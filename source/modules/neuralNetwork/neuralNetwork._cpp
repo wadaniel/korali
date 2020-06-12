@@ -494,13 +494,43 @@ void NeuralNetwork::create()
       const memory::dims layerDims = {N, IC};
       auto dataDiffMemDesc = memory::desc(layerDims, memory::data_type::f32, memory::format_tag::ab);
       _layers[i]->_dataDiffMem = memory(dataDiffMemDesc, _engine);
+      _layers[i]->_activationDiffMem = memory(dataDiffMemDesc, _engine);
     }
-
-    // Setting last layer's data diff to the last value
-    _layers[layerCount - 1]->_dataDiffMem = _layers[layerCount - 1]->_dataMem;
 
     for (size_t i = layerCount - 1; i > 0; i--)
     {
+
+     // Creating backward propagation primitives for activation functions
+     algorithm activationAlgorithm;
+     float alpha = 0.0f;
+     float beta = 0.0f;
+
+     if (_layers[i]->_activationFunction == "Identity")
+     {
+      alpha = 1.0f;
+      activationAlgorithm = algorithm::eltwise_linear;
+     }
+
+     if (_layers[i]->_activationFunction == "ReLU")
+      activationAlgorithm = algorithm::eltwise_relu;
+
+     if (_layers[i]->_activationFunction == "Tanh")
+      activationAlgorithm = algorithm::eltwise_tanh;
+
+     // Creating descriptor
+     auto activationDesc = eltwise_backward::desc(activationAlgorithm, _layers[i]->_dataMem.get_desc(), _layers[i]->_activationMem.get_desc(), alpha, beta);
+
+     // Create primitive descriptor.
+     auto backwardActivationPrimitiveDesc = eltwise_backward::primitive_desc(activationDesc, _engine, _layers[i]->_forwardActivationPrimitiveDesc);
+
+     // Create the primitive.
+     _layers[i]->_backwardActivationPrimitive = eltwise_backward(backwardActivationPrimitiveDesc);
+
+     // Primitive arguments.
+     _layers[i]->_backwardActivationArgs.insert({DNNL_ARG_SRC, _layers[i]->_dataMem}); // Input
+     _layers[i]->_backwardActivationArgs.insert({DNNL_ARG_DIFF_DST, _layers[i]->_activationDiffMem}); // Input
+     _layers[i]->_backwardActivationArgs.insert({DNNL_ARG_DIFF_SRC, _layers[i]->_dataDiffMem}); // Output
+
       auto backwardDataDesc = inner_product_backward_data::desc(
         _layers[i - 1]->_dataDiffMem.get_desc(),
         _layers[i]->_weightsWorkMem.get_desc(),
@@ -510,9 +540,10 @@ void NeuralNetwork::create()
       auto backwardDataPrimitiveDesc = inner_product_backward_data::primitive_desc(backwardDataDesc, _engine, _layers[i]->_forwardInnerProductPrimitiveDesc);
       _layers[i]->_backwardDataPrimitive = inner_product_backward_data(backwardDataPrimitiveDesc);
 
-      _layers[i]->_backwardDataArgs.insert({DNNL_ARG_DIFF_SRC, _layers[i - 1]->_dataDiffMem});
-      _layers[i]->_backwardDataArgs.insert({DNNL_ARG_WEIGHTS, _layers[i]->_weightsWorkMem});
-      _layers[i]->_backwardDataArgs.insert({DNNL_ARG_DIFF_DST, _layers[i]->_dataDiffMem});
+      _layers[i]->_backwardDataArgs.insert({DNNL_ARG_DIFF_DST, _layers[i]->_dataDiffMem}); // Input
+      _layers[i]->_backwardDataArgs.insert({DNNL_ARG_WEIGHTS, _layers[i]->_weightsWorkMem}); // Input
+      _layers[i]->_backwardDataArgs.insert({DNNL_ARG_DIFF_SRC, _layers[i - 1]->_activationDiffMem}); // Output
+
 
       auto backwardWeightsDesc = inner_product_backward_weights::desc(
         _layers[i - 1]->_dataMem.get_desc(),
@@ -524,10 +555,11 @@ void NeuralNetwork::create()
       auto backwardWeightsPrimitiveDesc = inner_product_backward_weights::primitive_desc(backwardWeightsDesc, _engine, _layers[i]->_forwardInnerProductPrimitiveDesc);
       _layers[i]->_backwardWeightsPrimitive = inner_product_backward_weights(backwardWeightsPrimitiveDesc);
 
-      _layers[i]->_backwardWeightsArgs.insert({DNNL_ARG_SRC, _layers[i - 1]->_dataMem});
-      _layers[i]->_backwardWeightsArgs.insert({DNNL_ARG_DIFF_WEIGHTS, _layers[i]->_weightsMem});
-      _layers[i]->_backwardWeightsArgs.insert({DNNL_ARG_DIFF_BIAS, _layers[i]->_biasMem});
-      _layers[i]->_backwardWeightsArgs.insert({DNNL_ARG_DIFF_DST, _layers[i]->_dataDiffMem});
+      _layers[i]->_backwardWeightsArgs.insert({DNNL_ARG_SRC, _layers[i - 1]->_activationMem}); // Input
+      _layers[i]->_backwardWeightsArgs.insert({DNNL_ARG_DIFF_DST, _layers[i]->_dataDiffMem}); // Input
+      _layers[i]->_backwardWeightsArgs.insert({DNNL_ARG_DIFF_WEIGHTS, _layers[i]->_weightsMem}); // Output
+      _layers[i]->_backwardWeightsArgs.insert({DNNL_ARG_DIFF_BIAS, _layers[i]->_biasMem}); // Output
+
     }
   }
 
@@ -639,10 +671,12 @@ void NeuralNetwork::backward()
 #ifdef _KORALI_USE_ONEDNN
 
   size_t layerCount = _layers.size();
+  size_t lastLayer = layerCount - 1;
 
   // Backward propagating neural network
-  for (size_t i = layerCount - 1; i > 0; i--)
+  for (size_t i = lastLayer; i > 0; i--)
   {
+    _layers[i]->_backwardActivationPrimitive.execute(_stream, _layers[i]->_backwardActivationArgs);
     _layers[i]->_backwardDataPrimitive.execute(_stream, _layers[i]->_backwardDataArgs);
     _layers[i]->_backwardWeightsPrimitive.execute(_stream, _layers[i]->_backwardWeightsArgs);
   }
@@ -732,21 +766,27 @@ void NeuralNetwork::runSample(Sample &sample, NeuralNetwork *nn)
   // Calculating mean square error
   double meanSquaredError = 0.0;
 
+  // Saving values for the last layer's diff
+  std::vector<float> outputDiff(batchSize*outputSize);
+
   for (size_t i = 0; i < batchSize; i++)
     for (size_t j = 0; j < outputSize; j++)
     {
-      double diff = nn->_layers[outputLayerId]->_nodeValues[i][j] - nn->_solution[i][j];
+      double diff = nn->_solution[i][j] - nn->_layers[outputLayerId]->_nodeValues[i][j];
+      outputDiff[i*outputSize + j] = diff;
       meanSquaredError += diff * diff;
     }
 
-  meanSquaredError = meanSquaredError / (double)batchSize;
+  meanSquaredError = meanSquaredError / ((double)batchSize*2);
 
   // Saving the negative of the error because we want to minimize it
   sample["F(x)"] = -meanSquaredError;
 
-  // If this is a training NN, run backward propagation and store gradients as well
   if (nn->_operation == "Training")
   {
+    // Writing to last layers differential information wrt data
+    write_to_dnnl_memory(outputDiff.data(), nn->_layers[outputLayerId]->_activationDiffMem);
+
     // Running backward propagation
     nn->backward();
 
@@ -758,7 +798,7 @@ void NeuralNetwork::runSample(Sample &sample, NeuralNetwork *nn)
       nn->_layers[i]->_weights.resize(nn->_layers[i]->_nodeCount);
       nn->_layers[i]->_bias.resize(nn->_layers[i]->_nodeCount);
 
-      //      printf("Layer %lu\n", i);
+//            printf("Layer %lu\n", i);
       // Adding layer's weights
       for (size_t j = 0; j < nn->_layers[i]->_nodeCount; j++)
       {
@@ -766,10 +806,10 @@ void NeuralNetwork::runSample(Sample &sample, NeuralNetwork *nn)
 
         for (size_t k = 0; k < nn->_layers[i - 1]->_nodeCount; k++)
         {
-          //          printf("%.5f ", nn->_layers[i]->_weights[j][k]);
+//                    printf("%.5f ", nn->_layers[i]->_weights[j][k]);
           gradientVector[currentVariable++] = nn->_layers[i]->_weights[j][k];
         }
-        //        printf("\n");
+//                printf("\n");
       }
 
       // Adding layer's biases

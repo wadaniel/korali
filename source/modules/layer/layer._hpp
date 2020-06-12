@@ -48,6 +48,12 @@ class Layer : public Module
    */
   dnnl::memory _dataDiffMem;
 
+  /*
+  * @brief oneDNN Gradients of the operation wrt to activation function
+  */
+ dnnl::memory _activationDiffMem;
+
+
   /*****************************************************************
   * Declaring Layers's Forward Activation Function Primitive Configuration
   ******************************************************************/
@@ -89,6 +95,16 @@ class Layer : public Module
   /*****************************************************************
    * Declaring Layers's Backward Propagation Configuration
    ******************************************************************/
+
+  /**
+   * @brief oneDNN Arguments for the backward propagation of the gradient wrt activation functions
+   */
+  std::unordered_map<int, dnnl::memory> _backwardActivationArgs;
+
+  /**
+   * @brief oneDNN primitive for the backward propagation of the gradient wrt activation functions
+   */
+  dnnl::primitive _backwardActivationPrimitive;
 
   /**
    * @brief oneDNN Arguments for the backward propagation of the gradient wrt Data

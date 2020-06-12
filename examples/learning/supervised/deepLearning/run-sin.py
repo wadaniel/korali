@@ -41,7 +41,6 @@ e["Solver"]["Termination Criteria"]["Max Generations"] = 500
 
 ### Defining the shape of the neural network
 
-#e["Solver"]["Neural Network"]["Optimizer"]["Type"] = "Optimizer/Adam"
 e["Solver"]["Neural Network"]["Optimizer"]["Type"] = "Optimizer/CMAES"
 
 e["Solver"]["Neural Network"]["Layers"][0]["Type"] = "Input"
@@ -69,7 +68,7 @@ k.run(e)
 testInputSet = np.random.uniform(0, 2 * np.pi, 100)
 testInputSet = [[x] for x in testInputSet.tolist()]
 
-testInferredSet = e.test(testInputSet)
+testInferredSet = e.evaluate(testInputSet)
 testOutputSet = np.sin(testInputSet) * scaling
 
 ### Plotting Results

@@ -15,28 +15,37 @@ class Layer : public Module
 #ifdef _KORALI_USE_ONEDNN
 
   /********************************************************
-  * Forward Propagation Memory Structures and Primitives
+  * Declaring Layers's Memory Structures
   *******************************************************/
 
   /**
-   * @brief oneDNN Memory object descriptor to contain the result value of the neurons of the layer
+   * @brief oneDNN Memory object descriptor to contain the result value of the neuron data of the layer
    */
-  dnnl::memory _forwardNodeMem;
+  dnnl::memory _dataMem;
 
   /**
    * @brief oneDNN Memory object descriptor to contain the weights of inner product with incoming channels
    */
-  dnnl::memory _forwardWeightMem;
+  dnnl::memory _weightsMem;
+
+  /**
+   * @brief oneDNN Working memory for weights that may be reordered to accelerate calculation
+   */
+  dnnl::memory _weightsWorkMem;
 
   /**
    * @brief oneDNN Memory object descriptor to contain the bias to add to incoming channels
    */
-  dnnl::memory _forwardBiasMem;
+  dnnl::memory _biasMem;
 
   /**
-   * @brief oneDNN Memory object descriptor to contain work memory of the inner product, required for backward propagation later
+   * @brief oneDNN Gradients of the operation wrt to Data
    */
-  dnnl::memory _forwardWorkMem;
+  dnnl::memory _dataDiffMem;
+
+  /*****************************************************************
+  * Declaring Layers's Forward Inner Product Primitive Configuration
+  ******************************************************************/
 
   /**
    * @brief oneDNN Arguments to the inner product operation
@@ -58,23 +67,29 @@ class Layer : public Module
    */
   dnnl::primitive _forwardPrimitive;
 
-  /********************************************************
-   * Backward Propagation Memory Structures and Primitives
-   *******************************************************/
-  /**
-   * @brief oneDNN Memory object descriptor to contain the gradients of the bias to add to incoming channels
-   */
-  dnnl::memory _backwardBiasDiffMem;
+  /*****************************************************************
+   * Declaring Layers's Backward Propagation Configuration
+   ******************************************************************/
 
   /**
-   * @brief oneDNN Arguments to the inner product operation
+   * @brief oneDNN Arguments for the backward propagation of the gradient wrt Data
    */
-  std::unordered_map<int, dnnl::memory> _backwardInnerProductArgs;
+  std::unordered_map<int, dnnl::memory> _backwardDataArgs;
 
   /**
-   * @brief oneDNN primitive to run the inner product + bias addition operation
+   * @brief oneDNN primitive for the backward propagation of the gradient wrt Data
    */
-  dnnl::primitive _backwardPrimitive;
+  dnnl::primitive _backwardDataPrimitive;
+
+  /**
+   * @brief oneDNN Arguments for the backward propagation of the gradient wrt Weights and Biases
+   */
+  std::unordered_map<int, dnnl::memory> _backwardWeightsArgs;
+
+  /**
+   * @brief oneDNN primitive for the backward propagation of the gradient wrt Weights and Biases
+   */
+  dnnl::primitive _backwardWeightsPrimitive;
 
 #endif
 };

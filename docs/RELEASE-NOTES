@@ -1,4 +1,4 @@
-June 11, 2020 - Korali 2.0.0
+June 12, 2020 - Korali 2.0.0
 
 New Features / Enhancements
 
@@ -12,6 +12,8 @@ New Features / Enhancements
    - For Learning: Neural Network-based Learner and Gaussian Processes
    - For Sampling: Nested Sampling
    - For Bayesian Inference: SAEM
+   - For Optimization: Grid Search
+   - For Integration: Integrator
 
 + Improved error reporting. Korali will notify the cause of bad configuration (for users) or runtime errors and file from which they originated (for developers).
 
@@ -30,7 +32,7 @@ Breaking Changes
 
 Bug Fixes
 
-+ General memory leaks fixes on creation of Korali modules.
++ General memory leaks fixes on creation of Korali modules and coroutines.
 + Removing many lingering compilation warnings.
 + General improvements to code styling.
 + Removed third-party code from Korali's repository as now they are gathered during installation.

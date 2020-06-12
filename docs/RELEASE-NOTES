@@ -12,7 +12,15 @@ New Features / Enhancements
    - For Learning: Neural Network-based Learner and Gaussian Processes
    - For Sampling: Nested Sampling
    - For Bayesian Inference: SAEM
-   
+
++ Improved error reporting. Korali will notify the cause of bad configuration (for users) or runtime errors and file from which they originated (for developers).
+
++ Korali can now automatically detect existing or download and install all its third party dependencies (GSL, oneDNN, EIGEN, libGP).
+
++ General performance optimizations, especially with regards to avoiding unnecessary data motion between JSON configuration and module internal variables.
+
++ Increased documentation coverage.
+
 Breaking Changes
 
 + Samplers and Optimizers have been recategorized and applications using them should be adapted to the new syntax.
@@ -23,8 +31,9 @@ Breaking Changes
 Bug Fixes
 
 + General memory leaks fixes on creation of Korali modules.
-+ General optimization of JSON configuration manipulation.
 + Removing many lingering compilation warnings.
++ General improvements to code styling.
++ Removed third-party code from Korali's repository as now they are gathered during installation.
 
 ---------------------------------------------------------------------
 
@@ -47,7 +56,7 @@ Breaking Changes
 
 Bug Fixes
 
-+ Fxied bug where, if not saving results to a file, they will not be accessible at runtime either.
++ Fixed bug where, if not saving results to a file, they will not be accessible at runtime either.
 
 ---------------------------------------------------------------------
 

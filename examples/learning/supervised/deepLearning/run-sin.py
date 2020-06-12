@@ -41,8 +41,8 @@ e["Solver"]["Termination Criteria"]["Max Generations"] = 500
 
 ### Defining the shape of the neural network
 
-#e["Solver"]["Neural Network"]["Optimizer"]["Type"] = "Optimizer/Adam"
-e["Solver"]["Neural Network"]["Optimizer"]["Type"] = "Optimizer/CMAES"
+e["Solver"]["Neural Network"]["Optimizer"]["Type"] = "Optimizer/Adam"
+#e["Solver"]["Neural Network"]["Optimizer"]["Type"] = "Optimizer/CMAES"
 
 e["Solver"]["Neural Network"]["Layers"][0]["Type"] = "Input"
 e["Solver"]["Neural Network"]["Layers"][0]["Node Count"] = 1

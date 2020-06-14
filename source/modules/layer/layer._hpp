@@ -51,8 +51,7 @@ class Layer : public Module
   /*
   * @brief oneDNN Gradients of the operation wrt to activation function
   */
- dnnl::memory _activationDiffMem;
-
+  dnnl::memory _activationDiffMem;
 
   /*****************************************************************
   * Declaring Layers's Forward Activation Function Primitive Configuration

@@ -5,7 +5,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 def env(s):
- s["State"]
+ state = s["State"]
+ action = s["Action"]
+ 
+ print('Running Environment')
+ print(' + State:  ' + str(state))
+ print(' + Action: ' + str(action))
+ 
+ s["Reward"] = 1.0
+ 
  s.update()
 
 import korali

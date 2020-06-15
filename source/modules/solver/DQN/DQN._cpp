@@ -11,52 +11,66 @@ void DQN::initialize()
   // Getting problem pointer
   _problem = dynamic_cast<problem::ReinforcementLearning *>(_k->_problem);
 
-  // Setting input training data
-  _neuralNetwork->_layers[0]->_nodeValues.resize(_problem->_trainingBatchSize);
-  for (size_t i = 0; i < _problem->_trainingBatchSize; i++)
+  _QExperiment["Problem"]["Type"] = "Supervised Learning";
+  _QExperiment["Solver"]["Type"] = "Deep Learner";
+  _neuralNetwork->getConfiguration(_QExperiment["Solver"]["Neural Network"]);
+
+  for (size_t i = 0; i < _k->_variables.size(); i++)
   {
-    _neuralNetwork->_layers[0]->_nodeValues[i].resize(_problem->_inputVectorSize);
-    for (size_t j = 0; j < _problem->_inputVectorSize; j++)
-    {
-      size_t varIdx = _problem->_inputVectorIndexes[j];
-      _neuralNetwork->_layers[0]->_nodeValues[i][j] = _k->_variables[varIdx]->_trainingData[i];
-    }
+   _QExperiment["Variables"][i]["Name"] = _k->_variables[i]->_name;
+   _QExperiment["Variables"][i]["Training Data"] = { 0.0 };
+   _QExperiment["Variables"][i]["Validation Data"] = { 0.0 };
+   if (_k->_variables[i]->_type == "State") _QExperiment["Variables"][i]["Type"] = "Input";
+   if (_k->_variables[i]->_type == "Action") _QExperiment["Variables"][i]["Type"] = "Output";
   }
 
-  // Setting Solution for NN training and validation
-  _neuralNetwork->_solution.resize(_problem->_trainingBatchSize);
-  for (size_t i = 0; i < _problem->_trainingBatchSize; i++)
-  {
-    _neuralNetwork->_solution[i].resize(_problem->_outputVectorSize);
-    for (size_t j = 0; j < _problem->_outputVectorSize; j++)
-    {
-      size_t varIdx = _problem->_outputVectorIndexes[j];
-      _neuralNetwork->_solution[i][j] = _k->_variables[varIdx]->_trainingData[i];
-    }
-  }
+  _QExperiment.initialize();
+}
 
-  // Creating Training Neural Network internal structures
-  _neuralNetwork->_operation = "Training";
-  _neuralNetwork->create();
+void DQN::setInitialConfiguration()
+{
+ // Starting to process initial states, from the first one
+ _currentInitialState = 0;
 }
 
 void DQN::runGeneration()
 {
-  // If initial generation, get problem pointer, and set initial DQN configuration
+ // If initial generation, set initial DQN configuration
   if (_k->_currentGeneration == 1)
-    setInitialConfiguration();
-
-  // Instructing DQN to initialize generation configuration
-  initializeGeneration();
+   setInitialConfiguration();
 
   // Creating as many agents as initial states defined.
-  size_t agentCount = _problem->_initialStateCount;
+  size_t agentCount = 1;
+
+  // Making sure we don't create more agents than remaining initial states
+  if (agentCount + _currentInitialState > _problem->_initialStateCount)
+   agentCount = _problem->_initialStateCount - _currentInitialState;
 
   // Creating storage for agents
   std::vector<Sample> agents(agentCount);
 
   // Index for current worker Id that helps making a balanced distribution of work
   size_t currentWorker = 0;
+
+  // Storage for agent information
+  std::vector<std::vector<double>> actions(agentCount);
+  std::vector<std::vector<double>> states(agentCount);
+  std::vector<double> rewards(agentCount);
+  std::vector<bool> hasFinished(agentCount);
+
+  // Storage for the entire history of the current policy
+  std::vector<std::vector<std::vector<double>>> actionHistories(agentCount);
+  std::vector<std::vector<std::vector<double>>> stateHistories(agentCount);
+
+  // Initializing Finished count
+  size_t finishedCount = 0;
+
+  // Setting initial states
+  for (size_t i = 0; i < agentCount; i++)
+   states[i] = _problem->_initialStates[_currentInitialState++];
+
+  // Setting initial actions
+  actions = _QExperiment._solver->evaluate(states);
 
   // Initializing the agents and their environments
   for (size_t i = 0; i < agentCount; i++)
@@ -66,6 +80,8 @@ void DQN::runGeneration()
     agents[i]["Sample Id"] = i;
     agents[i]["Module"] = "Problem";
     agents[i]["Operation"] = "Run Environment";
+    agents[i]["State"] = states[i];
+    agents[i]["Action"] = actions[i];
 
     // Launching agent initialization
     _conduit->start(agents[i]);
@@ -75,54 +91,21 @@ void DQN::runGeneration()
     if (currentWorker == _conduit->maxConcurrency()) currentWorker = 0;
   }
 
-  // Waiting for all agents to initialize
-  _conduit->waitAll(agents);
-
-  // Storage for agent information
-  std::vector<std::vector<double>> actions(agentCount);
-  std::vector<std::vector<double>> states(agentCount);
-  std::vector<double> rewards(agentCount);
-  std::vector<bool> hasFinished(agentCount);
-
-  // Storage for the entire history of the current policy
-  std::vector<std::vector<std::vector<double>>> currentPolicyActions(agentCount);
-  std::vector<std::vector<std::vector<double>>> currentPolicyStates(agentCount);
-
-  // Storing agent's initial state and performing first action
-  for (size_t i = 0; i < agentCount; i++)
-    if (hasFinished[i] == false)
-    {
-      states[i] = KORALI_GET(std::vector<double>, agents[i], "State");
-
-      // Getting new action to perform
-      actions[i] = getAction(states[i]);
-      agents[i]["Action"] = actions[i];
-
-      // Running a new episode
-      _conduit->start(agents[i]);
-    }
-
-  // Initializing Finished count
-  size_t finishedCount = 0;
-
   // Running main iteration loop until all agents have finished
   while (finishedCount < agentCount)
   {
     // Waiting for any of the pending agents
     size_t i = _conduit->waitAny(agents);
 
-    // Add state/action to current policy history
-    currentPolicyActions[i].push_back(actions[i]);
-    currentPolicyStates[i].push_back(states[i]);
+    // Add state to current policy history
+    actionHistories[i].push_back(actions[i]);
+    stateHistories[i].push_back(states[i]);
 
     // Updating reward
     rewards[i] = KORALI_GET(double, agents[i], "Reward");
 
     // Storing agent's new state
     auto newState = KORALI_GET(std::vector<double>, agents[i], "State");
-
-    // Storing the agent's experience into the learner
-    storeExperience(states[i], actions[i], rewards[i], newState);
 
     // The new state becomes the current state
     states[i] = newState;
@@ -132,16 +115,13 @@ void DQN::runGeneration()
     // If it finished, then add to the count
     if (hasFinished[i])
     {
-      // Adding the end state to the policy
-      currentPolicyStates[i].push_back(states[i]);
-
       // Incrementing finished agent count
       finishedCount++;
     }
     else // Else, get new action and run next episode
     {
       // Getting new action to perform
-      actions[i] = getAction(states[i]);
+      actions[i] = _QExperiment._solver->evaluate( { newState } )[0];
       agents[i]["Action"] = actions[i];
 
       // Run Episode
@@ -149,8 +129,23 @@ void DQN::runGeneration()
     }
   }
 
-  // Instructing DQN to process finsihed generation
-  processGeneration();
+  // Updating the NN with the gathered results
+  for (size_t i = 0; i < agentCount; i++)
+  {
+   printf("Agent %lu\n", i, stateHistories[i].size(), actionHistories[i].size());
+   for (size_t j = 0; j < stateHistories[i].size(); j++)
+   {
+    printf(" + State  %.3lu: ", j);
+    for (size_t k = 0; k < stateHistories[i][j].size(); k++) printf("%f ", stateHistories[i][j][k]);
+    printf("\n");
+
+    printf(" + Action %.3lu: ", j);
+    for (size_t k = 0; k < stateHistories[i][j].size(); k++) printf("%f ", stateHistories[i][j][k]);
+    printf("\n");
+   }
+  }
+
+  exit(0);
 }
 
 } // namespace solver

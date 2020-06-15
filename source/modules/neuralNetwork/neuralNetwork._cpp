@@ -31,8 +31,15 @@ void NeuralNetwork::initialize()
     // Setting value for this layer's xavier constant
     double xavierConstant = sqrt(6.0) / sqrt(_layers[i]->_nodeCount + _layers[i - 1]->_nodeCount);
 
+    // Reserving space for layer weights and biases
+    _layers[i]->_weights.resize(_layers[i]->_nodeCount);
+    _layers[i]->_bias.resize(_layers[i]->_nodeCount);
+
     // Adding layer's weights
     for (size_t j = 0; j < _layers[i]->_nodeCount; j++)
+    {
+     _layers[i]->_weights[j].resize(_layers[i-1]->_nodeCount);
+
       for (size_t k = 0; k < _layers[i - 1]->_nodeCount; k++)
       {
         char varName[512];
@@ -47,8 +54,10 @@ void NeuralNetwork::initialize()
         _koraliExperiment["Variables"][currentVariable]["Initial Value"] = initialGuess;
         _koraliExperiment["Variables"][currentVariable]["Initial Mean"] = initialGuess;
         _koraliExperiment["Variables"][currentVariable]["Initial Standard Deviation"] = 1.0;
+        _layers[i]->_weights[j][k] = initialGuess;
         currentVariable++;
       }
+    }
 
     // Adding layer's biases
     for (size_t j = 0; j < _layers[i]->_nodeCount; j++)
@@ -65,6 +74,7 @@ void NeuralNetwork::initialize()
       _koraliExperiment["Variables"][currentVariable]["Initial Value"] = initialGuess;
       _koraliExperiment["Variables"][currentVariable]["Initial Mean"] = initialGuess;
       _koraliExperiment["Variables"][currentVariable]["Initial Standard Deviation"] = 1.0;
+      _layers[i]->_bias[j] = initialGuess;
       currentVariable++;
     }
   }
@@ -791,18 +801,13 @@ void NeuralNetwork::runSample(Sample &sample, NeuralNetwork *nn)
       nn->_layers[i]->_weights.resize(nn->_layers[i]->_nodeCount);
       nn->_layers[i]->_bias.resize(nn->_layers[i]->_nodeCount);
 
-      //            printf("Layer %lu\n", i);
       // Adding layer's weights
       for (size_t j = 0; j < nn->_layers[i]->_nodeCount; j++)
       {
         nn->_layers[i]->_weights[j].resize(nn->_layers[i - 1]->_nodeCount);
 
         for (size_t k = 0; k < nn->_layers[i - 1]->_nodeCount; k++)
-        {
-          //                    printf("%.5f ", nn->_layers[i]->_weights[j][k]);
           gradientVector[currentVariable++] = nn->_layers[i]->_weights[j][k];
-        }
-        //                printf("\n");
       }
 
       // Adding layer's biases

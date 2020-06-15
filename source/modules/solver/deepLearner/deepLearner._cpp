@@ -74,10 +74,10 @@ void DeepLearner::initialize()
 
   // Creating Validation Neural Network internal structures, keeping normalization from training NN
   _validationNeuralNetwork->create();
+  _validationNeuralNetwork->_operation = "Inference";
 
   // Creating Test NN
   _testNeuralNetwork = dynamic_cast<NeuralNetwork *>(Module::duplicate(_neuralNetwork));
-  _validationNeuralNetwork->_operation = "Inference";
 }
 
 void DeepLearner::runGeneration()
@@ -138,6 +138,8 @@ std::vector<std::vector<double>> DeepLearner::evaluate(const std::vector<std::ve
 
   // If training was normalized, we need to de-normalize the results
   if (_testNeuralNetwork->_batchNormalizationEnabled == true)
+  if (_testNeuralNetwork->_outputNormalizationSigmas.size() > 0)
+  if (_testNeuralNetwork->_outputNormalizationMeans.size() > 0)
   {
     for (size_t i = 0; i < batchSize; i++)
       for (size_t j = 0; j < outputSize; j++)

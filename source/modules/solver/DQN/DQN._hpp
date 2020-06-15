@@ -17,52 +17,21 @@ class DQN : public Solver
   problem::ReinforcementLearning *_problem;
 
   /**
+ * @brief Korali engine for supervised learning of Q
+ */
+  korali::Engine _QEngine;
+
+  /**
+ * @brief Korali experiment for supervised learning of Q
+ */
+  korali::Experiment _QExperiment;
+
+  /**
   * @brief Runs a generation of the environment(s), running an action on each episode, and updating the policy.
   */
   void runGeneration() override;
-
-  /**
-  * @brief Instructs the learner to initialize variables before the start of a generation.
-  */
-  virtual void initializeGeneration()
-  {
-    KORALI_LOG_ERROR("Not implemented yet\n");
-    exit(1);
-  };
-
-  /**
-  * @brief Instructs the learner to perform after-generation processing.
-  */
-  virtual void processGeneration()
-  {
-    KORALI_LOG_ERROR("Not implemented yet\n");
-    exit(1);
-  };
-
-  /**
-  * @brief Given the state of the agent, the learner returns a new action.
-  * @param state The current agent state
-  * @return A vector containing the new action to perform
-  */
-  virtual std::vector<double> getAction(const std::vector<double> &state)
-  {
-    KORALI_LOG_ERROR("Not implemented yet\n");
-    exit(1);
-    return {};
-  };
-
-  /**
-  * @brief Stores the (state, action, reward, new state) agent experience and and uses it to update the policy.
-  * @param state The previous agent state
-  * @param action The action performed by the agent
-  * @param reward The perceived reward
-  * @param newState The new agent state
-  */
-  virtual void storeExperience(const std::vector<double> &state, const std::vector<double> &action, const double reward, const std::vector<double> &newState)
-  {
-    KORALI_LOG_ERROR("Not implemented yet\n");
-    exit(1);
-  };
+  void setInitialConfiguration() override;
+  void initialize() override;
 };
 
 } // namespace solver

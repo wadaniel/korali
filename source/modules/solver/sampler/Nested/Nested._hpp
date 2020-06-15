@@ -17,7 +17,7 @@ struct ellipse_t
 {
   ellipse_t() = delete;
 
-  ellipse_t(size_t dim) : num(0), sampleIdx(0), mean(dim), cov(dim * dim), invCov(dim * dim), axes(dim * dim), evals(dim), paxes(dim * dim), volume(0.0), trueVolume(0.0){};
+  ellipse_t(size_t dim) : num(0), sampleIdx(0), mean(dim, 0.0), cov(dim * dim, 0.0), invCov(dim * dim, 0.0), axes(dim * dim, 0.0), evals(dim, 0.0), paxes(dim * dim, 0.0), volume(0.0), trueVolume(0.0){};
 
   /**
    * @brief Number samples in ellipse.

@@ -142,15 +142,12 @@ void NeuralNetwork::create()
     * Creating Activation Function primitive and memory
     * ***************************************/
 
-    algorithm activationAlgorithm;
+    algorithm activationAlgorithm = algorithm::eltwise_linear;
     float alpha = 0.0f;
     float beta = 0.0f;
 
     if (_layers[i]->_activationFunction == "Identity")
-    {
       alpha = 1.0f;
-      activationAlgorithm = algorithm::eltwise_linear;
-    }
 
     if (_layers[i]->_activationFunction == "ReLU")
       activationAlgorithm = algorithm::eltwise_relu;

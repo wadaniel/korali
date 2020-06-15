@@ -5,26 +5,61 @@ namespace korali
 {
 namespace solver
 {
+
+void DQN::initialize()
+{
+  // Getting problem pointer
+  _problem = dynamic_cast<problem::ReinforcementLearning *>(_k->_problem);
+
+  // Setting input training data
+  _neuralNetwork->_layers[0]->_nodeValues.resize(_problem->_trainingBatchSize);
+  for (size_t i = 0; i < _problem->_trainingBatchSize; i++)
+  {
+    _neuralNetwork->_layers[0]->_nodeValues[i].resize(_problem->_inputVectorSize);
+    for (size_t j = 0; j < _problem->_inputVectorSize; j++)
+    {
+      size_t varIdx = _problem->_inputVectorIndexes[j];
+      _neuralNetwork->_layers[0]->_nodeValues[i][j] = _k->_variables[varIdx]->_trainingData[i];
+    }
+  }
+
+  // Setting Solution for NN training and validation
+  _neuralNetwork->_solution.resize(_problem->_trainingBatchSize);
+  for (size_t i = 0; i < _problem->_trainingBatchSize; i++)
+  {
+    _neuralNetwork->_solution[i].resize(_problem->_outputVectorSize);
+    for (size_t j = 0; j < _problem->_outputVectorSize; j++)
+    {
+      size_t varIdx = _problem->_outputVectorIndexes[j];
+      _neuralNetwork->_solution[i][j] = _k->_variables[varIdx]->_trainingData[i];
+    }
+  }
+
+  // Creating Training Neural Network internal structures
+  _neuralNetwork->_operation = "Training";
+  _neuralNetwork->create();
+}
+
 void DQN::runGeneration()
 {
   // If initial generation, get problem pointer, and set initial DQN configuration
   if (_k->_currentGeneration == 1)
-  {
-    _problem = dynamic_cast<problem::ReinforcementLearning *>(_k->_problem);
     setInitialConfiguration();
-  }
 
   // Instructing DQN to initialize generation configuration
   initializeGeneration();
 
+  // Creating as many agents as initial states defined.
+  size_t agentCount = _problem->_initialStateCount;
+
   // Creating storage for agents
-  std::vector<Sample> agents(_agentCount);
+  std::vector<Sample> agents(agentCount);
 
   // Index for current worker Id that helps making a balanced distribution of work
   size_t currentWorker = 0;
 
   // Initializing the agents and their environments
-  for (size_t i = 0; i < _agentCount; i++)
+  for (size_t i = 0; i < agentCount; i++)
   {
     // Configuring Agent
     agents[i]["Worker"] = 0;
@@ -44,17 +79,17 @@ void DQN::runGeneration()
   _conduit->waitAll(agents);
 
   // Storage for agent information
-  std::vector<std::vector<double>> actions(_agentCount);
-  std::vector<std::vector<double>> states(_agentCount);
-  std::vector<double> rewards(_agentCount);
-  std::vector<bool> hasFinished(_agentCount);
+  std::vector<std::vector<double>> actions(agentCount);
+  std::vector<std::vector<double>> states(agentCount);
+  std::vector<double> rewards(agentCount);
+  std::vector<bool> hasFinished(agentCount);
 
   // Storage for the entire history of the current policy
-  std::vector<std::vector<std::vector<double>>> currentPolicyActions(_agentCount);
-  std::vector<std::vector<std::vector<double>>> currentPolicyStates(_agentCount);
+  std::vector<std::vector<std::vector<double>>> currentPolicyActions(agentCount);
+  std::vector<std::vector<std::vector<double>>> currentPolicyStates(agentCount);
 
   // Storing agent's initial state and performing first action
-  for (size_t i = 0; i < _agentCount; i++)
+  for (size_t i = 0; i < agentCount; i++)
     if (hasFinished[i] == false)
     {
       states[i] = KORALI_GET(std::vector<double>, agents[i], "State");
@@ -71,7 +106,7 @@ void DQN::runGeneration()
   size_t finishedCount = 0;
 
   // Running main iteration loop until all agents have finished
-  while (finishedCount < _agentCount)
+  while (finishedCount < agentCount)
   {
     // Waiting for any of the pending agents
     size_t i = _conduit->waitAny(agents);
@@ -113,21 +148,6 @@ void DQN::runGeneration()
       _conduit->start(agents[i]);
     }
   }
-
-  // Find and store best policy so far
-  for (size_t i = 0; i < _agentCount; i++)
-    if (rewards[i] > _bestReward)
-    {
-      // Saving best reward so far
-      _bestReward = rewards[i];
-
-      _bestPolicyStates = currentPolicyStates[i];
-      _bestPolicyActions = currentPolicyActions[i];
-
-      _k->_js["Results"]["Optimal Policy Actions"] = _bestPolicyActions;
-      _k->_js["Results"]["Optimal Policy States"] = _bestPolicyStates;
-      _k->_js["Results"]["Optimal Reward"] = _bestReward;
-    }
 
   // Instructing DQN to process finsihed generation
   processGeneration();

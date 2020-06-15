@@ -6,52 +6,6 @@ namespace problem
 {
 void ReinforcementLearning::initialize()
 {
-  // If it has already been initialized, reset generation and skip initialization.
-  if (_isInitialized == true) return;
-
-  // Processing variable parameter space
-  for (size_t i = 0; i < _k->_variables.size(); i++)
-  {
-    if (_k->_variables[i]->_parameterSpace == "Continuous" || _k->_variables[i]->_parameterSpace == "Discrete")
-    {
-      if (_k->_variables[i]->_parameterVector.size() > 0) KORALI_LOG_ERROR("Variable %lu (%s): Parameter Vector is defined, but variable's parameter space is not marked as user-defined.\n", i, _k->_variables[i]->_name.c_str());
-      if (_k->_variables[i]->_lowerBound == Inf) KORALI_LOG_ERROR("Variable %lu (%s): Lower bound for continuous/discrete variable is not defined.\n", i, _k->_variables[i]->_name.c_str());
-      if (_k->_variables[i]->_upperBound == -Inf) KORALI_LOG_ERROR("Variable %lu (%s): Upper bound for continuous/discrete variable is not defined.\n", i, _k->_variables[i]->_name.c_str());
-      if (_k->_variables[i]->_upperBound <= _k->_variables[i]->_lowerBound) KORALI_LOG_ERROR("Variable %lu (%s): Upper bound is lower than lower bound.\n", i, _k->_variables[i]->_name.c_str());
-    }
-
-    if (_k->_variables[i]->_parameterSpace == "Discrete")
-    {
-      if (_k->_variables[i]->_granularity <= 0.0) KORALI_LOG_ERROR("Variable %lu (%s): Granularity for discrete variable is invalid/not defined.\n", i, _k->_variables[i]->_name.c_str());
-      if (_k->_variables[i]->_granularity > _k->_variables[i]->_upperBound - _k->_variables[i]->_lowerBound) KORALI_LOG_ERROR("Variable %lu (%s): Granularity for discrete variable is larger than the [lower,upper] bound space.\n", i, _k->_variables[i]->_name.c_str());
-    }
-
-    if (_k->_variables[i]->_parameterSpace == "Custom")
-    {
-      if (_k->_variables[i]->_granularity > 0.0) KORALI_LOG_ERROR("Variable %lu (%s): Granularity is defined, but variable's parameter space is marked as user-defined.\n", i, _k->_variables[i]->_name.c_str());
-      if (_k->_variables[i]->_parameterVector.size() == 0) KORALI_LOG_ERROR("Variable %lu (%s): Parameter Vector is not defined for user-defined variable.\n", i, _k->_variables[i]->_name.c_str());
-      if (_k->_variables[i]->_lowerBound != Inf) KORALI_LOG_ERROR("Variable %lu (%s): Lower bound for variable is defined, but variable's parameter space is marked as user-defined.\n", i, _k->_variables[i]->_name.c_str());
-      if (_k->_variables[i]->_upperBound != -Inf) KORALI_LOG_ERROR("Variable %lu (%s): Upper bound for variable is defined, but variable's parameter space is marked as user-defined.\n", i, _k->_variables[i]->_name.c_str());
-    }
-  }
-
-  // Creating parameter vector space for discrete variables
-  for (size_t i = 0; i < _k->_variables.size(); i++)
-    if (_k->_variables[i]->_parameterSpace == "Discrete")
-    {
-      double currentVal = _k->_variables[i]->_lowerBound;
-
-      // Creating intermediate points
-      while (currentVal < _k->_variables[i]->_upperBound)
-      {
-        _k->_variables[i]->_parameterVector.push_back(currentVal);
-        currentVal += _k->_variables[i]->_granularity;
-      }
-
-      // Including upper bound point
-      _k->_variables[i]->_parameterVector.push_back(_k->_variables[i]->_upperBound);
-    }
-
   // Processing state/action variable configuration
 
   for (size_t i = 0; i < _k->_variables.size(); i++)
@@ -66,89 +20,14 @@ void ReinforcementLearning::initialize()
   if (_actionVectorSize == 0) KORALI_LOG_ERROR("No action variables have been defined.\n");
   if (_stateVectorSize == 0) KORALI_LOG_ERROR("No state variables have been defined.\n");
 
-  _stateCount = 1;
-  for (size_t i = 0; i < _stateVectorSize; i++)
-  {
-    size_t index = _stateVectorIndexes[i];
-    _stateCount *= _k->_variables[index]->_parameterVector.size();
-  }
+  // Verifying initial states
+  _initialStateCount = _initialStates.size();
 
-  _actionCount = 1;
-  for (size_t i = 0; i < _actionVectorSize; i++)
-  {
-    size_t index = _actionVectorIndexes[i];
-    _actionCount *= _k->_variables[index]->_parameterVector.size();
-  }
+  if (_initialStateCount == 0) KORALI_LOG_ERROR("No initial states have been provided.\n");
 
-  // Now mark as initalized
-  _isInitialized = true;
-}
-
-std::vector<double> ReinforcementLearning::getActionFromIndex(const size_t &index)
-{
-  return extrapolateValuesFromIndex(index, _actionVectorIndexes);
-}
-
-std::vector<double> ReinforcementLearning::getStateFromIndex(const size_t &index)
-{
-  return extrapolateValuesFromIndex(index, _stateVectorIndexes);
-}
-
-size_t ReinforcementLearning::getIndexFromAction(const std::vector<double> &values)
-{
-  return interpolateIndexFromValues(values, _actionVectorIndexes);
-}
-
-size_t ReinforcementLearning::getIndexFromState(const std::vector<double> &values)
-{
-  return interpolateIndexFromValues(values, _stateVectorIndexes);
-}
-
-std::vector<double> ReinforcementLearning::extrapolateValuesFromIndex(const size_t &index, const std::vector<size_t> &variableIndexVector)
-{
-  // Creating storage for new action
-  std::vector<double> values(variableIndexVector.size());
-
-  size_t tempIdx = index;
-  for (size_t i = 0; i < variableIndexVector.size(); i++)
-  {
-    size_t varIdx = variableIndexVector[i];
-    size_t varParVectorSize = _k->_variables[varIdx]->_parameterVector.size();
-    size_t parameterIdx = tempIdx % varParVectorSize;
-    values[i] = _k->_variables[varIdx]->_parameterVector[parameterIdx];
-    tempIdx = tempIdx / varParVectorSize;
-  }
-
-  return values;
-}
-
-size_t ReinforcementLearning::interpolateIndexFromValues(const std::vector<double> &values, const std::vector<size_t> &variableIndexVector)
-{
-  size_t pos = 0;
-  size_t multiplier = 1;
-
-  for (size_t i = 0; i < values.size(); i++)
-  {
-    double value = values[i];
-    size_t index = variableIndexVector[i];
-
-    double minDiff = Inf;
-    size_t valPos = 0;
-    for (size_t j = 0; j < _k->_variables[index]->_parameterVector.size(); j++)
-    {
-      double diff = abs(value - _k->_variables[index]->_parameterVector[j]);
-      if (diff < minDiff)
-      {
-        minDiff = diff;
-        valPos = j;
-      }
-    }
-
-    pos += valPos * multiplier;
-    multiplier *= _k->_variables[index]->_parameterVector.size();
-  }
-
-  return pos;
+  for (size_t i = 0; i < _initialStates.size(); i++)
+   if (_initialStates[i].size() != _stateVectorSize)
+    KORALI_LOG_ERROR("Incorrect number of values (%lu) for initial state %lu. Expected: %lu (the number of state variables).\n", _initialStates[i].size(), i, _stateVectorSize);
 }
 
 void ReinforcementLearning::runEnvironment(Sample &sample)

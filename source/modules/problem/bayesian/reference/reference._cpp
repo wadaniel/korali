@@ -96,11 +96,11 @@ void Reference::loglikelihoodPositiveNormal(Sample &sample)
     if (s <= 0.0) KORALI_LOG_ERROR("Negative or zero value (%lf) detected for the Standard Deviation.\n", s);
     if (m < 0.0) KORALI_LOG_ERROR("Negative value (%lf) detected in Reference Evaluation.\n", m);
 
-    double z = (_referenceData[i]-m)/s;
+    double z = (_referenceData[i] - m) / s;
 
-    loglike -= 0.5*(_log2pi+z*z);
+    loglike -= 0.5 * (_log2pi + z * z);
     loglike -= log(s);
-    loglike -= log(1. - gsl_cdf_gaussian_P(-m/s, 1.0));
+    loglike -= log(1. - gsl_cdf_gaussian_P(-m / s, 1.0));
   }
 
   sample["logLikelihood"] = loglike;

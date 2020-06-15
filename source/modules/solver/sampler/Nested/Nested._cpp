@@ -21,8 +21,6 @@ namespace solver
 {
 namespace sampler
 {
-
-
 void Nested::setInitialConfiguration()
 {
   _shuffleSeed = _k->_randomSeed++;
@@ -110,38 +108,37 @@ void Nested::runGeneration()
 
   do
   {
-      generateCandidates();
-      std::vector<Sample> samples(_batchSize);
+    generateCandidates();
+    std::vector<Sample> samples(_batchSize);
 
-      for (size_t c = 0; c < _batchSize; c++)
-      {
-        samples[c]["Module"] = "Problem";
-        samples[c]["Operation"] = "Evaluate";
-        sample = _candidates[c];
-        priorTransform(sample);
-        samples[c]["Parameters"] = sample;
-        samples[c]["Sample Id"] = c;
-        _conduit->start(samples[c]);
-        _modelEvaluationCount++;
-        _generatedSamples++;
-      }
+    for (size_t c = 0; c < _batchSize; c++)
+    {
+      samples[c]["Module"] = "Problem";
+      samples[c]["Operation"] = "Evaluate";
+      sample = _candidates[c];
+      priorTransform(sample);
+      samples[c]["Parameters"] = sample;
+      samples[c]["Sample Id"] = c;
+      _conduit->start(samples[c]);
+      _modelEvaluationCount++;
+      _generatedSamples++;
+    }
 
-      size_t finishedCandidatesCount = 0;
-      while (finishedCandidatesCount < _batchSize)
-      {
-        size_t finishedId = _conduit->waitAny(samples);
+    size_t finishedCandidatesCount = 0;
+    while (finishedCandidatesCount < _batchSize)
+    {
+      size_t finishedId = _conduit->waitAny(samples);
 
-        _candidateLogPriors[finishedId] = KORALI_GET(double, samples[finishedId], "logPrior");
-        _candidateLogLikelihoods[finishedId] = KORALI_GET(double, samples[finishedId], "logLikelihood");
+      _candidateLogPriors[finishedId] = KORALI_GET(double, samples[finishedId], "logPrior");
+      _candidateLogLikelihoods[finishedId] = KORALI_GET(double, samples[finishedId], "logLikelihood");
 
-        finishedCandidatesCount++;
-      }
+      finishedCandidatesCount++;
+    }
 
     _lastAccepted++;
     accepted = processGeneration();
-    
-  }
-  while( accepted == false );
+
+  } while (accepted == false);
 
   return;
 }
@@ -206,9 +203,9 @@ void Nested::prepareGeneration()
   }
 }
 
-void Nested::priorTransform(std::vector<double>& sample) const
+void Nested::priorTransform(std::vector<double> &sample) const
 {
-    for(size_t d = 0; d < _dimensions; ++d) { sample[d] = _priorLowerBound[d] + sample[d]*_priorWidth[d]; }
+  for (size_t d = 0; d < _dimensions; ++d) { sample[d] = _priorLowerBound[d] + sample[d] * _priorWidth[d]; }
 }
 
 void Nested::generateCandidates()
@@ -276,7 +273,6 @@ bool Nested::processGeneration()
   _lastAccepted++;
   return (acceptedBefore != _acceptedSamples);
 }
-
 
 void Nested::generateCandidatesFromBox()
 {
@@ -359,7 +355,6 @@ void Nested::generateCandidatesFromMultiEllipse()
     }
   }
 }
-
 
 void Nested::updateBox()
 {
@@ -476,7 +471,7 @@ double Nested::l2distance(const std::vector<double> &sampleOne, const std::vecto
 
 bool Nested::updateEllipse(ellipse_t &ellipse) const
 {
-  if (ellipse.num <= 2*_dimensions) return false;
+  if (ellipse.num <= 2 * _dimensions) return false;
 
   updateEllipseMean(ellipse);
   updateEllipseCov(ellipse);
@@ -487,7 +482,7 @@ void Nested::updateMultiEllipse()
 {
   initEllipseVector();
   bool ok = updateEllipse(_ellipseVector.front());
-  if ( ok == false ) KORALI_LOG_ERROR("Ellipse update failed at initialization\n");
+  if (ok == false) KORALI_LOG_ERROR("Ellipse update failed at initialization\n");
 
   std::vector<ellipse_t> newEllipseVector;
   size_t split = 0;
@@ -500,7 +495,7 @@ void Nested::updateMultiEllipse()
 
     bool okOne = updateEllipse(one);
     bool okTwo = updateEllipse(two);
-    
+
     /*
     size_t iter = 0;
     while (reassignSamples(one, two) > 0)
@@ -512,7 +507,7 @@ void Nested::updateMultiEllipse()
     }
     */
 
-    if ( (okOne == false) || (okTwo == false) || ((one.volume + two.volume >= 0.5*ellipse.volume) && (ellipse.volume < 2.0 * exp(_logVolume))) )
+    if ((okOne == false) || (okTwo == false) || ((one.volume + two.volume >= 0.5 * ellipse.volume) && (ellipse.volume < 2.0 * exp(_logVolume))))
     {
       newEllipseVector.push_back(ellipse);
     }
@@ -520,7 +515,7 @@ void Nested::updateMultiEllipse()
     {
       bool okOne = updateEllipse(one);
       bool okTwo = updateEllipse(two);
-      if( okOne && okTwo )
+      if (okOne && okTwo)
       {
         split++;
         _ellipseVector.push_back(one);
@@ -532,7 +527,6 @@ void Nested::updateMultiEllipse()
       }
     }
   }
-
 
   _ellipseVector = newEllipseVector;
 }
@@ -550,11 +544,10 @@ void Nested::initEllipseVector()
 
 void Nested::kmeansClustering(const ellipse_t &parent, size_t maxIter, ellipse_t &childOne, ellipse_t &childTwo) const
 {
-
-  for(size_t d = 0; d < _dimensions; ++d)
+  for (size_t d = 0; d < _dimensions; ++d)
   {
-      childOne.mean[d] = parent.mean[d] + parent.paxes[d*_dimensions] * parent.evals[0];
-      childTwo.mean[d] = parent.mean[d] - parent.paxes[d*_dimensions] * parent.evals[0];
+    childOne.mean[d] = parent.mean[d] + parent.paxes[d * _dimensions] * parent.evals[0];
+    childTwo.mean[d] = parent.mean[d] - parent.paxes[d * _dimensions] * parent.evals[0];
   }
 
   size_t diffs, nOne, nTwo;
@@ -656,7 +649,7 @@ void Nested::updateEllipseMean(ellipse_t &ellipse) const
 
 void Nested::updateEllipseCov(ellipse_t &ellipse) const
 {
-  double weight = 1.0/(ellipse.num - 1.0);
+  double weight = 1.0 / (ellipse.num - 1.0);
   if (ellipse.num > 1)
     for (size_t i = 0; i < _dimensions; i++)
     {
@@ -668,7 +661,7 @@ void Nested::updateEllipseCov(ellipse_t &ellipse) const
           size_t sidx = ellipse.sampleIdx[k];
           c += (_liveSamples[sidx][i] - ellipse.mean[i]) * (_liveSamples[sidx][j] - ellipse.mean[j]);
         }
-        ellipse.cov[j * _dimensions + i] = ellipse.cov[i * _dimensions + j] = weight*c;
+        ellipse.cov[j * _dimensions + i] = ellipse.cov[i * _dimensions + j] = weight * c;
       }
     }
 }
@@ -689,9 +682,8 @@ bool Nested::updateEllipseVolume(ellipse_t &ellipse) const
 
   int status = gsl_linalg_LU_invert(matLU, perm, &invCov.matrix);
   gsl_permutation_free(perm);
- 
- 
-   if (status != 0)
+
+  if (status != 0)
   {
     _k->_logger->logWarning("Normal", "Covariance inversion failed during ellipsoid volume update.\n");
     gsl_matrix_free(matLU);
@@ -700,62 +692,60 @@ bool Nested::updateEllipseVolume(ellipse_t &ellipse) const
 
   double det = gsl_linalg_LU_det(matLU, signal);
   gsl_matrix_free(matLU);
- 
+
   gsl_vector_view evals = gsl_vector_view_array(ellipse.evals.data(), _dimensions);
   gsl_matrix_view paxes = gsl_matrix_view_array(ellipse.paxes.data(), _dimensions, _dimensions);
- 
-  gsl_matrix * matEigen = gsl_matrix_alloc(_dimensions, _dimensions);
+
+  gsl_matrix *matEigen = gsl_matrix_alloc(_dimensions, _dimensions);
   status = gsl_matrix_memcpy(matEigen, &cov.matrix);
-  if (status != 0) 
-  { 
-      _k->_logger->logWarning("Normal", "Memcpy failed ruing Ellipsoid volume update.\n");
-      gsl_matrix_free(matEigen);
-      return false;
+  if (status != 0)
+  {
+    _k->_logger->logWarning("Normal", "Memcpy failed ruing Ellipsoid volume update.\n");
+    gsl_matrix_free(matEigen);
+    return false;
   }
-  
-  gsl_eigen_symmv_workspace * workEigen = gsl_eigen_symmv_alloc(_dimensions);
+
+  gsl_eigen_symmv_workspace *workEigen = gsl_eigen_symmv_alloc(_dimensions);
   status = gsl_eigen_symmv(matEigen, &evals.vector, &paxes.matrix, workEigen);
   gsl_matrix_free(matEigen);
   gsl_eigen_symmv_free(workEigen);
-  if (status != 0) 
-  { 
-      _k->_logger->logWarning("Normal", "Eigenvalue Decomposition failed ruing Ellipsoid volume update.\n");
-      return false;
+  if (status != 0)
+  {
+    _k->_logger->logWarning("Normal", "Eigenvalue Decomposition failed ruing Ellipsoid volume update.\n");
+    return false;
   }
- 
-  
+
   status = gsl_eigen_symmv_sort(&evals.vector, &paxes.matrix, GSL_EIGEN_SORT_ABS_DESC);
-  if (status != 0) 
-  { 
-      _k->_logger->logWarning("Normal", "Eigenvalue sorting failed ruing Ellipsoid volume update.\n");
-      return false;
+  if (status != 0)
+  {
+    _k->_logger->logWarning("Normal", "Eigenvalue sorting failed ruing Ellipsoid volume update.\n");
+    return false;
   }
- 
+
   // calculate axes from cholesky decomposition
   gsl_matrix_view axes = gsl_matrix_view_array(ellipse.axes.data(), _dimensions, _dimensions);
-  
+
   /* On output the diagonal and lower triangular part of the 
      * input matrix A contain the matrix L, while the upper triangular part 
      * contains the original matrix. */
 
   status = gsl_matrix_memcpy(&axes.matrix, &cov.matrix);
-  if (status != 0) 
-  { 
-      _k->_logger->logWarning("Normal", "Memcpy failed ruing Ellipsoid volume update.\n");
-      return false;
+  if (status != 0)
+  {
+    _k->_logger->logWarning("Normal", "Memcpy failed ruing Ellipsoid volume update.\n");
+    return false;
   }
   status = gsl_linalg_cholesky_decomp1(&axes.matrix); // LL^T = A
-  if (status != 0) 
+  if (status != 0)
   {
     _k->_logger->logWarning("Normal", "Cholesky Decomposition failed ruing Ellipsoid volume update.\n");
-    return false; 
+    return false;
   }
-  
+
   // find scaling s.t. all samples are bounded by ellipse
   double res, max = std::numeric_limits<double>::lowest();
   for (size_t i = 0; i < ellipse.num; ++i)
   {
-
     size_t six = ellipse.sampleIdx[i];
     res = mahalanobisDistance(_liveSamples[six], ellipse);
     if (res > max) max = res;

@@ -13,14 +13,12 @@ namespace solver
 {
 namespace sampler
 {
-
 struct ellipse_t
 {
   ellipse_t() = delete;
 
-  ellipse_t(size_t dim) : num(0), sampleIdx(0), mean(dim), cov(dim*dim), invCov(dim*dim), axes(dim*dim), evals(dim), paxes(dim*dim), volume(0.0), trueVolume(0.0) {};
-  
-  
+  ellipse_t(size_t dim) : num(0), sampleIdx(0), mean(dim), cov(dim * dim), invCov(dim * dim), axes(dim * dim), evals(dim), paxes(dim * dim), volume(0.0), trueVolume(0.0){};
+
   /**
    * @brief Number samples in ellipse.
    */
@@ -50,7 +48,7 @@ struct ellipse_t
     * @brief Axes of the ellipse.
    */
   std::vector<double> axes;
-  
+
   /**
     * @brief Eigenvalues of the ellipse.
    */
@@ -61,7 +59,6 @@ struct ellipse_t
    */
   std::vector<double> paxes;
 
-
   /**
    * @brief Volume estimated from covariance.
    */
@@ -71,7 +68,6 @@ struct ellipse_t
    * @brief 'True' volume from which the subset of samples were sampled from.
    */
   double trueVolume;
-
 };
 
 class Nested : public Sampler

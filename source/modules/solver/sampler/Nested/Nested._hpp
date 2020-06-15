@@ -113,7 +113,7 @@ class Nested : public Sampler
   /*
   * @brief Process Generation after receiving all results.
   */
-  void processGeneration();
+  bool processGeneration();
 
   /*
   * @brief Add all live samples to sample data base.
@@ -153,7 +153,7 @@ class Nested : public Sampler
   /*
   * @brief Updates bounding Ellipse.
   */
-  void updateEllipse(ellipse_t &ellipse) const;
+  bool updateEllipse(ellipse_t &ellipse) const;
 
   /*
   * @brief Updates ellipses based on Multi Nest.
@@ -183,7 +183,7 @@ class Nested : public Sampler
   /*
   * @brief Updates volume and the axes of the ellipse.
   */
-  void updateEllipseVolume(ellipse_t &ellipse) const;
+  bool updateEllipseVolume(ellipse_t &ellipse) const;
 
   /*
   * @brief Calculates Mahalanobis metric of sample and ellipse.

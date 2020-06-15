@@ -13,8 +13,14 @@ namespace solver
 {
 namespace sampler
 {
-typedef struct ellipse_s
+
+struct ellipse_t
 {
+  ellipse_t() = delete;
+
+  ellipse_t(size_t dim) : num(0), sampleIdx(0), mean(dim), cov(dim*dim), invCov(dim*dim), axes(dim*dim), evals(dim), paxes(dim*dim), volume(0.0), trueVolume(0.0) {};
+  
+  
   /**
    * @brief Number samples in ellipse.
    */
@@ -44,6 +50,17 @@ typedef struct ellipse_s
     * @brief Axes of the ellipse.
    */
   std::vector<double> axes;
+  
+  /**
+    * @brief Eigenvalues of the ellipse.
+   */
+  std::vector<double> evals;
+
+  /**
+    * @brief Principal axes of the ellipse.
+   */
+  std::vector<double> paxes;
+
 
   /**
    * @brief Volume estimated from covariance.
@@ -55,7 +72,7 @@ typedef struct ellipse_s
    */
   double trueVolume;
 
-} ellipse_t;
+};
 
 class Nested : public Sampler
 {
@@ -81,14 +98,14 @@ class Nested : public Sampler
   void prepareGeneration();
 
   /*
+   * @brief Transformation from unit domain into prior domain.
+  */
+  void priorTransform(std::vector<double> &sample) const;
+
+  /*
   * @brief Generate new candidates to evaluate.
   */
   void generateCandidates();
-
-  /** 
-  * @brief Generates new samples by copying and mutating randomly selected samples
-  */
-  void generateCandidatesFromMCMC();
 
   /** 
   * @brief Generate new samples uniformly in Box
@@ -121,13 +138,8 @@ class Nested : public Sampler
   void consumeLiveSamples();
 
   /*
-  * @brief Calculates Mean and Covariance from Live Samples.
- */
-  void updateMeanAndCovariance();
-
-  /*
   * @brief Updates bounding Box.
- */
+  */
   void updateBox();
 
   /*
@@ -234,13 +246,13 @@ class Nested : public Sampler
   void runGeneration() override;
 
   /**
- * @brief Console Output before generation runs.
- */
+  * @brief Console Output before generation runs.
+  */
   void printGenerationBefore() override;
 
   /**
- * @brief Console output after generation.
- */
+  * @brief Console output after generation.
+  */
   void printGenerationAfter() override;
 
   /**

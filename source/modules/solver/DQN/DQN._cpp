@@ -24,13 +24,21 @@ void DQN::initialize()
    if (_k->_variables[i]->_type == "Action") _QExperiment["Variables"][i]["Type"] = "Output";
   }
 
-  _QExperiment.initialize();
+  _QExperiment["Console Output"]["Frequency"] = 5000;
+  _QExperiment["File Output"]["Enabled"] = false;
+
+  // Running initialization to verify that the configuration is correct
+  _QEngine.initialize(_QExperiment);
+
+  // Setting termination criterion
+  if (_maxEpisodes > _problem->_initialStateCount || _maxEpisodes == 0)
+   _maxEpisodes = _problem->_initialStateCount;
 }
 
 void DQN::setInitialConfiguration()
 {
  // Starting to process initial states, from the first one
- _currentInitialState = 0;
+ _currentEpisode = 0;
 }
 
 void DQN::runGeneration()
@@ -43,8 +51,8 @@ void DQN::runGeneration()
   size_t agentCount = 1;
 
   // Making sure we don't create more agents than remaining initial states
-  if (agentCount + _currentInitialState > _problem->_initialStateCount)
-   agentCount = _problem->_initialStateCount - _currentInitialState;
+  if (agentCount + _currentEpisode > _maxEpisodes)
+   agentCount = _maxEpisodes - _currentEpisode;
 
   // Creating storage for agents
   std::vector<Sample> agents(agentCount);
@@ -58,16 +66,12 @@ void DQN::runGeneration()
   std::vector<double> rewards(agentCount);
   std::vector<bool> hasFinished(agentCount);
 
-  // Storage for the entire history of the current policy
-  std::vector<std::vector<std::vector<double>>> actionHistories(agentCount);
-  std::vector<std::vector<std::vector<double>>> stateHistories(agentCount);
-
   // Initializing Finished count
   size_t finishedCount = 0;
 
   // Setting initial states
   for (size_t i = 0; i < agentCount; i++)
-   states[i] = _problem->_initialStates[_currentInitialState++];
+   states[i] = _problem->_initialStates[_currentEpisode++];
 
   // Setting initial actions
   actions = _QExperiment._solver->evaluate(states);
@@ -97,12 +101,13 @@ void DQN::runGeneration()
     // Waiting for any of the pending agents
     size_t i = _conduit->waitAny(agents);
 
-    // Add state to current policy history
-    actionHistories[i].push_back(actions[i]);
-    stateHistories[i].push_back(states[i]);
-
     // Updating reward
     rewards[i] = KORALI_GET(double, agents[i], "Reward");
+
+    // Add state to current policy history
+    _actionHistory.push_back(actions[i]);
+    _stateHistory.push_back(states[i]);
+    _rewardHistory.push_back(rewards[i]);
 
     // Storing agent's new state
     auto newState = KORALI_GET(std::vector<double>, agents[i], "State");
@@ -130,22 +135,36 @@ void DQN::runGeneration()
   }
 
   // Updating the NN with the gathered results
-  for (size_t i = 0; i < agentCount; i++)
+  for (size_t i = 0; i < _stateHistory.size(); i++)
   {
-   printf("Agent %lu\n", i, stateHistories[i].size(), actionHistories[i].size());
-   for (size_t j = 0; j < stateHistories[i].size(); j++)
-   {
-    printf(" + State  %.3lu: ", j);
-    for (size_t k = 0; k < stateHistories[i][j].size(); k++) printf("%f ", stateHistories[i][j][k]);
-    printf("\n");
+   printf(" + State  %.3lu: ", i);
+   for (size_t j = 0; j < _stateHistory[i].size(); j++) printf("%f ", _stateHistory[i][j]);
+   printf("\n");
 
-    printf(" + Action %.3lu: ", j);
-    for (size_t k = 0; k < stateHistories[i][j].size(); k++) printf("%f ", stateHistories[i][j][k]);
-    printf("\n");
-   }
+   printf(" + Action %.3lu: ", i);
+   for (size_t j = 0; j < _actionHistory[i].size(); j++) printf("%f ", _actionHistory[i][j]);
+   printf("\n");
+
+   printf(" + Reward %.3lu: %f\n", i, _rewardHistory[i]);
   }
 
-  exit(0);
+  for (size_t i = 0; i < _stateHistory.size(); i++)
+   for (size_t j = 0; j < _stateHistory[i].size(); j++)
+   {
+     size_t varIdx = _problem->_stateVectorIndexes[j];
+    _QExperiment["Variables"][varIdx]["Training Data"][j] = _stateHistory[i][j];
+    _QExperiment["Variables"][varIdx]["Validation Data"][j] = _stateHistory[i][j];
+   }
+
+  for (size_t i = 0; i < _actionHistory.size(); i++)
+   for (size_t j = 0; j < _actionHistory[i].size(); j++)
+   {
+    size_t varIdx = _problem->_actionVectorIndexes[j];
+    _QExperiment["Variables"][varIdx]["Training Data"][j] = _actionHistory[i][j];
+    _QExperiment["Variables"][varIdx]["Validation Data"][j] = _actionHistory[i][j];
+   }
+
+  _QEngine.resume(_QExperiment);
 }
 
 } // namespace solver

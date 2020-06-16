@@ -6,6 +6,15 @@
 using namespace dnnl;
 #endif
 
+/********************************************
+ * Pending Performance Improvements
+ * - Make sure all operations are made on memory objects with format_tag::any, reordered by oneDNN during creation.
+ *   This guarantees that the best memory landscape is selected for all these operations
+ * - Do not reserve memory nor create/execute primitives for differentiation when just inferring
+ * - Use prop_kind::forward_inference always when inferring
+ ********************************************/
+
+
 namespace korali
 {
 void NeuralNetwork::initialize()
@@ -95,9 +104,6 @@ void NeuralNetwork::initialize()
 void NeuralNetwork::create()
 {
 #ifdef _KORALI_USE_ONEDNN
-
-  auto forwardPropagationKind = prop_kind::forward_training;
-  if (_operation == "Inference") forwardPropagationKind = prop_kind::forward_inference;
 
   // Obtaining NN dimensions
   size_t inputSize = _layers[0]->_nodeCount;
@@ -195,7 +201,7 @@ void NeuralNetwork::create()
     auto weightsWorkMemDesc = memory::desc(weightDims, memory::data_type::f32, memory::format_tag::any);
 
     // Create operation descriptor.
-    auto inner_product_d = inner_product_forward::desc(forwardPropagationKind, _layers[i - 1]->_activationMem.get_desc(), weightsWorkMemDesc, biasMemDesc, _layers[i]->_dataMem.get_desc());
+    auto inner_product_d = inner_product_forward::desc(prop_kind::forward_training, _layers[i - 1]->_activationMem.get_desc(), weightsWorkMemDesc, biasMemDesc, _layers[i]->_dataMem.get_desc());
 
     // Create inner product primitive descriptor.
     dnnl::primitive_attr forwardPrimitiveAttributes;
@@ -284,7 +290,7 @@ void NeuralNetwork::create()
 
     // Create operation descriptor.
     auto normalizationDesc = dnnl::batch_normalization_forward::desc(
-      forwardPropagationKind,
+      prop_kind::forward_training,
       _layers[0]->_dataMem.get_desc(),
       _batchNormalizationEpsilon,
       normalizationFlags);
@@ -351,209 +357,206 @@ void NeuralNetwork::create()
   // Creating batch output normalization primitive
 
   if (_batchNormalizationEnabled == true)
-    if (_solution.size() > 0)
+  if (_solution.size() > 0)
+  {
+    const memory::dim IC = _solution[0].size();
+    const memory::dims scaleShiftDims = {2, IC};
+
+    auto normalizationFlags = dnnl::normalization_flags::none;
+    dnnl::memory outputNormalizationScaleShiftMem;
+
+    // If not training, assign given variances and means
+    if (_outputNormalizationMeans.size() > 0 || _outputNormalizationVariances.size() > 0)
     {
-      const memory::dim IC = _solution[0].size();
-      const memory::dims scaleShiftDims = {2, IC};
+      if (_outputNormalizationMeans.size() != (size_t)IC)
+        KORALI_LOG_ERROR("Number of values (%lu) in the batch normalization means vector is different from that of the node count of the first layer (%lu).\n", _outputNormalizationMeans.size(), IC);
 
-      auto normalizationFlags = dnnl::normalization_flags::none;
-      dnnl::memory outputNormalizationScaleShiftMem;
+      if (_outputNormalizationVariances.size() != (size_t)IC)
+        KORALI_LOG_ERROR("Number of values (%lu) in the batch normalization variances vector is different from that of the node count of the first layer (%lu).\n", _outputNormalizationVariances.size(), IC);
 
-      // If not training, assign given variances and means
-      if (_outputNormalizationMeans.size() > 0 || _outputNormalizationVariances.size() > 0)
-      {
-        if (_outputNormalizationMeans.size() != (size_t)IC)
-          KORALI_LOG_ERROR("Number of values (%lu) in the batch normalization means vector is different from that of the node count of the first layer (%lu).\n", _outputNormalizationMeans.size(), IC);
-
-        if (_outputNormalizationVariances.size() != (size_t)IC)
-          KORALI_LOG_ERROR("Number of values (%lu) in the batch normalization variances vector is different from that of the node count of the first layer (%lu).\n", _outputNormalizationVariances.size(), IC);
-
-        normalizationFlags |= dnnl::normalization_flags::use_global_stats;
-      }
-
-      // Processing shift/scale part of batch normalization
-      if (_batchNormalizationScale.size() > 0 || _batchNormalizationShift.size() > 0)
-      {
-        auto normalizationScaleShiftMemDesc = memory::desc(scaleShiftDims, memory::data_type::f32, memory::format_tag::nc);
-        outputNormalizationScaleShiftMem = memory(normalizationScaleShiftMemDesc, _engine);
-
-        // Storing scale/shift data
-        std::vector<float> scaleShiftData(product(scaleShiftDims));
-        for (size_t i = 0; i < (size_t)IC; i++)
-        {
-          scaleShiftData[i + IC * 0] = _batchNormalizationScale[i];
-          scaleShiftData[i + IC * 1] = _batchNormalizationShift[i];
-        }
-
-        normalizationFlags |= normalization_flags::use_scale_shift;
-        write_to_dnnl_memory(scaleShiftData.data(), outputNormalizationScaleShiftMem);
-      }
-
-      const memory::dims layerDims = {N, IC};
-      auto outputMemDesc = memory::desc(layerDims, memory::data_type::f32, memory::format_tag::ab);
-      auto normalizedOutputMem = memory(outputMemDesc, _engine);
-
-      // Create operation descriptor.
-      auto normalizationDesc = dnnl::batch_normalization_forward::desc(
-        prop_kind::forward_training,
-        outputMemDesc,
-        _batchNormalizationEpsilon,
-        normalizationFlags);
-
-      auto normalizationPrimitiveDesc = batch_normalization_forward::primitive_desc(normalizationDesc, _engine);
-      auto outputNormalizationPrimitive = dnnl::batch_normalization_forward(normalizationPrimitiveDesc);
-
-      // Create memory objects using memory descriptors created by the primitive descriptor: mean, variance, workspace.
-      auto outputNormalizationMeanMem = memory(normalizationPrimitiveDesc.mean_desc(), _engine);
-      auto outputNormalizationVarianceMem = memory(normalizationPrimitiveDesc.variance_desc(), _engine);
-      auto outputNormalizationWorkspaceMem = memory(normalizationPrimitiveDesc.workspace_desc(), _engine);
-
-      std::unordered_map<int, dnnl::memory> outputNormalizationArgs;
-      outputNormalizationArgs.insert({DNNL_ARG_SRC, normalizedOutputMem});
-      outputNormalizationArgs.insert({DNNL_ARG_MEAN, outputNormalizationMeanMem});
-      outputNormalizationArgs.insert({DNNL_ARG_VARIANCE, outputNormalizationVarianceMem});
-      outputNormalizationArgs.insert({DNNL_ARG_SCALE_SHIFT, outputNormalizationScaleShiftMem});
-      outputNormalizationArgs.insert({DNNL_ARG_WORKSPACE, outputNormalizationWorkspaceMem});
-      outputNormalizationArgs.insert({DNNL_ARG_DST, normalizedOutputMem});
-
-      // Now normalizing provided solution
-
-      // Copying input data to first layer
-      std::vector<float> batchOutput(N * IC);
-      for (size_t i = 0; i < (size_t)N; i++)
-        for (size_t j = 0; j < (size_t)IC; j++)
-          batchOutput[i * IC + j] = _solution[i][j];
-
-      // Executing normalization
-      write_to_dnnl_memory(batchOutput.data(), normalizedOutputMem);
-
-      // Creating memory to read/write variances and means
-      std::vector<float> outputNormalizationMeans(IC);
-      std::vector<float> outputNormalizationVariances(IC);
-
-      // If not training, assign given variances and means
-      if (_outputNormalizationMeans.size() > 0)
-      {
-        for (size_t i = 0; i < (size_t)IC; i++)
-        {
-          outputNormalizationMeans[i] = _outputNormalizationMeans[i];
-          outputNormalizationVariances[i] = _outputNormalizationVariances[i];
-        }
-
-        write_to_dnnl_memory(outputNormalizationMeans.data(), outputNormalizationMeanMem);
-        write_to_dnnl_memory(outputNormalizationVariances.data(), outputNormalizationVarianceMem);
-      }
-
-      // Normalizing output
-      outputNormalizationPrimitive.execute(_stream, outputNormalizationArgs);
-
-      _stream.wait();
-
-      // Retrieving normalization means and variances
-      if (_outputNormalizationMeans.size() == 0 && _outputNormalizationVariances.size() == 0)
-      {
-        read_from_dnnl_memory(outputNormalizationMeans.data(), outputNormalizationMeanMem);
-        read_from_dnnl_memory(outputNormalizationVariances.data(), outputNormalizationVarianceMem);
-
-        _outputNormalizationMeans.resize(outputNormalizationMeans.size());
-        _outputNormalizationVariances.resize(outputNormalizationVariances.size());
-        _outputNormalizationSigmas.resize(outputNormalizationVariances.size());
-
-        // Translating from variance to sigma values
-        for (size_t i = 0; i < (size_t)IC; i++)
-        {
-          _outputNormalizationMeans[i] = outputNormalizationMeans[i];
-          _outputNormalizationVariances[i] = outputNormalizationVariances[i];
-          _outputNormalizationSigmas[i] = sqrt(outputNormalizationVariances[i]);
-          // printf("%f, %f\n", _outputNormalizationMeans[i], _outputNormalizationVariances[i]);
-        }
-      }
-
-      // Retrieving normalized solution
-      read_from_dnnl_memory(batchOutput.data(), normalizedOutputMem);
-
-      for (size_t i = 0; i < (size_t)N; i++)
-        for (size_t j = 0; j < (size_t)IC; j++)
-          _solution[i][j] = batchOutput[i * IC + j];
+      normalizationFlags |= dnnl::normalization_flags::use_global_stats;
     }
+
+    // Processing shift/scale part of batch normalization
+    if (_batchNormalizationScale.size() > 0 || _batchNormalizationShift.size() > 0)
+    {
+      auto normalizationScaleShiftMemDesc = memory::desc(scaleShiftDims, memory::data_type::f32, memory::format_tag::nc);
+      outputNormalizationScaleShiftMem = memory(normalizationScaleShiftMemDesc, _engine);
+
+      // Storing scale/shift data
+      std::vector<float> scaleShiftData(product(scaleShiftDims));
+      for (size_t i = 0; i < (size_t)IC; i++)
+      {
+        scaleShiftData[i + IC * 0] = _batchNormalizationScale[i];
+        scaleShiftData[i + IC * 1] = _batchNormalizationShift[i];
+      }
+
+      normalizationFlags |= normalization_flags::use_scale_shift;
+      write_to_dnnl_memory(scaleShiftData.data(), outputNormalizationScaleShiftMem);
+    }
+
+    const memory::dims layerDims = {N, IC};
+    auto outputMemDesc = memory::desc(layerDims, memory::data_type::f32, memory::format_tag::ab);
+    auto normalizedOutputMem = memory(outputMemDesc, _engine);
+
+    // Create operation descriptor.
+    auto normalizationDesc = dnnl::batch_normalization_forward::desc(
+      prop_kind::forward_training,
+      outputMemDesc,
+      _batchNormalizationEpsilon,
+      normalizationFlags);
+
+    auto normalizationPrimitiveDesc = batch_normalization_forward::primitive_desc(normalizationDesc, _engine);
+    auto outputNormalizationPrimitive = dnnl::batch_normalization_forward(normalizationPrimitiveDesc);
+
+    // Create memory objects using memory descriptors created by the primitive descriptor: mean, variance, workspace.
+    auto outputNormalizationMeanMem = memory(normalizationPrimitiveDesc.mean_desc(), _engine);
+    auto outputNormalizationVarianceMem = memory(normalizationPrimitiveDesc.variance_desc(), _engine);
+    auto outputNormalizationWorkspaceMem = memory(normalizationPrimitiveDesc.workspace_desc(), _engine);
+
+    std::unordered_map<int, dnnl::memory> outputNormalizationArgs;
+    outputNormalizationArgs.insert({DNNL_ARG_SRC, normalizedOutputMem});
+    outputNormalizationArgs.insert({DNNL_ARG_MEAN, outputNormalizationMeanMem});
+    outputNormalizationArgs.insert({DNNL_ARG_VARIANCE, outputNormalizationVarianceMem});
+    outputNormalizationArgs.insert({DNNL_ARG_SCALE_SHIFT, outputNormalizationScaleShiftMem});
+    outputNormalizationArgs.insert({DNNL_ARG_WORKSPACE, outputNormalizationWorkspaceMem});
+    outputNormalizationArgs.insert({DNNL_ARG_DST, normalizedOutputMem});
+
+    // Now normalizing provided solution
+
+    // Copying input data to first layer
+    std::vector<float> batchOutput(N * IC);
+    for (size_t i = 0; i < (size_t)N; i++)
+      for (size_t j = 0; j < (size_t)IC; j++)
+        batchOutput[i * IC + j] = _solution[i][j];
+
+    // Executing normalization
+    write_to_dnnl_memory(batchOutput.data(), normalizedOutputMem);
+
+    // Creating memory to read/write variances and means
+    std::vector<float> outputNormalizationMeans(IC);
+    std::vector<float> outputNormalizationVariances(IC);
+
+    // If not training, assign given variances and means
+    if (_outputNormalizationMeans.size() > 0)
+    {
+      for (size_t i = 0; i < (size_t)IC; i++)
+      {
+        outputNormalizationMeans[i] = _outputNormalizationMeans[i];
+        outputNormalizationVariances[i] = _outputNormalizationVariances[i];
+      }
+
+      write_to_dnnl_memory(outputNormalizationMeans.data(), outputNormalizationMeanMem);
+      write_to_dnnl_memory(outputNormalizationVariances.data(), outputNormalizationVarianceMem);
+    }
+
+    // Normalizing output
+    outputNormalizationPrimitive.execute(_stream, outputNormalizationArgs);
+
+    _stream.wait();
+
+    // Retrieving normalization means and variances
+    if (_outputNormalizationMeans.size() == 0 && _outputNormalizationVariances.size() == 0)
+    {
+      read_from_dnnl_memory(outputNormalizationMeans.data(), outputNormalizationMeanMem);
+      read_from_dnnl_memory(outputNormalizationVariances.data(), outputNormalizationVarianceMem);
+
+      _outputNormalizationMeans.resize(outputNormalizationMeans.size());
+      _outputNormalizationVariances.resize(outputNormalizationVariances.size());
+      _outputNormalizationSigmas.resize(outputNormalizationVariances.size());
+
+      // Translating from variance to sigma values
+      for (size_t i = 0; i < (size_t)IC; i++)
+      {
+        _outputNormalizationMeans[i] = outputNormalizationMeans[i];
+        _outputNormalizationVariances[i] = outputNormalizationVariances[i];
+        _outputNormalizationSigmas[i] = sqrt(outputNormalizationVariances[i]);
+        // printf("%f, %f\n", _outputNormalizationMeans[i], _outputNormalizationVariances[i]);
+      }
+    }
+
+    // Retrieving normalized solution
+    read_from_dnnl_memory(batchOutput.data(), normalizedOutputMem);
+
+    for (size_t i = 0; i < (size_t)N; i++)
+      for (size_t j = 0; j < (size_t)IC; j++)
+        _solution[i][j] = batchOutput[i * IC + j];
+  }
 
   /*********************************************************************************
   *  Initializing memory objects and primitives for BACKWARD propagation
   *********************************************************************************/
 
-  if (_operation == "Training")
+  // Creating layer's data diff memory storage
+  for (size_t i = 0; i < layerCount; i++)
   {
-    // Creating layer's data diff memory storage
-    for (size_t i = 0; i < layerCount; i++)
+    const memory::dim IC = _layers[i]->_nodeCount;
+    const memory::dims layerDims = {N, IC};
+    auto dataDiffMemDesc = memory::desc(layerDims, memory::data_type::f32, memory::format_tag::ab);
+    _layers[i]->_dataDiffMem = memory(dataDiffMemDesc, _engine);
+    _layers[i]->_activationDiffMem = memory(dataDiffMemDesc, _engine);
+  }
+
+  for (size_t i = layerCount - 1; i > 0; i--)
+  {
+    // Creating backward propagation primitives for activation functions
+    algorithm activationAlgorithm;
+    float alpha = 0.0f;
+    float beta = 0.0f;
+
+    if (_layers[i]->_activationFunction == "Identity")
     {
-      const memory::dim IC = _layers[i]->_nodeCount;
-      const memory::dims layerDims = {N, IC};
-      auto dataDiffMemDesc = memory::desc(layerDims, memory::data_type::f32, memory::format_tag::ab);
-      _layers[i]->_dataDiffMem = memory(dataDiffMemDesc, _engine);
-      _layers[i]->_activationDiffMem = memory(dataDiffMemDesc, _engine);
+      alpha = 1.0f;
+      activationAlgorithm = algorithm::eltwise_linear;
     }
 
-    for (size_t i = layerCount - 1; i > 0; i--)
-    {
-      // Creating backward propagation primitives for activation functions
-      algorithm activationAlgorithm;
-      float alpha = 0.0f;
-      float beta = 0.0f;
+    if (_layers[i]->_activationFunction == "ReLU")
+      activationAlgorithm = algorithm::eltwise_relu;
 
-      if (_layers[i]->_activationFunction == "Identity")
-      {
-        alpha = 1.0f;
-        activationAlgorithm = algorithm::eltwise_linear;
-      }
+    if (_layers[i]->_activationFunction == "Tanh")
+      activationAlgorithm = algorithm::eltwise_tanh;
 
-      if (_layers[i]->_activationFunction == "ReLU")
-        activationAlgorithm = algorithm::eltwise_relu;
+    // Creating descriptor
+    auto activationDesc = eltwise_backward::desc(activationAlgorithm, _layers[i]->_dataMem.get_desc(), _layers[i]->_activationMem.get_desc(), alpha, beta);
 
-      if (_layers[i]->_activationFunction == "Tanh")
-        activationAlgorithm = algorithm::eltwise_tanh;
+    // Create primitive descriptor.
+    auto backwardActivationPrimitiveDesc = eltwise_backward::primitive_desc(activationDesc, _engine, _layers[i]->_forwardActivationPrimitiveDesc);
 
-      // Creating descriptor
-      auto activationDesc = eltwise_backward::desc(activationAlgorithm, _layers[i]->_dataMem.get_desc(), _layers[i]->_activationMem.get_desc(), alpha, beta);
+    // Create the primitive.
+    _layers[i]->_backwardActivationPrimitive = eltwise_backward(backwardActivationPrimitiveDesc);
 
-      // Create primitive descriptor.
-      auto backwardActivationPrimitiveDesc = eltwise_backward::primitive_desc(activationDesc, _engine, _layers[i]->_forwardActivationPrimitiveDesc);
+    // Primitive arguments.
+    _layers[i]->_backwardActivationArgs.insert({DNNL_ARG_SRC, _layers[i]->_dataMem});                // Input
+    _layers[i]->_backwardActivationArgs.insert({DNNL_ARG_DIFF_DST, _layers[i]->_activationDiffMem}); // Input
+    _layers[i]->_backwardActivationArgs.insert({DNNL_ARG_DIFF_SRC, _layers[i]->_dataDiffMem});       // Output
 
-      // Create the primitive.
-      _layers[i]->_backwardActivationPrimitive = eltwise_backward(backwardActivationPrimitiveDesc);
+    auto backwardDataDesc = inner_product_backward_data::desc(
+      _layers[i - 1]->_dataDiffMem.get_desc(),
+      _layers[i]->_weightsWorkMem.get_desc(),
+      _layers[i]->_dataMem.get_desc());
 
-      // Primitive arguments.
-      _layers[i]->_backwardActivationArgs.insert({DNNL_ARG_SRC, _layers[i]->_dataMem});                // Input
-      _layers[i]->_backwardActivationArgs.insert({DNNL_ARG_DIFF_DST, _layers[i]->_activationDiffMem}); // Input
-      _layers[i]->_backwardActivationArgs.insert({DNNL_ARG_DIFF_SRC, _layers[i]->_dataDiffMem});       // Output
+    // Create the primitive.
+    auto backwardDataPrimitiveDesc = inner_product_backward_data::primitive_desc(backwardDataDesc, _engine, _layers[i]->_forwardInnerProductPrimitiveDesc);
+    _layers[i]->_backwardDataPrimitive = inner_product_backward_data(backwardDataPrimitiveDesc);
 
-      auto backwardDataDesc = inner_product_backward_data::desc(
-        _layers[i - 1]->_dataDiffMem.get_desc(),
-        _layers[i]->_weightsWorkMem.get_desc(),
-        _layers[i]->_dataMem.get_desc());
+    _layers[i]->_backwardDataArgs.insert({DNNL_ARG_DIFF_DST, _layers[i]->_dataDiffMem});           // Input
+    _layers[i]->_backwardDataArgs.insert({DNNL_ARG_WEIGHTS, _layers[i]->_weightsWorkMem});         // Input
+    _layers[i]->_backwardDataArgs.insert({DNNL_ARG_DIFF_SRC, _layers[i - 1]->_activationDiffMem}); // Output
 
-      // Create the primitive.
-      auto backwardDataPrimitiveDesc = inner_product_backward_data::primitive_desc(backwardDataDesc, _engine, _layers[i]->_forwardInnerProductPrimitiveDesc);
-      _layers[i]->_backwardDataPrimitive = inner_product_backward_data(backwardDataPrimitiveDesc);
+    auto backwardWeightsDesc = inner_product_backward_weights::desc(
+      _layers[i - 1]->_dataMem.get_desc(),
+      _layers[i]->_weightsMem.get_desc(),
+      _layers[i]->_biasMem.get_desc(),
+      _layers[i]->_dataDiffMem.get_desc());
 
-      _layers[i]->_backwardDataArgs.insert({DNNL_ARG_DIFF_DST, _layers[i]->_dataDiffMem});           // Input
-      _layers[i]->_backwardDataArgs.insert({DNNL_ARG_WEIGHTS, _layers[i]->_weightsWorkMem});         // Input
-      _layers[i]->_backwardDataArgs.insert({DNNL_ARG_DIFF_SRC, _layers[i - 1]->_activationDiffMem}); // Output
+    // Create the primitive.
+    auto backwardWeightsPrimitiveDesc = inner_product_backward_weights::primitive_desc(backwardWeightsDesc, _engine, _layers[i]->_forwardInnerProductPrimitiveDesc);
+    _layers[i]->_backwardWeightsPrimitive = inner_product_backward_weights(backwardWeightsPrimitiveDesc);
 
-      auto backwardWeightsDesc = inner_product_backward_weights::desc(
-        _layers[i - 1]->_dataMem.get_desc(),
-        _layers[i]->_weightsMem.get_desc(),
-        _layers[i]->_biasMem.get_desc(),
-        _layers[i]->_dataDiffMem.get_desc());
-
-      // Create the primitive.
-      auto backwardWeightsPrimitiveDesc = inner_product_backward_weights::primitive_desc(backwardWeightsDesc, _engine, _layers[i]->_forwardInnerProductPrimitiveDesc);
-      _layers[i]->_backwardWeightsPrimitive = inner_product_backward_weights(backwardWeightsPrimitiveDesc);
-
-      _layers[i]->_backwardWeightsArgs.insert({DNNL_ARG_SRC, _layers[i - 1]->_activationMem});   // Input
-      _layers[i]->_backwardWeightsArgs.insert({DNNL_ARG_DIFF_DST, _layers[i]->_dataDiffMem});    // Input
-      _layers[i]->_backwardWeightsArgs.insert({DNNL_ARG_DIFF_WEIGHTS, _layers[i]->_weightsMem}); // Output
-      _layers[i]->_backwardWeightsArgs.insert({DNNL_ARG_DIFF_BIAS, _layers[i]->_biasMem});       // Output
-    }
+    _layers[i]->_backwardWeightsArgs.insert({DNNL_ARG_SRC, _layers[i - 1]->_activationMem});   // Input
+    _layers[i]->_backwardWeightsArgs.insert({DNNL_ARG_DIFF_DST, _layers[i]->_dataDiffMem});    // Input
+    _layers[i]->_backwardWeightsArgs.insert({DNNL_ARG_DIFF_WEIGHTS, _layers[i]->_weightsMem}); // Output
+    _layers[i]->_backwardWeightsArgs.insert({DNNL_ARG_DIFF_BIAS, _layers[i]->_biasMem});       // Output
   }
 
 #endif

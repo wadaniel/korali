@@ -25,9 +25,6 @@ void NeuralNetwork::initialize()
 
 #endif
 
-  // Setting initialized flag to false
-  _isInitialized = false;
-
   // Creating evaluation lambda function for optimization
   auto fc = [nn = this](Sample &sample) { nn->evaluateWeightsAndBiases(sample); };
 
@@ -433,16 +430,10 @@ void NeuralNetwork::create()
   }
 
 #endif
-
-  // Setting initialized flag to true
-  _isInitialized = true;
 }
 
 void NeuralNetwork::updateWeightsAndBias()
 {
-  if (_isInitialized == false)
-    KORALI_LOG_ERROR("The neural network has not been initialized before the update.\n");
-
 #ifdef _KORALI_USE_ONEDNN
 
   // Initialize solver's configuration here

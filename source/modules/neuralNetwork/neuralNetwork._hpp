@@ -17,10 +17,6 @@ namespace korali
 class NeuralNetwork : public Module
 {
   public:
-  /**
-  * @brief Flag that indicates whether the oneDNN structures have been initialized
-  */
-  bool _isInitialized;
 
 #ifdef _KORALI_USE_ONEDNN
   /**

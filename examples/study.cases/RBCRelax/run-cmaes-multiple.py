@@ -14,76 +14,89 @@ procId = 0
 procCount = 1
 jobId = 0
 
-if ('SLURM_PROCID' in os.environ): procId = os.environ['SLURM_PROCID']
-if ('SLURM_NTASKS' in os.environ): procCount = os.environ['SLURM_NTASKS']
-if ('SLURM_JOBID'  in os.environ): jobId = os.environ['SLURM_JOBID']
+if ('SLURM_PROCID' in os.environ):
+  procId = os.environ['SLURM_PROCID']
+if ('SLURM_NTASKS' in os.environ):
+  procCount = os.environ['SLURM_NTASKS']
+if ('SLURM_JOBID' in os.environ):
+  jobId = os.environ['SLURM_JOBID']
 
-expNames = [ 'hochmuth01', 'hochmuth02', 'hochmuth03', 'hochmuth04', 'henon' ]
+expNames = ['hochmuth01', 'hochmuth02', 'hochmuth03', 'hochmuth04', 'henon']
 eList = []
 
 for i in range(len(expNames)):
- resFolder = "./results/cmaes_multiple/" + expNames[i]
- profFile  = './results/cmaes_multiple/profiling.' + str(jobId) + '.json'
+  resFolder = "./results/cmaes_multiple/" + expNames[i]
+  profFile = './results/cmaes_multiple/profiling.' + str(jobId) + '.json'
 
- if (int(procId) == int(procCount) - 1):
-  print("[Korali] --------------------------------------------")
-  print("[Korali] Running experiment: " + expNames[i] + ".txt ...")
-  print("[Korali] Result Folder: " + resFolder)
-  print("[Korali] Profiling File: " + profFile)
-  print("[Korali] Job Id: " + str(jobId)) 
-  print("[Korali] Rank Count: " + str(procCount))
-  print("[Korali] Experiment Index: " + str(i))
- sys.stdout.flush()
+  if (int(procId) == int(procCount) - 1):
+    print("[Korali] --------------------------------------------")
+    print("[Korali] Running experiment: " + expNames[i] + ".txt ...")
+    print("[Korali] Result Folder: " + resFolder)
+    print("[Korali] Profiling File: " + profFile)
+    print("[Korali] Job Id: " + str(jobId))
+    print("[Korali] Rank Count: " + str(procCount))
+    print("[Korali] Experiment Index: " + str(i))
+  sys.stdout.flush()
 
- # Creating Experiment
- e = korali.Experiment()
- 
- # Setting up the reference likelihood for the Bayesian Problem
- e["Problem"]["Type"] = "Bayesian/Reference"
- e["Problem"]["Likelihood Model"] = "Normal"
- e["Problem"]["Reference Data"]   = getReferenceData(expNames[i])
+  # Creating Experiment
+  e = korali.Experiment()
 
- # Configuring CMA-ES parameters
- e["Solver"]["Type"] = "CMAES"
- e["Solver"]["Population Size"] = 8 
- e["Solver"]["Termination Criteria"]["Max Generations"] = 100
+  # Setting up the reference likelihood for the Bayesian Problem
+  e["Problem"]["Type"] = "Bayesian/Reference"
+  e["Problem"]["Likelihood Model"] = "Normal"
+  e["Problem"]["Reference Data"] = getReferenceData(expNames[i])
 
- # Configuring the problem's random distributions
- e["Distributions"][0]["Name"] = "Uniform 0"
- e["Distributions"][0]["Type"] = "Univariate/Uniform"
- e["Distributions"][0]["Minimum"] = 8000
- e["Distributions"][0]["Maximum"] = 32000
+  # Configuring CMA-ES parameters
+  e["Solver"]["Type"] = "CMAES"
+  e["Solver"]["Population Size"] = 8
+  e["Solver"]["Termination Criteria"]["Max Generations"] = 100
 
- e["Distributions"][1]["Name"] = "Uniform 1"
- e["Distributions"][1]["Type"] = "Univariate/Uniform"
- e["Distributions"][1]["Minimum"] = 0.0
- e["Distributions"][1]["Maximum"] = 1.0
+  # Configuring the problem's random distributions
+  e["Distributions"][0]["Name"] = "Uniform 0"
+  e["Distributions"][0]["Type"] = "Univariate/Uniform"
+  e["Distributions"][0]["Minimum"] = 8000
+  e["Distributions"][0]["Maximum"] = 32000
 
- # Configuring the problem's variables 
- e["Variables"][0]["Name"] = "gammaC"
- e["Variables"][0]["Prior Distribution"] = "Uniform 0"
- e["Variables"][0]["Initial Mean"] = 16000
- e["Variables"][0]["Initial Standard Deviation"] = 7200
+  e["Distributions"][1]["Name"] = "Uniform 1"
+  e["Distributions"][1]["Type"] = "Univariate/Uniform"
+  e["Distributions"][1]["Minimum"] = 0.0
+  e["Distributions"][1]["Maximum"] = 1.0
 
- e["Variables"][1]["Name"] = "[Sigma]"
- e["Variables"][1]["Prior Distribution"] = "Uniform 1"
- e["Variables"][1]["Initial Mean"] = 0.5
- e["Variables"][1]["Initial Standard Deviation"] = 0.66
+  # Configuring the problem's variables
+  e["Variables"][0]["Name"] = "gammaC"
+  e["Variables"][0]["Prior Distribution"] = "Uniform 0"
+  e["Variables"][0]["Initial Mean"] = 16000
+  e["Variables"][0]["Initial Standard Deviation"] = 7200
 
- # General Settings
- e["Console Output"]["Verbosity"]  = "Detailed"
- e["File Output"]["Path"]          = resFolder
- e["Store Sample Information"] = True
+  e["Variables"][1]["Name"] = "[Sigma]"
+  e["Variables"][1]["Prior Distribution"] = "Uniform 1"
+  e["Variables"][1]["Initial Mean"] = 0.5
+  e["Variables"][1]["Initial Standard Deviation"] = 0.66
 
- # Loading previous results, if they exist.
- e.loadState(resFolder + '/latest')
- eList.append(e)
- 
-eList[0]["Problem"]["Computational Model"] = lambda sample: relaxModel(sample, getReferencePoints('hochmuth01'), 'hochmuth01', 0.4, './data/off_files/stretch_H1979_d01.off'      , korali.getMPIComm() )
-eList[1]["Problem"]["Computational Model"] = lambda sample: relaxModel(sample, getReferencePoints('hochmuth02'), 'hochmuth02', 0.4, './data/off_files/stretch_H1979_d02.off'      , korali.getMPIComm() )
-eList[2]["Problem"]["Computational Model"] = lambda sample: relaxModel(sample, getReferencePoints('hochmuth03'), 'hochmuth03', 0.4, './data/off_files/stretch_H1979_d03.off'      , korali.getMPIComm() )
-eList[3]["Problem"]["Computational Model"] = lambda sample: relaxModel(sample, getReferencePoints('hochmuth04'), 'hochmuth04', 0.4, './data/off_files/stretch_H1979_d04.off'      , korali.getMPIComm() )
-eList[4]["Problem"]["Computational Model"] = lambda sample: relaxModel(sample, getReferencePoints('henon')     , 'henon'     , 0.4, './data/off_files/stretch_Hen1999_d01.off', korali.getMPIComm() )
+  # General Settings
+  e["Console Output"]["Verbosity"] = "Detailed"
+  e["File Output"]["Path"] = resFolder
+  e["Store Sample Information"] = True
+
+  # Loading previous results, if they exist.
+  e.loadState(resFolder + '/latest')
+  eList.append(e)
+
+eList[0]["Problem"]["Computational Model"] = lambda sample: relaxModel(
+    sample, getReferencePoints('hochmuth01'), 'hochmuth01', 0.4,
+    './data/off_files/stretch_H1979_d01.off', korali.getMPIComm())
+eList[1]["Problem"]["Computational Model"] = lambda sample: relaxModel(
+    sample, getReferencePoints('hochmuth02'), 'hochmuth02', 0.4,
+    './data/off_files/stretch_H1979_d02.off', korali.getMPIComm())
+eList[2]["Problem"]["Computational Model"] = lambda sample: relaxModel(
+    sample, getReferencePoints('hochmuth03'), 'hochmuth03', 0.4,
+    './data/off_files/stretch_H1979_d03.off', korali.getMPIComm())
+eList[3]["Problem"]["Computational Model"] = lambda sample: relaxModel(
+    sample, getReferencePoints('hochmuth04'), 'hochmuth04', 0.4,
+    './data/off_files/stretch_H1979_d04.off', korali.getMPIComm())
+eList[4]["Problem"]["Computational Model"] = lambda sample: relaxModel(
+    sample, getReferencePoints('henon'), 'henon', 0.4,
+    './data/off_files/stretch_Hen1999_d01.off', korali.getMPIComm())
 
 # Configuring Linked (Distributed) Conduit
 k = korali.Engine()

@@ -10,13 +10,16 @@ e = korali.Experiment()
 
 # Defining Concurrent Jobs
 cJobs = 1
-if (len(sys.argv) > 1): cJobs = int(sys.argv[1]) 
+if (len(sys.argv) > 1):
+  cJobs = int(sys.argv[1])
 
 # Setting up the reference likelihood for the Bayesian Problem
 e["Problem"]["Type"] = "Bayesian/Reference"
 e["Problem"]["Likelihood Model"] = "Normal"
 e["Problem"]["Reference Data"] = data.getReferenceData().tolist()
-e["Problem"]["Computational Model"] = lambda koraliData: model.evaluate(koraliData, data.getReferencePoints().tolist(), k.getMPIComm())
+e["Problem"]["Computational Model"] = lambda koraliData: model.evaluate(
+    koraliData,
+    data.getReferencePoints().tolist(), k.getMPIComm())
 
 e["Distributions"][0]["Name"] = "Uniform 0"
 e["Distributions"][0]["Type"] = "Univariate/Uniform"
@@ -50,7 +53,7 @@ e["Variables"][2]["Initial Mean"] = 1.0
 e["Variables"][2]["Initial Standard Deviation"] = 0.05
 
 # Setting CMAES as Solver
-e["Solver"]["Type"]  = "CMAES"
+e["Solver"]["Type"] = "CMAES"
 e["Solver"]["Population Size"] = int(cJobs)
 e["Solver"]["Termination Criteria"]["Max Generations"] = 50
 

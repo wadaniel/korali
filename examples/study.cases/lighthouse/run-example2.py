@@ -4,7 +4,6 @@
 # distribution of the coastline distance 'alpha' and distance from shore 'beta'
 # of the lighthouse.
 
-
 # Importing computational model
 import sys
 sys.path.append('./models')
@@ -45,7 +44,7 @@ e["Solver"]["Population Size"] = 2000
 e["Solver"]["Target Coefficient Of Variation"] = 2.0
 
 # General settings
-e["File Output"]["Path"] = "_results_example2" 
+e["File Output"]["Path"] = "_results_example2"
 
 # Running Korali
 k.run(e)

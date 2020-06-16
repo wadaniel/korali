@@ -10,12 +10,18 @@ from surrogate import *
 # Creating new experiment
 import korali
 
-parser = argparse.ArgumentParser(prog='RBC Relaxation Sampling', description='Samples the viscosity parameter of an RBC inferred from actual experiments.')
-parser.add_argument('--pop', help='Population Size. How many samples per generation.',  default=512)
+parser = argparse.ArgumentParser(
+    prog='RBC Relaxation Sampling',
+    description='Samples the viscosity parameter of an RBC inferred from actual experiments.'
+)
+parser.add_argument(
+    '--pop',
+    help='Population Size. How many samples per generation.',
+    default=512)
 args = parser.parse_args()
 popSize = int(args.pop)
 
-expNames = [ 'hochmuth01', 'hochmuth02', 'hochmuth03', 'hochmuth04', 'henon' ]
+expNames = ['hochmuth01', 'hochmuth02', 'hochmuth03', 'hochmuth04', 'henon']
 
 # cm=[]
 # cm.append( lambda sample: relaxModel_surrogate(sample, getReferencePoints('hochmuth01'), 'hochmuth01', 0.4 ) )
@@ -26,7 +32,7 @@ expNames = [ 'hochmuth01', 'hochmuth02', 'hochmuth03', 'hochmuth04', 'henon' ]
 
 # for i in range(len(expNames)):
 #
-i=0
+i = 0
 resFolder = "./results/tmcmc_surrogate_multiple/" + expNames[i]
 
 print("[Korali] --------------------------------------------")
@@ -36,17 +42,16 @@ print("[Korali] TMCMC Population Size: " + str(popSize))
 print("[Korali] Experiment Index: " + str(i))
 sys.stdout.flush()
 
-
-
 # Creating Experiment
 e = korali.Experiment()
 
 # Setting up the reference likelihood for the Bayesian Problem
 e["Problem"]["Type"] = "Bayesian/Reference"
-e["Problem"]["Likelihood Model"] = "Normal" 
-e["Problem"]["Reference Data"]   = getReferenceData(expNames[i])
+e["Problem"]["Likelihood Model"] = "Normal"
+e["Problem"]["Reference Data"] = getReferenceData(expNames[i])
 
-e["Problem"]["Computational Model"] = lambda sample: relaxModel_surrogate(sample, getReferencePoints('hochmuth01'), 'hochmuth01', 0.4 )
+e["Problem"]["Computational Model"] = lambda sample: relaxModel_surrogate(
+    sample, getReferencePoints('hochmuth01'), 'hochmuth01', 0.4)
 
 # Configuring TMCMC parameters
 e["Solver"]["Type"] = "TMCMC"
@@ -73,8 +78,8 @@ e["Variables"][1]["Name"] = "[Sigma]"
 e["Variables"][1]["Prior Distribution"] = "Uniform 1"
 
 # General Settings
-e["Console Output"]["Verbosity"]  = "Detailed"
-e["File Output"]["Path"]          = resFolder
+e["Console Output"]["Verbosity"] = "Detailed"
+e["File Output"]["Path"] = resFolder
 e["Store Sample Information"] = True
 
 k = korali.Engine()

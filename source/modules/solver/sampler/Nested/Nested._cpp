@@ -205,7 +205,7 @@ void Nested::prepareGeneration()
 
 void Nested::priorTransform(std::vector<double> &sample) const
 {
-  for (size_t d = 0; d < _dimensions; ++d) { sample[d] = _priorLowerBound[d] + sample[d] * _priorWidth[d]; }
+  for (size_t d = 0; d < _dimensions; ++d) sample[d] = _priorLowerBound[d] + sample[d] * _priorWidth[d];
 }
 
 void Nested::generateCandidates()
@@ -280,6 +280,7 @@ void Nested::generateCandidatesFromBox()
   {
     for (size_t d = 0; d < _dimensions; ++d)
       _candidates[i][d] = _boxLowerBound[d] + _uniformGenerator->getRandomNumber() * (_boxUpperBound[d] - _boxLowerBound[d]);
+    if (insideUnitCube(_candidates[i]) == false) i--;
   }
 }
 
@@ -310,6 +311,7 @@ void Nested::generateCandidatesFromEllipse()
   for (size_t i = 0; i < _batchSize; i++)
   {
     generateSampleFromEllipse(_ellipseVector.front(), _candidates[i]);
+    if (insideUnitCube(_candidates[i]) == false) i--;
   }
 }
 
@@ -352,6 +354,7 @@ void Nested::generateCandidatesFromMultiEllipse()
       // accept / reject
       double rnd = _uniformGenerator->getRandomNumber();
       if (rnd < 1.0 / ((double)overlap)) accept = true;
+      if (insideUnitCube(_candidates[i]) == false) accept = false;
     }
   }
 }
@@ -452,7 +455,6 @@ void Nested::generatePosterior()
     if (sum > k)
     {
       _posteriorSampleDatabase.push_back(_sampleDatabase[rndIdx]);
-      priorTransform(_sampleDatabase.back());
       _posteriorSampleLogPriorDatabase.push_back(_sampleLogPriorDatabase[rndIdx]);
       _posteriorSampleLogLikelihoodDatabase.push_back(_sampleLogLikelihoodDatabase[rndIdx]);
       k++;
@@ -536,7 +538,7 @@ void Nested::initEllipseVector()
   _ellipseVector.clear();
   _ellipseVector.emplace_back(ellipse_t(_dimensions));
   ellipse_t *first = _ellipseVector.data();
-  
+
   first->num = _numberLivePoints;
   first->sampleIdx.resize(_numberLivePoints);
 
@@ -851,6 +853,16 @@ double Nested::calcEffectiveSamples() const
   }
 
   return exp(2.0 * wtsum - wt2sum);
+}
+
+bool Nested::insideUnitCube(const std::vector<double> &sample) const
+{
+  for (auto &s : sample)
+  {
+    if (s < 0.0) return false;
+    if (s > 1.0) return false;
+  }
+  return true;
 }
 
 double Nested::safeLogPlus(double logx, double logy) const

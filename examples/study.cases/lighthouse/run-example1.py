@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # In this example, we demonstrate how Korali samples the posterior
-# distribution of the estimated coastline distance 'alpha' of the lighthouse 
+# distribution of the estimated coastline distance 'alpha' of the lighthouse
 # problem with KNOWN distance from shore 'beta'.
 
 # Importing computational model
@@ -36,7 +36,7 @@ e["Solver"]["Population Size"] = 5000
 #e["Solver"]["Default Burn In"] = 1
 e["Solver"]["Target Coefficient Of Variation"] = 0.2
 
-# Gener settings 
+# Gener settings
 e["File Output"]["Path"] = "_results_example1"
 
 # Running Korali

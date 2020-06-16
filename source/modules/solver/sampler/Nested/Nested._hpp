@@ -215,6 +215,11 @@ class Nested : public Sampler
   double calcEffectiveSamples() const;
 
   /*
+  * @brief Checks if sample is inside d dimensional unit cube.
+  */
+  bool insideUnitCube(const std::vector<double> &sample) const;
+
+  /*
   * @brief Safely adding two values that are in log space. Returns in log space.
   * @param logx logx
   * @param logy logy

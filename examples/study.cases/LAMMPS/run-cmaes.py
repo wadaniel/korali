@@ -37,16 +37,16 @@ e["Variables"][0]["Initial Standard Deviation"] = 0.01
 
 e["Variables"][1]["Name"] = "Model-Sigma"
 e["Variables"][1]["Prior Distribution"] = "Uniform 1"
-e["Variables"][1]["Initial Mean"] = 0.8 
+e["Variables"][1]["Initial Mean"] = 0.8
 e["Variables"][1]["Initial Standard Deviation"] = 0.20
 
 e["Variables"][2]["Name"] = "[Sigma]"
 e["Variables"][2]["Prior Distribution"] = "Uniform 2"
-e["Variables"][2]["Initial Mean"] = 0.05 
+e["Variables"][2]["Initial Mean"] = 0.05
 e["Variables"][2]["Initial Standard Deviation"] = 0.001
 
 # Configuring TMCMC parameters
-e["Solver"]["Type"] = "CMAES";
+e["Solver"]["Type"] = "CMAES"
 e["Solver"]["Population Size"] = 16
 e["Solver"]["Termination Criteria"]["Max Generations"] = 120
 

@@ -15,53 +15,54 @@ from ...tools import tools
 
 
 def propagate_uncertainty(args, jskSamples, jsData):
-    sir.set_custom_params(reduction=args.reduction,
-                          infer_reduction=args.infer_reduction,
-                          duration=args.duration,
-                          infer_duration=args.infer_duration)
-    jsOde = sir.getReferenceData(jsData)
+  sir.set_custom_params(
+      reduction=args.reduction,
+      infer_reduction=args.infer_reduction,
+      duration=args.duration,
+      infer_duration=args.infer_duration)
+  jsOde = sir.getReferenceData(jsData)
 
-    Ns = jskSamples['Solver']['Population Size']
-    Np = len(jskSamples['Samples'][0]['Parameters'])
+  Ns = jskSamples['Solver']['Population Size']
+  Np = len(jskSamples['Samples'][0]['Parameters'])
 
-    db = jskSamples['Results']['Sample Database']
-    p = []
-    for j in range(Np):
-        tmp = []
-        for k in range(Ns):
-            tmp.append(db[k][j])
-        p.append(tmp)
+  db = jskSamples['Results']['Sample Database']
+  p = []
+  for j in range(Np):
+    tmp = []
+    for k in range(Ns):
+      tmp.append(db[k][j])
+    p.append(tmp)
 
-    # days of prediction = days in the data + future days
-    T = jsOde['Time'][-1] + args.futureDays
-    t = np.linspace(0, T, args.nPoints)
-    jsOde['Time'] = t.tolist()
+  # days of prediction = days in the data + future days
+  T = jsOde['Time'][-1] + args.futureDays
+  t = np.linspace(0, T, args.nPoints)
+  jsOde['Time'] = t.tolist()
 
-    e = korali.Experiment()
+  e = korali.Experiment()
 
-    e['Problem']['Type'] = 'Propagation'
-    e['Problem']['Execution Model'] = \
-                lambda modelData: sir.model_for_korali_execute(
-            modelData, jsOde)
+  e['Problem']['Type'] = 'Propagation'
+  e['Problem']['Execution Model'] = \
+              lambda modelData: sir.model_for_korali_execute(
+          modelData, jsOde)
 
-    for i, var in enumerate(sir.params_to_infer):
-        e['Variables'][i]['Name'] = var
-        e['Variables'][i]['Precomputed Values'] = p[i]
+  for i, var in enumerate(sir.params_to_infer):
+    e['Variables'][i]['Name'] = var
+    e['Variables'][i]['Precomputed Values'] = p[i]
 
-    e['Solver']['Type'] = 'Executor'
+  e['Solver']['Type'] = 'Executor'
 
-    e['File Output'] = tools.fileOutputDefaults(args, '_korali_propagation/')
+  e['File Output'] = tools.fileOutputDefaults(args, '_korali_propagation/')
 
-    if (args.silent):
-        e['Console Output']['Verbosity'] = 'Silent'
+  if (args.silent):
+    e['Console Output']['Verbosity'] = 'Silent'
 
-    e['Store Sample Information'] = True
+  e['Store Sample Information'] = True
 
-    k = korali.Engine()
+  k = korali.Engine()
 
-    k['Conduit']['Type'] = 'Concurrent'
-    k['Conduit']['Concurrent Jobs'] = args.nThreads
+  k['Conduit']['Type'] = 'Concurrent'
+  k['Conduit']['Concurrent Jobs'] = args.nThreads
 
-    k.run(e)
+  k.run(e)
 
-    return e
+  return e

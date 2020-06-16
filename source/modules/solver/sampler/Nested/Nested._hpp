@@ -17,7 +17,17 @@ struct ellipse_t
 {
   ellipse_t() = delete;
 
-  ellipse_t(size_t dim) : num(0), sampleIdx(0), mean(dim, 0.0), cov(dim * dim, 0.0), invCov(dim * dim, 0.0), axes(dim * dim, 0.0), evals(dim, 0.0), paxes(dim * dim, 0.0), volume(0.0), trueVolume(0.0){};
+  ellipse_t(size_t dim) : dim(dim), num(0), sampleIdx(0), mean(dim, 0.0), cov(dim * dim, 0.0), invCov(dim * dim, 0.0), axes(dim * dim, 0.0), evals(dim, 0.0), paxes(dim * dim, 0.0), volume(0.0), pointVolume(0.0){};
+
+  /**
+   * @brief Init d-dimensional unit sphere.
+   */
+  void initSphere();
+
+  /**
+   * @brief Dimension of ellipsoid.
+  */
+  size_t dim;
 
   /**
    * @brief Number samples in ellipse.
@@ -67,7 +77,7 @@ struct ellipse_t
   /**
    * @brief 'True' volume from which the subset of samples were sampled from.
    */
-  double trueVolume;
+  double pointVolume;
 };
 
 class Nested : public Sampler
@@ -186,7 +196,7 @@ class Nested : public Sampler
   /*
   * @brief Udates the covariance matrix of input ellipse.
   */
-  void updateEllipseCov(ellipse_t &ellipse) const;
+  bool updateEllipseCov(ellipse_t &ellipse) const;
 
   /*
   * @brief Updates volume and the axes of the ellipse.
@@ -214,11 +224,11 @@ class Nested : public Sampler
   */
   double calcEffectiveSamples() const;
 
-  /*
+ /*
   * @brief Checks if sample is inside d dimensional unit cube.
   */
-  bool insideUnitCube(const std::vector<double> &sample) const;
-
+  bool insideUnitCube(const std::vector<double>& sample) const;
+  
   /*
   * @brief Safely adding two values that are in log space. Returns in log space.
   * @param logx logx

@@ -132,25 +132,7 @@ std::vector<std::vector<double>> DeepLearner::evaluate(const std::vector<std::ve
   // Running the input values through the neural network
   _testNeuralNetwork->forward();
 
-  // Denormalizing values
   size_t outputLayerId = _testNeuralNetwork->_layers.size() - 1;
-  size_t batchSize = _testNeuralNetwork->_layers[outputLayerId]->_nodeValues.size();
-  size_t outputSize = _testNeuralNetwork->_layers[outputLayerId]->_nodeValues[0].size();
-
-  // If training was normalized, we need to de-normalize the results
-  if (_testNeuralNetwork->_batchNormalizationEnabled == true)
-  {
-    for (size_t i = 0; i < batchSize; i++)
-      for (size_t j = 0; j < outputSize; j++)
-      {
-        //double value = _testNeuralNetwork->_layers[outputLayerId]->_nodeValues[i][j];
-        double sigma = _testNeuralNetwork->_outputNormalizationSigmas[j];
-        double mean = _testNeuralNetwork->_outputNormalizationMeans[j];
-        _testNeuralNetwork->_layers[outputLayerId]->_nodeValues[i][j] *= sigma;
-        _testNeuralNetwork->_layers[outputLayerId]->_nodeValues[i][j] += mean;
-      }
-  }
-
   return _testNeuralNetwork->_layers[outputLayerId]->_nodeValues;
 }
 

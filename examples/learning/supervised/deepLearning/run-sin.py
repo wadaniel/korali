@@ -57,7 +57,7 @@ e["Solver"]["Neural Network"]["Layers"][2]["Type"] = "Output"
 e["Solver"]["Neural Network"]["Layers"][2]["Node Count"] = 1
 e["Solver"]["Neural Network"]["Layers"][2]["Activation Function"] = "Identity"
 
-e["Console Output"]["Frequency"] = 5000
+e["Console Output"]["Frequency"] = 500
 e["File Output"]["Enabled"] = False
 e["Random Seed"] = 0xC0FFEE
 

@@ -27,6 +27,17 @@ class DQN : public Solver
   korali::Experiment _QExperiment;
 
   /**
+ * @brief Korali engine for optimizing the action based on a trained Q-Network
+ */
+  korali::Engine _AEngine;
+
+  /**
+ * @brief Korali experiment for optimizing the action based on a trained Q-Network
+ */
+  korali::Experiment _AExperiment;
+
+
+  /**
    * @brief Gets the next action for the actor, based on the Q policy
    */
   void getAction(std::vector<double>& action, const std::vector<double>& state) const;

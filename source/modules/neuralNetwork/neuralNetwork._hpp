@@ -36,11 +36,16 @@ class NeuralNetwork : public Module
 #endif
 
   /**
-  * @brief Model function to evaluate the proposed NN configuration
-  * @param sample The sample containing proposal configuration
-  * @param nn Pointer to the neural network
+  * @brief Model function to evaluate a given NN weight/bias configuration
+  * @param sample The sample containing proposal NN weight/bias configuration.
   */
-  static void runSample(korali::Sample &sample, korali::NeuralNetwork *nn);
+  void evaluateWeightsAndBiases(korali::Sample &sample);
+
+  /**
+   * @brief Model function to evaluate a given input.
+   * @param sample The sample containing the input.
+   */
+  void evaluateInputs(Sample &sample);
 
   /**
  * @brief Korali engine for optimizing the NN's weights and biases

@@ -96,7 +96,7 @@ void DeepLearner::runGeneration()
   // Setting input validation data
   Sample validationSample;
   validationSample["Parameters"] = _trainingNeuralNetwork->_validationParameters;
-  NeuralNetwork::runSample(validationSample, _validationNeuralNetwork);
+  _validationNeuralNetwork->evaluateWeightsAndBiases(validationSample);
 
   // Getting results of optimization
   _currentValidationLoss = -KORALI_GET(double, validationSample, "F(x)");

@@ -20,10 +20,10 @@ void NeuralNetwork::initialize()
   _isInitialized = false;
 
   // Creating evaluation lambda function for optimization
-  auto evaluateProposal = [nn = this](Sample &sample) { runSample(sample, nn); };
+  auto fc = [nn = this](Sample &sample) { nn->evaluateWeightsAndBiases(sample); };
 
   _koraliExperiment["Problem"]["Type"] = "Optimization";
-  _koraliExperiment["Problem"]["Objective Function"] = evaluateProposal;
+  _koraliExperiment["Problem"]["Objective Function"] = fc;
 
   size_t currentVariable = 0;
   for (size_t i = 1; i < _layers.size(); i++)
@@ -714,47 +714,47 @@ void NeuralNetwork::train(const size_t stepsToRun)
   // Setting input validation data
   Sample newSample;
   newSample["Parameters"] = _validationParameters;
-  NeuralNetwork::runSample(newSample, this);
+  evaluateWeightsAndBiases(newSample);
 
   // Getting results of optimization
   _currentTrainingLoss = -newSample["F(x)"].get<double>();
 }
 
-void NeuralNetwork::runSample(Sample &sample, NeuralNetwork *nn)
+void NeuralNetwork::evaluateWeightsAndBiases(Sample &sample)
 {
   // Setting weights and biases
   auto parameters = KORALI_GET(std::vector<double>, sample, "Parameters");
 
   size_t currentVariable = 0;
-  for (size_t i = 1; i < nn->_layers.size(); i++)
+  for (size_t i = 1; i < _layers.size(); i++)
   {
-    nn->_layers[i]->_weights.resize(nn->_layers[i]->_nodeCount);
-    nn->_layers[i]->_bias.resize(nn->_layers[i]->_nodeCount);
+    _layers[i]->_weights.resize(_layers[i]->_nodeCount);
+    _layers[i]->_bias.resize(_layers[i]->_nodeCount);
 
     // Adding layer's weights
-    for (size_t j = 0; j < nn->_layers[i]->_nodeCount; j++)
+    for (size_t j = 0; j < _layers[i]->_nodeCount; j++)
     {
-      nn->_layers[i]->_weights[j].resize(nn->_layers[i - 1]->_nodeCount);
+      _layers[i]->_weights[j].resize(_layers[i - 1]->_nodeCount);
 
-      for (size_t k = 0; k < nn->_layers[i - 1]->_nodeCount; k++)
-        nn->_layers[i]->_weights[j][k] = parameters[currentVariable++];
+      for (size_t k = 0; k < _layers[i - 1]->_nodeCount; k++)
+        _layers[i]->_weights[j][k] = parameters[currentVariable++];
     }
 
     // Adding layer's biases
-    for (size_t j = 0; j < nn->_layers[i]->_nodeCount; j++)
-      nn->_layers[i]->_bias[j] = parameters[currentVariable++];
+    for (size_t j = 0; j < _layers[i]->_nodeCount; j++)
+      _layers[i]->_bias[j] = parameters[currentVariable++];
   }
 
   // Updating the network's weights and biases
-  nn->updateWeightsAndBias();
+  updateWeightsAndBias();
 
   // Running the input values through the neural network
-  nn->forward();
+  forward();
 
   // Printing Layer values
-  size_t outputLayerId = nn->_layers.size() - 1;
-  size_t batchSize = nn->_layers[outputLayerId]->_nodeValues.size();
-  size_t outputSize = nn->_layers[outputLayerId]->_nodeValues[0].size();
+  size_t outputLayerId = _layers.size() - 1;
+  size_t batchSize = _layers[outputLayerId]->_nodeValues.size();
+  size_t outputSize = _layers[outputLayerId]->_nodeValues[0].size();
 
   // Calculating mean square error
   double meanSquaredError = 0.0;
@@ -765,7 +765,7 @@ void NeuralNetwork::runSample(Sample &sample, NeuralNetwork *nn)
   for (size_t i = 0; i < batchSize; i++)
     for (size_t j = 0; j < outputSize; j++)
     {
-      double diff = nn->_solution[i][j] - nn->_layers[outputLayerId]->_nodeValues[i][j];
+      double diff = _solution[i][j] - _layers[outputLayerId]->_nodeValues[i][j];
       outputDiff[i * outputSize + j] = diff;
       meanSquaredError += diff * diff;
     }
@@ -775,43 +775,48 @@ void NeuralNetwork::runSample(Sample &sample, NeuralNetwork *nn)
   // Saving the negative of the error because we want to minimize it
   sample["F(x)"] = -meanSquaredError;
 
-  if (nn->_operation == "Training")
+  if (_operation == "Training")
   {
     // Writing to last layers differential information wrt data
-    write_to_dnnl_memory(outputDiff.data(), nn->_layers[outputLayerId]->_activationDiffMem);
+    write_to_dnnl_memory(outputDiff.data(), _layers[outputLayerId]->_activationDiffMem);
 
     // Running backward propagation
-    nn->backward();
+    backward();
 
     // Copying back the gradients and biases back
     std::vector<double> gradientVector(currentVariable);
     currentVariable = 0;
-    for (size_t i = 1; i < nn->_layers.size(); i++)
+    for (size_t i = 1; i < _layers.size(); i++)
     {
-      nn->_layers[i]->_weights.resize(nn->_layers[i]->_nodeCount);
-      nn->_layers[i]->_bias.resize(nn->_layers[i]->_nodeCount);
+      _layers[i]->_weights.resize(_layers[i]->_nodeCount);
+      _layers[i]->_bias.resize(_layers[i]->_nodeCount);
 
       //            printf("Layer %lu\n", i);
       // Adding layer's weights
-      for (size_t j = 0; j < nn->_layers[i]->_nodeCount; j++)
+      for (size_t j = 0; j < _layers[i]->_nodeCount; j++)
       {
-        nn->_layers[i]->_weights[j].resize(nn->_layers[i - 1]->_nodeCount);
+        _layers[i]->_weights[j].resize(_layers[i - 1]->_nodeCount);
 
-        for (size_t k = 0; k < nn->_layers[i - 1]->_nodeCount; k++)
+        for (size_t k = 0; k < _layers[i - 1]->_nodeCount; k++)
         {
-          //                    printf("%.5f ", nn->_layers[i]->_weights[j][k]);
-          gradientVector[currentVariable++] = nn->_layers[i]->_weights[j][k];
+          //                    printf("%.5f ", _layers[i]->_weights[j][k]);
+          gradientVector[currentVariable++] = _layers[i]->_weights[j][k];
         }
         //                printf("\n");
       }
 
       // Adding layer's biases
-      for (size_t j = 0; j < nn->_layers[i]->_nodeCount; j++)
-        gradientVector[currentVariable++] = nn->_layers[i]->_bias[j];
+      for (size_t j = 0; j < _layers[i]->_nodeCount; j++)
+        gradientVector[currentVariable++] = _layers[i]->_bias[j];
     }
 
     sample["Gradient"] = gradientVector;
   }
+}
+
+void NeuralNetwork::evaluateInputs(Sample &sample)
+{
+
 }
 
 } // namespace korali

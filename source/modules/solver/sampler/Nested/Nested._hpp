@@ -186,7 +186,7 @@ class Nested : public Sampler
   /*
   * @brief Applies k-means clustering (k=2) and fills cluster vectors with samples.
   */
-  void kmeansClustering(const ellipse_t &parent, size_t maxIter, ellipse_t &childOne, ellipse_t &childTwo) const;
+  bool kmeansClustering(const ellipse_t &parent, size_t maxIter, ellipse_t &childOne, ellipse_t &childTwo) const;
 
   /*
   * @brief Udates the mean vector of ellipse argument.

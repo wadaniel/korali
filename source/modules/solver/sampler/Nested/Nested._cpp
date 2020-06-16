@@ -497,7 +497,7 @@ double Nested::l2distance(const std::vector<double> &sampleOne, const std::vecto
 
 bool Nested::updateEllipse(ellipse_t &ellipse) const
 {
-  if (ellipse.num <= 2 * _dimensions) return false;
+  if (ellipse.num <= ellipse.dim) return false;
 
   bool good = true;
   
@@ -514,6 +514,8 @@ void Nested::updateMultiEllipse()
   bool ok = updateEllipse(_ellipseVector.front());
   if (ok == false) KORALI_LOG_ERROR("Ellipse update failed at initialization\n");
 
+  bool okCluster, okOne, okTwo;
+
   std::vector<ellipse_t> newEllipseVector;
   size_t split = 0;
   for (size_t idx = 0; idx < _ellipseVector.size(); ++idx)
@@ -521,10 +523,14 @@ void Nested::updateMultiEllipse()
     ellipse_t &ellipse = _ellipseVector[idx];
     auto one = ellipse_t(_dimensions);
     auto two = ellipse_t(_dimensions);
-    kmeansClustering(ellipse, 100, one, two);
+    
+    okCluster = kmeansClustering(ellipse, 100, one, two);
 
-    bool okOne = updateEllipse(one);
-    bool okTwo = updateEllipse(two);
+    if(okCluster)
+    {
+      okOne = updateEllipseVolume(one);
+      okTwo = updateEllipseVolume(two);
+    }
 
     /*
     size_t iter = 0;
@@ -537,24 +543,15 @@ void Nested::updateMultiEllipse()
     }
     */
 
-    if ((okOne == false) || (okTwo == false) || ((one.volume + two.volume >= 0.5 * ellipse.volume) && (ellipse.volume < 2.0 * exp(_logVolume))))
+    if ( (okCluster == false) ||  (okOne == false) || (okTwo == false) || ((one.volume + two.volume >= 0.5 * ellipse.volume) && (ellipse.volume < 2.0 * exp(_logVolume))))
     {
       newEllipseVector.push_back(ellipse);
     }
     else
     {
-      bool okOne = updateEllipse(one);
-      bool okTwo = updateEllipse(two);
-      if (okOne && okTwo)
-      {
-        split++;
-        _ellipseVector.push_back(one);
-        _ellipseVector.push_back(two);
-      }
-      else
-      {
-        newEllipseVector.push_back(ellipse);
-      }
+      split++;
+      _ellipseVector.push_back(one);
+      _ellipseVector.push_back(two);
     }
   }
 
@@ -592,22 +589,23 @@ void Nested::updateEllipseMean(ellipse_t &ellipse) const
 bool Nested::updateEllipseCov(ellipse_t &ellipse) const
 {
   
+  if (ellipse.num <= ellipse.dim) return false;
+
   // update covariance
   double weight = 1.0 / (ellipse.num - 1.0);
-  if (ellipse.num > 1)
-    for (size_t i = 0; i < _dimensions; i++)
+  for (size_t i = 0; i < _dimensions; i++)
+  {
+    for (size_t j = i; j < _dimensions; ++j)
     {
-      for (size_t j = i; j < _dimensions; ++j)
+      double c = 0.0;
+      for (size_t k = 0; k < ellipse.num; ++k)
       {
-        double c = 0.0;
-        for (size_t k = 0; k < ellipse.num; ++k)
-        {
-          size_t sidx = ellipse.sampleIdx[k];
-          c += (_liveSamples[sidx][i] - ellipse.mean[i]) * (_liveSamples[sidx][j] - ellipse.mean[j]);
-        }
-        ellipse.cov[j * _dimensions + i] = ellipse.cov[i * _dimensions + j] = weight * c;
+        size_t sidx = ellipse.sampleIdx[k];
+        c += (_liveSamples[sidx][i] - ellipse.mean[i]) * (_liveSamples[sidx][j] - ellipse.mean[j]);
       }
+      ellipse.cov[j * _dimensions + i] = ellipse.cov[i * _dimensions + j] = weight * c;
     }
+  }
 
   // update inverse covariance
   gsl_matrix_view cov = gsl_matrix_view_array(ellipse.cov.data(), _dimensions, _dimensions);
@@ -624,21 +622,23 @@ bool Nested::updateEllipseCov(ellipse_t &ellipse) const
 
   int status = gsl_linalg_LU_invert(matLU, perm, &invCov.matrix);
   gsl_permutation_free(perm);
+  gsl_matrix_free(matLU);
  
-  bool check = true;
   if (status != 0)
   {
     _k->_logger->logWarning("Normal", "Covariance inversion failed during ellipsoid covariance update.\n");
-    check = false;
+    return false;
   }
 
-  gsl_matrix_free(matLU);
-  return check;
+  return true;
 
 }
 
 bool Nested::updateEllipseVolume(ellipse_t &ellipse) const
 {
+    
+  if (ellipse.num <= ellipse.dim) return false;
+  
   gsl_matrix_view cov = gsl_matrix_view_array(ellipse.cov.data(), _dimensions, _dimensions);
 
   gsl_matrix *matLU = gsl_matrix_alloc(_dimensions, _dimensions);
@@ -760,93 +760,73 @@ double Nested::weightedMahalanobisDistance(const std::vector<double> &sample, co
   return ellipse.volume * dist / ellipse.pointVolume;
 }
 
-void Nested::kmeansClustering(const ellipse_t &parent, size_t maxIter, ellipse_t &childOne, ellipse_t &childTwo) const
+bool Nested::kmeansClustering(const ellipse_t &parent, size_t maxIter, ellipse_t &childOne, ellipse_t &childTwo) const
 {
+  childOne.initSphere();
+  childTwo.initSphere();
+  
   for (size_t d = 0; d < _dimensions; ++d)
   {
     childOne.mean[d] = parent.mean[d] + parent.paxes[d * _dimensions] * parent.evals[0];
     childTwo.mean[d] = parent.mean[d] - parent.paxes[d * _dimensions] * parent.evals[0];
   }
 
-  size_t diffs, nOne, nTwo;
-  std::vector<double> meanOneTmp(_dimensions);
-  std::vector<double> meanTwoTmp(_dimensions);
-
+  size_t diffs, nOne, nTwo, idxOne, idxTwo;
   std::vector<int8_t> clusterFlag(parent.num, 0);
 
+  bool ok = true;
   size_t iter = 0;
   while (iter < maxIter)
   {
     diffs = 0;
     nOne = 0;
     nTwo = 0;
-    std::fill(meanOneTmp.begin(), meanOneTmp.end(), 0.);
-    std::fill(meanTwoTmp.begin(), meanTwoTmp.end(), 0.);
 
     // assign samples to means
     for (size_t i = 0; i < parent.num; ++i)
     {
       size_t six = parent.sampleIdx[i];
-      double d1 = l2distance(_liveSamples[six], childOne.mean);
-      double d2 = l2distance(_liveSamples[six], childTwo.mean);
+      double d1 = mahalanobisDistance(_liveSamples[six], childOne);
+      double d2 = mahalanobisDistance(_liveSamples[six], childTwo);
       int8_t flag = (d1 < d2) ? 1 : 2;
 
       if (clusterFlag[i] != flag) diffs++;
       clusterFlag[i] = flag;
 
       // calc mean (accumulate)
-      if (flag == 1)
-      {
-        nOne++;
-        for (size_t d = 0; d < _dimensions; ++d) meanOneTmp[d] += _liveSamples[six][d];
-      }
-      else
-      {
-        nTwo++;
-        for (size_t d = 0; d < _dimensions; ++d) meanTwoTmp[d] += _liveSamples[six][d];
-      }
+      if (flag == 1) nOne++;
+      else           nTwo++;
     }
 
-    // calc mean (average)
-    if (nOne > 0)
+    childOne.num = nOne;
+    childOne.sampleIdx.resize(nOne);
+
+    childTwo.num = nTwo;
+    childTwo.sampleIdx.resize(nTwo);
+
+    idxOne = 0;
+    idxTwo = 0;
+
+    for (size_t i = 0; i < parent.num; ++i)
     {
-      for (size_t d = 0; d < _dimensions; ++d) meanOneTmp[d] /= ((double)nOne);
-      childOne.mean = meanOneTmp;
+      if (clusterFlag[i] == 1) 
+        childOne.sampleIdx[idxOne++] = parent.sampleIdx[i];
+      else /* clusterFlag[i] == 2 */
+        childTwo.sampleIdx[idxTwo++] = parent.sampleIdx[i];
     }
-    if (nTwo > 0)
-    {
-      for (size_t d = 0; d < _dimensions; ++d) meanTwoTmp[d] /= ((double)nTwo);
-      childTwo.mean = meanTwoTmp;
-    }
+
+    updateEllipseMean(childOne);
+    ok = ok && updateEllipseCov(childOne);
+    
+    updateEllipseMean(childTwo);
+    ok = ok & updateEllipseCov(childTwo);
 
     iter++;
     if (diffs == 0) break;
   }
   if (iter >= maxIter) _k->_logger->logWarning("Normal", "K-Means Clustering did not terminate in %zu steps.\n", maxIter);
-
-  childOne.num = nOne;
-  childOne.sampleIdx.resize(nOne);
-
-  childTwo.num = nTwo;
-  childTwo.sampleIdx.resize(nTwo);
-
-  size_t idxOne = 0;
-  size_t idxTwo = 0;
-
-  for (size_t i = 0; i < parent.num; ++i)
-  {
-    size_t six = parent.sampleIdx[i];
-    if (clusterFlag[i] == 1)
-    {
-      childOne.sampleIdx[idxOne] = six;
-      idxOne++;
-    }
-    else /* clusterFlag[i] == 2 */
-    {
-      childTwo.sampleIdx[idxTwo] = six;
-      idxTwo++;
-    }
-  }
+    
+  return ok;
 }
 
 size_t Nested::reassignSamples(ellipse_t &childOne, ellipse_t &childTwo) const

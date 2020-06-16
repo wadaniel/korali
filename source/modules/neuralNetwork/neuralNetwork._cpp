@@ -791,18 +791,13 @@ void NeuralNetwork::evaluateWeightsAndBiases(Sample &sample)
       _layers[i]->_weights.resize(_layers[i]->_nodeCount);
       _layers[i]->_bias.resize(_layers[i]->_nodeCount);
 
-      //            printf("Layer %lu\n", i);
       // Adding layer's weights
       for (size_t j = 0; j < _layers[i]->_nodeCount; j++)
       {
         _layers[i]->_weights[j].resize(_layers[i - 1]->_nodeCount);
 
         for (size_t k = 0; k < _layers[i - 1]->_nodeCount; k++)
-        {
-          //                    printf("%.5f ", _layers[i]->_weights[j][k]);
           gradientVector[currentVariable++] = _layers[i]->_weights[j][k];
-        }
-        //                printf("\n");
       }
 
       // Adding layer's biases

@@ -33,6 +33,16 @@ void DQN::initialize()
    _QExperiment["Variables"][expVar]["Type"] = "Input";
    _QExperiment["Variables"][expVar]["Training Data"] = { 0.0 };
    _QExperiment["Variables"][expVar]["Validation Data"] = { 0.0 };
+
+   if (std::isfinite(_k->_variables[varIdx]->_lowerBound) == false)
+    KORALI_LOG_ERROR("Lower bound for action variable %lu must be finite, but is %f instead.\n", i, _k->_variables[varIdx]->_lowerBound);
+
+   if (std::isfinite(_k->_variables[varIdx]->_upperBound) == false)
+    KORALI_LOG_ERROR("Upper bound for action variable %lu must be finite, but is %f instead.\n", i, _k->_variables[varIdx]->_upperBound);
+
+   if (_k->_variables[varIdx]->_lowerBound >= _k->_variables[varIdx]->_upperBound)
+    KORALI_LOG_ERROR("Lower Bound (%f) for action variable %lu must be strictly smaller than its upper bound (%f).\n", _k->_variables[varIdx]->_lowerBound, i, _k->_variables[varIdx]->_upperBound);
+
    expVar++;
   }
 
@@ -77,21 +87,25 @@ void DQN::runGeneration()
   // Index for current worker Id that helps making a balanced distribution of work
   size_t currentWorker = 0;
 
-  // Storage for agent information
+  // Storage for agent state/action information
   std::vector<std::vector<double>> actions(agentCount);
   std::vector<std::vector<double>> states(agentCount);
+  for (size_t i = 0; i < agentCount; i++) actions[i].resize(_problem->_actionVectorSize);
+  for (size_t i = 0; i < agentCount; i++) states[i].resize(_problem->_stateVectorSize);
+
+  // Storage for agent reward information
   std::vector<double> rewards(agentCount);
-  std::vector<bool> hasFinished(agentCount);
 
   // Initializing Finished count
   size_t finishedCount = 0;
 
-  // Setting initial states
+  // Setting initial states and actions
   for (size_t i = 0; i < agentCount; i++)
+  {
    states[i] = _problem->_initialStates[_currentEpisode++];
-
-  // Setting initial actions
-  actions = _QExperiment._solver->evaluate(states);
+   getAction(actions[i], states[i]);
+   printf("ActionSize: %lu\n", actions[i].size());
+  }
 
   // Initializing the agents and their environments
   for (size_t i = 0; i < agentCount; i++)
@@ -132,10 +146,11 @@ void DQN::runGeneration()
     // The new state becomes the current state
     states[i] = newState;
 
-    hasFinished[i] = KORALI_GET(bool, agents[i], "Finished");
+    // Checking for agent termination
+    bool hasTerminated = KORALI_GET(bool, agents[i], "Finished");
 
     // If it finished, then add to the count
-    if (hasFinished[i])
+    if (hasTerminated)
     {
       // Incrementing finished agent count
       finishedCount++;
@@ -143,7 +158,7 @@ void DQN::runGeneration()
     else // Else, get new action and run next episode
     {
       // Getting new action to perform
-      actions[i] = _QExperiment._solver->evaluate( { newState } )[0];
+      getAction(actions[i], states[i]);
       agents[i]["Action"] = actions[i];
 
       // Run Episode
@@ -166,36 +181,52 @@ void DQN::runGeneration()
   }
 
   size_t expVar = 0;
-  for (size_t i = 0; i < _stateHistory.size(); i++)
+  for (size_t i = 0; i < _problem->_stateVectorSize; i++)
   {
-   for (size_t j = 0; j < _stateHistory[i].size(); j++)
+   for (size_t j = 0; j < _stateHistory.size(); j++)
    {
-    _QExperiment["Variables"][expVar]["Training Data"][j] = _stateHistory[i][j];
-    _QExperiment["Variables"][expVar]["Validation Data"][j] = _stateHistory[i][j];
+   _QExperiment["Variables"][expVar]["Training Data"][j] = _stateHistory[j][i];
+   _QExperiment["Variables"][expVar]["Validation Data"][j] = _stateHistory[j][i];
    }
    expVar++;
   }
 
-  for (size_t i = 0; i < _actionHistory.size(); i++)
+  for (size_t i = 0; i < _problem->_actionVectorSize; i++)
   {
-   for (size_t j = 0; j < _actionHistory[i].size(); j++)
+   for (size_t j = 0; j < _actionHistory.size(); j++)
    {
-    _QExperiment["Variables"][expVar]["Training Data"][j] = _actionHistory[i][j];
-    _QExperiment["Variables"][expVar]["Validation Data"][j] = _actionHistory[i][j];
+   _QExperiment["Variables"][expVar]["Training Data"][j] = _actionHistory[j][i];
+   _QExperiment["Variables"][expVar]["Validation Data"][j] = _actionHistory[j][i];
    }
    expVar++;
   }
 
-  for (size_t i = 0; i < _rewardHistory.size(); i++)
+  for (size_t j = 0; j < _rewardHistory.size(); j++)
   {
-   _QExperiment["Variables"][expVar]["Training Data"][i] = _rewardHistory[i];
-   _QExperiment["Variables"][expVar]["Validation Data"][i] = _rewardHistory[i];
+   _QExperiment["Variables"][expVar]["Training Data"][j] = _rewardHistory[j];
+   _QExperiment["Variables"][expVar]["Validation Data"][j] = _rewardHistory[j];
   }
 
   _QEngine.run(_QExperiment);
+}
 
-  printf("Updated NN\n");
-  exit(0);
+void DQN::getAction(std::vector<double>& action, const std::vector<double>& state) const
+{
+ // Getting p = U[0,1] for the epsilon strategy
+  double p = _uniformGenerator->getRandomNumber();
+
+  // If p < e, then we choose the action randomly, with a uniform probability, among all possible actions.
+  if (p < 1.0) //if (p < _epsilon)
+  {
+   for (size_t i = 0; i < action.size(); i++)
+   {
+    size_t varIdx = _problem->_actionVectorIndexes[i];
+    double lowerBound = _k->_variables[varIdx]->_lowerBound;
+    double upperBound = _k->_variables[varIdx]->_upperBound;
+    double x = _uniformGenerator->getRandomNumber();
+    action[i] = lowerBound + x*(upperBound - lowerBound);
+   }
+  }
 }
 
 } // namespace solver

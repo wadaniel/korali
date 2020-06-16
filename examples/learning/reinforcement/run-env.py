@@ -31,6 +31,8 @@ e["Variables"][0]["Type"] = "State"
 
 e["Variables"][1]["Name"] = "Y"
 e["Variables"][1]["Type"] = "Action"
+e["Variables"][1]["Lower Bound"] = -100.0
+e["Variables"][1]["Upper Bound"] = +100.0
 
 ### Using a neural network solver (deep learning) for inference
 

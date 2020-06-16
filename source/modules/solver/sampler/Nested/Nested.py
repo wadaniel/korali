@@ -106,15 +106,20 @@ def plot(genList, args):
       lastGen = genList[i]['Current Generation']
 
   numdim = len(genList[lastGen]['Variables'])
-  samples = genList[lastGen]['Solver']['Posterior Sample Database']
+  samples = np.array(genList[lastGen]['Solver']['Posterior Sample Database'])
+
+  isFinite = [ ~np.isnan(s-s).any() for s in samples ] # Filter trick
+  samples  = samples[isFinite]
   
   lpr = np.array(genList[lastGen]['Solver']['Posterior Sample LogPrior Database'])
+  lpr = lpr[isFinite]
   llk = np.array(genList[lastGen]['Solver']['Posterior Sample LogLikelihood Database'])
+  llk = llk[isFinite]
   lpo = (llk + lpr).tolist()
-  lpo, samples = zip(*(sorted(zip(lpo, samples))))
-  
-  numentries = len(samples)
 
+  lpo, samples = zip(*(sorted(zip(lpo, samples))))
+  numentries   = len(samples)
+  
   fig, ax = plt.subplots(numdim, numdim, figsize=(8, 8))
   samplesTmp = np.reshape(samples, (numentries, numdim))
   plt.suptitle(

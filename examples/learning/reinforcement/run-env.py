@@ -41,7 +41,7 @@ e["Solver"]["Type"] = "DQN"
 e["Solver"]["Neural Network"]["Optimizer"]["Type"] = "Optimizer/Adam"
 
 e["Solver"]["Neural Network"]["Layers"][0]["Type"] = "Input"
-e["Solver"]["Neural Network"]["Layers"][0]["Node Count"] = 1
+e["Solver"]["Neural Network"]["Layers"][0]["Node Count"] = 2
 e["Solver"]["Neural Network"]["Layers"][0]["Activation Function"] = "Identity"
 
 e["Solver"]["Neural Network"]["Layers"][1]["Type"] = "Dense"

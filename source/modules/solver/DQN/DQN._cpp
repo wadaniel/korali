@@ -15,14 +15,31 @@ void DQN::initialize()
   _QExperiment["Solver"]["Type"] = "Deep Learner";
   _neuralNetwork->getConfiguration(_QExperiment["Solver"]["Neural Network"]);
 
-  for (size_t i = 0; i < _k->_variables.size(); i++)
+  size_t expVar = 0;
+  for (size_t i = 0; i < _problem->_stateVectorSize; i++)
   {
-   _QExperiment["Variables"][i]["Name"] = _k->_variables[i]->_name;
-   _QExperiment["Variables"][i]["Training Data"] = { 0.0 };
-   _QExperiment["Variables"][i]["Validation Data"] = { 0.0 };
-   if (_k->_variables[i]->_type == "State") _QExperiment["Variables"][i]["Type"] = "Input";
-   if (_k->_variables[i]->_type == "Action") _QExperiment["Variables"][i]["Type"] = "Output";
+   size_t varIdx = _problem->_stateVectorIndexes[i];
+   _QExperiment["Variables"][expVar]["Name"] = _k->_variables[varIdx]->_name;
+   _QExperiment["Variables"][expVar]["Type"] = "Input";
+   _QExperiment["Variables"][expVar]["Training Data"] = { 0.0 };
+   _QExperiment["Variables"][expVar]["Validation Data"] = { 0.0 };
+   expVar++;
   }
+
+  for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+  {
+   size_t varIdx = _problem->_actionVectorIndexes[i];
+   _QExperiment["Variables"][expVar]["Name"] = _k->_variables[varIdx]->_name;
+   _QExperiment["Variables"][expVar]["Type"] = "Input";
+   _QExperiment["Variables"][expVar]["Training Data"] = { 0.0 };
+   _QExperiment["Variables"][expVar]["Validation Data"] = { 0.0 };
+   expVar++;
+  }
+
+  _QExperiment["Variables"][expVar]["Name"] = "Q";
+  _QExperiment["Variables"][expVar]["Type"] = "Output";
+  _QExperiment["Variables"][expVar]["Training Data"] = { 0.0 };
+  _QExperiment["Variables"][expVar]["Validation Data"] = { 0.0 };
 
   _QExperiment["Console Output"]["Frequency"] = 5000;
   _QExperiment["File Output"]["Enabled"] = false;
@@ -148,23 +165,37 @@ void DQN::runGeneration()
    printf(" + Reward %.3lu: %f\n", i, _rewardHistory[i]);
   }
 
+  size_t expVar = 0;
   for (size_t i = 0; i < _stateHistory.size(); i++)
+  {
    for (size_t j = 0; j < _stateHistory[i].size(); j++)
    {
-     size_t varIdx = _problem->_stateVectorIndexes[j];
-    _QExperiment["Variables"][varIdx]["Training Data"][j] = _stateHistory[i][j];
-    _QExperiment["Variables"][varIdx]["Validation Data"][j] = _stateHistory[i][j];
+    _QExperiment["Variables"][expVar]["Training Data"][j] = _stateHistory[i][j];
+    _QExperiment["Variables"][expVar]["Validation Data"][j] = _stateHistory[i][j];
    }
+   expVar++;
+  }
 
   for (size_t i = 0; i < _actionHistory.size(); i++)
+  {
    for (size_t j = 0; j < _actionHistory[i].size(); j++)
    {
-    size_t varIdx = _problem->_actionVectorIndexes[j];
-    _QExperiment["Variables"][varIdx]["Training Data"][j] = _actionHistory[i][j];
-    _QExperiment["Variables"][varIdx]["Validation Data"][j] = _actionHistory[i][j];
+    _QExperiment["Variables"][expVar]["Training Data"][j] = _actionHistory[i][j];
+    _QExperiment["Variables"][expVar]["Validation Data"][j] = _actionHistory[i][j];
    }
+   expVar++;
+  }
 
-  _QEngine.resume(_QExperiment);
+  for (size_t i = 0; i < _rewardHistory.size(); i++)
+  {
+   _QExperiment["Variables"][expVar]["Training Data"][i] = _rewardHistory[i];
+   _QExperiment["Variables"][expVar]["Validation Data"][i] = _rewardHistory[i];
+  }
+
+  _QEngine.run(_QExperiment);
+
+  printf("Updated NN\n");
+  exit(0);
 }
 
 } // namespace solver

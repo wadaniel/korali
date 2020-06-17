@@ -67,29 +67,29 @@ void DQN::initialize()
   *********************************************************************/
 
   // Creating evaluation lambda function for optimization
-  auto fc = [nn = _neuralNetwork](Sample &sample) { nn->evaluateInputs(sample); };
-
-  _AExperiment["Problem"]["Type"] = "Optimization";
-  _AExperiment["Problem"]["Objective Function"] = fc;
-  _AExperiment["Solver"]["Type"] = "CMAES";
-
-  for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-  {
-   size_t varIdx = _problem->_actionVectorIndexes[i];
-   _AExperiment["Variables"][i]["Name"] = _k->_variables[varIdx]->_name;
-   _AExperiment["Variables"][i]["Lower Bound"] = _k->_variables[varIdx]->_lowerBound;
-   _AExperiment["Variables"][i]["Upper Bound"] = _k->_variables[varIdx]->_upperBound;
-  }
-
-  _AExperiment["Console Output"]["Frequency"] = 1;
-  _AExperiment["File Output"]["Enabled"] = false;
-
-  // Running initialization to verify that the configuration is correct
-  _AEngine.initialize(_AExperiment);
-
-  // Setting termination criterion
-  if (_maxEpisodes > _problem->_initialStateCount || _maxEpisodes == 0)
-   _maxEpisodes = _problem->_initialStateCount;
+//  auto fc = [nn = _neuralNetwork](Sample &sample) { nn->evaluateInputs(sample); };
+//
+//  _AExperiment["Problem"]["Type"] = "Optimization";
+//  _AExperiment["Problem"]["Objective Function"] = fc;
+//  _AExperiment["Solver"]["Type"] = "CMAES";
+//
+//  for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+//  {
+//   size_t varIdx = _problem->_actionVectorIndexes[i];
+//   _AExperiment["Variables"][i]["Name"] = _k->_variables[varIdx]->_name;
+//   _AExperiment["Variables"][i]["Lower Bound"] = _k->_variables[varIdx]->_lowerBound;
+//   _AExperiment["Variables"][i]["Upper Bound"] = _k->_variables[varIdx]->_upperBound;
+//  }
+//
+//  _AExperiment["Console Output"]["Frequency"] = 1;
+//  _AExperiment["File Output"]["Enabled"] = false;
+//
+//  // Running initialization to verify that the configuration is correct
+//  _AEngine.initialize(_AExperiment);
+//
+//  // Setting termination criterion
+//  if (_maxEpisodes > _problem->_initialStateCount || _maxEpisodes == 0)
+//   _maxEpisodes = _problem->_initialStateCount;
 }
 
 void DQN::setInitialConfiguration()

@@ -34,7 +34,7 @@ class DeepLearner : public Solver
   * @param sample The sample containing proposal NN weight/bias configuration.
   * @param solution Solution values from which to calculate loss and differentials
   */
-  void evaluateWeightsAndBiases(korali::Sample &sample, NeuralNetwork* nn, const std::vector<std::vector<double>>& solution);
+  void evaluateWeightsAndBiases(korali::Sample &sample, NeuralNetwork* nn, const std::vector<std::vector<double>>& solution, bool getGradients = false);
 
   std::vector<std::vector<double>> evaluate(const std::vector<std::vector<double>> &inputBatch) override;
 

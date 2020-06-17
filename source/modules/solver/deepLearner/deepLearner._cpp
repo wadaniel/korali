@@ -30,7 +30,6 @@ void DeepLearner::initialize()
   _trainingNeuralNetwork->_inputValues = _problem->_trainingInput;
 
   // Creating Training Neural Network internal structures
-  _trainingNeuralNetwork->_operation = "Training";
   _trainingNeuralNetwork->initialize();
   _trainingNeuralNetwork->create();
 
@@ -41,7 +40,6 @@ void DeepLearner::initialize()
   _validationNeuralNetwork->_inputValues = _problem->_validationInput;
 
   // Creating Validation Neural Network internal structures, keeping normalization from training NN
-  _validationNeuralNetwork->_operation = "Inference";
   _validationNeuralNetwork->initialize();
   _validationNeuralNetwork->create();
 
@@ -54,7 +52,7 @@ void DeepLearner::initialize()
    *****************************************************************/
 
   // Creating evaluation lambda function for optimization
-  auto fc = [this, nn = _trainingNeuralNetwork, sol = _problem->_trainingSolution](Sample &sample) { this->evaluateWeightsAndBiases(sample, nn, sol); };
+  auto fc = [this, nn = _trainingNeuralNetwork, sol = _problem->_trainingSolution](Sample &sample) { this->evaluateWeightsAndBiases(sample, nn, sol, true); };
 
   _optExperiment["Problem"]["Type"] = "Optimization";
   _optExperiment["Problem"]["Objective Function"] = fc;
@@ -190,7 +188,7 @@ void DeepLearner::printGenerationAfter()
   _k->_logger->logInfo("Normal", "Inactive Step Counter: %lu\n", _currentInactiveSteps);
 }
 
-void DeepLearner::evaluateWeightsAndBiases(Sample &sample, NeuralNetwork* nn, const std::vector<std::vector<double>>& solution)
+void DeepLearner::evaluateWeightsAndBiases(Sample &sample, NeuralNetwork* nn, const std::vector<std::vector<double>>& solution, bool getGradients)
 {
   // Setting weights and biases
   auto parameters = KORALI_GET(std::vector<double>, sample, "Parameters");
@@ -245,34 +243,34 @@ void DeepLearner::evaluateWeightsAndBiases(Sample &sample, NeuralNetwork* nn, co
   // Saving the negative of the error because we want to minimize it
   sample["F(x)"] = -meanSquaredError;
 
-  if (nn->_operation == "Training")
+  if (getGradients)
   {
-    // Running backward propagation
-    nn->backward(outputDiff);
+   // Running backward propagation
+   nn->backward(outputDiff);
 
-    // Copying back the gradients and biases back
-    std::vector<double> gradientVector(currentVariable);
-    currentVariable = 0;
-    for (size_t i = 1; i < nn->_layers.size(); i++)
-    {
-      nn->_layers[i]->_weights.resize(nn->_layers[i]->_nodeCount);
-      nn->_layers[i]->_bias.resize(nn->_layers[i]->_nodeCount);
+   // Copying back the gradients and biases back
+   std::vector<double> gradientVector(currentVariable);
+   currentVariable = 0;
+   for (size_t i = 1; i < nn->_layers.size(); i++)
+   {
+     nn->_layers[i]->_weights.resize(nn->_layers[i]->_nodeCount);
+     nn->_layers[i]->_bias.resize(nn->_layers[i]->_nodeCount);
 
-      // Adding layer's weights
-      for (size_t j = 0; j < nn->_layers[i]->_nodeCount; j++)
-      {
-        nn->_layers[i]->_weights[j].resize(nn->_layers[i - 1]->_nodeCount);
+     // Adding layer's weights
+     for (size_t j = 0; j < nn->_layers[i]->_nodeCount; j++)
+     {
+       nn->_layers[i]->_weights[j].resize(nn->_layers[i - 1]->_nodeCount);
 
-        for (size_t k = 0; k < nn->_layers[i - 1]->_nodeCount; k++)
-          gradientVector[currentVariable++] = nn->_layers[i]->_weights[j][k];
-      }
+       for (size_t k = 0; k < nn->_layers[i - 1]->_nodeCount; k++)
+         gradientVector[currentVariable++] = nn->_layers[i]->_weights[j][k];
+     }
 
-      // Adding layer's biases
-      for (size_t j = 0; j < nn->_layers[i]->_nodeCount; j++)
-        gradientVector[currentVariable++] = nn->_layers[i]->_bias[j];
-    }
+     // Adding layer's biases
+     for (size_t j = 0; j < nn->_layers[i]->_nodeCount; j++)
+       gradientVector[currentVariable++] = nn->_layers[i]->_bias[j];
+   }
 
-    sample["Gradient"] = gradientVector;
+   sample["Gradient"] = gradientVector;
   }
 }
 

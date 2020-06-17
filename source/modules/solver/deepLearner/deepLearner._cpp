@@ -246,24 +246,17 @@ void DeepLearner::evaluateWeightsAndBiases(Sample &sample, NeuralNetwork* nn, co
   if (getGradients)
   {
    // Running backward propagation
-   nn->backward(outputDiff);
+   nn->backwardWeightsAndBias(outputDiff);
 
    // Copying back the gradients and biases back
    std::vector<double> gradientVector(currentVariable);
    currentVariable = 0;
    for (size_t i = 1; i < nn->_layers.size(); i++)
    {
-     nn->_layers[i]->_weights.resize(nn->_layers[i]->_nodeCount);
-     nn->_layers[i]->_bias.resize(nn->_layers[i]->_nodeCount);
-
      // Adding layer's weights
      for (size_t j = 0; j < nn->_layers[i]->_nodeCount; j++)
-     {
-       nn->_layers[i]->_weights[j].resize(nn->_layers[i - 1]->_nodeCount);
-
        for (size_t k = 0; k < nn->_layers[i - 1]->_nodeCount; k++)
          gradientVector[currentVariable++] = nn->_layers[i]->_weights[j][k];
-     }
 
      // Adding layer's biases
      for (size_t j = 0; j < nn->_layers[i]->_nodeCount; j++)

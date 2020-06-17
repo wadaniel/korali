@@ -44,6 +44,16 @@ class Layer : public Module
   dnnl::memory _biasMem;
 
   /**
+   * @brief oneDNN Memory object descriptor to contain the gradient of the weights
+   */
+  dnnl::memory _weightsDiffMem;
+
+  /**
+   * @brief oneDNN Memory object descriptor to contain the gradient of the biases
+   */
+  dnnl::memory _biasDiffMem;
+
+  /**
    * @brief oneDNN Gradients of the operation wrt to Data
    */
   dnnl::memory _dataDiffMem;

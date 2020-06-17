@@ -54,10 +54,16 @@ class NeuralNetwork : public Module
   void forward();
 
   /**
-   * @brief Forward-propagates to find out the gradients of the weights and biases.
+   * @brief Backward-propagates to find out the gradients of the weights and biases.
    * @param outputDifferential The differential of the output wrt the solution
   */
-  void backward(std::vector<float>& outputDifferential);
+  void backwardWeightsAndBias(std::vector<float>& outputDifferential);
+
+  /**
+   * @brief Backward-propagates to find out the gradients of the input data.
+   * @param outputDifferential The differential of the output wrt the solution
+  */
+  void backwardData(std::vector<float>& outputDifferential);
 
   /**
    * @brief Creator that sets initialized flag to false

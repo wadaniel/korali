@@ -16,6 +16,7 @@
 #include <random> // std::default_random_engine
 
 #define L2DIST
+#define RNDAX
 
 namespace korali
 {
@@ -98,6 +99,7 @@ void Nested::setInitialConfiguration()
   _logEvidenceVar = 0.;
   _information = 0.;
   _lastAccepted = 0;
+  _nextUpdate = 0;
   _acceptedSamples = 0;
   _generatedSamples = 0;
   _lStarOld = std::numeric_limits<double>::lowest();
@@ -132,13 +134,14 @@ void Nested::runGeneration()
 
   // Generation > 1
   bool accepted;
-  prepareGeneration();
+  _lastAccepted = 0;
   std::vector<double> sample;
+  std::vector<Sample> samples(_batchSize);
 
   do
   {
+    updateBounds();
     generateCandidates();
-    std::vector<Sample> samples(_batchSize);
 
     for (size_t c = 0; c < _batchSize; c++)
     {
@@ -163,7 +166,7 @@ void Nested::runGeneration()
 
       finishedCandidatesCount++;
     }
-
+    
     _lastAccepted++;
     accepted = processGeneration();
 
@@ -213,11 +216,12 @@ void Nested::runFirstGeneration()
   return;
 }
 
-void Nested::prepareGeneration()
+void Nested::updateBounds()
 {
-  if (_k->_currentGeneration > 3 && (_k->_currentGeneration % _proposalUpdateFrequency) != 0) return;
-
-  _lastAccepted = 0;
+  if (_generatedSamples < _nextUpdate) return;
+  
+  _nextUpdate+=_proposalUpdateFrequency;
+  
   if (_resamplingMethod == "Box")
   {
     updateBox();
@@ -379,7 +383,7 @@ void Nested::generateCandidatesFromMultiEllipse()
     double rnd_ellipse = _uniformGenerator->getRandomNumber() * totalVol;
 
     ellipse_t *ellipse_ptr;
-    for (auto &ellipse : _ellipseVector)
+    for (auto& ellipse : _ellipseVector)
     {
       cumVol += ellipse.volume;
       if (rnd_ellipse < cumVol)
@@ -426,9 +430,8 @@ void Nested::updateBox()
 
 void Nested::sortLiveSamplesAscending()
 {
-  //TODO: speed up
   std::iota(_liveSamplesRank.begin(), _liveSamplesRank.end(), 0);
-  stable_sort(_liveSamplesRank.begin(), _liveSamplesRank.end(), [this](const size_t &idx1, const size_t &idx2) -> bool { return this->_liveLogLikelihoods[idx1] < this->_liveLogLikelihoods[idx2]; });
+  sort(_liveSamplesRank.begin(), _liveSamplesRank.end(), [this](const size_t &idx1, const size_t &idx2) -> bool { return this->_liveLogLikelihoods[idx1] < this->_liveLogLikelihoods[idx2]; });
 }
 
 void Nested::updateSampleDatabase(size_t sampleIdx)
@@ -436,6 +439,7 @@ void Nested::updateSampleDatabase(size_t sampleIdx)
   _databaseEntries++;
   _sampleDatabase.push_back(_liveSamples[sampleIdx]);
   priorTransform(_sampleDatabase.back());
+  
   _sampleLogPriorDatabase.push_back(_liveLogPriors[sampleIdx]);
   _sampleLogLikelihoodDatabase.push_back(_liveLogLikelihoods[sampleIdx]);
   _sampleLogWeightDatabase.push_back(_logWeight);
@@ -525,13 +529,16 @@ double Nested::l2distance(const std::vector<double> &sampleOne, const std::vecto
 
 bool Nested::updateEllipse(ellipse_t &ellipse) const
 {
-  if (ellipse.num <= ellipse.dim) return false;
-
-  bool good = true;
+  if (ellipse.num == 0) return false;
   
+  if (ellipse.num <= ellipse.dim) 
+  {
+    _k->_logger->logWarning("Normal", "Can't update ellipsoid, not enough samples (%zu, required %zu).\n", ellipse.num, ellipse.dim+1);
+  }
+      
   updateEllipseMean(ellipse);
-  good = updateEllipseCov(ellipse);
-  if(good) good = updateEllipseVolume(ellipse);
+  bool good = updateEllipseCov(ellipse);
+  if (good) good = updateEllipseVolume(ellipse);
   
   return good;
 }
@@ -553,17 +560,17 @@ void Nested::updateMultiEllipse()
     
     okCluster = kmeansClustering(ellipse, 100, one, two);
 
-#ifdef L2DIST
-    if(okCluster)
-    {
-      okOne = updateEllipse(one);
-      okTwo = updateEllipse(two);
-    }
-#else
+#ifdef WMDIST
     if(okCluster)
     {
       okOne = updateEllipseVolume(one);
       okTwo = updateEllipseVolume(two);
+    }
+#else
+    if(okCluster)
+    {
+      okOne = updateEllipse(one);
+      okTwo = updateEllipse(two);
     }
 #endif
 
@@ -611,46 +618,64 @@ void Nested::updateEllipseMean(ellipse_t &ellipse) const
 
 bool Nested::updateEllipseCov(ellipse_t &ellipse) const
 {
-  
-  if (ellipse.num <= ellipse.dim) return false;
-
-  // update covariance
   double weight = 1.0 / (ellipse.num - 1.0);
-  for (size_t i = 0; i < _dimensions; i++)
+  
+  if (ellipse.num <= ellipse.dim)
   {
-    for (size_t j = i; j < _dimensions; ++j)
-    {
-      double c = 0.0;
-      for (size_t k = 0; k < ellipse.num; ++k)
+      // update variance
+      std::fill(ellipse.cov.begin(), ellipse.cov.end(), 0.);
+      std::fill(ellipse.invCov.begin(), ellipse.invCov.end(), 0.);
+      for (size_t d = 0; d < _dimensions; ++d)
       {
-        size_t sidx = ellipse.sampleIdx[k];
-        c += (_liveSamples[sidx][i] - ellipse.mean[i]) * (_liveSamples[sidx][j] - ellipse.mean[j]);
+         double c = 0.0;
+         for (size_t k = 0; k < ellipse.num; ++k)
+         {
+            size_t sidx = ellipse.sampleIdx[k];
+            c += (_liveSamples[sidx][d] - ellipse.mean[d]) * (_liveSamples[sidx][d] - ellipse.mean[d]);
+            ellipse.cov[d*_dimensions + d] = (ellipse.num == 1) ? 1.0 : weight * c;
+            ellipse.invCov[d*_dimensions + d] = (ellipse.num == 1) ? 1.0 : 1./(weight * c);
+         }
       }
-      ellipse.cov[j * _dimensions + i] = ellipse.cov[i * _dimensions + j] = weight * c;
-    }
   }
-
-  // update inverse covariance
-  gsl_matrix_view cov = gsl_matrix_view_array(ellipse.cov.data(), _dimensions, _dimensions);
-
-  gsl_matrix *matLU = gsl_matrix_alloc(_dimensions, _dimensions);
-  gsl_matrix_memcpy(matLU, &cov.matrix);
-
-  int signal;
-  gsl_permutation *perm = gsl_permutation_alloc(_dimensions);
-  gsl_linalg_LU_decomp(matLU, perm, &signal);
-
-  std::fill(ellipse.invCov.begin(), ellipse.invCov.end(), 0.);
-  gsl_matrix_view invCov = gsl_matrix_view_array(ellipse.invCov.data(), _dimensions, _dimensions);
-
-  int status = gsl_linalg_LU_invert(matLU, perm, &invCov.matrix);
-  gsl_permutation_free(perm);
-  gsl_matrix_free(matLU);
- 
-  if (status != 0)
+  else
   {
-    _k->_logger->logWarning("Normal", "Covariance inversion failed during ellipsoid covariance update.\n");
-    return false;
+      // update covariance
+      for (size_t i = 0; i < _dimensions; ++i)
+      {
+        for (size_t j = i; j < _dimensions; ++j)
+        {
+          double c = 0.0;
+          for (size_t k = 0; k < ellipse.num; ++k)
+          {
+            size_t sidx = ellipse.sampleIdx[k];
+            c += (_liveSamples[sidx][i] - ellipse.mean[i]) * (_liveSamples[sidx][j] - ellipse.mean[j]);
+          }
+          ellipse.cov[j * _dimensions + i] = ellipse.cov[i * _dimensions + j] = weight * c;
+        }
+      }
+
+      // update inverse covariance
+      gsl_matrix_view cov = gsl_matrix_view_array(ellipse.cov.data(), _dimensions, _dimensions);
+
+      gsl_matrix *matLU = gsl_matrix_alloc(_dimensions, _dimensions);
+      gsl_matrix_memcpy(matLU, &cov.matrix);
+
+      int signal;
+      gsl_permutation *perm = gsl_permutation_alloc(_dimensions);
+      gsl_linalg_LU_decomp(matLU, perm, &signal);
+
+      std::fill(ellipse.invCov.begin(), ellipse.invCov.end(), 0.);
+      gsl_matrix_view invCov = gsl_matrix_view_array(ellipse.invCov.data(), _dimensions, _dimensions);
+
+      int status = gsl_linalg_LU_invert(matLU, perm, &invCov.matrix);
+      gsl_permutation_free(perm);
+      gsl_matrix_free(matLU);
+     
+      if (status != 0)
+      {
+        _k->_logger->logWarning("Normal", "Covariance inversion failed during ellipsoid covariance update.\n");
+        return false;
+      }
   }
 
   return true;
@@ -660,8 +685,8 @@ bool Nested::updateEllipseCov(ellipse_t &ellipse) const
 bool Nested::updateEllipseVolume(ellipse_t &ellipse) const
 {
     
-  if (ellipse.num <= ellipse.dim) return false;
-  
+  if (ellipse.num == 0) return false;
+
   gsl_matrix_view cov = gsl_matrix_view_array(ellipse.cov.data(), _dimensions, _dimensions);
 
   gsl_matrix *matLU = gsl_matrix_alloc(_dimensions, _dimensions);
@@ -792,10 +817,25 @@ bool Nested::kmeansClustering(const ellipse_t &parent, size_t maxIter, ellipse_t
   childOne.volume = 1.0; childOne.pointVolume = 1.0;
   childTwo.volume = 1.0; childTwo.pointVolume = 1.0;
 #endif
+
+  size_t ax = 0;
+#ifdef RNDAX
+  double totlen = 0.0;
+  for(double ev : parent.evals) totlen += ev;
+
+  double cumlen = 0.0;
+  double rnd = _uniformGenerator->getRandomNumber();
+  for(size_t d = 0; d < _dimensions; ++d)
+  {
+      cumlen += parent.evals[d]/totlen;
+      if (rnd < cumlen) { ax = d; break; }
+  }
+#endif
+
   for (size_t d = 0; d < _dimensions; ++d)
   {
-    childOne.mean[d] = parent.mean[d] + parent.paxes[d * _dimensions] * parent.evals[0];
-    childTwo.mean[d] = parent.mean[d] - parent.paxes[d * _dimensions] * parent.evals[0];
+    childOne.mean[d] = parent.mean[d] + parent.paxes[d * _dimensions + ax] * parent.evals[ax];
+    childTwo.mean[d] = parent.mean[d] - parent.paxes[d * _dimensions + ax] * parent.evals[ax];
   }
 
   size_t nOne, nTwo, idxOne, idxTwo;
@@ -872,10 +912,11 @@ bool Nested::kmeansClustering(const ellipse_t &parent, size_t maxIter, ellipse_t
   return ok;
 }
 
-double Nested::updateEffectiveSamples()
+void Nested::updateEffectiveSamples()
 {
-  _sumLogWeights = safeLogPlus(_sumLogWeights, _sampleLogWeightDatabase.back());
-  _sumSquareLogWeights = safeLogPlus(_sumSquareLogWeights, 2.0*_sampleLogWeightDatabase.back());
+  double w = _sampleLogWeightDatabase.back();
+  _sumLogWeights = safeLogPlus(_sumLogWeights, w);
+  _sumSquareLogWeights = safeLogPlus(_sumSquareLogWeights, 2.0*w);
   _effectiveSampleSize = exp(2.0*_sumLogWeights - _sumSquareLogWeights);
 }
 

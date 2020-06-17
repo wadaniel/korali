@@ -99,9 +99,9 @@ class Nested : public Sampler
   void runFirstGeneration();
 
   /*
-  * @brief Prepare Generation before evaluation, update proposals.
+  * @brief Update the Bounds (Box, Ellipsoid or Multi Ellipsoid).
   */
-  void prepareGeneration();
+  void updateBounds();
 
   /*
    * @brief Transformation from unit domain into prior domain.
@@ -222,7 +222,7 @@ class Nested : public Sampler
   * @brief Calculate effective number of samples.
   * @return the number of effective samples
   */
-  double updateEffectiveSamples();
+  void updateEffectiveSamples();
 
  /*
   * @brief Checks if sample is inside d dimensional unit cube.

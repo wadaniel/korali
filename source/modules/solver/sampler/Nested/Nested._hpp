@@ -139,6 +139,11 @@ class Nested : public Sampler
   bool processGeneration();
 
   /*
+   * @brief Caclculate volume of bounds.
+  */
+  void setBoundsVolume();
+
+  /*
   * @brief Add all live samples to sample data base.
   */
   void consumeLiveSamples();
@@ -214,15 +219,10 @@ class Nested : public Sampler
   double weightedMahalanobisDistance(const std::vector<double> &sample, const ellipse_t &ellipse) const;
 
   /*
-  * @brief Reassigns samples from parent to childs based on weighted Mahalanobis distance.
-  */
-  size_t reassignSamples(ellipse_t &childOne, ellipse_t &childTwo) const;
-
-  /*
   * @brief Calculate effective number of samples.
   * @return the number of effective samples
   */
-  double calcEffectiveSamples() const;
+  double updateEffectiveSamples();
 
  /*
   * @brief Checks if sample is inside d dimensional unit cube.

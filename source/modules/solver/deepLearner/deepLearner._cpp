@@ -14,70 +14,105 @@ void DeepLearner::initialize()
   if (_problem->_trainingBatchSize == 0) KORALI_LOG_ERROR("Training data has not been provided for variable 0.\n");
   if (_problem->_validationBatchSize == 0) KORALI_LOG_ERROR("Validation data has not been provided for variable 0.\n");
 
+  /*****************************************************************
+   * Setting up Training and Validation networks
+   *****************************************************************/
+
+//  // Setting NN's input and output dimensions
+  size_t outputLayerId = _neuralNetwork->_layers.size() - 1;
+  _neuralNetwork->_layers[0]->_nodeCount = _problem->_inputVectorSize;
+  _neuralNetwork->_layers[outputLayerId]->_nodeCount = _problem->_solutionVectorSize;
+
   // Setting training NN
   _trainingNeuralNetwork = dynamic_cast<NeuralNetwork *>(Module::duplicate(_neuralNetwork));
 
   // Setting input training data
-  _trainingNeuralNetwork->_layers[0]->_nodeValues.resize(_problem->_trainingBatchSize);
-  for (size_t i = 0; i < _problem->_trainingBatchSize; i++)
-  {
-    _trainingNeuralNetwork->_layers[0]->_nodeValues[i].resize(_problem->_inputVectorSize);
-    for (size_t j = 0; j < _problem->_inputVectorSize; j++)
-    {
-      size_t varIdx = _problem->_inputVectorIndexes[j];
-      _trainingNeuralNetwork->_layers[0]->_nodeValues[i][j] = _k->_variables[varIdx]->_trainingData[i];
-    }
-  }
-
-  // Setting Solution for NN training and validation
-  _trainingNeuralNetwork->_solution.resize(_problem->_trainingBatchSize);
-  for (size_t i = 0; i < _problem->_trainingBatchSize; i++)
-  {
-    _trainingNeuralNetwork->_solution[i].resize(_problem->_outputVectorSize);
-    for (size_t j = 0; j < _problem->_outputVectorSize; j++)
-    {
-      size_t varIdx = _problem->_outputVectorIndexes[j];
-      _trainingNeuralNetwork->_solution[i][j] = _k->_variables[varIdx]->_trainingData[i];
-    }
-  }
+  _trainingNeuralNetwork->_inputValues = _problem->_trainingInput;
 
   // Creating Training Neural Network internal structures
   _trainingNeuralNetwork->_operation = "Training";
+  _trainingNeuralNetwork->initialize();
   _trainingNeuralNetwork->create();
 
   // Creating Validation NN
   _validationNeuralNetwork = dynamic_cast<NeuralNetwork *>(Module::duplicate(_trainingNeuralNetwork));
-  _validationNeuralNetwork->_operation = "Inference";
 
   // Setting input validation data
-  _validationNeuralNetwork->_layers[0]->_nodeValues.resize(_problem->_validationBatchSize);
-  for (size_t i = 0; i < _problem->_validationBatchSize; i++)
-  {
-    _validationNeuralNetwork->_layers[0]->_nodeValues[i].resize(_problem->_inputVectorSize);
-    for (size_t j = 0; j < _problem->_inputVectorSize; j++)
-    {
-      size_t varIdx = _problem->_inputVectorIndexes[j];
-      _validationNeuralNetwork->_layers[0]->_nodeValues[i][j] = _k->_variables[varIdx]->_validationData[i];
-    }
-  }
-
-  _validationNeuralNetwork->_solution.resize(_problem->_validationBatchSize);
-  for (size_t i = 0; i < _problem->_validationBatchSize; i++)
-  {
-    _validationNeuralNetwork->_solution[i].resize(_problem->_outputVectorSize);
-    for (size_t j = 0; j < _problem->_outputVectorSize; j++)
-    {
-      size_t varIdx = _problem->_outputVectorIndexes[j];
-      _validationNeuralNetwork->_solution[i][j] = _k->_variables[varIdx]->_validationData[i];
-    }
-  }
+  _validationNeuralNetwork->_inputValues = _problem->_validationInput;
 
   // Creating Validation Neural Network internal structures, keeping normalization from training NN
-  _validationNeuralNetwork->create();
   _validationNeuralNetwork->_operation = "Inference";
+  _validationNeuralNetwork->initialize();
+  _validationNeuralNetwork->create();
 
   // Creating Test NN
   _testNeuralNetwork = dynamic_cast<NeuralNetwork *>(Module::duplicate(_neuralNetwork));
+  _testNeuralNetwork->initialize();
+
+  /*****************************************************************
+   * Setting up weight and bias optimization experiment
+   *****************************************************************/
+
+  // Creating evaluation lambda function for optimization
+  auto fc = [this, nn = _trainingNeuralNetwork, sol = _problem->_trainingSolution](Sample &sample) { this->evaluateWeightsAndBiases(sample, nn, sol); };
+
+  _optExperiment["Problem"]["Type"] = "Optimization";
+  _optExperiment["Problem"]["Objective Function"] = fc;
+
+  size_t currentVariable = 0;
+  for (size_t i = 1; i < _trainingNeuralNetwork->_layers.size(); i++)
+  {
+    // Setting value for this layer's xavier constant
+    double xavierConstant = sqrt(6.0) / sqrt(_trainingNeuralNetwork->_layers[i]->_nodeCount + _trainingNeuralNetwork->_layers[i - 1]->_nodeCount);
+
+    // Adding layer's weights
+    for (size_t j = 0; j < _trainingNeuralNetwork->_layers[i]->_nodeCount; j++)
+      for (size_t k = 0; k < _trainingNeuralNetwork->_layers[i - 1]->_nodeCount; k++)
+      {
+        char varName[512];
+        sprintf(varName, "Weight [%lu] %lu->%lu", i, j, k);
+        std::string varNameString(varName);
+
+        // Setting initial weight values
+        double initialGuess = 0.0;
+        if (_weightInitialization == "Xavier") initialGuess = xavierConstant * _uniformGenerator->getRandomNumber();
+
+        _optExperiment["Variables"][currentVariable]["Name"] = varNameString;
+        _optExperiment["Variables"][currentVariable]["Initial Value"] = initialGuess;
+        _optExperiment["Variables"][currentVariable]["Initial Mean"] = initialGuess;
+        _optExperiment["Variables"][currentVariable]["Initial Standard Deviation"] = 1.0;
+        currentVariable++;
+      }
+
+    // Adding layer's biases
+    for (size_t j = 0; j < _trainingNeuralNetwork->_layers[i]->_nodeCount; j++)
+    {
+      char varName[512];
+      sprintf(varName, "Bias [%lu] %lu", i, j);
+      std::string varNameString(varName);
+      _optExperiment["Variables"][currentVariable]["Name"] = varNameString;
+
+      // Setting initial biases values
+      double initialGuess = 0.0;
+      if (_weightInitialization == "Xavier") initialGuess = xavierConstant * _uniformGenerator->getRandomNumber();
+
+      _optExperiment["Variables"][currentVariable]["Initial Value"] = initialGuess;
+      _optExperiment["Variables"][currentVariable]["Initial Mean"] = initialGuess;
+      _optExperiment["Variables"][currentVariable]["Initial Standard Deviation"] = 1.0;
+      currentVariable++;
+    }
+  }
+
+  _optExperiment["Solver"] = _optimizer;
+
+  _optExperiment["File Output"]["Frequency"] = 0;
+  _optExperiment["File Output"]["Enabled"] = false;
+  _optExperiment["Console Output"]["Frequency"] = 0;
+  _optExperiment["Console Output"]["Verbosity"] = "Silent";
+  _optExperiment["Random Seed"] = _k->_randomSeed++;
+
+  // Running initialization to verify that the configuration is correct
+  _optEngine.initialize(_optExperiment);
 
 }
 
@@ -87,7 +122,19 @@ void DeepLearner::runGeneration()
   * Training Stage
   *************************************************************/
 
-  _trainingNeuralNetwork->train();
+  // Performs the training phase of the NN, given the solution and the NN's configuration.
+
+  _optExperiment["Solver"]["Termination Criteria"]["Max Generations"] = _optExperiment._currentGeneration + 1;
+  _optEngine.resume(_optExperiment);
+
+  // Setting input validation data
+  Sample newSample;
+
+  // Getting the (so far) optimal training parameters
+  newSample["Parameters"] = _optExperiment["Results"]["Best Sample"]["Parameters"];
+
+  // Getting results of optimization
+  _currentTrainingLoss = _optExperiment["Results"]["Best Sample"]["F(x)"].get<double>();
 
   /**************************************************************
   * Validation Stage
@@ -95,8 +142,8 @@ void DeepLearner::runGeneration()
 
   // Setting input validation data
   Sample validationSample;
-  validationSample["Parameters"] = _trainingNeuralNetwork->_validationParameters;
-  _validationNeuralNetwork->evaluateWeightsAndBiases(validationSample);
+  validationSample["Parameters"] = _optExperiment["Results"]["Best Sample"]["Parameters"];
+  evaluateWeightsAndBiases(validationSample, _validationNeuralNetwork, _problem->_validationSolution);
 
   // Getting results of optimization
   _currentValidationLoss = -KORALI_GET(double, validationSample, "F(x)");
@@ -116,14 +163,13 @@ void DeepLearner::runGeneration()
     _validationNeuralNetwork->getConfiguration(js);
     _testNeuralNetwork->_layers.clear();
     _testNeuralNetwork->setConfiguration(js);
-    _testNeuralNetwork->_solution.clear();
   }
 }
 
 std::vector<std::vector<double>> DeepLearner::evaluate(const std::vector<std::vector<double>> &inputBatch)
 {
   // Re-creating NN's internal structures
-  _testNeuralNetwork->_layers[0]->_nodeValues = inputBatch;
+  _testNeuralNetwork->_inputValues = inputBatch;
   _testNeuralNetwork->create();
 
   // Updating the network's weights and biases
@@ -132,17 +178,102 @@ std::vector<std::vector<double>> DeepLearner::evaluate(const std::vector<std::ve
   // Running the input values through the neural network
   _testNeuralNetwork->forward();
 
-  size_t outputLayerId = _testNeuralNetwork->_layers.size() - 1;
-  return _testNeuralNetwork->_layers[outputLayerId]->_nodeValues;
+  return _testNeuralNetwork->_outputValues;
 }
 
 void DeepLearner::printGenerationAfter()
 {
   // Printing results so far
-  _k->_logger->logInfo("Normal", "Training Loss: %.15f\n", _trainingNeuralNetwork->_currentTrainingLoss);
+  _k->_logger->logInfo("Normal", "Training Loss: %.15f\n", _currentTrainingLoss);
   _k->_logger->logInfo("Normal", "Current Validation Loss: %.15f\n", _currentValidationLoss);
   _k->_logger->logInfo("Normal", "Lowest Validation Loss: %.15f\n", _lowestValidationLoss);
   _k->_logger->logInfo("Normal", "Inactive Step Counter: %lu\n", _currentInactiveSteps);
+}
+
+void DeepLearner::evaluateWeightsAndBiases(Sample &sample, NeuralNetwork* nn, const std::vector<std::vector<double>>& solution)
+{
+  // Setting weights and biases
+  auto parameters = KORALI_GET(std::vector<double>, sample, "Parameters");
+
+  // Updating training network's weights and biases
+  size_t currentVariable = 0;
+  for (size_t i = 1; i < nn->_layers.size(); i++)
+  {
+   nn->_layers[i]->_weights.resize(nn->_layers[i]->_nodeCount);
+   nn->_layers[i]->_bias.resize(nn->_layers[i]->_nodeCount);
+
+    // Adding layer's weights
+    for (size_t j = 0; j < nn->_layers[i]->_nodeCount; j++)
+    {
+      nn->_layers[i]->_weights[j].resize(nn->_layers[i - 1]->_nodeCount);
+
+      for (size_t k = 0; k < nn->_layers[i - 1]->_nodeCount; k++)
+        nn->_layers[i]->_weights[j][k] = parameters[currentVariable++];
+    }
+
+    // Adding layer's biases
+    for (size_t j = 0; j < nn->_layers[i]->_nodeCount; j++)
+      nn->_layers[i]->_bias[j] = parameters[currentVariable++];
+  }
+
+  // Updating the trainingnetwork's weights and biases
+  nn->updateWeightsAndBias();
+
+  // Running the input values through the training neural network
+  nn->forward();
+
+  // Getting NN's dimensions
+  size_t batchSize = nn->_outputValues.size();
+  size_t outputSize = nn->_outputValues[0].size();
+
+  // Calculating mean square error
+  double meanSquaredError = 0.0;
+
+  // Saving values for the last layer's diff
+  std::vector<float> outputDiff(batchSize * outputSize);
+
+  for (size_t i = 0; i < batchSize; i++)
+    for (size_t j = 0; j < outputSize; j++)
+    {
+      double diff = solution[i][j] - nn->_outputValues[i][j];
+      outputDiff[i * outputSize + j] = diff;
+      meanSquaredError += diff * diff;
+    }
+
+  meanSquaredError = meanSquaredError / ((double)batchSize * 2);
+
+  // Saving the negative of the error because we want to minimize it
+  sample["F(x)"] = -meanSquaredError;
+
+  if (nn->_operation == "Training")
+  {
+    // Running backward propagation
+    nn->backward(outputDiff);
+
+    // Copying back the gradients and biases back
+    std::vector<double> gradientVector(currentVariable);
+    currentVariable = 0;
+    for (size_t i = 1; i < nn->_layers.size(); i++)
+    {
+      nn->_layers[i]->_weights.resize(nn->_layers[i]->_nodeCount);
+      nn->_layers[i]->_bias.resize(nn->_layers[i]->_nodeCount);
+
+      // Adding layer's weights
+      for (size_t j = 0; j < nn->_layers[i]->_nodeCount; j++)
+      {
+        nn->_layers[i]->_weights[j].resize(nn->_layers[i - 1]->_nodeCount);
+
+        for (size_t k = 0; k < nn->_layers[i - 1]->_nodeCount; k++)
+          gradientVector[currentVariable++] = nn->_layers[i]->_weights[j][k];
+      }
+
+      // Adding layer's biases
+      for (size_t j = 0; j < nn->_layers[i]->_nodeCount; j++)
+        gradientVector[currentVariable++] = nn->_layers[i]->_bias[j];
+    }
+
+    sample["Gradient"] = gradientVector;
+  }
 }
 
 } // namespace solver

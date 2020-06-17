@@ -11,11 +11,18 @@ k = korali.Engine()
 
 # Defining Training Sets
 np.random.seed(0xC0FFEE)
-trainingInputSet = np.random.uniform(0, 2 * np.pi, 500)
-validationInputSet = np.random.uniform(0, 2 * np.pi, 500)
 
-trainingOutputSet = np.sin(trainingInputSet) * scaling
-validationOutputSet = np.sin(validationInputSet) * scaling
+trainingInputSet = np.random.uniform(0, 2 * np.pi, 500)
+trainingSolutionSet = np.sin(trainingInputSet) * scaling
+
+validationInputSet = np.random.uniform(0, 2 * np.pi, 500)
+validationSolutionSet = np.sin(validationInputSet) * scaling
+
+trainingInputSet = [ [ i ] for i in trainingInputSet.tolist() ]
+trainingSolutionSet = [ [ i ] for i in trainingSolutionSet.tolist() ]
+
+validationInputSet = [ [ i ] for i in validationInputSet.tolist() ]
+validationSolutionSet = [ [ i ] for i in validationSolutionSet.tolist() ]
 
 e = korali.Experiment()
 
@@ -23,30 +30,27 @@ e = korali.Experiment()
 
 e["Problem"]["Type"] = "Supervised Learning"
 
-e["Variables"][0]["Name"] = "X"
-e["Variables"][0]["Type"] = "Input"
-e["Variables"][0]["Training Data"] = trainingInputSet.tolist()
-e["Variables"][0]["Validation Data"] = validationInputSet.tolist()
+e["Problem"]["Training"]["Input"] = trainingInputSet
+e["Problem"]["Training"]["Solution"] = trainingSolutionSet
 
-e["Variables"][1]["Name"] = "Sin(X)"
-e["Variables"][1]["Type"] = "Output"
-e["Variables"][1]["Training Data"] = trainingOutputSet.tolist()
-e["Variables"][1]["Validation Data"] = validationOutputSet.tolist()
+e["Problem"]["Validation"]["Input"] = validationInputSet
+e["Problem"]["Validation"]["Solution"] = validationSolutionSet
+
+e["Variables"][0]["Name"] = "tt"
 
 ### Using a neural network solver (deep learning) for inference
 
 e["Solver"]["Type"] = "Deep Learner"
+#e["Solver"]["Optimizer"]["Type"] = "Optimizer/CMAES"
+e["Solver"]["Optimizer"]["Type"] = "Optimizer/Adam"
+#e["Solver"]["Optimizer"]["Type"] = "Optimizer/Rprop"
+
 e["Solver"]["Termination Criteria"]["Max Inactive Steps"] = 1000
 e["Solver"]["Termination Criteria"]["Max Generations"] = 10000
 
 ### Defining the shape of the neural network
 
-#e["Solver"]["Neural Network"]["Optimizer"]["Type"] = "Optimizer/CMAES"
-e["Solver"]["Neural Network"]["Optimizer"]["Type"] = "Optimizer/Adam"
-#e["Solver"]["Neural Network"]["Optimizer"]["Type"] = "Optimizer/Rprop"
-
 e["Solver"]["Neural Network"]["Layers"][0]["Type"] = "Input"
-e["Solver"]["Neural Network"]["Layers"][0]["Node Count"] = 1
 e["Solver"]["Neural Network"]["Layers"][0]["Activation Function"] = "Identity"
 
 e["Solver"]["Neural Network"]["Layers"][1]["Type"] = "Dense"
@@ -54,7 +58,6 @@ e["Solver"]["Neural Network"]["Layers"][1]["Node Count"] = 5
 e["Solver"]["Neural Network"]["Layers"][1]["Activation Function"] = "Tanh"
 
 e["Solver"]["Neural Network"]["Layers"][2]["Type"] = "Output"
-e["Solver"]["Neural Network"]["Layers"][2]["Node Count"] = 1
 e["Solver"]["Neural Network"]["Layers"][2]["Activation Function"] = "Identity"
 
 e["Console Output"]["Frequency"] = 500

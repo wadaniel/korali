@@ -29,37 +29,14 @@ class NeuralNetwork : public Module
    */
   dnnl::stream _stream;
 
+  /**
+   * @brief Flag to make sure the NN is initialized before creating
+   */
+  bool _isInitialized;
+
 #endif
 
-  /**
-  * @brief Model function to evaluate a given NN weight/bias configuration
-  * @param sample The sample containing proposal NN weight/bias configuration.
-  */
-  void evaluateWeightsAndBiases(korali::Sample &sample);
-
-  /**
-   * @brief Model function to evaluate a given input.
-   * @param sample The sample containing the input.
-   */
-  void evaluateInputs(Sample &sample);
-
-  /**
- * @brief Korali engine for optimizing the NN's weights and biases
- */
-  korali::Engine _koraliEngine;
-
-  /**
- * @brief Korali engine for optimizing the NN's weights and biases
- */
-  korali::Experiment _koraliExperiment;
-
   void initialize() override;
-
-  /**
-   * @brief Performs the training phase of the NN, given a solution and the NN's configuration.
-   * @param stepsToRun The number of generations of the optimizer to run.
-   */
-  void train(const size_t stepsToRun = 1);
 
   /**
    * @brief Initializes the internal memory structures, with regards to the layer configuration of the network
@@ -78,8 +55,14 @@ class NeuralNetwork : public Module
 
   /**
    * @brief Forward-propagates to find out the gradients of the weights and biases.
+   * @param outputDifferential The differential of the output wrt the solution
   */
-  void backward();
+  void backward(std::vector<float>& outputDifferential);
+
+  /**
+   * @brief Creator that sets initialized flag to false
+   */
+  NeuralNetwork();
 };
 
 } // namespace korali

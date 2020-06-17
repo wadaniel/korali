@@ -232,6 +232,7 @@ def createSetConfiguration(module):
           getVariableOptions(v))
 
   if 'Variables Configuration' in module:
+    codeString += ' if (isDefined(_k->_js.getJson(), "Variables"))\n'
     codeString += ' for (size_t i = 0; i < _k->_js["Variables"].size(); i++) { \n'
     for v in module["Variables Configuration"]:
       codeString += consumeValue(
@@ -322,7 +323,8 @@ def createGetConfiguration(module):
   codeString += ' ' + module["Parent Class"] + '::getConfiguration(js);\n'
 
   if 'Experiment' == module['Name']:
-     codeString += ' js["Variables"] = _js["Variables"];\n'
+     codeString += ' if (isDefined(_js.getJson(), "Variables"))\n'
+     codeString += '   js["Variables"] = _js["Variables"];\n'
 
   codeString += '} \n\n'
 
@@ -359,8 +361,9 @@ def createApplyVariableDefaults(module):
     codeString += ' std::string defaultString = "' + json.dumps(
         module["Variable Defaults"]).replace('"', '\\"') + '";\n'
     codeString += ' knlohmann::json defaultJs = knlohmann::json::parse(defaultString);\n'
-    codeString += ' for (size_t i = 0; i < _k->_js["Variables"].size(); i++) \n'
-    codeString += '  mergeJson(_k->_js["Variables"][i], defaultJs); \n'
+    codeString += ' if (isDefined(_k->_js.getJson(), "Variables"))\n'
+    codeString += '  for (size_t i = 0; i < _k->_js["Variables"].size(); i++) \n'
+    codeString += '   mergeJson(_k->_js["Variables"][i], defaultJs); \n'
 
   codeString += ' ' + module["Parent Class"] + '::applyVariableDefaults();\n'
   codeString += '} \n\n'

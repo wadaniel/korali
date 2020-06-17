@@ -19,6 +19,23 @@ class DeepLearner : public Solver
  */
   problem::SupervisedLearning *_problem;
 
+  /**
+ * @brief Korali engine for optimizing the NN's weights and biases
+ */
+  korali::Engine _optEngine;
+
+  /**
+ * @brief Korali engine for optimizing the NN's weights and biases
+ */
+  korali::Experiment _optExperiment;
+
+  /**
+  * @brief Model function to evaluate a given NN weight/bias configuration
+  * @param sample The sample containing proposal NN weight/bias configuration.
+  * @param solution Solution values from which to calculate loss and differentials
+  */
+  void evaluateWeightsAndBiases(korali::Sample &sample, NeuralNetwork* nn, const std::vector<std::vector<double>>& solution);
+
   std::vector<std::vector<double>> evaluate(const std::vector<std::vector<double>> &inputBatch) override;
 
   void initialize() override;

@@ -17,6 +17,12 @@ using namespace dnnl;
 
 namespace korali
 {
+
+NeuralNetwork::NeuralNetwork()
+{
+ _isInitialized = false;
+}
+
 void NeuralNetwork::initialize()
 {
 #ifndef _KORALI_USE_ONEDNN
@@ -25,69 +31,6 @@ void NeuralNetwork::initialize()
 
 #endif
 
-  // Creating evaluation lambda function for optimization
-  auto fc = [nn = this](Sample &sample) { nn->evaluateWeightsAndBiases(sample); };
-
-  _koraliExperiment["Problem"]["Type"] = "Optimization";
-  _koraliExperiment["Problem"]["Objective Function"] = fc;
-
-  size_t currentVariable = 0;
-  for (size_t i = 1; i < _layers.size(); i++)
-  {
-    // Setting value for this layer's xavier constant
-    double xavierConstant = sqrt(6.0) / sqrt(_layers[i]->_nodeCount + _layers[i - 1]->_nodeCount);
-
-    // Adding layer's weights
-    for (size_t j = 0; j < _layers[i]->_nodeCount; j++)
-      for (size_t k = 0; k < _layers[i - 1]->_nodeCount; k++)
-      {
-        char varName[512];
-        sprintf(varName, "Weight [%lu] %lu->%lu", i, j, k);
-        std::string varNameString(varName);
-
-        // Setting initial weight values
-        double initialGuess = 0.0;
-        if (_weightInitialization == "Xavier") initialGuess = xavierConstant * _uniformGenerator->getRandomNumber();
-
-        _koraliExperiment["Variables"][currentVariable]["Name"] = varNameString;
-        _koraliExperiment["Variables"][currentVariable]["Initial Value"] = initialGuess;
-        _koraliExperiment["Variables"][currentVariable]["Initial Mean"] = initialGuess;
-        _koraliExperiment["Variables"][currentVariable]["Initial Standard Deviation"] = 1.0;
-        currentVariable++;
-      }
-
-    // Adding layer's biases
-    for (size_t j = 0; j < _layers[i]->_nodeCount; j++)
-    {
-      char varName[512];
-      sprintf(varName, "Bias [%lu] %lu", i, j);
-      std::string varNameString(varName);
-      _koraliExperiment["Variables"][currentVariable]["Name"] = varNameString;
-
-      // Setting initial biases values
-      double initialGuess = 0.0;
-      if (_weightInitialization == "Xavier") initialGuess = xavierConstant * _uniformGenerator->getRandomNumber();
-
-      _koraliExperiment["Variables"][currentVariable]["Initial Value"] = initialGuess;
-      _koraliExperiment["Variables"][currentVariable]["Initial Mean"] = initialGuess;
-      _koraliExperiment["Variables"][currentVariable]["Initial Standard Deviation"] = 1.0;
-      currentVariable++;
-    }
-  }
-
-  _koraliExperiment["Solver"] = _optimizer;
-
-  _koraliExperiment["File Output"]["Frequency"] = 0;
-  _koraliExperiment["File Output"]["Enabled"] = false;
-  _koraliExperiment["Console Output"]["Frequency"] = 0;
-  _koraliExperiment["Console Output"]["Verbosity"] = "Silent";
-  _koraliExperiment["Random Seed"] = _k->_randomSeed++;
-
-  // Running initialization to verify that the configuration is correct
-  _koraliEngine.initialize(_koraliExperiment);
-
-#ifdef _KORALI_USE_ONEDNN
-
   // Initializing Engine and stream
 
   if (_engineKind == "CPU") _engine = engine(engine::kind::cpu, 0);
@@ -95,24 +38,29 @@ void NeuralNetwork::initialize()
 
   _stream = stream(_engine);
 
-#endif
+  _isInitialized = true;
 }
 
 void NeuralNetwork::create()
 {
+  if (_isInitialized == false)
+   KORALI_LOG_ERROR("Neural Network not initialized.\n");
+
 #ifdef _KORALI_USE_ONEDNN
 
   auto forwardPropagationKind = prop_kind::forward_training;
 
+  /****************************************************************************
+    * Checking input/output configuration
+    ****************************************************************************/
+
   // Obtaining NN dimensions
-  size_t inputSize = _layers[0]->_nodeCount;
-  size_t batchSize = _layers[0]->_nodeValues.size();
+  size_t batchSize = _inputValues.size();
+  if (batchSize == 0) KORALI_LOG_ERROR("You should provide an input forwarding set.\n");
+
+  size_t inputSize = _inputValues[0].size();
   size_t layerCount = _layers.size();
   memory::dim N = batchSize;
-
-  /****************************************************************************
-  * Checking input/output configuration
-  ****************************************************************************/
 
   if (_layers[0]->_type != "Input") KORALI_LOG_ERROR("The first layer must be of an input type.\n");
   for (size_t i = 1; i < layerCount - 1; i++)
@@ -122,13 +70,14 @@ void NeuralNetwork::create()
   }
   if (_layers[layerCount - 1]->_type != "Output") KORALI_LOG_ERROR("The last layer must be of an output type.\n");
 
-  // Checking input/output training data
-
-  if (batchSize == 0) KORALI_LOG_ERROR("You should provide an input forwarding set.\n");
-
   for (size_t i = 0; i < batchSize; i++)
-    if (_layers[0]->_nodeValues[i].size() != inputSize)
-      KORALI_LOG_ERROR("Input data set %lu has a different number of elements (%lu) than the input layer node count (%lu).\n", i, _layers[0]->_nodeValues[i].size(), inputSize);
+    if (_inputValues[i].size() != inputSize)
+      KORALI_LOG_ERROR("Input data set %lu has a different number of elements (%lu) than the input layer node count (%lu).\n", i, _inputValues[i].size(), inputSize);
+
+  // Checking Layer sizes
+  for (size_t i = 0; i < layerCount; i++)
+   if (_layers[i]->_nodeCount == 0)
+     KORALI_LOG_ERROR("Node count for layer (%lu) should be larger than zero.\n", i);
 
   /*********************************************************************************
   *  Initializing memory objects and primitives for FORWARD propagation
@@ -225,18 +174,13 @@ void NeuralNetwork::create()
     _layers[i]->_forwardInnerProductArgs.insert({DNNL_ARG_WEIGHTS, _layers[i]->_weightsWorkMem});
     _layers[i]->_forwardInnerProductArgs.insert({DNNL_ARG_BIAS, _layers[i]->_biasMem});
     _layers[i]->_forwardInnerProductArgs.insert({DNNL_ARG_DST, _layers[i]->_dataMem});
-
-    // Creating storage for layer's node data
-    size_t nodeCount = _layers[i]->_nodeCount;
-    _layers[i]->_nodeValues.resize(batchSize);
-    for (size_t j = 0; j < batchSize; j++) _layers[i]->_nodeValues[j].resize(nodeCount);
   }
 
   // Copying input data to first layer
   std::vector<float> batchInput(batchSize * inputSize);
   for (size_t i = 0; i < batchSize; i++)
     for (size_t j = 0; j < inputSize; j++)
-      batchInput[i * inputSize + j] = _layers[0]->_nodeValues[i][j];
+      batchInput[i * inputSize + j] = _inputValues[i][j];
 
   write_to_dnnl_memory(batchInput.data(), _layers[0]->_dataMem);
 
@@ -370,15 +314,12 @@ void NeuralNetwork::create()
   for (size_t i = layerCount - 1; i > 0; i--)
   {
     // Creating backward propagation primitives for activation functions
-    algorithm activationAlgorithm;
+    auto activationAlgorithm = algorithm::eltwise_linear;
     float alpha = 0.0f;
     float beta = 0.0f;
 
     if (_layers[i]->_activationFunction == "Identity")
-    {
       alpha = 1.0f;
-      activationAlgorithm = algorithm::eltwise_linear;
-    }
 
     if (_layers[i]->_activationFunction == "ReLU")
       activationAlgorithm = algorithm::eltwise_relu;
@@ -491,7 +432,7 @@ void NeuralNetwork::forward()
 #ifdef _KORALI_USE_ONEDNN
 
   size_t layerCount = _layers.size();
-  size_t batchSize = _layers[0]->_nodeValues.size();
+  size_t batchSize = _inputValues.size();
 
   // forward propagating neural network
   _layers[0]->_forwardActivationPrimitive.execute(_stream, _layers[0]->_forwardActivationArgs);
@@ -510,9 +451,13 @@ void NeuralNetwork::forward()
   std::vector<float> resultData(batchSize * nodeCount);
   read_from_dnnl_memory(resultData.data(), _layers[lastLayer]->_activationMem);
 
+  _outputValues.resize(batchSize);
   for (size_t i = 0; i < batchSize; i++)
-    for (size_t j = 0; j < nodeCount; j++)
-      _layers[lastLayer]->_nodeValues[i][j] = resultData[i * nodeCount + j];
+  {
+   _outputValues[i].resize(nodeCount);
+   for (size_t j = 0; j < nodeCount; j++)
+    _outputValues[i][j] = resultData[i * nodeCount + j];
+  }
 
 #endif
 
@@ -520,7 +465,7 @@ void NeuralNetwork::forward()
   _hasPerformedForwardPropagation = true;
 }
 
-void NeuralNetwork::backward()
+void NeuralNetwork::backward(std::vector<float>& outputDifferential)
 {
   if (_hasPerformedForwardPropagation == false)
     KORALI_LOG_ERROR("Neural network being backward propagated without doing a forward propagation first. \n");
@@ -529,6 +474,9 @@ void NeuralNetwork::backward()
 
   size_t layerCount = _layers.size();
   size_t lastLayer = layerCount - 1;
+
+  // Writing to last layers differential information wrt data
+  write_to_dnnl_memory(outputDifferential.data(), _layers[lastLayer]->_activationDiffMem);
 
   // Backward propagating neural network
   for (size_t i = lastLayer; i > 0; i--)
@@ -564,118 +512,6 @@ void NeuralNetwork::backward()
   }
 
 #endif
-}
-
-void NeuralNetwork::train(const size_t stepsToRun)
-{
-  _koraliExperiment["Solver"]["Termination Criteria"]["Max Generations"] = _koraliExperiment._currentGeneration + stepsToRun;
-  _koraliEngine.resume(_koraliExperiment);
-
-  // // Getting results of optimization
-  //_validationParameters = _koraliExperiment["Solver"]["Current Mean"].get<std::vector<double>>();
-  _validationParameters = _koraliExperiment["Results"]["Best Sample"]["Parameters"].get<std::vector<double>>();
-
-  // Setting input validation data
-  Sample newSample;
-  newSample["Parameters"] = _validationParameters;
-  evaluateWeightsAndBiases(newSample);
-
-  // Getting results of optimization
-  _currentTrainingLoss = -newSample["F(x)"].get<double>();
-}
-
-void NeuralNetwork::evaluateWeightsAndBiases(Sample &sample)
-{
-  // Setting weights and biases
-  auto parameters = KORALI_GET(std::vector<double>, sample, "Parameters");
-
-  size_t currentVariable = 0;
-  for (size_t i = 1; i < _layers.size(); i++)
-  {
-    _layers[i]->_weights.resize(_layers[i]->_nodeCount);
-    _layers[i]->_bias.resize(_layers[i]->_nodeCount);
-
-    // Adding layer's weights
-    for (size_t j = 0; j < _layers[i]->_nodeCount; j++)
-    {
-      _layers[i]->_weights[j].resize(_layers[i - 1]->_nodeCount);
-
-      for (size_t k = 0; k < _layers[i - 1]->_nodeCount; k++)
-        _layers[i]->_weights[j][k] = parameters[currentVariable++];
-    }
-
-    // Adding layer's biases
-    for (size_t j = 0; j < _layers[i]->_nodeCount; j++)
-      _layers[i]->_bias[j] = parameters[currentVariable++];
-  }
-
-  // Updating the network's weights and biases
-  updateWeightsAndBias();
-
-  // Running the input values through the neural network
-  forward();
-
-  // Printing Layer values
-  size_t outputLayerId = _layers.size() - 1;
-  size_t batchSize = _layers[outputLayerId]->_nodeValues.size();
-  size_t outputSize = _layers[outputLayerId]->_nodeValues[0].size();
-
-  // Calculating mean square error
-  double meanSquaredError = 0.0;
-
-  // Saving values for the last layer's diff
-  std::vector<float> outputDiff(batchSize * outputSize);
-
-  for (size_t i = 0; i < batchSize; i++)
-    for (size_t j = 0; j < outputSize; j++)
-    {
-      double diff = _solution[i][j] - _layers[outputLayerId]->_nodeValues[i][j];
-      outputDiff[i * outputSize + j] = diff;
-      meanSquaredError += diff * diff;
-    }
-
-  meanSquaredError = meanSquaredError / ((double)batchSize * 2);
-
-  // Saving the negative of the error because we want to minimize it
-  sample["F(x)"] = -meanSquaredError;
-
-  if (_operation == "Training")
-  {
-    // Writing to last layers differential information wrt data
-    write_to_dnnl_memory(outputDiff.data(), _layers[outputLayerId]->_activationDiffMem);
-
-    // Running backward propagation
-    backward();
-
-    // Copying back the gradients and biases back
-    std::vector<double> gradientVector(currentVariable);
-    currentVariable = 0;
-    for (size_t i = 1; i < _layers.size(); i++)
-    {
-      _layers[i]->_weights.resize(_layers[i]->_nodeCount);
-      _layers[i]->_bias.resize(_layers[i]->_nodeCount);
-
-      // Adding layer's weights
-      for (size_t j = 0; j < _layers[i]->_nodeCount; j++)
-      {
-        _layers[i]->_weights[j].resize(_layers[i - 1]->_nodeCount);
-
-        for (size_t k = 0; k < _layers[i - 1]->_nodeCount; k++)
-          gradientVector[currentVariable++] = _layers[i]->_weights[j][k];
-      }
-
-      // Adding layer's biases
-      for (size_t j = 0; j < _layers[i]->_nodeCount; j++)
-        gradientVector[currentVariable++] = _layers[i]->_bias[j];
-    }
-
-    sample["Gradient"] = gradientVector;
-  }
-}
-
-void NeuralNetwork::evaluateInputs(Sample &sample)
-{
-
 }
 
 } // namespace korali

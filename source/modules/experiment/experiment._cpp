@@ -155,8 +155,11 @@ void Experiment::initialize()
   _js["Samples"] = knlohmann::json();
 
   // Initializing Variables
-  _variables.resize(_js["Variables"].size());
-  for (size_t i = 0; i < _js["Variables"].size(); i++) _variables[i] = new Variable;
+  if (isDefined(_js.getJson(), "Variables"))
+  {
+   _variables.resize(_js["Variables"].size());
+   for (size_t i = 0; i < _js["Variables"].size(); i++) _variables[i] = new Variable;
+  }
 
   applyModuleDefaults(_js.getJson());
 
@@ -166,6 +169,7 @@ void Experiment::initialize()
   }
   catch (const std::exception &e)
   {
+    printf("%s", _js.getJson().dump(2).c_str());
     KORALI_LOG_ERROR("Error parsing Experiment's configuration. Reason:\n%s", e.what());
   }
 

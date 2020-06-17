@@ -6,32 +6,39 @@ namespace problem
 {
 void SupervisedLearning::initialize()
 {
-  // Processing output/input variable configuration
-  _outputVectorIndexes.clear();
-  _inputVectorIndexes.clear();
-
-  for (size_t i = 0; i < _k->_variables.size(); i++)
-  {
-    if (_k->_variables[i]->_type == "Output") _outputVectorIndexes.push_back(i);
-    if (_k->_variables[i]->_type == "Input") _inputVectorIndexes.push_back(i);
-  }
-
-  _inputVectorSize = _inputVectorIndexes.size();
-  _outputVectorSize = _outputVectorIndexes.size();
-
-  if (_inputVectorSize == 0) KORALI_LOG_ERROR("No input variables have been defined.\n");
-  if (_outputVectorSize == 0) KORALI_LOG_ERROR("No output variables have been defined.\n");
-
   // Checking training/validation inputs
-  _trainingBatchSize = _k->_variables[0]->_trainingData.size();
-  for (size_t i = 1; i < _k->_variables.size(); i++)
-    if (_k->_variables[i]->_trainingData.size() != _trainingBatchSize)
-      KORALI_LOG_ERROR("Variable %lu has a different training set vector size (%lu) than that of variable 0 (%lu).\n", _k->_variables[i]->_trainingData.size(), _trainingBatchSize);
+  _trainingBatchSize = _trainingInput.size();
 
-  _validationBatchSize = _k->_variables[0]->_validationData.size();
-  for (size_t i = 1; i < _k->_variables.size(); i++)
-    if (_k->_variables[i]->_validationData.size() != _validationBatchSize)
-      KORALI_LOG_ERROR("Variable %lu has a different validation set vector size (%lu) than that of variable 0 (%lu).\n", _k->_variables[i]->_validationData.size(), _validationBatchSize);
+  if (_trainingBatchSize == 0)
+      KORALI_LOG_ERROR("Empty testing set provided.\n");
+
+  if (_trainingBatchSize != _trainingSolution.size())
+      KORALI_LOG_ERROR("Batch size of training solution (%lu) is different than that of training input (%lu).\n", _trainingSolution.size(), _trainingBatchSize);
+
+  _validationBatchSize = _validationInput.size();
+
+  if (_validationBatchSize != _validationSolution.size())
+    KORALI_LOG_ERROR("Batch size of validation solution (%lu) is different than that of validation input (%lu).\n", _validationSolution.size(), _validationBatchSize);
+
+  _inputVectorSize = _trainingInput[0].size();
+  _solutionVectorSize = _trainingSolution[0].size();
+
+  // Checking that all batch entries have the correct size
+  for (size_t i = 0; i < _trainingInput.size(); i++)
+   if (_trainingInput[i].size() != _inputVectorSize)
+    KORALI_LOG_ERROR("Vector size of training input %lu is inconsistent. Size: %lu - Expected: %lu.\n", i, _trainingInput[i].size(), _inputVectorSize);
+
+  for (size_t i = 0; i < _trainingSolution.size(); i++)
+   if (_trainingSolution[i].size() != _solutionVectorSize)
+    KORALI_LOG_ERROR("Vector size of training solution %lu is inconsistent. Size: %lu - Expected: %lu.\n", i, _trainingSolution[i].size(), _solutionVectorSize);
+
+  for (size_t i = 0; i < _validationInput.size(); i++)
+   if (_validationInput[i].size() != _inputVectorSize)
+    KORALI_LOG_ERROR("Vector size of validation input %lu is inconsistent. Size: %lu - Expected: %lu.\n", i, _validationInput[i].size(), _inputVectorSize);
+
+  for (size_t i = 0; i < _validationSolution.size(); i++)
+   if (_validationSolution[i].size() != _solutionVectorSize)
+    KORALI_LOG_ERROR("Vector size of validation solution %lu is inconsistent. Size: %lu - Expected: %lu.\n", i, _validationSolution[i].size(), _solutionVectorSize);
 }
 
 } // namespace problem

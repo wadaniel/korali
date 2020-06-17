@@ -22,10 +22,10 @@ e["Problem"]["Computational Model"] = lambda sampleData: model(
 
 # Configuring Nested Sampling parameters
 e["Solver"]["Type"] = "Sampler/Nested"
-e["Solver"]["Number Live Points"] = 1500
-e["Solver"]["Batch Size"] = 1
-e["Solver"]["Proposal Update Frequency"] = 10
 e["Solver"]["Resampling Method"] = "Ellipse"
+e["Solver"]["Number Live Points"] = 1500
+e["Solver"]["Proposal Update Frequency"] = 10
+e["Solver"]["Batch Size"] = 1
 
 # Configuring the problem's random distributions
 e["Distributions"][0]["Name"] = "Uniform 0"
@@ -57,8 +57,7 @@ e["File Output"]["Frequency"] = 5000
 e["Console Output"]["Frequency"] = 500
 e["Console Output"]["Verbosity"] = 'Detailed'
 e["Solver"]["Termination Criteria"]["Max Generations"] = 100000
-e["Solver"]["Termination Criteria"]["Max Effective Sample Size"] = 10000
-e["Solver"]["Termination Criteria"]["Max Gain Factor"] = 1e-2
+e["Solver"]["Termination Criteria"]["Min Log Evidence Delta"] = 1e-1
 
 # Configuring output settings
 e["File Output"]["Path"] = '_korali_result_nested'

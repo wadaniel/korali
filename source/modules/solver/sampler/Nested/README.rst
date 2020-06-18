@@ -19,4 +19,4 @@ improved the efficiency of the algorithm:
       length (eigen values)
 
     - ellispoids bounding cluster of samples less than the number of variables 
-      plus one are initiated without covariances.
+      plus one are initiated without covariances instead of rejecting them

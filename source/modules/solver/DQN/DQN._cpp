@@ -45,7 +45,7 @@ void DQN::initialize()
   *********************************************************************/
 
   // Creating evaluation lambda function for optimization
-  auto fc = [this, e = &_QExperiment](Sample &sample) { this->evaluateAction(sample, e, true); };
+  auto fc = [this, e = &_QExperiment, s = _currentState](Sample &sample) { this->evaluateAction(sample, e, s, true); };
 
   _AExperiment["Problem"]["Type"] = "Optimization";
   _AExperiment["Problem"]["Objective Function"] = fc;
@@ -65,7 +65,7 @@ void DQN::initialize()
   _AExperiment["File Output"]["Enabled"] = false;
 
   // Running initialization to verify that the configuration is correct
-  _AEngine.initialize(_AExperiment);
+  _engine.initialize(_AExperiment);
 
   // Setting termination criterion
   if (_maxEpisodes > _problem->_initialStateCount || _maxEpisodes == 0)
@@ -218,16 +218,19 @@ void DQN::runGeneration()
    _QExperiment["Problem"]["Validation"]["Solution"][i][0] = _rewardHistory[i];
   }
 
-  _QEngine.run(_QExperiment);
+  _engine.run(_QExperiment);
 
   // Increasing state count
   _stateCount = _stateHistory.size();
 }
 
-void DQN::getAction(std::vector<double>& action, const std::vector<double>& state) const
+void DQN::getAction(std::vector<double>& action, std::vector<double>& state)
 {
  // Getting p = U[0,1] for the epsilon strategy
   double p = _uniformGenerator->getRandomNumber();
+
+  // Updating current state
+  _currentState = &state;
 
   // If p < e, then we choose the action randomly, with a uniform probability, among all possible actions.
   if (p < 1.0) //if (p < _epsilon)
@@ -245,14 +248,20 @@ void DQN::getAction(std::vector<double>& action, const std::vector<double>& stat
   }
 }
 
-void DQN::evaluateAction(Sample &sample, Experiment* e, bool getGradients)
+void DQN::evaluateAction(Sample &sample, Experiment* e, std::vector<double>* state, bool getGradients)
 {
   // Setting weights and biases
-  auto parameters = KORALI_GET(std::vector<double>, sample, "Parameters");
+  auto action = KORALI_GET(std::vector<double>, sample, "Parameters");
 
-//  // Creating input batch
-//  std::vector<std::vector<double>> inputBatch(1);
-//
+  // Creating input batch
+  std::vector<std::vector<double>> inputBatch(1);
+
+  // Putting together state and action
+  inputBatch[0].resize( state->size() + action.size() );
+  size_t pos = 0;
+  for (size_t i = 0; i < state->size(); i++) inputBatch[0][pos++] = (*state)[i];
+  for (size_t i = 0; i < action.size(); i++) inputBatch[0][pos++] = action[i];
+
 //  // Updating NN inputs
 //  nn->setInput(inputBatch);
 //

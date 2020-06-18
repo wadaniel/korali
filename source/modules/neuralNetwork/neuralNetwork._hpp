@@ -30,9 +30,39 @@ class NeuralNetwork : public Module
   dnnl::stream _stream;
 
   /**
+   * @brief Flag to remember the batch size of the input
+   */
+  size_t _batchSize;
+
+  /**
    * @brief Flag to make sure the NN is initialized before creating
    */
   bool _isInitialized;
+
+  /**
+   * @brief oneDNN Memory object descriptor to contain normalization means
+   */
+  dnnl::memory _inputNormalizationMeanMem;
+
+  /**
+   * @brief oneDNN Memory object descriptor to contain normalization variance
+   */
+  dnnl::memory _inputNormalizationVarianceMem;
+
+  /**
+   * @brief oneDNN Memory object descriptor to contain normalization workspace
+   */
+  dnnl::memory _inputNormalizationWorkspaceMem;
+
+  /**
+   * @brief oneDNN Arguments to the normalization operation
+   */
+  std::unordered_map<int, dnnl::memory> _inputNormalizationArgs;
+
+  /**
+   * @brief oneDNN primitive to run the normalization operation
+   */
+  dnnl::primitive _inputNormalizationPrimitive;
 
 #endif
 
@@ -40,8 +70,15 @@ class NeuralNetwork : public Module
 
   /**
    * @brief Initializes the internal memory structures, with regards to the layer configuration of the network
+   * @param The size of the input batch for which the NN has to be created
    */
-  void create();
+  void create(size_t batchSize);
+
+  /**
+   * @brief Updates the internal values of the NN inputs
+   * @param The input batch
+   */
+  void setInput(const std::vector<std::vector<double>>& input);
 
   /**
    * @brief Updates the values of weights, biases, and inputs to the NN

@@ -26,26 +26,23 @@ void DeepLearner::initialize()
   // Setting training NN
   _trainingNeuralNetwork = dynamic_cast<NeuralNetwork *>(Module::duplicate(_neuralNetwork));
 
-  // Setting input training data
-  _trainingNeuralNetwork->_inputValues = _problem->_trainingInput;
-
   // Creating Training Neural Network internal structures
-  _trainingNeuralNetwork->initialize();
-  _trainingNeuralNetwork->create();
+  _trainingNeuralNetwork->create(_problem->_trainingBatchSize);
+
+  // Setting input training data
+  _trainingNeuralNetwork->setInput(_problem->_trainingInput);
 
   // Creating Validation NN
   _validationNeuralNetwork = dynamic_cast<NeuralNetwork *>(Module::duplicate(_trainingNeuralNetwork));
 
-  // Setting input validation data
-  _validationNeuralNetwork->_inputValues = _problem->_validationInput;
-
   // Creating Validation Neural Network internal structures, keeping normalization from training NN
-  _validationNeuralNetwork->initialize();
-  _validationNeuralNetwork->create();
+  _validationNeuralNetwork->create(_problem->_validationBatchSize);
 
-  // Creating Test NN
-  _testNeuralNetwork = dynamic_cast<NeuralNetwork *>(Module::duplicate(_neuralNetwork));
-  _testNeuralNetwork->initialize();
+  // Setting input validation data
+  _validationNeuralNetwork->setInput(_problem->_validationInput);
+
+  // Setting Test NN
+  _testNeuralNetwork = dynamic_cast<NeuralNetwork *>(Module::duplicate(_validationNeuralNetwork));
 
   /*****************************************************************
    * Setting up weight and bias optimization experiment
@@ -166,9 +163,11 @@ void DeepLearner::runGeneration()
 
 std::vector<std::vector<double>> DeepLearner::evaluate(const std::vector<std::vector<double>> &inputBatch)
 {
-  // Re-creating NN's internal structures
-  _testNeuralNetwork->_inputValues = inputBatch;
-  _testNeuralNetwork->create();
+  // Re-building NN if batch size differs from the previous run
+  _testNeuralNetwork->create(inputBatch.size());
+
+  // Updating NN inputs
+  _testNeuralNetwork->setInput(inputBatch);
 
   // Updating the network's weights and biases
   _testNeuralNetwork->updateWeightsAndBias();

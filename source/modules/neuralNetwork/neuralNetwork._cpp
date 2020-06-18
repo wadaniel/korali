@@ -31,6 +31,9 @@ void NeuralNetwork::initialize()
 
 #endif
 
+  if (_isInitialized)
+   KORALI_LOG_ERROR("Neural Network has already been initialized!.\n");
+
   // Initializing Engine and stream
 
   if (_engineKind == "CPU") _engine = engine(engine::kind::cpu, 0);
@@ -38,13 +41,21 @@ void NeuralNetwork::initialize()
 
   _stream = stream(_engine);
 
+  _batchSize = 0;
   _isInitialized = true;
 }
 
-void NeuralNetwork::create()
+void NeuralNetwork::create(size_t batchSize)
 {
-  if (_isInitialized == false)
-   KORALI_LOG_ERROR("Neural Network not initialized.\n");
+  if (_isInitialized == false) KORALI_LOG_ERROR("Neural Network not initialized.\n");
+
+  if (batchSize == 0) KORALI_LOG_ERROR("You should provide an input batch size larger than zero.\n");
+
+  // If the batchsize has not changed, then the NN has already been created, so return.
+  if (batchSize == _batchSize) return;
+
+  // Updating NN's batch size
+  _batchSize = batchSize;
 
 #ifdef _KORALI_USE_ONEDNN
 
@@ -55,12 +66,9 @@ void NeuralNetwork::create()
     ****************************************************************************/
 
   // Obtaining NN dimensions
-  size_t batchSize = _inputValues.size();
-  if (batchSize == 0) KORALI_LOG_ERROR("You should provide an input forwarding set.\n");
-
-  size_t inputSize = _inputValues[0].size();
+  size_t inputSize = _layers[0]->_nodeCount;
   size_t layerCount = _layers.size();
-  memory::dim N = batchSize;
+  memory::dim N = _batchSize;
 
   if (_layers[0]->_type != "Input") KORALI_LOG_ERROR("The first layer must be of an input type.\n");
   for (size_t i = 1; i < layerCount - 1; i++)
@@ -69,10 +77,6 @@ void NeuralNetwork::create()
     if (_layers[i]->_type == "Output") KORALI_LOG_ERROR("Hidden layers cannot be output type.\n");
   }
   if (_layers[layerCount - 1]->_type != "Output") KORALI_LOG_ERROR("The last layer must be of an output type.\n");
-
-  for (size_t i = 0; i < batchSize; i++)
-    if (_inputValues[i].size() != inputSize)
-      KORALI_LOG_ERROR("Input data set %lu has a different number of elements (%lu) than the input layer node count (%lu).\n", i, _inputValues[i].size(), inputSize);
 
   // Checking Layer sizes
   for (size_t i = 0; i < layerCount; i++)
@@ -178,14 +182,6 @@ void NeuralNetwork::create()
     _layers[i]->_forwardInnerProductArgs.insert({DNNL_ARG_DST, _layers[i]->_dataMem});
   }
 
-  // Copying input data to first layer
-  std::vector<float> batchInput(batchSize * inputSize);
-  for (size_t i = 0; i < batchSize; i++)
-    for (size_t j = 0; j < inputSize; j++)
-      batchInput[i * inputSize + j] = _inputValues[i][j];
-
-  write_to_dnnl_memory(batchInput.data(), _layers[0]->_dataMem);
-
   // Creating batch input/output normalization primitives
 
   if (_batchNormalizationEnabled == true)
@@ -241,62 +237,19 @@ void NeuralNetwork::create()
       normalizationFlags);
 
     auto normalizationPrimitiveDesc = batch_normalization_forward::primitive_desc(normalizationDesc, _engine);
-    dnnl::primitive inputNormalizationPrimitive = dnnl::batch_normalization_forward(normalizationPrimitiveDesc);
+    _inputNormalizationPrimitive = dnnl::batch_normalization_forward(normalizationPrimitiveDesc);
 
     // Create memory objects using memory descriptors created by the primitive descriptor: mean, variance, workspace.
-    dnnl::memory inputNormalizationMeanMem = memory(normalizationPrimitiveDesc.mean_desc(), _engine);
-    dnnl::memory inputNormalizationVarianceMem = memory(normalizationPrimitiveDesc.variance_desc(), _engine);
-    dnnl::memory inputNormalizationWorkspaceMem = memory(normalizationPrimitiveDesc.workspace_desc(), _engine);
+    _inputNormalizationMeanMem = memory(normalizationPrimitiveDesc.mean_desc(), _engine);
+    _inputNormalizationVarianceMem = memory(normalizationPrimitiveDesc.variance_desc(), _engine);
+    _inputNormalizationWorkspaceMem = memory(normalizationPrimitiveDesc.workspace_desc(), _engine);
 
-    std::unordered_map<int, dnnl::memory> inputNormalizationArgs;
-    inputNormalizationArgs.insert({DNNL_ARG_SRC, _layers[0]->_dataMem});
-    inputNormalizationArgs.insert({DNNL_ARG_MEAN, inputNormalizationMeanMem});
-    inputNormalizationArgs.insert({DNNL_ARG_VARIANCE, inputNormalizationVarianceMem});
-    inputNormalizationArgs.insert({DNNL_ARG_SCALE_SHIFT, inputNormalizationScaleShiftMem});
-    inputNormalizationArgs.insert({DNNL_ARG_WORKSPACE, inputNormalizationWorkspaceMem});
-    inputNormalizationArgs.insert({DNNL_ARG_DST, _layers[0]->_dataMem});
-
-    // Creating memory to read/write variances and means
-    std::vector<float> inputNormalizationMeans(IC);
-    std::vector<float> inputNormalizationVariances(IC);
-
-    // If not training, assign given variances and means
-    if (_inputNormalizationMeans.size() > 0)
-    {
-      for (size_t i = 0; i < (size_t)IC; i++)
-      {
-        inputNormalizationMeans[i] = _inputNormalizationMeans[i];
-        inputNormalizationVariances[i] = _inputNormalizationVariances[i];
-      }
-
-      write_to_dnnl_memory(inputNormalizationMeans.data(), inputNormalizationMeanMem);
-      write_to_dnnl_memory(inputNormalizationVariances.data(), inputNormalizationVarianceMem);
-    }
-
-    // Normalizing input
-    inputNormalizationPrimitive.execute(_stream, inputNormalizationArgs);
-
-    _stream.wait();
-
-    // Retrieving normalization means and variances
-    if (_inputNormalizationMeans.size() == 0 && _inputNormalizationVariances.size() == 0)
-    {
-      read_from_dnnl_memory(inputNormalizationMeans.data(), inputNormalizationMeanMem);
-      read_from_dnnl_memory(inputNormalizationVariances.data(), inputNormalizationVarianceMem);
-
-      _inputNormalizationMeans.resize(inputNormalizationMeans.size());
-      _inputNormalizationVariances.resize(inputNormalizationVariances.size());
-      _inputNormalizationSigmas.resize(inputNormalizationVariances.size());
-
-      // Translating from variance to sigma values
-      for (size_t i = 0; i < (size_t)IC; i++)
-      {
-        _inputNormalizationMeans[i] = inputNormalizationMeans[i];
-        _inputNormalizationVariances[i] = inputNormalizationVariances[i];
-        _inputNormalizationSigmas[i] = sqrt(inputNormalizationVariances[i]);
-        // printf("%f, %f\n", _inputNormalizationMeans[i], _inputNormalizationVariances[i]);
-      }
-    }
+    _inputNormalizationArgs.insert({DNNL_ARG_SRC, _layers[0]->_dataMem});
+    _inputNormalizationArgs.insert({DNNL_ARG_MEAN, _inputNormalizationMeanMem});
+    _inputNormalizationArgs.insert({DNNL_ARG_VARIANCE, _inputNormalizationVarianceMem});
+    _inputNormalizationArgs.insert({DNNL_ARG_SCALE_SHIFT, inputNormalizationScaleShiftMem});
+    _inputNormalizationArgs.insert({DNNL_ARG_WORKSPACE, _inputNormalizationWorkspaceMem});
+    _inputNormalizationArgs.insert({DNNL_ARG_DST, _layers[0]->_dataMem});
   }
 
   /*********************************************************************************
@@ -379,6 +332,76 @@ void NeuralNetwork::create()
 #endif
 }
 
+void NeuralNetwork::setInput(const std::vector<std::vector<double>>& input)
+{
+ size_t inputSize = _layers[0]->_nodeCount;
+
+ // Checking input
+ if (input.size() != _batchSize)
+  KORALI_LOG_ERROR("Input data set has a different batch size (%lu) than the one for which the NN was created for (%lu).\n", input.size(), _batchSize);
+
+ for (size_t i = 0; i < input.size(); i++)
+   if (input[i].size() != inputSize)
+     KORALI_LOG_ERROR("Input data set %lu has a different number of elements (%lu) than the input layer node count (%lu).\n", i, input[i].size(), inputSize);
+
+ // Copying input data to first layer
+ std::vector<float> batchInput(_batchSize * inputSize);
+ for (size_t i = 0; i < _batchSize; i++)
+   for (size_t j = 0; j < inputSize; j++)
+     batchInput[i * inputSize + j] = input[i][j];
+
+ write_to_dnnl_memory(batchInput.data(), _layers[0]->_dataMem);
+
+ // Normalizing input, if required
+
+ if (_batchNormalizationEnabled == true)
+ {
+   const memory::dim IC = _layers[0]->_nodeCount;
+
+   // Creating memory to read/write variances and means
+   std::vector<float> inputNormalizationMeans(IC);
+   std::vector<float> inputNormalizationVariances(IC);
+
+   // If not training, assign given variances and means
+   if (_inputNormalizationMeans.size() > 0)
+   {
+     for (size_t i = 0; i < (size_t)IC; i++)
+     {
+       inputNormalizationMeans[i] = _inputNormalizationMeans[i];
+       inputNormalizationVariances[i] = _inputNormalizationVariances[i];
+     }
+
+     write_to_dnnl_memory(inputNormalizationMeans.data(), _inputNormalizationMeanMem);
+     write_to_dnnl_memory(inputNormalizationVariances.data(), _inputNormalizationVarianceMem);
+   }
+
+   // Normalizing input
+   _inputNormalizationPrimitive.execute(_stream, _inputNormalizationArgs);
+
+   _stream.wait();
+
+   // Retrieving normalization means and variances
+   if (_inputNormalizationMeans.size() == 0 && _inputNormalizationVariances.size() == 0)
+   {
+     read_from_dnnl_memory(inputNormalizationMeans.data(), _inputNormalizationMeanMem);
+     read_from_dnnl_memory(inputNormalizationVariances.data(), _inputNormalizationVarianceMem);
+
+     _inputNormalizationMeans.resize(inputNormalizationMeans.size());
+     _inputNormalizationVariances.resize(inputNormalizationVariances.size());
+     _inputNormalizationSigmas.resize(inputNormalizationVariances.size());
+
+     // Translating from variance to sigma values
+     for (size_t i = 0; i < (size_t)IC; i++)
+     {
+       _inputNormalizationMeans[i] = inputNormalizationMeans[i];
+       _inputNormalizationVariances[i] = inputNormalizationVariances[i];
+       _inputNormalizationSigmas[i] = sqrt(inputNormalizationVariances[i]);
+       // printf("%f, %f\n", _inputNormalizationMeans[i], _inputNormalizationVariances[i]);
+     }
+   }
+ }
+}
+
 void NeuralNetwork::updateWeightsAndBias()
 {
 #ifdef _KORALI_USE_ONEDNN
@@ -433,12 +456,12 @@ void NeuralNetwork::updateWeightsAndBias()
   _hasPerformedForwardPropagation = false;
 }
 
+
 void NeuralNetwork::forward()
 {
 #ifdef _KORALI_USE_ONEDNN
 
   size_t layerCount = _layers.size();
-  size_t batchSize = _inputValues.size();
 
   // forward propagating neural network
   _layers[0]->_forwardActivationPrimitive.execute(_stream, _layers[0]->_forwardActivationArgs);
@@ -454,11 +477,11 @@ void NeuralNetwork::forward()
   // Restoring the output later node values
   size_t lastLayer = layerCount - 1;
   size_t nodeCount = _layers[lastLayer]->_nodeCount;
-  std::vector<float> resultData(batchSize * nodeCount);
+  std::vector<float> resultData(_batchSize * nodeCount);
   read_from_dnnl_memory(resultData.data(), _layers[lastLayer]->_activationMem);
 
-  _outputValues.resize(batchSize);
-  for (size_t i = 0; i < batchSize; i++)
+  _outputValues.resize(_batchSize);
+  for (size_t i = 0; i < _batchSize; i++)
   {
    _outputValues[i].resize(nodeCount);
    for (size_t j = 0; j < nodeCount; j++)

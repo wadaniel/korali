@@ -18,6 +18,9 @@ namespace sampler
 */
 struct ellipse_t
 {
+  /**
+   * @brief Default c-tor (avoid empty initialization).
+   */
   ellipse_t() = delete;
 
   /**

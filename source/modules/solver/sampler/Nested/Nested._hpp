@@ -25,6 +25,7 @@ struct ellipse_t
 
   /**
    * @brief Init d-dimensional ellipse without covariance.
+   * @param dim Dimension of ellipsoid.
    */
   ellipse_t(size_t dim) : dim(dim), num(0), sampleIdx(0), mean(dim, 0.0), cov(dim * dim, 0.0), invCov(dim * dim, 0.0), axes(dim * dim, 0.0), evals(dim, 0.0), paxes(dim * dim, 0.0), volume(0.0), pointVolume(0.0){};
 
@@ -114,6 +115,7 @@ class Nested : public Sampler
 
   /*
    * @brief Transformation from unit domain into prior domain.
+   * @param sample Sample to transform.
   */
   void priorTransform(std::vector<double> &sample) const;
 
@@ -129,6 +131,8 @@ class Nested : public Sampler
 
   /** 
   * @brief Generates a sample uniformly in Ellipse
+  * @param ellipse Bounding ellipsoid from which to sample.
+  * @param sample Generated sample.
   */
   void generateSampleFromEllipse(const ellipse_t &ellipse, std::vector<double> &sample) const;
 
@@ -169,7 +173,8 @@ class Nested : public Sampler
 
   /*
   * @brief Add sample to discard to sample database.
- */
+  * @param sampleIdx Sample Id of sample in live set to put into database.
+  */
   void updateSampleDatabase(size_t sampleIdx);
 
   /*
@@ -179,11 +184,14 @@ class Nested : public Sampler
 
   /*
   * @brief Calculate L2 distance between two vectors.
+  * @param sampleOne Vector one
+  * @param sampleTwo Vector two
   */
   double l2distance(const std::vector<double> &sampleOne, const std::vector<double> &sampleTwo) const;
 
   /*
-  * @brief Updates bounding Ellipse.
+  * @brief Updates bounding Ellipse (mean, cov and volume).
+  * @param ellipse Ellipse to be updated.
   */
   bool updateEllipse(ellipse_t &ellipse) const;
 
@@ -199,31 +207,41 @@ class Nested : public Sampler
 
   /*
   * @brief Applies k-means clustering (k=2) and fills cluster vectors with samples.
+  * @param parent Parent ellipse to be split.
+  * @param childOne Cluster one
+  * @param childTwo Cluster two
   */
   bool kmeansClustering(const ellipse_t &parent, size_t maxIter, ellipse_t &childOne, ellipse_t &childTwo) const;
 
   /*
   * @brief Udates the mean vector of ellipse argument.
+  * @param ellipse Ellipse to be updated.
   */
   void updateEllipseMean(ellipse_t &ellipse) const;
 
   /*
   * @brief Udates the covariance matrix of input ellipse.
+  * @param ellipse Ellipse to be updated.
   */
   bool updateEllipseCov(ellipse_t &ellipse) const;
 
   /*
   * @brief Updates volume and the axes of the ellipse.
+  * @param ellipse Ellipse to be updated.
   */
   bool updateEllipseVolume(ellipse_t &ellipse) const;
 
   /*
   * @brief Calculates Mahalanobis metric of sample and ellipse.
+  * @param sample Sample.
+  * @param ellipse Ellipse.
   */
   double mahalanobisDistance(const std::vector<double> &sample, const ellipse_t &ellipse) const;
 
   /*
   * @brief Calculates weighted Mahalanobis metric of sample and ellipse.
+  * @param sample Sample.
+  * @param ellipse Ellipse.
   */
   double weightedMahalanobisDistance(const std::vector<double> &sample, const ellipse_t &ellipse) const;
 
@@ -235,6 +253,7 @@ class Nested : public Sampler
 
   /*
   * @brief Checks if sample is inside d dimensional unit cube.
+  * @param sample Sample to be checked.
   */
   bool insideUnitCube(const std::vector<double> &sample) const;
 

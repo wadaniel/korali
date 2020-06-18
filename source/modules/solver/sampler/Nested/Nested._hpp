@@ -13,14 +13,13 @@ namespace solver
 {
 namespace sampler
 {
- 
 /**
  * @brief Ellipse object to generate bounds.
 */
 struct ellipse_t
 {
   ellipse_t() = delete;
-  
+
   /**
    * @brief Init d-dimensional ellipse without covariance.
    */

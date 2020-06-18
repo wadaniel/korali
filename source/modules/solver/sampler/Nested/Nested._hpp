@@ -35,6 +35,12 @@ struct ellipse_t
   void initSphere();
 
   /**
+   * @brief Scale volume.
+   * @param factor Volume multiplicator.
+   */
+  void scaleVolume(double factor);
+
+  /**
    * @brief Dimension of ellipsoid.
   */
   size_t dim;

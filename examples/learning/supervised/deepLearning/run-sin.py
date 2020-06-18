@@ -41,12 +41,12 @@ e["Variables"][0]["Name"] = "tt"
 ### Using a neural network solver (deep learning) for inference
 
 e["Solver"]["Type"] = "Deep Learner"
-#e["Solver"]["Optimizer"]["Type"] = "Optimizer/CMAES"
-e["Solver"]["Optimizer"]["Type"] = "Optimizer/Adam"
-#e["Solver"]["Optimizer"]["Type"] = "Optimizer/Rprop"
 
-e["Solver"]["Termination Criteria"]["Max Inactive Steps"] = 1000
-e["Solver"]["Termination Criteria"]["Max Generations"] = 10000
+e["Solver"]["Optimizer"]["Type"] = "Optimizer/Adam"
+e["Solver"]["Steps Per Generation"] = 100
+
+e["Solver"]["Termination Criteria"]["Max Inactive Steps"] = 10
+e["Solver"]["Termination Criteria"]["Max Generations"] = 100
 
 ### Defining the shape of the neural network
 
@@ -60,7 +60,7 @@ e["Solver"]["Neural Network"]["Layers"][1]["Activation Function"] = "Tanh"
 e["Solver"]["Neural Network"]["Layers"][2]["Type"] = "Output"
 e["Solver"]["Neural Network"]["Layers"][2]["Activation Function"] = "Identity"
 
-e["Console Output"]["Frequency"] = 500
+e["Console Output"]["Frequency"] = 10
 e["File Output"]["Enabled"] = False
 e["Random Seed"] = 0xC0FFEE
 

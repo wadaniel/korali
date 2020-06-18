@@ -27,7 +27,8 @@ void DeepLearner::initialize()
   _trainingNeuralNetwork = dynamic_cast<NeuralNetwork *>(Module::duplicate(_neuralNetwork));
 
   // Creating Training Neural Network internal structures
-  _trainingNeuralNetwork->create(_problem->_trainingBatchSize);
+  _trainingNeuralNetwork->createForwardPipeline(_problem->_trainingBatchSize);
+  _trainingNeuralNetwork->createBackwardPipeline();
 
   // Setting input training data
   _trainingNeuralNetwork->setInput(_problem->_trainingInput);
@@ -36,7 +37,7 @@ void DeepLearner::initialize()
   _validationNeuralNetwork = dynamic_cast<NeuralNetwork *>(Module::duplicate(_trainingNeuralNetwork));
 
   // Creating Validation Neural Network internal structures, keeping normalization from training NN
-  _validationNeuralNetwork->create(_problem->_validationBatchSize);
+  _validationNeuralNetwork->createForwardPipeline(_problem->_validationBatchSize);
 
   // Setting input validation data
   _validationNeuralNetwork->setInput(_problem->_validationInput);
@@ -119,7 +120,7 @@ void DeepLearner::runGeneration()
 
   // Performs the training phase of the NN, given the solution and the NN's configuration.
 
-  _optExperiment["Solver"]["Termination Criteria"]["Max Generations"] = _optExperiment._currentGeneration + 1;
+  _optExperiment["Solver"]["Termination Criteria"]["Max Generations"] = _optExperiment._currentGeneration + _stepsPerGeneration;
   _optEngine.resume(_optExperiment);
 
   // Setting input validation data
@@ -156,7 +157,6 @@ void DeepLearner::runGeneration()
     // Storing best NN
     knlohmann::json js;
     _validationNeuralNetwork->getConfiguration(js);
-    _testNeuralNetwork->_layers.clear();
     _testNeuralNetwork->setConfiguration(js);
   }
 }
@@ -164,7 +164,7 @@ void DeepLearner::runGeneration()
 std::vector<std::vector<double>> DeepLearner::evaluate(const std::vector<std::vector<double>> &inputBatch)
 {
   // Re-building NN if batch size differs from the previous run
-  _testNeuralNetwork->create(inputBatch.size());
+  _testNeuralNetwork->createForwardPipeline(inputBatch.size());
 
   // Updating NN inputs
   _testNeuralNetwork->setInput(inputBatch);

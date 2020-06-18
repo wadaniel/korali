@@ -127,6 +127,7 @@ def consumeValue(base, moduleName, path, varName, varType, isMandatory,
 
   if ('std::vector<korali::' in varType):
     baseType = varType.replace('std::vector<', '').replace('>', '')
+    cString += ' ' + varName + '.clear();\n'
     cString += ' for(size_t i = 0; i < ' + base + path + '.size(); i++) ' + varName + '.push_back((' + baseType + ')korali::Module::getModule(' + base + path + '[i], _k));\n'
     cString += ' eraseValue(' + base + ', ' + path.replace('][', ", ").replace(
         '[', '').replace(']', '') + ');\n\n'

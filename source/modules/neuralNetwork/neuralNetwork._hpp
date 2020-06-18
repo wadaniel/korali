@@ -69,10 +69,15 @@ class NeuralNetwork : public Module
   void initialize() override;
 
   /**
-   * @brief Initializes the internal memory structures, with regards to the layer configuration of the network
+   * @brief Initializes the internal memory structures for the forward pipeline
    * @param The size of the input batch for which the NN has to be created
    */
-  void create(size_t batchSize);
+  void createForwardPipeline(size_t batchSize);
+
+  /**
+  * @brief Initializes the internal memory structures for the backward pipeline
+  */
+ void createBackwardPipeline();
 
   /**
    * @brief Updates the internal values of the NN inputs

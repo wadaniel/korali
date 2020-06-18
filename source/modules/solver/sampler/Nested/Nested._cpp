@@ -532,7 +532,7 @@ bool Nested::updateEllipse(ellipse_t &ellipse) const
 
   if (ellipse.num <= ellipse.dim)
   {
-    _k->_logger->logWarning("Normal", "Can't update ellipsoid, not enough samples (%zu, required %zu).\n", ellipse.num, ellipse.dim + 1);
+    _k->_logger->logWarning("Detailed", "Can't update ellipsoid, not enough samples (%zu, required %zu).\n", ellipse.num, ellipse.dim + 1);
   }
 
   updateEllipseMean(ellipse);
@@ -953,13 +953,12 @@ void Nested::printGenerationBefore() { return; }
 void Nested::printGenerationAfter()
 {
   _k->_logger->logInfo("Minimal", "Log Evidence: %.4f (+- %.4f)\n", _logEvidence, sqrt(_logEvidenceVar));
-  _k->_logger->logInfo("Minimal", "Accepted Samples: %zu (+%zu) \n", _acceptedSamples, _numberLivePoints);
   _k->_logger->logInfo("Minimal", "Sampling Efficiency: %.2f%%\n", 100.0 * _acceptedSamples / ((double)(_generatedSamples - _numberLivePoints)));
   _k->_logger->logInfo("Detailed", "Last Accepted: %zu\n", _lastAccepted);
   _k->_logger->logInfo("Detailed", "Effective Sample Size: %.2f\n", _effectiveSampleSize);
   _k->_logger->logInfo("Detailed", "Log Volume (shrinkage): %.2f/%.2f (%.2f%%)\n", _logVolume, _boundLogVolume, 100. * (1. - exp(_logVolume)));
-  _k->_logger->logInfo("Detailed", "lStar: %.2f (max llk evaluation %.2f)\n", _lStar, _maxEvaluation);
-  _k->_logger->logInfo("Detailed", "Estimated remaining log evidence: %.2f (dlogz: %.3f)\n", _remainingLogEvidence, _logEvidenceDifference);
+  _k->_logger->logInfo("Normal", "lStar: %.2f (max llk evaluation %.2f)\n", _lStar, _maxEvaluation);
+  _k->_logger->logInfo("Minimal", "Remaining Log Evidence: %.2f (dlogz: %.3f)\n", _remainingLogEvidence, _logEvidenceDifference);
   if (_resamplingMethod == "Multi Ellipse")
   {
     _k->_logger->logInfo("Detailed", "Num Ellipsoids: %zu\n", _ellipseVector.size());

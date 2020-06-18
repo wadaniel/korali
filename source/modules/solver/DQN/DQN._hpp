@@ -36,11 +36,15 @@ class DQN : public Solver
  */
   korali::Experiment _AExperiment;
 
-
   /**
    * @brief Gets the next action for the actor, based on the Q policy
    */
   void getAction(std::vector<double>& action, const std::vector<double>& state) const;
+
+  /**
+   * @brief Function to evaluate the Q* of a given action
+   */
+  void evaluateAction(Sample &sample, Experiment* e, bool getGradients);
 
   /**
   * @brief Runs a generation of the environment(s), running an action on each episode, and updating the policy.

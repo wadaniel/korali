@@ -2,6 +2,11 @@
 #include "modules/experiment/experiment.hpp"
 #include "modules/solver/deepLearner/deepLearner.hpp"
 
+/******************************************************************
+ * Performance considerations:
+ * + Do not require gradient if the solver is purely stochastic
+ *****************************************************************/
+
 namespace korali
 {
 namespace solver

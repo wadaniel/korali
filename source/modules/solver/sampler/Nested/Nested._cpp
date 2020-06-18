@@ -49,14 +49,13 @@ void ellipse_t::initSphere()
 
 void ellipse_t::scaleVolume(double factor)
 {
-    double K = sqrt(pow(M_PI, _dimensions)) * 2.0 / ((double)_dimensions * gsl_sf_gamma(0.5 * _dimensions));
-    double enlargementFactor = pow((ellipse.volume * ellipse.volume * factor * factor) / (K * K * det), 1.0 / ((double)_dimensions));
-    gsl_matrix_scale(&cov.matrix, enlargementFactor);
-    gsl_matrix_scale(&invCov.matrix, 1. / enlargementFactor);
-    gsl_vector_scale(&evals.vector, enlargementFactor);
-    gsl_matrix_scale(&axes.matrix, sqrt(enlargementFactor));
+  double K = sqrt(pow(M_PI, _dimensions)) * 2.0 / ((double)_dimensions * gsl_sf_gamma(0.5 * _dimensions));
+  double enlargementFactor = pow((ellipse.volume * ellipse.volume * factor * factor) / (K * K * det), 1.0 / ((double)_dimensions));
+  gsl_matrix_scale(&cov.matrix, enlargementFactor);
+  gsl_matrix_scale(&invCov.matrix, 1. / enlargementFactor);
+  gsl_vector_scale(&evals.vector, enlargementFactor);
+  gsl_matrix_scale(&axes.matrix, sqrt(enlargementFactor));
 }
-
 
 void Nested::setInitialConfiguration()
 {

@@ -43,8 +43,22 @@ void ellipse_t::initSphere()
     evals[d] = 1.0;
     paxes[d * dim + d] = 1.0;
   }
+  det = 1.0;
   volume = sqrt(pow(M_PI, dim)) * 2.0 / ((double)dim * gsl_sf_gamma(0.5 * dim));
   pointVolume = 0.0;
+}
+
+void ellipse_t::scaleVolume(double factor)
+{
+  double K = sqrt(pow(M_PI, dim)) * 2.0 / ((double)dim * gsl_sf_gamma(0.5 * dim));
+  double enlargementFactor = pow((volume * volume * factor * factor) / (K * K * det), 1.0 / ((double)dim));
+  for (size_t d = 0; d < dim * dim; ++d)
+  {
+    cov[d] *= enlargementFactor;
+    invCov[d] *= 1.0 / enlargementFactor;
+    axes[d] *= enlargementFactor;
+  }
+  for (size_t d = 0; d < dim; ++d) evals[d] *= enlargementFactor;
 }
 
 void Nested::setInitialConfiguration()
@@ -700,7 +714,7 @@ bool Nested::updateEllipseVolume(ellipse_t &ellipse) const
   gsl_linalg_LU_decomp(matLU, perm, &signal);
   gsl_permutation_free(perm);
 
-  double det = gsl_linalg_LU_det(matLU, signal);
+  ellipse.det = gsl_linalg_LU_det(matLU, signal);
   gsl_matrix_free(matLU);
 
   gsl_vector_view evals = gsl_vector_view_array(ellipse.evals.data(), _dimensions);
@@ -764,10 +778,10 @@ bool Nested::updateEllipseVolume(ellipse_t &ellipse) const
   ellipse.pointVolume = exp(_logVolume) * (double)ellipse.num / ((double)_numberLivePoints);
 
   double K = sqrt(pow(M_PI, _dimensions)) * 2.0 / ((double)_dimensions * gsl_sf_gamma(0.5 * _dimensions));
-  double vol = sqrt(pow(_ellipsoidalScaling * max, _dimensions) * det) * K;
+  double vol = sqrt(pow(_ellipsoidalScaling * max, _dimensions) * ellipse.det) * K;
 
-  double enlargementFactor = vol > ellipse.pointVolume ? _ellipsoidalScaling * max : pow((ellipse.pointVolume * ellipse.pointVolume) / (K * K * det), 1.0 / ((double)_dimensions));
-  ellipse.volume = pow(enlargementFactor, _dimensions / 2.0) * sqrt(det) * K;
+  double enlargementFactor = vol > ellipse.pointVolume ? _ellipsoidalScaling * max : pow((ellipse.pointVolume * ellipse.pointVolume) / (K * K * ellipse.det), 1.0 / ((double)_dimensions));
+  ellipse.volume = pow(enlargementFactor, _dimensions / 2.0) * sqrt(ellipse.det) * K;
 
   gsl_matrix_view invCov = gsl_matrix_view_array(ellipse.invCov.data(), _dimensions, _dimensions);
 

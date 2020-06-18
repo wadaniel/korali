@@ -22,7 +22,11 @@ aa('--country',
    default='switzerland',
    help='Country from which to retrieve data./')
 aa('--data', '-d', nargs='+', type=float, help='Infected population.')
-aa('--populationSize', '-ps', type=int, default=80000, help='Total population.')
+aa('--populationSize',
+   '-ps',
+   type=int,
+   default=80000,
+   help='Total population.')
 aa('--nSamples',
    '-ns',
    type=int,
@@ -42,14 +46,16 @@ aa('--futureDays',
    '-fd',
    type=int,
    default=2,
-   help='Propagate that many days in future, after the time of observation of the last data.'
-  )
+   help=
+   'Propagate that many days in future, after the time of observation of the last data.'
+   )
 aa('--validateData',
    '-vd',
    type=int,
    default=0,
-   help='Use that many data from the end of the data list to validate the prediction.'
-  )
+   help=
+   'Use that many data from the end of the data list to validate the prediction.'
+   )
 aa('--percentages',
    '-p',
    nargs='+',

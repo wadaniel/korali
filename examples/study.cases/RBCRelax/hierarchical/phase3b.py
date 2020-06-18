@@ -8,7 +8,7 @@ import korali
 # Creating hierarchical Bayesian problem from previous two problems
 e = korali.Experiment()
 
-e["Problem"]["Type"] = "Evaluation/Bayesian/Hierarchical/Theta"
+e["Problem"]["Type"]  = "Evaluation/Bayesian/Hierarchical/Theta"
 e["Problem"]["Theta Problem Path"] = '../results_daint/tmcmc_hochmuth01'
 e["Problem"]["Psi Problem Path"] = 'results_phase_2'
 

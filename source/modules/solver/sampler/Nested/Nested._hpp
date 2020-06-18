@@ -27,12 +27,18 @@ struct ellipse_t
    * @brief Init d-dimensional ellipse without covariance.
    * @param dim Dimension of ellipsoid.
    */
-  ellipse_t(size_t dim) : dim(dim), num(0), sampleIdx(0), mean(dim, 0.0), cov(dim * dim, 0.0), invCov(dim * dim, 0.0), axes(dim * dim, 0.0), evals(dim, 0.0), paxes(dim * dim, 0.0), volume(0.0), pointVolume(0.0){};
+  ellipse_t(size_t dim) : dim(dim), num(0), det(0.0), sampleIdx(0), mean(dim, 0.0), cov(dim * dim, 0.0), invCov(dim * dim, 0.0), axes(dim * dim, 0.0), evals(dim, 0.0), paxes(dim * dim, 0.0), volume(0.0), pointVolume(0.0){};
 
   /**
    * @brief Init d-dimensional unit sphere.
    */
   void initSphere();
+
+  /**
+   * @brief Scale volume.
+   * @param factor Volume multiplicator.
+   */
+  void scaleVolume(double factor);
 
   /**
    * @brief Dimension of ellipsoid.
@@ -43,6 +49,11 @@ struct ellipse_t
    * @brief Number samples in ellipse.
    */
   size_t num;
+
+  /** 
+   * @brief Determinant of covariance.
+   */
+  double det;
 
   /** 
    * @brief Indices of samples from live data set.

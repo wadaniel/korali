@@ -24,8 +24,8 @@ Then, download this repository
 
 .. code-block:: bash
 
-   git clone https://github.com/cselab/korali-apps.git
-   cd korali-apps/5.coronavirus
+   git clone https://github.com/cselab/korali.git
+   cd examples/study.cases/covid
 
 Make sure you have installed the latest version (at least 1.4) of the Scipy library:
 
@@ -33,7 +33,11 @@ Make sure you have installed the latest version (at least 1.4) of the Scipy libr
 
    python3 -m pip install scipy==1.4.1
 
+Also, get the pybind11 development source code by running:
 
+.. code-block:: bash
+
+   ./install_prereqs.sh
 
 Run the code main code,
 

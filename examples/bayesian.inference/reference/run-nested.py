@@ -24,8 +24,6 @@ e["Problem"]["Computational Model"] = lambda sampleData: model(
 e["Solver"]["Type"] = "Sampler/Nested"
 e["Solver"]["Resampling Method"] = "Ellipse"
 e["Solver"]["Number Live Points"] = 1500
-e["Solver"]["Proposal Update Frequency"] = 10
-e["Solver"]["Batch Size"] = 1
 
 # Configuring the problem's random distributions
 e["Distributions"][0]["Name"] = "Uniform 0"

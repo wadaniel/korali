@@ -24,8 +24,6 @@ e["Problem"]["Computational Model"] = lambda sampleData: model(
 e["Solver"]["Type"] = "Sampler/Nested"
 e["Solver"]["Resampling Method"] = "Multi Ellipse"
 e["Solver"]["Number Live Points"] = 1500
-e["Solver"]["Proposal Update Frequency"] = 10
-#e["Solver"]["Batch Size"] = 10
 
 # Configuring the problem's random distributions
 e["Distributions"][0]["Name"] = "Uniform 0"
@@ -65,8 +63,6 @@ e["File Output"]["Path"] = '_korali_result_multinest'
 
 # Starting Korali's Engine and running experiment
 k = korali.Engine()
-#k['Conduit']['Type'] = 'Concurrent'
-#k['Conduit']['Concurrent Jobs'] = 10
 
 
 k.run(e)

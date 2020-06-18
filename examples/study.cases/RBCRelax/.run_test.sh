@@ -15,7 +15,7 @@ function check_result()
 
 echo "  + Creating test files..."
 
-rm -f _run*; check_result
+rm -f _*; check_result
 fileList=`ls *.py`
 
 for file in $fileList

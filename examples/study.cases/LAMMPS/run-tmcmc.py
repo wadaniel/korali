@@ -10,8 +10,7 @@ e = korali.Experiment()
 
 # Defining Concurrent Jobs
 cJobs = 1
-if (len(sys.argv) > 1):
-  cJobs = int(sys.argv[1])
+if (len(sys.argv) > 1): cJobs = int(sys.argv[1])
 
 # Setting up the reference likelihood for the Bayesian Problem
 e["Problem"]["Type"] = "Bayesian/Reference"
@@ -45,13 +44,12 @@ e["Variables"][2]["Name"] = "[Sigma]"
 e["Variables"][2]["Prior Distribution"] = "Uniform 2"
 
 # Configuring TMCMC parameters
-e["Solver"]["Type"] = "TMCMC"
+e["Solver"]["Type"] = "Sampler/TMCMC"
 e["Solver"]["Population Size"] = 32
 e["Solver"]["Termination Criteria"]["Max Generations"] = 20
 
 # General Settings
-e["File Output"]["Path"] = "_result_lammps_tmcmc_" + str(cJobs).zfill(
-    4) + "_workers"
+e["File Output"]["Path"] = "_result_lammps_tmcmc_" + str(cJobs).zfill(4) + "_workers"
 e["Console Output"]["Verbosity"] = "Detailed"
 
 # Selecting external conduit

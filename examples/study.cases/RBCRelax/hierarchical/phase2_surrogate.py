@@ -8,21 +8,16 @@ import korali
 # Creating hierarchical Bayesian problem from previous two problems
 e = korali.Experiment()
 
-e["Problem"]["Type"] = "Evaluation/Bayesian/Hierarchical/Psi"
+e["Problem"]["Type"]  = "Evaluation/Bayesian/Hierarchical/Psi"
 
 # Hochmuth 1 - 5
 for i in range(5):
-  e["Problem"]["Subproblems"][i][
-      "Path"] = '../results_hierarchical/hochmuth' + str(i + 1).zfill(2)
-  e["Problem"]["Subproblems"][i]["Conditional Priors"] = [
-      "Conditional 0", "Conditional 1"
-  ]
+  e["Problem"]["Subproblems"][i]["Path"]   = '../results_hierarchical/hochmuth' + str(i+1).zfill(2)
+  e["Problem"]["Subproblems"][i]["Conditional Priors"] = ["Conditional 0", "Conditional 1"]
 
 # Henon
-e["Problem"]["Subproblems"][4]["Path"] = '../results_hierarchical/henon'
-e["Problem"]["Subproblems"][4]["Conditional Priors"] = [
-    "Conditional 0", "Conditional 2"
-]
+e["Problem"]["Subproblems"][4]["Path"]   = '../results_hierarchical/henon'
+e["Problem"]["Subproblems"][4]["Conditional Priors"] = ["Conditional 0", "Conditional 2"]
 
 # Add probability of theta given psi, one per subproblem variable.
 e["Variables"][0]["Name"] = "Psi 1"
@@ -44,6 +39,7 @@ e["Distributions"][0]["Name"] = "Conditional 0"
 e["Distributions"][0]["Type"] = "Univariate/Gaussian"
 e["Distributions"][0]["Mean"] = "Psi 1"
 e["Distributions"][0]["Standard Deviation"] = "Psi 2"
+
 """
 e["Distributions"][1]["Name"] = "Conditional 1"
 e["Distributions"][1]["Type"] = "Univariate/LogNormal"
@@ -65,6 +61,7 @@ e["Distributions"][2]["Name"] = "Conditional 2"
 e["Distributions"][2]["Type"] = "Univariate/Gamma"
 e["Distributions"][2]["Shape"] = "Psi 5"
 e["Distributions"][2]["Scale"] = "Psi 6"
+
 
 e["Distributions"][3]["Name"] = "Uniform 1"
 e["Distributions"][3]["Type"] = "Univariate/Uniform"

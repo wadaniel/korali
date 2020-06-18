@@ -43,6 +43,13 @@ class Solver : public Module
   virtual std::vector<std::vector<double>> evaluate(const std::vector<std::vector<double>> &inputBatch);
 
   /**
+   * @brief For solver modules which have been trained, return the gradient of a differentiated output
+   * @param Output differentials
+   * @return The calculated gradients
+   */
+  virtual std::vector<std::vector<double>> getGradients(const std::vector<std::vector<double>> &outputDiffs);
+
+  /**
   * @brief Stores termination criteria for the module.
   */
   std::vector<std::string> _terminationCriteria;

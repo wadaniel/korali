@@ -114,6 +114,14 @@ class Experiment : public Module
     * @return The inferred outputs
    */
   std::vector<std::vector<double>> evaluate(const std::vector<std::vector<double>> &inputBatch);
+
+  /**
+   * @brief For solver modules which have been trained, return the gradient of a differentiated output
+   * @param Output differentials
+   * @return The calculated gradients
+   */
+  std::vector<std::vector<double>> getGradients(const std::vector<std::vector<double>> &outputDiffs);
+
 };
 
 } // namespace korali

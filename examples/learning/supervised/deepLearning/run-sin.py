@@ -36,8 +36,6 @@ e["Problem"]["Training"]["Solution"] = trainingSolutionSet
 e["Problem"]["Validation"]["Input"] = validationInputSet
 e["Problem"]["Validation"]["Solution"] = validationSolutionSet
 
-e["Variables"][0]["Name"] = "tt"
-
 ### Using a neural network solver (deep learning) for inference
 
 e["Solver"]["Type"] = "Deep Learner"

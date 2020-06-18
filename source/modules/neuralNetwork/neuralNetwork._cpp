@@ -51,6 +51,7 @@ void NeuralNetwork::createForwardPipeline(size_t batchSize)
 
   if (batchSize == 0) KORALI_LOG_ERROR("You should provide an input batch size larger than zero.\n");
 
+
   // Updating NN's batch size
   _batchSize = batchSize;
 
@@ -561,6 +562,10 @@ void NeuralNetwork::backwardData(std::vector<float>& outputDifferential)
   size_t layerCount = _layers.size();
   size_t lastLayer = layerCount - 1;
 
+  auto outputBatchSize = _layers[lastLayer]->_nodeCount * _batchSize;
+  if (outputDifferential.size() != outputBatchSize)
+   KORALI_LOG_ERROR("Incorrect size of output differential provided. Given: %lu, Expected: %lu. \n", outputDifferential.size(), outputBatchSize);
+
   // Writing to last layers differential information wrt data
   write_to_dnnl_memory(outputDifferential.data(), _layers[lastLayer]->_activationDiffMem);
 
@@ -578,13 +583,17 @@ void NeuralNetwork::backwardData(std::vector<float>& outputDifferential)
 
   // Retreiving gradient of the input
   size_t inputSize = _layers[0]->_nodeCount;
-  std::vector<float> dataDiff(inputSize);
+  std::vector<float> dataDiff(_batchSize * inputSize);
 
   read_from_dnnl_memory(dataDiff.data(), _layers[0]->_dataDiffMem);
 
-  _inputGradient.resize(inputSize);
-  for (size_t i = 0; i < inputSize; i++)
-   _inputGradient[i] =  dataDiff[i];
+  _inputGradient.resize(_batchSize);
+  for (size_t i = 0; i < _batchSize; i++)
+  {
+   _inputGradient[i].resize(inputSize);
+   for (size_t j = 0; j < inputSize; j++)
+    _inputGradient[i][j] = dataDiff[i * inputSize + j];
+  }
 
 #endif
 }

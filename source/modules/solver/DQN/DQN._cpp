@@ -37,7 +37,8 @@ void DQN::initialize()
 
   _QExperiment["Solver"]["Optimizer"] = _weightOptimizer;
 
-  _QExperiment["Console Output"]["Frequency"] = 50;
+  _QExperiment["Console Output"]["Frequency"] = 0;
+  _QExperiment["Console Output"]["Verbosity"] = "Silent";
   _QExperiment["File Output"]["Enabled"] = false;
 
   /*********************************************************************
@@ -45,7 +46,7 @@ void DQN::initialize()
   *********************************************************************/
 
   // Creating evaluation lambda function for optimization
-  auto fc = [this, e = &_QExperiment, s = _currentState](Sample &sample) { this->evaluateAction(sample, e, s, true); };
+  auto fc = [this, e = &_QExperiment, s = &_currentState](Sample &sample) { this->evaluateAction(sample, e, *s, true); };
 
   _AExperiment["Problem"]["Type"] = "Optimization";
   _AExperiment["Problem"]["Objective Function"] = fc;
@@ -57,12 +58,21 @@ void DQN::initialize()
    _AExperiment["Variables"][i]["Name"] = _k->_variables[varIdx]->_name;
    _AExperiment["Variables"][i]["Lower Bound"] = _k->_variables[varIdx]->_lowerBound;
    _AExperiment["Variables"][i]["Upper Bound"] = _k->_variables[varIdx]->_upperBound;
+
+   double initialGuess = (_k->_variables[varIdx]->_upperBound + _k->_variables[varIdx]->_lowerBound) * 0.5;
+   double initialStdDev = abs((_k->_variables[varIdx]->_upperBound - _k->_variables[varIdx]->_lowerBound)) * 0.1;
+   _AExperiment["Variables"][i]["Initial Value"] = initialGuess;
+   _AExperiment["Variables"][i]["Initial Mean"] = initialGuess;
+   _AExperiment["Variables"][i]["Initial Standard Deviation"] = initialStdDev;
   }
 
   _AExperiment["Solver"] = _actionOptimizer;
 
-  _AExperiment["Console Output"]["Frequency"] = 1;
+  _AExperiment["Console Output"]["Frequency"] = 0;
   _AExperiment["File Output"]["Enabled"] = false;
+  _AExperiment["Console Output"]["Verbosity"] = "Silent";
+
+  _AExperiment["Random Seed"] = _k->_randomSeed++;
 
   // Running initialization to verify that the configuration is correct
   _engine.initialize(_AExperiment);
@@ -179,20 +189,6 @@ void DQN::runGeneration()
     }
   }
 
-  // Printing episodes gathered so far
-  for (size_t i = 0; i < _stateHistory.size(); i++)
-  {
-   printf(" + State  %.3lu: ", i);
-   for (size_t j = 0; j < _stateHistory[i].size(); j++) printf("%f ", _stateHistory[i][j]);
-   printf("\n");
-
-   printf(" + Action %.3lu: ", i);
-   for (size_t j = 0; j < _actionHistory[i].size(); j++) printf("%f ", _actionHistory[i][j]);
-   printf("\n");
-
-   printf(" + Reward %.3lu: %f\n", i, _rewardHistory[i]);
-  }
-
   /*********************************************************************
   * Updating and Running Q-Approximation Experiment
   *********************************************************************/
@@ -229,11 +225,9 @@ void DQN::getAction(std::vector<double>& action, std::vector<double>& state)
  // Getting p = U[0,1] for the epsilon strategy
   double p = _uniformGenerator->getRandomNumber();
 
-  // Updating current state
-  _currentState = &state;
-
   // If p < e, then we choose the action randomly, with a uniform probability, among all possible actions.
-  if (p < 1.0) //if (p < _epsilon)
+  // If no states have been registered yet, use the random option in any case
+  if (p < _epsilon || _stateCount == 0)
   {
    for (size_t i = 0; i < action.size(); i++)
    {
@@ -246,6 +240,15 @@ void DQN::getAction(std::vector<double>& action, std::vector<double>& state)
 
    return;
   }
+
+  // Updating current state
+  _currentState = &state;
+
+  // Running optimization experiment to get best estimated action
+  _engine.run(_AExperiment);
+
+  // Getting optimal action, based on the NN evaluation
+  action = _AExperiment["Results"]["Best Sample"]["Parameters"].get<std::vector<double>>();
 }
 
 void DQN::evaluateAction(Sample &sample, Experiment* e, std::vector<double>* state, bool getGradients)
@@ -262,23 +265,17 @@ void DQN::evaluateAction(Sample &sample, Experiment* e, std::vector<double>* sta
   for (size_t i = 0; i < state->size(); i++) inputBatch[0][pos++] = (*state)[i];
   for (size_t i = 0; i < action.size(); i++) inputBatch[0][pos++] = action[i];
 
-//  // Updating NN inputs
-//  nn->setInput(inputBatch);
-//
-//  // Running the input values through the training neural network
-//  nn->forward();
-//
-//  // Saving the estimated Q for the given action (given the state)
-//  float Q = nn->_outputValues[0][0];
-//  sample["F(x)"] = Q;
-//
-//  if (getGradients)
-//  {
-//   // Running backward propagation
-//   nn->backwardData( { Q } );
-//
-//   sample["Gradient"] = nn->_inputGradient;
-//  }
+  // Getting function valuation
+  auto evaluation = e->_solver->evaluate(inputBatch);
+  auto gradients = e->_solver->getGradients(evaluation);
+
+  sample["F(x)"] = evaluation[0][0];
+
+  for (size_t i = 0; i < action.size(); i++)
+  {
+    size_t startIdx = state->size();
+    sample["Gradient"][i] = gradients[0][startIdx + i];
+  }
 }
 
 } // namespace solver

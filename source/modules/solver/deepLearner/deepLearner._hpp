@@ -36,6 +36,7 @@ class DeepLearner : public Solver
   */
   void evaluateWeightsAndBiases(korali::Sample &sample, NeuralNetwork* nn, const std::vector<std::vector<double>>& solution, bool getGradients = false);
 
+  std::vector<std::vector<double>> getGradients(const std::vector<std::vector<double>> &outputDiffs) override;
   std::vector<std::vector<double>> evaluate(const std::vector<std::vector<double>> &inputBatch) override;
 
   void initialize() override;

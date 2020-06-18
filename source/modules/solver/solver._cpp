@@ -2,10 +2,19 @@
 
 namespace korali
 {
+
 std::vector<std::vector<double>> Solver::evaluate(const std::vector<std::vector<double>> &inputBatch)
 {
-  KORALI_LOG_ERROR("This solver does not provide a test operation.\n");
+  KORALI_LOG_ERROR("This solver does not provide an evaluate operation.\n");
+  return {{}};
+}
+
+std::vector<std::vector<double>> Solver::getGradients(const std::vector<std::vector<double>> &outputDiffs)
+{
+  KORALI_LOG_ERROR("This solver does not provide a getGradients operation.\n");
   return {{}};
 }
 
 } // namespace korali
+
+

@@ -176,6 +176,7 @@ std::vector<std::vector<double>> DeepLearner::evaluate(const std::vector<std::ve
   {
    _testNeuralNetwork->createForwardPipeline(inputBatch.size());
    _testNeuralNetwork->updateWeightsAndBias();
+   _testNeuralNetwork->createBackwardPipeline();
   }
 
   // Updating NN inputs
@@ -185,6 +186,23 @@ std::vector<std::vector<double>> DeepLearner::evaluate(const std::vector<std::ve
   _testNeuralNetwork->forward();
 
   return _testNeuralNetwork->_outputValues;
+}
+
+std::vector<std::vector<double>> DeepLearner::getGradients(const std::vector<std::vector<double>> &outputDiffs)
+{
+ size_t batchSize = _testNeuralNetwork->_outputValues.size();
+ size_t outputSize = _testNeuralNetwork->_outputValues[0].size();
+
+ // Converting precision
+ std::vector<float> singlePrecisionDiffs(batchSize * outputSize);
+ for (size_t i = 0; i < batchSize; i++)
+   for (size_t j = 0; j < outputSize; j++)
+    singlePrecisionDiffs[i*outputSize + j] = outputDiffs[i][j];
+
+ // Running backward propagation wrt data
+ _testNeuralNetwork->backwardData(singlePrecisionDiffs);
+
+  return _testNeuralNetwork->_inputGradient;
 }
 
 void DeepLearner::printGenerationAfter()

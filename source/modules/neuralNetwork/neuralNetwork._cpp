@@ -51,9 +51,6 @@ void NeuralNetwork::createForwardPipeline(size_t batchSize)
 
   if (batchSize == 0) KORALI_LOG_ERROR("You should provide an input batch size larger than zero.\n");
 
-  // If the batchsize has not changed, then the NN has already been created, so return.
-  if (batchSize == _batchSize) return;
-
   // Updating NN's batch size
   _batchSize = batchSize;
 

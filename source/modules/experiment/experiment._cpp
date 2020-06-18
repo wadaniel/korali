@@ -169,7 +169,6 @@ void Experiment::initialize()
   }
   catch (const std::exception &e)
   {
-    printf("%s", _js.getJson().dump(2).c_str());
     KORALI_LOG_ERROR("Error parsing Experiment's configuration. Reason:\n%s", e.what());
   }
 

@@ -5,13 +5,15 @@
 #include "modules/experiment/experiment.hpp"
 #include "modules/neuralNetwork/neuralNetwork.hpp"
 #include "modules/problem/supervisedLearning/supervisedLearning.hpp"
-#include "modules/solver/solver.hpp"
+#include "modules/solver/learner/learner.hpp"
 
 namespace korali
 {
 namespace solver
 {
-class DeepLearner : public Solver
+namespace learner
+{
+class DeepLearner : public Learner
 {
   public:
   /**
@@ -30,12 +32,24 @@ class DeepLearner : public Solver
   korali::Experiment _optExperiment;
 
   /**
+   * @brief A neural network to perform input evaluation and obtain gradients
+   */
+  NeuralNetwork* _evaluationNeuralNetwork;
+
+  /**
+   * @brief Keeps track of whether the evaluation NN has been initialized
+   */
+  bool _isEvaluatioNNInitialized;
+
+  /**
   * @brief Model function to evaluate a given NN weight/bias configuration
   * @param sample The sample containing proposal NN weight/bias configuration.
   * @param solution Solution values from which to calculate loss and differentials
   */
   void evaluateWeightsAndBiases(korali::Sample &sample, NeuralNetwork* nn, const std::vector<std::vector<double>>& solution, bool getGradients = false);
 
+  knlohmann::json getParameters() const override;
+  void setParameters(const knlohmann::json& parameters) override;
   std::vector<std::vector<double>> getGradients(const std::vector<std::vector<double>> &outputDiffs) override;
   std::vector<std::vector<double>> evaluate(const std::vector<std::vector<double>> &inputBatch) override;
 
@@ -43,6 +57,7 @@ class DeepLearner : public Solver
   void runGeneration() override;
   void printGenerationAfter() override;
 };
+} // namespace learner
 } // namespace solver
 } // namespace korali
 

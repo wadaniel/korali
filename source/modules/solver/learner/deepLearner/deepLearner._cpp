@@ -1,6 +1,6 @@
 #include "modules/conduit/conduit.hpp"
 #include "modules/experiment/experiment.hpp"
-#include "modules/solver/deepLearner/deepLearner.hpp"
+#include "modules/solver/learner/deepLearner/deepLearner.hpp"
 
 /******************************************************************
  * Performance considerations:
@@ -11,8 +11,14 @@ namespace korali
 {
 namespace solver
 {
+namespace learner
+{
+
 void DeepLearner::initialize()
 {
+  // Indicate that the evaluation NN is not yet initialized
+  _isEvaluatioNNInitialized = false;
+
   // Getting problem pointer
   _problem = dynamic_cast<problem::SupervisedLearning *>(_k->_problem);
 
@@ -46,9 +52,6 @@ void DeepLearner::initialize()
 
   // Setting input validation data
   _validationNeuralNetwork->setInput(_problem->_validationInput);
-
-  // Setting Test NN
-  _testNeuralNetwork = dynamic_cast<NeuralNetwork *>(Module::duplicate(_validationNeuralNetwork));
 
   /*****************************************************************
    * Setting up weight and bias optimization experiment
@@ -115,6 +118,9 @@ void DeepLearner::initialize()
   // Running initialization to verify that the configuration is correct
   _optEngine.initialize(_optExperiment);
 
+  // Storing input normalization hyperparameters
+  _hyperparameters["Input Normalization Means"] = _trainingNeuralNetwork->_inputNormalizationMeans;
+  _hyperparameters["Input Normalization Variances"] = _trainingNeuralNetwork->_inputNormalizationVariances;
 }
 
 void DeepLearner::runGeneration()
@@ -160,38 +166,49 @@ void DeepLearner::runGeneration()
     _lowestValidationLoss = _currentValidationLoss;
 
     // Storing best NN
-    knlohmann::json js;
     for (size_t i = 1; i < _validationNeuralNetwork->_layers.size(); i++)
     {
-     _testNeuralNetwork->_layers[i]->_weights = _validationNeuralNetwork->_layers[i]->_weights;
-     _testNeuralNetwork->_layers[i]->_bias = _validationNeuralNetwork->_layers[i]->_bias;
+     _hyperparameters["Weights"][i] = _validationNeuralNetwork->_layers[i]->_weights;
+     _hyperparameters["Bias"][i] = _validationNeuralNetwork->_layers[i]->_bias;
     }
   }
 }
 
 std::vector<std::vector<double>> DeepLearner::evaluate(const std::vector<std::vector<double>> &inputBatch)
 {
-  // Re-building NN if batch size differs from the previous run
-  if (inputBatch.size() != _testNeuralNetwork->_batchSize)
+  // Building evaluation NN if not yet initialized
+  if (_isEvaluatioNNInitialized == false)
   {
-   _testNeuralNetwork->createForwardPipeline(inputBatch.size());
-   _testNeuralNetwork->updateWeightsAndBias();
-   _testNeuralNetwork->createBackwardPipeline();
+   _evaluationNeuralNetwork = dynamic_cast<NeuralNetwork *>(Module::duplicate(_neuralNetwork));
+   _evaluationNeuralNetwork->_inputNormalizationMeans = _hyperparameters["Input Normalization Means"].get<std::vector<double>>();
+   _evaluationNeuralNetwork->_inputNormalizationVariances = _hyperparameters["Input Normalization Variances"].get<std::vector<double>>();
+
+   for (size_t i = 1; i < _evaluationNeuralNetwork->_layers.size(); i++)
+   {
+    _evaluationNeuralNetwork->_layers[i]->_weights = _hyperparameters["Weights"][i].get<std::vector<std::vector<double>>>();
+    _evaluationNeuralNetwork->_layers[i]->_bias = _hyperparameters["Bias"][i].get<std::vector<double>>();
+   }
+
+   _evaluationNeuralNetwork->createForwardPipeline(inputBatch.size());
+   _evaluationNeuralNetwork->createBackwardPipeline();
+   _evaluationNeuralNetwork->updateWeightsAndBias();
+
+   _isEvaluatioNNInitialized = true;
   }
 
   // Updating NN inputs
-  _testNeuralNetwork->setInput(inputBatch);
+  _evaluationNeuralNetwork->setInput(inputBatch);
 
   // Running the input values through the neural network
-  _testNeuralNetwork->forward();
+  _evaluationNeuralNetwork->forward();
 
-  return _testNeuralNetwork->_outputValues;
+  return _evaluationNeuralNetwork->_outputValues;
 }
 
 std::vector<std::vector<double>> DeepLearner::getGradients(const std::vector<std::vector<double>> &outputDiffs)
 {
- size_t batchSize = _testNeuralNetwork->_outputValues.size();
- size_t outputSize = _testNeuralNetwork->_outputValues[0].size();
+ size_t batchSize = _evaluationNeuralNetwork->_outputValues.size();
+ size_t outputSize = _evaluationNeuralNetwork->_outputValues[0].size();
 
  // Converting precision
  std::vector<float> singlePrecisionDiffs(batchSize * outputSize);
@@ -200,9 +217,9 @@ std::vector<std::vector<double>> DeepLearner::getGradients(const std::vector<std
     singlePrecisionDiffs[i*outputSize + j] = outputDiffs[i][j];
 
  // Running backward propagation wrt data
- _testNeuralNetwork->backwardData(singlePrecisionDiffs);
+ _evaluationNeuralNetwork->backwardData(singlePrecisionDiffs);
 
-  return _testNeuralNetwork->_inputGradient;
+  return _evaluationNeuralNetwork->_inputGradient;
 }
 
 void DeepLearner::printGenerationAfter()
@@ -292,6 +309,18 @@ void DeepLearner::evaluateWeightsAndBiases(Sample &sample, NeuralNetwork* nn, co
    sample["Gradient"] = gradientVector;
   }
 }
+
+knlohmann::json DeepLearner::getParameters() const
+{
+
+}
+
+void DeepLearner::setParameters(const knlohmann::json& parameters)
+{
+
+}
+
+} // namespace learner
 
 } // namespace solver
 

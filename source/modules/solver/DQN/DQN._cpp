@@ -28,25 +28,11 @@ void DQN::initialize()
   }
 
   /*********************************************************************
-  * Creating Q-Approximation Experiment
-  *********************************************************************/
-
-  _QExperiment["Problem"]["Type"] = "Supervised Learning";
-  _QExperiment["Solver"]["Type"] = "Deep Learner";
-  _neuralNetwork->getConfiguration(_QExperiment["Solver"]["Neural Network"]);
-
-  _QExperiment["Solver"]["Optimizer"] = _weightOptimizer;
-
-  _QExperiment["Console Output"]["Frequency"] = 0;
-  _QExperiment["Console Output"]["Verbosity"] = "Silent";
-  _QExperiment["File Output"]["Enabled"] = false;
-
-  /*********************************************************************
   * Creating Q-Maximizing Action Experiment
   *********************************************************************/
 
   // Creating evaluation lambda function for optimization
-  auto fc = [this, e = &_QExperiment, s = &_currentState](Sample &sample) { this->evaluateAction(sample, e, *s, true); };
+  auto fc = [this, s = &_currentState](Sample &sample) { this->evaluateAction(sample, *s, true); };
 
   _AExperiment["Problem"]["Type"] = "Optimization";
   _AExperiment["Problem"]["Objective Function"] = fc;
@@ -190,31 +176,56 @@ void DQN::runGeneration()
   }
 
   /*********************************************************************
-  * Updating and Running Q-Approximation Experiment
+  * Creating and running Q-Approximation Experiment
   *********************************************************************/
+
+  Experiment QExperiment;
+
+  QExperiment["Problem"]["Type"] = "Supervised Learning";
+  QExperiment["Solver"]["Type"] = "Deep Learner";
+  _neuralNetwork->getConfiguration(QExperiment["Solver"]["Neural Network"]);
+
+  QExperiment["Solver"]["Optimizer"] = _weightOptimizer;
+
+  QExperiment["Console Output"]["Frequency"] = 50;
+  //QExperiment["Console Output"]["Verbosity"] = "Silent";
+  QExperiment["File Output"]["Enabled"] = false;
+
+   // Setting dummy configuration
+  QExperiment["Problem"]["Training"]["Input"][0][0] = 0;
+  QExperiment["Problem"]["Validation"]["Input"][0][0] = 0;
+  QExperiment["Problem"]["Training"]["Solution"][0][0] = 0;
+  QExperiment["Problem"]["Validation"]["Solution"][0][0] = 0;
+
+  _engine.initialize(QExperiment);
 
   for (size_t i = _stateCount; i < _stateHistory.size(); i++)
   {
    size_t expVar = 0;
    for (size_t j = 0; j < _problem->_stateVectorSize; j++)
    {
-    _QExperiment["Problem"]["Training"]["Input"][i][expVar] = _stateHistory[i][j];
-    _QExperiment["Problem"]["Validation"]["Input"][i][expVar] = _stateHistory[i][j];
+    QExperiment["Problem"]["Training"]["Input"][i][expVar] = _stateHistory[i][j];
+    QExperiment["Problem"]["Validation"]["Input"][i][expVar] = _stateHistory[i][j];
     expVar++;
    }
 
    for (size_t j = 0; j < _problem->_actionVectorSize; j++)
    {
-    _QExperiment["Problem"]["Training"]["Input"][i][expVar] = _actionHistory[i][j];
-    _QExperiment["Problem"]["Validation"]["Input"][i][expVar] = _actionHistory[i][j];
+    QExperiment["Problem"]["Training"]["Input"][i][expVar] = _actionHistory[i][j];
+    QExperiment["Problem"]["Validation"]["Input"][i][expVar] = _actionHistory[i][j];
     expVar++;
    }
 
-   _QExperiment["Problem"]["Training"]["Solution"][i][0] = _rewardHistory[i];
-   _QExperiment["Problem"]["Validation"]["Solution"][i][0] = _rewardHistory[i];
+   QExperiment["Problem"]["Training"]["Solution"][i][0] = _rewardHistory[i];
+   QExperiment["Problem"]["Validation"]["Solution"][i][0] = _rewardHistory[i];
   }
 
-  _engine.run(_QExperiment);
+  _engine.run(QExperiment);
+
+  // Broadcasting configuration
+  knlohmann::json js;
+  QExperiment.getConfiguration(js["Q Experiment"]);
+  _conduit->broadcastGlobals(js);
 
   // Increasing state count
   _stateCount = _stateHistory.size();
@@ -251,8 +262,15 @@ void DQN::getAction(std::vector<double>& action, std::vector<double>& state)
   action = _AExperiment["Results"]["Best Sample"]["Parameters"].get<std::vector<double>>();
 }
 
-void DQN::evaluateAction(Sample &sample, Experiment* e, std::vector<double>* state, bool getGradients)
+void DQN::evaluateAction(Sample &sample, std::vector<double>* state, bool getGradients)
 {
+  printf("Config: %s\n", sample["Globals"]["Q Experiment"].dump(2).c_str());
+
+  // Getting updated Q Experiment configuration
+  Experiment QExperiment;
+  QExperiment.setConfiguration(sample["Globals"]["Q Experiment"]);
+  QExperiment.initialize();
+
   // Setting weights and biases
   auto action = KORALI_GET(std::vector<double>, sample, "Parameters");
 
@@ -266,8 +284,8 @@ void DQN::evaluateAction(Sample &sample, Experiment* e, std::vector<double>* sta
   for (size_t i = 0; i < action.size(); i++) inputBatch[0][pos++] = action[i];
 
   // Getting function valuation
-  auto evaluation = e->_solver->evaluate(inputBatch);
-  auto gradients = e->_solver->getGradients(evaluation);
+  auto evaluation = QExperiment.evaluate(inputBatch);
+  auto gradients = QExperiment.getGradients(evaluation);
 
   sample["F(x)"] = evaluation[0][0];
 

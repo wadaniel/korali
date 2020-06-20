@@ -7,6 +7,7 @@
 #include "modules/experiment/experiment.hpp"
 #include "modules/problem/problem.hpp"
 #include "modules/solver/solver.hpp"
+#include "modules/solver/learner/learner.hpp"
 #include <chrono>
 #include <cstdio>
 #include <map>
@@ -187,12 +188,20 @@ void Experiment::finalize()
 
 std::vector<std::vector<double>> Experiment::evaluate(const std::vector<std::vector<double>> &inputBatch)
 {
-  return _k->_solver->evaluate(inputBatch);
+  auto learner = dynamic_cast<solver::Learner*>(_k->_solver);
+  if (learner != NULL)
+   return learner->evaluate(inputBatch);
+  else
+   KORALI_LOG_ERROR("This solver does not support evaluation operations.\n");
 }
 
 std::vector<std::vector<double>> Experiment::getGradients(const std::vector<std::vector<double>> &outputDiffs)
 {
-  return _k->_solver->getGradients(outputDiffs);
+ auto learner = dynamic_cast<solver::Learner*>(_k->_solver);
+   if (learner != NULL)
+    return learner->getGradients(outputDiffs);
+   else
+    KORALI_LOG_ERROR("This solver does not support evaluation operations.\n");
 }
 
 knlohmann::json &Experiment::operator[](const std::string &key) { return _js[key]; }

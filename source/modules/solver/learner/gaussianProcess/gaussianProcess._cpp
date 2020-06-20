@@ -1,11 +1,13 @@
 #include "modules/conduit/conduit.hpp"
 #include "modules/experiment/experiment.hpp"
-#include "modules/solver/gaussianProcess/gaussianProcess.hpp"
+#include "modules/solver/learner/gaussianProcess/gaussianProcess.hpp"
 #include <Eigen/Dense>
 
 namespace korali
 {
 namespace solver
+{
+namespace learner
 {
 /**
   * @brief Converts a vector of doubles to Eigen format
@@ -118,6 +120,8 @@ std::vector<std::vector<double>> GaussianProcess::evaluate(const std::vector<std
   }
   return output;
 }
+
+} // namespace learner
 
 } // namespace solver
 

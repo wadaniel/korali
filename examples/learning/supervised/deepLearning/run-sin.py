@@ -38,7 +38,7 @@ e["Problem"]["Validation"]["Solution"] = validationSolutionSet
 
 ### Using a neural network solver (deep learning) for inference
 
-e["Solver"]["Type"] = "Deep Learner"
+e["Solver"]["Type"] = "Learner/Deep Learner"
 
 e["Solver"]["Optimizer"]["Type"] = "Optimizer/Adam"
 e["Solver"]["Steps Per Generation"] = 100

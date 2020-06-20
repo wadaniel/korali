@@ -5,7 +5,7 @@
 #include "gp/gp.h"
 #include "modules/experiment/experiment.hpp"
 #include "modules/problem/supervisedLearning/supervisedLearning.hpp"
-#include "modules/solver/solver.hpp"
+#include "modules/solver/learner/learner.hpp"
 
 #include <memory>
 
@@ -13,7 +13,10 @@ namespace korali
 {
 namespace solver
 {
-class GaussianProcess : public Solver
+namespace learner
+{
+
+class GaussianProcess : public Learner
 {
   public:
   ~GaussianProcess();
@@ -51,6 +54,7 @@ class GaussianProcess : public Solver
   void runGeneration() override;
   void printGenerationAfter() override;
 };
+} // namespace learner
 } // namespace solver
 } // namespace korali
 

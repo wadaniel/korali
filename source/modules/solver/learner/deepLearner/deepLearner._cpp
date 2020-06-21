@@ -22,9 +22,6 @@ void DeepLearner::initialize()
   // Getting problem pointer
   _problem = dynamic_cast<problem::SupervisedLearning *>(_k->_problem);
 
-  if (_problem->_trainingBatchSize == 0) KORALI_LOG_ERROR("Training data has not been provided for variable 0.\n");
-  if (_problem->_validationBatchSize == 0) KORALI_LOG_ERROR("Validation data has not been provided for variable 0.\n");
-
   /*****************************************************************
    * Setting up Training and Validation networks
    *****************************************************************/
@@ -121,10 +118,15 @@ void DeepLearner::initialize()
   // Storing input normalization hyperparameters
   _hyperparameters["Input Normalization Means"] = _trainingNeuralNetwork->_inputNormalizationMeans;
   _hyperparameters["Input Normalization Variances"] = _trainingNeuralNetwork->_inputNormalizationVariances;
+
+  // Resetting termination counters
+  _currentInactiveSteps = 0;
+  _lowestValidationLoss = korali::Inf;
 }
 
 void DeepLearner::runGeneration()
 {
+
   /**************************************************************
   * Training Stage
   *************************************************************/
@@ -166,7 +168,7 @@ void DeepLearner::runGeneration()
     _lowestValidationLoss = _currentValidationLoss;
 
     // Storing best NN
-    for (size_t i = 1; i < _validationNeuralNetwork->_layers.size(); i++)
+    for (size_t i = 0; i < _validationNeuralNetwork->_layers.size(); i++)
     {
      _hyperparameters["Weights"][i] = _validationNeuralNetwork->_layers[i]->_weights;
      _hyperparameters["Bias"][i] = _validationNeuralNetwork->_layers[i]->_bias;
@@ -183,7 +185,7 @@ std::vector<std::vector<double>> DeepLearner::evaluate(const std::vector<std::ve
    _evaluationNeuralNetwork->_inputNormalizationMeans = _hyperparameters["Input Normalization Means"].get<std::vector<double>>();
    _evaluationNeuralNetwork->_inputNormalizationVariances = _hyperparameters["Input Normalization Variances"].get<std::vector<double>>();
 
-   for (size_t i = 1; i < _evaluationNeuralNetwork->_layers.size(); i++)
+   for (size_t i = 0; i < _evaluationNeuralNetwork->_layers.size(); i++)
    {
     _evaluationNeuralNetwork->_layers[i]->_weights = _hyperparameters["Weights"][i].get<std::vector<std::vector<double>>>();
     _evaluationNeuralNetwork->_layers[i]->_bias = _hyperparameters["Bias"][i].get<std::vector<double>>();
@@ -308,16 +310,6 @@ void DeepLearner::evaluateWeightsAndBiases(Sample &sample, NeuralNetwork* nn, co
 
    sample["Gradient"] = gradientVector;
   }
-}
-
-knlohmann::json DeepLearner::getParameters() const
-{
-
-}
-
-void DeepLearner::setParameters(const knlohmann::json& parameters)
-{
-
 }
 
 } // namespace learner

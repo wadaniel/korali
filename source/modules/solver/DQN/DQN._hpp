@@ -3,6 +3,7 @@
 
 #include "modules/problem/reinforcementLearning/reinforcementLearning.hpp"
 #include "modules/solver/solver.hpp"
+#include "modules/solver/learner/learner.hpp"
 
 namespace korali
 {
@@ -22,6 +23,16 @@ class DQN : public Solver
   korali::Engine _engine;
 
   /**
+ * @brief Korali experiment for supervised learning of Q
+ */
+  korali::Experiment _QExperiment;
+
+  /**
+  * @brief Learner to use for the inference of actions
+  */
+  solver::Learner* _learner;
+
+  /**
  * @brief Korali experiment for optimizing the action based on a trained Q-Network
  */
   korali::Experiment _AExperiment;
@@ -39,7 +50,7 @@ class DQN : public Solver
   /**
    * @brief Function to evaluate the Q* of a given action
    */
-  void evaluateAction(Sample &sample, std::vector<double>* state, bool getGradients);
+  void evaluateAction(Sample &sample, bool getGradients);
 
   /**
   * @brief Runs a generation of the environment(s), running an action on each episode, and updating the policy.

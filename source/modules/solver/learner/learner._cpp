@@ -1,0 +1,30 @@
+#include "modules/solver/learner/learner.hpp"
+
+namespace korali
+{
+namespace solver
+{
+
+std::vector<std::vector<double>> Learner::evaluate [[noreturn]] (const std::vector<std::vector<double>> &inputBatch)
+{
+  KORALI_LOG_ERROR("This solver does not provide an evaluate operation.\n");
+}
+
+std::vector<std::vector<double>> Learner::getGradients [[noreturn]] (const std::vector<std::vector<double>> &outputDiffs)
+{
+  KORALI_LOG_ERROR("This solver does not provide a getGradients operation.\n");
+}
+
+knlohmann::json& Learner::getHyperparameters()
+{
+ return _hyperparameters;
+}
+
+void Learner::setHyperparameters(const knlohmann::json& parameters)
+{
+ _hyperparameters = parameters;
+}
+
+} // namespace solver
+
+} // namespace korali

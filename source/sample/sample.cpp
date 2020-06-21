@@ -59,6 +59,11 @@ void Sample::sampleLauncher()
   co_switch(engine->_workerThread);
 }
 
+knlohmann::json& Sample::globals()
+{
+ return *_globals;
+}
+
 bool Sample::contains(const std::string &key) { return _self->_js.contains(key); }
 knlohmann::json &Sample::operator[](const std::string &key) { return _self->_js[key]; }
 knlohmann::json &Sample::operator[](const unsigned long int &key) { return _self->_js[key]; }

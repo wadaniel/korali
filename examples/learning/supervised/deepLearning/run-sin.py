@@ -72,10 +72,12 @@ testInputSet = np.random.uniform(0, 2 * np.pi, 100)
 testInputSet = [[x] for x in testInputSet.tolist()]
 
 testInferredSet = e.evaluate(testInputSet)
+testGradientSet = e.getGradients(testInferredSet)
 testOutputSet = np.sin(testInputSet) * scaling
 
 ### Plotting Results
 
 plt.plot(testInputSet, testOutputSet, "o")
 plt.plot(testInputSet, testInferredSet, "x")
+plt.plot(testInputSet, testGradientSet, "*")
 plt.show()

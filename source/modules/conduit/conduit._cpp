@@ -28,8 +28,8 @@ void Conduit::initiateSample(knlohmann::json &sampleJs)
   if (it == experiment->sampleIdMap.end())
   {
     sampleJs["Finished"] = false;
-    sampleJs["Globals"] = _globals;
     experiment->sampleIdMap[sampleId] = new Sample;
+    experiment->sampleIdMap[sampleId]->_globals = &_globals;
     experiment->sampleIdMap[sampleId]->_sampleThread = co_create(1 << 30, Sample::sampleLauncher);
   }
 

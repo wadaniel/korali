@@ -55,14 +55,34 @@ class NeuralNetwork : public Module
   dnnl::memory _inputNormalizationWorkspaceMem;
 
   /**
+   * @brief oneDNN Memory object descriptor to store scale/shift configuration for the normalization operation
+   */
+  dnnl::memory _inputNormalizationScaleShiftMem;
+
+  /**
    * @brief oneDNN Arguments to the normalization operation
    */
-  std::unordered_map<int, dnnl::memory> _inputNormalizationArgs;
+  std::unordered_map<int, dnnl::memory> _inputForwardNormalizationArgs;
+
+  /**
+   * @brief oneDNN primitive descriptor to run the normalization operation
+  */
+  dnnl::batch_normalization_forward::primitive_desc _inputForwardNormalizationPrimitiveDesc;
 
   /**
    * @brief oneDNN primitive to run the normalization operation
    */
-  dnnl::primitive _inputNormalizationPrimitive;
+  dnnl::primitive _inputForwardNormalizationPrimitive;
+
+  /**
+   * @brief oneDNN Arguments to the gradient normalization operation
+   */
+  std::unordered_map<int, dnnl::memory> _inputBackwardNormalizationArgs;
+
+  /**
+   * @brief oneDNN primitive to run the gradient normalization operation
+   */
+  dnnl::primitive _inputBackwardNormalizationPrimitive;
 
 #endif
 

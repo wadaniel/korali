@@ -56,6 +56,11 @@ class Sample
   Sample *_self;
 
   /**
+  * @brief Pointer to global parameters
+  */
+  knlohmann::json* _globals;
+
+  /**
   * @brief Current state of the sample
   */
   SampleState _state;
@@ -93,9 +98,15 @@ class Sample
   static void sampleLauncher();
 
   /**
-  * @brief Rreturns results to engine without finishing the sample.
+  * @brief Returns results to engine without finishing the sample.
   */
   void update();
+
+  /**
+  * @brief Returns global parameters broadcasted by the problem
+  * @return The global parameters
+  */
+  knlohmann::json& globals();
 
   /**
   * @brief Checks whether the sample contains the given key.

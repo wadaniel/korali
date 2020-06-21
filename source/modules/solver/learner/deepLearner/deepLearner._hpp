@@ -48,8 +48,6 @@ class DeepLearner : public Learner
   */
   void evaluateWeightsAndBiases(korali::Sample &sample, NeuralNetwork* nn, const std::vector<std::vector<double>>& solution, bool getGradients = false);
 
-  knlohmann::json getParameters() const override;
-  void setParameters(const knlohmann::json& parameters) override;
   std::vector<std::vector<double>> getGradients(const std::vector<std::vector<double>> &outputDiffs) override;
   std::vector<std::vector<double>> evaluate(const std::vector<std::vector<double>> &inputBatch) override;
 

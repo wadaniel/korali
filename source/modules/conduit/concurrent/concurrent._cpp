@@ -78,15 +78,6 @@ void Concurrent::initServer()
   }
 }
 
-void Concurrent::update(Sample &sample)
-{
-  string resultString = sample._js.getJson().dump();
-  size_t resultStringSize = resultString.size();
-
-  write(_resultPipe[_workerId][1], &resultStringSize, sizeof(size_t));
-  write(_resultPipe[_workerId][1], resultString.c_str(), resultStringSize * sizeof(char));
-}
-
 void Concurrent::worker(int workerId)
 {
   _workerId = workerId;
@@ -112,7 +103,19 @@ void Concurrent::worker(int workerId)
     auto actionJs = knlohmann::json::parse(inputString);
 
     if (actionJs["Conduit Action"] == "Terminate") exit(0);
-    if (actionJs["Conduit Action"] == "Process Sample") initiateSample(actionJs);
+    if (actionJs["Conduit Action"] == "Process Sample")
+    {
+     Sample s;
+     s._globals = &_globals;
+     s._js.getJson() = actionJs;
+     s.sampleLauncher();
+
+     string resultString = s._js.getJson().dump();
+     size_t resultStringSize = resultString.size();
+
+     write(_resultPipe[_workerId][1], &resultStringSize, sizeof(size_t));
+     write(_resultPipe[_workerId][1], resultString.c_str(), resultStringSize * sizeof(char));
+    }
     if (actionJs["Conduit Action"] == "Broadcast Globals") _globals = actionJs;
     if (actionJs["Conduit Action"] == "Stack Engine") _engineStack.push(Engine::deserialize(actionJs["Engine"]));
     if (actionJs["Conduit Action"] == "Pop Engine") _engineStack.pop();
@@ -168,8 +171,7 @@ void Concurrent::processSample(Sample &sample)
     if (readBytes > 0)
     {
       char resultString[resultStringSize + 1];
-      while (read(_resultPipe[launcherId][0], resultString, resultStringSize * sizeof(char)) < 0)
-        ;
+      while (read(_resultPipe[launcherId][0], resultString, resultStringSize * sizeof(char)) < 0);
 
       resultString[resultStringSize] = '\0';
       sample._js.getJson() = knlohmann::json::parse(resultString);

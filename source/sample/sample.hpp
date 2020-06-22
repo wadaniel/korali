@@ -95,7 +95,7 @@ class Sample
   /**
   * @brief Handles the execution thread of individual samples on the worker's side
   */
-  static void sampleLauncher();
+  void sampleLauncher();
 
   /**
   * @brief Returns results to engine without finishing the sample.

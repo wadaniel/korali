@@ -24,39 +24,24 @@ void Sample::run(size_t functionPosition)
   (*_functionVector[functionPosition])(*_self);
 }
 
-void Sample::update()
-{
-  Engine *engine = _engineStack.top();
-  engine->_currentWorker->update(*_self);
-  co_switch(engine->_workerThread);
-}
-
 void Sample::sampleLauncher()
 {
   Engine *engine = _engineStack.top();
-  Sample *sample = engine->_currentSample;
-
-  (*sample)["Finished"] = false;
 
   // Getting sample information
-  size_t experimentId = KORALI_GET(size_t, (*sample), "Experiment Id");
-  auto operation = KORALI_GET(std::string, (*sample), "Operation");
-  auto module = KORALI_GET(std::string, (*sample), "Module");
+  size_t experimentId = KORALI_GET(size_t, (*_self), "Experiment Id");
+  auto operation = KORALI_GET(std::string, (*_self), "Operation");
+  auto module = KORALI_GET(std::string, (*_self), "Module");
 
   // Getting experiment pointer
   auto experiment = engine->_experimentVector[experimentId];
 
   // Running operation
-  if ((*sample)["Module"] == "Problem")
-    experiment->_problem->runOperation(operation, *sample);
+  if ((*_self)["Module"] == "Problem")
+    experiment->_problem->runOperation(operation, *_self);
 
-  if ((*sample)["Module"] == "Solver")
-    experiment->_solver->runOperation(operation, *sample);
-
-  (*sample)["Finished"] = true;
-  engine->_currentWorker->update(*sample);
-
-  co_switch(engine->_workerThread);
+  if ((*_self)["Module"] == "Solver")
+    experiment->_solver->runOperation(operation, *_self);
 }
 
 knlohmann::json& Sample::globals()

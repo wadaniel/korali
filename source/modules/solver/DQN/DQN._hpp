@@ -53,6 +53,11 @@ class DQN : public Solver
   void evaluateAction(Sample &sample, bool getGradients);
 
   /**
+   * @brief Gets the next action for the actor, based on the Q policy
+   */
+  void getAction2(Sample &sample);
+
+  /**
   * @brief Runs a generation of the environment(s), running an action on each episode, and updating the policy.
   */
   void runGeneration() override;

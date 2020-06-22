@@ -47,7 +47,7 @@ void Conduit::initiateSample(knlohmann::json &sampleJs)
 }
 
 /***********************************
- * Worker-Side Operations
+ * Engine-Side Operations
  **********************************/
 
 void Conduit::coroutineWrapper()

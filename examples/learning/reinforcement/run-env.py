@@ -1,41 +1,61 @@
 #!/usr/bin/env python3
 import os
 import sys
+import math
 import numpy as np
 import matplotlib.pyplot as plt
+
+######## Defining Problem's Constants
+
+N = 3 # Number of stages
+initialX = 1.0 # Initial value of X
+alpha = 0.75 # Alpha
+beta = 0.50 # Beta
+
+######## Defining Problem's Formulae
+
+# Reward Function g(y)
+def g(y):
+ return np.cos(1 + 23 * y)
+
+# Reward Function h(x-y)
+def h(v):
+ return np.sin(10 * v)
+
+####### Defining Problem's environment
 
 def env(s):
 
  # Getting first state/action
- state = s["State"][0]
- action = s["Action"][0]
+ x = s["State"][0]
+ y = s["Action"][0]
  reward = 0
  
- while (state > 0.0):
+ for i in range(N):
   
-  #print('Running Environment')
-  #print(' + State:  ' + str(state))
-  #print(' + Action: ' + str(action))
+  print('Running Environment')
+  print(' + State:  ' + str(x))
+  print(' + Action: ' + str(y))
   
-  # Calculating reward
-  reward = reward + action
-  #print(' + Reward: ' + str(reward))
+  # If Y greater than current X, then this is not a feasible policy, with discount for the extra expenditure
+  if (y > x): 
+   reward = reward + g(y) + h(x-y) + (x - y)*100.0 
+     
+  # Else, we use the given function to calculate reward
+  else: reward = reward + g(y) + h(x-y)
   
-  # Storing reward for current state/action 
   s["Reward"] = reward
+  print(' + Reward: ' + str(s["Reward"]))
   
   # Storing new state
-  state = state - action
-  s["State"] = [ state ]
+  x = alpha*y + beta*(x-y)
+  s["State"] = [ x ]
   
   # Reporting back and getting new action
   s.update()
  
   # Reading new action
-  action = s["Action"][0]
-  
- # Lastly, add the remaining budget
- s["Reward"] = reward + state
+  y = s["Action"][0]
 
 import korali
 k = korali.Engine()
@@ -45,15 +65,15 @@ e = korali.Experiment()
 
 e["Problem"]["Type"] = "Reinforcement Learning"
 e["Problem"]["Environment Function"] = env
-e["Problem"]["Initial States"] = [ [ 100.0 ] for i in range(500) ]
+e["Problem"]["Initial States"] = [ [ initialX ] for i in range(500) ]
 
 e["Variables"][0]["Name"] = "X"
 e["Variables"][0]["Type"] = "State"
 
 e["Variables"][1]["Name"] = "Y"
 e["Variables"][1]["Type"] = "Action"
-e["Variables"][1]["Lower Bound"] = 10.0
-e["Variables"][1]["Upper Bound"] = 100.0
+e["Variables"][1]["Lower Bound"] = 0.0
+e["Variables"][1]["Upper Bound"] = 1.0
 
 ### Using a neural network solver (deep learning) for inference
 
@@ -62,8 +82,9 @@ e["Solver"]["Agent Count"] = 50
 
 ### Defining the shape of the neural network
 
-e["Solver"]["Action Optimizer"]["Type"] = "Optimizer/Adam"
-e["Solver"]["Action Optimizer"]["Termination Criteria"]["Max Generations"] = 1000;
+e["Solver"]["Action Optimizer"]["Type"] = "Optimizer/CMAES"
+e["Solver"]["Action Optimizer"]["Termination Criteria"]["Max Infeasible Resamplings"] = 10000;
+#e["Solver"]["Action Optimizer"]["Termination Criteria"]["Max Generations"] = 1000;
 
 e["Solver"]["Weight Optimizer"]["Type"] = "Optimizer/Adam"
 
@@ -72,7 +93,7 @@ e["Solver"]["Neural Network"]["Layers"][0]["Node Count"] = 2
 e["Solver"]["Neural Network"]["Layers"][0]["Activation Function"] = "Identity"
 
 e["Solver"]["Neural Network"]["Layers"][1]["Type"] = "Dense"
-e["Solver"]["Neural Network"]["Layers"][1]["Node Count"] = 10
+e["Solver"]["Neural Network"]["Layers"][1]["Node Count"] = 30
 e["Solver"]["Neural Network"]["Layers"][1]["Activation Function"] = "Tanh"
 
 e["Solver"]["Neural Network"]["Layers"][2]["Type"] = "Output"

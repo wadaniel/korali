@@ -6,13 +6,17 @@ namespace korali
 namespace solver
 {
 
+void DQN::getAction2(Sample &sample)
+{
+ printf("Hello\n");
+}
+
 void DQN::initialize()
 {
   // Getting problem pointer
   _problem = dynamic_cast<problem::ReinforcementLearning *>(_k->_problem);
 
   // Checking inputs
-
   for (size_t i = 0; i < _problem->_actionVectorSize; i++)
   {
    size_t varIdx = _problem->_actionVectorIndexes[i];
@@ -84,7 +88,7 @@ void DQN::initialize()
    _AExperiment["Variables"][i]["Upper Bound"] = _k->_variables[varIdx]->_upperBound;
 
    double initialGuess = (_k->_variables[varIdx]->_upperBound + _k->_variables[varIdx]->_lowerBound) * 0.5;
-   double initialStdDev = abs((_k->_variables[varIdx]->_upperBound - _k->_variables[varIdx]->_lowerBound)) * 0.01;
+   double initialStdDev = abs((_k->_variables[varIdx]->_upperBound - _k->_variables[varIdx]->_lowerBound)) * 0.0001;
 
    _AExperiment["Variables"][i]["Initial Value"] = initialGuess;
    _AExperiment["Variables"][i]["Initial Mean"] = initialGuess;
@@ -333,8 +337,6 @@ void DQN::evaluateAction(Sample &sample, bool getGradients)
   auto gradients = learner->getGradients(evaluation);
 
   sample["F(x)"] = evaluation[0][0];
-
-//  printf("Gradient 1: %.20f\n", gradients[0][1]);
 
   for (size_t i = 0; i < action.size(); i++)
   {

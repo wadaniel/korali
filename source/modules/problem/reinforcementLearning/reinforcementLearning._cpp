@@ -31,14 +31,42 @@ void ReinforcementLearning::initialize()
     KORALI_LOG_ERROR("Incorrect number of values (%lu) for initial state %lu. Expected: %lu (the number of state variables).\n", _initialStates[i].size(), i, _stateVectorSize);
 }
 
+Sample* __currentSample;
+size_t __envFunctionId;
+
+void __environmentWrapper()
+{
+ Sample* sample = __currentSample;
+
+ sample->run(__envFunctionId);
+
+ (*sample)["Finished"] = true;
+
+ co_switch(sample->_workerThread);
+
+ KORALI_LOG_ERROR("Resuming a finished sample\n");
+}
+
 void ReinforcementLearning::runEnvironment(Sample &sample)
 {
  // Getting RL-compatible solver
  auto solver = dynamic_cast<solver::DQN *>(_k->_solver);
 
- solver->getAction2(sample);
+ sample["Finished"] = false;
 
-  sample.run(_environmentFunction);
+ // Creating sample coroutine
+ __currentSample = &sample;
+ __envFunctionId = _environmentFunction;
+ sample._workerThread = co_active();
+ auto envThread = co_create(1 << 28, __environmentWrapper);
+
+ while (sample["Finished"] == false)
+ {
+  solver->getAction(sample);
+  co_switch(envThread);
+ }
+
+ co_delete(envThread);
 }
 
 } // namespace problem

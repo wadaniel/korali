@@ -71,6 +71,11 @@ class Sample
   cothread_t _sampleThread;
 
   /**
+  * @brief User-Level thread (coroutine) containing the CPU execution state of the calling worker.
+  */
+  cothread_t _workerThread;
+
+  /**
   * @brief Determines whether the thread memory has been allocated.
   * Necessary to make sure we do not double-allocate or free unallocated space when re-executing sample.
   */
@@ -98,7 +103,7 @@ class Sample
   void sampleLauncher();
 
   /**
-  * @brief Returns results to engine without finishing the sample.
+  * @brief Returns results to the worker without finishing the execution of the computational model.
   */
   void update();
 

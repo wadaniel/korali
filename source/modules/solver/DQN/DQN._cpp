@@ -6,11 +6,6 @@ namespace korali
 namespace solver
 {
 
-void DQN::getAction2(Sample &sample)
-{
- printf("Hello\n");
-}
-
 void DQN::initialize()
 {
   // Getting problem pointer
@@ -51,15 +46,15 @@ void DQN::initialize()
   size_t expVar = 0;
   for (size_t i = 0; i < _problem->_stateVectorSize; i++)
   {
-   _QExperiment["Problem"]["Training"]["Input"][0][expVar] = 0.0;
-   _QExperiment["Problem"]["Validation"]["Input"][0][expVar] = 0.0;
+   _QExperiment["Problem"]["Training"]["Input"][0][expVar] = 1.0;
+   _QExperiment["Problem"]["Validation"]["Input"][0][expVar] = 1.0;
    expVar++;
   }
 
   for (size_t i = 0; i < _problem->_actionVectorSize; i++)
   {
-   _QExperiment["Problem"]["Training"]["Input"][0][expVar] = 0.0;
-   _QExperiment["Problem"]["Validation"]["Input"][0][expVar] = 0.0;
+   _QExperiment["Problem"]["Training"]["Input"][0][expVar] = 1.0;
+   _QExperiment["Problem"]["Validation"]["Input"][0][expVar] = 1.0;
    expVar++;
   }
 
@@ -133,192 +128,131 @@ void DQN::runGeneration()
   // Creating storage for agents
   std::vector<Sample> agents(_agentCount);
 
-  // Index for current worker Id that helps making a balanced distribution of work
-  size_t currentWorker = 0;
-
-  // Storage for agent state/action information
-  std::vector<std::vector<double>> actions(_agentCount);
-  std::vector<std::vector<double>> states(_agentCount);
-  for (size_t i = 0; i < _agentCount; i++) actions[i].resize(_problem->_actionVectorSize);
-  for (size_t i = 0; i < _agentCount; i++) states[i].resize(_problem->_stateVectorSize);
-
-  // Storage for agent reward information
-  std::vector<double> rewards(_agentCount);
-
-  // Initializing Finished count
-  size_t finishedCount = 0;
-
-  // Setting initial states and actions
-  for (size_t i = 0; i < _agentCount; i++)
-  {
-   states[i] = _problem->_initialStates[_currentEpisode++];
-   getAction(actions[i], states[i]);
-  }
-
-  // Initializing the agents and their environments
-  for (size_t i = 0; i < _agentCount; i++)
-  {
-    // Configuring Agent
-    agents[i]["Worker"] = 0;
-    agents[i]["Sample Id"] = i;
-    agents[i]["Module"] = "Problem";
-    agents[i]["Operation"] = "Run Environment";
-    agents[i]["State"] = states[i];
-    agents[i]["Action"] = actions[i];
-
-    // Launching agent initialization
-    _conduit->start(agents[i]);
-
-    // Advancing to the next worker (if reached the last, start from beginning)
-    currentWorker++;
-    if (currentWorker == _conduit->maxConcurrency()) currentWorker = 0;
-  }
-
-  // Running main iteration loop until all agents have finished
-  while (finishedCount < _agentCount)
-  {
-    // Waiting for any of the pending agents
-    size_t i = _conduit->waitAny(agents);
-
-    // Updating reward
-    rewards[i] = KORALI_GET(double, agents[i], "Reward");
-
-    // Add state to current policy history
-    _actionHistory.push_back(actions[i]);
-    _stateHistory.push_back(states[i]);
-    _rewardHistory.push_back(rewards[i]);
-
-    // Storing agent's new state
-    auto newState = KORALI_GET(std::vector<double>, agents[i], "State");
-
-    // The new state becomes the current state
-    states[i] = newState;
-
-    // Checking for agent termination
-    bool hasTerminated = KORALI_GET(bool, agents[i], "Finished");
-
-    // If it finished, then add to the count
-    if (hasTerminated)
-    {
-      // Incrementing finished agent count
-      finishedCount++;
-    }
-    else // Else, get new action and run next episode
-    {
-      // Getting new action to perform
-      getAction(actions[i], states[i]);
-      agents[i]["Action"] = actions[i];
-
-      // Run Episode
-      _conduit->start(agents[i]);
-    }
-  }
-
-  /*********************************************************************
-  * Running Q-Approximation Experiment
-  *********************************************************************/
-
-  // Getting number of episodes for training
-  size_t trainingEpisodes = floor((double) _stateHistory.size() * (1 - _validationRatio));
-  size_t validationEpisodes = _stateHistory.size() - trainingEpisodes;
-
-  if (trainingEpisodes == 0)
-   KORALI_LOG_ERROR("Not enough training episodes available for training.\n");
-
-  if (validationEpisodes == 0)
-   KORALI_LOG_ERROR("Not enough validation episodes available for training.\n");
-
-  for (size_t i = 0; i < trainingEpisodes; i++)
-  {
-   size_t expVar = 0;
-   for (size_t j = 0; j < _problem->_stateVectorSize; j++)
-   {
-    _QExperiment["Problem"]["Training"]["Input"][i][expVar] = _stateHistory[i][j];
-    expVar++;
-   }
-
-   for (size_t j = 0; j < _problem->_actionVectorSize; j++)
-   {
-    _QExperiment["Problem"]["Training"]["Input"][i][expVar] = _actionHistory[i][j];
-    expVar++;
-   }
-
-   _QExperiment["Problem"]["Training"]["Solution"][i][0] = _rewardHistory[i];
-  }
-
-  // Setting validation episodes
-  for (size_t i = 0; i < validationEpisodes; i++)
-  {
-   size_t expVar = 0;
-   auto epIdx = trainingEpisodes + i;
-
-   for (size_t j = 0; j < _problem->_stateVectorSize; j++)
-   {
-    _QExperiment["Problem"]["Validation"]["Input"][i][expVar] = _stateHistory[epIdx][j];
-    expVar++;
-   }
-
-   for (size_t j = 0; j < _problem->_actionVectorSize; j++)
-   {
-    _QExperiment["Problem"]["Validation"]["Input"][i][expVar] = _actionHistory[epIdx][j];
-    expVar++;
-   }
-
-   _QExperiment["Problem"]["Validation"]["Solution"][i][0] = _rewardHistory[epIdx];
-  }
-
-  //printf("%s\n", _QExperiment["Problem"].dump(2).c_str());
-
-  _engine.run(_QExperiment);
-
   // Getting learner's pointer
   auto learner = dynamic_cast<solver::Learner *>(_QExperiment._solver);
 
   // Broadcasting learner's hyperparameters
   _conduit->broadcastGlobals(learner->getHyperparameters());
 
-  // Increasing state count
-  _stateCount = _stateHistory.size();
+  // Initializing the agents and their environments
+  for (size_t i = 0; i < _agentCount; i++)
+  {
+    // Configuring Agent
+    agents[i]["Sample Id"] = i;
+    agents[i]["Module"] = "Problem";
+    agents[i]["Operation"] = "Run Environment";
+    agents[i]["State"] = _problem->_initialStates[_currentEpisode++];
+
+    // Launching agent initialization
+    _conduit->start(agents[i]);
+  }
+
+  _conduit->waitAll(agents);
+
+//  /*********************************************************************
+//  * Running Q-Approximation Experiment
+//  *********************************************************************/
+//
+//  // Getting number of episodes for training
+//  size_t trainingEpisodes = floor((double) _stateHistory.size() * (1 - _validationRatio));
+//  size_t validationEpisodes = _stateHistory.size() - trainingEpisodes;
+//
+//  if (trainingEpisodes == 0)
+//   KORALI_LOG_ERROR("Not enough training episodes available for training.\n");
+//
+//  if (validationEpisodes == 0)
+//   KORALI_LOG_ERROR("Not enough validation episodes available for training.\n");
+//
+//  for (size_t i = 0; i < trainingEpisodes; i++)
+//  {
+//   size_t expVar = 0;
+//   for (size_t j = 0; j < _problem->_stateVectorSize; j++)
+//   {
+//    _QExperiment["Problem"]["Training"]["Input"][i][expVar] = _stateHistory[i][j];
+//    expVar++;
+//   }
+//
+//   for (size_t j = 0; j < _problem->_actionVectorSize; j++)
+//   {
+//    _QExperiment["Problem"]["Training"]["Input"][i][expVar] = _actionHistory[i][j];
+//    expVar++;
+//   }
+//
+//   _QExperiment["Problem"]["Training"]["Solution"][i][0] = _rewardHistory[i];
+//  }
+//
+//  // Setting validation episodes
+//  for (size_t i = 0; i < validationEpisodes; i++)
+//  {
+//   size_t expVar = 0;
+//   auto epIdx = trainingEpisodes + i;
+//
+//   for (size_t j = 0; j < _problem->_stateVectorSize; j++)
+//   {
+//    _QExperiment["Problem"]["Validation"]["Input"][i][expVar] = _stateHistory[epIdx][j];
+//    expVar++;
+//   }
+//
+//   for (size_t j = 0; j < _problem->_actionVectorSize; j++)
+//   {
+//    _QExperiment["Problem"]["Validation"]["Input"][i][expVar] = _actionHistory[epIdx][j];
+//    expVar++;
+//   }
+//
+//   _QExperiment["Problem"]["Validation"]["Solution"][i][0] = _rewardHistory[epIdx];
+//  }
+//
+//  //printf("%s\n", _QExperiment["Problem"].dump(2).c_str());
+//
+//  _engine.run(_QExperiment);
+//
+//
+//  // Increasing state count
+//  _stateCount = _stateHistory.size();
 }
 
-void DQN::getAction(std::vector<double>& action, std::vector<double>& state)
+void DQN::getAction(Sample &sample)
 {
  // Getting p = U[0,1] for the epsilon strategy
   double p = _uniformGenerator->getRandomNumber();
 
   // If p < e, then we choose the action randomly, with a uniform probability, among all possible actions.
   // If no states have been registered yet, use the random option in any case
-  if (p < _epsilon || _stateCount == 0)
+  if (p < _epsilon)
   {
-   for (size_t i = 0; i < action.size(); i++)
+   for (size_t i = 0; i < _problem->_actionVectorSize; i++)
    {
     size_t varIdx = _problem->_actionVectorIndexes[i];
     double lowerBound = _k->_variables[varIdx]->_lowerBound;
     double upperBound = _k->_variables[varIdx]->_upperBound;
     double x = _uniformGenerator->getRandomNumber();
-    action[i] = lowerBound + x*(upperBound - lowerBound);
+    sample["Action"][i] = lowerBound + x*(upperBound - lowerBound);
    }
 
    return;
   }
 
+  // Getting learner's pointer
+  auto learner = dynamic_cast<solver::Learner *>(_QExperiment._solver);
+
+  // Updating learner with the latest hyperparameters
+  learner->setHyperparameters(sample.globals());
+
   // Updating current state
-  _currentState = &state;
+  _currentState = KORALI_GET(std::vector<double>, sample, "State");
 
   // Running optimization experiment to get best estimated action
-  _engine.run(_AExperiment);
+  korali::Engine engine;
+  engine.run(_AExperiment);
 
   // Getting optimal action, based on the NN evaluation
-  action = _AExperiment["Results"]["Best Sample"]["Parameters"].get<std::vector<double>>();
+  sample["Action"] = _AExperiment["Results"]["Best Sample"]["Parameters"];
 }
 
 void DQN::evaluateAction(Sample &sample, bool getGradients)
 {
   // Getting learner's pointer
   auto learner = dynamic_cast<solver::Learner *>(_QExperiment._solver);
-
-  // Updating learner with the latest hyperparameters
-  learner->setHyperparameters(sample.globals());
 
   // Setting weights and biases
   auto action = KORALI_GET(std::vector<double>, sample, "Parameters");
@@ -327,9 +261,9 @@ void DQN::evaluateAction(Sample &sample, bool getGradients)
   std::vector<std::vector<double>> inputBatch(1);
 
   // Putting together state and action
-  inputBatch[0].resize( _currentState->size() + action.size() );
+  inputBatch[0].resize( _currentState.size() + action.size() );
   size_t pos = 0;
-  for (size_t i = 0; i < _currentState->size(); i++) inputBatch[0][pos++]  = (*_currentState)[i];
+  for (size_t i = 0; i < _currentState.size(); i++) inputBatch[0][pos++]  = _currentState[i];
   for (size_t i = 0; i < action.size(); i++) inputBatch[0][pos++] = action[i];
 
   // Getting function valuation
@@ -340,7 +274,7 @@ void DQN::evaluateAction(Sample &sample, bool getGradients)
 
   for (size_t i = 0; i < action.size(); i++)
   {
-    size_t startIdx = _currentState->size();
+    size_t startIdx = _currentState.size();
     sample["Gradient"][i] = gradients[0][startIdx + i];
   }
 

@@ -60,6 +60,9 @@ void DeepLearner::initialize()
   _optExperiment["Problem"]["Type"] = "Optimization";
   _optExperiment["Problem"]["Objective Function"] = fc;
 
+  _hyperparameters["Weights"][0] = { { 0 } };
+  _hyperparameters["Bias"][0] = { 0 };
+
   size_t currentVariable = 0;
   for (size_t i = 1; i < _trainingNeuralNetwork->_layers.size(); i++)
   {
@@ -73,15 +76,17 @@ void DeepLearner::initialize()
         char varName[512];
         sprintf(varName, "Weight [%lu] %lu->%lu", i, j, k);
         std::string varNameString(varName);
+        _optExperiment["Variables"][currentVariable]["Name"] = varNameString;
 
         // Setting initial weight values
         double initialGuess = 0.0;
-        if (_weightInitialization == "Xavier") initialGuess = xavierConstant * _uniformGenerator->getRandomNumber();
+        if (_weightInitialization == "Xavier")
+         initialGuess = xavierConstant * _uniformGenerator->getRandomNumber();
 
-        _optExperiment["Variables"][currentVariable]["Name"] = varNameString;
+        _hyperparameters["Weights"][i][j][k] = initialGuess;
         _optExperiment["Variables"][currentVariable]["Initial Value"] = initialGuess;
         _optExperiment["Variables"][currentVariable]["Initial Mean"] = initialGuess;
-        _optExperiment["Variables"][currentVariable]["Initial Standard Deviation"] = 1.0;
+        _optExperiment["Variables"][currentVariable]["Initial Standard Deviation"] = abs(initialGuess)*0.1;
         currentVariable++;
       }
 
@@ -97,9 +102,10 @@ void DeepLearner::initialize()
       double initialGuess = 0.0;
       if (_weightInitialization == "Xavier") initialGuess = xavierConstant * _uniformGenerator->getRandomNumber();
 
+      _hyperparameters["Bias"][i][j] = initialGuess;
       _optExperiment["Variables"][currentVariable]["Initial Value"] = initialGuess;
       _optExperiment["Variables"][currentVariable]["Initial Mean"] = initialGuess;
-      _optExperiment["Variables"][currentVariable]["Initial Standard Deviation"] = 1.0;
+      _optExperiment["Variables"][currentVariable]["Initial Standard Deviation"] = abs(initialGuess)*0.1;
       currentVariable++;
     }
   }

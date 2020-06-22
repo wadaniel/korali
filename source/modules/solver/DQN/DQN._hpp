@@ -40,22 +40,17 @@ class DQN : public Solver
   /**
  * @brief Vector of the current state to use for action optimization
  */
-  std::vector<double>* _currentState;
+  std::vector<double> _currentState;
 
   /**
    * @brief Gets the next action for the actor, based on the Q policy
    */
-  void getAction(std::vector<double>& action, std::vector<double>& state);
+  void getAction(Sample &sample);
 
   /**
    * @brief Function to evaluate the Q* of a given action
    */
   void evaluateAction(Sample &sample, bool getGradients);
-
-  /**
-   * @brief Gets the next action for the actor, based on the Q policy
-   */
-  void getAction2(Sample &sample);
 
   /**
   * @brief Runs a generation of the environment(s), running an action on each episode, and updating the policy.

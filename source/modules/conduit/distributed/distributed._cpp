@@ -177,20 +177,13 @@ void Distributed::processSample(Sample &sample)
 
   int teamId = -1;
 
-  if (isDefined(sample._js.getJson(), "Worker"))
+  while (_teamQueue.empty())
   {
-    teamId = sample["Worker"];
+    sample._state = SampleState::waiting;
+    co_switch(engine->_currentExperiment->_thread);
   }
-  else
-  {
-    while (_teamQueue.empty())
-    {
-      sample._state = SampleState::waiting;
-      co_switch(engine->_currentExperiment->_thread);
-    }
-    teamId = _teamQueue.front();
-    _teamQueue.pop();
-  }
+  teamId = _teamQueue.front();
+  _teamQueue.pop();
 
   auto sampleJs = sample._js.getJson();
   sampleJs["Conduit Action"] = "Process Sample";
@@ -236,13 +229,6 @@ void Distributed::processSample(Sample &sample)
   timelineJs["Current Generation"] = engine->_currentExperiment->_currentGeneration;
   __profiler["Timelines"]["Worker " + to_string(teamId)] += timelineJs;
 
-#endif
-}
-
-size_t Distributed::maxConcurrency()
-{
-#ifdef _KORALI_USE_MPI
-  return _teamCount;
 #endif
 }
 

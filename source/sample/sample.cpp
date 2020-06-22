@@ -24,9 +24,14 @@ void Sample::run(size_t functionPosition)
   (*_functionVector[functionPosition])(*_self);
 }
 
+void Sample::update()
+{
+  co_switch(_self->_workerThread);
+}
+
 void Sample::sampleLauncher()
 {
-  Engine *engine = _engineStack.top();
+ Engine *engine = _engineStack.top();
 
   // Getting sample information
   size_t experimentId = KORALI_GET(size_t, (*_self), "Experiment Id");

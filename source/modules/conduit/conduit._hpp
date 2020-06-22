@@ -32,12 +32,6 @@ class Conduit : public Module
   virtual void initServer(){};
 
   /**
-  * @brief Indicates how many samples can be evaluated concurrently.
-  * @return Maximum number of workers.
-  */
-  virtual size_t maxConcurrency() { return 1; };
-
-  /**
  * @brief Determines whether the caller rank/thread/process is root.
  * @return True, if it is root; false, otherwise.
  */

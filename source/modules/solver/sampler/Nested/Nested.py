@@ -97,7 +97,7 @@ def plot_lower_triangle(ax, theta):
         ax[i, j].set_yticklabels([])
 
 
-def plot(genList, args):
+def plotGen(genList, idx):
   numgens = len(genList)
 
   lastGen = 0
@@ -141,3 +141,16 @@ def plot(genList, args):
     ax.set_xlabel(genList[idx]['Variables'][0]['Name'])
 
 
+def plot(genList, args):
+  numgens = len(genList)
+
+  plotAll = args.all
+  if plotAll:
+    for idx in genList:
+      plotGen(genList, idx)
+  else:
+    lastGen = 0
+    for i in genList:
+      if genList[i]['Current Generation'] > lastGen:
+        lastGen = genList[i]['Current Generation']
+    plotGen(genList, lastGen)

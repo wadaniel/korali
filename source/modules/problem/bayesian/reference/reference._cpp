@@ -127,10 +127,10 @@ void Reference::loglikelihoodNegativeBinomial(Sample &sample)
     loglike -= gsl_sf_lngamma(y + 1.);
 
     double m = refEvals[i];
-    
+
     if (y < 0)
     {
-        KORALI_LOG_ERROR("Negative Binomial Likelihood not defined for negative Reference Data (provided %lf.\n", y);
+      KORALI_LOG_ERROR("Negative Binomial Likelihood not defined for negative Reference Data (provided %lf.\n", y);
     }
 
     if (m <= 0)

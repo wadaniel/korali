@@ -79,5 +79,5 @@ testOutputSet = np.sin(testInputSet) * scaling
 
 plt.plot(testInputSet, testOutputSet, "o")
 plt.plot(testInputSet, testInferredSet, "x")
-plt.plot(testInputSet, testGradientSet, "*")
+plt.plot(testInferredSet, testGradientSet, "*")
 plt.show()

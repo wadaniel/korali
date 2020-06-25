@@ -56,7 +56,6 @@ class DQN : public Solver
   * @brief Runs a generation of the environment(s), running an action on each episode, and updating the policy.
   */
   void runGeneration() override;
-  void setInitialConfiguration() override;
   void initialize() override;
 };
 

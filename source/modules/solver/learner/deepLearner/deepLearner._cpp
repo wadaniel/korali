@@ -17,7 +17,8 @@ namespace learner
 void DeepLearner::initialize()
 {
   // Indicate that the evaluation NN is not yet initialized
-  _isEvaluatioNNInitialized = false;
+  _isEvaluatioNNForwardInitialized = false;
+  _isEvaluatioNNBackwardInitialized = false;
 
   // Getting problem pointer
   _problem = dynamic_cast<problem::SupervisedLearning *>(_k->_problem);
@@ -184,25 +185,23 @@ void DeepLearner::runGeneration()
 
 std::vector<std::vector<double>> DeepLearner::evaluate(const std::vector<std::vector<double>> &inputBatch)
 {
-  // Building evaluation NN if not yet initialized
-  if (_isEvaluatioNNInitialized == false)
+  // Building evaluation NN's forward pipeline if not yet initialized
+  if (_isEvaluatioNNForwardInitialized == false)
   {
    _evaluationNeuralNetwork = dynamic_cast<NeuralNetwork *>(Module::duplicate(_neuralNetwork));
    _evaluationNeuralNetwork->_inputNormalizationMeans = _hyperparameters["Input Normalization Means"].get<std::vector<double>>();
    _evaluationNeuralNetwork->_inputNormalizationVariances = _hyperparameters["Input Normalization Variances"].get<std::vector<double>>();
-
-   for (size_t i = 0; i < _evaluationNeuralNetwork->_layers.size(); i++)
-   {
-    _evaluationNeuralNetwork->_layers[i]->_weights = _hyperparameters["Weights"][i].get<std::vector<std::vector<double>>>();
-    _evaluationNeuralNetwork->_layers[i]->_bias = _hyperparameters["Bias"][i].get<std::vector<double>>();
-   }
-
    _evaluationNeuralNetwork->createForwardPipeline(inputBatch.size());
-   _evaluationNeuralNetwork->createBackwardPipeline();
-   _evaluationNeuralNetwork->updateWeightsAndBias();
-
-   _isEvaluatioNNInitialized = true;
+   _isEvaluatioNNForwardInitialized = true;
   }
+
+  for (size_t i = 0; i < _evaluationNeuralNetwork->_layers.size(); i++)
+  {
+   _evaluationNeuralNetwork->_layers[i]->_weights = _hyperparameters["Weights"][i].get<std::vector<std::vector<double>>>();
+   _evaluationNeuralNetwork->_layers[i]->_bias = _hyperparameters["Bias"][i].get<std::vector<double>>();
+  }
+
+  _evaluationNeuralNetwork->updateWeightsAndBias();
 
   // Updating NN inputs
   _evaluationNeuralNetwork->setInput(inputBatch);
@@ -215,6 +214,17 @@ std::vector<std::vector<double>> DeepLearner::evaluate(const std::vector<std::ve
 
 std::vector<std::vector<double>> DeepLearner::getGradients(const std::vector<std::vector<double>> &outputDiffs)
 {
+ // Building evaluation NN's backward pipeline if not yet initialized
+ if (_isEvaluatioNNBackwardInitialized == false)
+ {
+  if (_isEvaluatioNNForwardInitialized == false)
+   KORALI_LOG_ERROR("Attempting to get gradients but forward inference has not yet been performed.\n");
+
+  _evaluationNeuralNetwork->createBackwardPipeline();
+
+  _isEvaluatioNNBackwardInitialized = true;
+ }
+
  size_t batchSize = _evaluationNeuralNetwork->_outputValues.size();
  size_t outputSize = _evaluationNeuralNetwork->_outputValues[0].size();
 

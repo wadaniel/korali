@@ -60,10 +60,16 @@ void ReinforcementLearning::runEnvironment(Sample &sample)
  sample._workerThread = co_active();
  auto envThread = co_create(1 << 28, __environmentWrapper);
 
+ size_t expId = 0;
+
  while (sample["Finished"] == false)
  {
   solver->getAction(sample);
+  sample["Experience"]["States"][expId] = sample["State"];
+  sample["Experience"]["Actions"][expId] = sample["Action"];
   co_switch(envThread);
+  sample["Experience"]["Rewards"][expId] = sample["Reward"];
+  expId++;
  }
 
  co_delete(envThread);

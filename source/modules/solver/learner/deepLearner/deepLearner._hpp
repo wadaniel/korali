@@ -37,9 +37,14 @@ class DeepLearner : public Learner
   NeuralNetwork* _evaluationNeuralNetwork;
 
   /**
-   * @brief Keeps track of whether the evaluation NN has been initialized
+   * @brief Keeps track of whether the evaluation NN's forward pipeline has been initialized
    */
-  bool _isEvaluatioNNInitialized;
+  bool _isEvaluatioNNForwardInitialized;
+
+  /**
+   * @brief Keeps track of whether the evaluation NN's backward pipeline has been initialized
+   */
+  bool _isEvaluatioNNBackwardInitialized;
 
   /**
   * @brief Model function to evaluate a given NN weight/bias configuration

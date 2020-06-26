@@ -391,7 +391,6 @@ void NeuralNetwork::setInput(const std::vector<std::vector<double>>& input)
  write_to_dnnl_memory(batchInput.data(), _layers[0]->_dataMem);
 
  // Normalizing input, if required
-
  if (_batchNormalizationEnabled == true)
  {
    const memory::dim IC = _layers[0]->_nodeCount;
@@ -414,6 +413,7 @@ void NeuralNetwork::setInput(const std::vector<std::vector<double>>& input)
    }
 
    // Normalizing input
+
    _inputForwardNormalizationPrimitive.execute(_stream, _inputForwardNormalizationArgs);
 
    _stream.wait();

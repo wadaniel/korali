@@ -46,6 +46,8 @@ e["Solver"]["Steps Per Generation"] = 100
 e["Solver"]["Termination Criteria"]["Max Inactive Steps"] = 10
 e["Solver"]["Termination Criteria"]["Max Generations"] = 100
 
+#e["Solver"]["Neural Network"]["Batch Normalization"]["Enabled"] = False
+
 ### Defining the shape of the neural network
 
 e["Solver"]["Neural Network"]["Layers"][0]["Type"] = "Input"
@@ -79,5 +81,5 @@ testOutputSet = np.sin(testInputSet) * scaling
 
 plt.plot(testInputSet, testOutputSet, "o")
 plt.plot(testInputSet, testInferredSet, "x")
-plt.plot(testInferredSet, testGradientSet, "*")
+#plt.plot(testInferredSet, testGradientSet, "*")
 plt.show()

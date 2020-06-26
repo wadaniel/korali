@@ -67,7 +67,11 @@ void ReinforcementLearning::runEnvironment(Sample &sample)
   solver->getAction(sample);
   sample["Experience"]["States"][expId] = sample["State"];
   sample["Experience"]["Actions"][expId] = sample["Action"];
+
+  // Jumping back into the agent's environment
   co_switch(envThread);
+  // Returning from the agent's environment with the reward
+
   sample["Experience"]["Rewards"][expId] = sample["Reward"];
   expId++;
  }

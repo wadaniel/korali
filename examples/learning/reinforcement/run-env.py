@@ -26,11 +26,13 @@ def h(v):
 
 def env(s):
 
- # Getting first state/action
+ # Reading initial state
  x = s["State"][0]
- y = s["Action"][0]
- 
+
  for i in range(N):
+  
+  # Reading action
+  y = s["Action"][0]
   
   print('Running Environment')
   print(' + State:  ' + str(x))
@@ -39,11 +41,17 @@ def env(s):
   # Calcuating reward
   reward = g(y) + h(x-y)
   
-  # If Y is les than zero, reduce reward
-  if (y < 0):  reward = reward - 1000
+  # If Y is less than zero, reduce reward and finish
+  if (y < 0): 
+   reward = reward - 1000
+   print(' + Reward: ' + str(s["Reward"]))
+   return
   
   # If Y greater than current X, then this is not a feasible policy, with discount for the extra expenditure
-  if (y > x):  reward = reward + (x - y)*100.0 
+  if (y > x): 
+   reward = reward + (x - y)*100.0
+   print(' + Reward: ' + str(s["Reward"]))
+   return  
      
   s["Reward"] = reward
   print(' + Reward: ' + str(s["Reward"]))
@@ -55,9 +63,6 @@ def env(s):
   # Reporting back and getting new action
   s.update()
  
-  # Reading new action
-  y = s["Action"][0]
-
 import korali
 k = korali.Engine()
 e = korali.Experiment()
@@ -87,7 +92,6 @@ e["Solver"]["Action Optimizer"]["Type"] = "Optimizer/Adam"
 #e["Solver"]["Action Optimizer"]["Termination Criteria"]["Max Generations"] = 1000;
 
 e["Solver"]["Weight Optimizer"]["Type"] = "Optimizer/Adam"
-
 e["Solver"]["Neural Network"]["Batch Normalization"]["Enabled"] = False
 
 e["Solver"]["Neural Network"]["Layers"][0]["Type"] = "Input"

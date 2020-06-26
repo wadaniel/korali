@@ -194,7 +194,7 @@ def saveValue(base, path, varName, varType):
     return sString
 
   if ('korali::' in varType):
-    sString = ' ' + varName + '->getConfiguration(' + base + path + ');\n'
+    sString = ' if(' + varName + ' != NULL) ' + varName + '->getConfiguration(' + base + path + ');\n'
     return sString
 
   sString = '   ' + base + path + ' = ' + varName + ';\n'

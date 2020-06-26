@@ -37,6 +37,11 @@ class DeepLearner : public Learner
   NeuralNetwork* _evaluationNeuralNetwork;
 
   /**
+   * @brief Keeps track of whether the training/validation configuration has been built
+   */
+  bool _isLearnerInitialized;
+
+  /**
    * @brief Keeps track of whether the evaluation NN's forward pipeline has been initialized
    */
   bool _isEvaluatioNNForwardInitialized;

@@ -42,32 +42,19 @@ void DQN::initialize()
   _neuralNetwork->getConfiguration(_QExperiment["Solver"]["Neural Network"]);
 
   _QExperiment["Solver"]["Optimizer"] = _weightOptimizer;
-  _QExperiment["Solver"]["Steps Per Generation"] = 10;
-  _QExperiment["Solver"]["Termination Criteria"]["Max Inactive Steps"] = 1000;
+  _QExperiment["Solver"]["Steps Per Generation"] = 1;
 
-  _QExperiment["Console Output"]["Frequency"] = 1000;
+  _QExperiment["Console Output"]["Frequency"] = 1;
+  _QExperiment["Solver"]["Termination Criteria"]["Max Generations"] = 5000;
   //_QExperiment["Console Output"]["Verbosity"] = "Silent";
   _QExperiment["File Output"]["Enabled"] = false;
 
   // Initializing experiment with an empty set
   size_t expVar = 0;
-  for (size_t i = 0; i < _problem->_stateVectorSize; i++)
-  {
-   _QExperiment["Problem"]["Training"]["Input"][0][expVar] = 1.0;
-   _QExperiment["Problem"]["Validation"]["Input"][0][expVar] = 1.0;
-   expVar++;
-  }
-
-  for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-  {
-   _QExperiment["Problem"]["Training"]["Input"][0][expVar] = 1.0;
-   _QExperiment["Problem"]["Validation"]["Input"][0][expVar] = 1.0;
-   expVar++;
-  }
+  for (size_t i = 0; i < _problem->_stateVectorSize; i++) _QExperiment["Problem"]["Training"]["Input"][0][expVar++] = 1.0;
+  for (size_t i = 0; i < _problem->_actionVectorSize; i++) _QExperiment["Problem"]["Training"]["Input"][0][expVar++] = 1.0;
 
   _QExperiment["Problem"]["Training"]["Solution"][0][0] = 0.0;
-  _QExperiment["Problem"]["Validation"]["Solution"][0][0] = 0.0;
-
   _QExperiment["Random Seed"] = _k->_randomSeed++;
 
   // Running initialization to verify that the configuration is correct
@@ -103,7 +90,8 @@ void DQN::initialize()
 
   _AExperiment["Console Output"]["Frequency"] = 0;
   _AExperiment["File Output"]["Enabled"] = false;
-  //_AExperiment["Console Output"]["Verbosity"] = "Silent";
+  _AExperiment["Console Output"]["Verbosity"] = "Silent";
+  _AExperiment["Solver"]["Termination Criteria"]["Max Generations"] = 50000;
 
   _AExperiment["Random Seed"] = _k->_randomSeed++;
 
@@ -180,74 +168,90 @@ void DQN::runGeneration()
      _nextStateHistory.push_back({ });
    }
 
-  // If the minimum number of experiences haven been reached, do not do any training
+  // If the maximum number of experiences have been reached, start forgetting older experiences
+  if (_stateHistory.size() > _replayMemorySize)
+  {
+   size_t excess = _replayMemorySize - _stateHistory.size();
+   _stateHistory.erase(_stateHistory.begin(), _stateHistory.begin()+excess);
+   _actionHistory.erase(_actionHistory.begin(), _actionHistory.begin()+excess);
+   _rewardHistory.erase(_rewardHistory.begin(), _rewardHistory.begin()+excess);
+   _nextStateHistory.erase(_nextStateHistory.begin(), _nextStateHistory.begin()+excess);
+  }
+
+  // If the minimum number of experiences have been reached, do not do any training
   printf("Replay size: %lu\n", _stateHistory.size());
   if (_stateHistory.size() < _replayStartSize) return;
-
 
   /***********************************************************************************
    * Randomly selecting experiences for the mini-batch and calculating their target Q
    ***********************************************************************************/
 
-  // Calculating target Q value (solution) for Qnew on selected batch
-  std::vector<double> qValue(_miniBatchSize);
-
-  for (size_t i = 0; i < _miniBatchSize; i++)
+  for (size_t iter = 0; iter < 10; iter++)
   {
-   double x = _uniformGenerator->getRandomNumber();
-   size_t expId = floor(x * (_stateHistory.size()+1));
 
-   printf("ExpId: %lu\n", expId);
-   qValue[i] = _rewardHistory[expId];
+   // Calculating target Q value (solution) for Qnew on selected batch
+   std::vector<double> qValue(_miniBatchSize);
 
-   // If state is not terminal (next state is filled) then add Qnew to the Q value.
-   if (_nextStateHistory[expId].size() > 0)
+   for (size_t i = 0; i < _miniBatchSize; i++)
    {
-    // Updating current state
-    _currentState = _nextStateHistory[expId];
+    double x = _uniformGenerator->getRandomNumber();
+    size_t expId = floor(x * _stateHistory.size());
 
-    // Running optimization experiment to get best estimated action
-    korali::Engine engine;
-    engine.run(_AExperiment);
+    printf("ExpId: %lu\n", expId);
 
-    // Getting optimal action, based on the NN evaluation
-    auto action = _AExperiment["Results"]["Best Sample"]["Parameters"].get<std::vector<double>>();
+    // Qnew = max_a(q) with s' fixed
 
-    // Getting optimal Qnew, based on the NN evaluation
-    auto qNew = _AExperiment["Results"]["Best Sample"]["F(x)"].get<double>();
+    // Q* = r + y*Qnew -- If not terminal state
+    // Q* = r -- If terminal state
 
-    // We add the expected remaining reward based on the optimization
-    qValue[i] += _discountFactor * qNew;
+    qValue[i] = _rewardHistory[expId];
 
-    // Debug only, print new experience values
-    printf("State: %f\n", _stateHistory[expId][0]);
-    printf("Action: %f\n", _actionHistory[expId][0]);
-    printf("Reward: %f\n", _rewardHistory[expId]);
-    printf("New State: %f\n", _currentState[0]);
-    printf("Action: %f\n", action[0]);
-    printf("Qvalue: %f\n", qValue[i]);
+    // If state is not terminal (next state is filled) then add Qnew to the Q value.
+    if (_nextStateHistory[expId].size() > 0)
+    {
+     // Updating current state
+     _currentState = _nextStateHistory[expId];
+
+     // Running optimization experiment to get best estimated action
+     korali::Engine engine;
+     engine.run(_AExperiment);
+
+     // Getting optimal action, based on the NN evaluation
+     auto action = _AExperiment["Results"]["Best Sample"]["Parameters"].get<std::vector<double>>();
+
+     // Getting optimal Qnew, based on the NN evaluation
+     auto qNew = _AExperiment["Results"]["Best Sample"]["F(x)"].get<double>();
+
+     // We add the expected remaining reward based on the optimization
+     qValue[i] += _discountFactor * qNew;
+
+     // Debug only, print new experience values
+     printf("State: %f\n", _stateHistory[expId][0]);
+     printf("Action: %f\n", _actionHistory[expId][0]);
+     printf("Reward: %f\n", _rewardHistory[expId]);
+     printf("New State: %f\n", _currentState[0]);
+     printf("Action: %f\n", action[0]);
+     printf("Qvalue: %f\n", qValue[i]);
+    }
    }
+
+   /*********************************************************************
+   * Optimizing NN based on the mini-batch
+   *********************************************************************/
+
+   for (size_t i = 0; i < _miniBatchSize; i++)
+   {
+    for (size_t j = 0; j < _problem->_stateVectorSize; j++) _QExperiment["Problem"]["Training"]["Input"][i][j] = _stateHistory[i][j];
+    for (size_t j = 0; j < _problem->_actionVectorSize; j++) _QExperiment["Problem"]["Training"]["Input"][i][_problem->_stateVectorSize + j] = _actionHistory[i][j];
+    _QExperiment["Problem"]["Training"]["Solution"][i][0] = qValue[i];
+   }
+
+   // Running one generation of the optimization method with the given mini-batch
+   _QExperiment["Solver"]["Termination Criteria"]["Max Generations"] = _QExperiment._currentGeneration + _optimizationStepsPerMiniBatch;
+   _engine.resume(_QExperiment);
   }
 
-  /*********************************************************************
-  * Optimizing NN based on the minibatch
-  *********************************************************************/
-
-  for (size_t i = 0; i < _miniBatchSize; i++)
-  {
-
-   for (size_t j = 0; j < _problem->_stateVectorSize; j++) _QExperiment["Problem"]["Training"]["Input"][i][j] = _stateHistory[i][j];
-   for (size_t j = 0; j < _problem->_actionVectorSize; j++) _QExperiment["Problem"]["Training"]["Input"][i][_problem->_stateVectorSize + j] = _actionHistory[i][j];
-   _QExperiment["Problem"]["Training"]["Solution"][i][0] = qValue[i];
-
-   for (size_t j = 0; j < _problem->_stateVectorSize; j++) _QExperiment["Problem"]["Validation"]["Input"][i][j] = _stateHistory[i][j];
-   for (size_t j = 0; j < _problem->_actionVectorSize; j++) _QExperiment["Problem"]["Validation"]["Input"][i][_problem->_stateVectorSize + j] = _actionHistory[i][j];
-   _QExperiment["Problem"]["Validation"]["Solution"][i][0] = qValue[i];
-  }
-
-
-  // Running weights and bias optimization
-  _engine.run(_QExperiment);
+  exit(0);
 }
 
 void DQN::getAction(Sample &sample)

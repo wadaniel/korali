@@ -55,7 +55,8 @@ function check()
 INSTALLREQS=0
 NJOBS=4
 WARNINGFLAGS=
-OPTFLAGS="-O3"
+OPTFLAGS="-O3 -DNDEBUG"
+DEBUG=0
 
 for i in "$@"
 do
@@ -70,6 +71,7 @@ case $i in
     ;;
     --debug)
     OPTFLAGS="-O0"
+    DEBUG=1
     shift 
     ;;
     --jobs=*)
@@ -418,6 +420,10 @@ cp source/libkorali.so . >> $logFile 2>&1
 if [ $? -ne 0 ]; then
   logEcho "[Korali] Error obtaining libkorali.so"
   exitWithError
+fi
+if [ $DEBUG -eq 0 ]; then
+    # strip symbols is not debug build
+    strip libkorali.so
 fi
 
 

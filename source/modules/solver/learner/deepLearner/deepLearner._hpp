@@ -61,6 +61,7 @@ class DeepLearner : public Learner
   std::vector<std::vector<double>> getGradients(const std::vector<std::vector<double>> &outputDiffs) override;
   std::vector<std::vector<double>> evaluate(const std::vector<std::vector<double>> &inputBatch) override;
 
+  void finalize() override;
   void initialize() override;
   void runGeneration() override;
   void printGenerationAfter() override;

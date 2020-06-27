@@ -3,6 +3,7 @@ import os
 import sys
 import numpy as np
 import matplotlib.pyplot as plt
+import time
 
 scaling = 5.0
 
@@ -43,11 +44,6 @@ e["Solver"]["Type"] = "Learner/Deep Learner"
 e["Solver"]["Optimizer"]["Type"] = "Optimizer/Adam"
 e["Solver"]["Steps Per Generation"] = 100
 
-e["Solver"]["Termination Criteria"]["Max Inactive Steps"] = 10
-e["Solver"]["Termination Criteria"]["Max Generations"] = 100
-
-#e["Solver"]["Neural Network"]["Batch Normalization"]["Enabled"] = False
-
 ### Defining the shape of the neural network
 
 e["Solver"]["Neural Network"]["Layers"][0]["Type"] = "Input"
@@ -66,7 +62,10 @@ e["Random Seed"] = 0xC0FFEE
 
 ### Training the neural network
 
-k.run(e)
+e["Solver"]["Termination Criteria"]["Max Inactive Steps"] = 10
+e["Solver"]["Termination Criteria"]["Max Generations"] = 100
+
+k.resume(e)
 
 ### Obtaining inferred results from the NN and comparing them to the actual solution
 

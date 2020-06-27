@@ -12,7 +12,6 @@ def getVariableType(v):
   return v['Type'].replace('bool', 'int').replace(
       'std::function<void(korali::Sample&)>', 'std::uint64_t')
 
-
 def getCXXVariableName(v):
   cVarName = ''
   for name in v:

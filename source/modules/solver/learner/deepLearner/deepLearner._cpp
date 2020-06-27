@@ -45,11 +45,11 @@ void DeepLearner::initialize()
  // Setting input training data
  _trainingNeuralNetwork->setInput(_problem->_trainingInput);
 
+ /*****************************************************************
+ * Setting up Optional Validation Neural Network
+ *****************************************************************/
  if (_isLearnerInitialized == false)
  {
-  /*****************************************************************
-   * Setting up Optional Validation Neural Network
-   *****************************************************************/
 
   // Initialize validation NN only if validation data has been provided
   if (_problem->_validationBatchSize > 0)
@@ -141,6 +141,7 @@ void DeepLearner::initialize()
 
   // Running initialization to verify that the configuration is correct
   _optEngine.initialize(_optExperiment);
+  printf("Initializing Experiment\n");
 
   // Resetting termination counters
    _currentInactiveSteps = 0;
@@ -150,13 +151,12 @@ void DeepLearner::initialize()
   // Storing input normalization hyperparameters
   _hyperparameters["Input Normalization Means"] = _trainingNeuralNetwork->_inputNormalizationMeans;
   _hyperparameters["Input Normalization Variances"] = _trainingNeuralNetwork->_inputNormalizationVariances;
+
+  _isLearnerInitialized = true;
 }
 
 void DeepLearner::runGeneration()
 {
- // Initializing NNs if this is the first generation
- if (_k->_currentGeneration == 1) setInitialConfiguration();
-
   /**************************************************************
   * Training Stage
   *************************************************************/
@@ -217,6 +217,11 @@ void DeepLearner::runGeneration()
      }
    }
   }
+}
+
+void DeepLearner::finalize()
+{
+ _k->_logger->logInfo("Normal", "Training Loss: %.15f\n", _currentTrainingLoss);
 }
 
 std::vector<std::vector<double>> DeepLearner::evaluate(const std::vector<std::vector<double>> &inputBatch)

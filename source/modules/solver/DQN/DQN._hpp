@@ -23,9 +23,14 @@ class DQN : public Solver
   korali::Engine _engine;
 
   /**
- * @brief Korali experiment for supervised learning of Q
+ * @brief Korali experiment for the estimation of Q values
  */
-  korali::Experiment _QExperiment;
+  korali::Experiment _qInferenceExperiment;
+
+  /**
+   * @brief Korali experiment for the training of the Qvalue-estimator
+   */
+  korali::Experiment _qTrainingExperiment;
 
   /**
   * @brief Learner to use for the inference of actions
@@ -33,9 +38,9 @@ class DQN : public Solver
   solver::Learner* _learner;
 
   /**
- * @brief Korali experiment for optimizing the action based on a trained Q-Network
+ * @brief Korali experiment for argmax_action(Q) based on a trained Q-Network
  */
-  korali::Experiment _AExperiment;
+  korali::Experiment _argMaxActionExperiment;
 
   /**
  * @brief Vector of the current state to use for action optimization

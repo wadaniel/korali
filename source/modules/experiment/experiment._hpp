@@ -58,6 +58,8 @@ class Experiment : public Module
   */
   cothread_t _thread;
 
+  bool _isInitialized;
+
   /**
   * @brief Gets an item from the JSON object at the current pointer position.
   * @param key A pybind11 object acting as JSON key (number or string).

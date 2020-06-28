@@ -190,12 +190,17 @@ void Engine::saveProfilingInfo(const bool forceSave)
 void Engine::run(Experiment &experiment)
 {
   experiment._js["Current Generation"] = 0;
+  experiment._currentGeneration = 0;
   resume(experiment);
 }
 
 void Engine::run(std::vector<Experiment> &experiments)
 {
-  for (size_t i = 0; i < experiments.size(); i++) experiments[i]._js["Current Generation"] = 0;
+  for (size_t i = 0; i < experiments.size(); i++)
+  {
+   experiments[i]._js["Current Generation"] = 0;
+   experiments[i]._currentGeneration = 0;
+  }
   resume(experiments);
 }
 

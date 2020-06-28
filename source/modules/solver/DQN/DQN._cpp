@@ -96,7 +96,7 @@ void DQN::initialize()
 
   _argMaxActionExperiment["Console Output"]["Frequency"] = 0;
   _argMaxActionExperiment["File Output"]["Enabled"] = false;
-  _argMaxActionExperiment["Console Output"]["Verbosity"] = "Silent";
+  //_argMaxActionExperiment["Console Output"]["Verbosity"] = "Silent";
   _argMaxActionExperiment["Solver"]["Termination Criteria"]["Max Generations"] = 50000;
 
   _argMaxActionExperiment["Random Seed"] = _k->_randomSeed++;
@@ -184,7 +184,7 @@ void DQN::runGeneration()
   // If the maximum number of experiences have been reached, start forgetting older experiences
   if (_stateHistory.size() > _replayMemorySize)
   {
-   size_t excess = _replayMemorySize - _stateHistory.size();
+   size_t excess = _stateHistory.size() - _replayMemorySize;
    _stateHistory.erase(_stateHistory.begin(), _stateHistory.begin()+excess);
    _actionHistory.erase(_actionHistory.begin(), _actionHistory.begin()+excess);
    _rewardHistory.erase(_rewardHistory.begin(), _rewardHistory.begin()+excess);
@@ -237,11 +237,11 @@ void DQN::runGeneration()
      qValue[i] += _discountFactor * qNew;
 
      // Debug only, print new experience values
-//     printf("State: %f\n", _stateHistory[expId][0]);
-//     printf("Action: %f\n", _actionHistory[expId][0]);
-//     printf("Reward: %f\n", _rewardHistory[expId]);
-//     printf("New State: %f\n", _currentState[0]);
-//     printf("Action: %f\n", action[0]);
+     printf("State: %f\n", _stateHistory[expId][0]);
+     printf("Action: %f\n", _actionHistory[expId][0]);
+     printf("Reward: %f\n", _rewardHistory[expId]);
+     printf("New State: %f\n", _currentState[0]);
+     printf("New Action: %f\n", action[0]);
      printf("Qvalue: %f\n", qValue[i]);
     }
    }
@@ -305,8 +305,10 @@ void DQN::getAction(Sample &sample)
   _currentState = KORALI_GET(std::vector<double>, sample, "State");
 
   // Running optimization experiment to get best estimated action
+  printf("********************************\n");
   korali::Engine engine;
   engine.run(_argMaxActionExperiment);
+  printf("********************************\n");
 
   // Getting optimal action, based on the NN evaluation
   sample["Action"] = _argMaxActionExperiment["Results"]["Best Sample"]["Parameters"];

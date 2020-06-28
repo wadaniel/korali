@@ -34,7 +34,7 @@ def env(s):
   
   # Calcuating reward
   p = 0.5*x
-  reward = -5*(p-y)*(p-y) + 1
+  reward = -(5/x)*(p-y)*(p-y) + 1
      
   s["Reward"] = reward
   print(' + Reward: ' + str(reward))
@@ -43,7 +43,7 @@ def env(s):
   x = x - abs(y)
   
   # If state < 0 then we are finished
-  if (x < 0): return
+  if (x <= 0): return
   
   s["State"] = [ x ]
   
@@ -60,7 +60,6 @@ e["Problem"]["Type"] = "Reinforcement Learning"
 e["Problem"]["Environment Function"] = env
 e["Problem"]["Initial States"] = [ [ initialX ] for i in range(50000) ]
 
-
 e["Variables"][0]["Name"] = "X"
 e["Variables"][0]["Type"] = "State"
 
@@ -76,7 +75,7 @@ e["Solver"]["Replay Start Size"] = 5000
 e["Solver"]["Replay Memory Size"] = 15000
 e["Solver"]["Mini Batch Size"] = 32
 e["Solver"]["Optimization Steps Per Update"] = 10
-e["Solver"]["Discount Factor"] = 0.95
+e["Solver"]["Discount Factor"] = 0.99
 
 ### Defining the shape of the neural network
 
@@ -91,11 +90,11 @@ e["Solver"]["Neural Network"]["Layers"][0]["Node Count"] = 2
 e["Solver"]["Neural Network"]["Layers"][0]["Activation Function"] = "Identity"
 
 e["Solver"]["Neural Network"]["Layers"][1]["Type"] = "Dense"
-e["Solver"]["Neural Network"]["Layers"][1]["Node Count"] = 10
+e["Solver"]["Neural Network"]["Layers"][1]["Node Count"] = 20
 e["Solver"]["Neural Network"]["Layers"][1]["Activation Function"] = "Tanh"
 
 e["Solver"]["Neural Network"]["Layers"][2]["Type"] = "Dense"
-e["Solver"]["Neural Network"]["Layers"][2]["Node Count"] = 10
+e["Solver"]["Neural Network"]["Layers"][2]["Node Count"] = 20
 e["Solver"]["Neural Network"]["Layers"][2]["Activation Function"] = "Tanh"
 
 e["Solver"]["Neural Network"]["Layers"][3]["Type"] = "Output"

@@ -168,7 +168,11 @@ void DQN::runGeneration()
    *********************************************************************/
 
   for (size_t i = 0; i < curEpisodeCount; i++)
-   for (size_t j = 0; j < agents[i]["Experience"]["States"].size(); j++)
+  {
+   size_t experienceSize = agents[i]["Experience"]["States"].size();
+   size_t startExpId = experienceSize > _agentHistorySize ? experienceSize - _agentHistorySize : 0;
+
+   for (size_t j = startExpId; j < experienceSize; j++)
    {
     _stateHistory.push_back(agents[i]["Experience"]["States"][j].get<std::vector<double>>());
     _actionHistory.push_back(agents[i]["Experience"]["Actions"][j].get<std::vector<double>>());
@@ -180,6 +184,7 @@ void DQN::runGeneration()
     else // Otherwise, store an empty next state
      _nextStateHistory.push_back({ });
    }
+  }
 
   // If the maximum number of experiences have been reached, start forgetting older experiences
   if (_stateHistory.size() > _replayMemorySize)
@@ -242,7 +247,8 @@ void DQN::runGeneration()
      printf("Reward: %f\n", _rewardHistory[expId]);
      printf("New State: %f\n", _currentState[0]);
      printf("New Action: %f\n", action[0]);
-     printf("Qvalue: %f\n", qValue[i]);
+     printf("QNew: %f\n", qNew);
+     printf("Q* %f\n", qValue[i]);
     }
    }
 

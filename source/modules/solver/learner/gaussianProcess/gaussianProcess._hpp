@@ -50,6 +50,8 @@ class GaussianProcess : public Learner
 
   std::vector<std::vector<double>> evaluate(const std::vector<std::vector<double>> &input) override;
 
+  knlohmann::json& getHyperparameters() override;
+  void setHyperparameters(const knlohmann::json& parameters) override;
   void initialize() override;
   void runGeneration() override;
   void printGenerationAfter() override;

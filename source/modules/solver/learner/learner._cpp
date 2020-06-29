@@ -15,16 +15,6 @@ std::vector<std::vector<double>> Learner::getGradients [[noreturn]] (const std::
   KORALI_LOG_ERROR("This solver does not provide a getGradients operation.\n");
 }
 
-knlohmann::json& Learner::getHyperparameters()
-{
- return _hyperparameters;
-}
-
-void Learner::setHyperparameters(const knlohmann::json& parameters)
-{
- _hyperparameters = parameters;
-}
-
 } // namespace solver
 
 } // namespace korali

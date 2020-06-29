@@ -121,6 +121,17 @@ std::vector<std::vector<double>> GaussianProcess::evaluate(const std::vector<std
   return output;
 }
 
+knlohmann::json& GaussianProcess::getHyperparameters()
+{
+ return _hyperparameters;
+}
+
+void GaussianProcess::setHyperparameters(const knlohmann::json& parameters)
+{
+ _hyperparameters = parameters;
+}
+
+
 } // namespace learner
 
 } // namespace solver

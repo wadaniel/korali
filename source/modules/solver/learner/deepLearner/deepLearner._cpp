@@ -146,11 +146,15 @@ void DeepLearner::initialize()
   // Resetting termination counters
    _currentInactiveSteps = 0;
    _lowestValidationLoss = korali::Inf;
+
+  // Creating evaluation NN
+  _evaluationNeuralNetwork = dynamic_cast<NeuralNetwork *>(Module::duplicate(_neuralNetwork));
  }
 
   // Storing input normalization hyperparameters
   _hyperparameters["Input Normalization Means"] = _trainingNeuralNetwork->_inputNormalizationMeans;
   _hyperparameters["Input Normalization Variances"] = _trainingNeuralNetwork->_inputNormalizationVariances;
+  _hyperparameters["Batch Size"] = 1;
 
   _isLearnerInitialized = true;
 }
@@ -224,25 +228,42 @@ void DeepLearner::finalize()
  _k->_logger->logInfo("Normal", "Training Loss: %.15f\n", _currentTrainingLoss);
 }
 
+knlohmann::json& DeepLearner::getHyperparameters()
+{
+ return _hyperparameters;
+}
+
+void DeepLearner::setHyperparameters(const knlohmann::json& parameters)
+{
+ _hyperparameters = parameters;
+
+ if (_isEvaluatioNNForwardInitialized == false)
+ {
+  _evaluationNeuralNetwork->_inputNormalizationMeans = _hyperparameters["Input Normalization Means"].get<std::vector<double>>();
+  _evaluationNeuralNetwork->_inputNormalizationVariances = _hyperparameters["Input Normalization Variances"].get<std::vector<double>>();
+  size_t batchSize = _hyperparameters["Batch Size"].get<size_t>();
+
+  _evaluationNeuralNetwork->createForwardPipeline(batchSize);
+  _isEvaluatioNNForwardInitialized = true;
+ }
+
+ for (size_t i = 0; i < _evaluationNeuralNetwork->_layers.size(); i++)
+ {
+  _evaluationNeuralNetwork->_layers[i]->_weights = _hyperparameters["Weights"][i].get<std::vector<std::vector<double>>>();
+  _evaluationNeuralNetwork->_layers[i]->_bias = _hyperparameters["Bias"][i].get<std::vector<double>>();
+ }
+
+ _evaluationNeuralNetwork->updateWeightsAndBias();
+}
+
 std::vector<std::vector<double>> DeepLearner::evaluate(const std::vector<std::vector<double>> &inputBatch)
 {
-  // Building evaluation NN's forward pipeline if not yet initialized
-  if (_isEvaluatioNNForwardInitialized == false)
-  {
-   _evaluationNeuralNetwork = dynamic_cast<NeuralNetwork *>(Module::duplicate(_neuralNetwork));
-   _evaluationNeuralNetwork->_inputNormalizationMeans = _hyperparameters["Input Normalization Means"].get<std::vector<double>>();
-   _evaluationNeuralNetwork->_inputNormalizationVariances = _hyperparameters["Input Normalization Variances"].get<std::vector<double>>();
-   _evaluationNeuralNetwork->createForwardPipeline(inputBatch.size());
-   _isEvaluatioNNForwardInitialized = true;
-  }
-
-  for (size_t i = 0; i < _evaluationNeuralNetwork->_layers.size(); i++)
-  {
-   _evaluationNeuralNetwork->_layers[i]->_weights = _hyperparameters["Weights"][i].get<std::vector<std::vector<double>>>();
-   _evaluationNeuralNetwork->_layers[i]->_bias = _hyperparameters["Bias"][i].get<std::vector<double>>();
-  }
-
-  _evaluationNeuralNetwork->updateWeightsAndBias();
+ // If evaluation NN was not initialized, initialize now.
+ if (_isEvaluatioNNForwardInitialized == false)
+ {
+  _hyperparameters["Batch Size"] = inputBatch.size();
+  setHyperparameters(_hyperparameters);
+ }
 
   // Updating NN inputs
   _evaluationNeuralNetwork->setInput(inputBatch);

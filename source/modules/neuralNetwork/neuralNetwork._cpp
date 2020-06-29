@@ -108,6 +108,9 @@ void NeuralNetwork::createForwardPipeline(size_t batchSize)
     if (_layers[i]->_activationFunction == "Tanh")
       activationAlgorithm = algorithm::eltwise_tanh;
 
+    if (_layers[i]->_activationFunction == "Logistic")
+      activationAlgorithm = algorithm::eltwise_logistic;
+
     // Creating descriptor
     auto activationDesc = eltwise_forward::desc(prop_kind::forward_training, activationAlgorithm, _layers[i]->_dataMem.get_desc(), alpha, beta);
 

@@ -119,18 +119,23 @@ void Experiment::saveState()
   if (_storeSampleInformation == true) _js["Samples"] = _sampleInfo["Samples"];
 
   char genFileName[256];
-  sprintf(genFileName, "gen%08lu.json", _currentGeneration);
 
-  std::string fileName = "./" + _fileOutputPath + "/" + genFileName;
-  std::string linkName = "./" + _fileOutputPath + "/latest";
+  // If filename not given, assign gen + genId
+  if (_fileOutputName == "")
+   sprintf(genFileName, "gen%08lu.json", _currentGeneration);
+  else
+   sprintf(genFileName, "%s", _fileOutputName.c_str());
 
-  if (saveJsonToFile(fileName.c_str(), _js.getJson()) != 0)
-    KORALI_LOG_ERROR("Error trying to save result file: %s.\n", fileName.c_str());
+  std::string filePath = "./" + _fileOutputPath + "/" + genFileName;
+  std::string linkPath = "./" + _fileOutputPath + "/latest";
 
-  remove(linkName.c_str());
+  if (saveJsonToFile(filePath.c_str(), _js.getJson()) != 0)
+    KORALI_LOG_ERROR("Error trying to save result file: %s.\n", filePath.c_str());
 
-  if (link(fileName.c_str(), linkName.c_str()) != 0)
-    KORALI_LOG_ERROR("Could not create hard link to latest result.\n + Target: %s\n + Link: %s\n", fileName.c_str(), linkName.c_str());
+  remove(linkPath.c_str());
+
+  if (link(filePath.c_str(), linkPath.c_str()) != 0)
+    KORALI_LOG_ERROR("Could not create hard link to latest result.\n + Target: %s\n + Link: %s\n", filePath.c_str(), linkPath.c_str());
 }
 
 bool Experiment::loadState(const std::string &path)
@@ -159,7 +164,6 @@ void Experiment::initialize()
 
   if (_isInitialized == false)
   {
-
    // Clearning sample and previous result information
    _js["Results"] = knlohmann::json();
    _js["Samples"] = knlohmann::json();
@@ -183,6 +187,8 @@ void Experiment::initialize()
    }
 
    getConfiguration(_js.getJson());
+
+   _logger = new Logger(_consoleOutputVerbosity, stdout);
 
    _isInitialized = true;
   }

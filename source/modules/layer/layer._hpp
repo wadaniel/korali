@@ -24,6 +24,11 @@ class Layer : public Module
   dnnl::memory _activationMem;
 
   /**
+   * @brief oneDNN Algorithm chosen for activation function
+   */
+  dnnl::algorithm _activationAlgorithm;
+
+  /**
    * @brief oneDNN Memory object descriptor to contain the result value of the neuron data of the layer
    */
   dnnl::memory _dataMem;

@@ -23,6 +23,11 @@ class DQN : public Solver
   korali::Engine _engine;
 
   /**
+ * @brief Korali engine for running internal experiments
+ */
+  korali::Engine _engine2;
+
+  /**
  * @brief Korali experiment for the estimation of Q values
  */
   korali::Experiment _qInferenceExperiment;
@@ -61,6 +66,8 @@ class DQN : public Solver
   * @brief Runs a generation of the environment(s), running an action on each episode, and updating the policy.
   */
   void runGeneration() override;
+
+  void printGenerationAfter() override;
   void initialize() override;
 };
 

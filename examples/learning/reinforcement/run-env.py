@@ -2,63 +2,42 @@
 import os
 import sys
 import math
-import numpy as np
-import matplotlib.pyplot as plt
+import gym
 
+######## Defining Environment Storage
 
-######## Defining Auxiliar Functions
-
-def gaussian(x, alpha, r):
-    return 1./(math.sqrt(alpha**math.pi))*np.exp(-alpha*np.power((x - r), 2.))
-
-######## Defining Problem's Constants
-
-N = 10 # Max stages
-initialX = 1 # Initial state
+cart = gym.make('CartPole-v1').unwrapped
+maxSteps = 1000
 
 ####### Defining Problem's environment
 
 def env(s):
 
- # Reading initial state
- x = s["State"][0]
+ # Initializing environment
+ s["State"] = cart.reset().tolist()
+ step = 0
+ done = False
 
- for i in range(N):
+ while not done and step < maxSteps:
+
+  # Getting new action
+  s.update()
   
   # Reading action
-  y = s["Action"][0]
-  
-  print('Running Environment')
-  print(' + State:  ' + str(x))
-  print(' + Action: ' + str(y))
-  
-  # If y less than zero, no reward 
-  if (y < 0): 
-   s["Reward"] = 0
-   return
-   
-  # If y if higher than x, then return zero 
-  if (y > x): 
-   s["Reward"] = 0
-   return
-   
-  # Calcuating reward
-  reward = (y*y)/3
-     
+  action = s["Action"][0] 
+    
+  # Performing the action
+  state, reward, done, info = cart.step(action)
+
+  # Storing Reward
   s["Reward"] = reward
-  print(' + Reward: ' + str(reward))
+   
+  # Storing New State
+  s["State"] = state.tolist()
   
-  # Storing new state
-  x = x - abs(y)
+  # Advancing step counter
+  step = step + 1
   
-  # If state < 0 then we are finished
-  if (x <= 0): return
-  
-  s["State"] = [ x ]
-  
-  # Reporting back and getting new action
-  s.update()
- 
 import korali
 k = korali.Engine()
 e = korali.Experiment()
@@ -67,54 +46,69 @@ e = korali.Experiment()
 
 e["Problem"]["Type"] = "Reinforcement Learning"
 e["Problem"]["Environment Function"] = env
-e["Problem"]["Initial States"] = [ [ initialX ] for i in range(1000000) ]
 
-e["Variables"][0]["Name"] = "X"
+e["Variables"][0]["Name"] = "Cart Position"
 e["Variables"][0]["Type"] = "State"
 
-e["Variables"][1]["Name"] = "Y"
-e["Variables"][1]["Type"] = "Action"
-e["Variables"][1]["Lower Bound"] = 0.0
-e["Variables"][1]["Upper Bound"] = 1.0
+e["Variables"][1]["Name"] = "Cart Velocity"
+e["Variables"][1]["Type"] = "State"
 
-### Using a neural network solver (deep learning) for inference
+e["Variables"][2]["Name"] = "Pole Angle"
+e["Variables"][2]["Type"] = "State"
+
+e["Variables"][3]["Name"] = "Pole Angular Velocity"
+e["Variables"][3]["Type"] = "State"
+
+e["Variables"][4]["Name"] = "Y"
+e["Variables"][4]["Type"] = "Action"
+e["Variables"][4]["Values"] = [ 0.0, 1.0 ]
+
+### Configuring DQN hyperparameters
 
 e["Solver"]["Type"] = "DQN"
-e["Solver"]["Replay Start Size"] = 50
-e["Solver"]["Replay Memory Size"] = 1000
-e["Solver"]["Agent History Size"] = 2
-e["Solver"]["Mini Batch Size"] = 4
+e["Solver"]["Replay Start Size"] = 5000
+e["Solver"]["Replay Memory Size"] = 100000
+e["Solver"]["Agent History Size"] = 250
+e["Solver"]["Mini Batch Size"] = 32
 e["Solver"]["Optimization Steps Per Update"] = 10
 e["Solver"]["Discount Factor"] = 0.99
+e["Solver"]["Epsilon"]["Initial Value"] = 0.9
+e["Solver"]["Epsilon"]["Target Value"] = 0.05
+e["Solver"]["Epsilon"]["Decrease Rate"] = 0.005
 
 ### Defining the shape of the neural network
 
-e["Solver"]["Action Optimizer"]["Type"] = "Optimizer/Adam"
-e["Solver"]["Action Optimizer"]["Termination Criteria"]["Max Gradient Norm"] = 1000000000
-#e["Solver"]["Action Optimizer"]["Termination Criteria"]["Min Gradient Norm"] = 0.0000000010
-
+e["Solver"]["Action Optimizer"]["Type"] = "Optimizer/Grid Search" 
 e["Solver"]["Weight Optimizer"]["Type"] = "Optimizer/Adam"
-e["Solver"]["Weight Optimizer"]["Termination Criteria"]["Max Gradient Norm"] = 1000000000
-e["Solver"]["Weight Optimizer"]["Termination Criteria"]["Min Gradient Norm"] = 0.0000000000001
+e["Solver"]["Weight Optimizer"]["Eta"] = 0.001
 
 e["Solver"]["Neural Network"]["Batch Normalization"]["Enabled"] = False
 
 e["Solver"]["Neural Network"]["Layers"][0]["Type"] = "Input"
-e["Solver"]["Neural Network"]["Layers"][0]["Node Count"] = 2
-e["Solver"]["Neural Network"]["Layers"][0]["Activation Function"] = "Identity"
+e["Solver"]["Neural Network"]["Layers"][0]["Node Count"] = 4
+e["Solver"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Identity"
 
 e["Solver"]["Neural Network"]["Layers"][1]["Type"] = "Dense"
-e["Solver"]["Neural Network"]["Layers"][1]["Node Count"] = 20
-e["Solver"]["Neural Network"]["Layers"][1]["Activation Function"] = "Tanh"
+e["Solver"]["Neural Network"]["Layers"][1]["Node Count"] = 32
+e["Solver"]["Neural Network"]["Layers"][1]["Activation Function"]["Type"] = "Tanh"
 
-e["Solver"]["Neural Network"]["Layers"][2]["Type"] = "Output"
-e["Solver"]["Neural Network"]["Layers"][2]["Node Count"] = 1
-e["Solver"]["Neural Network"]["Layers"][2]["Activation Function"] = "Identity" 
+e["Solver"]["Neural Network"]["Layers"][2]["Type"] = "Dense"
+e["Solver"]["Neural Network"]["Layers"][2]["Node Count"] = 32
+e["Solver"]["Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Tanh"
 
-e["Random Seed"] = 0xC0FFEE
-e["File Output"]["Enabled"] = False
+e["Solver"]["Neural Network"]["Layers"][3]["Type"] = "Output"
+e["Solver"]["Neural Network"]["Layers"][3]["Node Count"] = 1
+e["Solver"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Identity" 
+
+# Defining Termination Criteria
+#e["Solver"]["Termination Criteria"]["Max Experiences"] = 100000
+#e["Solver"]["Termination Criteria"]["Max Episodes"] = 1000
+e["Solver"]["Termination Criteria"]["Max Generations"] = 2000
 
 ### Training the neural network
-
+e["Random Seed"] = 0xC0FFEE
+e["File Output"]["Frequency"] = 1
+e["File Output"]["Enabled"] = True
+e["File Output"]["Name"] = "result.json"
 k.run(e)
 

@@ -95,24 +95,21 @@ void NeuralNetwork::createForwardPipeline(size_t batchSize)
     * Creating Activation Function primitive and memory
     * ***************************************/
 
-    algorithm activationAlgorithm = algorithm::eltwise_linear;
-    float alpha = 0.0f;
-    float beta = 0.0f;
+    _layers[i]->_activationAlgorithm = algorithm::eltwise_linear;
 
-    if (_layers[i]->_activationFunction == "Identity")
-      alpha = 1.0f;
+    if (_layers[i]->_activationFunctionType == "Identity") _layers[i]->_activationFunctionAlpha = 1.0f;
+    if (_layers[i]->_activationFunctionType == "Clip") _layers[i]->_activationAlgorithm = algorithm::eltwise_clip;
+    if (_layers[i]->_activationFunctionType == "Linear") _layers[i]->_activationAlgorithm = algorithm::eltwise_linear;
+    if (_layers[i]->_activationFunctionType == "Log") _layers[i]->_activationAlgorithm = algorithm::eltwise_log;
+    if (_layers[i]->_activationFunctionType == "ReLU") _layers[i]->_activationAlgorithm = algorithm::eltwise_relu;
+    if (_layers[i]->_activationFunctionType == "Tanh") _layers[i]->_activationAlgorithm = algorithm::eltwise_tanh;
+    if (_layers[i]->_activationFunctionType == "Logistic") _layers[i]->_activationAlgorithm = algorithm::eltwise_logistic;
 
-    if (_layers[i]->_activationFunction == "ReLU")
-      activationAlgorithm = algorithm::eltwise_relu;
-
-    if (_layers[i]->_activationFunction == "Tanh")
-      activationAlgorithm = algorithm::eltwise_tanh;
-
-    if (_layers[i]->_activationFunction == "Logistic")
-      activationAlgorithm = algorithm::eltwise_logistic;
+    float alpha = _layers[i]->_activationFunctionAlpha;
+    float beta = _layers[i]->_activationFunctionBeta;
 
     // Creating descriptor
-    auto activationDesc = eltwise_forward::desc(prop_kind::forward_training, activationAlgorithm, _layers[i]->_dataMem.get_desc(), alpha, beta);
+    auto activationDesc = eltwise_forward::desc(prop_kind::forward_training, _layers[i]->_activationAlgorithm, _layers[i]->_dataMem.get_desc(), alpha, beta);
 
     // Create primitive descriptor.
     _layers[i]->_forwardActivationPrimitiveDesc = eltwise_forward::primitive_desc(activationDesc, _engine);
@@ -277,21 +274,11 @@ void NeuralNetwork::createBackwardPipeline()
   for (ssize_t i = layerCount - 1; i >= 0; i--)
   {
     // Creating backward propagation primitives for activation functions
-    auto activationAlgorithm = algorithm::eltwise_linear;
-    float alpha = 0.0f;
-    float beta = 0.0f;
-
-    if (_layers[i]->_activationFunction == "Identity")
-      alpha = 1.0f;
-
-    if (_layers[i]->_activationFunction == "ReLU")
-      activationAlgorithm = algorithm::eltwise_relu;
-
-    if (_layers[i]->_activationFunction == "Tanh")
-      activationAlgorithm = algorithm::eltwise_tanh;
+    float alpha = _layers[i]->_activationFunctionAlpha;
+    float beta = _layers[i]->_activationFunctionBeta;
 
     // Creating descriptor
-    auto activationDesc = eltwise_backward::desc(activationAlgorithm, _layers[i]->_dataMem.get_desc(), _layers[i]->_activationMem.get_desc(), alpha, beta);
+    auto activationDesc = eltwise_backward::desc(_layers[i]->_activationAlgorithm, _layers[i]->_dataMem.get_desc(), _layers[i]->_activationMem.get_desc(), alpha, beta);
 
     // Create primitive descriptor.
     auto backwardActivationPrimitiveDesc = eltwise_backward::primitive_desc(activationDesc, _engine, _layers[i]->_forwardActivationPrimitiveDesc);

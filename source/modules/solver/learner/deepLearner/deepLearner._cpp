@@ -76,7 +76,7 @@ void DeepLearner::initialize()
  if (_isLearnerInitialized == false)
  {
   // Creating evaluation lambda function for optimization
-  auto fc = [this, nn = _trainingNeuralNetwork, sol = _problem->_trainingSolution](Sample &sample) { this->evaluateWeightsAndBiases(sample, nn, sol, true); };
+  auto fc = [this, nn = &_trainingNeuralNetwork, sol = &_problem->_trainingSolution](Sample &sample) { this->evaluateWeightsAndBiases(sample, *nn, *sol, true); };
 
   _optExperiment["Problem"]["Type"] = "Optimization";
   _optExperiment["Problem"]["Objective Function"] = fc;
@@ -141,7 +141,6 @@ void DeepLearner::initialize()
 
   // Running initialization to verify that the configuration is correct
   _optEngine.initialize(_optExperiment);
-  printf("Initializing Experiment\n");
 
   // Resetting termination counters
    _currentInactiveSteps = 0;
@@ -175,11 +174,9 @@ void DeepLearner::runGeneration()
   // If validation hasn't been provided, store best training NN so far
   if (_problem->_validationBatchSize == 0)
   {
-   // Setting input validation data
-   Sample newSample;
-
    // Getting the (so far) optimal training parameters
-   newSample["Parameters"] = _optExperiment["Results"]["Best Sample"]["Parameters"];
+   auto parameters = _optExperiment["Results"]["Best Sample"]["Parameters"].get<std::vector<double>>();
+   storeWeightsAndBiases(_trainingNeuralNetwork, parameters);
 
    for (size_t i = 0; i < _trainingNeuralNetwork->_layers.size(); i++)
    {
@@ -314,31 +311,39 @@ void DeepLearner::printGenerationAfter()
   }
 }
 
+size_t DeepLearner::storeWeightsAndBiases(NeuralNetwork* nn, const std::vector<double> params)
+{
+ // Updating training network's weights and biases
+ size_t currentVariable = 0;
+ for (size_t i = 1; i < nn->_layers.size(); i++)
+ {
+  nn->_layers[i]->_weights.resize(nn->_layers[i]->_nodeCount);
+  nn->_layers[i]->_bias.resize(nn->_layers[i]->_nodeCount);
+
+   // Adding layer's weights
+   for (size_t j = 0; j < nn->_layers[i]->_nodeCount; j++)
+   {
+     nn->_layers[i]->_weights[j].resize(nn->_layers[i - 1]->_nodeCount);
+
+     for (size_t k = 0; k < nn->_layers[i - 1]->_nodeCount; k++)
+       nn->_layers[i]->_weights[j][k] = params[currentVariable++];
+   }
+
+   // Adding layer's biases
+   for (size_t j = 0; j < nn->_layers[i]->_nodeCount; j++)
+     nn->_layers[i]->_bias[j] = params[currentVariable++];
+ }
+
+ return currentVariable;
+}
+
 void DeepLearner::evaluateWeightsAndBiases(Sample &sample, NeuralNetwork* nn, const std::vector<std::vector<double>>& solution, bool getGradients)
 {
-  // Setting weights and biases
+  // Getting parameters for weight and bias update
   auto parameters = KORALI_GET(std::vector<double>, sample, "Parameters");
 
-  // Updating training network's weights and biases
-  size_t currentVariable = 0;
-  for (size_t i = 1; i < nn->_layers.size(); i++)
-  {
-   nn->_layers[i]->_weights.resize(nn->_layers[i]->_nodeCount);
-   nn->_layers[i]->_bias.resize(nn->_layers[i]->_nodeCount);
-
-    // Adding layer's weights
-    for (size_t j = 0; j < nn->_layers[i]->_nodeCount; j++)
-    {
-      nn->_layers[i]->_weights[j].resize(nn->_layers[i - 1]->_nodeCount);
-
-      for (size_t k = 0; k < nn->_layers[i - 1]->_nodeCount; k++)
-        nn->_layers[i]->_weights[j][k] = parameters[currentVariable++];
-    }
-
-    // Adding layer's biases
-    for (size_t j = 0; j < nn->_layers[i]->_nodeCount; j++)
-      nn->_layers[i]->_bias[j] = parameters[currentVariable++];
-  }
+  // Storing the weights and biases into the neural network
+  size_t variableCount = storeWeightsAndBiases(nn, parameters);
 
   // Updating the trainingnetwork's weights and biases
   nn->updateWeightsAndBias();
@@ -375,8 +380,9 @@ void DeepLearner::evaluateWeightsAndBiases(Sample &sample, NeuralNetwork* nn, co
    nn->backwardWeightsAndBias(outputDiff);
 
    // Copying back the gradients and biases back
-   std::vector<double> gradientVector(currentVariable);
-   currentVariable = 0;
+   std::vector<double> gradientVector(variableCount);
+
+   size_t currentVariable = 0;
    for (size_t i = 1; i < nn->_layers.size(); i++)
    {
      // Adding layer's weights

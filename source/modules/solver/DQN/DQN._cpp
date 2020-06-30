@@ -1,6 +1,5 @@
 #include "modules/conduit/conduit.hpp"
 #include "modules/solver/DQN/DQN.hpp"
-#include "modules/problem/supervisedLearning/supervisedLearning.hpp"
 
 /****************************************
  * Things to fix:
@@ -18,6 +17,7 @@ void DQN::initialize()
   // Getting problem pointer
   _problem = dynamic_cast<problem::ReinforcementLearning *>(_k->_problem);
 
+  printf("Generation: %lu\n", _k->_currentGeneration);
   // Checking inputs
   for (size_t i = 0; i < _problem->_actionVectorSize; i++)
   {
@@ -71,6 +71,14 @@ void DQN::initialize()
   _qInferenceExperiment._js.getJson() = qConfig;
   _engine.initialize(_qInferenceExperiment);
 
+  // Getting learner pointers
+  _qTrainingProblem = dynamic_cast<problem::SupervisedLearning *>(_qTrainingExperiment._problem);
+  _qTrainingLearner = dynamic_cast<solver::Learner *>(_qTrainingExperiment._solver);
+  _qInferenceLearner = dynamic_cast<solver::Learner *>(_qInferenceExperiment._solver);
+
+  // If this is the first generation, get the initial set of hyperparameters
+  if (_k->_currentGeneration == 0) _hyperparameters =  _qTrainingLearner->getHyperparameters();
+
   /*********************************************************************
   * Creating Q-Maximizing argmax(Action) Experiment
   *********************************************************************/
@@ -108,17 +116,19 @@ void DQN::initialize()
   // Running initialization to verify that the configuration is correct
   _engine.initialize(_argMaxActionExperiment);
 
-}
-
-void DQN::runGeneration()
-{
- // If initial generation, set initial DQN configuration
-  if (_k->_currentGeneration == 1)
+  // If initial generation, set initial DQN configuration
+  if (_k->_currentGeneration == 0)
   {
    _currentEpisode = 0;
    _epsilonCurrentValue = _epsilonInitialValue;
   }
 
+  // Assigning training hyperparameters to inference learner
+  _qInferenceLearner->setHyperparameters(_hyperparameters);
+}
+
+void DQN::runGeneration()
+{
   // Making sure we don't create more agents than remaining initial states
   size_t curEpisodeCount = _episodesPerGeneration;
   if (curEpisodeCount + _currentEpisode > _maxEpisodes) if (_maxEpisodes > 0)
@@ -127,18 +137,13 @@ void DQN::runGeneration()
   // Creating storage for agents
   std::vector<Sample> agents(curEpisodeCount);
 
-  // Getting learner and problem's pointer
-  auto qTrainingProblem = dynamic_cast<problem::SupervisedLearning *>(_qTrainingExperiment._problem);
-  auto qTrainingLearner = dynamic_cast<solver::Learner *>(_qTrainingExperiment._solver);
-  auto qInferenceLearner = dynamic_cast<solver::Learner *>(_qInferenceExperiment._solver);
-
   // Setting global configuration for workers to use
   knlohmann::json globals;
 
   // Getting q training hyperparameters to broadcast to workers
-  auto hyperparameters =  qTrainingLearner->getHyperparameters();
-  globals["Hyperparameters"] = hyperparameters;
-  qInferenceLearner->setHyperparameters(hyperparameters);
+  _hyperparameters =  _qTrainingLearner->getHyperparameters();
+  globals["Hyperparameters"] = _hyperparameters;
+  _qInferenceLearner->setHyperparameters(_hyperparameters);
 
   // If the minimum number of experiences haven been reached, do not update NN
   // and use epsilon = 1.0 to use only random decisions.
@@ -265,9 +270,9 @@ void DQN::runGeneration()
     }
 
     // Updating inputs to training learner
-    for (size_t j = 0; j < _problem->_stateVectorSize; j++) qTrainingProblem->_trainingInput[i][j] = _stateHistory[expId][j];
-    for (size_t j = 0; j < _problem->_actionVectorSize; j++) qTrainingProblem->_trainingInput[i][_problem->_stateVectorSize + j] = _actionHistory[expId][j];
-    qTrainingProblem->_trainingSolution[i][0] = qValue[i];
+    for (size_t j = 0; j < _problem->_stateVectorSize; j++) _qTrainingProblem->_trainingInput[i][j] = _stateHistory[expId][j];
+    for (size_t j = 0; j < _problem->_actionVectorSize; j++) _qTrainingProblem->_trainingInput[i][_problem->_stateVectorSize + j] = _actionHistory[expId][j];
+    _qTrainingProblem->_trainingSolution[i][0] = qValue[i];
 
     // Keeping statistics
     _cumulativeQStar += qValue[i];

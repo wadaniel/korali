@@ -4,6 +4,7 @@
 #include "modules/problem/reinforcementLearning/reinforcementLearning.hpp"
 #include "modules/solver/solver.hpp"
 #include "modules/solver/learner/learner.hpp"
+#include "modules/problem/supervisedLearning/supervisedLearning.hpp"
 
 namespace korali
 {
@@ -23,9 +24,19 @@ class DQN : public Solver
   korali::Engine _engine;
 
   /**
- * @brief Korali engine for running internal experiments
- */
-  korali::Engine _engine2;
+   * @brief Pointer to training experiment's problem
+   */
+  problem::SupervisedLearning * _qTrainingProblem;
+
+  /**
+  * @brief Pointer to training experiment's learner
+  */
+  solver::Learner * _qTrainingLearner;
+
+  /**
+   * @brief Pointer to inference experiment's learner
+   */
+  solver::Learner * _qInferenceLearner;
 
   /**
  * @brief Korali experiment for the estimation of Q values

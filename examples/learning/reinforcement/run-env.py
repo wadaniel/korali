@@ -59,7 +59,7 @@ e["Variables"][2]["Type"] = "State"
 e["Variables"][3]["Name"] = "Pole Angular Velocity"
 e["Variables"][3]["Type"] = "State"
 
-e["Variables"][4]["Name"] = "Y"
+e["Variables"][4]["Name"] = "Push Direction"
 e["Variables"][4]["Type"] = "Action"
 e["Variables"][4]["Values"] = [ 0.0, 1.0 ]
 
@@ -101,9 +101,7 @@ e["Solver"]["Neural Network"]["Layers"][3]["Node Count"] = 1
 e["Solver"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Identity" 
 
 # Defining Termination Criteria
-#e["Solver"]["Termination Criteria"]["Max Experiences"] = 100000
-#e["Solver"]["Termination Criteria"]["Max Episodes"] = 1000
-e["Solver"]["Termination Criteria"]["Max Generations"] = 2000
+e["Solver"]["Termination Criteria"]["Max Generations"] = 400
 
 ### Training the neural network
 e["Random Seed"] = 0xC0FFEE

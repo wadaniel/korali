@@ -67,20 +67,20 @@ e["Variables"][4]["Values"] = [ 0.0, 1.0 ]
 
 e["Solver"]["Type"] = "DQN"
 e["Solver"]["Replay Start Size"] = 5000
-e["Solver"]["Replay Memory Size"] = 100000
-e["Solver"]["Agent History Size"] = 250
-e["Solver"]["Mini Batch Size"] = 32
+e["Solver"]["Replay Memory Size"] = 150000
+e["Solver"]["Agent History Size"] = 1000
+e["Solver"]["Mini Batch Size"] = 256
 e["Solver"]["Optimization Steps Per Update"] = 10
 e["Solver"]["Discount Factor"] = 0.99
 e["Solver"]["Epsilon"]["Initial Value"] = 0.9
 e["Solver"]["Epsilon"]["Target Value"] = 0.05
-e["Solver"]["Epsilon"]["Decrease Rate"] = 0.005
+e["Solver"]["Epsilon"]["Decrease Rate"] = 0.05
 
 ### Defining the shape of the neural network
 
 e["Solver"]["Action Optimizer"]["Type"] = "Optimizer/Grid Search" 
 e["Solver"]["Weight Optimizer"]["Type"] = "Optimizer/Adam"
-e["Solver"]["Weight Optimizer"]["Eta"] = 0.001
+e["Solver"]["Weight Optimizer"]["Eta"] = 0.02
 
 e["Solver"]["Neural Network"]["Batch Normalization"]["Enabled"] = False
 
@@ -96,17 +96,32 @@ e["Solver"]["Neural Network"]["Layers"][2]["Type"] = "Dense"
 e["Solver"]["Neural Network"]["Layers"][2]["Node Count"] = 32
 e["Solver"]["Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Tanh"
 
-e["Solver"]["Neural Network"]["Layers"][3]["Type"] = "Output"
-e["Solver"]["Neural Network"]["Layers"][3]["Node Count"] = 1
-e["Solver"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Identity" 
+e["Solver"]["Neural Network"]["Layers"][3]["Type"] = "Dense"
+e["Solver"]["Neural Network"]["Layers"][3]["Node Count"] = 32
+e["Solver"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Tanh"
+
+e["Solver"]["Neural Network"]["Layers"][4]["Type"] = "Output"
+e["Solver"]["Neural Network"]["Layers"][4]["Node Count"] = 1
+e["Solver"]["Neural Network"]["Layers"][4]["Activation Function"]["Type"] = "Identity" 
 
 # Defining Termination Criteria
-e["Solver"]["Termination Criteria"]["Max Generations"] = 400
+e["Solver"]["Termination Criteria"]["Max Generations"] = 1000
+e["Solver"]["Termination Criteria"]["Max Suboptimal Steps"] = 100
 
 ### Training the neural network
 e["Random Seed"] = 0xC0FFEE
 e["File Output"]["Frequency"] = 1
 e["File Output"]["Enabled"] = True
 e["File Output"]["Name"] = "result.json"
+
+### Loading any previous results
+
+#found = e.loadState('_korali_result/latest')
+
+# If not found, we run the training experiment again
+#if (found == False):
 k.run(e)
+#else:
+# print('Found pre-trained experiment') 
+
 

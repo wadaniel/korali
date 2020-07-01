@@ -76,9 +76,6 @@ void DQN::initialize()
   _qTrainingLearner = dynamic_cast<solver::Learner *>(_qTrainingExperiment._solver);
   _qInferenceLearner = dynamic_cast<solver::Learner *>(_qInferenceExperiment._solver);
 
-  // If this is the first generation, get the initial set of hyperparameters
-  if (_k->_currentGeneration == 0) _hyperparameters =  _qTrainingLearner->getHyperparameters();
-
   /*********************************************************************
   * Creating Q-Maximizing argmax(Action) Experiment
   *********************************************************************/
@@ -121,6 +118,14 @@ void DQN::initialize()
   {
    _currentEpisode = 0;
    _epsilonCurrentValue = _epsilonInitialValue;
+   _suboptimalStepCounter = 0;
+
+    // Initialize best reward
+   _bestReward = -korali::Inf;
+
+    // Get the initial set of hyperparameters
+   _hyperparameters =  _qTrainingLearner->getHyperparameters();
+   _bestHyperparameters = _hyperparameters;
   }
 
   // Assigning training hyperparameters to inference learner
@@ -177,6 +182,9 @@ void DQN::runGeneration()
   _maxExperienceCount = 0;
   _minExperienceCount = std::numeric_limits<size_t>::max();
 
+  // Calculating the cumulative reward of this round of experiences
+  _cumulativeReward = 0.0;
+
   for (size_t i = 0; i < curEpisodeCount; i++)
   {
    size_t experienceSize = agents[i]["Experience"]["States"].size();
@@ -186,14 +194,18 @@ void DQN::runGeneration()
    if (experienceSize > _maxExperienceCount) _maxExperienceCount = experienceSize;
    if (experienceSize < _minExperienceCount) _minExperienceCount = experienceSize;
 
-
    size_t startExpId = experienceSize > _agentHistorySize ? experienceSize - _agentHistorySize : 0;
 
    for (size_t j = startExpId; j < experienceSize; j++)
    {
+    // Storing action and state experience
     _stateHistory.push_back(agents[i]["Experience"]["States"][j].get<std::vector<double>>());
     _actionHistory.push_back(agents[i]["Experience"]["Actions"][j].get<std::vector<double>>());
-    _rewardHistory.push_back(agents[i]["Experience"]["Rewards"][j].get<double>());
+
+    // Storing reward
+    double reward = agents[i]["Experience"]["Rewards"][j].get<double>();
+    _rewardHistory.push_back(reward);
+    _cumulativeReward += reward;
 
     // If not a terminal state, store the next state
     if (j < agents[i]["Experience"]["States"].size() - 1)
@@ -201,6 +213,20 @@ void DQN::runGeneration()
     else // Otherwise, store an empty next state
      _nextStateHistory.push_back({ });
    }
+  }
+
+  // Updating best reward so far, it the cumulative reward of this round exceeds it
+  // and store the best hyperparameters used for that
+  if (_cumulativeReward > _bestReward)
+  {
+   _bestReward = _cumulativeReward;
+   _bestHyperparameters = _hyperparameters;
+   _suboptimalStepCounter = 0;
+  }
+  else
+  {
+   // If not better, then increase the suboptimal step counter
+   _suboptimalStepCounter++;
   }
 
   // Updating average experience count
@@ -381,14 +407,22 @@ void DQN::evaluateAction(Sample &sample, bool getGradients)
 void DQN::printGenerationAfter()
 {
  // Printing results so far
- _k->_logger->logInfo("Normal", "Experience Memory Size: %lu/%lu\n", _stateHistory.size(), _replayMemorySize);
- _k->_logger->logInfo("Normal", "Epsilon: %f\n", _epsilonCurrentValue);
- _k->_logger->logInfo("Normal", "Total Experience Count: %lu\n", _totalExperienceCount);
- _k->_logger->logInfo("Normal", "Max Experience Count: %lu\n", _maxExperienceCount);
- _k->_logger->logInfo("Normal", "Avg Experience Count: %.0f\n", _averageExperienceCount);
- _k->_logger->logInfo("Normal", "Min Experience Count: %lu\n", _minExperienceCount);
- _k->_logger->logInfo("Normal", "Sum Q*: %f\n", _cumulativeQStar);
- _k->_logger->logInfo("Normal", "Avg Q*: %f\n", _averageQStar);
+ _k->_logger->logInfo("Normal", "Experience Memory Size:       %lu/%lu\n", _stateHistory.size(), _replayMemorySize);
+ _k->_logger->logInfo("Normal", "Epsilon:                      %f\n", _epsilonCurrentValue);
+ _k->_logger->logInfo("Normal", "Total Experience Count:       %lu\n", _totalExperienceCount);
+ _k->_logger->logInfo("Normal", "Max Experience Count:         %lu\n", _maxExperienceCount);
+ _k->_logger->logInfo("Normal", "Avg Experience Count:         %.0f\n", _averageExperienceCount);
+ _k->_logger->logInfo("Normal", "Min Experience Count:         %lu\n", _minExperienceCount);
+ _k->_logger->logInfo("Normal", "Cumulative Experience Reward: %f\n", _cumulativeReward);
+ _k->_logger->logInfo("Normal", "Best Experience Reward:       %f\n", _bestReward);
+
+ if (_maxSuboptimalSteps > 0)
+  _k->_logger->logInfo("Normal", "Steps with Suboptimal Reward: %lu/%lu\n", _suboptimalStepCounter, _maxSuboptimalSteps);
+ else
+  _k->_logger->logInfo("Normal", "Steps with Suboptimal Reward: %lu\n", _suboptimalStepCounter);
+
+ _k->_logger->logInfo("Normal", "Cumulative Expected Q-Value:  %f\n", _cumulativeQStar);
+ _k->_logger->logInfo("Normal", "Average Expected Q-Value:     %f\n", _averageQStar);
 
  _k->_logger->logInfo("Normal", "Learner Information:\n");
  _qTrainingExperiment._logger->_verbosityLevel = _k->_logger->_verbosityLevel;

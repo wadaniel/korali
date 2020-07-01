@@ -1,8 +1,8 @@
-#ifndef _KORALI_SOLVER_DQN_HPP_
-#define _KORALI_SOLVER_DQN_HPP_
+#ifndef _KORALI_AGENT_DQN_HPP_
+#define _KORALI_AGENT_DQN_HPP_
 
 #include "modules/problem/reinforcementLearning/reinforcementLearning.hpp"
-#include "modules/solver/solver.hpp"
+#include "modules/solver/agent/agent.hpp"
 #include "modules/solver/learner/learner.hpp"
 #include "modules/problem/supervisedLearning/supervisedLearning.hpp"
 
@@ -10,7 +10,9 @@ namespace korali
 {
 namespace solver
 {
-class DQN : public Solver
+namespace agent
+{
+class DQN : public Agent
 {
   public:
   /**
@@ -64,11 +66,6 @@ class DQN : public Solver
   std::vector<double> _currentState;
 
   /**
-   * @brief Gets the next action for the actor, based on the Q policy
-   */
-  void getAction(Sample &sample);
-
-  /**
    * @brief Function to evaluate the Q* of a given action
    */
   void evaluateAction(Sample &sample, bool getGradients);
@@ -78,11 +75,14 @@ class DQN : public Solver
   */
   void runGeneration() override;
 
+  std::vector<double> getAction(const std::vector<double>& state) override;
+  void getAction(Sample &sample) override;
   void printGenerationAfter() override;
   void initialize() override;
 };
 
+} // namespace agent
 } // namespace solver
 } // namespace korali
 
-#endif // _KORALI_SOLVER_DQN_HPP_
+#endif // _KORALI_AGENT_DQN_HPP_

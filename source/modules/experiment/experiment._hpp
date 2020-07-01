@@ -53,6 +53,9 @@ class Experiment : public Module
   */
   cothread_t _thread;
 
+  /**
+  * @brief Flag to indicate that the experiment has been initialized to prevent it from re-initializing upon resuming
+  */
   bool _isInitialized;
 
   /**
@@ -101,11 +104,18 @@ class Experiment : public Module
   knlohmann::json &operator[](const unsigned long int &key);
 
   /**
-    * @brief For solver modules which have been trained, test returns an inferred output batch, from a batch of inputs to process.
+    * @brief For agent modules, this returns an optimal action, given the state
+    * @param state The input state
+    * @return The optimal action
+   */
+  std::vector<double> getAction(const std::vector<double> &state);
+
+  /**
+    * @brief For learner modules which have been trained, test returns an inferred output batch, from a batch of inputs to process.
     * @param inputBatch The inputs from which to infer outputs.
     * @return The inferred outputs
    */
-  std::vector<std::vector<double>> evaluate(const std::vector<std::vector<double>> &inputBatch);
+  std::vector<std::vector<double>> getEvaluation(const std::vector<std::vector<double>> &inputBatch);
 
   /**
    * @brief For solver modules which have been trained, return the gradient of a differentiated output

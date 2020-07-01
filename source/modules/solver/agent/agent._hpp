@@ -1,0 +1,33 @@
+#ifndef _KORALI_AGENT_HPP_
+#define _KORALI_AGENT_HPP_
+
+#include "engine.hpp"
+#include "modules/solver/solver.hpp"
+
+namespace korali
+{
+namespace solver
+{
+class Agent : public Solver
+{
+  public:
+
+ /**
+  * @brief Gets the next action for the actor, based on the state
+  * @param sample the sample containing the state and other required information
+  */
+ virtual void getAction(Sample &sample) = 0;
+
+
+ /**
+  * @brief Gets the next action for the actor, based on the state
+  * @param sate The vector containing the state and other required information
+  */
+ virtual std::vector<double> getAction(const std::vector<double>& state) = 0;
+
+};
+
+} // namespace solver
+} // namespace korali
+
+#endif // _KORALI_AGENT_HPP_

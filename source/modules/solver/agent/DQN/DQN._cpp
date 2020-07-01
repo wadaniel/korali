@@ -1,5 +1,5 @@
 #include "modules/conduit/conduit.hpp"
-#include "modules/solver/DQN/DQN.hpp"
+#include "modules/solver/agent/DQN/DQN.hpp"
 
 /****************************************
  * Things to fix:
@@ -10,6 +10,8 @@
 namespace korali
 {
 namespace solver
+{
+namespace agent
 {
 
 void DQN::initialize()
@@ -118,6 +120,7 @@ void DQN::initialize()
    _currentEpisode = 0;
    _epsilonCurrentValue = _epsilonInitialValue;
    _suboptimalStepCounter = 0;
+   _optimizationStepCount = 0;
 
     // Initialize best reward
    _bestAverageReward = -korali::Inf;
@@ -133,13 +136,9 @@ void DQN::initialize()
 
 void DQN::runGeneration()
 {
-  // Making sure we don't create more agents than remaining initial states
-  size_t curEpisodeCount = _episodesPerGeneration;
-  if (curEpisodeCount + _currentEpisode > _maxEpisodes) if (_maxEpisodes > 0)
-   curEpisodeCount = _maxEpisodes - _currentEpisode;
-
   // Creating storage for agents
-  std::vector<Sample> agents(curEpisodeCount);
+  std::vector<Sample> agents(_episodesPerGeneration);
+  _currentEpisode += _episodesPerGeneration;
 
   // Setting global configuration for workers to use
   knlohmann::json globals;
@@ -160,7 +159,7 @@ void DQN::runGeneration()
   _conduit->broadcastGlobals(globals);
 
   // Initializing the agents and their environments
-  for (size_t i = 0; i < curEpisodeCount; i++)
+  for (size_t i = 0; i < _episodesPerGeneration; i++)
   {
     // Configuring Agent
     agents[i]["Sample Id"] = i;
@@ -177,19 +176,20 @@ void DQN::runGeneration()
    * Storing new experiences to the history
    *********************************************************************/
 
-  _totalExperienceCount = 0;
+  size_t currentExperienceCount = 0;
+
   _maxExperienceCount = 0;
   _minExperienceCount = std::numeric_limits<size_t>::max();
 
   // Calculating the cumulative reward of this round of experiences
   double cumulativeReward = 0.0;
 
-  for (size_t i = 0; i < curEpisodeCount; i++)
+  for (size_t i = 0; i < _episodesPerGeneration; i++)
   {
    size_t experienceSize = agents[i]["Experience"]["States"].size();
 
    // Storing statistics
-   _totalExperienceCount += experienceSize;
+   currentExperienceCount += experienceSize;
    if (experienceSize > _maxExperienceCount) _maxExperienceCount = experienceSize;
    if (experienceSize < _minExperienceCount) _minExperienceCount = experienceSize;
 
@@ -216,7 +216,7 @@ void DQN::runGeneration()
 
   // Updating best reward so far, it the cumulative reward of this round exceeds it
   // and store the best hyperparameters used for that
-  _averageReward = cumulativeReward / (double) curEpisodeCount;
+  _averageReward = cumulativeReward / (double) _episodesPerGeneration;
   if (_averageReward > _bestAverageReward)
   {
    _bestAverageReward = _averageReward;
@@ -230,7 +230,8 @@ void DQN::runGeneration()
   }
 
   // Updating average experience count
-  _averageExperienceCount = ((double)_totalExperienceCount) / ((double)curEpisodeCount);
+  _totalExperienceCount += currentExperienceCount;
+  _averageExperienceCount = ((double)currentExperienceCount) / ((double)_episodesPerGeneration);
 
   // If the maximum number of experiences have been reached, start forgetting excess experiences
   if (_stateHistory.size() > _replayMemoryMaximumSize)
@@ -327,6 +328,9 @@ void DQN::runGeneration()
    _qTrainingExperiment["Solver"]["Termination Criteria"]["Max Generations"] = _qTrainingExperiment._currentGeneration + 1;
    _qTrainingExperiment._solver->initialize();
    _engine.resume(_qTrainingExperiment);
+
+   // Increasing optimization step counter
+   _optimizationStepCount++;
   }
 
   // Keeping statistics
@@ -410,7 +414,7 @@ void DQN::evaluateAction(Sample &sample, bool getGradients)
   for (size_t i = 0; i < _currentState.size(); i++) inputBatch[0][pos++]  = _currentState[i];
   for (size_t i = 0; i < action.size(); i++) inputBatch[0][pos++] = action[i];
 
-  auto evaluation = learner->evaluate(inputBatch);
+  auto evaluation = learner->getEvaluation(inputBatch);
   auto gradients = learner->getGradients(evaluation);
 
   sample["F(x)"] = evaluation[0][0];
@@ -425,33 +429,76 @@ void DQN::evaluateAction(Sample &sample, bool getGradients)
 
 void DQN::printGenerationAfter()
 {
- // Printing results so far
- _k->_logger->logInfo("Normal", "Experience Memory Size:       %lu/%lu\n", _stateHistory.size(), _replayMemoryMaximumSize);
- _k->_logger->logInfo("Normal", "Epsilon:                      %f\n", _epsilonCurrentValue);
- _k->_logger->logInfo("Normal", "Total Experience Count:       %lu\n", _totalExperienceCount);
- _k->_logger->logInfo("Normal", "Max Experience Count:         %lu\n", _maxExperienceCount);
- _k->_logger->logInfo("Normal", "Avg Experience Count:         %.0f\n", _averageExperienceCount);
- _k->_logger->logInfo("Normal", "Min Experience Count:         %lu\n", _minExperienceCount);
- _k->_logger->logInfo("Normal", "Average Reward:               %f\n", _averageReward);
+ _k->_logger->logInfo("Normal", "DQN Statistics:\n");
+ _k->_logger->logInfo("Normal", " + Experience Memory Size:          %lu/%lu\n", _stateHistory.size(), _replayMemoryMaximumSize);
+ _k->_logger->logInfo("Normal", " + Epsilon:                         %f\n", _epsilonCurrentValue);
+
+ _k->_logger->logInfo("Normal", "Experience Statistics:\n");
+
+ if (_maxEpisodes > 0)
+ _k->_logger->logInfo("Normal", " + Total Episodes Count:            %lu/%lu\n", _currentEpisode, _maxEpisodes);
+ else
+ _k->_logger->logInfo("Normal", " + Total Episodes Count:            %lu\n", _currentEpisode);
+
+ if (_maxExperiences > 0)
+ _k->_logger->logInfo("Normal", " + Total Experience Count:          %lu/%lu\n", _totalExperienceCount, _maxExperiences);
+ else
+ _k->_logger->logInfo("Normal", " + Total Experience Count:          %lu\n", _totalExperienceCount);
+
+ _k->_logger->logInfo("Normal", " + Current Max Experiences/Episode: %lu\n", _maxExperienceCount);
+ _k->_logger->logInfo("Normal", " + Current Avg Experiences/Episode: %.0f\n", _averageExperienceCount);
+ _k->_logger->logInfo("Normal", " + Current Min Experiences/Episode: %lu\n", _minExperienceCount);
+
+ _k->_logger->logInfo("Normal", "Reward Statistics:\n");
+
+ _k->_logger->logInfo("Normal", " + Average Reward:                  %f\n", _averageReward);
 
  if (_targetAverageReward > -korali::Inf)
- _k->_logger->logInfo("Normal", "Best Average Reward:          %f/%f\n", _bestAverageReward, _targetAverageReward);
+ _k->_logger->logInfo("Normal", " + Best Average Reward:             %f/%f\n", _bestAverageReward, _targetAverageReward);
  else
- _k->_logger->logInfo("Normal", "Best Average Reward:          %f\n", _bestAverageReward);
+ _k->_logger->logInfo("Normal", " + Best Average Reward:             %f\n", _bestAverageReward);
+
+
+ _k->_logger->logInfo("Normal", "Optimization Statistics:\n");
+ if (_maxOptimizationSteps > 0)
+ _k->_logger->logInfo("Normal", " + Optimization Step Count:         %lu/%lu\n", _optimizationStepCount, _maxOptimizationSteps);
+ else
+ _k->_logger->logInfo("Normal", " + Optimization Step Count:         %lu\n", _optimizationStepCount);
 
  if (_maxSuboptimalSteps > 0)
- _k->_logger->logInfo("Normal", "Steps with Suboptimal Reward: %lu/%lu\n", _suboptimalStepCounter, _maxSuboptimalSteps);
+ _k->_logger->logInfo("Normal", " + Steps with Suboptimal Reward:    %lu/%lu\n", _suboptimalStepCounter, _maxSuboptimalSteps);
  else
- _k->_logger->logInfo("Normal", "Steps with Suboptimal Reward: %lu\n", _suboptimalStepCounter);
+ _k->_logger->logInfo("Normal", " + Steps with Suboptimal Reward:    %lu\n", _suboptimalStepCounter);
 
- _k->_logger->logInfo("Normal", "Cumulative Expected Q-Value:  %f\n", _cumulativeQStar);
- _k->_logger->logInfo("Normal", "Average Expected Q-Value:     %f\n", _averageQStar);
+ _k->_logger->logInfo("Normal", " + Cumulative Expected Q-Value:     %f\n", _cumulativeQStar);
+ _k->_logger->logInfo("Normal", " + Average Expected Q-Value:        %f\n", _averageQStar);
 
  _k->_logger->logInfo("Normal", "Learner Information:\n");
  _qTrainingExperiment._logger->_verbosityLevel = _k->_logger->_verbosityLevel;
  _qTrainingExperiment._solver->printGenerationAfter();
  _qTrainingExperiment._logger->setVerbosityLevel("Silent");
 }
+
+std::vector<double> DQN::getAction(const std::vector<double>& state)
+{
+ // Getting learner's pointer
+  auto learner = dynamic_cast<solver::Learner *>(_qInferenceExperiment._solver);
+
+  // Updating learner with the latest hyperparameters
+  learner->setHyperparameters(_bestHyperparameters);
+
+  // Updating current state
+  _currentState = state;
+
+  // Running optimization experiment to get best estimated action
+  korali::Engine engine;
+  engine.run(_argMaxActionExperiment);
+
+  // Getting optimal action, based on the NN evaluation
+  return _argMaxActionExperiment["Results"]["Best Sample"]["Parameters"].get<std::vector<double>>();
+}
+
+} // namespace agent
 
 } // namespace solver
 

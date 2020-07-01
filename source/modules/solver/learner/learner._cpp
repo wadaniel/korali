@@ -5,7 +5,7 @@ namespace korali
 namespace solver
 {
 
-std::vector<std::vector<double>> Learner::evaluate [[noreturn]] (const std::vector<std::vector<double>> &inputBatch)
+std::vector<std::vector<double>> Learner::getEvaluation [[noreturn]] (const std::vector<std::vector<double>> &inputBatch)
 {
   KORALI_LOG_ERROR("This solver does not provide an evaluate operation.\n");
 }

@@ -72,7 +72,7 @@ k.resume(e)
 testInputSet = np.random.uniform(0, 2 * np.pi, 100)
 testInputSet = [[x] for x in testInputSet.tolist()]
 
-testInferredSet = e.evaluate(testInputSet)
+testInferredSet = e.getEvaluation(testInputSet)
 testGradientSet = e.getGradients(testInferredSet)
 testOutputSet = np.sin(testInputSet) * scaling
 

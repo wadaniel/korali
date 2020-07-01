@@ -48,8 +48,7 @@ class GaussianProcess : public Learner
   */
   static void runSample(Sample &sample, libgp::GaussianProcess *gp);
 
-  std::vector<std::vector<double>> evaluate(const std::vector<std::vector<double>> &input) override;
-
+  std::vector<std::vector<double>> getEvaluation(const std::vector<std::vector<double>> &input) override;
   knlohmann::json& getHyperparameters() override;
   void setHyperparameters(const knlohmann::json& parameters) override;
   void initialize() override;

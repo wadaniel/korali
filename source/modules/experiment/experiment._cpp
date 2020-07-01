@@ -8,6 +8,7 @@
 #include "modules/problem/problem.hpp"
 #include "modules/solver/solver.hpp"
 #include "modules/solver/learner/learner.hpp"
+#include "modules/solver/agent/agent.hpp"
 #include <chrono>
 #include <cstdio>
 #include <map>
@@ -126,6 +127,9 @@ void Experiment::saveState()
   else
    sprintf(genFileName, "%s", _fileOutputName.c_str());
 
+  // If results directory doesn't exist, create it
+  if (!dirExists(_fileOutputPath)) mkdir(_fileOutputPath);
+
   std::string filePath = "./" + _fileOutputPath + "/" + genFileName;
   std::string linkPath = "./" + _fileOutputPath + "/latest";
 
@@ -203,11 +207,22 @@ void Experiment::finalize()
   co_delete(_thread);
 }
 
-std::vector<std::vector<double>> Experiment::evaluate(const std::vector<std::vector<double>> &inputBatch)
+
+std::vector<double> Experiment::getAction(const std::vector<double> &state)
+{
+  auto agent = dynamic_cast<solver::Agent*>(_k->_solver);
+  if (agent != NULL)
+   return agent->getAction(state);
+  else
+   KORALI_LOG_ERROR("This solver does not support getAction operations.\n");
+}
+
+
+std::vector<std::vector<double>> Experiment::getEvaluation(const std::vector<std::vector<double>> &inputBatch)
 {
   auto learner = dynamic_cast<solver::Learner*>(_k->_solver);
   if (learner != NULL)
-   return learner->evaluate(inputBatch);
+   return learner->getEvaluation(inputBatch);
   else
    KORALI_LOG_ERROR("This solver does not support evaluation operations.\n");
 }
@@ -218,7 +233,7 @@ std::vector<std::vector<double>> Experiment::getGradients(const std::vector<std:
    if (learner != NULL)
     return learner->getGradients(outputDiffs);
    else
-    KORALI_LOG_ERROR("This solver does not support evaluation operations.\n");
+    KORALI_LOG_ERROR("This solver does not provide gradients.\n");
 }
 
 knlohmann::json &Experiment::operator[](const std::string &key) { return _js[key]; }

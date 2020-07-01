@@ -69,7 +69,7 @@ class DeepLearner : public Learner
 
 
   std::vector<std::vector<double>> getGradients(const std::vector<std::vector<double>> &outputDiffs) override;
-  std::vector<std::vector<double>> evaluate(const std::vector<std::vector<double>> &inputBatch) override;
+  std::vector<std::vector<double>> getEvaluation(const std::vector<std::vector<double>> &inputBatch) override;
 
   knlohmann::json& getHyperparameters() override;
   void setHyperparameters(const knlohmann::json& parameters) override;

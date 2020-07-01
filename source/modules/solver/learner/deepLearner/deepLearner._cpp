@@ -253,7 +253,7 @@ void DeepLearner::setHyperparameters(const knlohmann::json& parameters)
  _evaluationNeuralNetwork->updateWeightsAndBias();
 }
 
-std::vector<std::vector<double>> DeepLearner::evaluate(const std::vector<std::vector<double>> &inputBatch)
+std::vector<std::vector<double>> DeepLearner::getEvaluation(const std::vector<std::vector<double>> &inputBatch)
 {
  // If evaluation NN was not initialized, initialize now.
  if (_isEvaluatioNNForwardInitialized == false)

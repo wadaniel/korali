@@ -1,5 +1,5 @@
 #include "modules/problem/reinforcementLearning/reinforcementLearning.hpp"
-#include "modules/solver/DQN/DQN.hpp"
+#include "modules/solver/agent/agent.hpp"
 
 namespace korali
 {
@@ -9,6 +9,8 @@ void ReinforcementLearning::initialize()
 {
   // Processing state/action variable configuration
 
+ _stateVectorIndexes.clear();
+ _actionVectorIndexes.clear();
   for (size_t i = 0; i < _k->_variables.size(); i++)
   {
     if (_k->_variables[i]->_type == "State") _stateVectorIndexes.push_back(i);
@@ -41,7 +43,7 @@ void __environmentWrapper()
 void ReinforcementLearning::runEnvironment(Sample &sample)
 {
  // Getting RL-compatible solver
- auto solver = dynamic_cast<solver::DQN *>(_k->_solver);
+ auto agent = dynamic_cast<solver::Agent *>(_k->_solver);
 
  sample["Finished"] = false;
 
@@ -59,7 +61,7 @@ void ReinforcementLearning::runEnvironment(Sample &sample)
  while (sample["Finished"] == false)
  {
   sample["Experience"]["States"][actionId] = sample["State"];
-  solver->getAction(sample);
+  agent->getAction(sample);
   sample["Experience"]["Actions"][actionId] = sample["Action"];
 
   // Jumping back into the agent's environment

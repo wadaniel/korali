@@ -1,0 +1,11 @@
+#include "modules/solver/agent/agent.hpp"
+
+namespace korali
+{
+namespace solver
+{
+
+
+} // namespace solver
+
+} // namespace korali

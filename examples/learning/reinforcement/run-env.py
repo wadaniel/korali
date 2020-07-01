@@ -8,6 +8,8 @@ import gym
 
 cart = gym.make('CartPole-v1').unwrapped
 maxSteps = 1000
+renderVideo = False
+loadFromFile = False
 
 ####### Defining Problem's environment
 
@@ -65,13 +67,13 @@ e["Variables"][4]["Values"] = [ 0.0, 1.0 ]
 
 ### Configuring DQN hyperparameters
 
-e["Solver"]["Type"] = "DQN"
-e["Solver"]["Episodes Per Generation"] = 64
+e["Solver"]["Type"] = "Agent/DQN"
+e["Solver"]["Episodes Per Generation"] = 16
 
 ### Defining Mini-batch and Q-Training configuration 
 
 e["Solver"]["Agent History Size"] = 1000
-e["Solver"]["Mini Batch Size"] = 256
+e["Solver"]["Mini Batch Size"] = 128
 e["Solver"]["Optimization Steps Per Update"] = 10
 e["Solver"]["Discount Factor"] = 0.99
 
@@ -119,19 +121,22 @@ e["Solver"]["Neural Network"]["Layers"][4]["Activation Function"]["Type"] = "Ide
 
 ### Defining Termination Criteria
 
-e["Solver"]["Termination Criteria"]["Max Suboptimal Steps"] = 50
+#e["Solver"]["Termination Criteria"]["Max Optimization Steps"] = 100
 e["Solver"]["Termination Criteria"]["Target Average Reward"] = 1000
 
 ### Setting initial seed and output configuration
 
 e["Random Seed"] = 0xC0FFEE
-e["File Output"]["Frequency"] = 1
+e["File Output"]["Frequency"] = 5
 e["File Output"]["Enabled"] = True
-e["File Output"]["Name"] = "result.json"
+#e["File Output"]["Name"] = "result.json"
 
 ###### Loading any previous results
 
-found = e.loadState('_korali_result/latest')
+if (loadFromFile):
+ found = e.loadState('_korali_result/latest')
+else:
+ found = False
 
 ### If not found, we run the training experiment again
 
@@ -140,5 +145,16 @@ if (found == False):
 else:
  print('Found pre-trained experiment') 
 
+###### Now running the cartpole experiment with Korali's help
 
+if (renderVideo): cart = gym.wrappers.Monitor(cart, './movie',  force=True)
 
+state = cart.reset().tolist()
+step = 0
+done = False
+
+while not done and step < maxSteps:
+ action = int(e.getAction(state)[0])
+ print('Step ' + str(step) + ' - State: ' + str(state) + ' - Action: ' + str(action))
+ state, reward, done, info = cart.step(action)
+ step = step + 1

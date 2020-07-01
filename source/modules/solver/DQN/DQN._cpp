@@ -17,7 +17,6 @@ void DQN::initialize()
   // Getting problem pointer
   _problem = dynamic_cast<problem::ReinforcementLearning *>(_k->_problem);
 
-  printf("Generation: %lu\n", _k->_currentGeneration);
   // Checking inputs
   for (size_t i = 0; i < _problem->_actionVectorSize; i++)
   {
@@ -121,7 +120,7 @@ void DQN::initialize()
    _suboptimalStepCounter = 0;
 
     // Initialize best reward
-   _bestReward = -korali::Inf;
+   _bestAverageReward = -korali::Inf;
 
     // Get the initial set of hyperparameters
    _hyperparameters =  _qTrainingLearner->getHyperparameters();
@@ -152,7 +151,7 @@ void DQN::runGeneration()
 
   // If the minimum number of experiences haven been reached, do not update NN
   // and use epsilon = 1.0 to use only random decisions.
-  if (_stateHistory.size() < _replayStartSize)
+  if (_stateHistory.size() < _replayMemoryStartSize)
    globals["Epsilon"] = 1.0;
   else
    globals["Epsilon"] = _epsilonCurrentValue;
@@ -183,7 +182,7 @@ void DQN::runGeneration()
   _minExperienceCount = std::numeric_limits<size_t>::max();
 
   // Calculating the cumulative reward of this round of experiences
-  _cumulativeReward = 0.0;
+  double cumulativeReward = 0.0;
 
   for (size_t i = 0; i < curEpisodeCount; i++)
   {
@@ -205,7 +204,7 @@ void DQN::runGeneration()
     // Storing reward
     double reward = agents[i]["Experience"]["Rewards"][j].get<double>();
     _rewardHistory.push_back(reward);
-    _cumulativeReward += reward;
+    cumulativeReward += reward;
 
     // If not a terminal state, store the next state
     if (j < agents[i]["Experience"]["States"].size() - 1)
@@ -217,9 +216,10 @@ void DQN::runGeneration()
 
   // Updating best reward so far, it the cumulative reward of this round exceeds it
   // and store the best hyperparameters used for that
-  if (_cumulativeReward > _bestReward)
+  _averageReward = cumulativeReward / (double) curEpisodeCount;
+  if (_averageReward > _bestAverageReward)
   {
-   _bestReward = _cumulativeReward;
+   _bestAverageReward = _averageReward;
    _bestHyperparameters = _hyperparameters;
    _suboptimalStepCounter = 0;
   }
@@ -232,18 +232,37 @@ void DQN::runGeneration()
   // Updating average experience count
   _averageExperienceCount = ((double)_totalExperienceCount) / ((double)curEpisodeCount);
 
-  // If the maximum number of experiences have been reached, start forgetting older experiences
-  if (_stateHistory.size() > _replayMemorySize)
+  // If the maximum number of experiences have been reached, start forgetting excess experiences
+  if (_stateHistory.size() > _replayMemoryMaximumSize)
   {
-   size_t excess = _stateHistory.size() - _replayMemorySize;
-   _stateHistory.erase(_stateHistory.begin(), _stateHistory.begin()+excess);
-   _actionHistory.erase(_actionHistory.begin(), _actionHistory.begin()+excess);
-   _rewardHistory.erase(_rewardHistory.begin(), _rewardHistory.begin()+excess);
-   _nextStateHistory.erase(_nextStateHistory.begin(), _nextStateHistory.begin()+excess);
+   size_t excess = _stateHistory.size() - _replayMemoryMaximumSize;
+
+   if (_replayMemoryReplacementPolicy == "Least Recently Added")
+   {
+    _stateHistory.erase(_stateHistory.begin(), _stateHistory.begin()+excess);
+    _actionHistory.erase(_actionHistory.begin(), _actionHistory.begin()+excess);
+    _rewardHistory.erase(_rewardHistory.begin(), _rewardHistory.begin()+excess);
+    _nextStateHistory.erase(_nextStateHistory.begin(), _nextStateHistory.begin()+excess);
+   }
+
+   if (_replayMemoryReplacementPolicy == "Uniform")
+   {
+    for (size_t i = 0; i < excess; i++)
+    {
+     double x = _uniformGenerator->getRandomNumber();
+     size_t expId = floor(x * _stateHistory.size());
+
+     _stateHistory.erase(_stateHistory.begin() + expId);
+     _actionHistory.erase(_actionHistory.begin() + expId);
+     _rewardHistory.erase(_rewardHistory.begin() + expId);
+     _nextStateHistory.erase(_nextStateHistory.begin() + expId);
+    }
+   }
+
   }
 
   // If the minimum number of experiences have been reached, do not do any training
-  if (_stateHistory.size() < _replayStartSize) return;
+  if (_stateHistory.size() < _replayMemoryStartSize) return;
 
   /***********************************************************************************
    * Randomly selecting experiences for the mini-batch and calculating their target Q
@@ -407,19 +426,23 @@ void DQN::evaluateAction(Sample &sample, bool getGradients)
 void DQN::printGenerationAfter()
 {
  // Printing results so far
- _k->_logger->logInfo("Normal", "Experience Memory Size:       %lu/%lu\n", _stateHistory.size(), _replayMemorySize);
+ _k->_logger->logInfo("Normal", "Experience Memory Size:       %lu/%lu\n", _stateHistory.size(), _replayMemoryMaximumSize);
  _k->_logger->logInfo("Normal", "Epsilon:                      %f\n", _epsilonCurrentValue);
  _k->_logger->logInfo("Normal", "Total Experience Count:       %lu\n", _totalExperienceCount);
  _k->_logger->logInfo("Normal", "Max Experience Count:         %lu\n", _maxExperienceCount);
  _k->_logger->logInfo("Normal", "Avg Experience Count:         %.0f\n", _averageExperienceCount);
  _k->_logger->logInfo("Normal", "Min Experience Count:         %lu\n", _minExperienceCount);
- _k->_logger->logInfo("Normal", "Cumulative Experience Reward: %f\n", _cumulativeReward);
- _k->_logger->logInfo("Normal", "Best Experience Reward:       %f\n", _bestReward);
+ _k->_logger->logInfo("Normal", "Average Reward:               %f\n", _averageReward);
+
+ if (_targetAverageReward > -korali::Inf)
+ _k->_logger->logInfo("Normal", "Best Average Reward:          %f/%f\n", _bestAverageReward, _targetAverageReward);
+ else
+ _k->_logger->logInfo("Normal", "Best Average Reward:          %f\n", _bestAverageReward);
 
  if (_maxSuboptimalSteps > 0)
-  _k->_logger->logInfo("Normal", "Steps with Suboptimal Reward: %lu/%lu\n", _suboptimalStepCounter, _maxSuboptimalSteps);
+ _k->_logger->logInfo("Normal", "Steps with Suboptimal Reward: %lu/%lu\n", _suboptimalStepCounter, _maxSuboptimalSteps);
  else
-  _k->_logger->logInfo("Normal", "Steps with Suboptimal Reward: %lu\n", _suboptimalStepCounter);
+ _k->_logger->logInfo("Normal", "Steps with Suboptimal Reward: %lu\n", _suboptimalStepCounter);
 
  _k->_logger->logInfo("Normal", "Cumulative Expected Q-Value:  %f\n", _cumulativeQStar);
  _k->_logger->logInfo("Normal", "Average Expected Q-Value:     %f\n", _averageQStar);

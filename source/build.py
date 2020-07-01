@@ -209,19 +209,20 @@ def createSetConfiguration(module):
 
   codeString += ' if (isDefined(js, "Results"))  eraseValue(js, "Results");\n\n'
 
+  # Consume Internal Settings
+  if 'Internal Settings' in module:
+    for v in module["Internal Settings"]:
+      codeString += consumeValue('js', module["Name"], getVariablePath(v),
+                                 getCXXVariableName(v["Name"]),
+                                 getVariableType(v), False,
+                                 getVariableOptions(v))
+                                 
   # Consume Configuration Settings
   if 'Configuration Settings' in module:
     for v in module["Configuration Settings"]:
       codeString += consumeValue('js', module["Name"], getVariablePath(v),
                                  getCXXVariableName(v["Name"]),
                                  getVariableType(v), True,
-                                 getVariableOptions(v))
-
-  if 'Internal Settings' in module:
-    for v in module["Internal Settings"]:
-      codeString += consumeValue('js', module["Name"], getVariablePath(v),
-                                 getCXXVariableName(v["Name"]),
-                                 getVariableType(v), False,
                                  getVariableOptions(v))
 
   if 'Termination Criteria' in module:

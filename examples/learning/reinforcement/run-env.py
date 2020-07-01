@@ -42,7 +42,7 @@ import korali
 k = korali.Engine()
 e = korali.Experiment()
 
-### Defining a learning problem to infer values of sin(x)
+### Defining the Cartpole problem's configuration
 
 e["Problem"]["Type"] = "Reinforcement Learning"
 e["Problem"]["Environment Function"] = env
@@ -66,21 +66,34 @@ e["Variables"][4]["Values"] = [ 0.0, 1.0 ]
 ### Configuring DQN hyperparameters
 
 e["Solver"]["Type"] = "DQN"
-e["Solver"]["Replay Start Size"] = 5000
-e["Solver"]["Replay Memory Size"] = 150000
+e["Solver"]["Episodes Per Generation"] = 64
+
+### Defining Mini-batch and Q-Training configuration 
+
 e["Solver"]["Agent History Size"] = 1000
 e["Solver"]["Mini Batch Size"] = 256
 e["Solver"]["Optimization Steps Per Update"] = 10
 e["Solver"]["Discount Factor"] = 0.99
+
+### Defining the configuration of replay memory
+
+e["Solver"]["Replay Memory"]["Start Size"] = 5000
+e["Solver"]["Replay Memory"]["Maximum Size"] = 50000
+e["Solver"]["Replay Memory"]["Replacement Policy"] = "Uniform"
+
+### Defining Epsilon (the probability of taking a random action) configuration
+
 e["Solver"]["Epsilon"]["Initial Value"] = 0.9
 e["Solver"]["Epsilon"]["Target Value"] = 0.05
 e["Solver"]["Epsilon"]["Decrease Rate"] = 0.05
 
-### Defining the shape of the neural network
+## Defining Q-Weight and Action-selection optimizers
 
 e["Solver"]["Action Optimizer"]["Type"] = "Optimizer/Grid Search" 
 e["Solver"]["Weight Optimizer"]["Type"] = "Optimizer/Adam"
 e["Solver"]["Weight Optimizer"]["Eta"] = 0.02
+
+### Defining the shape of the neural network
 
 e["Solver"]["Neural Network"]["Batch Normalization"]["Enabled"] = False
 
@@ -104,24 +117,28 @@ e["Solver"]["Neural Network"]["Layers"][4]["Type"] = "Output"
 e["Solver"]["Neural Network"]["Layers"][4]["Node Count"] = 1
 e["Solver"]["Neural Network"]["Layers"][4]["Activation Function"]["Type"] = "Identity" 
 
-# Defining Termination Criteria
-e["Solver"]["Termination Criteria"]["Max Generations"] = 1000
-e["Solver"]["Termination Criteria"]["Max Suboptimal Steps"] = 100
+### Defining Termination Criteria
 
-### Training the neural network
+e["Solver"]["Termination Criteria"]["Max Suboptimal Steps"] = 50
+e["Solver"]["Termination Criteria"]["Target Average Reward"] = 1000
+
+### Setting initial seed and output configuration
+
 e["Random Seed"] = 0xC0FFEE
 e["File Output"]["Frequency"] = 1
 e["File Output"]["Enabled"] = True
 e["File Output"]["Name"] = "result.json"
 
-### Loading any previous results
+###### Loading any previous results
 
-#found = e.loadState('_korali_result/latest')
+found = e.loadState('_korali_result/latest')
 
-# If not found, we run the training experiment again
-#if (found == False):
-k.run(e)
-#else:
-# print('Found pre-trained experiment') 
+### If not found, we run the training experiment again
+
+if (found == False):
+ k.run(e)
+else:
+ print('Found pre-trained experiment') 
+
 
 

@@ -125,7 +125,7 @@ def plotGen(genList, idx):
   fig, ax = plt.subplots(numdim, numdim, figsize=(8, 8))
   samplesTmp = np.reshape(samples, (numentries, numdim))
   plt.suptitle(
-      'Nested Plotter - \nNumber of Samples {0}\n'.format(str(numentries)),
+      'Nested Plotter - \nNumber of Samples {0}'.format(str(numentries)),
       fontweight='bold',
       fontsize=12)
   plot_histogram(ax, samplesTmp)

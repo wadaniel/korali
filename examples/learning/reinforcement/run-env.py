@@ -8,8 +8,6 @@ import gym
 
 cart = gym.make('CartPole-v1').unwrapped
 maxSteps = 1000
-renderVideo = False
-loadFromFile = False
 
 ####### Defining Problem's environment
 
@@ -73,7 +71,7 @@ e["Solver"]["Episodes Per Generation"] = 16
 ### Defining Mini-batch and Q-Training configuration 
 
 e["Solver"]["Agent History Size"] = 1000
-e["Solver"]["Mini Batch Size"] = 128
+e["Solver"]["Mini Batch Size"] = 64
 e["Solver"]["Optimization Steps Per Update"] = 10
 e["Solver"]["Discount Factor"] = 0.99
 
@@ -93,7 +91,7 @@ e["Solver"]["Epsilon"]["Decrease Rate"] = 0.05
 
 e["Solver"]["Action Optimizer"]["Type"] = "Optimizer/Grid Search" 
 e["Solver"]["Weight Optimizer"]["Type"] = "Optimizer/Adam"
-e["Solver"]["Weight Optimizer"]["Eta"] = 0.02
+e["Solver"]["Weight Optimizer"]["Eta"] = 0.005
 
 ### Defining the shape of the neural network
 
@@ -121,24 +119,15 @@ e["Solver"]["Neural Network"]["Layers"][4]["Activation Function"]["Type"] = "Ide
 
 ### Defining Termination Criteria
 
-#e["Solver"]["Termination Criteria"]["Max Optimization Steps"] = 100
-e["Solver"]["Termination Criteria"]["Target Average Reward"] = 1000
+e["Solver"]["Termination Criteria"]["Target Average Reward"] = 900
 
-### Setting initial seed and output configuration
+### Setting file output configuration
 
-e["Random Seed"] = 0xC0FFEE
-e["File Output"]["Frequency"] = 5
-e["File Output"]["Enabled"] = True
-#e["File Output"]["Name"] = "result.json"
-
+e["File Output"]["Frequency"] = 0
+                                      
 ###### Loading any previous results
 
-if (loadFromFile):
- found = e.loadState('_korali_result/latest')
-else:
- found = False
-
-### If not found, we run the training experiment again
+found = e.loadState('_korali_result/latest')
 
 if (found == False):
  k.run(e)
@@ -146,8 +135,6 @@ else:
  print('Found pre-trained experiment') 
 
 ###### Now running the cartpole experiment with Korali's help
-
-if (renderVideo): cart = gym.wrappers.Monitor(cart, './movie',  force=True)
 
 state = cart.reset().tolist()
 step = 0

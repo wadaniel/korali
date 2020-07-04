@@ -121,6 +121,32 @@ void Experiment::saveState()
 
   char genFileName[256];
 
+  // Removing keys in the exclusion list
+  for (size_t i = 0; i < _fileOutputExcludedKeys.size(); i++)
+  {
+   bool foundKey = true;
+   auto currentJs = &_js.getJson();
+   auto prevJs = currentJs;
+
+   for (size_t j = 0; j < _fileOutputExcludedKeys[i].size(); j++)
+   {
+    if (isDefined(*currentJs, _fileOutputExcludedKeys[i][j]))
+    {
+     prevJs = currentJs;
+     currentJs = &((*currentJs)[_fileOutputExcludedKeys[i][j]]);
+    }
+    else
+    {
+     foundKey = false;
+     break;
+    }
+   }
+   if (foundKey)
+   {
+    eraseValue(*prevJs, _fileOutputExcludedKeys[i][_fileOutputExcludedKeys[i].size()-1]);
+   }
+  }
+
   // If filename not given, assign gen + genId
   if (_fileOutputName == "")
    sprintf(genFileName, "gen%08lu.json", _currentGeneration);

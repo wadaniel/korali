@@ -22,6 +22,8 @@ void ReinforcementLearning::initialize()
 
   if (_actionVectorSize == 0) KORALI_LOG_ERROR("No action variables have been defined.\n");
   if (_stateVectorSize == 0) KORALI_LOG_ERROR("No state variables have been defined.\n");
+
+  if (_actionRepeat == 0) KORALI_LOG_ERROR("Action repeat cannot be zero.\n");
 }
 
 Sample* __currentSample;
@@ -56,20 +58,35 @@ void ReinforcementLearning::runEnvironment(Sample &sample)
  // Getting first state
  co_switch(envThread);
 
+ // Action Repeat Counter
+ size_t actionLastUpdated = 0;
+
+ // Initializing episode's experience counter
+ size_t expId = 0;
+
  // Saving experiences
- size_t actionId = 0;
  while (sample["Finished"] == false)
  {
-  sample["Experience"]["States"][actionId] = sample["State"];
-  agent->getAction(sample);
-  sample["Experience"]["Actions"][actionId] = sample["Action"];
+  // Storing the current state
+  sample["Experience"]["States"][expId] = sample["State"];
+
+  // Requesting new action, if enough steps have passed, given by the action repeat parameter
+  if (actionLastUpdated == 0)
+  {
+   agent->getAction(sample);
+   actionLastUpdated = _actionRepeat;
+  }
+  actionLastUpdated--;
+
+  // Storing the current action
+  sample["Experience"]["Actions"][expId] = sample["Action"];
 
   // Jumping back into the agent's environment
   co_switch(envThread);
 
   // Returning from the agent's environment with the reward
-  sample["Experience"]["Rewards"][actionId] = sample["Reward"];
-  actionId++;
+  sample["Experience"]["Rewards"][expId] = sample["Reward"];
+  expId++;
  }
 
  co_delete(envThread);

@@ -3,6 +3,7 @@
 
 #include "engine.hpp"
 #include "modules/solver/solver.hpp"
+#include "modules/problem/reinforcementLearning/reinforcementLearning.hpp"
 
 namespace korali
 {
@@ -13,18 +14,34 @@ class Agent : public Solver
   public:
 
  /**
+  * @brief Storage for the pointer to the learning problem
+  */
+ problem::ReinforcementLearning *_problem;
+
+ /**
   * @brief Gets the next action for the actor, based on the state
   * @param sample the sample containing the state and other required information
   */
  virtual void getAction(Sample &sample) = 0;
 
-
  /**
   * @brief Gets the next action for the actor, based on the state
-  * @param sate The vector containing the state and other required information
+  * @param state The vector containing the state and other required information
   */
  virtual std::vector<double> getAction(const std::vector<double>& state) = 0;
 
+ /**
+  * @brief Updates the algorithm's policy, based on the new experiences
+  */
+ virtual void updatePolicy() = 0;
+
+ /**
+ * @brief Runs a generation of the environment(s), running an action on each episode, and updating the policy.
+ */
+ void runGeneration() override;
+
+ void printGenerationAfter() override;
+ void initialize() override;
 };
 
 } // namespace solver

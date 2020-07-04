@@ -1,7 +1,6 @@
 #ifndef _KORALI_AGENT_DQN_HPP_
 #define _KORALI_AGENT_DQN_HPP_
 
-#include "modules/problem/reinforcementLearning/reinforcementLearning.hpp"
 #include "modules/solver/agent/agent.hpp"
 #include "modules/solver/learner/learner.hpp"
 #include "modules/problem/supervisedLearning/supervisedLearning.hpp"
@@ -15,10 +14,6 @@ namespace agent
 class DQN : public Agent
 {
   public:
-  /**
-   * @brief Storage for the pointer to the learning problem
-   */
-  problem::ReinforcementLearning *_problem;
 
   /**
  * @brief Korali engine for running internal experiments
@@ -70,11 +65,7 @@ class DQN : public Agent
    */
   void evaluateAction(Sample &sample, bool getGradients);
 
-  /**
-  * @brief Runs a generation of the environment(s), running an action on each episode, and updating the policy.
-  */
-  void runGeneration() override;
-
+  void updatePolicy() override;
   std::vector<double> getAction(const std::vector<double>& state) override;
   void getAction(Sample &sample) override;
   void printGenerationAfter() override;

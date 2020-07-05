@@ -19,8 +19,8 @@ void DeepLearner::initialize()
  if (_isLearnerInitialized == false)
  {
   // Indicate that the evaluation NN is not yet initialized
-  _isEvaluatioNNForwardInitialized = false;
-  _isEvaluatioNNBackwardInitialized = false;
+  _isEvaluationNNForwardInitialized = false;
+  _isEvaluationNNBackwardInitialized = false;
 
   // Getting problem pointer
   _problem = dynamic_cast<problem::SupervisedLearning *>(_k->_problem);
@@ -151,8 +151,8 @@ void DeepLearner::initialize()
  }
 
   // Storing input normalization hyperparameters
-  _hyperparameters["Input Normalization Means"] = _trainingNeuralNetwork->_inputNormalizationMeans;
-  _hyperparameters["Input Normalization Variances"] = _trainingNeuralNetwork->_inputNormalizationVariances;
+  _hyperparameters["Batch Input Normalization"]["Means"] = _trainingNeuralNetwork->_batchInputNormalizationMeans;
+  _hyperparameters["Batch Input Normalization"]["Variances"] = _trainingNeuralNetwork->_batchInputNormalizationVariances;
   _hyperparameters["Batch Size"] = 1;
 
   _isLearnerInitialized = true;
@@ -234,14 +234,14 @@ void DeepLearner::setHyperparameters(const knlohmann::json& parameters)
 {
  _hyperparameters = parameters;
 
- if (_isEvaluatioNNForwardInitialized == false)
+ if (_isEvaluationNNForwardInitialized == false)
  {
-  _evaluationNeuralNetwork->_inputNormalizationMeans = _hyperparameters["Input Normalization Means"].get<std::vector<double>>();
-  _evaluationNeuralNetwork->_inputNormalizationVariances = _hyperparameters["Input Normalization Variances"].get<std::vector<double>>();
+  _evaluationNeuralNetwork->_batchInputNormalizationMeans = _hyperparameters["Batch Input Normalization"]["Means"].get<std::vector<double>>();
+  _evaluationNeuralNetwork->_batchInputNormalizationVariances = _hyperparameters["Batch Input Normalization"]["Variances"].get<std::vector<double>>();
   size_t batchSize = _hyperparameters["Batch Size"].get<size_t>();
 
   _evaluationNeuralNetwork->createForwardPipeline(batchSize);
-  _isEvaluatioNNForwardInitialized = true;
+  _isEvaluationNNForwardInitialized = true;
  }
 
  for (size_t i = 0; i < _evaluationNeuralNetwork->_layers.size(); i++)
@@ -256,7 +256,7 @@ void DeepLearner::setHyperparameters(const knlohmann::json& parameters)
 std::vector<std::vector<double>> DeepLearner::getEvaluation(const std::vector<std::vector<double>> &inputBatch)
 {
  // If evaluation NN was not initialized, initialize now.
- if (_isEvaluatioNNForwardInitialized == false)
+ if (_isEvaluationNNForwardInitialized == false)
  {
   _hyperparameters["Batch Size"] = inputBatch.size();
   setHyperparameters(_hyperparameters);
@@ -274,14 +274,14 @@ std::vector<std::vector<double>> DeepLearner::getEvaluation(const std::vector<st
 std::vector<std::vector<double>> DeepLearner::getGradients(const std::vector<std::vector<double>> &outputDiffs)
 {
  // Building evaluation NN's backward pipeline if not yet initialized
- if (_isEvaluatioNNBackwardInitialized == false)
+ if (_isEvaluationNNBackwardInitialized == false)
  {
-  if (_isEvaluatioNNForwardInitialized == false)
+  if (_isEvaluationNNForwardInitialized == false)
    KORALI_LOG_ERROR("Attempting to get gradients but forward inference has not yet been performed.\n");
 
   _evaluationNeuralNetwork->createBackwardPipeline();
 
-  _isEvaluatioNNBackwardInitialized = true;
+  _isEvaluationNNBackwardInitialized = true;
  }
 
  size_t batchSize = _evaluationNeuralNetwork->_outputValues.size();

@@ -95,8 +95,6 @@ e["Solver"]["Weight Optimizer"]["Eta"] = 0.005
 
 ### Defining the shape of the neural network
 
-e["Solver"]["Neural Network"]["Batch Normalization"]["Enabled"] = False
-
 e["Solver"]["Neural Network"]["Layers"][0]["Type"] = "Input"
 e["Solver"]["Neural Network"]["Layers"][0]["Node Count"] = 4
 e["Solver"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Identity"

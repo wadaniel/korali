@@ -178,7 +178,7 @@ void DQN::updatePolicy()
 
    // Running one generation of the optimization method with the given mini-batch
    _qTrainingExperiment["Solver"]["Termination Criteria"]["Max Generations"] = _qTrainingExperiment._currentGeneration + 1;
-   _qTrainingExperiment._solver->initialize();
+   _qTrainingLearner->initialize();
    _engine.resume(_qTrainingExperiment);
 
    // Increasing optimization step counter

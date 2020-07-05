@@ -44,12 +44,12 @@ class DeepLearner : public Learner
   /**
    * @brief Keeps track of whether the evaluation NN's forward pipeline has been initialized
    */
-  bool _isEvaluatioNNForwardInitialized;
+  bool _isEvaluationNNForwardInitialized;
 
   /**
    * @brief Keeps track of whether the evaluation NN's backward pipeline has been initialized
    */
-  bool _isEvaluatioNNBackwardInitialized;
+  bool _isEvaluationNNBackwardInitialized;
 
   /**
   * @brief Stores the parameters of a sample into the weights and biases storage of the NN

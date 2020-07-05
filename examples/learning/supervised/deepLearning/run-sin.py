@@ -46,6 +46,8 @@ e["Solver"]["Steps Per Generation"] = 100
 
 ### Defining the shape of the neural network
 
+e["Solver"]["Neural Network"]["Batch Input Normalization"]["Enabled"] = True
+
 e["Solver"]["Neural Network"]["Layers"][0]["Type"] = "Input"
 e["Solver"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Identity"
 

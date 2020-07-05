@@ -16,7 +16,7 @@
 /*
 TODO LIST:
 *NUTS algorithm as option
-*calc dU with automatic differentiation/specified by user
+*calc dU with automatic differentiation
 */
 
 namespace korali
@@ -441,8 +441,8 @@ std::vector<double> HMC::dK(std::vector<double> p)
 
 double HMC::U(std::vector<double> q)
 {
+  // get sample
   auto sample = Sample();
-
   _modelEvaluationCount++;
   sample["Parameters"] = q;
   sample["Sample Id"] = _sampleDatabase.size();
@@ -450,9 +450,11 @@ double HMC::U(std::vector<double> q)
   sample["Operation"] = "Evaluate";
   _conduit->start(sample);
   _conduit->wait(sample);
-
-  // change to logP(x)
-  double evaluation = -KORALI_GET(double, sample, "logP(x)");
+  // evaluate logP(x)
+  double evaluation = KORALI_GET(double, sample, "logP(x)");
+  
+  // negate to get U
+  evaluation *= -1.0;
 
   return evaluation;
 }
@@ -460,52 +462,23 @@ double HMC::U(std::vector<double> q)
 std::vector<double> HMC::dU(std::vector<double> q)
 {
   size_t dim = _k->_variables.size();
-  
-  
-  // TODO:Implement dU
-  // auto sample = Sample();
 
-  // _modelEvaluationCount++;
-  // sample["Parameters"] = q;
-  // sample["Sample Id"] = _sampleDatabase.size();
-  // sample["Module"] = "Problem";
-  // sample["Operation"] = "Evaluate Gradient";
-  // _conduit->start(sample);
-  // _conduit->wait(sample);
+  // get sample 
+  auto sample = Sample();
+  _modelEvaluationCount++;
+  sample["Parameters"] = q;
+  sample["Sample Id"] = _sampleDatabase.size();
+  sample["Module"] = "Problem";
+  sample["Operation"] = "Evaluate Gradient";
+  _conduit->start(sample);
+  _conduit->wait(sample);
+  // evaluate grad(logP(x)) (extremely slow)
+  std::vector<double> evaluation = KORALI_GET(std::vector<double>, sample, "grad(logP(x))");
 
-  // auto evaluation = -KORALI_GET(double, sample, "grad(logP(x))");
+  // negate to get dU
+  std::transform(evaluation.cbegin(), evaluation.cend(), evaluation.begin(), std::negate<double>());
 
-
-  // TODO: REMOVE: Hardcoding gradient of U
-  std::vector<double> result = q;
-
-  // WARNING: POTENTIAL ERROR SOURCE
-  // for(size_t i = 0; i < q.size(); ++i) result[i] /= 5.;
-
-  std::vector<double> cov(dim*dim, 0.0);
-
-  // make sure it is consistent with HMC::dU
-  cov[0] = 1.0;
-  cov[1] = -0.5;
-  cov[2] = -0.5;
-  cov[3] = 1.0;
-
-  std::vector<double> inverseCov(dim*dim, 0.0);
-  invertMatrix(cov, inverseCov);
-
-  double sum = 0.0;
-
-  for(size_t i = 0; i < dim; ++i)
-  {
-    sum = 0.0;
-    for(size_t j = 0; j < dim; ++j)
-    {
-      sum = sum + inverseCov[i*dim + j] * q[j];
-    }
-    result[i] = sum;
-  }
-
-  return result;
+  return evaluation;
 }
 
 void HMC::leapFrogStep(std::vector<double>& q, std::vector<double>& p, const double stepSize)

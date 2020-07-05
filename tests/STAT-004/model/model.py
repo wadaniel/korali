@@ -6,7 +6,7 @@ import math
 def lgaussian(s):
   x0 = s["Parameters"][0]
   r = -0.5 * ((x0 + 2.0)**2 / (9.0)) - 0.5 * math.log(2 * math.pi * 9)
-  s["P(x)"] = r
+  s["logP(x)"] = r
 
 
 def lgaussianCustom(s):
@@ -21,7 +21,7 @@ def lgaussianxd(s, d):
   for i in range(d):
     ss += s["Parameters"][i]**2
   r = -0.5 * ss
-  s["P(x)"] = r
+  s["logP(x)"] = r
 
 
 def lgaussianxdCustom(s, d):
@@ -41,7 +41,7 @@ def lexponential(s):
     r = -math.inf
   else:
     r = math.log(lam) - lam * x0
-  s["P(x)"] = r
+  s["logP(x)"] = r
 
 
 def lexponentialCustom(s):
@@ -61,7 +61,7 @@ def llaplace(s):
   mu = 4.0
   scale = 1
   r = -math.log(2.0 * scale) - abs(x0 - mu) / scale
-  s["P(x)"] = r
+  s["logP(x)"] = r
 
 
 def llaplaceCustom(s):

@@ -15,9 +15,8 @@
 
 /*
 TODO LIST:
-*adaptive timestepping
 *NUTS algorithm as option
-*calc dU with autmatic differentiation/specified by user
+*calc dU with automatic differentiation/specified by user
 */
 
 namespace korali
@@ -453,7 +452,7 @@ double HMC::U(std::vector<double> q)
   _conduit->wait(sample);
 
   // change to logP(x)
-  double evaluation = -KORALI_GET(double, sample, "P(x)");
+  double evaluation = -KORALI_GET(double, sample, "logP(x)");
 
   return evaluation;
 }

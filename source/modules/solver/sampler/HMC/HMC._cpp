@@ -460,7 +460,21 @@ double HMC::U(std::vector<double> q)
 std::vector<double> HMC::dU(std::vector<double> q)
 {
   size_t dim = _k->_variables.size();
+  
+  
   // TODO:Implement dU
+  // auto sample = Sample();
+
+  // _modelEvaluationCount++;
+  // sample["Parameters"] = q;
+  // sample["Sample Id"] = _sampleDatabase.size();
+  // sample["Module"] = "Problem";
+  // sample["Operation"] = "Evaluate Gradient";
+  // _conduit->start(sample);
+  // _conduit->wait(sample);
+
+  // auto evaluation = -KORALI_GET(double, sample, "grad(logP(x))");
+
 
   // TODO: REMOVE: Hardcoding gradient of U
   std::vector<double> result = q;

@@ -18,6 +18,8 @@ class Sampling : public korali::Problem
    * @param sample Sample to evaluate
    */
   virtual void evaluate(korali::Sample &sample);
+
+  virtual void evaluateGradient(korali::Sample &sample);
 };
 
 } // namespace problem

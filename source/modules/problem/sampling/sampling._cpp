@@ -27,6 +27,15 @@ void Sampling::evaluate(Sample &sample)
   sample["F(x)"] = sample["logP(x)"];
 }
 
+void Sampling::evaluateGradient(korali::Sample &sample)
+{
+  sample.run(_probabilityFunction);
+
+  auto evaluation = KORALI_GET(std::vector<double>, sample, "grad(logP(x))");
+
+  // TODO: find out why they write sample["F(x)"] = sample["logP(x)"] 
+}
+
 } // namespace problem
 
 } // namespace korali

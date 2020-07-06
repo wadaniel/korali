@@ -25,15 +25,15 @@ e["Solver"]["Burn In"] = 10000
 e["Solver"]["Termination Criteria"]["Max Samples"] = 50000
 e["Console Output"]["Frequency"] = 500
 
-# e["Solver"]["Burn In"] = 30
-# e["Solver"]["Termination Criteria"]["Max Samples"] = 1
+# e["Solver"]["Burn In"] = 0
+# e["Solver"]["Termination Criteria"]["Max Samples"] = 30
 # e["Console Output"]["Frequency"] = 1
 
 e["Solver"]["Num Integration Steps"] = 20
-e["Solver"]["Step Size"] = 0.1
-e["Solver"]["Use Euclidean Metric"] = 1
+e["Solver"]["Step Size"] = 0.05
+e["Solver"]["Use Euclidean Metric"] = 0
 e["Solver"]["Adaptive Time Stepping"] = 1
-e["Solver"]["Target Integration Time"] = 10.0
+e["Solver"]["Target Integration Time"] = 5.0
 e["Solver"]["Use NUTS"] = 1
 
 # Defining problem's variables

@@ -81,6 +81,7 @@ class HMC : public Sampler
   void leapFrogStep(std::vector<double>& q, std::vector<double>& p, const double stepSize);
   void invertMatrix(std::vector<double>& mat, std::vector<double>& inverseMat);
   double findReasonableStepSize(std::vector<double> q);
+  void buildTree(const std::vector<double>& q, const std::vector<double>& p, const double u, const int v, const int j, const double stepSize, const double H_0, std::vector<double>& qMin, std::vector<double>& pMin, std::vector<double>& qPlus, std::vector<double>& pPlus, std::vector<double>& q1, double& n1, bool& s1, double& alpha1, int& nAlpha1);
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   //////////////////////////////////////////////// My Functions: END ////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////

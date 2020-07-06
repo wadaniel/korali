@@ -15,7 +15,9 @@
 
 /*
 TODO LIST:
-*NUTS algorithm as option
+*remove redundancy between euclidean and NUTS
+*implement acceptance_rate for NUTS
+*move NUTS certain parts of NUTS to private member variable status
 *calc dU with automatic differentiation
 */
 
@@ -51,8 +53,8 @@ void HMC::setInitialConfiguration()
   // Setting position to inital mean, cholesky decomposition
   for (size_t i = 0; i < dim; ++i)
   {
-    _positionLeader[i] = _k->_variables[i]->_initialMean;
-    _metric[i*dim + i] = _k->_variables[i]->_initialStandardDeviation * _k->_variables[i]->_initialStandardDeviation;
+    _positionLeader[i]        = _k->_variables[i]->_initialMean;
+    _metric[i*dim + i]        = _k->_variables[i]->_initialStandardDeviation * _k->_variables[i]->_initialStandardDeviation;
     _inverseMetric[i*dim + i] = 1.0 / _metric[i*dim + i];
     _choleskyDecompositionMetric[i*dim + i] = _k->_variables[i]->_initialStandardDeviation;
   }
@@ -60,7 +62,7 @@ void HMC::setInitialConfiguration()
   // initialize multivariate normal distribution
   std::vector<double> zeroMean(dim, 0.0);
   _multivariateGenerator->_meanVector = zeroMean;
-  _multivariateGenerator->_sigma = _metric;
+  _multivariateGenerator->_sigma      = _metric;
 
   /* Cholesky Decomp */
   gsl_matrix_view sigma = gsl_matrix_view_array(&_multivariateGenerator->_sigma[0], dim, dim);
@@ -71,15 +73,15 @@ void HMC::setInitialConfiguration()
   if(_adaptiveTimeStepping == true)
   {
     _stepSize = findReasonableStepSize(_positionLeader);
-    _mu = std::log(10.0 * _stepSize);
-    _hBar = 0.0;
+    _mu       = std::log(10.0 * _stepSize);
+    _hBar     = 0.0;
   }
 
   // Init Generation
-  _acceptanceCount = 0;
-  _proposedSampleCount = 0;
-  _chainLength = 0;
-  _acceptanceRate = 1.0;
+  _acceptanceCount      = 0;
+  _proposedSampleCount  = 0;
+  _chainLength          = 0;
+  _acceptanceRate       = 1.0;
   //////////////////////////////////////////// My Code: END //////////////////////////////////////////////
 }
 
@@ -87,74 +89,157 @@ void HMC::runGeneration()
 {
   if (_k->_currentGeneration == 1) setInitialConfiguration();
 
-  bool _sampleAccepted = false;
+  const size_t dim      = _k->_variables.size();
+  bool _sampleAccepted  = false;
+  double alpha;
 
   /////////////////////////////////////////// My Code: START /////////////////////////////////////////////
 
   // Samples Momentum Candidate from N(0.0, metric)
   generateCandidate();
   // Save old Energies
-  _momentumLeader = _momentumCandidate;
-  double K_old = K(_momentumLeader);
-  double U_old = U(_positionLeader);
-  _positionCandidate = _positionLeader;
+  _momentumLeader     = _momentumCandidate;
+  double oldK         = K(_momentumLeader);
+  double oldU         = U(_positionLeader);
+  _positionCandidate  = _positionLeader;
 
-  if(_adaptiveTimeStepping == true && _chainLength <= _burnIn)
+  if(_useNUTS == true)
   {
-    _numIntegrationSteps = std::max((size_t) 1, (size_t) (_targetIntegrationTime / _stepSize));
+    std::vector<double> nullPoint1(dim);
+    std::vector<double> nullPoint2(dim);
+    std::vector<double> result(dim, 0.0);
+
+    std::vector<double> qMin  = _positionLeader;
+    std::vector<double> qPlus = _positionLeader;
+    std::vector<double> pMin  = _momentumLeader;
+    std::vector<double> pPlus = _momentumLeader;
+    double K_0  = K(pMin);
+    double U_0  = U(qMin);
+    double H_0  = U_0 + K_0;
+    double n    = 1.0;
+    double n1;
+    double u    = _uniformGenerator->getRandomNumber();
+    double u2;
+    double alpha1;
+    int nAlpha1;
+    
+    bool s = 1;
+    bool s1, s3, s4;
+    int j = 0;
+
+    while(s)
+    {
+      u2 = _uniformGenerator->getRandomNumber();
+      if(u2 < 0.5)
+      {
+        buildTree(qMin, pMin, u, -1, j, _stepSize, H_0, qMin, pMin, nullPoint1, nullPoint2, _positionCandidate, n1, s1, alpha1, nAlpha1);
+      }
+      else
+      {
+        buildTree(qPlus, pPlus, u, 1, j, _stepSize, H_0, nullPoint1, nullPoint2, qPlus, pPlus, _positionCandidate, n1, s1, alpha1, nAlpha1);
+      }
+      if(s1)
+      {
+        u2 = _uniformGenerator->getRandomNumber();
+
+          
+        if(n == 0)
+        {
+          KORALI_LOG_ERROR("Division by zero encountered in NUTS (n is %lf).\n", n);
+        }
+        if(u2 < n1 / n)
+        {
+          _positionLeader = _positionCandidate;
+          _sampleAccepted = true;
+        }
+      }
+
+      n = n + n1;
+      
+      for(size_t i = 0; i < dim; ++i)
+      {
+        result[i] = qPlus[i] - qMin[i];
+      }
+      s3 = 0;
+      s4 = 0;
+      for(size_t i = 0; i < dim; ++i)
+      {
+        s3 += result[i] * pMin[i];
+        s4 += result[i] * pPlus[i];
+      }
+      s = s1 * (s3 > 0) * (s4 > 0);
+      ++j;
+    }
+    
+    alpha = alpha1 / nAlpha1;
+  }
+  else if(_useNUTS == false)
+  {
+    if(_adaptiveTimeStepping == true && _chainLength <= _burnIn)
+    {
+      // TODO: Maybe change to round at 0.5 instead of of always rounding down as it is currently doing
+      _numIntegrationSteps = std::max((size_t) 1, (size_t) (_targetIntegrationTime / _stepSize));
+    }
+
+    // Perform Num Integration Steps of Leapfrog scheme to Momentum Candidate and Position Candidate
+    for(size_t i = 0; i < _numIntegrationSteps; ++i)
+    {
+      leapFrogStep(_positionCandidate, _momentumCandidate, _stepSize);
+    }
+
+    // Save new Energies
+    double newK = K(_momentumCandidate);
+    double newU = U(_positionCandidate);
+
+    double u = _uniformGenerator->getRandomNumber();
+    alpha = std::min(1.0, std::exp(-(newK - oldK + newU - oldU)));
+
+    // TODO: Ask why Tobias added constrain (newK + newU) == (newK + newU)
+    if(u <= alpha)
+    {
+      ++_acceptanceCount;
+      _sampleAccepted = true;
+      _positionLeader = _positionCandidate;
+    }
+
+    if(_chainLength >= _burnIn)
+    {
+      _sampleDatabase.push_back(_positionLeader);
+    }
+    else if(_useEuclideanMetric == true)
+    {
+      _warmupSampleDatabase.push_back(_positionLeader);
+    }
   }
 
-  // Perform Num Integration Steps of Leapfrog scheme to Momentum Candidate and Position Candidate
-  for(size_t i = 0; i < _numIntegrationSteps; ++i)
-  {
-    leapFrogStep(_positionCandidate, _momentumCandidate, _stepSize);
-  }
-
-  // Save new Energies
-  double K_new = K(_momentumCandidate);
-  double U_new = U(_positionCandidate);
-
-  double u = _uniformGenerator->getRandomNumber();
-  double alpha = std::min(1.0, std::exp(-(K_new - K_old + U_new - U_old)));
-
-  // TODO: Ask why Tobias added constrain (K_new + U_new) == (K_new + U_new)
-  if(u <= alpha)
-  {
-    ++_acceptanceCount;
-    _sampleAccepted = true;
-    _positionLeader = _positionCandidate;
-  }
-
+  // save sample
   if(_chainLength >= _burnIn)
   {
     _sampleDatabase.push_back(_positionLeader);
   }
   else if(_useEuclideanMetric == true)
-  {
+  { 
     _warmupSampleDatabase.push_back(_positionLeader);
   }
 
   // Update Step Size, Dual Step Size, H Bar for adaptive time stepping
   if(_adaptiveTimeStepping == true && _chainLength <= _burnIn)
   {
-    // TODO: Update ugly control flow
     if(_chainLength < _burnIn)
     {
-      // constants for adaptive time stepping
-      const double gamma = 0.05;
-      const double t_0 = 10.0;
-      const double kappa = 0.75;
+      const double gamma  = 0.05;
+      const double t_0    = 10.0;
+      const double kappa  = 0.75;
 
-      _hBar = (1.0 - 1.0 / (_chainLength + 1 + t_0)) * _hBar + (_desiredAverageAcceptanceRate - alpha) / (_chainLength + 1 + t_0);
-      _stepSize = std::exp((_mu - std::sqrt(_chainLength + 1) / gamma * _hBar));
-      _dualStepSize = std::pow((_stepSize/_dualStepSize), std::pow(_chainLength + 1, -kappa)) * _stepSize;
+      _hBar         = (1.0 - 1.0 / (_chainLength + 1 + t_0)) * _hBar + (_desiredAverageAcceptanceRate - alpha) / (_chainLength + 1 + t_0);
+      _stepSize     = std::exp((_mu - std::sqrt(_chainLength + 1) / gamma * _hBar));
+      _dualStepSize = std::pow((_stepSize/_dualStepSize), std::pow(_chainLength + 1, -kappa)) * _dualStepSize;
     }
     else if(_chainLength == _burnIn)
     {
       _stepSize = _dualStepSize;
     }
   }
-
 
   //////////////////////////////////////////// My Code: END //////////////////////////////////////////////
   ++_chainLength;
@@ -325,7 +410,6 @@ void HMC::updateState()
 
 void HMC::printGenerationBefore() 
 {
-
   if(_adaptiveTimeStepping == true)
   {
     // Chain Length + 1 = m in Algorithm
@@ -405,7 +489,7 @@ void HMC::finalize()
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 double HMC::K(std::vector<double> p)
 {
-  size_t dim = _k->_variables.size();
+  const size_t dim    = _k->_variables.size();
   double result = 0.0;
   
   for(size_t i = 0; i < dim; ++i)
@@ -422,7 +506,7 @@ double HMC::K(std::vector<double> p)
 
 std::vector<double> HMC::dK(std::vector<double> p)
 {
-  size_t dim = _k->_variables.size();
+  const size_t dim = _k->_variables.size();
   std::vector<double> result(dim, 0.0);
   double sum = 0.0;
 
@@ -483,23 +567,20 @@ std::vector<double> HMC::dU(std::vector<double> q)
 
 void HMC::leapFrogStep(std::vector<double>& q, std::vector<double>& p, const double stepSize)
 {
-  size_t dim = _k->_variables.size();
+  const size_t dim = _k->_variables.size();
   
-  std::vector<double> dU = HMC::dU(q);
-  // std::vector<double> dU = -KORALI_GET(std::vector<double>, theta, "dlogP(x)");
+  std::vector<double> dU = HMC::dU(q);;
   for(size_t i = 0; i < dim; ++i)
   {
     p[i] = p[i] - 0.5 * stepSize * dU[i];
   }
   
-  // std::vector<double> dK = std::vector<double> (dim, 0.);
   std::vector<double> dK = HMC::dK(p);
   for(size_t i = 0; i < dim; ++i)
   {
     q[i] = q[i] + stepSize * dK[i];
   }
 
-  // dU = std::vector<double> (dim, 0.);
   dU = HMC::dU(q);
   for(size_t i = 0; i < dim; ++i)
   {
@@ -511,8 +592,8 @@ void HMC::leapFrogStep(std::vector<double>& q, std::vector<double>& p, const dou
 // TODO: Avoid calculating cholesky decompisition twice
 void HMC::invertMatrix(std::vector<double>& mat, std::vector<double>& inverseMat)
 {
-  size_t dim = _k->_variables.size();
-  gsl_matrix *A = gsl_matrix_alloc(dim, dim);
+  const size_t dim  = _k->_variables.size();
+  gsl_matrix *A     = gsl_matrix_alloc(dim, dim);
 
   // copy mat to gsl matrix
   for (size_t d = 0; d < dim; ++d)
@@ -558,8 +639,8 @@ void HMC::invertMatrix(std::vector<double>& mat, std::vector<double>& inverseMat
 
 double HMC::findReasonableStepSize(std::vector<double> q)
 {
-  size_t dim = _k->_variables.size();
-  double stepSize = 1.0;
+  const size_t dim  = _k->_variables.size();
+  double stepSize   = 1.0;
   double oldLogP, newLogP;
 
   std::vector<double> p(dim, 0.0);
@@ -610,6 +691,88 @@ double HMC::findReasonableStepSize(std::vector<double> q)
   }
 
   return stepSize;
+}
+
+void HMC::buildTree(const std::vector<double>& q, const std::vector<double>& p, const double u, const int v, const int j, const double stepSize, const double H_0, std::vector<double>& qMin, std::vector<double>& pMin, std::vector<double>& qPlus, std::vector<double>& pPlus, std::vector<double>& q1, double& n1, bool& s1, double& alpha1, int& nAlpha1)
+{
+  const size_t dim = _k->_variables.size();
+
+  bool s2;
+  double s3, s4, n2, u2, alpha2, K_prime, U_prime, H_prime;
+  int nAlpha2;
+  double deltaMax = 100;
+
+  std::vector<double> nullPoint1(dim, 0.0);
+  std::vector<double> nullPoint2(dim, 0.0);
+  std::vector<double> q2(dim, 0.0);
+  std::vector<double> result(dim, 0.0);
+  
+  qMin = q;
+  pMin = p;
+  if(j == 0)
+  {
+    leapFrogStep(qMin, pMin, v*stepSize);
+    K_prime = K(pMin);
+    U_prime = U(qMin);
+    H_prime = U_prime + K_prime;
+
+    n1 = 0;
+    if(u <= std::exp(H_0 - H_prime))
+    {
+      n1    = 1;
+    }
+
+    s1      = (-H_prime > -H_0 -deltaMax);
+    alpha1  = std::min(1.0, std::exp(H_0 - H_prime));
+    nAlpha1 = 1;
+    qPlus   = qMin;
+    q1      = qMin;
+    pPlus   = pMin;
+  }
+  else
+  {
+    buildTree(q, p, u, v, j-1, stepSize, H_0, qMin, pMin, qPlus, pPlus, q1, n1, s1, alpha1, nAlpha1);
+
+    if(s1 == true)
+    {
+      if(v == -1)
+      {
+        buildTree(qMin, pMin, u, v, j-1, stepSize, H_0, qMin, pMin, nullPoint1, nullPoint2, q2, n2, s2, alpha2, nAlpha2);
+      }
+      else
+      {
+        buildTree(qPlus, pPlus, u, v, j-1, stepSize, H_0, nullPoint1, nullPoint2, qPlus, pPlus, q2, n2, s2, alpha2, nAlpha2);
+      }
+      u2 = _uniformGenerator->getRandomNumber();
+
+      // TODO: Find out how STAN handles this case
+      // if(n1 + n2 == 0)
+      // {
+      //   KORALI_LOG_ERROR("Division by zero encountered in buildTree (n1 + n2 is %lf).\n", n1 + n2);
+      // }
+      if(u2 < n2 / (n1 + n2))
+      {
+        q1 = q2;
+      }
+      n1      = n1 + n2;
+      alpha1  = alpha1 + alpha2;
+      nAlpha1 = nAlpha1 + nAlpha2;
+
+      for(size_t i = 0; i < dim; ++i)
+      {
+        result[i] = qPlus[i] - qMin[i];
+      }
+      
+      s3 = 0;
+      s4 = 0;
+      for(size_t i = 0; i < dim; ++i)
+      {
+        s3 += result[i] * pMin[i];
+        s4 += result[i] * pPlus[i]; 
+      }
+      s1 = s2 * (s3 > 0) * (s4 > 0);
+    }
+  }
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////// My Functions: END /////////////////////////////////////////////////

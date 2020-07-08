@@ -16,14 +16,8 @@ np.random.seed(0xC0FFEE)
 trainingInputSet = np.random.uniform(0, 2 * np.pi, 500)
 trainingSolutionSet = np.sin(trainingInputSet) * scaling
 
-validationInputSet = np.random.uniform(0, 2 * np.pi, 500)
-validationSolutionSet = np.sin(validationInputSet) * scaling
-
 trainingInputSet = [ [ i ] for i in trainingInputSet.tolist() ]
 trainingSolutionSet = [ [ i ] for i in trainingSolutionSet.tolist() ]
-
-validationInputSet = [ [ i ] for i in validationInputSet.tolist() ]
-validationSolutionSet = [ [ i ] for i in validationSolutionSet.tolist() ]
 
 e = korali.Experiment()
 
@@ -31,24 +25,20 @@ e = korali.Experiment()
 
 e["Problem"]["Type"] = "Supervised Learning"
 
-e["Problem"]["Training"]["Input"] = trainingInputSet
-e["Problem"]["Training"]["Solution"] = trainingSolutionSet
-
-e["Problem"]["Validation"]["Input"] = validationInputSet
-e["Problem"]["Validation"]["Solution"] = validationSolutionSet
+e["Problem"]["Inputs"] = trainingInputSet
+e["Problem"]["Outputs"] = trainingSolutionSet
 
 ### Using a neural network solver (deep learning) for inference
 
-e["Solver"]["Type"] = "Learner/Deep Learner"
-
-e["Solver"]["Optimizer"]["Type"] = "Optimizer/Adam"
+e["Solver"]["Type"] = "Learner/DeepGD"
 e["Solver"]["Steps Per Generation"] = 100
+e["Solver"]["Use Batch Normalization"] = True
+e["Solver"]["Optimizer"]["Type"] = "Optimizer/Adam"
 
 ### Defining the shape of the neural network
 
-e["Solver"]["Neural Network"]["Batch Input Normalization"]["Enabled"] = True
-
 e["Solver"]["Neural Network"]["Layers"][0]["Type"] = "Input"
+e["Solver"]["Neural Network"]["Layers"][0]["Node Count"] = 1
 e["Solver"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Identity"
 
 e["Solver"]["Neural Network"]["Layers"][1]["Type"] = "Dense"
@@ -56,15 +46,15 @@ e["Solver"]["Neural Network"]["Layers"][1]["Node Count"] = 5
 e["Solver"]["Neural Network"]["Layers"][1]["Activation Function"]["Type"] = "Tanh"
 
 e["Solver"]["Neural Network"]["Layers"][2]["Type"] = "Output"
+e["Solver"]["Neural Network"]["Layers"][2]["Node Count"] = 1
 e["Solver"]["Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Identity"
 
-e["Console Output"]["Frequency"] = 10
+e["Console Output"]["Frequency"] = 1
 e["File Output"]["Enabled"] = False
 e["Random Seed"] = 0xC0FFEE
 
 ### Training the neural network
 
-e["Solver"]["Termination Criteria"]["Max Inactive Steps"] = 10
 e["Solver"]["Termination Criteria"]["Max Generations"] = 100
 
 k.resume(e)

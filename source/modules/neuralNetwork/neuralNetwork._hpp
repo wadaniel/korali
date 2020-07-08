@@ -39,51 +39,6 @@ class NeuralNetwork : public Module
    */
   bool _isInitialized;
 
-  /**
-   * @brief oneDNN Memory object descriptor to contain normalization means
-   */
-  dnnl::memory _inputNormalizationMeanMem;
-
-  /**
-   * @brief oneDNN Memory object descriptor to contain normalization variance
-   */
-  dnnl::memory _inputNormalizationVarianceMem;
-
-  /**
-   * @brief oneDNN Memory object descriptor to contain normalization workspace
-   */
-  dnnl::memory _inputNormalizationWorkspaceMem;
-
-  /**
-   * @brief oneDNN Memory object descriptor to store scale/shift configuration for the normalization operation
-   */
-  dnnl::memory _inputNormalizationScaleShiftMem;
-
-  /**
-   * @brief oneDNN Arguments to the normalization operation
-   */
-  std::unordered_map<int, dnnl::memory> _inputForwardNormalizationArgs;
-
-  /**
-   * @brief oneDNN primitive descriptor to run the normalization operation
-  */
-  dnnl::batch_normalization_forward::primitive_desc _inputForwardNormalizationPrimitiveDesc;
-
-  /**
-   * @brief oneDNN primitive to run the normalization operation
-   */
-  dnnl::primitive _inputForwardNormalizationPrimitive;
-
-  /**
-   * @brief oneDNN Arguments to the gradient normalization operation
-   */
-  std::unordered_map<int, dnnl::memory> _inputBackwardNormalizationArgs;
-
-  /**
-   * @brief oneDNN primitive to run the gradient normalization operation
-   */
-  dnnl::primitive _inputBackwardNormalizationPrimitive;
-
 #endif
 
   void initialize() override;
@@ -106,9 +61,9 @@ class NeuralNetwork : public Module
   void setInput(const std::vector<std::vector<double>>& input);
 
   /**
-   * @brief Updates the values of weights, biases, and inputs to the NN
+   * @brief Updates the values of weights, biases, and normalization scale/shift configuration to the NN
    */
-  void updateWeightsAndBias();
+  void updateWeightsBiasAndNormalization();
 
   /**
    * @brief Forward-propagates the input batch data through the network.

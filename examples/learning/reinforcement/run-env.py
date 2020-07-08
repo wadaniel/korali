@@ -71,14 +71,14 @@ e["Solver"]["Episodes Per Generation"] = 16
 ### Defining Mini-batch and Q-Training configuration 
 
 e["Solver"]["Agent History Size"] = 1000
-e["Solver"]["Mini Batch Size"] = 64
+e["Solver"]["Mini Batch Size"] = 256
 e["Solver"]["Optimization Steps Per Update"] = 10
 e["Solver"]["Discount Factor"] = 0.99
 
 ### Defining the configuration of replay memory
 
 e["Solver"]["Replay Memory"]["Start Size"] = 5000
-e["Solver"]["Replay Memory"]["Maximum Size"] = 50000
+e["Solver"]["Replay Memory"]["Maximum Size"] = 150000
 e["Solver"]["Replay Memory"]["Replacement Policy"] = "Uniform"
 
 ### Defining Epsilon (the probability of taking a random action) configuration
@@ -91,12 +91,12 @@ e["Solver"]["Epsilon"]["Decrease Rate"] = 0.05
 
 e["Solver"]["Action Optimizer"]["Type"] = "Optimizer/Grid Search" 
 e["Solver"]["Weight Optimizer"]["Type"] = "Optimizer/Adam"
-e["Solver"]["Weight Optimizer"]["Eta"] = 0.005
+e["Solver"]["Weight Optimizer"]["Eta"] = 0.05
 
 ### Defining the shape of the neural network
 
 e["Solver"]["Neural Network"]["Layers"][0]["Type"] = "Input"
-e["Solver"]["Neural Network"]["Layers"][0]["Node Count"] = 4
+e["Solver"]["Neural Network"]["Layers"][0]["Node Count"] = 5
 e["Solver"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Identity"
 
 e["Solver"]["Neural Network"]["Layers"][1]["Type"] = "Dense"
@@ -107,13 +107,9 @@ e["Solver"]["Neural Network"]["Layers"][2]["Type"] = "Dense"
 e["Solver"]["Neural Network"]["Layers"][2]["Node Count"] = 32
 e["Solver"]["Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Tanh"
 
-e["Solver"]["Neural Network"]["Layers"][3]["Type"] = "Dense"
-e["Solver"]["Neural Network"]["Layers"][3]["Node Count"] = 32
-e["Solver"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Tanh"
-
-e["Solver"]["Neural Network"]["Layers"][4]["Type"] = "Output"
-e["Solver"]["Neural Network"]["Layers"][4]["Node Count"] = 1
-e["Solver"]["Neural Network"]["Layers"][4]["Activation Function"]["Type"] = "Identity" 
+e["Solver"]["Neural Network"]["Layers"][3]["Type"] = "Output"
+e["Solver"]["Neural Network"]["Layers"][3]["Node Count"] = 1
+e["Solver"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Identity" 
 
 ### Defining Termination Criteria
 
@@ -121,7 +117,7 @@ e["Solver"]["Termination Criteria"]["Target Average Reward"] = 900
 
 ### Setting file output configuration
 
-e["File Output"]["Frequency"] = 0
+e["File Output"]["Frequency"] = 1
                                       
 ###### Loading any previous results
 

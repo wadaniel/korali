@@ -24,7 +24,8 @@ void DQN::initialize()
   *********************************************************************/
 
   _qTrainingExperiment["Problem"]["Type"] = "Supervised Learning";
-  _qTrainingExperiment["Solver"]["Type"] = "Learner/Deep Learner";
+  _qTrainingExperiment["Solver"]["Type"] = "Learner/DeepGD";
+//  _qTrainingExperiment["Solver"]["Use Batch Normalization"] = true;
   _neuralNetwork->getConfiguration(_qTrainingExperiment["Solver"]["Neural Network"]);
 
   _qTrainingExperiment["Solver"]["Optimizer"] = _weightOptimizer;
@@ -38,10 +39,10 @@ void DQN::initialize()
   // Initializing experiment with an initial zero set
   for (size_t i = 0; i < _miniBatchSize; i++)
   {
-   _qTrainingExperiment["Problem"]["Training"]["Solution"][i][0] = 0.0;
+   _qTrainingExperiment["Problem"]["Outputs"][i][0] = 0.0;
 
    for (size_t j = 0; j < _k->_variables.size(); j++)
-    _qTrainingExperiment["Problem"]["Training"]["Input"][i][j] = 0.0;
+    _qTrainingExperiment["Problem"]["Inputs"][i][j] = 0.0;
   }
 
   // Running initialization to verify that the configuration is correct
@@ -168,9 +169,9 @@ void DQN::updatePolicy()
     }
 
     // Updating inputs to training learner
-    for (size_t j = 0; j < _problem->_stateVectorSize; j++) _qTrainingProblem->_trainingInput[i][j] = _stateHistory[expId][j];
-    for (size_t j = 0; j < _problem->_actionVectorSize; j++) _qTrainingProblem->_trainingInput[i][_problem->_stateVectorSize + j] = _actionHistory[expId][j];
-    _qTrainingProblem->_trainingSolution[i][0] = qValue[i];
+    for (size_t j = 0; j < _problem->_stateVectorSize; j++) _qTrainingProblem->_inputs[i][j] = _stateHistory[expId][j];
+    for (size_t j = 0; j < _problem->_actionVectorSize; j++) _qTrainingProblem->_inputs[i][_problem->_stateVectorSize + j] = _actionHistory[expId][j];
+    _qTrainingProblem->_outputs[i][0] = qValue[i];
 
     // Keeping statistics
     _cumulativeQStar += qValue[i];
@@ -200,7 +201,7 @@ void DQN::updatePolicy()
   knlohmann::json globals;
 
   // Getting q training hyperparameters to broadcast to workers
-  _hyperparameters =  _qTrainingLearner->getHyperparameters();
+  _hyperparameters = _qTrainingLearner->getHyperparameters();
   _qInferenceLearner->setHyperparameters(_hyperparameters);
 
   // Broadcasting updated globals for all workers to have

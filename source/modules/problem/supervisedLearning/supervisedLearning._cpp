@@ -7,42 +7,34 @@ namespace problem
 void SupervisedLearning::initialize()
 {
   // Checking training/validation inputs
-  _trainingBatchSize = _trainingInput.size();
+  _batchSize = _inputs.size();
 
-  if (_trainingBatchSize == 0)
-      KORALI_LOG_ERROR("Empty testing set provided.\n");
+  if (_batchSize == 0)
+      KORALI_LOG_ERROR("Empty input batch provided.\n");
 
-  if (_trainingBatchSize != _trainingSolution.size())
-      KORALI_LOG_ERROR("Batch size of training solution (%lu) is different than that of training input (%lu).\n", _trainingSolution.size(), _trainingBatchSize);
-
-  _inputVectorSize = _trainingInput[0].size();
-  _solutionVectorSize = _trainingSolution[0].size();
+  _inputVectorSize = _inputs[0].size();
 
   // Checking that all batch entries have the correct size
-  for (size_t i = 0; i < _trainingInput.size(); i++)
-   if (_trainingInput[i].size() != _inputVectorSize)
-    KORALI_LOG_ERROR("Vector size of training input %lu is inconsistent. Size: %lu - Expected: %lu.\n", i, _trainingInput[i].size(), _inputVectorSize);
+  for (size_t i = 0; i < _inputs.size(); i++)
+   if (_inputs[i].size() != _inputVectorSize)
+    KORALI_LOG_ERROR("Vector size of input data %lu is inconsistent. Size: %lu - Expected: %lu.\n", i, _inputs[i].size(), _inputVectorSize);
 
-  for (size_t i = 0; i < _trainingSolution.size(); i++)
-   if (_trainingSolution[i].size() != _solutionVectorSize)
-    KORALI_LOG_ERROR("Vector size of training solution %lu is inconsistent. Size: %lu - Expected: %lu.\n", i, _trainingSolution[i].size(), _solutionVectorSize);
-
-  // Checking for optional validation data
-
-  _validationBatchSize = _validationInput.size();
-
-  if (_validationBatchSize > 0)
+  // Checking if solution is given in the form of a function or pre-calculated values
+  if (_outputFunction == 0)
   {
-   if (_validationBatchSize != _validationSolution.size())
-     KORALI_LOG_ERROR("Batch size of validation solution (%lu) is different than that of validation input (%lu).\n", _validationSolution.size(), _validationBatchSize);
+   _outputVectorSize = _outputs[0].size();
 
-   for (size_t i = 0; i < _validationInput.size(); i++)
-    if (_validationInput[i].size() != _inputVectorSize)
-     KORALI_LOG_ERROR("Vector size of validation input %lu is inconsistent. Size: %lu - Expected: %lu.\n", i, _validationInput[i].size(), _inputVectorSize);
+   if (_batchSize != _outputs.size())
+     KORALI_LOG_ERROR("Batch size of output data (%lu) is different than that of input data (%lu).\n", _outputs.size(), _batchSize);
 
-   for (size_t i = 0; i < _validationSolution.size(); i++)
-    if (_validationSolution[i].size() != _solutionVectorSize)
-     KORALI_LOG_ERROR("Vector size of validation solution %lu is inconsistent. Size: %lu - Expected: %lu.\n", i, _validationSolution[i].size(), _solutionVectorSize);
+   for (size_t i = 0; i < _outputs.size(); i++)
+    if (_outputs[i].size() != _outputVectorSize)
+     KORALI_LOG_ERROR("Vector size of training solution %lu is inconsistent. Size: %lu - Expected: %lu.\n", i, _outputs[i].size(), _outputVectorSize);
+  }
+  else
+  {
+   // No pre-calculated values for the output provided, use online function instead.
+   _outputVectorSize = 0;
   }
 }
 

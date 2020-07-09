@@ -1,5 +1,6 @@
 #include "modules/conduit/conduit.hpp"
 #include "modules/solver/agent/DQN/DQN.hpp"
+#include <algorithm>    // std::random_shuffle
 
 /****************************************
  * Things to fix:
@@ -122,6 +123,11 @@ void DQN::updatePolicy()
    * Randomly selecting experiences for the mini-batch and calculating their target Q
    ***********************************************************************************/
 
+  // Creating state history indexes to choose from
+  std::vector<size_t> _stateHistoryIndexes(_stateHistory.size());
+  for (size_t i = 0; i < _stateHistory.size(); i++) _stateHistoryIndexes[i] = i;
+
+  // Calculating cumulative Q*, for statistical purposes
   _cumulativeQStar = 0.0;
 
   for (size_t step = 0; step < _optimizationStepsPerUpdate; step++)
@@ -129,10 +135,13 @@ void DQN::updatePolicy()
    // Calculating target Q value (solution) for Qnew on selected batch
    std::vector<double> qValue(_miniBatchSize);
 
+   // Shuffling indexes to choose the mini batch from
+   std::random_shuffle(_stateHistoryIndexes.begin(), _stateHistoryIndexes.end());
+
    for (size_t i = 0; i < _miniBatchSize; i++)
    {
-    double x = _uniformGenerator->getRandomNumber();
-    size_t expId = floor(x * _stateHistory.size());
+    // Selecting a uniformly random selected, yet not repeated experience
+    size_t expId = _stateHistoryIndexes[i];
 
     // Qnew = max_a(q) with s' fixed
     // Q* = r + y*Qnew -- If not terminal state
@@ -213,12 +222,15 @@ void DQN::updatePolicy()
     std::vector<std::vector<double>> miniBatch(_miniBatchSize);
     for (size_t i = 0; i < _miniBatchSize; i++)  miniBatch[i].resize(_problem->_stateVectorSize + _problem->_actionVectorSize);
 
+    // Shuffling indexes to choose the mini batch from
+    std::random_shuffle(_stateHistoryIndexes.begin(), _stateHistoryIndexes.end());
+
     for (size_t step = 0; step < _batchNormalizationCorrectionSteps; step++)
     {
       for (size_t i = 0; i < _miniBatchSize; i++)
       {
-       double x = _uniformGenerator->getRandomNumber();
-       size_t expId = floor(x * _stateHistory.size());
+       // Selecting a uniformly random selected, yet not repeated experience
+       size_t expId = _stateHistoryIndexes[i];
 
        for (size_t j = 0; j < _problem->_stateVectorSize; j++) miniBatch[i][j] = _stateHistory[expId][j];
        for (size_t j = 0; j < _problem->_actionVectorSize; j++) miniBatch[i][_problem->_stateVectorSize + j] = _actionHistory[expId][j];

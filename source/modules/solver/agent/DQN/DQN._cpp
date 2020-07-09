@@ -25,7 +25,7 @@ void DQN::initialize()
 
   _qTrainingExperiment["Problem"]["Type"] = "Supervised Learning";
   _qTrainingExperiment["Solver"]["Type"] = "Learner/DeepGD";
-//  _qTrainingExperiment["Solver"]["Use Batch Normalization"] = true;
+  _qTrainingExperiment["Solver"]["Batch Normalization"]["Enabled"] = _batchNormalizationEnabled;
   _neuralNetwork->getConfiguration(_qTrainingExperiment["Solver"]["Neural Network"]);
 
   _qTrainingExperiment["Solver"]["Optimizer"] = _weightOptimizer;
@@ -56,8 +56,8 @@ void DQN::initialize()
 
   // Getting learner pointers
   _qTrainingProblem = dynamic_cast<problem::SupervisedLearning *>(_qTrainingExperiment._problem);
-  _qTrainingLearner = dynamic_cast<solver::Learner *>(_qTrainingExperiment._solver);
-  _qInferenceLearner = dynamic_cast<solver::Learner *>(_qInferenceExperiment._solver);
+  _qTrainingLearner = dynamic_cast<solver::learner::DeepGD *>(_qTrainingExperiment._solver);
+  _qInferenceLearner = dynamic_cast<solver::learner::DeepGD *>(_qInferenceExperiment._solver);
 
   /*********************************************************************
   * Creating Q-Maximizing argmax(Action) Experiment
@@ -159,13 +159,13 @@ void DQN::updatePolicy()
      qValue[i] += _discountFactor * qNew;
 
      // Debug only, print new experience values
-     //printf("State: %f %f %f %f \n", _stateHistory[expId][0], _stateHistory[expId][1], _stateHistory[expId][2], _stateHistory[expId][3]);
-     //printf("Action: %f\n", _actionHistory[expId][0]);
-     //printf("Reward: %f\n", _rewardHistory[expId]);
-     //printf("New State: %f %f %f %f\n", _currentState[0], _currentState[1], _currentState[2], _currentState[3]);
-     //printf("New Action: %f\n", action[0]);
-     //printf("QNew: %f\n", qNew);
-     //printf("Q* %f\n", qValue[i]);
+//     printf("State: %f %f %f %f \n", _stateHistory[expId][0], _stateHistory[expId][1], _stateHistory[expId][2], _stateHistory[expId][3]);
+//     printf("Action: %f\n", _actionHistory[expId][0]);
+//     printf("Reward: %f\n", _rewardHistory[expId]);
+//     printf("New State: %f %f %f %f\n", _currentState[0], _currentState[1], _currentState[2], _currentState[3]);
+//     printf("New Action: %f\n", action[0]);
+//     printf("QNew: %f\n", qNew);
+//     printf("Q* %f\n", qValue[i]);
     }
 
     // Updating inputs to training learner
@@ -188,6 +188,58 @@ void DQN::updatePolicy()
 
   // Keeping statistics
   _averageQStar = (double)_cumulativeQStar / (double)(_optimizationStepsPerUpdate * _miniBatchSize);
+
+  /****************************************************************************
+  * If batch normalization is being used, we need to adjust mean and variances
+  * by sampling a few more mini-batches after the optimization steps
+  ******************************************************************************/
+
+  if (_batchNormalizationEnabled)
+  {
+    auto nn = _qTrainingLearner->_neuralNetwork;
+
+    std::vector<std::vector<double>> meanSums(nn->_layers.size());
+    std::vector<std::vector<double>> varianceSums(nn->_layers.size());
+
+    for (size_t i = 1; i < nn->_layers.size(); i++)
+    {
+     meanSums[i].resize(nn->_layers[i]->_nodeCount);
+     varianceSums[i].resize(nn->_layers[i]->_nodeCount);
+
+     for (size_t j = 0; j < nn->_layers[i]->_nodeCount; j++) meanSums[i][j] = 0.0;
+     for (size_t j = 0; j < nn->_layers[i]->_nodeCount; j++) varianceSums[i][j] = 0.0;
+    }
+
+    std::vector<std::vector<double>> miniBatch(_miniBatchSize);
+    for (size_t i = 0; i < _miniBatchSize; i++)  miniBatch[i].resize(_problem->_stateVectorSize + _problem->_actionVectorSize);
+
+    for (size_t step = 0; step < _batchNormalizationCorrectionSteps; step++)
+    {
+      for (size_t i = 0; i < _miniBatchSize; i++)
+      {
+       double x = _uniformGenerator->getRandomNumber();
+       size_t expId = floor(x * _stateHistory.size());
+
+       for (size_t j = 0; j < _problem->_stateVectorSize; j++) miniBatch[i][j] = _stateHistory[expId][j];
+       for (size_t j = 0; j < _problem->_actionVectorSize; j++) miniBatch[i][_problem->_stateVectorSize + j] = _actionHistory[expId][j];
+      }
+
+      nn->setInput(miniBatch);
+      nn->forward();
+
+      for (size_t i = 1; i < nn->_layers.size(); i++)
+      {
+       for (size_t j = 0; j < nn->_layers[i]->_nodeCount; j++) meanSums[i][j] += nn->_layers[i]->_batchNormalizationMeans[j];
+       for (size_t j = 0; j < nn->_layers[i]->_nodeCount; j++) varianceSums[i][j] += nn->_layers[i]->_batchNormalizationVariances[j];
+      }
+    }
+
+    for (size_t i = 1; i < _neuralNetwork->_layers.size(); i++)
+    {
+     for (size_t j = 0; j < _neuralNetwork->_layers[i]->_nodeCount; j++) nn->_layers[i]->_batchNormalizationMeans[j] = meanSums[i][j] / _batchNormalizationCorrectionSteps;
+     for (size_t j = 0; j < _neuralNetwork->_layers[i]->_nodeCount; j++) nn->_layers[i]->_batchNormalizationVariances[j] = varianceSums[i][j] / (_batchNormalizationCorrectionSteps-1.0);
+    }
+  }
 
   /*********************************************************************
   * Updating hyperparameters and broadcasting them to the workers

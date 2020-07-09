@@ -4,6 +4,7 @@
 #include "modules/solver/agent/agent.hpp"
 #include "modules/solver/learner/learner.hpp"
 #include "modules/problem/supervisedLearning/supervisedLearning.hpp"
+#include "modules/solver/learner/deepGD/deepGD.hpp"
 
 namespace korali
 {
@@ -28,12 +29,12 @@ class DQN : public Agent
   /**
   * @brief Pointer to training experiment's learner
   */
-  solver::Learner * _qTrainingLearner;
+  learner::DeepGD * _qTrainingLearner;
 
   /**
    * @brief Pointer to inference experiment's learner
    */
-  solver::Learner * _qInferenceLearner;
+  learner::DeepGD * _qInferenceLearner;
 
   /**
  * @brief Korali experiment for the estimation of Q values
@@ -48,7 +49,7 @@ class DQN : public Agent
   /**
   * @brief Learner to use for the inference of actions
   */
-  solver::Learner* _learner;
+  learner::DeepGD* _learner;
 
   /**
  * @brief Korali experiment for argmax_action(Q) based on a trained Q-Network

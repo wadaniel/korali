@@ -37,7 +37,7 @@ void DeepGD::initialize()
   _neuralNetwork->_layers[outputLayerId]->_nodeCount = _problem->_outputVectorSize;
 
   // If we use normalization, inform the underlying NN
-  _neuralNetwork->_batchNormalizationEnabled = _useBatchNormalization;
+  _neuralNetwork->_batchNormalizationEnabled = _batchNormalizationEnabled;
 
   // Creating Training Neural Network internal structures
   _neuralNetwork->createForwardPipeline(_problem->_inputs.size());
@@ -74,7 +74,7 @@ void DeepGD::initialize()
       }
 
     // If we are not using normalization, then we define biases
-    if (_useBatchNormalization == false)
+    if (_batchNormalizationEnabled == false)
     {
      for (size_t j = 0; j < _neuralNetwork->_layers[i]->_nodeCount; j++)
      {
@@ -129,7 +129,6 @@ void DeepGD::initialize()
    }
 
   _optExperiment["Solver"] = _optimizer;
-
   _optExperiment["File Output"]["Frequency"] = 0;
   _optExperiment["File Output"]["Enabled"] = false;
   _optExperiment["Console Output"]["Frequency"] = 0;
@@ -156,73 +155,6 @@ void DeepGD::runGeneration()
   _optExperiment["Solver"]["Termination Criteria"]["Max Generations"] = _optExperiment._currentGeneration + _stepsPerGeneration;
   _optEngine.resume(_optExperiment);
   _currentLoss = _optExperiment["Results"]["Best Sample"]["F(x)"].get<double>();
-
-// // If using batch normalization, keep track of means and variances
-// if (_useBatchNormalization)
-// {
-//  meanSums.resize(_neuralNetwork->_layers.size());
-//  varianceSums.resize(_neuralNetwork->_layers.size());
-//
-//  for (size_t i = 1; i < _neuralNetwork->_layers.size(); i++)
-//  {
-//   meanSums[i].resize(_neuralNetwork->_layers[i]->_nodeCount);
-//   varianceSums[i].resize(_neuralNetwork->_layers[i]->_nodeCount);
-//
-//   for (size_t j = 0; j < _neuralNetwork->_layers[i]->_nodeCount; j++) meanSums[i][j] = 0.0;
-//   for (size_t j = 0; j < _neuralNetwork->_layers[i]->_nodeCount; j++) varianceSums[i][j] = 0.0;
-//  }
-// }
-//
-// // Main Mini-batch execution loop
-// for (size_t step = 0; step < _optimizationStepsPerGeneration; step++)
-// {
-//  for (size_t i = 0; i < _miniBatchSize; i++)
-//  {
-//   double x = _miniBatchGenerator->getRandomNumber();
-//   size_t inputId = floor(x * _problem->_inputs.size());
-//
-//   _miniBatchInputs[i] = _problem->_inputs[inputId];
-//   _miniBatchOutputs[i] = _problem->_outputs[inputId];
-//  }
-//
-//  _neuralNetwork->setInput(_miniBatchInputs);
-//  _optExperiment["Solver"]["Termination Criteria"]["Max Generations"] = _optExperiment._currentGeneration + 1;
-//  _optEngine.resume(_optExperiment);
-// }
-//
-// // If using batch normalization, we need to average means and variances over a bunch of mini-batches
-// if (_useBatchNormalization)
-// {
-//  for (size_t step = 0; step < _optimizationStepsPerGeneration; step++)
-//  {
-//    for (size_t i = 0; i < _miniBatchSize; i++)
-//    {
-//     double x = _miniBatchGenerator->getRandomNumber();
-//     size_t inputId = floor(x * _problem->_inputs.size());
-//
-//     _miniBatchInputs[i] = _problem->_inputs[inputId];
-//     _miniBatchOutputs[i] = _problem->_outputs[inputId];
-//    }
-//
-//    _neuralNetwork->setInput(_miniBatchInputs);
-//    _neuralNetwork->forward();
-//
-//    for (size_t i = 1; i < _neuralNetwork->_layers.size(); i++)
-//    {
-//     for (size_t j = 0; j < _neuralNetwork->_layers[i]->_nodeCount; j++) meanSums[i][j] += _neuralNetwork->_layers[i]->_batchNormalizationMeans[j];
-//     for (size_t j = 0; j < _neuralNetwork->_layers[i]->_nodeCount; j++) varianceSums[i][j] += _neuralNetwork->_layers[i]->_batchNormalizationVariances[j];
-//    }
-//  }
-//
-//  for (size_t i = 1; i < _neuralNetwork->_layers.size(); i++)
-//  {
-//   for (size_t j = 0; j < _neuralNetwork->_layers[i]->_nodeCount; j++) _neuralNetwork->_layers[i]->_batchNormalizationMeans[j] = meanSums[i][j] / _optimizationStepsPerGeneration;
-//   for (size_t j = 0; j < _neuralNetwork->_layers[i]->_nodeCount; j++) _neuralNetwork->_layers[i]->_batchNormalizationVariances[j] = varianceSums[i][j] / (_optimizationStepsPerGeneration-1.0);
-//  }
-// }
-//
-//  // Getting results of optimization
-//  _currentLoss = _optExperiment["Results"]["Best Sample"]["F(x)"].get<double>();
 }
 
 void DeepGD::finalize()

@@ -55,6 +55,8 @@ void NeuralNetwork::initialize()
    _layers[i]->_bias.resize(_layers[i]->_nodeCount);
    _layers[i]->_batchNormalizationShift.resize(_layers[i]->_nodeCount);
    _layers[i]->_batchNormalizationScale.resize(_layers[i]->_nodeCount);
+   _layers[i]->_batchNormalizationMeans.resize(_layers[i]->_nodeCount);
+   _layers[i]->_batchNormalizationVariances.resize(_layers[i]->_nodeCount);
 
    // Adding layer's weights
    for (size_t j = 0; j < _layers[i]->_nodeCount; j++)
@@ -68,7 +70,8 @@ void NeuralNetwork::initialize()
    {
     _layers[i]->_bias[j] = xavierConstant * _xavierGenerator->getRandomNumber();
     _layers[i]->_batchNormalizationShift[j] = xavierConstant * _xavierGenerator->getRandomNumber();
-    _layers[i]->_batchNormalizationScale[j] = xavierConstant * _xavierGenerator->getRandomNumber();
+    _layers[i]->_batchNormalizationMeans[j] = 0.0;
+    _layers[i]->_batchNormalizationVariances[j] = 1.0;
    }
   }
 

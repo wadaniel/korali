@@ -71,15 +71,17 @@ e["Solver"]["Episodes Per Generation"] = 16
 ### Defining Mini-batch and Q-Training configuration 
 
 e["Solver"]["Agent History Size"] = 1000
-e["Solver"]["Mini Batch Size"] = 256
+e["Solver"]["Mini Batch Size"] = 32
+e["Solver"]["Batch Normalization"]["Enabled"] = True
+e["Solver"]["Batch Normalization"]["Correction Steps"] = 64
 e["Solver"]["Optimization Steps Per Update"] = 10
 e["Solver"]["Discount Factor"] = 0.99
 
 ### Defining the configuration of replay memory
-
+ 
 e["Solver"]["Replay Memory"]["Start Size"] = 5000
-e["Solver"]["Replay Memory"]["Maximum Size"] = 150000
-e["Solver"]["Replay Memory"]["Replacement Policy"] = "Uniform"
+e["Solver"]["Replay Memory"]["Maximum Size"] = 50000
+e["Solver"]["Replay Memory"]["Replacement Policy"] = "Least Recently Added"
 
 ### Defining Epsilon (the probability of taking a random action) configuration
 

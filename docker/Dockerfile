@@ -31,7 +31,7 @@ WORKDIR /home/korali
 USER korali
 
 # install korali
-RUN git clone https://github.com/cselab/korali.git --recursive --branch master
+RUN git clone https://github.com/cselab/korali.git --recursive
 RUN (cd korali && MPICXX=mpic++ ./install --prereqs --jobs=4)
 RUN (cd korali/tests && ./run_all_tests.sh)
 RUN rm -rf korali/external/_llvm

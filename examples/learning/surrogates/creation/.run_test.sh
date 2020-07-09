@@ -11,8 +11,7 @@ rm -rf _korali_result*; check_result
 
 ##### Running Test
 
-python3 ./train-surrogate.py; check_result
-python3 ./run-cmaes.py; check_result
+python3 ./run-surrogates.py; check_result
 
   
   

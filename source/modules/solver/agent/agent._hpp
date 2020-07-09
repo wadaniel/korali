@@ -28,7 +28,7 @@ class Agent : public Solver
    * @param state The vector containing the state and other required information
    * @return A vector containing the action
    */
-  virtual std::vector<double> getAction(const std::vector<double>& state) = 0;
+  virtual std::vector<double> getAction(const std::vector<double> &state) = 0;
 
   /**
   * @brief Updates the algorithm's policy, based on the new experiences

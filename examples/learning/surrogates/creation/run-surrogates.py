@@ -21,10 +21,10 @@ e = korali.Experiment()
 
 e['Problem']['Type'] = 'Supervised Learning'
 
-e["Problem"]["Training"]["Input"] = trainInput
-e["Problem"]["Training"]["Solution"] = trainSolution
+e["Problem"]["Inputs"] = trainInput
+e["Problem"]["Outputs"] = trainSolution
 
-e['Solver']['Type'] = 'Gaussian Process'
+e['Solver']['Type'] = 'Learner/Gaussian Process'
 e['Solver']['Covariance Function'] = 'CovSum ( CovSEiso, CovNoise)'
 
 e['Solver']['Optimizer']['Type'] = 'Optimizer/Rprop'
@@ -42,7 +42,7 @@ k.run(e)
 
 x = np.linspace(0, 14, 1000)
 x = [[i] for i in x.tolist()]
-y = e.evaluate(x)
+y = e.getEvaluation(x)
 
 z = [i + j for i, j in zip(x, y)]
 

@@ -2,7 +2,7 @@
 
 ###### Auxiliar Functions and Variables #########
 
-source ../../../../tests/functions.sh
+source ../../../tests/functions.sh
 
 ##### Deleting Previous Results 
 

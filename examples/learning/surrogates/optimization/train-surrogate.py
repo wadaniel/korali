@@ -10,30 +10,21 @@ def create_train_data(n=20, L=2):
   y = x**2
   return x, y
 
-
 k = korali.Engine()
 e = korali.Experiment()
+xtrain, ytrain = create_train_data()
 
 e['Random Seed'] = 0xC0FFEE
 e['Problem']['Type'] = 'Supervised Learning'
+e['Problem']['Inputs'] = [ [ x ] for x in xtrain ] 
+e['Problem']['Outputs'] = [ [ y ]  for y in ytrain ]
 
-xtrain, ytrain = create_train_data()
-
-e['Variables'][0]['Name'] = 'X'
-e['Variables'][0]['Type'] = 'Input'
-e['Variables'][0]['Training Data'] = xtrain.tolist()
-
-e['Variables'][1]['Name'] = 'Y'
-e['Variables'][1]['Type'] = 'Output'
-e['Variables'][1]['Training Data'] = ytrain.tolist()
-
-e['Solver']['Type'] = 'Gaussian Process'
+e['Solver']['Type'] = 'Learner/Gaussian Process'
 e['Solver']['Covariance Function'] = 'CovSEiso'
 
 e['Solver']['Optimizer']['Type'] = 'Optimizer/Rprop'
 e['Solver']['Optimizer']['Termination Criteria']['Max Generations'] = 1000
-e['Solver']['Optimizer']['Termination Criteria'][
-    'Parameter Relative Tolerance'] = 1e-8
+e['Solver']['Optimizer']['Termination Criteria']['Parameter Relative Tolerance'] = 1e-8
 
 e['Console Output']['Verbosity'] = 'Normal'
 e['Console Output']['Frequency'] = 10

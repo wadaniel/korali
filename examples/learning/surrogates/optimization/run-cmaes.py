@@ -8,13 +8,11 @@ surrogate = korali.Experiment()
 found = surrogate.loadState("_korali_result_surrogate/latest")
 assert found
 
-
 def model(sample):
   x = sample["Parameters"][0]
-  y = surrogate.evaluate([[x]])
+  y = surrogate.getEvaluation([[x]])
   # minus because we maximize
   sample["F(x)"] = -y[0][0]
-
 
 k = korali.Engine()
 e = korali.Experiment()

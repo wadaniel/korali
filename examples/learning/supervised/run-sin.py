@@ -32,7 +32,7 @@ e["Problem"]["Outputs"] = trainingSolutionSet
 
 e["Solver"]["Type"] = "Learner/DeepGD"
 e["Solver"]["Steps Per Generation"] = 100
-e["Solver"]["Use Batch Normalization"] = True
+e["Solver"]["Batch Normalization"]["Enabled"] = True
 e["Solver"]["Optimizer"]["Type"] = "Optimizer/Adam"
 
 ### Defining the shape of the neural network

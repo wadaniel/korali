@@ -97,7 +97,7 @@ def plot_lower_triangle(ax, theta):
         ax[i, j].set_yticklabels([])
 
 
-def plot(genList, args):
+def plotGen(genList, idx):
   numgens = len(genList)
 
   lastGen = 0
@@ -125,9 +125,32 @@ def plot(genList, args):
   fig, ax = plt.subplots(numdim, numdim, figsize=(8, 8))
   samplesTmp = np.reshape(samples, (numentries, numdim))
   plt.suptitle(
-      'Nested Plotter - \nNumber of Samples {0}\n'.format(str(numentries)),
+      'Nested Plotter - \nNumber of Samples {0}'.format(str(numentries)),
       fontweight='bold',
       fontsize=12)
   plot_histogram(ax, samplesTmp)
   plot_upper_triangle(ax, samplesTmp, lpo)
   plot_lower_triangle(ax, samplesTmp)
+  
+  if numdim > 1:
+    for i in range(numdim):
+      ax[i, 0].set_ylabel(genList[idx]['Variables'][i]['Name'])
+      ax[-1, i].set_xlabel(genList[idx]['Variables'][i]['Name'])
+  else:
+    ax.set_ylabel(genList[idx]['Variables'][0]['Name'])
+    ax.set_xlabel(genList[idx]['Variables'][0]['Name'])
+
+
+def plot(genList, args):
+  numgens = len(genList)
+
+  plotAll = args.all
+  if plotAll:
+    for idx in genList:
+      plotGen(genList, idx)
+  else:
+    lastGen = 0
+    for i in genList:
+      if genList[i]['Current Generation'] > lastGen:
+        lastGen = genList[i]['Current Generation']
+    plotGen(genList, lastGen)

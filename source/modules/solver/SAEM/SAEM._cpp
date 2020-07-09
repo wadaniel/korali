@@ -247,7 +247,7 @@ void SAEM::QFunction(Sample &sample, size_t zetaFc, size_t phiFc)
 
   auto zeta = KORALI_GET(double, sample, "zeta");
   auto phi = KORALI_GET(std::vector<double>, sample, "phi");
-  auto currentS = KORALI_GET(std::vector<double>, sample, "Globals", "Current S");
+  auto currentS = sample.globals()["Current S"].get<std::vector<double>>();
 
   if (phi.size() != currentS.size())
     KORALI_LOG_ERROR("SAEM Internal model error. Current Robbins-Monro-averaged vector S did not have the same length as vector phi from the problem definition (from the model).\n");

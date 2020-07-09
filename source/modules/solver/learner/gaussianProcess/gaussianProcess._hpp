@@ -5,7 +5,7 @@
 #include "gp/gp.h"
 #include "modules/experiment/experiment.hpp"
 #include "modules/problem/supervisedLearning/supervisedLearning.hpp"
-#include "modules/solver/solver.hpp"
+#include "modules/solver/learner/learner.hpp"
 
 #include <memory>
 
@@ -13,7 +13,9 @@ namespace korali
 {
 namespace solver
 {
-class GaussianProcess : public Solver
+namespace learner
+{
+class GaussianProcess : public Learner
 {
   public:
   ~GaussianProcess();
@@ -45,12 +47,14 @@ class GaussianProcess : public Solver
   */
   static void runSample(Sample &sample, libgp::GaussianProcess *gp);
 
-  std::vector<std::vector<double>> evaluate(const std::vector<std::vector<double>> &input) override;
-
+  std::vector<std::vector<double>> getEvaluation(const std::vector<std::vector<double>> &input) override;
+  knlohmann::json &getHyperparameters() override;
+  void setHyperparameters(const knlohmann::json &parameters) override;
   void initialize() override;
   void runGeneration() override;
   void printGenerationAfter() override;
 };
+} // namespace learner
 } // namespace solver
 } // namespace korali
 

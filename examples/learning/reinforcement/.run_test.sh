@@ -2,7 +2,7 @@
 
 ###### Auxiliar Functions and Variables #########
 
-source ../../../../tests/functions.sh
+source ../../../tests/functions.sh
 
 ##### Deleting Previous Results 
 
@@ -13,12 +13,12 @@ rm -rf _korali_result*; check_result
  
 echo "  + Creating test files..."
 
-sed -e 's%\plt.%#plt.%g' \
-        run-sin.py > __test-sin.py; check_result
+sed -e 's%Defining Termination Criteria%Defining Termination Criteria\ne["Solver"]["Termination Criteria"]["Max Generations"] = 20\n%g' \
+        run-dqn.py > __test-dqn.py; check_result
 
 ##### Running Test
 
-OMP_NUM_THREADS=4 python3 ./__test-sin.py; check_result
+OMP_NUM_THREADS=4 python3 ./__test-dqn.py; check_result
 
 ##### Deleting Tests
 

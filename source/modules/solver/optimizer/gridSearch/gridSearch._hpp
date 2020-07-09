@@ -9,7 +9,6 @@ namespace solver
 {
 namespace optimizer
 {
-
 class GridSearch : public Optimizer
 {
   public:

@@ -6,9 +6,9 @@
 #include "modules/conduit/distributed/distributed.hpp"
 #include "modules/experiment/experiment.hpp"
 #include "modules/problem/problem.hpp"
-#include "modules/solver/solver.hpp"
-#include "modules/solver/learner/learner.hpp"
 #include "modules/solver/agent/agent.hpp"
+#include "modules/solver/learner/learner.hpp"
+#include "modules/solver/solver.hpp"
 #include <chrono>
 #include <cstdio>
 #include <map>
@@ -124,34 +124,34 @@ void Experiment::saveState()
   // Removing keys in the exclusion list
   for (size_t i = 0; i < _fileOutputExcludedKeys.size(); i++)
   {
-   bool foundKey = true;
-   auto currentJs = &_js.getJson();
-   auto prevJs = currentJs;
+    bool foundKey = true;
+    auto currentJs = &_js.getJson();
+    auto prevJs = currentJs;
 
-   for (size_t j = 0; j < _fileOutputExcludedKeys[i].size(); j++)
-   {
-    if (isDefined(*currentJs, _fileOutputExcludedKeys[i][j]))
+    for (size_t j = 0; j < _fileOutputExcludedKeys[i].size(); j++)
     {
-     prevJs = currentJs;
-     currentJs = &((*currentJs)[_fileOutputExcludedKeys[i][j]]);
+      if (isDefined(*currentJs, _fileOutputExcludedKeys[i][j]))
+      {
+        prevJs = currentJs;
+        currentJs = &((*currentJs)[_fileOutputExcludedKeys[i][j]]);
+      }
+      else
+      {
+        foundKey = false;
+        break;
+      }
     }
-    else
+    if (foundKey)
     {
-     foundKey = false;
-     break;
+      eraseValue(*prevJs, _fileOutputExcludedKeys[i][_fileOutputExcludedKeys[i].size() - 1]);
     }
-   }
-   if (foundKey)
-   {
-    eraseValue(*prevJs, _fileOutputExcludedKeys[i][_fileOutputExcludedKeys[i].size()-1]);
-   }
   }
 
   // If filename not given, assign gen + genId
   if (_fileOutputName == "")
-   sprintf(genFileName, "gen%08lu.json", _currentGeneration);
+    sprintf(genFileName, "gen%08lu.json", _currentGeneration);
   else
-   sprintf(genFileName, "%s", _fileOutputName.c_str());
+    sprintf(genFileName, "%s", _fileOutputName.c_str());
 
   // If results directory doesn't exist, create it
   if (!dirExists(_fileOutputPath)) mkdir(_fileOutputPath);
@@ -194,37 +194,37 @@ void Experiment::initialize()
 
   if (_isInitialized == false)
   {
-   // Clearning sample and previous result information
-   _js["Results"] = knlohmann::json();
-   _js["Samples"] = knlohmann::json();
+    // Clearning sample and previous result information
+    _js["Results"] = knlohmann::json();
+    _js["Samples"] = knlohmann::json();
 
-   // Initializing Variables
-   if (isDefined(_js.getJson(), "Variables"))
-   {
-    _variables.resize(_js["Variables"].size());
-    for (size_t i = 0; i < _js["Variables"].size(); i++) _variables[i] = new Variable;
-   }
+    // Initializing Variables
+    if (isDefined(_js.getJson(), "Variables"))
+    {
+      _variables.resize(_js["Variables"].size());
+      for (size_t i = 0; i < _js["Variables"].size(); i++) _variables[i] = new Variable;
+    }
 
-   applyModuleDefaults(_js.getJson());
+    applyModuleDefaults(_js.getJson());
 
-   try
-   {
-     setConfiguration(_js.getJson());
-   }
-   catch (const std::exception &e)
-   {
-     KORALI_LOG_ERROR("Error parsing Experiment's configuration. Reason:\n%s", e.what());
-   }
+    try
+    {
+      setConfiguration(_js.getJson());
+    }
+    catch (const std::exception &e)
+    {
+      KORALI_LOG_ERROR("Error parsing Experiment's configuration. Reason:\n%s", e.what());
+    }
 
-   getConfiguration(_js.getJson());
+    getConfiguration(_js.getJson());
 
-   _logger = new Logger(_consoleOutputVerbosity, stdout);
+    _logger = new Logger(_consoleOutputVerbosity, stdout);
 
-   _isInitialized = true;
+    _isInitialized = true;
   }
 
   if (isDefined(_js.getJson(), "Solver", "Termination Criteria", "Max Generations"))
-   _solver->_maxGenerations = _js["Solver"]["Termination Criteria"]["Max Generations"].get<size_t>();
+    _solver->_maxGenerations = _js["Solver"]["Termination Criteria"]["Max Generations"].get<size_t>();
 }
 
 void Experiment::finalize()
@@ -233,32 +233,30 @@ void Experiment::finalize()
   co_delete(_thread);
 }
 
-
 std::vector<double> Experiment::getAction(const std::vector<double> &state)
 {
-  auto agent = dynamic_cast<solver::Agent*>(_k->_solver);
+  auto agent = dynamic_cast<solver::Agent *>(_k->_solver);
   if (agent != NULL)
-   return agent->getAction(state);
+    return agent->getAction(state);
   else
-   KORALI_LOG_ERROR("This solver does not support getAction operations.\n");
+    KORALI_LOG_ERROR("This solver does not support getAction operations.\n");
 }
-
 
 std::vector<std::vector<double>> Experiment::getEvaluation(const std::vector<std::vector<double>> &inputBatch)
 {
-  auto learner = dynamic_cast<solver::Learner*>(_k->_solver);
+  auto learner = dynamic_cast<solver::Learner *>(_k->_solver);
   if (learner != NULL)
-   return learner->getEvaluation(inputBatch);
+    return learner->getEvaluation(inputBatch);
   else
-   KORALI_LOG_ERROR("This solver does not support evaluation operations.\n");
+    KORALI_LOG_ERROR("This solver does not support evaluation operations.\n");
 }
 
 std::vector<std::vector<double>> Experiment::getGradients(const std::vector<std::vector<double>> &outputDiffs)
 {
- auto learner = dynamic_cast<solver::Learner*>(_k->_solver);
-   if (learner != NULL)
+  auto learner = dynamic_cast<solver::Learner *>(_k->_solver);
+  if (learner != NULL)
     return learner->getGradients(outputDiffs);
-   else
+  else
     KORALI_LOG_ERROR("This solver does not provide gradients.\n");
 }
 

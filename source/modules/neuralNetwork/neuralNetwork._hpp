@@ -17,7 +17,6 @@ namespace korali
 class NeuralNetwork : public Module
 {
   public:
-
 #ifdef _KORALI_USE_ONEDNN
   /**
    * @brief oneDNN Engine
@@ -45,20 +44,20 @@ class NeuralNetwork : public Module
 
   /**
    * @brief Initializes the internal memory structures for the forward pipeline
-   * @param The size of the input batch for which the NN has to be created
+   * @param batchSize The size of the input batch for which the NN has to be created
    */
   void createForwardPipeline(size_t batchSize);
 
   /**
   * @brief Initializes the internal memory structures for the backward pipeline
   */
- void createBackwardPipeline();
+  void createBackwardPipeline();
 
   /**
    * @brief Updates the internal values of the NN inputs
-   * @param The input batch
+   * @param input The input batch
    */
-  void setInput(const std::vector<std::vector<double>>& input);
+  void setInput(const std::vector<std::vector<double>> &input);
 
   /**
    * @brief Updates the values of weights, biases, and normalization scale/shift configuration to the NN
@@ -74,13 +73,13 @@ class NeuralNetwork : public Module
    * @brief Backward-propagates to find out the gradients of the weights and biases.
    * @param outputDifferential The differential of the output wrt the solution
   */
-  void backwardWeightsAndBias(std::vector<float>& outputDifferential);
+  void backwardWeightsAndBias(std::vector<float> &outputDifferential);
 
   /**
    * @brief Backward-propagates to find out the gradients of the input data.
    * @param outputDifferential The differential of the output wrt the solution
   */
-  void backwardData(std::vector<float>& outputDifferential);
+  void backwardData(std::vector<float> &outputDifferential);
 
   /**
    * @brief Creator that sets initialized flag to false

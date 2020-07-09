@@ -58,7 +58,7 @@ class Sample
   /**
   * @brief Pointer to global parameters
   */
-  knlohmann::json* _globals;
+  knlohmann::json *_globals;
 
   /**
   * @brief Current state of the sample
@@ -111,7 +111,7 @@ class Sample
   * @brief Returns global parameters broadcasted by the problem
   * @return The global parameters
   */
-  knlohmann::json& globals();
+  knlohmann::json &globals();
 
   /**
   * @brief Checks whether the sample contains the given key.

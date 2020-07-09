@@ -1,8 +1,8 @@
 #ifndef _KORALI_PROBLEM_REINFORCEMENT_LEARNING_HPP_
 #define _KORALI_PROBLEM_REINFORCEMENT_LEARNING_HPP_
 
-#include "modules/problem/problem.hpp"
 #include "modules/neuralNetwork/neuralNetwork.hpp"
+#include "modules/problem/problem.hpp"
 
 namespace korali
 {
@@ -18,7 +18,6 @@ class ReinforcementLearning : public korali::Problem
    * @param sample Sample containing current agent/state information.
    */
   void runEnvironment(korali::Sample &sample);
-
 };
 
 } // namespace problem

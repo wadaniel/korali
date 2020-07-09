@@ -31,7 +31,7 @@ void Sample::update()
 
 void Sample::sampleLauncher()
 {
- Engine *engine = _engineStack.top();
+  Engine *engine = _engineStack.top();
 
   // Getting sample information
   size_t experimentId = KORALI_GET(size_t, (*_self), "Experiment Id");
@@ -49,9 +49,9 @@ void Sample::sampleLauncher()
     experiment->_solver->runOperation(operation, *_self);
 }
 
-knlohmann::json& Sample::globals()
+knlohmann::json &Sample::globals()
 {
- return *_globals;
+  return *_globals;
 }
 
 bool Sample::contains(const std::string &key) { return _self->_js.contains(key); }

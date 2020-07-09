@@ -173,8 +173,8 @@ void Engine::run(std::vector<Experiment> &experiments)
 {
   for (size_t i = 0; i < experiments.size(); i++)
   {
-   experiments[i]._js["Current Generation"] = 0;
-   experiments[i]._currentGeneration = 0;
+    experiments[i]._js["Current Generation"] = 0;
+    experiments[i]._currentGeneration = 0;
   }
   resume(experiments);
 }

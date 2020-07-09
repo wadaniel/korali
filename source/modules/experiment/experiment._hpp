@@ -119,11 +119,10 @@ class Experiment : public Module
 
   /**
    * @brief For solver modules which have been trained, return the gradient of a differentiated output
-   * @param Output differentials
+   * @param outputDiffs Differentials of the (loss) function
    * @return The calculated gradients
    */
   std::vector<std::vector<double>> getGradients(const std::vector<std::vector<double>> &outputDiffs);
-
 };
 
 } // namespace korali

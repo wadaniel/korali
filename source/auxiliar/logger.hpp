@@ -20,7 +20,7 @@ namespace korali
 */
 class Logger
 {
- public:
+  public:
   /**
  * @brief Global variable that contains the verbosity level for the current Korali experiment.
  */

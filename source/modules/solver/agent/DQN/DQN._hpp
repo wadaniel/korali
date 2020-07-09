@@ -1,10 +1,10 @@
 #ifndef _KORALI_AGENT_DQN_HPP_
 #define _KORALI_AGENT_DQN_HPP_
 
-#include "modules/solver/agent/agent.hpp"
-#include "modules/solver/learner/learner.hpp"
 #include "modules/problem/supervisedLearning/supervisedLearning.hpp"
+#include "modules/solver/agent/agent.hpp"
 #include "modules/solver/learner/deepGD/deepGD.hpp"
+#include "modules/solver/learner/learner.hpp"
 
 namespace korali
 {
@@ -15,7 +15,6 @@ namespace agent
 class DQN : public Agent
 {
   public:
-
   /**
  * @brief Korali engine for running internal experiments
  */
@@ -24,17 +23,17 @@ class DQN : public Agent
   /**
    * @brief Pointer to training experiment's problem
    */
-  problem::SupervisedLearning * _qTrainingProblem;
+  problem::SupervisedLearning *_qTrainingProblem;
 
   /**
   * @brief Pointer to training experiment's learner
   */
-  learner::DeepGD * _qTrainingLearner;
+  learner::DeepGD *_qTrainingLearner;
 
   /**
    * @brief Pointer to inference experiment's learner
    */
-  learner::DeepGD * _qInferenceLearner;
+  learner::DeepGD *_qInferenceLearner;
 
   /**
  * @brief Korali experiment for the estimation of Q values
@@ -49,7 +48,7 @@ class DQN : public Agent
   /**
   * @brief Learner to use for the inference of actions
   */
-  learner::DeepGD* _learner;
+  learner::DeepGD *_learner;
 
   /**
  * @brief Korali experiment for argmax_action(Q) based on a trained Q-Network
@@ -63,11 +62,13 @@ class DQN : public Agent
 
   /**
    * @brief Function to evaluate the Q* of a given action
+   * @param sample Sample containing the action to evaluate
+   * @param getGradients Indicates whether the gradients are required
    */
   void evaluateAction(Sample &sample, bool getGradients);
 
   void updatePolicy() override;
-  std::vector<double> getAction(const std::vector<double>& state) override;
+  std::vector<double> getAction(const std::vector<double> &state) override;
   void getAction(Sample &sample) override;
   void printGenerationAfter() override;
   void initialize() override;

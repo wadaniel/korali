@@ -9,8 +9,8 @@ void ReinforcementLearning::initialize()
 {
   // Processing state/action variable configuration
 
- _stateVectorIndexes.clear();
- _actionVectorIndexes.clear();
+  _stateVectorIndexes.clear();
+  _actionVectorIndexes.clear();
   for (size_t i = 0; i < _k->_variables.size(); i++)
   {
     if (_k->_variables[i]->_type == "State") _stateVectorIndexes.push_back(i);
@@ -26,70 +26,80 @@ void ReinforcementLearning::initialize()
   if (_actionRepeat == 0) KORALI_LOG_ERROR("Action repeat cannot be zero.\n");
 }
 
-Sample* __currentSample;
+/**
+ * @brief Pointer to the current sample, it is immediately copied as to avoid concurrency problems
+ */
+Sample *__currentSample;
+
+/**
+ * @brief Identifier of the current environment function Id.
+ */
 size_t __envFunctionId;
 
+/**
+ * @brief Thread wrapper to run an environment
+ */
 void __environmentWrapper()
 {
- Sample* sample = __currentSample;
+  Sample *sample = __currentSample;
 
- sample->run(__envFunctionId);
+  sample->run(__envFunctionId);
 
- (*sample)["Finished"] = true;
+  (*sample)["Finished"] = true;
 
- co_switch(sample->_workerThread);
+  co_switch(sample->_workerThread);
 
- KORALI_LOG_ERROR("Resuming a finished sample\n");
+  KORALI_LOG_ERROR("Resuming a finished sample\n");
 }
 
 void ReinforcementLearning::runEnvironment(Sample &sample)
 {
- // Getting RL-compatible solver
- auto agent = dynamic_cast<solver::Agent *>(_k->_solver);
+  // Getting RL-compatible solver
+  auto agent = dynamic_cast<solver::Agent *>(_k->_solver);
 
- sample["Finished"] = false;
+  sample["Finished"] = false;
 
- // Creating sample coroutine
- __currentSample = &sample;
- __envFunctionId = _environmentFunction;
- sample._workerThread = co_active();
- auto envThread = co_create(1 << 28, __environmentWrapper);
+  // Creating sample coroutine
+  __currentSample = &sample;
+  __envFunctionId = _environmentFunction;
+  sample._workerThread = co_active();
+  auto envThread = co_create(1 << 28, __environmentWrapper);
 
- // Getting first state
- co_switch(envThread);
-
- // Action Repeat Counter
- size_t actionLastUpdated = 0;
-
- // Initializing episode's experience counter
- size_t expId = 0;
-
- // Saving experiences
- while (sample["Finished"] == false)
- {
-  // Storing the current state
-  sample["Experience"]["States"][expId] = sample["State"];
-
-  // Requesting new action, if enough steps have passed, given by the action repeat parameter
-  if (actionLastUpdated == 0)
-  {
-   agent->getAction(sample);
-   actionLastUpdated = _actionRepeat;
-  }
-  actionLastUpdated--;
-
-  // Storing the current action
-  sample["Experience"]["Actions"][expId] = sample["Action"];
-
-  // Jumping back into the agent's environment
+  // Getting first state
   co_switch(envThread);
 
-  // Returning from the agent's environment with the reward
-  sample["Experience"]["Rewards"][expId] = sample["Reward"];
-  expId++;
- }
+  // Action Repeat Counter
+  size_t actionLastUpdated = 0;
 
- co_delete(envThread);
+  // Initializing episode's experience counter
+  size_t expId = 0;
+
+  // Saving experiences
+  while (sample["Finished"] == false)
+  {
+    // Storing the current state
+    sample["Experience"]["States"][expId] = sample["State"];
+
+    // Requesting new action, if enough steps have passed, given by the action repeat parameter
+    if (actionLastUpdated == 0)
+    {
+      agent->getAction(sample);
+      actionLastUpdated = _actionRepeat;
+    }
+    actionLastUpdated--;
+
+    // Storing the current action
+    sample["Experience"]["Actions"][expId] = sample["Action"];
+
+    // Jumping back into the agent's environment
+    co_switch(envThread);
+
+    // Returning from the agent's environment with the reward
+    sample["Experience"]["Rewards"][expId] = sample["Reward"];
+    expId++;
+  }
+
+  co_delete(envThread);
 }
 
 } // namespace problem

@@ -10,31 +10,31 @@ void SupervisedLearning::initialize()
   _batchSize = _inputs.size();
 
   if (_batchSize == 0)
-      KORALI_LOG_ERROR("Empty input batch provided.\n");
+    KORALI_LOG_ERROR("Empty input batch provided.\n");
 
   _inputVectorSize = _inputs[0].size();
 
   // Checking that all batch entries have the correct size
   for (size_t i = 0; i < _inputs.size(); i++)
-   if (_inputs[i].size() != _inputVectorSize)
-    KORALI_LOG_ERROR("Vector size of input data %lu is inconsistent. Size: %lu - Expected: %lu.\n", i, _inputs[i].size(), _inputVectorSize);
+    if (_inputs[i].size() != _inputVectorSize)
+      KORALI_LOG_ERROR("Vector size of input data %lu is inconsistent. Size: %lu - Expected: %lu.\n", i, _inputs[i].size(), _inputVectorSize);
 
   // Checking if solution is given in the form of a function or pre-calculated values
   if (_outputFunction == 0)
   {
-   _outputVectorSize = _outputs[0].size();
+    _outputVectorSize = _outputs[0].size();
 
-   if (_batchSize != _outputs.size())
-     KORALI_LOG_ERROR("Batch size of output data (%lu) is different than that of input data (%lu).\n", _outputs.size(), _batchSize);
+    if (_batchSize != _outputs.size())
+      KORALI_LOG_ERROR("Batch size of output data (%lu) is different than that of input data (%lu).\n", _outputs.size(), _batchSize);
 
-   for (size_t i = 0; i < _outputs.size(); i++)
-    if (_outputs[i].size() != _outputVectorSize)
-     KORALI_LOG_ERROR("Vector size of training solution %lu is inconsistent. Size: %lu - Expected: %lu.\n", i, _outputs[i].size(), _outputVectorSize);
+    for (size_t i = 0; i < _outputs.size(); i++)
+      if (_outputs[i].size() != _outputVectorSize)
+        KORALI_LOG_ERROR("Vector size of training solution %lu is inconsistent. Size: %lu - Expected: %lu.\n", i, _outputs[i].size(), _outputVectorSize);
   }
   else
   {
-   // No pre-calculated values for the output provided, use online function instead.
-   _outputVectorSize = 0;
+    // No pre-calculated values for the output provided, use online function instead.
+    _outputVectorSize = 0;
   }
 }
 

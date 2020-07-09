@@ -75,7 +75,7 @@ class Layer : public Module
   /*
   * @brief oneDNN Gradient of the data at the normalization stage
   */
- dnnl::memory _batchNormalizationDiffMem;
+  dnnl::memory _batchNormalizationDiffMem;
 
   /*
   * @brief oneDNN Gradients of the operation wrt to activation function

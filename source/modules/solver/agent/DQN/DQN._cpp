@@ -1,6 +1,6 @@
 #include "modules/conduit/conduit.hpp"
 #include "modules/solver/agent/DQN/DQN.hpp"
-#include <algorithm>    // std::random_shuffle
+#include <algorithm> // std::random_shuffle
 
 /****************************************
  * Things to fix:
@@ -14,11 +14,10 @@ namespace solver
 {
 namespace agent
 {
-
 void DQN::initialize()
 {
- // Calling common initialization routine for all agents
- Agent::initialize();
+  // Calling common initialization routine for all agents
+  Agent::initialize();
 
   /*********************************************************************
   * Creating and running Q-Approximation Experiment
@@ -40,10 +39,10 @@ void DQN::initialize()
   // Initializing experiment with an initial zero set
   for (size_t i = 0; i < _miniBatchSize; i++)
   {
-   _qTrainingExperiment["Problem"]["Outputs"][i][0] = 0.0;
+    _qTrainingExperiment["Problem"]["Outputs"][i][0] = 0.0;
 
-   for (size_t j = 0; j < _k->_variables.size(); j++)
-    _qTrainingExperiment["Problem"]["Inputs"][i][j] = 0.0;
+    for (size_t j = 0; j < _k->_variables.size(); j++)
+      _qTrainingExperiment["Problem"]["Inputs"][i][j] = 0.0;
   }
 
   // Running initialization to verify that the configuration is correct
@@ -72,19 +71,19 @@ void DQN::initialize()
 
   for (size_t i = 0; i < _problem->_actionVectorSize; i++)
   {
-   size_t varIdx = _problem->_actionVectorIndexes[i];
+    size_t varIdx = _problem->_actionVectorIndexes[i];
 
-   _argMaxActionExperiment["Variables"][i]["Name"] = _k->_variables[varIdx]->_name;
-   _argMaxActionExperiment["Variables"][i]["Lower Bound"] = _k->_variables[varIdx]->_lowerBound;
-   _argMaxActionExperiment["Variables"][i]["Upper Bound"] = _k->_variables[varIdx]->_upperBound;
+    _argMaxActionExperiment["Variables"][i]["Name"] = _k->_variables[varIdx]->_name;
+    _argMaxActionExperiment["Variables"][i]["Lower Bound"] = _k->_variables[varIdx]->_lowerBound;
+    _argMaxActionExperiment["Variables"][i]["Upper Bound"] = _k->_variables[varIdx]->_upperBound;
 
-   double initialGuess = (_k->_variables[varIdx]->_upperBound + _k->_variables[varIdx]->_lowerBound) * 0.5;
-   double initialStdDev = abs((_k->_variables[varIdx]->_upperBound - _k->_variables[varIdx]->_lowerBound));
+    double initialGuess = (_k->_variables[varIdx]->_upperBound + _k->_variables[varIdx]->_lowerBound) * 0.5;
+    double initialStdDev = abs((_k->_variables[varIdx]->_upperBound - _k->_variables[varIdx]->_lowerBound));
 
-   _argMaxActionExperiment["Variables"][i]["Initial Value"] = initialGuess;
-   _argMaxActionExperiment["Variables"][i]["Initial Mean"] = initialGuess;
-   _argMaxActionExperiment["Variables"][i]["Initial Standard Deviation"] = initialStdDev;
-   _argMaxActionExperiment["Variables"][i]["Values"] = _k->_variables[varIdx]->_values;
+    _argMaxActionExperiment["Variables"][i]["Initial Value"] = initialGuess;
+    _argMaxActionExperiment["Variables"][i]["Initial Mean"] = initialGuess;
+    _argMaxActionExperiment["Variables"][i]["Initial Standard Deviation"] = initialStdDev;
+    _argMaxActionExperiment["Variables"][i]["Values"] = _k->_variables[varIdx]->_values;
   }
 
   _argMaxActionExperiment["Solver"] = _actionOptimizer;
@@ -100,17 +99,17 @@ void DQN::initialize()
   // If initial generation, set initial DQN configuration
   if (_k->_currentGeneration == 0)
   {
-   _currentEpisode = 0;
-   _epsilonCurrentValue = _epsilonInitialValue;
-   _suboptimalStepCounter = 0;
-   _optimizationStepCount = 0;
+    _currentEpisode = 0;
+    _epsilonCurrentValue = _epsilonInitialValue;
+    _suboptimalStepCounter = 0;
+    _optimizationStepCount = 0;
 
     // Initialize best reward
-   _bestAverageReward = -korali::Inf;
+    _bestAverageReward = -korali::Inf;
 
     // Get the initial set of hyperparameters
-   _hyperparameters =  _qTrainingLearner->getHyperparameters();
-   _bestHyperparameters = _hyperparameters;
+    _hyperparameters = _qTrainingLearner->getHyperparameters();
+    _bestHyperparameters = _hyperparameters;
   }
 
   // Assigning training hyperparameters to inference learner
@@ -132,67 +131,67 @@ void DQN::updatePolicy()
 
   for (size_t step = 0; step < _optimizationStepsPerUpdate; step++)
   {
-   // Calculating target Q value (solution) for Qnew on selected batch
-   std::vector<double> qValue(_miniBatchSize);
+    // Calculating target Q value (solution) for Qnew on selected batch
+    std::vector<double> qValue(_miniBatchSize);
 
-   // Shuffling indexes to choose the mini batch from
-   std::random_shuffle(_stateHistoryIndexes.begin(), _stateHistoryIndexes.end());
+    // Shuffling indexes to choose the mini batch from
+    std::random_shuffle(_stateHistoryIndexes.begin(), _stateHistoryIndexes.end());
 
-   for (size_t i = 0; i < _miniBatchSize; i++)
-   {
-    // Selecting a uniformly random selected, yet not repeated experience
-    size_t expId = _stateHistoryIndexes[i];
-
-    // Qnew = max_a(q) with s' fixed
-    // Q* = r + y*Qnew -- If not terminal state
-    // Q* = r -- If terminal state
-
-    qValue[i] = _rewardHistory[expId];
-
-    // If state is not terminal (next state is filled) then add Qnew to the Q value.
-    if (_nextStateHistory[expId].size() > 0)
+    for (size_t i = 0; i < _miniBatchSize; i++)
     {
-     // Updating current state
-     _currentState = _nextStateHistory[expId];
+      // Selecting a uniformly random selected, yet not repeated experience
+      size_t expId = _stateHistoryIndexes[i];
 
-     // Running optimization experiment to get best estimated action
-     _engine.run(_argMaxActionExperiment);
+      // Qnew = max_a(q) with s' fixed
+      // Q* = r + y*Qnew -- If not terminal state
+      // Q* = r -- If terminal state
 
-     // Getting optimal action, based on the NN evaluation
-     auto action = _argMaxActionExperiment["Results"]["Best Sample"]["Parameters"].get<std::vector<double>>();
+      qValue[i] = _rewardHistory[expId];
 
-     // Getting optimal Qnew, based on the NN evaluation
-     auto qNew = _argMaxActionExperiment["Results"]["Best Sample"]["F(x)"].get<double>();
+      // If state is not terminal (next state is filled) then add Qnew to the Q value.
+      if (_nextStateHistory[expId].size() > 0)
+      {
+        // Updating current state
+        _currentState = _nextStateHistory[expId];
 
-     // We add the expected remaining reward based on the optimization
-     qValue[i] += _discountFactor * qNew;
+        // Running optimization experiment to get best estimated action
+        _engine.run(_argMaxActionExperiment);
 
-     // Debug only, print new experience values
-//     printf("State: %f %f %f %f \n", _stateHistory[expId][0], _stateHistory[expId][1], _stateHistory[expId][2], _stateHistory[expId][3]);
-//     printf("Action: %f\n", _actionHistory[expId][0]);
-//     printf("Reward: %f\n", _rewardHistory[expId]);
-//     printf("New State: %f %f %f %f\n", _currentState[0], _currentState[1], _currentState[2], _currentState[3]);
-//     printf("New Action: %f\n", action[0]);
-//     printf("QNew: %f\n", qNew);
-//     printf("Q* %f\n", qValue[i]);
+        // Getting optimal action, based on the NN evaluation
+        auto action = _argMaxActionExperiment["Results"]["Best Sample"]["Parameters"].get<std::vector<double>>();
+
+        // Getting optimal Qnew, based on the NN evaluation
+        auto qNew = _argMaxActionExperiment["Results"]["Best Sample"]["F(x)"].get<double>();
+
+        // We add the expected remaining reward based on the optimization
+        qValue[i] += _discountFactor * qNew;
+
+        // Debug only, print new experience values
+        //     printf("State: %f %f %f %f \n", _stateHistory[expId][0], _stateHistory[expId][1], _stateHistory[expId][2], _stateHistory[expId][3]);
+        //     printf("Action: %f\n", _actionHistory[expId][0]);
+        //     printf("Reward: %f\n", _rewardHistory[expId]);
+        //     printf("New State: %f %f %f %f\n", _currentState[0], _currentState[1], _currentState[2], _currentState[3]);
+        //     printf("New Action: %f\n", action[0]);
+        //     printf("QNew: %f\n", qNew);
+        //     printf("Q* %f\n", qValue[i]);
+      }
+
+      // Updating inputs to training learner
+      for (size_t j = 0; j < _problem->_stateVectorSize; j++) _qTrainingProblem->_inputs[i][j] = _stateHistory[expId][j];
+      for (size_t j = 0; j < _problem->_actionVectorSize; j++) _qTrainingProblem->_inputs[i][_problem->_stateVectorSize + j] = _actionHistory[expId][j];
+      _qTrainingProblem->_outputs[i][0] = qValue[i];
+
+      // Keeping statistics
+      _cumulativeQStar += qValue[i];
     }
 
-    // Updating inputs to training learner
-    for (size_t j = 0; j < _problem->_stateVectorSize; j++) _qTrainingProblem->_inputs[i][j] = _stateHistory[expId][j];
-    for (size_t j = 0; j < _problem->_actionVectorSize; j++) _qTrainingProblem->_inputs[i][_problem->_stateVectorSize + j] = _actionHistory[expId][j];
-    _qTrainingProblem->_outputs[i][0] = qValue[i];
+    // Running one generation of the optimization method with the given mini-batch
+    _qTrainingExperiment["Solver"]["Termination Criteria"]["Max Generations"] = _qTrainingExperiment._currentGeneration + 1;
+    _qTrainingLearner->initialize();
+    _engine.resume(_qTrainingExperiment);
 
-    // Keeping statistics
-    _cumulativeQStar += qValue[i];
-   }
-
-   // Running one generation of the optimization method with the given mini-batch
-   _qTrainingExperiment["Solver"]["Termination Criteria"]["Max Generations"] = _qTrainingExperiment._currentGeneration + 1;
-   _qTrainingLearner->initialize();
-   _engine.resume(_qTrainingExperiment);
-
-   // Increasing optimization step counter
-   _optimizationStepCount++;
+    // Increasing optimization step counter
+    _optimizationStepCount++;
   }
 
   // Keeping statistics
@@ -212,15 +211,15 @@ void DQN::updatePolicy()
 
     for (size_t i = 1; i < nn->_layers.size(); i++)
     {
-     meanSums[i].resize(nn->_layers[i]->_nodeCount);
-     varianceSums[i].resize(nn->_layers[i]->_nodeCount);
+      meanSums[i].resize(nn->_layers[i]->_nodeCount);
+      varianceSums[i].resize(nn->_layers[i]->_nodeCount);
 
-     for (size_t j = 0; j < nn->_layers[i]->_nodeCount; j++) meanSums[i][j] = 0.0;
-     for (size_t j = 0; j < nn->_layers[i]->_nodeCount; j++) varianceSums[i][j] = 0.0;
+      for (size_t j = 0; j < nn->_layers[i]->_nodeCount; j++) meanSums[i][j] = 0.0;
+      for (size_t j = 0; j < nn->_layers[i]->_nodeCount; j++) varianceSums[i][j] = 0.0;
     }
 
     std::vector<std::vector<double>> miniBatch(_miniBatchSize);
-    for (size_t i = 0; i < _miniBatchSize; i++)  miniBatch[i].resize(_problem->_stateVectorSize + _problem->_actionVectorSize);
+    for (size_t i = 0; i < _miniBatchSize; i++) miniBatch[i].resize(_problem->_stateVectorSize + _problem->_actionVectorSize);
 
     // Shuffling indexes to choose the mini batch from
     std::random_shuffle(_stateHistoryIndexes.begin(), _stateHistoryIndexes.end());
@@ -229,11 +228,11 @@ void DQN::updatePolicy()
     {
       for (size_t i = 0; i < _miniBatchSize; i++)
       {
-       // Selecting a uniformly random selected, yet not repeated experience
-       size_t expId = _stateHistoryIndexes[i];
+        // Selecting a uniformly random selected, yet not repeated experience
+        size_t expId = _stateHistoryIndexes[i];
 
-       for (size_t j = 0; j < _problem->_stateVectorSize; j++) miniBatch[i][j] = _stateHistory[expId][j];
-       for (size_t j = 0; j < _problem->_actionVectorSize; j++) miniBatch[i][_problem->_stateVectorSize + j] = _actionHistory[expId][j];
+        for (size_t j = 0; j < _problem->_stateVectorSize; j++) miniBatch[i][j] = _stateHistory[expId][j];
+        for (size_t j = 0; j < _problem->_actionVectorSize; j++) miniBatch[i][_problem->_stateVectorSize + j] = _actionHistory[expId][j];
       }
 
       nn->setInput(miniBatch);
@@ -241,15 +240,15 @@ void DQN::updatePolicy()
 
       for (size_t i = 1; i < nn->_layers.size(); i++)
       {
-       for (size_t j = 0; j < nn->_layers[i]->_nodeCount; j++) meanSums[i][j] += nn->_layers[i]->_batchNormalizationMeans[j];
-       for (size_t j = 0; j < nn->_layers[i]->_nodeCount; j++) varianceSums[i][j] += nn->_layers[i]->_batchNormalizationVariances[j];
+        for (size_t j = 0; j < nn->_layers[i]->_nodeCount; j++) meanSums[i][j] += nn->_layers[i]->_batchNormalizationMeans[j];
+        for (size_t j = 0; j < nn->_layers[i]->_nodeCount; j++) varianceSums[i][j] += nn->_layers[i]->_batchNormalizationVariances[j];
       }
     }
 
     for (size_t i = 1; i < _neuralNetwork->_layers.size(); i++)
     {
-     for (size_t j = 0; j < _neuralNetwork->_layers[i]->_nodeCount; j++) nn->_layers[i]->_batchNormalizationMeans[j] = meanSums[i][j] / _batchNormalizationCorrectionSteps;
-     for (size_t j = 0; j < _neuralNetwork->_layers[i]->_nodeCount; j++) nn->_layers[i]->_batchNormalizationVariances[j] = varianceSums[i][j] / (_batchNormalizationCorrectionSteps-1.0);
+      for (size_t j = 0; j < _neuralNetwork->_layers[i]->_nodeCount; j++) nn->_layers[i]->_batchNormalizationMeans[j] = meanSums[i][j] / _batchNormalizationCorrectionSteps;
+      for (size_t j = 0; j < _neuralNetwork->_layers[i]->_nodeCount; j++) nn->_layers[i]->_batchNormalizationVariances[j] = varianceSums[i][j] / (_batchNormalizationCorrectionSteps - 1.0);
     }
   }
 
@@ -287,30 +286,30 @@ void DQN::getAction(Sample &sample)
   // If no states have been registered yet, use the random option in any case
   if (p < epsilon)
   {
-   for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-   {
-    size_t varIdx = _problem->_actionVectorIndexes[i];
-    double x = _uniformGenerator->getRandomNumber();
-
-    // If discrete value vector was not provided, use lower and upper bounds
-    if (_k->_variables[varIdx]->_values.size() == 0)
+    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
     {
-     double lowerBound = _k->_variables[varIdx]->_lowerBound;
-     double upperBound = _k->_variables[varIdx]->_upperBound;
-     sample["Action"][i] = lowerBound + x*(upperBound - lowerBound);
-    }
-    else
-    {
-     // Randomly select one of the actions provided in the value vector
-     size_t valIdx = floor(x * _k->_variables[varIdx]->_values.size());
-     sample["Action"][i] = _k->_variables[varIdx]->_values[valIdx];
-    }
-   }
+      size_t varIdx = _problem->_actionVectorIndexes[i];
+      double x = _uniformGenerator->getRandomNumber();
 
-   return;
+      // If discrete value vector was not provided, use lower and upper bounds
+      if (_k->_variables[varIdx]->_values.size() == 0)
+      {
+        double lowerBound = _k->_variables[varIdx]->_lowerBound;
+        double upperBound = _k->_variables[varIdx]->_upperBound;
+        sample["Action"][i] = lowerBound + x * (upperBound - lowerBound);
+      }
+      else
+      {
+        // Randomly select one of the actions provided in the value vector
+        size_t valIdx = floor(x * _k->_variables[varIdx]->_values.size());
+        sample["Action"][i] = _k->_variables[varIdx]->_values[valIdx];
+      }
+    }
+
+    return;
   }
 
- // Getting learner's pointer
+  // Getting learner's pointer
   auto learner = dynamic_cast<solver::Learner *>(_qInferenceExperiment._solver);
 
   // Updating learner with the latest hyperparameters
@@ -339,9 +338,9 @@ void DQN::evaluateAction(Sample &sample, bool getGradients)
   std::vector<std::vector<double>> inputBatch(1);
 
   // Putting together state and action
-  inputBatch[0].resize( _currentState.size() + action.size() );
+  inputBatch[0].resize(_currentState.size() + action.size());
   size_t pos = 0;
-  for (size_t i = 0; i < _currentState.size(); i++) inputBatch[0][pos++]  = _currentState[i];
+  for (size_t i = 0; i < _currentState.size(); i++) inputBatch[0][pos++] = _currentState[i];
   for (size_t i = 0; i < action.size(); i++) inputBatch[0][pos++] = action[i];
 
   auto evaluation = learner->getEvaluation(inputBatch);
@@ -354,36 +353,35 @@ void DQN::evaluateAction(Sample &sample, bool getGradients)
     size_t startIdx = _currentState.size();
     sample["Gradient"][i] = gradients[0][startIdx + i];
   }
-
 }
 
 void DQN::printGenerationAfter()
 {
- // Printing common experience information
- Agent::printGenerationAfter();
+  // Printing common experience information
+  Agent::printGenerationAfter();
 
- _k->_logger->logInfo("Normal", "DQN Statistics:\n");
- _k->_logger->logInfo("Normal", " + Experience Memory Size:          %lu/%lu\n", _stateHistory.size(), _replayMemoryMaximumSize);
- _k->_logger->logInfo("Normal", " + Epsilon:                         %f\n", _epsilonCurrentValue);
+  _k->_logger->logInfo("Normal", "DQN Statistics:\n");
+  _k->_logger->logInfo("Normal", " + Experience Memory Size:          %lu/%lu\n", _stateHistory.size(), _replayMemoryMaximumSize);
+  _k->_logger->logInfo("Normal", " + Epsilon:                         %f\n", _epsilonCurrentValue);
 
- _k->_logger->logInfo("Normal", "Optimization Statistics:\n");
- if (_maxOptimizationSteps > 0)
- _k->_logger->logInfo("Normal", " + Optimization Step Count:         %lu/%lu\n", _optimizationStepCount, _maxOptimizationSteps);
- else
- _k->_logger->logInfo("Normal", " + Optimization Step Count:         %lu\n", _optimizationStepCount);
+  _k->_logger->logInfo("Normal", "Optimization Statistics:\n");
+  if (_maxOptimizationSteps > 0)
+    _k->_logger->logInfo("Normal", " + Optimization Step Count:         %lu/%lu\n", _optimizationStepCount, _maxOptimizationSteps);
+  else
+    _k->_logger->logInfo("Normal", " + Optimization Step Count:         %lu\n", _optimizationStepCount);
 
- _k->_logger->logInfo("Normal", " + Cumulative Expected Q-Value:     %f\n", _cumulativeQStar);
- _k->_logger->logInfo("Normal", " + Average Expected Q-Value:        %f\n", _averageQStar);
+  _k->_logger->logInfo("Normal", " + Cumulative Expected Q-Value:     %f\n", _cumulativeQStar);
+  _k->_logger->logInfo("Normal", " + Average Expected Q-Value:        %f\n", _averageQStar);
 
- _k->_logger->logInfo("Normal", "Learner Information:\n");
- _qTrainingExperiment._logger->_verbosityLevel = _k->_logger->_verbosityLevel;
- _qTrainingExperiment._solver->printGenerationAfter();
- _qTrainingExperiment._logger->setVerbosityLevel("Silent");
+  _k->_logger->logInfo("Normal", "Learner Information:\n");
+  _qTrainingExperiment._logger->_verbosityLevel = _k->_logger->_verbosityLevel;
+  _qTrainingExperiment._solver->printGenerationAfter();
+  _qTrainingExperiment._logger->setVerbosityLevel("Silent");
 }
 
-std::vector<double> DQN::getAction(const std::vector<double>& state)
+std::vector<double> DQN::getAction(const std::vector<double> &state)
 {
- // Getting learner's pointer
+  // Getting learner's pointer
   auto learner = dynamic_cast<solver::Learner *>(_qInferenceExperiment._solver);
 
   // Updating learner with the latest hyperparameters

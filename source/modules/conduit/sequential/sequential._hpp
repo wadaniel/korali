@@ -12,7 +12,6 @@ class Sequential : public Conduit
 {
   private:
   public:
-
   /**
   * @brief Initializes the conduit's configuration, only once per process.
   */

@@ -5,6 +5,8 @@
 #include "modules/solver/agent/agent.hpp"
 #include "modules/solver/learner/deepGD/deepGD.hpp"
 #include "modules/solver/learner/learner.hpp"
+#include <algorithm> // std::shuffle
+#include <random>
 
 namespace korali
 {
@@ -19,6 +21,16 @@ class DQN : public Agent
  * @brief Korali engine for running internal experiments
  */
   korali::Engine _engine;
+
+  /**
+   * @brief Random device for the generation of shuffling numbers
+   */
+  std::random_device rd;
+
+  /**
+  * @brief Mersenne twister for the generation of shuffling numbers
+  */
+  std::mt19937 *mt;
 
   /**
    * @brief Pointer to training experiment's problem

@@ -1,6 +1,5 @@
 #include "modules/conduit/conduit.hpp"
 #include "modules/solver/agent/DQN/DQN.hpp"
-#include <algorithm> // std::random_shuffle
 
 /****************************************
  * Things to fix:
@@ -114,6 +113,10 @@ void DQN::initialize()
 
   // Assigning training hyperparameters to inference learner
   _qInferenceLearner->setHyperparameters(_hyperparameters);
+
+  // Initializing random seed for the shuffle operation
+  mt = new std::mt19937(rd());
+  mt->seed(_k->_randomSeed++);
 }
 
 void DQN::updatePolicy()
@@ -135,7 +138,7 @@ void DQN::updatePolicy()
     std::vector<double> qValue(_miniBatchSize);
 
     // Shuffling indexes to choose the mini batch from
-    std::random_shuffle(_stateHistoryIndexes.begin(), _stateHistoryIndexes.end());
+    std::shuffle(_stateHistoryIndexes.begin(), _stateHistoryIndexes.end(), *mt);
 
     for (size_t i = 0; i < _miniBatchSize; i++)
     {
@@ -222,7 +225,7 @@ void DQN::updatePolicy()
     for (size_t i = 0; i < _miniBatchSize; i++) miniBatch[i].resize(_problem->_stateVectorSize + _problem->_actionVectorSize);
 
     // Shuffling indexes to choose the mini batch from
-    std::random_shuffle(_stateHistoryIndexes.begin(), _stateHistoryIndexes.end());
+    std::shuffle(_stateHistoryIndexes.begin(), _stateHistoryIndexes.end(), *mt);
 
     for (size_t step = 0; step < _batchNormalizationCorrectionSteps; step++)
     {

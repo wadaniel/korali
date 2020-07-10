@@ -1,0 +1,106 @@
+#ifndef _KORALI_AGENT_DDPG_HPP_
+#define _KORALI_AGENT_DDPG_HPP_
+
+#include "modules/problem/supervisedLearning/supervisedLearning.hpp"
+#include "modules/solver/agent/agent.hpp"
+#include "modules/solver/learner/deepGD/deepGD.hpp"
+#include "modules/solver/learner/learner.hpp"
+#include "modules/distribution/univariate/normal/normal.hpp"
+#include <algorithm> // std::shuffle
+#include <random>
+
+namespace korali
+{
+namespace solver
+{
+namespace agent
+{
+class DDPG : public Agent
+{
+  public:
+  /**
+ * @brief Korali engine for running internal experiments
+ */
+  korali::Engine _engine;
+
+  /**
+   * @brief Random device for the generation of shuffling numbers
+   */
+  std::random_device rd;
+
+  /**
+  * @brief Mersenne twister for the generation of shuffling numbers
+  */
+  std::mt19937 *mt;
+
+  /////// Setting Critic experiments
+
+  /**
+  * @brief Pointer to training the critic network
+  */
+  learner::DeepGD *_criticTrainingLearner;
+
+  /**
+  * @brief Pointer to critic's experiment problem
+  */
+  problem::SupervisedLearning *_criticTrainingProblem;
+
+  /**
+   * @brief Pointer to critic's Q inference
+   */
+  learner::DeepGD *_criticInferenceLearner;
+
+  /**
+ * @brief Korali experiment for the estimation of the critic network
+ */
+  korali::Experiment _criticInferenceExperiment;
+
+  /**
+   * @brief Korali experiment for the training of the critic network
+   */
+  korali::Experiment _criticTrainingExperiment;
+
+  /////// Setting Actor experiments
+
+  /**
+  * @brief Pointer to training the actor network
+  */
+  learner::DeepGD *_actorTrainingLearner;
+
+  /**
+  * @brief Pointer to actor's experiment problem
+  */
+  problem::SupervisedLearning *_actorTrainingProblem;
+
+  /**
+   * @brief Pointer to actor's Q inference
+   */
+  learner::DeepGD *_actorInferenceLearner;
+
+  /**
+ * @brief Korali experiment for the estimation of the actor network
+ */
+  korali::Experiment _actorInferenceExperiment;
+
+  /**
+   * @brief Korali experiment for the training of the actor network
+   */
+  korali::Experiment _actorTrainingExperiment;
+
+  /**
+ * @brief Vector of the current state to use for action optimization
+ */
+  std::vector<double> _currentState;
+
+  void updatePolicy() override;
+  std::vector<double> getAction(const std::vector<double> &state) override;
+  void getAction(Sample &sample) override;
+  void printGenerationAfter() override;
+  void initialize() override;
+};
+
+} // namespace agent
+} // namespace solver
+} // namespace korali
+
+#endif // _KORALI_AGENT_DDPG_HPP_

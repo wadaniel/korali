@@ -66,15 +66,15 @@ e["Variables"][4]["Values"] = [ 0.0, 1.0 ]
 ### Configuring DQN hyperparameters
 
 e["Solver"]["Type"] = "Agent/DQN"
-e["Solver"]["Episodes Per Generation"] = 16
 
-### Defining Mini-batch and Q-Training configuration 
-
+### Defining Mini-batch and Q-Training configuration
+ 
+e["Solver"]["Episodes Per Generation"] = 10
+e["Solver"]["Optimization Steps Per Generation"] = 10
 e["Solver"]["Agent History Size"] = 1000
 e["Solver"]["Mini Batch Size"] = 32
-e["Solver"]["Batch Normalization"]["Enabled"] = False
+e["Solver"]["Batch Normalization"]["Enabled"] = True
 e["Solver"]["Batch Normalization"]["Correction Steps"] = 64
-e["Solver"]["Optimization Steps Per Update"] = 10
 e["Solver"]["Discount Factor"] = 0.99
 
 ### Defining the configuration of replay memory

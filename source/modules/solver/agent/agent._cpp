@@ -8,29 +8,15 @@ void Agent::initialize()
 {
   // Getting problem pointer
   _problem = dynamic_cast<problem::ReinforcementLearning *>(_k->_problem);
-
-  // Checking inputs
-  for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-  {
-    size_t varIdx = _problem->_actionVectorIndexes[i];
-
-    // If value vector has not been provided, check for bound correctness.
-    if (_k->_variables[varIdx]->_values.size() == 0)
-    {
-      if (std::isfinite(_k->_variables[varIdx]->_lowerBound) == false)
-        KORALI_LOG_ERROR("Lower bound for action variable %lu must be finite, but is %f instead.\n", i, _k->_variables[varIdx]->_lowerBound);
-
-      if (std::isfinite(_k->_variables[varIdx]->_upperBound) == false)
-        KORALI_LOG_ERROR("Upper bound for action variable %lu must be finite, but is %f instead.\n", i, _k->_variables[varIdx]->_upperBound);
-
-      if (_k->_variables[varIdx]->_lowerBound >= _k->_variables[varIdx]->_upperBound)
-        KORALI_LOG_ERROR("Lower Bound (%f) for action variable %lu must be strictly smaller than its upper bound (%f).\n", _k->_variables[varIdx]->_lowerBound, i, _k->_variables[varIdx]->_upperBound);
-    }
-  }
 }
 
 void Agent::runGeneration()
 {
+ // Broadcasting hyperparameters for all workers to use
+  knlohmann::json globals;
+  globals["Hyperparameters"] = _hyperparameters;
+  _conduit->broadcastGlobals(globals);
+
   // Creating storage for agents
   std::vector<Sample> agents(_episodesPerGeneration);
   _currentEpisode += _episodesPerGeneration;

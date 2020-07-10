@@ -108,6 +108,7 @@ void DQN::initialize()
 
     // Get the initial set of hyperparameters
     _hyperparameters = _qTrainingLearner->getHyperparameters();
+    _hyperparameters["Epsilon"] = _epsilonCurrentValue;
     _bestHyperparameters = _hyperparameters;
   }
 
@@ -132,7 +133,7 @@ void DQN::updatePolicy()
   // Calculating cumulative Q*, for statistical purposes
   _cumulativeQStar = 0.0;
 
-  for (size_t step = 0; step < _optimizationStepsPerUpdate; step++)
+  for (size_t step = 0; step < _optimizationStepsPerGeneration; step++)
   {
     // Calculating target Q value (solution) for Qnew on selected batch
     std::vector<double> qValue(_miniBatchSize);
@@ -198,7 +199,7 @@ void DQN::updatePolicy()
   }
 
   // Keeping statistics
-  _averageQStar = (double)_cumulativeQStar / (double)(_optimizationStepsPerUpdate * _miniBatchSize);
+  _averageQStar = (double)_cumulativeQStar / (double)(_optimizationStepsPerGeneration * _miniBatchSize);
 
   /****************************************************************************
   * If batch normalization is being used, we need to adjust mean and variances
@@ -256,24 +257,17 @@ void DQN::updatePolicy()
   }
 
   /*********************************************************************
-  * Updating hyperparameters and broadcasting them to the workers
+  * Updating hyperparameters
   *********************************************************************/
 
   // Decreasing the value of epsilon
   _epsilonCurrentValue = _epsilonCurrentValue - _epsilonDecreaseRate;
   if (_epsilonCurrentValue < _epsilonTargetValue) _epsilonCurrentValue = _epsilonTargetValue;
 
-  // Updating global configuration for workers to use
-  knlohmann::json globals;
-
   // Getting q training hyperparameters to broadcast to workers
   _hyperparameters = _qTrainingLearner->getHyperparameters();
   _qInferenceLearner->setHyperparameters(_hyperparameters);
-
-  // Broadcasting updated globals for all workers to have
-  globals["Hyperparameters"] = _hyperparameters;
-  globals["Epsilon"] = _epsilonCurrentValue;
-  _conduit->broadcastGlobals(globals);
+  _hyperparameters["Epsilon"] = _epsilonCurrentValue;
 }
 
 void DQN::getAction(Sample &sample)
@@ -283,7 +277,7 @@ void DQN::getAction(Sample &sample)
 
   // Getting the value of epsilon. If we haven't reached the start the minimum history, always use epsilon = 1.0, that is random decisions.
   double epsilon = 1.0;
-  if (isDefined(sample.globals(), "Epsilon")) epsilon = sample.globals()["Epsilon"].get<double>();
+  if (isDefined(sample.globals(), "Hyperparameters", "Epsilon")) epsilon = sample.globals()["Hyperparameters"]["Epsilon"].get<double>();
 
   // If p < e, then we choose the action randomly, with a uniform probability, among all possible actions.
   // If no states have been registered yet, use the random option in any case

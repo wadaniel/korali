@@ -395,7 +395,7 @@ void Nested::generateCandidatesFromMultiEllipse()
     double cumVol = 0.0;
     double rnd_ellipse = _uniformGenerator->getRandomNumber() * totalVol;
 
-    ellipse_t *ellipse_ptr;
+    ellipse_t *ellipse_ptr = NULL;
     for (auto &ellipse : _ellipseVector)
     {
       cumVol += ellipse.volume;
@@ -405,6 +405,9 @@ void Nested::generateCandidatesFromMultiEllipse()
         break;
       }
     }
+
+    if (ellipse_ptr == NULL)
+     KORALI_LOG_ERROR("Failed to assign ellipse vector.");
 
     bool accept = false;
     while (accept == false)

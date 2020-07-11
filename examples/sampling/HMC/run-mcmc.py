@@ -3,7 +3,7 @@
 # In this example, we demonstrate how Korali samples the posterior
 # distribution in a bayesian problem where the likelihood
 # is provided directly by the computational model.
-# In this case, we use the HMC method.
+# In this case, we use the MCMC method.
 
 # Importing computational model
 import sys
@@ -18,42 +18,21 @@ e = korali.Experiment()
 e["Problem"]["Type"] = "Sampling"
 e["Problem"]["Probability Function"] = model_0
 
-# Configuring the HMC sampler parameters
-e["Solver"]["Type"] = "Sampler/HMC"
-
+# Configuring the MCMC sampler parameters
+e["Solver"]["Type"] = "Sampler/MCMC"
 e["Solver"]["Burn In"] = 10000
-e["Solver"]["Termination Criteria"]["Max Samples"] = 100000
-e["Console Output"]["Frequency"] = 500
-
-# e["Solver"]["Burn In"] = 0
-# e["Solver"]["Termination Criteria"]["Max Samples"] = 30
-# e["Console Output"]["Frequency"] = 1
-
-e["Solver"]["Num Integration Steps"] = 20
-e["Solver"]["Step Size"] = 0.05
-e["Solver"]["Use Euclidean Metric"] = 0
-e["Solver"]["Adaptive Time Stepping"] = 0
-e["Solver"]["Target Integration Time"] = 5.0
-e["Solver"]["Use NUTS"] = 1
+e["Solver"]["Termination Criteria"]["Max Samples"] = 500000
 
 # Defining problem's variables
 e["Variables"][0]["Name"] = "X"
 e["Variables"][0]["Initial Mean"] = 0.0
 e["Variables"][0]["Initial Standard Deviation"] = 1.0
 
-# e["Variables"][1]["Name"] = "Y"
-# e["Variables"][1]["Initial Mean"] = 0.0
-# e["Variables"][1]["Initial Standard Deviation"] = 1.0
-
-# e["Variables"][2]["Name"] = "Z"
-# e["Variables"][2]["Initial Mean"] = 0.0
-# e["Variables"][2]["Initial Standard Deviation"] = 1.0
-
 # Configuring output settings
 e["File Output"]["Frequency"] = 500
+e["Console Output"]["Frequency"] = 500
 e["Console Output"]["Verbosity"] = "Detailed"
 
 # Starting Korali's Engine and running experiment
 k = korali.Engine()
 k.run(e)
-

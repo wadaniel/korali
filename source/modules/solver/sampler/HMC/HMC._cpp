@@ -138,10 +138,10 @@ void HMC::runGeneration()
       {
         buildTree(qPlus, pPlus, u, 1, j, _stepSize, H_0, nullPoint1, nullPoint2, qPlus, pPlus, _positionCandidate, n1, s1, alpha1, nAlpha1);
       }
+      
       if(s1)
       {
         u2 = _uniformGenerator->getRandomNumber();
-
           
         if(n == 0)
         {
@@ -170,8 +170,9 @@ void HMC::runGeneration()
       s = s1 * (s3 > 0) * (s4 > 0);
       ++j;
     }
-    
+
     alpha = alpha1 / nAlpha1;
+    _sum += alpha;
   }
   else if(_useNUTS == false)
   {
@@ -200,15 +201,6 @@ void HMC::runGeneration()
       ++_acceptanceCount;
       _sampleAccepted = true;
       _positionLeader = _positionCandidate;
-    }
-
-    if(_chainLength >= _burnIn)
-    {
-      _sampleDatabase.push_back(_positionLeader);
-    }
-    else if(_useEuclideanMetric == true)
-    {
-      _warmupSampleDatabase.push_back(_positionLeader);
     }
   }
 
@@ -304,7 +296,15 @@ void HMC::generateCandidate()
 void HMC::updateState()
 {
   /////////////////////////////////////////// My Code: START /////////////////////////////////////////////
-  _acceptanceRate = ((double)_acceptanceCount / (double)_chainLength);
+  if(_useNUTS == false)
+  {
+    _acceptanceRate = (double)_acceptanceCount / ((double)(_chainLength));
+  }
+  else if(_useNUTS == true)
+  {
+    _acceptanceRate = (double)_sum / ((double)_chainLength);
+  }
+
   size_t dim = _k->_variables.size();
 
   // case: sample phase
@@ -473,6 +473,12 @@ void HMC::printGenerationAfter()
     _k->_logger->logInfo("Detailed", "Num Integration Steps: %ld\n", _numIntegrationSteps);
     // Dual Step Size
     _k->_logger->logInfo("Detailed", "H Bar: %lf\n", _hBar);
+  }
+
+  if(_useNUTS == true)
+  {
+    // Dual Step Size
+    _k->_logger->logInfo("Detailed", "Sum: %lf\n", _sum);
   }
 }
 
@@ -722,7 +728,8 @@ void HMC::buildTree(const std::vector<double>& q, const std::vector<double>& p, 
       n1    = 1;
     }
 
-    s1      = (-H_prime > -H_0 -deltaMax);
+    // s1 indicates error of simulation -> setting to false signals to stop building tree
+    s1      = (-H_prime > - H_0 - deltaMax);
     alpha1  = std::min(1.0, std::exp(H_0 - H_prime));
     nAlpha1 = 1;
     qPlus   = qMin;
@@ -745,11 +752,23 @@ void HMC::buildTree(const std::vector<double>& q, const std::vector<double>& p, 
       }
       u2 = _uniformGenerator->getRandomNumber();
 
+      // double acceptProbability;
+      // if(n1 + n2 == 0)
+      // {
+      //   acceptProbability = 1.0;
+      // }
+      // else
+      // {
+      //   acceptProbability = n2 / (n1 + n2);
+      // }
       // TODO: Find out how STAN handles this case
       // if(n1 + n2 == 0)
       // {
-      //   KORALI_LOG_ERROR("Division by zero encountered in buildTree (n1 + n2 is %lf).\n", n1 + n2);
+      //   // KORALI_LOG_ERROR("Division by zero encountered in buildTree (n1 + n2 is %lf).\n", n1 + n2);
+      //   std::cout << "n2 / (n1 + n2) = " << n2 / (n1 + n2) << std::endl;
       // }
+
+      // if(u2 < acceptProbability)
       if(u2 < n2 / (n1 + n2))
       {
         q1 = q2;

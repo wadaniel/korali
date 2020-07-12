@@ -28,6 +28,7 @@ void HMC::setInitialConfiguration()
 {
   // TODO: Check exact intervals (i.e. inclusion and exclusion)
   if (_burnIn < 0) KORALI_LOG_ERROR("Burn In must be larger equal 0 (is %zu).\n", _burnIn);
+  if (_metricEstimateQuotient <= 0.0 || _metricEstimateQuotient > 1.0) KORALI_LOG_ERROR("Metric Estimate Quotient must be in interval (0.0, 1.0] (is %lf).\n", _metricEstimateQuotient);
   if (_desiredAverageAcceptanceRate <= 0.0 || _desiredAverageAcceptanceRate > 1.0) KORALI_LOG_ERROR("Desired Average Acceptance Rate must be in interval (0.0, 1.0] (is %lf).\n", _desiredAverageAcceptanceRate);
   if (_targetIntegrationTime < 0.0) KORALI_LOG_ERROR("Target Integration Time must be non-negative (is %lf).\n", _targetIntegrationTime);
   if (_numIntegrationSteps < 1) KORALI_LOG_ERROR("Num Integration Steps must be larger equal 1 (is %zu).\n", _numIntegrationSteps);
@@ -318,7 +319,7 @@ void HMC::updateState()
 
     // case: Use Adaptive Sampling = True
     //       Approximate Inverse Matrix via Fisher Information
-    if(_useEuclideanMetric == true && (int)(0.7 * _burnIn) == _chainLength)
+    if(_useEuclideanMetric == true && (int)(_metricEstimateQuotient * _burnIn) == _chainLength)
     {
       double sum;
       size_t numWarmupSamples = _warmupSampleDatabase.size();

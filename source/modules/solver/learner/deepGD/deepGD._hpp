@@ -52,21 +52,13 @@ class DeepGD : public Learner
   bool _isEvaluationNNBackwardInitialized;
 
   /**
-  * @brief Stores the parameters of a sample into the weights and biases storage of the NN
-  * @param nn The neural network to update
-  * @param params Parameter vector containing the weights and biases
-  * @return The number of variables read
-  */
-  size_t storeWeightsBiasAndNormalization(NeuralNetwork *nn, const std::vector<double> params);
-
-  /**
   * @brief Model function to evaluate a given NN weight/bias configuration
   * @param sample The sample containing proposal NN weight/bias configuration.
   * @param nn The neural network to update
   * @param solution Solution values from which to calculate loss and differentials
   * @param getGradients Flag that indicates whether the gradients are required
   */
-  void evaluateWeightsAndBiases(korali::Sample &sample, NeuralNetwork *nn, const std::vector<std::vector<double>> &solution, bool getGradients = false);
+  void evaluateHyperparameters(korali::Sample &sample, NeuralNetwork *nn, const std::vector<std::vector<double>> &solution, bool getGradients = false);
 
   std::vector<std::vector<double>> getGradients(const std::vector<std::vector<double>> &outputDiffs) override;
   std::vector<std::vector<double>> getEvaluation(const std::vector<std::vector<double>> &inputBatch) override;

@@ -24,6 +24,11 @@ class DDPG : public Agent
   korali::Engine _engine;
 
   /**
+   * @brief The number of hyperparamters to the NN
+   */
+  size_t _hyperparameterCount;
+
+  /**
    * @brief Random device for the generation of shuffling numbers
    */
   std::random_device rd;

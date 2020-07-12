@@ -38,6 +38,11 @@ class NeuralNetwork : public Module
    */
   bool _isInitialized;
 
+  /**
+   * @brief Number of NN hyperparameters (weights/bias/normalization shift/scale)
+   */
+  size_t _hyperparameterCount;
+
 #endif
 
   void initialize() override;
@@ -62,7 +67,7 @@ class NeuralNetwork : public Module
   /**
    * @brief Updates the values of weights, biases, and normalization scale/shift configuration to the NN
    */
-  void updateWeightsBiasAndNormalization();
+  void applyHyperparameters();
 
   /**
    * @brief Forward-propagates the input batch data through the network.
@@ -70,10 +75,18 @@ class NeuralNetwork : public Module
   void forward();
 
   /**
-   * @brief Backward-propagates to find out the gradients of the weights and biases.
-   * @param outputDifferential The differential of the output wrt the solution
+  * @brief Runs the backward propagation procedure and returns the gradients of the hyperparameters (weights,bias/normalization) with respect to the output
+  * @param outputDiffs Output differentials
+  * @return The calculated gradients
   */
-  void backwardWeightsAndBias(std::vector<float> &outputDifferential);
+  std::vector<double> getHyperparameterGradients(const std::vector<double> &outputDifferential);
+
+  /**
+  * @brief Stores the parameters of a sample into the weights and biases storage of the NN
+  * @param params Parameter vector containing the weights and biases
+  * @return The number of variables read
+  */
+  void storeHyperparameters(const std::vector<double> params);
 
   /**
    * @brief Backward-propagates to find out the gradients of the input data.

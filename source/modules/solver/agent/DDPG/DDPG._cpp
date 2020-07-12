@@ -141,12 +141,6 @@ void DDPG::updatePolicy()
 
   for (size_t step = 0; step < _optimizationStepsPerGeneration; step++)
   {
-    // Calculating target Q value (solution) for Qnew on selected batch
-    std::vector<double> qValue(_miniBatchSize);
-
-    // Calculating target gradient of J for the actor NN, that is: dJ = da/dw * dq/da
-    std::vector<double> gradientJ(_miniBatchSize);
-
     // Shuffling indexes to choose the mini batch from
     std::shuffle(_stateHistoryIndexes.begin(), _stateHistoryIndexes.end(), *mt);
 
@@ -159,7 +153,8 @@ void DDPG::updatePolicy()
       // Q* = r + y*Qnew -- If not terminal state
       // Q* = r -- If terminal state
 
-      qValue[i] = _rewardHistory[expId];
+      // Q Value is the expectation of the reward, with regards to the Bellman Equation
+      double qValue = _rewardHistory[expId];
 
       // If state is not terminal (next state is filled) then add Qnew to the Q value.
       if (_nextStateHistory[expId].size() > 0)
@@ -174,8 +169,8 @@ void DDPG::updatePolicy()
         std::vector<std::vector<double>> inputBatch(1);
         inputBatch[0].resize(_currentState.size() + action.size());
         size_t pos = 0;
-        for (size_t i = 0; i < _currentState.size(); i++) inputBatch[0][pos++] = _currentState[i];
-        for (size_t i = 0; i < action.size(); i++) inputBatch[0][pos++] = action[i];
+        for (size_t j = 0; j < _currentState.size(); j++) inputBatch[0][pos++] = _currentState[j];
+        for (size_t j = 0; j < action.size(); j++) inputBatch[0][pos++] = action[j];
 
         // Forward propagating state/action through the critic inference NN
         auto evaluation = _criticInferenceLearner->getEvaluation(inputBatch);
@@ -184,29 +179,35 @@ void DDPG::updatePolicy()
         auto qNew = evaluation[0][0];
 
         // We add the expected remaining reward based on the optimization
-        qValue[i] += _discountFactor * qNew;
-
-        // Now calculating Gradient of J for the actor NN
-        auto qGradients = _criticInferenceLearner->getGradients(evaluation);
-        printf("qGradients Size: %lu x %lu\n", qGradients.size(), qGradients[0].size());
+        qValue += _discountFactor * qNew;
 
         // Debug only, print new experience values
-//        printf("State: %f %f\n", _stateHistory[expId][0], _stateHistory[expId][1]);
-//        printf("Action: %f\n", _actionHistory[expId][0]);
-//        printf("Reward: %f\n", _rewardHistory[expId]);
-//        printf("New State: %f %f\n", _currentState[0], _currentState[1]);
-//        printf("New Action: %f\n", action[0]);
-//        printf("QNew: %f\n", qNew);
-//        printf("Q* %f\n", qValue[i]);
+        // printf("State: %f %f\n", _stateHistory[expId][0], _stateHistory[expId][1]);
+        // printf("Action: %f\n", _actionHistory[expId][0]);
+        // printf("Reward: %f\n", _rewardHistory[expId]);
+        // printf("New State: %f %f\n", _currentState[0], _currentState[1]);
+        // printf("New Action: %f\n", action[0]);
+        // printf("QNew: %f\n", qNew);
+        // printf("Q* %f\n", qValue);
       }
+
+      // Now calculating Gradient of q with respect to state+action for the critic NN
+      auto qGradients = _criticInferenceLearner->getGradients({{ qValue }});
+
+      // Extracting the action gradients from the full critic gradients
+      std::vector<double> aGradients = std::vector<double>(qGradients[0].begin() + _currentState.size(), qGradients[0].end());
 
       // Updating inputs to critic training learner
       for (size_t j = 0; j < _problem->_stateVectorSize; j++) _criticTrainingProblem->_inputs[i][j] = _stateHistory[expId][j];
       for (size_t j = 0; j < _problem->_actionVectorSize; j++) _criticTrainingProblem->_inputs[i][_problem->_stateVectorSize + j] = _actionHistory[expId][j];
-      _criticTrainingProblem->_outputs[i][0] = qValue[i];
+      _criticTrainingProblem->_outputs[i][0] = qValue;
+
+      // Updating inputs to actor training learner
+      for (size_t j = 0; j < _problem->_stateVectorSize; j++) _actorTrainingProblem->_inputs[i][j] = _stateHistory[expId][j];
+      _actorTrainingProblem->_outputs[i] = aGradients;
 
       // Keeping statistics
-      _cumulativeQStar += qValue[i];
+      _cumulativeQStar += qValue;
     }
 
     // Running one generation of the optimization method with the given mini-batch
@@ -217,8 +218,6 @@ void DDPG::updatePolicy()
     // Increasing optimization step counter
     _optimizationStepCount++;
   }
-
-  exit(0);
 
   // Keeping statistics
   _averageQStar = (double)_cumulativeQStar / (double)(_optimizationStepsPerGeneration * _miniBatchSize);

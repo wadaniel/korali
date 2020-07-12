@@ -25,7 +25,7 @@ def env(s):
   s.update()
   
   # Reading action
-  action = s["Action"] 
+  action = [ s["Action"][0] ] 
     
   # Performing the action
   state, reward, done, info = car.step(action)
@@ -56,6 +56,9 @@ e["Variables"][1]["Type"] = "State"
 
 e["Variables"][2]["Name"] = "Force"
 e["Variables"][2]["Type"] = "Action"
+
+e["Variables"][3]["Name"] = "Dummy"
+e["Variables"][3]["Type"] = "Action"
 
 ### Configuring DQN hyperparameters
 
@@ -104,7 +107,7 @@ e["Solver"]["Critic Neural Network"]["Layers"][2]["Node Count"] = 32
 e["Solver"]["Critic Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Tanh"
 
 e["Solver"]["Critic Neural Network"]["Layers"][3]["Type"] = "Output"
-e["Solver"]["Critic Neural Network"]["Layers"][3]["Node Count"] = 1
+e["Solver"]["Critic Neural Network"]["Layers"][3]["Node Count"] = 2
 e["Solver"]["Critic Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Identity" 
 
 ### Defining the shape of the actor neural network
@@ -122,7 +125,7 @@ e["Solver"]["Actor Neural Network"]["Layers"][2]["Node Count"] = 32
 e["Solver"]["Actor Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Tanh"
 
 e["Solver"]["Actor Neural Network"]["Layers"][3]["Type"] = "Output"
-e["Solver"]["Actor Neural Network"]["Layers"][3]["Node Count"] = 1
+e["Solver"]["Actor Neural Network"]["Layers"][3]["Node Count"] = 2
 e["Solver"]["Actor Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Logistic" 
 
 ### Defining Termination Criteria

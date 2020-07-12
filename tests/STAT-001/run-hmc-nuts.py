@@ -24,13 +24,13 @@ e["Solver"]["Burn In"] = 500
 e["Solver"]["Termination Criteria"]["Max Samples"] = 5000
 
 # HMC specific parameters
-e["Solver"]["Use Adaptive Step Size"] = 0
-e["Solver"]["Use Euclidean Metric"] = 0
-e["Solver"]["Use NUTS"] = 0
+e["Solver"]["Use Adaptive Step Size"] = 1
+e["Solver"]["Use Euclidean Metric"] = 1
+e["Solver"]["Use NUTS"] = 1
 e["Solver"]["Num Integration Steps"] = 20
 e["Solver"]["Step Size"] = 0.1
-e["Solver"]["Target Integration Time"] = 20.0
-e["Solver"]["Desired Average Acceptance Rate"] = 0.98
+e["Solver"]["Target Integration Time"] = 1.0
+e["Solver"]["Desired Average Acceptance Rate"] = 0.8
 
 # Defining problem's variables and their HMC settings
 e["Variables"][0]["Name"] = "X"

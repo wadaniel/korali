@@ -230,8 +230,8 @@ void HMC::runGeneration()
     }
   }
 
-  ++_chainLength;
   updateState();
+  ++_chainLength;
 
   return;
 }
@@ -250,11 +250,11 @@ void HMC::updateState()
 {
   if(_useNUTS == false)
   {
-    _acceptanceRate = (double)_acceptanceCount / ((double)(_chainLength));
+    _acceptanceRate = (double)_acceptanceCount / ((double)(_chainLength + 1));
   }
   else if(_useNUTS == true)
   {
-    _acceptanceRate = (double)_acceptanceCountNUTS / ((double)_chainLength);
+    _acceptanceRate = (double)_acceptanceCountNUTS / ((double)_chainLength + 1);
   }
 
   size_t dim = _k->_variables.size();
@@ -319,7 +319,7 @@ void HMC::updateState()
 
     // case: Use Adaptive Sampling = True
     //       Approximate Inverse Matrix via Fisher Information
-    if(_useEuclideanMetric == true && (int)(_metricEstimateQuotient * _burnIn) == _chainLength)
+    if(_useEuclideanMetric == true && (int)(_metricEstimateQuotient * (double) _burnIn) == _chainLength + 1)
     {
       double sum;
       size_t numWarmupSamples = _warmupSampleDatabase.size();
@@ -427,10 +427,11 @@ void HMC::printGenerationAfter()
     _k->_logger->logInfo("Detailed", "\n");
   }
 
+  // Chain Length + 1 = m in Algorithm
+  _k->_logger->logInfo("Detailed", "Chain Length: %ld\n", _chainLength);
+
   if(_useAdaptiveStepSize == true)
   {
-    // Chain Length + 1 = m in Algorithm
-    _k->_logger->logInfo("Detailed", "Chain Length: %ld\n", _chainLength);
     // Step Size
     _k->_logger->logInfo("Detailed", "Step Size: %lf\n", _stepSize);
     // Dual Step Size

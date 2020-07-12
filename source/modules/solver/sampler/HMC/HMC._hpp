@@ -26,7 +26,7 @@ class HMC : public Sampler
   */
 
   /**
-  * @brief Updates internal state such as mean and covariance of chain.
+  * @brief Updates internal state such as mean, Metric and InverseMetric.
   */
   void updateState();
 

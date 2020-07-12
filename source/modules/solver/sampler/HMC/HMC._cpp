@@ -365,14 +365,17 @@ void HMC::printGenerationBefore()
 {
   if(_useAdaptiveStepSize == true)
   {
-    // Chain Length + 1 = m in Algorithm
-    _k->_logger->logInfo("Detailed", "Chain Length: %ld\n", _chainLength);
     // Step Size
     _k->_logger->logInfo("Detailed", "Step Size: %lf\n", _stepSize);
     // Dual Step Size
     _k->_logger->logInfo("Detailed", "Dual Step Size: %lf\n", _dualStepSize);
-    // Num Integration Steps
-    _k->_logger->logInfo("Detailed", "Num Integration Steps: %ld\n", _numIntegrationSteps);
+    
+    if(_useNUTS == false)
+    {
+      // Num Integration Steps
+      _k->_logger->logInfo("Detailed", "Num Integration Steps: %ld\n", _numIntegrationSteps);
+    }
+
     // Dual Step Size
     _k->_logger->logInfo("Detailed", "H Bar: %lf\n", _hBar);
   }
@@ -386,7 +389,16 @@ void HMC::printGenerationAfter()
   _k->_logger->logInfo("Minimal", "Database Entries %ld\n", _sampleDatabase.size());
 
   // Number of Accepted Samples
-  _k->_logger->logInfo("Normal", "Accepted Samples: %zu\n", _acceptanceCount);
+  if(_useNUTS == false)
+  {
+    _k->_logger->logInfo("Normal", "Accepted Samples: %zu\n", _acceptanceCount);
+  }
+  else if(_useNUTS == true)
+  {
+    // Dual Step Size
+    _k->_logger->logInfo("Detailed", "Accepted Samples Indicator (NUTS): %lf\n", _acceptanceCountNUTS);
+  }
+
   _k->_logger->logInfo("Normal", "Acceptance Rate Proposals: %.2f%%\n", 100 * _acceptanceRate);
 
   // Current Sample
@@ -422,16 +434,15 @@ void HMC::printGenerationAfter()
     _k->_logger->logInfo("Detailed", "Step Size: %lf\n", _stepSize);
     // Dual Step Size
     _k->_logger->logInfo("Detailed", "Dual Step Size: %lf\n", _dualStepSize);
-    // Num Integration Steps
-    _k->_logger->logInfo("Detailed", "Num Integration Steps: %ld\n", _numIntegrationSteps);
+    
+    if(_useNUTS == false)
+    {
+      // Num Integration Steps
+      _k->_logger->logInfo("Detailed", "Num Integration Steps: %ld\n", _numIntegrationSteps);
+    }
+
     // Dual Step Size
     _k->_logger->logInfo("Detailed", "H Bar: %lf\n", _hBar);
-  }
-
-  if(_useNUTS == true)
-  {
-    // Dual Step Size
-    _k->_logger->logInfo("Detailed", "Sum: %lf\n", _acceptanceCountNUTS);
   }
 
   return;

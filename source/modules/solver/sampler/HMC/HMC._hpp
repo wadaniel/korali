@@ -104,7 +104,7 @@ class HMC : public Sampler
   /**
   * @brief Recursive binary tree building algorithm. Used if Use NUTS is set to True.
   */
-  void buildTree(const std::vector<double>& q, const std::vector<double>& p, const double u, const int v, const int j, const double stepSize, const double H_0, std::vector<double>& qMin, std::vector<double>& pMin, std::vector<double>& qPlus, std::vector<double>& pPlus, std::vector<double>& q1, double& n1, bool& s1, double& alpha1, int& nAlpha1);
+  void buildTree(const std::vector<double>& q, const std::vector<double>& p, const double uniSample, const int direction, const int depth, const double stepSize, const double oldH, std::vector<double>& qMin, std::vector<double>& pMin, std::vector<double>& qPlus, std::vector<double>& pPlus, std::vector<double>& qPrime, double& nPrime, bool& buildCriterionPrime, double& alphaPrime, int& nAlphaPrime);
 };
 
 } // namespace sampler

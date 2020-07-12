@@ -102,73 +102,73 @@ void HMC::runGeneration()
   {
     std::vector<double> nullPoint1(dim);
     std::vector<double> nullPoint2(dim);
-    std::vector<double> result(dim, 0.0);
+    std::vector<double> tmpVector(dim, 0.0);
 
     std::vector<double> qMin  = _positionLeader;
     std::vector<double> qPlus = _positionLeader;
     std::vector<double> pMin  = _momentumLeader;
     std::vector<double> pPlus = _momentumLeader;
 
-    double oldH = oldU + oldK;
-    double n    = 1.0;
-    double n1;
-    double u    = _uniformGenerator->getRandomNumber();
-    double u2;
-    double alpha1;
-    int nAlpha1;
+    double oldH       = oldU + oldK;
+    double n          = 1.0;
+    double nPrime;
+    double uniSample  = _uniformGenerator->getRandomNumber();
+    double uDoublePrime;
+    double alphaPrime;
+    int nAlphaPrime;
     
-    bool s = 1;
-    bool s1;
-    double s3, s4;
-    int j = 0;
+    bool buildCriterion = true;
+    bool buildCriterionPrime;
+    double dotProuctMin, dotProuctMax;
+    int depth = 0;
 
-    while(s)
+    while(buildCriterion == true)
     {
-      u2 = _uniformGenerator->getRandomNumber();
-      if(u2 < 0.5)
+      uDoublePrime = _uniformGenerator->getRandomNumber();
+      if(uDoublePrime < 0.5)
       {
-        buildTree(qMin, pMin, u, -1, j, _stepSize, oldH, qMin, pMin, nullPoint1, nullPoint2, _positionCandidate, n1, s1, alpha1, nAlpha1);
+        buildTree(qMin, pMin, uniSample, -1, depth, _stepSize, oldH, qMin, pMin, nullPoint1, nullPoint2, _positionCandidate, nPrime, buildCriterionPrime, alphaPrime, nAlphaPrime);
       }
       else
       {
-        buildTree(qPlus, pPlus, u, 1, j, _stepSize, oldH, nullPoint1, nullPoint2, qPlus, pPlus, _positionCandidate, n1, s1, alpha1, nAlpha1);
+        buildTree(qPlus, pPlus, uniSample, 1, depth, _stepSize, oldH, nullPoint1, nullPoint2, qPlus, pPlus, _positionCandidate, nPrime, buildCriterionPrime, alphaPrime, nAlphaPrime);
       }
       
-      if(s1)
+      if(buildCriterionPrime == true)
       {
-        u2 = _uniformGenerator->getRandomNumber();
+        uDoublePrime = _uniformGenerator->getRandomNumber();
           
         if(n == 0)
         {
           KORALI_LOG_ERROR("Division by zero encountered in NUTS (n is %lf).\n", n);
         }
-        if(u2 < n1 / n)
+        if(uDoublePrime < nPrime / n)
         {
           _positionLeader = _positionCandidate;
           _sampleAccepted = true;
         }
       }
 
-      n = n + n1;
+      n = n + nPrime;
 
       for(size_t i = 0; i < dim; ++i)
       {
-        result[i] = qPlus[i] - qMin[i];
+        tmpVector[i] = qPlus[i] - qMin[i];
       }
 
-      s3 = 0;
-      s4 = 0;
+      dotProuctMin = 0;
+      dotProuctMax = 0;
       for(size_t i = 0; i < dim; ++i)
       {
-        s3 += result[i] * pMin[i];
-        s4 += result[i] * pPlus[i];
+        dotProuctMin += tmpVector[i] * pMin[i];
+        dotProuctMax += tmpVector[i] * pPlus[i];
       }
-      s = s1 * (s3 > 0) * (s4 > 0);
+      buildCriterion = buildCriterionPrime * (dotProuctMin > 0) * (dotProuctMax > 0);
 
-      ++j;
+      ++depth;
     }
 
-    alpha = alpha1 / nAlpha1;
+    alpha = alphaPrime / nAlphaPrime;
     _acceptanceCountNUTS += alpha;
   }
   else if(_useNUTS == false)
@@ -188,11 +188,11 @@ void HMC::runGeneration()
     double newK = K(_momentumCandidate);
     double newU = U(_positionCandidate);
 
-    double u = _uniformGenerator->getRandomNumber();
+    double uniSample = _uniformGenerator->getRandomNumber();
     alpha = std::min(1.0, std::exp(-(newK - oldK + newU - oldU)));
 
     // TODO: Ask why Tobias added constrain (newK + newU) == (newK + newU)
-    if(u <= alpha)
+    if(uniSample <= alpha)
     {
       ++_acceptanceCount;
       _sampleAccepted = true;
@@ -303,7 +303,7 @@ void HMC::updateState()
       {
         _positionMean[d] = _positionLeader[d];
       }
-      
+
       return;
     }
 
@@ -450,24 +450,24 @@ void HMC::finalize()
 double HMC::K(std::vector<double> p)
 {
   const size_t dim    = _k->_variables.size();
-  double result = 0.0;
+  double tmpScalar = 0.0;
   
   for(size_t i = 0; i < dim; ++i)
   {
     for(size_t j = 0; j < dim; ++j)
     {
-      result = result + p[i] * _inverseMetric[i*dim + j] * p[j];
+      tmpScalar = tmpScalar + p[i] * _inverseMetric[i*dim + j] * p[j];
     }
   }
-  result = 0.5 * result;
+  tmpScalar = 0.5 * tmpScalar;
 
-  return result;
+  return tmpScalar;
 }
 
 std::vector<double> HMC::dK(std::vector<double> p)
 {
   const size_t dim = _k->_variables.size();
-  std::vector<double> result(dim, 0.0);
+  std::vector<double> tmpVector(dim, 0.0);
   double sum = 0.0;
 
   for(size_t i = 0; i < dim; ++i)
@@ -477,10 +477,10 @@ std::vector<double> HMC::dK(std::vector<double> p)
     {
       sum = sum + _inverseMetric[i*dim + j] * p[j];
     }
-    result[i] = sum;
+    tmpVector[i] = sum;
   }
 
-  return result;
+  return tmpVector;
 }
 
 double HMC::U(std::vector<double> q)
@@ -655,97 +655,97 @@ double HMC::findReasonableStepSize(std::vector<double> q)
   return stepSize;
 }
 
-void HMC::buildTree(const std::vector<double>& q, const std::vector<double>& p, const double u, const int v, const int j, const double stepSize, const double H_0, std::vector<double>& qMin, std::vector<double>& pMin, std::vector<double>& qPlus, std::vector<double>& pPlus, std::vector<double>& q1, double& n1, bool& s1, double& alpha1, int& nAlpha1)
+void HMC::buildTree(const std::vector<double>& q, const std::vector<double>& p, const double uniSample, const int direction, const int depth, const double stepSize, const double oldH, std::vector<double>& qMin, std::vector<double>& pMin, std::vector<double>& qPlus, std::vector<double>& pPlus, std::vector<double>& qPrime, double& nPrime, bool& buildCriterionPrime, double& alphaPrime, int& nAlphaPrime)
 {
   const size_t dim = _k->_variables.size();
 
-  bool s2;
-  double s3, s4, n2, u2, alpha2, K_prime, U_prime, H_prime;
+  bool sDoublePrime;
+  double dotProuctMin, dotProuctMax, n2, uDoublePrime, alpha2, KPrime, UPrime, HPrime;
   int nAlpha2;
   double deltaMax = 100;
 
   std::vector<double> nullPoint1(dim, 0.0);
   std::vector<double> nullPoint2(dim, 0.0);
-  std::vector<double> q2(dim, 0.0);
-  std::vector<double> result(dim, 0.0);
+  std::vector<double> qDoublePrime(dim, 0.0);
+  std::vector<double> tmpVector(dim, 0.0);
   
   qMin = q;
   pMin = p;
-  if(j == 0)
+  if(depth == 0)
   {
-    leapFrogStep(qMin, pMin, v*stepSize);
-    K_prime = K(pMin);
-    U_prime = U(qMin);
-    H_prime = U_prime + K_prime;
+    leapFrogStep(qMin, pMin, direction*stepSize);
+    KPrime = K(pMin);
+    UPrime = U(qMin);
+    HPrime = UPrime + KPrime;
 
-    n1 = 0;
-    if(u <= std::exp(H_0 - H_prime))
+    nPrime = 0;
+    if(uniSample <= std::exp(oldH - HPrime))
     {
-      n1    = 1;
+      nPrime = 1;
     }
 
-    // s1 indicates error of simulation -> setting to false signals to stop building tree
-    s1      = (-H_prime > - H_0 - deltaMax);
-    alpha1  = std::min(1.0, std::exp(H_0 - H_prime));
-    nAlpha1 = 1;
-    qPlus   = qMin;
-    q1      = qMin;
-    pPlus   = pMin;
+    // buildCriterionPrime indicates error of simulation -> setting to false signals to stop building tree
+    buildCriterionPrime = (- HPrime > - oldH - deltaMax);
+    alphaPrime          = std::min(1.0, std::exp(oldH - HPrime));
+    nAlphaPrime         = 1;
+    qPlus               = qMin;
+    qPrime              = qMin;
+    pPlus               = pMin;
   }
   else
   {
-    buildTree(q, p, u, v, j-1, stepSize, H_0, qMin, pMin, qPlus, pPlus, q1, n1, s1, alpha1, nAlpha1);
+    buildTree(q, p, uniSample, direction, depth-1, stepSize, oldH, qMin, pMin, qPlus, pPlus, qPrime, nPrime, buildCriterionPrime, alphaPrime, nAlphaPrime);
 
-    if(s1 == true)
+    if(buildCriterionPrime == true)
     {
-      if(v == -1)
+      if(direction == -1)
       {
-        buildTree(qMin, pMin, u, v, j-1, stepSize, H_0, qMin, pMin, nullPoint1, nullPoint2, q2, n2, s2, alpha2, nAlpha2);
+        buildTree(qMin, pMin, uniSample, direction, depth-1, stepSize, oldH, qMin, pMin, nullPoint1, nullPoint2, qDoublePrime, n2, sDoublePrime, alpha2, nAlpha2);
       }
       else
       {
-        buildTree(qPlus, pPlus, u, v, j-1, stepSize, H_0, nullPoint1, nullPoint2, qPlus, pPlus, q2, n2, s2, alpha2, nAlpha2);
+        buildTree(qPlus, pPlus, uniSample, direction, depth-1, stepSize, oldH, nullPoint1, nullPoint2, qPlus, pPlus, qDoublePrime, n2, sDoublePrime, alpha2, nAlpha2);
       }
-      u2 = _uniformGenerator->getRandomNumber();
+      uDoublePrime = _uniformGenerator->getRandomNumber();
 
       // double acceptProbability;
-      // if(n1 + n2 == 0)
+      // if(nPrime + n2 == 0)
       // {
       //   acceptProbability = 1.0;
       // }
       // else
       // {
-      //   acceptProbability = n2 / (n1 + n2);
+      //   acceptProbability = n2 / (nPrime + n2);
       // }
       // TODO: Find out how STAN handles this case
-      // if(n1 + n2 == 0)
+      // if(nPrime + n2 == 0)
       // {
-      //   // KORALI_LOG_ERROR("Division by zero encountered in buildTree (n1 + n2 is %lf).\n", n1 + n2);
-      //   std::cout << "n2 / (n1 + n2) = " << n2 / (n1 + n2) << std::endl;
+      //   // KORALI_LOG_ERROR("Division by zero encountered in buildTree (nPrime + n2 is %lf).\n", nPrime + n2);
+      //   std::cout << "n2 / (nPrime + n2) = " << n2 / (nPrime + n2) << std::endl;
       // }
 
-      // if(u2 < acceptProbability)
-      if(u2 < n2 / (n1 + n2))
+      // if(uDoublePrime < acceptProbability)
+      if(uDoublePrime < n2 / (nPrime + n2))
       {
-        q1 = q2;
+        qPrime = qDoublePrime;
       }
-      n1      = n1 + n2;
-      alpha1  = alpha1 + alpha2;
-      nAlpha1 = nAlpha1 + nAlpha2;
+      nPrime      = nPrime + n2;
+      alphaPrime  = alphaPrime + alpha2;
+      nAlphaPrime = nAlphaPrime + nAlpha2;
 
       for(size_t i = 0; i < dim; ++i)
       {
-        result[i] = qPlus[i] - qMin[i];
+        tmpVector[i] = qPlus[i] - qMin[i];
       }
       
-      s3 = 0;
-      s4 = 0;
+      dotProuctMin = 0;
+      dotProuctMax = 0;
       for(size_t i = 0; i < dim; ++i)
       {
-        s3 += result[i] * pMin[i];
-        s4 += result[i] * pPlus[i]; 
+        dotProuctMin += tmpVector[i] * pMin[i];
+        dotProuctMax += tmpVector[i] * pPlus[i]; 
       }
-      s1 = s2 * (s3 > 0) * (s4 > 0);
+      buildCriterionPrime = sDoublePrime * (dotProuctMin > 0) * (dotProuctMax > 0);
     }
   }
 

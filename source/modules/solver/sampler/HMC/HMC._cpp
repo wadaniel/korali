@@ -15,10 +15,7 @@
 
 /*
 TODO LIST:
-*remove redundancy between euclidean and NUTS
-*implement acceptance_rate for NUTS
 *move NUTS certain parts of NUTS to private member variable status
-*calc dU with automatic differentiation
 */
 
 namespace korali
@@ -29,14 +26,15 @@ namespace sampler
 {
 void HMC::setInitialConfiguration()
 {
-  //////////////////////////////////////////// My Code: START /////////////////////////////////////////////    
+  // TODO: Check exact intervals (i.e. inclusion and exclusion)
   if (_burnIn < 0) KORALI_LOG_ERROR("Burn In must be larger equal 0 (is %zu).\n", _burnIn);
+  if (_desiredAverageAcceptanceRate <= 0.0 || _desiredAverageAcceptanceRate > 1.0) KORALI_LOG_ERROR("Desired Average Acceptance Rate must be in interval (0.0, 1.0] (is %lf).\n", _desiredAverageAcceptanceRate);
+  if (_targetIntegrationTime < 0.0) KORALI_LOG_ERROR("Target Integration Time must be non-negative (is %lf).\n", _targetIntegrationTime);
   if (_numIntegrationSteps < 1) KORALI_LOG_ERROR("Num Integration Steps must be larger equal 1 (is %zu).\n", _numIntegrationSteps);
 
   size_t dim = _k->_variables.size();
   
   // Resizing vectors of internal settings to correct dimensions
-  _choleskyDecompositionMetric.resize(dim * dim);
   _positionLeader.resize(dim);
   _positionCandidate.resize(dim);
   _momentumLeader.resize(dim);
@@ -46,43 +44,42 @@ void HMC::setInitialConfiguration()
   _inverseMetric.resize(dim * dim);
 
   // Filling vectors of internal settings to 0.0
-  std::fill(std::begin(_choleskyDecompositionMetric), std::end(_choleskyDecompositionMetric), 0.0);
   std::fill(std::begin(_metric), std::end(_metric), 0.0);
   std::fill(std::begin(_inverseMetric), std::end(_inverseMetric), 0.0);
   
-  // Setting position to inital mean, cholesky decomposition
+  // Setting position to inital mean
   for (size_t i = 0; i < dim; ++i)
   {
     _positionLeader[i]        = _k->_variables[i]->_initialMean;
     _metric[i*dim + i]        = _k->_variables[i]->_initialStandardDeviation * _k->_variables[i]->_initialStandardDeviation;
     _inverseMetric[i*dim + i] = 1.0 / _metric[i*dim + i];
-    _choleskyDecompositionMetric[i*dim + i] = _k->_variables[i]->_initialStandardDeviation;
   }
 
-  // initialize multivariate normal distribution
+  // Initialize multivariate normal distribution
   std::vector<double> zeroMean(dim, 0.0);
   _multivariateGenerator->_meanVector = zeroMean;
   _multivariateGenerator->_sigma      = _metric;
 
-  /* Cholesky Decomp */
+  // Cholesky Decomposition
   gsl_matrix_view sigma = gsl_matrix_view_array(&_multivariateGenerator->_sigma[0], dim, dim);
   gsl_linalg_cholesky_decomp(&sigma.matrix);
 
   _multivariateGenerator->updateDistribution();
 
-  if(_adaptiveTimeStepping == true)
+  if(_useAdaptiveStepSize == true)
   {
     _stepSize = findReasonableStepSize(_positionLeader);
     _mu       = std::log(10.0 * _stepSize);
     _hBar     = 0.0;
   }
 
-  // Init Generation
+  // Initialize Generation
   _acceptanceCount      = 0;
   _proposedSampleCount  = 0;
   _chainLength          = 0;
   _acceptanceRate       = 1.0;
-  //////////////////////////////////////////// My Code: END //////////////////////////////////////////////
+
+  return;
 }
 
 void HMC::runGeneration()
@@ -92,8 +89,6 @@ void HMC::runGeneration()
   const size_t dim      = _k->_variables.size();
   bool _sampleAccepted  = false;
   double alpha;
-
-  /////////////////////////////////////////// My Code: START /////////////////////////////////////////////
 
   // Samples Momentum Candidate from N(0.0, metric)
   generateCandidate();
@@ -113,9 +108,8 @@ void HMC::runGeneration()
     std::vector<double> qPlus = _positionLeader;
     std::vector<double> pMin  = _momentumLeader;
     std::vector<double> pPlus = _momentumLeader;
-    double K_0  = K(pMin);
-    double U_0  = U(qMin);
-    double H_0  = U_0 + K_0;
+
+    double oldH = oldU + oldK;
     double n    = 1.0;
     double n1;
     double u    = _uniformGenerator->getRandomNumber();
@@ -124,7 +118,8 @@ void HMC::runGeneration()
     int nAlpha1;
     
     bool s = 1;
-    bool s1, s3, s4;
+    bool s1;
+    double s3, s4;
     int j = 0;
 
     while(s)
@@ -132,11 +127,11 @@ void HMC::runGeneration()
       u2 = _uniformGenerator->getRandomNumber();
       if(u2 < 0.5)
       {
-        buildTree(qMin, pMin, u, -1, j, _stepSize, H_0, qMin, pMin, nullPoint1, nullPoint2, _positionCandidate, n1, s1, alpha1, nAlpha1);
+        buildTree(qMin, pMin, u, -1, j, _stepSize, oldH, qMin, pMin, nullPoint1, nullPoint2, _positionCandidate, n1, s1, alpha1, nAlpha1);
       }
       else
       {
-        buildTree(qPlus, pPlus, u, 1, j, _stepSize, H_0, nullPoint1, nullPoint2, qPlus, pPlus, _positionCandidate, n1, s1, alpha1, nAlpha1);
+        buildTree(qPlus, pPlus, u, 1, j, _stepSize, oldH, nullPoint1, nullPoint2, qPlus, pPlus, _positionCandidate, n1, s1, alpha1, nAlpha1);
       }
       
       if(s1)
@@ -155,11 +150,12 @@ void HMC::runGeneration()
       }
 
       n = n + n1;
-      
+
       for(size_t i = 0; i < dim; ++i)
       {
         result[i] = qPlus[i] - qMin[i];
       }
+
       s3 = 0;
       s4 = 0;
       for(size_t i = 0; i < dim; ++i)
@@ -168,18 +164,18 @@ void HMC::runGeneration()
         s4 += result[i] * pPlus[i];
       }
       s = s1 * (s3 > 0) * (s4 > 0);
+
       ++j;
     }
 
     alpha = alpha1 / nAlpha1;
-    _sum += alpha;
+    _acceptanceCountNUTS += alpha;
   }
   else if(_useNUTS == false)
   {
-    if(_adaptiveTimeStepping == true && _chainLength <= _burnIn)
+    if(_useAdaptiveStepSize == true && _chainLength <= _burnIn)
     {
-      // TODO: Maybe change to round at 0.5 instead of of always rounding down as it is currently doing
-      _numIntegrationSteps = std::max((size_t) 1, (size_t) (_targetIntegrationTime / _stepSize));
+      _numIntegrationSteps = std::max((size_t) 1, (size_t) std::round(_targetIntegrationTime / _stepSize));
     }
 
     // Perform Num Integration Steps of Leapfrog scheme to Momentum Candidate and Position Candidate
@@ -214,8 +210,8 @@ void HMC::runGeneration()
     _warmupSampleDatabase.push_back(_positionLeader);
   }
 
-  // Update Step Size, Dual Step Size, H Bar for adaptive time stepping
-  if(_adaptiveTimeStepping == true && _chainLength <= _burnIn)
+  // Update Step Size, Dual Step Size, H Bar for Adaptive Step Size option
+  if(_useAdaptiveStepSize == true && _chainLength <= _burnIn)
   {
     if(_chainLength < _burnIn)
     {
@@ -233,76 +229,31 @@ void HMC::runGeneration()
     }
   }
 
-  //////////////////////////////////////////// My Code: END //////////////////////////////////////////////
   ++_chainLength;
   updateState();
-}
 
-// TODO: REMOVE
-void HMC::choleskyDecomp(const std::vector<double> &inC, std::vector<double> &outL) const
-{
-  gsl_matrix *A = gsl_matrix_alloc(_k->_variables.size(), _k->_variables.size());
-
-  for (size_t d = 0; d < _k->_variables.size(); ++d)
-    for (size_t e = 0; e < d; ++e)
-    {
-      gsl_matrix_set(A, d, e, inC[d * _k->_variables.size() + e]);
-      gsl_matrix_set(A, e, d, inC[e * _k->_variables.size() + d]);
-    }
-  for (size_t d = 0; d < _k->_variables.size(); ++d) gsl_matrix_set(A, d, d, inC[d * _k->_variables.size() + d]);
-
-  int err = gsl_linalg_cholesky_decomp1(A);
-
-  if (err == GSL_EDOM)
-  {
-    _k->_logger->logWarning("Normal", "Chain Covariance negative definite (not updating Cholesky Decomposition of Chain Covariance).\n");
-  }
-  else
-  {
-    for (size_t d = 0; d < _k->_variables.size(); ++d)
-      for (size_t e = 0; e < d; ++e)
-      {
-        outL[d * _k->_variables.size() + e] = gsl_matrix_get(A, d, e);
-      }
-    for (size_t d = 0; d < _k->_variables.size(); ++d) outL[d * _k->_variables.size() + d] = gsl_matrix_get(A, d, d);
-  }
-
-  gsl_matrix_free(A);
+  return;
 }
 
 void HMC::generateCandidate()
 {
-  /////////////////////////////////////////// My Code: START /////////////////////////////////////////////
-  _proposedSampleCount++;
-  
+  ++_proposedSampleCount;
   size_t dim = _k->_variables.size();
   // saple momentum p from p ~ N(0.0, metric)
-  
-  // Original implementation according to MCMC
-  // for(size_t d = 0; d < dim; ++d)
-  // {
-  //   _momentumCandidate[d] = 0;
-  //   for(size_t e = 0; e < d+1; ++e)
-  //   {
-  //     _momentumCandidate[d] += _choleskyDecompositionMetric[d*dim + e] * _normalGenerator->getRandomNumber();
-  //   }
-  // }
-  
-  // new implementation according to TMC
   _multivariateGenerator->getRandomVector(&_momentumCandidate[0], dim);
-  //////////////////////////////////////////// My Code: END //////////////////////////////////////////////
+
+  return;
 }
 
 void HMC::updateState()
 {
-  /////////////////////////////////////////// My Code: START /////////////////////////////////////////////
   if(_useNUTS == false)
   {
     _acceptanceRate = (double)_acceptanceCount / ((double)(_chainLength));
   }
   else if(_useNUTS == true)
   {
-    _acceptanceRate = (double)_sum / ((double)_chainLength);
+    _acceptanceRate = (double)_acceptanceCountNUTS / ((double)_chainLength);
   }
 
   size_t dim = _k->_variables.size();
@@ -319,17 +270,18 @@ void HMC::updateState()
     // for one sample simply set average to current value (to avoid dividing by zero)
     if (_sampleDatabase.size() == 1)
     {
-      for (size_t d = 0; d < dim; d++) 
+      for (size_t d = 0; d < dim; ++d) 
       {
         _positionMean[d] = _positionLeader[d];
       }
+
       return;
     }
 
     // calculate chain mean for > 1 sample
     if(_sampleDatabase.size() > 1)
     {
-      for (size_t d = 0; d < dim; d++)
+      for (size_t d = 0; d < dim; ++d)
       {
         _positionMean[d] = (_positionMean[d] * (_sampleDatabase.size() - 1) + _positionLeader[d]) / _sampleDatabase.size();
       }
@@ -347,17 +299,18 @@ void HMC::updateState()
     // for one sample simply set average to current value (to avoid dividing by zero)
     if (_warmupSampleDatabase.size() == 1)
     {
-      for (size_t d = 0; d < dim; d++) 
+      for (size_t d = 0; d < dim; ++d) 
       {
         _positionMean[d] = _positionLeader[d];
       }
+      
       return;
     }
 
     // calculate chain mean for > 1 sample
     if(_warmupSampleDatabase.size() > 1)
     {
-      for (size_t d = 0; d < dim; d++)
+      for (size_t d = 0; d < dim; ++d)
       {
         _positionMean[d] = (_positionMean[d] * (_warmupSampleDatabase.size() - 1) + _positionLeader[d]) / _warmupSampleDatabase.size();
       }
@@ -388,7 +341,6 @@ void HMC::updateState()
       // update Metric to be consisitent with Inverse Metric
       invertMatrix(_inverseMetric, _metric);
 
-      // TODO: CHANGE BACK TO _METRIC
       _multivariateGenerator->_sigma = _metric;
       // /* Cholesky Decomp */
       gsl_matrix_view sigma = gsl_matrix_view_array(&_multivariateGenerator->_sigma[0], dim, dim);
@@ -405,12 +357,13 @@ void HMC::updateState()
 
     }
   }
-  //////////////////////////////////////////// My Code: END //////////////////////////////////////////////
+
+  return;
 }
 
 void HMC::printGenerationBefore() 
 {
-  if(_adaptiveTimeStepping == true)
+  if(_useAdaptiveStepSize == true)
   {
     // Chain Length + 1 = m in Algorithm
     _k->_logger->logInfo("Detailed", "Chain Length: %ld\n", _chainLength);
@@ -438,30 +391,30 @@ void HMC::printGenerationAfter()
 
   // Current Sample
   _k->_logger->logInfo("Detailed", "Current Sample:\n");
-  for (size_t d = 0; d < _k->_variables.size(); d++) _k->_logger->logData("Detailed", "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _positionLeader[d]);
+  for (size_t d = 0; d < _k->_variables.size(); ++d) _k->_logger->logData("Detailed", "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _positionLeader[d]);
 
   // TODO: Give better name
   // Current Sample/Position Mean
   _k->_logger->logInfo("Detailed", "Current Position Mean:\n");
-  for (size_t d = 0; d < _k->_variables.size(); d++) _k->_logger->logData("Detailed", "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _positionMean[d]);
+  for (size_t d = 0; d < _k->_variables.size(); ++d) _k->_logger->logData("Detailed", "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _positionMean[d]);
   _k->_logger->logInfo("Detailed", "Current Metric:\n");
 
   // Metric
-  for (size_t d = 0; d < _k->_variables.size(); d++)
+  for (size_t d = 0; d < _k->_variables.size(); ++d)
   {
-    for (size_t e = 0; e < _k->_variables.size(); e++) _k->_logger->logData("Detailed", "         %+6.3e  ", _metric[d * _k->_variables.size() + e]);
+    for (size_t e = 0; e < _k->_variables.size(); ++e) _k->_logger->logData("Detailed", "         %+6.3e  ", _metric[d * _k->_variables.size() + e]);
     _k->_logger->logInfo("Detailed", "\n");
   }
 
   // Inverse Metric
   _k->_logger->logInfo("Detailed", "Current Inverse Metric:\n");
-  for (size_t d = 0; d < _k->_variables.size(); d++)
+  for (size_t d = 0; d < _k->_variables.size(); ++d)
   {
-    for (size_t e = 0; e < _k->_variables.size(); e++) _k->_logger->logData("Detailed", "         %+6.3e  ", _inverseMetric[d * _k->_variables.size() + e]);
+    for (size_t e = 0; e < _k->_variables.size(); ++e) _k->_logger->logData("Detailed", "         %+6.3e  ", _inverseMetric[d * _k->_variables.size() + e]);
     _k->_logger->logInfo("Detailed", "\n");
   }
 
-  if(_adaptiveTimeStepping == true)
+  if(_useAdaptiveStepSize == true)
   {
     // Chain Length + 1 = m in Algorithm
     _k->_logger->logInfo("Detailed", "Chain Length: %ld\n", _chainLength);
@@ -478,8 +431,10 @@ void HMC::printGenerationAfter()
   if(_useNUTS == true)
   {
     // Dual Step Size
-    _k->_logger->logInfo("Detailed", "Sum: %lf\n", _sum);
+    _k->_logger->logInfo("Detailed", "Sum: %lf\n", _acceptanceCountNUTS);
   }
+
+  return;
 }
 
 void HMC::finalize()
@@ -488,11 +443,10 @@ void HMC::finalize()
   _k->_logger->logInfo("Minimal", "Acceptance Rate: %.2f%%\n", 100 * _acceptanceRate);
   if (_sampleDatabase.size() == _maxSamples) _k->_logger->logInfo("Minimal", "Max Samples Reached.\n");
   (*_k)["Results"]["Sample Database"] = _sampleDatabase;
+
+  return;
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////// My Functions: START ////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 double HMC::K(std::vector<double> p)
 {
   const size_t dim    = _k->_variables.size();
@@ -533,7 +487,7 @@ double HMC::U(std::vector<double> q)
 {
   // get sample
   auto sample = Sample();
-  _modelEvaluationCount++;
+  ++_modelEvaluationCount;
   sample["Parameters"] = q;
   sample["Sample Id"] = _sampleDatabase.size();
   sample["Module"] = "Problem";
@@ -555,7 +509,7 @@ std::vector<double> HMC::dU(std::vector<double> q)
 
   // get sample 
   auto sample = Sample();
-  _modelEvaluationCount++;
+  ++_modelEvaluationCount;
   sample["Parameters"] = q;
   sample["Sample Id"] = _sampleDatabase.size();
   sample["Module"] = "Problem";
@@ -592,6 +546,8 @@ void HMC::leapFrogStep(std::vector<double>& q, std::vector<double>& p, const dou
   {
     p[i] = p[i] - 0.5 * stepSize * dU[i]; 
   }
+
+  return;
 }
 
 // inverts mat via cholesky decomposition and writes inverted Matrix to inverseMat
@@ -617,8 +573,7 @@ void HMC::invertMatrix(std::vector<double>& mat, std::vector<double>& inverseMat
   if (err == GSL_EDOM)
   {
     // error handling for non s.p.d. matrices
-    // TODO: extend error message with recomendation to increase number of samples
-    _k->_logger->logWarning("Normal", "Inverse Metric negative definite (not updating Metric).\n");
+    _k->_logger->logWarning("Normal", "Inverse Metric negative definite (not updating Metric). Try Increasing Burn In.\n");
   }
   else
   {
@@ -640,6 +595,7 @@ void HMC::invertMatrix(std::vector<double>& mat, std::vector<double>& inverseMat
 
   // free up memory of gsl matrix
   gsl_matrix_free(A);
+
   return;
 }
 
@@ -655,13 +611,13 @@ double HMC::findReasonableStepSize(std::vector<double> q)
   
   // Sampling from Normal distribution with metric as covariance matrix
   // WARNING: MY INTERPRETATION
-  _multivariateGenerator->getRandomVector(&p[0], dim);
+  // _multivariateGenerator->getRandomVector(&p[0], dim);
   
   // Sampling from Standard Normal Distributoin (Identity as covariance matrix)
-  // for(size_t i = 0; i < dim; ++i)
-  // {
-  //   p[i] = _normalGenerator->getRandomNumber();
-  // }
+  for(size_t i = 0; i < dim; ++i)
+  {
+    p[i] = _normalGenerator->getRandomNumber();
+  }
 
   oldLogP = -(K(p) + U(q));
 
@@ -792,10 +748,10 @@ void HMC::buildTree(const std::vector<double>& q, const std::vector<double>& p, 
       s1 = s2 * (s3 > 0) * (s4 > 0);
     }
   }
+
+  return;
 }
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////// My Functions: END /////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 } // namespace sampler
 
 } // namespace solver

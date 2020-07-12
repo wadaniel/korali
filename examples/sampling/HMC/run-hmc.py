@@ -21,19 +21,20 @@ e["Problem"]["Probability Function"] = model_0
 # Configuring the HMC sampler parameters
 e["Solver"]["Type"] = "Sampler/HMC"
 
-e["Solver"]["Burn In"] = 10000
-e["Solver"]["Termination Criteria"]["Max Samples"] = 100000
-e["Console Output"]["Frequency"] = 500
+e["Solver"]["Burn In"] = 2000
+e["Solver"]["Termination Criteria"]["Max Samples"] = 500000
+e["Console Output"]["Frequency"] = 1000
 
 # e["Solver"]["Burn In"] = 0
 # e["Solver"]["Termination Criteria"]["Max Samples"] = 30
 # e["Console Output"]["Frequency"] = 1
 
 e["Solver"]["Num Integration Steps"] = 20
-e["Solver"]["Step Size"] = 0.05
-e["Solver"]["Use Euclidean Metric"] = 0
-e["Solver"]["Adaptive Time Stepping"] = 0
-e["Solver"]["Target Integration Time"] = 5.0
+e["Solver"]["Step Size"] = 0.1
+e["Solver"]["Use Euclidean Metric"] = 1
+e["Solver"]["Use Adaptive Step Size"] = 0
+e["Solver"]["Target Integration Time"] = 10.0
+e["Solver"]["Desired Average Acceptance Rate"] = 0.65
 e["Solver"]["Use NUTS"] = 1
 
 # Defining problem's variables

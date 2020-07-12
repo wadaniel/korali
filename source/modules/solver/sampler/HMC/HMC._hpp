@@ -36,11 +36,6 @@ class HMC : public Sampler
   void generateCandidate();
 
   /**
-  * @brief Cholesky decomposition of chain covariance matrix.
-  */
-  void choleskyDecomp(const std::vector<double> &inC, std::vector<double> &outL) const;
-
-  /**
   * @brief Process sample after evaluation.
   */
   void finishSample(size_t sampleId);
@@ -70,21 +65,46 @@ class HMC : public Sampler
   * @brief Console output after generation.
   */
   void printGenerationAfter() override;
-    
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  /////////////////////////////////////////////// My Functions: START ///////////////////////////////////////////////
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  /**
+  * @brief Kinetic energy used for Hamiltonian Dynamics.
+  */
   double K(std::vector<double> p);
+
+  /**
+  * @brief Gradient of kinetic energy used for Hamiltonian Dynamics.
+  */
   std::vector<double> dK(std::vector<double> p);
+
+  /**
+  * @brief Potential energy used for Hamiltonian Dynamics with relation U(x) = -logP(x).
+  */
   double U(std::vector<double> q);
+
+  /**
+  * @brief Gradient of potential energy used for Hamiltonian Dynamics with relation grad(U(x)) = -grad(logP(x)).
+  */
   std::vector<double> dU(std::vector<double> q);
+
+  /**
+  * @brief Leapfrog stepping scheme used for evolving Hamiltonian Dynamics.
+  */
   void leapFrogStep(std::vector<double>& q, std::vector<double>& p, const double stepSize);
+
+  /**
+  * @brief Inverts matrix in first argument. Solution is given in second argument. Used for Euclidean Metric as Metric has to be calculated from InverseMetric.
+  */
   void invertMatrix(std::vector<double>& mat, std::vector<double>& inverseMat);
+  
+  /**
+  * @brief Finds reasonable Step Size. Used if Use Adaptive Time Stepping is set to True.
+  */
   double findReasonableStepSize(std::vector<double> q);
+
+  /**
+  * @brief Recursive binary tree building algorithm. Used if Use NUTS is set to True.
+  */
   void buildTree(const std::vector<double>& q, const std::vector<double>& p, const double u, const int v, const int j, const double stepSize, const double H_0, std::vector<double>& qMin, std::vector<double>& pMin, std::vector<double>& qPlus, std::vector<double>& pPlus, std::vector<double>& q1, double& n1, bool& s1, double& alpha1, int& nAlpha1);
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  //////////////////////////////////////////////// My Functions: END ////////////////////////////////////////////////
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 };
 
 } // namespace sampler

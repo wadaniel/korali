@@ -38,8 +38,8 @@ e["Solver"]["Termination Criteria"]["Max Samples"] = 100000
 e["Solver"]["Num Integration Steps"] = 20
 e["Solver"]["Step Size"] = 0.05
 e["Solver"]["Use Euclidean Metric"] = 1
-e["Solver"]["Adaptive Time Stepping"] = 1
-e["Solver"]["Target Integration Time"] = 0.5
+e["Solver"]["Use Adaptive Step Size"] = 1
+e["Solver"]["Target Integration Time"] = 0.55
 e["Solver"]["Desired Average Acceptance Rate"] = 0.7
 e["Solver"]["Use NUTS"] = 0
 

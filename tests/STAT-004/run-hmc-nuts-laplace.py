@@ -34,7 +34,7 @@ e["Solver"]["Use Euclidean Metric"] = 1
 e["Solver"]["Use Adaptive Step Size"] = 1
 e["Solver"]["Target Integration Time"] = 0.5
 e["Solver"]["Desired Average Acceptance Rate"] = 0.80
-e["Solver"]["Use NUTS"] = 0
+e["Solver"]["Use NUTS"] = 1
 
 e["Console Output"]["Frequency"] = 5000
 e["File Output"]["Frequency"] = 0

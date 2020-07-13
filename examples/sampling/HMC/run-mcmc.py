@@ -21,7 +21,7 @@ e["Problem"]["Probability Function"] = model_0
 # Configuring the MCMC sampler parameters
 e["Solver"]["Type"] = "Sampler/MCMC"
 e["Solver"]["Burn In"] = 10000
-e["Solver"]["Termination Criteria"]["Max Samples"] = 500000
+e["Solver"]["Termination Criteria"]["Max Samples"] = 50000
 
 # Defining problem's variables
 e["Variables"][0]["Name"] = "X"

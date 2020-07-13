@@ -105,10 +105,10 @@ void HMC::runGeneration()
     std::vector<double> nullPoint2(dim);
     std::vector<double> tmpVector(dim, 0.0);
 
-    std::vector<double> qMin  = _positionLeader;
-    std::vector<double> qPlus = _positionLeader;
-    std::vector<double> pMin  = _momentumLeader;
-    std::vector<double> pPlus = _momentumLeader;
+    std::vector<double> qMinus  = _positionLeader;
+    std::vector<double> qPlus   = _positionLeader;
+    std::vector<double> pMinus  = _momentumLeader;
+    std::vector<double> pPlus   = _momentumLeader;
 
     double oldH       = oldU + oldK;
     double n          = 1.0;
@@ -128,7 +128,7 @@ void HMC::runGeneration()
       uDoublePrime = _uniformGenerator->getRandomNumber();
       if(uDoublePrime < 0.5)
       {
-        buildTree(qMin, pMin, uniSample, -1, depth, _stepSize, oldH, qMin, pMin, nullPoint1, nullPoint2, _positionCandidate, nPrime, buildCriterionPrime, alphaPrime, nAlphaPrime);
+        buildTree(qMinus, pMinus, uniSample, -1, depth, _stepSize, oldH, qMinus, pMinus, nullPoint1, nullPoint2, _positionCandidate, nPrime, buildCriterionPrime, alphaPrime, nAlphaPrime);
       }
       else
       {
@@ -154,14 +154,14 @@ void HMC::runGeneration()
 
       for(size_t i = 0; i < dim; ++i)
       {
-        tmpVector[i] = qPlus[i] - qMin[i];
+        tmpVector[i] = qPlus[i] - qMinus[i];
       }
 
       dotProuctMin = 0;
       dotProuctMax = 0;
       for(size_t i = 0; i < dim; ++i)
       {
-        dotProuctMin += tmpVector[i] * pMin[i];
+        dotProuctMin += tmpVector[i] * pMinus[i];
         dotProuctMax += tmpVector[i] * pPlus[i];
       }
       buildCriterion = buildCriterionPrime * (dotProuctMin > 0) * (dotProuctMax > 0);
@@ -668,7 +668,7 @@ double HMC::findReasonableStepSize(std::vector<double> q)
   return stepSize;
 }
 
-void HMC::buildTree(const std::vector<double>& q, const std::vector<double>& p, const double uniSample, const int direction, const int depth, const double stepSize, const double oldH, std::vector<double>& qMin, std::vector<double>& pMin, std::vector<double>& qPlus, std::vector<double>& pPlus, std::vector<double>& qPrime, double& nPrime, bool& buildCriterionPrime, double& alphaPrime, int& nAlphaPrime)
+void HMC::buildTree(const std::vector<double>& q, const std::vector<double>& p, const double uniSample, const int direction, const int depth, const double stepSize, const double oldH, std::vector<double>& qMinus, std::vector<double>& pMinus, std::vector<double>& qPlus, std::vector<double>& pPlus, std::vector<double>& qPrime, double& nPrime, bool& buildCriterionPrime, double& alphaPrime, int& nAlphaPrime)
 {
   const size_t dim = _k->_variables.size();
 
@@ -682,13 +682,13 @@ void HMC::buildTree(const std::vector<double>& q, const std::vector<double>& p, 
   std::vector<double> qDoublePrime(dim, 0.0);
   std::vector<double> tmpVector(dim, 0.0);
   
-  qMin = q;
-  pMin = p;
+  qMinus = q;
+  pMinus = p;
   if(depth == 0)
   {
-    leapFrogStep(qMin, pMin, direction*stepSize);
-    KPrime = K(pMin);
-    UPrime = U(qMin);
+    leapFrogStep(qMinus, pMinus, direction*stepSize);
+    KPrime = K(pMinus);
+    UPrime = U(qMinus);
     HPrime = UPrime + KPrime;
 
     nPrime = 0;
@@ -701,19 +701,19 @@ void HMC::buildTree(const std::vector<double>& q, const std::vector<double>& p, 
     buildCriterionPrime = (- HPrime > - oldH - deltaMax);
     alphaPrime          = std::min(1.0, std::exp(oldH - HPrime));
     nAlphaPrime         = 1;
-    qPlus               = qMin;
-    qPrime              = qMin;
-    pPlus               = pMin;
+    qPlus               = qMinus;
+    qPrime              = qMinus;
+    pPlus               = pMinus;
   }
   else
   {
-    buildTree(q, p, uniSample, direction, depth-1, stepSize, oldH, qMin, pMin, qPlus, pPlus, qPrime, nPrime, buildCriterionPrime, alphaPrime, nAlphaPrime);
+    buildTree(q, p, uniSample, direction, depth-1, stepSize, oldH, qMinus, pMinus, qPlus, pPlus, qPrime, nPrime, buildCriterionPrime, alphaPrime, nAlphaPrime);
 
     if(buildCriterionPrime == true)
     {
       if(direction == -1)
       {
-        buildTree(qMin, pMin, uniSample, direction, depth-1, stepSize, oldH, qMin, pMin, nullPoint1, nullPoint2, qDoublePrime, n2, sDoublePrime, alpha2, nAlpha2);
+        buildTree(qMinus, pMinus, uniSample, direction, depth-1, stepSize, oldH, qMinus, pMinus, nullPoint1, nullPoint2, qDoublePrime, n2, sDoublePrime, alpha2, nAlpha2);
       }
       else
       {
@@ -748,14 +748,14 @@ void HMC::buildTree(const std::vector<double>& q, const std::vector<double>& p, 
 
       for(size_t i = 0; i < dim; ++i)
       {
-        tmpVector[i] = qPlus[i] - qMin[i];
+        tmpVector[i] = qPlus[i] - qMinus[i];
       }
       
       dotProuctMin = 0;
       dotProuctMax = 0;
       for(size_t i = 0; i < dim; ++i)
       {
-        dotProuctMin += tmpVector[i] * pMin[i];
+        dotProuctMin += tmpVector[i] * pMinus[i];
         dotProuctMax += tmpVector[i] * pPlus[i]; 
       }
       buildCriterionPrime = sDoublePrime * (dotProuctMin > 0) * (dotProuctMax > 0);

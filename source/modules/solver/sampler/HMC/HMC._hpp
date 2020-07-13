@@ -118,8 +118,8 @@ class HMC : public Sampler
   * @param depth Depth of binary tree recursion.
   * @param stepSize Step Size used for integration scheme (Leap Frog).
   * @param oldH Original total energy from starting position.
-  * @param qMin Leftmost leaf of binary tree (position).
-  * @param pMin Leftmost leaf of binary tree (momentum).
+  * @param qMinus Leftmost leaf of binary tree (position).
+  * @param pMinus Leftmost leaf of binary tree (momentum).
   * @param qPlus Rightmost leaf of binary tree (positon).
   * @param pPlus Rightmost leaf of binary tree (momentum).
   * @param qPrime Newly visited position state.
@@ -128,7 +128,7 @@ class HMC : public Sampler
   * @param alphaPrime Auxiliary variable needed for Adaptive Step Size.
   * @param nAlphaPrime Auxiliary variable needed for Adaptive Step Size.
   */
-  void buildTree(const std::vector<double>& q, const std::vector<double>& p, const double uniSample, const int direction, const int depth, const double stepSize, const double oldH, std::vector<double>& qMin, std::vector<double>& pMin, std::vector<double>& qPlus, std::vector<double>& pPlus, std::vector<double>& qPrime, double& nPrime, bool& buildCriterionPrime, double& alphaPrime, int& nAlphaPrime);
+  void buildTree(const std::vector<double>& q, const std::vector<double>& p, const double uniSample, const int direction, const int depth, const double stepSize, const double oldH, std::vector<double>& qMinus, std::vector<double>& pMinus, std::vector<double>& qPlus, std::vector<double>& pPlus, std::vector<double>& qPrime, double& nPrime, bool& buildCriterionPrime, double& alphaPrime, int& nAlphaPrime);
 };
 
 } // namespace sampler

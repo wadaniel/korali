@@ -46,8 +46,12 @@ void DeepGD::initialize()
     neuralNetworkConfig["Batch Normalization"]["Use Global Stats"] = true;
     _evaluationNeuralNetwork = dynamic_cast<NeuralNetwork *>(getModule(neuralNetworkConfig, _k));
 
-    // If we ran this experiment before, set evaluation hyperparameters obtained from the previous run
-    if (_k->_currentGeneration > 0) setHyperparameters(getHyperparameters());
+    // If we ran this experiment before, set evaluation hyperparameters and normalization statistics obtained from the previous run
+    if (_k->_currentGeneration > 0)
+    {
+     setHyperparameters(getHyperparameters());
+     setNormalizationParameters(getNormalizationParameters());
+    }
 
     /*****************************************************************
    * Setting up weight and bias optimization experiment
@@ -96,15 +100,27 @@ void DeepGD::runGeneration()
 
 void DeepGD::finalize()
 {
-  // Copying hyperparameters from training to evaluation
+  // Copying hyperparameters and normalization parameters from training to evaluation
   setHyperparameters(getHyperparameters());
+  setNormalizationParameters(getNormalizationParameters());
 
   _k->_logger->logInfo("Normal", "Current Loss: %.15f\n", _currentLoss);
 }
 
+
+std::vector<double> DeepGD::getNormalizationParameters()
+{
+  return _trainingNeuralNetwork->getNormalizationParameters();
+}
+
+void DeepGD::setNormalizationParameters(const std::vector<double> &normalizationParameters)
+{
+  _evaluationNeuralNetwork->setNormalizationParameters(normalizationParameters);
+}
+
 std::vector<double> DeepGD::getHyperparameters()
 {
-  return _optExperiment["Results"]["Best Sample"]["Parameters"].get<std::vector<double>>();
+  return _trainingNeuralNetwork->getHyperparameters();
 }
 
 void DeepGD::setHyperparameters(const std::vector<double> &hyperparameters)

@@ -43,9 +43,13 @@ e["Solver"]["Neural Network"]["Layers"][1]["Type"] = "Dense"
 e["Solver"]["Neural Network"]["Layers"][1]["Node Count"] = 32
 e["Solver"]["Neural Network"]["Layers"][1]["Activation Function"]["Type"] = "Tanh"
 
-e["Solver"]["Neural Network"]["Layers"][2]["Type"] = "Output"
-e["Solver"]["Neural Network"]["Layers"][2]["Node Count"] = 1
-e["Solver"]["Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Identity"
+e["Solver"]["Neural Network"]["Layers"][2]["Type"] = "Dense"
+e["Solver"]["Neural Network"]["Layers"][2]["Node Count"] = 32
+e["Solver"]["Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Tanh"
+
+e["Solver"]["Neural Network"]["Layers"][3]["Type"] = "Output"
+e["Solver"]["Neural Network"]["Layers"][3]["Node Count"] = 1
+e["Solver"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Identity"
 
 e["Console Output"]["Frequency"] = 1
 e["File Output"]["Enabled"] = False
@@ -53,7 +57,7 @@ e["Random Seed"] = 0xC0FFEE
 
 ### Training the neural network
 
-e["Solver"]["Termination Criteria"]["Max Generations"] = 100
+e["Solver"]["Termination Criteria"]["Max Generations"] = 80
 
 k.resume(e)
 

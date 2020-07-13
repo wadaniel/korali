@@ -38,6 +38,11 @@ class NeuralNetwork : public Module
    */
   size_t _hyperparameterCount;
 
+  /**
+   * @brief Number of normalization parameters (mean/variance)
+   */
+  size_t _normalizationParameterCount;
+
 #endif
 
   void initialize() override;
@@ -66,10 +71,22 @@ class NeuralNetwork : public Module
   void setHyperparameters(const std::vector<double>& hyperparameters);
 
   /**
-   * @brief Updates the values of weights, biases, and normalization scale/shift configuration to the NN
+   * @brief Gets the values of weights, biases, and normalization scale/shift configuration to the NN
    * @return The hyperparameters of the NN
    */
   std::vector<double> getHyperparameters();
+
+  /**
+   * @brief Gets the values of normalization mean variance
+   * @return The input normalization parameters
+   */
+  std::vector<double> getNormalizationParameters();
+
+ /**
+  * @brief Updates the values of normalization mean variance
+  * @param normalizationParameters The input normalization parameters
+  */
+  void setNormalizationParameters(const std::vector<double> &normalizationParameters);
 
   /**
    * @brief Forward-propagates the input batch data through the network.

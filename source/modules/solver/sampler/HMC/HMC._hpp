@@ -2,9 +2,9 @@
 #define _KORALI_SOLVER_HMC_HPP_
 
 // TODO: REMOVE normal/normal.hpp
+#include "modules/distribution/multivariate/normal/normal.hpp"
 #include "modules/distribution/univariate/normal/normal.hpp"
 #include "modules/distribution/univariate/uniform/uniform.hpp"
-#include "modules/distribution/multivariate/normal/normal.hpp"
 #include "modules/solver/sampler/sampler.hpp"
 #include <vector>
 
@@ -17,7 +17,6 @@ namespace sampler
 class HMC : public Sampler
 {
   private:
-
   /**
   * @brief Updates internal state such as mean, Metric and InverseMetric.
   */
@@ -93,15 +92,15 @@ class HMC : public Sampler
   * @param p Momentum which is evolved.
   * @param stepSize Step Size used for Leap Frog Scheme.
   */
-  void leapFrogStep(std::vector<double>& q, std::vector<double>& p, const double stepSize);
+  void leapFrogStep(std::vector<double> &q, std::vector<double> &p, const double stepSize);
 
   /**
   * @brief Inverts matrix in first argument. Solution is given in second argument. Used for Euclidean Metric as Metric has to be calculated from InverseMetric.
   * @param mat Input matrix.
   * @param inverseMat Output matrix which is mat^(-1).
   */
-  void invertMatrix(std::vector<double>& mat, std::vector<double>& inverseMat);
-  
+  void invertMatrix(std::vector<double> &mat, std::vector<double> &inverseMat);
+
   /**
   * @brief Finds reasonable Step Size. Used if Use Adaptive Time Stepping is set to True.
   * @param q Current position.
@@ -128,7 +127,7 @@ class HMC : public Sampler
   * @param alphaPrime Auxiliary variable needed for Adaptive Step Size.
   * @param nAlphaPrime Auxiliary variable needed for Adaptive Step Size.
   */
-  void buildTree(const std::vector<double>& q, const std::vector<double>& p, const double uniSample, const int direction, const int depth, const double stepSize, const double oldH, std::vector<double>& qMinus, std::vector<double>& pMinus, std::vector<double>& qPlus, std::vector<double>& pPlus, std::vector<double>& qPrime, double& nPrime, bool& buildCriterionPrime, double& alphaPrime, int& nAlphaPrime);
+  void buildTree(const std::vector<double> &q, const std::vector<double> &p, const double uniSample, const int direction, const int depth, const double stepSize, const double oldH, std::vector<double> &qMinus, std::vector<double> &pMinus, std::vector<double> &qPlus, std::vector<double> &pPlus, std::vector<double> &qPrime, double &nPrime, bool &buildCriterionPrime, double &alphaPrime, int &nAlphaPrime);
 };
 
 } // namespace sampler

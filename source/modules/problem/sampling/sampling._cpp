@@ -33,7 +33,7 @@ void Sampling::evaluateGradient(korali::Sample &sample)
 
   auto evaluation = KORALI_GET(std::vector<double>, sample, "grad(logP(x))");
 
-  // TODO: find out why they write sample["F(x)"] = sample["logP(x)"] 
+  // TODO: find out why they write sample["F(x)"] = sample["logP(x)"]
 }
 
 } // namespace problem

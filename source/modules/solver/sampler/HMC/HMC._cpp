@@ -120,7 +120,7 @@ void HMC::runGeneration()
 
     bool buildCriterion = true;
     bool buildCriterionPrime;
-    double dotProuctMin, dotProuctMax;
+    double dotProductMinus, dotProductPlus;
     int depth = 0;
 
     while (buildCriterion == true)
@@ -152,19 +152,11 @@ void HMC::runGeneration()
 
       n = n + nPrime;
 
-      for (size_t i = 0; i < dim; ++i)
-      {
-        tmpVector[i] = qPlus[i] - qMinus[i];
-      }
+      std::transform(std::cbegin(qPlus), std::cend(qPlus), std::cbegin(qMinus), std::begin(tmpVector), std::minus<double>());
+      dotProductMinus = std::inner_product(std::cbegin(tmpVector), std::cend(tmpVector), std::cbegin(pMinus), 0.0);
+      dotProductPlus = std::inner_product(std::cbegin(tmpVector), std::cend(tmpVector), std::cbegin(pPlus), 0.0);
 
-      dotProuctMin = 0;
-      dotProuctMax = 0;
-      for (size_t i = 0; i < dim; ++i)
-      {
-        dotProuctMin += tmpVector[i] * pMinus[i];
-        dotProuctMax += tmpVector[i] * pPlus[i];
-      }
-      buildCriterion = buildCriterionPrime * (dotProuctMin > 0) * (dotProuctMax > 0);
+      buildCriterion = buildCriterionPrime * (dotProductMinus > 0) * (dotProductPlus > 0);
 
       ++depth;
     }
@@ -673,7 +665,7 @@ void HMC::buildTree(const std::vector<double> &q, const std::vector<double> &p, 
   const size_t dim = _k->_variables.size();
 
   bool sDoublePrime;
-  double dotProuctMin, dotProuctMax, n2, uDoublePrime, alpha2, KPrime, UPrime, HPrime;
+  double dotProductMinus, dotProductPlus, n2, uDoublePrime, alpha2, KPrime, UPrime, HPrime;
   int nAlpha2;
   double deltaMax = 100;
 
@@ -746,19 +738,11 @@ void HMC::buildTree(const std::vector<double> &q, const std::vector<double> &p, 
       alphaPrime = alphaPrime + alpha2;
       nAlphaPrime = nAlphaPrime + nAlpha2;
 
-      for (size_t i = 0; i < dim; ++i)
-      {
-        tmpVector[i] = qPlus[i] - qMinus[i];
-      }
+      std::transform(std::cbegin(qPlus), std::cend(qPlus), std::cbegin(qMinus), std::begin(tmpVector), std::minus<double>());
+      dotProductMinus = std::inner_product(std::cbegin(tmpVector), std::cend(tmpVector), std::cbegin(pMinus), 0.0);
+      dotProductPlus = std::inner_product(std::cbegin(tmpVector), std::cend(tmpVector), std::cbegin(pPlus), 0.0);
 
-      dotProuctMin = 0;
-      dotProuctMax = 0;
-      for (size_t i = 0; i < dim; ++i)
-      {
-        dotProuctMin += tmpVector[i] * pMinus[i];
-        dotProuctMax += tmpVector[i] * pPlus[i];
-      }
-      buildCriterionPrime = sDoublePrime * (dotProuctMin > 0) * (dotProuctMax > 0);
+      buildCriterionPrime = sDoublePrime * (dotProductMinus > 0) * (dotProductPlus > 0);
     }
   }
 

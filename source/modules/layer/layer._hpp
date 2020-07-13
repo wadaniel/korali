@@ -44,11 +44,6 @@ class Layer : public Module
   dnnl::memory _weightsMem;
 
   /**
-   * @brief oneDNN Working memory for weights that may be reordered to accelerate calculation
-   */
-  dnnl::memory _weightsWorkMem;
-
-  /**
    * @brief oneDNN Memory object descriptor to contain the bias to add to incoming channels
    */
   dnnl::memory _biasMem;

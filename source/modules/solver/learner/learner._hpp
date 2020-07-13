@@ -29,13 +29,13 @@ class Learner : public Solver
   * @brief Returns the hyperparameters required to produce new evaluations and gradients
   * @return The hyperparameters
   */
-  virtual knlohmann::json &getHyperparameters() = 0;
+  virtual std::vector<double> getHyperparameters() = 0;
 
   /**
   * @brief Sets the hyperparameters required to produce new evaluations and gradients
   * @param parameters The hyperparameters to use
   */
-  virtual void setHyperparameters(const knlohmann::json &parameters) = 0;
+  virtual void setHyperparameters(const std::vector<double>& hyperparameters) = 0;
 };
 } // namespace solver
 } // namespace korali

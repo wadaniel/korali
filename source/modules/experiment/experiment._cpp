@@ -242,7 +242,7 @@ std::vector<double> Experiment::getAction(const std::vector<double> &state)
     KORALI_LOG_ERROR("This solver does not support getAction operations.\n");
 }
 
-std::vector<std::vector<double>> Experiment::getEvaluation(const std::vector<std::vector<double>> &inputBatch)
+std::vector<double> Experiment::getEvaluation(const std::vector<double> &inputBatch)
 {
   auto learner = dynamic_cast<solver::Learner *>(_k->_solver);
   if (learner != NULL)
@@ -251,7 +251,7 @@ std::vector<std::vector<double>> Experiment::getEvaluation(const std::vector<std
     KORALI_LOG_ERROR("This solver does not support evaluation operations.\n");
 }
 
-std::vector<std::vector<double>> Experiment::getGradients(const std::vector<std::vector<double>> &outputDiffs)
+std::vector<double> Experiment::getGradients(const std::vector<double> &outputDiffs)
 {
   auto learner = dynamic_cast<solver::Learner *>(_k->_solver);
   if (learner != NULL)

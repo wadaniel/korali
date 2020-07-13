@@ -74,19 +74,21 @@ void NeuralNetwork::initialize()
     }
   }
 
-  // Setting batch size to 1 as default.
-  _batchSize = 1;
+  // Checking if batch size if correct
+  if (_batchSize == 0) KORALI_LOG_ERROR("You should provide an input batch size larger than zero.\n");
+
+  // Creating forward-propagation pipeline
+  createForwardPipeline();
+
+  // Creating backward-propagation pipeline
+  createBackwardPipeline();
+
+  // Making sure we do not re-initialize
   _isInitialized = true;
 }
 
-void NeuralNetwork::createForwardPipeline(size_t batchSize)
+void NeuralNetwork::createForwardPipeline()
 {
-  if (_isInitialized == false) KORALI_LOG_ERROR("Neural Network not initialized.\n");
-
-  if (batchSize == 0) KORALI_LOG_ERROR("You should provide an input batch size larger than zero.\n");
-
-  // Updating NN's batch size
-  _batchSize = batchSize;
 
 #ifdef _KORALI_USE_ONEDNN
 
@@ -268,9 +270,6 @@ void NeuralNetwork::createBackwardPipeline()
   /*********************************************************************************
   *  Initializing memory objects and primitives for BACKWARD propagation
   *********************************************************************************/
-
-  if (_isInitialized == false) KORALI_LOG_ERROR("Neural Network not initialized.\n");
-  if (_batchSize == 0) KORALI_LOG_ERROR("You should provide an input batch size larger than zero. Have you forgotten to create the forward pipeline first?\n");
 
 #ifdef _KORALI_USE_ONEDNN
 

@@ -29,11 +29,6 @@ class NeuralNetwork : public Module
   dnnl::stream _stream;
 
   /**
-   * @brief Flag to remember the batch size of the input
-   */
-  size_t _batchSize;
-
-  /**
    * @brief Flag to make sure the NN is initialized before creating
    */
   bool _isInitialized;
@@ -51,7 +46,7 @@ class NeuralNetwork : public Module
    * @brief Initializes the internal memory structures for the forward pipeline
    * @param batchSize The size of the input batch for which the NN has to be created
    */
-  void createForwardPipeline(size_t batchSize);
+  void createForwardPipeline();
 
   /**
   * @brief Initializes the internal memory structures for the backward pipeline

@@ -32,7 +32,12 @@ class DeepGD : public Learner
   korali::Experiment _optExperiment;
 
   /**
-   * @brief A neural network to perform input evaluation and obtain gradients
+   * @brief A neural network to be trained based on inputs and solutions
+   */
+  NeuralNetwork *_trainingNeuralNetwork;
+
+  /**
+   * @brief A neural network to perform inference of inputs and obtain gradients
    */
   NeuralNetwork *_evaluationNeuralNetwork;
 
@@ -40,16 +45,6 @@ class DeepGD : public Learner
    * @brief Keeps track of whether the training/validation configuration has been built
    */
   bool _isLearnerInitialized;
-
-  /**
-   * @brief Keeps track of whether the evaluation NN's forward pipeline has been initialized
-   */
-  bool _isEvaluationNNForwardInitialized;
-
-  /**
-   * @brief Keeps track of whether the evaluation NN's backward pipeline has been initialized
-   */
-  bool _isEvaluationNNBackwardInitialized;
 
   /**
   * @brief Model function to evaluate a given NN weight/bias configuration
@@ -60,8 +55,8 @@ class DeepGD : public Learner
   */
   void evaluateHyperparameters(korali::Sample &sample, NeuralNetwork *nn, const std::vector<std::vector<double>> &solution, bool getGradients = false);
 
-  std::vector<std::vector<double>> getGradients(const std::vector<std::vector<double>> &outputDiffs) override;
-  std::vector<std::vector<double>> getEvaluation(const std::vector<std::vector<double>> &inputBatch) override;
+  std::vector<double> getGradients(const std::vector<double> &outputDiffs) override;
+  std::vector<double> getEvaluation(const std::vector<double> &inputBatch) override;
 
   knlohmann::json &getHyperparameters() override;
   void setHyperparameters(const knlohmann::json &parameters) override;

@@ -163,20 +163,18 @@ void DDPG::updatePolicy()
         _currentState = _nextStateHistory[expId];
 
         // Running actor experiment to get its candidate action
-        auto action = _actorInferenceLearner->getEvaluation({ _currentState })[0];
+        auto action = _actorInferenceLearner->getEvaluation({ _currentState });
 
         // Putting together state and action
-        std::vector<std::vector<double>> inputBatch(1);
-        inputBatch[0].resize(_currentState.size() + action.size());
-        size_t pos = 0;
-        for (size_t j = 0; j < _currentState.size(); j++) inputBatch[0][pos++] = _currentState[j];
-        for (size_t j = 0; j < action.size(); j++) inputBatch[0][pos++] = action[j];
+        std::vector<double> stateActionInput(_currentState.size() + action.size());
+        for (size_t j = 0; j < _currentState.size(); j++) stateActionInput[j] = _currentState[j];
+        for (size_t j = 0; j < action.size(); j++) stateActionInput[j + _currentState.size()] = action[j];
 
         // Forward propagating state/action through the critic inference NN
-        auto evaluation = _criticInferenceLearner->getEvaluation(inputBatch);
+        auto evaluation = _criticInferenceLearner->getEvaluation(stateActionInput);
 
         // Getting estimate Qnew, based on the NN evaluation
-        auto qNew = evaluation[0][0];
+        auto qNew = evaluation[0];
 
         // We add the expected remaining reward based on the optimization
         qValue += _discountFactor * qNew;
@@ -195,7 +193,7 @@ void DDPG::updatePolicy()
       auto qGradients = _criticInferenceLearner->getGradients({{ qValue }});
 
       // Extracting the action gradients from the full critic gradients
-      std::vector<double> aGradients = std::vector<double>(qGradients[0].begin() + _currentState.size(), qGradients[0].end());
+      std::vector<double> aGradients = std::vector<double>(qGradients.begin() + _currentState.size(), qGradients.end());
 
       // Updating inputs to critic training learner
       for (size_t j = 0; j < _problem->_stateVectorSize; j++) _criticTrainingProblem->_inputs[i][j] = _stateHistory[expId][j];
@@ -229,8 +227,8 @@ void DDPG::updatePolicy()
 
   if (_batchNormalizationEnabled)
   {
-    auto criticNN = _criticTrainingLearner->_neuralNetwork;
-    auto actorNN = _actorTrainingLearner->_neuralNetwork;
+    auto criticNN = _criticTrainingLearner->_trainingNeuralNetwork;
+    auto actorNN = _actorTrainingLearner->_trainingNeuralNetwork;
 
     std::vector<std::vector<double>> criticMeanSums(criticNN->_layers.size());
     std::vector<std::vector<double>> criticVarianceSums(criticNN->_layers.size());
@@ -381,7 +379,7 @@ std::vector<double> DDPG::getAction(const std::vector<double> &state)
   learner->setHyperparameters(_bestHyperparameters);
 
   // Forward-propagating state through actor NN
-  auto action = learner->getEvaluation( { state } )[0];
+  auto action = learner->getEvaluation( { state } );
 
   printf("action: %f\n", action[0]);
 

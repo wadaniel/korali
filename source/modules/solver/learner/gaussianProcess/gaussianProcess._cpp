@@ -106,18 +106,15 @@ void GaussianProcess::printGenerationAfter()
   return;
 }
 
-std::vector<std::vector<double>> GaussianProcess::getEvaluation(const std::vector<std::vector<double>> &input)
+std::vector<double> GaussianProcess::getEvaluation(const std::vector<double> &input)
 {
-  size_t inputSize = input.size();
-  std::vector<std::vector<double>> output(inputSize, std::vector<double>(2));
+  std::vector<double> output(2);
 
   _gp->covf().set_loghyper(toEigen(_gpHyperparameters));
 
-  for (size_t i = 0; i < inputSize; i++)
-  {
-    output[i][0] = _gp->f(input[i].data());
-    output[i][1] = _gp->var(input[i].data());
-  }
+  output[0] = _gp->f(input.data());
+  output[1] = _gp->var(input.data());
+
   return output;
 }
 

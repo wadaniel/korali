@@ -208,7 +208,7 @@ void DQN::updatePolicy()
 
   if (_batchNormalizationEnabled)
   {
-    auto nn = _qTrainingLearner->_neuralNetwork;
+    auto nn = _qTrainingLearner->_trainingNeuralNetwork;
 
     std::vector<std::vector<double>> meanSums(nn->_layers.size());
     std::vector<std::vector<double>> varianceSums(nn->_layers.size());
@@ -331,24 +331,20 @@ void DQN::evaluateAction(Sample &sample, bool getGradients)
   // Setting weights and biases
   auto action = KORALI_GET(std::vector<double>, sample, "Parameters");
 
-  // Creating input batch
-  std::vector<std::vector<double>> inputBatch(1);
+  // Creating state/action input
+  std::vector<double> stateActionInput(_currentState.size() + action.size());
+  for (size_t j = 0; j < _currentState.size(); j++) stateActionInput[j] = _currentState[j];
+  for (size_t j = 0; j < action.size(); j++) stateActionInput[j + _currentState.size()] = action[j];
 
-  // Putting together state and action
-  inputBatch[0].resize(_currentState.size() + action.size());
-  size_t pos = 0;
-  for (size_t i = 0; i < _currentState.size(); i++) inputBatch[0][pos++] = _currentState[i];
-  for (size_t i = 0; i < action.size(); i++) inputBatch[0][pos++] = action[i];
-
-  auto evaluation = learner->getEvaluation(inputBatch);
+  auto evaluation = learner->getEvaluation(stateActionInput);
   auto gradients = learner->getGradients(evaluation);
 
-  sample["F(x)"] = evaluation[0][0];
+  sample["F(x)"] = evaluation[0];
 
   for (size_t i = 0; i < action.size(); i++)
   {
     size_t startIdx = _currentState.size();
-    sample["Gradient"][i] = gradients[0][startIdx + i];
+    sample["Gradient"][i] = gradients[startIdx + i];
   }
 }
 

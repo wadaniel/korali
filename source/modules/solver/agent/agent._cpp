@@ -13,9 +13,7 @@ void Agent::initialize()
 void Agent::runGeneration()
 {
  // Broadcasting hyperparameters for all workers to use
-  knlohmann::json globals;
-  globals["Hyperparameters"] = _hyperparameters;
-  _conduit->broadcastGlobals(globals);
+  _conduit->broadcastGlobals(_hyperparameters);
 
   // Creating storage for agents
   std::vector<Sample> agents(_episodesPerGeneration);

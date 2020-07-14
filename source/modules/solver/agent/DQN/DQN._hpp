@@ -40,27 +40,12 @@ class DQN : public Agent
   /**
   * @brief Pointer to training experiment's learner
   */
-  learner::DeepGD *_qTrainingLearner;
-
-  /**
-   * @brief Pointer to inference experiment's learner
-   */
-  learner::DeepGD *_qInferenceLearner;
-
-  /**
- * @brief Korali experiment for the estimation of Q values
- */
-  korali::Experiment _qInferenceExperiment;
+  learner::DeepGD *_qLearner;
 
   /**
    * @brief Korali experiment for the training of the Qvalue-estimator
    */
-  korali::Experiment _qTrainingExperiment;
-
-  /**
-  * @brief Learner to use for the inference of actions
-  */
-  learner::DeepGD *_learner;
+  korali::Experiment _qExperiment;
 
   /**
  * @brief Korali experiment for argmax_action(Q) based on a trained Q-Network

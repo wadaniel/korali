@@ -4,7 +4,6 @@ import sys
 import numpy as np
 import matplotlib.pyplot as plt
 import time
-
 import korali
 k = korali.Engine()
 
@@ -12,19 +11,11 @@ k = korali.Engine()
 np.random.seed(0xC0FFEE)
 
 scaling = 5.0
-trainingInputSet = np.random.uniform(0, 2 * np.pi, 500)
-trainingSolutionSet = np.sin(trainingInputSet) * scaling 
-
-trainingInputSet = [ [ i ] for i in trainingInputSet.tolist() ]
-trainingSolutionSet = [ [ i ] for i in trainingSolutionSet.tolist() ]
 
 ### Defining a learning problem to infer values of sin(x)
 
 e = korali.Experiment()
 e["Problem"]["Type"] = "Supervised Learning"
-
-e["Problem"]["Inputs"] = trainingInputSet
-e["Problem"]["Outputs"] = trainingSolutionSet
 
 ### Using a neural network solver (deep learning) for inference
 
@@ -57,6 +48,14 @@ e["Random Seed"] = 0xC0FFEE
 
 ### Training the neural network
 
+trainingInputSet = np.random.uniform(0, 2 * np.pi, 500)
+trainingSolutionSet = np.sin(trainingInputSet) * scaling 
+
+trainingInputSet = [ [ i ] for i in trainingInputSet.tolist() ]
+trainingSolutionSet = [ [ i ] for i in trainingSolutionSet.tolist() ]
+
+e["Problem"]["Inputs"] = trainingInputSet
+e["Problem"]["Outputs"] = trainingSolutionSet
 e["Solver"]["Termination Criteria"]["Max Generations"] = 80
 
 k.resume(e)

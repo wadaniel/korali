@@ -73,7 +73,7 @@ e["Solver"]["Episodes Per Generation"] = 10
 e["Solver"]["Optimization Steps Per Generation"] = 10
 e["Solver"]["Agent History Size"] = 1000
 e["Solver"]["Mini Batch Size"] = 32
-e["Solver"]["Batch Normalization"]["Enabled"] = True
+e["Solver"]["Batch Normalization"]["Enabled"] = False
 e["Solver"]["Batch Normalization"]["Correction Steps"] = 64
 e["Solver"]["Discount Factor"] = 0.99
 

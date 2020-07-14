@@ -15,6 +15,7 @@ namespace learner
 {
 void DeepGD::initialize()
 {
+
   // If the learner is alread initialized, do not do anything else
   if (_isLearnerInitialized == false)
   {
@@ -47,11 +48,7 @@ void DeepGD::initialize()
     _evaluationNeuralNetwork = dynamic_cast<NeuralNetwork *>(getModule(neuralNetworkConfig, _k));
 
     // If we ran this experiment before, set evaluation hyperparameters and normalization statistics obtained from the previous run
-    if (_k->_currentGeneration > 0)
-    {
-     setHyperparameters(getHyperparameters());
-     setNormalizationParameters(getNormalizationParameters());
-    }
+    if (_k->_currentGeneration > 0) setHyperparameters(getHyperparameters());
 
     /*****************************************************************
    * Setting up weight and bias optimization experiment
@@ -100,36 +97,40 @@ void DeepGD::runGeneration()
 
 void DeepGD::finalize()
 {
-  // Copying hyperparameters and normalization parameters from training to evaluation
-  setHyperparameters(getHyperparameters());
-  setNormalizationParameters(getNormalizationParameters());
-
   _k->_logger->logInfo("Normal", "Current Loss: %.15f\n", _currentLoss);
-}
-
-
-std::vector<double> DeepGD::getNormalizationParameters()
-{
-  return _trainingNeuralNetwork->getNormalizationParameters();
-}
-
-void DeepGD::setNormalizationParameters(const std::vector<double> &normalizationParameters)
-{
-  _evaluationNeuralNetwork->setNormalizationParameters(normalizationParameters);
 }
 
 std::vector<double> DeepGD::getHyperparameters()
 {
-  return _trainingNeuralNetwork->getHyperparameters();
+  std::vector<double> parameters;
+
+  // Getting NN's hyperparameters and normalization parameters
+  auto networkHyperparameters = _trainingNeuralNetwork->getHyperparameters();
+  auto networkNormalizationParameters = _trainingNeuralNetwork->getNormalizationParameters();
+
+  // Concatenating parameters
+  parameters.insert(parameters.end(), networkHyperparameters.begin(), networkHyperparameters.end());
+  parameters.insert(parameters.end(), networkNormalizationParameters.begin(), networkNormalizationParameters.end());
+
+  return parameters;
 }
 
 void DeepGD::setHyperparameters(const std::vector<double> &hyperparameters)
 {
-  _evaluationNeuralNetwork->setHyperparameters(hyperparameters);
+  // Setting NN hyperparameters first
+  std::vector<double> networkHyperparameters(hyperparameters.begin(), hyperparameters.begin() + _evaluationNeuralNetwork->_hyperparameterCount);
+  _evaluationNeuralNetwork->setHyperparameters(networkHyperparameters);
+
+  // Setting NN normalization parameters second
+  std::vector<double> networkNormalizationParameters(hyperparameters.begin() + _evaluationNeuralNetwork->_hyperparameterCount, hyperparameters.end());
+  _evaluationNeuralNetwork->setNormalizationParameters(networkNormalizationParameters);
 }
 
 std::vector<double> DeepGD::getEvaluation(const std::vector<double> &inputBatch)
 {
+  // Copying hyperparameters and normalization parameters from training to evaluation
+  //setHyperparameters(getHyperparameters());
+
   // Updating NN inputs
   _evaluationNeuralNetwork->setInput({ inputBatch });
 

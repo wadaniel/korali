@@ -85,7 +85,7 @@ e["Solver"]["Replay Memory"]["Replacement Policy"] = "Least Recently Added"
 
 ### Defining Epsilon (the probability of taking a random action) configuration
 
-e["Solver"]["Epsilon"]["Initial Value"] = 0.9
+e["Solver"]["Epsilon"]["Initial Value"] = 1.0
 e["Solver"]["Epsilon"]["Target Value"] = 0.05
 e["Solver"]["Epsilon"]["Decrease Rate"] = 0.05
 

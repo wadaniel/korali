@@ -7,16 +7,24 @@ import time
 import korali
 k = korali.Engine()
 
-# Initializing training input and solution sets (with scaling to make sure the NN can learn it)
+scaling = 5.0
 np.random.seed(0xC0FFEE)
 
-scaling = 5.0
+# The input set has scaling and a linear element to break symmetry
+trainingInputSet = np.random.uniform(0, 2 * np.pi, 500)
+trainingSolutionSet = np.add(np.exp(np.sin(trainingInputSet)), trainingInputSet) * scaling 
+
+trainingInputSet = [ [ i ] for i in trainingInputSet.tolist() ]
+trainingSolutionSet = [ [ i ] for i in trainingSolutionSet.tolist() ]
+
 
 ### Defining a learning problem to infer values of sin(x)
 
 e = korali.Experiment()
 e["Problem"]["Type"] = "Supervised Learning"
 
+e["Problem"]["Inputs"] = trainingInputSet
+e["Problem"]["Outputs"] = trainingSolutionSet
 ### Using a neural network solver (deep learning) for inference
 
 e["Solver"]["Type"] = "Learner/DeepGD"
@@ -48,16 +56,7 @@ e["Random Seed"] = 0xC0FFEE
 
 ### Training the neural network
 
-trainingInputSet = np.random.uniform(0, 2 * np.pi, 500)
-trainingSolutionSet = np.sin(trainingInputSet) * scaling 
-
-trainingInputSet = [ [ i ] for i in trainingInputSet.tolist() ]
-trainingSolutionSet = [ [ i ] for i in trainingSolutionSet.tolist() ]
-
-e["Problem"]["Inputs"] = trainingInputSet
-e["Problem"]["Outputs"] = trainingSolutionSet
-e["Solver"]["Termination Criteria"]["Max Generations"] = 80
-
+e["Solver"]["Termination Criteria"]["Max Generations"] = 100
 k.resume(e)
 
 ### Obtaining inferred results from the NN and comparing them to the actual solution
@@ -67,7 +66,7 @@ testInputSet = [[x] for x in testInputSet.tolist()]
 
 testInferredSet = [ e.getEvaluation(x) for x in testInputSet ]
 testGradientSet = [ e.getGradients(x) for x in testInferredSet ]
-testOutputSet = np.sin(testInputSet) * scaling
+testOutputSet = np.add(np.exp(np.sin(testInputSet)), testInputSet) * scaling 
 
 ### Plotting Results
 

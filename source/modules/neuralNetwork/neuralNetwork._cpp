@@ -364,7 +364,7 @@ void NeuralNetwork::createBackwardPipeline()
 
       auto backwardWeightsDesc = inner_product_backward_weights::desc(
         _layers[i - 1]->_nodeMem.get_desc(),
-        _layers[i]->_weightsWorkMem.get_desc(),
+        _layers[i]->_weightsMem.get_desc(),
         _layers[i]->_biasMem.get_desc(),
         _layers[i]->_nodeDiffMem.get_desc());
 
@@ -454,6 +454,7 @@ void NeuralNetwork::setHyperparameters(const std::vector<double>& hyperparameter
     // Copying weight mem to weight work mem, if they are not the same
     if (_layers[i]->_weightsMem.get_desc() != _layers[i]->_weightsWorkMem.get_desc())
       reorder(_layers[i]->_weightsMem, _layers[i]->_weightsWorkMem).execute(_stream, _layers[i]->_weightsMem, _layers[i]->_weightsWorkMem);
+    _stream.wait();
 
     // Setting weight data to the layer's weight memory, only if batch normalization is not being used
     if (_batchNormalizationEnabled == false)

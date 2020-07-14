@@ -47,9 +47,6 @@ void DeepGD::initialize()
     neuralNetworkConfig["Batch Normalization"]["Use Global Stats"] = true;
     _evaluationNeuralNetwork = dynamic_cast<NeuralNetwork *>(getModule(neuralNetworkConfig, _k));
 
-    // If we ran this experiment before, set evaluation hyperparameters and normalization statistics obtained from the previous run
-    if (_k->_currentGeneration > 0) setHyperparameters(getHyperparameters());
-
     /*****************************************************************
    * Setting up weight and bias optimization experiment
    *****************************************************************/
@@ -60,14 +57,14 @@ void DeepGD::initialize()
     _optExperiment["Problem"]["Type"] = "Optimization";
     _optExperiment["Problem"]["Objective Function"] = fc;
 
-    std::vector<double> hyperparameters = _trainingNeuralNetwork->getHyperparameters();
+    _hyperparameters = _trainingNeuralNetwork->getHyperparameters();
 
-    for (size_t i = 0; i < hyperparameters.size(); i++)
+    for (size_t i = 0; i < _hyperparameters.size(); i++)
     {
       _optExperiment["Variables"][i]["Name"] = std::string("Hyperparameter") + std::to_string(i);
-      _optExperiment["Variables"][i]["Initial Value"] = hyperparameters[i];
-      _optExperiment["Variables"][i]["Initial Mean"] = hyperparameters[i];
-      _optExperiment["Variables"][i]["Initial Standard Deviation"] = abs(hyperparameters[i]) * 0.1;
+      _optExperiment["Variables"][i]["Initial Value"] = _hyperparameters[i];
+      _optExperiment["Variables"][i]["Initial Mean"] = _hyperparameters[i];
+      _optExperiment["Variables"][i]["Initial Standard Deviation"] = abs(_hyperparameters[i]) * 0.1;
     }
 
     _optExperiment["Solver"] = _optimizer;
@@ -93,6 +90,8 @@ void DeepGD::runGeneration()
   _optExperiment["Solver"]["Termination Criteria"]["Max Generations"] = _optExperiment._currentGeneration + _stepsPerGeneration;
   _optEngine.resume(_optExperiment);
   _currentLoss = _optExperiment["Results"]["Best Sample"]["F(x)"].get<double>();
+
+  _hyperparameters = _optExperiment["Results"]["Best Sample"]["Parameters"].get<std::vector<double>>();
 }
 
 void DeepGD::finalize()
@@ -102,34 +101,22 @@ void DeepGD::finalize()
 
 std::vector<double> DeepGD::getHyperparameters()
 {
-  std::vector<double> parameters;
-
-  // Getting NN's hyperparameters and normalization parameters
-  auto networkHyperparameters = _trainingNeuralNetwork->getHyperparameters();
-  auto networkNormalizationParameters = _trainingNeuralNetwork->getNormalizationParameters();
-
-  // Concatenating parameters
-  parameters.insert(parameters.end(), networkHyperparameters.begin(), networkHyperparameters.end());
-  parameters.insert(parameters.end(), networkNormalizationParameters.begin(), networkNormalizationParameters.end());
-
-  return parameters;
+  return _hyperparameters;
 }
 
 void DeepGD::setHyperparameters(const std::vector<double> &hyperparameters)
 {
-  // Setting NN hyperparameters first
-  std::vector<double> networkHyperparameters(hyperparameters.begin(), hyperparameters.begin() + _evaluationNeuralNetwork->_hyperparameterCount);
-  _evaluationNeuralNetwork->setHyperparameters(networkHyperparameters);
-
-  // Setting NN normalization parameters second
-  std::vector<double> networkNormalizationParameters(hyperparameters.begin() + _evaluationNeuralNetwork->_hyperparameterCount, hyperparameters.end());
-  _evaluationNeuralNetwork->setNormalizationParameters(networkNormalizationParameters);
+  _hyperparameters = hyperparameters;
 }
 
 std::vector<double> DeepGD::getEvaluation(const std::vector<double> &inputBatch)
 {
-  // Copying hyperparameters and normalization parameters from training to evaluation
-  //setHyperparameters(getHyperparameters());
+  // Setting NN hyperparameters first
+  _evaluationNeuralNetwork->setHyperparameters(_hyperparameters);
+
+  // Setting NN normalization parameters second
+  std::vector<double> networkNormalizationParameters(_hyperparameters.begin() + _evaluationNeuralNetwork->_hyperparameterCount, _hyperparameters.end());
+  _evaluationNeuralNetwork->setNormalizationParameters(networkNormalizationParameters);
 
   // Updating NN inputs
   _evaluationNeuralNetwork->setInput({ inputBatch });

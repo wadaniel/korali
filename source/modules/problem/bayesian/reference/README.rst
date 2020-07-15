@@ -2,11 +2,23 @@
 Likelihood by Reference
 *************************
 
-In a *Bayesian Inference* problem, the user defines and a prior probability density :math:`$p(\vartheta)` for the problem variables, and the solver is applied to the of the posterior distribution:
+..
+  In a *Bayesian Inference* problem, the user defines and a prior probability density :math:`$p(\vartheta)` for the problem variables, and the solver is applied to the of the posterior distribution:
+
+  .. math::
+
+     p(\vartheta | d) = \frac{p(d | \vartheta) p(\vartheta)}{p(d)}
+
+A Bayesian *Reference* problem is for data that originate from a computational model :math:`f`:
 
 .. math::
 
-   p(\vartheta | d) = \frac{p(d | \vartheta) p(\vartheta)}{p(d)}
+  d = (x_j, y_j)_{j=1...N}\;  with  \\
+  y_j = f(x_j) + \epsilon
+
+The distribution of noise :math:`\epsilon` defines the likelihood model of the data.
+You can choose between three types of noise likelihood models: *Normal*, *Negative Binomial* and *Positive Normal*.
+
 
 Normal Likelihood
 -----------------

@@ -36,6 +36,11 @@ class Agent : public Solver
   virtual void updatePolicy() = 0;
 
   /**
+  * @brief Updates the underlying learner's hyperparameters to calculate the next action of the agent
+  */
+  virtual void updateHyperparmeters(Sample& sample) = 0;
+
+  /**
  * @brief Runs a generation of the environment(s), running an action on each episode, and updating the policy.
  */
   void runGeneration() override;

@@ -57,6 +57,9 @@ void ReinforcementLearning::runEnvironment(Sample &sample)
   // Getting RL-compatible solver
   auto agent = dynamic_cast<solver::Agent *>(_k->_solver);
 
+  // First, we update the solver's hyperparameters with the info included in the sample
+  agent->updateHyperparmeters(sample);
+
   sample["Finished"] = false;
 
   // Creating sample coroutine

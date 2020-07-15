@@ -326,11 +326,8 @@ void DDPG::updatePolicy()
 
 void DDPG::getAction(Sample &sample)
 {
-  // Getting actor learner's pointer
+ // Getting actor learner's pointer
   auto learner = dynamic_cast<solver::Learner *>(_actorInferenceExperiment._solver);
-
-  // Updating actor learner with the latest hyperparameters
-  learner->setHyperparameters(sample.globals()["Hyperparameters"]);
 
   // Getting current state
   auto state = KORALI_GET(std::vector<double>, sample, "State");
@@ -340,6 +337,15 @@ void DDPG::getAction(Sample &sample)
 
   // Getting optimal action, based on the NN evaluation
   sample["Action"] = action;
+}
+
+void DDPG::updateHyperparmeters(Sample &sample)
+{
+ // Getting actor learner's pointer
+ auto learner = dynamic_cast<solver::Learner *>(_actorInferenceExperiment._solver);
+
+ // Updating actor learner with the latest hyperparameters
+ learner->setHyperparameters(sample.globals()["Hyperparameters"]);
 }
 
 void DDPG::printGenerationAfter()

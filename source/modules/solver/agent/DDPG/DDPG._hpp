@@ -97,6 +97,7 @@ class DDPG : public Agent
  */
   std::vector<double> _currentState;
 
+  void updateHyperparmeters(Sample& sample) override;
   void updatePolicy() override;
   std::vector<double> getAction(const std::vector<double> &state) override;
   void getAction(Sample &sample) override;

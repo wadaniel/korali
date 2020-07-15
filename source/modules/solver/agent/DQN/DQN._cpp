@@ -297,9 +297,6 @@ void DQN::getAction(Sample &sample)
     return;
   }
 
-  // Updating learner with the latest hyperparameters
-  _qLearner->setHyperparameters(sample.globals()["Learner Hyperparameters"].get<std::vector<double>>());
-
   // Updating current state
   _currentState = KORALI_GET(std::vector<double>, sample, "State");
 
@@ -331,6 +328,11 @@ void DQN::evaluateAction(Sample &sample, bool getGradients)
     size_t startIdx = _currentState.size();
     sample["Gradient"][i] = gradients[startIdx + i];
   }
+}
+
+void DQN::updateHyperparmeters(Sample &sample)
+{
+ _qLearner->setHyperparameters(sample.globals()["Learner Hyperparameters"].get<std::vector<double>>());
 }
 
 void DQN::printGenerationAfter()
@@ -372,6 +374,7 @@ std::vector<double> DQN::getAction(const std::vector<double> &state)
   // Getting optimal action, based on the NN evaluation
   return _argMaxActionExperiment["Results"]["Best Sample"]["Parameters"].get<std::vector<double>>();
 }
+
 
 } // namespace agent
 

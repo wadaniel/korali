@@ -77,11 +77,11 @@ void NeuralNetwork::initialize()
     {
      // Adding layer's batch normalization scale hyperparameters
      for (size_t j = 0; j < _layers[i]->_nodeCount; j++)
-      initialHyperparameters[currPos++] = 0.00001 * _xavierGenerator->getRandomNumber();
+      initialHyperparameters[currPos++] = 0.0000000001*_xavierGenerator->getRandomNumber();
 
      // Adding layer's batch normalization shift hyperparameters
      for (size_t j = 0; j < _layers[i]->_nodeCount; j++)
-      initialHyperparameters[currPos++] = 0.00001 * _xavierGenerator->getRandomNumber();
+      initialHyperparameters[currPos++] = 0.0000000001*_xavierGenerator->getRandomNumber();
     }
   }
 

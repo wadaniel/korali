@@ -63,7 +63,7 @@ class DQN : public Agent
    * @param getGradients Indicates whether the gradients are required
    */
   void evaluateAction(Sample &sample, bool getGradients);
-
+  void updateHyperparmeters(Sample& sample) override;
   void updatePolicy() override;
   std::vector<double> getAction(const std::vector<double> &state) override;
   void getAction(Sample &sample) override;

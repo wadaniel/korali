@@ -28,7 +28,7 @@ e["Problem"]["Outputs"] = trainingSolutionSet
 
 e["Solver"]["Type"] = "Learner/DeepGD"
 e["Solver"]["Steps Per Generation"] = 100
-e["Solver"]["Batch Normalization"]["Enabled"] = True
+e["Solver"]["Batch Normalization"]["Enabled"] = False
 e["Solver"]["Optimizer"]["Type"] = "Optimizer/Adam"
 e["Solver"]["Optimizer"]["Eta"] = 0.05
 

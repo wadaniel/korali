@@ -12,11 +12,10 @@ np.random.seed(0xC0FFEE)
 
 # The input set has scaling and a linear element to break symmetry
 trainingInputSet = np.random.uniform(0, 2 * np.pi, 500)
-trainingSolutionSet = np.add(np.exp(np.sin(trainingInputSet)), trainingInputSet) * scaling 
+trainingSolutionSet = np.tanh(np.exp(np.sin(trainingInputSet))) * scaling 
 
 trainingInputSet = [ [ i ] for i in trainingInputSet.tolist() ]
 trainingSolutionSet = [ [ i ] for i in trainingSolutionSet.tolist() ]
-
 
 ### Defining a learning problem to infer values of sin(x)
 
@@ -31,6 +30,7 @@ e["Solver"]["Type"] = "Learner/DeepGD"
 e["Solver"]["Steps Per Generation"] = 100
 e["Solver"]["Batch Normalization"]["Enabled"] = False
 e["Solver"]["Optimizer"]["Type"] = "Optimizer/Adam"
+e["Solver"]["Optimizer"]["Eta"] = 0.05
 
 ### Defining the shape of the neural network
 
@@ -56,7 +56,7 @@ e["Random Seed"] = 0xC0FFEE
 
 ### Training the neural network
 
-e["Solver"]["Termination Criteria"]["Max Generations"] = 100
+e["Solver"]["Termination Criteria"]["Max Generations"] = 10
 k.resume(e)
 
 ### Obtaining inferred results from the NN and comparing them to the actual solution
@@ -66,7 +66,7 @@ testInputSet = [[x] for x in testInputSet.tolist()]
 
 testInferredSet = [ e.getEvaluation(x) for x in testInputSet ]
 testGradientSet = [ e.getGradients(x) for x in testInferredSet ]
-testOutputSet = np.add(np.exp(np.sin(testInputSet)), testInputSet) * scaling 
+testOutputSet = np.tanh(np.exp(np.sin(testInputSet))) * scaling 
 
 ### Plotting Results
 

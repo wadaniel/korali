@@ -74,6 +74,9 @@ void ReinforcementLearning::runEnvironment(Sample &sample)
   // Initializing episode's experience counter
   size_t expId = 0;
 
+  // A counter for the cumulative reward
+  double cumulativeReward = 0.0;
+
   // Saving experiences
   while (sample["Finished"] == false)
   {
@@ -95,9 +98,17 @@ void ReinforcementLearning::runEnvironment(Sample &sample)
     co_switch(envThread);
 
     // Returning from the agent's environment with the reward
-    sample["Experience"]["Rewards"][expId] = sample["Reward"];
+    double reward = sample["Reward"];
+    sample["Experience"]["Rewards"][expId] = reward;
+
+    // Adding this experience's reward to total reward
+    cumulativeReward += reward;
+
+    // Advancing to next experience
     expId++;
   }
+
+  sample["Cumulative Reward"] = cumulativeReward;
 
   co_delete(envThread);
 }

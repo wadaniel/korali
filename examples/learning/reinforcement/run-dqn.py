@@ -7,7 +7,7 @@ import gym
 ######## Defining Environment Storage
 
 cart = gym.make('CartPole-v1').unwrapped
-maxSteps = 1000
+maxSteps = 3000
 
 ####### Defining Problem's environment
 
@@ -72,7 +72,7 @@ e["Solver"]["Type"] = "Agent/DQN"
 e["Solver"]["Episodes Per Generation"] = 10
 e["Solver"]["Optimization Steps Per Generation"] = 10
 e["Solver"]["Agent History Size"] = 1000
-e["Solver"]["Mini Batch Size"] = 32
+e["Solver"]["Mini Batch Size"] = 128
 e["Solver"]["Batch Normalization"]["Enabled"] = False
 e["Solver"]["Batch Normalization"]["Correction Steps"] = 64
 e["Solver"]["Discount Factor"] = 0.99
@@ -80,7 +80,7 @@ e["Solver"]["Discount Factor"] = 0.99
 ### Defining the configuration of replay memory
  
 e["Solver"]["Replay Memory"]["Start Size"] = 5000
-e["Solver"]["Replay Memory"]["Maximum Size"] = 50000
+e["Solver"]["Replay Memory"]["Maximum Size"] = 150000
 e["Solver"]["Replay Memory"]["Replacement Policy"] = "Least Recently Added"
 
 ### Defining Epsilon (the probability of taking a random action) configuration
@@ -115,7 +115,7 @@ e["Solver"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Ide
 
 ### Defining Termination Criteria
 
-e["Solver"]["Termination Criteria"]["Target Average Reward"] = 900
+e["Solver"]["Termination Criteria"]["Target Average Reward"] = 0.9*maxSteps
 
 ### Setting file output configuration
 

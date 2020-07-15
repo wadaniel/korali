@@ -58,6 +58,7 @@ void DeepGD::initialize()
     _optExperiment["Problem"]["Objective Function"] = fc;
 
     _hyperparameters = _trainingNeuralNetwork->getHyperparameters();
+    _normalizationParameters = _trainingNeuralNetwork->getNormalizationParameters();
 
     for (size_t i = 0; i < _hyperparameters.size(); i++)
     {
@@ -90,33 +91,41 @@ void DeepGD::runGeneration()
   _optExperiment["Solver"]["Termination Criteria"]["Max Generations"] = _optExperiment._currentGeneration + _stepsPerGeneration;
   _optEngine.resume(_optExperiment);
   _currentLoss = _optExperiment["Results"]["Best Sample"]["F(x)"].get<double>();
-
-  _hyperparameters = _optExperiment["Results"]["Best Sample"]["Parameters"].get<std::vector<double>>();
 }
 
 void DeepGD::finalize()
 {
+ _hyperparameters = _trainingNeuralNetwork->getHyperparameters();
+ _normalizationParameters = _trainingNeuralNetwork->getNormalizationParameters();
+
   _k->_logger->logInfo("Normal", "Current Loss: %.15f\n", _currentLoss);
 }
 
 std::vector<double> DeepGD::getHyperparameters()
 {
-  return _hyperparameters;
+  std::vector<double> parameters;
+
+  // Concatenating parameters
+  parameters.insert(parameters.end(), _hyperparameters.begin(), _hyperparameters.end());
+  parameters.insert(parameters.end(), _normalizationParameters.begin(), _normalizationParameters.end());
+
+  return parameters;
 }
 
 void DeepGD::setHyperparameters(const std::vector<double> &hyperparameters)
 {
-  _hyperparameters = hyperparameters;
+  // Setting NN hyperparameters first
+ _hyperparameters = std::vector<double>(hyperparameters.begin(), hyperparameters.begin() + _trainingNeuralNetwork->_hyperparameterCount);
+
+  // Setting NN normalization parameters second
+ _normalizationParameters = std::vector<double>(hyperparameters.begin() + _trainingNeuralNetwork->_hyperparameterCount, hyperparameters.end());
 }
 
 std::vector<double> DeepGD::getEvaluation(const std::vector<double> &inputBatch)
 {
-  // Setting NN hyperparameters first
-  _evaluationNeuralNetwork->setHyperparameters(_hyperparameters);
-
-  // Setting NN normalization parameters second
-  std::vector<double> networkNormalizationParameters(_hyperparameters.begin() + _evaluationNeuralNetwork->_hyperparameterCount, _hyperparameters.end());
-  _evaluationNeuralNetwork->setNormalizationParameters(networkNormalizationParameters);
+  // Copying hyperparameters and normalization parameters from training to evaluation
+ _evaluationNeuralNetwork->setHyperparameters(_hyperparameters);
+ _evaluationNeuralNetwork->setNormalizationParameters(_normalizationParameters);
 
   // Updating NN inputs
   _evaluationNeuralNetwork->setInput({ inputBatch });

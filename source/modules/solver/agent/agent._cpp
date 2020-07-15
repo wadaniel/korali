@@ -49,6 +49,9 @@ void Agent::runGeneration()
   {
     size_t experienceSize = agents[i]["Experience"]["States"].size();
 
+    // Collecting entire episode's reward
+    cumulativeReward += agents[i]["Cumulative Reward"].get<double>();
+
     // Storing statistics
     currentExperienceCount += experienceSize;
     if (experienceSize > _maxExperienceCount) _maxExperienceCount = experienceSize;
@@ -62,10 +65,9 @@ void Agent::runGeneration()
       _stateHistory.push_back(agents[i]["Experience"]["States"][j].get<std::vector<double>>());
       _actionHistory.push_back(agents[i]["Experience"]["Actions"][j].get<std::vector<double>>());
 
-      // Storing reward
+      // Storing experience's reward
       double reward = agents[i]["Experience"]["Rewards"][j].get<double>();
       _rewardHistory.push_back(reward);
-      cumulativeReward += reward;
 
       // If not a terminal state, store the next state
       if (j < agents[i]["Experience"]["States"].size() - 1)

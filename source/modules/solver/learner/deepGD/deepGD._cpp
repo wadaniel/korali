@@ -119,6 +119,7 @@ void DeepGD::setHyperparameters(const std::vector<double> &hyperparameters)
 
   // Setting NN normalization parameters second
  _normalizationParameters = std::vector<double>(hyperparameters.begin() + _trainingNeuralNetwork->_hyperparameterCount, hyperparameters.end());
+
 }
 
 std::vector<double> DeepGD::getEvaluation(const std::vector<double> &inputBatch)

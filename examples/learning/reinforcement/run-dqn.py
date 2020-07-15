@@ -72,9 +72,9 @@ e["Solver"]["Type"] = "Agent/DQN"
 e["Solver"]["Episodes Per Generation"] = 10
 e["Solver"]["Optimization Steps Per Generation"] = 10
 e["Solver"]["Agent History Size"] = 1000
-e["Solver"]["Mini Batch Size"] = 128
-e["Solver"]["Batch Normalization"]["Enabled"] = False
-e["Solver"]["Batch Normalization"]["Correction Steps"] = 64
+e["Solver"]["Mini Batch Size"] = 32
+e["Solver"]["Batch Normalization"]["Enabled"] = True
+e["Solver"]["Batch Normalization"]["Correction Steps"] = 32
 e["Solver"]["Discount Factor"] = 0.99
 
 ### Defining the configuration of replay memory
@@ -93,7 +93,7 @@ e["Solver"]["Epsilon"]["Decrease Rate"] = 0.05
 
 e["Solver"]["Action Optimizer"]["Type"] = "Optimizer/Grid Search" 
 e["Solver"]["Weight Optimizer"]["Type"] = "Optimizer/Adam"
-e["Solver"]["Weight Optimizer"]["Eta"] = 0.05
+e["Solver"]["Weight Optimizer"]["Eta"] = 0.1
 
 ### Defining the shape of the neural network
 

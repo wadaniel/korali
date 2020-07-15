@@ -126,7 +126,6 @@ void DQN::updatePolicy()
 
   for (size_t step = 0; step < _optimizationStepsPerGeneration; step++)
   {
-
   // Returning hyperparameters to its pre-training value
   _qLearner->setHyperparameters(_hyperparameters["Learner Hyperparameters"]);
 
@@ -260,8 +259,6 @@ void DQN::updatePolicy()
   // Getting q training hyperparameters to broadcast to workers
   _hyperparameters["Learner Hyperparameters"] = _qLearner->getHyperparameters();
   _hyperparameters["Epsilon"] = _epsilonCurrentValue;
-
-  auto evaluation = _qLearner->getEvaluation( { 0.1, 0.1, 0.1, 0.1, 1.0 });
 }
 
 void DQN::getAction(Sample &sample)
@@ -302,8 +299,6 @@ void DQN::getAction(Sample &sample)
 
   // Updating learner with the latest hyperparameters
   _qLearner->setHyperparameters(sample.globals()["Learner Hyperparameters"].get<std::vector<double>>());
-
-  auto evaluation = _qLearner->getEvaluation( { 0.1, 0.1, 0.1, 0.1, 1.0 });
 
   // Updating current state
   _currentState = KORALI_GET(std::vector<double>, sample, "State");

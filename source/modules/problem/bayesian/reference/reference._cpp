@@ -114,11 +114,10 @@ void Reference::loglikelihoodPositiveNormal(Sample &sample)
   sample["logLikelihood"] = loglike;
 }
 
-
 void Reference::loglikelihoodStudentT(Sample &sample)
 {
   auto refEvals = KORALI_GET(std::vector<double>, sample, "Reference Evaluations");
-  auto nus      = KORALI_GET(std::vector<double>, sample, "Degrees Of Freedom");
+  auto nus = KORALI_GET(std::vector<double>, sample, "Degrees Of Freedom");
 
   if (nus.size() != _referenceData.size())
     KORALI_LOG_ERROR("This Bayesian (%s) problem requires a %lu-sized Degrees Of Freedom array. Provided: %lu.\n", _likelihoodModel.c_str(), _referenceData.size(), nus.size());
@@ -129,18 +128,17 @@ void Reference::loglikelihoodStudentT(Sample &sample)
   double loglike = 0.;
   for (size_t i = 0; i < nus.size(); i++)
   {
-    if ( nus[i] <= 0.0) KORALI_LOG_ERROR("Negative or zero value (%lf) detected for the Degrees Of Freedom.\n", nus[i]);
-    loglike += log( gsl_ran_tdist_pdf(_referenceData[i]-refEvals[i], nus[i]) );
+    if (nus[i] <= 0.0) KORALI_LOG_ERROR("Negative or zero value (%lf) detected for the Degrees Of Freedom.\n", nus[i]);
+    loglike += log(gsl_ran_tdist_pdf(_referenceData[i] - refEvals[i], nus[i]));
   }
 
   sample["logLikelihood"] = loglike;
 }
 
-
 void Reference::loglikelihoodPositiveStudentT(Sample &sample)
 {
   auto refEvals = KORALI_GET(std::vector<double>, sample, "Reference Evaluations");
-  auto nus      = KORALI_GET(std::vector<double>, sample, "Degrees Of Freedom");
+  auto nus = KORALI_GET(std::vector<double>, sample, "Degrees Of Freedom");
 
   if (nus.size() != _referenceData.size())
     KORALI_LOG_ERROR("This Bayesian (%s) problem requires a %lu-sized Degrees Of Freedom array. Provided: %lu.\n", _likelihoodModel.c_str(), _referenceData.size(), nus.size());
@@ -151,16 +149,15 @@ void Reference::loglikelihoodPositiveStudentT(Sample &sample)
   double loglike = 0.;
   for (size_t i = 0; i < _referenceData.size(); i++)
   {
-    if ( nus[i] <= 0.0) KORALI_LOG_ERROR("Negative or zero value (%lf) detected for the Degrees Of Freedom.\n", nus[i]);
-    if ( refEvals[i] < 0.0) KORALI_LOG_ERROR("Negative value (%lf) detected in Reference Evaluation.\n", refEvals[i]);
+    if (nus[i] <= 0.0) KORALI_LOG_ERROR("Negative or zero value (%lf) detected for the Degrees Of Freedom.\n", nus[i]);
+    if (refEvals[i] < 0.0) KORALI_LOG_ERROR("Negative value (%lf) detected in Reference Evaluation.\n", refEvals[i]);
     if (_referenceData[i] < 0.0) KORALI_LOG_ERROR("Negative value (%lf) detected in Reference Data.\n", _referenceData[i]);
-    
-    loglike += log( gsl_ran_tdist_pdf(_referenceData[i]-refEvals[i], nus[i]) ) - log( gsl_cdf_tdist_P(-refEvals[i], nus[i]) );
+
+    loglike += log(gsl_ran_tdist_pdf(_referenceData[i] - refEvals[i], nus[i])) - log(gsl_cdf_tdist_P(-refEvals[i], nus[i]));
   }
 
   sample["logLikelihood"] = loglike;
 }
-
 
 void Reference::loglikelihoodPoisson(Sample &sample)
 {
@@ -172,18 +169,17 @@ void Reference::loglikelihoodPoisson(Sample &sample)
   double loglike = 0.;
   for (size_t i = 0; i < _referenceData.size(); i++)
   {
-    if ( refEvals[i] <= 0.0) KORALI_LOG_ERROR("Negative value (%lf) detected in Reference Evaluation.\n", refEvals[i]);
+    if (refEvals[i] <= 0.0) KORALI_LOG_ERROR("Negative value (%lf) detected in Reference Evaluation.\n", refEvals[i]);
     if (_referenceData[i] < 0.0) KORALI_LOG_ERROR("Negative value (%lf) detected in Reference Data.\n", _referenceData[i]);
-    loglike += gsl_ran_poisson_pdf( _referenceData[i], refEvals[i] );
+    loglike += gsl_ran_poisson_pdf(_referenceData[i], refEvals[i]);
   }
 
   sample["logLikelihood"] = loglike;
 }
 
-
 void Reference::loglikelihoodNegativeBinomial(Sample &sample)
 {
-  auto refEvals   = KORALI_GET(std::vector<double>, sample, "Reference Evaluations");
+  auto refEvals = KORALI_GET(std::vector<double>, sample, "Reference Evaluations");
   auto dispersion = KORALI_GET(std::vector<double>, sample, "Dispersion");
 
   if (refEvals.size() != _referenceData.size())

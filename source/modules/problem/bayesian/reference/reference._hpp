@@ -37,6 +37,24 @@ class Reference : public korali::problem::Bayesian
   * @param sample A Korali Sample
   */
   void loglikelihoodPositiveNormal(korali::Sample &sample);
+ 
+  /**
+  * @brief An implementation of the student's t loglikelihood y~T(v), where v>0 (degrees of freedom) is provided by the user.
+  * @param sample A Korali Sample
+  */
+  void loglikelihoodStudentT(korali::Sample &sample);
+ 
+  /**
+  * @brief An implementation of the student's t loglikelihood y~T(v) truncated at zero, where v>0 (degrees of freedom) is provided by the user.
+  * @param sample A Korali Sample
+  */
+  void loglikelihoodPositiveStudentT(Sample &sample);
+ 
+  /**
+  * @brief Poisson likelihood parametrized by mean.
+  * @param sample A Korali Sample
+  */
+  void loglikelihoodPoisson(korali::Sample &sample);
 
   /**
   * @brief Negative Binomial likelihood parametrized by mean and dispersion.

@@ -63,28 +63,28 @@ class HMC : public Sampler
   * @param p Current momentum.
   * @return Kinetic energy with current momentum.
   */
-  double K(std::vector<double> p);
+  double K(const std::vector<double> &p) const;
 
   /**
   * @brief Gradient of kinetic energy used for Hamiltonian Dynamics.
   * @param p Current momentum.
   * @return Gradient of kinetic energy with current momentum.
   */
-  std::vector<double> dK(std::vector<double> p);
+  std::vector<double> dK(const std::vector<double> &p) const;
 
   /**
   * @brief Potential energy used for Hamiltonian Dynamics with relation U(x) = -logP(x).
   * @param q Current position.
   * @return Potential energy with current position.
   */
-  double U(std::vector<double> q);
+  double U(const std::vector<double> &q);
 
   /**
   * @brief Gradient of potential energy used for Hamiltonian Dynamics with relation grad(U(x)) = -grad(logP(x)).
   * @param q Current position.
   * @return Gradent of potential energy with current position.
   */
-  std::vector<double> dU(std::vector<double> q);
+  std::vector<double> dU(const std::vector<double> &q);
 
   /**
   * @brief Leapfrog stepping scheme used for evolving Hamiltonian Dynamics.

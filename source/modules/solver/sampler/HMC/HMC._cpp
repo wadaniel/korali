@@ -13,11 +13,6 @@
 #include <gsl/gsl_sort_vector.h>
 #include <gsl/gsl_statistics.h>
 
-/*
-TODO LIST:
-*move NUTS certain parts of NUTS to private member variable status
-*/
-
 namespace korali
 {
 namespace solver
@@ -88,7 +83,6 @@ void HMC::runGeneration()
   if (_k->_currentGeneration == 1) setInitialConfiguration();
 
   const size_t dim = _k->_variables.size();
-  bool _sampleAccepted = false;
   double alpha;
 
   // Samples Momentum Candidate from N(0.0, metric)
@@ -146,7 +140,6 @@ void HMC::runGeneration()
         if (uDoublePrime < nPrime / n)
         {
           _positionLeader = _positionCandidate;
-          _sampleAccepted = true;
         }
       }
 
@@ -188,7 +181,6 @@ void HMC::runGeneration()
     if (uniSample <= alpha)
     {
       ++_acceptanceCount;
-      _sampleAccepted = true;
       _positionLeader = _positionCandidate;
     }
   }
@@ -240,14 +232,7 @@ void HMC::generateCandidate()
 
 void HMC::updateState()
 {
-  if (_useNUTS == false)
-  {
-    _acceptanceRate = (double)_acceptanceCount / ((double)(_chainLength + 1));
-  }
-  else if (_useNUTS == true)
-  {
-    _acceptanceRate = (double)_acceptanceCountNUTS / ((double)_chainLength + 1);
-  }
+  _acceptanceRate = _useNUTS == true ? (double)_acceptanceCountNUTS / ((double)_chainLength + 1) : (double)_acceptanceCount / ((double)(_chainLength + 1));
 
   size_t dim = _k->_variables.size();
 
@@ -355,23 +340,6 @@ void HMC::updateState()
 
 void HMC::printGenerationBefore()
 {
-  if (_useAdaptiveStepSize == true)
-  {
-    // Step Size
-    _k->_logger->logInfo("Detailed", "Step Size: %lf\n", _stepSize);
-    // Dual Step Size
-    _k->_logger->logInfo("Detailed", "Dual Step Size: %lf\n", _dualStepSize);
-
-    if (_useNUTS == false)
-    {
-      // Num Integration Steps
-      _k->_logger->logInfo("Detailed", "Num Integration Steps: %ld\n", _numIntegrationSteps);
-    }
-
-    // Dual Step Size
-    _k->_logger->logInfo("Detailed", "H Bar: %lf\n", _hBar);
-  }
-
   return;
 }
 
@@ -380,16 +348,7 @@ void HMC::printGenerationAfter()
   // Number of Samples
   _k->_logger->logInfo("Minimal", "Database Entries %ld\n", _sampleDatabase.size());
 
-  // Number of Accepted Samples
-  if (_useNUTS == false)
-  {
-    _k->_logger->logInfo("Normal", "Accepted Samples: %zu\n", _acceptanceCount);
-  }
-  else if (_useNUTS == true)
-  {
-    // Dual Step Size
-    _k->_logger->logInfo("Detailed", "Accepted Samples Indicator (NUTS): %lf\n", _acceptanceCountNUTS);
-  }
+  _useNUTS == true ? _k->_logger->logInfo("Detailed", "Accepted Samples Indicator (NUTS): %lf\n", _acceptanceCountNUTS) : _k->_logger->logInfo("Normal", "Accepted Samples: %zu\n", _acceptanceCount);
 
   _k->_logger->logInfo("Normal", "Acceptance Rate Proposals: %.2f%%\n", 100 * _acceptanceRate);
 
@@ -402,13 +361,6 @@ void HMC::printGenerationAfter()
   _k->_logger->logInfo("Detailed", "Current Position Mean:\n");
   for (size_t d = 0; d < _k->_variables.size(); ++d) _k->_logger->logData("Detailed", "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _positionMean[d]);
   _k->_logger->logInfo("Detailed", "Current Metric:\n");
-
-  // Metric
-  for (size_t d = 0; d < _k->_variables.size(); ++d)
-  {
-    for (size_t e = 0; e < _k->_variables.size(); ++e) _k->_logger->logData("Detailed", "         %+6.3e  ", _metric[d * _k->_variables.size() + e]);
-    _k->_logger->logInfo("Detailed", "\n");
-  }
 
   // Inverse Metric
   _k->_logger->logInfo("Detailed", "Current Inverse Metric:\n");
@@ -629,15 +581,7 @@ double HMC::findReasonableStepSize(std::vector<double> q)
   leapFrogStep(q, p, stepSize);
   newLogP = -(K(p) + U(q));
 
-  int a = 1;
-  if (newLogP - oldLogP > std::log(0.5))
-  {
-    a = 1;
-  }
-  else
-  {
-    a = -1;
-  }
+  int a = (newLogP - oldLogP > std::log(0.5)) ? 1 : -1;
 
   // TODO: Ask why Tobias updates oldLogP as this is not what Algorithm 5 says
   while (std::pow(std::exp(newLogP - oldLogP), a) > std::pow(2, -a))
@@ -665,12 +609,12 @@ void HMC::buildTree(const std::vector<double> &q, const std::vector<double> &p, 
   const size_t dim = _k->_variables.size();
 
   bool sDoublePrime;
-  double dotProductMinus, dotProductPlus, n2, uDoublePrime, alpha2, KPrime, UPrime, HPrime;
+  double dotProductMinus, dotProductPlus, nDoublePrime, uDoublePrime, alpha2, KPrime, UPrime, HPrime;
   int nAlpha2;
   double deltaMax = 100;
 
-  std::vector<double> nullPoint1(dim, 0.0);
-  std::vector<double> nullPoint2(dim, 0.0);
+  std::vector<double> nullPoint1(dim);
+  std::vector<double> nullPoint2(dim);
   std::vector<double> qDoublePrime(dim, 0.0);
   std::vector<double> tmpVector(dim, 0.0);
 
@@ -705,36 +649,20 @@ void HMC::buildTree(const std::vector<double> &q, const std::vector<double> &p, 
     {
       if (direction == -1)
       {
-        buildTree(qMinus, pMinus, uniSample, direction, depth - 1, stepSize, oldH, qMinus, pMinus, nullPoint1, nullPoint2, qDoublePrime, n2, sDoublePrime, alpha2, nAlpha2);
+        buildTree(qMinus, pMinus, uniSample, direction, depth - 1, stepSize, oldH, qMinus, pMinus, nullPoint1, nullPoint2, qDoublePrime, nDoublePrime, sDoublePrime, alpha2, nAlpha2);
       }
       else
       {
-        buildTree(qPlus, pPlus, uniSample, direction, depth - 1, stepSize, oldH, nullPoint1, nullPoint2, qPlus, pPlus, qDoublePrime, n2, sDoublePrime, alpha2, nAlpha2);
+        buildTree(qPlus, pPlus, uniSample, direction, depth - 1, stepSize, oldH, nullPoint1, nullPoint2, qPlus, pPlus, qDoublePrime, nDoublePrime, sDoublePrime, alpha2, nAlpha2);
       }
       uDoublePrime = _uniformGenerator->getRandomNumber();
 
-      // double acceptProbability;
-      // if(nPrime + n2 == 0)
-      // {
-      //   acceptProbability = 1.0;
-      // }
-      // else
-      // {
-      //   acceptProbability = n2 / (nPrime + n2);
-      // }
-      // TODO: Find out how STAN handles this case
-      // if(nPrime + n2 == 0)
-      // {
-      //   // KORALI_LOG_ERROR("Division by zero encountered in buildTree (nPrime + n2 is %lf).\n", nPrime + n2);
-      //   std::cout << "n2 / (nPrime + n2) = " << n2 / (nPrime + n2) << std::endl;
-      // }
-
       // if(uDoublePrime < acceptProbability)
-      if (uDoublePrime < n2 / (nPrime + n2))
+      if (nDoublePrime != 0 && uDoublePrime < nDoublePrime / (nPrime + nDoublePrime))
       {
         qPrime = qDoublePrime;
       }
-      nPrime = nPrime + n2;
+      nPrime = nPrime + nDoublePrime;
       alphaPrime = alphaPrime + alpha2;
       nAlphaPrime = nAlphaPrime + nAlpha2;
 

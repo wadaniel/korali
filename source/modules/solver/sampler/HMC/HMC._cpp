@@ -28,7 +28,7 @@ void HMC::setInitialConfiguration()
   if (_targetIntegrationTime < 0.0) KORALI_LOG_ERROR("Target Integration Time must be non-negative (is %lf).\n", _targetIntegrationTime);
   if (_numIntegrationSteps < 1) KORALI_LOG_ERROR("Num Integration Steps must be larger equal 1 (is %zu).\n", _numIntegrationSteps);
 
-  size_t dim = _k->_variables.size();
+  const size_t dim = _k->_variables.size();
 
   // Resizing vectors of internal settings to correct dimensions
   _positionLeader.resize(dim);
@@ -107,8 +107,8 @@ void HMC::runGeneration()
     double oldH = oldU + oldK;
     double n = 1.0;
     double nPrime;
-    double uniSample = _uniformGenerator->getRandomNumber();
-    double uDoublePrime;
+    const double uniSample = _uniformGenerator->getRandomNumber();
+    double uniSamplePrime;
     double alphaPrime;
     int nAlphaPrime;
 
@@ -119,8 +119,8 @@ void HMC::runGeneration()
 
     while (buildCriterion == true)
     {
-      uDoublePrime = _uniformGenerator->getRandomNumber();
-      if (uDoublePrime < 0.5)
+      uniSamplePrime = _uniformGenerator->getRandomNumber();
+      if (uniSamplePrime < 0.5)
       {
         buildTree(qMinus, pMinus, uniSample, -1, depth, _stepSize, oldH, qMinus, pMinus, nullPoint1, nullPoint2, _positionCandidate, nPrime, buildCriterionPrime, alphaPrime, nAlphaPrime);
       }
@@ -131,13 +131,13 @@ void HMC::runGeneration()
 
       if (buildCriterionPrime == true)
       {
-        uDoublePrime = _uniformGenerator->getRandomNumber();
+        uniSamplePrime = _uniformGenerator->getRandomNumber();
 
         if (n == 0)
         {
           KORALI_LOG_ERROR("Division by zero encountered in NUTS (n is %lf).\n", n);
         }
-        if (uDoublePrime < nPrime / n)
+        if (uniSamplePrime < nPrime / n)
         {
           _positionLeader = _positionCandidate;
         }
@@ -149,7 +149,7 @@ void HMC::runGeneration()
       dotProductMinus = std::inner_product(std::cbegin(tmpVector), std::cend(tmpVector), std::cbegin(pMinus), 0.0);
       dotProductPlus = std::inner_product(std::cbegin(tmpVector), std::cend(tmpVector), std::cbegin(pPlus), 0.0);
 
-      buildCriterion = buildCriterionPrime * (dotProductMinus > 0) * (dotProductPlus > 0);
+      buildCriterion = buildCriterionPrime && (dotProductMinus > 0) && (dotProductPlus > 0);
 
       ++depth;
     }
@@ -223,7 +223,7 @@ void HMC::runGeneration()
 void HMC::generateCandidate()
 {
   ++_proposedSampleCount;
-  size_t dim = _k->_variables.size();
+  const size_t dim = _k->_variables.size();
   // saple momentum p from p ~ N(0.0, metric)
   _multivariateGenerator->getRandomVector(&_momentumCandidate[0], dim);
 
@@ -234,7 +234,7 @@ void HMC::updateState()
 {
   _acceptanceRate = _useNUTS == true ? (double)_acceptanceCountNUTS / ((double)_chainLength + 1) : (double)_acceptanceCount / ((double)(_chainLength + 1));
 
-  size_t dim = _k->_variables.size();
+  const size_t dim = _k->_variables.size();
 
   // case: sample phase
   if (_chainLength >= _burnIn)
@@ -403,7 +403,7 @@ void HMC::finalize()
   return;
 }
 
-double HMC::K(std::vector<double> p)
+double HMC::K(const std::vector<double> &p) const
 {
   const size_t dim = _k->_variables.size();
   double tmpScalar = 0.0;
@@ -420,7 +420,7 @@ double HMC::K(std::vector<double> p)
   return tmpScalar;
 }
 
-std::vector<double> HMC::dK(std::vector<double> p)
+std::vector<double> HMC::dK(const std::vector<double> &p) const
 {
   const size_t dim = _k->_variables.size();
   std::vector<double> tmpVector(dim, 0.0);
@@ -439,7 +439,7 @@ std::vector<double> HMC::dK(std::vector<double> p)
   return tmpVector;
 }
 
-double HMC::U(std::vector<double> q)
+double HMC::U(const std::vector<double> &q)
 {
   // get sample
   auto sample = Sample();
@@ -459,9 +459,9 @@ double HMC::U(std::vector<double> q)
   return evaluation;
 }
 
-std::vector<double> HMC::dU(std::vector<double> q)
+std::vector<double> HMC::dU(const std::vector<double> &q)
 {
-  size_t dim = _k->_variables.size();
+  const size_t dim = _k->_variables.size();
 
   // get sample
   auto sample = Sample();
@@ -486,7 +486,6 @@ void HMC::leapFrogStep(std::vector<double> &q, std::vector<double> &p, const dou
   const size_t dim = _k->_variables.size();
 
   std::vector<double> dU = HMC::dU(q);
-  ;
   for (size_t i = 0; i < dim; ++i)
   {
     p[i] = p[i] - 0.5 * stepSize * dU[i];
@@ -609,7 +608,7 @@ void HMC::buildTree(const std::vector<double> &q, const std::vector<double> &p, 
   const size_t dim = _k->_variables.size();
 
   bool sDoublePrime;
-  double dotProductMinus, dotProductPlus, nDoublePrime, uDoublePrime, alpha2, KPrime, UPrime, HPrime;
+  double dotProductMinus, dotProductPlus, nDoublePrime, uniSamplePrime, alpha2, KPrime, UPrime, HPrime;
   int nAlpha2;
   double deltaMax = 100;
 
@@ -634,7 +633,7 @@ void HMC::buildTree(const std::vector<double> &q, const std::vector<double> &p, 
     }
 
     // buildCriterionPrime indicates error of simulation -> setting to false signals to stop building tree
-    buildCriterionPrime = (-HPrime > -oldH - deltaMax);
+    buildCriterionPrime = (-HPrime > -(oldH + deltaMax));
     alphaPrime = std::min(1.0, std::exp(oldH - HPrime));
     nAlphaPrime = 1;
     qPlus = qMinus;
@@ -655,10 +654,10 @@ void HMC::buildTree(const std::vector<double> &q, const std::vector<double> &p, 
       {
         buildTree(qPlus, pPlus, uniSample, direction, depth - 1, stepSize, oldH, nullPoint1, nullPoint2, qPlus, pPlus, qDoublePrime, nDoublePrime, sDoublePrime, alpha2, nAlpha2);
       }
-      uDoublePrime = _uniformGenerator->getRandomNumber();
+      uniSamplePrime = _uniformGenerator->getRandomNumber();
 
-      // if(uDoublePrime < acceptProbability)
-      if (nDoublePrime != 0 && uDoublePrime < nDoublePrime / (nPrime + nDoublePrime))
+      // if(uniSamplePrime < acceptProbability)
+      if (nDoublePrime != 0 && uniSamplePrime < nDoublePrime / (nPrime + nDoublePrime))
       {
         qPrime = qDoublePrime;
       }
@@ -670,7 +669,7 @@ void HMC::buildTree(const std::vector<double> &q, const std::vector<double> &p, 
       dotProductMinus = std::inner_product(std::cbegin(tmpVector), std::cend(tmpVector), std::cbegin(pMinus), 0.0);
       dotProductPlus = std::inner_product(std::cbegin(tmpVector), std::cend(tmpVector), std::cbegin(pPlus), 0.0);
 
-      buildCriterionPrime = sDoublePrime * (dotProductMinus > 0) * (dotProductPlus > 0);
+      buildCriterionPrime = sDoublePrime && (dotProductMinus > 0) && (dotProductPlus > 0);
     }
   }
 

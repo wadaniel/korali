@@ -16,9 +16,6 @@ e = korali.Experiment()
 e["File Output"]["Frequency"] = 0
 e["Console Output"]["Frequency"] = 5000
 
-e["Console Output"]["Frequency"] = 500
-
-
 # Selecting problem and solver types.
 e["Problem"]["Type"] = "Sampling"
 e["Problem"]["Probability Function"] = lexponential

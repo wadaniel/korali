@@ -152,7 +152,8 @@ void Reference::loglikelihoodPositiveStudentT(Sample &sample)
     if (refEvals[i] < 0.0) KORALI_LOG_ERROR("Negative value (%lf) detected in Reference Evaluation.\n", refEvals[i]);
     if (_referenceData[i] < 0.0) KORALI_LOG_ERROR("Negative value (%lf) detected in Reference Data.\n", _referenceData[i]);
 
-    loglike += log(gsl_ran_tdist_pdf(_referenceData[i] - refEvals[i], nus[i])) - log(gsl_cdf_tdist_P(-refEvals[i], nus[i]));
+    loglike += log(gsl_ran_tdist_pdf(_referenceData[i] - refEvals[i], nus[i]));
+    loglike -= log(1.0-gsl_cdf_tdist_P(-refEvals[i], nus[i]));
   }
 
   sample["logLikelihood"] = loglike;

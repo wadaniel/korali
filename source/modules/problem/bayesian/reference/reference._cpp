@@ -171,7 +171,7 @@ void Reference::loglikelihoodPoisson(Sample &sample)
   {
     if (refEvals[i] <= 0.0) KORALI_LOG_ERROR("Negative value (%lf) detected in Reference Evaluation.\n", refEvals[i]);
     if (_referenceData[i] < 0.0) KORALI_LOG_ERROR("Negative value (%lf) detected in Reference Data.\n", _referenceData[i]);
-    loglike += gsl_ran_poisson_pdf(_referenceData[i], refEvals[i]);
+    loglike += log(gsl_ran_poisson_pdf(_referenceData[i], refEvals[i]));
   }
 
   sample["logLikelihood"] = loglike;

@@ -46,6 +46,7 @@ class NormalData():
     for i in range(self.nIndividuals):
       self.data.append(data[data[:, 0] == i])
 
+    self.data = np.array(self.data)
     self.beta = [2, 2]
     self.omega = np.eye(2)
     self.Nmp = len(self.beta) - 1

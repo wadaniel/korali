@@ -888,6 +888,7 @@ void korali::solver::HSAEM::printGenerationAfter()
 
 void korali::solver::HSAEM::finalize()
 {
+  _k->_logger->logInfo("Normal", "\n");
   _k->_logger->logInfo("Normal", "Finished. Final hyperparameter estimates:\n");
   // Only enable as soon as I have good estimates of that:
   //  _k->_logger->logInfo("Normal", "  Current Total Log Probability:       %.2e\n", ...);
@@ -906,6 +907,7 @@ void korali::solver::HSAEM::finalize()
   }
 
   std::ostringstream covLogStringStream;
+  _k->_logger->logInfo("Normal", "\n");
   _k->_logger->logInfo("Normal", "Covariance matrix: \n");
   _k->_logger->logInfo("Normal", "  [\n");
   for (size_t i = 0; i < _latentSpaceDimensions; i++)

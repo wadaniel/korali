@@ -16,14 +16,22 @@ def main():
   k = korali.Engine()
   e = korali.Experiment()
 
-  e["Problem"]["Type"] = "Bayesian/Latent/HierarchicalLatentCustom"
-  # * The computational model for the log-likelihood, log[ p(data point | latent) ]
-  e["Problem"]["Conditional Log Likelihood Function"] = lambda sample: distrib.conditional_p(sample)
+  e["Problem"]["Type"] = "Bayesian/Latent/HierarchicalLatentReference"
+  # * The computational model, y, sdev = f(x, theta), g(x, theta)
+  e["Problem"]["Computational Model"] = lambda sample: normalModelFunction(sample)
+  e["Problem"]["Likelihood Model"] = "Normal"
 
-  data_vector = [[] for _ in range(distrib._p.nIndividuals)]
+  x_vals = [[] for _ in range(distrib._p.nIndividuals)]
+  y_vals = [[] for _ in range(distrib._p.nIndividuals)]
+  import pdb
+  pdb.set_trace()
   for i in range(distrib._p.nIndividuals):
-    data_vector[i] = distrib._p.data[i].tolist()
-  e["Problem"]["Data"] = data_vector
+    # data: (nInd x nPoints x nDim), with nPoints = 1, nDim = 3
+    # We discard the first dimension: ID
+    x_vals[i] = distrib._p.data[i, :, 1:2].tolist()
+    y_vals[i] = distrib._p.data[i, :, 2].tolist()
+  e["Problem"]["Data Points"] = x_vals
+  e["Problem"]["Reference Data"] = y_vals
   e["Problem"]["Data Dimensions"] = distrib._p.nDataDimensions
   e["Problem"]["Number Individuals"] = distrib._p.nIndividuals
   e["Problem"]["Latent Space Dimensions"] = distrib._p.nLatentSpaceDimensions

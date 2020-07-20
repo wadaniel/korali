@@ -63,7 +63,7 @@ Normal and log-normal distributions describe distributions in many different dis
    We have one sample per 'individuum' i. Note that our notation is flipped compared to the book, we use :math:`\theta`
    for latent variables and :math:`\psi` for hyperparameters.
 
-   We solve this problem both with SAEM (`run-saem-population-simple.py`) and with HSAEM (`run-saem-hierarchical.py`).
+   We solve this problem both with SAEM (`run-saem-population-simple.py`) and with HSAEM (`run-hsaem-population-simple.py`).
 
 
 2. **Mixed prior distributions:**
@@ -121,7 +121,7 @@ We now look at more complex `conditional probability` models :math:`p(x_i | z_i)
    `_data/normal/generate_data.py`.
 
    **Model:**
-   Contrary to the data generation process, we will assume in `run-saem-normal.py` that :math:`\theta_{i,1}`
+   Contrary to the data generation process, we will assume in `run-hsaem-normal.py` that :math:`\theta_{i,1}`
    and :math:`\theta_{i,2}` follow log-normal distributions.
 
    **True parameter values:**
@@ -146,7 +146,7 @@ We now look at more complex `conditional probability` models :math:`p(x_i | z_i)
 
    **Model:**
    We will assume a normal distribution for each of :math:`\theta_{i,1}, \theta_{i,2}` and :math:`\theta_{i,3}`, and
-   a log-normal distribution for :math:`\theta_{i,3}` in `run-saem-logistic.py`.
+   a log-normal distribution for :math:`\theta_{i,3}` in `run-hsaem-logistic.py`.
 
    **True parameter values:**
 
@@ -160,11 +160,11 @@ We now look at more complex `conditional probability` models :math:`p(x_i | z_i)
 File descriptions
 ------------------
 
-- The scripts :code:`run-saem-[example name].py` run the five different examples (for the simple example there are two:
-  :code:`run-saem-hierarchical.py` uses HSAEM, :code:`run-saem-population-simple.py` uses SAEM.)
+- The scripts :code:`run-[h]saem-[example name].py` run the five different examples (two for the simple example:
+  :code:`run-hsaem-population-simple.py` uses HSAEM, :code:`run-saem-population-simple.py` uses SAEM.)
 
 ..
-   - :code:`test-saem-normal.py`: Not included in master
+   - :code:`test-hsaem-normal.py`: Not included in master
 
 - Subfolder :code:`_model/` contains code for the probability models for each example. It accesses the data in
 - subfolder :code:`_data/[example name]/`, where also the data-generating scripts can be found.
@@ -177,9 +177,9 @@ In a shell from this directory, type, for example
 
 .. code-block::
 
-    $ python3 run-saem-hierarchical.py
+    $ python3 run-hsaem-population-simple.py
 
-to run the 'simple example' using HSAEM.
+to run the 'simple example' described in 1. above, using HSAEM.
 
 
 
@@ -321,7 +321,7 @@ In the next section, we describe an example that adjusts more settings of `HSAEM
 Optimizing a logistic model with HSAEM
 ---------------------------------------
 
-This section describes step-by-step the contents of :code:`run-saem-logistic.py`. It runs `HSAEM` for the
+This section describes step-by-step the contents of :code:`run-hsaem-logistic.py`. It runs `HSAEM` for the
 'logistic' problem (problem no. 4) described above.
 
 

@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
   int nIndividuals = distrib5._p.nIndividuals;
   int nDimensions = distrib5._p.nDimensions;
 
-  e["Problem"]["Type"] = "Bayesian/Latent/HierarchicalLatent";
+  e["Problem"]["Type"] = "Bayesian/Latent/HierarchicalLatentCustom";
   e["Problem"]["Conditional Log Likelihood Function"] = &distrib5_conditional_p; // defined in model.cpp
 
   e["Problem"]["Data"] = distrib5._p.data; // data: length: nIndividuals; each of its entries is a vector of different length

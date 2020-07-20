@@ -12,6 +12,19 @@ def normalModel(x, theta):
     y = 1e300
   return y
 
+def normalModelFunction(sample):
+  latents = sample["Latent Variables"]
+  assert len(latents) == 2
+  theta = latents[0]
+  sdev = latents[1]
+  y = theta**2
+  if np.any(np.isinf(y) | np.isnan(y)):
+    y = 1e300
+
+  sample["Reference Evaluation"] = y
+  sample["Standard Deviation"] = sdev
+
+  return y, sdev
 
 class NormalConditionalDistribution():
   ''' Model 6:

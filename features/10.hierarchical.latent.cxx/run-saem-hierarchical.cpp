@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
 
   int nIndividuals = distrib4._p.nIndividuals;
 
-  e["Problem"]["Type"] = "Bayesian/Latent/HierarchicalLatent";
+  e["Problem"]["Type"] = "Bayesian/Latent/HierarchicalLatentCustom";
   e["Problem"]["Conditional Log Likelihood Function"] = &distrib4_conditional_p; // defined in model.cpp
 
   // We need to add one dimension to _p.data, because one individual in the general case could have

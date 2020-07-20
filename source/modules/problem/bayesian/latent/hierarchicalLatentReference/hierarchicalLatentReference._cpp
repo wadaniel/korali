@@ -238,7 +238,7 @@ double HierarchicalLatentReference::compute_normalized_sse(double f, double g, d
 
 void HierarchicalLatentReference::loglikelihoodNormal(Sample &sample)
 {
-  auto refEval = KORALI_GET(double, sample, "Reference Evaluations");
+  auto refEval = KORALI_GET(double, sample, "Reference Evaluation");
   auto stdDev = KORALI_GET(double, sample, "Standard Deviation");
   auto dataPoint = KORALI_GET(std::vector<double>, sample, "Data Point");
   double y = dataPoint[dataPoint.size()-1];

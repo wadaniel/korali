@@ -215,16 +215,19 @@ HierarchicalLatentReference::~HierarchicalLatentReference()
  */
 void HierarchicalLatentReference::evaluateLoglikelihoodSingle(korali::Sample &sample)
 {
+  /* Remove the y-value from 'Data Point', it should not be visible to the evaluation function */
+  auto dataPoint = KORALI_GET(std::vector<double>, sample, "Data Point");
+  double y = dataPoint[dataPoint.size()-1];
+  sample["Data Point"] = std::vector<double>(dataPoint.begin(), dataPoint.end()-1);
+
   sample.run(_computationalModel);
 
-//  double refEval = KORALI_GET(double, sample, "Reference Evaluation");
-
   if (_likelihoodModel == "Normal")
-    loglikelihoodNormal(sample);
+    loglikelihoodNormal(sample, y);
   else if (_likelihoodModel == "Negative Binomial")
-    loglikelihoodNegativeBinomial(sample);
+    loglikelihoodNegativeBinomial(sample, y);
   else if (_likelihoodModel == "Positive Normal")
-    loglikelihoodPositiveNormal(sample);
+    loglikelihoodPositiveNormal(sample, y);
   else
     KORALI_LOG_ERROR("Bayesian problem (%s) not recognized.\n", _likelihoodModel.c_str());
 }
@@ -236,12 +239,12 @@ double HierarchicalLatentReference::compute_normalized_sse(double f, double g, d
   return sse;
 }
 
-void HierarchicalLatentReference::loglikelihoodNormal(Sample &sample)
+void HierarchicalLatentReference::loglikelihoodNormal(Sample &sample, double y)
 {
   auto refEval = KORALI_GET(double, sample, "Reference Evaluation");
   auto stdDev = KORALI_GET(double, sample, "Standard Deviation");
   auto dataPoint = KORALI_GET(std::vector<double>, sample, "Data Point");
-  double y = dataPoint[dataPoint.size()-1];
+//  double y = dataPoint[dataPoint.size()-1];
   if (stdDev <= 0.0) KORALI_LOG_ERROR("Negative or zero value (%lf) detected for the Standard Deviation.\n", stdDev);
 
   double sse = -Inf;
@@ -254,12 +257,12 @@ void HierarchicalLatentReference::loglikelihoodNormal(Sample &sample)
            the bayesian reference problem? */
 }
 
-void HierarchicalLatentReference::loglikelihoodPositiveNormal(Sample &sample)
+void HierarchicalLatentReference::loglikelihoodPositiveNormal(Sample &sample, double y)
 {
   auto refEval = KORALI_GET(double, sample, "Reference Evaluation");
   auto stdDev = KORALI_GET(double, sample, "Standard Deviation");
   auto dataPoint = KORALI_GET(std::vector<double>, sample, "Data Point");
-  double y = dataPoint[dataPoint.size()-1];
+//  double y = dataPoint[dataPoint.size()-1];
   if (stdDev <= 0.0) KORALI_LOG_ERROR("Negative or zero value (%lf) detected for the Standard Deviation.\n", stdDev);
   if (refEval < 0.0) KORALI_LOG_ERROR("Negative value (%lf) detected in Reference Evaluation.\n", refEval);
   if (y < 0.0) KORALI_LOG_ERROR("Negative value (%lf) detected in Reference Data.\n", y);
@@ -273,12 +276,12 @@ void HierarchicalLatentReference::loglikelihoodPositiveNormal(Sample &sample)
   sample["Conditional LogLikelihood"] = loglike;
 }
 
-void HierarchicalLatentReference::loglikelihoodNegativeBinomial(Sample &sample)
+void HierarchicalLatentReference::loglikelihoodNegativeBinomial(Sample &sample, double y)
 {
   auto refEval = KORALI_GET(double, sample, "Reference Evaluation");
   auto dispersion = KORALI_GET(double, sample, "Dispersion");
   auto dataPoint = KORALI_GET(std::vector<double>, sample, "Data Point");
-  double y = dataPoint[dataPoint.size()-1];
+//  double y = dataPoint[dataPoint.size()-1];
   if (y < 0)
   {
     KORALI_LOG_ERROR("Negative Binomial Likelihood not defined for negative Reference Data (provided %lf.\n", y);

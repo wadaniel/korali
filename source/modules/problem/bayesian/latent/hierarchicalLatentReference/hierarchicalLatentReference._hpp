@@ -35,20 +35,23 @@ class HierarchicalLatentReference : public korali::problem::bayesian::Latent
   /**
   * @brief An implementation of the normal likelihood y~N(f,g), where f ang g are provided by the user.
   * @param sample A Korali Sample
+  * @param y: The reference value to compare the sample's evaluated value to (comes from measured / external data)
   */
-  void loglikelihoodNormal(korali::Sample &sample);
+  void loglikelihoodNormal(korali::Sample &sample, double y);
 
   /**
   * @brief An implementation of the normal likelihood y~N(f,g) truncated at zero, where f ang g are provided by the user.
   * @param sample A Korali Sample
+  * @param y: The reference value to compare the sample's evaluated value to (comes from measured / external data)
   */
-  void loglikelihoodPositiveNormal(korali::Sample &sample);
+  void loglikelihoodPositiveNormal(korali::Sample &sample, double y);
 
   /**
   * @brief Negative Binomial likelihood parametrized by mean and dispersion.
   * @param sample A Korali Sample
+  * @param y: The reference value to compare the sample's evaluated value to (comes from measured / external data)
   */
-  void loglikelihoodNegativeBinomial(korali::Sample &sample);
+  void loglikelihoodNegativeBinomial(korali::Sample &sample, double y);
 
   public:
   /** @brief The lowlevel problem containing actual calculations. */

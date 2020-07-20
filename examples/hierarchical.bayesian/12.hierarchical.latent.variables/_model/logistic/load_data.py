@@ -49,6 +49,7 @@ class LogisticData():
     for i in range(self.nIndividuals):
       self.data.append(data[data[:, 0] == i])
 
+    self.data = np.array(self.data)
     self.beta = [1, 1, 1, 1]
     self.omega = 100 * np.diag([1, 1, 1, 1])
     # self.alpha = 1

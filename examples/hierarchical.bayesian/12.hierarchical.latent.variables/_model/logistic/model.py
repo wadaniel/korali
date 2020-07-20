@@ -22,6 +22,27 @@ def logisticModel(x, theta):
   return y
 
 
+def logisticModelFunction(sample):
+  theta = sample["Latent Variables"]
+  x = sample["Data Point"]
+  assert len(theta) >= 4
+  assert len(x) == 1
+  x = x[0]
+  f = np.exp(float(theta[2]) * x)  # can give inf if theta[2] is very large
+  y = (theta[0] * theta[1] * f) / (theta[0] + theta[1] * (f - 1.))
+
+  if np.isscalar(x):
+    if np.isinf(y) or np.isnan(y):
+      y = 1e300
+  else:
+    y[np.isinf(y) | np.isnan(y)] = 1e300
+    # set inf or nan to something large. otherwise nlmefitsa complains -- not sure if necessary in python, too. we'll see.
+
+  sample["Reference Evaluation"] = y
+  sample["Standard Deviation"] = theta[3]
+
+
+
 class LogisticConditionalDistribution():
   ''' Model 7:
         Data generation process: yi = f(xi, theta[:3]) + eps,

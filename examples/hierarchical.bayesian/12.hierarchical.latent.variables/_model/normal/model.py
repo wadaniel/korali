@@ -24,7 +24,6 @@ def normalModelFunction(sample):
   sample["Reference Evaluation"] = y
   sample["Standard Deviation"] = sdev
 
-  return y, sdev
 
 class NormalConditionalDistribution():
   ''' Model 6:

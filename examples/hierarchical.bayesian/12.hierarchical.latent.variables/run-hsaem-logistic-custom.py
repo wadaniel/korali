@@ -1,5 +1,5 @@
 import sys
-sys.path.append('./_model/normal')
+sys.path.append('./_model/logistic')
 sys.path.append('./_model')
 from model import *
 from utils import generate_variable
@@ -9,47 +9,43 @@ import korali
 
 
 def main():
-  # * Initialize the assumed data distribution
-  distrib = NormalConditionalDistribution()
-
+  # Initialize the distribution
+  distrib = LogisticConditionalDistribution()
 
   k = korali.Engine()
   e = korali.Experiment()
 
-  e["Problem"]["Type"] = "Bayesian/Latent/HierarchicalLatentReference"
-  # * The computational model, y, sdev = f(x, theta), g(x, theta)
-  e["Problem"]["Computational Model"] = lambda sample: normalModelFunction(sample)
-  e["Problem"]["Likelihood Model"] = "Normal"
+  e["Problem"]["Type"] = "Bayesian/Latent/HierarchicalLatentCustom"
+  # The computational model for the log-likelihood, log[ p(data point | latent) ]
+  e["Problem"][
+      "Conditional Log Likelihood Function"] = lambda sample: distrib.conditional_p(
+          sample)
 
-  x_vals = [[] for _ in range(distrib._p.nIndividuals)]
-  y_vals = [[] for _ in range(distrib._p.nIndividuals)]
+  data_vector = [[] for _ in range(distrib._p.nIndividuals)]
   for i in range(distrib._p.nIndividuals):
-    # data: (nInd x nPoints x nDim), with nPoints = 1, nDim = 3
-    # We discard the first dimension: ID
-    x_vals[i] = distrib._p.data[i, :, 1:2].tolist()
-    y_vals[i] = distrib._p.data[i, :, 2].tolist()
-  e["Problem"]["Data Points"] = x_vals
-  e["Problem"]["Reference Data"] = y_vals
+    data_vector[i] = distrib._p.data[i].tolist()
+  # e["Problem"]["Data"] = data_vector
+  e["Problem"]["Data"] = data_vector
   e["Problem"]["Data Dimensions"] = distrib._p.nDataDimensions
   e["Problem"]["Number Individuals"] = distrib._p.nIndividuals
   e["Problem"]["Latent Space Dimensions"] = distrib._p.nLatentSpaceDimensions
+  e["Problem"]["Initial Variance"] = 1
 
   e["Solver"]["Type"] = "HSAEM"
-  e["Solver"]["Number Samples Per Step"] = 5
+  e["Solver"]["Number Samples Per Step"] = 10
   e["Solver"]["mcmc Outer Steps"] = 1
   e["Solver"]["mcmc Target Acceptance Rate"] = 0.4
   e["Solver"]["N1"] = 2
   e["Solver"]["N2"] = 2
   e["Solver"]["N3"] = 2
   e["Solver"]["K1"] = 200
-  e["Solver"]["Ka"] = 200
   e["Solver"]["Alpha 1"] = 0.25
   e["Solver"]["Alpha 2"] = 0.5
   e["Solver"]["Use Simulated Annealing"] = True
   e["Solver"]["Simulated Annealing Decay Factor"] = 0.95
   e["Solver"]["Simulated Annealing Initial Variance"] = 1
   e["Solver"]["Diagonal Covariance"] = True
-  e["Solver"]["Termination Criteria"]["Max Generations"] = 250
+  e["Solver"]["Termination Criteria"]["Max Generations"] = 150
 
   e["Distributions"][0]["Name"] = "Uniform 0"
   e["Distributions"][0]["Type"] = "Univariate/Uniform"
@@ -102,19 +98,10 @@ def main():
 
   assert dimCounter == distrib._p.dNormal + distrib._p.dLognormal + distrib._p.dLogitnormal + distrib._p.dProbitnormal
 
-  # Configure how results will be stored to a file:
   e["File Output"]["Frequency"] = 1
-  e["File Output"]["Path"] = "_korali_result_normal/"
-  # We choose a non-default output directory -
-  # for plotting results, we can later set the directory with:
-  #   python3 -m korali.plotter --dir _korali_result_logistic/
-
-  # Configure console output:
+  e["File Output"]["Path"] = "_korali_result_logistic_custom/"
   e["Console Output"]["Frequency"] = 1
-  e["Console Output"][
-      "Verbosity"] = "Normal"  # "Detailed" results in all latent variable means being printed -
-  # we have 200 of them here, so we suppress this by choosing a less
-  # detailed output option.
+  e["Console Output"]["Verbosity"] = "Detailed"
 
   k.run(e)
 

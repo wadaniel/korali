@@ -42,7 +42,6 @@ void Reference::evaluateLoglikelihood(Sample &sample)
     loglikelihoodPoisson(sample);
   else if (_likelihoodModel == "Negative Binomial")
     loglikelihoodNegativeBinomial(sample);
-
   else
     KORALI_LOG_ERROR("Bayesian problem (%s) not recognized.\n", _likelihoodModel.c_str());
 }

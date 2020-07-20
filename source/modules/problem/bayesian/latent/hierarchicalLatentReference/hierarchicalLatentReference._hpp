@@ -76,8 +76,7 @@ class HierarchicalLatentReference : public korali::problem::bayesian::Latent
                     the reference evaluation.
      @returns: Will set sample["logLikelihood"].
    */
-  std::function<void(korali::Sample & s)> conditionalLogLikelihoodFunction;
-//  void conditionalLogLikelihoodFunction(korali::Sample &sample);
+  std::function<void(korali::Sample & s)> logLikelihoodFunction;
 
   /**
     @brief Evaluate each log-likelihood log(p(data for individual i | latent variables i)) across all data points
@@ -94,15 +93,6 @@ class HierarchicalLatentReference : public korali::problem::bayesian::Latent
     @param sample: See other function description
     */
   void evaluateLoglikelihood(korali::Sample &sample) override;
-
-  /**
-  * @brief Evaluate the conditional log-likelihood of one data point, given its reference function value.
-  *         How it is calculated depends on the _likelihoodModel.
-  * @param sample: Should contain fields "Latent Variables" and "Data Point". The last dimension of "Data Point" is
-  *                 expected to be the reference function value, that is, point = [x1, x2, ... xd, y] where
-  *                 our x values have d dimensions.
-  */
-  void evaluateLoglikelihoodSingle(korali::Sample &sample);
 
   /**
   * @brief Evaluate log of p(latent | hyperparameters), hyperparameter-dependent prior over each *transformed* latent variable.

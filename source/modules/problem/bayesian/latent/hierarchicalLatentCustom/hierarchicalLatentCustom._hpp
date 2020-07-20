@@ -52,15 +52,6 @@ class HierarchicalLatentCustom : public korali::problem::bayesian::Latent
   void evaluateLoglikelihood(korali::Sample &sample) override;
 
   /**
-  * @brief Evaluate the user-defined function giving the conditional log-likelihood of one data point, given one
-            vector of latent variables (for a single, unspecified individual).
-            See the description of that function in the config for more information.
-           (It will set "Conditional LogLikelihood" and use "Latent Variables" and "Data Point".)
-  * @param sample: Should contain fields "Latent Variables" and "Data Point".
- */
-  void evaluateLoglikelihoodSingle(korali::Sample &sample);
-
-  /**
   * @brief Evaluate log of p(latent | hyperparameters), hyperparameter-dependent prior over each *transformed* latent variable.
     @param sample: Is expected to contain the fields ["Latent Variables"], ["Mean"] and ["Covariance Matrix"]. or
                     ["Covariance Cholesky Decomposition"]. Here, "Mean" should be a vector (size := n), "Covariance Matrix"
@@ -87,7 +78,7 @@ class HierarchicalLatentCustom : public korali::problem::bayesian::Latent
             log[ p(all data | all latent) * p(all latent | hyperparameters) ]
     @param sample: Is expected to contain the fields ["Latent Variables"], ["Mean"] and ["Covariance Matrix"] or
                     ["Covariance Cholesky Decomposition"].
-                    Data was given at problem creation.
+                    Data was either included in the models by the user, or given at problem creation.
                     "Mean" should be a vector (size := n), "Covariance Matrix"/ "Covariance Cholesky Decomposition" should
                     be an nxn vector of vectors. (No special encoding of the cov, except as cholesky decomposition.)
     @param zForm:  A boolean indicating whether the latent variables are passed in z-Form (if zForm is true) or

@@ -13,11 +13,21 @@
 void korali::problem::bayesian::latent::HierarchicalLatentCustom::initialize()
 {
   korali::problem::bayesian::Latent::initialize();
-
+  _numberIndividuals = _logLikelihoodFunctions.size();
   if (_numberIndividuals <= 0) KORALI_LOG_ERROR("Hierarchical latent variable problems require defining reference data.\n");
-  if (_data.size() != _numberIndividuals) KORALI_LOG_ERROR("Hierarchical latent variable problems require defining reference data, with one vector of points for each individual.\n");
-  // The user should define one variable per latent variable dimension, as prototype:
+ // The user should define one variable per latent variable dimension, as prototype:
   if (_k->_variables.size() != _latentSpaceDimensions) KORALI_LOG_ERROR("Hierarchical latent variable problems require only a subset of prototype variables to be defined. Please define one prototype latent variable per individual. (Expected %d variables, found %d variables.) \n", _numberIndividuals, _k->_variables.size());
+
+  if (_points){
+     if (_points.size() != _numberIndividuals) KORALI_LOG_ERROR("If x-value data is passed to the hierarchical latent variable problems, it must consist of one vector of points for each individual.\n");
+    _handleXValues = true;
+    _xDimensions = _points[0][0].size();
+  }
+
+  // Prepare the loglikelihood function
+  logLikelihoodFunction = [this](korali::Sample &s) -> void {
+    evaluateLoglikelihood(s);
+  };
 
   // * * Set up the low-level problem
 
@@ -26,10 +36,7 @@ void korali::problem::bayesian::latent::HierarchicalLatentCustom::initialize()
   //     TODO: IF that ever changes, need to propagate _all_ solver configurations here!
 
   _koraliExperiment["Problem"]["Type"] = "Bayesian/Latent/HierarchicalLatentLowlevel";
-  _koraliExperiment["Problem"]["Conditional Log Likelihood Function"] = _conditionalLogLikelihoodFunction;
-  _koraliExperiment["Problem"]["Data Dimensions"] = _dataDimensions;
-  _koraliExperiment["Problem"]["Data"] = _data;
-  _koraliExperiment["Problem"]["Number Individuals"] = _numberIndividuals;
+  _koraliExperiment["Problem"]["Conditional Log Likelihood Function"] = logLikelihoodFunction;
   _koraliExperiment["Problem"]["Latent Space Dimensions"] = _latentSpaceDimensions;
 
   _koraliExperiment["Distributions"][0]["Name"] = "Dummy Prior";
@@ -164,21 +171,29 @@ korali::problem::bayesian::latent::HierarchicalLatentCustom::~HierarchicalLatent
 //  delete &_lowlevelProblem;
 }
 
-/**
-  * @brief Evaluate the user-defined function giving the conditional log-likelihood of one data point, given one
-            vector of latent variables (for a single, unspecified individual).
-            See the description of that function in the config for more information.
-           (It will set "Conditional LogLikelihood" and use "Latent Variables" and "Data Point".)
-  * @param sample: Should contain fields "Latent Variables" and "Data Point".
- */
-void korali::problem::bayesian::latent::HierarchicalLatentCustom::evaluateLoglikelihoodSingle(korali::Sample &sample)
-{
-  sample.run(_conditionalLogLikelihoodFunction);
-}
 
 void korali::problem::bayesian::latent::HierarchicalLatentCustom::evaluateLoglikelihood_(korali::Sample &sample, bool zForm)
 {
-  _lowlevelProblem->evaluateLoglikelihood_(sample, zForm);
+  /* - extract latent variables
+     - run each model separately on the latent variables --> 'LogLikelihood Evaluation'
+       - optionally, insert Data Points (vector of vectors)
+     - return as 'Log Likelihood'
+  */
+  korali::Sample llhSample;
+  llhSample["Sample Id"] = KORALI_GET(int, sample, "Sample Id") + 1234;
+  llhSample["Current Generation"] = _k->_currentGeneration;
+  llhSample["Module"] = "Problem"; // not needed?
+  std::vector<std::vector<double>> latentVariables = KORALI_GET(std::vector<std::vector<double>>, sample, "Latent Variables");
+  std::vector<double> allLLHs(_numberIndividuals);
+
+  for (size_t i=0; i < _numberIndividuals; i++){
+    llhSample["Latent Variables"] = latentVariables[i]
+    if (_handleXValues)
+      llhSample["Data Points"] = _points[i];
+    llhSample.run(_logLikelihoodFunctions[i]);
+    allLLHs[i] = KORALI_GET(double, llhSample, "LogLikelihood Evaluation");
+  }
+  sample["Log Likelihood"] = allLLHs;
 }
 void korali::problem::bayesian::latent::HierarchicalLatentCustom::evaluateLoglikelihood(korali::Sample &sample)
 {

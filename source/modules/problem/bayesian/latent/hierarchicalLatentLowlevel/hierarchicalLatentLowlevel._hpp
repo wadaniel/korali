@@ -66,9 +66,10 @@ class HierarchicalLatentLowlevel : public korali::problem::bayesian::Latent
   /**
   * @brief Evaluate the total log-probability p(all data | all latent) * p(latent | hyperparameters).
             log[ p(all data | all latent) * p(all latent | hyperparameters) ]
+            Note: Data is not handled by this problem class, it must be included in the definition of the
+                  likelihood model functions.
     @param sample: Is expected to contain the fields ["Latent Variables"], ["Mean"] and ["Covariance Matrix"] or
                     ["Covariance Cholesky Decomposition"].
-                    Data was given at problem creation.
                     "Mean" should be a vector (size := n), "Covariance Matrix"/ "Covariance Cholesky Decomposition" should
                     be an nxn vector of vectors. (No special encoding of the cov, except as cholesky decomposition.)
     @param zForm:  A boolean indicating whether the latent variables are passed in z-Form (if zForm is true) or
@@ -86,19 +87,11 @@ class HierarchicalLatentLowlevel : public korali::problem::bayesian::Latent
   void evaluateLogPosterior(korali::Sample &sample) override;
 
   /**
-  * @brief Evaluate the user-defined function giving the conditional log-likelihood of one data point, given one
-            vector of latent variables (for a single, unspecified individual).
-            See the description of that function in the config for more information.
-           (It will set "Conditional LogLikelihood" and use "Latent Variables" and "Data Point".)
-  * @param sample: Should contain fields "Latent Variables" and "Data Point".
- */
-  void evaluateLoglikelihoodSingle(korali::Sample &sample);
-
-  /**
-    @brief Evaluate each log-likelihood log(p(data for individual i | latent variables i)) across all data points
-            assigned to the individual, given latent variables.
-            Uses sample["Latent Variables"] which must be a vector of vectors of latent variables (one vector per individual).
-            Note: "Latent Variables" will be overwritten in the process!
+    @brief Runs the function _logLikelihoodFunction, after optionally transforming the latent variables back from z space.
+            Evaluate each log-likelihood log(p(data for individual i | latent variables i)),
+            given the latent variables. Uses sample["Latent Variables"] which must be a vector of vectors of
+            latent variables (one vector per individual).
+            Note: "Latent Variables" can be overwritten in the process!
      @param sample: sample["Latent Variables"] should contain a list of lists / vector of vectors, one latent variable vector for each individual.
      @param zForm:  A boolean indicating whether the latent variables are passed in z-Form (if zForm is true) or
                     whether "Latent Variables" are the untransformed values.

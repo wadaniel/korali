@@ -157,17 +157,6 @@ void korali::problem::bayesian::latent::HierarchicalLatentLowlevel::initialize()
   }
 }
 
-/*! @brief Evaluate the user-defined function giving the conditional log-likelihood of one data point, given one
-            vector of latent variables (for a single, unspecified individual).
-            See the description of this function for more information.
-           (It will set "Conditional LogLikelihood" and use "Latent Variables" and "Data Point".)
-  * @param sample: Should contain fields "Latent Variables" (a vector) and "Data Point" (a vector).
-                    "Latent Variables" must be the untransformed values. */
-void korali::problem::bayesian::latent::HierarchicalLatentLowlevel::evaluateLoglikelihoodSingle(korali::Sample &sample)
-{
-  sample.run(_conditionalLogLikelihoodFunction);
-  //sample["Single LogLikelihood"] = sample["Conditional LogLikelihood"].get<double>();
-}
 /*! @brief Evaluate each log-likelihood log(p(data for individual i | latent variables i)) across all data points
             assigned to the individual, given latent variables.
             Uses sample["Latent Variables"] which must be a vector of vectors of latent variables (one vector per individual).
@@ -181,25 +170,18 @@ void korali::problem::bayesian::latent::HierarchicalLatentLowlevel::evaluateLogl
 {
   std::vector<std::vector<double>> allLatentVars = KORALI_GET(std::vector<std::vector<double>>, sample, "Latent Variables");
   assert(allLatentVars.size() == _numberIndividuals);
-  //sample["Latent Variables"].get<std::vector<std::vector<double>>>();
-  std::vector<double> allLogP(_numberIndividuals);
-  assert(_data.size() == _numberIndividuals);
-  for (size_t i = 0; i < _numberIndividuals; i++)
+  if (zForm)
   {
-    assert(_data[i].size() > 0); // && "We need non-empty data for each individual.");
-    double logP = 0;
-    std::vector<double> latentVars = allLatentVars[i];
-    if (zForm)
-      latentVars = zToLatent(latentVars);
-    for (std::vector<double> dataPoint : _data[i])
+    for (size_t i = 0; i < _numberIndividuals; i++)
     {
-      sample["Latent Variables"] = latentVars;
-      sample["Data Point"] = dataPoint;
-      sample.run(_conditionalLogLikelihoodFunction);
-      logP += KORALI_GET(double, sample, "Conditional LogLikelihood"); // sample["Conditional LogLikelihood"].get<double>();
+      std::vector<double> latentVars = allLatentVars[i];
+      allLatentVars[i] = zToLatent(allLatentVars[i]);
     }
-    allLogP[i] = logP;
+    sample["Latent Variables"] = allLatentVars;
   }
+  sample.run(_logLikelihoodFunction);
+  auto allLogP = KORALI_GET(std::vector<double>, sample, "LogLikelihood Evaluations");
+
   sample["Log Likelihood"] = allLogP;
 }
 void korali::problem::bayesian::latent::HierarchicalLatentLowlevel::evaluateLoglikelihood(korali::Sample &sample)
@@ -448,10 +430,10 @@ void korali::problem::bayesian::latent::HierarchicalLatentLowlevel::evaluateLogP
   evaluateLogPrior_(sample, true, true);
 }
 
-/*! @brief Evaluate the total loglikelihood of the data (if any), given values for latent variables and hyperparameters.
+/*! @brief Evaluate the total loglikelihood of the data (implicitly included in the likelihood function definition),
+            given values for latent variables and hyperparameters.
     @param sample: Is expected to contain the fields ["Latent Variables"], ["Mean"] and ["Covariance Matrix"] or
-                    ["Covariance Cholesky Decomposition"]. Data was given at problem creation. Latent variables should be in
-                    untransformed form.
+                    ["Covariance Cholesky Decomposition"]. Latent variables should be in untransformed form.
                     "Mean" should be a vector (size := n), "Covariance Matrix" or "Covariance Cholesky Decomposition" should be an
                     nxn vector of vectors. (No special encoding of the cov except as cholesky decomp..)
                     Todo: Refactor to use "Hyperparameters" instead of "Mean" and "Covariance .."?

@@ -21,6 +21,9 @@ Normal
    p(d | \vartheta) = {\frac {1}{\sigma {\sqrt {2\pi }}}}e^{-{\frac {1}{2}}\left((x-\mu )/\sigma \right)^{2}}
 
 
+where :math:`\mu` is the mean and :math:`\sigma` is the Standard Deviation.
+
+
 Positive Normal
 ---------------
 

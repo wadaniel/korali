@@ -57,7 +57,7 @@ class Reference : public korali::problem::Bayesian
   void loglikelihoodPoisson(korali::Sample &sample);
 
   /**
-  * @brief Geometric likelihood parametrized by mean.
+  * @brief Geometric likelihood parametrized by mean. Parametrization of number of trials before success used.
   * @param sample A Korali Sample
   */
   void loglikelihoodGeometric(korali::Sample &sample);

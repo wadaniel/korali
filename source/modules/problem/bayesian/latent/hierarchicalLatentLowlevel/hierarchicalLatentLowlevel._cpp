@@ -180,7 +180,7 @@ void korali::problem::bayesian::latent::HierarchicalLatentLowlevel::evaluateLogl
     sample["Latent Variables"] = allLatentVars;
   }
   sample.run(_logLikelihoodFunction);
-  auto allLogP = KORALI_GET(std::vector<double>, sample, "LogLikelihood Evaluations");
+  auto allLogP = KORALI_GET(std::vector<double>, sample, "logLikelihood");
 
   sample["logLikelihood"] = allLogP;
 }

@@ -29,7 +29,7 @@ def main():
     y_vals[i] = d.data[i, :, 2].tolist()
 
   # * The computational model, y, sdev = f(x, theta), g(x, theta)
-  e["Problem"]["Computational Model"] = [lambda sample: normalModelFunction(sample, x_vals[i])
+  e["Problem"]["Computational Models"] = [lambda sample: normalModelFunction(sample, x_vals[i])
                                          for i in range(d.nIndividuals)]
   e["Problem"]["Likelihood Model"] = "Normal"
   e["Problem"]["Reference Data"] = y_vals

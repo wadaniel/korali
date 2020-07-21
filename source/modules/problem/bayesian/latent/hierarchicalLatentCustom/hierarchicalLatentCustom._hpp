@@ -25,11 +25,11 @@ class HierarchicalLatentCustom : public korali::problem::bayesian::Latent
      @param sample: sample["Latent Variables"] should contain a list of lists / vector of vectors, one latent variable vector for each individual.
      @returns: sample["logLikelihood"], a list/vector with one log-likelihood per individual.
    */
-  std::function<void(korali::Sample & s)> logLikelihoodFunction;
+  std::function<void(korali::Sample & s)> loglikelihoodLambdaFunction;
 
   public:
   /** @brief The lowlevel problem containing actual calculations. */
-  korali::problem::bayesian::latent::HierarchicalLatentLowlevel *_lowlevelProblem;
+  HierarchicalLatentLowlevel *_lowlevelProblem;
 
   /**
   * @brief The problem initialization; here, create hyperparameter variables and set up index lists to
@@ -52,7 +52,26 @@ class HierarchicalLatentCustom : public korali::problem::bayesian::Latent
      @param sample: sample["Latent Variables"] should contain a list of lists / vector of vectors, one latent variable vector for each individual.
      @returns : sample["logLikelihood"], a list/vector with one log-likelihood per individual.
  */
-  void evaluateLoglikelihood(korali::Sample &sample);
+  void loglikelihoodFunction(korali::Sample &sample);
+
+  /**
+    @brief Calls the lowlevel problem's function of same name.
+            Evaluate each log-likelihood log(p(data for individual i | latent variables i)) across all data points
+            assigned to the individual, given latent variables.
+            Uses sample["Latent Variables"] which must be a vector of vectors of latent variables (one vector per individual).
+     @param sample: sample["Latent Variables"] should contain a list of lists / vector of vectors, one latent variable vector for each individual.
+     @param zForm:  A boolean indicating whether the latent variables are passed in z-Form (if zForm is true) or
+                    whether "Latent Variables" are the untransformed values.
+     @returns : sample['Log Likelihood'], a list/vector with one log-likelihood per individual.
+ */
+  void evaluateLoglikelihood_(korali::Sample &sample, bool zForm = true);
+  /**
+    @brief Same as evaluateLogLikelihood_(..., zForm = true)
+    @param sample: See other function description
+    */
+  void evaluateLoglikelihood(korali::Sample &sample) override;
+
+
 
   /**
   * @brief Evaluate log of p(latent | hyperparameters), hyperparameter-dependent prior over each *transformed* latent variable.

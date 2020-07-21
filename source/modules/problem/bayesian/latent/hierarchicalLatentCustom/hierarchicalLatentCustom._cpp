@@ -35,8 +35,8 @@ void HierarchicalLatentCustom::initialize()
   }
 
   // Prepare the loglikelihood function
-  logLikelihoodFunction = [this](korali::Sample &s) -> void {
-    evaluateLoglikelihood(s);
+  loglikelihoodLambdaFunction = [this](korali::Sample &s) -> void {
+    loglikelihoodFunction(s);
   };
 
   // * * Set up the low-level problem
@@ -46,7 +46,7 @@ void HierarchicalLatentCustom::initialize()
   //     TODO: IF that ever changes, need to propagate _all_ solver configurations here!
 
   _koraliExperiment["Problem"]["Type"] = "Bayesian/Latent/HierarchicalLatentLowlevel";
-  _koraliExperiment["Problem"]["Log Likelihood Function"] = logLikelihoodFunction;
+  _koraliExperiment["Problem"]["Log Likelihood Function"] = loglikelihoodLambdaFunction;
   _koraliExperiment["Problem"]["Latent Space Dimensions"] = _latentSpaceDimensions;
   _koraliExperiment["Problem"]["Number Individuals"] = _numberIndividuals;
 
@@ -178,7 +178,7 @@ HierarchicalLatentCustom::~HierarchicalLatentCustom()
 }
 
 
-void HierarchicalLatentCustom::evaluateLoglikelihood(korali::Sample &sample)
+void HierarchicalLatentCustom::loglikelihoodFunction(korali::Sample &sample)
 {
   /* - extract latent variables
      - run each model separately on the latent variables --> 'LogLikelihood Evaluation'
@@ -200,6 +200,22 @@ void HierarchicalLatentCustom::evaluateLoglikelihood(korali::Sample &sample)
     allLLHs[i] = KORALI_GET(double, llhSample, "logLikelihood");
   }
   sample["logLikelihood"] = allLLHs;
+}
+
+/*** Implementation note: **
+   We need to call the lowlevel problem's functions here, for all functions that can be called by name:
+     sample[".. function to evaluate"] = "Evaluate Loglikelihood"
+     conduit.start(sample)
+   or similar. That is because the highlevel problem is still linked to _k and will be called at every
+   such indirect call.
+*/
+void HierarchicalLatentCustom::evaluateLoglikelihood_(korali::Sample &sample, bool zForm)
+{
+  _lowlevelProblem->evaluateLoglikelihood_(sample, zForm);
+}
+void HierarchicalLatentCustom::evaluateLoglikelihood(korali::Sample &sample)
+{
+  _lowlevelProblem->evaluateLoglikelihood_(sample, true);
 }
 
 void HierarchicalLatentCustom::evaluateLogPosterior_(korali::Sample &sample, bool zForm, bool cholesky)

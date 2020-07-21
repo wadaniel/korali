@@ -20,7 +20,6 @@ def normalModelFunction(sample, points):
   assert len(latents) == 2
   theta = latents[0]
   sdev = latents[1]
-  sdev = abs(sdev)
 
   referenceEvals = []
   for i in range(N):

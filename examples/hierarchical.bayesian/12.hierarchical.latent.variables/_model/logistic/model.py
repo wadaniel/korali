@@ -46,13 +46,7 @@ def logisticModelFunction(sample, points=None, internalData=False):
       # set inf or nan to something large. otherwise nlmefitsa complains -- not sure if necessary in python, too. we'll see.
     referenceEvals.append(y)
 
-
-  import pdb
-  pdb.set_trace()
-
   sdev = theta[3]
-  sdev = abs(sdev)
-
   sample["Reference Evaluations"] = referenceEvals
   sample["Standard Deviations"] = [sdev] * len(points)
 

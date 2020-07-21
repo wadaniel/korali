@@ -36,9 +36,14 @@ void HierarchicalLatentReference::initialize()
     _xDimensions = _points[0][0].size();
   }
 
-  // Prepare the loglikelihood function
-  logLikelihoodFunction = [this](korali::Sample &s) -> void {
-    evaluateLoglikelihood(s);
+  /* Prepare the loglikelihood function.
+
+   *** Implementation note: **
+       This will result in the following call sequence:
+        HSAEM ~~> this->evaluateLoglikelihood() ~~> lowlevelProblem->_evaluateLoglikelihood() ~~> this lambda function.
+  */
+  loglikelihoodLambdaFunction = [this](korali::Sample &s) -> void {
+    loglikelihoodFunction(s);
   };
 
   // * * Set up the low-level problem
@@ -48,7 +53,7 @@ void HierarchicalLatentReference::initialize()
   //     TODO: IF that ever changes, need to propagate _all_ solver configurations here!
 
   _koraliExperiment["Problem"]["Type"] = "Bayesian/Latent/HierarchicalLatentLowlevel";
-  _koraliExperiment["Problem"]["Log Likelihood Function"] = logLikelihoodFunction;
+  _koraliExperiment["Problem"]["Log Likelihood Function"] = loglikelihoodLambdaFunction;
   _koraliExperiment["Problem"]["Latent Space Dimensions"] = _latentSpaceDimensions;
   _koraliExperiment["Problem"]["Number Individuals"] = _numberIndividuals;
 
@@ -190,7 +195,7 @@ HierarchicalLatentReference::~HierarchicalLatentReference()
         - return this list
  */
 
-void HierarchicalLatentReference::evaluateLoglikelihood(korali::Sample &sample)
+void HierarchicalLatentReference::loglikelihoodFunction(korali::Sample &sample)
 {
   /* Set up a sample*/
   korali::Sample llhSample;
@@ -340,6 +345,21 @@ void HierarchicalLatentReference::loglikelihoodNegativeBinomial(Sample &sample, 
   sample["logLikelihood"] = loglike;
 }
 
+/*** Implementation note: **
+   We need to call the lowlevel problem's functions here, for all functions that can be called by name:
+     sample[".. function to evaluate"] = "Evaluate Loglikelihood"
+     conduit.start(sample)
+   or similar. That is because the highlevel problem is still linked to _k and will be called at every
+   such indirect call.
+*/
+void HierarchicalLatentReference::evaluateLoglikelihood_(korali::Sample &sample, bool zForm)
+{
+  _lowlevelProblem->evaluateLoglikelihood_(sample, zForm);
+}
+void HierarchicalLatentReference::evaluateLoglikelihood(korali::Sample &sample)
+{
+  _lowlevelProblem->evaluateLoglikelihood_(sample, true);
+}
 
 void HierarchicalLatentReference::evaluateLogPosterior_(korali::Sample &sample, bool zForm, bool cholesky)
 {

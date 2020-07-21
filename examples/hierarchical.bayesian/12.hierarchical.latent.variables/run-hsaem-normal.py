@@ -20,10 +20,6 @@ def main():
 
   e["Problem"]["Type"] = "Bayesian/Latent/HierarchicalLatentReference"
 
-  # * The computational model, y, sdev = f(x, theta), g(x, theta)
-  e["Problem"]["Computational Model"] = lambda sample: normalModelFunction(sample)
-  e["Problem"]["Likelihood Model"] = "Normal"
-
   x_vals = [[] for _ in range(d.nIndividuals)]
   y_vals = [[] for _ in range(d.nIndividuals)]
   for i in range(d.nIndividuals):
@@ -32,10 +28,12 @@ def main():
     x_vals[i] = d.data[i, :, 1:2].tolist()
     y_vals[i] = d.data[i, :, 2].tolist()
 
-  e["Problem"]["Data Points"] = x_vals
+  # * The computational model, y, sdev = f(x, theta), g(x, theta)
+  e["Problem"]["Computational Model"] = [lambda sample: normalModelFunction(sample, x_vals[i])
+                                         for i in range(d.nIndividuals)]
+  e["Problem"]["Likelihood Model"] = "Normal"
   e["Problem"]["Reference Data"] = y_vals
-  e["Problem"]["Data Dimensions"] = d.nDataDimensions
-  e["Problem"]["Number Individuals"] = d.nIndividuals
+
   e["Problem"]["Latent Space Dimensions"] = d.nLatentSpaceDimensions
 
   e["Solver"]["Type"] = "HSAEM"

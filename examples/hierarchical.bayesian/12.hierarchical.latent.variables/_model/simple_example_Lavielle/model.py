@@ -111,11 +111,6 @@ class ExampleDistribution3(ExponentialFamilyDistribution):
         hyperparam / self._p.omega**2, 1. / self._p.sigma**2
     ]
 
-  def joint_probability(self, sample):
-    ''' for sampling via mcmc; given sample["Parameters"] -> (psi_i)_i (psi as in the book), and the current
-                hyperparameter, cur_hyperparameter, return the joint data probability. (Edit: need to return log-llh?)'''
-    pass  # TODO
-
 
 class ConditionalDistribution4():
   ''' Same hierarchical model as above, but here we only know the part p(data | latent), which is a product
@@ -129,52 +124,23 @@ class ConditionalDistribution4():
   def __init__(self):
     self._p = load_data.SimplePopulationData()
 
-  def conditional_p(self, sample):
+  def conditional_p(self, sample, points=None, internalData=False):
 
     latent_vars = sample["Latent Variables"]
-    data = sample["Data Point"]
     assert len(
         latent_vars
-    ) == 1  #self._p.nIndividuals, "we assume each individual has only one measurement and have their own latent variable"
+    ) == 1
+    if internalData:
+      points = sample["Data Points"]
+      assert points is None, "Points are handled internally"
+    else:
+      assert points is not None
+
     sigma = self._p.sigma
+    logp_sum = 0
 
-    # pdb.set_trace()
-    # log(p(data | mean, sigma ))
-    # logp = 0
-    #for i in range(self._p.nIndividuals):
-    # pt = self._p.data[i]
-    # assert pt == data[i]
-    mean = latent_vars
-    logp = np.log(utils.univariate_gaussian_probability(mean, sigma, data))
-
-    sample["Conditional LogLikelihood"] = logp
-
-
-#
-# class ConditionalDistribution5():
-#     ''' Model 5:
-#      - multiple dimensions
-#      - multiple distribution types
-#      - latent variable coordinates are correlated
-#      - p(datapoint | latent) is still a normal distribution N(latent, sigma**2)
-#     '''
-#
-#     def __init__(self):
-#         self._p = load_data.PopulationData()
-#
-#
-#     def conditional_p(self, sample):
-#
-#         latent_vars = sample["Latent Variables"]
-#         dataPoint = sample["Data Point"]
-#         assert len(latent_vars) == self._p.nDimensions
-#         sigma = self._p.sigma
-#
-#         logp = 0
-#         for dim in range(self._p.nDimensions):
-#             pt = dataPoint[dim]
-#             mean = latent_vars[dim]
-#             p = utils.univariate_gaussian_probability([mean], sigma, [pt])
-#             logp += np.log(p)
-#
-#         sample["Conditional LogLikelihood"] = logp
+    for point in points:
+      mean = latent_vars
+      logp = np.log(utils.univariate_gaussian_probability(mean, sigma, point))
+      logp_sum += logp
+    sample["logLikelihood"] = logp_sum

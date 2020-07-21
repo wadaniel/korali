@@ -20,11 +20,6 @@ def main():
 
   e["Problem"]["Type"] = "Bayesian/Latent/HierarchicalLatentReference"
 
-  # The computational model for the log-likelihood, log[ p(data point | latent) ]
-  e["Problem"][
-      "Computational Model"] = lambda sample: logisticModelFunction(sample)
-  e["Problem"]["Likelihood Model"] = "Normal"
-
   x_vals = [[] for _ in range(d.nIndividuals)]
   y_vals = [[] for _ in range(d.nIndividuals)]
   for i in range(d.nIndividuals):
@@ -33,12 +28,20 @@ def main():
     x_vals[i] = d.data[i, :, 1:2].tolist()
     y_vals[i] = d.data[i, :, 2].tolist()
 
-  e["Problem"]["Data Points"] = x_vals
+  # The computational model for the log-likelihood, log[ p(data point | latent) ]
+  e["Problem"]["Computational Models"] = [lambda sample: logisticModelFunction(sample, x_vals[i])
+                                          for i in range(d.nIndividuals)]
+
+  # Alternative: Pass the x values to Korali. Then, the points for the individual
+  #  will be accessible to the computational model in "Data Points".
+  # e["Problem"]["Computational Models"] = [lambda sample: logisticModelFunction(sample, internalData=True)
+  #                                         for i in range(10)]
+  # e["Problem"]["Points"] = x_vals
+
+  e["Problem"]["Likelihood Model"] = "Normal"
+
   e["Problem"]["Reference Data"] = y_vals
-  e["Problem"]["Data Dimensions"] = d.nDataDimensions
-  e["Problem"]["Number Individuals"] = d.nIndividuals
   e["Problem"]["Latent Space Dimensions"] = d.nLatentSpaceDimensions
-  e["Problem"]["Initial Variance"] = 1
 
   e["Solver"]["Type"] = "HSAEM"
   e["Solver"]["Number Samples Per Step"] = 10

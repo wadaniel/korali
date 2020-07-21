@@ -12,20 +12,18 @@ def main():
   k = korali.Engine()
   e = korali.Experiment()
 
-  e["Problem"]["Type"] = "Bayesian/Latent/HierarchicalLatentCustom"
-  # The computational model for the log-likelihood, log[ p(data point | latent) ]
-  e["Problem"][
-      "Conditional Log Likelihood Function"] = lambda sample: distrib.conditional_p(
-          sample)
-
   # We need to add one dimension to _p.data, because one individual in the general case could have
   # more than one data point assigned
   data_vector = [[] for _ in range(distrib._p.nIndividuals)]
   for i in range(distrib._p.nIndividuals):
     data_vector[i].append([distrib._p.data[i]])
-  e["Problem"]["Data"] = data_vector
-  e["Problem"]["Data Dimensions"] = 1
-  e["Problem"]["Number Individuals"] = distrib._p.nIndividuals
+
+  e["Problem"]["Type"] = "Bayesian/Latent/HierarchicalLatentCustom"
+  # The computational model for the log-likelihood, log[ p(data point | latent) ]
+  e["Problem"][
+      "Log Likelihood Functions"] = [lambda sample: distrib.conditional_p(
+          sample, data_vector[i])  for i in range(distrib._p.nIndividuals)]
+
   e["Problem"]["Latent Space Dimensions"] = 1
 
   e["Solver"]["Type"] = "HSAEM"

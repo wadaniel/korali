@@ -16,16 +16,14 @@ def main():
   k = korali.Engine()
   e = korali.Experiment()
 
-  e["Problem"]["Type"] = "Bayesian/Latent/HierarchicalLatentCustom"
-  # * The computational model for the log-likelihood, log[ p(data point | latent) ]
-  e["Problem"]["Conditional Log Likelihood Function"] = lambda sample: distrib.conditional_p(sample)
-
   data_vector = [[] for _ in range(distrib._p.nIndividuals)]
   for i in range(distrib._p.nIndividuals):
     data_vector[i] = distrib._p.data[i].tolist()
-  e["Problem"]["Data"] = data_vector
-  e["Problem"]["Data Dimensions"] = distrib._p.nDataDimensions
-  e["Problem"]["Number Individuals"] = distrib._p.nIndividuals
+
+  e["Problem"]["Type"] = "Bayesian/Latent/HierarchicalLatentCustom"
+  # * The computational model for the log-likelihood, log[ p(data point | latent) ]
+  e["Problem"]["Log Likelihood Functions"] = [lambda sample: distrib.conditional_p(sample, data_vector[i]) for i in range(distrib._p.nIndividuals)]
+
   e["Problem"]["Latent Space Dimensions"] = distrib._p.nLatentSpaceDimensions
 
   e["Solver"]["Type"] = "HSAEM"

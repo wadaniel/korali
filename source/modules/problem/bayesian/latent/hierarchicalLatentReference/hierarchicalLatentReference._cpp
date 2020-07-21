@@ -30,7 +30,7 @@ void HierarchicalLatentReference::initialize()
  // The user should define one variable per latent variable dimension, as prototype:
   if (_k->_variables.size() != _latentSpaceDimensions) KORALI_LOG_ERROR("Hierarchical latent variable problems require only a subset of prototype variables to be defined. Please define one prototype latent variable per individual. (Expected %d variables, found %d variables.) \n", _numberIndividuals, _k->_variables.size());
 
-  if (&_points){
+  if (_points.size() > 0){
      if (_points.size() != _numberIndividuals) KORALI_LOG_ERROR("If x-value data is passed to the hierarchical latent variable problems, it must consist of one vector of points for each individual.\n");
     _handleXValues = true;
     _xDimensions = _points[0][0].size();
@@ -48,7 +48,7 @@ void HierarchicalLatentReference::initialize()
   //     TODO: IF that ever changes, need to propagate _all_ solver configurations here!
 
   _koraliExperiment["Problem"]["Type"] = "Bayesian/Latent/HierarchicalLatentLowlevel";
-  _koraliExperiment["Problem"]["Conditional Log Likelihood Function"] = logLikelihoodFunction;
+  _koraliExperiment["Problem"]["Log Likelihood Function"] = logLikelihoodFunction;
   _koraliExperiment["Problem"]["Latent Space Dimensions"] = _latentSpaceDimensions;
   _koraliExperiment["Problem"]["Number Individuals"] = _numberIndividuals;
 
@@ -214,11 +214,11 @@ void HierarchicalLatentReference::evaluateLoglikelihood(korali::Sample &sample)
     llhSample.run(_computationalModels[i]);
 
     if (_likelihoodModel == "Normal")
-      loglikelihoodNormal(sample, _referenceData[i]);
+      loglikelihoodNormal(llhSample, _referenceData[i]);
     else if (_likelihoodModel == "Negative Binomial")
-      loglikelihoodNegativeBinomial(sample, _referenceData[i]);
+      loglikelihoodNegativeBinomial(llhSample, _referenceData[i]);
     else if (_likelihoodModel == "Positive Normal")
-      loglikelihoodPositiveNormal(sample, _referenceData[i]);
+      loglikelihoodPositiveNormal(llhSample, _referenceData[i]);
     else
       KORALI_LOG_ERROR("Bayesian problem (%s) not recognized.\n", _likelihoodModel.c_str());
 

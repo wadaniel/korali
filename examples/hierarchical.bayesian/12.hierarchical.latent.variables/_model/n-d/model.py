@@ -17,18 +17,26 @@ class ConditionalDistribution5():
         self._p is an object that manages the data, and stores fixed parameter sigma, plus other information. '''
     self._p = load_data.PopulationData()
 
-  def conditional_p(self, sample):
+  def conditional_p(self, sample, points=None, internalData=False):
 
     latent_vars = sample["Latent Variables"]
-    dataPoint = sample["Data Point"]
     assert len(latent_vars) == self._p.nDimensions
+    if internalData:
+      points = sample["Data Points"]
+      assert points is None, "Points are handled internally"
+    else:
+      assert points is not None
+
     sigma = self._p.sigma
+    logp_sum = 0
 
-    logp = 0
-    for dim in range(self._p.nDimensions):
-      pt = dataPoint[dim]
-      mean = latent_vars[dim]
-      p = utils.univariate_gaussian_probability([mean], sigma, [pt])
-      logp += np.log(p)
+    for point in points:
+      logp = 0
+      for dim in range(self._p.nDimensions):
+        pt = point[dim]
+        mean = latent_vars[dim]
+        p = utils.univariate_gaussian_probability([mean], sigma, [pt])
+        logp += np.log(p)
+      logp_sum += logp
 
-    sample["Conditional LogLikelihood"] = logp
+    sample["logLikelihood"] = logp_sum

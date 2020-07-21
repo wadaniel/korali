@@ -22,25 +22,39 @@ def logisticModel(x, theta):
   return y
 
 
-def logisticModelFunction(sample):
+def logisticModelFunction(sample, points=None, internalData=False):
   theta = sample["Latent Variables"]
-  x = sample["Data Point"]
-  assert len(theta) >= 4
-  assert len(x) == 1
-  x = x[0]
-  f = np.exp(float(theta[2]) * x)  # can give inf if theta[2] is very large
-  y = (theta[0] * theta[1] * f) / (theta[0] + theta[1] * (f - 1.))
-
-  if np.isscalar(x):
-    if np.isinf(y) or np.isnan(y):
-      y = 1e300
+  if internalData:
+    points = sample["Data Points"]
+    assert points is None, "No need to pass 'points' if internal data is set"
   else:
-    y[np.isinf(y) | np.isnan(y)] = 1e300
-    # set inf or nan to something large. otherwise nlmefitsa complains -- not sure if necessary in python, too. we'll see.
+    assert points is not None, "Missing data points"
+  assert len(theta) >= 4
+  referenceEvals = []
 
-  sample["Reference Evaluation"] = y
-  sample["Standard Deviation"] = theta[3]
+  for x in points:
+    assert len(x) == 1
+    x = x[0]
+    f = np.exp(float(theta[2]) * x)  # can give inf if theta[2] is very large
+    y = (theta[0] * theta[1] * f) / (theta[0] + theta[1] * (f - 1.))
 
+    if np.isscalar(x):
+      if np.isinf(y) or np.isnan(y):
+        y = 1e300
+    else:
+      y[np.isinf(y) | np.isnan(y)] = 1e300
+      # set inf or nan to something large. otherwise nlmefitsa complains -- not sure if necessary in python, too. we'll see.
+    referenceEvals.append(y)
+
+
+  import pdb
+  pdb.set_trace()
+
+  sdev = theta[3]
+  sdev = abs(sdev)
+
+  sample["Reference Evaluations"] = referenceEvals
+  sample["Standard Deviations"] = [sdev] * len(points)
 
 
 class LogisticConditionalDistribution():
@@ -54,42 +68,50 @@ class LogisticConditionalDistribution():
   def __init__(self):
     self._p = load_data.LogisticData()
 
-  def conditional_p(self, sample):
+  def conditional_p(self, sample, points=None, internalData=False):
 
     latent_vars = sample["Latent Variables"]
-    dataPoint = sample["Data Point"]
-
-    assert len(dataPoint) == 3, f"Latent variable vector has wrong length. " \
-                                f"Was: {len(latent_vars)}, should be: {2}"
-
-    x = dataPoint[1]
-    y = dataPoint[2]
     assert len(latent_vars) == self._p.nLatentSpaceDimensions
-    fx = logisticModel(x, latent_vars[:-1])
-    sigma2 = latent_vars[-1]**2
-    eps = 1e-10
-    if self._p.error_model == "constant":
-      try:
-        err = (y - fx)**2
-      except OverflowError as e:
-        err = 1e200
-      det = sigma2
-    elif self._p.error_model == "proportional":
-      y2 = max(y**2, eps)
-      try:
-        err = (y - fx)**2 / y2
-      except OverflowError as e:
-        err = 1e200
-      det = sigma2 * y2
+    if internalData:
+      points = sample["Data Points"]
+      assert points is None, "Points are handled internally"
     else:
-      raise ValueError(f"Unknown error model: {self._p.error_model}")
+      assert points is not None
+
+    logp_sum = 0
+
+    for point in points:
+      assert len(point) == 3, f"Latent variable vector has wrong length. " \
+                          f"Was: {len(latent_vars)}, should be: {2}"
+      x = point[1]
+      y = point[2]
+      fx = logisticModel(x, latent_vars[:-1])
+      sigma2 = latent_vars[-1]**2
+      eps = 1e-10
+      if self._p.error_model == "constant":
+        try:
+          err = (y - fx)**2
+        except OverflowError as e:
+          err = 1e200
+        det = sigma2
+      elif self._p.error_model == "proportional":
+        y2 = max(y**2, eps)
+        try:
+          err = (y - fx)**2 / y2
+        except OverflowError as e:
+          err = 1e200
+        det = sigma2 * y2
+      else:
+        raise ValueError(f"Unknown error model: {self._p.error_model}")
 
     if np.isinf(err) or np.isnan(err):
-      sample["Conditional LogLikelihood"] = -1.e200
+       logp_sum = -1.e200
     else:
       log2pi = 0.5 * np.log(2 * np.pi)
       if (sigma2 == 0):
         logp = -np.inf
       else:
         logp = -log2pi - 0.5 * np.log(float(det)) - 0.5 * err / sigma2
-      sample["Conditional LogLikelihood"] = logp
+      logp_sum += logp
+
+    sample["logLikelihood"] = logp_sum

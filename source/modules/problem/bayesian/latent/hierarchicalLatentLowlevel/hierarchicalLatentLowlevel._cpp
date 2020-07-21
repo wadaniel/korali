@@ -164,7 +164,7 @@ void korali::problem::bayesian::latent::HierarchicalLatentLowlevel::initialize()
      @param sample: sample["Latent Variables"] should contain a list of lists / vector of vectors, one latent variable vector for each individual.
      @param zForm:  A boolean indicating whether the latent variables are passed in z-Form (if zForm is true) or
                     whether "Latent Variables" are the untransformed values.
-     @returns : sample['Log Likelihood'], a list/vector with one log-likelihood per individual.
+     @returns : sample["logLikelihood"], a list/vector with one log-likelihood per individual.
      */
 void korali::problem::bayesian::latent::HierarchicalLatentLowlevel::evaluateLoglikelihood_(korali::Sample &sample, bool zForm)
 {
@@ -182,7 +182,7 @@ void korali::problem::bayesian::latent::HierarchicalLatentLowlevel::evaluateLogl
   sample.run(_logLikelihoodFunction);
   auto allLogP = KORALI_GET(std::vector<double>, sample, "LogLikelihood Evaluations");
 
-  sample["Log Likelihood"] = allLogP;
+  sample["logLikelihood"] = allLogP;
 }
 void korali::problem::bayesian::latent::HierarchicalLatentLowlevel::evaluateLoglikelihood(korali::Sample &sample)
 {
@@ -444,7 +444,7 @@ void korali::problem::bayesian::latent::HierarchicalLatentLowlevel::evaluateLogP
   evaluateLogPrior_(sample, zForm, cholesky);
   evaluateLoglikelihood_(sample, zForm);
 
-  auto llhs = KORALI_GET(std::vector<double>, sample, "Log Likelihood");
+  auto llhs = KORALI_GET(std::vector<double>, sample, "logLikelihood");
   auto lpriors = KORALI_GET(std::vector<double>, sample, "Log Prior");
 
   //               log(p) =         log(p(y | latent))                   + log(p(latent | hyperparams))

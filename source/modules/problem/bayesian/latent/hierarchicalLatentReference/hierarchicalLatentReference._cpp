@@ -25,42 +25,21 @@ void HierarchicalLatentReference::initialize()
 {
   Latent::initialize();
 
-  if (_numberIndividuals <= 0) KORALI_LOG_ERROR("Hierarchical latent variable problems assume factorization of the probability over multiple 'individuals'.\n");
-  if (_dataPoints.size() != _numberIndividuals) KORALI_LOG_ERROR("'Reference' problems allow to define data points. If passed, it should consist of one list of points for each individual.\n");
-  if (_referenceData.size() != _numberIndividuals) KORALI_LOG_ERROR("'Reference' problems require defining reference data, with one list of points for each individual.\n");
-  // * The user should define one variable per latent variable dimension, as prototype:
+  _numberIndividuals = _computationalModels.size();
+  if (_numberIndividuals <= 0) KORALI_LOG_ERROR("Hierarchical latent variable problems require defining reference data.\n");
+ // The user should define one variable per latent variable dimension, as prototype:
   if (_k->_variables.size() != _latentSpaceDimensions) KORALI_LOG_ERROR("Hierarchical latent variable problems require only a subset of prototype variables to be defined. Please define one prototype latent variable per individual. (Expected %d variables, found %d variables.) \n", _numberIndividuals, _k->_variables.size());
 
-  std::vector<std::vector<std::vector<double>>> data(_numberIndividuals);
+  if (&_points){
+     if (_points.size() != _numberIndividuals) KORALI_LOG_ERROR("If x-value data is passed to the hierarchical latent variable problems, it must consist of one vector of points for each individual.\n");
+    _handleXValues = true;
+    _xDimensions = _points[0][0].size();
+  }
 
-  /* If no _dataPoints are passed, set Y (Y == _referenceData) as Data for the lowlevel problem. */
-  if (_dataPoints.size() == 0) {
-    for (size_t i=0; i < _numberIndividuals; i++){
-      size_t ni = _referenceData[i].size();
-      data[i].resize(ni);
-      for (size_t k=0; k < ni; k++){
-        data[i][k] = std::vector<double>({_referenceData[i][k]});
-      }
-    }
-  }
-  else {
-    /* Otherwise, stack X and Y to Data (Y goes into the last dimension), and check that the dimensions of X and Y fit to each other.*/
-    data = _dataPoints;
-    for (size_t i=0; i < _numberIndividuals; i++){
-      size_t ni = _referenceData[i].size();
-      if (data[i].size() != ni) KORALI_LOG_ERROR("If Data Points are passed, there must be one data point per Reference Data value for each individual. Number of points for individual %d was: %d. Expected: %d.", i, data[i].size(), ni);
-      for (size_t k=0; k < ni; k++){
-        if(data[i][k].size() != _dataDimensions) KORALI_LOG_ERROR("Data points should all have dimension 'Data Dimension'. Expected: %d, found dimension: %d.", data[i][k].size(), _dataDimensions);
-        data[i][k].push_back(_referenceData[i][k]);
-      }
-    }
-  }
-  // Prepare the conditional loglikelihood function
-  conditionalLogLikelihoodFunction = [this](korali::Sample &s) -> void {
-    evaluateLoglikelihoodSingle(s);
+  // Prepare the loglikelihood function
+  logLikelihoodFunction = [this](korali::Sample &s) -> void {
+    evaluateLoglikelihood(s);
   };
-
-
 
   // * * Set up the low-level problem
 
@@ -69,11 +48,9 @@ void HierarchicalLatentReference::initialize()
   //     TODO: IF that ever changes, need to propagate _all_ solver configurations here!
 
   _koraliExperiment["Problem"]["Type"] = "Bayesian/Latent/HierarchicalLatentLowlevel";
-  _koraliExperiment["Problem"]["Conditional Log Likelihood Function"] = conditionalLogLikelihoodFunction;
-  _koraliExperiment["Problem"]["Data Dimensions"] = _dataDimensions;
-  _koraliExperiment["Problem"]["Data"] = data;
-  _koraliExperiment["Problem"]["Number Individuals"] = _numberIndividuals;
+  _koraliExperiment["Problem"]["Conditional Log Likelihood Function"] = logLikelihoodFunction;
   _koraliExperiment["Problem"]["Latent Space Dimensions"] = _latentSpaceDimensions;
+  _koraliExperiment["Problem"]["Number Individuals"] = _numberIndividuals;
 
   _koraliExperiment["Distributions"][0]["Name"] = "Dummy Prior";
   _koraliExperiment["Distributions"][0]["Type"] = "Univariate/Uniform";
@@ -150,20 +127,11 @@ void HierarchicalLatentReference::initialize()
           KORALI_LOG_ERROR("Unrecognized 'Latent Variable Distribution' %s ", distribString.c_str());
       }
     }
-
-    // Todo: Add any other parameters here that will be required by the hierarchical SAEM. Initial values?-OK. Bounds?
-
-    //  volatile int done = 0;
-    //  while (!done) sleep(1);
   }
 
   /* 2. Create covariance matrices.
       Note: If ever required, could add 'groups' of variables that share a covariance matrix, while groups are independent of each other. */
   //  Degrees of freedom of the covariance matrix: n*(n+1)/2; we over-represent it as matrix
-  // _hyperparametersCovIndices.resize(_latentSpaceDimensions);
-  // for (size_t i = 0; i< _hyperparametersCovIndices.size(); i++){
-  //   _hyperparametersCovIndices[i].clear();
-  //  }
   for (size_t i = 0; i < _latentSpaceDimensions; i++)
   {
     for (size_t j = 0; j < _latentSpaceDimensions; j++)
@@ -194,7 +162,7 @@ void HierarchicalLatentReference::initialize()
   _koraliExperiment["Console Output"]["Verbosity"] = "Silent"; // Todo: Or propagate the current, user defined setting?
   _koraliExperiment["Random Seed"] = _k->_randomSeed++;
 
-  // TODO: Initialize the experiment and "extract" the lowlevel problem, so that we can call it's functions later.
+  /* Initialize the experiment and "extract" the lowlevel problem, so that we can call it's functions later. */
   _koraliEngine.initialize(_koraliExperiment);
   _lowlevelProblem = dynamic_cast<HierarchicalLatentLowlevel *>(
     _koraliExperiment._problem);
@@ -207,114 +175,171 @@ HierarchicalLatentReference::~HierarchicalLatentReference()
 }
 
 /**
-  * @brief Evaluate the conditional log-likelihood of one data point, given its reference function value.
-  *         How it is calculated depends on the _likelihoodModel.
-  * @param sample: Should contain fields "Latent Variables" and "Data Point". The last dimension of "Data Point" is
-  *                 expected to be the reference function value, that is, point = [x1, x2, ... xd, y] where
-  *                 our x values have d dimensions.
+  * @brief Evaluate all log-likelihoods for all individuals. Returns a list of log-likelihood values.
+  * @param sample: Should contain fields "Latent Variables" and optionally "Data Points".
+
+  Todo:
+        - extract latent variables;
+        - optionally, get the right data points for:
+        - run each model
+            - on possibly reverse-transformed latents
+            for each: --> sample with sigma/di... and refrence values [y1, y2, ...]
+            - re-copy the logLikelihoodNormal etc -->
+            - feed the resulting sample into the right llh function
+            - append the resulting llh to a list
+        - return this list
  */
-void HierarchicalLatentReference::evaluateLoglikelihoodSingle(korali::Sample &sample)
+
+void HierarchicalLatentReference::evaluateLoglikelihood(korali::Sample &sample)
 {
-  /* Remove the y-value from 'Data Point', it should not be visible to the evaluation function */
-  auto dataPoint = KORALI_GET(std::vector<double>, sample, "Data Point");
-  double y = dataPoint[dataPoint.size()-1];
-  sample["Data Point"] = std::vector<double>(dataPoint.begin(), dataPoint.end()-1);
+  /* Set up a sample*/
+  korali::Sample llhSample;
+  llhSample["Sample Id"] = KORALI_GET(int, sample, "Sample Id") + 1235;
+  llhSample["Current Generation"] = _k->_currentGeneration;
+  llhSample["Module"] = "Problem"; // not needed?
 
-  sample.run(_computationalModel);
+  std::vector<std::vector<double>> latentVariables = KORALI_GET(std::vector<std::vector<double>>, sample, "Latent Variables");
+//  std::vector<std::vector<double>> allY(_numberIndividuals);
+//  std::vector<std::vector<double>> allY(_numberIndividuals);
+  std::vector<double> allLLHs(_numberIndividuals);
 
-  if (_likelihoodModel == "Normal")
-    loglikelihoodNormal(sample, y);
-  else if (_likelihoodModel == "Negative Binomial")
-    loglikelihoodNegativeBinomial(sample, y);
-  else if (_likelihoodModel == "Positive Normal")
-    loglikelihoodPositiveNormal(sample, y);
-  else
-    KORALI_LOG_ERROR("Bayesian problem (%s) not recognized.\n", _likelihoodModel.c_str());
+  for (size_t i=0; i < _numberIndividuals; i++){
+    // Set to something invalid to prevent re-using former values
+    llhSample["Reference Evaluations"] = 0;
+    llhSample["Sigmas"] = 0;
+    llhSample["Dispersions"] = 0;
+    llhSample["Latent Variables"] = latentVariables[i];
+    if (_handleXValues)
+      llhSample["Data Points"] = _points[i];
+    llhSample.run(_computationalModels[i]);
+
+    if (_likelihoodModel == "Normal")
+      loglikelihoodNormal(sample, _referenceData[i]);
+    else if (_likelihoodModel == "Negative Binomial")
+      loglikelihoodNegativeBinomial(sample, _referenceData[i]);
+    else if (_likelihoodModel == "Positive Normal")
+      loglikelihoodPositiveNormal(sample, _referenceData[i]);
+    else
+      KORALI_LOG_ERROR("Bayesian problem (%s) not recognized.\n", _likelihoodModel.c_str());
+
+    allLLHs[i] = KORALI_GET(double, llhSample, "logLikelihood");
+  }
+  sample["logLikelihood"] = allLLHs;
 }
 
-double HierarchicalLatentReference::compute_normalized_sse(double f, double g, double y)
+double HierarchicalLatentReference::compute_normalized_sse(std::vector<double> f, std::vector<double> g, std::vector<double> y)
 {
-  double diff = (y - f) / g;
-  double sse = diff * diff;
+  double sse = 0.;
+  for (size_t i = 0; i < y.size(); i++)
+  {
+    double diff = (y[i] - f[i]) / g[i];
+    sse += diff * diff;
+  }
   return sse;
 }
 
-void HierarchicalLatentReference::loglikelihoodNormal(Sample &sample, double y)
+void HierarchicalLatentReference::loglikelihoodNormal(Sample &sample, std::vector<double> referenceData)
 {
-  auto refEval = KORALI_GET(double, sample, "Reference Evaluation");
-  auto stdDev = KORALI_GET(double, sample, "Standard Deviation");
-  auto dataPoint = KORALI_GET(std::vector<double>, sample, "Data Point");
-//  double y = dataPoint[dataPoint.size()-1];
-  if (stdDev <= 0.0) KORALI_LOG_ERROR("Negative or zero value (%lf) detected for the Standard Deviation.\n", stdDev);
+  auto refEvals = KORALI_GET(std::vector<double>, sample, "Reference Evaluations");
+  auto stdDevs = KORALI_GET(std::vector<double>, sample, "Standard Deviations");
+
+  if (stdDevs.size() != referenceData.size())
+    KORALI_LOG_ERROR("This Bayesian (%s) problem requires a %lu-sized Standard Deviation array. Provided: %lu.\n", _likelihoodModel.c_str(), referenceData.size(), stdDevs.size());
+
+  if (refEvals.size() != referenceData.size())
+    KORALI_LOG_ERROR("This Bayesian (%s) problem requires a %lu-sized Reference Evaluations array. Provided: %lu.\n", _likelihoodModel.c_str(), referenceData.size(), refEvals.size());
 
   double sse = -Inf;
-  sse = compute_normalized_sse(refEval, stdDev, y);
-
-  double loglike = - log(stdDev);
-  loglike -= 0.5 * (_log2pi + sse);
-  sample["Conditional LogLikelihood"] = loglike;
-  /* Todo: Instead change hierarchicalLatentLowlevel problem to use "logLikelihood", like
-           the bayesian reference problem? */
-}
-
-void HierarchicalLatentReference::loglikelihoodPositiveNormal(Sample &sample, double y)
-{
-  auto refEval = KORALI_GET(double, sample, "Reference Evaluation");
-  auto stdDev = KORALI_GET(double, sample, "Standard Deviation");
-  auto dataPoint = KORALI_GET(std::vector<double>, sample, "Data Point");
-//  double y = dataPoint[dataPoint.size()-1];
-  if (stdDev <= 0.0) KORALI_LOG_ERROR("Negative or zero value (%lf) detected for the Standard Deviation.\n", stdDev);
-  if (refEval < 0.0) KORALI_LOG_ERROR("Negative value (%lf) detected in Reference Evaluation.\n", refEval);
-  if (y < 0.0) KORALI_LOG_ERROR("Negative value (%lf) detected in Reference Data.\n", y);
+  sse = compute_normalized_sse(refEvals, stdDevs, referenceData);
 
   double loglike = 0.;
-  double z = (y - refEval) / stdDev;
-  loglike -= 0.5 * (_log2pi + z * z);
-  loglike -= log(stdDev);
-  loglike -= log(1. - gsl_cdf_gaussian_P(-refEval / stdDev, 1.0));
+  for (size_t i = 0; i < stdDevs.size(); i++)
+  {
+    if (stdDevs[i] <= 0.0) KORALI_LOG_ERROR("Negative or zero value (%lf) detected for the Standard Deviation.\n", stdDevs[i]);
+    loglike -= log(stdDevs[i]);
+  }
 
-  sample["Conditional LogLikelihood"] = loglike;
+  loglike -= 0.5 * (referenceData.size() * _log2pi + sse);
+  sample["logLikelihood"] = loglike;
+
 }
 
-void HierarchicalLatentReference::loglikelihoodNegativeBinomial(Sample &sample, double y)
+void HierarchicalLatentReference::loglikelihoodPositiveNormal(Sample &sample, std::vector<double> referenceData)
 {
-  auto refEval = KORALI_GET(double, sample, "Reference Evaluation");
-  auto dispersion = KORALI_GET(double, sample, "Dispersion");
-  auto dataPoint = KORALI_GET(std::vector<double>, sample, "Data Point");
-//  double y = dataPoint[dataPoint.size()-1];
-  if (y < 0)
+  auto refEvals = KORALI_GET(std::vector<double>, sample, "Reference Evaluations");
+  auto stdDevs = KORALI_GET(std::vector<double>, sample, "Standard Deviations");
+
+  if (stdDevs.size() != referenceData.size())
+    KORALI_LOG_ERROR("This Bayesian (%s) problem requires a %lu-sized Standard Deviation array. Provided: %lu.\n", _likelihoodModel.c_str(), referenceData.size(), stdDevs.size());
+
+  if (refEvals.size() != referenceData.size())
+    KORALI_LOG_ERROR("This Bayesian (%s) problem requires a %lu-sized Reference Evaluations array. Provided: %lu.\n", _likelihoodModel.c_str(), referenceData.size(), refEvals.size());
+
+  double loglike = 0.;
+  for (size_t i = 0; i < stdDevs.size(); i++)
   {
-    KORALI_LOG_ERROR("Negative Binomial Likelihood not defined for negative Reference Data (provided %lf.\n", y);
-  }
-  if (refEval <= 0)
-  {
-    sample["logLikelihood"] = -Inf;
-    return;
+    double m = refEvals[i];
+    double s = stdDevs[i];
+
+    if (s <= 0.0) KORALI_LOG_ERROR("Negative or zero value (%lf) detected for the Standard Deviation.\n", s);
+    if (m < 0.0) KORALI_LOG_ERROR("Negative value (%lf) detected in Reference Evaluation.\n", m);
+    if (referenceData[i] < 0.0) KORALI_LOG_ERROR("Negative value (%lf) detected in Reference Data.\n", referenceData[i]);
+
+    double z = (referenceData[i] - m) / s;
+
+    loglike -= 0.5 * (_log2pi + z * z);
+    loglike -= log(s);
+    loglike -= log(1. - gsl_cdf_gaussian_P(-m / s, 1.0));
   }
 
+  sample["logLikelihood"] = loglike;
+}
+
+void HierarchicalLatentReference::loglikelihoodNegativeBinomial(Sample &sample,  std::vector<double> referenceData)
+{
+  auto refEvals = KORALI_GET(std::vector<double>, sample, "Reference Evaluations");
+  auto dispersions = KORALI_GET(std::vector<double>, sample, "Dispersions");
+
+  if (refEvals.size() != referenceData.size())
+    KORALI_LOG_ERROR("This Bayesian (%s) problem requires a %lu-sized Reference Evaluations array. Provided: %lu.\n", _likelihoodModel.c_str(), referenceData.size(), refEvals.size());
+
+  if (dispersions.size() != referenceData.size())
+    KORALI_LOG_ERROR("This Bayesian (%s) problem requires a %lu-sized Dispersion array. Provided: %lu.\n", _likelihoodModel.c_str(), referenceData.size(), dispersions.size());
+
+  size_t N = referenceData.size();
   double loglike = 0.0;
-  loglike -= gsl_sf_lngamma(y + 1.);
-  double p = refEval / (refEval + dispersion);
 
-  loglike += gsl_sf_lngamma(y + dispersion);
-  loglike -= gsl_sf_lngamma(dispersion);
-  loglike += dispersion * log(1 - p);
-  loglike += y * log(p);
+  for (size_t i = 0; i < N; i++)
+  {
+    double y = referenceData[i];
+    loglike -= gsl_sf_lngamma(y + 1.);
 
-  sample["Conditional LogLikelihood"] = loglike;
+    double m = refEvals[i];
+
+    if (y < 0)
+    {
+      KORALI_LOG_ERROR("Negative Binomial Likelihood not defined for negative Reference Data (provided %lf.\n", y);
+    }
+
+    if (m <= 0)
+    {
+      sample["logLikelihood"] = -Inf;
+      return;
+    }
+
+    double r = dispersions[i];
+
+    double p = m / (m + r);
+
+    loglike += gsl_sf_lngamma(y + r);
+    loglike -= gsl_sf_lngamma(r);
+    loglike += r * log(1 - p);
+    loglike += y * log(p);
+  }
+
+  sample["logLikelihood"] = loglike;
 }
 
-
-
-
-void HierarchicalLatentReference::evaluateLoglikelihood_(korali::Sample &sample, bool zForm)
-{
-  _lowlevelProblem->evaluateLoglikelihood_(sample, zForm);
-}
-void HierarchicalLatentReference::evaluateLoglikelihood(korali::Sample &sample)
-{
-  _lowlevelProblem->evaluateLoglikelihood_(sample, true);
-}
 
 void HierarchicalLatentReference::evaluateLogPosterior_(korali::Sample &sample, bool zForm, bool cholesky)
 {
@@ -333,6 +358,7 @@ void HierarchicalLatentReference::evaluateLogPrior(korali::Sample &sample)
 {
   _lowlevelProblem->evaluateLogPrior_(sample, true, true);
 }
+
 
 
 } // namespace latent

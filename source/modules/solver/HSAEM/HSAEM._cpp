@@ -182,7 +182,7 @@ void korali::solver::HSAEM::setInitialConfiguration()
                          //    sample["Module"] = "Problem";
                          //    _conduit->start(sample);
                          //    _conduit->wait(sample);
-                         //    auto newLLHs = sample["Log Likelihood"].get<std::vector<double>>();
+                         //    auto newLLHs = sample["logLikelihood"].get<std::vector<double>>();
                          //    _currentSampleLogLikelihoods[c_idx] = newLLHs;
                          //  }
 
@@ -255,7 +255,7 @@ void korali::solver::HSAEM::sampleLatent()
     }
 
     korali::Sample sample;
-    sample["Sample Id"] = 2564236; // Todo: is this a problem? Re-using the same Sample Id
+    sample["Sample Id"] = 2564236; // Todo: better way to pick an ID?
     sample["Module"] = "Problem";
     sample["Current Generation"] = _k->_currentGeneration;
 
@@ -285,7 +285,7 @@ void korali::solver::HSAEM::sampleLatent()
         sample["Operation"] = "Evaluate logLikelihood";
         _conduit->start(sample);
         _conduit->wait(sample);
-        auto newLLHs = sample["Log Likelihood"].get<std::vector<double>>();
+        auto newLLHs = sample["logLikelihood"].get<std::vector<double>>();
         for (size_t indiv = 0; indiv < _numberIndividuals; indiv++)
         {
           // generate RVs to randomly accept or reject each new zeta
@@ -347,7 +347,7 @@ void korali::solver::HSAEM::sampleLatent()
           sample["Operation"] = "Evaluate logLikelihood";
           _conduit->start(sample);
           _conduit->wait(sample);
-          auto newLLHs = sample["Log Likelihood"].get<std::vector<double>>();
+          auto newLLHs = sample["logLikelihood"].get<std::vector<double>>();
 
           sample["Latent Variables"] = localZ;
           sample["Mean"] = _currentHyperparametersMean;
@@ -400,9 +400,9 @@ void korali::solver::HSAEM::sampleLatent()
       {
         // pick a number of coordinates to change simultaneously
         double nRandCoords_d = _uniformGenerator->getRandomNumber() * double(_latentSpaceDimensions) + 1.;
-        if (size_t(nRandCoords_d) == _latentSpaceDimensions + 1) // Todo: Check the cast work
+        if (size_t(nRandCoords_d) == _latentSpaceDimensions + 1) // Todo: Check the cast works
           nRandCoords_d = 1.;
-        size_t nRandCoords = size_t(nRandCoords_d); // Todo: Check the cast work
+        size_t nRandCoords = size_t(nRandCoords_d); // Todo: Check the cast works
 
         std::vector<size_t> randomCoords(_latentSpaceDimensions);
         std::iota(randomCoords.begin(), randomCoords.end(), 0);
@@ -430,7 +430,7 @@ void korali::solver::HSAEM::sampleLatent()
         sample["Operation"] = "Evaluate logLikelihood";
         _conduit->start(sample);
         _conduit->wait(sample);
-        auto newLLHs = sample["Log Likelihood"].get<std::vector<double>>();
+        auto newLLHs = sample["logLikelihood"].get<std::vector<double>>();
 
         sample["Latent Variables"] = localZ;
         sample["Mean"] = _currentHyperparametersMean;
@@ -627,7 +627,7 @@ void korali::solver::HSAEM::updateProbabilities()
     sample["Module"] = "Problem";
     _conduit->start(sample);
     _conduit->wait(sample);
-    auto newLLHs = sample["Log Likelihood"].get<std::vector<double>>();
+    auto newLLHs = sample["logLikelihood"].get<std::vector<double>>();
     _currentSampleLogLikelihoods[c_idx] = newLLHs;
 
     sample["Operation"] = "Evaluate logPrior";

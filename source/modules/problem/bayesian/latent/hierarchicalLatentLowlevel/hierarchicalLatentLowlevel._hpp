@@ -95,7 +95,7 @@ class HierarchicalLatentLowlevel : public korali::problem::bayesian::Latent
      @param sample: sample["Latent Variables"] should contain a list of lists / vector of vectors, one latent variable vector for each individual.
      @param zForm:  A boolean indicating whether the latent variables are passed in z-Form (if zForm is true) or
                     whether "Latent Variables" are the untransformed values.
-     @returns : sample['Log Likelihood'], a list/vector with one log-likelihood per individual.
+     @returns : sample["logLikelihood"], a list/vector with one log-likelihood per individual.
  */
   void evaluateLoglikelihood_(korali::Sample &sample, bool zForm = true);
   /**

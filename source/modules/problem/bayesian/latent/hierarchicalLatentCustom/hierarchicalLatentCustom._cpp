@@ -8,17 +8,27 @@
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_vector.h>
 
+namespace korali
+{
+namespace problem
+{
+namespace bayesian
+{
+namespace latent
+{
+
 /* The problem initialization; here, create hyperparameter variables, add them to the problem's variable list,
     and set up index lists to find both types of variables in that list.*/
-void korali::problem::bayesian::latent::HierarchicalLatentCustom::initialize()
+void HierarchicalLatentCustom::initialize()
 {
-  korali::problem::bayesian::Latent::initialize();
+  Latent::initialize();
+
   _numberIndividuals = _logLikelihoodFunctions.size();
   if (_numberIndividuals <= 0) KORALI_LOG_ERROR("Hierarchical latent variable problems require defining reference data.\n");
  // The user should define one variable per latent variable dimension, as prototype:
   if (_k->_variables.size() != _latentSpaceDimensions) KORALI_LOG_ERROR("Hierarchical latent variable problems require only a subset of prototype variables to be defined. Please define one prototype latent variable per individual. (Expected %d variables, found %d variables.) \n", _numberIndividuals, _k->_variables.size());
 
-  if (_points){
+  if (&_points){
      if (_points.size() != _numberIndividuals) KORALI_LOG_ERROR("If x-value data is passed to the hierarchical latent variable problems, it must consist of one vector of points for each individual.\n");
     _handleXValues = true;
     _xDimensions = _points[0][0].size();
@@ -38,6 +48,7 @@ void korali::problem::bayesian::latent::HierarchicalLatentCustom::initialize()
   _koraliExperiment["Problem"]["Type"] = "Bayesian/Latent/HierarchicalLatentLowlevel";
   _koraliExperiment["Problem"]["Conditional Log Likelihood Function"] = logLikelihoodFunction;
   _koraliExperiment["Problem"]["Latent Space Dimensions"] = _latentSpaceDimensions;
+  _koraliExperiment["Problem"]["Number Individuals"] = _numberIndividuals;
 
   _koraliExperiment["Distributions"][0]["Name"] = "Dummy Prior";
   _koraliExperiment["Distributions"][0]["Type"] = "Univariate/Uniform";
@@ -114,11 +125,6 @@ void korali::problem::bayesian::latent::HierarchicalLatentCustom::initialize()
           KORALI_LOG_ERROR("Unrecognized 'Latent Variable Distribution' %s ", distribString.c_str());
       }
     }
-
-    // Todo: Add any other parameters here that will be required by the hierarchical SAEM. Initial values?-OK. Bounds?
-
-    //  volatile int done = 0;
-    //  while (!done) sleep(1);
   }
 
   /* 2. Create covariance matrices.
@@ -158,26 +164,26 @@ void korali::problem::bayesian::latent::HierarchicalLatentCustom::initialize()
   _koraliExperiment["Console Output"]["Verbosity"] = "Silent"; // Todo: Or propagate the current, user defined setting?
   _koraliExperiment["Random Seed"] = _k->_randomSeed++;
 
-  // TODO: Initialize the experiment and "extract" the lowlevel problem, so that we can call it's functions later.
+  /* Initialize the experiment and "extract" the lowlevel problem, so that we can call it's functions later. */
   _koraliEngine.initialize(_koraliExperiment);
-  _lowlevelProblem = dynamic_cast<korali::problem::bayesian::latent::HierarchicalLatentLowlevel *>(
+  _lowlevelProblem = dynamic_cast<HierarchicalLatentLowlevel *>(
     _koraliExperiment._problem);
 }
 
 
-korali::problem::bayesian::latent::HierarchicalLatentCustom::~HierarchicalLatentCustom()
+HierarchicalLatentCustom::~HierarchicalLatentCustom()
 {
   delete &_koraliExperiment;
 //  delete &_lowlevelProblem;
 }
 
 
-void korali::problem::bayesian::latent::HierarchicalLatentCustom::evaluateLoglikelihood_(korali::Sample &sample, bool zForm)
+void HierarchicalLatentCustom::evaluateLoglikelihood(korali::Sample &sample)
 {
   /* - extract latent variables
      - run each model separately on the latent variables --> 'LogLikelihood Evaluation'
        - optionally, insert Data Points (vector of vectors)
-     - return as 'Log Likelihood'
+     - return as '"logLikelihood"'
   */
   korali::Sample llhSample;
   llhSample["Sample Id"] = KORALI_GET(int, sample, "Sample Id") + 1234;
@@ -187,42 +193,44 @@ void korali::problem::bayesian::latent::HierarchicalLatentCustom::evaluateLoglik
   std::vector<double> allLLHs(_numberIndividuals);
 
   for (size_t i=0; i < _numberIndividuals; i++){
-    llhSample["Latent Variables"] = latentVariables[i]
+    llhSample["Latent Variables"] = latentVariables[i];
     if (_handleXValues)
       llhSample["Data Points"] = _points[i];
     llhSample.run(_logLikelihoodFunctions[i]);
-    allLLHs[i] = KORALI_GET(double, llhSample, "LogLikelihood Evaluation");
+    allLLHs[i] = KORALI_GET(double, llhSample, "logLikelihood");
   }
-  sample["Log Likelihood"] = allLLHs;
-}
-void korali::problem::bayesian::latent::HierarchicalLatentCustom::evaluateLoglikelihood(korali::Sample &sample)
-{
-  _lowlevelProblem->evaluateLoglikelihood_(sample, true);
+  sample["logLikelihood"] = allLLHs;
 }
 
-void korali::problem::bayesian::latent::HierarchicalLatentCustom::evaluateLogPosterior_(korali::Sample &sample, bool zForm, bool cholesky)
+void HierarchicalLatentCustom::evaluateLogPosterior_(korali::Sample &sample, bool zForm, bool cholesky)
 {
   _lowlevelProblem->evaluateLogPosterior_(sample, zForm, cholesky);
 }
-void korali::problem::bayesian::latent::HierarchicalLatentCustom::evaluateLogPosterior(korali::Sample &sample)
+void HierarchicalLatentCustom::evaluateLogPosterior(korali::Sample &sample)
 {
   _lowlevelProblem->evaluateLogPosterior_(sample, true, true);
 }
 
-void korali::problem::bayesian::latent::HierarchicalLatentCustom::evaluateLogPrior_(korali::Sample &sample, bool zForm, bool cholesky)
+void HierarchicalLatentCustom::evaluateLogPrior_(korali::Sample &sample, bool zForm, bool cholesky)
 {
   _lowlevelProblem->evaluateLogPrior_(sample, zForm, cholesky);
 }
-void korali::problem::bayesian::latent::HierarchicalLatentCustom::evaluateLogPrior(korali::Sample &sample)
+void HierarchicalLatentCustom::evaluateLogPrior(korali::Sample &sample)
 {
   _lowlevelProblem->evaluateLogPrior_(sample, true, true);
 }
 
 ///* @brief allocate memory for all GSL-matrix and GSL-vector local variables used in calculating the loglikelihood
 //    @param nLatent: The number of latent variables in this problem.  */
-//void korali::problem::bayesian::latent::HierarchicalLatentCustom::initializeGSLVariables(int nLatent){
+//void HierarchicalLatentCustom::initializeGSLVariables(int nLatent){
 //  covMatrixGSL = gsl_matrix_alloc(nLatent, nLatent);
 //  chol = gsl_matrix_alloc(nLatent, nLatent);
 //  latent_minus_mean = gsl_vector_alloc(nLatent);
 //  x = gsl_vector_alloc(nLatent);
 //}
+
+
+} // namespace latent
+} // namespace bayesian
+} // namespace problem
+} // namespace korali

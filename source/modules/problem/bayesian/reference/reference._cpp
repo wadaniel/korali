@@ -191,7 +191,7 @@ void Reference::loglikelihoodGeometric(Sample &sample)
   {
     if (refEvals[i] <= 0.0) KORALI_LOG_ERROR("Negative value (%lf) detected in Reference Evaluation.\n", refEvals[i]);
     if (_referenceData[i] < 0.0) KORALI_LOG_ERROR("Negative value (%lf) detected in Reference Data.\n", _referenceData[i]);
-    loglike += log(gsl_ran_geometric_pdf(_referenceData[i], 1.0/refEvals[i]));
+    loglike += log(gsl_ran_geometric_pdf(_referenceData[i], 1.0 / refEvals[i]));
   }
 
   sample["logLikelihood"] = loglike;

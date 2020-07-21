@@ -58,6 +58,17 @@ Poisson
 where :math:`\lambda` is the mean.
 
 
+Geometric
+---------
+
+
+.. math::
+
+   p(d | \vartheta) =  \lambda(1-\lambda)^{d-1}
+
+where :math:`\lambda` is the mean.
+
+
 Negative Binomial
 -----------------
 

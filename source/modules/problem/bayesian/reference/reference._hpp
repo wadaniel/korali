@@ -55,6 +55,12 @@ class Reference : public korali::problem::Bayesian
   * @param sample A Korali Sample
   */
   void loglikelihoodPoisson(korali::Sample &sample);
+ 
+  /**
+  * @brief Geometric likelihood parametrized by mean.
+  * @param sample A Korali Sample
+  */
+  void loglikelihoodGeometric(korali::Sample &sample);
 
   /**
   * @brief Negative Binomial likelihood parametrized by mean and dispersion.

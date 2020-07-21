@@ -40,6 +40,8 @@ void Reference::evaluateLoglikelihood(Sample &sample)
     loglikelihoodPositiveStudentT(sample);
   else if (_likelihoodModel == "Poisson")
     loglikelihoodPoisson(sample);
+  else if (_likelihoodModel == "Geometric")
+    loglikelihoodGeometric(sample);
   else if (_likelihoodModel == "Negative Binomial")
     loglikelihoodNegativeBinomial(sample);
   else
@@ -172,6 +174,24 @@ void Reference::loglikelihoodPoisson(Sample &sample)
     if (refEvals[i] <= 0.0) KORALI_LOG_ERROR("Negative value (%lf) detected in Reference Evaluation.\n", refEvals[i]);
     if (_referenceData[i] < 0.0) KORALI_LOG_ERROR("Negative value (%lf) detected in Reference Data.\n", _referenceData[i]);
     loglike += log(gsl_ran_poisson_pdf(_referenceData[i], refEvals[i]));
+  }
+
+  sample["logLikelihood"] = loglike;
+}
+
+void Reference::loglikelihoodGeometric(Sample &sample)
+{
+  auto refEvals = KORALI_GET(std::vector<double>, sample, "Reference Evaluations");
+
+  if (refEvals.size() != _referenceData.size())
+    KORALI_LOG_ERROR("This Bayesian (%s) problem requires a %lu-sized Reference Evaluations array. Provided: %lu.\n", _likelihoodModel.c_str(), _referenceData.size(), refEvals.size());
+
+  double loglike = 0.;
+  for (size_t i = 0; i < _referenceData.size(); i++)
+  {
+    if (refEvals[i] <= 0.0) KORALI_LOG_ERROR("Negative value (%lf) detected in Reference Evaluation.\n", refEvals[i]);
+    if (_referenceData[i] < 0.0) KORALI_LOG_ERROR("Negative value (%lf) detected in Reference Data.\n", _referenceData[i]);
+    loglike += log(gsl_ran_geometric_pdf(_referenceData[i], 1.0/refEvals[i]));
   }
 
   sample["logLikelihood"] = loglike;

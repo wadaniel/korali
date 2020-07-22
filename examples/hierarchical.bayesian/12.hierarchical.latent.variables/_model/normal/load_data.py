@@ -1,5 +1,5 @@
 import numpy as np
-
+import os
 
 def extr(line, toint=True, tofloat=False, delim=" "):
   ''' Helper for extracting file contents. '''
@@ -13,7 +13,7 @@ def extr(line, toint=True, tofloat=False, delim=" "):
 
 class NormalData():
 
-  def __init__(self):
+  def __init__(self, datafile=None):
     self.nIndividuals = None
     self.nDataTotal = None
     self.nDataDimensions = 1
@@ -27,7 +27,10 @@ class NormalData():
 
     self.nSamplesEach = []
     self.data = []
-    filename = '_data/normal/all_data.txt'
+    if datafile is None:
+      filename = '_data/normal/all_data.txt'
+    else:
+      filename = os.path.join('_data/normal/', datafile)
     delimiterIn = '\t'
     print(f"Loading data from {filename} ... \n")
     with open(filename, "r") as fd:

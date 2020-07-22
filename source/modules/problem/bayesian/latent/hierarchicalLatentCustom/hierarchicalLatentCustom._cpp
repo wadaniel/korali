@@ -189,10 +189,12 @@ void HierarchicalLatentCustom::loglikelihoodFunction(korali::Sample &sample)
   llhSample["Sample Id"] = KORALI_GET(int, sample, "Sample Id") + 1234;
   llhSample["Current Generation"] = _k->_currentGeneration;
   llhSample["Module"] = "Problem"; // not needed?
+
   std::vector<std::vector<double>> latentVariables = KORALI_GET(std::vector<std::vector<double>>, sample, "Latent Variables");
   std::vector<double> allLLHs(_numberIndividuals);
 
   for (size_t i=0; i < _numberIndividuals; i++){
+    llhSample["Reference Evaluations"] = 0;
     llhSample["Latent Variables"] = latentVariables[i];
     if (_handleXValues)
       llhSample["Data Points"] = _points[i];

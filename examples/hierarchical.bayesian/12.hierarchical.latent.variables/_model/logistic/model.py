@@ -65,7 +65,8 @@ class LogisticConditionalDistribution():
   def conditional_p(self, sample, points=None, internalData=False):
 
     latent_vars = sample["Latent Variables"]
-    assert len(latent_vars) == self._p.nLatentSpaceDimensions
+    assert len(latent_vars) == self._p.nLatentSpaceDimensions, \
+      f"Latent variable vector has wrong length. Was: {len(latent_vars)}, should be: {self._p.nLatentSpaceDimensions}"
     if internalData:
       points = sample["Data Points"]
       assert points is None, "Points are handled internally"
@@ -74,9 +75,12 @@ class LogisticConditionalDistribution():
 
     logp_sum = 0
 
+    # import pdb
+    # pdb.set_trace()
+
     for point in points:
-      assert len(point) == 3, f"Latent variable vector has wrong length. " \
-                          f"Was: {len(latent_vars)}, should be: {2}"
+      assert len(point) == 3, f"Data point vector has wrong length. " \
+                              f"Was: {len(point)}, should be: {3}"
       x = point[1]
       y = point[2]
       fx = logisticModel(x, latent_vars[:-1])
@@ -98,14 +102,14 @@ class LogisticConditionalDistribution():
       else:
         raise ValueError(f"Unknown error model: {self._p.error_model}")
 
-    if np.isinf(err) or np.isnan(err):
-       logp_sum = -1.e200
-    else:
-      log2pi = 0.5 * np.log(2 * np.pi)
-      if (sigma2 == 0):
-        logp = -np.inf
+      if np.isinf(err) or np.isnan(err):
+         logp_sum = -1.e200
       else:
-        logp = -log2pi - 0.5 * np.log(float(det)) - 0.5 * err / sigma2
-      logp_sum += logp
+        log2pi = 0.5 * np.log(2 * np.pi)
+        if (sigma2 == 0):
+          logp = -np.inf
+        else:
+          logp = -log2pi - 0.5 * np.log(float(det)) - 0.5 * err / sigma2
+        logp_sum += logp
 
     sample["logLikelihood"] = logp_sum

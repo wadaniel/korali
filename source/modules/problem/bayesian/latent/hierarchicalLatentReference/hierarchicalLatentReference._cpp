@@ -204,8 +204,6 @@ void HierarchicalLatentReference::loglikelihoodFunction(korali::Sample &sample)
   llhSample["Module"] = "Problem"; // not needed?
 
   std::vector<std::vector<double>> latentVariables = KORALI_GET(std::vector<std::vector<double>>, sample, "Latent Variables");
-//  std::vector<std::vector<double>> allY(_numberIndividuals);
-//  std::vector<std::vector<double>> allY(_numberIndividuals);
   std::vector<double> allLLHs(_numberIndividuals);
 
   for (size_t i=0; i < _numberIndividuals; i++){

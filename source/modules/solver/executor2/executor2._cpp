@@ -45,6 +45,7 @@ void Executor2::runGeneration()
     else
       setParameters(samples[i]);
 
+    samples[i]["Current Generation"] = _k->_currentGeneration;
     _conduit->start(samples[i]);
     _modelEvaluationCount++;
   }
@@ -55,12 +56,15 @@ void Executor2::runGeneration()
   {
     for (size_t i = 0; i < _executionsPerGeneration; i++)
     {
+      samples[i]["Current Generation"] = _k->_currentGeneration;
       // Insert the parameters another time, in some functions, parameters are overwritten:
       if (_functionToPopulateSampleParameters)
         samples[i].run(_functionToPopulateSampleParameters);
       else
         setParameters(samples[i]);
 
+      samples[i]["Current Generation"] = _k->_currentGeneration;
+      auto dbg_curGen = KORALI_GET(int, samples[i], "Current Generation");
       samples[i].run(_testFunction);
     }
   }

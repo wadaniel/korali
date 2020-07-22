@@ -21,9 +21,14 @@ def main():
 
   e["Problem"]["Type"] = "Bayesian/Latent/HierarchicalLatentCustom"
   # The computational model for the log-likelihood, log[ p(data point | latent) ]
-  e["Problem"][
-      "Log Likelihood Functions"] = [lambda sample: distrib.conditional_p(
-          sample, data_vector[i])   for i in range(distrib._p.nIndividuals) ]
+  # Do NOT do this:
+  # e["Problem"]["Log Likelihood Functions"] = [lambda sample: distrib.conditional_p(
+  #         sample, data_vector[i])   for i in range(distrib._p.nIndividuals) ]
+  func_list = []
+  for i in range(distrib._p.nIndividuals):
+      func_list.append(lambda sample: distrib.conditional_p(sample, data_vector[i]))
+  e["Problem"]["Log Likelihood Functions"] = func_list
+
 
   e["Problem"]["Latent Space Dimensions"] = distrib._p.nLatentSpaceDimensions
 
@@ -41,7 +46,7 @@ def main():
   e["Solver"]["Simulated Annealing Decay Factor"] = 0.95
   e["Solver"]["Simulated Annealing Initial Variance"] = 1
   e["Solver"]["Diagonal Covariance"] = True
-  e["Solver"]["Termination Criteria"]["Max Generations"] = 150
+  e["Solver"]["Termination Criteria"]["Max Generations"] = 250
 
   e["Distributions"][0]["Name"] = "Uniform 0"
   e["Distributions"][0]["Type"] = "Univariate/Uniform"

@@ -95,8 +95,9 @@ Normal and log-normal distributions describe distributions in many different dis
    - :math:`f(z_k) = \frac{1}{1 + exp(-z_k)}` for logit-normal :math:`\theta_k` (sigmoid is the inverse logit).
 
 
-Data for both examples can be generated with custom parameters using the script
-`_model/[example name]/generate_data.py` (please change the parameters in the script).
+Data for both examples can be generated with custom parameters using the scripts
+`_model/[example name]/generate_data.py`. They must be run from their subdirectory. Change the parameters in the script
+to generate different examples.
 This will also write more detailed information about the example into `_model/[example name]/data_[name]_info.txt`. Please
 refer to this for an estimate how difficult the generated data will be to fit - it generates
 a number of proxies for the optimizers. These can be compared to the true / original parameter values. For example,
@@ -364,8 +365,8 @@ We also import the :code:`korali` Python library, as well as NumPy:
     import korali
     import numpy as np
 
-##########################
-TODO TODO - continue below
+
+- TODO TODO - continue below
 
 We then instatiate the model class, which provides acces to the data points and the conditional distribution function:
 

@@ -39,8 +39,8 @@ class NormalConditionalDistribution():
             Everything is one-dimensional.
     '''
 
-  def __init__(self):
-    self._p = load_data.NormalData()
+  def __init__(self, datafile=None):
+    self._p = load_data.NormalData(datafile)
 
   def conditional_p(self, sample, points):
 
@@ -48,6 +48,8 @@ class NormalConditionalDistribution():
     assert len(latent_vars) == self._p.nLatentSpaceDimensions == 2, f"Latent variable vector has wrong length. " \
                                                                     f"Was: {len(latent_vars)}, should be: {2}"
     logp_sum = 0
+    # import pdb
+    # pdb.set_trace()
 
     for point in points:
       assert len(point) == 3, "Expected id, x and y values as 'data point'"

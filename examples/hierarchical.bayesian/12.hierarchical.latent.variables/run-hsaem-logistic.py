@@ -29,8 +29,13 @@ def main():
     y_vals[i] = d.data[i, :, 2].tolist()
 
   # The computational model for the log-likelihood, log[ p(data point | latent) ]
-  e["Problem"]["Computational Models"] = [lambda sample: logisticModelFunction(sample, x_vals[i])
-                                          for i in range(d.nIndividuals)]
+  # Do NOT do this:
+  # e["Problem"]["Computational Models"] = [lambda sample: logisticModelFunction(sample, x_vals[i])
+  #                                         for i in range(d.nIndividuals)]
+  func_list = []
+  for i in range(d.nIndividuals):
+      func_list.append(lambda sample: logisticModelFunction(sample, x_vals[i]))
+  e["Problem"]["Computational Models"] = func_list
 
   # Alternative: Pass the x values to Korali. Then, the points for the individual
   #  will be accessible to the computational model in "Data Points".
@@ -57,7 +62,7 @@ def main():
   e["Solver"]["Simulated Annealing Decay Factor"] = 0.95
   e["Solver"]["Simulated Annealing Initial Variance"] = 1
   e["Solver"]["Diagonal Covariance"] = True
-  e["Solver"]["Termination Criteria"]["Max Generations"] = 150
+  e["Solver"]["Termination Criteria"]["Max Generations"] = 250
 
   e["Distributions"][0]["Name"] = "Uniform 0"
   e["Distributions"][0]["Type"] = "Univariate/Uniform"

@@ -111,15 +111,14 @@ void HMC::runGeneration()
     std::vector<double> pLeft = _momentumLeader;
     std::vector<double> pRight = _momentumLeader;
 
-    const double oldH = oldU + oldK;
-    double numValidLeaves = 1.0;
-    double numValidLeavesSubtree;
+    int depth = 0;
     int numLeavesSubtree;
-
     bool buildCriterion = true;
     bool buildCriterionSubtree;
+    double numValidLeaves = 1.0;
+    double numValidLeavesSubtree;
     double dotProductLeft, dotProductRight;
-    int depth = 0;
+    const double oldH = oldU + oldK;
 
     while (buildCriterion == true)
     {
@@ -624,8 +623,8 @@ void HMC::buildTree(const std::vector<double> &q, const std::vector<double> &p, 
   }
   else
   {
-    bool buildCriterionSubtree;
     int numLeavesSubtree;
+    bool buildCriterionSubtree;
     double dotProductLeft, dotProductRight, numValidLeavesSubtree, alphaSubtree;
 
     std::vector<double> nullPointOne(dim);

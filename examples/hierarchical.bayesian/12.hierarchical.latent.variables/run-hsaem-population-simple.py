@@ -8,7 +8,7 @@ import korali
 
 def main():
   # Initialize the distribution
-  distrib = ConditionalDistribution4()
+  distrib = SimpleDistributionConditional()
   data = distrib._p.data
 
   k = korali.Engine()
@@ -21,16 +21,16 @@ def main():
   # The computational model for the log-likelihood, log[ p(data point | latent) ]
   # e["Problem"][
   #     "Log Likelihood Functions"] = [lambda sample: distrib.conditional_p(
-  #         sample, data_vector[i])  for i in range(distrib._p.nIndividuals)]
+  #         sample, data[i])  for i in range(distrib._p.nIndividuals)]
 
   ## same here, don't do this:
   # func_list = []
   # for i in range(distrib._p.nIndividuals):
-  #     func_list.append(lambda sample: distrib.conditional_p(sample, data_vector[i]))
+  #     func_list.append(lambda sample: distrib.conditional_p(sample, data[i]))
 
   # ** With partial functions from the functools package:
   # e["Problem"]["Log Likelihood Functions"] = [
-  #   functools.partial(lambda sample, index: distrib.conditional_p(sample, data_vector[index]), index=i)
+  #   functools.partial(lambda sample, index: distrib.conditional_p(sample, data[index]), index=i)
   #   for i in range(distrib._p.nIndividuals)]
 
   # ** Method with no external packages

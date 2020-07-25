@@ -17,7 +17,7 @@ def main():
   e["Problem"]["Type"] = "Bayesian/Latent/HierarchicalLatentCustom"
   # The computational model for the log-likelihood, log[ p(data point | latent) ]
 
-  ## Don't do this, i will be captured by reference:
+  ## Do **not** do this, i will be captured by reference:
   # e["Problem"][
   #     "Log Likelihood Functions"] = [lambda sample: distrib.conditional_p(
   #         sample, data_vector[i]) for i in range(distrib._p.nIndividuals)]

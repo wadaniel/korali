@@ -22,7 +22,7 @@ class ExponentialFamilyDistribution():
 
 # Model 3:
 #  See section 9.2.5 in Lavielle, 'Mixed effect models for the population approach'
-class ExampleDistribution3(ExponentialFamilyDistribution):
+class SimpleDistributionExponential(ExponentialFamilyDistribution):
   ''' See section 9.2.5 in Lavielle, 'Mixed effect models for the population approach'
 
         In the book's notation (theta <-> psi, yi <-> xi ):
@@ -112,7 +112,7 @@ class ExampleDistribution3(ExponentialFamilyDistribution):
     ]
 
 
-class ConditionalDistribution4():
+class SimpleDistributionConditional():
   ''' Same hierarchical model as above, but here we only know the part p(data | latent), which is a product
         of Gaussians:
         #

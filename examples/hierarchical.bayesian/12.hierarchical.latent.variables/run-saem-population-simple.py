@@ -14,28 +14,28 @@ import korali
 
 def main():
   # Initialize the distribution
-  distrib3 = ExampleDistribution3()
+  distrib = SimpleDistributionExponential()
 
-  distrib3_S = lambda s: distrib3.S(s)
-  distrib3_zeta = lambda s: distrib3.zeta(s)
-  distrib3_phi = lambda s: distrib3.phi(s)
+  distrib_S = lambda s: distrib.S(s)
+  distrib_zeta = lambda s: distrib.zeta(s)
+  distrib_phi = lambda s: distrib.phi(s)
 
-  d3_numberLatentVars = distrib3._p.nIndividuals
+  d3_numberLatentVars = distrib._p.nIndividuals
   d3_numberHyperparams = 1
 
   d3_initialLatentValues = np.random.normal(0.5, 0.5, (d3_numberLatentVars))
   d3_initialHyperparams = np.random.normal(0, 1, (d3_numberHyperparams))
 
-  sampler = lambda s: distrib3.sampleLatent(s)
+  sampler = lambda s: distrib.sampleLatent(s)
 
   k = korali.Engine()
   e = korali.Experiment()
 
   e["Problem"]["Type"] = "Bayesian/Latent/ExponentialLatent"
-  e["Problem"]["S Of Likelihood Model"] = distrib3_S
-  e["Problem"]["Zeta Of Likelihood Model"] = distrib3_zeta
-  e["Problem"]["Phi Of Likelihood Model"] = distrib3_phi
-  e["Problem"]["S Dimension"] = distrib3.sufficientStatisticsDimension
+  e["Problem"]["S Of Likelihood Model"] = distrib_S
+  e["Problem"]["Zeta Of Likelihood Model"] = distrib_zeta
+  e["Problem"]["Phi Of Likelihood Model"] = distrib_phi
+  e["Problem"]["S Dimension"] = distrib.sufficientStatisticsDimension
   e["Problem"]["Latent Variable Sampler"] = sampler
 
   e["Solver"]["Type"] = "SAEM"
@@ -63,7 +63,7 @@ def main():
 
   # * Latent variables
   latent_counter = 0
-  for i in range(distrib3._p.nIndividuals):
+  for i in range(distrib._p.nIndividuals):
     e["Variables"][i + 1]["Name"] = "individual_mean_" + str(latent_counter)
     e["Variables"][i + 1]["Bayesian Type"] = "Latent"
     e["Variables"][i + 1]["Prior Distribution"] = "Uniform 0"

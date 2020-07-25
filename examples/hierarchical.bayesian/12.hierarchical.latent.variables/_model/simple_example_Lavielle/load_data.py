@@ -29,10 +29,10 @@ class SimplePopulationData():
         values = extr(fd.readline(), tofloat=True)
         assert len(
             values
-        ) == 1, "need to rewrite this to accomodate multiple samples per individual (or multiple dimensions - use another class for that"
-        self.data.append(values)
+        ) == 1, "need to rewrite this to accomodate multiple samples per individual (or multiple dimensions) - use another class for that"
+        self.data.append([values]) # one data point of one dimension for each individual
 
-    self.data = np.array(self.data).flatten()
+    self.data = np.array(self.data)
 
   def reset_to(self, nIndividuals, sigma, omega, data, nSamplesEach=1):
     self.data = np.array(data).flatten()

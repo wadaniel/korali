@@ -44,6 +44,6 @@ class PopulationData():
         numSamples = int(numSamples)
         self.nSamplesEach[i] = numSamples
         assert c == "N"
-        self.data[i] = np.zeros((numSamples, self.nDimensions))
         for j in range(numSamples):
-          self.data[i][j] = extr(fd.readline(), tofloat=True)
+          self.data[i].append(extr(fd.readline(), tofloat=True))
+

@@ -9,13 +9,10 @@ import korali
 def main():
   # Initialize the distribution
   distrib = ConditionalDistribution5()
+  data = distrib._p.data
 
   k = korali.Engine()
   e = korali.Experiment()
-
-  data_vector = [[] for _ in range(distrib._p.nIndividuals)]
-  for i in range(distrib._p.nIndividuals):
-    data_vector[i] = distrib._p.data[i].tolist()
 
   e["Problem"]["Type"] = "Bayesian/Latent/HierarchicalLatentCustom"
   # The computational model for the log-likelihood, log[ p(data point | latent) ]
@@ -29,14 +26,14 @@ def main():
   func_list = []
   dbg_func_list = []
   for i in range(distrib._p.nIndividuals):
-    func_list.append((lambda index: (lambda sample: distrib.conditional_p(sample, data_vector[index]) ))(i))
-    dbg_func_list.append((lambda index: (lambda : data_vector[index] ))(i))
+    func_list.append((lambda index: (lambda sample: distrib.conditional_p(sample, data[index]) ))(i))
+    dbg_func_list.append((lambda index: (lambda : data[index] ))(i))
   e["Problem"]["Log Likelihood Functions"] = func_list
 
   # dbg
-  assert dbg_func_list[0]() == data_vector[0]
-  assert dbg_func_list[4]() == data_vector[4]
-  assert dbg_func_list[len(data_vector) - 1]() == data_vector[-1]
+  assert dbg_func_list[0]() == data[0]
+  assert dbg_func_list[4]() == data[4]
+  assert dbg_func_list[len(data) - 1]() == data[-1]
 
   e["Problem"]["Latent Space Dimensions"] = distrib._p.nDimensions
 

@@ -1,5 +1,5 @@
 import sys
-import functools
+# import functools
 sys.path.append('./_model/simple_example_Lavielle')
 from model import *
 
@@ -9,15 +9,11 @@ import korali
 def main():
   # Initialize the distribution
   distrib = ConditionalDistribution4()
+  data = distrib._p.data
 
   k = korali.Engine()
   e = korali.Experiment()
 
-  # We need to add one dimension to _p.data, because one individual in the general case could have
-  # more than one data point assigned
-  data_vector = [[] for _ in range(distrib._p.nIndividuals)]
-  for i in range(distrib._p.nIndividuals):
-    data_vector[i].append([distrib._p.data[i]])
 
   e["Problem"]["Type"] = "Bayesian/Latent/HierarchicalLatentCustom"
 
@@ -32,15 +28,15 @@ def main():
   # for i in range(distrib._p.nIndividuals):
   #     func_list.append(lambda sample: distrib.conditional_p(sample, data_vector[i]))
 
-  # With partial functions from the functools package:
-  e["Problem"]["Log Likelihood Functions"] = [
-    functools.partial(lambda sample, index: distrib.conditional_p(sample, data_vector[index]), index=i)
-    for i in range(distrib._p.nIndividuals)]
+  # ** With partial functions from the functools package:
+  # e["Problem"]["Log Likelihood Functions"] = [
+  #   functools.partial(lambda sample, index: distrib.conditional_p(sample, data_vector[index]), index=i)
+  #   for i in range(distrib._p.nIndividuals)]
 
-  # Method with no external packages
+  # ** Method with no external packages
   func_list = []
   for i in range(distrib._p.nIndividuals):
-    func_list.append((lambda index: (lambda sample: distrib.conditional_p(sample, data_vector[index]) ))(i))
+    func_list.append((lambda index: (lambda sample: distrib.conditional_p(sample, data[index]) ))(i))
   e["Problem"]["Log Likelihood Functions"] = func_list
 
   e["Problem"]["Latent Space Dimensions"] = 1

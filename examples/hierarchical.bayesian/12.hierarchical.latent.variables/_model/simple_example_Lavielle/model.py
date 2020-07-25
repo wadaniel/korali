@@ -39,8 +39,8 @@ class ExampleDistribution3(ExponentialFamilyDistribution):
     self.cur_hyperparameter = 0
     self.numberHyperparameters = 1
 
-    if isinstance(self._p.data, np.ndarray):
-      self._p.data = self._p.data.flatten()
+    # if isinstance(self._p.data, np.ndarray):
+    #   self._p.data = self._p.data.flatten()
     assert self.numberLatent == len(self._p.data)
 
   # In case we reset the underlying data, we cannot directly define these variables but need to use properties
@@ -77,7 +77,7 @@ class ExampleDistribution3(ExponentialFamilyDistribution):
 
     samples = np.zeros((self._p.nIndividuals, numberSamples))
     for i in range(self._p.nIndividuals):
-      mean = self.a * theta + (1 - self.a) * self._p.data[i]
+      mean = self.a * theta + (1 - self.a) * self._p.data.flatten()[i]
       sdev = self.gamma
       samples[i][:] = np.random.normal(mean, sdev, size=(numberSamples,))
 
@@ -91,7 +91,7 @@ class ExampleDistribution3(ExponentialFamilyDistribution):
     sample["S"] = [
         np.sum(individual_latent_vars**2),
         np.sum(individual_latent_vars),
-        np.dot(individual_latent_vars, self._p.data)
+        np.dot(individual_latent_vars, self._p.data.flatten())
     ]
 
   def zeta(self, sample):
@@ -99,7 +99,7 @@ class ExampleDistribution3(ExponentialFamilyDistribution):
     hyperparams = sample["Hyperparameters"]
     hyperparam = hyperparams[0]
     sample["zeta"] = self.N * np.log(2 * np.pi * self._p.sigma * self._p.omega) + \
-                       np.sum(self._p.data **2) / (2 * self._p.sigma**2) + \
+                       np.sum(self._p.data.flatten() **2) / (2 * self._p.sigma**2) + \
                        self.N * hyperparam **2 / (2 * self._p.omega**2)
 
   def phi(self, sample):

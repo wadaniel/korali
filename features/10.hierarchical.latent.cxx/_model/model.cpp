@@ -45,7 +45,7 @@ void HierarchicalDistribution4::conditional_p(korali::Sample &s, std::vector<std
   // log(p(data | mean, sigma ))
   double logp = 0;
 //  for (size_t i=0; i < _p.nIndividuals; i++){
-    std::vector<double> pt = points[0]; // in this example there is only one point per individual
+    std::vector<double> pt = {points[0][0]}; // in this example there is only one point per individual
     double p = univariate_gaussian_probability(latentVariables, sigma, pt);
 
     logp += log(p);

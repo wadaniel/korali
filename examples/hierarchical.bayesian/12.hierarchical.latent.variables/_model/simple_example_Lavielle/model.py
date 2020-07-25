@@ -131,8 +131,8 @@ class ConditionalDistribution4():
         latent_vars
     ) == 1
     if internalData:
-      points = sample["Data Points"]
       assert points is None, "Points are handled internally"
+      points = sample["Data Points"]
     else:
       assert points is not None
 

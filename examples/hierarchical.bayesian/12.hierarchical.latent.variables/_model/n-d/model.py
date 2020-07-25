@@ -22,8 +22,8 @@ class ConditionalDistribution5():
     latent_vars = sample["Latent Variables"]
     assert len(latent_vars) == self._p.nDimensions
     if internalData:
-      points = sample["Data Points"]
       assert points is None, "Points are handled internally"
+      points = sample["Data Points"]
     else:
       assert points is not None
 

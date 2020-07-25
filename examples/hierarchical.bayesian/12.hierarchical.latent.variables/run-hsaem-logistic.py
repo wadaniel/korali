@@ -44,8 +44,8 @@ def main():
     func_list.append((lambda index: (lambda sample: logisticModelFunction(sample, x_vals[index]) ))(i))
   e["Problem"]["Computational Models"] = func_list
 
-  # Alternative: Pass the x values to Korali. Then, the points for the individual
-  #  will be accessible to the computational model in "Data Points".
+  # # Alternative: Pass the x values to Korali. Then, the points for the individual
+  # #  will be accessible to the computational model in "Data Points".
   # e["Problem"]["Computational Models"] = [lambda sample: logisticModelFunction(sample, internalData=True)
   #                                         for i in range(10)]
   # e["Problem"]["Points"] = x_vals

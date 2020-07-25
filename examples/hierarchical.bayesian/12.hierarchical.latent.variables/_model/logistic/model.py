@@ -25,8 +25,8 @@ def logisticModel(x, theta):
 def logisticModelFunction(sample, points=None, internalData=False):
   theta = sample["Latent Variables"]
   if internalData:
-    points = sample["Data Points"]
     assert points is None, "No need to pass 'points' if internal data is set"
+    points = sample["Data Points"]
   else:
     assert points is not None, "Missing data points"
   assert len(theta) >= 4
@@ -68,8 +68,8 @@ class LogisticConditionalDistribution():
     assert len(latent_vars) == self._p.nLatentSpaceDimensions, \
       f"Latent variable vector has wrong length. Was: {len(latent_vars)}, should be: {self._p.nLatentSpaceDimensions}"
     if internalData:
-      points = sample["Data Points"]
       assert points is None, "Points are handled internally"
+      points = sample["Data Points"]
     else:
       assert points is not None
 

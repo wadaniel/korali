@@ -36,6 +36,12 @@ def main():
     func_list.append((lambda index: (lambda sample: distrib.conditional_p(sample, data_vector[index]) ))(i))
   e["Problem"]["Log Likelihood Functions"] = func_list
 
+  # # Alternative: Pass the x values to Korali. Then, the points for the individual
+  # #  will be accessible to the computational model in "Data Points".
+  # e["Problem"]["Log Likelihood Functions"] = [lambda sample: distrib.conditional_p(sample, internalData=True)
+  #                                                   for _ in range(distrib._p.nIndividuals)]
+  # e["Problem"]["Points"] = data_vector
+
   e["Problem"]["Latent Space Dimensions"] = distrib._p.nLatentSpaceDimensions
 
   e["Solver"]["Type"] = "HSAEM"

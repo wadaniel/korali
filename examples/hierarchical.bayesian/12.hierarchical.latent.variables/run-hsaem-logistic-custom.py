@@ -24,11 +24,17 @@ def main():
   # Do NOT do this:
   # e["Problem"]["Log Likelihood Functions"] = [lambda sample: distrib.conditional_p(
   #         sample, data_vector[i])   for i in range(distrib._p.nIndividuals) ]
+
+  ## Also don't do this:
+  # func_list = []
+  # for i in range(distrib._p.nIndividuals):
+  #     func_list.append(lambda sample: distrib.conditional_p(sample, data_vector[i]))
+
+  # Method with no external packages:
   func_list = []
   for i in range(distrib._p.nIndividuals):
-      func_list.append(lambda sample: distrib.conditional_p(sample, data_vector[i]))
+    func_list.append((lambda index: (lambda sample: distrib.conditional_p(sample, data_vector[index]) ))(i))
   e["Problem"]["Log Likelihood Functions"] = func_list
-
 
   e["Problem"]["Latent Space Dimensions"] = distrib._p.nLatentSpaceDimensions
 

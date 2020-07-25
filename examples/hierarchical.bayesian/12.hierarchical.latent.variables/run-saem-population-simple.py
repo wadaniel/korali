@@ -1,5 +1,7 @@
 import sys
 import os
+import functools
+
 current_path = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(os.path.join(current_path, './_model/simple_example_Lavielle'))
 sys.path.append('./_model/simple_example_Lavielle')

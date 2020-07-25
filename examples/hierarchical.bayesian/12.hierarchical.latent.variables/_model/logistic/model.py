@@ -75,9 +75,6 @@ class LogisticConditionalDistribution():
 
     logp_sum = 0
 
-    # import pdb
-    # pdb.set_trace()
-
     for point in points:
       assert len(point) == 3, f"Data point vector has wrong length. " \
                               f"Was: {len(point)}, should be: {3}"

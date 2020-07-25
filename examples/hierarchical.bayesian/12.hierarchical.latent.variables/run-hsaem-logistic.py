@@ -29,12 +29,19 @@ def main():
     y_vals[i] = d.data[i, :, 2].tolist()
 
   # The computational model for the log-likelihood, log[ p(data point | latent) ]
-  # Do NOT do this:
+  # Do NOT do this (even though in this example, the x-values are the same for all so there's no difference.):
   # e["Problem"]["Computational Models"] = [lambda sample: logisticModelFunction(sample, x_vals[i])
   #                                         for i in range(d.nIndividuals)]
+
+  ## Same here, also don't do this:
+  # func_list = []
+  # for i in range(d.nIndividuals):
+  #     func_list.append(lambda sample: logisticModelFunction(sample, x_vals[i]))
+
+  # Method with no external packages:
   func_list = []
   for i in range(d.nIndividuals):
-      func_list.append(lambda sample: logisticModelFunction(sample, x_vals[i]))
+    func_list.append((lambda index: (lambda sample: logisticModelFunction(sample, x_vals[index]) ))(i))
   e["Problem"]["Computational Models"] = func_list
 
   # Alternative: Pass the x values to Korali. Then, the points for the individual

@@ -19,9 +19,24 @@ def main():
 
   e["Problem"]["Type"] = "Bayesian/Latent/HierarchicalLatentCustom"
   # The computational model for the log-likelihood, log[ p(data point | latent) ]
-  e["Problem"][
-      "Log Likelihood Functions"] = [lambda sample: distrib.conditional_p(
-          sample, data_vector[i]) for i in range(distrib._p.nIndividuals)]
+
+  ## Don't do this, i will be captured by reference:
+  # e["Problem"][
+  #     "Log Likelihood Functions"] = [lambda sample: distrib.conditional_p(
+  #         sample, data_vector[i]) for i in range(distrib._p.nIndividuals)]
+
+  # Method with no external packages:
+  func_list = []
+  dbg_func_list = []
+  for i in range(distrib._p.nIndividuals):
+    func_list.append((lambda index: (lambda sample: distrib.conditional_p(sample, data_vector[index]) ))(i))
+    dbg_func_list.append((lambda index: (lambda : data_vector[index] ))(i))
+  e["Problem"]["Log Likelihood Functions"] = func_list
+
+  # dbg
+  assert dbg_func_list[0]() == data_vector[0]
+  assert dbg_func_list[4]() == data_vector[4]
+  assert dbg_func_list[len(data_vector) - 1]() == data_vector[-1]
 
   e["Problem"]["Latent Space Dimensions"] = distrib._p.nDimensions
 

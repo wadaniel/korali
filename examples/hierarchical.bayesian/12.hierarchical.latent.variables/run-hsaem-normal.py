@@ -29,12 +29,19 @@ def main():
     y_vals[i] = d.data[i, :, 2].tolist()
 
   # * The computational model, y, sdev = f(x, theta), g(x, theta)
+
+  ## Do NOT do this, i is captured by reference:
   # e["Problem"]["Computational Models"] = [lambda sample: normalModelFunction(sample, x_vals[i])
   #                                        for i in range(d.nIndividuals)]
 
+  # Instead (can also use functools.partial):
   func_list = []
   for i in range(d.nIndividuals):
-      func_list.append(lambda sample: normalModelFunction(sample, x_vals[i]))
+    func_list.append((lambda index: (lambda sample: normalModelFunction(sample, x_vals[index]) ))(i))
+  e["Problem"]["Computational Models"] = func_list
+
+
+
   e["Problem"]["Computational Models"] = func_list
 
   e["Problem"]["Likelihood Model"] = "Normal"

@@ -48,8 +48,6 @@ class NormalConditionalDistribution():
     assert len(latent_vars) == self._p.nLatentSpaceDimensions == 2, f"Latent variable vector has wrong length. " \
                                                                     f"Was: {len(latent_vars)}, should be: {2}"
     logp_sum = 0
-    # import pdb
-    # pdb.set_trace()
 
     for point in points:
       assert len(point) == 3, "Expected id, x and y values as 'data point'"

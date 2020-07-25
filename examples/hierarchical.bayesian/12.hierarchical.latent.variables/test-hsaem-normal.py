@@ -793,17 +793,6 @@ def main():
   e["Problem"]["Type"] = "Bayesian/Latent/HierarchicalLatentCustom"
   # The computational model for the log-likelihood, log[ p(data point | latent) ]
 
-  ## With partial functions from the functools package:
-  # e["Problem"]["Log Likelihood Functions"] = [
-  #     functools.partial(lambda sample, index: distrib.conditional_p(sample, data_vector[index]), index=i)
-  #     for i in range(distrib._p.nIndividuals)]
-
-  # Alternatively, without external packages:
-  func_list = []
-  for i in range(distrib._p.nIndividuals):
-      func_list.append(lambda sample: distrib.conditional_p(sample, data_vector[i]))
-  e["Problem"]["Log Likelihood Functions"] = func_list
-
   # ** Do NOT EVER do this (i would be captured by reference): **
   # e["Problem"]["Log Likelihood Functions"] = [lambda sample: distrib.conditional_p(
   #                                             sample, data_vector[i]) for i in range(distrib._p.nIndividuals)]
@@ -812,6 +801,18 @@ def main():
   # e["Problem"]["Log Likelihood Functions"] = [
   #     functools.partial(lambda sample, d: distrib.conditional_p(sample, d), d=data_vector[i])
   #     for i in range(distrib._p.nIndividuals)]
+
+  ## Instead, with partial functions from the functools package:
+  # e["Problem"]["Log Likelihood Functions"] = [
+  #     functools.partial(lambda sample, index: distrib.conditional_p(sample, data_vector[index]), index=i)
+  #     for i in range(distrib._p.nIndividuals)]
+
+  # Alternatively, without external packages:
+  func_list = []
+  for i in range(distrib._p.nIndividuals):
+    func_list.append((lambda index: (lambda sample: distrib.conditional_p(sample, data_vector[index]) ))(i))
+
+  e["Problem"]["Log Likelihood Functions"] = func_list
 
   e["Problem"]["Latent Space Dimensions"] = distrib._p.nLatentSpaceDimensions
 
@@ -830,7 +831,7 @@ def main():
     e["Solver"]["Test Function"] = lambda sample: test_prior(sample)
   else:
     assert test_what == "llh"
-    e["Solver"]["Vector Result Names"] = ["Log Likelihood"]
+    e["Solver"]["Vector Result Names"] = ["logLikelihood"]
     e["Solver"]["Function To Execute"] = "Evaluate logLikelihood"
     e["Solver"][
         "Function To Populate Sample Parameters"] = lambda sample: populate_for_test_prior(

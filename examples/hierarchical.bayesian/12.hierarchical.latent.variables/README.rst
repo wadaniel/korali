@@ -1,5 +1,11 @@
 .. _hsaem_examples:
 
+.. role:: red
+
+.red {
+    color:red;
+}
+
 ===============================================================================
 Optimizing parameters in hierarchical latent variable models, using SA-EM
 ===============================================================================
@@ -232,7 +238,7 @@ Simple example using HSAEM
 
 
 We first import everything from the file :code:`_model/simple_example_Lavielle/model.py`, including
-our model class, :code:`ConditionalDistribution4`. We also import the :code:`korali` Python library:
+our model class, :code:`SimpleDistributionConditional`. We also import the :code:`korali` Python library:
 (The distribution enumeration continues from the non-hierarchical examples:)
 
 .. code-block:: python
@@ -247,7 +253,8 @@ We then instatiate the model class, which provides acces to the data points and 
 
 .. code-block:: python
 
-    distrib = ConditionalDistribution4()
+    distrib = SimpleDistributionConditional()
+    data = distrib._p.data
 
 To run a Korali experiment, we first need to create a :code:`korali.Experiment` that we can then customize.
 We will also need a :code:`korali.Engine` to run the experiment:
@@ -258,13 +265,57 @@ We will also need a :code:`korali.Engine` to run the experiment:
     e = korali.Experiment()
 
 **Problem Setup:**
-To solve a hierarchical problem with latent variables, we tell Korali that :code:`HierarchicalLatent` is the
-problem type. We then set the conditional log likelihood function, i.e. :math:`p(x | \theta)`
+To solve a hierarchical problem with latent variables, we tell Korali that :code:`HierarchicalLatentCustom` is the
+problem type.
 
 .. code-block:: python
 
-    e["Problem"]["Type"] = "Bayesian/Latent/HierarchicalLatent"
-    e["Problem"]["Conditional Log Likelihood Function"] = lambda sample : distrib.conditional_p(sample)
+    e["Problem"]["Type"] = "Bayesian/Latent/HierarchicalLatentCustom"
+
+We then define the conditional log likelihood functions, i.e. :math:`p(x | \theta)`, one for
+each individual. For this, there is a trap that Python has set out for us: Beware of
+defining lambda functions in loops. It *can* be done in this way:
+
+.. code-block:: python
+
+  # ** Method with no external packages
+  func_list = []
+  for i in range(distrib._p.nIndividuals):
+    func_list.append((lambda index: (lambda sample: distrib.conditional_p(sample, data[index]) ))(i))
+  e["Problem"]["Log Likelihood Functions"] = func_list
+
+:red:`It is NOT possible to do the following:`
+
+.. code-block:: python
+
+  # BAD !
+  func_list = []
+  for i in range(distrib._p.nIndividuals):
+    func_list.append(lambda sample: distrib.conditional_p(sample, data[i]))
+  e["Problem"]["Log Likelihood Functions"] = func_list
+  # BAD !
+
+:red:`The above would insert the same data points (those of the last individual)
+into each of the functions.` This is typically not the desired behaviour.
+
+Alternatively, partial functions from the functools package can also be used. This
+results in somewhat cleaner code:
+
+.. code-block:: python
+
+  # ** Using partial functions from the functools package
+  import functools
+
+  e["Problem"]["Log Likelihood Functions"] = [
+    functools.partial(
+      lambda sample, index: distrib.conditional_p(sample, data[index]),
+      index=i)
+    for i in range(distrib._p.nIndividuals)]
+
+
+
+TODO: CONTINUE HERE.
+
 
 To evaluate total and inidividual likelihoods, the problem needs access to our measured or generated
 data points. We set them as the problem's :code:`"Data"`, and also define the number of dimensions
@@ -384,11 +435,13 @@ We also import the :code:`korali` Python library, as well as NumPy:
 
 - TODO TODO - continue below
 
-We then instatiate the model class, which provides acces to the data points and the conditional distribution function:
+We then instatiate the model class, which provides access to the data points
+and the conditional distribution function:
 
 .. code-block:: python
 
-    distrib = ConditionalDistribution4()
+    distrib = SimpleDistributionConditional()
+    data = distrib._p.data
 
 To run a Korali experiment, we first need to create a :code:`korali.Experiment` that we can then customize.
 We will also need a :code:`korali.Engine` to run the experiment:
@@ -399,13 +452,33 @@ We will also need a :code:`korali.Engine` to run the experiment:
     e = korali.Experiment()
 
 **Problem Setup:**
-To solve a hierarchical problem with latent variables, we tell Korali that :code:`HierarchicalLatent` is the
-problem type. We then set the conditional log likelihood function, i.e. :math:`p(x | \theta)`
+To solve a hierarchical problem with latent variables, we tell Korali that :code:`HierarchicalLatentReference` is the
+problem type.
 
 .. code-block:: python
 
-    e["Problem"]["Type"] = "Bayesian/Latent/HierarchicalLatent"
-    e["Problem"]["Conditional Log Likelihood Function"] = lambda sample : distrib.conditional_p(sample)
+    e["Problem"]["Type"] = "Bayesian/Latent/HierarchicalLatentReference"
+
+We then set the conditional log likelihood functions, i.e. :math:`p(x | \theta)`, one for
+each individual. For this, there is a trap that Python has set out for us: Beware of
+defining lambda functions in loops. It is possible in this way:
+
+.. code-block:: python
+
+  # ** Method with no external packages
+  func_list = []
+  for i in range(distrib._p.nIndividuals):
+    func_list.append((lambda index: (lambda sample: distrib.conditional_p(sample, data[index]) ))(i))
+  e["Problem"]["Log Likelihood Functions"] = func_list
+
+:red:`It is NOT possible to do the following:`
+
+.. code-block:: python
+  # BAD !
+
+
+  # BAD !
+
 
 To evaluate total and inidividual likelihoods, the problem needs access to our measured or generated
 data points. We set them as the problem's :code:`"Data"`, and also define the number of dimensions

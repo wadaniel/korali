@@ -65,14 +65,14 @@ Two Examples
    That is, the data is again normally distributed around each individual's latent variable :math:`\mathbf{\theta}_i`, which is
    now vector-valued and whose transformed entries follow a multivariate normal distribution with mean :math:`\mathbf{\beta}`
    and covariance matrix :math:`\mathbf{\mathbf{\Omega}}`.
-   The inverse transform :math:`\mathbf{f}` is the identity in each normal coordinate of :math:`\mathbf{\theta}_i`, while
+   The inverse transform :math:`\mathbf{h}` is the identity in each normal coordinate of :math:`\mathbf{\theta}_i`, while
    for log-normal coordinates it's the exponential and for logit-normal coordinates the sigmoidal function:
 
-   :math:`\mathbf{f}(\mathbf{z})_k = f(z_k)`, with:
+   :math:`\mathbf{h}(\mathbf{z})_k = h(z_k)`, with:
 
-   - :math:`f(z_k) = z_k` for normal :math:`\theta_k`,
-   - :math:`f(z_k) = exp(z_k)` for log-normal :math:`\theta_k`, and
-   - :math:`f(z_k) = \frac{1}{1 + exp(-z_k)}` for logit-normal :math:`\theta_k` (sigmoid is the inverse logit).
+   - :math:`h(z_k) = z_k` for normal :math:`\theta_k`,
+   - :math:`h(z_k) = exp(z_k)` for log-normal :math:`\theta_k`, and
+   - :math:`h(z_k) = \frac{1}{1 + exp(-z_k)}` for logit-normal :math:`\theta_k` (sigmoid is the inverse logit).
 
 
 Data for both examples can be generated with different parameters using the script `model/generate_data.py`.

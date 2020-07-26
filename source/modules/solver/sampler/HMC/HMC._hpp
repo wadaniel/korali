@@ -23,6 +23,16 @@ class HMC : public Sampler
   void updateState();
 
   /**
+  * @brief Updates internal state such as mean, Metric and InverseMetric during warmup phase.
+  */
+  void updateStateWarmup();
+
+  /**
+  * @brief Updates internal state such as mean, Metric and InverseMetric during sampling phase.
+  */
+  void updateStateSampling();
+
+  /**
   * @brief Generate new sample.
   */
   void generateCandidate();
@@ -47,6 +57,28 @@ class HMC : public Sampler
   * @brief Generate a sample and evaluate it.
   */
   void runGeneration() override;
+
+  /**
+  * @brief Runs generation for HMC sampler.
+  * @param logUniSample Log of uniform sample needed for Metropolis accepance / rejection step.
+  */
+  void runGenerationHMC(const double logUniSample);
+
+  /**
+  * @brief Runs generation for NUTS.
+  * @param logUniSample Log of uniform sample needed for Metropolis accepance / rejection step.
+  */
+  void runGenerationNUTS(const double logUniSample);
+
+  /**
+  * @brief Saves sample.
+  */
+  void saveSample();
+
+  /**
+  * @brief Updates Step Size for Adaptive Step Size.
+  */
+  void updateStepSize();
 
   /**
   * @brief Console Output before generation runs.

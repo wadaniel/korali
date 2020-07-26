@@ -11,14 +11,12 @@ import korali
 
 def main():
 
-  # * Load the data.
-  #   It is stored together with other information such as data dimensions in object "d":
-  d = LogisticData()
-
   k = korali.Engine()
   e = korali.Experiment()
 
-  e["Problem"]["Type"] = "Bayesian/Latent/HierarchicalLatentReference"
+  # * Load the data
+  #   It is stored together with other information such as data dimensions in object "d":
+  d = LogisticData()
 
   x_vals = [[] for _ in range(d.nIndividuals)]
   y_vals = [[] for _ in range(d.nIndividuals)]
@@ -27,6 +25,8 @@ def main():
     # We discard the first dimension: ID
     x_vals[i] = d.data[i, :, 1:2].tolist()
     y_vals[i] = d.data[i, :, 2].tolist()
+
+  e["Problem"]["Type"] = "Bayesian/Latent/HierarchicalLatentReference"
 
   # The computational model for the log-likelihood, log[ p(data point | latent) ]
   # Do NOT do this (even though in this example, the x-values are the same for all so there's no difference.):
@@ -95,29 +95,29 @@ def main():
     d.err_transf = [d.err_transf]
   dimCounter = 0
   distribs = {
-      "Normal": "Uniform 0",
-      "Log-Normal": "Uniform 1",
-      "Logit-Normal": "Uniform 2",
-      "Probit-Normal": "Uniform XX"
+    "Normal": "Uniform 0",
+    "Log-Normal": "Uniform 1",
+    "Logit-Normal": "Uniform 2",
+    "Probit-Normal": "Uniform XX" # There are no probit-normal variables in HSAEM (yet)
   }
   for transf in d.transf:
     generate_variable(
-        transf,
-        e,
-        dimCounter,
-        "latent parameter " + str(dimCounter),
-        distribs,
-        initial=d.beta[dimCounter])
+      transf,
+      e,
+      dimCounter,
+      "latent parameter " + str(dimCounter),
+      distribs,
+      initial=d.beta[dimCounter])
     dimCounter += 1
 
   for i, err_transf in enumerate(d.err_transf):
     generate_variable(
-        err_transf,
-        e,
-        dimCounter,
-        "standard deviation " + str(i),
-        distribs,
-        initial=d.beta[dimCounter])
+      err_transf,
+      e,
+      dimCounter,
+      "standard deviation " + str(i),
+      distribs,
+      initial=d.beta[dimCounter])
     dimCounter += 1
 
   assert dimCounter == d.dNormal + d.dLognormal + d.dLogitnormal + d.dProbitnormal

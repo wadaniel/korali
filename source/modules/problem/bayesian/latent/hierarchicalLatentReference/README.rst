@@ -77,9 +77,9 @@ is managed by the user:
             for i in range(number_individuals)]
 
 **Important note:** We need this complicated form, because a mere :code:`[lambda s: f(s, my_points[i]) for i in range(10)]`
-**will not work**. Technical details: In the lambda expression, Python will capture :code:`i` by reference, meaning each :code:`i`
+**will not work**. (In the lambda expression, Python will capture :code:`i` by reference, meaning each :code:`i`
 will be overwritten with the last value for :code:`i` - that's 2 here. See `here <https://stackoverflow.com/questions/6076270/lambda-function-in-list-comprehensions>`_
-for more information.
+for more information.)
 
 Alternatively, to let Korali handle the data points (first without additional parameters):
 

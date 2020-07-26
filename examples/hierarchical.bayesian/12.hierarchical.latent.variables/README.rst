@@ -2,9 +2,14 @@
 
 .. role:: red
 
+..
+  Todo: this will probably not work; remove in that case
+
 .red {
     color:red;
+
 }
+
 
 ===============================================================================
 Optimizing parameters in hierarchical latent variable models, using SA-EM
@@ -284,6 +289,7 @@ defining lambda functions in loops. It *can* be done in this way:
     func_list.append((lambda index: (lambda sample: distrib.conditional_p(sample, data[index]) ))(i))
   e["Problem"]["Log Likelihood Functions"] = func_list
 
+
 :red:`It is NOT possible to do the following:`
 
 .. code-block:: python
@@ -295,11 +301,11 @@ defining lambda functions in loops. It *can* be done in this way:
   e["Problem"]["Log Likelihood Functions"] = func_list
   # BAD !
 
-:red:`The above would insert the same data points (those of the last individual)
-into each of the functions.` This is typically not the desired behaviour.
+:red:`The above would insert the same data points (those of the last individual) into each function.` This
+is typically not the desired behaviour.
 
 Alternatively, partial functions from the functools package can also be used. This
-results in somewhat cleaner code:
+results in slightly cleaner code:
 
 .. code-block:: python
 
@@ -313,73 +319,93 @@ results in somewhat cleaner code:
     for i in range(distrib._p.nIndividuals)]
 
 
-
-TODO: CONTINUE HERE.
-
-
-To evaluate total and inidividual likelihoods, the problem needs access to our measured or generated
-data points. We set them as the problem's :code:`"Data"`, and also define the number of dimensions
-and individuals of our problem:
+Now that the likelihood functions are defined, we set the number of
+latent space dimensions (i.e. the number of latent variables for a single
+individual),
 
 .. code-block:: python
 
-    # We need to add one dimension to _p.data, because one individual in the general case could have
-    # more than one data point assigned
-    data_vector = [[] for _ in range(distrib._p.nIndividuals)]
-    for i in range(distrib._p.nIndividuals):
-        data_vector[i].append([distrib._p.data[i]])
-    e["Problem"]["Data"] = data_vector
-    e["Problem"]["Data Dimensions"] = 1
-    e["Problem"]["Number Individuals"] = distrib._p.nIndividuals
-    e["Problem"]["Latent Space Dimensions"] = 1
+  e["Problem"]["Latent Space Dimensions"] = 1
 
-**Solver Setup:** We then define the solver. We want to use :code:`HSAEM`. We can also pass additional parameters for the solver.
-If they are not passed, default values will be used. Here, we choose to use a short sampling process with
-5 chains, only one main sampling step with 6 sub-steps (N1 + N2 + N3). Finally, we want to run HSAEM for
-30 generations:
+**Solver Setup:**
+Next, we choose solver *HSAEM* and configure it. Here we want to use 5
+samples for stochastic approximation, which will be obtained after a
+number of MCMC sampling steps.
 
 .. code-block:: python
 
-    e["Solver"]["Type"] = "HSAEM"
-    e["Solver"]["Number Samples Per Step"] = 5
-    e["Solver"]["mcmc Outer Steps"] = 1
-    e["Solver"]["N1"] = 2
-    e["Solver"]["N2"] = 2
-    e["Solver"]["N3"] = 2
-    e["Solver"]["Termination Criteria"]["Max Generations"] = 30
+  e["Solver"]["Type"] = "HSAEM"
+  e["Solver"]["Number Samples Per Step"] = 5
+  e["Solver"]["mcmc Outer Steps"] = 1
+  e["Solver"]["N1"] = 2
+  e["Solver"]["N2"] = 2
+  e["Solver"]["N3"] = 2
+
+:code:`N1`, :code:`N2` and :code:`N3`
+are the number of sampling steps under three different sampling distributions.
+We choose to perform this sequence of 2 + 2 + 2 steps once.
+
+We want to run the optimization for 50 generations:
+
+.. code-block:: python
+
+  e["Solver"]["Termination Criteria"]["Max Generations"] = 50
+
+One generation is composed of one E and one M step.
+In each E step, new samples will be generated.
 
 **Variables and Distributions:**
-Apart from solver and problem, we define what variables our experiment has. Each variable also needs
-a prior distribution, since our selected problem :code:`HierarchicalLatent` is a :code:`Bayesian` problem:
+The problem types *HierarchicalLatentCustom* and *HierarchicalLatentReference*
+simplify the definition of variables. In the hierarchical setting, the latent
+variable vectors of each individual are symmetric, so they only need to
+be defined for one individual. The hyperparameters are also automatically
+generated.
+
+We have only one latent space dimension, so we define only one variable:
 
 .. code-block:: python
 
-    e["Distributions"][0]["Name"] = "Uniform 0"
-    e["Distributions"][0]["Type"] = "Univariate/Uniform"
-    e["Distributions"][0]["Minimum"] = -100
-    e["Distributions"][0]["Maximum"] = 100
+  e["Variables"][0]["Name"] = "latent variable mean"
+  e["Variables"][0]["Latent Variable Distribution Type"] = "Normal"
+  e["Variables"][0]["Initial Value"] = -5
+  e["Variables"][0]["Prior Distribution"] = "Uniform 0"
 
-Instead of defining each latent variable for each individual, problem :code:`HierarchicalLatent` allows
-us to only define the latent variables for one individual as prototypes. There is only
-one latent space dimension in our problem, so we define only one latent variable. Latent variables for
-all other individuals, as well as hyperparameters, will be automatically inferred and added by Korali.
-
-.. code-block:: python
-
-    e["Variables"][0]["Name"] = "latent mean "+str(0)
-    e["Variables"][0]["Initial Value"] = -5
-    e["Variables"][0]["Latent Variable Distribution Type"] = "Normal"
-    e["Variables"][0]["Prior Distribution"] = "Uniform 0"
-
-Here, we gave each variable a name for identification and set a starting value (this will be used to set the
+Here, we give the variable a name for identification and set a starting value (this will be used to set the
 starting value for the hyperparameter representing the mean for this latent variable).
 The field :code:`"Latent Variable Distribution Type"` defines how we expect this variable to be distributed.
 It can be one of :code:`"Normal"`, :code:`"Log-Normal"` and :code:`"Logit-Normal"`.
 
-Finally, we choose to only store the experiment state every 50 generations (for plotting, a frequency of 1
-is advised) and change the default results folder. We also tell Korali to print :code:`"Detailed"`
-information to the command line every 10 generations:
+The variable also needs a prior distribution, as required for all variables in *Bayesian*
+problems.
+Next, we define this distribution:
 
+.. code-block:: python
+
+  e["Distributions"][0]["Name"] = "Uniform 0"
+  e["Distributions"][0]["Type"] = "Univariate/Uniform"
+  e["Distributions"][0]["Minimum"] = -100
+  e["Distributions"][0]["Maximum"] = 100
+
+..
+    **Solver Setup:** We then define the solver. We want to use :code:`HSAEM`. We can also pass additional parameters for the solver.
+    If they are not passed, default values will be used. Here, we choose to use a short sampling process with
+    5 chains, only one main sampling step with 6 sub-steps (N1 + N2 + N3). Finally, we want to run HSAEM for
+    50 generations:
+
+    .. code-block:: python
+
+        e["Solver"]["Type"] = "HSAEM"
+        e["Solver"]["Number Samples Per Step"] = 5
+        e["Solver"]["mcmc Outer Steps"] = 1
+        e["Solver"]["N1"] = 2
+        e["Solver"]["N2"] = 2
+        e["Solver"]["N3"] = 2
+        e["Solver"]["Termination Criteria"]["Max Generations"] = 50
+
+
+Finally, we choose to store the experiment at every generation (for plotting, a frequency of 1
+works best) and change the default results folder. We also tell Korali to print :code:`"Detailed"`
+information to the command line every 10 generations:
 
 .. code-block:: python
 
@@ -394,7 +420,8 @@ Now we can run the experiment and wait for the results.
 
     k.run(e)
 
-In the next section, we describe an example that adjusts more settings of `HSAEM`.
+In the next section, we describe an example that adjusts more settings of `HSAEM`, and
+uses a *Reference* type problem.
 
 
 ..
@@ -409,12 +436,8 @@ Optimizing a logistic model with HSAEM and a 'Reference' problem class
 This section describes step-by-step the contents of :code:`run-hsaem-logistic.py`. It runs `HSAEM` for the
 logistic problem described above (problem no. 4).
 
-
-TODO TODO - fix the copy-paste below
-
-
 **Imports:**
-We first import everything from the files :code:`_model/logistic/model.py` and :code:`_model/logistic/model.py`,
+We first import everything from the files :code:`_model/logistic/load_data.py` and :code:`_model/logistic/model.py`,
 including our computational model, :code:`logisticModelFunction`, and an object class that will
 load the data at its initialization: :code:`LogisticData`. From `_model/utils.py` we import a helper function.
 We also import the :code:`korali` Python library, as well as NumPy:
@@ -433,16 +456,6 @@ We also import the :code:`korali` Python library, as well as NumPy:
     import numpy as np
 
 
-- TODO TODO - continue below
-
-We then instatiate the model class, which provides access to the data points
-and the conditional distribution function:
-
-.. code-block:: python
-
-    distrib = SimpleDistributionConditional()
-    data = distrib._p.data
-
 To run a Korali experiment, we first need to create a :code:`korali.Experiment` that we can then customize.
 We will also need a :code:`korali.Engine` to run the experiment:
 
@@ -451,107 +464,187 @@ We will also need a :code:`korali.Engine` to run the experiment:
     k = korali.Engine()
     e = korali.Experiment()
 
+
+We then load the data:
+
+.. code-block:: python
+
+  d = LogisticData()
+  # d is available as d.data
+
+:code:`d.data` contains the x and y values combined as 3-dimensional points (Id, x, y).
+We extract x and y separately:
+
+.. code-block:: python
+
+  x_vals = [[] for _ in range(d.nIndividuals)]
+  y_vals = [[] for _ in range(d.nIndividuals)]
+
+  for i in range(d.nIndividuals):
+    x_vals[i] = d.data[i, :, 1:2].tolist()
+    y_vals[i] = d.data[i, :, 2].tolist()
+
+
 **Problem Setup:**
-To solve a hierarchical problem with latent variables, we tell Korali that :code:`HierarchicalLatentReference` is the
-problem type.
+To solve a hierarchical problem with latent variables, we choose the :code:`HierarchicalLatentReference`
+problem type,
 
 .. code-block:: python
 
     e["Problem"]["Type"] = "Bayesian/Latent/HierarchicalLatentReference"
 
-We then set the conditional log likelihood functions, i.e. :math:`p(x | \theta)`, one for
-each individual. For this, there is a trap that Python has set out for us: Beware of
-defining lambda functions in loops. It is possible in this way:
+In this problem class, we choose a computational model, :math:`f(x, \mathbf{\theta})` for each individual.
+From this, the probability of a data point :math:`(x, y)` will be calculated from
+:math:`y = f(x, \mathbf{\theta}) + \epsilon`, where the distribution of :math:`\epsilon` is defined
+by the :code:`"Likelihood Model"`.
+
+Again, we need to be ware of defining lambda functions in loops.
+See the previous example, or the problem class documentation.
+We define the functions in this way, inserting the x values manually:
 
 .. code-block:: python
 
-  # ** Method with no external packages
   func_list = []
-  for i in range(distrib._p.nIndividuals):
-    func_list.append((lambda index: (lambda sample: distrib.conditional_p(sample, data[index]) ))(i))
-  e["Problem"]["Log Likelihood Functions"] = func_list
+  for i in range(d.nIndividuals):
+    func_list.append(
+        (lambda index:
+          (lambda sample: logisticModelFunction(sample, x_vals[index]) )
+        )(i)
+    )
+  e["Problem"]["Computational Models"] = func_list
 
-:red:`It is NOT possible to do the following:`
+For automated handling of data points, please see the documentation of `HierarchicalLatentReference`.
 
-.. code-block:: python
-  # BAD !
+The functions defined here will access :code:`"sample["Latent Variables"]`
+(and the inserted points) and calculate two terms from it. First, the calculated function values
+:math:`[y_1, y_2, ...]`, must be written to
+:code:`sample["Reference Evaluations"]`. This list msut contain one value for each value passed
+as :code:`"Reference Data"` for this individual.
+Also, for a :code:`"Normal"` noise model, :code:`sample["Standard Deviations"]` must be filled with
+a list of standard deviations :math:`[\sigma_1, \sigma_2, ...]`, of same length. (A negative binomial
+likelihood model expects a list of :code:`"Dispersions"` instead.)
 
-
-  # BAD !
-
-
-To evaluate total and inidividual likelihoods, the problem needs access to our measured or generated
-data points. We set them as the problem's :code:`"Data"`, and also define the number of dimensions
-and individuals of our problem:
-
-.. code-block:: python
-
-    # We need to add one dimension to _p.data, because one individual in the general case could have
-    # more than one data point assigned
-    data_vector = [[] for _ in range(distrib._p.nIndividuals)]
-    for i in range(distrib._p.nIndividuals):
-        data_vector[i].append([distrib._p.data[i]])
-    e["Problem"]["Data"] = data_vector
-    e["Problem"]["Data Dimensions"] = 1
-    e["Problem"]["Number Individuals"] = distrib._p.nIndividuals
-    e["Problem"]["Latent Space Dimensions"] = 1
-
-**Solver Setup:** We then define the solver. We want to use :code:`HSAEM`. We can also pass additional parameters for the solver.
-If they are not passed, default values will be used. Here, we choose to use a short sampling process with
-5 chains, only one main sampling step with 6 sub-steps (N1 + N2 + N3). Finally, we want to run HSAEM for
-30 generations:
+We choose a :code:`"Normal"` noise distribution, pass our reference y-values to the problem (these
+could be measurements, for example), and set the number of latent space dimensions required by
+our model (to 4):
 
 .. code-block:: python
 
-    e["Solver"]["Type"] = "HSAEM"
-    e["Solver"]["Number Samples Per Step"] = 5
-    e["Solver"]["mcmc Outer Steps"] = 1
-    e["Solver"]["N1"] = 2
-    e["Solver"]["N2"] = 2
-    e["Solver"]["N3"] = 2
-    e["Solver"]["Termination Criteria"]["Max Generations"] = 30
+  e["Problem"]["Likelihood Model"] = "Normal"
+  e["Problem"]["Reference Data"] = y_vals
+  e["Problem"]["Latent Space Dimensions"] = d.nLatentSpaceDimensions
+
+
+**Solver Setup:**
+We choose the solver *HSAEM* and configure it:
+
+.. code-block:: python
+
+  e["Solver"]["Type"] = "HSAEM"
+
+  e["Solver"]["Number Samples Per Step"] = 10
+  e["Solver"]["mcmc Outer Steps"] = 1
+  e["Solver"]["mcmc Target Acceptance Rate"] = 0.4
+  e["Solver"]["N1"] = 2
+  e["Solver"]["N2"] = 2
+  e["Solver"]["N3"] = 2
+  e["Solver"]["K1"] = 200
+  e["Solver"]["Alpha 1"] = 0.25
+  e["Solver"]["Alpha 2"] = 0.5
+  e["Solver"]["Use Simulated Annealing"] = True
+  e["Solver"]["Simulated Annealing Decay Factor"] = 0.95
+  e["Solver"]["Simulated Annealing Initial Variance"] = 1
+  e["Solver"]["Diagonal Covariance"] = True
+
+  e["Solver"]["Termination Criteria"]["Max Generations"] = 250
+
+Here, we choose to make use of Simulated Annealing, which will introduce greater stochasticity in sampling
+during the first generations - if its :code:`"Initial Variance"` is greater than the initial covariance estimates.
+The parameter :code:`"Diagonal Covariance"` tells *HSAEM* to model the different latent variable dimensions as
+independent from each other. Also, we choose to run the optimization for 250 generations.
 
 **Variables and Distributions:**
-Apart from solver and problem, we define what variables our experiment has. Each variable also needs
-a prior distribution, since our selected problem :code:`HierarchicalLatent` is a :code:`Bayesian` problem:
-
-.. code-block:: python
-
-    e["Distributions"][0]["Name"] = "Uniform 0"
-    e["Distributions"][0]["Type"] = "Univariate/Uniform"
-    e["Distributions"][0]["Minimum"] = -100
-    e["Distributions"][0]["Maximum"] = 100
-
-Instead of defining each latent variable for each individual, problem :code:`HierarchicalLatent` allows
-us to only define the latent variables for one individual as prototypes. There is only
-one latent space dimension in our problem, so we define only one latent variable. Latent variables for
-all other individuals, as well as hyperparameters, will be automatically inferred and added by Korali.
-
-.. code-block:: python
-
-    e["Variables"][0]["Name"] = "latent mean "+str(0)
-    e["Variables"][0]["Initial Value"] = -5
-    e["Variables"][0]["Latent Variable Distribution Type"] = "Normal"
-    e["Variables"][0]["Prior Distribution"] = "Uniform 0"
-
-Here, we gave each variable a name for identification and set a starting value (this will be used to set the
-starting value for the hyperparameter representing the mean for this latent variable).
-The field :code:`"Latent Variable Distribution Type"` defines how we expect this variable to be distributed.
-It can be one of :code:`"Normal"`, :code:`"Log-Normal"` and :code:`"Logit-Normal"`.
-
-Finally, we choose to only store the experiment state every 50 generations (for plotting, a frequency of 1
-is advised) and change the default results folder. We also tell Korali to print :code:`"Detailed"`
-information to the command line every 10 generations:
+As *HierarchicalLatentReference* is a *Bayesian* problem, we need to define priors for all variables. We
+define three different distributions for use as priors:
 
 
 .. code-block:: python
 
-    e["File Output"]["Frequency"] = 50
-    e["File Output"]["Path"] = "_korali_result_hierarchical/"
-    e["Console Output"]["Frequency"] = 10
-    e["Console Output"]["Verbosity"] = "Detailed"
+  e["Distributions"][0]["Name"] = "Uniform 0"
+  e["Distributions"][0]["Type"] = "Univariate/Uniform"
+  e["Distributions"][0]["Minimum"] = -100
+  e["Distributions"][0]["Maximum"] = 100
 
-Now we can run the experiment and wait for the results.
+  e["Distributions"][1]["Name"] = "Uniform 1"
+  e["Distributions"][1]["Type"] = "Univariate/Uniform"
+  e["Distributions"][1]["Minimum"] = 0
+  e["Distributions"][1]["Maximum"] = 100
+
+  e["Distributions"][2]["Name"] = "Uniform 2"
+  e["Distributions"][2]["Type"] = "Univariate/Uniform"
+  e["Distributions"][2]["Minimum"] = 0.0
+  e["Distributions"][2]["Maximum"] = 1.0
+
+Again, with *HierarchicalLatentReference* we only need to define prototype latent variables for one
+individual. The next code paragraph works for variable numbers of latent variables to be modeled as
+:code:`"Normal"`, :code:`"Log-Normal"` or :code:`"Logit-Normal"`.
+
+..
+  Todo: Rewrite the code to explicitly create the four variables? That's probably cleaner.
+
+The :code:`transf` and :code:`err_transf` list variables encode which variables to represent as
+normal variables (if :code:`transf[0] == 0`, the first variable is normal), log-normal variables
+(where :code:`transf` contains a :code:`1`), or as logit-normal variables (a :code:`2` in :code:`transf`).
+:code:`err_transf` is for the fourth latent variable, which is the error standard deviation in our model.
+
+We use the function :code:`generate_variable`, defined in
+:code:`_models/utils.py`, to populate the dictionary for each variable, with :code:`"Name"`,
+:code:`"Initial Value"`, the right :code:`"Latent Variable Distribution Type"` as well as the
+:code:`"Prior Distribution"`.
+
+.. code-block:: python
+
+  dimCounter = 0
+  distribs = {
+    "Normal": "Uniform 0",
+    "Log-Normal": "Uniform 1",
+    "Logit-Normal": "Uniform 2",
+    "Probit-Normal": "Uniform XX" # There are no probit-normal variables in HSAEM (yet)
+  }
+  for transf in d.transf:
+    generate_variable(
+      transf,
+      e,
+      dimCounter,
+      "latent parameter " + str(dimCounter),
+      distribs,
+      initial=d.beta[dimCounter])
+    dimCounter += 1
+
+  for i, err_transf in enumerate(d.err_transf):
+    generate_variable(
+      err_transf,
+      e,
+      dimCounter,
+      "standard deviation " + str(i),
+      distribs,
+      initial=d.beta[dimCounter])
+    dimCounter += 1
+
+
+Finally, we choose to store the experiment state every generation (useful for plotting)
+and change the default results folder. We also tell Korali to print :code:`"Detailed"`
+information to the command line every generation:
+
+
+.. code-block:: python
+
+  e["File Output"]["Frequency"] = 1
+  e["File Output"]["Path"] = "_korali_result_logistic/"
+  e["Console Output"]["Frequency"] = 1
+  e["Console Output"]["Verbosity"] = "Detailed"
+
+Now we can run the experiment and wait for the results to be printed to the command line.
 
 .. code-block:: python
 

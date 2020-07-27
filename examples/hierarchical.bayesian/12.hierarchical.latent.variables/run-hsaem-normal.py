@@ -28,20 +28,16 @@ def main():
     x_vals[i] = d.data[i, :, 1:2].tolist()
     y_vals[i] = d.data[i, :, 2].tolist()
 
-  # * The computational model, y, sdev = f(x, theta), g(x, theta)
+  # * The computational models, y, sdev = f(x, theta), g(x, theta)
 
-  ## Do NOT do this, i is captured by reference:
-  # e["Problem"]["Computational Models"] = [lambda sample: normalModelFunction(sample, x_vals[i])
-  #                                        for i in range(d.nIndividuals)]
+  ## Warning: The i=i is necessary to capture the current i.
+  ## Just writing
+  ##   lambda sample, i: logisticModelFunction(sample, x_vals[i])
+  ## will capture i by reference and thus not do what is intended.
 
-  # Instead (can also use functools.partial):
   func_list = []
   for i in range(d.nIndividuals):
-    func_list.append((lambda index: (lambda sample: normalModelFunction(sample, x_vals[index]) ))(i))
-  e["Problem"]["Computational Models"] = func_list
-
-
-
+    func_list.append(lambda sample, i=i: normalModelFunction(sample, x_vals[i]))
   e["Problem"]["Computational Models"] = func_list
 
   e["Problem"]["Likelihood Model"] = "Normal"

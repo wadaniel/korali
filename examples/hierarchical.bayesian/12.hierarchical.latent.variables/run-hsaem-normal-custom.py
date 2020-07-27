@@ -22,19 +22,15 @@ def main():
 
   e["Problem"]["Type"] = "Bayesian/Latent/HierarchicalLatentCustom"
   # * The computational model for the log-likelihood, log[ p(data point | latent) ]
-  # Do NOT do this (i is captured by reference):
-  # e["Problem"]["Log Likelihood Functions"] = [lambda sample: distrib.conditional_p(sample, data_vector[i])
-  #                                             for i in range(distrib._p.nIndividuals)]
 
-  # Also don't do this:
-  # func_list = []
-  # for i in range(distrib._p.nIndividuals):
-  #     func_list.append(lambda sample: distrib.conditional_p(sample, data_vector[i]))
+  ## Warning: The i=i below is necessary to capture the current i.
+  ## Just writing
+  ##   lambda sample, i: logisticModelFunction(sample, x_vals[i])
+  ## will capture i by reference and thus not do what is intended.
 
-  # Method with no external packages:
   func_list = []
   for i in range(distrib._p.nIndividuals):
-    func_list.append((lambda index: (lambda sample: distrib.conditional_p(sample, data_vector[index]) ))(i))
+    func_list.append(lambda sample, i=i: distrib.conditional_p(sample, data_vector[i]) )
 
   e["Problem"]["Log Likelihood Functions"] = func_list
 

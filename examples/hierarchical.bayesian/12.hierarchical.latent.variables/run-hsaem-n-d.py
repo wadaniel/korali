@@ -15,19 +15,19 @@ def main():
   e = korali.Experiment()
 
   e["Problem"]["Type"] = "Bayesian/Latent/HierarchicalLatentCustom"
-  # The computational model for the log-likelihood, log[ p(data point | latent) ]
 
-  ## Do **not** do this, i will be captured by reference:
-  # e["Problem"][
-  #     "Log Likelihood Functions"] = [lambda sample: distrib.conditional_p(
-  #         sample, data_vector[i]) for i in range(distrib._p.nIndividuals)]
+  # The computational models for the log-likelihood, log[ p(data point | latent) ]
 
-  # Method with no external packages:
+  ## Warning: The index=i is necessary to capture the current i.
+  ## Just writing
+  ##   lambda sample, i: logisticModelFunction(sample, x_vals[i])
+  ## will capture i by reference and thus not do what is intended.
+
   func_list = []
   dbg_func_list = []
   for i in range(distrib._p.nIndividuals):
-    func_list.append((lambda index: (lambda sample: distrib.conditional_p(sample, data[index]) ))(i))
-    dbg_func_list.append((lambda index: (lambda : data[index] ))(i))
+    func_list.append(lambda sample, index=i: distrib.conditional_p(sample, data[index]))
+    dbg_func_list.append(lambda index=i: data[index] )
   e["Problem"]["Log Likelihood Functions"] = func_list
 
   # dbg

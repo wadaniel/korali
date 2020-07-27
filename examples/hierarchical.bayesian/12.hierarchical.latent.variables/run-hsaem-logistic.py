@@ -28,21 +28,19 @@ def main():
 
   e["Problem"]["Type"] = "Bayesian/Latent/HierarchicalLatentReference"
 
-  # The computational model for the log-likelihood, log[ p(data point | latent) ]
-  # Do NOT do this (even though in this example, the x-values are the same for all so there's no difference.):
-  # e["Problem"]["Computational Models"] = [lambda sample: logisticModelFunction(sample, x_vals[i])
-  #                                         for i in range(d.nIndividuals)]
 
-  ## Same here, also don't do this:
-  # func_list = []
-  # for i in range(d.nIndividuals):
-  #     func_list.append(lambda sample: logisticModelFunction(sample, x_vals[i]))
+  # * The computational models, y, sdev = f(x, theta), g(x, theta)
 
-  # Method with no external packages:
+  ## Warning: The i=i is necessary to capture the current i.
+  ## Just writing
+  ##   lambda sample, i: logisticModelFunction(sample, x_vals[i])
+  ## will capture i by reference and thus not do what is intended.
+
   func_list = []
   for i in range(d.nIndividuals):
-    func_list.append((lambda index: (lambda sample: logisticModelFunction(sample, x_vals[index]) ))(i))
+      func_list.append(lambda sample, i=i: logisticModelFunction(sample, x_vals[i]))
   e["Problem"]["Computational Models"] = func_list
+
 
   # # Alternative: Pass the x values to Korali. Then, the points for the individual
   # #  will be accessible to the computational model in "Data Points".

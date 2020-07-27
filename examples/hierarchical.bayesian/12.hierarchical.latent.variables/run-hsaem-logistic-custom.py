@@ -20,20 +20,18 @@ def main():
     data_vector[i] = distrib._p.data[i].tolist()
 
   e["Problem"]["Type"] = "Bayesian/Latent/HierarchicalLatentCustom"
-  # The computational model for the log-likelihood, log[ p(data point | latent) ]
-  # Do NOT do this:
-  # e["Problem"]["Log Likelihood Functions"] = [lambda sample: distrib.conditional_p(
-  #         sample, data_vector[i])   for i in range(distrib._p.nIndividuals) ]
 
-  ## Also don't do this:
-  # func_list = []
-  # for i in range(distrib._p.nIndividuals):
-  #     func_list.append(lambda sample: distrib.conditional_p(sample, data_vector[i]))
 
-  # Method with no external packages:
+  # The computational models for the log-likelihood, log[ p(data point | latent) ]
+
+  ## Warning: The i=i is necessary to capture the current i.
+  ## Just writing
+  ##   lambda sample, i: logisticModelFunction(sample, x_vals[i])
+  ## will capture i by reference and thus not do what is intended.
+
   func_list = []
   for i in range(distrib._p.nIndividuals):
-    func_list.append((lambda index: (lambda sample: distrib.conditional_p(sample, data_vector[index]) ))(i))
+      func_list.append(lambda sample, i=i: distrib.conditional_p(sample, data_vector[i]))
   e["Problem"]["Log Likelihood Functions"] = func_list
 
   # # Alternative: Pass the x values to Korali. Then, the points for the individual

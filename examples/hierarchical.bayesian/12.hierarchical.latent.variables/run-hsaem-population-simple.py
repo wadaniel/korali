@@ -17,26 +17,15 @@ def main():
 
   e["Problem"]["Type"] = "Bayesian/Latent/HierarchicalLatentCustom"
 
-  ## Do NOT do (i is captured by reference and will be the last index in all lambdas):
-  # The computational model for the log-likelihood, log[ p(data point | latent) ]
-  # e["Problem"][
-  #     "Log Likelihood Functions"] = [lambda sample: distrib.conditional_p(
-  #         sample, data[i])  for i in range(distrib._p.nIndividuals)]
 
-  ## same here, don't do this:
-  # func_list = []
-  # for i in range(distrib._p.nIndividuals):
-  #     func_list.append(lambda sample: distrib.conditional_p(sample, data[i]))
+  ## Warning: The i=i below is necessary to capture the current i.
+  ## Just writing
+  ##   lambda sample, i: logisticModelFunction(sample, x_vals[i])
+  ## will capture i by reference and thus not do what is intended.
 
-  # ** With partial functions from the functools package:
-  # e["Problem"]["Log Likelihood Functions"] = [
-  #   functools.partial(lambda sample, index: distrib.conditional_p(sample, data[index]), index=i)
-  #   for i in range(distrib._p.nIndividuals)]
-
-  # ** Method with no external packages
   func_list = []
   for i in range(distrib._p.nIndividuals):
-    func_list.append((lambda index: (lambda sample: distrib.conditional_p(sample, data[index]) ))(i))
+    func_list.append(lambda sample, i=i: distrib.conditional_p(sample, data[i]) )
   e["Problem"]["Log Likelihood Functions"] = func_list
 
   e["Problem"]["Latent Space Dimensions"] = 1

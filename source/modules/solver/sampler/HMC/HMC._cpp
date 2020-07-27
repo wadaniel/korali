@@ -133,6 +133,9 @@ void HMC::runGenerationHMC(const double logUniSample)
     leapFrogStep(_positionCandidate, _momentumCandidate, _stepSize);
   }
 
+  // Negate proposed momentum to make proposal symmetric
+  std::transform(std::cbegin(_momentumCandidate), std::cend(_momentumCandidate), std::begin(_momentumCandidate), std::negate<double>());
+
   // Save new Energies
   const double newK = K(_momentumCandidate);
   const double newU = U(_positionCandidate);
@@ -158,6 +161,10 @@ void HMC::runGenerationNUTS(const double logUniSample)
   std::vector<double> nullPointTwo(_stateSpaceDim);
   std::vector<double> tmpVector(_stateSpaceDim, 0.0);
 
+  std::vector<double> rhoInit = _momentumLeader;
+  std::vector<double> rhoPlus(_stateSpaceDim, 0.0);
+  std::vector<double> rhoMinus(_stateSpaceDim, 0.0);
+
   std::vector<double> qLeft = _positionLeader;
   std::vector<double> qRight = _positionLeader;
   std::vector<double> pLeft = _momentumLeader;
@@ -174,13 +181,17 @@ void HMC::runGenerationNUTS(const double logUniSample)
 
   while (buildCriterion == true)
   {
+    std::vector<double> rho(_stateSpaceDim);
     if (_uniformGenerator->getRandomNumber() < 0.5)
     {
-      buildTree(qLeft, pLeft, logUniSample, -1, depth, _stepSize, oldH, qLeft, pLeft, nullPointOne, nullPointTwo, _positionCandidate, numValidLeavesSubtree, buildCriterionSubtree, _acceptanceProbability, numLeavesSubtree);
+      buildTree(qLeft, pLeft, logUniSample, -1, depth, _stepSize, oldH, qLeft, pLeft, nullPointOne, nullPointTwo, _positionCandidate, numValidLeavesSubtree, buildCriterionSubtree, _acceptanceProbability, numLeavesSubtree, rhoMinus);
+      rho = rhoMinus;
     }
     else
     {
-      buildTree(qRight, pRight, logUniSample, 1, depth, _stepSize, oldH, nullPointOne, nullPointTwo, qRight, pRight, _positionCandidate, numValidLeavesSubtree, buildCriterionSubtree, _acceptanceProbability, numLeavesSubtree);
+      rho = rhoPlus;
+      buildTree(qRight, pRight, logUniSample, 1, depth, _stepSize, oldH, nullPointOne, nullPointTwo, qRight, pRight, _positionCandidate, numValidLeavesSubtree, buildCriterionSubtree, _acceptanceProbability, numLeavesSubtree, rhoPlus);
+      rho = rhoPlus;
     }
 
     if (buildCriterionSubtree == true)
@@ -197,11 +208,14 @@ void HMC::runGenerationNUTS(const double logUniSample)
 
     numValidLeaves += numValidLeavesSubtree;
 
-    std::transform(std::cbegin(qRight), std::cend(qRight), std::cbegin(qLeft), std::begin(tmpVector), std::minus<double>());
-    dotProductLeft = std::inner_product(std::cbegin(tmpVector), std::cend(tmpVector), std::cbegin(pLeft), 0.0);
-    dotProductRight = std::inner_product(std::cbegin(tmpVector), std::cend(tmpVector), std::cbegin(pRight), 0.0);
+    // buildCriterion = buildCriterionSubtree && (dotProductLeft > 0) && (dotProductRight > 0);
+    std::vector<double> deltaRho(_stateSpaceDim, 0.0);
 
-    buildCriterion = buildCriterionSubtree && (dotProductLeft > 0) && (dotProductRight > 0);
+    std::transform(std::cbegin(rhoMinus), std::cend(rhoMinus), std::cbegin(deltaRho), std::begin(deltaRho), std::plus<double>());
+    std::transform(cbegin(rhoInit), std::cend(rhoInit), std::cbegin(deltaRho), std::begin(deltaRho), std::plus<double>());
+    std::transform(std::cbegin(rhoPlus), std::cend(rhoPlus), std::cbegin(deltaRho), std::begin(deltaRho), std::plus<double>());
+
+    buildCriterion = buildCriterionSubtree && computeNoUTurnCriterion(pLeft, pRight, deltaRho);
 
     ++depth;
   }
@@ -506,6 +520,21 @@ std::vector<double> HMC::dU(const std::vector<double> &q)
   return evaluation;
 }
 
+double HMC::dotProduct(const std::vector<double> &pLeft, const std::vector<double> &pRight) const
+{
+  double tmpScalar = 0.0;
+
+  for (size_t i = 0; i < _stateSpaceDim; ++i)
+  {
+    for (size_t j = 0; j < _stateSpaceDim; ++j)
+    {
+      tmpScalar += pLeft[i] * _inverseMetric[i * _stateSpaceDim + j] * pRight[j];
+    }
+  }
+
+  return tmpScalar;
+}
+
 void HMC::leapFrogStep(std::vector<double> &q, std::vector<double> &p, const double stepSize)
 {
   std::vector<double> dU = HMC::dU(q);
@@ -624,7 +653,24 @@ double HMC::findReasonableStepSize(std::vector<double> q)
   return stepSize;
 }
 
-void HMC::buildTree(const std::vector<double> &q, const std::vector<double> &p, const double logUniSample, const int direction, const int depth, const double stepSize, const double rootH, std::vector<double> &qLeft, std::vector<double> &pLeft, std::vector<double> &qRight, std::vector<double> &pRight, std::vector<double> &qProposed, double &numValidLeaves, bool &buildCriterion, double &alpha, int &numLeaves)
+bool HMC::computeNoUTurnCriterion(const std::vector<double> &pLeft, const std::vector<double> &pRight, const std::vector<double> &rho) const
+{
+  double dotProductLeft, dotProductRight;
+  std::vector<double> tmpVectorOne(_stateSpaceDim, 0.0);
+  std::vector<double> tmpVectorTwo(_stateSpaceDim, 0.0);
+
+  std::transform(std::cbegin(rho), std::cend(rho), std::cbegin(pLeft), std::begin(tmpVectorOne), std::minus<double>());
+  std::transform(std::cbegin(rho), std::cend(rho), std::cbegin(pRight), std::begin(tmpVectorTwo), std::minus<double>());
+
+  // dotProductLeft = std::inner_product(std::cbegin(pLeft), std::cend(pLeft), std::cbegin(tmpVectorOne), 0.0);
+  // dotProductRight = std::inner_product(std::cbegin(pRight), std::cend(pRight), std::cbegin(tmpVectorTwo), 0.0);
+  dotProductLeft = dotProduct(tmpVectorOne, pLeft);
+  dotProductRight = dotProduct(tmpVectorTwo, pRight);
+
+  return dotProductLeft > 0 && dotProductRight > 0;
+}
+
+void HMC::buildTree(const std::vector<double> &q, const std::vector<double> &p, const double logUniSample, const int direction, const int depth, const double stepSize, const double rootH, std::vector<double> &qLeft, std::vector<double> &pLeft, std::vector<double> &qRight, std::vector<double> &pRight, std::vector<double> &qProposed, double &numValidLeaves, bool &buildCriterion, double &alpha, int &numLeaves, std::vector<double> &rho)
 {
   qLeft = q;
   pLeft = p;
@@ -633,6 +679,9 @@ void HMC::buildTree(const std::vector<double> &q, const std::vector<double> &p, 
   {
     const double deltaMax = 100;
     leapFrogStep(qLeft, pLeft, direction * stepSize);
+
+    std::transform(std::cbegin(rho), std::cend(rho), std::cbegin(pLeft), std::begin(rho), std::plus<double>());
+
     const double leafK = K(pLeft);
     const double leafU = U(qLeft);
     const double leafH = leafU + leafK;
@@ -656,18 +705,20 @@ void HMC::buildTree(const std::vector<double> &q, const std::vector<double> &p, 
     std::vector<double> nullPointTwo(_stateSpaceDim);
     std::vector<double> qProposedSubtree(_stateSpaceDim, 0.0);
     std::vector<double> tmpVector(_stateSpaceDim, 0.0);
+    std::vector<double> rhoLeftSubtree(_stateSpaceDim, 0.0);
+    std::vector<double> rhoRightSubtree(_stateSpaceDim, 0.0);
 
-    buildTree(q, p, logUniSample, direction, depth - 1, stepSize, rootH, qLeft, pLeft, qRight, pRight, qProposed, numValidLeaves, buildCriterion, alpha, numLeaves);
+    buildTree(q, p, logUniSample, direction, depth - 1, stepSize, rootH, qLeft, pLeft, qRight, pRight, qProposed, numValidLeaves, buildCriterion, alpha, numLeaves, rhoLeftSubtree);
 
     if (buildCriterion == true)
     {
       if (direction == -1)
       {
-        buildTree(qLeft, pLeft, logUniSample, direction, depth - 1, stepSize, rootH, qLeft, pLeft, nullPointOne, nullPointTwo, qProposedSubtree, numValidLeavesSubtree, buildCriterionSubtree, alphaSubtree, numLeavesSubtree);
+        buildTree(qLeft, pLeft, logUniSample, direction, depth - 1, stepSize, rootH, qLeft, pLeft, nullPointOne, nullPointTwo, qProposedSubtree, numValidLeavesSubtree, buildCriterionSubtree, alphaSubtree, numLeavesSubtree, rhoRightSubtree);
       }
       else
       {
-        buildTree(qRight, pRight, logUniSample, direction, depth - 1, stepSize, rootH, nullPointOne, nullPointTwo, qRight, pRight, qProposedSubtree, numValidLeavesSubtree, buildCriterionSubtree, alphaSubtree, numLeavesSubtree);
+        buildTree(qRight, pRight, logUniSample, direction, depth - 1, stepSize, rootH, nullPointOne, nullPointTwo, qRight, pRight, qProposedSubtree, numValidLeavesSubtree, buildCriterionSubtree, alphaSubtree, numLeavesSubtree, rhoRightSubtree);
       }
 
       // First check to avoid divising by zero
@@ -684,7 +735,15 @@ void HMC::buildTree(const std::vector<double> &q, const std::vector<double> &p, 
       dotProductLeft = std::inner_product(std::cbegin(tmpVector), std::cend(tmpVector), std::cbegin(pLeft), 0.0);
       dotProductRight = std::inner_product(std::cbegin(tmpVector), std::cend(tmpVector), std::cbegin(pRight), 0.0);
 
-      buildCriterion = buildCriterionSubtree && (dotProductLeft > 0) && (dotProductRight > 0);
+      // buildCriterion = buildCriterionSubtree && (dotProductLeft > 0) && (dotProductRight > 0);
+
+      std::vector<double> &rhoSubtree = rhoLeftSubtree;
+
+      std::transform(std::cbegin(rhoRightSubtree), std::cend(rhoRightSubtree), std::cbegin(rhoSubtree), std::begin(rhoSubtree), std::plus<double>());
+      std::transform(std::cbegin(rhoSubtree), std::cend(rhoSubtree), std::cbegin(rho), std::begin(rho), std::plus<double>());
+
+      std::vector<double> p_ = direction == -1 ? pLeft : pRight;
+      buildCriterion = buildCriterionSubtree && computeNoUTurnCriterion(p, p_, rhoSubtree);
     }
   }
 

@@ -120,15 +120,10 @@ e["Solver"]["Termination Criteria"]["Target Average Reward"] = 0.9*maxSteps
 ### Setting file output configuration
 
 e["File Output"]["Frequency"] = 1
-                                      
-###### Loading any previous results
 
-found = e.loadState('_korali_result/latest')
+### Running Experiment
 
-if (found == False):
- k.run(e)
-else:
- print('Found pre-trained experiment') 
+k.run(e)
 
 ###### Now running the cartpole experiment with Korali's help
 

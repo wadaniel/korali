@@ -198,55 +198,55 @@ void DQN::updatePolicy()
   * by sampling a few more mini-batches after the optimization steps
   ******************************************************************************/
 
-  if (_batchNormalizationEnabled)
-  {
-    auto nn = _criticLearner->_trainingNeuralNetwork;
-
-    std::vector<std::vector<double>> meanSums(nn->_layers.size());
-    std::vector<std::vector<double>> varianceSums(nn->_layers.size());
-
-    for (size_t i = 1; i < nn->_layers.size(); i++)
-    {
-      meanSums[i].resize(nn->_layers[i]->_nodeCount);
-      varianceSums[i].resize(nn->_layers[i]->_nodeCount);
-
-      for (size_t j = 0; j < nn->_layers[i]->_nodeCount; j++) meanSums[i][j] = 0.0;
-      for (size_t j = 0; j < nn->_layers[i]->_nodeCount; j++) varianceSums[i][j] = 0.0;
-    }
-
-    std::vector<std::vector<double>> miniBatch(_miniBatchSize);
-    for (size_t i = 0; i < _miniBatchSize; i++) miniBatch[i].resize(_problem->_stateVectorSize + _problem->_actionVectorSize);
-
-    // Shuffling indexes to choose the mini batch from
-    std::shuffle(_stateHistoryIndexes.begin(), _stateHistoryIndexes.end(), *mt);
-
-    for (size_t step = 0; step < _batchNormalizationCorrectionSteps; step++)
-    {
-      for (size_t i = 0; i < _miniBatchSize; i++)
-      {
-        // Selecting a uniformly random selected, yet not repeated experience
-        size_t expId = _stateHistoryIndexes[i];
-
-        for (size_t j = 0; j < _problem->_stateVectorSize; j++) miniBatch[i][j] = _stateHistory[expId][j];
-        for (size_t j = 0; j < _problem->_actionVectorSize; j++) miniBatch[i][_problem->_stateVectorSize + j] = _actionHistory[expId][j];
-      }
-
-      nn->setInput(miniBatch);
-      nn->forward();
-
-      for (size_t i = 1; i < nn->_layers.size(); i++)
-      {
-        for (size_t j = 0; j < nn->_layers[i]->_nodeCount; j++) meanSums[i][j] += nn->_layers[i]->_batchNormalizationMeans[j];
-        for (size_t j = 0; j < nn->_layers[i]->_nodeCount; j++) varianceSums[i][j] += nn->_layers[i]->_batchNormalizationVariances[j];
-      }
-    }
-
-    for (size_t i = 1; i < nn->_layers.size(); i++)
-    {
-      for (size_t j = 0; j < nn->_layers[i]->_nodeCount; j++) nn->_layers[i]->_batchNormalizationMeans[j] = meanSums[i][j] / _batchNormalizationCorrectionSteps;
-      for (size_t j = 0; j < nn->_layers[i]->_nodeCount; j++) nn->_layers[i]->_batchNormalizationVariances[j] = varianceSums[i][j] / (_batchNormalizationCorrectionSteps - 1.0);
-    }
-  }
+//  if (_batchNormalizationEnabled)
+//  {
+//    auto nn = _criticLearner->_trainingNeuralNetwork;
+//
+//    std::vector<std::vector<double>> meanSums(nn->_layers.size());
+//    std::vector<std::vector<double>> varianceSums(nn->_layers.size());
+//
+//    for (size_t i = 1; i < nn->_layers.size(); i++)
+//    {
+//      meanSums[i].resize(nn->_layers[i]->_nodeCount);
+//      varianceSums[i].resize(nn->_layers[i]->_nodeCount);
+//
+//      for (size_t j = 0; j < nn->_layers[i]->_nodeCount; j++) meanSums[i][j] = 0.0;
+//      for (size_t j = 0; j < nn->_layers[i]->_nodeCount; j++) varianceSums[i][j] = 0.0;
+//    }
+//
+//    std::vector<std::vector<double>> miniBatch(_miniBatchSize);
+//    for (size_t i = 0; i < _miniBatchSize; i++) miniBatch[i].resize(_problem->_stateVectorSize + _problem->_actionVectorSize);
+//
+//    // Shuffling indexes to choose the mini batch from
+//    std::shuffle(_stateHistoryIndexes.begin(), _stateHistoryIndexes.end(), *mt);
+//
+//    for (size_t step = 0; step < _batchNormalizationCorrectionSteps; step++)
+//    {
+//      for (size_t i = 0; i < _miniBatchSize; i++)
+//      {
+//        // Selecting a uniformly random selected, yet not repeated experience
+//        size_t expId = _stateHistoryIndexes[i];
+//
+//        for (size_t j = 0; j < _problem->_stateVectorSize; j++) miniBatch[i][j] = _stateHistory[expId][j];
+//        for (size_t j = 0; j < _problem->_actionVectorSize; j++) miniBatch[i][_problem->_stateVectorSize + j] = _actionHistory[expId][j];
+//      }
+//
+//      nn->setInput(miniBatch);
+//      nn->forward();
+//
+//      for (size_t i = 1; i < nn->_layers.size(); i++)
+//      {
+//        for (size_t j = 0; j < nn->_layers[i]->_nodeCount; j++) meanSums[i][j] += nn->_layers[i]->_batchNormalizationMeans[j];
+//        for (size_t j = 0; j < nn->_layers[i]->_nodeCount; j++) varianceSums[i][j] += nn->_layers[i]->_batchNormalizationVariances[j];
+//      }
+//    }
+//
+//    for (size_t i = 1; i < nn->_layers.size(); i++)
+//    {
+//      for (size_t j = 0; j < nn->_layers[i]->_nodeCount; j++) nn->_layers[i]->_batchNormalizationMeans[j] = meanSums[i][j] / _batchNormalizationCorrectionSteps;
+//      for (size_t j = 0; j < nn->_layers[i]->_nodeCount; j++) nn->_layers[i]->_batchNormalizationVariances[j] = varianceSums[i][j] / (_batchNormalizationCorrectionSteps - 1.0);
+//    }
+//  }
 
   /*********************************************************************
   * Updating hyperparameters

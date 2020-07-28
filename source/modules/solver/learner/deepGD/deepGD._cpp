@@ -58,7 +58,8 @@ void DeepGD::initialize()
     _optExperiment["Problem"]["Objective Function"] = fc;
 
     _hyperparameters = _trainingNeuralNetwork->getHyperparameters();
-    _normalizationParameters = _trainingNeuralNetwork->getNormalizationParameters();
+    _normalizationMeans = _trainingNeuralNetwork->getNormalizationMeans();
+    _normalizationVariances = _trainingNeuralNetwork->getNormalizationVariances();
 
     for (size_t i = 0; i < _hyperparameters.size(); i++)
     {
@@ -96,7 +97,8 @@ void DeepGD::runGeneration()
 void DeepGD::finalize()
 {
  _hyperparameters = _trainingNeuralNetwork->getHyperparameters();
- _normalizationParameters = _trainingNeuralNetwork->getNormalizationParameters();
+ _normalizationMeans = _trainingNeuralNetwork->getNormalizationMeans();
+ _normalizationVariances = _trainingNeuralNetwork->getNormalizationVariances();
 
   _k->_logger->logInfo("Normal", "Current Loss: %.15f\n", _currentLoss);
 }
@@ -107,26 +109,34 @@ std::vector<double> DeepGD::getHyperparameters()
 
   // Concatenating parameters
   parameters.insert(parameters.end(), _hyperparameters.begin(), _hyperparameters.end());
-  parameters.insert(parameters.end(), _normalizationParameters.begin(), _normalizationParameters.end());
+  parameters.insert(parameters.end(), _normalizationMeans.begin(), _normalizationMeans.end());
+  parameters.insert(parameters.end(), _normalizationVariances.begin(), _normalizationVariances.end());
 
   return parameters;
 }
 
 void DeepGD::setHyperparameters(const std::vector<double> &hyperparameters)
 {
+  size_t curPos = 0;
+
   // Setting NN hyperparameters first
- _hyperparameters = std::vector<double>(hyperparameters.begin(), hyperparameters.begin() + _trainingNeuralNetwork->_hyperparameterCount);
+ _hyperparameters = std::vector<double>(hyperparameters.begin() + curPos, hyperparameters.begin() + _trainingNeuralNetwork->_hyperparameterCount);
+ curPos += _hyperparameters.size();
 
-  // Setting NN normalization parameters second
- _normalizationParameters = std::vector<double>(hyperparameters.begin() + _trainingNeuralNetwork->_hyperparameterCount, hyperparameters.end());
+  // Setting NN normalization means second
+ _normalizationMeans = std::vector<double>(hyperparameters.begin() + curPos, hyperparameters.begin() + curPos + _trainingNeuralNetwork->_normalizationParameterCount);
+ curPos += _normalizationMeans.size();
 
+ // Setting NN normalization variances finally
+ _normalizationVariances = std::vector<double>(hyperparameters.begin() + curPos, hyperparameters.end());
 }
 
 std::vector<double> DeepGD::getEvaluation(const std::vector<double> &inputBatch)
 {
   // Copying hyperparameters and normalization parameters from training to evaluation
  _evaluationNeuralNetwork->setHyperparameters(_hyperparameters);
- _evaluationNeuralNetwork->setNormalizationParameters(_normalizationParameters);
+ _evaluationNeuralNetwork->setNormalizationMeans(_normalizationMeans);
+ _evaluationNeuralNetwork->setNormalizationVariances(_normalizationVariances);
 
   // Updating NN inputs
   _evaluationNeuralNetwork->setInput({ inputBatch });

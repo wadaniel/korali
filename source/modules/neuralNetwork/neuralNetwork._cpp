@@ -60,7 +60,6 @@ void NeuralNetwork::initialize()
   {
     // Setting value for this layer's xavier constant
     double xavierConstant = sqrt(6.0) / sqrt(_layers[i]->_nodeCount + _layers[i - 1]->_nodeCount);
-    double NormalizationConstant = sqrt(6.0) / sqrt(_layers[i]->_nodeCount *  + _layers[i - 1]->_nodeCount);
 
     // Adding layer's weights hyperparameter values
     for (size_t j = 0; j < _layers[i]->_nodeCount; j++)
@@ -232,7 +231,7 @@ void NeuralNetwork::createForwardPipeline()
 
       // Adding normalization scale/shift hyperparameters to the count
       _hyperparameterCount += 2*OC;
-      _normalizationParameterCount += 2*OC;
+      _normalizationParameterCount += OC;
 
       // Allocating normalization scale/shift memory structure
       auto normalizationMemDesc = memory::desc(scale_shift_dims, memory::data_type::f32, memory::format_tag::nc);
@@ -570,7 +569,7 @@ std::vector<double> NeuralNetwork::getHyperparameterGradients(const std::vector<
  return gradientVector;
 }
 
-std::vector<double> NeuralNetwork::getNormalizationParameters()
+std::vector<double> NeuralNetwork::getNormalizationMeans()
 {
  // If not using normalization, return nothing.
  if (_batchNormalizationEnabled == false) return { };
@@ -585,11 +584,8 @@ std::vector<double> NeuralNetwork::getNormalizationParameters()
   for (size_t i = 1; i < layerCount; i++)
   {
     const memory::dim OC = _layers[i]->_nodeCount;
-
-     read_from_dnnl_memory(&fParams[currPos], _layers[i]->_batchNormalizationMeanMem);
-     currPos += OC;
-     read_from_dnnl_memory(&fParams[currPos], _layers[i]->_batchNormalizationVarianceMem);
-     currPos += OC;
+    read_from_dnnl_memory(&fParams[currPos], _layers[i]->_batchNormalizationMeanMem);
+    currPos += OC;
   }
 
   #endif
@@ -598,27 +594,74 @@ std::vector<double> NeuralNetwork::getNormalizationParameters()
   return std::vector<double>(fParams.begin(), fParams.end());
 }
 
-void NeuralNetwork::setNormalizationParameters(const std::vector<double>& normalizationParameters)
+void NeuralNetwork::setNormalizationMeans(const std::vector<double>& normalizationMeans)
 {
 #ifdef _KORALI_USE_ONEDNN
 
  // If not using normalization, do nothing.
  if (_batchNormalizationEnabled == false) return;
 
- if (normalizationParameters.size() != _normalizationParameterCount)
-  KORALI_LOG_ERROR("Wrong number of normalization parameters passed to the neural network. Expected: %lu, provided: %lu.\n", _normalizationParameterCount, normalizationParameters.size());
+ if (normalizationMeans.size() != _normalizationParameterCount)
+  KORALI_LOG_ERROR("Wrong number of normalization parameters passed to the neural network. Expected: %lu, provided: %lu.\n", _normalizationParameterCount, normalizationMeans.size());
 
  // Creating single precision floating-point version of the normalization parameters
- auto fParams = std::vector<float>(normalizationParameters.begin(), normalizationParameters.end());
+ auto fParams = std::vector<float>(normalizationMeans.begin(), normalizationMeans.end());
 
  size_t layerCount = _layers.size();
  size_t currPos = 0;
  for (size_t i = 1; i < layerCount; i++)
  {
    const memory::dim OC = _layers[i]->_nodeCount;
-
    write_to_dnnl_memory(&fParams[currPos], _layers[i]->_batchNormalizationMeanMem);
    currPos += OC;
+ }
+
+#endif
+}
+
+std::vector<double> NeuralNetwork::getNormalizationVariances()
+{
+ // If not using normalization, return nothing.
+ if (_batchNormalizationEnabled == false) return { };
+
+ // Creating single precision floating-point version of the hyperparameters
+ auto fParams = std::vector<float>(_normalizationParameterCount);
+
+  #ifdef _KORALI_USE_ONEDNN
+
+  size_t layerCount = _layers.size();
+  size_t currPos = 0;
+  for (size_t i = 1; i < layerCount; i++)
+  {
+    const memory::dim OC = _layers[i]->_nodeCount;
+    read_from_dnnl_memory(&fParams[currPos], _layers[i]->_batchNormalizationVarianceMem);
+    currPos += OC;
+  }
+
+  #endif
+
+  // Returning the hyperparameters converted to double-precision
+  return std::vector<double>(fParams.begin(), fParams.end());
+}
+
+void NeuralNetwork::setNormalizationVariances(const std::vector<double>& normalizationVariances)
+{
+#ifdef _KORALI_USE_ONEDNN
+
+ // If not using normalization, do nothing.
+ if (_batchNormalizationEnabled == false) return;
+
+ if (normalizationVariances.size() != _normalizationParameterCount)
+  KORALI_LOG_ERROR("Wrong number of normalization parameters passed to the neural network. Expected: %lu, provided: %lu.\n", _normalizationParameterCount, normalizationVariances.size());
+
+ // Creating single precision floating-point version of the normalization parameters
+ auto fParams = std::vector<float>(normalizationVariances.begin(), normalizationVariances.end());
+
+ size_t layerCount = _layers.size();
+ size_t currPos = 0;
+ for (size_t i = 1; i < layerCount; i++)
+ {
+   const memory::dim OC = _layers[i]->_nodeCount;
    write_to_dnnl_memory(&fParams[currPos], _layers[i]->_batchNormalizationVarianceMem);
    currPos += OC;
  }
@@ -658,23 +701,6 @@ void NeuralNetwork::forward()
       _outputValues[i][j] = resultData[i * nodeCount + j];
   }
 
-  // Restoring batch normalization means and variances, if enabled
-  if (_batchNormalizationEnabled)
-    for (size_t i = 1; i < layerCount; i++)
-    {
-      size_t nodeCount = _layers[i]->_nodeCount;
-      std::vector<float> meanData(nodeCount);
-      std::vector<float> varianceData(nodeCount);
-
-      read_from_dnnl_memory(meanData.data(), _layers[i]->_batchNormalizationMeanMem);
-      read_from_dnnl_memory(varianceData.data(), _layers[i]->_batchNormalizationVarianceMem);
-
-      _layers[i]->_batchNormalizationMeans.resize(nodeCount);
-      _layers[i]->_batchNormalizationVariances.resize(nodeCount);
-
-      for (size_t j = 0; j < nodeCount; j++) _layers[i]->_batchNormalizationMeans[j] = meanData[j];
-      for (size_t j = 0; j < nodeCount; j++) _layers[i]->_batchNormalizationVariances[j] = varianceData[j];
-    }
 
 #endif
 }

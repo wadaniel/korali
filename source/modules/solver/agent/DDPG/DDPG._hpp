@@ -6,8 +6,6 @@
 #include "modules/solver/learner/deepGD/deepGD.hpp"
 #include "modules/solver/learner/learner.hpp"
 #include "modules/distribution/univariate/normal/normal.hpp"
-#include <algorithm> // std::shuffle
-#include <random>
 
 namespace korali
 {
@@ -27,16 +25,6 @@ class DDPG : public Agent
    * @brief The number of hyperparamters to the NN
    */
   size_t _hyperparameterCount;
-
-  /**
-   * @brief Random device for the generation of shuffling numbers
-   */
-  std::random_device rd;
-
-  /**
-  * @brief Mersenne twister for the generation of shuffling numbers
-  */
-  std::mt19937 *mt;
 
   /////// Setting Critic experiments
 

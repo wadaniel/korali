@@ -106,10 +106,6 @@ void DDPG::initialize()
 
   // Assigning training hyperparameters to inference learner
   _actorLearner->setHyperparameters(_hyperparameters);
-
-  // Initializing random seed for the shuffle operation
-  mt = new std::mt19937(rd());
-  mt->seed(_k->_randomSeed++);
 }
 
 void DDPG::updatePolicy()
@@ -135,6 +131,7 @@ void DDPG::updatePolicy()
 
    for (size_t step = 0; step < _optimizationStepsPerGeneration; step++)
    {
+
    // Shuffling indexes to choose the mini batch from
    std::shuffle(_stateHistoryIndexes.begin(), _stateHistoryIndexes.end(), *mt);
 
@@ -223,88 +220,12 @@ void DDPG::updatePolicy()
   * If batch normalization is being used, we need to adjust mean and variances
   * by sampling a few more mini-batches after the optimization steps
   ******************************************************************************/
-//
-//  if (_batchNormalizationEnabled)
-//  {
-//    auto criticNN = _criticLearner->_trainingNeuralNetwork;
-//    auto actorNN = _actorLearner->_trainingNeuralNetwork;
-//
-//    std::vector<std::vector<double>> criticMeanSums(criticNN->_layers.size());
-//    std::vector<std::vector<double>> criticVarianceSums(criticNN->_layers.size());
-//
-//    std::vector<std::vector<double>> actorMeanSums(actorNN->_layers.size());
-//    std::vector<std::vector<double>> actorVarianceSums(actorNN->_layers.size());
-//
-//    for (size_t i = 1; i < criticNN->_layers.size(); i++)
-//    {
-//      criticMeanSums[i].resize(criticNN->_layers[i]->_nodeCount);
-//      criticVarianceSums[i].resize(criticNN->_layers[i]->_nodeCount);
-//
-//      for (size_t j = 0; j < criticNN->_layers[i]->_nodeCount; j++) criticMeanSums[i][j] = 0.0;
-//      for (size_t j = 0; j < criticNN->_layers[i]->_nodeCount; j++) criticVarianceSums[i][j] = 0.0;
-//    }
-//
-//    for (size_t i = 1; i < actorNN->_layers.size(); i++)
-//    {
-//      actorMeanSums[i].resize(actorNN->_layers[i]->_nodeCount);
-//      actorVarianceSums[i].resize(actorNN->_layers[i]->_nodeCount);
-//
-//      for (size_t j = 0; j < actorNN->_layers[i]->_nodeCount; j++) actorMeanSums[i][j] = 0.0;
-//      for (size_t j = 0; j < actorNN->_layers[i]->_nodeCount; j++) actorVarianceSums[i][j] = 0.0;
-//    }
-//
-//    std::vector<std::vector<double>> criticMiniBatch(_miniBatchSize);
-//    for (size_t i = 0; i < _miniBatchSize; i++) criticMiniBatch[i].resize(_problem->_stateVectorSize + _problem->_actionVectorSize);
-//
-//    std::vector<std::vector<double>> actorMiniBatch(_miniBatchSize);
-//    for (size_t i = 0; i < _miniBatchSize; i++) actorMiniBatch[i].resize(_problem->_actionVectorSize);
-//
-//    // Shuffling indexes to choose the mini batch from
-//    std::shuffle(_stateHistoryIndexes.begin(), _stateHistoryIndexes.end(), *mt);
-//
-//    for (size_t step = 0; step < _batchNormalizationCorrectionSteps; step++)
-//    {
-//      for (size_t i = 0; i < _miniBatchSize; i++)
-//      {
-//        // Selecting a uniformly random selected, yet not repeated experience
-//        size_t expId = _stateHistoryIndexes[i];
-//
-//        for (size_t j = 0; j < _problem->_stateVectorSize; j++) criticMiniBatch[i][j] = _stateHistory[expId][j];
-//        for (size_t j = 0; j < _problem->_actionVectorSize; j++) criticMiniBatch[i][_problem->_stateVectorSize + j] = _actionHistory[expId][j];
-//        for (size_t j = 0; j < _problem->_stateVectorSize; j++) actorMiniBatch[i][j] = _stateHistory[expId][j];
-//      }
-//
-//      criticNN->setInput(criticMiniBatch);
-//      criticNN->forward();
-//
-//      actorNN->setInput(actorMiniBatch);
-//      actorNN->forward();
-//
-//      for (size_t i = 1; i < criticNN->_layers.size(); i++)
-//      {
-//        for (size_t j = 0; j < criticNN->_layers[i]->_nodeCount; j++) criticMeanSums[i][j] += criticNN->_layers[i]->_batchNormalizationMeans[j];
-//        for (size_t j = 0; j < criticNN->_layers[i]->_nodeCount; j++) criticVarianceSums[i][j] += criticNN->_layers[i]->_batchNormalizationVariances[j];
-//      }
-//
-//      for (size_t i = 1; i < actorNN->_layers.size(); i++)
-//      {
-//        for (size_t j = 0; j < actorNN->_layers[i]->_nodeCount; j++) actorMeanSums[i][j] += actorNN->_layers[i]->_batchNormalizationMeans[j];
-//        for (size_t j = 0; j < actorNN->_layers[i]->_nodeCount; j++) actorVarianceSums[i][j] += actorNN->_layers[i]->_batchNormalizationVariances[j];
-//      }
-//    }
-//
-//    for (size_t i = 1; i < criticNN->_layers.size(); i++)
-//    {
-//      for (size_t j = 0; j < criticNN->_layers[i]->_nodeCount; j++) criticNN->_layers[i]->_batchNormalizationMeans[j] = criticMeanSums[i][j] / _batchNormalizationCorrectionSteps;
-//      for (size_t j = 0; j < criticNN->_layers[i]->_nodeCount; j++) criticNN->_layers[i]->_batchNormalizationVariances[j] = criticVarianceSums[i][j] / (_batchNormalizationCorrectionSteps - 1.0);
-//    }
-//
-//    for (size_t i = 1; i < actorNN->_layers.size(); i++)
-//    {
-//      for (size_t j = 0; j < actorNN->_layers[i]->_nodeCount; j++) actorNN->_layers[i]->_batchNormalizationMeans[j] = actorMeanSums[i][j] / _batchNormalizationCorrectionSteps;
-//      for (size_t j = 0; j < actorNN->_layers[i]->_nodeCount; j++) actorNN->_layers[i]->_batchNormalizationVariances[j] = actorVarianceSums[i][j] / (_batchNormalizationCorrectionSteps - 1.0);
-//    }
-//  }
+
+  if (_batchNormalizationEnabled)
+  {
+   normalizeNeuralNetwork(_criticLearner->_trainingNeuralNetwork);
+   normalizeNeuralNetwork(_actorLearner->_trainingNeuralNetwork);
+  }
 
   /*********************************************************************
    * Adopting the new parameters

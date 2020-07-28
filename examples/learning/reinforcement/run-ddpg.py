@@ -14,7 +14,6 @@ maxSteps = 1000
 def env(s):
 
  # Initializing environment
- print(car.reset().tolist())
  s["State"] = car.reset().tolist()
  step = 0
  done = False
@@ -23,9 +22,9 @@ def env(s):
 
   # Getting new action
   s.update()
-  
+
   # Reading action
-  action = [ s["Action"][0] ] 
+  action = s["Action"] 
     
   # Performing the action
   state, reward, done, info = car.step(action)
@@ -56,9 +55,9 @@ e["Variables"][1]["Type"] = "State"
 
 e["Variables"][2]["Name"] = "Force"
 e["Variables"][2]["Type"] = "Action"
-
-e["Variables"][3]["Name"] = "Dummy"
-e["Variables"][3]["Type"] = "Action"
+e["Variables"][2]["Exploration Noise"]["Type"] = "Univariate/Normal"
+e["Variables"][2]["Exploration Noise"]["Mean"] = 0.0
+e["Variables"][2]["Exploration Noise"]["Standard Deviation"] = 0.01
 
 ### Configuring DQN hyperparameters
 
@@ -76,7 +75,6 @@ e["Solver"]["Batch Normalization"]["Correction Steps"] = 64
 
 e["Solver"]["Discount Factor"] = 0.99
 e["Solver"]["Adoption Rate"] = 0.0001
-e["Solver"]["Exploration Noise"]["Standard Deviation"] = 0.001
 
 ### Defining the configuration of replay memory
  
@@ -107,7 +105,7 @@ e["Solver"]["Critic Neural Network"]["Layers"][2]["Node Count"] = 32
 e["Solver"]["Critic Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Tanh"
 
 e["Solver"]["Critic Neural Network"]["Layers"][3]["Type"] = "Output"
-e["Solver"]["Critic Neural Network"]["Layers"][3]["Node Count"] = 2
+e["Solver"]["Critic Neural Network"]["Layers"][3]["Node Count"] = 1
 e["Solver"]["Critic Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Identity" 
 
 ### Defining the shape of the actor neural network
@@ -125,7 +123,7 @@ e["Solver"]["Actor Neural Network"]["Layers"][2]["Node Count"] = 32
 e["Solver"]["Actor Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Tanh"
 
 e["Solver"]["Actor Neural Network"]["Layers"][3]["Type"] = "Output"
-e["Solver"]["Actor Neural Network"]["Layers"][3]["Node Count"] = 2
+e["Solver"]["Actor Neural Network"]["Layers"][3]["Node Count"] = 1
 e["Solver"]["Actor Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Logistic" 
 
 ### Defining Termination Criteria
@@ -145,14 +143,14 @@ if (found == False):
 else:
  print('Found pre-trained experiment') 
 
-###### Now running the cartpole experiment with Korali's help
+###### Now running the car experiment with Korali's help
 
-state = cart.reset().tolist()
+state = car.reset().tolist()
 step = 0
 done = False
 
 while not done and step < maxSteps:
  action = int(e.getAction(state)[0])
  print('Step ' + str(step) + ' - State: ' + str(state) + ' - Action: ' + str(action))
- state, reward, done, info = cart.step(action)
+ state, reward, done, info = car.step(action)
  step = step + 1

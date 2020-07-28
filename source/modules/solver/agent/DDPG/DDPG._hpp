@@ -43,54 +43,34 @@ class DDPG : public Agent
   /**
   * @brief Pointer to training the critic network
   */
-  learner::DeepGD *_criticTrainingLearner;
+  learner::DeepGD *_criticLearner;
 
   /**
   * @brief Pointer to critic's experiment problem
   */
-  problem::SupervisedLearning *_criticTrainingProblem;
-
-  /**
-   * @brief Pointer to critic's Q inference
-   */
-  learner::DeepGD *_criticInferenceLearner;
-
-  /**
- * @brief Korali experiment for the estimation of the critic network
- */
-  korali::Experiment _criticInferenceExperiment;
+  problem::SupervisedLearning *_criticProblem;
 
   /**
    * @brief Korali experiment for the training of the critic network
    */
-  korali::Experiment _criticTrainingExperiment;
+  korali::Experiment _criticExperiment;
 
   /////// Setting Actor experiments
 
   /**
   * @brief Pointer to training the actor network
   */
-  learner::DeepGD *_actorTrainingLearner;
+  learner::DeepGD *_actorLearner;
 
   /**
   * @brief Pointer to actor's experiment problem
   */
-  problem::SupervisedLearning *_actorTrainingProblem;
-
-  /**
-   * @brief Pointer to actor's Q inference
-   */
-  learner::DeepGD *_actorInferenceLearner;
-
-  /**
- * @brief Korali experiment for the estimation of the actor network
- */
-  korali::Experiment _actorInferenceExperiment;
+  problem::SupervisedLearning *_actorProblem;
 
   /**
    * @brief Korali experiment for the training of the actor network
    */
-  korali::Experiment _actorTrainingExperiment;
+  korali::Experiment _actorExperiment;
 
   /**
  * @brief Vector of the current state to use for action optimization

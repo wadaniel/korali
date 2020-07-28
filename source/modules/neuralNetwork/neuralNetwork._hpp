@@ -77,16 +77,28 @@ class NeuralNetwork : public Module
   std::vector<double> getHyperparameters();
 
   /**
-   * @brief Gets the values of normalization mean variance
-   * @return The input normalization parameters
+   * @brief Gets the values of batch normalization means
+   * @return The batch normalization means
    */
-  std::vector<double> getNormalizationParameters();
+  std::vector<double> getNormalizationMeans();
 
  /**
-  * @brief Updates the values of normalization mean variance
-  * @param normalizationParameters The input normalization parameters
+  * @brief Updates the values of batch normalization means
+  * @param normalizationMeans The batch normalization means
   */
-  void setNormalizationParameters(const std::vector<double> &normalizationParameters);
+  void setNormalizationMeans(const std::vector<double> &normalizationMeans);
+
+  /**
+   * @brief Gets the values of normalization mean variance
+   * @return The batch normalization variances
+   */
+  std::vector<double> getNormalizationVariances();
+
+ /**
+  * @brief Updates the values of batch normalization variances
+  * @param normalizationVariances The batch normalization variances
+  */
+  void setNormalizationVariances(const std::vector<double> &normalizationVariances);
 
   /**
    * @brief Forward-propagates the input batch data through the network.

@@ -71,7 +71,7 @@ e["Solver"]["Optimization Steps Per Generation"] = 10
 e["Solver"]["Agent History Size"] = 1000
 e["Solver"]["Mini Batch Size"] = 32
 e["Solver"]["Batch Normalization"]["Enabled"] = False
-e["Solver"]["Batch Normalization"]["Correction Steps"] = 64
+e["Solver"]["Batch Normalization"]["Correction Steps"] = 32
 
 e["Solver"]["Discount Factor"] = 0.99
 e["Solver"]["Adoption Rate"] = 0.0001
@@ -133,15 +133,10 @@ e["Solver"]["Termination Criteria"]["Target Average Reward"] = 900
 ### Setting file output configuration
 
 e["File Output"]["Frequency"] = 1
-                                      
-###### Loading any previous results
 
-found = e.loadState('_korali_result/latest')
+### Running Experiment
 
-if (found == False):
- k.run(e)
-else:
- print('Found pre-trained experiment') 
+k.run(e)
 
 ###### Now running the car experiment with Korali's help
 

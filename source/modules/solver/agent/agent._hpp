@@ -4,6 +4,9 @@
 #include "engine.hpp"
 #include "modules/problem/reinforcementLearning/reinforcementLearning.hpp"
 #include "modules/solver/solver.hpp"
+#include "modules/neuralNetwork/neuralNetwork.hpp"
+#include <algorithm> // std::shuffle
+#include <random>
 
 namespace korali
 {
@@ -16,6 +19,16 @@ class Agent : public Solver
   * @brief Storage for the pointer to the learning problem
   */
   problem::ReinforcementLearning *_problem;
+
+  /**
+   * @brief Random device for the generation of shuffling numbers
+   */
+  std::random_device rd;
+
+  /**
+  * @brief Mersenne twister for the generation of shuffling numbers
+  */
+  std::mt19937 *mt;
 
   /**
    * @brief Gets the next action for the actor, based on a sample containing a state, from inside Korali
@@ -39,6 +52,12 @@ class Agent : public Solver
   * @brief Updates the underlying learner's hyperparameters to calculate the next action of the agent
   */
   virtual void updateHyperparmeters(Sample& sample) = 0;
+
+  /**
+  * @brief Normalizes neural network batch normalization mean and variances
+  * @param The neural network to normalize
+  */
+  void normalizeNeuralNetwork(korali::NeuralNetwork* nn);
 
   /**
  * @brief Runs a generation of the environment(s), running an action on each episode, and updating the policy.

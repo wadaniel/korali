@@ -123,6 +123,12 @@ class Experiment : public Module
    * @return The calculated gradients
    */
   std::vector<std::vector<double>> getGradients(const std::vector<std::vector<double>> &outputDiffs);
+
+  private:
+  /**
+   * @brief Initializes seed to a random value based on current time if not set by the user (i.e. Random Seed is 0).
+   */
+  void setSeed();
 };
 
 } // namespace korali

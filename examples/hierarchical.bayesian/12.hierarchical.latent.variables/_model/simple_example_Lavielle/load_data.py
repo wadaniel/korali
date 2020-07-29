@@ -30,7 +30,8 @@ class SimplePopulationData():
         assert len(
             values
         ) == 1, "need to rewrite this to accomodate multiple samples per individual (or multiple dimensions) - use another class for that"
-        self.data.append([values]) # one data point of one dimension for each individual
+        self.data.append(
+            [values])  # one data point of one dimension for each individual
 
     self.data = np.array(self.data)
 

@@ -100,7 +100,7 @@ class LogisticConditionalDistribution():
         raise ValueError(f"Unknown error model: {self._p.error_model}")
 
       if np.isinf(err) or np.isnan(err):
-         logp_sum = -1.e200
+        logp_sum = -1.e200
       else:
         log2pi = 0.5 * np.log(2 * np.pi)
         if (sigma2 == 0):

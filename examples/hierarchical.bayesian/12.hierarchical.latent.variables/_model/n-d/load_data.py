@@ -11,8 +11,6 @@ def extr(line, toint=True, tofloat=False):
   return result
 
 
-
-
 class PopulationData():
 
   def __init__(self):
@@ -46,4 +44,3 @@ class PopulationData():
         assert c == "N"
         for j in range(numSamples):
           self.data[i].append(extr(fd.readline(), tofloat=True))
-

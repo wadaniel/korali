@@ -23,11 +23,11 @@ def main():
   for i in range(d.nIndividuals):
     # data: (nInd x nPoints x nDim), with nDim = 3
     # We discard the first dimension: ID
-    x_vals[i] = d.data[i, :, 1:2].tolist()
-    y_vals[i] = d.data[i, :, 2].tolist()
+    x_vals[i] = d.data[i, :, 1:2].tolist()  # set x_vals[i] to a list of lists
+    y_vals[i] = d.data[
+        i, :, 2].tolist()  # set y_vals[i] to a list, one value per datapoint
 
   e["Problem"]["Type"] = "Bayesian/Latent/HierarchicalLatentReference"
-
 
   # * The computational models, y, sdev = f(x, theta), g(x, theta)
 
@@ -38,9 +38,9 @@ def main():
 
   func_list = []
   for i in range(d.nIndividuals):
-      func_list.append(lambda sample, i=i: logisticModelFunction(sample, x_vals[i]))
+    func_list.append(
+        lambda sample, i=i: logisticModelFunction(sample, x_vals[i]))
   e["Problem"]["Computational Models"] = func_list
-
 
   # # Alternative: Pass the x values to Korali. Then, the points for the individual
   # #  will be accessible to the computational model in "Data Points".
@@ -93,29 +93,30 @@ def main():
     d.err_transf = [d.err_transf]
   dimCounter = 0
   distribs = {
-    "Normal": "Uniform 0",
-    "Log-Normal": "Uniform 1",
-    "Logit-Normal": "Uniform 2",
-    "Probit-Normal": "Uniform XX" # There are no probit-normal variables in HSAEM (yet)
+      "Normal": "Uniform 0",
+      "Log-Normal": "Uniform 1",
+      "Logit-Normal": "Uniform 2",
+      "Probit-Normal":
+          "Uniform XX"  # There are no probit-normal variables in HSAEM (yet)
   }
   for transf in d.transf:
     generate_variable(
-      transf,
-      e,
-      dimCounter,
-      "latent parameter " + str(dimCounter),
-      distribs,
-      initial=d.beta[dimCounter])
+        transf,
+        e,
+        dimCounter,
+        "latent parameter " + str(dimCounter),
+        distribs,
+        initial=d.beta[dimCounter])
     dimCounter += 1
 
   for i, err_transf in enumerate(d.err_transf):
     generate_variable(
-      err_transf,
-      e,
-      dimCounter,
-      "standard deviation " + str(i),
-      distribs,
-      initial=d.beta[dimCounter])
+        err_transf,
+        e,
+        dimCounter,
+        "standard deviation " + str(i),
+        distribs,
+        initial=d.beta[dimCounter])
     dimCounter += 1
 
   assert dimCounter == d.dNormal + d.dLognormal + d.dLogitnormal + d.dProbitnormal

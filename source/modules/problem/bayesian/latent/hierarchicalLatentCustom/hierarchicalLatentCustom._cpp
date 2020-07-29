@@ -16,7 +16,6 @@ namespace bayesian
 {
 namespace latent
 {
-
 /* The problem initialization; here, create hyperparameter variables, add them to the problem's variable list,
     and set up index lists to find both types of variables in that list.*/
 void HierarchicalLatentCustom::initialize()
@@ -25,11 +24,12 @@ void HierarchicalLatentCustom::initialize()
 
   _numberIndividuals = _logLikelihoodFunctions.size();
   if (_numberIndividuals <= 0) KORALI_LOG_ERROR("Hierarchical latent variable problems require defining reference data.\n");
- // The user should define one variable per latent variable dimension, as prototype:
+  // The user should define one variable per latent variable dimension, as prototype:
   if (_k->_variables.size() != _latentSpaceDimensions) KORALI_LOG_ERROR("Hierarchical latent variable problems require only a subset of prototype variables to be defined. Please define one prototype latent variable per individual. (Expected %d variables, found %d variables.) \n", _numberIndividuals, _k->_variables.size());
 
-  if (_points.size() > 0){
-     if (_points.size() != _numberIndividuals) KORALI_LOG_ERROR("If x-value data is passed to the hierarchical latent variable problems, it must consist of one vector of points for each individual.\n");
+  if (_points.size() > 0)
+  {
+    if (_points.size() != _numberIndividuals) KORALI_LOG_ERROR("If x-value data is passed to the hierarchical latent variable problems, it must consist of one vector of points for each individual.\n");
     _handleXValues = true;
     _xDimensions = _points[0][0].size();
   }
@@ -170,13 +170,11 @@ void HierarchicalLatentCustom::initialize()
     _koraliExperiment._problem);
 }
 
-
 HierarchicalLatentCustom::~HierarchicalLatentCustom()
 {
   delete &_koraliExperiment;
-//  delete &_lowlevelProblem;
+  //  delete &_lowlevelProblem;
 }
-
 
 void HierarchicalLatentCustom::loglikelihoodFunction(korali::Sample &sample)
 {
@@ -193,7 +191,8 @@ void HierarchicalLatentCustom::loglikelihoodFunction(korali::Sample &sample)
   std::vector<std::vector<double>> latentVariables = KORALI_GET(std::vector<std::vector<double>>, sample, "Latent Variables");
   std::vector<double> allLLHs(_numberIndividuals);
 
-  for (size_t i=0; i < _numberIndividuals; i++){
+  for (size_t i = 0; i < _numberIndividuals; i++)
+  {
     llhSample["Reference Evaluations"] = 0;
     llhSample["Latent Variables"] = latentVariables[i];
     if (_handleXValues)
@@ -246,7 +245,6 @@ void HierarchicalLatentCustom::evaluateLogPrior(korali::Sample &sample)
 //  latent_minus_mean = gsl_vector_alloc(nLatent);
 //  x = gsl_vector_alloc(nLatent);
 //}
-
 
 } // namespace latent
 } // namespace bayesian

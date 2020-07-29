@@ -127,9 +127,7 @@ class SimpleDistributionConditional():
   def conditional_p(self, sample, points=None, internalData=False):
 
     latent_vars = sample["Latent Variables"]
-    assert len(
-        latent_vars
-    ) == 1
+    assert len(latent_vars) == 1
     if internalData:
       assert points is None, "Points are handled internally"
       points = sample["Data Points"]

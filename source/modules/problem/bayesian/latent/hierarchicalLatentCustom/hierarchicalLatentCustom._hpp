@@ -25,7 +25,7 @@ class HierarchicalLatentCustom : public korali::problem::bayesian::Latent
      @param sample: sample["Latent Variables"] should contain a list of lists / vector of vectors, one latent variable vector for each individual.
      @returns: sample["logLikelihood"], a list/vector with one log-likelihood per individual.
    */
-  std::function<void(korali::Sample & s)> loglikelihoodLambdaFunction;
+  std::function<void(korali::Sample &s)> loglikelihoodLambdaFunction;
 
   public:
   /** @brief The lowlevel problem containing actual calculations. */
@@ -70,8 +70,6 @@ class HierarchicalLatentCustom : public korali::problem::bayesian::Latent
     @param sample: See other function description
     */
   void evaluateLoglikelihood(korali::Sample &sample) override;
-
-
 
   /**
   * @brief Evaluate log of p(latent | hyperparameters), hyperparameter-dependent prior over each *transformed* latent variable.

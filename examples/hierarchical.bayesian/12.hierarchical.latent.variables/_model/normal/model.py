@@ -12,6 +12,7 @@ def normalModel(x, theta):
     y = 1e300
   return y
 
+
 def normalModelFunction(sample, points):
   ''' :param points: Data points to calculate the function evaluation from.
                     Here, only used to find the number of reference evaluations for this individual'''

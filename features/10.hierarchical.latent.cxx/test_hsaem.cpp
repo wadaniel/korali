@@ -36,18 +36,18 @@ int main(int argc, char *argv[])
   int nIndividuals = distrib5._p.nIndividuals;
   int nDimensions = distrib5._p.nDimensions;
 
-  std::vector<  std::function<void(korali::Sample & s)>  > logLikelihoodFunctions(nIndividuals);
+  std::vector<std::function<void(korali::Sample & s)>> logLikelihoodFunctions(nIndividuals);
   for (size_t i = 0; i < nIndividuals; i++)
     logLikelihoodFunctions[i] = [distrib5, i](korali::Sample &s) -> void {
       distrib5.conditional_p(s, {distrib5._p.data[i]});
-  };
+    };
 
   e["Problem"]["Type"] = "Bayesian/Latent/HierarchicalLatentCustom";
   e["Problem"]["Log Likelihood Functions"] = logLikelihoodFunctions; // defined in model.cpp
 
-//  e["Problem"]["Data"] = distrib5._p.data; // data: length: nIndividuals; each of its entries is a vector of different length
-//  e["Problem"]["Data Dimensions"] = nDimensions;
-//  e["Problem"]["Number Individuals"] = nIndividuals;
+  //  e["Problem"]["Data"] = distrib5._p.data; // data: length: nIndividuals; each of its entries is a vector of different length
+  //  e["Problem"]["Data Dimensions"] = nDimensions;
+  //  e["Problem"]["Number Individuals"] = nIndividuals;
   e["Problem"]["Latent Space Dimensions"] = nDimensions;
 
   e["Solver"]["Type"] = "Executor2";

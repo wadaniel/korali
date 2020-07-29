@@ -37,8 +37,8 @@ void korali::solver::HSAEM::runGeneration()
 void korali::solver::HSAEM::initialize()
 {
   if ((_k->_problem->getType() != "Bayesian/Latent/HierarchicalLatentCustom") &&
-        (_k->_problem->getType() != "Bayesian/Latent/HierarchicalLatentLowlevel") &&
-        (_k->_problem->getType() != "Bayesian/Latent/HierarchicalLatentReference"))
+      (_k->_problem->getType() != "Bayesian/Latent/HierarchicalLatentLowlevel") &&
+      (_k->_problem->getType() != "Bayesian/Latent/HierarchicalLatentReference"))
     KORALI_LOG_ERROR("SAEM can only optimize problems of type 'Bayesian/Latent/HierarchicalLatentReference' or '.../HierarchicalLatentCustom' or '.../HierarchicalLatentLowlevel' .\n");
   if (_k->_problem->getType() == "Bayesian/Latent/HierarchicalLatentCustom")
   {

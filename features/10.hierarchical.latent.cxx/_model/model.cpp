@@ -30,26 +30,28 @@ HierarchicalDistribution4::HierarchicalDistribution4()
 //            draw psi_i ~ N(theta, omega**2)
 //            draw x_i ~ N(psi_i, sigma**2)
 //
-void HierarchicalDistribution4::conditional_p(korali::Sample &s, std::vector<std::vector<double>> points, bool internalData )
+void HierarchicalDistribution4::conditional_p(korali::Sample &s, std::vector<std::vector<double>> points, bool internalData)
 {
   std::vector<double> latentVariables = s["Latent Variables"];
   assert(latentVariables.size() == 1); // nr latent space dimensions = 1
-  if (internalData){
-    assert (points.size() == 0);
+  if (internalData)
+  {
+    assert(points.size() == 0);
     points = s["Data Points"].get<std::vector<std::vector<double>>>();
   }
-  else assert (points.size() > 0);
+  else
+    assert(points.size() > 0);
 
   double sigma = _p.sigma;
 
   // log(p(data | mean, sigma ))
   double logp = 0;
-//  for (size_t i=0; i < _p.nIndividuals; i++){
-    std::vector<double> pt = {points[0][0]}; // in this example there is only one point per individual
-    double p = univariate_gaussian_probability(latentVariables, sigma, pt);
+  //  for (size_t i=0; i < _p.nIndividuals; i++){
+  std::vector<double> pt = {points[0][0]}; // in this example there is only one point per individual
+  double p = univariate_gaussian_probability(latentVariables, sigma, pt);
 
-    logp += log(p);
-//   }
+  logp += log(p);
+  //   }
 
   s["logLikelihood"] = logp;
 };
@@ -66,22 +68,24 @@ HierarchicalDistribution5::HierarchicalDistribution5()
   _p = populationData();
 };
 
-void HierarchicalDistribution5::conditional_p(korali::Sample &s, std::vector<std::vector<double>> points, bool internalData )
+void HierarchicalDistribution5::conditional_p(korali::Sample &s, std::vector<std::vector<double>> points, bool internalData)
 {
   std::vector<double> latentVariables = s["Latent Variables"];
   assert(latentVariables.size() == _p.nDimensions);
-  if (internalData){
+  if (internalData)
+  {
     assert(points.size() == 0);
     points = s["Data Points"].get<std::vector<std::vector<double>>>();
   }
-  else assert(points.size() > 0);
-
+  else
+    assert(points.size() > 0);
 
   double sigma = _p.sigma;
 
   // log(p(data | mean=latent variable, sigma ))
   double logp = 0;
-  for (size_t j = 0; j < points.size() ; j++){
+  for (size_t j = 0; j < points.size(); j++)
+  {
     assert(points[j].size() == _p.nDimensions);
     for (size_t i = 0; i < _p.nDimensions; i++)
     {

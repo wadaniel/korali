@@ -14,18 +14,16 @@ def main():
   k = korali.Engine()
   e = korali.Experiment()
 
-
   e["Problem"]["Type"] = "Bayesian/Latent/HierarchicalLatentCustom"
-
 
   ## Warning: The i=i below is necessary to capture the current i.
   ## Just writing
-  ##   lambda sample, i: logisticModelFunction(sample, x_vals[i])
+  ##   lambda sample, i: logisticModelFuncdtion(sample, x_vals[i])
   ## will capture i by reference and thus not do what is intended.
 
   func_list = []
   for i in range(distrib._p.nIndividuals):
-    func_list.append(lambda sample, i=i: distrib.conditional_p(sample, data[i]) )
+    func_list.append(lambda sample, i=i: distrib.conditional_p(sample, data[i]))
   e["Problem"]["Log Likelihood Functions"] = func_list
 
   e["Problem"]["Latent Space Dimensions"] = 1

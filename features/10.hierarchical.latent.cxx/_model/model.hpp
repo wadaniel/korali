@@ -14,7 +14,7 @@ class HierarchicalDistribution4
 {
   public:
   HierarchicalDistribution4();
-  void conditional_p(korali::Sample &k, std::vector<std::vector<double>> points = {}, bool internalData=false );
+  void conditional_p(korali::Sample &k, std::vector<std::vector<double>> points = {}, bool internalData = false);
   pointsInfoStruct _p;
 };
 
@@ -22,7 +22,7 @@ class HierarchicalDistribution5
 {
   public:
   HierarchicalDistribution5();
-  void conditional_p(korali::Sample &k,  std::vector<std::vector<double>> points = {}, bool internalData=false);
+  void conditional_p(korali::Sample &k, std::vector<std::vector<double>> points = {}, bool internalData = false);
   pointsInfoStructAdvanced _p;
 };
 

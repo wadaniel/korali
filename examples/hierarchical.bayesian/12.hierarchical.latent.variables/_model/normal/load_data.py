@@ -1,6 +1,7 @@
 import numpy as np
 import os
 
+
 def extr(line, toint=True, tofloat=False, delim=" "):
   ''' Helper for extracting file contents. '''
   result = line.strip("\n ").split(delim)

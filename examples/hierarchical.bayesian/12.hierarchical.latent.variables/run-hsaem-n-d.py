@@ -26,8 +26,9 @@ def main():
   func_list = []
   dbg_func_list = []
   for i in range(distrib._p.nIndividuals):
-    func_list.append(lambda sample, index=i: distrib.conditional_p(sample, data[index]))
-    dbg_func_list.append(lambda index=i: data[index] )
+    func_list.append(
+        lambda sample, index=i: distrib.conditional_p(sample, data[index]))
+    dbg_func_list.append(lambda index=i: data[index])
   e["Problem"]["Log Likelihood Functions"] = func_list
 
   # dbg

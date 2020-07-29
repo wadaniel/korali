@@ -20,13 +20,14 @@ int main(int argc, char *argv[])
 
   int nIndividuals = distrib4._p.nIndividuals;
 
-  std::vector<  std::function<void(korali::Sample & s)>  > logLikelihoodFunctions(nIndividuals);
-  for (size_t i = 0; i < nIndividuals; i++){
-	std::vector<std::vector<double>> extended_data(1);
-	extended_data[0] = {distrib4._p.data[i][0], float(i)};
+  std::vector<std::function<void(korali::Sample & s)>> logLikelihoodFunctions(nIndividuals);
+  for (size_t i = 0; i < nIndividuals; i++)
+  {
+    std::vector<std::vector<double>> extended_data(1);
+    extended_data[0] = {distrib4._p.data[i][0], float(i)};
     logLikelihoodFunctions[i] = [distrib4, i, extended_data](korali::Sample &s) -> void {
       distrib4.conditional_p(s, extended_data);
-  };
+    };
   }
 
   e["Problem"]["Type"] = "Bayesian/Latent/HierarchicalLatentCustom";
@@ -34,15 +35,15 @@ int main(int argc, char *argv[])
 
   // We need to add one dimension to _p.data, because one individual in the general case could have
   // more than one data point assigned
-//  std::vector<std::vector<std::vector<double>>> dataVector(nIndividuals);
-//  for (size_t i = 0; i < nIndividuals; i++)
-//  {
-//    dataVector[i].clear();
-//    dataVector[i].push_back(distrib4._p.data[i]);
-//  }
-//  e["Problem"]["Data"] = dataVector;
-//  e["Problem"]["Data Dimensions"] = 1;
-//  e["Problem"]["Number Individuals"] = nIndividuals;
+  //  std::vector<std::vector<std::vector<double>>> dataVector(nIndividuals);
+  //  for (size_t i = 0; i < nIndividuals; i++)
+  //  {
+  //    dataVector[i].clear();
+  //    dataVector[i].push_back(distrib4._p.data[i]);
+  //  }
+  //  e["Problem"]["Data"] = dataVector;
+  //  e["Problem"]["Data Dimensions"] = 1;
+  //  e["Problem"]["Number Individuals"] = nIndividuals;
   e["Problem"]["Latent Space Dimensions"] = 1;
 
   e["Solver"]["Type"] = "HSAEM";

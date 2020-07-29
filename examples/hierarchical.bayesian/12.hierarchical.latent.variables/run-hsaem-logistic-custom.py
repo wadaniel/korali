@@ -21,7 +21,6 @@ def main():
 
   e["Problem"]["Type"] = "Bayesian/Latent/HierarchicalLatentCustom"
 
-
   # The computational models for the log-likelihood, log[ p(data point | latent) ]
 
   ## Warning: The i=i is necessary to capture the current i.
@@ -31,7 +30,8 @@ def main():
 
   func_list = []
   for i in range(distrib._p.nIndividuals):
-      func_list.append(lambda sample, i=i: distrib.conditional_p(sample, data_vector[i]))
+    func_list.append(
+        lambda sample, i=i: distrib.conditional_p(sample, data_vector[i]))
   e["Problem"]["Log Likelihood Functions"] = func_list
 
   # # Alternative: Pass the x values to Korali. Then, the points for the individual

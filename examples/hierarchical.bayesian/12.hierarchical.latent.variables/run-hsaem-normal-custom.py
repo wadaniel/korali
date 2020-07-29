@@ -12,7 +12,6 @@ def main():
   # * Initialize the assumed data distribution
   distrib = NormalConditionalDistribution()
 
-
   k = korali.Engine()
   e = korali.Experiment()
 
@@ -30,7 +29,8 @@ def main():
 
   func_list = []
   for i in range(distrib._p.nIndividuals):
-    func_list.append(lambda sample, i=i: distrib.conditional_p(sample, data_vector[i]) )
+    func_list.append(
+        lambda sample, i=i: distrib.conditional_p(sample, data_vector[i]))
 
   e["Problem"]["Log Likelihood Functions"] = func_list
 

@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
   auto k = korali::Engine();
   auto e = korali::Experiment();
 
-  e["Problem"]["Type"] = "Bayesian/Latent/ExponentialLatent";
+  e["Problem"]["Type"] = "Bayesian/Latent/Exponential";
   e["Problem"]["S Of Likelihood Model"] = distrib2_S;
   e["Problem"]["Zeta Of Likelihood Model"] = distrib2_zeta;
   e["Problem"]["Phi Of Likelihood Model"] = distrib2_phi;

@@ -126,7 +126,7 @@ We create a Korali engine and an experiment, and then configure the :code:`Probl
     k = korali.Engine()
     e = korali.Experiment()
 
-    e["Problem"]["Type"] = "Bayesian/Latent"  # We need a "latent" problem
+    e["Problem"]["Type"] = "Bayesian/Latent/Exponential"  # We need an "exponential-latent" problem
     e["Problem"]["S Of Likelihood Model"] = distrib1_S 
     e["Problem"]["Zeta Of Likelihood Model"] = distrib1_zeta
     e["Problem"]["Phi Of Likelihood Model"] = distrib1_phi

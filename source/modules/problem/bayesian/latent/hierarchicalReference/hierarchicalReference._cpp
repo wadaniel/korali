@@ -1,4 +1,4 @@
-#include "modules/problem/bayesian/latent/hierarchicalLatentReference/hierarchicalLatentReference.hpp"
+#include "modules/problem/bayesian/latent/hierarchicalReference/hierarchicalReference.hpp"
 
 #include <map>
 #include <math.h>
@@ -21,14 +21,20 @@ namespace latent
 {
 /* The problem initialization; here, create hyperparameter variables, add them to the problem's variable list,
     and set up index lists to find both types of variables in that list.*/
-void HierarchicalLatentReference::initialize()
+void HierarchicalReference::initialize()
 {
   Latent::initialize();
 
   _numberIndividuals = _computationalModels.size();
   if (_numberIndividuals <= 0) KORALI_LOG_ERROR("Hierarchical latent variable problems require defining reference data.\n");
-  // The user should define one variable per latent variable dimension, as prototype:
-  if (_k->_variables.size() != _latentSpaceDimensions) KORALI_LOG_ERROR("Hierarchical latent variable problems require only a subset of prototype variables to be defined. Please define one prototype latent variable per individual. (Expected %d variables, found %d variables.) \n", _numberIndividuals, _k->_variables.size());
+
+  _latentSpaceDimensions = _k->_variables.size();
+  if (_k->_variables.size() < 1) KORALI_LOG_ERROR("Bayesian (%s) inference problems require at least one variable.\n", _likelihoodModel.c_str());
+
+  if (_referenceData.size() == 0) KORALI_LOG_ERROR("Bayesian (%s) problems require defining reference data.\n", _likelihoodModel.c_str());
+
+//  // The user should define one variable per latent variable dimension, as prototype:
+//  if (_k->_variables.size() != _latentSpaceDimensions) KORALI_LOG_ERROR("Hierarchical latent variable problems require only a subset of prototype variables to be defined. Please define one prototype latent variable per individual. (Expected %d variables, found %d variables.) \n", _numberIndividuals, _k->_variables.size());
 
   if (_points.size() > 0)
   {
@@ -53,7 +59,7 @@ void HierarchicalLatentReference::initialize()
   // \__ do not change any other solver configuration -- this solver is supposedly never used.
   //     TODO: IF that ever changes, need to propagate _all_ solver configurations here!
 
-  _koraliExperiment["Problem"]["Type"] = "Bayesian/Latent/HierarchicalLatentLowlevel";
+  _koraliExperiment["Problem"]["Type"] = "Bayesian/Latent/HierarchicalLowlevel";
   _koraliExperiment["Problem"]["Log Likelihood Function"] = loglikelihoodLambdaFunction;
   _koraliExperiment["Problem"]["Latent Space Dimensions"] = _latentSpaceDimensions;
   _koraliExperiment["Problem"]["Number Individuals"] = _numberIndividuals;
@@ -170,11 +176,11 @@ void HierarchicalLatentReference::initialize()
 
   /* Initialize the experiment and "extract" the lowlevel problem, so that we can call it's functions later. */
   _koraliEngine.initialize(_koraliExperiment);
-  _lowlevelProblem = dynamic_cast<HierarchicalLatentLowlevel *>(
+  _lowlevelProblem = dynamic_cast<HierarchicalLowlevel *>(
     _koraliExperiment._problem);
 }
 
-HierarchicalLatentReference::~HierarchicalLatentReference()
+HierarchicalReference::~HierarchicalReference()
 {
   delete &_lowlevelProblem;
 }
@@ -195,7 +201,7 @@ HierarchicalLatentReference::~HierarchicalLatentReference()
         - return this list
  */
 
-void HierarchicalLatentReference::loglikelihoodFunction(korali::Sample &sample)
+void HierarchicalReference::loglikelihoodFunction(korali::Sample &sample)
 {
   /* Set up a sample*/
   korali::Sample llhSample;
@@ -231,7 +237,7 @@ void HierarchicalLatentReference::loglikelihoodFunction(korali::Sample &sample)
   sample["logLikelihood"] = allLLHs;
 }
 
-double HierarchicalLatentReference::compute_normalized_sse(std::vector<double> f, std::vector<double> g, std::vector<double> y)
+double HierarchicalReference::compute_normalized_sse(std::vector<double> f, std::vector<double> g, std::vector<double> y)
 {
   double sse = 0.;
   for (size_t i = 0; i < y.size(); i++)
@@ -242,7 +248,7 @@ double HierarchicalLatentReference::compute_normalized_sse(std::vector<double> f
   return sse;
 }
 
-void HierarchicalLatentReference::loglikelihoodNormal(Sample &sample, std::vector<double> referenceData)
+void HierarchicalReference::loglikelihoodNormal(Sample &sample, std::vector<double> referenceData)
 {
   auto refEvals = KORALI_GET(std::vector<double>, sample, "Reference Evaluations");
   auto stdDevs = KORALI_GET(std::vector<double>, sample, "Standard Deviations");
@@ -267,7 +273,7 @@ void HierarchicalLatentReference::loglikelihoodNormal(Sample &sample, std::vecto
   sample["logLikelihood"] = loglike;
 }
 
-void HierarchicalLatentReference::loglikelihoodPositiveNormal(Sample &sample, std::vector<double> referenceData)
+void HierarchicalReference::loglikelihoodPositiveNormal(Sample &sample, std::vector<double> referenceData)
 {
   auto refEvals = KORALI_GET(std::vector<double>, sample, "Reference Evaluations");
   auto stdDevs = KORALI_GET(std::vector<double>, sample, "Standard Deviations");
@@ -298,7 +304,7 @@ void HierarchicalLatentReference::loglikelihoodPositiveNormal(Sample &sample, st
   sample["logLikelihood"] = loglike;
 }
 
-void HierarchicalLatentReference::loglikelihoodNegativeBinomial(Sample &sample, std::vector<double> referenceData)
+void HierarchicalReference::loglikelihoodNegativeBinomial(Sample &sample, std::vector<double> referenceData)
 {
   auto refEvals = KORALI_GET(std::vector<double>, sample, "Reference Evaluations");
   auto dispersions = KORALI_GET(std::vector<double>, sample, "Dispersions");
@@ -350,29 +356,29 @@ void HierarchicalLatentReference::loglikelihoodNegativeBinomial(Sample &sample, 
    or similar. That is because the highlevel problem is still linked to _k and will be called at every
    such indirect call.
 */
-void HierarchicalLatentReference::evaluateLoglikelihood_(korali::Sample &sample, bool zForm)
+void HierarchicalReference::evaluateLoglikelihood_(korali::Sample &sample, bool zForm)
 {
   _lowlevelProblem->evaluateLoglikelihood_(sample, zForm);
 }
-void HierarchicalLatentReference::evaluateLoglikelihood(korali::Sample &sample)
+void HierarchicalReference::evaluateLoglikelihood(korali::Sample &sample)
 {
   _lowlevelProblem->evaluateLoglikelihood_(sample, true);
 }
 
-void HierarchicalLatentReference::evaluateLogPosterior_(korali::Sample &sample, bool zForm, bool cholesky)
+void HierarchicalReference::evaluateLogPosterior_(korali::Sample &sample, bool zForm, bool cholesky)
 {
   _lowlevelProblem->evaluateLogPosterior_(sample, zForm, cholesky);
 }
-void HierarchicalLatentReference::evaluateLogPosterior(korali::Sample &sample)
+void HierarchicalReference::evaluateLogPosterior(korali::Sample &sample)
 {
   _lowlevelProblem->evaluateLogPosterior_(sample, true, true);
 }
 
-void HierarchicalLatentReference::evaluateLogPrior_(korali::Sample &sample, bool zForm, bool cholesky)
+void HierarchicalReference::evaluateLogPrior_(korali::Sample &sample, bool zForm, bool cholesky)
 {
   _lowlevelProblem->evaluateLogPrior_(sample, zForm, cholesky);
 }
-void HierarchicalLatentReference::evaluateLogPrior(korali::Sample &sample)
+void HierarchicalReference::evaluateLogPrior(korali::Sample &sample)
 {
   _lowlevelProblem->evaluateLogPrior_(sample, true, true);
 }

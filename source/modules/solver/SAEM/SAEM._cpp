@@ -19,10 +19,10 @@ namespace solver
 /** @brief This is always run before (re-)starting the solver */
 void SAEM::initialize()
 {
-  if (_k->_problem->getType() != "Bayesian/Latent/ExponentialLatent")
-    KORALI_LOG_ERROR("SAEM can only optimize problems of type 'Bayesian/Latent/ExponentialLatent' .\n");
+  if (_k->_problem->getType() != "Bayesian/Latent/Exponential")
+    KORALI_LOG_ERROR("SAEM can only optimize problems of type 'Bayesian/Latent/Exponential' .\n");
 
-  _latentProblem = dynamic_cast<korali::problem::bayesian::latent::ExponentialLatent *>(_k->_problem);
+  _latentProblem = dynamic_cast<korali::problem::bayesian::latent::Exponential *>(_k->_problem);
 
   _numberVariables = _k->_variables.size();
   _numberLatent = _latentProblem->_latentVariableIndices.size();

@@ -1,4 +1,4 @@
-#include "modules/problem/bayesian/latent/hierarchicalLatentLowlevel/hierarchicalLatentLowlevel.hpp"
+#include "modules/problem/bayesian/latent/hierarchicalLowlevel/hierarchicalLowlevel.hpp"
 
 #include <map>
 #include <math.h>
@@ -12,7 +12,7 @@
 #include <iostream>
 
 /* The problem initialization.*/
-void korali::problem::bayesian::latent::HierarchicalLatentLowlevel::initialize()
+void korali::problem::bayesian::latent::HierarchicalLowlevel::initialize()
 {
   korali::problem::bayesian::Latent::initialize();
 
@@ -166,7 +166,7 @@ void korali::problem::bayesian::latent::HierarchicalLatentLowlevel::initialize()
                     whether "Latent Variables" are the untransformed values.
      @returns : sample["logLikelihood"], a list/vector with one log-likelihood per individual.
      */
-void korali::problem::bayesian::latent::HierarchicalLatentLowlevel::evaluateLoglikelihood_(korali::Sample &sample, bool zForm)
+void korali::problem::bayesian::latent::HierarchicalLowlevel::evaluateLoglikelihood_(korali::Sample &sample, bool zForm)
 {
   std::vector<std::vector<double>> allLatentVars = KORALI_GET(std::vector<std::vector<double>>, sample, "Latent Variables");
   assert(allLatentVars.size() == _numberIndividuals);
@@ -184,7 +184,7 @@ void korali::problem::bayesian::latent::HierarchicalLatentLowlevel::evaluateLogl
 
   sample["logLikelihood"] = allLogP;
 }
-void korali::problem::bayesian::latent::HierarchicalLatentLowlevel::evaluateLoglikelihood(korali::Sample &sample)
+void korali::problem::bayesian::latent::HierarchicalLowlevel::evaluateLoglikelihood(korali::Sample &sample)
 {
   evaluateLoglikelihood_(sample, true);
 }
@@ -202,7 +202,7 @@ void korali::problem::bayesian::latent::HierarchicalLatentLowlevel::evaluateLogl
         Update: This uses korali's multivariate normal distribution and comes with the option to pass an already
                 cholesky-decomposed covariance.
  */
-void korali::problem::bayesian::latent::HierarchicalLatentLowlevel::evaluateLogPrior_(korali::Sample &sample, bool zForm, bool cholesky)
+void korali::problem::bayesian::latent::HierarchicalLowlevel::evaluateLogPrior_(korali::Sample &sample, bool zForm, bool cholesky)
 {
   std::vector<std::vector<double>> _latentVariables = KORALI_GET(std::vector<std::vector<double>>, sample, "Latent Variables");
   std::vector<double> mean = KORALI_GET(std::vector<double>, sample, "Mean");
@@ -310,7 +310,7 @@ void korali::problem::bayesian::latent::HierarchicalLatentLowlevel::evaluateLogP
 //        This older function essentially implements a multivariate normal probability function. Though, that is already
 //                implemented in the distribution multivariate/normal. However, this old function seemed to work
 //                just as well.
-//void korali::problem::bayesian::latent::HierarchicalLatentLowlevel::evaluateLogPrior_old(korali::Sample &sample, bool zForm)
+//void korali::problem::bayesian::latent::HierarchicalLowlevel::evaluateLogPrior_old(korali::Sample &sample, bool zForm)
 //{
 //  //  volatile int done = 0;
 //  //  while (!done) sleep(1);
@@ -425,7 +425,7 @@ void korali::problem::bayesian::latent::HierarchicalLatentLowlevel::evaluateLogP
 //  gsl_vector_free(x);
 //}
 
-void korali::problem::bayesian::latent::HierarchicalLatentLowlevel::evaluateLogPrior(korali::Sample &sample)
+void korali::problem::bayesian::latent::HierarchicalLowlevel::evaluateLogPrior(korali::Sample &sample)
 {
   evaluateLogPrior_(sample, true, true);
 }
@@ -439,7 +439,7 @@ void korali::problem::bayesian::latent::HierarchicalLatentLowlevel::evaluateLogP
                     Todo: Refactor to use "Hyperparameters" instead of "Mean" and "Covariance .."?
          TODO: test it.
  */
-void korali::problem::bayesian::latent::HierarchicalLatentLowlevel::evaluateLogPosterior_(korali::Sample &sample, bool zForm, bool cholesky)
+void korali::problem::bayesian::latent::HierarchicalLowlevel::evaluateLogPosterior_(korali::Sample &sample, bool zForm, bool cholesky)
 {
   evaluateLogPrior_(sample, zForm, cholesky);
   evaluateLoglikelihood_(sample, zForm);
@@ -450,12 +450,12 @@ void korali::problem::bayesian::latent::HierarchicalLatentLowlevel::evaluateLogP
   //               log(p) =         log(p(y | latent))                   + log(p(latent | hyperparams))
   sample["Log Posterior"] = std::accumulate(llhs.begin(), llhs.end(), 0) + std::accumulate(lpriors.begin(), lpriors.end(), 0);
 }
-void korali::problem::bayesian::latent::HierarchicalLatentLowlevel::evaluateLogPosterior(korali::Sample &sample)
+void korali::problem::bayesian::latent::HierarchicalLowlevel::evaluateLogPosterior(korali::Sample &sample)
 {
   evaluateLogPosterior_(sample, true, true);
 }
 
-std::vector<double> korali::problem::bayesian::latent::HierarchicalLatentLowlevel::zToLatent(std::vector<double> z)
+std::vector<double> korali::problem::bayesian::latent::HierarchicalLowlevel::zToLatent(std::vector<double> z)
 {
   if (z.size() != _latentSpaceDimensions)
     KORALI_LOG_ERROR("Error, z vector passed to zToLatent() had the wrong number of entries.");
@@ -483,7 +483,7 @@ std::vector<double> korali::problem::bayesian::latent::HierarchicalLatentLowleve
   return theta;
 }
 
-std::vector<double> korali::problem::bayesian::latent::HierarchicalLatentLowlevel::latentToZ(std::vector<double> v)
+std::vector<double> korali::problem::bayesian::latent::HierarchicalLowlevel::latentToZ(std::vector<double> v)
 {
   if (v.size() != _latentSpaceDimensions)
     KORALI_LOG_ERROR("Error, vector passed to latentToZ() had the wrong number of coordinates.");

@@ -1,5 +1,5 @@
 ***********************************
-Exponential Latent Variable Problem
+Exponential Variable Problem
 ***********************************
 
 (It's not as bad as it sounds.)
@@ -116,6 +116,7 @@ To summarize, the following fields need to be set for a `Latent` problem:
 .. code-block:: python
 
     e = korali.Experiment()
+    e["Problem"][ "Type" ] = "Bayesian/Latent/Exponential"
 
     # S, phi and zeta functions as described above:
     e["Problem"][ "S Of Likelihood Model" ] = ...
@@ -123,10 +124,10 @@ To summarize, the following fields need to be set for a `Latent` problem:
     e["Problem"][ "Phi Of Likelihood Model" ] = ...
 
     # Whatever dimension your S and zeta return:
-    e["Problem"]["S Dimension"]
+    e["Problem"]["S Dimension"] = ...
 
     # a "sampler" function as described above:
-    e["Probelm"]["Latent Variable Sampler" ]
+    e["Probelm"]["Latent Variable Sampler" ] = ...
 
 
 

@@ -3,7 +3,7 @@
 #include "engine.hpp"
 #include "korali.hpp"
 #include "modules/module.hpp"
-#include "modules/problem/bayesian/latent/hierarchicalLatentCustom/hierarchicalLatentCustom.hpp"
+#include "modules/problem/bayesian/latent/hierarchicalCustom/hierarchicalCustom.hpp"
 #include "modules/problem/problem.hpp"
 
 #include <iostream>
@@ -11,7 +11,7 @@
 #include <vector>
 
 /* What to test:
-    - Instatiate the hierarchicalLatentLowlevel problem and check that it returns the right
+    - Instatiate the hierarchicalLowlevel problem and check that it returns the right
        - priors ( evaluateLogPrior(korali::Sample &sample)  )
        - conditional llhs   ( evaluateLoglikelihood(korali::Sample &sample)  )
        - total.  ( evaluateLogPosterior(korali::Sample &sample)  )
@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
       distrib5.conditional_p(s, {distrib5._p.data[i]});
     };
 
-  e["Problem"]["Type"] = "Bayesian/Latent/HierarchicalLatentCustom";
+  e["Problem"]["Type"] = "Bayesian/Latent/HierarchicalCustom";
   e["Problem"]["Log Likelihood Functions"] = logLikelihoodFunctions; // defined in model.cpp
 
   //  e["Problem"]["Data"] = distrib5._p.data; // data: length: nIndividuals; each of its entries is a vector of different length

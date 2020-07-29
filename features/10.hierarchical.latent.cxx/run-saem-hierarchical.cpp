@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
     };
   }
 
-  e["Problem"]["Type"] = "Bayesian/Latent/HierarchicalLatentCustom";
+  e["Problem"]["Type"] = "Bayesian/Latent/HierarchicalCustom";
   e["Problem"]["Log Likelihood Functions"] = logLikelihoodFunctions;
 
   // We need to add one dimension to _p.data, because one individual in the general case could have

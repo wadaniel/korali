@@ -18,7 +18,7 @@ def main():
   k = korali.Engine()
   e = korali.Experiment()
 
-  e["Problem"]["Type"] = "Bayesian/Latent/HierarchicalLatentReference"
+  e["Problem"]["Type"] = "Bayesian/Latent/HierarchicalReference"
 
   x_vals = [[] for _ in range(d.nIndividuals)]
   y_vals = [[] for _ in range(d.nIndividuals)]

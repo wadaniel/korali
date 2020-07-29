@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
       distrib5.conditional_p(s, {distrib5._p.data[i]});
     };
 
-  e["Problem"]["Type"] = "Bayesian/Latent/HierarchicalLatentCustom";
+  e["Problem"]["Type"] = "Bayesian/Latent/HierarchicalCustom";
   e["Problem"]["Log Likelihood Functions"] = logLikelihoodFunctions; // defined in model.cpp
 
   //  e["Problem"]["Data"] = distrib5._p.data; // data: length: nIndividuals; each of its entries is a vector of different length

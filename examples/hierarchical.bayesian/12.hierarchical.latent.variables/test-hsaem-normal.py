@@ -929,7 +929,7 @@ def main():
   for i in range(distrib._p.nIndividuals):
     data_vector[i] = distrib._p.data[i].tolist()
 
-  e["Problem"]["Type"] = "Bayesian/Latent/HierarchicalLatentCustom"
+  e["Problem"]["Type"] = "Bayesian/Latent/HierarchicalCustom"
 
   # The computational model for the log-likelihood, log[ p(data point | latent) ]
 

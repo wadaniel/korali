@@ -4,7 +4,7 @@
 #include "modules/distribution/multivariate/normal/normal.hpp"
 #include "modules/distribution/univariate/normal/normal.hpp"
 #include "modules/distribution/univariate/uniform/uniform.hpp"
-#include "modules/problem/bayesian/latent/hierarchicalLatentLowlevel/hierarchicalLatentLowlevel.hpp"
+#include "modules/problem/bayesian/latent/hierarchicalLowlevel/hierarchicalLowlevel.hpp"
 #include "modules/solver/solver.hpp"
 
 #include <gsl/gsl_blas.h> // Todo: Find out which of those are not needed; we only need the cholesky decomp
@@ -25,7 +25,7 @@ class HSAEM : public korali::Solver
   public:
   /**
   * @brief The (lowlevel) latent variable problem that this hSAEM instance is solving. */
-  korali::problem::bayesian::latent::HierarchicalLatentLowlevel *_latentProblem;
+  korali::problem::bayesian::latent::HierarchicalLowlevel *_latentProblem;
 
   /**
   * @brief Draw samples of all latent variables, using a Metropolis-Hastings method.

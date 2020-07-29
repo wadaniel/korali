@@ -270,12 +270,12 @@ We will also need a :code:`korali.Engine` to run the experiment:
     e = korali.Experiment()
 
 **Problem Setup:**
-To solve a hierarchical problem with latent variables, we tell Korali that :code:`HierarchicalLatentCustom` is the
+To solve a hierarchical problem with latent variables, we tell Korali that :code:`HierarchicalCustom` is the
 problem type.
 
 .. code-block:: python
 
-    e["Problem"]["Type"] = "Bayesian/Latent/HierarchicalLatentCustom"
+    e["Problem"]["Type"] = "Bayesian/Latent/HierarchicalCustom"
 
 We then define the conditional log likelihood functions, i.e. :math:`p(x | \theta)`, one for
 each individual. For this, there is a trap that Python has set out for us: Beware of
@@ -355,7 +355,7 @@ One generation is composed of one E and one M step.
 In each E step, new samples will be generated.
 
 **Variables and Distributions:**
-The problem types *HierarchicalLatentCustom* and *HierarchicalLatentReference*
+The problem types *HierarchicalCustom* and *HierarchicalReference*
 simplify the definition of variables. In the hierarchical setting, the latent
 variable vectors of each individual are symmetric, so they only need to
 be defined for one individual. The hyperparameters are also automatically
@@ -486,12 +486,12 @@ We extract x and y separately:
 
 
 **Problem Setup:**
-To solve a hierarchical problem with latent variables, we choose the :code:`HierarchicalLatentReference`
+To solve a hierarchical problem with latent variables, we choose the :code:`HierarchicalReference`
 problem type,
 
 .. code-block:: python
 
-    e["Problem"]["Type"] = "Bayesian/Latent/HierarchicalLatentReference"
+    e["Problem"]["Type"] = "Bayesian/Latent/HierarchicalReference"
 
 In this problem class, we choose a computational model, :math:`f(x, \mathbf{\theta})` for each individual.
 From this, the probability of a data point :math:`(x, y)` will be calculated from
@@ -513,7 +513,7 @@ We define the functions in this way, inserting the x values manually:
     )
   e["Problem"]["Computational Models"] = func_list
 
-For automated handling of data points, please see the documentation of `HierarchicalLatentReference`.
+For automated handling of data points, please see the documentation of `HierarchicalReference`.
 
 The functions defined here will access :code:`"sample["Latent Variables"]`
 (and the inserted points) and calculate two terms from it. First, the calculated function values
@@ -564,7 +564,7 @@ The parameter :code:`"Diagonal Covariance"` tells *HSAEM* to model the different
 independent from each other. Also, we choose to run the optimization for 250 generations.
 
 **Variables and Distributions:**
-As *HierarchicalLatentReference* is a *Bayesian* problem, we need to define priors for all variables. We
+As *HierarchicalReference* is a *Bayesian* problem, we need to define priors for all variables. We
 define three different distributions for use as priors:
 
 
@@ -585,7 +585,7 @@ define three different distributions for use as priors:
   e["Distributions"][2]["Minimum"] = 0.0
   e["Distributions"][2]["Maximum"] = 1.0
 
-Again, with *HierarchicalLatentReference* we only need to define prototype latent variables for one
+Again, with *HierarchicalReference* we only need to define prototype latent variables for one
 individual. The next code paragraph works for variable numbers of latent variables to be modeled as
 :code:`"Normal"`, :code:`"Log-Normal"` or :code:`"Logit-Normal"`.
 

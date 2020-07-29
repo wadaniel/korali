@@ -14,7 +14,7 @@ def main():
   k = korali.Engine()
   e = korali.Experiment()
 
-  e["Problem"]["Type"] = "Bayesian/Latent/HierarchicalLatentCustom"
+  e["Problem"]["Type"] = "Bayesian/Latent/HierarchicalCustom"
 
   # The computational models for the log-likelihood, log[ p(data point | latent) ]
 

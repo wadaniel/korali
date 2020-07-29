@@ -11,7 +11,7 @@ namespace bayesian
 {
 namespace latent
 {
-class ExponentialLatent : public korali::problem::bayesian::Latent
+class Exponential : public korali::problem::bayesian::Latent
 {
   public:
   /**

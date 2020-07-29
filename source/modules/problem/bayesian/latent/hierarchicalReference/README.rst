@@ -53,7 +53,7 @@ Usage
     my_other_parameters = ... # we might have other individual paramters, such as the age of each individual
 
     e = korali.Experiment()
-    e["Problem"]["Type"] = "Evaluation/Bayesian/Latent/HierarchicalLatentReference"
+    e["Problem"]["Type"] = "Evaluation/Bayesian/Latent/HierarchicalReference"
     e["Problem"]["Likelihood Models"] = "Additive Normal"
     e["Problem"]["Latent Space Dimensions"] = ... # the number of latent variables per individual
     e["Problem"]["Reference Data"] = my_refrence_data # insert list of lists of reference evaluations

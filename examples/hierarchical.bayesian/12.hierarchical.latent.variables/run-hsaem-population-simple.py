@@ -14,7 +14,7 @@ def main():
   k = korali.Engine()
   e = korali.Experiment()
 
-  e["Problem"]["Type"] = "Bayesian/Latent/HierarchicalLatentCustom"
+  e["Problem"]["Type"] = "Bayesian/Latent/HierarchicalCustom"
 
   ## Warning: The i=i below is necessary to capture the current i.
   ## Just writing

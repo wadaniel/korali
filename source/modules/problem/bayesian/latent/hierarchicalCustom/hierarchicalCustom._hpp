@@ -1,10 +1,10 @@
-#ifndef _KORALI_PROBLEM_HIERARCHICALLATENTREFERENCE_HPP_
-#define _KORALI_PROBLEM_HIERARCHICALLATENTREFERENCE_HPP_
+#ifndef _KORALI_PROBLEM_HIERARCHICALLATENT_HPP_
+#define _KORALI_PROBLEM_HIERARCHICALLATENT_HPP_
 
 #include "engine.hpp"
 #include "modules/experiment/experiment.hpp"
 #include "modules/problem/bayesian/bayesian.hpp"
-#include "modules/problem/bayesian/latent/hierarchicalLatentLowlevel/hierarchicalLatentLowlevel.hpp"
+#include "modules/problem/bayesian/latent/hierarchicalLowlevel/hierarchicalLowlevel.hpp"
 #include "modules/problem/bayesian/latent/latent.hpp"
 
 //#include <memory>
@@ -17,41 +17,9 @@ namespace bayesian
 {
 namespace latent
 {
-class HierarchicalLatentReference : public korali::problem::bayesian::Latent
+class HierarchicalCustom : public korali::problem::bayesian::Latent
 {
   private:
-  const double _log2pi = 1.83787706640934533908193770912476;
-
-  /**
-  * @brief Precomputes the square distance between two vectors (f and y) of the same size normalized by a third vector (g)
-  * @param f Vector f
-  * @param g Vector g, the normalization vector
-  * @param y Vector y
-  * @return Normalized square distance of the vectors
-  */
-  double compute_normalized_sse(std::vector<double> f, std::vector<double> g, std::vector<double> y);
-
-  /**
-  * @brief An implementation of the normal likelihood y~N(f,g), where f ang g are provided by the user.
-  * @param sample A Korali Sample
-  * @param referenceData: A vector of reference y values
-  */
-  void loglikelihoodNormal(korali::Sample &sample, std::vector<double> referenceData);
-
-  /**
-  * @brief An implementation of the normal likelihood y~N(f,g) truncated at zero, where f ang g are provided by the user.
-  * @param sample A Korali Sample
-  * @param referenceData: A vector of reference y values
-  */
-  void loglikelihoodPositiveNormal(korali::Sample &sample, std::vector<double> referenceData);
-
-  /**
-  * @brief Negative Binomial likelihood parametrized by mean and dispersion.
-  * @param sample A Korali Sample
-  * @param referenceData: A vector of reference y values
-  */
-  void loglikelihoodNegativeBinomial(korali::Sample &sample, std::vector<double> referenceData);
-
   /**
     @brief Evaluate the conditional log-likelihood of all individuals. Exact same as evaluateLoglikelihood.
      @param sample: sample["Latent Variables"] should contain a list of lists / vector of vectors, one latent variable vector for each individual.
@@ -61,7 +29,7 @@ class HierarchicalLatentReference : public korali::problem::bayesian::Latent
 
   public:
   /** @brief The lowlevel problem containing actual calculations. */
-  HierarchicalLatentLowlevel *_lowlevelProblem;
+  HierarchicalLowlevel *_lowlevelProblem;
 
   /**
   * @brief The problem initialization; here, create hyperparameter variables and set up index lists to
@@ -72,34 +40,31 @@ class HierarchicalLatentReference : public korali::problem::bayesian::Latent
   /**
   * @brief Call destructor of sub-problem, just in case we want to do some de-allocation there
  */
-  ~HierarchicalLatentReference();
+  ~HierarchicalCustom();
 
   /**
     @brief Evaluate each log-likelihood log(p(data for individual i | latent variables i)), given latent variables.
             Implementation note: Latent variables are expected in original (non-z) form, --because-- the
-             HierarchicalLatentLowlevel problem takes care of the transformation.
-            If data was passed to the HierarchicalLatentReference problem, it will be passed to the computational
-            models and thus can be used there.
+             HierarchicalLowlevel problem takes care of the transformation.
+            If data points were given to the HierarchicalCustom problem, they will be passed to the custom
+            likelihood functions and thus can be used there.
             Uses sample["Latent Variables"] which must be a vector of vectors of latent variables (one vector per individual).
      @param sample: sample["Latent Variables"] should contain a list of lists / vector of vectors, one latent variable vector for each individual.
      @returns : sample["logLikelihood"], a list/vector with one log-likelihood per individual.
  */
-
   void loglikelihoodFunction(korali::Sample &sample);
 
   /**
-    @brief Calls the lowlevel problem's function. Like loglikelihoodFunction, except for the choice of zForm.
-            Evaluate each log-likelihood log(p(data for individual i | latent variables i)), given latent variables.
-            Implementation note: Latent variables are expected in original (non-z) form, --because-- the
-             HierarchicalLatentLowlevel problem takes care of the transformation.
-            If data was passed to the HierarchicalLatentReference problem, it will be passed to the computational
-            models and thus can be used there.
+    @brief Calls the lowlevel problem's function of same name.
+            Evaluate each log-likelihood log(p(data for individual i | latent variables i)) across all data points
+            assigned to the individual, given latent variables.
             Uses sample["Latent Variables"] which must be a vector of vectors of latent variables (one vector per individual).
      @param sample: sample["Latent Variables"] should contain a list of lists / vector of vectors, one latent variable vector for each individual.
-     @returns : sample["logLikelihood"], a list/vector with one log-likelihood per individual.
+     @param zForm:  A boolean indicating whether the latent variables are passed in z-Form (if zForm is true) or
+                    whether "Latent Variables" are the untransformed values.
+     @returns : sample['Log Likelihood'], a list/vector with one log-likelihood per individual.
  */
   void evaluateLoglikelihood_(korali::Sample &sample, bool zForm = true);
-
   /**
     @brief Same as evaluateLogLikelihood_(..., zForm = true)
     @param sample: See other function description
@@ -129,19 +94,19 @@ class HierarchicalLatentReference : public korali::problem::bayesian::Latent
   void evaluateLogPrior(korali::Sample &sample) override;
 
   /**
-    @brief Evaluate the total log-probability p(all data | all latent) * p(latent | hyperparameters).
-             log[ p(all data | all latent) * p(all latent | hyperparameters) ]
+  * @brief Evaluate the total log-probability p(all data | all latent) * p(latent | hyperparameters).
+            log[ p(all data | all latent) * p(all latent | hyperparameters) ]
     @param sample: Is expected to contain the fields ["Latent Variables"], ["Mean"] and ["Covariance Matrix"] or
-                     ["Covariance Cholesky Decomposition"].
-                     Data is implicitly included in the models (taken care of by the user), or was given at problem creation.
-                     "Mean" should be a vector (size := n), "Covariance Matrix"/ "Covariance Cholesky Decomposition" should
-                     be an nxn vector of vectors. (No special encoding of the cov, except as cholesky decomposition.)
+                    ["Covariance Cholesky Decomposition"].
+                    Data was either included in the models by the user, or given at problem creation.
+                    "Mean" should be a vector (size := n), "Covariance Matrix"/ "Covariance Cholesky Decomposition" should
+                    be an nxn vector of vectors. (No special encoding of the cov, except as cholesky decomposition.)
     @param zForm:  A boolean indicating whether the latent variables are passed in z-Form (if zForm is true) or
                     whether "Latent Variables" are the untransformed values.
     @param cholesky: If true, the function expects a cholesky-decomposed covariance matrix in
-                     sample["Covariance Cholesky Decomposition"]. If false, expects a non-decomposed covariance in
-                     sample["Covariance Matrix"].
-    @returns sample["Log Posterior"], a single value.
+                    sample["Covariance Cholesky Decomposition"]. If false, expects a non-decomposed covariance in
+                    sample["Covariance Matrix"].
+     @returns sample["Log Posterior"], a single value.
  */
   void evaluateLogPosterior_(korali::Sample &sample, bool zForm = true, bool cholesky = true);
   /**
@@ -164,4 +129,4 @@ class HierarchicalLatentReference : public korali::problem::bayesian::Latent
 } // namespace problem
 } // namespace korali
 
-#endif // _KORALI_PROBLEM_HIERARCHICALLATENTREFERENCE_HPP_
+#endif // _KORALI_PROBLEM_HIERARCHICALLATENT_HPP_

@@ -1,6 +1,6 @@
 #include "modules/conduit/conduit.hpp"
-#include "modules/problem/bayesian/latent/hierarchicalLatentCustom/hierarchicalLatentCustom.hpp"
-#include "modules/problem/bayesian/latent/hierarchicalLatentReference/hierarchicalLatentReference.hpp"
+#include "modules/problem/bayesian/latent/hierarchicalCustom/hierarchicalCustom.hpp"
+#include "modules/problem/bayesian/latent/hierarchicalReference/hierarchicalReference.hpp"
 #include "modules/solver/HSAEM/HSAEM.hpp"
 
 //#include <algorithm>
@@ -36,22 +36,22 @@ void korali::solver::HSAEM::runGeneration()
 /* @brief This is always run before (re-)starting the solver */
 void korali::solver::HSAEM::initialize()
 {
-  if ((_k->_problem->getType() != "Bayesian/Latent/HierarchicalLatentCustom") &&
-      (_k->_problem->getType() != "Bayesian/Latent/HierarchicalLatentLowlevel") &&
-      (_k->_problem->getType() != "Bayesian/Latent/HierarchicalLatentReference"))
-    KORALI_LOG_ERROR("SAEM can only optimize problems of type 'Bayesian/Latent/HierarchicalLatentReference' or '.../HierarchicalLatentCustom' or '.../HierarchicalLatentLowlevel' .\n");
-  if (_k->_problem->getType() == "Bayesian/Latent/HierarchicalLatentCustom")
+  if ((_k->_problem->getType() != "Bayesian/Latent/HierarchicalCustom") &&
+      (_k->_problem->getType() != "Bayesian/Latent/HierarchicalLowlevel") &&
+      (_k->_problem->getType() != "Bayesian/Latent/HierarchicalReference"))
+    KORALI_LOG_ERROR("SAEM can only optimize problems of type 'Bayesian/Latent/HierarchicalReference' or '.../HierarchicalCustom' or '.../HierarchicalLowlevel' .\n");
+  if (_k->_problem->getType() == "Bayesian/Latent/HierarchicalCustom")
   {
-    auto _latentProblemWrapper = dynamic_cast<korali::problem::bayesian::latent::HierarchicalLatentCustom *>(_k->_problem);
+    auto _latentProblemWrapper = dynamic_cast<korali::problem::bayesian::latent::HierarchicalCustom *>(_k->_problem);
     _latentProblem = _latentProblemWrapper->_lowlevelProblem;
   }
-  if (_k->_problem->getType() == "Bayesian/Latent/HierarchicalLatentReference")
+  if (_k->_problem->getType() == "Bayesian/Latent/HierarchicalReference")
   {
-    auto _latentProblemWrapper = dynamic_cast<korali::problem::bayesian::latent::HierarchicalLatentReference *>(_k->_problem);
+    auto _latentProblemWrapper = dynamic_cast<korali::problem::bayesian::latent::HierarchicalReference *>(_k->_problem);
     _latentProblem = _latentProblemWrapper->_lowlevelProblem;
   }
-  if (_k->_problem->getType() == "Bayesian/Latent/HierarchicalLatentLowlevel")
-    _latentProblem = dynamic_cast<korali::problem::bayesian::latent::HierarchicalLatentLowlevel *>(_k->_problem);
+  if (_k->_problem->getType() == "Bayesian/Latent/HierarchicalLowlevel")
+    _latentProblem = dynamic_cast<korali::problem::bayesian::latent::HierarchicalLowlevel *>(_k->_problem);
 
   // Todo: make sure the problem is initialized before the solver
   _numberIndividuals = _latentProblem->_numberIndividuals;

@@ -15,7 +15,7 @@ namespace bayesian
 {
 namespace latent
 {
-class HierarchicalLatentLowlevel : public korali::problem::bayesian::Latent
+class HierarchicalLowlevel : public korali::problem::bayesian::Latent
 {
   private:
   // // local variables, but we don't want to re-allocate space at every use (or do we?)
@@ -36,7 +36,7 @@ class HierarchicalLatentLowlevel : public korali::problem::bayesian::Latent
   /**
   * @brief De-allocate both vectors with hyperparameter korali-variables
  */
-  // ~HierarchicalLatentLowlevel(void);
+  // ~HierarchicalLowlevel(void);
 
   /**
   * @brief Evaluate log of p(latent | hyperparameters), hyperparameter-dependent prior over each *transformed* latent variable.

@@ -18,14 +18,9 @@ class LogisticData():
     self.nDataTotal = None
     self.nDataDimensions = 1
     self.nLatentSpaceDimensions = None
-    # par_transf = [0 0 0]; --> three variables, all normal
-    self.dNormal = None
-    self.dLognormal = None
-    self.dProbitnormal = None
-    self.dLogitnormal = None
 
     self.error = "ind"  # no other choice than individual errors
-    self.error_model = "constant"  # might add "proportional" option
+    self.error_model = "constant"  # might add "proportional" option in addition to "constant"
 
     self.nSamplesEach = []
     self.data = []
@@ -50,28 +45,32 @@ class LogisticData():
       self.data.append(data[data[:, 0] == i])
 
     self.data = np.array(self.data)
-    self.beta = [1, 1, 1, 1]
-    self.omega = 100 * np.diag([1, 1, 1, 1])
+
+    x_vals = [[] for _ in range(self.nIndividuals)]
+    y_vals = [[] for _ in range(self.nIndividuals)]
+    for i in range(self.nIndividuals):
+      # data: (nInd x nPoints x nDim), with nDim = 3
+      # We discard the first dimension: ID
+      x_vals[i] = self.data[i, :, 1:2].tolist()  # set x_vals[i] to a list of lists
+      y_vals[i] = self.data[
+                  i, :, 2].tolist()  # set y_vals[i] to a list, one value per datapoint
+    self.x_values = x_vals
+    self.y_values = y_vals
+
+    # self.beta = [1, 1, 1, 1]
+    # self.omega = 100 * np.diag([1, 1, 1, 1])
     # self.alpha = 1
     self.Nmp = len(self.beta) - 1
     self.N = len(self.beta)
-    self.nLatentSpaceDimensions = len(self.beta)
-    self.omega_chol = np.linalg.cholesky(self.omega)
+    self.nLatentSpaceDimensions =4 # len(self.beta)
+    # self.omega_chol = np.linalg.cholesky(self.omega)
     self.sigma = 1 * np.eye(self.N)
 
-    self.transf = np.array([0, 0, 0])
-    self.err_transf = 1
-    self.dNormal = np.sum(self.transf == 0) + np.sum(self.err_transf == 0)
-    self.dLognormal = np.sum(self.transf == 1) + np.sum(self.err_transf == 1)
-    self.dProbitnormal = np.sum(self.transf == 2) + np.sum(self.err_transf == 2)
-    self.dLogitnormal = np.sum(self.transf == 3) + np.sum(self.err_transf == 3)
-    assert self.dProbitnormal == 0, "Probitnormal variables not yet implemented"
+    # self.transf = np.array([0, 0, 0])
+    # self.err_transf = 1
+    # self.dNormal = np.sum(self.transf == 0) + np.sum(self.err_transf == 0)
+    # self.dLognormal = np.sum(self.transf == 1) + np.sum(self.err_transf == 1)
+    # self.dProbitnormal = np.sum(self.transf == 2) + np.sum(self.err_transf == 2)
+    # # self.dLogitnormal = np.sum(self.transf == 3) + np.sum(self.err_transf == 3)
+    # assert self.dProbitnormal == 0, "Probitnormal variables not yet implemented"
 
-  #
-  # def reset_to(self, nIndividuals, sigma, omega, data, nSamplesEach=1):
-  #     self.data = np.array(data).flatten()
-  #     self.nIndividuals = nIndividuals
-  #     self.sigma = sigma
-  #     self.omega = omega
-  #     self.nSamplesEach = nSamplesEach
-  #     assert len(data) == nIndividuals

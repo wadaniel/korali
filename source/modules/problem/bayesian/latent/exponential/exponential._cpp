@@ -1,8 +1,8 @@
-#include "modules/problem/bayesian/latent/exponentialLatent/exponentialLatent.hpp"
+#include "modules/problem/bayesian/latent/exponential/exponential.hpp"
 #include <vector>
 
 /*! @brief The problem initialization; here, remember indices of latent vs. hyperparameters for easy access later on */
-void korali::problem::bayesian::latent::ExponentialLatent::initialize()
+void korali::problem::bayesian::latent::Exponential::initialize()
 {
   korali::problem::Bayesian::initialize();
 
@@ -30,7 +30,7 @@ void korali::problem::bayesian::latent::ExponentialLatent::initialize()
 /*! @brief Given 'Hyperparameters' and 'Latent Variables' (parameters the sample is expected to have), calculate
           the total log probability.
 */
-void korali::problem::bayesian::latent::ExponentialLatent::evaluateLogPosterior(korali::Sample &sample)
+void korali::problem::bayesian::latent::Exponential::evaluateLogPosterior(korali::Sample &sample)
 {
   // Evaluate the user-given probability distribution for latent- and hyperparameter values given in the sample
   sample.run(_sOfLikelihoodModel);
@@ -57,7 +57,7 @@ void korali::problem::bayesian::latent::ExponentialLatent::evaluateLogPosterior(
     Values that will be set:
       - sample["Samples"]
  */
-void korali::problem::bayesian::latent::ExponentialLatent::sampleLatent(korali::Sample &sample)
+void korali::problem::bayesian::latent::Exponential::sampleLatent(korali::Sample &sample)
 {
   sample["Number Of Latent Variables"] = _latentVariableIndices.size();
   sample.run(_latentVariableSampler);
@@ -65,21 +65,21 @@ void korali::problem::bayesian::latent::ExponentialLatent::sampleLatent(korali::
 
 /*! @brief Evaluate the user-defined 'S' function (the sufficient statistics of the distribution).
           sample is expected to contain parameter 'Latent Variables' */
-void korali::problem::bayesian::latent::ExponentialLatent::evaluateS(korali::Sample &sample)
+void korali::problem::bayesian::latent::Exponential::evaluateS(korali::Sample &sample)
 {
   sample.run(_sOfLikelihoodModel);
 }
 
 /*! @brief Evaluate the user-defined 'phi' function (log-llh = -zeta + <S, phi>).
           sample is expected to contain parameter 'Hyperparameters' */
-void korali::problem::bayesian::latent::ExponentialLatent::evaluatePhi(korali::Sample &sample)
+void korali::problem::bayesian::latent::Exponential::evaluatePhi(korali::Sample &sample)
 {
   sample.run(_phiOfLikelihoodModel);
 }
 
 /*! @brief Evaluate the user-defined 'zeta' function (~ the log-normalization constant of the distribution).
           sample is expected to contain parameter 'Hyperparameters' */
-void korali::problem::bayesian::latent::ExponentialLatent::evaluateZeta(korali::Sample &sample)
+void korali::problem::bayesian::latent::Exponential::evaluateZeta(korali::Sample &sample)
 {
   sample.run(_zetaOfLikelihoodModel);
 }

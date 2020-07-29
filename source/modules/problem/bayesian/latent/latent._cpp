@@ -17,19 +17,19 @@ void Latent::initialize()
 /* Class considered abstract; do not use. */
 void Latent::evaluateLoglikelihood(korali::Sample &sample)
 {
-  KORALI_LOG_ERROR("'Latent' is an abstract class; use 'Exponential Latent' or 'Hierarchical Latent'.");
+  KORALI_LOG_ERROR("'Latent' is an abstract class; use 'Exponential' or 'Hierarchical Latent'.");
 }
 
 /* Class considered abstract; do not use. */
 void Latent::evaluateLogPosterior(korali::Sample &sample)
 {
-  KORALI_LOG_ERROR("'Latent' is an abstract class; use 'Exponential Latent' or 'Hierarchical Latent'.");
+  KORALI_LOG_ERROR("'Latent' is an abstract class; use 'Exponential' or 'Hierarchical Latent'.");
 }
 
 /* Class considered abstract; do not use. */
 void Latent::evaluateLogPrior(korali::Sample &sample)
 {
-  KORALI_LOG_ERROR("'Latent' is an abstract class; use 'Exponential Latent' or 'Hierarchical Latent'.");
+  KORALI_LOG_ERROR("'Latent' is an abstract class; use 'Exponential' or 'Hierarchical Latent'.");
 }
 
 } // namespace bayesian

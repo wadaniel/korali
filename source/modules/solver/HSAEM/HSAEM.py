@@ -72,7 +72,10 @@ def plotVariables(genList):
 
   total_logprior_check[:] = np.array(
       [tot - l for tot, l in zip(total_logprobab, total_logllh)])
-  assert np.all(np.isclose(total_logprior_check, total_logprior))
+  assert np.all(np.isclose(
+      # where one of the two contains an inf, the prior might still be finite, so we reduce to finite values
+      total_logprior_check[ np.isfinite(total_logprobab)],
+      total_logprior[       np.isfinite(total_logprobab)]))
 
   # Get all samples across sampling steps, whenever available
   if log_all_samples:

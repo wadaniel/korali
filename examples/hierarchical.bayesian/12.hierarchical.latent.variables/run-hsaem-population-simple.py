@@ -28,7 +28,7 @@ def main():
 
   e["Solver"]["Type"] = "HSAEM"
   e["Solver"]["Number Samples Per Step"] = 5
-  e["Solver"]["mcmc Outer Steps"] = 1
+  e["Solver"]["MCMC Outer Steps"] = 1
   e["Solver"]["N1"] = 2
   e["Solver"]["N2"] = 2
   e["Solver"]["N3"] = 2

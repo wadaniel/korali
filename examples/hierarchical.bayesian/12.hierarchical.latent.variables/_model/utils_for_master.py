@@ -73,10 +73,7 @@ def test_transform_to_z():
         rtol=1.e-8)
 
 
-#
-#
-#
-#  REMOVE:
+# ## ** To remove **
 # def generate_variable(transf, experiment, idx, name, distribs, initial=None):
 #   ''':param experiment: korali-experiment
 #         :param idx: The variable index of the variable to create

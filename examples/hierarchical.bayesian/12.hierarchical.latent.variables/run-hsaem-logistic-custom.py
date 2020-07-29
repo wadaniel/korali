@@ -2,7 +2,6 @@ import sys
 sys.path.append('./_model/logistic')
 sys.path.append('./_model')
 from model import *
-from utils import generate_variable
 
 import numpy as np
 import korali
@@ -24,11 +23,10 @@ def main():
   ##   lambda sample, i: logisticModelFunction(sample, x_vals[i])
   ## will capture i by reference and thus not do what is intended.
 
-  func_list = []
-  for i in range(distrib._p.nIndividuals):
-    func_list.append(
-        lambda sample, i=i: distrib.conditional_p(sample, distrib._p.data[i]))
-  e["Problem"]["Log Likelihood Functions"] = func_list
+  e["Problem"]["Log Likelihood Functions"] = [
+      lambda sample, i=i: distrib.conditional_p(sample, distrib._p.data[i])
+      for i in range(distrib._p.nIndividuals)
+  ]
 
   e["Solver"]["Type"] = "HSAEM"
   e["Solver"]["Number Samples Per Step"] = 10
@@ -63,16 +61,17 @@ def main():
   # We define three normal and one log-normal latent variable.
 
   for i in range(3):
-    e["Variables"][i]["Name"] = "Theta "+str(i)
+    e["Variables"][i]["Name"] = "Theta " + str(i)
     e["Variables"][i]["Initial Value"] = 1
     e["Variables"][i]["Latent Variable Distribution Type"] = "Normal"
-    e["Variables"][i]["Prior Distribution"] = "Uniform 0"  # not used, but required
+    e["Variables"][i][
+        "Prior Distribution"] = "Uniform 0"  # not used, but required
 
   e["Variables"][3]["Name"] = "Theta 4"
   e["Variables"][3]["Initial Value"] = 1
   e["Variables"][3]["Latent Variable Distribution Type"] = "Log-Normal"
-  e["Variables"][3]["Prior Distribution"] = "Uniform 1"  # not used, but required
-
+  e["Variables"][3][
+      "Prior Distribution"] = "Uniform 1"  # not used, but required
 
   e["File Output"]["Frequency"] = 1
   e["File Output"]["Path"] = "_korali_result_logistic_custom/"

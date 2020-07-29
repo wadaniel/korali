@@ -62,7 +62,7 @@ def test_transform_to_z():
         z,
         transform_to_z(point, d_normal, d_lognormal, d_logitnormal),
         rtol=1.e-8):
-      print("aaaah")
+      print("test is failing")
     assert np.allclose(
         z,
         transform_to_z(point, d_normal, d_lognormal, d_logitnormal),
@@ -82,46 +82,47 @@ def transform_from_z_by_ids(z, logn_ids, logitn_ids):
   return backtransformed
 
 
-def generate_variable(transf, experiment, idx, name, distribs, initial=None):
-  ''':param experiment: korali-experiment
-        :param idx: The variable index of the variable to create
-        :distribs: A dict mapping distribution types to prior distribution names'''
-  if transf == 0:  # Normal
-    experiment["Variables"][idx]["Name"] = "(Normal) " + name
-    experiment["Variables"][idx][
-        "Initial Value"] = -5. if initial is None else initial
-    experiment["Variables"][idx]["Bayesian Type"] = "Latent"
-    experiment["Variables"][idx]["Latent Variable Distribution Type"] = "Normal"
-    experiment["Variables"][idx]["Prior Distribution"] = distribs[
-        "Normal"]  # not used, but required
-  elif transf == 1:  # lognormal
-    experiment["Variables"][idx]["Name"] = "(Log-normal) " + name
-    experiment["Variables"][idx][
-        "Initial Value"] = 5. if initial is None else initial
-    experiment["Variables"][idx]["Bayesian Type"] = "Latent"
-    experiment["Variables"][idx][
-        "Latent Variable Distribution Type"] = "Log-Normal"
-    experiment["Variables"][idx]["Prior Distribution"] = distribs[
-        "Log-Normal"]  # not used, but required
-  elif transf == 2:  # probit-normal
-    raise NotImplementedError("Probit-normal variables not yet implemented")
-    experiment["Variables"][idx]["Name"] = "(Probit-normal) " + name
-    experiment["Variables"][idx][
-        "Initial Value"] = 999999. if initial is None else initial
-    experiment["Variables"][idx]["Bayesian Type"] = "Latent"
-    experiment["Variables"][idx][
-        "Latent Variable Distribution Type"] = "Probit-Normal"
-    experiment["Variables"][idx]["Prior Distribution"] = distribs[
-        "Probit-Normal"]  # not used, but required
-  elif transf == 3:  # logit-normal
-    experiment["Variables"][idx]["Name"] = "(Logit-normal) " + name
-    experiment["Variables"][idx][
-        "Initial Value"] = 0.5 if initial is None else initial
-    experiment["Variables"][idx]["Bayesian Type"] = "Latent"
-    experiment["Variables"][idx][
-        "Latent Variable Distribution Type"] = "Logit-Normal"
-    experiment["Variables"][idx]["Prior Distribution"] = distribs[
-        "Logit-Normal"]  # not used, but required
-  else:
-    raise ValueError("Only values 0 - 3 code for latent variable types")
-  return None
+# ** To remove **
+# def generate_variable(transf, experiment, idx, name, distribs, initial=None):
+#   ''':param experiment: korali-experiment
+#         :param idx: The variable index of the variable to create
+#         :distribs: A dict mapping distribution types to prior distribution names'''
+#   if transf == 0:  # Normal
+#     experiment["Variables"][idx]["Name"] = "(Normal) " + name
+#     experiment["Variables"][idx][
+#         "Initial Value"] = -5. if initial is None else initial
+#     experiment["Variables"][idx]["Bayesian Type"] = "Latent"
+#     experiment["Variables"][idx]["Latent Variable Distribution Type"] = "Normal"
+#     experiment["Variables"][idx]["Prior Distribution"] = distribs[
+#         "Normal"]  # not used, but required
+#   elif transf == 1:  # lognormal
+#     experiment["Variables"][idx]["Name"] = "(Log-normal) " + name
+#     experiment["Variables"][idx][
+#         "Initial Value"] = 5. if initial is None else initial
+#     experiment["Variables"][idx]["Bayesian Type"] = "Latent"
+#     experiment["Variables"][idx][
+#         "Latent Variable Distribution Type"] = "Log-Normal"
+#     experiment["Variables"][idx]["Prior Distribution"] = distribs[
+#         "Log-Normal"]  # not used, but required
+#   elif transf == 2:  # probit-normal
+#     raise NotImplementedError("Probit-normal variables not yet implemented")
+#     experiment["Variables"][idx]["Name"] = "(Probit-normal) " + name
+#     experiment["Variables"][idx][
+#         "Initial Value"] = 999999. if initial is None else initial
+#     experiment["Variables"][idx]["Bayesian Type"] = "Latent"
+#     experiment["Variables"][idx][
+#         "Latent Variable Distribution Type"] = "Probit-Normal"
+#     experiment["Variables"][idx]["Prior Distribution"] = distribs[
+#         "Probit-Normal"]  # not used, but required
+#   elif transf == 3:  # logit-normal
+#     experiment["Variables"][idx]["Name"] = "(Logit-normal) " + name
+#     experiment["Variables"][idx][
+#         "Initial Value"] = 0.5 if initial is None else initial
+#     experiment["Variables"][idx]["Bayesian Type"] = "Latent"
+#     experiment["Variables"][idx][
+#         "Latent Variable Distribution Type"] = "Logit-Normal"
+#     experiment["Variables"][idx]["Prior Distribution"] = distribs[
+#         "Logit-Normal"]  # not used, but required
+#   else:
+#     raise ValueError("Only values 0 - 3 code for latent variable types")
+#   return None

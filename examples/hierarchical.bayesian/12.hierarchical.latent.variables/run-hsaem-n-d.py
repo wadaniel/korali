@@ -23,20 +23,10 @@ def main():
   ##   lambda sample, i: logisticModelFunction(sample, x_vals[i])
   ## will capture i by reference and thus not do what is intended.
 
-  func_list = []
-  dbg_func_list = []
-  for i in range(distrib._p.nIndividuals):
-    func_list.append(
-        lambda sample, index=i: distrib.conditional_p(sample, data[index]))
-    dbg_func_list.append(lambda index=i: data[index])
-  e["Problem"]["Log Likelihood Functions"] = func_list
-
-  # dbg
-  assert dbg_func_list[0]() == data[0]
-  assert dbg_func_list[4]() == data[4]
-  assert dbg_func_list[len(data) - 1]() == data[-1]
-
-  e["Problem"]["Latent Space Dimensions"] = distrib._p.nDimensions
+  e["Problem"]["Log Likelihood Functions"] = [
+      lambda sample, index=i: distrib.conditional_p(sample, data[index])
+      for i in range(distrib._p.nIndividuals)
+  ]
 
   e["Solver"]["Type"] = "HSAEM"
   e["Solver"]["Number Samples Per Step"] = 10

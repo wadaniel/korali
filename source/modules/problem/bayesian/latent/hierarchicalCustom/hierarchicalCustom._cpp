@@ -28,16 +28,9 @@ void HierarchicalCustom::initialize()
   _latentSpaceDimensions = _k->_variables.size();
   if (_latentSpaceDimensions < 1) KORALI_LOG_ERROR("Hierarchical custom latent variable problems require at least one variable.\n");
 
-// Edit, _latentSpaceDimension is inferred now
-//  // The user should define one variable per latent variable dimension, as prototype:
-//  if (_k->variables.size() != _latentSpaceDimensions) KORALI_LOG_ERROR("Hierarchical latent variable problems require only a subset of prototype variables to be defined. Please define one prototype latent variable per individual. (Expected %d variables, found %d variables.) \n", _numberIndividuals, _k->_variables.size());
-
-  if (_points.size() > 0)
-  {
-    if (_points.size() != _numberIndividuals) KORALI_LOG_ERROR("If x-value data is passed to the hierarchical latent variable problems, it must consist of one vector of points for each individual.\n");
-    _handleXValues = true;
-    _xDimensions = _points[0][0].size();
-  }
+  // Edit, _latentSpaceDimension is inferred now
+  //  // The user should define one variable per latent variable dimension, as prototype:
+  //  if (_k->variables.size() != _latentSpaceDimensions) KORALI_LOG_ERROR("Hierarchical latent variable problems require only a subset of prototype variables to be defined. Please define one prototype latent variable per individual. (Expected %d variables, found %d variables.) \n", _numberIndividuals, _k->_variables.size());
 
   // Prepare the loglikelihood function
   loglikelihoodLambdaFunction = [this](korali::Sample &s) -> void {
@@ -185,7 +178,6 @@ void HierarchicalCustom::loglikelihoodFunction(korali::Sample &sample)
 {
   /* - extract latent variables
      - run each model separately on the latent variables --> 'LogLikelihood Evaluation'
-       - optionally, insert Data Points (vector of vectors)
      - return as '"logLikelihood"'
   */
   korali::Sample llhSample;
@@ -200,8 +192,6 @@ void HierarchicalCustom::loglikelihoodFunction(korali::Sample &sample)
   {
     llhSample["Reference Evaluations"] = 0;
     llhSample["Latent Variables"] = latentVariables[i];
-    if (_handleXValues)
-      llhSample["Data Points"] = _points[i];
     llhSample.run(_logLikelihoodFunctions[i]);
     allLLHs[i] = KORALI_GET(double, llhSample, "logLikelihood");
   }

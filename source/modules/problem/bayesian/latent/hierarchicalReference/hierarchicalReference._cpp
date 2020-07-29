@@ -33,15 +33,8 @@ void HierarchicalReference::initialize()
 
   if (_referenceData.size() == 0) KORALI_LOG_ERROR("Bayesian (%s) problems require defining reference data.\n", _likelihoodModel.c_str());
 
-//  // The user should define one variable per latent variable dimension, as prototype:
-//  if (_k->_variables.size() != _latentSpaceDimensions) KORALI_LOG_ERROR("Hierarchical latent variable problems require only a subset of prototype variables to be defined. Please define one prototype latent variable per individual. (Expected %d variables, found %d variables.) \n", _numberIndividuals, _k->_variables.size());
-
-  if (_points.size() > 0)
-  {
-    if (_points.size() != _numberIndividuals) KORALI_LOG_ERROR("If x-value data is passed to the hierarchical latent variable problems, it must consist of one vector of points for each individual.\n");
-    _handleXValues = true;
-    _xDimensions = _points[0][0].size();
-  }
+  //  // The user should define one variable per latent variable dimension, as prototype:
+  //  if (_k->_variables.size() != _latentSpaceDimensions) KORALI_LOG_ERROR("Hierarchical latent variable problems require only a subset of prototype variables to be defined. Please define one prototype latent variable per individual. (Expected %d variables, found %d variables.) \n", _numberIndividuals, _k->_variables.size());
 
   /* Prepare the loglikelihood function.
 
@@ -187,7 +180,7 @@ HierarchicalReference::~HierarchicalReference()
 
 /**
   * @brief Evaluate all log-likelihoods for all individuals. Returns a list of log-likelihood values.
-  * @param sample: Should contain fields "Latent Variables" and optionally "Data Points".
+  * @param sample: Should contain field "Latent Variables" .
 
   Todo:
         - extract latent variables;
@@ -219,8 +212,6 @@ void HierarchicalReference::loglikelihoodFunction(korali::Sample &sample)
     llhSample["Sigmas"] = 0;
     llhSample["Dispersions"] = 0;
     llhSample["Latent Variables"] = latentVariables[i];
-    if (_handleXValues)
-      llhSample["Data Points"] = _points[i];
     llhSample.run(_computationalModels[i]);
 
     if (_likelihoodModel == "Normal")

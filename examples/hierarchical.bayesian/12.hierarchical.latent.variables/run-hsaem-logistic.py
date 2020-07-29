@@ -27,7 +27,7 @@ def main():
   ## will capture i by reference and thus not do what is intended.
 
   e["Problem"]["Computational Models"] = [
-    lambda sample, i=i: logisticModelFunction(sample, d.x_values[i])
+      lambda sample, i=i: logisticModelFunction(sample, d.x_values[i])
     for i in range(d.nIndividuals)]
 
   e["Problem"]["Likelihood Model"] = "Normal"

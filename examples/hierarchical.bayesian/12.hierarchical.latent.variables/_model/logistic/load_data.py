@@ -41,36 +41,32 @@ class LogisticData():
         self.nSamplesEach[i] = np.sum(data[:, 0] == i)
       assert np.sum(self.nSamplesEach) == len(data)
 
+    data = []
     for i in range(self.nIndividuals):
-      self.data.append(data[data[:, 0] == i])
+      data.append(data[data[:, 0] == i])
 
-    self.data = np.array(self.data)
+    data = np.array(data) # to simplify extraction of x and y
 
     x_vals = [[] for _ in range(self.nIndividuals)]
     y_vals = [[] for _ in range(self.nIndividuals)]
     for i in range(self.nIndividuals):
       # data: (nInd x nPoints x nDim), with nDim = 3
       # We discard the first dimension: ID
-      x_vals[i] = self.data[i, :, 1:2].tolist()  # set x_vals[i] to a list of lists
-      y_vals[i] = self.data[
-                  i, :, 2].tolist()  # set y_vals[i] to a list, one value per datapoint
+
+      x_vals[i] = data[i, :, 1:2].tolist()  # a list of lists
+      y_vals[i] = data[i, :, 2].tolist()  # a list, one value per datapoint
     self.x_values = x_vals
     self.y_values = y_vals
+
+    self.data = [d.tolist() for d in self.data] # Korali expects lists as data (might change in the future)
+
+
 
     # self.beta = [1, 1, 1, 1]
     # self.omega = 100 * np.diag([1, 1, 1, 1])
     # self.alpha = 1
     self.Nmp = len(self.beta) - 1
     self.N = len(self.beta)
-    self.nLatentSpaceDimensions =4 # len(self.beta)
+    self.nLatentSpaceDimensions = 4  # len(self.beta)
     # self.omega_chol = np.linalg.cholesky(self.omega)
     self.sigma = 1 * np.eye(self.N)
-
-    # self.transf = np.array([0, 0, 0])
-    # self.err_transf = 1
-    # self.dNormal = np.sum(self.transf == 0) + np.sum(self.err_transf == 0)
-    # self.dLognormal = np.sum(self.transf == 1) + np.sum(self.err_transf == 1)
-    # self.dProbitnormal = np.sum(self.transf == 2) + np.sum(self.err_transf == 2)
-    # # self.dLogitnormal = np.sum(self.transf == 3) + np.sum(self.err_transf == 3)
-    # assert self.dProbitnormal == 0, "Probitnormal variables not yet implemented"
-

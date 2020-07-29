@@ -81,31 +81,6 @@ is managed by the user:
 will be overwritten with the last value for :code:`i` - that's 2 here. See `here <https://stackoverflow.com/questions/6076270/lambda-function-in-list-comprehensions>`_
 for more information.)
 
-Alternatively, to let Korali handle the data points (first without additional parameters):
-
-.. code-block:: python
-
-    f = lambda sample: ... # will access sample["Data Points"] and sample["Latent Variables"] and do something with it
-
-    e["Problem"]["Computational Models"] = [f] * number_individuals # Each function is the same. Here this is fine.
-    e["Problem"]["Data Points"] = my_data_points
-
-With additional parameters, we again need more convoluted lambda expressions:
-
-.. code-block:: python
-
-    f = lambda sample, other_params: ... # will access 'other_params', sample["Data Points"] and sample["Latent Variables"] and do something with it
-
-    e["Problem"]["Computational Models"] = [
-            (lambda index:
-                (lambda sample: f(  sample,
-                                    my_other_parameters[index] ) )
-            )(i)
-            for i in range(number_individuals)]
-
-    e["Problem"]["Data Points"] = my_data_points
-
-
 -----------------------
 
 Please refer to the corresponding example for further explanation and complete usage examples.

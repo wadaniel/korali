@@ -44,9 +44,6 @@ class LogisticData():
     for i in range(self.nIndividuals):
       self.data.append(data[data[:, 0] == i])
 
-    import pdb
-    pdb.set_trace()
-
     self.data = np.array(self.data)  # to simplify extraction of x and y
 
     x_vals = [[] for _ in range(self.nIndividuals)]

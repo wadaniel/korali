@@ -17,11 +17,7 @@ class NormalData():
   def __init__(self, datafile=None):
     self.nIndividuals = None
     self.nDataTotal = None
-    # self.nDataDimensions = 1
     self.nLatentSpaceDimensions = None
-    self.dNormal = None
-    self.dLognormal = None
-    self.dLogitnormal = None
 
     self.error = "ind"  # only 'individual' error parameters are possible
     self.error_model = "constant"  #  "proportional" might also work but is untested
@@ -50,6 +46,7 @@ class NormalData():
     for i in range(self.nIndividuals):
       self.data.append(data[data[:, 0] == i])
 
+    # ** Extract x and y values from the data **
     self.data = np.array(self.data)  # to simplify extraction of x and y
     x_vals = [[] for _ in range(self.nIndividuals)]
     y_vals = [[] for _ in range(self.nIndividuals)]
@@ -64,18 +61,6 @@ class NormalData():
     self.data = [d.tolist() for d in self.data
                 ]  # Korali expects lists as data (might change in the future)
 
-    # self.beta = [2, 2]
-    # self.omega = np.eye(2)
-    self.Nmp = 1  #len(self.beta) - 1
-    self.N = 2  # len(self.beta)
-    self.nLatentSpaceDimensions = 2  #len(self.beta)
-    # self.omega_chol = np.linalg.cholesky(self.omega)
-    self.sigma = 1 * np.eye(self.N)
-
-    # self.transf = 0
-    # self.err_transf = 1
-    # self.dNormal = np.sum(self.transf == 0) + np.sum(self.err_transf == 0)
-    # self.dLognormal = np.sum(self.transf == 1) + np.sum(self.err_transf == 1)
-    # self.dProbitnormal = np.sum(self.transf == 2) + np.sum(self.err_transf == 2)
-    # self.dLogitnormal = np.sum(self.transf == 3) + np.sum(self.err_transf == 3)
-    # assert self.dProbitnormal == 0, "Probitnormal variables not yet implemented"
+    N = 2
+    self.nLatentSpaceDimensions = 2
+    self.sigma = 1 * np.eye(N)

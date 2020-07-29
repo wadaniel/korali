@@ -59,11 +59,6 @@ class LogisticData():
     self.data = [d.tolist() for d in self.data
                 ]  # Korali expects lists as data (might change in the future)
 
-    # self.beta = [1, 1, 1, 1]
-    # self.omega = 100 * np.diag([1, 1, 1, 1])
-    # self.alpha = 1
-    self.Nmp = 3  #len(self.beta) - 1
-    self.N = 4  #len(self.beta)
-    self.nLatentSpaceDimensions = 4  # len(self.beta)
-    # self.omega_chol = np.linalg.cholesky(self.omega)
-    self.sigma = 1 * np.eye(self.N)
+    N = 4
+    self.nLatentSpaceDimensions = 4
+    self.sigma = 1 * np.eye(N)

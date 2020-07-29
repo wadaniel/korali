@@ -27,7 +27,7 @@ def plotVariables(genList):
   N1 = genList[some_gen]["Solver"]["N1"]
   N2 = genList[some_gen]["Solver"]["N2"]
   N3 = genList[some_gen]["Solver"]["N3"]
-  nOuter = genList[some_gen]["Solver"]["mcmc Outer Steps"]
+  nOuter = genList[some_gen]["Solver"]["MCMC Outer Steps"]
   nInner = N1 + N2 + N3
   sample_means = np.zeros((numgens, numIndividuals, numLatentSpaceDims))
   sample_sdevs = np.zeros((numgens, numIndividuals, numLatentSpaceDims))

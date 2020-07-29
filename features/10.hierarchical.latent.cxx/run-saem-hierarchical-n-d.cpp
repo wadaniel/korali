@@ -44,8 +44,8 @@ int main(int argc, char *argv[])
   e["Solver"]["Simulated Annealing Initial Variance"] = 1.;
   // e["Solver"]["K1"] = 10;
   //  e["Solver"]["N1"] = 5;
-  e["Solver"]["mcmc Outer Steps"] = 1;
-  e["Solver"]["mcmc Target Acceptance Rate"] = 0.3;
+  e["Solver"]["MCMC Outer Steps"] = 1;
+  e["Solver"]["MCMC Target Acceptance Rate"] = 0.3;
   e["Solver"]["N1"] = 2;
   e["Solver"]["N2"] = 2;
   e["Solver"]["N3"] = 2;

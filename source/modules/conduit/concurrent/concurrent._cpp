@@ -119,7 +119,11 @@ void Concurrent::worker(int workerId)
       write(_resultPipe[_workerId][1], &resultStringSize, sizeof(size_t));
       write(_resultPipe[_workerId][1], resultString.c_str(), resultStringSize * sizeof(char));
     }
-    if (actionJs["Conduit Action"] == "Broadcast Globals") _globals = actionJs["Globals"];
+    if (actionJs["Conduit Action"] == "Broadcast Globals")
+    {
+     auto key = actionJs["Globals"]["Key"].get<std::string>();
+     _globals[key] = actionJs["Globals"]["Values"];
+    }
 
     if (actionJs["Conduit Action"] == "Stack Engine") _engineStack.push(Engine::deserialize(actionJs["Engine"]));
     if (actionJs["Conduit Action"] == "Pop Engine") _engineStack.pop();
@@ -229,14 +233,15 @@ void Concurrent::popEngine()
   }
 }
 
-void Concurrent::broadcastGlobals(knlohmann::json &globalsJs)
+void Concurrent::broadcastGlobals(std::string key, knlohmann::json &globalsJs)
 {
   // Run broadcast only if this is the master process
   if (!isRoot()) return;
 
   knlohmann::json js;
   js["Conduit Action"] = "Broadcast Globals";
-  js["Globals"] = globalsJs;
+  js["Globals"]["Key"] = key;
+  js["Globals"]["Values"] = globalsJs;
 
   string globalsString = js.dump();
   size_t globalsStringSize = globalsString.size();

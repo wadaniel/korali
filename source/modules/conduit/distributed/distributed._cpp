@@ -161,7 +161,11 @@ void Distributed::workerThread()
         MPI_Send(resultJsonString.c_str(), resultJsonSize, MPI_CHAR, getRootRank(), MPI_TAG_ACTION_JSON_CONTENT, _mpiCommunicator);
       }
     }
-    if (actionJs["Conduit Action"] == "Broadcast Globals") _globals = actionJs["Globals"];
+    if (actionJs["Conduit Action"] == "Broadcast Globals")
+    {
+     auto key = actionJs["Globals"]["Key"].get<std::string>();
+     _globals[key] = actionJs["Globals"]["Values"];
+    }
     if (actionJs["Conduit Action"] == "Stack Engine") _engineStack.push(Engine::deserialize(actionJs["Engine"]));
     if (actionJs["Conduit Action"] == "Pop Engine") _engineStack.pop();
 
@@ -232,13 +236,14 @@ void Distributed::processSample(Sample &sample)
 #endif
 }
 
-void Distributed::broadcastGlobals(knlohmann::json &globalsJs)
+void Distributed::broadcastGlobals(std::string key, knlohmann::json &globalsJs)
 {
 #ifdef _KORALI_USE_MPI
 
   knlohmann::json js;
   js["Conduit Action"] = "Broadcast Globals";
-  js["Globals"] = globalsJs;
+  js["Globals"]["Key"] = key;
+  js["Globals"]["Values"] = globalsJs;
 
   string globalsString = js.dump();
   size_t globalsStringSize = globalsString.size();

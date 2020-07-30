@@ -30,9 +30,9 @@ void Sequential::processSample(Sample &sample)
   __profiler["Timelines"]["Worker 0"] += js;
 }
 
-void Sequential::broadcastGlobals(knlohmann::json &globalsJs)
+void Sequential::broadcastGlobals(std::string key, knlohmann::json &globalsJs)
 {
-  _conduit->_globals = globalsJs;
+  _conduit->_globals[key] = globalsJs;
 }
 
 } // namespace conduit

@@ -142,7 +142,6 @@ void Agent::normalizeNeuralNetwork(korali::NeuralNetwork* nn)
  std::vector<std::vector<double>> miniBatch(_miniBatchSize);
  for (size_t i = 0; i < _miniBatchSize; i++) miniBatch[i].resize(_problem->_stateVectorSize + _problem->_actionVectorSize);
 
-
  // Creating state history indexes to choose from
  std::vector<size_t> _stateHistoryIndexes(_stateHistory.size());
  for (size_t i = 0; i < _stateHistory.size(); i++) _stateHistoryIndexes[i] = i;

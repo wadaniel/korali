@@ -144,7 +144,7 @@ void DQN::updatePolicy()
     if (_nextStateHistory[expId].size() > 0)
     {
       // Updating current state
-      _currentState = _nextStateHistory[expId];
+     _actorExperiment._globals["Current State"] = _nextStateHistory[expId];
 
       // Running optimization experiment to get best estimated action
       _engine.run(_actorExperiment);
@@ -162,7 +162,7 @@ void DQN::updatePolicy()
 //             printf("State: %f %f %f %f \n", _stateHistory[expId][0], _stateHistory[expId][1], _stateHistory[expId][2], _stateHistory[expId][3]);
 //             printf("Action: %f\n", _actionHistory[expId][0]);
 //             printf("Reward: %f\n", _rewardHistory[expId]);
-//             printf("New State: %f %f %f %f\n", _currentState[0], _currentState[1], _currentState[2], _currentState[3]);
+//             printf("New State: %f %f %f %f\n", _nextStateHistory[expId][0], _nextStateHistory[expId][1], _nextStateHistory[expId][2], _nextStateHistory[expId][3]);
 //             printf("New Action: %f\n", action[0]);
 //             printf("QNew: %f\n", qNew);
 //             printf("Q* %f\n", qValue);
@@ -246,7 +246,7 @@ void DQN::getAction(Sample &sample)
   }
 
   // Updating current state
-  _currentState = KORALI_GET(std::vector<double>, sample, "State");
+  _actorExperiment._globals["Current State"] = sample["State"];
 
   // Running optimization experiment to get best estimated action
   korali::Engine engine;
@@ -260,11 +260,12 @@ void DQN::evaluateAction(Sample &sample, bool getGradients)
 {
   // Setting weights and biases
   auto action = KORALI_GET(std::vector<double>, sample, "Parameters");
+  auto state = sample.globals()["Current State"].get<std::vector<double>>();
 
   // Creating state/action input
-  std::vector<double> stateActionInput(_currentState.size() + action.size());
-  for (size_t j = 0; j < _currentState.size(); j++) stateActionInput[j] = _currentState[j];
-  for (size_t j = 0; j < action.size(); j++) stateActionInput[j + _currentState.size()] = action[j];
+  std::vector<double> stateActionInput(state.size() + action.size());
+  for (size_t j = 0; j < state.size(); j++) stateActionInput[j] = state[j];
+  for (size_t j = 0; j < action.size(); j++) stateActionInput[j + state.size()] = action[j];
 
   auto evaluation = _criticLearner->getEvaluation(stateActionInput);
   auto gradients = _criticLearner->getGradients(evaluation);
@@ -273,7 +274,7 @@ void DQN::evaluateAction(Sample &sample, bool getGradients)
 
   for (size_t i = 0; i < action.size(); i++)
   {
-    size_t startIdx = _currentState.size();
+    size_t startIdx = state.size();
     sample["Gradient"][i] = gradients[startIdx + i];
   }
 }
@@ -313,7 +314,7 @@ std::vector<double> DQN::getAction(const std::vector<double> &state)
  _criticLearner->setHyperparameters(_bestHyperparameters["Critic"]);
 
   // Updating current state
-  _currentState = state;
+ _actorExperiment._globals["Current State"] = state;
 
   // Running optimization experiment to get best estimated action
   korali::Engine engine;

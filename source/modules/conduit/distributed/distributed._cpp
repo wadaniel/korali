@@ -137,6 +137,7 @@ void Distributed::workerThread()
 
   while (true)
   {
+    Engine *engine = _engineStack.top();
     size_t jsonStringSize;
     MPI_Recv(&jsonStringSize, 1, MPI_UNSIGNED_LONG, getRootRank(), MPI_TAG_ACTION_JSON_SIZE, _mpiCommunicator, MPI_STATUS_IGNORE);
 
@@ -150,7 +151,7 @@ void Distributed::workerThread()
     if (actionJs["Conduit Action"] == "Process Sample")
     {
       Sample s;
-      s._globals = &_globals;
+      s._globals = &engine->_currentExperiment->_globals;
       s._js.getJson() = actionJs;
       s.sampleLauncher();
       if (_localRankId == 0)
@@ -163,8 +164,9 @@ void Distributed::workerThread()
     }
     if (actionJs["Conduit Action"] == "Broadcast Globals")
     {
+     auto expId = actionJs["Experiment Id"];
      auto key = actionJs["Globals"]["Key"].get<std::string>();
-     _globals[key] = actionJs["Globals"]["Values"];
+     engine->_experimentVector[expId]->_globals[key] = actionJs["Globals"]["Values"];
     }
     if (actionJs["Conduit Action"] == "Stack Engine") _engineStack.push(Engine::deserialize(actionJs["Engine"]));
     if (actionJs["Conduit Action"] == "Pop Engine") _engineStack.pop();
@@ -240,7 +242,13 @@ void Distributed::broadcastGlobals(std::string key, knlohmann::json &globalsJs)
 {
 #ifdef _KORALI_USE_MPI
 
+  // Run broadcast only if this is the master process
+  if (!isRoot()) return;
+
+  Engine *engine = _engineStack.top();
+
   knlohmann::json js;
+  js["Experiment Id"] = engine->_currentExperiment->_experimentId;
   js["Conduit Action"] = "Broadcast Globals";
   js["Globals"]["Key"] = key;
   js["Globals"]["Values"] = globalsJs;

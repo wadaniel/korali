@@ -87,6 +87,7 @@ void Concurrent::worker(int workerId)
 
   while (true)
   {
+    Engine *engine = _engineStack.top();
     size_t inputStringSize;
     read(_inputsPipe[workerId][0], &inputStringSize, sizeof(size_t));
 
@@ -109,7 +110,7 @@ void Concurrent::worker(int workerId)
     if (actionJs["Conduit Action"] == "Process Sample")
     {
       Sample s;
-      s._globals = &_globals;
+      s._globals = &engine->_currentExperiment->_globals;
       s._js.getJson() = actionJs;
       s.sampleLauncher();
 
@@ -121,8 +122,9 @@ void Concurrent::worker(int workerId)
     }
     if (actionJs["Conduit Action"] == "Broadcast Globals")
     {
+     auto expId = actionJs["Experiment Id"];
      auto key = actionJs["Globals"]["Key"].get<std::string>();
-     _globals[key] = actionJs["Globals"]["Values"];
+     engine->_experimentVector[expId]->_globals[key] = actionJs["Globals"]["Values"];
     }
 
     if (actionJs["Conduit Action"] == "Stack Engine") _engineStack.push(Engine::deserialize(actionJs["Engine"]));
@@ -238,7 +240,10 @@ void Concurrent::broadcastGlobals(std::string key, knlohmann::json &globalsJs)
   // Run broadcast only if this is the master process
   if (!isRoot()) return;
 
+  Engine *engine = _engineStack.top();
+
   knlohmann::json js;
+  js["Experiment Id"] = engine->_currentExperiment->_experimentId;
   js["Conduit Action"] = "Broadcast Globals";
   js["Globals"]["Key"] = key;
   js["Globals"]["Values"] = globalsJs;

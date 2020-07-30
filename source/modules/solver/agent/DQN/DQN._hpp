@@ -42,11 +42,6 @@ class DQN : public Agent
   korali::Experiment _actorExperiment;
 
   /**
- * @brief Vector of the current state to use for action optimization
- */
-  std::vector<double> _currentState;
-
-  /**
    * @brief Function to evaluate the Q* of a given action
    * @param sample Sample containing the action to evaluate
    * @param getGradients Indicates whether the gradients are required

@@ -15,10 +15,6 @@ class Engine;
 class Conduit : public Module
 {
   public:
-  /**
-   * @brief Dictionary of global information broadcasted by the solver, shared by all workers.
-  */
-  knlohmann::json _globals;
 
   /**
  * @brief Accepts a sample for processing.

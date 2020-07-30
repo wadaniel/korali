@@ -123,6 +123,13 @@ class Experiment : public Module
    * @return The calculated gradients
    */
   std::vector<double> getGradients(const std::vector<double> &outputDiffs);
+
+  private:
+  /**
+   * @brief Initializes seed to a random value based on current time if not set by the user (i.e. Random Seed is 0).
+   * @param js Json object onto which to store the Experiment data.
+   */
+  void setSeed(knlohmann::json &js);
 };
 
 } // namespace korali

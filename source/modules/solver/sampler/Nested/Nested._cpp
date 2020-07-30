@@ -547,11 +547,6 @@ bool Nested::updateEllipse(ellipse_t &ellipse) const
 {
   if (ellipse.num == 0) return false;
 
-  if (ellipse.num <= ellipse.dim)
-  {
-    _k->_logger->logWarning("Detailed", "Can't update ellipsoid, not enough samples (%zu, required %zu).\n", ellipse.num, ellipse.dim + 1);
-  }
-
   updateEllipseMean(ellipse);
   bool good = updateEllipseCov(ellipse);
   if (good) good = updateEllipseVolume(ellipse);

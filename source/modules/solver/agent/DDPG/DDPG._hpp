@@ -61,9 +61,9 @@ class DDPG : public Agent
   korali::Experiment _actorExperiment;
 
   /**
- * @brief Vector of the current state to use for action optimization
- */
-  std::vector<double> _currentState;
+   * @brief Variable to keep track of the current noise added to the action
+   */
+  std::vector<double> _currentActionNoises;
 
   void updateHyperparmeters(Sample& sample) override;
   void updatePolicy() override;

@@ -100,7 +100,7 @@ void DQN::initialize()
     _bestAverageReward = -korali::Inf;
 
     // Get the initial set of hyperparameters
-    _hyperparameters["Learner Hyperparameters"] = _criticLearner->getHyperparameters();
+    _hyperparameters["Critic"] = _criticLearner->getHyperparameters();
     _hyperparameters["Epsilon"] = _epsilonCurrentValue;
     _bestHyperparameters = _hyperparameters;
   }
@@ -120,7 +120,7 @@ void DQN::updatePolicy()
   _cumulativeQStar = 0.0;
 
   // Returning hyperparameters to its pre-training value
-  _criticLearner->setHyperparameters(_hyperparameters["Learner Hyperparameters"]);
+  _criticLearner->setHyperparameters(_hyperparameters["Critic"]);
 
   for (size_t step = 0; step < _optimizationStepsPerGeneration; step++)
   {
@@ -205,7 +205,7 @@ void DQN::updatePolicy()
   if (_epsilonCurrentValue < _epsilonTargetValue) _epsilonCurrentValue = _epsilonTargetValue;
 
   // Getting q training hyperparameters to broadcast to workers
-  _hyperparameters["Learner Hyperparameters"] = _criticLearner->getHyperparameters();
+  _hyperparameters["Critic"] = _criticLearner->getHyperparameters();
   _hyperparameters["Epsilon"] = _epsilonCurrentValue;
 }
 
@@ -216,7 +216,7 @@ void DQN::getAction(Sample &sample)
 
   // Getting the value of epsilon. If we haven't reached the start the minimum history, always use epsilon = 1.0, that is random decisions.
   double epsilon = 1.0;
-  if (isDefined(sample.globals(), "Epsilon")) epsilon = sample.globals()["Epsilon"].get<double>();
+  if (isDefined(sample.globals(), "Hyperparameters", "Epsilon")) epsilon = sample.globals()["Hyperparameters"]["Epsilon"].get<double>();
 
   // If p < e, then we choose the action randomly, with a uniform probability, among all possible actions.
   // If no states have been registered yet, use the random option in any case
@@ -280,7 +280,7 @@ void DQN::evaluateAction(Sample &sample, bool getGradients)
 
 void DQN::updateHyperparmeters(Sample &sample)
 {
- _criticLearner->setHyperparameters(sample.globals()["Learner Hyperparameters"].get<std::vector<double>>());
+ _criticLearner->setHyperparameters(sample.globals()["Hyperparameters"]["Critic"].get<std::vector<double>>());
 }
 
 void DQN::printGenerationAfter()
@@ -310,7 +310,7 @@ void DQN::printGenerationAfter()
 std::vector<double> DQN::getAction(const std::vector<double> &state)
 {
   // Getting learner's pointer
- _criticLearner->setHyperparameters(_bestHyperparameters["Learner Hyperparameters"]);
+ _criticLearner->setHyperparameters(_bestHyperparameters["Critic"]);
 
   // Updating current state
   _currentState = state;

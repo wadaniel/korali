@@ -259,9 +259,8 @@ void SAEM::QFunction(Sample &sample, size_t zetaFc, size_t phiFc)
           Q function to get a new vector of hyperparameters. */
 void SAEM::updateHyperparameters()
 {
-  knlohmann::json globalsJs;
-  globalsJs["Current S"] = _currentS;
-  _conduit->broadcastGlobals(globalsJs);
+  knlohmann::json globalsJs = _currentS;
+  _conduit->broadcastGlobals("Current S", globalsJs);
 
   _experiment["Random Seed"] = _k->_randomSeed++;
   _engine.run(_experiment);

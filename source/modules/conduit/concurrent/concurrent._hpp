@@ -44,7 +44,7 @@ class Concurrent : public Conduit
 
   bool isRoot() override;
   void initServer() override;
-  void broadcastGlobals(knlohmann::json &sampleJs) override;
+  void broadcastGlobals(std::string key, knlohmann::json &sampleJs) override;
   void processSample(Sample &sample) override;
   void initialize() override;
   void finalize() override;

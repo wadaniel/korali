@@ -18,6 +18,9 @@ namespace conduit
 {
 void Concurrent::initialize()
 {
+  // Setting workerId to -1 to identify master process
+  _workerId = -1;
+
   if (_concurrentJobs < 1) KORALI_LOG_ERROR("You need to define at least 1 concurrent job(s) for external models \n");
   _resultPipe.clear();
   _inputsPipe.clear();
@@ -116,7 +119,8 @@ void Concurrent::worker(int workerId)
       write(_resultPipe[_workerId][1], &resultStringSize, sizeof(size_t));
       write(_resultPipe[_workerId][1], resultString.c_str(), resultStringSize * sizeof(char));
     }
-    if (actionJs["Conduit Action"] == "Broadcast Globals") _globals = actionJs;
+    if (actionJs["Conduit Action"] == "Broadcast Globals") _globals = actionJs["Globals"];
+
     if (actionJs["Conduit Action"] == "Stack Engine") _engineStack.push(Engine::deserialize(actionJs["Engine"]));
     if (actionJs["Conduit Action"] == "Pop Engine") _engineStack.pop();
   }
@@ -227,14 +231,19 @@ void Concurrent::popEngine()
 
 void Concurrent::broadcastGlobals(knlohmann::json &globalsJs)
 {
-  globalsJs["Conduit Action"] = "Broadcast Globals";
-  string globalsString = globalsJs.dump();
+  // Run broadcast only if this is the master process
+  if (!isRoot()) return;
+
+  knlohmann::json js;
+  js["Conduit Action"] = "Broadcast Globals";
+  js["Globals"] = globalsJs;
+
+  string globalsString = js.dump();
   size_t globalsStringSize = globalsString.size();
 
   for (size_t i = 0; i < _concurrentJobs; i++)
   {
     write(_inputsPipe[i][1], &globalsStringSize, sizeof(size_t));
-
     size_t curPos = 0;
     while (curPos < globalsStringSize)
     {
@@ -245,6 +254,12 @@ void Concurrent::broadcastGlobals(knlohmann::json &globalsJs)
     }
   }
 }
+
+bool Concurrent::isRoot()
+{
+  return _workerId == -1;
+}
+
 
 } // namespace conduit
 

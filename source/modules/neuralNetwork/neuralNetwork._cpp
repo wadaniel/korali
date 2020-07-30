@@ -87,12 +87,22 @@ void NeuralNetwork::initialize()
   // Setting initial hyperparameter values
   setHyperparameters(initialHyperparameters);
 
-  // If we use batch normalization, we set bias to zero
+  // Configuration required for when we use normalization
   if (_batchNormalizationEnabled)
-  for (size_t i = 1; i < _layers.size(); i++)
   {
-    std::vector<float> biasData(_layers[i]->_nodeCount, 0.0);
-    write_to_dnnl_memory(biasData.data(), _layers[i]->_biasMem);
+   // If we use batch normalization, we set bias to zero
+   for (size_t i = 1; i < _layers.size(); i++)
+   {
+     std::vector<float> biasData(_layers[i]->_nodeCount, 0.0);
+     write_to_dnnl_memory(biasData.data(), _layers[i]->_biasMem);
+   }
+
+   // If we use batch normalization, we set mean and variances to neutral values
+   std::vector<double> meanData(_normalizationParameterCount, 0.0);
+   std::vector<double> varianceData(_normalizationParameterCount, 1.0);
+
+   setNormalizationMeans(meanData);
+   setNormalizationVariances(varianceData);
   }
 
   // Making sure we do not re-initialize
@@ -453,7 +463,10 @@ void NeuralNetwork::setHyperparameters(const std::vector<double>& hyperparameter
 
     // Copying weight mem to weight work mem, if they are not the same
     if (_layers[i]->_weightsMem.get_desc() != _layers[i]->_weightsWorkMem.get_desc())
+    {
       reorder(_layers[i]->_weightsMem, _layers[i]->_weightsWorkMem).execute(_stream, _layers[i]->_weightsMem, _layers[i]->_weightsWorkMem);
+      _stream.wait();
+    }
 
     // Setting weight data to the layer's weight memory, only if batch normalization is not being used
     if (_batchNormalizationEnabled == false)

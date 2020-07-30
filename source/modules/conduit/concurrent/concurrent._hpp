@@ -23,7 +23,7 @@ class Concurrent : public Conduit
   std::vector<pid_t> _workerPids;
 
   /**
-   * @brief Worker Id for current workers
+   * @brief Worker Id for current workers - 0 for the master process
    */
   int _workerId;
 
@@ -42,6 +42,7 @@ class Concurrent : public Conduit
   */
   std::queue<int> _launcherQueue;
 
+  bool isRoot() override;
   void initServer() override;
   void broadcastGlobals(knlohmann::json &sampleJs) override;
   void processSample(Sample &sample) override;

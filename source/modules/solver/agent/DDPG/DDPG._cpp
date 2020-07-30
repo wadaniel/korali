@@ -58,7 +58,7 @@ void DDPG::initialize()
    _actorExperiment["Problem"]["Type"] = "Supervised Learning";
 
    _actorExperiment["Solver"]["Type"] = "Learner/DeepGD";
-   _actorExperiment["Solver"]["Batch Normalization"]["Enabled"] = _batchNormalizationEnabled;
+   _actorExperiment["Solver"]["Batch Normalization"]["Enabled"] = false;
    _actorExperiment["Solver"]["Optimizer"] = _actorOptimizer;
    _actorExperiment["Solver"]["Steps Per Generation"] = 1;
    _actorExperiment["Solver"]["Neural Network"] = _actorNeuralNetwork;
@@ -115,8 +115,8 @@ void DDPG::updatePolicy()
   * Grabbing current set of hyperparameters
   **********************************************************************************/
 
-  auto curActornHypeparameters  = _criticLearner->getHyperparameters();
-  auto curCriticHyperparameters = _actorLearner->getHyperparameters();
+  auto curActorHypeparameters  = _actorLearner->getHyperparameters();
+  auto curCriticHyperparameters = _criticLearner->getHyperparameters();
 
   /***********************************************************************************
    * Randomly selecting experiences for the mini-batch and calculating their target Q
@@ -151,7 +151,7 @@ void DDPG::updatePolicy()
      if (_nextStateHistory[expId].size() > 0)
      {
        // Updating current state
-       _currentState = _nextStateHistory[expId];
+       auto _currentState = _nextStateHistory[expId];
 
        // Running actor experiment to get its candidate action
        auto action = _actorLearner->getEvaluation({ _currentState });
@@ -184,7 +184,7 @@ void DDPG::updatePolicy()
       auto qGradients = _criticLearner->getGradients({{ qValue }});
 
       // Extracting the action gradients from the full critic gradients
-      std::vector<double> aGradients = std::vector<double>(qGradients.begin() + _currentState.size(), qGradients.end());
+      std::vector<double> aGradients = std::vector<double>(qGradients.begin() + _stateHistoryIndexes.size(), qGradients.end());
 
       // Updating inputs to critic training learner
       for (size_t j = 0; j < _problem->_stateVectorSize; j++) _criticProblem->_inputs[i][j] = _stateHistory[expId][j];
@@ -221,18 +221,17 @@ void DDPG::updatePolicy()
   * by sampling a few more mini-batches after the optimization steps
   ******************************************************************************/
 
-  if (_batchNormalizationEnabled)
-  {
-   normalizeNeuralNetwork(_criticLearner->_trainingNeuralNetwork);
-   normalizeNeuralNetwork(_actorLearner->_trainingNeuralNetwork);
-  }
+  if (_batchNormalizationEnabled) normalizeNeuralNetwork(_criticLearner->_trainingNeuralNetwork);
 
   /*********************************************************************
    * Adopting the new parameters
    *********************************************************************/
 
-  auto newActornHypeparameters  = _criticLearner->getHyperparameters();
-  auto newCriticHyperparameters = _actorLearner->getHyperparameters();
+  auto newActorHypeparameters  = _actorLearner->getHyperparameters();
+  auto newCriticHyperparameters = _criticLearner->getHyperparameters();
+
+  for (size_t i = 0; i < newActorHypeparameters.size(); i++ ) newActorHypeparameters[i] = _adoptionRate*newActorHypeparameters[i] + (1-_adoptionRate) * curActorHypeparameters[i];
+  for (size_t i = 0; i < newCriticHyperparameters.size(); i++ ) newCriticHyperparameters[i] = _adoptionRate*newCriticHyperparameters[i] + (1-_adoptionRate) * curCriticHyperparameters[i];
 
   /*********************************************************************
   * Updating hyperparameters and broadcasting them to the workers
@@ -241,27 +240,34 @@ void DDPG::updatePolicy()
   // Updating global configuration for workers to use
   knlohmann::json globals;
 
-  //
   // Getting q training hyperparameters to broadcast to workers
-  _hyperparameters = _actorLearner->getHyperparameters();
-  _actorLearner->setHyperparameters(_hyperparameters);
+  _hyperparameters = newActorHypeparameters;
+  _actorLearner->setHyperparameters(newActorHypeparameters);
+  _criticLearner->setHyperparameters(newCriticHyperparameters);
 }
 
 void DDPG::getAction(Sample &sample)
 {
-
   // Getting current state
   auto state = KORALI_GET(std::vector<double>, sample, "State");
 
   // Forward-propagating state through actor NN
   auto action = _actorLearner->getEvaluation( { state } );
 
+  // Checking for correctness of the action
+  for (size_t i = 0; i < action.size(); i++)
+   if (std::isfinite(action[i]) == false)
+    KORALI_LOG_ERROR(" + Action [%lu] is not finite (%f)\n", i, action[i]);
+
   // Introducing random noise to the action
   for (size_t i = 0; i < _problem->_actionVectorIndexes.size(); i++)
   {
    size_t varIdx = _problem->_actionVectorIndexes[i];
-   double e = _k->_variables[varIdx]->_explorationNoise->getRandomNumber();
-   action[i] += e;
+   double w = _k->_variables[varIdx]->_explorationNoiseRandomVariable->getRandomNumber();
+   double noise = _k->_variables[varIdx]->_explorationNoiseTheta * _currentActionNoises[i] + w;
+   action[i] += noise;
+   //printf("Theta (%f) * Previous Noise: (%f) + W: (%f) = %f\n", _k->_variables[varIdx]->_explorationNoiseTheta, _currentActionNoises[i], w, noise);
+   _currentActionNoises[i] = noise;
   }
 
   // Getting optimal action, based on the NN evaluation
@@ -271,6 +277,11 @@ void DDPG::getAction(Sample &sample)
 void DDPG::updateHyperparmeters(Sample &sample)
 {
  _actorLearner->setHyperparameters(sample.globals().get<std::vector<double>>());
+
+ // Re-initializing action noises to zero
+ size_t actionCount = _problem->_actionVectorIndexes.size();
+ _currentActionNoises.resize(actionCount);
+ for (size_t i = 0; i < actionCount; i++) _currentActionNoises[i] = 0.0;
 }
 
 void DDPG::printGenerationAfter()

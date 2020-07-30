@@ -59,7 +59,7 @@ class NormalData():
     self.y_values = y_vals
 
     self.data = [d.tolist() for d in self.data
-                ]  # Korali expects lists as data (might change in the future)
+                ]  # Korali expects data as lists (might change in the future)
 
     N = 2
     self.nLatentSpaceDimensions = 2

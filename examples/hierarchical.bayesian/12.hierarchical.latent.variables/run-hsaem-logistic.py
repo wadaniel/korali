@@ -21,10 +21,10 @@ def main():
 
   # * The computational models, y, sdev = f(x, theta), g(x, theta)
 
-  ## Warning: The i=i is necessary to capture the current i.
-  ## Simply writing
-  ##   "lambda sample, i: logisticModelFunction(sample, x_vals[i])"
-  ## will capture i by reference and thus not do what is intended.
+  #* Warning: The i=i is necessary to capture the current i.
+  #* Simply writing
+  #*   "lambda sample, i: logisticModelFunction(sample, x_vals[i])"
+  #* will capture i by reference and thus not do what is intended.
 
   e["Problem"]["Computational Models"] = [
       lambda sample, i=i: logisticModelFunction(sample, d.x_values[i])
@@ -39,12 +39,10 @@ def main():
   e["Solver"]["Number Samples Per Step"] = 10
   e["Solver"]["MCMC Outer Steps"] = 1
   e["Solver"]["MCMC Target Acceptance Rate"] = 0.4
-  e["Solver"]["N1"] = 2
+  e["Solver"]["N1"] = 2  # Length of the 3 parts of sampling
   e["Solver"]["N2"] = 2
   e["Solver"]["N3"] = 2
-  e["Solver"]["K1"] = 200
-  e["Solver"]["Alpha 1"] = 0.25
-  e["Solver"]["Alpha 2"] = 0.5
+  e["Solver"]["K1"] = 200 # How many generations before starting Robbins-Monro decayed averaging
   e["Solver"]["Use Simulated Annealing"] = True
   e["Solver"]["Simulated Annealing Decay Factor"] = 0.95
   e["Solver"]["Simulated Annealing Initial Variance"] = 1

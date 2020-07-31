@@ -65,7 +65,7 @@ e["Variables"][3]["Type"] = "Action"
 
 e["Variables"][3]["Exploration Noise"]["Random Variable"]["Type"] = "Univariate/Normal"
 e["Variables"][3]["Exploration Noise"]["Random Variable"]["Mean"] = 0.0
-e["Variables"][3]["Exploration Noise"]["Random Variable"]["Standard Deviation"] = 0.25
+e["Variables"][3]["Exploration Noise"]["Random Variable"]["Standard Deviation"] = 0.6
 e["Variables"][3]["Exploration Noise"]["Theta"] = 0.15
 
 ### Configuring DQN hyperparameters
@@ -114,6 +114,7 @@ e["Solver"]["Critic Neural Network"]["Layers"][2]["Activation Function"]["Type"]
 e["Solver"]["Critic Neural Network"]["Layers"][3]["Type"] = "Output"
 e["Solver"]["Critic Neural Network"]["Layers"][3]["Node Count"] = 1
 e["Solver"]["Critic Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Identity" 
+e["Solver"]["Critic Neural Network"]["Layers"][3]["Weight Initialization Scaling"] = 0.00000001
 
 ### Defining the shape of the actor neural network
 
@@ -132,6 +133,7 @@ e["Solver"]["Actor Neural Network"]["Layers"][2]["Activation Function"]["Type"] 
 e["Solver"]["Actor Neural Network"]["Layers"][3]["Type"] = "Output"
 e["Solver"]["Actor Neural Network"]["Layers"][3]["Node Count"] = 1
 e["Solver"]["Actor Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Identity" 
+e["Solver"]["Actor Neural Network"]["Layers"][3]["Weight Initialization Scaling"] = 0.00000001
 
 ### Defining Termination Criteria
 

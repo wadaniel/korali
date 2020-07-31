@@ -92,9 +92,6 @@ void DeepGD::runGeneration()
   _optExperiment["Solver"]["Termination Criteria"]["Max Generations"] = _optExperiment._currentGeneration + _stepsPerGeneration;
   _optEngine.resume(_optExperiment);
   _currentLoss = _optExperiment["Results"]["Best Sample"]["F(x)"].get<double>();
-
-  // Getting new hyperparameters to be sent to workers
-  auto trainingHyperparameters = _trainingNeuralNetwork->getHyperparameters();
 }
 
 void DeepGD::finalize()

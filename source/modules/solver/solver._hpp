@@ -12,6 +12,32 @@
 */
 namespace korali
 {
+
+/**
+ * @brief Macro to start the processing of a sample.
+ */
+#define KORALI_START(SAMPLE) _k->_engine->_conduit->start(SAMPLE);
+
+/**
+ * @brief Macro to wait for the finishing of a sample.
+ */
+#define KORALI_WAIT(SAMPLE) _k->_engine->_conduit->wait(SAMPLE);
+
+/**
+ * @brief Macro to wait for any of the given samples.
+ */
+#define KORALI_WAITANY(SAMPLE) _k->_engine->_conduit->waitAny(SAMPLE);
+
+/**
+ * @brief Macro to wait for all of the given samples.
+ */
+#define KORALI_WAITALL(SAMPLE) _k->_engine->_conduit->waitAll(SAMPLE);
+
+/**
+ * @brief Macro to broadcast global information to all the workers.
+ */
+#define KORALI_BROADCAST(KEY, JSON) _k->_engine->_conduit->broadcastGlobals(KEY, JSON);
+
 class Solver : public Module
 {
   public:

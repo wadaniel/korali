@@ -1,4 +1,5 @@
 #include "modules/solver/agent/agent.hpp"
+#include "engine.hpp"
 
 namespace korali
 {
@@ -17,7 +18,7 @@ void Agent::initialize()
 void Agent::runGeneration()
 {
  // Broadcasting hyperparameters for all workers to use
-  _conduit->broadcastGlobals("Hyperparameters", _hyperparameters);
+  KORALI_BROADCAST("Hyperparameters", _hyperparameters);
 
   // Creating storage for agents
   std::vector<Sample> agents(_episodesPerGeneration);
@@ -32,10 +33,10 @@ void Agent::runGeneration()
     agents[i]["Operation"] = "Run Environment";
 
     // Launching agent initialization
-    _conduit->start(agents[i]);
+    KORALI_START(agents[i]);
   }
 
-  _conduit->waitAll(agents);
+  KORALI_WAITALL(agents);
 
   /*********************************************************************
    * Storing new experiences to the history

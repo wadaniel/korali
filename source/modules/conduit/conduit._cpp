@@ -5,7 +5,6 @@ using namespace std;
 
 namespace korali
 {
-Conduit *_conduit = NULL;
 
 /***********************************
  * Engine-Side Operations
@@ -19,7 +18,7 @@ void Conduit::coroutineWrapper()
   (*currentSample)["Experiment Id"] = engine->_currentExperiment->_experimentId;
   (*currentSample)["Current Generation"] = engine->_currentExperiment->_currentGeneration;
 
-  _conduit->processSample(*currentSample);
+  engine->_conduit->processSample(*currentSample);
 
   currentSample->_state = SampleState::finished;
   co_switch(engine->_currentExperiment->_thread);

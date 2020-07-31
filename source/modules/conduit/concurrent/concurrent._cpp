@@ -176,11 +176,13 @@ void Concurrent::processSample(Sample &sample)
 
     if (readBytes > 0)
     {
+      printf("resultStringSize: %lu\n", resultStringSize);
+
       char resultString[resultStringSize + 1];
-      while (read(_resultPipe[launcherId][0], resultString, resultStringSize * sizeof(char)) < 0)
-        ;
+      while (read(_resultPipe[launcherId][0], resultString, resultStringSize * sizeof(char)) < 0);
 
       resultString[resultStringSize] = '\0';
+
       sample._js.getJson() = knlohmann::json::parse(resultString);
 
       _launcherQueue.push(launcherId);

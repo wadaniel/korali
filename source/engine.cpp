@@ -75,8 +75,6 @@ void Engine::run()
   // Only initialize conduit if the Engine being ran is the first one in the process
   if (_conduit == NULL)
   {
-    try
-    {
       // Configuring conduit
       auto conduit = dynamic_cast<Conduit *>(getModule(_js["Conduit"], _k));
 
@@ -88,11 +86,6 @@ void Engine::run()
 
       // Recovering Conduit configuration in case of restart
       _conduit->getConfiguration(_js.getJson()["Conduit"]);
-    }
-    catch (const std::exception &e)
-    {
-      KORALI_LOG_ERROR("Could not initialize execution conduit. Reason:\n%s", e.what());
-    }
   }
 
   if (_conduit->isRoot())

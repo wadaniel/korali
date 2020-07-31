@@ -70,7 +70,7 @@ e["Solver"]["Type"] = "Agent/DQN"
 ### Defining Mini-batch and Q-Training configuration
  
 e["Solver"]["Episodes Per Generation"] = 10
-e["Solver"]["Optimization Steps Per Generation"] = 10
+e["Solver"]["Optimization Steps Per Generation"] = 2
 e["Solver"]["Agent History Size"] = 1000
 e["Solver"]["Mini Batch Size"] = 32
 e["Solver"]["Batch Normalization"]["Enabled"] = True
@@ -123,8 +123,8 @@ e["File Output"]["Frequency"] = 1
 
 ### Running Experiment
 
-#k["Conduit"]["Type"] = "Concurrent"
-#k["Conduit"]["Concurrent Jobs"] = 5
+k["Conduit"]["Type"] = "Concurrent"
+k["Conduit"]["Concurrent Jobs"] = 1
 k.run(e)
 
 ###### Now running the cartpole experiment with Korali's help

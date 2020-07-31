@@ -87,7 +87,6 @@ void Concurrent::worker(int workerId)
 
   while (true)
   {
-    Engine *engine = _engineStack.top();
     size_t inputStringSize;
     read(_inputsPipe[workerId][0], &inputStringSize, sizeof(size_t));
 
@@ -109,8 +108,10 @@ void Concurrent::worker(int workerId)
     if (actionJs["Conduit Action"] == "Terminate") exit(0);
     if (actionJs["Conduit Action"] == "Process Sample")
     {
+      Engine *engine = _engineStack.top();
+      auto expId = actionJs["Experiment Id"];
       Sample s;
-      s._globals = &engine->_currentExperiment->_globals;
+      s._globals = &engine->_experimentVector[expId]->_globals;
       s._js.getJson() = actionJs;
       s.sampleLauncher();
 
@@ -122,6 +123,7 @@ void Concurrent::worker(int workerId)
     }
     if (actionJs["Conduit Action"] == "Broadcast Globals")
     {
+     Engine *engine = _engineStack.top();
      auto expId = actionJs["Experiment Id"];
      auto key = actionJs["Globals"]["Key"].get<std::string>();
      engine->_experimentVector[expId]->_globals[key] = actionJs["Globals"]["Values"];

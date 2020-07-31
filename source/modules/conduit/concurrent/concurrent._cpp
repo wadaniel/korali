@@ -22,11 +22,13 @@ void Concurrent::initialize()
   _workerId = -1;
 
   if (_concurrentJobs < 1) KORALI_LOG_ERROR("You need to define at least 1 concurrent job(s) for external models \n");
-  _resultPipe.clear();
+  _resultSizePipe.clear();
+  _resultContentPipe.clear();
   _inputsPipe.clear();
   while (!_launcherQueue.empty()) _launcherQueue.pop();
 
-  for (size_t i = 0; i < _concurrentJobs; i++) _resultPipe.push_back(vector<int>(2));
+  for (size_t i = 0; i < _concurrentJobs; i++) _resultSizePipe.push_back(vector<int>(2));
+  for (size_t i = 0; i < _concurrentJobs; i++) _resultContentPipe.push_back(vector<int>(2));
   for (size_t i = 0; i < _concurrentJobs; i++) _inputsPipe.push_back(vector<int>(2));
   for (size_t i = 0; i < _concurrentJobs; i++) _launcherQueue.push(i);
 
@@ -34,9 +36,12 @@ void Concurrent::initialize()
   for (size_t i = 0; i < _concurrentJobs; i++)
   {
     if (pipe(_inputsPipe[i].data()) == -1) KORALI_LOG_ERROR("Unable to create inter-process pipe. \n");
-    if (pipe(_resultPipe[i].data()) == -1) KORALI_LOG_ERROR("Unable to create inter-process pipe. \n");
-    fcntl(_resultPipe[i][0], F_SETFL, fcntl(_resultPipe[i][0], F_GETFL));
-    fcntl(_resultPipe[i][1], F_SETFL, fcntl(_resultPipe[i][1], F_GETFL));
+    if (pipe(_resultSizePipe[i].data()) == -1) KORALI_LOG_ERROR("Unable to create inter-process pipe. \n");
+    if (pipe(_resultContentPipe[i].data()) == -1) KORALI_LOG_ERROR("Unable to create inter-process pipe. \n");
+    fcntl(_resultSizePipe[i][0], F_SETFL, fcntl(_resultSizePipe[i][0], F_GETFL) | O_NONBLOCK);
+    fcntl(_resultSizePipe[i][1], F_SETFL, fcntl(_resultSizePipe[i][1], F_GETFL) | O_NONBLOCK);
+    fcntl(_resultContentPipe[i][0], F_SETFL, fcntl(_resultContentPipe[i][0], F_GETFL));
+    fcntl(_resultContentPipe[i][1], F_SETFL, fcntl(_resultContentPipe[i][1], F_GETFL));
   }
 }
 
@@ -62,8 +67,10 @@ void Concurrent::finalize()
 
   for (size_t i = 0; i < _concurrentJobs; i++)
   {
-    close(_resultPipe[i][1]); // Closing pipes
-    close(_resultPipe[i][0]); // Closing pipes
+    close(_resultContentPipe[i][1]); // Closing pipes
+    close(_resultContentPipe[i][0]); // Closing pipes
+    close(_resultSizePipe[i][1]); // Closing pipes
+    close(_resultSizePipe[i][0]); // Closing pipes
     close(_inputsPipe[i][1]); // Closing pipes
     close(_inputsPipe[i][0]); // Closing pipes
   }
@@ -118,14 +125,14 @@ void Concurrent::worker(int workerId)
       string resultString = s._js.getJson().dump();
       size_t resultStringSize = resultString.size();
 
-      write(_resultPipe[_workerId][1], &resultStringSize, sizeof(size_t));
+      write(_resultSizePipe[_workerId][1], &resultStringSize, sizeof(size_t));
 
       size_t curPos = 0;
       while (curPos < resultStringSize)
       {
         size_t bufSize = BUFFERSIZE;
         if (curPos + bufSize > resultStringSize) bufSize = resultStringSize - curPos;
-        write(_resultPipe[_workerId][1], resultString.c_str() + curPos, bufSize * sizeof(char));
+        write(_resultContentPipe[_workerId][1], resultString.c_str() + curPos, bufSize * sizeof(char));
         curPos += bufSize;
       }
 
@@ -181,12 +188,10 @@ void Concurrent::processSample(Sample &sample)
     }
 
     size_t resultStringSize;
-    readBytes = read(_resultPipe[launcherId][0], &resultStringSize, sizeof(size_t));
+    readBytes = read(_resultSizePipe[launcherId][0], &resultStringSize, sizeof(size_t));
 
     if (readBytes > 0)
     {
-      printf("resultStringSize: %lu\n", resultStringSize);
-
       char resultString[resultStringSize + BUFFERSIZE];
 
       size_t curPos = 0;
@@ -194,7 +199,7 @@ void Concurrent::processSample(Sample &sample)
       {
         size_t bufSize = BUFFERSIZE;
         if (curPos + bufSize > resultStringSize) bufSize = resultStringSize - curPos;
-        read(_resultPipe[launcherId][0], resultString + curPos, bufSize * sizeof(char));
+        read(_resultContentPipe[launcherId][0], resultString + curPos, bufSize * sizeof(char));
         curPos += bufSize;
         //sched_yield(); // Guarantees MacOs finishes the pipe reading
       }

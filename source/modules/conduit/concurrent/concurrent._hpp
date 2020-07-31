@@ -28,9 +28,14 @@ class Concurrent : public Conduit
   int _workerId;
 
   /**
-   * @brief OS Pipe to handle result communication coming from worker processes
+   * @brief OS Pipe to handle result contents communication coming from worker processes
    */
-  std::vector<std::vector<int>> _resultPipe;
+  std::vector<std::vector<int>> _resultContentPipe;
+
+  /**
+   * @brief OS Pipe to handle result size communication coming from worker processes
+   */
+  std::vector<std::vector<int>> _resultSizePipe;
 
   /**
   * @brief OS Pipe to handle sample parameter communication to worker processes

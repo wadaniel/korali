@@ -28,7 +28,7 @@ void Agent::runGeneration()
   for (size_t i = 0; i < _episodesPerGeneration; i++)
   {
     // Configuring Agent
-    agents[i]["Sample Id"] = i;
+    agents[i]["Sample Id"] = _k->_currentGeneration*_episodesPerGeneration + i;
     agents[i]["Module"] = "Problem";
     agents[i]["Operation"] = "Run Environment";
 

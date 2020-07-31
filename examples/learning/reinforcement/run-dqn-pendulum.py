@@ -110,7 +110,8 @@ e["Solver"]["Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Tan
 
 e["Solver"]["Neural Network"]["Layers"][3]["Type"] = "Output"
 e["Solver"]["Neural Network"]["Layers"][3]["Node Count"] = 1
-e["Solver"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Identity" 
+e["Solver"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Identity"
+e["Solver"]["Neural Network"]["Layers"][3]["Weight Initialization Scaling"] = 0.000001  
 
 ### Defining Termination Criteria
 

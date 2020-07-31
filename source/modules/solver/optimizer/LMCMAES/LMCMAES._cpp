@@ -1,4 +1,4 @@
-#include "modules/conduit/conduit.hpp"
+#include "engine.hpp"
 #include "modules/solver/optimizer/LMCMAES/LMCMAES.hpp"
 #include "sample/sample.hpp"
 
@@ -157,11 +157,11 @@ void LMCMAES::runGeneration()
     samples[i]["Parameters"] = _samplePopulation[i];
     samples[i]["Sample Id"] = i;
     _modelEvaluationCount++;
-    _conduit->start(samples[i]);
+    KORALI_START(samples[i]);
   }
 
   // Waiting for samples to finish
-  _conduit->waitAll(samples);
+  KORALI_WAITALL(samples);
   updateDistribution(samples);
 }
 

@@ -1,4 +1,4 @@
-#include "modules/conduit/conduit.hpp"
+#include "engine.hpp"
 #include "modules/experiment/experiment.hpp"
 #include "modules/problem/problem.hpp"
 #include "modules/solver/optimizer/Rprop/Rprop.hpp"
@@ -41,10 +41,10 @@ void Rprop::evaluateFunctionAndGradient(Sample &sample)
   sample["Parameters"] = _currentX;
   sample["Sample Id"] = 0;
   _modelEvaluationCount++;
-  _conduit->start(sample);
+  KORALI_START(sample);
 
   // Waiting for samples to finish
-  _conduit->wait(sample);
+  KORALI_WAIT(sample);
 
   // Processing results
   // The 'minus' is there because we want Rprop to do Maximization be default.

@@ -1,4 +1,4 @@
-#include "modules/conduit/conduit.hpp"
+#include "engine.hpp"
 #include "modules/solver/optimizer/Adam/Adam.hpp"
 
 namespace korali
@@ -39,10 +39,10 @@ void Adam::runGeneration()
   sample["Parameters"] = _currentValue;
   sample["Sample Id"] = 0;
   _modelEvaluationCount++;
-  _conduit->start(sample);
+  KORALI_START(sample);
 
   // Waiting for sample to finish
-  _conduit->wait(sample);
+  KORALI_WAIT(sample);
 
   // Processing results
 

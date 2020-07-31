@@ -86,11 +86,6 @@ class Conduit : public Module
   static void coroutineWrapper();
 };
 
-/**
-  * @brief A singleton pointer to the execution conduit. Shared among all experiments.
-  */
-extern Conduit *_conduit;
-
 } // namespace korali
 
 #endif // _KORALI_CONDUIT_HPP_

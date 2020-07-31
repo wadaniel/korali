@@ -124,7 +124,7 @@ e["File Output"]["Frequency"] = 1
 ### Running Experiment
 
 k["Conduit"]["Type"] = "Concurrent"
-k["Conduit"]["Concurrent Jobs"] = 1
+k["Conduit"]["Concurrent Jobs"] = 5
 k.run(e)
 
 ###### Now running the pendulumpole experiment with Korali's help

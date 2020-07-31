@@ -157,9 +157,7 @@ void NeuralNetwork::createForwardPipeline()
     * Creating Activation Function primitive and memory
     * ***************************************/
 
-    _layers[i]->_activationAlgorithm = algorithm::eltwise_linear;
-
-    if (_layers[i]->_activationFunctionType == "Identity") _layers[i]->_activationFunctionAlpha = 1.0f;
+    if (_layers[i]->_activationFunctionType == "Identity") _layers[i]->_activationAlgorithm = algorithm::eltwise_linear;
     if (_layers[i]->_activationFunctionType == "Clip") _layers[i]->_activationAlgorithm = algorithm::eltwise_clip;
     if (_layers[i]->_activationFunctionType == "Linear") _layers[i]->_activationAlgorithm = algorithm::eltwise_linear;
     if (_layers[i]->_activationFunctionType == "Log") _layers[i]->_activationAlgorithm = algorithm::eltwise_log;

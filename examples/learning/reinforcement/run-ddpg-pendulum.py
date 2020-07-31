@@ -7,7 +7,7 @@ import gym
 ######## Defining Environment Storage
 
 pendulum = gym.make('Pendulum-v0').unwrapped
-maxSteps = 500
+maxSteps = 200
 
 ####### Defining Problem's environment
 
@@ -76,7 +76,7 @@ e["Solver"]["Type"] = "Agent/DDPG"
 
 e["Solver"]["Episodes Per Generation"] = 5
 e["Solver"]["Optimization Steps Per Generation"] = 5
-e["Solver"]["Agent History Size"] = 500
+e["Solver"]["Agent History Size"] = 200
 e["Solver"]["Mini Batch Size"] = 64
 e["Solver"]["Batch Normalization"]["Enabled"] = True
 e["Solver"]["Batch Normalization"]["Correction Steps"] = 32
@@ -114,7 +114,7 @@ e["Solver"]["Critic Neural Network"]["Layers"][2]["Activation Function"]["Type"]
 e["Solver"]["Critic Neural Network"]["Layers"][3]["Type"] = "Output"
 e["Solver"]["Critic Neural Network"]["Layers"][3]["Node Count"] = 1
 e["Solver"]["Critic Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Identity" 
-e["Solver"]["Critic Neural Network"]["Layers"][3]["Weight Initialization Scaling"] = 0.00000001
+e["Solver"]["Critic Neural Network"]["Layers"][3]["Weight Initialization Scaling"] = 0.000001
 
 ### Defining the shape of the actor neural network
 
@@ -133,7 +133,6 @@ e["Solver"]["Actor Neural Network"]["Layers"][2]["Activation Function"]["Type"] 
 e["Solver"]["Actor Neural Network"]["Layers"][3]["Type"] = "Output"
 e["Solver"]["Actor Neural Network"]["Layers"][3]["Node Count"] = 1
 e["Solver"]["Actor Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Identity" 
-e["Solver"]["Actor Neural Network"]["Layers"][3]["Weight Initialization Scaling"] = 0.00000001
 
 ### Defining Termination Criteria
 

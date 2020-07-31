@@ -16,7 +16,6 @@ def env(s):
  # Initializing environment
  seed = s["Sample Id"]
  cart.seed(seed)
- print("Seed" + str(seed))
  s["State"] = cart.reset().tolist()
  step = 0
  done = False
@@ -128,6 +127,7 @@ e["File Output"]["Frequency"] = 1
 
 k["Conduit"]["Type"] = "Concurrent"
 k["Conduit"]["Concurrent Jobs"] = 10
+#k["Conduit"]["Type"] = "Distributed"
 k.run(e)
 
 ###### Now running the cartpole experiment with Korali's help

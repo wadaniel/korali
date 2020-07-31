@@ -14,6 +14,8 @@ maxSteps = 200
 def env(s):
 
  # Initializing environment
+ seed = s["Sample Id"]
+ pendulum.seed(seed)
  s["State"] = pendulum.reset().tolist()
  step = 0
  done = False
@@ -102,9 +104,13 @@ e["Solver"]["Neural Network"]["Layers"][1]["Type"] = "Dense"
 e["Solver"]["Neural Network"]["Layers"][1]["Node Count"] = 32
 e["Solver"]["Neural Network"]["Layers"][1]["Activation Function"]["Type"] = "Tanh"
 
-e["Solver"]["Neural Network"]["Layers"][2]["Type"] = "Output"
-e["Solver"]["Neural Network"]["Layers"][2]["Node Count"] = 1
-e["Solver"]["Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Identity" 
+e["Solver"]["Neural Network"]["Layers"][2]["Type"] = "Dense"
+e["Solver"]["Neural Network"]["Layers"][2]["Node Count"] = 32
+e["Solver"]["Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Tanh"
+
+e["Solver"]["Neural Network"]["Layers"][3]["Type"] = "Output"
+e["Solver"]["Neural Network"]["Layers"][3]["Node Count"] = 1
+e["Solver"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Identity" 
 
 ### Defining Termination Criteria
 
@@ -116,6 +122,8 @@ e["File Output"]["Frequency"] = 1
 
 ### Running Experiment
 
+k["Conduit"]["Type"] = "Concurrent"
+k["Conduit"]["Concurrent Jobs"] = 1
 k.run(e)
 
 ###### Now running the pendulumpole experiment with Korali's help

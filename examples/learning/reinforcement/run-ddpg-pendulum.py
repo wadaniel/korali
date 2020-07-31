@@ -7,13 +7,15 @@ import gym
 ######## Defining Environment Storage
 
 pendulum = gym.make('Pendulum-v0').unwrapped
-maxSteps = 100
+maxSteps = 500
 
 ####### Defining Problem's environment
 
 def env(s):
 
  # Initializing environment
+ seed = s["Sample Id"]
+ pendulum.seed(seed)
  s["State"] = pendulum.reset().tolist()
  step = 0
  done = False
@@ -72,14 +74,14 @@ e["Solver"]["Type"] = "Agent/DDPG"
 
 ### Defining Mini-batch and DDPG configuration 
 
-e["Solver"]["Episodes Per Generation"] = 1
-e["Solver"]["Optimization Steps Per Generation"] = 1
-e["Solver"]["Agent History Size"] = maxSteps
+e["Solver"]["Episodes Per Generation"] = 5
+e["Solver"]["Optimization Steps Per Generation"] = 5
+e["Solver"]["Agent History Size"] = 500
 e["Solver"]["Mini Batch Size"] = 64
 e["Solver"]["Batch Normalization"]["Enabled"] = True
 e["Solver"]["Batch Normalization"]["Correction Steps"] = 32
 e["Solver"]["Discount Factor"] = 0.99
-e["Solver"]["Adoption Rate"] = 0.001
+e["Solver"]["Adoption Rate"] = 0.001 
 
 ### Defining the configuration of replay memory
 
@@ -102,11 +104,11 @@ e["Solver"]["Critic Neural Network"]["Layers"][0]["Node Count"] = 4
 e["Solver"]["Critic Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Identity"
 
 e["Solver"]["Critic Neural Network"]["Layers"][1]["Type"] = "Dense"
-e["Solver"]["Critic Neural Network"]["Layers"][1]["Node Count"] = 64
+e["Solver"]["Critic Neural Network"]["Layers"][1]["Node Count"] = 32
 e["Solver"]["Critic Neural Network"]["Layers"][1]["Activation Function"]["Type"] = "Tanh"
 
 e["Solver"]["Critic Neural Network"]["Layers"][2]["Type"] = "Dense"
-e["Solver"]["Critic Neural Network"]["Layers"][2]["Node Count"] = 64
+e["Solver"]["Critic Neural Network"]["Layers"][2]["Node Count"] = 32
 e["Solver"]["Critic Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Tanh"
 
 e["Solver"]["Critic Neural Network"]["Layers"][3]["Type"] = "Output"
@@ -120,11 +122,11 @@ e["Solver"]["Actor Neural Network"]["Layers"][0]["Node Count"] = 1
 e["Solver"]["Actor Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Identity"
 
 e["Solver"]["Actor Neural Network"]["Layers"][1]["Type"] = "Dense"
-e["Solver"]["Actor Neural Network"]["Layers"][1]["Node Count"] = 64
+e["Solver"]["Actor Neural Network"]["Layers"][1]["Node Count"] = 32
 e["Solver"]["Actor Neural Network"]["Layers"][1]["Activation Function"]["Type"] = "Tanh"
 
 e["Solver"]["Actor Neural Network"]["Layers"][2]["Type"] = "Dense"
-e["Solver"]["Actor Neural Network"]["Layers"][2]["Node Count"] = 64
+e["Solver"]["Actor Neural Network"]["Layers"][2]["Node Count"] = 32
 e["Solver"]["Actor Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Tanh"
 
 e["Solver"]["Actor Neural Network"]["Layers"][3]["Type"] = "Output"
@@ -142,7 +144,7 @@ e["File Output"]["Frequency"] = 0
 ### Running Experiment
 
 k["Conduit"]["Type"] = "Concurrent"
-k["Conduit"]["Concurrent Jobs"] = 4
+k["Conduit"]["Concurrent Jobs"] = 5
 k.run(e)
 
 ###### Now running the pendulum experiment with Korali's help

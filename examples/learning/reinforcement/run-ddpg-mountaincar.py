@@ -14,7 +14,9 @@ maxSteps = 1000
 def env(s):
 
  # Initializing environment
- s["State"] = car.reset().tolist()
+ seed = s["Sample Id"]
+ car.seed(seed)
+ s["State"] = pendulum.reset().tolist()
  step = 0
  done = False
 

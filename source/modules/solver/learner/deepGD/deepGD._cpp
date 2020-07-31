@@ -57,7 +57,7 @@ void DeepGD::initialize()
     _optExperiment["Problem"]["Type"] = "Optimization";
     _optExperiment["Problem"]["Objective Function"] = fc;
 
-    _hyperparameters = _trainingNeuralNetwork->getHyperparameters();
+    _hyperparameters = _trainingNeuralNetwork->generateInitialHyperparameters();
     _normalizationMeans = _trainingNeuralNetwork->getNormalizationMeans();
     _normalizationVariances = _trainingNeuralNetwork->getNormalizationVariances();
 

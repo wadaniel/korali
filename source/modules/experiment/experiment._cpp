@@ -207,16 +207,7 @@ void Experiment::initialize()
 
     applyModuleDefaults(_js.getJson());
     setSeed(_js.getJson());
-
-    try
-    {
-      setConfiguration(_js.getJson());
-    }
-    catch (const std::exception &e)
-    {
-      KORALI_LOG_ERROR("Error parsing Experiment's configuration. Reason:\n%s", e.what());
-    }
-
+    setConfiguration(_js.getJson());
     getConfiguration(_js.getJson());
 
     _logger = new Logger(_consoleOutputVerbosity, stdout);

@@ -155,6 +155,7 @@ void DQN::updatePolicy()
       // Getting optimal Qnew, based on the NN evaluation
       auto qNew = _actorExperiment["Results"]["Best Sample"]["F(x)"].get<double>();
 
+      printf("qNew: %f\n", qNew);
       // We add the expected remaining reward based on the optimization
       qValue += _discountFactor * qNew;
 
@@ -184,7 +185,11 @@ void DQN::updatePolicy()
 
     // Increasing optimization step counter
     _optimizationStepCount++;
+
+    printf("----------------------------------------------\n");
   }
+
+  exit(0);
 
   // Keeping statistics
   _averageQStar = (double)_cumulativeQStar / (double)(_optimizationStepsPerGeneration * _miniBatchSize);
@@ -206,6 +211,9 @@ void DQN::updatePolicy()
 
   // Getting q training hyperparameters to broadcast to workers
   _hyperparameters["Critic"] = _criticLearner->getHyperparameters();
+
+  printf("Sending Hyperparametes %f\n",  _hyperparameters["Critic"][0].get<double>());
+
   _hyperparameters["Epsilon"] = _epsilonCurrentValue;
 }
 
@@ -269,6 +277,11 @@ void DQN::evaluateAction(Sample &sample, bool getGradients)
 
   auto evaluation = _criticLearner->getEvaluation(stateActionInput);
   auto gradients = _criticLearner->getGradients(evaluation);
+
+  printf("[");
+  for (size_t i = 0; i < stateActionInput.size(); i++)
+   printf("%f ", stateActionInput[i]);
+  printf("] = %f\n", evaluation[0]);
 
   sample["F(x)"] = evaluation[0];
 

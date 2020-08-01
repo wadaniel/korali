@@ -137,7 +137,6 @@ void Distributed::workerThread()
 
   while (true)
   {
-    Engine *engine = _engineStack.top();
     size_t jsonStringSize;
     MPI_Recv(&jsonStringSize, 1, MPI_UNSIGNED_LONG, getRootRank(), MPI_TAG_ACTION_JSON_SIZE, _mpiCommunicator, MPI_STATUS_IGNORE);
 
@@ -150,10 +149,13 @@ void Distributed::workerThread()
     if (actionJs["Conduit Action"] == "Terminate") return;
     if (actionJs["Conduit Action"] == "Process Sample")
     {
-      Sample s;
-      s._globals = &engine->_currentExperiment->_globals;
-      s._js.getJson() = actionJs;
-      s.sampleLauncher();
+     Engine *engine = _engineStack.top();
+     auto expId = actionJs["Experiment Id"];
+     Sample s;
+     s._globals = &engine->_experimentVector[expId]->_globals;
+     s._js.getJson() = actionJs;
+     s.sampleLauncher();
+
       if (_localRankId == 0)
       {
         string resultJsonString = s._js.getJson().dump();
@@ -164,6 +166,7 @@ void Distributed::workerThread()
     }
     if (actionJs["Conduit Action"] == "Broadcast Globals")
     {
+     Engine *engine = _engineStack.top();
      auto expId = actionJs["Experiment Id"];
      auto key = actionJs["Globals"]["Key"].get<std::string>();
      engine->_experimentVector[expId]->_globals[key] = actionJs["Globals"]["Values"];

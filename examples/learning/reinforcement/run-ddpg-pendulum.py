@@ -7,7 +7,7 @@ import gym
 ######## Defining Environment Storage
 
 pendulum = gym.make('Pendulum-v0').unwrapped
-maxSteps = 200
+maxSteps = 500
 
 ####### Defining Problem's environment
 
@@ -74,9 +74,9 @@ e["Solver"]["Type"] = "Agent/DDPG"
 
 ### Defining Mini-batch and DDPG configuration 
 
-e["Solver"]["Episodes Per Generation"] = 5
-e["Solver"]["Optimization Steps Per Generation"] = 5
-e["Solver"]["Agent History Size"] = 200
+e["Solver"]["Episodes Per Generation"] = 1
+e["Solver"]["Optimization Steps Per Generation"] = 10
+e["Solver"]["Agent History Size"] = maxSteps
 e["Solver"]["Mini Batch Size"] = 64
 e["Solver"]["Batch Normalization"]["Enabled"] = True
 e["Solver"]["Batch Normalization"]["Correction Steps"] = 32
@@ -140,12 +140,12 @@ e["Solver"]["Termination Criteria"]["Target Average Reward"] = -400
 
 ### Setting file output configuration
 
-e["File Output"]["Frequency"] = 0
+e["File Output"]["Frequency"] = 50
 
 ### Running Experiment
 
-k["Conduit"]["Type"] = "Concurrent"
-k["Conduit"]["Concurrent Jobs"] = 5
+#k["Conduit"]["Type"] = "Concurrent"
+#k["Conduit"]["Concurrent Jobs"] = 5
 k.run(e)
 
 ###### Now running the pendulum experiment with Korali's help

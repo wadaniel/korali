@@ -26,9 +26,6 @@ void DeepGD::initialize()
    * Setting up Neural Networks
    *****************************************************************/
 
-    // If we use normalization, inform the underlying NN
-    _neuralNetwork["Batch Normalization"]["Enabled"] = _batchNormalizationEnabled;
-
     // Setting the number of input layer nodes as number of input vector size
     _neuralNetwork["Layers"][0]["Node Count"] = _problem->_inputVectorSize;
 
@@ -44,7 +41,7 @@ void DeepGD::initialize()
     // Creating inference neural network, setting its batch size as one (evaluation per call) and following the global (mean/variance) stats of the trained NN
     neuralNetworkConfig = _neuralNetwork;
     neuralNetworkConfig["Batch Size"] = 1;
-    neuralNetworkConfig["Batch Normalization"]["Use Global Stats"] = true;
+    neuralNetworkConfig["Use Preloaded Normalization Data"] = true;
     _evaluationNeuralNetwork = dynamic_cast<NeuralNetwork *>(getModule(neuralNetworkConfig, _k));
 
     /*****************************************************************

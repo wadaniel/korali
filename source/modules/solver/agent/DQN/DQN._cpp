@@ -23,7 +23,6 @@ void DQN::initialize()
 
   _criticExperiment["Problem"]["Type"] = "Supervised Learning";
   _criticExperiment["Solver"]["Type"] = "Learner/DeepGD";
-  _criticExperiment["Solver"]["Batch Normalization"]["Enabled"] = _batchNormalizationEnabled;
   _criticExperiment["Solver"]["Neural Network"] = _neuralNetwork;
 
   _criticExperiment["Solver"]["Optimizer"] = _weightOptimizer;
@@ -193,7 +192,7 @@ void DQN::updatePolicy()
   * by sampling a few more mini-batches after the optimization steps
   ******************************************************************************/
 
-  if (_batchNormalizationEnabled) normalizeNeuralNetwork(_criticLearner->_trainingNeuralNetwork);
+  normalizeNeuralNetwork(_criticLearner->_trainingNeuralNetwork);
 
   /*********************************************************************
   * Updating hyperparameters

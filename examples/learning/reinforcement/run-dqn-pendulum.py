@@ -128,7 +128,7 @@ k["Conduit"]["Type"] = "Distributed"
 #k["Conduit"]["Concurrent Jobs"] = 5
 k.run(e)
 
-###### Now running the pendulumpole experiment with Korali's help
+###### Now running the pendulum experiment with Korali's help
 
 state = pendulum.reset().tolist()
 step = 0

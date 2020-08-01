@@ -115,16 +115,17 @@ e["Solver"]["Neural Network"]["Layers"][3]["Weight Initialization Scaling"] = 0.
 
 ### Defining Termination Criteria
 
-e["Solver"]["Termination Criteria"]["Target Average Reward"] = -400
+e["Solver"]["Termination Criteria"]["Target Average Reward"] = -50
 
 ### Setting file output configuration
 
-e["File Output"]["Frequency"] = 1
+e["File Output"]["Frequency"] = 1000
 
 ### Running Experiment
 
-k["Conduit"]["Type"] = "Concurrent"
-k["Conduit"]["Concurrent Jobs"] = 5
+k["Conduit"]["Type"] = "Distributed" 
+#k["Conduit"]["Type"] = "Concurrent"
+#k["Conduit"]["Concurrent Jobs"] = 5
 k.run(e)
 
 ###### Now running the pendulumpole experiment with Korali's help

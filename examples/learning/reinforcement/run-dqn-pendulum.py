@@ -72,8 +72,6 @@ e["Solver"]["Episodes Per Generation"] = 5
 e["Solver"]["Optimization Steps Per Generation"] = 5
 e["Solver"]["Agent History Size"] = maxSteps
 e["Solver"]["Mini Batch Size"] = 64
-e["Solver"]["Batch Normalization"]["Enabled"] = True
-e["Solver"]["Batch Normalization"]["Correction Steps"] = 32
 e["Solver"]["Discount Factor"] = 0.99
 
 ### Defining the configuration of replay memory
@@ -98,20 +96,26 @@ e["Solver"]["Weight Optimizer"]["Eta"] = 0.05
 
 e["Solver"]["Neural Network"]["Layers"][0]["Type"] = "Input"
 e["Solver"]["Neural Network"]["Layers"][0]["Node Count"] = 4
-e["Solver"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Identity"
+e["Solver"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Linear"
+e["Solver"]["Neural Network"]["Layers"][0]["Batch Normalization"]["Enabled"] = True
 
 e["Solver"]["Neural Network"]["Layers"][1]["Type"] = "Dense"
 e["Solver"]["Neural Network"]["Layers"][1]["Node Count"] = 32
 e["Solver"]["Neural Network"]["Layers"][1]["Activation Function"]["Type"] = "Tanh"
+e["Solver"]["Neural Network"]["Layers"][1]["Batch Normalization"]["Enabled"] = True
 
 e["Solver"]["Neural Network"]["Layers"][2]["Type"] = "Dense"
 e["Solver"]["Neural Network"]["Layers"][2]["Node Count"] = 32
 e["Solver"]["Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Tanh"
+e["Solver"]["Neural Network"]["Layers"][2]["Batch Normalization"]["Enabled"] = True
 
 e["Solver"]["Neural Network"]["Layers"][3]["Type"] = "Output"
 e["Solver"]["Neural Network"]["Layers"][3]["Node Count"] = 1
-e["Solver"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Identity"
-e["Solver"]["Neural Network"]["Layers"][3]["Weight Initialization Scaling"] = 0.000001  
+e["Solver"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Linear"
+e["Solver"]["Neural Network"]["Layers"][3]["Batch Normalization"]["Enabled"] = True
+e["Solver"]["Neural Network"]["Layers"][3]["Weight Initialization Scaling"] = 0.000001
+
+e["Solver"]["Batch Normalization"]["Correction Steps"] = 32
 
 ### Defining Termination Criteria
 
@@ -123,9 +127,9 @@ e["File Output"]["Frequency"] = 1000
 
 ### Running Experiment
 
-k["Conduit"]["Type"] = "Distributed" 
-#k["Conduit"]["Type"] = "Concurrent"
-#k["Conduit"]["Concurrent Jobs"] = 5
+#k["Conduit"]["Type"] = "Distributed" 
+k["Conduit"]["Type"] = "Concurrent"
+k["Conduit"]["Concurrent Jobs"] = 5
 k.run(e)
 
 ###### Now running the pendulum experiment with Korali's help

@@ -6,37 +6,32 @@ import gym
 
 ######## Defining Environment Storage
 
-car = gym.make('MountainCar-v0').unwrapped
-maxSteps = 200
+maxSteps = 100
 
 ####### Defining Problem's environment
 
 def env(s):
 
  # Initializing environment
- seed = s["Sample Id"]
- car.seed(seed)
- s["State"] = pendulum.reset().tolist()
+ s["State"] = [ 3.0 ]
  step = 0
- done = False
 
- while not done and step < maxSteps:
+ while step < maxSteps:
 
   # Getting new action
   s.update()
-
+  
   # Reading action
-  action = s["Action"][0] 
+  action = s["Action"][0] * 5.0
+  #print(action) 
+  
+  # Reward = action, if not bigger than state
+  val = action - s["State"][0]
+  reward = -val*val + 3
     
-  # Performing the action
-  state, reward, done, info = car.step(action)
-
   # Storing Reward
   s["Reward"] = reward
    
-  # Storing New State
-  s["State"] = state.tolist()
-  
   # Advancing step counter
   step = step + 1
   
@@ -49,15 +44,12 @@ e = korali.Experiment()
 e["Problem"]["Type"] = "Reinforcement Learning"
 e["Problem"]["Environment Function"] = env
 
-e["Variables"][0]["Name"] = "Car Position"
+e["Variables"][0]["Name"] = "Current Budget"
 e["Variables"][0]["Type"] = "State"
 
-e["Variables"][1]["Name"] = "Car Speed"
-e["Variables"][1]["Type"] = "State"
-
-e["Variables"][2]["Name"] = "Force"
-e["Variables"][2]["Type"] = "Action"
-e["Variables"][2]["Values"] = [ 0.0, 1.0, 2.0 ]
+e["Variables"][1]["Name"] = "Spenditure"
+e["Variables"][1]["Type"] = "Action"
+e["Variables"][1]["Values"] = [ 0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0 ]
 
 ### Configuring DQN hyperparameters
 
@@ -66,8 +58,8 @@ e["Solver"]["Type"] = "Agent/DQN"
 ### Defining Mini-batch and Q-Training configuration
  
 e["Solver"]["Episodes Per Generation"] = 10
-e["Solver"]["Optimization Steps Per Generation"] = 10
-e["Solver"]["Agent History Size"] = 200
+e["Solver"]["Optimization Steps Per Generation"] = 2
+e["Solver"]["Agent History Size"] = 1000
 e["Solver"]["Mini Batch Size"] = 32
 e["Solver"]["Discount Factor"] = 0.99
 
@@ -92,7 +84,7 @@ e["Solver"]["Weight Optimizer"]["Eta"] = 0.1
 ### Defining the shape of the neural network
 
 e["Solver"]["Neural Network"]["Layers"][0]["Type"] = "Input"
-e["Solver"]["Neural Network"]["Layers"][0]["Node Count"] = 3
+e["Solver"]["Neural Network"]["Layers"][0]["Node Count"] = 5
 e["Solver"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Linear"
 e["Solver"]["Neural Network"]["Layers"][0]["Batch Normalization"]["Enabled"] = True
 
@@ -108,14 +100,14 @@ e["Solver"]["Neural Network"]["Layers"][2]["Batch Normalization"]["Enabled"] = T
 
 e["Solver"]["Neural Network"]["Layers"][3]["Type"] = "Output"
 e["Solver"]["Neural Network"]["Layers"][3]["Node Count"] = 1
-e["Solver"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Linear" 
-e["Solver"]["Neural Network"]["Layers"][3]["Batch Normalization"]["Enabled"] = True
+e["Solver"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Linear"
+e["Solver"]["Neural Network"]["Layers"][3]["Batch Normalization"]["Enabled"] = False 
 
 e["Solver"]["Batch Normalization"]["Correction Steps"] = 32
 
 ### Defining Termination Criteria
 
-e["Solver"]["Termination Criteria"]["Target Average Reward"] = 0
+e["Solver"]["Termination Criteria"]["Target Average Reward"] = 290
 
 ### Setting file output configuration
 
@@ -123,17 +115,7 @@ e["File Output"]["Frequency"] = 1
 
 ### Running Experiment
 
+#k["Conduit"]["Type"] = "Concurrent"
+#k["Conduit"]["Concurrent Jobs"] = 10
+#k["Conduit"]["Type"] = "Distributed"
 k.run(e)
-
-###### Now running the cartpole experiment with Korali's help
-
-state = car.reset().tolist()
-step = 0
-done = False
-
-while not done and step < maxSteps:
- action = int(e.getAction(state)[0])
- print('Step ' + str(step) + ' - State: ' + str(state) + ' - Action: ' + str(action), end = '')
- state, reward, done, info = car.step(action)
- print('- Reward: ' + str(reward))
- step = step + 1

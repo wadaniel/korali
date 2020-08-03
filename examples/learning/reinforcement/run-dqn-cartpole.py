@@ -75,8 +75,6 @@ e["Solver"]["Episodes Per Generation"] = 10
 e["Solver"]["Optimization Steps Per Generation"] = 2
 e["Solver"]["Agent History Size"] = 1000
 e["Solver"]["Mini Batch Size"] = 32
-e["Solver"]["Batch Normalization"]["Enabled"] = True
-e["Solver"]["Batch Normalization"]["Correction Steps"] = 32
 e["Solver"]["Discount Factor"] = 0.99
 
 ### Defining the configuration of replay memory
@@ -101,19 +99,25 @@ e["Solver"]["Weight Optimizer"]["Eta"] = 0.1
 
 e["Solver"]["Neural Network"]["Layers"][0]["Type"] = "Input"
 e["Solver"]["Neural Network"]["Layers"][0]["Node Count"] = 5
-e["Solver"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Identity"
+e["Solver"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Linear"
+e["Solver"]["Neural Network"]["Layers"][0]["Batch Normalization"]["Enabled"] = True
 
 e["Solver"]["Neural Network"]["Layers"][1]["Type"] = "Dense"
 e["Solver"]["Neural Network"]["Layers"][1]["Node Count"] = 32
 e["Solver"]["Neural Network"]["Layers"][1]["Activation Function"]["Type"] = "Tanh"
+e["Solver"]["Neural Network"]["Layers"][1]["Batch Normalization"]["Enabled"] = True
 
 e["Solver"]["Neural Network"]["Layers"][2]["Type"] = "Dense"
 e["Solver"]["Neural Network"]["Layers"][2]["Node Count"] = 32
 e["Solver"]["Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Tanh"
+e["Solver"]["Neural Network"]["Layers"][2]["Batch Normalization"]["Enabled"] = True
 
 e["Solver"]["Neural Network"]["Layers"][3]["Type"] = "Output"
 e["Solver"]["Neural Network"]["Layers"][3]["Node Count"] = 1
-e["Solver"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Identity" 
+e["Solver"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Linear"
+e["Solver"]["Neural Network"]["Layers"][3]["Batch Normalization"]["Enabled"] = False 
+
+e["Solver"]["Batch Normalization"]["Correction Steps"] = 32
 
 ### Defining Termination Criteria
 
@@ -125,8 +129,8 @@ e["File Output"]["Frequency"] = 1
 
 ### Running Experiment
 
-k["Conduit"]["Type"] = "Concurrent"
-k["Conduit"]["Concurrent Jobs"] = 10
+#k["Conduit"]["Type"] = "Concurrent"
+#k["Conduit"]["Concurrent Jobs"] = 10
 #k["Conduit"]["Type"] = "Distributed"
 k.run(e)
 

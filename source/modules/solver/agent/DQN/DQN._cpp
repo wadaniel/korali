@@ -27,6 +27,7 @@ void DQN::initialize()
 
   _criticExperiment["Solver"]["Optimizer"] = _weightOptimizer;
   _criticExperiment["Solver"]["Steps Per Generation"] = 1;
+  _criticExperiment["Solver"]["Loss Function"] = "Mean Squared Error";
 
   _criticExperiment["Console Output"]["Frequency"] = 0;
   _criticExperiment["Console Output"]["Verbosity"] = "Silent";
@@ -36,7 +37,7 @@ void DQN::initialize()
   // Initializing experiment with an initial zero set
   for (size_t i = 0; i < _miniBatchSize; i++)
   {
-    _criticExperiment["Problem"]["Outputs"][i][0] = 0.0;
+    _criticExperiment["Problem"]["Solution"][i][0] = 0.0;
 
     for (size_t j = 0; j < _k->_variables.size(); j++)
       _criticExperiment["Problem"]["Inputs"][i][j] = 0.0;
@@ -169,7 +170,7 @@ void DQN::updatePolicy()
      // Updating inputs to training learner
      for (size_t j = 0; j < _problem->_stateVectorSize; j++) _criticTrainingProblem->_inputs[i][j] = _stateHistory[expId][j];
      for (size_t j = 0; j < _problem->_actionVectorSize; j++) _criticTrainingProblem->_inputs[i][_problem->_stateVectorSize + j] = _actionHistory[expId][j];
-     _criticTrainingProblem->_outputs[i][0] = qValue;
+     _criticTrainingProblem->_solution[i][0] = qValue;
 
      // Keeping statistics
      _cumulativeQStar += qValue;

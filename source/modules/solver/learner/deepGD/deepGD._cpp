@@ -31,7 +31,7 @@ void DeepGD::initialize()
 
     // Setting the number of output layer nodes as number of output vector size
     size_t outputLayerId = _neuralNetwork["Layers"].size() - 1;
-    _neuralNetwork["Layers"][outputLayerId]["Node Count"] = _problem->_outputVectorSize;
+    _neuralNetwork["Layers"][outputLayerId]["Node Count"] = _problem->_solutionVectorSize;
 
     // Creating training neural network, setting its batch size as the number of inputs to the problem
     auto neuralNetworkConfig = _neuralNetwork;
@@ -49,7 +49,7 @@ void DeepGD::initialize()
    *****************************************************************/
 
     // Creating evaluation lambda function for optimization
-    auto fc = [this, nn = &_trainingNeuralNetwork, out = &_problem->_outputs](Sample &sample) { this->evaluateHyperparameters(sample, *nn, *out, true); };
+    auto fc = [this, nn = &_trainingNeuralNetwork, out = &_problem->_solution](Sample &sample) { this->evaluateHyperparameters(sample, *nn, *out, true); };
 
     _optExperiment["Problem"]["Type"] = "Optimization";
     _optExperiment["Problem"]["Objective Function"] = fc;
@@ -176,24 +176,35 @@ void DeepGD::evaluateHyperparameters(Sample &sample, NeuralNetwork *nn, const st
   size_t batchSize = nn->_outputValues.size();
   size_t outputSize = nn->_outputValues[0].size();
 
-  // Calculating mean square error
-  double meanSquaredError = 0.0;
+  // Variable for the NN output
+  double output = 0.0;
 
   // Saving values for the last layer's diff
   std::vector<double> outputDiff(batchSize * outputSize);
 
-  for (size_t i = 0; i < batchSize; i++)
+  if (_lossFunction == "Direct")
+  {
+   for (size_t i = 0; i < batchSize; i++)
     for (size_t j = 0; j < outputSize; j++)
-    {
-      double diff = solution[i][j] - nn->_outputValues[i][j];
-      outputDiff[i * outputSize + j] = diff;
-      meanSquaredError += diff * diff;
-    }
+     outputDiff[i * outputSize + j] = -solution[i][j];
+  }
 
-  meanSquaredError = meanSquaredError / ((double)batchSize * 2);
+  if (_lossFunction == "Mean Squared Error")
+  {
+   for (size_t i = 0; i < batchSize; i++)
+     for (size_t j = 0; j < outputSize; j++)
+     {
+       double diff = solution[i][j] - nn->_outputValues[i][j];
+       outputDiff[i * outputSize + j] = diff;
+       output += diff * diff;
+     }
+
+   // Saving the negative of the error because we want to minimize it
+   output = -output / ((double)batchSize * 2);
+  }
 
   // Saving the negative of the error because we want to minimize it
-  sample["F(x)"] = -meanSquaredError;
+  sample["F(x)"] = output;
 
   // If we need the gradients of the weights, we also compute them
   if (getGradients) sample["Gradient"] = nn->getHyperparameterGradients(outputDiff);

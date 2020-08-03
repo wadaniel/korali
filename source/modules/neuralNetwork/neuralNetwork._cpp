@@ -79,24 +79,28 @@ std::vector<double> NeuralNetwork::generateInitialHyperparameters()
  std::vector<double> initialHyperparameters(_hyperparameterCount);
 
  size_t currPos = 0;
- for (size_t i = 1; i < _layers.size(); i++)
+ for (size_t i = 0; i < _layers.size(); i++)
  {
-   // Setting value for this layer's xavier constant
-   double xavierConstant = sqrt(6.0) / sqrt(_layers[i]->_nodeCount + _layers[i - 1]->_nodeCount);
-   double initializationConstant = xavierConstant * _layers[i]->_weightInitializationScaling;
-
-   // Adding layer's weights hyperparameter values
-   for (size_t j = 0; j < _layers[i]->_nodeCount; j++)
-    for (size_t k = 0; k < _layers[i - 1]->_nodeCount; k++)
-     initialHyperparameters[currPos++] = initializationConstant * _xavierGenerator->getRandomNumber();
-
-   // Adding layer's bias hyperparameter values, if not using batch initialization
-   if (_layers[i]->_batchNormalizationEnabled == false)
+   if (i > 0)
    {
+    // Setting value for this layer's xavier constant
+    double xavierConstant = sqrt(6.0) / sqrt(_layers[i]->_nodeCount + _layers[i - 1]->_nodeCount);
+    double initializationConstant = xavierConstant * _layers[i]->_weightInitializationScaling;
+
+    // Adding layer's weights hyperparameter values
     for (size_t j = 0; j < _layers[i]->_nodeCount; j++)
-     initialHyperparameters[currPos++] = initializationConstant * _xavierGenerator->getRandomNumber();
+     for (size_t k = 0; k < _layers[i - 1]->_nodeCount; k++)
+      initialHyperparameters[currPos++] = initializationConstant * _xavierGenerator->getRandomNumber();
+
+    // Adding layer's bias hyperparameter values, if not using batch initialization
+    if (_layers[i]->_batchNormalizationEnabled == false)
+    {
+     for (size_t j = 0; j < _layers[i]->_nodeCount; j++)
+      initialHyperparameters[currPos++] = initializationConstant * _xavierGenerator->getRandomNumber();
+    }
    }
-   else
+
+   if (_layers[i]->_batchNormalizationEnabled == true)
    {
     // Adding layer's batch normalization shift and scale hyperparameters
     for (size_t j = 0; j < _layers[i]->_nodeCount; j++)
@@ -155,7 +159,6 @@ void NeuralNetwork::createForwardPipeline()
     * Creating Activation Function primitive and memory
     * ***************************************/
 
-    if (_layers[i]->_activationFunctionType == "Identity") _layers[i]->_activationAlgorithm = algorithm::eltwise_linear;
     if (_layers[i]->_activationFunctionType == "Clip") _layers[i]->_activationAlgorithm = algorithm::eltwise_clip;
     if (_layers[i]->_activationFunctionType == "Linear") _layers[i]->_activationAlgorithm = algorithm::eltwise_linear;
     if (_layers[i]->_activationFunctionType == "Log") _layers[i]->_activationAlgorithm = algorithm::eltwise_log;
@@ -305,17 +308,17 @@ void NeuralNetwork::createBackwardPipeline()
     _layers[i]->_batchNormalizationDiffMem = memory(dataDiffMemDesc, _engine);
     _layers[i]->_activationDiffMem = memory(dataDiffMemDesc, _engine);
 
+    // Creating normalization-related gradient memory
+    if (_layers[i]->_batchNormalizationEnabled)
+    {
+      const memory::dims normalizationDims = {2, OC};
+      auto dataDiffMemDesc = memory::desc(normalizationDims, memory::data_type::f32, memory::format_tag::ab);
+     _layers[i]->_batchNormalizationScaleShiftDiffMem = memory(dataDiffMemDesc, _engine);
+    }
+
     // Creating weight-related gradient memory
     if (i > 0)
     {
-      // Creating normalization-related gradient memory
-      if (_layers[i]->_batchNormalizationEnabled)
-      {
-        const memory::dims normalizationDims = {2, OC};
-        auto dataDiffMemDesc = memory::desc(normalizationDims, memory::data_type::f32, memory::format_tag::ab);
-       _layers[i]->_batchNormalizationScaleShiftDiffMem = memory(dataDiffMemDesc, _engine);
-      }
-
       // Allocating bias gradient memory
       const memory::dims biasDims = {OC};
       auto biasMemDesc = memory::desc(biasDims, memory::data_type::f32, memory::format_tag::a);
@@ -412,7 +415,7 @@ void NeuralNetwork::createBackwardPipeline()
       _layers[i]->_backwardNormalizationArgs.insert({DNNL_ARG_DIFF_SRC, _layers[i]->_nodeDiffMem});                                 // Output
       _layers[i]->_backwardNormalizationArgs.insert({DNNL_ARG_DIFF_SCALE_SHIFT, _layers[i]->_batchNormalizationScaleShiftDiffMem}); // Output
     }
-}
+  }
 
 #endif
 }
@@ -435,11 +438,7 @@ void NeuralNetwork::setInput(const std::vector<std::vector<double>> &input)
     for (size_t j = 0; j < inputSize; j++)
       batchInput[i * inputSize + j] = input[i][j];
 
-  // If normalization is defined, the inputs are put into the normalization mem, otherwise node mem
-  if (_layers[0]->_batchNormalizationEnabled)
-    write_to_dnnl_memory(batchInput.data(), _layers[0]->_batchNormalizationMem);
-  else
-    write_to_dnnl_memory(batchInput.data(), _layers[0]->_nodeMem);
+  write_to_dnnl_memory(batchInput.data(), _layers[0]->_nodeMem);
 }
 
 void NeuralNetwork::setHyperparameters(const std::vector<double>& hyperparameters)
@@ -454,27 +453,31 @@ void NeuralNetwork::setHyperparameters(const std::vector<double>& hyperparameter
 
   size_t layerCount = _layers.size();
   size_t currPos = 0;
-  for (size_t i = 1; i < layerCount; i++)
+  for (size_t i = 0; i < layerCount; i++)
   {
     const memory::dim IC = _layers[i - 1]->_nodeCount;
     const memory::dim OC = _layers[i]->_nodeCount;
 
-    // Setting weight data to the layer's weight memory
-    write_to_dnnl_memory(&fParams[currPos], _layers[i]->_weightsMem);
-    currPos += IC*OC;
-
-    // Copying weight mem to weight work mem, if they are not the same
-    if (_layers[i]->_weightsMem.get_desc() != _layers[i]->_weightsWorkMem.get_desc())
-      reorder(_layers[i]->_weightsMem, _layers[i]->_weightsWorkMem).execute(_stream, _layers[i]->_weightsMem, _layers[i]->_weightsWorkMem);
-
-    // Setting weight data to the layer's weight memory, only if batch normalization is not being used
-    if (_layers[i]->_batchNormalizationEnabled == false)
+    if ( i > 0)
     {
-     write_to_dnnl_memory(&fParams[currPos], _layers[i]->_biasMem);
-     currPos += OC;
+     // Setting weight data to the layer's weight memory
+     write_to_dnnl_memory(&fParams[currPos], _layers[i]->_weightsMem);
+     currPos += IC*OC;
+
+     // Copying weight mem to weight work mem, if they are not the same
+     if (_layers[i]->_weightsMem.get_desc() != _layers[i]->_weightsWorkMem.get_desc())
+       reorder(_layers[i]->_weightsMem, _layers[i]->_weightsWorkMem).execute(_stream, _layers[i]->_weightsMem, _layers[i]->_weightsWorkMem);
+
+     // Setting weight data to the layer's weight memory, only if batch normalization is not being used
+     if (_layers[i]->_batchNormalizationEnabled == false)
+     {
+      write_to_dnnl_memory(&fParams[currPos], _layers[i]->_biasMem);
+      currPos += OC;
+     }
     }
-    else
+
     // If layer normalization is enabled, we fill in scale/shift data
+    if (_layers[i]->_batchNormalizationEnabled == true)
     {
      write_to_dnnl_memory(&fParams[currPos], _layers[i]->_batchNormalizationScaleShiftMem);
      currPos += 2*OC;
@@ -493,23 +496,27 @@ std::vector<double> NeuralNetwork::getHyperparameters()
 
   size_t layerCount = _layers.size();
   size_t currPos = 0;
-  for (size_t i = 1; i < layerCount; i++)
+  for (size_t i = 0; i < layerCount; i++)
   {
     const memory::dim IC = _layers[i - 1]->_nodeCount;
     const memory::dim OC = _layers[i]->_nodeCount;
 
     // Setting weight data to the layer's weight memory
-    read_from_dnnl_memory(&fParams[currPos], _layers[i]->_weightsMem);
-    currPos += IC*OC;
-
-    // Setting weight data to the layer's weight memory, only if batch normalization is not being used
-    if (_layers[i]->_batchNormalizationEnabled == false)
+    if (i > 0)
     {
-     read_from_dnnl_memory(&fParams[currPos], _layers[i]->_biasMem);
-     currPos += OC;
+     read_from_dnnl_memory(&fParams[currPos], _layers[i]->_weightsMem);
+     currPos += IC*OC;
+
+     // Setting weight data to the layer's weight memory, only if batch normalization is not being used
+     if (_layers[i]->_batchNormalizationEnabled == false)
+     {
+      read_from_dnnl_memory(&fParams[currPos], _layers[i]->_biasMem);
+      currPos += OC;
+     }
     }
-    else
+
     // If layer normalization is enabled, we fill in scale/shift data
+    if (_layers[i]->_batchNormalizationEnabled == true)
     {
      read_from_dnnl_memory(&fParams[currPos], _layers[i]->_batchNormalizationScaleShiftMem);
      currPos += 2*OC;
@@ -535,12 +542,16 @@ std::vector<double> NeuralNetwork::getHyperparameterGradients(const std::vector<
  write_to_dnnl_memory(floatDiffs.data(), _layers[lastLayer]->_activationDiffMem);
 
  // Backward propagating neural network
- for (size_t i = lastLayer; i > 0; i--)
+ for (ssize_t i = lastLayer; i >= 0; i--)
  {
    _layers[i]->_backwardActivationPrimitive.execute(_stream, _layers[i]->_backwardActivationArgs);
    if (_layers[i]->_batchNormalizationEnabled) _layers[i]->_backwardNormalizationPrimitive.execute(_stream, _layers[i]->_backwardNormalizationArgs);
-   _layers[i]->_backwardDataPrimitive.execute(_stream, _layers[i]->_backwardDataArgs);
-   _layers[i]->_backwardWeightsPrimitive.execute(_stream, _layers[i]->_backwardWeightsArgs);
+
+   if (i > 0)
+   {
+    _layers[i]->_backwardDataPrimitive.execute(_stream, _layers[i]->_backwardDataArgs);
+    _layers[i]->_backwardWeightsPrimitive.execute(_stream, _layers[i]->_backwardWeightsArgs);
+   }
  }
 
  // Wait for the computation to finalize.
@@ -551,20 +562,23 @@ std::vector<double> NeuralNetwork::getHyperparameterGradients(const std::vector<
 
  // Retrieving hyperparameter gradients
  size_t currPos = 0;
- for (size_t i = 1; i < layerCount; i++)
+ for (size_t i = 0; i < layerCount; i++)
  {
    const memory::dim IC = _layers[i - 1]->_nodeCount;
    const memory::dim OC = _layers[i]->_nodeCount;
 
-   // Reading weight gradients
-   read_from_dnnl_memory(&gradientVectorFloat[currPos], _layers[i]->_weightsDiffMem);
-   currPos += OC*IC;
-
-   // If not using layer normalization, we get the bias gradients
-   if (_layers[i]->_batchNormalizationEnabled == false)
+   if (i > 0)
    {
-     read_from_dnnl_memory(&gradientVectorFloat[currPos], _layers[i]->_biasDiffMem);
-     currPos += OC;
+    // Reading weight gradients
+    read_from_dnnl_memory(&gradientVectorFloat[currPos], _layers[i]->_weightsDiffMem);
+    currPos += OC*IC;
+
+    // If not using layer normalization, we get the bias gradients
+    if (_layers[i]->_batchNormalizationEnabled == false)
+    {
+      read_from_dnnl_memory(&gradientVectorFloat[currPos], _layers[i]->_biasDiffMem);
+      currPos += OC;
+    }
    }
 
    // If using layer normalization, we get normalization gradients
@@ -590,7 +604,7 @@ std::vector<double> NeuralNetwork::getNormalizationMeans()
 
   size_t layerCount = _layers.size();
   size_t currPos = 0;
-  for (size_t i = 1; i < layerCount; i++)
+  for (size_t i = 0; i < layerCount; i++)
    if (_layers[i]->_batchNormalizationEnabled == true)
    {
      const memory::dim OC = _layers[i]->_nodeCount;
@@ -616,7 +630,7 @@ void NeuralNetwork::setNormalizationMeans(const std::vector<double>& normalizati
 
  size_t layerCount = _layers.size();
  size_t currPos = 0;
- for (size_t i = 1; i < layerCount; i++)
+ for (size_t i = 0; i < layerCount; i++)
   if (_layers[i]->_batchNormalizationEnabled == true)
   {
     const memory::dim OC = _layers[i]->_nodeCount;
@@ -636,7 +650,7 @@ std::vector<double> NeuralNetwork::getNormalizationVariances()
 
   size_t layerCount = _layers.size();
   size_t currPos = 0;
-  for (size_t i = 1; i < layerCount; i++)
+  for (size_t i = 0; i < layerCount; i++)
   if (_layers[i]->_batchNormalizationEnabled == true)
    {
      const memory::dim OC = _layers[i]->_nodeCount;
@@ -662,7 +676,7 @@ void NeuralNetwork::setNormalizationVariances(const std::vector<double>& normali
 
  size_t layerCount = _layers.size();
  size_t currPos = 0;
- for (size_t i = 1; i < layerCount; i++)
+ for (size_t i = 0; i < layerCount; i++)
  if (_layers[i]->_batchNormalizationEnabled == true)
   {
     const memory::dim OC = _layers[i]->_nodeCount;
@@ -736,7 +750,10 @@ void NeuralNetwork::backwardData(std::vector<float> &outputDifferential)
   size_t inputSize = _layers[0]->_nodeCount;
   std::vector<float> dataDiff(_batchSize * inputSize);
 
-  read_from_dnnl_memory(dataDiff.data(), _layers[0]->_nodeDiffMem);
+  if (_layers[0]->_batchNormalizationEnabled)
+    read_from_dnnl_memory(dataDiff.data(), _layers[0]->_batchNormalizationDiffMem);
+  else
+    read_from_dnnl_memory(dataDiff.data(), _layers[0]->_nodeDiffMem);
 
   _inputGradient.resize(_batchSize);
   for (size_t i = 0; i < _batchSize; i++)

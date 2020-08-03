@@ -25,6 +25,7 @@ void DDPG::initialize()
 
   _criticExperiment["Solver"]["Type"] = "Learner/DeepGD";
   _criticExperiment["Solver"]["Optimizer"] = _criticOptimizer;
+  _criticExperiment["Solver"]["Loss Function"] = "Mean Squared Error";
   _criticExperiment["Solver"]["Steps Per Generation"] = 1;
   _criticExperiment["Solver"]["Neural Network"] = _criticNeuralNetwork;
 
@@ -36,7 +37,7 @@ void DDPG::initialize()
   // Initializing experiment with an initial zero set
   for (size_t i = 0; i < _miniBatchSize; i++)
   {
-    _criticExperiment["Problem"]["Outputs"][i][0] = 0.0;
+    _criticExperiment["Problem"]["Solution"][i][0] = 0.0;
 
     for (size_t j = 0; j < _k->_variables.size(); j++)
       _criticExperiment["Problem"]["Inputs"][i][j] = 0.0;
@@ -57,6 +58,7 @@ void DDPG::initialize()
 
    _actorExperiment["Solver"]["Type"] = "Learner/DeepGD";
    _actorExperiment["Solver"]["Batch Normalization"]["Enabled"] = false;
+   _actorExperiment["Solver"]["Loss Function"] = "Direct";
    _actorExperiment["Solver"]["Optimizer"] = _actorOptimizer;
    _actorExperiment["Solver"]["Steps Per Generation"] = 1;
    _actorExperiment["Solver"]["Neural Network"] = _actorNeuralNetwork;
@@ -73,7 +75,7 @@ void DDPG::initialize()
      _actorExperiment["Problem"]["Inputs"][i][j] = 0.0;
 
      for (size_t j = 0; j < _problem->_actionVectorSize; j++)
-     _actorExperiment["Problem"]["Outputs"][i][j] = 0.0;
+     _actorExperiment["Problem"]["Solution"][i][j] = 0.0;
    }
 
    // Running initialization to verify that the configuration is correct
@@ -145,21 +147,21 @@ void DDPG::updatePolicy()
      // Calculating target Q value (solution) for Qnew on selected batch
      double qValue = _rewardHistory[expId];
 
+     // Storage to put together state and action
+     std::vector<double> stateActionInput(_problem->_stateVectorSize + _problem->_actionVectorSize);
+
      // If state is not terminal (next state is filled) then add Qnew to the Q value.
      if (_nextStateHistory[expId].size() > 0)
      {
        // Updating current state
-       auto _currentState = _nextStateHistory[expId];
+       auto nextState = _nextStateHistory[expId];
 
        // Running actor experiment to get its candidate action
-       auto action = _actorLearner->getEvaluation({ _currentState });
-
-       // Putting together state and action
-       std::vector<double> stateActionInput(_currentState.size() + action.size());
-       for (size_t j = 0; j < _currentState.size(); j++) stateActionInput[j] = _currentState[j];
-       for (size_t j = 0; j < action.size(); j++) stateActionInput[j + _currentState.size()] = action[j];
+       auto action = _actorLearner->getEvaluation({ nextState });
 
        // Forward propagating state/action through the critic inference NN
+       for (size_t j = 0; j < nextState.size(); j++) stateActionInput[j] = nextState[j];
+       for (size_t j = 0; j < action.size(); j++) stateActionInput[j + nextState.size()] = action[j];
        auto evaluation = _criticLearner->getEvaluation(stateActionInput);
 
        // Getting estimate Qnew, based on the NN evaluation
@@ -172,26 +174,33 @@ void DDPG::updatePolicy()
  //             printf("State: %f %f %f %f \n", _stateHistory[expId][0], _stateHistory[expId][1], _stateHistory[expId][2], _stateHistory[expId][3]);
  //             printf("Action: %f\n", _actionHistory[expId][0]);
  //             printf("Reward: %f\n", _rewardHistory[expId]);
- //             printf("New State: %f %f %f %f\n", _currentState[0], _currentState[1], _currentState[2], _currentState[3]);
+ //             printf("New State: %f %f %f %f\n", currentState[0], currentState[1], currentState[2], currentState[3]);
  //             printf("New Action: %f\n", action[0]);
  //             printf("QNew: %f\n", qNew);
  //             printf("Q* %f\n", qValue);
       }
 
       // Now calculating Gradient of q with respect to state+action for the critic NN
-      auto qGradients = _criticLearner->getGradients({{ qValue }});
+      for (size_t j = 0; j < _problem->_stateVectorSize; j++) stateActionInput[j] = _stateHistory[expId][j];
+      for (size_t j = 0; j < _problem->_actionVectorSize; j++) stateActionInput[_problem->_stateVectorSize + j] = _actionHistory[expId][j];
+      _criticLearner->getEvaluation(stateActionInput);
+      auto qGradients = _criticLearner->getGradients({{ qValue  }});
+//      printf("Gradient %.15f %.15f\n", qGradients[0], qGradients[1]);
 
       // Extracting the action gradients from the full critic gradients
       std::vector<double> aGradients = std::vector<double>(qGradients.begin() + _problem->_stateVectorSize, qGradients.end());
+      //if (i == 0) printf("aGradients: %.15f\n", aGradients[0]);
 
       // Updating inputs to critic training learner
       for (size_t j = 0; j < _problem->_stateVectorSize; j++) _criticProblem->_inputs[i][j] = _stateHistory[expId][j];
       for (size_t j = 0; j < _problem->_actionVectorSize; j++) _criticProblem->_inputs[i][_problem->_stateVectorSize + j] = _actionHistory[expId][j];
-      _criticProblem->_outputs[i][0] = qValue;
+      _criticProblem->_solution[i][0] = qValue;
+
+      //printf("State: %f - Action: %f - Reward: %f - Gradient %.20f - Qvalue: %f\n", _stateHistory[expId][0], _actionHistory[expId][0], _rewardHistory[expId], aGradients[0], qValue);
 
       // Updating inputs to critic learner
       for (size_t j = 0; j < _problem->_stateVectorSize; j++) _actorProblem->_inputs[i][j] = _stateHistory[expId][j];
-      _actorProblem->_outputs[i] = aGradients;
+      _actorProblem->_solution[i] = aGradients;
 
       // Keeping statistics
       _cumulativeQStar += qValue;
@@ -203,7 +212,7 @@ void DDPG::updatePolicy()
     _engine.resume(_criticExperiment);
 
     // Running one generation of the optimization method on the actor NN with the given mini-batch
-    _actorExperiment["Solver"]["Termination Criteria"]["Max Generations"] = _criticExperiment._currentGeneration + 1;
+    _actorExperiment["Solver"]["Termination Criteria"]["Max Generations"] = _actorExperiment._currentGeneration + 1;
     _actorLearner->initialize();
     _engine.resume(_actorExperiment);
 
@@ -251,8 +260,12 @@ void DDPG::getAction(Sample &sample)
 
   // Checking for correctness of the action
   for (size_t i = 0; i < action.size(); i++)
+  {
    if (std::isfinite(action[i]) == false)
     KORALI_LOG_ERROR(" + Action [%lu] is not finite (%f)\n", i, action[i]);
+  }
+
+  printf("State: %f - Action: %f\n", state[0], action[0]);
 
   // Introducing random noise to the action
   for (size_t i = 0; i < _problem->_actionVectorIndexes.size(); i++)

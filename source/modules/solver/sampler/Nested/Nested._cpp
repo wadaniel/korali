@@ -292,8 +292,11 @@ bool Nested::processGeneration()
 
     double evidenceTerm = exp(_lStarOld - _logEvidence) * _lStarOld + exp(_lStar - _logEvidence) * _lStar;
 
-    _information = exp(dLogVol) * evidenceTerm + exp(logEvidenceOld - _logEvidence) * (informationOld + logEvidenceOld) - _logEvidence;
-    _logEvidenceVar += 2. * (_information - informationOld) * _expectedLogShrinkage;
+    if (isfinite(evidenceTerm))
+    {
+      _information = exp(dLogVol) * evidenceTerm + exp(logEvidenceOld - _logEvidence) * (informationOld + logEvidenceOld) - _logEvidence;
+      _logEvidenceVar += 2. * (_information - informationOld) * _expectedLogShrinkage;
+    }
 
     // add it to db
     if (isfinite(_liveLogLikelihoods[sampleIdx])) updateSampleDatabase(sampleIdx);

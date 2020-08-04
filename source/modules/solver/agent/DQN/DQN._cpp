@@ -208,19 +208,18 @@ void DQN::updatePolicy()
   _hyperparameters["Epsilon"] = _epsilonCurrentValue;
 }
 
-void DQN::getAction(Sample &sample)
+std::vector<double> DQN::getTrainingAction(const std::vector<double> &state)
 {
   // Getting p = U[0,1] for the epsilon strategy
   double p = _uniformGenerator->getRandomNumber();
 
-  // Getting the value of epsilon. If we haven't reached the start the minimum history, always use epsilon = 1.0, that is random decisions.
-  double epsilon = 1.0;
-  if (isDefined(sample.globals(), "Hyperparameters", "Epsilon")) epsilon = sample.globals()["Hyperparameters"]["Epsilon"].get<double>();
-
   // If p < e, then we choose the action randomly, with a uniform probability, among all possible actions.
   // If no states have been registered yet, use the random option in any case
-  if (p < epsilon)
+  if (p < _epsilonCurrentValue)
   {
+   // Storage for action
+   std::vector<double> randomAction(_problem->_actionVectorSize);
+
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
     {
       size_t varIdx = _problem->_actionVectorIndexes[i];
@@ -231,28 +230,28 @@ void DQN::getAction(Sample &sample)
       {
         double lowerBound = _k->_variables[varIdx]->_lowerBound;
         double upperBound = _k->_variables[varIdx]->_upperBound;
-        sample["Action"][i] = lowerBound + x * (upperBound - lowerBound);
+        randomAction[i] = lowerBound + x * (upperBound - lowerBound);
       }
       else
       {
         // Randomly select one of the actions provided in the value vector
         size_t valIdx = floor(x * _k->_variables[varIdx]->_values.size());
-        sample["Action"][i] = _k->_variables[varIdx]->_values[valIdx];
+        randomAction[i] = _k->_variables[varIdx]->_values[valIdx];
       }
     }
 
-    return;
+    return randomAction;
   }
 
   // Updating current state
-  _actorExperiment._globals["Current State"] = sample["State"];
+  _actorExperiment._globals["Current State"] = state;
 
   // Running optimization experiment to get best estimated action
   korali::Engine engine;
   engine.run(_actorExperiment);
 
   // Getting optimal action, based on the NN evaluation
-  sample["Action"] = _actorExperiment["Results"]["Best Sample"]["Parameters"];
+  return _actorExperiment["Results"]["Best Sample"]["Parameters"].get<std::vector<double>>();
 }
 
 void DQN::evaluateAction(Sample &sample, bool getGradients)
@@ -267,7 +266,7 @@ void DQN::evaluateAction(Sample &sample, bool getGradients)
   for (size_t j = 0; j < action.size(); j++) stateActionInput[j + state.size()] = action[j];
 
   auto evaluation = _criticLearner->getEvaluation(stateActionInput);
-  auto gradients = _criticLearner->getGradients(evaluation);
+  auto gradients = _criticLearner->getGradients({{ -1.0 }});
 
   sample["F(x)"] = evaluation[0];
 
@@ -278,9 +277,22 @@ void DQN::evaluateAction(Sample &sample, bool getGradients)
   }
 }
 
-void DQN::updateHyperparmeters(Sample &sample)
+void DQN::updateHyperparameters(const knlohmann::json& hyperparameters)
 {
- _criticLearner->setHyperparameters(sample.globals()["Hyperparameters"]["Critic"].get<std::vector<double>>());
+ _criticLearner->setHyperparameters(hyperparameters["Critic"].get<std::vector<double>>());
+ _epsilonCurrentValue = hyperparameters["Epsilon"].get<double>();
+}
+
+std::vector<double> DQN::queryPolicy(const std::vector<double>& state)
+{
+  _actorExperiment._globals["Current State"] = state;
+
+  // Running optimization experiment to get best estimated action
+  korali::Engine engine;
+  engine.run(_actorExperiment);
+
+  // Getting optimal action, based on the NN evaluation
+  return _actorExperiment["Results"]["Best Sample"]["Parameters"].get<std::vector<double>>();
 }
 
 void DQN::printGenerationAfter()
@@ -306,23 +318,6 @@ void DQN::printGenerationAfter()
   _criticExperiment._solver->printGenerationAfter();
   _criticExperiment._logger->setVerbosityLevel("Silent");
 }
-
-std::vector<double> DQN::getAction(const std::vector<double> &state)
-{
-  // Getting learner's pointer
- _criticLearner->setHyperparameters(_bestHyperparameters["Critic"]);
-
-  // Updating current state
- _actorExperiment._globals["Current State"] = state;
-
-  // Running optimization experiment to get best estimated action
-  korali::Engine engine;
-  engine.run(_actorExperiment);
-
-  // Getting optimal action, based on the NN evaluation
-  return _actorExperiment["Results"]["Best Sample"]["Parameters"].get<std::vector<double>>();
-}
-
 
 } // namespace agent
 

@@ -64,11 +64,10 @@ class DDPG : public Agent
    * @brief Variable to keep track of the current noise added to the action
    */
   std::vector<double> _currentActionNoises;
-
-  void updateHyperparmeters(Sample& sample) override;
+  std::vector<double> getTrainingAction(const std::vector<double> &state) override;
+  std::vector<double> queryPolicy(const std::vector<double>& state) override;
+  void updateHyperparameters(const knlohmann::json& hyperparameters) override;
   void updatePolicy() override;
-  std::vector<double> getAction(const std::vector<double> &state) override;
-  void getAction(Sample &sample) override;
   void printGenerationAfter() override;
   void initialize() override;
 };

@@ -31,17 +31,18 @@ class Agent : public Solver
   std::mt19937 *mt;
 
   /**
-   * @brief Gets the next action for the actor, based on a sample containing a state, from inside Korali
-   * @param sample the sample containing the state and other required information
-   */
-  virtual void getAction(Sample &sample) = 0;
-
-  /**
-   * @brief Gets the next action for the actor, based on the state, as requested by the user
-   * @param state The vector containing the state and other required information
+   * @brief Gets the next action for the agent, based on the state and current policy, for training purposes (may contain noise)
+   * @param state The vector containing the current agent's state
    * @return A vector containing the action
    */
-  virtual std::vector<double> getAction(const std::vector<double> &state) = 0;
+  virtual std::vector<double> getTrainingAction(const std::vector<double> &state) = 0;
+
+  /**
+   * @brief Gets the next action for the actor, based on the state and best policy, for inference purposes (may not contain noise)
+   * @param state The vector containing the current agent's state
+   * @return A vector containing the action
+   */
+  std::vector<double> getInferenceAction(const std::vector<double> &state);
 
   /**
   * @brief Updates the algorithm's policy, based on the new experiences
@@ -49,15 +50,22 @@ class Agent : public Solver
   virtual void updatePolicy() = 0;
 
   /**
-  * @brief Updates the underlying learner's hyperparameters to calculate the next action of the agent
+  * @brief Updates the policy's hyperparameters to calculate the next action of the agent
+  * @param hyperparameters The hyperparameters to update the policy.
   */
-  virtual void updateHyperparmeters(Sample& sample) = 0;
+  virtual void updateHyperparameters(const knlohmann::json& hyperparameters) = 0;
 
   /**
   * @brief Normalizes neural network batch normalization mean and variances
   * @param The neural network to normalize
   */
   void normalizeNeuralNetwork(korali::NeuralNetwork* nn);
+
+  /**
+  * @brief Retrieves the exact value of the (action) produced by the current policy
+  * @param state The input (state) to the policy
+  */
+  virtual std::vector<double> queryPolicy(const std::vector<double>& state) = 0;
 
   /**
  * @brief Runs a generation of the environment(s), running an action on each episode, and updating the policy.

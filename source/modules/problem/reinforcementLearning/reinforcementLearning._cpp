@@ -57,8 +57,8 @@ void ReinforcementLearning::runEnvironment(Sample &sample)
   // Getting RL-compatible solver
   auto agent = dynamic_cast<solver::Agent *>(_k->_solver);
 
-  // First, we update the solver's hyperparameters with the info included in the sample
-  agent->updateHyperparmeters(sample);
+  // First, we update the policy's hyperparameters
+  agent->updateHyperparameters(sample.globals()["Hyperparameters"]);
 
   sample["Finished"] = false;
 
@@ -89,7 +89,7 @@ void ReinforcementLearning::runEnvironment(Sample &sample)
     // Requesting new action, if enough steps have passed, given by the action repeat parameter
     if (actionLastUpdated == 0)
     {
-      agent->getAction(sample);
+      sample["Action"] = agent->getTrainingAction(sample["State"].get<std::vector<double>>());
       actionLastUpdated = _actionRepeat;
     }
     actionLastUpdated--;

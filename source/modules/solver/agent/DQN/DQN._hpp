@@ -47,10 +47,11 @@ class DQN : public Agent
    * @param getGradients Indicates whether the gradients are required
    */
   void evaluateAction(Sample &sample, bool getGradients);
-  void updateHyperparmeters(Sample& sample) override;
+
+  std::vector<double> getTrainingAction(const std::vector<double> &state) override;
+  std::vector<double> queryPolicy(const std::vector<double>& state) override;
+  void updateHyperparameters(const knlohmann::json& hyperparameters) override;
   void updatePolicy() override;
-  std::vector<double> getAction(const std::vector<double> &state) override;
-  void getAction(Sample &sample) override;
   void printGenerationAfter() override;
   void initialize() override;
 };

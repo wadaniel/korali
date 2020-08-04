@@ -93,10 +93,10 @@ e["Solver"]["Replay Memory"]["Replacement Policy"] = "Least Recently Added"
 
 e["Solver"]["Actor Optimizer"]["Type"] = "Optimizer/Adam"
 e["Solver"]["Actor Optimizer"]["Termination Criteria"]["Min Gradient Norm"] = -1.0
-e["Solver"]["Actor Optimizer"]["Eta"] = 0.001
+e["Solver"]["Actor Optimizer"]["Eta"] = 0.0001
 
 e["Solver"]["Critic Optimizer"]["Type"] = "Optimizer/Adam"
-e["Solver"]["Critic Optimizer"]["Eta"] = 0.001
+e["Solver"]["Critic Optimizer"]["Eta"] = 0.01
 
 ### Defining the shape of the critic neural network
 
@@ -108,12 +108,12 @@ e["Solver"]["Critic Neural Network"]["Layers"][0]["Batch Normalization"]["Enable
 e["Solver"]["Critic Neural Network"]["Layers"][1]["Type"] = "Dense"
 e["Solver"]["Critic Neural Network"]["Layers"][1]["Node Count"] = 32
 e["Solver"]["Critic Neural Network"]["Layers"][1]["Activation Function"]["Type"] = "Tanh"
-e["Solver"]["Critic Neural Network"]["Layers"][1]["Batch Normalization"]["Enabled"] = True
+e["Solver"]["Critic Neural Network"]["Layers"][1]["Batch Normalization"]["Enabled"] = False
 
 e["Solver"]["Critic Neural Network"]["Layers"][2]["Type"] = "Dense"
 e["Solver"]["Critic Neural Network"]["Layers"][2]["Node Count"] = 32
 e["Solver"]["Critic Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Tanh"
-e["Solver"]["Critic Neural Network"]["Layers"][2]["Batch Normalization"]["Enabled"] = True
+e["Solver"]["Critic Neural Network"]["Layers"][2]["Batch Normalization"]["Enabled"] = False
 
 e["Solver"]["Critic Neural Network"]["Layers"][3]["Type"] = "Output"
 e["Solver"]["Critic Neural Network"]["Layers"][3]["Node Count"] = 1
@@ -132,20 +132,19 @@ e["Solver"]["Actor Neural Network"]["Layers"][0]["Batch Normalization"]["Enabled
 
 e["Solver"]["Actor Neural Network"]["Layers"][1]["Type"] = "Dense"
 e["Solver"]["Actor Neural Network"]["Layers"][1]["Node Count"] = 32
-e["Solver"]["Actor Neural Network"]["Layers"][1]["Activation Function"]["Type"] = "ReLU"
-e["Solver"]["Actor Neural Network"]["Layers"][1]["Activation Function"]["Alpha"] = 1.0
+e["Solver"]["Actor Neural Network"]["Layers"][1]["Activation Function"]["Type"] = "Tanh"
 e["Solver"]["Actor Neural Network"]["Layers"][1]["Batch Normalization"]["Enabled"] = False
 
 e["Solver"]["Actor Neural Network"]["Layers"][2]["Type"] = "Dense"
 e["Solver"]["Actor Neural Network"]["Layers"][2]["Node Count"] = 32
-e["Solver"]["Actor Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "ReLU"
-e["Solver"]["Actor Neural Network"]["Layers"][1]["Activation Function"]["Alpha"] = 1.0
+e["Solver"]["Actor Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Tanh"
 e["Solver"]["Actor Neural Network"]["Layers"][2]["Batch Normalization"]["Enabled"] = False
 
 e["Solver"]["Actor Neural Network"]["Layers"][3]["Type"] = "Output"
 e["Solver"]["Actor Neural Network"]["Layers"][3]["Node Count"] = 1
 e["Solver"]["Actor Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Tanh" 
 e["Solver"]["Actor Neural Network"]["Layers"][3]["Batch Normalization"]["Enabled"] = False
+e["Solver"]["Actor Neural Network"]["Layers"][3]["Weight Initialization Scaling"] = 0.000001
 
 ### Defining Termination Criteria
 

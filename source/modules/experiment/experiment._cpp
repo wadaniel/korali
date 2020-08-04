@@ -229,9 +229,9 @@ std::vector<double> Experiment::getAction(const std::vector<double> &state)
 {
   auto agent = dynamic_cast<solver::Agent *>(_k->_solver);
   if (agent != NULL)
-    return agent->getAction(state);
+    return agent->getInferenceAction(state);
   else
-    KORALI_LOG_ERROR("This solver does not support getAction operations.\n");
+    KORALI_LOG_ERROR("This solver does not support getInferenceAction.\n");
 }
 
 std::vector<double> Experiment::getEvaluation(const std::vector<double> &inputBatch)

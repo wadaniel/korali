@@ -185,6 +185,18 @@ void Agent::normalizeNeuralNetwork(korali::NeuralNetwork* nn)
  nn->setNormalizationVariances(newVariances);
 }
 
+std::vector<double> Agent::getInferenceAction(const std::vector<double> &state)
+{
+  // Updating the policy's hyperparameters with the best we found so far
+  updateHyperparameters(_bestHyperparameters);
+
+  // Querying the policy for the action, given the state
+  auto action = queryPolicy(state);
+
+  // Returning action
+  return action;
+}
+
 void Agent::printGenerationAfter()
 {
   _k->_logger->logInfo("Normal", "Experience Statistics:\n");

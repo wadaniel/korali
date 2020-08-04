@@ -71,8 +71,8 @@ e["Solver"]["Type"] = "Agent/DQN"
 
 ### Defining Mini-batch and Q-Training configuration
  
-e["Solver"]["Episodes Per Generation"] = 10
-e["Solver"]["Optimization Steps Per Generation"] = 2
+e["Solver"]["Episodes Per Generation"] = 5
+e["Solver"]["Optimization Steps Per Generation"] = 5
 e["Solver"]["Agent History Size"] = 1000
 e["Solver"]["Mini Batch Size"] = 32
 e["Solver"]["Discount Factor"] = 0.99

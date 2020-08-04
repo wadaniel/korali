@@ -13,7 +13,7 @@ maxSteps = 1
 def env(s):
 
  # Initializing environment
- s["State"] = [ 1.0 ]
+ s["State"] = [ 3.0 ]
  step = 0
 
  while step < maxSteps:
@@ -23,11 +23,11 @@ def env(s):
   
   # Reading action
   action = s["Action"][0]
-  #print(action) 
+  print('Python Action: ' + str(action) ) 
   
   # Reward = action, if not bigger than state
-  val = action - s["State"][0]
-  reward = -val*val + 1.0
+  val = action - s["State"][0] 
+  reward = -val*val
     
   # Storing Reward
   s["Reward"] = reward
@@ -47,7 +47,7 @@ e["Problem"]["Environment Function"] = env
 e["Variables"][0]["Name"] = "Budget"
 e["Variables"][0]["Type"] = "State"
 
-e["Variables"][1]["Name"] = "Spenditure"
+e["Variables"][1]["Name"] = "Spenditure 0"
 e["Variables"][1]["Type"] = "Action"
 
 ### Defining noise to add to the action
@@ -66,14 +66,14 @@ e["Solver"]["Type"] = "Agent/DDPG"
 e["Solver"]["Episodes Per Generation"] = 1
 e["Solver"]["Optimization Steps Per Generation"] = 1
 e["Solver"]["Agent History Size"] = maxSteps
-e["Solver"]["Mini Batch Size"] = 32
+e["Solver"]["Mini Batch Size"] = 64
 e["Solver"]["Discount Factor"] = 0.99
-e["Solver"]["Adoption Rate"] = 0.01
+e["Solver"]["Adoption Rate"] = 0.001
 
 ### Defining the configuration of replay memory
 
 e["Solver"]["Replay Memory"]["Start Size"] = 256
-e["Solver"]["Replay Memory"]["Maximum Size"] = 10000
+e["Solver"]["Replay Memory"]["Maximum Size"] = 100000
 e["Solver"]["Replay Memory"]["Replacement Policy"] = "Least Recently Added"
 
 ## Defining Actor and Critic optimizers
@@ -83,12 +83,12 @@ e["Solver"]["Actor Optimizer"]["Termination Criteria"]["Min Gradient Norm"] = -1
 e["Solver"]["Actor Optimizer"]["Eta"] = 0.00001
 
 e["Solver"]["Critic Optimizer"]["Type"] = "Optimizer/Adam"
-e["Solver"]["Critic Optimizer"]["Eta"] = 0.001
+e["Solver"]["Critic Optimizer"]["Eta"] = 0.005
 
 ### Defining the shape of the critic neural network
 
 e["Solver"]["Critic Neural Network"]["Layers"][0]["Type"] = "Input"
-e["Solver"]["Critic Neural Network"]["Layers"][0]["Node Count"] = 1
+e["Solver"]["Critic Neural Network"]["Layers"][0]["Node Count"] = 2
 e["Solver"]["Critic Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Linear"
 e["Solver"]["Critic Neural Network"]["Layers"][0]["Batch Normalization"]["Enabled"] = False
 
@@ -122,19 +122,15 @@ e["Solver"]["Actor Neural Network"]["Layers"][1]["Node Count"] = 32
 e["Solver"]["Actor Neural Network"]["Layers"][1]["Activation Function"]["Type"] = "Tanh"
 e["Solver"]["Actor Neural Network"]["Layers"][1]["Batch Normalization"]["Enabled"] = False
 
-e["Solver"]["Actor Neural Network"]["Layers"][2]["Type"] = "Dense"
-e["Solver"]["Actor Neural Network"]["Layers"][2]["Node Count"] = 32
-e["Solver"]["Actor Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Tanh"
+e["Solver"]["Actor Neural Network"]["Layers"][2]["Type"] = "Output"
+e["Solver"]["Actor Neural Network"]["Layers"][2]["Node Count"] = 1
+e["Solver"]["Actor Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Linear" 
 e["Solver"]["Actor Neural Network"]["Layers"][2]["Batch Normalization"]["Enabled"] = False
-
-e["Solver"]["Actor Neural Network"]["Layers"][3]["Type"] = "Output"
-e["Solver"]["Actor Neural Network"]["Layers"][3]["Node Count"] = 1
-e["Solver"]["Actor Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Linear" 
-e["Solver"]["Actor Neural Network"]["Layers"][3]["Batch Normalization"]["Enabled"] = False
+e["Solver"]["Actor Neural Network"]["Layers"][2]["Weight Initialization Scaling"] = 0.0000001
 
 ### Defining Termination Criteria
 
-e["Solver"]["Termination Criteria"]["Target Average Reward"] = 400
+e["Solver"]["Termination Criteria"]["Target Average Reward"] = 0
 
 ### Setting file output configuration
 

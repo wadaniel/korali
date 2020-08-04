@@ -277,7 +277,7 @@ void TMCMC::processCandidate(const size_t sampleId)
 
     if (_currentChainStep[sampleId] > _currentBurnIn) _acceptedSamplesCount++;
   }
-    
+
   if (_currentChainStep[sampleId] < _currentBurnIn + _chainLengths[sampleId]) generateCandidate(sampleId);
 
   if (_currentChainStep[sampleId] > _currentBurnIn) updateDatabase(sampleId);
@@ -806,8 +806,8 @@ void TMCMC::setBurnIn()
 {
   if (_k->_currentGeneration <= 1)
     _currentBurnIn = 0;
-  else if (_k->_currentGeneration-2 < _perGenerationBurnIn.size())
-    _currentBurnIn = _perGenerationBurnIn[_k->_currentGeneration-2];
+  else if (_k->_currentGeneration - 2 < _perGenerationBurnIn.size())
+    _currentBurnIn = _perGenerationBurnIn[_k->_currentGeneration - 2];
   else
     _currentBurnIn = _defaultBurnIn;
 }

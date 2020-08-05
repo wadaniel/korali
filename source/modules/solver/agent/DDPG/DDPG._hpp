@@ -1,11 +1,7 @@
 #ifndef _KORALI_AGENT_DDPG_HPP_
 #define _KORALI_AGENT_DDPG_HPP_
 
-#include "modules/problem/supervisedLearning/supervisedLearning.hpp"
 #include "modules/solver/agent/agent.hpp"
-#include "modules/solver/learner/deepGD/deepGD.hpp"
-#include "modules/solver/learner/learner.hpp"
-#include "modules/distribution/univariate/normal/normal.hpp"
 
 namespace korali
 {
@@ -16,49 +12,6 @@ namespace agent
 class DDPG : public Agent
 {
   public:
-  /**
- * @brief Korali engine for running internal experiments
- */
-  korali::Engine _engine;
-
-  /**
-   * @brief The number of hyperparamters to the NN
-   */
-  size_t _hyperparameterCount;
-
-  /////// Setting Critic experiments
-
-  /**
-  * @brief Pointer to training the critic network
-  */
-  learner::DeepGD *_criticLearner;
-
-  /**
-  * @brief Pointer to critic's experiment problem
-  */
-  problem::SupervisedLearning *_criticProblem;
-
-  /**
-   * @brief Korali experiment for the training of the critic network
-   */
-  korali::Experiment _criticExperiment;
-
-  /////// Setting Actor experiments
-
-  /**
-  * @brief Pointer to training the actor network
-  */
-  learner::DeepGD *_actorLearner;
-
-  /**
-  * @brief Pointer to actor's experiment problem
-  */
-  problem::SupervisedLearning *_actorProblem;
-
-  /**
-   * @brief Korali experiment for the training of the actor network
-   */
-  korali::Experiment _actorExperiment;
 
   /**
    * @brief Variable to keep track of the current noise added to the action

@@ -2,9 +2,9 @@
 #define _KORALI_AGENT_HPP_
 
 #include "engine.hpp"
+#include "modules/problem/supervisedLearning/supervisedLearning.hpp"
 #include "modules/problem/reinforcementLearning/reinforcementLearning.hpp"
-#include "modules/solver/solver.hpp"
-#include "modules/neuralNetwork/neuralNetwork.hpp"
+#include "modules/solver/learner/deepGD/deepGD.hpp"
 #include <algorithm> // std::shuffle
 #include <random>
 
@@ -15,6 +15,42 @@ namespace solver
 class Agent : public Solver
 {
   public:
+
+ /**
+ * @brief Korali engine for running internal experiments
+ */
+  korali::Engine _engine;
+
+  /**
+   * @brief Pointer to training experiment's problem
+   */
+  problem::SupervisedLearning *_criticProblem;
+
+  /**
+  * @brief Pointer to training experiment's learner
+  */
+  learner::DeepGD *_criticLearner;
+
+  /**
+   * @brief Korali experiment for the training of the Qvalue-estimator
+   */
+  korali::Experiment _criticExperiment;
+
+  /**
+  * @brief Korali experiment for argmax_action(Q) based on a trained Q-Network
+  */
+   korali::Experiment _actorExperiment;
+
+   /**
+   * @brief Pointer to training the actor network
+   */
+   learner::DeepGD *_actorLearner;
+
+   /**
+   * @brief Pointer to actor's experiment problem
+   */
+   problem::SupervisedLearning *_actorProblem;
+
   /**
   * @brief Storage for the pointer to the learning problem
   */
@@ -45,6 +81,11 @@ class Agent : public Solver
   std::vector<double> getInferenceAction(const std::vector<double> &state);
 
   /**
+  * @brief Updates the algorithm's critic (Q), based on the new experiences
+  */
+  void updateCritic();
+
+  /**
   * @brief Updates the algorithm's policy, based on the new experiences
   */
   virtual void updatePolicy() = 0;
@@ -62,8 +103,9 @@ class Agent : public Solver
   void normalizeNeuralNetwork(korali::NeuralNetwork* nn);
 
   /**
-  * @brief Retrieves the exact value of the (action) produced by the current policy
-  * @param state The input (state) to the policy
+  * @brief Function to query policy and get the best action for the given state
+  * @param state The input state
+  * @return The action, given by the policy, corresponding to the state and the current policy hyperparameters
   */
   virtual std::vector<double> queryPolicy(const std::vector<double>& state) = 0;
 

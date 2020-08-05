@@ -18,39 +18,6 @@ void DDPG::initialize()
   Agent::initialize();
 
   /*********************************************************************
-  * Creating and running Critic Learning Experiments
-  *********************************************************************/
-
-  _criticExperiment["Problem"]["Type"] = "Supervised Learning";
-
-  _criticExperiment["Solver"]["Type"] = "Learner/DeepGD";
-  _criticExperiment["Solver"]["Optimizer"] = _criticOptimizer;
-  _criticExperiment["Solver"]["Loss Function"] = "Mean Squared Error";
-  _criticExperiment["Solver"]["Steps Per Generation"] = 1;
-  _criticExperiment["Solver"]["Neural Network"] = _criticNeuralNetwork;
-
-  _criticExperiment["Console Output"]["Frequency"] = 0;
-  _criticExperiment["Console Output"]["Verbosity"] = "Silent";
-  _criticExperiment["File Output"]["Enabled"] = false;
-  _criticExperiment["Random Seed"] = _k->_randomSeed++;
-
-  // Initializing experiment with an initial zero set
-  for (size_t i = 0; i < _miniBatchSize; i++)
-  {
-    _criticExperiment["Problem"]["Solution"][i][0] = 0.0;
-
-    for (size_t j = 0; j < _k->_variables.size(); j++)
-      _criticExperiment["Problem"]["Inputs"][i][j] = 0.0;
-  }
-
-  // Running initialization to verify that the configuration is correct
-  _engine.initialize(_criticExperiment);
-
-  // Getting learner pointers
-  _criticProblem = dynamic_cast<problem::SupervisedLearning *>(_criticExperiment._problem);
-  _criticLearner = dynamic_cast<solver::learner::DeepGD *>(_criticExperiment._solver);
-
-  /*********************************************************************
    * Creating and running Actor Learning Experiments
    *********************************************************************/
 
@@ -100,12 +67,12 @@ void DDPG::initialize()
     _bestAverageReward = -korali::Inf;
 
     // Get the initial set of hyperparameters
-    _hyperparameters = _actorLearner->getHyperparameters();
+    _hyperparameters["Policy"] = _actorLearner->getHyperparameters();
     _bestHyperparameters = _hyperparameters;
   }
 
   // Assigning training hyperparameters to inference learner
-  _actorLearner->setHyperparameters(_hyperparameters);
+  _actorLearner->setHyperparameters(_hyperparameters["Policy"]);
 }
 
 void DDPG::updatePolicy()
@@ -118,106 +85,23 @@ void DDPG::updatePolicy()
   auto curActorHypeparameters  = _actorLearner->getHyperparameters();
   auto curCriticHyperparameters = _criticLearner->getHyperparameters();
 
- /***********************************************************************************
-  * Updating Q/Critic Network by performing a Stochastic Gradient Descent step
-  ***********************************************************************************/
-
-  // Creating state history indexes to choose from
-  std::vector<size_t> _stateHistoryIndexes(_stateHistory.size());
-  for (size_t i = 0; i < _stateHistory.size(); i++) _stateHistoryIndexes[i] = i;
-
-  // Calculating cumulative Q*, for statistical purposes
-  _cumulativeQStar = 0.0;
-
-  for (size_t step = 0; step < _optimizationStepsPerGeneration; step++)
-  {
-
-   // Randomly selecting experiences for the mini-batch and calculating their target Q
-   std::shuffle(_stateHistoryIndexes.begin(), _stateHistoryIndexes.end(), *mt);
-
-   for (size_t i = 0; i < _miniBatchSize; i++)
-   {
-     // Selecting a uniformly random selected, yet not repeated experience
-     size_t expId = _stateHistoryIndexes[i];
-
-     // Qnew = max_a(q) with s' fixed
-     // Q* = r + y*Qnew -- If not terminal state
-     // Q* = r -- If terminal state
-
-     // Calculating target Q value (solution) for Qnew on selected batch
-     double qValue = _rewardHistory[expId];
-
-     // If state is not terminal (next state is filled) then add Qnew to the Q value.
-     if (_nextStateHistory[expId].size() > 0)
-     {
-       // Updating current state
-       auto nextState = _nextStateHistory[expId];
-
-       // Running actor experiment to get its candidate action
-       auto action = _actorLearner->getEvaluation({ nextState });
-
-       // Storage to put together state and action
-       std::vector<double> stateActionInput(_problem->_stateVectorSize + _problem->_actionVectorSize);
-
-       // Forward propagating state/action through the critic inference NN
-       for (size_t j = 0; j < nextState.size(); j++) stateActionInput[j] = nextState[j];
-       for (size_t j = 0; j < action.size(); j++) stateActionInput[j + nextState.size()] = action[j];
-       auto evaluation = _criticLearner->getEvaluation(stateActionInput);
-
-       // Getting estimate Qnew, based on the NN evaluation
-       auto qNew = evaluation[0];
-
-       // We add the expected remaining reward based on the optimization
-       qValue += _discountFactor * qNew;
-
-       // Debug only, print new experience values
- //             printf("State: %f %f %f %f \n", _stateHistory[expId][0], _stateHistory[expId][1], _stateHistory[expId][2], _stateHistory[expId][3]);
- //             printf("Action: %f\n", _actionHistory[expId][0]);
- //             printf("Reward: %f\n", _rewardHistory[expId]);
- //             printf("New State: %f %f %f %f\n", currentState[0], currentState[1], currentState[2], currentState[3]);
- //             printf("New Action: %f\n", action[0]);
- //             printf("QNew: %f\n", qNew);
- //             printf("Q* %f\n", qValue);
-      }
-
-      // Updating inputs to critic training learner
-      for (size_t j = 0; j < _problem->_stateVectorSize; j++) _criticProblem->_inputs[i][j] = _stateHistory[expId][j];
-      for (size_t j = 0; j < _problem->_actionVectorSize; j++) _criticProblem->_inputs[i][_problem->_stateVectorSize + j] = _actionHistory[expId][j];
-      _criticProblem->_solution[i][0] = qValue;
-
-      // Keeping statistics
-      _cumulativeQStar += qValue;
-     }
-
-    // Running one generation of the optimization method with the given mini-batch
-    _criticExperiment["Solver"]["Termination Criteria"]["Max Generations"] = _criticExperiment._currentGeneration + 1;
-    _criticLearner->initialize();
-   _engine.resume(_criticExperiment);
-
-    // Increasing optimization step counter
-    _optimizationStepCount++;
-  }
-
-  // Keeping statistics
-  _averageQStar = (double)_cumulativeQStar / (double)(_optimizationStepsPerGeneration * _miniBatchSize);
-
   /***********************************************************************************
    * Updating Actor/Policy/Pi Network by performing a Stochastic Gradient Descent step
    ***********************************************************************************/
 
    // Creating state history indexes to choose from
-   //std::vector<size_t> _stateHistoryIndexes(_stateHistory.size());
-   //for (size_t i = 0; i < _stateHistory.size(); i++) _stateHistoryIndexes[i] = i;
+   std::vector<size_t> stateHistoryIndexes(_stateHistory.size());
+   for (size_t i = 0; i < _stateHistory.size(); i++) stateHistoryIndexes[i] = i;
 
    for (size_t step = 0; step < _optimizationStepsPerGeneration; step++)
    {
     // Randomly selecting experiences for the mini-batch and calculating their target Q
-    std::shuffle(_stateHistoryIndexes.begin(), _stateHistoryIndexes.end(), *mt);
+    std::shuffle(stateHistoryIndexes.begin(), stateHistoryIndexes.end(), *mt);
 
     for (size_t i = 0; i < _miniBatchSize; i++)
     {
      // Selecting a uniformly random selected, yet not repeated experience
-     size_t expId = _stateHistoryIndexes[i];
+     size_t expId = stateHistoryIndexes[i];
 
      // Storage to put together state and action
      std::vector<double> stateActionInput(_problem->_stateVectorSize + _problem->_actionVectorSize);
@@ -240,14 +124,6 @@ void DDPG::updatePolicy()
     _engine.resume(_actorExperiment);
    }
 
-
-  /****************************************************************************
-  * If batch normalization is being used, we need to adjust mean and variances
-  * by sampling a few more mini-batches after the optimization steps
-  ******************************************************************************/
-
-  normalizeNeuralNetwork(_criticLearner->_trainingNeuralNetwork);
-
   /*********************************************************************
    * Adopting the new parameters
    *********************************************************************/
@@ -263,7 +139,7 @@ void DDPG::updatePolicy()
   *********************************************************************/
 
   // Getting q training hyperparameters to broadcast to workers
-  _hyperparameters = newActorHypeparameters;
+  _hyperparameters["Policy"] = newActorHypeparameters;
   _actorLearner->setHyperparameters(newActorHypeparameters);
   _criticLearner->setHyperparameters(newCriticHyperparameters);
 }
@@ -304,7 +180,7 @@ std::vector<double> DDPG::getTrainingAction(const std::vector<double> &state)
 
 void DDPG::updateHyperparameters(const knlohmann::json& hyperparameters)
 {
- _actorLearner->setHyperparameters(hyperparameters.get<std::vector<double>>());
+ _actorLearner->setHyperparameters(hyperparameters["Policy"].get<std::vector<double>>());
 
  // Re-initializing action noises to zero
  size_t actionCount = _problem->_actionVectorIndexes.size();
@@ -316,23 +192,6 @@ void DDPG::printGenerationAfter()
 {
   // Printing common experience information
   Agent::printGenerationAfter();
-
-  _k->_logger->logInfo("Normal", "DDPG Statistics:\n");
-  _k->_logger->logInfo("Normal", " + Experience Memory Size:          %lu/%lu\n", _stateHistory.size(), _replayMemoryMaximumSize);
-
-  _k->_logger->logInfo("Normal", "Optimization Statistics:\n");
-  if (_maxOptimizationSteps > 0)
-    _k->_logger->logInfo("Normal", " + Optimization Step Count:         %lu/%lu\n", _optimizationStepCount, _maxOptimizationSteps);
-  else
-    _k->_logger->logInfo("Normal", " + Optimization Step Count:         %lu\n", _optimizationStepCount);
-
-  _k->_logger->logInfo("Normal", " + Cumulative Expected Q-Value:     %f\n", _cumulativeQStar);
-  _k->_logger->logInfo("Normal", " + Average Expected Q-Value:        %f\n", _averageQStar);
-
-  _k->_logger->logInfo("Normal", "Critic Network Information:\n");
-  _criticExperiment._logger->_verbosityLevel = _k->_logger->_verbosityLevel;
-  _criticExperiment._solver->printGenerationAfter();
-  _criticExperiment._logger->setVerbosityLevel("Silent");
 
   _k->_logger->logInfo("Normal", "Actor Network Information:\n");
   _actorExperiment._logger->_verbosityLevel = _k->_logger->_verbosityLevel;

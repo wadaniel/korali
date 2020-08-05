@@ -78,30 +78,30 @@ e["Solver"]["Epsilon"]["Decrease Rate"] = 0.05
 ## Defining Q-Weight and Action-selection optimizers
 
 e["Solver"]["Action Optimizer"]["Type"] = "Optimizer/Grid Search" 
-e["Solver"]["Weight Optimizer"]["Type"] = "Optimizer/Adam"
-e["Solver"]["Weight Optimizer"]["Eta"] = 0.1
+e["Solver"]["Critic Optimizer"]["Type"] = "Optimizer/Adam"
+e["Solver"]["Critic Optimizer"]["Eta"] = 0.1
 
 ### Defining the shape of the neural network
 
-e["Solver"]["Neural Network"]["Layers"][0]["Type"] = "Input"
-e["Solver"]["Neural Network"]["Layers"][0]["Node Count"] = 5
-e["Solver"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Linear"
-e["Solver"]["Neural Network"]["Layers"][0]["Batch Normalization"]["Enabled"] = True
+e["Solver"]["Critic Neural Network"]["Layers"][0]["Type"] = "Input"
+e["Solver"]["Critic Neural Network"]["Layers"][0]["Node Count"] = 5
+e["Solver"]["Critic Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Linear"
+e["Solver"]["Critic Neural Network"]["Layers"][0]["Batch Normalization"]["Enabled"] = True
 
-e["Solver"]["Neural Network"]["Layers"][1]["Type"] = "Dense"
-e["Solver"]["Neural Network"]["Layers"][1]["Node Count"] = 32
-e["Solver"]["Neural Network"]["Layers"][1]["Activation Function"]["Type"] = "Tanh"
-e["Solver"]["Neural Network"]["Layers"][1]["Batch Normalization"]["Enabled"] = True
+e["Solver"]["Critic Neural Network"]["Layers"][1]["Type"] = "Dense"
+e["Solver"]["Critic Neural Network"]["Layers"][1]["Node Count"] = 32
+e["Solver"]["Critic Neural Network"]["Layers"][1]["Activation Function"]["Type"] = "Tanh"
+e["Solver"]["Critic Neural Network"]["Layers"][1]["Batch Normalization"]["Enabled"] = True
 
-e["Solver"]["Neural Network"]["Layers"][2]["Type"] = "Dense"
-e["Solver"]["Neural Network"]["Layers"][2]["Node Count"] = 32
-e["Solver"]["Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Tanh"
-e["Solver"]["Neural Network"]["Layers"][2]["Batch Normalization"]["Enabled"] = True
+e["Solver"]["Critic Neural Network"]["Layers"][2]["Type"] = "Dense"
+e["Solver"]["Critic Neural Network"]["Layers"][2]["Node Count"] = 32
+e["Solver"]["Critic Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Tanh"
+e["Solver"]["Critic Neural Network"]["Layers"][2]["Batch Normalization"]["Enabled"] = True
 
-e["Solver"]["Neural Network"]["Layers"][3]["Type"] = "Output"
-e["Solver"]["Neural Network"]["Layers"][3]["Node Count"] = 1
-e["Solver"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Linear"
-e["Solver"]["Neural Network"]["Layers"][3]["Batch Normalization"]["Enabled"] = False 
+e["Solver"]["Critic Neural Network"]["Layers"][3]["Type"] = "Output"
+e["Solver"]["Critic Neural Network"]["Layers"][3]["Node Count"] = 1
+e["Solver"]["Critic Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Linear"
+e["Solver"]["Critic Neural Network"]["Layers"][3]["Batch Normalization"]["Enabled"] = False 
 
 e["Solver"]["Batch Normalization"]["Correction Steps"] = 32
 

@@ -1,18 +1,22 @@
 #ifndef _KORALI_LAYER_DENSE_HPP_
 #define _KORALI_LAYER_DENSE_HPP_
 
-#include "modules/layer/layer.hpp"
+#include "modules/neuralNetwork/layer/layer.hpp"
 
 namespace korali
 {
+namespace neuralNetwork
+{
 namespace layer
 {
-class Dense : public korali::Layer
+class Dense : public Layer
 {
   public:
 };
 
 } // namespace layer
+
+} // namespace neuralNetwork
 
 } // namespace korali
 

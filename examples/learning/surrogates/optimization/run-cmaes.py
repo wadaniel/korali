@@ -10,9 +10,9 @@ assert found
 
 def model(sample):
   x = sample["Parameters"][0]
-  y = surrogate.getEvaluation([[x]])
+  y = surrogate.getEvaluation([x])
   # minus because we maximize
-  sample["F(x)"] = -y[0][0]
+  sample["F(x)"] = -y[0]
 
 k = korali.Engine()
 e = korali.Experiment()

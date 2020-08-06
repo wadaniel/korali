@@ -4,8 +4,8 @@
 #include "engine.hpp"
 #include "modules/distribution/univariate/uniform/uniform.hpp"
 #include "modules/experiment/experiment.hpp"
-#include "modules/layer/layer.hpp"
 #include "modules/module.hpp"
+#include "modules/neuralNetwork/layer/layer.hpp"
 #include "modules/solver/solver.hpp"
 
 #ifdef _KORALI_USE_ONEDNN
@@ -29,24 +29,34 @@ class NeuralNetwork : public Module
   dnnl::stream _stream;
 
   /**
-   * @brief Flag to remember the batch size of the input
-   */
-  size_t _batchSize;
-
-  /**
    * @brief Flag to make sure the NN is initialized before creating
    */
   bool _isInitialized;
+
+  /**
+   * @brief Number of NN hyperparameters (weights/bias/normalization shift/scale)
+   */
+  size_t _hyperparameterCount;
+
+  /**
+   * @brief Number of normalization parameters (mean/variance)
+   */
+  size_t _normalizationParameterCount;
 
 #endif
 
   void initialize() override;
 
   /**
-   * @brief Initializes the internal memory structures for the forward pipeline
-   * @param batchSize The size of the input batch for which the NN has to be created
+   * @brief Generates the initial values for the hyperparameters
+   * @return The initial hyperparameters
    */
-  void createForwardPipeline(size_t batchSize);
+  std::vector<double> generateInitialHyperparameters();
+
+  /**
+   * @brief Initializes the internal memory structures for the forward pipeline
+   */
+  void createForwardPipeline();
 
   /**
   * @brief Initializes the internal memory structures for the backward pipeline
@@ -61,8 +71,39 @@ class NeuralNetwork : public Module
 
   /**
    * @brief Updates the values of weights, biases, and normalization scale/shift configuration to the NN
+   * @param hyperparameters The input hyperparameters
    */
-  void updateWeightsBiasAndNormalization();
+  void setHyperparameters(const std::vector<double> &hyperparameters);
+
+  /**
+   * @brief Gets the values of weights, biases, and normalization scale/shift configuration to the NN
+   * @return The hyperparameters of the NN
+   */
+  std::vector<double> getHyperparameters();
+
+  /**
+   * @brief Gets the values of batch normalization means
+   * @return The batch normalization means
+   */
+  std::vector<double> getNormalizationMeans();
+
+  /**
+  * @brief Updates the values of batch normalization means
+  * @param normalizationMeans The batch normalization means
+  */
+  void setNormalizationMeans(const std::vector<double> &normalizationMeans);
+
+  /**
+   * @brief Gets the values of normalization mean variance
+   * @return The batch normalization variances
+   */
+  std::vector<double> getNormalizationVariances();
+
+  /**
+  * @brief Updates the values of batch normalization variances
+  * @param normalizationVariances The batch normalization variances
+  */
+  void setNormalizationVariances(const std::vector<double> &normalizationVariances);
 
   /**
    * @brief Forward-propagates the input batch data through the network.
@@ -70,10 +111,11 @@ class NeuralNetwork : public Module
   void forward();
 
   /**
-   * @brief Backward-propagates to find out the gradients of the weights and biases.
-   * @param outputDifferential The differential of the output wrt the solution
+  * @brief Runs the backward propagation procedure and returns the gradients of the hyperparameters (weights,bias/normalization) with respect to the output
+  * @param outputDifferential Output differentials
+  * @return The calculated gradients
   */
-  void backwardWeightsAndBias(std::vector<float> &outputDifferential);
+  std::vector<double> getHyperparameterGradients(const std::vector<double> &outputDifferential);
 
   /**
    * @brief Backward-propagates to find out the gradients of the input data.

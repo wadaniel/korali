@@ -1,5 +1,5 @@
-#ifndef _KORALI_AGENT_DQN_HPP_
-#define _KORALI_AGENT_DQN_HPP_
+#ifndef _KORALI_AGENT_DDPG_HPP_
+#define _KORALI_AGENT_DDPG_HPP_
 
 #include "modules/solver/agent/agent.hpp"
 
@@ -9,16 +9,13 @@ namespace solver
 {
 namespace agent
 {
-class DQN : public Agent
+class DDPG : public Agent
 {
   public:
   /**
-   * @brief Function to evaluate the Q* of a given action
-   * @param sample Sample containing the action to evaluate
-   * @param getGradients Indicates whether the gradients are required
+   * @brief Variable to keep track of the current noise added to the action
    */
-  void evaluateAction(Sample &sample, bool getGradients);
-
+  std::vector<double> _currentActionNoises;
   std::vector<double> getTrainingAction(const std::vector<double> &state) override;
   std::vector<double> queryPolicy(const std::vector<double> &state) override;
   void updateHyperparameters(const knlohmann::json &hyperparameters) override;
@@ -31,4 +28,4 @@ class DQN : public Agent
 } // namespace solver
 } // namespace korali
 
-#endif // _KORALI_AGENT_DQN_HPP_
+#endif // _KORALI_AGENT_DDPG_HPP_

@@ -24,6 +24,11 @@ class Engine : public Module
   Engine();
 
   /**
+    * @brief A pointer to the execution conduit. Shared among all experiments in the engine.
+    */
+  Conduit *_conduit;
+
+  /**
    * @brief Verbosity level of the Engine ('Silent', 'Minimal' (default), 'Normal' or 'Detailed').
   */
   std::string _verbosityLevel;

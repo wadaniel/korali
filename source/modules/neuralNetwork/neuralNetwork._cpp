@@ -128,14 +128,6 @@ void NeuralNetwork::createForwardPipeline()
   size_t layerCount = _layers.size();
   memory::dim N = _batchSize;
 
-  if (_layers[0]->_type != "Input") KORALI_LOG_ERROR("The first layer must be of an input type.\n");
-  for (size_t i = 1; i < layerCount - 1; i++)
-  {
-    if (_layers[i]->_type == "Input") KORALI_LOG_ERROR("Hidden layers cannot be input type.\n");
-    if (_layers[i]->_type == "Output") KORALI_LOG_ERROR("Hidden layers cannot be output type.\n");
-  }
-  if (_layers[layerCount - 1]->_type != "Output") KORALI_LOG_ERROR("The last layer must be of an output type.\n");
-
   // Checking Layer sizes
   for (size_t i = 0; i < layerCount; i++)
     if (_layers[i]->_nodeCount == 0)

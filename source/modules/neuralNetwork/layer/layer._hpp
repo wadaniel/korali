@@ -9,6 +9,8 @@
 
 namespace korali
 {
+namespace neuralNetwork
+{
 class Layer : public Module
 {
   public:
@@ -210,6 +212,8 @@ class Layer : public Module
 
 #endif
 };
+
+} // namespace neuralNetwork
 
 } // namespace korali
 

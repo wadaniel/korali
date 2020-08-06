@@ -1,4 +1,4 @@
-#include "modules/conduit/conduit.hpp"
+#include "engine.hpp"
 #include "modules/experiment/experiment.hpp"
 #include "modules/problem/problem.hpp"
 #include "modules/solver/optimizer/DEA/DEA.hpp"
@@ -76,11 +76,11 @@ void DEA::runGeneration()
     samples[i]["Parameters"] = _candidatePopulation[i];
     samples[i]["Sample Id"] = i;
     _modelEvaluationCount++;
-    _conduit->start(samples[i]);
+    KORALI_START(samples[i]);
   }
 
   // Waiting for samples to finish
-  _conduit->waitAll(samples);
+  KORALI_WAITALL(samples);
 
   updateSolver(samples);
 }

@@ -16,11 +16,6 @@ class Conduit : public Module
 {
   public:
   /**
-   * @brief Dictionary of global information broadcasted by the solver, shared by all workers.
-  */
-  knlohmann::json _globals;
-
-  /**
  * @brief Accepts a sample for processing.
  * @param sample A Korali sample
  */
@@ -39,9 +34,10 @@ class Conduit : public Module
 
   /**
  * @brief broadcast global information for all workers to have when processing a sample. Useful for Korali-in-Korali solvers.
+ * @param key Key onto which to save the global information
  * @param globalsJs JSON object with information to broadcast
  */
-  virtual void broadcastGlobals(knlohmann::json &globalsJs) = 0;
+  virtual void broadcastGlobals(std::string key, knlohmann::json &globalsJs) = 0;
 
   /**
  * @brief Aborts execution for all ranks/threads/processes.
@@ -89,11 +85,6 @@ class Conduit : public Module
   */
   static void coroutineWrapper();
 };
-
-/**
-  * @brief A singleton pointer to the execution conduit. Shared among all experiments.
-  */
-extern Conduit *_conduit;
 
 } // namespace korali
 

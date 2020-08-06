@@ -17,7 +17,7 @@ xtrain, ytrain = create_train_data()
 e['Random Seed'] = 0xC0FFEE
 e['Problem']['Type'] = 'Supervised Learning'
 e['Problem']['Inputs'] = [ [ x ] for x in xtrain ] 
-e['Problem']['Outputs'] = [ [ y ]  for y in ytrain ]
+e['Problem']['Solution'] = [ [ y ]  for y in ytrain ]
 
 e['Solver']['Type'] = 'Learner/Gaussian Process'
 e['Solver']['Covariance Function'] = 'CovSEiso'
@@ -38,7 +38,7 @@ show_figure = False
 if show_figure:
   xtest = np.linspace(-1, 1, 100)
   xtest = xtest.reshape((len(xtest), 1))
-  ytest = np.array(e.evaluate(xtest.tolist()))
+  ytest = np.array( [ e.getEvaluation(v) for v in xtest.tolist() ] )
 
   import matplotlib.pyplot as plt
 

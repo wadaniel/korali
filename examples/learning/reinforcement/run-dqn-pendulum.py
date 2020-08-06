@@ -94,22 +94,22 @@ e["Solver"]["Critic Optimizer"]["Eta"] = 0.05
 
 ### Defining the shape of the neural network
 
-e["Solver"]["Critic Neural Network"]["Layers"][0]["Type"] = "Input"
+e["Solver"]["Critic Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
 e["Solver"]["Critic Neural Network"]["Layers"][0]["Node Count"] = 4
 e["Solver"]["Critic Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Linear"
 e["Solver"]["Critic Neural Network"]["Layers"][0]["Batch Normalization"]["Enabled"] = True
 
-e["Solver"]["Critic Neural Network"]["Layers"][1]["Type"] = "Dense"
+e["Solver"]["Critic Neural Network"]["Layers"][1]["Type"] = "Layer/Dense"
 e["Solver"]["Critic Neural Network"]["Layers"][1]["Node Count"] = 32
 e["Solver"]["Critic Neural Network"]["Layers"][1]["Activation Function"]["Type"] = "Tanh"
 e["Solver"]["Critic Neural Network"]["Layers"][1]["Batch Normalization"]["Enabled"] = True
 
-e["Solver"]["Critic Neural Network"]["Layers"][2]["Type"] = "Dense"
+e["Solver"]["Critic Neural Network"]["Layers"][2]["Type"] = "Layer/Dense"
 e["Solver"]["Critic Neural Network"]["Layers"][2]["Node Count"] = 32
 e["Solver"]["Critic Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Tanh"
 e["Solver"]["Critic Neural Network"]["Layers"][2]["Batch Normalization"]["Enabled"] = True
 
-e["Solver"]["Critic Neural Network"]["Layers"][3]["Type"] = "Output"
+e["Solver"]["Critic Neural Network"]["Layers"][3]["Type"] = "Layer/Dense"
 e["Solver"]["Critic Neural Network"]["Layers"][3]["Node Count"] = 1
 e["Solver"]["Critic Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Linear"
 e["Solver"]["Critic Neural Network"]["Layers"][3]["Batch Normalization"]["Enabled"] = True

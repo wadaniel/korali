@@ -15,7 +15,6 @@ namespace learner
 {
 void DeepGD::initialize()
 {
-
   // If the learner is alread initialized, do not do anything else
   if (_isLearnerInitialized == false)
   {
@@ -93,9 +92,9 @@ void DeepGD::runGeneration()
 
 void DeepGD::finalize()
 {
- _hyperparameters = _trainingNeuralNetwork->getHyperparameters();
- _normalizationMeans = _trainingNeuralNetwork->getNormalizationMeans();
- _normalizationVariances = _trainingNeuralNetwork->getNormalizationVariances();
+  _hyperparameters = _trainingNeuralNetwork->getHyperparameters();
+  _normalizationMeans = _trainingNeuralNetwork->getNormalizationMeans();
+  _normalizationVariances = _trainingNeuralNetwork->getNormalizationVariances();
 
   _k->_logger->logInfo("Normal", "Current Loss: %.15f\n", _currentLoss);
 }
@@ -117,26 +116,26 @@ void DeepGD::setHyperparameters(const std::vector<double> &hyperparameters)
   size_t curPos = 0;
 
   // Setting NN hyperparameters first
- _hyperparameters = std::vector<double>(hyperparameters.begin() + curPos, hyperparameters.begin() + _trainingNeuralNetwork->_hyperparameterCount);
- curPos += _hyperparameters.size();
+  _hyperparameters = std::vector<double>(hyperparameters.begin() + curPos, hyperparameters.begin() + _trainingNeuralNetwork->_hyperparameterCount);
+  curPos += _hyperparameters.size();
 
   // Setting NN normalization means second
- _normalizationMeans = std::vector<double>(hyperparameters.begin() + curPos, hyperparameters.begin() + curPos + _trainingNeuralNetwork->_normalizationParameterCount);
- curPos += _normalizationMeans.size();
+  _normalizationMeans = std::vector<double>(hyperparameters.begin() + curPos, hyperparameters.begin() + curPos + _trainingNeuralNetwork->_normalizationParameterCount);
+  curPos += _normalizationMeans.size();
 
- // Setting NN normalization variances finally
- _normalizationVariances = std::vector<double>(hyperparameters.begin() + curPos, hyperparameters.end());
+  // Setting NN normalization variances finally
+  _normalizationVariances = std::vector<double>(hyperparameters.begin() + curPos, hyperparameters.end());
 }
 
 std::vector<double> DeepGD::getEvaluation(const std::vector<double> &inputBatch)
 {
   // Copying hyperparameters and normalization parameters from training to evaluation
- _evaluationNeuralNetwork->setHyperparameters(_hyperparameters);
- _evaluationNeuralNetwork->setNormalizationMeans(_normalizationMeans);
- _evaluationNeuralNetwork->setNormalizationVariances(_normalizationVariances);
+  _evaluationNeuralNetwork->setHyperparameters(_hyperparameters);
+  _evaluationNeuralNetwork->setNormalizationMeans(_normalizationMeans);
+  _evaluationNeuralNetwork->setNormalizationVariances(_normalizationVariances);
 
   // Updating NN inputs
-  _evaluationNeuralNetwork->setInput({ inputBatch });
+  _evaluationNeuralNetwork->setInput({inputBatch});
 
   // Running the input values through the neural network
   _evaluationNeuralNetwork->forward();
@@ -184,23 +183,23 @@ void DeepGD::evaluateHyperparameters(Sample &sample, NeuralNetwork *nn, const st
 
   if (_lossFunction == "Direct")
   {
-   for (size_t i = 0; i < batchSize; i++)
-    for (size_t j = 0; j < outputSize; j++)
-     outputDiff[i * outputSize + j] = -solution[i][j];
+    for (size_t i = 0; i < batchSize; i++)
+      for (size_t j = 0; j < outputSize; j++)
+        outputDiff[i * outputSize + j] = -solution[i][j];
   }
 
   if (_lossFunction == "Mean Squared Error")
   {
-   for (size_t i = 0; i < batchSize; i++)
-     for (size_t j = 0; j < outputSize; j++)
-     {
-       double diff = solution[i][j] - nn->_outputValues[i][j];
-       outputDiff[i * outputSize + j] = diff;
-       output += diff * diff;
-     }
+    for (size_t i = 0; i < batchSize; i++)
+      for (size_t j = 0; j < outputSize; j++)
+      {
+        double diff = solution[i][j] - nn->_outputValues[i][j];
+        outputDiff[i * outputSize + j] = diff;
+        output += diff * diff;
+      }
 
-   // Saving the negative of the error because we want to minimize it
-   output = -output / ((double)batchSize * 2);
+    // Saving the negative of the error because we want to minimize it
+    output = -output / ((double)batchSize * 2);
   }
 
   // Saving the negative of the error because we want to minimize it

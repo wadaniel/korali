@@ -12,7 +12,6 @@ namespace agent
 class DQN : public Agent
 {
   public:
-
   /**
    * @brief Function to evaluate the Q* of a given action
    * @param sample Sample containing the action to evaluate
@@ -21,8 +20,8 @@ class DQN : public Agent
   void evaluateAction(Sample &sample, bool getGradients);
 
   std::vector<double> getTrainingAction(const std::vector<double> &state) override;
-  std::vector<double> queryPolicy(const std::vector<double>& state) override;
-  void updateHyperparameters(const knlohmann::json& hyperparameters) override;
+  std::vector<double> queryPolicy(const std::vector<double> &state) override;
+  void updateHyperparameters(const knlohmann::json &hyperparameters) override;
   void updatePolicy() override;
   void printGenerationAfter() override;
   void initialize() override;

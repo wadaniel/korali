@@ -12,7 +12,6 @@
 */
 namespace korali
 {
-
 /**
  * @brief Macro to start the processing of a sample.
  */

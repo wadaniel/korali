@@ -123,9 +123,9 @@ std::vector<double> GaussianProcess::getHyperparameters()
   return _gpHyperparameters;
 }
 
-void GaussianProcess::setHyperparameters(const std::vector<double>& hyperparameters)
+void GaussianProcess::setHyperparameters(const std::vector<double> &hyperparameters)
 {
- _gpHyperparameters = hyperparameters;
+  _gpHyperparameters = hyperparameters;
 }
 
 } // namespace learner

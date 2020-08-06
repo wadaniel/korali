@@ -517,7 +517,7 @@ koraliDir = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
 modulesDir = koraliDir + '/modules/'
 
 # modules List
-detectedModules = dict()
+detectedModules = []
 detectedParents = set()
 variableDeclarationList = ''
 variableDeclarationSet = set()
@@ -550,7 +550,7 @@ for moduleDir, relDir, fileNames in os.walk(modulesDir):
 
       ####### Adding module and parent to list
 
-      detectedModules[moduleConfig["Class"]] = moduleConfig
+      detectedModules.append(moduleConfig)
       detectedParents.add(moduleConfig["Parent Class"]) 
 
       ###### Producing module code
@@ -694,10 +694,10 @@ if (os.path.exists(moduleNewCodeFile)):
 moduleIncludeList = ''
 moduleDetectionList = ''
 
-for key in detectedModules:
- if (not key in detectedParents):
-  moduleIncludeList += '#include "' + detectedModules[key]["Header Filename"] + '" \n'
-  moduleDetectionList += '  if(moduleType == "' + detectedModules[key]["Option Name"] + '") module = new ' + ''.join(n + '::' for n in detectedModules[key]["Namespace"]) + detectedModules[key]["Class"] + '();\n'
+for module in detectedModules:
+ if (not module["Class"] in detectedParents):
+  moduleIncludeList += '#include "' + module["Header Filename"] + '" \n'
+  moduleDetectionList += '  if(moduleType == "' + module["Option Name"] + '") module = new ' + ''.join(n + '::' for n in module["Namespace"]) + module["Class"] + '();\n'
 
 if (baseFileTime >= newFileTime):
   with open(moduleBaseCodeFileName, 'r') as file:

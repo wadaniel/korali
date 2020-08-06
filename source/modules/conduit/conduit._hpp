@@ -15,7 +15,6 @@ class Engine;
 class Conduit : public Module
 {
   public:
-
   /**
  * @brief Accepts a sample for processing.
  * @param sample A Korali sample

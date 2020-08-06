@@ -1,2 +1,1 @@
 #include "modules/neuralNetwork/layer/dense/dense.hpp"
-

@@ -407,7 +407,7 @@ void Nested::generateCandidatesFromMultiEllipse()
     }
 
     if (ellipse_ptr == NULL)
-     KORALI_LOG_ERROR("Failed to assign ellipse vector.");
+      KORALI_LOG_ERROR("Failed to assign ellipse vector.");
 
     bool accept = false;
     while (accept == false)

@@ -1,4 +1,4 @@
-#include "modules/conduit/conduit.hpp"
+#include "engine.hpp"
 #include "modules/experiment/experiment.hpp"
 #include "modules/solver/learner/deepGD/deepGD.hpp"
 
@@ -18,112 +18,51 @@ void DeepGD::initialize()
   // If the learner is alread initialized, do not do anything else
   if (_isLearnerInitialized == false)
   {
-    // Indicate that the evaluation NN is not yet initialized
-    _isEvaluationNNForwardInitialized = false;
-    _isEvaluationNNBackwardInitialized = false;
-
     // Getting problem pointer
     _problem = dynamic_cast<problem::SupervisedLearning *>(_k->_problem);
 
     /*****************************************************************
-   * Setting up Training Neural Network
+   * Setting up Neural Networks
    *****************************************************************/
 
-    // Setting NN's input and output dimensions
-    size_t outputLayerId = _neuralNetwork->_layers.size() - 1;
-    _neuralNetwork->_layers[0]->_nodeCount = _problem->_inputVectorSize;
-    _neuralNetwork->_layers[outputLayerId]->_nodeCount = _problem->_outputVectorSize;
+    // Setting the number of input layer nodes as number of input vector size
+    _neuralNetwork["Layers"][0]["Node Count"] = _problem->_inputVectorSize;
 
-    // If we use normalization, inform the underlying NN
-    _neuralNetwork->_batchNormalizationEnabled = _batchNormalizationEnabled;
+    // Setting the number of output layer nodes as number of output vector size
+    size_t outputLayerId = _neuralNetwork["Layers"].size() - 1;
+    _neuralNetwork["Layers"][outputLayerId]["Node Count"] = _problem->_solutionVectorSize;
 
-    // Creating Training Neural Network internal structures
-    _neuralNetwork->createForwardPipeline(_problem->_inputs.size());
-    _neuralNetwork->createBackwardPipeline();
+    // Creating training neural network, setting its batch size as the number of inputs to the problem
+    auto neuralNetworkConfig = _neuralNetwork;
+    neuralNetworkConfig["Batch Size"] = _problem->_inputs.size();
+    _trainingNeuralNetwork = dynamic_cast<NeuralNetwork *>(getModule(neuralNetworkConfig, _k));
+
+    // Creating inference neural network, setting its batch size as one (evaluation per call) and following the global (mean/variance) stats of the trained NN
+    neuralNetworkConfig = _neuralNetwork;
+    neuralNetworkConfig["Batch Size"] = 1;
+    neuralNetworkConfig["Use Preloaded Normalization Data"] = true;
+    _evaluationNeuralNetwork = dynamic_cast<NeuralNetwork *>(getModule(neuralNetworkConfig, _k));
 
     /*****************************************************************
    * Setting up weight and bias optimization experiment
    *****************************************************************/
 
     // Creating evaluation lambda function for optimization
-    auto fc = [this, nn = &_neuralNetwork, out = &_problem->_outputs](Sample &sample) { this->evaluateWeightsAndBiases(sample, *nn, *out, true); };
+    auto fc = [this, nn = &_trainingNeuralNetwork, out = &_problem->_solution](Sample &sample) { this->evaluateHyperparameters(sample, *nn, *out, true); };
 
     _optExperiment["Problem"]["Type"] = "Optimization";
     _optExperiment["Problem"]["Objective Function"] = fc;
 
-    size_t currentVariable = 0;
-    for (size_t i = 1; i < _neuralNetwork->_layers.size(); i++)
+    _hyperparameters = _trainingNeuralNetwork->generateInitialHyperparameters();
+    _normalizationMeans = _trainingNeuralNetwork->getNormalizationMeans();
+    _normalizationVariances = _trainingNeuralNetwork->getNormalizationVariances();
+
+    for (size_t i = 0; i < _hyperparameters.size(); i++)
     {
-      for (size_t j = 0; j < _neuralNetwork->_layers[i]->_nodeCount; j++)
-        for (size_t k = 0; k < _neuralNetwork->_layers[i - 1]->_nodeCount; k++)
-        {
-          char varName[512];
-          sprintf(varName, "Weight [%lu] %lu->%lu", i, j, k);
-          std::string varNameString(varName);
-          _optExperiment["Variables"][currentVariable]["Name"] = varNameString;
-
-          // Setting initial weight values
-          double initialGuess = _neuralNetwork->_layers[i]->_weights[j][k];
-
-          _optExperiment["Variables"][currentVariable]["Initial Value"] = initialGuess;
-          _optExperiment["Variables"][currentVariable]["Initial Mean"] = initialGuess;
-          _optExperiment["Variables"][currentVariable]["Initial Standard Deviation"] = abs(initialGuess) * 0.1;
-          currentVariable++;
-        }
-
-      // If we are not using normalization, then we define biases
-      if (_batchNormalizationEnabled == false)
-      {
-        for (size_t j = 0; j < _neuralNetwork->_layers[i]->_nodeCount; j++)
-        {
-          char varName[512];
-          sprintf(varName, "Bias [%lu] %lu", i, j);
-          std::string varNameString(varName);
-          _optExperiment["Variables"][currentVariable]["Name"] = varNameString;
-
-          // Setting initial biases values
-          double initialGuess = _neuralNetwork->_layers[i]->_bias[j];
-
-          _optExperiment["Variables"][currentVariable]["Initial Value"] = initialGuess;
-          _optExperiment["Variables"][currentVariable]["Initial Mean"] = initialGuess;
-          _optExperiment["Variables"][currentVariable]["Initial Standard Deviation"] = abs(initialGuess) * 0.1;
-          currentVariable++;
-        }
-      }
-      else // If we are using normalization, then define scale and shift variables
-      {
-        for (size_t j = 0; j < _neuralNetwork->_layers[i]->_nodeCount; j++)
-        {
-          char varName[512];
-          sprintf(varName, "Scale [%lu] %lu", i, j);
-          std::string varNameString(varName);
-          _optExperiment["Variables"][currentVariable]["Name"] = varNameString;
-
-          // Setting initial biases values
-          double initialGuess = _neuralNetwork->_layers[i]->_batchNormalizationScale[j];
-
-          _optExperiment["Variables"][currentVariable]["Initial Value"] = initialGuess;
-          _optExperiment["Variables"][currentVariable]["Initial Mean"] = initialGuess;
-          _optExperiment["Variables"][currentVariable]["Initial Standard Deviation"] = 0.1;
-          currentVariable++;
-        }
-
-        for (size_t j = 0; j < _neuralNetwork->_layers[i]->_nodeCount; j++)
-        {
-          char varName[512];
-          sprintf(varName, "Shift [%lu] %lu", i, j);
-          std::string varNameString(varName);
-          _optExperiment["Variables"][currentVariable]["Name"] = varNameString;
-
-          // Setting initial biases values
-          double initialGuess = _neuralNetwork->_layers[i]->_batchNormalizationShift[j];
-
-          _optExperiment["Variables"][currentVariable]["Initial Value"] = initialGuess;
-          _optExperiment["Variables"][currentVariable]["Initial Mean"] = initialGuess;
-          _optExperiment["Variables"][currentVariable]["Initial Standard Deviation"] = abs(initialGuess) * 0.1;
-          currentVariable++;
-        }
-      }
+      _optExperiment["Variables"][i]["Name"] = std::string("Hyperparameter") + std::to_string(i);
+      _optExperiment["Variables"][i]["Initial Value"] = _hyperparameters[i];
+      _optExperiment["Variables"][i]["Initial Mean"] = _hyperparameters[i];
+      _optExperiment["Variables"][i]["Initial Standard Deviation"] = abs(_hyperparameters[i]) * 0.1;
     }
 
     _optExperiment["Solver"] = _optimizer;
@@ -136,16 +75,12 @@ void DeepGD::initialize()
     // Running initialization to verify that the configuration is correct
     _optEngine.initialize(_optExperiment);
 
-    // Creating evaluation NN
-    _evaluationNeuralNetwork = dynamic_cast<NeuralNetwork *>(Module::duplicate(_neuralNetwork));
-    _evaluationNeuralNetwork->_batchNormalizationUseGlobalStats = true;
-
     // Setting learner initialized flag
     _isLearnerInitialized = true;
   }
 
   // Update/Copy the inputs into the NN
-  _neuralNetwork->setInput(_problem->_inputs);
+  _trainingNeuralNetwork->setInput(_problem->_inputs);
 }
 
 void DeepGD::runGeneration()
@@ -157,98 +92,66 @@ void DeepGD::runGeneration()
 
 void DeepGD::finalize()
 {
+  _hyperparameters = _trainingNeuralNetwork->getHyperparameters();
+  _normalizationMeans = _trainingNeuralNetwork->getNormalizationMeans();
+  _normalizationVariances = _trainingNeuralNetwork->getNormalizationVariances();
+
   _k->_logger->logInfo("Normal", "Current Loss: %.15f\n", _currentLoss);
 }
 
-knlohmann::json &DeepGD::getHyperparameters()
+std::vector<double> DeepGD::getHyperparameters()
 {
-  // Getting the best paramaters from the optimization, if it has run at least once
-  if (_optExperiment._currentGeneration > 0)
-  {
-    auto parameters = _optExperiment["Results"]["Best Sample"]["Parameters"].get<std::vector<double>>();
-    storeWeightsBiasAndNormalization(_neuralNetwork, parameters);
-  }
+  std::vector<double> parameters;
 
-  // Updating hyperparameters
-  for (size_t i = 1; i < _neuralNetwork->_layers.size(); i++)
-  {
-    _hyperparameters["Weights"][i] = _neuralNetwork->_layers[i]->_weights;
-    _hyperparameters["Bias"][i] = _neuralNetwork->_layers[i]->_bias;
-    _hyperparameters["Layer Normalization"]["Scale"][i] = _neuralNetwork->_layers[i]->_batchNormalizationScale;
-    _hyperparameters["Layer Normalization"]["Shift"][i] = _neuralNetwork->_layers[i]->_batchNormalizationShift;
-    _hyperparameters["Layer Normalization"]["Means"][i] = _neuralNetwork->_layers[i]->_batchNormalizationMeans;
-    _hyperparameters["Layer Normalization"]["Variances"][i] = _neuralNetwork->_layers[i]->_batchNormalizationVariances;
-  }
+  // Concatenating parameters
+  parameters.insert(parameters.end(), _hyperparameters.begin(), _hyperparameters.end());
+  parameters.insert(parameters.end(), _normalizationMeans.begin(), _normalizationMeans.end());
+  parameters.insert(parameters.end(), _normalizationVariances.begin(), _normalizationVariances.end());
 
-  return _hyperparameters;
+  return parameters;
 }
 
-void DeepGD::setHyperparameters(const knlohmann::json &parameters)
+void DeepGD::setHyperparameters(const std::vector<double> &hyperparameters)
 {
-  if (_isEvaluationNNForwardInitialized == false)
-  {
-    _evaluationNeuralNetwork->createForwardPipeline(1);
-    _isEvaluationNNForwardInitialized = true;
-  }
+  size_t curPos = 0;
 
-  for (size_t i = 1; i < _neuralNetwork->_layers.size(); i++)
-  {
-    _evaluationNeuralNetwork->_layers[i]->_weights = parameters["Weights"][i].get<std::vector<std::vector<double>>>();
-    _evaluationNeuralNetwork->_layers[i]->_bias = parameters["Bias"][i].get<std::vector<double>>();
-    _evaluationNeuralNetwork->_layers[i]->_batchNormalizationScale = parameters["Layer Normalization"]["Scale"][i].get<std::vector<double>>();
-    _evaluationNeuralNetwork->_layers[i]->_batchNormalizationShift = parameters["Layer Normalization"]["Shift"][i].get<std::vector<double>>();
-    _evaluationNeuralNetwork->_layers[i]->_batchNormalizationMeans = parameters["Layer Normalization"]["Means"][i].get<std::vector<double>>();
-    _evaluationNeuralNetwork->_layers[i]->_batchNormalizationVariances = parameters["Layer Normalization"]["Variances"][i].get<std::vector<double>>();
-  }
+  // Setting NN hyperparameters first
+  _hyperparameters = std::vector<double>(hyperparameters.begin() + curPos, hyperparameters.begin() + _trainingNeuralNetwork->_hyperparameterCount);
+  curPos += _hyperparameters.size();
 
-  _evaluationNeuralNetwork->updateWeightsBiasAndNormalization();
+  // Setting NN normalization means second
+  _normalizationMeans = std::vector<double>(hyperparameters.begin() + curPos, hyperparameters.begin() + curPos + _trainingNeuralNetwork->_normalizationParameterCount);
+  curPos += _normalizationMeans.size();
+
+  // Setting NN normalization variances finally
+  _normalizationVariances = std::vector<double>(hyperparameters.begin() + curPos, hyperparameters.end());
 }
 
-std::vector<std::vector<double>> DeepGD::getEvaluation(const std::vector<std::vector<double>> &inputBatch)
+std::vector<double> DeepGD::getEvaluation(const std::vector<double> &inputBatch)
 {
-  // If evaluation NN was not initialized, initialize now.
-  if (_isEvaluationNNForwardInitialized == false)
-  {
-    _isEvaluationNNForwardInitialized = true;
-    _evaluationNeuralNetwork->createForwardPipeline(inputBatch.size());
-    setHyperparameters(getHyperparameters());
-  }
+  // Copying hyperparameters and normalization parameters from training to evaluation
+  _evaluationNeuralNetwork->setHyperparameters(_hyperparameters);
+  _evaluationNeuralNetwork->setNormalizationMeans(_normalizationMeans);
+  _evaluationNeuralNetwork->setNormalizationVariances(_normalizationVariances);
 
   // Updating NN inputs
-  _evaluationNeuralNetwork->setInput(inputBatch);
+  _evaluationNeuralNetwork->setInput({inputBatch});
 
   // Running the input values through the neural network
   _evaluationNeuralNetwork->forward();
 
-  return _evaluationNeuralNetwork->_outputValues;
+  return _evaluationNeuralNetwork->_outputValues[0];
 }
 
-std::vector<std::vector<double>> DeepGD::getGradients(const std::vector<std::vector<double>> &outputDiffs)
+std::vector<double> DeepGD::getGradients(const std::vector<double> &outputDiffs)
 {
-  // Building evaluation NN's backward pipeline if not yet initialized
-  if (_isEvaluationNNBackwardInitialized == false)
-  {
-    if (_isEvaluationNNForwardInitialized == false)
-      KORALI_LOG_ERROR("Attempting to get gradients but forward inference has not yet been performed.\n");
-
-    _evaluationNeuralNetwork->createBackwardPipeline();
-
-    _isEvaluationNNBackwardInitialized = true;
-  }
-
-  size_t batchSize = _evaluationNeuralNetwork->_outputValues.size();
-  size_t outputSize = _evaluationNeuralNetwork->_outputValues[0].size();
-
   // Converting precision
-  std::vector<float> singlePrecisionDiffs(batchSize * outputSize);
-  for (size_t i = 0; i < batchSize; i++)
-    for (size_t j = 0; j < outputSize; j++)
-      singlePrecisionDiffs[i * outputSize + j] = outputDiffs[i][j];
+  std::vector<float> singlePrecisionDiffs(outputDiffs.begin(), outputDiffs.end());
 
   // Running backward propagation wrt data
   _evaluationNeuralNetwork->backwardData(singlePrecisionDiffs);
 
-  return _evaluationNeuralNetwork->_inputGradient;
+  return _evaluationNeuralNetwork->_inputGradient[0];
 }
 
 void DeepGD::printGenerationAfter()
@@ -257,58 +160,13 @@ void DeepGD::printGenerationAfter()
   _k->_logger->logInfo("Normal", "Training Loss: %.15f\n", _currentLoss);
 }
 
-size_t DeepGD::storeWeightsBiasAndNormalization(NeuralNetwork *nn, const std::vector<double> params)
-{
-  // Updating training network's weights and biases
-  size_t currentVariable = 0;
-  for (size_t i = 1; i < nn->_layers.size(); i++)
-  {
-    nn->_layers[i]->_weights.resize(nn->_layers[i]->_nodeCount);
-    nn->_layers[i]->_bias.resize(nn->_layers[i]->_nodeCount);
-    nn->_layers[i]->_batchNormalizationScale.resize(nn->_layers[i]->_nodeCount);
-    nn->_layers[i]->_batchNormalizationShift.resize(nn->_layers[i]->_nodeCount);
-
-    // Adding layer's weights
-    for (size_t j = 0; j < nn->_layers[i]->_nodeCount; j++)
-    {
-      nn->_layers[i]->_weights[j].resize(nn->_layers[i - 1]->_nodeCount);
-
-      for (size_t k = 0; k < nn->_layers[i - 1]->_nodeCount; k++)
-        nn->_layers[i]->_weights[j][k] = params[currentVariable++];
-    }
-
-    // Adding layer's biases if no normalization was defined
-    if (_neuralNetwork->_batchNormalizationEnabled == false)
-    {
-      for (size_t j = 0; j < nn->_layers[i]->_nodeCount; j++)
-        nn->_layers[i]->_bias[j] = params[currentVariable++];
-    }
-
-    // If normalization was defined, biases are zero, and we specify scale and shift
-    if (_neuralNetwork->_batchNormalizationEnabled == true)
-    {
-      for (size_t j = 0; j < nn->_layers[i]->_nodeCount; j++)
-        nn->_layers[i]->_bias[j] = 0.0;
-      for (size_t j = 0; j < nn->_layers[i]->_nodeCount; j++)
-        nn->_layers[i]->_batchNormalizationScale[j] = params[currentVariable++];
-      for (size_t j = 0; j < nn->_layers[i]->_nodeCount; j++)
-        nn->_layers[i]->_batchNormalizationShift[j] = params[currentVariable++];
-    }
-  }
-
-  return currentVariable;
-}
-
-void DeepGD::evaluateWeightsAndBiases(Sample &sample, NeuralNetwork *nn, const std::vector<std::vector<double>> &solution, bool getGradients)
+void DeepGD::evaluateHyperparameters(Sample &sample, NeuralNetwork *nn, const std::vector<std::vector<double>> &solution, bool getGradients)
 {
   // Getting parameters for weight and bias update
   auto parameters = KORALI_GET(std::vector<double>, sample, "Parameters");
 
-  // Storing the weights and biases into the neural network
-  size_t variableCount = storeWeightsBiasAndNormalization(nn, parameters);
-
-  // Updating the trainingnetwork's weights, biases, and normalzation factors
-  nn->updateWeightsBiasAndNormalization();
+  // Updating the training network's weights, biases, and normalization factors
+  nn->setHyperparameters(parameters);
 
   // Running the input values through the training neural network
   nn->forward();
@@ -317,61 +175,38 @@ void DeepGD::evaluateWeightsAndBiases(Sample &sample, NeuralNetwork *nn, const s
   size_t batchSize = nn->_outputValues.size();
   size_t outputSize = nn->_outputValues[0].size();
 
-  // Calculating mean square error
-  double meanSquaredError = 0.0;
+  // Variable for the NN output
+  double output = 0.0;
 
   // Saving values for the last layer's diff
-  std::vector<float> outputDiff(batchSize * outputSize);
+  std::vector<double> outputDiff(batchSize * outputSize);
 
-  for (size_t i = 0; i < batchSize; i++)
-    for (size_t j = 0; j < outputSize; j++)
-    {
-      double diff = solution[i][j] - nn->_outputValues[i][j];
-      outputDiff[i * outputSize + j] = diff;
-      meanSquaredError += diff * diff;
-    }
+  if (_lossFunction == "Direct")
+  {
+    for (size_t i = 0; i < batchSize; i++)
+      for (size_t j = 0; j < outputSize; j++)
+        outputDiff[i * outputSize + j] = -solution[i][j];
+  }
 
-  meanSquaredError = meanSquaredError / ((double)batchSize * 2);
+  if (_lossFunction == "Mean Squared Error")
+  {
+    for (size_t i = 0; i < batchSize; i++)
+      for (size_t j = 0; j < outputSize; j++)
+      {
+        double diff = solution[i][j] - nn->_outputValues[i][j];
+        outputDiff[i * outputSize + j] = diff;
+        output += diff * diff;
+      }
+
+    // Saving the negative of the error because we want to minimize it
+    output = -output / ((double)batchSize * 2);
+  }
 
   // Saving the negative of the error because we want to minimize it
-  sample["F(x)"] = -meanSquaredError;
+  sample["F(x)"] = output;
 
-  if (getGradients)
-  {
-    // Running backward propagation
-    nn->backwardWeightsAndBias(outputDiff);
-
-    // Copying back the gradients and biases back
-    std::vector<double> gradientVector(variableCount);
-
-    size_t currentVariable = 0;
-    for (size_t i = 1; i < nn->_layers.size(); i++)
-    {
-      // Adding layer's weights
-      for (size_t j = 0; j < nn->_layers[i]->_nodeCount; j++)
-        for (size_t k = 0; k < nn->_layers[i - 1]->_nodeCount; k++)
-          gradientVector[currentVariable++] = nn->_layers[i]->_weightGradient[j][k];
-
-      // Adding layer's biases if no normalization has been defined
-      if (_neuralNetwork->_batchNormalizationEnabled == false)
-      {
-        for (size_t j = 0; j < nn->_layers[i]->_nodeCount; j++)
-          gradientVector[currentVariable++] = nn->_layers[i]->_biasGradient[j];
-      }
-      else
-      {
-        // Storing gradients for scaling
-        for (size_t j = 0; j < nn->_layers[i]->_nodeCount; j++)
-          gradientVector[currentVariable++] = nn->_layers[i]->_batchNormalizationScaleGradient[j];
-
-        // Storing gradients for shift
-        for (size_t j = 0; j < nn->_layers[i]->_nodeCount; j++)
-          gradientVector[currentVariable++] = nn->_layers[i]->_batchNormalizationShiftGradient[j];
-      }
-    }
-
-    sample["Gradient"] = gradientVector;
-  }
+  // If we need the gradients of the weights, we also compute them
+  if (getGradients) sample["Gradient"] = nn->getHyperparameterGradients(outputDiff);
 }
 
 } // namespace learner

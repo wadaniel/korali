@@ -1,0 +1,205 @@
+#include "modules/solver/agent/DDPG/DDPG.hpp"
+
+/****************************************
+ * Things to fix:
+ * - All samples use their own pseudorandom generators
+ * - All seeds must be replicable when restarting a job
+ *****************************************/
+
+namespace korali
+{
+namespace solver
+{
+namespace agent
+{
+void DDPG::initialize()
+{
+  // Calling common initialization routine for all agents
+  Agent::initialize();
+
+  /*********************************************************************
+   * Creating and running Actor Learning Experiments
+   *********************************************************************/
+
+  _actorExperiment["Problem"]["Type"] = "Supervised Learning";
+
+  _actorExperiment["Solver"]["Type"] = "Learner/DeepGD";
+  _actorExperiment["Solver"]["Batch Normalization"]["Enabled"] = false;
+  _actorExperiment["Solver"]["Loss Function"] = "Direct";
+  _actorExperiment["Solver"]["Optimizer"] = _actorOptimizer;
+  _actorExperiment["Solver"]["Steps Per Generation"] = 1;
+  _actorExperiment["Solver"]["Neural Network"] = _actorNeuralNetwork;
+
+  _actorExperiment["Console Output"]["Frequency"] = 0;
+  _actorExperiment["Console Output"]["Verbosity"] = "Silent";
+  _actorExperiment["File Output"]["Enabled"] = false;
+  _actorExperiment["Random Seed"] = _k->_randomSeed++;
+
+  // Initializing experiment with an initial zero set
+  for (size_t i = 0; i < _miniBatchSize; i++)
+  {
+    for (size_t j = 0; j < _problem->_stateVectorSize; j++)
+      _actorExperiment["Problem"]["Inputs"][i][j] = 0.0;
+
+    for (size_t j = 0; j < _problem->_actionVectorSize; j++)
+      _actorExperiment["Problem"]["Solution"][i][j] = 0.0;
+  }
+
+  // Running initialization to verify that the configuration is correct
+  _engine.initialize(_actorExperiment);
+
+  // Getting learner pointers
+  _actorProblem = dynamic_cast<problem::SupervisedLearning *>(_actorExperiment._problem);
+  _actorLearner = dynamic_cast<solver::learner::DeepGD *>(_actorExperiment._solver);
+
+  /*********************************************************************
+  * Setting initial configuration
+  *********************************************************************/
+
+  // If initial generation, set initial DDPG configuration
+  if (_k->_currentGeneration == 0)
+  {
+    _currentEpisode = 0;
+    _suboptimalStepCounter = 0;
+    _optimizationStepCount = 0;
+
+    // Initialize best reward
+    _bestAverageReward = -korali::Inf;
+
+    // Get the initial set of hyperparameters
+    _hyperparameters["Policy"] = _actorLearner->getHyperparameters();
+    _bestHyperparameters = _hyperparameters;
+  }
+
+  // Assigning training hyperparameters to inference learner
+  _actorLearner->setHyperparameters(_hyperparameters["Policy"]);
+}
+
+void DDPG::updatePolicy()
+{
+  /***********************************************************************************
+  * Grabbing current set of hyperparameters
+  **********************************************************************************/
+
+  auto curActorHypeparameters = _actorLearner->getHyperparameters();
+  auto curCriticHyperparameters = _criticLearner->getHyperparameters();
+
+  /***********************************************************************************
+   * Updating Actor/Policy/Pi Network by performing a Stochastic Gradient Descent step
+   ***********************************************************************************/
+
+  // Creating state history indexes to choose from
+  std::vector<size_t> stateHistoryIndexes(_stateHistory.size());
+  for (size_t i = 0; i < _stateHistory.size(); i++) stateHistoryIndexes[i] = i;
+
+  for (size_t step = 0; step < _optimizationStepsPerGeneration; step++)
+  {
+    // Randomly selecting experiences for the mini-batch and calculating their target Q
+    std::shuffle(stateHistoryIndexes.begin(), stateHistoryIndexes.end(), *mt);
+
+    for (size_t i = 0; i < _miniBatchSize; i++)
+    {
+      // Selecting a uniformly random selected, yet not repeated experience
+      size_t expId = stateHistoryIndexes[i];
+
+      // Storage to put together state and action
+      std::vector<double> stateActionInput(_problem->_stateVectorSize + _problem->_actionVectorSize);
+
+      // Now calculating Gradient of q with respect to state+action for the critic NN
+      for (size_t j = 0; j < _problem->_stateVectorSize; j++) stateActionInput[j] = _stateHistory[expId][j];
+      for (size_t j = 0; j < _problem->_actionVectorSize; j++) stateActionInput[_problem->_stateVectorSize + j] = _actionHistory[expId][j];
+
+      _criticLearner->getEvaluation(stateActionInput);
+      auto qGradients = _criticLearner->getGradients({{-1.0}}); // Identity, to estimate the exact gradient dQ/dAS
+      std::vector<double> aGradients = std::vector<double>(qGradients.begin() + _problem->_stateVectorSize, qGradients.end());
+
+      for (size_t j = 0; j < _problem->_stateVectorSize; j++) _actorProblem->_inputs[i][j] = _stateHistory[expId][j];
+      _actorProblem->_solution[i] = aGradients;
+    }
+
+    // Running one generation of the optimization method on the actor NN with the given mini-batch
+    _actorExperiment["Solver"]["Termination Criteria"]["Max Generations"] = _actorExperiment._currentGeneration + 1;
+    _actorLearner->initialize();
+    _engine.resume(_actorExperiment);
+  }
+
+  /*********************************************************************
+   * Adopting the new parameters
+   *********************************************************************/
+
+  auto newActorHypeparameters = _actorLearner->getHyperparameters();
+  auto newCriticHyperparameters = _criticLearner->getHyperparameters();
+
+  for (size_t i = 0; i < newActorHypeparameters.size(); i++) newActorHypeparameters[i] = _adoptionRate * newActorHypeparameters[i] + (1 - _adoptionRate) * curActorHypeparameters[i];
+  for (size_t i = 0; i < newCriticHyperparameters.size(); i++) newCriticHyperparameters[i] = _adoptionRate * newCriticHyperparameters[i] + (1 - _adoptionRate) * curCriticHyperparameters[i];
+
+  /*********************************************************************
+  * Updating hyperparameters and broadcasting them to the workers
+  *********************************************************************/
+
+  // Getting q training hyperparameters to broadcast to workers
+  _hyperparameters["Policy"] = newActorHypeparameters;
+  _actorLearner->setHyperparameters(newActorHypeparameters);
+  _criticLearner->setHyperparameters(newCriticHyperparameters);
+}
+
+std::vector<double> DDPG::queryPolicy(const std::vector<double> &state)
+{
+  return _actorLearner->getEvaluation({state});
+}
+
+std::vector<double> DDPG::getTrainingAction(const std::vector<double> &state)
+{
+  // Forward-propagating state through actor NN
+  auto action = queryPolicy(state);
+
+  // Checking for correctness of the action
+  for (size_t i = 0; i < action.size(); i++)
+  {
+    if (std::isfinite(action[i]) == false)
+      KORALI_LOG_ERROR(" + Action [%lu] is not finite (%f)\n", i, action[i]);
+  }
+
+  // printf("State: %f - Action: %f - Action: %f\n", state[0], action[0], action[1]);
+
+  // Introducing random noise to the action
+  for (size_t i = 0; i < _problem->_actionVectorIndexes.size(); i++)
+  {
+    size_t varIdx = _problem->_actionVectorIndexes[i];
+    double w = _k->_variables[varIdx]->_explorationNoiseRandomVariable->getRandomNumber();
+    double noise = _k->_variables[varIdx]->_explorationNoiseTheta * _currentActionNoises[i] + w;
+    action[i] += noise;
+    //printf("Theta (%f) * Previous Noise: (%f) + W: (%f) = %f\n", _k->_variables[varIdx]->_explorationNoiseTheta, _currentActionNoises[i], w, noise);
+    _currentActionNoises[i] = noise;
+  }
+
+  // Getting optimal action, based on the NN evaluation
+  return action;
+}
+
+void DDPG::updateHyperparameters(const knlohmann::json &hyperparameters)
+{
+  _actorLearner->setHyperparameters(hyperparameters["Policy"].get<std::vector<double>>());
+
+  // Re-initializing action noises to zero
+  size_t actionCount = _problem->_actionVectorIndexes.size();
+  _currentActionNoises.resize(actionCount);
+  for (size_t i = 0; i < actionCount; i++) _currentActionNoises[i] = 0.0;
+}
+
+void DDPG::printGenerationAfter()
+{
+  // Printing common experience information
+  Agent::printGenerationAfter();
+
+  _k->_logger->logInfo("Normal", "Actor Network Information:\n");
+  _actorExperiment._logger->_verbosityLevel = _k->_logger->_verbosityLevel;
+  _actorExperiment._solver->printGenerationAfter();
+  _actorExperiment._logger->setVerbosityLevel("Silent");
+}
+
+} // namespace agent
+
+} // namespace solver
+
+} // namespace korali

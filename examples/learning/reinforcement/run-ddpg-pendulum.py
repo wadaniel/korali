@@ -100,22 +100,22 @@ e["Solver"]["Critic Optimizer"]["Eta"] = 0.01
 
 ### Defining the shape of the critic neural network
 
-e["Solver"]["Critic Neural Network"]["Layers"][0]["Type"] = "Input"
+e["Solver"]["Critic Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
 e["Solver"]["Critic Neural Network"]["Layers"][0]["Node Count"] = 4
 e["Solver"]["Critic Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Linear"
 e["Solver"]["Critic Neural Network"]["Layers"][0]["Batch Normalization"]["Enabled"] = False
 
-e["Solver"]["Critic Neural Network"]["Layers"][1]["Type"] = "Dense"
+e["Solver"]["Critic Neural Network"]["Layers"][1]["Type"] = "Layer/Dense"
 e["Solver"]["Critic Neural Network"]["Layers"][1]["Node Count"] = 32
 e["Solver"]["Critic Neural Network"]["Layers"][1]["Activation Function"]["Type"] = "Tanh"
 e["Solver"]["Critic Neural Network"]["Layers"][1]["Batch Normalization"]["Enabled"] = False
 
-e["Solver"]["Critic Neural Network"]["Layers"][2]["Type"] = "Dense"
+e["Solver"]["Critic Neural Network"]["Layers"][2]["Type"] = "Layer/Dense"
 e["Solver"]["Critic Neural Network"]["Layers"][2]["Node Count"] = 32
 e["Solver"]["Critic Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Tanh"
 e["Solver"]["Critic Neural Network"]["Layers"][2]["Batch Normalization"]["Enabled"] = False
 
-e["Solver"]["Critic Neural Network"]["Layers"][3]["Type"] = "Output"
+e["Solver"]["Critic Neural Network"]["Layers"][3]["Type"] = "Layer/Dense"
 e["Solver"]["Critic Neural Network"]["Layers"][3]["Node Count"] = 1
 e["Solver"]["Critic Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Linear"
 e["Solver"]["Critic Neural Network"]["Layers"][3]["Batch Normalization"]["Enabled"] = False 
@@ -125,22 +125,22 @@ e["Solver"]["Batch Normalization"]["Correction Steps"] = 32
 
 ### Defining the shape of the actor neural network
 
-e["Solver"]["Actor Neural Network"]["Layers"][0]["Type"] = "Input"
+e["Solver"]["Actor Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
 e["Solver"]["Actor Neural Network"]["Layers"][0]["Node Count"] = 3
 e["Solver"]["Actor Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Linear"
 e["Solver"]["Actor Neural Network"]["Layers"][0]["Batch Normalization"]["Enabled"] = False
 
-e["Solver"]["Actor Neural Network"]["Layers"][1]["Type"] = "Dense"
+e["Solver"]["Actor Neural Network"]["Layers"][1]["Type"] = "Layer/Dense"
 e["Solver"]["Actor Neural Network"]["Layers"][1]["Node Count"] = 32
 e["Solver"]["Actor Neural Network"]["Layers"][1]["Activation Function"]["Type"] = "Tanh"
 e["Solver"]["Actor Neural Network"]["Layers"][1]["Batch Normalization"]["Enabled"] = False
 
-e["Solver"]["Actor Neural Network"]["Layers"][2]["Type"] = "Dense"
+e["Solver"]["Actor Neural Network"]["Layers"][2]["Type"] = "Layer/Dense"
 e["Solver"]["Actor Neural Network"]["Layers"][2]["Node Count"] = 32
 e["Solver"]["Actor Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Tanh"
 e["Solver"]["Actor Neural Network"]["Layers"][2]["Batch Normalization"]["Enabled"] = False
 
-e["Solver"]["Actor Neural Network"]["Layers"][3]["Type"] = "Output"
+e["Solver"]["Actor Neural Network"]["Layers"][3]["Type"] = "Layer/Dense"
 e["Solver"]["Actor Neural Network"]["Layers"][3]["Node Count"] = 1
 e["Solver"]["Actor Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Tanh" 
 e["Solver"]["Actor Neural Network"]["Layers"][3]["Batch Normalization"]["Enabled"] = False

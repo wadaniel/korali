@@ -6,7 +6,7 @@ import gym
 
 ######## Defining Environment Storage
 
-maxSteps = 100
+maxSteps = 1
 
 ####### Defining Problem's environment
 
@@ -22,12 +22,11 @@ def env(s):
   s.update()
   
   # Reading action
-  action = s["Action"][0] * 5.0
-  #print(action) 
+  action = s["Action"][0]
   
   # Reward = action, if not bigger than state
-  val = action - s["State"][0]
-  reward = -val*val + 3
+  val = action - s["State"][0] 
+  reward = -val*val
     
   # Storing Reward
   s["Reward"] = reward
@@ -49,7 +48,7 @@ e["Variables"][0]["Type"] = "State"
 
 e["Variables"][1]["Name"] = "Spenditure"
 e["Variables"][1]["Type"] = "Action"
-e["Variables"][1]["Values"] = [ 0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0 ]
+e["Variables"][1]["Values"] = [ 0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0 ]
 
 ### Configuring DQN hyperparameters
 
@@ -83,18 +82,22 @@ e["Solver"]["Critic Optimizer"]["Eta"] = 0.1
 
 ### Defining the shape of the neural network
 
+e["Solver"]["Critic Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
 e["Solver"]["Critic Neural Network"]["Layers"][0]["Node Count"] = 5
 e["Solver"]["Critic Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Linear"
 e["Solver"]["Critic Neural Network"]["Layers"][0]["Batch Normalization"]["Enabled"] = True
 
+e["Solver"]["Critic Neural Network"]["Layers"][1]["Type"] = "Layer/Dense"
 e["Solver"]["Critic Neural Network"]["Layers"][1]["Node Count"] = 32
 e["Solver"]["Critic Neural Network"]["Layers"][1]["Activation Function"]["Type"] = "Tanh"
 e["Solver"]["Critic Neural Network"]["Layers"][1]["Batch Normalization"]["Enabled"] = True
 
+e["Solver"]["Critic Neural Network"]["Layers"][2]["Type"] = "Layer/Dense"
 e["Solver"]["Critic Neural Network"]["Layers"][2]["Node Count"] = 32
 e["Solver"]["Critic Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Tanh"
 e["Solver"]["Critic Neural Network"]["Layers"][2]["Batch Normalization"]["Enabled"] = True
 
+e["Solver"]["Critic Neural Network"]["Layers"][3]["Type"] = "Layer/Dense"
 e["Solver"]["Critic Neural Network"]["Layers"][3]["Node Count"] = 1
 e["Solver"]["Critic Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Linear"
 e["Solver"]["Critic Neural Network"]["Layers"][3]["Batch Normalization"]["Enabled"] = False 
@@ -103,7 +106,7 @@ e["Solver"]["Batch Normalization"]["Correction Steps"] = 32
 
 ### Defining Termination Criteria
 
-e["Solver"]["Termination Criteria"]["Target Average Reward"] = 290
+e["Solver"]["Termination Criteria"]["Target Average Reward"] = 0
 
 ### Setting file output configuration
 

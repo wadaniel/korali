@@ -33,7 +33,7 @@ class Learner : public Solver
 
   /**
   * @brief Sets the hyperparameters required to produce new evaluations and gradients
-  * @param parameters The hyperparameters to use
+  * @param hyperparameters The hyperparameters to use
   */
   virtual void setHyperparameters(const std::vector<double>& hyperparameters) = 0;
 };

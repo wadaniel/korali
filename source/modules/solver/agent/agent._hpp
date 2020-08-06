@@ -98,7 +98,7 @@ class Agent : public Solver
 
   /**
   * @brief Normalizes neural network batch normalization mean and variances
-  * @param The neural network to normalize
+  * @param nn The neural network to normalize
   */
   void normalizeNeuralNetwork(korali::NeuralNetwork* nn);
 

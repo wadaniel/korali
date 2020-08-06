@@ -36,7 +36,6 @@ Korali's Documentation
    modules/solver/*
    modules/conduit/*
    modules/distribution/*
-   modules/layer/*         
    modules/neuralNetwork/*
    
 .. toctree::

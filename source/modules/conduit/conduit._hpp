@@ -35,6 +35,7 @@ class Conduit : public Module
 
   /**
  * @brief broadcast global information for all workers to have when processing a sample. Useful for Korali-in-Korali solvers.
+ * @param key Key onto which to save the global information
  * @param globalsJs JSON object with information to broadcast
  */
   virtual void broadcastGlobals(std::string key, knlohmann::json &globalsJs) = 0;

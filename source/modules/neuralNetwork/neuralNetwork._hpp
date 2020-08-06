@@ -55,7 +55,6 @@ class NeuralNetwork : public Module
 
   /**
    * @brief Initializes the internal memory structures for the forward pipeline
-   * @param batchSize The size of the input batch for which the NN has to be created
    */
   void createForwardPipeline();
 
@@ -113,7 +112,7 @@ class NeuralNetwork : public Module
 
   /**
   * @brief Runs the backward propagation procedure and returns the gradients of the hyperparameters (weights,bias/normalization) with respect to the output
-  * @param outputDiffs Output differentials
+  * @param outputDifferential Output differentials
   * @return The calculated gradients
   */
   std::vector<double> getHyperparameterGradients(const std::vector<double> &outputDifferential);

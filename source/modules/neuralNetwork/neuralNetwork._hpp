@@ -4,8 +4,8 @@
 #include "engine.hpp"
 #include "modules/distribution/univariate/uniform/uniform.hpp"
 #include "modules/experiment/experiment.hpp"
-#include "modules/neuralNetwork/layer/layer.hpp"
 #include "modules/module.hpp"
+#include "modules/neuralNetwork/layer/layer.hpp"
 #include "modules/solver/solver.hpp"
 
 #ifdef _KORALI_USE_ONEDNN
@@ -73,7 +73,7 @@ class NeuralNetwork : public Module
    * @brief Updates the values of weights, biases, and normalization scale/shift configuration to the NN
    * @param hyperparameters The input hyperparameters
    */
-  void setHyperparameters(const std::vector<double>& hyperparameters);
+  void setHyperparameters(const std::vector<double> &hyperparameters);
 
   /**
    * @brief Gets the values of weights, biases, and normalization scale/shift configuration to the NN
@@ -87,7 +87,7 @@ class NeuralNetwork : public Module
    */
   std::vector<double> getNormalizationMeans();
 
- /**
+  /**
   * @brief Updates the values of batch normalization means
   * @param normalizationMeans The batch normalization means
   */
@@ -99,7 +99,7 @@ class NeuralNetwork : public Module
    */
   std::vector<double> getNormalizationVariances();
 
- /**
+  /**
   * @brief Updates the values of batch normalization variances
   * @param normalizationVariances The batch normalization variances
   */

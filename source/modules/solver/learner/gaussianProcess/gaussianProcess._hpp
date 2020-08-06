@@ -49,7 +49,7 @@ class GaussianProcess : public Learner
 
   std::vector<double> getEvaluation(const std::vector<double> &input) override;
   std::vector<double> getHyperparameters() override;
-  void setHyperparameters(const std::vector<double>& hyperparameters) override;
+  void setHyperparameters(const std::vector<double> &hyperparameters) override;
   void initialize() override;
   void runGeneration() override;
   void printGenerationAfter() override;

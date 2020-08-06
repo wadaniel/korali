@@ -9,11 +9,9 @@ namespace neuralNetwork
 {
 namespace layer
 {
-
 class Dense : public Layer
 {
   public:
-
 };
 
 } // namespace layer

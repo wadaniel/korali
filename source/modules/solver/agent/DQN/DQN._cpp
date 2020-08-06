@@ -74,7 +74,6 @@ void DQN::initialize()
 
 void DQN::updatePolicy()
 {
-
   /*********************************************************************
   * Updating hyperparameters
   *********************************************************************/
@@ -96,8 +95,8 @@ std::vector<double> DQN::getTrainingAction(const std::vector<double> &state)
   // If no states have been registered yet, use the random option in any case
   if (p < _epsilonCurrentValue)
   {
-   // Storage for action
-   std::vector<double> randomAction(_problem->_actionVectorSize);
+    // Storage for action
+    std::vector<double> randomAction(_problem->_actionVectorSize);
 
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
     {
@@ -145,7 +144,7 @@ void DQN::evaluateAction(Sample &sample, bool getGradients)
   for (size_t j = 0; j < action.size(); j++) stateActionInput[j + state.size()] = action[j];
 
   auto evaluation = _criticLearner->getEvaluation(stateActionInput);
-  auto gradients = _criticLearner->getGradients({{ -1.0 }});
+  auto gradients = _criticLearner->getGradients({{-1.0}});
 
   sample["F(x)"] = evaluation[0];
 
@@ -156,13 +155,13 @@ void DQN::evaluateAction(Sample &sample, bool getGradients)
   }
 }
 
-void DQN::updateHyperparameters(const knlohmann::json& hyperparameters)
+void DQN::updateHyperparameters(const knlohmann::json &hyperparameters)
 {
- _criticLearner->setHyperparameters(hyperparameters["Critic"].get<std::vector<double>>());
- _epsilonCurrentValue = hyperparameters["Epsilon"].get<double>();
+  _criticLearner->setHyperparameters(hyperparameters["Critic"].get<std::vector<double>>());
+  _epsilonCurrentValue = hyperparameters["Epsilon"].get<double>();
 }
 
-std::vector<double> DQN::queryPolicy(const std::vector<double>& state)
+std::vector<double> DQN::queryPolicy(const std::vector<double> &state)
 {
   _actorExperiment._globals["Current State"] = state;
 

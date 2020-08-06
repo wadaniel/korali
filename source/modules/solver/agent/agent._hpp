@@ -2,8 +2,8 @@
 #define _KORALI_AGENT_HPP_
 
 #include "engine.hpp"
-#include "modules/problem/supervisedLearning/supervisedLearning.hpp"
 #include "modules/problem/reinforcementLearning/reinforcementLearning.hpp"
+#include "modules/problem/supervisedLearning/supervisedLearning.hpp"
 #include "modules/solver/learner/deepGD/deepGD.hpp"
 #include <algorithm> // std::shuffle
 #include <random>
@@ -15,8 +15,7 @@ namespace solver
 class Agent : public Solver
 {
   public:
-
- /**
+  /**
  * @brief Korali engine for running internal experiments
  */
   korali::Engine _engine;
@@ -39,17 +38,17 @@ class Agent : public Solver
   /**
   * @brief Korali experiment for argmax_action(Q) based on a trained Q-Network
   */
-   korali::Experiment _actorExperiment;
+  korali::Experiment _actorExperiment;
 
-   /**
+  /**
    * @brief Pointer to training the actor network
    */
-   learner::DeepGD *_actorLearner;
+  learner::DeepGD *_actorLearner;
 
-   /**
+  /**
    * @brief Pointer to actor's experiment problem
    */
-   problem::SupervisedLearning *_actorProblem;
+  problem::SupervisedLearning *_actorProblem;
 
   /**
   * @brief Storage for the pointer to the learning problem
@@ -94,20 +93,20 @@ class Agent : public Solver
   * @brief Updates the policy's hyperparameters to calculate the next action of the agent
   * @param hyperparameters The hyperparameters to update the policy.
   */
-  virtual void updateHyperparameters(const knlohmann::json& hyperparameters) = 0;
+  virtual void updateHyperparameters(const knlohmann::json &hyperparameters) = 0;
 
   /**
   * @brief Normalizes neural network batch normalization mean and variances
   * @param nn The neural network to normalize
   */
-  void normalizeNeuralNetwork(korali::NeuralNetwork* nn);
+  void normalizeNeuralNetwork(korali::NeuralNetwork *nn);
 
   /**
   * @brief Function to query policy and get the best action for the given state
   * @param state The input state
   * @return The action, given by the policy, corresponding to the state and the current policy hyperparameters
   */
-  virtual std::vector<double> queryPolicy(const std::vector<double>& state) = 0;
+  virtual std::vector<double> queryPolicy(const std::vector<double> &state) = 0;
 
   /**
  * @brief Runs a generation of the environment(s), running an action on each episode, and updating the policy.

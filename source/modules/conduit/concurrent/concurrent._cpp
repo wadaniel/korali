@@ -69,10 +69,10 @@ void Concurrent::finalize()
   {
     close(_resultContentPipe[i][1]); // Closing pipes
     close(_resultContentPipe[i][0]); // Closing pipes
-    close(_resultSizePipe[i][1]); // Closing pipes
-    close(_resultSizePipe[i][0]); // Closing pipes
-    close(_inputsPipe[i][1]); // Closing pipes
-    close(_inputsPipe[i][0]); // Closing pipes
+    close(_resultSizePipe[i][1]);    // Closing pipes
+    close(_resultSizePipe[i][0]);    // Closing pipes
+    close(_inputsPipe[i][1]);        // Closing pipes
+    close(_inputsPipe[i][0]);        // Closing pipes
   }
 
   Conduit::finalize();
@@ -135,14 +135,13 @@ void Concurrent::worker(int workerId)
         write(_resultContentPipe[_workerId][1], resultString.c_str() + curPos, bufSize * sizeof(char));
         curPos += bufSize;
       }
-
     }
     if (actionJs["Conduit Action"] == "Broadcast Globals")
     {
-     Engine *engine = _engineStack.top();
-     auto expId = actionJs["Experiment Id"];
-     auto key = actionJs["Globals"]["Key"].get<std::string>();
-     engine->_experimentVector[expId]->_globals[key] = actionJs["Globals"]["Values"];
+      Engine *engine = _engineStack.top();
+      auto expId = actionJs["Experiment Id"];
+      auto key = actionJs["Globals"]["Key"].get<std::string>();
+      engine->_experimentVector[expId]->_globals[key] = actionJs["Globals"]["Values"];
     }
 
     if (actionJs["Conduit Action"] == "Stack Engine") _engineStack.push(Engine::deserialize(actionJs["Engine"]));
@@ -295,7 +294,6 @@ bool Concurrent::isRoot()
 {
   return _workerId == -1;
 }
-
 
 } // namespace conduit
 

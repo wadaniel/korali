@@ -59,7 +59,7 @@ class DeepGD : public Learner
   std::vector<double> getEvaluation(const std::vector<double> &inputBatch) override;
 
   std::vector<double> getHyperparameters() override;
-  void setHyperparameters(const std::vector<double>& hyperparameters) override;
+  void setHyperparameters(const std::vector<double> &hyperparameters) override;
   void finalize() override;
   void initialize() override;
   void runGeneration() override;

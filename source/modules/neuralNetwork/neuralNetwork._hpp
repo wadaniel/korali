@@ -4,7 +4,7 @@
 #include "engine.hpp"
 #include "modules/distribution/univariate/uniform/uniform.hpp"
 #include "modules/experiment/experiment.hpp"
-#include "modules/layer/layer.hpp"
+#include "modules/neuralNetwork/layer/layer.hpp"
 #include "modules/module.hpp"
 #include "modules/solver/solver.hpp"
 

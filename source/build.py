@@ -58,41 +58,20 @@ def getModuleName(path):
   return moduleName
 
 
-def getClassName(path):
-  nameList = path.rsplit('/')
-  className = 'korali::'
-  for name in nameList[:-1]:
-    className += name + '::'
-  className += getModuleName(path)
+def getClassName(headerFileString):
+  className = [ x for x in headerFileString.splitlines() if 'class' in x and 'public' in x ][0].rsplit()[1]
   return className
 
 
-def getNamespaceName(path):
-  nameList = path.rsplit('/')
-  namespaceName = 'korali::'
-  for name in nameList[:-1]:
-    namespaceName += name + '::'
-  namespaceName += getModuleName(path)[0].lower() + getModuleName(path)[1:]
-  return namespaceName
+def getNamespaceName(headerFileString):
+  namespaceLines = [ x for x in headerFileString.splitlines() if 'namespace' in x and not '//' in x and not '}' in x and not '\\' in x]
+  namespaces = [ x.rsplit()[1] for x in namespaceLines ]
+  return namespaces
 
 
-def getParentClassName(className):
-  nameString = className.rsplit('::', 2)
-  if (len(nameString) == 2):
-    return 'korali::Module'
-  parentClass = nameString[0] + '::' + nameString[-2][0].upper(
-  ) + nameString[-2][1:]
-  return parentClass
-
-
-def isLeafModule(path):
-  list_dir = os.listdir(path)
-  for f in list_dir:
-    subPath = os.path.join(path, f)
-    if not os.path.isfile(subPath):
-      return False
-  return True
-
+def getParentClassName(headerFileString):
+  parentClassName = [ x for x in headerFileString.splitlines() if 'class' in x and 'public' in x ][0].rsplit()[-1].rsplit('::')[-1]
+  return parentClassName
 
 #####################################################################
 
@@ -204,8 +183,7 @@ def saveValue(base, path, varName, varType):
 
 
 def createSetConfiguration(module):
-  codeString = 'void ' + module[
-      "Class"] + '::setConfiguration(knlohmann::json& js) \n{\n'
+  codeString = 'void ' + module["Class"] + '::setConfiguration(knlohmann::json& js) \n{\n'
 
   codeString += ' if (isDefined(js, "Results"))  eraseValue(js, "Results");\n\n'
 
@@ -245,9 +223,7 @@ def createSetConfiguration(module):
   if 'Conditional Variables' in module:
     codeString += '  _hasConditionalVariables = false; \n'
     for v in module["Conditional Variables"]:
-      codeString += ' if(js' + getVariablePath(
-          v) + '.is_number()) ' + getCXXVariableName(
-              v["Name"]) + ' = js' + getVariablePath(v) + ';\n'
+      codeString += ' if(js' + getVariablePath(v) + '.is_number()) ' + getCXXVariableName(v["Name"]) + ' = js' + getVariablePath(v) + ';\n'
       codeString += ' if(js' + getVariablePath(
           v
       ) + '.is_string()) { _hasConditionalVariables = true; ' + getCXXVariableName(
@@ -282,8 +258,7 @@ def createSetConfiguration(module):
 
 
 def createGetConfiguration(module):
-  codeString = 'void ' + module[
-      "Class"] + '::getConfiguration(knlohmann::json& js) \n{\n\n'
+  codeString = 'void ' + module["Class"] + '::getConfiguration(knlohmann::json& js) \n{\n\n'
 
   codeString += ' js["Type"] = _type;\n'
 
@@ -542,8 +517,8 @@ koraliDir = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
 modulesDir = koraliDir + '/modules/'
 
 # modules List
-moduleDetectionList = ''
-moduleIncludeList = ''
+detectedModules = dict()
+detectedParents = set()
 variableDeclarationList = ''
 variableDeclarationSet = set()
 
@@ -555,6 +530,10 @@ for moduleDir, relDir, fileNames in os.walk(modulesDir):
       print('[Korali] Opening: ' + filePath + '...')
       moduleFilename = fileName.replace('.config', '')
 
+      # Loading template header .hpp file
+      moduleTemplateHeaderFile = moduleDir + '/' + moduleFilename + '._hpp'
+      with open(moduleTemplateHeaderFile, 'r') as file: moduleTemplateHeaderString = file.read()
+      
       # Loading Json configuration file
       with open(filePath, 'r') as file:
         moduleConfig = json.load(file)
@@ -562,23 +541,26 @@ for moduleDir, relDir, fileNames in os.walk(modulesDir):
       # Processing Module information
       modulePath = os.path.relpath(moduleDir, modulesDir)
       moduleConfig["Name"] = getModuleName(modulePath)
-      moduleConfig["Class"] = getClassName(modulePath)
-      moduleConfig["Namespace"] = getNamespaceName(modulePath)
-      moduleConfig["Parent Class"] = getParentClassName(moduleConfig["Class"])
+      moduleConfig["Class"] = getClassName(moduleTemplateHeaderString)
+      moduleConfig["Namespace"] = getNamespaceName(moduleTemplateHeaderString)
+      moduleConfig["Parent Class"] = getParentClassName(moduleTemplateHeaderString)
       moduleConfig["Option Name"] = getOptionName(modulePath)
-      moduleConfig["Is Leaf"] = isLeafModule(moduleDir)
+      moduleConfig["Relative Path"] = os.path.relpath(moduleDir, modulesDir)
+      moduleConfig["Header Filename"] = os.path.join(moduleConfig["Relative Path"], moduleFilename + '.hpp') 
 
-      ####### Adding module to list
-      relpath = os.path.relpath(moduleDir, modulesDir)
-      if (moduleConfig["Is Leaf"]):
-        filepath = os.path.join(relpath, moduleFilename + '.hpp')
-        moduleIncludeList += '#include "' + filepath + '" \n'
-        moduleDetectionList += '  if(moduleType == "' + moduleConfig[
-            "Option Name"] + '") module = new ' + moduleConfig["Class"] + '();\n'
+      ####### Adding module and parent to list
+
+      detectedModules[moduleConfig["Class"]] = moduleConfig
+      detectedParents.add(moduleConfig["Parent Class"]) 
 
       ###### Producing module code
 
-      moduleCodeString = createSetConfiguration(moduleConfig)
+      moduleCodeString = ''
+      
+      # Adding namespaces
+      for n in moduleConfig["Namespace"]: moduleCodeString += 'namespace ' + n + ' { \n'  
+        
+      moduleCodeString += createSetConfiguration(moduleConfig)
       moduleCodeString += createGetConfiguration(moduleConfig)
       moduleCodeString += createApplyModuleDefaults(moduleConfig)
       moduleCodeString += createApplyVariableDefaults(moduleConfig)
@@ -595,20 +577,16 @@ for moduleDir, relDir, fileNames in os.walk(modulesDir):
       ####### Producing header file
 
       # Adding doxygen header
-      moduleTemplateHeaderString = '/** \\file\n'
-      moduleTemplateHeaderString += '* @brief Header file for module: ' + moduleConfig[
-          "Class"] + '.\n'
-      moduleTemplateHeaderString += '*/\n\n'
+      moduleHeaderString = '/** \\file\n'
+      moduleHeaderString += '* @brief Header file for module: ' + moduleConfig["Class"] + '.\n'
+      moduleHeaderString += '*/\n\n'
 
-      moduleTemplateHeaderString += '/** \\dir ' + relpath + '\n'
-      moduleTemplateHeaderString += '* @brief Contains code, documentation, and scripts for module: ' + moduleConfig[
-          "Class"] + '.\n'
-      moduleTemplateHeaderString += '*/\n\n'
+      moduleHeaderString += '/** \\dir ' + moduleConfig["Relative Path"] + '\n'
+      moduleHeaderString += '* @brief Contains code, documentation, and scripts for module: ' + moduleConfig["Class"] + '.\n'
+      moduleHeaderString += '*/\n\n'
 
-      # Loading template header .hpp file
-      moduleTemplateHeaderFile = moduleDir + '/' + moduleFilename + '._hpp'
-      with open(moduleTemplateHeaderFile, 'r') as file:
-        moduleTemplateHeaderString += file.read()
+      # Adding original template header file contents
+      moduleHeaderString += moduleTemplateHeaderString
 
       # Adding overridden function declarations
       functionOverrideString = ''
@@ -660,25 +638,22 @@ for moduleDir, relDir, fileNames in os.walk(modulesDir):
         functionOverrideString += '*/\n'
         functionOverrideString += ' double* getPropertyPointer(const std::string& property) override;\n'
 
-      newHeaderString = moduleTemplateHeaderString.replace(
-          'public:', 'public: \n' + functionOverrideString + '\n')
+      newHeaderString = moduleHeaderString.replace('public:', 'public: \n' + functionOverrideString + '\n')
 
+      # Closing namespaces
+      for n in moduleConfig["Namespace"]: moduleCodeString += '} // namespace ' + n + '\n'  
+       
       # Adding Doxygen Information
 
       doxyClassHeader = '/**\n'
-      doxyClassHeader += '* @brief Class declaration for module: ' + moduleConfig[
-          "Class"] + '.\n'
+      doxyClassHeader += '* @brief Class declaration for module: ' + moduleConfig["Class"] + '.\n'
       doxyClassHeader += '*/\n'
-      newHeaderString = newHeaderString.replace('class ',
-                                                doxyClassHeader + 'class ')
+      newHeaderString = newHeaderString.replace('class ', doxyClassHeader + 'class ')
 
-      if (not moduleConfig["Is Leaf"]):
-        doxyNamespaceHeader = '/** \\namespace ' + moduleConfig[
-            "Namespace"] + '\n'
-        doxyNamespaceHeader += '* @brief Namespace declaration for modules of type: ' + moduleConfig[
-            "Namespace"] + '.\n'
-        doxyNamespaceHeader += '*/\n\n'
-        newHeaderString = doxyNamespaceHeader + newHeaderString
+      doxyNamespaceHeader = '/** \\namespace ' + moduleConfig["Namespace"][-1] + '\n'
+      doxyNamespaceHeader += '* @brief Namespace declaration for modules of type: ' + moduleConfig["Namespace"][-1] + '.\n'
+      doxyNamespaceHeader += '*/\n\n'
+      newHeaderString = doxyNamespaceHeader + newHeaderString
 
       # Adding declarations
       declarationsString = createHeaderDeclarations(moduleConfig)
@@ -716,13 +691,19 @@ newFileTime = baseFileTime
 if (os.path.exists(moduleNewCodeFile)):
   newFileTime = os.path.getmtime(moduleNewCodeFile)
 
+moduleIncludeList = ''
+moduleDetectionList = ''
+
+for key in detectedModules:
+ if (not key in detectedParents):
+  moduleIncludeList += '#include "' + detectedModules[key]["Header Filename"] + '" \n'
+  moduleDetectionList += '  if(moduleType == "' + detectedModules[key]["Option Name"] + '") module = new ' + ''.join(n + '::' for n in detectedModules[key]["Namespace"]) + detectedModules[key]["Class"] + '();\n'
+
 if (baseFileTime >= newFileTime):
   with open(moduleBaseCodeFileName, 'r') as file:
-    moduleBaseCodeString = file.read()
-  newBaseString = moduleBaseCodeString.replace('// Module Include List',
-                                               moduleIncludeList)
-  newBaseString = newBaseString.replace(' // Module Selection List',
-                                        moduleDetectionList)
+   moduleBaseCodeString = file.read()
+  newBaseString = moduleBaseCodeString.replace('// Module Include List', moduleIncludeList)
+  newBaseString = newBaseString.replace(' // Module Selection List', moduleDetectionList)
   save_if_different(moduleNewCodeFile, newBaseString)
 
 ###### Updating module header file

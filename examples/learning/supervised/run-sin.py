@@ -4,50 +4,56 @@ import sys
 import numpy as np
 import matplotlib.pyplot as plt
 import time
-
-scaling = 5.0
-
 import korali
 k = korali.Engine()
 
-# Defining Training Sets
+scaling = 5.0
 np.random.seed(0xC0FFEE)
 
+# The input set has scaling and a linear element to break symmetry
 trainingInputSet = np.random.uniform(0, 2 * np.pi, 500)
-trainingSolutionSet = np.sin(trainingInputSet) * scaling
+trainingSolutionSet = np.tanh(np.exp(np.sin(trainingInputSet))) * scaling 
 
 trainingInputSet = [ [ i ] for i in trainingInputSet.tolist() ]
 trainingSolutionSet = [ [ i ] for i in trainingSolutionSet.tolist() ]
 
-e = korali.Experiment()
-
 ### Defining a learning problem to infer values of sin(x)
 
+e = korali.Experiment()
 e["Problem"]["Type"] = "Supervised Learning"
 
 e["Problem"]["Inputs"] = trainingInputSet
-e["Problem"]["Outputs"] = trainingSolutionSet
+e["Problem"]["Solution"] = trainingSolutionSet
 
 ### Using a neural network solver (deep learning) for inference
 
 e["Solver"]["Type"] = "Learner/DeepGD"
+e["Solver"]["Loss Function"] = "Mean Squared Error"
 e["Solver"]["Steps Per Generation"] = 100
-e["Solver"]["Batch Normalization"]["Enabled"] = True
 e["Solver"]["Optimizer"]["Type"] = "Optimizer/Adam"
+e["Solver"]["Optimizer"]["Eta"] = 0.05
 
 ### Defining the shape of the neural network
 
-e["Solver"]["Neural Network"]["Layers"][0]["Type"] = "Input"
+e["Solver"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
 e["Solver"]["Neural Network"]["Layers"][0]["Node Count"] = 1
-e["Solver"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Identity"
+e["Solver"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Linear"
+e["Solver"]["Neural Network"]["Layers"][0]["Batch Normalization"]["Enabled"] = False
 
-e["Solver"]["Neural Network"]["Layers"][1]["Type"] = "Dense"
-e["Solver"]["Neural Network"]["Layers"][1]["Node Count"] = 5
+e["Solver"]["Neural Network"]["Layers"][1]["Type"] = "Layer/Dense"
+e["Solver"]["Neural Network"]["Layers"][1]["Node Count"] = 32
 e["Solver"]["Neural Network"]["Layers"][1]["Activation Function"]["Type"] = "Tanh"
+e["Solver"]["Neural Network"]["Layers"][1]["Batch Normalization"]["Enabled"] = True
 
-e["Solver"]["Neural Network"]["Layers"][2]["Type"] = "Output"
-e["Solver"]["Neural Network"]["Layers"][2]["Node Count"] = 1
-e["Solver"]["Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Identity"
+e["Solver"]["Neural Network"]["Layers"][2]["Type"] = "Layer/Dense"
+e["Solver"]["Neural Network"]["Layers"][2]["Node Count"] = 32
+e["Solver"]["Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Tanh"
+e["Solver"]["Neural Network"]["Layers"][2]["Batch Normalization"]["Enabled"] = True
+
+e["Solver"]["Neural Network"]["Layers"][3]["Type"] = "Layer/Dense"
+e["Solver"]["Neural Network"]["Layers"][3]["Node Count"] = 1
+e["Solver"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Linear"
+e["Solver"]["Neural Network"]["Layers"][3]["Batch Normalization"]["Enabled"] = True
 
 e["Console Output"]["Frequency"] = 1
 e["File Output"]["Enabled"] = False
@@ -55,18 +61,17 @@ e["Random Seed"] = 0xC0FFEE
 
 ### Training the neural network
 
-e["Solver"]["Termination Criteria"]["Max Generations"] = 100
-
-k.resume(e)
+e["Solver"]["Termination Criteria"]["Max Generations"] = 10
+k.run(e)
 
 ### Obtaining inferred results from the NN and comparing them to the actual solution
 
 testInputSet = np.random.uniform(0, 2 * np.pi, 100)
 testInputSet = [[x] for x in testInputSet.tolist()]
 
-testInferredSet = e.getEvaluation(testInputSet)
-testGradientSet = e.getGradients(testInferredSet)
-testOutputSet = np.sin(testInputSet) * scaling
+testInferredSet = [ e.getEvaluation(x) for x in testInputSet ]
+testGradientSet = [ e.getGradients(x) for x in testInferredSet ]
+testOutputSet = np.tanh(np.exp(np.sin(testInputSet))) * scaling 
 
 ### Plotting Results
 

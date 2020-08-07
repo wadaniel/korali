@@ -27,6 +27,8 @@ __pycache__
 .korali.config
 .DS_Store/
 .DS_Store
+fontconfig/
+
 *.odg#
 
 ## -- added by susanne:

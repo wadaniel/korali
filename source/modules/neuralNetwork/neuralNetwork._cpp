@@ -47,8 +47,11 @@ void NeuralNetwork::initialize()
   // Checking if batch size if correct
   if (_batchSize == 0) KORALI_LOG_ERROR("You should provide an input batch size larger than zero.\n");
 
-  // Creating layer chain
+  // Assigning NN pointer to each of the layers
   ssize_t layerCount = _layers.size();
+  for (size_t i = 0; i < layerCount; i++) _layers[i]->_nn = this;
+
+  // Creating layer chain
   _layers[0]->_prevLayer = NULL;
   for (ssize_t i = 1; i < layerCount; i++) _layers[i]->_prevLayer = _layers[i-1];
 

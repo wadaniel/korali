@@ -100,17 +100,21 @@ class NeuralNetwork : public Module
   void forward();
 
   /**
+   * @brief Backward-propagates the gradients data through the network.
+   * @param outputDifferential Output differentials
+  */
+  void backward(const std::vector<double> &outputDifferential);
+
+  /**
   * @brief Runs the backward propagation procedure and returns the gradients of the hyperparameters (weights,bias/normalization) with respect to the output
-  * @param outputDifferential Output differentials
   * @return The calculated gradients
   */
-  std::vector<double> getHyperparameterGradients(const std::vector<double> &outputDifferential);
+  std::vector<double> getHyperparameterGradients();
 
   /**
    * @brief Backward-propagates to find out the gradients of the input data.
-   * @param outputDifferential The differential of the output wrt the solution
   */
-  void backwardData(std::vector<float> &outputDifferential);
+  std::vector<double> getDataGradients();
 
   /**
    * @brief Creator that sets initialized flag to false

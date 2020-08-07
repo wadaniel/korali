@@ -1,1 +1,50 @@
 #include "modules/neuralNetwork/layer/layer.hpp"
+#include "modules/neuralNetwork/neuralNetwork.hpp"
+
+namespace korali {
+
+namespace neuralNetwork {
+
+std::vector<double> Layer::generateInitialHyperparameters()
+{
+ std::vector<double> hyperparameters;
+
+ // If this is not the initial layer, calculate hyperparameters for weight and bias operation
+ if (_prevLayer != NULL)
+ {
+  // Setting value for this layer's xavier constant
+  double xavierConstant = sqrt(6.0) / sqrt(_nodeCount + _prevLayer->_nodeCount);
+  double initializationConstant = xavierConstant * _weightInitializationScaling;
+
+  // Adding layer's weights hyperparameter values
+  for (size_t i = 0; i < _nodeCount; i++)
+    for (size_t j = 0; j < _prevLayer->_nodeCount; j++)
+     hyperparameters.push_back(initializationConstant * _nn->_xavierGenerator->getRandomNumber());
+
+  // Adding layer's bias hyperparameter values, if not using batch initialization
+  if (_batchNormalizationEnabled == false)
+  {
+    for (size_t i = 0; i < _nodeCount; i++)
+     hyperparameters.push_back(initializationConstant * _nn->_xavierGenerator->getRandomNumber());
+  }
+ }
+
+ // If using batch normalization, add layer's batch normalization shift and scale hyperparameters
+ if (_batchNormalizationEnabled == true)
+ {
+  for (size_t i = 0; i < _nodeCount; i++)
+   hyperparameters.push_back(0.0 + 0.0001 * _nn->_xavierGenerator->getRandomNumber());
+
+  // Adding layer's batch normalization shift hyperparameters
+  for (size_t i = 0; i < _nodeCount; i++)
+   hyperparameters.push_back(1.0 + 0.0001 * _nn->_xavierGenerator->getRandomNumber());
+ }
+
+ return hyperparameters;
+
+}
+
+} // namespace neuralNetwork
+
+} // namespace korali
+

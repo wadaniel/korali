@@ -2,7 +2,6 @@
 #define _KORALI_NEURAL_NETWORK_HPP_
 
 #include "engine.hpp"
-#include "modules/distribution/univariate/uniform/uniform.hpp"
 #include "modules/experiment/experiment.hpp"
 #include "modules/module.hpp"
 #include "modules/neuralNetwork/layer/layer.hpp"

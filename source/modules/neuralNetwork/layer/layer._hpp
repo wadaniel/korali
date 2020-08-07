@@ -6,9 +6,13 @@
 #endif
 
 #include "modules/module.hpp"
+#include "modules/distribution/univariate/uniform/uniform.hpp"
 
 namespace korali
 {
+
+class NeuralNetwork;
+
 namespace neuralNetwork
 {
 class Layer : public Module
@@ -16,8 +20,27 @@ class Layer : public Module
   public:
 #ifdef _KORALI_USE_ONEDNN
 
+ /********************************************************
+  * Relevant pointers declaration
+  *******************************************************/
+
+  /**
+   * @brief Pointer to the parent neural network
+   */
+  NeuralNetwork* _nn;
+
+  /**
+  * @brief Pointer to previous layer, NULL if this is the first layer
+  */
+  Layer* _prevLayer;
+
+  /**
+   * @brief Pointer to next layer, NULL if this is the last layer
+   */
+  Layer* _nextLayer;
+
   /********************************************************
-  * Declaring Layers's Memory Structures for Forward Propagation
+  * Layers's Memory Structures for Forward Propagation
   *******************************************************/
 
   /**
@@ -209,6 +232,8 @@ class Layer : public Module
    * @brief oneDNN primitive for the backward propagation of the gradient wrt normalization
    */
   dnnl::primitive _backwardNormalizationPrimitive;
+
+  std::vector<double> generateInitialHyperparameters();
 
 #endif
 };

@@ -47,6 +47,14 @@ void NeuralNetwork::initialize()
   // Checking if batch size if correct
   if (_batchSize == 0) KORALI_LOG_ERROR("You should provide an input batch size larger than zero.\n");
 
+  // Creating layer chain
+  ssize_t layerCount = _layers.size();
+  _layers[0]->_prevLayer = NULL;
+  for (ssize_t i = 1; i < layerCount; i++) _layers[i]->_prevLayer = _layers[i-1];
+
+  _layers[layerCount-1]->_nextLayer = NULL;
+  for (ssize_t i = layerCount-2; i >= 0; i--) _layers[i]->_nextLayer = _layers[i+1];
+
   // Creating forward-propagation pipeline
   createForwardPipeline();
 
@@ -76,40 +84,12 @@ void NeuralNetwork::initialize()
 std::vector<double> NeuralNetwork::generateInitialHyperparameters()
 {
   // Setting initial values for hyperparameters
-  std::vector<double> initialHyperparameters(_hyperparameterCount);
+  std::vector<double> initialHyperparameters;
 
-  size_t currPos = 0;
   for (size_t i = 0; i < _layers.size(); i++)
   {
-    if (i > 0)
-    {
-      // Setting value for this layer's xavier constant
-      double xavierConstant = sqrt(6.0) / sqrt(_layers[i]->_nodeCount + _layers[i - 1]->_nodeCount);
-      double initializationConstant = xavierConstant * _layers[i]->_weightInitializationScaling;
-
-      // Adding layer's weights hyperparameter values
-      for (size_t j = 0; j < _layers[i]->_nodeCount; j++)
-        for (size_t k = 0; k < _layers[i - 1]->_nodeCount; k++)
-          initialHyperparameters[currPos++] = initializationConstant * _xavierGenerator->getRandomNumber();
-
-      // Adding layer's bias hyperparameter values, if not using batch initialization
-      if (_layers[i]->_batchNormalizationEnabled == false)
-      {
-        for (size_t j = 0; j < _layers[i]->_nodeCount; j++)
-          initialHyperparameters[currPos++] = initializationConstant * _xavierGenerator->getRandomNumber();
-      }
-    }
-
-    if (_layers[i]->_batchNormalizationEnabled == true)
-    {
-      // Adding layer's batch normalization shift and scale hyperparameters
-      for (size_t j = 0; j < _layers[i]->_nodeCount; j++)
-        initialHyperparameters[currPos++] = 0.0 + 0.0001 * _xavierGenerator->getRandomNumber();
-
-      // Adding layer's batch normalization shift hyperparameters
-      for (size_t j = 0; j < _layers[i]->_nodeCount; j++)
-        initialHyperparameters[currPos++] = 1.0 + 0.0001 * _xavierGenerator->getRandomNumber();
-    }
+   auto layerParameters = _layers[i]->generateInitialHyperparameters();
+   initialHyperparameters.insert(initialHyperparameters.begin(), layerParameters.begin(), layerParameters.end());
   }
 
   return initialHyperparameters;

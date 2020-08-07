@@ -20,6 +20,11 @@ class Layer : public Module
   public:
 #ifdef _KORALI_USE_ONEDNN
 
+  /**
+   * @brief Index of the current layer within the NN
+  */
+  size_t _index;
+
  /********************************************************
   * Relevant pointers declaration
   *******************************************************/
@@ -38,6 +43,20 @@ class Layer : public Module
    * @brief Pointer to next layer, NULL if this is the last layer
    */
   Layer* _nextLayer;
+
+  /********************************************************
+   * Hyperparameter counts
+   *******************************************************/
+
+  /**
+   * @brief Number of layer's hyperparameters (weights/bias/normalization shift/scale)
+   */
+  size_t _hyperparameterCount;
+
+  /**
+   * @brief Number of layer's normalization parameters (mean/variance)
+   */
+  size_t _normalizationParameterCount;
 
   /********************************************************
   * Layers's Memory Structures for Forward Propagation
@@ -234,6 +253,12 @@ class Layer : public Module
   dnnl::primitive _backwardNormalizationPrimitive;
 
   std::vector<double> generateInitialHyperparameters();
+
+  /**
+   * @brief Initializes the layer's internal memory structures for the forward pipeline
+   */
+  void createForwardPipeline();
+
 
 #endif
 };

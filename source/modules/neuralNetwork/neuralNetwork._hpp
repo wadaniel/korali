@@ -53,11 +53,6 @@ class NeuralNetwork : public Module
   std::vector<double> generateInitialHyperparameters();
 
   /**
-   * @brief Initializes the internal memory structures for the forward pipeline
-   */
-  void createForwardPipeline();
-
-  /**
   * @brief Initializes the internal memory structures for the backward pipeline
   */
   void createBackwardPipeline();

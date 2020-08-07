@@ -1,6 +1,11 @@
 #include "modules/neuralNetwork/layer/layer.hpp"
 #include "modules/neuralNetwork/neuralNetwork.hpp"
 
+#ifdef _KORALI_USE_ONEDNN
+  #include "auxiliar/dnnUtils.hpp"
+using namespace dnnl;
+#endif
+
 namespace korali {
 
 namespace neuralNetwork {
@@ -42,6 +47,161 @@ std::vector<double> Layer::generateInitialHyperparameters()
 
  return hyperparameters;
 
+}
+
+void Layer::createForwardPipeline()
+{
+#ifdef _KORALI_USE_ONEDNN
+
+  /****************************************************************************
+   * Checking input/output configuration
+   ****************************************************************************/
+
+  // Obtaining batch size
+  memory::dim N = _nn->_batchSize;
+
+  // Checking Layer sizes
+  if (_nodeCount == 0) KORALI_LOG_ERROR("Node count for layer (%lu) should be larger than zero.\n", _index);
+  const memory::dim OC = _nodeCount;
+  const memory::dims layerDims = {N, OC};
+
+  /*********************************************************************************
+  *  Initializing memory objects and primitives for FORWARD propagation
+  *********************************************************************************/
+
+  // Creating layer's data memory storage and activation function
+  auto dataMemDesc = memory::desc(layerDims, memory::data_type::f32, memory::format_tag::ab);
+  _nodeMem = memory(dataMemDesc, _nn->_engine);
+  _activationMem = memory(dataMemDesc, _nn->_engine);
+  if (_batchNormalizationEnabled) _batchNormalizationMem = memory(dataMemDesc, _nn->_engine);
+
+  /*****************************************
+  * Creating Activation Function primitive and memory
+  * ***************************************/
+
+  if (_activationFunctionType == "Clip") _activationAlgorithm = algorithm::eltwise_clip;
+  if (_activationFunctionType == "Linear") _activationAlgorithm = algorithm::eltwise_linear;
+  if (_activationFunctionType == "Log") _activationAlgorithm = algorithm::eltwise_log;
+  if (_activationFunctionType == "ReLU") _activationAlgorithm = algorithm::eltwise_relu;
+  if (_activationFunctionType == "Tanh") _activationAlgorithm = algorithm::eltwise_tanh;
+  if (_activationFunctionType == "Logistic") _activationAlgorithm = algorithm::eltwise_logistic;
+
+  float alpha = _activationFunctionAlpha;
+  float beta = _activationFunctionBeta;
+
+  // Creating descriptor
+  auto activationDesc = eltwise_forward::desc(prop_kind::forward_training, _activationAlgorithm, _nodeMem.get_desc(), alpha, beta);
+
+  // Create primitive descriptor.
+  _forwardActivationPrimitiveDesc = eltwise_forward::primitive_desc(activationDesc, _nn->_engine);
+
+  // Create the primitive.
+  _forwardActivationPrimitive = eltwise_forward(_forwardActivationPrimitiveDesc);
+
+  // Primitive arguments.
+  if (_batchNormalizationEnabled)
+    _forwardActivationArgs.insert({DNNL_ARG_SRC, _batchNormalizationMem});
+  else
+    _forwardActivationArgs.insert({DNNL_ARG_SRC, _nodeMem});
+
+  _forwardActivationArgs.insert({DNNL_ARG_DST, _activationMem});
+
+  // If this is not the initial layer, we create the inner product (Wx + b) operation
+  if (_prevLayer != NULL)
+  {
+   // Starting to count hyperparameters and normalization parameters
+   const memory::dim IC = _prevLayer->_nodeCount;
+   _hyperparameterCount = IC * OC;
+   _normalizationParameterCount = 0;
+
+   // Allocating weight memory
+   memory::dims weightDims = {OC, IC};
+   auto weightMemDesc = memory::desc(weightDims, memory::data_type::f32, memory::format_tag::ab);
+   _weightsMem = memory(weightMemDesc, _nn->_engine);
+   _weightsWorkMem = _weightsMem;
+
+   // Allocating weight work memory with format::any for oneDNN to decide the best layour
+   auto weightsWorkMemDesc = memory::desc(weightDims, memory::data_type::f32, memory::format_tag::any);
+
+   // Allocating bias memory
+   auto biasMemDesc = memory::desc({OC}, memory::data_type::f32, memory::format_tag::a);
+   _biasMem = memory(biasMemDesc, _nn->_engine);
+
+   // Adding bias hyperparameters to the count if not using normalization
+   if (_batchNormalizationEnabled == false)
+   {
+    _hyperparameterCount += OC;
+   }
+   else // Otherwise, if we use batch normalization, we set bias to zero
+   {
+      std::vector<float> biasData(_nodeCount, 0.0);
+      write_to_dnnl_memory(biasData.data(), _biasMem);
+   }
+
+   // Create operation descriptor.
+   auto inner_product_d = inner_product_forward::desc(prop_kind::forward_training, _prevLayer->_activationMem.get_desc(), weightsWorkMemDesc, biasMemDesc, _nodeMem.get_desc());
+
+   // Create inner product primitive descriptor.
+   dnnl::primitive_attr forwardPrimitiveAttributes;
+   _forwardInnerProductPrimitiveDesc = inner_product_forward::primitive_desc(inner_product_d, forwardPrimitiveAttributes, _nn->_engine);
+
+   // If oneDNN ultimately decided to use a different layout for weight work memory, then use it
+   if (_weightsWorkMem.get_desc() != _forwardInnerProductPrimitiveDesc.weights_desc())
+     _weightsWorkMem = memory(_forwardInnerProductPrimitiveDesc.weights_desc(), _nn->_engine);
+
+   // Create the weights+bias primitive.
+   _forwardInnerProductPrimitive = inner_product_forward(_forwardInnerProductPrimitiveDesc);
+
+   // Configuring inner product arguments
+   _forwardInnerProductArgs.insert({DNNL_ARG_SRC, _prevLayer->_activationMem});
+   _forwardInnerProductArgs.insert({DNNL_ARG_WEIGHTS, _weightsWorkMem});
+   _forwardInnerProductArgs.insert({DNNL_ARG_BIAS, _biasMem});
+   _forwardInnerProductArgs.insert({DNNL_ARG_DST, _nodeMem});
+  }
+
+  // Initializing forward layer normalization operations
+  if (_batchNormalizationEnabled)
+  {
+    memory::dims scale_shift_dims = {2, OC};
+
+    // Adding normalization scale/shift hyperparameters to the count
+    _hyperparameterCount += 2 * OC;
+    _normalizationParameterCount += OC;
+
+    // Allocating normalization scale/shift memory structure
+    auto normalizationMemDesc = memory::desc(scale_shift_dims, memory::data_type::f32, memory::format_tag::nc);
+    _batchNormalizationScaleShiftMem = memory(normalizationMemDesc, _nn->_engine);
+
+    auto normalizationFlags = normalization_flags::use_scale_shift;
+
+    // If mean and variances are defined, then normalize with respect to them
+    if (_nn->_usePreloadedNormalizationData)
+      normalizationFlags |= normalization_flags::use_global_stats;
+
+    // Create operation descriptor.
+    auto forwardNormalizationDesc = batch_normalization_forward::desc(prop_kind::forward_training, _nodeMem.get_desc(), _batchNormalizationEpsilon, normalizationFlags);
+
+    // Create inner product primitive descriptor.
+    _forwardNormalizationPrimitiveDesc = batch_normalization_forward::primitive_desc(forwardNormalizationDesc, _nn->_engine);
+
+    // Creating mean and variance mem structures
+    _batchNormalizationMeanMem = memory(_forwardNormalizationPrimitiveDesc.mean_desc(), _nn->_engine);
+    _batchNormalizationVarianceMem = memory(_forwardNormalizationPrimitiveDesc.variance_desc(), _nn->_engine);
+    _batchNormalizationWorkMem = memory(_forwardNormalizationPrimitiveDesc.workspace_desc(), _nn->_engine);
+
+    // Create the normalization primitive.
+    _forwardNormalizationPrimitive = batch_normalization_forward(_forwardNormalizationPrimitiveDesc);
+
+    // Configuring inner product arguments
+    _forwardNormalizationArgs.insert({DNNL_ARG_SRC, _nodeMem});                                 // Input
+    _forwardNormalizationArgs.insert({DNNL_ARG_SCALE_SHIFT, _batchNormalizationScaleShiftMem}); // Input
+    _forwardNormalizationArgs.insert({DNNL_ARG_MEAN, _batchNormalizationMeanMem});              // Output
+    _forwardNormalizationArgs.insert({DNNL_ARG_VARIANCE, _batchNormalizationVarianceMem});      // Output
+    _forwardNormalizationArgs.insert({DNNL_ARG_WORKSPACE, _batchNormalizationWorkMem});         // Output
+    _forwardNormalizationArgs.insert({DNNL_ARG_DST, _batchNormalizationMem});                   // Output
+  }
+
+#endif
 }
 
 } // namespace neuralNetwork

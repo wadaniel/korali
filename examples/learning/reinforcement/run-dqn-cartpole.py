@@ -125,7 +125,7 @@ e["Solver"]["Termination Criteria"]["Target Average Reward"] = 0.9*maxSteps
 
 ### Setting file output configuration
 
-e["File Output"]["Frequency"] = 1
+e["File Output"]["Frequency"] = 100
 
 ### Running Experiment
 

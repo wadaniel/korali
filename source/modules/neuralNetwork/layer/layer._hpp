@@ -259,6 +259,10 @@ class Layer : public Module
    */
   void createForwardPipeline();
 
+  /**
+  * @brief Initializes the internal memory structures for the backward pipeline
+  */
+  void createBackwardPipeline();
 
 #endif
 };

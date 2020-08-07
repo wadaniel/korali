@@ -51,19 +51,15 @@ void NeuralNetwork::initialize()
   size_t layerCount = _layers.size();
   for (size_t i = 0; i < layerCount; i++)
   {
+   _layers[i]->_prevLayer = i > 0 ? _layers[i-1] : NULL;
+   _layers[i]->_nextLayer = i < layerCount - 1 ? _layers[i+1] : NULL;
    _layers[i]->_index = i;
    _layers[i]->_nn = this;
   }
 
-  // Creating forward-propagation pipeline
-  _layers[0]->_prevLayer = NULL;
-  for (size_t i = 1; i < layerCount; i++) _layers[i]->_prevLayer = _layers[i-1];
+  // Creating forward and backward-propagation pipeline
   for (size_t i = 0; i < layerCount; i++) _layers[i]->createForwardPipeline();
-
-  // Creating backward-propagation pipeline
-  _layers[layerCount-1]->_nextLayer = NULL;
-  for (ssize_t i = (ssize_t)layerCount-2; i >= 0; i--) _layers[i]->_nextLayer = _layers[i+1];
-  createBackwardPipeline();
+  for (size_t i = 0; i < layerCount; i++) _layers[i]->createBackwardPipeline();
 
   // Getting hyperparameter and normalization parameter counts
   _hyperparameterCount = 0;
@@ -95,141 +91,6 @@ std::vector<double> NeuralNetwork::generateInitialHyperparameters()
   }
 
   return initialHyperparameters;
-}
-
-void NeuralNetwork::createBackwardPipeline()
-{
-  /*********************************************************************************
-  *  Initializing memory objects and primitives for BACKWARD propagation
-  *********************************************************************************/
-
-#ifdef _KORALI_USE_ONEDNN
-
-  size_t layerCount = _layers.size();
-  const memory::dim N = _batchSize;
-
-  // Creating layer's gradient memory storage
-  for (size_t i = 0; i < layerCount; i++)
-  {
-    const memory::dim OC = _layers[i]->_nodeCount; // Output Channels
-
-    // Creating data-related gradient memory
-    const memory::dims layerDims = {N, OC};
-    auto dataDiffMemDesc = memory::desc(layerDims, memory::data_type::f32, memory::format_tag::ab);
-    _layers[i]->_nodeDiffMem = memory(dataDiffMemDesc, _engine);
-    _layers[i]->_batchNormalizationDiffMem = memory(dataDiffMemDesc, _engine);
-    _layers[i]->_activationDiffMem = memory(dataDiffMemDesc, _engine);
-
-    // Creating normalization-related gradient memory
-    if (_layers[i]->_batchNormalizationEnabled)
-    {
-      const memory::dims normalizationDims = {2, OC};
-      auto dataDiffMemDesc = memory::desc(normalizationDims, memory::data_type::f32, memory::format_tag::ab);
-      _layers[i]->_batchNormalizationScaleShiftDiffMem = memory(dataDiffMemDesc, _engine);
-    }
-
-    // Creating weight-related gradient memory
-    if (i > 0)
-    {
-      // Allocating bias gradient memory
-      const memory::dims biasDims = {OC};
-      auto biasMemDesc = memory::desc(biasDims, memory::data_type::f32, memory::format_tag::a);
-      _layers[i]->_biasDiffMem = memory(biasMemDesc, _engine);
-
-      // Creating weights gradient memory
-      const memory::dim IC = _layers[i - 1]->_nodeCount; // Input Channels
-      memory::dims weightDiffDims = {OC, IC};
-      auto weightDiffMemDesc = memory::desc(weightDiffDims, memory::data_type::f32, memory::format_tag::ab);
-      _layers[i]->_weightsDiffMem = memory(weightDiffMemDesc, _engine);
-    }
-  }
-
-  // Creating the backward propagation operations
-  for (ssize_t i = layerCount - 1; i >= 0; i--)
-  {
-    // Creating backward propagation primitives for activation functions
-    float alpha = _layers[i]->_activationFunctionAlpha;
-    float beta = _layers[i]->_activationFunctionBeta;
-
-    // Creating descriptor
-    auto activationDesc = eltwise_backward::desc(_layers[i]->_activationAlgorithm, _layers[i]->_nodeMem.get_desc(), _layers[i]->_activationMem.get_desc(), alpha, beta);
-
-    // Create primitive descriptor.
-    auto backwardActivationPrimitiveDesc = eltwise_backward::primitive_desc(activationDesc, _engine, _layers[i]->_forwardActivationPrimitiveDesc);
-
-    // Create the primitive.
-    _layers[i]->_backwardActivationPrimitive = eltwise_backward(backwardActivationPrimitiveDesc);
-
-    // Primitive arguments.
-    if (_layers[i]->_batchNormalizationEnabled)
-      _layers[i]->_backwardActivationArgs.insert({DNNL_ARG_SRC, _layers[i]->_batchNormalizationMem}); // Input
-    else
-      _layers[i]->_backwardActivationArgs.insert({DNNL_ARG_SRC, _layers[i]->_nodeMem}); // Input
-
-    _layers[i]->_backwardActivationArgs.insert({DNNL_ARG_DIFF_DST, _layers[i]->_activationDiffMem}); // Input
-
-    if (_layers[i]->_batchNormalizationEnabled)
-      _layers[i]->_backwardActivationArgs.insert({DNNL_ARG_DIFF_SRC, _layers[i]->_batchNormalizationDiffMem}); // Output
-    else
-      _layers[i]->_backwardActivationArgs.insert({DNNL_ARG_DIFF_SRC, _layers[i]->_nodeDiffMem}); // Output
-
-    // We do not define the following primitives for the first layer
-    if (i > 0)
-    {
-      auto backwardDataDesc = inner_product_backward_data::desc(
-        _layers[i - 1]->_nodeDiffMem.get_desc(),
-        _layers[i]->_weightsWorkMem.get_desc(),
-        _layers[i]->_nodeMem.get_desc());
-
-      // Create the primitive.
-      auto backwardDataPrimitiveDesc = inner_product_backward_data::primitive_desc(backwardDataDesc, _engine, _layers[i]->_forwardInnerProductPrimitiveDesc);
-      _layers[i]->_backwardDataPrimitive = inner_product_backward_data(backwardDataPrimitiveDesc);
-
-      _layers[i]->_backwardDataArgs.insert({DNNL_ARG_DIFF_DST, _layers[i]->_nodeDiffMem});           // Input
-      _layers[i]->_backwardDataArgs.insert({DNNL_ARG_WEIGHTS, _layers[i]->_weightsWorkMem});         // Input
-      _layers[i]->_backwardDataArgs.insert({DNNL_ARG_DIFF_SRC, _layers[i - 1]->_activationDiffMem}); // Output
-
-      auto backwardWeightsDesc = inner_product_backward_weights::desc(
-        _layers[i - 1]->_nodeMem.get_desc(),
-        _layers[i]->_weightsMem.get_desc(),
-        _layers[i]->_biasMem.get_desc(),
-        _layers[i]->_nodeDiffMem.get_desc());
-
-      // Create the primitive.
-      auto backwardWeightsPrimitiveDesc = inner_product_backward_weights::primitive_desc(backwardWeightsDesc, _engine, _layers[i]->_forwardInnerProductPrimitiveDesc);
-      _layers[i]->_backwardWeightsPrimitive = inner_product_backward_weights(backwardWeightsPrimitiveDesc);
-
-      _layers[i]->_backwardWeightsArgs.insert({DNNL_ARG_SRC, _layers[i - 1]->_activationMem});       // Input
-      _layers[i]->_backwardWeightsArgs.insert({DNNL_ARG_DIFF_DST, _layers[i]->_nodeDiffMem});        // Input
-      _layers[i]->_backwardWeightsArgs.insert({DNNL_ARG_DIFF_WEIGHTS, _layers[i]->_weightsDiffMem}); // Output
-      _layers[i]->_backwardWeightsArgs.insert({DNNL_ARG_DIFF_BIAS, _layers[i]->_biasDiffMem});       // Output
-    }
-
-    // Initializing backward layer normalization operations
-    if (_layers[i]->_batchNormalizationEnabled)
-    {
-      auto backwardNormalizationDesc = batch_normalization_backward::desc(
-        prop_kind::backward,
-        _layers[i]->_nodeDiffMem.get_desc(),
-        _layers[i]->_nodeMem.get_desc(),
-        _layers[i]->_batchNormalizationEpsilon,
-        normalization_flags::use_scale_shift);
-
-      // Create the primitive.
-      auto normalizationPrimitiveDesc = batch_normalization_backward::primitive_desc(backwardNormalizationDesc, _engine, _layers[i]->_forwardNormalizationPrimitiveDesc);
-      _layers[i]->_backwardNormalizationPrimitive = batch_normalization_backward(normalizationPrimitiveDesc);
-
-      _layers[i]->_backwardNormalizationArgs.insert({DNNL_ARG_SRC, _layers[i]->_nodeMem});                                          // Input
-      _layers[i]->_backwardNormalizationArgs.insert({DNNL_ARG_DIFF_DST, _layers[i]->_batchNormalizationDiffMem});                   // Input
-      _layers[i]->_backwardNormalizationArgs.insert({DNNL_ARG_MEAN, _layers[i]->_batchNormalizationMeanMem});                       // Input
-      _layers[i]->_backwardNormalizationArgs.insert({DNNL_ARG_VARIANCE, _layers[i]->_batchNormalizationVarianceMem});               // Input
-      _layers[i]->_backwardNormalizationArgs.insert({DNNL_ARG_SCALE_SHIFT, _layers[i]->_batchNormalizationScaleShiftMem});          // Input
-      _layers[i]->_backwardNormalizationArgs.insert({DNNL_ARG_DIFF_SRC, _layers[i]->_nodeDiffMem});                                 // Output
-      _layers[i]->_backwardNormalizationArgs.insert({DNNL_ARG_DIFF_SCALE_SHIFT, _layers[i]->_batchNormalizationScaleShiftDiffMem}); // Output
-    }
-  }
-
-#endif
 }
 
 void NeuralNetwork::setInput(const std::vector<std::vector<double>> &input)

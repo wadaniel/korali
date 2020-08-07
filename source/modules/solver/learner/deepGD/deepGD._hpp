@@ -53,7 +53,7 @@ class DeepGD : public Learner
   * @param solution Solution values from which to calculate loss and differentials
   * @param getGradients Flag that indicates whether the gradients are required
   */
-  void evaluateHyperparameters(korali::Sample &sample, NeuralNetwork *nn, const std::vector<std::vector<double>> &solution, bool getGradients = false);
+  void evaluateHyperparameters(korali::Sample &sample, NeuralNetwork *nn, const std::vector<std::vector<double>> &solution);
 
   std::vector<double> getGradients(const std::vector<double> &outputDiffs) override;
   std::vector<double> getEvaluation(const std::vector<double> &inputBatch) override;

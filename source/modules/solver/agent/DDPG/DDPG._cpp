@@ -12,11 +12,8 @@ namespace solver
 {
 namespace agent
 {
-void DDPG::initialize()
+void DDPG::initializePolicy()
 {
-  // Calling common initialization routine for all agents
-  Agent::initialize();
-
   /*********************************************************************
    * Creating and running Actor Learning Experiments
    *********************************************************************/
@@ -52,23 +49,11 @@ void DDPG::initialize()
   _actorProblem = dynamic_cast<problem::SupervisedLearning *>(_actorExperiment._problem);
   _actorLearner = dynamic_cast<solver::learner::DeepGD *>(_actorExperiment._solver);
 
-  /*********************************************************************
-  * Setting initial configuration
-  *********************************************************************/
-
-  // If initial generation, set initial DDPG configuration
   if (_k->_currentGeneration == 0)
   {
-    _currentEpisode = 0;
-    _suboptimalStepCounter = 0;
-    _optimizationStepCount = 0;
-
-    // Initialize best reward
-    _bestAverageReward = -korali::Inf;
-
-    // Get the initial set of hyperparameters
+    // Get the initial set of policy NN hyperparameters
     _hyperparameters["Policy"] = _actorLearner->getHyperparameters();
-    _bestHyperparameters = _hyperparameters;
+    _bestHyperparameters["Policy"] = _hyperparameters["Policy"];
   }
 
   // Assigning training hyperparameters to inference learner
@@ -95,12 +80,12 @@ void DDPG::updatePolicy()
   for (size_t step = 0; step < _optimizationStepsPerGeneration; step++)
   {
     // Randomly selecting experiences for the mini-batch and calculating their target Q
-    //std::shuffle(stateHistoryIndexes.begin(), stateHistoryIndexes.end(), *mt);
+    std::shuffle(stateHistoryIndexes.begin(), stateHistoryIndexes.end(), *mt);
 
     for (size_t i = 0; i < _miniBatchSize; i++)
     {
       // Selecting a uniformly random selected, yet not repeated experience
-      size_t expId = stateHistoryIndexes[stateHistoryIndexes.size() - _miniBatchSize + i];
+      size_t expId = stateHistoryIndexes[i];
 
       // Storage to put together state and action
       std::vector<double> stateActionInput(_problem->_stateVectorSize + _problem->_actionVectorSize);
@@ -148,38 +133,10 @@ std::vector<double> DDPG::queryPolicy(const std::vector<double> &state)
   return _actorLearner->getEvaluation({state});
 }
 
-std::vector<double> DDPG::getTrainingAction(const std::vector<double> &state)
-{
-  // Forward-propagating state through actor NN
-  auto action = queryPolicy(state);
-
-  // Checking for correctness of the action
-  for (size_t i = 0; i < action.size(); i++)
-  {
-    if (std::isfinite(action[i]) == false)
-      KORALI_LOG_ERROR(" + Action [%lu] is not finite (%f)\n", i, action[i]);
-  }
-
-  // printf("State: %f - Action: %f - Action: %f\n", state[0], action[0], action[1]);
-
-  // Introducing random noise to the action
-  for (size_t i = 0; i < _problem->_actionVectorIndexes.size(); i++)
-  {
-    size_t varIdx = _problem->_actionVectorIndexes[i];
-    double w = _k->_variables[varIdx]->_explorationNoiseRandomVariable->getRandomNumber();
-    double noise = _k->_variables[varIdx]->_explorationNoiseTheta * _currentActionNoises[i] + w;
-    action[i] += noise;
-    //printf("Theta (%f) * Previous Noise: (%f) + W: (%f) = %f\n", _k->_variables[varIdx]->_explorationNoiseTheta, _currentActionNoises[i], w, noise);
-    _currentActionNoises[i] = noise;
-  }
-
-  // Getting optimal action, based on the NN evaluation
-  return action;
-}
-
 void DDPG::updateHyperparameters(const knlohmann::json &hyperparameters)
 {
   _actorLearner->setHyperparameters(hyperparameters["Policy"].get<std::vector<double>>());
+  _epsilonCurrentValue = hyperparameters["Epsilon"].get<double>();
 
   // Re-initializing action noises to zero
   size_t actionCount = _problem->_actionVectorIndexes.size();

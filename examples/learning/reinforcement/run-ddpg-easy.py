@@ -61,16 +61,18 @@ e["Variables"][2]["Upper Bound"] = +6.0
 
 ### Defining noise to add to the action
 
-e["Variables"][1]["Exploration Noise"]["Random Variable"]["Type"] = "Univariate/Normal"
-e["Variables"][1]["Exploration Noise"]["Random Variable"]["Mean"] = 0.0
-e["Variables"][1]["Exploration Noise"]["Random Variable"]["Standard Deviation"] = 0.1
+e["Variables"][1]["Exploration Noise"]["Enabled"] = True
+e["Variables"][1]["Exploration Noise"]["Distribution"]["Type"] = "Univariate/Normal"
+e["Variables"][1]["Exploration Noise"]["Distribution"]["Mean"] = 0.0
+e["Variables"][1]["Exploration Noise"]["Distribution"]["Standard Deviation"] = 0.25
 e["Variables"][1]["Exploration Noise"]["Theta"] = 0.05
 
 ### Defining noise to add to the action
 
-e["Variables"][2]["Exploration Noise"]["Random Variable"]["Type"] = "Univariate/Normal"
-e["Variables"][2]["Exploration Noise"]["Random Variable"]["Mean"] = 0.0
-e["Variables"][2]["Exploration Noise"]["Random Variable"]["Standard Deviation"] = 0.1
+e["Variables"][2]["Exploration Noise"]["Enabled"] = True
+e["Variables"][2]["Exploration Noise"]["Distribution"]["Type"] = "Univariate/Normal"
+e["Variables"][2]["Exploration Noise"]["Distribution"]["Mean"] = 0.0
+e["Variables"][2]["Exploration Noise"]["Distribution"]["Standard Deviation"] = 0.25
 e["Variables"][2]["Exploration Noise"]["Theta"] = 0.05
 
 ### Configuring DQN hyperparameters
@@ -80,7 +82,7 @@ e["Solver"]["Type"] = "Agent/DDPG"
 ### Defining Mini-batch and DDPG configuration 
 
 e["Solver"]["Episodes Per Generation"] = 1
-e["Solver"]["Optimization Steps Per Generation"] = 1
+e["Solver"]["Optimization Steps Per Generation"] = 10
 e["Solver"]["Agent History Size"] = maxSteps
 e["Solver"]["Mini Batch Size"] = 64
 e["Solver"]["Discount Factor"] = 0.99
@@ -88,7 +90,7 @@ e["Solver"]["Adoption Rate"] = 0.001
 
 ### Defining the configuration of replay memory
 
-e["Solver"]["Replay Memory"]["Start Size"] = 256
+e["Solver"]["Replay Memory"]["Start Size"] = 15000
 e["Solver"]["Replay Memory"]["Maximum Size"] = 100000
 e["Solver"]["Replay Memory"]["Replacement Policy"] = "Least Recently Added"
 
@@ -96,7 +98,7 @@ e["Solver"]["Replay Memory"]["Replacement Policy"] = "Least Recently Added"
 
 e["Solver"]["Actor Optimizer"]["Type"] = "Optimizer/Adam"
 e["Solver"]["Actor Optimizer"]["Termination Criteria"]["Min Gradient Norm"] = -1.0
-e["Solver"]["Actor Optimizer"]["Eta"] = 0.00001
+e["Solver"]["Actor Optimizer"]["Eta"] = 0.0001
 
 e["Solver"]["Critic Optimizer"]["Type"] = "Optimizer/Adam"
 e["Solver"]["Critic Optimizer"]["Eta"] = 0.005

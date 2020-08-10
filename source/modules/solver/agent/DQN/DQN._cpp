@@ -12,11 +12,8 @@ namespace solver
 {
 namespace agent
 {
-void DQN::initialize()
+void DQN::initializePolicy()
 {
-  // Calling common initialization routine for all agents
-  Agent::initialize();
-
   /*********************************************************************
   * Creating Q-Maximizing argmax(Action) Experiment
   *********************************************************************/
@@ -53,83 +50,11 @@ void DQN::initialize()
 
   // Running initialization to verify that the configuration is correct
   _engine.initialize(_actorExperiment);
-
-  // If initial generation, set initial DQN configuration
-  if (_k->_currentGeneration == 0)
-  {
-    _currentEpisode = 0;
-    _epsilonCurrentValue = _epsilonInitialValue;
-    _suboptimalStepCounter = 0;
-    _optimizationStepCount = 0;
-
-    // Initialize best reward
-    _bestAverageReward = -korali::Inf;
-
-    // Get the initial set of hyperparameters
-    _hyperparameters["Critic"] = _criticLearner->getHyperparameters();
-    _hyperparameters["Epsilon"] = _epsilonCurrentValue;
-    _bestHyperparameters = _hyperparameters;
-  }
 }
 
 void DQN::updatePolicy()
 {
-  /*********************************************************************
-  * Updating hyperparameters
-  *********************************************************************/
 
-  // Decreasing the value of epsilon
-  _epsilonCurrentValue = _epsilonCurrentValue - _epsilonDecreaseRate;
-  if (_epsilonCurrentValue < _epsilonTargetValue) _epsilonCurrentValue = _epsilonTargetValue;
-
-  // Getting q training hyperparameters to broadcast to workers
-  _hyperparameters["Epsilon"] = _epsilonCurrentValue;
-}
-
-std::vector<double> DQN::getTrainingAction(const std::vector<double> &state)
-{
-  // Getting p = U[0,1] for the epsilon strategy
-  double p = _uniformGenerator->getRandomNumber();
-
-  // If p < e, then we choose the action randomly, with a uniform probability, among all possible actions.
-  // If no states have been registered yet, use the random option in any case
-  if (p < _epsilonCurrentValue)
-  {
-    // Storage for action
-    std::vector<double> randomAction(_problem->_actionVectorSize);
-
-    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-    {
-      size_t varIdx = _problem->_actionVectorIndexes[i];
-      double x = _uniformGenerator->getRandomNumber();
-
-      // If discrete value vector was not provided, use lower and upper bounds
-      if (_k->_variables[varIdx]->_values.size() == 0)
-      {
-        double lowerBound = _k->_variables[varIdx]->_lowerBound;
-        double upperBound = _k->_variables[varIdx]->_upperBound;
-        randomAction[i] = lowerBound + x * (upperBound - lowerBound);
-      }
-      else
-      {
-        // Randomly select one of the actions provided in the value vector
-        size_t valIdx = floor(x * _k->_variables[varIdx]->_values.size());
-        randomAction[i] = _k->_variables[varIdx]->_values[valIdx];
-      }
-    }
-
-    return randomAction;
-  }
-
-  // Updating current state
-  _actorExperiment._globals["Current State"] = state;
-
-  // Running optimization experiment to get best estimated action
-  korali::Engine engine;
-  engine.run(_actorExperiment);
-
-  // Getting optimal action, based on the NN evaluation
-  return _actorExperiment["Results"]["Best Sample"]["Parameters"].get<std::vector<double>>();
 }
 
 void DQN::evaluateAction(Sample &sample, bool getGradients)
@@ -159,6 +84,11 @@ void DQN::updateHyperparameters(const knlohmann::json &hyperparameters)
 {
   _criticLearner->setHyperparameters(hyperparameters["Critic"].get<std::vector<double>>());
   _epsilonCurrentValue = hyperparameters["Epsilon"].get<double>();
+
+  // Re-initializing action noises to zero
+  size_t actionCount = _problem->_actionVectorIndexes.size();
+  _currentActionNoises.resize(actionCount);
+  for (size_t i = 0; i < actionCount; i++) _currentActionNoises[i] = 0.0;
 }
 
 std::vector<double> DQN::queryPolicy(const std::vector<double> &state)
@@ -177,9 +107,6 @@ void DQN::printGenerationAfter()
 {
   // Printing common experience information
   Agent::printGenerationAfter();
-
-  _k->_logger->logInfo("Normal", "DQN Statistics:\n");
-  _k->_logger->logInfo("Normal", " + Epsilon:                         %f\n", _epsilonCurrentValue);
 }
 
 } // namespace agent

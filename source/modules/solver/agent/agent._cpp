@@ -43,9 +43,42 @@ void Agent::initialize()
   _criticProblem = dynamic_cast<problem::SupervisedLearning *>(_criticExperiment._problem);
   _criticLearner = dynamic_cast<solver::learner::DeepGD *>(_criticExperiment._solver);
 
+  // Initializing selected policy
+  initializePolicy();
+
   // Initializing random seed for the shuffle operation
   mt = new std::mt19937(rd());
   mt->seed(_k->_randomSeed++);
+
+  // If initial generation, set initial agent configuration
+  if (_k->_currentGeneration == 0)
+  {
+    _currentEpisode = 0;
+    _suboptimalStepCounter = 0;
+    _optimizationStepCount = 0;
+
+    // Initialize best reward
+    _bestAverageReward = -korali::Inf;
+
+    // Getting Critic's hyperparameters
+    _hyperparameters["Critic"] = _criticLearner->getHyperparameters();
+
+    // Setting intial epsilon to 1.0 (initial exploratory phase)
+    _epsilonInitialized = false;
+    _epsilonCurrentValue = 1.0;
+
+    // Get the initial set of hyperparameters
+    _bestHyperparameters = _hyperparameters;
+  }
+
+  // Setting Critic's hyperparameters
+  _criticLearner->setHyperparameters(_hyperparameters["Critic"]);
+
+  // Settting Epsilon
+  _hyperparameters["Epsilon"] = _epsilonCurrentValue;
+
+  // Initializing policy hyperparameters
+  updateHyperparameters(_hyperparameters);
 }
 
 void Agent::runGeneration()
@@ -167,10 +200,93 @@ void Agent::runGeneration()
   {
     updateCritic();
     updatePolicy();
+
+    // Initializing the value of epsilon, if not already set
+    if (_epsilonInitialized == false)
+    {
+     _epsilonCurrentValue = _epsilonInitialValue;
+     _epsilonInitialized = true;
+    }
+    else
+    {
+      // Decreasing the value of epsilon
+     _epsilonCurrentValue = _epsilonCurrentValue - _epsilonDecreaseRate;
+
+     // Without exceeding the lower bound
+     if (_epsilonCurrentValue < _epsilonTargetValue) _epsilonCurrentValue = _epsilonTargetValue;
+    }
+
+    // Updating Epsilon
+    _hyperparameters["Epsilon"] = _epsilonCurrentValue;
+
+    // Storing new Critic's hyperparameters
+    _hyperparameters["Critic"] = _criticLearner->getHyperparameters();
+  }
+}
+
+std::vector<double> Agent::getTrainingAction(const std::vector<double> &state)
+{
+  // Getting p = U[0,1] for the epsilon strategy
+  double p = _uniformGenerator->getRandomNumber();
+
+  // If p < e, then we choose the action randomly, with a uniform probability, among all possible actions.
+  // If no states have been registered yet, use the random option in any case
+  if (p < _epsilonCurrentValue)
+  {
+    // Storage for action
+    std::vector<double> randomAction(_problem->_actionVectorSize);
+
+    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+    {
+      size_t varIdx = _problem->_actionVectorIndexes[i];
+      double x = _uniformGenerator->getRandomNumber();
+
+      // If discrete value vector was not provided, use lower and upper bounds
+      if (_k->_variables[varIdx]->_values.size() == 0)
+      {
+        double lowerBound = _k->_variables[varIdx]->_lowerBound;
+        double upperBound = _k->_variables[varIdx]->_upperBound;
+        randomAction[i] = lowerBound + x * (upperBound - lowerBound);
+      }
+      else
+      {
+        // Randomly select one of the actions provided in the value vector
+        size_t valIdx = floor(x * _k->_variables[varIdx]->_values.size());
+        randomAction[i] = _k->_variables[varIdx]->_values[valIdx];
+      }
+    }
+
+    return randomAction;
   }
 
-  // Storing new Critic's hyperparameters
-  _hyperparameters["Critic"] = _criticLearner->getHyperparameters();
+  // Obtaining action from policy
+  auto action = queryPolicy(state);
+
+  // Checking for correctness of the action
+  for (size_t i = 0; i < action.size(); i++)
+  {
+    if (std::isfinite(action[i]) == false)
+      KORALI_LOG_ERROR(" + Action [%lu] is not finite (%f)\n", i, action[i]);
+  }
+
+  // Introducing random noise to the action
+  for (size_t i = 0; i < _problem->_actionVectorIndexes.size(); i++)
+  {
+    size_t varIdx = _problem->_actionVectorIndexes[i];
+
+    // Check whether the variable requires noise
+    if (_k->_variables[varIdx]->_explorationNoiseEnabled == true)
+    {
+     double w = _k->_variables[varIdx]->_explorationNoiseDistribution->getRandomNumber();
+     double noise = _k->_variables[varIdx]->_explorationNoiseTheta * _currentActionNoises[i] + w;
+     action[i] += noise;
+     //printf("Theta (%f) * Previous Noise: (%f) + W: (%f) = %f\n",  _k->_variables[varIdx]->_explorationNoiseTheta, _currentActionNoises[i], w, noise);
+     _currentActionNoises[i] = noise;
+    }
+  }
+
+  // Returning the action
+  return action;
 }
 
 void Agent::updateCritic()
@@ -345,6 +461,8 @@ void Agent::printGenerationAfter()
     _k->_logger->logInfo("Normal", " + Total Experience Count:          %lu/%lu\n", _totalExperienceCount, _maxExperiences);
   else
     _k->_logger->logInfo("Normal", " + Total Experience Count:          %lu\n", _totalExperienceCount);
+
+  _k->_logger->logInfo("Normal", " + Epsilon:                         %f\n", _epsilonCurrentValue);
 
   _k->_logger->logInfo("Normal", " + Current Max Experiences/Episode: %lu\n", _maxExperienceCount);
   _k->_logger->logInfo("Normal", " + Current Avg Experiences/Episode: %.0f\n", _averageExperienceCount);

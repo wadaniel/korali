@@ -21,6 +21,11 @@ class Agent : public Solver
   korali::Engine _engine;
 
   /**
+   * @brief Variable to keep track of the current noise added to the action
+   */
+  std::vector<double> _currentActionNoises;
+
+  /**
    * @brief Pointer to training experiment's problem
    */
   problem::SupervisedLearning *_criticProblem;
@@ -70,7 +75,7 @@ class Agent : public Solver
    * @param state The vector containing the current agent's state
    * @return A vector containing the action
    */
-  virtual std::vector<double> getTrainingAction(const std::vector<double> &state) = 0;
+  std::vector<double> getTrainingAction(const std::vector<double> &state);
 
   /**
    * @brief Gets the next action for the actor, based on the state and best policy, for inference purposes (may not contain noise)
@@ -107,6 +112,11 @@ class Agent : public Solver
   * @return The action, given by the policy, corresponding to the state and the current policy hyperparameters
   */
   virtual std::vector<double> queryPolicy(const std::vector<double> &state) = 0;
+
+  /**
+    * @brief Initializes the internal state of the policy
+    */
+  virtual void initializePolicy() = 0;
 
   /**
  * @brief Runs a generation of the environment(s), running an action on each episode, and updating the policy.

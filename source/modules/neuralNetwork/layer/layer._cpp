@@ -6,47 +6,46 @@
 using namespace dnnl;
 #endif
 
-namespace korali {
-
-namespace neuralNetwork {
-
+namespace korali
+{
+namespace neuralNetwork
+{
 std::vector<double> Layer::generateInitialHyperparameters()
 {
- std::vector<double> hyperparameters;
+  std::vector<double> hyperparameters;
 
- // If this is not the initial layer, calculate hyperparameters for weight and bias operation
- if (_prevLayer != NULL)
- {
-  // Setting value for this layer's xavier constant
-  double xavierConstant = sqrt(6.0) / sqrt(_nodeCount + _prevLayer->_nodeCount);
-  double initializationConstant = xavierConstant * _weightInitializationScaling;
+  // If this is not the initial layer, calculate hyperparameters for weight and bias operation
+  if (_prevLayer != NULL)
+  {
+    // Setting value for this layer's xavier constant
+    double xavierConstant = sqrt(6.0) / sqrt(_nodeCount + _prevLayer->_nodeCount);
+    double initializationConstant = xavierConstant * _weightInitializationScaling;
 
-  // Adding layer's weights hyperparameter values
-  for (size_t i = 0; i < _nodeCount; i++)
-    for (size_t j = 0; j < _prevLayer->_nodeCount; j++)
-     hyperparameters.push_back(initializationConstant * _nn->_xavierGenerator->getRandomNumber());
+    // Adding layer's weights hyperparameter values
+    for (size_t i = 0; i < _nodeCount; i++)
+      for (size_t j = 0; j < _prevLayer->_nodeCount; j++)
+        hyperparameters.push_back(initializationConstant * _nn->_xavierGenerator->getRandomNumber());
 
-  // Adding layer's bias hyperparameter values, if not using batch initialization
-  if (_batchNormalizationEnabled == false)
+    // Adding layer's bias hyperparameter values, if not using batch initialization
+    if (_batchNormalizationEnabled == false)
+    {
+      for (size_t i = 0; i < _nodeCount; i++)
+        hyperparameters.push_back(initializationConstant * _nn->_xavierGenerator->getRandomNumber());
+    }
+  }
+
+  // If using batch normalization, add layer's batch normalization shift and scale hyperparameters
+  if (_batchNormalizationEnabled == true)
   {
     for (size_t i = 0; i < _nodeCount; i++)
-     hyperparameters.push_back(initializationConstant * _nn->_xavierGenerator->getRandomNumber());
+      hyperparameters.push_back(0.0 + 0.0001 * _nn->_xavierGenerator->getRandomNumber());
+
+    // Adding layer's batch normalization shift hyperparameters
+    for (size_t i = 0; i < _nodeCount; i++)
+      hyperparameters.push_back(1.0 + 0.0001 * _nn->_xavierGenerator->getRandomNumber());
   }
- }
 
- // If using batch normalization, add layer's batch normalization shift and scale hyperparameters
- if (_batchNormalizationEnabled == true)
- {
-  for (size_t i = 0; i < _nodeCount; i++)
-   hyperparameters.push_back(0.0 + 0.0001 * _nn->_xavierGenerator->getRandomNumber());
-
-  // Adding layer's batch normalization shift hyperparameters
-  for (size_t i = 0; i < _nodeCount; i++)
-   hyperparameters.push_back(1.0 + 0.0001 * _nn->_xavierGenerator->getRandomNumber());
- }
-
- return hyperparameters;
-
+  return hyperparameters;
 }
 
 void Layer::createForwardPipeline()
@@ -109,54 +108,54 @@ void Layer::createForwardPipeline()
   // If this is not the input layer, we create the inner product (Wx + b) operation
   if (_prevLayer != NULL)
   {
-   // Starting to count hyperparameters and normalization parameters
-   const memory::dim IC = _prevLayer->_nodeCount;
-   _hyperparameterCount = IC * OC;
-   _normalizationParameterCount = 0;
+    // Starting to count hyperparameters and normalization parameters
+    const memory::dim IC = _prevLayer->_nodeCount;
+    _hyperparameterCount = IC * OC;
+    _normalizationParameterCount = 0;
 
-   // Allocating weight memory
-   memory::dims weightDims = {OC, IC};
-   auto weightMemDesc = memory::desc(weightDims, memory::data_type::f32, memory::format_tag::ab);
-   _weightsMem = memory(weightMemDesc, _nn->_engine);
-   _weightsWorkMem = _weightsMem;
+    // Allocating weight memory
+    memory::dims weightDims = {OC, IC};
+    auto weightMemDesc = memory::desc(weightDims, memory::data_type::f32, memory::format_tag::ab);
+    _weightsMem = memory(weightMemDesc, _nn->_engine);
+    _weightsWorkMem = _weightsMem;
 
-   // Allocating weight work memory with format::any for oneDNN to decide the best layour
-   auto weightsWorkMemDesc = memory::desc(weightDims, memory::data_type::f32, memory::format_tag::any);
+    // Allocating weight work memory with format::any for oneDNN to decide the best layour
+    auto weightsWorkMemDesc = memory::desc(weightDims, memory::data_type::f32, memory::format_tag::any);
 
-   // Allocating bias memory
-   auto biasMemDesc = memory::desc({OC}, memory::data_type::f32, memory::format_tag::a);
-   _biasMem = memory(biasMemDesc, _nn->_engine);
+    // Allocating bias memory
+    auto biasMemDesc = memory::desc({OC}, memory::data_type::f32, memory::format_tag::a);
+    _biasMem = memory(biasMemDesc, _nn->_engine);
 
-   // Adding bias hyperparameters to the count if not using normalization
-   if (_batchNormalizationEnabled == false)
-   {
-    _hyperparameterCount += OC;
-   }
-   else // Otherwise, if we use batch normalization, we set bias to zero
-   {
-     std::vector<float> biasData(_nodeCount, 0.0);
-     write_to_dnnl_memory(biasData.data(), _biasMem);
-   }
+    // Adding bias hyperparameters to the count if not using normalization
+    if (_batchNormalizationEnabled == false)
+    {
+      _hyperparameterCount += OC;
+    }
+    else // Otherwise, if we use batch normalization, we set bias to zero
+    {
+      std::vector<float> biasData(_nodeCount, 0.0);
+      write_to_dnnl_memory(biasData.data(), _biasMem);
+    }
 
-   // Create operation descriptor.
-   auto inner_product_d = inner_product_forward::desc(prop_kind::forward_training, _prevLayer->_activationMem.get_desc(), weightsWorkMemDesc, biasMemDesc, _nodeMem.get_desc());
+    // Create operation descriptor.
+    auto inner_product_d = inner_product_forward::desc(prop_kind::forward_training, _prevLayer->_activationMem.get_desc(), weightsWorkMemDesc, biasMemDesc, _nodeMem.get_desc());
 
-   // Create inner product primitive descriptor.
-   dnnl::primitive_attr forwardPrimitiveAttributes;
-   _forwardInnerProductPrimitiveDesc = inner_product_forward::primitive_desc(inner_product_d, forwardPrimitiveAttributes, _nn->_engine);
+    // Create inner product primitive descriptor.
+    dnnl::primitive_attr forwardPrimitiveAttributes;
+    _forwardInnerProductPrimitiveDesc = inner_product_forward::primitive_desc(inner_product_d, forwardPrimitiveAttributes, _nn->_engine);
 
-   // If oneDNN ultimately decided to use a different layout for weight work memory, then use it
-   if (_weightsWorkMem.get_desc() != _forwardInnerProductPrimitiveDesc.weights_desc())
-     _weightsWorkMem = memory(_forwardInnerProductPrimitiveDesc.weights_desc(), _nn->_engine);
+    // If oneDNN ultimately decided to use a different layout for weight work memory, then use it
+    if (_weightsWorkMem.get_desc() != _forwardInnerProductPrimitiveDesc.weights_desc())
+      _weightsWorkMem = memory(_forwardInnerProductPrimitiveDesc.weights_desc(), _nn->_engine);
 
-   // Create the weights+bias primitive.
-   _forwardInnerProductPrimitive = inner_product_forward(_forwardInnerProductPrimitiveDesc);
+    // Create the weights+bias primitive.
+    _forwardInnerProductPrimitive = inner_product_forward(_forwardInnerProductPrimitiveDesc);
 
-   // Configuring inner product arguments
-   _forwardInnerProductArgs.insert({DNNL_ARG_SRC, _prevLayer->_activationMem});
-   _forwardInnerProductArgs.insert({DNNL_ARG_WEIGHTS, _weightsWorkMem});
-   _forwardInnerProductArgs.insert({DNNL_ARG_BIAS, _biasMem});
-   _forwardInnerProductArgs.insert({DNNL_ARG_DST, _nodeMem});
+    // Configuring inner product arguments
+    _forwardInnerProductArgs.insert({DNNL_ARG_SRC, _prevLayer->_activationMem});
+    _forwardInnerProductArgs.insert({DNNL_ARG_WEIGHTS, _weightsWorkMem});
+    _forwardInnerProductArgs.insert({DNNL_ARG_BIAS, _biasMem});
+    _forwardInnerProductArgs.insert({DNNL_ARG_DST, _nodeMem});
   }
 
   // Initializing forward layer normalization operations
@@ -210,7 +209,7 @@ void Layer::createBackwardPipeline()
   *  Initializing memory objects and primitives for BACKWARD propagation
   *********************************************************************************/
 
-  #ifdef _KORALI_USE_ONEDNN
+#ifdef _KORALI_USE_ONEDNN
 
   // Creating data-related gradient memory
   _nodeDiffMem = memory(_nodeMem.get_desc(), _nn->_engine);
@@ -236,17 +235,21 @@ void Layer::createBackwardPipeline()
 
   // Primitive arguments.
   _backwardActivationArgs.insert({DNNL_ARG_DIFF_DST, _activationDiffMem}); // Input
-  if (_batchNormalizationEnabled)  _backwardActivationArgs.insert({DNNL_ARG_SRC, _batchNormalizationMem}); // Input
-  else                             _backwardActivationArgs.insert({DNNL_ARG_SRC, _nodeMem}); // Input
-  if (_batchNormalizationEnabled)  _backwardActivationArgs.insert({DNNL_ARG_DIFF_SRC, _batchNormalizationDiffMem}); // Output
-  else                             _backwardActivationArgs.insert({DNNL_ARG_DIFF_SRC, _nodeDiffMem}); // Output
+  if (_batchNormalizationEnabled)
+    _backwardActivationArgs.insert({DNNL_ARG_SRC, _batchNormalizationMem}); // Input
+  else
+    _backwardActivationArgs.insert({DNNL_ARG_SRC, _nodeMem}); // Input
+  if (_batchNormalizationEnabled)
+    _backwardActivationArgs.insert({DNNL_ARG_DIFF_SRC, _batchNormalizationDiffMem}); // Output
+  else
+    _backwardActivationArgs.insert({DNNL_ARG_DIFF_SRC, _nodeDiffMem}); // Output
 
   // We do not define the following primitives for the input layer
   if (_prevLayer != NULL)
   {
     // Creating gradient memory for the inner product operation
-     _biasDiffMem = memory(_biasMem.get_desc(), _nn->_engine);
-     _weightsDiffMem = memory(_weightsMem.get_desc(), _nn->_engine);
+    _biasDiffMem = memory(_biasMem.get_desc(), _nn->_engine);
+    _weightsDiffMem = memory(_weightsMem.get_desc(), _nn->_engine);
 
     auto backwardDataDesc = inner_product_backward_data::desc(
       _prevLayer->_nodeMem.get_desc(),
@@ -257,8 +260,8 @@ void Layer::createBackwardPipeline()
     auto backwardDataPrimitiveDesc = inner_product_backward_data::primitive_desc(backwardDataDesc, _nn->_engine, _forwardInnerProductPrimitiveDesc);
     _backwardDataPrimitive = inner_product_backward_data(backwardDataPrimitiveDesc);
 
-    _backwardDataArgs.insert({DNNL_ARG_DIFF_DST, _nodeDiffMem});           // Input
-    _backwardDataArgs.insert({DNNL_ARG_WEIGHTS, _weightsWorkMem});         // Input
+    _backwardDataArgs.insert({DNNL_ARG_DIFF_DST, _nodeDiffMem});                   // Input
+    _backwardDataArgs.insert({DNNL_ARG_WEIGHTS, _weightsWorkMem});                 // Input
     _backwardDataArgs.insert({DNNL_ARG_DIFF_SRC, _prevLayer->_activationDiffMem}); // Output
 
     auto backwardWeightsDesc = inner_product_backward_weights::desc(
@@ -271,10 +274,10 @@ void Layer::createBackwardPipeline()
     auto backwardWeightsPrimitiveDesc = inner_product_backward_weights::primitive_desc(backwardWeightsDesc, _nn->_engine, _forwardInnerProductPrimitiveDesc);
     _backwardWeightsPrimitive = inner_product_backward_weights(backwardWeightsPrimitiveDesc);
 
-    _backwardWeightsArgs.insert({DNNL_ARG_SRC, _prevLayer->_activationMem});       // Input
-    _backwardWeightsArgs.insert({DNNL_ARG_DIFF_DST, _nodeDiffMem});        // Input
-    _backwardWeightsArgs.insert({DNNL_ARG_DIFF_WEIGHTS, _weightsDiffMem}); // Output
-    _backwardWeightsArgs.insert({DNNL_ARG_DIFF_BIAS, _biasDiffMem});       // Output
+    _backwardWeightsArgs.insert({DNNL_ARG_SRC, _prevLayer->_activationMem}); // Input
+    _backwardWeightsArgs.insert({DNNL_ARG_DIFF_DST, _nodeDiffMem});          // Input
+    _backwardWeightsArgs.insert({DNNL_ARG_DIFF_WEIGHTS, _weightsDiffMem});   // Output
+    _backwardWeightsArgs.insert({DNNL_ARG_DIFF_BIAS, _biasDiffMem});         // Output
   }
 
   // Initializing backward layer normalization operations
@@ -300,11 +303,9 @@ void Layer::createBackwardPipeline()
     _backwardNormalizationArgs.insert({DNNL_ARG_DIFF_SCALE_SHIFT, _batchNormalizationScaleShiftDiffMem}); // Output
   }
 
-
 #endif
 }
 
 } // namespace neuralNetwork
 
 } // namespace korali
-

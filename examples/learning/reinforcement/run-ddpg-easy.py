@@ -6,7 +6,7 @@ import gym
 
 ######## Defining Environment Storage
 
-maxSteps = 1
+maxSteps = 10
 
 ####### Defining Problem's environment
 
@@ -22,12 +22,14 @@ def env(s):
   s.update()
   
   # Reading action
-  action = s["Action"][0]
-  print('Python Action: ' + str(action) ) 
+  action0 = s["Action"][0]
+  action1 = s["Action"][1]
+  print('Python Action: ' + str(action0) + ' ' + str(action1) ) 
   
   # Reward = action, if not bigger than state
-  val = action - s["State"][0] 
-  reward = -val*val
+  val0 = action0 - s["State"][0]
+  val1 = - action1 - s["State"][0]  
+  reward = -val0*val0 -val1*val1
     
   # Storing Reward
   s["Reward"] = reward
@@ -49,13 +51,27 @@ e["Variables"][0]["Type"] = "State"
 
 e["Variables"][1]["Name"] = "Spenditure 0"
 e["Variables"][1]["Type"] = "Action"
+e["Variables"][1]["Lower Bound"] = -6.0
+e["Variables"][1]["Upper Bound"] = +6.0
+
+e["Variables"][2]["Name"] = "Spenditure 1"
+e["Variables"][2]["Type"] = "Action"
+e["Variables"][2]["Lower Bound"] = -6.0
+e["Variables"][2]["Upper Bound"] = +6.0
 
 ### Defining noise to add to the action
 
 e["Variables"][1]["Exploration Noise"]["Random Variable"]["Type"] = "Univariate/Normal"
 e["Variables"][1]["Exploration Noise"]["Random Variable"]["Mean"] = 0.0
-e["Variables"][1]["Exploration Noise"]["Random Variable"]["Standard Deviation"] = 0.05
+e["Variables"][1]["Exploration Noise"]["Random Variable"]["Standard Deviation"] = 0.1
 e["Variables"][1]["Exploration Noise"]["Theta"] = 0.05
+
+### Defining noise to add to the action
+
+e["Variables"][2]["Exploration Noise"]["Random Variable"]["Type"] = "Univariate/Normal"
+e["Variables"][2]["Exploration Noise"]["Random Variable"]["Mean"] = 0.0
+e["Variables"][2]["Exploration Noise"]["Random Variable"]["Standard Deviation"] = 0.1
+e["Variables"][2]["Exploration Noise"]["Theta"] = 0.05
 
 ### Configuring DQN hyperparameters
 

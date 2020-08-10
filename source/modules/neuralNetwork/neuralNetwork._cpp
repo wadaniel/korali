@@ -51,10 +51,10 @@ void NeuralNetwork::initialize()
   size_t layerCount = _layers.size();
   for (size_t i = 0; i < layerCount; i++)
   {
-   _layers[i]->_prevLayer = i > 0 ? _layers[i-1] : NULL;
-   _layers[i]->_nextLayer = i < layerCount - 1 ? _layers[i+1] : NULL;
-   _layers[i]->_index = i;
-   _layers[i]->_nn = this;
+    _layers[i]->_prevLayer = i > 0 ? _layers[i - 1] : NULL;
+    _layers[i]->_nextLayer = i < layerCount - 1 ? _layers[i + 1] : NULL;
+    _layers[i]->_index = i;
+    _layers[i]->_nn = this;
   }
 
   // Creating forward and backward-propagation pipeline
@@ -86,8 +86,8 @@ std::vector<double> NeuralNetwork::generateInitialHyperparameters()
 
   for (size_t i = 0; i < _layers.size(); i++)
   {
-   auto layerParameters = _layers[i]->generateInitialHyperparameters();
-   initialHyperparameters.insert(initialHyperparameters.begin(), layerParameters.begin(), layerParameters.end());
+    auto layerParameters = _layers[i]->generateInitialHyperparameters();
+    initialHyperparameters.insert(initialHyperparameters.begin(), layerParameters.begin(), layerParameters.end());
   }
 
   return initialHyperparameters;
@@ -220,8 +220,8 @@ void NeuralNetwork::backward(const std::vector<double> &outputDifferential)
 
     if (i > 0)
     {
-     _layers[i]->_backwardDataPrimitive.execute(_stream, _layers[i]->_backwardDataArgs);
-     _layers[i]->_backwardWeightsPrimitive.execute(_stream, _layers[i]->_backwardWeightsArgs);
+      _layers[i]->_backwardDataPrimitive.execute(_stream, _layers[i]->_backwardDataArgs);
+      _layers[i]->_backwardWeightsPrimitive.execute(_stream, _layers[i]->_backwardWeightsArgs);
     }
   }
 
@@ -396,7 +396,6 @@ std::vector<double> NeuralNetwork::getHyperparameterGradients()
 
   return gradientVector;
 }
-
 
 std::vector<double> NeuralNetwork::getDataGradients()
 {

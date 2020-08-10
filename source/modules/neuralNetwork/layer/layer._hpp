@@ -5,12 +5,11 @@
   #include "dnnl.hpp"
 #endif
 
-#include "modules/module.hpp"
 #include "modules/distribution/univariate/uniform/uniform.hpp"
+#include "modules/module.hpp"
 
 namespace korali
 {
-
 class NeuralNetwork;
 
 namespace neuralNetwork
@@ -25,24 +24,24 @@ class Layer : public Module
   */
   size_t _index;
 
- /********************************************************
+  /********************************************************
   * Relevant pointers declaration
   *******************************************************/
 
   /**
    * @brief Pointer to the parent neural network
    */
-  NeuralNetwork* _nn;
+  NeuralNetwork *_nn;
 
   /**
   * @brief Pointer to previous layer, NULL if this is the first layer
   */
-  Layer* _prevLayer;
+  Layer *_prevLayer;
 
   /**
    * @brief Pointer to next layer, NULL if this is the last layer
    */
-  Layer* _nextLayer;
+  Layer *_nextLayer;
 
   /********************************************************
    * Hyperparameter counts

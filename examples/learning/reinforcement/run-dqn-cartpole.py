@@ -115,7 +115,7 @@ e["Solver"]["Critic Neural Network"]["Layers"][2]["Batch Normalization"]["Enable
 e["Solver"]["Critic Neural Network"]["Layers"][3]["Type"] = "Layer/Dense"
 e["Solver"]["Critic Neural Network"]["Layers"][3]["Node Count"] = 1
 e["Solver"]["Critic Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Linear"
-e["Solver"]["Critic Neural Network"]["Layers"][3]["Batch Normalization"]["Enabled"] = False 
+e["Solver"]["Critic Neural Network"]["Layers"][3]["Batch Normalization"]["Enabled"] = True 
 
 e["Solver"]["Batch Normalization"]["Correction Steps"] = 32
 

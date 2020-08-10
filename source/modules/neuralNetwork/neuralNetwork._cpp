@@ -75,6 +75,11 @@ void NeuralNetwork::initialize()
   setNormalizationMeans(meanData);
   setNormalizationVariances(varianceData);
 
+  // Check output scaling configuration
+  if (_outputScaling.empty() == false)
+   if (_outputScaling.size() != _layers[layerCount-1]->_nodeCount)
+    KORALI_LOG_ERROR("Wrong number of output scaling factors passed to the neural network. Expected: %lu, provided: %lu.\n", _layers[layerCount-1]->_nodeCount, _outputScaling.size());
+
   // Making sure we do not re-initialize
   _isInitialized = true;
 }
@@ -210,6 +215,10 @@ void NeuralNetwork::backward(const std::vector<double> &outputDifferential)
 
   // Writing to last layers differential information wrt data
   std::vector<float> floatDiffs(outputDifferential.begin(), outputDifferential.end());
+
+  // If we  use scaling, then apply the scaling factors gradient now
+  if (_outputScaling.size() > 0) for (size_t i = 0; i < _outputScaling.size(); i++)  floatDiffs[i] /= _outputScaling[i];
+
   write_to_dnnl_memory(floatDiffs.data(), _layers[lastLayer]->_activationDiffMem);
 
   // Backward propagating neural network
@@ -348,8 +357,10 @@ void NeuralNetwork::forward()
   for (size_t i = 0; i < _batchSize; i++)
   {
     _outputValues[i].resize(nodeCount);
-    for (size_t j = 0; j < nodeCount; j++)
-      _outputValues[i][j] = resultData[i * nodeCount + j];
+    for (size_t j = 0; j < nodeCount; j++) _outputValues[i][j] = resultData[i * nodeCount + j];
+
+    // If we  use scaling, then apply the scaling factors now
+    if (_outputScaling.size() > 0) for (size_t j = 0; j < nodeCount; j++)  _outputValues[i][j] *= _outputScaling[j];
   }
 
 #endif

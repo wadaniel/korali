@@ -64,7 +64,7 @@ e["Variables"][2]["Upper Bound"] = +6.0
 e["Variables"][1]["Exploration Noise"]["Enabled"] = True
 e["Variables"][1]["Exploration Noise"]["Distribution"]["Type"] = "Univariate/Normal"
 e["Variables"][1]["Exploration Noise"]["Distribution"]["Mean"] = 0.0
-e["Variables"][1]["Exploration Noise"]["Distribution"]["Standard Deviation"] = 0.25
+e["Variables"][1]["Exploration Noise"]["Distribution"]["Standard Deviation"] = 0.1
 e["Variables"][1]["Exploration Noise"]["Theta"] = 0.05
 
 ### Defining noise to add to the action
@@ -72,7 +72,7 @@ e["Variables"][1]["Exploration Noise"]["Theta"] = 0.05
 e["Variables"][2]["Exploration Noise"]["Enabled"] = True
 e["Variables"][2]["Exploration Noise"]["Distribution"]["Type"] = "Univariate/Normal"
 e["Variables"][2]["Exploration Noise"]["Distribution"]["Mean"] = 0.0
-e["Variables"][2]["Exploration Noise"]["Distribution"]["Standard Deviation"] = 0.25
+e["Variables"][2]["Exploration Noise"]["Distribution"]["Standard Deviation"] = 0.1
 e["Variables"][2]["Exploration Noise"]["Theta"] = 0.05
 
 ### Configuring DQN hyperparameters
@@ -82,15 +82,15 @@ e["Solver"]["Type"] = "Agent/DDPG"
 ### Defining Mini-batch and DDPG configuration 
 
 e["Solver"]["Episodes Per Generation"] = 1
-e["Solver"]["Optimization Steps Per Generation"] = 10
+e["Solver"]["Optimization Steps Per Generation"] = 1
 e["Solver"]["Agent History Size"] = maxSteps
-e["Solver"]["Mini Batch Size"] = 64
+e["Solver"]["Mini Batch Size"] = 32
 e["Solver"]["Discount Factor"] = 0.99
 e["Solver"]["Adoption Rate"] = 0.001
 
 ### Defining the configuration of replay memory
 
-e["Solver"]["Replay Memory"]["Start Size"] = 15000
+e["Solver"]["Replay Memory"]["Start Size"] = 5000
 e["Solver"]["Replay Memory"]["Maximum Size"] = 100000
 e["Solver"]["Replay Memory"]["Replacement Policy"] = "Least Recently Added"
 
@@ -108,23 +108,22 @@ e["Solver"]["Critic Optimizer"]["Eta"] = 0.005
 e["Solver"]["Critic Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
 e["Solver"]["Critic Neural Network"]["Layers"][0]["Node Count"] = 2
 e["Solver"]["Critic Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Linear"
-e["Solver"]["Critic Neural Network"]["Layers"][0]["Batch Normalization"]["Enabled"] = False
+e["Solver"]["Critic Neural Network"]["Layers"][0]["Batch Normalization"]["Enabled"] = True
 
 e["Solver"]["Critic Neural Network"]["Layers"][1]["Type"] = "Layer/Dense"
 e["Solver"]["Critic Neural Network"]["Layers"][1]["Node Count"] = 32
 e["Solver"]["Critic Neural Network"]["Layers"][1]["Activation Function"]["Type"] = "Tanh"
-e["Solver"]["Critic Neural Network"]["Layers"][1]["Batch Normalization"]["Enabled"] = False
+e["Solver"]["Critic Neural Network"]["Layers"][1]["Batch Normalization"]["Enabled"] = True
 
 e["Solver"]["Critic Neural Network"]["Layers"][2]["Type"] = "Layer/Dense"
 e["Solver"]["Critic Neural Network"]["Layers"][2]["Node Count"] = 32
 e["Solver"]["Critic Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Tanh"
-e["Solver"]["Critic Neural Network"]["Layers"][2]["Batch Normalization"]["Enabled"] = False
+e["Solver"]["Critic Neural Network"]["Layers"][2]["Batch Normalization"]["Enabled"] = True
 
 e["Solver"]["Critic Neural Network"]["Layers"][3]["Type"] = "Layer/Dense"
 e["Solver"]["Critic Neural Network"]["Layers"][3]["Node Count"] = 1
 e["Solver"]["Critic Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Linear"
 e["Solver"]["Critic Neural Network"]["Layers"][3]["Batch Normalization"]["Enabled"] = False 
-e["Solver"]["Critic Neural Network"]["Layers"][3]["Weight Initialization Scaling"] = 0.0000001
 
 e["Solver"]["Batch Normalization"]["Correction Steps"] = 32
 
@@ -133,18 +132,20 @@ e["Solver"]["Batch Normalization"]["Correction Steps"] = 32
 e["Solver"]["Actor Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
 e["Solver"]["Actor Neural Network"]["Layers"][0]["Node Count"] = 1
 e["Solver"]["Actor Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Linear"
-e["Solver"]["Actor Neural Network"]["Layers"][0]["Batch Normalization"]["Enabled"] = False
+e["Solver"]["Actor Neural Network"]["Layers"][0]["Batch Normalization"]["Enabled"] = True
 
 e["Solver"]["Actor Neural Network"]["Layers"][1]["Type"] = "Layer/Dense"
 e["Solver"]["Actor Neural Network"]["Layers"][1]["Node Count"] = 32
 e["Solver"]["Actor Neural Network"]["Layers"][1]["Activation Function"]["Type"] = "Tanh"
-e["Solver"]["Actor Neural Network"]["Layers"][1]["Batch Normalization"]["Enabled"] = False
+e["Solver"]["Actor Neural Network"]["Layers"][1]["Batch Normalization"]["Enabled"] = True
 
 e["Solver"]["Actor Neural Network"]["Layers"][2]["Type"] = "Layer/Dense"
 e["Solver"]["Actor Neural Network"]["Layers"][2]["Node Count"] = 1
-e["Solver"]["Actor Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Linear" 
+e["Solver"]["Actor Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Logistic" 
 e["Solver"]["Actor Neural Network"]["Layers"][2]["Batch Normalization"]["Enabled"] = False
 e["Solver"]["Actor Neural Network"]["Layers"][2]["Weight Initialization Scaling"] = 0.0000001
+
+e["Solver"]["Actor Neural Network"]["Output Scaling"] = [ 10.0, 10.0 ]
 
 ### Defining Termination Criteria
 

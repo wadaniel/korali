@@ -41,21 +41,6 @@ class Agent : public Solver
   korali::Experiment _criticExperiment;
 
   /**
-  * @brief Korali experiment for argmax_action(Q) based on a trained Q-Network
-  */
-  korali::Experiment _actorExperiment;
-
-  /**
-   * @brief Pointer to training the actor network
-   */
-  learner::DeepGD *_actorLearner;
-
-  /**
-   * @brief Pointer to actor's experiment problem
-   */
-  problem::SupervisedLearning *_actorProblem;
-
-  /**
   * @brief Storage for the pointer to the learning problem
   */
   problem::ReinforcementLearning *_problem;
@@ -85,20 +70,26 @@ class Agent : public Solver
   std::vector<double> getInferenceAction(const std::vector<double> &state);
 
   /**
-  * @brief Updates the algorithm's critic (Q), based on the new experiences
+  * @brief Trains the algorithm's critic (Q), based on the new experiences
   */
-  void updateCritic();
+  void trainCritic();
 
   /**
-  * @brief Updates the algorithm's policy, based on the new experiences
+  * @brief Performs the training of the algorithm's policy, based on the new experiences
   */
-  virtual void updatePolicy() = 0;
+  virtual void trainPolicy() = 0;
+
+  /**
+  * @brief Updates the agent's hyperparameters
+  * @param hyperparameters The hyperparameters to update the agent.
+  */
+  void updateHyperparameters(const knlohmann::json &hyperparameters);
 
   /**
   * @brief Updates the policy's hyperparameters to calculate the next action of the agent
   * @param hyperparameters The hyperparameters to update the policy.
   */
-  virtual void updateHyperparameters(const knlohmann::json &hyperparameters) = 0;
+  virtual void updatePolicyHyperparameters(const knlohmann::json &hyperparameters) = 0;
 
   /**
   * @brief Normalizes neural network batch normalization mean and variances
@@ -122,6 +113,11 @@ class Agent : public Solver
  * @brief Runs a generation of the environment(s), running an action on each episode, and updating the policy.
  */
   void runGeneration() override;
+
+  /**
+   * @brief Prints information about the training policy
+   */
+  virtual void printPolicyInformation() = 0;
 
   void printGenerationAfter() override;
   void initialize() override;

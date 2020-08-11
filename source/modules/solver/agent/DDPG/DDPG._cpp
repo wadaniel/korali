@@ -80,12 +80,12 @@ void DDPG::updatePolicy()
   for (size_t step = 0; step < _optimizationStepsPerGeneration; step++)
   {
     // Randomly selecting experiences for the mini-batch and calculating their target Q
-    std::shuffle(stateHistoryIndexes.begin(), stateHistoryIndexes.end(), *mt);
+//    std::shuffle(stateHistoryIndexes.begin(), stateHistoryIndexes.end(), *mt);
 
     for (size_t i = 0; i < _miniBatchSize; i++)
     {
       // Selecting a uniformly random selected, yet not repeated experience
-      size_t expId = stateHistoryIndexes[i];
+      size_t expId = stateHistoryIndexes[_stateHistory.size() - _miniBatchSize + i];
 
       // Storage to put together state and action
       std::vector<double> stateActionInput(_problem->_stateVectorSize + _problem->_actionVectorSize);

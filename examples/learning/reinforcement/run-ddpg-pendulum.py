@@ -26,9 +26,8 @@ def env(s):
   s.update()
   
   # Reading action
-  action = s["Action"]
-  action[0] = action[0] * 2
-  #print(action)
+  action = s["Action"][0]
+  print(action)
       
   # Performing the action
   state, reward, done, info = pendulum.step(action)
@@ -93,10 +92,10 @@ e["Solver"]["Replay Memory"]["Replacement Policy"] = "Least Recently Added"
 
 e["Solver"]["Actor Optimizer"]["Type"] = "Optimizer/Adam"
 e["Solver"]["Actor Optimizer"]["Termination Criteria"]["Min Gradient Norm"] = -1.0
-e["Solver"]["Actor Optimizer"]["Eta"] = 0.0001
+e["Solver"]["Actor Optimizer"]["Eta"] = 0.00001
 
 e["Solver"]["Critic Optimizer"]["Type"] = "Optimizer/Adam"
-e["Solver"]["Critic Optimizer"]["Eta"] = 0.01
+e["Solver"]["Critic Optimizer"]["Eta"] = 0.001
 
 ### Defining the shape of the critic neural network
 
@@ -146,13 +145,15 @@ e["Solver"]["Actor Neural Network"]["Layers"][3]["Activation Function"]["Type"] 
 e["Solver"]["Actor Neural Network"]["Layers"][3]["Batch Normalization"]["Enabled"] = False
 e["Solver"]["Actor Neural Network"]["Layers"][3]["Weight Initialization Scaling"] = 0.000001
 
+e["Solver"]["Actor Neural Network"]["Output Scaling"] = [ 2.0 ]
+
 ### Defining Termination Criteria
 
 e["Solver"]["Termination Criteria"]["Target Average Reward"] = -100
 
 ### Setting file output configuration
 
-e["File Output"]["Frequency"] = 1000
+e["File Output"]["Frequency"] = 5000
 
 ### Running Experiment
 

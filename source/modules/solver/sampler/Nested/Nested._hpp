@@ -161,7 +161,12 @@ class Nested : public Sampler
   * @brief Process Generation after receiving all results.
   */
   bool processGeneration();
-
+  
+  /*
+  * @brief Calculates the log prior weight.
+  */
+  double logPriorWeight(std::vector<double> &sample);
+ 
   /*
    * @brief Caclculate volume of bounds.
   */

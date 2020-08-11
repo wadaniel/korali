@@ -12,6 +12,12 @@ namespace agent
 class DQN : public Agent
 {
   public:
+
+  /**
+  * @brief Korali experiment for argmax_action(Q) based on a trained Q-Network
+  */
+  korali::Experiment _policyExperiment;
+
   /**
    * @brief Function to evaluate the Q* of a given action
    * @param sample Sample containing the action to evaluate
@@ -20,9 +26,9 @@ class DQN : public Agent
   void evaluateAction(Sample &sample, bool getGradients);
 
   std::vector<double> queryPolicy(const std::vector<double> &state) override;
-  void updateHyperparameters(const knlohmann::json &hyperparameters) override;
-  void updatePolicy() override;
-  void printGenerationAfter() override;
+  void updatePolicyHyperparameters(const knlohmann::json &hyperparameters) override;
+  void trainPolicy() override;
+  void printPolicyInformation() override;
   void initializePolicy() override;
 };
 

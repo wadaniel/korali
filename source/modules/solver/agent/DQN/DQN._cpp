@@ -14,6 +14,13 @@ namespace agent
 {
 void DQN::initializePolicy()
 {
+ // Checking a discrete policy has been defined
+ for (size_t i = 0; i < _problem->_actionVectorIndexes.size(); i++)
+ {
+  size_t varIdx = _problem->_actionVectorIndexes[i];
+  if (_k->_variables[varIdx]->_values.size() == 0) KORALI_LOG_ERROR("No discrete action values have been defined for variable %lu (%s), required by DQN\n", varIdx, _k->_variables[varIdx]->_name.c_str());
+ }
+
   /*********************************************************************
   * Creating Q-Maximizing argmax(Action) Experiment
   *********************************************************************/
@@ -21,40 +28,41 @@ void DQN::initializePolicy()
   // Creating evaluation lambda function for optimization
   auto fc = [this](Sample &sample) { this->evaluateAction(sample, true); };
 
-  _actorExperiment["Problem"]["Type"] = "Optimization";
-  _actorExperiment["Problem"]["Objective Function"] = fc;
+  _policyExperiment["Problem"]["Type"] = "Optimization";
+  _policyExperiment["Problem"]["Objective Function"] = fc;
 
   for (size_t i = 0; i < _problem->_actionVectorSize; i++)
   {
     size_t varIdx = _problem->_actionVectorIndexes[i];
 
-    _actorExperiment["Variables"][i]["Name"] = _k->_variables[varIdx]->_name;
-    _actorExperiment["Variables"][i]["Lower Bound"] = _k->_variables[varIdx]->_lowerBound;
-    _actorExperiment["Variables"][i]["Upper Bound"] = _k->_variables[varIdx]->_upperBound;
+    _policyExperiment["Variables"][i]["Name"] = _k->_variables[varIdx]->_name;
+    _policyExperiment["Variables"][i]["Lower Bound"] = _k->_variables[varIdx]->_lowerBound;
+    _policyExperiment["Variables"][i]["Upper Bound"] = _k->_variables[varIdx]->_upperBound;
 
     double initialGuess = (_k->_variables[varIdx]->_upperBound + _k->_variables[varIdx]->_lowerBound) * 0.5;
     double initialStdDev = abs((_k->_variables[varIdx]->_upperBound - _k->_variables[varIdx]->_lowerBound));
 
-    _actorExperiment["Variables"][i]["Initial Value"] = initialGuess;
-    _actorExperiment["Variables"][i]["Initial Mean"] = initialGuess;
-    _actorExperiment["Variables"][i]["Initial Standard Deviation"] = initialStdDev;
-    _actorExperiment["Variables"][i]["Values"] = _k->_variables[varIdx]->_values;
+    _policyExperiment["Variables"][i]["Initial Value"] = initialGuess;
+    _policyExperiment["Variables"][i]["Initial Mean"] = initialGuess;
+    _policyExperiment["Variables"][i]["Initial Standard Deviation"] = initialStdDev;
+    _policyExperiment["Variables"][i]["Values"] = _k->_variables[varIdx]->_values;
   }
 
-  _actorExperiment["Solver"] = _actionOptimizer;
+  _policyExperiment["Solver"] = _policyOptimizer;
 
-  _actorExperiment["Console Output"]["Frequency"] = 0;
-  _actorExperiment["Console Output"]["Verbosity"] = "Silent";
-  _actorExperiment["File Output"]["Enabled"] = false;
-  _actorExperiment["Random Seed"] = _k->_randomSeed++;
+  _policyExperiment["Console Output"]["Frequency"] = 0;
+  _policyExperiment["Console Output"]["Verbosity"] = "Silent";
+  _policyExperiment["File Output"]["Enabled"] = false;
+  _policyExperiment["Random Seed"] = _k->_randomSeed++;
 
   // Running initialization to verify that the configuration is correct
-  _engine.initialize(_actorExperiment);
+  _engine.initialize(_policyExperiment);
 }
 
-void DQN::updatePolicy()
+void DQN::trainPolicy()
 {
-
+ // No direct training to the policy required since the best action is
+ // selected at every action with an optimizer.
 }
 
 void DQN::evaluateAction(Sample &sample, bool getGradients)
@@ -80,10 +88,10 @@ void DQN::evaluateAction(Sample &sample, bool getGradients)
   }
 }
 
-void DQN::updateHyperparameters(const knlohmann::json &hyperparameters)
+void DQN::updatePolicyHyperparameters(const knlohmann::json &hyperparameters)
 {
   _criticLearner->setHyperparameters(hyperparameters["Critic"].get<std::vector<double>>());
-  _epsilonCurrentValue = hyperparameters["Epsilon"].get<double>();
+  _policyEpsilonCurrentValue = hyperparameters["Epsilon"].get<double>();
 
   // Re-initializing action noises to zero
   size_t actionCount = _problem->_actionVectorIndexes.size();
@@ -93,20 +101,19 @@ void DQN::updateHyperparameters(const knlohmann::json &hyperparameters)
 
 std::vector<double> DQN::queryPolicy(const std::vector<double> &state)
 {
-  _actorExperiment._globals["Current State"] = state;
+  _policyExperiment._globals["Current State"] = state;
 
   // Running optimization experiment to get best estimated action
   korali::Engine engine;
-  engine.run(_actorExperiment);
+  engine.run(_policyExperiment);
 
   // Getting optimal action, based on the NN evaluation
-  return _actorExperiment["Results"]["Best Sample"]["Parameters"].get<std::vector<double>>();
+  return _policyExperiment["Results"]["Best Sample"]["Parameters"].get<std::vector<double>>();
 }
 
-void DQN::printGenerationAfter()
+void DQN::printPolicyInformation()
 {
-  // Printing common experience information
-  Agent::printGenerationAfter();
+
 }
 
 } // namespace agent

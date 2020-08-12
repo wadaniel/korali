@@ -89,7 +89,8 @@ e["Solver"]["Policy"]["Epsilon"]["Decrease Rate"] = 0.05
 ## Defining Q-Critic and Action-selection (policy) optimizers
 
 e["Solver"]["Critic"]["Mini Batch Size"] = 32
-e["Solver"]["Critic"]["Discount Factor"] = 0.99 
+e["Solver"]["Critic"]["Discount Factor"] = 0.99
+e["Solver"]["Critic"]["Update Algorithm"] = "Retrace" 
 e["Solver"]["Critic"]["Optimizer"]["Type"] = "Optimizer/Adam"
 e["Solver"]["Critic"]["Optimizer"]["Eta"] = 0.1
 e["Solver"]["Critic"]["Optimization Steps"] = 5

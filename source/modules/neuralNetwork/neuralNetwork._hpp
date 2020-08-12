@@ -113,6 +113,7 @@ class NeuralNetwork : public Module
 
   /**
    * @brief Backward-propagates to find out the gradients of the input data.
+   * @return The gradients of the input data wrt to the output data
   */
   std::vector<double> getDataGradients();
 

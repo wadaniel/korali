@@ -12,7 +12,6 @@ namespace agent
 class DQN : public Agent
 {
   public:
-
   /**
   * @brief Korali experiment for argmax_action(Q) based on a trained Q-Network
   */

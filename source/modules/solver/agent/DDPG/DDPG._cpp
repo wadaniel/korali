@@ -14,16 +14,15 @@ namespace agent
 {
 void DDPG::initializePolicy()
 {
-
   // Checking if a correct action space was defined
   for (size_t i = 0; i < _problem->_actionVectorIndexes.size(); i++)
   {
-   size_t varIdx = _problem->_actionVectorIndexes[i];
+    size_t varIdx = _problem->_actionVectorIndexes[i];
 
-   if (_k->_variables[varIdx]->_values.size() > 0) KORALI_LOG_ERROR("Discrete action values (%lu, in total) have been defined for variable %lu (%s), but these are not required for DDPG\n", _k->_variables[varIdx]->_values.size(), varIdx, _k->_variables[varIdx]->_name.c_str());
-   if (_k->_variables[varIdx]->_upperBound < _k->_variables[varIdx]->_lowerBound) KORALI_LOG_ERROR("Upper bound for variable %lu (%s) is lower than the lower bound (%f < %f).\n", varIdx, _k->_variables[varIdx]->_name.c_str(), _k->_variables[varIdx]->_upperBound, _k->_variables[varIdx]->_lowerBound);
-   if (std::isfinite(_k->_variables[varIdx]->_lowerBound) == false) KORALI_LOG_ERROR("Lower bound for variable %lu (%s) is not finite or has not been specified.\n", varIdx, _k->_variables[varIdx]->_name.c_str());
-   if (std::isfinite(_k->_variables[varIdx]->_upperBound) == false) KORALI_LOG_ERROR("Upper bound for variable %lu (%s) is not finite or has not been specified.\n", varIdx, _k->_variables[varIdx]->_name.c_str());
+    if (_k->_variables[varIdx]->_values.size() > 0) KORALI_LOG_ERROR("Discrete action values (%lu, in total) have been defined for variable %lu (%s), but these are not required for DDPG\n", _k->_variables[varIdx]->_values.size(), varIdx, _k->_variables[varIdx]->_name.c_str());
+    if (_k->_variables[varIdx]->_upperBound < _k->_variables[varIdx]->_lowerBound) KORALI_LOG_ERROR("Upper bound for variable %lu (%s) is lower than the lower bound (%f < %f).\n", varIdx, _k->_variables[varIdx]->_name.c_str(), _k->_variables[varIdx]->_upperBound, _k->_variables[varIdx]->_lowerBound);
+    if (std::isfinite(_k->_variables[varIdx]->_lowerBound) == false) KORALI_LOG_ERROR("Lower bound for variable %lu (%s) is not finite or has not been specified.\n", varIdx, _k->_variables[varIdx]->_name.c_str());
+    if (std::isfinite(_k->_variables[varIdx]->_upperBound) == false) KORALI_LOG_ERROR("Upper bound for variable %lu (%s) is not finite or has not been specified.\n", varIdx, _k->_variables[varIdx]->_name.c_str());
   }
 
   /*********************************************************************
@@ -69,7 +68,7 @@ void DDPG::initializePolicy()
   }
 
   // Storage for statistics
-   avgGradients.resize(_problem->_actionVectorSize);
+  avgGradients.resize(_problem->_actionVectorSize);
 
   // Assigning training hyperparameters to inference learner
   _policyLearner->setHyperparameters(_hyperparameters["Policy"]);
@@ -148,12 +147,12 @@ void DDPG::updatePolicyHyperparameters(const knlohmann::json &hyperparameters)
 
 void DDPG::printPolicyInformation()
 {
- _k->_logger->logInfo("Normal", " + Average Action Gradients: [");
+  _k->_logger->logInfo("Normal", " + Average Action Gradients: [");
 
   // Printing gradient averages
- _k->_logger->logData("Normal", " %e", avgGradients[0]);
+  _k->_logger->logData("Normal", " %e", avgGradients[0]);
   for (size_t i = 1; i < _problem->_actionVectorSize; i++) _k->_logger->logData("Normal", ", %e", avgGradients[i]);
- _k->_logger->logData("Normal", " ]\n");
+  _k->_logger->logData("Normal", " ]\n");
 }
 
 } // namespace agent

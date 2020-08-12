@@ -17,8 +17,6 @@ namespace neuralNetwork
 class Layer : public Module
 {
   public:
-#ifdef _KORALI_USE_ONEDNN
-
   /**
    * @brief Index of the current layer within the NN
   */
@@ -56,6 +54,8 @@ class Layer : public Module
    * @brief Number of layer's normalization parameters (mean/variance)
    */
   size_t _normalizationParameterCount;
+
+#ifdef _KORALI_USE_ONEDNN
 
   /********************************************************
   * Layers's Memory Structures for Forward Propagation
@@ -251,6 +251,12 @@ class Layer : public Module
    */
   dnnl::primitive _backwardNormalizationPrimitive;
 
+#endif
+
+  /**
+   * @brief Generates the initial weight/bias/normalization hyperparameters for the layer
+   * @return The initial hyperparameters
+   */
   std::vector<double> generateInitialHyperparameters();
 
   /**
@@ -262,8 +268,6 @@ class Layer : public Module
   * @brief Initializes the internal memory structures for the backward pipeline
   */
   void createBackwardPipeline();
-
-#endif
 };
 
 } // namespace neuralNetwork

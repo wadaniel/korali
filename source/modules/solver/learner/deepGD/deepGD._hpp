@@ -51,7 +51,6 @@ class DeepGD : public Learner
   * @param sample The sample containing proposal NN weight/bias configuration.
   * @param nn The neural network to update
   * @param solution Solution values from which to calculate loss and differentials
-  * @param getGradients Flag that indicates whether the gradients are required
   */
   void evaluateHyperparameters(korali::Sample &sample, NeuralNetwork *nn, const std::vector<std::vector<double>> &solution);
 

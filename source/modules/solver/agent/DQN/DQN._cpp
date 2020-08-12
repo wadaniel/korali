@@ -14,12 +14,12 @@ namespace agent
 {
 void DQN::initializePolicy()
 {
- // Checking a discrete policy has been defined
- for (size_t i = 0; i < _problem->_actionVectorIndexes.size(); i++)
- {
-  size_t varIdx = _problem->_actionVectorIndexes[i];
-  if (_k->_variables[varIdx]->_values.size() == 0) KORALI_LOG_ERROR("No discrete action values have been defined for variable %lu (%s), required by DQN\n", varIdx, _k->_variables[varIdx]->_name.c_str());
- }
+  // Checking a discrete policy has been defined
+  for (size_t i = 0; i < _problem->_actionVectorIndexes.size(); i++)
+  {
+    size_t varIdx = _problem->_actionVectorIndexes[i];
+    if (_k->_variables[varIdx]->_values.size() == 0) KORALI_LOG_ERROR("No discrete action values have been defined for variable %lu (%s), required by DQN\n", varIdx, _k->_variables[varIdx]->_name.c_str());
+  }
 
   /*********************************************************************
   * Creating Q-Maximizing argmax(Action) Experiment
@@ -61,8 +61,8 @@ void DQN::initializePolicy()
 
 void DQN::trainPolicy()
 {
- // No direct training to the policy required since the best action is
- // selected at every action with an optimizer.
+  // No direct training to the policy required since the best action is
+  // selected at every action with an optimizer.
 }
 
 void DQN::evaluateAction(Sample &sample, bool getGradients)
@@ -113,7 +113,6 @@ std::vector<double> DQN::queryPolicy(const std::vector<double> &state)
 
 void DQN::printPolicyInformation()
 {
-
 }
 
 } // namespace agent

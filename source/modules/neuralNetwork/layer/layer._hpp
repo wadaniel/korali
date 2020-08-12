@@ -5,19 +5,60 @@
   #include "dnnl.hpp"
 #endif
 
+#include "modules/distribution/univariate/uniform/uniform.hpp"
 #include "modules/module.hpp"
 
 namespace korali
 {
+class NeuralNetwork;
+
 namespace neuralNetwork
 {
 class Layer : public Module
 {
   public:
+  /**
+   * @brief Index of the current layer within the NN
+  */
+  size_t _index;
+
+  /********************************************************
+  * Relevant pointers declaration
+  *******************************************************/
+
+  /**
+   * @brief Pointer to the parent neural network
+   */
+  NeuralNetwork *_nn;
+
+  /**
+  * @brief Pointer to previous layer, NULL if this is the first layer
+  */
+  Layer *_prevLayer;
+
+  /**
+   * @brief Pointer to next layer, NULL if this is the last layer
+   */
+  Layer *_nextLayer;
+
+  /********************************************************
+   * Hyperparameter counts
+   *******************************************************/
+
+  /**
+   * @brief Number of layer's hyperparameters (weights/bias/normalization shift/scale)
+   */
+  size_t _hyperparameterCount;
+
+  /**
+   * @brief Number of layer's normalization parameters (mean/variance)
+   */
+  size_t _normalizationParameterCount;
+
 #ifdef _KORALI_USE_ONEDNN
 
   /********************************************************
-  * Declaring Layers's Memory Structures for Forward Propagation
+  * Layers's Memory Structures for Forward Propagation
   *******************************************************/
 
   /**
@@ -211,6 +252,22 @@ class Layer : public Module
   dnnl::primitive _backwardNormalizationPrimitive;
 
 #endif
+
+  /**
+   * @brief Generates the initial weight/bias/normalization hyperparameters for the layer
+   * @return The initial hyperparameters
+   */
+  std::vector<double> generateInitialHyperparameters();
+
+  /**
+   * @brief Initializes the layer's internal memory structures for the forward pipeline
+   */
+  void createForwardPipeline();
+
+  /**
+  * @brief Initializes the internal memory structures for the backward pipeline
+  */
+  void createBackwardPipeline();
 };
 
 } // namespace neuralNetwork

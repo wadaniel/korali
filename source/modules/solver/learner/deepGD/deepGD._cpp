@@ -48,7 +48,7 @@ void DeepGD::initialize()
    *****************************************************************/
 
     // Creating evaluation lambda function for optimization
-    auto fc = [this, nn = &_trainingNeuralNetwork, out = &_problem->_solution](Sample &sample) { this->evaluateHyperparameters(sample, *nn, *out, true); };
+    auto fc = [this, nn = &_trainingNeuralNetwork, out = &_problem->_solution](Sample &sample) { this->evaluateHyperparameters(sample, *nn, *out); };
 
     _optExperiment["Problem"]["Type"] = "Optimization";
     _optExperiment["Problem"]["Objective Function"] = fc;
@@ -145,13 +145,11 @@ std::vector<double> DeepGD::getEvaluation(const std::vector<double> &inputBatch)
 
 std::vector<double> DeepGD::getGradients(const std::vector<double> &outputDiffs)
 {
-  // Converting precision
-  std::vector<float> singlePrecisionDiffs(outputDiffs.begin(), outputDiffs.end());
+  // Backward propagating the gradients through the training neural network
+  _evaluationNeuralNetwork->backward(outputDiffs);
 
   // Running backward propagation wrt data
-  _evaluationNeuralNetwork->backwardData(singlePrecisionDiffs);
-
-  return _evaluationNeuralNetwork->_inputGradient[0];
+  return _evaluationNeuralNetwork->getDataGradients();
 }
 
 void DeepGD::printGenerationAfter()
@@ -160,7 +158,7 @@ void DeepGD::printGenerationAfter()
   _k->_logger->logInfo("Normal", "Training Loss: %.15f\n", _currentLoss);
 }
 
-void DeepGD::evaluateHyperparameters(Sample &sample, NeuralNetwork *nn, const std::vector<std::vector<double>> &solution, bool getGradients)
+void DeepGD::evaluateHyperparameters(Sample &sample, NeuralNetwork *nn, const std::vector<std::vector<double>> &solution)
 {
   // Getting parameters for weight and bias update
   auto parameters = KORALI_GET(std::vector<double>, sample, "Parameters");
@@ -168,45 +166,47 @@ void DeepGD::evaluateHyperparameters(Sample &sample, NeuralNetwork *nn, const st
   // Updating the training network's weights, biases, and normalization factors
   nn->setHyperparameters(parameters);
 
-  // Running the input values through the training neural network
+  // Forward propagating the input values through the training neural network
   nn->forward();
 
-  // Getting NN's dimensions
-  size_t batchSize = nn->_outputValues.size();
-  size_t outputSize = nn->_outputValues[0].size();
+  // Getting solution's dimensions
+  size_t batchSize = solution.size();
+  size_t solutionSize = solution[0].size();
 
-  // Variable for the NN output
-  double output = 0.0;
+  // Saving values for the loss function and its gradient
+  double loss = 0.0;
+  std::vector<double> lossDiff(batchSize * solutionSize);
 
-  // Saving values for the last layer's diff
-  std::vector<double> outputDiff(batchSize * outputSize);
-
+  // Assigning values to evaluation and gradients, depending on the loss function selected
   if (_lossFunction == "Direct")
   {
     for (size_t i = 0; i < batchSize; i++)
-      for (size_t j = 0; j < outputSize; j++)
-        outputDiff[i * outputSize + j] = -solution[i][j];
+      for (size_t j = 0; j < solutionSize; j++)
+        lossDiff[i * solutionSize + j] = -solution[i][j];
   }
 
   if (_lossFunction == "Mean Squared Error")
   {
     for (size_t i = 0; i < batchSize; i++)
-      for (size_t j = 0; j < outputSize; j++)
+      for (size_t j = 0; j < solutionSize; j++)
       {
         double diff = solution[i][j] - nn->_outputValues[i][j];
-        outputDiff[i * outputSize + j] = diff;
-        output += diff * diff;
+        lossDiff[i * solutionSize + j] = diff;
+        loss += diff * diff;
       }
 
     // Saving the negative of the error because we want to minimize it
-    output = -output / ((double)batchSize * 2);
+    loss = -loss / ((double)batchSize * 2);
   }
 
+  // Backward propagating the gradients through the training neural network
+  nn->backward(lossDiff);
+
   // Saving the negative of the error because we want to minimize it
-  sample["F(x)"] = output;
+  sample["F(x)"] = loss;
 
   // If we need the gradients of the weights, we also compute them
-  if (getGradients) sample["Gradient"] = nn->getHyperparameterGradients(outputDiff);
+  sample["Gradient"] = nn->getHyperparameterGradients();
 }
 
 } // namespace learner

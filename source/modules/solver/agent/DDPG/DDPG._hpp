@@ -13,15 +13,30 @@ class DDPG : public Agent
 {
   public:
   /**
-   * @brief Variable to keep track of the current noise added to the action
+  * @brief Korali experiment for argmax_action(Q) based on a trained Q-Network
+  */
+  korali::Experiment _policyExperiment;
+
+  /**
+   * @brief Pointer to training the actor network
    */
-  std::vector<double> _currentActionNoises;
-  std::vector<double> getTrainingAction(const std::vector<double> &state) override;
+  learner::DeepGD *_policyLearner;
+
+  /**
+   * @brief Pointer to actor's experiment problem
+   */
+  problem::SupervisedLearning *_policyProblem;
+
+  /**
+   * @brief Storage for statistical data of the policy gradients
+   */
+  std::vector<double> avgGradients;
+
   std::vector<double> queryPolicy(const std::vector<double> &state) override;
-  void updateHyperparameters(const knlohmann::json &hyperparameters) override;
-  void updatePolicy() override;
-  void printGenerationAfter() override;
-  void initialize() override;
+  void updatePolicyHyperparameters(const knlohmann::json &hyperparameters) override;
+  void trainPolicy() override;
+  void printPolicyInformation() override;
+  void initializePolicy() override;
 };
 
 } // namespace agent

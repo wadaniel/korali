@@ -75,6 +75,20 @@ class Agent : public Solver
   void trainCritic();
 
   /**
+   * @brief Calculates the state-only value function V(s) of a given (state/action) experience
+   * @param expId Position within the experience replay history that locates the given experience
+   * @return The value of the state value function for the given experience
+   */
+  double stateValueFunction(size_t expId);
+
+  /**
+   * @brief Calculates (recursively) the Qretrace value of a given (state/action) experience
+   * @param expId Position within the experience replay history that locates the given experience
+   * @return The value of the retrace function for the given experience
+   */
+  double retraceFunction(size_t expId);
+
+  /**
   * @brief Performs the training of the algorithm's policy, based on the new experiences
   */
   virtual void trainPolicy() = 0;

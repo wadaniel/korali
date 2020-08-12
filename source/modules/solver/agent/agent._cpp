@@ -140,59 +140,23 @@ void Agent::runGeneration()
       double reward = agents[i]["Experience"]["Rewards"][j].get<double>();
       _rewardHistory.push_back(reward);
 
-      // If not a terminal state, store the next state
-      if (j < agents[i]["Experience"]["States"].size() - 1)
-        _nextStateHistory.push_back(agents[i]["Experience"]["States"][j + 1].get<std::vector<double>>());
-      else // Otherwise, store an empty next state
-        _nextStateHistory.push_back({});
+      // Storing whether this experience is terminal
+      _terminalHistory.push_back(j == (experienceSize - 1));
     }
-  }
-
-  // Updating best reward so far, it the cumulative reward of this round exceeds it
-  // and store the best hyperparameters used for that
-  _averageReward = cumulativeReward / (double)_agentEpisodesPerGeneration;
-  if (_averageReward > _bestAverageReward)
-  {
-    _bestAverageReward = _averageReward;
-    _bestHyperparameters = _hyperparameters;
-    _suboptimalStepCounter = 0;
-  }
-  else
-  {
-    // If not better, then increase the suboptimal step counter
-    _suboptimalStepCounter++;
   }
 
   // Updating average experience count
   _totalExperienceCount += currentExperienceCount;
   _averageExperienceCount = ((double)currentExperienceCount) / ((double)_agentEpisodesPerGeneration);
 
-  // If the maximum number of experiences have been reached, start forgetting excess experiences
+  // If the maximum number of experiences have been reached, start forgetting older excess experiences
   if (_stateHistory.size() > _replayMemoryMaximumSize)
   {
     size_t excess = _stateHistory.size() - _replayMemoryMaximumSize;
-
-    if (_replayMemoryReplacementPolicy == "Least Recently Added")
-    {
-      _stateHistory.erase(_stateHistory.begin(), _stateHistory.begin() + excess);
-      _actionHistory.erase(_actionHistory.begin(), _actionHistory.begin() + excess);
-      _rewardHistory.erase(_rewardHistory.begin(), _rewardHistory.begin() + excess);
-      _nextStateHistory.erase(_nextStateHistory.begin(), _nextStateHistory.begin() + excess);
-    }
-
-    if (_replayMemoryReplacementPolicy == "Uniform")
-    {
-      for (size_t i = 0; i < excess; i++)
-      {
-        double x = _uniformGenerator->getRandomNumber();
-        size_t expId = floor(x * _stateHistory.size());
-
-        _stateHistory.erase(_stateHistory.begin() + expId);
-        _actionHistory.erase(_actionHistory.begin() + expId);
-        _rewardHistory.erase(_rewardHistory.begin() + expId);
-        _nextStateHistory.erase(_nextStateHistory.begin() + expId);
-      }
-    }
+    _stateHistory.erase(_stateHistory.begin(), _stateHistory.begin() + excess);
+    _actionHistory.erase(_actionHistory.begin(), _actionHistory.begin() + excess);
+    _rewardHistory.erase(_rewardHistory.begin(), _rewardHistory.begin() + excess);
+    _terminalHistory.erase(_terminalHistory.begin(), _terminalHistory.begin() + excess);
   }
 
   // If the minimum number of experiences have been reached update the algorithm-specific method
@@ -221,6 +185,21 @@ void Agent::runGeneration()
 
     // Storing new Critic's hyperparameters
     _hyperparameters["Critic"] = _criticLearner->getHyperparameters();
+
+    // Updating best reward so far, it the cumulative reward of this round exceeds it
+    // and store the best hyperparameters used for that
+    _averageReward = cumulativeReward / (double)_agentEpisodesPerGeneration;
+    if (_averageReward > _bestAverageReward)
+    {
+      _bestAverageReward = _averageReward;
+      _bestHyperparameters = _hyperparameters;
+      _suboptimalStepCounter = 0;
+    }
+    else
+    {
+      // If not better, then increase the suboptimal step counter
+      _suboptimalStepCounter++;
+    }
   }
 }
 
@@ -320,13 +299,13 @@ void Agent::trainCritic()
       // Q* = r -- If terminal state
 
       // Calculating target Q value (solution) for Qnew on selected batch
-      double qValue = _rewardHistory[expId];
+      double qStar = _rewardHistory[expId];
 
       // If state is not terminal (next state is filled) then add Qnew to the Q value.
-      if (_nextStateHistory[expId].size() > 0)
+      if (_terminalHistory[expId] == false)
       {
         // Updating current state
-        auto nextState = _nextStateHistory[expId];
+        auto nextState = _stateHistory[expId+1];
 
         // Getting optimal action for the next state, based on the NN evaluation
         auto action = queryPolicy(nextState);
@@ -339,29 +318,33 @@ void Agent::trainCritic()
         for (size_t j = 0; j < action.size(); j++) stateActionInput[j + nextState.size()] = action[j];
         auto evaluation = _criticLearner->getEvaluation(stateActionInput);
 
-        // Getting estimate Qnew, based on the NN evaluation
-        auto qNew = evaluation[0];
+        // Getting the value of V(Xt+1), i.e., Q(xt+1, best action)
+        auto V = evaluation[0];
+
+        // If using retrace, we calculate it's value here
+        double qRetrace = 0.0;
+        //if (_retraceEnabled == true) calculateRetrace(expId);
 
         // We add the expected remaining reward based on the optimization
-        qValue += _criticDiscountFactor * qNew;
+        qStar += _criticDiscountFactor * V;
 
         // Debug only, print new experience values
         //  printf("State: %f %f %f %f \n", _stateHistory[expId][0], _stateHistory[expId][1], _stateHistory[expId][2], _stateHistory[expId][3]);
         //  printf("Action: %f\n", _actionHistory[expId][0]);
         //  printf("Reward: %f\n", _rewardHistory[expId]);
-        //  printf("New State: %f %f %f %f\n", _nextStateHistory[expId][0], _nextStateHistory[expId][1], _nextStateHistory[expId][2], _nextStateHistory[expId][3]);
+        //  printf("New State: %f %f %f %f\n", _stateHistory[expId+1][0], _stateHistory[expId+1][1], _stateHistory[expId+1][2], _stateHistory[expId+1][3]);
         //  printf("New Action: %f\n", action[0]);
-        //  printf("QNew: %f\n", qNew);
-        //  printf("Q* %f\n", qValue);
+        //  printf("V: %f\n", V);
+        //  printf("Q* %f\n", qStar);
       }
 
       // Updating inputs to training learner
       for (size_t j = 0; j < _problem->_stateVectorSize; j++) _criticProblem->_inputs[i][j] = _stateHistory[expId][j];
       for (size_t j = 0; j < _problem->_actionVectorSize; j++) _criticProblem->_inputs[i][_problem->_stateVectorSize + j] = _actionHistory[expId][j];
-      _criticProblem->_solution[i][0] = qValue;
+      _criticProblem->_solution[i][0] = qStar;
 
       // Keeping statistics
-      _cumulativeQStar += qValue;
+      _cumulativeQStar += qStar;
     }
 
     // Running one generation of the optimization method with the given mini-batch
@@ -511,6 +494,7 @@ void Agent::printGenerationAfter()
   _criticExperiment._logger->setVerbosityLevel("Silent");
 
   _k->_logger->logInfo("Normal", "Policy Information:\n");
+  _k->_logger->logInfo("Normal", " + Current Epsilon:                  %f -> %f\n", _policyEpsilonCurrentValue, _policyEpsilonTargetValue);
   printPolicyInformation();
 }
 

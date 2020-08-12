@@ -151,8 +151,8 @@ void DDPG::printPolicyInformation()
  _k->_logger->logInfo("Normal", " + Average Action Gradients: [");
 
   // Printing gradient averages
- _k->_logger->logData("Normal", " %f", avgGradients[0]);
-  for (size_t i = 1; i < _problem->_actionVectorSize; i++) _k->_logger->logData("Normal", ", %f", avgGradients[i]);
+ _k->_logger->logData("Normal", " %e", avgGradients[0]);
+  for (size_t i = 1; i < _problem->_actionVectorSize; i++) _k->_logger->logData("Normal", ", %e", avgGradients[i]);
  _k->_logger->logData("Normal", " ]\n");
 }
 

@@ -73,7 +73,6 @@ e["Solver"]["Type"] = "Agent/DQN"
 
 e["Solver"]["Replay Memory"]["Start Size"] = 5000
 e["Solver"]["Replay Memory"]["Maximum Size"] = 150000
-e["Solver"]["Replay Memory"]["Replacement Policy"] = "Least Recently Added"
 
 ### Defining the configuration of the agent
 

@@ -77,8 +77,8 @@ void NeuralNetwork::initialize()
 
   // Check output scaling configuration
   if (_outputScaling.empty() == false)
-   if (_outputScaling.size() != _layers[layerCount-1]->_nodeCount)
-    KORALI_LOG_ERROR("Wrong number of output scaling factors passed to the neural network. Expected: %lu, provided: %lu.\n", _layers[layerCount-1]->_nodeCount, _outputScaling.size());
+    if (_outputScaling.size() != _layers[layerCount - 1]->_nodeCount)
+      KORALI_LOG_ERROR("Wrong number of output scaling factors passed to the neural network. Expected: %lu, provided: %lu.\n", _layers[layerCount - 1]->_nodeCount, _outputScaling.size());
 
   // Making sure we do not re-initialize
   _isInitialized = true;
@@ -217,7 +217,8 @@ void NeuralNetwork::backward(const std::vector<double> &outputDifferential)
   std::vector<float> floatDiffs(outputDifferential.begin(), outputDifferential.end());
 
   // If we  use scaling, then apply the scaling factors gradient now
-  if (_outputScaling.size() > 0) for (size_t i = 0; i < _outputScaling.size(); i++)  floatDiffs[i] /= _outputScaling[i];
+  if (_outputScaling.size() > 0)
+    for (size_t i = 0; i < _outputScaling.size(); i++) floatDiffs[i] /= _outputScaling[i];
 
   write_to_dnnl_memory(floatDiffs.data(), _layers[lastLayer]->_activationDiffMem);
 
@@ -360,7 +361,8 @@ void NeuralNetwork::forward()
     for (size_t j = 0; j < nodeCount; j++) _outputValues[i][j] = resultData[i * nodeCount + j];
 
     // If we  use scaling, then apply the scaling factors now
-    if (_outputScaling.size() > 0) for (size_t j = 0; j < nodeCount; j++)  _outputValues[i][j] *= _outputScaling[j];
+    if (_outputScaling.size() > 0)
+      for (size_t j = 0; j < nodeCount; j++) _outputValues[i][j] *= _outputScaling[j];
   }
 
 #endif

@@ -168,16 +168,16 @@ void Agent::runGeneration()
     // Initializing the value of epsilon, if not already set
     if (_policyEpsilonInitialized == false)
     {
-     _policyEpsilonCurrentValue = _policyEpsilonInitialValue;
-     _policyEpsilonInitialized = true;
+      _policyEpsilonCurrentValue = _policyEpsilonInitialValue;
+      _policyEpsilonInitialized = true;
     }
     else
     {
       // Decreasing the value of epsilon
-     _policyEpsilonCurrentValue = _policyEpsilonCurrentValue - _policyEpsilonDecreaseRate;
+      _policyEpsilonCurrentValue = _policyEpsilonCurrentValue - _policyEpsilonDecreaseRate;
 
-     // Without exceeding the lower bound
-     if (_policyEpsilonCurrentValue < _policyEpsilonTargetValue) _policyEpsilonCurrentValue = _policyEpsilonTargetValue;
+      // Without exceeding the lower bound
+      if (_policyEpsilonCurrentValue < _policyEpsilonTargetValue) _policyEpsilonCurrentValue = _policyEpsilonTargetValue;
     }
 
     // Updating Epsilon
@@ -256,11 +256,11 @@ std::vector<double> Agent::getTrainingAction(const std::vector<double> &state)
     // Check whether the variable requires noise
     if (_k->_variables[varIdx]->_explorationNoiseEnabled == true)
     {
-     double w = _k->_variables[varIdx]->_explorationNoiseDistribution->getRandomNumber();
-     double noise = _k->_variables[varIdx]->_explorationNoiseTheta * _currentActionNoises[i] + w;
-     action[i] += noise;
-     //printf("Theta (%f) * Previous Noise: (%f) + W: (%f) = %f\n",  _k->_variables[varIdx]->_explorationNoiseTheta, _currentActionNoises[i], w, noise);
-     _currentActionNoises[i] = noise;
+      double w = _k->_variables[varIdx]->_explorationNoiseDistribution->getRandomNumber();
+      double noise = _k->_variables[varIdx]->_explorationNoiseTheta * _currentActionNoises[i] + w;
+      action[i] += noise;
+      //printf("Theta (%f) * Previous Noise: (%f) + W: (%f) = %f\n",  _k->_variables[varIdx]->_explorationNoiseTheta, _currentActionNoises[i], w, noise);
+      _currentActionNoises[i] = noise;
     }
   }
 
@@ -305,7 +305,7 @@ void Agent::trainCritic()
       if (_terminalHistory[expId] == false)
       {
         // Updating current state
-        auto nextState = _stateHistory[expId+1];
+        auto nextState = _stateHistory[expId + 1];
 
         // Getting optimal action for the next state, based on the NN evaluation
         auto action = queryPolicy(nextState);
@@ -482,9 +482,9 @@ void Agent::printGenerationAfter()
   _k->_logger->logInfo("Normal", "Critic Information:\n");
 
   if (_maxOptimizationSteps > 0)
-      _k->_logger->logInfo("Normal", " + Optimization Step Count:         %lu/%lu\n", _optimizationStepCount, _maxOptimizationSteps);
+    _k->_logger->logInfo("Normal", " + Optimization Step Count:         %lu/%lu\n", _optimizationStepCount, _maxOptimizationSteps);
   else
-      _k->_logger->logInfo("Normal", " + Optimization Step Count:         %lu\n", _optimizationStepCount);
+    _k->_logger->logInfo("Normal", " + Optimization Step Count:         %lu\n", _optimizationStepCount);
 
   _k->_logger->logInfo("Normal", " + Cumulative Expected Q-Value:     %f\n", _cumulativeQStar);
   _k->_logger->logInfo("Normal", " + Average Expected Q-Value:        %f\n", _averageQStar);

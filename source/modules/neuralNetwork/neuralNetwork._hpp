@@ -2,7 +2,6 @@
 #define _KORALI_NEURAL_NETWORK_HPP_
 
 #include "engine.hpp"
-#include "modules/distribution/univariate/uniform/uniform.hpp"
 #include "modules/experiment/experiment.hpp"
 #include "modules/module.hpp"
 #include "modules/neuralNetwork/layer/layer.hpp"
@@ -54,16 +53,6 @@ class NeuralNetwork : public Module
   std::vector<double> generateInitialHyperparameters();
 
   /**
-   * @brief Initializes the internal memory structures for the forward pipeline
-   */
-  void createForwardPipeline();
-
-  /**
-  * @brief Initializes the internal memory structures for the backward pipeline
-  */
-  void createBackwardPipeline();
-
-  /**
    * @brief Updates the internal values of the NN inputs
    * @param input The input batch
    */
@@ -111,17 +100,22 @@ class NeuralNetwork : public Module
   void forward();
 
   /**
+   * @brief Backward-propagates the gradients data through the network.
+   * @param outputDifferential Output differentials
+  */
+  void backward(const std::vector<double> &outputDifferential);
+
+  /**
   * @brief Runs the backward propagation procedure and returns the gradients of the hyperparameters (weights,bias/normalization) with respect to the output
-  * @param outputDifferential Output differentials
   * @return The calculated gradients
   */
-  std::vector<double> getHyperparameterGradients(const std::vector<double> &outputDifferential);
+  std::vector<double> getHyperparameterGradients();
 
   /**
    * @brief Backward-propagates to find out the gradients of the input data.
-   * @param outputDifferential The differential of the output wrt the solution
+   * @return The gradients of the input data wrt to the output data
   */
-  void backwardData(std::vector<float> &outputDifferential);
+  std::vector<double> getDataGradients();
 
   /**
    * @brief Creator that sets initialized flag to false

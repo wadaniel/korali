@@ -71,7 +71,7 @@ e["Solver"]["Type"] = "Agent/DQN"
 
 ### Defining Replay Memory configuration
 
-e["Solver"]["Replay Memory"]["Start Size"] = 5000
+e["Solver"]["Replay Memory"]["Start Size"] = 500
 e["Solver"]["Replay Memory"]["Maximum Size"] = 150000
 
 ### Defining the configuration of the agent

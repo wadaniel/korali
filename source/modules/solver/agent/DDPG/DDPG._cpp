@@ -129,6 +129,11 @@ void DDPG::trainPolicy()
   _policyLearner->setHyperparameters(policyHypeparameters);
 }
 
+double DDPG::getStateActionProbabilityDensity(const std::vector<double>& state, const std::vector<double>& action)
+{
+ return 1.0;
+}
+
 std::vector<double> DDPG::queryPolicy(const std::vector<double> &state)
 {
   return _policyLearner->getEvaluation({state});

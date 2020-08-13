@@ -111,6 +111,39 @@ std::vector<double> DQN::queryPolicy(const std::vector<double> &state)
   return _policyExperiment["Results"]["Best Sample"]["Parameters"].get<std::vector<double>>();
 }
 
+double DQN::getStateActionProbabilityDensity(const std::vector<double>& state, const std::vector<double>& action)
+{
+ // To obtain the probability density of a  state/action in a discrete action space, we
+ // try all possible actions, and apply a softmax normalization to their estimated Q(s,a)
+
+ // Running proposed state/action to get its Q value
+ std::vector<double> stateActionInput(state.size() + action.size());
+ for (size_t j = 0; j < state.size(); j++) stateActionInput[j] = state[j];
+ for (size_t j = 0; j < action.size(); j++) stateActionInput[j + state.size()] = action[j];
+
+ // Calculating the exponential of the current variables' Q value
+ auto curExpQ = exp(_criticLearner->getEvaluation(stateActionInput)[0]);
+
+ // Cumulative exp(Q(s,a)) for all actions
+ double sumExpQ = 0.0;
+
+ // Running optimization experiment to get Q(s,a) for all actions in the action space
+ _policyExperiment._globals["Current State"] = state;
+ korali::Engine engine;
+ engine.run(_policyExperiment);
+
+ // Iterating among the entire Q vector for all actions to get the one that corresponds
+ // to the proposed action, and also to get the sum of all Q values
+ auto qVector = _policyExperiment["Solver"]["Objective"].get<std::vector<double>>();
+ for (size_t i = 0; i < qVector.size(); i++)
+  sumExpQ += exp(qVector[i]); // e^(Q(s,a))
+
+ // Calculating pDensity = softmax of q(s,a)
+ double pDensity = curExpQ / sumExpQ;
+
+ return pDensity;
+}
+
 void DQN::printPolicyInformation()
 {
 }

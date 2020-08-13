@@ -132,13 +132,11 @@ void Agent::runGeneration()
 
     for (size_t j = startExpId; j < experienceSize; j++)
     {
-      // Storing action and state experience
+      // Storing action/state/reward/probability density experience
       _stateHistory.push_back(agents[i]["Experience"]["States"][j].get<std::vector<double>>());
       _actionHistory.push_back(agents[i]["Experience"]["Actions"][j].get<std::vector<double>>());
-
-      // Storing experience's reward
-      double reward = agents[i]["Experience"]["Rewards"][j].get<double>();
-      _rewardHistory.push_back(reward);
+      _probabilityDensityHistory.push_back(agents[i]["Experience"]["Densities"][j].get<double>());
+      _rewardHistory.push_back(agents[i]["Experience"]["Rewards"][j].get<double>());
 
       // Storing whether this experience is terminal
       _terminalHistory.push_back(j == (experienceSize - 1));
@@ -156,6 +154,7 @@ void Agent::runGeneration()
     _stateHistory.erase(_stateHistory.begin(), _stateHistory.begin() + excess);
     _actionHistory.erase(_actionHistory.begin(), _actionHistory.begin() + excess);
     _rewardHistory.erase(_rewardHistory.begin(), _rewardHistory.begin() + excess);
+    _probabilityDensityHistory.erase(_probabilityDensityHistory.begin(), _probabilityDensityHistory.begin() + excess);
     _terminalHistory.erase(_terminalHistory.begin(), _terminalHistory.begin() + excess);
   }
 
@@ -318,7 +317,14 @@ double Agent::retraceFunction(size_t expId)
   // Decreasing index
   curId--;
 
-  double importanceWeight = 1.0; // Still need to develop this
+  // Getting p(s,a) for selected experience, given the old policy
+  double pPrevExp = _probabilityDensityHistory[curId];
+
+  // Getting p(s,a) for the best action, given the current policy
+  double pCurExp = getStateActionProbabilityDensity(_stateHistory[curId], _actionHistory[curId]);
+
+  // Now calculating importance weight, truncating it to avoid exploding values, and then multiplying it by lambda
+  double importanceWeight = _importanceWeightLambda * std::min(_importanceWeightTruncation, (pCurExp / pPrevExp));
 
   retraceValue = _rewardHistory[curId]
                  + _criticDiscountFactor * importanceWeight * (retraceValue - stateActionValueFunction(_stateHistory[curId+1], _actionHistory[curId+1]))

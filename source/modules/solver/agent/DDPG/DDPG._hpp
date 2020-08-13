@@ -32,6 +32,7 @@ class DDPG : public Agent
    */
   std::vector<double> avgGradients;
 
+  double getStateActionProbabilityDensity(const std::vector<double>& state, const std::vector<double>& action) override;
   std::vector<double> queryPolicy(const std::vector<double> &state) override;
   void updatePolicyHyperparameters(const knlohmann::json &hyperparameters) override;
   void trainPolicy() override;

@@ -18,11 +18,11 @@ def main():
 
   ## Warning: The i=i below is necessary to capture the current i.
   ## Just writing
-  ##   lambda sample: distrib.conditional_p(sample, data[i])
+  ##   lambda sample: distrib.conditional_logp(sample, data[i])
   ## will capture i by reference and thus not do what is intended.
 
   e["Problem"]["Log Likelihood Functions"] = [
-      lambda sample, i=i: distrib.conditional_p(sample, data[i])
+      lambda sample, i=i: distrib.conditional_logp(sample, data[i])
       for i in range(distrib._p.nIndividuals)
   ]
 

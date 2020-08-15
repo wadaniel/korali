@@ -24,7 +24,7 @@ def main():
   ## will capture i by reference and thus not do what is intended.
 
   e["Problem"]["Log Likelihood Functions"] = [
-      lambda sample, index=i: distrib.conditional_p(sample, data[index])
+      lambda sample, index=i: distrib.conditional_logp(sample, data[index])
       for i in range(distrib._p.nIndividuals)
   ]
 

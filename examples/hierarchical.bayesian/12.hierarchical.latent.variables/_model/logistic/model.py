@@ -62,7 +62,7 @@ class LogisticConditionalDistribution():
   def __init__(self):
     self._p = load_data.LogisticData()
 
-  def conditional_p(self, sample, points=None, internalData=False):
+  def conditional_logp(self, sample, points=None, internalData=False):
 
     latent_vars = sample["Latent Variables"]
     assert len(latent_vars) == self._p.nLatentSpaceDimensions, \

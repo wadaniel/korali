@@ -235,7 +235,7 @@ to run the 'simple example' described in 1. above, using HSAEM.
 Simple example using standard SA-EM
 --------------------------------------------
 
-This example is structured similarly to the examples in `these examples <../../bayesian.inference/latent/README.rst>`_.
+This example is structured similarly to `these examples <../../bayesian.inference/latent/README.rst>`_.
 Please refer to their readme for explanations.
 
 
@@ -245,7 +245,6 @@ Simple example using HSAEM
 
 We first import everything from the file :code:`_model/simple_example_Lavielle/model.py`, including
 our model class, :code:`SimpleDistributionConditional`. We also import the :code:`korali` Python library:
-(The distribution enumeration continues from the non-hierarchical examples:)
 
 .. code-block:: python
 
@@ -255,7 +254,7 @@ our model class, :code:`SimpleDistributionConditional`. We also import the :code
 
     import korali
 
-We then instatiate the model class, which provides acces to the data points and the conditional distribution function:
+We then instatiate the model class, which provides access to the data points and the conditional distribution function:
 
 .. code-block:: python
 
@@ -278,39 +277,31 @@ problem type.
 
     e["Problem"]["Type"] = "Bayesian/Latent/HierarchicalCustom"
 
-We then define the conditional log likelihood functions, i.e. :math:`p(x | \theta)`, one for
+We then define the conditional log likelihood functions, i.e. :math:`log(p(x | \theta))`, one for
 each individual. For this, there is a trap that Python has set out for us: Beware of
 defining lambda functions in loops. It can be done in this way:
 
 .. code-block:: python
 
     e["Problem"]["Log Likelihood Functions"] = [
-        lambda sample, i=i: distrib.conditional_p(sample, data[i])
+        lambda sample, i=i: distrib.conditional_logp(sample, data[i])
       for i in range(distrib._p.nIndividuals)
     ]
 
 
-:red:`It is NOT possible to do the following:`
+:red:`It is NOT possible to do the following (the only difference being the :code:`i=i` part):`
 
 .. code-block:: python
 
   # BAD !
   e["Problem"]["Log Likelihood Functions"] = [
-      lambda sample: distrib.conditional_p(sample, data[i])
+      lambda sample: distrib.conditional_logp(sample, data[i])
     for i in range(distrib._p.nIndividuals)
   ]
   # BAD !
 
 :red:`The above would insert the same data points (those of the last individual) into each function.` This
 is typically not the desired behaviour.
-
-Now that the likelihood functions are defined, we set the number of
-latent space dimensions (i.e. the number of latent variables for a single
-individual),
-
-.. code-block:: python
-
-  e["Problem"]["Latent Space Dimensions"] = 1
 
 **Solver Setup:**
 Next, we choose solver *HSAEM* and configure it. Here we want to use 5
@@ -371,26 +362,9 @@ Next, we define this distribution:
   e["Distributions"][0]["Minimum"] = -100
   e["Distributions"][0]["Maximum"] = 100
 
-..
-    COMMENTED OUT:
-    **Solver Setup:** We then define the solver. We want to use :code:`HSAEM`. We can also pass additional parameters for the solver.
-    If they are not passed, default values will be used. Here, we choose to use a short sampling process with
-    5 chains, only one main sampling step with 6 sub-steps (N1 + N2 + N3). Finally, we want to run HSAEM for
-    50 generations:
-
-    .. code-block:: python
-
-        e["Solver"]["Type"] = "HSAEM"
-        e["Solver"]["Number Samples Per Step"] = 5
-        e["Solver"]["MCMC Outer Steps"] = 1
-        e["Solver"]["N1"] = 2
-        e["Solver"]["N2"] = 2
-        e["Solver"]["N3"] = 2
-        e["Solver"]["Termination Criteria"]["Max Generations"] = 50
-
 
 Finally, we choose to store the experiment at every generation (for plotting, a frequency of 1
-works best) and change the default results folder. We also tell Korali to print :code:`"Detailed"`
+is best) and change the default results folder. We also tell Korali to print :code:`"Detailed"`
 information to the command line every 10 generations:
 
 .. code-block:: python

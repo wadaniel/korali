@@ -17,7 +17,7 @@ class ConditionalDistribution5():
         self._p is an object that manages the data, and stores fixed parameter sigma, plus other information. '''
     self._p = load_data.PopulationData()
 
-  def conditional_p(self, sample, points=None, internalData=False):
+  def conditional_logp(self, sample, points=None, internalData=False):
 
     latent_vars = sample["Latent Variables"]
     assert len(latent_vars) == self._p.nDimensions

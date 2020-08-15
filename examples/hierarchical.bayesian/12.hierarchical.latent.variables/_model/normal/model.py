@@ -43,7 +43,7 @@ class NormalConditionalDistribution():
   def __init__(self, datafile=None):
     self._p = load_data.NormalData(datafile)
 
-  def conditional_p(self, sample, points):
+  def conditional_logp(self, sample, points):
 
     latent_vars = sample["Latent Variables"]
     assert len(latent_vars) == self._p.nLatentSpaceDimensions == 2, f"Latent variable vector has wrong length. " \

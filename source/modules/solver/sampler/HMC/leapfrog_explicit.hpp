@@ -2,7 +2,6 @@
 #define LEAPFROG_EXPLICIT_H
 
 #include "hamiltonian_base.hpp"
-#include "hamiltonian_unit.hpp"
 #include "leapfrog_base.hpp"
 
 namespace korali

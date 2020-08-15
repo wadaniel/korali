@@ -8,10 +8,9 @@
 #include "modules/solver/sampler/sampler.hpp"
 #include <vector>
 
-// #include "leapfrog/leapfrog_base.hpp"
+#include "hamiltonian_dense.hpp"
+#include "hamiltonian_diag.hpp"
 #include "leapfrog_explicit.hpp"
-// #include "hamiltonians/hamiltonian_base.hpp"
-#include "hamiltonian_unit.hpp"
 
 namespace korali
 {

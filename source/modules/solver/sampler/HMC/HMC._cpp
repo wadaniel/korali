@@ -3,10 +3,6 @@
 #include "modules/problem/problem.hpp"
 #include "modules/solver/sampler/HMC/HMC.hpp"
 
-#include "hamiltonian_euclidean.hpp"
-#include "hamiltonian_unit.hpp"
-#include "leapfrog_explicit.hpp"
-
 #include <chrono>
 #include <limits>
 #include <numeric>
@@ -76,10 +72,10 @@ void HMC::setInitialConfiguration()
   switch (_useEuclideanMetric)
   {
   case false:
-    _hamiltonian = new HamiltonianEuclidean{_stateSpaceDim};
+    _hamiltonian = new HamiltonianDense{_stateSpaceDim};
     break;
   case true:
-    _hamiltonian = new HamiltonianEuclidean{_stateSpaceDim};
+    _hamiltonian = new HamiltonianDense{_stateSpaceDim};
     break;
 
   default:
@@ -668,8 +664,8 @@ void HMC::buildTree(const std::vector<double> &q, const std::vector<double> &p, 
     std::vector<double> nullPointTwo(_stateSpaceDim);
     std::vector<double> qProposedSubtree(_stateSpaceDim, 0.0);
     std::vector<double> tmpVector(_stateSpaceDim, 0.0);
-    // std::vector<double> rho1(_stateSpaceDim, 0.0);
-    // std::vector<double> rho2(_stateSpaceDim, 0.0);
+    std::vector<double> rho1(_stateSpaceDim, 0.0);
+    std::vector<double> rho2(_stateSpaceDim, 0.0);
 
     buildTree(q, p, logUniSample, direction, depth - 1, stepSize, rootH, qLeft, pLeft, qRight, pRight, qProposed, numValidLeaves, buildCriterion, alpha, numLeaves, rho1);
 

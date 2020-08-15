@@ -1,5 +1,5 @@
-#ifndef HAMILTONIAN_UNIT_H
-#define HAMILTONIAN_UNIT_H
+#ifndef HAMILTONIAN_DIAG_H
+#define HAMILTONIAN_DIAG_H
 
 #include "hamiltonian_base.hpp"
 
@@ -10,17 +10,17 @@ namespace solver
 namespace sampler
 {
 /**
-* \class HamiltonianUnit
+* \class HamiltonianDiag
 * @brief Used for calculating energies with unit euclidean metric.
 */
-class HamiltonianUnit : public Hamiltonian
+class HamiltonianDiag : public Hamiltonian
 {
   public:
   /**
   * @brief Constructor with State Space Dim.
   * @param stateSpaceDim Dimension of State Space.
   */
-  HamiltonianUnit(const size_t stateSpaceDim) : Hamiltonian{stateSpaceDim} {}
+  HamiltonianDiag(const size_t stateSpaceDim) : Hamiltonian{stateSpaceDim} {}
 
   /**
   * @brief Total energy function used for Hamiltonian Dynamics.

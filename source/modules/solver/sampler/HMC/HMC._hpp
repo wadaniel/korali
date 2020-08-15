@@ -8,6 +8,11 @@
 #include "modules/solver/sampler/sampler.hpp"
 #include <vector>
 
+// #include "leapfrog/leapfrog_base.hpp"
+#include "leapfrog_explicit.hpp"
+// #include "hamiltonians/hamiltonian_base.hpp"
+#include "hamiltonian_unit.hpp"
+
 namespace korali
 {
 namespace solver
@@ -16,7 +21,9 @@ namespace sampler
 {
 class HMC : public Sampler
 {
-  private:
+  Hamiltonian *_hamiltonian;
+  Leapfrog *_integrator;
+
   /**
   * @brief Updates internal state such as mean, Metric and InverseMetric.
   */
@@ -91,48 +98,12 @@ class HMC : public Sampler
   void printGenerationAfter() override;
 
   /**
-  * @brief Kinetic energy used for Hamiltonian Dynamics.
-  * @param p Current momentum.
-  * @return Kinetic energy with current momentum.
-  */
-  double K(const std::vector<double> &p) const;
-
-  /**
-  * @brief Gradient of kinetic energy used for Hamiltonian Dynamics.
-  * @param p Current momentum.
-  * @return Gradient of kinetic energy with current momentum.
-  */
-  std::vector<double> dK(const std::vector<double> &p) const;
-
-  /**
-  * @brief Potential energy used for Hamiltonian Dynamics with relation U(x) = -logP(x).
-  * @param q Current position.
-  * @return Potential energy with current position.
-  */
-  double U(const std::vector<double> &q);
-
-  /**
-  * @brief Gradient of potential energy used for Hamiltonian Dynamics with relation grad(U(x)) = -grad(logP(x)).
-  * @param q Current position.
-  * @return Gradent of potential energy with current position.
-  */
-  std::vector<double> dU(const std::vector<double> &q);
-
-  /**
   * @brief Inner product induced by Inverse Metric.
   * @param pLeft Left argument of dot product.
   * @param pRight Right argumnt of dot procudt.
   * @return Inner product p^T * M ^ (-1) * p where M is the Metric.
   */
   double dotProduct(const std::vector<double> &pLeft, const std::vector<double> &pRight) const;
-
-  /**
-  * @brief Leapfrog stepping scheme used for evolving Hamiltonian Dynamics.
-  * @param q Position which is evolved.
-  * @param p Momentum which is evolved.
-  * @param stepSize Step Size used for Leap Frog Scheme.
-  */
-  void leapFrogStep(std::vector<double> &q, std::vector<double> &p, const double stepSize);
 
   /**
   * @brief Inverts matrix in first argument. Solution is given in second argument. Used for Euclidean Metric as Metric has to be calculated from InverseMetric.

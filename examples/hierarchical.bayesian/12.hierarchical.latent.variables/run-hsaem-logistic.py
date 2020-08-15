@@ -42,7 +42,8 @@ def main():
   e["Solver"]["N1"] = 2  # Length of the 3 parts of sampling
   e["Solver"]["N2"] = 2
   e["Solver"]["N3"] = 2
-  e["Solver"]["K1"] = 200 # How many generations before starting Robbins-Monro decayed averaging
+  e["Solver"][
+      "K1"] = 200  # How many generations before starting Robbins-Monro decayed averaging
   e["Solver"]["Use Simulated Annealing"] = True
   e["Solver"]["Simulated Annealing Decay Factor"] = 0.95
   e["Solver"]["Simulated Annealing Initial Variance"] = 1
@@ -75,7 +76,8 @@ def main():
   e["Variables"][3]["Name"] = "Theta 4"
   e["Variables"][3]["Initial Value"] = 1
   e["Variables"][3]["Latent Variable Distribution Type"] = "Log-Normal"
-  e["Variables"][3]["Prior Distribution"] = "Uniform 1"  # not used, but required
+  e["Variables"][3][
+      "Prior Distribution"] = "Uniform 1"  # not used, but required
 
   e["File Output"]["Frequency"] = 1
   e["File Output"]["Path"] = "_korali_result_logistic/"

@@ -32,13 +32,10 @@ e["Solver"]["Burn In"] = 100
 e["Solver"]["Termination Criteria"]["Max Samples"] = 100000
 
 # HMC specific parameters
-e["Solver"]["Num Integration Steps"] = 20
-e["Solver"]["Step Size"] = 0.05
-e["Solver"]["Use Euclidean Metric"] = 1
-e["Solver"]["Use Adaptive Step Size"] = 1
-e["Solver"]["Target Integration Time"] = 0.55
-e["Solver"]["Desired Average Acceptance Rate"] = 0.7
-e["Solver"]["Use NUTS"] = 1
+e["Solver"]["Use Euclidean Metric"] = True
+e["Solver"]["Use Adaptive Step Size"] = True
+e["Solver"]["Use NUTS"] = True
+e["Solver"]["Desired Average Acceptance Rate"] = 0.32
 
 # Running Korali
 e["Random Seed"] = 1337

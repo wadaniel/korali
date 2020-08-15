@@ -3,6 +3,10 @@
 #include "modules/problem/problem.hpp"
 #include "modules/solver/sampler/HMC/HMC.hpp"
 
+#include "hamiltonian_euclidean.hpp"
+#include "hamiltonian_unit.hpp"
+#include "leapfrog_explicit.hpp"
+
 #include <chrono>
 #include <limits>
 #include <numeric>
@@ -24,6 +28,7 @@ void HMC::setInitialConfiguration()
   // TODO: Check exact intervals (i.e. inclusion and exclusion)
   if (!(_burnIn >= 0)) KORALI_LOG_ERROR("Burn In must be larger equal 0 (is %zu).\n", _burnIn);
   if (!(_metricEstimateQuotient > 0.0 && _metricEstimateQuotient <= 1.0)) KORALI_LOG_ERROR("Metric Estimate Quotient must be in interval (0.0, 1.0] (is %lf).\n", _metricEstimateQuotient);
+  if (!(_maxDepth >= 0)) KORALI_LOG_ERROR("Max Depth must be non-negative. (is %zu).\n", _maxDepth);
 
   // Check Adaptive Step Size settings
   if (!(_desiredAverageAcceptanceRate > 0.0 && _desiredAverageAcceptanceRate <= 1.0)) KORALI_LOG_ERROR("Desired Average Acceptance Rate must be in interval (0.0, 1.0] (is %lf).\n", _desiredAverageAcceptanceRate);
@@ -66,6 +71,22 @@ void HMC::setInitialConfiguration()
   gsl_linalg_cholesky_decomp(&sigma.matrix);
 
   _multivariateGenerator->updateDistribution();
+
+  // TODO: REMOVE
+  switch (_useEuclideanMetric)
+  {
+  case false:
+    _hamiltonian = new HamiltonianEuclidean{_stateSpaceDim};
+    break;
+  case true:
+    _hamiltonian = new HamiltonianEuclidean{_stateSpaceDim};
+    break;
+
+  default:
+    KORALI_LOG_ERROR("Use Euclidean Metric must be set to True or False.\n");
+  };
+
+  _integrator = new LeapfrogExplicit;
 
   if (_useAdaptiveStepSize == true)
   {
@@ -119,8 +140,8 @@ void HMC::runGeneration()
 
 void HMC::runGenerationHMC(const double logUniSample)
 {
-  const double oldK = K(_momentumLeader);
-  const double oldU = U(_positionLeader);
+  const double oldK = _hamiltonian->K(_positionLeader, _momentumLeader, _inverseMetric);
+  const double oldU = _hamiltonian->U(_positionLeader, _modelEvaluationCount, _sampleDatabase.size());
 
   if (_useAdaptiveStepSize == true && _chainLength <= _burnIn)
   {
@@ -130,15 +151,15 @@ void HMC::runGenerationHMC(const double logUniSample)
   // Perform Num Integration Steps of Leapfrog scheme to Momentum Candidate and Position Candidate
   for (size_t i = 0; i < _numIntegrationSteps; ++i)
   {
-    leapFrogStep(_positionCandidate, _momentumCandidate, _stepSize);
+    _integrator->step(_positionCandidate, _momentumCandidate, _stepSize, _hamiltonian, _modelEvaluationCount, _sampleDatabase.size(), _inverseMetric);
   }
 
   // Negate proposed momentum to make proposal symmetric
   std::transform(std::cbegin(_momentumCandidate), std::cend(_momentumCandidate), std::begin(_momentumCandidate), std::negate<double>());
 
   // Save new Energies
-  const double newK = K(_momentumCandidate);
-  const double newU = U(_positionCandidate);
+  const double newK = _hamiltonian->K(_positionCandidate, _momentumCandidate, _inverseMetric);
+  const double newU = _hamiltonian->U(_positionCandidate, _modelEvaluationCount, _sampleDatabase.size());
 
   const double logAlpha = std::min(0.0, -(newK - oldK + newU - oldU));
   _acceptanceProbability = std::exp(logAlpha);
@@ -154,14 +175,14 @@ void HMC::runGenerationHMC(const double logUniSample)
 
 void HMC::runGenerationNUTS(const double logUniSample)
 {
-  const double oldK = K(_momentumLeader);
-  const double oldU = U(_positionLeader);
+  const double oldK = _hamiltonian->K(_positionLeader, _momentumLeader, _inverseMetric);
+  const double oldU = _hamiltonian->U(_positionLeader, _modelEvaluationCount, _sampleDatabase.size());
 
   std::vector<double> nullPointOne(_stateSpaceDim);
   std::vector<double> nullPointTwo(_stateSpaceDim);
   std::vector<double> tmpVector(_stateSpaceDim, 0.0);
 
-  std::vector<double> rhoInit = _momentumLeader;
+  // std::vector<double> rhoInit = _momentumLeader;
   std::vector<double> rhoPlus(_stateSpaceDim, 0.0);
   std::vector<double> rhoMinus(_stateSpaceDim, 0.0);
 
@@ -179,19 +200,16 @@ void HMC::runGenerationNUTS(const double logUniSample)
   double dotProductLeft, dotProductRight;
   const double oldH = oldU + oldK;
 
-  while (buildCriterion == true)
+  while (buildCriterion == true && depth <= _maxDepth)
   {
-    std::vector<double> rho(_stateSpaceDim);
+    // std::vector<double> rho(_stateSpaceDim, 0.0);
     if (_uniformGenerator->getRandomNumber() < 0.5)
     {
       buildTree(qLeft, pLeft, logUniSample, -1, depth, _stepSize, oldH, qLeft, pLeft, nullPointOne, nullPointTwo, _positionCandidate, numValidLeavesSubtree, buildCriterionSubtree, _acceptanceProbability, numLeavesSubtree, rhoMinus);
-      rho = rhoMinus;
     }
     else
     {
-      rho = rhoPlus;
       buildTree(qRight, pRight, logUniSample, 1, depth, _stepSize, oldH, nullPointOne, nullPointTwo, qRight, pRight, _positionCandidate, numValidLeavesSubtree, buildCriterionSubtree, _acceptanceProbability, numLeavesSubtree, rhoPlus);
-      rho = rhoPlus;
     }
 
     if (buildCriterionSubtree == true)
@@ -208,14 +226,30 @@ void HMC::runGenerationNUTS(const double logUniSample)
 
     numValidLeaves += numValidLeavesSubtree;
 
-    // buildCriterion = buildCriterionSubtree && (dotProductLeft > 0) && (dotProductRight > 0);
-    std::vector<double> deltaRho(_stateSpaceDim, 0.0);
+    std::transform(std::cbegin(qRight), std::cend(qRight), std::cbegin(qLeft), std::begin(tmpVector), std::minus<double>());
+    dotProductLeft = std::inner_product(std::cbegin(tmpVector), std::cend(tmpVector), std::cbegin(pLeft), 0.0);
+    dotProductRight = std::inner_product(std::cbegin(tmpVector), std::cend(tmpVector), std::cbegin(pRight), 0.0);
 
-    std::transform(std::cbegin(rhoMinus), std::cend(rhoMinus), std::cbegin(deltaRho), std::begin(deltaRho), std::plus<double>());
-    std::transform(cbegin(rhoInit), std::cend(rhoInit), std::cbegin(deltaRho), std::begin(deltaRho), std::plus<double>());
-    std::transform(std::cbegin(rhoPlus), std::cend(rhoPlus), std::cbegin(deltaRho), std::begin(deltaRho), std::plus<double>());
+    buildCriterion = buildCriterionSubtree && (dotProductLeft > 0) && (dotProductRight > 0);
 
-    buildCriterion = buildCriterionSubtree && computeNoUTurnCriterion(pLeft, pRight, deltaRho);
+    // std::cout << "depth = " << depth << std::endl;
+    // std::cout << "Normal difference: " << std::endl;
+    // std::cout << "dotProductLeft = " << dotProductLeft << std::endl;
+    // std::cout << "dotProductRight = " << dotProductRight << std::endl;
+
+    // std::vector<double> deltaRho(_stateSpaceDim, 0.0);
+
+    // std::transform(std::cbegin(rhoMinus), std::cend(rhoMinus), std::cbegin(deltaRho), std::begin(deltaRho), std::plus<double>());
+    // std::transform(cbegin(rhoInit), std::cend(rhoInit), std::cbegin(deltaRho), std::begin(deltaRho), std::plus<double>());
+    // std::transform(std::cbegin(rhoPlus), std::cend(rhoPlus), std::cbegin(deltaRho), std::begin(deltaRho), std::plus<double>());
+
+    // for (size_t i = 0; i < _stateSpaceDim; ++i)
+    // {
+    //   deltaRho[i] = _stepSize * rhoInit[i] + rhoMinus[i] + rhoPlus[i];
+    //   deltaRho[i] = rhoMinus[i] + rhoPlus[i];
+    // }
+
+    // buildCriterion = buildCriterionSubtree && computeNoUTurnCriterion(pLeft, pRight, deltaRho);
 
     ++depth;
   }
@@ -242,13 +276,13 @@ void HMC::saveSample()
 
 void HMC::updateStepSize()
 {
-  if (_chainLength < _burnIn)
+  if (_chainLength + 1 < _burnIn)
   {
     _hBar = (1.0 - 1.0 / (_chainLength + 1 + _adaptiveStepSizeStabilizationConstant)) * _hBar + (_desiredAverageAcceptanceRate - _acceptanceProbability) / (_chainLength + 1 + _adaptiveStepSizeStabilizationConstant);
     _stepSize = std::exp((_mu - std::sqrt(_chainLength + 1) / _adaptiveStepSizeSpeedConstant * _hBar));
     _dualStepSize = std::pow((_stepSize / _dualStepSize), std::pow(_chainLength + 1, -_adaptiveStepSizeScheduleConstant)) * _dualStepSize;
   }
-  else if (_chainLength == _burnIn)
+  else if (_chainLength + 1 == _burnIn)
   {
     _stepSize = _dualStepSize;
   }
@@ -334,7 +368,7 @@ void HMC::updateStateWarmup()
     invertMatrix(_inverseMetric, _metric);
 
     _multivariateGenerator->_sigma = _metric;
-    // /* Cholesky Decomp */
+    // Cholesky Decomp
     gsl_matrix_view sigma = gsl_matrix_view_array(&_multivariateGenerator->_sigma[0], _stateSpaceDim, _stateSpaceDim);
 
     int err = gsl_linalg_cholesky_decomp(&sigma.matrix);
@@ -444,80 +478,10 @@ void HMC::finalize()
   if (_sampleDatabase.size() == _maxSamples) _k->_logger->logInfo("Minimal", "Max Samples Reached.\n");
   (*_k)["Results"]["Sample Database"] = _sampleDatabase;
 
+  delete _hamiltonian;
+  delete _integrator;
+
   return;
-}
-
-double HMC::K(const std::vector<double> &p) const
-{
-  double tmpScalar = 0.0;
-
-  for (size_t i = 0; i < _stateSpaceDim; ++i)
-  {
-    for (size_t j = 0; j < _stateSpaceDim; ++j)
-    {
-      tmpScalar += p[i] * _inverseMetric[i * _stateSpaceDim + j] * p[j];
-    }
-  }
-  tmpScalar *= 0.5;
-
-  return tmpScalar;
-}
-
-std::vector<double> HMC::dK(const std::vector<double> &p) const
-{
-  std::vector<double> tmpVector(_stateSpaceDim, 0.0);
-  double tmpScalar = 0.0;
-
-  for (size_t i = 0; i < _stateSpaceDim; ++i)
-  {
-    tmpScalar = 0.0;
-    for (size_t j = 0; j < _stateSpaceDim; ++j)
-    {
-      tmpScalar += _inverseMetric[i * _stateSpaceDim + j] * p[j];
-    }
-    tmpVector[i] = tmpScalar;
-  }
-  return tmpVector;
-}
-
-double HMC::U(const std::vector<double> &q)
-{
-  // get sample
-  auto sample = Sample();
-  ++_modelEvaluationCount;
-  sample["Parameters"] = q;
-  sample["Sample Id"] = _sampleDatabase.size();
-  sample["Module"] = "Problem";
-  sample["Operation"] = "Evaluate";
-  _conduit->start(sample);
-  _conduit->wait(sample);
-  // evaluate logP(x)
-  double evaluation = KORALI_GET(double, sample, "logP(x)");
-
-  // negate to get U
-  evaluation *= -1.0;
-
-  return evaluation;
-}
-
-std::vector<double> HMC::dU(const std::vector<double> &q)
-{
-  // get sample
-  auto sample = Sample();
-  ++_modelEvaluationCount;
-  sample["Parameters"] = q;
-  sample["Sample Id"] = _sampleDatabase.size();
-  sample["Module"] = "Problem";
-  sample["Operation"] = "Evaluate Gradient";
-  _conduit->start(sample);
-  _conduit->wait(sample);
-  // evaluate grad(logP(x)) (extremely slow)
-  std::vector<double> evaluation = KORALI_GET(std::vector<double>, sample, "grad(logP(x))");
-
-  // negate to get dU
-  std::transform(evaluation.cbegin(), evaluation.cend(), evaluation.begin(), std::negate<double>());
-
-  return evaluation;
 }
 
 double HMC::dotProduct(const std::vector<double> &pLeft, const std::vector<double> &pRight) const
@@ -533,29 +497,6 @@ double HMC::dotProduct(const std::vector<double> &pLeft, const std::vector<doubl
   }
 
   return tmpScalar;
-}
-
-void HMC::leapFrogStep(std::vector<double> &q, std::vector<double> &p, const double stepSize)
-{
-  std::vector<double> dU = HMC::dU(q);
-  for (size_t i = 0; i < _stateSpaceDim; ++i)
-  {
-    p[i] -= 0.5 * stepSize * dU[i];
-  }
-
-  std::vector<double> dK = HMC::dK(p);
-  for (size_t i = 0; i < _stateSpaceDim; ++i)
-  {
-    q[i] += stepSize * dK[i];
-  }
-
-  dU = HMC::dU(q);
-  for (size_t i = 0; i < _stateSpaceDim; ++i)
-  {
-    p[i] -= 0.5 * stepSize * dU[i];
-  }
-
-  return;
 }
 
 // inverts mat via cholesky decomposition and writes inverted Matrix to inverseMat
@@ -625,10 +566,10 @@ double HMC::findReasonableStepSize(std::vector<double> q)
   //   p[i] = _normalGenerator->getRandomNumber();
   // }
 
-  oldLogP = -(K(p) + U(q));
+  oldLogP = -_hamiltonian->H(q, p, _modelEvaluationCount, _sampleDatabase.size(), _inverseMetric);
 
-  leapFrogStep(q, p, stepSize);
-  newLogP = -(K(p) + U(q));
+  _integrator->step(q, p, stepSize, _hamiltonian, _modelEvaluationCount, _sampleDatabase.size(), _inverseMetric);
+  newLogP = -_hamiltonian->H(q, p, _modelEvaluationCount, _sampleDatabase.size(), _inverseMetric);
 
   int a = (newLogP - oldLogP > std::log(0.5)) ? 1 : -1;
 
@@ -640,8 +581,8 @@ double HMC::findReasonableStepSize(std::vector<double> q)
     oldLogP = newLogP;
 
     // Here leapfrog uses Kinetic Energy with metric instead of Identity
-    leapFrogStep(q, p, stepSize);
-    newLogP = -(K(p) + U(q));
+    _integrator->step(q, p, stepSize, _hamiltonian, _modelEvaluationCount, _sampleDatabase.size(), _inverseMetric);
+    newLogP = -_hamiltonian->H(q, p, _modelEvaluationCount, _sampleDatabase.size(), _inverseMetric);
   }
 
   // Catch Step Size = 0.0 -> No traversal of phase space
@@ -659,13 +600,30 @@ bool HMC::computeNoUTurnCriterion(const std::vector<double> &pLeft, const std::v
   std::vector<double> tmpVectorOne(_stateSpaceDim, 0.0);
   std::vector<double> tmpVectorTwo(_stateSpaceDim, 0.0);
 
-  std::transform(std::cbegin(rho), std::cend(rho), std::cbegin(pLeft), std::begin(tmpVectorOne), std::minus<double>());
-  std::transform(std::cbegin(rho), std::cend(rho), std::cbegin(pRight), std::begin(tmpVectorTwo), std::minus<double>());
+  std::vector<double> pLeftAdjusted = pLeft;
+  std::vector<double> pRightAdjusted = pRight;
+
+  for (size_t i = 0; i < _stateSpaceDim; ++i)
+  {
+    pLeftAdjusted[i] *= _stepSize;
+    pRightAdjusted[i] *= _stepSize;
+  }
+
+  std::transform(std::cbegin(rho), std::cend(rho), std::cbegin(pLeftAdjusted), std::begin(tmpVectorOne), std::minus<double>());
+  std::transform(std::cbegin(rho), std::cend(rho), std::cbegin(pRightAdjusted), std::begin(tmpVectorTwo), std::minus<double>());
+  dotProductLeft = dotProduct(tmpVectorOne, pLeft);
+  dotProductRight = dotProduct(tmpVectorTwo, pRight);
 
   // dotProductLeft = std::inner_product(std::cbegin(pLeft), std::cend(pLeft), std::cbegin(tmpVectorOne), 0.0);
   // dotProductRight = std::inner_product(std::cbegin(pRight), std::cend(pRight), std::cbegin(tmpVectorTwo), 0.0);
-  dotProductLeft = dotProduct(tmpVectorOne, pLeft);
-  dotProductRight = dotProduct(tmpVectorTwo, pRight);
+
+  dotProductLeft = dotProduct(rho, pLeft);
+  dotProductRight = dotProduct(rho, pRight);
+
+  // std::cout << "Integral Version: " << std::endl;
+  // std::cout << "dotProductLeft = " << dotProductLeft << std::endl;
+  // std::cout << "dotProductRight = " << dotProductRight << std::endl;
+  // std::cout << "--------------------------" << std::endl;
 
   return dotProductLeft > 0 && dotProductRight > 0;
 }
@@ -678,12 +636,17 @@ void HMC::buildTree(const std::vector<double> &q, const std::vector<double> &p, 
   if (depth == 0)
   {
     const double deltaMax = 100;
-    leapFrogStep(qLeft, pLeft, direction * stepSize);
+    _integrator->step(qLeft, pLeft, _stepSize, _hamiltonian, _modelEvaluationCount, _sampleDatabase.size(), _inverseMetric);
 
-    std::transform(std::cbegin(rho), std::cend(rho), std::cbegin(pLeft), std::begin(rho), std::plus<double>());
+    // std::transform(std::cbegin(rho), std::cend(rho), std::cbegin(pLeft), std::begin(rho), std::plus<double>());
 
-    const double leafK = K(pLeft);
-    const double leafU = U(qLeft);
+    // for (size_t i = 0; i < _stateSpaceDim; ++i)
+    // {
+    //   rho[i] += _stepSize * pLeft[i];
+    // }
+
+    const double leafK = _hamiltonian->K(qLeft, pLeft, _inverseMetric);
+    const double leafU = _hamiltonian->U(qLeft, _modelEvaluationCount, _sampleDatabase.size());
     const double leafH = leafU + leafK;
 
     numValidLeaves = (logUniSample <= rootH - leafH) ? 1.0 : 0.0;
@@ -705,20 +668,20 @@ void HMC::buildTree(const std::vector<double> &q, const std::vector<double> &p, 
     std::vector<double> nullPointTwo(_stateSpaceDim);
     std::vector<double> qProposedSubtree(_stateSpaceDim, 0.0);
     std::vector<double> tmpVector(_stateSpaceDim, 0.0);
-    std::vector<double> rhoLeftSubtree(_stateSpaceDim, 0.0);
-    std::vector<double> rhoRightSubtree(_stateSpaceDim, 0.0);
+    // std::vector<double> rho1(_stateSpaceDim, 0.0);
+    // std::vector<double> rho2(_stateSpaceDim, 0.0);
 
-    buildTree(q, p, logUniSample, direction, depth - 1, stepSize, rootH, qLeft, pLeft, qRight, pRight, qProposed, numValidLeaves, buildCriterion, alpha, numLeaves, rhoLeftSubtree);
+    buildTree(q, p, logUniSample, direction, depth - 1, stepSize, rootH, qLeft, pLeft, qRight, pRight, qProposed, numValidLeaves, buildCriterion, alpha, numLeaves, rho1);
 
     if (buildCriterion == true)
     {
       if (direction == -1)
       {
-        buildTree(qLeft, pLeft, logUniSample, direction, depth - 1, stepSize, rootH, qLeft, pLeft, nullPointOne, nullPointTwo, qProposedSubtree, numValidLeavesSubtree, buildCriterionSubtree, alphaSubtree, numLeavesSubtree, rhoRightSubtree);
+        buildTree(qLeft, pLeft, logUniSample, direction, depth - 1, stepSize, rootH, qLeft, pLeft, nullPointOne, nullPointTwo, qProposedSubtree, numValidLeavesSubtree, buildCriterionSubtree, alphaSubtree, numLeavesSubtree, rho2);
       }
       else
       {
-        buildTree(qRight, pRight, logUniSample, direction, depth - 1, stepSize, rootH, nullPointOne, nullPointTwo, qRight, pRight, qProposedSubtree, numValidLeavesSubtree, buildCriterionSubtree, alphaSubtree, numLeavesSubtree, rhoRightSubtree);
+        buildTree(qRight, pRight, logUniSample, direction, depth - 1, stepSize, rootH, nullPointOne, nullPointTwo, qRight, pRight, qProposedSubtree, numValidLeavesSubtree, buildCriterionSubtree, alphaSubtree, numLeavesSubtree, rho2);
       }
 
       // First check to avoid divising by zero
@@ -735,15 +698,26 @@ void HMC::buildTree(const std::vector<double> &q, const std::vector<double> &p, 
       dotProductLeft = std::inner_product(std::cbegin(tmpVector), std::cend(tmpVector), std::cbegin(pLeft), 0.0);
       dotProductRight = std::inner_product(std::cbegin(tmpVector), std::cend(tmpVector), std::cbegin(pRight), 0.0);
 
-      // buildCriterion = buildCriterionSubtree && (dotProductLeft > 0) && (dotProductRight > 0);
+      buildCriterion = buildCriterionSubtree && (dotProductLeft > 0) && (dotProductRight > 0);
 
-      std::vector<double> &rhoSubtree = rhoLeftSubtree;
+      // std::cout << "direction = " << direction << std::endl;
+      // std::cout << "depth = " << depth << std::endl;
+      // std::cout << "Normal difference: " << std::endl;
+      // std::cout << "dotProductLeft = " << dotProductLeft << std::endl;
+      // std::cout << "dotProductRight = " << dotProductRight << std::endl;
 
-      std::transform(std::cbegin(rhoRightSubtree), std::cend(rhoRightSubtree), std::cbegin(rhoSubtree), std::begin(rhoSubtree), std::plus<double>());
-      std::transform(std::cbegin(rhoSubtree), std::cend(rhoSubtree), std::cbegin(rho), std::begin(rho), std::plus<double>());
+      // std::vector<double> rhoSubtree = rho1;
 
-      std::vector<double> p_ = direction == -1 ? pLeft : pRight;
-      buildCriterion = buildCriterionSubtree && computeNoUTurnCriterion(p, p_, rhoSubtree);
+      // std::transform(std::cbegin(rhoRightSubtree), std::cend(rhoRightSubtree), std::cbegin(rhoSubtree), std::begin(rhoSubtree), std::plus<double>());
+      // std::transform(std::cbegin(rhoSubtree), std::cend(rhoSubtree), std::cbegin(rho), std::begin(rho), std::plus<double>());
+      // for (size_t i = 0; i < _stateSpaceDim; ++i)
+      // {
+      //   rhoSubtree[i] += rho2[i];
+      //   rho[i] += rhoSubtree[i];
+      // }
+
+      // std::vector<double> p_ = direction == -1 ? pLeft : pRight;
+      // buildCriterion = buildCriterionSubtree && computeNoUTurnCriterion(p, p_, rhoSubtree);
     }
   }
 

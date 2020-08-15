@@ -1,5 +1,5 @@
-#ifndef HAMILTONIAN_EUCLIDEAN_H
-#define HAMILTONIAN_EUCLIDEAN_H
+#ifndef HAMILTONIAN_DENSE_H
+#define HAMILTONIAN_DENSE_H
 
 #include "hamiltonian_base.hpp"
 
@@ -10,17 +10,17 @@ namespace solver
 namespace sampler
 {
 /**
-* \class HamiltonianEuclidean
+* \class HamiltonianDense
 * @brief Used for calculating energies with euclidean metric.
 */
-class HamiltonianEuclidean : public Hamiltonian
+class HamiltonianDense : public Hamiltonian
 {
   public:
   /**
   * @brief Constructor with State Space Dim.
   * @param stateSpaceDim Dimension of State Space.
   */
-  HamiltonianEuclidean(const size_t stateSpaceDim) : Hamiltonian{stateSpaceDim} {}
+  HamiltonianDense(const size_t stateSpaceDim) : Hamiltonian{stateSpaceDim} {}
 
   /**
   * @brief Total energy function used for Hamiltonian Dynamics.

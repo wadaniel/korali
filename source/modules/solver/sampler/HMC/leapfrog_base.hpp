@@ -2,7 +2,6 @@
 #define LEAPFROG_H
 
 #include "hamiltonian_base.hpp"
-#include "hamiltonian_unit.hpp"
 #include <iostream>
 #include <vector>
 namespace korali

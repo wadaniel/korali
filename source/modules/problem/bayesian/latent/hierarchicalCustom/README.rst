@@ -7,7 +7,7 @@ form on the total likelihood:
 
 .. math::
   p( d, \theta  | \psi ) = \prod_{i=0}^N \left( \prod_{j=0}^{n_i} p(d_{i,j} | \theta_i) \right)
-  \cdot p(\theta_i | \psi)
+  \cdot q(\theta_i | \psi)
 
 
 where
@@ -19,7 +19,8 @@ where
 - Vectors :math:`\theta_i` are latent variables, one per 'individual' :math:`i`
 - :math:`\psi` are a number of hyperparameters.
 
-In the *Custom* problem class, you are completely free in the construction of a likelihood function.
+In the *Custom* problem class, you are completely free in the construction of a conditional
+likelihood function, :math:`p( ... | \theta_i)`.
 
 Please refer to the corresponding tutorial / example for further explanation, such
-as the form that we impose on :math:`p(\theta | \psi)`.
+as the form that we impose on :math:`q(\theta | \psi)`.

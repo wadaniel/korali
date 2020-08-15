@@ -30,7 +30,7 @@ def main():
       lambda sample, i=i: logisticModelFunction(sample, d.x_values[i])
       for i in range(d.nIndividuals)
   ]
-
+  # We assume a normal noise distribution around f(x), which determines the conditional likelihood
   e["Problem"]["Likelihood Model"] = "Normal"
 
   e["Problem"]["Reference Data"] = d.y_values
@@ -75,8 +75,7 @@ def main():
   e["Variables"][3]["Name"] = "Theta 4"
   e["Variables"][3]["Initial Value"] = 1
   e["Variables"][3]["Latent Variable Distribution Type"] = "Log-Normal"
-  e["Variables"][3][
-      "Prior Distribution"] = "Uniform 1"  # not used, but required
+  e["Variables"][3]["Prior Distribution"] = "Uniform 1"  # not used, but required
 
   e["File Output"]["Frequency"] = 1
   e["File Output"]["Path"] = "_korali_result_logistic/"

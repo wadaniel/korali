@@ -12,10 +12,11 @@ That is, we have a probability distribution of the following form:
 Here, d are observed data points, z the latent variables, and :math:`\psi` the distribution parameters (aka hyperparameters).
 
 Do not use this class directly, but instead one of the subclasses `Exponential`
-and `Hierarchical Latent`. An `Exponential`
+and `HierarchicalCustom` or `HierarchicalReference`. An `Exponential`
 problem makes fewer assumptions on the distribution - it assumes that it belongs to the
-exponential family. An `Hierarchical Latent` problem instead assumes a hierarchical
-probability structure. Please refer to their respective documentation.
+exponential family. A `HierarchicalCustom` or `HierarchicalReference` problem instead
+assumes a hierarchical probability structure.
+Please refer to their respective documentation.
 
 
 Configuration

@@ -18,7 +18,7 @@ def main():
 
   ## Warning: The i=i below is necessary to capture the current i.
   ## Just writing
-  ##   lambda sample, i: logisticModelFuncdtion(sample, x_vals[i])
+  ##   lambda sample: distrib.conditional_p(sample, data[i])
   ## will capture i by reference and thus not do what is intended.
 
   e["Problem"]["Log Likelihood Functions"] = [

@@ -41,10 +41,12 @@ Examples
 
 Four examples how to use this solver can be found in folder `examples/hierarchical.bayesian/latent.variables`:
 
-- `run-saem-hierarchical.py`,
-- `run-saem-hierarchical-nd.py`,
-- `run-saem-normal.py` and
-- `run-saem-logistic.py`.
+- `run-hsaem-population-simple.py`,
+- `run-hsaem-n-d.py`,
+- `run-hsaem-normal.py`,
+- `run-hsaem-normal-custom.py`,
+- `run-hsaem-logistic.py`  and
+- `run-hsaem-logistic-custom.py`.
 
 
 
@@ -59,6 +61,7 @@ Parameters that influence runtime
     sufficiently many `"Number Initial Steps"` during which `"Alpha 1"`
     is active.
   - Note: `"Alpha 1"` is only active in genrations `"K1"` to  `"Number Initial Steps"`.
+    (`"K1"` gives the length of an initial, highly stochastic phase.)
   - Simulated Annealing (SA): Increasing the initial SA variance and
     decreasing its decay factor will increase stochasticity.
   - Note: SA only has an effect if the SA variance is larger than some of the
@@ -71,7 +74,7 @@ Simulated Annealing (SA, see `Kirkpatrick 1984 <https://link.springer.com/articl
 for stochastic optimization methods, where the probability distribution is widened artificially, by a factor decreasing
 with iterations, to allow more exploration and prevent getting stuck in local minima.
 
-Parameters that control SA in the SAEM solver are:
+Parameters that control SA in the HSAEM solver are:
 
 .. code-block:: python
 
@@ -91,7 +94,7 @@ Parameters that control SA in the SAEM solver are:
   e["Solver"]["Simulated Annealing Decay Factor"] = 0.95
 
 
-Korali's implementation of SA for SAEM follows the proposal in chapter 9.2.6 in the `book by Lavielle <http://www.cmap.polytechnique.fr/~lavielle/book.html>`_ .
+Korali's implementation of SA for HSAEM follows the proposal in chapter 9.2.6 in the `book by Lavielle <http://www.cmap.polytechnique.fr/~lavielle/book.html>`_ .
 
 
 

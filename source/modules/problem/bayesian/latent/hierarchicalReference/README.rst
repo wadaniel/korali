@@ -55,30 +55,27 @@ Usage
     e = korali.Experiment()
     e["Problem"]["Type"] = "Evaluation/Bayesian/Latent/HierarchicalReference"
     e["Problem"]["Likelihood Models"] = "Additive Normal"
-    e["Problem"]["Latent Space Dimensions"] = ... # the number of latent variables per individual
     e["Problem"]["Reference Data"] = my_refrence_data # insert list of lists of reference evaluations
 
-Then, we can define the computational models for each individual as follows - here, the data
+Then, we can define the computational models for each individual as follows. The data
 is managed by the user:
 
 .. code-block:: python
 
-    f = lambda sample, points, other_params: ... # will use 'points' sample["Latent Variables"] and do something with it
+    f = lambda sample, points, other_params: ... # f will use 'points' sample["Latent Variables"] and do something with it
 
 
     # f should calculate the function value f(x, theta), as well as a standard deviation
     # sigma = g(x, theta) or dispersion coefficient, depending on likelihood model.
     e["Problem"]["Computational Models"] = [
-            (lambda index:
-                (lambda sample: f(  sample,
-                                    my_data_points[index],
-                                    my_other_parameters[index] ) )
-            )(i)
+            lambda sample, index=i: f(  sample,
+                                        my_data_points[index],
+                                        my_other_parameters[index] )
             for i in range(number_individuals)]
 
-**Important note:** We need this complicated form, because a mere :code:`[lambda s: f(s, my_points[i]) for i in range(10)]`
+**Important note:** We need the part `index=i`, because a mere :code:`[lambda s: f(s, my_points[i]) for i in range(10)]`
 **will not work**. (In the lambda expression, Python will capture :code:`i` by reference, meaning each :code:`i`
-will be overwritten with the last value for :code:`i` - that's 2 here. See `here <https://stackoverflow.com/questions/6076270/lambda-function-in-list-comprehensions>`_
+will be overwritten with the last value for :code:`i` - that's 2 here. See `here <https://docs.python.org/3.4/faq/programming.html#why-do-lambdas-defined-in-a-loop-with-different-values-all-return-the-same-result>`_
 for more information.)
 
 -----------------------

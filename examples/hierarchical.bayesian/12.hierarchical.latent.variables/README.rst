@@ -5,10 +5,10 @@
 ..
   Todo: this will probably not work; remove in that case
 
-.red {
-    color:red;
+  .red {
+      color:red;
 
-}
+  }
 
 
 ===============================================================================
@@ -35,7 +35,8 @@ Problem setting
 -------------------
 As in `examples/bayesian.inference/latent`, we aim to find the parameters for a
 probability distribution that maximize the likelihood of a set of observed points :math:`X = \{\mathbf{x}_i\}_{i=1...M}`,
-:math:`\mathbf{x}_i \in \mathbb{R}^n`. (any :math:`y_i` from a functional dependence are included here). For comparison, we first use the standard version `SA-EM` solver for one problem,
+:math:`\mathbf{x}_i \in \mathbb{R}^n`. (any :math:`y_i` from a functional dependence are included here).
+For comparison, we first use the standard version `SA-EM` solver for one problem,
 and then show the use of specialized `SA-EM` for hierarchical models (`HSAEM`), for the same problem as well as three others.
 
 As hierarchical model, we consider a probability distribution of the form (following [1]):
@@ -279,15 +280,14 @@ problem type.
 
 We then define the conditional log likelihood functions, i.e. :math:`p(x | \theta)`, one for
 each individual. For this, there is a trap that Python has set out for us: Beware of
-defining lambda functions in loops. It *can* be done in this way:
+defining lambda functions in loops. It can be done in this way:
 
 .. code-block:: python
 
-  # ** Method with no external packages
-  func_list = []
-  for i in range(distrib._p.nIndividuals):
-    func_list.append((lambda index: (lambda sample: distrib.conditional_p(sample, data[index]) ))(i))
-  e["Problem"]["Log Likelihood Functions"] = func_list
+    e["Problem"]["Log Likelihood Functions"] = [
+        lambda sample, i=i: distrib.conditional_p(sample, data[i])
+      for i in range(distrib._p.nIndividuals)
+    ]
 
 
 :red:`It is NOT possible to do the following:`
@@ -295,29 +295,14 @@ defining lambda functions in loops. It *can* be done in this way:
 .. code-block:: python
 
   # BAD !
-  func_list = []
-  for i in range(distrib._p.nIndividuals):
-    func_list.append(lambda sample: distrib.conditional_p(sample, data[i]))
-  e["Problem"]["Log Likelihood Functions"] = func_list
+  e["Problem"]["Log Likelihood Functions"] = [
+      lambda sample: distrib.conditional_p(sample, data[i])
+    for i in range(distrib._p.nIndividuals)
+  ]
   # BAD !
 
 :red:`The above would insert the same data points (those of the last individual) into each function.` This
 is typically not the desired behaviour.
-
-Alternatively, partial functions from the functools package can also be used. This
-results in slightly cleaner code:
-
-.. code-block:: python
-
-  # ** Using partial functions from the functools package
-  import functools
-
-  e["Problem"]["Log Likelihood Functions"] = [
-    functools.partial(
-      lambda sample, index: distrib.conditional_p(sample, data[index]),
-      index=i)
-    for i in range(distrib._p.nIndividuals)]
-
 
 Now that the likelihood functions are defined, we set the number of
 latent space dimensions (i.e. the number of latent variables for a single
@@ -387,6 +372,7 @@ Next, we define this distribution:
   e["Distributions"][0]["Maximum"] = 100
 
 ..
+    COMMENTED OUT:
     **Solver Setup:** We then define the solver. We want to use :code:`HSAEM`. We can also pass additional parameters for the solver.
     If they are not passed, default values will be used. Here, we choose to use a short sampling process with
     5 chains, only one main sampling step with 6 sub-steps (N1 + N2 + N3). Finally, we want to run HSAEM for
@@ -450,7 +436,6 @@ We also import the :code:`korali` Python library, as well as NumPy:
     sys.path.append('./_model')
     from model import *
     from load_data import *
-    from utils import generate_variable
 
     import korali
     import numpy as np
@@ -470,20 +455,9 @@ We then load the data:
 .. code-block:: python
 
   d = LogisticData()
-  # d is available as d.data
 
-:code:`d.data` contains the x and y values combined as 3-dimensional points (Id, x, y).
-We extract x and y separately:
-
-.. code-block:: python
-
-  x_vals = [[] for _ in range(d.nIndividuals)]
-  y_vals = [[] for _ in range(d.nIndividuals)]
-
-  for i in range(d.nIndividuals):
-    x_vals[i] = d.data[i, :, 1:2].tolist()
-    y_vals[i] = d.data[i, :, 2].tolist()
-
+:code:`d.d.x_values` and :code:`d.d.x_values` contain the x values (data points)
+and y values (reference values, i.e., target function values).
 
 **Problem Setup:**
 To solve a hierarchical problem with latent variables, we choose the :code:`HierarchicalReference`
@@ -504,25 +478,21 @@ We define the functions in this way, inserting the x values manually:
 
 .. code-block:: python
 
-  func_list = []
-  for i in range(d.nIndividuals):
-    func_list.append(
-        (lambda index:
-          (lambda sample: logisticModelFunction(sample, x_vals[index]) )
-        )(i)
-    )
-  e["Problem"]["Computational Models"] = func_list
+   e["Problem"]["Computational Models"] = [
+      lambda sample, i=i: logisticModelFunction(sample, d.x_values[i])
+      for i in range(d.nIndividuals)
+   ]
 
-For automated handling of data points, please see the documentation of `HierarchicalReference`.
+Note the :code:`i=i`, which is needed to capture :code:`i` by value.
 
 The functions defined here will access :code:`"sample["Latent Variables"]`
-(and the inserted points) and calculate two terms from it. First, the calculated function values
-:math:`[y_1, y_2, ...]`, must be written to
-:code:`sample["Reference Evaluations"]`. This list msut contain one value for each value passed
-as :code:`"Reference Data"` for this individual.
+(and the inserted 'x values') and calculate two terms from it. First, after calculating
+function values :math:`[y_1, y_2, ...]`, each computational model function must pass them back to the
+sample by writing them to :code:`sample["Reference Evaluations"]`. The list of function values must
+contain one value for each value passed as :code:`"Reference Data"` for this individual.
 Also, for a :code:`"Normal"` noise model, :code:`sample["Standard Deviations"]` must be filled with
-a list of standard deviations :math:`[\sigma_1, \sigma_2, ...]`, of same length. (A negative binomial
-likelihood model expects a list of :code:`"Dispersions"` instead.)
+a list of standard deviations :math:`[\sigma_1, \sigma_2, ...]`, of same length. A negative binomial
+likelihood model expects a list of :code:`"Dispersions"` instead.
 
 We choose a :code:`"Normal"` noise distribution, pass our reference y-values to the problem (these
 could be measurements, for example), and set the number of latent space dimensions required by
@@ -564,8 +534,8 @@ The parameter :code:`"Diagonal Covariance"` tells *HSAEM* to model the different
 independent from each other. Also, we choose to run the optimization for 250 generations.
 
 **Variables and Distributions:**
-As *HierarchicalReference* is a *Bayesian* problem, we need to define priors for all variables. We
-define three different distributions for use as priors:
+As *HierarchicalReference* is a *Bayesian* problem, we need to define priors for all variables, although
+they are currently not used. We define two different distributions for use as priors:
 
 
 .. code-block:: python
@@ -580,56 +550,25 @@ define three different distributions for use as priors:
   e["Distributions"][1]["Minimum"] = 0
   e["Distributions"][1]["Maximum"] = 100
 
-  e["Distributions"][2]["Name"] = "Uniform 2"
-  e["Distributions"][2]["Type"] = "Univariate/Uniform"
-  e["Distributions"][2]["Minimum"] = 0.0
-  e["Distributions"][2]["Maximum"] = 1.0
-
-Again, with *HierarchicalReference* we only need to define prototype latent variables for one
-individual. The next code paragraph works for variable numbers of latent variables to be modeled as
-:code:`"Normal"`, :code:`"Log-Normal"` or :code:`"Logit-Normal"`.
-
-..
-  Todo: Rewrite the code to explicitly create the four variables? That's probably cleaner.
-
-The :code:`transf` and :code:`err_transf` list variables encode which variables to represent as
-normal variables (if :code:`transf[0] == 0`, the first variable is normal), log-normal variables
-(where :code:`transf` contains a :code:`1`), or as logit-normal variables (a :code:`2` in :code:`transf`).
-:code:`err_transf` is for the fourth latent variable, which is the error standard deviation in our model.
-
-We use the function :code:`generate_variable`, defined in
-:code:`_models/utils.py`, to populate the dictionary for each variable, with :code:`"Name"`,
-:code:`"Initial Value"`, the right :code:`"Latent Variable Distribution Type"` as well as the
-:code:`"Prior Distribution"`.
+Again, with *HierarchicalReference* we only need to define prototype latent variables
+for a single individual.
+We define three normal and one log-normal latent variable - three parameters for
+our computational models and one for the noise standard deviation:
 
 .. code-block:: python
 
-  dimCounter = 0
-  distribs = {
-    "Normal": "Uniform 0",
-    "Log-Normal": "Uniform 1",
-    "Logit-Normal": "Uniform 2",
-    "Probit-Normal": "Uniform XX" # There are no probit-normal variables in HSAEM (yet)
-  }
-  for transf in d.transf:
-    generate_variable(
-      transf,
-      e,
-      dimCounter,
-      "latent parameter " + str(dimCounter),
-      distribs,
-      initial=d.beta[dimCounter])
-    dimCounter += 1
+  # ** Define the variables **
 
-  for i, err_transf in enumerate(d.err_transf):
-    generate_variable(
-      err_transf,
-      e,
-      dimCounter,
-      "standard deviation " + str(i),
-      distribs,
-      initial=d.beta[dimCounter])
-    dimCounter += 1
+  for i in range(3):
+    e["Variables"][i]["Name"] = "Theta " + str(i)
+    e["Variables"][i]["Initial Value"] = 1
+    e["Variables"][i]["Latent Variable Distribution Type"] = "Normal"
+    e["Variables"][i]["Prior Distribution"] = "Uniform 0"
+
+  e["Variables"][3]["Name"] = "Theta 4"
+  e["Variables"][3]["Initial Value"] = 1
+  e["Variables"][3]["Latent Variable Distribution Type"] = "Log-Normal"
+  e["Variables"][3]["Prior Distribution"] = "Uniform 1"
 
 
 Finally, we choose to store the experiment state every generation (useful for plotting)
@@ -644,7 +583,7 @@ information to the command line every generation:
   e["Console Output"]["Frequency"] = 1
   e["Console Output"]["Verbosity"] = "Detailed"
 
-Now we can run the experiment and wait for the results to be printed to the command line.
+Now we can run the experiment and wait for the results to be displayed.
 
 .. code-block:: python
 

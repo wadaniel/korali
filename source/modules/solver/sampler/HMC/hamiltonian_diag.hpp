@@ -31,9 +31,9 @@ class HamiltonianDiag : public Hamiltonian
   * @param inverseMetric Inverse Metric must be provided.
   * @return Total energy.
   */
-  double H(const std::vector<double> &q, const std::vector<double> &p, size_t &modelEvaluationCount, const size_t &numSamples, const std::vector<double> &inverseMetric = std::vector<double>()) override
+  double H(const std::vector<double> &q, const std::vector<double> &p, size_t &modelEvaluationCount, const size_t &numSamples, const std::vector<double> &inverseMetric) override
   {
-    return K(q, p) + U(q, modelEvaluationCount, numSamples);
+    return K(q, p, inverseMetric) + U(q, modelEvaluationCount, numSamples);
   }
 
   /**
@@ -43,14 +43,15 @@ class HamiltonianDiag : public Hamiltonian
   * @param inverseMetric Inverse Metric must be provided.
   * @return Kinetic energy.
   */
-  double K(const std::vector<double> &q, const std::vector<double> &p, const std::vector<double> &inverseMetric = std::vector<double>()) const override
+  double K(const std::vector<double> &q, const std::vector<double> &p, const std::vector<double> &inverseMetric) const override
   {
     double tmpScalar = 0.0;
     for (size_t i = 0; i < _stateSpaceDim; ++i)
     {
-      tmpScalar += p[i] * p[i];
+      tmpScalar += p[i] * inverseMetric[i] * p[i];
     }
 
+    // std::cout << "K(" << p[0] << ") = " << 0.5 * tmpScalar << std::endl;
     return 0.5 * tmpScalar;
   }
 
@@ -64,18 +65,39 @@ class HamiltonianDiag : public Hamiltonian
   std::vector<double> dK(const std::vector<double> &q, const std::vector<double> &p, const std::vector<double> &inverseMetric) const override
   {
     std::vector<double> tmpVector(_stateSpaceDim, 0.0);
-    double tmpScalar = 0.0;
-
     for (size_t i = 0; i < _stateSpaceDim; ++i)
     {
-      tmpScalar = 0.0;
-      for (size_t j = 0; j < _stateSpaceDim; ++j)
-      {
-        tmpScalar += inverseMetric[i * _stateSpaceDim + j] * p[j];
-      }
-      tmpVector[i] = tmpScalar;
+      tmpVector[i] = inverseMetric[i] * p[i];
     }
     return tmpVector;
+  }
+
+  /**
+  * @brief Updates diagonal Inverse Metric by using samples to approximate the Variance (diagonal of Fisher Information matrix).
+  * @param samples Contains samples. One row is one sample.
+  * @param positionMean Mean of samples.
+  * @param inverseMetric Inverse Metric to be approximated.
+  * @param metric Metric which is calculated from inverMetric.
+  * @return Error code not needed here to set to 0.
+  */
+  int updateInverseMetric(const std::vector<std::vector<double>> &samples, const std::vector<double> &positionMean, std::vector<double> &inverseMetric, std::vector<double> &metric) override
+  {
+    double tmpScalar;
+    size_t numSamples = samples.size();
+
+    // calculate covariance matrix of warmup sample via Fisher Infromation
+    for (size_t i = 0; i < _stateSpaceDim; ++i)
+    {
+      tmpScalar = 0;
+      for (size_t j = 0; j < numSamples; ++j)
+      {
+        tmpScalar += (samples[j][i] - positionMean[i]) * (samples[j][i] - positionMean[i]);
+      }
+      inverseMetric[i] = tmpScalar / (numSamples - 1);
+      metric[i] = 1.0 / inverseMetric[i];
+    }
+
+    return 0;
   }
 };
 

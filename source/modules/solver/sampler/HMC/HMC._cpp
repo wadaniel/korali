@@ -42,45 +42,57 @@ void HMC::setInitialConfiguration()
   _momentumLeader.resize(_stateSpaceDim);
   _momentumCandidate.resize(_stateSpaceDim);
   _positionMean.resize(_stateSpaceDim);
-  _metric.resize(_stateSpaceDim * _stateSpaceDim);
-  _inverseMetric.resize(_stateSpaceDim * _stateSpaceDim);
 
-  // Filling vectors of internal settings to 0.0
-  std::fill(std::begin(_metric), std::end(_metric), 0.0);
-  std::fill(std::begin(_inverseMetric), std::end(_inverseMetric), 0.0);
-
-  // Setting position to inital mean
-  for (size_t i = 0; i < _stateSpaceDim; ++i)
-  {
-    _positionLeader[i] = _k->_variables[i]->_initialMean;
-    _metric[i * _stateSpaceDim + i] = _k->_variables[i]->_initialStandardDeviation * _k->_variables[i]->_initialStandardDeviation;
-    _inverseMetric[i * _stateSpaceDim + i] = 1.0 / _metric[i * _stateSpaceDim + i];
-  }
-
-  // Initialize multivariate normal distribution
-  std::vector<double> zeroMean(_stateSpaceDim, 0.0);
-  _multivariateGenerator->_meanVector = zeroMean;
-  _multivariateGenerator->_sigma = _metric;
-
-  // Cholesky Decomposition
-  gsl_matrix_view sigma = gsl_matrix_view_array(&_multivariateGenerator->_sigma[0], _stateSpaceDim, _stateSpaceDim);
-  gsl_linalg_cholesky_decomp(&sigma.matrix);
-
-  _multivariateGenerator->updateDistribution();
-
-  // TODO: REMOVE
-  switch (_useEuclideanMetric)
+  switch (_useDiagonalMetric == false && _useEuclideanMetric == true)
   {
   case false:
-    _hamiltonian = new HamiltonianDense{_stateSpaceDim};
-    break;
-  case true:
-    _hamiltonian = new HamiltonianDense{_stateSpaceDim};
+    _hamiltonian = new HamiltonianDiag{_stateSpaceDim};
+
+    _metric.resize(_stateSpaceDim);
+    _inverseMetric.resize(_stateSpaceDim);
+
+    // Setting position to inital mean
+    for (size_t i = 0; i < _stateSpaceDim; ++i)
+    {
+      _positionLeader[i] = _k->_variables[i]->_initialMean;
+      _metric[i] = _k->_variables[i]->_initialStandardDeviation * _k->_variables[i]->_initialStandardDeviation;
+      _inverseMetric[i] = 1.0 / _metric[i];
+    }
+
     break;
 
-  default:
-    KORALI_LOG_ERROR("Use Euclidean Metric must be set to True or False.\n");
-  };
+  case true:
+    _hamiltonian = new HamiltonianDense{_stateSpaceDim};
+    _metric.resize(_stateSpaceDim * _stateSpaceDim);
+    _inverseMetric.resize(_stateSpaceDim * _stateSpaceDim);
+
+    // Filling vectors of internal settings to 0.0
+    std::fill(std::begin(_metric), std::end(_metric), 0.0);
+    std::fill(std::begin(_inverseMetric), std::end(_inverseMetric), 0.0);
+
+    // Setting position to inital mean
+    for (size_t i = 0; i < _stateSpaceDim; ++i)
+    {
+      _positionLeader[i] = _k->_variables[i]->_initialMean;
+      _metric[i * _stateSpaceDim + i] = _k->_variables[i]->_initialStandardDeviation * _k->_variables[i]->_initialStandardDeviation;
+      _inverseMetric[i * _stateSpaceDim + i] = 1.0 / _metric[i * _stateSpaceDim + i];
+    }
+
+    // Initialize multivariate normal distribution
+    std::vector<double> zeroMean(_stateSpaceDim, 0.0);
+    _multivariateGenerator->_meanVector = zeroMean;
+    _multivariateGenerator->_sigma = _metric;
+
+    // Cholesky Decomposition
+    gsl_matrix_view sigma = gsl_matrix_view_array(&_multivariateGenerator->_sigma[0], _stateSpaceDim, _stateSpaceDim);
+    gsl_linalg_cholesky_decomp(&sigma.matrix);
+
+    _multivariateGenerator->updateDistribution();
+
+    break;
+    // default:
+    //   KORALI_LOG_ERROR("Use Diagonal Metric must be set to True or False.\n");
+  }
 
   _integrator = new LeapfrogExplicit;
 
@@ -105,7 +117,8 @@ void HMC::runGeneration()
   if (_k->_currentGeneration == 1) setInitialConfiguration();
 
   // Samples Momentum Candidate from N(0.0, metric)
-  generateCandidate();
+
+  _momentumCandidate = generateCandidate();
 
   _positionCandidate = _positionLeader;
   _momentumLeader = _momentumCandidate;
@@ -286,13 +299,26 @@ void HMC::updateStepSize()
   return;
 }
 
-void HMC::generateCandidate()
+std::vector<double> HMC::generateCandidate()
 {
   ++_proposedSampleCount;
   // saple momentum p from p ~ N(0.0, metric)
-  _multivariateGenerator->getRandomVector(&_momentumCandidate[0], _stateSpaceDim);
+  std::vector<double> result(_stateSpaceDim, 0.0);
 
-  return;
+  switch (_useDiagonalMetric == false && _useEuclideanMetric == true)
+  {
+  case true:
+    _multivariateGenerator->getRandomVector(&result[0], _stateSpaceDim);
+    break;
+  case false:
+    for (size_t i = 0; i < _stateSpaceDim; ++i)
+    {
+      result[i] = std::sqrt(_metric[i]) * _normalGenerator->getRandomNumber();
+    }
+    break;
+  }
+
+  return result;
 }
 
 void HMC::updateState()
@@ -342,39 +368,50 @@ void HMC::updateStateWarmup()
   //       Approximate Inverse Matrix via Fisher Information
   if (_useEuclideanMetric == true && (int)(_metricEstimateQuotient * (double)_burnIn) == _chainLength + 1)
   {
-    double tmpScalar;
-    size_t numWarmupSamples = _warmupSampleDatabase.size();
+    // double tmpScalar;
+    // size_t numWarmupSamples = _warmupSampleDatabase.size();
 
-    // calculate covariance matrix of warmup sample via Fisher Infromation
-    for (size_t i = 0; i < _stateSpaceDim; ++i)
-    {
-      for (size_t k = i; k < _stateSpaceDim; ++k)
-      {
-        tmpScalar = 0;
-        for (size_t j = 0; j < numWarmupSamples; ++j)
-        {
-          tmpScalar += (_warmupSampleDatabase[j][i] - _positionMean[i]) * (_warmupSampleDatabase[j][k] - _positionMean[k]);
-        }
-        _inverseMetric[i * _stateSpaceDim + k] = tmpScalar / (numWarmupSamples - 1);
-        _inverseMetric[k * _stateSpaceDim + i] = _inverseMetric[i * _stateSpaceDim + k];
-      }
-    }
+    // // calculate covariance matrix of warmup sample via Fisher Infromation
+    // for (size_t i = 0; i < _stateSpaceDim; ++i)
+    // {
+    //   for (size_t k = i; k < _stateSpaceDim; ++k)
+    //   {
+    //     tmpScalar = 0;
+    //     for (size_t j = 0; j < numWarmupSamples; ++j)
+    //     {
+    //       tmpScalar += (_warmupSampleDatabase[j][i] - _positionMean[i]) * (_warmupSampleDatabase[j][k] - _positionMean[k]);
+    //     }
+    //     _inverseMetric[i * _stateSpaceDim + k] = tmpScalar / (numWarmupSamples - 1);
+    //     _inverseMetric[k * _stateSpaceDim + i] = _inverseMetric[i * _stateSpaceDim + k];
+    //   }
+    // }
 
-    // update Metric to be consisitent with Inverse Metric
-    invertMatrix(_inverseMetric, _metric);
+    // // update Metric to be consisitent with Inverse Metric
+    // // invertMatrix(_inverseMetric, _metric);
 
-    _multivariateGenerator->_sigma = _metric;
-    // Cholesky Decomp
-    gsl_matrix_view sigma = gsl_matrix_view_array(&_multivariateGenerator->_sigma[0], _stateSpaceDim, _stateSpaceDim);
+    int err = _hamiltonian->updateInverseMetric(_warmupSampleDatabase, _positionMean, _inverseMetric, _metric);
 
-    int err = gsl_linalg_cholesky_decomp(&sigma.matrix);
     if (err == GSL_EDOM)
     {
-      _k->_logger->logWarning("Normal", "Metric negative definite (not updating Metric used for sampling momentum).\n");
+      // error handling for non s.p.d. matrices
+      _k->_logger->logWarning("Normal", "Inverse Metric negative definite (not updating Metric). Try Increasing Burn In.\n");
     }
-    else
+
+    if (_useDiagonalMetric == false && _useEuclideanMetric == true)
     {
-      _multivariateGenerator->updateDistribution();
+      _multivariateGenerator->_sigma = _metric;
+      // Cholesky Decomp
+      gsl_matrix_view sigma = gsl_matrix_view_array(&_multivariateGenerator->_sigma[0], _stateSpaceDim, _stateSpaceDim);
+
+      err = gsl_linalg_cholesky_decomp(&sigma.matrix);
+      if (err == GSL_EDOM)
+      {
+        _k->_logger->logWarning("Normal", "Metric negative definite (not updating Metric used for sampling momentum).\n");
+      }
+      else
+      {
+        _multivariateGenerator->updateDistribution();
+      }
     }
   }
 
@@ -436,12 +473,51 @@ void HMC::printGenerationAfter()
   for (size_t d = 0; d < _k->_variables.size(); ++d) _k->_logger->logData("Detailed", "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _positionMean[d]);
   _k->_logger->logInfo("Detailed", "Current Metric:\n");
 
+  switch (_useDiagonalMetric)
+  {
+  case false:
+    for (size_t e = 0; e < _k->_variables.size(); ++e)
+    {
+      for (size_t d = 0; d < _k->_variables.size(); ++d)
+      {
+        _k->_logger->logData("Detailed", "         %+6.3e  ", _metric[d * _k->_variables.size() + e]);
+      }
+      _k->_logger->logInfo("Detailed", "\n");
+    }
+    break;
+
+  case true:
+    for (size_t e = 0; e < _k->_variables.size(); ++e)
+    {
+      _k->_logger->logData("Detailed", "         %+6.3e  ", _metric[e]);
+      _k->_logger->logInfo("Detailed", "\n");
+    }
+    break;
+  }
+
   // Inverse Metric
   _k->_logger->logInfo("Detailed", "Current Inverse Metric:\n");
-  for (size_t d = 0; d < _k->_variables.size(); ++d)
+
+  switch (_useDiagonalMetric)
   {
-    for (size_t e = 0; e < _k->_variables.size(); ++e) _k->_logger->logData("Detailed", "         %+6.3e  ", _inverseMetric[d * _k->_variables.size() + e]);
-    _k->_logger->logInfo("Detailed", "\n");
+  case false:
+    for (size_t e = 0; e < _k->_variables.size(); ++e)
+    {
+      for (size_t d = 0; d < _k->_variables.size(); ++d)
+      {
+        _k->_logger->logData("Detailed", "         %+6.3e  ", _inverseMetric[d * _k->_variables.size() + e]);
+      }
+      _k->_logger->logInfo("Detailed", "\n");
+    }
+    break;
+
+  case true:
+    for (size_t e = 0; e < _k->_variables.size(); ++e)
+    {
+      _k->_logger->logData("Detailed", "         %+6.3e  ", _inverseMetric[e]);
+      _k->_logger->logInfo("Detailed", "\n");
+    }
+    break;
   }
 
   // Chain Length + 1 = m in Algorithm
@@ -495,53 +571,53 @@ double HMC::dotProduct(const std::vector<double> &pLeft, const std::vector<doubl
   return tmpScalar;
 }
 
-// inverts mat via cholesky decomposition and writes inverted Matrix to inverseMat
-// TODO: Avoid calculating cholesky decompisition twice
-void HMC::invertMatrix(std::vector<double> &mat, std::vector<double> &inverseMat)
-{
-  gsl_matrix *A = gsl_matrix_alloc(_stateSpaceDim, _stateSpaceDim);
+// // inverts mat via cholesky decomposition and writes inverted Matrix to inverseMat
+// // TODO: Avoid calculating cholesky decompisition twice
+// void HMC::invertMatrix(std::vector<double> &mat, std::vector<double> &inverseMat)
+// {
+//   gsl_matrix *A = gsl_matrix_alloc(_stateSpaceDim, _stateSpaceDim);
 
-  // copy mat to gsl matrix
-  for (size_t d = 0; d < _stateSpaceDim; ++d)
-  {
-    for (size_t e = 0; e < d; ++e)
-    {
-      gsl_matrix_set(A, d, e, mat[d * _stateSpaceDim + e]);
-      gsl_matrix_set(A, e, d, mat[e * _stateSpaceDim + d]);
-    }
-    gsl_matrix_set(A, d, d, mat[d * _stateSpaceDim + d]);
-  }
+//   // copy mat to gsl matrix
+//   for (size_t d = 0; d < _stateSpaceDim; ++d)
+//   {
+//     for (size_t e = 0; e < d; ++e)
+//     {
+//       gsl_matrix_set(A, d, e, mat[d * _stateSpaceDim + e]);
+//       gsl_matrix_set(A, e, d, mat[e * _stateSpaceDim + d]);
+//     }
+//     gsl_matrix_set(A, d, d, mat[d * _stateSpaceDim + d]);
+//   }
 
-  // calculate cholesky decomposition
-  int err = gsl_linalg_cholesky_decomp(A);
-  if (err == GSL_EDOM)
-  {
-    // error handling for non s.p.d. matrices
-    _k->_logger->logWarning("Normal", "Inverse Metric negative definite (not updating Metric). Try Increasing Burn In.\n");
-  }
-  else
-  {
-    // Invert matrix
-    gsl_linalg_cholesky_invert(A);
+//   // calculate cholesky decomposition
+//   int err = gsl_linalg_cholesky_decomp(A);
+//   if (err == GSL_EDOM)
+//   {
+//     // error handling for non s.p.d. matrices
+//     _k->_logger->logWarning("Normal", "Inverse Metric negative definite (not updating Metric). Try Increasing Burn In.\n");
+//   }
+//   else
+//   {
+//     // Invert matrix
+//     gsl_linalg_cholesky_invert(A);
 
-    // copy gsl matrix to inverseMat
-    // TODO: Find out if there is a better way to do this
-    for (size_t d = 0; d < _stateSpaceDim; ++d)
-    {
-      for (size_t e = 0; e < d; ++e)
-      {
-        inverseMat[d * _stateSpaceDim + e] = gsl_matrix_get(A, d, e);
-        inverseMat[e * _stateSpaceDim + d] = gsl_matrix_get(A, d, e);
-      }
-      inverseMat[d * _stateSpaceDim + d] = gsl_matrix_get(A, d, d);
-    }
-  }
+//     // copy gsl matrix to inverseMat
+//     // TODO: Find out if there is a better way to do this
+//     for (size_t d = 0; d < _stateSpaceDim; ++d)
+//     {
+//       for (size_t e = 0; e < d; ++e)
+//       {
+//         inverseMat[d * _stateSpaceDim + e] = gsl_matrix_get(A, d, e);
+//         inverseMat[e * _stateSpaceDim + d] = gsl_matrix_get(A, d, e);
+//       }
+//       inverseMat[d * _stateSpaceDim + d] = gsl_matrix_get(A, d, d);
+//     }
+//   }
 
-  // free up memory of gsl matrix
-  gsl_matrix_free(A);
+//   // free up memory of gsl matrix
+//   gsl_matrix_free(A);
 
-  return;
-}
+//   return;
+// }
 
 double HMC::findReasonableStepSize(std::vector<double> q)
 {
@@ -554,7 +630,9 @@ double HMC::findReasonableStepSize(std::vector<double> q)
 
   // Sampling from Normal distribution with metric as covariance matrix
   // WARNING: MY INTERPRETATION
-  _multivariateGenerator->getRandomVector(&p[0], _stateSpaceDim);
+  // _multivariateGenerator->getRandomVector(&p[0], _stateSpaceDim);
+
+  p = generateCandidate();
 
   // Sampling from Standard Normal Distributoin (Identity as covariance matrix)
   // for (size_t i = 0; i < _stateSpaceDim; ++i)

@@ -111,6 +111,16 @@ class Hamiltonian
   }
 
   /**
+  * @brief Updates Inverse Metric by using samples to approximate the covariance matrix via the Fisher information.
+  * @param samples Contains samples. One row is one sample.
+  * @param positionMean Mean of samples.
+  * @param inverseMetric Inverse Metric to be approximated.
+  * @param metric Metric which is calculated from inverMetric.
+  * @return Error code of Cholesky decomposition needed for dense Metric.
+  */
+  virtual int updateInverseMetric(const std::vector<std::vector<double>> &samples, const std::vector<double> &positionMean, std::vector<double> &inverseMetric, std::vector<double> &metric) = 0;
+
+  /**
   * @brief Getter function for State Space Dim.
   * @return Dimension of state space (i.e. dim(q)).
   */

@@ -40,8 +40,9 @@ class HMC : public Sampler
 
   /**
   * @brief Generate new sample.
+  * @return Sample of Momentum.
   */
-  void generateCandidate();
+  std::vector<double> generateCandidate();
 
   /**
   * @brief Process sample after evaluation.
@@ -103,13 +104,6 @@ class HMC : public Sampler
   * @return Inner product p^T * M ^ (-1) * p where M is the Metric.
   */
   double dotProduct(const std::vector<double> &pLeft, const std::vector<double> &pRight) const;
-
-  /**
-  * @brief Inverts matrix in first argument. Solution is given in second argument. Used for Euclidean Metric as Metric has to be calculated from InverseMetric.
-  * @param mat Input matrix.
-  * @param inverseMat Output matrix which is mat^(-1).
-  */
-  void invertMatrix(std::vector<double> &mat, std::vector<double> &inverseMat);
 
   /**
   * @brief Finds reasonable Step Size. Used if Use Adaptive Time Stepping is set to True.

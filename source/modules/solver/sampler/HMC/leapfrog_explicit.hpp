@@ -29,20 +29,23 @@ class LeapfrogExplicit : public Leapfrog
   */
   void step(std::vector<double> &q, std::vector<double> &p, const double stepSize, Hamiltonian *hamiltonian, size_t &modelEvaluationCount, const size_t &numSamples, std::vector<double> &inverseMetric) override
   {
-    std::vector<double> dU = hamiltonian->dU(q, modelEvaluationCount, numSamples);
     size_t stateSpaceDim = hamiltonian->getStateSpaceDim();
+    std::vector<double> dU = hamiltonian->dU(q, modelEvaluationCount, numSamples);
+    // std::cout << "dU[0] = " << dU[0] << std::endl;
     for (size_t i = 0; i < stateSpaceDim; ++i)
     {
       p[i] -= 0.5 * stepSize * dU[i];
     }
 
     std::vector<double> dK = hamiltonian->dK(q, p, inverseMetric);
+    // std::cout << "dK[0] = " << dK[0] << std::endl;
     for (size_t i = 0; i < stateSpaceDim; ++i)
     {
       q[i] += stepSize * dK[i];
     }
 
     dU = hamiltonian->dU(q, modelEvaluationCount, numSamples);
+    // std::cout << "dU[0] = " << dU[0] << std::endl;
     for (size_t i = 0; i < stateSpaceDim; ++i)
     {
       p[i] -= 0.5 * stepSize * dU[i];

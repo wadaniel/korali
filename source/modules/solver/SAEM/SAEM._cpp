@@ -1,5 +1,4 @@
 #include "engine.hpp"
-#include "modules/conduit/conduit.hpp"
 #include "modules/experiment/experiment.hpp"
 #include "modules/problem/problem.hpp"
 #include "modules/solver/SAEM/SAEM.hpp"
@@ -121,8 +120,8 @@ void SAEM::sampleLatent()
   sample["Module"] = "Problem";
   sample["Operation"] = "Sample Latent Variables";
 
-  _conduit->start(sample);
-  _conduit->wait(sample);
+  KORALI_START(sample);
+  KORALI_WAIT(sample);
 
   _currentSamples = KORALI_GET(std::vector<std::vector<double>>, sample, "Samples");
 
@@ -165,17 +164,17 @@ void SAEM::calculateSampleSVectors()
     k[i]["Hyperparameters"] = _currentHyperparameters;
     k[i]["Module"] = "Problem";
     k[i]["Operation"] = "Evaluate S";
-    _conduit->start(k[i]);
+    KORALI_START(k[i]);
   }
 
-  _conduit->waitAll(k);
+  KORALI_WAITALL(k);
 
   for (size_t i = 0; i < _numberSamplesPerStep; i++)
   {
     auto v = KORALI_GET(std::vector<double>, k[i], "S");
 
     _currentSamplesSVectors[i] = v;
-    if (v.size() != _latentProblem->_sDimension)
+    if (v.size() != (size_t)_latentProblem->_sDimension)
       KORALI_LOG_ERROR("S vector had incorrect size, or incorrect size was given as 'S Dimension' when defining the problem");
   }
 }
@@ -259,10 +258,8 @@ void SAEM::QFunction(Sample &sample, size_t zetaFc, size_t phiFc)
           Q function to get a new vector of hyperparameters. */
 void SAEM::updateHyperparameters()
 {
-  knlohmann::json globalsJs;
-  globalsJs["Current S"] = _currentS;
-  _conduit->broadcastGlobals(globalsJs);
-
+  // Updating the current S for the Q experiment
+  _experiment._globals["Current S"] = _currentS;
   _experiment["Random Seed"] = _k->_randomSeed++;
   _engine.run(_experiment);
 

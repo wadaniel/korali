@@ -22,15 +22,14 @@ e = korali.Experiment()
 e['Problem']['Type'] = 'Supervised Learning'
 
 e["Problem"]["Inputs"] = trainInput
-e["Problem"]["Outputs"] = trainSolution
+e["Problem"]["Solution"] = trainSolution
 
 e['Solver']['Type'] = 'Learner/Gaussian Process'
 e['Solver']['Covariance Function'] = 'CovSum ( CovSEiso, CovNoise)'
 
 e['Solver']['Optimizer']['Type'] = 'Optimizer/Rprop'
 e['Solver']['Optimizer']['Termination Criteria']['Max Generations'] = 1000
-e['Solver']['Optimizer']['Termination Criteria'][
-    'Parameter Relative Tolerance'] = 1e-8
+e['Solver']['Optimizer']['Termination Criteria']['Parameter Relative Tolerance'] = 1e-8
 
 e['Console Output']['Verbosity'] = 'Normal'
 e['Console Output']['Frequency'] = 10
@@ -40,11 +39,9 @@ e['Random Seed'] = 0xC0FFEE
 
 k.run(e)
 
-x = np.linspace(0, 14, 1000)
-x = [[i] for i in x.tolist()]
-y = e.getEvaluation(x)
-
-z = [i + j for i, j in zip(x, y)]
+x = [ [ v ] for v in np.linspace(0, 14, 1000).tolist() ]
+y = [ e.getEvaluation(v) for v in x ]
+z = [ [ i ] + j for i, j in zip(x, y)]
 
 with open('_data/results.dat', 'w') as f:
   wr = csv.writer(f, delimiter=' ')

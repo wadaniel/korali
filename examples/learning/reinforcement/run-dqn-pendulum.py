@@ -68,7 +68,7 @@ e["Solver"]["Type"] = "Agent/DQN"
 
 ### Defining Replay Memory configuration
 
-e["Solver"]["Replay Memory"]["Start Size"] = 5000
+e["Solver"]["Replay Memory"]["Start Size"] = 500
 e["Solver"]["Replay Memory"]["Maximum Size"] = 150000
 
 ### Defining the configuration of the agent
@@ -87,6 +87,7 @@ e["Solver"]["Policy"]["Epsilon"]["Decrease Rate"] = 0.05
 
 e["Solver"]["Critic"]["Mini Batch Size"] = 32
 e["Solver"]["Critic"]["Discount Factor"] = 0.99 
+e["Solver"]["Critic"]["Update Algorithm"] = "Q-Learning"
 e["Solver"]["Critic"]["Optimizer"]["Type"] = "Optimizer/Adam"
 e["Solver"]["Critic"]["Optimizer"]["Eta"] = 0.1
 e["Solver"]["Critic"]["Optimization Steps"] = 1
@@ -99,12 +100,12 @@ e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Activation Function"]["Typ
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Batch Normalization"]["Enabled"] = False
 
 e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Type"] = "Layer/Dense"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Node Count"] = 32
+e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Node Count"] = 128
 e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Activation Function"]["Type"] = "Tanh"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Batch Normalization"]["Enabled"] = True
 
 e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Type"] = "Layer/Dense"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Node Count"] = 32
+e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Node Count"] = 128
 e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Tanh"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Batch Normalization"]["Enabled"] = True
 
@@ -118,7 +119,9 @@ e["Solver"]["Critic"]["Normalization Steps"] = 32
 
 ### Defining Termination Criteria
 
-e["Solver"]["Termination Criteria"]["Target Average Reward"] = -50
+e["Solver"]["Average Training Reward Threshold"] = -100
+e["Solver"]["Policy Testing Episodes"] = 20
+e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = -50
 
 ### Setting file output configuration
 

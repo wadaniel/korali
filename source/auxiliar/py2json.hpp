@@ -13,6 +13,37 @@
 #define PYBIND_JSON_HPP
 
 #include "auxiliar/json.hpp"
+
+
+#ifdef OMPI_MPI_H
+#include "mpi.h"
+
+namespace knlohmann
+{
+
+/**
+ * @brief Struct containing serializer/deserializer object for MPI Communicator and JSON objects.
+ */
+template <>
+struct adl_serializer<MPI_Comm>
+{
+  static void to_json(json &j, const MPI_Comm &obj);
+};
+
+/**
+ * @brief Serializes MPI Communicators into a JSON-acceptable number containing its pointer.
+ * @param j The JSON object to write.
+ * @param obj The MPI communicator to serialize
+ */
+inline void adl_serializer<MPI_Comm>::to_json(json &j, const MPI_Comm &obj)
+{
+  auto x = new MPI_Comm;
+  MPI_Comm_dup(obj, x);
+  j = (size_t)x;
+}
+}
+#endif
+
 #include "modules/experiment/experiment.hpp"
 #include "pybind11/pybind11.h"
 #include "pybind11/stl.h"
@@ -21,10 +52,6 @@
 #include <gsl/gsl_rng.h>
 #include <string>
 #include <vector>
-
-#ifdef _KORALI_USE_MPI
-  #include "mpi.h"
-#endif
 
 /*! \namespace knlohmann
   \brief The knlohmann namespace includes all Korali-Json auxiliar functions and class methods.
@@ -52,31 +79,6 @@ inline void adl_serializer<std::function<void(korali::Sample &)>>::to_json(json 
   j = korali::_functionVector.size();
   korali::_functionVector.push_back(x);
 }
-
-#ifdef OMPI_MPI_H
-
-/**
- * @brief Struct containing serializer/deserializer object for MPI Communicator and JSON objects.
- */
-template <>
-struct adl_serializer<MPI_Comm>
-{
-  static void to_json(json &j, const MPI_Comm &obj);
-};
-
-/**
- * @brief Serializes MPI Communicators into a JSON-acceptable number containing its pointer.
- * @param j The JSON object to write.
- * @param obj The MPI communicator to serialize
- */
-inline void adl_serializer<MPI_Comm>::to_json(json &j, const MPI_Comm &obj)
-{
-  auto x = new MPI_Comm;
-  MPI_Comm_dup(obj, x);
-  j = (size_t)x;
-}
-
-#endif
 
 /**
     * @brief Struct containing serializer/deserializer object for korali::Experiment and JSON objects.

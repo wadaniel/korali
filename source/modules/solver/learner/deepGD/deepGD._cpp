@@ -73,7 +73,8 @@ void DeepGD::initialize()
     _optExperiment["Random Seed"] = _k->_randomSeed++;
 
     // Running initialization to verify that the configuration is correct
-    _optEngine.initialize(_optExperiment);
+    korali::Engine engine;
+    engine.initialize(_optExperiment);
 
     // Setting learner initialized flag
     _isLearnerInitialized = true;
@@ -86,7 +87,8 @@ void DeepGD::initialize()
 void DeepGD::runGeneration()
 {
   _optExperiment["Solver"]["Termination Criteria"]["Max Generations"] = _optExperiment._currentGeneration + _stepsPerGeneration;
-  _optEngine.resume(_optExperiment);
+  korali::Engine engine;
+  engine.resume(_optExperiment);
   _currentLoss = _optExperiment["Results"]["Best Sample"]["F(x)"].get<double>();
 }
 

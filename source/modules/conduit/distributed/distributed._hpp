@@ -10,6 +10,7 @@ namespace korali
 {
 #ifdef _KORALI_USE_MPI
   #include "mpi.h"
+
 /**
  * @brief Communicator storage for the current Korali Team
  */

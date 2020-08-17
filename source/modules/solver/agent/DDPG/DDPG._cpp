@@ -54,7 +54,8 @@ void DDPG::initializePolicy()
   }
 
   // Running initialization to verify that the configuration is correct
-  _engine.initialize(_policyExperiment);
+  korali::Engine engine;
+  engine.initialize(_policyExperiment);
 
   // Getting learner pointers
   _policyProblem = dynamic_cast<problem::SupervisedLearning *>(_policyExperiment._problem);
@@ -116,7 +117,8 @@ void DDPG::trainPolicy()
   // Running one generation of the optimization method on the actor NN with the given mini-batch
   _policyExperiment["Solver"]["Termination Criteria"]["Max Generations"] = _policyExperiment._currentGeneration + _policyOptimizationSteps;
   _policyLearner->initialize();
-  _engine.resume(_policyExperiment);
+  korali::Engine engine;
+  engine.resume(_policyExperiment);
 
   auto policyHypeparameters = _policyLearner->getHyperparameters();
 

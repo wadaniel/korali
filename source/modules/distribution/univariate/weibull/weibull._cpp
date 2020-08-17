@@ -1,4 +1,4 @@
-#include "modules/distribution/univariate/gamma/weibull.hpp"
+#include "modules/distribution/univariate/weibull/weibull.hpp"
 #include "modules/experiment/experiment.hpp"
 
 namespace korali
@@ -28,7 +28,7 @@ void Weibull::updateDistribution()
   if (_shape <= 0.0) KORALI_LOG_ERROR("Incorrect Shape parameter of Weibull distribution: %f.\n", _shape);
   if (_scale <= 0.0) KORALI_LOG_ERROR("Incorrect Scale parameter of Weibull distribution: %f.\n", _scale);
 
-  _aux = log(shape/scale) - (shape-1.0)*log(scale);
+  _aux = log(_shape/_scale) - (_shape-1.0)*log(_scale);
 }
 
 } // namespace univariate

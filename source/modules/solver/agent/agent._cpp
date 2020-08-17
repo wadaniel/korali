@@ -63,19 +63,12 @@ void Agent::initialize()
     // Getting Critic's hyperparameters
     _hyperparameters["Critic"] = _criticLearner->getHyperparameters();
 
-    // Setting intial epsilon to 1.0 (initial exploratory phase)
-    _policyEpsilonInitialized = false;
-    _policyEpsilonCurrentValue = 1.0;
-
     // Get the initial set of hyperparameters
     _bestHyperparameters = _hyperparameters;
   }
 
   // Setting Critic's hyperparameters
   _criticLearner->setHyperparameters(_hyperparameters["Critic"]);
-
-  // Settting Epsilon
-  _hyperparameters["Epsilon"] = _policyEpsilonCurrentValue;
 
   // Initializing policy hyperparameters
   updateHyperparameters(_hyperparameters);
@@ -164,24 +157,6 @@ void Agent::runGeneration()
     trainCritic();
     trainPolicy();
 
-    // Initializing the value of epsilon, if not already set
-    if (_policyEpsilonInitialized == false)
-    {
-      _policyEpsilonCurrentValue = _policyEpsilonInitialValue;
-      _policyEpsilonInitialized = true;
-    }
-    else
-    {
-      // Decreasing the value of epsilon
-      _policyEpsilonCurrentValue = _policyEpsilonCurrentValue - _policyEpsilonDecreaseRate;
-
-      // Without exceeding the lower bound
-      if (_policyEpsilonCurrentValue < _policyEpsilonTargetValue) _policyEpsilonCurrentValue = _policyEpsilonTargetValue;
-    }
-
-    // Updating Epsilon
-    _hyperparameters["Epsilon"] = _policyEpsilonCurrentValue;
-
     // Storing new Critic's hyperparameters
     _hyperparameters["Critic"] = _criticLearner->getHyperparameters();
 
@@ -202,69 +177,32 @@ void Agent::runGeneration()
   }
 }
 
-std::vector<double> Agent::getTrainingAction(const std::vector<double> &state)
+std::vector<double> Agent::getRandomAction(const std::vector<double> &state)
 {
-  // Getting p = U[0,1] for the epsilon strategy
-  double p = _uniformGenerator->getRandomNumber();
+ // Storage for action
+  std::vector<double> randomAction(_problem->_actionVectorSize);
 
-  // If p < e, then we choose the action randomly, with a uniform probability, among all possible actions.
-  // If no states have been registered yet, use the random option in any case
-  if (p < _policyEpsilonCurrentValue)
-  {
-    // Storage for action
-    std::vector<double> randomAction(_problem->_actionVectorSize);
-
-    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-    {
-      size_t varIdx = _problem->_actionVectorIndexes[i];
-      double x = _uniformGenerator->getRandomNumber();
-
-      // If discrete value vector was not provided, use lower and upper bounds
-      if (_k->_variables[varIdx]->_values.size() == 0)
-      {
-        double lowerBound = _k->_variables[varIdx]->_lowerBound;
-        double upperBound = _k->_variables[varIdx]->_upperBound;
-        randomAction[i] = lowerBound + x * (upperBound - lowerBound);
-      }
-      else
-      {
-        // Randomly select one of the actions provided in the value vector
-        size_t valIdx = floor(x * _k->_variables[varIdx]->_values.size());
-        randomAction[i] = _k->_variables[varIdx]->_values[valIdx];
-      }
-    }
-
-    return randomAction;
-  }
-
-  // Obtaining action from policy
-  auto action = queryPolicy(state);
-
-  // Checking for correctness of the action
-  for (size_t i = 0; i < action.size(); i++)
-  {
-    if (std::isfinite(action[i]) == false)
-      KORALI_LOG_ERROR(" + Action [%lu] is not finite (%f)\n", i, action[i]);
-  }
-
-  // Introducing random noise to the action
-  for (size_t i = 0; i < _problem->_actionVectorIndexes.size(); i++)
+  for (size_t i = 0; i < _problem->_actionVectorSize; i++)
   {
     size_t varIdx = _problem->_actionVectorIndexes[i];
+    double x = _randomActionGenerator->getRandomNumber();
 
-    // Check whether the variable requires noise
-    if (_k->_variables[varIdx]->_explorationNoiseEnabled == true)
+    // If discrete value vector was not provided, use lower and upper bounds
+    if (_k->_variables[varIdx]->_values.size() == 0)
     {
-      double w = _k->_variables[varIdx]->_explorationNoiseDistribution->getRandomNumber();
-      double noise = _k->_variables[varIdx]->_explorationNoiseTheta * _currentActionNoises[i] + w;
-      action[i] += noise;
-      //printf("Theta (%f) * Previous Noise: (%f) + W: (%f) = %f\n",  _k->_variables[varIdx]->_explorationNoiseTheta, _currentActionNoises[i], w, noise);
-      _currentActionNoises[i] = noise;
+      double lowerBound = _k->_variables[varIdx]->_lowerBound;
+      double upperBound = _k->_variables[varIdx]->_upperBound;
+      randomAction[i] = lowerBound + x * (upperBound - lowerBound);
+    }
+    else
+    {
+      // Randomly select one of the actions provided in the value vector
+      size_t valIdx = floor(x * _k->_variables[varIdx]->_values.size());
+      randomAction[i] = _k->_variables[varIdx]->_values[valIdx];
     }
   }
 
-  // Returning the action
-  return action;
+  return randomAction;
 }
 
 double Agent::stateActionValueFunction(const std::vector<double>& state, const std::vector<double>& action)
@@ -279,26 +217,6 @@ double Agent::stateActionValueFunction(const std::vector<double>& state, const s
 
  // Getting the value of V(Xt), i.e., Q(xt, best action)
  return evaluation[0];
-}
-
-double Agent::stateValueFunction(const std::vector<double>& state)
-{
- // Getting optimal action for the next state, based on the NN evaluation
- auto action = queryPolicy(state);
-
- // Storage to put together state and action
- std::vector<double> stateActionInput(_problem->_stateVectorSize + _problem->_actionVectorSize);
-
- // Getting the Q value of the state + best action
- auto evaluation = stateActionValueFunction(state, action);
-
- // Debug only, print new experience values
- //  printf("State: %f %f %f %f \n", state[0], state[1], state[2], state[3]);
- //  printf("Action: %f\n", action[0]);
- //  printf("V: %f\n", evaluation[0]);
-
- // Getting the value of V(Xt), i.e., Q(xt, best action)
- return evaluation;
 }
 
 double Agent::retraceFunction(size_t expId)
@@ -317,18 +235,26 @@ double Agent::retraceFunction(size_t expId)
   // Decreasing index
   curId--;
 
+  // Getting Q(s+1, a+1) for the selected experience
+  double qNextState = stateActionValueFunction(_stateHistory[curId+1], _actionHistory[curId+1]);
+
+  // Getting V(s+1) for the selected experience
+  double vNextState = stateValueFunction(_stateHistory[curId+1]);
+
   // Getting p(s,a) for selected experience, given the old policy
-  double pPrevExp = _probabilityDensityHistory[curId];
+  double pOldExp = _probabilityDensityHistory[curId];
 
   // Getting p(s,a) for the best action, given the current policy
   double pCurExp = getStateActionProbabilityDensity(_stateHistory[curId], _actionHistory[curId]);
 
   // Now calculating importance weight, truncating it to avoid exploding values, and then multiplying it by lambda
-  double importanceWeight = _importanceWeightLambda * std::min(_importanceWeightTruncation, (pCurExp / pPrevExp));
+  double importanceWeight = _importanceWeightLambda * std::min(_importanceWeightTruncation, (pCurExp / pOldExp));
+
+  // printf("Importance Weight: %f\n", importanceWeight);
 
   retraceValue = _rewardHistory[curId]
-                 + _criticDiscountFactor * importanceWeight * (retraceValue - stateActionValueFunction(_stateHistory[curId+1], _actionHistory[curId+1]))
-                 + _criticDiscountFactor * stateValueFunction(_stateHistory[curId+1]);
+                 + _criticDiscountFactor * importanceWeight * (retraceValue - qNextState)
+                 + _criticDiscountFactor * vNextState;
  }
 
  //printf("Retrace Val: %f\n", retraceValue);
@@ -473,20 +399,6 @@ std::vector<double> Agent::getInferenceAction(const std::vector<double> &state)
   return action;
 }
 
-void Agent::updateHyperparameters(const knlohmann::json &hyperparameters)
-{
-  // Updating epsilon value
-  _policyEpsilonCurrentValue = hyperparameters["Epsilon"].get<double>();
-
-  // Re-initializing action noises to zero
-  size_t actionCount = _problem->_actionVectorIndexes.size();
-  _currentActionNoises.resize(actionCount);
-  for (size_t i = 0; i < actionCount; i++) _currentActionNoises[i] = 0.0;
-
-  // Updating policy hyperparameters
-  updatePolicyHyperparameters(hyperparameters);
-}
-
 void Agent::printGenerationAfter()
 {
   _k->_logger->logInfo("Normal", "Replay Experience Statistics:\n");
@@ -536,7 +448,6 @@ void Agent::printGenerationAfter()
   _criticExperiment._logger->setVerbosityLevel("Silent");
 
   _k->_logger->logInfo("Normal", "Policy Information:\n");
-  _k->_logger->logInfo("Normal", " + Current Epsilon:                  %f -> %f\n", _policyEpsilonCurrentValue, _policyEpsilonTargetValue);
   printPolicyInformation();
 }
 

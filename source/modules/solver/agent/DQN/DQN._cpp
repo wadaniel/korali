@@ -57,12 +57,39 @@ void DQN::initializePolicy()
 
   // Running initialization to verify that the configuration is correct
   _engine.initialize(_policyExperiment);
+
+  // If initial generation, set initial DQN configuration
+  if (_k->_currentGeneration == 0)
+  {
+   // Setting intial epsilon to 1.0 (initial exploratory phase)
+   _policyEpsilonInitialized = false;
+   _policyEpsilonCurrentValue = 1.0;
+
+   // Settting Epsilon
+   _hyperparameters["Epsilon"] = _policyEpsilonCurrentValue;
+  }
+
 }
 
 void DQN::trainPolicy()
 {
-  // No direct training to the policy required since the best action is
-  // selected at every action with an optimizer.
+ // Initializing the value of epsilon, if not already set
+ if (_policyEpsilonInitialized == false)
+ {
+   _policyEpsilonCurrentValue = _policyEpsilonInitialValue;
+   _policyEpsilonInitialized = true;
+ }
+ else
+ {
+   // Decreasing the value of epsilon
+   _policyEpsilonCurrentValue = _policyEpsilonCurrentValue - _policyEpsilonDecreaseRate;
+
+   // Without exceeding the lower bound
+   if (_policyEpsilonCurrentValue < _policyEpsilonTargetValue) _policyEpsilonCurrentValue = _policyEpsilonTargetValue;
+ }
+
+ // Updating Epsilon
+ _hyperparameters["Epsilon"] = _policyEpsilonCurrentValue;
 }
 
 void DQN::evaluateAction(Sample &sample, bool getGradients)
@@ -88,15 +115,36 @@ void DQN::evaluateAction(Sample &sample, bool getGradients)
   }
 }
 
-void DQN::updatePolicyHyperparameters(const knlohmann::json &hyperparameters)
+std::vector<double> DQN::getTrainingAction(const std::vector<double> &state)
+{
+  // If we still do not have enough experiences to train the critic/policy, just return random action
+  if (_stateHistory.size() < _replayMemoryStartSize) return getRandomAction(state);
+
+  // Getting p = U[0,1] for the epsilon strategy
+  double p = _policyEpsilonGenerator->getRandomNumber();
+
+  // If p < e, then we choose the action randomly, with a uniform probability, among all possible actions.
+  // If no states have been registered yet, use the random option in any case
+  if (p < _policyEpsilonCurrentValue) return getRandomAction(state);
+
+  // Obtaining action from policy
+  auto action = queryPolicy(state);
+
+  // Checking for correctness of the action
+  for (size_t i = 0; i < action.size(); i++)
+  {
+    if (std::isfinite(action[i]) == false)
+      KORALI_LOG_ERROR(" + Action [%lu] is not finite (%f)\n", i, action[i]);
+  }
+
+  // Returning the action
+  return action;
+}
+
+void DQN::updateHyperparameters(const knlohmann::json &hyperparameters)
 {
   _criticLearner->setHyperparameters(hyperparameters["Critic"].get<std::vector<double>>());
   _policyEpsilonCurrentValue = hyperparameters["Epsilon"].get<double>();
-
-  // Re-initializing action noises to zero
-  size_t actionCount = _problem->_actionVectorIndexes.size();
-  _currentActionNoises.resize(actionCount);
-  for (size_t i = 0; i < actionCount; i++) _currentActionNoises[i] = 0.0;
 }
 
 std::vector<double> DQN::queryPolicy(const std::vector<double> &state)
@@ -109,6 +157,39 @@ std::vector<double> DQN::queryPolicy(const std::vector<double> &state)
 
   // Getting optimal action, based on the NN evaluation
   return _policyExperiment["Results"]["Best Sample"]["Parameters"].get<std::vector<double>>();
+}
+
+double DQN::stateValueFunction(const std::vector<double>& state)
+{
+ // We calculate V(s) = E_a( Q(s,a) | policy )
+
+ // First step: we run the optimization experiment to get Q(s,a) for all actions in the action space
+ _policyExperiment._globals["Current State"] = state;
+ korali::Engine engine;
+ engine.run(_policyExperiment);
+
+ // Storage to contain the sum of all e^(Q(s, a_i))
+ double sumExpQ = 0.0;
+
+ // Storage to contain the sum of all Q(s, a_i) * e^(Q(s, a_i))
+ double sumQExpQ = 0.0;
+
+ // Iterating among the entire Q vector for all actions to get the one that corresponds
+ // to the proposed action, and also to get the sum of all Q values
+ auto qVector = _policyExperiment["Solver"]["Objective"].get<std::vector<double>>();
+ for (size_t i = 0; i < qVector.size(); i++)
+ {
+  double curQ = qVector[i]; // Q(s,a)
+  double curExpQ = exp(curQ); // e^(Q(s,a))
+
+  sumQExpQ += curQ * curExpQ; // Q(s,a) * e^(Q(s,a))
+  sumExpQ += curExpQ;
+ }
+
+ // Calculating E_a (Q(s,a) | policy) = Sum(Q(s, a_i) * e^(Q(s, a_i))) / Sum(e^(Q(s, a_i)))
+ double expQ = sumQExpQ / sumExpQ;
+
+ return expQ;
 }
 
 double DQN::getStateActionProbabilityDensity(const std::vector<double>& state, const std::vector<double>& action)
@@ -138,7 +219,7 @@ double DQN::getStateActionProbabilityDensity(const std::vector<double>& state, c
  for (size_t i = 0; i < qVector.size(); i++)
   sumExpQ += exp(qVector[i]); // e^(Q(s,a))
 
- // Calculating pDensity = softmax of q(s,a)
+ // Calculating p(s,a) = q(s,a') softmax q(s,a)
  double pDensity = curExpQ / sumExpQ;
 
  return pDensity;
@@ -146,6 +227,7 @@ double DQN::getStateActionProbabilityDensity(const std::vector<double>& state, c
 
 void DQN::printPolicyInformation()
 {
+ _k->_logger->logInfo("Normal", " + Current Epsilon:                  %f -> %f\n", _policyEpsilonCurrentValue, _policyEpsilonTargetValue);
 }
 
 } // namespace agent

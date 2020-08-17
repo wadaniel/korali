@@ -56,11 +56,18 @@ class Agent : public Solver
   std::mt19937 *mt;
 
   /**
+   * @brief Gets a random action for the given state
+   * @param state The vector containing the current agent's state
+   * @return A vector containing the random action
+   */
+  std::vector<double> getRandomAction(const std::vector<double> &state);
+
+  /**
    * @brief Gets the next action for the agent, based on the state and current policy, for training purposes (may contain noise)
    * @param state The vector containing the current agent's state
    * @return A vector containing the action
    */
-  std::vector<double> getTrainingAction(const std::vector<double> &state);
+  virtual std::vector<double> getTrainingAction(const std::vector<double> &state) = 0;
 
   /**
    * @brief Gets the next action for the actor, based on the state and best policy, for inference purposes (may not contain noise)
@@ -87,7 +94,7 @@ class Agent : public Solver
    * @param state state to evaluate
    * @return The value of the V(s)
    */
-  double stateValueFunction(const std::vector<double>& state);
+  virtual double stateValueFunction(const std::vector<double>& state) = 0;
 
   /**
    * @brief Calculates the probability density of selecting the input state+action given the latest critic
@@ -113,13 +120,7 @@ class Agent : public Solver
   * @brief Updates the agent's hyperparameters
   * @param hyperparameters The hyperparameters to update the agent.
   */
-  void updateHyperparameters(const knlohmann::json &hyperparameters);
-
-  /**
-  * @brief Updates the policy's hyperparameters to calculate the next action of the agent
-  * @param hyperparameters The hyperparameters to update the policy.
-  */
-  virtual void updatePolicyHyperparameters(const knlohmann::json &hyperparameters) = 0;
+  virtual void updateHyperparameters(const knlohmann::json &hyperparameters) = 0;
 
   /**
   * @brief Normalizes neural network batch normalization mean and variances

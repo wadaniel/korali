@@ -7,7 +7,7 @@ import gym
 ######## Defining Environment Storage
 
 cart = gym.make('CartPole-v1').unwrapped
-maxSteps = 3000
+maxSteps = 1000
 
 ####### Defining Problem's environment
 
@@ -77,7 +77,7 @@ e["Solver"]["Replay Memory"]["Maximum Size"] = 150000
 ### Defining the configuration of the agent
 
 e["Solver"]["Agent"]["Episodes Per Generation"] = 5 
-e["Solver"]["Agent"]["Experience Limit"] = 1000
+e["Solver"]["Agent"]["Experience Limit"] = maxSteps
 
 ### Defining training policy configuration
 

@@ -72,10 +72,6 @@ e["Variables"][3]["Exploration Noise"]["Distribution"]["Mean"] = 0.0
 e["Variables"][3]["Exploration Noise"]["Distribution"]["Standard Deviation"] = 0.1
 e["Variables"][3]["Exploration Noise"]["Theta"] = 0.05
 
-#e["Solver"]["Policy"]["Epsilon"]["Initial Value"] = 1.0
-#e["Solver"]["Policy"]["Epsilon"]["Target Value"] = 0.05
-#e["Solver"]["Policy"]["Epsilon"]["Decrease Rate"] = 0.05
-
 ### Defining Agent Configuration 
 
 e["Solver"]["Type"] = "Agent/DDPG"

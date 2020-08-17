@@ -99,6 +99,7 @@ e["Solver"]["Replay Memory"]["Maximum Size"] = 100000
 
 ## Defining Critic Configuration
 
+e["Solver"]["Critic"]["Update Algorithm"] = "Retrace" 
 e["Solver"]["Critic"]["Optimization Steps"] = 50
 e["Solver"]["Critic"]["Optimizer"]["Type"] = "Optimizer/Adam"
 e["Solver"]["Critic"]["Optimizer"]["Eta"] = 0.01

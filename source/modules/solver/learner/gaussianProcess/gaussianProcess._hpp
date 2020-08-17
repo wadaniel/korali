@@ -1,7 +1,6 @@
 #ifndef _KORALI_SOLVER_GAUSSIAN_PROCESS_HPP_
 #define _KORALI_SOLVER_GAUSSIAN_PROCESS_HPP_
 
-#include "engine.hpp"
 #include "gp/gp.h"
 #include "modules/experiment/experiment.hpp"
 #include "modules/problem/supervisedLearning/supervisedLearning.hpp"
@@ -29,11 +28,6 @@ class GaussianProcess : public Learner
   * @brief Pointer to the gaussian processes library
   */
   std::unique_ptr<libgp::GaussianProcess> _gp;
-
-  /**
-  * @brief Korali engine for optimizing the GP's parameters
-  */
-  Engine _koraliEngine;
 
   /**
   * @brief Korali experiment for optimizing the GP's parameters

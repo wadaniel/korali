@@ -74,6 +74,41 @@ void DDPG::initializePolicy()
   _policyLearner->setHyperparameters(_hyperparameters["Policy"]);
 }
 
+std::vector<double> DDPG::getTrainingAction(const std::vector<double> &state)
+{
+  // If we still do not have enough experiences to train the critic/policy, just return random action
+  if (_stateHistory.size() < _replayMemoryStartSize) return getRandomAction(state);
+
+  // Obtaining action from policy
+  auto action = queryPolicy(state);
+
+  // Checking for correctness of the action
+  for (size_t i = 0; i < action.size(); i++)
+  {
+    if (std::isfinite(action[i]) == false)
+      KORALI_LOG_ERROR(" + Action [%lu] is not finite (%f)\n", i, action[i]);
+  }
+
+  // Introducing random noise to the action
+  for (size_t i = 0; i < _problem->_actionVectorIndexes.size(); i++)
+  {
+    size_t varIdx = _problem->_actionVectorIndexes[i];
+
+    // Check whether the variable requires noise
+    if (_k->_variables[varIdx]->_explorationNoiseEnabled == true)
+    {
+      double w = _k->_variables[varIdx]->_explorationNoiseDistribution->getRandomNumber();
+      double noise = _k->_variables[varIdx]->_explorationNoiseTheta * _currentActionNoises[i] + w;
+      action[i] += noise;
+      //printf("Theta (%f) * Previous Noise: (%f) + W: (%f) = %f\n",  _k->_variables[varIdx]->_explorationNoiseTheta, _currentActionNoises[i], w, noise);
+      _currentActionNoises[i] = noise;
+    }
+  }
+
+  // Returning the action
+  return action;
+}
+
 void DDPG::trainPolicy()
 {
   /***********************************************************************************
@@ -129,9 +164,73 @@ void DDPG::trainPolicy()
   _policyLearner->setHyperparameters(policyHypeparameters);
 }
 
+double DDPG::stateValueFunction(const std::vector<double>& state)
+{
+ auto curPolicyAction = queryPolicy(state);
+
+ double vValue = 0.0;
+
+ for (size_t iter = 0; iter < _stateValueFunctionSamples; iter++)
+ {
+  // Creating action based on the one given by the policy.
+  auto evalAction = curPolicyAction;
+
+  // Storage for the total action probability
+  double pAction = 1.0;
+
+  for (size_t i = 0; i < evalAction.size(); i++)
+  {
+   // Getting noise from the given action variable
+   size_t varIdx = _problem->_actionVectorIndexes[i];
+   double noise = _k->_variables[varIdx]->_explorationNoiseDistribution->getRandomNumber();
+
+   // Adding noise to the action to evaluate
+   evalAction[i] += noise;
+
+   // Calculating the probability density of having produced the noise
+   double pNoise = _k->_variables[varIdx]->_explorationNoiseDistribution->getDensity(noise);
+
+   // Factoring the noise probability into the action probability, assuming independence
+   pAction *= pNoise;
+  }
+
+  // Evaluating Q(s,a) for the given action
+  double qValue = stateActionValueFunction(state, evalAction);
+
+  // Now calculating pAction*Q(s,action) and adding it to V(s,a)
+  vValue += pAction*qValue;
+ }
+
+ // Now averaging the V(s) over all sampled actions
+ vValue = vValue / _stateValueFunctionSamples;
+
+ return vValue;
+}
+
 double DDPG::getStateActionProbabilityDensity(const std::vector<double>& state, const std::vector<double>& action)
 {
- return 1.0;
+ // To calculate the probability density, we first subtract the taken action from the one that
+ // the current policy would take. This will give us a value with zero mean, and with sigma
+ // equivalent to the noise introduced.
+
+ auto curPolicyAction = queryPolicy(state);
+
+ double pDensity = 1.0;
+
+ for (size_t i = 0; i < action.size(); i++)
+ {
+  // Getting the difference (noise) between used action and current policy action
+  double noise = action[i] - curPolicyAction[i];
+
+  // Getting the probability density of such noise for the current variable.
+  size_t varIdx = _problem->_actionVectorIndexes[i];
+  double pNoise = _k->_variables[varIdx]->_explorationNoiseDistribution->getDensity(noise);
+
+  // Since we assume independent noise among variables, we can multiply them directly.
+  pDensity = pDensity * pNoise;
+ }
+
+ return pDensity;
 }
 
 std::vector<double> DDPG::queryPolicy(const std::vector<double> &state)
@@ -139,10 +238,9 @@ std::vector<double> DDPG::queryPolicy(const std::vector<double> &state)
   return _policyLearner->getEvaluation({state});
 }
 
-void DDPG::updatePolicyHyperparameters(const knlohmann::json &hyperparameters)
+void DDPG::updateHyperparameters(const knlohmann::json &hyperparameters)
 {
   _policyLearner->setHyperparameters(hyperparameters["Policy"].get<std::vector<double>>());
-  _policyEpsilonCurrentValue = hyperparameters["Epsilon"].get<double>();
 
   // Re-initializing action noises to zero
   size_t actionCount = _problem->_actionVectorIndexes.size();

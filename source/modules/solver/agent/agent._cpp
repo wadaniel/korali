@@ -54,17 +54,17 @@ void Agent::initialize()
   if (_k->_currentGeneration == 0)
   {
     _currentEpisode = 0;
-    _suboptimalStepCounter = 0;
     _optimizationStepCount = 0;
+    _candidatePoliciesTested = 0;
+    _currentSampleID = 0;
 
-    // Initialize best reward
-    _bestAverageReward = -korali::Inf;
+    // Initialize best rewards
+    _averageTestingReward = -korali::Inf;
+    _bestAverageTrainingReward = -korali::Inf;
+    _bestAverageTestingReward = -korali::Inf;
 
     // Getting Critic's hyperparameters
     _hyperparameters["Critic"] = _criticLearner->getHyperparameters();
-
-    // Get the initial set of hyperparameters
-    _bestHyperparameters = _hyperparameters;
   }
 
   // Setting Critic's hyperparameters
@@ -87,9 +87,9 @@ void Agent::runGeneration()
   for (size_t i = 0; i < _agentEpisodesPerGeneration; i++)
   {
     // Configuring Agent
-    agents[i]["Sample Id"] = _k->_currentGeneration * _agentEpisodesPerGeneration + i;
+    agents[i]["Sample Id"] = _currentSampleID++;
     agents[i]["Module"] = "Problem";
-    agents[i]["Operation"] = "Run Environment";
+    agents[i]["Operation"] = "Run Training";
 
     // Launching agent initialization
     KORALI_START(agents[i]);
@@ -151,30 +151,58 @@ void Agent::runGeneration()
     _terminalHistory.erase(_terminalHistory.begin(), _terminalHistory.begin() + excess);
   }
 
-  // If the minimum number of experiences have been reached update the algorithm-specific method
-  if (_stateHistory.size() >= _replayMemoryStartSize)
+  // If the minimum number of experiences has not yet been reached, there's not much else to do
+  if (_stateHistory.size() < _replayMemoryStartSize) return;
+
+  // Updating best reward so far, it the cumulative reward of this round exceeds it
+  // and store the best hyperparameters used for that
+  _averageTrainingReward = cumulativeReward / (double)_agentEpisodesPerGeneration;
+
+  // Updating if exceeded best training policy so far.
+  if (_averageTrainingReward > _bestAverageTrainingReward) _bestAverageTrainingReward = _averageTrainingReward;
+
+  // If the policy has exceeded the threshold during training, it is time to test it properly (without noise)
+  // Otherwise, let current testing reward remain as -inf.
+  if (_averageTrainingReward > _averageTrainingRewardThreshold)
   {
-    trainCritic();
-    trainPolicy();
+   // Increasing tested policy counter
+   _candidatePoliciesTested++;
 
-    // Storing new Critic's hyperparameters
-    _hyperparameters["Critic"] = _criticLearner->getHyperparameters();
+   // Creating storage for agents
+   std::vector<Sample> tests(_policyTestingEpisodes);
 
-    // Updating best reward so far, it the cumulative reward of this round exceeds it
-    // and store the best hyperparameters used for that
-    _averageReward = cumulativeReward / (double)_agentEpisodesPerGeneration;
-    if (_averageReward > _bestAverageReward)
-    {
-      _bestAverageReward = _averageReward;
-      _bestHyperparameters = _hyperparameters;
-      _suboptimalStepCounter = 0;
-    }
-    else
-    {
-      // If not better, then increase the suboptimal step counter
-      _suboptimalStepCounter++;
-    }
+   // Initializing the agents and their environments
+   for (size_t i = 0; i < _policyTestingEpisodes; i++)
+   {
+     // Configuring Agent
+    tests[i]["Sample Id"] = _currentSampleID++;
+    tests[i]["Module"] = "Problem";
+    tests[i]["Operation"] = "Run Testing";
+
+     // Launching agent initialization
+     KORALI_START(tests[i]);
+   }
+
+   KORALI_WAITALL(tests);
+
+   // Calculating average testing reward
+   _averageTestingReward = 0.0;
+   for (size_t i = 0; i < _policyTestingEpisodes; i++)
+    _averageTestingReward += tests[i]["Cumulative Reward"].get<double>();
+   _averageTestingReward = _averageTestingReward / _policyTestingEpisodes;
   }
+
+  // If the average testing reward is better than the previous best, replace it
+  // and store hyperparameters as best so far.
+  if (_averageTestingReward > _bestAverageTestingReward) _bestAverageTestingReward = _averageTestingReward;
+
+  // If we reached our target testing reward, there's nothing else to do
+  if (_targetAverageTestingReward > -korali::Inf)
+   if (_bestAverageTestingReward >= _targetAverageTestingReward) return;
+
+  // Otherwise, continue training critic and policy.
+  trainCritic();
+  trainPolicy();
 }
 
 std::vector<double> Agent::getRandomAction(const std::vector<double> &state)
@@ -300,6 +328,7 @@ void Agent::trainCritic()
       {
        // Reward is the first factor in the QLearning algorithm
        qStar = _rewardHistory[expId];
+
        // If state is not terminal (next state is filled) then add Qnew to the Q value.
        if (_terminalHistory[expId] == false) qStar += _criticDiscountFactor * stateValueFunction(_stateHistory[expId + 1]);
       }
@@ -333,6 +362,9 @@ void Agent::trainCritic()
  ******************************************************************************/
 
   normalizeNeuralNetwork(_criticLearner->_trainingNeuralNetwork);
+
+  // Storing new Critic's hyperparameters
+  _hyperparameters["Critic"] = _criticLearner->getHyperparameters();
 }
 
 void Agent::normalizeNeuralNetwork(korali::NeuralNetwork *nn)
@@ -389,9 +421,6 @@ void Agent::normalizeNeuralNetwork(korali::NeuralNetwork *nn)
 
 std::vector<double> Agent::getInferenceAction(const std::vector<double> &state)
 {
-  // Updating the policy's hyperparameters with the best we found so far
-  updateHyperparameters(_bestHyperparameters);
-
   // Querying the policy for the action, given the state
   auto action = queryPolicy(state);
 
@@ -403,7 +432,7 @@ void Agent::printGenerationAfter()
 {
   _k->_logger->logInfo("Normal", "Replay Experience Statistics:\n");
 
-  _k->_logger->logInfo("Normal", " + Experience Memory Size:          %lu/%lu\n", _stateHistory.size(), _replayMemoryMaximumSize);
+  _k->_logger->logInfo("Normal", " + Experience Memory Size:            %lu/%lu\n", _stateHistory.size(), _replayMemoryMaximumSize);
 
   if (_maxEpisodes > 0)
     _k->_logger->logInfo("Normal", " + Total Episodes Count:            %lu/%lu\n", _currentEpisode, _maxEpisodes);
@@ -421,17 +450,19 @@ void Agent::printGenerationAfter()
 
   _k->_logger->logInfo("Normal", "Training Statistics:\n");
 
-  _k->_logger->logInfo("Normal", " + Average Reward:                  %f\n", _averageReward);
+  _k->_logger->logInfo("Normal", " + Average Training Reward:         %f/%f\n", _averageTrainingReward, _averageTrainingRewardThreshold);
+  _k->_logger->logInfo("Normal", " + Best Average Training Reward:    %f\n", _bestAverageTrainingReward);
 
-  if (_targetAverageReward > -korali::Inf)
-    _k->_logger->logInfo("Normal", " + Best Average Reward:             %f/%f\n", _bestAverageReward, _targetAverageReward);
-  else
-    _k->_logger->logInfo("Normal", " + Best Average Reward:             %f\n", _bestAverageReward);
+  _k->_logger->logInfo("Normal", "Testing Statistics:\n");
 
-  if (_maxSuboptimalSteps > 0)
-    _k->_logger->logInfo("Normal", " + Steps with Suboptimal Reward:    %lu/%lu\n", _suboptimalStepCounter, _maxSuboptimalSteps);
+  _k->_logger->logInfo("Normal", " + Candidate Policies Tested:       %lu\n", _candidatePoliciesTested);
+
+  _k->_logger->logInfo("Normal", " + Latest Average Testing Reward:   %f\n", _averageTestingReward);
+
+  if (_targetAverageTestingReward > -korali::Inf)
+    _k->_logger->logInfo("Normal", " + Best Average Testing Reward:     %f/%f\n", _bestAverageTestingReward, _targetAverageTestingReward);
   else
-    _k->_logger->logInfo("Normal", " + Steps with Suboptimal Reward:    %lu\n", _suboptimalStepCounter);
+    _k->_logger->logInfo("Normal", " + Best Average Testing Reward:     %f\n", _bestAverageTestingReward);
 
   _k->_logger->logInfo("Normal", "Critic Information:\n");
 

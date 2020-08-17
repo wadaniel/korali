@@ -52,7 +52,10 @@ void __environmentWrapper()
   KORALI_LOG_ERROR("Resuming a finished sample\n");
 }
 
-void ReinforcementLearning::runEnvironment(Sample &sample)
+
+void ReinforcementLearning::runTrainingSample(Sample &sample) { runEnvironment(sample, true); }
+void ReinforcementLearning::runTestingSample(Sample &sample) { runEnvironment(sample, false); }
+void ReinforcementLearning::runEnvironment(Sample &sample, bool useTrainingAction)
 {
   // Getting RL-compatible solver
   auto agent = dynamic_cast<solver::Agent *>(_k->_solver);
@@ -92,7 +95,11 @@ void ReinforcementLearning::runEnvironment(Sample &sample)
     // Requesting new action, if enough steps have passed, given by the action repeat parameter
     if (actionLastUpdated == 0)
     {
-      action = agent->getTrainingAction(state);
+      if (useTrainingAction == true)
+       action = agent->getTrainingAction(state);
+      else
+       action = agent->getInferenceAction(state);
+
       actionLastUpdated = _actionRepeat;
     }
     actionLastUpdated--;

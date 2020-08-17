@@ -1,4 +1,4 @@
-#include "modules/conduit/conduit.hpp"
+#include "engine.hpp"
 #include "modules/distribution/univariate/uniform/uniform.hpp"
 #include "modules/experiment/experiment.hpp"
 #include "modules/solver/sampler/Nested/Nested.hpp"
@@ -180,7 +180,7 @@ void Nested::runGeneration()
       priorTransform(sample);
       samples[c]["Parameters"] = sample;
       samples[c]["Sample Id"] = c;
-      _conduit->start(samples[c]);
+      KORALI_START(samples[c]);
       _modelEvaluationCount++;
       _generatedSamples++;
     }
@@ -188,7 +188,7 @@ void Nested::runGeneration()
     size_t finishedCandidatesCount = 0;
     while (finishedCandidatesCount < _batchSize)
     {
-      size_t finishedId = _conduit->waitAny(samples);
+      size_t finishedId = KORALI_WAITANY(samples);
 
       auto candidate = KORALI_GET(std::vector<double>, samples[finishedId], "Parameters");
       _candidateLogPriors[finishedId] = KORALI_GET(double, samples[finishedId], "logPrior");
@@ -223,7 +223,7 @@ void Nested::runFirstGeneration()
     priorTransform(sample);
     samples[c]["Parameters"] = sample;
     samples[c]["Sample Id"] = c;
-    _conduit->start(samples[c]);
+    KORALI_START(samples[c]);
     _modelEvaluationCount++;
     _generatedSamples++;
   }
@@ -231,7 +231,7 @@ void Nested::runFirstGeneration()
   size_t finishedCandidatesCount = 0;
   while (finishedCandidatesCount < _numberLivePoints)
   {
-    size_t finishedId = _conduit->waitAny(samples);
+    size_t finishedId = KORALI_WAITANY(samples);
 
     auto sample = KORALI_GET(std::vector<double>, samples[finishedId], "Parameters");
     _liveLogPriors[finishedId] = KORALI_GET(double, samples[finishedId], "logPrior");
@@ -431,7 +431,7 @@ void Nested::generateCandidatesFromMultiEllipse()
     double cumVol = 0.0;
     double rnd_ellipse = _uniformGenerator->getRandomNumber() * totalVol;
 
-    ellipse_t *ellipse_ptr;
+    ellipse_t *ellipse_ptr = NULL;
     for (auto &ellipse : _ellipseVector)
     {
       cumVol += ellipse.volume;
@@ -441,6 +441,9 @@ void Nested::generateCandidatesFromMultiEllipse()
         break;
       }
     }
+
+    if (ellipse_ptr == NULL)
+      KORALI_LOG_ERROR("Failed to assign ellipse vector.");
 
     bool accept = false;
     while (accept == false)

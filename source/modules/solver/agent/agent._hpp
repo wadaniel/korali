@@ -3,7 +3,10 @@
 
 #include "engine.hpp"
 #include "modules/problem/reinforcementLearning/reinforcementLearning.hpp"
-#include "modules/solver/solver.hpp"
+#include "modules/problem/supervisedLearning/supervisedLearning.hpp"
+#include "modules/solver/learner/deepGD/deepGD.hpp"
+#include <algorithm> // std::shuffle
+#include <random>
 
 namespace korali
 {
@@ -13,32 +16,108 @@ class Agent : public Solver
 {
   public:
   /**
+ * @brief Korali engine for running internal experiments
+ */
+  korali::Engine _engine;
+
+  /**
+   * @brief Variable to keep track of the current noise added to the action
+   */
+  std::vector<double> _currentActionNoises;
+
+  /**
+   * @brief Pointer to training experiment's problem
+   */
+  problem::SupervisedLearning *_criticProblem;
+
+  /**
+  * @brief Pointer to training experiment's learner
+  */
+  learner::DeepGD *_criticLearner;
+
+  /**
+   * @brief Korali experiment for the training of the Qvalue-estimator
+   */
+  korali::Experiment _criticExperiment;
+
+  /**
   * @brief Storage for the pointer to the learning problem
   */
   problem::ReinforcementLearning *_problem;
 
   /**
-   * @brief Gets the next action for the actor, based on a sample containing a state, from inside Korali
-   * @param sample the sample containing the state and other required information
+   * @brief Random device for the generation of shuffling numbers
    */
-  virtual void getAction(Sample &sample) = 0;
+  std::random_device rd;
 
   /**
-   * @brief Gets the next action for the actor, based on the state, as requested by the user
-   * @param state The vector containing the state and other required information
+  * @brief Mersenne twister for the generation of shuffling numbers
+  */
+  std::mt19937 *mt;
+
+  /**
+   * @brief Gets the next action for the agent, based on the state and current policy, for training purposes (may contain noise)
+   * @param state The vector containing the current agent's state
    * @return A vector containing the action
    */
-  virtual std::vector<double> getAction(const std::vector<double> &state) = 0;
+  std::vector<double> getTrainingAction(const std::vector<double> &state);
 
   /**
-  * @brief Updates the algorithm's policy, based on the new experiences
+   * @brief Gets the next action for the actor, based on the state and best policy, for inference purposes (may not contain noise)
+   * @param state The vector containing the current agent's state
+   * @return A vector containing the action
+   */
+  std::vector<double> getInferenceAction(const std::vector<double> &state);
+
+  /**
+  * @brief Trains the algorithm's critic (Q), based on the new experiences
   */
-  virtual void updatePolicy() = 0;
+  void trainCritic();
+
+  /**
+  * @brief Performs the training of the algorithm's policy, based on the new experiences
+  */
+  virtual void trainPolicy() = 0;
+
+  /**
+  * @brief Updates the agent's hyperparameters
+  * @param hyperparameters The hyperparameters to update the agent.
+  */
+  void updateHyperparameters(const knlohmann::json &hyperparameters);
+
+  /**
+  * @brief Updates the policy's hyperparameters to calculate the next action of the agent
+  * @param hyperparameters The hyperparameters to update the policy.
+  */
+  virtual void updatePolicyHyperparameters(const knlohmann::json &hyperparameters) = 0;
+
+  /**
+  * @brief Normalizes neural network batch normalization mean and variances
+  * @param nn The neural network to normalize
+  */
+  void normalizeNeuralNetwork(korali::NeuralNetwork *nn);
+
+  /**
+  * @brief Function to query policy and get the best action for the given state
+  * @param state The input state
+  * @return The action, given by the policy, corresponding to the state and the current policy hyperparameters
+  */
+  virtual std::vector<double> queryPolicy(const std::vector<double> &state) = 0;
+
+  /**
+    * @brief Initializes the internal state of the policy
+    */
+  virtual void initializePolicy() = 0;
 
   /**
  * @brief Runs a generation of the environment(s), running an action on each episode, and updating the policy.
  */
   void runGeneration() override;
+
+  /**
+   * @brief Prints information about the training policy
+   */
+  virtual void printPolicyInformation() = 0;
 
   void printGenerationAfter() override;
   void initialize() override;

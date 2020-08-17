@@ -73,27 +73,16 @@ void Engine::run()
   if (_isDryRun) return;
 
   // Only initialize conduit if the Engine being ran is the first one in the process
-  if (_conduit == NULL)
-  {
-    try
-    {
-      // Configuring conduit
-      auto conduit = dynamic_cast<Conduit *>(getModule(_js["Conduit"], _k));
+  auto conduit = dynamic_cast<Conduit *>(getModule(_js["Conduit"], _k));
 
-      // Initializing conduit server
-      conduit->initServer();
+  // Initializing conduit server
+  conduit->initServer();
 
-      // Assigning pointer after starting workers, so they can initialize their own conduit
-      _conduit = conduit;
+  // Assigning pointer after starting workers, so they can initialize their own conduit
+  _conduit = conduit;
 
-      // Recovering Conduit configuration in case of restart
-      _conduit->getConfiguration(_js.getJson()["Conduit"]);
-    }
-    catch (const std::exception &e)
-    {
-      KORALI_LOG_ERROR("Could not initialize execution conduit. Reason:\n%s", e.what());
-    }
-  }
+  // Recovering Conduit configuration in case of restart
+  _conduit->getConfiguration(_js.getJson()["Conduit"]);
 
   if (_conduit->isRoot())
   {
@@ -138,11 +127,7 @@ void Engine::run()
   }
 
   // Finalizing Conduit if last engine in the stack
-  if (_engineStack.size() == 0)
-  {
-    _conduit->finalize();
-    _conduit = NULL;
-  }
+  _conduit->finalize();
 }
 
 void Engine::saveProfilingInfo(const bool forceSave)

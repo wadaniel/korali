@@ -13,12 +13,20 @@ rm -rf _korali_result*; check_result
  
 echo "  + Creating test files..."
 
-sed -e 's%Defining Termination Criteria%Defining Termination Criteria\ne["Solver"]["Termination Criteria"]["Max Generations"] = 20\n%g' \
-        run-dqn.py > __test-dqn.py; check_result
+rm -rf __test-*; check_result
+
+for file in *.py
+do
+ sed -e 's%Defining Termination Criteria%Defining Termination Criteria\ne["Solver"]["Termination Criteria"]["Max Generations"] = 50\n%g' \
+        ${file} > __test-${file}; check_result
+done
 
 ##### Running Test
 
-OMP_NUM_THREADS=4 python3 ./__test-dqn.py; check_result
+for file in __test-*.py
+do
+ OMP_NUM_THREADS=4 python3 ${file}; check_result
+done
 
 ##### Deleting Tests
 

@@ -1,4 +1,4 @@
-#include "modules/conduit/conduit.hpp"
+#include "engine.hpp"
 #include "modules/solver/executor/executor.hpp"
 
 namespace korali
@@ -33,11 +33,11 @@ void Executor::runGeneration()
     samples[i]["Operation"] = "Execute";
     samples[i]["Parameters"] = sampleData;
     samples[i]["Sample Id"] = _modelEvaluationCount;
-    _conduit->start(samples[i]);
+    KORALI_START(samples[i]);
     _modelEvaluationCount++;
   }
 
-  _conduit->waitAll(samples);
+  KORALI_WAITALL(samples);
 }
 
 void Executor::printGenerationBefore()

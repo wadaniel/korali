@@ -1,7 +1,6 @@
 #ifndef _KORALI_AGENT_HPP_
 #define _KORALI_AGENT_HPP_
 
-#include "engine.hpp"
 #include "modules/problem/reinforcementLearning/reinforcementLearning.hpp"
 #include "modules/problem/supervisedLearning/supervisedLearning.hpp"
 #include "modules/solver/learner/deepGD/deepGD.hpp"
@@ -15,11 +14,6 @@ namespace solver
 class Agent : public Solver
 {
   public:
-  /**
- * @brief Korali engine for running internal experiments
- */
-  korali::Engine _engine;
-
   /**
    * @brief Variable to keep track of the current noise added to the action
    */

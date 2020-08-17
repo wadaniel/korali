@@ -37,7 +37,8 @@ void Agent::initialize()
   }
 
   // Running initialization to verify that the configuration is correct
-  _engine.initialize(_criticExperiment);
+  korali::Engine engine;
+  engine.initialize(_criticExperiment);
 
   // Getting learner pointers
   _criticProblem = dynamic_cast<problem::SupervisedLearning *>(_criticExperiment._problem);
@@ -350,7 +351,8 @@ void Agent::trainCritic()
     // Running one generation of the optimization method with the given mini-batch
     _criticExperiment["Solver"]["Termination Criteria"]["Max Generations"] = _criticExperiment._currentGeneration + 1;
     _criticLearner->initialize();
-    _engine.resume(_criticExperiment);
+    korali::Engine engine;
+    engine.resume(_criticExperiment);
 
     // Increasing optimization step counter
     _optimizationStepCount++;

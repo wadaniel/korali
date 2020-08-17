@@ -4,6 +4,7 @@
 #include "modules/experiment/experiment.hpp"
 #include "modules/problem/problem.hpp"
 #include "modules/solver/solver.hpp"
+#include <vector>
 
 namespace korali
 {

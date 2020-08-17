@@ -7,7 +7,7 @@ import gym
 ######## Defining Environment Storage
 
 cart = gym.make('CartPole-v1').unwrapped
-maxSteps = 3000
+maxSteps = 1000
 
 ####### Defining Problem's environment
 
@@ -71,13 +71,13 @@ e["Solver"]["Type"] = "Agent/DQN"
 
 ### Defining Replay Memory configuration
 
-e["Solver"]["Replay Memory"]["Start Size"] = 5000
+e["Solver"]["Replay Memory"]["Start Size"] = 500
 e["Solver"]["Replay Memory"]["Maximum Size"] = 150000
 
 ### Defining the configuration of the agent
 
 e["Solver"]["Agent"]["Episodes Per Generation"] = 5 
-e["Solver"]["Agent"]["Experience Limit"] = 1000
+e["Solver"]["Agent"]["Experience Limit"] = maxSteps
 
 ### Defining training policy configuration
 
@@ -89,7 +89,8 @@ e["Solver"]["Policy"]["Epsilon"]["Decrease Rate"] = 0.05
 ## Defining Q-Critic and Action-selection (policy) optimizers
 
 e["Solver"]["Critic"]["Mini Batch Size"] = 32
-e["Solver"]["Critic"]["Discount Factor"] = 0.99 
+e["Solver"]["Critic"]["Discount Factor"] = 0.99
+e["Solver"]["Critic"]["Update Algorithm"] = "Retrace" 
 e["Solver"]["Critic"]["Optimizer"]["Type"] = "Optimizer/Adam"
 e["Solver"]["Critic"]["Optimizer"]["Eta"] = 0.1
 e["Solver"]["Critic"]["Optimization Steps"] = 5

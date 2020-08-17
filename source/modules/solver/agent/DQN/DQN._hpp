@@ -24,8 +24,11 @@ class DQN : public Agent
    */
   void evaluateAction(Sample &sample, bool getGradients);
 
+  std::vector<double> getTrainingAction(const std::vector<double> &state) override;
+  double stateValueFunction(const std::vector<double>& state) override;
+  double getStateActionProbabilityDensity(const std::vector<double>& state, const std::vector<double>& action) override;
   std::vector<double> queryPolicy(const std::vector<double> &state) override;
-  void updatePolicyHyperparameters(const knlohmann::json &hyperparameters) override;
+  void updateHyperparameters(const knlohmann::json &hyperparameters) override;
   void trainPolicy() override;
   void printPolicyInformation() override;
   void initializePolicy() override;

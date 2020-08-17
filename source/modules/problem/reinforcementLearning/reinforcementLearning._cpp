@@ -52,7 +52,6 @@ void __environmentWrapper()
   KORALI_LOG_ERROR("Resuming a finished sample\n");
 }
 
-
 void ReinforcementLearning::runTrainingSample(Sample &sample) { runEnvironment(sample, true); }
 void ReinforcementLearning::runTestingSample(Sample &sample) { runEnvironment(sample, false); }
 void ReinforcementLearning::runEnvironment(Sample &sample, bool useTrainingAction)
@@ -96,9 +95,9 @@ void ReinforcementLearning::runEnvironment(Sample &sample, bool useTrainingActio
     if (actionLastUpdated == 0)
     {
       if (useTrainingAction == true)
-       action = agent->getTrainingAction(state);
+        action = agent->getTrainingAction(state);
       else
-       action = agent->getInferenceAction(state);
+        action = agent->getInferenceAction(state);
 
       actionLastUpdated = _actionRepeat;
     }

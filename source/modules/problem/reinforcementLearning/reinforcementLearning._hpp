@@ -28,6 +28,7 @@ class ReinforcementLearning : public korali::Problem
   /**
    * @brief Runs an episode of the agent within the environment
    * @param sample Sample containing current agent/state information.
+   * @param useTrainingAction A flag to indicate whether this is a training run (with noise) or an inference run (without noise)
    */
   void runEnvironment(korali::Sample &sample, bool useTrainingAction);
 };

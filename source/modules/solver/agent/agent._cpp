@@ -166,31 +166,31 @@ void Agent::runGeneration()
   // Otherwise, let current testing reward remain as -inf.
   if (_averageTrainingReward > _averageTrainingRewardThreshold)
   {
-   // Increasing tested policy counter
-   _candidatePoliciesTested++;
+    // Increasing tested policy counter
+    _candidatePoliciesTested++;
 
-   // Creating storage for agents
-   std::vector<Sample> tests(_policyTestingEpisodes);
+    // Creating storage for agents
+    std::vector<Sample> tests(_policyTestingEpisodes);
 
-   // Initializing the agents and their environments
-   for (size_t i = 0; i < _policyTestingEpisodes; i++)
-   {
-     // Configuring Agent
-    tests[i]["Sample Id"] = _currentSampleID++;
-    tests[i]["Module"] = "Problem";
-    tests[i]["Operation"] = "Run Testing";
+    // Initializing the agents and their environments
+    for (size_t i = 0; i < _policyTestingEpisodes; i++)
+    {
+      // Configuring Agent
+      tests[i]["Sample Id"] = _currentSampleID++;
+      tests[i]["Module"] = "Problem";
+      tests[i]["Operation"] = "Run Testing";
 
-     // Launching agent initialization
-     KORALI_START(tests[i]);
-   }
+      // Launching agent initialization
+      KORALI_START(tests[i]);
+    }
 
-   KORALI_WAITALL(tests);
+    KORALI_WAITALL(tests);
 
-   // Calculating average testing reward
-   _averageTestingReward = 0.0;
-   for (size_t i = 0; i < _policyTestingEpisodes; i++)
-    _averageTestingReward += tests[i]["Cumulative Reward"].get<double>();
-   _averageTestingReward = _averageTestingReward / _policyTestingEpisodes;
+    // Calculating average testing reward
+    _averageTestingReward = 0.0;
+    for (size_t i = 0; i < _policyTestingEpisodes; i++)
+      _averageTestingReward += tests[i]["Cumulative Reward"].get<double>();
+    _averageTestingReward = _averageTestingReward / _policyTestingEpisodes;
   }
 
   // If the average testing reward is better than the previous best, replace it
@@ -199,7 +199,7 @@ void Agent::runGeneration()
 
   // If we reached our target testing reward, there's nothing else to do
   if (_targetAverageTestingReward > -korali::Inf)
-   if (_bestAverageTestingReward >= _targetAverageTestingReward) return;
+    if (_bestAverageTestingReward >= _targetAverageTestingReward) return;
 
   // Otherwise, continue training critic and policy.
   trainCritic();
@@ -208,7 +208,7 @@ void Agent::runGeneration()
 
 std::vector<double> Agent::getRandomAction(const std::vector<double> &state)
 {
- // Storage for action
+  // Storage for action
   std::vector<double> randomAction(_problem->_actionVectorSize);
 
   for (size_t i = 0; i < _problem->_actionVectorSize; i++)
@@ -234,62 +234,60 @@ std::vector<double> Agent::getRandomAction(const std::vector<double> &state)
   return randomAction;
 }
 
-double Agent::stateActionValueFunction(const std::vector<double>& state, const std::vector<double>& action)
+double Agent::stateActionValueFunction(const std::vector<double> &state, const std::vector<double> &action)
 {
- // Storage to put together state and action
- std::vector<double> stateActionInput(_problem->_stateVectorSize + _problem->_actionVectorSize);
+  // Storage to put together state and action
+  std::vector<double> stateActionInput(_problem->_stateVectorSize + _problem->_actionVectorSize);
 
- // Forward propagating state/action through the critic
- for (size_t j = 0; j < state.size(); j++) stateActionInput[j] = state[j];
- for (size_t j = 0; j < action.size(); j++) stateActionInput[j + state.size()] = action[j];
- auto evaluation = _criticLearner->getEvaluation(stateActionInput);
+  // Forward propagating state/action through the critic
+  for (size_t j = 0; j < state.size(); j++) stateActionInput[j] = state[j];
+  for (size_t j = 0; j < action.size(); j++) stateActionInput[j + state.size()] = action[j];
+  auto evaluation = _criticLearner->getEvaluation(stateActionInput);
 
- // Getting the value of V(Xt), i.e., Q(xt, best action)
- return evaluation[0];
+  // Getting the value of V(Xt), i.e., Q(xt, best action)
+  return evaluation[0];
 }
 
 double Agent::retraceFunction(size_t expId)
 {
- // Going straight to the latest experience in the corresponding episode
- size_t curId = expId;
- while (_terminalHistory[curId] == false) curId++;
- //printf("For experience %lu, the last experience in its episode is: %lu\n", expId, curId);
+  // Going straight to the latest experience in the corresponding episode
+  size_t curId = expId;
+  while (_terminalHistory[curId] == false) curId++;
+  //printf("For experience %lu, the last experience in its episode is: %lu\n", expId, curId);
 
- // First, get the retrace value for the last experience (just the reward)
- double retraceValue = _rewardHistory[curId];
+  // First, get the retrace value for the last experience (just the reward)
+  double retraceValue = _rewardHistory[curId];
 
- // Now going backwards from the last, calculating the retrace value of each experience, one by one
- while (curId > expId)
- {
-  // Decreasing index
-  curId--;
+  // Now going backwards from the last, calculating the retrace value of each experience, one by one
+  while (curId > expId)
+  {
+    // Decreasing index
+    curId--;
 
-  // Getting Q(s+1, a+1) for the selected experience
-  double qNextState = stateActionValueFunction(_stateHistory[curId+1], _actionHistory[curId+1]);
+    // Getting Q(s+1, a+1) for the selected experience
+    double qNextState = stateActionValueFunction(_stateHistory[curId + 1], _actionHistory[curId + 1]);
 
-  // Getting V(s+1) for the selected experience
-  double vNextState = stateValueFunction(_stateHistory[curId+1]);
+    // Getting V(s+1) for the selected experience
+    double vNextState = stateValueFunction(_stateHistory[curId + 1]);
 
-  // Getting p(s,a) for selected experience, given the old policy
-  double pOldExp = _probabilityDensityHistory[curId];
+    // Getting p(s,a) for selected experience, given the old policy
+    double pOldExp = _probabilityDensityHistory[curId];
 
-  // Getting p(s,a) for the best action, given the current policy
-  double pCurExp = getStateActionProbabilityDensity(_stateHistory[curId], _actionHistory[curId]);
+    // Getting p(s,a) for the best action, given the current policy
+    double pCurExp = getStateActionProbabilityDensity(_stateHistory[curId], _actionHistory[curId]);
 
-  // Now calculating importance weight, truncating it to avoid exploding values, and then multiplying it by lambda
-  double importanceWeight = _importanceWeightLambda * std::min(_importanceWeightTruncation, (pCurExp / pOldExp));
+    // Now calculating importance weight, truncating it to avoid exploding values, and then multiplying it by lambda
+    double importanceWeight = _importanceWeightLambda * std::min(_importanceWeightTruncation, (pCurExp / pOldExp));
 
-  // printf("Importance Weight: %f\n", importanceWeight);
+    // printf("Importance Weight: %f\n", importanceWeight);
 
-  retraceValue = _rewardHistory[curId]
-                 + _criticDiscountFactor * importanceWeight * (retraceValue - qNextState)
-                 + _criticDiscountFactor * vNextState;
- }
+    retraceValue = _rewardHistory[curId] + _criticDiscountFactor * importanceWeight * (retraceValue - qNextState) + _criticDiscountFactor * vNextState;
+  }
 
- //printf("Retrace Val: %f\n", retraceValue);
+  //printf("Retrace Val: %f\n", retraceValue);
 
- // Returning the retrace value of the required experience
- return retraceValue;
+  // Returning the retrace value of the required experience
+  return retraceValue;
 }
 
 void Agent::trainCritic()
@@ -327,11 +325,11 @@ void Agent::trainCritic()
 
       if (_criticUpdateAlgorithm == "Q-Learning")
       {
-       // Reward is the first factor in the QLearning algorithm
-       qStar = _rewardHistory[expId];
+        // Reward is the first factor in the QLearning algorithm
+        qStar = _rewardHistory[expId];
 
-       // If state is not terminal (next state is filled) then add Qnew to the Q value.
-       if (_terminalHistory[expId] == false) qStar += _criticDiscountFactor * stateValueFunction(_stateHistory[expId + 1]);
+        // If state is not terminal (next state is filled) then add Qnew to the Q value.
+        if (_terminalHistory[expId] == false) qStar += _criticDiscountFactor * stateValueFunction(_stateHistory[expId + 1]);
       }
 
       if (_criticUpdateAlgorithm == "Retrace") qStar = retraceFunction(expId);

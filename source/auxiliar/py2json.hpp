@@ -14,13 +14,11 @@
 
 #include "auxiliar/json.hpp"
 
-
 #ifdef OMPI_MPI_H
-#include "mpi.h"
+  #include "mpi.h"
 
 namespace knlohmann
 {
-
 /**
  * @brief Struct containing serializer/deserializer object for MPI Communicator and JSON objects.
  */
@@ -41,7 +39,7 @@ inline void adl_serializer<MPI_Comm>::to_json(json &j, const MPI_Comm &obj)
   MPI_Comm_dup(obj, x);
   j = (size_t)x;
 }
-}
+} // namespace knlohmann
 #endif
 
 #include "modules/experiment/experiment.hpp"

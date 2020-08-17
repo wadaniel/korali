@@ -20,7 +20,7 @@ double Weibull::getLogDensity(const double x) const
 
 double Weibull::getRandomNumber()
 {
-  return  gsl_ran_weibull(_range, _scale, _shape);
+  return gsl_ran_weibull(_range, _scale, _shape);
 }
 
 void Weibull::updateDistribution()
@@ -28,7 +28,7 @@ void Weibull::updateDistribution()
   if (_shape <= 0.0) KORALI_LOG_ERROR("Incorrect Shape parameter of Weibull distribution: %f.\n", _shape);
   if (_scale <= 0.0) KORALI_LOG_ERROR("Incorrect Scale parameter of Weibull distribution: %f.\n", _scale);
 
-  _aux = log(_shape/_scale) - (_shape-1.0)*log(_scale);
+  _aux = log(_shape / _scale) - (_shape - 1.0) * log(_scale);
 }
 
 } // namespace univariate

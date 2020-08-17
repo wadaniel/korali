@@ -16,14 +16,12 @@ namespace optimizer
 {
 void LMCMAES::setInitialConfiguration()
 {
-
   // Establishing optimization goal
   _bestEverValue = -std::numeric_limits<double>::infinity();
 
   _previousBestEverValue = _bestEverValue;
   _previousBestValue = _bestEverValue;
   _currentBestValue = _bestEverValue;
-
 
   if (_targetDistanceCoefficients.size() == 0) _targetDistanceCoefficients = {double(_k->_variables.size()), 0.0, 0.0};
 

@@ -66,7 +66,6 @@ void DDPG::initializePolicy()
   {
     // Get the initial set of policy NN hyperparameters
     _hyperparameters["Policy"] = _policyLearner->getHyperparameters();
-    _bestHyperparameters["Policy"] = _hyperparameters["Policy"];
   }
 
   // Storage for statistics

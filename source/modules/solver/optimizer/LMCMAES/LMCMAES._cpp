@@ -16,6 +16,15 @@ namespace optimizer
 {
 void LMCMAES::setInitialConfiguration()
 {
+
+  // Establishing optimization goal
+  _bestEverValue = -std::numeric_limits<double>::infinity();
+
+  _previousBestEverValue = _bestEverValue;
+  _previousBestValue = _bestEverValue;
+  _currentBestValue = _bestEverValue;
+
+
   if (_targetDistanceCoefficients.size() == 0) _targetDistanceCoefficients = {double(_k->_variables.size()), 0.0, 0.0};
 
   if (_targetDistanceCoefficients.size() != 3)
@@ -136,7 +145,6 @@ void LMCMAES::setInitialConfiguration()
     KORALI_LOG_ERROR("Invalid Set Update Interval(must be greater 0, is %zu).", _setUpdateInterval);
 
   _infeasibleSampleCount = 0;
-  _bestEverValue = -std::numeric_limits<double>::infinity();
   _sqrtInverseCholeskyRate = std::sqrt(1.0 - _choleskyMatrixLearningRate);
 
   for (size_t i = 0; i < _k->_variables.size(); i++) _currentMean[i] = _previousMean[i] = _k->_variables[i]->_initialValue;
@@ -172,6 +180,7 @@ void LMCMAES::prepareGeneration()
     bool isFeasible;
     do
     {
+      sampleSingle(i);
       isFeasible = isSampleFeasible(_samplePopulation[i]);
 
       if (isFeasible == false) _infeasibleSampleCount++;

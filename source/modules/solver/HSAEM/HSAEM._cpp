@@ -149,7 +149,11 @@ void HSAEM::setInitialConfiguration()
     {
       //      int idx =  _latentProblem->_hyperparametersCovIndices[i][j];
       int idx = i * _latentProblem->_latentSpaceDimensions + j;
-      _currentHyperparametersCovariance[i][j] = _latentProblem->_hyperparametersCovariance[idx]->_initialValue;
+      if (!_diagonalCovariance | (i == j))
+        _currentHyperparametersCovariance[i][j] = _latentProblem->_hyperparametersCovariance[idx]->_initialValue;
+        // Other entries of the _latentProblem's covariance will be uninitialized!
+      else
+        _currentHyperparametersCovariance[i][j] = 0;
     }
 
   _currentCovarianceCholesky.resize(_latentSpaceDimensions);
@@ -170,25 +174,12 @@ void HSAEM::setInitialConfiguration()
     for (size_t j = 0; j < _numberIndividuals; j++)
     {
       _currentZ[i][j].resize(_latentSpaceDimensions);
-      //std::vector<double> temp_something(1);
       _annealedNormalGenerator->getRandomVector(&_currentZ[i][j][0], _latentSpaceDimensions);
     }
   }
 
   // Initialize log-Likelihoods. Z is initialized above. Do not switch these two paragraphs.
-  updateProbabilities(); // Todo: If works, remove what's commented out
-                         //  for (size_t c_idx = 0; c_idx < _mCMCNumberChains; c_idx++)
-                         //  {
-                         //    Sample sample;
-                         //    sample["Sample Id"] = 2564234;
-                         //    sample["Latent Variables"] = _currentZ[c_idx];
-                         //    sample["Operation"] = "Evaluate logLikelihood";
-                         //    sample["Module"] = "Problem";
-                         //    KORALI_START(sample);
-                         //    KORALI_WAIT(sample);
-                         //    auto newLLHs = sample["logLikelihood"].get<std::vector<double>>();
-                         //    _currentSampleLogLikelihoods[c_idx] = newLLHs;
-                         //  }
+  updateProbabilities();
 
   if (_latentSpaceDimensions == 1)
     _n3 = 0;
@@ -355,7 +346,7 @@ void HSAEM::sampleLatent()
 
           sample["Latent Variables"] = localZ;
           sample["Mean"] = _currentHyperparametersMean;
-          sample["Covariance Cholesky Decomposition"] = _currentAnnealedCovarianceCholesky; // _currentHyperparametersCovariance;
+          sample["Covariance Cholesky Decomposition"] = _currentAnnealedCovarianceCholesky;
           sample["Operation"] = "Evaluate logPrior";
           KORALI_START(sample);
           KORALI_WAIT(sample);
@@ -548,17 +539,6 @@ void HSAEM::updateAnnealedDistribution()
   _annealedNormalGenerator->setProperty("Sigma", flatten(_currentAnnealedCovarianceCholesky));
   _annealedNormalGenerator->setProperty("Mean Vector", _currentHyperparametersMean);
   _annealedNormalGenerator->updateDistribution();
-  //  if (_useSimulatedAnnealing)
-  //  {
-  //    auto flatCov = flatten(_currentHyperparametersCovariance);
-  //    for (size_t i = 0; i < flatCov.size(); i++)
-  //      _annealedCovariance[i] = std::max(_annealedCovariance[i] * _simulatedAnnealingDecayFactor, flatCov[i]);
-  //    _annealedNormalGenerator->setProperty("Sigma", _currentAnnealedCovarianceCholesky);
-  //  }
-  //  else
-  //    _annealedNormalGenerator->setProperty("Sigma", flatten(_currentHyperparametersCovarianceCholesky));
-  //  _annealedNormalGenerator->setProperty("Mean Vector", _currentHyperparametersMean);
-  //  _annealedNormalGenerator->updateDistribution();
 }
 
 void HSAEM::updateS()
@@ -607,10 +587,10 @@ void HSAEM::updateHyperparameters()
   for (size_t i = 0; i < _latentSpaceDimensions; i++)
     for (size_t j = 0; j < _latentSpaceDimensions; j++)
     {
-      _currentHyperparametersCovariance[i][j] = _currentS2[i][j] / double(_numberIndividuals) - _currentHyperparametersMean[i] * _currentHyperparametersMean[j];
-      if (_diagonalCovariance)
-        if (i != j)
-          _currentHyperparametersCovariance[i][j] = 0;
+      if ((_latentProblem->_diagonalCovariance) & (i != j))
+        _currentHyperparametersCovariance[i][j] = 0;
+      else
+        _currentHyperparametersCovariance[i][j] = _currentS2[i][j] / double(_numberIndividuals) - _currentHyperparametersMean[i] * _currentHyperparametersMean[j];
     }
   // No simulated annealing here, that is only done with the 'annealed normal distribution' used in sampling.
   _currentHyperparametersMeanTransformed = _latentProblem->zToLatent(_currentHyperparametersMean);
@@ -643,12 +623,7 @@ void HSAEM::updateProbabilities()
     auto newPriors = sample["Log Prior"].get<std::vector<double>>();
     _currentSampleLogPriors[c_idx] = newPriors;
   }
-  //  double LLHSum = 0;
-  //  for (size_t c_idx = 0; c_idx <_mCMCNumberChains; c_idx++){
-  //    LLHSum = std::accumulate(_currentSampleLogLikelihoods[c_idx].begin(), _currentSampleLogLikelihoods[c_idx].end(), LLHSum);
-  //    LLHSum = std::accumulate(_currentSampleLogPriors[c_idx].begin(), _currentSampleLogPriors[c_idx].end(), LLHSum);
-  //  }
-  //  _currentLogLikelihood = LLHSum / double(_mCMCNumberChains);
+
   _currentSampleLogProbability = 0;
   _currentSampleLogPrior = 0;
   _currentSampleLogLikelihood = 0;

@@ -57,6 +57,7 @@ void HierarchicalReference::initialize()
   _koraliExperiment["Problem"]["Log Likelihood Function"] = loglikelihoodLambdaFunction;
   _koraliExperiment["Problem"]["Latent Space Dimensions"] = _latentSpaceDimensions;
   _koraliExperiment["Problem"]["Number Individuals"] = _numberIndividuals;
+  _koraliExperiment["Problem"]["Diagonal Covariance"] = _diagonalCovariance;
 
   _koraliExperiment["Distributions"][0]["Name"] = "Dummy Prior";
   _koraliExperiment["Distributions"][0]["Type"] = "Univariate/Uniform";
@@ -136,15 +137,26 @@ void HierarchicalReference::initialize()
   }
 
   /* 2. Create covariance matrices.
+      Create d variables if _diagonalCovariance, else d * d variables.
       Note: If ever required, could add 'groups' of variables that share a covariance matrix, while groups are independent of each other. */
   //  Degrees of freedom of the covariance matrix: n*(n+1)/2; we over-represent it as matrix
   for (size_t i = 0; i < _latentSpaceDimensions; i++)
   {
     for (size_t j = 0; j < _latentSpaceDimensions; j++)
     {
+      // If _diagonalCovariance, we only define variables for the cases i==j:
+      int varIdx;
+      if (_diagonalCovariance){
+        if (i != j)
+          continue;
+        else
+          varIdx = i;
+      }
+      else
+        varIdx = numberLatent + _latentSpaceDimensions + i * _latentSpaceDimensions + j;
+      // Define the variable:
       Variable *vari = _k->_variables[i];
       Variable *varj = _k->_variables[j];
-      int varIdx = numberLatent + _latentSpaceDimensions + i * _latentSpaceDimensions + j;
       _koraliExperiment["Variables"][varIdx]["Latent Variable Distribution Type"] = "NA";
       _koraliExperiment["Variables"][varIdx]["Bayesian Type"] = "Hyperparameter";
       _koraliExperiment["Variables"][varIdx]["Is Mean"] = false;
@@ -158,7 +170,6 @@ void HierarchicalReference::initialize()
         _koraliExperiment["Variables"][varIdx]["Initial Value"] = _initialVariance;
       else
         _koraliExperiment["Variables"][varIdx]["Initial Value"] = 0.0;
-      //   _hyperparametersCovIndices[i].push_back(varIdx);
     }
   }
 
@@ -183,7 +194,7 @@ HierarchicalReference::~HierarchicalReference()
   * @brief Evaluate all log-likelihoods for all individuals. Returns a list of log-likelihood values.
   * @param sample: Should contain field "Latent Variables" .
 
-  Todo:
+  Does:
         - extract latent variables;
         - optionally, get the right data points for:
         - run each model

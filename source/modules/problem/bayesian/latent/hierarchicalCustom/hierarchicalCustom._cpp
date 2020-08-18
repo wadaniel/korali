@@ -29,10 +29,6 @@ void HierarchicalCustom::initialize()
   _latentSpaceDimensions = _k->_variables.size();
   if (_latentSpaceDimensions < 1) KORALI_LOG_ERROR("Hierarchical custom latent variable problems require at least one variable.\n");
 
-  // Edit, _latentSpaceDimension is inferred now
-  //  // The user should define one variable per latent variable dimension, as prototype:
-  //  if (_k->variables.size() != _latentSpaceDimensions) KORALI_LOG_ERROR("Hierarchical latent variable problems require only a subset of prototype variables to be defined. Please define one prototype latent variable per individual. (Expected %d variables, found %d variables.) \n", _numberIndividuals, _k->_variables.size());
-
   // Prepare the loglikelihood function
   loglikelihoodLambdaFunction = [this](Sample &s) -> void {
     loglikelihoodFunction(s);
@@ -48,6 +44,7 @@ void HierarchicalCustom::initialize()
   _koraliExperiment["Problem"]["Log Likelihood Function"] = loglikelihoodLambdaFunction;
   _koraliExperiment["Problem"]["Latent Space Dimensions"] = _latentSpaceDimensions;
   _koraliExperiment["Problem"]["Number Individuals"] = _numberIndividuals;
+  _koraliExperiment["Problem"]["Diagonal Covariance"] = _diagonalCovariance;
 
   _koraliExperiment["Distributions"][0]["Name"] = "Dummy Prior";
   _koraliExperiment["Distributions"][0]["Type"] = "Univariate/Uniform";
@@ -79,6 +76,7 @@ void HierarchicalCustom::initialize()
     // Check variables type
     std::string typeString = _k->_variables[i]->_bayesianType;
     if (typeString != "Latent") KORALI_LOG_ERROR("Unrecognized Variable Type %s \n", typeString.c_str());
+    // Hyperparameters are inferred - todo: change this error message to add the case typeString == "Hyperparameters" ?
   }
 
   /*  Now, generate the hyperparameters:
@@ -137,9 +135,19 @@ void HierarchicalCustom::initialize()
   {
     for (size_t j = 0; j < _latentSpaceDimensions; j++)
     {
+      // If _diagonalCovariance, we only define variables for the cases i==j:
+      int varIdx;
+      if (_diagonalCovariance){
+        if (i != j)
+          continue;
+        else
+          varIdx = i;
+      }
+      else
+        varIdx = numberLatent + _latentSpaceDimensions + i * _latentSpaceDimensions + j;
+      // Define the variable:
       Variable *vari = _k->_variables[i];
       Variable *varj = _k->_variables[j];
-      int varIdx = numberLatent + _latentSpaceDimensions + i * _latentSpaceDimensions + j;
       _koraliExperiment["Variables"][varIdx]["Latent Variable Distribution Type"] = "NA";
       _koraliExperiment["Variables"][varIdx]["Bayesian Type"] = "Hyperparameter";
       _koraliExperiment["Variables"][varIdx]["Is Mean"] = false;
@@ -153,7 +161,6 @@ void HierarchicalCustom::initialize()
         _koraliExperiment["Variables"][varIdx]["Initial Value"] = _initialVariance;
       else
         _koraliExperiment["Variables"][varIdx]["Initial Value"] = 0.0;
-      //   _hyperparametersCovIndices[i].push_back(varIdx);
     }
   }
 

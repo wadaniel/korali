@@ -27,10 +27,6 @@ void korali::problem::bayesian::latent::HierarchicalLowlevel::initialize()
   _hyperparametersMean.resize(_latentSpaceDimensions);
   _hyperparametersCovariance.clear();
   _hyperparametersCovariance.resize(_latentSpaceDimensions * _latentSpaceDimensions);
-  // for (size_t i = 0; i < _latentSpaceDimensions; i++){
-  //   _hyperparametersCovariance[i].clear();
-  //   _hyperparametersCovariance[i].resize(_latentSpaceDimensions);
-  // }
 
   /* Check and assign distribution types , by looking only at those of the first individual. */
   size_t dim_counter = 0;
@@ -92,6 +88,9 @@ void korali::problem::bayesian::latent::HierarchicalLowlevel::initialize()
       }
       else
       {
+        // ! Note: If _diagonalCovariance, this will contain uninitialized values off-diagonal.
+        if (_diagonalCovariance & (var->_covarianceI != var->_covarianceJ))
+          KORALI_LOG_ERROR("Diagonal covariance expected, because the problem was defined as having diagonal covariance");
         _hyperparametersCovariance[var->_covarianceI * _latentSpaceDimensions + var->_covarianceJ] = _k->_variables[i];
       }
     }
@@ -217,6 +216,13 @@ void korali::problem::bayesian::latent::HierarchicalLowlevel::evaluateLogPrior_(
   {
     covMatrix = KORALI_GET(std::vector<std::vector<double>>, sample, "Covariance Matrix");
   }
+  if (_diagonalCovariance){
+    for (size_t i=0; i < N; i++)
+      for (size_t j=0; j < N; j++){
+        if ((i != j) & covMatrix[i][j] != 0)
+          KORALI_LOG_ERROR("Passed covariance or Cholesky decomposed covariance was not diagonal, but the problem was initialized as having diagonal covariance in the prior.");
+      }
+  }
   assert(N == covMatrix.size());       // "Error: Dimensions of covariance matrix passed to evaluateLogLikelihood did not fit to dimensions of the mean passed ");
   assert(N == _latentSpaceDimensions); // "Error: Dimensions of the hyperparameters passed to evaluateLogLikelihood did not fit to the latent variable distribution defined during problem setup.")
   for (std::vector<double> v : covMatrix)
@@ -282,12 +288,8 @@ void korali::problem::bayesian::latent::HierarchicalLowlevel::evaluateLogPrior_(
     }
   }
   _multivariateNormalDistribution->_meanVector = mean;
-  _multivariateNormalDistribution->_sigma = sigmaVec; // Todo: Need to flatten it
+  _multivariateNormalDistribution->_sigma = sigmaVec;
   _multivariateNormalDistribution->updateDistribution();
-  //  if (sigmaVec[0] != 0){
-  //    volatile int done = 0;
-  //    while (!done) sleep(1);
-  //  }
 
   /* Calculate the log-probability for each individual, meaning each of the transformed-latent-variable vectors
   following the same multivariate Gaussian distribution */

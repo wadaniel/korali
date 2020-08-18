@@ -34,6 +34,8 @@ def main():
   e["Problem"]["Likelihood Model"] = "Normal"
   e["Problem"]["Reference Data"] = d.y_values
 
+  e["Problem"]["Diagonal Covariance"] = True
+
   e["Solver"]["Type"] = "HSAEM"
   e["Solver"]["Number Samples Per Step"] = 5
   e["Solver"]["MCMC Outer Steps"] = 1
@@ -48,7 +50,6 @@ def main():
   e["Solver"]["Use Simulated Annealing"] = True
   e["Solver"]["Simulated Annealing Decay Factor"] = 0.95
   e["Solver"]["Simulated Annealing Initial Variance"] = 1
-  e["Solver"]["Diagonal Covariance"] = True
   e["Solver"]["Termination Criteria"]["Max Generations"] = 250
 
   e["Distributions"][0]["Name"] = "Uniform 0"

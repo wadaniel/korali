@@ -469,15 +469,16 @@ a list of standard deviations :math:`[\sigma_1, \sigma_2, ...]`, of same length.
 likelihood model expects a list of :code:`"Dispersions"` instead.
 
 We choose a :code:`"Normal"` noise distribution, pass our reference y-values to the problem (these
-could be measurements, for example), and set the number of latent space dimensions required by
-our model (to 4):
+could be measurements, for example):
 
 .. code-block:: python
 
   e["Problem"]["Likelihood Model"] = "Normal"
   e["Problem"]["Reference Data"] = y_vals
-  e["Problem"]["Latent Space Dimensions"] = d.nLatentSpaceDimensions
+  e["Problem"]["Diagonal Covariance"] = True
 
+The parameter :code:`"Diagonal Covariance"` tells the problem class to model the different latent variable
+dimensions as independent from each other.
 
 **Solver Setup:**
 We choose the solver *HSAEM* and configure it:
@@ -498,14 +499,12 @@ We choose the solver *HSAEM* and configure it:
   e["Solver"]["Use Simulated Annealing"] = True
   e["Solver"]["Simulated Annealing Decay Factor"] = 0.95
   e["Solver"]["Simulated Annealing Initial Variance"] = 1
-  e["Solver"]["Diagonal Covariance"] = True
 
   e["Solver"]["Termination Criteria"]["Max Generations"] = 250
 
 Here, we choose to make use of Simulated Annealing, which will introduce greater stochasticity in sampling
 during the first generations - if its :code:`"Initial Variance"` is greater than the initial covariance estimates.
-The parameter :code:`"Diagonal Covariance"` tells *HSAEM* to model the different latent variable dimensions as
-independent from each other. Also, we choose to run the optimization for 250 generations.
+Also, we choose to run the optimization for 250 generations.
 
 **Variables and Distributions:**
 As *HierarchicalReference* is a *Bayesian* problem, we need to define priors for all variables, although

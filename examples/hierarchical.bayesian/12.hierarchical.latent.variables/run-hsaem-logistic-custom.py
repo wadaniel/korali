@@ -27,6 +27,7 @@ def main():
       lambda sample, i=i: distrib.conditional_logp(sample, distrib._p.data[i])
       for i in range(distrib._p.nIndividuals)
   ]
+  e["Problem"]["Diagonal Covariance"] = True
 
   e["Solver"]["Type"] = "HSAEM"
   e["Solver"]["Number Samples Per Step"] = 10
@@ -41,7 +42,6 @@ def main():
   e["Solver"]["Use Simulated Annealing"] = True
   e["Solver"]["Simulated Annealing Decay Factor"] = 0.95
   e["Solver"]["Simulated Annealing Initial Variance"] = 1
-  e["Solver"]["Diagonal Covariance"] = True
   e["Solver"]["Termination Criteria"]["Max Generations"] = 250
 
   e["Distributions"][0]["Name"] = "Uniform 0"

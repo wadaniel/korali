@@ -66,7 +66,8 @@ void korali::problem::bayesian::latent::HierarchicalLowlevel::initialize()
   }
   if (dim_counter < _latentSpaceDimensions)
     KORALI_LOG_ERROR("Latent variable list was incomplete, expected exactly as many latent variables for individual 0 as there are latent space dimensions. Latent space dimensions: %d, number variables: %d",
-     _latentSpaceDimensions, _k->_variables.size());
+                     _latentSpaceDimensions,
+                     _k->_variables.size());
 
   for (size_t i = 0; i < _k->_variables.size(); i++)
   {

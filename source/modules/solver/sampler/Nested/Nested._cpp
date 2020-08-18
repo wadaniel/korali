@@ -78,9 +78,22 @@ void Nested::setInitialConfiguration()
 
   for (size_t d = 0; d < _dimensions; ++d)
   {
-    if (_k->_distributions[_k->_variables[d]->_distributionIndex]->_type != "Univariate/Uniform") KORALI_LOG_ERROR("Only 'Univariate/Uniform' priors allowed (is %s).\n", _k->_distributions[_k->_variables[d]->_distributionIndex]->_type.c_str());
-    _priorWidth[d] = dynamic_cast<distribution::univariate::Uniform *>(_k->_distributions[_k->_variables[d]->_distributionIndex])->_maximum - dynamic_cast<distribution::univariate::Uniform *>(_k->_distributions[_k->_variables[d]->_distributionIndex])->_minimum;
-    _priorLowerBound[d] = dynamic_cast<distribution::univariate::Uniform *>(_k->_distributions[_k->_variables[d]->_distributionIndex])->_minimum;
+    if (dynamic_cast<distribution::Univariate *>(_k->_distributions[_k->_variables[d]->_distributionIndex]) == nullptr) KORALI_LOG_ERROR("Prior of variable %s is not of type Univariate (is %s).\n", _k->_variables[d]->_name.c_str(), _k->_distributions[_k->_variables[d]->_distributionIndex]->_type.c_str());
+
+    if ((_k->_distributions[_k->_variables[d]->_distributionIndex]->_type != "Univariate/Uniform") && (std::isfinite(_k->_variables[d]->_lowerBound) == false)) KORALI_LOG_ERROR("Prior of variable %s is not 'Univariate/Uniform' (is %s) AND lower bound not set (invalid configuration).\n", _k->_variables[d]->_name.c_str(), _k->_distributions[_k->_variables[d]->_distributionIndex]->_type.c_str());
+
+    if ((_k->_distributions[_k->_variables[d]->_distributionIndex]->_type != "Univariate/Uniform") && (std::isfinite(_k->_variables[d]->_upperBound) == false)) KORALI_LOG_ERROR("Prior of variable %s is not 'Univariate/Uniform' (is %s) AND upper bound not set (invalid configuration).\n", _k->_variables[d]->_name.c_str(), _k->_distributions[_k->_variables[d]->_distributionIndex]->_type.c_str());
+
+    if (_k->_distributions[_k->_variables[d]->_distributionIndex]->_type == "Univariate/Uniform")
+    {
+      _priorWidth[d] = dynamic_cast<distribution::univariate::Uniform *>(_k->_distributions[_k->_variables[d]->_distributionIndex])->_maximum - dynamic_cast<distribution::univariate::Uniform *>(_k->_distributions[_k->_variables[d]->_distributionIndex])->_minimum;
+      _priorLowerBound[d] = dynamic_cast<distribution::univariate::Uniform *>(_k->_distributions[_k->_variables[d]->_distributionIndex])->_minimum;
+    }
+    else
+    {
+      _priorWidth[d] = _k->_variables[d]->_upperBound - _k->_variables[d]->_lowerBound;
+      _priorLowerBound[d] = _k->_variables[d]->_lowerBound;
+    }
   }
 
   if ((_resamplingMethod == "Ellipse" || _resamplingMethod == "Multi Ellipse") && (_dimensions == 2)) KORALI_LOG_ERROR("Resampling Method Ellipse only suitable for problems of dim larger 2.");
@@ -175,8 +188,10 @@ void Nested::runGeneration()
     {
       size_t finishedId = KORALI_WAITANY(samples);
 
+      auto candidate = KORALI_GET(std::vector<double>, samples[finishedId], "Parameters");
       _candidateLogPriors[finishedId] = KORALI_GET(double, samples[finishedId], "logPrior");
       _candidateLogLikelihoods[finishedId] = KORALI_GET(double, samples[finishedId], "logLikelihood");
+      _candidateLogLikelihoods[finishedId] += logPriorWeight(candidate);
 
       finishedCandidatesCount++;
     }
@@ -216,8 +231,10 @@ void Nested::runFirstGeneration()
   {
     size_t finishedId = KORALI_WAITANY(samples);
 
+    auto sample = KORALI_GET(std::vector<double>, samples[finishedId], "Parameters");
     _liveLogPriors[finishedId] = KORALI_GET(double, samples[finishedId], "logPrior");
     _liveLogLikelihoods[finishedId] = KORALI_GET(double, samples[finishedId], "logLikelihood");
+    _liveLogLikelihoods[finishedId] += logPriorWeight(sample);
 
     finishedCandidatesCount++;
   }
@@ -324,6 +341,18 @@ bool Nested::processGeneration()
 
   _lastAccepted++;
   return (acceptedBefore != _acceptedSamples);
+}
+
+double Nested::logPriorWeight(std::vector<double> &sample)
+{
+  double logweight = 0.0;
+  for (size_t d = 0; d < _dimensions; ++d)
+    if (_k->_distributions[_k->_variables[d]->_distributionIndex]->_type != "Univariate/Uniform")
+    {
+      logweight += dynamic_cast<distribution::Univariate *>(_k->_distributions[_k->_variables[d]->_distributionIndex])->getLogDensity(sample[d]);
+      logweight += log(_priorWidth[d]);
+    }
+  return logweight;
 }
 
 void Nested::setBoundsVolume()

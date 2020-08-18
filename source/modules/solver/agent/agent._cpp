@@ -330,7 +330,7 @@ void Agent::trainCritic()
         qStar = _rewardHistory[expId];
 
         // If state is not terminal (next state is filled) then add Qnew to the Q value.
-        if (_terminalHistory[expId] == false) qStar += _criticDiscountFactor * stateValueFunction(_stateHistory[expId + 1]);
+        if (_terminalHistory[expId] == false) qStar += _criticDiscountFactor * stateActionValueFunction(_stateHistory[expId + 1], _actionHistory[expId + 1]);
       }
 
       if (_criticUpdateAlgorithm == "Retrace") qStar = retraceFunction(expId);

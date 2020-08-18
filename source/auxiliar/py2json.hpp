@@ -21,19 +21,19 @@
 #include <string>
 #include <vector>
 
-#ifdef _KORALI_USE_MPI
-  #include "mpi.h"
-#endif
-
 namespace korali
 {
 class Sample;
 
 /**
-  * @brief Stores all functions inserted as parameters to experiment's configuration
-  */
+ * @brief Stores all functions inserted as parameters to experiment's configuration
+ */
 extern std::vector<std::function<void(Sample &)> *> _functionVector;
-} // namespace korali
+}
+
+#ifdef _KORALI_USE_MPI
+  #include "mpi.h"
+#endif
 
 /*! \namespace knlohmann
   \brief The knlohmann namespace includes all Korali-Json auxiliar functions and class methods.

@@ -2,6 +2,7 @@
 #include "modules/problem/bayesian/latent/hierarchicalCustom/hierarchicalCustom.hpp"
 #include "modules/problem/bayesian/latent/hierarchicalReference/hierarchicalReference.hpp"
 #include "modules/solver/HSAEM/HSAEM.hpp"
+#include "sample/sample.hpp"
 
 //#include <algorithm>
 #include <cmath>
@@ -13,7 +14,11 @@
 #include <gsl/gsl_rng.h>     // todo: Do I need this here?
 #include <gsl/gsl_sf.h>      // todo: Do I need this here?
 
-void korali::solver::HSAEM::runGeneration()
+namespace korali
+{
+namespace solver
+{
+void HSAEM::runGeneration()
 {
   if (_k->_currentGeneration == 1) setInitialConfiguration();
 
@@ -34,7 +39,7 @@ void korali::solver::HSAEM::runGeneration()
 }
 
 /* @brief This is always run before (re-)starting the solver */
-void korali::solver::HSAEM::initialize()
+void HSAEM::initialize()
 {
   if ((_k->_problem->getType() != "Bayesian/Latent/HierarchicalCustom") &&
       (_k->_problem->getType() != "Bayesian/Latent/HierarchicalLowlevel") &&
@@ -42,16 +47,16 @@ void korali::solver::HSAEM::initialize()
     KORALI_LOG_ERROR("SAEM can only optimize problems of type 'Bayesian/Latent/HierarchicalReference' or '.../HierarchicalCustom' or '.../HierarchicalLowlevel' .\n");
   if (_k->_problem->getType() == "Bayesian/Latent/HierarchicalCustom")
   {
-    auto _latentProblemWrapper = dynamic_cast<korali::problem::bayesian::latent::HierarchicalCustom *>(_k->_problem);
+    auto _latentProblemWrapper = dynamic_cast<problem::bayesian::latent::HierarchicalCustom *>(_k->_problem);
     _latentProblem = _latentProblemWrapper->_lowlevelProblem;
   }
   if (_k->_problem->getType() == "Bayesian/Latent/HierarchicalReference")
   {
-    auto _latentProblemWrapper = dynamic_cast<korali::problem::bayesian::latent::HierarchicalReference *>(_k->_problem);
+    auto _latentProblemWrapper = dynamic_cast<problem::bayesian::latent::HierarchicalReference *>(_k->_problem);
     _latentProblem = _latentProblemWrapper->_lowlevelProblem;
   }
   if (_k->_problem->getType() == "Bayesian/Latent/HierarchicalLowlevel")
-    _latentProblem = dynamic_cast<korali::problem::bayesian::latent::HierarchicalLowlevel *>(_k->_problem);
+    _latentProblem = dynamic_cast<problem::bayesian::latent::HierarchicalLowlevel *>(_k->_problem);
 
   // Todo: make sure the problem is initialized before the solver
   _numberIndividuals = _latentProblem->_numberIndividuals;
@@ -76,7 +81,7 @@ void korali::solver::HSAEM::initialize()
 }
 
 /* @brief Run once, before the first generation */
-void korali::solver::HSAEM::setInitialConfiguration()
+void HSAEM::setInitialConfiguration()
 {
   // Resizing and clearing internal vectors
   assert(_mCMCNumberChains == _numberSamplesPerStep); // Else the function above is not called before this one, implementation error, need to switch those
@@ -134,7 +139,6 @@ void korali::solver::HSAEM::setInitialConfiguration()
   _currentHyperparametersCovariance.resize(_latentSpaceDimensions);
   for (size_t i = 0; i < _latentSpaceDimensions; i++)
     _currentHyperparametersCovariance[i].resize(_latentSpaceDimensions);
-  size_t hyperparam_index = 0;
   for (size_t i = 0; i < _latentSpaceDimensions; i++)
   {
     //    int idx =  _latentProblem->_hyperparametersMeanIndices[i];
@@ -175,13 +179,13 @@ void korali::solver::HSAEM::setInitialConfiguration()
   updateProbabilities(); // Todo: If works, remove what's commented out
                          //  for (size_t c_idx = 0; c_idx < _mCMCNumberChains; c_idx++)
                          //  {
-                         //    korali::Sample sample;
+                         //    Sample sample;
                          //    sample["Sample Id"] = 2564234;
                          //    sample["Latent Variables"] = _currentZ[c_idx];
                          //    sample["Operation"] = "Evaluate logLikelihood";
                          //    sample["Module"] = "Problem";
-                         //    _conduit->start(sample);
-                         //    _conduit->wait(sample);
+                         //    KORALI_START(sample);
+                         //    KORALI_WAIT(sample);
                          //    auto newLLHs = sample["logLikelihood"].get<std::vector<double>>();
                          //    _currentSampleLogLikelihoods[c_idx] = newLLHs;
                          //  }
@@ -214,10 +218,10 @@ void korali::solver::HSAEM::setInitialConfiguration()
     }
   }
 
-  _bestSampleLogProbability = -korali::Inf;
+  _bestSampleLogProbability = -Inf;
 }
 
-void korali::solver::HSAEM::sampleLatent()
+void HSAEM::sampleLatent()
 {
   std::fill(_acceptanceRateDenominator.begin(), _acceptanceRateDenominator.end(), 0.0);
   std::fill(_acceptanceRateNominator.begin(), _acceptanceRateNominator.end(), 0.0);
@@ -254,7 +258,7 @@ void korali::solver::HSAEM::sampleLatent()
       counter = 0;
     }
 
-    korali::Sample sample;
+    Sample sample;
     sample["Sample Id"] = 2564236; // Todo: better way to pick an ID?
     sample["Module"] = "Problem";
     sample["Current Generation"] = _k->_currentGeneration;
@@ -283,8 +287,8 @@ void korali::solver::HSAEM::sampleLatent()
         // generate acceptance probabilities: new llh / former llh
         sample["Latent Variables"] = newZ; // Note: We need not transform to non-Z form; the function called with "Evaluate logLikelihood" expects Z form
         sample["Operation"] = "Evaluate logLikelihood";
-        _conduit->start(sample);
-        _conduit->wait(sample);
+        KORALI_START(sample);
+        KORALI_WAIT(sample);
         auto newLLHs = sample["logLikelihood"].get<std::vector<double>>();
         for (size_t indiv = 0; indiv < _numberIndividuals; indiv++)
         {
@@ -316,8 +320,8 @@ void korali::solver::HSAEM::sampleLatent()
       sample["Mean"] = _currentHyperparametersMean;
       sample["Covariance Cholesky Decomposition"] = _currentAnnealedCovarianceCholesky;
       sample["Operation"] = "Evaluate logPrior";
-      _conduit->start(sample);
-      _conduit->wait(sample);
+      KORALI_START(sample);
+      KORALI_WAIT(sample);
       currentPriors = sample["Log Prior"].get<std::vector<double>>();
 
       // *****************************
@@ -345,16 +349,16 @@ void korali::solver::HSAEM::sampleLatent()
 
           sample["Latent Variables"] = localZ;
           sample["Operation"] = "Evaluate logLikelihood";
-          _conduit->start(sample);
-          _conduit->wait(sample);
+          KORALI_START(sample);
+          KORALI_WAIT(sample);
           auto newLLHs = sample["logLikelihood"].get<std::vector<double>>();
 
           sample["Latent Variables"] = localZ;
           sample["Mean"] = _currentHyperparametersMean;
           sample["Covariance Cholesky Decomposition"] = _currentAnnealedCovarianceCholesky; // _currentHyperparametersCovariance;
           sample["Operation"] = "Evaluate logPrior";
-          _conduit->start(sample);
-          _conduit->wait(sample);
+          KORALI_START(sample);
+          KORALI_WAIT(sample);
           auto newPriors = sample["Log Prior"].get<std::vector<double>>();
 
           // acceptance probability == ratio of new prior * log to the current one
@@ -428,16 +432,16 @@ void korali::solver::HSAEM::sampleLatent()
         // Evaluate localZ proposals for each individual
         sample["Latent Variables"] = localZ;
         sample["Operation"] = "Evaluate logLikelihood";
-        _conduit->start(sample);
-        _conduit->wait(sample);
+        KORALI_START(sample);
+        KORALI_WAIT(sample);
         auto newLLHs = sample["logLikelihood"].get<std::vector<double>>();
 
         sample["Latent Variables"] = localZ;
         sample["Mean"] = _currentHyperparametersMean;
         sample["Covariance Cholesky Decomposition"] = _currentAnnealedCovarianceCholesky;
         sample["Operation"] = "Evaluate logPrior";
-        _conduit->start(sample);
-        _conduit->wait(sample);
+        KORALI_START(sample);
+        KORALI_WAIT(sample);
         auto newPriors = sample["Log Prior"].get<std::vector<double>>();
 
         // Accept? -- Same acceptance calculation as in 2nd proposal distribution.
@@ -517,7 +521,7 @@ void korali::solver::HSAEM::sampleLatent()
 }
 
 //* @brief Anneal the covariance if needed.
-void korali::solver::HSAEM::annealCovariance()
+void HSAEM::annealCovariance()
 {
   if (_useSimulatedAnnealing & (_ka >= _k->_currentGeneration))
   { /* If I'm not mistaken, taking the max on the diagonal can never be a problem because it's the same as
@@ -539,7 +543,7 @@ void korali::solver::HSAEM::annealCovariance()
 }
 
 //* @brief Update internal distribution representation of p(latent | hyper). ! Does not anneal the covariance.
-void korali::solver::HSAEM::updateAnnealedDistribution()
+void HSAEM::updateAnnealedDistribution()
 {
   _annealedNormalGenerator->setProperty("Sigma", flatten(_currentAnnealedCovarianceCholesky));
   _annealedNormalGenerator->setProperty("Mean Vector", _currentHyperparametersMean);
@@ -557,7 +561,7 @@ void korali::solver::HSAEM::updateAnnealedDistribution()
   //  _annealedNormalGenerator->updateDistribution();
 }
 
-void korali::solver::HSAEM::updateS()
+void HSAEM::updateS()
 {
   // Determine alpha
   double alpha;
@@ -596,7 +600,7 @@ void korali::solver::HSAEM::updateS()
   }
 }
 
-void korali::solver::HSAEM::updateHyperparameters()
+void HSAEM::updateHyperparameters()
 {
   for (size_t i = 0; i < _latentSpaceDimensions; i++)
     _currentHyperparametersMean[i] = _currentS1[i] / double(_numberIndividuals);
@@ -615,18 +619,18 @@ void korali::solver::HSAEM::updateHyperparameters()
 /* Call after updating hyperparameters: Re-calculate the likelihood of all current samples.
    Need to be already set up: _currentHyperparametersMean and _currentHyperparametersCovariance and _currentZ
 */
-void korali::solver::HSAEM::updateProbabilities()
+void HSAEM::updateProbabilities()
 {
   for (size_t c_idx = 0; c_idx < _mCMCNumberChains; c_idx++)
   {
-    korali::Sample sample;
+    Sample sample;
     sample["Sample Id"] = 2564242;
     sample["Current Generation"] = _k->_currentGeneration;
     sample["Latent Variables"] = _currentZ[c_idx];
     sample["Operation"] = "Evaluate logLikelihood";
     sample["Module"] = "Problem";
-    _conduit->start(sample);
-    _conduit->wait(sample);
+    KORALI_START(sample);
+    KORALI_WAIT(sample);
     auto newLLHs = sample["logLikelihood"].get<std::vector<double>>();
     _currentSampleLogLikelihoods[c_idx] = newLLHs;
 
@@ -634,8 +638,8 @@ void korali::solver::HSAEM::updateProbabilities()
     sample["Latent Variables"] = _currentZ[c_idx];
     sample["Mean"] = _currentHyperparametersMean;
     sample["Covariance Cholesky Decomposition"] = _currentAnnealedCovarianceCholesky;
-    _conduit->start(sample);
-    _conduit->wait(sample);
+    KORALI_START(sample);
+    KORALI_WAIT(sample);
     auto newPriors = sample["Log Prior"].get<std::vector<double>>();
     _currentSampleLogPriors[c_idx] = newPriors;
   }
@@ -673,7 +677,7 @@ void korali::solver::HSAEM::updateProbabilities()
 
 /* Re-calculate the cholesky decomposition of the annealed covariance matrix.
    Also re-calculate a cholesky decomposition of the true current esimate of the covariance. */
-void korali::solver::HSAEM::updateCholesky()
+void HSAEM::updateCholesky()
 {
   size_t N = _latentSpaceDimensions; // for brevity
 
@@ -780,7 +784,7 @@ void korali::solver::HSAEM::updateCholesky()
       update chol of original covariance
     - reset sampling distribution to new annealed covariance
     */
-void korali::solver::HSAEM::updateDistribution()
+void HSAEM::updateDistribution()
 {
   annealCovariance();
   updateCholesky();
@@ -788,7 +792,7 @@ void korali::solver::HSAEM::updateDistribution()
 }
 
 /** @brief Utility function to calculate mean and standard deviation of the values in vector v. */
-std::vector<double> korali::solver::HSAEM::meanAndSDev(std::vector<double> v)
+std::vector<double> HSAEM::meanAndSDev(std::vector<double> v)
 {
   // Todo: To save space and not duplicate code, use gsl_stats_mean() and gsl_stats_sd_m() instead.
 
@@ -807,7 +811,7 @@ std::vector<double> korali::solver::HSAEM::meanAndSDev(std::vector<double> v)
 /** @brief Utility function, "transposes" a vector of vectors of vectors @param data
         so that data[i][j][k] will be moved to result[j][k][i].
     */
-std::vector<std::vector<std::vector<double>>> korali::solver::HSAEM::transpose3D(const std::vector<std::vector<std::vector<double>>> data)
+std::vector<std::vector<std::vector<double>>> HSAEM::transpose3D(const std::vector<std::vector<std::vector<double>>> data)
 {
   /* From: https://stackoverflow.com/questions/6009782/how-to-pivot-a-vector-of-vectors */
   // this assumes that all inner vectors have the same size
@@ -819,12 +823,12 @@ std::vector<std::vector<std::vector<double>>> korali::solver::HSAEM::transpose3D
   return result;
 }
 
-void korali::solver::HSAEM::printGenerationBefore()
+void HSAEM::printGenerationBefore()
 {
   _k->_logger->logInfo("Normal", "Preparing to start generation...\n");
 }
 
-void korali::solver::HSAEM::printGenerationAfter()
+void HSAEM::printGenerationAfter()
 {
   _k->_logger->logInfo("Normal", "Finished generation %lu...\n", _k->_currentGeneration);
 
@@ -886,7 +890,7 @@ void korali::solver::HSAEM::printGenerationAfter()
   //* Todo?: Show current mean log-likelihood across samples
 }
 
-void korali::solver::HSAEM::finalize()
+void HSAEM::finalize()
 {
   _k->_logger->logInfo("Normal", "\n");
   _k->_logger->logInfo("Normal", "Finished. Final hyperparameter estimates:\n");
@@ -924,7 +928,7 @@ void korali::solver::HSAEM::finalize()
 
 /** @brief: Utility function to convert a vector of vectors into a concatenated 1D vector.
   */
-std::vector<double> korali::solver::HSAEM::flatten(const std::vector<std::vector<double>> &v)
+std::vector<double> HSAEM::flatten(const std::vector<std::vector<double>> &v)
 {
   // credits to Sebastian Redl @ stackoverflow
   std::size_t total_size = 0;
@@ -936,3 +940,7 @@ std::vector<double> korali::solver::HSAEM::flatten(const std::vector<std::vector
     result.insert(result.end(), sub.begin(), sub.end());
   return result;
 }
+
+} // namespace solver
+
+} // namespace korali

@@ -1,5 +1,7 @@
+#include "engine.hpp"
 #include "modules/conduit/conduit.hpp"
 #include "modules/solver/executor2/executor2.hpp"
+#include "sample/sample.hpp"
 
 /* Todo: Could add a "Parameter Setter Function" as parameter, as alternative to defining the parameters at the start
         -- Would have advantage: Can set different parameters each generation or execution
@@ -46,11 +48,11 @@ void Executor2::runGeneration()
       setParameters(samples[i]);
 
     samples[i]["Current Generation"] = _k->_currentGeneration;
-    _conduit->start(samples[i]);
+    KORALI_START(samples[i]);
     _modelEvaluationCount++;
   }
 
-  _conduit->waitAll(samples);
+  KORALI_WAITALL(samples);
 
   if (_testFunction)
   {

@@ -1,4 +1,5 @@
 #include "modules/problem/bayesian/latent/hierarchicalCustom/hierarchicalCustom.hpp"
+#include "sample/sample.hpp"
 
 #include <map>
 #include <math.h>
@@ -33,7 +34,7 @@ void HierarchicalCustom::initialize()
   //  if (_k->variables.size() != _latentSpaceDimensions) KORALI_LOG_ERROR("Hierarchical latent variable problems require only a subset of prototype variables to be defined. Please define one prototype latent variable per individual. (Expected %d variables, found %d variables.) \n", _numberIndividuals, _k->_variables.size());
 
   // Prepare the loglikelihood function
-  loglikelihoodLambdaFunction = [this](korali::Sample &s) -> void {
+  loglikelihoodLambdaFunction = [this](Sample &s) -> void {
     loglikelihoodFunction(s);
   };
 
@@ -59,7 +60,7 @@ void HierarchicalCustom::initialize()
   {
     for (size_t dim = 0; dim < _latentSpaceDimensions; dim++)
     {
-      korali::Variable *var = _k->_variables[dim];
+      Variable *var = _k->_variables[dim];
       if (var->_bayesianType != "Latent") KORALI_LOG_ERROR("Expected prototype variables for latent variables only; found a hyperparameter. Hyperparameters will be created automatically.");
       //      if (var->_latentVariableDistributionType.c_str() == "NA") KORALI_LOG_ERROR("Latent variable distribution type 'NA' is only for internal use. Please choose a valid distribution.");
       _koraliExperiment["Variables"][i * _latentSpaceDimensions + dim]["Latent Variable Distribution Type"] = var->_latentVariableDistributionType;
@@ -86,7 +87,7 @@ void HierarchicalCustom::initialize()
   int numberLatent = _latentSpaceDimensions * _numberIndividuals;
   for (size_t i = 0; i < _latentSpaceDimensions; i++)
   {
-    korali::Variable *var = _k->_variables[i];
+    Variable *var = _k->_variables[i];
     _koraliExperiment["Variables"][numberLatent + i]["Latent Variable Distribution Type"] = "NA";
     _koraliExperiment["Variables"][numberLatent + i]["Bayesian Type"] = "Hyperparameter";
     _koraliExperiment["Variables"][numberLatent + i]["Is Mean"] = true;
@@ -136,8 +137,8 @@ void HierarchicalCustom::initialize()
   {
     for (size_t j = 0; j < _latentSpaceDimensions; j++)
     {
-      korali::Variable *vari = _k->_variables[i];
-      korali::Variable *varj = _k->_variables[j];
+      Variable *vari = _k->_variables[i];
+      Variable *varj = _k->_variables[j];
       int varIdx = numberLatent + _latentSpaceDimensions + i * _latentSpaceDimensions + j;
       _koraliExperiment["Variables"][varIdx]["Latent Variable Distribution Type"] = "NA";
       _koraliExperiment["Variables"][varIdx]["Bayesian Type"] = "Hyperparameter";
@@ -174,13 +175,13 @@ HierarchicalCustom::~HierarchicalCustom()
   //  delete &_lowlevelProblem;
 }
 
-void HierarchicalCustom::loglikelihoodFunction(korali::Sample &sample)
+void HierarchicalCustom::loglikelihoodFunction(Sample &sample)
 {
   /* - extract latent variables
      - run each model separately on the latent variables --> 'LogLikelihood Evaluation'
      - return as '"logLikelihood"'
   */
-  korali::Sample llhSample;
+  Sample llhSample;
   llhSample["Sample Id"] = KORALI_GET(int, sample, "Sample Id") + 1234;
   llhSample["Current Generation"] = _k->_currentGeneration;
   llhSample["Module"] = "Problem"; // not needed?
@@ -205,29 +206,29 @@ void HierarchicalCustom::loglikelihoodFunction(korali::Sample &sample)
    or similar. That is because the highlevel problem is still linked to _k and will be called at every
    such indirect call.
 */
-void HierarchicalCustom::evaluateLoglikelihood_(korali::Sample &sample, bool zForm)
+void HierarchicalCustom::evaluateLoglikelihood_(Sample &sample, bool zForm)
 {
   _lowlevelProblem->evaluateLoglikelihood_(sample, zForm);
 }
-void HierarchicalCustom::evaluateLoglikelihood(korali::Sample &sample)
+void HierarchicalCustom::evaluateLoglikelihood(Sample &sample)
 {
   _lowlevelProblem->evaluateLoglikelihood_(sample, true);
 }
 
-void HierarchicalCustom::evaluateLogPosterior_(korali::Sample &sample, bool zForm, bool cholesky)
+void HierarchicalCustom::evaluateLogPosterior_(Sample &sample, bool zForm, bool cholesky)
 {
   _lowlevelProblem->evaluateLogPosterior_(sample, zForm, cholesky);
 }
-void HierarchicalCustom::evaluateLogPosterior(korali::Sample &sample)
+void HierarchicalCustom::evaluateLogPosterior(Sample &sample)
 {
   _lowlevelProblem->evaluateLogPosterior_(sample, true, true);
 }
 
-void HierarchicalCustom::evaluateLogPrior_(korali::Sample &sample, bool zForm, bool cholesky)
+void HierarchicalCustom::evaluateLogPrior_(Sample &sample, bool zForm, bool cholesky)
 {
   _lowlevelProblem->evaluateLogPrior_(sample, zForm, cholesky);
 }
-void HierarchicalCustom::evaluateLogPrior(korali::Sample &sample)
+void HierarchicalCustom::evaluateLogPrior(Sample &sample)
 {
   _lowlevelProblem->evaluateLogPrior_(sample, true, true);
 }

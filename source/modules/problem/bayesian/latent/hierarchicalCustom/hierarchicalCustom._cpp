@@ -142,7 +142,7 @@ void HierarchicalCustom::initialize()
         if (i != j)
           continue;
         else
-          varIdx = i;
+          varIdx = numberLatent + _latentSpaceDimensions + i;
       }
       else
         varIdx = numberLatent + _latentSpaceDimensions + i * _latentSpaceDimensions + j;

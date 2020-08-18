@@ -33,7 +33,7 @@ def env(s):
   # Reward = action, if not bigger than state
   val0 = action0 - 5.0
   val1 = action1 - 2.5
-  reward = -val0*val0 -val1*val1
+  reward = -0.1*(val0*val0 + val1*val1)
   
   # Calculating remaining budget
   spenditure = val0 + val1
@@ -77,13 +77,13 @@ e["Variables"][2]["Upper Bound"] = +6.0
 e["Variables"][1]["Exploration Noise"]["Enabled"] = True
 e["Variables"][1]["Exploration Noise"]["Distribution"]["Type"] = "Univariate/Normal"
 e["Variables"][1]["Exploration Noise"]["Distribution"]["Mean"] = 0.0
-e["Variables"][1]["Exploration Noise"]["Distribution"]["Standard Deviation"] = 0.1
+e["Variables"][1]["Exploration Noise"]["Distribution"]["Standard Deviation"] = 0.05
 e["Variables"][1]["Exploration Noise"]["Theta"] = 0.05
 
 e["Variables"][2]["Exploration Noise"]["Enabled"] = True
 e["Variables"][2]["Exploration Noise"]["Distribution"]["Type"] = "Univariate/Normal"
 e["Variables"][2]["Exploration Noise"]["Distribution"]["Mean"] = 0.0
-e["Variables"][2]["Exploration Noise"]["Distribution"]["Standard Deviation"] = 0.1
+e["Variables"][2]["Exploration Noise"]["Distribution"]["Standard Deviation"] = 0.05
 e["Variables"][2]["Exploration Noise"]["Theta"] = 0.05
 
 ### Defining Agent Configuration 
@@ -94,7 +94,7 @@ e["Solver"]["Agent"]["Experience Limit"] = maxSteps
 
 ### Defining the configuration of replay memory
 
-e["Solver"]["Replay Memory"]["Start Size"] =   10000
+e["Solver"]["Replay Memory"]["Start Size"] =   1000
 e["Solver"]["Replay Memory"]["Maximum Size"] = 100000
 
 ## Defining Critic Configuration
@@ -112,7 +112,7 @@ e["Solver"]["Policy"]["Optimization Steps"] = 5
 e["Solver"]["Policy"]["Optimizer"]["Type"] = "Optimizer/Adam"
 e["Solver"]["Policy"]["Optimizer"]["Termination Criteria"]["Min Gradient Norm"] = -1.0
 e["Solver"]["Policy"]["Optimizer"]["Eta"] = 0.0001
-e["Solver"]["Policy"]["Mini Batch Size"] = 16
+e["Solver"]["Policy"]["Mini Batch Size"] = 64
 
 ### Defining the shape of the critic neural network
 
@@ -162,7 +162,7 @@ e["Solver"]["Policy"]["Neural Network"]["Output Scaling"] = [ 10.0, 10.0 ]
 
 ### Defining Termination Criteria
 
-e["Solver"]["Average Training Reward Threshold"] = -2.0
+e["Solver"]["Average Training Reward Threshold"] = -0.5
 e["Solver"]["Policy Testing Episodes"] = 20
 e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = -0.1
 

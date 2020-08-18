@@ -48,6 +48,7 @@ e = korali.Experiment()
 
 e["Problem"]["Type"] = "Reinforcement Learning"
 e["Problem"]["Environment Function"] = env
+e["Problem"]["Action Repeat"] = 3
 
 e["Variables"][0]["Name"] = "X"
 e["Variables"][0]["Type"] = "State"

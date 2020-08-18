@@ -2,6 +2,13 @@
 12 - Optimizing parameters in a hierarchical latent variable model, using SA-EM
 ===============================================================================
 
+These examples are only for debugging purposes - they allow debugging C++-only code,
+which is easier to debug than mixed Python / C++ code.
+
+Do not put this on the master branch.
+
+-----------------
+
 Here, we optimize hierarchical latent variable models. As in tutorial 11, we aim to find the parameters for a
 probability distribution, that maximize the likelihood of a set of observed points :math:`X = \{\mathbf{x}_i\}_{i=1...M}`,
 :math:`\mathbf{x}_i \in \mathbb{R}^n`. We first use the standard version of the `SA-EM` solver, and then show the use of

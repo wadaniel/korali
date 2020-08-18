@@ -307,9 +307,9 @@ void korali::problem::bayesian::latent::HierarchicalLowlevel::evaluateLogPrior_(
   sample["Log Prior"] = individualLLH;
 }
 //
-//        This older function essentially implements a multivariate normal probability function. Though, that is already
-//                implemented in the distribution multivariate/normal. However, this old function seemed to work
-//                just as well.
+//        This older function essentially implements a multivariate normal probability function. But that is already
+//                implemented in the distribution multivariate/normal. Although this old function seemed to work
+//                just as well, switched to the "simpler" version.
 //void korali::problem::bayesian::latent::HierarchicalLowlevel::evaluateLogPrior_old(korali::Sample &sample, bool zForm)
 //{
 //  //  volatile int done = 0;

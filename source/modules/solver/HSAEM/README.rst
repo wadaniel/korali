@@ -14,7 +14,7 @@ then a more specialized solver can be used - this one, `HSAEM`. This can simplif
 
 In the above formula,
  -  :math:`X = (x_i)_i` are observed data points
-    (entirely dealt with by the user, only mentioned for clarity)
+    (entirely handled by the user, only mentioned for clarity)
  -  :math:`\theta` are latent (i.e. unobserved) variables,
  -  :math:`\psi` are hyperparameters.
 

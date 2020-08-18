@@ -1,7 +1,8 @@
-#include "modules/conduit/conduit.hpp"
+#include "engine.hpp"
 #include "modules/experiment/experiment.hpp"
 #include "modules/problem/problem.hpp"
 #include "modules/solver/sampler/MCMC/MCMC.hpp"
+#include "sample/sample.hpp"
 
 #include <chrono>
 #include <limits>
@@ -71,8 +72,8 @@ void MCMC::runGeneration()
     sample["Sample Id"] = _sampleDatabase.size();
     sample["Module"] = "Problem";
     sample["Operation"] = "Evaluate";
-    _conduit->start(sample);
-    _conduit->wait(sample);
+    KORALI_START(sample);
+    KORALI_WAIT(sample);
 
     double evaluation = KORALI_GET(double, sample, "P(x)");
 

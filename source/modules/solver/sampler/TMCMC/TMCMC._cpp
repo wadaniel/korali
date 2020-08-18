@@ -1,6 +1,7 @@
-#include "modules/conduit/conduit.hpp"
+#include "engine.hpp"
 #include "modules/experiment/experiment.hpp"
 #include "modules/solver/sampler/TMCMC/TMCMC.hpp"
+#include "sample/sample.hpp"
 #include <chrono>
 #include <limits>
 #include <numeric>
@@ -163,11 +164,11 @@ void TMCMC::runGeneration()
           samples[c]["Sample Id"] = c;
           _currentChainStep[c]++;
           _modelEvaluationCount++;
-          _conduit->start(samples[c]);
+          KORALI_START(samples[c]);
         }
     }
 
-    size_t finishedId = _conduit->waitAny(samples);
+    size_t finishedId = KORALI_WAITANY(samples);
     //printf("%s\n", samples[finishedId]._js.getJson().dump(2).c_str());
     _chainPendingEvaluation[finishedId] = false;
 
@@ -426,13 +427,13 @@ void TMCMC::calculateGradients(std::vector<Sample> &samples)
     samples[c]["Module"] = "Problem";
     samples[c]["Sample Id"] = c;
     samples[c]["Operation"] = "Evaluate Gradient";
-    _conduit->start(samples[c]);
+    KORALI_START(samples[c]);
     numGradientCalculations++;
   }
 
   for (size_t c = 0; c < numGradientCalculations; c++)
   {
-    size_t finishedId = _conduit->waitAny(samples);
+    size_t finishedId = KORALI_WAITANY(samples);
 
     _chainCandidatesGradients[finishedId] = KORALI_GET(std::vector<double>, samples[finishedId], "logLikelihood Gradient");
     for (size_t d = 0; d < _k->_variables.size(); ++d) _chainCandidatesGradients[finishedId][d] *= _annealingExponent;
@@ -448,7 +449,7 @@ void TMCMC::calculateProposals(std::vector<Sample> &samples)
     samples[c]["Sample Id"] = c;
     samples[c]["Module"] = "Problem";
     samples[c]["Operation"] = "Evaluate Fisher Information";
-    _conduit->start(samples[c]);
+    KORALI_START(samples[c]);
     numFIMCalculations++;
   }
 
@@ -459,7 +460,7 @@ void TMCMC::calculateProposals(std::vector<Sample> &samples)
 
   for (size_t c = 0; c < numFIMCalculations; c++)
   {
-    size_t finishedId = _conduit->waitAny(samples);
+    size_t finishedId = KORALI_WAITANY(samples);
     //printf("%s\n", samples[finishedId]._js.getJson().dump(2).c_str());
 
     // reset

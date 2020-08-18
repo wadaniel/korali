@@ -1,7 +1,6 @@
 #ifndef _KORALI_SOLVER_GAUSSIAN_PROCESS_HPP_
 #define _KORALI_SOLVER_GAUSSIAN_PROCESS_HPP_
 
-#include "engine.hpp"
 #include "gp/gp.h"
 #include "modules/experiment/experiment.hpp"
 #include "modules/problem/supervisedLearning/supervisedLearning.hpp"
@@ -31,11 +30,6 @@ class GaussianProcess : public Learner
   std::unique_ptr<libgp::GaussianProcess> _gp;
 
   /**
-  * @brief Korali engine for optimizing the GP's parameters
-  */
-  Engine _koraliEngine;
-
-  /**
   * @brief Korali experiment for optimizing the GP's parameters
   */
   Experiment _koraliExperiment;
@@ -47,9 +41,9 @@ class GaussianProcess : public Learner
   */
   static void runSample(Sample &sample, libgp::GaussianProcess *gp);
 
-  std::vector<std::vector<double>> getEvaluation(const std::vector<std::vector<double>> &input) override;
-  knlohmann::json &getHyperparameters() override;
-  void setHyperparameters(const knlohmann::json &parameters) override;
+  std::vector<double> getEvaluation(const std::vector<double> &input) override;
+  std::vector<double> getHyperparameters() override;
+  void setHyperparameters(const std::vector<double> &hyperparameters) override;
   void initialize() override;
   void runGeneration() override;
   void printGenerationAfter() override;

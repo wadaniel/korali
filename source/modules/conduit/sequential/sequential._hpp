@@ -22,7 +22,7 @@ class Sequential : public Conduit
   * @param sample Sample to start/resume.
   */
   void processSample(Sample &sample) override;
-  void broadcastGlobals(knlohmann::json &globalsJs) override;
+  void broadcastGlobals(std::string key, knlohmann::json &globalsJs) override;
 };
 
 } // namespace conduit

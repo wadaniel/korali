@@ -3,6 +3,7 @@
 #include "modules/experiment/experiment.hpp"
 #include "modules/problem/problem.hpp"
 #include "modules/solver/solver.hpp"
+#include "sample/sample.hpp"
 #include <fcntl.h>
 #include <sched.h>
 #include <sys/types.h>
@@ -18,12 +19,17 @@ namespace conduit
 {
 void Concurrent::initialize()
 {
+  // Setting workerId to -1 to identify master process
+  _workerId = -1;
+
   if (_concurrentJobs < 1) KORALI_LOG_ERROR("You need to define at least 1 concurrent job(s) for external models \n");
-  _resultPipe.clear();
+  _resultSizePipe.clear();
+  _resultContentPipe.clear();
   _inputsPipe.clear();
   while (!_launcherQueue.empty()) _launcherQueue.pop();
 
-  for (size_t i = 0; i < _concurrentJobs; i++) _resultPipe.push_back(vector<int>(2));
+  for (size_t i = 0; i < _concurrentJobs; i++) _resultSizePipe.push_back(vector<int>(2));
+  for (size_t i = 0; i < _concurrentJobs; i++) _resultContentPipe.push_back(vector<int>(2));
   for (size_t i = 0; i < _concurrentJobs; i++) _inputsPipe.push_back(vector<int>(2));
   for (size_t i = 0; i < _concurrentJobs; i++) _launcherQueue.push(i);
 
@@ -31,9 +37,12 @@ void Concurrent::initialize()
   for (size_t i = 0; i < _concurrentJobs; i++)
   {
     if (pipe(_inputsPipe[i].data()) == -1) KORALI_LOG_ERROR("Unable to create inter-process pipe. \n");
-    if (pipe(_resultPipe[i].data()) == -1) KORALI_LOG_ERROR("Unable to create inter-process pipe. \n");
-    fcntl(_resultPipe[i][0], F_SETFL, fcntl(_resultPipe[i][0], F_GETFL) | O_NONBLOCK);
-    fcntl(_resultPipe[i][1], F_SETFL, fcntl(_resultPipe[i][1], F_GETFL) | O_NONBLOCK);
+    if (pipe(_resultSizePipe[i].data()) == -1) KORALI_LOG_ERROR("Unable to create inter-process pipe. \n");
+    if (pipe(_resultContentPipe[i].data()) == -1) KORALI_LOG_ERROR("Unable to create inter-process pipe. \n");
+    fcntl(_resultSizePipe[i][0], F_SETFL, fcntl(_resultSizePipe[i][0], F_GETFL) | O_NONBLOCK);
+    fcntl(_resultSizePipe[i][1], F_SETFL, fcntl(_resultSizePipe[i][1], F_GETFL) | O_NONBLOCK);
+    fcntl(_resultContentPipe[i][0], F_SETFL, fcntl(_resultContentPipe[i][0], F_GETFL));
+    fcntl(_resultContentPipe[i][1], F_SETFL, fcntl(_resultContentPipe[i][1], F_GETFL));
   }
 }
 
@@ -59,10 +68,12 @@ void Concurrent::finalize()
 
   for (size_t i = 0; i < _concurrentJobs; i++)
   {
-    close(_resultPipe[i][1]); // Closing pipes
-    close(_resultPipe[i][0]); // Closing pipes
-    close(_inputsPipe[i][1]); // Closing pipes
-    close(_inputsPipe[i][0]); // Closing pipes
+    close(_resultContentPipe[i][1]); // Closing pipes
+    close(_resultContentPipe[i][0]); // Closing pipes
+    close(_resultSizePipe[i][1]);    // Closing pipes
+    close(_resultSizePipe[i][0]);    // Closing pipes
+    close(_inputsPipe[i][1]);        // Closing pipes
+    close(_inputsPipe[i][0]);        // Closing pipes
   }
 
   Conduit::finalize();
@@ -105,18 +116,35 @@ void Concurrent::worker(int workerId)
     if (actionJs["Conduit Action"] == "Terminate") exit(0);
     if (actionJs["Conduit Action"] == "Process Sample")
     {
+      Engine *engine = _engineStack.top();
+      auto expId = actionJs["Experiment Id"];
       Sample s;
-      s._globals = &_globals;
+      s._globals = &engine->_experimentVector[expId]->_globals;
       s._js.getJson() = actionJs;
       s.sampleLauncher();
 
       string resultString = s._js.getJson().dump();
       size_t resultStringSize = resultString.size();
 
-      write(_resultPipe[_workerId][1], &resultStringSize, sizeof(size_t));
-      write(_resultPipe[_workerId][1], resultString.c_str(), resultStringSize * sizeof(char));
+      write(_resultSizePipe[_workerId][1], &resultStringSize, sizeof(size_t));
+
+      size_t curPos = 0;
+      while (curPos < resultStringSize)
+      {
+        size_t bufSize = BUFFERSIZE;
+        if (curPos + bufSize > resultStringSize) bufSize = resultStringSize - curPos;
+        write(_resultContentPipe[_workerId][1], resultString.c_str() + curPos, bufSize * sizeof(char));
+        curPos += bufSize;
+      }
     }
-    if (actionJs["Conduit Action"] == "Broadcast Globals") _globals = actionJs;
+    if (actionJs["Conduit Action"] == "Broadcast Globals")
+    {
+      Engine *engine = _engineStack.top();
+      auto expId = actionJs["Experiment Id"];
+      auto key = actionJs["Globals"]["Key"].get<std::string>();
+      engine->_experimentVector[expId]->_globals[key] = actionJs["Globals"]["Values"];
+    }
+
     if (actionJs["Conduit Action"] == "Stack Engine") _engineStack.push(Engine::deserialize(actionJs["Engine"]));
     if (actionJs["Conduit Action"] == "Pop Engine") _engineStack.pop();
   }
@@ -160,15 +188,23 @@ void Concurrent::processSample(Sample &sample)
     }
 
     size_t resultStringSize;
-    readBytes = read(_resultPipe[launcherId][0], &resultStringSize, sizeof(size_t));
+    readBytes = read(_resultSizePipe[launcherId][0], &resultStringSize, sizeof(size_t));
 
     if (readBytes > 0)
     {
-      char resultString[resultStringSize + 1];
-      while (read(_resultPipe[launcherId][0], resultString, resultStringSize * sizeof(char)) < 0)
-        ;
+      char resultString[resultStringSize + BUFFERSIZE];
 
+      size_t curPos = 0;
+      while (curPos < resultStringSize)
+      {
+        size_t bufSize = BUFFERSIZE;
+        if (curPos + bufSize > resultStringSize) bufSize = resultStringSize - curPos;
+        read(_resultContentPipe[launcherId][0], resultString + curPos, bufSize * sizeof(char));
+        curPos += bufSize;
+        //sched_yield(); // Guarantees MacOs finishes the pipe reading
+      }
       resultString[resultStringSize] = '\0';
+
       sample._js.getJson() = knlohmann::json::parse(resultString);
 
       _launcherQueue.push(launcherId);
@@ -225,16 +261,25 @@ void Concurrent::popEngine()
   }
 }
 
-void Concurrent::broadcastGlobals(knlohmann::json &globalsJs)
+void Concurrent::broadcastGlobals(std::string key, knlohmann::json &globalsJs)
 {
-  globalsJs["Conduit Action"] = "Broadcast Globals";
-  string globalsString = globalsJs.dump();
+  // Run broadcast only if this is the master process
+  if (!isRoot()) return;
+
+  Engine *engine = _engineStack.top();
+
+  knlohmann::json js;
+  js["Experiment Id"] = engine->_currentExperiment->_experimentId;
+  js["Conduit Action"] = "Broadcast Globals";
+  js["Globals"]["Key"] = key;
+  js["Globals"]["Values"] = globalsJs;
+
+  string globalsString = js.dump();
   size_t globalsStringSize = globalsString.size();
 
   for (size_t i = 0; i < _concurrentJobs; i++)
   {
     write(_inputsPipe[i][1], &globalsStringSize, sizeof(size_t));
-
     size_t curPos = 0;
     while (curPos < globalsStringSize)
     {
@@ -244,6 +289,11 @@ void Concurrent::broadcastGlobals(knlohmann::json &globalsJs)
       curPos += bufSize;
     }
   }
+}
+
+bool Concurrent::isRoot()
+{
+  return _workerId == -1;
 }
 
 } // namespace conduit

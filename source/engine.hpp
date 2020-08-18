@@ -5,7 +5,6 @@
 * @brief Include header for the Korali Engine
 */
 
-#include "auxiliar/py2json.hpp"
 #include "modules/conduit/conduit.hpp"
 #include "modules/conduit/distributed/distributed.hpp"
 #include "modules/experiment/experiment.hpp"
@@ -15,6 +14,8 @@
 
 namespace korali
 {
+class Sample;
+
 /**
   * @brief A Korali Engine initializes the conduit and experiments, and guides their execution.
  */
@@ -22,6 +23,11 @@ class Engine : public Module
 {
   public:
   Engine();
+
+  /**
+    * @brief A pointer to the execution conduit. Shared among all experiments in the engine.
+    */
+  Conduit *_conduit;
 
   /**
    * @brief Verbosity level of the Engine ('Silent', 'Minimal' (default), 'Normal' or 'Detailed').

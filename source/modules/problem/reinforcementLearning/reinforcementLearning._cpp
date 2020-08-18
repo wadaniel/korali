@@ -1,5 +1,6 @@
 #include "modules/problem/reinforcementLearning/reinforcementLearning.hpp"
 #include "modules/solver/agent/agent.hpp"
+#include "sample/sample.hpp"
 
 namespace korali
 {
@@ -52,10 +53,15 @@ void __environmentWrapper()
   KORALI_LOG_ERROR("Resuming a finished sample\n");
 }
 
-void ReinforcementLearning::runEnvironment(Sample &sample)
+void ReinforcementLearning::runTrainingSample(Sample &sample) { runEnvironment(sample, true); }
+void ReinforcementLearning::runTestingSample(Sample &sample) { runEnvironment(sample, false); }
+void ReinforcementLearning::runEnvironment(Sample &sample, bool useTrainingAction)
 {
   // Getting RL-compatible solver
   auto agent = dynamic_cast<solver::Agent *>(_k->_solver);
+
+  // First, we update the policy's hyperparameters
+  agent->updateHyperparameters(sample.globals()["Hyperparameters"]);
 
   sample["Finished"] = false;
 
@@ -74,30 +80,57 @@ void ReinforcementLearning::runEnvironment(Sample &sample)
   // Initializing episode's experience counter
   size_t expId = 0;
 
+  // A counter for the cumulative reward
+  double cumulativeReward = 0.0;
+
+  // Storage for the action
+  std::vector<double> action(_actionVectorSize);
+
   // Saving experiences
   while (sample["Finished"] == false)
   {
-    // Storing the current state
-    sample["Experience"]["States"][expId] = sample["State"];
+    // Retrieving state
+    auto state = sample["State"].get<std::vector<double>>();
 
     // Requesting new action, if enough steps have passed, given by the action repeat parameter
     if (actionLastUpdated == 0)
     {
-      agent->getAction(sample);
+      if (useTrainingAction == true)
+        action = agent->getTrainingAction(state);
+      else
+        action = agent->getInferenceAction(state);
+
       actionLastUpdated = _actionRepeat;
     }
     actionLastUpdated--;
 
+    // Setting current action
+    sample["Action"] = action;
+
+    // Storing the current state
+    sample["Experience"]["States"][expId] = state;
+
     // Storing the current action
-    sample["Experience"]["Actions"][expId] = sample["Action"];
+    sample["Experience"]["Actions"][expId] = action;
+
+    // Calculating and storing probability density of current state/action
+    sample["Experience"]["Densities"][expId] = agent->getStateActionProbabilityDensity(state, action);
 
     // Jumping back into the agent's environment
     co_switch(envThread);
 
     // Returning from the agent's environment with the reward
-    sample["Experience"]["Rewards"][expId] = sample["Reward"];
+    double reward = sample["Reward"].get<double>();
+    sample["Experience"]["Rewards"][expId] = reward;
+
+    // Adding this experience's reward to total reward
+    cumulativeReward += reward;
+
+    // Advancing to next experience
     expId++;
   }
+
+  sample["Cumulative Reward"] = cumulativeReward;
 
   co_delete(envThread);
 }

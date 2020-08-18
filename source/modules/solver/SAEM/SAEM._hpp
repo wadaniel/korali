@@ -17,7 +17,6 @@ class SAEM : public Solver
   public:
   void setInitialConfiguration();
 
-  Engine _engine;         //!< @brief Korali engine for running the optimization in the M step
   Experiment _experiment; //!< @brief Korali experiment for the optimization in the M step
 
   korali::problem::bayesian::latent::Exponential *_latentProblem; //!< @brief The problem instance that this SAEM is supposed to solve

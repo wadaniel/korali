@@ -1,0 +1,38 @@
+#include "modules/distribution/univariate/weibull/weibull.hpp"
+#include "modules/experiment/experiment.hpp"
+
+namespace korali
+{
+namespace distribution
+{
+namespace univariate
+{
+double Weibull::getDensity(const double x) const
+{
+  return gsl_ran_weibull_pdf(x, _scale, _shape);
+}
+
+double Weibull::getLogDensity(const double x) const
+{
+  if (x < 0) return -INFINITY;
+  return _aux + (_scale - 1) * log(x) - pow((x / _scale), _shape);
+}
+
+double Weibull::getRandomNumber()
+{
+  return gsl_ran_weibull(_range, _scale, _shape);
+}
+
+void Weibull::updateDistribution()
+{
+  if (_shape <= 0.0) KORALI_LOG_ERROR("Incorrect Shape parameter of Weibull distribution: %f.\n", _shape);
+  if (_scale <= 0.0) KORALI_LOG_ERROR("Incorrect Scale parameter of Weibull distribution: %f.\n", _scale);
+
+  _aux = log(_shape / _scale) - (_shape - 1.0) * log(_scale);
+}
+
+} // namespace univariate
+
+} // namespace distribution
+
+} // namespace korali

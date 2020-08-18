@@ -1,4 +1,5 @@
 #include "modules/problem/propagation/propagation.hpp"
+#include "sample/sample.hpp"
 
 namespace korali
 {

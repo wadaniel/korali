@@ -261,7 +261,8 @@ void SAEM::updateHyperparameters()
   // Updating the current S for the Q experiment
   _experiment._globals["Current S"] = _currentS;
   _experiment["Random Seed"] = _k->_randomSeed++;
-  _engine.run(_experiment);
+  korali::Engine engine;
+  engine.run(_experiment);
 
   _currentHyperparameters = _experiment["Results"]["Best Sample"]["Parameters"].get<std::vector<double>>();
   if (_currentHyperparameters.size() != _numberHyperparameters) KORALI_LOG_ERROR(

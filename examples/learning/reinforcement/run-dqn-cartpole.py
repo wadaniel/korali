@@ -7,7 +7,7 @@ import gym
 ######## Defining Environment Storage
 
 cart = gym.make('CartPole-v1').unwrapped
-maxSteps = 3000
+maxSteps = 2000
 
 ####### Defining Problem's environment
 
@@ -71,13 +71,13 @@ e["Solver"]["Type"] = "Agent/DQN"
 
 ### Defining Replay Memory configuration
 
-e["Solver"]["Replay Memory"]["Start Size"] = 5000
+e["Solver"]["Replay Memory"]["Start Size"] = 500
 e["Solver"]["Replay Memory"]["Maximum Size"] = 150000
 
 ### Defining the configuration of the agent
 
-e["Solver"]["Agent"]["Episodes Per Generation"] = 5 
-e["Solver"]["Agent"]["Experience Limit"] = 1000
+e["Solver"]["Agent"]["Episodes Per Generation"] = 1 
+e["Solver"]["Agent"]["Experience Limit"] = maxSteps
 
 ### Defining training policy configuration
 
@@ -89,10 +89,11 @@ e["Solver"]["Policy"]["Epsilon"]["Decrease Rate"] = 0.05
 ## Defining Q-Critic and Action-selection (policy) optimizers
 
 e["Solver"]["Critic"]["Mini Batch Size"] = 32
-e["Solver"]["Critic"]["Discount Factor"] = 0.99 
+e["Solver"]["Critic"]["Discount Factor"] = 0.99
+e["Solver"]["Critic"]["Update Algorithm"] = "Retrace"  
 e["Solver"]["Critic"]["Optimizer"]["Type"] = "Optimizer/Adam"
 e["Solver"]["Critic"]["Optimizer"]["Eta"] = 0.1
-e["Solver"]["Critic"]["Optimization Steps"] = 5
+e["Solver"]["Critic"]["Optimization Steps"] = 1
 
 ### Defining the shape of the neural network
 
@@ -120,7 +121,9 @@ e["Solver"]["Critic"]["Normalization Steps"] = 32
 
 ### Defining Termination Criteria
 
-e["Solver"]["Termination Criteria"]["Target Average Reward"] = 0.9*maxSteps
+e["Solver"]["Average Training Reward Threshold"] = 1900
+e["Solver"]["Policy Testing Episodes"] = 20
+e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 1900
 
 ### Setting file output configuration
 

@@ -1,7 +1,6 @@
 #ifndef _KORALI_LEARNER_HPP_
 #define _KORALI_LEARNER_HPP_
 
-#include "engine.hpp"
 #include "modules/solver/solver.hpp"
 
 namespace korali

@@ -216,9 +216,11 @@ void korali::problem::bayesian::latent::HierarchicalLowlevel::evaluateLogPrior_(
   {
     covMatrix = KORALI_GET(std::vector<std::vector<double>>, sample, "Covariance Matrix");
   }
-  if (_diagonalCovariance){
-    for (size_t i=0; i < N; i++)
-      for (size_t j=0; j < N; j++){
+  if (_diagonalCovariance)
+  {
+    for (size_t i = 0; i < N; i++)
+      for (size_t j = 0; j < N; j++)
+      {
         if ((i != j) & covMatrix[i][j] != 0)
           KORALI_LOG_ERROR("Passed covariance or Cholesky decomposed covariance was not diagonal, but the problem was initialized as having diagonal covariance in the prior.");
       }

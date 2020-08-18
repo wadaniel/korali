@@ -137,7 +137,8 @@ void HierarchicalCustom::initialize()
     {
       // If _diagonalCovariance, we only define variables for the cases i==j:
       int varIdx;
-      if (_diagonalCovariance){
+      if (_diagonalCovariance)
+      {
         if (i != j)
           continue;
         else

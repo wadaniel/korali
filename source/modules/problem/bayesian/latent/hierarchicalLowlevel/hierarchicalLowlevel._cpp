@@ -120,8 +120,13 @@ void korali::problem::bayesian::latent::HierarchicalLowlevel::initialize()
   _latentIndex.resize(_numberIndividuals);
   for (size_t i = 0; i < _numberIndividuals; i++)
     _latentIndex[i].resize(_latentSpaceDimensions);
-  if (_k->_variables.size() != _latentSpaceDimensions * _numberIndividuals + _latentSpaceDimensions + _latentSpaceDimensions * _latentSpaceDimensions)
-    KORALI_LOG_ERROR("Error: For each coordinate of each 'individual' latent variable vector, one (latent) variable needs to be defined, and then we also need the right amount of hyperparameters (a mean vector and a covariance matrix).");
+  int expectedNumberVariables = 0;
+  if (_diagonalCovariance)
+    expectedNumberVariables = _latentSpaceDimensions * _numberIndividuals + _latentSpaceDimensions * 2;
+  else
+    expectedNumberVariables = _latentSpaceDimensions * _numberIndividuals + _latentSpaceDimensions + _latentSpaceDimensions * _latentSpaceDimensions;
+  if (_k->_variables.size() != expectedNumberVariables)
+    KORALI_LOG_ERROR("Error: For each coordinate of each 'individual' latent variable vector, one (latent) variable needs to be defined, and then we also need the right amount of hyperparameters (a mean vector and a covariance matrix /  its diagonal entries only if _diagonalCovariance).");
 
   // * Check that the ranges are from 0 to max
   std::map<int, std::vector<int>> latentCoordinatesPerIndividual;

@@ -25,4 +25,5 @@
 #ifndef __KORALI__
   #include "engine.hpp"
   #include "modules/experiment/experiment.hpp"
+  #include "sample/sample.hpp"
 #endif

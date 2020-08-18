@@ -1,11 +1,7 @@
 #ifndef _KORALI_CONDUIT_HPP_
 #define _KORALI_CONDUIT_HPP_
 
-#include "modules/conduit/conduit.hpp"
-#include "modules/experiment/experiment.hpp"
 #include "modules/module.hpp"
-#include "modules/solver/solver.hpp"
-#include <chrono>
 #include <vector>
 
 namespace korali

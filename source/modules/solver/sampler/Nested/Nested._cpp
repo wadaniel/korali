@@ -2,6 +2,7 @@
 #include "modules/distribution/univariate/uniform/uniform.hpp"
 #include "modules/experiment/experiment.hpp"
 #include "modules/solver/sampler/Nested/Nested.hpp"
+#include "sample/sample.hpp"
 
 #include <gsl/gsl_linalg.h>
 #include <gsl/gsl_matrix.h>

@@ -8,6 +8,8 @@
 
 namespace korali
 {
+std::vector<std::function<void(Sample &)> *> _functionVector;
+
 Sample::Sample()
 {
   _self = this;

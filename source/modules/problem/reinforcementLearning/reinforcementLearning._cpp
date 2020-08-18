@@ -1,5 +1,6 @@
 #include "modules/problem/reinforcementLearning/reinforcementLearning.hpp"
 #include "modules/solver/agent/agent.hpp"
+#include "sample/sample.hpp"
 
 namespace korali
 {

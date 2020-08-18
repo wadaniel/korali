@@ -1,6 +1,7 @@
 #include "modules/conduit/conduit.hpp"
 #include "modules/experiment/experiment.hpp"
 #include "modules/problem/bayesian/custom/custom.hpp"
+#include "sample/sample.hpp"
 
 namespace korali
 {

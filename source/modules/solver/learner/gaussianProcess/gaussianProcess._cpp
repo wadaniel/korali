@@ -1,6 +1,7 @@
 #include "engine.hpp"
 #include "modules/experiment/experiment.hpp"
 #include "modules/solver/learner/gaussianProcess/gaussianProcess.hpp"
+#include "sample/sample.hpp"
 #include <Eigen/Dense>
 
 namespace korali

@@ -1,5 +1,6 @@
 #include "engine.hpp"
 #include "modules/solver/optimizer/gridSearch/gridSearch.hpp"
+#include "sample/sample.hpp"
 
 namespace korali
 {

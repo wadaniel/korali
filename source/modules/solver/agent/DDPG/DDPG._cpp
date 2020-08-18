@@ -1,5 +1,6 @@
 #include "engine.hpp"
 #include "modules/solver/agent/DDPG/DDPG.hpp"
+#include "sample/sample.hpp"
 
 /****************************************
  * Things to fix:

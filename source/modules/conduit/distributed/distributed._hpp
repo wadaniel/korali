@@ -6,11 +6,11 @@
 #include <queue>
 #include <vector>
 
-namespace korali
-{
 #ifdef _KORALI_USE_MPI
   #include "mpi.h"
 
+namespace korali
+{
 /**
  * @brief Communicator storage for the current Korali Team
  */

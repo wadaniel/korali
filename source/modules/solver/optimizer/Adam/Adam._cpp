@@ -1,5 +1,6 @@
 #include "engine.hpp"
 #include "modules/solver/optimizer/Adam/Adam.hpp"
+#include "sample/sample.hpp"
 
 namespace korali
 {

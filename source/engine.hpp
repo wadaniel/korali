@@ -14,6 +14,8 @@
 
 namespace korali
 {
+class Sample;
+
 /**
   * @brief A Korali Engine initializes the conduit and experiments, and guides their execution.
  */

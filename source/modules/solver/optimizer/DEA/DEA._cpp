@@ -2,6 +2,7 @@
 #include "modules/experiment/experiment.hpp"
 #include "modules/problem/problem.hpp"
 #include "modules/solver/optimizer/DEA/DEA.hpp"
+#include "sample/sample.hpp"
 
 #include <algorithm>
 #include <chrono>

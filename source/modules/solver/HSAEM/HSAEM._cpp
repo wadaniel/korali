@@ -149,7 +149,7 @@ void HSAEM::setInitialConfiguration()
     {
       //      int idx =  _latentProblem->_hyperparametersCovIndices[i][j];
       int idx = i * _latentProblem->_latentSpaceDimensions + j;
-      if (!_diagonalCovariance | (i == j))
+      if (!_latentProblem->_diagonalCovariance | (i == j))
         _currentHyperparametersCovariance[i][j] = _latentProblem->_hyperparametersCovariance[idx]->_initialValue;
       // Other entries of the _latentProblem's covariance will be uninitialized!
       else

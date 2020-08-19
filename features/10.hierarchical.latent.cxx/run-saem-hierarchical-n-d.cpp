@@ -33,6 +33,7 @@ int main(int argc, char *argv[])
   //  e["Problem"]["Data Dimensions"] = nDimensions;
   //  e["Problem"]["Number Individuals"] = nIndividuals;
   e["Problem"]["Latent Space Dimensions"] = nDimensions;
+  e["Problem"]["Diagonal Covariance"] = true;
 
   e["Solver"]["Type"] = "HSAEM";
   e["Solver"]["Number Samples Per Step"] = 5; // reduce further to speed up

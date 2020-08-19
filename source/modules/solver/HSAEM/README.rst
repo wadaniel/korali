@@ -97,4 +97,10 @@ Parameters that control SA in the HSAEM solver are:
 Korali's implementation of SA for HSAEM follows the proposal in chapter 9.2.6 in the `book by Lavielle <http://www.cmap.polytechnique.fr/~lavielle/book.html>`_ .
 
 
+Supported Problem Types
+-----------------------
+
+HSAEM expects a special problem structure. `Bayesian/Latent/HierarchicalReference`,  `Bayesian/Latent/HierarchicalCustom`
+and  `Bayesian/Latent/HierarchicalLowlevel` have this structure (the latter might not work as it is not intended
+for direct use).
 

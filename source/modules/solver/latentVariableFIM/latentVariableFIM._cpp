@@ -29,6 +29,9 @@ void korali::solver::LatentVariableFIM::initialize()
   if (_k->_problem->getType() == "Bayesian/Latent/HierarchicalLowlevel")
     _latentProblem = dynamic_cast<problem::bayesian::latent::HierarchicalLowlevel *>(_k->_problem);
 
+  if ( ! _latentProblem->_diagonalCovariance )
+    KORALI_LOG_ERROR("Error, FIM estimation only supported for diagonal covariances, currently.");
+
   _numberIndividuals = _latentProblem->_numberIndividuals;
   _latentSpaceDimensions = _latentProblem->_latentSpaceDimensions;
 

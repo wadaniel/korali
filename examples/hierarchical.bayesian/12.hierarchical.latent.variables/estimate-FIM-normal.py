@@ -37,7 +37,7 @@ def main():
   # FIM estimation is only supported for diagonal covariance matrices
   e["Problem"]["Diagonal Covariance"] = True
 
-  e["Solver"]["Type"] = "latentVariableFIM"
+  e["Solver"]["Type"] = "LatentVariableFIM"
   e["Solver"]["Number Sampling Chains"] = 5
   e["Solver"]["MCMC Outer Steps"] = 100
   e["Solver"]["MCMC Target Acceptance Rate"] = 0.4

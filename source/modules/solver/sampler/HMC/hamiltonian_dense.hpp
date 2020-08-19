@@ -59,7 +59,7 @@ class HamiltonianDense : public Hamiltonian
         tmpScalar += p[i] * inverseMetric[i * _stateSpaceDim + j] * p[j];
       }
     }
-    
+
     // std::cout << "K(" << p[0] << ") = " << 0.5 * tmpScalar << std::endl;
     return 0.5 * tmpScalar;
   }

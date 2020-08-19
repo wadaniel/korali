@@ -61,8 +61,6 @@ void HSAEM::initialize()
   // Todo: make sure the problem is initialized before the solver
   _numberIndividuals = _latentProblem->_numberIndividuals;
   _latentSpaceDimensions = _latentProblem->_latentSpaceDimensions;
-  // assert (_latentSpaceDimensions == _k->_variables.size()); // only variables for one individual, as prototypes, should be defined
-  // \_ Edit: hSAEM initialization is also called when initializing the sub-problem, from within hierarchicalLatent._cpp. In that case _k has a complete list of variables.
   _mCMCNumberChains = _numberSamplesPerStep; // to simplify things, use one MCMC chain per final sample to generate.
 
   _univariateNormalGenerator->_mean = 0.0;
@@ -293,7 +291,6 @@ void HSAEM::sampleLatent()
             // Todo: Do not write to currentZ directly here, instead create a temporary array and write back everything
             //             only after the loop over all chains? I don't know enough about the optimization / what will be
             //             parallelized in both cases. It could help.
-            // Todo: Look at (T)MCMC, how are separate chains managed there?
             currentLLHs[indiv] = newLLHs[indiv];
           }
         }

@@ -1,0 +1,479 @@
+#include "modules/conduit/conduit.hpp"
+#include "modules/problem/bayesian/latent/hierarchicalCustom/hierarchicalCustom.hpp"
+#include "modules/problem/bayesian/latent/hierarchicalReference/hierarchicalReference.hpp"
+#include "modules/solver/latentVariableFIM/latentVariableFIM.hpp"
+#include "sample/sample.hpp"
+
+#include <sstream>
+
+/*       * * * * * * * * * * * * * * * * * * * * * * * *
+ *        *  Initialization and initial configuration  *
+ *       * * * * * * * * * * * * * * * * * * * * * * * */
+
+void korali::solver::LatentVariableFIM::initialize()
+{
+  if ((_k->_problem->getType() != "Bayesian/Latent/HierarchicalCustom") &&
+      (_k->_problem->getType() != "Bayesian/Latent/HierarchicalLowlevel") &&
+      (_k->_problem->getType() != "Bayesian/Latent/HierarchicalReference"))
+    KORALI_LOG_ERROR("latentVariableFIM can only calculate the FIM for problems of type 'Bayesian/Latent/HierarchicalReference' or '.../HierarchicalCustom' or '.../HierarchicalLowlevel' .\n");
+  if (_k->_problem->getType() == "Bayesian/Latent/HierarchicalCustom")
+  {
+    auto _latentProblemWrapper = dynamic_cast<problem::bayesian::latent::HierarchicalCustom *>(_k->_problem);
+    _latentProblem = _latentProblemWrapper->_lowlevelProblem;
+  }
+  if (_k->_problem->getType() == "Bayesian/Latent/HierarchicalReference")
+  {
+    auto _latentProblemWrapper = dynamic_cast<problem::bayesian::latent::HierarchicalReference *>(_k->_problem);
+    _latentProblem = _latentProblemWrapper->_lowlevelProblem;
+  }
+  if (_k->_problem->getType() == "Bayesian/Latent/HierarchicalLowlevel")
+    _latentProblem = dynamic_cast<problem::bayesian::latent::HierarchicalLowlevel *>(_k->_problem);
+
+  _numberIndividuals = _latentProblem->_numberIndividuals;
+  _latentSpaceDimensions = _latentProblem->_latentSpaceDimensions;
+
+  _univariateNormalGenerator->_mean = 0.0;
+  rng = std::mt19937(std::random_device{}());
+
+  if (_mCMCSubchainSteps.size() != 3)
+    KORALI_LOG_ERROR("Parameter 'MCMC Subchain Steps' must be a list of exactly three elements. Its length was: %d", _mCMCSubchainSteps.size());
+  _n1 = _mCMCSubchainSteps[0];
+  _n2 = _mCMCSubchainSteps[1];
+  _n3 = _mCMCSubchainSteps[2];
+
+  if (_latentSpaceDimensions == 1)
+    _n3 = 0;
+  if (_latentProblem->_logitnormalLatentIndices.size() > 0.75 * (_latentSpaceDimensions))
+    _n1 = 1; // For Logit-Normal variables, the first "chain", first N1 steps, are very unstable. That is
+             // because the LLH is a bad indicator for logit-normals, and the first steps rely purely on LLH as acceptance criterion.
+  if (_n1 == 0)
+    _n1 = 1; // We require at least one initial step in N1, where we always accept - that's the initialization.
+
+  if ((_mCMCTargetAcceptanceRate <= 0.) || (_mCMCTargetAcceptanceRate >= 1))
+    KORALI_LOG_ERROR("Value of 'mcmc Target Acceptance Rate' must be above 0 and below 1. Value %.2f is invalid.\n", _mCMCTargetAcceptanceRate);
+}
+
+/* @brief Run once, before the first generation */
+void korali::solver::LatentVariableFIM::setInitialConfiguration()
+{
+  _acceptanceRate.resize(_latentSpaceDimensions);
+  _acceptanceRateNominator.resize(_latentSpaceDimensions);
+  _acceptanceRateDenominator.resize(_latentSpaceDimensions);
+  std::fill(_acceptanceRateNominator.begin(), _acceptanceRateNominator.end(), 0.0);
+  std::fill(_acceptanceRateDenominator.begin(), _acceptanceRateDenominator.end(), 0.0);
+
+  _mCMCVariances.resize(_latentSpaceDimensions);
+
+  // Run dimensionality checks.
+  // Also, if a diagonal covariance was passed as vector, transform it into a matrix.
+  if (_hyperparametersDiagonalCovariance.size() > 0)
+  {
+    if (_hyperparametersCovariance.size() > 0)
+      KORALI_LOG_ERROR("Please only set one of 'Hyperparameters Diagonal Covariance' and 'Hyperparameters Covariance.'");
+    if (_hyperparametersDiagonalCovariance.size() != _latentSpaceDimensions)
+      KORALI_LOG_ERROR("If passed as list of diagonal entries, the covariance must have as many entries as there are latent variable dimensions (%d, here).", _latentSpaceDimensions);
+    _hyperparametersCovariance.resize(_latentSpaceDimensions);
+    // Populate _hyperparametersCovariance:
+    for (size_t i = 0; i < _latentSpaceDimensions; i++)
+    {
+      _hyperparametersCovariance[i].resize(_latentSpaceDimensions);
+      std::fill(_hyperparametersCovariance[i].begin(), _hyperparametersCovariance[i].end(), 0.0);
+      // Insert value on the diagonal:
+      _hyperparametersCovariance[i][i] = _hyperparametersDiagonalCovariance[i];
+    }
+  }
+  else
+  {
+    if (_hyperparametersCovariance.size() == 0)
+      KORALI_LOG_ERROR("One of 'Hyperparameters Diagonal Covariance' and 'Hyperparameters Covariance' is required.");
+    if (_hyperparametersCovariance.size() != _latentSpaceDimensions)
+      KORALI_LOG_ERROR("Wrong size of first dimension of the covariance: %d instead of %d", _hyperparametersCovariance.size(), _latentSpaceDimensions);
+    for (size_t i = 0; i < _latentSpaceDimensions; i++)
+      if (_hyperparametersCovariance[i].size() != _latentSpaceDimensions)
+        KORALI_LOG_ERROR("Wrong size of %d-th row of the covariance: %d instead of %d.", _hyperparametersCovariance[i].size(), _latentSpaceDimensions);
+  }
+  if (_hyperparametersMean.size() != _latentSpaceDimensions)
+    KORALI_LOG_ERROR("Wrong length of 'Hyperparameters Mean': %d instead of %d.", _hyperparametersMean.size(), _latentSpaceDimensions);
+
+  _covarianceCholesky.resize(_latentSpaceDimensions);
+  for (size_t i = 0; i < _latentSpaceDimensions; i++)
+    _covarianceCholesky[i].resize(_latentSpaceDimensions);
+
+  calculateCholesky();
+  updateMultivariateDistribution();
+
+  /* Initialize the array of z-samples */
+
+  //  _samples.resize(_numberSamplingChains)
+  _z.resize(_numberSamplingChains);
+  for (size_t i = 0; i < _numberSamplingChains; i++)
+  {
+    //    _samples[i].resize(_mCMCOuterSteps * _n1 * _n2 * _n3 );
+    _z[i].resize(_mCMCOuterSteps * (_n1 + _n2 * _latentSpaceDimensions + _n3));
+    for (size_t j = 0; j < _mCMCOuterSteps * (_n1 + _n2 * _latentSpaceDimensions + _n3); j++)
+    {
+      //      _samples[i][j].resize(_numberIndividuals );
+      _z[i][j].resize(_numberIndividuals);
+      for (size_t k = 0; k < _numberIndividuals; k++)
+        //        _samples[i][j][k].resize(_latentSpaceDimensions);
+        _z[i][j][k].resize(_latentSpaceDimensions);
+    }
+    for (size_t k = 0; k < _numberIndividuals; k++)
+    {
+      // Starting values for sampling
+      _multivariateNormalGenerator->getRandomVector(&_z[i][0][k][0], _latentSpaceDimensions);
+    }
+  }
+}
+
+/*       * * * * * * * * * * *
+ *        * Run Generation *
+ *       * * * * * * * * * * */
+
+void korali::solver::LatentVariableFIM ::runGeneration()
+{
+  if (_k->_currentGeneration == 1) setInitialConfiguration();
+
+  sampleLatent();
+  _k->_logger->logInfo("Detailed", "Sampled generation: %d \n", _k->_currentGeneration);
+}
+
+/*       * * * * * * * * * * * * * * * * * * * * *
+ *        * Sampling - Modified from HSAEM *
+ *       * * * * * * * * * * * * * * * * * * * */
+
+void korali::solver::LatentVariableFIM::sampleLatent()
+{
+  std::fill(_acceptanceRateDenominator.begin(), _acceptanceRateDenominator.end(), 0.0);
+  std::fill(_acceptanceRateNominator.begin(), _acceptanceRateNominator.end(), 0.0);
+
+  // ** Loop over chains
+  for (size_t c_idx = 0; c_idx < _numberSamplingChains; c_idx++)
+  {
+    // Calculate initial likelihoods and priors
+    std::vector<double> currentLLHs(0);
+    std::vector<double> currentPriors(0); // will be used in steps 2 and 3
+    std::vector<double> acceptanceRates(0);
+
+    Sample sample;
+    sample["Sample Id"] = 2564236;
+    sample["Current Generation"] = _k->_currentGeneration;
+    sample["Latent Variables"] = _z[c_idx][0];
+    sample["Operation"] = "Evaluate logLikelihood";
+    sample["Module"] = "Problem";
+    KORALI_START(sample);
+    KORALI_WAIT(sample);
+    currentLLHs = sample["logLikelihood"].get<std::vector<double>>();
+
+    sample["Operation"] = "Evaluate logPrior";
+    sample["Latent Variables"] = _z[c_idx][0];
+    sample["Mean"] = _hyperparametersMean;
+    sample["Covariance Cholesky Decomposition"] = _covarianceCholesky;
+    KORALI_START(sample);
+    KORALI_WAIT(sample);
+    currentPriors = sample["Log Prior"].get<std::vector<double>>();
+
+    // Access _z only twice for each chain, and hope that this allows parallelism - use chainZ in between:
+    std::vector<std::vector<std::vector<double>>> chainZ = _z[c_idx];
+
+    // ** Loop over one chain
+    size_t step = 1; // substep-counter. Step 0 is initialization.
+    for (size_t outer_step = 0; outer_step < _mCMCOuterSteps; outer_step++)
+    {
+      // *****************************
+      // ** 1st proposal distribution:
+      // *****************************
+      //    Sample directly according to p(latent | hyperparameter), ignoring the data. Accept according to the ratios
+      //       of the data likelihoods.
+      for (size_t i = 0; i < _n1; i++)
+      {
+        if (outer_step == 0) // We start at 1 - step 0 was the initialization. _n1 must be at least 1.
+          continue;
+
+        // Proposals q1: Drawn from p(latent | hyperparam)
+        std::vector<std::vector<double>> newZ(_numberIndividuals); // NrIndividuals x NrDimensions
+        std::vector<double> localZ(_latentSpaceDimensions);
+        for (size_t indiv = 0; indiv < _numberIndividuals; indiv++)
+        {
+          _multivariateNormalGenerator->getRandomVector(&localZ[0], _latentSpaceDimensions); // == Previous samples minus par.beta --Why?
+          newZ[indiv] = localZ;                                                              // TODO: Check that this is not copy-by-reference
+        }
+
+        // generate acceptance probabilities: new llh / former llh
+        sample["Latent Variables"] = newZ; // Note: We need not transform to non-Z form; the function called with "Evaluate logLikelihood" expects Z form
+        sample["Operation"] = "Evaluate logLikelihood";
+        KORALI_START(sample);
+        KORALI_WAIT(sample);
+        auto newLLHs = sample["logLikelihood"].get<std::vector<double>>();
+        for (size_t indiv = 0; indiv < _numberIndividuals; indiv++)
+        {
+          // generate RVs to randomly accept or reject each new zeta
+          double logAcceptanceProb = newLLHs[indiv] - currentLLHs[indiv];
+          double rval = _uniformGenerator->getRandomNumber();
+          if (log(rval) < logAcceptanceProb)
+          {
+            // update zeta, update likelihood
+            chainZ[step][indiv] = newZ[indiv];
+            currentLLHs[indiv] = newLLHs[indiv];
+          }
+          else
+            chainZ[step][indiv] = chainZ[step - 1][indiv];
+        }
+        step++;
+      }
+
+      // *****************************
+      // ** 2nd proposal distribution
+      // *****************************
+      //    sample each coordinate separately, according to a normal distribution unrelated to any variable
+      //    --> the acceptance probability is then a function of latent variables and hyperparameters
+      for (size_t i = 0; i < _n2; i++)
+      {
+        for (size_t dim = 0; dim < _latentSpaceDimensions; dim++)
+        {
+          // we will use this to sample, and then update _mCMCVariances after step 2, and then again after step 3
+          _univariateNormalGenerator->_standardDeviation = sqrt(_mCMCVariances[dim]);
+          _univariateNormalGenerator->updateDistribution();
+          //          assert(_univariateNormalGenerator->_standardDeviation != 1.);
+
+          std::vector<std::vector<double>> localZ = chainZ[step - 1];
+          for (size_t indiv = 0; indiv < _numberIndividuals; indiv++)
+          {
+            double eta = _univariateNormalGenerator->getRandomNumber(); // Todo: Adjust covariance below - check whether we count acceptance for each coordinate or how
+            // Adjust eta, eta is ~ N(0, 1) and we need other sdev
+            //            eta *= sqrt(_mCMCVariances[dim]);
+            localZ[indiv][dim] += eta;
+          }
+
+          sample["Latent Variables"] = localZ;
+          sample["Operation"] = "Evaluate logLikelihood";
+          KORALI_START(sample);
+          KORALI_WAIT(sample);
+          auto newLLHs = sample["logLikelihood"].get<std::vector<double>>();
+
+          sample["Latent Variables"] = localZ;
+          sample["Mean"] = _hyperparametersMean;
+          sample["Covariance Cholesky Decomposition"] = _covarianceCholesky;
+          sample["Operation"] = "Evaluate logPrior";
+          KORALI_START(sample);
+          KORALI_WAIT(sample);
+          auto newPriors = sample["Log Prior"].get<std::vector<double>>();
+
+          // acceptance probability == ratio of new prior * log to the current one
+          for (size_t indiv = 0; indiv < _numberIndividuals; indiv++)
+          {
+            double logAcceptanceProb = newLLHs[indiv] + newPriors[indiv] - currentLLHs[indiv] - currentPriors[indiv];
+            double rval = _uniformGenerator->getRandomNumber();
+            if (log(rval) < logAcceptanceProb)
+            {
+              chainZ[step][indiv] = localZ[indiv];
+              _acceptanceRateNominator[dim] += 1.0;
+              currentLLHs[indiv] = newLLHs[indiv];
+              currentPriors[indiv] = newPriors[indiv];
+            }
+            else
+              chainZ[step][indiv] = chainZ[step - 1][indiv];
+          }
+          _acceptanceRateDenominator[dim] += float(_numberIndividuals);
+          step++;
+        }
+      }
+
+      // **  update variances
+      if (_n2 > 0)
+      {
+        for (size_t dim = 0; dim < _latentSpaceDimensions; dim++)
+        {
+          _acceptanceRate[dim] = (_acceptanceRateNominator[dim]) / (_acceptanceRateDenominator[dim]);
+          _mCMCVariances[dim] *= (1.0 + _delta * (_acceptanceRate[dim] - _mCMCTargetAcceptanceRate));
+          assert(_mCMCVariances[dim] > 0.);
+        }
+      }
+
+      // *****************************
+      // ** 3rd proposal distribution:
+      //    - Sample random subsets of coordinates jointly
+      // *****************************
+      for (size_t i = 0; i < _n3; i++)
+      {
+        // pick a number of coordinates to change simultaneously
+        double nRandCoords_d = _uniformGenerator->getRandomNumber() * double(_latentSpaceDimensions) + 1.;
+        if (size_t(nRandCoords_d) == _latentSpaceDimensions + 1) // Todo: Check the cast works
+          nRandCoords_d = 1.;
+        size_t nRandCoords = size_t(nRandCoords_d); // Todo: Check the cast works
+
+        std::vector<size_t> randomCoords(_latentSpaceDimensions);
+        std::iota(randomCoords.begin(), randomCoords.end(), 0);
+        std::shuffle(randomCoords.begin(), randomCoords.end(), rng);
+        assert(nRandCoords <= randomCoords.size());
+        randomCoords.resize(nRandCoords);
+
+        std::vector<std::vector<double>> localZ = chainZ[step - 1];
+        for (size_t dim : randomCoords)
+        {
+          _univariateNormalGenerator->_standardDeviation = sqrt(_mCMCVariances[dim]);
+          _univariateNormalGenerator->updateDistribution();
+          //          assert(_univariateNormalGenerator->_standardDeviation != 1.);
+
+          for (size_t indiv = 0; indiv < _numberIndividuals; indiv++)
+          {
+            double eta = _univariateNormalGenerator->getRandomNumber();
+            // Adjust eta, eta is ~ N(0, 1) and we need other sdev
+            //            eta *= _mCMCVariances[dim];
+            localZ[indiv][dim] += eta;
+          }
+        }
+        // Evaluate localZ proposals for each individual
+        sample["Latent Variables"] = localZ;
+        sample["Operation"] = "Evaluate logLikelihood";
+        KORALI_START(sample);
+        KORALI_WAIT(sample);
+        auto newLLHs = sample["logLikelihood"].get<std::vector<double>>();
+
+        sample["Latent Variables"] = localZ;
+        sample["Mean"] = _hyperparametersMean;
+        sample["Covariance Cholesky Decomposition"] = _covarianceCholesky;
+        sample["Operation"] = "Evaluate logPrior";
+        KORALI_START(sample);
+        KORALI_WAIT(sample);
+        auto newPriors = sample["Log Prior"].get<std::vector<double>>();
+
+        // Accept? -- Same acceptance calculation as in 2nd proposal distribution.
+        for (size_t indiv = 0; indiv < _numberIndividuals; indiv++)
+        {
+          double logAcceptanceProb = newLLHs[indiv] + newPriors[indiv] - currentLLHs[indiv] - currentPriors[indiv];
+          double rval = _uniformGenerator->getRandomNumber();
+          if (log(rval) < logAcceptanceProb)
+          {
+            chainZ[step][indiv] = localZ[indiv];
+            currentLLHs[indiv] = newLLHs[indiv];
+            currentPriors[indiv] = newPriors[indiv];
+            for (size_t dim : randomCoords)
+            {
+              _acceptanceRateNominator[dim] += 1.0;
+            }
+          }
+          else
+            chainZ[step][indiv] = chainZ[step - 1][indiv];
+          for (size_t dim : randomCoords)
+            _acceptanceRateDenominator[dim] += 1.0;
+        }
+        step++;
+      }
+      // **  update variances
+      if (_n3 > 0)
+        for (size_t dim = 0; dim < _latentSpaceDimensions; dim++)
+        {
+          if (_acceptanceRateDenominator[dim] == 0)
+            continue; // This can happen if a coordinate is never selected as part of any random set
+          _acceptanceRate[dim] = (_acceptanceRateNominator[dim]) / (_acceptanceRateDenominator[dim]);
+          _mCMCVariances[dim] *= (1.0 + _delta * (_acceptanceRate[dim] - _mCMCTargetAcceptanceRate));
+          assert(_mCMCVariances[dim] > 0.);
+        }
+
+    } // Chain loop end
+
+    assert(step == (_n1 + _n2 * _latentSpaceDimensions + _n3) * _mCMCOuterSteps);
+
+    _z[c_idx] = chainZ;
+    //    for (size_t indiv = 0; indiv < _numberIndividuals; indiv++)
+    //    {
+    //      auto dbg_var = chainZ[indiv];
+    //      // TODO: We need to add all the other samples to _samples, too!
+    //      _samples[c_idx][indiv] = _latentProblem->zToLatent(chainZ[indiv]);
+    //    }
+
+  } // Loop over all chains end
+
+  //    // TODO: remove?
+  //  // mean and variance:
+  //  auto transposed3D = transpose3D(_samples);
+  //  for (size_t indiv = 0; indiv < _numberIndividuals; indiv++)
+  //  {
+  //    auto transposed2D = transposed3D[indiv];
+  //    assert(transposed2D.size() == _latentSpaceDimensions);
+  //    _currentSampleMeans[indiv] = std::vector<double>(transposed2D.size(), 0.0);
+  //    _currentSampleStandardDeviations[indiv] = std::vector<double>(transposed2D.size(), 0.0);
+  //
+  //    for (size_t i = 0; i < transposed2D.size(); i++)
+  //    {
+  //      std::vector<double> mean_and_sdev = meanAndSDev(transposed2D[i]);
+  //      _currentSampleMeans[indiv][i] = mean_and_sdev[0];
+  //      _currentSampleStandardDeviations[indiv][i] = mean_and_sdev[1];
+  //    }
+  //  }
+}
+
+/*       * * * * * * * * * * * * * * * * * * * * * * * * *
+ *        * Helper Functions - Mostly copied from HSAEM *
+ *       * * * * * * * * * * * * * * * * * * * * * * * * */
+
+/* Calculate the cholesky decomposition of the covariance matrix. */
+void korali::solver::LatentVariableFIM::calculateCholesky()
+{
+  size_t N = _latentSpaceDimensions; // for brevity
+
+  gsl_matrix *covMatrixGSL = gsl_matrix_alloc(N, N);
+  for (size_t i = 0; i < N; i++)
+    for (size_t j = 0; j < N; j++)
+      gsl_matrix_set(covMatrixGSL, i, j, _hyperparametersCovariance[i][j]);
+
+  // First, calculate the cholesky decomposition, cov = L'*L
+  gsl_matrix *chol = gsl_matrix_alloc(N, N);
+  gsl_matrix_memcpy(chol, covMatrixGSL);
+
+  int status = gsl_linalg_cholesky_decomp1(chol); //lower triangular part + diagonal of chol afterwards contain L from the cholesky decomposition cov = L*L'
+  if (status != 0)
+  {
+    if (status != 1) KORALI_LOG_ERROR("Status == 1 would have indicated an invalid input, such as not positive definite (e.g. very small eigenvalues). But the GSL error code was: %d. Please report this if you think it is a bug.", status, status);
+    /* If status == 1, covMatrixGSL was not positive definite.
+     * Let's add a small diagonal matrix. */
+    double eps = 1.e-4; // 1.e-8 is too small. Maybe GSL has low precision for matrix operations?
+    for (size_t i = 0; i < N; i++)
+    {
+      for (size_t j = 0; j < N; j++)
+        gsl_matrix_set(chol, i, j, _hyperparametersCovariance[i][j]);
+      gsl_matrix_set(chol, i, i, _hyperparametersCovariance[i][i] + eps);
+    }
+    int status = gsl_linalg_cholesky_decomp1(chol); //lower triangular part + diagonal of chol afterwards contain L from the cholesky decomposition cov = L*L'
+
+    if (status != 0)
+    { // Now it failed for real. Is it negative definite?
+      std::ostringstream covLogStringStream;
+      _k->_logger->logInfo("Minimal", "Error, printing the covariance matrix: \n");
+      _k->_logger->logInfo("Normal", "  [\n");
+      for (size_t i = 0; i < _latentSpaceDimensions; i++)
+      {
+        covLogStringStream << "    [";
+        for (size_t j = 0; j < _latentSpaceDimensions; j++)
+          covLogStringStream << "\t" << _hyperparametersCovariance[i][j] << " ";
+        covLogStringStream << "],\n";
+        _k->_logger->logInfo("Normal", covLogStringStream.str().c_str());
+        covLogStringStream.str("");
+      }
+      _k->_logger->logInfo("Normal", "  ]\n");
+      KORALI_LOG_ERROR("GSL error code: %d. If ==1: Covariance matrix was invalid; this could mean it had a negative eigenvalue (that should be impossible) or one of its entries was NaN. Please report this if you think it is a bug.", status);
+    }
+  }
+  // Set the cholesky matrix
+  for (size_t i = 0; i < N; i++)
+    for (size_t j = 0; j < N; j++)
+      _covarianceCholesky[i][j] = gsl_matrix_get(chol, i, j);
+
+  gsl_matrix_free(covMatrixGSL);
+  gsl_matrix_free(chol);
+}
+
+//* @brief Update internal distribution representation of p(latent | hyperparam).
+void korali::solver::LatentVariableFIM::updateMultivariateDistribution()
+{
+  _multivariateNormalGenerator->setProperty("Sigma", flatten(_covarianceCholesky));
+  _multivariateNormalGenerator->setProperty("Mean Vector", _hyperparametersMean);
+  _multivariateNormalGenerator->updateDistribution();
+}
+
+//void korali::solver::LatentVariableFIM ::printGenerationBefore() {
+//}
+//
+//void korali::solver::LatentVariableFIM ::printGenerationAfter() {
+//}

@@ -1,5 +1,5 @@
-#ifndef _KORALI_SOLVER_HSAEM_HPP_
-#define _KORALI_SOLVER_HSAEM_HPP_
+#ifndef _KORALI_SOLVER_LATENTVARIABLEFIM_HPP_
+#define _KORALI_SOLVER_LATENTVARIABLEFIM_HPP_
 
 #include "modules/distribution/multivariate/normal/normal.hpp"
 #include "modules/distribution/univariate/normal/normal.hpp"
@@ -18,10 +18,11 @@ namespace korali
 {
 namespace solver
 {
-class HSAEM : public korali::Solver
+class LatentVariableFIM : public korali::Solver
 {
   private:
   std::mt19937 rng; //* @brief Random number generator, used in shuffle
+
   public:
   /**
   * @brief The (lowlevel) latent variable problem that this hSAEM instance is solving. */
@@ -35,45 +36,11 @@ class HSAEM : public korali::Solver
   */
   void sampleLatent();
 
-  /** @brief After sampling, update the statistics (S1 and S2) used to update the hyperparameters.  */
-  void updateS();
+  /** @brief  Calculates the Cholesky decomposition of the covariance. */
+  void calculateCholesky();
 
-  /** @brief Update current estimates of the hyperparameters, using S1 and S2 statistics updated with new samples. */
-  void updateHyperparameters();
-
-  /** @brief A function to combine these sub-steps in the right order:
-            - new covariance --> annealed covariance
-              (also needed without SA because we use _annealedCovariance everywhere (it's just the same if no SA))
-            - update chol of annealed covariance;
-              update chol of original covariance
-            - reset sampling distribution to new annealed covariance
-    */
-  void updateDistribution();
-
-  /** @brief  Call after "annealCovariance()". Re-calculates the Cholesky decomposition of the annealed covariance matrix.
-              Also re-calculates a cholesky decomposition of the true current estimate of the covariance. */
-  void updateCholesky();
-
-  /** @brief  Call after updating hyperparameters: Updates the annealed covariance. If simulated annealing
-              is enabled, it will be applied here: In earlier generations, the covariance is increased so that
-              sampling happens across a wider range.
-
-              Need to be already set up: _currentHyperparametersMean and _currentHyperparametersCovariance.
-    */
-  void annealCovariance();
-
-  /** @brief Update the distribution used during sampling with new hyperparameter values.  */
-  void updateAnnealedDistribution();
-
-  /** @brief  Call after updating hyperparameters: Re-calculate the likelihood of all current samples.
-                Need to be already set up: _currentHyperparametersMean and _currentHyperparametersCovariance and _currentZ
-    */
-  void updateProbabilities();
-
-  //  /**
-  //  * @brief initial things to run to test the hierarchical latent problem class. To be deleted.
-  //  */
-  //  void justTesting();
+  /** @brief Update the distribution used during sampling with the hyperparameter values.  */
+  void updateMultivariateDistribution();
 
   /** @brief Utility function to convert a vector of vectors into a concatenated 1D vector.
   *   @param v: The vector of vectors to flatten
@@ -93,27 +60,28 @@ class HSAEM : public korali::Solver
   * @param data A vector of vectors. All sub-vectors are expected to have same length. Represents a 3D-array.
   * @return result, a 3D array, so that data[i][j][k] is moved to result[j][i][k].
   */
-  std::vector<std::vector<std::vector<double>>> transpose3D(const std::vector<std::vector<std::vector<double>>> data);
 
-  // void finalize() override;
+  std::vector<std::vector<std::vector<double>>> transpose3D(const std::vector<std::vector<std::vector<double>>> data);
 
   /** @brief This is always run before (re-)starting the solver */
   void initialize() override;
 
   /** @brief Run once, before the first generation */
   void setInitialConfiguration() override;
-  /** @brief Run a generation; main unit of execution. */
-  void runGeneration() override;
-  /** @brief Print information before each generation */
-  void printGenerationBefore() override;
-  /** @brief Print information after each generation */
-  void printGenerationAfter() override;
 
-  /** @brief Final console output at termination. */
+  /** @brief Run a generation; main unit of execution. Only run once in this solver.*/
+  void runGeneration() override;
+
+  /** @brief Print information before each generation */
+  //void printGenerationBefore() override;
+  /** @brief Print information after each generation */
+  //void printGenerationAfter() override;
+
+  /** @brief Console output at termination. */
   void finalize() override;
 };
 
 } // namespace solver
 } // namespace korali
 
-#endif // _KORALI_SOLVER_HSAEM_HPP_
+#endif // _KORALI_SOLVER_LATENTVARIABLEFIM_HPP_

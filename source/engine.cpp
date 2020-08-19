@@ -6,12 +6,12 @@
 #include "modules/experiment/experiment.hpp"
 #include "modules/problem/problem.hpp"
 #include "modules/solver/solver.hpp"
+#include "sample/sample.hpp"
 #include <sys/stat.h>
 #include <sys/types.h>
 
 namespace korali
 {
-std::vector<std::function<void(Sample &)> *> _functionVector;
 std::stack<Engine *> _engineStack;
 bool isPythonActive = 0;
 
@@ -73,51 +73,19 @@ void Engine::run()
   if (_isDryRun) return;
 
   // Only initialize conduit if the Engine being ran is the first one in the process
-  if (_conduit == NULL)
-  {
-    try
-    {
-      // Configuring conduit
-      auto conduit = dynamic_cast<Conduit *>(getModule(_js["Conduit"], _k));
+  auto conduit = dynamic_cast<Conduit *>(getModule(_js["Conduit"], _k));
 
-      // Initializing conduit server
-      conduit->initServer();
+  // Initializing conduit server
+  conduit->initServer();
 
-      // Assigning pointer after starting workers, so they can initialize their own conduit
-      _conduit = conduit;
+  // Assigning pointer after starting workers, so they can initialize their own conduit
+  _conduit = conduit;
 
-      // Recovering Conduit configuration in case of restart
-      _conduit->getConfiguration(_js.getJson()["Conduit"]);
-    }
-    catch (const std::exception &e)
-    {
-      KORALI_LOG_ERROR("Could not initialize execution conduit. Reason:\n%s", e.what());
-    }
-  }
+  // Recovering Conduit configuration in case of restart
+  _conduit->getConfiguration(_js.getJson()["Conduit"]);
 
   if (_conduit->isRoot())
   {
-    // Initializing experiment's result folder / log files (or stdout)
-    for (size_t i = 0; i < _experimentVector.size(); i++)
-    {
-      _experimentVector[i]->_logFile = stdout;
-
-      // If experiments are saving results to file, create folder
-      if (_experimentVector[i]->_fileOutputEnabled)
-      {
-        if (!dirExists(_experimentVector[i]->_fileOutputPath)) mkdir(_experimentVector[i]->_fileOutputPath);
-
-        // Setting log files to be saved on to the log folder
-        std::string fileName = "./" + _experimentVector[i]->_fileOutputPath + "/log.txt";
-        if (_experimentVector.size() > 1) _experimentVector[i]->_logFile = fopen(fileName.c_str(), "a");
-
-        if (_experimentVector[i]->_logFile == NULL)
-          KORALI_LOG_ERROR("[Korali] Could not create log file (%s) for experiment %lu.\n", fileName.c_str(), i);
-      }
-
-      _experimentVector[i]->_logger = new Logger(_experimentVector[i]->_consoleOutputVerbosity, _experimentVector[i]->_logFile);
-    }
-
     // (Engine-Side) Adding engine to the stack to support Korali-in-Korali execution
     _engineStack.push(this);
 
@@ -149,11 +117,7 @@ void Engine::run()
     _cumulativeTime += std::chrono::duration<double>(_endTime - _startTime).count();
 
     // Finalizing experiments
-    for (size_t i = 0; i < _experimentVector.size(); i++)
-    {
-      _experimentVector[i]->finalize();
-      if (_experimentVector.size() > 1) fclose(_experimentVector[i]->_logFile);
-    }
+    for (size_t i = 0; i < _experimentVector.size(); i++) _experimentVector[i]->finalize();
 
     // (Engine-Side) Removing the current engine to the conduit's engine stack
     _engineStack.pop();
@@ -163,11 +127,7 @@ void Engine::run()
   }
 
   // Finalizing Conduit if last engine in the stack
-  if (_engineStack.size() == 0)
-  {
-    _conduit->finalize();
-    _conduit = NULL;
-  }
+  _conduit->finalize();
 }
 
 void Engine::saveProfilingInfo(const bool forceSave)
@@ -190,12 +150,17 @@ void Engine::saveProfilingInfo(const bool forceSave)
 void Engine::run(Experiment &experiment)
 {
   experiment._js["Current Generation"] = 0;
+  experiment._currentGeneration = 0;
   resume(experiment);
 }
 
 void Engine::run(std::vector<Experiment> &experiments)
 {
-  for (size_t i = 0; i < experiments.size(); i++) experiments[i]._js["Current Generation"] = 0;
+  for (size_t i = 0; i < experiments.size(); i++)
+  {
+    experiments[i]._js["Current Generation"] = 0;
+    experiments[i]._currentGeneration = 0;
+  }
   resume(experiments);
 }
 
@@ -309,5 +274,7 @@ PYBIND11_MODULE(libkorali, m)
     .def("__getitem__", pybind11::overload_cast<pybind11::object>(&Experiment::getItem), pybind11::return_value_policy::reference)
     .def("__setitem__", pybind11::overload_cast<pybind11::object, pybind11::object>(&Experiment::setItem), pybind11::return_value_policy::reference)
     .def("loadState", &Experiment::loadState)
-    .def("evaluate", &Experiment::evaluate);
+    .def("getEvaluation", &Experiment::getEvaluation)
+    .def("getAction", &Experiment::getAction)
+    .def("getGradients", &Experiment::getGradients);
 }

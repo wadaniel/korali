@@ -1,0 +1,239 @@
+#include "engine.hpp"
+#include "modules/solver/agent/DQN/DQN.hpp"
+#include "sample/sample.hpp"
+
+/****************************************
+ * Things to fix:
+ * - All samples use their own pseudorandom generators
+ * - All seeds must be replicable when restarting a job
+ *****************************************/
+
+namespace korali
+{
+namespace solver
+{
+namespace agent
+{
+void DQN::initializePolicy()
+{
+  // Checking a discrete policy has been defined
+  for (size_t i = 0; i < _problem->_actionVectorIndexes.size(); i++)
+  {
+    size_t varIdx = _problem->_actionVectorIndexes[i];
+    if (_k->_variables[varIdx]->_values.size() == 0) KORALI_LOG_ERROR("No discrete action values have been defined for variable %lu (%s), required by DQN\n", varIdx, _k->_variables[varIdx]->_name.c_str());
+  }
+
+  /*********************************************************************
+  * Creating Q-Maximizing argmax(Action) Experiment
+  *********************************************************************/
+
+  // Creating evaluation lambda function for optimization
+  auto fc = [this](Sample &sample) { this->evaluateAction(sample, true); };
+
+  _policyExperiment["Problem"]["Type"] = "Optimization";
+  _policyExperiment["Problem"]["Objective Function"] = fc;
+
+  for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+  {
+    size_t varIdx = _problem->_actionVectorIndexes[i];
+
+    _policyExperiment["Variables"][i]["Name"] = _k->_variables[varIdx]->_name;
+    _policyExperiment["Variables"][i]["Lower Bound"] = _k->_variables[varIdx]->_lowerBound;
+    _policyExperiment["Variables"][i]["Upper Bound"] = _k->_variables[varIdx]->_upperBound;
+
+    double initialGuess = (_k->_variables[varIdx]->_upperBound + _k->_variables[varIdx]->_lowerBound) * 0.5;
+    double initialStdDev = abs((_k->_variables[varIdx]->_upperBound - _k->_variables[varIdx]->_lowerBound));
+
+    _policyExperiment["Variables"][i]["Initial Value"] = initialGuess;
+    _policyExperiment["Variables"][i]["Initial Mean"] = initialGuess;
+    _policyExperiment["Variables"][i]["Initial Standard Deviation"] = initialStdDev;
+    _policyExperiment["Variables"][i]["Values"] = _k->_variables[varIdx]->_values;
+  }
+
+  _policyExperiment["Solver"] = _policyOptimizer;
+
+  _policyExperiment["Console Output"]["Frequency"] = 0;
+  _policyExperiment["Console Output"]["Verbosity"] = "Silent";
+  _policyExperiment["File Output"]["Enabled"] = false;
+  _policyExperiment["Random Seed"] = _k->_randomSeed++;
+
+  // Running initialization to verify that the configuration is correct
+  korali::Engine engine;
+  engine.initialize(_policyExperiment);
+
+  // If initial generation, set initial DQN configuration
+  if (_k->_currentGeneration == 0)
+  {
+    // Setting intial epsilon to 1.0 (initial exploratory phase)
+    _policyEpsilonInitialized = false;
+    _policyEpsilonCurrentValue = 1.0;
+
+    // Settting Epsilon
+    _hyperparameters["Epsilon"] = _policyEpsilonCurrentValue;
+  }
+}
+
+void DQN::trainPolicy()
+{
+  // Initializing the value of epsilon, if not already set
+  if (_policyEpsilonInitialized == false)
+  {
+    _policyEpsilonCurrentValue = _policyEpsilonInitialValue;
+    _policyEpsilonInitialized = true;
+  }
+  else
+  {
+    // Decreasing the value of epsilon
+    _policyEpsilonCurrentValue = _policyEpsilonCurrentValue - _policyEpsilonDecreaseRate;
+
+    // Without exceeding the lower bound
+    if (_policyEpsilonCurrentValue < _policyEpsilonTargetValue) _policyEpsilonCurrentValue = _policyEpsilonTargetValue;
+  }
+
+  // Updating Epsilon
+  _hyperparameters["Epsilon"] = _policyEpsilonCurrentValue;
+}
+
+void DQN::evaluateAction(Sample &sample, bool getGradients)
+{
+  // Setting weights and biases
+  auto action = KORALI_GET(std::vector<double>, sample, "Parameters");
+  auto state = sample.globals()["Current State"].get<std::vector<double>>();
+
+  // Creating state/action input
+  std::vector<double> stateActionInput(state.size() + action.size());
+  for (size_t j = 0; j < state.size(); j++) stateActionInput[j] = state[j];
+  for (size_t j = 0; j < action.size(); j++) stateActionInput[j + state.size()] = action[j];
+
+  auto evaluation = _criticLearner->getEvaluation(stateActionInput);
+  auto gradients = _criticLearner->getGradients({{-1.0}});
+
+  sample["F(x)"] = evaluation[0];
+
+  for (size_t i = 0; i < action.size(); i++)
+  {
+    size_t startIdx = state.size();
+    sample["Gradient"][i] = gradients[startIdx + i];
+  }
+}
+
+std::vector<double> DQN::getTrainingAction(const std::vector<double> &state)
+{
+  // If we still do not have enough experiences to train the critic/policy, just return random action
+  if (_stateHistory.size() < _replayMemoryStartSize) return getRandomAction(state);
+
+  // Getting p = U[0,1] for the epsilon strategy
+  double p = _policyEpsilonGenerator->getRandomNumber();
+
+  // If p < e, then we choose the action randomly, with a uniform probability, among all possible actions.
+  // If no states have been registered yet, use the random option in any case
+  if (p < _policyEpsilonCurrentValue) return getRandomAction(state);
+
+  // Obtaining action from policy
+  auto action = queryPolicy(state);
+
+  // Checking for correctness of the action
+  for (size_t i = 0; i < action.size(); i++)
+  {
+    if (std::isfinite(action[i]) == false)
+      KORALI_LOG_ERROR(" + Action [%lu] is not finite (%f)\n", i, action[i]);
+  }
+
+  // Returning the action
+  return action;
+}
+
+void DQN::updateHyperparameters(const knlohmann::json &hyperparameters)
+{
+  _criticLearner->setHyperparameters(hyperparameters["Critic"].get<std::vector<double>>());
+  _policyEpsilonCurrentValue = hyperparameters["Epsilon"].get<double>();
+}
+
+std::vector<double> DQN::queryPolicy(const std::vector<double> &state)
+{
+  _policyExperiment._globals["Current State"] = state;
+
+  // Running optimization experiment to get best estimated action
+  korali::Engine engine;
+  engine.run(_policyExperiment);
+
+  // Getting optimal action, based on the NN evaluation
+  return _policyExperiment["Results"]["Best Sample"]["Parameters"].get<std::vector<double>>();
+}
+
+double DQN::stateValueFunction(const std::vector<double> &state)
+{
+  // We calculate V(s) = E_a( Q(s,a) | policy )
+
+  // First step: we run the optimization experiment to get Q(s,a) for all actions in the action space
+  _policyExperiment._globals["Current State"] = state;
+  korali::Engine engine;
+  engine.run(_policyExperiment);
+
+  // Storage to contain the sum of all e^(Q(s, a_i))
+  double sumExpQ = 0.0;
+
+  // Storage to contain the sum of all Q(s, a_i) * e^(Q(s, a_i))
+  double sumQExpQ = 0.0;
+
+  // Iterating among the entire Q vector for all actions to get the one that corresponds
+  // to the proposed action, and also to get the sum of all Q values
+  auto qVector = _policyExperiment["Solver"]["Objective"].get<std::vector<double>>();
+  for (size_t i = 0; i < qVector.size(); i++)
+  {
+    double curQ = qVector[i];   // Q(s,a)
+    double curExpQ = exp(curQ); // e^(Q(s,a))
+
+    sumQExpQ += curQ * curExpQ; // Q(s,a) * e^(Q(s,a))
+    sumExpQ += curExpQ;
+  }
+
+  // Calculating E_a (Q(s,a) | policy) = Sum(Q(s, a_i) * e^(Q(s, a_i))) / Sum(e^(Q(s, a_i)))
+  double expQ = sumQExpQ / sumExpQ;
+
+  return expQ;
+}
+
+double DQN::getStateActionProbabilityDensity(const std::vector<double> &state, const std::vector<double> &action)
+{
+  // To obtain the probability density of a  state/action in a discrete action space, we
+  // try all possible actions, and apply a softmax normalization to their estimated Q(s,a)
+
+  // Running proposed state/action to get its Q value
+  std::vector<double> stateActionInput(state.size() + action.size());
+  for (size_t j = 0; j < state.size(); j++) stateActionInput[j] = state[j];
+  for (size_t j = 0; j < action.size(); j++) stateActionInput[j + state.size()] = action[j];
+
+  // Calculating the exponential of the current variables' Q value
+  auto curExpQ = exp(_criticLearner->getEvaluation(stateActionInput)[0]);
+
+  // Cumulative exp(Q(s,a)) for all actions
+  double sumExpQ = 0.0;
+
+  // Running optimization experiment to get Q(s,a) for all actions in the action space
+  _policyExperiment._globals["Current State"] = state;
+  korali::Engine engine;
+  engine.run(_policyExperiment);
+
+  // Iterating among the entire Q vector for all actions to get the one that corresponds
+  // to the proposed action, and also to get the sum of all Q values
+  auto qVector = _policyExperiment["Solver"]["Objective"].get<std::vector<double>>();
+  for (size_t i = 0; i < qVector.size(); i++)
+    sumExpQ += exp(qVector[i]); // e^(Q(s,a))
+
+  // Calculating p(s,a) = q(s,a') softmax q(s,a)
+  double pDensity = curExpQ / sumExpQ;
+
+  return pDensity;
+}
+
+void DQN::printPolicyInformation()
+{
+  _k->_logger->logInfo("Normal", " + Current Epsilon:                  %f -> %f\n", _policyEpsilonCurrentValue, _policyEpsilonTargetValue);
+}
+
+} // namespace agent
+
+} // namespace solver
+
+} // namespace korali

@@ -5,7 +5,6 @@
 * @brief Include header for the Korali Engine
 */
 
-#include "auxiliar/py2json.hpp"
 #include "modules/conduit/conduit.hpp"
 #include "modules/conduit/distributed/distributed.hpp"
 #include "modules/experiment/experiment.hpp"
@@ -15,6 +14,8 @@
 
 namespace korali
 {
+class Sample;
+
 /**
   * @brief A Korali Engine initializes the conduit and experiments, and guides their execution.
  */
@@ -22,6 +23,11 @@ class Engine : public Module
 {
   public:
   Engine();
+
+  /**
+    * @brief A pointer to the execution conduit. Shared among all experiments in the engine.
+    */
+  Conduit *_conduit;
 
   /**
    * @brief Verbosity level of the Engine ('Silent', 'Minimal' (default), 'Normal' or 'Detailed').
@@ -143,29 +149,14 @@ class Engine : public Module
   bool _isDryRun;
 
   /**
-    * @brief A pointer to the worker, on the worker side.
-    */
-  Conduit *_currentWorker;
-
-  /**
   * @brief (Worker) Stores a pointer to the current Experiment being processed
   */
   Experiment *_currentExperiment;
 
   /**
-  * @brief Stores a pointer to the current sample being processed
-  */
-  Sample *_currentSample;
-
-  /**
   * @brief (Engine) Stores a pointer to the current sample to process
   */
   Sample *_engineSample;
-
-  /**
-   * @brief Stores the state of a worker thread
-   */
-  cothread_t _workerThread;
 
   /**
    * @brief Returns the worker teams MPI communication pointer (Distributed Conduit only).

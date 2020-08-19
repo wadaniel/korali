@@ -12,6 +12,31 @@
 */
 namespace korali
 {
+/**
+ * @brief Macro to start the processing of a sample.
+ */
+#define KORALI_START(SAMPLE) _k->_engine->_conduit->start(SAMPLE);
+
+/**
+ * @brief Macro to wait for the finishing of a sample.
+ */
+#define KORALI_WAIT(SAMPLE) _k->_engine->_conduit->wait(SAMPLE);
+
+/**
+ * @brief Macro to wait for any of the given samples.
+ */
+#define KORALI_WAITANY(SAMPLE) _k->_engine->_conduit->waitAny(SAMPLE);
+
+/**
+ * @brief Macro to wait for all of the given samples.
+ */
+#define KORALI_WAITALL(SAMPLE) _k->_engine->_conduit->waitAll(SAMPLE);
+
+/**
+ * @brief Macro to broadcast global information to all the workers.
+ */
+#define KORALI_BROADCAST(KEY, JSON) _k->_engine->_conduit->broadcastGlobals(KEY, JSON);
+
 class Solver : public Module
 {
   public:
@@ -34,13 +59,6 @@ class Solver : public Module
   * @brief Initializes the solver with starting values for the first generation.
  */
   virtual void setInitialConfiguration(){};
-
-  /**
-    * @brief For solver modules which have been trained, test returns an infered output batch, from a batch of inputs to process.
-    * @param inputBatch The inputs from which to infer outputs.
-    * @return The inferred outputs
-   */
-  virtual std::vector<std::vector<double>> evaluate(const std::vector<std::vector<double>> &inputBatch);
 
   /**
   * @brief Stores termination criteria for the module.

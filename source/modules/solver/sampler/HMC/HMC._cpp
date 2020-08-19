@@ -214,11 +214,11 @@ void HMC::runGenerationNUTS(const double logUniSample)
     // std::vector<double> rho(_stateSpaceDim, 0.0);
     if (_uniformGenerator->getRandomNumber() < 0.5)
     {
-      buildTree(qLeft, pLeft, logUniSample, -1, depth, _stepSize, oldH, qLeft, pLeft, nullPointOne, nullPointTwo, _positionCandidate, numValidLeavesSubtree, buildCriterionSubtree, _acceptanceProbability, numLeavesSubtree, rhoMinus);
+      buildTree(qLeft, pLeft, logUniSample, -1, depth, _stepSize, oldH, qLeft, pLeft, nullPointOne, nullPointTwo, _positionCandidate, numValidLeavesSubtree, buildCriterionSubtree, _acceptanceProbability, numLeavesSubtree);
     }
     else
     {
-      buildTree(qRight, pRight, logUniSample, 1, depth, _stepSize, oldH, nullPointOne, nullPointTwo, qRight, pRight, _positionCandidate, numValidLeavesSubtree, buildCriterionSubtree, _acceptanceProbability, numLeavesSubtree, rhoPlus);
+      buildTree(qRight, pRight, logUniSample, 1, depth, _stepSize, oldH, nullPointOne, nullPointTwo, qRight, pRight, _positionCandidate, numValidLeavesSubtree, buildCriterionSubtree, _acceptanceProbability, numLeavesSubtree);
     }
 
     if (buildCriterionSubtree == true)
@@ -702,7 +702,75 @@ bool HMC::computeNoUTurnCriterion(const std::vector<double> &pLeft, const std::v
   return dotProductLeft > 0 && dotProductRight > 0;
 }
 
-void HMC::buildTree(const std::vector<double> &q, const std::vector<double> &p, const double logUniSample, const int direction, const int depth, const double stepSize, const double rootH, std::vector<double> &qLeft, std::vector<double> &pLeft, std::vector<double> &qRight, std::vector<double> &pRight, std::vector<double> &qProposed, double &numValidLeaves, bool &buildCriterion, double &alpha, int &numLeaves, std::vector<double> &rho)
+void HMC::buildTree(const std::vector<double> &q, const std::vector<double> &p, const double logUniSample, const int direction, const int depth, const double stepSize, const double rootH, std::vector<double> &qLeft, std::vector<double> &pLeft, std::vector<double> &qRight, std::vector<double> &pRight, std::vector<double> &qProposed, double &numValidLeaves, bool &buildCriterion, double &alpha, int &numLeaves)
+{
+  qLeft = q;
+  pLeft = p;
+
+  if (depth == 0)
+  {
+    const double deltaMax = 100;
+    _integrator->step(qLeft, pLeft, _stepSize, _hamiltonian, _modelEvaluationCount, _sampleDatabase.size(), _inverseMetric);
+
+    const double leafK = _hamiltonian->K(qLeft, pLeft, _inverseMetric);
+    const double leafU = _hamiltonian->U(qLeft, _modelEvaluationCount, _sampleDatabase.size());
+    const double leafH = leafU + leafK;
+
+    numValidLeaves = (logUniSample <= rootH - leafH) ? 1.0 : 0.0;
+
+    buildCriterion = (rootH - leafH + deltaMax > logUniSample);
+    alpha = std::min(1.0, std::exp(rootH - leafH));
+    numLeaves = 1;
+    qRight = qLeft;
+    qProposed = qLeft;
+    pRight = pLeft;
+  }
+  else
+  {
+    int numLeavesSubtree;
+    bool buildCriterionSubtree;
+    double dotProductLeft, dotProductRight, numValidLeavesSubtree, alphaSubtree;
+
+    std::vector<double> nullPointOne(_stateSpaceDim);
+    std::vector<double> nullPointTwo(_stateSpaceDim);
+    std::vector<double> qProposedSubtree(_stateSpaceDim, 0.0);
+    std::vector<double> tmpVector(_stateSpaceDim, 0.0);
+
+    buildTree(q, p, logUniSample, direction, depth - 1, stepSize, rootH, qLeft, pLeft, qRight, pRight, qProposed, numValidLeaves, buildCriterion, alpha, numLeaves);
+
+    if (buildCriterion == true)
+    {
+      if (direction == -1)
+      {
+        buildTree(qLeft, pLeft, logUniSample, direction, depth - 1, stepSize, rootH, qLeft, pLeft, nullPointOne, nullPointTwo, qProposedSubtree, numValidLeavesSubtree, buildCriterionSubtree, alphaSubtree, numLeavesSubtree);
+      }
+      else
+      {
+        buildTree(qRight, pRight, logUniSample, direction, depth - 1, stepSize, rootH, nullPointOne, nullPointTwo, qRight, pRight, qProposedSubtree, numValidLeavesSubtree, buildCriterionSubtree, alphaSubtree, numLeavesSubtree);
+      }
+
+      // First check to avoid divising by zero
+      if (numValidLeavesSubtree != 0 && _uniformGenerator->getRandomNumber() < numValidLeavesSubtree / (numValidLeaves + numValidLeavesSubtree))
+      {
+        qProposed = qProposedSubtree;
+      }
+
+      numValidLeaves += numValidLeavesSubtree;
+      alpha += alphaSubtree;
+      numLeaves += numLeavesSubtree;
+
+      std::transform(std::cbegin(qRight), std::cend(qRight), std::cbegin(qLeft), std::begin(tmpVector), std::minus<double>());
+      dotProductLeft = std::inner_product(std::cbegin(tmpVector), std::cend(tmpVector), std::cbegin(pLeft), 0.0);
+      dotProductRight = std::inner_product(std::cbegin(tmpVector), std::cend(tmpVector), std::cbegin(pRight), 0.0);
+
+      buildCriterion = buildCriterionSubtree && (dotProductLeft > 0) && (dotProductRight > 0);
+    }
+  }
+
+  return;
+}
+
+void HMC::buildTreeIntegrationCriterion(const std::vector<double> &q, const std::vector<double> &p, const double logUniSample, const int direction, const int depth, const double stepSize, const double rootH, std::vector<double> &qLeft, std::vector<double> &pLeft, std::vector<double> &qRight, std::vector<double> &pRight, std::vector<double> &qProposed, double &numValidLeaves, bool &buildCriterion, double &alpha, int &numLeaves, std::vector<double> &rho)
 {
   qLeft = q;
   pLeft = p;
@@ -745,17 +813,17 @@ void HMC::buildTree(const std::vector<double> &q, const std::vector<double> &p, 
     std::vector<double> rho1(_stateSpaceDim, 0.0);
     std::vector<double> rho2(_stateSpaceDim, 0.0);
 
-    buildTree(q, p, logUniSample, direction, depth - 1, stepSize, rootH, qLeft, pLeft, qRight, pRight, qProposed, numValidLeaves, buildCriterion, alpha, numLeaves, rho1);
+    buildTreeIntegrationCriterion(q, p, logUniSample, direction, depth - 1, stepSize, rootH, qLeft, pLeft, qRight, pRight, qProposed, numValidLeaves, buildCriterion, alpha, numLeaves, rho1);
 
     if (buildCriterion == true)
     {
       if (direction == -1)
       {
-        buildTree(qLeft, pLeft, logUniSample, direction, depth - 1, stepSize, rootH, qLeft, pLeft, nullPointOne, nullPointTwo, qProposedSubtree, numValidLeavesSubtree, buildCriterionSubtree, alphaSubtree, numLeavesSubtree, rho2);
+        buildTreeIntegrationCriterion(qLeft, pLeft, logUniSample, direction, depth - 1, stepSize, rootH, qLeft, pLeft, nullPointOne, nullPointTwo, qProposedSubtree, numValidLeavesSubtree, buildCriterionSubtree, alphaSubtree, numLeavesSubtree, rho2);
       }
       else
       {
-        buildTree(qRight, pRight, logUniSample, direction, depth - 1, stepSize, rootH, nullPointOne, nullPointTwo, qRight, pRight, qProposedSubtree, numValidLeavesSubtree, buildCriterionSubtree, alphaSubtree, numLeavesSubtree, rho2);
+        buildTreeIntegrationCriterion(qRight, pRight, logUniSample, direction, depth - 1, stepSize, rootH, nullPointOne, nullPointTwo, qRight, pRight, qProposedSubtree, numValidLeavesSubtree, buildCriterionSubtree, alphaSubtree, numLeavesSubtree, rho2);
       }
 
       // First check to avoid divising by zero

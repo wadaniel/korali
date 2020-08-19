@@ -29,11 +29,12 @@ class HamiltonianDiag : public Hamiltonian
   * @param modelEvaluationCount Number of model evuations musst be increased.
   * @param numSamples Needed for Sample ID.
   * @param inverseMetric Inverse Metric must be provided.
+  * @param _k Experiment object.
   * @return Total energy.
   */
-  double H(const std::vector<double> &q, const std::vector<double> &p, size_t &modelEvaluationCount, const size_t &numSamples, const std::vector<double> &inverseMetric) override
+  double H(const std::vector<double> &q, const std::vector<double> &p, size_t &modelEvaluationCount, const size_t &numSamples, const std::vector<double> &inverseMetric, korali::Experiment *_k) override
   {
-    return K(q, p, inverseMetric) + U(q, modelEvaluationCount, numSamples);
+    return K(q, p, inverseMetric) + U(q, modelEvaluationCount, numSamples, _k);
   }
 
   /**

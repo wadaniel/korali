@@ -1,0 +1,277 @@
+#ifndef _KORALI_LAYER_HPP_
+#define _KORALI_LAYER_HPP_
+
+#ifdef _KORALI_USE_ONEDNN
+  #include "dnnl.hpp"
+#endif
+
+#include "modules/distribution/univariate/uniform/uniform.hpp"
+#include "modules/module.hpp"
+
+namespace korali
+{
+class NeuralNetwork;
+
+namespace neuralNetwork
+{
+class Layer : public Module
+{
+  public:
+  /**
+   * @brief Index of the current layer within the NN
+  */
+  size_t _index;
+
+  /********************************************************
+  * Relevant pointers declaration
+  *******************************************************/
+
+  /**
+   * @brief Pointer to the parent neural network
+   */
+  NeuralNetwork *_nn;
+
+  /**
+  * @brief Pointer to previous layer, NULL if this is the first layer
+  */
+  Layer *_prevLayer;
+
+  /**
+   * @brief Pointer to next layer, NULL if this is the last layer
+   */
+  Layer *_nextLayer;
+
+  /********************************************************
+   * Hyperparameter counts
+   *******************************************************/
+
+  /**
+   * @brief Number of layer's hyperparameters (weights/bias/normalization shift/scale)
+   */
+  size_t _hyperparameterCount;
+
+  /**
+   * @brief Number of layer's normalization parameters (mean/variance)
+   */
+  size_t _normalizationParameterCount;
+
+#ifdef _KORALI_USE_ONEDNN
+
+  /********************************************************
+  * Layers's Memory Structures for Forward Propagation
+  *******************************************************/
+
+  /**
+   * @brief oneDNN Memory object descriptor to contain the result value of applying the activation function on incoming data
+   */
+  dnnl::memory _activationMem;
+
+  /**
+   * @brief oneDNN Memory object descriptor to contain the result value of inner product (Wx+b) operation
+   */
+  dnnl::memory _nodeMem;
+
+  /**
+   * @brief oneDNN Memory object descriptor to contain the result value of inner product (Wx+b) operation
+   */
+  dnnl::memory _batchNormalizationWorkMem;
+
+  /**
+   * @brief oneDNN Memory object descriptor to contain the result value of inner product (Wx+b) operation
+   */
+  dnnl::memory _batchNormalizationMem;
+
+  /**
+   * @brief oneDNN Memory object descriptor to contain the weights of inner product with incoming channels
+   */
+  dnnl::memory _weightsMem;
+
+  /**
+   * @brief oneDNN Working memory for weights that may be reordered to accelerate calculation
+   */
+  dnnl::memory _weightsWorkMem;
+
+  /**
+   * @brief oneDNN Memory object descriptor to contain the bias to add to incoming channels
+   */
+  dnnl::memory _biasMem;
+
+  /********************************************************
+  * Declaring Layers's Memory Structures for Gradients
+  *******************************************************/
+
+  /**
+   * @brief oneDNN Memory object descriptor to contain the gradient of the weights
+   */
+  dnnl::memory _weightsDiffMem;
+
+  /**
+   * @brief oneDNN Memory object descriptor to contain the gradient of the biases
+   */
+  dnnl::memory _biasDiffMem;
+
+  /**
+   * @brief oneDNN Gradient of the data at the inner product (Wx+b) stage
+   */
+  dnnl::memory _nodeDiffMem;
+
+  /*
+  * @brief oneDNN Gradient of the data at the normalization stage
+  */
+  dnnl::memory _batchNormalizationDiffMem;
+
+  /*
+  * @brief oneDNN Gradients of the operation wrt to activation function
+  */
+  dnnl::memory _activationDiffMem;
+
+  /*
+   * @brief oneDNN Gradients of the operation wrt to the layer normalization function
+   */
+  dnnl::memory _batchNormalizationScaleShiftDiffMem;
+
+  /*****************************************************************
+   * Declaring Layers's Forward Propagation Normalization
+   ******************************************************************/
+
+  /*
+   * @brief oneDNN Stores the mean of the normalized batch on this node
+   */
+  dnnl::memory _batchNormalizationMeanMem;
+
+  /*
+   * @brief oneDNN Stores the variance of the normalized batch on this node
+   */
+  dnnl::memory _batchNormalizationVarianceMem;
+
+  /*
+   * @brief oneDNN Provides the scale/shift values for each channel in the layer
+   */
+  dnnl::memory _batchNormalizationScaleShiftMem;
+
+  /**
+   * @brief oneDNN Arguments to the layer normalization operation
+   */
+  std::unordered_map<int, dnnl::memory> _forwardNormalizationArgs;
+
+  /**
+   * @brief oneDNN primitive attributes that describe the forward normalization operation
+   */
+  dnnl::batch_normalization_forward::primitive_desc _forwardNormalizationPrimitiveDesc;
+
+  /**
+  * @brief oneDNN primitive to perform forward layer normalization
+  */
+  dnnl::primitive _forwardNormalizationPrimitive;
+
+  /*****************************************************************
+  * Declaring Layers's Forward Activation Function Primitive Configuration
+  ******************************************************************/
+
+  /**
+   * @brief oneDNN Algorithm chosen for activation function
+   */
+  dnnl::algorithm _activationAlgorithm;
+
+  /**
+   * @brief oneDNN Arguments to the activation function
+   */
+  std::unordered_map<int, dnnl::memory> _forwardActivationArgs;
+
+  /**
+   * @brief oneDNN primitive attributes that describe the activation function
+   */
+  dnnl::eltwise_forward::primitive_desc _forwardActivationPrimitiveDesc;
+
+  /**
+   * @brief oneDNN primitive to run the activation function operation
+   */
+  dnnl::primitive _forwardActivationPrimitive;
+
+  /*****************************************************************
+   * Declaring Layers's Forward Inner Product Primitive Configuration
+   ******************************************************************/
+
+  /**
+   * @brief oneDNN Arguments to the inner product operation
+   */
+  std::unordered_map<int, dnnl::memory> _forwardInnerProductArgs;
+
+  /**
+   * @brief oneDNN primitive attributes that describe the full forward propagation primitive
+   */
+  dnnl::inner_product_forward::primitive_desc _forwardInnerProductPrimitiveDesc;
+
+  /**
+   * @brief oneDNN primitive to run the inner product + bias addition operation
+   */
+  dnnl::primitive _forwardInnerProductPrimitive;
+
+  /*****************************************************************
+   * Declaring Layers's Backward Propagation Configuration
+   ******************************************************************/
+
+  /**
+   * @brief oneDNN Arguments for the backward propagation of the gradient wrt activation functions
+   */
+  std::unordered_map<int, dnnl::memory> _backwardActivationArgs;
+
+  /**
+   * @brief oneDNN primitive for the backward propagation of the gradient wrt activation functions
+   */
+  dnnl::primitive _backwardActivationPrimitive;
+
+  /**
+   * @brief oneDNN Arguments for the backward propagation of the gradient wrt Data
+   */
+  std::unordered_map<int, dnnl::memory> _backwardDataArgs;
+
+  /**
+   * @brief oneDNN primitive for the backward propagation of the gradient wrt Data
+   */
+  dnnl::primitive _backwardDataPrimitive;
+
+  /**
+   * @brief oneDNN Arguments for the backward propagation of the gradient wrt Weights and Biases
+   */
+  std::unordered_map<int, dnnl::memory> _backwardWeightsArgs;
+
+  /**
+   * @brief oneDNN primitive for the backward propagation of the gradient wrt Weights and Biases
+   */
+  dnnl::primitive _backwardWeightsPrimitive;
+
+  /**
+   * @brief oneDNN Arguments for the backward propagation of the gradient wrt normalization
+   */
+  std::unordered_map<int, dnnl::memory> _backwardNormalizationArgs;
+
+  /**
+   * @brief oneDNN primitive for the backward propagation of the gradient wrt normalization
+   */
+  dnnl::primitive _backwardNormalizationPrimitive;
+
+#endif
+
+  /**
+   * @brief Generates the initial weight/bias/normalization hyperparameters for the layer
+   * @return The initial hyperparameters
+   */
+  std::vector<double> generateInitialHyperparameters();
+
+  /**
+   * @brief Initializes the layer's internal memory structures for the forward pipeline
+   */
+  void createForwardPipeline();
+
+  /**
+  * @brief Initializes the internal memory structures for the backward pipeline
+  */
+  void createBackwardPipeline();
+};
+
+} // namespace neuralNetwork
+
+} // namespace korali
+
+#endif // _KORALI_LAYER_HPP_

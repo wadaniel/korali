@@ -1,11 +1,7 @@
 #ifndef _KORALI_CONDUIT_HPP_
 #define _KORALI_CONDUIT_HPP_
 
-#include "modules/conduit/conduit.hpp"
-#include "modules/experiment/experiment.hpp"
 #include "modules/module.hpp"
-#include "modules/solver/solver.hpp"
-#include <chrono>
 #include <vector>
 
 namespace korali
@@ -15,11 +11,6 @@ class Engine;
 class Conduit : public Module
 {
   public:
-  /**
-   * @brief Dictionary of global information broadcasted by the solver, shared by all workers.
-  */
-  knlohmann::json _globals;
-
   /**
  * @brief Accepts a sample for processing.
  * @param sample A Korali sample
@@ -32,28 +23,17 @@ class Conduit : public Module
   virtual void initServer(){};
 
   /**
-  * @brief Indicates how many samples can be evaluated concurrently.
-  * @return Maximum number of workers.
-  */
-  virtual size_t maxConcurrency() { return 1; };
-
-  /**
  * @brief Determines whether the caller rank/thread/process is root.
  * @return True, if it is root; false, otherwise.
  */
   virtual bool isRoot() { return true; }
 
   /**
- * @brief Starts the execution of a sample on the worker side with its own coroutine.
- * @param sampleJs JSON object with the sample information
- */
-  void initiateSample(knlohmann::json &sampleJs);
-
-  /**
  * @brief broadcast global information for all workers to have when processing a sample. Useful for Korali-in-Korali solvers.
+ * @param key Key onto which to save the global information
  * @param globalsJs JSON object with information to broadcast
  */
-  virtual void broadcastGlobals(knlohmann::json &globalsJs) = 0;
+  virtual void broadcastGlobals(std::string key, knlohmann::json &globalsJs) = 0;
 
   /**
  * @brief Aborts execution for all ranks/threads/processes.
@@ -86,12 +66,6 @@ class Conduit : public Module
   size_t waitAny(std::vector<Sample> &samples);
 
   /**
- * @brief Sends sample information back to engine
- * @param sample Sample to send back
- */
-  virtual void update(Sample &sample) = 0;
-
-  /**
   * @brief Stacks a new Engine into the engine stack
   * @param engine A Korali Engine
   */
@@ -107,11 +81,6 @@ class Conduit : public Module
   */
   static void coroutineWrapper();
 };
-
-/**
-  * @brief A singleton pointer to the execution conduit. Shared among all experiments.
-  */
-extern Conduit *_conduit;
 
 } // namespace korali
 

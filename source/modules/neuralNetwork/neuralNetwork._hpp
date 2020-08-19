@@ -1,11 +1,9 @@
 #ifndef _KORALI_NEURAL_NETWORK_HPP_
 #define _KORALI_NEURAL_NETWORK_HPP_
 
-#include "engine.hpp"
-#include "modules/distribution/univariate/uniform/uniform.hpp"
 #include "modules/experiment/experiment.hpp"
-#include "modules/layer/layer.hpp"
 #include "modules/module.hpp"
+#include "modules/neuralNetwork/layer/layer.hpp"
 #include "modules/solver/solver.hpp"
 
 #ifdef _KORALI_USE_ONEDNN
@@ -17,11 +15,6 @@ namespace korali
 class NeuralNetwork : public Module
 {
   public:
-  /**
-  * @brief Flag that indicates whether the oneDNN structures have been initialized
-  */
-  bool _isInitialized;
-
 #ifdef _KORALI_USE_ONEDNN
   /**
    * @brief oneDNN Engine
@@ -33,42 +26,72 @@ class NeuralNetwork : public Module
    */
   dnnl::stream _stream;
 
+  /**
+   * @brief Flag to make sure the NN is initialized before creating
+   */
+  bool _isInitialized;
+
+  /**
+   * @brief Number of NN hyperparameters (weights/bias/normalization shift/scale)
+   */
+  size_t _hyperparameterCount;
+
+  /**
+   * @brief Number of normalization parameters (mean/variance)
+   */
+  size_t _normalizationParameterCount;
+
 #endif
-
-  /**
-  * @brief Model function to evaluate the proposed NN configuration
-  * @param sample The sample containing proposal configuration
-  * @param nn Pointer to the neural network
-  */
-  static void runSample(korali::Sample &sample, korali::NeuralNetwork *nn);
-
-  /**
- * @brief Korali engine for optimizing the NN's weights and biases
- */
-  korali::Engine _koraliEngine;
-
-  /**
- * @brief Korali engine for optimizing the NN's weights and biases
- */
-  korali::Experiment _koraliExperiment;
 
   void initialize() override;
 
   /**
-   * @brief Performs the training phase of the NN, given a solution and the NN's configuration.
-   * @param stepsToRun The number of generations of the optimizer to run.
+   * @brief Generates the initial values for the hyperparameters
+   * @return The initial hyperparameters
    */
-  void train(const size_t stepsToRun = 1);
+  std::vector<double> generateInitialHyperparameters();
 
   /**
-   * @brief Initializes the internal memory structures, with regards to the layer configuration of the network
+   * @brief Updates the internal values of the NN inputs
+   * @param input The input batch
    */
-  void create();
+  void setInput(const std::vector<std::vector<double>> &input);
 
   /**
-   * @brief Updates the values of weights, biases, and inputs to the NN
+   * @brief Updates the values of weights, biases, and normalization scale/shift configuration to the NN
+   * @param hyperparameters The input hyperparameters
    */
-  void updateWeightsAndBias();
+  void setHyperparameters(const std::vector<double> &hyperparameters);
+
+  /**
+   * @brief Gets the values of weights, biases, and normalization scale/shift configuration to the NN
+   * @return The hyperparameters of the NN
+   */
+  std::vector<double> getHyperparameters();
+
+  /**
+   * @brief Gets the values of batch normalization means
+   * @return The batch normalization means
+   */
+  std::vector<double> getNormalizationMeans();
+
+  /**
+  * @brief Updates the values of batch normalization means
+  * @param normalizationMeans The batch normalization means
+  */
+  void setNormalizationMeans(const std::vector<double> &normalizationMeans);
+
+  /**
+   * @brief Gets the values of normalization mean variance
+   * @return The batch normalization variances
+   */
+  std::vector<double> getNormalizationVariances();
+
+  /**
+  * @brief Updates the values of batch normalization variances
+  * @param normalizationVariances The batch normalization variances
+  */
+  void setNormalizationVariances(const std::vector<double> &normalizationVariances);
 
   /**
    * @brief Forward-propagates the input batch data through the network.
@@ -76,9 +99,27 @@ class NeuralNetwork : public Module
   void forward();
 
   /**
-   * @brief Forward-propagates to find out the gradients of the weights and biases.
+   * @brief Backward-propagates the gradients data through the network.
+   * @param outputDifferential Output differentials
   */
-  void backward();
+  void backward(const std::vector<double> &outputDifferential);
+
+  /**
+  * @brief Runs the backward propagation procedure and returns the gradients of the hyperparameters (weights,bias/normalization) with respect to the output
+  * @return The calculated gradients
+  */
+  std::vector<double> getHyperparameterGradients();
+
+  /**
+   * @brief Backward-propagates to find out the gradients of the input data.
+   * @return The gradients of the input data wrt to the output data
+  */
+  std::vector<double> getDataGradients();
+
+  /**
+   * @brief Creator that sets initialized flag to false
+   */
+  NeuralNetwork();
 };
 
 } // namespace korali

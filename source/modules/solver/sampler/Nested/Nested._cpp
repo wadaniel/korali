@@ -1,7 +1,8 @@
-#include "modules/conduit/conduit.hpp"
+#include "engine.hpp"
 #include "modules/distribution/univariate/uniform/uniform.hpp"
 #include "modules/experiment/experiment.hpp"
 #include "modules/solver/sampler/Nested/Nested.hpp"
+#include "sample/sample.hpp"
 
 #include <gsl/gsl_linalg.h>
 #include <gsl/gsl_matrix.h>
@@ -77,9 +78,22 @@ void Nested::setInitialConfiguration()
 
   for (size_t d = 0; d < _dimensions; ++d)
   {
-    if (_k->_distributions[_k->_variables[d]->_distributionIndex]->_type != "Univariate/Uniform") KORALI_LOG_ERROR("Only 'Univariate/Uniform' priors allowed (is %s).\n", _k->_distributions[_k->_variables[d]->_distributionIndex]->_type.c_str());
-    _priorWidth[d] = dynamic_cast<distribution::univariate::Uniform *>(_k->_distributions[_k->_variables[d]->_distributionIndex])->_maximum - dynamic_cast<distribution::univariate::Uniform *>(_k->_distributions[_k->_variables[d]->_distributionIndex])->_minimum;
-    _priorLowerBound[d] = dynamic_cast<distribution::univariate::Uniform *>(_k->_distributions[_k->_variables[d]->_distributionIndex])->_minimum;
+    if (dynamic_cast<distribution::Univariate *>(_k->_distributions[_k->_variables[d]->_distributionIndex]) == nullptr) KORALI_LOG_ERROR("Prior of variable %s is not of type Univariate (is %s).\n", _k->_variables[d]->_name.c_str(), _k->_distributions[_k->_variables[d]->_distributionIndex]->_type.c_str());
+
+    if ((_k->_distributions[_k->_variables[d]->_distributionIndex]->_type != "Univariate/Uniform") && (std::isfinite(_k->_variables[d]->_lowerBound) == false)) KORALI_LOG_ERROR("Prior of variable %s is not 'Univariate/Uniform' (is %s) AND lower bound not set (invalid configuration).\n", _k->_variables[d]->_name.c_str(), _k->_distributions[_k->_variables[d]->_distributionIndex]->_type.c_str());
+
+    if ((_k->_distributions[_k->_variables[d]->_distributionIndex]->_type != "Univariate/Uniform") && (std::isfinite(_k->_variables[d]->_upperBound) == false)) KORALI_LOG_ERROR("Prior of variable %s is not 'Univariate/Uniform' (is %s) AND upper bound not set (invalid configuration).\n", _k->_variables[d]->_name.c_str(), _k->_distributions[_k->_variables[d]->_distributionIndex]->_type.c_str());
+
+    if (_k->_distributions[_k->_variables[d]->_distributionIndex]->_type == "Univariate/Uniform")
+    {
+      _priorWidth[d] = dynamic_cast<distribution::univariate::Uniform *>(_k->_distributions[_k->_variables[d]->_distributionIndex])->_maximum - dynamic_cast<distribution::univariate::Uniform *>(_k->_distributions[_k->_variables[d]->_distributionIndex])->_minimum;
+      _priorLowerBound[d] = dynamic_cast<distribution::univariate::Uniform *>(_k->_distributions[_k->_variables[d]->_distributionIndex])->_minimum;
+    }
+    else
+    {
+      _priorWidth[d] = _k->_variables[d]->_upperBound - _k->_variables[d]->_lowerBound;
+      _priorLowerBound[d] = _k->_variables[d]->_lowerBound;
+    }
   }
 
   if ((_resamplingMethod == "Ellipse" || _resamplingMethod == "Multi Ellipse") && (_dimensions == 2)) KORALI_LOG_ERROR("Resampling Method Ellipse only suitable for problems of dim larger 2.");
@@ -164,7 +178,7 @@ void Nested::runGeneration()
       priorTransform(sample);
       samples[c]["Parameters"] = sample;
       samples[c]["Sample Id"] = c;
-      _conduit->start(samples[c]);
+      KORALI_START(samples[c]);
       _modelEvaluationCount++;
       _generatedSamples++;
     }
@@ -172,10 +186,12 @@ void Nested::runGeneration()
     size_t finishedCandidatesCount = 0;
     while (finishedCandidatesCount < _batchSize)
     {
-      size_t finishedId = _conduit->waitAny(samples);
+      size_t finishedId = KORALI_WAITANY(samples);
 
+      auto candidate = KORALI_GET(std::vector<double>, samples[finishedId], "Parameters");
       _candidateLogPriors[finishedId] = KORALI_GET(double, samples[finishedId], "logPrior");
       _candidateLogLikelihoods[finishedId] = KORALI_GET(double, samples[finishedId], "logLikelihood");
+      _candidateLogLikelihoods[finishedId] += logPriorWeight(candidate);
 
       finishedCandidatesCount++;
     }
@@ -205,7 +221,7 @@ void Nested::runFirstGeneration()
     priorTransform(sample);
     samples[c]["Parameters"] = sample;
     samples[c]["Sample Id"] = c;
-    _conduit->start(samples[c]);
+    KORALI_START(samples[c]);
     _modelEvaluationCount++;
     _generatedSamples++;
   }
@@ -213,10 +229,12 @@ void Nested::runFirstGeneration()
   size_t finishedCandidatesCount = 0;
   while (finishedCandidatesCount < _numberLivePoints)
   {
-    size_t finishedId = _conduit->waitAny(samples);
+    size_t finishedId = KORALI_WAITANY(samples);
 
+    auto sample = KORALI_GET(std::vector<double>, samples[finishedId], "Parameters");
     _liveLogPriors[finishedId] = KORALI_GET(double, samples[finishedId], "logPrior");
     _liveLogLikelihoods[finishedId] = KORALI_GET(double, samples[finishedId], "logLikelihood");
+    _liveLogLikelihoods[finishedId] += logPriorWeight(sample);
 
     finishedCandidatesCount++;
   }
@@ -292,8 +310,11 @@ bool Nested::processGeneration()
 
     double evidenceTerm = exp(_lStarOld - _logEvidence) * _lStarOld + exp(_lStar - _logEvidence) * _lStar;
 
-    _information = exp(dLogVol) * evidenceTerm + exp(logEvidenceOld - _logEvidence) * (informationOld + logEvidenceOld) - _logEvidence;
-    _logEvidenceVar += 2. * (_information - informationOld) * _expectedLogShrinkage;
+    if (isfinite(evidenceTerm))
+    {
+      _information = exp(dLogVol) * evidenceTerm + exp(logEvidenceOld - _logEvidence) * (informationOld + logEvidenceOld) - _logEvidence;
+      _logEvidenceVar += 2. * (_information - informationOld) * _expectedLogShrinkage;
+    }
 
     // add it to db
     if (isfinite(_liveLogLikelihoods[sampleIdx])) updateSampleDatabase(sampleIdx);
@@ -320,6 +341,18 @@ bool Nested::processGeneration()
 
   _lastAccepted++;
   return (acceptedBefore != _acceptedSamples);
+}
+
+double Nested::logPriorWeight(std::vector<double> &sample)
+{
+  double logweight = 0.0;
+  for (size_t d = 0; d < _dimensions; ++d)
+    if (_k->_distributions[_k->_variables[d]->_distributionIndex]->_type != "Univariate/Uniform")
+    {
+      logweight += dynamic_cast<distribution::Univariate *>(_k->_distributions[_k->_variables[d]->_distributionIndex])->getLogDensity(sample[d]);
+      logweight += log(_priorWidth[d]);
+    }
+  return logweight;
 }
 
 void Nested::setBoundsVolume()
@@ -395,7 +428,7 @@ void Nested::generateCandidatesFromMultiEllipse()
     double cumVol = 0.0;
     double rnd_ellipse = _uniformGenerator->getRandomNumber() * totalVol;
 
-    ellipse_t *ellipse_ptr;
+    ellipse_t *ellipse_ptr = NULL;
     for (auto &ellipse : _ellipseVector)
     {
       cumVol += ellipse.volume;
@@ -405,6 +438,9 @@ void Nested::generateCandidatesFromMultiEllipse()
         break;
       }
     }
+
+    if (ellipse_ptr == NULL)
+      KORALI_LOG_ERROR("Failed to assign ellipse vector.");
 
     bool accept = false;
     while (accept == false)
@@ -543,11 +579,6 @@ double Nested::l2distance(const std::vector<double> &sampleOne, const std::vecto
 bool Nested::updateEllipse(ellipse_t &ellipse) const
 {
   if (ellipse.num == 0) return false;
-
-  if (ellipse.num <= ellipse.dim)
-  {
-    _k->_logger->logWarning("Detailed", "Can't update ellipsoid, not enough samples (%zu, required %zu).\n", ellipse.num, ellipse.dim + 1);
-  }
 
   updateEllipseMean(ellipse);
   bool good = updateEllipseCov(ellipse);

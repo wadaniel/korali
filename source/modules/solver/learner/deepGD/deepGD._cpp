@@ -1,0 +1,219 @@
+#include "engine.hpp"
+#include "modules/experiment/experiment.hpp"
+#include "modules/solver/learner/deepGD/deepGD.hpp"
+#include "sample/sample.hpp"
+
+/******************************************************************
+ * Performance considerations:
+ * + Do not require gradient if the solver is purely stochastic
+ *****************************************************************/
+
+namespace korali
+{
+namespace solver
+{
+namespace learner
+{
+void DeepGD::initialize()
+{
+  // If the learner is alread initialized, do not do anything else
+  if (_isLearnerInitialized == false)
+  {
+    // Getting problem pointer
+    _problem = dynamic_cast<problem::SupervisedLearning *>(_k->_problem);
+
+    /*****************************************************************
+   * Setting up Neural Networks
+   *****************************************************************/
+
+    // Setting the number of input layer nodes as number of input vector size
+    _neuralNetwork["Layers"][0]["Node Count"] = _problem->_inputVectorSize;
+
+    // Setting the number of output layer nodes as number of output vector size
+    size_t outputLayerId = _neuralNetwork["Layers"].size() - 1;
+    _neuralNetwork["Layers"][outputLayerId]["Node Count"] = _problem->_solutionVectorSize;
+
+    // Creating training neural network, setting its batch size as the number of inputs to the problem
+    auto neuralNetworkConfig = _neuralNetwork;
+    neuralNetworkConfig["Batch Size"] = _problem->_inputs.size();
+    _trainingNeuralNetwork = dynamic_cast<NeuralNetwork *>(getModule(neuralNetworkConfig, _k));
+
+    // Creating inference neural network, setting its batch size as one (evaluation per call) and following the global (mean/variance) stats of the trained NN
+    neuralNetworkConfig = _neuralNetwork;
+    neuralNetworkConfig["Batch Size"] = 1;
+    neuralNetworkConfig["Use Preloaded Normalization Data"] = true;
+    _evaluationNeuralNetwork = dynamic_cast<NeuralNetwork *>(getModule(neuralNetworkConfig, _k));
+
+    /*****************************************************************
+   * Setting up weight and bias optimization experiment
+   *****************************************************************/
+
+    // Creating evaluation lambda function for optimization
+    auto fc = [this, nn = &_trainingNeuralNetwork, out = &_problem->_solution](Sample &sample) { this->evaluateHyperparameters(sample, *nn, *out); };
+
+    _optExperiment["Problem"]["Type"] = "Optimization";
+    _optExperiment["Problem"]["Objective Function"] = fc;
+
+    _hyperparameters = _trainingNeuralNetwork->generateInitialHyperparameters();
+    _normalizationMeans = _trainingNeuralNetwork->getNormalizationMeans();
+    _normalizationVariances = _trainingNeuralNetwork->getNormalizationVariances();
+
+    for (size_t i = 0; i < _hyperparameters.size(); i++)
+    {
+      _optExperiment["Variables"][i]["Name"] = std::string("Hyperparameter") + std::to_string(i);
+      _optExperiment["Variables"][i]["Initial Value"] = _hyperparameters[i];
+      _optExperiment["Variables"][i]["Initial Mean"] = _hyperparameters[i];
+      _optExperiment["Variables"][i]["Initial Standard Deviation"] = abs(_hyperparameters[i]) * 0.1;
+    }
+
+    _optExperiment["Solver"] = _optimizer;
+    _optExperiment["File Output"]["Frequency"] = 0;
+    _optExperiment["File Output"]["Enabled"] = false;
+    _optExperiment["Console Output"]["Frequency"] = 0;
+    _optExperiment["Console Output"]["Verbosity"] = "Silent";
+    _optExperiment["Random Seed"] = _k->_randomSeed++;
+
+    // Running initialization to verify that the configuration is correct
+    korali::Engine engine;
+    engine.initialize(_optExperiment);
+
+    // Setting learner initialized flag
+    _isLearnerInitialized = true;
+  }
+
+  // Update/Copy the inputs into the NN
+  _trainingNeuralNetwork->setInput(_problem->_inputs);
+}
+
+void DeepGD::runGeneration()
+{
+  _optExperiment["Solver"]["Termination Criteria"]["Max Generations"] = _optExperiment._currentGeneration + _stepsPerGeneration;
+  korali::Engine engine;
+  engine.resume(_optExperiment);
+  _currentLoss = _optExperiment["Results"]["Best Sample"]["F(x)"].get<double>();
+}
+
+void DeepGD::finalize()
+{
+  _hyperparameters = _trainingNeuralNetwork->getHyperparameters();
+  _normalizationMeans = _trainingNeuralNetwork->getNormalizationMeans();
+  _normalizationVariances = _trainingNeuralNetwork->getNormalizationVariances();
+
+  _k->_logger->logInfo("Normal", "Current Loss: %.15f\n", _currentLoss);
+}
+
+std::vector<double> DeepGD::getHyperparameters()
+{
+  std::vector<double> parameters;
+
+  // Concatenating parameters
+  parameters.insert(parameters.end(), _hyperparameters.begin(), _hyperparameters.end());
+  parameters.insert(parameters.end(), _normalizationMeans.begin(), _normalizationMeans.end());
+  parameters.insert(parameters.end(), _normalizationVariances.begin(), _normalizationVariances.end());
+
+  return parameters;
+}
+
+void DeepGD::setHyperparameters(const std::vector<double> &hyperparameters)
+{
+  size_t curPos = 0;
+
+  // Setting NN hyperparameters first
+  _hyperparameters = std::vector<double>(hyperparameters.begin() + curPos, hyperparameters.begin() + _trainingNeuralNetwork->_hyperparameterCount);
+  curPos += _hyperparameters.size();
+
+  // Setting NN normalization means second
+  _normalizationMeans = std::vector<double>(hyperparameters.begin() + curPos, hyperparameters.begin() + curPos + _trainingNeuralNetwork->_normalizationParameterCount);
+  curPos += _normalizationMeans.size();
+
+  // Setting NN normalization variances finally
+  _normalizationVariances = std::vector<double>(hyperparameters.begin() + curPos, hyperparameters.end());
+}
+
+std::vector<double> DeepGD::getEvaluation(const std::vector<double> &inputBatch)
+{
+  // Copying hyperparameters and normalization parameters from training to evaluation
+  _evaluationNeuralNetwork->setHyperparameters(_hyperparameters);
+  _evaluationNeuralNetwork->setNormalizationMeans(_normalizationMeans);
+  _evaluationNeuralNetwork->setNormalizationVariances(_normalizationVariances);
+
+  // Updating NN inputs
+  _evaluationNeuralNetwork->setInput({inputBatch});
+
+  // Running the input values through the neural network
+  _evaluationNeuralNetwork->forward();
+
+  return _evaluationNeuralNetwork->_outputValues[0];
+}
+
+std::vector<double> DeepGD::getGradients(const std::vector<double> &outputDiffs)
+{
+  // Backward propagating the gradients through the training neural network
+  _evaluationNeuralNetwork->backward(outputDiffs);
+
+  // Running backward propagation wrt data
+  return _evaluationNeuralNetwork->getDataGradients();
+}
+
+void DeepGD::printGenerationAfter()
+{
+  // Printing results so far
+  _k->_logger->logInfo("Normal", "Training Loss: %.15f\n", _currentLoss);
+}
+
+void DeepGD::evaluateHyperparameters(Sample &sample, NeuralNetwork *nn, const std::vector<std::vector<double>> &solution)
+{
+  // Getting parameters for weight and bias update
+  auto parameters = KORALI_GET(std::vector<double>, sample, "Parameters");
+
+  // Updating the training network's weights, biases, and normalization factors
+  nn->setHyperparameters(parameters);
+
+  // Forward propagating the input values through the training neural network
+  nn->forward();
+
+  // Getting solution's dimensions
+  size_t batchSize = solution.size();
+  size_t solutionSize = solution[0].size();
+
+  // Saving values for the loss function and its gradient
+  double loss = 0.0;
+  std::vector<double> lossDiff(batchSize * solutionSize);
+
+  // Assigning values to evaluation and gradients, depending on the loss function selected
+  if (_lossFunction == "Direct")
+  {
+    for (size_t i = 0; i < batchSize; i++)
+      for (size_t j = 0; j < solutionSize; j++)
+        lossDiff[i * solutionSize + j] = -solution[i][j];
+  }
+
+  if (_lossFunction == "Mean Squared Error")
+  {
+    for (size_t i = 0; i < batchSize; i++)
+      for (size_t j = 0; j < solutionSize; j++)
+      {
+        double diff = solution[i][j] - nn->_outputValues[i][j];
+        lossDiff[i * solutionSize + j] = diff;
+        loss += diff * diff;
+      }
+
+    // Saving the negative of the error because we want to minimize it
+    loss = -loss / ((double)batchSize * 2);
+  }
+
+  // Backward propagating the gradients through the training neural network
+  nn->backward(lossDiff);
+
+  // Saving the negative of the error because we want to minimize it
+  sample["F(x)"] = loss;
+
+  // If we need the gradients of the weights, we also compute them
+  sample["Gradient"] = nn->getHyperparameterGradients();
+}
+
+} // namespace learner
+
+} // namespace solver
+
+} // namespace korali

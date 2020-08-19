@@ -1,5 +1,4 @@
 #include "engine.hpp"
-#include "modules/conduit/conduit.hpp"
 #include "modules/experiment/experiment.hpp"
 #include "modules/problem/problem.hpp"
 #include "modules/solver/SAEM/SAEM.hpp"
@@ -121,8 +120,8 @@ void SAEM::sampleLatent()
   sample["Module"] = "Problem";
   sample["Operation"] = "Sample Latent Variables";
 
-  _conduit->start(sample);
-  _conduit->wait(sample);
+  KORALI_START(sample);
+  KORALI_WAIT(sample);
 
   _currentSamples = KORALI_GET(std::vector<std::vector<double>>, sample, "Samples");
 
@@ -165,17 +164,17 @@ void SAEM::calculateSampleSVectors()
     k[i]["Hyperparameters"] = _currentHyperparameters;
     k[i]["Module"] = "Problem";
     k[i]["Operation"] = "Evaluate S";
-    _conduit->start(k[i]);
+    KORALI_START(k[i]);
   }
 
-  _conduit->waitAll(k);
+  KORALI_WAITALL(k);
 
   for (size_t i = 0; i < _numberSamplesPerStep; i++)
   {
     auto v = KORALI_GET(std::vector<double>, k[i], "S");
 
     _currentSamplesSVectors[i] = v;
-    if (v.size() != _latentProblem->_sDimension)
+    if (v.size() != (size_t)_latentProblem->_sDimension)
       KORALI_LOG_ERROR("S vector had incorrect size, or incorrect size was given as 'S Dimension' when defining the problem");
   }
 }
@@ -247,7 +246,7 @@ void SAEM::QFunction(Sample &sample, size_t zetaFc, size_t phiFc)
 
   auto zeta = KORALI_GET(double, sample, "zeta");
   auto phi = KORALI_GET(std::vector<double>, sample, "phi");
-  auto currentS = KORALI_GET(std::vector<double>, sample, "Globals", "Current S");
+  auto currentS = sample.globals()["Current S"].get<std::vector<double>>();
 
   if (phi.size() != currentS.size())
     KORALI_LOG_ERROR("SAEM Internal model error. Current Robbins-Monro-averaged vector S did not have the same length as vector phi from the problem definition (from the model).\n");
@@ -259,12 +258,11 @@ void SAEM::QFunction(Sample &sample, size_t zetaFc, size_t phiFc)
           Q function to get a new vector of hyperparameters. */
 void SAEM::updateHyperparameters()
 {
-  knlohmann::json globalsJs;
-  globalsJs["Current S"] = _currentS;
-  _conduit->broadcastGlobals(globalsJs);
-
+  // Updating the current S for the Q experiment
+  _experiment._globals["Current S"] = _currentS;
   _experiment["Random Seed"] = _k->_randomSeed++;
-  _engine.run(_experiment);
+  korali::Engine engine;
+  engine.run(_experiment);
 
   _currentHyperparameters = _experiment["Results"]["Best Sample"]["Parameters"].get<std::vector<double>>();
   if (_currentHyperparameters.size() != _numberHyperparameters) KORALI_LOG_ERROR(
@@ -285,11 +283,7 @@ void SAEM::updateHyperparameters()
     _numberGenerationsSmallLikelihoodChange++;
 }
 
-/** @brief Test whether index idx corresponds to a latent variable.
-
- @param idx The index of a variable, in the list of all variables. The order is given by the user when defining
-            variables, e.g. k["Variables"][3] will be the third variable. (typo possible.)
- */
+/** @brief Test whether index idx corresponds to a latent variable. */
 bool SAEM::isLatent(int idx)
 {
   /* checks whether the variable at index idx, i.e., k->_variables[idx], is latent or not*/
@@ -311,10 +305,7 @@ std::vector<double> SAEM::meanAndSDev(std::vector<double> v)
   return result;
 }
 
-/** @brief Utility function, "transposes" a vector of vectors @param data 
-
-    That is, data[i][j] will be moved to result[j][i].
-    */
+/** @brief Utility function, "transposes" a vector of vectors */
 std::vector<std::vector<double>> SAEM::transpose(const std::vector<std::vector<double>> data)
 {
   /* From: https://stackoverflow.com/questions/6009782/how-to-pivot-a-vector-of-vectors */

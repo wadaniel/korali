@@ -47,12 +47,13 @@ class LatentVariableFIM : public korali::Solver
   *   @returns a flattened vector
   */
   std::vector<double> flatten(const std::vector<std::vector<double>> &v);
+
   /**
   * @brief Utility function to calculate mean and standard deviation of the values in vector v.
   * @param v A 1D vector.
   * @return A two-element vector: {mean, stdev} (in this order)
   */
-  std::vector<double> meanAndSDev(std::vector<double> v);
+  //  std::vector<double> meanAndSDev(std::vector<double> v);
 
   /**
   *  @brief Utility function, "transposes" a vector of vectors of vectors @param data
@@ -61,7 +62,7 @@ class LatentVariableFIM : public korali::Solver
   * @return result, a 3D array, so that data[i][j][k] is moved to result[j][i][k].
   */
 
-  std::vector<std::vector<std::vector<double>>> transpose3D(const std::vector<std::vector<std::vector<double>>> data);
+  //  std::vector<std::vector<std::vector<double>>> transpose3D(const std::vector<std::vector<std::vector<double>>> data);
 
   /** @brief This is always run before (re-)starting the solver */
   void initialize() override;

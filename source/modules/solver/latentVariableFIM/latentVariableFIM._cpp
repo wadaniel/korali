@@ -472,8 +472,55 @@ void korali::solver::LatentVariableFIM::updateMultivariateDistribution()
   _multivariateNormalGenerator->updateDistribution();
 }
 
+/** @brief: Utility function to convert a vector of vectors into a concatenated 1D vector.
+  */
+std::vector<double> korali::solver::LatentVariableFIM::flatten(const std::vector<std::vector<double>> &v)
+{
+  // credits to Sebastian Redl @ stackoverflow
+  std::size_t total_size = 0;
+  for (const auto &sub : v)
+    total_size += sub.size();
+  std::vector<double> result;
+  result.reserve(total_size);
+  for (const auto &sub : v)
+    result.insert(result.end(), sub.begin(), sub.end());
+  return result;
+}
+
+/*       * * * * * * * * * * * * * * * * * * * * * * * * *
+ *        * Final Results and Console Output *
+ *       * * * * * * * * * * * * * * * * * * * * * * * * */
+
 //void korali::solver::LatentVariableFIM ::printGenerationBefore() {
 //}
 //
 //void korali::solver::LatentVariableFIM ::printGenerationAfter() {
 //}
+
+void korali::solver::LatentVariableFIM::finalize()
+{
+  _k->_logger->logInfo("Normal", "\n");
+  _k->_logger->logInfo("Normal", "Finished. Final Fischer Information estimate: (TODO)\n");
+  // Only enable as soon as I have good estimates of that:
+  //  _k->_logger->logInfo("Normal", "  Current Total Log Probability:       %.2e\n", ...);
+  //  _k->_logger->logInfo("Normal", "  Best Total Log Probability:          %.2e\n", ...);
+
+  // * Set results and print them
+  //  (*_k)["Results"]["Mean"] = _currentHyperparametersMean;
+  //  (*_k)["Results"]["Covariance Matrix"] = _currentHyperparametersCovariance;
+
+  //  std::ostringstream covLogStringStream;
+  //  _k->_logger->logInfo("Normal", "\n");
+  //  _k->_logger->logInfo("Normal", "Covariance matrix: \n");
+  //  _k->_logger->logInfo("Normal", "  [\n");
+  //  for (size_t i = 0; i < _latentSpaceDimensions; i++)
+  //  {
+  //    covLogStringStream << "    [";
+  //    for (size_t j = 0; j < _latentSpaceDimensions; j++)
+  //      covLogStringStream << "\t" << _currentHyperparametersCovariance[i][j] << " ";
+  //    covLogStringStream << "],\n";
+  //    _k->_logger->logInfo("Normal", covLogStringStream.str().c_str());
+  //    covLogStringStream.str("");
+  //  }
+  //  _k->_logger->logInfo("Normal", "  ]\n");
+}

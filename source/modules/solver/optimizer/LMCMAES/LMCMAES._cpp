@@ -16,6 +16,8 @@ namespace optimizer
 {
 void LMCMAES::setInitialConfiguration()
 {
+
+  _dimensions = _k->_variables.size();
   // Establishing optimization goal
   _bestEverValue = -std::numeric_limits<double>::infinity();
 
@@ -23,35 +25,36 @@ void LMCMAES::setInitialConfiguration()
   _previousBestValue = _bestEverValue;
   _currentBestValue = _bestEverValue;
 
-  if (_targetDistanceCoefficients.size() == 0) _targetDistanceCoefficients = {double(_k->_variables.size()), 0.0, 0.0};
+
+  if (_targetDistanceCoefficients.size() == 0) _targetDistanceCoefficients = {double(_dimensions), 0.0, 0.0};
 
   if (_targetDistanceCoefficients.size() != 3)
     KORALI_LOG_ERROR("LMCMAES requires 3 parameters for 'Target Distance Coefficients' (%zu provided).\n", _targetDistanceCoefficients.size());
 
   if (_muValue == 0) _muValue = _populationSize / 2;
-  if (_cumulativeCovariance == 0.0) _cumulativeCovariance = 0.5 / std::sqrt((double)_k->_variables.size());
-  if (_choleskyMatrixLearningRate == 0.0) _choleskyMatrixLearningRate = 1.0 / (10.0 - std::log((double)_k->_variables.size() + 1.0));
-  if (_targetDistanceCoefficients.empty()) _targetDistanceCoefficients = {(double)_k->_variables.size(), 0.0, 0.0};
-  if (_setUpdateInterval == 0) _setUpdateInterval = std::max(std::floor(std::log(_k->_variables.size())), 1.0);
-  if (_subsetSize == 0) _subsetSize = std::ceil(std::sqrt(double(_k->_variables.size())));
+  if (_subsetSize == 0) _subsetSize = 4+std::floor(3*std::log(double(_dimensions)));
+  if (_cumulativeCovariance == 0.0) _cumulativeCovariance = 1.0 /((double) _subsetSize);
+  if (_choleskyMatrixLearningRate == 0.0) _choleskyMatrixLearningRate = 1.0 / (10.0 * std::log((double) _dimensions + 1.0));
+  if (_targetDistanceCoefficients.empty()) _targetDistanceCoefficients = {(double)_dimensions, 0.0, 0.0};
+  if (_setUpdateInterval == 0) _setUpdateInterval = std::max(std::floor(std::log(_dimensions)), 1.0);
 
-  _chiSquareNumber = sqrt((double)_k->_variables.size()) * (1. - 1. / (4. * _k->_variables.size()) + 1. / (21. * _k->_variables.size() * _k->_variables.size()));
+  _chiSquareNumber = sqrt((double)_dimensions) * (1. - 1. / (4. * _dimensions) + 1. / (21. * _dimensions * _dimensions));
   _sigmaExponentFactor = 0.0;
   _conjugateEvolutionPathL2Norm = 0.0;
 
   // Allocating Memory
   _samplePopulation.resize(_populationSize);
-  for (size_t i = 0; i < _populationSize; i++) _samplePopulation[i].resize(_k->_variables.size());
+  for (size_t i = 0; i < _populationSize; i++) _samplePopulation[i].resize(_dimensions);
 
-  _evolutionPath.resize(_k->_variables.size());
-  _meanUpdate.resize(_k->_variables.size());
-  _currentMean.resize(_k->_variables.size());
-  _previousMean.resize(_k->_variables.size());
-  _bestEverVariables.resize(_k->_variables.size());
-  _currentBestVariables.resize(_k->_variables.size());
-  _randomVector.resize(_k->_variables.size());
-  _choleskyFactorVectorProduct.resize(_k->_variables.size());
-  _standardDeviation.resize(_k->_variables.size());
+  _evolutionPath.resize(_dimensions);
+  _meanUpdate.resize(_dimensions);
+  _currentMean.resize(_dimensions);
+  _previousMean.resize(_dimensions);
+  _bestEverVariables.resize(_dimensions);
+  _currentBestVariables.resize(_dimensions);
+  _randomVector.resize(_dimensions);
+  _choleskyFactorVectorProduct.resize(_dimensions);
+  _standardDeviation.resize(_dimensions);
 
   _muWeights.resize(_muValue);
 
@@ -72,14 +75,14 @@ void LMCMAES::setInitialConfiguration()
   _evolutionPathHistory.resize(_subsetSize);
   for (size_t i = 0; i < _subsetSize; ++i)
   {
-    _inverseVectors[i].resize(_k->_variables.size());
-    _evolutionPathHistory[i].resize(_k->_variables.size());
+    _inverseVectors[i].resize(_dimensions);
+    _evolutionPathHistory[i].resize(_dimensions);
     std::fill(_inverseVectors[i].begin(), _inverseVectors[i].end(), 0.0);
     std::fill(_evolutionPathHistory[i].begin(), _evolutionPathHistory[i].end(), 0.0);
   }
 
   // Initializing variable defaults
-  for (size_t i = 0; i < _k->_variables.size(); i++)
+  for (size_t i = 0; i < _dimensions; i++)
   {
     /* confirm lower & upper bound */
     //   if( (std::isfinite(_k->_variables[i]->_lowerBound) && std::isfinite(_k->_variables[i]->_upperBound) ) == false )
@@ -145,7 +148,7 @@ void LMCMAES::setInitialConfiguration()
   _infeasibleSampleCount = 0;
   _sqrtInverseCholeskyRate = std::sqrt(1.0 - _choleskyMatrixLearningRate);
 
-  for (size_t i = 0; i < _k->_variables.size(); i++) _currentMean[i] = _previousMean[i] = _k->_variables[i]->_initialValue;
+  for (size_t i = 0; i < _dimensions; i++) _currentMean[i] = _previousMean[i] = _k->_variables[i]->_initialValue;
 }
 
 void LMCMAES::runGeneration()
@@ -192,14 +195,14 @@ void LMCMAES::sampleSingle(size_t sampleIdx)
   if (_symmetricSampling || (sampleIdx % 2) == 0)
   {
     choleskyFactorUpdate(sampleIdx);
-    for (size_t d = 0; d < _k->_variables.size(); ++d)
+    for (size_t d = 0; d < _dimensions; ++d)
     {
       _samplePopulation[sampleIdx][d] = _currentMean[d] + _sigma * _standardDeviation[d] * _choleskyFactorVectorProduct[d];
     }
   }
   else
   {
-    for (size_t d = 0; d < _k->_variables.size(); ++d)
+    for (size_t d = 0; d < _dimensions; ++d)
       //_samplePopulation[sampleIdx][d] = 2.0*_currentMean[d] - _samplePopulation[sampleIdx-1][d]; // version from [Loshchilov2015]
       _samplePopulation[sampleIdx][d] = _currentMean[d] - _sigma * _standardDeviation[d] * _choleskyFactorVectorProduct[d]; // version from Loshcholov's code
   }
@@ -223,7 +226,7 @@ void LMCMAES::updateDistribution(std::vector<Sample> &samples)
 
   /* update current best */
   _currentBestValue = _valueVector[0];
-  for (size_t d = 0; d < _k->_variables.size(); ++d) _currentBestVariables[d] = _samplePopulation[_sortingIndex[0]][d];
+  for (size_t d = 0; d < _dimensions; ++d) _currentBestVariables[d] = _samplePopulation[_sortingIndex[0]][d];
 
   /* update xbestever */
   if (_currentBestValue > _bestEverValue)
@@ -231,11 +234,11 @@ void LMCMAES::updateDistribution(std::vector<Sample> &samples)
     _previousBestEverValue = _bestEverValue;
     _bestEverValue = _currentBestValue;
 
-    for (size_t d = 0; d < _k->_variables.size(); ++d) _bestEverVariables[d] = _currentBestVariables[d];
+    for (size_t d = 0; d < _dimensions; ++d) _bestEverVariables[d] = _currentBestVariables[d];
   }
 
   /* set weights */
-  for (size_t d = 0; d < _k->_variables.size(); ++d)
+  for (size_t d = 0; d < _dimensions; ++d)
   {
     _previousMean[d] = _currentMean[d];
     _currentMean[d] = 0.;
@@ -247,7 +250,7 @@ void LMCMAES::updateDistribution(std::vector<Sample> &samples)
 
   /* update evolution path */
   _conjugateEvolutionPathL2Norm = 0.0;
-  for (size_t d = 0; d < _k->_variables.size(); ++d)
+  for (size_t d = 0; d < _dimensions; ++d)
   {
     _evolutionPath[d] = (1. - _cumulativeCovariance) * _evolutionPath[d] + sqrt(_cumulativeCovariance * (2. - _cumulativeCovariance) * _effectiveMu) * _meanUpdate[d];
     _conjugateEvolutionPathL2Norm += std::pow(_evolutionPath[d], 2);
@@ -275,23 +278,23 @@ void LMCMAES::choleskyFactorUpdate(size_t sampleIdx)
   if (sampleIdx == 0) ms *= 10;
   size_t subsetStartIndex = _subsetSize - std::min((size_t)std::floor(ms * std::abs(_normalGenerator->getRandomNumber())) + 1, _subsetSize);
 
-  //for (size_t d = 0; d < _k->_variables.size(); ++d) _randomVector[d] = (_uniformGenerator->getRandomNumber() > 0.5) ? 1 : -1.0; Rademacher
+  //for (size_t d = 0; d < _dimensions); ++d) _randomVector[d] = (_uniformGenerator->getRandomNumber() > 0.5) ? 1 : -1.0; Rademacher
   if (_randomNumberDistribution == "Normal")
-    for (size_t d = 0; d < _k->_variables.size(); ++d) _randomVector[d] = _normalGenerator->getRandomNumber();
+    for (size_t d = 0; d < _dimensions; ++d) _randomVector[d] = _normalGenerator->getRandomNumber();
   else if (_randomNumberDistribution == "Uniform")
-    for (size_t d = 0; d < _k->_variables.size(); ++d) _randomVector[d] = 2 * _uniformGenerator->getRandomNumber() - 1.0;
+    for (size_t d = 0; d < _dimensions; ++d) _randomVector[d] = 2 * _uniformGenerator->getRandomNumber() - 1.0;
 
-  for (size_t d = 0; d < _k->_variables.size(); ++d) _choleskyFactorVectorProduct[d] = _randomVector[d];
+  for (size_t d = 0; d < _dimensions; ++d) _choleskyFactorVectorProduct[d] = _randomVector[d];
 
   for (size_t i = subsetStartIndex; i < _subsetSize; ++i)
   {
     size_t idx = _subsetHistory[i];
 
     double k = 0.0;
-    for (size_t d = 0; d < _k->_variables.size(); ++d) k += _inverseVectors[idx][d] * _randomVector[d];
+    for (size_t d = 0; d < _dimensions; ++d) k += _inverseVectors[idx][d] * _randomVector[d];
     k *= _evolutionPathWeights[idx];
 
-    for (size_t d = 0; d < _k->_variables.size(); ++d) _choleskyFactorVectorProduct[d] = _sqrtInverseCholeskyRate * _choleskyFactorVectorProduct[d] + k * _evolutionPathHistory[idx][d];
+    for (size_t d = 0; d < _dimensions; ++d) _choleskyFactorVectorProduct[d] = _sqrtInverseCholeskyRate * _choleskyFactorVectorProduct[d] + k * _evolutionPathHistory[idx][d];
   }
 }
 
@@ -311,7 +314,7 @@ void LMCMAES::updateSet()
     minarg = std::numeric_limits<double>::max();
     for (size_t i = 1; i < _subsetSize; ++i)
     {
-      /* `target` by default equals  _k->_variables.size() */
+      /* `target` by default equals _dimensions */
       target = _targetDistanceCoefficients[0] + _targetDistanceCoefficients[1] * std::pow(double(i + 1.) / double(_subsetSize), _targetDistanceCoefficients[2]);
       tmparg = _subsetUpdateTimes[_subsetHistory[i]] - _subsetUpdateTimes[_subsetHistory[i - 1]] - target;
       if (tmparg < minarg)
@@ -343,7 +346,7 @@ void LMCMAES::updateInverseVectors()
     size_t idx = _subsetHistory[i];
 
     double v2L2 = 0.0;
-    for (size_t d = 0; d < _k->_variables.size(); ++d) v2L2 += _inverseVectors[idx][d] * _inverseVectors[idx][d];
+    for (size_t d = 0; d < _dimensions; ++d) v2L2 += _inverseVectors[idx][d] * _inverseVectors[idx][d];
 
     k = 0.0;
     if (v2L2 > 0.0)
@@ -351,13 +354,13 @@ void LMCMAES::updateInverseVectors()
       djt = _sqrtInverseCholeskyRate / v2L2 * (1.0 - 1.0 / (fac * std::sqrt(v2L2)));
 
       k = 0.0;
-      for (size_t d = 0; d < _k->_variables.size(); ++d) k += _inverseVectors[idx][d] * _evolutionPathHistory[idx][d];
+      for (size_t d = 0; d < _dimensions; ++d) k += _inverseVectors[idx][d] * _evolutionPathHistory[idx][d];
       k *= djt;
 
       _evolutionPathWeights[idx] = _sqrtInverseCholeskyRate / v2L2 * (std::sqrt(1.0 + _choleskyMatrixLearningRate / (1.0 - _choleskyMatrixLearningRate) * v2L2) - 1.0);
     }
 
-    for (size_t d = 0; d < _k->_variables.size(); ++d)
+    for (size_t d = 0; d < _dimensions; ++d)
       _inverseVectors[idx][d] = _sqrtInverseCholeskyRate * _evolutionPathHistory[idx][d] - k * _inverseVectors[idx][d];
   }
 }
@@ -438,12 +441,12 @@ void LMCMAES::printGenerationAfter()
   _k->_logger->logInfo("Normal", "Current Function Value: Max = %+6.3e - Best = %+6.3e\n", _currentBestValue, _bestEverValue);
 
   _k->_logger->logInfo("Detailed", "Variable = (MeanX, BestX):\n");
-  for (size_t d = 0; d < _k->_variables.size(); d++) _k->_logger->logData("Detailed", "         %s = (%+6.3e, %+6.3e)\n", _k->_variables[d]->_name.c_str(), _currentMean[d], _bestEverVariables[d]);
+  for (size_t d = 0; d < _dimensions; d++) _k->_logger->logData("Detailed", "         %s = (%+6.3e, %+6.3e)\n", _k->_variables[d]->_name.c_str(), _currentMean[d], _bestEverVariables[d]);
 
   _k->_logger->logInfo("Detailed", "Covariance Matrix:\n");
-  for (size_t d = 0; d < _k->_variables.size(); d++)
+  for (size_t d = 0; d < _dimensions; d++)
   {
-    //for (size_t e = 0; e <= d; e++) _k->_logger->logData("Detailed", "   %+6.3e  ",_covarianceMatrix[d*_k->_variables.size()+e]);
+    //for (size_t e = 0; e <= d; e++) _k->_logger->logData("Detailed", "   %+6.3e  ",_covarianceMatrix[d*_dimensions+e]);
     _k->_logger->logInfo("Detailed", "\n");
   }
 
@@ -458,7 +461,7 @@ void LMCMAES::finalize()
 
   _k->_logger->logInfo("Minimal", "Optimum found: %e\n", _bestEverValue);
   _k->_logger->logInfo("Minimal", "Optimum found at:\n");
-  for (size_t d = 0; d < _k->_variables.size(); ++d) _k->_logger->logData("Minimal", "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _bestEverVariables[d]);
+  for (size_t d = 0; d < _dimensions; ++d) _k->_logger->logData("Minimal", "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _bestEverVariables[d]);
   _k->_logger->logInfo("Detailed", "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
 }
 

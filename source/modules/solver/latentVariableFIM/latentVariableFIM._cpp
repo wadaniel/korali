@@ -158,11 +158,11 @@ void korali::solver::LatentVariableFIM ::runGeneration()
 
   size_t numberSamplesUsed = size_t(std::ceil(float(_samplesPerChain) / 2.));
 
-  std::vector<Sample &> samples(_numberChains * numberSamplesUsed);
+  std::vector<Sample> samples(_numberChains * numberSamplesUsed);
 
   /* First, broadcast terms that are used by all samples */
   std::vector<std::vector<double>> powers = covariancePowers();
-  _conduit->broadcastGlobals("Covariance Powers", powers);
+  KORALI_BROADCAST("Covariance Powers", powers);
   // _conduit->broadcastGlobals("Covariance Powers", knlohmann::json &globalsJs);
   for (size_t c_idx = 0; c_idx < _numberChains; c_idx++)
   {

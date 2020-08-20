@@ -179,9 +179,14 @@ class Layer : public Module
   std::unordered_map<int, dnnl::memory> _forwardActivationArgs;
 
   /**
-   * @brief oneDNN primitive attributes that describe the activation function
+   * @brief oneDNN primitive attributes that describe a softmax activation function
    */
-  dnnl::eltwise_forward::primitive_desc _forwardActivationPrimitiveDesc;
+  dnnl::softmax_forward::primitive_desc _forwardSoftmaxActivationPrimitiveDesc;
+
+  /**
+   * @brief oneDNN primitive attributes that describe an element-wise activation function
+   */
+  dnnl::eltwise_forward::primitive_desc _forwardEltwiseActivationPrimitiveDesc;
 
   /**
    * @brief oneDNN primitive to run the activation function operation

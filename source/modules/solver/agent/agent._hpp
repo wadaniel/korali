@@ -65,13 +65,6 @@ class Agent : public Solver
   virtual double stateActionValueFunction(const std::vector<double> &state, const std::vector<double> &action) = 0;
 
   /**
-   * @brief Calculates the state value function V(s) = Expectation_a [ Q(s,a) | s ] of a given experience using the latest critic
-   * @param state state to evaluate
-   * @return The value of the V(s)
-   */
-  virtual double stateValueFunction(const std::vector<double> &state) = 0;
-
-  /**
    * @brief Calculates the probability density of selecting the input state+action given the latest critic
    * @param state state to evaluate
    * @param action action to evaluate

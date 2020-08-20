@@ -1,5 +1,5 @@
 #include "engine.hpp"
-#include "modules/solver/agent/DDPG/DDPG.hpp"
+#include "modules/solver/agent/ACER/ACER.hpp"
 #include "sample/sample.hpp"
 
 /****************************************
@@ -14,21 +14,25 @@ namespace solver
 {
 namespace agent
 {
-void DDPG::initializeAgent()
+void ACER::initializeAgent()
 {
  /*********************************************************************
-  * Verifying Problem's Definition
-  *********************************************************************/
+ * Verifying Problem's Definition
+ *********************************************************************/
+
+ // Checking a discrete action space has been defined and getting total number of actions
+ size_t totalActionCount = 1;
 
  for (size_t i = 0; i < _problem->_actionVectorIndexes.size(); i++)
  {
    size_t varIdx = _problem->_actionVectorIndexes[i];
-
-   if (_k->_variables[varIdx]->_values.size() > 0) KORALI_LOG_ERROR("Discrete action values (%lu, in total) have been defined for variable %lu (%s), but these are not required for DDPG\n", _k->_variables[varIdx]->_values.size(), varIdx, _k->_variables[varIdx]->_name.c_str());
-   if (_k->_variables[varIdx]->_upperBound < _k->_variables[varIdx]->_lowerBound) KORALI_LOG_ERROR("Upper bound for variable %lu (%s) is lower than the lower bound (%f < %f).\n", varIdx, _k->_variables[varIdx]->_name.c_str(), _k->_variables[varIdx]->_upperBound, _k->_variables[varIdx]->_lowerBound);
-   if (std::isfinite(_k->_variables[varIdx]->_lowerBound) == false) KORALI_LOG_ERROR("Lower bound for variable %lu (%s) is not finite or has not been specified.\n", varIdx, _k->_variables[varIdx]->_name.c_str());
-   if (std::isfinite(_k->_variables[varIdx]->_upperBound) == false) KORALI_LOG_ERROR("Upper bound for variable %lu (%s) is not finite or has not been specified.\n", varIdx, _k->_variables[varIdx]->_name.c_str());
+   size_t varActionCount = _k->_variables[varIdx]->_values.size();
+   if (varActionCount == 0) KORALI_LOG_ERROR("No discrete action values have been defined for variable %lu (%s), required by DQN\n", varIdx, _k->_variables[varIdx]->_name.c_str());
+   totalActionCount *= varActionCount;
  }
+
+ printf("Total Action Count: %lu\n", totalActionCount);
+ exit(0);
 
  /*********************************************************************
  * Initializing Critic-Related Structures
@@ -101,7 +105,6 @@ void DDPG::initializeAgent()
   _policyProblem = dynamic_cast<problem::SupervisedLearning *>(_policyExperiment._problem);
   _policyLearner = dynamic_cast<solver::learner::DeepGD *>(_policyExperiment._solver);
 
-
   /*********************************************************************
   * Loading/Setting Hyperparameters
   *********************************************************************/
@@ -123,7 +126,49 @@ void DDPG::initializeAgent()
   avgGradients.resize(_problem->_actionVectorSize);
 }
 
-std::vector<double> DDPG::getTrainingAction(const std::vector<double> &state)
+double ACER::retraceFunction(size_t expId)
+{
+  // Going straight to the latest experience in the corresponding episode
+  size_t curId = expId;
+  while (_terminalHistory[curId] == false) curId++;
+  //printf("For experience %lu, the last experience in its episode is: %lu\n", expId, curId);
+
+  // First, get the retrace value for the last experience (just the reward)
+  double retraceValue = _rewardHistory[curId];
+
+  // Now going backwards from the last, calculating the retrace value of each experience, one by one
+  while (curId > expId)
+  {
+    // Decreasing index
+    curId--;
+
+    // Getting Q(s+1, a+1) for the selected experience
+    double qNextState = stateActionValueFunction(_stateHistory[curId + 1], _actionHistory[curId + 1]);
+
+    // Getting V(s+1) for the selected experience
+    double vNextState = stateValueFunction(_stateHistory[curId + 1]);
+
+    // Getting p(s,a) for selected experience, given the old policy
+    double pOldExp = _probabilityDensityHistory[curId];
+
+    // Getting p(s,a) for the best action, given the current policy
+    double pCurExp = getStateActionProbabilityDensity(_stateHistory[curId], _actionHistory[curId]);
+
+    // Now calculating importance weight, truncating it to avoid exploding values, and then multiplying it by lambda
+    double importanceWeight = _importanceWeightLambda * std::min(_importanceWeightTruncation, (pCurExp / pOldExp));
+
+    // printf("Importance Weight: %f\n", importanceWeight);
+
+    retraceValue = _rewardHistory[curId] + _criticDiscountFactor * importanceWeight * (retraceValue - qNextState) + _criticDiscountFactor * vNextState;
+  }
+
+  //printf("Retrace Val: %f\n", retraceValue);
+
+  // Returning the retrace value of the required experience
+  return retraceValue;
+}
+
+std::vector<double> ACER::getTrainingAction(const std::vector<double> &state)
 {
   // If we still do not have enough experiences to train the critic/policy, just return random action
   if (_stateHistory.size() < _replayMemoryStartSize) return getRandomAction(state);
@@ -158,7 +203,7 @@ std::vector<double> DDPG::getTrainingAction(const std::vector<double> &state)
   return action;
 }
 
-double DDPG::stateActionValueFunction(const std::vector<double> &state, const std::vector<double> &action)
+double ACER::stateActionValueFunction(const std::vector<double> &state, const std::vector<double> &action)
 {
   // Storage to put together state and action
   std::vector<double> stateActionInput(_problem->_stateVectorSize + _problem->_actionVectorSize);
@@ -172,7 +217,7 @@ double DDPG::stateActionValueFunction(const std::vector<double> &state, const st
   return evaluation[0];
 }
 
-void DDPG::trainAgent()
+void ACER::trainAgent()
 {
  // Creating storage for state history indexes to choose from
  std::vector<size_t> stateHistoryIndexes(_stateHistory.size());
@@ -291,7 +336,50 @@ void DDPG::trainAgent()
   _policyLearner->setHyperparameters(policyHypeparameters);
 }
 
-double DDPG::getStateActionProbabilityDensity(const std::vector<double> &state, const std::vector<double> &action)
+double ACER::stateValueFunction(const std::vector<double> &state)
+{
+  auto curPolicyAction = queryPolicy(state);
+
+  double vValue = 0.0;
+
+  for (size_t iter = 0; iter < _stateValueFunctionSamples; iter++)
+  {
+    // Creating action based on the one given by the policy.
+    auto evalAction = curPolicyAction;
+
+    // Storage for the total action probability
+    double pAction = 1.0;
+
+    for (size_t i = 0; i < evalAction.size(); i++)
+    {
+      // Getting noise from the given action variable
+      size_t varIdx = _problem->_actionVectorIndexes[i];
+      double noise = _k->_variables[varIdx]->_explorationNoiseDistribution->getRandomNumber();
+
+      // Adding noise to the action to evaluate
+      evalAction[i] += noise;
+
+      // Calculating the probability density of having produced the noise
+      double pNoise = _k->_variables[varIdx]->_explorationNoiseDistribution->getDensity(noise);
+
+      // Factoring the noise probability into the action probability, assuming independence
+      pAction *= pNoise;
+    }
+
+    // Evaluating Q(s,a) for the given action
+    double qValue = stateActionValueFunction(state, evalAction);
+
+    // Now calculating pAction*Q(s,action) and adding it to V(s,a)
+    vValue += pAction * qValue;
+  }
+
+  // Now averaging the V(s) over all sampled actions
+  vValue = vValue / _stateValueFunctionSamples;
+
+  return vValue;
+}
+
+double ACER::getStateActionProbabilityDensity(const std::vector<double> &state, const std::vector<double> &action)
 {
   // To calculate the probability density, we first subtract the taken action from the one that
   // the current policy would take. This will give us a value with zero mean, and with sigma
@@ -317,12 +405,12 @@ double DDPG::getStateActionProbabilityDensity(const std::vector<double> &state, 
   return pDensity;
 }
 
-std::vector<double> DDPG::queryPolicy(const std::vector<double> &state)
+std::vector<double> ACER::queryPolicy(const std::vector<double> &state)
 {
   return _policyLearner->getEvaluation({state});
 }
 
-void DDPG::updateHyperparameters(const knlohmann::json &hyperparameters)
+void ACER::updateHyperparameters(const knlohmann::json &hyperparameters)
 {
   _policyLearner->setHyperparameters(hyperparameters["Policy"].get<std::vector<double>>());
 
@@ -332,7 +420,7 @@ void DDPG::updateHyperparameters(const knlohmann::json &hyperparameters)
   for (size_t i = 0; i < actionCount; i++) _currentActionNoises[i] = 0.0;
 }
 
-void DDPG::printAgentInformation()
+void ACER::printAgentInformation()
 {
  _k->_logger->logInfo("Normal", "Critic Information:\n");
 

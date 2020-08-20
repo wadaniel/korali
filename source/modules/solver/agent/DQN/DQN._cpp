@@ -18,6 +18,16 @@ void DQN::initializeAgent()
 {
 
  /*********************************************************************
+  * Verifying Problem's Definition
+  *********************************************************************/
+
+ for (size_t i = 0; i < _problem->_actionVectorIndexes.size(); i++)
+ {
+   size_t varIdx = _problem->_actionVectorIndexes[i];
+   if (_k->_variables[varIdx]->_values.size() == 0) KORALI_LOG_ERROR("No discrete action values have been defined for variable %lu (%s), required by DQN\n", varIdx, _k->_variables[varIdx]->_name.c_str());
+ }
+
+ /*********************************************************************
  * Initializing Critic-Related Structures
  *********************************************************************/
 
@@ -51,13 +61,6 @@ void DQN::initializeAgent()
  // Getting learner pointers
  _criticProblem = dynamic_cast<problem::SupervisedLearning *>(_criticExperiment._problem);
  _criticLearner = dynamic_cast<solver::learner::DeepGD *>(_criticExperiment._solver);
-
-  // Checking a discrete policy has been defined
-  for (size_t i = 0; i < _problem->_actionVectorIndexes.size(); i++)
-  {
-    size_t varIdx = _problem->_actionVectorIndexes[i];
-    if (_k->_variables[varIdx]->_values.size() == 0) KORALI_LOG_ERROR("No discrete action values have been defined for variable %lu (%s), required by DQN\n", varIdx, _k->_variables[varIdx]->_name.c_str());
-  }
 
   /*********************************************************************
   * Initializing Policy-Related Structures
@@ -284,39 +287,6 @@ std::vector<double> DQN::queryPolicy(const std::vector<double> &state)
 
   // Getting optimal action, based on the NN evaluation
   return _policyExperiment["Results"]["Best Sample"]["Parameters"].get<std::vector<double>>();
-}
-
-double DQN::stateValueFunction(const std::vector<double> &state)
-{
-  // We calculate V(s) = E_a( Q(s,a) | policy )
-
-  // First step: we run the optimization experiment to get Q(s,a) for all actions in the action space
-  _policyExperiment._globals["Current State"] = state;
-  korali::Engine engine;
-  engine.run(_policyExperiment);
-
-  // Storage to contain the sum of all e^(Q(s, a_i))
-  double sumExpQ = 0.0;
-
-  // Storage to contain the sum of all Q(s, a_i) * e^(Q(s, a_i))
-  double sumQExpQ = 0.0;
-
-  // Iterating among the entire Q vector for all actions to get the one that corresponds
-  // to the proposed action, and also to get the sum of all Q values
-  auto qVector = _policyExperiment["Solver"]["Objective"].get<std::vector<double>>();
-  for (size_t i = 0; i < qVector.size(); i++)
-  {
-    double curQ = qVector[i];   // Q(s,a)
-    double curExpQ = exp(curQ); // e^(Q(s,a))
-
-    sumQExpQ += curQ * curExpQ; // Q(s,a) * e^(Q(s,a))
-    sumExpQ += curExpQ;
-  }
-
-  // Calculating E_a (Q(s,a) | policy) = Sum(Q(s, a_i) * e^(Q(s, a_i))) / Sum(e^(Q(s, a_i)))
-  double expQ = sumQExpQ / sumExpQ;
-
-  return expQ;
 }
 
 double DQN::getStateActionProbabilityDensity(const std::vector<double> &state, const std::vector<double> &action)

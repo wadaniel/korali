@@ -90,7 +90,6 @@ e["Solver"]["Policy"]["Epsilon"]["Decrease Rate"] = 0.05
 
 e["Solver"]["Critic"]["Mini Batch Size"] = 32
 e["Solver"]["Critic"]["Discount Factor"] = 0.99
-e["Solver"]["Critic"]["Update Algorithm"] = "Retrace"  
 e["Solver"]["Critic"]["Optimizer"]["Type"] = "Optimizer/Adam"
 e["Solver"]["Critic"]["Optimizer"]["Eta"] = 0.1
 e["Solver"]["Critic"]["Optimization Steps"] = 1
@@ -99,22 +98,22 @@ e["Solver"]["Critic"]["Optimization Steps"] = 1
 
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Node Count"] = 5
-e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Linear"
+e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Batch Normalization"]["Enabled"] = False
 
 e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Type"] = "Layer/Dense"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Node Count"] = 32
-e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Activation Function"]["Type"] = "Tanh"
+e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Activation Function"]["Type"] = "Elementwise/Tanh"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Batch Normalization"]["Enabled"] = True
 
 e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Type"] = "Layer/Dense"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Node Count"] = 32
-e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Tanh"
+e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Elementwise/Tanh"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Batch Normalization"]["Enabled"] = True
 
 e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Type"] = "Layer/Dense"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Node Count"] = 1
-e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Linear"
+e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Elementwise/Linear"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Batch Normalization"]["Enabled"] = True 
 
 e["Solver"]["Normalization Steps"] = 32

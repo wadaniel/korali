@@ -78,24 +78,42 @@ void Layer::createForwardPipeline()
   * Creating Activation Function primitive and memory
   * ***************************************/
 
-  if (_activationFunctionType == "Clip") _activationAlgorithm = algorithm::eltwise_clip;
-  if (_activationFunctionType == "Linear") _activationAlgorithm = algorithm::eltwise_linear;
-  if (_activationFunctionType == "Log") _activationAlgorithm = algorithm::eltwise_log;
-  if (_activationFunctionType == "ReLU") _activationAlgorithm = algorithm::eltwise_relu;
-  if (_activationFunctionType == "Tanh") _activationAlgorithm = algorithm::eltwise_tanh;
-  if (_activationFunctionType == "Logistic") _activationAlgorithm = algorithm::eltwise_logistic;
+  // If it is an element-wise operation, create an element-wise primitive
+  if (_activationFunctionType.rfind("Elementwise", 0) == 0)
+  {
+   if (_activationFunctionType == "Elementwise/Clip") _activationAlgorithm = algorithm::eltwise_clip;
+   if (_activationFunctionType == "Elementwise/Linear") _activationAlgorithm = algorithm::eltwise_linear;
+   if (_activationFunctionType == "Elementwise/Log") _activationAlgorithm = algorithm::eltwise_log;
+   if (_activationFunctionType == "Elementwise/ReLU") _activationAlgorithm = algorithm::eltwise_relu;
+   if (_activationFunctionType == "Elementwise/Tanh") _activationAlgorithm = algorithm::eltwise_tanh;
+   if (_activationFunctionType == "Elementwise/Logistic") _activationAlgorithm = algorithm::eltwise_logistic;
 
-  float alpha = _activationFunctionAlpha;
-  float beta = _activationFunctionBeta;
+   float alpha = _activationFunctionAlpha;
+   float beta = _activationFunctionBeta;
 
-  // Creating descriptor
-  auto activationDesc = eltwise_forward::desc(prop_kind::forward_training, _activationAlgorithm, _nodeMem.get_desc(), alpha, beta);
+   // Creating descriptor
+   auto activationDesc = eltwise_forward::desc(prop_kind::forward_training, _activationAlgorithm, _nodeMem.get_desc(), alpha, beta);
 
-  // Create primitive descriptor.
-  _forwardActivationPrimitiveDesc = eltwise_forward::primitive_desc(activationDesc, _nn->_engine);
+   // Create primitive descriptor.
+   _forwardEltwiseActivationPrimitiveDesc = eltwise_forward::primitive_desc(activationDesc, _nn->_engine);
 
-  // Create the primitive.
-  _forwardActivationPrimitive = eltwise_forward(_forwardActivationPrimitiveDesc);
+   // Create the primitive.
+   _forwardActivationPrimitive = eltwise_forward(_forwardEltwiseActivationPrimitiveDesc);
+  }
+
+  // Check other possible types of activation functions
+  if (_activationFunctionType == "Softmax")
+  {
+   // Creating descriptor
+   const int axis = 1;
+   auto activationDesc = softmax_forward::desc(prop_kind::forward_training, _nodeMem.get_desc(), axis);
+
+   // Create primitive descriptor.
+   _forwardSoftmaxActivationPrimitiveDesc = softmax_forward::primitive_desc(activationDesc, _nn->_engine);
+
+   // Create the primitive.
+   _forwardActivationPrimitive = softmax_forward(_forwardSoftmaxActivationPrimitiveDesc);
+  }
 
   // Primitive arguments.
   if (_batchNormalizationEnabled)
@@ -119,7 +137,7 @@ void Layer::createForwardPipeline()
     _weightsMem = memory(weightMemDesc, _nn->_engine);
     _weightsWorkMem = _weightsMem;
 
-    // Allocating weight work memory with format::any for oneDNN to decide the best layour
+    // Allocating weight work memory with format::any for oneDNN to decide the best layout
     auto weightsWorkMemDesc = memory::desc(weightDims, memory::data_type::f32, memory::format_tag::any);
 
     // Allocating bias memory
@@ -224,14 +242,32 @@ void Layer::createBackwardPipeline()
   float alpha = _activationFunctionAlpha;
   float beta = _activationFunctionBeta;
 
-  // Creating descriptor
-  auto activationDesc = eltwise_backward::desc(_activationAlgorithm, _nodeMem.get_desc(), _activationMem.get_desc(), alpha, beta);
+  // If it is an element-wise operation, create an element-wise backward primitive
+  if (_activationFunctionType.rfind("Elementwise", 0) == 0)
+  {
+   // Creating descriptor
+   auto activationDesc = eltwise_backward::desc(_activationAlgorithm, _nodeMem.get_desc(), _activationMem.get_desc(), alpha, beta);
 
-  // Create primitive descriptor.
-  auto backwardActivationPrimitiveDesc = eltwise_backward::primitive_desc(activationDesc, _nn->_engine, _forwardActivationPrimitiveDesc);
+   // Create primitive descriptor.
+   auto backwardActivationPrimitiveDesc = eltwise_backward::primitive_desc(activationDesc, _nn->_engine, _forwardEltwiseActivationPrimitiveDesc);
 
-  // Create the primitive.
-  _backwardActivationPrimitive = eltwise_backward(backwardActivationPrimitiveDesc);
+   // Create the primitive.
+   _backwardActivationPrimitive = eltwise_backward(backwardActivationPrimitiveDesc);
+  }
+
+  // Check other possible types of activation functions
+  if (_activationFunctionType == "Softmax")
+  {
+   // Creating descriptor
+   const int axis = 1;
+   auto activationDesc = softmax_backward::desc(_nodeMem.get_desc(), _activationMem.get_desc(), axis);
+
+   // Create primitive descriptor.
+   auto backwardActivationPrimitiveDesc = softmax_backward::primitive_desc(activationDesc, _nn->_engine, _forwardSoftmaxActivationPrimitiveDesc);
+
+   // Create the primitive.
+   _backwardActivationPrimitive = softmax_backward(backwardActivationPrimitiveDesc);
+  }
 
   // Primitive arguments.
   _backwardActivationArgs.insert({DNNL_ARG_DIFF_DST, _activationDiffMem}); // Input

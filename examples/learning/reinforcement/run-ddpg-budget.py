@@ -106,56 +106,54 @@ e["Solver"]["Critic"]["Optimizer"]["Eta"] = 0.01
 e["Solver"]["Critic"]["Discount Factor"] = 0.99
 e["Solver"]["Critic"]["Mini Batch Size"] = 64
 
+### Defining the shape of the critic neural network
+
+e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
+e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Node Count"] = 3
+e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear"
+
+e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Type"] = "Layer/Dense"
+e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Node Count"] = 32
+e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Activation Function"]["Type"] = "Elementwise/Tanh"
+e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Batch Normalization"]["Enabled"] = True
+
+e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Type"] = "Layer/Dense"
+e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Node Count"] = 32
+e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Elementwise/Tanh"
+e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Batch Normalization"]["Enabled"] = True
+
+e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Type"] = "Layer/Dense"
+e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Node Count"] = 1
+e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Elementwise/Linear"
+e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Weight Initialization Scaling"] = 0.000000001
+
+e["Solver"]["Normalization Steps"] = 32
+
 ## Defining Policy Configuration
 
 e["Solver"]["Policy"]["Optimization Steps"] = 5
 e["Solver"]["Policy"]["Optimizer"]["Type"] = "Optimizer/Adam"
 e["Solver"]["Policy"]["Optimizer"]["Termination Criteria"]["Min Gradient Norm"] = -1.0
-e["Solver"]["Policy"]["Optimizer"]["Eta"] = 0.0001
-e["Solver"]["Policy"]["Mini Batch Size"] = 64
-
-### Defining the shape of the critic neural network
-
-e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Node Count"] = 3
-e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Linear"
-
-e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Type"] = "Layer/Dense"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Node Count"] = 32
-e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Activation Function"]["Type"] = "Tanh"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Batch Normalization"]["Enabled"] = True
-
-e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Type"] = "Layer/Dense"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Node Count"] = 32
-e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Tanh"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Batch Normalization"]["Enabled"] = True
-
-e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Type"] = "Layer/Dense"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Node Count"] = 1
-e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Linear"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Weight Initialization Scaling"] = 0.000000001
-
-e["Solver"]["Normalization Steps"] = 32
-
-### Defining the shape of the policy neural network
+e["Solver"]["Policy"]["Optimizer"]["Eta"] = 0.001
+e["Solver"]["Policy"]["Mini Batch Size"] = 8
 
 e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
 e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Node Count"] = 1
-e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Linear"
+e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear"
 
 e["Solver"]["Policy"]["Neural Network"]["Layers"][1]["Type"] = "Layer/Dense"
 e["Solver"]["Policy"]["Neural Network"]["Layers"][1]["Node Count"] = 32
-e["Solver"]["Policy"]["Neural Network"]["Layers"][1]["Activation Function"]["Type"] = "ReLU"
+e["Solver"]["Policy"]["Neural Network"]["Layers"][1]["Activation Function"]["Type"] = "Elementwise/ReLU"
 e["Solver"]["Policy"]["Neural Network"]["Layers"][1]["Activation Function"]["Alpha"] = 0.0
 
 e["Solver"]["Policy"]["Neural Network"]["Layers"][2]["Type"] = "Layer/Dense"
 e["Solver"]["Policy"]["Neural Network"]["Layers"][2]["Node Count"] = 32
-e["Solver"]["Policy"]["Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "ReLU"
+e["Solver"]["Policy"]["Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Elementwise/ReLU"
 e["Solver"]["Policy"]["Neural Network"]["Layers"][2]["Activation Function"]["Alpha"] = 0.0
 
 e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Type"] = "Layer/Dense"
 e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Node Count"] = 2
-e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Logistic" 
+e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Elementwise/Logistic" 
 e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Weight Initialization Scaling"] = 0.000000001
 
 e["Solver"]["Policy"]["Neural Network"]["Output Scaling"] = [ 10.0, 10.0 ]

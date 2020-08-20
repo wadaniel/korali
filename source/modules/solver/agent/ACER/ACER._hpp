@@ -1,5 +1,5 @@
-#ifndef _KORALI_AGENT_DDPG_HPP_
-#define _KORALI_AGENT_DDPG_HPP_
+#ifndef _KORALI_AGENT_ACER_HPP_
+#define _KORALI_AGENT_ACER_HPP_
 
 #include "modules/solver/agent/agent.hpp"
 
@@ -9,7 +9,7 @@ namespace solver
 {
 namespace agent
 {
-class DDPG : public Agent
+class ACER : public Agent
 {
   public:
 
@@ -53,6 +53,21 @@ class DDPG : public Agent
    * @brief Variable to keep track of the current noise added to the action
    */
   std::vector<double> _currentActionNoises;
+
+  /**
+   * @brief Calculates the state value function V(s) = Expectation_a [ Q(s,a) | s ] of a given experience using the latest critic
+   * @param state state to evaluate
+   * @return The value of the V(s)
+   */
+  double stateValueFunction(const std::vector<double> &state);
+
+  /**
+   * @brief Calculates (recursively) the Qretrace value of a given (state/action) experience
+   * @param expId Position within the experience replay history that locates the given experience
+   * @return The value of the retrace function for the given experience
+   */
+  double retraceFunction(size_t expId);
+
   double stateActionValueFunction(const std::vector<double> &state, const std::vector<double> &action);
   std::vector<double> getTrainingAction(const std::vector<double> &state) override;
   double getStateActionProbabilityDensity(const std::vector<double> &state, const std::vector<double> &action) override;
@@ -67,4 +82,4 @@ class DDPG : public Agent
 } // namespace solver
 } // namespace korali
 
-#endif // _KORALI_AGENT_DDPG_HPP_
+#endif // _KORALI_AGENT_ACER_HPP_

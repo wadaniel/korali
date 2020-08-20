@@ -12,6 +12,23 @@ namespace agent
 class DDPG : public Agent
 {
   public:
+
+  /**
+   * @brief Pointer to training experiment's problem
+   */
+  problem::SupervisedLearning *_criticProblem;
+
+  /**
+  * @brief Pointer to training experiment's learner
+  */
+  learner::DeepGD *_criticLearner;
+
+  /**
+   * @brief Korali experiment for the training of the Qvalue-estimator
+   */
+  korali::Experiment _criticExperiment;
+
+
   /**
   * @brief Korali experiment for argmax_action(Q) based on a trained Q-Network
   */
@@ -32,14 +49,19 @@ class DDPG : public Agent
    */
   std::vector<double> avgGradients;
 
+  /**
+   * @brief Variable to keep track of the current noise added to the action
+   */
+  std::vector<double> _currentActionNoises;
+  double stateActionValueFunction(const std::vector<double> &state, const std::vector<double> &action);
   std::vector<double> getTrainingAction(const std::vector<double> &state) override;
   double stateValueFunction(const std::vector<double> &state) override;
   double getStateActionProbabilityDensity(const std::vector<double> &state, const std::vector<double> &action) override;
   std::vector<double> queryPolicy(const std::vector<double> &state) override;
   void updateHyperparameters(const knlohmann::json &hyperparameters) override;
-  void trainPolicy() override;
-  void printPolicyInformation() override;
-  void initializePolicy() override;
+  void trainAgent() override;
+  void printAgentInformation() override;
+  void initializeAgent() override;
 };
 
 } // namespace agent

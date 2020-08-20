@@ -117,7 +117,7 @@ e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Node Count"] = 1
 e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Linear"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Batch Normalization"]["Enabled"] = True 
 
-e["Solver"]["Critic"]["Normalization Steps"] = 32
+e["Solver"]["Normalization Steps"] = 32
 
 ### Defining Termination Criteria
 

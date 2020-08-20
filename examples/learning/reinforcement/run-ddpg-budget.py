@@ -135,7 +135,7 @@ e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Node Count"] = 1
 e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Linear"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Weight Initialization Scaling"] = 0.000000001
 
-e["Solver"]["Critic"]["Normalization Steps"] = 32
+e["Solver"]["Normalization Steps"] = 32
 
 ### Defining the shape of the policy neural network
 

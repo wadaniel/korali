@@ -42,6 +42,17 @@ class LatentVariableFIM : public korali::Solver
   /** @brief Update the distribution used during sampling with the hyperparameter values.  */
   void updateMultivariateDistribution();
 
+  /** @brief: Calculates four fractional exponents of the covariance, for use in calculating derivatives
+            of the log-likelihood.
+  @returns four vectors, each of size _latentSpaceDimensions:
+    - the standard deviations (square of the covariance),
+    - original covariance diagonal
+    - 3rd power of standard deviations
+    - 4th power of standard deviations
+  Since we assume a diagonal covariance, this only returns the diagonal entries.
+  */
+  std::vector<std::vector<double>> covariancePowers();
+
   /** @brief Utility function to convert a vector of vectors into a concatenated 1D vector.
   *   @param v: The vector of vectors to flatten
   *   @returns a flattened vector
@@ -78,6 +89,9 @@ class LatentVariableFIM : public korali::Solver
   /** @brief Print information after each generation */
   //void printGenerationAfter() override;
 
+  /** @brief Console output after sampling. Meant to check the sampling results;
+        remove / do not call in final version, probably. */
+  void printLastSamples();
   /** @brief Console output at termination. */
   void finalize() override;
 };

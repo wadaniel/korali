@@ -29,6 +29,13 @@ void HierarchicalCustom::initialize()
   _latentSpaceDimensions = _k->_variables.size();
   if (_latentSpaceDimensions < 1) KORALI_LOG_ERROR("Hierarchical custom latent variable problems require at least one variable.\n");
 
+  // Total number of independent Hyperparameters - not equal to the number of such variables set for the
+  // lowlevel problem (only the lower or upper triangular part of the covariance are independent variables)
+  if (_diagonalCovariance)
+    _numberHyperparameters = 2 * _latentSpaceDimensions;
+  else
+    _numberHyperparameters = _latentSpaceDimensions + ((_latentSpaceDimensions + 1) * (_latentSpaceDimensions)) / 2;
+
   // Prepare the loglikelihood function
   loglikelihoodLambdaFunction = [this](Sample &s) -> void {
     loglikelihoodFunction(s);
@@ -239,6 +246,11 @@ void HierarchicalCustom::evaluateLogPrior_(Sample &sample, bool zForm, bool chol
 void HierarchicalCustom::evaluateLogPrior(Sample &sample)
 {
   _lowlevelProblem->evaluateLogPrior_(sample, true, true);
+}
+
+void HierarchicalCustom::evaluateLogProbabilityDerivatives(Sample &sample)
+{
+  _lowlevelProblem->evaluateLogProbabilityDerivatives(sample);
 }
 
 ///* @brief allocate memory for all GSL-matrix and GSL-vector local variables used in calculating the loglikelihood

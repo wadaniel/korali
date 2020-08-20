@@ -38,8 +38,8 @@ def main():
   e["Problem"]["Diagonal Covariance"] = True
 
   e["Solver"]["Type"] = "LatentVariableFIM"
-  e["Solver"]["Number Sampling Chains"] = 5
-  e["Solver"]["MCMC Outer Steps"] = 100
+  e["Solver"]["Number Chains"] = 2
+  e["Solver"]["MCMC Outer Steps"] = 5
   e["Solver"]["MCMC Target Acceptance Rate"] = 0.4
   e["Solver"]["MCMC Subchain Steps"] = [2, 2, 2]
   e["Solver"]["Termination Criteria"]["Max Generations"] = 1
@@ -87,10 +87,7 @@ def main():
 
   # Configure console output:
   e["Console Output"]["Frequency"] = 1
-  e["Console Output"][
-      "Verbosity"] = "Normal"  # "Detailed" results in all latent variable means being printed -
-  # we have 200 of them here, so we suppress this by choosing a less
-  # detailed output option.
+  e["Console Output"]["Verbosity"] = "Detailed"
 
   k.run(e)
 

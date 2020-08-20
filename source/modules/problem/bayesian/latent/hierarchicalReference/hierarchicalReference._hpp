@@ -155,6 +155,21 @@ class HierarchicalReference : public korali::problem::bayesian::Latent
     */
   void evaluateLogPosterior(korali::Sample &sample) override;
 
+  /**
+   * @brief Evaluates the gradient and Hessian of the log-probability, given the hyperparameters passed to the sample.
+        ! Only supported for 'Diagonal Covariance' == true.
+        Returns the gradient vector in sample["Gradient"] and the Hessian vector-of-vectors in sample["Hessian"].
+        Dimensions of gradient and Hessian equal the (true) number of independent hyperparameters.
+        Order of the hyperparameter dimensions in the output:
+            First the mean, then the diagonal covariance entries, in order.
+     @parama sample: Should have populated fields 'Latent Variables' and 'Covariance Powers'.
+                    'Covariance Powers' are powers of {1/2, 1, 3/2, 4/2} of a diagonal covariance matrix,
+                     represented as vectors; one vector per power.
+                     'Latent Variables' should be a nIndividuals x latentSpaceDimensions vector-of-vectors.
+
+   */
+  void evaluateLogProbabilityDerivatives(korali::Sample &sample);
+
   /// @brief Korali experiment needed to create the sub-problem
   korali::Experiment _koraliExperiment;
 

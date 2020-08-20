@@ -28,6 +28,12 @@ void korali::problem::bayesian::latent::HierarchicalLowlevel::initialize()
   _hyperparametersCovariance.clear();
   _hyperparametersCovariance.resize(_latentSpaceDimensions * _latentSpaceDimensions);
 
+  // Total number of independent Hyperparameters
+  if (_diagonalCovariance)
+    _numberHyperparameters = 2 * _latentSpaceDimensions;
+  else
+    _numberHyperparameters = _latentSpaceDimensions + ((_latentSpaceDimensions + 1) * (_latentSpaceDimensions)) / 2;
+
   /* Check and assign distribution types , by looking only at those of the first individual. */
   size_t dim_counter = 0;
   for (size_t i = 0; i < _k->_variables.size() && (dim_counter < _latentSpaceDimensions); i++)
@@ -466,6 +472,26 @@ void korali::problem::bayesian::latent::HierarchicalLowlevel::evaluateLogPosteri
 void korali::problem::bayesian::latent::HierarchicalLowlevel::evaluateLogPosterior(korali::Sample &sample)
 {
   evaluateLogPosterior_(sample, true, true);
+}
+
+void korali::problem::bayesian::latent::HierarchicalLowlevel::evaluateLogProbabilityDerivatives(korali::Sample &sample)
+{
+  //TODO
+
+  auto covPowers = KORALI_GET(std::vector<std::vector<double>>, sample, "Covariance Powers");
+  assert(covPowers.size() == 4); // Expecting 4 different powers
+
+  auto halfPower = covPowers[0];
+  assert(halfPower.size() == _numberHyperparameters);
+  _k->_logger->logInfo("Normal", "Squareroot power: [\n");
+  for (size_t i = 0; i < _numberHyperparameters; i++)
+  {
+    _k->_logger->logInfo("Normal", "\t\t%d, ", halfPower[i]);
+  }
+  _k->_logger->logInfo("Normal", "\t\t     ]");
+
+  sample["Gradient"] = 0; //... //TODO
+  sample["Hessian"] = 0;  //... //TODO
 }
 
 std::vector<double> korali::problem::bayesian::latent::HierarchicalLowlevel::zToLatent(std::vector<double> z)

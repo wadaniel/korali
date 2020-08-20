@@ -4,6 +4,7 @@
 #include "modules/solver/latentVariableFIM/latentVariableFIM.hpp"
 #include "sample/sample.hpp"
 
+#include <cmath>
 #include <sstream>
 
 /*       * * * * * * * * * * * * * * * * * * * * * * * *
@@ -29,7 +30,7 @@ void korali::solver::LatentVariableFIM::initialize()
   if (_k->_problem->getType() == "Bayesian/Latent/HierarchicalLowlevel")
     _latentProblem = dynamic_cast<problem::bayesian::latent::HierarchicalLowlevel *>(_k->_problem);
 
-  if ( ! _latentProblem->_diagonalCovariance )
+  if (!_latentProblem->_diagonalCovariance)
     KORALI_LOG_ERROR("Error, FIM estimation only supported for diagonal covariances, currently.");
 
   _numberIndividuals = _latentProblem->_numberIndividuals;
@@ -52,6 +53,8 @@ void korali::solver::LatentVariableFIM::initialize()
   if (_n1 == 0)
     _n1 = 1; // We require at least one initial step in N1, where we always accept - that's the initialization.
 
+  _samplesPerChain = (_n1 + _n2 * _latentSpaceDimensions + _n3) * _mCMCOuterSteps;
+
   if ((_mCMCTargetAcceptanceRate <= 0.) || (_mCMCTargetAcceptanceRate >= 1))
     KORALI_LOG_ERROR("Value of 'mcmc Target Acceptance Rate' must be above 0 and below 1. Value %.2f is invalid.\n", _mCMCTargetAcceptanceRate);
 }
@@ -66,6 +69,7 @@ void korali::solver::LatentVariableFIM::setInitialConfiguration()
   std::fill(_acceptanceRateDenominator.begin(), _acceptanceRateDenominator.end(), 0.0);
 
   _mCMCVariances.resize(_latentSpaceDimensions);
+  std::fill(_mCMCVariances.begin(), _mCMCVariances.end(), 1.0);
 
   // Run dimensionality checks.
   // Also, if a diagonal covariance was passed as vector, transform it into a matrix.
@@ -94,6 +98,10 @@ void korali::solver::LatentVariableFIM::setInitialConfiguration()
     for (size_t i = 0; i < _latentSpaceDimensions; i++)
       if (_hyperparametersCovariance[i].size() != _latentSpaceDimensions)
         KORALI_LOG_ERROR("Wrong size of %d-th row of the covariance: %d instead of %d.", _hyperparametersCovariance[i].size(), _latentSpaceDimensions);
+    _hyperparametersDiagonalCovariance.resize(_latentSpaceDimensions);
+    // For convenience, also create a diagonal-vector representation
+    for (size_t i = 0; i < _latentSpaceDimensions; i++)
+      _hyperparametersDiagonalCovariance[i] = _hyperparametersCovariance[i][i];
   }
   if (_hyperparametersMean.size() != _latentSpaceDimensions)
     KORALI_LOG_ERROR("Wrong length of 'Hyperparameters Mean': %d instead of %d.", _hyperparametersMean.size(), _latentSpaceDimensions);
@@ -107,9 +115,9 @@ void korali::solver::LatentVariableFIM::setInitialConfiguration()
 
   /* Initialize the array of z-samples */
 
-  //  _samples.resize(_numberSamplingChains)
-  _z.resize(_numberSamplingChains);
-  for (size_t i = 0; i < _numberSamplingChains; i++)
+  //  _samples.resize(_numberChains)
+  _z.resize(_numberChains);
+  for (size_t i = 0; i < _numberChains; i++)
   {
     //    _samples[i].resize(_mCMCOuterSteps * _n1 * _n2 * _n3 );
     _z[i].resize(_mCMCOuterSteps * (_n1 + _n2 * _latentSpaceDimensions + _n3));
@@ -137,8 +145,104 @@ void korali::solver::LatentVariableFIM ::runGeneration()
 {
   if (_k->_currentGeneration == 1) setInitialConfiguration();
 
+  /* Sample. */
   sampleLatent();
+  // Debug printout
   _k->_logger->logInfo("Detailed", "Sampled generation: %d \n", _k->_currentGeneration);
+  printLastSamples();
+
+  /* For each sample step, get the gradient and Hessian of the log-probability from the problem. */
+  // Todo: Set up the arrays for those in the initialization
+  // Todo: Think and ask Sergio whether there is a difference between calculating it for all at once, in one location,
+  //        and not pass around the arrays, or whether it's good to run each sample separately. How heavy are calc's?
+
+  size_t numberSamplesUsed = size_t(std::ceil(float(_samplesPerChain) / 2.));
+
+  std::vector<Sample &> samples(_numberChains * numberSamplesUsed);
+
+  /* First, broadcast terms that are used by all samples */
+  std::vector<std::vector<double>> powers = covariancePowers();
+  _conduit->broadcastGlobals("Covariance Powers", powers);
+  // _conduit->broadcastGlobals("Covariance Powers", knlohmann::json &globalsJs);
+  for (size_t c_idx = 0; c_idx < _numberChains; c_idx++)
+  {
+    for (size_t i = _samplesPerChain - numberSamplesUsed; i < _samplesPerChain; i++)
+    {
+      size_t sampleIdx = c_idx * numberSamplesUsed + i;
+      Sample sample = samples[i];
+      sample["Sample Id"] = sampleIdx + 5678;
+      sample["Transformed Latent Variables"] = _z[i];
+      //sample["Hyperparameters Covariance"] = 0; // we broadcast this one;
+      sample["Hyperparameters Mean"] = _hyperparametersMean; // we broadcast this one;
+      sample["Module"] = "Problem";
+      sample["Operation"] = "Evaluate Log Probability Derivatives";
+
+      KORALI_START(sample);
+    }
+  }
+  KORALI_WAITALL(samples);
+
+  /* Collect the results:
+     D: The mean gradient
+     H: The mean Hessian matrix
+     G: mean of D * D^T         */
+
+  size_t nHyperparameters = _latentProblem->_numberHyperparameters;
+  std::vector<double> D(nHyperparameters);
+  std::vector<std::vector<double>> H(nHyperparameters);
+  std::vector<std::vector<double>> G(nHyperparameters);
+  _fischerInformationMatrix.resize(nHyperparameters);
+  for (size_t i = 0; i < nHyperparameters; i++)
+  {
+    H[i].resize(nHyperparameters);
+    G[i].resize(nHyperparameters);
+    std::fill(H[i].begin(), H[i].end(), 0.0);
+    std::fill(G[i].begin(), G[i].end(), 0.0);
+    _fischerInformationMatrix[i].resize(nHyperparameters);
+    std::fill(_fischerInformationMatrix[i].begin(), _fischerInformationMatrix[i].end(), 0.0);
+  }
+
+  for (size_t c_idx = 0; c_idx < _numberChains; c_idx++)
+  {
+    for (size_t i = _samplesPerChain - numberSamplesUsed; i < _samplesPerChain; i++)
+    {
+      size_t sampleIdx = c_idx * numberSamplesUsed + i;
+      Sample sample = samples[sampleIdx];
+      assert(sample["Gradient"].size() == nHyperparameters);
+      assert(sample["Hessian"].size() == nHyperparameters);
+      for (size_t j = 0; j < nHyperparameters; j++)
+      {
+        D[j] += sample["Gradient"][j];
+        assert(sample["Hessian"][j].size() == nHyperparameters);
+        for (size_t k = 0; k < nHyperparameters; k++)
+        {
+          H[j][k] += sample["Hessian"][j][k];
+          G[j][k] += sample["Gradient"][j] * sample["Gradient"][k];
+        }
+      }
+    }
+  }
+
+  double samplesUsedTotal = _numberChains * numberSamplesUsed;
+  for (size_t j = 0; j < nHyperparameters; j++)
+  {
+    D[j] /= samplesUsedTotal;
+    for (size_t k = 0; k < nHyperparameters; k++)
+    {
+      H[j][k] /= samplesUsedTotal;
+      G[j][k] /= samplesUsedTotal;
+    }
+  }
+
+  /* Combine all sample gradients and Hessians to the FIM estimate. */
+
+  for (size_t j = 0; j < nHyperparameters; j++)
+  {
+    for (size_t k = 0; k < nHyperparameters; k++)
+    {
+      _fischerInformationMatrix[j][k] = -(H[j][k] + G[j][k] - D[j] D[k]);
+    }
+  }
 }
 
 /*       * * * * * * * * * * * * * * * * * * * * *
@@ -151,7 +255,7 @@ void korali::solver::LatentVariableFIM::sampleLatent()
   std::fill(_acceptanceRateNominator.begin(), _acceptanceRateNominator.end(), 0.0);
 
   // ** Loop over chains
-  for (size_t c_idx = 0; c_idx < _numberSamplingChains; c_idx++)
+  for (size_t c_idx = 0; c_idx < _numberChains; c_idx++)
   {
     // Calculate initial likelihoods and priors
     std::vector<double> currentLLHs(0);
@@ -376,7 +480,7 @@ void korali::solver::LatentVariableFIM::sampleLatent()
 
     } // Chain loop end
 
-    assert(step == (_n1 + _n2 * _latentSpaceDimensions + _n3) * _mCMCOuterSteps);
+    assert(step == _samplesPerChain);
 
     _z[c_idx] = chainZ;
     //    for (size_t indiv = 0; indiv < _numberIndividuals; indiv++)
@@ -475,6 +579,35 @@ void korali::solver::LatentVariableFIM::updateMultivariateDistribution()
   _multivariateNormalGenerator->updateDistribution();
 }
 
+/** @brief: Calculates four fractional exponents of the covariance, for use in calculating derivatives
+            of the log-likelihood.
+  Returns four vectors, each of size _latentSpaceDimensions:
+    - the standard deviations (square of the covariance),
+    - original covariance diagonal
+    - 3rd power of standard deviations
+    - 4th power of standard deviations
+
+  Since we assume a diagonal covariance, this only returns the diagonal entries.
+  */
+std::vector<std::vector<double>> korali::solver::LatentVariableFIM::covariancePowers()
+{
+  std::vector<std::vector<double>> powers(4);
+  powers[0].resize(_latentSpaceDimensions);
+  powers[1].resize(_latentSpaceDimensions);
+  powers[2].resize(_latentSpaceDimensions);
+  powers[3].resize(_latentSpaceDimensions); // Loop?
+  for (size_t i = 0; i < _latentSpaceDimensions; i++)
+    powers[0][i] = std::sqrt(_diagonalCovariance[i]);
+  powers[1] = _diagonalCovariance;
+  for (size_t i = 0; i < _latentSpaceDimensions; i++)
+    powers[2][i] = std::pow(powers[0][i], 3);
+  for (size_t i = 0; i < _latentSpaceDimensions; i++)
+    powers[3][i] = std::pow(_diagonalCovariance[i], 2);
+  return powers;
+
+  // Could use the Cholesky decomposition as starting point, too, but skip this minimal performance gain
+}
+
 /** @brief: Utility function to convert a vector of vectors into a concatenated 1D vector.
   */
 std::vector<double> korali::solver::LatentVariableFIM::flatten(const std::vector<std::vector<double>> &v)
@@ -499,6 +632,41 @@ std::vector<double> korali::solver::LatentVariableFIM::flatten(const std::vector
 //
 //void korali::solver::LatentVariableFIM ::printGenerationAfter() {
 //}
+
+void korali::solver::LatentVariableFIM::printLastSamples()
+{
+  std::ostringstream lastSampleStream;
+  for (size_t c_idx = 0; c_idx < _numberChains; c_idx++)
+  {
+    _k->_logger->logInfo("Detailed", "Last samples, chain %d: \n", c_idx);
+    size_t last = _z[c_idx].size() - 1;
+    std::vector<std::vector<double>> chainZ = _z[c_idx][last];
+
+    for (size_t i = 0; i < _numberIndividuals; i++)
+    {
+      _k->_logger->logInfo("Detailed", "  Individual %d: \n", i);
+
+      // print z form:
+      _k->_logger->logInfo("Detailed", "    Z form: \t", i);
+      lastSampleStream << "[" << chainZ[i][0];
+      for (size_t j = 1; j < _latentSpaceDimensions; j++)
+        lastSampleStream << ", " << chainZ[i][j];
+      lastSampleStream << "]\n";
+      _k->_logger->logInfo("Detailed", lastSampleStream.str().c_str());
+      lastSampleStream.str("");
+
+      // print standard form:
+      std::vector<double> nonZSample = _latentProblem->zToLatent(chainZ[i]);
+      _k->_logger->logInfo("Detailed", "    Original form: \t", i);
+      lastSampleStream << "[" << chainZ[i][0];
+      for (size_t j = 1; j < _latentSpaceDimensions; j++)
+        lastSampleStream << ", " << nonZSample[j];
+      lastSampleStream << "]\n";
+      _k->_logger->logInfo("Detailed", lastSampleStream.str().c_str());
+      lastSampleStream.str("");
+    }
+  }
+}
 
 void korali::solver::LatentVariableFIM::finalize()
 {

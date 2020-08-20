@@ -34,8 +34,12 @@ void HierarchicalReference::initialize()
 
   if (_referenceData.size() == 0) KORALI_LOG_ERROR("Bayesian (%s) problems require defining reference data.\n", _likelihoodModel.c_str());
 
-  //  // The user should define one variable per latent variable dimension, as prototype:
-  //  if (_k->_variables.size() != _latentSpaceDimensions) KORALI_LOG_ERROR("Hierarchical latent variable problems require only a subset of prototype variables to be defined. Please define one prototype latent variable per individual. (Expected %d variables, found %d variables.) \n", _numberIndividuals, _k->_variables.size());
+  // Total number of independent Hyperparameters - not equal to the number of such variables set for the
+  // lowlevel problem (only the lower or upper triangular part of the covariance are independent variables)
+  if (_diagonalCovariance)
+    _numberHyperparameters = 2 * _latentSpaceDimensions;
+  else
+    _numberHyperparameters = _latentSpaceDimensions + ((_latentSpaceDimensions + 1) * (_latentSpaceDimensions)) / 2;
 
   /* Prepare the loglikelihood function.
 
@@ -385,6 +389,11 @@ void HierarchicalReference::evaluateLogPrior_(Sample &sample, bool zForm, bool c
 void HierarchicalReference::evaluateLogPrior(Sample &sample)
 {
   _lowlevelProblem->evaluateLogPrior_(sample, true, true);
+}
+
+void HierarchicalReference::evaluateLogProbabilityDerivatives(Sample &sample)
+{
+  _lowlevelProblem->evaluateLogProbabilityDerivatives(sample);
 }
 
 } // namespace latent

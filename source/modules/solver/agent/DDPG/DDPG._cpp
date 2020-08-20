@@ -14,22 +14,59 @@ namespace solver
 {
 namespace agent
 {
-void DDPG::initializePolicy()
+void DDPG::initializeAgent()
 {
-  // Checking if a correct action space was defined
-  for (size_t i = 0; i < _problem->_actionVectorIndexes.size(); i++)
-  {
-    size_t varIdx = _problem->_actionVectorIndexes[i];
+ // Checking if a correct action space was defined
+ for (size_t i = 0; i < _problem->_actionVectorIndexes.size(); i++)
+ {
+   size_t varIdx = _problem->_actionVectorIndexes[i];
 
-    if (_k->_variables[varIdx]->_values.size() > 0) KORALI_LOG_ERROR("Discrete action values (%lu, in total) have been defined for variable %lu (%s), but these are not required for DDPG\n", _k->_variables[varIdx]->_values.size(), varIdx, _k->_variables[varIdx]->_name.c_str());
-    if (_k->_variables[varIdx]->_upperBound < _k->_variables[varIdx]->_lowerBound) KORALI_LOG_ERROR("Upper bound for variable %lu (%s) is lower than the lower bound (%f < %f).\n", varIdx, _k->_variables[varIdx]->_name.c_str(), _k->_variables[varIdx]->_upperBound, _k->_variables[varIdx]->_lowerBound);
-    if (std::isfinite(_k->_variables[varIdx]->_lowerBound) == false) KORALI_LOG_ERROR("Lower bound for variable %lu (%s) is not finite or has not been specified.\n", varIdx, _k->_variables[varIdx]->_name.c_str());
-    if (std::isfinite(_k->_variables[varIdx]->_upperBound) == false) KORALI_LOG_ERROR("Upper bound for variable %lu (%s) is not finite or has not been specified.\n", varIdx, _k->_variables[varIdx]->_name.c_str());
-  }
+   if (_k->_variables[varIdx]->_values.size() > 0) KORALI_LOG_ERROR("Discrete action values (%lu, in total) have been defined for variable %lu (%s), but these are not required for DDPG\n", _k->_variables[varIdx]->_values.size(), varIdx, _k->_variables[varIdx]->_name.c_str());
+   if (_k->_variables[varIdx]->_upperBound < _k->_variables[varIdx]->_lowerBound) KORALI_LOG_ERROR("Upper bound for variable %lu (%s) is lower than the lower bound (%f < %f).\n", varIdx, _k->_variables[varIdx]->_name.c_str(), _k->_variables[varIdx]->_upperBound, _k->_variables[varIdx]->_lowerBound);
+   if (std::isfinite(_k->_variables[varIdx]->_lowerBound) == false) KORALI_LOG_ERROR("Lower bound for variable %lu (%s) is not finite or has not been specified.\n", varIdx, _k->_variables[varIdx]->_name.c_str());
+   if (std::isfinite(_k->_variables[varIdx]->_upperBound) == false) KORALI_LOG_ERROR("Upper bound for variable %lu (%s) is not finite or has not been specified.\n", varIdx, _k->_variables[varIdx]->_name.c_str());
+ }
+
+ /*********************************************************************
+ * Initializing Critic-Related Structures
+ *********************************************************************/
+
+ korali::Engine engine; // Engine to initialize experiments with
+
+ _criticExperiment["Problem"]["Type"] = "Supervised Learning";
+
+ _criticExperiment["Solver"]["Type"] = "Learner/DeepGD";
+ _criticExperiment["Solver"]["Optimizer"] = _criticOptimizer;
+ _criticExperiment["Solver"]["Loss Function"] = "Mean Squared Error";
+ _criticExperiment["Solver"]["Steps Per Generation"] = 1;
+ _criticExperiment["Solver"]["Neural Network"] = _criticNeuralNetwork;
+
+ _criticExperiment["Console Output"]["Frequency"] = 0;
+ _criticExperiment["Console Output"]["Verbosity"] = "Silent";
+ _criticExperiment["File Output"]["Enabled"] = false;
+ _criticExperiment["Random Seed"] = _k->_randomSeed++;
+
+ // Initializing experiment with an initial zero set
+ for (size_t i = 0; i < _criticMiniBatchSize; i++)
+ {
+   _criticExperiment["Problem"]["Solution"][i][0] = 0.0;
+
+   for (size_t j = 0; j < _k->_variables.size(); j++)
+     _criticExperiment["Problem"]["Inputs"][i][j] = 0.0;
+ }
+
+ // Running initialization to verify that the configuration is correct
+ engine.initialize(_criticExperiment);
+
+ // Getting learner pointers
+ _criticProblem = dynamic_cast<problem::SupervisedLearning *>(_criticExperiment._problem);
+ _criticLearner = dynamic_cast<solver::learner::DeepGD *>(_criticExperiment._solver);
 
   /*********************************************************************
-   * Creating and running Actor Learning Experiments
-   *********************************************************************/
+  * Initializing Policy-Related Structures
+  *********************************************************************/
+
+   // Creating and running Actor Learning Experiments
 
   _policyExperiment["Problem"]["Type"] = "Supervised Learning";
 
@@ -56,24 +93,32 @@ void DDPG::initializePolicy()
   }
 
   // Running initialization to verify that the configuration is correct
-  korali::Engine engine;
   engine.initialize(_policyExperiment);
 
   // Getting learner pointers
   _policyProblem = dynamic_cast<problem::SupervisedLearning *>(_policyExperiment._problem);
   _policyLearner = dynamic_cast<solver::learner::DeepGD *>(_policyExperiment._solver);
 
+
+  /*********************************************************************
+  * Loading/Setting Hyperparameters
+  *********************************************************************/
+
   if (_k->_currentGeneration == 0)
   {
+   // Get the initial set of critic NN hyperparameters
+   _hyperparameters["Critic"] = _criticLearner->getHyperparameters();
+
     // Get the initial set of policy NN hyperparameters
     _hyperparameters["Policy"] = _policyLearner->getHyperparameters();
   }
 
+  // Assigning training hyperparameters to inference learner
+  _criticLearner->setHyperparameters(_hyperparameters["Critic"]);
+  _policyLearner->setHyperparameters(_hyperparameters["Policy"]);
+
   // Storage for statistics
   avgGradients.resize(_problem->_actionVectorSize);
-
-  // Assigning training hyperparameters to inference learner
-  _policyLearner->setHyperparameters(_hyperparameters["Policy"]);
 }
 
 std::vector<double> DDPG::getTrainingAction(const std::vector<double> &state)
@@ -111,56 +156,133 @@ std::vector<double> DDPG::getTrainingAction(const std::vector<double> &state)
   return action;
 }
 
-void DDPG::trainPolicy()
+double DDPG::stateActionValueFunction(const std::vector<double> &state, const std::vector<double> &action)
 {
-  /***********************************************************************************
-   * Updating Actor/Policy/Pi Network by performing a Stochastic Gradient Descent step
-   ***********************************************************************************/
+  // Storage to put together state and action
+  std::vector<double> stateActionInput(_problem->_stateVectorSize + _problem->_actionVectorSize);
 
-  // Initializing gradient for statistics
-  for (size_t i = 0; i < _problem->_actionVectorSize; i++) avgGradients[i] = 0.0;
+  // Forward propagating state/action through the critic
+  for (size_t j = 0; j < state.size(); j++) stateActionInput[j] = state[j];
+  for (size_t j = 0; j < action.size(); j++) stateActionInput[j + state.size()] = action[j];
+  auto evaluation = _criticLearner->getEvaluation(stateActionInput);
 
-  // Creating state history indexes to choose from
-  std::vector<size_t> stateHistoryIndexes(_stateHistory.size());
-  for (size_t i = 0; i < _stateHistory.size(); i++) stateHistoryIndexes[i] = i;
+  // Getting the value of V(Xt), i.e., Q(xt, best action)
+  return evaluation[0];
+}
 
-  for (size_t i = 0; i < _policyMiniBatchSize; i++)
+void DDPG::trainAgent()
+{
+ // Creating storage for state history indexes to choose from
+ std::vector<size_t> stateHistoryIndexes(_stateHistory.size());
+ for (size_t i = 0; i < _stateHistory.size(); i++) stateHistoryIndexes[i] = i;
+
+ /***************************************************************************************
+  * Updating Policy Network by performing a Gradient descent step with latest experiences
+  ***************************************************************************************/
+
+ // Initializing gradient for statistics
+ for (size_t i = 0; i < _problem->_actionVectorSize; i++) avgGradients[i] = 0.0;
+
+ for (size_t i = 0; i < _policyMiniBatchSize; i++)
+ {
+   // Selecting a uniformly random selected, yet not repeated experience
+   size_t expId = stateHistoryIndexes[_stateHistory.size() - _policyMiniBatchSize + i];
+
+   // Storage to put together state and action
+   std::vector<double> stateActionInput(_problem->_stateVectorSize + _problem->_actionVectorSize);
+
+   // Now calculating Gradient of q with respect to state+action for the critic NN
+   for (size_t j = 0; j < _problem->_stateVectorSize; j++) stateActionInput[j] = _stateHistory[expId][j];
+   for (size_t j = 0; j < _problem->_actionVectorSize; j++) stateActionInput[_problem->_stateVectorSize + j] = _actionHistory[expId][j];
+
+   _criticLearner->getEvaluation(stateActionInput);
+   auto qGradients = _criticLearner->getGradients({{-1.0}}); // Identity, to estimate the exact gradient dQ/dAS
+   std::vector<double> aGradients = std::vector<double>(qGradients.begin() + _problem->_stateVectorSize, qGradients.end());
+
+   // Keeping track of gradient averages for statistics
+   for (size_t i = 0; i < _problem->_actionVectorSize; i++) avgGradients[i] += aGradients[i];
+
+   for (size_t j = 0; j < _problem->_stateVectorSize; j++) _policyProblem->_inputs[i][j] = _stateHistory[expId][j];
+   _policyProblem->_solution[i] = aGradients;
+ }
+
+ // Calculating gradient statistics
+ for (size_t i = 0; i < _problem->_actionVectorSize; i++) avgGradients[i] /= _policyMiniBatchSize;
+
+ // Running one generation of the optimization method on the actor NN with the given mini-batch
+ _policyExperiment["Solver"]["Termination Criteria"]["Max Generations"] = _policyExperiment._currentGeneration + _policyOptimizationSteps;
+ _policyLearner->initialize();
+ korali::Engine engine;
+ engine.resume(_policyExperiment);
+
+ auto policyHypeparameters = _policyLearner->getHyperparameters();
+
+ /***********************************************************************************
+  * Updating Critic Network by performing a Stochastic Gradient Descent step
+  **********************************************************************************/
+
+ // Calculating cumulative Q*, for statistical purposes
+ _cumulativeQStar = 0.0;
+
+  for (size_t step = 0; step < _criticOptimizationSteps; step++)
   {
-    // Selecting a uniformly random selected, yet not repeated experience
-    size_t expId = stateHistoryIndexes[_stateHistory.size() - _policyMiniBatchSize + i];
+    // Returning hyperparameters to its pre-training value
+    _criticLearner->setHyperparameters(_hyperparameters["Critic"]);
 
-    // Storage to put together state and action
-    std::vector<double> stateActionInput(_problem->_stateVectorSize + _problem->_actionVectorSize);
+    // Shuffling indexes to choose the mini batch from
+    std::shuffle(stateHistoryIndexes.begin(), stateHistoryIndexes.end(), *mt);
 
-    // Now calculating Gradient of q with respect to state+action for the critic NN
-    for (size_t j = 0; j < _problem->_stateVectorSize; j++) stateActionInput[j] = _stateHistory[expId][j];
-    for (size_t j = 0; j < _problem->_actionVectorSize; j++) stateActionInput[_problem->_stateVectorSize + j] = _actionHistory[expId][j];
+    // Randomly selecting experiences for the mini-batch and calculating their target Q
+    for (size_t i = 0; i < _criticMiniBatchSize; i++)
+    {
+      // Selecting a uniformly random selected, yet not repeated experience
+      size_t expId = stateHistoryIndexes[i];
 
-    _criticLearner->getEvaluation(stateActionInput);
-    auto qGradients = _criticLearner->getGradients({{-1.0}}); // Identity, to estimate the exact gradient dQ/dAS
-    std::vector<double> aGradients = std::vector<double>(qGradients.begin() + _problem->_stateVectorSize, qGradients.end());
+      // Qnew = max_a(q) with s' fixed
+      // Q* = r + y*Qnew -- If not terminal state
+      // Q* = r -- If terminal state
 
-    // Keeping track of gradient averages for statistics
-    for (size_t i = 0; i < _problem->_actionVectorSize; i++) avgGradients[i] += aGradients[i];
+      // Calculating target Q value (solution) for Qnew on selected batch
+      double qStar = 0.0;
 
-    for (size_t j = 0; j < _problem->_stateVectorSize; j++) _policyProblem->_inputs[i][j] = _stateHistory[expId][j];
-    _policyProblem->_solution[i] = aGradients;
+      // Reward is the first factor in the QLearning algorithm
+      qStar = _rewardHistory[expId];
+
+      // If state is not terminal (next state is filled) then add Qnew to the Q value.
+      if (_terminalHistory[expId] == false) qStar += _criticDiscountFactor * stateActionValueFunction(_stateHistory[expId + 1], _actionHistory[expId + 1]);
+
+      // Updating inputs to training learner
+      for (size_t j = 0; j < _problem->_stateVectorSize; j++) _criticProblem->_inputs[i][j] = _stateHistory[expId][j];
+      for (size_t j = 0; j < _problem->_actionVectorSize; j++) _criticProblem->_inputs[i][_problem->_stateVectorSize + j] = _actionHistory[expId][j];
+      _criticProblem->_solution[i][0] = qStar;
+
+      // Keeping statistics
+      _cumulativeQStar += qStar;
+    }
+
+    // Running one generation of the optimization method with the given mini-batch
+    _criticExperiment["Solver"]["Termination Criteria"]["Max Generations"] = _criticExperiment._currentGeneration + 1;
+    _criticLearner->initialize();
+    korali::Engine engine;
+    engine.resume(_criticExperiment);
+
+    // Increasing optimization step counter
+    _optimizationStepCount++;
   }
 
-  // Calculating gradient statistics
-  for (size_t i = 0; i < _problem->_actionVectorSize; i++) avgGradients[i] /= _policyMiniBatchSize;
+  // Keeping statistics
+  _averageQStar = (double)_cumulativeQStar / (double)(_criticOptimizationSteps * _criticMiniBatchSize);
 
-  // Running one generation of the optimization method on the actor NN with the given mini-batch
-  _policyExperiment["Solver"]["Termination Criteria"]["Max Generations"] = _policyExperiment._currentGeneration + _policyOptimizationSteps;
-  _policyLearner->initialize();
-  korali::Engine engine;
-  engine.resume(_policyExperiment);
+ // If batch normalization is being used, we need to adjust mean and variances
 
-  auto policyHypeparameters = _policyLearner->getHyperparameters();
+  normalizeNeuralNetwork(_criticLearner->_trainingNeuralNetwork);
 
   /*********************************************************************
   * Updating hyperparameters and broadcasting them to the workers
   *********************************************************************/
+
+  // Storing new Critic's hyperparameters
+  _hyperparameters["Critic"] = _criticLearner->getHyperparameters();
 
   // Getting q training hyperparameters to broadcast to workers
   _hyperparameters["Policy"] = policyHypeparameters;
@@ -251,8 +373,24 @@ void DDPG::updateHyperparameters(const knlohmann::json &hyperparameters)
   for (size_t i = 0; i < actionCount; i++) _currentActionNoises[i] = 0.0;
 }
 
-void DDPG::printPolicyInformation()
+void DDPG::printAgentInformation()
 {
+ _k->_logger->logInfo("Normal", "Critic Information:\n");
+
+ if (_maxOptimizationSteps > 0)
+   _k->_logger->logInfo("Normal", " + Optimization Step Count:         %lu/%lu\n", _optimizationStepCount, _maxOptimizationSteps);
+ else
+   _k->_logger->logInfo("Normal", " + Optimization Step Count:         %lu\n", _optimizationStepCount);
+
+ _k->_logger->logInfo("Normal", " + Cumulative Expected Q-Value:     %f\n", _cumulativeQStar);
+ _k->_logger->logInfo("Normal", " + Average Expected Q-Value:        %f\n", _averageQStar);
+
+ _criticExperiment._logger->_verbosityLevel = _k->_logger->_verbosityLevel;
+ _criticExperiment._solver->printGenerationAfter();
+ _criticExperiment._logger->setVerbosityLevel("Silent");
+
+ _k->_logger->logInfo("Normal", "Policy Information:\n");
+
   _k->_logger->logInfo("Normal", " + Average Action Gradients: [");
 
   // Printing gradient averages

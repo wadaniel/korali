@@ -118,7 +118,7 @@ e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Activation Function"]["Typ
 e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Batch Normalization"]["Enabled"] = True
 e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Weight Initialization Scaling"] = 0.000001
 
-e["Solver"]["Critic"]["Normalization Steps"] = 32
+e["Solver"]["Normalization Steps"] = 32
 
 ### Defining the shape of the actor neural network
 

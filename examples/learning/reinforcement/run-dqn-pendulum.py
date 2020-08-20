@@ -88,7 +88,7 @@ e["Solver"]["Policy"]["Epsilon"]["Decrease Rate"] = 0.05
 
 e["Solver"]["Critic"]["Mini Batch Size"] = 32
 e["Solver"]["Critic"]["Discount Factor"] = 0.99 
-e["Solver"]["Critic"]["Update Algorithm"] = "Q-Learning"
+e["Solver"]["Critic"]["Update Algorithm"] = "Retrace"
 e["Solver"]["Critic"]["Optimizer"]["Type"] = "Optimizer/Adam"
 e["Solver"]["Critic"]["Optimizer"]["Eta"] = 0.1
 e["Solver"]["Critic"]["Optimization Steps"] = 1
@@ -116,7 +116,7 @@ e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Activation Function"]["Typ
 e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Batch Normalization"]["Enabled"] = False
 e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Weight Initialization Scaling"] = 0.000001
 
-e["Solver"]["Critic"]["Normalization Steps"] = 32
+e["Solver"]["Normalization Steps"] = 32
 
 ### Defining Termination Criteria
 

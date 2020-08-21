@@ -37,10 +37,10 @@ def main():
   e["Problem"]["Diagonal Covariance"] = True
 
   e["Solver"]["Type"] = "LatentVariableFIM"
-  e["Solver"]["Number Chains"] = 2
-  e["Solver"]["MCMC Outer Steps"] = 20
+  e["Solver"]["Number Chains"] = 1
+  e["Solver"]["MCMC Outer Steps"] = 1000
   e["Solver"]["MCMC Target Acceptance Rate"] = 0.4
-  e["Solver"]["MCMC Subchain Steps"] = [2, 2, 2]
+  e["Solver"]["MCMC Subchain Steps"] = [2, 2, 0]
   # e["Solver"]["Termination Criteria"]["Max Generations"] = 1
 
   # Set values for the hyperparameters.

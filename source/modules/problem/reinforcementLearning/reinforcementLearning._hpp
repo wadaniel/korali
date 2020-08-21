@@ -14,10 +14,23 @@ class ReinforcementLearning : public korali::Problem
   void initialize() override;
 
   /**
-   * @brief Runs an episode of the agent within the environment
+   * @brief Runs an episode of the agent with a training policy (with noise)
    * @param sample Sample containing current agent/state information.
    */
-  void runEnvironment(korali::Sample &sample);
+  void runTrainingSample(Sample &sample);
+
+  /**
+   * @brief Runs an episode of the agent with a testing policy (without noise)
+   * @param sample Sample containing current agent/state information.
+   */
+  void runTestingSample(Sample &sample);
+
+  /**
+   * @brief Runs an episode of the agent within the environment
+   * @param sample Sample containing current agent/state information.
+   * @param useTrainingAction A flag to indicate whether this is a training run (with noise) or an inference run (without noise)
+   */
+  void runEnvironment(korali::Sample &sample, bool useTrainingAction);
 };
 
 } // namespace problem

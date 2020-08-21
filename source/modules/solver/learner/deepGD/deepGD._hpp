@@ -1,7 +1,6 @@
 #ifndef _KORALI_SOLVER_DeepGD_HPP_
 #define _KORALI_SOLVER_DeepGD_HPP_
 
-#include "engine.hpp"
 #include "modules/experiment/experiment.hpp"
 #include "modules/neuralNetwork/neuralNetwork.hpp"
 #include "modules/problem/supervisedLearning/supervisedLearning.hpp"
@@ -17,17 +16,12 @@ class DeepGD : public Learner
 {
   public:
   /**
- * @brief Korali engine for optimizing NN weights and biases
+ * @brief Korali Problem for optimizing NN weights and biases
  */
   problem::SupervisedLearning *_problem;
 
   /**
- * @brief Korali engine for optimizing the NN's weights and biases
- */
-  korali::Engine _optEngine;
-
-  /**
- * @brief Korali engine for optimizing the NN's weights and biases
+ * @brief Korali Experiment for optimizing the NN's weights and biases
  */
   korali::Experiment _optExperiment;
 

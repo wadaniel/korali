@@ -2,6 +2,7 @@
 #include "modules/experiment/experiment.hpp"
 #include "modules/problem/problem.hpp"
 #include "modules/solver/optimizer/Rprop/Rprop.hpp"
+#include "sample/sample.hpp"
 
 #include <stdio.h>
 

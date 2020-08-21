@@ -292,6 +292,26 @@ void DQN::getAction(korali::Sample& sample)
   sample["Action"] = action;
 }
 
+std::vector<double> DQN::getRandomAction()
+{
+  // Storage for action
+  std::vector<double> randomAction(_problem->_actionVectorSize);
+
+  for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+  {
+    size_t varIdx = _problem->_actionVectorIndexes[i];
+
+    // Producing random (uniform) number to obtain a value index
+    double x = _randomActionGenerator->getRandomNumber();
+
+    // Randomly select one of the actions provided in the value vector
+    size_t valIdx = floor(x * _k->_variables[varIdx]->_values.size());
+    randomAction[i] = _k->_variables[varIdx]->_values[valIdx];
+  }
+
+  return randomAction;
+}
+
 void DQN::updateHyperparameters(const knlohmann::json &hyperparameters)
 {
   _criticLearner->setHyperparameters(hyperparameters["Critic"].get<std::vector<double>>());

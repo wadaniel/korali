@@ -164,6 +164,26 @@ void DDPG::getAction(korali::Sample& sample)
   sample["Action"] = action;
 }
 
+std::vector<double> DDPG::getRandomAction()
+{
+  // Storage for action
+  std::vector<double> randomAction(_problem->_actionVectorSize);
+
+  for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+  {
+    size_t varIdx = _problem->_actionVectorIndexes[i];
+
+    // Producing random (uniform) number to select within an lower/upper bound range
+    double x = _randomActionGenerator->getRandomNumber();
+
+    double lowerBound = _k->_variables[varIdx]->_lowerBound;
+    double upperBound = _k->_variables[varIdx]->_upperBound;
+    randomAction[i] = lowerBound + x * (upperBound - lowerBound);
+  }
+
+  return randomAction;
+}
+
 double DDPG::stateActionValueFunction(const std::vector<double> &state, const std::vector<double> &action)
 {
   // Storage to put together state and action

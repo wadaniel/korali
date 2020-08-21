@@ -48,6 +48,12 @@ class DQN : public Agent
    */
   double stateActionValueFunction(const std::vector<double> &state, const std::vector<double> &action);
 
+  /**
+   * @brief Gets a random action
+   * @return A vector containing the random action
+   */
+  std::vector<double> getRandomAction();
+
   void getAction(korali::Sample& sample) override;
   std::vector<double> queryPolicy(const std::vector<double> &state) override;
   void updateHyperparameters(const knlohmann::json &hyperparameters) override;

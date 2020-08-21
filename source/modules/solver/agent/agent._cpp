@@ -157,34 +157,6 @@ void Agent::runGeneration()
   trainAgent();
 }
 
-std::vector<double> Agent::getRandomAction()
-{
-  // Storage for action
-  std::vector<double> randomAction(_problem->_actionVectorSize);
-
-  for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-  {
-    size_t varIdx = _problem->_actionVectorIndexes[i];
-    double x = _randomActionGenerator->getRandomNumber();
-
-    // If discrete value vector was not provided, use lower and upper bounds
-    if (_k->_variables[varIdx]->_values.size() == 0)
-    {
-      double lowerBound = _k->_variables[varIdx]->_lowerBound;
-      double upperBound = _k->_variables[varIdx]->_upperBound;
-      randomAction[i] = lowerBound + x * (upperBound - lowerBound);
-    }
-    else
-    {
-      // Randomly select one of the actions provided in the value vector
-      size_t valIdx = floor(x * _k->_variables[varIdx]->_values.size());
-      randomAction[i] = _k->_variables[varIdx]->_values[valIdx];
-    }
-  }
-
-  return randomAction;
-}
-
 void Agent::normalizeNeuralNetwork(korali::NeuralNetwork *nn)
 {
   size_t pCount = nn->_normalizationParameterCount;

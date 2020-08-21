@@ -69,10 +69,10 @@ e["Variables"][4]["Values"] = [ 0.0, 1.0 ]
 
 e["Solver"]["Type"] = "Agent/ACER"
 
-### Defining Replay Memory configuration
+### Defining Experience Replay configuration
 
-e["Solver"]["Replay Memory"]["Start Size"] = 500
-e["Solver"]["Replay Memory"]["Maximum Size"] = 150000
+e["Solver"]["Experience Replay"]["Start Size"] = 500
+e["Solver"]["Experience Replay"]["Maximum Size"] = 150000
 
 ### Defining the configuration of the agent
 

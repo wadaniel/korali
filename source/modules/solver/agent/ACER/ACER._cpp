@@ -21,18 +21,15 @@ void ACER::initializeAgent()
  *********************************************************************/
 
  // Checking a discrete action space has been defined and getting total number of actions
- size_t totalActionCount = 1;
+ _actionCount = 1;
 
  for (size_t i = 0; i < _problem->_actionVectorIndexes.size(); i++)
  {
    size_t varIdx = _problem->_actionVectorIndexes[i];
    size_t varActionCount = _k->_variables[varIdx]->_values.size();
    if (varActionCount == 0) KORALI_LOG_ERROR("No discrete action values have been defined for variable %lu (%s), required by DQN\n", varIdx, _k->_variables[varIdx]->_name.c_str());
-   totalActionCount *= varActionCount;
+   _actionCount *= varActionCount;
  }
-
- printf("Total Action Count: %lu\n", totalActionCount);
- exit(0);
 
  /*********************************************************************
  * Initializing Critic-Related Structures
@@ -58,7 +55,7 @@ void ACER::initializeAgent()
  {
    _criticExperiment["Problem"]["Solution"][i][0] = 0.0;
 
-   for (size_t j = 0; j < _k->_variables.size(); j++)
+   for (size_t j = 0; j < _actionCount; j++)
      _criticExperiment["Problem"]["Inputs"][i][j] = 0.0;
  }
 
@@ -94,7 +91,7 @@ void ACER::initializeAgent()
     for (size_t j = 0; j < _problem->_stateVectorSize; j++)
       _policyExperiment["Problem"]["Inputs"][i][j] = 0.0;
 
-    for (size_t j = 0; j < _problem->_actionVectorSize; j++)
+    for (size_t j = 0; j < _actionCount; j++)
       _policyExperiment["Problem"]["Solution"][i][j] = 0.0;
   }
 

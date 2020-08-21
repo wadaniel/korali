@@ -819,12 +819,12 @@ void CMAES::updateEigensystem(std::vector<double> &M)
   eigen(_k->_variables.size(), M, _auxiliarAxisLengths, _auxiliarCovarianceEigenvectorMatrix);
 
   /* find largest and smallest eigenvalue, they are supposed to be sorted anyway */
-  double minEWtmp = *std::min_element(std::begin(_auxiliarAxisLengths), std::end(_auxiliarAxisLengths));
-  double maxEWtmp = *std::max_element(std::begin(_auxiliarAxisLengths), std::end(_auxiliarAxisLengths));
+  _minimumCovarianceEigenvalue = *std::min_element(std::begin(_auxiliarAxisLengths), std::end(_auxiliarAxisLengths));
+  _maximumCovarianceEigenvalue = *std::max_element(std::begin(_auxiliarAxisLengths), std::end(_auxiliarAxisLengths));
 
-  if (minEWtmp <= 0.0)
+  if (_minimumCovarianceEigenvalue <= 0.0)
   {
-    _k->_logger->logWarning("Detailed", "Min Eigenvalue smaller or equal 0.0 (%+6.3e) after Eigen decomp (no update possible).\n", minEWtmp);
+    _k->_logger->logWarning("Detailed", "Min Eigenvalue smaller or equal 0.0 (%+6.3e) after Eigen decomp (no update possible).\n", _minimumCovarianceEigenvalue);
     return;
   }
 
@@ -848,8 +848,6 @@ void CMAES::updateEigensystem(std::vector<double> &M)
   for (size_t d = 0; d < _k->_variables.size(); ++d) _axisLengths[d] = _auxiliarAxisLengths[d];
   _covarianceEigenvectorMatrix.assign(std::begin(_auxiliarCovarianceEigenvectorMatrix), std::end(_auxiliarCovarianceEigenvectorMatrix));
 
-  _minimumCovarianceEigenvalue = minEWtmp;
-  _maximumCovarianceEigenvalue = maxEWtmp;
 }
 
 /************************************************************************/

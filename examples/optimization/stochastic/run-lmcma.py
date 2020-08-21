@@ -18,20 +18,23 @@ e = korali.Experiment()
 
 # Configuring Problem.
 e["Problem"]["Type"] = "Optimization"
-e["Problem"]["Objective Function"] = model
+e["Problem"]["Objective Function"] = negative_rosenbrock
 
+dim = 512
 # Defining the problem's variables.
-e["Variables"][0]["Name"] = "X"
-e["Variables"][0]["Lower Bound"] = -10.0
-e["Variables"][0]["Upper Bound"] = +10.0
-#e["Variables"][0]["Initial Value"] = +0.0
-e["Variables"][0]["Initial Standard Deviation"] = +2.0
+for i in range(dim):
+    e["Variables"][i]["Name"] = "X" + str(i)
+    e["Variables"][i]["Lower Bound"] = -25.0
+    e["Variables"][i]["Upper Bound"] = +25.0
+    e["Variables"][i]["Initial Standard Deviation"] = 3.0
 
-# Configuring CMA-ES parameters
+# Configuring LM-CMA parameters
 e["Solver"]["Type"] = "Optimizer/LMCMAES"
-e["Solver"]["Population Size"] = 4
-e["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-7
-e["Solver"]["Termination Criteria"]["Max Generations"] = 100
+e["Solver"]["Population Size"] = 32
+e["Solver"]["Sigma Update Rule"] = "CMAES"
+#e["Solver"]["Random Number Distribution"] = "Uniform"
+e["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-15
+e["Solver"]["Termination Criteria"]["Max Generations"] = 500
 
 # Configuring results path
 e["File Output"]["Path"] = '_korali_result_lmcma'

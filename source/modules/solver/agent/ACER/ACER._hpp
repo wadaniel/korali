@@ -2,6 +2,7 @@
 #define _KORALI_AGENT_ACER_HPP_
 
 #include "modules/solver/agent/agent.hpp"
+#include "modules/problem/reinforcementLearning/discrete/discrete.hpp"
 
 namespace korali
 {
@@ -14,6 +15,11 @@ class ACER : public Agent
   public:
 
   /**
+  * @brief Storage for the pointer to the (discrete) learning problem
+  */
+  problem::reinforcementLearning::Discrete *_discreteProblem;
+
+  /**
    * @brief Pointer to training experiment's problem
    */
   problem::SupervisedLearning *_criticProblem;
@@ -24,13 +30,12 @@ class ACER : public Agent
   learner::DeepGD *_criticLearner;
 
   /**
-   * @brief Korali experiment for the training of the Qvalue-estimator
+   * @brief Korali experiment for the training of the Q(s,a)
    */
   korali::Experiment _criticExperiment;
 
-
   /**
-  * @brief Korali experiment for argmax_action(Q) based on a trained Q-Network
+  * @brief Korali experiment for P(a | s) for all actions
   */
   korali::Experiment _policyExperiment;
 
@@ -72,7 +77,7 @@ class ACER : public Agent
    * @param action action to evaluate
    * @return The value of Q(s,a)
    */
-  double stateActionValueFunction(const std::vector<double> &state, const std::vector<double> &action);
+  double stateActionValueFunction(const std::vector<double> &state, const size_t &actionIdx);
 
   /**
    * @brief Calculates (recursively) the Qretrace value of a given (state/action) experience
@@ -86,6 +91,14 @@ class ACER : public Agent
    * @return Index of the action selected
    */
   size_t getRandomActionIndex();
+
+  /**
+   * @brief Calculates the probability density of selecting the input state+action given the latest critic
+   * @param state state to evaluate
+   * @param actionIdx index to the action to evaluate
+   * @return p(s,a | Q)
+   */
+  double getStateActionProbabilityDensity(const std::vector<double> &state, const size_t &actionIdx);
 
   void getAction(korali::Sample& sample) override;
   std::vector<double> queryPolicy(const std::vector<double> &state) override;

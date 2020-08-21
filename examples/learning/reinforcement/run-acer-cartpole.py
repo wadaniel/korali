@@ -46,8 +46,9 @@ e = korali.Experiment()
 
 ### Defining the Cartpole problem's configuration
 
-e["Problem"]["Type"] = "Reinforcement Learning"
+e["Problem"]["Type"] = "Reinforcement Learning / Discrete"
 e["Problem"]["Environment Function"] = env
+e["Problem"]["Possible Actions"] = [ [ 0.0 ], [ 1.0 ] ]
 
 e["Variables"][0]["Name"] = "Cart Position"
 e["Variables"][0]["Type"] = "State"
@@ -63,11 +64,11 @@ e["Variables"][3]["Type"] = "State"
 
 e["Variables"][4]["Name"] = "Push Direction"
 e["Variables"][4]["Type"] = "Action"
-e["Variables"][4]["Values"] = [ 0.0, 1.0 ]
 
 ### Configuring DQN hyperparameters
 
 e["Solver"]["Type"] = "Agent/ACER"
+e["Solver"]["Importance Weight Truncation"] = 1.0
 
 ### Defining Experience Replay configuration
 
@@ -138,10 +139,6 @@ e["Solver"]["Policy"]["Neural Network"]["Layers"][2]["Activation Function"]["Alp
 e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Type"] = "Layer/Dense"
 e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Node Count"] = 2
 e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Softmax" 
-
-e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Weight Initialization Scaling"] = 0.000000001
-
-e["Solver"]["Policy"]["Neural Network"]["Output Scaling"] = [ 10.0, 10.0 ]
 
 ### Defining Termination Criteria
 

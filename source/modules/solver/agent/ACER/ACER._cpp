@@ -16,20 +16,8 @@ namespace agent
 {
 void ACER::initializeAgent()
 {
- /*********************************************************************
- * Verifying Problem's Definition
- *********************************************************************/
-
- // Checking a discrete action space has been defined and getting total number of actions
- _actionCount = 1;
-
- for (size_t i = 0; i < _problem->_actionVectorIndexes.size(); i++)
- {
-   size_t varIdx = _problem->_actionVectorIndexes[i];
-   size_t varActionCount = _k->_variables[varIdx]->_values.size();
-   if (varActionCount == 0) KORALI_LOG_ERROR("No discrete action values have been defined for variable %lu (%s), required by DQN\n", varIdx, _k->_variables[varIdx]->_name.c_str());
-   _actionCount *= varActionCount;
- }
+ // Getting discrete problem pointer
+ _discreteProblem = dynamic_cast<problem::reinforcementLearning::Discrete *>(_k->_problem);
 
  /*********************************************************************
  * Initializing Critic-Related Structures
@@ -53,10 +41,11 @@ void ACER::initializeAgent()
  // Initializing experiment with an initial zero set
  for (size_t i = 0; i < _criticMiniBatchSize; i++)
  {
-   _criticExperiment["Problem"]["Solution"][i][0] = 0.0;
-
-   for (size_t j = 0; j < _actionCount; j++)
+  for (size_t j = 0; j < _problem->_stateVectorSize; j++)
      _criticExperiment["Problem"]["Inputs"][i][j] = 0.0;
+
+   for (size_t j = 0; j < _discreteProblem->_possibleActions.size(); j++)
+     _criticExperiment["Problem"]["Solution"][i][j] = 0.0;
  }
 
  // Running initialization to verify that the configuration is correct
@@ -91,7 +80,7 @@ void ACER::initializeAgent()
     for (size_t j = 0; j < _problem->_stateVectorSize; j++)
       _policyExperiment["Problem"]["Inputs"][i][j] = 0.0;
 
-    for (size_t j = 0; j < _actionCount; j++)
+    for (size_t j = 0; j < _discreteProblem->_possibleActions.size(); j++)
       _policyExperiment["Problem"]["Solution"][i][j] = 0.0;
   }
 
@@ -140,38 +129,50 @@ double ACER::qRetrace(size_t expId)
     curId--;
 
     // Getting experience's next state and action
+    std::vector<double> curState = _experienceReplayHistory[curId]["State"];
+    size_t curActionIdx = _experienceReplayHistory[curId]["Metadata"]["Action Index"];
+
+    // Getting experience's next state and action
     std::vector<double> nextState = _experienceReplayHistory[curId+1]["State"];
-    std::vector<double> nextAction = _experienceReplayHistory[curId+1]["Action"];
+    size_t nextActionIdx = _experienceReplayHistory[curId+1]["Metadata"]["Action Index"];
 
     // Getting Q(s+1, a+1) for the selected experience
-    double qNextState = stateActionValueFunction(nextState, nextAction);
+    double qNextState = stateActionValueFunction(nextState, nextActionIdx);
 
     // Getting V(s+1) for the selected experience
     double vNextState = stateValueFunction(nextState);
 
     // Getting p(s,a) for selected experience, given the old policy
-    double pOldExp = _experienceReplayHistory[curId]["Probability Density"];
+    double pOldExp = _experienceReplayHistory[curId]["Metadata"]["Action pDensity"];
 
     // Getting p(s,a) for the best action, given the current policy
-    printf("To be completed 1\n");
-    exit(0);
-    double pCurExp = 0;
-    //double pCurExp = getStateActionProbabilityDensity(_stateHistory[curId], _actionHistory[curId]);
+    double pCurExp = getStateActionProbabilityDensity(curState, curActionIdx);
 
-    // Now calculating importance weight, truncating it to avoid exploding values, and then multiplying it by lambda
-    double importanceWeight = _importanceWeightLambda * std::min(_importanceWeightTruncation, (pCurExp / pOldExp));
-    // printf("Importance Weight: %f\n", importanceWeight);
+    // Now calculating importance weight
+    double importanceWeight = pCurExp / pOldExp;
+
+    // Now calculating truncated importance weight
+    double truncatedImportanceWeight = std::min(_importanceWeightTruncation, importanceWeight);
 
     // Getting current reward
     double curReward = _experienceReplayHistory[curId]["Reward"];
 
-    retraceValue += curReward + _criticDiscountFactor * importanceWeight * (retraceValue - qNextState) + _criticDiscountFactor * vNextState;
-  }
+    retraceValue += curReward + _criticDiscountFactor * truncatedImportanceWeight * (retraceValue - qNextState) + _criticDiscountFactor * vNextState;
 
-  //printf("Retrace Val: %f\n", retraceValue);
+    printf("Retrace Val: %f\n", retraceValue);
+  }
 
   // Returning the retrace value of the required experience
   return retraceValue;
+}
+
+double ACER::getStateActionProbabilityDensity(const std::vector<double> &state, const size_t &actionIdx)
+{
+ // Forward propagating state through the policy to get P(s,a) for all a
+ auto evaluation = _policyLearner->getEvaluation(state);
+
+ // Getting the value of P(s,a) for the given a_i
+ return evaluation[actionIdx];
 }
 
 void ACER::getAction(korali::Sample& sample)
@@ -180,7 +181,9 @@ void ACER::getAction(korali::Sample& sample)
   if (_experienceReplayHistory.size() < _experienceReplayStartSize)
   {
    size_t randomActionIdx = getRandomActionIndex();
-   //sample["Action"] = getRandomAction();
+   sample["Metadata"]["Action Index"] = randomActionIdx;
+   sample["Metadata"]["Action pDensity"] = 1.0 / (double)_discreteProblem->_possibleActions.size();
+   sample["Action"] = _discreteProblem->_possibleActions[randomActionIdx];
    return;
   }
 
@@ -213,24 +216,43 @@ size_t ACER::getRandomActionIndex()
   double x = _randomActionGenerator->getRandomNumber();
 
   // Randomly select one of the actions provided in the value vector
-  size_t actionIdx = floor(x * _actionCount);
+  size_t actionIdx = floor(x * _discreteProblem->_possibleActions.size());
 
   return actionIdx;
 }
 
-double ACER::stateActionValueFunction(const std::vector<double> &state, const std::vector<double> &action)
+double ACER::stateActionValueFunction(const std::vector<double> &state, const size_t &actionIdx)
 {
-  // Storage to put together state and action
-  std::vector<double> stateActionInput(_problem->_stateVectorSize + _problem->_actionVectorSize);
-
-  // Forward propagating state/action through the critic
-  for (size_t j = 0; j < state.size(); j++) stateActionInput[j] = state[j];
-  for (size_t j = 0; j < action.size(); j++) stateActionInput[j + state.size()] = action[j];
-  auto evaluation = _criticLearner->getEvaluation(stateActionInput);
+  // Forward propagating state through the critic to get Q(s,a) for all A
+  auto evaluation = _criticLearner->getEvaluation(state);
 
   // Getting the value of V(Xt), i.e., Q(xt, best action)
-  return evaluation[0];
+  return evaluation[actionIdx];
 }
+
+double ACER::stateValueFunction(const std::vector<double> &state)
+{
+  // Forward propagating state through the critic to get Q(s,a) for all A
+  auto evaluation = _criticLearner->getEvaluation(state);
+
+  // Storage for max_a Q(s,a) and its index
+  double maxQVal = -korali::Inf;
+  size_t maxQIdx = 0;
+
+  // Iterating over all possible actions, checking which one is best
+  for (size_t i = 0; i < _discreteProblem->_possibleActions.size(); i++)
+  {
+   // Getting Q(s,a) for a_i
+   double curQVal = evaluation[i];
+
+   // If current action got a larger Q, store it as the best
+   if (curQVal > maxQVal) { maxQVal = curQVal; maxQIdx = i; }
+  }
+
+  // Getting the value of V(Xt), i.e., Q(xt, best action)
+  return evaluation[maxQIdx];
+}
+
 
 void ACER::trainAgent()
 {
@@ -254,8 +276,12 @@ void ACER::trainAgent()
    std::vector<double> curState = _experienceReplayHistory[expId]["State"];
    std::vector<double> curAction = _experienceReplayHistory[expId]["Action"];
 
+   printf("Starting StateValueFunction\n");
+
    // Calculating V_theta(state)
    double vState = stateValueFunction(curState);
+
+   printf("Starting QTrace\n");
 
    // Calculating Qret(state, action)
    double qRet = qRetrace(expId);
@@ -314,10 +340,10 @@ void ACER::trainAgent()
       {
        // Getting experience's next state and action
        std::vector<double> nextState = _experienceReplayHistory[expId+1]["State"];
-       std::vector<double> nextAction = _experienceReplayHistory[expId+1]["Action"];
+       size_t nextActionIdx = _experienceReplayHistory[expId+1]["Metadata"]["Action Index"];
 
        // If state is not terminal (next state is filled) then add Qnew to the Q value.
-       qStar += _criticDiscountFactor * stateActionValueFunction(nextState, nextAction);
+       qStar += _criticDiscountFactor * stateActionValueFunction(nextState, nextActionIdx);
       }
 
       // Updating inputs to training learner
@@ -356,18 +382,6 @@ void ACER::trainAgent()
   // Getting q training hyperparameters to broadcast to workers
   _hyperparameters["Policy"] = policyHypeparameters;
   _policyLearner->setHyperparameters(policyHypeparameters);
-}
-
-double ACER::stateValueFunction(const std::vector<double> &state)
-{
-  auto curPolicyAction = queryPolicy(state);
-
-  double vValue = 0.0;
-
-  // Now averaging the V(s) over all sampled actions
-  vValue = vValue / _stateValueFunctionSamples;
-
-  return vValue;
 }
 
 std::vector<double> ACER::queryPolicy(const std::vector<double> &state)

@@ -55,6 +55,11 @@ class ACER : public Agent
   std::vector<double> _currentActionNoises;
 
   /**
+   * @brief Variable to calculate the total number of actions in the action space
+   */
+  size_t _actionCount;
+
+  /**
    * @brief Calculates the state value function V(s) = Expectation_a [ Q(s,a) | s ] of a given experience using the latest critic
    * @param state state to evaluate
    * @return The value of the V(s)

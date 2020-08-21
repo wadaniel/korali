@@ -123,7 +123,7 @@ void ACER::initializeAgent()
   avgGradients.resize(_problem->_actionVectorSize);
 }
 
-double ACER::retraceFunction(size_t expId)
+double ACER::qRetrace(size_t expId)
 {
   // Going straight to the latest experience in the corresponding episode
   size_t curId = expId;
@@ -179,7 +179,8 @@ void ACER::getAction(korali::Sample& sample)
   // If we still do not have enough experiences to train the critic/policy, just return random action
   if (_experienceReplayHistory.size() < _experienceReplayStartSize)
   {
-   sample["Action"] = getRandomAction();
+   size_t randomActionIdx = getRandomActionIndex();
+   //sample["Action"] = getRandomAction();
    return;
   }
 
@@ -201,6 +202,20 @@ void ACER::getAction(korali::Sample& sample)
 
   // Storing the action
   sample["Action"] = action;
+}
+
+size_t ACER::getRandomActionIndex()
+{
+  // Storage for action
+  std::vector<double> randomAction(_problem->_actionVectorSize);
+
+  // Producing random (uniform) number to obtain a value index
+  double x = _randomActionGenerator->getRandomNumber();
+
+  // Randomly select one of the actions provided in the value vector
+  size_t actionIdx = floor(x * _actionCount);
+
+  return actionIdx;
 }
 
 double ACER::stateActionValueFunction(const std::vector<double> &state, const std::vector<double> &action)
@@ -234,6 +249,16 @@ void ACER::trainAgent()
  {
    // Selecting a uniformly random selected, yet not repeated experience
    size_t expId = experienceReplayIndexes[_experienceReplayHistory.size() - _policyMiniBatchSize + i];
+
+   // Getting experience's current state and action
+   std::vector<double> curState = _experienceReplayHistory[expId]["State"];
+   std::vector<double> curAction = _experienceReplayHistory[expId]["Action"];
+
+   // Calculating V_theta(state)
+   double vState = stateValueFunction(curState);
+
+   // Calculating Qret(state, action)
+   double qRet = qRetrace(expId);
 
    printf("To be completed 0\n");
    exit(0);
@@ -338,37 +363,6 @@ double ACER::stateValueFunction(const std::vector<double> &state)
   auto curPolicyAction = queryPolicy(state);
 
   double vValue = 0.0;
-
-  for (size_t iter = 0; iter < _stateValueFunctionSamples; iter++)
-  {
-    // Creating action based on the one given by the policy.
-    auto evalAction = curPolicyAction;
-
-    // Storage for the total action probability
-    double pAction = 1.0;
-
-    for (size_t i = 0; i < evalAction.size(); i++)
-    {
-      // Getting noise from the given action variable
-      size_t varIdx = _problem->_actionVectorIndexes[i];
-      double noise = _k->_variables[varIdx]->_explorationNoiseDistribution->getRandomNumber();
-
-      // Adding noise to the action to evaluate
-      evalAction[i] += noise;
-
-      // Calculating the probability density of having produced the noise
-      double pNoise = _k->_variables[varIdx]->_explorationNoiseDistribution->getDensity(noise);
-
-      // Factoring the noise probability into the action probability, assuming independence
-      pAction *= pNoise;
-    }
-
-    // Evaluating Q(s,a) for the given action
-    double qValue = stateActionValueFunction(state, evalAction);
-
-    // Now calculating pAction*Q(s,action) and adding it to V(s,a)
-    vValue += pAction * qValue;
-  }
 
   // Now averaging the V(s) over all sampled actions
   vValue = vValue / _stateValueFunctionSamples;

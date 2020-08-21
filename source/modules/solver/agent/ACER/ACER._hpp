@@ -79,7 +79,13 @@ class ACER : public Agent
    * @param expId Position within the experience replay history that locates the given experience
    * @return The value of the retrace function for the given experience
    */
-  double retraceFunction(size_t expId);
+  double qRetrace(size_t expId);
+
+  /**
+   * @brief Gets a random action index
+   * @return Index of the action selected
+   */
+  size_t getRandomActionIndex();
 
   void getAction(korali::Sample& sample) override;
   std::vector<double> queryPolicy(const std::vector<double> &state) override;

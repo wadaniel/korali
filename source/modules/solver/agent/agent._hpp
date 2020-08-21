@@ -31,12 +31,6 @@ class Agent : public Solver
   std::mt19937 *mt;
 
   /**
-   * @brief Gets a random action for the given state
-   * @return A vector containing the random action
-   */
-  std::vector<double> getRandomAction();
-
-  /**
    * @brief Gets the next action for the agent, based on the state and current policy, for training purposes (may contain noise)
    * @param Sample to update
    */

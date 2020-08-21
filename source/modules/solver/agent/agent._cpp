@@ -51,7 +51,8 @@ void Agent::runGeneration()
     // Configuring Agent
     agents[i]["Sample Id"] = _currentSampleID++;
     agents[i]["Module"] = "Problem";
-    agents[i]["Operation"] = "Run Training";
+    agents[i]["Operation"] = "Run Episode";
+    agents[i]["Mode"] = "Training";
 
     // Launching agent initialization
     KORALI_START(agents[i]);
@@ -73,28 +74,20 @@ void Agent::runGeneration()
 
   for (size_t i = 0; i < _agentEpisodesPerGeneration; i++)
   {
-    size_t experienceSize = agents[i]["Experience"]["States"].size();
-
-    // Collecting entire episode's reward
-    cumulativeReward += agents[i]["Cumulative Reward"].get<double>();
+    size_t episodeSize = agents[i]["Experiences"].size();
 
     // Storing statistics
-    currentExperienceCount += experienceSize;
-    if (experienceSize > _maxExperienceCount) _maxExperienceCount = experienceSize;
-    if (experienceSize < _minExperienceCount) _minExperienceCount = experienceSize;
+    currentExperienceCount += episodeSize;
+    if (episodeSize > _maxExperienceCount) _maxExperienceCount = episodeSize;
+    if (episodeSize < _minExperienceCount) _minExperienceCount = episodeSize;
 
-    size_t startExpId = experienceSize > _agentExperienceLimit ? experienceSize - _agentExperienceLimit : 0;
+    size_t startExpId = episodeSize > _agentExperienceLimit ? episodeSize - _agentExperienceLimit : 0;
 
-    for (size_t j = startExpId; j < experienceSize; j++)
+    // Storing episode's experiences
+    for (size_t j = startExpId; j < episodeSize; j++)
     {
-      // Storing action/state/reward/probability density experience
-      _stateHistory.push_back(agents[i]["Experience"]["States"][j].get<std::vector<double>>());
-      _actionHistory.push_back(agents[i]["Experience"]["Actions"][j].get<std::vector<double>>());
-      _probabilityDensityHistory.push_back(agents[i]["Experience"]["Densities"][j].get<double>());
-      _rewardHistory.push_back(agents[i]["Experience"]["Rewards"][j].get<double>());
-
-      // Storing whether this experience is terminal
-      _terminalHistory.push_back(j == (experienceSize - 1));
+      _experienceReplayHistory.push_back(agents[i]["Experiences"][j]);
+      cumulativeReward += agents[i]["Experiences"][j]["Reward"].get<double>();
     }
   }
 
@@ -103,18 +96,14 @@ void Agent::runGeneration()
   _averageExperienceCount = ((double)currentExperienceCount) / ((double)_agentEpisodesPerGeneration);
 
   // If the maximum number of experiences have been reached, start forgetting older excess experiences
-  if (_stateHistory.size() > _replayMemoryMaximumSize)
+  if (_experienceReplayHistory.size() > _experienceReplayMaximumSize)
   {
-    size_t excess = _stateHistory.size() - _replayMemoryMaximumSize;
-    _stateHistory.erase(_stateHistory.begin(), _stateHistory.begin() + excess);
-    _actionHistory.erase(_actionHistory.begin(), _actionHistory.begin() + excess);
-    _rewardHistory.erase(_rewardHistory.begin(), _rewardHistory.begin() + excess);
-    _probabilityDensityHistory.erase(_probabilityDensityHistory.begin(), _probabilityDensityHistory.begin() + excess);
-    _terminalHistory.erase(_terminalHistory.begin(), _terminalHistory.begin() + excess);
+    size_t excess = _experienceReplayHistory.size() - _experienceReplayMaximumSize;
+    _experienceReplayHistory.erase(_experienceReplayHistory.begin(), _experienceReplayHistory.begin() + excess);
   }
 
   // If the minimum number of experiences has not yet been reached, there's not much else to do
-  if (_stateHistory.size() < _replayMemoryStartSize) return;
+  if (_experienceReplayHistory.size() < _experienceReplayStartSize) return;
 
   // Updating best reward so far, it the cumulative reward of this round exceeds it
   // and store the best hyperparameters used for that
@@ -139,7 +128,8 @@ void Agent::runGeneration()
       // Configuring Agent
       tests[i]["Sample Id"] = _currentSampleID++;
       tests[i]["Module"] = "Problem";
-      tests[i]["Operation"] = "Run Testing";
+      tests[i]["Operation"] = "Run Episode";
+      tests[i]["Mode"] = "Testing";
 
       // Launching agent initialization
       KORALI_START(tests[i]);
@@ -150,7 +140,8 @@ void Agent::runGeneration()
     // Calculating average testing reward
     _averageTestingReward = 0.0;
     for (size_t i = 0; i < _policyTestingEpisodes; i++)
-      _averageTestingReward += tests[i]["Cumulative Reward"].get<double>();
+     for (size_t j = 0; j < tests[i]["Experiences"].size(); j++)
+      _averageTestingReward += tests[i]["Experiences"][j]["Reward"].get<double>();
     _averageTestingReward = _averageTestingReward / _policyTestingEpisodes;
   }
 
@@ -166,7 +157,7 @@ void Agent::runGeneration()
   trainAgent();
 }
 
-std::vector<double> Agent::getRandomAction(const std::vector<double> &state)
+std::vector<double> Agent::getRandomAction()
 {
   // Storage for action
   std::vector<double> randomAction(_problem->_actionVectorSize);
@@ -205,21 +196,21 @@ void Agent::normalizeNeuralNetwork(korali::NeuralNetwork *nn)
   for (size_t i = 0; i < nn->_batchSize; i++) miniBatch[i].resize(_problem->_stateVectorSize + _problem->_actionVectorSize);
 
   // Creating state history indexes to choose from
-  std::vector<size_t> stateHistoryIndexes(_stateHistory.size());
-  for (size_t i = 0; i < _stateHistory.size(); i++) stateHistoryIndexes[i] = i;
+  std::vector<size_t> experienceReplayIndexes(_experienceReplayHistory.size());
+  for (size_t i = 0; i < _experienceReplayHistory.size(); i++) experienceReplayIndexes[i] = i;
 
   for (size_t step = 0; step < _normalizationSteps; step++)
   {
     // Shuffling indexes to choose the mini batch from
-    std::shuffle(stateHistoryIndexes.begin(), stateHistoryIndexes.end(), *mt);
+    std::shuffle(experienceReplayIndexes.begin(), experienceReplayIndexes.end(), *mt);
 
     for (size_t i = 0; i < nn->_batchSize; i++)
     {
       // Selecting a uniformly random selected, yet not repeated experience
-      size_t expId = stateHistoryIndexes[i];
+      size_t expId = experienceReplayIndexes[i];
 
-      for (size_t j = 0; j < _problem->_stateVectorSize; j++) miniBatch[i][j] = _stateHistory[expId][j];
-      for (size_t j = 0; j < _problem->_actionVectorSize; j++) miniBatch[i][_problem->_stateVectorSize + j] = _actionHistory[expId][j];
+      for (size_t j = 0; j < _problem->_stateVectorSize; j++) miniBatch[i][j] = _experienceReplayHistory[expId]["State"][j];
+      for (size_t j = 0; j < _problem->_actionVectorSize; j++) miniBatch[i][_problem->_stateVectorSize + j] = _experienceReplayHistory[expId]["Action"][j];
     }
 
     nn->setInput(miniBatch);
@@ -246,20 +237,11 @@ void Agent::normalizeNeuralNetwork(korali::NeuralNetwork *nn)
   nn->setNormalizationVariances(newVariances);
 }
 
-std::vector<double> Agent::getInferenceAction(const std::vector<double> &state)
-{
-  // Querying the policy for the action, given the state
-  auto action = queryPolicy(state);
-
-  // Returning action
-  return action;
-}
-
 void Agent::printGenerationAfter()
 {
   _k->_logger->logInfo("Normal", "Replay Experience Statistics:\n");
 
-  _k->_logger->logInfo("Normal", " + Experience Memory Size:            %lu/%lu\n", _stateHistory.size(), _replayMemoryMaximumSize);
+  _k->_logger->logInfo("Normal", " + Experience Memory Size:            %lu/%lu\n", _experienceReplayHistory.size(), _experienceReplayMaximumSize);
 
   if (_maxEpisodes > 0)
     _k->_logger->logInfo("Normal", " + Total Episodes Count:            %lu/%lu\n", _currentEpisode, _maxEpisodes);

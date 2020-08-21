@@ -1,6 +1,7 @@
 #include "auxiliar/fs.hpp"
 #include "auxiliar/koraliJson.hpp"
 #include "engine.hpp"
+#include "sample/sample.hpp"
 #include "modules/conduit/conduit.hpp"
 #include "modules/conduit/distributed/distributed.hpp"
 #include "modules/experiment/experiment.hpp"
@@ -228,7 +229,13 @@ std::vector<double> Experiment::getAction(const std::vector<double> &state)
 {
   auto agent = dynamic_cast<solver::Agent *>(_k->_solver);
   if (agent != NULL)
-    return agent->getInferenceAction(state);
+  {
+    korali::Sample sample;
+    sample["State"] = state;
+    sample["Mode"] == "Testing";
+    agent->getAction(sample);
+    return sample["Action"].get<std::vector<double>>();
+  }
   else
     KORALI_LOG_ERROR("This solver does not support getInferenceAction.\n");
 }

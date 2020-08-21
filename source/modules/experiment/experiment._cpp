@@ -1,6 +1,5 @@
 #include "auxiliar/fs.hpp"
 #include "auxiliar/koraliJson.hpp"
-#include "auxiliar/py2json.hpp"
 #include "engine.hpp"
 #include "modules/conduit/conduit.hpp"
 #include "modules/conduit/distributed/distributed.hpp"

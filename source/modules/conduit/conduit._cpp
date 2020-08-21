@@ -1,5 +1,8 @@
 #include "engine.hpp"
 #include "modules/conduit/conduit.hpp"
+#include "modules/experiment/experiment.hpp"
+#include "sample/sample.hpp"
+#include <chrono>
 
 using namespace std;
 

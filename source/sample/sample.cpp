@@ -1,12 +1,20 @@
+#include "auxiliar/py2json.hpp"
 #include "sample/sample.hpp"
 #include "engine.hpp"
 #include "modules/conduit/conduit.hpp"
 #include "modules/experiment/experiment.hpp"
 #include "modules/problem/problem.hpp"
 #include "modules/solver/solver.hpp"
+#include <vector>
 
 namespace korali
 {
+
+/**
+ * @brief Stores all functions inserted as parameters to experiment's configuration
+ */
+std::vector<std::function<void(Sample &)> *> _functionVector;
+
 Sample::Sample()
 {
   _self = this;

@@ -230,14 +230,17 @@ void korali::solver::LatentVariableFIM::estimateFIM()
         assert(hessian[j].size() == nHyperparameters);
         for (size_t k = 0; k < nHyperparameters; k++)
         {
-          H[j][k] += hessian[j][k]; // * invSamplesUsedTotal;
-          G[j][k] += gradient[j];   // * gradient[k] * invSamplesUsedTotal;
+          H[j][k] += hessian[j][k];             // * invSamplesUsedTotal;
+          G[j][k] += gradient[j] * gradient[k]; // * invSamplesUsedTotal;
         }
       }
     }
   }
 
-  samplesUsedTotal = double(_numberChains * numberSamplesUsed);
+  /* Strangely, the below (and with the inverse-multiplications above removed) gives slightly different results -
+    with larger values, by a factor of 10 maybe. What's the error here?
+    Edit: Found it! I had removed the second gradient[k] in G above. */
+  double samplesUsedTotal = _numberChains * numberSamplesUsed;
   for (size_t j = 0; j < nHyperparameters; j++)
   {
     D[j] /= samplesUsedTotal;

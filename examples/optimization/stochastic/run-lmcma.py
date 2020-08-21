@@ -17,6 +17,7 @@ k = korali.Engine()
 e = korali.Experiment()
 
 # Configuring Problem.
+e["Random Seed"] = 0xC0FEE
 e["Problem"]["Type"] = "Optimization"
 e["Problem"]["Objective Function"] = negative_rosenbrock
 
@@ -32,7 +33,7 @@ for i in range(dim):
 # Configuring LM-CMA parameters
 e["Solver"]["Type"] = "Optimizer/LMCMAES"
 e["Solver"]["Population Size"] = 32
-e["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-15
+e["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-32
 e["Solver"]["Termination Criteria"]["Max Generations"] = 100
 
 # Configuring results path

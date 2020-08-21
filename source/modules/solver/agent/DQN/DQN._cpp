@@ -16,17 +16,6 @@ namespace agent
 {
 void DQN::initializeAgent()
 {
-
- /*********************************************************************
-  * Verifying Problem's Definition
-  *********************************************************************/
-
- for (size_t i = 0; i < _problem->_actionVectorIndexes.size(); i++)
- {
-   size_t varIdx = _problem->_actionVectorIndexes[i];
-   if (_k->_variables[varIdx]->_values.size() == 0) KORALI_LOG_ERROR("No discrete action values have been defined for variable %lu (%s), required by DQN\n", varIdx, _k->_variables[varIdx]->_name.c_str());
- }
-
  /*********************************************************************
  * Initializing Critic-Related Structures
  *********************************************************************/

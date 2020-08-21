@@ -2,6 +2,7 @@
 #define _KORALI_AGENT_DQN_HPP_
 
 #include "modules/solver/agent/agent.hpp"
+#include "modules/problem/reinforcementLearning/discrete/discrete.hpp"
 
 namespace korali
 {
@@ -12,6 +13,11 @@ namespace agent
 class DQN : public Agent
 {
   public:
+
+  /**
+  * @brief Storage for the pointer to the (discrete) learning problem
+  */
+  problem::reinforcementLearning::Discrete *_discreteProblem;
 
   /**
    * @brief Pointer to training experiment's problem
@@ -27,18 +33,6 @@ class DQN : public Agent
    * @brief Korali experiment for the training of the Qvalue-estimator
    */
   korali::Experiment _criticExperiment;
-
-  /**
-  * @brief Korali experiment for argmax_action(Q) based on a trained Q-Network
-  */
-  korali::Experiment _policyExperiment;
-
-  /**
-   * @brief Function to evaluate the Q* of a given action
-   * @param sample Sample containing the action to evaluate
-   * @param getGradients Indicates whether the gradients are required
-   */
-  void evaluateAction(Sample &sample, bool getGradients);
 
   /**
    * @brief Calculates the state+action value function Q(s,a) = Expectation_s,a [ R | s,a ] of a given experience using the latest critic

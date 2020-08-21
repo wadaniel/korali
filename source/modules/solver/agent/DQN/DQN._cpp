@@ -16,6 +16,9 @@ namespace agent
 {
 void DQN::initializeAgent()
 {
+ // Getting discrete problem pointer
+ _discreteProblem = dynamic_cast<problem::reinforcementLearning::Discrete *>(_k->_problem);
+
  /*********************************************************************
  * Initializing Critic-Related Structures
  *********************************************************************/
@@ -50,44 +53,6 @@ void DQN::initializeAgent()
  // Getting learner pointers
  _criticProblem = dynamic_cast<problem::SupervisedLearning *>(_criticExperiment._problem);
  _criticLearner = dynamic_cast<solver::learner::DeepGD *>(_criticExperiment._solver);
-
-  /*********************************************************************
-  * Initializing Policy-Related Structures
-  *********************************************************************/
-
-  // Creating Q-Maximizing argmax(Action) Experiment
-  // Creating evaluation lambda function for optimization
-  auto fc = [this](Sample &sample) { this->evaluateAction(sample, true); };
-
-  _policyExperiment["Problem"]["Type"] = "Optimization";
-  _policyExperiment["Problem"]["Objective Function"] = fc;
-
-  for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-  {
-    size_t varIdx = _problem->_actionVectorIndexes[i];
-
-    _policyExperiment["Variables"][i]["Name"] = _k->_variables[varIdx]->_name;
-    _policyExperiment["Variables"][i]["Lower Bound"] = _k->_variables[varIdx]->_lowerBound;
-    _policyExperiment["Variables"][i]["Upper Bound"] = _k->_variables[varIdx]->_upperBound;
-
-    double initialGuess = (_k->_variables[varIdx]->_upperBound + _k->_variables[varIdx]->_lowerBound) * 0.5;
-    double initialStdDev = abs((_k->_variables[varIdx]->_upperBound - _k->_variables[varIdx]->_lowerBound));
-
-    _policyExperiment["Variables"][i]["Initial Value"] = initialGuess;
-    _policyExperiment["Variables"][i]["Initial Mean"] = initialGuess;
-    _policyExperiment["Variables"][i]["Initial Standard Deviation"] = initialStdDev;
-    _policyExperiment["Variables"][i]["Values"] = _k->_variables[varIdx]->_values;
-  }
-
-  _policyExperiment["Solver"] = _policyOptimizer;
-
-  _policyExperiment["Console Output"]["Frequency"] = 0;
-  _policyExperiment["Console Output"]["Verbosity"] = "Silent";
-  _policyExperiment["File Output"]["Enabled"] = false;
-  _policyExperiment["Random Seed"] = _k->_randomSeed++;
-
-  // Running initialization to verify that the configuration is correct
-  engine.initialize(_policyExperiment);
 
   // If initial generation, set initial DQN configuration
   if (_k->_currentGeneration == 0)
@@ -222,29 +187,6 @@ void DQN::trainAgent()
   _hyperparameters["Epsilon"] = _policyEpsilonCurrentValue;
 }
 
-void DQN::evaluateAction(Sample &sample, bool getGradients)
-{
-  // Setting weights and biases
-  auto action = KORALI_GET(std::vector<double>, sample, "Parameters");
-  auto state = sample.globals()["Current State"].get<std::vector<double>>();
-
-  // Creating state/action input
-  std::vector<double> stateActionInput(state.size() + action.size());
-  for (size_t j = 0; j < state.size(); j++) stateActionInput[j] = state[j];
-  for (size_t j = 0; j < action.size(); j++) stateActionInput[j + state.size()] = action[j];
-
-  auto evaluation = _criticLearner->getEvaluation(stateActionInput);
-  auto gradients = _criticLearner->getGradients({{-1.0}});
-
-  sample["F(x)"] = evaluation[0];
-
-  for (size_t i = 0; i < action.size(); i++)
-  {
-    size_t startIdx = state.size();
-    sample["Gradient"][i] = gradients[startIdx + i];
-  }
-}
-
 void DQN::getAction(korali::Sample& sample)
 {
   // If we still do not have enough experiences to train the critic/policy, just return random action
@@ -283,22 +225,13 @@ void DQN::getAction(korali::Sample& sample)
 
 std::vector<double> DQN::getRandomAction()
 {
-  // Storage for action
-  std::vector<double> randomAction(_problem->_actionVectorSize);
+  // Producing random (uniform) number to obtain a value index
+  double x = _randomActionGenerator->getRandomNumber();
 
-  for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-  {
-    size_t varIdx = _problem->_actionVectorIndexes[i];
+  // Randomly select one of the actions provided in the possible actions
+  size_t valIdx = floor(x * _discreteProblem->_possibleActions.size());
 
-    // Producing random (uniform) number to obtain a value index
-    double x = _randomActionGenerator->getRandomNumber();
-
-    // Randomly select one of the actions provided in the value vector
-    size_t valIdx = floor(x * _k->_variables[varIdx]->_values.size());
-    randomAction[i] = _k->_variables[varIdx]->_values[valIdx];
-  }
-
-  return randomAction;
+  return _discreteProblem->_possibleActions[valIdx];
 }
 
 void DQN::updateHyperparameters(const knlohmann::json &hyperparameters)
@@ -309,14 +242,32 @@ void DQN::updateHyperparameters(const knlohmann::json &hyperparameters)
 
 std::vector<double> DQN::queryPolicy(const std::vector<double> &state)
 {
-  _policyExperiment._globals["Current State"] = state;
+ // Creating state/action input
+  std::vector<double> stateActionInput(_problem->_stateVectorSize + _problem->_actionVectorSize);
 
-  // Running optimization experiment to get best estimated action
-  korali::Engine engine;
-  engine.run(_policyExperiment);
+  // Assigning state first
+  for (size_t i = 0; i < state.size(); i++) stateActionInput[i] = state[i];
 
-  // Getting optimal action, based on the NN evaluation
-  return _policyExperiment["Results"]["Best Sample"]["Parameters"].get<std::vector<double>>();
+  // Storage for max_a Q(s,a) and its index
+  double maxQVal = -korali::Inf;
+  size_t maxQIdx = 0;
+
+  // Iterating over all possible actions, checking which one is best
+  for (size_t i = 0; i < _discreteProblem->_possibleActions.size(); i++)
+  {
+   // Copying the values of the possible action onto the state/action vector
+   for (size_t j = 0; j < _problem->_actionVectorSize; j++)
+    stateActionInput[_problem->_stateVectorSize + j] = _discreteProblem->_possibleActions[i][j];
+
+   // Computing Q(s,a_i)
+   double curQVal = _criticLearner->getEvaluation(stateActionInput)[0];
+
+   // If current action got a larger Q, store it as the best
+   if (curQVal > maxQVal) { maxQVal = curQVal; maxQIdx = i; }
+  }
+
+  // Returning the best found
+  return _discreteProblem->_possibleActions[maxQIdx];
 }
 
 void DQN::printAgentInformation()

@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 
-# Single function evaluation
+# 1-d problem
 def model(p):
   x = p["Parameters"][0]
   p["F(x)"] = -0.5 * x * x
 
+# multi dimensional problem (sphere)
 def negative_sphere(p):
     x = p["Parameters"]
     dim = len(x)
@@ -14,6 +15,7 @@ def negative_sphere(p):
 
     p["F(x)"] = -res
 
+# multi dimensional problem (rosenbrock)
 def negative_rosenbrock(p):
     x = p["Parameters"]
     dim = len(x)

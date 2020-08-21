@@ -21,7 +21,8 @@ e["Random Seed"] = 0xC0FEE
 e["Problem"]["Type"] = "Optimization"
 e["Problem"]["Objective Function"] = negative_rosenbrock
 
-dim = 512
+dim = 3
+
 # Defining the problem's variables.
 for i in range(dim):
     e["Variables"][i]["Name"] = "X" + str(i)
@@ -37,6 +38,7 @@ e["Solver"]["Termination Criteria"]["Max Generations"] = 500
 
 # Configuring results path
 e["File Output"]["Path"] = '_korali_result_cmaes'
+e["File Output"]["Frequency"] = 1
 
 # Running Korali
 k.run(e)

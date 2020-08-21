@@ -20,7 +20,6 @@ void LMCMAES::setInitialConfiguration()
   // Establishing optimization goal
   _bestEverValue = -std::numeric_limits<double>::infinity();
 
-  _previousBestEverValue = _bestEverValue;
   _previousBestValue = _bestEverValue;
   _currentBestValue = _bestEverValue;
 
@@ -57,9 +56,7 @@ void LMCMAES::setInitialConfiguration()
   _muWeights.resize(_muValue);
 
   _sortingIndex.resize(_populationSize);
-  _previousSortingIndex.resize(_populationSize);
   _valueVector.resize(_populationSize);
-  _previousValueVector.resize(_populationSize);
 
   _evolutionPathWeights.resize(_subsetSize);
   _subsetHistory.resize(_subsetSize);
@@ -82,10 +79,6 @@ void LMCMAES::setInitialConfiguration()
   // Initializing variable defaults
   for (size_t i = 0; i < _dimensions; i++)
   {
-    /* confirm lower & upper bound */
-    //   if( (std::isfinite(_k->_variables[i]->_lowerBound) && std::isfinite(_k->_variables[i]->_upperBound) ) == false )
-    //        KORALI_LOG_ERROR("Lower and/or upper bound of variable \'%s\' is not defined.\n", _k->_variables[i]->_name.c_str());
-
     /* init mean if not defined */
     if (std::isfinite(_k->_variables[i]->_initialValue) == false)
     {
@@ -96,17 +89,16 @@ void LMCMAES::setInitialConfiguration()
 
     /* calculate stddevs */
     if (std::isfinite(_k->_variables[i]->_initialStandardDeviation) == false)
+    {
+      if ((std::isfinite(_k->_variables[i]->_lowerBound) && std::isfinite(_k->_variables[i]->_upperBound)) == false)
+        KORALI_LOG_ERROR("Either Lower/Upper Bound or Initial Value of variable \'%s\' must be defined.\n", _k->_variables[i]->_name.c_str());
       _standardDeviation[i] = 0.3 * (_k->_variables[i]->_upperBound - _k->_variables[i]->_lowerBound);
+    }
     else
       _standardDeviation[i] = _k->_variables[i]->_initialStandardDeviation;
   }
 
   _sigma = _initialSigma;
-
-  if ((_sigmaUpdateRule == "CMAES" || _sigmaUpdateRule == "LMCMA") == false)
-    KORALI_LOG_ERROR("Invalid setting of Sigma Update Rule (%s) (choose CMAES, or LMCMA).", _sigmaUpdateRule.c_str());
-
-  _lmcmaUpdateRule = (_sigmaUpdateRule == "LMCMA");
 
   if (_muType == "Linear")
     for (size_t i = 0; i < _muValue; i++) _muWeights[i] = _muValue - i;
@@ -205,7 +197,7 @@ void LMCMAES::sampleSingle(size_t sampleIdx)
   {
     for (size_t d = 0; d < _dimensions; ++d)
       //_samplePopulation[sampleIdx][d] = 2.0*_currentMean[d] - _samplePopulation[sampleIdx-1][d]; // version from [Loshchilov2015]
-      _samplePopulation[sampleIdx][d] = _currentMean[d] - _sigma * _standardDeviation[d] * _choleskyFactorVectorProduct[d]; // version from Loshcholov's code
+      _samplePopulation[sampleIdx][d] = _currentMean[d] - _sigma * _standardDeviation[d] * _choleskyFactorVectorProduct[d]; // version from Loshchilov's code
   }
 }
 
@@ -215,24 +207,17 @@ void LMCMAES::updateDistribution(std::vector<Sample> &samples)
   for (size_t i = 0; i < _populationSize; i++)
     _valueVector[i] = KORALI_GET(double, samples[i], "F(x)");
 
-  /* Copy to previous */
-  std::copy(_sortingIndex.begin(), _sortingIndex.end(), _previousSortingIndex.begin());
-  std::copy(_valueVector.begin(), _valueVector.end(), _previousValueVector.begin());
-
   /* Generate _sortingIndex */
   sort_index(_valueVector, _sortingIndex);
 
-  /* update function value history */
-  _previousBestValue = _currentBestValue;
-
   /* update current best */
+  _previousBestValue = _currentBestValue;
   _currentBestValue = _valueVector[0];
   for (size_t d = 0; d < _dimensions; ++d) _currentBestVariables[d] = _samplePopulation[_sortingIndex[0]][d];
 
   /* update xbestever */
   if (_currentBestValue > _bestEverValue)
   {
-    _previousBestEverValue = _bestEverValue;
     _bestEverValue = _currentBestValue;
 
     for (size_t d = 0; d < _dimensions; ++d) _bestEverVariables[d] = _currentBestVariables[d];
@@ -374,33 +359,7 @@ void LMCMAES::updateInverseVectors()
 
 void LMCMAES::updateSigma()
 {
-  /* update sigma */
-  if (_lmcmaUpdateRule)
-  {
-    double rank = 0;
-    for (size_t i = 0; i < _populationSize; ++i)
-    {
-      if (_valueVector[_sortingIndex[i]] > _previousValueVector[_previousSortingIndex[i]])
-      {
-        rank--;
-        for (size_t j = i + 1; (j < _populationSize) && (_valueVector[_sortingIndex[j]] > _previousValueVector[_previousSortingIndex[i]]); ++j) rank--;
-      }
-      else
-      {
-        rank++;
-        for (size_t j = i + 1; (j < _populationSize) && (_previousValueVector[_previousSortingIndex[j]] > _valueVector[_sortingIndex[i]]); ++j) rank++;
-      }
-    }
-
-    rank = rank / (_populationSize * _populationSize) - _targetSuccessRate;
-    _sigmaExponentFactor = (1.0 - _sigmaCumulationFactor) * _sigmaExponentFactor + _sigmaCumulationFactor * rank;
-
-    _sigma *= std::exp(_sigmaExponentFactor / _dampFactor);
-  }
-  else /* CMA-ES update rule */
-  {
-    _sigma *= exp(_sigmaCumulationFactor / _dampFactor * (_conjugateEvolutionPathL2Norm / _chiSquareNumber - 1.));
-  }
+  _sigma *= exp(_sigmaCumulationFactor / _dampFactor * (_conjugateEvolutionPathL2Norm / _chiSquareNumber - 1.));
 
   /* escape flat evaluation */
   if (_currentBestValue == _valueVector[_sortingIndex[(int)_muValue]])

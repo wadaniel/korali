@@ -123,39 +123,45 @@ void DDPG::initializeAgent()
   avgGradients.resize(_problem->_actionVectorSize);
 }
 
-std::vector<double> DDPG::getTrainingAction(const std::vector<double> &state)
+void DDPG::getAction(korali::Sample& sample)
 {
   // If we still do not have enough experiences to train the critic/policy, just return random action
-  if (_stateHistory.size() < _replayMemoryStartSize) return getRandomAction(state);
+  if (_experienceReplayHistory.size() < _experienceReplayStartSize)
+  {
+   sample["Action"] = getRandomAction();
+   return;
+  }
+
+  // Getting current state
+  auto state = sample["State"].get<std::vector<double>>();
 
   // Obtaining action from policy
   auto action = queryPolicy(state);
 
-  // Checking for correctness of the action
-  for (size_t i = 0; i < action.size(); i++)
+  // If currently on a training phase, add noise/random actions.
+  bool isTraining = sample["Mode"] == "Training";
+
+  if (isTraining)
   {
-    if (std::isfinite(action[i]) == false)
-      KORALI_LOG_ERROR(" + Action [%lu] is not finite (%f)\n", i, action[i]);
+   // Introducing random noise to the action
+   for (size_t i = 0; i < _problem->_actionVectorIndexes.size(); i++)
+   {
+     size_t varIdx = _problem->_actionVectorIndexes[i];
+
+     // Check whether the variable requires noise
+     if (_k->_variables[varIdx]->_explorationNoiseEnabled == true)
+     {
+       double w = _k->_variables[varIdx]->_explorationNoiseDistribution->getRandomNumber();
+       double noise = _k->_variables[varIdx]->_explorationNoiseTheta * _currentActionNoises[i] + w;
+       action[i] += noise;
+       //printf("Theta (%f) * Previous Noise: (%f) + W: (%f) = %f\n",  _k->_variables[varIdx]->_explorationNoiseTheta, _currentActionNoises[i], w, noise);
+       _currentActionNoises[i] = noise;
+     }
+   }
   }
 
-  // Introducing random noise to the action
-  for (size_t i = 0; i < _problem->_actionVectorIndexes.size(); i++)
-  {
-    size_t varIdx = _problem->_actionVectorIndexes[i];
-
-    // Check whether the variable requires noise
-    if (_k->_variables[varIdx]->_explorationNoiseEnabled == true)
-    {
-      double w = _k->_variables[varIdx]->_explorationNoiseDistribution->getRandomNumber();
-      double noise = _k->_variables[varIdx]->_explorationNoiseTheta * _currentActionNoises[i] + w;
-      action[i] += noise;
-      //printf("Theta (%f) * Previous Noise: (%f) + W: (%f) = %f\n",  _k->_variables[varIdx]->_explorationNoiseTheta, _currentActionNoises[i], w, noise);
-      _currentActionNoises[i] = noise;
-    }
-  }
-
-  // Returning the action
-  return action;
+  // Storing the action
+  sample["Action"] = action;
 }
 
 double DDPG::stateActionValueFunction(const std::vector<double> &state, const std::vector<double> &action)
@@ -175,8 +181,8 @@ double DDPG::stateActionValueFunction(const std::vector<double> &state, const st
 void DDPG::trainAgent()
 {
  // Creating storage for state history indexes to choose from
- std::vector<size_t> stateHistoryIndexes(_stateHistory.size());
- for (size_t i = 0; i < _stateHistory.size(); i++) stateHistoryIndexes[i] = i;
+ std::vector<size_t> experienceReplayIndexes(_experienceReplayHistory.size());
+ for (size_t i = 0; i < _experienceReplayHistory.size(); i++) experienceReplayIndexes[i] = i;
 
  /***************************************************************************************
   * Updating Policy Network by performing a Gradient descent step with latest experiences
@@ -188,14 +194,18 @@ void DDPG::trainAgent()
  for (size_t i = 0; i < _policyMiniBatchSize; i++)
  {
    // Selecting a uniformly random selected, yet not repeated experience
-   size_t expId = stateHistoryIndexes[_stateHistory.size() - _policyMiniBatchSize + i];
+   size_t expId = experienceReplayIndexes[_experienceReplayHistory.size() - _policyMiniBatchSize + i];
 
    // Storage to put together state and action
    std::vector<double> stateActionInput(_problem->_stateVectorSize + _problem->_actionVectorSize);
 
+   // Getting experience's current state and action
+   std::vector<double> curState = _experienceReplayHistory[expId]["State"];
+   std::vector<double> curAction = _experienceReplayHistory[expId]["Action"];
+
    // Now calculating Gradient of q with respect to state+action for the critic NN
-   for (size_t j = 0; j < _problem->_stateVectorSize; j++) stateActionInput[j] = _stateHistory[expId][j];
-   for (size_t j = 0; j < _problem->_actionVectorSize; j++) stateActionInput[_problem->_stateVectorSize + j] = _actionHistory[expId][j];
+   stateActionInput = curState;
+   stateActionInput.insert(stateActionInput.end(), curAction.begin(), curAction.end());
 
    _criticLearner->getEvaluation(stateActionInput);
    auto qGradients = _criticLearner->getGradients({{-1.0}}); // Identity, to estimate the exact gradient dQ/dAS
@@ -204,7 +214,8 @@ void DDPG::trainAgent()
    // Keeping track of gradient averages for statistics
    for (size_t i = 0; i < _problem->_actionVectorSize; i++) avgGradients[i] += aGradients[i];
 
-   for (size_t j = 0; j < _problem->_stateVectorSize; j++) _policyProblem->_inputs[i][j] = _stateHistory[expId][j];
+   // Setting input and gradient for policy update
+   _policyProblem->_inputs[i] = curState;
    _policyProblem->_solution[i] = aGradients;
  }
 
@@ -232,13 +243,13 @@ void DDPG::trainAgent()
     _criticLearner->setHyperparameters(_hyperparameters["Critic"]);
 
     // Shuffling indexes to choose the mini batch from
-    std::shuffle(stateHistoryIndexes.begin(), stateHistoryIndexes.end(), *mt);
+    std::shuffle(experienceReplayIndexes.begin(), experienceReplayIndexes.end(), *mt);
 
     // Randomly selecting experiences for the mini-batch and calculating their target Q
     for (size_t i = 0; i < _criticMiniBatchSize; i++)
     {
       // Selecting a uniformly random selected, yet not repeated experience
-      size_t expId = stateHistoryIndexes[i];
+      size_t expId = experienceReplayIndexes[i];
 
       // Qnew = max_a(q) with s' fixed
       // Q* = r + y*Qnew -- If not terminal state
@@ -248,14 +259,25 @@ void DDPG::trainAgent()
       double qStar = 0.0;
 
       // Reward is the first factor in the QLearning algorithm
-      qStar = _rewardHistory[expId];
+      qStar = _experienceReplayHistory[expId]["Reward"];
+
+      // Getting experience's current state and action
+      std::vector<double> curState = _experienceReplayHistory[expId]["State"];
+      std::vector<double> curAction = _experienceReplayHistory[expId]["Action"];
 
       // If state is not terminal (next state is filled) then add Qnew to the Q value.
-      if (_terminalHistory[expId] == false) qStar += _criticDiscountFactor * stateActionValueFunction(_stateHistory[expId + 1], _actionHistory[expId + 1]);
+      if (_experienceReplayHistory[expId]["Is Terminal"] == false)
+      {
+       // Getting experience's next state and action
+       std::vector<double> nextState = _experienceReplayHistory[expId+1]["State"];
+       std::vector<double> nextAction = _experienceReplayHistory[expId+1]["Action"];
+
+       qStar += _criticDiscountFactor * stateActionValueFunction(nextState, nextAction);
+      }
 
       // Updating inputs to training learner
-      for (size_t j = 0; j < _problem->_stateVectorSize; j++) _criticProblem->_inputs[i][j] = _stateHistory[expId][j];
-      for (size_t j = 0; j < _problem->_actionVectorSize; j++) _criticProblem->_inputs[i][_problem->_stateVectorSize + j] = _actionHistory[expId][j];
+      _criticProblem->_inputs[i] = curState;
+      _criticProblem->_inputs[i].insert(_criticProblem->_inputs[i].end(), curAction.begin(), curAction.end());
       _criticProblem->_solution[i][0] = qStar;
 
       // Keeping statistics
@@ -289,32 +311,6 @@ void DDPG::trainAgent()
   // Getting q training hyperparameters to broadcast to workers
   _hyperparameters["Policy"] = policyHypeparameters;
   _policyLearner->setHyperparameters(policyHypeparameters);
-}
-
-double DDPG::getStateActionProbabilityDensity(const std::vector<double> &state, const std::vector<double> &action)
-{
-  // To calculate the probability density, we first subtract the taken action from the one that
-  // the current policy would take. This will give us a value with zero mean, and with sigma
-  // equivalent to the noise introduced.
-
-  auto curPolicyAction = queryPolicy(state);
-
-  double pDensity = 1.0;
-
-  for (size_t i = 0; i < action.size(); i++)
-  {
-    // Getting the difference (noise) between used action and current policy action
-    double noise = action[i] - curPolicyAction[i];
-
-    // Getting the probability density of such noise for the current variable.
-    size_t varIdx = _problem->_actionVectorIndexes[i];
-    double pNoise = _k->_variables[varIdx]->_explorationNoiseDistribution->getDensity(noise);
-
-    // Since we assume independent noise among variables, we can multiply them directly.
-    pDensity = pDensity * pNoise;
-  }
-
-  return pDensity;
 }
 
 std::vector<double> DDPG::queryPolicy(const std::vector<double> &state)

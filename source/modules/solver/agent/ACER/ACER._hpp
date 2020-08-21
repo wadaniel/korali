@@ -67,15 +67,21 @@ class ACER : public Agent
   double stateValueFunction(const std::vector<double> &state);
 
   /**
+   * @brief Calculates the state+action value function Q(s,a) = Expectation_s,a [ R | s,a ] of a given experience using the latest critic
+   * @param state state to evaluate
+   * @param action action to evaluate
+   * @return The value of Q(s,a)
+   */
+  double stateActionValueFunction(const std::vector<double> &state, const std::vector<double> &action);
+
+  /**
    * @brief Calculates (recursively) the Qretrace value of a given (state/action) experience
    * @param expId Position within the experience replay history that locates the given experience
    * @return The value of the retrace function for the given experience
    */
   double retraceFunction(size_t expId);
 
-  double stateActionValueFunction(const std::vector<double> &state, const std::vector<double> &action);
-  std::vector<double> getTrainingAction(const std::vector<double> &state) override;
-  double getStateActionProbabilityDensity(const std::vector<double> &state, const std::vector<double> &action) override;
+  void getAction(korali::Sample& sample) override;
   std::vector<double> queryPolicy(const std::vector<double> &state) override;
   void updateHyperparameters(const knlohmann::json &hyperparameters) override;
   void trainAgent() override;

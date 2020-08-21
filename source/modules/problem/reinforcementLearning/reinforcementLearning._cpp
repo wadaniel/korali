@@ -53,9 +53,7 @@ void __environmentWrapper()
   KORALI_LOG_ERROR("Resuming a finished sample\n");
 }
 
-void ReinforcementLearning::runTrainingSample(Sample &sample) { runEnvironment(sample, true); }
-void ReinforcementLearning::runTestingSample(Sample &sample) { runEnvironment(sample, false); }
-void ReinforcementLearning::runEnvironment(Sample &sample, bool useTrainingAction)
+void ReinforcementLearning::runEpisode(Sample &sample)
 {
   // Getting RL-compatible solver
   auto agent = dynamic_cast<solver::Agent *>(_k->_solver);
@@ -80,57 +78,44 @@ void ReinforcementLearning::runEnvironment(Sample &sample, bool useTrainingActio
   // Initializing episode's experience counter
   size_t expId = 0;
 
-  // A counter for the cumulative reward
-  double cumulativeReward = 0.0;
-
   // Storage for the action
   std::vector<double> action(_actionVectorSize);
 
   // Saving experiences
   while (sample["Finished"] == false)
   {
-    // Retrieving state
-    auto state = sample["State"].get<std::vector<double>>();
-
     // Requesting new action, if enough steps have passed, given by the action repeat parameter
     if (actionLastUpdated == 0)
     {
-      if (useTrainingAction == true)
-        action = agent->getTrainingAction(state);
-      else
-        action = agent->getInferenceAction(state);
-
+      agent->getAction(sample);
       actionLastUpdated = _actionRepeat;
     }
     actionLastUpdated--;
 
-    // Setting current action
-    sample["Action"] = action;
+    // Storing whether this experience was terminal or not
+    sample["Experiences"][expId]["Is Terminal"] = false;
 
     // Storing the current state
-    sample["Experience"]["States"][expId] = state;
+    sample["Experiences"][expId]["State"] = sample["State"];
 
     // Storing the current action
-    sample["Experience"]["Actions"][expId] = action;
+    sample["Experiences"][expId]["Action"] = sample["Action"];
 
     // Calculating and storing probability density of current state/action
-    sample["Experience"]["Densities"][expId] = agent->getStateActionProbabilityDensity(state, action);
+    //sample["Experience"]["Densities"][expId] = agent->getStateActionProbabilityDensity(state, action);
 
     // Jumping back into the agent's environment
     co_switch(envThread);
 
     // Returning from the agent's environment with the reward
-    double reward = sample["Reward"].get<double>();
-    sample["Experience"]["Rewards"][expId] = reward;
-
-    // Adding this experience's reward to total reward
-    cumulativeReward += reward;
+    sample["Experiences"][expId]["Reward"] = sample["Reward"];
 
     // Advancing to next experience
     expId++;
   }
 
-  sample["Cumulative Reward"] = cumulativeReward;
+  // Last experience is always terminal
+  sample["Experiences"][expId-1]["Is Terminal"] = true;
 
   co_delete(envThread);
 }

@@ -138,8 +138,8 @@ void DQN::trainAgent()
 
    // Randomly selecting experiences for the mini-batch and calculating their target Q
    // Creating state history indexes to choose from
-   std::vector<size_t> stateHistoryIndexes(_stateHistory.size());
-   for (size_t i = 0; i < _stateHistory.size(); i++) stateHistoryIndexes[i] = i;
+   std::vector<size_t> experienceReplayIndexes(_experienceReplayHistory.size());
+   for (size_t i = 0; i < _experienceReplayHistory.size(); i++) experienceReplayIndexes[i] = i;
 
    // Calculating cumulative Q*, for statistical purposes
    _cumulativeQStar = 0.0;
@@ -150,12 +150,12 @@ void DQN::trainAgent()
      _criticLearner->setHyperparameters(_hyperparameters["Critic"]);
 
      // Shuffling indexes to choose the mini batch from
-     std::shuffle(stateHistoryIndexes.begin(), stateHistoryIndexes.end(), *mt);
+     std::shuffle(experienceReplayIndexes.begin(), experienceReplayIndexes.end(), *mt);
 
      for (size_t i = 0; i < _criticMiniBatchSize; i++)
      {
        // Selecting a uniformly random selected, yet not repeated experience
-       size_t expId = stateHistoryIndexes[i];
+       size_t expId = experienceReplayIndexes[i];
 
        // Qnew = max_a(q) with s' fixed
        // Q* = r + y*Qnew -- If not terminal state
@@ -165,14 +165,25 @@ void DQN::trainAgent()
        double qStar = 0.0;
 
        // Reward is the first factor in the QLearning algorithm
-       qStar = _rewardHistory[expId];
+       qStar = _experienceReplayHistory[expId]["Reward"];
+
+       // Getting experience's current state and action
+       std::vector<double> curState = _experienceReplayHistory[expId]["State"];
+       std::vector<double> curAction = _experienceReplayHistory[expId]["Action"];
 
        // If state is not terminal (next state is filled) then add Qnew to the Q value.
-       if (_terminalHistory[expId] == false) qStar += _criticDiscountFactor * stateActionValueFunction(_stateHistory[expId + 1], _actionHistory[expId + 1]);
+       if (_experienceReplayHistory[expId]["Is Terminal"] == false)
+       {
+        // Getting experience's next state and action
+        std::vector<double> nextState = _experienceReplayHistory[expId+1]["State"];
+        std::vector<double> nextAction = _experienceReplayHistory[expId+1]["Action"];
+
+        qStar += _criticDiscountFactor * stateActionValueFunction(nextState, nextAction);
+       }
 
        // Updating inputs to training learner
-       for (size_t j = 0; j < _problem->_stateVectorSize; j++) _criticProblem->_inputs[i][j] = _stateHistory[expId][j];
-       for (size_t j = 0; j < _problem->_actionVectorSize; j++) _criticProblem->_inputs[i][_problem->_stateVectorSize + j] = _actionHistory[expId][j];
+       _criticProblem->_inputs[i] = curState;
+       _criticProblem->_inputs[i].insert(_criticProblem->_inputs[i].end(), curAction.begin(), curAction.end());
        _criticProblem->_solution[i][0] = qStar;
 
        // Keeping statistics
@@ -245,30 +256,40 @@ void DQN::evaluateAction(Sample &sample, bool getGradients)
   }
 }
 
-std::vector<double> DQN::getTrainingAction(const std::vector<double> &state)
+void DQN::getAction(korali::Sample& sample)
 {
   // If we still do not have enough experiences to train the critic/policy, just return random action
-  if (_stateHistory.size() < _replayMemoryStartSize) return getRandomAction(state);
+  if (_experienceReplayHistory.size() < _experienceReplayStartSize)
+  {
+   sample["Action"] = getRandomAction();
+   return;
+  }
 
-  // Getting p = U[0,1] for the epsilon strategy
-  double p = _policyEpsilonGenerator->getRandomNumber();
+  // If currently on a training phase, add noise/random actions.
+  bool isTraining = sample["Mode"] == "Training";
 
-  // If p < e, then we choose the action randomly, with a uniform probability, among all possible actions.
-  // If no states have been registered yet, use the random option in any case
-  if (p < _policyEpsilonCurrentValue) return getRandomAction(state);
+  if (isTraining)
+  {
+   // Getting p = U[0,1] for the epsilon strategy
+   double p = _policyEpsilonGenerator->getRandomNumber();
+
+   // If p < e, then we choose the action randomly, with a uniform probability, among all possible actions.
+   // If no states have been registered yet, use the random option in any case
+   if (p < _policyEpsilonCurrentValue)
+   {
+    sample["Action"] = getRandomAction();
+    return;
+   }
+  }
+
+  // Getting current state
+  auto state = sample["State"].get<std::vector<double>>();
 
   // Obtaining action from policy
   auto action = queryPolicy(state);
 
-  // Checking for correctness of the action
-  for (size_t i = 0; i < action.size(); i++)
-  {
-    if (std::isfinite(action[i]) == false)
-      KORALI_LOG_ERROR(" + Action [%lu] is not finite (%f)\n", i, action[i]);
-  }
-
-  // Returning the action
-  return action;
+  // Storing the action
+  sample["Action"] = action;
 }
 
 void DQN::updateHyperparameters(const knlohmann::json &hyperparameters)
@@ -287,39 +308,6 @@ std::vector<double> DQN::queryPolicy(const std::vector<double> &state)
 
   // Getting optimal action, based on the NN evaluation
   return _policyExperiment["Results"]["Best Sample"]["Parameters"].get<std::vector<double>>();
-}
-
-double DQN::getStateActionProbabilityDensity(const std::vector<double> &state, const std::vector<double> &action)
-{
-  // To obtain the probability density of a  state/action in a discrete action space, we
-  // try all possible actions, and apply a softmax normalization to their estimated Q(s,a)
-
-  // Running proposed state/action to get its Q value
-  std::vector<double> stateActionInput(state.size() + action.size());
-  for (size_t j = 0; j < state.size(); j++) stateActionInput[j] = state[j];
-  for (size_t j = 0; j < action.size(); j++) stateActionInput[j + state.size()] = action[j];
-
-  // Calculating the exponential of the current variables' Q value
-  auto curExpQ = exp(_criticLearner->getEvaluation(stateActionInput)[0]);
-
-  // Cumulative exp(Q(s,a)) for all actions
-  double sumExpQ = 0.0;
-
-  // Running optimization experiment to get Q(s,a) for all actions in the action space
-  _policyExperiment._globals["Current State"] = state;
-  korali::Engine engine;
-  engine.run(_policyExperiment);
-
-  // Iterating among the entire Q vector for all actions to get the one that corresponds
-  // to the proposed action, and also to get the sum of all Q values
-  auto qVector = _policyExperiment["Solver"]["Objective"].get<std::vector<double>>();
-  for (size_t i = 0; i < qVector.size(); i++)
-    sumExpQ += exp(qVector[i]); // e^(Q(s,a))
-
-  // Calculating p(s,a) = q(s,a') softmax q(s,a)
-  double pDensity = curExpQ / sumExpQ;
-
-  return pDensity;
 }
 
 void DQN::printAgentInformation()

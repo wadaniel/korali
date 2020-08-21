@@ -111,8 +111,9 @@ class HierarchicalLowlevel : public korali::problem::bayesian::Latent
         Dimensions of gradient and Hessian equal the (true) number of independent hyperparameters.
         Order of the hyperparameter dimensions in the output:
             First the mean, then the diagonal covariance entries, in order.
-     @parama sample: Should have populated fields 'Latent Variables' and 'Covariance Powers'.
-                    'Covariance Powers' are powers of {1/2, 1, 3/2, 4/2} of a diagonal covariance matrix,
+     @parama sample: Should have populated fields 'Latent Variables' and a global / broadcasted field 'Hyperparameters',
+                    with sub-fields 'Covariance Powers' and 'Mean'.
+                    'Covariance Powers' are powers of {-1/2, -1, -3/2, -4/2} of a diagonal covariance matrix,
                      represented as vectors; one vector per power.
                      'Latent Variables' should be a nIndividuals x latentSpaceDimensions vector-of-vectors.
 

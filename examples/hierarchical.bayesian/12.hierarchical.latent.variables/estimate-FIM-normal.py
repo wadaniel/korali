@@ -4,7 +4,6 @@ sys.path.append('./_model')
 from model import *
 from load_data import *
 
-import numpy as np
 import korali
 
 
@@ -39,10 +38,10 @@ def main():
 
   e["Solver"]["Type"] = "LatentVariableFIM"
   e["Solver"]["Number Chains"] = 2
-  e["Solver"]["MCMC Outer Steps"] = 5
+  e["Solver"]["MCMC Outer Steps"] = 20
   e["Solver"]["MCMC Target Acceptance Rate"] = 0.4
   e["Solver"]["MCMC Subchain Steps"] = [2, 2, 2]
-  e["Solver"]["Termination Criteria"]["Max Generations"] = 1
+  # e["Solver"]["Termination Criteria"]["Max Generations"] = 1
 
   # Set values for the hyperparameters.
   # Insert the hyperparameter estimates from a run of HSAEM, for example:

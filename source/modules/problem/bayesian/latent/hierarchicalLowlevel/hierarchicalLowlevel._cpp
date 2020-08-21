@@ -1,6 +1,9 @@
+#include "auxiliar/koraliJson.hpp"
 #include "modules/problem/bayesian/latent/hierarchicalLowlevel/hierarchicalLowlevel.hpp"
 #include "sample/sample.hpp"
 
+#include <fstream>
+#include <iostream>
 #include <map>
 #include <math.h>
 
@@ -8,9 +11,7 @@
 #include <gsl/gsl_linalg.h>
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_vector.h>
-
-#include <fstream>
-#include <iostream>
+//#include <cassert>
 
 /* The problem initialization.*/
 void korali::problem::bayesian::latent::HierarchicalLowlevel::initialize()
@@ -126,7 +127,7 @@ void korali::problem::bayesian::latent::HierarchicalLowlevel::initialize()
   _latentIndex.resize(_numberIndividuals);
   for (size_t i = 0; i < _numberIndividuals; i++)
     _latentIndex[i].resize(_latentSpaceDimensions);
-  int expectedNumberVariables = 0;
+  size_t expectedNumberVariables = 0;
   if (_diagonalCovariance)
     expectedNumberVariables = _latentSpaceDimensions * _numberIndividuals + _latentSpaceDimensions * 2;
   else
@@ -431,10 +432,10 @@ void korali::problem::bayesian::latent::HierarchicalLowlevel::evaluateLogPrior_(
 //  }
 //
 //  // add the log of the normalization factor:
-//  double log_normn = (float(N) / 2. * log(2. * M_PI) + logdet);
+//  double log_normn = (double(N) / 2. * log(2. * M_PI) + logdet);
 //  for (size_t i = 0; i < _numberIndividuals; i++)
 //    individualLLH[i] -= log_normn;
-//  //  lllh -= log_normn * float(_numberIndividuals);
+//  //  lllh -= log_normn * double(_numberIndividuals);
 //  //  sample["Log Prior"] = lllh;
 //  sample["Log Prior"] = individualLLH;
 //
@@ -476,22 +477,89 @@ void korali::problem::bayesian::latent::HierarchicalLowlevel::evaluateLogPosteri
 
 void korali::problem::bayesian::latent::HierarchicalLowlevel::evaluateLogProbabilityDerivatives(korali::Sample &sample)
 {
-  //TODO
+  auto hyperparamJson = sample.globals()["Hyperparameters"].get<knlohmann::json>();
 
-  auto covPowers = KORALI_GET(std::vector<std::vector<double>>, sample, "Covariance Powers");
-  assert(covPowers.size() == 4); // Expecting 4 different powers
+  std::vector<std::vector<double>> covPowers = hyperparamJson["Covariance Powers"];
+  std::vector<double> mean = hyperparamJson["Mean"];
 
-  auto halfPower = covPowers[0];
-  assert(halfPower.size() == _numberHyperparameters);
-  _k->_logger->logInfo("Normal", "Squareroot power: [\n");
+  auto z = KORALI_GET(std::vector<std::vector<double>>, sample, "Transformed Latent Variables");
+  assert(z.size() == _numberIndividuals);
+  assert(z[0].size() == _latentSpaceDimensions);
+
+  // Powers of inverse standard deviations
+  std::vector<double> &invSDev = covPowers[0];
+  std::vector<double> &invSDev2 = covPowers[1];
+  std::vector<double> &invSDev3 = covPowers[2];
+  std::vector<double> &invSDev4 = covPowers[3];
+  assert(invSDev.size() == _latentSpaceDimensions); // Todo: remove assertions later
+  assert(invSDev2.size() == _latentSpaceDimensions);
+  assert(invSDev3.size() == _latentSpaceDimensions);
+  assert(invSDev4.size() == _latentSpaceDimensions);
+
+  std::vector<double> diffSum(_latentSpaceDimensions);
+  std::vector<double> squaredDiffSum(_latentSpaceDimensions);
+  for (size_t d = 0; d < _latentSpaceDimensions; d++)
+  {
+    std::vector<double> diffs(_numberIndividuals);
+    std::vector<double> squaredDiffs(_numberIndividuals);
+    for (size_t i = 0; i < _numberIndividuals; i++)
+    {
+      diffs[i] = z[i][d] - mean[d];
+      squaredDiffs[i] = diffs[i] * diffs[i];
+      assert(std::isfinite(squaredDiffs[i]));
+    }
+    diffSum[d] = std::accumulate(diffs.begin(), diffs.end(), 0.0);
+    squaredDiffSum[d] =
+      std::accumulate(squaredDiffs.begin(), squaredDiffs.end(), 0.0);
+    assert(std::isfinite(diffSum[d]));
+    assert(std::isfinite(squaredDiffSum[d]));
+  }
+
+  /* Gradient */
+  std::vector<double> gradient(_numberHyperparameters);
+  for (size_t d = 0; d < _latentSpaceDimensions; d++)
+  {
+    gradient[d] = diffSum[d] * invSDev2[d];
+    assert(std::isfinite(gradient[d]));
+  }
+  for (size_t d = 0; d < _latentSpaceDimensions; d++)
+  {
+    gradient[_latentSpaceDimensions + d] =
+      -double(_numberIndividuals) * invSDev[d] + squaredDiffSum[d] * invSDev3[d];
+    assert(std::isfinite(gradient[_latentSpaceDimensions + d]));
+  }
+
+  /* Hessian */
+  std::vector<std::vector<double>> Hessian(_numberHyperparameters);
   for (size_t i = 0; i < _numberHyperparameters; i++)
   {
-    _k->_logger->logInfo("Normal", "\t\t%d, ", halfPower[i]);
+    Hessian[i].resize(_numberHyperparameters);
+    std::fill(Hessian[i].begin(), Hessian[i].end(), 0.0);
   }
-  _k->_logger->logInfo("Normal", "\t\t     ]");
+  // second derivatives by mean coordinates / upper left part of Hessian
+  for (size_t d = 0; d < _latentSpaceDimensions; d++)
+  {
+    Hessian[d][d] = -double(_numberIndividuals) * invSDev2[d];
+    assert(std::isfinite(Hessian[d][d]));
+  }
+  // mixed 2nd derivatives by mean and cov coordinates / upper right and lower left part
+  for (size_t d = 0; d < _latentSpaceDimensions; d++)
+  {
+    double h = -2. * diffSum[d] * invSDev3[d];
+    assert(std::isfinite(h));
+    Hessian[_latentSpaceDimensions + d][d] = h;
+    Hessian[d][_latentSpaceDimensions + d] = h;
+  }
+  // second derivatives by cov coordinates / lower right part of Hessian
+  for (size_t d = 0; d < _latentSpaceDimensions; d++)
+  {
+    double h = double(_numberIndividuals) * invSDev2[d] - 3. * squaredDiffSum[d] * invSDev4[d];
+    assert(std::isfinite(h));
+    Hessian[_latentSpaceDimensions + d][_latentSpaceDimensions + d] = h;
+  }
 
-  sample["Gradient"] = 0; //... //TODO
-  sample["Hessian"] = 0;  //... //TODO
+  sample["Gradient"] = gradient;
+  sample["Hessian"] = Hessian;
 }
 
 std::vector<double> korali::problem::bayesian::latent::HierarchicalLowlevel::zToLatent(std::vector<double> z)

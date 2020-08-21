@@ -147,39 +147,50 @@ void korali::solver::LatentVariableFIM ::runGeneration()
 
   /* Sample. */
   sampleLatent();
-  // Debug printout
-  _k->_logger->logInfo("Detailed", "Sampled generation: %d \n", _k->_currentGeneration);
-  printLastSamples();
 
+  // To debug sampling:
+  //  _k->_logger->logInfo("Detailed", "Sampled generation: %d \n", _k->_currentGeneration);
+  //  printLastSamples();
+
+  estimateFIM();
+}
+
+void korali::solver::LatentVariableFIM::estimateFIM()
+{
   /* For each sample step, get the gradient and Hessian of the log-probability from the problem. */
   // Todo: Set up the arrays for those in the initialization
   // Todo: Think and ask Sergio whether there is a difference between calculating it for all at once, in one location,
   //        and not pass around the arrays, or whether it's good to run each sample separately. How heavy are calc's?
-
-  size_t numberSamplesUsed = size_t(std::ceil(float(_samplesPerChain) / 2.));
+  size_t numberSamplesUsed = size_t(std::ceil(double(_samplesPerChain) / 2.));
 
   std::vector<Sample> samples(_numberChains * numberSamplesUsed);
 
   /* First, broadcast terms that are used by all samples */
-  std::vector<std::vector<double>> powers = covariancePowers();
-  KORALI_BROADCAST("Covariance Powers", powers);
+  knlohmann::json hyperparameterJson;
+  hyperparameterJson["Covariance Powers"] = covariancePowers();
+  hyperparameterJson["Mean"] = _hyperparametersMean;
+
+  KORALI_BROADCAST("Hyperparameters", hyperparameterJson);
+  size_t counter = 0; // DBG
   // _conduit->broadcastGlobals("Covariance Powers", knlohmann::json &globalsJs);
   for (size_t c_idx = 0; c_idx < _numberChains; c_idx++)
   {
     for (size_t i = _samplesPerChain - numberSamplesUsed; i < _samplesPerChain; i++)
     {
-      size_t sampleIdx = c_idx * numberSamplesUsed + i;
-      Sample sample = samples[i];
-      sample["Sample Id"] = sampleIdx + 5678;
-      sample["Transformed Latent Variables"] = _z[i];
+      size_t sampleIdx = c_idx * numberSamplesUsed + i - (_samplesPerChain - numberSamplesUsed);
+      Sample &sample = samples[sampleIdx];
+      sample["Sample Id"] = sampleIdx; // + 5678;
+      sample["Transformed Latent Variables"] = _z[c_idx][i];
       //sample["Hyperparameters Covariance"] = 0; // we broadcast this one;
-      sample["Hyperparameters Mean"] = _hyperparametersMean; // we broadcast this one;
+      //      sample["Hyperparameters Mean"] = _hyperparametersMean; // we broadcast this one;
       sample["Module"] = "Problem";
       sample["Operation"] = "Evaluate Log Probability Derivatives";
 
       KORALI_START(sample);
+      counter++;
     }
   }
+  assert(counter == samples.size());
   KORALI_WAITALL(samples);
 
   /* Collect the results:
@@ -202,28 +213,31 @@ void korali::solver::LatentVariableFIM ::runGeneration()
     std::fill(_fischerInformationMatrix[i].begin(), _fischerInformationMatrix[i].end(), 0.0);
   }
 
+  //  double invSamplesUsedTotal = 1. / double(_numberChains * numberSamplesUsed);
   for (size_t c_idx = 0; c_idx < _numberChains; c_idx++)
   {
     for (size_t i = _samplesPerChain - numberSamplesUsed; i < _samplesPerChain; i++)
     {
-      size_t sampleIdx = c_idx * numberSamplesUsed + i;
-      Sample sample = samples[sampleIdx];
-      assert(sample["Gradient"].size() == nHyperparameters);
-      assert(sample["Hessian"].size() == nHyperparameters);
+      size_t sampleIdx = c_idx * numberSamplesUsed + i - (_samplesPerChain - numberSamplesUsed);
+      Sample &sample = samples[sampleIdx];
+      auto gradient = KORALI_GET(std::vector<double>, sample, "Gradient");
+      auto hessian = KORALI_GET(std::vector<std::vector<double>>, sample, "Hessian");
+      assert(gradient.size() == nHyperparameters);
+      assert(hessian.size() == nHyperparameters);
       for (size_t j = 0; j < nHyperparameters; j++)
       {
-        D[j] += sample["Gradient"][j];
-        assert(sample["Hessian"][j].size() == nHyperparameters);
+        D[j] += gradient[j]; // * invSamplesUsedTotal;
+        assert(hessian[j].size() == nHyperparameters);
         for (size_t k = 0; k < nHyperparameters; k++)
         {
-          H[j][k] += sample["Hessian"][j][k];
-          G[j][k] += sample["Gradient"][j] * sample["Gradient"][k];
+          H[j][k] += hessian[j][k]; // * invSamplesUsedTotal;
+          G[j][k] += gradient[j];   // * gradient[k] * invSamplesUsedTotal;
         }
       }
     }
   }
 
-  double samplesUsedTotal = _numberChains * numberSamplesUsed;
+  samplesUsedTotal = double(_numberChains * numberSamplesUsed);
   for (size_t j = 0; j < nHyperparameters; j++)
   {
     D[j] /= samplesUsedTotal;
@@ -240,7 +254,7 @@ void korali::solver::LatentVariableFIM ::runGeneration()
   {
     for (size_t k = 0; k < nHyperparameters; k++)
     {
-      _fischerInformationMatrix[j][k] = -(H[j][k] + G[j][k] - D[j] D[k]);
+      _fischerInformationMatrix[j][k] = -(H[j][k] + G[j][k] - D[j] * D[k]);
     }
   }
 }
@@ -294,7 +308,7 @@ void korali::solver::LatentVariableFIM::sampleLatent()
       //       of the data likelihoods.
       for (size_t i = 0; i < _n1; i++)
       {
-        if (outer_step == 0) // We start at 1 - step 0 was the initialization. _n1 must be at least 1.
+        if ((outer_step == 0) & (i == 0)) // We start at 1 - step 0 was the initialization. _n1 must be at least 1.
           continue;
 
         // Proposals q1: Drawn from p(latent | hyperparam)
@@ -381,7 +395,7 @@ void korali::solver::LatentVariableFIM::sampleLatent()
             else
               chainZ[step][indiv] = chainZ[step - 1][indiv];
           }
-          _acceptanceRateDenominator[dim] += float(_numberIndividuals);
+          _acceptanceRateDenominator[dim] += double(_numberIndividuals);
           step++;
         }
       }
@@ -579,13 +593,13 @@ void korali::solver::LatentVariableFIM::updateMultivariateDistribution()
   _multivariateNormalGenerator->updateDistribution();
 }
 
-/** @brief: Calculates four fractional exponents of the covariance, for use in calculating derivatives
+/** @brief: Calculates four negative fractional exponents of the covariance, for use in calculating derivatives
             of the log-likelihood.
   Returns four vectors, each of size _latentSpaceDimensions:
-    - the standard deviations (square of the covariance),
-    - original covariance diagonal
-    - 3rd power of standard deviations
-    - 4th power of standard deviations
+    - ["-1/2"]: inverse of the standard deviations (1 / squareroot of the covariance),
+    - ["-1"]: 1 / original covariance diagonal
+    - ["-3/2"]: 1 / 3rd power of standard deviations
+    - ["-2"]: 1 / 4th power of standard deviations
 
   Since we assume a diagonal covariance, this only returns the diagonal entries.
   */
@@ -597,12 +611,14 @@ std::vector<std::vector<double>> korali::solver::LatentVariableFIM::covariancePo
   powers[2].resize(_latentSpaceDimensions);
   powers[3].resize(_latentSpaceDimensions); // Loop?
   for (size_t i = 0; i < _latentSpaceDimensions; i++)
-    powers[0][i] = std::sqrt(_diagonalCovariance[i]);
-  powers[1] = _diagonalCovariance;
+    powers[0][i] = 1. / std::sqrt(_hyperparametersDiagonalCovariance[i]);
+  for (size_t i = 0; i < _latentSpaceDimensions; i++)
+    powers[1][i] = 1. / _hyperparametersDiagonalCovariance[i];
   for (size_t i = 0; i < _latentSpaceDimensions; i++)
     powers[2][i] = std::pow(powers[0][i], 3);
   for (size_t i = 0; i < _latentSpaceDimensions; i++)
-    powers[3][i] = std::pow(_diagonalCovariance[i], 2);
+    powers[3][i] = 1. / std::pow(_hyperparametersDiagonalCovariance[i], 2);
+
   return powers;
 
   // Could use the Cholesky decomposition as starting point, too, but skip this minimal performance gain
@@ -671,27 +687,24 @@ void korali::solver::LatentVariableFIM::printLastSamples()
 void korali::solver::LatentVariableFIM::finalize()
 {
   _k->_logger->logInfo("Normal", "\n");
-  _k->_logger->logInfo("Normal", "Finished. Final Fischer Information estimate: (TODO)\n");
-  // Only enable as soon as I have good estimates of that:
-  //  _k->_logger->logInfo("Normal", "  Current Total Log Probability:       %.2e\n", ...);
-  //  _k->_logger->logInfo("Normal", "  Best Total Log Probability:          %.2e\n", ...);
+  _k->_logger->logInfo("Normal", "Finished. Final Fischer Information estimate: \n");
 
   // * Set results and print them
-  //  (*_k)["Results"]["Mean"] = _currentHyperparametersMean;
-  //  (*_k)["Results"]["Covariance Matrix"] = _currentHyperparametersCovariance;
+  (*_k)["Results"]["Fischer Information Matrix"] = _fischerInformationMatrix;
 
-  //  std::ostringstream covLogStringStream;
-  //  _k->_logger->logInfo("Normal", "\n");
-  //  _k->_logger->logInfo("Normal", "Covariance matrix: \n");
-  //  _k->_logger->logInfo("Normal", "  [\n");
-  //  for (size_t i = 0; i < _latentSpaceDimensions; i++)
-  //  {
-  //    covLogStringStream << "    [";
-  //    for (size_t j = 0; j < _latentSpaceDimensions; j++)
-  //      covLogStringStream << "\t" << _currentHyperparametersCovariance[i][j] << " ";
-  //    covLogStringStream << "],\n";
-  //    _k->_logger->logInfo("Normal", covLogStringStream.str().c_str());
-  //    covLogStringStream.str("");
-  //  }
-  //  _k->_logger->logInfo("Normal", "  ]\n");
+  std::ostringstream FIMStream;
+  //    _k->_logger->logInfo("Normal", "\n");
+  //    _k->_logger->logInfo("Normal", "Estimated Fischer Information Matrix: \n");
+  _k->_logger->logInfo("Normal", "  [\n");
+  size_t nHyperparameters = _latentProblem->_numberHyperparameters;
+  for (size_t i = 0; i < nHyperparameters; i++)
+  {
+    FIMStream << "    [";
+    for (size_t j = 0; j < nHyperparameters; j++)
+      FIMStream << "\t" << _fischerInformationMatrix[i][j] << " ";
+    FIMStream << "],\n";
+    _k->_logger->logInfo("Normal", FIMStream.str().c_str());
+    FIMStream.str("");
+  }
+  _k->_logger->logInfo("Normal", "  ]\n");
 }

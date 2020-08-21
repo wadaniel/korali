@@ -1,6 +1,7 @@
 #ifndef _KORALI_SOLVER_LATENTVARIABLEFIM_HPP_
 #define _KORALI_SOLVER_LATENTVARIABLEFIM_HPP_
 
+#include "auxiliar/koraliJson.hpp"
 #include "modules/distribution/multivariate/normal/normal.hpp"
 #include "modules/distribution/univariate/normal/normal.hpp"
 #include "modules/distribution/univariate/uniform/uniform.hpp"
@@ -32,9 +33,15 @@ class LatentVariableFIM : public korali::Solver
   * @brief Draw samples of all latent variables, using a Metropolis-Hastings method.
   *        Uses the same proposal distributions as described in chapter 9.3 of
   *        "Mixed Effect Models for the Population Approach" by Marc Lavielle.
-  *        If enabled, uses simulated annealing.
   */
   void sampleLatent();
+
+  /**
+  * @brief 2nd stage of the solver after sampling.
+  *        Given the samples, get gradients and Hessian matrices from the problem, for each sample.
+  *        Then combine them to get the FIM estimate.
+  */
+  void estimateFIM();
 
   /** @brief  Calculates the Cholesky decomposition of the covariance. */
   void calculateCholesky();

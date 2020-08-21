@@ -81,7 +81,6 @@ e["Solver"]["Agent"]["Experience Limit"] = maxSteps
 
 ### Defining training policy configuration
 
-e["Solver"]["Policy"]["Optimizer"]["Type"] = "Optimizer/Grid Search"
 e["Solver"]["Policy"]["Epsilon"]["Initial Value"] = 1.0
 e["Solver"]["Policy"]["Epsilon"]["Target Value"] = 0.05
 e["Solver"]["Policy"]["Epsilon"]["Decrease Rate"] = 0.05

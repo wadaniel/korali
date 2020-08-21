@@ -296,11 +296,11 @@ void LMCMAES::choleskyFactorUpdate(size_t sampleIdx)
 
     _minCholeskyFactorVectorProductEntry = std::numeric_limits<double>::infinity();
     _maxCholeskyFactorVectorProductEntry = -std::numeric_limits<double>::infinity();
-    for (size_t d = 0; d < _dimensions; ++d) 
+    for (size_t d = 0; d < _dimensions; ++d)
     {
-        _choleskyFactorVectorProduct[d] = _sqrtInverseCholeskyRate * _choleskyFactorVectorProduct[d] + k * _evolutionPathHistory[idx][d];
-        if(_choleskyFactorVectorProduct[d] < _minCholeskyFactorVectorProductEntry) _minCholeskyFactorVectorProductEntry = _choleskyFactorVectorProduct[d]; 
-        if(_choleskyFactorVectorProduct[d] > _maxCholeskyFactorVectorProductEntry) _maxCholeskyFactorVectorProductEntry = _choleskyFactorVectorProduct[d]; 
+      _choleskyFactorVectorProduct[d] = _sqrtInverseCholeskyRate * _choleskyFactorVectorProduct[d] + k * _evolutionPathHistory[idx][d];
+      if (_choleskyFactorVectorProduct[d] < _minCholeskyFactorVectorProductEntry) _minCholeskyFactorVectorProductEntry = _choleskyFactorVectorProduct[d];
+      if (_choleskyFactorVectorProduct[d] > _maxCholeskyFactorVectorProductEntry) _maxCholeskyFactorVectorProductEntry = _choleskyFactorVectorProduct[d];
     }
   }
 }

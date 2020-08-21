@@ -46,7 +46,8 @@ e = korali.Experiment()
 
 ### Defining the Cartpole problem's configuration
 
-e["Problem"]["Type"] = "Reinforcement Learning"
+e["Problem"]["Type"] = "Reinforcement Learning / Discrete"
+e["Problem"]["Possible Actions"] = [ [ 0.0 ], [ 1.0 ] ]
 e["Problem"]["Environment Function"] = env
 
 e["Variables"][0]["Name"] = "Cart Position"
@@ -63,7 +64,6 @@ e["Variables"][3]["Type"] = "State"
 
 e["Variables"][4]["Name"] = "Push Direction"
 e["Variables"][4]["Type"] = "Action"
-e["Variables"][4]["Values"] = [ 0.0, 1.0 ]
 
 ### Configuring DQN hyperparameters
 

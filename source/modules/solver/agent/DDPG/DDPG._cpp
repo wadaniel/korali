@@ -17,20 +17,6 @@ namespace agent
 void DDPG::initializeAgent()
 {
  /*********************************************************************
-  * Verifying Problem's Definition
-  *********************************************************************/
-
- for (size_t i = 0; i < _problem->_actionVectorIndexes.size(); i++)
- {
-   size_t varIdx = _problem->_actionVectorIndexes[i];
-
-   if (_k->_variables[varIdx]->_values.size() > 0) KORALI_LOG_ERROR("Discrete action values (%lu, in total) have been defined for variable %lu (%s), but these are not required for DDPG\n", _k->_variables[varIdx]->_values.size(), varIdx, _k->_variables[varIdx]->_name.c_str());
-   if (_k->_variables[varIdx]->_upperBound < _k->_variables[varIdx]->_lowerBound) KORALI_LOG_ERROR("Upper bound for variable %lu (%s) is lower than the lower bound (%f < %f).\n", varIdx, _k->_variables[varIdx]->_name.c_str(), _k->_variables[varIdx]->_upperBound, _k->_variables[varIdx]->_lowerBound);
-   if (std::isfinite(_k->_variables[varIdx]->_lowerBound) == false) KORALI_LOG_ERROR("Lower bound for variable %lu (%s) is not finite or has not been specified.\n", varIdx, _k->_variables[varIdx]->_name.c_str());
-   if (std::isfinite(_k->_variables[varIdx]->_upperBound) == false) KORALI_LOG_ERROR("Upper bound for variable %lu (%s) is not finite or has not been specified.\n", varIdx, _k->_variables[varIdx]->_name.c_str());
- }
-
- /*********************************************************************
  * Initializing Critic-Related Structures
  *********************************************************************/
 

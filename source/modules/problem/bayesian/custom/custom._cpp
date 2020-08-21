@@ -34,6 +34,9 @@ void Custom::evaluateFisherInformation(Sample &sample)
 
   size_t Nth = _k->_variables.size();
   if (sample["Fisher Information"].size() != Nth) KORALI_LOG_ERROR("Bayesian problem of type Custom requires Fisher Information of size %zux%zu\n", Nth, Nth);
+
+  for (size_t d = 0; d < Nth; ++d)
+    if (sample["Fisher Information"][d].size() != Nth) KORALI_LOG_ERROR("Bayesian problem of type Custom requires Fisher Information of size %zux%zu\n", Nth, Nth);
 }
 
 } // namespace bayesian

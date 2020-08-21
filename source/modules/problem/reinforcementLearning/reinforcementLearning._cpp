@@ -101,8 +101,8 @@ void ReinforcementLearning::runEpisode(Sample &sample)
     // Storing the current action
     sample["Experiences"][expId]["Action"] = sample["Action"];
 
-    // Calculating and storing probability density of current state/action
-    //sample["Experience"]["Densities"][expId] = agent->getStateActionProbabilityDensity(state, action);
+    // Storing metadata, for methods that require more information
+    if (isDefined(sample._js.getJson(), "Metadata")) sample["Experiences"][expId]["Metadata"] = sample["Metadata"];
 
     // Jumping back into the agent's environment
     co_switch(envThread);

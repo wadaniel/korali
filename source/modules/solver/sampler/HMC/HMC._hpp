@@ -11,7 +11,7 @@
 #include "hamiltonian_dense.hpp"
 #include "hamiltonian_diag.hpp"
 #include "leapfrog_explicit.hpp"
-#include "tree_helper.hpp"
+#include "tree_helper_euclidean.hpp"
 
 namespace korali
 {
@@ -76,7 +76,7 @@ class HMC : public Sampler
   * @brief Rund NUTS algorithm with buildTreeUtil.
   * @param helper Helper struct for large argument list.
   */
-  void runGenerationNUTSUtil(TreeHelper &helper);
+  void runGenerationNUTSUtil(TreeHelper *helper);
 
   /**
   * @brief Runs generation for NUTS.
@@ -132,7 +132,7 @@ class HMC : public Sampler
   * @brief Recursive binary tree building algorithm. Used if Use NUTS is set to True.
   * @param helper Helper struct for large argument list.
   */
-  void buildTreeUtil(TreeHelper &helper);
+  void buildTreeUtil(TreeHelper *helper);
 
   /**
   * @brief Recursive binary tree building algorithm. Used if Use NUTS is set to True.

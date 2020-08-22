@@ -80,10 +80,6 @@ class Hamiltonian
     sample["Sample Id"] = numSamples;
     sample["Module"] = "Problem";
     sample["Operation"] = "Evaluate";
-    // _conduit->start(sample);
-    // _conduit->wait(sample);
-    // evaluate logP(x)
-    // double evaluation = KORALI_GET(double, sample, "logP(x)");
     KORALI_START(sample);
     KORALI_WAIT(sample);
 
@@ -141,6 +137,25 @@ class Hamiltonian
   const size_t getStateSpaceDim() const
   {
     return _stateSpaceDim;
+  }
+
+  /**
+  * @brief Computes NUTS criterion on euclidean domain.
+  * @param qLeft Leftmost position.
+  * @param pLeft Leftmost momentum.
+  * @param qRight Rightmost position.
+  * @param pRight Rightmost momentum.
+  * @return Returns if trees should be built further.
+  */
+  bool computeStandardCriterion(const std::vector<double> &qLeft, const std::vector<double> &pLeft, const std::vector<double> &qRight, const std::vector<double> &pRight)
+  {
+    std::vector<double> tmpVector(_stateSpaceDim, 0.0);
+
+    std::transform(std::cbegin(qRight), std::cend(qRight), std::cbegin(qLeft), std::begin(tmpVector), std::minus<double>());
+    double dotProductLeft = std::inner_product(std::cbegin(tmpVector), std::cend(tmpVector), std::cbegin(pLeft), 0.0);
+    double dotProductRight = std::inner_product(std::cbegin(tmpVector), std::cend(tmpVector), std::cbegin(pRight), 0.0);
+
+    return (dotProductLeft > 0) && (dotProductRight > 0);
   }
 
   protected:

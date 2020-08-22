@@ -1,5 +1,5 @@
-#ifndef TREE_HELPER
-#define TREE_HELPER
+#ifndef TREE_HELPER_BASE
+#define TREE_HELPER_BASE
 
 #include <vector>
 namespace korali
@@ -10,7 +10,7 @@ namespace sampler
 {
 /**
 * \struct TreeHelper
-* @brief Helper class for long argument list of buildTree
+* @brief Abstract helper class for long argument list of buildTree
 */
 struct TreeHelper
 {
@@ -74,6 +74,13 @@ struct TreeHelper
     * @brief Number of valid leaves encountererd (needed for adaptive time stepping).
     */
   int numLeavesOut;
+
+  /**
+    * @brief Computes No U-Turn Sampling (NUTS) criterion
+    * @param hamiltonian Hamiltonian object of system
+    * @return Returns of tree should be built further.
+    */
+  virtual bool computeCriterion(Hamiltonian *hamiltonian) = 0;
 };
 
 } // namespace sampler

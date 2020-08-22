@@ -131,9 +131,10 @@ void HMC::runGeneration()
     runGenerationHMC(logUniSample);
     break;
   case true:
-    TreeHelper helper;
-    helper.logUniSampleIn = logUniSample;
+    TreeHelper *helper = new TreeHelperEuclidean;
+    helper->logUniSampleIn = logUniSample;
     runGenerationNUTSUtil(helper);
+    delete helper;
     break;
 
     // default:
@@ -270,12 +271,12 @@ void HMC::runGenerationNUTS(const double logUniSample)
   return;
 }
 
-void HMC::runGenerationNUTSUtil(TreeHelper &helper)
+void HMC::runGenerationNUTSUtil(TreeHelper *helper)
 {
   const double oldK = _hamiltonian->K(_positionLeader, _momentumLeader, _inverseMetric);
   const double oldU = _hamiltonian->U(_positionLeader, _modelEvaluationCount, _sampleDatabase.size(), _k);
 
-  std::vector<double> tmpVector(_stateSpaceDim, 0.0);
+  // std::vector<double> tmpVector(_stateSpaceDim, 0.0);
 
   std::vector<double> qLeft = _positionLeader;
   std::vector<double> pLeft = _momentumLeader;
@@ -288,49 +289,57 @@ void HMC::runGenerationNUTSUtil(TreeHelper &helper)
   bool buildCriterionSubtree;
   double numValidLeaves = 1.0;
   double numValidLeavesSubtree;
-  double dotProductLeft, dotProductRight;
+  // double dotProductLeft, dotProductRight;
   const double oldH = oldU + oldK;
 
-  helper.depthIn = 0;
-  helper.rootHIn = oldH;
-  helper.buildCriterionOut = true;
+  helper->depthIn = 0;
+  helper->rootHIn = oldH;
+  helper->buildCriterionOut = true;
 
   while (buildCriterion == true && depth <= _maxDepth)
   {
     // std::cout << "in buildCriterion loop" << std::endl;
     // std::vector<double> rho(_stateSpaceDim, 0.0);
-    helper.depthIn = depth;
+    helper->depthIn = depth;
     if (_uniformGenerator->getRandomNumber() < 0.5)
     {
-      helper.qIn = qLeft;
-      helper.pIn = pLeft;
-      helper.directionIn = -1;
+      helper->qIn = qLeft;
+      helper->pIn = pLeft;
+      helper->directionIn = -1;
 
       buildTreeUtil(helper);
 
-      qLeft = helper.qLeftOut;
-      pLeft = helper.pLeftOut;
+      qLeft = helper->qLeftOut;
+      pLeft = helper->pLeftOut;
       // qRight = --
       // pRight = --
+
+      // Setting for termination criterium
+      helper->qRightOut = qRight;
+      helper->pRightOut = pRight;
     }
     else
     {
-      helper.qIn = qRight;
-      helper.pIn = pRight;
-      helper.directionIn = 1;
+      helper->qIn = qRight;
+      helper->pIn = pRight;
+      helper->directionIn = 1;
 
       buildTreeUtil(helper);
 
       // qLeft = --
       // pLeft = --
-      qRight = helper.qRightOut;
-      pRight = helper.pRightOut;
+      qRight = helper->qRightOut;
+      pRight = helper->pRightOut;
+
+      // setting for termination criterium
+      helper->qLeftOut = qLeft;
+      helper->pLeftOut = pLeft;
     }
-    _positionCandidate = helper.qProposedOut;
-    numValidLeavesSubtree = helper.numValidLeavesOut;
-    buildCriterionSubtree = helper.buildCriterionOut;
-    _acceptanceProbability = helper.alphaOut;
-    numLeavesSubtree = helper.numLeavesOut;
+    _positionCandidate = helper->qProposedOut;
+    numValidLeavesSubtree = helper->numValidLeavesOut;
+    buildCriterionSubtree = helper->buildCriterionOut;
+    _acceptanceProbability = helper->alphaOut;
+    numLeavesSubtree = helper->numLeavesOut;
 
     if (buildCriterionSubtree == true)
     {
@@ -346,11 +355,7 @@ void HMC::runGenerationNUTSUtil(TreeHelper &helper)
 
     numValidLeaves += numValidLeavesSubtree;
 
-    std::transform(std::cbegin(qRight), std::cend(qRight), std::cbegin(qLeft), std::begin(tmpVector), std::minus<double>());
-    dotProductLeft = std::inner_product(std::cbegin(tmpVector), std::cend(tmpVector), std::cbegin(pLeft), 0.0);
-    dotProductRight = std::inner_product(std::cbegin(tmpVector), std::cend(tmpVector), std::cbegin(pRight), 0.0);
-
-    buildCriterion = buildCriterionSubtree && (dotProductLeft > 0) && (dotProductRight > 0);
+    buildCriterion = buildCriterionSubtree && helper->computeCriterion(_hamiltonian);
 
     // std::cout << "depth = " << depth << std::endl;
     // std::cout << "Normal difference: " << std::endl;
@@ -750,29 +755,29 @@ bool HMC::computeNoUTurnCriterion(const std::vector<double> &pLeft, const std::v
   return dotProductLeft > 0 && dotProductRight > 0;
 }
 
-void HMC::buildTreeUtil(TreeHelper &helper)
+void HMC::buildTreeUtil(TreeHelper *helper)
 {
-  helper.qLeftOut = helper.qIn;
-  helper.pLeftOut = helper.pIn;
+  helper->qLeftOut = helper->qIn;
+  helper->pLeftOut = helper->pIn;
 
-  if (helper.depthIn == 0)
+  if (helper->depthIn == 0)
   {
     const double deltaMax = 100;
-    _integrator->step(helper.qLeftOut, helper.pLeftOut, _stepSize, _hamiltonian, _modelEvaluationCount, _sampleDatabase.size(), _inverseMetric, _k);
+    _integrator->step(helper->qLeftOut, helper->pLeftOut, _stepSize, _hamiltonian, _modelEvaluationCount, _sampleDatabase.size(), _inverseMetric, _k);
 
-    const double leafK = _hamiltonian->K(helper.qLeftOut, helper.pLeftOut, _inverseMetric);
-    const double leafU = _hamiltonian->U(helper.qLeftOut, _modelEvaluationCount, _sampleDatabase.size(), _k);
+    const double leafK = _hamiltonian->K(helper->qLeftOut, helper->pLeftOut, _inverseMetric);
+    const double leafU = _hamiltonian->U(helper->qLeftOut, _modelEvaluationCount, _sampleDatabase.size(), _k);
     const double leafH = leafU + leafK;
 
-    helper.numValidLeavesOut = (helper.logUniSampleIn <= helper.rootHIn - leafH) ? 1.0 : 0.0;
+    helper->numValidLeavesOut = (helper->logUniSampleIn <= helper->rootHIn - leafH) ? 1.0 : 0.0;
 
-    helper.buildCriterionOut = (helper.rootHIn - leafH + deltaMax > helper.logUniSampleIn);
+    helper->buildCriterionOut = (helper->rootHIn - leafH + deltaMax > helper->logUniSampleIn);
 
-    helper.alphaOut = std::min(1.0, std::exp(helper.rootHIn - leafH));
-    helper.numLeavesOut = 1;
-    helper.qRightOut = helper.qLeftOut;
-    helper.pRightOut = helper.pLeftOut;
-    helper.qProposedOut = helper.qLeftOut;
+    helper->alphaOut = std::min(1.0, std::exp(helper->rootHIn - leafH));
+    helper->numLeavesOut = 1;
+    helper->qRightOut = helper->qLeftOut;
+    helper->pRightOut = helper->pLeftOut;
+    helper->qProposedOut = helper->qLeftOut;
   }
   else
   {
@@ -783,63 +788,66 @@ void HMC::buildTreeUtil(TreeHelper &helper)
     std::vector<double> qProposedSubtree(_stateSpaceDim, 0.0);
     std::vector<double> tmpVector(_stateSpaceDim, 0.0);
 
-    helper.depthIn = helper.depthIn - 1;
+    helper->depthIn = helper->depthIn - 1;
 
     buildTreeUtil(helper);
 
-    if (helper.buildCriterionOut == true)
+    if (helper->buildCriterionOut == true)
     {
-      TreeHelper helperSubtree;
-      helperSubtree.logUniSampleIn = helper.logUniSampleIn;
-      helperSubtree.directionIn = helper.directionIn;
-      helperSubtree.depthIn = helper.depthIn;
-      helperSubtree.rootHIn = helper.rootHIn;
+      TreeHelper *helperSubtree = new TreeHelperEuclidean;
+      helperSubtree->logUniSampleIn = helper->logUniSampleIn;
+      helperSubtree->directionIn = helper->directionIn;
+      helperSubtree->depthIn = helper->depthIn;
+      helperSubtree->rootHIn = helper->rootHIn;
 
-      if (helper.directionIn == -1)
+      if (helper->directionIn == -1)
       {
-        helperSubtree.qIn = helper.qLeftOut;
-        helperSubtree.pIn = helper.pLeftOut;
+        helperSubtree->qIn = helper->qLeftOut;
+        helperSubtree->pIn = helper->pLeftOut;
 
         buildTreeUtil(helperSubtree);
 
-        // helperSubtree.qRightOut = --
-        // helperSubtree.pRightOut = --
-        numValidLeavesSubtree = helperSubtree.numValidLeavesOut;
-        buildCriterionSubtree = helperSubtree.buildCriterionOut;
-        alphaSubtree = helperSubtree.alphaOut;
-        numLeavesSubtree = helperSubtree.numLeavesOut;
+        // helperSubtree->qRightOut = --
+        // helperSubtree->pRightOut = --
+        numValidLeavesSubtree = helperSubtree->numValidLeavesOut;
+        buildCriterionSubtree = helperSubtree->buildCriterionOut;
+        alphaSubtree = helperSubtree->alphaOut;
+        numLeavesSubtree = helperSubtree->numLeavesOut;
       }
       else
       {
-        helperSubtree.qIn = helper.qRightOut;
-        helperSubtree.pIn = helper.pRightOut;
+        helperSubtree->qIn = helper->qRightOut;
+        helperSubtree->pIn = helper->pRightOut;
 
         buildTreeUtil(helperSubtree);
 
-        // helperSubtree.qLeftOut = --
-        // helperSubtree.pLeftOut = --
-        numValidLeavesSubtree = helperSubtree.numValidLeavesOut;
-        buildCriterionSubtree = helperSubtree.buildCriterionOut;
-        alphaSubtree = helperSubtree.alphaOut;
-        numLeavesSubtree = helperSubtree.numLeavesOut;
+        // helperSubtree->qLeftOut = --
+        // helperSubtree->pLeftOut = --
+        numValidLeavesSubtree = helperSubtree->numValidLeavesOut;
+        buildCriterionSubtree = helperSubtree->buildCriterionOut;
+        alphaSubtree = helperSubtree->alphaOut;
+        numLeavesSubtree = helperSubtree->numLeavesOut;
       }
 
       // First check to avoid divising by zero
-      if (numValidLeavesSubtree != 0 && _uniformGenerator->getRandomNumber() < numValidLeavesSubtree / (helper.numValidLeavesOut + numValidLeavesSubtree))
+      if (numValidLeavesSubtree != 0 && _uniformGenerator->getRandomNumber() < numValidLeavesSubtree / (helper->numValidLeavesOut + numValidLeavesSubtree))
       {
-        helper.qProposedOut = helperSubtree.qProposedOut;
+        helper->qProposedOut = helperSubtree->qProposedOut;
       }
 
-      helper.numValidLeavesOut += numValidLeavesSubtree;
-      helper.alphaOut += alphaSubtree;
-      helper.numLeavesOut += numLeavesSubtree;
+      helper->numValidLeavesOut += numValidLeavesSubtree;
+      helper->alphaOut += alphaSubtree;
+      helper->numLeavesOut += numLeavesSubtree;
 
-      std::transform(std::cbegin(helper.qRightOut), std::cend(helper.qRightOut), std::cbegin(helper.qLeftOut), std::begin(tmpVector), std::minus<double>());
-      dotProductLeft = std::inner_product(std::cbegin(tmpVector), std::cend(tmpVector), std::cbegin(helper.pLeftOut), 0.0);
-      dotProductRight = std::inner_product(std::cbegin(tmpVector), std::cend(tmpVector), std::cbegin(helper.pRightOut), 0.0);
+      // std::transform(std::cbegin(helper->qRightOut), std::cend(helper->qRightOut), std::cbegin(helper->qLeftOut), std::begin(tmpVector), std::minus<double>());
+      // dotProductLeft = std::inner_product(std::cbegin(tmpVector), std::cend(tmpVector), std::cbegin(helper->pLeftOut), 0.0);
+      // dotProductRight = std::inner_product(std::cbegin(tmpVector), std::cend(tmpVector), std::cbegin(helper->pRightOut), 0.0);
 
-      // TODO: abstract to helper.buildCriterion();
-      helper.buildCriterionOut = buildCriterionSubtree && (dotProductLeft > 0) && (dotProductRight > 0);
+      // TODO: abstract to helper->buildCriterion();
+      // helper->buildCriterionOut = buildCriterionSubtree && (dotProductLeft > 0) && (dotProductRight > 0);
+      helper->buildCriterionOut = buildCriterionSubtree && helper->computeCriterion(_hamiltonian);
+
+      delete helperSubtree;
     }
   }
 

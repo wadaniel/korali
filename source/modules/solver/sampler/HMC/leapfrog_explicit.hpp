@@ -25,10 +25,9 @@ class LeapfrogExplicit : public Leapfrog
   * @param hamiltonian Hamiltonian object to calulcate energies.
   * @param modelEvaluationCount Needed to keep track of number of model evaluations.
   * @param numSamples Needed for ID of Sample.
-  * @param inverseMetric Needed for calculation of Kinetic Energy.
   * @param _k Experiment object.
   */
-  void step(std::vector<double> &q, std::vector<double> &p, const double stepSize, Hamiltonian *hamiltonian, size_t &modelEvaluationCount, const size_t &numSamples, std::vector<double> &inverseMetric, korali::Experiment *_k) override
+  void step(std::vector<double> &q, std::vector<double> &p, const double stepSize, Hamiltonian *hamiltonian, size_t &modelEvaluationCount, const size_t &numSamples, korali::Experiment *_k) override
   {
     size_t stateSpaceDim = hamiltonian->getStateSpaceDim();
     std::vector<double> dU = hamiltonian->dU(q, modelEvaluationCount, numSamples, _k);
@@ -38,7 +37,7 @@ class LeapfrogExplicit : public Leapfrog
       p[i] -= 0.5 * stepSize * dU[i];
     }
 
-    std::vector<double> dK = hamiltonian->dK(q, p, inverseMetric);
+    std::vector<double> dK = hamiltonian->dK(q, p);
     // std::cout << "dK[0] = " << dK[0] << std::endl;
     for (size_t i = 0; i < stateSpaceDim; ++i)
     {

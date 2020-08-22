@@ -39,29 +39,26 @@ class Hamiltonian
   * @param p Current momentum.
   * @param modelEvaluationCount Number of model evuations musst be increased.
   * @param numSamples Needed for Sample ID.
-  * @param inverseMetric Inverse Metric must be provided.
   * @param _k Experiment object.
   * @return Total energy.
   */
-  virtual double H(const std::vector<double> &q, const std::vector<double> &p, size_t &modelEvaluationCount, const size_t &numSamples, const std::vector<double> &inverseMetric, korali::Experiment *_k) = 0;
+  virtual double H(const std::vector<double> &q, const std::vector<double> &p, size_t &modelEvaluationCount, const size_t &numSamples, korali::Experiment *_k) = 0;
 
   /**
   * @brief Purely virtual kinetic energy function used for Hamiltonian Dynamics.
   * @param q Current position.
   * @param p Current momentum.
-  * @param inverseMetric Inverse Metric must be provided.
   * @return Kinetic energy.
   */
-  virtual double K(const std::vector<double> &q, const std::vector<double> &p, const std::vector<double> &inverseMetric) const = 0;
+  virtual double K(const std::vector<double> &q, const std::vector<double> &p) const = 0;
 
   /**
   * @brief Purely virtual gradient of kintetic energy function used for Hamiltonian Dynamics.
   * @param q Current position.
   * @param p Current momentum.
-  * @param inverseMetric Inverse Metric must be provided.
   * @return Gradient of Kinetic energy with current momentum.
   */
-  virtual std::vector<double> dK(const std::vector<double> &q, const std::vector<double> &p, const std::vector<double> &inverseMetric) const = 0;
+  virtual std::vector<double> dK(const std::vector<double> &q, const std::vector<double> &p) const = 0;
 
   /**
   * @brief Potential Energy function used for Hamiltonian Dynamics.
@@ -121,14 +118,18 @@ class Hamiltonian
   }
 
   /**
+  * @brief Generates sample of momentum.
+  * @return Sample of momentum from normal distribution with covariance matrix _metric.
+  */
+  virtual std::vector<double> sampleMomentum() const = 0;
+
+  /**
   * @brief Updates Inverse Metric by using samples to approximate the covariance matrix via the Fisher information.
   * @param samples Contains samples. One row is one sample.
   * @param positionMean Mean of samples.
-  * @param inverseMetric Inverse Metric to be approximated.
-  * @param metric Metric which is calculated from inverMetric.
   * @return Error code of Cholesky decomposition needed for dense Metric.
   */
-  virtual int updateInverseMetric(const std::vector<std::vector<double>> &samples, const std::vector<double> &positionMean, std::vector<double> &inverseMetric, std::vector<double> &metric) = 0;
+  virtual int updateInverseMetric(const std::vector<std::vector<double>> &samples, const std::vector<double> &positionMean) = 0;
 
   /**
   * @brief Getter function for State Space Dim.
@@ -158,12 +159,76 @@ class Hamiltonian
     return (dotProductLeft > 0) && (dotProductRight > 0);
   }
 
+  /**
+  * @brief Setter function for metric.
+  * @param metric Metric which is set.
+  * @return Returns true if dimensions are compatible. Returns false if dimension mismatch found.
+  */
+  bool setMetric(std::vector<double> &metric)
+  {
+    if (metric.size() != _metric.size())
+    {
+      return false;
+    }
+    else
+    {
+      _metric = metric;
+      return true;
+    }
+  }
+
+  /**
+  * @brief Setter function for inverse metric.
+  * @param inverseMetric Inverse metric which is set.
+  * @return Returns true if dimensions are compatible. Returns false if dimension mismatch found.
+  */
+  bool setInverseMetric(std::vector<double> &inverseMetric)
+  {
+    if (inverseMetric.size() != _inverseMetric.size())
+    {
+      return false;
+    }
+    else
+    {
+      _inverseMetric = inverseMetric;
+      return true;
+    }
+  }
+
+  /**
+  * @brief Getter function for metric.
+  * @return Returns metric of hamiltonian.
+  */
+  std::vector<double> getMetric() const
+  {
+    return _metric;
+  }
+
+  /**
+  * @brief Getter function for inverse metric.
+  * @return Returns inverse metric of hamiltonian.
+  */
+  std::vector<double> getInverseMetric() const
+  {
+    return _inverseMetric;
+  }
+
   protected:
   /**
   * @brief _stateSpaceDim
 State Space Dimension needed for Leapfrog integrator.
   */
   size_t _stateSpaceDim;
+
+  /**
+  * @brief _inverseMetric
+  */
+  std::vector<double> _metric;
+
+  /**
+  * @brief _inverseMetric
+  */
+  std::vector<double> _inverseMetric;
 };
 
 } // namespace sampler

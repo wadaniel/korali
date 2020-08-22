@@ -1,5 +1,5 @@
-#ifndef TREE_HELPER_EUCLIDEAN
-#define TREE_HELPER_EUCLIDEAN
+#ifndef TREE_HELPER_EUCLIDEAN_H
+#define TREE_HELPER_EUCLIDEAN_H
 
 #include "tree_helper_base.hpp"
 namespace korali

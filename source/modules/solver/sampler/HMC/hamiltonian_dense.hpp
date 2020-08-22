@@ -2,6 +2,7 @@
 #define HAMILTONIAN_DENSE_H
 
 #include "hamiltonian_base.hpp"
+#include "modules/distribution/multivariate/normal/normal.hpp"
 
 #include <gsl/gsl_linalg.h>
 #include <gsl/gsl_matrix.h>
@@ -26,7 +27,24 @@ class HamiltonianDense : public Hamiltonian
   * @brief Constructor with State Space Dim.
   * @param stateSpaceDim Dimension of State Space.
   */
-  HamiltonianDense(const size_t stateSpaceDim) : Hamiltonian{stateSpaceDim} {}
+  HamiltonianDense(const size_t stateSpaceDim) : Hamiltonian{stateSpaceDim}
+  {
+    _metric.resize(stateSpaceDim * stateSpaceDim);
+    _inverseMetric.resize(stateSpaceDim * stateSpaceDim);
+  }
+
+  /**
+  * @brief Constructor with State Space Dim.
+  * @param stateSpaceDim Dimension of State Space.
+  * @param multivariateGenerator Generator needed for momentum sampling.
+  */
+  HamiltonianDense(const size_t stateSpaceDim, korali::distribution::multivariate::Normal *multivariateGenerator) : Hamiltonian{stateSpaceDim}
+  {
+    _metric.resize(stateSpaceDim * stateSpaceDim);
+    _inverseMetric.resize(stateSpaceDim * stateSpaceDim);
+
+    _multivariateGenerator = multivariateGenerator;
+  }
 
   /**
   * @brief Total energy function used for Hamiltonian Dynamics.
@@ -34,30 +52,28 @@ class HamiltonianDense : public Hamiltonian
   * @param p Current momentum.
   * @param modelEvaluationCount Number of model evuations musst be increased.
   * @param numSamples Needed for Sample ID.
-  * @param inverseMetric Inverse Metric must be provided.
   * @param _k Experiment object.
   * @return Total energy.
   */
-  double H(const std::vector<double> &q, const std::vector<double> &p, size_t &modelEvaluationCount, const size_t &numSamples, const std::vector<double> &inverseMetric, korali::Experiment *_k) override
+  double H(const std::vector<double> &q, const std::vector<double> &p, size_t &modelEvaluationCount, const size_t &numSamples, korali::Experiment *_k) override
   {
-    return K(q, p, inverseMetric) + U(q, modelEvaluationCount, numSamples, _k);
+    return K(q, p) + U(q, modelEvaluationCount, numSamples, _k);
   }
 
   /**
   * @brief Kinetic energy function used for Hamiltonian Dynamics.
   * @param q Current position.
   * @param p Current momentum.
-  * @param inverseMetric Inverse Metric must be provided.
   * @return Kinetic energy.
   */
-  double K(const std::vector<double> &q, const std::vector<double> &p, const std::vector<double> &inverseMetric) const override
+  double K(const std::vector<double> &q, const std::vector<double> &p) const override
   {
     double tmpScalar = 0.0;
     for (size_t i = 0; i < _stateSpaceDim; ++i)
     {
       for (size_t j = 0; j < _stateSpaceDim; ++j)
       {
-        tmpScalar += p[i] * inverseMetric[i * _stateSpaceDim + j] * p[j];
+        tmpScalar += p[i] * _inverseMetric[i * _stateSpaceDim + j] * p[j];
       }
     }
 
@@ -68,10 +84,9 @@ class HamiltonianDense : public Hamiltonian
   * @brief Gradient of kintetic energy function used for Hamiltonian Dynamics.
   * @param q Current position.
   * @param p Current momentum.
-  * @param inverseMetric Inverse Metric must be provided.
   * @return Gradient of Kinetic energy with current momentum.
   */
-  std::vector<double> dK(const std::vector<double> &q, const std::vector<double> &p, const std::vector<double> &inverseMetric) const override
+  std::vector<double> dK(const std::vector<double> &q, const std::vector<double> &p) const override
   {
     std::vector<double> tmpVector(_stateSpaceDim, 0.0);
     double tmpScalar = 0.0;
@@ -81,22 +96,33 @@ class HamiltonianDense : public Hamiltonian
       tmpScalar = 0.0;
       for (size_t j = 0; j < _stateSpaceDim; ++j)
       {
-        tmpScalar += inverseMetric[i * _stateSpaceDim + j] * p[j];
+        tmpScalar += _inverseMetric[i * _stateSpaceDim + j] * p[j];
       }
       tmpVector[i] = tmpScalar;
     }
+
     return tmpVector;
+  }
+
+  /**
+  * @brief Generates sample of momentum.
+  * @return Sample of momentum from normal distribution with covariance matrix _metric.
+  */
+  std::vector<double> sampleMomentum() const override
+  {
+    // TODO: Change
+    std::vector<double> result(_stateSpaceDim, 0.0);
+    _multivariateGenerator->getRandomVector(&result[0], _stateSpaceDim);
+    return result;
   }
 
   /**
   * @brief Updates Inverse Metric by using samples to approximate the covariance matrix via the Fisher information.
   * @param samples Contains samples. One row is one sample.
   * @param positionMean Mean of samples.
-  * @param inverseMetric Inverse Metric to be approximated.
-  * @param metric Metric which is calculated from inverMetric.
   * @return Error code of Cholesky decomposition used to invert matrix.
   */
-  int updateInverseMetric(const std::vector<std::vector<double>> &samples, const std::vector<double> &positionMean, std::vector<double> &inverseMetric, std::vector<double> &metric) override
+  int updateInverseMetric(const std::vector<std::vector<double>> &samples, const std::vector<double> &positionMean) override
   {
     double tmpScalar;
     size_t numSamples = samples.size();
@@ -111,13 +137,28 @@ class HamiltonianDense : public Hamiltonian
         {
           tmpScalar += (samples[j][i] - positionMean[i]) * (samples[j][k] - positionMean[k]);
         }
-        inverseMetric[i * _stateSpaceDim + k] = tmpScalar / (numSamples - 1);
-        inverseMetric[k * _stateSpaceDim + i] = inverseMetric[i * _stateSpaceDim + k];
+        _inverseMetric[i * _stateSpaceDim + k] = tmpScalar / (numSamples - 1);
+        _inverseMetric[k * _stateSpaceDim + i] = _inverseMetric[i * _stateSpaceDim + k];
       }
     }
 
     // update Metric to be consisitent with Inverse Metric
-    int err = invertMatrix(inverseMetric, metric);
+    int err = invertMatrix(_inverseMetric, _metric);
+
+    _multivariateGenerator->_sigma = _metric;
+
+    // Cholesky Decomp
+    gsl_matrix_view sigma = gsl_matrix_view_array(&_multivariateGenerator->_sigma[0], _stateSpaceDim, _stateSpaceDim);
+
+    err = gsl_linalg_cholesky_decomp(&sigma.matrix);
+    if (err == GSL_EDOM)
+    {
+      // Do nothing if error occurs
+    }
+    else
+    {
+      _multivariateGenerator->updateDistribution();
+    }
 
     return err;
   }
@@ -177,6 +218,12 @@ class HamiltonianDense : public Hamiltonian
 
     return err;
   }
+
+  private:
+  /**
+  * @brief Multivariate normal generator needed for sampling of momentum from dense _metric.
+  */
+  korali::distribution::multivariate::Normal *_multivariateGenerator;
 };
 
 } // namespace sampler

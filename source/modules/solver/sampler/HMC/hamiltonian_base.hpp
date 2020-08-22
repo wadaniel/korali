@@ -9,8 +9,6 @@
 #include "modules/solver/sampler/MCMC/MCMC.hpp"
 #include "sample/sample.hpp"
 
-
-
 namespace korali
 {
 namespace solver
@@ -106,6 +104,7 @@ class Hamiltonian
   */
   virtual std::vector<double> dU(const std::vector<double> &q, size_t &modelEvaluationCount, const size_t &numSamples, korali::Experiment *_k)
   {
+    // TODO: REMOVE THIS SAMPLING PART
     // get sample
     auto sample = Sample();
     ++modelEvaluationCount;
@@ -146,7 +145,8 @@ class Hamiltonian
 
   protected:
   /**
-  * @brief State Space Dimension needed for Leapfrog integrator.
+  * @brief _stateSpaceDim
+State Space Dimension needed for Leapfrog integrator.
   */
   size_t _stateSpaceDim;
 };

@@ -2,6 +2,7 @@
 #define HAMILTONIAN_DIAG_H
 
 #include "hamiltonian_base.hpp"
+#include "modules/distribution/univariate/normal/normal.hpp"
 
 namespace korali
 {
@@ -20,7 +21,23 @@ class HamiltonianDiag : public Hamiltonian
   * @brief Constructor with State Space Dim.
   * @param stateSpaceDim Dimension of State Space.
   */
-  HamiltonianDiag(const size_t stateSpaceDim) : Hamiltonian{stateSpaceDim} {}
+  HamiltonianDiag(const size_t stateSpaceDim) : Hamiltonian{stateSpaceDim}
+  {
+    _metric.resize(stateSpaceDim);
+    _inverseMetric.resize(stateSpaceDim);
+  }
+
+  /**
+  * @brief Constructor with State Space Dim.
+  * @param stateSpaceDim Dimension of State Space.
+  * @param normalGenerator Generator needed for momentum sampling.
+  */
+  HamiltonianDiag(const size_t stateSpaceDim, korali::distribution::univariate::Normal *normalGenerator) : Hamiltonian{stateSpaceDim}
+  {
+    _metric.resize(stateSpaceDim);
+    _inverseMetric.resize(stateSpaceDim);
+    _normalGenerator = normalGenerator;
+  }
 
   /**
   * @brief Total energy function used for Hamiltonian Dynamics.
@@ -28,28 +45,26 @@ class HamiltonianDiag : public Hamiltonian
   * @param p Current momentum.
   * @param modelEvaluationCount Number of model evuations musst be increased.
   * @param numSamples Needed for Sample ID.
-  * @param inverseMetric Inverse Metric must be provided.
   * @param _k Experiment object.
   * @return Total energy.
   */
-  double H(const std::vector<double> &q, const std::vector<double> &p, size_t &modelEvaluationCount, const size_t &numSamples, const std::vector<double> &inverseMetric, korali::Experiment *_k) override
+  double H(const std::vector<double> &q, const std::vector<double> &p, size_t &modelEvaluationCount, const size_t &numSamples, korali::Experiment *_k) override
   {
-    return K(q, p, inverseMetric) + U(q, modelEvaluationCount, numSamples, _k);
+    return K(q, p) + U(q, modelEvaluationCount, numSamples, _k);
   }
 
   /**
   * @brief Kinetic energy function used for Hamiltonian Dynamics.
   * @param q Current position.
   * @param p Current momentum.
-  * @param inverseMetric Inverse Metric must be provided.
   * @return Kinetic energy.
   */
-  double K(const std::vector<double> &q, const std::vector<double> &p, const std::vector<double> &inverseMetric) const override
+  double K(const std::vector<double> &q, const std::vector<double> &p) const override
   {
     double tmpScalar = 0.0;
     for (size_t i = 0; i < _stateSpaceDim; ++i)
     {
-      tmpScalar += p[i] * inverseMetric[i] * p[i];
+      tmpScalar += p[i] * _inverseMetric[i] * p[i];
     }
 
     return 0.5 * tmpScalar;
@@ -59,28 +74,41 @@ class HamiltonianDiag : public Hamiltonian
   * @brief Gradient of kintetic energy function used for Hamiltonian Dynamics.
   * @param q Current position.
   * @param p Current momentum.
-  * @param inverseMetric Inverse Metric must be provided.
   * @return Gradient of Kinetic energy with current momentum.
   */
-  std::vector<double> dK(const std::vector<double> &q, const std::vector<double> &p, const std::vector<double> &inverseMetric) const override
+  std::vector<double> dK(const std::vector<double> &q, const std::vector<double> &p) const override
   {
     std::vector<double> tmpVector(_stateSpaceDim, 0.0);
     for (size_t i = 0; i < _stateSpaceDim; ++i)
     {
-      tmpVector[i] = inverseMetric[i] * p[i];
+      tmpVector[i] = _inverseMetric[i] * p[i];
     }
     return tmpVector;
+  }
+
+  /**
+  * @brief Generates sample of momentum.
+  * @return Sample of momentum from normal distribution with covariance matrix _metric. Only variance taken into account with diagonal metric.
+  */
+  std::vector<double> sampleMomentum() const override
+  {
+    std::vector<double> result(_stateSpaceDim);
+
+    for (size_t i = 0; i < _stateSpaceDim; ++i)
+    {
+      result[i] = std::sqrt(_metric[i]) * _normalGenerator->getRandomNumber();
+    }
+
+    return result;
   }
 
   /**
   * @brief Updates diagonal Inverse Metric by using samples to approximate the Variance (diagonal of Fisher Information matrix).
   * @param samples Contains samples. One row is one sample.
   * @param positionMean Mean of samples.
-  * @param inverseMetric Inverse Metric to be approximated.
-  * @param metric Metric which is calculated from inverMetric.
   * @return Error code not needed here to set to 0.
   */
-  int updateInverseMetric(const std::vector<std::vector<double>> &samples, const std::vector<double> &positionMean, std::vector<double> &inverseMetric, std::vector<double> &metric) override
+  int updateInverseMetric(const std::vector<std::vector<double>> &samples, const std::vector<double> &positionMean) override
   {
     double tmpScalar;
     size_t numSamples = samples.size();
@@ -93,12 +121,18 @@ class HamiltonianDiag : public Hamiltonian
       {
         tmpScalar += (samples[j][i] - positionMean[i]) * (samples[j][i] - positionMean[i]);
       }
-      inverseMetric[i] = tmpScalar / (numSamples - 1);
-      metric[i] = 1.0 / inverseMetric[i];
+      _inverseMetric[i] = tmpScalar / (numSamples - 1);
+      _metric[i] = 1.0 / _inverseMetric[i];
     }
 
     return 0;
   }
+
+  private:
+  /**
+  * @brief One dimensional normal generator needed for sampling of momentum from diagonal _metric.
+  */
+  korali::distribution::univariate::Normal *_normalGenerator;
 };
 
 } // namespace sampler

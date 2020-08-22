@@ -1,5 +1,5 @@
-#ifndef TREE_HELPER_BASE
-#define TREE_HELPER_BASE
+#ifndef TREE_HELPER_BASE_H
+#define TREE_HELPER_BASE_H
 
 #include <vector>
 namespace korali

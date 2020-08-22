@@ -12,6 +12,7 @@
 #include "hamiltonian_diag.hpp"
 #include "leapfrog_explicit.hpp"
 #include "tree_helper_euclidean.hpp"
+#include "tree_helper_riemannian.hpp"
 
 namespace korali
 {
@@ -38,12 +39,6 @@ class HMC : public Sampler
   * @brief Updates internal state such as mean, Metric and InverseMetric during sampling phase.
   */
   void updateStateSampling();
-
-  /**
-  * @brief Generate new sample.
-  * @return Sample of Momentum.
-  */
-  std::vector<double> generateCandidate();
 
   /**
   * @brief Process sample after evaluation.

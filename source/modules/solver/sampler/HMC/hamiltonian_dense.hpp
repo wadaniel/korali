@@ -61,7 +61,6 @@ class HamiltonianDense : public Hamiltonian
       }
     }
 
-    // std::cout << "K(" << p[0] << ") = " << 0.5 * tmpScalar << std::endl;
     return 0.5 * tmpScalar;
   }
 

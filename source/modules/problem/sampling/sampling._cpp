@@ -16,9 +16,6 @@ void Sampling::evaluate(Sample &sample)
 
   auto evaluation = KORALI_GET(double, sample, "logP(x)");
 
-  // TODO: Check 0 <= P(x) <= 1
-  // TODO: Use Lognormalization
-
   // If result is not a finite number, objective function evaluates to -Infinity
   if (std::isnan(evaluation))
     sample["logP(x)"] = -Inf;
@@ -33,8 +30,6 @@ void Sampling::evaluateGradient(korali::Sample &sample)
   sample.run(_probabilityFunction);
 
   auto evaluation = KORALI_GET(std::vector<double>, sample, "grad(logP(x))");
-
-  // TODO: find out why they write sample["F(x)"] = sample["logP(x)"]
 }
 
 } // namespace problem

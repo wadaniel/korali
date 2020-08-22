@@ -11,6 +11,7 @@
 #include "hamiltonian_dense.hpp"
 #include "hamiltonian_diag.hpp"
 #include "leapfrog_explicit.hpp"
+#include "tree_helper.hpp"
 
 namespace korali
 {
@@ -72,6 +73,12 @@ class HMC : public Sampler
   void runGenerationHMC(const double logUniSample);
 
   /**
+  * @brief Rund NUTS algorithm with buildTreeUtil.
+  * @param helper Helper struct for large argument list.
+  */
+  void runGenerationNUTSUtil(TreeHelper &helper);
+
+  /**
   * @brief Runs generation for NUTS.
   * @param logUniSample Log of uniform sample needed for Metropolis accepance / rejection step.
   */
@@ -120,6 +127,12 @@ class HMC : public Sampler
   * @return Boolean indicating if No U-Turn was found.
   */
   bool computeNoUTurnCriterion(const std::vector<double> &pLeft, const std::vector<double> &pRight, const std::vector<double> &rho) const;
+
+  /**
+  * @brief Recursive binary tree building algorithm. Used if Use NUTS is set to True.
+  * @param helper Helper struct for large argument list.
+  */
+  void buildTreeUtil(TreeHelper &helper);
 
   /**
   * @brief Recursive binary tree building algorithm. Used if Use NUTS is set to True.

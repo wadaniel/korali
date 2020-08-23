@@ -10,7 +10,7 @@ namespace sampler
 {
 /**
 * \struct TreeHelperEuclidean
-* @brief Euclidean child of helper class for long argument list of buildTree
+* @brief Euclidean helper class for long argument list of buildTree
 */
 struct TreeHelperEuclidean : public TreeHelper
 {
@@ -19,7 +19,7 @@ struct TreeHelperEuclidean : public TreeHelper
     * @param hamiltonian Hamiltonian object of system
     * @return Returns of tree should be built further.
     */
-  bool computeCriterion(Hamiltonian *hamiltonian) override
+  bool computeCriterion(Hamiltonian *hamiltonian)
   {
     return hamiltonian->computeStandardCriterion(qLeftOut, pLeftOut, qRightOut, pRightOut);
   }

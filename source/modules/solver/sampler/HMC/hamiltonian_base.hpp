@@ -124,6 +124,12 @@ class Hamiltonian
   virtual std::vector<double> sampleMomentum() const = 0;
 
   /**
+  * @brief Calculates inner product induces by inverse metric.
+  * @return pLeft.transpose * _inverseMetric * pRight.
+  */
+  virtual double innerProduct(std::vector<double> pLeft, std::vector<double> pRight) const = 0;
+
+  /**
   * @brief Updates Inverse Metric by using samples to approximate the covariance matrix via the Fisher information.
   * @param samples Contains samples. One row is one sample.
   * @param positionMean Mean of samples.

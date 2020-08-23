@@ -10,7 +10,7 @@ from helpers import *
 
 # Starting Korali's Engine
 import korali
-for useDiagonalMetric in [False]:
+for useDiagonalMetric in [False, True]:
     k = korali.Engine()
     e = korali.Experiment()
 

@@ -80,7 +80,9 @@ struct TreeHelper
     * @param hamiltonian Hamiltonian object of system
     * @return Returns of tree should be built further.
     */
-  virtual bool computeCriterion(Hamiltonian *hamiltonian) = 0;
+  bool computeCriterion(Hamiltonian *hamiltonian){};
+
+  bool computeCriterion(Hamiltonian *hamiltonian, const std::vector<double> pStart, const std::vector<double> pEnd, std::vector<double> rho){};
 };
 
 } // namespace sampler

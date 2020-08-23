@@ -103,6 +103,22 @@ class HamiltonianDiag : public Hamiltonian
   }
 
   /**
+  * @brief Calculates inner product induces by inverse metric.
+  * @return pLeft.transpose * _inverseMetric * pRight.
+  */
+  double innerProduct(std::vector<double> pLeft, std::vector<double> pRight) const
+  {
+    double result = 0.0;
+
+    for(size_t i = 0; i < _stateSpaceDim; ++i)
+    {
+      result += pLeft[i] * _inverseMetric[i] * pRight[i];
+    }
+
+    return result;
+  }
+
+  /**
   * @brief Updates diagonal Inverse Metric by using samples to approximate the Variance (diagonal of Fisher Information matrix).
   * @param samples Contains samples. One row is one sample.
   * @param positionMean Mean of samples.

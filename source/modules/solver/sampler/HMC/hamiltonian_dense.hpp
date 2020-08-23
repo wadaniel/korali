@@ -115,6 +115,25 @@ class HamiltonianDense : public Hamiltonian
     _multivariateGenerator->getRandomVector(&result[0], _stateSpaceDim);
     return result;
   }
+  
+  /**
+  * @brief Calculates inner product induces by inverse metric.
+  * @return pLeft.transpose * _inverseMetric * pRight.
+  */
+  double innerProduct(std::vector<double> pLeft, std::vector<double> pRight) const
+  {
+    double result = 0.0;
+
+    for(size_t i = 0; i < _stateSpaceDim; ++i)
+    {
+      for(size_t j = 0; j < _stateSpaceDim; ++j)
+      {
+        result += pLeft[i] * _inverseMetric[i*_stateSpaceDim + j] * pRight[j];
+      }
+    }
+
+    return result;
+  }
 
   /**
   * @brief Updates Inverse Metric by using samples to approximate the covariance matrix via the Fisher information.

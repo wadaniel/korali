@@ -82,6 +82,14 @@ struct TreeHelper
     */
   bool computeCriterion(Hamiltonian *hamiltonian){};
 
+  /**
+    * @brief Computes No U-Turn Sampling (NUTS) criterion
+    * @param hamiltonian Hamiltonian object of system
+    * @param pStart Starting momentum of trajectory
+    * @param pEnd Ending momentum of trajsectory
+    * @param rho Sum of momenta encountered in trajectory
+    * @return Returns of tree should be built further.
+    */
   bool computeCriterion(Hamiltonian *hamiltonian, const std::vector<double> pStart, const std::vector<double> pEnd, std::vector<double> rho){};
 };
 

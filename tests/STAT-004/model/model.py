@@ -8,13 +8,13 @@ def lgaussian(s):
   r = -0.5 * ((x0 + 2.0)**2 / (9.0)) - 0.5 * math.log(2 * math.pi * 9)
   s["logP(x)"] = r
   s["grad(logP(x))"] = [-(x0 + 2.0) / 9.0]
+  s["H(logP(x))"] = [[-1.0 / 9.0]]
 
 
 def lgaussianCustom(s):
   x0 = s["Parameters"][0]
   r = -0.5 * ((x0 + 2.0)**2 / (9.0)) - 0.5 * math.log(2 * math.pi * 9)
   s["logLikelihood"] = r
-
 
 # log Gaussian in d dimension with mean 0 and var 1
 def lgaussianxd(s, d):
@@ -27,6 +27,7 @@ def lgaussianxd(s, d):
   for i in range(d):
     grad.append(-s["Parameters"][i])
   s["grad(logP(x))"] = grad
+  s["H(logP(x))"] = (-np.identity(d)).tolist()
 
 
 def lgaussianxdCustom(s, d):
@@ -48,6 +49,7 @@ def lexponential(s):
     r = math.log(lam) - lam * x0
   s["logP(x)"] = r
   s["grad(logP(x))"] = [-lam]
+  s["H(logP(x))"] = [[0.0]]
 
 
 def lexponentialCustom(s):
@@ -69,6 +71,7 @@ def llaplace(s):
   r = -math.log(2.0 * scale) - abs(x0 - mu) / scale
   s["logP(x)"] = r
   s["grad(logP(x))"] = [-np.sign(x0 - mu) / scale]
+  s["H(logP(x))"] = [[0.0]]
 
 
 def llaplaceCustom(s):

@@ -125,6 +125,8 @@ class Hamiltonian
 
   /**
   * @brief Calculates inner product induces by inverse metric.
+  * @param pLeft Left argument (momentum).
+  * @param pRight Right argument (momentum).
   * @return pLeft.transpose * _inverseMetric * pRight.
   */
   virtual double innerProduct(std::vector<double> pLeft, std::vector<double> pRight) const = 0;
@@ -170,36 +172,14 @@ class Hamiltonian
   * @param metric Metric which is set.
   * @return Returns true if dimensions are compatible. Returns false if dimension mismatch found.
   */
-  bool setMetric(std::vector<double> &metric)
-  {
-    if (metric.size() != _metric.size())
-    {
-      return false;
-    }
-    else
-    {
-      _metric = metric;
-      return true;
-    }
-  }
+  virtual bool setMetric(std::vector<double> &metric) = 0;
 
   /**
   * @brief Setter function for inverse metric.
   * @param inverseMetric Inverse metric which is set.
   * @return Returns true if dimensions are compatible. Returns false if dimension mismatch found.
   */
-  bool setInverseMetric(std::vector<double> &inverseMetric)
-  {
-    if (inverseMetric.size() != _inverseMetric.size())
-    {
-      return false;
-    }
-    else
-    {
-      _inverseMetric = inverseMetric;
-      return true;
-    }
-  }
+  virtual bool setInverseMetric(std::vector<double> &inverseMetric) = 0;
 
   /**
   * @brief Getter function for metric.

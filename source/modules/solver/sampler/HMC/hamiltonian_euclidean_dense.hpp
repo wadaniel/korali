@@ -1,7 +1,7 @@
-#ifndef HAMILTONIAN_DENSE_H
-#define HAMILTONIAN_DENSE_H
+#ifndef HAMILTONIAN_EUCLIDEAN_DENSE_H
+#define HAMILTONIAN_EUCLIDEAN_DENSE_H
 
-#include "hamiltonian_base.hpp"
+#include "hamiltonian_euclidean_base.hpp"
 #include "modules/distribution/multivariate/normal/normal.hpp"
 
 #include <gsl/gsl_linalg.h>
@@ -17,17 +17,17 @@ namespace solver
 namespace sampler
 {
 /**
-* \class HamiltonianDense
+* \class HamiltonianEuclideanDense
 * @brief Used for calculating energies with euclidean metric.
 */
-class HamiltonianDense : public Hamiltonian
+class HamiltonianEuclideanDense : public HamiltonianEuclidean
 {
   public:
   /**
   * @brief Constructor with State Space Dim.
   * @param stateSpaceDim Dimension of State Space.
   */
-  HamiltonianDense(const size_t stateSpaceDim) : Hamiltonian{stateSpaceDim}
+  HamiltonianEuclideanDense(const size_t stateSpaceDim) : HamiltonianEuclidean{stateSpaceDim}
   {
     _metric.resize(stateSpaceDim * stateSpaceDim);
     _inverseMetric.resize(stateSpaceDim * stateSpaceDim);
@@ -38,7 +38,7 @@ class HamiltonianDense : public Hamiltonian
   * @param stateSpaceDim Dimension of State Space.
   * @param multivariateGenerator Generator needed for momentum sampling.
   */
-  HamiltonianDense(const size_t stateSpaceDim, korali::distribution::multivariate::Normal *multivariateGenerator) : Hamiltonian{stateSpaceDim}
+  HamiltonianEuclideanDense(const size_t stateSpaceDim, korali::distribution::multivariate::Normal *multivariateGenerator) : HamiltonianEuclidean{stateSpaceDim}
   {
     _metric.resize(stateSpaceDim * stateSpaceDim);
     _inverseMetric.resize(stateSpaceDim * stateSpaceDim);
@@ -115,20 +115,22 @@ class HamiltonianDense : public Hamiltonian
     _multivariateGenerator->getRandomVector(&result[0], _stateSpaceDim);
     return result;
   }
-  
+
   /**
   * @brief Calculates inner product induces by inverse metric.
+  * @param pLeft Left argument (momentum).
+  * @param pRight Right argument (momentum).
   * @return pLeft.transpose * _inverseMetric * pRight.
   */
   double innerProduct(std::vector<double> pLeft, std::vector<double> pRight) const
   {
     double result = 0.0;
 
-    for(size_t i = 0; i < _stateSpaceDim; ++i)
+    for (size_t i = 0; i < _stateSpaceDim; ++i)
     {
-      for(size_t j = 0; j < _stateSpaceDim; ++j)
+      for (size_t j = 0; j < _stateSpaceDim; ++j)
       {
-        result += pLeft[i] * _inverseMetric[i*_stateSpaceDim + j] * pRight[j];
+        result += pLeft[i] * _inverseMetric[i * _stateSpaceDim + j] * pRight[j];
       }
     }
 

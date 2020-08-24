@@ -57,7 +57,8 @@ void HMC::setInitialConfiguration()
       _inverseMetric[i] = 1.0 / _metric[i];
     }
 
-    _hamiltonian = new HamiltonianDiag{_stateSpaceDim, _normalGenerator};
+    // TODO: Change back to HamiltonianEuclideanDiag
+    _hamiltonian = new HamiltonianEuclideanDiag{_stateSpaceDim, _normalGenerator};
     break;
 
   case true:
@@ -87,7 +88,7 @@ void HMC::setInitialConfiguration()
 
     _multivariateGenerator->updateDistribution();
 
-    _hamiltonian = new HamiltonianDense{_stateSpaceDim, _multivariateGenerator};
+    _hamiltonian = new HamiltonianEuclideanDense{_stateSpaceDim, _multivariateGenerator};
     break;
     // default:
     //   KORALI_LOG_ERROR("Use Diagonal Metric must be set to True or False.\n");
@@ -111,6 +112,46 @@ void HMC::setInitialConfiguration()
   _proposedSampleCount = 0;
   _chainLength = 0;
   _acceptanceRate = 1.0;
+
+  // // TESTING
+  // // get sample
+  // korali::Sample sample = Sample();
+  // korali::Sample *sample_ptr = &sample;
+  // std::vector<double> q(_stateSpaceDim, 1.0);
+  // sample["Parameters"] = q;
+  // sample["Sample Id"] = 0;
+  // sample["Module"] = "Problem";
+  // sample["Operation"] = "Evaluate Hessian";
+  // KORALI_START(sample);
+  // KORALI_WAIT(sample);
+
+  // // evaluate grad(logP(x)) (extremely slow)
+  // std::vector<std::vector<double> > evaluation = KORALI_GET(std::vector<std::vector<double> >, sample, "H(logP(x))");
+  // std::cout << "_stateSpaceDim = " << _stateSpaceDim << std::endl;
+
+  // std::cout << "H(logP(1.0)) = " << std::endl;
+  // for(size_t i = 0; i < _stateSpaceDim; ++i)
+  // {
+  //   for(size_t j = 0; j < _stateSpaceDim; ++j)
+  //   {
+  //     std::cout << evaluation[i][j] << std::endl;
+  //   }
+  // }
+
+  // std::cout << "test1" << std::endl;
+
+  // HamiltonianRiemannianDiag *riemannianHamiltonian = new HamiltonianRiemannianDiag{_stateSpaceDim, _normalGenerator};
+
+  // std::vector<double> evaluation2 = riemannianHamiltonian->hessianU(q, _modelEvaluationCount, 0, _k);
+  // for(size_t i = 0; i < _stateSpaceDim; ++i)
+  // {
+  //   for(size_t j = 0; j < _stateSpaceDim; ++j)
+  //   {
+  //     std::cout << evaluation2[i*_stateSpaceDim + j] << std::endl;
+  //   }
+  // }
+
+  // std::cout << "test2" << std::endl;
 
   return;
 }
@@ -880,7 +921,7 @@ void HMC::buildTreeUtil(TreeHelperEuclidean *helper)
   return;
 }
 
-void HMC::buildTreeUtilIntegration(TreeHelperRiemannian *helper, std::vector<double>& rho)
+void HMC::buildTreeUtilIntegration(TreeHelperRiemannian *helper, std::vector<double> &rho)
 {
   helper->qLeftOut = helper->qIn;
   helper->pLeftOut = helper->pIn;

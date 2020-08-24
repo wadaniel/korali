@@ -8,8 +8,9 @@
 #include "modules/solver/sampler/sampler.hpp"
 #include <vector>
 
-#include "hamiltonian_dense.hpp"
-#include "hamiltonian_diag.hpp"
+#include "hamiltonian_euclidean_dense.hpp"
+#include "hamiltonian_euclidean_diag.hpp"
+#include "hamiltonian_riemannian_diag.hpp"
 #include "leapfrog_explicit.hpp"
 #include "tree_helper_euclidean.hpp"
 #include "tree_helper_riemannian.hpp"
@@ -127,14 +128,20 @@ class HMC : public Sampler
   */
   void buildTreeUtil(TreeHelperEuclidean *helper);
 
-
+  /**
+  * @brief Dot product induced by inverse metric.
+  * @param pLeft Left argument (momentum).
+  * @param pRight Right argument (momentum).
+  * @return pLeft.T * inverseMetric * pRight
+  */
   double dotProduct(const std::vector<double> &pLeft, const std::vector<double> &pRight) const;
 
   /**
   * @brief Recursive binary tree building algorithm. Used if Use NUTS is set to True.
   * @param helper Helper struct for large argument list.
+  * @param rho Sum of momenta encountered along momentum.
   */
-  void buildTreeUtilIntegration(TreeHelperRiemannian *helper, std::vector<double>& rho);
+  void buildTreeUtilIntegration(TreeHelperRiemannian *helper, std::vector<double> &rho);
 
   /**
   * @brief Recursive binary tree building algorithm. Used if Use NUTS is set to True.

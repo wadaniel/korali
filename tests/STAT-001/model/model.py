@@ -10,3 +10,4 @@ def model(s):
   s["logP(x)"] = r
   s["logLikelihood"] = r
   s["grad(logP(x))"] = [-v]
+  s["H(logP(x))"] = [[-1.0]]

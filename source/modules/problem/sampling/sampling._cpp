@@ -32,6 +32,13 @@ void Sampling::evaluateGradient(korali::Sample &sample)
   auto evaluation = KORALI_GET(std::vector<double>, sample, "grad(logP(x))");
 }
 
+void Sampling::evaluateHessian(korali::Sample &sample)
+{
+  sample.run(_probabilityFunction);
+
+  auto evaluation = KORALI_GET(std::vector<std::vector<double>>, sample, "H(logP(x))");
+}
+
 } // namespace problem
 
 } // namespace korali

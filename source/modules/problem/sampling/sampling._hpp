@@ -24,6 +24,12 @@ class Sampling : public korali::Problem
    * @param sample Sample to evaluate
    */
   virtual void evaluateGradient(korali::Sample &sample);
+
+  /**
+   * @brief Evaluates the Heassian of logarithm probability density (H(logP(x))) of the function at the given parameters.
+   * @param sample Sample to evaluate
+   */
+  virtual void evaluateHessian(korali::Sample &sample);
 };
 
 } // namespace problem

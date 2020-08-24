@@ -1,7 +1,7 @@
-#ifndef HAMILTONIAN_DIAG_H
-#define HAMILTONIAN_DIAG_H
+#ifndef HAMILTONIAN_EUCLIDEAN_DIAG_H
+#define HAMILTONIAN_EUCLIDEAN_DIAG_H
 
-#include "hamiltonian_base.hpp"
+#include "hamiltonian_euclidean_base.hpp"
 #include "modules/distribution/univariate/normal/normal.hpp"
 
 namespace korali
@@ -11,17 +11,17 @@ namespace solver
 namespace sampler
 {
 /**
-* \class HamiltonianDiag
+* \class HamiltonianEuclideanDiag
 * @brief Used for calculating energies with unit euclidean metric.
 */
-class HamiltonianDiag : public Hamiltonian
+class HamiltonianEuclideanDiag : public HamiltonianEuclidean
 {
   public:
   /**
   * @brief Constructor with State Space Dim.
   * @param stateSpaceDim Dimension of State Space.
   */
-  HamiltonianDiag(const size_t stateSpaceDim) : Hamiltonian{stateSpaceDim}
+  HamiltonianEuclideanDiag(const size_t stateSpaceDim) : HamiltonianEuclidean{stateSpaceDim}
   {
     _metric.resize(stateSpaceDim);
     _inverseMetric.resize(stateSpaceDim);
@@ -32,7 +32,7 @@ class HamiltonianDiag : public Hamiltonian
   * @param stateSpaceDim Dimension of State Space.
   * @param normalGenerator Generator needed for momentum sampling.
   */
-  HamiltonianDiag(const size_t stateSpaceDim, korali::distribution::univariate::Normal *normalGenerator) : Hamiltonian{stateSpaceDim}
+  HamiltonianEuclideanDiag(const size_t stateSpaceDim, korali::distribution::univariate::Normal *normalGenerator) : HamiltonianEuclidean{stateSpaceDim}
   {
     _metric.resize(stateSpaceDim);
     _inverseMetric.resize(stateSpaceDim);
@@ -104,13 +104,15 @@ class HamiltonianDiag : public Hamiltonian
 
   /**
   * @brief Calculates inner product induces by inverse metric.
+  * @param pLeft Left argument (momentum).
+  * @param pRight Right argument (momentum).
   * @return pLeft.transpose * _inverseMetric * pRight.
   */
   double innerProduct(std::vector<double> pLeft, std::vector<double> pRight) const
   {
     double result = 0.0;
 
-    for(size_t i = 0; i < _stateSpaceDim; ++i)
+    for (size_t i = 0; i < _stateSpaceDim; ++i)
     {
       result += pLeft[i] * _inverseMetric[i] * pRight[i];
     }

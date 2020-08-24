@@ -8,3 +8,4 @@ def model(s):
   r = -0.5 * v * v
   s["logP(x)"] = r
   s["grad(logP(x))"] = [-v]
+  s["H(logP(x))"] = [[-1.0]]

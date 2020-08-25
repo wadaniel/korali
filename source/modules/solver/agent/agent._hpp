@@ -48,19 +48,6 @@ class Agent : public Solver
   virtual void updateHyperparameters(const knlohmann::json &hyperparameters) = 0;
 
   /**
-  * @brief Normalizes neural network batch normalization mean and variances
-  * @param nn The neural network to normalize
-  */
-  void normalizeNeuralNetwork(korali::NeuralNetwork *nn);
-
-  /**
-  * @brief Function to query policy and get the best action for the given state
-  * @param state The input state
-  * @return The action, given by the policy, corresponding to the state and the current policy hyperparameters
-  */
-  virtual std::vector<double> queryPolicy(const std::vector<double> &state) = 0;
-
-  /**
     * @brief Initializes the internal state of the policy
     */
   virtual void initializeAgent() = 0;

@@ -1,0 +1,32 @@
+#include "modules/problem/reinforcementLearning/continuous/continuous.hpp"
+
+namespace korali
+{
+namespace problem
+{
+namespace reinforcementLearning
+{
+
+void Continuous::initialize()
+{
+   ReinforcementLearning::initialize();
+
+  /*********************************************************************
+   * Verifying Continuous Variable Information
+   *********************************************************************/
+
+  for (size_t i = 0; i < _actionVectorIndexes.size(); i++)
+  {
+    size_t varIdx = _actionVectorIndexes[i];
+
+    if (_k->_variables[varIdx]->_upperBound < _k->_variables[varIdx]->_lowerBound) KORALI_LOG_ERROR("Upper bound for variable %lu (%s) is lower than the lower bound (%f < %f).\n", varIdx, _k->_variables[varIdx]->_name.c_str(), _k->_variables[varIdx]->_upperBound, _k->_variables[varIdx]->_lowerBound);
+    if (std::isfinite(_k->_variables[varIdx]->_lowerBound) == false) KORALI_LOG_ERROR("Lower bound for variable %lu (%s) is not finite or has not been specified.\n", varIdx, _k->_variables[varIdx]->_name.c_str());
+    if (std::isfinite(_k->_variables[varIdx]->_upperBound) == false) KORALI_LOG_ERROR("Upper bound for variable %lu (%s) is not finite or has not been specified.\n", varIdx, _k->_variables[varIdx]->_name.c_str());
+  }
+}
+
+} // namespace reinforcementLearning
+
+} // namespace problem
+
+} // namespace korali

@@ -267,18 +267,24 @@ void Layer::createBackwardPipeline()
 
    // Create the primitive.
    _backwardActivationPrimitive = softmax_backward(backwardActivationPrimitiveDesc);
+
+   // Setting argument
+   _backwardActivationArgs.insert({DNNL_ARG_DST, _activationMem}); // Input
   }
 
   // Primitive arguments.
   _backwardActivationArgs.insert({DNNL_ARG_DIFF_DST, _activationDiffMem}); // Input
+
   if (_batchNormalizationEnabled)
+  {
     _backwardActivationArgs.insert({DNNL_ARG_SRC, _batchNormalizationMem}); // Input
-  else
-    _backwardActivationArgs.insert({DNNL_ARG_SRC, _nodeMem}); // Input
-  if (_batchNormalizationEnabled)
     _backwardActivationArgs.insert({DNNL_ARG_DIFF_SRC, _batchNormalizationDiffMem}); // Output
+  }
   else
-    _backwardActivationArgs.insert({DNNL_ARG_DIFF_SRC, _nodeDiffMem}); // Output
+  {
+   _backwardActivationArgs.insert({DNNL_ARG_SRC, _nodeMem}); // Input
+   _backwardActivationArgs.insert({DNNL_ARG_DIFF_SRC, _nodeDiffMem}); // Output
+  }
 
   // We do not define the following primitives for the input layer
   if (_prevLayer != NULL)

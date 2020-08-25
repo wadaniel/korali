@@ -58,7 +58,6 @@ void DQN::initializeAgent()
   if (_k->_currentGeneration == 0)
   {
     // Setting intial epsilon to 1.0 (initial exploratory phase)
-    _policyEpsilonInitialized = false;
     _policyEpsilonCurrentValue = 1.0;
 
     // Settting Epsilon
@@ -162,26 +161,47 @@ void DQN::trainAgent()
   * by sampling a few more mini-batches after the optimization steps
   ******************************************************************************/
 
-   normalizeNeuralNetwork(_criticLearner->_trainingNeuralNetwork);
+   // Allocating memory for the mini batch set
+   std::vector<std::vector<std::vector<double>>> miniBatches(_normalizationSteps);
+
+   for (size_t i = 0; i < _normalizationSteps; i++)
+    miniBatches[i].resize(_criticMiniBatchSize);
+
+   for (size_t i = 0; i < _normalizationSteps; i++)
+    for (size_t j = 0; j < _criticMiniBatchSize; j++) miniBatches[i][j].resize(_problem->_stateVectorSize + _problem->_actionVectorSize);
+
+   // Filling the minibatches
+   for (size_t step = 0; step < _normalizationSteps; step++)
+   {
+     // Shuffling indexes to choose the mini batch from
+     std::shuffle(experienceReplayIndexes.begin(), experienceReplayIndexes.end(), *mt);
+
+     for (size_t i = 0; i < _criticMiniBatchSize; i++)
+     {
+       // Selecting a uniformly random selected, yet not repeated experience
+       size_t expId = experienceReplayIndexes[i];
+
+       for (size_t j = 0; j < _problem->_stateVectorSize; j++) miniBatches[step][i][j] = _experienceReplayHistory[expId]["State"][j];
+       for (size_t j = 0; j < _problem->_actionVectorSize; j++) miniBatches[step][i][_problem->_stateVectorSize + j] = _experienceReplayHistory[expId]["Action"][j];
+     }
+   }
+
+   _criticLearner->_trainingNeuralNetwork->normalize(miniBatches);
+
+   /*********************************************************************
+   * Updating hyperparameters and broadcasting them to the workers
+   *********************************************************************/
 
    // Storing new Critic's hyperparameters
    _hyperparameters["Critic"] = _criticLearner->getHyperparameters();
 
+  /////////////// Updating Epsilon
 
-  // Initializing the value of epsilon, if not already set
-  if (_policyEpsilonInitialized == false)
-  {
-    _policyEpsilonCurrentValue = _policyEpsilonInitialValue;
-    _policyEpsilonInitialized = true;
-  }
-  else
-  {
-    // Decreasing the value of epsilon
-    _policyEpsilonCurrentValue = _policyEpsilonCurrentValue - _policyEpsilonDecreaseRate;
+  // Decreasing the value of epsilon
+  _policyEpsilonCurrentValue = _policyEpsilonCurrentValue - _policyEpsilonDecreaseRate;
 
-    // Without exceeding the lower bound
-    if (_policyEpsilonCurrentValue < _policyEpsilonTargetValue) _policyEpsilonCurrentValue = _policyEpsilonTargetValue;
-  }
+  // Without exceeding the lower bound
+  if (_policyEpsilonCurrentValue < _policyEpsilonTargetValue) _policyEpsilonCurrentValue = _policyEpsilonTargetValue;
 
   // Updating Epsilon
   _hyperparameters["Epsilon"] = _policyEpsilonCurrentValue;

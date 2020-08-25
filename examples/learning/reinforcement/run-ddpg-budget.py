@@ -56,7 +56,7 @@ e = korali.Experiment()
 
 ### Defining the Cartpole problem's configuration
 
-e["Problem"]["Type"] = "Reinforcement Learning"
+e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = env
 
 e["Variables"][0]["Name"] = "Budget"

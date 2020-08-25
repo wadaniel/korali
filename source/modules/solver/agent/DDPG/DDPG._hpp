@@ -47,7 +47,7 @@ class DDPG : public Agent
   /**
    * @brief Storage for statistical data of the policy gradients
    */
-  std::vector<double> avgGradients;
+  std::vector<double> _avgGradients;
 
   /**
    * @brief Variable to keep track of the current noise added to the action
@@ -68,8 +68,15 @@ class DDPG : public Agent
    */
   std::vector<double> getRandomAction();
 
+
+  /**
+  * @brief Function to query policy and get the best action for the given state
+  * @param state The input state
+  * @return The action value, corresponding to the state and the current policy hyperparameters
+  */
+  std::vector<double> queryPolicy(const std::vector<double> &state);
+
   void getAction(korali::Sample& sample) override;
-  std::vector<double> queryPolicy(const std::vector<double> &state) override;
   void updateHyperparameters(const knlohmann::json &hyperparameters) override;
   void trainAgent() override;
   void printAgentInformation() override;

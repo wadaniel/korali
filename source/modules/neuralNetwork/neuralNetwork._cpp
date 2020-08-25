@@ -285,6 +285,37 @@ void NeuralNetwork::setNormalizationMeans(const std::vector<double> &normalizati
 #endif
 }
 
+void NeuralNetwork::normalize(const std::vector<std::vector<std::vector<double>>>& miniBatches)
+{
+  std::vector<double> newMeans(_normalizationParameterCount, 0.0);
+  std::vector<double> newVariances(_normalizationParameterCount, 0.0);
+
+  for (size_t step = 0; step < miniBatches.size(); step++)
+  {
+    setInput(miniBatches[step]);
+    forward();
+
+    // Getting this mini-batch's normalization means and variances
+    auto newMeans = getNormalizationMeans();
+    auto newVariances = getNormalizationVariances();
+
+    // Accuulating their values into the new vector
+    for (size_t i = 0; i < _normalizationParameterCount; i++) newMeans[i] += newMeans[i];
+    for (size_t i = 0; i < _normalizationParameterCount; i++) newVariances[i] += newVariances[i];
+  }
+
+  // Calculating the actual mean and variance averages
+  for (size_t i = 0; i < _normalizationParameterCount; i++)
+  {
+    newMeans[i] = newMeans[i] / (double)miniBatches.size();
+    newVariances[i] = newVariances[i] / (double)(miniBatches.size() - 1.0);
+  }
+
+  // Setting the new adjusted means and variances
+  setNormalizationMeans(newMeans);
+  setNormalizationVariances(newVariances);
+}
+
 std::vector<double> NeuralNetwork::getNormalizationVariances()
 {
   // Creating single precision floating-point version of the hyperparameters

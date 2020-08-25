@@ -62,7 +62,7 @@ class Hamiltonian
   * @param p Current momentum.
   * @return Kinetic energy.
   */
-  virtual double K(const std::vector<double> &q, const std::vector<double> &p) const = 0;
+  virtual double K(const std::vector<double> &q, const std::vector<double> &p, korali::Experiment *_k = 0) = 0;
 
   /**
   * @brief Purely virtual gradient of kintetic energy function used for Hamiltonian Dynamics.
@@ -70,16 +70,21 @@ class Hamiltonian
   * @param p Current momentum.
   * @return Gradient of Kinetic energy with current momentum.
   */
-  virtual std::vector<double> dK(const std::vector<double> &q, const std::vector<double> &p) const = 0;
+  virtual std::vector<double> dK(const std::vector<double> &q, const std::vector<double> &p) = 0;
 
   /**
   * @brief Updates current position of hamiltonian.
   * @param q Current position.
   * @param _k Experiment object.
   */
-  void updateHamiltonian(const std::vector<double> &q, korali::Experiment *_k)
+  virtual void updateHamiltonian(const std::vector<double> &q, korali::Experiment *_k)
   {
     (*_sample)["Parameters"] = q;
+
+    if(verbosity == true)
+    {
+      std::cout << "In Hamiltonian::updateHamiltonian " << std::endl;
+    }
 
     KORALI_START((*_sample));
     KORALI_WAIT((*_sample));

@@ -25,6 +25,7 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
   {
     _metric.resize(stateSpaceDim);
     _inverseMetric.resize(stateSpaceDim);
+    _inverseRegularizationParam = 1.0;
   }
 
   /**
@@ -37,6 +38,7 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
     _metric.resize(stateSpaceDim);
     _inverseMetric.resize(stateSpaceDim);
     _normalGenerator = normalGenerator;
+    _inverseRegularizationParam = 1.0;
   }
 
   /**
@@ -48,7 +50,7 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
   */
   double H(const std::vector<double> &q, const std::vector<double> &p, korali::Experiment *_k) override
   {
-    return K(q, p) + U(q, _k);
+    return K(q, p, _k) + U(q, _k);
   }
 
   /**
@@ -57,16 +59,22 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
   * @param p Current momentum.
   * @return Kinetic energy.
   */
-  double K(const std::vector<double> &q, const std::vector<double> &p) const override
+  double K(const std::vector<double> &q, const std::vector<double> &p, korali::Experiment *_k = 0) override
   {
-    double tmpScalar = 0.0;
-    // updateHamiltonian(q);
-    for (int i = 0; i < _stateSpaceDim; ++i)
+    // make sure hamiltonian updated in tau
+    if(_k == 0)
     {
-      tmpScalar += p[i] * _inverseMetric[i] * p[i];
+      std::cout << "Error in RiemannianHamiltonianDiag::K : Experiment pointer _k initialized with nullptr" << std::endl;
+    }
+    
+    if (verbosity == true)
+    {
+      std::cout << "In HamiltonianRiemannianDiag::K :" << std::endl;
+      printf("%s\n", _sample->_js.getJson().dump(2).c_str());
+      fflush(stdout);
     }
 
-    return 0.5 * (tmpScalar + _logDetMetric);
+    return 0.5 * (tau(q, p, _k) + _logDetMetric);
   }
 
   /**
@@ -75,7 +83,7 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
   * @param p Current momentum.
   * @return Gradient of Kinetic energy with current momentum.
   */
-  std::vector<double> dK(const std::vector<double> &q, const std::vector<double> &p) const override
+  std::vector<double> dK(const std::vector<double> &q, const std::vector<double> &p) override
   {
     std::vector<double> tmpVector(_stateSpaceDim, 0.0);
     for (int i = 0; i < _stateSpaceDim; ++i)
@@ -83,6 +91,204 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
       tmpVector[i] = _inverseMetric[i] * p[i];
     }
     return tmpVector;
+  }
+
+  double tau(const std::vector<double> &q, const std::vector<double> &p, korali::Experiment *_k)
+  {
+    double tmpScalar = 0.0;
+
+    updateHamiltonian(q, _k);
+
+    for (int i = 0; i < _stateSpaceDim; ++i)
+    {
+      tmpScalar += p[i] * _inverseMetric[i] * p[i];
+    }
+
+    if (verbosity == true)
+    {
+      std::cout << "In HamiltonianRiemannianDiag::tau :" << std::endl;
+      printf("%s\n", _sample->_js.getJson().dump(2).c_str());
+      fflush(stdout);
+    }
+
+    return 0.5 * tmpScalar;
+  }
+
+  std::vector<double> dtau_dq(const std::vector<double> &q, const std::vector<double> &p, korali::Experiment *_k)
+  {
+    std::vector<double> result(_stateSpaceDim, 0.0);
+    std::vector<double> gradU = dU(q, _k);
+    std::vector<double> H_U = hessianU(q, _k);
+    
+    for(size_t j = 0; j < _stateSpaceDim; ++j)
+    {
+      result[j] = 0.0;
+      for(size_t i = 0; i < _stateSpaceDim; ++i)
+      {
+        double arg = _inverseRegularizationParam * (gradU[i] * gradU[i]);
+        result[j] += H_U[i*_stateSpaceDim + j] / (std::pow(gradU[i], 3)) * (_inverseRegularizationParam / std::cosh(arg) - std::tanh(arg)) * p[i] * p[i];
+      }
+    }
+
+    if(verbosity == true)
+    {
+      std::cout << "dtau_dq(q, p, _k) = ";
+      __printVec(result);
+      std::cout << "with q = " << std::endl;
+      __printVec(q);
+      std::cout << "with p = " << std::endl;
+      __printVec(p);
+    }
+
+    return result;
+  }
+
+  std::vector<double> dtau_dp(const std::vector<double> &q, const std::vector<double> &p, korali::Experiment *_k)
+  {
+    updateHamiltonian(q, _k);
+
+    
+    if(verbosity == true)
+    {
+      std::cout << "dtau_dp(q, p, _k) = ";
+      __printVec(dK(q, p));
+      std::cout << "with q = " << std::endl;
+      __printVec(q);
+      std::cout << "with p = " << std::endl;
+      __printVec(p);
+    }
+
+    return dK(q, p);
+  }
+
+  double phi(const std::vector<double> q, korali::Experiment *_k)
+  {
+    // make sure hamiltonian updated in U 
+    
+    if (verbosity == true)
+    {
+      std::cout << "In HamiltonianRiemannianDiag::phi :" << std::endl;
+      printf("%s\n", _sample->_js.getJson().dump(2).c_str());
+      fflush(stdout);
+    }
+
+    return U(q, _k) + 0.5 * _logDetMetric;
+  }
+
+  std::vector<double> dphi_dq(const std::vector<double> q, korali::Experiment *_k)
+  {
+    std::vector<double> result(_stateSpaceDim, 0.0);
+    std::vector<double> gradU = dU(q, _k);
+    std::vector<double> H_U = hessianU(q, _k);
+
+    std::vector<double> dLogDetMetric_dq(_stateSpaceDim, 0.0);
+    
+    for(size_t j = 0; j < _stateSpaceDim; ++j)
+    {
+      dLogDetMetric_dq[j] = 0.0;
+      for(size_t i = 0; i < _stateSpaceDim; ++i)
+      {
+        double arg = _inverseRegularizationParam * (gradU[i] * gradU[i]);
+        dLogDetMetric_dq[j] += 1.0 / _metric[i] * ( 2.0 * H_U[i*_stateSpaceDim + j] * gradU[i] * 1.0 / std::tanh(arg) - 2.0 * _inverseRegularizationParam * H_U[i*_stateSpaceDim + j] * gradU[i] / (std::sinh(arg) * std::sinh(arg)) );
+      }
+    }
+
+    for(size_t j = 0; j < _stateSpaceDim; ++j)
+    {
+      result[j] = gradU[j] + 0.5 * dLogDetMetric_dq[j];
+    }
+
+    if(verbosity == true)
+    {
+      std::cout << "dphi_dq(q, _k) = ";
+      __printVec(result);
+      std::cout << "with q = " << std::endl;
+      __printVec(q);
+    }
+    
+    return result;
+  }
+
+  /**
+  * @brief Updates current position of hamiltonian.
+  * @param q Current position.
+  * @param _k Experiment object.
+  */
+  void updateHamiltonian(const std::vector<double> &q, korali::Experiment *_k) override
+  {
+    if(verbosity == true)
+    {
+      std::cout << "In HamiltonianRiemannianDiag::updateHamiltonian before adaptMetrics :" << std::endl;
+      printf("%s\n", _sample->_js.getJson().dump(2).c_str());
+      fflush(stdout);
+    }
+
+    if(verbosity == true)
+    {
+      std::cout << "In HamiltonianRiemannianDiag::updateHamiltonian before setting Paramters :" << std::endl;
+      printf("%s\n", _sample->_js.getJson().dump(2).c_str());
+      fflush(stdout);
+    }
+
+    (*_sample)["Parameters"] = q;
+
+    if(verbosity == true)
+    {
+      std::cout << "In HamiltonianRiemannianDiag::updateHamiltonian after setting Paramters :" << std::endl;
+      printf("%s\n", _sample->_js.getJson().dump(2).c_str());
+      fflush(stdout);
+    }
+
+    KORALI_START((*_sample));
+    KORALI_WAIT((*_sample));
+
+
+    if(verbosity == true)
+    {
+      std::cout << "In HamiltonianRiemannianDiag::updateHamiltonian after KORALI_WAIT :" << std::endl;
+      printf("%s\n", _sample->_js.getJson().dump(2).c_str());
+      fflush(stdout);
+    }
+
+    // constant for condition number of _metric
+    double detMetric = 1.0;
+
+    std::vector<double> g = KORALI_GET(std::vector<double>, (*_sample), "grad(logP(x))");
+
+    if(verbosity == true)
+    {
+      std::cout << "In HamiltonianRiemannianDiag::updateHamiltonian after getting gradient :" << std::endl;
+      printf("%s\n", _sample->_js.getJson().dump(2).c_str());
+      fflush(stdout);
+    }
+
+    for (size_t i = 0; i < _stateSpaceDim; ++i)
+    {
+      double gi2 = g[i] * g[i];
+      double coth_alpha_gi_2 = 1.0 / std::tanh(_inverseRegularizationParam * gi2);
+      _metric[i] = gi2 * coth_alpha_gi_2;
+      _inverseMetric[i] = 1.0 / _metric[i];
+      detMetric *= _metric[i];
+    }
+    _logDetMetric = std::log(detMetric);
+
+    if(verbosity == true)
+    {
+      std::cout << "In HamiltonianRiemannianDiag::updateHamiltonian end :" << std::endl;
+      printf("%s\n", _sample->_js.getJson().dump(2).c_str());
+      fflush(stdout);
+      std::cout << "_logDetMetric = " << _logDetMetric << std::endl;
+      std::cout << "_metric = " << std::endl;
+      __printVec(_metric);
+      std::cout << "_inverseMetric = " << std::endl;
+      __printVec(_inverseMetric);
+    }
+  }
+
+  void adaptMetrics(const std::vector<double> &q, korali::Experiment *_k)
+  {
+
+    return;
   }
 
   /**
@@ -198,6 +404,11 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
   bool setInverseMetric(std::vector<double> &inverseMetric) override { return false; };
 
   private:
+  /**
+  * @brief Inverse regularization parameter of SoftAbs metric that controls hardness of approximation: For large values _inverseMetric is closer to analytical formula (and therefore closer to degeneracy in certain cases). 
+  */
+  double _inverseRegularizationParam;
+
   /**
   * @brief One dimensional normal generator needed for sampling of momentum from diagonal _metric.
   */

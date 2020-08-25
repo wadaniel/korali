@@ -70,7 +70,7 @@ class HamiltonianEuclideanDiag : public HamiltonianEuclidean
   * @param p Current momentum.
   * @return Kinetic energy.
   */
-  double K(const std::vector<double> &q, const std::vector<double> &p) const override
+  double K(const std::vector<double> &q, const std::vector<double> &p, korali::Experiment *_k = 0) override
   {
     double tmpScalar = 0.0;
     for (size_t i = 0; i < _stateSpaceDim; ++i)
@@ -87,7 +87,7 @@ class HamiltonianEuclideanDiag : public HamiltonianEuclidean
   * @param p Current momentum.
   * @return Gradient of Kinetic energy with current momentum.
   */
-  std::vector<double> dK(const std::vector<double> &q, const std::vector<double> &p) const override
+  std::vector<double> dK(const std::vector<double> &q, const std::vector<double> &p) override
   {
     std::vector<double> tmpVector(_stateSpaceDim, 0.0);
     for (size_t i = 0; i < _stateSpaceDim; ++i)

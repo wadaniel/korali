@@ -118,6 +118,32 @@ void HMC::setInitialConfiguration()
   _chainLength = 0;
   _acceptanceRate = 1.0;
 
+  // // TESTING
+  // HamiltonianRiemannianDiag *test = new HamiltonianRiemannianDiag{_stateSpaceDim, _normalGenerator};
+  // test->verbosity = false;
+  // std::cout << "test->K(_positionLeader, _momentumLeader, _k) = " << test->K(_positionLeader, _momentumLeader, _k) << std::endl;
+  
+  // std::cout << "test->tau(_positionLeader, _momentumLeader, _k) = " << test->tau(_positionLeader, _momentumLeader, _k) << std::endl;
+
+  // std::cout << "test->U(_positionLeader, _k) = " << test->U(_positionLeader, _k) << std::endl;
+  
+  // std::cout << "test->phi(_positionLeader, _k) = " << test->phi(_positionLeader, _k) << std::endl;
+
+  // std::cout << "test->H(_positionLeader, _momentumLeader, _k) = " << test->H(_positionLeader, _momentumLeader, _k) << std::endl;
+  
+  // std::vector<double> dphi_dq = test->dphi_dq(_positionLeader, _k);
+  // std::cout << "test->dphi_dq(_positionLeader, _k) = " << std::endl;
+  // for(size_t i = 0; i < _stateSpaceDim; ++i)
+  // {
+  //   std::cout << dphi_dq[i] << std::endl;
+  // }
+
+  // std::vector<double> qTest(_stateSpaceDim, 1.0);
+  // std::vector<double> pTest(_stateSpaceDim, 2.3);
+
+  // LeapfrogImplicit *test_integrator = new LeapfrogImplicit;
+  // test_integrator->step(qTest, pTest, _stepSize, test, _k);
+
   return;
 }
 

@@ -31,18 +31,30 @@ class Hamiltonian
   * @brief Constructor with State Space Dim.
   * @param stateSpaceDim Dimension of State Space.
   */
-  Hamiltonian(const size_t stateSpaceDim) : _stateSpaceDim{stateSpaceDim} {}
+  Hamiltonian(const size_t stateSpaceDim) : _stateSpaceDim{stateSpaceDim}, _numHamiltonianObjectUpdates{0}
+  {
+    _sample = new korali::Sample();
+    (*_sample)["Sample Id"] = 0;
+    (*_sample)["Module"] = "Problem";
+    (*_sample)["Operation"] = "Evaluate";
+    verbosity = false;
+  }
+
+  /**
+  * @brief Constructor with State Space Dim.
+  * @param stateSpaceDim Dimension of State Space.
+  * @param sample Pointer to sample object.
+  */
+  Hamiltonian(const size_t stateSpaceDim, korali::Sample *sample) : _stateSpaceDim{stateSpaceDim}, _sample{sample} {}
 
   /**
   * @brief Purely abstract total energy function used for Hamiltonian Dynamics.
   * @param q Current position.
   * @param p Current momentum.
-  * @param modelEvaluationCount Number of model evuations musst be increased.
-  * @param numSamples Needed for Sample ID.
   * @param _k Experiment object.
   * @return Total energy.
   */
-  virtual double H(const std::vector<double> &q, const std::vector<double> &p, size_t &modelEvaluationCount, const size_t &numSamples, korali::Experiment *_k) = 0;
+  virtual double H(const std::vector<double> &q, const std::vector<double> &p, korali::Experiment *_k) = 0;
 
   /**
   * @brief Purely virtual kinetic energy function used for Hamiltonian Dynamics.
@@ -61,55 +73,60 @@ class Hamiltonian
   virtual std::vector<double> dK(const std::vector<double> &q, const std::vector<double> &p) const = 0;
 
   /**
+  * @brief Updates current position of hamiltonian.
+  * @param q Current position.
+  * @param _k Experiment object.
+  */
+  void updateHamiltonian(const std::vector<double> &q, korali::Experiment *_k)
+  {
+    (*_sample)["Parameters"] = q;
+
+    KORALI_START((*_sample));
+    KORALI_WAIT((*_sample));
+  }
+
+  /**
   * @brief Potential Energy function used for Hamiltonian Dynamics.
   * @param q Current position.
-  * @param modelEvaluationCount Number of model evuations musst be increased.
-  * @param numSamples Needed for Sample ID.
   * @param _k Experiment object.
   * @return Potential energy.
   */
-  virtual double U(const std::vector<double> &q, size_t &modelEvaluationCount, const size_t &numSamples, korali::Experiment *_k)
+  virtual double U(const std::vector<double> &q, korali::Experiment *_k)
   {
-    // get sample
-    auto sample = Sample();
-    ++modelEvaluationCount;
-    sample["Parameters"] = q;
-    sample["Sample Id"] = numSamples;
-    sample["Module"] = "Problem";
-    sample["Operation"] = "Evaluate";
-    KORALI_START(sample);
-    KORALI_WAIT(sample);
+    updateHamiltonian(q, _k);
+    ++_numHamiltonianObjectUpdates;
 
-    double evaluation = KORALI_GET(double, sample, "logP(x)");
-    // negate to get U
+    if (verbosity == true)
+    {
+      std::cout << "In Hamiltonian::U :" << std::endl;
+      printf("%s\n", _sample->_js.getJson().dump(2).c_str());
+      fflush(stdout);
+    }
+
+    double evaluation = KORALI_GET(double, (*_sample), "logP(x)");
     evaluation *= -1.0;
-
     return evaluation;
   }
 
   /**
   * @brief Gradient of Potential Energy function used for Hamiltonian Dynamics.
   * @param q Current position.
-  * @param modelEvaluationCount Number of model evuations musst be increased.
-  * @param numSamples Needed for Sample ID.
   * @param _k Experiment object.
   * @return Gradient of Potential energy.
   */
-  virtual std::vector<double> dU(const std::vector<double> &q, size_t &modelEvaluationCount, const size_t &numSamples, korali::Experiment *_k)
+  virtual std::vector<double> dU(const std::vector<double> &q, korali::Experiment *_k)
   {
-    // TODO: REMOVE THIS SAMPLING PART
-    // get sample
-    auto sample = Sample();
-    ++modelEvaluationCount;
-    sample["Parameters"] = q;
-    sample["Sample Id"] = numSamples;
-    sample["Module"] = "Problem";
-    sample["Operation"] = "Evaluate Gradient";
-    KORALI_START(sample);
-    KORALI_WAIT(sample);
+    updateHamiltonian(q, _k);
+
+    if (verbosity == true)
+    {
+      std::cout << "In Hamiltonian::U :" << std::endl;
+      printf("%s\n", _sample->_js.getJson().dump(2).c_str());
+      fflush(stdout);
+    }
 
     // evaluate grad(logP(x)) (extremely slow)
-    std::vector<double> evaluation = KORALI_GET(std::vector<double>, sample, "grad(logP(x))");
+    std::vector<double> evaluation = KORALI_GET(std::vector<double>, (*_sample), "grad(logP(x))");
 
     // negate to get dU
     std::transform(evaluation.cbegin(), evaluation.cend(), evaluation.begin(), std::negate<double>());
@@ -164,6 +181,23 @@ class Hamiltonian
     double dotProductLeft = std::inner_product(std::cbegin(tmpVector), std::cend(tmpVector), std::cbegin(pLeft), 0.0);
     double dotProductRight = std::inner_product(std::cbegin(tmpVector), std::cend(tmpVector), std::cbegin(pRight), 0.0);
 
+    if (verbosity)
+    {
+      std::cout << "In Hamiltonian::computeStandardCriterion :" << std::endl;
+      std::cout << "qLeft = " << std::endl;
+      __printVec(qLeft);
+      std::cout << "pLeft = " << std::endl;
+      __printVec(pLeft);
+      std::cout << "qRight = " << std::endl;
+      __printVec(qRight);
+      std::cout << "pRight = " << std::endl;
+      __printVec(pRight);
+      std::cout << "dotProductLeft = " << dotProductLeft << std::endl;
+      std::cout << "dotProductRight = " << dotProductRight << std::endl;
+      bool __returnVal = (dotProductLeft > 0) && (dotProductRight > 0);
+      std::cout << "return (dotProductLeft > 0) && (dotProductRight > 0) = " << __returnVal << std::endl;
+    }
+
     return (dotProductLeft > 0) && (dotProductRight > 0);
   }
 
@@ -199,7 +233,39 @@ class Hamiltonian
     return _inverseMetric;
   }
 
+  /**
+  * @brief Getter function for number of hamiltonian object updates.
+  * @return Number of hamiltonian object updates.
+  */
+  size_t getNumHamiltonianObjectUpdates() const
+  {
+    return _numHamiltonianObjectUpdates;
+  }
+
+  /**
+  * @brief verbosity boolean for debuggin purposes.
+  */
+  bool verbosity;
+
   protected:
+  /**
+  * @brief Debug printer function for std::vector. TODO: REMOVE
+  * @param vec Vector to be printed.
+  */
+  void __printVec(std::vector<double> vec)
+  {
+    for (size_t i = 0; i < vec.size(); ++i)
+    {
+      std::cout << vec[i] << std::endl;
+    }
+    return;
+  }
+
+  /**
+  * @brief Pointer to current sample object.
+  */
+  korali::Sample *_sample;
+
   /**
   * @brief _stateSpaceDim
 State Space Dimension needed for Leapfrog integrator.
@@ -215,6 +281,11 @@ State Space Dimension needed for Leapfrog integrator.
   * @brief _inverseMetric
   */
   std::vector<double> _inverseMetric;
+
+  /**
+  * @brief Number of model evaluations
+  */
+  size_t _numHamiltonianObjectUpdates;
 };
 
 } // namespace sampler

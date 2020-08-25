@@ -25,7 +25,6 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
   {
     _metric.resize(stateSpaceDim);
     _inverseMetric.resize(stateSpaceDim);
-    _logDetMetric = 1.0;
   }
 
   /**
@@ -38,21 +37,18 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
     _metric.resize(stateSpaceDim);
     _inverseMetric.resize(stateSpaceDim);
     _normalGenerator = normalGenerator;
-    _logDetMetric = 1.0;
   }
 
   /**
   * @brief Total energy function used for Hamiltonian Dynamics.
   * @param q Current position.
   * @param p Current momentum.
-  * @param modelEvaluationCount Number of model evuations musst be increased.
-  * @param numSamples Needed for Sample ID.
   * @param _k Experiment object.
   * @return Total energy.
   */
-  double H(const std::vector<double> &q, const std::vector<double> &p, size_t &modelEvaluationCount, const size_t &numSamples, korali::Experiment *_k) override
+  double H(const std::vector<double> &q, const std::vector<double> &p, korali::Experiment *_k) override
   {
-    return K(q, p) + U(q, modelEvaluationCount, numSamples, _k);
+    return K(q, p) + U(q, _k);
   }
 
   /**
@@ -64,7 +60,7 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
   double K(const std::vector<double> &q, const std::vector<double> &p) const override
   {
     double tmpScalar = 0.0;
-    updateHamiltonian(q);
+    // updateHamiltonian(q);
     for (int i = 0; i < _stateSpaceDim; ++i)
     {
       tmpScalar += p[i] * _inverseMetric[i] * p[i];
@@ -152,26 +148,17 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
   /**
   * @brief Hessian of Potential Energy function used for Riemannian metric.
   * @param q Current position.
-  * @param modelEvaluationCount Number of model evuations musst be increased.
-  * @param numSamples Needed for Sample ID.
   * @param _k Experiment object.
   * @return Gradient of Potential energy.
   */
-  std::vector<double> hessianU(const std::vector<double> &q, size_t &modelEvaluationCount, const size_t &numSamples, korali::Experiment *_k)
+  std::vector<double> hessianU(const std::vector<double> &q, korali::Experiment *_k)
   {
-    // TODO: REMOVE THIS SAMPLING PART
-    // get sample
-    auto sample = Sample();
-    ++modelEvaluationCount;
-    sample["Parameters"] = q;
-    sample["Sample Id"] = numSamples;
-    sample["Module"] = "Problem";
-    sample["Operation"] = "Evaluate Hessian";
-    KORALI_START(sample);
-    KORALI_WAIT(sample);
+    updateHamiltonian(q, _k);
+
+    ++_numHamiltonianObjectUpdates;
 
     // evaluate grad(logP(x)) (extremely slow)
-    std::vector<std::vector<double>> evaluationMat = KORALI_GET(std::vector<std::vector<double>>, sample, "H(logP(x))");
+    std::vector<std::vector<double>> evaluationMat = KORALI_GET(std::vector<std::vector<double>>, (*_sample), "H(logP(x))");
     std::vector<double> evaluation(_stateSpaceDim * _stateSpaceDim);
     for (size_t i = 0; i < _stateSpaceDim; ++i)
     {
@@ -183,6 +170,13 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
 
     // negate to get dU
     std::transform(evaluation.cbegin(), evaluation.cend(), evaluation.begin(), std::negate<double>());
+
+    if (verbosity == true)
+    {
+      std::cout << "In HamiltonianRiemannianDiag::hessianU :" << std::endl;
+      printf("%s\n", _sample->_js.getJson().dump(2).c_str());
+      fflush(stdout);
+    }
 
     return evaluation;
   }
@@ -204,11 +198,6 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
   bool setInverseMetric(std::vector<double> &inverseMetric) override { return false; };
 
   private:
-  void updateHamiltonian(const std::vector<double> &q) const
-  {
-    // update _metric, _inverseMetric and _logDetMetric
-  }
-
   /**
   * @brief One dimensional normal generator needed for sampling of momentum from diagonal _metric.
   */

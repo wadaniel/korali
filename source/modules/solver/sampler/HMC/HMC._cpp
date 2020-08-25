@@ -58,6 +58,7 @@ void HMC::setInitialConfiguration()
     }
 
     // TODO: Change back to HamiltonianEuclideanDiag
+    // _hamiltonian = new HamiltonianEuclideanDiag{_stateSpaceDim, _normalGenerator};
     _hamiltonian = new HamiltonianEuclideanDiag{_stateSpaceDim, _normalGenerator};
     break;
 
@@ -94,9 +95,13 @@ void HMC::setInitialConfiguration()
     //   KORALI_LOG_ERROR("Use Diagonal Metric must be set to True or False.\n");
   }
 
+  _hamiltonian->updateHamiltonian(_positionLeader, _k);
+
   // Set _inverseMetric of hamiltonian
   _hamiltonian->setInverseMetric(_inverseMetric);
   _hamiltonian->setMetric(_metric);
+
+  _hamiltonian->verbosity = false;
 
   _integrator = new LeapfrogExplicit;
 
@@ -112,46 +117,6 @@ void HMC::setInitialConfiguration()
   _proposedSampleCount = 0;
   _chainLength = 0;
   _acceptanceRate = 1.0;
-
-  // // TESTING
-  // // get sample
-  // korali::Sample sample = Sample();
-  // korali::Sample *sample_ptr = &sample;
-  // std::vector<double> q(_stateSpaceDim, 1.0);
-  // sample["Parameters"] = q;
-  // sample["Sample Id"] = 0;
-  // sample["Module"] = "Problem";
-  // sample["Operation"] = "Evaluate Hessian";
-  // KORALI_START(sample);
-  // KORALI_WAIT(sample);
-
-  // // evaluate grad(logP(x)) (extremely slow)
-  // std::vector<std::vector<double> > evaluation = KORALI_GET(std::vector<std::vector<double> >, sample, "H(logP(x))");
-  // std::cout << "_stateSpaceDim = " << _stateSpaceDim << std::endl;
-
-  // std::cout << "H(logP(1.0)) = " << std::endl;
-  // for(size_t i = 0; i < _stateSpaceDim; ++i)
-  // {
-  //   for(size_t j = 0; j < _stateSpaceDim; ++j)
-  //   {
-  //     std::cout << evaluation[i][j] << std::endl;
-  //   }
-  // }
-
-  // std::cout << "test1" << std::endl;
-
-  // HamiltonianRiemannianDiag *riemannianHamiltonian = new HamiltonianRiemannianDiag{_stateSpaceDim, _normalGenerator};
-
-  // std::vector<double> evaluation2 = riemannianHamiltonian->hessianU(q, _modelEvaluationCount, 0, _k);
-  // for(size_t i = 0; i < _stateSpaceDim; ++i)
-  // {
-  //   for(size_t j = 0; j < _stateSpaceDim; ++j)
-  //   {
-  //     std::cout << evaluation2[i*_stateSpaceDim + j] << std::endl;
-  //   }
-  // }
-
-  // std::cout << "test2" << std::endl;
 
   return;
 }
@@ -203,7 +168,7 @@ void HMC::runGeneration()
 void HMC::runGenerationHMC(const double logUniSample)
 {
   const double oldK = _hamiltonian->K(_positionLeader, _momentumLeader);
-  const double oldU = _hamiltonian->U(_positionLeader, _modelEvaluationCount, _sampleDatabase.size(), _k);
+  const double oldU = _hamiltonian->U(_positionLeader, _k);
 
   if (_useAdaptiveStepSize == true && _chainLength <= _burnIn)
   {
@@ -213,7 +178,7 @@ void HMC::runGenerationHMC(const double logUniSample)
   // Perform Num Integration Steps of Leapfrog scheme to Momentum Candidate and Position Candidate
   for (size_t i = 0; i < _numIntegrationSteps; ++i)
   {
-    _integrator->step(_positionCandidate, _momentumCandidate, _stepSize, _hamiltonian, _modelEvaluationCount, _sampleDatabase.size(), _k);
+    _integrator->step(_positionCandidate, _momentumCandidate, _stepSize, _hamiltonian, _k);
   }
 
   // Negate proposed momentum to make proposal symmetric
@@ -221,7 +186,7 @@ void HMC::runGenerationHMC(const double logUniSample)
 
   // Save new Energies
   const double newK = _hamiltonian->K(_positionCandidate, _momentumCandidate);
-  const double newU = _hamiltonian->U(_positionCandidate, _modelEvaluationCount, _sampleDatabase.size(), _k);
+  const double newU = _hamiltonian->U(_positionCandidate, _k);
 
   const double logAlpha = std::min(0.0, -(newK - oldK + newU - oldU));
   _acceptanceProbability = std::exp(logAlpha);
@@ -238,7 +203,7 @@ void HMC::runGenerationHMC(const double logUniSample)
 void HMC::runGenerationNUTS(const double logUniSample)
 {
   const double oldK = _hamiltonian->K(_positionLeader, _momentumLeader);
-  const double oldU = _hamiltonian->U(_positionLeader, _modelEvaluationCount, _sampleDatabase.size(), _k);
+  const double oldU = _hamiltonian->U(_positionLeader, _k);
 
   std::vector<double> nullPointOne(_stateSpaceDim);
   std::vector<double> nullPointTwo(_stateSpaceDim);
@@ -324,7 +289,7 @@ void HMC::runGenerationNUTS(const double logUniSample)
 void HMC::runGenerationNUTSUtil(TreeHelperEuclidean *helper)
 {
   const double oldK = _hamiltonian->K(_positionLeader, _momentumLeader);
-  const double oldU = _hamiltonian->U(_positionLeader, _modelEvaluationCount, _sampleDatabase.size(), _k);
+  const double oldU = _hamiltonian->U(_positionLeader, _k);
 
   std::vector<double> qLeft = _positionLeader;
   std::vector<double> pLeft = _momentumLeader;
@@ -414,7 +379,7 @@ void HMC::runGenerationNUTSUtil(TreeHelperEuclidean *helper)
 void HMC::runGenerationNUTSUtilRiemannian(TreeHelperRiemannian *helper)
 {
   const double oldK = _hamiltonian->K(_positionLeader, _momentumLeader);
-  const double oldU = _hamiltonian->U(_positionLeader, _modelEvaluationCount, _sampleDatabase.size(), _k);
+  const double oldU = _hamiltonian->U(_positionLeader, _k);
 
   std::vector<double> qLeft = _positionLeader;
   std::vector<double> pLeft = _momentumLeader;
@@ -752,6 +717,8 @@ void HMC::finalize()
   if (_sampleDatabase.size() == _maxSamples) _k->_logger->logInfo("Minimal", "Max Samples Reached.\n");
   (*_k)["Results"]["Sample Database"] = _sampleDatabase;
 
+  _modelEvaluationCount = _hamiltonian->getNumHamiltonianObjectUpdates();
+
   delete _hamiltonian;
   delete _integrator;
 
@@ -766,10 +733,10 @@ double HMC::findReasonableStepSize(std::vector<double> q)
   std::vector<double> p = _hamiltonian->sampleMomentum();
   ++_proposedSampleCount;
 
-  oldLogP = -_hamiltonian->H(q, p, _modelEvaluationCount, _sampleDatabase.size(), _k);
+  oldLogP = -_hamiltonian->H(q, p, _k);
 
-  _integrator->step(q, p, stepSize, _hamiltonian, _modelEvaluationCount, _sampleDatabase.size(), _k);
-  newLogP = -_hamiltonian->H(q, p, _modelEvaluationCount, _sampleDatabase.size(), _k);
+  _integrator->step(q, p, stepSize, _hamiltonian, _k);
+  newLogP = -_hamiltonian->H(q, p, _k);
 
   int a = (newLogP - oldLogP > std::log(0.5)) ? 1 : -1;
 
@@ -781,8 +748,8 @@ double HMC::findReasonableStepSize(std::vector<double> q)
     oldLogP = newLogP;
 
     // Here leapfrog uses Kinetic Energy with metric instead of Identity
-    _integrator->step(q, p, stepSize, _hamiltonian, _modelEvaluationCount, _sampleDatabase.size(), _k);
-    newLogP = -_hamiltonian->H(q, p, _modelEvaluationCount, _sampleDatabase.size(), _k);
+    _integrator->step(q, p, stepSize, _hamiltonian, _k);
+    newLogP = -_hamiltonian->H(q, p, _k);
   }
 
   // Catch Step Size = 0.0 -> No traversal of phase space
@@ -836,10 +803,10 @@ void HMC::buildTreeUtil(TreeHelperEuclidean *helper)
   if (helper->depthIn == 0)
   {
     const double deltaMax = 100;
-    _integrator->step(helper->qLeftOut, helper->pLeftOut, _stepSize, _hamiltonian, _modelEvaluationCount, _sampleDatabase.size(), _k);
+    _integrator->step(helper->qLeftOut, helper->pLeftOut, _stepSize, _hamiltonian, _k);
 
     const double leafK = _hamiltonian->K(helper->qLeftOut, helper->pLeftOut);
-    const double leafU = _hamiltonian->U(helper->qLeftOut, _modelEvaluationCount, _sampleDatabase.size(), _k);
+    const double leafU = _hamiltonian->U(helper->qLeftOut, _k);
     const double leafH = leafU + leafK;
 
     helper->numValidLeavesOut = (helper->logUniSampleIn <= helper->rootHIn - leafH) ? 1.0 : 0.0;
@@ -929,10 +896,10 @@ void HMC::buildTreeUtilIntegration(TreeHelperRiemannian *helper, std::vector<dou
   if (helper->depthIn == 0)
   {
     const double deltaMax = 100;
-    _integrator->step(helper->qLeftOut, helper->pLeftOut, _stepSize, _hamiltonian, _modelEvaluationCount, _sampleDatabase.size(), _k);
+    _integrator->step(helper->qLeftOut, helper->pLeftOut, _stepSize, _hamiltonian, _k);
 
     const double leafK = _hamiltonian->K(helper->qLeftOut, helper->pLeftOut);
-    const double leafU = _hamiltonian->U(helper->qLeftOut, _modelEvaluationCount, _sampleDatabase.size(), _k);
+    const double leafU = _hamiltonian->U(helper->qLeftOut, _k);
     const double leafH = leafU + leafK;
 
     helper->numValidLeavesOut = (helper->logUniSampleIn <= helper->rootHIn - leafH) ? 1.0 : 0.0;
@@ -1037,10 +1004,10 @@ void HMC::buildTree(const std::vector<double> &q, const std::vector<double> &p, 
   if (depth == 0)
   {
     const double deltaMax = 100;
-    _integrator->step(qLeft, pLeft, _stepSize, _hamiltonian, _modelEvaluationCount, _sampleDatabase.size(), _k);
+    _integrator->step(qLeft, pLeft, _stepSize, _hamiltonian, _k);
 
     const double leafK = _hamiltonian->K(qLeft, pLeft);
-    const double leafU = _hamiltonian->U(qLeft, _modelEvaluationCount, _sampleDatabase.size(), _k);
+    const double leafU = _hamiltonian->U(qLeft, _k);
     const double leafH = leafU + leafK;
 
     numValidLeaves = (logUniSample <= rootH - leafH) ? 1.0 : 0.0;
@@ -1105,7 +1072,7 @@ void HMC::buildTreeIntegrationCriterion(const std::vector<double> &q, const std:
   if (depth == 0)
   {
     const double deltaMax = 100;
-    _integrator->step(qLeft, pLeft, _stepSize, _hamiltonian, _modelEvaluationCount, _sampleDatabase.size(), _k);
+    _integrator->step(qLeft, pLeft, _stepSize, _hamiltonian, _k);
 
     // std::transform(std::cbegin(rho), std::cend(rho), std::cbegin(pLeft), std::begin(rho), std::plus<double>());
 
@@ -1115,7 +1082,7 @@ void HMC::buildTreeIntegrationCriterion(const std::vector<double> &q, const std:
     // }
 
     const double leafK = _hamiltonian->K(qLeft, pLeft);
-    const double leafU = _hamiltonian->U(qLeft, _modelEvaluationCount, _sampleDatabase.size(), _k);
+    const double leafU = _hamiltonian->U(qLeft, _k);
     const double leafH = leafU + leafK;
 
     numValidLeaves = (logUniSample <= rootH - leafH) ? 1.0 : 0.0;

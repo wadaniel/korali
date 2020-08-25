@@ -47,17 +47,29 @@ class HamiltonianEuclideanDense : public HamiltonianEuclidean
   }
 
   /**
+  * @brief Constructor with State Space Dim.
+  * @param stateSpaceDim Dimension of State Space.
+  * @param sample Sample object.
+  * @param multivariateGenerator Generator needed for momentum sampling.
+  */
+  HamiltonianEuclideanDense(const size_t stateSpaceDim, korali::Sample *sample, korali::distribution::multivariate::Normal *multivariateGenerator) : HamiltonianEuclidean{stateSpaceDim, sample}
+  {
+    _metric.resize(stateSpaceDim * stateSpaceDim);
+    _inverseMetric.resize(stateSpaceDim * stateSpaceDim);
+
+    _multivariateGenerator = multivariateGenerator;
+  }
+
+  /**
   * @brief Total energy function used for Hamiltonian Dynamics.
   * @param q Current position.
   * @param p Current momentum.
-  * @param modelEvaluationCount Number of model evuations musst be increased.
-  * @param numSamples Needed for Sample ID.
   * @param _k Experiment object.
   * @return Total energy.
   */
-  double H(const std::vector<double> &q, const std::vector<double> &p, size_t &modelEvaluationCount, const size_t &numSamples, korali::Experiment *_k) override
+  double H(const std::vector<double> &q, const std::vector<double> &p, korali::Experiment *_k) override
   {
-    return K(q, p) + U(q, modelEvaluationCount, numSamples, _k);
+    return K(q, p) + U(q, _k);
   }
 
   /**

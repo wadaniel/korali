@@ -35,6 +35,13 @@ class HamiltonianEuclidean : public Hamiltonian
   HamiltonianEuclidean(const size_t stateSpaceDim) : Hamiltonian{stateSpaceDim} {}
 
   /**
+  * @brief Constructor with State Space Dim.
+  * @param stateSpaceDim Dimension of State Space.
+  * @param sample Pointer to sample object.
+  */
+  HamiltonianEuclidean(const size_t stateSpaceDim, korali::Sample *sample) : Hamiltonian{stateSpaceDim, sample} {}
+
+  /**
   * @brief Setter function for metric.
   * @param metric Metric which is set.
   * @return Returns true if dimensions are compatible. Returns false if dimension mismatch found.

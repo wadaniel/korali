@@ -23,11 +23,9 @@ class Leapfrog
   * @param p Momentum which is evolved.
   * @param stepSize Step Size used for Leap Frog Scheme.
   * @param hamiltonian Hamiltonian object to calulcate energies.
-  * @param modelEvaluationCount Needed to keep track of number of model evaluations.
-  * @param numSamples Needed for ID of Sample.
   * @param _k Experiment object.
   */
-  virtual void step(std::vector<double> &q, std::vector<double> &p, const double stepSize, Hamiltonian *hamiltonian, size_t &modelEvaluationCount, const size_t &numSamples, korali::Experiment *_k) = 0;
+  virtual void step(std::vector<double> &q, std::vector<double> &p, const double stepSize, Hamiltonian *hamiltonian, korali::Experiment *_k) = 0;
 };
 
 } // namespace sampler

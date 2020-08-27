@@ -33,11 +33,11 @@ for useDiagonalMetric in [False, True]:
     e["Solver"]["Termination Criteria"]["Max Samples"] = 100000
 
     # HMC specific parameters
-    e["Solver"]["Use Euclidean Metric"] = True
+    e["Solver"]["Version"] = 'Euclidean'
     e["Solver"]["Use Diagonal Metric"] = useDiagonalMetric
     e["Solver"]["Use Adaptive Step Size"] = True
     e["Solver"]["Use NUTS"] = True
-    e["Solver"]["Desired Average Acceptance Rate"] = 0.32
+    e["Solver"]["Desired Average Acceptance Rate"] = 0.45
 
     # Running Korali
     e["Random Seed"] = 1337

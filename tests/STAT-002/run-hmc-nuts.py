@@ -29,13 +29,11 @@ e["Solver"]["Type"] = "Sampler/HMC"
 e["Solver"]["Burn In"] = 10500
 e["Solver"]["Termination Criteria"]["Max Samples"] = 1
 e["Solver"]["Metric Estimate Quotient"] = 1.0
-e["Solver"]["Use Adaptive Step Size"] = 0
-e["Solver"]["Use Euclidean Metric"] = 1
-e["Solver"]["Use NUTS"] = 1
+e["Solver"]["Use Adaptive Step Size"] = False
+e["Solver"]["Version"] = 'Euclidean'
+e["Solver"]["Use NUTS"] = True
 e["Solver"]["Num Integration Steps"] = 20
 e["Solver"]["Step Size"] = 0.1
-e["Solver"]["Target Integration Time"] = 20.0
-e["Solver"]["Desired Average Acceptance Rate"] = 0.65
 
 # Running Korali
 k = korali.Engine()

@@ -17,6 +17,10 @@ namespace sampler
 class HamiltonianEuclideanDiag : public HamiltonianEuclidean
 {
   public:
+  //////////////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////// CONSTRUCTORS START /////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////////////////////
+
   /**
   * @brief Constructor with State Space Dim.
   * @param stateSpaceDim Dimension of State Space.
@@ -39,18 +43,13 @@ class HamiltonianEuclideanDiag : public HamiltonianEuclidean
     _normalGenerator = normalGenerator;
   }
 
-  /**
-  * @brief Constructor with State Space Dim.
-  * @param stateSpaceDim Dimension of State Space.
-  * @param sample Sample object.
-  * @param normalGenerator Generator needed for momentum sampling.
-  */
-  HamiltonianEuclideanDiag(const size_t stateSpaceDim, korali::Sample *sample, korali::distribution::univariate::Normal *normalGenerator) : HamiltonianEuclidean{stateSpaceDim, sample}
-  {
-    _metric.resize(stateSpaceDim);
-    _inverseMetric.resize(stateSpaceDim);
-    _normalGenerator = normalGenerator;
-  }
+  //////////////////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////// CONSTRUCTORS END //////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////////////////////
+
+  //////////////////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////// ENERGY FUNCTIONS START ///////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////////////////////
 
   /**
   * @brief Total energy function used for Hamiltonian Dynamics.
@@ -65,9 +64,10 @@ class HamiltonianEuclideanDiag : public HamiltonianEuclidean
   }
 
   /**
-  * @brief Kinetic energy function used for Hamiltonian Dynamics.
+  * @brief Kinetic energy function K(q, p) = 0.5 * p.T * inverseMetric(q) * p + 0.5 * logDetMetric(q) used for Hamiltonian Dynamics. For Euclidean metric logDetMetric(q) := 0.0.
   * @param q Current position.
   * @param p Current momentum.
+  * @param _k Experiment object.
   * @return Kinetic energy.
   */
   double K(const std::vector<double> &q, const std::vector<double> &p, korali::Experiment *_k = 0) override
@@ -82,12 +82,13 @@ class HamiltonianEuclideanDiag : public HamiltonianEuclidean
   }
 
   /**
-  * @brief Gradient of kintetic energy function used for Hamiltonian Dynamics.
+  * @brief Purely virtual gradient of kintetic energy function dK(q, p) = inverseMetric(q) * p + 0.5 * dlogDetMetric_dq(q) used for Hamiltonian Dynamics. For Euclidean metric logDetMetric(q) := 0.0.
   * @param q Current position.
   * @param p Current momentum.
+  * @param _k Experiment object.
   * @return Gradient of Kinetic energy with current momentum.
   */
-  std::vector<double> dK(const std::vector<double> &q, const std::vector<double> &p) override
+  std::vector<double> dK(const std::vector<double> &q, const std::vector<double> &p, korali::Experiment *_k = 0) override
   {
     std::vector<double> tmpVector(_stateSpaceDim, 0.0);
     for (size_t i = 0; i < _stateSpaceDim; ++i)
@@ -96,6 +97,14 @@ class HamiltonianEuclideanDiag : public HamiltonianEuclidean
     }
     return tmpVector;
   }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////// ENERGY FUNCTIONS END ////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////////////////////
+
+  //////////////////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////// GENERAL FUNCTIONS START //////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////////////////////
 
   /**
   * @brief Generates sample of momentum.
@@ -156,6 +165,10 @@ class HamiltonianEuclideanDiag : public HamiltonianEuclidean
 
     return 0;
   }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////// GENERAL FUNCTIONS END ///////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////////////////////
 
   private:
   /**

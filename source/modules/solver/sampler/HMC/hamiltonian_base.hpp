@@ -22,6 +22,10 @@ namespace sampler
 class Hamiltonian
 {
   public:
+  //////////////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////// CONSTRUCTORS START /////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////////////////////
+
   /**
   * @brief Default constructor.
   */
@@ -40,12 +44,13 @@ class Hamiltonian
     verbosity = false;
   }
 
-  /**
-  * @brief Constructor with State Space Dim.
-  * @param stateSpaceDim Dimension of State Space.
-  * @param sample Pointer to sample object.
-  */
-  Hamiltonian(const size_t stateSpaceDim, korali::Sample *sample) : _stateSpaceDim{stateSpaceDim}, _sample{sample} {}
+  //////////////////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////// CONSTRUCTORS END //////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////////////////////
+
+  //////////////////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////// ENERGY FUNCTIONS START ///////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////////////////////
 
   /**
   * @brief Purely abstract total energy function used for Hamiltonian Dynamics.
@@ -57,20 +62,121 @@ class Hamiltonian
   virtual double H(const std::vector<double> &q, const std::vector<double> &p, korali::Experiment *_k) = 0;
 
   /**
-  * @brief Purely virtual kinetic energy function used for Hamiltonian Dynamics.
+  * @brief Purely virtual kinetic energy function K(q, p) = 0.5 * p.T * inverseMetric(q) * p + 0.5 * logDetMetric(q) used for Hamiltonian Dynamics.
   * @param q Current position.
   * @param p Current momentum.
+  * @param _k Experiment object.
   * @return Kinetic energy.
   */
-  virtual double K(const std::vector<double> &q, const std::vector<double> &p, korali::Experiment *_k = 0) = 0;
+  virtual double K(const std::vector<double> &q, const std::vector<double> &p, korali::Experiment *_k) = 0;
 
   /**
-  * @brief Purely virtual gradient of kintetic energy function used for Hamiltonian Dynamics.
+  * @brief Purely virtual gradient of kintetic energy function dK(q, p) = inverseMetric(q) * p + 0.5 * dlogDetMetric_dq(q) used for Hamiltonian Dynamics.
   * @param q Current position.
   * @param p Current momentum.
+  * @param _k Experiment object.
   * @return Gradient of Kinetic energy with current momentum.
   */
-  virtual std::vector<double> dK(const std::vector<double> &q, const std::vector<double> &p) = 0;
+  virtual std::vector<double> dK(const std::vector<double> &q, const std::vector<double> &p, korali::Experiment *_k) = 0;
+
+  /**
+  * @brief Potential Energy function U(q) = -log(pi(q)) used for Hamiltonian Dynamics.
+  * @param q Current position.
+  * @param _k Experiment object.
+  * @return Potential energy.
+  */
+  virtual double U(const std::vector<double> &q, korali::Experiment *_k)
+  {
+    updateHamiltonian(q, _k);
+    ++_numHamiltonianObjectUpdates;
+    double evaluation = KORALI_GET(double, (*_sample), "logP(x)");
+    evaluation *= -1.0;
+
+    if (verbosity == true)
+    {
+      std::cout << "In Hamiltonian::U :" << std::endl;
+      std::cout << "U(q, _k) = " << evaluation << std::endl;
+    }
+
+    return evaluation;
+  }
+
+  /**
+  * @brief Gradient of Potential Energy function dU(q) = -grad(log(pi(q))) used for Hamiltonian Dynamics.
+  * @param q Current position.
+  * @param _k Experiment object.
+  * @return Gradient of Potential energy.
+  */
+  virtual std::vector<double> dU(const std::vector<double> &q, korali::Experiment *_k)
+  {
+    updateHamiltonian(q, _k);
+
+    // evaluate grad(logP(x)) (extremely slow)
+    std::vector<double> evaluation = KORALI_GET(std::vector<double>, (*_sample), "grad(logP(x))");
+
+    // negate to get dU
+    std::transform(evaluation.cbegin(), evaluation.cend(), evaluation.begin(), std::negate<double>());
+
+    if (verbosity == true)
+    {
+      std::cout << "In Hamiltonian::dU :" << std::endl;
+      std::cout << "dU(q, _k) = " << std::endl;
+      __printVec(evaluation);
+    }
+
+    return evaluation;
+  }
+
+  /**
+  * @brief Purely virtual function tau(q, p) = 0.5 * p^T * inverseMetric(q) * p (no logDetMetric term)
+  * @param q Current position.
+  * @param p Current momentum.
+  * @param _k Experiment object.
+  * @return Gradient of Kinetic energy with current momentum.
+  */
+  virtual double tau(const std::vector<double> &q, const std::vector<double> &p, korali::Experiment *_k) = 0;
+
+  /**
+  * @brief Purely virtual gradient of dtau_dq(q, p) = 0.5 * p^T * dinverseMetric_dq(q) * p used for Hamiltonian Dynamics.
+  * @param q Current position.
+  * @param p Current momentum.
+  * @param _k Experiment object.
+  * @return Gradient of Kinetic energy with current momentum.
+  */
+  virtual std::vector<double> dtau_dq(const std::vector<double> &q, const std::vector<double> &p, korali::Experiment *_k) = 0;
+
+  /**
+  * @brief Purely virtual gradient of dtau_dp(q, p) = inverseMetric(q) * p used for Hamiltonian Dynamics.
+  * @param q Current position.
+  * @param p Current momentum.
+  * @param _k Experiment object.
+  * @return Gradient of Kinetic energy with current momentum.
+  */
+  virtual std::vector<double> dtau_dp(const std::vector<double> &q, const std::vector<double> &p, korali::Experiment *_k) = 0;
+
+  /**
+  * @brief Purely virtual gradient of phi(q) = 0.5 * logDetMetric(q) + U(q) used for Hamiltonian Dynamics.
+  * @param q Current position.
+  * @param _k Experiment object.
+  * @return Gradient of Kinetic energy with current momentum.
+  */
+  virtual double phi(const std::vector<double> q, korali::Experiment *_k) = 0;
+
+  /**
+  * @brief Purely virtual gradient of dphi_dq(q) = 0.5 * dlogDetMetric_dq(q) + dU(q) used for Hamiltonian Dynamics.
+  * @param q Current position.
+  * @param _k Experiment object.
+  * @return Gradient of Kinetic energy with current momentum.
+  */
+  virtual std::vector<double> dphi_dq(const std::vector<double> q, korali::Experiment *_k) = 0;
+
+  //////////////////////////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////// ENERGY FUNCTIONS END ////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////////////////////
+
+  //////////////////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////// GENERAL FUNCTIONS START //////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////////////////////
 
   /**
   * @brief Updates current position of hamiltonian.
@@ -81,62 +187,15 @@ class Hamiltonian
   {
     (*_sample)["Parameters"] = q;
 
-    if(verbosity == true)
-    {
-      std::cout << "In Hamiltonian::updateHamiltonian " << std::endl;
-    }
-
     KORALI_START((*_sample));
     KORALI_WAIT((*_sample));
-  }
-
-  /**
-  * @brief Potential Energy function used for Hamiltonian Dynamics.
-  * @param q Current position.
-  * @param _k Experiment object.
-  * @return Potential energy.
-  */
-  virtual double U(const std::vector<double> &q, korali::Experiment *_k)
-  {
-    updateHamiltonian(q, _k);
-    ++_numHamiltonianObjectUpdates;
 
     if (verbosity == true)
     {
-      std::cout << "In Hamiltonian::U :" << std::endl;
+      std::cout << "In Hamiltonian::updateHamiltonian " << std::endl;
       printf("%s\n", _sample->_js.getJson().dump(2).c_str());
       fflush(stdout);
     }
-
-    double evaluation = KORALI_GET(double, (*_sample), "logP(x)");
-    evaluation *= -1.0;
-    return evaluation;
-  }
-
-  /**
-  * @brief Gradient of Potential Energy function used for Hamiltonian Dynamics.
-  * @param q Current position.
-  * @param _k Experiment object.
-  * @return Gradient of Potential energy.
-  */
-  virtual std::vector<double> dU(const std::vector<double> &q, korali::Experiment *_k)
-  {
-    updateHamiltonian(q, _k);
-
-    if (verbosity == true)
-    {
-      std::cout << "In Hamiltonian::U :" << std::endl;
-      printf("%s\n", _sample->_js.getJson().dump(2).c_str());
-      fflush(stdout);
-    }
-
-    // evaluate grad(logP(x)) (extremely slow)
-    std::vector<double> evaluation = KORALI_GET(std::vector<double>, (*_sample), "grad(logP(x))");
-
-    // negate to get dU
-    std::transform(evaluation.cbegin(), evaluation.cend(), evaluation.begin(), std::negate<double>());
-
-    return evaluation;
   }
 
   /**
@@ -152,23 +211,6 @@ class Hamiltonian
   * @return pLeft.transpose * _inverseMetric * pRight.
   */
   virtual double innerProduct(std::vector<double> pLeft, std::vector<double> pRight) const = 0;
-
-  /**
-  * @brief Updates Inverse Metric by using samples to approximate the covariance matrix via the Fisher information.
-  * @param samples Contains samples. One row is one sample.
-  * @param positionMean Mean of samples.
-  * @return Error code of Cholesky decomposition needed for dense Metric.
-  */
-  virtual int updateInverseMetric(const std::vector<std::vector<double>> &samples, const std::vector<double> &positionMean) = 0;
-
-  /**
-  * @brief Getter function for State Space Dim.
-  * @return Dimension of state space (i.e. dim(q)).
-  */
-  const size_t getStateSpaceDim() const
-  {
-    return _stateSpaceDim;
-  }
 
   /**
   * @brief Computes NUTS criterion on euclidean domain.
@@ -207,18 +249,29 @@ class Hamiltonian
   }
 
   /**
-  * @brief Setter function for metric.
-  * @param metric Metric which is set.
-  * @return Returns true if dimensions are compatible. Returns false if dimension mismatch found.
+  * @brief Updates Inverse Metric by using samples to approximate the covariance matrix via the Fisher information.
+  * @param samples Contains samples. One row is one sample.
+  * @param positionMean Mean of samples.
+  * @return Error code of Cholesky decomposition needed for dense Metric.
   */
-  virtual bool setMetric(std::vector<double> &metric) = 0;
+  virtual int updateInverseMetric(const std::vector<std::vector<double>> &samples, const std::vector<double> &positionMean) = 0;
+
+  //////////////////////////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////// GENERAL FUNCTIONS END ///////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////////////////////
+
+  //////////////////////////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////// GETTERS START ///////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////////////////////
 
   /**
-  * @brief Setter function for inverse metric.
-  * @param inverseMetric Inverse metric which is set.
-  * @return Returns true if dimensions are compatible. Returns false if dimension mismatch found.
+  * @brief Getter function for State Space Dim.
+  * @return Dimension of state space (i.e. dim(q)).
   */
-  virtual bool setInverseMetric(std::vector<double> &inverseMetric) = 0;
+  const size_t getStateSpaceDim() const
+  {
+    return _stateSpaceDim;
+  }
 
   /**
   * @brief Getter function for metric.
@@ -247,6 +300,58 @@ class Hamiltonian
     return _numHamiltonianObjectUpdates;
   }
 
+  //////////////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////// GETTERS END ////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////////////////////
+
+  //////////////////////////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////// SETTERS START ///////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////////////////////
+
+  /**
+  * @brief Setter function for metric.
+  * @param metric Metric which is set.
+  * @return Returns true if dimensions are compatible. Returns false if dimension mismatch found.
+  */
+  bool setMetric(std::vector<double> &metric)
+  {
+    if (metric.size() != _metric.size())
+    {
+      return false;
+    }
+    else
+    {
+      _metric = metric;
+      return true;
+    }
+  }
+
+  /**
+  * @brief Setter function for inverse metric.
+  * @param inverseMetric Inverse metric which is set.
+  * @return Returns true if dimensions are compatible. Returns false if dimension mismatch found.
+  */
+  bool setInverseMetric(std::vector<double> &inverseMetric)
+  {
+    if (inverseMetric.size() != _inverseMetric.size())
+    {
+      return false;
+    }
+    else
+    {
+      _inverseMetric = inverseMetric;
+      return true;
+    }
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////// SETTERS END ////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////////////////////
+
+  //////////////////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////// DEBUGGER MEMBERS START ///////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////////////////////
+
   /**
   * @brief verbosity boolean for debuggin purposes.
   */
@@ -265,6 +370,10 @@ class Hamiltonian
     }
     return;
   }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////// DEBUGGER MEMBERS END ////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////////////////////
 
   /**
   * @brief Pointer to current sample object.

@@ -23,6 +23,10 @@ namespace sampler
 class HamiltonianEuclideanDense : public HamiltonianEuclidean
 {
   public:
+  //////////////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////// CONSTRUCTORS START /////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////////////////////
+
   /**
   * @brief Constructor with State Space Dim.
   * @param stateSpaceDim Dimension of State Space.
@@ -46,19 +50,13 @@ class HamiltonianEuclideanDense : public HamiltonianEuclidean
     _multivariateGenerator = multivariateGenerator;
   }
 
-  /**
-  * @brief Constructor with State Space Dim.
-  * @param stateSpaceDim Dimension of State Space.
-  * @param sample Sample object.
-  * @param multivariateGenerator Generator needed for momentum sampling.
-  */
-  HamiltonianEuclideanDense(const size_t stateSpaceDim, korali::Sample *sample, korali::distribution::multivariate::Normal *multivariateGenerator) : HamiltonianEuclidean{stateSpaceDim, sample}
-  {
-    _metric.resize(stateSpaceDim * stateSpaceDim);
-    _inverseMetric.resize(stateSpaceDim * stateSpaceDim);
+  //////////////////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////// CONSTRUCTORS END //////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////////////////////
 
-    _multivariateGenerator = multivariateGenerator;
-  }
+  //////////////////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////// ENERGY FUNCTIONS START ///////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////////////////////
 
   /**
   * @brief Total energy function used for Hamiltonian Dynamics.
@@ -73,9 +71,10 @@ class HamiltonianEuclideanDense : public HamiltonianEuclidean
   }
 
   /**
-  * @brief Kinetic energy function used for Hamiltonian Dynamics.
+  * @brief Kinetic energy function K(q, p) = 0.5 * p.T * inverseMetric(q) * p + 0.5 * logDetMetric(q) used for Hamiltonian Dynamics. For Euclidean metric logDetMetric(q) := 0.0.
   * @param q Current position.
   * @param p Current momentum.
+  * @param _k Experiment object.
   * @return Kinetic energy.
   */
   double K(const std::vector<double> &q, const std::vector<double> &p, korali::Experiment *_k = 0) override
@@ -93,12 +92,13 @@ class HamiltonianEuclideanDense : public HamiltonianEuclidean
   }
 
   /**
-  * @brief Gradient of kintetic energy function used for Hamiltonian Dynamics.
+  * @brief Purely virtual gradient of kintetic energy function dK(q, p) = inverseMetric(q) * p + 0.5 * dlogDetMetric_dq(q) used for Hamiltonian Dynamics. For Euclidean metric logDetMetric(q) := 0.0.
   * @param q Current position.
   * @param p Current momentum.
+  * @param _k Experiment object.
   * @return Gradient of Kinetic energy with current momentum.
   */
-  std::vector<double> dK(const std::vector<double> &q, const std::vector<double> &p) override
+  std::vector<double> dK(const std::vector<double> &q, const std::vector<double> &p, korali::Experiment *_k = 0) override
   {
     std::vector<double> tmpVector(_stateSpaceDim, 0.0);
     double tmpScalar = 0.0;
@@ -115,6 +115,14 @@ class HamiltonianEuclideanDense : public HamiltonianEuclidean
 
     return tmpVector;
   }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////// ENERGY FUNCTIONS END ////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////////////////////
+
+  //////////////////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////// GENERAL FUNCTIONS START //////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////////////////////
 
   /**
   * @brief Generates sample of momentum.
@@ -176,7 +184,7 @@ class HamiltonianEuclideanDense : public HamiltonianEuclidean
     }
 
     // update Metric to be consisitent with Inverse Metric
-    int err = invertMatrix(_inverseMetric, _metric);
+    int err = __invertMatrix(_inverseMetric, _metric);
 
     _multivariateGenerator->_sigma = _metric;
 
@@ -196,6 +204,14 @@ class HamiltonianEuclideanDense : public HamiltonianEuclidean
     return err;
   }
 
+  //////////////////////////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////// GENERAL FUNCTIONS END ///////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////////////////////
+
+  //////////////////////////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////// HELPERS START ///////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////////////////////
+
   protected:
   // inverts mat via cholesky decomposition and writes inverted Matrix to inverseMat
   // TODO: Avoid calculating cholesky decompisition twice
@@ -206,7 +222,7 @@ class HamiltonianEuclideanDense : public HamiltonianEuclidean
   * @param inverseMat Result of inversion.
   * @return Error code of Cholesky decomposition used to invert matrix.
   */
-  int invertMatrix(std::vector<double> &mat, std::vector<double> &inverseMat)
+  int __invertMatrix(std::vector<double> &mat, std::vector<double> &inverseMat)
   {
     int _stateSpaceDim = (int)std::sqrt(mat.size());
     gsl_matrix *A = gsl_matrix_alloc(_stateSpaceDim, _stateSpaceDim);
@@ -251,6 +267,10 @@ class HamiltonianEuclideanDense : public HamiltonianEuclidean
 
     return err;
   }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////// HELPERS END ////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////////////////////
 
   private:
   /**

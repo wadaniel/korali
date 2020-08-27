@@ -23,6 +23,10 @@ namespace sampler
 class HamiltonianEuclidean : public Hamiltonian
 {
   public:
+  //////////////////////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////// CONSTRUCTORS START /////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////////////////////
+
   /**
   * @brief Default constructor.
   */
@@ -34,48 +38,75 @@ class HamiltonianEuclidean : public Hamiltonian
   */
   HamiltonianEuclidean(const size_t stateSpaceDim) : Hamiltonian{stateSpaceDim} {}
 
-  /**
-  * @brief Constructor with State Space Dim.
-  * @param stateSpaceDim Dimension of State Space.
-  * @param sample Pointer to sample object.
-  */
-  HamiltonianEuclidean(const size_t stateSpaceDim, korali::Sample *sample) : Hamiltonian{stateSpaceDim, sample} {}
+  //////////////////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////// CONSTRUCTORS END //////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////////////////////
+
+  //////////////////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////// ENERGY FUNCTIONS START ///////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////////////////////
 
   /**
-  * @brief Setter function for metric.
-  * @param metric Metric which is set.
-  * @return Returns true if dimensions are compatible. Returns false if dimension mismatch found.
+  * @brief Purely virtual function tau(q, p) = 0.5 * p^T * inverseMetric(q) * p (no logDetMetric term)
+  * @param q Current position.
+  * @param p Current momentum.
+  * @param _k Experiment object.
+  * @return Gradient of Kinetic energy with current momentum.
   */
-  bool setMetric(std::vector<double> &metric) override
+  double tau(const std::vector<double> &q, const std::vector<double> &p, korali::Experiment *_k = 0) override
   {
-    if (metric.size() != _metric.size())
-    {
-      return false;
-    }
-    else
-    {
-      _metric = metric;
-      return true;
-    }
+    return this->K(q, p, _k);
   }
 
   /**
-  * @brief Setter function for inverse metric.
-  * @param inverseMetric Inverse metric which is set.
-  * @return Returns true if dimensions are compatible. Returns false if dimension mismatch found.
+  * @brief Purely virtual gradient of dtau_dq(q, p) = 0.5 * p^T * dinverseMetric_dq(q) * p used for Hamiltonian Dynamics.
+  * @param q Current position.
+  * @param p Current momentum.
+  * @param _k Experiment object.
+  * @return Gradient of Kinetic energy with current momentum.
   */
-  bool setInverseMetric(std::vector<double> &inverseMetric) override
+  std::vector<double> dtau_dq(const std::vector<double> &q, const std::vector<double> &p, korali::Experiment *_k = 0) override
   {
-    if (inverseMetric.size() != _inverseMetric.size())
-    {
-      return false;
-    }
-    else
-    {
-      _inverseMetric = inverseMetric;
-      return true;
-    }
+    return std::vector<double>(_stateSpaceDim, 0.0);
   }
+
+  /**
+  * @brief Purely virtual gradient of dtau_dp(q, p) = inverseMetric(q) * p used for Hamiltonian Dynamics.
+  * @param q Current position.
+  * @param p Current momentum.
+  * @param _k Experiment object.
+  * @return Gradient of Kinetic energy with current momentum.
+  */
+  std::vector<double> dtau_dp(const std::vector<double> &q, const std::vector<double> &p, korali::Experiment *_k = 0) override
+  {
+    return this->dK(q, p, _k);
+  }
+
+  /**
+  * @brief Purely virtual gradient of phi(q) = 0.5 * logDetMetric(q) + U(q) used for Hamiltonian Dynamics.
+  * @param q Current position.
+  * @param _k Experiment object.
+  * @return Gradient of Kinetic energy with current momentum.
+  */
+  double phi(const std::vector<double> q, korali::Experiment *_k) override
+  {
+    return this->U(q, _k);
+  }
+
+  /**
+  * @brief Purely virtual gradient of dphi_dq(q) = 0.5 * dlogDetMetric_dq(q) + dU(q) used for Hamiltonian Dynamics.
+  * @param q Current position.
+  * @param _k Experiment object.
+  * @return Gradient of Kinetic energy with current momentum.
+  */
+  std::vector<double> dphi_dq(const std::vector<double> q, korali::Experiment *_k) override
+  {
+    return this->dU(q, _k);
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////// ENERGY FUNCTIONS END ////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////////////////////
 };
 
 } // namespace sampler

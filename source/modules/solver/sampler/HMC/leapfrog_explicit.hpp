@@ -35,7 +35,7 @@ class LeapfrogExplicit : public Leapfrog
       p[i] -= 0.5 * stepSize * dU[i];
     }
 
-    std::vector<double> dK = hamiltonian->dK(q, p);
+    std::vector<double> dK = hamiltonian->dK(q, p, _k);
     // std::cout << "dK[0] = " << dK[0] << std::endl;
     for (size_t i = 0; i < stateSpaceDim; ++i)
     {

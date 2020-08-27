@@ -6,6 +6,7 @@
 #include "modules/distribution/univariate/normal/normal.hpp"
 #include "modules/distribution/univariate/uniform/uniform.hpp"
 #include "modules/solver/sampler/sampler.hpp"
+#include <string>
 #include <vector>
 
 #include "hamiltonian_euclidean_dense.hpp"
@@ -26,6 +27,9 @@ class HMC : public Sampler
 {
   Hamiltonian *_hamiltonian;
   Leapfrog *_integrator;
+
+  HamiltonianRiemannianDiag *_hamiltonianRiemannian;
+  LeapfrogImplicit *_integratorImplicit;
 
   /**
   * @brief Updates internal state such as mean, Metric and InverseMetric.
@@ -68,6 +72,12 @@ class HMC : public Sampler
   * @param logUniSample Log of uniform sample needed for Metropolis accepance / rejection step.
   */
   void runGenerationHMC(const double logUniSample);
+
+  /**
+  * @brief Runs generation for HMC sampler.
+  * @param logUniSample Log of uniform sample needed for Metropolis accepance / rejection step.
+  */
+  void runGenerationRHMC(const double logUniSample);
 
   /**
   * @brief Rund NUTS algorithm with buildTreeUtil.

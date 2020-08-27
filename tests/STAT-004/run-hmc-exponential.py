@@ -34,7 +34,7 @@ for useDiagonalMetric in [False, True]:
     # HMC specific parameters
     e["Solver"]["Num Integration Steps"] = 20
     e["Solver"]["Step Size"] = 0.05
-    e["Solver"]["Use Euclidean Metric"] = True
+    e["Solver"]["Version"] = 'Euclidean'
     e["Solver"]["Use Diagonal Metric"] = useDiagonalMetric
     e["Solver"]["Use Adaptive Step Size"] = True
     e["Solver"]["Target Integration Time"] = 0.55

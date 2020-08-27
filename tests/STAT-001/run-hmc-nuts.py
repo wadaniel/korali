@@ -25,7 +25,7 @@ e["Solver"]["Termination Criteria"]["Max Samples"] = 5000
 
 # HMC specific parameters
 e["Solver"]["Use Adaptive Step Size"] = True
-e["Solver"]["Use Euclidean Metric"] = True
+e["Solver"]["Version"] = 'Euclidean'
 e["Solver"]["Use NUTS"] = True
 e["Solver"]["Num Integration Steps"] = 20
 e["Solver"]["Step Size"] = 0.1

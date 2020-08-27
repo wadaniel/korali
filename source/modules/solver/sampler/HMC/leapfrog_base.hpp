@@ -26,6 +26,20 @@ class Leapfrog
   * @param _k Experiment object.
   */
   virtual void step(std::vector<double> &q, std::vector<double> &p, const double stepSize, Hamiltonian *hamiltonian, korali::Experiment *_k) = 0;
+
+  protected:
+  /**
+  * @brief Debug printer function for std::vector. TODO: REMOVE
+  * @param vec Vector to be printed.
+  */
+  void __printVec(std::vector<double> vec)
+  {
+    for (size_t i = 0; i < vec.size(); ++i)
+    {
+      std::cout << vec[i] << std::endl;
+    }
+    return;
+  }
 };
 
 } // namespace sampler

@@ -24,9 +24,9 @@ e["Solver"]["Burn In"] = 500
 e["Solver"]["Termination Criteria"]["Max Samples"] = 5000
 
 # HMC specific parameters
-e["Solver"]["Use Adaptive Step Size"] = 0
-e["Solver"]["Use Euclidean Metric"] = 0
-e["Solver"]["Use NUTS"] = 0
+e["Solver"]["Use Adaptive Step Size"] = False
+e["Solver"]["Version"] = 'Static'
+e["Solver"]["Use NUTS"] = False
 e["Solver"]["Num Integration Steps"] = 20
 e["Solver"]["Step Size"] = 0.1
 e["Solver"]["Target Integration Time"] = 20.0

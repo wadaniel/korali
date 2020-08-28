@@ -12,7 +12,7 @@ lg5 = lambda x: lgaussianxd(x, 5)
 
 # Starting Korali's Engine
 import korali
-for useDiagonalMetric in [True]:
+for useDiagonalMetric in [False, True]:
   k = korali.Engine()
   e = korali.Experiment()
 
@@ -37,7 +37,6 @@ for useDiagonalMetric in [True]:
   e["Solver"]["Num Integration Steps"] = 20
   e["Solver"]["Step Size"] = 0.05
   e["Solver"]["Version"] = 'Euclidean'
-  e["Solver"]["Version"] = 'Riemannian'
   e["Solver"]["Use Diagonal Metric"] = useDiagonalMetric
   e["Solver"]["Use Adaptive Step Size"] = True
   e["Solver"]["Target Integration Time"] = 0.5

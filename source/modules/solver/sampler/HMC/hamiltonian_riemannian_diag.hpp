@@ -87,7 +87,7 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
       std::cout << "Error in RiemannianHamiltonianDiag::K : Experiment pointer _k initialized with nullptr" << std::endl;
     }
 
-    double result = 0.5 * (this->tau(q, p, _k) + _logDetMetric);
+    double result = tau(q, p, _k) + 0.5 * _logDetMetric;
     if (verbosity == true)
     {
       std::cout << "In HamiltonianRiemannianDiag::K :" << std::endl;

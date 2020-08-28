@@ -103,7 +103,8 @@ class Hamiltonian
     if (verbosity == true)
     {
       std::cout << "In Hamiltonian::U :" << std::endl;
-      std::cout << "U(q, _k) = " << evaluation << std::endl;
+      std::cout << "U(q, _k) = " << evaluation << std::endl
+                << std::endl;
     }
 
     return evaluation;
@@ -130,6 +131,7 @@ class Hamiltonian
       std::cout << "In Hamiltonian::dU :" << std::endl;
       std::cout << "dU(q, _k) = " << std::endl;
       __printVec(evaluation);
+      std::cout << std::endl;
     }
 
     return evaluation;

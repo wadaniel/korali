@@ -213,23 +213,40 @@ HierarchicalReference::~HierarchicalReference()
 
 void HierarchicalReference::loglikelihoodFunction(Sample &sample)
 {
-  /* Set up a sample*/
-  Sample llhSample;
-  llhSample["Sample Id"] = KORALI_GET(int, sample, "Sample Id") + 1235;
-  llhSample["Current Generation"] = _k->_currentGeneration;
-  llhSample["Module"] = "Problem"; // not needed?
+  /* Set up samples*/
+  std::vector<Sample> llhSamples(_numberIndividuals);
 
   std::vector<std::vector<double>> latentVariables = KORALI_GET(std::vector<std::vector<double>>, sample, "Latent Variables");
   std::vector<double> allLLHs(_numberIndividuals);
 
+  /*TODO: Change this so that it first starts all samples, then WAITALL, and then convert the results of all samples?
+           The important point is that the line "llhSample.run(_computationalModels[i]);" runs in parallel. */
   for (size_t i = 0; i < _numberIndividuals; i++)
   {
-    // Set to something invalid to prevent re-using former values
-    llhSample["Reference Evaluations"] = 0;
-    llhSample["Sigmas"] = 0;
-    llhSample["Dispersions"] = 0;
+    Sample &llhSample = llhSamples[i];
+    llhSample["Sample Id"] = KORALI_GET(int, sample, "Sample Id") + 12678 + int(i);
+    llhSample["Current Generation"] = _k->_currentGeneration;
+    llhSample["Module"] = "Problem";
+    llhSample["Operation"] = "Run Computational Model";
+    llhSample["Computational Model Index"] = i;
     llhSample["Latent Variables"] = latentVariables[i];
+
+    // To prevent potential error message from Korali, as only one of them will be set by the model:
+    llhSample["Standard Deviations"] = {0};
+    llhSample["Dispersions"] = {0};
+
     llhSample.run(_computationalModels[i]);
+    _k->_engine->_conduit->start(llhSample); // KORALI_START is only defined for solvers
+    _k->_engine->_conduit->wait(llhSample);
+//    KORALI_START(llhSample);
+//    KORALI_WAIT(llhSample);
+
+//  }
+//  _k->_engine->_conduit->waitAll(llhSamples);
+////  size_t idx = _k->_engine->_conduit->waitAny(llhSamples);
+//
+//  for (size_t i = 0; i < _numberIndividuals; i++)
+//  {
 
     if (_likelihoodModel == "Normal")
       loglikelihoodNormal(llhSample, _referenceData[i]);
@@ -355,6 +372,12 @@ void HierarchicalReference::loglikelihoodNegativeBinomial(Sample &sample, std::v
   }
 
   sample["logLikelihood"] = loglike;
+}
+
+void HierarchicalReference::runComputationalModel(Sample &sample)
+{
+  size_t idx = KORALI_GET(size_t, sample, "Computational Model Index");
+  sample.run(_computationalModels[idx]);
 }
 
 /*** Implementation note: **

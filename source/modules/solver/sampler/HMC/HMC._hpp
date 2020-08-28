@@ -74,12 +74,6 @@ class HMC : public Sampler
   void runGenerationHMC(const double logUniSample);
 
   /**
-  * @brief Runs generation for HMC sampler.
-  * @param logUniSample Log of uniform sample needed for Metropolis accepance / rejection step.
-  */
-  void runGenerationRHMC(const double logUniSample);
-
-  /**
   * @brief Rund NUTS algorithm with buildTreeUtil.
   * @param helper Helper struct for large argument list.
   */

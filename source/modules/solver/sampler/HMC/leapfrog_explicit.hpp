@@ -33,6 +33,7 @@ class LeapfrogExplicit : public Leapfrog
     }
 
     size_t stateSpaceDim = hamiltonian->getStateSpaceDim();
+    hamiltonian->updateHamiltonian(q, _k);
     std::vector<double> dU = hamiltonian->dU(q, _k);
 
     if (verbosity == true)
@@ -52,6 +53,7 @@ class LeapfrogExplicit : public Leapfrog
       __printVec(p);
     }
 
+    // would need to update in Riemannian case
     std::vector<double> dK = hamiltonian->dK(q, p, _k);
 
     if (verbosity == true)
@@ -71,6 +73,7 @@ class LeapfrogExplicit : public Leapfrog
       __printVec(q);
     }
 
+    hamiltonian->updateHamiltonian(q, _k);
     dU = hamiltonian->dU(q, _k);
 
     if (verbosity == true)

@@ -76,38 +76,28 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
 
   /**
   * @brief Total energy function used for Hamiltonian Dynamics.
-  * @param q Current position.
   * @param p Current momentum.
-  * @param _k Experiment object.
   * @return Total energy.
   */
-  double H(const std::vector<double> &q, const std::vector<double> &p, korali::Experiment *_k) override
+  double H(const std::vector<double> &p) override
   {
-    return this->K(q, p, _k) + this->U(q, _k);
+    return this->K(p) + this->U();
   }
 
   /**
   * @brief Purely virtual kinetic energy function K(q, p) = 0.5 * p.T * inverseMetric(q) * p + 0.5 * logDetMetric(q) used for Hamiltonian Dynamics.
-  * @param q Current position.
   * @param p Current momentum.
-  * @param _k Experiment object.
   * @return Kinetic energy.
   */
-  double K(const std::vector<double> &q, const std::vector<double> &p, korali::Experiment *_k) override
+  double K(const std::vector<double> &p) override
   {
-    // make sure hamiltonian updated in tau
-    if (_k == 0)
-    {
-      std::cout << "Error in RiemannianHamiltonianDiag::K : Experiment pointer _k initialized with nullptr" << std::endl;
-    }
-
-    double result = tau(q, p, _k) + 0.5 * _logDetMetric;
+    double result = tau(p) + 0.5 * _logDetMetric;
     if (verbosity == true)
     {
       std::cout << "In HamiltonianRiemannianDiag::K :" << std::endl;
       // printf("%s\n", _sample->_js.getJson().dump(2).c_str());
       // fflush(stdout);
-      std::cout << "K(q, p, _k) = " << result << std::endl;
+      std::cout << "K(p) = " << result << std::endl;
     }
 
     return result;
@@ -115,18 +105,11 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
 
   /**
   * @brief Purely virtual gradient of kintetic energy function dK(q, p) = inverseMetric(q) * p + 0.5 * dlogDetMetric_dq(q) used for Hamiltonian Dynamics.
-  * @param q Current position.
   * @param p Current momentum.
-  * @param _k Experiment object.
   * @return Gradient of Kinetic energy with current momentum.
   */
-  std::vector<double> dK(const std::vector<double> &q, const std::vector<double> &p, korali::Experiment *_k) override
+  std::vector<double> dK(const std::vector<double> &p) override
   {
-    if (_k == 0)
-    {
-      std::cout << "Error in RiemannianHamiltonianDiag::K : Experiment pointer _k initialized with nullptr" << std::endl;
-    }
-
     std::vector<double> tmpVector(_stateSpaceDim, 0.0);
     for (int i = 0; i < _stateSpaceDim; ++i)
     {
@@ -137,12 +120,10 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
 
   /**
   * @brief Purely virtual function tau(q, p) = 0.5 * p^T * inverseMetric(q) * p (no logDetMetric term)
-  * @param q Current position.
   * @param p Current momentum.
-  * @param _k Experiment object.
   * @return Gradient of Kinetic energy with current momentum.
   */
-  double tau(const std::vector<double> &q, const std::vector<double> &p, korali::Experiment *_k) override
+  double tau(const std::vector<double> &p) override
   {
     double tmpScalar = 0.0;
 
@@ -158,7 +139,7 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
       std::cout << "In HamiltonianRiemannianDiag::tau :" << std::endl;
       // printf("%s\n", _sample->_js.getJson().dump(2).c_str());
       // fflush(stdout);
-      std::cout << "tau(q, p, _k) = " << 0.5 * tmpScalar << std::endl;
+      std::cout << "tau(p) = " << 0.5 * tmpScalar << std::endl;
     }
 
     return 0.5 * tmpScalar;
@@ -166,16 +147,14 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
 
   /**
   * @brief Purely virtual gradient of dtau_dq(q, p) = 0.5 * p^T * dinverseMetric_dq(q) * p used for Hamiltonian Dynamics.
-  * @param q Current position.
   * @param p Current momentum.
-  * @param _k Experiment object.
   * @return Gradient of Kinetic energy with current momentum.
   */
-  std::vector<double> dtau_dq(const std::vector<double> &q, const std::vector<double> &p, korali::Experiment *_k) override
+  std::vector<double> dtau_dq(const std::vector<double> &p) override
   {
     std::vector<double> result(_stateSpaceDim, 0.0);
-    std::vector<double> gradU = this->dU(q, _k);
-    std::vector<double> hessianU = this->__hessianU(q, _k);
+    std::vector<double> gradU = this->dU();
+    std::vector<double> hessianU = this->__hessianU();
 
     for (size_t j = 0; j < _stateSpaceDim; ++j)
     {
@@ -189,10 +168,8 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
 
     if (verbosity == true)
     {
-      std::cout << "dtau_dq(q, p, _k) = ";
+      std::cout << "dtau_dq(p) = ";
       __printVec(result);
-      std::cout << "with q = " << std::endl;
-      __printVec(q);
       std::cout << "with p = " << std::endl;
       __printVec(p);
     }
@@ -202,38 +179,29 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
 
   /**
   * @brief Purely virtual gradient of dtau_dp(q, p) = inverseMetric(q) * p used for Hamiltonian Dynamics.
-  * @param q Current position.
   * @param p Current momentum.
-  * @param _k Experiment object.
   * @return Gradient of Kinetic energy with current momentum.
   */
-  std::vector<double> dtau_dp(const std::vector<double> &q, const std::vector<double> &p, korali::Experiment *_k) override
+  std::vector<double> dtau_dp(const std::vector<double> &p) override
   {
-    // this->updateHamiltonian(q, _k);
-
+    std::vector<double> result = this->dK(p);
     if (verbosity == true)
     {
-      std::cout << "dtau_dp(q, p, _k) = ";
-      __printVec(dK(q, p, _k));
-      std::cout << "with q = " << std::endl;
-      __printVec(q);
+      std::cout << "dtau_dp(p) = ";
+      __printVec(result);
       std::cout << "with p = " << std::endl;
       __printVec(p);
     }
 
-    return this->dK(q, p, _k);
+    return this->dK(p);
   }
 
   /**
   * @brief Purely virtual gradient of phi(q) = 0.5 * logDetMetric(q) + U(q) used for Hamiltonian Dynamics.
-  * @param q Current position.
-  * @param _k Experiment object.
   * @return Gradient of Kinetic energy with current momentum.
   */
-  double phi(const std::vector<double> q, korali::Experiment *_k) override
+  double phi() override
   {
-    // make sure hamiltonian updated in U
-
     if (verbosity == true)
     {
       std::cout << "In HamiltonianRiemannianDiag::phi :" << std::endl;
@@ -241,20 +209,18 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
       fflush(stdout);
     }
 
-    return this->U(q, _k) + 0.5 * _logDetMetric;
+    return this->U() + 0.5 * _logDetMetric;
   }
 
   /**
   * @brief Purely virtual gradient of dphi_dq(q) = 0.5 * dlogDetMetric_dq(q) + dU(q) used for Hamiltonian Dynamics.
-  * @param q Current position.
-  * @param _k Experiment object.
   * @return Gradient of Kinetic energy with current momentum.
   */
-  std::vector<double> dphi_dq(const std::vector<double> q, korali::Experiment *_k) override
+  std::vector<double> dphi_dq() override
   {
     std::vector<double> result(_stateSpaceDim, 0.0);
-    std::vector<double> gradU = this->dU(q, _k);
-    std::vector<double> hessianU = this->__hessianU(q, _k);
+    std::vector<double> gradU = this->dU();
+    std::vector<double> hessianU = this->__hessianU();
 
     std::vector<double> dLogDetMetric_dq(_stateSpaceDim, 0.0);
 
@@ -276,10 +242,8 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
 
     if (verbosity == true)
     {
-      std::cout << "dphi_dq(q, _k) = ";
+      std::cout << "dphi_dq() = ";
       __printVec(result);
-      std::cout << "with q = " << std::endl;
-      __printVec(q);
       std::cout << "with gradU = " << std::endl;
       __printVec(gradU);
       std::cout << "with hessianU = " << std::endl;
@@ -432,16 +396,10 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
   private:
   /**
   * @brief Hessian of potential energy function used for Riemannian metric.
-  * @param q Current position.
-  * @param _k Experiment object.
   * @return Hessian of potential energy.
   */
-  std::vector<double> __hessianU(const std::vector<double> &q, korali::Experiment *_k)
+  std::vector<double> __hessianU()
   {
-    // this->updateHamiltonian(q, _k);
-
-    ++_numHamiltonianObjectUpdates;
-
     // evaluate grad(logP(x)) (extremely slow)
     std::vector<std::vector<double>> evaluationMat = KORALI_GET(std::vector<std::vector<double>>, (*_sample), "H(logP(x))");
     std::vector<double> evaluation(_stateSpaceDim * _stateSpaceDim);
@@ -459,7 +417,7 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
     if (verbosity == true)
     {
       std::cout << "In HamiltonianRiemannianDiag::__hessianU :" << std::endl;
-      std::cout << "__hessianU(q, _k) = " << std::endl;
+      std::cout << "__hessianU() = " << std::endl;
       __printVec(evaluation);
     }
 

@@ -197,8 +197,8 @@ void HMC::runGeneration()
 void HMC::runGenerationHMC(const double logUniSample)
 {
   _hamiltonian->updateHamiltonian(_positionLeader, _k);
-  const double oldK = _hamiltonian->K(_positionLeader, _momentumLeader, _k);
-  const double oldU = _hamiltonian->U(_positionLeader, _k);
+  const double oldK = _hamiltonian->K(_momentumLeader);
+  const double oldU = _hamiltonian->U();
 
   if (_useAdaptiveStepSize == true && _chainLength <= _burnIn)
   {
@@ -216,8 +216,8 @@ void HMC::runGenerationHMC(const double logUniSample)
 
   // Save new Energies
   _hamiltonian->updateHamiltonian(_positionCandidate, _k);
-  const double newK = _hamiltonian->K(_positionCandidate, _momentumCandidate, _k);
-  const double newU = _hamiltonian->U(_positionCandidate, _k);
+  const double newK = _hamiltonian->K(_momentumCandidate);
+  const double newU = _hamiltonian->U();
 
   const double logAlpha = std::min(0.0, -(newK - oldK + newU - oldU));
   _acceptanceProbability = std::exp(logAlpha);
@@ -233,8 +233,8 @@ void HMC::runGenerationHMC(const double logUniSample)
 
 void HMC::runGenerationNUTS(const double logUniSample)
 {
-  const double oldK = _hamiltonian->K(_positionLeader, _momentumLeader, _k);
-  const double oldU = _hamiltonian->U(_positionLeader, _k);
+  const double oldK = _hamiltonian->K(_momentumLeader);
+  const double oldU = _hamiltonian->U();
 
   std::vector<double> nullPointOne(_stateSpaceDim);
   std::vector<double> nullPointTwo(_stateSpaceDim);
@@ -320,8 +320,8 @@ void HMC::runGenerationNUTS(const double logUniSample)
 void HMC::runGenerationNUTSUtil(TreeHelperEuclidean *helper)
 {
   _hamiltonian->updateHamiltonian(_positionLeader, _k);
-  const double oldK = _hamiltonian->K(_positionLeader, _momentumLeader, _k);
-  const double oldU = _hamiltonian->U(_positionLeader, _k);
+  const double oldK = _hamiltonian->K(_momentumLeader);
+  const double oldU = _hamiltonian->U();
 
   std::vector<double> qLeft = _positionLeader;
   std::vector<double> pLeft = _momentumLeader;
@@ -410,8 +410,8 @@ void HMC::runGenerationNUTSUtil(TreeHelperEuclidean *helper)
 
 void HMC::runGenerationNUTSUtilRiemannian(TreeHelperRiemannian *helper)
 {
-  const double oldK = _hamiltonian->K(_positionLeader, _momentumLeader, _k);
-  const double oldU = _hamiltonian->U(_positionLeader, _k);
+  const double oldK = _hamiltonian->K(_momentumLeader);
+  const double oldU = _hamiltonian->U();
 
   std::vector<double> qLeft = _positionLeader;
   std::vector<double> pLeft = _momentumLeader;
@@ -765,10 +765,12 @@ double HMC::findReasonableStepSize(std::vector<double> q)
   std::vector<double> p = _hamiltonian->sampleMomentum();
   ++_proposedSampleCount;
 
-  oldLogP = -_hamiltonian->H(q, p, _k);
+  _hamiltonian->updateHamiltonian(q, _k);
+  oldLogP = -_hamiltonian->H(p);
 
   _integrator->step(q, p, stepSize, _hamiltonian, _k);
-  newLogP = -_hamiltonian->H(q, p, _k);
+  _hamiltonian->updateHamiltonian(q, _k);
+  newLogP = -_hamiltonian->H(p);
 
   int a = (newLogP - oldLogP > std::log(0.5)) ? 1 : -1;
 
@@ -781,7 +783,8 @@ double HMC::findReasonableStepSize(std::vector<double> q)
 
     // Here leapfrog uses Kinetic Energy with metric instead of Identity
     _integrator->step(q, p, stepSize, _hamiltonian, _k);
-    newLogP = -_hamiltonian->H(q, p, _k);
+    _hamiltonian->updateHamiltonian(q, _k);
+    newLogP = -_hamiltonian->H(p);
   }
 
   // Catch Step Size = 0.0 -> No traversal of phase space
@@ -838,8 +841,8 @@ void HMC::buildTreeUtil(TreeHelperEuclidean *helper)
     _integrator->step(helper->qLeftOut, helper->pLeftOut, _stepSize, _hamiltonian, _k);
 
     _hamiltonian->updateHamiltonian(helper->qLeftOut, _k);
-    const double leafK = _hamiltonian->K(helper->qLeftOut, helper->pLeftOut, _k);
-    const double leafU = _hamiltonian->U(helper->qLeftOut, _k);
+    const double leafK = _hamiltonian->K(helper->pLeftOut);
+    const double leafU = _hamiltonian->U();
     const double leafH = leafU + leafK;
 
     helper->numValidLeavesOut = (helper->logUniSampleIn <= helper->rootHIn - leafH) ? 1.0 : 0.0;
@@ -932,8 +935,8 @@ void HMC::buildTreeUtilIntegration(TreeHelperRiemannian *helper, std::vector<dou
     _integrator->step(helper->qLeftOut, helper->pLeftOut, _stepSize, _hamiltonian, _k);
 
     _hamiltonian->updateHamiltonian(helper->pLeftOut, _k);
-    const double leafK = _hamiltonian->K(helper->qLeftOut, helper->pLeftOut, _k);
-    const double leafU = _hamiltonian->U(helper->qLeftOut, _k);
+    const double leafK = _hamiltonian->K(helper->pLeftOut);
+    const double leafU = _hamiltonian->U();
     const double leafH = leafU + leafK;
 
     helper->numValidLeavesOut = (helper->logUniSampleIn <= helper->rootHIn - leafH) ? 1.0 : 0.0;
@@ -1040,8 +1043,8 @@ void HMC::buildTree(const std::vector<double> &q, const std::vector<double> &p, 
     const double deltaMax = 100;
     _integrator->step(qLeft, pLeft, _stepSize, _hamiltonian, _k);
 
-    const double leafK = _hamiltonian->K(qLeft, pLeft, _k);
-    const double leafU = _hamiltonian->U(qLeft, _k);
+    const double leafK = _hamiltonian->K(pLeft);
+    const double leafU = _hamiltonian->U();
     const double leafH = leafU + leafK;
 
     numValidLeaves = (logUniSample <= rootH - leafH) ? 1.0 : 0.0;
@@ -1115,8 +1118,8 @@ void HMC::buildTreeIntegrationCriterion(const std::vector<double> &q, const std:
     //   rho[i] += _stepSize * pLeft[i];
     // }
 
-    const double leafK = _hamiltonian->K(qLeft, pLeft, _k);
-    const double leafU = _hamiltonian->U(qLeft, _k);
+    const double leafK = _hamiltonian->K(pLeft);
+    const double leafU = _hamiltonian->U();
     const double leafH = leafU + leafK;
 
     numValidLeaves = (logUniSample <= rootH - leafH) ? 1.0 : 0.0;

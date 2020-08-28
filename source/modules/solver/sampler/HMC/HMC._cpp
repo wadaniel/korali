@@ -129,7 +129,7 @@ void HMC::setInitialConfiguration()
   {
     std::cout << "not implemented" << std::endl;
   }
-
+  
   _hamiltonian->verbosity = _hamiltonianVerbosity;
   _integrator->verbosity = _integratorVerbosity;
 
@@ -151,12 +151,12 @@ void HMC::setInitialConfiguration()
   _proposedSampleCount = 0;
   _chainLength = 0;
   _acceptanceRate = 1.0;
-
   return;
 }
 
 void HMC::runGeneration()
 {
+  fflush(stdout);
   if (_k->_currentGeneration == 1) setInitialConfiguration();
 
   // Samples Momentum Candidate from N(0.0, metric)

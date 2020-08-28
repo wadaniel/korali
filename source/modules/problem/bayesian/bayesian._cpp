@@ -56,6 +56,7 @@ void Bayesian::evaluateLogPosterior(Sample &sample)
   }
 }
 
+// TODO: clean up namings F, P, logP, .. (D.W.)
 void Bayesian::evaluate(Sample &sample)
 {
   evaluateLogPosterior(sample);
@@ -71,14 +72,12 @@ void Bayesian::evaluateGradient(Sample &sample)
   sample["grad(logP(x))"] = sample["logLikelihood Gradient"]; // TODO: need gradients from prior (D.W.)
 }
 
-// TODO: evaluateHessian (D.W.)
-/*
 void Bayesian::evaluateHessian(Sample &sample)
 {
-
+  evaluateLogLikelihoodHessian(sample);
+  sample["H(F(x))"] = sample["logLikelihood Hessian"];
+  sample["H(logP(x))"] = sample["logLikelihood Hessian"]; // TODO: Hessian from prior (D.W.)
 }
-*/
-
 
 } // namespace problem
 

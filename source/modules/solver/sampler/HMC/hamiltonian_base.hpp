@@ -176,6 +176,13 @@ class Hamiltonian
 
     KORALI_START((*_sample));
     KORALI_WAIT((*_sample));
+ 
+    //TDO: remove hack (D.W.)
+    (*_sample)["Operation"] = "Evaluate Gradient";
+    KORALI_START((*_sample));
+    KORALI_WAIT((*_sample));
+    (*_sample)["Operation"] = "Evaluate";
+
 
     if (verbosity == true)
     {

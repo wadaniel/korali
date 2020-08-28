@@ -61,12 +61,24 @@ void Bayesian::evaluate(Sample &sample)
   evaluateLogPosterior(sample);
   sample["F(x)"] = sample["logPosterior"];
   sample["P(x)"] = sample["logPosterior"];
+  sample["logP(x)"] = sample["logPosterior"];
 }
 
 void Bayesian::evaluateGradient(Sample &sample)
 {
   evaluateLoglikelihoodGradient(sample);
+  sample["grad(F(x))"] = sample["logLikelihood Gradient"];
+  sample["grad(logP(x))"] = sample["logLikelihood Gradient"]; // TODO: need gradients from prior (D.W.)
 }
+
+// TODO: evaluateHessian (D.W.)
+/*
+void Bayesian::evaluateHessian(Sample &sample)
+{
+
+}
+*/
+
 
 } // namespace problem
 

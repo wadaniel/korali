@@ -43,6 +43,9 @@ class Bayesian : public korali::Problem
  */
   virtual void evaluateGradient(korali::Sample &sample);
 
+  // TODO: evaluate Hessian (D.W.)
+  //virtual void evaluateHessian(korali::Sample &sample);
+  
   /**
  * @brief Evaluates the gradient of the logLikelikood w.r.t. to the variables, and stores it in sample["Log Likelihood Gradient"]
  * @param sample A Korali Sample

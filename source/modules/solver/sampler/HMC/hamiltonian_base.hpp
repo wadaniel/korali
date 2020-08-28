@@ -62,40 +62,31 @@ class Hamiltonian
 
   /**
   * @brief Purely abstract total energy function used for Hamiltonian Dynamics.
-  * @param q Current position.
   * @param p Current momentum.
-  * @param _k Experiment object.
   * @return Total energy.
   */
-  virtual double H(const std::vector<double> &q, const std::vector<double> &p, korali::Experiment *_k) = 0;
+  virtual double H(const std::vector<double> &p) = 0;
 
   /**
   * @brief Purely virtual kinetic energy function K(q, p) = 0.5 * p.T * inverseMetric(q) * p + 0.5 * logDetMetric(q) used for Hamiltonian Dynamics.
-  * @param q Current position.
   * @param p Current momentum.
-  * @param _k Experiment object.
   * @return Kinetic energy.
   */
-  virtual double K(const std::vector<double> &q, const std::vector<double> &p, korali::Experiment *_k) = 0;
+  virtual double K(const std::vector<double> &p) = 0;
 
   /**
   * @brief Purely virtual gradient of kintetic energy function dK(q, p) = inverseMetric(q) * p + 0.5 * dlogDetMetric_dq(q) used for Hamiltonian Dynamics.
-  * @param q Current position.
   * @param p Current momentum.
-  * @param _k Experiment object.
   * @return Gradient of Kinetic energy with current momentum.
   */
-  virtual std::vector<double> dK(const std::vector<double> &q, const std::vector<double> &p, korali::Experiment *_k) = 0;
+  virtual std::vector<double> dK(const std::vector<double> &p) = 0;
 
   /**
   * @brief Potential Energy function U(q) = -log(pi(q)) used for Hamiltonian Dynamics.
-  * @param q Current position.
-  * @param _k Experiment object.
   * @return Potential energy.
   */
-  virtual double U(const std::vector<double> &q, korali::Experiment *_k)
+  virtual double U()
   {
-    // updateHamiltonian(q, _k);
     ++_numHamiltonianObjectUpdates;
     double evaluation = KORALI_GET(double, (*_sample), "logP(x)");
     evaluation *= -1.0;
@@ -103,7 +94,7 @@ class Hamiltonian
     if (verbosity == true)
     {
       std::cout << "In Hamiltonian::U :" << std::endl;
-      std::cout << "U(q, _k) = " << evaluation << std::endl
+      std::cout << "U() = " << evaluation << std::endl
                 << std::endl;
     }
 
@@ -112,14 +103,10 @@ class Hamiltonian
 
   /**
   * @brief Gradient of Potential Energy function dU(q) = -grad(log(pi(q))) used for Hamiltonian Dynamics.
-  * @param q Current position.
-  * @param _k Experiment object.
   * @return Gradient of Potential energy.
   */
-  virtual std::vector<double> dU(const std::vector<double> &q, korali::Experiment *_k)
+  virtual std::vector<double> dU()
   {
-    // updateHamiltonian(q, _k);
-
     // evaluate grad(logP(x)) (extremely slow)
     std::vector<double> evaluation = KORALI_GET(std::vector<double>, (*_sample), "grad(logP(x))");
 
@@ -129,7 +116,7 @@ class Hamiltonian
     if (verbosity == true)
     {
       std::cout << "In Hamiltonian::dU :" << std::endl;
-      std::cout << "dU(q, _k) = " << std::endl;
+      std::cout << "dU() = " << std::endl;
       __printVec(evaluation);
       std::cout << std::endl;
     }
@@ -139,46 +126,36 @@ class Hamiltonian
 
   /**
   * @brief Purely virtual function tau(q, p) = 0.5 * p^T * inverseMetric(q) * p (no logDetMetric term)
-  * @param q Current position.
   * @param p Current momentum.
-  * @param _k Experiment object.
   * @return Gradient of Kinetic energy with current momentum.
   */
-  virtual double tau(const std::vector<double> &q, const std::vector<double> &p, korali::Experiment *_k) = 0;
+  virtual double tau(const std::vector<double> &p) = 0;
 
   /**
   * @brief Purely virtual gradient of dtau_dq(q, p) = 0.5 * p^T * dinverseMetric_dq(q) * p used for Hamiltonian Dynamics.
-  * @param q Current position.
   * @param p Current momentum.
-  * @param _k Experiment object.
   * @return Gradient of Kinetic energy with current momentum.
   */
-  virtual std::vector<double> dtau_dq(const std::vector<double> &q, const std::vector<double> &p, korali::Experiment *_k) = 0;
+  virtual std::vector<double> dtau_dq(const std::vector<double> &p) = 0;
 
   /**
   * @brief Purely virtual gradient of dtau_dp(q, p) = inverseMetric(q) * p used for Hamiltonian Dynamics.
-  * @param q Current position.
   * @param p Current momentum.
-  * @param _k Experiment object.
   * @return Gradient of Kinetic energy with current momentum.
   */
-  virtual std::vector<double> dtau_dp(const std::vector<double> &q, const std::vector<double> &p, korali::Experiment *_k) = 0;
+  virtual std::vector<double> dtau_dp(const std::vector<double> &p) = 0;
 
   /**
   * @brief Purely virtual gradient of phi(q) = 0.5 * logDetMetric(q) + U(q) used for Hamiltonian Dynamics.
-  * @param q Current position.
-  * @param _k Experiment object.
   * @return Gradient of Kinetic energy with current momentum.
   */
-  virtual double phi(const std::vector<double> q, korali::Experiment *_k) = 0;
+  virtual double phi() = 0;
 
   /**
   * @brief Purely virtual gradient of dphi_dq(q) = 0.5 * dlogDetMetric_dq(q) + dU(q) used for Hamiltonian Dynamics.
-  * @param q Current position.
-  * @param _k Experiment object.
   * @return Gradient of Kinetic energy with current momentum.
   */
-  virtual std::vector<double> dphi_dq(const std::vector<double> q, korali::Experiment *_k) = 0;
+  virtual std::vector<double> dphi_dq() = 0;
 
   //////////////////////////////////////////////////////////////////////////////////////////////
   //////////////////////////////////// ENERGY FUNCTIONS END ////////////////////////////////////

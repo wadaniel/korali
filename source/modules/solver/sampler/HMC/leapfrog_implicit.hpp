@@ -42,7 +42,7 @@ class LeapfrogImplicit : public Leapfrog
 
     // half step of momentum
     hamiltonian->updateHamiltonian(q, _k);
-    std::vector<double> dphi_dq = hamiltonian->dphi_dq(q, _k);
+    std::vector<double> dphi_dq = hamiltonian->dphi_dq();
     for (size_t i = 0; i < stateSpaceDim; ++i)
     {
       p[i] = p[i] - stepSize / 2.0 * dphi_dq[i];
@@ -62,7 +62,7 @@ class LeapfrogImplicit : public Leapfrog
     {
       deltaP = 0.0;
       hamiltonian->updateHamiltonian(q, _k);
-      std::vector<double> dtau_dq = hamiltonian->dtau_dq(q, p, _k);
+      std::vector<double> dtau_dq = hamiltonian->dtau_dq(p);
       for (size_t i = 0; i < stateSpaceDim; ++i)
       {
         pPrime[i] = rho[i] - stepSize / 2.0 * dtau_dq[i];
@@ -110,9 +110,9 @@ class LeapfrogImplicit : public Leapfrog
     {
       deltaQ = 0.0;
       hamiltonian->updateHamiltonian(sigma, _k);
-      std::vector<double> dtau_dp_sigma = hamiltonian->dtau_dp(sigma, p, _k);
+      std::vector<double> dtau_dp_sigma = hamiltonian->dtau_dp(p);
       hamiltonian->updateHamiltonian(q, _k);
-      std::vector<double> dtau_dp_q = hamiltonian->dtau_dp(q, p, _k);
+      std::vector<double> dtau_dp_q = hamiltonian->dtau_dp(p);
       for (size_t i = 0; i < stateSpaceDim; ++i)
       {
         qPrime[i] = sigma[i] + stepSize / 2.0 * dtau_dp_sigma[i] + stepSize / 2.0 * dtau_dp_q[i];
@@ -144,7 +144,7 @@ class LeapfrogImplicit : public Leapfrog
     }
 
     hamiltonian->updateHamiltonian(q, _k);
-    std::vector<double> dtau_dq = hamiltonian->dtau_dq(q, p, _k);
+    std::vector<double> dtau_dq = hamiltonian->dtau_dq(p);
     for (size_t i = 0; i < stateSpaceDim; ++i)
     {
       p[i] = p[i] - stepSize / 2.0 * dtau_dq[i];
@@ -155,7 +155,7 @@ class LeapfrogImplicit : public Leapfrog
       std::cout << "after last step dtau_dq" << std::endl;
     }
 
-    dphi_dq = hamiltonian->dphi_dq(q, _k);
+    dphi_dq = hamiltonian->dphi_dq();
     for (size_t i = 0; i < stateSpaceDim; ++i)
     {
       p[i] = p[i] - stepSize / 2.0 * dphi_dq[i];

@@ -67,24 +67,20 @@ class HamiltonianEuclideanDense : public HamiltonianEuclidean
 
   /**
   * @brief Total energy function used for Hamiltonian Dynamics.
-  * @param q Current position.
   * @param p Current momentum.
-  * @param _k Experiment object.
   * @return Total energy.
   */
-  double H(const std::vector<double> &q, const std::vector<double> &p, korali::Experiment *_k) override
+  double H(const std::vector<double> &p) override
   {
-    return K(q, p) + U(q, _k);
+    return K(p) + U();
   }
 
   /**
   * @brief Kinetic energy function K(q, p) = 0.5 * p.T * inverseMetric(q) * p + 0.5 * logDetMetric(q) used for Hamiltonian Dynamics. For Euclidean metric logDetMetric(q) := 0.0.
-  * @param q Current position.
   * @param p Current momentum.
-  * @param _k Experiment object.
   * @return Kinetic energy.
   */
-  double K(const std::vector<double> &q, const std::vector<double> &p, korali::Experiment *_k = 0) override
+  double K(const std::vector<double> &p) override
   {
     double tmpScalar = 0.0;
     for (size_t i = 0; i < _stateSpaceDim; ++i)
@@ -100,12 +96,10 @@ class HamiltonianEuclideanDense : public HamiltonianEuclidean
 
   /**
   * @brief Purely virtual gradient of kintetic energy function dK(q, p) = inverseMetric(q) * p + 0.5 * dlogDetMetric_dq(q) used for Hamiltonian Dynamics. For Euclidean metric logDetMetric(q) := 0.0.
-  * @param q Current position.
   * @param p Current momentum.
-  * @param _k Experiment object.
   * @return Gradient of Kinetic energy with current momentum.
   */
-  std::vector<double> dK(const std::vector<double> &q, const std::vector<double> &p, korali::Experiment *_k = 0) override
+  std::vector<double> dK(const std::vector<double> &p) override
   {
     std::vector<double> tmpVector(_stateSpaceDim, 0.0);
     double tmpScalar = 0.0;

@@ -129,7 +129,7 @@ void HMC::setInitialConfiguration()
   {
     std::cout << "not implemented" << std::endl;
   }
-  
+
   _hamiltonian->verbosity = _hamiltonianVerbosity;
   _integrator->verbosity = _integratorVerbosity;
 

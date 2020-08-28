@@ -10,6 +10,7 @@ void Sampling::initialize()
   if (_k->_variables.size() == 0) KORALI_LOG_ERROR("Sampling Evaluation problems require at least one variable.\n");
 }
 
+// TODO: clean up namings logP(x), F(x), .. (D.W.)
 void Sampling::evaluate(Sample &sample)
 {
   sample.run(_probabilityFunction);

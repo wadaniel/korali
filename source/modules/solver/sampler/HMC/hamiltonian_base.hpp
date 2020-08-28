@@ -176,13 +176,18 @@ class Hamiltonian
 
     KORALI_START((*_sample));
     KORALI_WAIT((*_sample));
- 
-    //TDO: remove hack (D.W.)
+
+    // TODO: remove hack, evaluate Gradient only when required by the solver (D.W.)
     (*_sample)["Operation"] = "Evaluate Gradient";
     KORALI_START((*_sample));
     KORALI_WAIT((*_sample));
     (*_sample)["Operation"] = "Evaluate";
 
+    // TODO: remove hack, evaluate Hessian only when required by the solver (D.W.)
+    //(*_sample)["Operation"] = "Evaluate Hessian";
+    //KORALI_START((*_sample));
+    //KORALI_WAIT((*_sample));
+    //(*_sample)["Operation"] = "Evaluate";
 
     if (verbosity == true)
     {

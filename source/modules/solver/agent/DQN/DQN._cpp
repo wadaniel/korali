@@ -97,61 +97,58 @@ void DQN::trainAgent()
    // Calculating cumulative Q*, for statistical purposes
    _cumulativeQStar = 0.0;
 
-   for (size_t step = 0; step < _criticOptimizationSteps; step++)
+   // Returning hyperparameters to its pre-training value
+   _criticLearner->setHyperparameters(_hyperparameters["Critic"]);
+
+   // Shuffling indexes to choose the mini batch from
+   std::shuffle(experienceReplayIndexes.begin(), experienceReplayIndexes.end(), *mt);
+
+   for (size_t i = 0; i < _criticMiniBatchSize; i++)
    {
-     // Returning hyperparameters to its pre-training value
-     _criticLearner->setHyperparameters(_hyperparameters["Critic"]);
+     // Selecting a uniformly random selected, yet not repeated experience
+     size_t expId = experienceReplayIndexes[i];
 
-     // Shuffling indexes to choose the mini batch from
-     std::shuffle(experienceReplayIndexes.begin(), experienceReplayIndexes.end(), *mt);
+     // Qnew = max_a(q) with s' fixed
+     // Q* = r + y*Qnew -- If not terminal state
+     // Q* = r -- If terminal state
 
-     for (size_t i = 0; i < _criticMiniBatchSize; i++)
+     // Calculating target Q value (solution) for Qnew on selected batch
+     double qStar = 0.0;
+
+     // Reward is the first factor in the QLearning algorithm
+     qStar = _experienceReplayHistory[expId]["Reward"];
+
+     // Getting experience's current state and action
+     std::vector<double> curState = _experienceReplayHistory[expId]["State"];
+     std::vector<double> curAction = _experienceReplayHistory[expId]["Action"];
+
+     // If state is not terminal (next state is filled) then add Qnew to the Q value.
+     if (_experienceReplayHistory[expId]["Is Terminal"] == false)
      {
-       // Selecting a uniformly random selected, yet not repeated experience
-       size_t expId = experienceReplayIndexes[i];
+      // Getting experience's next state and action
+      std::vector<double> nextState = _experienceReplayHistory[expId+1]["State"];
+      std::vector<double> nextAction = _experienceReplayHistory[expId+1]["Action"];
 
-       // Qnew = max_a(q) with s' fixed
-       // Q* = r + y*Qnew -- If not terminal state
-       // Q* = r -- If terminal state
-
-       // Calculating target Q value (solution) for Qnew on selected batch
-       double qStar = 0.0;
-
-       // Reward is the first factor in the QLearning algorithm
-       qStar = _experienceReplayHistory[expId]["Reward"];
-
-       // Getting experience's current state and action
-       std::vector<double> curState = _experienceReplayHistory[expId]["State"];
-       std::vector<double> curAction = _experienceReplayHistory[expId]["Action"];
-
-       // If state is not terminal (next state is filled) then add Qnew to the Q value.
-       if (_experienceReplayHistory[expId]["Is Terminal"] == false)
-       {
-        // Getting experience's next state and action
-        std::vector<double> nextState = _experienceReplayHistory[expId+1]["State"];
-        std::vector<double> nextAction = _experienceReplayHistory[expId+1]["Action"];
-
-        qStar += _criticDiscountFactor * stateActionValueFunction(nextState, nextAction);
-       }
-
-       // Updating inputs to training learner
-       _criticProblem->_inputs[i] = curState;
-       _criticProblem->_inputs[i].insert(_criticProblem->_inputs[i].end(), curAction.begin(), curAction.end());
-       _criticProblem->_solution[i][0] = qStar;
-
-       // Keeping statistics
-       _cumulativeQStar += qStar;
+      qStar += _criticDiscountFactor * stateActionValueFunction(nextState, nextAction);
      }
 
-     // Running one generation of the optimization method with the given mini-batch
-     _criticExperiment["Solver"]["Termination Criteria"]["Max Generations"] = _criticExperiment._currentGeneration + 1;
-     _criticLearner->initialize();
-     korali::Engine engine;
-     engine.resume(_criticExperiment);
+     // Updating inputs to training learner
+     _criticProblem->_inputs[i] = curState;
+     _criticProblem->_inputs[i].insert(_criticProblem->_inputs[i].end(), curAction.begin(), curAction.end());
+     _criticProblem->_solution[i][0] = qStar;
 
-     // Increasing optimization step counter
-     _optimizationStepCount++;
+     // Keeping statistics
+     _cumulativeQStar += qStar;
    }
+
+   // Running one generation of the optimization method with the given mini-batch
+   _criticExperiment["Solver"]["Termination Criteria"]["Max Generations"] = _criticExperiment._currentGeneration + 1;
+   _criticLearner->initialize();
+   korali::Engine engine;
+   engine.resume(_criticExperiment);
+
+   // Increasing optimization step counter
+   _optimizationStepCount++;
 
    // Keeping statistics
    _averageQStar = (double)_cumulativeQStar / (double)(_criticOptimizationSteps * _criticMiniBatchSize);

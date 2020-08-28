@@ -166,72 +166,59 @@ double ACER::qRetrace(size_t expId)
 
 void ACER::getAction(korali::Sample& sample)
 {
+ // Getting current state
+ auto state = sample["State"].get<std::vector<double>>();
+
+ // Forward propagating state through the critic to get Q(s,a) for all A
+ auto pEvalVector = _policyLearner->getEvaluation(state);
+
+ // Storage for action indexs
+ size_t actionIdx = 0;
+
  // If currently on a training phase, then fill experience replay with random actions
  // and then select actions based on their policy probabilities
  if (sample["Mode"] == "Training")
  {
    // If we still do not have enough experiences to train the critic/policy, just return random action
-   if (_experienceReplayHistory.size() < _experienceReplayStartSize)
+   if (_experienceReplayHistory.size() < _experienceReplayStartSize)  actionIdx = getRandomActionIndex();
+   else  // If not, gathering an action from the policy
    {
-    size_t randomActionIdx = getRandomActionIndex();
-    sample["Metadata"]["Action Index"] = randomActionIdx;
+    // Producing random (uniform) number to obtain a value index
+    double x = _randomActionGenerator->getRandomNumber();
 
-    size_t actionCount = _discreteProblem->_possibleActions.size();
-    for (size_t i = 0; i < actionCount; i++)
-     sample["Metadata"]["Policy Densities"][i] = 1.0 / (double)actionCount;
-
-    sample["Action"] = _discreteProblem->_possibleActions[randomActionIdx];
-    return;
+    // Iterating over all p(s,a) to select the corresponding action
+    double curSum = 0.0;
+    size_t actionIdx;
+    for (actionIdx = 0; actionIdx < pEvalVector.size(); actionIdx++)
+    {
+      double pAction = pEvalVector[actionIdx];
+      if (x > curSum && x <= curSum + pAction) break;
+      curSum += pAction;
+    }
    }
 
-   // Getting current state
-   auto state = sample["State"].get<std::vector<double>>();
-
-   // Forward propagating state through the critic to get Q(s,a) for all A
-   auto pEvalVector = _policyLearner->getEvaluation(state);
-
-   // Producing random (uniform) number to obtain a value index
-   double x = _randomActionGenerator->getRandomNumber();
-
-   // Iterating over all p(s,a) to select the corresponding action
-   double curSum = 0.0;
-   size_t actionIdx;
-   for (actionIdx = 0; actionIdx < pEvalVector.size(); actionIdx++)
-   {
-     double pAction = pEvalVector[actionIdx];
-     if (x > curSum && x <= curSum + pAction) break;
-     curSum += pAction;
-   }
-
-   // Storing the action
-   sample["Action"] = _discreteProblem->_possibleActions[actionIdx];
-   sample["Metadata"]["Action Index"] = actionIdx;
-   sample["Metadata"]["Policy Densities"] = pEvalVector;
-
-//   ////////////////////////////////////////
-//   // Creating state/action input
+//     ////////////////////////////////////////
+//     // Creating state/action input
 //
-//   auto qVals = _criticLearner->getEvaluation(state);
+//     auto qVals = _criticLearner->getEvaluation(state);
 //
-//    // Storage for max_a Q(s,a) and its index
-//    double maxQVal = -korali::Inf;
-//    size_t maxQIdx = 0;
+//      // Storage for max_a Q(s,a) and its index
+//      double maxQVal = -korali::Inf;
+//      size_t maxQIdx = 0;
 //
-//    // Iterating over all possible actions, checking which one is best
-//    for (size_t i = 0; i < _discreteProblem->_possibleActions.size(); i++)
-//    {
-//     // Computing Q(s,a_i)
-//     double curQVal = qVals[i];
+//      // Iterating over all possible actions, checking which one is best
+//      for (size_t i = 0; i < _discreteProblem->_possibleActions.size(); i++)
+//      {
+//       // Computing Q(s,a_i)
+//       double curQVal = qVals[i];
 //
-//     // If current action got a larger Q, store it as the best
-//     if (curQVal > maxQVal) { maxQVal = curQVal; maxQIdx = i; }
-//    }
+//       // If current action got a larger Q, store it as the best
+//       if (curQVal > maxQVal) { maxQVal = curQVal; maxQIdx = i; }
+//      }
 //
-//    // Returning the best found
-//    sample["Action"] = _discreteProblem->_possibleActions[maxQIdx];
-//    sample["Metadata"]["Action Index"] = maxQIdx;
-//    sample["Metadata"]["Policy Densities"] = pEvalVector;
-   ///////////////////////////////////////
+//      // Returning the best found
+//      actionIdx = maxQIdx;
+//     /////////////////////////////////////
 
  }
 
@@ -243,11 +230,14 @@ void ACER::getAction(korali::Sample& sample)
   auto state = sample["State"].get<std::vector<double>>();
 
   // Getting index of the action with the highest probability
-  size_t actionIdx = queryPolicy(state);
-
-  // Storing the action
-  sample["Action"] = _discreteProblem->_possibleActions[actionIdx];
+  actionIdx = queryPolicy(state);
  }
+
+ // Storing the action and associated metadata
+ sample["Action"] = _discreteProblem->_possibleActions[actionIdx];
+ sample["Metadata"]["Action Index"] = actionIdx;
+ sample["Metadata"]["Policy Densities"] = pEvalVector;
+
 }
 
 size_t ACER::getRandomActionIndex()

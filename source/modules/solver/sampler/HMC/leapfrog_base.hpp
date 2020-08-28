@@ -27,6 +27,11 @@ class Leapfrog
   */
   virtual void step(std::vector<double> &q, std::vector<double> &p, const double stepSize, Hamiltonian *hamiltonian, korali::Experiment *_k) = 0;
 
+  /**
+  * @brief Debugging member variable to control verbosity.
+  */
+  bool verbosity;
+
   protected:
   /**
   * @brief Debug printer function for std::vector. TODO: REMOVE

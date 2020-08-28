@@ -123,7 +123,6 @@ void HMC::setInitialConfiguration()
     }
 
     _hamiltonian = new HamiltonianRiemannianDiag{_stateSpaceDim, _normalGenerator};
-
     _integrator = new LeapfrogImplicit;
   }
   else if (_version == "Riemannian" && _useDiagonalMetric == false)
@@ -131,13 +130,14 @@ void HMC::setInitialConfiguration()
     std::cout << "not implemented" << std::endl;
   }
 
+  _hamiltonian->verbosity = _hamiltonianVerbosity;
+  _integrator->verbosity = _integratorVerbosity;
+
   _hamiltonian->updateHamiltonian(_positionLeader, _k);
 
   // Set _inverseMetric of hamiltonian
   _hamiltonian->setInverseMetric(_inverseMetric);
   _hamiltonian->setMetric(_metric);
-
-  _integrator = new LeapfrogExplicit;
 
   if (_useAdaptiveStepSize == true)
   {
@@ -151,43 +151,6 @@ void HMC::setInitialConfiguration()
   _proposedSampleCount = 0;
   _chainLength = 0;
   _acceptanceRate = 1.0;
-
-  if (_useRiemannianMetric == true)
-  {
-    _hamiltonianRiemannian = new HamiltonianRiemannianDiag{_stateSpaceDim, _normalGenerator};
-    _hamiltonianRiemannian->verbosity = false;
-    _integratorImplicit = new LeapfrogImplicit;
-    _integratorImplicit->verbosity = false;
-  }
-
-  // Hamiltonian *test = new HamiltonianRiemannianDiag{_stateSpaceDim, _normalGenerator};
-
-  // // TESTING
-  // HamiltonianRiemannianDiag *test = new HamiltonianRiemannianDiag{_stateSpaceDim, _normalGenerator};
-  // test->verbosity = true;
-  // // std::cout << "test->K(_positionLeader, _momentumLeader, _k) = " << test->K(_positionLeader, _momentumLeader, _k) << std::endl;
-
-  // // std::cout << "test->tau(_positionLeader, _momentumLeader, _k) = " << test->tau(_positionLeader, _momentumLeader, _k) << std::endl;
-
-  // // std::cout << "test->U(_positionLeader, _k) = " << test->U(_positionLeader, _k) << std::endl;
-
-  // // std::cout << "test->phi(_positionLeader, _k) = " << test->phi(_positionLeader, _k) << std::endl;
-
-  // // std::cout << "test->H(_positionLeader, _momentumLeader, _k) = " << test->H(_positionLeader, _momentumLeader, _k) << std::endl;
-
-  // std::vector<double> dphi_dq = test->dphi_dq(_positionLeader, _k);
-  // std::cout << "test->dphi_dq(_positionLeader, _k) = " << std::endl;
-  // for(size_t i = 0; i < _stateSpaceDim; ++i)
-  // {
-  //   std::cout << dphi_dq[i] << std::endl;
-  // }
-
-  // std::vector<double> qTest(_stateSpaceDim, 1.2);
-  // std::vector<double> pTest(_stateSpaceDim, 2.3);
-
-  // LeapfrogImplicit *test_integrator = new LeapfrogImplicit;
-  // test_integrator->verbosity = true;
-  // test_integrator->step(qTest, pTest, _stepSize, test, _k);
 
   return;
 }
@@ -752,10 +715,6 @@ void HMC::printGenerationAfter()
   _k->_logger->logInfo("Detailed", "Current Metric:\n");
 
   std::vector<double> metric = _hamiltonian->getMetric();
-  if (_useRiemannianMetric == true)
-  {
-    metric = _hamiltonianRiemannian->getMetric();
-  }
   switch (_useDiagonalMetric)
   {
   case false:
@@ -782,10 +741,6 @@ void HMC::printGenerationAfter()
   _k->_logger->logInfo("Detailed", "Current Inverse Metric:\n");
 
   std::vector<double> inverseMetric = _hamiltonian->getInverseMetric();
-  if (_useRiemannianMetric == true)
-  {
-    inverseMetric = _hamiltonianRiemannian->getInverseMetric();
-  }
   switch (_useDiagonalMetric)
   {
   case false:

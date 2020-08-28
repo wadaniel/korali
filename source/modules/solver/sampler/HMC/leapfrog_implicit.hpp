@@ -30,11 +30,13 @@ class LeapfrogImplicit : public Leapfrog
   */
   void step(std::vector<double> &q, std::vector<double> &p, const double stepSize, Hamiltonian *hamiltonian, korali::Experiment *_k) override
   {
-    size_t maxNumFixedPointIter = 10;
     if (verbosity == true)
     {
-      std::cout << "start of step" << std::endl;
+      std::cout << "------------START OF LeapfrogImplicit Step-------------" << std::endl;
     }
+
+    size_t maxNumFixedPointIter = 10;
+
     size_t stateSpaceDim = hamiltonian->getStateSpaceDim();
     double delta = 1e-8;
 
@@ -156,16 +158,11 @@ class LeapfrogImplicit : public Leapfrog
 
     if (verbosity == true)
     {
-      std::cout << "end of step (after last step dphi_dq)" << std::endl;
+      std::cout << "-------------END OF LeapfrogImplicit Step--------------" << std::endl;
     }
 
     return;
   }
-
-  /**
-  * @brief Debugging member variable to control verbosity.
-  */
-  bool verbosity;
 };
 
 } // namespace sampler

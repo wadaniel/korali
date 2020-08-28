@@ -46,6 +46,20 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
   }
 
   /**
+  * @brief Constructor with State Space Dim.
+  * @param stateSpaceDim Dimension of State Space.
+  * @param normalGenerator Generator needed for momentum sampling.
+  * @param inverseRegularizationParam Inverse regularization parameter of SoftAbs metric that controls hardness of approximation: For large values _inverseMetric is closer to analytical formula (and therefore closer to degeneracy in certain cases). 
+  */
+  HamiltonianRiemannianDiag(const size_t stateSpaceDim, korali::distribution::univariate::Normal *normalGenerator, const double inverseRegularizationParam) : HamiltonianRiemannian{stateSpaceDim}
+  {
+    _metric.resize(stateSpaceDim);
+    _inverseMetric.resize(stateSpaceDim);
+    _normalGenerator = normalGenerator;
+    _inverseRegularizationParam = inverseRegularizationParam;
+  }
+
+  /**
   * @brief Destructor of derived class.
   */
   ~HamiltonianRiemannianDiag()
@@ -132,7 +146,7 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
   {
     double tmpScalar = 0.0;
 
-    this->updateHamiltonian(q, _k);
+    // this->updateHamiltonian(q, _k);
 
     for (int i = 0; i < _stateSpaceDim; ++i)
     {
@@ -195,7 +209,7 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
   */
   std::vector<double> dtau_dp(const std::vector<double> &q, const std::vector<double> &p, korali::Experiment *_k) override
   {
-    this->updateHamiltonian(q, _k);
+    // this->updateHamiltonian(q, _k);
 
     if (verbosity == true)
     {
@@ -406,6 +420,11 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
   //////////////////////////////////// GENERAL FUNCTIONS END ///////////////////////////////////
   //////////////////////////////////////////////////////////////////////////////////////////////
 
+  /**
+  * @brief Inverse regularization parameter of SoftAbs metric that controls hardness of approximation: For large values _inverseMetric is closer to analytical formula (and therefore closer to degeneracy in certain cases). 
+  */
+  double _inverseRegularizationParam;
+
   //////////////////////////////////////////////////////////////////////////////////////////////
   //////////////////////////////////////// HELPERS START ///////////////////////////////////////
   //////////////////////////////////////////////////////////////////////////////////////////////
@@ -419,7 +438,7 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
   */
   std::vector<double> __hessianU(const std::vector<double> &q, korali::Experiment *_k)
   {
-    this->updateHamiltonian(q, _k);
+    // this->updateHamiltonian(q, _k);
 
     ++_numHamiltonianObjectUpdates;
 
@@ -524,11 +543,6 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
   //////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////// HELPERS END ////////////////////////////////////////
   //////////////////////////////////////////////////////////////////////////////////////////////
-
-  /**
-  * @brief Inverse regularization parameter of SoftAbs metric that controls hardness of approximation: For large values _inverseMetric is closer to analytical formula (and therefore closer to degeneracy in certain cases). 
-  */
-  double _inverseRegularizationParam;
 
   /**
   * @brief One dimensional normal generator needed for sampling of momentum from diagonal _metric.

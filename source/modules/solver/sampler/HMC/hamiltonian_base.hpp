@@ -95,7 +95,7 @@ class Hamiltonian
   */
   virtual double U(const std::vector<double> &q, korali::Experiment *_k)
   {
-    updateHamiltonian(q, _k);
+    // updateHamiltonian(q, _k);
     ++_numHamiltonianObjectUpdates;
     double evaluation = KORALI_GET(double, (*_sample), "logP(x)");
     evaluation *= -1.0;
@@ -118,7 +118,7 @@ class Hamiltonian
   */
   virtual std::vector<double> dU(const std::vector<double> &q, korali::Experiment *_k)
   {
-    updateHamiltonian(q, _k);
+    // updateHamiltonian(q, _k);
 
     // evaluate grad(logP(x)) (extremely slow)
     std::vector<double> evaluation = KORALI_GET(std::vector<double>, (*_sample), "grad(logP(x))");

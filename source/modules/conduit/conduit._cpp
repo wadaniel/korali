@@ -16,7 +16,7 @@ void Conduit::coroutineWrapper()
 {
   Engine *engine = _engineStack.top();
   Sample *currentSample = engine->_engineSample;
-  co_switch(engine->_currentExperiment->_thread);
+
   (*currentSample)["Experiment Id"] = engine->_currentExperiment->_experimentId;
   (*currentSample)["Current Generation"] = engine->_currentExperiment->_currentGeneration;
 
@@ -33,7 +33,10 @@ void Conduit::start(Sample &sample)
   Engine *engine = _engineStack.top();
 
   // Checking if sample id was defined
-  KORALI_GET(size_t, sample, "Sample Id");
+  size_t sampleId = KORALI_GET(size_t, sample, "Sample Id");
+
+  // Saving sample's pointer to its Id
+  engine->_sampleIdToPointerMap[sampleId] = &sample;
 
   if (sample._state != SampleState::uninitialized) KORALI_LOG_ERROR("Sample has already been initialized.\n");
 
@@ -153,6 +156,19 @@ void Conduit::waitAll(vector<Sample> &samples)
     samples[i]._state = SampleState::uninitialized;
     co_delete(samples[i]._sampleThread);
   }
+}
+
+knlohmann::json Conduit::listen(Sample &sample)
+{
+ // Waiting for queue to have at least one entry, if not check if new messages arrived
+ while (sample._messageQueue.empty()) checkUpdates();
+
+ // Grabbing the message at front and taking it out of the queue
+ auto message = sample._messageQueue.front();
+ sample._messageQueue.pop();
+
+ // Returning message
+ return message;
 }
 
 } // namespace korali

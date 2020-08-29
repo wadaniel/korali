@@ -11,6 +11,7 @@ namespace korali
 {
 namespace conduit
 {
+
 void Sequential::initialize()
 {
 }
@@ -35,6 +36,26 @@ void Sequential::broadcastGlobals(std::string key, knlohmann::json &globalsJs)
 {
   Engine *engine = _engineStack.top();
   engine->_currentExperiment->_globals[key] = globalsJs;
+}
+
+void Sequential::checkUpdates()
+{
+ KORALI_LOG_ERROR("Detected request for update in Sequential Conduit -- This provokes a deadlock. Check whether the module is properly programmed.");
+}
+
+void Sequential::sendUpdate(knlohmann::json& update)
+{
+ // Getting Engine pointer
+ Engine *engine = _engineStack.top();
+
+ // Getting sample id
+ size_t sampleId = update["Sample Id"].get<size_t>();
+
+ // Getting necessary sample pointer
+ Sample* sample = engine->_sampleIdToPointerMap[sampleId];
+
+ // Pushing sample JSON information to its message queue directly.
+ sample->_messageQueue.push(update);
 }
 
 } // namespace conduit

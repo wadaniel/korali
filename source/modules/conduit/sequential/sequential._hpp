@@ -22,6 +22,8 @@ class Sequential : public Conduit
   * @param sample Sample to start/resume.
   */
   void processSample(Sample &sample) override;
+  void sendUpdate(knlohmann::json& update) override;
+  void checkUpdates() override;
   void broadcastGlobals(std::string key, knlohmann::json &globalsJs) override;
 };
 

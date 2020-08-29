@@ -11,6 +11,7 @@
 #include <chrono>
 #include <stack>
 #include <vector>
+#include <map>
 
 namespace korali
 {
@@ -38,6 +39,11 @@ class Engine : public Module
     * @brief Stores the list of experiments to run.
     */
   std::vector<Experiment *> _experimentVector;
+
+  /**
+   * @brief Stores a map between the a Sample's ID and its pointer
+   */
+  std::map<size_t, Sample*> _sampleIdToPointerMap;
 
   /**
     * @brief Stores the main execution thread (coroutine).

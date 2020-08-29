@@ -10,6 +10,7 @@
 #include "auxiliar/py2json.hpp"
 #include "libco.h"
 #include <string>
+#include <queue>
 
 #undef _POSIX_C_SOURCE
 #undef _XOPEN_SOURCE
@@ -24,6 +25,13 @@ class Engine;
  */
 #define KORALI_GET(TYPE, SAMPLE, ...) \
   SAMPLE.get<TYPE>(__FILE__, __LINE__, __VA_ARGS__);
+
+/**
+ * @brief Macro to send updates to the engine
+ */
+#define KORALI_SEND_UPDATE(UPDATE) \
+  _k->_engine->_conduit->sendUpdate(UPDATE);
+
 
 /**
 * @brief Execution states of a given sample.
@@ -55,6 +63,11 @@ class Sample
   * @brief Pointer to global parameters
   */
   knlohmann::json *_globals;
+
+  /**
+  * @brief Queue to contain incoming sample messages
+  */
+  std::queue<knlohmann::json> _messageQueue;
 
   /**
   * @brief Current state of the sample

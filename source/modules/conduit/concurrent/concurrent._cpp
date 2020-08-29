@@ -291,6 +291,16 @@ void Concurrent::broadcastGlobals(std::string key, knlohmann::json &globalsJs)
   }
 }
 
+void Concurrent::checkUpdates()
+{
+ KORALI_LOG_ERROR("Concurrent::checkUpdates - Not yet implemented.");
+}
+
+void Concurrent::sendUpdate(knlohmann::json& update)
+{
+ KORALI_LOG_ERROR("Concurrent::sendUpdate - Not yet implemented.");
+}
+
 bool Concurrent::isRoot()
 {
   return _workerId == -1;

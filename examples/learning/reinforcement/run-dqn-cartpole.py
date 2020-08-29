@@ -78,7 +78,6 @@ e["Solver"]["Experience Replay"]["Maximum Size"] = 150000
 
 e["Solver"]["Agent"]["Actions Between Updates"] = 1
 e["Solver"]["Agent"]["Optimization Steps Per Update"] = 1
-e["Solver"]["Agent"]["Experience Limit"] = maxSteps
 
 ### Defining training policy configuration
 

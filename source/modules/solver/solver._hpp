@@ -37,6 +37,11 @@ namespace korali
  */
 #define KORALI_BROADCAST(KEY, JSON) _k->_engine->_conduit->broadcastGlobals(KEY, JSON);
 
+/**
+ * @brief Macro to wait for any of the given samples.
+ */
+#define KORALI_LISTEN(SAMPLE) _k->_engine->_conduit->listen(SAMPLE);
+
 class Solver : public Module
 {
   public:

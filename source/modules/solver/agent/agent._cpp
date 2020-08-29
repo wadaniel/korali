@@ -51,31 +51,47 @@ void Agent::runGeneration()
   agent["Operation"] = "Run Episode";
   agent["Mode"] = "Training";
 
+  // Initializing statistical information
+  _currentReward = 0.0;
+  _currentExperienceCount = 0;
+
   // Launching agent
   KORALI_START(agent);
+
+  // Storage to keep experience information
+  std::vector<knlohmann::json> episode;
+  knlohmann::json experience;
+
+  // Keep listening to incoming experiences until we reached a terminal state
+  do
+  {
+   // Listening for incoming experiences
+   experience = KORALI_LISTEN(agent);
+
+   // Storing new experience into the episode history
+   episode.push_back(experience);
+  }
+  while(experience["Is Terminal"] == false);
+
+  // Waiting for agent to finish
   KORALI_WAIT(agent);
 
-  /*********************************************************************
-   * Storing new experiences to the history
-   *********************************************************************/
+  // Setting current cumulative reward
+  _currentReward = agent["Cumulative Reward"].get<double>();
+
+  // Pusing the new episode into the replay history
+  _experienceReplayHistory.insert(_experienceReplayHistory.end(), episode.begin(), episode.end());
 
   // Adding to the number of episodes
-   _currentEpisode++;
-
-  // Calculating the cumulative reward of this round of experiences
-  _currentReward = 0.0;
-  _currentExperienceCount = agent["Experiences"].size();
-  size_t startExpId = _currentExperienceCount > _agentExperienceLimit ? _currentExperienceCount - _agentExperienceLimit : 0;
-
-  // Storing episode's experiences
-  for (size_t j = startExpId; j < _currentExperienceCount; j++)
-  {
-    _experienceReplayHistory.push_back(agent["Experiences"][j]);
-    _currentReward += agent["Experiences"][j]["Reward"].get<double>();
-  }
+  _currentEpisode++;
 
   // Updating average experience count
+  _currentExperienceCount = episode.size();
   _totalExperienceCount += _currentExperienceCount;
+
+  /*********************************************************************
+   * Updating experience replay memory
+   *********************************************************************/
 
   // If the maximum number of experiences have been reached, start forgetting older excess experiences
   if (_experienceReplayHistory.size() > _experienceReplayMaximumSize)
@@ -118,8 +134,7 @@ void Agent::runGeneration()
     // Calculating average testing reward
     _averageTestingReward = 0.0;
     for (size_t i = 0; i < _policyTestingEpisodes; i++)
-     for (size_t j = 0; j < tests[i]["Experiences"].size(); j++)
-      _averageTestingReward += tests[i]["Experiences"][j]["Reward"].get<double>();
+      _averageTestingReward += tests[i]["Cumulative Reward"].get<double>();
     _averageTestingReward = _averageTestingReward / _policyTestingEpisodes;
   }
 

@@ -338,6 +338,16 @@ void Distributed::popEngine()
 #endif
 }
 
+void Distributed::checkUpdates()
+{
+ KORALI_LOG_ERROR("Distributed::checkUpdate - Not yet implemented.");
+}
+
+void Distributed::sendUpdate(knlohmann::json& update)
+{
+ KORALI_LOG_ERROR("Distributed::sendUpdate - Not yet implemented.");
+}
+
 } // namespace conduit
 
 } // namespace korali

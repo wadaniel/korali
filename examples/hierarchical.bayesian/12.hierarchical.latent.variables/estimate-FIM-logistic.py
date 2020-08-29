@@ -80,6 +80,8 @@ def main():
   e["Console Output"]["Frequency"] = 1
   e["Console Output"]["Verbosity"] = "Detailed"
 
+  # k["Conduit"]["Type"] = "Sequential"
+
   k.run(e)
 
 

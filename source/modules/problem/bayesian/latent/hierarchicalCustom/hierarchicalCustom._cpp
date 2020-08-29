@@ -36,7 +36,7 @@ void HierarchicalCustom::initialize()
   else
     _numberHyperparameters = _latentSpaceDimensions + ((_latentSpaceDimensions + 1) * (_latentSpaceDimensions)) / 2;
 
-  // Prepare the loglikelihood function
+  // Prepare the loglikelihood function: One function that returns a list of loglikelihoods, one per individual
   loglikelihoodLambdaFunction = [this](Sample &s) -> void {
     loglikelihoodFunction(s);
   };
@@ -186,7 +186,7 @@ void HierarchicalCustom::initialize()
 
 HierarchicalCustom::~HierarchicalCustom()
 {
-  delete &_koraliExperiment;
+//  delete &_koraliExperiment;
   //  delete &_lowlevelProblem;
 }
 
@@ -196,22 +196,37 @@ void HierarchicalCustom::loglikelihoodFunction(Sample &sample)
      - run each model separately on the latent variables --> 'LogLikelihood Evaluation'
      - return as '"logLikelihood"'
   */
-  Sample llhSample;
-  llhSample["Sample Id"] = KORALI_GET(int, sample, "Sample Id") + 1234;
-  llhSample["Current Generation"] = _k->_currentGeneration;
-  llhSample["Module"] = "Problem"; // not needed?
+  std::vector<Sample> llhSamples(_numberIndividuals);
 
   std::vector<std::vector<double>> latentVariables = KORALI_GET(std::vector<std::vector<double>>, sample, "Latent Variables");
   std::vector<double> allLLHs(_numberIndividuals);
 
   for (size_t i = 0; i < _numberIndividuals; i++)
   {
+    Sample &llhSample = llhSamples[i];
     llhSample["Reference Evaluations"] = 0;
     llhSample["Latent Variables"] = latentVariables[i];
+
+    size_t sid = KORALI_GET(int, sample, "Sample Id");
+    llhSample["Sample Id"] = ( sid + 312678 + i);
+    llhSample["Current Generation"] = _k->_currentGeneration;
+    llhSample["Module"] = "Problem";
+
     llhSample.run(_logLikelihoodFunctions[i]);
+//    llhSample["Operation"] = "Run Loglikelihood Function";
+//    llhSample["Loglikelihood Function Index"] = i;
+//    _k->_engine->_conduit->start(llhSample);
+//    _k->_engine->_conduit->wait(llhSample);
     allLLHs[i] = KORALI_GET(double, llhSample, "logLikelihood");
   }
   sample["logLikelihood"] = allLLHs;
+}
+
+
+void HierarchicalCustom::runLoglikelihoodFunction(Sample &sample)
+{
+  size_t idx = KORALI_GET(size_t, sample, "Loglikelihood Function Index");
+  sample.run(_logLikelihoodFunctions[idx]);
 }
 
 /*** Implementation note: **

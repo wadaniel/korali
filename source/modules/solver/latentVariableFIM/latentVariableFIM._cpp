@@ -13,9 +13,8 @@
 
 void korali::solver::LatentVariableFIM::initialize()
 {
-  volatile int done = 0;
-  while (!done) sleep(1);
-  // Where do I want to set breakpoints: ... Nowhere! Just ctrl-c
+//  volatile int done = 0;
+//  while (!done) sleep(1);
 
   if ((_k->_problem->getType() != "Bayesian/Latent/HierarchicalCustom") &&
       (_k->_problem->getType() != "Bayesian/Latent/HierarchicalLowlevel") &&
@@ -285,14 +284,8 @@ void korali::solver::LatentVariableFIM::sampleLatent()
 
     Sample sample;
     sample["Sample Id"] = 2564236;
-    sample["Current Generation"] = _k->_currentGeneration;
-    sample["Latent Variables"] = _z[c_idx][0];
-    sample["Operation"] = "Evaluate logLikelihood";
     sample["Module"] = "Problem";
-    _latentProblem->evaluateLoglikelihood(sample);
-//    KORALI_START(sample);
-//    KORALI_WAIT(sample);
-    currentLLHs = sample["logLikelihood"].get<std::vector<double>>();
+    sample["Current Generation"] = _k->_currentGeneration;
 
     sample["Operation"] = "Evaluate logPrior";
     sample["Latent Variables"] = _z[c_idx][0];
@@ -301,6 +294,16 @@ void korali::solver::LatentVariableFIM::sampleLatent()
     KORALI_START(sample);
     KORALI_WAIT(sample);
     currentPriors = sample["Log Prior"].get<std::vector<double>>();
+
+
+    sample["Latent Variables"] = _z[c_idx][0];
+    sample["Operation"] = "Evaluate logLikelihood";
+//    _latentProblem->evaluateLoglikelihood(sample);
+    KORALI_START(sample);
+    KORALI_WAIT(sample);
+    currentLLHs = sample["logLikelihood"].get<std::vector<double>>();
+//      currentLLHs = std::vector<double>(_numberIndividuals, 0.0);
+
 
     // Access _z only twice for each chain, and hope that this allows parallelism - use chainZ in between:
     std::vector<std::vector<std::vector<double>>> chainZ = _z[c_idx];
@@ -331,9 +334,10 @@ void korali::solver::LatentVariableFIM::sampleLatent()
         // generate acceptance probabilities: new llh / former llh
         sample["Latent Variables"] = newZ; // Note: We need not transform to non-Z form; the function called with "Evaluate logLikelihood" expects Z form
         sample["Operation"] = "Evaluate logLikelihood";
-        _latentProblem->evaluateLoglikelihood(sample);
-//        KORALI_START(sample);
-//        KORALI_WAIT(sample);
+        sample["logLikelihood"] = 0;
+//        _latentProblem->evaluateLoglikelihood(sample);
+        KORALI_START(sample);
+        KORALI_WAIT(sample);
         auto newLLHs = sample["logLikelihood"].get<std::vector<double>>();
         for (size_t indiv = 0; indiv < _numberIndividuals; indiv++)
         {
@@ -377,15 +381,16 @@ void korali::solver::LatentVariableFIM::sampleLatent()
 
           sample["Latent Variables"] = localZ;
           sample["Operation"] = "Evaluate logLikelihood";
-          _latentProblem->evaluateLoglikelihood(sample);
-//          KORALI_START(sample);
-//          KORALI_WAIT(sample);
+//          _latentProblem->evaluateLoglikelihood(sample);
+          KORALI_START(sample);
+          KORALI_WAIT(sample);
           auto newLLHs = sample["logLikelihood"].get<std::vector<double>>();
 
           sample["Latent Variables"] = localZ;
           sample["Mean"] = _hyperparametersMean;
           sample["Covariance Cholesky Decomposition"] = _covarianceCholesky;
           sample["Operation"] = "Evaluate logPrior";
+          sample["Log Prior"] = 0; // Set to an invalid value (something not a vector)
           KORALI_START(sample);
           KORALI_WAIT(sample);
           auto newPriors = sample["Log Prior"].get<std::vector<double>>();
@@ -457,15 +462,17 @@ void korali::solver::LatentVariableFIM::sampleLatent()
         // Evaluate localZ proposals for each individual
         sample["Latent Variables"] = localZ;
         sample["Operation"] = "Evaluate logLikelihood";
-        _latentProblem->evaluateLoglikelihood(sample);
-//        KORALI_START(sample);
-//        KORALI_WAIT(sample);
+        sample["logLikelihood"] = 0;
+//        _latentProblem->evaluateLoglikelihood(sample);
+        KORALI_START(sample);
+        KORALI_WAIT(sample);
         auto newLLHs = sample["logLikelihood"].get<std::vector<double>>();
 
         sample["Latent Variables"] = localZ;
         sample["Mean"] = _hyperparametersMean;
         sample["Covariance Cholesky Decomposition"] = _covarianceCholesky;
         sample["Operation"] = "Evaluate logPrior";
+        sample["Log Prior"] = 0;
         KORALI_START(sample);
         KORALI_WAIT(sample);
         auto newPriors = sample["Log Prior"].get<std::vector<double>>();

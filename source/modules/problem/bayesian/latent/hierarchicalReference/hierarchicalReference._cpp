@@ -220,44 +220,46 @@ void HierarchicalReference::loglikelihoodFunction(Sample &sample)
   std::vector<double> allLLHs(_numberIndividuals);
 
   /*TODO: Change this so that it first starts all samples, then WAITALL, and then convert the results of all samples?
-           The important point is that the line "llhSample.run(_computationalModels[i]);" runs in parallel. */
+           The important point is that the line "llhSample.run(_computationalModels[i]);" runs in parallel
+            - so don't call llhSample.run(...) directly. */
   for (size_t i = 0; i < _numberIndividuals; i++)
   {
     Sample &llhSample = llhSamples[i];
-    llhSample["Sample Id"] = KORALI_GET(int, sample, "Sample Id") + 12678 + int(i);
+    size_t sid = KORALI_GET(int, sample, "Sample Id");
+    llhSample["Sample Id"] = ( sid + 12678 + i);
     llhSample["Current Generation"] = _k->_currentGeneration;
     llhSample["Module"] = "Problem";
-    llhSample["Operation"] = "Run Computational Model";
-    llhSample["Computational Model Index"] = i;
     llhSample["Latent Variables"] = latentVariables[i];
 
     // To prevent potential error message from Korali, as only one of them will be set by the model:
     llhSample["Standard Deviations"] = {0};
     llhSample["Dispersions"] = {0};
 
-    llhSample.run(_computationalModels[i]);
-    _k->_engine->_conduit->start(llhSample); // KORALI_START is only defined for solvers
-    _k->_engine->_conduit->wait(llhSample);
-//    KORALI_START(llhSample);
-//    KORALI_WAIT(llhSample);
+     llhSample.run(_computationalModels[i]);
+//    llhSample["Operation"] = "Run Computational Model";
+//    llhSample["Computational Model Index"] = i;
+//    _k->_engine->_conduit->start(llhSample); // KORALI_START is only defined for solvers
+//    _k->_engine->_conduit->wait(llhSample);
+////    KORALI_START(llhSample);
+////    KORALI_WAIT(llhSample);
 
 //  }
-//  _k->_engine->_conduit->waitAll(llhSamples);
-////  size_t idx = _k->_engine->_conduit->waitAny(llhSamples);
+////  _k->_engine->_conduit->waitAll(llhSamples);
+//////  size_t idx = _k->_engine->_conduit->waitAny(llhSamples);
 //
 //  for (size_t i = 0; i < _numberIndividuals; i++)
 //  {
-
+////    size_t i = _k->_engine->_conduit->waitAny(llhSamples);
     if (_likelihoodModel == "Normal")
-      loglikelihoodNormal(llhSample, _referenceData[i]);
+      loglikelihoodNormal(llhSamples[i], _referenceData[i]);
     else if (_likelihoodModel == "Negative Binomial")
-      loglikelihoodNegativeBinomial(llhSample, _referenceData[i]);
+      loglikelihoodNegativeBinomial(llhSamples[i], _referenceData[i]);
     else if (_likelihoodModel == "Positive Normal")
-      loglikelihoodPositiveNormal(llhSample, _referenceData[i]);
+      loglikelihoodPositiveNormal(llhSamples[i], _referenceData[i]);
     else
       KORALI_LOG_ERROR("Bayesian problem (%s) not recognized.\n", _likelihoodModel.c_str());
 
-    allLLHs[i] = KORALI_GET(double, llhSample, "logLikelihood");
+    allLLHs[i] = KORALI_GET(double, llhSamples[i], "logLikelihood");
   }
   sample["logLikelihood"] = allLLHs;
 }

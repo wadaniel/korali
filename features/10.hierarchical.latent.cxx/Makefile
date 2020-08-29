@@ -1,7 +1,16 @@
-BINARIES =  run-saem-hierarchical   run-saem-hierarchical-n-d   test_hsaem   estimate-FIM-hierarchical-n-d
+BINARIES =  run-saem-hierarchical   run-saem-hierarchical-n-d   test_hsaem   estimate-FIM-hierarchical-n-d   estimate-FIM-hierarchical-n-d-4-jobs estimate-FIM-hierarchical-n-d-8-jobs
+
+baseKoraliDir=../..
+include $(baseKoraliDir)/source/Makefile.conf
+# externalDir=${baseKoraliDir}/external
+# GSLDir=${externalDir}/GSL/install/include
+
+
 KORALICXX=$(shell python3 -m korali.cxx --compiler)
-KORALICFLAGS=`python3 -m korali.cxx --cflags`
-KORALILIBS=`python3 -m korali.cxx --libs`
+KORALICFLAGS=$(shell python3 -m korali.cxx --cflags)
+KORALILIBS=$(shell python3 -m korali.cxx --libs)
+KORALICFLAGS += $(GSLCFLAGS)
+KORALILIBS += $(GSLLIBS)
 
 .SECONDARY:
 .PHONY: all

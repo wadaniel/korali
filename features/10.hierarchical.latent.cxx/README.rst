@@ -92,6 +92,16 @@ a number of proxies for the optimizers. These can be compared to the true / orig
 TODO: Describe how to run both examples and how to re-generate data and
 read the information files. EDIT: Do that for the python example only.
 
+Implementation Notes
+--------------------
+
+Todo:
+  - Describe how and why the problem's function is parallelized, and not the solver code, and how/where
+        to possibly change that
+  - Describe the totally confusing way the _computationalModel is called (and think about possible
+    ways to improve / refactor that)
+  - Talk about current performance bottlenecks: Packing and unpacking the latent variables for the
+    computational model
 
 
 References

@@ -1,7 +1,17 @@
 all: model.o load_data.o utils.o
+
+
+curDir := $(shell pwd)
+baseKoraliDir=$(curDir)/../../..
+include $(baseKoraliDir)/source/Makefile.conf
+
 KORALICXX=$(shell python3 -m korali.cxx --compiler)
-KORALICFLAGS=`python3 -m korali.cxx --cflags`
-KORALILIBS=`python3 -m korali.cxx --libs`
+KORALICFLAGS=$(shell python3 -m korali.cxx --cflags)
+KORALILIBS=$(shell python3 -m korali.cxx --libs)
+KORALICFLAGS += $(GSLCFLAGS)
+KORALILIBS += $(GSLLIBS)
+## \ that does not seem to work; GSL functions aren't found
+
 
 # %.o: %.cpp %.hpp load_data.hpp
 
@@ -17,7 +27,7 @@ KORALILIBS=`python3 -m korali.cxx --libs`
 # 	$(KORALICXX) $(CXXFLAGS) $(INCLUDES) $(KORALICFLAGS) -MP -MMD -c $< -o $@
 
 
-load_data.o: load_data.cpp 
+load_data.o: load_data.cpp
 	@echo "Compiling: $< -> $@"
 	$(KORALICXX) $(CXXFLAGS) $(INCLUDES) $(KORALICFLAGS) -MP -MMD -g -c $< -o $@
 

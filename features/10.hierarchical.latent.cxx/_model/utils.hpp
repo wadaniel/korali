@@ -7,15 +7,15 @@
 #include <random>
 #include <vector>
 
-double multivariate_gaussian_probability(std::vector<std::vector<double>> mus,
+double multivariate_gaussian_probability(const std::vector<std::vector<double>>& mus,
                                          int nDimensions,
-                                         std::vector<int> assignments,
+                                         const std::vector<int>& assignments,
                                          int nClusters,
                                          double sigma,
-                                         std::vector<std::vector<double>> points);
+                                         const std::vector<std::vector<double>>& points);
 
-double univariate_gaussian_probability(std::vector<double> mu,
+double univariate_gaussian_probability(const std::vector<double>& mu,
                                        double sigma,
-                                       std::vector<double> point);
+                                       const std::vector<double>& point);
 
 #endif

@@ -54,6 +54,14 @@ class HierarchicalCustom : public korali::problem::bayesian::Latent
  */
   void loglikelihoodFunction(korali::Sample &sample);
 
+   /**
+    @brief  Run one of the loglikelihood functions defined by the user.
+            Which one is determined by sample["Loglikelihood Function Index"]
+    @param sample: A Korali sample object
+  */
+   void runLoglikelihoodFunction(Sample &sample);
+
+
   /**
     @brief Calls the lowlevel problem's function of same name.
             Evaluate each log-likelihood log(p(data for individual i | latent variables i)) across all data points

@@ -40,7 +40,12 @@ namespace korali
 /**
  * @brief Macro to wait for any of the given samples.
  */
-#define KORALI_LISTEN(SAMPLE) _k->_engine->_conduit->listen(SAMPLE);
+#define KORALI_SEND_MSG_TO_SAMPLE(SAMPLE, MSG) _k->_engine->_conduit->sendMessageToSample(SAMPLE, MSG);
+
+/**
+ * @brief Macro to wait for any of the given samples.
+ */
+#define KORALI_RECV_MSG_FROM_SAMPLE(SAMPLE) _k->_engine->_conduit->recvMessageFromSample(SAMPLE);
 
 class Solver : public Module
 {

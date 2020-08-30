@@ -23,6 +23,7 @@ void Sequential::processSample(Sample &sample)
   auto js = knlohmann::json();
   js["Start Time"] = chrono::duration<double>(chrono::high_resolution_clock::now() - _startTime).count() + _cumulativeTime;
 
+  _currentSample = &sample;
   sample._globals = &engine->_currentExperiment->_globals;
   sample.sampleLauncher();
 
@@ -38,24 +39,47 @@ void Sequential::broadcastGlobals(std::string key, knlohmann::json &globalsJs)
   engine->_currentExperiment->_globals[key] = globalsJs;
 }
 
-void Sequential::checkUpdates()
+void Sequential::sendMessageToEngine(knlohmann::json& message)
 {
- KORALI_LOG_ERROR("Detected request for update in Sequential Conduit -- This provokes a deadlock. Check whether the module is properly programmed.");
+ // Queueing outgoing message directly
+ _currentSample->_outputMessageQueue.push(message);
 }
 
-void Sequential::sendUpdate(knlohmann::json& update)
+knlohmann::json Sequential::recvMessageFromEngine()
 {
- // Getting Engine pointer
  Engine *engine = _engineStack.top();
 
- // Getting sample id
- size_t sampleId = update["Sample Id"].get<size_t>();
+ // While there's no message, keep executing sample until there is
+ while(_currentSample->_inputMessageQueue.empty())
+  co_switch(engine->_currentExperiment->_thread);
 
- // Getting necessary sample pointer
- Sample* sample = engine->_sampleIdToPointerMap[sampleId];
+ // Pulling message from incoming message queue
+ auto message = _currentSample->_inputMessageQueue.front();
+ _currentSample->_inputMessageQueue.pop();
 
- // Pushing sample JSON information to its message queue directly.
- sample->_messageQueue.push(update);
+ return message;
+}
+
+knlohmann::json Sequential::recvMessageFromSample(Sample& sample)
+{
+ // While there's no message, keep executing sample until there is
+ while(sample._outputMessageQueue.empty())
+ {
+  _currentSample = &sample;
+  co_switch(sample._sampleThread);
+ }
+
+ // Pulling message from outgoing message queue
+ auto message = sample._outputMessageQueue.front();
+ sample._outputMessageQueue.pop();
+
+ return message;
+}
+
+void Sequential::sendMessageToSample(Sample& sample, knlohmann::json& message)
+{
+ // Queueing incomping message directly
+ sample._inputMessageQueue.push(message);
 }
 
 } // namespace conduit

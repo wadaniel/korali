@@ -6,6 +6,7 @@
 
 namespace korali
 {
+
 class Engine;
 
 class Conduit : public Module
@@ -66,22 +67,30 @@ class Conduit : public Module
   size_t waitAny(std::vector<Sample> &samples);
 
   /**
-  * @brief Blocking call that waits until the given sample has sent a message back.
-  * @param sample A Korali sample
-  * @return Information relayed back from the sample.
-  */
-  knlohmann::json listen(Sample &sample);
-
-  /**
-  * @brief Checks whether there are pending incoming messages from still active samples
-  */
-  virtual void checkUpdates() = 0;
-
-  /**
   * @brief Sends an update to the engine to provide partial information while the sample is still active
-  * @param update The update to send back
+  * @param message Message to send to engine
   */
-  virtual void sendUpdate(knlohmann::json& update) = 0;
+  virtual void sendMessageToEngine(knlohmann::json& message) = 0;
+
+  /**
+  * @brief Blocking call that waits until any message incoming from the engine.
+  * @return Message from the engine.
+  */
+  virtual knlohmann::json recvMessageFromEngine() = 0;
+
+  /**
+  * @brief Blocking call that waits until any message is received from any sample.
+  * @param sample The sample from which to receive an update
+  * @return Message from the sample.
+  */
+  virtual knlohmann::json recvMessageFromSample(Sample& sample) = 0;
+
+  /**
+  * @brief Sends an update to a still active sample
+  * @param sample The sample from which to receive an update
+  * @param Message Message to send to the sample.
+  */
+  virtual void sendMessageToSample(Sample& sample, knlohmann::json& message) = 0;
 
   /**
   * @brief Stacks a new Engine into the engine stack

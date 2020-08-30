@@ -338,14 +338,24 @@ void Distributed::popEngine()
 #endif
 }
 
-void Distributed::checkUpdates()
+void Distributed::sendMessageToEngine(knlohmann::json& message)
 {
- KORALI_LOG_ERROR("Distributed::checkUpdate - Not yet implemented.");
+ KORALI_LOG_ERROR("Distributed::sendMessageToEngine - Not yet implemented.");
 }
 
-void Distributed::sendUpdate(knlohmann::json& update)
+knlohmann::json Distributed::recvMessageFromEngine()
 {
- KORALI_LOG_ERROR("Distributed::sendUpdate - Not yet implemented.");
+ KORALI_LOG_ERROR("Distributed::recvMessageFromEngine - Not yet implemented.");
+}
+
+knlohmann::json Distributed::recvMessageFromSample(Sample& sample)
+{
+ KORALI_LOG_ERROR("Distributed::recvMessageFromSample - Not yet implemented.");
+}
+
+void Distributed::sendMessageToSample(Sample& sample, knlohmann::json& message)
+{
+ KORALI_LOG_ERROR("Distributed::sendMessageToSample - Not yet implemented.");
 }
 
 } // namespace conduit

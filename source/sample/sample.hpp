@@ -27,11 +27,16 @@ class Engine;
   SAMPLE.get<TYPE>(__FILE__, __LINE__, __VA_ARGS__);
 
 /**
- * @brief Macro to send updates to the engine
+ * @brief Macro to send message updates to the engine
  */
-#define KORALI_SEND_UPDATE(UPDATE) \
-  _k->_engine->_conduit->sendUpdate(UPDATE);
+#define KORALI_SEND_MSG_TO_ENGINE(MESSAGE) \
+  _k->_engine->_conduit->sendMessageToEngine(MESSAGE);
 
+/**
+ * @brief Macro to recv message updates from the engine
+ */
+#define KORALI_RECV_MSG_FROM_ENGINE() \
+  _k->_engine->_conduit->recvMessageFromEngine();
 
 /**
 * @brief Execution states of a given sample.
@@ -65,14 +70,19 @@ class Sample
   knlohmann::json *_globals;
 
   /**
-  * @brief Queue to contain incoming sample messages
-  */
-  std::queue<knlohmann::json> _messageQueue;
-
-  /**
   * @brief Current state of the sample
   */
   SampleState _state;
+
+  /**
+  * @brief Queue to contain outgoing sample messages to the engine
+  */
+  std::queue<knlohmann::json> _outputMessageQueue;
+
+  /**
+  * @brief Queue to contain incoming messages from the engine
+  */
+  std::queue<knlohmann::json> _inputMessageQueue;
 
   /**
   * @brief User-Level thread (coroutine) containing the CPU execution state of the current Sample.

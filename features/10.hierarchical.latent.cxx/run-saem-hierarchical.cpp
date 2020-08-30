@@ -75,8 +75,8 @@ int main(int argc, char *argv[])
     e["Variables"][i]["Prior Distribution"] = "Uniform 0"; // not used (?) but required
   }
   e["File Output"]["Frequency"] = 50;
-  e["Console Output"]["Frequency"] = 1;
-  e["Console Output"]["Verbosity"] = "Detailed";
+  e["Console Output"]["Frequency"] = 20;
+  e["Console Output"]["Verbosity"] = "Normal";
 
   k.run(e);
 

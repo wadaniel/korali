@@ -50,7 +50,7 @@ def main():
   e["Solver"]["Use Simulated Annealing"] = True
   e["Solver"]["Simulated Annealing Decay Factor"] = 0.95
   e["Solver"]["Simulated Annealing Initial Variance"] = 1
-  e["Solver"]["Termination Criteria"]["Max Generations"] = 175 
+  e["Solver"]["Termination Criteria"]["Max Generations"] = 175
 
   e["Distributions"][0]["Name"] = "Uniform 0"
   e["Distributions"][0]["Type"] = "Univariate/Uniform"
@@ -88,7 +88,7 @@ def main():
   #   python3 -m korali.plotter --dir _korali_result_normal/
 
   # Configure console output:
-  e["Console Output"]["Frequency"] = 1
+  e["Console Output"]["Frequency"] = 25
   e["Console Output"][
       "Verbosity"] = "Normal"  # "Detailed" results in all latent variable means being printed -
   # we have 200 of them here, so we suppress this by choosing a less

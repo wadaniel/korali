@@ -19,5 +19,6 @@ python3 ./run-hsaem-logistic.py; check_result
 #python3 ./run-hsaem-normal.py; check_result
 #python3 ./run-hsaem-logistic-custom.py; check_result
 python3 ./run-hsaem-normal-custom.py; check_result
+python3 ./estimate-FIM-logistic.py; check_result
 
   

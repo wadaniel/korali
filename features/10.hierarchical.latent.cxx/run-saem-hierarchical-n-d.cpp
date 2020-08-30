@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
 
   e["Solver"]["Type"] = "HSAEM";
   e["Solver"]["Number Samples Per Step"] = 5; // reduce further to speed up
-  e["Solver"]["Termination Criteria"]["Max Generations"] = 250;
+  e["Solver"]["Termination Criteria"]["Max Generations"] = 100;
   e["Solver"]["Delta"] = 0.4;
   // Set up simulated annealing - or disable
   e["Solver"]["Use Simulated Annealing"] = true;
@@ -100,8 +100,8 @@ int main(int argc, char *argv[])
     dimCounter++;
   }
   e["File Output"]["Frequency"] = 1;
-  e["Console Output"]["Frequency"] = 1;
-  e["Console Output"]["Verbosity"] = "Detailed";
+  e["Console Output"]["Frequency"] = 20;
+  e["Console Output"]["Verbosity"] = "Normal";
 
   k.run(e);
 

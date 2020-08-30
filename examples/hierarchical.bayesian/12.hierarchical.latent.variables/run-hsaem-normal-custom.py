@@ -81,7 +81,7 @@ def main():
   #   python3 -m korali.plotter --dir _korali_result_normal_custom/
 
   # Configure console output:
-  e["Console Output"]["Frequency"] = 1
+  e["Console Output"]["Frequency"] = 25
   e["Console Output"][
       "Verbosity"] = "Normal"  # "Detailed" results in all latent variable means being printed -
   # we have 200 of them here, so we suppress this by choosing a less

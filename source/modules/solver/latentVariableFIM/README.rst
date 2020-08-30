@@ -82,7 +82,7 @@ There are a few things that do not follow a good style practice and/or might be 
 
    As nested parallelism is not yet possible, this leaves the following options:
 
-   a) Parallelize the outer loop, over sampling chains. <-- Currently implemented
+   a) Currently implemented: Parallelize the outer loop, over sampling chains.
       *Disadvantage:* Very slow for experiments with many (>=100) individuals.
 
    b) Parallelize the inner loop, over individuals.
@@ -95,6 +95,14 @@ There are a few things that do not follow a good style practice and/or might be 
       function or model that has to return a list of results, one per individual.
       Here, the user would be responsible for parallelizing (or vectorizing) the
       inner loop - something that might be nontrivial in Python.
+
+   d) Rewrite sampling entirely: Since hyperparameters are fixed, the latent variable
+      vector for one individual can be considered independently of all other latent variables.
+      (Or am I overlooking something here?) Thus it should be possible to have L
+      numbers of chains *per individual*. In this way one could sample latent variables
+      for each individuals independently, and the two loops would be combined into one
+      that iterates both over chains and individuals. (Again, am I overlooking something?)
+
 
 
 [1] Lavielle, Marc. Mixed effects models for the population approach: models, tasks, methods and tools. CRC press, 2014.

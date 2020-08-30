@@ -79,16 +79,11 @@ def main():
   # Configure how results will be stored to a file:
   e["File Output"]["Frequency"] = 1
   e["File Output"]["Path"] = "_korali_result_FIM_normal/"
-  # We choose a non-default output directory -
-  # for plotting results, we can later set the directory with:
-  #   python3 -m korali.plotter --dir _korali_result_FIM_normal/.
-  # But for FIM estimation, there is currently no plotting available.
+  # We choose a non-default output directory.
 
   # Configure console output:
   e["Console Output"]["Frequency"] = 1
   e["Console Output"]["Verbosity"] = "Detailed"
-
-  # k["Conduit"]["Type"] = "Sequential"
 
   k.run(e)
 

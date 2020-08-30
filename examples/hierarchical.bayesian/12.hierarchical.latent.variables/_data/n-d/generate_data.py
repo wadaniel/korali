@@ -55,7 +55,7 @@ def generate_data_advanced():
         '''
   n_individuals = 5
   max_n_samples = 10  # each individual has between 1 and this number of data points assigned
-  sigma = .4  # Note: for logit-normal variables, a sigma of 0.5 is already pretty high.
+  sigma = .2  # Note: for logit-normal variables, a sigma of 0.5 is already pretty high.
   omega1 = 1.0
   omega2 = 0.25
   omega3 = 0.5
@@ -231,7 +231,7 @@ def generate_data_advanced():
       for i in range(n_individuals):
         fd.write("\tIndiv. %d: \t %.2f\n" % (i, logp_latent[i]))
 
-  print("Done generating more complicated data")
+  print("Done generating n-d data.")
 
 
 if __name__ == '__main__':

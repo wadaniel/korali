@@ -40,7 +40,7 @@ void Agent::initialize()
 
 void Agent::runGeneration()
 {
-  // Broadcasting hyperparameters for all workers to use
+  // Broadcasting initial hyperparameters for all workers to use
   KORALI_BROADCAST("Hyperparameters", _hyperparameters);
 
   // Configuring current agent
@@ -66,7 +66,26 @@ void Agent::runGeneration()
   do
   {
    // Listening for incoming experiences
-   experience = KORALI_LISTEN(agent);
+   experience = KORALI_RECV_MSG_FROM_SAMPLE(agent);
+
+   // Increasing experience counts
+   _currentExperienceCount++;
+
+   // If reached initial number of experiences, check if we need to update train agent
+   if (_experienceReplayHistory.size() > _experienceReplayStartSize)
+    if (_currentExperienceCount % _agentExperiencesBetweenUpdates == 0)
+    {
+     // Perform optimization steps on the critic/policy
+     for (size_t i = 0; i < _agentOptimizationStepsPerUpdate; i++)
+      trainAgent();
+
+     // Update the number of optimization steps, for workers to know it has been updated
+     _optimizationStepCount += _agentOptimizationStepsPerUpdate;
+    }
+
+   // If agent requested new policy, send the new hyperparameters
+   if (experience["Request New Policy"] == true)
+    KORALI_SEND_MSG_TO_SAMPLE(agent, _hyperparameters);
 
    // Storing new experience into the episode history
    episode.push_back(experience);
@@ -85,8 +104,7 @@ void Agent::runGeneration()
   // Adding to the number of episodes
   _currentEpisode++;
 
-  // Updating average experience count
-  _currentExperienceCount = episode.size();
+  // Adding to the number of experiences
   _totalExperienceCount += _currentExperienceCount;
 
   /*********************************************************************
@@ -99,9 +117,6 @@ void Agent::runGeneration()
     size_t excess = _experienceReplayHistory.size() - _experienceReplayMaximumSize;
     _experienceReplayHistory.erase(_experienceReplayHistory.begin(), _experienceReplayHistory.begin() + excess);
   }
-
-  // If the minimum number of experiences has not yet been reached, there's not much else to do
-  if (_experienceReplayHistory.size() < _experienceReplayStartSize) return;
 
   // Updating if exceeded best training policy so far.
   if (_currentReward > _bestTrainingReward) _bestTrainingReward = _currentReward;
@@ -141,14 +156,6 @@ void Agent::runGeneration()
   // If the average testing reward is better than the previous best, replace it
   // and store hyperparameters as best so far.
   if (_averageTestingReward > _bestAverageTestingReward) _bestAverageTestingReward = _averageTestingReward;
-
-  // If we reached our target testing reward, there's nothing else to do
-  if (_targetAverageTestingReward > -korali::Inf)
-    if (_bestAverageTestingReward >= _targetAverageTestingReward) return;
-
-  // Otherwise, optimize agent's critic/policy learners.
-  for (size_t i = 0; i < _agentOptimizationStepsPerUpdate; i++)
-   trainAgent();
 }
 
 void Agent::printGenerationAfter()

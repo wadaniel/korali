@@ -59,10 +59,8 @@ void ReinforcementLearning::runEpisode(Sample &sample)
   // Getting RL-compatible solver
   auto agent = dynamic_cast<solver::Agent *>(_k->_solver);
 
-  // First, we update the policy's hyperparameters
+  // First, we update the initial policy's hyperparameters
   agent->updateHyperparameters(sample.globals()["Hyperparameters"]);
-
-  sample["Is Terminal"] = false;
 
   // Creating sample coroutine
   __currentSample = &sample;
@@ -75,6 +73,9 @@ void ReinforcementLearning::runEpisode(Sample &sample)
 
   // Action Repeat Counter
   size_t actionLastUpdated = 0;
+
+  // Counter for the total number of actions taken
+  size_t actionCount = 0;
 
   // Storage for the action
   std::vector<double> action(_actionVectorSize);
@@ -90,6 +91,7 @@ void ReinforcementLearning::runEpisode(Sample &sample)
   double cumulativeReward = 0.0;
 
   // Saving experiences
+  sample["Is Terminal"] = false;
   while (sample["Is Terminal"] == false)
   {
     // Requesting new action, if enough steps have passed, given by the action repeat parameter
@@ -97,6 +99,7 @@ void ReinforcementLearning::runEpisode(Sample &sample)
     {
       agent->getAction(sample);
       actionLastUpdated = _actionRepeat;
+      actionCount++;
     }
     actionLastUpdated--;
 
@@ -125,7 +128,24 @@ void ReinforcementLearning::runEpisode(Sample &sample)
     cumulativeReward += sample["Reward"].get<double>();
 
     // If training, updating engine with the current experience
-    if (sample["Mode"] == "Training") KORALI_SEND_UPDATE(experience);
+    if (sample["Mode"] == "Training")
+    {
+     // Checking if we requested the given number of actions in between policy updates
+     bool requestNewPolicy = actionCount % _actionsBetweenPolicyUpdates == 0;
+
+     experience["Request New Policy"] = false;
+     if (requestNewPolicy) experience["Request New Policy"] = true;
+
+     // Sending experience to engine
+     KORALI_SEND_MSG_TO_ENGINE(experience);
+
+     // If requested new policy, wait for incoming message containing new hyperparameters
+     if (requestNewPolicy)
+     {
+      auto hyperparameters = KORALI_RECV_MSG_FROM_ENGINE();
+      agent->updateHyperparameters(hyperparameters);
+     }
+    }
   }
 
   // Setting cumulative reward

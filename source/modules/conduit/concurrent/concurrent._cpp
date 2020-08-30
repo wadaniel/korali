@@ -291,14 +291,24 @@ void Concurrent::broadcastGlobals(std::string key, knlohmann::json &globalsJs)
   }
 }
 
-void Concurrent::checkUpdates()
+void Concurrent::sendMessageToEngine(knlohmann::json& message)
 {
- KORALI_LOG_ERROR("Concurrent::checkUpdates - Not yet implemented.");
+ KORALI_LOG_ERROR("Concurrent::sendMessageToEngine - Not yet implemented.");
 }
 
-void Concurrent::sendUpdate(knlohmann::json& update)
+knlohmann::json Concurrent::recvMessageFromEngine()
 {
- KORALI_LOG_ERROR("Concurrent::sendUpdate - Not yet implemented.");
+ KORALI_LOG_ERROR("Concurrent::recvMessageFromEngine - Not yet implemented.");
+}
+
+knlohmann::json Concurrent::recvMessageFromSample(Sample& sample)
+{
+ KORALI_LOG_ERROR("Concurrent::recvMessageFromSample - Not yet implemented.");
+}
+
+void Concurrent::sendMessageToSample(Sample& sample, knlohmann::json& message)
+{
+ KORALI_LOG_ERROR("Concurrent::sendMessageToSample - Not yet implemented.");
 }
 
 bool Concurrent::isRoot()

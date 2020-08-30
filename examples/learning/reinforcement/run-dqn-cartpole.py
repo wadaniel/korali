@@ -49,6 +49,8 @@ e = korali.Experiment()
 e["Problem"]["Type"] = "Reinforcement Learning / Discrete"
 e["Problem"]["Possible Actions"] = [ [ 0.0 ], [ 1.0 ] ]
 e["Problem"]["Environment Function"] = env
+e["Problem"]["Action Repeat"] = 1
+e["Problem"]["Actions Between Policy Updates"] = 10
 
 e["Variables"][0]["Name"] = "Cart Position"
 e["Variables"][0]["Type"] = "State"
@@ -76,7 +78,7 @@ e["Solver"]["Experience Replay"]["Maximum Size"] = 150000
 
 ### Defining the configuration of the agent
 
-e["Solver"]["Agent"]["Actions Between Updates"] = 1
+e["Solver"]["Agent"]["Experiences Between Updates"] = 1
 e["Solver"]["Agent"]["Optimization Steps Per Update"] = 1
 
 ### Defining training policy configuration
@@ -90,7 +92,7 @@ e["Solver"]["Policy"]["Epsilon"]["Decrease Rate"] = 0.05
 e["Solver"]["Critic"]["Mini Batch Size"] = 32
 e["Solver"]["Critic"]["Discount Factor"] = 0.99
 e["Solver"]["Critic"]["Optimizer"]["Type"] = "Optimizer/Adam"
-e["Solver"]["Critic"]["Optimizer"]["Eta"] = 0.1
+e["Solver"]["Critic"]["Optimizer"]["Eta"] = 0.01
 
 ### Defining the shape of the neural network
 

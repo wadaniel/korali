@@ -75,8 +75,8 @@ def main():
 
   e["File Output"]["Frequency"] = 1
   e["File Output"]["Path"] = "_korali_result_logistic_custom/"
-  e["Console Output"]["Frequency"] = 1
-  e["Console Output"]["Verbosity"] = "Detailed"
+  e["Console Output"]["Frequency"] = 50
+  e["Console Output"]["Verbosity"] = "Normal"
 
   k.run(e)
 

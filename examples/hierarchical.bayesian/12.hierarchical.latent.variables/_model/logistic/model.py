@@ -7,6 +7,11 @@ import utils
 import load_data
 
 
+#
+# The functional dependency for the 'logistic' example:
+#   y = f(x, theta) + eps;
+#   logisticModel(x, theta) is f(x, theta).
+#
 def logisticModel(x, theta):
   assert len(theta) >= 3
   # logistic function
@@ -22,6 +27,10 @@ def logisticModel(x, theta):
   return y
 
 
+#
+#  Computational model for the 'logistic' example,
+#   for use with 'hierarchicalReference' type problems.
+#
 def logisticModelFunction(sample, points=None, internalData=False):
   theta = sample["Latent Variables"]
   if internalData:
@@ -62,16 +71,17 @@ class LogisticConditionalDistribution():
   def __init__(self):
     self._p = load_data.LogisticData()
 
-  def conditional_logp(self, sample, points=None, internalData=False):
-
+  def conditional_logp(self, sample, points):
+    ''' Conditional log-probability function used in the 'logistic' example.
+        For use with 'hierarchicalCustom' type problems.
+        :param sample: The sample; required by Korali.
+        :param points: The user will populate this with the points for a single individual, during problem setup.
+        :returns: Will populate the field sample["logLikelihood"] with a single log likelihood value, calculated using
+                  sample["Latent Variables"] and the points.
+    '''
     latent_vars = sample["Latent Variables"]
     assert len(latent_vars) == self._p.nLatentSpaceDimensions, \
       f"Latent variable vector has wrong length. Was: {len(latent_vars)}, should be: {self._p.nLatentSpaceDimensions}"
-    if internalData:
-      assert points is None, "Points are handled internally"
-      points = sample["Data Points"]
-    else:
-      assert points is not None
 
     logp_sum = 0
 

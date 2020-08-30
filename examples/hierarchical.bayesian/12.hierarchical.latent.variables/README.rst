@@ -566,13 +566,163 @@ Now we can run the experiment and wait for the results to be displayed.
 
 
 
+..
+   ################################################################################################
 
 
 
 
+Estimating the observed Fisher information matrix for the 'normal' example
+--------------------------------------------------------------------------
+
+This is a guide to the example in :code:`estimate-FIM-normal.py`. It is based on the same example as
+:code:`run-HSAEM-normal.py`. It estimates the Fisher information
+matrix around a set of hyperparameters, possibly found in a run of :code:`run-HSAEM-normal.py`.
+
+
+For the problem setup, we need to import the same functions as when running `HSAEM`, as well as the `korali` library:
+
+.. code-block:: python
+
+    import sys
+    sys.path.append('./_model/normal')
+    sys.path.append('./_model')
+    from model import *
+    from load_data import *
+
+    import korali
 
 
 
+Then, we load the data for our problem, including the 'measurements', y and 'points' x for which the 'measurements'
+were obtained:
+
+.. code-block:: python
+
+      d = NormalData()
+
+Next we create an experiment, and an engine to run it,
+
+.. code-block:: python
+
+      k = korali.Engine()
+      e = korali.Experiment()
+
+We choose a `hierarchicalReference` problem for which we will define a functional relationship between `y` and `x`, with
+likelihood function based on a 'normal' noise model:
+
+.. code-block:: python
+
+    e["Problem"]["Type"] = "Bayesian/Latent/HierarchicalReference"
+    e["Problem"]["Likelihood Model"] = "Normal"
+    e["Problem"]["Reference Data"] = d.y_values
+
+Here, we passed our 'measurements' as :code:`"Reference Data"`.
+
+For each individual, we define the functional relationship / computational model,
+
+.. code-block:: python
+
+    e["Problem"]["Computational Models"] = [
+      lambda sample, i=i: normalModelFunction(sample, d.x_values[i])
+      for i in range(d.nIndividuals)
+    ]
+
+Note that the part :code:`i=i` is necessary, as described in the previous examples.
+
+The Fisher information matrix solver only supports diagonal covariance matrices, so we set:
+
+.. code-block:: python
+
+  e["Problem"]["Diagonal Covariance"] = True
+
+Next, we define two distributions:
+
+.. code-block:: python
+
+  e["Distributions"][0]["Name"] = "Uniform 0"
+  e["Distributions"][0]["Type"] = "Univariate/Uniform"
+  e["Distributions"][0]["Minimum"] = -100
+  e["Distributions"][0]["Maximum"] = 100
+
+  e["Distributions"][1]["Name"] = "Uniform 1"
+  e["Distributions"][1]["Type"] = "Univariate/Uniform"
+  e["Distributions"][1]["Minimum"] = 0
+  e["Distributions"][1]["Maximum"] = 100
+
+We will use them as priors for our variables, which we define next. As in the previous example, we only need to define
+latent variables for a single individual. We define one normal variable, a function parameter :math:`\theta` for the computational
+models :math:`f(x, \theta)`, and one log-normal variable parameterizing the noise around :math:`f(x, \theta)`:
+
+.. code-block:: python
+
+  e["Variables"][0]["Name"] = "Theta 1"
+  e["Variables"][0]["Initial Value"] = 2
+  e["Variables"][0]["Latent Variable Distribution Type"] = "Normal"
+  e["Variables"][0]["Prior Distribution"] = "Uniform 0"
+
+  e["Variables"][1]["Name"] = "Theta 2"
+  e["Variables"][1]["Initial Value"] = 2
+  e["Variables"][1]["Latent Variable Distribution Type"] = "Log-Normal"
+  e["Variables"][1]["Prior Distribution"] = "Uniform 1"
+
+
+**Setting up the FIM estimator:**
+So far, everything we did was setting up the problem. It is the exact same steps as if we would be setting up
+a `HSAEM` optimization.
+Now we finally configure the FIM estimation.
+
+Of course, our solver type will be:
+
+.. code-block:: python
+
+  e["Solver"]["Type"] = "LatentVariableFIM"
+
+Then we configure the sampling part of FIM estimation: We choose to only use one sampling chain with 1000 main steps,
+which will each consist of 2 steps in the first sub-chain and 2 steps in the second sub-chain. The sampling procedure
+is the same as in `HSAEM`. We also decide on a targeted acceptance rate of 0.4 - generally, a larger target acceptance
+rate will result in narrower proposal distributions.
+
+.. code-block:: python
+
+  e["Solver"]["Number Chains"] = 1
+  e["Solver"]["MCMC Outer Steps"] = 1000
+  e["Solver"]["MCMC Subchain Steps"] = [2, 2, 0]
+  e["Solver"]["MCMC Target Acceptance Rate"] = 0.4
+
+Now finally, we reach the point where we tell Korali the values of the hyperparameters. The values below were obtained
+from one run of `run-hsaem-normal.py`:
+
+.. code-block:: python
+
+  # Set values for the hyperparameters.
+  # Insert the hyperparameter estimates from a run of HSAEM, for example:
+  e["Solver"]["Hyperparameters Mean"] = [4.99, 0.95]
+  # we can pass the covariance as its diagonal entries:
+  e["Solver"]["Hyperparameters Diagonal Covariance"] = [0.0093771, 0.058124]
+
+Note that the :code:`"Hyperparameters Mean"` are given in z-form, i.e., they are the mean of the
+*transformed* latent variables.
+
+**Starting the estimation:**
+Finally, we configure where and at what frequency the solver state will be stored to a file, and how verbose and
+how often we will see output in the console.
+Per default, the :code:`LatentVariableFIM` solver only runs one iteration, so of course we choose
+:code:`["Frequency"] = 1` for both.
+
+.. code-block:: python
+
+  e["File Output"]["Frequency"] = 1
+  e["File Output"]["Path"] = "_korali_result_FIM_normal/"
+
+  e["Console Output"]["Frequency"] = 1
+  e["Console Output"]["Verbosity"] = "Detailed"
+
+Then, we start the estimation and wait for the results.
+
+.. code-block:: python
+
+  k.run(e)
 
 
 ..

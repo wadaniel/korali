@@ -13,8 +13,8 @@
 
 void korali::solver::LatentVariableFIM::initialize()
 {
-//  volatile int done = 0;
-//  while (!done) sleep(1);
+  //  volatile int done = 0;
+  //  while (!done) sleep(1);
 
   if ((_k->_problem->getType() != "Bayesian/Latent/HierarchicalCustom") &&
       (_k->_problem->getType() != "Bayesian/Latent/HierarchicalLowlevel") &&
@@ -201,6 +201,7 @@ void korali::solver::LatentVariableFIM::estimateFIM()
      H: The mean Hessian matrix
      G: mean of D * D^T         */
 
+  // Prepare vectors and matrices
   size_t nHyperparameters = _latentProblem->_numberHyperparameters;
   std::vector<double> D(nHyperparameters);
   std::vector<std::vector<double>> H(nHyperparameters);
@@ -216,6 +217,7 @@ void korali::solver::LatentVariableFIM::estimateFIM()
     std::fill(_fischerInformationMatrix[i].begin(), _fischerInformationMatrix[i].end(), 0.0);
   }
 
+  /* Collect gradients and Hessians */
   //  double invSamplesUsedTotal = 1. / double(_numberChains * numberSamplesUsed);
   for (size_t c_idx = 0; c_idx < _numberChains; c_idx++)
   {
@@ -240,9 +242,7 @@ void korali::solver::LatentVariableFIM::estimateFIM()
     }
   }
 
-  /* Strangely, the below (and with the inverse-multiplications above removed) gives slightly different results -
-    with larger values, by a factor of 10 maybe. What's the error here?
-    Edit: Found it! I had removed the second gradient[k] in G above. */
+  /* Sum -> average */
   double samplesUsedTotal = _numberChains * numberSamplesUsed;
   for (size_t j = 0; j < nHyperparameters; j++)
   {
@@ -254,7 +254,7 @@ void korali::solver::LatentVariableFIM::estimateFIM()
     }
   }
 
-  /* Combine all sample gradients and Hessians to the FIM estimate. */
+  /* Combine all sample gradients and Hessians to the FIM estimate */
 
   for (size_t j = 0; j < nHyperparameters; j++)
   {
@@ -295,15 +295,13 @@ void korali::solver::LatentVariableFIM::sampleLatent()
     KORALI_WAIT(sample);
     currentPriors = sample["Log Prior"].get<std::vector<double>>();
 
-
     sample["Latent Variables"] = _z[c_idx][0];
     sample["Operation"] = "Evaluate logLikelihood";
-//    _latentProblem->evaluateLoglikelihood(sample);
+    //    _latentProblem->evaluateLoglikelihood(sample);
     KORALI_START(sample);
     KORALI_WAIT(sample);
     currentLLHs = sample["logLikelihood"].get<std::vector<double>>();
-//      currentLLHs = std::vector<double>(_numberIndividuals, 0.0);
-
+    //      currentLLHs = std::vector<double>(_numberIndividuals, 0.0);
 
     // Access _z only twice for each chain, and hope that this allows parallelism - use chainZ in between:
     std::vector<std::vector<std::vector<double>>> chainZ = _z[c_idx];
@@ -335,7 +333,7 @@ void korali::solver::LatentVariableFIM::sampleLatent()
         sample["Latent Variables"] = newZ; // Note: We need not transform to non-Z form; the function called with "Evaluate logLikelihood" expects Z form
         sample["Operation"] = "Evaluate logLikelihood";
         sample["logLikelihood"] = 0;
-//        _latentProblem->evaluateLoglikelihood(sample);
+        //        _latentProblem->evaluateLoglikelihood(sample);
         KORALI_START(sample);
         KORALI_WAIT(sample);
         auto newLLHs = sample["logLikelihood"].get<std::vector<double>>();
@@ -381,7 +379,7 @@ void korali::solver::LatentVariableFIM::sampleLatent()
 
           sample["Latent Variables"] = localZ;
           sample["Operation"] = "Evaluate logLikelihood";
-//          _latentProblem->evaluateLoglikelihood(sample);
+          //          _latentProblem->evaluateLoglikelihood(sample);
           KORALI_START(sample);
           KORALI_WAIT(sample);
           auto newLLHs = sample["logLikelihood"].get<std::vector<double>>();
@@ -463,7 +461,7 @@ void korali::solver::LatentVariableFIM::sampleLatent()
         sample["Latent Variables"] = localZ;
         sample["Operation"] = "Evaluate logLikelihood";
         sample["logLikelihood"] = 0;
-//        _latentProblem->evaluateLoglikelihood(sample);
+        //        _latentProblem->evaluateLoglikelihood(sample);
         KORALI_START(sample);
         KORALI_WAIT(sample);
         auto newLLHs = sample["logLikelihood"].get<std::vector<double>>();
@@ -523,8 +521,6 @@ void korali::solver::LatentVariableFIM::sampleLatent()
     //    }
 
   } // Loop over all chains end
-
-
 }
 
 /*       * * * * * * * * * * * * * * * * * * * * * * * * *

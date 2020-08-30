@@ -2,11 +2,11 @@
 
 ###### Auxiliar Functions and Variables #########
 
-source ../../tests/functions.sh
+#source ../../tests/functions.sh
 
 ##### Deleting Previous Results
 
-echo "  + Deleting previous results..." 
+echo "  + Deleting previous results..."
 rm -rf _korali_result*; check_result
 
 ##### Recompiling C++

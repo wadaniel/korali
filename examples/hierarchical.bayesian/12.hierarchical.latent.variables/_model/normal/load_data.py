@@ -12,7 +12,11 @@ def extr(line, toint=True, tofloat=False, delim=" "):
   return result
 
 
-class NormalData():
+class NormalData:
+  '''
+    Reads the data (x and y values) for the 'normal' example, as well as other parameters of the example,
+     from '_data/normal/all_data.txt'.
+  '''
 
   def __init__(self, datafile=None):
     self.nIndividuals = None

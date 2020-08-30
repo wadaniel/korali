@@ -13,7 +13,6 @@
 #include <typeinfo>
 #include <vector>
 
-
 /*
 Model 4:
  (see python tutorial, in basic/...)
@@ -48,8 +47,8 @@ void HierarchicalDistribution4::conditional_p(korali::Sample &s, std::vector<std
   // log(p(data | mean, sigma ))
   double logp = 0;
   //  for (size_t i=0; i < _p.nIndividuals; i++){
-//  std::vector<double> pt = {points[0][0]}; // in this example there is only one point per individual
-//  auto pt = gsl::make_span(points[0]).subspan(0, 1);
+  //  std::vector<double> pt = {points[0][0]}; // in this example there is only one point per individual
+  //  auto pt = gsl::make_span(points[0]).subspan(0, 1);
   double p = univariate_gaussian_probability(latentVariables, sigma, {points[0][0]});
 
   logp += log(p);
@@ -93,8 +92,8 @@ void HierarchicalDistribution5::conditional_p(korali::Sample &s, std::vector<std
     {
       double pt = points[j][i];
       double mean = latentVariables[i];
-//      std::vector<double> pt_vec({pt});
-//      std::vector<double> mean_vec({mean});
+      //      std::vector<double> pt_vec({pt});
+      //      std::vector<double> mean_vec({mean});
       double p = univariate_gaussian_probability({mean}, sigma, {pt});
       logp += log(p);
     }

@@ -1,7 +1,7 @@
 import numpy as np
 import copy
 #
-#  !! Use this instead of utils.py !! when you push things to master !!
+#  !! Use this instead of utils.py !! when you push the code to master !!
 #
 #
 

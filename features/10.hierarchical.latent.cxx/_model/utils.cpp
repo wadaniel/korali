@@ -3,9 +3,7 @@
 
 #include "utils.hpp"
 
-double multivariate_gaussian_probability(const std::vector<std::vector<double>> &mus, int nDimensions,
-                                         const std::vector<int>& assignments, int nClusters, double sigma,
-                                         const std::vector<std::vector<double>>& points)
+double multivariate_gaussian_probability(const std::vector<std::vector<double>> &mus, int nDimensions, const std::vector<int> &assignments, int nClusters, double sigma, const std::vector<std::vector<double>> &points)
 {
   /* Normalized, no log, clean pretty probability for N points. */
   assert(sigma > 0.0);
@@ -29,7 +27,7 @@ double multivariate_gaussian_probability(const std::vector<std::vector<double>> 
   return p;
 }
 
-double univariate_gaussian_probability(const std::vector<double>& mu, double sigma, const std::vector<double>& point)
+double univariate_gaussian_probability(const std::vector<double> &mu, double sigma, const std::vector<double> &point)
 {
   assert(mu.size() == point.size());
   std::vector<double> distance(mu.size());

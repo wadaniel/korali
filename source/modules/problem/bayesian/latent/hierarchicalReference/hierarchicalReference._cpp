@@ -226,7 +226,7 @@ void HierarchicalReference::loglikelihoodFunction(Sample &sample)
   {
     Sample &llhSample = llhSamples[i];
     size_t sid = KORALI_GET(int, sample, "Sample Id");
-    llhSample["Sample Id"] = ( sid + 12678 + i);
+    llhSample["Sample Id"] = (sid + 12678 + i);
     llhSample["Current Generation"] = _k->_currentGeneration;
     llhSample["Module"] = "Problem";
     llhSample["Latent Variables"] = latentVariables[i];
@@ -235,21 +235,21 @@ void HierarchicalReference::loglikelihoodFunction(Sample &sample)
     llhSample["Standard Deviations"] = {0};
     llhSample["Dispersions"] = {0};
 
-     llhSample.run(_computationalModels[i]);
-//    llhSample["Operation"] = "Run Computational Model";
-//    llhSample["Computational Model Index"] = i;
-//    _k->_engine->_conduit->start(llhSample); // KORALI_START is only defined for solvers
-//    _k->_engine->_conduit->wait(llhSample);
-////    KORALI_START(llhSample);
-////    KORALI_WAIT(llhSample);
+    llhSample.run(_computationalModels[i]);
+    //    llhSample["Operation"] = "Run Computational Model";
+    //    llhSample["Computational Model Index"] = i;
+    //    _k->_engine->_conduit->start(llhSample); // KORALI_START is only defined for solvers
+    //    _k->_engine->_conduit->wait(llhSample);
+    ////    KORALI_START(llhSample);
+    ////    KORALI_WAIT(llhSample);
 
-//  }
-////  _k->_engine->_conduit->waitAll(llhSamples);
-//////  size_t idx = _k->_engine->_conduit->waitAny(llhSamples);
-//
-//  for (size_t i = 0; i < _numberIndividuals; i++)
-//  {
-////    size_t i = _k->_engine->_conduit->waitAny(llhSamples);
+    //  }
+    ////  _k->_engine->_conduit->waitAll(llhSamples);
+    //////  size_t idx = _k->_engine->_conduit->waitAny(llhSamples);
+    //
+    //  for (size_t i = 0; i < _numberIndividuals; i++)
+    //  {
+    ////    size_t i = _k->_engine->_conduit->waitAny(llhSamples);
     if (_likelihoodModel == "Normal")
       loglikelihoodNormal(llhSamples[i], _referenceData[i]);
     else if (_likelihoodModel == "Negative Binomial")

@@ -18,6 +18,8 @@ def main():
 
   e["Problem"]["Type"] = "Bayesian/Latent/HierarchicalReference"
 
+  e["Problem"]["Likelihood Model"] = "Normal"
+  e["Problem"]["Reference Data"] = d.y_values
   # * Next, define the computational models, y, sdev = f(x, theta), g(x, theta)
 
   ## Warning: The i=i is necessary to capture the current i.
@@ -30,24 +32,8 @@ def main():
       for i in range(d.nIndividuals)
   ]
 
-  e["Problem"]["Likelihood Model"] = "Normal"
-  e["Problem"]["Reference Data"] = d.y_values
-
   # FIM estimation is only supported for diagonal covariance matrices
   e["Problem"]["Diagonal Covariance"] = True
-
-  e["Solver"]["Type"] = "LatentVariableFIM"
-  e["Solver"]["Number Chains"] = 1
-  e["Solver"]["MCMC Outer Steps"] = 1000
-  e["Solver"]["MCMC Target Acceptance Rate"] = 0.4
-  e["Solver"]["MCMC Subchain Steps"] = [2, 2, 0]
-  # e["Solver"]["Termination Criteria"]["Max Generations"] = 1
-
-  # Set values for the hyperparameters.
-  # Insert the hyperparameter estimates from a run of HSAEM, for example:
-  e["Solver"]["Hyperparameters Mean"] = [4.99, 0.95]
-  # we can pass the covariance as its diagonal entries:
-  e["Solver"]["Hyperparameters Diagonal Covariance"] = [0.0093771, 0.058124]
 
   e["Distributions"][0]["Name"] = "Uniform 0"
   e["Distributions"][0]["Type"] = "Univariate/Uniform"
@@ -77,12 +63,26 @@ def main():
   e["Variables"][1][
       "Prior Distribution"] = "Uniform 1"  # not used, but required
 
+  e["Solver"]["Type"] = "LatentVariableFIM"
+  e["Solver"]["Number Chains"] = 1
+  e["Solver"]["MCMC Outer Steps"] = 1000
+  e["Solver"]["MCMC Subchain Steps"] = [2, 2, 0]
+  e["Solver"]["MCMC Target Acceptance Rate"] = 0.4
+  # e["Solver"]["Termination Criteria"]["Max Generations"] = 1
+
+  # Set values for the hyperparameters.
+  # Insert the hyperparameter estimates from a run of HSAEM, for example:
+  e["Solver"]["Hyperparameters Mean"] = [4.99, 0.95]
+  # we can pass the covariance as its diagonal entries:
+  e["Solver"]["Hyperparameters Diagonal Covariance"] = [0.0093771, 0.058124]
+
   # Configure how results will be stored to a file:
   e["File Output"]["Frequency"] = 1
   e["File Output"]["Path"] = "_korali_result_FIM_normal/"
   # We choose a non-default output directory -
   # for plotting results, we can later set the directory with:
-  #   python3 -m korali.plotter --dir _korali_result_logistic/
+  #   python3 -m korali.plotter --dir _korali_result_FIM_normal/.
+  # But for FIM estimation, there is currently no plotting available.
 
   # Configure console output:
   e["Console Output"]["Frequency"] = 1

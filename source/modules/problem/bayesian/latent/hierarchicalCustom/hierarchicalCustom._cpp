@@ -186,7 +186,7 @@ void HierarchicalCustom::initialize()
 
 HierarchicalCustom::~HierarchicalCustom()
 {
-//  delete &_koraliExperiment;
+  //  delete &_koraliExperiment;
   //  delete &_lowlevelProblem;
 }
 
@@ -208,20 +208,19 @@ void HierarchicalCustom::loglikelihoodFunction(Sample &sample)
     llhSample["Latent Variables"] = latentVariables[i];
 
     size_t sid = KORALI_GET(int, sample, "Sample Id");
-    llhSample["Sample Id"] = ( sid + 312678 + i);
+    llhSample["Sample Id"] = (sid + 312678 + i);
     llhSample["Current Generation"] = _k->_currentGeneration;
     llhSample["Module"] = "Problem";
 
     llhSample.run(_logLikelihoodFunctions[i]);
-//    llhSample["Operation"] = "Run Loglikelihood Function";
-//    llhSample["Loglikelihood Function Index"] = i;
-//    _k->_engine->_conduit->start(llhSample);
-//    _k->_engine->_conduit->wait(llhSample);
+    //    llhSample["Operation"] = "Run Loglikelihood Function";
+    //    llhSample["Loglikelihood Function Index"] = i;
+    //    _k->_engine->_conduit->start(llhSample);
+    //    _k->_engine->_conduit->wait(llhSample);
     allLLHs[i] = KORALI_GET(double, llhSample, "logLikelihood");
   }
   sample["logLikelihood"] = allLLHs;
 }
-
 
 void HierarchicalCustom::runLoglikelihoodFunction(Sample &sample)
 {

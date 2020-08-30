@@ -89,12 +89,11 @@ class HierarchicalReference : public korali::problem::bayesian::Latent
 
   void loglikelihoodFunction(korali::Sample &sample);
 
-
- /**
+  /**
     @brief  Run one of the computational models; which one is determined by sample["Computational Model Index"]
     @param sample: A Korali sample object
   */
-   void runComputationalModel(Sample &sample);
+  void runComputationalModel(Sample &sample);
 
   /**
     @brief Calls the lowlevel problem's function. Like loglikelihoodFunction, except for the choice of zForm.

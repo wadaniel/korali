@@ -11,7 +11,11 @@ def extr(line, toint=True, tofloat=False, delim=" "):
   return result
 
 
-class LogisticData():
+class LogisticData:
+  '''
+    Reads the data (x and y values) for the 'logistic' example, as well as other parameters of the example,
+     from '_data/logistic/all_data.txt'.
+  '''
 
   def __init__(self):
     self.nIndividuals = None

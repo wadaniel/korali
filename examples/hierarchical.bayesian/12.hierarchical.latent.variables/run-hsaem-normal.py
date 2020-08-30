@@ -85,7 +85,7 @@ def main():
   e["File Output"]["Path"] = "_korali_result_normal/"
   # We choose a non-default output directory -
   # for plotting results, we can later set the directory with:
-  #   python3 -m korali.plotter --dir _korali_result_logistic/
+  #   python3 -m korali.plotter --dir _korali_result_normal/
 
   # Configure console output:
   e["Console Output"]["Frequency"] = 1

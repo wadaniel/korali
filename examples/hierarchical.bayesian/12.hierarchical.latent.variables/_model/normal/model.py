@@ -6,6 +6,11 @@ sys.path.append(os.path.join(scriptdir, '../'))
 import load_data
 
 
+#
+# Functional dependency for the 'normal' example:
+#   y = f(x, theta) + eps;
+#   normalModel(x, theta) is f(x, theta).
+#
 def normalModel(x, theta):
   y = theta**2
   if np.any(np.isinf(y) | np.isnan(y)):
@@ -13,6 +18,10 @@ def normalModel(x, theta):
   return y
 
 
+#
+#  Computational model for the 'normal' example,
+#   for use with 'hierarchicalReference' type problems.
+#
 def normalModelFunction(sample, points):
   ''' :param points: Data points to calculate the function evaluation from.
                     Here, only used to find the number of reference evaluations for this individual'''
@@ -44,6 +53,13 @@ class NormalConditionalDistribution():
     self._p = load_data.NormalData(datafile)
 
   def conditional_logp(self, sample, points):
+    ''' Conditional log-probability function used in the 'normal' example.
+        For use with 'hierarchicalCustom' type problems.
+        :param sample: The sample; required by Korali.
+        :param points: The user will populate this with the points for a single individual, during problem setup.
+        :returns: Will populate the field sample["logLikelihood"] with a single log likelihood value, calculated using
+                  sample["Latent Variables"] and the points.
+    '''
 
     latent_vars = sample["Latent Variables"]
     assert len(latent_vars) == self._p.nLatentSpaceDimensions == 2, f"Latent variable vector has wrong length. " \

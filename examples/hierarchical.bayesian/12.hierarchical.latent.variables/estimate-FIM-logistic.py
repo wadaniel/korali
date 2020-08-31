@@ -38,8 +38,8 @@ def main():
   e["Solver"]["Type"] = "LatentVariableFIM"
   e["Solver"]["Number Chains"] = 1
   e["Solver"]["MCMC Outer Steps"] = 1000
-  e["Solver"]["MCMC Target Acceptance Rate"] = 0.4
   e["Solver"]["MCMC Subchain Steps"] = [2, 2, 0]
+  e["Solver"]["MCMC Target Acceptance Rate"] = 0.4
 
   e["Solver"]["Hyperparameters Mean"] = [199.00, 37.39, 1.05, 5.36]
   e["Solver"]["Hyperparameters Diagonal Covariance"] = [

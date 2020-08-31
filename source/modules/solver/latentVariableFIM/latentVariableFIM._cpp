@@ -13,9 +13,6 @@
 
 void korali::solver::LatentVariableFIM::initialize()
 {
-  //  volatile int done = 0;
-  //  while (!done) sleep(1);
-
   if ((_k->_problem->getType() != "Bayesian/Latent/HierarchicalCustom") &&
       (_k->_problem->getType() != "Bayesian/Latent/HierarchicalLowlevel") &&
       (_k->_problem->getType() != "Bayesian/Latent/HierarchicalReference"))
@@ -174,7 +171,7 @@ void korali::solver::LatentVariableFIM::estimateFIM()
   hyperparameterJson["Mean"] = _hyperparametersMean;
 
   KORALI_BROADCAST("Hyperparameters", hyperparameterJson);
-  size_t counter = 0; // DBG
+  size_t counter = 0; // Debugging
   // _conduit->broadcastGlobals("Covariance Powers", knlohmann::json &globalsJs);
   for (size_t c_idx = 0; c_idx < _numberChains; c_idx++)
   {
@@ -206,15 +203,15 @@ void korali::solver::LatentVariableFIM::estimateFIM()
   std::vector<double> D(nHyperparameters);
   std::vector<std::vector<double>> H(nHyperparameters);
   std::vector<std::vector<double>> G(nHyperparameters);
-  _fischerInformationMatrix.resize(nHyperparameters);
+  _fisherInformationMatrix.resize(nHyperparameters);
   for (size_t i = 0; i < nHyperparameters; i++)
   {
     H[i].resize(nHyperparameters);
     G[i].resize(nHyperparameters);
     std::fill(H[i].begin(), H[i].end(), 0.0);
     std::fill(G[i].begin(), G[i].end(), 0.0);
-    _fischerInformationMatrix[i].resize(nHyperparameters);
-    std::fill(_fischerInformationMatrix[i].begin(), _fischerInformationMatrix[i].end(), 0.0);
+    _fisherInformationMatrix[i].resize(nHyperparameters);
+    std::fill(_fisherInformationMatrix[i].begin(), _fisherInformationMatrix[i].end(), 0.0);
   }
 
   /* Collect gradients and Hessians */
@@ -260,7 +257,7 @@ void korali::solver::LatentVariableFIM::estimateFIM()
   {
     for (size_t k = 0; k < nHyperparameters; k++)
     {
-      _fischerInformationMatrix[j][k] = -(H[j][k] + G[j][k] - D[j] * D[k]);
+      _fisherInformationMatrix[j][k] = -(H[j][k] + G[j][k] - D[j] * D[k]);
     }
   }
 }
@@ -685,21 +682,21 @@ void korali::solver::LatentVariableFIM::printLastSamples()
 void korali::solver::LatentVariableFIM::finalize()
 {
   _k->_logger->logInfo("Normal", "\n");
-  _k->_logger->logInfo("Normal", "Finished. Final Fischer Information estimate: \n");
+  _k->_logger->logInfo("Normal", "Finished. Final Fisher Information estimate: \n");
 
   // * Set results and print them
-  (*_k)["Results"]["Fischer Information Matrix"] = _fischerInformationMatrix;
+  (*_k)["Results"]["Fisher Information Matrix"] = _fisherInformationMatrix;
 
   std::ostringstream FIMStream;
   //    _k->_logger->logInfo("Normal", "\n");
-  //    _k->_logger->logInfo("Normal", "Estimated Fischer Information Matrix: \n");
+  //    _k->_logger->logInfo("Normal", "Estimated Fisher Information Matrix: \n");
   _k->_logger->logInfo("Normal", "  [\n");
   size_t nHyperparameters = _latentProblem->_numberHyperparameters;
   for (size_t i = 0; i < nHyperparameters; i++)
   {
     FIMStream << "    [";
     for (size_t j = 0; j < nHyperparameters; j++)
-      FIMStream << "\t" << _fischerInformationMatrix[i][j] << " ";
+      FIMStream << "\t" << _fisherInformationMatrix[i][j] << " ";
     FIMStream << "],\n";
     _k->_logger->logInfo("Normal", FIMStream.str().c_str());
     FIMStream.str("");

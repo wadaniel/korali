@@ -95,6 +95,11 @@ class Sample
   cothread_t _workerThread;
 
   /**
+  * @brief Storage to keep the iD of the worker processing this sample.
+  */
+  size_t _workerId;
+
+  /**
   * @brief Determines whether the thread memory has been allocated.
   * Necessary to make sure we do not double-allocate or free unallocated space when re-executing sample.
   */

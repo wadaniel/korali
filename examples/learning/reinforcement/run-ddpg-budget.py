@@ -58,6 +58,8 @@ e = korali.Experiment()
 
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = env
+e["Problem"]["Action Repeat"] = 1
+e["Problem"]["Actions Between Policy Updates"] = 1
 
 e["Variables"][0]["Name"] = "Budget"
 e["Variables"][0]["Type"] = "State"
@@ -89,8 +91,8 @@ e["Variables"][2]["Exploration Noise"]["Theta"] = 0.05
 ### Defining Agent Configuration 
 
 e["Solver"]["Type"] = "Agent/DDPG"
-e["Solver"]["Agent"]["Episodes Per Generation"] = 1
-e["Solver"]["Agent"]["Experience Limit"] = maxSteps
+e["Solver"]["Agent"]["Experiences Between Updates"] = 1
+e["Solver"]["Agent"]["Optimization Steps Per Update"] = 1
 
 ### Defining the configuration of replay memory
 
@@ -159,7 +161,7 @@ e["Solver"]["Policy"]["Neural Network"]["Output Scaling"] = [ 10.0, 10.0 ]
 
 ### Defining Termination Criteria
 
-e["Solver"]["Average Training Reward Threshold"] = -0.5
+e["Solver"]["Training Reward Threshold"] = -0.5
 e["Solver"]["Policy Testing Episodes"] = 20
 e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = -0.1
 

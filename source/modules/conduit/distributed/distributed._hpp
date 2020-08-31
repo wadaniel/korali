@@ -65,11 +65,6 @@ class Distributed : public Conduit
   size_t _teamCount;
 
   /**
-   * @brief ID the Korali Team for the current rank
-   */
-  size_t _teamId;
-
-  /**
   * @brief Signals whether the worker has been assigned a team
   */
   size_t _teamIdSet;

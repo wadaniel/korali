@@ -14,7 +14,7 @@ namespace conduit
 class Concurrent : public Conduit
 {
   private:
-  void worker(int workerId);
+  void worker();
 
   public:
   /**
@@ -45,7 +45,7 @@ class Concurrent : public Conduit
   /**
   * @brief Queue with free worker threads
   */
-  std::queue<int> _launcherQueue;
+  std::queue<int> _workerQueue;
 
   bool isRoot() override;
   void initServer() override;

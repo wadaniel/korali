@@ -49,6 +49,8 @@ e = korali.Experiment()
 e["Problem"]["Type"] = "Reinforcement Learning / Discrete"
 e["Problem"]["Environment Function"] = env
 e["Problem"]["Possible Actions"] = [ [ 0.0 ], [ 1.0 ] ]
+e["Problem"]["Action Repeat"] = 1
+e["Problem"]["Actions Between Policy Updates"] = 1
 
 e["Variables"][0]["Name"] = "Cart Position"
 e["Variables"][0]["Type"] = "State"
@@ -77,8 +79,8 @@ e["Solver"]["Experience Replay"]["Maximum Size"] = 150000
 
 ### Defining the configuration of the agent
 
-e["Solver"]["Agent"]["Episodes Per Generation"] = 1 
-e["Solver"]["Agent"]["Experience Limit"] = maxSteps
+e["Solver"]["Agent"]["Experiences Between Updates"] = 1
+e["Solver"]["Agent"]["Optimization Steps Per Update"] = 1
 
 ## Defining Q-Critic and Action-selection (policy) optimizers
 
@@ -142,7 +144,7 @@ e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Activation Function"]["Typ
 
 ### Defining Termination Criteria
 
-e["Solver"]["Average Training Reward Threshold"] = 1900
+e["Solver"]["Training Reward Threshold"] = 1900
 e["Solver"]["Policy Testing Episodes"] = 20
 e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 1900
 

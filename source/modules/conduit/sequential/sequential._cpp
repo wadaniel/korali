@@ -33,10 +33,9 @@ void Sequential::processSample(Sample &sample)
   __profiler["Timelines"]["Worker 0"] += js;
 }
 
-void Sequential::broadcastGlobals(std::string key, knlohmann::json &globalsJs)
+void Sequential::broadcastMessageToWorkers(knlohmann::json& message)
 {
-  Engine *engine = _engineStack.top();
-  engine->_currentExperiment->_globals[key] = globalsJs;
+
 }
 
 void Sequential::sendMessageToEngine(knlohmann::json& message)

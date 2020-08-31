@@ -29,12 +29,12 @@ class Conduit : public Module
  */
   virtual bool isRoot() { return true; }
 
-  /**
+ /**
  * @brief broadcast global information for all workers to have when processing a sample. Useful for Korali-in-Korali solvers.
  * @param key Key onto which to save the global information
  * @param globalsJs JSON object with information to broadcast
  */
-  virtual void broadcastGlobals(std::string key, knlohmann::json &globalsJs) = 0;
+  void updateGlobals(std::string key, knlohmann::json &globalsJs);
 
   /**
  * @brief Aborts execution for all ranks/threads/processes.
@@ -67,6 +67,28 @@ class Conduit : public Module
   size_t waitAny(std::vector<Sample> &samples);
 
   /**
+  * @brief Stacks a new Engine into the engine stack
+  * @param engine A Korali Engine
+  */
+  void stackEngine(Engine *engine);
+
+  /**
+  * @brief Pops the current Engine from the engine stack
+  */
+  void popEngine();
+
+  /**
+  * @brief Wrapper function for the sample coroutine
+  */
+  static void coroutineWrapper();
+
+  /**
+  * @brief Broadcasts a message to all workers
+  * @param message JSON object with information to broadcast
+  */
+  virtual void broadcastMessageToWorkers(knlohmann::json &message) = 0;
+
+  /**
   * @brief Sends an update to the engine to provide partial information while the sample is still active
   * @param message Message to send to engine
   */
@@ -91,22 +113,6 @@ class Conduit : public Module
   * @param Message Message to send to the sample.
   */
   virtual void sendMessageToSample(Sample& sample, knlohmann::json& message) = 0;
-
-  /**
-  * @brief Stacks a new Engine into the engine stack
-  * @param engine A Korali Engine
-  */
-  virtual void stackEngine(Engine *engine){};
-
-  /**
-  * @brief Pops the current Engine from the engine stack
-  */
-  virtual void popEngine(){};
-
-  /**
-  * @brief Wrapper function for the sample coroutine
-  */
-  static void coroutineWrapper();
 };
 
 } // namespace korali

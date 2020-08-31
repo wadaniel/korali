@@ -93,11 +93,9 @@ class Distributed : public Conduit
   void initServer() override;
   void initialize() override;
   void finalize() override;
-  void broadcastGlobals(std::string key, knlohmann::json &sampleJs) override;
   void processSample(Sample &sample) override;
-  void stackEngine(Engine *) override;
-  void popEngine() override;
 
+  void broadcastMessageToWorkers(knlohmann::json &message) override;
   void sendMessageToEngine(knlohmann::json& message) override;
   knlohmann::json recvMessageFromEngine() override;
   knlohmann::json recvMessageFromSample(Sample& sample) override;

@@ -86,10 +86,7 @@ void Engine::run()
 
   if (_conduit->isRoot())
   {
-    // (Engine-Side) Adding engine to the stack to support Korali-in-Korali execution
-    _engineStack.push(this);
-
-    // (Workers-Side) Adding engine to the stack to support Korali-in-Korali execution
+    // Adding engine to the stack to support Korali-in-Korali execution
     _conduit->stackEngine(this);
 
     // Setting base time for profiling.
@@ -118,9 +115,6 @@ void Engine::run()
 
     // Finalizing experiments
     for (size_t i = 0; i < _experimentVector.size(); i++) _experimentVector[i]->finalize();
-
-    // (Engine-Side) Removing the current engine to the conduit's engine stack
-    _engineStack.pop();
 
     // (Workers-Side) Removing the current engine to the conduit's engine stack
     _conduit->popEngine();

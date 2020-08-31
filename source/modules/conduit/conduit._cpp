@@ -28,6 +28,44 @@ void Conduit::coroutineWrapper()
   if (currentSample->_state != SampleState::uninitialized) KORALI_LOG_ERROR("Resuming a finished sample\n");
 }
 
+void Conduit::stackEngine(Engine *engine)
+{
+ // (Engine-Side) Adding engine to the stack to support Korali-in-Korali execution
+ _engineStack.push(engine);
+
+  knlohmann::json engineJs;
+  engineJs["Conduit Action"] = "Stack Engine";
+  engine->serialize(engineJs["Engine"]);
+
+  broadcastMessageToWorkers(engineJs);
+}
+
+void Conduit::popEngine()
+{
+ // (Engine-Side) Removing the current engine to the conduit's engine stack
+ _engineStack.pop();
+
+  auto popJs = knlohmann::json();
+  popJs["Conduit Action"] = "Pop Engine";
+  broadcastMessageToWorkers(popJs);
+}
+
+void Conduit::updateGlobals(std::string key, knlohmann::json &globalsJs)
+{
+  // Run broadcast only if this is the master process
+  if (!isRoot()) return;
+
+  Engine *engine = _engineStack.top();
+
+  knlohmann::json js;
+  js["Experiment Id"] = engine->_currentExperiment->_experimentId;
+  js["Conduit Action"] = "Broadcast Globals";
+  js["Globals"]["Key"] = key;
+  js["Globals"]["Values"] = globalsJs;
+
+  broadcastMessageToWorkers(js);
+}
+
 void Conduit::start(Sample &sample)
 {
   Engine *engine = _engineStack.top();

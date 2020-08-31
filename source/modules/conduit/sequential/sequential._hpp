@@ -22,14 +22,13 @@ class Sequential : public Conduit
   * @param sample Sample to start/resume.
   */
   void processSample(Sample &sample) override;
-  void broadcastGlobals(std::string key, knlohmann::json &globalsJs) override;
 
   /**
   * @brief Stores a pointer to the activa sample, for communication purposes
   */
   Sample *_currentSample;
 
-
+  void broadcastMessageToWorkers(knlohmann::json &message) override;
   void sendMessageToEngine(knlohmann::json& message) override;
   knlohmann::json recvMessageFromEngine() override;
   knlohmann::json recvMessageFromSample(Sample& sample) override;

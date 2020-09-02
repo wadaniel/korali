@@ -74,7 +74,7 @@ e["Solver"]["Importance Weight Truncation"] = 1.0
 
 ### Defining Experience Replay configuration
 
-e["Solver"]["Experience Replay"]["Start Size"] = 500
+e["Solver"]["Experience Replay"]["Start Size"] = 5000
 e["Solver"]["Experience Replay"]["Maximum Size"] = 150000
 
 ### Defining the configuration of the agent
@@ -87,10 +87,8 @@ e["Solver"]["Agent"]["Optimization Steps Per Update"] = 1
 e["Solver"]["Critic"]["Mini Batch Size"] = 32
 e["Solver"]["Critic"]["Discount Factor"] = 0.99
 e["Solver"]["Critic"]["Optimizer"]["Type"] = "Optimizer/Adam"
-e["Solver"]["Critic"]["Optimizer"]["Eta"] = 0.1
+e["Solver"]["Critic"]["Optimizer"]["Eta"] = 0.01
 e["Solver"]["Critic"]["Optimization Steps"] = 1
-
-### Defining the shape of the neural network
 
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Node Count"] = 4

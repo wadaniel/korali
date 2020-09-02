@@ -133,11 +133,12 @@ void NeuralNetwork::setHyperparameters(const std::vector<double> &hyperparameter
   size_t currPos = 0;
   for (size_t i = 0; i < layerCount; i++)
   {
-    const memory::dim IC = _layers[i - 1]->_nodeCount;
     const memory::dim OC = _layers[i]->_nodeCount;
 
     if (i > 0)
     {
+      const memory::dim IC = _layers[i - 1]->_nodeCount;
+
       // Setting weight data to the layer's weight memory
       write_to_dnnl_memory(&fParams[currPos], _layers[i]->_weightsMem);
       currPos += IC * OC;
@@ -285,7 +286,7 @@ void NeuralNetwork::setNormalizationMeans(const std::vector<double> &normalizati
 #endif
 }
 
-void NeuralNetwork::normalize(const std::vector<std::vector<std::vector<double>>>& miniBatches)
+void NeuralNetwork::normalize(const std::vector<std::vector<std::vector<double>>> &miniBatches)
 {
   std::vector<double> newMeans(_normalizationParameterCount, 0.0);
   std::vector<double> newVariances(_normalizationParameterCount, 0.0);

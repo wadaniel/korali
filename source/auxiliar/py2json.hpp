@@ -29,7 +29,7 @@ class Sample;
  * @brief Stores all functions inserted as parameters to experiment's configuration
  */
 extern std::vector<std::function<void(Sample &)> *> _functionVector;
-}
+} // namespace korali
 
 #ifdef _KORALI_USE_MPI
   #include "mpi.h"

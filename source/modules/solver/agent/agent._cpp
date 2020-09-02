@@ -65,38 +65,38 @@ void Agent::runGeneration()
   // Keep listening to incoming experiences until we reached a terminal state
   do
   {
-   // Listening for incoming experiences
-   experience = KORALI_RECV_MSG_FROM_SAMPLE(agent);
+    // Listening for incoming experiences
+    experience = KORALI_RECV_MSG_FROM_SAMPLE(agent);
 
-   // Increasing experience counts
-   _currentExperienceCount++;
+    // Increasing experience counts
+    _currentExperienceCount++;
 
-   // If reached initial number of experiences, check if we need to update train agent
-   if (_experienceReplayHistory.size() > _experienceReplayStartSize)
-    if (_currentExperienceCount % _agentExperiencesBetweenUpdates == 0)
-    {
-     // Perform optimization steps on the critic/policy
-     for (size_t i = 0; i < _agentOptimizationStepsPerUpdate; i++)
-      trainAgent();
+    // If reached initial number of experiences, check if we need to update train agent
+    if (_experienceReplayHistory.size() > _experienceReplayStartSize)
+      if (_currentExperienceCount % _agentExperiencesBetweenUpdates == 0)
+      {
+        // Perform optimization steps on the critic/policy
+        for (size_t i = 0; i < _agentOptimizationStepsPerUpdate; i++)
+          trainAgent();
 
-     // Update the number of optimization steps, for workers to know it has been updated
-     _optimizationStepCount += _agentOptimizationStepsPerUpdate;
-    }
+        // Update the number of optimization steps, for workers to know it has been updated
+        _optimizationStepCount += _agentOptimizationStepsPerUpdate;
+      }
 
-   // If agent requested new policy, send the new hyperparameters
-   if (experience["Request New Policy"] == true)
-    KORALI_SEND_MSG_TO_SAMPLE(agent, _hyperparameters);
+    // If agent requested new policy, send the new hyperparameters
+    if (experience["Request New Policy"] == true)
+      KORALI_SEND_MSG_TO_SAMPLE(agent, _hyperparameters);
 
-   // Storing new experience into the episode history
-   episode.push_back(experience);
-  }
-  while(experience["Is Terminal"] == false);
+    // Adding experience's reward to episode's reward
+    _currentReward += experience["Reward"].get<double>();
+
+    // Storing new experience into the episode history
+    episode.push_back(experience);
+
+  } while (experience["Is Terminal"] == false);
 
   // Waiting for agent to finish
   KORALI_WAIT(agent);
-
-  // Setting current cumulative reward
-  _currentReward = agent["Cumulative Reward"].get<double>();
 
   // Pusing the new episode into the replay history
   _experienceReplayHistory.insert(_experienceReplayHistory.end(), episode.begin(), episode.end());
@@ -167,16 +167,21 @@ void Agent::printGenerationAfter()
   _k->_logger->logInfo("Normal", " + Experience Memory Size:      %lu/%lu\n", _experienceReplayHistory.size(), _experienceReplayMaximumSize);
 
   if (_maxEpisodes > 0)
-  _k->_logger->logInfo("Normal", " + Total Episodes Count:        %lu/%lu\n", _currentEpisode, _maxEpisodes);
+    _k->_logger->logInfo("Normal", " + Total Episodes Count:        %lu/%lu\n", _currentEpisode, _maxEpisodes);
   else
-  _k->_logger->logInfo("Normal", " + Total Episodes Count:        %lu\n", _currentEpisode);
+    _k->_logger->logInfo("Normal", " + Total Episodes Count:        %lu\n", _currentEpisode);
 
   if (_maxExperiences > 0)
-  _k->_logger->logInfo("Normal", " + Total Experience Count:      %lu/%lu\n", _totalExperienceCount, _maxExperiences);
+    _k->_logger->logInfo("Normal", " + Total Experience Count:      %lu/%lu\n", _totalExperienceCount, _maxExperiences);
   else
     _k->_logger->logInfo("Normal", " + Total Experience Count:    %lu\n", _totalExperienceCount);
 
   _k->_logger->logInfo("Normal", "Training Statistics:\n");
+
+  if (_maxOptimizationSteps > 0)
+    _k->_logger->logInfo("Normal", " + Optimization Step Count:         %lu/%lu\n", _optimizationStepCount, _maxOptimizationSteps);
+  else
+    _k->_logger->logInfo("Normal", " + Optimization Step Count:         %lu\n", _optimizationStepCount);
 
   _k->_logger->logInfo("Normal", " + Current Reward:              %f/%f\n", _currentReward, _trainingRewardThreshold);
   _k->_logger->logInfo("Normal", " + Best Reward:                 %f\n", _bestTrainingReward);
@@ -188,9 +193,9 @@ void Agent::printGenerationAfter()
   _k->_logger->logInfo("Normal", " + Latest Average Reward:       %f\n", _averageTestingReward);
 
   if (_targetAverageTestingReward > -korali::Inf)
-  _k->_logger->logInfo("Normal", " + Best Average Reward:         %f/%f\n", _bestAverageTestingReward, _targetAverageTestingReward);
+    _k->_logger->logInfo("Normal", " + Best Average Reward:         %f/%f\n", _bestAverageTestingReward, _targetAverageTestingReward);
   else
-  _k->_logger->logInfo("Normal", " + Best Average Reward:         %f\n", _bestAverageTestingReward);
+    _k->_logger->logInfo("Normal", " + Best Average Reward:         %f\n", _bestAverageTestingReward);
 
   printAgentInformation();
 }

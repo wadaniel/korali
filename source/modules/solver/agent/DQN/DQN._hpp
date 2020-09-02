@@ -1,8 +1,8 @@
 #ifndef _KORALI_AGENT_DQN_HPP_
 #define _KORALI_AGENT_DQN_HPP_
 
-#include "modules/solver/agent/agent.hpp"
 #include "modules/problem/reinforcementLearning/discrete/discrete.hpp"
+#include "modules/solver/agent/agent.hpp"
 
 namespace korali
 {
@@ -13,7 +13,6 @@ namespace agent
 class DQN : public Agent
 {
   public:
-
   /**
   * @brief Storage for the pointer to the (discrete) learning problem
   */
@@ -55,7 +54,7 @@ class DQN : public Agent
    */
   std::vector<double> queryPolicy(const std::vector<double> &state);
 
-  void getAction(korali::Sample& sample) override;
+  void getAction(korali::Sample &sample) override;
   void updateHyperparameters(const knlohmann::json &hyperparameters) override;
   void trainAgent() override;
   void printAgentInformation() override;

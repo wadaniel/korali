@@ -86,185 +86,147 @@ void Concurrent::initServer()
     pid_t processId = fork();
     if (processId == 0)
     {
-     _workerId = i;
-     worker();
+      _workerId = i;
+      worker();
     }
     _workerPids.push_back(processId);
   }
 }
 
-void Concurrent::worker()
+void Concurrent::broadcastMessageToWorkers(knlohmann::json &message)
 {
-  while (true)
+  string messageString = message.dump();
+  size_t messageStringSize = messageString.size();
+
+  for (size_t i = 0; i < _concurrentJobs; i++)
   {
-    auto actionJs = recvMessageFromEngine();
+    write(_inputsPipe[i][1], &messageStringSize, sizeof(size_t));
 
-    if (actionJs["Conduit Action"] == "Terminate") exit(0);
-    if (actionJs["Conduit Action"] == "Process Sample")
+    size_t curPos = 0;
+    while (curPos < messageStringSize)
     {
-      Engine *engine = _engineStack.top();
-      auto expId = actionJs["Experiment Id"];
-      Sample s;
-      s._globals = &engine->_experimentVector[expId]->_globals;
-      s._js.getJson() = actionJs;
-      s.sampleLauncher();
-
-      sendMessageToEngine(s._js.getJson());
+      size_t bufSize = BUFFERSIZE;
+      if (curPos + bufSize > messageStringSize) bufSize = messageStringSize - curPos;
+      write(_inputsPipe[i][1], messageString.c_str() + curPos, bufSize * sizeof(char));
+      curPos += bufSize;
     }
-    if (actionJs["Conduit Action"] == "Broadcast Globals")
-    {
-      Engine *engine = _engineStack.top();
-      auto expId = actionJs["Experiment Id"];
-      auto key = actionJs["Globals"]["Key"].get<std::string>();
-      engine->_experimentVector[expId]->_globals[key] = actionJs["Globals"]["Values"];
-    }
-
-    if (actionJs["Conduit Action"] == "Stack Engine") _engineStack.push(Engine::deserialize(actionJs["Engine"]));
-    if (actionJs["Conduit Action"] == "Pop Engine") _engineStack.pop();
   }
 }
 
-void Concurrent::processSample(Sample &sample)
+void Concurrent::sendMessageToEngine(knlohmann::json &message)
 {
-  Engine *engine = _engineStack.top();
+  string messageString = message.dump();
+  size_t messageSize = messageString.size();
 
-  while (_workerQueue.empty())
+  write(_resultSizePipe[_workerId][1], &messageSize, sizeof(size_t));
+
+  size_t curPos = 0;
+  while (curPos < messageSize)
   {
-    sample._state = SampleState::waiting;
-    co_switch(engine->_currentExperiment->_thread);
+    size_t bufSize = BUFFERSIZE;
+    if (curPos + bufSize > messageSize) bufSize = messageSize - curPos;
+    write(_resultContentPipe[_workerId][1], messageString.c_str() + curPos, bufSize * sizeof(char));
+    curPos += bufSize;
   }
-  sample._workerId = _workerQueue.front();
-  _workerQueue.pop();
-
-  auto js = knlohmann::json();
-  js["Start Time"] = chrono::duration<double>(chrono::high_resolution_clock::now() - _startTime).count() + _cumulativeTime;
-
-  auto sampleJs = sample._js.getJson();
-  sampleJs["Conduit Action"] = "Process Sample";
-  sendMessageToSample(sample, sampleJs);
-
-  sample._js.getJson() = recvMessageFromSample(sample);
-  _workerQueue.push(sample._workerId);
-
-  js["End Time"] = chrono::duration<double>(chrono::high_resolution_clock::now() - _startTime).count() + _cumulativeTime;
-  js["Solver Id"] = engine->_currentExperiment->_experimentId;
-  js["Current Generation"] = engine->_currentExperiment->_currentGeneration;
-  __profiler["Timelines"]["Worker " + to_string(sample._workerId)] += js;
-}
-
-void Concurrent::broadcastMessageToWorkers(knlohmann::json& message)
-{
- string messageString = message.dump();
- size_t messageStringSize = messageString.size();
-
- for (size_t i = 0; i < _concurrentJobs; i++)
- {
-   write(_inputsPipe[i][1], &messageStringSize, sizeof(size_t));
-
-   size_t curPos = 0;
-   while (curPos < messageStringSize)
-   {
-     size_t bufSize = BUFFERSIZE;
-     if (curPos + bufSize > messageStringSize) bufSize = messageStringSize - curPos;
-     write(_inputsPipe[i][1], messageString.c_str() + curPos, bufSize * sizeof(char));
-     curPos += bufSize;
-   }
- }
-}
-
-void Concurrent::sendMessageToEngine(knlohmann::json& message)
-{
- string messageString = message.dump();
- size_t messageSize = messageString.size();
-
- write(_resultSizePipe[_workerId][1], &messageSize, sizeof(size_t));
-
- size_t curPos = 0;
- while (curPos < messageSize)
- {
-   size_t bufSize = BUFFERSIZE;
-   if (curPos + bufSize > messageSize) bufSize = messageSize - curPos;
-   write(_resultContentPipe[_workerId][1], messageString.c_str() + curPos, bufSize * sizeof(char));
-   curPos += bufSize;
- }
 }
 
 knlohmann::json Concurrent::recvMessageFromEngine()
 {
- size_t inputStringSize;
- read(_inputsPipe[_workerId][0], &inputStringSize, sizeof(size_t));
+  size_t inputStringSize;
+  read(_inputsPipe[_workerId][0], &inputStringSize, sizeof(size_t));
 
- char inputString[inputStringSize + BUFFERSIZE];
+  char inputString[inputStringSize + BUFFERSIZE];
 
- size_t curPos = 0;
- while (curPos < inputStringSize)
- {
-   size_t bufSize = BUFFERSIZE;
-   if (curPos + bufSize > inputStringSize) bufSize = inputStringSize - curPos;
-   read(_inputsPipe[_workerId][0], inputString + curPos, bufSize * sizeof(char));
-   curPos += bufSize;
-   sched_yield(); // Guarantees MacOs finishes the pipe reading
- }
- inputString[inputStringSize] = '\0';
+  size_t curPos = 0;
+  while (curPos < inputStringSize)
+  {
+    size_t bufSize = BUFFERSIZE;
+    if (curPos + bufSize > inputStringSize) bufSize = inputStringSize - curPos;
+    read(_inputsPipe[_workerId][0], inputString + curPos, bufSize * sizeof(char));
+    curPos += bufSize;
+    sched_yield(); // Guarantees MacOs finishes the pipe reading
+  }
+  inputString[inputStringSize] = '\0';
 
- auto message = knlohmann::json::parse(inputString);
+  auto message = knlohmann::json::parse(inputString);
 
- return message;
+  return message;
 }
 
-knlohmann::json Concurrent::recvMessageFromSample(Sample& sample)
+knlohmann::json Concurrent::recvMessageFromSample(Sample &sample)
 {
- Engine *engine = _engineStack.top();
- knlohmann::json message;
+  Engine *engine = _engineStack.top();
+  knlohmann::json message;
 
- int readBytes = -1;
- while (readBytes < 0)
- {
-   // Check for child defunction
-   for (size_t i = 0; i < _workerPids.size(); i++)
-   {
-     int status;
-     pid_t result = waitpid(_workerPids[i], &status, WNOHANG);
-     if (result != 0) KORALI_LOG_ERROR("Worker %i (Pid: %d) exited unexpectedly.\n", i, _workerPids[i]);
-   }
+  int readBytes = -1;
+  while (readBytes < 0)
+  {
+    // Check for child defunction
+    for (size_t i = 0; i < _workerPids.size(); i++)
+    {
+      int status;
+      pid_t result = waitpid(_workerPids[i], &status, WNOHANG);
+      if (result != 0) KORALI_LOG_ERROR("Worker %i (Pid: %d) exited unexpectedly.\n", i, _workerPids[i]);
+    }
 
-   size_t resultStringSize;
-   readBytes = read(_resultSizePipe[sample._workerId][0], &resultStringSize, sizeof(size_t));
+    size_t resultStringSize;
+    readBytes = read(_resultSizePipe[sample._workerId][0], &resultStringSize, sizeof(size_t));
 
-   if (readBytes > 0)
-   {
-     char resultString[resultStringSize + BUFFERSIZE];
+    if (readBytes > 0)
+    {
+      char resultString[resultStringSize + BUFFERSIZE];
 
-     size_t curPos = 0;
-     while (curPos < resultStringSize)
-     {
-       size_t bufSize = BUFFERSIZE;
-       if (curPos + bufSize > resultStringSize) bufSize = resultStringSize - curPos;
-       read(_resultContentPipe[sample._workerId][0], resultString + curPos, bufSize * sizeof(char));
-       curPos += bufSize;
-       //sched_yield(); // Guarantees MacOs finishes the pipe reading
-     }
-     resultString[resultStringSize] = '\0';
+      size_t curPos = 0;
+      while (curPos < resultStringSize)
+      {
+        size_t bufSize = BUFFERSIZE;
+        if (curPos + bufSize > resultStringSize) bufSize = resultStringSize - curPos;
+        read(_resultContentPipe[sample._workerId][0], resultString + curPos, bufSize * sizeof(char));
+        curPos += bufSize;
+        //sched_yield(); // Guarantees MacOs finishes the pipe reading
+      }
+      resultString[resultStringSize] = '\0';
 
-     message = knlohmann::json::parse(resultString);
-   }
-   else
-   {
-     sample._state = SampleState::waiting;
-     co_switch(engine->_currentExperiment->_thread);
-   }
- }
+      message = knlohmann::json::parse(resultString);
+    }
+    else
+    {
+      co_switch(engine->_currentExperiment->_thread);
+    }
+  }
 
- return message;
+  return message;
 }
 
-void Concurrent::sendMessageToSample(Sample& sample, knlohmann::json& message)
+void Concurrent::stackEngine(Engine *engine)
 {
- string messageString = message.dump();
- size_t messageStringSize = messageString.size();
+  // (Engine-Side) Adding engine to the stack to support Korali-in-Korali execution
+  _engineStack.push(engine);
 
- write(_inputsPipe[sample._workerId][1], &messageStringSize, sizeof(size_t));
- write(_inputsPipe[sample._workerId][1], messageString.c_str(), messageStringSize * sizeof(char));
+  knlohmann::json engineJs;
+  engineJs["Conduit Action"] = "Stack Engine";
+  engine->serialize(engineJs["Engine"]);
+
+  broadcastMessageToWorkers(engineJs);
+}
+
+void Concurrent::popEngine()
+{
+  // (Engine-Side) Removing the current engine to the conduit's engine stack
+  _engineStack.pop();
+
+  auto popJs = knlohmann::json();
+  popJs["Conduit Action"] = "Pop Engine";
+  broadcastMessageToWorkers(popJs);
+}
+
+void Concurrent::sendMessageToSample(Sample &sample, knlohmann::json &message)
+{
+  string messageString = message.dump();
+  size_t messageStringSize = messageString.size();
+
+  write(_inputsPipe[sample._workerId][1], &messageStringSize, sizeof(size_t));
+  write(_inputsPipe[sample._workerId][1], messageString.c_str(), messageStringSize * sizeof(char));
 }
 
 bool Concurrent::isRoot()

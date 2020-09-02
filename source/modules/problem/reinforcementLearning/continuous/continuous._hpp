@@ -9,7 +9,6 @@ namespace problem
 {
 namespace reinforcementLearning
 {
-
 class Continuous : public korali::problem::ReinforcementLearning
 {
   public:

@@ -14,7 +14,6 @@ namespace solver
 class Agent : public Solver
 {
   public:
-
   /**
   * @brief Storage for the pointer to the learning problem
   */
@@ -32,9 +31,9 @@ class Agent : public Solver
 
   /**
    * @brief Gets the next action for the agent, based on the state and current policy, for training purposes (may contain noise)
-   * @param Sample to update
+   * @param sample to update
    */
-  virtual void getAction(korali::Sample& sample) = 0;
+  virtual void getAction(korali::Sample &sample) = 0;
 
   /**
   * @brief Trains the Agent's critic/policy, based on the new experiences

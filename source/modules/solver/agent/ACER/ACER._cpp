@@ -195,13 +195,18 @@ void ACER::getAction(korali::Sample &sample)
 
       // Iterating over all p(s,a) to select the corresponding action
       double curSum = 0.0;
-      size_t actionIdx;
       for (actionIdx = 0; actionIdx < pActionVector.size(); actionIdx++)
       {
         double pAction = pActionVector[actionIdx];
         if (x > curSum && x <= curSum + pAction) break;
         curSum += pAction;
       }
+
+//      printf("---------------------------------\n");
+//      for(size_t i; i < pActionVector.size(); i++) printf("%f ", pActionVector[i]); printf("\n");
+//      printf("x = %f\n", x);
+//      printf("actionIdx: %lu\n", actionIdx);
+//      printf("action: %f\n", _discreteProblem->_possibleActions[actionIdx][0]);
     }
 
     //     ////////////////////////////////////////
@@ -229,6 +234,7 @@ void ACER::getAction(korali::Sample &sample)
 
     sample["Metadata"]["Action Index"] = actionIdx;
     sample["Metadata"]["Policy Densities"] = pActionVector;
+//    printf("%s\n", sample["Metadata"].dump(2).c_str());
   }
 
   // If currently on a training phase, then we just select the action with the
@@ -244,6 +250,8 @@ void ACER::getAction(korali::Sample &sample)
 
   // Storing the action and associated metadata
   sample["Action"] = _discreteProblem->_possibleActions[actionIdx];
+//  printf("%s\n", sample["Action"].dump(2).c_str());
+//  printf("---------------------------------\n");
 }
 
 size_t ACER::getRandomActionIndex()
@@ -265,7 +273,6 @@ double ACER::stateActionValueFunction(const std::vector<double> &state, const si
   // Forward propagating state through the critic to get Q(s,a) for all A
   auto evaluation = _criticLearner->getEvaluation(state);
 
-  // Getting the value of V(Xt), i.e., Q(xt, best action)
   return evaluation[actionIdx];
 }
 

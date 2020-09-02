@@ -6,10 +6,9 @@ namespace problem
 {
 namespace reinforcementLearning
 {
-
 void Continuous::initialize()
 {
-   ReinforcementLearning::initialize();
+  ReinforcementLearning::initialize();
 
   /*********************************************************************
    * Verifying Continuous Variable Information

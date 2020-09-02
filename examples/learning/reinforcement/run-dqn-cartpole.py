@@ -50,7 +50,7 @@ e["Problem"]["Type"] = "Reinforcement Learning / Discrete"
 e["Problem"]["Possible Actions"] = [ [ 0.0 ], [ 1.0 ] ]
 e["Problem"]["Environment Function"] = env
 e["Problem"]["Action Repeat"] = 1
-e["Problem"]["Actions Between Policy Updates"] = 10
+e["Problem"]["Actions Between Policy Updates"] = 1
 
 e["Variables"][0]["Name"] = "Cart Position"
 e["Variables"][0]["Type"] = "State"

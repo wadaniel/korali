@@ -12,7 +12,6 @@ namespace agent
 class DDPG : public Agent
 {
   public:
-
   /**
    * @brief Pointer to training experiment's problem
    */
@@ -27,7 +26,6 @@ class DDPG : public Agent
    * @brief Korali experiment for the training of the Qvalue-estimator
    */
   korali::Experiment _criticExperiment;
-
 
   /**
   * @brief Korali experiment for argmax_action(Q) based on a trained Q-Network
@@ -68,7 +66,6 @@ class DDPG : public Agent
    */
   std::vector<double> getRandomAction();
 
-
   /**
   * @brief Function to query policy and get the best action for the given state
   * @param state The input state
@@ -76,7 +73,7 @@ class DDPG : public Agent
   */
   std::vector<double> queryPolicy(const std::vector<double> &state);
 
-  void getAction(korali::Sample& sample) override;
+  void getAction(korali::Sample &sample) override;
   void updateHyperparameters(const knlohmann::json &hyperparameters) override;
   void trainAgent() override;
   void printAgentInformation() override;

@@ -32,8 +32,8 @@ e["Solver"]["Population Size"] = 4
 e["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-15
 e["Solver"]["Termination Criteria"]["Max Generations"] = 20
 
-k["Conduit"]["Type"] = "Concurrent"
-k["Conduit"]["Concurrent Jobs"] = 4
+#k["Conduit"]["Type"] = "Concurrent"
+#k["Conduit"]["Concurrent Jobs"] = 4
 
 # Running Korali
 k.run(e)

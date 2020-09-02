@@ -4,7 +4,6 @@
 #include "modules/conduit/conduit.hpp"
 #include <chrono>
 #include <map>
-#include <queue>
 #include <vector>
 
 namespace korali
@@ -13,9 +12,6 @@ namespace conduit
 {
 class Concurrent : public Conduit
 {
-  private:
-  void worker();
-
   public:
   /**
    * @brief PID of worker processes
@@ -42,22 +38,19 @@ class Concurrent : public Conduit
   */
   std::vector<std::vector<int>> _inputsPipe;
 
-  /**
-  * @brief Queue with free worker threads
-  */
-  std::queue<int> _workerQueue;
-
   bool isRoot() override;
   void initServer() override;
-  void processSample(Sample &sample) override;
   void initialize() override;
   void finalize() override;
 
+  void stackEngine(Engine *engine) override;
+  void popEngine() override;
+
   void broadcastMessageToWorkers(knlohmann::json &message) override;
-  void sendMessageToEngine(knlohmann::json& message) override;
+  void sendMessageToEngine(knlohmann::json &message) override;
   knlohmann::json recvMessageFromEngine() override;
-  knlohmann::json recvMessageFromSample(Sample& sample) override;
-  void sendMessageToSample(Sample& sample, knlohmann::json& message) override;
+  knlohmann::json recvMessageFromSample(Sample &sample) override;
+  void sendMessageToSample(Sample &sample, knlohmann::json &message) override;
 };
 
 } // namespace conduit

@@ -9,7 +9,6 @@ namespace problem
 {
 namespace reinforcementLearning
 {
-
 class Discrete : public korali::problem::ReinforcementLearning
 {
   public:

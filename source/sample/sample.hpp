@@ -9,8 +9,8 @@
 #include "auxiliar/logger.hpp"
 #include "auxiliar/py2json.hpp"
 #include "libco.h"
-#include <string>
 #include <queue>
+#include <string>
 
 #undef _POSIX_C_SOURCE
 #undef _XOPEN_SOURCE
@@ -73,16 +73,6 @@ class Sample
   * @brief Current state of the sample
   */
   SampleState _state;
-
-  /**
-  * @brief Queue to contain outgoing sample messages to the engine
-  */
-  std::queue<knlohmann::json> _outputMessageQueue;
-
-  /**
-  * @brief Queue to contain incoming messages from the engine
-  */
-  std::queue<knlohmann::json> _inputMessageQueue;
 
   /**
   * @brief User-Level thread (coroutine) containing the CPU execution state of the current Sample.

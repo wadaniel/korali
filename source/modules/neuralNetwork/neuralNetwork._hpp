@@ -71,9 +71,9 @@ class NeuralNetwork : public Module
 
   /**
   * @brief Normalizes neural network batch normalization mean and variances
-  * @param miniBatches The set of mini batches for the neural network to normalize with
+  * @param minibatches The set of mini batches for the neural network to normalize with
   */
-  void normalize(const std::vector<std::vector<std::vector<double>>>& minibatches);
+  void normalize(const std::vector<std::vector<std::vector<double>>> &minibatches);
 
   /**
    * @brief Gets the values of batch normalization means

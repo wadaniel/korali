@@ -1,7 +1,7 @@
+#include "engine.hpp"
 #include "modules/problem/reinforcementLearning/reinforcementLearning.hpp"
 #include "modules/solver/agent/agent.hpp"
 #include "sample/sample.hpp"
-#include "engine.hpp"
 
 namespace korali
 {
@@ -85,7 +85,7 @@ void ReinforcementLearning::runEpisode(Sample &sample)
   experience["Sample Id"] = sample["Sample Id"];
 
   // Clearing sample metadata in case we need it
-  sample["Metadata"] = "";
+  sample["Metadata"] = knlohmann::json();
 
   // Storage to keep track of cumulative reward
   double cumulativeReward = 0.0;
@@ -130,21 +130,21 @@ void ReinforcementLearning::runEpisode(Sample &sample)
     // If training, updating engine with the current experience
     if (sample["Mode"] == "Training")
     {
-     // Checking if we requested the given number of actions in between policy updates
-     bool requestNewPolicy = actionCount % _actionsBetweenPolicyUpdates == 0;
+      // Checking if we requested the given number of actions in between policy updates
+      bool requestNewPolicy = actionCount % _actionsBetweenPolicyUpdates == 0;
 
-     experience["Request New Policy"] = false;
-     if (requestNewPolicy) experience["Request New Policy"] = true;
+      experience["Request New Policy"] = false;
+      if (requestNewPolicy) experience["Request New Policy"] = true;
 
-     // Sending experience to engine
-     KORALI_SEND_MSG_TO_ENGINE(experience);
+      // Sending experience to engine
+      KORALI_SEND_MSG_TO_ENGINE(experience);
 
-     // If requested new policy, wait for incoming message containing new hyperparameters
-     if (requestNewPolicy)
-     {
-      auto hyperparameters = KORALI_RECV_MSG_FROM_ENGINE();
-      agent->updateHyperparameters(hyperparameters);
-     }
+      // If requested new policy, wait for incoming message containing new hyperparameters
+      if (requestNewPolicy)
+      {
+        auto hyperparameters = KORALI_RECV_MSG_FROM_ENGINE();
+        agent->updateHyperparameters(hyperparameters);
+      }
     }
   }
 

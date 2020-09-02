@@ -1,8 +1,8 @@
 #ifndef _KORALI_AGENT_ACER_HPP_
 #define _KORALI_AGENT_ACER_HPP_
 
-#include "modules/solver/agent/agent.hpp"
 #include "modules/problem/reinforcementLearning/discrete/discrete.hpp"
+#include "modules/solver/agent/agent.hpp"
 
 namespace korali
 {
@@ -13,7 +13,6 @@ namespace agent
 class ACER : public Agent
 {
   public:
-
   /**
   * @brief Storage for the pointer to the (discrete) learning problem
   */
@@ -74,7 +73,7 @@ class ACER : public Agent
   /**
    * @brief Calculates the state+action value function Q(s,a) = Expectation_s,a [ R | s,a ] of a given experience using the latest critic
    * @param state state to evaluate
-   * @param action action to evaluate
+   * @param actionIdx action to evaluate
    * @return The value of Q(s,a)
    */
   double stateActionValueFunction(const std::vector<double> &state, const size_t &actionIdx);
@@ -99,7 +98,7 @@ class ACER : public Agent
   */
   size_t queryPolicy(const std::vector<double> &state);
 
-  void getAction(korali::Sample& sample) override;
+  void getAction(korali::Sample &sample) override;
   void updateHyperparameters(const knlohmann::json &hyperparameters) override;
   void trainAgent() override;
   void printAgentInformation() override;

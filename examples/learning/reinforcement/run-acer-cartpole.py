@@ -71,6 +71,7 @@ e["Variables"][4]["Type"] = "Action"
 
 e["Solver"]["Type"] = "Agent/ACER"
 e["Solver"]["Importance Weight Truncation"] = 1.0
+e["Solver"]["Mini Batch Size"] = 32
 
 ### Defining Experience Replay configuration
 
@@ -84,11 +85,9 @@ e["Solver"]["Agent"]["Optimization Steps Per Update"] = 1
 
 ## Defining Q-Critic and Action-selection (policy) optimizers
 
-e["Solver"]["Critic"]["Mini Batch Size"] = 32
 e["Solver"]["Critic"]["Discount Factor"] = 0.99
 e["Solver"]["Critic"]["Optimizer"]["Type"] = "Optimizer/Adam"
 e["Solver"]["Critic"]["Optimizer"]["Eta"] = 0.001
-e["Solver"]["Critic"]["Optimization Steps"] = 1
 
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Node Count"] = 4
@@ -116,11 +115,9 @@ e["Solver"]["Normalization Steps"] = 32
 
 ## Defining Policy Configuration
 
-e["Solver"]["Policy"]["Optimization Steps"] = 1
 e["Solver"]["Policy"]["Optimizer"]["Type"] = "Optimizer/Adam"
 e["Solver"]["Policy"]["Optimizer"]["Termination Criteria"]["Min Gradient Norm"] = -1.0
-e["Solver"]["Policy"]["Optimizer"]["Eta"] = 0.0001
-e["Solver"]["Policy"]["Mini Batch Size"] = 32
+e["Solver"]["Policy"]["Optimizer"]["Eta"] = 0.000001
 
 e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
 e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Node Count"] = 4

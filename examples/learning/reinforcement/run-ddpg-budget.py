@@ -79,13 +79,13 @@ e["Variables"][2]["Upper Bound"] = +6.0
 e["Variables"][1]["Exploration Noise"]["Enabled"] = True
 e["Variables"][1]["Exploration Noise"]["Distribution"]["Type"] = "Univariate/Normal"
 e["Variables"][1]["Exploration Noise"]["Distribution"]["Mean"] = 0.0
-e["Variables"][1]["Exploration Noise"]["Distribution"]["Standard Deviation"] = 0.05
+e["Variables"][1]["Exploration Noise"]["Distribution"]["Standard Deviation"] = 0.1
 e["Variables"][1]["Exploration Noise"]["Theta"] = 0.05
 
 e["Variables"][2]["Exploration Noise"]["Enabled"] = True
 e["Variables"][2]["Exploration Noise"]["Distribution"]["Type"] = "Univariate/Normal"
 e["Variables"][2]["Exploration Noise"]["Distribution"]["Mean"] = 0.0
-e["Variables"][2]["Exploration Noise"]["Distribution"]["Standard Deviation"] = 0.05
+e["Variables"][2]["Exploration Noise"]["Distribution"]["Standard Deviation"] = 0.1
 e["Variables"][2]["Exploration Noise"]["Theta"] = 0.05
 
 ### Defining Agent Configuration 
@@ -98,13 +98,13 @@ e["Solver"]["Agent"]["Optimization Steps Per Update"] = 1
 
 ### Defining the configuration of replay memory
 
-e["Solver"]["Experience Replay"]["Start Size"] =   1000
+e["Solver"]["Experience Replay"]["Start Size"] =   50000
 e["Solver"]["Experience Replay"]["Maximum Size"] = 100000
 
 ## Defining Critic Configuration
 
 e["Solver"]["Critic"]["Optimizer"]["Type"] = "Optimizer/Adam"
-e["Solver"]["Critic"]["Optimizer"]["Eta"] = 0.001
+e["Solver"]["Critic"]["Optimizer"]["Eta"] = 0.01
 e["Solver"]["Critic"]["Discount Factor"] = 0.99
 
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
@@ -130,7 +130,7 @@ e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Weight Initialization Scal
 
 e["Solver"]["Policy"]["Optimizer"]["Type"] = "Optimizer/Adam"
 e["Solver"]["Policy"]["Optimizer"]["Termination Criteria"]["Min Gradient Norm"] = -1.0
-e["Solver"]["Policy"]["Optimizer"]["Eta"] = 0.00001
+e["Solver"]["Policy"]["Optimizer"]["Eta"] = 0.0001
 
 e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
 e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Node Count"] = 1

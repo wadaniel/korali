@@ -91,6 +91,8 @@ e["Variables"][2]["Exploration Noise"]["Theta"] = 0.05
 ### Defining Agent Configuration 
 
 e["Solver"]["Type"] = "Agent/DDPG"
+e["Solver"]["Mini Batch Size"] = 32
+e["Solver"]["Normalization Steps"] = 32
 e["Solver"]["Agent"]["Experiences Between Updates"] = 1
 e["Solver"]["Agent"]["Optimization Steps Per Update"] = 1
 
@@ -101,13 +103,9 @@ e["Solver"]["Experience Replay"]["Maximum Size"] = 100000
 
 ## Defining Critic Configuration
 
-e["Solver"]["Critic"]["Optimization Steps"] = 50
 e["Solver"]["Critic"]["Optimizer"]["Type"] = "Optimizer/Adam"
-e["Solver"]["Critic"]["Optimizer"]["Eta"] = 0.01
+e["Solver"]["Critic"]["Optimizer"]["Eta"] = 0.001
 e["Solver"]["Critic"]["Discount Factor"] = 0.99
-e["Solver"]["Critic"]["Mini Batch Size"] = 64
-
-### Defining the shape of the critic neural network
 
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Node Count"] = 3
@@ -128,15 +126,11 @@ e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Node Count"] = 1
 e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Elementwise/Linear"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Weight Initialization Scaling"] = 0.000000001
 
-e["Solver"]["Normalization Steps"] = 32
-
 ## Defining Policy Configuration
 
-e["Solver"]["Policy"]["Optimization Steps"] = 5
 e["Solver"]["Policy"]["Optimizer"]["Type"] = "Optimizer/Adam"
 e["Solver"]["Policy"]["Optimizer"]["Termination Criteria"]["Min Gradient Norm"] = -1.0
-e["Solver"]["Policy"]["Optimizer"]["Eta"] = 0.0001
-e["Solver"]["Policy"]["Mini Batch Size"] = 8
+e["Solver"]["Policy"]["Optimizer"]["Eta"] = 0.00001
 
 e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
 e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Node Count"] = 1
@@ -172,6 +166,4 @@ e["File Output"]["Frequency"] = 10000
 
 ### Running Experiment
 
-#k["Conduit"]["Type"] = "Concurrent"
-#k["Conduit"]["Concurrent Jobs"] = 5
 k.run(e)

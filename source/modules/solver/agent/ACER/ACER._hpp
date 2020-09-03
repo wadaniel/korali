@@ -54,11 +54,6 @@ class ACER : public Agent
   std::vector<double> _avgGradients;
 
   /**
-   * @brief Variable to keep track of the current noise added to the action
-   */
-  std::vector<double> _currentActionNoises;
-
-  /**
    * @brief Variable to calculate the total number of actions in the action space
    */
   size_t _actionCount;

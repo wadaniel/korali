@@ -94,19 +94,8 @@ void ACER::initializeAgent()
   /*********************************************************************
   * Loading/Setting Hyperparameters
   *********************************************************************/
-
-  if (_k->_currentGeneration == 0)
-  {
-    // Get the initial set of critic NN hyperparameters
-    _hyperparameters["Critic"] = _criticLearner->getHyperparameters();
-
-    // Get the initial set of policy NN hyperparameters
-    _hyperparameters["Policy"] = _policyLearner->getHyperparameters();
-  }
-
-  // Assigning training hyperparameters to inference learner
-  _criticLearner->setHyperparameters(_hyperparameters["Critic"]);
-  _policyLearner->setHyperparameters(_hyperparameters["Policy"]);
+  // Get the initial set of policy NN hyperparameters
+  _hyperparameters["Policy"] = _policyLearner->getHyperparameters();
 
   // Storage for statistics
   _avgGradients.resize(_discreteProblem->_possibleActions.size());
@@ -202,11 +191,12 @@ void ACER::getAction(korali::Sample &sample)
         curSum += pAction;
       }
 
-//      printf("---------------------------------\n");
-//      for(size_t i; i < pActionVector.size(); i++) printf("%f ", pActionVector[i]); printf("\n");
-//      printf("x = %f\n", x);
-//      printf("actionIdx: %lu\n", actionIdx);
-//      printf("action: %f\n", _discreteProblem->_possibleActions[actionIdx][0]);
+      printf("---------------------------------\n");
+      for(size_t i = 0; i < pActionVector.size(); i++) {printf("%f ", pActionVector[i]);}
+      printf("\n");
+      printf("x = %f\n", x);
+      printf("actionIdx: %lu\n", actionIdx);
+      printf("action: %f\n", _discreteProblem->_possibleActions[actionIdx][0]);
     }
 
     //     ////////////////////////////////////////
@@ -250,8 +240,8 @@ void ACER::getAction(korali::Sample &sample)
 
   // Storing the action and associated metadata
   sample["Action"] = _discreteProblem->_possibleActions[actionIdx];
-//  printf("%s\n", sample["Action"].dump(2).c_str());
-//  printf("---------------------------------\n");
+  printf("%s\n", sample["Action"].dump(2).c_str());
+  printf("---------------------------------\n");
 }
 
 size_t ACER::getRandomActionIndex()
@@ -395,6 +385,11 @@ void ACER::trainAgent()
   korali::Engine engine;
   engine.resume(_policyExperiment);
 
+  // Getting q training hyperparameters to broadcast to workers
+  auto policyHypeparameters = _policyLearner->getHyperparameters();
+  _policyLearner->setHyperparameters(policyHypeparameters);
+  _hyperparameters["Policy"] = policyHypeparameters;
+
   /***********************************************************************************
   * Updating Critic Network by performing a Stochastic Gradient Descent step
   **********************************************************************************/
@@ -402,10 +397,12 @@ void ACER::trainAgent()
   // Calculating cumulative Q*, for statistical purposes
   _cumulativeQStar = 0.0;
 
+  auto criticParameters = _criticLearner->getHyperparameters();
+
   for (size_t step = 0; step < _criticOptimizationSteps; step++)
   {
     // Returning hyperparameters to its pre-training value
-    _criticLearner->setHyperparameters(_hyperparameters["Critic"]);
+    _criticLearner->setHyperparameters(criticParameters);
 
     // Shuffling indexes to choose the mini batch from
     std::shuffle(experienceReplayIndexes.begin(), experienceReplayIndexes.end(), *mt);
@@ -478,17 +475,9 @@ void ACER::trainAgent()
 
   _criticLearner->_trainingNeuralNetwork->normalize(miniBatches);
 
-  /*********************************************************************
-  * Updating hyperparameters and broadcasting them to the workers
-  *********************************************************************/
-
-  // Storing new Critic's hyperparameters
-  _hyperparameters["Critic"] = _criticLearner->getHyperparameters();
-
-  // Getting q training hyperparameters to broadcast to workers
-  auto policyHypeparameters = _policyLearner->getHyperparameters();
-  _hyperparameters["Policy"] = policyHypeparameters;
-  _policyLearner->setHyperparameters(policyHypeparameters);
+  // Storing new Critic's parameters
+  criticParameters = _criticLearner->getHyperparameters();
+  _criticLearner->setHyperparameters(criticParameters);
 }
 
 size_t ACER::queryPolicy(const std::vector<double> &state)
@@ -520,13 +509,7 @@ size_t ACER::queryPolicy(const std::vector<double> &state)
 
 void ACER::updateHyperparameters(const knlohmann::json &hyperparameters)
 {
-  _criticLearner->setHyperparameters(hyperparameters["Critic"].get<std::vector<double>>());
   _policyLearner->setHyperparameters(hyperparameters["Policy"].get<std::vector<double>>());
-
-  // Re-initializing action noises to zero
-  size_t actionCount = _problem->_actionVectorIndexes.size();
-  _currentActionNoises.resize(actionCount);
-  for (size_t i = 0; i < actionCount; i++) _currentActionNoises[i] = 0.0;
 }
 
 void ACER::printAgentInformation()

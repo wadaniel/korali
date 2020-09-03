@@ -240,8 +240,6 @@ void ACER::getAction(korali::Sample &sample)
 
   // Storing the action and associated metadata
   sample["Action"] = _discreteProblem->_possibleActions[actionIdx];
-  printf("%s\n", sample["Action"].dump(2).c_str());
-  printf("---------------------------------\n");
 }
 
 size_t ACER::getRandomActionIndex()
@@ -420,21 +418,14 @@ void ACER::trainAgent()
  ******************************************************************************/
 
   // Allocating memory for the mini batch set
-  std::vector<std::vector<std::vector<double>>> criticMiniBatches(_normalizationSteps);
-  std::vector<std::vector<std::vector<double>>> policyMiniBatches(_normalizationSteps);
+  std::vector<std::vector<std::vector<double>>> miniBatches(_normalizationSteps);
 
   for (size_t i = 0; i < _normalizationSteps; i++)
-  {
-    criticMiniBatches[i].resize(_miniBatchSize);
-    policyMiniBatches[i].resize(_miniBatchSize);
-  }
+    miniBatches[i].resize(_miniBatchSize);
 
   for (size_t i = 0; i < _normalizationSteps; i++)
     for (size_t j = 0; j < _miniBatchSize; j++)
-    {
-      criticMiniBatches[i][j].resize(_problem->_stateVectorSize + _problem->_actionVectorSize);
-      policyMiniBatches[i][j].resize(_problem->_stateVectorSize);
-    }
+      miniBatches[i][j].resize(_problem->_stateVectorSize + _problem->_actionVectorSize);
 
   // Filling the minibatches
   for (size_t step = 0; step < _normalizationSteps; step++)
@@ -446,15 +437,12 @@ void ACER::trainAgent()
     {
       // Selecting a uniformly random selected, yet not repeated experience
       size_t expId = experienceReplayIndexes[i];
-
-      policyMiniBatches[step][i] = _experienceReplayHistory[expId]["State"].get<std::vector<double>>();
-      for (size_t j = 0; j < _problem->_stateVectorSize; j++) criticMiniBatches[step][i][j] = _experienceReplayHistory[expId]["State"][j];
-      for (size_t j = 0; j < _problem->_actionVectorSize; j++) criticMiniBatches[step][i][_problem->_stateVectorSize + j] = _experienceReplayHistory[expId]["Action"][j];
+      miniBatches[step][i] = _experienceReplayHistory[expId]["State"].get<std::vector<double>>();
     }
   }
 
-  _criticLearner->_trainingNeuralNetwork->normalize(criticMiniBatches);
-  _policyLearner->_trainingNeuralNetwork->normalize(policyMiniBatches);
+  _criticLearner->_trainingNeuralNetwork->normalize(miniBatches);
+  _policyLearner->_trainingNeuralNetwork->normalize(miniBatches);
 
   // Storing new inference parameters
   auto criticHyperparameters = _criticLearner->getHyperparameters();

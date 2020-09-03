@@ -55,18 +55,11 @@ void DQN::initializeAgent()
   _criticLearner = dynamic_cast<solver::learner::DeepGD *>(_criticExperiment._solver);
 
   // If initial generation, set initial DQN configuration
-  if (_k->_currentGeneration == 0)
-  {
-    // Setting intial epsilon to 1.0 (initial exploratory phase)
-    _policyEpsilonCurrentValue = 1.0;
+  if (_k->_currentGeneration == 0) _policyEpsilonCurrentValue = 1.0;
 
-    // Settting Epsilon
-    _hyperparameters["Epsilon"] = _policyEpsilonCurrentValue;
-    _hyperparameters["Critic"] = _criticLearner->getHyperparameters();
-  }
-
-  // Setting Critic's hyperparameters
-  _criticLearner->setHyperparameters(_hyperparameters["Critic"]);
+  // Setting Initial Hyperparameters
+  _hyperparameters["Epsilon"] = _policyEpsilonCurrentValue;
+  _hyperparameters["Critic"] = _criticLearner->getHyperparameters();
 }
 
 double DQN::stateActionValueFunction(const std::vector<double> &state, const std::vector<double> &action)
@@ -96,9 +89,6 @@ void DQN::trainAgent()
 
   // Calculating cumulative Q*, for statistical purposes
   _cumulativeQStar = 0.0;
-
-  // Returning hyperparameters to its pre-training value
-  _criticLearner->setHyperparameters(_hyperparameters["Critic"]);
 
   // Shuffling indexes to choose the mini batch from
   std::shuffle(experienceReplayIndexes.begin(), experienceReplayIndexes.end(), *mt);
@@ -148,7 +138,7 @@ void DQN::trainAgent()
   engine.resume(_criticExperiment);
 
   // Keeping statistics
-  _averageQStar = (double)_cumulativeQStar / (double)(_criticOptimizationSteps * _criticMiniBatchSize);
+  _averageQStar = (double)_cumulativeQStar / (double)_criticMiniBatchSize;
 
   /****************************************************************************
   * If batch normalization is being used, we need to adjust mean and variances

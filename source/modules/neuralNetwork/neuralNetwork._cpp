@@ -411,11 +411,12 @@ std::vector<double> NeuralNetwork::getHyperparameterGradients()
 
   for (size_t i = 0; i < layerCount; i++)
   {
-    const memory::dim IC = _layers[i - 1]->_nodeCount;
     const memory::dim OC = _layers[i]->_nodeCount;
 
     if (i > 0)
     {
+      const memory::dim IC = _layers[i - 1]->_nodeCount;
+
       // Reading weight gradients
       read_from_dnnl_memory(&gradientVectorFloat[currPos], _layers[i]->_weightsDiffMem);
       currPos += OC * IC;

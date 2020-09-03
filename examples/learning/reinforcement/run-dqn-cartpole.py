@@ -130,9 +130,6 @@ e["File Output"]["Frequency"] = 100
 
 ### Running Experiment
 
-#k["Conduit"]["Type"] = "Concurrent"
-#k["Conduit"]["Concurrent Jobs"] = 10
-#k["Conduit"]["Type"] = "Distributed"
 k.run(e)
 
 ###### Now running the cartpole experiment with Korali's help

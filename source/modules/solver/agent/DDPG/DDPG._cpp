@@ -239,7 +239,7 @@ void DDPG::trainAgent()
 
    // Now calculating Gradient of q with respect to state+action for the critic NN
    _criticLearner->getEvaluation(stateActionInput);
-   auto qGradients = _criticLearner->getGradients({{-1.0}}); // Identity, to estimate the exact gradient dQ/dAS
+   auto qGradients = _criticLearner->getGradients({{1.0}}); // Identity, to estimate the exact gradient dQ/dAS
    std::vector<double> aGradients = std::vector<double>(qGradients.begin() + _problem->_stateVectorSize, qGradients.end());
 
    // Keeping track of gradient averages for statistics

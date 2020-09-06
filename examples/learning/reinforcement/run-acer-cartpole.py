@@ -70,12 +70,12 @@ e["Variables"][4]["Type"] = "Action"
 ### Configuring DQN hyperparameters
 
 e["Solver"]["Type"] = "Agent/ACER"
-e["Solver"]["Importance Weight Truncation"] = 1.0
+e["Solver"]["Importance Weight Truncation"] = 10.0
 e["Solver"]["Mini Batch Size"] = 32
 
 ### Defining Experience Replay configuration
 
-e["Solver"]["Experience Replay"]["Start Size"] = 5000
+e["Solver"]["Experience Replay"]["Start Size"] = 500
 e["Solver"]["Experience Replay"]["Maximum Size"] = 150000
 
 ### Defining the configuration of the agent
@@ -117,7 +117,7 @@ e["Solver"]["Normalization Steps"] = 32
 
 e["Solver"]["Policy"]["Optimizer"]["Type"] = "Optimizer/Adam"
 e["Solver"]["Policy"]["Optimizer"]["Termination Criteria"]["Min Gradient Norm"] = -1.0
-e["Solver"]["Policy"]["Optimizer"]["Eta"] = 0.000001
+e["Solver"]["Policy"]["Optimizer"]["Eta"] = 0.0001
 
 e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
 e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Node Count"] = 4

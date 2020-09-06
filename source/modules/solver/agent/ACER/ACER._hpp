@@ -86,13 +86,6 @@ class ACER : public Agent
    */
   size_t getRandomActionIndex();
 
-  /**
-  * @brief Function to query policy and get the best action for the given state
-  * @param state The input state
-  * @return The action index with higher p(s,a_i), corresponding to the state and the current policy hyperparameters
-  */
-  size_t queryPolicy(const std::vector<double> &state);
-
   void getAction(korali::Sample &sample) override;
   void updateHyperparameters(const knlohmann::json &hyperparameters) override;
   void trainAgent() override;

@@ -96,7 +96,6 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
     {
       std::cout << "In HamiltonianRiemannianDiag::K :" << std::endl;
       // printf("%s\n", _sample->_js.getJson().dump(2).c_str());
-      // fflush(stdout);
       std::cout << "K(p) = " << result << std::endl;
     }
 
@@ -138,7 +137,6 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
     {
       std::cout << "In HamiltonianRiemannianDiag::tau :" << std::endl;
       // printf("%s\n", _sample->_js.getJson().dump(2).c_str());
-      // fflush(stdout);
       std::cout << "tau(p) = " << 0.5 * tmpScalar << std::endl;
     }
 
@@ -206,7 +204,6 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
     {
       std::cout << "In HamiltonianRiemannianDiag::phi :" << std::endl;
       printf("%s\n", _sample->_js.getJson().dump(2).c_str());
-      fflush(stdout);
     }
 
     return this->U() + 0.5 * _logDetMetric;
@@ -309,7 +306,6 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
     {
       std::cout << "In HamiltonianRiemannianDiag::updateHamiltonian end :" << std::endl;
       printf("%s\n", _sample->_js.getJson().dump(2).c_str());
-      fflush(stdout);
       std::cout << "_logDetMetric = " << _logDetMetric << std::endl;
       std::cout << "_metric = " << std::endl;
       __printVec(_metric);

@@ -1,6 +1,7 @@
 #ifndef LEAPFROG_IMPLICIT_H
 #define LEAPFROG_IMPLICIT_H
 
+#include "engine.hpp"
 #include "hamiltonian_base.hpp"
 #include "hamiltonian_riemannian_base.hpp"
 #include "leapfrog_base.hpp"
@@ -35,7 +36,7 @@ class LeapfrogImplicit : public Leapfrog
       std::cout << "------------START OF LeapfrogImplicit Step-------------" << std::endl;
     }
 
-    size_t maxNumFixedPointIter = 10;
+    size_t maxNumFixedPointIter = 50;
 
     size_t stateSpaceDim = hamiltonian->getStateSpaceDim();
     double delta = 1e-8;
@@ -85,14 +86,13 @@ class LeapfrogImplicit : public Leapfrog
       p = pPrime;
       ++numIter;
 
-      if (numIter > 2)
-      {
-        hamiltonian->verbosity = false;
-      }
+      if (numIter > 10) hamiltonian->verbosity = false;
 
     } while (deltaP > delta && numIter < maxNumFixedPointIter);
+    if (maxNumFixedPointIter <= numIter)
+      _k->_logger->logInfo("Detailed", "Maximum number (%zu) of fixed point iterations reached during implicit leapfrog scheme.\n", maxNumFixedPointIter);
 
-    hamiltonian->verbosity = false;
+    //hamiltonian->verbosity = false;
 
     if (verbosity == true)
     {
@@ -135,6 +135,9 @@ class LeapfrogImplicit : public Leapfrog
       q = qPrime;
       ++numIter;
     } while (deltaQ > delta && numIter < maxNumFixedPointIter);
+
+    if (maxNumFixedPointIter <= numIter)
+      _k->_logger->logInfo("Detailed", "Maximum number (%zu) of fixed point iterations reached during implicit leapfrog scheme.\n", maxNumFixedPointIter);
 
     if (verbosity == true)
     {

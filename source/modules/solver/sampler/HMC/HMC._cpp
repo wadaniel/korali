@@ -112,8 +112,8 @@ void HMC::setInitialConfiguration()
   }
   else if (_version == "Riemannian" && _useDiagonalMetric == true)
   {
-    _metric.resize(_dimensions);
-    _inverseMetric.resize(_dimensions);
+    _metric.resize(_dimensions, 0.0);
+    _inverseMetric.resize(_dimensions, 0.0);
 
     // Setting position to inital mean
     for (size_t i = 0; i < _dimensions; ++i)

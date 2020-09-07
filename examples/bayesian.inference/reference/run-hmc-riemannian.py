@@ -22,28 +22,29 @@ e["Problem"]["Computational Model"] = lambda sampleData: modelWithGradientsAndHe
 
 # Configuring HMC parameters
 e["Solver"]["Type"] = "Sampler/HMC"
-e["Solver"]["Burn In"] = 100.0
-e["Solver"]["Termination Criteria"]["Max Samples"] = 5000
+e["Solver"]["Burn In"] = 10
+e["Solver"]["Termination Criteria"]["Max Samples"] = 1000
 e["Solver"]["Version"] = "Riemannian"
+e["Solver"]["Use NUTS"] = True
 e["Solver"]["Inverse Regularization Parameter"] = 1
 e["Solver"]["Integrator Verbosity"] = False
-e["Solver"]["Hamiltonian Verbosity"] = False
+e["Solver"]["Hamiltonian Verbosity"] = True
 
 # Configuring the problem's random distributions
 e["Distributions"][0]["Name"] = "Uniform 0"
 e["Distributions"][0]["Type"] = "Univariate/Uniform"
 e["Distributions"][0]["Minimum"] = 0.0
-e["Distributions"][0]["Maximum"] = +5.0
+e["Distributions"][0]["Maximum"] = 5.0
 
 e["Distributions"][1]["Name"] = "Uniform 1"
 e["Distributions"][1]["Type"] = "Univariate/Uniform"
 e["Distributions"][1]["Minimum"] = 0.0
-e["Distributions"][1]["Maximum"] = +5.0
+e["Distributions"][1]["Maximum"] = 5.0
 
 e["Distributions"][2]["Name"] = "Uniform 2"
 e["Distributions"][2]["Type"] = "Univariate/Uniform"
 e["Distributions"][2]["Minimum"] = 0.0
-e["Distributions"][2]["Maximum"] = +5.0
+e["Distributions"][2]["Maximum"] = 5.0
 
 # Configuring the problem's variables and their prior distributions
 e["Variables"][0]["Name"] = "a"

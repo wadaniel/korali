@@ -119,7 +119,6 @@ double ACER::qRetrace(size_t expId)
 
     // Getting experience's next state and action
     std::vector<double> curState = _experienceReplayHistory[curId]["State"];
-    size_t curActionIdx = _experienceReplayHistory[curId]["Metadata"]["Action Index"];
 
     // Getting experience's next state and action
     std::vector<double> nextState = _experienceReplayHistory[curId + 1]["State"];
@@ -226,6 +225,9 @@ double ACER::stateValueFunction(const std::vector<double> &state)
 
 void ACER::trainAgent()
 {
+  // Storing current average policy parameters
+  auto averagePolicyHypeparameters = _policyLearner->getHyperparameters();
+
   // Creating storage for state history indexes to choose from
   std::vector<size_t> experienceReplayIndexes(_experienceReplayHistory.size());
   for (size_t i = 0; i < _experienceReplayHistory.size(); i++) experienceReplayIndexes[i] = i;
@@ -253,7 +255,6 @@ void ACER::trainAgent()
    // Getting experience's current state and action
    std::vector<double> curState = _experienceReplayHistory[expId]["State"];
    size_t curActionIdx = _experienceReplayHistory[expId]["Metadata"]["Action Index"];
-   double curReward = _experienceReplayHistory[expId]["Reward"];
 
    /*****************************************
     * Critic Section
@@ -390,13 +391,24 @@ void ACER::trainAgent()
 
   // Storing new inference parameters
   auto criticHyperparameters = _criticLearner->getHyperparameters();
-  auto policyHypeparameters = _policyLearner->getHyperparameters();
-
   _criticLearner->setHyperparameters(criticHyperparameters);
-  _policyLearner->setHyperparameters(policyHypeparameters);
 
-  // Storing hyperparameters
-  _hyperparameters["Policy"] = policyHypeparameters;
+  /****************************************************************************
+ * Updating Trust region
+ ******************************************************************************/
+
+  // Getting new hyperparameters
+  auto newPolicyHypeparameters = _policyLearner->getHyperparameters();
+
+  // Softly adopting the new parameters, using an adoption rate
+  for (size_t i = 0; i < newPolicyHypeparameters.size(); i++)
+   averagePolicyHypeparameters[i] = _policyAdoptionRate*averagePolicyHypeparameters[i] + (1-_policyAdoptionRate)*newPolicyHypeparameters[i];
+
+  // Updating policy with new averaged parameters
+  _policyLearner->setHyperparameters(averagePolicyHypeparameters);
+
+  // Storing average policy hyperparameters
+  _hyperparameters["Policy"] = averagePolicyHypeparameters;
 }
 
 void ACER::updateHyperparameters(const knlohmann::json &hyperparameters)

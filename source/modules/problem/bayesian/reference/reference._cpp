@@ -457,9 +457,9 @@ void Reference::hessianLogLikelihoodNormal(korali::Sample &sample)
     {
       for (size_t l = 0; l <= k; ++l)
       {
-        tmp = diff * diff * (stdev3inv * hessianG[i][k * Nth + l] - 3 * var2inv * gradientG[i][k] * gradientG[i][l]) - varinv * (gradientF[i][k] * gradientF[i][l] + diff * hessianF[i][k * Nth + l]) - 2 * stdev3inv * diff * (gradientF[i][k] * gradientG[i][l] + gradientF[i][l] * gradientG[i][k]) + 2 * (varinv * gradientG[i][k] * gradientG[i][l] - stdevinv * hessianG[i][k * Nth + l]);
+        tmp = diff * diff * (stdev3inv * hessianG[i][k * Nth + l] - 3 * var2inv * gradientG[i][k] * gradientG[i][l]) - varinv * (gradientF[i][k] * gradientF[i][l] + diff * hessianF[i][k * Nth + l]) - 2 * stdev3inv * diff * (gradientF[i][k] * gradientG[i][l] + gradientF[i][l] * gradientG[i][k]) + varinv * gradientG[i][k] * gradientG[i][l] - stdevinv * hessianG[i][k * Nth + l];
         hessian[k * Nth + l] += tmp;
-        hessian[l * Nth + k] += tmp;
+        if(l < k) hessian[l * Nth + k] += tmp;
       }
     }
   }

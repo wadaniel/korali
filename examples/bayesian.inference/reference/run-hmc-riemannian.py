@@ -23,10 +23,11 @@ e["Problem"]["Computational Model"] = lambda sampleData: modelWithGradientsAndHe
 # Configuring HMC parameters
 e["Solver"]["Type"] = "Sampler/HMC"
 e["Solver"]["Burn In"] = 100.0
-e["Solver"]["Termination Criteria"]["Max Samples"] = 50000
+e["Solver"]["Termination Criteria"]["Max Samples"] = 5000
 e["Solver"]["Version"] = "Riemannian"
+e["Solver"]["Inverse Regularization Parameter"] = 1
 e["Solver"]["Integrator Verbosity"] = False
-e["Solver"]["Hamiltonian Verbosity"] = True
+e["Solver"]["Hamiltonian Verbosity"] = False
 
 # Configuring the problem's random distributions
 e["Distributions"][0]["Name"] = "Uniform 0"

@@ -108,20 +108,20 @@ class Hamiltonian
   virtual std::vector<double> dU()
   {
     // evaluate grad(logP(x)) (extremely slow)
-    std::vector<double> evaluation = KORALI_GET(std::vector<double>, (*_sample), "grad(logP(x))");
+    auto grad = KORALI_GET(std::vector<double>, (*_sample), "grad(logP(x))");
 
     // negate to get dU
-    std::transform(evaluation.cbegin(), evaluation.cend(), evaluation.begin(), std::negate<double>());
+    std::transform(grad.cbegin(), grad.cend(), grad.begin(), std::negate<double>());
 
     if (verbosity == true)
     {
       std::cout << "In Hamiltonian::dU :" << std::endl;
       std::cout << "dU() = " << std::endl;
-      __printVec(evaluation);
+      __printVec(grad);
       std::cout << std::endl;
     }
 
-    return evaluation;
+    return grad;
   }
 
   /**
@@ -182,12 +182,6 @@ class Hamiltonian
     KORALI_START((*_sample));
     KORALI_WAIT((*_sample));
     (*_sample)["Operation"] = "Evaluate";
-
-    // TODO: remove hack, evaluate Hessian only when required by the solver (D.W.)
-    //(*_sample)["Operation"] = "Evaluate Hessian";
-    //KORALI_START((*_sample));
-    //KORALI_WAIT((*_sample));
-    //(*_sample)["Operation"] = "Evaluate";
 
     if (verbosity == true)
     {

@@ -268,40 +268,38 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
   */
   void updateHamiltonian(const std::vector<double> &q, korali::Experiment *_k) override
   {
-    if (verbosity == true)
-    {
-      std::cout << "In HamiltonianRiemannianDiag::updateHamiltonian before setting Paramters :" << std::endl;
-      printf("%s\n", _sample->_js.getJson().dump(2).c_str());
-      fflush(stdout);
-    }
-
     (*_sample)["Parameters"] = q;
 
     KORALI_START((*_sample));
     KORALI_WAIT((*_sample));
 
-    if (verbosity == true)
-    {
-      std::cout << "In HamiltonianRiemannianDiag::updateHamiltonian after KORALI_WAIT :" << std::endl;
-      printf("%s\n", _sample->_js.getJson().dump(2).c_str());
-      fflush(stdout);
-    }
+    // TODO: remove hack, evaluate Gradient only when required by the solver (D.W.)
+    (*_sample)["Operation"] = "Evaluate Gradient";
+    KORALI_START((*_sample));
+    KORALI_WAIT((*_sample));
+    (*_sample)["Operation"] = "Evaluate";
+
+    // TODO: remove hack, evaluate Hessian only when required by the solver (D.W.)
+    (*_sample)["Operation"] = "Evaluate Hessian";
+    KORALI_START((*_sample));
+    KORALI_WAIT((*_sample));
+    (*_sample)["Operation"] = "Evaluate";
 
     // constant for condition number of _metric
     double detMetric = 1.0;
 
-    std::vector<double> g = KORALI_GET(std::vector<double>, (*_sample), "grad(logP(x))");
+    auto grad = KORALI_GET(std::vector<double>, (*_sample), "grad(logP(x))");
 
     if (verbosity == true)
     {
       std::cout << "In HamiltonianRiemannianDiag::updateHamiltonian after getting gradient :" << std::endl;
       std::cout << "g = " << std::endl;
-      __printVec(g);
+      __printVec(grad);
     }
 
     for (size_t i = 0; i < _stateSpaceDim; ++i)
     {
-      _metric[i] = this->__softAbsFunc(g[i], _inverseRegularizationParam);
+      _metric[i] = this->__softAbsFunc(grad[i], _inverseRegularizationParam);
       _inverseMetric[i] = 1.0 / _metric[i];
       detMetric *= _metric[i];
     }
@@ -400,28 +398,19 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
   */
   std::vector<double> __hessianU()
   {
-    // evaluate grad(logP(x)) (extremely slow)
-    std::vector<std::vector<double>> evaluationMat = KORALI_GET(std::vector<std::vector<double>>, (*_sample), "H(logP(x))");
-    std::vector<double> evaluation(_stateSpaceDim * _stateSpaceDim);
-    for (size_t i = 0; i < _stateSpaceDim; ++i)
-    {
-      for (size_t j = 0; j < _stateSpaceDim; ++j)
-      {
-        evaluation[i * _stateSpaceDim + j] = evaluationMat[i][j];
-      }
-    }
+    auto hessian = KORALI_GET(std::vector<double>, (*_sample), "H(logP(x))");
 
     // negate to get dU
-    std::transform(evaluation.cbegin(), evaluation.cend(), evaluation.begin(), std::negate<double>());
+    std::transform(hessian.cbegin(), hessian.cend(), hessian.begin(), std::negate<double>());
 
     if (verbosity == true)
     {
       std::cout << "In HamiltonianRiemannianDiag::__hessianU :" << std::endl;
       std::cout << "__hessianU() = " << std::endl;
-      __printVec(evaluation);
+      __printVec(hessian);
     }
 
-    return evaluation;
+    return hessian;
   }
 
   /**

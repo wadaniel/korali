@@ -17,10 +17,10 @@ e = korali.Experiment()
 e["Problem"]["Type"] = "Bayesian/Reference"
 e["Problem"]["Likelihood Model"] = "Normal"
 e["Problem"]["Reference Data"] = getReferenceData()
-e["Problem"]["Computational Model"] = lambda sampleData: modelWithDerivatives(
+e["Problem"]["Computational Model"] = lambda sampleData: modelWithGradients(
     sampleData, getReferencePoints())
 
-# Configuring TMCMC parameters
+# Configuring HMC parameters
 e["Solver"]["Type"] = "Sampler/HMC"
 e["Solver"]["Burn In"] = 500
 e["Solver"]["Termination Criteria"]["Max Samples"] = 50000

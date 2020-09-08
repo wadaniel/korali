@@ -28,7 +28,7 @@ e["Solver"]["Version"] = "Riemannian"
 e["Solver"]["Use NUTS"] = True
 e["Solver"]["Inverse Regularization Parameter"] = 1
 e["Solver"]["Integrator Verbosity"] = False
-e["Solver"]["Hamiltonian Verbosity"] = True
+e["Solver"]["Hamiltonian Verbosity"] = False
 
 # Configuring the problem's random distributions
 e["Distributions"][0]["Name"] = "Uniform 0"

@@ -92,8 +92,6 @@ class LeapfrogImplicit : public Leapfrog
     if (maxNumFixedPointIter <= numIter)
       _k->_logger->logInfo("Detailed", "Maximum number (%zu) of fixed point iterations reached during implicit leapfrog scheme.\n", maxNumFixedPointIter);
 
-    //hamiltonian->verbosity = false;
-
     if (verbosity == true)
     {
       std::cout << "Total number of (momentum) iterations in FPI = " << numIter << std::endl;

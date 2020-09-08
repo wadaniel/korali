@@ -19,8 +19,9 @@ e = korali.Experiment()
 # Selecting problem and solver types.
 e["Problem"]["Type"] = "Sampling"
 e["Problem"]["Probability Function"] = lg5
-e["Console Output"]["Frequency"] = 1000
+e["Console Output"]["Frequency"] = 100
 e["File Output"]["Frequency"] = 0
+e["Console Output"]["Verbosity"] = "Detailed"
 
 # Defining problem's variables and their HMC settings
 for i in range(5):
@@ -35,15 +36,13 @@ e["Solver"]["Burn In"] = 500
 e["Solver"]["Termination Criteria"]["Max Samples"] = 10000
 
 # HMC specific parameters
-e["Solver"]["Num Integration Steps"] = 20
-e["Solver"]["Step Size"] = 0.05
-e["Solver"]["Version"] = 'Euclidean'
+e["Solver"]["Num Integration Steps"] = 5
+e["Solver"]["Step Size"] = 0.15
 e["Solver"]["Use Diagonal Metric"] = True
-e["Solver"]["Use Adaptive Step Size"] = True
+e["Solver"]["Use Adaptive Step Size"] = False
 e["Solver"]["Target Integration Time"] = 0.5
 e["Solver"]["Desired Average Acceptance Rate"] = 0.80
 e["Solver"]["Use NUTS"] = False
-
 # Running Korali
 e["Random Seed"] = 1337
 k.run(e)

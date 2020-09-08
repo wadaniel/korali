@@ -122,7 +122,7 @@ void Reference::loglikelihoodPositiveNormal(Sample &sample)
 void Reference::loglikelihoodStudentT(Sample &sample)
 {
   size_t Nd = _referenceData.size();
-  
+
   auto refEvals = KORALI_GET(std::vector<double>, sample, "Reference Evaluations");
   auto nus = KORALI_GET(std::vector<double>, sample, "Degrees Of Freedom");
 
@@ -145,7 +145,7 @@ void Reference::loglikelihoodStudentT(Sample &sample)
 void Reference::loglikelihoodPositiveStudentT(Sample &sample)
 {
   size_t Nd = _referenceData.size();
-  
+
   auto refEvals = KORALI_GET(std::vector<double>, sample, "Reference Evaluations");
   auto nus = KORALI_GET(std::vector<double>, sample, "Degrees Of Freedom");
 
@@ -191,7 +191,7 @@ void Reference::loglikelihoodPoisson(Sample &sample)
 void Reference::loglikelihoodGeometric(Sample &sample)
 {
   size_t Nd = _referenceData.size();
-  
+
   auto refEvals = KORALI_GET(std::vector<double>, sample, "Reference Evaluations");
 
   if (refEvals.size() != Nd)
@@ -275,7 +275,7 @@ void Reference::evaluateLoglikelihoodGradient(Sample &sample)
 }
 
 void Reference::gradientLoglikelihoodNormal(Sample &sample)
-{ 
+{
   size_t Nd = _referenceData.size();
   size_t Nth = _k->_variables.size();
 

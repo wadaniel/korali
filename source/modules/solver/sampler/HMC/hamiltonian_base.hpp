@@ -187,7 +187,6 @@ class Hamiltonian
     {
       std::cout << "In Hamiltonian::updateHamiltonian " << std::endl;
       printf("%s\n", _sample->_js.getJson().dump(2).c_str());
-      fflush(stdout);
     }
   }
 

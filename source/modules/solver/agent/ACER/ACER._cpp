@@ -94,8 +94,16 @@ void ACER::initializeAgent()
   /*********************************************************************
   * Loading/Setting Hyperparameters
   *********************************************************************/
+
+  // Getting current hyperparameters
+  _policyCurrentHyperparameters = _policyLearner->getHyperparameters();
+
+  // Storing initial average policy parameters
+  if (_k->_currentGeneration == 0)
+   _policyAverageHyperparameters = _policyCurrentHyperparameters;
+
   // Get the initial set of policy NN hyperparameters
-  _hyperparameters["Policy"] = _policyLearner->getHyperparameters();
+  _hyperparameters["Policy"] = _policyCurrentHyperparameters;
 
   // Storage for statistics
   _avgGradients.resize(_discreteProblem->_possibleActions.size());
@@ -140,7 +148,7 @@ double ACER::qRetrace(size_t expId)
     double importanceWeight = pCurExp / pOldExp;
 
     // Now calculating truncated importance weight
-    double truncatedImportanceWeight = std::min(_importanceWeightTruncation, importanceWeight);
+    double truncatedImportanceWeight = std::min(1.0, importanceWeight);
 
     // Getting current reward
     double curReward = _experienceReplayHistory[curId]["Reward"];
@@ -225,9 +233,6 @@ double ACER::stateValueFunction(const std::vector<double> &state)
 
 void ACER::trainAgent()
 {
-  // Storing current average policy parameters
-  auto averagePolicyHypeparameters = _policyLearner->getHyperparameters();
-
   // Creating storage for state history indexes to choose from
   std::vector<size_t> experienceReplayIndexes(_experienceReplayHistory.size());
   for (size_t i = 0; i < _experienceReplayHistory.size(); i++) experienceReplayIndexes[i] = i;
@@ -280,8 +285,16 @@ void ACER::trainAgent()
     // Getting probability densities for current action given current policy
     auto pOldPolicy = _experienceReplayHistory[expId]["Metadata"]["Policy Densities"].get<std::vector<double>>();
 
+    // Getting probability densities for average action given current policy
+    _policyLearner->setHyperparameters(_policyAverageHyperparameters);
+    auto pAvgPolicy = _policyLearner->getEvaluation(curState);
+
     // Getting probability densities for current action given current policy
+    _policyLearner->setHyperparameters(_policyCurrentHyperparameters);
     auto pCurPolicy = _policyLearner->getEvaluation(curState);
+
+    // Obtaining KL Divergence for the current state
+    auto KLDiv = KLDivergence(pAvgPolicy, pCurPolicy);
 
     // Now Calculating Acer gradient, from https://arxiv.org/pdf/1611.01224.pdf, Eq. 9
     std::vector<double> gAcer(_discreteProblem->_possibleActions.size(), 0);
@@ -398,17 +411,17 @@ void ACER::trainAgent()
  ******************************************************************************/
 
   // Getting new hyperparameters
-  auto newPolicyHypeparameters = _policyLearner->getHyperparameters();
+  _policyCurrentHyperparameters = _policyLearner->getHyperparameters();
 
   // Softly adopting the new parameters, using an adoption rate
-  for (size_t i = 0; i < newPolicyHypeparameters.size(); i++)
-   averagePolicyHypeparameters[i] = _policyAdoptionRate*averagePolicyHypeparameters[i] + (1-_policyAdoptionRate)*newPolicyHypeparameters[i];
+  for (size_t i = 0; i < _policyCurrentHyperparameters.size(); i++)
+   _policyAverageHyperparameters[i] = _policyAdoptionRate*_policyAverageHyperparameters[i] + (1-_policyAdoptionRate)*_policyCurrentHyperparameters[i];
 
   // Updating policy with new averaged parameters
-  _policyLearner->setHyperparameters(averagePolicyHypeparameters);
+  _policyLearner->setHyperparameters(_policyCurrentHyperparameters);
 
   // Storing average policy hyperparameters
-  _hyperparameters["Policy"] = averagePolicyHypeparameters;
+  _hyperparameters["Policy"] = _policyCurrentHyperparameters;
 }
 
 void ACER::updateHyperparameters(const knlohmann::json &hyperparameters)

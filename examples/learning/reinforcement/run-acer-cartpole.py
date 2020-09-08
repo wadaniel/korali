@@ -70,8 +70,8 @@ e["Variables"][4]["Type"] = "Action"
 ### Configuring DQN hyperparameters
 
 e["Solver"]["Type"] = "Agent/ACER"
-e["Solver"]["Importance Weight Truncation"] = 10.0
-e["Solver"]["Mini Batch Size"] = 32
+e["Solver"]["Importance Weight Truncation"] = 5.0
+e["Solver"]["Mini Batch Size"] = 64
 
 ### Defining Experience Replay configuration
 

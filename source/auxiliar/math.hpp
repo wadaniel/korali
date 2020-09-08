@@ -100,6 +100,14 @@ double vectorNorm(const std::vector<double> &x);
 double vectorDistance(const std::vector<double> &x, const std::vector<double> &y);
 
 /**
+* @brief Computes the Kullback-Leibler divergence for two equally sized probability vectors
+* @param P vector of P(xi) values
+* @param Q vector of Q(xi) values
+* @return The KL divergence between the two probability vectors
+*/
+double KLDivergence(const std::vector<double> &P, const std::vector<double> &Q);
+
+/**
 * @brief Checks whether at least one of the elements in the vector is not a number.
 * @param x vector of xi values
 * @return True, if found at least one NaN: false, otherwise.

@@ -51,6 +51,15 @@ double vectorDistance(const std::vector<double> &x, const std::vector<double> &y
   return sqrt(norm);
 }
 
+double KLDivergence(const std::vector<double> &X, const std::vector<double> &P, const std::vector<double> &Q)
+{
+ double KLSum = 0.0;
+ for (size_t i = 0; i < P.size(); i++)
+  KLSum += P[i] * log(P[i] / Q[i]);
+
+ return KLSum;
+}
+
 std::string getTimestamp()
 {
   time_t rawtime;

@@ -660,10 +660,7 @@ void HMC::printGenerationAfter()
   // Current Sample
   _k->_logger->logInfo("Detailed", "Current Sample:\n");
   for (size_t d = 0; d < _dimensions; ++d) _k->_logger->logData("Detailed", "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _positionLeader[d]);
-
-  // TODO: Give better name
-  // Current Sample/Position Mean
-  _k->_logger->logInfo("Detailed", "Current Position Mean:\n");
+  _k->_logger->logInfo("Detailed", "Current Chain Mean:\n");
   for (size_t d = 0; d < _dimensions; ++d) _k->_logger->logData("Detailed", "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _positionMean[d]);
   _k->_logger->logInfo("Detailed", "Current Metric:\n");
 

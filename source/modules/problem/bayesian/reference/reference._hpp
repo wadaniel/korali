@@ -97,13 +97,13 @@ class Reference : public korali::problem::Bayesian
   * @param sample A Korali Sample
   */
   void hessianLogLikelihoodPositiveNormal(korali::Sample &sample);
- 
+
   /**
   * @brief Calculates the Hessian of the Negative Binomial logLikelihood model.
   * @param sample A Korali Sample
   */
   void hessianLogLikelihoodNegativeBinomial(korali::Sample &sample);
-  
+
   /**
   * @brief Calculates the Fisher information matrix of the Normal likelihood model.
   * @param sample A Korali Sample

@@ -491,66 +491,63 @@ void Reference::hessianLogLikelihoodNegativeBinomial(korali::Sample &sample)
   if (refEvals.size() != Nd)
     KORALI_LOG_ERROR("This Bayesian (%s) problem requires a %lu-sized Reference Evaluations array. Provided: %lu.\n", _likelihoodModel.c_str(), Nd, refEvals.size());
   if (dispersions.size() != Nd)
-    KORALI_LOG_ERROR("This Bayesian (%s) problem requires a %lu-sized Dispersion array. Provided: %lu.\n", _likelihoodModel.c_str(), Nd,dispersions.size());
-  if (gradientM.size() != Nd) KORALI_LOG_ERROR("Bayesian problem requires a gradient of the Mean for each reference evaluation (provided %zu required %zu).",gradientM.size(), Nd);
-  if (gradientR.size() != Nd) KORALI_LOG_ERROR("Bayesian problem requires a gradient of the Dispersion for each reference evaluation (provided %zu required %zu).",gradientM.size(), Nd);
-  if (hessianM.size() != Nd) KORALI_LOG_ERROR("Bayesian problem requires a Hessian of the Mean for each reference evaluation (provided %zu required %zu).",gradientM.size(), Nd);
-  if (hessianR.size() != Nd) KORALI_LOG_ERROR("Bayesian problem requires a Hessian of the Dispersion for each reference evaluation (provided %zu required %zu).",gradientM.size(), Nd);
+    KORALI_LOG_ERROR("This Bayesian (%s) problem requires a %lu-sized Dispersion array. Provided: %lu.\n", _likelihoodModel.c_str(), Nd, dispersions.size());
+  if (gradientM.size() != Nd) KORALI_LOG_ERROR("Bayesian problem requires a gradient of the Mean for each reference evaluation (provided %zu required %zu).", gradientM.size(), Nd);
+  if (gradientR.size() != Nd) KORALI_LOG_ERROR("Bayesian problem requires a gradient of the Dispersion for each reference evaluation (provided %zu required %zu).", gradientM.size(), Nd);
+  if (hessianM.size() != Nd) KORALI_LOG_ERROR("Bayesian problem requires a Hessian of the Mean for each reference evaluation (provided %zu required %zu).", gradientM.size(), Nd);
+  if (hessianR.size() != Nd) KORALI_LOG_ERROR("Bayesian problem requires a Hessian of the Dispersion for each reference evaluation (provided %zu required %zu).", gradientM.size(), Nd);
 
   std::vector<double> hessian(Nth * Nth, 0.0);
   for (size_t i = 0; i < Nd; ++i)
   {
-    if (gradientM[i].size() != Nth) KORALI_LOG_ERROR("Bayesian problem requires a gradient of the Mean of size %zu for each reference evaluation (provided %zu).", Nth,gradientM[i].size());
-    if (gradientR[i].size() != Nth) KORALI_LOG_ERROR("Bayesian problem requires a gradient of the Standard Deviation of size %zu for each reference evaluation (provided %zu).", Nth,gradientR[i].size());
-    if (hessianM[i].size() != Nth * Nth) KORALI_LOG_ERROR("Bayesian problem requires a Hessian of the Mean of size %zu for each reference evaluation (provided %zu).", Nth * Nth,hessianM[i].size());
-    if (hessianR[i].size() != Nth * Nth) KORALI_LOG_ERROR("Bayesian problem requires a Hessian of the Standard Deviation of size %zu for each reference evaluation (provided %zu).", Nth * Nth,hessianR[i].size());
+    if (gradientM[i].size() != Nth) KORALI_LOG_ERROR("Bayesian problem requires a gradient of the Mean of size %zu for each reference evaluation (provided %zu).", Nth, gradientM[i].size());
+    if (gradientR[i].size() != Nth) KORALI_LOG_ERROR("Bayesian problem requires a gradient of the Standard Deviation of size %zu for each reference evaluation (provided %zu).", Nth, gradientR[i].size());
+    if (hessianM[i].size() != Nth * Nth) KORALI_LOG_ERROR("Bayesian problem requires a Hessian of the Mean of size %zu for each reference evaluation (provided %zu).", Nth * Nth, hessianM[i].size());
+    if (hessianR[i].size() != Nth * Nth) KORALI_LOG_ERROR("Bayesian problem requires a Hessian of the Standard Deviation of size %zu for each reference evaluation (provided %zu).", Nth * Nth, hessianR[i].size());
 
     double d = _referenceData[i];
-    
+
     double m = refEvals[i];
     double r = dispersions[i];
-    double dr = d+r;
-    double mr = m+r;
+    double dr = d + r;
+    double mr = m + r;
 
-    double m2 = m*m;
-    double m3 = m2*m;
-    double r2 = r*r;
-    double r3 = r2*r;
+    double m2 = m * m;
+    double m3 = m2 * m;
+    double r2 = r * r;
+    double r3 = r2 * r;
 
-    double C1 = 1.0/(r*(mr*mr));
-    double C2 = d/(m*m*(mr*mr));
+    double C1 = 1.0 / (r * (mr * mr));
+    double C2 = d / (m * m * (mr * mr));
 
-    double logC = log(r/(m+r));
+    double logC = log(r / (m + r));
 
     for (size_t k = 0; k < Nth; ++k)
     {
       for (size_t l = 0; l <= k; ++l)
       {
-        double Hm = hessianM[i][k*Nth+l];
-        double Hr = hessianR[i][k*Nth+l];
+        double Hm = hessianM[i][k * Nth + l];
+        double Hr = hessianR[i][k * Nth + l];
 
         double Gmk = gradientM[i][k];
         double Gml = gradientM[i][l];
-        double Gm2 = Gmk*Gml;
- 
+        double Gm2 = Gmk * Gml;
+
         double Grk = gradientR[i][k];
         double Grl = gradientR[i][l];
-        double Gr2 = Grk*Grl;
+        double Gr2 = Grk * Grl;
 
-        double tmp1 = Hr*(gsl_sf_psi(dr)-gsl_sf_psi(r))+Grk*Grl*(gsl_sf_psi_1(dr)-gsl_sf_psi_1(r));
-        double tmp2 = C1*(-Hm*r3-m*r2*Hm-m*r*(Gmk*Grl+Gml*Grk)+r2*Gm2+m*r2*Hr+m2*r*Hr+r3*Hr*logC+2*m*r2*Hr*logC+m2*r*Hr*logC+m*Gr2);
-        double tmp3 = C2*(-r2*Gm2+m2*(r*(Hm-Hr)+Gmk*Grl+Gml*Grk)+m*r*(r*Hm-2*Gm2)-m3*Hr);
+        double tmp1 = Hr * (gsl_sf_psi(dr) - gsl_sf_psi(r)) + Grk * Grl * (gsl_sf_psi_1(dr) - gsl_sf_psi_1(r));
+        double tmp2 = C1 * (-Hm * r3 - m * r2 * Hm - m * r * (Gmk * Grl + Gml * Grk) + r2 * Gm2 + m * r2 * Hr + m2 * r * Hr + r3 * Hr * logC + 2 * m * r2 * Hr * logC + m2 * r * Hr * logC + m * Gr2);
+        double tmp3 = C2 * (-r2 * Gm2 + m2 * (r * (Hm - Hr) + Gmk * Grl + Gml * Grk) + m * r * (r * Hm - 2 * Gm2) - m3 * Hr);
 
-        hessian[k*Nth+l] += (tmp1+tmp2+tmp3);
-        if (l<k) hessian[l*Nth+k] += (tmp1+tmp2+tmp3);
+        hessian[k * Nth + l] += (tmp1 + tmp2 + tmp3);
+        if (l < k) hessian[l * Nth + k] += (tmp1 + tmp2 + tmp3);
       }
     }
-
   }
   sample["logLikelihood Hessian"] = hessian;
-
 }
-
 
 void Reference::evaluateFisherInformation(Sample &sample)
 {

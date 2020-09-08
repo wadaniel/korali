@@ -29,7 +29,7 @@ for useDiagonalMetric in [False, True]:
     # Configuring the HMC sampler parameters
     e["Solver"]["Type"] = "Sampler/HMC"
     e["Solver"]["Burn In"] = 100
-    e["Solver"]["Termination Criteria"]["Max Samples"] = 100000
+    e["Solver"]["Termination Criteria"]["Max Samples"] = 25000
 
     # HMC specific parameters
     e["Solver"]["Num Integration Steps"] = 20

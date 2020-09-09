@@ -36,7 +36,7 @@ class LeapfrogImplicit : public Leapfrog
       std::cout << "------------START OF LeapfrogImplicit Step-------------" << std::endl;
     }
 
-    size_t maxNumFixedPointIter = 50;
+    size_t maxNumFixedPointIter = 8;
 
     size_t stateSpaceDim = hamiltonian->getStateSpaceDim();
     double delta = 1e-6 * stepSize;

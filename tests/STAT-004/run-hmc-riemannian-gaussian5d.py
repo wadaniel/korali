@@ -19,14 +19,13 @@ e = korali.Experiment()
 # Selecting problem and solver types.
 e["Problem"]["Type"] = "Sampling"
 e["Problem"]["Probability Function"] = lg5
-e["Console Output"]["Frequency"] = 100
+e["Console Output"]["Frequency"] = 1000
 e["File Output"]["Frequency"] = 0
-e["Console Output"]["Verbosity"] = "Detailed"
 
 # Defining problem's variables and their HMC settings
 for i in range(5):
   e["Variables"][i]["Name"] = "X" + str(i)
-  e["Variables"][i]["Initial Mean"] = -1.0
+  e["Variables"][i]["Initial Mean"] = 0.0
   e["Variables"][i]["Initial Standard Deviation"] = 1.0
 
 # Configuring the HMC sampler parameters
@@ -34,10 +33,9 @@ e["Solver"]["Type"] = "Sampler/HMC"
 e["Solver"]["Version"] = "Riemannian"
 e["Solver"]["Burn In"] = 500
 e["Solver"]["Termination Criteria"]["Max Samples"] = 10000
+e["Solver"]["Step Size"] = 0.2
+e["Solver"]["Inverse Regularization Parameter"] = 0.5
 
-# HMC specific parameters
-e["Solver"]["Num Integration Steps"] = 5
-e["Solver"]["Step Size"] = 0.15
 e["Solver"]["Use Diagonal Metric"] = True
 e["Solver"]["Use Adaptive Step Size"] = False
 e["Solver"]["Target Integration Time"] = 0.5

@@ -749,7 +749,7 @@ void HMC::finalize()
 
 double HMC::findReasonableStepSize(std::vector<double> q)
 {
-  double stepSize = 1.0;
+  double stepSize = _stepSize;
   double oldLogP, newLogP;
 
   std::vector<double> p = _hamiltonian->sampleMomentum();

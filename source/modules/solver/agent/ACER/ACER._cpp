@@ -2,6 +2,11 @@
 #include "modules/solver/agent/ACER/ACER.hpp"
 #include "sample/sample.hpp"
 
+#ifdef _KORALI_USE_ONEDNN
+  #include "auxiliar/dnnUtils.hpp"
+using namespace dnnl;
+#endif
+
 /****************************************
  * Things to fix:
  * - All samples use their own pseudorandom generators
@@ -92,6 +97,15 @@ void ACER::initializeAgent()
   _policyLearner = dynamic_cast<solver::learner::DeepGD *>(_policyExperiment._solver);
 
   /*********************************************************************
+  * Initializing Policy Probability Function
+  *********************************************************************/
+
+  _policyProbabilityFunction->_nodeCount = _discreteProblem->_possibleActions.size();
+  _policyProbabilityFunction->_nn = _criticLearner->_evaluationNeuralNetwork;
+  _policyProbabilityFunction->createForwardPipeline();
+  _policyProbabilityFunction->createBackwardPipeline();
+
+  /*********************************************************************
   * Loading/Setting Hyperparameters
   *********************************************************************/
 
@@ -142,7 +156,7 @@ double ACER::qRetrace(size_t expId)
     double pOldExp = _experienceReplayHistory[curId + 1]["Metadata"]["Policy Densities"][nextActionIdx];
 
     // Getting p(s,a) for the best action, given the current policy
-    double pCurExp = _policyLearner->getEvaluation(nextState)[nextActionIdx];
+    double pCurExp = queryPolicy(nextState)[nextActionIdx];
 
     // Now calculating importance weight
     double importanceWeight = pCurExp / pOldExp;
@@ -162,6 +176,37 @@ double ACER::qRetrace(size_t expId)
   return retraceValue;
 }
 
+std::vector<double> ACER::queryPolicy(const std::vector<double> &state)
+{
+ // Forward propagating state through the critic to get Q(s,a) for all A
+ auto pLogits = _policyLearner->getEvaluation(state);
+
+ // Passing logits through the softmax probability function
+ auto pValues = forwardProbabilityFunction(pLogits);
+
+ return pValues;
+}
+
+std::vector<double> ACER::forwardProbabilityFunction(const std::vector<double> &logits)
+{
+ // Passing logits through the probability function
+ std::vector<float> fVector(logits.begin(), logits.end());
+ write_to_dnnl_memory(fVector.data(), _policyProbabilityFunction->_nodeMem);
+ _policyProbabilityFunction->_forwardActivationPrimitive.execute(_policyProbabilityFunction->_nn->_stream, _policyProbabilityFunction->_forwardActivationArgs);
+ read_from_dnnl_memory(fVector.data(), _policyProbabilityFunction->_activationMem);
+ return std::vector<double>(fVector.begin(), fVector.end());
+}
+
+std::vector<double> ACER::backwardProbabilityFunction(const std::vector<double> &gradients)
+{
+ // Passing logits through the probability function
+ std::vector<float> fVector(gradients.begin(), gradients.end());
+ write_to_dnnl_memory(fVector.data(), _policyProbabilityFunction->_activationDiffMem);
+ _policyProbabilityFunction->_backwardActivationPrimitive.execute(_policyProbabilityFunction->_nn->_stream, _policyProbabilityFunction->_backwardActivationArgs);
+ read_from_dnnl_memory(fVector.data(), _policyProbabilityFunction->_nodeDiffMem);
+ return std::vector<double>(fVector.begin(), fVector.end());
+}
+
 void ACER::getAction(korali::Sample &sample)
 {
   // Getting current state
@@ -171,7 +216,7 @@ void ACER::getAction(korali::Sample &sample)
   double x = _randomActionGenerator->getRandomNumber();
 
   // Forward propagating state through the critic to get Q(s,a) for all A
-  auto pActionVector = _policyLearner->getEvaluation(state);
+  auto pActionVector = queryPolicy(state);
 
   // Iterating over all p(s,a) to select the corresponding action
   double curSum = 0.0;
@@ -220,7 +265,7 @@ double ACER::stateValueFunction(const std::vector<double> &state)
   auto qEval = _criticLearner->getEvaluation(state);
 
   // Forward propagating state through the policty to get P(s,a) for all a
-  auto pEval = _policyLearner->getEvaluation(state);
+  auto pEval = queryPolicy(state);
 
   // Calculating the sum of p(s,a)*q(s,a) for all a
   double qSum = 0.0;
@@ -287,11 +332,11 @@ void ACER::trainAgent()
 
     // Getting probability densities for average action given current policy
     _policyLearner->setHyperparameters(_policyAverageHyperparameters);
-    auto pAvgPolicy = _policyLearner->getEvaluation(curState);
+    auto pAvgPolicy = queryPolicy(curState);
 
     // Getting probability densities for current action given current policy
     _policyLearner->setHyperparameters(_policyCurrentHyperparameters);
-    auto pCurPolicy = _policyLearner->getEvaluation(curState);
+    auto pCurPolicy = queryPolicy(curState);
 
     // Obtaining KL Divergence for the current state
     auto KLDiv = KLDivergence(pAvgPolicy, pCurPolicy);
@@ -348,7 +393,7 @@ void ACER::trainAgent()
 
     // Setting these gradients as inputs to the
     _policyProblem->_inputs[i] = curState;
-    _policyProblem->_solution[i] = gAcer;
+    _policyProblem->_solution[i] = backwardProbabilityFunction(gAcer);
 
     // Keeping track of gradient averages for statistics
     for (size_t i = 0; i < _discreteProblem->_possibleActions.size(); i++) _avgGradients[i] += gAcer[i];

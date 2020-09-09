@@ -39,7 +39,7 @@ class LeapfrogImplicit : public Leapfrog
     size_t maxNumFixedPointIter = 50;
 
     size_t stateSpaceDim = hamiltonian->getStateSpaceDim();
-    double delta = 1e-8;
+    double delta = 1e-6 * stepSize;
 
     // half step of momentum
     hamiltonian->updateHamiltonian(q, _k);
@@ -57,6 +57,13 @@ class LeapfrogImplicit : public Leapfrog
     std::vector<double> rho = p;
     std::vector<double> pPrime(stateSpaceDim);
     double deltaP;
+
+    if (verbosity == true)
+    {
+      std::cout << "Starting FPI on p" << std::endl;
+      std::cout << "p = " << std::endl;
+      __printVec(p);
+    }
 
     size_t numIter = 0;
     do
@@ -102,6 +109,13 @@ class LeapfrogImplicit : public Leapfrog
     std::vector<double> qPrime(stateSpaceDim);
     std::vector<double> sigma = q;
     double deltaQ;
+    
+    if (verbosity == true)
+    {
+      std::cout << "Starting FPI on q" << std::endl;
+      std::cout << "q = " << std::endl;
+      __printVec(q);
+    }
 
     numIter = 0;
     do

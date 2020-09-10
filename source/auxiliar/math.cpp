@@ -40,6 +40,15 @@ double vectorNorm(const std::vector<double> &x)
   return sqrt(norm);
 }
 
+double dotProduct(const std::vector<double> &x, const std::vector<double> &y)
+{
+ double dotProd = 0.0;
+
+ for (size_t i = 0; i < x.size(); i++) dotProd += x[i] * y[i];
+
+ return dotProd;
+}
+
 double vectorDistance(const std::vector<double> &x, const std::vector<double> &y)
 {
   double norm = 0.;
@@ -49,15 +58,6 @@ double vectorDistance(const std::vector<double> &x, const std::vector<double> &y
     norm += z * z;
   }
   return sqrt(norm);
-}
-
-double KLDivergence(const std::vector<double> &P, const std::vector<double> &Q)
-{
- double KLSum = 0.0;
- for (size_t i = 0; i < P.size(); i++)
-  KLSum += P[i] * log(P[i] / Q[i]);
-
- return KLSum;
 }
 
 std::string getTimestamp()

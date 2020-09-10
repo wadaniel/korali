@@ -92,20 +92,20 @@ double logSumExp(const std::vector<double> &logValues);
 double vectorNorm(const std::vector<double> &x);
 
 /**
+* @brief Computes the dot product between two vectors.
+* @param x vector of xi values
+* @param y vector of yi values
+* @return The x . y product
+*/
+double dotProduct(const std::vector<double> &x, const std::vector<double> &y);
+
+/**
 * @brief Computes the norm of the difference between two vectors.
 * @param x vector of xi values
 * @param y vector of yi values
 * @return The L2 norm of the distance of vectors x and y.
 */
 double vectorDistance(const std::vector<double> &x, const std::vector<double> &y);
-
-/**
-* @brief Computes the Kullback-Leibler divergence for two equally sized probability vectors
-* @param P vector of P(xi) values
-* @param Q vector of Q(xi) values
-* @return The KL divergence between the two probability vectors
-*/
-double KLDivergence(const std::vector<double> &P, const std::vector<double> &Q);
 
 /**
 * @brief Checks whether at least one of the elements in the vector is not a number.

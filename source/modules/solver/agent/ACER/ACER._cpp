@@ -127,11 +127,16 @@ double ACER::qRetrace(size_t expId)
 {
   // Going straight to the latest experience in the corresponding episode
   size_t curId = expId;
-  while (_experienceReplayHistory[curId]["Is Terminal"] == false) curId++;
+  while ( (_experienceReplayHistory[curId]["Is Terminal"] == false) && ((curId - expId) < _trajectorySize)) curId++;
   //printf("For experience %lu, the last experience in its episode is: %lu\n", expId, curId);
 
   // First, get the retrace value for the last experience (just the reward)
   double retraceValue = 0.0;
+  if (_experienceReplayHistory[curId]["Is Terminal"] == false)
+  {
+   std::vector<double> curState = _experienceReplayHistory[curId]["State"];
+   retraceValue = stateValueFunction(curState);
+  }
 
   // Now going backwards from the last, calculating the retrace value of each experience, one by one
   while (curId > expId)
@@ -338,16 +343,8 @@ void ACER::trainAgent()
     _policyLearner->setHyperparameters(_policyCurrentHyperparameters);
     auto pCurPolicy = queryPolicy(curState);
 
-    // Obtaining KL Divergence for the current state
-    auto KLDiv = KLDivergence(pAvgPolicy, pCurPolicy);
-
-    // Now Calculating Acer gradient, from https://arxiv.org/pdf/1611.01224.pdf, Eq. 9
-    std::vector<double> gAcer(_discreteProblem->_possibleActions.size(), 0);
-
     // Calculating V_theta(state)
     double vState = stateValueFunction(curState);
-
-    ///////// Part one of the equation
 
     // Getting p(s,a) for selected experience, given the old policy
     double pActionOldPolicy = pOldPolicy[curActionIdx];
@@ -361,13 +358,21 @@ void ACER::trainAgent()
     // Now calculating truncated importance weight
     double truncatedImportanceWeight = std::min(_importanceWeightTruncation, importanceWeight);
 
+    // Now Calculating Acer gradient, from https://arxiv.org/pdf/1611.01224.pdf, Eq. 9
+    std::vector<double> g(_discreteProblem->_possibleActions.size(), 0.0);
+
+    // Storage to calculate probability function gradients (inputs and outputs)
+    std::vector<double> gTmp(_discreteProblem->_possibleActions.size(), 0.0);
+
     // Adding the component of part one to the gradient vector
-    gAcer[curActionIdx] += truncatedImportanceWeight * (qRet - vState) / pActionCurPolicy;
+    gTmp[curActionIdx] = (qRet - vState) / pActionCurPolicy;
+    gTmp = backwardProbabilityFunction(gTmp);
+    for(size_t i = 0; i < g.size(); i++) g[i] += truncatedImportanceWeight * gTmp[i];
 
     ///////// Part two of the equation
 
     // Getting the best action by the policy for the current state
-    for (size_t newActionIdx = 0; newActionIdx < gAcer.size(); newActionIdx++)
+    for (size_t newActionIdx = 0; newActionIdx < g.size(); newActionIdx++)
     {
       // Calculating Qcritic(state,action)
       double qCritic = stateActionValueFunction(curState, newActionIdx);
@@ -388,15 +393,35 @@ void ACER::trainAgent()
       double correctionWeight = importanceRatio > 0 ? importanceRatio : 0.0;
 
       // Adding the component of part two to the gradient vector
-      gAcer[newActionIdx] += correctionWeight * (qCritic - vState);
+      for(size_t i = 0; i < gTmp.size(); i++) gTmp[i] = 0.0;
+      gTmp[newActionIdx] = std::log(pNewActionCurPolicy) * (qCritic - vState);
+      gTmp = backwardProbabilityFunction(gTmp);
+
+      for(size_t i = 0; i < g.size(); i++) g[i] += pNewActionCurPolicy * correctionWeight * gTmp[i];
     }
+
+    // Obtaining KL Divergence gradients for the current state.
+    std::vector<double> k(_discreteProblem->_possibleActions.size());
+    for (size_t i = 0; i < k.size(); i++) k[i] = - pAvgPolicy[i] / pCurPolicy[i];
+
+    // Getting dot product between the gradient vector and k
+    auto gkDotProduct = dotProduct(k, g);
+
+    // Getting norm(k)^2, simply by dot product of k and itself
+    auto kNormSquared = dotProduct(k, k);
+
+    // Getting magnitude of adjustment
+    double adjustmentMagnitude = std::max(0.0, (gkDotProduct - _trustRegionDivergenceConstraint) / kNormSquared);
+
+    // Adjusting gradients to trust region
+    for(size_t i = 0; i < g.size(); i++) g[i] = g[i] - adjustmentMagnitude * k[i];
 
     // Setting these gradients as inputs to the
     _policyProblem->_inputs[i] = curState;
-    _policyProblem->_solution[i] = backwardProbabilityFunction(gAcer);
+    _policyProblem->_solution[i] = g;
 
     // Keeping track of gradient averages for statistics
-    for (size_t i = 0; i < _discreteProblem->_possibleActions.size(); i++) _avgGradients[i] += gAcer[i];
+    for (size_t i = 0; i < _discreteProblem->_possibleActions.size(); i++) _avgGradients[i] += g[i];
   }
 
   // Calculating gradient statistics

@@ -71,7 +71,9 @@ e["Variables"][4]["Type"] = "Action"
 
 e["Solver"]["Type"] = "Agent/ACER"
 e["Solver"]["Importance Weight Truncation"] = 5.0
+e["Solver"]["Trust Region Divergence Constraint"] = 1.0
 e["Solver"]["Mini Batch Size"] = 64
+e["Solver"]["Trajectory Size"] = 200
 
 ### Defining Experience Replay configuration
 
@@ -117,8 +119,8 @@ e["Solver"]["Normalization Steps"] = 32
 
 e["Solver"]["Policy"]["Optimizer"]["Type"] = "Optimizer/Adam"
 e["Solver"]["Policy"]["Optimizer"]["Termination Criteria"]["Min Gradient Norm"] = -1.0
-e["Solver"]["Policy"]["Optimizer"]["Eta"] = 0.0001
-e["Solver"]["Policy"]["Adoption Rate"] = 0.99
+e["Solver"]["Policy"]["Optimizer"]["Eta"] = 0.00001
+e["Solver"]["Policy"]["Adoption Rate"] = 0.999
 
 e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
 e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Node Count"] = 4

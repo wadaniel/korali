@@ -22,7 +22,6 @@ void Agent::initialize()
   if (_k->_currentGeneration == 0)
   {
     _currentEpisode = 0;
-    _totalExperienceCount = 0;
     _currentExperienceCount = 0;
     _optimizationStepCount = 0;
     _candidatePoliciesTested = 0;
@@ -53,7 +52,6 @@ void Agent::runGeneration()
 
   // Initializing statistical information
   _currentReward = 0.0;
-  _currentExperienceCount = 0;
 
   // Launching agent
   KORALI_START(agent);
@@ -103,9 +101,6 @@ void Agent::runGeneration()
 
   // Adding to the number of episodes
   _currentEpisode++;
-
-  // Adding to the number of experiences
-  _totalExperienceCount += _currentExperienceCount;
 
   /*********************************************************************
    * Updating experience replay memory
@@ -162,8 +157,6 @@ void Agent::printGenerationAfter()
 {
   _k->_logger->logInfo("Normal", "Replay Experience Statistics:\n");
 
-  _k->_logger->logInfo("Normal", " + Episode's Experience Count:  %lu\n", _currentExperienceCount);
-
   _k->_logger->logInfo("Normal", " + Experience Memory Size:      %lu/%lu\n", _experienceReplayHistory.size(), _experienceReplayMaximumSize);
 
   if (_maxEpisodes > 0)
@@ -172,9 +165,9 @@ void Agent::printGenerationAfter()
     _k->_logger->logInfo("Normal", " + Total Episodes Count:        %lu\n", _currentEpisode);
 
   if (_maxExperiences > 0)
-    _k->_logger->logInfo("Normal", " + Total Experience Count:      %lu/%lu\n", _totalExperienceCount, _maxExperiences);
+    _k->_logger->logInfo("Normal", " + Total Experience Count:      %lu/%lu\n", _currentExperienceCount, _maxExperiences);
   else
-    _k->_logger->logInfo("Normal", " + Total Experience Count:    %lu\n", _totalExperienceCount);
+    _k->_logger->logInfo("Normal", " + Total Experience Count:    %lu\n", _currentExperienceCount);
 
   _k->_logger->logInfo("Normal", "Training Statistics:\n");
 

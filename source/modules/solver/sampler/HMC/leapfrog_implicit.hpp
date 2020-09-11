@@ -20,7 +20,11 @@ namespace sampler
 */
 class LeapfrogImplicit : public Leapfrog
 {
+  private:
+  size_t _maxNumFixedPointIter;
+
   public:
+  LeapfrogImplicit(size_t maxNumFixedPointIter) : _maxNumFixedPointIter(maxNumFixedPointIter){};
   /**
   * @brief Implicit Leapfrog stepping scheme used for evolving Hamiltonian Dynamics.
   * @param q Position which is evolved.
@@ -35,8 +39,6 @@ class LeapfrogImplicit : public Leapfrog
     {
       std::cout << "------------START OF LeapfrogImplicit Step-------------" << std::endl;
     }
-
-    size_t maxNumFixedPointIter = 8;
 
     size_t stateSpaceDim = hamiltonian->getStateSpaceDim();
     double delta = 1e-6 * stepSize;
@@ -95,9 +97,9 @@ class LeapfrogImplicit : public Leapfrog
 
       if (numIter > 10) hamiltonian->verbosity = false;
 
-    } while (deltaP > delta && numIter < maxNumFixedPointIter);
-    if (maxNumFixedPointIter <= numIter)
-      _k->_logger->logInfo("Detailed", "Maximum number (%zu) of fixed point iterations reached during implicit leapfrog scheme.\n", maxNumFixedPointIter);
+    } while (deltaP > delta && numIter < _maxNumFixedPointIter);
+    if (_maxNumFixedPointIter <= numIter)
+      _k->_logger->logInfo("Detailed", "Maximum number (%zu) of fixed point iterations reached during implicit leapfrog scheme.\n", _maxNumFixedPointIter);
 
     if (verbosity == true)
     {
@@ -109,7 +111,7 @@ class LeapfrogImplicit : public Leapfrog
     std::vector<double> qPrime(stateSpaceDim);
     std::vector<double> sigma = q;
     double deltaQ;
-    
+
     if (verbosity == true)
     {
       std::cout << "Starting FPI on q" << std::endl;
@@ -146,10 +148,10 @@ class LeapfrogImplicit : public Leapfrog
 
       q = qPrime;
       ++numIter;
-    } while (deltaQ > delta && numIter < maxNumFixedPointIter);
+    } while (deltaQ > delta && numIter < _maxNumFixedPointIter);
 
-    if (maxNumFixedPointIter <= numIter)
-      _k->_logger->logInfo("Detailed", "Maximum number (%zu) of fixed point iterations reached during implicit leapfrog scheme.\n", maxNumFixedPointIter);
+    if (_maxNumFixedPointIter <= numIter)
+      _k->_logger->logInfo("Detailed", "Maximum number (%zu) of fixed point iterations reached during implicit leapfrog scheme.\n", _maxNumFixedPointIter);
 
     if (verbosity == true)
     {

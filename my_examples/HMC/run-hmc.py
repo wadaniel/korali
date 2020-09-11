@@ -31,22 +31,22 @@ if useRiemannian:
     # e["Solver"]["Inverse Regularization Parameter"] = 0.05
     e["Solver"]["Use Diagonal Metric"] = True
     e["Solver"]["Use Adaptive Step Size"] = True
-    e["Solver"]["Step Size"] = 0.2
+    e["Solver"]["Max Num Fixed Point Iteration"] = 5
+    e["Solver"]["Step Size"] = 1.0
     e["Solver"]["Num Integration Steps"] = 20
-    e["Solver"]["Max Depth"] = 10
     e["Solver"]["Use NUTS"] = False
+    e["Solver"]["Max Depth"] = 10
     # e["Solver"]["Hamiltonian Verbosity"] = True
     # e["Solver"]["Integrator Verbosity"] = True
 
 else: 
-    e["Solver"]["Use NUTS"] = False
     e["Solver"]["Version"] = 'Euclidean'
     e["Solver"]["Use Diagonal Metric"] = True
     e["Solver"]["Use Adaptive Step Size"] = True
-    e["Solver"]["Step Size"] = 0.2
+    e["Solver"]["Step Size"] = 1.0
     e["Solver"]["Num Integration Steps"] = 20
+    e["Solver"]["Use NUTS"] = True
     e["Solver"]["Max Depth"] = 10
-    e["Solver"]["Use NUTS"] = False
     # e["Solver"]["Hamiltonian Verbosity"] = True
     # e["Solver"]["Integrator Verbosity"] = True
 

@@ -87,6 +87,6 @@ def lcauchy(s):
   x0 = 0.0
   x = s["Parameters"][0]
   gamma = 1
-  s["logP(x)"] = 2.0 * math.log(gamma) - math.log(math.pi * gamma) - math.log((x - x0)**2 + gamma ** 2)
-  s["grad(logP(x))"] = [2.0 * (x - x0) / ((x - x0)**2 + gamma ** 2)]
-  s["H(logP(x))"] = [[(-2.0 * (x - x0) ** 2 + gamma ** 2 - 4.0 * (x - x0) ** 2) / ((x - x0) ** 2 + gamma ** 2)]]
+  s["logP(x)"] = 2.0 * math.log(gamma) - math.log(math.pi) - math.log((x - x0)**2 + gamma ** 2)
+  s["grad(logP(x))"] = [-2.0 * (x - x0) / ((x - x0)**2 + gamma ** 2)]
+  s["H(logP(x))"] = [[(2.0 * (x - x0) ** 2 - 2.0 * gamma ** 2) / (((x - x0) ** 2 + gamma**2)**2)]]

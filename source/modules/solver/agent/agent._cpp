@@ -67,8 +67,9 @@ void Agent::runGeneration()
     // Listening for incoming experiences
     experience = KORALI_RECV_MSG_FROM_SAMPLE(agent);
 
-    // Setting trajectory position on the experience
+    // Setting trajectory position on the experience and whether it is the latest in the trajectory
     experience["Trajectory Position"] = trajectory.size();
+    experience["Trajectory End"] = false;
 
     // Adding experience to trajectory
     trajectory.push_back(experience);
@@ -76,6 +77,9 @@ void Agent::runGeneration()
     // If reached desired trajectory size, run an optimization step
     if (trajectory.size() == _trajectorySize)
     {
+     // Now this experience is the last in the trajectory
+     trajectory[trajectory.size()-1]["Trajectory End"] = true;
+
      // Add trajectory to experience
      _experienceReplayHistory.insert(_experienceReplayHistory.end(), trajectory.begin(), trajectory.end());
      _currentTrajectoryCount++;
@@ -181,7 +185,7 @@ void Agent::printGenerationAfter()
   else
     _k->_logger->logInfo("Normal", " + Total Experience Count:    %lu\n", _currentExperienceCount);
 
-    _k->_logger->logInfo("Normal", " + Total Trajectory Count:    %lu\n", _currentTrajectoryCount);
+  _k->_logger->logInfo("Normal", " + Total Trajectory Count:    %lu\n", _currentTrajectoryCount);
 
 
   _k->_logger->logInfo("Normal", "Training Statistics:\n");

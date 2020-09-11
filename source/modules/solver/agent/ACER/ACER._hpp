@@ -51,7 +51,12 @@ class ACER : public Agent
   /**
    * @brief Storage for statistical data of the policy gradients
    */
-  std::vector<double> _avgGradients;
+  std::vector<double> _avgCriticGradients;
+
+  /**
+   * @brief Storage for statistical data of the policy gradients
+   */
+  std::vector<double> _avgPolicyGradients;
 
   /**
    * @brief Variable to calculate the total number of actions in the action space
@@ -72,13 +77,6 @@ class ACER : public Agent
    * @return The value of Q(s,a)
    */
   double stateActionValueFunction(const std::vector<double> &state, const size_t &actionIdx);
-
-  /**
-   * @brief Calculates (recursively) the Qretrace value of a given (state/action) experience
-   * @param expId Position within the experience replay history that locates the given experience
-   * @return The value of the retrace function for the given experience
-   */
-  double qRetrace(size_t expId);
 
   /**
    * @brief Gets a random action index

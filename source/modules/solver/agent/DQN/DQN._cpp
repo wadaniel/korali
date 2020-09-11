@@ -85,7 +85,7 @@ void DQN::trainAgent()
   // Randomly selecting experiences for the mini-batch and calculating their target Q
   // Creating state history indexes to choose from
   std::vector<size_t> experienceReplayIndexes(_experienceReplayHistory.size());
-  for (size_t i = 0; i < _experienceReplayHistory.size(); i++) experienceReplayIndexes[i] = i;
+  for (size_t i = 0; i < _experienceReplayHistory.size()-1; i++) experienceReplayIndexes[i] = i;
 
   // Calculating cumulative Q*, for statistical purposes
   _cumulativeQStar = 0.0;

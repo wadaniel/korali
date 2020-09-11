@@ -23,6 +23,7 @@ void Agent::initialize()
   {
     _currentEpisode = 0;
     _currentExperienceCount = 0;
+    _currentTrajectoryCount = 0;
     _optimizationStepCount = 0;
     _candidatePoliciesTested = 0;
     _currentSampleID = 0;
@@ -57,7 +58,7 @@ void Agent::runGeneration()
   KORALI_START(agent);
 
   // Storage to keep experience information
-  std::vector<knlohmann::json> episode;
+  std::vector<knlohmann::json> trajectory;
   knlohmann::json experience;
 
   // Keep listening to incoming experiences until we reached a terminal state
@@ -66,20 +67,30 @@ void Agent::runGeneration()
     // Listening for incoming experiences
     experience = KORALI_RECV_MSG_FROM_SAMPLE(agent);
 
-    // Increasing experience counts
-    _currentExperienceCount++;
+    // Setting trajectory position on the experience
+    experience["Trajectory Position"] = trajectory.size();
 
-    // If reached initial number of experiences, check if we need to update train agent
-    if (_experienceReplayHistory.size() > _experienceReplayStartSize)
-      if (_currentExperienceCount % _agentExperiencesBetweenUpdates == 0)
-      {
-        // Perform optimization steps on the critic/policy
-        for (size_t i = 0; i < _agentOptimizationStepsPerUpdate; i++)
-          trainAgent();
+    // Adding experience to trajectory
+    trajectory.push_back(experience);
 
-        // Update the number of optimization steps, for workers to know it has been updated
-        _optimizationStepCount += _agentOptimizationStepsPerUpdate;
-      }
+    // If reached desired trajectory size, run an optimization step
+    if (trajectory.size() == _trajectorySize)
+    {
+     // Add trajectory to experience
+     _experienceReplayHistory.insert(_experienceReplayHistory.end(), trajectory.begin(), trajectory.end());
+     _currentTrajectoryCount++;
+
+     // Perform optimization steps on the critic/policy, if reached the minimum replay memory size
+     if (_experienceReplayHistory.size() > _experienceReplayStartSize)
+     for (size_t i = 0; i < _optimizationStepsPerTrajectory; i++)
+       trainAgent();
+
+      // Update the number of optimization steps, for workers to know it has been updated
+      _optimizationStepCount += _optimizationStepsPerTrajectory;
+
+      // Now cleaning trajectory, to create a new one.
+      trajectory.clear();
+    }
 
     // If agent requested new policy, send the new hyperparameters
     if (experience["Request New Policy"] == true)
@@ -88,16 +99,17 @@ void Agent::runGeneration()
     // Adding experience's reward to episode's reward
     _currentReward += experience["Reward"].get<double>();
 
-    // Storing new experience into the episode history
-    episode.push_back(experience);
+    // Increasing experience counts
+    _currentExperienceCount++;
 
   } while (experience["Is Terminal"] == false);
 
+  // Add final trajectory to experience
+  _experienceReplayHistory.insert(_experienceReplayHistory.end(), trajectory.begin(), trajectory.end());
+  _currentTrajectoryCount++;
+
   // Waiting for agent to finish
   KORALI_WAIT(agent);
-
-  // Pusing the new episode into the replay history
-  _experienceReplayHistory.insert(_experienceReplayHistory.end(), episode.begin(), episode.end());
 
   // Adding to the number of episodes
   _currentEpisode++;
@@ -168,6 +180,9 @@ void Agent::printGenerationAfter()
     _k->_logger->logInfo("Normal", " + Total Experience Count:      %lu/%lu\n", _currentExperienceCount, _maxExperiences);
   else
     _k->_logger->logInfo("Normal", " + Total Experience Count:    %lu\n", _currentExperienceCount);
+
+    _k->_logger->logInfo("Normal", " + Total Trajectory Count:    %lu\n", _currentTrajectoryCount);
+
 
   _k->_logger->logInfo("Normal", "Training Statistics:\n");
 

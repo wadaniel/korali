@@ -44,7 +44,7 @@ void ACER::initializeAgent()
   _criticExperiment["Random Seed"] = _k->_randomSeed++;
 
   // Initializing experiment with an initial zero set
-  for (size_t i = 0; i < _miniBatchSize; i++)
+  for (size_t i = 0; i < _trajectorySize; i++)
   {
     for (size_t j = 0; j < _problem->_stateVectorSize; j++)
       _criticExperiment["Problem"]["Inputs"][i][j] = 0.0;
@@ -80,7 +80,7 @@ void ACER::initializeAgent()
   _policyExperiment["Random Seed"] = _k->_randomSeed++;
 
   // Initializing experiment with an initial zero set
-  for (size_t i = 0; i < _miniBatchSize; i++)
+  for (size_t i = 0; i < _trajectorySize; i++)
   {
     for (size_t j = 0; j < _problem->_stateVectorSize; j++)
       _policyExperiment["Problem"]["Inputs"][i][j] = 0.0;
@@ -121,64 +121,6 @@ void ACER::initializeAgent()
 
   // Storage for statistics
   _avgGradients.resize(_discreteProblem->_possibleActions.size());
-}
-
-double ACER::qRetrace(size_t expId)
-{
-  // Going straight to the latest experience in the corresponding episode
-  size_t curId = expId;
-  while ( (_experienceReplayHistory[curId]["Is Terminal"] == false) && ((curId - expId) < _trajectorySize)) curId++;
-  //printf("For experience %lu, the last experience in its episode is: %lu\n", expId, curId);
-
-  // First, get the retrace value for the last experience (just the reward)
-  double retraceValue = 0.0;
-  if (_experienceReplayHistory[curId]["Is Terminal"] == false)
-  {
-   std::vector<double> curState = _experienceReplayHistory[curId]["State"];
-   retraceValue = stateValueFunction(curState);
-  }
-
-  // Now going backwards from the last, calculating the retrace value of each experience, one by one
-  while (curId > expId)
-  {
-    // Decreasing index
-    curId--;
-
-    // Getting experience's next state and action
-    std::vector<double> curState = _experienceReplayHistory[curId]["State"];
-
-    // Getting experience's next state and action
-    std::vector<double> nextState = _experienceReplayHistory[curId + 1]["State"];
-    size_t nextActionIdx = _experienceReplayHistory[curId + 1]["Metadata"]["Action Index"];
-
-    // Getting Q(s+1, a+1) for the selected experience
-    double qNextState = stateActionValueFunction(nextState, nextActionIdx);
-
-    // Getting V(s+1) for the selected experience
-    double vNextState = stateValueFunction(nextState);
-
-    // Getting p(s,a) for selected experience, given the old policy
-    double pOldExp = _experienceReplayHistory[curId + 1]["Metadata"]["Policy Densities"][nextActionIdx];
-
-    // Getting p(s,a) for the best action, given the current policy
-    double pCurExp = queryPolicy(nextState)[nextActionIdx];
-
-    // Now calculating importance weight
-    double importanceWeight = pCurExp / pOldExp;
-
-    // Now calculating truncated importance weight
-    double truncatedImportanceWeight = std::min(1.0, importanceWeight);
-
-    // Getting current reward
-    double curReward = _experienceReplayHistory[curId]["Reward"];
-
-    //printf("truncatedImportanceWeight: %f\n", truncatedImportanceWeight);
-
-    retraceValue = curReward + _criticDiscountFactor * ( truncatedImportanceWeight * (retraceValue - qNextState) + vNextState );
-  }
-
-  // Returning the retrace value of the required experience
-  return retraceValue;
 }
 
 std::vector<double> ACER::queryPolicy(const std::vector<double> &state)
@@ -281,70 +223,101 @@ double ACER::stateValueFunction(const std::vector<double> &state)
   return qSum;
 }
 
+double ACER::qRetrace(size_t expId)
+{
+  // Going straight to the latest experience in the corresponding episode
+  size_t curId = expId;
+  while ( (_experienceReplayHistory[curId]["Is Terminal"] == false) && ((curId - expId) < _trajectorySize)) curId++;
+  //printf("For experience %lu, the last experience in its episode is: %lu\n", expId, curId);
+
+  // First, get the retrace value for the last experience (just the reward)
+  double qRet = 0.0;
+  if (_experienceReplayHistory[curId]["Is Terminal"] == false)
+  {
+   std::vector<double> curState = _experienceReplayHistory[curId]["State"];
+   qRet = stateValueFunction(curState);
+  }
+
+  // Now going backwards from the last, calculating the retrace value of each experience, one by one
+  while (curId > expId)
+  {
+
+
+  }
+
+  // Returning the retrace value of the required experience
+  return qRet;
+}
+
 void ACER::trainAgent()
 {
-  // Creating storage for state history indexes to choose from
-  std::vector<size_t> experienceReplayIndexes(_experienceReplayHistory.size());
-  for (size_t i = 0; i < _experienceReplayHistory.size(); i++) experienceReplayIndexes[i] = i;
+  // Calculating cumulative Q*, for statistical purposes
+  _cumulativeQStar = 0.0;
 
-  // Shuffling indexes to choose the mini batch from
-  std::shuffle(experienceReplayIndexes.begin(), experienceReplayIndexes.end(), *mt);
+  // Creating storage for the starting index for all current trajectories
+  std::vector<size_t> trajectoryStartIndexes;
+
+  // Detecting trajectories
+  for (size_t i = 0; i < _experienceReplayHistory.size(); i++)
+   if (_experienceReplayHistory[i]["Trajectory Position"] == 0)
+    trajectoryStartIndexes.push_back(i);
 
   // Keeping average policy statistics
   for (size_t i = 0; i < _avgGradients.size(); i++) _avgGradients[i] = 0.0;
 
-  // Calculating cumulative Q*, for statistical purposes
-  _cumulativeQStar = 0.0;
+  // Storage for trajectory selections
+  std::vector<size_t> trajectories;
 
-  // Declaring engine to launch experiments
-  korali::Engine engine;
+  // Adding on-policy trajectory first
+  trajectories.push_back(trajectoryStartIndexes[trajectoryStartIndexes.size()-1]);
 
-  for (size_t i = 0; i < _miniBatchSize; i++)
+  // Shuffling indexes to choose the off-policy trajectories from
+  std::shuffle(trajectoryStartIndexes.begin(), trajectoryStartIndexes.end()-1, *mt);
+
+  // Adding off-policy trajectories
+  for (size_t i = 0; i < _offPolicyUpdates; i++)
+   trajectories.push_back(trajectoryStartIndexes[i]);
+
+  for (size_t tId = 0; tId < trajectories.size(); tId++)
   {
-   // Selecting a uniformly random selected, yet not repeated experience
-   size_t expId = experienceReplayIndexes[i];
+   size_t expId = trajectories[tId];
 
-   // Calculating Qret(state, action)
-   double qRet = qRetrace(expId);
+   // Going straight to the latest experience in the corresponding episode
+   size_t curId = expId;
+   while ( ( curId < _experienceReplayHistory.size()-1 ) &&
+           ( (curId - expId) < _trajectorySize) &&
+           ( _experienceReplayHistory[curId]["Is Terminal"] == false)) curId++;
 
-   // Getting experience's current state and action
-   std::vector<double> curState = _experienceReplayHistory[expId]["State"];
-   size_t curActionIdx = _experienceReplayHistory[expId]["Metadata"]["Action Index"];
+   // First, get the retrace value for the last experience (just the reward)
+   double qRet = 0.0;
+   if (_experienceReplayHistory[curId]["Is Terminal"] == false)
+   {
+    std::vector<double> curState = _experienceReplayHistory[curId]["State"];
+    qRet = stateValueFunction(curState);
+   }
 
-   /*****************************************
-    * Critic Section
-    *****************************************/
+   // Keeping track of the position on the minibatch
+   size_t curTrajectoryPos = 0;
 
-   // Creating storage for the gradient vector
-   std::vector<double> gCritic(_discreteProblem->_possibleActions.size(), 0);
+   while (curId > expId)
+   {
+    // Decreasing current experience index
+    curId--;
 
-   // Update the gradient vector with the value of the retrace function for g = Q-Qret
-   gCritic[curActionIdx] = qRet;
-
-   // Updating inputs to training learner
-   _criticProblem->_inputs[i] = curState;
-   _criticProblem->_solution[i] = gCritic;
-
-   // Keeping statistics
-   _cumulativeQStar += gCritic[curActionIdx];
-
-   /*****************************************
-    * Policy Section
-    *****************************************/
+    // Getting experience's state and action
+    std::vector<double> curState = _experienceReplayHistory[curId]["State"];
+    size_t curActionIdx = _experienceReplayHistory[curId]["Metadata"]["Action Index"];
 
     // Getting probability densities for current action given current policy
     auto pOldPolicy = _experienceReplayHistory[expId]["Metadata"]["Policy Densities"].get<std::vector<double>>();
 
-    // Getting probability densities for average action given current policy
+    // Getting probability densities for current action given average policy
     _policyLearner->setHyperparameters(_policyAverageHyperparameters);
     auto pAvgPolicy = queryPolicy(curState);
 
     // Getting probability densities for current action given current policy
     _policyLearner->setHyperparameters(_policyCurrentHyperparameters);
     auto pCurPolicy = queryPolicy(curState);
-
-    // Calculating V_theta(state)
-    double vState = stateValueFunction(curState);
 
     // Getting p(s,a) for selected experience, given the old policy
     double pActionOldPolicy = pOldPolicy[curActionIdx];
@@ -355,143 +328,201 @@ void ACER::trainAgent()
     // Now calculating importance weight for the old s,a experience
     double importanceWeight = pActionCurPolicy / pActionOldPolicy;
 
-    // Now calculating truncated importance weight
-    double truncatedImportanceWeight = std::min(_importanceWeightTruncation, importanceWeight);
+    // Getting current reward
+    double curReward = _experienceReplayHistory[curId]["Reward"];
 
-    // Now Calculating Acer gradient, from https://arxiv.org/pdf/1611.01224.pdf, Eq. 9
-    std::vector<double> g(_discreteProblem->_possibleActions.size(), 0.0);
+    // Updating the value of qRet for this experience
+    qRet = curReward + _discountFactor * qRet;
 
-    // Storage to calculate probability function gradients (inputs and outputs)
-    std::vector<double> gTmp(_discreteProblem->_possibleActions.size(), 0.0);
+    /*****************************************
+     * Critic Section
+     *****************************************/
 
-    // Adding the component of part one to the gradient vector
-    gTmp[curActionIdx] = (qRet - vState) / pActionCurPolicy;
-    gTmp = backwardProbabilityFunction(gTmp);
-    for(size_t i = 0; i < g.size(); i++) g[i] += truncatedImportanceWeight * gTmp[i];
+    // Creating storage for the gradient vector
+    std::vector<double> gCritic(_discreteProblem->_possibleActions.size(), 0);
 
-    ///////// Part two of the equation
+    // Update the gradient vector with the value of the retrace function for g = Q-Qret
+    gCritic[curActionIdx] = qRet;
 
-    // Getting the best action by the policy for the current state
-    for (size_t newActionIdx = 0; newActionIdx < g.size(); newActionIdx++)
-    {
-      // Calculating Qcritic(state,action)
-      double qCritic = stateActionValueFunction(curState, newActionIdx);
+    // Updating inputs to training learner
+    _criticProblem->_inputs[curTrajectoryPos] = curState;
+    _criticProblem->_solution[curTrajectoryPos] = gCritic;
 
-      // Getting p(s,a) for selected action, given the old policy
-      double pNewActionOldPolicy = pOldPolicy[newActionIdx];
+    // Keeping statistics
+    _cumulativeQStar += gCritic[curActionIdx];
 
-      // Getting p(s,a) for selected action, given the current policy
-      double pNewActionCurPolicy = pCurPolicy[newActionIdx];
+    /*****************************************
+     * Policy Section
+     *****************************************/
 
-      // Now calculating importance weight for the old s,a experience
-      double newImportanceWeight = pNewActionCurPolicy / pNewActionOldPolicy;
+     // Calculating V_theta(state)
+     double vState = stateValueFunction(curState);
 
-      // Now calculating r(a) - c / r(a) ratio
-      double importanceRatio = 1.0 - _importanceWeightTruncation / newImportanceWeight;
+     // Now calculating truncated importance weight
+     double truncatedImportanceWeight = std::min(_importanceWeightTruncation, importanceWeight);
 
-      // Now calculating the correction weight
-      double correctionWeight = importanceRatio > 0 ? importanceRatio : 0.0;
+     // Now Calculating Acer gradient, from https://arxiv.org/pdf/1611.01224.pdf, Eq. 9
+     std::vector<double> g(_discreteProblem->_possibleActions.size(), 0.0);
 
-      // Adding the component of part two to the gradient vector
-      for(size_t i = 0; i < gTmp.size(); i++) gTmp[i] = 0.0;
-      gTmp[newActionIdx] = std::log(pNewActionCurPolicy) * (qCritic - vState);
-      gTmp = backwardProbabilityFunction(gTmp);
+     // Storage to calculate probability function gradients (inputs and outputs)
+     std::vector<double> gTmp(_discreteProblem->_possibleActions.size(), 0.0);
 
-      for(size_t i = 0; i < g.size(); i++) g[i] += pNewActionCurPolicy * correctionWeight * gTmp[i];
-    }
+     // Adding the component of part one to the gradient vector
+     gTmp[curActionIdx] = (qRet - vState) / pActionCurPolicy;
+     gTmp = backwardProbabilityFunction(gTmp);
+     for(size_t i = 0; i < g.size(); i++) g[i] = truncatedImportanceWeight * gTmp[i];
 
-    // Obtaining KL Divergence gradients for the current state.
-    std::vector<double> k(_discreteProblem->_possibleActions.size());
-    for (size_t i = 0; i < k.size(); i++) k[i] = - pAvgPolicy[i] / pCurPolicy[i];
+     ///////// Part two of the equation
 
-    // Getting dot product between the gradient vector and k
-    auto gkDotProduct = dotProduct(k, g);
+     // Getting the best action by the policy for the current state
+     for (size_t newActionIdx = 0; newActionIdx < g.size(); newActionIdx++)
+     {
+       // Calculating Qcritic(state,action)
+       double qCritic = stateActionValueFunction(curState, newActionIdx);
 
-    // Getting norm(k)^2, simply by dot product of k and itself
-    auto kNormSquared = dotProduct(k, k);
+       // Getting p(s,a) for selected action, given the old policy
+       double pNewActionOldPolicy = pOldPolicy[newActionIdx];
 
-    // Getting magnitude of adjustment
-    double adjustmentMagnitude = std::max(0.0, (gkDotProduct - _trustRegionDivergenceConstraint) / kNormSquared);
+       // Getting p(s,a) for selected action, given the current policy
+       double pNewActionCurPolicy = pCurPolicy[newActionIdx];
 
-    // Adjusting gradients to trust region
-    for(size_t i = 0; i < g.size(); i++) g[i] = g[i] - adjustmentMagnitude * k[i];
+       // Now calculating importance weight for the old s,a experience
+       double newImportanceWeight = pNewActionCurPolicy / pNewActionOldPolicy;
 
-    // Setting these gradients as inputs to the
-    _policyProblem->_inputs[i] = curState;
-    _policyProblem->_solution[i] = g;
+       // Now calculating r(a) - c / r(a) ratio
+       double importanceRatio = 1.0 - _importanceWeightTruncation / newImportanceWeight;
 
-    // Keeping track of gradient averages for statistics
-    for (size_t i = 0; i < _discreteProblem->_possibleActions.size(); i++) _avgGradients[i] += g[i];
-  }
+       // Now calculating the correction weight
+       double correctionWeight = importanceRatio > 0 ? importanceRatio : 0.0;
 
-  // Calculating gradient statistics
-  for (size_t i = 0; i < _avgGradients.size(); i++) _avgGradients[i] /= _miniBatchSize;
+       // Adding the component of part two to the gradient vector
+       for(size_t i = 0; i < gTmp.size(); i++) gTmp[i] = 0.0;
+       gTmp[newActionIdx] = std::log(pNewActionCurPolicy) * (qCritic - vState);
+       gTmp = backwardProbabilityFunction(gTmp);
 
-  // Running one generation of the optimization method on the actor NN with the given mini-batch
-  _policyExperiment["Solver"]["Termination Criteria"]["Max Generations"] = _policyExperiment._currentGeneration + 1;
-  _policyLearner->initialize();
-  engine.resume(_policyExperiment);
+       for(size_t i = 0; i < g.size(); i++) g[i] += pNewActionCurPolicy * correctionWeight * gTmp[i];
+     }
 
-  // Running one generation of the critic optimization method with the given mini-batch
-  _criticExperiment["Solver"]["Termination Criteria"]["Max Generations"] = _criticExperiment._currentGeneration + 1;
-  _criticLearner->initialize();
-  engine.resume(_criticExperiment);
+     // Obtaining KL Divergence gradients for the current state.
+     std::vector<double> k(_discreteProblem->_possibleActions.size());
+     for (size_t i = 0; i < k.size(); i++) k[i] = - pAvgPolicy[i] / pCurPolicy[i];
 
-  // Keeping statistics
-  _averageQStar = (double)_cumulativeQStar / (double)(_miniBatchSize);
+     // Getting dot product between the gradient vector and k
+     auto gkDotProduct = dotProduct(k, g);
+
+     // Getting norm(k)^2, simply by dot product of k and itself
+     auto kNormSquared = dotProduct(k, k);
+
+     // Getting magnitude of adjustment
+     double adjustmentMagnitude = std::max(0.0, (gkDotProduct - _trustRegionDivergenceConstraint) / kNormSquared);
+
+     // Adjusting gradients to trust region
+     for(size_t i = 0; i < g.size(); i++) g[i] = g[i] - adjustmentMagnitude * k[i];
+
+     // Setting these gradients as inputs to the
+     _policyProblem->_inputs[curTrajectoryPos] = curState;
+     _policyProblem->_solution[curTrajectoryPos] = g;
+
+     // Keeping track of gradient averages for statistics
+     for (size_t i = 0; i < _discreteProblem->_possibleActions.size(); i++) _avgGradients[i] += g[i];
+
+     /*****************************************
+      * Updating the value of qRet
+      *****************************************/
+
+     // Getting Q(s, a) for the selected experience
+     double qCurState = stateActionValueFunction(curState, curActionIdx);
+
+     // Now calculating truncated importance weight with 1.0 as truncation factor
+     truncatedImportanceWeight = std::min(1.0, importanceWeight);
+
+     // Updating qRet
+     qRet = truncatedImportanceWeight * (qRet - qCurState) + vState;
+
+     // Increasing trajectory position
+     curTrajectoryPos++;
+   }
+
+   // Filling missing minibatch positions with zero gradient to prevent change
+   for (size_t i = curTrajectoryPos; i < _trajectorySize; i++)
+   {
+    _policyProblem->_inputs[curTrajectoryPos] = std::vector<double>(_problem->_stateVectorIndexes.size(), 0.0);
+    _policyProblem->_solution[curTrajectoryPos] = std::vector<double>(_discreteProblem->_possibleActions.size(), 0.0);
+   }
+
+   // Declaring engine to launch experiments
+   korali::Engine engine;
+
+   // Running one generation of the optimization method on the actor NN with the given mini-batch
+   _policyExperiment["Solver"]["Termination Criteria"]["Max Generations"] = _policyExperiment._currentGeneration + 1;
+   _policyLearner->initialize();
+   engine.resume(_policyExperiment);
+
+   // Running one generation of the critic optimization method with the given mini-batch
+   _criticExperiment["Solver"]["Termination Criteria"]["Max Generations"] = _criticExperiment._currentGeneration + 1;
+   _criticLearner->initialize();
+   engine.resume(_criticExperiment);
+
+   /****************************************************************************
+  * If batch normalization is being used, we need to adjust mean and variances
+  * by sampling a few more mini-batches after the optimization steps
+  ******************************************************************************/
+
+   // Creating storage for state history indexes to choose from
+   std::vector<size_t> experienceReplayIndexes(_experienceReplayHistory.size());
+   for (size_t i = 0; i < _experienceReplayHistory.size(); i++) experienceReplayIndexes[i] = i;
+
+   // Shuffling indexes to choose the mini batch from
+   std::shuffle(experienceReplayIndexes.begin(), experienceReplayIndexes.end(), *mt);
+
+   // Allocating memory for the mini batch set
+   std::vector<std::vector<std::vector<double>>> miniBatches(_normalizationSteps);
+
+   for (size_t i = 0; i < _normalizationSteps; i++)
+     miniBatches[i].resize(_trajectorySize);
+
+   for (size_t i = 0; i < _normalizationSteps; i++)
+     for (size_t j = 0; j < _trajectorySize; j++)
+       miniBatches[i][j].resize(_problem->_stateVectorSize + _problem->_actionVectorSize);
+
+   // Filling the minibatches
+   for (size_t step = 0; step < _normalizationSteps; step++)
+   {
+     // Shuffling indexes to choose the mini batch from
+     std::shuffle(experienceReplayIndexes.begin(), experienceReplayIndexes.end(), *mt);
+
+     for (size_t i = 0; i < _trajectorySize; i++)
+     {
+       // Selecting a uniformly random selected, yet not repeated experience
+       size_t expId = experienceReplayIndexes[i];
+       miniBatches[step][i] = _experienceReplayHistory[expId]["State"].get<std::vector<double>>();
+     }
+   }
+
+   _criticLearner->_trainingNeuralNetwork->normalize(miniBatches);
+   _policyLearner->_trainingNeuralNetwork->normalize(miniBatches);
+
+   // Storing new inference parameters
+   auto criticHyperparameters = _criticLearner->getHyperparameters();
+   _criticLearner->setHyperparameters(criticHyperparameters);
 
   /****************************************************************************
- * If batch normalization is being used, we need to adjust mean and variances
- * by sampling a few more mini-batches after the optimization steps
- ******************************************************************************/
+  * Updating Average Policy
+  ******************************************************************************/
 
-  // Allocating memory for the mini batch set
-  std::vector<std::vector<std::vector<double>>> miniBatches(_normalizationSteps);
+   // Getting new hyperparameters
+   _policyCurrentHyperparameters = _policyLearner->getHyperparameters();
 
-  for (size_t i = 0; i < _normalizationSteps; i++)
-    miniBatches[i].resize(_miniBatchSize);
+   // Softly adopting the new parameters, using an adoption rate
+   for (size_t i = 0; i < _policyCurrentHyperparameters.size(); i++)
+    _policyAverageHyperparameters[i] = _policyAdoptionRate*_policyAverageHyperparameters[i] + (1-_policyAdoptionRate)*_policyCurrentHyperparameters[i];
 
-  for (size_t i = 0; i < _normalizationSteps; i++)
-    for (size_t j = 0; j < _miniBatchSize; j++)
-      miniBatches[i][j].resize(_problem->_stateVectorSize + _problem->_actionVectorSize);
+   // Updating policy with new averaged parameters
+   _policyLearner->setHyperparameters(_policyCurrentHyperparameters);
 
-  // Filling the minibatches
-  for (size_t step = 0; step < _normalizationSteps; step++)
-  {
-    // Shuffling indexes to choose the mini batch from
-    std::shuffle(experienceReplayIndexes.begin(), experienceReplayIndexes.end(), *mt);
-
-    for (size_t i = 0; i < _miniBatchSize; i++)
-    {
-      // Selecting a uniformly random selected, yet not repeated experience
-      size_t expId = experienceReplayIndexes[i];
-      miniBatches[step][i] = _experienceReplayHistory[expId]["State"].get<std::vector<double>>();
-    }
+   // Storing average policy hyperparameters
+   _hyperparameters["Policy"] = _policyCurrentHyperparameters;
   }
-
-  _criticLearner->_trainingNeuralNetwork->normalize(miniBatches);
-  _policyLearner->_trainingNeuralNetwork->normalize(miniBatches);
-
-  // Storing new inference parameters
-  auto criticHyperparameters = _criticLearner->getHyperparameters();
-  _criticLearner->setHyperparameters(criticHyperparameters);
-
-  /****************************************************************************
- * Updating Trust region
- ******************************************************************************/
-
-  // Getting new hyperparameters
-  _policyCurrentHyperparameters = _policyLearner->getHyperparameters();
-
-  // Softly adopting the new parameters, using an adoption rate
-  for (size_t i = 0; i < _policyCurrentHyperparameters.size(); i++)
-   _policyAverageHyperparameters[i] = _policyAdoptionRate*_policyAverageHyperparameters[i] + (1-_policyAdoptionRate)*_policyCurrentHyperparameters[i];
-
-  // Updating policy with new averaged parameters
-  _policyLearner->setHyperparameters(_policyCurrentHyperparameters);
-
-  // Storing average policy hyperparameters
-  _hyperparameters["Policy"] = _policyCurrentHyperparameters;
 }
 
 void ACER::updateHyperparameters(const knlohmann::json &hyperparameters)

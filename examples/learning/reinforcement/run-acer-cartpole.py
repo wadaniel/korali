@@ -67,27 +67,23 @@ e["Variables"][3]["Type"] = "State"
 e["Variables"][4]["Name"] = "Push Direction"
 e["Variables"][4]["Type"] = "Action"
 
-### Configuring DQN hyperparameters
+### Configuring ACER hyperparameters
 
 e["Solver"]["Type"] = "Agent/ACER"
 e["Solver"]["Importance Weight Truncation"] = 5.0
 e["Solver"]["Trust Region Divergence Constraint"] = 1.0
-e["Solver"]["Mini Batch Size"] = 64
-e["Solver"]["Trajectory Size"] = 200
+e["Solver"]["Trajectory Size"] = 16
+e["Solver"]["Discount Factor"] = 0.99
+e["Solver"]["Off Policy Updates"] = 1
+e["Solver"]["Optimization Steps Per Trajectory"] = 1
 
 ### Defining Experience Replay configuration
 
-e["Solver"]["Experience Replay"]["Start Size"] = 500
-e["Solver"]["Experience Replay"]["Maximum Size"] = 150000
-
-### Defining the configuration of the agent
-
-e["Solver"]["Agent"]["Experiences Between Updates"] = 1
-e["Solver"]["Agent"]["Optimization Steps Per Update"] = 1
+e["Solver"]["Experience Replay"]["Start Size"] = 1500
+e["Solver"]["Experience Replay"]["Maximum Size"] = 500000
 
 ## Defining Q-Critic and Action-selection (policy) optimizers
 
-e["Solver"]["Critic"]["Discount Factor"] = 0.99
 e["Solver"]["Critic"]["Optimizer"]["Type"] = "Optimizer/Adam"
 e["Solver"]["Critic"]["Optimizer"]["Eta"] = 0.001
 
@@ -120,7 +116,7 @@ e["Solver"]["Normalization Steps"] = 32
 e["Solver"]["Policy"]["Optimizer"]["Type"] = "Optimizer/Adam"
 e["Solver"]["Policy"]["Optimizer"]["Termination Criteria"]["Min Gradient Norm"] = -1.0
 e["Solver"]["Policy"]["Optimizer"]["Eta"] = 0.00001
-e["Solver"]["Policy"]["Adoption Rate"] = 0.999
+e["Solver"]["Policy"]["Adoption Rate"] = 0.99
 
 e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
 e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Node Count"] = 4

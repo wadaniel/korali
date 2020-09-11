@@ -176,7 +176,7 @@ void DDPG::trainAgent()
 {
   // Creating storage for state history indexes to choose from
   std::vector<size_t> experienceReplayIndexes(_experienceReplayHistory.size());
-  for (size_t i = 0; i < _experienceReplayHistory.size(); i++) experienceReplayIndexes[i] = i;
+  for (size_t i = 0; i < _experienceReplayHistory.size()-1; i++) experienceReplayIndexes[i] = i;
 
   // Shuffling indexes to choose the mini batch from
   std::shuffle(experienceReplayIndexes.begin(), experienceReplayIndexes.end(), *mt);

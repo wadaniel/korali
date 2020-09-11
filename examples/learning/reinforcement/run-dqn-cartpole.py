@@ -70,16 +70,13 @@ e["Variables"][4]["Type"] = "Action"
 ### Configuring DQN hyperparameters
 
 e["Solver"]["Type"] = "Agent/DQN"
+e["Solver"]["Trajectory Size"] = 1
+e["Solver"]["Optimization Steps Per Trajectory"] = 1
 
 ### Defining Experience Replay configuration
 
 e["Solver"]["Experience Replay"]["Start Size"] = 500
 e["Solver"]["Experience Replay"]["Maximum Size"] = 150000
-
-### Defining the configuration of the agent
-
-e["Solver"]["Agent"]["Experiences Between Updates"] = 1
-e["Solver"]["Agent"]["Optimization Steps Per Update"] = 1
 
 ### Defining training policy configuration
 

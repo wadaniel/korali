@@ -93,8 +93,8 @@ e["Variables"][2]["Exploration Noise"]["Theta"] = 0.05
 e["Solver"]["Type"] = "Agent/DDPG"
 e["Solver"]["Mini Batch Size"] = 32
 e["Solver"]["Normalization Steps"] = 32
-e["Solver"]["Agent"]["Experiences Between Updates"] = 1
-e["Solver"]["Agent"]["Optimization Steps Per Update"] = 1
+e["Solver"]["Trajectory Size"] = 1
+e["Solver"]["Optimization Steps Per Trajectory"] = 1
 
 ### Defining the configuration of replay memory
 

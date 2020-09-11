@@ -14,7 +14,7 @@ from model import *
 import korali
 e = korali.Experiment()
 
-useRiemannian = False
+useRiemannian = True
 
 # Selecting problem and solver types.
 e["Problem"]["Type"] = "Sampling"
@@ -32,7 +32,7 @@ if useRiemannian:
     e["Solver"]["Use Diagonal Metric"] = True
     e["Solver"]["Use Adaptive Step Size"] = True
     e["Solver"]["Step Size"] = 0.2
-    e["Solver"]["Num Integration Steps"] = 10
+    e["Solver"]["Num Integration Steps"] = 20
     e["Solver"]["Max Depth"] = 10
     e["Solver"]["Use NUTS"] = False
     # e["Solver"]["Hamiltonian Verbosity"] = True

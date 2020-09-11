@@ -31,6 +31,7 @@ void HMC::setInitialConfiguration()
   if (!(_desiredAverageAcceptanceRate > 0.0 && _desiredAverageAcceptanceRate <= 1.0)) KORALI_LOG_ERROR("Desired Average Acceptance Rate must be in interval (0.0, 1.0] (is %lf).\n", _desiredAverageAcceptanceRate);
   if (!(_targetIntegrationTime >= 0.0)) KORALI_LOG_ERROR("Target Integration Time must be non-negative (is %lf).\n", _targetIntegrationTime);
   if (!(_numIntegrationSteps > 0)) KORALI_LOG_ERROR("Num Integration Steps must be larger equal 1 (is %zu).\n", _numIntegrationSteps);
+  if (!(_maxNumFixedPointIteration > 0)) KORALI_LOG_ERROR("Max Num Fixed Point Iterations must be larger equal 1 (is %zu).\n", _maxNumFixedPointIteration);
   if (!(_adaptiveStepSizeSpeedConstant > 0.0)) KORALI_LOG_ERROR("Adaptive Step Size Speed Constant must be positive (is %lf).\n", _adaptiveStepSizeSpeedConstant);
   if (!(_adaptiveStepSizeStabilizationConstant >= 0.0)) KORALI_LOG_ERROR("Adaptive Step Size Stabilization Constant must be non-negative (is %lf).\n", _adaptiveStepSizeStabilizationConstant);
   if (!(_adaptiveStepSizeScheduleConstant > 0.5 && _adaptiveStepSizeScheduleConstant <= 1.0)) KORALI_LOG_ERROR("Adaptive Step Size Schedule Constant must be in the interval (0.5, 1.0] (is %lf).\n", _adaptiveStepSizeScheduleConstant);
@@ -124,7 +125,7 @@ void HMC::setInitialConfiguration()
     }
 
     _hamiltonian = new HamiltonianRiemannianDiag{_dimensions, _normalGenerator, _inverseRegularizationParameter};
-    _integrator = new LeapfrogImplicit;
+    _integrator = new LeapfrogImplicit(_maxNumFixedPointIteration);
   }
   else if (_version == "Riemannian" && _useDiagonalMetric == false)
   {

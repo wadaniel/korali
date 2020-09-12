@@ -52,93 +52,62 @@ void HMC::setInitialConfiguration()
       KORALI_LOG_ERROR("Initial Mean of variable \'%s\' not defined.\n", _k->_variables[i]->_name.c_str());
     if (std::isfinite(_k->_variables[i]->_initialStandardDeviation) == false)
       KORALI_LOG_ERROR("Initial Standard Deviation of variable \'%s\' not defined.\n", _k->_variables[i]->_name.c_str());
+    _positionLeader[i] = _k->_variables[i]->_initialMean;
+  }
+
+  if (_useDiagonalMetric)
+  {
+    _metric.resize(_dimensions);
+    _inverseMetric.resize(_dimensions);
+    for (size_t i = 0; i < _dimensions; ++i)
+    {
+      _metric[i] = _k->_variables[i]->_initialStandardDeviation * _k->_variables[i]->_initialStandardDeviation;
+      _inverseMetric[i] = 1.0 / _metric[i];
+    }
+  }
+  else
+  {
+    _metric.resize(_dimensions * _dimensions, 0.0);
+    _inverseMetric.resize(_dimensions * _dimensions, 0.0);
+
+    for (size_t d = 0; d < _dimensions; ++d)
+    {
+      _metric[d * _dimensions + d] = _k->_variables[d]->_initialStandardDeviation * _k->_variables[d]->_initialStandardDeviation;
+      _inverseMetric[d * _dimensions + d] = 1.0 / _metric[d * _dimensions + d];
+    }
+
+    // Initialize multivariate normal distribution
+    _multivariateGenerator->_meanVector = std::vector<double>(_dimensions, 0.0);
+    _multivariateGenerator->_sigma = std::vector<double>(_dimensions * _dimensions, 0.0);
+
+    // Cholesky Decomposition
+    for (size_t d = 0; d < _dimensions; ++d)
+      _multivariateGenerator->_sigma[d * _dimensions + d] = sqrt(_metric[d * _dimensions + d]);
+
+    _multivariateGenerator->updateDistribution();
   }
 
   if (_version == "Static")
   {
-    _metric.resize(_dimensions);
-    _inverseMetric.resize(_dimensions);
-
     // Setting position to inital mean
-    for (size_t i = 0; i < _dimensions; ++i)
-    {
-      _positionLeader[i] = _k->_variables[i]->_initialMean;
-      _metric[i] = _k->_variables[i]->_initialStandardDeviation * _k->_variables[i]->_initialStandardDeviation;
-      _inverseMetric[i] = 1.0 / _metric[i];
-    }
-
     _hamiltonian = new HamiltonianEuclideanDiag{_dimensions, _normalGenerator};
-
     _integrator = new LeapfrogExplicit;
   }
-  else if (_version == "Euclidean" && _useDiagonalMetric == true)
+  else if (_version == "Euclidean")
   {
-    _metric.resize(_dimensions);
-    _inverseMetric.resize(_dimensions);
-
-    // Setting position to inital mean
-    for (size_t i = 0; i < _dimensions; ++i)
-    {
-      _positionLeader[i] = _k->_variables[i]->_initialMean;
-      _metric[i] = _k->_variables[i]->_initialStandardDeviation * _k->_variables[i]->_initialStandardDeviation;
-      _inverseMetric[i] = 1.0 / _metric[i];
-    }
-
-    _hamiltonian = new HamiltonianEuclideanDiag{_dimensions, _normalGenerator};
-
+    if (_useDiagonalMetric)
+      _hamiltonian = new HamiltonianEuclideanDiag{_dimensions, _normalGenerator};
+    else
+      _hamiltonian = new HamiltonianEuclideanDense{_dimensions, _multivariateGenerator};
     _integrator = new LeapfrogExplicit;
   }
-  else if (_version == "Euclidean" && _useDiagonalMetric == false)
+  else if (_version == "Riemannian")
   {
-    _metric.resize(_dimensions * _dimensions);
-    _inverseMetric.resize(_dimensions * _dimensions);
-
-    // Filling vectors of internal settings to 0.0
-    std::fill(std::begin(_metric), std::end(_metric), 0.0);
-    std::fill(std::begin(_inverseMetric), std::end(_inverseMetric), 0.0);
-
-    // Setting position to inital mean
-    for (size_t i = 0; i < _dimensions; ++i)
-    {
-      _positionLeader[i] = _k->_variables[i]->_initialMean;
-      _metric[i * _dimensions + i] = _k->_variables[i]->_initialStandardDeviation * _k->_variables[i]->_initialStandardDeviation;
-      _inverseMetric[i * _dimensions + i] = 1.0 / _metric[i * _dimensions + i];
-    }
-
-    // Initialize multivariate normal distribution
-    std::vector<double> zeroMean(_dimensions, 0.0);
-    _multivariateGenerator->_meanVector = zeroMean;
-    _multivariateGenerator->_sigma = _metric;
-
-    // Cholesky Decomposition
-    gsl_matrix_view sigma = gsl_matrix_view_array(&_multivariateGenerator->_sigma[0], _dimensions, _dimensions);
-    gsl_linalg_cholesky_decomp(&sigma.matrix);
-
-    _multivariateGenerator->updateDistribution();
-
-    _hamiltonian = new HamiltonianEuclideanDense{_dimensions, _multivariateGenerator};
-
-    _integrator = new LeapfrogExplicit;
-  }
-  else if (_version == "Riemannian" && _useDiagonalMetric == true)
-  {
-    _metric.resize(_dimensions, 0.0);
-    _inverseMetric.resize(_dimensions, 0.0);
-
-    // Setting position to inital mean
-    for (size_t i = 0; i < _dimensions; ++i)
-    {
-      _positionLeader[i] = _k->_variables[i]->_initialMean;
-      _metric[i] = _k->_variables[i]->_initialStandardDeviation * _k->_variables[i]->_initialStandardDeviation;
-      _inverseMetric[i] = 1.0 / _metric[i];
-    }
-
-    _hamiltonian = new HamiltonianRiemannianDiag{_dimensions, _normalGenerator, _inverseRegularizationParameter};
+    if (_useDiagonalMetric)
+      _hamiltonian = new HamiltonianRiemannianDiag{_dimensions, _normalGenerator, _inverseRegularizationParameter};
+    else
+      KORALI_LOG_ERROR("Riemannian Metric only supported with Diagonal Metric");
     _integrator = new LeapfrogImplicit(_maxNumFixedPointIteration);
-  }
-  else if (_version == "Riemannian" && _useDiagonalMetric == false)
-  {
-    KORALI_LOG_ERROR("Riemannian Metric only supported with Diagonal Metric");
   }
 
   _hamiltonian->verbosity = _hamiltonianVerbosity;
@@ -162,7 +131,6 @@ void HMC::setInitialConfiguration()
   _proposedSampleCount = 0;
   _chainLength = 0;
   _acceptanceRate = 1.0;
-  return;
 }
 
 void HMC::runGeneration()

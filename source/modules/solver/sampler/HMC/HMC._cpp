@@ -44,6 +44,16 @@ void HMC::setInitialConfiguration()
   _momentumLeader.resize(_dimensions);
   _momentumCandidate.resize(_dimensions);
   _positionMean.resize(_dimensions);
+  
+  // initializing variable defaults
+  for (size_t i = 0; i < _k->_variables.size(); i++)
+  {
+    if (std::isfinite(_k->_variables[i]->_initialMean) == false)
+      KORALI_LOG_ERROR("Initial Mean of variable \'%s\' not defined.\n", _k->_variables[i]->_name.c_str());
+    if (std::isfinite(_k->_variables[i]->_initialStandardDeviation) == false)
+      KORALI_LOG_ERROR("Initial Standard Deviation of variable \'%s\' not defined.\n", _k->_variables[i]->_name.c_str());
+  }
+
 
   if (_version == "Static")
   {
@@ -689,7 +699,7 @@ void HMC::printGenerationAfter()
   // Gradient
   _k->_logger->logInfo("Normal", "Gradient:\n");
   auto grad = _hamiltonian->dU();
-  for (auto &g : grad) _k->_logger->logData("Normal", "         %+6.3e  \n", g);
+  for (auto& g : grad) _k->_logger->logData("Normal", "         %+6.3e  \n", g);
 
   // Inverse Metric
   _k->_logger->logInfo("Normal", "Current Inverse Metric:\n");

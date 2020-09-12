@@ -90,3 +90,25 @@ def lcauchy(s):
   s["logP(x)"] = 2.0 * math.log(gamma) - math.log(math.pi) - math.log((x - x0)**2 + gamma ** 2)
   s["grad(logP(x))"] = [-2.0 * (x - x0) / ((x - x0)**2 + gamma ** 2)]
   s["H(logP(x))"] = [[(2.0 * (x - x0) ** 2 - 2.0 * gamma ** 2) / (((x - x0) ** 2 + gamma**2)**2)]]
+
+
+# helper
+def lognormal(x, sdev):
+    return -0.5*math.log(2*math.pi*sdev**2)-0.5*(x/sdev)**2
+
+# funnel function from paper
+def lfunnel(s):
+  param = s["Parameters"]
+  v = param[0]
+  logp = lognormal(v, 9.0)
+  for i in range(len(param)-1):
+    logp += lognormal(param[i+1], math.exp(-v))
+
+  
+  s["logP(x)"] = logp
+  #s["grad(logP(x))"] = 
+  #s["H(logP(x))"] = 
+
+
+
+

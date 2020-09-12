@@ -665,7 +665,7 @@ void HMC::printGenerationAfter()
   for (size_t d = 0; d < _dimensions; ++d) _k->_logger->logData("Detailed", "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _positionMean[d]);
   _k->_logger->logInfo("Detailed", "Current Metric:\n");
 
-  std::vector<double> metric = _hamiltonian->getMetric();
+  auto metric = _hamiltonian->getMetric();
   if (_useDiagonalMetric)
   {
     for (size_t d = 0; d < _dimensions; ++d)
@@ -686,16 +686,21 @@ void HMC::printGenerationAfter()
     }
   }
 
-  // Inverse Metric
-  _k->_logger->logInfo("Detailed", "Current Inverse Metric:\n");
+  // Gradient
+  _k->_logger->logInfo("Normal", "Gradient:\n");
+  auto grad = _hamiltonian->dU();
+  for (auto &g : grad) _k->_logger->logData("Normal", "         %+6.3e  \n", g);
 
-  std::vector<double> inverseMetric = _hamiltonian->getInverseMetric();
+  // Inverse Metric
+  _k->_logger->logInfo("Normal", "Current Inverse Metric:\n");
+
+  auto inverseMetric = _hamiltonian->getInverseMetric();
   if (_useDiagonalMetric)
   {
     for (size_t e = 0; e < _dimensions; ++e)
     {
-      _k->_logger->logData("Detailed", "         %+6.3e  ", inverseMetric[e]);
-      _k->_logger->logInfo("Detailed", "\n");
+      _k->_logger->logData("Normal", "         %+6.3e  ", inverseMetric[e]);
+      _k->_logger->logInfo("Normal", "\n");
     }
   }
   else
@@ -704,9 +709,9 @@ void HMC::printGenerationAfter()
     {
       for (size_t e = 0; e < _dimensions; ++e)
       {
-        _k->_logger->logData("Detailed", "         %+6.3e  ", inverseMetric[d * _dimensions + e]);
+        _k->_logger->logData("Normal", "         %+6.3e  ", inverseMetric[d * _dimensions + e]);
       }
-      _k->_logger->logInfo("Detailed", "\n");
+      _k->_logger->logInfo("Normal", "\n");
     }
   }
 

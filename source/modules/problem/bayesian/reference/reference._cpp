@@ -446,9 +446,9 @@ void Reference::hessianLogLikelihoodNormal(korali::Sample &sample)
   if (stdDevs.size() != Nd)
     KORALI_LOG_ERROR("This Bayesian (%s) problem requires a %lu-sized Standard Deviation array. Provided: %lu.\n", _likelihoodModel.c_str(), Nd, stdDevs.size());
   if (gradientF.size() != Nd) KORALI_LOG_ERROR("Bayesian problem requires a gradient of the Mean for each reference evaluation (provided %zu required %zu).", gradientF.size(), Nd);
-  if (gradientG.size() != Nd) KORALI_LOG_ERROR("Bayesian problem requires a gradient of the Standard Deviation for each reference evaluation (provided %zu required %zu).", gradientF.size(), Nd);
-  if (hessianF.size() != Nd) KORALI_LOG_ERROR("Bayesian problem requires a Hessian of the Mean for each reference evaluation (provided %zu required %zu).", gradientF.size(), Nd);
-  if (hessianG.size() != Nd) KORALI_LOG_ERROR("Bayesian problem requires a Hessian of the Standard Deviation for each reference evaluation (provided %zu required %zu).", gradientF.size(), Nd);
+  if (gradientG.size() != Nd) KORALI_LOG_ERROR("Bayesian problem requires a gradient of the Standard Deviation for each reference evaluation (provided %zu required %zu).", gradientG.size(), Nd);
+  if (hessianF.size() != Nd) KORALI_LOG_ERROR("Bayesian problem requires a Hessian of the Mean for each reference evaluation (provided %zu required %zu).", hessianF.size(), Nd);
+  if (hessianG.size() != Nd) KORALI_LOG_ERROR("Bayesian problem requires a Hessian of the Standard Deviation for each reference evaluation (provided %zu required %zu).", hessianG.size(), Nd);
 
   std::vector<double> hessian(Nth * Nth, 0.0);
 

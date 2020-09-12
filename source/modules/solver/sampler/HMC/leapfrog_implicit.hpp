@@ -21,19 +21,17 @@ namespace sampler
 class LeapfrogImplicit : public Leapfrog
 {
   private:
-  
   /**
   * @brief Maximum fixed point iterations during each step.
   */
   size_t _maxNumFixedPointIter;
 
   public:
-  
   /**
   * @brief Constructor for implicit leapfrog stepper.
   * @param maxNumFixedPointIter Maximum fixed point iterations.
   */
-  LeapfrogImplicit(size_t maxNumFixedPointIter) : _maxNumFixedPointIter(maxNumFixedPointIter) {} ;
+  LeapfrogImplicit(size_t maxNumFixedPointIter) : _maxNumFixedPointIter(maxNumFixedPointIter){};
   /**
   * @brief Implicit Leapfrog stepping scheme used for evolving Hamiltonian Dynamics.
   * @param q Position which is evolved.
@@ -120,7 +118,7 @@ class LeapfrogImplicit : public Leapfrog
     std::vector<double> qPrime(stateSpaceDim);
     std::vector<double> sigma = q;
     double deltaQ;
-    
+
     if (verbosity == true)
     {
       std::cout << "Starting FPI on q" << std::endl;

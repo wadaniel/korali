@@ -58,6 +58,7 @@ void NeuralNetwork::initialize()
   }
 
   // Creating forward and backward-propagation pipeline
+  for (size_t i = 0; i < layerCount; i++) _layers[i]->createHyperparameterMemory();
   for (size_t i = 0; i < layerCount; i++) _layers[i]->createForwardPipeline();
   for (size_t i = 0; i < layerCount; i++) _layers[i]->createBackwardPipeline();
 
@@ -100,11 +101,17 @@ std::vector<double> NeuralNetwork::generateInitialHyperparameters()
 
 void NeuralNetwork::setInput(const std::vector<std::vector<double>> &input)
 {
+  size_t batchSize = input.size();
   size_t inputSize = _layers[0]->_nodeCount;
+  size_t layerCount = _layers.size();
 
-  // Checking input
-  if (input.size() != _batchSize)
-    KORALI_LOG_ERROR("Input data set has a different batch size (%lu) than the one for which the NN was created for (%lu).\n", input.size(), _batchSize);
+  // If batchsize is different than existing one, re-create pipelines
+  if (batchSize != _batchSize)
+  {
+   _batchSize = batchSize;
+   for (size_t i = 0; i < layerCount; i++) _layers[i]->createForwardPipeline();
+   for (size_t i = 0; i < layerCount; i++) _layers[i]->createBackwardPipeline();
+  }
 
   for (size_t i = 0; i < input.size(); i++)
     if (input[i].size() != inputSize)
@@ -142,10 +149,6 @@ void NeuralNetwork::setHyperparameters(const std::vector<double> &hyperparameter
       // Setting weight data to the layer's weight memory
       write_to_dnnl_memory(&fParams[currPos], _layers[i]->_weightsMem);
       currPos += IC * OC;
-
-      // Copying weight mem to weight work mem, if they are not the same
-      if (_layers[i]->_weightsMem.get_desc() != _layers[i]->_weightsWorkMem.get_desc())
-        reorder(_layers[i]->_weightsMem, _layers[i]->_weightsWorkMem).execute(_stream, _layers[i]->_weightsMem, _layers[i]->_weightsWorkMem);
 
       // Setting weight data to the layer's weight memory, only if batch normalization is not being used
       if (_layers[i]->_batchNormalizationEnabled == false)

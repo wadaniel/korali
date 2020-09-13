@@ -95,7 +95,7 @@ void DeepGD::runGeneration()
 
 void DeepGD::finalize()
 {
-  _hyperparameters = _optExperiment["Results"]["Best Sample"]["Parameters"].get<std::vector<double>>();
+  _hyperparameters = _trainingNeuralNetwork->getHyperparameters();
   _normalizationMeans = _trainingNeuralNetwork->getNormalizationMeans();
   _normalizationVariances = _trainingNeuralNetwork->getNormalizationVariances();
 
@@ -179,6 +179,14 @@ void DeepGD::evaluateHyperparameters(Sample &sample, NeuralNetwork *nn, const st
   // Saving values for the loss function and its gradient
   double loss = 0.0;
   std::vector<double> lossDiff(batchSize * solutionSize);
+
+  // Assigning values to evaluation and gradients, depending on the loss function selected
+  if (_lossFunction == "Direct")
+  {
+    for (size_t i = 0; i < batchSize; i++)
+      for (size_t j = 0; j < solutionSize; j++)
+        lossDiff[i * solutionSize + j] = solution[i][j];
+  }
 
   if (_lossFunction == "Mean Squared Error")
   {

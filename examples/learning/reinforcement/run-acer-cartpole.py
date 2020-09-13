@@ -72,9 +72,9 @@ e["Variables"][4]["Type"] = "Action"
 e["Solver"]["Type"] = "Agent/ACER"
 e["Solver"]["Importance Weight Truncation"] = 5.0
 e["Solver"]["Trust Region Divergence Constraint"] = 1.0
-e["Solver"]["Trajectory Size"] = 16
+e["Solver"]["Trajectory Size"] = 32
 e["Solver"]["Discount Factor"] = 0.99
-e["Solver"]["Off Policy Updates"] = 5
+e["Solver"]["Off Policy Updates"] = 1
 e["Solver"]["Optimization Steps Per Trajectory"] = 1
 
 ### Defining Experience Replay configuration
@@ -95,21 +95,22 @@ e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Batch Normalization"]["Ena
 e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Type"] = "Layer/Dense"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Node Count"] = 32
 e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Activation Function"]["Type"] = "Elementwise/Tanh"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Batch Normalization"]["Enabled"] = False
+e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Batch Normalization"]["Enabled"] = True
 
 e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Type"] = "Layer/Dense"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Node Count"] = 32
 e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Elementwise/Tanh"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Batch Normalization"]["Enabled"] = False
+e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Batch Normalization"]["Enabled"] = True
 
 e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Type"] = "Layer/Dense"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Node Count"] = 2
 e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Elementwise/Linear"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Batch Normalization"]["Enabled"] = False
+e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Batch Normalization"]["Enabled"] = True
 
 e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Weight Initialization Scaling"] = 0.000000001
 
 e["Solver"]["Normalization Steps"] = 32
+e["Solver"]["Normalization Batch Size"] = 32
 
 ## Defining Policy Configuration
 
@@ -144,7 +145,7 @@ e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 1900
 
 ### Setting file output configuration
 
-e["File Output"]["Frequency"] = 10000
+e["File Output"]["Frequency"] = 100000
 
 ### Running Experiment
 

@@ -49,16 +49,6 @@ class ACER : public Agent
   problem::SupervisedLearning *_policyProblem;
 
   /**
-   * @brief Storage for statistical data of the policy gradients
-   */
-  std::vector<double> _avgCriticGradients;
-
-  /**
-   * @brief Storage for statistical data of the policy gradients
-   */
-  std::vector<double> _avgPolicyGradients;
-
-  /**
    * @brief Variable to calculate the total number of actions in the action space
    */
   size_t _actionCount;

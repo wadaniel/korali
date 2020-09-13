@@ -34,7 +34,7 @@ void ACER::initializeAgent()
 
   _criticExperiment["Solver"]["Type"] = "Learner/DeepGD";
   _criticExperiment["Solver"]["Optimizer"] = _criticOptimizer;
-  _criticExperiment["Solver"]["Loss Function"] = "Gradient";
+  _criticExperiment["Solver"]["Loss Function"] = "Mean Squared Error";
   _criticExperiment["Solver"]["Steps Per Generation"] = 1;
   _criticExperiment["Solver"]["Neural Network"] = _criticNeuralNetwork;
 
@@ -66,7 +66,7 @@ void ACER::initializeAgent()
   _policyExperiment["Problem"]["Type"] = "Supervised Learning";
 
   _policyExperiment["Solver"]["Type"] = "Learner/DeepGD";
-  _policyExperiment["Solver"]["Loss Function"] = "Gradient";
+  _policyExperiment["Solver"]["Loss Function"] = "Direct";
   _policyExperiment["Solver"]["Optimizer"] = _policyOptimizer;
   _policyExperiment["Solver"]["Steps Per Generation"] = 1;
   _policyExperiment["Solver"]["Neural Network"] = _policyNeuralNetwork;
@@ -102,10 +102,6 @@ void ACER::initializeAgent()
   /*********************************************************************
   * Loading/Setting Hyperparameters
   *********************************************************************/
-
-  // Keeping statistics
-  _avgCriticGradients.assign(_discreteProblem->_possibleActions.size(), 0.0);
-  _avgPolicyGradients.assign(_discreteProblem->_possibleActions.size(), 0.0);
 
   // Getting current hyperparameters
   _policyCurrentHyperparameters = _policyLearner->getHyperparameters();
@@ -243,19 +239,14 @@ void ACER::trainAgent()
   // Adding off-policy trajectories
   for (size_t i = 0; i < _offPolicyUpdates; i++) trajectories.push_back(trajectoryStartIndexes[i]);
 
-  // Storage for critic and learner gradient vectors
-  _criticGradients.assign(_criticLearner->_trainingNeuralNetwork->_hyperparameterCount, 0.0);
-  _policyGradients.assign(_policyLearner->_trainingNeuralNetwork->_hyperparameterCount, 0.0);
-
-  // Keeping statistics
-  _avgCriticGradients.assign(_discreteProblem->_possibleActions.size(), 0.0);
-  _avgPolicyGradients.assign(_discreteProblem->_possibleActions.size(), 0.0);
-
-  // Experience Counter
-  size_t expCounter = 0;
-
   for (size_t tId = 0; tId < trajectories.size(); tId++)
   {
+   // Initializing inputs and solution for the critic and policy problems
+   _criticProblem->_inputs.clear();
+   _criticProblem->_solution.clear();
+   _policyProblem->_inputs.clear();
+   _policyProblem->_solution.clear();
+
    // Getting initial experience id from the trajectory
    size_t expId = trajectories[tId];
 
@@ -264,7 +255,7 @@ void ACER::trainAgent()
    while (_experienceReplayHistory[curId]["Trajectory End"] == false) curId++;
 
    // First, get the retrace value for the last experience (just the reward)
-   double qRet = 0.0;
+   double qRet = _experienceReplayHistory[curId]["Reward"];
    if (_experienceReplayHistory[curId]["Is Terminal"] == false)
    {
     std::vector<double> curState = _experienceReplayHistory[curId]["State"];
@@ -320,23 +311,17 @@ void ACER::trainAgent()
      *****************************************/
 
     // Creating storage for the gradient vector
-    std::vector<double> gCritic(_discreteProblem->_possibleActions.size(), 0.0);
+    std::vector<double> gCritic(_discreteProblem->_possibleActions.size(), 0);
 
     // Update the gradient vector with the value of the retrace function for g = Q-Qret
-    double qDiff = qRet - qCurState;
-    gCritic[curActionIdx] = qDiff*qDiff;
+    gCritic[curActionIdx] = qRet;
 
-    // Accumulating for statistics
-    for (size_t i = 0; i < _avgCriticGradients.size(); i++) _avgCriticGradients[i] += gCritic[i];
+    // Updating inputs to training learner
+    _criticProblem->_inputs.push_back(curState);
+    _criticProblem->_solution.push_back(gCritic);
 
-    // Backward propagating the given loss function
-    _criticLearner->_evaluationNeuralNetwork->backward(gCritic);
-
-    // Getting the hyperparameter gradients
-    auto gCriticHyperparameters = _criticLearner->_evaluationNeuralNetwork->getHyperparameterGradients();
-
-    // Accumulating them into the main gradient vector
-    for (size_t i = 0; i < _criticGradients.size(); i++) _criticGradients[i] += gCriticHyperparameters[i];
+    // Keeping statistics
+    _cumulativeQStar += gCritic[curActionIdx];
 
     /*****************************************
      * Policy Section
@@ -352,14 +337,14 @@ void ACER::trainAgent()
      std::vector<double> gTmp(_discreteProblem->_possibleActions.size(), 0.0);
 
      // Adding the component of part one to the gradient vector
-     gTmp[curActionIdx] = (qRet - vCurState) / pActionCurPolicy;
+     gTmp[curActionIdx] = std::log(pActionCurPolicy) * (qRet - vCurState);
      gTmp = backwardProbabilityFunction(gTmp);
      for(size_t i = 0; i < gPolicy.size(); i++) gPolicy[i] = truncatedImportanceWeight * gTmp[i];
 
      ///////// Part two of the equation
 
      // Getting the best action by the policy for the current state
-     for (size_t newActionIdx = 0; newActionIdx < gPolicy.size(); newActionIdx++)
+     for (size_t newActionIdx = 0; newActionIdx < _discreteProblem->_possibleActions.size(); newActionIdx++)
      {
        // Calculating Qcritic(state,action)
        double qCritic = stateActionValueFunction(curState, newActionIdx);
@@ -374,10 +359,10 @@ void ACER::trainAgent()
        double newImportanceWeight = pNewActionCurPolicy / pNewActionOldPolicy;
 
        // Now calculating r(a) - c / r(a) ratio
-       double importanceRatio = 1.0 - _importanceWeightTruncation / newImportanceWeight;
+       double importanceRatio = 1.0 - (_importanceWeightTruncation / newImportanceWeight);
 
        // Now calculating the correction weight
-       double correctionWeight = importanceRatio > 0 ? importanceRatio : 0.0;
+       double correctionWeight = importanceRatio > 0.0 ? importanceRatio : 0.0;
 
        // Adding the component of part two to the gradient vector
        for(size_t i = 0; i < gTmp.size(); i++) gTmp[i] = 0.0;
@@ -403,17 +388,8 @@ void ACER::trainAgent()
      // Adjusting gradients to trust region
      for(size_t i = 0; i < gPolicy.size(); i++) gPolicy[i] = gPolicy[i] - adjustmentMagnitude * k[i];
 
-     // Accumulating for statistics
-     for (size_t i = 0; i < _avgPolicyGradients.size(); i++) _avgPolicyGradients[i] += gPolicy[i];
-
-     // Backward propagating the given loss function
-     _policyLearner->_evaluationNeuralNetwork->backward(gPolicy);
-
-     // Getting the hyperparameter gradients
-     auto gPolicyHyperparameters = _policyLearner->_evaluationNeuralNetwork->getHyperparameterGradients();
-
-     // Accumulating them into the main gradient vector
-     for (size_t i = 0; i < _policyGradients.size(); i++) _policyGradients[i] += gPolicyHyperparameters[i];
+     _policyProblem->_inputs.push_back(curState);
+     _policyProblem->_solution.push_back(gPolicy);
 
      /*****************************************
       * Updating the value of qRet
@@ -427,38 +403,65 @@ void ACER::trainAgent()
 
      // Increasing trajectory position
      curTrajectoryPos++;
-
-     // Increasing experience counter
-     expCounter++;
    }
-  }
-
-  // Calculating statistics
-  for (size_t i = 0; i < _avgCriticGradients.size(); i++) _avgCriticGradients[i] /= expCounter;
-  for (size_t i = 0; i < _avgPolicyGradients.size(); i++) _avgPolicyGradients[i] /= expCounter;
 
   // Declaring engine to launch experiments
   korali::Engine engine;
 
-  // Running one generation of the optimization method on the actor NN with the given mini-batch
-  _policyExperiment["Solver"]["Termination Criteria"]["Max Generations"] = _policyExperiment._currentGeneration + 1;
-  _policyProblem->_solution[0] = _policyGradients;
-  engine.resume(_policyExperiment);
-
-  // Running one generation of the critic optimization method with the given mini-batch
+  // Running one generation of the optimization method with the given mini-batch
   _criticExperiment["Solver"]["Termination Criteria"]["Max Generations"] = _criticExperiment._currentGeneration + 1;
-  _criticProblem->_solution[0] = _criticGradients;
+  _criticLearner->initialize();
   engine.resume(_criticExperiment);
 
+  // Running one generation of the optimization method with the given mini-batch
+  _policyExperiment["Solver"]["Termination Criteria"]["Max Generations"] = _policyExperiment._currentGeneration + 1;
+  _policyLearner->initialize();
+  engine.resume(_policyExperiment);
 
  /****************************************************************************
- * Updating Critic and Policy
+ * If batch normalization is being used, we need to adjust mean and variances
+ * by sampling a few more mini-batches after the optimization steps
  ******************************************************************************/
 
-  // Storing new Critic's hyperparameters
+  // Randomly selecting experiences for the mini-batch and calculating their target Q
+  // Creating state history indexes to choose from
+  std::vector<size_t> experienceReplayIndexes(_experienceReplayHistory.size());
+  for (size_t i = 0; i < _experienceReplayHistory.size()-1; i++) experienceReplayIndexes[i] = i;
+
+  // Allocating memory for the mini batch set
+  std::vector<std::vector<std::vector<double>>> miniBatches(_normalizationSteps);
+
+  for (size_t i = 0; i < _normalizationSteps; i++)
+    miniBatches[i].resize(_normalizationBatchSize);
+
+  for (size_t i = 0; i < _normalizationSteps; i++)
+    for (size_t j = 0; j < _normalizationBatchSize; j++)
+      miniBatches[i][j].resize(_problem->_stateVectorSize);
+
+  // Filling the minibatches
+  for (size_t step = 0; step < _normalizationSteps; step++)
+  {
+    // Shuffling indexes to choose the mini batch from
+    std::shuffle(experienceReplayIndexes.begin(), experienceReplayIndexes.end(), *mt);
+
+    for (size_t i = 0; i < _normalizationBatchSize; i++)
+    {
+      // Selecting a uniformly random selected, yet not repeated experience
+      size_t expId = experienceReplayIndexes[i];
+      miniBatches[step][i] = _experienceReplayHistory[expId]["State"].get<std::vector<double>>();
+    }
+  }
+
+  _criticLearner->_trainingNeuralNetwork->normalize(miniBatches);
+  _policyLearner->_trainingNeuralNetwork->normalize(miniBatches);
+
+  // Storing new inference parameters
   auto criticHyperparameters = _criticLearner->getHyperparameters();
-  _hyperparameters["Critic"] = criticHyperparameters;
   _criticLearner->setHyperparameters(criticHyperparameters);
+
+ /****************************************************************************
+ * Updating Policy
+ ******************************************************************************/
 
   // Getting new policy hyperparameters
   _policyCurrentHyperparameters = _policyLearner->getHyperparameters();
@@ -472,6 +475,8 @@ void ACER::trainAgent()
 
   // Storing average policy hyperparameters
   _hyperparameters["Policy"] = _policyCurrentHyperparameters;
+
+  }
 }
 
 void ACER::updateHyperparameters(const knlohmann::json &hyperparameters)
@@ -489,17 +494,6 @@ void ACER::printAgentInformation()
   _criticExperiment._logger->_verbosityLevel = _k->_logger->_verbosityLevel;
   _criticExperiment._solver->printGenerationAfter();
   _criticExperiment._logger->setVerbosityLevel("Silent");
-
-  // Printing gradient averages
-  _k->_logger->logInfo("Normal", " + Average Critic Gradients: [");
-  _k->_logger->logData("Normal", " %e", _avgCriticGradients[0]);
-  for (size_t i = 1; i < _avgCriticGradients.size(); i++) _k->_logger->logData("Normal", ", %e", _avgCriticGradients[i]);
-  _k->_logger->logData("Normal", " ]\n");
-
-  _k->_logger->logInfo("Normal", " + Average Policy Gradients: [");
-  _k->_logger->logData("Normal", " %e", _avgPolicyGradients[0]);
-  for (size_t i = 1; i < _avgPolicyGradients.size(); i++) _k->_logger->logData("Normal", ", %e", _avgPolicyGradients[i]);
-  _k->_logger->logData("Normal", " ]\n");
 }
 
 } // namespace agent

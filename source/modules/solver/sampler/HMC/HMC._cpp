@@ -592,7 +592,7 @@ void HMC::updateStateWarmup()
 }
 
 void HMC::updateStateSampling()
-{  
+{
   // Apply Step Size Jitter
   _stepSize = _dualStepSize * (1.0 + _stepSizeJitter * (2.0 * _uniformGenerator->getRandomNumber() - 1.0));
 

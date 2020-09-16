@@ -177,9 +177,6 @@ void ACER::getAction(korali::Sample &sample)
 
 size_t ACER::getRandomActionIndex()
 {
-  // Storage for action
-  std::vector<double> randomAction(_problem->_actionVectorSize);
-
   // Producing random (uniform) number to obtain a value index
   double x = _randomActionGenerator->getRandomNumber();
 
@@ -202,7 +199,7 @@ double ACER::stateValueFunction(const std::vector<double> &state)
   // Forward propagating state through the critic to get Q(s,a) for all a
   auto qEval = _criticLearner->getEvaluation(state);
 
-  // Forward propagating state through the policty to get P(s,a) for all a
+  // Forward propagating state through the policy to get P(s,a) for all a
   auto pEval = queryPolicy(state);
 
   // Calculating the sum of p(s,a)*q(s,a) for all a
@@ -275,11 +272,11 @@ void ACER::trainAgent()
     size_t curActionIdx = _experienceReplayHistory[curId]["Metadata"]["Action Index"];
 
     // Getting probability densities for current action given current policy
-    auto pOldPolicy = _experienceReplayHistory[expId]["Metadata"]["Policy Densities"].get<std::vector<double>>();
+    auto pOldPolicy = _experienceReplayHistory[expId]["Metadata"]["Policy Densities"].get<std::vector<double>>(); // PW: This should be curId
 
     // Getting probability densities for current action given average policy
     _policyLearner->setHyperparameters(_policyAverageHyperparameters);
-    auto pAvgPolicy = queryPolicy(curState);
+    auto pAvgPolicy = queryPolicy(curState); // PW: This is not used below
 
     // Getting probability densities for current action given current policy
     _policyLearner->setHyperparameters(_policyCurrentHyperparameters);

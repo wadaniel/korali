@@ -3,12 +3,16 @@
 
 int main(int argc, char *argv[])
 {
-  MPI_Init(&argc, &argv);
+  // Gathering actual arguments from MPI
+  //MPI_Init(&argc, &argv);
+
+  // Initializing environment
+  initializeEnvironment(argc, argv);
 
   auto e = korali::Experiment();
 
   e["Problem"]["Type"] = "Reinforcement Learning / Continuous";
-  //e["Problem"]["Environment Function"] = &environment;
+  e["Problem"]["Environment Function"] = &runEnvironment;
   e["Problem"]["Action Repeat"] = 1;
   e["Problem"]["Actions Between Policy Updates"] = 1;
 
@@ -20,7 +24,6 @@ int main(int argc, char *argv[])
    e["Variables"][curVariable]["Type"] = "State";
   }
 
-  curVariable++;
   e["Variables"][curVariable]["Name"] = "Curvature";
   e["Variables"][curVariable]["Type"] = "Action";
   e["Variables"][curVariable]["Lower Bound"] = -1.0;
@@ -115,14 +118,14 @@ int main(int argc, char *argv[])
 
   auto k = korali::Engine();
 
-  k["Conduit"]["Type"] = "Distributed";
-  k["Conduit"]["Workers Per Team"] = 1;
-  k["Conduit"]["Communicator"] = MPI_COMM_WORLD;
+//  k["Conduit"]["Type"] = "Distributed";
+//  k["Conduit"]["Workers Per Team"] = 1;
+//  k["Conduit"]["Communicator"] = MPI_COMM_WORLD;
   k["Profiling"]["Detail"] = "Full";
   k["Profiling"]["Frequency"] = 0.5;
 
   k.run(e);
 
-  MPI_Finalize();
+  //MPI_Finalize();
   return 0;
 }

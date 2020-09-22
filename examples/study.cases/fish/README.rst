@@ -1,36 +1,25 @@
-Running MPI Applications
-=====================================================
+Study Case: Reinforcement Learning on Fish Swimming
+=======================================================
 
-In this tutorial we show how an MPI model can be executed with Korali.
+In this study case, we replicate the fish swimming experiment from CSELab.
 
-MPI Init
+Setup
 ---------------------------
 
-Do not forget to init MPI inside the Korali application:
-
-.. code-block:: python
-
-    MPI_Init(&argc, &argv);
-
-Distributed Conduit
----------------------------
-
-Run with the `Distributed` conduit to benefit from parallelized model evaluations.
-Note that we set `Workers Per Team` to assign a team of MPI processes to the model.
-
-.. code-block:: python
-
-    k["Conduit"]["Type"] = "Distributed";
-    k["Conduit"]["Workers Per Team"] = workersPerTeam;
-    k["Profiling"]["Detail"] = "Full";
-    k["Profiling"]["Frequency"] = 0.5;
-
-Run
----------------------------
-
-Compile the script with the `Makefile`.
-Run the script with an input argument (Workers Per Team):
+1) Install CubismUP2D by running:
 
 .. code-block:: bash
 
-    ./run-tmcmc 4
+   ./install_deps.sh
+
+2) Compile the study case by running:
+
+.. code-block:: bash
+   
+  ./make -j6
+
+3) Run the test:
+
+.. code-block:: bash
+   
+  ./run_test.sh

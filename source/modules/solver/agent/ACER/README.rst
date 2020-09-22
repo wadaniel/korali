@@ -1,6 +1,6 @@
-******************************************
-Deep Deterministic Policy Gradient (DDPG)
-******************************************
+***********************************************************
+Sample Efficient Actor-Critic with Experience Replay (ACER)
+***********************************************************
 
-This solver implements Deep Deterministic Policy Gradient (DDPG) as described in https://arxiv.org/abs/1509.02971
+This solver implements ACER as described in https://arxiv.org/abs/1611.01224
 

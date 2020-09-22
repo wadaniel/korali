@@ -3,8 +3,8 @@
 
 #include "model.hpp"
 
-Simulation* _simulation;
-bool __isTraining;
+Simulation* _environment;
+bool _isTraining;
 std::mt19937 _randomGenerator;
 size_t _maxSteps;
 Shape* _object;
@@ -15,22 +15,61 @@ void runEnvironment(korali::Sample &s)
  size_t seed = s["Sample Id"];
  _randomGenerator.seed(seed);
 
- s["State"] = { 0.0 }; // Get initial state
- size_t curStep = 0;
- bool done = false; // flag to check whether simulation is done
+ // Reseting environment and setting initial conditions
+ _environment->reset();
+ setInitialConditions(_agent, _object);
 
+ // Setting initial state
+ s["State"] = { _agent->state(_object) };
+
+ // Setting initial time and step conditions
+ double t = 0; // Current time
+ double tNextAct = 0; // Time until next action
+ size_t curStep = 0; // current Step
+
+ // Starting main environment loop
+ bool done = false;
  while(done == false && curStep < _maxSteps)
  {
   // Getting new action
   s.update();
 
   // Reading new action
-  std::vector<double> action = s["Action"][0];
+  std::vector<double> action = s["Action"];
 
-  // Performing action
-  //state, reward, done, info = cart.step(action)
-  double reward = 0.0;
-  std::vector<double> state = { 1.0 };
+  // Setting action
+  _agent->act(t, action);
+
+  // Run the simulation until next action is required
+  tNextAct += _agent->getLearnTPeriod() * 0.5;
+  while (t < tNextAct)
+  {
+    const double dt = _environment->calcMaxTimestep();
+    t += dt;
+
+    // Advance simulation and check whether it is correct
+    if (_environment->advance(dt))
+    {
+      printf("Set -tend 0. This file decides the length of train sim.\n");
+      assert(false); fflush(0); abort();
+    }
+
+    // Check if simulation is done.
+    if ( isTerminal(_agent, _object) )
+    {
+      done = true;
+      break;
+    }
+  }
+
+  // Checking if it's terminal state
+  done = isTerminal(_agent, _object);
+
+  // Reward is -10 if state is terminal; otherwise obtain it from the agent's efficiency
+  double reward = done ? -10.0 : _agent->EffPDefBnd;
+
+  // Obtaining new agent state
+  std::vector<double> state = { _agent->state(_object) };
 
   // Storing reward
   s["Reward"] = reward;
@@ -38,28 +77,24 @@ void runEnvironment(korali::Sample &s)
   // Storing new state
   s["State"] = { state };
 
-  // Check termination
-  done = true;
+  // Advancing to next step
   curStep++;
  }
 }
 
 void initializeEnvironment(int argc, char* argv[])
 {
- printf("Configuring Cubism2D with the following parameters:\n");
- for(int i = 0; i < argc; i++) printf("arg: %s\n", argv[i]);
+ _maxSteps = 200;
 
- const unsigned _maxSteps = 200;
+ _environment = new Simulation(argc, argv);
+ _environment->init();
 
- _simulation = new Simulation(argc, argv);
- _simulation->init();
-
- _object = _simulation->getShapes()[0];
- _agent = dynamic_cast<StefanFish*>(_simulation->getShapes()[1] );
+ _object = _environment->getShapes()[0];
+ _agent = dynamic_cast<StefanFish*>(_environment->getShapes()[1] );
  if(_agent == nullptr) { printf("Agent was not a StefanFish!\n"); exit(-1); }
 }
 
-inline void resetIC(StefanFish* const a, Shape*const p)
+void setInitialConditions(StefanFish* a, Shape* p)
 {
   std::uniform_real_distribution<double> disA(-20./180.*M_PI, 20./180.*M_PI);
   std::uniform_real_distribution<double> disX(0, 0.5),  disY(-0.25, 0.25);
@@ -73,4 +108,20 @@ inline void resetIC(StefanFish* const a, Shape*const p)
   p->center[1] = p->center[1] - ( C[1] - p->center[1] );
   a->setCenterOfMass(C);
   a->setOrientation(SA);
+}
+
+bool isTerminal(StefanFish* a, Shape* p)
+{
+  const double X = ( a->center[0] - p->center[0] ) / a->length;
+  const double Y = ( a->center[1] - p->center[1] ) / a->length;
+  assert(X>0);
+  #if 1
+    // cylFollow
+    return std::fabs(Y)>1 || X<0.5 || X>3;
+  #else
+    // extended follow
+    // return std::fabs(Y)>1 || X<1 || X>3;
+    // restricted follow
+    return std::fabs(Y)>0.75 || X<1 || X>2;
+  #endif
 }

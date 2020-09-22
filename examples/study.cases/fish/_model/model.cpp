@@ -48,11 +48,7 @@ void runEnvironment(korali::Sample &s)
     t += dt;
 
     // Advance simulation and check whether it is correct
-    if (_environment->advance(dt))
-    {
-      printf("Set -tend 0. This file decides the length of train sim.\n");
-      assert(false); fflush(0); abort();
-    }
+    if (_environment->advance(dt)){ printf("Error during environment\n"); exit(-1); }
 
     // Check if simulation is done.
     if ( isTerminal(_agent, _object) )

@@ -259,24 +259,32 @@ void ACER::trainAgent()
     qRet = stateValueFunction(curState);
    }
 
-   // Keeping track of the position on the minibatch
-   size_t curTrajectoryPos = 0;
-
    while (curId > expId)
    {
     // Decreasing current experience index
     curId--;
 
-    // Getting experience's state and action
+    // Getting current reward
+    double curReward = _experienceReplayHistory[curId]["Reward"];
+
+    // Updating the value of qRet for this experience
+    qRet = curReward + _discountFactor * qRet;
+
+    // Getting experience's state
     std::vector<double> curState = _experienceReplayHistory[curId]["State"];
+
+    // Calculating V(state) with the current policy
+    double vCurState = stateValueFunction(curState);
+
+    // Getting experience's action
     size_t curActionIdx = _experienceReplayHistory[curId]["Metadata"]["Action Index"];
 
     // Getting probability densities for current action given current policy
-    auto pOldPolicy = _experienceReplayHistory[expId]["Metadata"]["Policy Densities"].get<std::vector<double>>(); // PW: This should be curId
+    auto pOldPolicy = _experienceReplayHistory[curId]["Metadata"]["Policy Densities"].get<std::vector<double>>(); 
 
     // Getting probability densities for current action given average policy
     _policyLearner->setHyperparameters(_policyAverageHyperparameters);
-    auto pAvgPolicy = queryPolicy(curState); // PW: This is not used below
+    auto pAvgPolicy = queryPolicy(curState);
 
     // Getting probability densities for current action given current policy
     _policyLearner->setHyperparameters(_policyCurrentHyperparameters);
@@ -291,17 +299,8 @@ void ACER::trainAgent()
     // Now calculating importance weight for the old s,a experience
     double importanceWeight = pActionCurPolicy / pActionOldPolicy;
 
-    // Getting current reward
-    double curReward = _experienceReplayHistory[curId]["Reward"];
-
     // Getting Q(s, a) for the selected experience
     double qCurState = stateActionValueFunction(curState, curActionIdx);
-
-    // Calculating V(state) with the current policy
-    double vCurState = stateValueFunction(curState);
-
-    // Updating the value of qRet for this experience
-    qRet = curReward + _discountFactor * qRet;
 
     /*****************************************
      * Critic Section
@@ -397,9 +396,6 @@ void ACER::trainAgent()
 
      // Updating qRet
      qRet = truncatedImportanceWeight * (qRet - qCurState) + vCurState;
-
-     // Increasing trajectory position
-     curTrajectoryPos++;
    }
 
   // Declaring engine to launch experiments

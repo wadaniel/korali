@@ -32,38 +32,38 @@ jobs:
 
       - restore_cache:
           keys:
-            - cache-linux-doxygen-v11
+            - cache-linux-doxygen-v12
             
       - restore_cache:
           keys:
-            - cache-linux-llvm-v11
+            - cache-linux-llvm-v12
             
       - restore_cache:
           keys:
-            - cache-linux-eigen-v11
+            - cache-linux-eigen-v12
                   
       - restore_cache:
           keys:
-            - cache-linux-gsl-v11
+            - cache-linux-gsl-v12
             
       - restore_cache:
           keys:
-            - cache-linux-oneDNN-v11
+            - cache-linux-oneDNN-v12
       
       - restore_cache:
           keys:
-            - cache-linux-libGP-v11
+            - cache-linux-libGP-v12
             
       - restore_cache:
           keys:
-            - cache-linux-rtnorm-v11
+            - cache-linux-rtnorm-v12
             
       - run:
           name: Install Doxygen
           command: ./external/install_doxygen.sh
           
       - save_cache:
-          key: cache-linux-doxygen-v11
+          key: cache-linux-doxygen-v12
           paths:
             - "~/korali/external/_doxygen/install"
                   
@@ -72,7 +72,7 @@ jobs:
           command: ./external/install_clang.sh
           
       - save_cache:
-          key: cache-linux-llvm-v11
+          key: cache-linux-llvm-v12
           paths:
             - "~/korali/external/_llvm/install"
             
@@ -81,7 +81,7 @@ jobs:
           command: ./external/install_eigen.sh
           
       - save_cache:
-          key: cache-linux-eigen-v11
+          key: cache-linux-eigen-v12
           paths:
             - "~/korali/external/eigen/install"
             
@@ -90,7 +90,7 @@ jobs:
           command: ./external/install_gsl.sh
           
       - save_cache:
-          key: cache-linux-gsl-v11
+          key: cache-linux-gsl-v12
           paths:
             - "~/korali/external/GSL/install"
       
@@ -99,7 +99,7 @@ jobs:
           command: ./external/install_oneDNN.sh
           
       - save_cache:
-          key: cache-linux-oneDNN-v11
+          key: cache-linux-oneDNN-v12
           paths:
             - "~/korali/external/oneDNN/install"
                                   
@@ -108,7 +108,7 @@ jobs:
           command: ./external/install_libGP.sh
           
       - save_cache:
-          key: cache-linux-libGP-v11
+          key: cache-linux-libGP-v12
           paths:
             - "~/korali/external/libGP/install"
             
@@ -117,7 +117,7 @@ jobs:
           command: ./external/install_rtnorm.sh
                     
       - save_cache:
-          key: cache-linux-rtnorm-v11
+          key: cache-linux-rtnorm-v12
           paths:
             - "~/korali/external/rtnorm/install"
             
@@ -157,38 +157,38 @@ jobs:
    
       - restore_cache:
           keys:
-            - cache-macos-doxygen-v11
+            - cache-macos-doxygen-v12
             
       - restore_cache:
           keys:
-            - cache-macos-llvm-v11
+            - cache-macos-llvm-v12
             
       - restore_cache:
           keys:
-            - cache-macos-eigen-v11
+            - cache-macos-eigen-v12
             
       - restore_cache:
           keys:
-            - cache-macos-gsl-v11
+            - cache-macos-gsl-v12
             
       - restore_cache:
           keys:
-            - cache-macos-oneDNN-v11
+            - cache-macos-oneDNN-v12
             
       - restore_cache:
           keys:
-            - cache-macos-libGP-v11
+            - cache-macos-libGP-v12
             
       - restore_cache:
           keys:
-            - cache-macos-rtnorm-v11
+            - cache-macos-rtnorm-v12
       
       - run:
           name: Install Doxygen
           command: ./external/install_doxygen.sh
           
       - save_cache:
-          key: cache-macos-doxygen-v11
+          key: cache-macos-doxygen-v12
           paths:
             - "~/korali/external/_doxygen/install"
                   
@@ -197,7 +197,7 @@ jobs:
           command: ./external/install_clang.sh
           
       - save_cache:
-          key: cache-macos-llvm-v11
+          key: cache-macos-llvm-v12
           paths:
             - "~/korali/external/_llvm/install"
             
@@ -206,7 +206,7 @@ jobs:
           command: ./external/install_eigen.sh
           
       - save_cache:
-          key: cache-macos-eigen-v11
+          key: cache-macos-eigen-v12
           paths:
             - "~/korali/external/eigen/install"
               
@@ -215,7 +215,7 @@ jobs:
           command: ./external/install_gsl.sh
           
       - save_cache:
-          key: cache-macos-gsl-v11
+          key: cache-macos-gsl-v12
           paths:
             - "~/korali/external/GSL/install"
       
@@ -224,7 +224,7 @@ jobs:
           command: ./external/install_oneDNN.sh
           
       - save_cache:
-          key: cache-macos-oneDNN-v11
+          key: cache-macos-oneDNN-v12
           paths:
             - "~/korali/external/oneDNN/install"
                             
@@ -233,7 +233,7 @@ jobs:
           command: ./external/install_libGP.sh
 
       - save_cache:
-          key: cache-macos-libGP-v11
+          key: cache-macos-libGP-v12
           paths:
             - "~/korali/external/libgp/install"
             
@@ -242,7 +242,7 @@ jobs:
           command: ./external/install_rtnorm.sh
                     
       - save_cache:
-          key: cache-macos-rtnorm-v11
+          key: cache-macos-rtnorm-v12
           paths:
             - "~/korali/external/rtnorm/install"
                   

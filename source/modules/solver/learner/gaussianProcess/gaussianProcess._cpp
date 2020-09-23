@@ -1,12 +1,9 @@
 #include "engine.hpp"
 #include "modules/experiment/experiment.hpp"
 #include "modules/solver/learner/gaussianProcess/gaussianProcess.hpp"
-<<<<<<< HEAD
+#include "sample/sample.hpp"
 
 #ifdef _KORALI_USE_EIGEN
-=======
-#include "sample/sample.hpp"
->>>>>>> 235b9484fe98f7b96e27d1eda86de7d4f06b11b4
 #include <Eigen/Dense>
 #endif
 

@@ -1,5 +1,5 @@
-#include "auxiliar/py2json.hpp"
 #include "sample/sample.hpp"
+#include "auxiliar/py2json.hpp"
 #include "engine.hpp"
 #include "modules/conduit/conduit.hpp"
 #include "modules/experiment/experiment.hpp"
@@ -9,7 +9,6 @@
 
 namespace korali
 {
-
 /**
  * @brief Stores all functions inserted as parameters to experiment's configuration
  */

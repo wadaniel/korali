@@ -91,15 +91,6 @@ void ACER::initializeAgent()
   _policyLearner = dynamic_cast<solver::learner::DeepGD *>(_policyExperiment._solver);
 
   /*********************************************************************
-  * Initializing Policy Probability Function
-  *********************************************************************/
-
-  _policyProbabilityFunction->_nodeCount = _discreteProblem->_possibleActions.size();
-  _policyProbabilityFunction->_nn = _criticLearner->_evaluationNeuralNetwork;
-  _policyProbabilityFunction->createForwardPipeline();
-  _policyProbabilityFunction->createBackwardPipeline();
-
-  /*********************************************************************
   * Loading/Setting Hyperparameters
   *********************************************************************/
 
@@ -116,33 +107,10 @@ void ACER::initializeAgent()
 
 std::vector<double> ACER::queryPolicy(const std::vector<double> &state)
 {
- // Forward propagating state through the critic to get Q(s,a) for all A
- auto pLogits = _policyLearner->getEvaluation(state);
-
- // Passing logits through the softmax probability function
- auto pValues = forwardProbabilityFunction(pLogits);
+ // Forward softmax probability function
+ auto pValues = _policyLearner->getEvaluation(state);
 
  return pValues;
-}
-
-std::vector<double> ACER::forwardProbabilityFunction(const std::vector<double> &logits)
-{
- // Passing logits through the probability function
- std::vector<float> fVector(logits.begin(), logits.end());
- write_to_dnnl_memory(fVector.data(), _policyProbabilityFunction->_nodeMem);
- _policyProbabilityFunction->_forwardActivationPrimitive.execute(_policyProbabilityFunction->_nn->_stream, _policyProbabilityFunction->_forwardActivationArgs);
- read_from_dnnl_memory(fVector.data(), _policyProbabilityFunction->_activationMem);
- return std::vector<double>(fVector.begin(), fVector.end());
-}
-
-std::vector<double> ACER::backwardProbabilityFunction(const std::vector<double> &gradients)
-{
- // Passing logits through the probability function
- std::vector<float> fVector(gradients.begin(), gradients.end());
- write_to_dnnl_memory(fVector.data(), _policyProbabilityFunction->_activationDiffMem);
- _policyProbabilityFunction->_backwardActivationPrimitive.execute(_policyProbabilityFunction->_nn->_stream, _policyProbabilityFunction->_backwardActivationArgs);
- read_from_dnnl_memory(fVector.data(), _policyProbabilityFunction->_nodeDiffMem);
- return std::vector<double>(fVector.begin(), fVector.end());
 }
 
 void ACER::getAction(korali::Sample &sample)
@@ -153,7 +121,7 @@ void ACER::getAction(korali::Sample &sample)
   // Producing random (uniform) number to obtain a value index
   double x = _randomActionGenerator->getRandomNumber();
 
-  // Forward propagating state through the critic to get Q(s,a) for all A
+  // Forward state to get p(a|s)
   auto pActionVector = queryPolicy(state);
 
   // Iterating over all p(s,a) to select the corresponding action
@@ -170,9 +138,6 @@ void ACER::getAction(korali::Sample &sample)
   sample["Metadata"]["Action Index"] = actionIdx;
   sample["Metadata"]["Policy Densities"] = pActionVector;
   sample["Action"] = _discreteProblem->_possibleActions[actionIdx];
-
-  for(size_t i = 0; i < pActionVector.size(); i++) {printf("%f ", pActionVector[i]);}
-  printf(" - action: %f\n", _discreteProblem->_possibleActions[actionIdx][0]);
 }
 
 size_t ACER::getRandomActionIndex()
@@ -276,18 +241,16 @@ void ACER::trainAgent()
     // Calculating V(state) with the current policy
     double vCurState = stateValueFunction(curState);
 
+    //// Computing quantities needed for updating weights
+
     // Getting experience's action
     size_t curActionIdx = _experienceReplayHistory[curId]["Metadata"]["Action Index"];
 
     // Getting probability densities for current action given current policy
     auto pOldPolicy = _experienceReplayHistory[curId]["Metadata"]["Policy Densities"].get<std::vector<double>>(); 
 
-    // Getting probability densities for current action given average policy
-    _policyLearner->setHyperparameters(_policyAverageHyperparameters);
-    auto pAvgPolicy = queryPolicy(curState);
-
     // Getting probability densities for current action given current policy
-    _policyLearner->setHyperparameters(_policyCurrentHyperparameters);
+    _policyLearner->setHyperparameters(_policyCurrentHyperparameters); // PW: why?
     auto pCurPolicy = queryPolicy(curState);
 
     // Getting p(s,a) for selected experience, given the old policy
@@ -303,23 +266,6 @@ void ACER::trainAgent()
     double qCurState = stateActionValueFunction(curState, curActionIdx);
 
     /*****************************************
-     * Critic Section
-     *****************************************/
-
-    // Creating storage for the gradient vector
-    std::vector<double> gCritic(_discreteProblem->_possibleActions.size(), 0);
-
-    // Update the gradient vector with the value of the retrace function for g = Q-Qret
-    gCritic[curActionIdx] = qRet;
-
-    // Updating inputs to training learner
-    _criticProblem->_inputs.push_back(curState);
-    _criticProblem->_solution.push_back(gCritic);
-
-    // Keeping statistics
-    _cumulativeQStar += gCritic[curActionIdx];
-
-    /*****************************************
      * Policy Section
      *****************************************/
 
@@ -329,17 +275,11 @@ void ACER::trainAgent()
      // Now Calculating Acer gradient, from https://arxiv.org/pdf/1611.01224.pdf, Eq. 9
      std::vector<double> gPolicy(_discreteProblem->_possibleActions.size(), 0.0);
 
-     // Storage to calculate probability function gradients (inputs and outputs)
-     std::vector<double> gTmp(_discreteProblem->_possibleActions.size(), 0.0);
+     // First part of the gradient vector
+     gPolicy[curActionIdx] = truncatedImportanceWeight * 1 / pActionCurPolicy * (qRet - vCurState);
 
-     // Adding the component of part one to the gradient vector
-     gTmp[curActionIdx] = std::log(pActionCurPolicy) * (qRet - vCurState);
-     gTmp = backwardProbabilityFunction(gTmp);
-     for(size_t i = 0; i < gPolicy.size(); i++) gPolicy[i] = truncatedImportanceWeight * gTmp[i];
 
-     ///////// Part two of the equation
-
-     // Getting the best action by the policy for the current state
+     // Compute the expectation for the second part of the gradient vector
      for (size_t newActionIdx = 0; newActionIdx < _discreteProblem->_possibleActions.size(); newActionIdx++)
      {
        // Calculating Qcritic(state,action)
@@ -361,16 +301,17 @@ void ACER::trainAgent()
        double correctionWeight = importanceRatio > 0.0 ? importanceRatio : 0.0;
 
        // Adding the component of part two to the gradient vector
-       for(size_t i = 0; i < gTmp.size(); i++) gTmp[i] = 0.0;
-       gTmp[newActionIdx] = std::log(pNewActionCurPolicy) * (qCritic - vCurState);
-       gTmp = backwardProbabilityFunction(gTmp);
-
-       for(size_t i = 0; i < gPolicy.size(); i++) gPolicy[i] += pNewActionCurPolicy * correctionWeight * gTmp[i];
+       gPolicy[newActionIdx] += correctionWeight * (qCritic - vCurState);
      }
 
-     // Obtaining KL Divergence gradients for the current state.
+     // Getting probability densities for current action given average policy
+     _policyLearner->setHyperparameters(_policyAverageHyperparameters);
+     auto pAvgPolicy = queryPolicy(curState);
+
+     // Obtaining KL Divergence gradients for the current state. //PW: check this
      std::vector<double> k(_discreteProblem->_possibleActions.size());
-     for (size_t i = 0; i < k.size(); i++) k[i] = - pAvgPolicy[i] / pCurPolicy[i];
+     for(size_t i = 0; i < k.size(); i++)
+      k[i] = - 1 / pCurPolicy[i];
 
      // Getting dot product between the gradient vector and k
      auto gkDotProduct = dotProduct(k, gPolicy);
@@ -382,10 +323,27 @@ void ACER::trainAgent()
      double adjustmentMagnitude = std::max(0.0, (gkDotProduct - _trustRegionDivergenceConstraint) / kNormSquared);
 
      // Adjusting gradients to trust region
-     for(size_t i = 0; i < gPolicy.size(); i++) gPolicy[i] = gPolicy[i] - adjustmentMagnitude * k[i];
+     for(size_t i = 0; i < _discreteProblem->_possibleActions.size(); i++) gPolicy[i] = gPolicy[i] - adjustmentMagnitude * k[i];
 
      _policyProblem->_inputs.push_back(curState);
      _policyProblem->_solution.push_back(gPolicy);
+
+    /*****************************************
+     * Critic Section
+     *****************************************/
+
+      // Creating storage for the gradient vector
+      std::vector<double> gCritic(_discreteProblem->_possibleActions.size(), 0);
+ 
+      // Update the gradient vector with the value of the retrace function for g  = Q-Qret 
+      gCritic[curActionIdx] = qRet; 
+ 
+      // Updating inputs to training learner
+      _criticProblem->_inputs.push_back(curState);
+      _criticProblem->_solution.push_back(gCritic);
+ 
+      // Keeping statistics
+      _cumulativeQStar += gCritic[curActionIdx];
 
      /*****************************************
       * Updating the value of qRet

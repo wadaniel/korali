@@ -74,20 +74,6 @@ class ACER : public Agent
    */
   size_t getRandomActionIndex();
 
-  /**
-   * @brief Produces a probability function value vector from a set of input logits.
-   * @param intput The input values to forward propagate
-   * @return The generated probability function values
-   */
-  std::vector<double> forwardProbabilityFunction(const std::vector<double> &logits);
-
-  /**
-   * @brief Calculates the gradient of the probability function
-   * @param output The output values to backpropagate
-   * @return The gradient of the inputs wrt the output values given
-   */
-  std::vector<double> backwardProbabilityFunction(const std::vector<double> &gradients);
-
   std::vector<double> queryPolicy(const std::vector<double> &state) override;
   void getAction(korali::Sample &sample) override;
   void updateHyperparameters(const knlohmann::json &hyperparameters) override;

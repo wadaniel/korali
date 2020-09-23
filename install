@@ -254,13 +254,6 @@ PIP_USER=$(python3 -c "import sys; hasattr(sys, 'real_prefix') or print('--user'
 log "[Korali] Checking for Pybind11 support using \"python3 -m pybind11 -h\"..."
 python3 -m pybind11 -h >> $logFile 2>&1
 if [ $? -ne 0 ]; then
-
-  if [ $INSTALLREQS -eq 0 ]; then
-   logEcho "[Korali] Error: pybind11 not found, trying to install it automatically."
-   logEcho "[Korali] Solution: Try running \"python3 -m pip install pybind11 --user\"."
-   exitWithError
-  fi
-  
   logEcho "[Korali] pybind11 not found, trying to install it automatically."
   python3 -m pip install $PIP_USER pybind11 >> $logFile 2>&1; check
 fi
@@ -270,13 +263,6 @@ fi
 log "[Korali] Checking for openAI Gym using \"python3 -c \"import gym\"\"..."
 python3 -c "import gym" >> $logFile 2>&1
 if [ $? -ne 0 ]; then
-
-  if [ $INSTALLREQS -eq 0 ]; then
-   logEcho "[Korali] Error: openAI Gym not found, trying to install it automatically."
-   logEcho "[Korali] Solution: Try running \"python3 -m pip install gym --user\"."
-   exitWithError
-  fi
-  
   logEcho "[Korali] openAI Gym not found, trying to install it automatically."
   python3 -m pip install $PIP_USER gym >> $logFile 2>&1; check
 fi

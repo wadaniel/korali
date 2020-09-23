@@ -21,4 +21,4 @@ model.o: _model/model.cpp
 .PHONY: clean
 clean:
 	$(MAKE) -C _model clean
-	$(RM) $(BINARIES) *.o *.ti *.optrpt *.txt *.h5 *.dat *.xmf
+	$(RM) $(BINARIES) *.o *.ti *.optrpt *.h5 *.dat *.xmf

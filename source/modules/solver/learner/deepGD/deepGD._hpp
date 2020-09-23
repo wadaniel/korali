@@ -1,7 +1,6 @@
 #ifndef _KORALI_SOLVER_DeepGD_HPP_
 #define _KORALI_SOLVER_DeepGD_HPP_
 
-#include "engine.hpp"
 #include "modules/experiment/experiment.hpp"
 #include "modules/neuralNetwork/neuralNetwork.hpp"
 #include "modules/problem/supervisedLearning/supervisedLearning.hpp"
@@ -17,17 +16,12 @@ class DeepGD : public Learner
 {
   public:
   /**
- * @brief Korali engine for optimizing NN weights and biases
+ * @brief Korali Problem for optimizing NN weights and biases
  */
   problem::SupervisedLearning *_problem;
 
   /**
- * @brief Korali engine for optimizing the NN's weights and biases
- */
-  korali::Engine _optEngine;
-
-  /**
- * @brief Korali engine for optimizing the NN's weights and biases
+ * @brief Korali Experiment for optimizing the NN's weights and biases
  */
   korali::Experiment _optExperiment;
 
@@ -51,9 +45,8 @@ class DeepGD : public Learner
   * @param sample The sample containing proposal NN weight/bias configuration.
   * @param nn The neural network to update
   * @param solution Solution values from which to calculate loss and differentials
-  * @param getGradients Flag that indicates whether the gradients are required
   */
-  void evaluateHyperparameters(korali::Sample &sample, NeuralNetwork *nn, const std::vector<std::vector<double>> &solution, bool getGradients = false);
+  void evaluateHyperparameters(korali::Sample &sample, NeuralNetwork *nn, const std::vector<std::vector<double>> &solution);
 
   std::vector<double> getGradients(const std::vector<double> &outputDiffs) override;
   std::vector<double> getEvaluation(const std::vector<double> &inputBatch) override;

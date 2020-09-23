@@ -1,7 +1,6 @@
 #ifndef _KORALI_SOLVERS_SAEM_H_
 #define _KORALI_SOLVERS_SAEM_H_
 
-#include "engine.hpp"
 #include "modules/problem/bayesian/latent/exponentialLatent/exponentialLatent.hpp"
 #include "modules/solver/solver.hpp"
 
@@ -17,7 +16,6 @@ class SAEM : public Solver
   public:
   void setInitialConfiguration();
 
-  Engine _engine;         //!< @brief Korali engine for running the optimization in the M step
   Experiment _experiment; //!< @brief Korali experiment for the optimization in the M step
 
   korali::problem::bayesian::latent::ExponentialLatent *_latentProblem; //!< @brief The problem instance that this SAEM is supposed to solve

@@ -6,12 +6,12 @@
 #include "modules/experiment/experiment.hpp"
 #include "modules/problem/problem.hpp"
 #include "modules/solver/solver.hpp"
+#include "sample/sample.hpp"
 #include <sys/stat.h>
 #include <sys/types.h>
 
 namespace korali
 {
-std::vector<std::function<void(Sample &)> *> _functionVector;
 std::stack<Engine *> _engineStack;
 bool isPythonActive = 0;
 

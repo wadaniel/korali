@@ -1,5 +1,6 @@
 #include "engine.hpp"
 #include "modules/solver/executor/executor.hpp"
+#include "sample/sample.hpp"
 
 namespace korali
 {

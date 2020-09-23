@@ -132,7 +132,7 @@ jobs:
             
       - run:
           name: build Korali
-          command: ./install 
+          command: cat .install.config.default | sed -e 's/=NO/=YES/g' -e 's/NJOBS=/NJOBS=8 #/g' > install.config; ./install 
 
       - run:
           name: run tests
@@ -270,7 +270,7 @@ jobs:
                   
       - run:
           name: build Korali
-          command: ./install 
+          command: cat .install.config.default | sed -e 's/=NO/=YES/g' -e 's/NJOBS=/NJOBS=4 #/g' > install.config; ./install
 
       - run:
           name: run tests

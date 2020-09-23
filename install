@@ -70,8 +70,11 @@ done
 
 ######### Environment Configuration ########
 
-# Loading Instsall Configuration
+# Loading Intsall Configuration
 
+if [ ! -f install.config ]; then
+ cp .install.config.default install.config
+fi
 source install.config
 if [ ! $? == 0 ]; then
  logEcho "[Korali] Error loading configuration from install.config."

@@ -26,7 +26,7 @@ void NeuralNetwork::initialize()
 {
 #ifndef _KORALI_USE_ONEDNN
 
-  KORALI_LOG_ERROR("OneDNN has not been properly installed to support NN operations.\n");
+  KORALI_LOG_ERROR("Korali requires OneDNN to be installed to support Neural Network / Deep Learning operations.\n");
 
 #endif
 
@@ -41,8 +41,6 @@ void NeuralNetwork::initialize()
   if (_engineKind == "GPU") _engine = engine(engine::kind::gpu, 0);
 
   _stream = stream(_engine);
-
-#endif
 
   // Checking if batch size if correct
   if (_batchSize == 0) KORALI_LOG_ERROR("You should provide an input batch size larger than zero.\n");
@@ -71,6 +69,8 @@ void NeuralNetwork::initialize()
 
   // Making sure we do not re-initialize
   _isInitialized = true;
+
+#endif
 }
 
 std::vector<double> NeuralNetwork::generateInitialHyperparameters()
@@ -413,6 +413,7 @@ void NeuralNetwork::createBackwardPipeline()
 
 void NeuralNetwork::setInput(const std::vector<std::vector<double>> &input)
 {
+#ifdef _KORALI_USE_ONEDNN
   size_t inputSize = _layers[0]->_nodeCount;
 
   // Checking input
@@ -430,6 +431,7 @@ void NeuralNetwork::setInput(const std::vector<std::vector<double>> &input)
       batchInput[i * inputSize + j] = input[i][j];
 
   write_to_dnnl_memory(batchInput.data(), _layers[0]->_nodeMem);
+#endif
 }
 
 void NeuralNetwork::setHyperparameters(const std::vector<double> &hyperparameters)
@@ -522,6 +524,11 @@ std::vector<double> NeuralNetwork::getHyperparameters()
 
 std::vector<double> NeuralNetwork::getHyperparameterGradients(const std::vector<double> &outputDifferential)
 {
+ // Reserving single-precision storage for hyperparameter gradients
+ std::vector<float> gradientVectorFloat(_hyperparameterCount);
+
+ #ifdef _KORALI_USE_ONEDNN
+
   // Converting input to float, for oneDNN to use
   std::vector<float> floatDiffs(outputDifferential.begin(), outputDifferential.end());
 
@@ -547,9 +554,6 @@ std::vector<double> NeuralNetwork::getHyperparameterGradients(const std::vector<
 
   // Wait for the computation to finalize.
   _stream.wait();
-
-  // Copying back the gradients and biases back
-  std::vector<float> gradientVectorFloat(_hyperparameterCount);
 
   // Retrieving hyperparameter gradients
   size_t currPos = 0;
@@ -579,6 +583,8 @@ std::vector<double> NeuralNetwork::getHyperparameterGradients(const std::vector<
       currPos += 2 * OC;
     }
   }
+
+  #endif
 
   // Getting the double version of the gradient vector
   std::vector<double> gradientVector(gradientVectorFloat.begin(), gradientVectorFloat.end());

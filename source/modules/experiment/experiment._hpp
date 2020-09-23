@@ -2,8 +2,8 @@
 #define _KORALI_EXPERIMENT_HPP_
 
 #include "auxiliar/koraliJson.hpp"
+#include "libco.h"
 #include "modules/module.hpp"
-#include "sample/sample.hpp"
 #include "variable/variable.hpp"
 #include <chrono>
 #include <functional>

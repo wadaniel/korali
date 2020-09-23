@@ -37,11 +37,6 @@ class GaussianProcess : public Learner
   #endif
 
   /**
-  * @brief Korali engine for optimizing the GP's parameters
-  */
-  Engine _koraliEngine;
-
-  /**
   * @brief Korali experiment for optimizing the GP's parameters
   */
   Experiment _koraliExperiment;

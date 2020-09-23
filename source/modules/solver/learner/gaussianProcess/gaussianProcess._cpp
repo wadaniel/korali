@@ -1,8 +1,12 @@
 #include "engine.hpp"
 #include "modules/experiment/experiment.hpp"
 #include "modules/solver/learner/gaussianProcess/gaussianProcess.hpp"
+<<<<<<< HEAD
 
 #ifdef _KORALI_USE_EIGEN
+=======
+#include "sample/sample.hpp"
+>>>>>>> 235b9484fe98f7b96e27d1eda86de7d4f06b11b4
 #include <Eigen/Dense>
 #endif
 
@@ -72,12 +76,13 @@ void GaussianProcess::initialize()
    _koraliExperiment["Console Output"]["Verbosity"] = "Silent";
    _koraliExperiment["Random Seed"] = _k->_randomSeed++;
 
-   // Running initialization to verify that the configuration is correct
-   _koraliEngine.initialize(_koraliExperiment);
-
    // Pass the training data from korali to the GP library
    double inData[_gpInputDimension];
    double outData;
+
+  // Running initialization to verify that the configuration is correct
+  korali::Engine engine;
+  engine.initialize(_koraliExperiment);
 
    for (size_t i = 0; i < _problem->_batchSize; ++i)
    {
@@ -121,7 +126,8 @@ void GaussianProcess::runSample(Sample &sample, libgp::GaussianProcess *gp)
 void GaussianProcess::runGeneration()
 {
   _koraliExperiment["Solver"]["Termination Criteria"]["Max Generations"] = _koraliExperiment._currentGeneration + 1;
-  _koraliEngine.resume(_koraliExperiment);
+  korali::Engine engine;
+  engine.resume(_koraliExperiment);
   _gpHyperparameters = _koraliExperiment["Results"]["Best Sample"]["Parameters"].get<std::vector<double>>();
 }
 

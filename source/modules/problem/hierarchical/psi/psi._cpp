@@ -2,6 +2,7 @@
 #include "modules/distribution/univariate/normal/normal.hpp"
 #include "modules/experiment/experiment.hpp"
 #include "modules/problem/hierarchical/psi/psi.hpp"
+#include "sample/sample.hpp"
 
 namespace korali
 {

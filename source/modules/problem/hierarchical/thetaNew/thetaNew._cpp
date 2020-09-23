@@ -1,5 +1,6 @@
 #include "modules/conduit/conduit.hpp"
 #include "modules/problem/hierarchical/thetaNew/thetaNew.hpp"
+#include "sample/sample.hpp"
 
 namespace korali
 {

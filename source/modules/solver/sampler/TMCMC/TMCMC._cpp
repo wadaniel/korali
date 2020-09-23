@@ -1,6 +1,7 @@
 #include "engine.hpp"
 #include "modules/experiment/experiment.hpp"
 #include "modules/solver/sampler/TMCMC/TMCMC.hpp"
+#include "sample/sample.hpp"
 #include <chrono>
 #include <limits>
 #include <numeric>

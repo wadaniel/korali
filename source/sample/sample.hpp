@@ -7,6 +7,7 @@
 
 #include "auxiliar/koraliJson.hpp"
 #include "auxiliar/logger.hpp"
+#include "auxiliar/py2json.hpp"
 #include "libco.h"
 #include <string>
 
@@ -23,11 +24,6 @@ class Engine;
  */
 #define KORALI_GET(TYPE, SAMPLE, ...) \
   SAMPLE.get<TYPE>(__FILE__, __LINE__, __VA_ARGS__);
-
-/**
- * @brief Stores all functions inserted as parameters to experiment's configuration
- */
-extern std::vector<std::function<void(Sample &)> *> _functionVector;
 
 /**
 * @brief Execution states of a given sample.

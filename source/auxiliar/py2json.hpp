@@ -16,11 +16,20 @@
 #include "modules/experiment/experiment.hpp"
 #include "pybind11/pybind11.h"
 #include "pybind11/stl.h"
-#include "sample/sample.hpp"
 #include <functional>
 #include <gsl/gsl_rng.h>
 #include <string>
 #include <vector>
+
+namespace korali
+{
+class Sample;
+
+/**
+ * @brief Stores all functions inserted as parameters to experiment's configuration
+ */
+extern std::vector<std::function<void(Sample &)> *> _functionVector;
+}
 
 #ifdef _KORALI_USE_MPI
   #include "mpi.h"

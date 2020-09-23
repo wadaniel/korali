@@ -1,7 +1,6 @@
 #ifndef _KORALI_AGENT_HPP_
 #define _KORALI_AGENT_HPP_
 
-#include "engine.hpp"
 #include "modules/problem/reinforcementLearning/reinforcementLearning.hpp"
 #include "modules/problem/supervisedLearning/supervisedLearning.hpp"
 #include "modules/solver/learner/deepGD/deepGD.hpp"
@@ -16,9 +15,9 @@ class Agent : public Solver
 {
   public:
   /**
- * @brief Korali engine for running internal experiments
- */
-  korali::Engine _engine;
+   * @brief Variable to keep track of the current noise added to the action
+   */
+  std::vector<double> _currentActionNoises;
 
   /**
    * @brief Pointer to training experiment's problem
@@ -36,21 +35,6 @@ class Agent : public Solver
   korali::Experiment _criticExperiment;
 
   /**
-  * @brief Korali experiment for argmax_action(Q) based on a trained Q-Network
-  */
-  korali::Experiment _actorExperiment;
-
-  /**
-   * @brief Pointer to training the actor network
-   */
-  learner::DeepGD *_actorLearner;
-
-  /**
-   * @brief Pointer to actor's experiment problem
-   */
-  problem::SupervisedLearning *_actorProblem;
-
-  /**
   * @brief Storage for the pointer to the learning problem
   */
   problem::ReinforcementLearning *_problem;
@@ -64,6 +48,13 @@ class Agent : public Solver
   * @brief Mersenne twister for the generation of shuffling numbers
   */
   std::mt19937 *mt;
+
+  /**
+   * @brief Gets a random action for the given state
+   * @param state The vector containing the current agent's state
+   * @return A vector containing the random action
+   */
+  std::vector<double> getRandomAction(const std::vector<double> &state);
 
   /**
    * @brief Gets the next action for the agent, based on the state and current policy, for training purposes (may contain noise)
@@ -80,18 +71,48 @@ class Agent : public Solver
   std::vector<double> getInferenceAction(const std::vector<double> &state);
 
   /**
-  * @brief Updates the algorithm's critic (Q), based on the new experiences
+  * @brief Trains the algorithm's critic (Q), based on the new experiences
   */
-  void updateCritic();
+  void trainCritic();
 
   /**
-  * @brief Updates the algorithm's policy, based on the new experiences
-  */
-  virtual void updatePolicy() = 0;
+   * @brief Calculates the state+action value function Q(s,a) = Expectation_s,a [ R | s,a ] of a given experience using the latest critic
+   * @param state state to evaluate
+   * @param action action to evaluate
+   * @return The value of Q(s,a)
+   */
+  double stateActionValueFunction(const std::vector<double> &state, const std::vector<double> &action);
 
   /**
-  * @brief Updates the policy's hyperparameters to calculate the next action of the agent
-  * @param hyperparameters The hyperparameters to update the policy.
+   * @brief Calculates the state value function V(s) = Expectation_a [ Q(s,a) | s ] of a given experience using the latest critic
+   * @param state state to evaluate
+   * @return The value of the V(s)
+   */
+  virtual double stateValueFunction(const std::vector<double> &state) = 0;
+
+  /**
+   * @brief Calculates the probability density of selecting the input state+action given the latest critic
+   * @param state state to evaluate
+   * @param action action to evaluate
+   * @return p(s,a | Q)
+   */
+  virtual double getStateActionProbabilityDensity(const std::vector<double> &state, const std::vector<double> &action) = 0;
+
+  /**
+   * @brief Calculates (recursively) the Qretrace value of a given (state/action) experience
+   * @param expId Position within the experience replay history that locates the given experience
+   * @return The value of the retrace function for the given experience
+   */
+  double retraceFunction(size_t expId);
+
+  /**
+  * @brief Performs the training of the algorithm's policy, based on the new experiences
+  */
+  virtual void trainPolicy() = 0;
+
+  /**
+  * @brief Updates the agent's hyperparameters
+  * @param hyperparameters The hyperparameters to update the agent.
   */
   virtual void updateHyperparameters(const knlohmann::json &hyperparameters) = 0;
 
@@ -109,9 +130,19 @@ class Agent : public Solver
   virtual std::vector<double> queryPolicy(const std::vector<double> &state) = 0;
 
   /**
+    * @brief Initializes the internal state of the policy
+    */
+  virtual void initializePolicy() = 0;
+
+  /**
  * @brief Runs a generation of the environment(s), running an action on each episode, and updating the policy.
  */
   void runGeneration() override;
+
+  /**
+   * @brief Prints information about the training policy
+   */
+  virtual void printPolicyInformation() = 0;
 
   void printGenerationAfter() override;
   void initialize() override;

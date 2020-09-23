@@ -4,7 +4,7 @@
 #include "engine.hpp"
 
 #ifdef _KORALI_USE_LIBGP
-#include "gp/gp.h"
+  #include "gp/gp.h"
 #endif
 
 #include "modules/experiment/experiment.hpp"
@@ -29,26 +29,26 @@ class GaussianProcess : public Learner
   */
   problem::SupervisedLearning *_problem;
 
-  #ifdef _KORALI_USE_LIBGP
+#ifdef _KORALI_USE_LIBGP
   /**
   * @brief Pointer to the gaussian processes library
   */
   std::unique_ptr<libgp::GaussianProcess> _gp;
-  #endif
+#endif
 
   /**
   * @brief Korali experiment for optimizing the GP's parameters
   */
   Experiment _koraliExperiment;
 
-  #ifdef _KORALI_USE_LIBGP
+#ifdef _KORALI_USE_LIBGP
   /**
   * @brief Model function to evaluate the error function of the GP
   * @param sample The sample containing the proposal parameters
   * @param gp Pointer to the GP
   */
   static void runSample(Sample &sample, libgp::GaussianProcess *gp);
-  #endif
+#endif
 
   std::vector<double> getEvaluation(const std::vector<double> &input) override;
   std::vector<double> getHyperparameters() override;

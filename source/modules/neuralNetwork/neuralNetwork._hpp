@@ -26,6 +26,8 @@ class NeuralNetwork : public Module
    */
   dnnl::stream _stream;
 
+#endif
+
   /**
    * @brief Flag to make sure the NN is initialized before creating
    */
@@ -40,8 +42,6 @@ class NeuralNetwork : public Module
    * @brief Number of normalization parameters (mean/variance)
    */
   size_t _normalizationParameterCount;
-
-#endif
 
   void initialize() override;
 

@@ -209,6 +209,8 @@ std::vector<double> NeuralNetwork::getHyperparameters()
 
 void NeuralNetwork::backward(const std::vector<double> &outputDifferential)
 {
+#ifdef _KORALI_USE_ONEDNN
+
   // Running backward propagation
   size_t layerCount = _layers.size();
   size_t lastLayer = layerCount - 1;
@@ -237,6 +239,8 @@ void NeuralNetwork::backward(const std::vector<double> &outputDifferential)
 
   // Wait for the computation to finalize.
   _stream.wait();
+
+#endif
 }
 
 std::vector<double> NeuralNetwork::getNormalizationMeans()

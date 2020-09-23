@@ -77,10 +77,6 @@ jobs:
             - "~/korali/external/_llvm/install"
             
       - run:
-          name: Install CMake
-          command: ./external/install_CMake.sh
-          
-      - run:
           name: Install Eigen
           command: ./external/install_eigen.sh
           
@@ -205,10 +201,6 @@ jobs:
           paths:
             - "~/korali/external/_llvm/install"
             
-      - run:
-          name: Install CMake
-          command: ./external/install_CMake.sh 
-        
       - run:
           name: Install Eigen
           command: ./external/install_eigen.sh

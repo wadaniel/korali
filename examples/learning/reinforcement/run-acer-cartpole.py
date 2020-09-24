@@ -72,9 +72,9 @@ e["Variables"][4]["Type"] = "Action"
 e["Solver"]["Type"] = "Agent/ACER"
 e["Solver"]["Importance Weight Truncation"] = 5.0
 e["Solver"]["Trust Region Divergence Constraint"] = 1.0
-e["Solver"]["Trajectory Size"] = 32
-e["Solver"]["Discount Factor"] = 0.99
-e["Solver"]["Off Policy Updates"] = 1
+e["Solver"]["Trajectory Size"] = 1000
+e["Solver"]["Discount Factor"] = 0.995
+e["Solver"]["Off Policy Updates"] = 8
 e["Solver"]["Optimization Steps Per Trajectory"] = 1
 
 ### Defining Experience Replay configuration
@@ -85,7 +85,7 @@ e["Solver"]["Experience Replay"]["Maximum Size"] = 500000
 ## Defining Q-Critic and Action-selection (policy) optimizers
 
 e["Solver"]["Critic"]["Optimizer"]["Type"] = "Optimizer/Adam"
-e["Solver"]["Critic"]["Optimizer"]["Eta"] = 0.001
+e["Solver"]["Critic"]["Optimizer"]["Eta"] = 0.00001
 
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Node Count"] = 4
@@ -116,7 +116,7 @@ e["Solver"]["Normalization Batch Size"] = 32
 
 e["Solver"]["Policy"]["Optimizer"]["Type"] = "Optimizer/Adam"
 e["Solver"]["Policy"]["Optimizer"]["Termination Criteria"]["Min Gradient Norm"] = -1.0
-e["Solver"]["Policy"]["Optimizer"]["Eta"] = 0.0001
+e["Solver"]["Policy"]["Optimizer"]["Eta"] = 0.00001
 e["Solver"]["Policy"]["Adoption Rate"] = 0.99
 
 e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
@@ -135,7 +135,7 @@ e["Solver"]["Policy"]["Neural Network"]["Layers"][2]["Activation Function"]["Alp
 
 e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Type"] = "Layer/Dense"
 e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Node Count"] = 2
-e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Elementwise/Linear" 
+e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Softmax" 
 
 ### Defining Termination Criteria
 

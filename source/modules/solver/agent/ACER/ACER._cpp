@@ -356,6 +356,8 @@ void ACER::trainAgent()
      qRet = truncatedImportanceWeight * (qRet - qCurState) + vCurState;
    }
 
+   //_cumulativeQStar /= _criticProblem->_solution.size();
+
   // Declaring engine to launch experiments
   korali::Engine engine;
 

@@ -195,11 +195,13 @@ void HMC::runGenerationHMC(const double logUniSample)
   const double newK = _hamiltonian->K(_momentumCandidate);
   const double newU = _hamiltonian->U();
 
+  printf("oldU %lf -- newU %lf\n", oldU, newU);
   const double logAlpha = std::min(0.0, -(newK - oldK + newU - oldU));
   _acceptanceProbability = std::exp(logAlpha);
 
   if (logUniSample <= logAlpha)
   {
+    printf("accepted\n");
     ++_acceptanceCount;
     _positionLeader = _positionCandidate;
   }

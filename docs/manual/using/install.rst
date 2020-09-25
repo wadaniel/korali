@@ -22,17 +22,27 @@ Installation Steps
      cd korali
      ./install
 
-  For a faster installation, you can build Korali with parallel jobs. E.g.,
+Advanced Configuration
+=========================
+     
+If you need to access the advanced installation configuration, just create a installation configuration file:
+
 
   .. code-block:: bash
    
-     ./install --jobs=8
+     cp .install.config.default install.config
+     
+Inside its file you can customize settings that enable/disable external libraries or set the number of parallel compilation job, among other options. To edit its contents run, for example:
 
-  If you are missing any prerequsites, you can ask Korali to install them automatically via:
-
-  .. code-block:: bash
+   .. code-block:: bash
    
-     ./install --prereqs
+    vi install.config
+    
+And now you can install Korali (add the --rebuild flag to override any previous installation):
+
+   .. code-block:: bash
+   
+     ./install --rebuild
 
 Troubleshooting
 ====================

@@ -25,7 +25,7 @@ LDFLAGS += $(PYTHONLIBS)
 DEPFLAGS = -MT $@ -MD -MP -MF $(DEPDIR)/$*.Td
 
 COMPILE.cc = $(CXX) $(DEPFLAGS) $(CXXFLAGS) -fPIC -c -o $@
-LINK.o = $(CXX) $(LDFLAGS) $(LDLIBS) -o $@
+LINK.o = $(CXX) -o $@
 PRECOMPILE =
 POSTCOMPILE = @mv -f $(DEPDIR)/$*.Td $(DEPDIR)/$*.d
 
@@ -58,7 +58,7 @@ build:
 	@for buildfile in $(BUILDFILES); do python3 $$buildfile; done
 
 libkorali.so: $(OBJS)
-	$(LINK.o) $^
+	$(LINK.o) $^ $(LDFLAGS) $(LDLIBS)
 
 $(OBJDIR)/%.o: %.cpp
 $(OBJDIR)/%.o: %.cpp $(DEPDIR)/%.d

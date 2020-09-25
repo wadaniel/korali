@@ -101,6 +101,8 @@ std::vector<double> NeuralNetwork::generateInitialHyperparameters()
 
 void NeuralNetwork::setInput(const std::vector<std::vector<double>> &input)
 {
+#ifdef _KORALI_USE_ONEDNN
+
   size_t batchSize = input.size();
   size_t inputSize = _layers[0]->_nodeCount;
   size_t layerCount = _layers.size();
@@ -124,6 +126,7 @@ void NeuralNetwork::setInput(const std::vector<std::vector<double>> &input)
       batchInput[i * inputSize + j] = input[i][j];
 
   write_to_dnnl_memory(batchInput.data(), _layers[0]->_nodeMem);
+#endif
 }
 
 void NeuralNetwork::setHyperparameters(const std::vector<double> &hyperparameters)
@@ -412,6 +415,8 @@ std::vector<double> NeuralNetwork::getHyperparameterGradients()
   // Copying back the gradients and biases back
   std::vector<float> gradientVectorFloat(_hyperparameterCount);
 
+#ifdef _KORALI_USE_ONEDNN
+
   // Retrieving hyperparameter gradients
   size_t currPos = 0;
   size_t layerCount = _layers.size();
@@ -443,6 +448,8 @@ std::vector<double> NeuralNetwork::getHyperparameterGradients()
       currPos += 2 * OC;
     }
   }
+
+#endif
 
   // Getting the double version of the gradient vector
   std::vector<double> gradientVector(gradientVectorFloat.begin(), gradientVectorFloat.end());

@@ -106,6 +106,7 @@ e["Solver"]["Experience Replay"]["Maximum Size"] = 100000
 e["Solver"]["Critic"]["Optimizer"]["Type"] = "Optimizer/Adam"
 e["Solver"]["Critic"]["Optimizer"]["Eta"] = 0.01
 e["Solver"]["Critic"]["Discount Factor"] = 0.99
+e["Solver"]["Critic"]["Adoption Rate"] = 0.5
 
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Node Count"] = 3
@@ -131,6 +132,7 @@ e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Weight Initialization Scal
 e["Solver"]["Policy"]["Optimizer"]["Type"] = "Optimizer/Adam"
 e["Solver"]["Policy"]["Optimizer"]["Termination Criteria"]["Min Gradient Norm"] = -1.0
 e["Solver"]["Policy"]["Optimizer"]["Eta"] = 0.0001
+e["Solver"]["Policy"]["Adoption Rate"] = 0.9
 
 e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
 e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Node Count"] = 1

@@ -85,7 +85,7 @@ e["Solver"]["Experience Replay"]["Maximum Size"] = 500000
 ## Defining Q-Critic and Action-selection (policy) optimizers
 
 e["Solver"]["Critic"]["Optimizer"]["Type"] = "Optimizer/Adam"
-e["Solver"]["Critic"]["Optimizer"]["Eta"] = 0.00001
+e["Solver"]["Critic"]["Optimizer"]["Eta"] = 0.001
 
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Node Count"] = 4
@@ -116,7 +116,7 @@ e["Solver"]["Normalization Batch Size"] = 32
 
 e["Solver"]["Policy"]["Optimizer"]["Type"] = "Optimizer/Adam"
 e["Solver"]["Policy"]["Optimizer"]["Termination Criteria"]["Min Gradient Norm"] = -1.0
-e["Solver"]["Policy"]["Optimizer"]["Eta"] = 0.00001
+e["Solver"]["Policy"]["Optimizer"]["Eta"] = 0.001
 e["Solver"]["Policy"]["Adoption Rate"] = 0.99
 
 e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"

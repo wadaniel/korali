@@ -74,8 +74,8 @@ void Agent::runGeneration()
     // Adding experience to trajectory
     trajectory.push_back(experience);
 
-    // If reached desired trajectory size, run an optimization step
-    if (trajectory.size() == _trajectorySize)
+    // If reached desired trajectory size or last experience of the episode, run an optimization step
+    if (trajectory.size() == _trajectorySize || experience["Is Terminal"] == true)
     {
      // Now this experience is the last in the trajectory
      trajectory[trajectory.size()-1]["Trajectory End"] = true;

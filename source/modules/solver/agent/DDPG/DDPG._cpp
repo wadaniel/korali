@@ -207,10 +207,10 @@ void DDPG::trainAgent()
    bool isTerminal = _experienceReplayHistory[expId]["Is Terminal"];
 
    // Getting experience's current state and action
-   std::vector<double> curState = _experienceReplayHistory[expId]["State"];
-   std::vector<double> curAction = _experienceReplayHistory[expId]["Action"];
-   std::vector<double> nextState = isTerminal ?  std::vector<double>() : _experienceReplayHistory[expId + 1]["State"].get<std::vector<double>>();
-   std::vector<double> nextAction = isTerminal ? std::vector<double>() : _experienceReplayHistory[expId + 1]["Action"].get<std::vector<double>>();
+   std::vector<double> curState   = _experienceReplayHistory[expId]["State"];
+   std::vector<double> curAction  = _experienceReplayHistory[expId]["Action"];
+   std::vector<double> nextState  = isTerminal ? std::vector<double>() : _experienceReplayHistory[expId + 1]["State"].get<std::vector<double>>();
+   std::vector<double> bestAction = isTerminal ? std::vector<double>() : queryPolicy(nextState);
 
    // Getting current reward
    double curReward = _experienceReplayHistory[expId]["Reward"].get<double>();
@@ -223,7 +223,7 @@ void DDPG::trainAgent()
    double qStar = curReward;
 
    // If state is not terminal (next state is filled) then add Qnew to the Q value.
-   if (isTerminal == false) qStar += _criticDiscountFactor * stateActionValueFunction(nextState, nextAction);
+   if (isTerminal == false) qStar += _criticDiscountFactor * stateActionValueFunction(nextState, bestAction);
 
    // Updating inputs to training learner
    _criticProblem->_inputs[i] = curState;

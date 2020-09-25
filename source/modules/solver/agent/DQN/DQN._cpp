@@ -117,9 +117,9 @@ void DQN::trainAgent()
     {
       // Getting experience's next state and action
       std::vector<double> nextState = _experienceReplayHistory[expId + 1]["State"];
-      std::vector<double> nextAction = _experienceReplayHistory[expId + 1]["Action"];
+      std::vector<double> bestAction = queryPolicy(nextState);
 
-      qStar += _criticDiscountFactor * stateActionValueFunction(nextState, nextAction);
+      qStar += _criticDiscountFactor * stateActionValueFunction(nextState, bestAction);
     }
 
     // Updating inputs to training learner

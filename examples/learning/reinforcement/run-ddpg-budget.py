@@ -79,20 +79,20 @@ e["Variables"][2]["Upper Bound"] = 10.0
 e["Variables"][1]["Exploration Noise"]["Enabled"] = True
 e["Variables"][1]["Exploration Noise"]["Distribution"]["Type"] = "Univariate/Normal"
 e["Variables"][1]["Exploration Noise"]["Distribution"]["Mean"] = 0.0
-e["Variables"][1]["Exploration Noise"]["Distribution"]["Standard Deviation"] = 0.02
+e["Variables"][1]["Exploration Noise"]["Distribution"]["Standard Deviation"] = 0.05
 e["Variables"][1]["Exploration Noise"]["Theta"] = 0.05
 
-e["Variables"][2]["Exploration Noise"]["Enabled"] = True
+e["Variables"][2]["Exploration Noise"]["Enabled"] = True 
 e["Variables"][2]["Exploration Noise"]["Distribution"]["Type"] = "Univariate/Normal"
 e["Variables"][2]["Exploration Noise"]["Distribution"]["Mean"] = 0.0
-e["Variables"][2]["Exploration Noise"]["Distribution"]["Standard Deviation"] = 0.02
+e["Variables"][2]["Exploration Noise"]["Distribution"]["Standard Deviation"] = 0.05
 e["Variables"][2]["Exploration Noise"]["Theta"] = 0.05
 
 ### Defining Agent Configuration 
 
 e["Solver"]["Type"] = "Agent/DDPG"
-e["Solver"]["Mini Batch Size"] = 32
-e["Solver"]["Normalization Steps"] = 32
+e["Solver"]["Mini Batch Size"] = 16
+e["Solver"]["Normalization Steps"] = 16
 e["Solver"]["Trajectory Size"] = 1
 e["Solver"]["Optimization Steps Per Trajectory"] = 1
 
@@ -131,7 +131,7 @@ e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Weight Initialization Scal
 
 e["Solver"]["Policy"]["Optimizer"]["Type"] = "Optimizer/Adam"
 e["Solver"]["Policy"]["Optimizer"]["Termination Criteria"]["Min Gradient Norm"] = -1.0
-e["Solver"]["Policy"]["Optimizer"]["Eta"] = 0.000001
+e["Solver"]["Policy"]["Optimizer"]["Eta"] = 0.00001
 e["Solver"]["Policy"]["Adoption Rate"] = 0.99
 
 e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
@@ -159,7 +159,7 @@ e["Solver"]["Policy"]["Neural Network"]["Output Scaling"] = [ 10.0, 10.0 ]
 
 e["Solver"]["Training Reward Threshold"] = -0.5
 e["Solver"]["Policy Testing Episodes"] = 20
-e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = -0.1
+e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = -0.5
 
 ### Setting file output configuration
 

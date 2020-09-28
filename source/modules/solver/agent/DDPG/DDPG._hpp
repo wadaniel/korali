@@ -2,6 +2,7 @@
 #define _KORALI_AGENT_DDPG_HPP_
 
 #include "modules/solver/agent/agent.hpp"
+#include "modules/problem/reinforcementLearning/continuous/continuous.hpp"
 
 namespace korali
 {
@@ -12,6 +13,12 @@ namespace agent
 class DDPG : public Agent
 {
   public:
+
+  /**
+  * @brief Storage for the pointer to the (continuous) learning problem
+  */
+  problem::reinforcementLearning::Continuous *_continuousProblem;
+
   /**
    * @brief Pointer to training experiment's problem
    */
@@ -61,12 +68,12 @@ class DDPG : public Agent
   double stateActionValueFunction(const std::vector<double> &state, const std::vector<double> &action);
 
   /**
-   * @brief Gets a random action
-   * @return A vector containing the random action
+   * @brief Function to query policy and get the best action for the given state
+   * @param state The input state
+   * @return The action value, corresponding to the state and the current policy hyperparameters
    */
-  std::vector<double> getRandomAction();
+  std::vector<double> queryPolicy(const std::vector<double> &state);
 
-  std::vector<double> queryPolicy(const std::vector<double> &state) override;
   void getAction(korali::Sample &sample) override;
   void updateHyperparameters(const knlohmann::json &hyperparameters) override;
   void trainAgent() override;

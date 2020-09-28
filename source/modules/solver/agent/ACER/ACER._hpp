@@ -69,12 +69,12 @@ class ACER : public Agent
   double stateActionValueFunction(const std::vector<double> &state, const size_t &actionIdx);
 
   /**
-   * @brief Gets a random action index
-   * @return Index of the action selected
+   * @brief Function to query policy and get the best action for the given state
+   * @param state The input state
+   * @return The action value, corresponding to the state and the current policy hyperparameters
    */
-  size_t getRandomActionIndex();
+  std::vector<double> queryPolicy(const std::vector<double> &state);
 
-  std::vector<double> queryPolicy(const std::vector<double> &state) override;
   void getAction(korali::Sample &sample) override;
   void updateHyperparameters(const knlohmann::json &hyperparameters) override;
   void trainAgent() override;

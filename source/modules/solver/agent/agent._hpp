@@ -57,13 +57,6 @@ class Agent : public Solver
   void runGeneration() override;
 
   /**
-   * @brief Function to query policy and get the best action for the given state
-   * @param state The input state
-   * @return The action value, corresponding to the state and the current policy hyperparameters
-   */
-  virtual std::vector<double> queryPolicy(const std::vector<double> &state) = 0;
-
-  /**
    * @brief Prints information about the training policy
    */
   virtual void printAgentInformation() = 0;

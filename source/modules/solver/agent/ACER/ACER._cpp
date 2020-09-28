@@ -43,12 +43,9 @@ void ACER::initializeAgent()
   _criticExperiment["File Output"]["Enabled"] = false;
   _criticExperiment["Random Seed"] = _k->_randomSeed++;
 
-  // Initializing experiment with an initial zero set
   for (size_t j = 0; j < _problem->_stateVectorSize; j++)
    _criticExperiment["Problem"]["Inputs"][0][j] = 0.0;
-
-  for (size_t j = 0; j < _discreteProblem->_possibleActions.size(); j++)
-   _criticExperiment["Problem"]["Solution"][0][j] = 0.0;
+  _criticExperiment["Problem"]["Solution"][0][0] = 0.0;
 
   // Running initialization to verify that the configuration is correct
   engine.initialize(_criticExperiment);
@@ -119,7 +116,7 @@ void ACER::getAction(korali::Sample &sample)
   auto state = sample["State"].get<std::vector<double>>();
 
   // Producing random (uniform) number to obtain a value index
-  double x = _randomActionGenerator->getRandomNumber();
+  double x = _uniformGenerator->getRandomNumber();
 
   // Forward state to get p(a|s)
   auto pActionVector = queryPolicy(state);
@@ -138,17 +135,6 @@ void ACER::getAction(korali::Sample &sample)
   sample["Metadata"]["Action Index"] = actionIdx;
   sample["Metadata"]["Policy Densities"] = pActionVector;
   sample["Action"] = _discreteProblem->_possibleActions[actionIdx];
-}
-
-size_t ACER::getRandomActionIndex()
-{
-  // Producing random (uniform) number to obtain a value index
-  double x = _randomActionGenerator->getRandomNumber();
-
-  // Randomly select one of the actions provided in the value vector
-  size_t actionIdx = floor(x * _discreteProblem->_possibleActions.size());
-
-  return actionIdx;
 }
 
 double ACER::stateActionValueFunction(const std::vector<double> &state, const size_t &actionIdx)
@@ -277,7 +263,6 @@ void ACER::trainAgent()
 
      // First part of the gradient vector
      gPolicy[curActionIdx] = truncatedImportanceWeight * 1 / pActionCurPolicy * (qRet - vCurState);
-
 
      // Compute the expectation for the second part of the gradient vector
      for (size_t newActionIdx = 0; newActionIdx < _discreteProblem->_possibleActions.size(); newActionIdx++)

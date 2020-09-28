@@ -74,26 +74,14 @@ e["Variables"][2]["Type"] = "Action"
 e["Variables"][2]["Lower Bound"] = 0.0
 e["Variables"][2]["Upper Bound"] = 10.0
 
-### Defining noise to add to the action
-
-e["Variables"][1]["Exploration Noise"]["Enabled"] = True
-e["Variables"][1]["Exploration Noise"]["Distribution"]["Type"] = "Univariate/Normal"
-e["Variables"][1]["Exploration Noise"]["Distribution"]["Mean"] = 0.0
-e["Variables"][1]["Exploration Noise"]["Distribution"]["Standard Deviation"] = 0.05
-e["Variables"][1]["Exploration Noise"]["Theta"] = 0.05
-
-e["Variables"][2]["Exploration Noise"]["Enabled"] = True 
-e["Variables"][2]["Exploration Noise"]["Distribution"]["Type"] = "Univariate/Normal"
-e["Variables"][2]["Exploration Noise"]["Distribution"]["Mean"] = 0.0
-e["Variables"][2]["Exploration Noise"]["Distribution"]["Standard Deviation"] = 0.05
-e["Variables"][2]["Exploration Noise"]["Theta"] = 0.05
-
 ### Defining Agent Configuration 
 
-e["Solver"]["Type"] = "Agent/DDPG"
-e["Solver"]["Mini Batch Size"] = 16
-e["Solver"]["Normalization Steps"] = 16
-e["Solver"]["Trajectory Size"] = 1
+e["Solver"]["Type"] = "Agent/CACER"
+e["Solver"]["Importance Weight Truncation"] = 5.0
+e["Solver"]["Trust Region Divergence Constraint"] = 1.0
+e["Solver"]["Trajectory Size"] = 1000
+e["Solver"]["Discount Factor"] = 0.995
+e["Solver"]["Off Policy Updates"] = 8
 e["Solver"]["Optimization Steps Per Trajectory"] = 1
 
 ### Defining the configuration of replay memory
@@ -105,11 +93,8 @@ e["Solver"]["Experience Replay"]["Maximum Size"] = 100000
 
 e["Solver"]["Critic"]["Optimizer"]["Type"] = "Optimizer/Adam"
 e["Solver"]["Critic"]["Optimizer"]["Eta"] = 0.001
-e["Solver"]["Critic"]["Discount Factor"] = 0.99
-e["Solver"]["Critic"]["Adoption Rate"] = 0.99
 
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Node Count"] = 3
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear"
 
 e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Type"] = "Layer/Dense"
@@ -123,7 +108,6 @@ e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Activation Function"]["Typ
 e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Batch Normalization"]["Enabled"] = True
 
 e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Type"] = "Layer/Dense"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Node Count"] = 1
 e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Elementwise/Linear"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Weight Initialization Scaling"] = 0.000000001
 
@@ -149,11 +133,9 @@ e["Solver"]["Policy"]["Neural Network"]["Layers"][2]["Activation Function"]["Typ
 e["Solver"]["Policy"]["Neural Network"]["Layers"][2]["Activation Function"]["Alpha"] = 0.0
 
 e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Type"] = "Layer/Dense"
-e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Node Count"] = 2
-e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Elementwise/Logistic" 
+e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Node Count"] = 4
+e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Elementwise/Linear" 
 e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Weight Initialization Scaling"] = 0.000000001
-
-e["Solver"]["Policy"]["Neural Network"]["Output Scaling"] = [ 10.0, 10.0 ]
 
 ### Defining Termination Criteria
 

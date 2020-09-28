@@ -16,6 +16,9 @@ namespace agent
 {
 void DDPG::initializeAgent()
 {
+  // Getting continuous problem pointer
+  _continuousProblem = dynamic_cast<problem::reinforcementLearning::Continuous *>(_k->_problem);
+
   /*********************************************************************
  * Initializing Critic-Related Structures
  *********************************************************************/
@@ -102,7 +105,7 @@ void DDPG::getAction(korali::Sample &sample)
   // If we still do not have enough experiences to train the critic/policy, just return random action
   if (_experienceReplayHistory.size() < _experienceReplayStartSize)
   {
-    sample["Action"] = getRandomAction();
+    sample["Action"] = _continuousProblem->getRandomAction();
     return;
   }
 
@@ -136,26 +139,6 @@ void DDPG::getAction(korali::Sample &sample)
 
   // Storing the action
   sample["Action"] = action;
-}
-
-std::vector<double> DDPG::getRandomAction()
-{
-  // Storage for action
-  std::vector<double> randomAction(_problem->_actionVectorSize);
-
-  for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-  {
-    size_t varIdx = _problem->_actionVectorIndexes[i];
-
-    // Producing random (uniform) number to select within an lower/upper bound range
-    double x = _randomActionGenerator->getRandomNumber();
-
-    double lowerBound = _k->_variables[varIdx]->_lowerBound;
-    double upperBound = _k->_variables[varIdx]->_upperBound;
-    randomAction[i] = lowerBound + x * (upperBound - lowerBound);
-  }
-
-  return randomAction;
 }
 
 double DDPG::stateActionValueFunction(const std::vector<double> &state, const std::vector<double> &action)

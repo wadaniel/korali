@@ -18,6 +18,13 @@ class ReinforcementLearning : public korali::Problem
    * @param sample Sample containing current agent/state information.
    */
   void runEpisode(korali::Sample &sample);
+
+
+  /**
+   * @brief Provides a uniformly random action within the action space
+   * @return A vector containing the random action
+   */
+  virtual std::vector<double> getRandomAction() = 0;
 };
 
 } // namespace problem

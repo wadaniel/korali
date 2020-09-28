@@ -13,6 +13,7 @@ namespace agent
 class DQN : public Agent
 {
   public:
+
   /**
   * @brief Storage for the pointer to the (discrete) learning problem
   */
@@ -42,12 +43,12 @@ class DQN : public Agent
   double stateActionValueFunction(const std::vector<double> &state, const std::vector<double> &action);
 
   /**
-   * @brief Gets a random action
-   * @return A vector containing the random action
+   * @brief Function to query policy and get the best action for the given state
+   * @param state The input state
+   * @return The action value, corresponding to the state and the current policy hyperparameters
    */
-  std::vector<double> getRandomAction();
+  std::vector<double> queryPolicy(const std::vector<double> &state);
 
-  std::vector<double> queryPolicy(const std::vector<double> &state) override;
   void getAction(korali::Sample &sample) override;
   void updateHyperparameters(const knlohmann::json &hyperparameters) override;
   void trainAgent() override;

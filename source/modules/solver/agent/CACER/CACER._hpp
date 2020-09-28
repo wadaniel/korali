@@ -1,0 +1,105 @@
+#ifndef _KORALI_AGENT_CACER_HPP_
+#define _KORALI_AGENT_CACER_HPP_
+
+#include "modules/distribution/univariate/normal/normal.hpp"
+#include "modules/problem/reinforcementLearning/continuous/continuous.hpp"
+#include "modules/solver/agent/agent.hpp"
+
+namespace korali
+{
+namespace solver
+{
+namespace agent
+{
+class CACER : public Agent
+{
+  public:
+  /**
+  * @brief Storage for the pointer to the (continuous) learning problem
+  */
+  problem::reinforcementLearning::Continuous *_continuousProblem;
+
+  /**
+   * @brief Pointer to training experiment's V(s) problem
+   */
+  problem::SupervisedLearning *_vProblem;
+
+  /**
+  * @brief Pointer to training experiment's V(s) critic learner
+  */
+  learner::DeepGD *_vLearner;
+
+  /**
+   * @brief Korali experiment for the training of V(s)
+   */
+  korali::Experiment _vExperiment;
+
+ /**
+  * @brief Pointer to training experiment's A(s,x) problem
+  */
+  problem::SupervisedLearning *_aProblem;
+
+  /**
+  * @brief Pointer to training experiment's A(s,x) learner
+  */
+  learner::DeepGD *_aLearner;
+
+  /**
+   * @brief Korali experiment for the training of A(s,x)
+   */
+  korali::Experiment _aExperiment;
+
+  /**
+  * @brief Korali experiment for P(a | s) for all actions
+  */
+  korali::Experiment _policyExperiment;
+
+  /**
+   * @brief Pointer to training the actor network
+   */
+  learner::DeepGD *_policyLearner;
+
+  /**
+   * @brief Pointer to actor's experiment problem
+   */
+  problem::SupervisedLearning *_policyProblem;
+
+  /**
+   * @brief Variable to calculate the total number of actions in the action space
+   */
+  size_t _actionCount;
+
+  /**
+   * @brief Calculates the state value function V(s) = Expectation_a [ Q(s,a) | s ] of a given experience using the latest critic
+   * @param state state to evaluate
+   * @return The value of the V(s)
+   */
+  double stateValueFunction(const std::vector<double> &state);
+
+  /**
+   * @brief Calculates the state+action value function Q(s,a) = V(s) + A(s,a) - 1/n sum_n[A(s, u_i) - with u_i ~ policy(s)
+   * @param state state to evaluate
+   * @param action action to evaluate
+   * @return The value of Q(s,a)
+   */
+  double stateActionValueFunction(const std::vector<double> &state, const std::vector<double> &action);
+
+  /**
+   * @brief Updated policy action-generating independent normal distributions given hyperparameters (mean + sigma) for all of them
+   * @param parameters The parameters that define the normal distributions (mean+sigma)
+   */
+  void updatePolicyDistributions(const std::vector<double> &parameters);
+
+  std::vector<double> queryPolicy();
+  void getAction(korali::Sample &sample) override;
+  void updateHyperparameters(const knlohmann::json &hyperparameters) override;
+  void trainAgent() override;
+  void printAgentInformation() override;
+  void initializeAgent() override;
+};
+
+} // namespace agent
+} // namespace solver
+} // namespace korali
+
+#endif // _KORALI_AGENT_CACER_HPP_

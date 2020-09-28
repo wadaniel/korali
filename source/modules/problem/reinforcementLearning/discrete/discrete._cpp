@@ -22,6 +22,28 @@ void Discrete::initialize()
       KORALI_LOG_ERROR("For possible action %lu, incorrect vector size provided. Expected: %lu, Provided: %lu.\n", i, _actionVectorSize, _possibleActions[i].size());
 }
 
+std::vector<double> Discrete::getRandomAction()
+{
+  // Producing random (uniform) number to obtain a value index
+  double x = _randomActionGenerator->getRandomNumber();
+
+  // Randomly select one of the actions provided in the possible actions
+  size_t valIdx = floor(x * _possibleActions.size());
+
+  return _possibleActions[valIdx];
+}
+
+size_t Discrete::getRandomActionIndex()
+{
+  // Producing random (uniform) number to obtain a value index
+  double x = _randomActionGenerator->getRandomNumber();
+
+  // Randomly select one of the actions provided in the value vector
+  size_t actionIdx = floor(x * _possibleActions.size());
+
+  return actionIdx;
+}
+
 } // namespace reinforcementLearning
 
 } // namespace problem

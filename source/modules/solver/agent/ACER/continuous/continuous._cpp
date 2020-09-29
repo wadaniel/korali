@@ -345,12 +345,15 @@ void Continuous::processTrajectory(size_t startId, size_t endId)
     /*****************************************
      * Policy Section
      *****************************************/
+    // compute variance and its inverse
+    double variance = _policyDistributions[i]->_standardDeviation * _policyDistributions[i]->_standardDeviation;
+    double invVariance = 1/variance;
 
     // Now calculating truncated importance weight
     double truncatedImportanceWeight = std::min(_importanceWeightTruncation, oldImportanceWeight);
 
     // First part of the gradient vector
-    double g1 = truncatedImportanceWeight * 1 / pOldActionCurPolicy * (qOpc - vCurState);
+    double g1 = -truncatedImportanceWeight * (qOpc - vCurState) * invVariance;
 
     // Calculate Qtilde of the new action
     double qTilde = stateActionValueFunction(curState, newAction);
@@ -362,15 +365,15 @@ void Continuous::processTrajectory(size_t startId, size_t endId)
     double correctionWeight = importanceRatio > 0.0 ? importanceRatio : 0.0;
 
     // Compute the expectation for the second part of the gradient vector
-    double g2 = correctionWeight * (qTilde - vCurState);
+    double g2 = -correctionWeight * (qTilde - vCurState) *invVariance;
 
     // Now Calculating Acer gradient for all of the action's variables (mean and sigma)
     std::vector<double> gPolicy(_problem->_actionVectorSize * 2, 0.0);
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
     {
       // TO-DO -- using the scalars g1 and g2 somehow?
-      gPolicy[i*2 + 0] = 0.0; // Mean
-      gPolicy[i*2 + 1] = 1.0; // Sigma
+      gPolicy[i*2 + 0] = (g1+g2)*(oldAction[i]-_policyDistributions[i]->_mean); // Mean - PW: done
+      gPolicy[i*2 + 1] = 0.0; // Sigma - PW: for now sigma is fixed
     }
 
     ///////////////// KL Calculation /////////////////////
@@ -381,13 +384,21 @@ void Continuous::processTrajectory(size_t startId, size_t endId)
     // Getting policy distribution parameters from the average policy NN
     auto avgParameters = _policyLearner->getEvaluation(curState);
 
+    // get mean for current weights
+    vector<double> currMean(_actionVectorSize);
+    for(size_t i = 0; i < _problem->_actionVectorSize; i++)
+      currMean[i] = _policyDistributions[i]->_mean;
+
+    // Setting policy distributions to average policy
+    updatePolicyDistributions(avgParameters);
+
     // Obtaining KL Divergence gradients for the current state.
     std::vector<double> k(_problem->_actionVectorSize * 2);
     for(size_t i = 0; i < _problem->_actionVectorSize; i++)
     {
      // Here we use avgParameters and curParameters to calculate the gradient of DKL for two gaussians
-     k[2*i + 0] = 0.0; // To-do Mean
-     k[2*i + 1] = 1.0; // To-do Sigma -- remember to sqrt?
+     k[2*i + 0] = invVariance*(currMean-_policyDistributionsAvg[i]->_mean); // To-do Mean - PW: done
+     k[2*i + 1] = 0.0; // To-do Sigma -- remember to sqrt? - PW: for now sigma is fixed
     }
 
      // Getting dot product between the gradient vector and k
@@ -426,7 +437,7 @@ void Continuous::processTrajectory(size_t startId, size_t endId)
       double unnormalizedTruncatedImportance = std::min(1.0, oldImportanceWeight);
 
       // Update the gradient vector with the value of the retrace function for g  = Q-Qret
-      double gradA = unnormalizedTruncatedImportance * qRet;
+      double gradA = unnormalizedTruncatedImportance * qRet; // PW: this is not true, the loss is not (Q-gradA)^2, but min{1,rho}(Q-gradA^2)
 
       // Updating inputs to training learner
       _aProblem->_inputs.push_back(curState);

@@ -1,0 +1,411 @@
+#include "engine.hpp"
+#include "modules/solver/agent/ACER/Discrete/Discrete.hpp"
+#include "sample/sample.hpp"
+
+/****************************************
+ * Things to fix:
+ * - All samples use their own pseudorandom generators
+ * - All seeds must be replicable when restarting a job
+ *****************************************/
+
+namespace korali
+{
+namespace solver
+{
+namespace agent
+{
+namespace acer
+{
+
+void Discrete::initializeAgent()
+{
+  // Getting discrete problem pointer
+  _discreteProblem = dynamic_cast<problem::reinforcementLearning::Discrete *>(_k->_problem);
+
+  /*********************************************************************
+ * Initializing Critic-Related Structures
+ *********************************************************************/
+
+  korali::Engine engine; // Engine to initialize experiments with
+
+  _criticExperiment["Problem"]["Type"] = "Supervised Learning";
+
+  _criticExperiment["Solver"]["Type"] = "Learner/DeepGD";
+  _criticExperiment["Solver"]["Optimizer"] = _criticOptimizer;
+  _criticExperiment["Solver"]["Loss Function"] = "Mean Squared Error";
+  _criticExperiment["Solver"]["Steps Per Generation"] = 1;
+  _criticExperiment["Solver"]["Neural Network"] = _criticNeuralNetwork;
+
+  _criticExperiment["Console Output"]["Frequency"] = 0;
+  _criticExperiment["Console Output"]["Verbosity"] = "Silent";
+  _criticExperiment["File Output"]["Enabled"] = false;
+  _criticExperiment["Random Seed"] = _k->_randomSeed++;
+
+  for (size_t j = 0; j < _problem->_stateVectorSize; j++)
+   _criticExperiment["Problem"]["Inputs"][0][j] = 0.0;
+  _criticExperiment["Problem"]["Solution"][0][0] = 0.0;
+
+  // Running initialization to verify that the configuration is correct
+  engine.initialize(_criticExperiment);
+
+  // Getting learner pointers
+  _criticProblem = dynamic_cast<problem::SupervisedLearning *>(_criticExperiment._problem);
+  _criticLearner = dynamic_cast<solver::learner::DeepGD *>(_criticExperiment._solver);
+
+  /*********************************************************************
+  * Initializing Policy-Related Structures
+  *********************************************************************/
+
+  // Creating and running Actor Learning Experiments
+
+  _policyExperiment["Problem"]["Type"] = "Supervised Learning";
+
+  _policyExperiment["Solver"]["Type"] = "Learner/DeepGD";
+  _policyExperiment["Solver"]["Loss Function"] = "Direct";
+  _policyExperiment["Solver"]["Optimizer"] = _policyOptimizer;
+  _policyExperiment["Solver"]["Steps Per Generation"] = 1;
+  _policyExperiment["Solver"]["Neural Network"] = _policyNeuralNetwork;
+
+  _policyExperiment["Console Output"]["Frequency"] = 0;
+  _policyExperiment["Console Output"]["Verbosity"] = "Silent";
+  _policyExperiment["File Output"]["Enabled"] = false;
+  _policyExperiment["Random Seed"] = _k->_randomSeed++;
+
+  // Initializing experiment with an initial zero set
+  for (size_t j = 0; j < _problem->_stateVectorSize; j++)
+    _policyExperiment["Problem"]["Inputs"][0][j] = 0.0;
+
+  for (size_t j = 0; j < _discreteProblem->_possibleActions.size(); j++)
+    _policyExperiment["Problem"]["Solution"][0][j] = 0.0;
+
+  // Running initialization to verify that the configuration is correct
+  engine.initialize(_policyExperiment);
+
+  // Getting learner pointers
+  _policyProblem = dynamic_cast<problem::SupervisedLearning *>(_policyExperiment._problem);
+  _policyLearner = dynamic_cast<solver::learner::DeepGD *>(_policyExperiment._solver);
+
+  /*********************************************************************
+  * Loading/Setting Hyperparameters
+  *********************************************************************/
+
+  // Getting current hyperparameters
+  _policyCurrentHyperparameters = _policyLearner->getHyperparameters();
+
+  // Storing initial average policy parameters
+  if (_k->_currentGeneration == 0)
+   _policyAverageHyperparameters = _policyCurrentHyperparameters;
+
+  // Get the initial set of policy NN hyperparameters
+  _hyperparameters["Policy"] = _policyCurrentHyperparameters;
+}
+
+std::vector<double> Discrete::queryPolicy(const std::vector<double> &state)
+{
+ // Forward softmax probability function
+ auto pValues = _policyLearner->getEvaluation(state);
+
+ return pValues;
+}
+
+void Discrete::getAction(korali::Sample &sample)
+{
+  // Getting current state
+  auto state = sample["State"].get<std::vector<double>>();
+
+  // Producing random (uniform) number to obtain a value index
+  double x = _uniformGenerator->getRandomNumber();
+
+  // Forward state to get p(a|s)
+  auto pActionVector = queryPolicy(state);
+
+  // Iterating over all p(s,a) to select the corresponding action
+  double curSum = 0.0;
+  size_t actionIdx;
+  for (actionIdx = 0; actionIdx < pActionVector.size(); actionIdx++)
+  {
+    double pAction = pActionVector[actionIdx];
+    if (x > curSum && x <= curSum + pAction) break;
+    curSum += pAction;
+  }
+
+  // Storing the action and associated metadata
+  sample["Metadata"]["Action Index"] = actionIdx;
+  sample["Metadata"]["Policy Densities"] = pActionVector;
+  sample["Action"] = _discreteProblem->_possibleActions[actionIdx];
+}
+
+double Discrete::stateActionValueFunction(const std::vector<double> &state, const size_t &actionIdx)
+{
+  // Forward propagating state through the critic to get Q(s,a) for all A
+  auto evaluation = _criticLearner->getEvaluation(state);
+
+  return evaluation[actionIdx];
+}
+
+double Discrete::stateValueFunction(const std::vector<double> &state)
+{
+  // Forward propagating state through the critic to get Q(s,a) for all a
+  auto qEval = _criticLearner->getEvaluation(state);
+
+  // Forward propagating state through the policy to get P(s,a) for all a
+  auto pEval = queryPolicy(state);
+
+  // Calculating the sum of p(s,a)*q(s,a) for all a
+  double qSum = 0.0;
+  for (size_t i = 0; i < qEval.size(); i++)
+    qSum += qEval[i] * pEval[i];
+
+  // Returning the sum
+  return qSum;
+}
+
+void Discrete::processTrajectory(size_t startId, size_t endId)
+{
+   // Initializing inputs and solution for the critic and policy problems
+   _criticProblem->_inputs.clear();
+   _criticProblem->_solution.clear();
+   _policyProblem->_inputs.clear();
+   _policyProblem->_solution.clear();
+
+   // Going straight to the latest experience in the corresponding trajectory
+   size_t curId = endId;
+
+   // First, get the retrace value for the last experience (just the reward)
+   double qRet = _experienceReplayHistory[curId]["Reward"];
+   if (_experienceReplayHistory[curId]["Is Terminal"] == false)
+   {
+    std::vector<double> curState = _experienceReplayHistory[curId]["State"];
+    qRet = stateValueFunction(curState);
+   }
+
+   while (curId > startId)
+   {
+    // Decreasing current experience index
+    curId--;
+
+    // Getting current reward
+    double curReward = _experienceReplayHistory[curId]["Reward"];
+
+    // Updating the value of qRet for this experience
+    qRet = curReward + _discountFactor * qRet;
+
+    // Getting experience's state
+    std::vector<double> curState = _experienceReplayHistory[curId]["State"];
+
+    // Calculating V(state) with the current policy
+    double vCurState = stateValueFunction(curState);
+
+    //// Computing quantities needed for updating weights
+
+    // Getting experience's action
+    size_t curActionIdx = _experienceReplayHistory[curId]["Metadata"]["Action Index"];
+
+    // Getting probability densities for current action given current policy
+    auto pOldPolicy = _experienceReplayHistory[curId]["Metadata"]["Policy Densities"].get<std::vector<double>>(); 
+
+    // Getting probability densities for current action given current policy
+    _policyLearner->setHyperparameters(_policyCurrentHyperparameters); // PW: why?
+    auto pCurPolicy = queryPolicy(curState);
+
+    // Getting p(s,a) for selected experience, given the old policy
+    double pActionOldPolicy = pOldPolicy[curActionIdx];
+
+    // Getting p(s,a) for the best action, given the current policy
+    double pActionCurPolicy = pCurPolicy[curActionIdx];
+
+    // Now calculating importance weight for the old s,a experience
+    double importanceWeight = pActionCurPolicy / pActionOldPolicy;
+
+    // Getting Q(s, a) for the selected experience
+    double qCurState = stateActionValueFunction(curState, curActionIdx);
+
+    /*****************************************
+     * Policy Section
+     *****************************************/
+
+     // Now calculating truncated importance weight
+     double truncatedImportanceWeight = std::min(_importanceWeightTruncation, importanceWeight);
+
+     // Now Calculating Acer gradient, from https://arxiv.org/pdf/1611.01224.pdf, Eq. 9
+     std::vector<double> gPolicy(_discreteProblem->_possibleActions.size(), 0.0);
+
+     // First part of the gradient vector
+     gPolicy[curActionIdx] = truncatedImportanceWeight * 1 / pActionCurPolicy * (qRet - vCurState);
+
+     // Compute the expectation for the second part of the gradient vector
+     for (size_t newActionIdx = 0; newActionIdx < _discreteProblem->_possibleActions.size(); newActionIdx++)
+     {
+       // Calculating Qcritic(state,action)
+       double qCritic = stateActionValueFunction(curState, newActionIdx);
+
+       // Getting p(s,a) for selected action, given the old policy
+       double pNewActionOldPolicy = pOldPolicy[newActionIdx];
+
+       // Getting p(s,a) for selected action, given the current policy
+       double pNewActionCurPolicy = pCurPolicy[newActionIdx];
+
+       // Now calculating importance weight for the old s,a experience
+       double newImportanceWeight = pNewActionCurPolicy / pNewActionOldPolicy;
+
+       // Now calculating r(a) - c / r(a) ratio
+       double importanceRatio = 1.0 - (_importanceWeightTruncation / newImportanceWeight);
+
+       // Now calculating the correction weight
+       double correctionWeight = importanceRatio > 0.0 ? importanceRatio : 0.0;
+
+       // Adding the component of part two to the gradient vector
+       gPolicy[newActionIdx] += correctionWeight * (qCritic - vCurState);
+     }
+
+     // Getting probability densities for current action given average policy
+     _policyLearner->setHyperparameters(_policyAverageHyperparameters);
+     auto pAvgPolicy = queryPolicy(curState);
+
+     // Obtaining KL Divergence gradients for the current state. //PW: check this
+     std::vector<double> k(_discreteProblem->_possibleActions.size());
+     for(size_t i = 0; i < k.size(); i++)
+      k[i] = - 1 / pCurPolicy[i];
+
+     // Getting dot product between the gradient vector and k
+     auto gkDotProduct = dotProduct(k, gPolicy);
+
+     // Getting norm(k)^2, simply by dot product of k and itself
+     auto kNormSquared = dotProduct(k, k);
+
+     // Getting magnitude of adjustment
+     double adjustmentMagnitude = std::max(0.0, (gkDotProduct - _trustRegionDivergenceConstraint) / kNormSquared);
+
+     // Adjusting gradients to trust region
+     for(size_t i = 0; i < _discreteProblem->_possibleActions.size(); i++) gPolicy[i] = gPolicy[i] - adjustmentMagnitude * k[i];
+
+     _policyProblem->_inputs.push_back(curState);
+     _policyProblem->_solution.push_back(gPolicy);
+
+    /*****************************************
+     * Critic Section
+     *****************************************/
+
+      // Creating storage for the gradient vector
+      std::vector<double> gCritic(_discreteProblem->_possibleActions.size(), 0);
+ 
+      // Update the gradient vector with the value of the retrace function for g  = Q-Qret 
+      gCritic[curActionIdx] = qRet; 
+ 
+      // Updating inputs to training learner
+      _criticProblem->_inputs.push_back(curState);
+      _criticProblem->_solution.push_back(gCritic);
+ 
+      // Keeping statistics
+      _cumulativeQStar += gCritic[curActionIdx];
+
+     /*****************************************
+      * Updating the value of qRet
+      *****************************************/
+
+     // Now calculating truncated importance weight with 1.0 as truncation factor
+     truncatedImportanceWeight = std::min(1.0, importanceWeight);
+
+     // Updating qRet
+     qRet = truncatedImportanceWeight * (qRet - qCurState) + vCurState;
+   }
+
+  // Declaring engine to launch experiments
+  korali::Engine engine;
+
+  // Running one generation of the optimization method with the given mini-batch
+  _criticExperiment["Solver"]["Termination Criteria"]["Max Generations"] = _criticExperiment._currentGeneration + 1;
+  _criticLearner->initialize();
+  engine.resume(_criticExperiment);
+
+  // Running one generation of the optimization method with the given mini-batch
+  _policyExperiment["Solver"]["Termination Criteria"]["Max Generations"] = _policyExperiment._currentGeneration + 1;
+  _policyLearner->initialize();
+  engine.resume(_policyExperiment);
+
+ /****************************************************************************
+ * If batch normalization is being used, we need to adjust mean and variances
+ * by sampling a few more mini-batches after the optimization steps
+ ******************************************************************************/
+
+  // Randomly selecting experiences for the mini-batch and calculating their target Q
+  // Creating state history indexes to choose from
+  std::vector<size_t> experienceReplayIndexes(_experienceReplayHistory.size());
+  for (size_t i = 0; i < _experienceReplayHistory.size()-1; i++) experienceReplayIndexes[i] = i;
+
+  // Allocating memory for the mini batch set
+  std::vector<std::vector<std::vector<double>>> miniBatches(_normalizationSteps);
+
+  for (size_t i = 0; i < _normalizationSteps; i++)
+    miniBatches[i].resize(_normalizationBatchSize);
+
+  for (size_t i = 0; i < _normalizationSteps; i++)
+    for (size_t j = 0; j < _normalizationBatchSize; j++)
+      miniBatches[i][j].resize(_problem->_stateVectorSize);
+
+  // Filling the minibatches
+  for (size_t step = 0; step < _normalizationSteps; step++)
+  {
+    // Shuffling indexes to choose the mini batch from
+    std::shuffle(experienceReplayIndexes.begin(), experienceReplayIndexes.end(), *mt);
+
+    for (size_t i = 0; i < _normalizationBatchSize; i++)
+    {
+      // Selecting a uniformly random selected, yet not repeated experience
+      size_t expId = experienceReplayIndexes[i];
+      miniBatches[step][i] = _experienceReplayHistory[expId]["State"].get<std::vector<double>>();
+    }
+  }
+
+  _criticLearner->_trainingNeuralNetwork->normalize(miniBatches);
+  _policyLearner->_trainingNeuralNetwork->normalize(miniBatches);
+
+  // Storing new inference parameters
+  auto criticHyperparameters = _criticLearner->getHyperparameters();
+  _criticLearner->setHyperparameters(criticHyperparameters);
+
+ /****************************************************************************
+ * Updating Policy
+ ******************************************************************************/
+
+  // Getting new policy hyperparameters
+  _policyCurrentHyperparameters = _policyLearner->getHyperparameters();
+
+  // Softly adopting the new parameters, using an adoption rate
+  for (size_t i = 0; i < _policyCurrentHyperparameters.size(); i++)
+   _policyAverageHyperparameters[i] = _policyAdoptionRate*_policyAverageHyperparameters[i] + (1-_policyAdoptionRate)*_policyCurrentHyperparameters[i];
+
+  // Updating policy with new averaged parameters
+  _policyLearner->setHyperparameters(_policyCurrentHyperparameters);
+
+  // Storing average policy hyperparameters
+  _hyperparameters["Policy"] = _policyCurrentHyperparameters;
+}
+
+void Discrete::updateHyperparameters(const knlohmann::json &hyperparameters)
+{
+  _policyLearner->setHyperparameters(hyperparameters["Policy"].get<std::vector<double>>());
+}
+
+void Discrete::printAgentInformation()
+{
+  // Updating average Q*, for statistical purposes
+ _averageQStar = _cumulativeQStar / ((_offPolicyUpdates + 1) * _criticProblem->_solution.size());
+
+  _k->_logger->logInfo("Normal", "Critic Information:\n");
+
+  _k->_logger->logInfo("Normal", " + Cumulative Expected Q-Value:     %f\n", _cumulativeQStar);
+  _k->_logger->logInfo("Normal", " + Average Expected Q-Value:        %f\n", _averageQStar);
+
+  _criticExperiment._logger->_verbosityLevel = _k->_logger->_verbosityLevel;
+  _criticExperiment._solver->printGenerationAfter();
+  _criticExperiment._logger->setVerbosityLevel("Silent");
+
+  // Resetting cumulative Q*, for statistical purposes
+  _cumulativeQStar = 0.0;
+}
+
+} // namespace acer
+} // namespace agent
+} // namespace solver
+} // namespace korali

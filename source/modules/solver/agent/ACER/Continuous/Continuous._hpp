@@ -1,9 +1,9 @@
-#ifndef _KORALI_AGENT_CACER_HPP_
-#define _KORALI_AGENT_CACER_HPP_
+#ifndef _KORALI_AGENT_CONTINUOUS_HPP_
+#define _KORALI_AGENT_CONTINUOUS_HPP_
 
 #include "modules/distribution/univariate/normal/normal.hpp"
 #include "modules/problem/reinforcementLearning/continuous/continuous.hpp"
-#include "modules/solver/agent/agent.hpp"
+#include "modules/solver/agent/ACER/ACER.hpp"
 
 namespace korali
 {
@@ -11,7 +11,10 @@ namespace solver
 {
 namespace agent
 {
-class CACER : public Agent
+namespace acer
+{
+
+class Continuous : public ACER
 {
   public:
   /**
@@ -90,16 +93,17 @@ class CACER : public Agent
    */
   void updatePolicyDistributions(const std::vector<double> &parameters);
 
+  void processTrajectory(size_t startId, size_t endId) override;
   std::vector<double> queryPolicy();
   void getAction(korali::Sample &sample) override;
   void updateHyperparameters(const knlohmann::json &hyperparameters) override;
-  void trainAgent() override;
   void printAgentInformation() override;
   void initializeAgent() override;
 };
 
+} // namespace acer
 } // namespace agent
 } // namespace solver
 } // namespace korali
 
-#endif // _KORALI_AGENT_CACER_HPP_
+#endif // _KORALI_AGENT_CONTINUOUS_HPP_

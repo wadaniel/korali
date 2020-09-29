@@ -68,11 +68,13 @@ e["Variables"][1]["Name"] = "Spenditure"
 e["Variables"][1]["Type"] = "Action"
 e["Variables"][1]["Lower Bound"] = 0.0
 e["Variables"][1]["Upper Bound"] = 10.0
+e["Variables"][1]["Noise Sigma"] = 0.05
 
 e["Variables"][2]["Name"] = "Spenditure"
 e["Variables"][2]["Type"] = "Action"
 e["Variables"][2]["Lower Bound"] = 0.0
 e["Variables"][2]["Upper Bound"] = 10.0
+e["Variables"][2]["Noise Sigma"] = 0.05
 
 ### Defining Agent Configuration 
 

@@ -29,12 +29,16 @@ void Continuous::initializeAgent()
  * Initializing Normal Distributions for the Policy
  *********************************************************************/
 
- for (size_t j = 0; j < _problem->_actionVectorSize; j++)
+ for (size_t i = 0; i < _problem->_actionVectorSize; i++)
  {
+  auto varIdx = _continuousProblem->_actionVectorIndexes[i];
+  double sigma = _k->_variables[varIdx]->_noiseSigma;
+  if (sigma <= 0) KORALI_LOG_ERROR("Value of Noise Sigma (%f) for action variable %lu is not defined or invalid.\n", sigma, i);
+
   knlohmann::json js;
   js["Type"] = "Univariate/Normal";
   js["Mean"] = 0.0;
-  js["Standard Deviation"] = 1.0;
+  js["Standard Deviation"] =  sigma;
 
   auto d = dynamic_cast<distribution::univariate::Normal*>(getModule(js, _k));
 
@@ -52,6 +56,7 @@ void Continuous::initializeAgent()
   _vExperiment["Solver"]["Loss Function"] = "Mean Squared Error";
   _vExperiment["Solver"]["Steps Per Generation"] = 1;
   _vExperiment["Solver"]["Neural Network"] = _criticNeuralNetwork;
+  _vExperiment["Solver"]["Neural Network"]["Layers"][0]["Node Count"] = _problem->_stateVectorSize;
 
   _vExperiment["Console Output"]["Frequency"] = 0;
   _vExperiment["Console Output"]["Verbosity"] = "Silent";
@@ -59,8 +64,8 @@ void Continuous::initializeAgent()
   _vExperiment["Random Seed"] = _k->_randomSeed++;
 
   // Initializing experiment with an initial zero set
-  for (size_t j = 0; j < _problem->_stateVectorSize; j++)
-   _vExperiment["Problem"]["Inputs"][0][j] = 0.0;
+  for (size_t i = 0; i < _problem->_stateVectorSize; i++)
+   _vExperiment["Problem"]["Inputs"][0][i] = 0.0;
   _vExperiment["Problem"]["Solution"][0][0] = 0.0; // V(s)
 
   // Running initialization to verify that the configuration is correct
@@ -80,7 +85,9 @@ void Continuous::initializeAgent()
   _aExperiment["Solver"]["Optimizer"] = _criticOptimizer;
   _aExperiment["Solver"]["Loss Function"] = "Mean Squared Error";
   _aExperiment["Solver"]["Steps Per Generation"] = 1;
+
   _aExperiment["Solver"]["Neural Network"] = _criticNeuralNetwork;
+  _aExperiment["Solver"]["Neural Network"]["Layers"][0]["Node Count"] = _problem->_stateVectorSize + _problem->_actionVectorSize;
 
   _aExperiment["Console Output"]["Frequency"] = 0;
   _aExperiment["Console Output"]["Verbosity"] = "Silent";
@@ -88,8 +95,8 @@ void Continuous::initializeAgent()
   _aExperiment["Random Seed"] = _k->_randomSeed++;
 
   // Initializing experiment with an initial zero set
-  for (size_t j = 0; j < _problem->_stateVectorSize; j++)
-   _aExperiment["Problem"]["Inputs"][0][j] = 0.0;
+  for (size_t i = 0; i < _problem->_stateVectorSize + _problem->_actionVectorSize; i++)
+   _aExperiment["Problem"]["Inputs"][0][i] = 0.0;
   _aExperiment["Problem"]["Solution"][0][0] = 0.0; // V(s,a)
 
   // Running initialization to verify that the configuration is correct
@@ -119,14 +126,11 @@ void Continuous::initializeAgent()
   _policyExperiment["Random Seed"] = _k->_randomSeed++;
 
   // Initializing experiment with an initial zero set
-  for (size_t j = 0; j < _problem->_stateVectorSize; j++)
-    _policyExperiment["Problem"]["Inputs"][0][j] = 0.0;
+  for (size_t i = 0; i < _problem->_stateVectorSize; i++)
+    _policyExperiment["Problem"]["Inputs"][0][i] = 0.0;
 
-  for (size_t j = 0; j < _problem->_actionVectorSize; j++)
-  {
-    _policyExperiment["Problem"]["Solution"][0][j*2 + 0] = 0.0; // Gaussian Mean
-    _policyExperiment["Problem"]["Solution"][0][j*2 + 1] = 0.0; // Gaussian Sigma
-  }
+  for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+    _policyExperiment["Problem"]["Solution"][0][i] = 0.0; // Gaussian Mean
 
   // Running initialization to verify that the configuration is correct
   engine.initialize(_policyExperiment);
@@ -150,20 +154,6 @@ void Continuous::initializeAgent()
   _hyperparameters["Policy"] = _policyCurrentHyperparameters;
 }
 
-void Continuous::updatePolicyDistributions(const std::vector<double> &parameters)
-{
- // For each of the problem's action dimensions
- for (size_t i = 0; i < _problem->_actionVectorSize; i++)
- {
-   // Updating action variable's mean and standard deviation
-   _policyDistributions[i]->_mean = parameters[2*i + 0]; // Mean
-   _policyDistributions[i]->_standardDeviation = parameters[2*i + 1]*parameters[2*i + 1]; // Sigma squared
-   _policyDistributions[i]->updateDistribution();
-
-   printf("V %lu - Mean: %f - Sigma: %f\n", i, _policyDistributions[i]->_mean, _policyDistributions[i]->_standardDeviation);
- }
-}
-
 std::vector<double> Continuous::queryPolicy()
 {
  // Creating storage for action
@@ -183,20 +173,16 @@ void Continuous::getAction(korali::Sample &sample)
   auto state = sample["State"].get<std::vector<double>>();
 
   // Getting policy distribution parameters from the policy NN
-  auto parameters = _policyLearner->getEvaluation(state);
+  auto means = _policyLearner->getEvaluation(state);
 
   // Updating policy distributions
-  updatePolicyDistributions(parameters);
+  for (size_t i = 0; i < _problem->_actionVectorSize; i++)  _policyDistributions[i]->_mean = means[i];
 
   // Querying policy
   auto action = queryPolicy();
 
   // Storing current policy's mean and standard deviation for this state
-  for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-  {
-   sample["Metadata"]["Parameters"][i*2 + 0] = _policyDistributions[i]->_mean;
-   sample["Metadata"]["Parameters"][i*2 + 1] = _policyDistributions[i]->_standardDeviation;
-  }
+  sample["Metadata"]["Means"] = means;
 
   // Storing action taken
   sample["Action"] = action;
@@ -216,10 +202,10 @@ double Continuous::stateActionValueFunction(const std::vector<double> &state, co
   auto A = _aLearner->getEvaluation(stateActionVector)[0];
 
   // Getting policy distribution parameters from the policy NN
-  auto parameters = _policyLearner->getEvaluation(state);
+  auto means = _policyLearner->getEvaluation(state);
 
   // Updating policy distributions
-  updatePolicyDistributions(parameters);
+  for (size_t i = 0; i < _problem->_actionVectorSize; i++)  _policyDistributions[i]->_mean = means[i];
 
   // Getting 1/n * sum_n(A(x,u)) with u ~ policy(x)
   double sumA = 0.0;
@@ -292,19 +278,19 @@ void Continuous::processTrajectory(size_t startId, size_t endId)
     std::vector<double> oldAction = _experienceReplayHistory[curId]["Action"];
 
     // Getting policy distribution parameters from the current policy NN
-    auto curParameters = _policyLearner->getEvaluation(curState);
+    auto curMeans = _policyLearner->getEvaluation(curState);
 
     // Setting policy distributions to follow that of the current policy
-    updatePolicyDistributions(curParameters);
+    for (size_t i = 0; i < _problem->_actionVectorSize; i++)  _policyDistributions[i]->_mean = curMeans[i];
 
     // Getting new action given the current policy
     auto newAction = queryPolicy();
 
     // Getting policy distribution parameters from the old policy NN
-    std::vector<double> oldParameters = _experienceReplayHistory[curId]["Metadata"]["Parameters"];
+    std::vector<double> oldMeans = _experienceReplayHistory[curId]["Metadata"]["Means"];
 
     // Setting policy distributions to follow that of the old policy
-    updatePolicyDistributions(oldParameters);
+    for (size_t i = 0; i < _problem->_actionVectorSize; i++)  _policyDistributions[i]->_mean = oldMeans[i];
 
     // Getting p(s,a) for selected experience, given the old policy
     std::vector<double> pOldActionOldPolicyVector(_problem->_actionVectorSize);
@@ -320,7 +306,7 @@ void Continuous::processTrajectory(size_t startId, size_t endId)
     }
 
     // Setting policy distributions back the current policy
-    updatePolicyDistributions(curParameters);
+    for (size_t i = 0; i < _problem->_actionVectorSize; i++)  _policyDistributions[i]->_mean = curMeans[i];
 
     // Getting p(s,a) for the best action, given the current policy
     std::vector<double> pOldActionNewPolicyVector(_problem->_actionVectorSize);
@@ -345,6 +331,7 @@ void Continuous::processTrajectory(size_t startId, size_t endId)
     /*****************************************
      * Policy Section
      *****************************************/
+
     // compute variance and its inverse, assuming constant diagonal covariance
     double variance = _policyDistributions[0]->_standardDeviation * _policyDistributions[0]->_standardDeviation;
     double invVariance = 1/variance;
@@ -368,13 +355,8 @@ void Continuous::processTrajectory(size_t startId, size_t endId)
     double g2 = -correctionWeight * (qTilde - vCurState) *invVariance;
 
     // Now Calculating Acer gradient for all of the action's variables (mean and sigma)
-    std::vector<double> gPolicy(_problem->_actionVectorSize * 2, 0.0);
-    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-    {
-      // TO-DO -- using the scalars g1 and g2 somehow?
-      gPolicy[i*2 + 0] = (g1+g2)*(oldAction[i]-_policyDistributions[i]->_mean); // Mean - PW: done
-      gPolicy[i*2 + 1] = 0.0; // Sigma - PW: for now sigma is fixed
-    }
+    std::vector<double> gPolicy(_problem->_actionVectorSize, 0.0);
+    for (size_t i = 0; i < _problem->_actionVectorSize; i++)  gPolicy[i] = (g1+g2)*(oldAction[i] - curMeans[i]);
 
     ///////////////// KL Calculation /////////////////////
 
@@ -382,24 +364,11 @@ void Continuous::processTrajectory(size_t startId, size_t endId)
     _policyLearner->setHyperparameters(_policyAverageHyperparameters);
 
     // Getting policy distribution parameters from the average policy NN
-    auto avgParameters = _policyLearner->getEvaluation(curState);
-
-    // get mean for current weights
-    std::vector<double> currMean(_problem->_actionVectorSize);
-    for(size_t i = 0; i < _problem->_actionVectorSize; i++)
-      currMean[i] = _policyDistributions[i]->_mean;
-
-    // Setting policy distributions to average policy
-    updatePolicyDistributions(avgParameters);
+    auto avgMeans = _policyLearner->getEvaluation(curState);
 
     // Obtaining KL Divergence gradients for the current state.
-    std::vector<double> k(_problem->_actionVectorSize * 2);
-    for(size_t i = 0; i < _problem->_actionVectorSize; i++)
-    {
-     // Here we use avgParameters and curParameters to calculate the gradient of DKL for two gaussians
-     k[2*i + 0] = invVariance*(currMean[i]-_policyDistributions[i]->_mean); // To-do Mean - PW: done
-     k[2*i + 1] = 0.0; // To-do Sigma -- remember to sqrt? - PW: for now sigma is fixed
-    }
+    std::vector<double> k(_problem->_actionVectorSize);
+    for(size_t i = 0; i < _problem->_actionVectorSize; i++)  k[i] = invVariance*(curMeans[i] - avgMeans[i]);
 
      // Getting dot product between the gradient vector and k
      auto gkDotProduct = dotProduct(k, gPolicy);
@@ -439,8 +408,13 @@ void Continuous::processTrajectory(size_t startId, size_t endId)
       // Update the gradient vector with the value of the retrace function for g  = Q-Qret
       double gradA = unnormalizedTruncatedImportance * qRet; // PW: this is not true, the loss is not (Q-gradA)^2, but min{1,rho}(Q-gradA^2)
 
+      // Putting together state and action
+      std::vector<double> stateActionVector(curState.size() + oldAction.size());
+      for (size_t i = 0; i < curState.size(); i++) stateActionVector[i] = curState[i];
+      for (size_t i = 0; i < oldAction.size(); i++) stateActionVector[curState.size() + i] = oldAction[i];
+
       // Updating inputs to training learner
-      _aProblem->_inputs.push_back(curState);
+      _aProblem->_inputs.push_back(stateActionVector);
       _aProblem->_solution.push_back({ gradA });
 
      /*****************************************
@@ -484,14 +458,21 @@ void Continuous::processTrajectory(size_t startId, size_t endId)
    for (size_t i = 0; i < _experienceReplayHistory.size()-1; i++) experienceReplayIndexes[i] = i;
 
    // Allocating memory for the mini batch set
-   std::vector<std::vector<std::vector<double>>> miniBatches(_normalizationSteps);
+   std::vector<std::vector<std::vector<double>>> stateMiniBatches(_normalizationSteps);
+   std::vector<std::vector<std::vector<double>>> stateActionMiniBatches(_normalizationSteps);
 
    for (size_t i = 0; i < _normalizationSteps; i++)
-     miniBatches[i].resize(_normalizationBatchSize);
+   {
+     stateMiniBatches[i].resize(_normalizationBatchSize);
+     stateActionMiniBatches[i].resize(_normalizationBatchSize);
+   }
 
    for (size_t i = 0; i < _normalizationSteps; i++)
      for (size_t j = 0; j < _normalizationBatchSize; j++)
-       miniBatches[i][j].resize(_problem->_stateVectorSize);
+     {
+       stateMiniBatches[i][j].resize(_problem->_stateVectorSize);
+       stateActionMiniBatches[i][j].resize(_problem->_stateVectorSize + _problem->_actionVectorSize);
+     }
 
    // Filling the minibatches
    for (size_t step = 0; step < _normalizationSteps; step++)
@@ -503,13 +484,24 @@ void Continuous::processTrajectory(size_t startId, size_t endId)
      {
        // Selecting a uniformly random selected, yet not repeated experience
        size_t expId = experienceReplayIndexes[i];
-       miniBatches[step][i] = _experienceReplayHistory[expId]["State"].get<std::vector<double>>();
+
+       auto curState = _experienceReplayHistory[expId]["State"].get<std::vector<double>>();
+       auto curAction = _experienceReplayHistory[expId]["Action"].get<std::vector<double>>();
+
+       for (size_t j = 0; j < _problem->_stateVectorSize; j++)
+        {
+         stateMiniBatches[step][i][j] = curState[j];
+         stateActionMiniBatches[step][i][j] = curState[j];
+        }
+
+       for (size_t j = 0; j < _problem->_actionVectorSize; j++)
+        stateActionMiniBatches[step][i][_problem->_stateVectorSize + j] = curAction[j];
      }
    }
 
-   _aLearner->_trainingNeuralNetwork->normalize(miniBatches);
-   _vLearner->_trainingNeuralNetwork->normalize(miniBatches);
-   _policyLearner->_trainingNeuralNetwork->normalize(miniBatches);
+   _aLearner->_trainingNeuralNetwork->normalize(stateActionMiniBatches);
+   _vLearner->_trainingNeuralNetwork->normalize(stateMiniBatches);
+   _policyLearner->_trainingNeuralNetwork->normalize(stateMiniBatches);
 
    // Storing new inference parameters
    auto aHyperparameters = _aLearner->getHyperparameters();

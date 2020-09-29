@@ -73,6 +73,11 @@ class Continuous : public ACER
   size_t _actionCount;
 
   /**
+   * @brief Vector with inverse variance for the action variables
+   */
+  std::vector<double> _inverseVariances;
+
+  /**
    * @brief Calculates the state value function V(s) = Expectation_a [ Q(s,a) | s ] of a given experience using the latest critic
    * @param state state to evaluate
    * @return The value of the V(s)

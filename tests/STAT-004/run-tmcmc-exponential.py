@@ -19,8 +19,9 @@ e["Problem"]["Likelihood Model"] = lexponentialCustom
 
 # Configuring TMCMC parameters
 e["Solver"]["Type"] = "Sampler/TMCMC"
-e["Solver"]["Target Coefficient Of Variation"] = 1.0
-e["Solver"]["Population Size"] = 20000
+e["Solver"]["Target Coefficient Of Variation"] = 0.6
+e["Solver"]["Population Size"] = 5000
+e["Solver"]["Per Generation Burn In"] = [3, 3, 3, 3]
 
 # Configuring the problem's random distributions
 e["Distributions"][0]["Name"] = "Uniform 0"

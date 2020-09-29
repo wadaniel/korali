@@ -1,11 +1,6 @@
 #include "engine.hpp"
-#include "modules/solver/agent/CACER/CACER.hpp"
+#include "modules/solver/agent/ACER/Continuous/Continuous.hpp"
 #include "sample/sample.hpp"
-
-#ifdef _KORALI_USE_ONEDNN
-  #include "auxiliar/dnnUtils.hpp"
-using namespace dnnl;
-#endif
 
 /****************************************
  * Things to fix:
@@ -19,7 +14,10 @@ namespace solver
 {
 namespace agent
 {
-void CACER::initializeAgent()
+namespace acer
+{
+
+void Continuous::initializeAgent()
 {
   // Getting discrete problem pointer
   _continuousProblem = dynamic_cast<problem::reinforcementLearning::Continuous *>(_k->_problem);
@@ -152,7 +150,7 @@ void CACER::initializeAgent()
   _hyperparameters["Policy"] = _policyCurrentHyperparameters;
 }
 
-void CACER::updatePolicyDistributions(const std::vector<double> &parameters)
+void Continuous::updatePolicyDistributions(const std::vector<double> &parameters)
 {
  // For each of the problem's action dimensions
  for (size_t i = 0; i < _problem->_actionVectorSize; i++)
@@ -166,7 +164,7 @@ void CACER::updatePolicyDistributions(const std::vector<double> &parameters)
  }
 }
 
-std::vector<double> CACER::queryPolicy()
+std::vector<double> Continuous::queryPolicy()
 {
  // Creating storage for action
  std::vector<double> action(_problem->_actionVectorSize);
@@ -179,7 +177,7 @@ std::vector<double> CACER::queryPolicy()
  return action;
 }
 
-void CACER::getAction(korali::Sample &sample)
+void Continuous::getAction(korali::Sample &sample)
 {
   // Getting current state
   auto state = sample["State"].get<std::vector<double>>();
@@ -204,7 +202,7 @@ void CACER::getAction(korali::Sample &sample)
   sample["Action"] = action;
 }
 
-double CACER::stateActionValueFunction(const std::vector<double> &state, const std::vector<double> &action)
+double Continuous::stateActionValueFunction(const std::vector<double> &state, const std::vector<double> &action)
 {
   // Getting V(s)
   auto V = stateValueFunction(state);
@@ -239,7 +237,7 @@ double CACER::stateActionValueFunction(const std::vector<double> &state, const s
   return V + A - sumA / (double)_criticSamplingPopulation;
 }
 
-double CACER::stateValueFunction(const std::vector<double> &state)
+double Continuous::stateValueFunction(const std::vector<double> &state)
 {
  // Forward propagating state through the critic to get V(s)
  auto V = _vLearner->getEvaluation(state);
@@ -248,33 +246,8 @@ double CACER::stateValueFunction(const std::vector<double> &state)
  return V[0];
 }
 
-void CACER::trainAgent()
+void Continuous::processTrajectory(size_t startId, size_t endId)
 {
-  // Calculating cumulative Q*, for statistical purposes
-  _cumulativeQStar = 0.0;
-
-  // Creating storage for the starting index for all current trajectories
-  std::vector<size_t> trajectoryStartIndexes;
-
-  // Detecting trajectories
-  for (size_t i = 0; i < _experienceReplayHistory.size(); i++)
-   if (_experienceReplayHistory[i]["Trajectory Position"] == 0)
-    trajectoryStartIndexes.push_back(i);
-
-  // Storage for trajectory selections
-  std::vector<size_t> trajectories;
-
-  // Adding on-policy trajectory first
-  trajectories.push_back(trajectoryStartIndexes[trajectoryStartIndexes.size()-1]);
-
-  // Shuffling indexes to choose the off-policy trajectories from
-  std::shuffle(trajectoryStartIndexes.begin(), trajectoryStartIndexes.end()-1, *mt);
-
-  // Adding off-policy trajectories
-  for (size_t i = 0; i < _offPolicyUpdates; i++) trajectories.push_back(trajectoryStartIndexes[i]);
-
-  for (size_t tId = 0; tId < trajectories.size(); tId++)
-  {
    // Initializing inputs and solution for the critic and policy problems
    _vProblem->_inputs.clear();
    _vProblem->_solution.clear();
@@ -283,12 +256,8 @@ void CACER::trainAgent()
    _policyProblem->_inputs.clear();
    _policyProblem->_solution.clear();
 
-   // Getting initial experience id from the trajectory
-   size_t expId = trajectories[tId];
-
    // Going straight to the latest experience in the corresponding trajectory
-   size_t curId = expId;
-   while (_experienceReplayHistory[curId]["Trajectory End"] == false) curId++;
+   size_t curId = endId;
 
    // First, get the retrace value for the last experience (just the reward)
    double qRet = _experienceReplayHistory[curId]["Reward"];
@@ -301,7 +270,7 @@ void CACER::trainAgent()
    // Setting Qopc, which is Qret without the truncated importance ratio
    double qOpc = qRet;
 
-   while (curId > expId)
+   while (curId > startId)
    {
     // Decreasing current experience index
     curId--;
@@ -475,9 +444,6 @@ void CACER::trainAgent()
      qOpc = (qOpc - qCurState) + vCurState;
    }
 
-   // Updating statistics
-   _averageQStar = _cumulativeQStar / _aProblem->_solution.size();
-
    // Declaring engine to launch experiments
    korali::Engine engine;
 
@@ -557,17 +523,18 @@ void CACER::trainAgent()
 
    // Storing average policy hyperparameters
    _hyperparameters["Policy"] = _policyCurrentHyperparameters;
-
-  }
 }
 
-void CACER::updateHyperparameters(const knlohmann::json &hyperparameters)
+void Continuous::updateHyperparameters(const knlohmann::json &hyperparameters)
 {
   _policyLearner->setHyperparameters(hyperparameters["Policy"].get<std::vector<double>>());
 }
 
-void CACER::printAgentInformation()
+void Continuous::printAgentInformation()
 {
+  // Updating average Q*, for statistical purposes
+  _averageQStar = _cumulativeQStar / ((_offPolicyUpdates + 1) * _aProblem->_solution.size());
+
   _k->_logger->logInfo("Normal", "Critic Information:\n");
 
   _k->_logger->logInfo("Normal", " + Cumulative Expected Q-Value:     %f\n", _cumulativeQStar);
@@ -580,10 +547,12 @@ void CACER::printAgentInformation()
   _vExperiment._logger->_verbosityLevel = _k->_logger->_verbosityLevel;
   _vExperiment._solver->printGenerationAfter();
   _vExperiment._logger->setVerbosityLevel("Silent");
+
+   // Resetting cumulative Q*, for statistical purposes
+   _cumulativeQStar = 0.0;
 }
 
+} // namespace acer
 } // namespace agent
-
 } // namespace solver
-
 } // namespace korali

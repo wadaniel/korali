@@ -69,7 +69,7 @@ e["Variables"][4]["Type"] = "Action"
 
 ### Configuring ACER hyperparameters
 
-e["Solver"]["Type"] = "Agent/ACER"
+e["Solver"]["Type"] = "Agent / ACER / Discrete"
 e["Solver"]["Importance Weight Truncation"] = 5.0
 e["Solver"]["Trust Region Divergence Constraint"] = 1.0
 e["Solver"]["Trajectory Size"] = 1000

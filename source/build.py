@@ -64,7 +64,7 @@ def getClassName(headerFileString):
 
 
 def getNamespaceName(headerFileString):
-  namespaceLines = [ x for x in headerFileString.splitlines() if 'namespace' in x and not '//' in x and not '}' in x and not '\\' in x]
+  namespaceLines = [ x for x in headerFileString.splitlines() if 'namespace' in x and not '//' in x and not 'using' in x and not '}' in x and not '\\' in x]
   namespaces = [ x.rsplit()[1] for x in namespaceLines ]
   return namespaces
 

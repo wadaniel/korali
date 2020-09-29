@@ -3,6 +3,7 @@
 #include "modules/experiment/experiment.hpp"
 #include "modules/problem/problem.hpp"
 #include "modules/solver/solver.hpp"
+#include "sample/sample.hpp"
 
 using namespace std;
 
@@ -149,10 +150,13 @@ void Distributed::workerThread()
     if (actionJs["Conduit Action"] == "Terminate") return;
     if (actionJs["Conduit Action"] == "Process Sample")
     {
+      Engine *engine = _engineStack.top();
+      auto expId = actionJs["Experiment Id"];
       Sample s;
-      s._globals = &_globals;
+      s._globals = &engine->_experimentVector[expId]->_globals;
       s._js.getJson() = actionJs;
       s.sampleLauncher();
+
       if (_localRankId == 0)
       {
         string resultJsonString = s._js.getJson().dump();
@@ -161,7 +165,13 @@ void Distributed::workerThread()
         MPI_Send(resultJsonString.c_str(), resultJsonSize, MPI_CHAR, getRootRank(), MPI_TAG_ACTION_JSON_CONTENT, _mpiCommunicator);
       }
     }
-    if (actionJs["Conduit Action"] == "Broadcast Globals") _globals = actionJs;
+    if (actionJs["Conduit Action"] == "Broadcast Globals")
+    {
+      Engine *engine = _engineStack.top();
+      auto expId = actionJs["Experiment Id"];
+      auto key = actionJs["Globals"]["Key"].get<std::string>();
+      engine->_experimentVector[expId]->_globals[key] = actionJs["Globals"]["Values"];
+    }
     if (actionJs["Conduit Action"] == "Stack Engine") _engineStack.push(Engine::deserialize(actionJs["Engine"]));
     if (actionJs["Conduit Action"] == "Pop Engine") _engineStack.pop();
 
@@ -232,12 +242,22 @@ void Distributed::processSample(Sample &sample)
 #endif
 }
 
-void Distributed::broadcastGlobals(knlohmann::json &globalsJs)
+void Distributed::broadcastGlobals(std::string key, knlohmann::json &globalsJs)
 {
 #ifdef _KORALI_USE_MPI
 
-  globalsJs["Conduit Action"] = "Broadcast Globals";
-  string globalsString = globalsJs.dump();
+  // Run broadcast only if this is the master process
+  if (!isRoot()) return;
+
+  Engine *engine = _engineStack.top();
+
+  knlohmann::json js;
+  js["Experiment Id"] = engine->_currentExperiment->_experimentId;
+  js["Conduit Action"] = "Broadcast Globals";
+  js["Globals"]["Key"] = key;
+  js["Globals"]["Values"] = globalsJs;
+
+  string globalsString = js.dump();
   size_t globalsStringSize = globalsString.size();
 
   for (size_t i = 0; i < _teamCount; i++)

@@ -1,5 +1,6 @@
 #include "modules/problem/bayesian/bayesian.hpp"
 #include "modules/problem/bayesian/latent/latent.hpp"
+#include "sample/sample.hpp"
 #include <vector>
 
 namespace korali

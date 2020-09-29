@@ -3,6 +3,7 @@
 #include "modules/experiment/experiment.hpp"
 #include "modules/problem/problem.hpp"
 #include "modules/solver/solver.hpp"
+#include "sample/sample.hpp"
 
 using namespace std;
 
@@ -21,7 +22,7 @@ void Sequential::processSample(Sample &sample)
   auto js = knlohmann::json();
   js["Start Time"] = chrono::duration<double>(chrono::high_resolution_clock::now() - _startTime).count() + _cumulativeTime;
 
-  sample._globals = &_globals;
+  sample._globals = &engine->_currentExperiment->_globals;
   sample.sampleLauncher();
 
   js["End Time"] = chrono::duration<double>(chrono::high_resolution_clock::now() - _startTime).count() + _cumulativeTime;
@@ -30,9 +31,10 @@ void Sequential::processSample(Sample &sample)
   __profiler["Timelines"]["Worker 0"] += js;
 }
 
-void Sequential::broadcastGlobals(knlohmann::json &globalsJs)
+void Sequential::broadcastGlobals(std::string key, knlohmann::json &globalsJs)
 {
-  _conduit->_globals = globalsJs;
+  Engine *engine = _engineStack.top();
+  engine->_currentExperiment->_globals[key] = globalsJs;
 }
 
 } // namespace conduit

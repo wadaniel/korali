@@ -345,8 +345,8 @@ void Continuous::processTrajectory(size_t startId, size_t endId)
     /*****************************************
      * Policy Section
      *****************************************/
-    // compute variance and its inverse
-    double variance = _policyDistributions[i]->_standardDeviation * _policyDistributions[i]->_standardDeviation;
+    // compute variance and its inverse, assuming constant diagonal covariance
+    double variance = _policyDistributions[0]->_standardDeviation * _policyDistributions[0]->_standardDeviation;
     double invVariance = 1/variance;
 
     // Now calculating truncated importance weight
@@ -385,7 +385,7 @@ void Continuous::processTrajectory(size_t startId, size_t endId)
     auto avgParameters = _policyLearner->getEvaluation(curState);
 
     // get mean for current weights
-    vector<double> currMean(_actionVectorSize);
+    std::vector<double> currMean(_problem->_actionVectorSize);
     for(size_t i = 0; i < _problem->_actionVectorSize; i++)
       currMean[i] = _policyDistributions[i]->_mean;
 
@@ -397,7 +397,7 @@ void Continuous::processTrajectory(size_t startId, size_t endId)
     for(size_t i = 0; i < _problem->_actionVectorSize; i++)
     {
      // Here we use avgParameters and curParameters to calculate the gradient of DKL for two gaussians
-     k[2*i + 0] = invVariance*(currMean-_policyDistributionsAvg[i]->_mean); // To-do Mean - PW: done
+     k[2*i + 0] = invVariance*(currMean[i]-_policyDistributions[i]->_mean); // To-do Mean - PW: done
      k[2*i + 1] = 0.0; // To-do Sigma -- remember to sqrt? - PW: for now sigma is fixed
     }
 

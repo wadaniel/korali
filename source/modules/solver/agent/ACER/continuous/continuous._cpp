@@ -194,29 +194,6 @@ void Continuous::getAction(korali::Sample &sample)
   sample["Action"] = action;
 }
 
-double Continuous::stateActionValueFunction(const std::vector<double> &state, const std::vector<double> &action, const std::vector<std::vector<double>> &actionSamples)
-{
-  // Getting V(s)
-  auto V = stateValueFunction(state);
-
-  // Allocating stateAction vector for sampling the advantage function A(x,a)
-  std::vector<double> stateActionVector(state.size() + action.size());
-  for (size_t i = 0; i < state.size(); i++) stateActionVector[i] = state[i];
-  for (size_t i = 0; i < action.size(); i++) stateActionVector[state.size() + i] = action[i];
-  auto A = _aLearner->getEvaluation(stateActionVector)[0];
-
-  // Getting sum_n(A(x,u)) with u ~ policy(x)
-  double sumA = 0.0;
-  for (size_t sampleIdx = 0; sampleIdx < actionSamples.size(); sampleIdx++)
-  {
-   for (size_t i = 0; i < action.size(); i++) stateActionVector[state.size() + i] = actionSamples[sampleIdx][i];
-   sumA += _aLearner->getEvaluation(stateActionVector)[0];
-  }
-
-  // returning Qtilde = V + A - 1/n * sum(u)
-  return V + A - sumA / (double)actionSamples.size();
-}
-
 double Continuous::stateValueFunction(const std::vector<double> &state)
 {
  // Forward propagating state through the critic to get V(s)
@@ -262,40 +239,66 @@ void Continuous::processTrajectory(size_t startId, size_t endId)
     qRet = curReward + _discountFactor * qRet;
     qOpc = curReward + _discountFactor * qOpc;
 
-    // Getting experience's state
+    // Getting experience's state and action
     std::vector<double> expState = _experienceReplayHistory[curId]["State"];
+    std::vector<double> expAction = _experienceReplayHistory[curId]["Action"];
+
+    // Getting new action given the current policy
+    std::vector<double> newAction = queryPolicy();
+
+    // Allocating stateAction placeholder vector for combining a state and an action
+    std::vector<double> stateActionVector(_problem->_stateVectorSize + _problem->_actionVectorSize);
+    for (size_t i = 0; i < _problem->_stateVectorSize; i++) stateActionVector[i] = expState[i];
+
+    // Getting policy distribution parameters from the current policy NN
+    std::vector<double> curMeans = _policyLearner->getEvaluation(expState);
+
+    // Getting policy distribution parameters from the old policy NN
+    std::vector<double> oldMeans = _experienceReplayHistory[curId]["Metadata"]["Means"];
 
     // Calculating V(state) with the current policy
     double vExpState = stateValueFunction(expState);
 
-    // Getting experience's action
-    std::vector<double> expAction = _experienceReplayHistory[curId]["Action"];
-
-    // Getting policy distribution parameters from the current policy NN
-    auto curMeans = _policyLearner->getEvaluation(expState);
-
     // Setting policy distributions to follow that of the current policy
-    for (size_t i = 0; i < _problem->_actionVectorSize; i++)  _policyDistributions[i]->_mean = curMeans[i];
+    for (size_t i = 0; i < _problem->_actionVectorSize; i++) _policyDistributions[i]->_mean = curMeans[i];
 
-    // Getting new action given the current policy
-    auto newAction = queryPolicy();
+    // Getting A of experience action
+    for (size_t i = 0; i < _problem->_actionVectorSize; i++) stateActionVector[_problem->_stateVectorSize + i] = expAction[i];
+    auto aExpStateExpAction = _aLearner->getEvaluation(stateActionVector)[0];
 
-    // Getting n additional action samples from the policy
+    // Getting A of new action
+    for (size_t i = 0; i < _problem->_actionVectorSize; i++) stateActionVector[_problem->_stateVectorSize + i] = newAction[i];
+    auto aExpStateNewAction = _aLearner->getEvaluation(stateActionVector)[0];
+
+    // Getting n action samples from the policy
     std::vector<std::vector<double>> actionSamples(_policySamplePopulation);
-    for (size_t i = 0; i < _policySamplePopulation; i++) actionSamples[i] = queryPolicy();
+    for (size_t i = 0; i < _policySamplePopulation; i++)  actionSamples[i] = queryPolicy();
 
-    // Getting policy distribution parameters from the old policy NN
-    std::vector<double> oldMeans = _experienceReplayHistory[curId]["Metadata"]["Means"];
+    // Getting sum_n(A(x,u)) with u ~ policy(x)
+    double aSamplesMean = 0.0;
+    for (size_t sampleIdx = 0; sampleIdx < actionSamples.size(); sampleIdx++)
+    {
+     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+      stateActionVector[_problem->_stateVectorSize + i] = actionSamples[sampleIdx][i];
+     aSamplesMean += _aLearner->getEvaluation(stateActionVector)[0];
+    }
+    aSamplesMean =  aSamplesMean / (double)_policySamplePopulation;
+
+    // Getting Q(s, a) for the experience action
+    double qExpStateExpAction = vExpState + aExpStateExpAction - aSamplesMean;
+
+    // Getting Q(s, a') for the new (policy) action
+    double qExpStateNewAction = vExpState + aExpStateNewAction - aSamplesMean;
 
     // Setting policy distributions to follow that of the old policy
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)  _policyDistributions[i]->_mean = oldMeans[i];
 
     // Getting p(s,a) for selected experience, given the old policy
-    double pexpActionOldPolicy = 1.0;
+    double pExpActionOldPolicy = 1.0;
     double pNewActionOldPolicy = 1.0;
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
     {
-      pexpActionOldPolicy *= _policyDistributions[i]->getDensity(expAction[i]);
+      pExpActionOldPolicy *= _policyDistributions[i]->getDensity(expAction[i]);
       pNewActionOldPolicy *= _policyDistributions[i]->getDensity(newAction[i]);
     }
 
@@ -303,16 +306,18 @@ void Continuous::processTrajectory(size_t startId, size_t endId)
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)  _policyDistributions[i]->_mean = curMeans[i];
 
     // Getting p(s,a) for the best action, given the current policy
-    double pexpActionCurPolicy = 1.0;
+    double pExpActionCurPolicy = 1.0;
     double pNewActionCurPolicy = 1.0;
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
     {
-     pexpActionCurPolicy *= _policyDistributions[i]->getDensity(expAction[i]);
+     pExpActionCurPolicy *= _policyDistributions[i]->getDensity(expAction[i]);
      pNewActionCurPolicy *= _policyDistributions[i]->getDensity(newAction[i]);
     }
 
-    // Now calculating importance weight for s,a (old) and the s, a' (new)
-    double oldImportanceWeight = pexpActionCurPolicy / pexpActionOldPolicy;
+    // Now calculating importance weight for s,a (old)
+    double oldImportanceWeight = pExpActionCurPolicy / pExpActionOldPolicy;
+
+    // Now calculating importance weight for s, a' (new)
     double newImportanceWeight = pNewActionCurPolicy / pNewActionOldPolicy;
 
     /*****************************************
@@ -323,10 +328,7 @@ void Continuous::processTrajectory(size_t startId, size_t endId)
     double truncatedImportanceWeight = std::min(_importanceWeightTruncation, oldImportanceWeight);
 
     // First part of the gradient vector
-    double g1 = -truncatedImportanceWeight * (qOpc - vExpState);
-
-    // Calculate Qtilde of the new action
-    double qExpStateNewAction = stateActionValueFunction(expState, newAction, actionSamples);
+    double g1 = - truncatedImportanceWeight * (qOpc - vExpState);
 
     // Now calculating r(a) - c / r(a) ratio
     double importanceRatio = 1.0 - (_importanceWeightTruncation / newImportanceWeight);
@@ -335,11 +337,16 @@ void Continuous::processTrajectory(size_t startId, size_t endId)
     double correctionWeight = importanceRatio > 0.0 ? importanceRatio : 0.0;
 
     // Compute the expectation for the second part of the gradient vector
-    double g2 = -correctionWeight * (qExpStateNewAction - vExpState);
+    double g2 = - correctionWeight * (qExpStateNewAction - vExpState);
 
     // Now Calculating Acer gradient for all of the action's variables (mean and sigma)
     std::vector<double> gPolicy(_problem->_actionVectorSize, 0.0);
-    for (size_t i = 0; i < _problem->_actionVectorSize; i++) gPolicy[i] = (g1+g2)*_inverseVariances[i]*(expAction[i] - curMeans[i]);
+    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+    {
+     double diffExpAction = expAction[i] - curMeans[i];
+     double diffNewAction = newAction[i] - curMeans[i];
+     gPolicy[i] = _inverseVariances[i] * (g1*diffExpAction + g2*diffNewAction);
+    }
 
     ///////////////// KL Calculation /////////////////////
 
@@ -351,7 +358,8 @@ void Continuous::processTrajectory(size_t startId, size_t endId)
 
     // Obtaining KL Divergence gradients for the current state.
     std::vector<double> k(_problem->_actionVectorSize);
-    for(size_t i = 0; i < _problem->_actionVectorSize; i++)  k[i] = _inverseVariances[i]*(curMeans[i] - avgMeans[i]);
+    for(size_t i = 0; i < _problem->_actionVectorSize; i++)
+     k[i] = _inverseVariances[i]*(curMeans[i] - avgMeans[i]);
 
      // Getting dot product between the gradient vector and k
      auto gkDotProduct = dotProduct(k, gPolicy);
@@ -372,13 +380,10 @@ void Continuous::processTrajectory(size_t startId, size_t endId)
      * Update Networks for Q estimation
      *****************************************/
 
-    // Getting Q(s, a) for the selected experience
-    double qExpStateExpAction = stateActionValueFunction(expState, expAction, actionSamples);
-
     ///////////////// Gradients for the State Function V(s) /////////////////
 
       // Update the gradient vector with the value of the retrace function for g  = Q-Qret
-      double gradV = ( qRet - qExpStateExpAction );
+      double gradV = std::min(1.0, oldImportanceWeight) * ( qRet - qExpStateExpAction );
 
       // Updating inputs to training learner
       _vProblem->_inputs.push_back(expState);
@@ -388,15 +393,10 @@ void Continuous::processTrajectory(size_t startId, size_t endId)
 
     ///////////////// Gradients for the Advantage Function A(s) /////////////////
 
-      // Now calculating unnormalized truncated importance weight with 1.0 as truncation factor
-      double unnormalizedTruncatedImportance = std::min(1.0, oldImportanceWeight);
-
       // Update the gradient vector with the value of the retrace function for g  = Q-Qret
-      double gradA = unnormalizedTruncatedImportance * ( qRet - qExpStateExpAction );
+      double gradA =  qRet - qExpStateExpAction;
 
       // Putting together state and action
-      std::vector<double> stateActionVector(_problem->_stateVectorSize + _problem->_actionVectorSize);
-      for (size_t i = 0; i < _problem->_stateVectorSize; i++) stateActionVector[i] = expState[i];
       for (size_t i = 0; i < _problem->_actionVectorSize; i++) stateActionVector[_problem->_stateVectorSize + i] = expAction[i];
 
       // Updating inputs to training learner
@@ -407,7 +407,8 @@ void Continuous::processTrajectory(size_t startId, size_t endId)
       double averagedGradient = gradA / (double) _policySamplePopulation;
       for (size_t sampleIdx = 0; sampleIdx < _policySamplePopulation; sampleIdx++)
       {
-       for (size_t i = 0; i < _problem->_actionVectorSize; i++) stateActionVector[_problem->_stateVectorSize + i] = actionSamples[sampleIdx][i];
+       for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+        stateActionVector[_problem->_stateVectorSize + i] = actionSamples[sampleIdx][i];
        _aProblem->_inputs.push_back(stateActionVector);
        _aProblem->_solution.push_back({ averagedGradient });
       }
@@ -537,14 +538,6 @@ void Continuous::printAgentInformation()
 
   _k->_logger->logInfo("Normal", " + Cumulative Expected Q-Value:     %f\n", _cumulativeQStar);
   _k->_logger->logInfo("Normal", " + Average Expected Q-Value:        %f\n", _averageQStar);
-
-  _aExperiment._logger->_verbosityLevel = _k->_logger->_verbosityLevel;
-  _aExperiment._solver->printGenerationAfter();
-  _aExperiment._logger->setVerbosityLevel("Silent");
-
-  _vExperiment._logger->_verbosityLevel = _k->_logger->_verbosityLevel;
-  _vExperiment._solver->printGenerationAfter();
-  _vExperiment._logger->setVerbosityLevel("Silent");
 
    // Resetting cumulative Q*, for statistical purposes
    _cumulativeQStar = 0.0;

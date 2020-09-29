@@ -85,15 +85,6 @@ class Continuous : public ACER
   double stateValueFunction(const std::vector<double> &state);
 
   /**
-   * @brief Calculates the state+action value function Q(s,a) = V(s) + A(s,a) - 1/n sum_n[A(s, u_i) - with u_i ~ policy(s)
-   * @param state state to evaluate
-   * @param action action to evaluate
-   * @param actionSamples additional samples from the policy for the calculation of Qtilde
-   * @return The value of Q(s,a)
-   */
-  double stateActionValueFunction(const std::vector<double> &state, const std::vector<double> &action, const std::vector<std::vector<double>> &actionSamples);
-
-  /**
    * @brief Updated policy action-generating independent normal distributions given hyperparameters (mean + sigma) for all of them
    * @param parameters The parameters that define the normal distributions (mean+sigma)
    */

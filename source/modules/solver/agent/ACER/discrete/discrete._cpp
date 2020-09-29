@@ -1,5 +1,5 @@
 #include "engine.hpp"
-#include "modules/solver/agent/ACER/Discrete/Discrete.hpp"
+#include "modules/solver/agent/ACER/discrete/discrete.hpp"
 #include "sample/sample.hpp"
 
 /****************************************

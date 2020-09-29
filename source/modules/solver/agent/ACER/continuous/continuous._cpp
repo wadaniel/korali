@@ -1,5 +1,5 @@
 #include "engine.hpp"
-#include "modules/solver/agent/ACER/Continuous/Continuous.hpp"
+#include "modules/solver/agent/ACER/continuous/continuous.hpp"
 #include "sample/sample.hpp"
 
 /****************************************

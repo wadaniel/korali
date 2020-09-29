@@ -76,7 +76,7 @@ e["Variables"][2]["Upper Bound"] = 10.0
 
 ### Defining Agent Configuration 
 
-e["Solver"]["Type"] = "Agent / ACER / Discrete"
+e["Solver"]["Type"] = "Agent / ACER / Continuous"
 e["Solver"]["Importance Weight Truncation"] = 5.0
 e["Solver"]["Trust Region Divergence Constraint"] = 1.0
 e["Solver"]["Trajectory Size"] = 1000

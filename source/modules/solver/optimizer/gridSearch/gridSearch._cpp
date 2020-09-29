@@ -1,5 +1,6 @@
-#include "modules/conduit/conduit.hpp"
+#include "engine.hpp"
 #include "modules/solver/optimizer/gridSearch/gridSearch.hpp"
+#include "sample/sample.hpp"
 
 namespace korali
 {
@@ -66,10 +67,10 @@ void GridSearch::runGeneration()
     samples[i]["Operation"] = "Evaluate";
     samples[i]["Parameters"] = sampleData;
     samples[i]["Sample Id"] = i;
-    _conduit->start(samples[i]);
+    KORALI_START(samples[i]);
     _modelEvaluationCount++;
   }
-  _conduit->waitAll(samples);
+  KORALI_WAITALL(samples);
   for (size_t i = 0; i < _numberOfValues; i++)
   {
     _objective[i] = KORALI_GET(double, samples[i], "F(x)");

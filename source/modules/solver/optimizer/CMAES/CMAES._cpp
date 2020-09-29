@@ -1,4 +1,4 @@
-#include "modules/conduit/conduit.hpp"
+#include "engine.hpp"
 #include "modules/solver/optimizer/CMAES/CMAES.hpp"
 #include "sample/sample.hpp"
 
@@ -193,11 +193,11 @@ void CMAES::runGeneration()
     samples[i]["Sample Id"] = i;
     _modelEvaluationCount++;
 
-    _conduit->start(samples[i]);
+    KORALI_START(samples[i]);
   }
 
   // Waiting for samples to finish
-  _conduit->waitAll(samples);
+  KORALI_WAITALL(samples);
   updateDistribution(samples);
 }
 
@@ -293,8 +293,8 @@ void CMAES::checkMeanAndSetRegime()
   sample["Module"] = "Problem";
   sample["Operation"] = "Evaluate Constraints";
 
-  _conduit->start(sample);
-  _conduit->wait(sample);
+  KORALI_START(sample);
+  KORALI_WAIT(sample);
   _constraintEvaluationCount++;
 
   auto cEvals = KORALI_GET(std::vector<double>, sample, "Constraint Evaluations");
@@ -330,8 +330,8 @@ void CMAES::updateConstraints()
     sample["Module"] = "Problem";
     sample["Operation"] = "Evaluate Constraints";
 
-    _conduit->start(sample);
-    _conduit->wait(sample);
+    KORALI_START(sample);
+    KORALI_WAIT(sample);
     _constraintEvaluationCount++;
 
     auto cEvals = KORALI_GET(std::vector<double>, sample, "Constraint Evaluations");
@@ -374,8 +374,8 @@ void CMAES::reEvaluateConstraints()
       sample["Module"] = "Problem";
       sample["Operation"] = "Evaluate Constraints";
 
-      _conduit->start(sample);
-      _conduit->wait(sample);
+      KORALI_START(sample);
+      KORALI_WAIT(sample);
       _constraintEvaluationCount++;
 
       _sampleConstraintViolationCounts[i] = 0;
@@ -819,12 +819,10 @@ void CMAES::updateEigensystem(std::vector<double> &M)
   eigen(_k->_variables.size(), M, _auxiliarAxisLengths, _auxiliarCovarianceEigenvectorMatrix);
 
   /* find largest and smallest eigenvalue, they are supposed to be sorted anyway */
-  double minEWtmp = *std::min_element(std::begin(_auxiliarAxisLengths), std::end(_auxiliarAxisLengths));
-  double maxEWtmp = *std::max_element(std::begin(_auxiliarAxisLengths), std::end(_auxiliarAxisLengths));
-
-  if (minEWtmp <= 0.0)
+  double minCovEVal = *std::min_element(std::begin(_auxiliarAxisLengths), std::end(_auxiliarAxisLengths));
+  if (minCovEVal <= 0.0)
   {
-    _k->_logger->logWarning("Detailed", "Min Eigenvalue smaller or equal 0.0 (%+6.3e) after Eigen decomp (no update possible).\n", minEWtmp);
+    _k->_logger->logWarning("Detailed", "Min Eigenvalue smaller or equal 0.0 (%+6.3e) after Eigen decomp (no update possible).\n", minCovEVal);
     return;
   }
 
@@ -845,11 +843,10 @@ void CMAES::updateEigensystem(std::vector<double> &M)
   }
 
   /* write back */
+  _minimumCovarianceEigenvalue = minCovEVal;
+  _maximumCovarianceEigenvalue = *std::max_element(std::begin(_auxiliarAxisLengths), std::end(_auxiliarAxisLengths));
   for (size_t d = 0; d < _k->_variables.size(); ++d) _axisLengths[d] = _auxiliarAxisLengths[d];
   _covarianceEigenvectorMatrix.assign(std::begin(_auxiliarCovarianceEigenvectorMatrix), std::end(_auxiliarCovarianceEigenvectorMatrix));
-
-  _minimumCovarianceEigenvalue = minEWtmp;
-  _maximumCovarianceEigenvalue = maxEWtmp;
 }
 
 /************************************************************************/

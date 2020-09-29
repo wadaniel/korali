@@ -14,24 +14,11 @@ function check()
  fi 
 }
 
-# Help display function
-function print_help ()
-{
- echo ""
- echo "Syntax: ./install_${libName}.sh [--jobs=N] [--check]"
- echo ""
- echo "Where:"
- echo " --no-install If ${libName} is not found, do not download and install it."
- echo " --jobs=N Specifies N jobs to use when building ${libName}."
- echo " --help Displays this help message."
-}
-
 ######### Environment Configuration ########
 
-NJOBS=4
 baseKoraliDir=$PWD
 foundbinVersionFile=0
-install=1
+source ${baseKoraliDir}/install.config
 
 if [ -f $baseKoraliDir/docs/VERSION ]; then
  foundbinVersionFile=1
@@ -46,33 +33,6 @@ if [ $foundbinVersionFile == 0 ]; then
   echo "[Korali] Error: You need to run this file from Korali's base folder."
   exit 1
 fi
-
-######### Argument Parsing ########
-
-for i in "$@"
-do
-case $i in
-    --jobs=*)
-    NJOBS="${i#*=}"
-    shift
-    ;;
-    --no-install)
-    install=0
-    shift 
-    ;;
-    --help)
-    print_help
-    exit 0 
-    shift 
-    ;;
-    *)
-    print_help
-    echo ""
-    echo "[Korali] Error:  Unknown option $i."       
-    exit 1
-    ;;
-esac
-done
 
 ######## Checking for existing software ########
 
@@ -93,11 +53,6 @@ fi
 ######## If not installed, download and install ########
 
 if [ ${fileFound} == 0 ]; then
-
- if [ ${install} == 0 ]; then
-   echo "[Korali] Could not find an installation of ${libName}."
-   exit 1
- fi
 
  # Checking whether gsl is accessible
  $externalDir/install_gsl.sh 

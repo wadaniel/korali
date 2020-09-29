@@ -1,5 +1,6 @@
-#include "modules/conduit/conduit.hpp"
+#include "engine.hpp"
 #include "modules/solver/integrator/integrator.hpp"
+#include "sample/sample.hpp"
 
 namespace korali
 {
@@ -68,10 +69,10 @@ void Integrator::runGeneration()
     samples[i]["Module"] = "Problem";
     samples[i]["Operation"] = "Execute";
     samples[i]["Parameters"] = sampleData;
-    _conduit->start(samples[i]);
+    KORALI_START(samples[i]);
     _modelEvaluationCount++;
   }
-  _conduit->waitAll(samples);
+  KORALI_WAITALL(samples);
 
   double weight;
   for (size_t i = 0; i < _executionsPerGeneration; i++)

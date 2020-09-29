@@ -1,6 +1,5 @@
 #include "auxiliar/fs.hpp"
 #include "auxiliar/koraliJson.hpp"
-#include "auxiliar/py2json.hpp"
 #include "engine.hpp"
 #include "modules/conduit/conduit.hpp"
 #include "modules/conduit/distributed/distributed.hpp"
@@ -207,16 +206,7 @@ void Experiment::initialize()
 
     applyModuleDefaults(_js.getJson());
     setSeed(_js.getJson());
-
-    try
-    {
-      setConfiguration(_js.getJson());
-    }
-    catch (const std::exception &e)
-    {
-      KORALI_LOG_ERROR("Error parsing Experiment's configuration. Reason:\n%s", e.what());
-    }
-
+    setConfiguration(_js.getJson());
     getConfiguration(_js.getJson());
 
     _logger = new Logger(_consoleOutputVerbosity, stdout);
@@ -238,12 +228,12 @@ std::vector<double> Experiment::getAction(const std::vector<double> &state)
 {
   auto agent = dynamic_cast<solver::Agent *>(_k->_solver);
   if (agent != NULL)
-    return agent->getAction(state);
+    return agent->getInferenceAction(state);
   else
-    KORALI_LOG_ERROR("This solver does not support getAction operations.\n");
+    KORALI_LOG_ERROR("This solver does not support getInferenceAction.\n");
 }
 
-std::vector<std::vector<double>> Experiment::getEvaluation(const std::vector<std::vector<double>> &inputBatch)
+std::vector<double> Experiment::getEvaluation(const std::vector<double> &inputBatch)
 {
   auto learner = dynamic_cast<solver::Learner *>(_k->_solver);
   if (learner != NULL)
@@ -252,7 +242,7 @@ std::vector<std::vector<double>> Experiment::getEvaluation(const std::vector<std
     KORALI_LOG_ERROR("This solver does not support evaluation operations.\n");
 }
 
-std::vector<std::vector<double>> Experiment::getGradients(const std::vector<std::vector<double>> &outputDiffs)
+std::vector<double> Experiment::getGradients(const std::vector<double> &outputDiffs)
 {
   auto learner = dynamic_cast<solver::Learner *>(_k->_solver);
   if (learner != NULL)

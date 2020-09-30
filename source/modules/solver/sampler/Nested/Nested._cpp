@@ -350,7 +350,7 @@ double Nested::logPriorWeight(std::vector<double> &sample)
     if (_k->_distributions[_k->_variables[d]->_distributionIndex]->_type != "Univariate/Uniform")
     {
       logweight += dynamic_cast<distribution::Univariate *>(_k->_distributions[_k->_variables[d]->_distributionIndex])->getLogDensity(sample[d]);
-      logweight -= log(_priorWidth[d]);
+      logweight += log(_priorWidth[d]); 
     }
   return logweight;
 }

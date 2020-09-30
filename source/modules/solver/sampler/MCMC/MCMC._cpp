@@ -238,7 +238,7 @@ void MCMC::printGenerationAfter()
   for (size_t d = 0; d < _k->_variables.size(); d++)
   {
     for (size_t e = 0; e <= d; e++) _k->_logger->logData("Detailed", "         %+6.3e  ", _chainCovariance[d * _k->_variables.size() + e]);
-    _k->_logger->logInfo("Detailed", "\n");
+    _k->_logger->logData("Detailed", "\n");
   }
 }
 

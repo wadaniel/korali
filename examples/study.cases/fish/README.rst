@@ -33,7 +33,7 @@ Setup
 
 .. code-block:: bash
    
-  ./make -j6
+  make -j6
 
 3) Run the test:
 

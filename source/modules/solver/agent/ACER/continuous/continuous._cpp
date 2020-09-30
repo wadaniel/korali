@@ -410,7 +410,7 @@ void Continuous::processTrajectory(size_t startId, size_t endId)
        for (size_t i = 0; i < _problem->_actionVectorSize; i++)
         stateActionVector[_problem->_stateVectorSize + i] = actionSamples[sampleIdx][i];
        _aProblem->_inputs.push_back(stateActionVector);
-       _aProblem->_solution.push_back({ averagedGradient });
+       _aProblem->_solution.push_back({ - averagedGradient });
       }
 
      /*****************************************

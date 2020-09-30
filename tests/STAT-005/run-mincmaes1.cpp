@@ -22,7 +22,7 @@ int main(int argc, char **argv)
 
   e["Solver"]["Type"] = "Optimizer/CMAES";
   e["Solver"]["Population Size"] = 32;
-  e["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-8;
+  e["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-12;
   e["Solver"]["Termination Criteria"]["Max Generations"] = 100;
 
   k.run(e);

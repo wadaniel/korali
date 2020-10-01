@@ -41,9 +41,11 @@ void Discrete::initializeAgent()
   _criticExperiment["File Output"]["Enabled"] = false;
   _criticExperiment["Random Seed"] = _k->_randomSeed++;
 
-  for (size_t j = 0; j < _problem->_stateVectorSize; j++)
-   _criticExperiment["Problem"]["Inputs"][0][j] = 0.0;
-  _criticExperiment["Problem"]["Solution"][0][0] = 0.0;
+  for (size_t i = 0; i < _problem->_stateVectorSize; i++)
+   _criticExperiment["Problem"]["Inputs"][0][i] = 0.0;
+
+  for (size_t i = 0; i < _discreteProblem->_possibleActions.size(); i++)
+   _criticExperiment["Problem"]["Solution"][0][i] = 0.0;
 
   // Running initialization to verify that the configuration is correct
   engine.initialize(_criticExperiment);
@@ -217,8 +219,8 @@ void Discrete::processTrajectory(size_t startId, size_t endId)
     // Now calculating importance weight for the old s,a experience
     double importanceWeight = pActionCurPolicy / pActionOldPolicy;
 
-    // Getting Q(s, a) for the selected experience
     double qCurState = stateActionValueFunction(curState, curActionIdx);
+
 
     /*****************************************
      * Policy Section

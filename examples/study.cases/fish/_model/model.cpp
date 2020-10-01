@@ -12,6 +12,7 @@ StefanFish* _agent;
 
 void runEnvironment(korali::Sample &s)
 {
+ // Setting seed
  size_t seed = s["Sample Id"];
  _randomGenerator.seed(seed);
 

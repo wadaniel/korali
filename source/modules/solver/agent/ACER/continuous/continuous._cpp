@@ -103,7 +103,7 @@ void Continuous::initializeAgent()
   // Initializing experiment with an initial zero set
   for (size_t i = 0; i < _problem->_stateVectorSize + _problem->_actionVectorSize; i++)
    _aExperiment["Problem"]["Inputs"][0][i] = 0.0;
-  _aExperiment["Problem"]["Solution"][0][0] = 0.0; // V(s,a)
+  _aExperiment["Problem"]["Solution"][0][0] = 0.0; // A(s,a)
 
   // Running initialization to verify that the configuration is correct
   engine.initialize(_aExperiment);

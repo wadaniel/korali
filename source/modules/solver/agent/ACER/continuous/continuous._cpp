@@ -349,16 +349,18 @@ void Continuous::processTrajectory(size_t startId, size_t endId)
 
     ///////////////// KL Calculation /////////////////////
 
-    // Getting policy distribution parameters given the average policy
-    _policyLearner->setHyperparameters(_policyAverageHyperparameters);
+    // Now calculating trust region, if required
+    if (_policyTrustRegionEnabled)
+    {
+     // Getting policy distribution parameters given the average policy
+     _policyLearner->setHyperparameters(_policyAverageHyperparameters);
 
-    // Getting policy distribution parameters from the average policy NN
-    auto avgMeans = _policyLearner->getEvaluation(expState);
+     // Getting policy distribution parameters from the average policy NN
+     auto avgMeans = _policyLearner->getEvaluation(expState);
 
-    // Obtaining KL Divergence gradients for the current state.
-    std::vector<double> k(_problem->_actionVectorSize);
-    for(size_t i = 0; i < _problem->_actionVectorSize; i++)
-     k[i] = _inverseVariances[i]*(curMeans[i] - avgMeans[i]);
+     // Obtaining KL Divergence gradients for the current state.
+     std::vector<double> k(_problem->_actionVectorSize);
+     for(size_t i = 0; i < _problem->_actionVectorSize; i++)  k[i] = _inverseVariances[i]*(curMeans[i] - avgMeans[i]);
 
      // Getting dot product between the gradient vector and k
      auto gkDotProduct = dotProduct(k, gPolicy);
@@ -367,10 +369,13 @@ void Continuous::processTrajectory(size_t startId, size_t endId)
      auto kNormSquared = dotProduct(k, k);
 
      // Getting magnitude of adjustment
-     double adjustmentMagnitude = std::max(0.0, (gkDotProduct - _trustRegionDivergenceConstraint) / kNormSquared);
+     double adjustmentMagnitude = std::max(0.0, (gkDotProduct - _policyTrustRegionDivergenceConstraint) / kNormSquared);
 
      // Adjusting gradients to trust region
      for(size_t i = 0; i < gPolicy.size(); i++) gPolicy[i] = gPolicy[i] - adjustmentMagnitude * k[i];
+    }
+
+    ///////////////// Storing Gradients /////////////////////
 
      _policyProblem->_inputs.push_back(expState);
      _policyProblem->_solution.push_back(gPolicy);
@@ -512,9 +517,10 @@ void Continuous::processTrajectory(size_t startId, size_t endId)
    // Getting new policy hyperparameters
    _policyCurrentHyperparameters = _policyLearner->getHyperparameters();
 
-   // Softly adopting the new parameters, using an adoption rate
-   for (size_t i = 0; i < _policyCurrentHyperparameters.size(); i++)
-    _policyAverageHyperparameters[i] = _policyAdoptionRate*_policyAverageHyperparameters[i] + (1-_policyAdoptionRate)*_policyCurrentHyperparameters[i];
+   // If using a trust region, softly adopting the new parameters of the average policy, using an adoption rate
+   if (_policyTrustRegionEnabled)
+    for (size_t i = 0; i < _policyCurrentHyperparameters.size(); i++)
+     _policyAverageHyperparameters[i] = _policyTrustRegionAdoptionRate*_policyAverageHyperparameters[i] + (1-_policyTrustRegionAdoptionRate)*_policyCurrentHyperparameters[i];
 
    // Updating policy with new averaged parameters
    _policyLearner->setHyperparameters(_policyCurrentHyperparameters);

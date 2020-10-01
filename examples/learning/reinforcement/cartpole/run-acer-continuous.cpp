@@ -37,7 +37,6 @@ int main(int argc, char *argv[])
 
   e["Solver"]["Type"] = "Agent / ACER / Continuous";
   e["Solver"]["Importance Weight Truncation"] = 5.0;
-  e["Solver"]["Trust Region Divergence Constraint"] = 1.0;
   e["Solver"]["Trajectory Size"] = 1000;
   e["Solver"]["Discount Factor"] = 0.995;
   e["Solver"]["Off Policy Updates"] = 8;
@@ -80,10 +79,13 @@ int main(int argc, char *argv[])
 
   // Defining Policy Configuration
 
+  e["Solver"]["Policy"]["Trust Region"]["Enabled"] = true;
+  e["Solver"]["Policy"]["Trust Region"]["Divergence Constraint"] = 1.0;
+  e["Solver"]["Policy"]["Trust Region"]["Adoption Rate"] = 0.99;
+
   e["Solver"]["Policy"]["Optimizer"]["Type"] = "Optimizer/Adam";
   e["Solver"]["Policy"]["Optimizer"]["Termination Criteria"]["Min Gradient Norm"] = -1.0;
   e["Solver"]["Policy"]["Optimizer"]["Eta"] = 0.001;
-  e["Solver"]["Policy"]["Adoption Rate"] = 0.99;
   e["Solver"]["Policy"]["Sample Population"] = 10;
 
   e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense";

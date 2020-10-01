@@ -134,7 +134,7 @@ void Agent::runGeneration()
 
   // If the policy has exceeded the threshold during training, it is time to test it properly (without noise)
   // Otherwise, let current testing reward remain as -inf.
-  if (_currentReward > _trainingRewardThreshold)
+  if (_currentReward >= _trainingRewardThreshold)
   {
     // Increasing tested policy counter
     _candidatePoliciesTested++;

@@ -1,52 +1,36 @@
 #!/usr/bin/env python3
 import os
 import sys
-import math
-import gym
+sys.path.append('./_model')
+from cartpole import *
 
 ######## Defining Environment Storage
 
-maxSteps = 5
-initialBudget = 25
-
-####### Defining Problem's environment
+cart = CartPole()
+maxSteps = 500
 
 def env(s):
 
  # Initializing environment
- budget = initialBudget
+ cart.reset()
+ s["State"] = cart.getState().tolist()
  step = 0
+ done = False
 
- while step < maxSteps:
+ while not done and step < maxSteps:
 
-  # Storing current budget as state
-  s["State"] = [ budget ]
-  
   # Getting new action
   s.update()
   
-  # Reading action
-  action0 = s["Action"][0]
-  action1 = s["Action"][1]
-  print('Python Action: ' + str(action0) + ' ' + str(action1) ) 
+  # Performing the action
+  done = cart.advance(s["Action"])
   
-  # Reward = action, if not bigger than state
-  val0 = action0 - 5.0
-  val1 = action1 - 2.5
-  reward = -2*(val0*val0 + val1*val1)
-  
-  # Calculating remaining budget
-  spenditure = val0 + val1
-  budget = budget - spenditure
-  
-  # If budget is negative (overdraft), set to zero and punish
-  if (budget < 0): 
-    reward = reward - abs(budget)*5.0
-    budget = 0
-    
-  # Storing Reward
-  s["Reward"] = reward
+  # Getting Reward
+  s["Reward"] = cart.getReward()
    
+  # Storing New State
+  s["State"] = cart.getState().tolist()
+  
   # Advancing step counter
   step = step + 1
   
@@ -61,32 +45,33 @@ e["Problem"]["Environment Function"] = env
 e["Problem"]["Action Repeat"] = 1
 e["Problem"]["Actions Between Policy Updates"] = 1
 
-e["Variables"][0]["Name"] = "Budget"
+e["Variables"][0]["Name"] = "Cart Position"
 e["Variables"][0]["Type"] = "State"
 
-e["Variables"][1]["Name"] = "Spenditure"
-e["Variables"][1]["Type"] = "Action"
-e["Variables"][1]["Lower Bound"] = 0.0
-e["Variables"][1]["Upper Bound"] = 10.0
+e["Variables"][1]["Name"] = "Cart Velocity"
+e["Variables"][1]["Type"] = "State"
 
-e["Variables"][2]["Name"] = "Spenditure"
-e["Variables"][2]["Type"] = "Action"
-e["Variables"][2]["Lower Bound"] = 0.0
-e["Variables"][2]["Upper Bound"] = 10.0
+e["Variables"][2]["Name"] = "Pole Omega"
+e["Variables"][2]["Type"] = "State"
+
+e["Variables"][3]["Name"] = "Pole Cos(Angle)"
+e["Variables"][3]["Type"] = "State"
+
+e["Variables"][4]["Name"] = "Pole Sin(Angle)"
+e["Variables"][4]["Type"] = "State"
+
+e["Variables"][5]["Name"] = "Force"
+e["Variables"][5]["Type"] = "Action"
+e["Variables"][5]["Lower Bound"] = -10.0
+e["Variables"][5]["Upper Bound"] = +10.0
 
 ### Defining noise to add to the action
 
-e["Variables"][1]["Exploration Noise"]["Enabled"] = True
-e["Variables"][1]["Exploration Noise"]["Distribution"]["Type"] = "Univariate/Normal"
-e["Variables"][1]["Exploration Noise"]["Distribution"]["Mean"] = 0.0
-e["Variables"][1]["Exploration Noise"]["Distribution"]["Standard Deviation"] = 0.05
-e["Variables"][1]["Exploration Noise"]["Theta"] = 0.05
-
-e["Variables"][2]["Exploration Noise"]["Enabled"] = True 
-e["Variables"][2]["Exploration Noise"]["Distribution"]["Type"] = "Univariate/Normal"
-e["Variables"][2]["Exploration Noise"]["Distribution"]["Mean"] = 0.0
-e["Variables"][2]["Exploration Noise"]["Distribution"]["Standard Deviation"] = 0.05
-e["Variables"][2]["Exploration Noise"]["Theta"] = 0.05
+e["Variables"][5]["Exploration Noise"]["Enabled"] = True
+e["Variables"][5]["Exploration Noise"]["Distribution"]["Type"] = "Univariate/Normal"
+e["Variables"][5]["Exploration Noise"]["Distribution"]["Mean"] = 0.0
+e["Variables"][5]["Exploration Noise"]["Distribution"]["Standard Deviation"] = 0.5
+e["Variables"][5]["Exploration Noise"]["Theta"] = 0.05
 
 ### Defining Agent Configuration 
 
@@ -98,7 +83,7 @@ e["Solver"]["Optimization Steps Per Trajectory"] = 1
 
 ### Defining the configuration of replay memory
 
-e["Solver"]["Experience Replay"]["Start Size"] =   5000
+e["Solver"]["Experience Replay"]["Start Size"] =   100
 e["Solver"]["Experience Replay"]["Maximum Size"] = 100000
 
 ## Defining Critic Configuration
@@ -109,7 +94,7 @@ e["Solver"]["Critic"]["Discount Factor"] = 0.99
 e["Solver"]["Critic"]["Adoption Rate"] = 0.99
 
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Node Count"] = 3
+e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Node Count"] = 5
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear"
 
 e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Type"] = "Layer/Dense"
@@ -135,7 +120,7 @@ e["Solver"]["Policy"]["Optimizer"]["Eta"] = 0.000001
 e["Solver"]["Policy"]["Adoption Rate"] = 0.99
 
 e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
-e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Node Count"] = 1
+e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Node Count"] = 5
 e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear"
 
 e["Solver"]["Policy"]["Neural Network"]["Layers"][1]["Type"] = "Layer/Dense"
@@ -149,17 +134,17 @@ e["Solver"]["Policy"]["Neural Network"]["Layers"][2]["Activation Function"]["Typ
 e["Solver"]["Policy"]["Neural Network"]["Layers"][2]["Activation Function"]["Alpha"] = 0.0
 
 e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Type"] = "Layer/Dense"
-e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Node Count"] = 2
-e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Elementwise/Logistic" 
+e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Node Count"] = 1
+e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Elementwise/Tanh" 
 e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Weight Initialization Scaling"] = 0.000000001
 
-e["Solver"]["Policy"]["Neural Network"]["Output Scaling"] = [ 10.0, 10.0 ]
+e["Solver"]["Policy"]["Neural Network"]["Output Scaling"] = [ 10.0 ]
 
 ### Defining Termination Criteria
 
-e["Solver"]["Training Reward Threshold"] = -0.5
+e["Solver"]["Training Reward Threshold"] = 490
 e["Solver"]["Policy Testing Episodes"] = 20
-e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = -0.5
+e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 490
 
 ### Setting file output configuration
 

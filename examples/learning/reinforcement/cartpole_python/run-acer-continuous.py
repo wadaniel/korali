@@ -2,38 +2,10 @@
 import os
 import sys
 sys.path.append('./_model')
-from cartpole import *
+from env import *
 
-######## Defining Environment Storage
+####### Defining Korali Problem
 
-cart = CartPole()
-maxSteps = 500
-
-def env(s):
-
- # Initializing environment
- cart.reset()
- s["State"] = cart.getState().tolist()
- step = 0
- done = False
-
- while not done and step < maxSteps:
-
-  # Getting new action
-  s.update()
-  
-  # Performing the action
-  done = cart.advance(s["Action"])
-  
-  # Getting Reward
-  s["Reward"] = cart.getReward()
-   
-  # Storing New State
-  s["State"] = cart.getState().tolist()
-  
-  # Advancing step counter
-  step = step + 1
-  
 import korali
 k = korali.Engine()
 e = korali.Experiment()
@@ -113,7 +85,7 @@ e["Solver"]["Normalization Batch Size"] = 32
 
 ## Defining Policy Configuration
 
-e["Solver"]["Policy"]["Sample Population"] 10
+e["Solver"]["Policy"]["Sample Population"] = 10
 
 e["Solver"]["Policy"]["Optimizer"]["Type"] = "Optimizer/Adam"
 e["Solver"]["Policy"]["Optimizer"]["Termination Criteria"]["Min Gradient Norm"] = -1.0
@@ -152,4 +124,5 @@ e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 490
 e["File Output"]["Frequency"] = 100000
 
 ### Running Experiment
+
 k.run(e)

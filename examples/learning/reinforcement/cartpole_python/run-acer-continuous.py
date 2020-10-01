@@ -36,21 +36,21 @@ e["Variables"][5]["Name"] = "Force"
 e["Variables"][5]["Type"] = "Action"
 e["Variables"][5]["Lower Bound"] = -10.0
 e["Variables"][5]["Upper Bound"] = +10.0
-e["Variables"][5]["Noise Sigma"] = 0.5
+e["Variables"][5]["Noise Sigma"] = 1.0
 
 ### Configuring ACER hyperparameters
 
 e["Solver"]["Type"] = "Agent / ACER / Continuous"
 e["Solver"]["Importance Weight Truncation"] = 5.0
-e["Solver"]["Trajectory Size"] = 1000
+e["Solver"]["Trajectory Size"] = 500
 e["Solver"]["Discount Factor"] = 0.995
 e["Solver"]["Off Policy Updates"] = 8
 e["Solver"]["Optimization Steps Per Trajectory"] = 1
 
 ### Defining Experience Replay configuration
 
-e["Solver"]["Experience Replay"]["Start Size"] = 1500
-e["Solver"]["Experience Replay"]["Maximum Size"] = 500000
+e["Solver"]["Experience Replay"]["Start Size"] = 500
+e["Solver"]["Experience Replay"]["Maximum Size"] = 50000
 
 ## Defining Q-Critic and Action-selection (policy) optimizers
 
@@ -75,22 +75,20 @@ e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Batch Normalization"]["Ena
 e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Type"] = "Layer/Dense"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Node Count"] = 1
 e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Elementwise/Linear"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Batch Normalization"]["Enabled"] = True
-
-e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Weight Initialization Scaling"] = 0.000000001
+e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Batch Normalization"]["Enabled"] = False
 
 e["Solver"]["Normalization Steps"] = 32
 e["Solver"]["Normalization Batch Size"] = 32
 
 ## Defining Policy Configuration
 
-e["Solver"]["Policy"]["Sample Population"] = 10
+e["Solver"]["Policy"]["Sample Population"] = 20
 
 e["Solver"]["Policy"]["Optimizer"]["Type"] = "Optimizer/Adam"
 e["Solver"]["Policy"]["Optimizer"]["Termination Criteria"]["Min Gradient Norm"] = -1.0
-e["Solver"]["Policy"]["Optimizer"]["Eta"] = 0.001
+e["Solver"]["Policy"]["Optimizer"]["Eta"] = 0.0001
 
-e["Solver"]["Policy"]["Trust Region"]["Enabled"] = True
+e["Solver"]["Policy"]["Trust Region"]["Enabled"] = False
 e["Solver"]["Policy"]["Trust Region"]["Divergence Constraint"] = 1.0
 e["Solver"]["Policy"]["Trust Region"]["Adoption Rate"] = 0.99
 
@@ -110,8 +108,7 @@ e["Solver"]["Policy"]["Neural Network"]["Layers"][2]["Activation Function"]["Alp
 
 e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Type"] = "Layer/Dense"
 e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Node Count"] = 1
-e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Elementwise/Logistic" 
-e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Weight Initialization Scaling"] = 0.000000001
+e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Elementwise/Tanh" 
 
 e["Solver"]["Policy"]["Neural Network"]["Output Scaling"] = [ 10.0 ]
 

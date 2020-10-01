@@ -22,9 +22,9 @@ class ReinforcementLearning : public korali::Problem
 
   /**
    * @brief Provides a uniformly random action within the action space
-   * @return A vector containing the random action
+   * @param sample Sample on which the action and metadata will be stored
    */
-  virtual std::vector<double> getRandomAction() = 0;
+  virtual void getRandomAction(korali::Sample &sample) = 0;
 };
 
 } // namespace problem

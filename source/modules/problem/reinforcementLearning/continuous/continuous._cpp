@@ -1,4 +1,5 @@
 #include "modules/problem/reinforcementLearning/continuous/continuous.hpp"
+#include "sample/sample.hpp"
 
 namespace korali
 {
@@ -25,11 +26,8 @@ void Continuous::initialize()
   }
 }
 
-std::vector<double> Continuous::getRandomAction()
+void Continuous::getRandomAction(Sample &sample)
 {
-  // Storage for action
-  std::vector<double> randomAction(_actionVectorSize);
-
   for (size_t i = 0; i < _actionVectorSize; i++)
   {
     size_t varIdx = _actionVectorIndexes[i];
@@ -39,10 +37,9 @@ std::vector<double> Continuous::getRandomAction()
 
     double lowerBound = _k->_variables[varIdx]->_lowerBound;
     double upperBound = _k->_variables[varIdx]->_upperBound;
-    randomAction[i] = lowerBound + x * (upperBound - lowerBound);
+    sample["Metadata"]["Means"][i] = (upperBound + lowerBound) * 0.5;
+    sample["Action"][i] = lowerBound + x * (upperBound - lowerBound);
   }
-
-  return randomAction;
 }
 
 } // namespace reinforcementLearning

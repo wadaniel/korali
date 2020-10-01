@@ -13,7 +13,7 @@ class Discrete : public korali::problem::ReinforcementLearning
 {
   public:
   void initialize() override;
-  std::vector<double> getRandomAction() override;
+  void getRandomAction(korali::Sample &sample) override;
 
   /**
    * @brief Gets a random action by index, instead of by value

@@ -105,7 +105,7 @@ void DDPG::getAction(korali::Sample &sample)
   // If we still do not have enough experiences to train the critic/policy, just return random action
   if (_experienceReplayHistory.size() < _experienceReplayStartSize)
   {
-    sample["Action"] = _continuousProblem->getRandomAction();
+    _continuousProblem->getRandomAction(sample);
     return;
   }
 

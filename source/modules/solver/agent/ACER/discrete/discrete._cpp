@@ -112,6 +112,13 @@ std::vector<double> Discrete::queryPolicy(const std::vector<double> &state)
 
 void Discrete::getAction(korali::Sample &sample)
 {
+  // If we still do not have enough experiences to train the critic/policy, just return random action
+  if (_experienceReplayHistory.size() < _experienceReplayStartSize)
+  {
+    _discreteProblem->getRandomAction(sample);
+    return;
+  }
+
   // Getting current state
   auto state = sample["State"].get<std::vector<double>>();
 
@@ -133,7 +140,7 @@ void Discrete::getAction(korali::Sample &sample)
 
   // Storing the action and associated metadata
   sample["Metadata"]["Action Index"] = actionIdx;
-  sample["Metadata"]["Policy Densities"] = pActionVector;
+  sample["Metadata"]["Probability Densities"] = pActionVector;
   sample["Action"] = _discreteProblem->_possibleActions[actionIdx];
 }
 
@@ -204,7 +211,7 @@ void Discrete::processTrajectory(size_t startId, size_t endId)
     size_t curActionIdx = _experienceReplayHistory[curId]["Metadata"]["Action Index"];
 
     // Getting probability densities for current action given current policy
-    auto pOldPolicy = _experienceReplayHistory[curId]["Metadata"]["Policy Densities"].get<std::vector<double>>(); 
+    auto pOldPolicy = _experienceReplayHistory[curId]["Metadata"]["Probability Densities"].get<std::vector<double>>();
 
     // Getting probability densities for current action given current policy
     _policyLearner->setHyperparameters(_policyCurrentHyperparameters); // PW: why?

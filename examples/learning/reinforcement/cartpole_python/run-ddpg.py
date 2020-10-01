@@ -82,7 +82,6 @@ e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Batch Normalization"]["Ena
 e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Type"] = "Layer/Dense"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Node Count"] = 1
 e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Elementwise/Linear"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Weight Initialization Scaling"] = 0.000000001
 
 ## Defining Policy Configuration
 
@@ -108,7 +107,6 @@ e["Solver"]["Policy"]["Neural Network"]["Layers"][2]["Activation Function"]["Alp
 e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Type"] = "Layer/Dense"
 e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Node Count"] = 1
 e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Elementwise/Tanh" 
-e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Weight Initialization Scaling"] = 0.000000001
 
 e["Solver"]["Policy"]["Neural Network"]["Output Scaling"] = [ 10.0 ]
 

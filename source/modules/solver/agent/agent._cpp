@@ -108,10 +108,6 @@ void Agent::runGeneration()
 
   } while (experience["Is Terminal"] == false);
 
-  // Add final trajectory to experience
-  _experienceReplayHistory.insert(_experienceReplayHistory.end(), trajectory.begin(), trajectory.end());
-  _currentTrajectoryCount++;
-
   // Waiting for agent to finish
   KORALI_WAIT(agent);
 

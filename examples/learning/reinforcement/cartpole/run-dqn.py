@@ -1,22 +1,19 @@
 #!/usr/bin/env python3
 import os
 import sys
-import math
-import gym
+sys.path.append('./_model')
+from cartpole import *
 
 ######## Defining Environment Storage
 
-cart = gym.make('CartPole-v1').unwrapped
-maxSteps = 2000
-
-####### Defining Problem's environment
+cart = CartPole()
+maxSteps = 500
 
 def env(s):
 
  # Initializing environment
- seed = s["Sample Id"]
- cart.seed(seed)
- s["State"] = cart.reset().tolist()
+ cart.reset()
+ s["State"] = cart.getState().tolist()
  step = 0
  done = False
 
@@ -25,29 +22,27 @@ def env(s):
   # Getting new action
   s.update()
   
-  # Reading action
-  action = s["Action"][0] 
-    
   # Performing the action
-  state, reward, done, info = cart.step(action)
-
-  # Storing Reward
-  s["Reward"] = reward
+  done = cart.advance(s["Action"])
+  
+  # Getting Reward
+  s["Reward"] = cart.getReward()
    
   # Storing New State
-  s["State"] = state.tolist()
+  s["State"] = cart.getState().tolist()
   
   # Advancing step counter
   step = step + 1
-  
+
+####### Defining Korali Problem
+
 import korali
 k = korali.Engine()
 e = korali.Experiment()
 
-### Defining the Cartpole problem's configuration
-
 e["Problem"]["Type"] = "Reinforcement Learning / Discrete"
-e["Problem"]["Possible Actions"] = [ [ 0.0 ], [ 1.0 ] ]
+e["Problem"]["Possible Actions"] = [ [ -10.0 ], [ -9.0 ], [ -8.0 ], [ -7.0 ], [ -6.0 ], [ -5.0 ], [ -4.0 ], [ -3.0 ], [ -2.0 ], [ -1.0 ], [0.0],
+                                     [  10.0 ], [  9.0 ], [  8.0 ], [  7.0 ], [  6.0 ], [  5.0 ], [  4.0 ], [  3.0 ], [  2.0 ], [  1.0 ]  ]
 e["Problem"]["Environment Function"] = env
 e["Problem"]["Action Repeat"] = 1
 e["Problem"]["Actions Between Policy Updates"] = 1
@@ -58,14 +53,17 @@ e["Variables"][0]["Type"] = "State"
 e["Variables"][1]["Name"] = "Cart Velocity"
 e["Variables"][1]["Type"] = "State"
 
-e["Variables"][2]["Name"] = "Pole Angle"
+e["Variables"][2]["Name"] = "Pole Omega"
 e["Variables"][2]["Type"] = "State"
 
-e["Variables"][3]["Name"] = "Pole Angular Velocity"
+e["Variables"][3]["Name"] = "Pole Cos(Angle)"
 e["Variables"][3]["Type"] = "State"
 
-e["Variables"][4]["Name"] = "Push Direction"
-e["Variables"][4]["Type"] = "Action"
+e["Variables"][4]["Name"] = "Pole Sin(Angle)"
+e["Variables"][4]["Type"] = "State"
+
+e["Variables"][5]["Name"] = "Force"
+e["Variables"][5]["Type"] = "Action"
 
 ### Configuring DQN hyperparameters
 
@@ -94,7 +92,7 @@ e["Solver"]["Critic"]["Optimizer"]["Eta"] = 0.01
 ### Defining the shape of the neural network
 
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Node Count"] = 5
+e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Node Count"] = 6
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Batch Normalization"]["Enabled"] = False
 
@@ -117,9 +115,9 @@ e["Solver"]["Normalization Steps"] = 32
 
 ### Defining Termination Criteria
 
-e["Solver"]["Training Reward Threshold"] = 1900
+e["Solver"]["Training Reward Threshold"] = 490
 e["Solver"]["Policy Testing Episodes"] = 20
-e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 1900
+e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 490
 
 ### Setting file output configuration
 

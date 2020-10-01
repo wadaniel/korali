@@ -1,4 +1,4 @@
-BINARIES = run-dqn
+BINARIES = run-dqn run-acer-discrete run-acer-continuous run-ddpg
 KORALICXX=$(shell python3 -m korali.cxx --compiler)
 KORALICFLAGS=`python3 -m korali.cxx --cflags`
 KORALILIBS=`python3 -m korali.cxx --libs`
@@ -11,7 +11,7 @@ $(BINARIES) : % : %.o
 	$(KORALICXX) -o $@ $^ $(KORALILIBS)
 
 %.o: %.cpp
-	$(KORALICXX) -c $< $(KORALICFLAGS)
+	$(KORALICXX) -c $< $(KORALICFLAGS) -I.
 
 .PHONY: clean
 clean:

@@ -48,20 +48,20 @@ e["Variables"][5]["Exploration Noise"]["Theta"] = 0.05
 ### Defining Agent Configuration 
 
 e["Solver"]["Type"] = "Agent/DDPG"
-e["Solver"]["Mini Batch Size"] = 16
-e["Solver"]["Normalization Steps"] = 16
+e["Solver"]["Mini Batch Size"] = 32
+e["Solver"]["Normalization Steps"] = 32
 e["Solver"]["Trajectory Size"] = 1
 e["Solver"]["Optimization Steps Per Trajectory"] = 1
 
 ### Defining the configuration of replay memory
 
-e["Solver"]["Experience Replay"]["Start Size"] =   100
+e["Solver"]["Experience Replay"]["Start Size"] =   500
 e["Solver"]["Experience Replay"]["Maximum Size"] = 100000
 
 ## Defining Critic Configuration
 
 e["Solver"]["Critic"]["Optimizer"]["Type"] = "Optimizer/Adam"
-e["Solver"]["Critic"]["Optimizer"]["Eta"] = 0.001
+e["Solver"]["Critic"]["Optimizer"]["Eta"] = 0.01
 e["Solver"]["Critic"]["Discount Factor"] = 0.99
 e["Solver"]["Critic"]["Adoption Rate"] = 0.99
 
@@ -82,12 +82,13 @@ e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Batch Normalization"]["Ena
 e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Type"] = "Layer/Dense"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Node Count"] = 1
 e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Elementwise/Linear"
+e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Batch Normalization"]["Enabled"] = True 
 
 ## Defining Policy Configuration
 
 e["Solver"]["Policy"]["Optimizer"]["Type"] = "Optimizer/Adam"
 e["Solver"]["Policy"]["Optimizer"]["Termination Criteria"]["Min Gradient Norm"] = -1.0
-e["Solver"]["Policy"]["Optimizer"]["Eta"] = 0.000001
+e["Solver"]["Policy"]["Optimizer"]["Eta"] = 0.0001
 e["Solver"]["Policy"]["Adoption Rate"] = 0.99
 
 e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
@@ -97,12 +98,10 @@ e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Activation Function"]["Typ
 e["Solver"]["Policy"]["Neural Network"]["Layers"][1]["Type"] = "Layer/Dense"
 e["Solver"]["Policy"]["Neural Network"]["Layers"][1]["Node Count"] = 32
 e["Solver"]["Policy"]["Neural Network"]["Layers"][1]["Activation Function"]["Type"] = "Elementwise/Tanh"
-e["Solver"]["Policy"]["Neural Network"]["Layers"][1]["Activation Function"]["Alpha"] = 0.0
 
 e["Solver"]["Policy"]["Neural Network"]["Layers"][2]["Type"] = "Layer/Dense"
 e["Solver"]["Policy"]["Neural Network"]["Layers"][2]["Node Count"] = 32
 e["Solver"]["Policy"]["Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Elementwise/Tanh"
-e["Solver"]["Policy"]["Neural Network"]["Layers"][2]["Activation Function"]["Alpha"] = 0.0
 
 e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Type"] = "Layer/Dense"
 e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Node Count"] = 1

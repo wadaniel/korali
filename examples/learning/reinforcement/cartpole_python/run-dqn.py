@@ -40,6 +40,7 @@ e["Variables"][5]["Type"] = "Action"
 e["Solver"]["Type"] = "Agent/DQN"
 e["Solver"]["Trajectory Size"] = 1
 e["Solver"]["Optimization Steps Per Trajectory"] = 1
+e["Solver"]["Normalization Steps"] = 32
 
 ### Defining Experience Replay configuration
 
@@ -80,8 +81,6 @@ e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Type"] = "Layer/Dense"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Node Count"] = 1
 e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Elementwise/Linear"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Batch Normalization"]["Enabled"] = True 
-
-e["Solver"]["Normalization Steps"] = 32
 
 ### Defining Termination Criteria
 

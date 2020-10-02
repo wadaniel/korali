@@ -51,6 +51,12 @@ void Agent::runGeneration()
   agent["Operation"] = "Run Episode";
   agent["Mode"] = "Training";
 
+  // If we reached the starting number of experiences, use policy actions. Otherwise random ones.
+  if (_experienceReplayHistory.size() < _experienceReplayStartSize)
+   agent["Action Source"] = "Random";
+  else
+   agent["Action Source"] = "Policy";
+
   // Initializing statistical information
   _currentReward = 0.0;
 
@@ -136,27 +142,28 @@ void Agent::runGeneration()
     _candidatePoliciesTested++;
 
     // Creating storage for agents
-    std::vector<Sample> tests(_policyTestingEpisodes);
+    std::vector<Sample> agents(_policyTestingEpisodes);
 
     // Initializing the agents and their environments
     for (size_t i = 0; i < _policyTestingEpisodes; i++)
     {
       // Configuring Agent
-      tests[i]["Sample Id"] = _currentSampleID++;
-      tests[i]["Module"] = "Problem";
-      tests[i]["Operation"] = "Run Episode";
-      tests[i]["Mode"] = "Testing";
+      agents[i]["Sample Id"] = _currentSampleID++;
+      agents[i]["Module"] = "Problem";
+      agents[i]["Action Source"] = "Policy";
+      agents[i]["Operation"] = "Run Episode";
+      agents[i]["Mode"] = "Testing";
 
       // Launching agent initialization
-      KORALI_START(tests[i]);
+      KORALI_START(agents[i]);
     }
 
-    KORALI_WAITALL(tests);
+    KORALI_WAITALL(agents);
 
     // Calculating average testing reward
     _averageTestingReward = 0.0;
     for (size_t i = 0; i < _policyTestingEpisodes; i++)
-      _averageTestingReward += tests[i]["Cumulative Reward"].get<double>();
+      _averageTestingReward += agents[i]["Cumulative Reward"].get<double>();
     _averageTestingReward = _averageTestingReward / _policyTestingEpisodes;
   }
 

@@ -54,11 +54,7 @@ void DQN::initializeAgent()
   _criticProblem = dynamic_cast<problem::SupervisedLearning *>(_criticExperiment._problem);
   _criticLearner = dynamic_cast<solver::learner::DeepGD *>(_criticExperiment._solver);
 
-  // If initial generation, set initial DQN configuration
-  if (_k->_currentGeneration == 0) _policyEpsilonCurrentValue = 1.0;
-
   // Setting Initial Hyperparameters
-  _hyperparameters["Epsilon"] = _policyEpsilonCurrentValue;
   _hyperparameters["Critic"] = _criticLearner->getHyperparameters();
 }
 
@@ -178,38 +174,10 @@ void DQN::trainAgent()
 
   // Storing new Critic's hyperparameters
   _hyperparameters["Critic"] = _criticLearner->getHyperparameters();
-
-  /////////////// Updating Epsilon
-
-  // Decreasing the value of epsilon
-  _policyEpsilonCurrentValue = _policyEpsilonCurrentValue - _policyEpsilonDecreaseRate;
-
-  // Without exceeding the lower bound
-  if (_policyEpsilonCurrentValue < _policyEpsilonTargetValue) _policyEpsilonCurrentValue = _policyEpsilonTargetValue;
-
-  // Updating Epsilon
-  _hyperparameters["Epsilon"] = _policyEpsilonCurrentValue;
 }
 
 void DQN::getAction(korali::Sample &sample)
 {
-  // If currently on a training phase, add noise/random actions.
-  bool isTraining = sample["Mode"] == "Training";
-
-  if (isTraining)
-  {
-    // Getting p = U[0,1] for the epsilon strategy
-    double p = _policyEpsilonGenerator->getRandomNumber();
-
-    // If p < e, then we choose the action randomly, with a uniform probability, among all possible actions.
-    // If no states have been registered yet, use the random option in any case
-    if (p < _policyEpsilonCurrentValue)
-    {
-      _discreteProblem->getRandomAction(sample);
-      return;
-    }
-  }
-
   // Getting current state
   auto state = sample["State"].get<std::vector<double>>();
 
@@ -223,7 +191,6 @@ void DQN::getAction(korali::Sample &sample)
 void DQN::updateHyperparameters(const knlohmann::json &hyperparameters)
 {
   _criticLearner->setHyperparameters(hyperparameters["Critic"].get<std::vector<double>>());
-  _policyEpsilonCurrentValue = hyperparameters["Epsilon"].get<double>();
 }
 
 std::vector<double> DQN::queryPolicy(const std::vector<double> &state)
@@ -271,9 +238,6 @@ void DQN::printAgentInformation()
   _criticExperiment._solver->printGenerationAfter();
   _criticExperiment._logger->setVerbosityLevel("Silent");
 
-  _k->_logger->logInfo("Normal", "Policy Information:\n");
-
-  _k->_logger->logInfo("Normal", " + Current Epsilon:                  %f -> %f\n", _policyEpsilonCurrentValue, _policyEpsilonTargetValue);
 }
 
 } // namespace agent

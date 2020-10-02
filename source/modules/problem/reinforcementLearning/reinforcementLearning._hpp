@@ -6,6 +6,9 @@
 
 namespace korali
 {
+
+namespace solver { class Agent; }
+
 namespace problem
 {
 class ReinforcementLearning : public korali::Problem
@@ -14,11 +17,21 @@ class ReinforcementLearning : public korali::Problem
   void initialize() override;
 
   /**
+   * @brief Pointer to the policy-generating agent
+   */
+  solver::Agent *_agent;
+
+  /**
    * @brief Runs an episode of the agent within the environment
    * @param sample Sample containing current agent/state information.
    */
   void runEpisode(korali::Sample &sample);
 
+  /**
+   * @brief Gathers the next action either from the policy or randomly
+   * @param sample Sample on which the action and metadata will be stored
+   */
+  void getAction(korali::Sample& sample);
 
   /**
    * @brief Provides a uniformly random action within the action space

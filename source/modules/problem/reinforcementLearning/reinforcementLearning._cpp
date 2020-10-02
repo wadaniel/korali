@@ -57,10 +57,10 @@ void __environmentWrapper()
 void ReinforcementLearning::runEpisode(Sample &sample)
 {
   // Getting RL-compatible solver
-  auto agent = dynamic_cast<solver::Agent *>(_k->_solver);
+  _agent = dynamic_cast<solver::Agent *>(_k->_solver);
 
   // First, we update the initial policy's hyperparameters
-  agent->updateHyperparameters(sample.globals()["Hyperparameters"]);
+  _agent->updateHyperparameters(sample.globals()["Hyperparameters"]);
 
   // Creating sample coroutine
   __currentSample = &sample;
@@ -97,11 +97,8 @@ void ReinforcementLearning::runEpisode(Sample &sample)
     // Requesting new action, if enough steps have passed, given by the action repeat parameter
     if (actionLastUpdated == 0)
     {
-      // If not enough experiences were collected, we still act randomly
-      if (sample["Action Source"] == "Random") getRandomAction(sample);
-
-      // Otherwise we take the action from the policy
-      if (sample["Action Source"] == "Policy") agent->getAction(sample);
+      // Getting new action
+      getAction(sample);
 
       // Resetting action repeat counter
       actionLastUpdated = _actionRepeat;
@@ -121,7 +118,7 @@ void ReinforcementLearning::runEpisode(Sample &sample)
     // Storing whether this experience was terminal or not
     experience["Is Terminal"] = false;
 
-    // Jumping back into the agent's environment
+    // Jumping back into the _agent's environment
     co_switch(envThread);
 
     // Storing experience's reward
@@ -149,7 +146,7 @@ void ReinforcementLearning::runEpisode(Sample &sample)
       if (requestNewPolicy)
       {
         auto hyperparameters = KORALI_RECV_MSG_FROM_ENGINE();
-        agent->updateHyperparameters(hyperparameters);
+        _agent->updateHyperparameters(hyperparameters);
       }
     }
   }
@@ -159,6 +156,18 @@ void ReinforcementLearning::runEpisode(Sample &sample)
 
   // Freeing co-routine memory
   co_delete(envThread);
+}
+
+void ReinforcementLearning::getAction(korali::Sample& sample)
+{
+ // Getting p = U[0,1] for the epsilon strategy
+ double p = _randomActionGenerator->getRandomNumber();
+
+ // If p < e, then we choose the action randomly, with a uniform probability, among all possible actions.
+ if (p < sample["Random Action Probability"])
+  getRandomAction(sample);
+ else // Otherwise we take the action from the policy
+  _agent->getAction(sample);
 }
 
 } // namespace problem

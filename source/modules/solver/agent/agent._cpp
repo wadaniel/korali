@@ -21,6 +21,9 @@ void Agent::initialize()
   // If initial generation, set initial agent configuration
   if (_k->_currentGeneration == 0)
   {
+     _randomActionProbabilityCurrentValue = _randomActionProbabilityInitialValue;
+     _hyperparameters["Random Action Probability"] = 1.0;
+
     _currentEpisode = 0;
     _currentExperienceCount = 0;
     _currentTrajectoryCount = 0;
@@ -50,12 +53,6 @@ void Agent::runGeneration()
   agent["Module"] = "Problem";
   agent["Operation"] = "Run Episode";
   agent["Mode"] = "Training";
-
-  // If we reached the starting number of experiences, use policy actions. Otherwise random ones.
-  if (_experienceReplayHistory.size() < _experienceReplayStartSize)
-   agent["Action Source"] = "Random";
-  else
-   agent["Action Source"] = "Policy";
 
   // Initializing statistical information
   _currentReward = 0.0;
@@ -167,6 +164,21 @@ void Agent::runGeneration()
     _averageTestingReward = _averageTestingReward / _policyTestingEpisodes;
   }
 
+  /////////////// Updating the probability of a random action (epsilon)
+
+  // If we reached the starting size
+  if (_experienceReplayHistory.size() > _experienceReplayStartSize)
+  {
+   // Decreasing the value of epsilon
+   _randomActionProbabilityCurrentValue = _randomActionProbabilityCurrentValue - _randomActionProbabilityDecreaseRate;
+
+   // Without exceeding the lower bound
+   if (_randomActionProbabilityCurrentValue < _randomActionProbabilityTargetValue) _randomActionProbabilityCurrentValue = _randomActionProbabilityTargetValue;
+
+   // Updating the probability of taking a random action (epsilon)
+   _hyperparameters["Random Action Probability"] = _randomActionProbabilityCurrentValue;
+  }
+
   // If the average testing reward is better than the previous best, replace it
   // and store hyperparameters as best so far.
   if (_averageTestingReward > _bestAverageTestingReward) _bestAverageTestingReward = _averageTestingReward;
@@ -211,6 +223,8 @@ void Agent::printGenerationAfter()
     _k->_logger->logInfo("Normal", " + Best Average Reward:         %f/%f\n", _bestAverageTestingReward, _targetAverageTestingReward);
   else
     _k->_logger->logInfo("Normal", " + Best Average Reward:         %f\n", _bestAverageTestingReward);
+
+ _k->_logger->logInfo("Normal", " + Current p(Random Action):       %f\n", _hyperparameters["Random Action Probability"].get<double>());
 
   printAgentInformation();
 }

@@ -46,11 +46,11 @@ e["Solver"]["Optimization Steps Per Trajectory"] = 1
 e["Solver"]["Experience Replay"]["Start Size"] = 500
 e["Solver"]["Experience Replay"]["Maximum Size"] = 150000
 
-### Defining training policy configuration
+### Defining probability of taking a random action (epsilon)
 
-e["Solver"]["Policy"]["Epsilon"]["Initial Value"] = 1.0
-e["Solver"]["Policy"]["Epsilon"]["Target Value"] = 0.05
-e["Solver"]["Policy"]["Epsilon"]["Decrease Rate"] = 0.05
+e["Solver"]["Random Action Probability"]["Initial Value"] = 1.0
+e["Solver"]["Random Action Probability"]["Target Value"] = 0.05
+e["Solver"]["Random Action Probability"]["Decrease Rate"] = 0.10
 
 ## Defining Q-Critic and Action-selection (policy) optimizers
 

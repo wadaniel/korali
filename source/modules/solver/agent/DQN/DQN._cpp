@@ -193,13 +193,6 @@ void DQN::trainAgent()
 
 void DQN::getAction(korali::Sample &sample)
 {
-  // If we still do not have enough experiences to train the critic/policy, just return random action
-  if (_experienceReplayHistory.size() < _experienceReplayStartSize)
-  {
-    _discreteProblem->getRandomAction(sample);
-    return;
-  }
-
   // If currently on a training phase, add noise/random actions.
   bool isTraining = sample["Mode"] == "Training";
 

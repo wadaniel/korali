@@ -97,7 +97,13 @@ void ReinforcementLearning::runEpisode(Sample &sample)
     // Requesting new action, if enough steps have passed, given by the action repeat parameter
     if (actionLastUpdated == 0)
     {
-      agent->getAction(sample);
+      // If not enough experiences were collected, we still act randomly
+      if (sample["Action Source"] == "Random") getRandomAction(sample);
+
+      // Otherwise we take the action from the policy
+      if (sample["Action Source"] == "Policy") agent->getAction(sample);
+
+      // Resetting action repeat counter
       actionLastUpdated = _actionRepeat;
       actionCount++;
     }

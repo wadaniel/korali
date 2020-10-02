@@ -102,13 +102,6 @@ void DDPG::initializeAgent()
 
 void DDPG::getAction(korali::Sample &sample)
 {
-  // If we still do not have enough experiences to train the critic/policy, just return random action
-  if (_experienceReplayHistory.size() < _experienceReplayStartSize)
-  {
-    _continuousProblem->getRandomAction(sample);
-    return;
-  }
-
   // Getting current state
   auto state = sample["State"].get<std::vector<double>>();
 

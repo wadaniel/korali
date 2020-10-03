@@ -164,7 +164,7 @@ void ReinforcementLearning::getAction(korali::Sample& sample)
  double p = _randomActionGenerator->getRandomNumber();
 
  // If p < e, then we choose the action randomly, with a uniform probability, among all possible actions.
- if (p < sample["Random Action Probability"])
+ if (p < sample["Random Action Probability"].get<double>())
   getRandomAction(sample);
  else // Otherwise we take the action from the policy
   _agent->getAction(sample);

@@ -48,6 +48,8 @@ class DeepGD : public Learner
   */
   void evaluateHyperparameters(korali::Sample &sample, NeuralNetwork *nn, const std::vector<std::vector<double>> &solution);
 
+  std::vector<std::vector<double>> getEvaluation(const std::vector<std::vector<double>> &inputBatch);
+
   std::vector<double> getGradients(const std::vector<double> &outputDiffs) override;
   std::vector<double> getEvaluation(const std::vector<double> &inputBatch) override;
 

@@ -30,6 +30,11 @@ class Agent : public Solver
   std::mt19937 *mt;
 
   /**
+   * @brief The value to use for probability of random actions.
+   */
+   double _randomActionProbabilityEffectiveValue;
+
+  /**
    * @brief Gets the next action for the agent, based on the state and current policy, for training purposes (may contain noise)
    * @param sample to update
    */

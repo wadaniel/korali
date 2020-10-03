@@ -1,5 +1,5 @@
-#ifndef _KORALI_AGENT_SQN_HPP_
-#define _KORALI_AGENT_SQN_HPP_
+#ifndef _KORALI_AGENT_SDPG_HPP_
+#define _KORALI_AGENT_SDPG_HPP_
 
 #include "modules/solver/agent/agent.hpp"
 #include "modules/problem/reinforcementLearning/continuous/continuous.hpp"
@@ -10,7 +10,7 @@ namespace solver
 {
 namespace agent
 {
-class SQN : public Agent
+class SDPG : public Agent
 {
   public:
 
@@ -18,11 +18,6 @@ class SQN : public Agent
   * @brief Storage for the pointer to the (continuous) learning problem
   */
   problem::reinforcementLearning::Continuous *_continuousProblem;
-
-  /**
-   * @brief A neural network to be trained based on inputs and solutions
-   */
-  NeuralNetwork *_policyNN;
 
   /**
    * @brief Pointer to training experiment's problem
@@ -40,9 +35,24 @@ class SQN : public Agent
   korali::Experiment _criticExperiment;
 
   /**
+   * @brief Korali experiment for finding the optimal action as per the critic
+   */
+  korali::Experiment _actionExperiment;
+
+  /**
   * @brief Korali experiment for argmax_action(Q) based on a trained Q-Network
   */
   korali::Experiment _policyExperiment;
+
+  /**
+   * @brief Pointer to training the actor network
+   */
+  learner::DeepGD *_policyLearner;
+
+  /**
+   * @brief Pointer to actor's experiment problem
+   */
+  problem::SupervisedLearning *_policyProblem;
 
   /**
    * @brief Variable to keep track of the current noise added to the action
@@ -58,10 +68,10 @@ class SQN : public Agent
   double stateActionValueFunction(const std::vector<double> &state, const std::vector<double> &action);
 
   /**
-   * @brief Model function to evaluate a given NN weight/bias configuration
-   * @param sample The sample containing proposal NN weight/bias configuration.
+   * @brief Model function to evaluate Q(s,a) for optimizer proposed a's
+   * @param sample The sample containing proposal action
    */
-  void evaluateHyperparameters(korali::Sample &sample);
+  void evaluateAction(korali::Sample &sample);
 
   /**
    * @brief Function to query policy and get the best action for the given state
@@ -81,4 +91,4 @@ class SQN : public Agent
 } // namespace solver
 } // namespace korali
 
-#endif // _KORALI_AGENT_SQN_HPP_
+#endif // _KORALI_AGENT_SDPG_HPP_

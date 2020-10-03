@@ -22,7 +22,6 @@ void Agent::initialize()
   if (_k->_currentGeneration == 0)
   {
      _randomActionProbabilityCurrentValue = _randomActionProbabilityInitialValue;
-     _hyperparameters["Random Action Probability"] = 1.0;
 
     _currentEpisode = 0;
     _currentExperienceCount = 0;
@@ -46,6 +45,9 @@ void Agent::runGeneration()
   // Broadcasting initial hyperparameters for all workers to use
   KORALI_UPDATE_GLOBALS("Hyperparameters", _hyperparameters);
 
+  // Calculating effective value for random action probability
+  _randomActionProbabilityEffectiveValue = _experienceReplayHistory.size() > _experienceReplayStartSize ? _randomActionProbabilityCurrentValue : 1.0;
+
   // Configuring current agent
   Sample agent;
 
@@ -53,6 +55,7 @@ void Agent::runGeneration()
   agent["Module"] = "Problem";
   agent["Operation"] = "Run Episode";
   agent["Mode"] = "Training";
+  agent["Random Action Probability"] = _randomActionProbabilityEffectiveValue;
 
   // Initializing statistical information
   _currentReward = 0.0;
@@ -90,10 +93,10 @@ void Agent::runGeneration()
      // Perform optimization steps on the critic/policy, if reached the minimum replay memory size
      if (_experienceReplayHistory.size() > _experienceReplayStartSize)
      for (size_t i = 0; i < _optimizationStepsPerTrajectory; i++)
+     {
        trainAgent();
-
-      // Update the number of optimization steps, for workers to know it has been updated
-      _optimizationStepCount += _optimizationStepsPerTrajectory;
+       _optimizationStepCount++;
+     }
 
       // Now cleaning trajectory, to create a new one.
       trajectory.clear();
@@ -174,9 +177,6 @@ void Agent::runGeneration()
 
    // Without exceeding the lower bound
    if (_randomActionProbabilityCurrentValue < _randomActionProbabilityTargetValue) _randomActionProbabilityCurrentValue = _randomActionProbabilityTargetValue;
-
-   // Updating the probability of taking a random action (epsilon)
-   _hyperparameters["Random Action Probability"] = _randomActionProbabilityCurrentValue;
   }
 
   // If the average testing reward is better than the previous best, replace it
@@ -224,7 +224,7 @@ void Agent::printGenerationAfter()
   else
     _k->_logger->logInfo("Normal", " + Best Average Reward:         %f\n", _bestAverageTestingReward);
 
- _k->_logger->logInfo("Normal", " + Current p(Random Action):       %f\n", _hyperparameters["Random Action Probability"].get<double>());
+ _k->_logger->logInfo("Normal", " + Current p(Random Action):       %f\n", _randomActionProbabilityEffectiveValue);
 
   printAgentInformation();
 }

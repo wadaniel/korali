@@ -81,6 +81,13 @@ void DeepGD::initialize()
     _isLearnerInitialized = true;
   }
 
+  // Initialize statistics
+  if (_k->_currentGeneration == 0)
+  {
+   _minimumLoss = korali::Inf;
+   _suboptimalGenerationCount = 0;
+  }
+
   // Update/Copy the inputs into the NN
   _trainingNeuralNetwork->setInput(_problem->_inputs);
 }
@@ -91,6 +98,10 @@ void DeepGD::runGeneration()
   korali::Engine engine;
   engine.resume(_optExperiment);
   _currentLoss = _optExperiment["Results"]["Best Sample"]["F(x)"].get<double>();
+
+  // Updating best loss if better, or increasing suboptimal generation count
+  if (_currentLoss < _minimumLoss) { _minimumLoss = _currentLoss; _suboptimalGenerationCount = 0; }
+  else _suboptimalGenerationCount++;
 }
 
 void DeepGD::finalize()
@@ -130,6 +141,20 @@ void DeepGD::setHyperparameters(const std::vector<double> &hyperparameters)
   _normalizationVariances = std::vector<double>(hyperparameters.begin() + curPos, hyperparameters.end());
 }
 
+std::vector<std::vector<double>> DeepGD::getEvaluation(const std::vector<std::vector<double>> &inputBatch)
+{
+  // Copying hyperparameters and normalization parameters from training to evaluation
+  _evaluationNeuralNetwork->setHyperparameters(_hyperparameters);
+
+  // Updating NN inputs
+  _evaluationNeuralNetwork->setInput(inputBatch);
+
+  // Running the input values through the neural network
+  _evaluationNeuralNetwork->forward();
+
+  return _evaluationNeuralNetwork->_outputValues;
+}
+
 std::vector<double> DeepGD::getEvaluation(const std::vector<double> &inputBatch)
 {
   // Copying hyperparameters and normalization parameters from training to evaluation
@@ -159,6 +184,8 @@ void DeepGD::printGenerationAfter()
 {
   // Printing results so far
   _k->_logger->logInfo("Normal", "Training Loss: %.15f\n", _currentLoss);
+  _k->_logger->logInfo("Normal", "Minimum Training Loss: %.15f\n", _minimumLoss);
+  _k->_logger->logInfo("Normal", "Suboptimal Generation Count: %lu\n", _suboptimalGenerationCount);
 }
 
 void DeepGD::evaluateHyperparameters(Sample &sample, NeuralNetwork *nn, const std::vector<std::vector<double>> &solution)

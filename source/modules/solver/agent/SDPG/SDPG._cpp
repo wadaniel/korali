@@ -374,8 +374,6 @@ void SDPG::printAgentInformation()
   _criticExperiment._logger->setVerbosityLevel("Silent");
 
   _k->_logger->logInfo("Normal", "Policy Information:\n");
-
-  _k->_logger->logInfo("Normal", " + Average Action Gradients: [");
 }
 
 } // namespace agent

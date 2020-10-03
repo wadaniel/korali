@@ -52,8 +52,8 @@ e["Solver"]["Normalization Steps"] = 32
 e["Solver"]["Trajectory Size"] = 1
 e["Solver"]["Optimization Steps Per Trajectory"] = 1
 
-e["Solver"]["Random Action Probability"]["Initial Value"] = 0.2
-e["Solver"]["Random Action Probability"]["Target Value"] = 0.1
+e["Solver"]["Random Action Probability"]["Initial Value"] = 0.5
+e["Solver"]["Random Action Probability"]["Target Value"] = 0.05
 e["Solver"]["Random Action Probability"]["Decrease Rate"] = 0.05
 
 ### Defining the configuration of replay memory
@@ -90,7 +90,7 @@ e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Batch Normalization"]["Ena
 ## Defining Policy Configuration
 
 e["Solver"]["Policy"]["Optimizer"]["Type"] = "Optimizer/Adam"
-e["Solver"]["Policy"]["Optimizer"]["Eta"] = 0.00001
+e["Solver"]["Policy"]["Optimizer"]["Eta"] = 0.0001
 e["Solver"]["Policy"]["Mini Batch Size"] = 32
 e["Solver"]["Policy"]["Adoption Rate"] = 0.1
 

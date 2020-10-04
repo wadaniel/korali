@@ -43,11 +43,9 @@ int main(int argc, char *argv[])
   e["Solver"]["Experience Replay"]["Start Size"] = 500;
   e["Solver"]["Experience Replay"]["Maximum Size"] = 150000;
 
-  /// Defining training policy configuration
-
-  e["Solver"]["Policy"]["Epsilon"]["Initial Value"] = 1.0;
-  e["Solver"]["Policy"]["Epsilon"]["Target Value"] = 0.05;
-  e["Solver"]["Policy"]["Epsilon"]["Decrease Rate"] = 0.05;
+  e["Solver"]["Random Action Probability"]["Initial Value"] = 1.0;
+  e["Solver"]["Random Action Probability"]["Target Value"] = 0.05;
+  e["Solver"]["Random Action Probability"]["Decrease Rate"] = 0.10;
 
   // Defining Q-Critic and Action-selection (policy) optimizers
 
@@ -64,12 +62,12 @@ int main(int argc, char *argv[])
   e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Batch Normalization"]["Enabled"] = false;
 
   e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Type"] = "Layer/Dense";
-  e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Node Count"] = 32;
+  e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Node Count"] = 16;
   e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Activation Function"]["Type"] = "Elementwise/Tanh";
   e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Batch Normalization"]["Enabled"] = true;
 
   e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Type"] = "Layer/Dense";
-  e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Node Count"] = 32;
+  e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Node Count"] = 16;
   e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Elementwise/Tanh";
   e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Batch Normalization"]["Enabled"] = true;
 

@@ -11,7 +11,7 @@ $(BINARIES) : % : %.o
 	$(KORALICXX) -o $@ $^ $(KORALILIBS)
 
 %.o: %.cpp
-	$(KORALICXX) -c $< $(KORALICFLAGS) -I.
+	$(KORALICXX) -c $< $(KORALICFLAGS) -I. -O3
 
 .PHONY: clean
 clean:

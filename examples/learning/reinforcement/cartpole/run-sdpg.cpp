@@ -68,12 +68,12 @@ int main(int argc, char *argv[])
   e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear";
 
   e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Type"] = "Layer/Dense";
-  e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Node Count"] = 32;
+  e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Node Count"] = 16;
   e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Activation Function"]["Type"] = "Elementwise/Tanh";
   e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Batch Normalization"]["Enabled"] = true;
 
   e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Type"] = "Layer/Dense";
-  e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Node Count"] = 32;
+  e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Node Count"] = 16;
   e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Elementwise/Tanh";
   e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Batch Normalization"]["Enabled"] = true;
 
@@ -94,11 +94,11 @@ int main(int argc, char *argv[])
   e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear";
 
   e["Solver"]["Policy"]["Neural Network"]["Layers"][1]["Type"] = "Layer/Dense";
-  e["Solver"]["Policy"]["Neural Network"]["Layers"][1]["Node Count"] = 32;
+  e["Solver"]["Policy"]["Neural Network"]["Layers"][1]["Node Count"] = 16;
   e["Solver"]["Policy"]["Neural Network"]["Layers"][1]["Activation Function"]["Type"] = "Elementwise/Tanh";
 
   e["Solver"]["Policy"]["Neural Network"]["Layers"][2]["Type"] = "Layer/Dense";
-  e["Solver"]["Policy"]["Neural Network"]["Layers"][2]["Node Count"] = 32;
+  e["Solver"]["Policy"]["Neural Network"]["Layers"][2]["Node Count"] = 16;
   e["Solver"]["Policy"]["Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Elementwise/Tanh";
 
   e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Type"] = "Layer/Dense";

@@ -39,11 +39,11 @@ e["Variables"][5]["Upper Bound"] = +10.0
 
 ### Defining noise to add to the action
 
-e["Variables"][5]["Exploration Noise"]["Enabled"] = True
-e["Variables"][5]["Exploration Noise"]["Distribution"]["Type"] = "Univariate/Normal"
-e["Variables"][5]["Exploration Noise"]["Distribution"]["Mean"] = 0.0
-e["Variables"][5]["Exploration Noise"]["Distribution"]["Standard Deviation"] = 0.5
-e["Variables"][5]["Exploration Noise"]["Theta"] = 0.05
+e["Variables"][5]["Exploration Noise"]["Enabled"] = true;
+e["Variables"][5]["Exploration Noise"]["Distribution"]["Type"] = "Univariate/Normal";
+e["Variables"][5]["Exploration Noise"]["Distribution"]["Mean"] = 0.0;
+e["Variables"][5]["Exploration Noise"]["Distribution"]["Standard Deviation"] = 0.5;
+e["Variables"][5]["Exploration Noise"]["Theta"] = 0.05;
 
 ### Defining Agent Configuration 
 

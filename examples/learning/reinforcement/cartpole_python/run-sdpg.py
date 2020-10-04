@@ -39,11 +39,11 @@ e["Variables"][5]["Upper Bound"] = +10.0
 
 ### Defining noise to add to the action
 
-e["Variables"][5]["Exploration Noise"]["Enabled"] = true;
-e["Variables"][5]["Exploration Noise"]["Distribution"]["Type"] = "Univariate/Normal";
-e["Variables"][5]["Exploration Noise"]["Distribution"]["Mean"] = 0.0;
-e["Variables"][5]["Exploration Noise"]["Distribution"]["Standard Deviation"] = 0.5;
-e["Variables"][5]["Exploration Noise"]["Theta"] = 0.05;
+e["Variables"][5]["Exploration Noise"]["Enabled"] = True
+e["Variables"][5]["Exploration Noise"]["Distribution"]["Type"] = "Univariate/Normal"
+e["Variables"][5]["Exploration Noise"]["Distribution"]["Mean"] = 0.0
+e["Variables"][5]["Exploration Noise"]["Distribution"]["Standard Deviation"] = 0.35
+e["Variables"][5]["Exploration Noise"]["Theta"] = 0.05
 
 ### Defining Agent Configuration 
 
@@ -66,7 +66,7 @@ e["Solver"]["Experience Replay"]["Maximum Size"] = 100000
 e["Solver"]["Critic"]["Optimizer"]["Type"] = "Optimizer/Adam"
 e["Solver"]["Critic"]["Optimizer"]["Eta"] = 0.001
 e["Solver"]["Critic"]["Discount Factor"] = 0.99
-e["Solver"]["Critic"]["Mini Batch Size"] = 32
+e["Solver"]["Critic"]["Mini Batch Size"] = 64
 
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Node Count"] = 5
@@ -90,9 +90,9 @@ e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Batch Normalization"]["Ena
 ## Defining Policy Configuration
 
 e["Solver"]["Policy"]["Optimizer"]["Type"] = "Optimizer/Adam"
-e["Solver"]["Policy"]["Optimizer"]["Eta"] = 0.0001
-e["Solver"]["Policy"]["Mini Batch Size"] = 32
-e["Solver"]["Policy"]["Adoption Rate"] = 0.1
+e["Solver"]["Policy"]["Optimizer"]["Eta"] = 0.001
+e["Solver"]["Policy"]["Mini Batch Size"] = 16
+e["Solver"]["Policy"]["Adoption Rate"] = 0.50
 
 e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
 e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Node Count"] = 5
@@ -114,9 +114,9 @@ e["Solver"]["Policy"]["Neural Network"]["Output Scaling"] = [ 10.0 ]
 
 ### Defining Termination Criteria
 
-e["Solver"]["Training Reward Threshold"] = 490
+e["Solver"]["Training Reward Threshold"] = 300
 e["Solver"]["Policy Testing Episodes"] = 20
-e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 490
+e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 450
 
 ### Setting file output configuration
 

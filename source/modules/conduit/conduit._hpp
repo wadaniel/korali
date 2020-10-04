@@ -36,6 +36,29 @@ class Conduit : public Module
   void updateGlobals(std::string key, knlohmann::json &globalsJs);
 
   /**
+ * @brief  (Worker Side) Starts the processing of a sample at the worker side
+ * @param js Contains sample's input data and metadata
+ */
+  void workerProcessSample(const knlohmann::json &js);
+
+  /**
+   * @brief (Worker Side) Accepts an incoming broadcast message containing global variables
+   * @param js Contains global data
+   */
+  void workerBroadcastGlobals(const knlohmann::json &js);
+
+  /**
+  * @brief (Worker Side) Accepts and stacks an incoming Korali engine from the main process
+  * @param js Contains Engine's input data and metadata
+  */
+  void workerStackEngine(const knlohmann::json &js);
+
+  /**
+   * @brief (Worker Side) Pops the top of the engine stack
+   */
+  void workerPopEngine();
+
+  /**
  * @brief Aborts execution for all ranks/threads/processes.
  */
   virtual void abort() { exit(-1); }

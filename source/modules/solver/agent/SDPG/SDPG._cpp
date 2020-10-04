@@ -312,10 +312,10 @@ void SDPG::trainAgent()
     std::vector<double> curState = _experienceReplayHistory[expId]["State"];
 
    _actionExperiment._globals["State"] = curState;
-   engine.run(_actionExperiment);
+   _actionExperiment._currentGeneration = 0;
+   engine.resume(_actionExperiment);
    auto action = _actionExperiment["Results"]["Best Sample"]["Parameters"].get<std::vector<double>>();
    auto actionQ = _actionExperiment["Results"]["Best Sample"]["F(x)"].get<double>();
-//   printf("ActionQ: %f\n", actionQ);
 
    _policyProblem->_inputs[i] = curState;
    _policyProblem->_solution[i] = action;
@@ -374,6 +374,10 @@ void SDPG::printAgentInformation()
   _criticExperiment._logger->setVerbosityLevel("Silent");
 
   _k->_logger->logInfo("Normal", "Policy Information:\n");
+
+  _policyExperiment._logger->_verbosityLevel = _k->_logger->_verbosityLevel;
+  _policyExperiment._solver->printGenerationAfter();
+  _policyExperiment._logger->setVerbosityLevel("Silent");
 }
 
 } // namespace agent

@@ -153,6 +153,7 @@ void Agent::runGeneration()
       agents[i]["Action Source"] = "Policy";
       agents[i]["Operation"] = "Run Episode";
       agents[i]["Mode"] = "Testing";
+      agents[i]["Random Action Probability"] = 0.0;
 
       // Launching agent initialization
       KORALI_START(agents[i]);

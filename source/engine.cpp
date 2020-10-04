@@ -19,6 +19,7 @@ Engine::Engine()
 {
   _cumulativeTime = 0.0;
   _thread = co_active();
+  _conduit = NULL;
 
   // Turn Off GSL Error Handler
   gsl_set_error_handler_off();
@@ -122,6 +123,8 @@ void Engine::run()
 
   // Finalizing Conduit if last engine in the stack
   _conduit->finalize();
+
+  delete conduit;
 }
 
 void Engine::saveProfilingInfo(const bool forceSave)
@@ -188,22 +191,6 @@ void Engine::serialize(knlohmann::json &js)
     _experimentVector[i]->getConfiguration(_experimentVector[i]->_js.getJson());
     js["Experiment Vector"][i] = _experimentVector[i]->_js.getJson();
   }
-}
-
-Engine *Engine::deserialize(const knlohmann::json &js)
-{
-  auto k = new Engine;
-
-  for (size_t i = 0; i < js["Experiment Vector"].size(); i++)
-  {
-    auto e = new Experiment;
-    e->_js.getJson() = js["Experiment Vector"][i];
-    k->_experimentVector.push_back(e);
-  }
-
-  k->initialize();
-
-  return k;
 }
 
 #ifdef _KORALI_USE_MPI

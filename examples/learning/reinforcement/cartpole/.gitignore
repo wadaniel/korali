@@ -2,4 +2,5 @@ run-dqn
 run-ddpg
 run-acer-discrete
 run-acer-continuous
+run-sdpg
 README.rst

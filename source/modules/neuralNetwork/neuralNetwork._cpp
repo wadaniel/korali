@@ -59,8 +59,6 @@ void NeuralNetwork::initialize()
 
   // Creating forward and backward-propagation pipeline
   for (size_t i = 0; i < layerCount; i++) _layers[i]->createHyperparameterMemory();
-  for (size_t i = 0; i < layerCount; i++) _layers[i]->createForwardPipeline();
-  for (size_t i = 0; i < layerCount; i++) _layers[i]->createBackwardPipeline();
 
   // Getting hyperparameter and normalization parameter counts
   _hyperparameterCount = 0;
@@ -108,12 +106,9 @@ void NeuralNetwork::setInput(const std::vector<std::vector<double>> &input)
   size_t layerCount = _layers.size();
 
   // If batchsize is different than existing one, re-create pipelines
-  if (batchSize != _batchSize)
-  {
-   _batchSize = batchSize;
-   for (size_t i = 0; i < layerCount; i++) _layers[i]->createForwardPipeline();
-   for (size_t i = 0; i < layerCount; i++) _layers[i]->createBackwardPipeline();
-  }
+  _batchSize = batchSize;
+  for (size_t i = 0; i < layerCount; i++) _layers[i]->createForwardPipeline();
+  for (size_t i = 0; i < layerCount; i++) _layers[i]->createBackwardPipeline();
 
   for (size_t i = 0; i < input.size(); i++)
     if (input[i].size() != inputSize)

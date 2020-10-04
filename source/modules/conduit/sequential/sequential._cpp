@@ -32,6 +32,7 @@ void Sequential::initialize()
 
 void Sequential::finalize()
 {
+ co_delete(_workerThread);
 }
 
 void Sequential::initServer()

@@ -56,31 +56,65 @@ void Conduit::worker()
 {
   while (true)
   {
-    auto actionJs = recvMessageFromEngine();
+    auto js = recvMessageFromEngine();
 
-    if (actionJs["Conduit Action"] == "Terminate") exit(0);
-    if (actionJs["Conduit Action"] == "Process Sample")
-    {
-      Engine *engine = _engineStack.top();
-      auto expId = actionJs["Experiment Id"];
-      Sample s;
-      s._globals = &engine->_experimentVector[expId]->_globals;
-      s._js.getJson() = actionJs;
-      s.sampleLauncher();
-
-      sendMessageToEngine(s._js.getJson());
-    }
-    if (actionJs["Conduit Action"] == "Broadcast Globals")
-    {
-      Engine *engine = _engineStack.top();
-      auto expId = actionJs["Experiment Id"];
-      auto key = actionJs["Globals"]["Key"].get<std::string>();
-      engine->_experimentVector[expId]->_globals[key] = actionJs["Globals"]["Values"];
-    }
-
-    if (actionJs["Conduit Action"] == "Stack Engine") _engineStack.push(Engine::deserialize(actionJs["Engine"]));
-    if (actionJs["Conduit Action"] == "Pop Engine") _engineStack.pop();
+    if (js["Conduit Action"] == "Terminate") exit(0);
+    if (js["Conduit Action"] == "Process Sample") workerProcessSample(js);
+    if (js["Conduit Action"] == "Broadcast Globals") workerBroadcastGlobals(js);
+    if (js["Conduit Action"] == "Stack Engine") workerStackEngine(js);
+    if (js["Conduit Action"] == "Pop Engine") workerPopEngine();
   }
+}
+
+void Conduit::workerProcessSample(const knlohmann::json &js)
+{
+ Engine *engine = _engineStack.top();
+ auto expId = js["Experiment Id"];
+ Sample s;
+ s._globals = &engine->_experimentVector[expId]->_globals;
+ s._js.getJson() = js;
+ s.sampleLauncher();
+ sendMessageToEngine(s._js.getJson());
+}
+
+void Conduit::workerBroadcastGlobals(const knlohmann::json &js)
+{
+ Engine *engine = _engineStack.top();
+ auto expId = js["Experiment Id"];
+ auto key = js["Globals"]["Key"].get<std::string>();
+ engine->_experimentVector[expId]->_globals[key] = js["Globals"]["Values"];
+}
+
+void Conduit::workerStackEngine(const knlohmann::json &js)
+{
+  auto k = new Engine;
+
+  for (size_t i = 0; i < js["Engine"]["Experiment Vector"].size(); i++)
+  {
+    auto e = new Experiment;
+    e->_js.getJson() = js["Engine"]["Experiment Vector"][i];
+    k->_experimentVector.push_back(e);
+  }
+
+  k->initialize();
+
+  _engineStack.push(k);
+}
+
+void Conduit::workerPopEngine()
+{
+ Engine *engine = _engineStack.top();
+ _engineStack.pop();
+
+ for (size_t i = 0; i < engine->_experimentVector.size(); i ++)
+ {
+  delete engine->_experimentVector[i]->_logger;
+  delete engine->_experimentVector[i]->_solver;
+  delete engine->_experimentVector[i]->_problem;
+  for (size_t i = 0; i < engine->_experimentVector[i]->_variables.size(); i++) delete engine->_experimentVector[i]->_variables[i];
+  delete engine->_experimentVector[i];
+ }
+ delete engine;
 }
 
 void Conduit::updateGlobals(std::string key, knlohmann::json &globalsJs)

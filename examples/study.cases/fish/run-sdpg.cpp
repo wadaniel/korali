@@ -1,44 +1,49 @@
-#include "_model/environment.hpp"
+#include "_model/model.hpp"
+#include "korali.hpp"
 
 int main(int argc, char *argv[])
 {
-  auto k = korali::Engine();
+  // Gathering actual arguments from MPI
+  //MPI_Init(&argc, &argv);
+
+  // Initializing environment
+  initializeEnvironment(argc, argv);
+
   auto e = korali::Experiment();
 
-  ////// Defining the Cartpole problem's configuration
-
   e["Problem"]["Type"] = "Reinforcement Learning / Continuous";
-  e["Problem"]["Environment Function"] = &env;
+  e["Problem"]["Environment Function"] = &runEnvironment;
   e["Problem"]["Action Repeat"] = 1;
   e["Problem"]["Actions Between Policy Updates"] = 1;
 
-  e["Variables"][0]["Name"] = "Cart Position";
-  e["Variables"][0]["Type"] = "State";
+  // Setting up the 10 state variables
+  size_t curVariable = 0;
+  for(; curVariable < 10; curVariable++)
+  {
+   e["Variables"][curVariable]["Name"] = std::string("StateVar") + std::to_string(curVariable);
+   e["Variables"][curVariable]["Type"] = "State";
+  }
 
-  e["Variables"][1]["Name"] = "Cart Velocity";
-  e["Variables"][1]["Type"] = "State";
+  e["Variables"][curVariable]["Name"] = "Curvature";
+  e["Variables"][curVariable]["Type"] = "Action";
+  e["Variables"][curVariable]["Lower Bound"] = -1.0;
+  e["Variables"][curVariable]["Upper Bound"] = +1.0;
+  e["Variables"][curVariable]["Exploration Noise"]["Enabled"] = true;
+  e["Variables"][curVariable]["Exploration Noise"]["Distribution"]["Type"] = "Univariate/Normal";
+  e["Variables"][curVariable]["Exploration Noise"]["Distribution"]["Mean"] = 0.0;
+  e["Variables"][curVariable]["Exploration Noise"]["Distribution"]["Standard Deviation"] = 0.01;
+  e["Variables"][curVariable]["Exploration Noise"]["Theta"] = 0.05;
 
-  e["Variables"][2]["Name"] = "Pole Omega";
-  e["Variables"][2]["Type"] = "State";
-
-  e["Variables"][3]["Name"] = "Pole Cos(Angle)";
-  e["Variables"][3]["Type"] = "State";
-
-  e["Variables"][4]["Name"] = "Pole Sin(Angle)";
-  e["Variables"][4]["Type"] = "State";
-
-  e["Variables"][5]["Name"] = "Force";
-  e["Variables"][5]["Type"] = "Action";
-  e["Variables"][5]["Lower Bound"] = -10.0;
-  e["Variables"][5]["Upper Bound"] = +10.0;
-
-  ////// Defining noise to add to the action
-
-  e["Variables"][5]["Exploration Noise"]["Enabled"] = true;
-  e["Variables"][5]["Exploration Noise"]["Distribution"]["Type"] = "Univariate/Normal";
-  e["Variables"][5]["Exploration Noise"]["Distribution"]["Mean"] = 0.0;
-  e["Variables"][5]["Exploration Noise"]["Distribution"]["Standard Deviation"] = 0.5;
-  e["Variables"][5]["Exploration Noise"]["Theta"] = 0.05;
+  curVariable++;
+  e["Variables"][curVariable]["Name"] = "Force?";
+  e["Variables"][curVariable]["Type"] = "Action";
+  e["Variables"][curVariable]["Lower Bound"] = -0.25;
+  e["Variables"][curVariable]["Upper Bound"] = +0.25;
+  e["Variables"][curVariable]["Exploration Noise"]["Enabled"] = true;
+  e["Variables"][curVariable]["Exploration Noise"]["Distribution"]["Type"] = "Univariate/Normal";
+  e["Variables"][curVariable]["Exploration Noise"]["Distribution"]["Mean"] = 0.0;
+  e["Variables"][curVariable]["Exploration Noise"]["Distribution"]["Standard Deviation"] = 0.001;
+  e["Variables"][curVariable]["Exploration Noise"]["Theta"] = 0.0125;
 
   ////// Defining Agent Configuration
 
@@ -53,7 +58,7 @@ int main(int argc, char *argv[])
 
   ////// Defining the configuration of replay memory
 
-  e["Solver"]["Experience Replay"]["Start Size"] =   1000;
+  e["Solver"]["Experience Replay"]["Start Size"] =   100;
   e["Solver"]["Experience Replay"]["Maximum Size"] = 100000;
 
   //// Defining Critic Configuration
@@ -61,10 +66,10 @@ int main(int argc, char *argv[])
   e["Solver"]["Critic"]["Optimizer"]["Type"] = "Optimizer/Adam";
   e["Solver"]["Critic"]["Optimizer"]["Eta"] = 0.001;
   e["Solver"]["Critic"]["Discount Factor"] = 0.99;
-  e["Solver"]["Critic"]["Mini Batch Size"] = 32;
+  e["Solver"]["Critic"]["Mini Batch Size"] = 64;
 
   e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense";
-  e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Node Count"] = 5;
+  e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Node Count"] = 10;
   e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear";
 
   e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Type"] = "Layer/Dense";
@@ -85,9 +90,9 @@ int main(int argc, char *argv[])
   //// Defining Policy Configuration
 
   e["Solver"]["Policy"]["Optimizer"]["Type"] = "Optimizer/Adam";
-  e["Solver"]["Policy"]["Optimizer"]["Eta"] = 0.0001;
+  e["Solver"]["Policy"]["Optimizer"]["Eta"] = 0.001;
   e["Solver"]["Policy"]["Mini Batch Size"] = 16;
-  e["Solver"]["Policy"]["Adoption Rate"] = 0.5;
+  e["Solver"]["Policy"]["Adoption Rate"] = 0.50;
 
   e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense";
   e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Node Count"] = 5;
@@ -102,25 +107,25 @@ int main(int argc, char *argv[])
   e["Solver"]["Policy"]["Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Elementwise/Tanh";
 
   e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Type"] = "Layer/Dense";
-  e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Node Count"] = 1;
-  e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Elementwise/Tanh";
+  e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Node Count"] = 2;
+  e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Elementwise/Logistic";
 
-  e["Solver"]["Policy"]["Neural Network"]["Output Scaling"] = { 10.0 };
+  e["Solver"]["Policy"]["Neural Network"]["Output Scaling"] = { 1.0, 0.25 };
 
   ////// Defining Termination Criteria
 
-  e["Solver"]["Training Reward Threshold"] = 490;
+  e["Solver"]["Training Reward Threshold"] = 300;
   e["Solver"]["Policy Testing Episodes"] = 20;
-  e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 490;
+  e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 450;
 
   ////// Setting file output configuration
 
   e["File Output"]["Frequency"] = 10000;
-  //e["Console Output"]["Verbosity"] = "Silent";
+  //e["Console Output"]["Verbosity"] = "Silent"
 
   ////// Running Experiment
 
+  auto k = korali::Engine();
   k.run(e);
-
-  return 0;
 }
+

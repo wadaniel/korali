@@ -108,7 +108,7 @@ int main(int argc, char *argv[])
   e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Elementwise/Logistic";
   e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Weight Initialization Scaling"] = 0.000000001;
 
-  e["Solver"]["Policy"]["Neural Network"]["Output Scaling"] = { 10.0, 10.0 };
+  e["Solver"]["Policy"]["Neural Network"]["Output Scaling"] = { 1.0, 0.25 };
 
   // Defining Termination Criteria
 
@@ -117,12 +117,6 @@ int main(int argc, char *argv[])
   e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = -0.1;
 
   auto k = korali::Engine();
-
-//  k["Conduit"]["Type"] = "Distributed";
-//  k["Conduit"]["Workers Per Team"] = 1;
-//  k["Conduit"]["Communicator"] = MPI_COMM_WORLD;
-  k["Profiling"]["Detail"] = "Full";
-  k["Profiling"]["Frequency"] = 0.5;
 
   k.run(e);
 

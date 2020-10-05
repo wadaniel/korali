@@ -1,4 +1,5 @@
 run-ddpg
+run-sdpg
 *.txt
 *.h5
 *.xmf

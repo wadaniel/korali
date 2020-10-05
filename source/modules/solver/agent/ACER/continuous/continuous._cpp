@@ -59,7 +59,7 @@ void Continuous::initializeAgent()
 
   _vExperiment["Solver"]["Type"] = "Learner/DeepGD";
   _vExperiment["Solver"]["Optimizer"] = _criticOptimizer;
-  _vExperiment["Solver"]["Loss Function"] = "Direct";
+  _vExperiment["Solver"]["Loss Function"] = "Mean Squared Error";
   _vExperiment["Solver"]["Steps Per Generation"] = 1;
   _vExperiment["Solver"]["Neural Network"] = _criticNeuralNetwork;
   _vExperiment["Solver"]["Neural Network"]["Layers"][0]["Node Count"] = _problem->_stateVectorSize;
@@ -89,7 +89,7 @@ void Continuous::initializeAgent()
 
   _aExperiment["Solver"]["Type"] = "Learner/DeepGD";
   _aExperiment["Solver"]["Optimizer"] = _criticOptimizer;
-  _aExperiment["Solver"]["Loss Function"] = "Direct";
+  _aExperiment["Solver"]["Loss Function"] = "Mean Squared Error";
   _aExperiment["Solver"]["Steps Per Generation"] = 1;
 
   _aExperiment["Solver"]["Neural Network"] = _criticNeuralNetwork;
@@ -537,6 +537,16 @@ void Continuous::printAgentInformation()
 
   _k->_logger->logInfo("Normal", " + Cumulative Expected Q-Value:     %f\n", _cumulativeQStar);
   _k->_logger->logInfo("Normal", " + Average Expected Q-Value:        %f\n", _averageQStar);
+
+  _k->_logger->logInfo("Normal", "State Value (V) Information:\n");
+  _vExperiment._logger->_verbosityLevel = _k->_logger->_verbosityLevel;
+  _vExperiment._solver->printGenerationAfter();
+  _vExperiment._logger->setVerbosityLevel("Silent");
+
+  _k->_logger->logInfo("Normal", "Advantage (A) Information:\n");
+  _aExperiment._logger->_verbosityLevel = _k->_logger->_verbosityLevel;
+  _aExperiment._solver->printGenerationAfter();
+  _aExperiment._logger->setVerbosityLevel("Silent");
 
    // Resetting cumulative Q*, for statistical purposes
    _cumulativeQStar = 0.0;

@@ -1,4 +1,4 @@
-BINARIES = run-ddpg
+BINARIES = run-ddpg run-sdpg
 KORALICXX=$(shell python3 -m korali.cxx --compiler)
 KORALICFLAGS=`python3 -m korali.cxx --cflags`
 KORALILIBS=`python3 -m korali.cxx --libs`

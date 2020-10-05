@@ -38,6 +38,11 @@ void runEnvironment(korali::Sample &s)
   // Reading new action
   std::vector<double> action = s["Action"];
 
+  // Printing Action:
+  printf("Action: [ %f", action[0]);
+  for (size_t i = 1; i < action.size(); i++) printf(", %f", action[i]);
+  printf("]\n");
+
   // Setting action
   _agent->act(t, action);
 

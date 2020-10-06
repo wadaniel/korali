@@ -24,12 +24,12 @@ for useDiagonalMetric in [False, True]:
 
     # Defining problem's variables and their HMC settings
     e["Variables"][0]["Name"] = "X0"
-    e["Variables"][0]["Initial Mean"] = 0.0
+    e["Variables"][0]["Initial Mean"] = 1.0
     e["Variables"][0]["Initial Standard Deviation"] = 1.0
 
     # Configuring the HMC sampler parameters
     e["Solver"]["Type"] = "Sampler/HMC"
-    e["Solver"]["Burn In"] = 100
+    e["Solver"]["Burn In"] = 1000
     e["Solver"]["Termination Criteria"]["Max Samples"] = 100000
 
     # HMC specific parameters
@@ -39,7 +39,7 @@ for useDiagonalMetric in [False, True]:
     e["Solver"]["Use Diagonal Metric"] = useDiagonalMetric
     e["Solver"]["Use Adaptive Step Size"] = True
     e["Solver"]["Target Integration Time"] = 0.55
-    e["Solver"]["Desired Average Acceptance Rate"] = 0.7
+    e["Solver"]["Desired Average Acceptance Rate"] = 0.65
     e["Solver"]["Use NUTS"] = False
 
     # Running Korali

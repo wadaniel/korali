@@ -89,7 +89,7 @@ void HMC::setInitialConfiguration()
 
   _hamiltonian->verbosity = _hamiltonianVerbosity;
   _integrator->verbosity = _integratorVerbosity;
-  
+
   // Initializing metric and inverseMetric for Euclidean and Static case
   if (_version == "Static" || _version == "Euclidean")
   {
@@ -104,7 +104,7 @@ void HMC::setInitialConfiguration()
       {
         metric[i] = _k->_variables[i]->_initialStandardDeviation * _k->_variables[i]->_initialStandardDeviation;
         inverseMetric[i] = 1.0 / metric[i];
-      } 
+      }
     }
     else
     {
@@ -116,7 +116,7 @@ void HMC::setInitialConfiguration()
         metric[d * _dimensions + d] = _k->_variables[d]->_initialStandardDeviation * _k->_variables[d]->_initialStandardDeviation;
         inverseMetric[d * _dimensions + d] = 1.0 / metric[d * _dimensions + d];
       }
-        
+
       // Initialize multivariate normal distribution
       _multivariateGenerator->_meanVector = std::vector<double>(_dimensions, 0.0);
       _multivariateGenerator->_sigma = std::vector<double>(_dimensions * _dimensions, 0.0);
@@ -132,39 +132,6 @@ void HMC::setInitialConfiguration()
     _hamiltonian->setInverseMetric(inverseMetric);
     _hamiltonian->setMetric(metric);
   }
-
-  // if (_useDiagonalMetric)
-  // {
-  //   metric.resize(_dimensions);
-  //   inverseMetric.resize(_dimensions);
-  //   for (size_t i = 0; i < _dimensions; ++i)
-  //   {
-  //     metric[i] = _k->_variables[i]->_initialStandardDeviation * _k->_variables[i]->_initialStandardDeviation;
-  //     inverseMetric[i] = 1.0 / metric[i];
-  //   }
-  // }
-  // else
-  // {
-  //   metric.resize(_dimensions * _dimensions, 0.0);
-  //   inverseMetric.resize(_dimensions * _dimensions, 0.0);
-
-  //   for (size_t d = 0; d < _dimensions; ++d)
-  //   {
-  //     metric[d * _dimensions + d] = _k->_variables[d]->_initialStandardDeviation * _k->_variables[d]->_initialStandardDeviation;
-  //     inverseMetric[d * _dimensions + d] = 1.0 / metric[d * _dimensions + d];
-  //   }
-
-  //   // Initialize multivariate normal distribution
-  //   _multivariateGenerator->_meanVector = std::vector<double>(_dimensions, 0.0);
-  //   _multivariateGenerator->_sigma = std::vector<double>(_dimensions * _dimensions, 0.0);
-
-  //   // Cholesky Decomposition
-  //   for (size_t d = 0; d < _dimensions; ++d)
-  //     _multivariateGenerator->_sigma[d * _dimensions + d] = sqrt(metric[d * _dimensions + d]);
-
-  //   _multivariateGenerator->updateDistribution();
-  // }
-
 
   if (_useAdaptiveStepSize == true)
   {
@@ -198,12 +165,15 @@ void HMC::runGeneration()
 
   if (_version == "Riemannian Const")
   {
+    // std::cout << "In Riemannian Const update metric" << std::endl;
+    // __printVec(_hamiltonian->getMetric());
     _hamiltonian->updateMetricMatricesRiemannian(_positionLeader, _k);
+    // __printVec(_hamiltonian->getMetric());
   }
 
   if (_useNUTS)
   {
-    if (_version == "Euclidean")
+    if (_version == "Euclidean" || _version == "Static")
     {
       TreeHelperEuclidean *helper = new TreeHelperEuclidean;
       helper->logUniSampleIn = logUniSample;
@@ -227,7 +197,7 @@ void HMC::runGeneration()
     }
     else if (_version == "Riemannian Const")
     {
-      std::cout << "runGeneration" << std::endl;
+      // std::cout << "runGeneration" << std::endl;
       TreeHelperEuclidean *helper = new TreeHelperEuclidean;
       helper->logUniSampleIn = logUniSample;
       runGenerationNUTSUtil(helper);
@@ -260,23 +230,28 @@ void HMC::runGenerationHMC(const double logUniSample)
   }
 
   // Perform Num Integration Steps of Leapfrog scheme to Momentum Candidate and Position Candidate
+  // std::cout << "in front of _integrator->step(...)" << std::endl;
   for (size_t i = 0; i < _numIntegrationSteps; ++i)
   {
     _integrator->step(_positionCandidate, _momentumCandidate, _stepSize, _hamiltonian, _k);
   }
+  // std::cout << "after _integrator->step(...)" << std::endl;
 
   // Negate proposed momentum to make proposal symmetric
+
   std::transform(std::cbegin(_momentumCandidate), std::cend(_momentumCandidate), std::begin(_momentumCandidate), std::negate<double>());
 
   // Save new Energies
+  // std::cout << "in front of _hamiltonian->updateHamiltonian(...)" << std::endl;
   _hamiltonian->updateHamiltonian(_positionCandidate, _k);
+  // std::cout << "after _hamiltonian->updateHamiltonian(...)" << std::endl;
   const double newK = _hamiltonian->K(_momentumCandidate);
   const double newU = _hamiltonian->U();
 
   const double logAlpha = std::min(0.0, -(newK - oldK + newU - oldU));
   _acceptanceProbability = std::exp(logAlpha);
 
-  if (logUniSample <= logAlpha)
+  if (logUniSample <= logAlpha && isNan(_positionCandidate) == false)
   {
     ++_acceptanceCount;
     _positionLeader = _positionCandidate;
@@ -443,7 +418,7 @@ void HMC::runGenerationNUTSUtil(TreeHelperEuclidean *helper)
       {
         KORALI_LOG_ERROR("Division by zero encountered in NUTS (numValidLeaves is %lf).\n", numValidLeaves);
       }
-      if (_uniformGenerator->getRandomNumber() < numValidLeavesSubtree / numValidLeaves)
+      if (_uniformGenerator->getRandomNumber() < numValidLeavesSubtree / numValidLeaves && isNan(_positionCandidate) == false)
       {
         _positionLeader = _positionCandidate;
       }
@@ -538,7 +513,7 @@ void HMC::runGenerationNUTSUtilRiemannian(TreeHelperRiemannian *helper)
       {
         KORALI_LOG_ERROR("Division by zero encountered in NUTS (numValidLeaves is %lf).\n", numValidLeaves);
       }
-      if (_uniformGenerator->getRandomNumber() < numValidLeavesSubtree / numValidLeaves)
+      if (_uniformGenerator->getRandomNumber() < numValidLeavesSubtree / numValidLeaves && isNan(_positionCandidate) == false)
       {
         _positionLeader = _positionCandidate;
       }
@@ -612,7 +587,9 @@ void HMC::updateState()
 {
   _acceptanceRate = _useNUTS == true ? (double)_acceptanceCountNUTS / ((double)_chainLength + 1) : (double)_acceptanceCount / ((double)(_chainLength + 1));
 
+  // std::cout << "in front of _chainlength..." << std::endl;
   _chainLength < _burnIn ? updateStateWarmup() : updateStateSampling();
+  // std::cout << "after _chainlength..." << std::endl;
 
   return;
 }
@@ -818,6 +795,11 @@ double HMC::findReasonableStepSize(std::vector<double> q)
   double stepSize = _stepSize;
   double oldLogP, newLogP;
 
+  if (_version == "Riemannian Const")
+  {
+    _hamiltonian->updateMetricMatricesRiemannian(q, _k);
+  }
+
   std::vector<double> p = _hamiltonian->sampleMomentum();
   ++_proposedSampleCount;
 
@@ -825,6 +807,12 @@ double HMC::findReasonableStepSize(std::vector<double> q)
   oldLogP = -_hamiltonian->H(p);
 
   _integrator->step(q, p, stepSize, _hamiltonian, _k);
+
+  if (_version == "Riemannian Const")
+  {
+    _hamiltonian->updateMetricMatricesRiemannian(q, _k);
+  }
+
   _hamiltonian->updateHamiltonian(q, _k);
   newLogP = -_hamiltonian->H(p);
 
@@ -840,6 +828,12 @@ double HMC::findReasonableStepSize(std::vector<double> q)
     // Here leapfrog uses Kinetic Energy with metric instead of Identity
     _integrator->step(q, p, stepSize, _hamiltonian, _k);
     _hamiltonian->updateHamiltonian(q, _k);
+
+    if (_version == "Riemannian Const")
+    {
+      _hamiltonian->updateMetricMatricesRiemannian(q, _k);
+    }
+
     newLogP = -_hamiltonian->H(p);
   }
 
@@ -1003,7 +997,7 @@ void HMC::buildTreeUtilIntegration(TreeHelperRiemannian *helper, std::vector<dou
     helper->numLeavesOut = 1;
     helper->qRightOut = helper->qLeftOut;
     helper->pRightOut = helper->pLeftOut;
-    helper->qProposedOut = helper->qLeftOut;  
+    helper->qProposedOut = helper->qLeftOut;
 
     std::cout << "rho (before sum) = " << std::endl;
     __printVec(rho);
@@ -1071,15 +1065,15 @@ void HMC::buildTreeUtilIntegration(TreeHelperRiemannian *helper, std::vector<dou
 
       std::cout << "rhoFirstSubtree = " << std::endl;
       __printVec(rhoFirstSubtree);
-      
+
       std::cout << "rhoSecondSubtree = " << std::endl;
       __printVec(rhoSecondSubtree);
 
       std::vector<double> rhoSubtree = rhoFirstSubtree;
-      
+
       std::cout << "rhoSubtree = (rhoSubtree = rhoFirstSubtree) " << std::endl;
       __printVec(rhoSubtree);
-      
+
       std::transform(std::cbegin(rhoSubtree), std::cend(rhoSubtree), std::cbegin(rhoSecondSubtree), std::begin(rhoSubtree), std::plus<double>());
 
       std::cout << "rhoSubtree = (rhoSubtree = rhoFirstSubtree + rhoSecondSubtree) " << std::endl;
@@ -1285,6 +1279,19 @@ void HMC::__printVec(const std::vector<double> vec) const
   return;
 }
 
+bool HMC::isNan(const std::vector<double> vec) const
+{
+  bool result = false;
+  for (size_t i = 0; i < vec.size(); ++i)
+  {
+    if (std::isfinite(vec[i]) == false)
+    {
+      result = true;
+    }
+  }
+
+  return result;
+}
 
 } // namespace sampler
 

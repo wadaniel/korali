@@ -56,25 +56,51 @@ void HMC::setInitialConfiguration()
     _positionLeader[i] = _k->_variables[i]->_initialMean;
   }
 
+  // Initializing metric and inverseMetric for diagonal and dense 
+  std::vector<double> metric;
+  std::vector<double> inverseMetric;
+
+  if (_useDiagonalMetric == true || _version == "Static")
+  {
+    metric.resize(_dimensions);
+    inverseMetric.resize(_dimensions);
+    for (size_t i = 0; i < _dimensions; ++i)
+    {
+      metric[i] = _k->_variables[i]->_initialStandardDeviation * _k->_variables[i]->_initialStandardDeviation;
+      inverseMetric[i] = 1.0 / metric[i];
+    }
+  }
+  else
+  {
+    metric.resize(_dimensions * _dimensions, 0.0);
+    inverseMetric.resize(_dimensions * _dimensions, 0.0);
+
+    for (size_t d = 0; d < _dimensions; ++d)
+    {
+      metric[d * _dimensions + d] = _k->_variables[d]->_initialStandardDeviation * _k->_variables[d]->_initialStandardDeviation;
+      inverseMetric[d * _dimensions + d] = 1.0 / metric[d * _dimensions + d];
+    }
+  }
+
   // Initializing Integrator and Hamiltonian
   if (_version == "Static")
   {
     _integrator = new LeapfrogExplicit;
-    _hamiltonian = new HamiltonianEuclideanDiag{_dimensions, _normalGenerator};
+    _hamiltonian = new HamiltonianEuclideanDiag{_dimensions, _normalGenerator, metric, inverseMetric};
   }
   else if (_version == "Euclidean")
   {
     _integrator = new LeapfrogExplicit;
     if (_useDiagonalMetric)
-      _hamiltonian = new HamiltonianEuclideanDiag{_dimensions, _normalGenerator};
+      _hamiltonian = new HamiltonianEuclideanDiag{_dimensions, _normalGenerator, metric, inverseMetric};
     else
-      _hamiltonian = new HamiltonianEuclideanDense{_dimensions, _multivariateGenerator};
+      _hamiltonian = new HamiltonianEuclideanDense{_dimensions, _multivariateGenerator, metric, inverseMetric};
   }
   else if (_version == "Riemannian")
   {
     _integrator = new LeapfrogImplicit(_maxNumFixedPointIteration);
     if (_useDiagonalMetric)
-      _hamiltonian = new HamiltonianRiemannianDiag{_dimensions, _normalGenerator, _inverseRegularizationParameter};
+      _hamiltonian = new HamiltonianRiemannianDiag{_dimensions, _normalGenerator, metric, inverseMetric, _inverseRegularizationParameter};
     else
       KORALI_LOG_ERROR("Riemannian Metric only supported with Diagonal Metric");
   }
@@ -82,57 +108,14 @@ void HMC::setInitialConfiguration()
   {
     _integrator = new LeapfrogExplicit;
     if (_useDiagonalMetric)
-      _hamiltonian = new HamiltonianRiemannianConstDiag{_dimensions, _normalGenerator, _inverseRegularizationParameter};
+      _hamiltonian = new HamiltonianRiemannianConstDiag{_dimensions, _normalGenerator, metric, inverseMetric, _inverseRegularizationParameter};
     else
-      _hamiltonian = new HamiltonianRiemannianConstDense{_dimensions, _multivariateGenerator, _inverseRegularizationParameter};
+      _hamiltonian = new HamiltonianRiemannianConstDense{_dimensions, _multivariateGenerator, metric, inverseMetric, _inverseRegularizationParameter};
   }
 
   _hamiltonian->verbosity = _hamiltonianVerbosity;
   _integrator->verbosity = _integratorVerbosity;
-
-  // Initializing metric and inverseMetric for Euclidean and Static case
-  if (_version == "Static" || _version == "Euclidean")
-  {
-    std::vector<double> metric;
-    std::vector<double> inverseMetric;
-
-    if (_useDiagonalMetric == true || _version == "Static")
-    {
-      metric.resize(_dimensions);
-      inverseMetric.resize(_dimensions);
-      for (size_t i = 0; i < _dimensions; ++i)
-      {
-        metric[i] = _k->_variables[i]->_initialStandardDeviation * _k->_variables[i]->_initialStandardDeviation;
-        inverseMetric[i] = 1.0 / metric[i];
-      }
-    }
-    else
-    {
-      metric.resize(_dimensions * _dimensions, 0.0);
-      inverseMetric.resize(_dimensions * _dimensions, 0.0);
-
-      for (size_t d = 0; d < _dimensions; ++d)
-      {
-        metric[d * _dimensions + d] = _k->_variables[d]->_initialStandardDeviation * _k->_variables[d]->_initialStandardDeviation;
-        inverseMetric[d * _dimensions + d] = 1.0 / metric[d * _dimensions + d];
-      }
-
-      // Initialize multivariate normal distribution
-      _multivariateGenerator->_meanVector = std::vector<double>(_dimensions, 0.0);
-      _multivariateGenerator->_sigma = std::vector<double>(_dimensions * _dimensions, 0.0);
-
-      // Cholesky Decomposition
-      for (size_t d = 0; d < _dimensions; ++d)
-        _multivariateGenerator->_sigma[d * _dimensions + d] = sqrt(metric[d * _dimensions + d]);
-
-      _multivariateGenerator->updateDistribution();
-    }
-
-    // Set _inverseMetric of hamiltonian
-    _hamiltonian->setInverseMetric(inverseMetric);
-    _hamiltonian->setMetric(metric);
-  }
-
+  
   if (_useAdaptiveStepSize == true)
   {
     _stepSize = findReasonableStepSize(_positionLeader);
@@ -538,15 +521,17 @@ void HMC::runGenerationNUTSUtilRiemannian(TreeHelperRiemannian *helper)
   return;
 }
 
+// TODO: Remove
 double HMC::dotProduct(const std::vector<double> &pLeft, const std::vector<double> &pRight) const
 {
   double tmpScalar = 0.0;
 
+  std::vector<double> inverseMetric = _hamiltonian->getInverseMetric();
   for (size_t i = 0; i < _dimensions; ++i)
   {
     for (size_t j = 0; j < _dimensions; ++j)
     {
-      tmpScalar += pLeft[i] * _inverseMetric[i * _dimensions + j] * pRight[j];
+      tmpScalar += pLeft[i] * inverseMetric[i * _dimensions + j] * pRight[j];
     }
   }
 

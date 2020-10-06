@@ -91,12 +91,12 @@ class Hamiltonian
     double evaluation = KORALI_GET(double, (*_sample), "logP(x)");
     evaluation *= -1.0;
 
-    if (verbosity == true)
-    {
-      std::cout << "In Hamiltonian::U :" << std::endl;
-      std::cout << "U() = " << evaluation << std::endl
-                << std::endl;
-    }
+    // if (verbosity == true)
+    // {
+    //   std::cout << "In Hamiltonian::U :" << std::endl;
+    //   std::cout << "U() = " << evaluation << std::endl
+    //             << std::endl;
+    // }
 
     return evaluation;
   }
@@ -113,13 +113,13 @@ class Hamiltonian
     // negate to get dU
     std::transform(grad.cbegin(), grad.cend(), grad.begin(), std::negate<double>());
 
-    if (verbosity == true)
-    {
-      std::cout << "In Hamiltonian::dU :" << std::endl;
-      std::cout << "dU() = " << std::endl;
-      __printVec(grad);
-      std::cout << std::endl;
-    }
+    // if (verbosity == true)
+    // {
+    //   std::cout << "In Hamiltonian::dU :" << std::endl;
+    //   std::cout << "dU() = " << std::endl;
+    //   __printVec(grad);
+    //   std::cout << std::endl;
+    // }
 
     return grad;
   }
@@ -183,11 +183,11 @@ class Hamiltonian
     KORALI_WAIT((*_sample));
     (*_sample)["Operation"] = "Evaluate";
 
-    if (verbosity == true)
-    {
-      std::cout << "In Hamiltonian::updateHamiltonian " << std::endl;
-      printf("%s\n", _sample->_js.getJson().dump(2).c_str());
-    }
+    // if (verbosity == true)
+    // {
+    //   std::cout << "In Hamiltonian::updateHamiltonian " << std::endl;
+    //   printf("%s\n", _sample->_js.getJson().dump(2).c_str());
+    // }
   }
 
   /**
@@ -246,7 +246,7 @@ class Hamiltonian
   * @param positionMean Mean of samples.
   * @return Error code of Cholesky decomposition needed for dense Metric.
   */
-  virtual int updateMetricMatricesEuclidean(const std::vector<std::vector<double>> &samples, const std::vector<double> &positionMean) 
+  virtual int updateMetricMatricesEuclidean(const std::vector<std::vector<double>> &samples, const std::vector<double> &positionMean)
   {
     return -1;
   };
@@ -256,14 +256,14 @@ class Hamiltonian
   * @param q current position
   * @param _k Korali experiment object
   */
-  virtual void updateMetricMatricesRiemannian(const std::vector<double> &q, korali::Experiment *_k) 
+  virtual int updateMetricMatricesRiemannian(const std::vector<double> &q, korali::Experiment *_k)
   {
     if (verbosity == true)
     {
-      std::cout  << "in Hamiltonian::updateMetricMatricesRiemannian" << std::endl;      
+      std::cout << "in Hamiltonian::updateMetricMatricesRiemannian" << std::endl;
     }
 
-    return;
+    return 0;
   };
 
   //////////////////////////////////////////////////////////////////////////////////////////////
@@ -366,12 +366,12 @@ class Hamiltonian
   * @brief verbosity boolean for debuggin purposes.
   */
   bool verbosity;
-  
+
   /**
   * @brief Debug printer function for std::vector. TODO: REMOVE
   * @param vec Vector to be printed.
   */
-  void __printVec(std::vector<double> vec)
+  void __printVec(std::vector<double> vec) const
   {
     for (size_t i = 0; i < vec.size(); ++i)
     {

@@ -3,6 +3,8 @@
 
 #include "hamiltonian_riemannian_const_base.hpp"
 #include "modules/distribution/multivariate/normal/normal.hpp"
+#include <gsl/gsl_eigen.h>
+#include <gsl/gsl_blas.h>
 
 namespace korali
 {
@@ -30,6 +32,16 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannianConst
     _metric.resize(stateSpaceDim * stateSpaceDim);
     _inverseMetric.resize(stateSpaceDim * stateSpaceDim);
     _inverseRegularizationParam = 1.0;
+
+    // Initialize multivariate normal distribution
+    _multivariateGenerator->_meanVector = std::vector<double>(_stateSpaceDim, 0.0);
+    _multivariateGenerator->_sigma = std::vector<double>(_stateSpaceDim * _stateSpaceDim, 0.0);
+
+    // Cholesky Decomposition
+    for (size_t d = 0; d < _stateSpaceDim; ++d)
+      _multivariateGenerator->_sigma[d * _stateSpaceDim + d] = sqrt(_metric[d * _stateSpaceDim + d]);
+
+    _multivariateGenerator->updateDistribution();
   }
 
   /**
@@ -59,6 +71,31 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannianConst
 
     _multivariateGenerator = multivariateGenerator;
     _inverseRegularizationParam = inverseRegularizationParam;
+  }
+
+  /**
+  * @brief Constructor with State Space Dim.
+  * @param stateSpaceDim Dimension of State Space.
+  * @param multivariateGenerator Generator needed for momentum sampling.
+  */
+  HamiltonianRiemannianConstDense(const size_t stateSpaceDim, korali::distribution::multivariate::Normal *multivariateGenerator, const std::vector<double> metric, const std::vector<double> inverseMetric, const double inverseRegularizationParam) : HamiltonianRiemannianConstDense{stateSpaceDim, multivariateGenerator, inverseRegularizationParam}
+  {
+    _metric = metric;
+    _inverseMetric = inverseMetric;
+
+    std::vector<double> mean(stateSpaceDim, 0.0);
+
+    // Initialize multivariate normal distribution
+    _multivariateGenerator->_meanVector = std::vector<double>(stateSpaceDim, 0.0);
+    _multivariateGenerator->_sigma = std::vector<double>(stateSpaceDim * stateSpaceDim, 0.0);
+
+    // Cholesky Decomposition
+    for (size_t d = 0; d < stateSpaceDim; ++d)
+    {
+      _multivariateGenerator->_sigma[d * stateSpaceDim + d] = sqrt(metric[d * stateSpaceDim + d]);
+    }
+
+    _multivariateGenerator->updateDistribution();
   }
 
   /**
@@ -284,7 +321,7 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannianConst
     return result;
   }
 
-  void updateMetricMatricesRiemannian(const std::vector<double> &q, korali::Experiment *_k) override
+  int updateMetricMatricesRiemannian(const std::vector<double> &q, korali::Experiment *_k) override
   {
     (*_sample)["Parameters"] = q;
 
@@ -302,24 +339,61 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannianConst
 
     auto hessian = KORALI_GET(std::vector<double>, (*_sample), "H(logP(x))");
 
+    gsl_matrix_view Xv = gsl_matrix_view_array(hessian.data(), _stateSpaceDim, _stateSpaceDim);
+    gsl_matrix* X = &Xv.matrix;
+    gsl_matrix* Q = gsl_matrix_alloc(_stateSpaceDim, _stateSpaceDim);
+    gsl_vector* lambda = gsl_vector_alloc(_stateSpaceDim);
+
+    gsl_eigen_symmv_workspace* w = gsl_eigen_symmv_alloc(_stateSpaceDim);
+
+    gsl_eigen_symmv(X, lambda, Q, w);
+
+    gsl_matrix* lambdaSoftAbs = gsl_matrix_alloc(_stateSpaceDim, _stateSpaceDim);
+    gsl_matrix_set_all(lambdaSoftAbs, 0.0);
+    
+    gsl_matrix* inverseLambdaSoftAbs = gsl_matrix_alloc(_stateSpaceDim, _stateSpaceDim);
+    gsl_matrix_set_all(inverseLambdaSoftAbs, 0.0);
+
+    _logDetMetric = 0.0;
+    for (size_t i = 0; i < _stateSpaceDim; ++i)
+    {
+      double lambdaSoftAbs_i = __softAbsFunc(gsl_vector_get(lambda, i), _inverseRegularizationParam);
+      gsl_matrix_set(lambdaSoftAbs, i, i, lambdaSoftAbs_i);
+      gsl_matrix_set(inverseLambdaSoftAbs, i, i, 1.0 / lambdaSoftAbs_i);
+      _logDetMetric += std::log(lambdaSoftAbs_i);
+    }
+
+    gsl_matrix* tmpMatOne = gsl_matrix_alloc(_stateSpaceDim, _stateSpaceDim);
+    gsl_matrix* tmpMatTwo = gsl_matrix_alloc(_stateSpaceDim, _stateSpaceDim);
+
+    gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1.0, Q, lambdaSoftAbs, 0.0, tmpMatOne);
+    gsl_blas_dgemm(CblasNoTrans, CblasTrans, 1.0, lambdaSoftAbs, Q, 0.0, tmpMatTwo);
+
+    gsl_matrix* tmpMatThree = gsl_matrix_alloc(_stateSpaceDim, _stateSpaceDim);
+    gsl_matrix* tmpMatFour = gsl_matrix_alloc(_stateSpaceDim, _stateSpaceDim);
+
+    gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1.0, Q, lambdaSoftAbs, 0.0, tmpMatThree);
+    gsl_blas_dgemm(CblasNoTrans, CblasTrans, 1.0, inverseLambdaSoftAbs, Q, 0.0, tmpMatFour);
+
+    for (size_t i = 0; i < _stateSpaceDim; ++i)
+    {
+      for (size_t j = 0; j < _stateSpaceDim; ++j)
+      {
+        _metric[i + j * _stateSpaceDim] = gsl_matrix_get(tmpMatTwo, i, j);
+        _inverseMetric[i + j * _stateSpaceDim] = gsl_matrix_get(tmpMatFour, i, j);
+      }
+    }
+
     if (verbosity == true)
     {
-      std::cout << "In updateMetricMatricesRiemannian::updateHamiltonian after getting hessian :" << std::endl;
+      std::cout << "In HamiltonianRiemannianConstDense::updateMetricMatricesRiemannian after getting hessian :" << std::endl;
       std::cout << "H = " << std::endl;
       __printVec(hessian);
     }
 
-    for (size_t i = 0; i < _stateSpaceDim; ++i)
-    {
-      _metric[i] = this->__softAbsFunc(hessian[i + i * _stateSpaceDim], _inverseRegularizationParam);
-      _inverseMetric[i] = 1.0 / _metric[i];
-      detMetric *= _metric[i];
-    }
-    _logDetMetric = std::log(detMetric);
-
     if (verbosity == true)
     {
-      std::cout << "In updateMetricMatricesRiemannian::updateHamiltonian end :" << std::endl;
+      std::cout << "In HamiltonianRiemannianConstDense::updateMetricMatricesRiemannian end :" << std::endl;
       printf("%s\n", _sample->_js.getJson().dump(2).c_str());
       std::cout << "_logDetMetric = " << _logDetMetric << std::endl;
       std::cout << "_metric = " << std::endl;
@@ -327,6 +401,31 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannianConst
       std::cout << "_inverseMetric = " << std::endl;
       __printVec(_inverseMetric);
     }
+
+    gsl_matrix_free(Q);
+    gsl_matrix_free(lambdaSoftAbs);
+    gsl_matrix_free(inverseLambdaSoftAbs);
+
+    gsl_vector_free(lambda);
+
+    gsl_eigen_symmv_free(w);
+
+    _multivariateGenerator->_sigma = _metric;
+
+    // Cholesky Decomp
+    gsl_matrix_view sigma = gsl_matrix_view_array(&_multivariateGenerator->_sigma[0], _stateSpaceDim, _stateSpaceDim);
+
+    int err = gsl_linalg_cholesky_decomp(&sigma.matrix);
+    if (err == GSL_EDOM)
+    {
+      // Do nothing if error occurs
+    }
+    else
+    {
+      _multivariateGenerator->updateDistribution();
+    }
+
+    return err;
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////

@@ -14,7 +14,7 @@ namespace optimizer
 {
 class CMAES : public Optimizer
 {
-  private:
+  public:
   /**
   * @brief Prepares generation for the next set of evaluations
  */
@@ -40,7 +40,7 @@ class CMAES : public Optimizer
   /**
  * @brief Updates mean and covariance of Gaussian proposal distribution.
  */
-  void updateDistribution(std::vector<Sample> &samples);
+  void updateDistribution(const std::vector<double> &evaluations);
 
   /**
     * @brief Updates the system of eigenvalues and eigenvectors
@@ -111,7 +111,6 @@ class CMAES : public Optimizer
  */
   void discretize(std::vector<double> &sample);
 
-  public:
   /**
  * @brief Configures CMA-ES.
  */

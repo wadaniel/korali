@@ -2,6 +2,7 @@
 #define _KORALI_AGENT_SDPG_HPP_
 
 #include "modules/solver/agent/agent.hpp"
+#include "modules/solver/optimizer/CMAES/CMAES.hpp"
 #include "modules/problem/reinforcementLearning/continuous/continuous.hpp"
 
 namespace korali
@@ -40,6 +41,11 @@ class SDPG : public Agent
   korali::Experiment _actionExperiment;
 
   /**
+   * @brief Korali optimizer for finding the optimal action as per the critic
+   */
+  korali::solver::optimizer::CMAES *_actionOptimizer;
+
+  /**
   * @brief Korali experiment for argmax_action(Q) based on a trained Q-Network
   */
   korali::Experiment _policyExperiment;
@@ -66,12 +72,6 @@ class SDPG : public Agent
    * @return The value of Q(s,a)
    */
   double stateActionValueFunction(const std::vector<double> &state, const std::vector<double> &action);
-
-  /**
-   * @brief Model function to evaluate Q(s,a) for optimizer proposed a's
-   * @param sample The sample containing proposal action
-   */
-  void evaluateAction(korali::Sample &sample);
 
   /**
    * @brief Function to query policy and get the best action for the given state

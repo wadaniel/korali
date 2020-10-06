@@ -58,11 +58,9 @@ void SDPG::initializeAgent()
   * Initializing Action Optimizing Experiment
   *********************************************************************/
 
-  // Creating evaluation lambda function for optimization
-  auto actionFc = [this](Sample &sample) { this->evaluateAction(sample); };
-
   _actionExperiment["Problem"]["Type"] = "Optimization";
-  _actionExperiment["Problem"]["Objective Function"] = actionFc;
+  _actionExperiment["Problem"]["Objective Function"] = 0;
+
   // Initializing experiment with an initial zero set
   for (size_t i = 0; i < _problem->_actionVectorSize; i++)
   {
@@ -89,6 +87,9 @@ void SDPG::initializeAgent()
 
   // Running initialization to verify that the configuration is correct
   engine.initialize(_actionExperiment);
+
+  // Getting pointer to the CMAES solver itself
+  _actionOptimizer = dynamic_cast<solver::optimizer::CMAES *>(_actionExperiment._solver);
 
   /*********************************************************************
    * Initializing Policy-Related Structures
@@ -167,18 +168,6 @@ void SDPG::getAction(korali::Sample &sample)
   sample["Action"] = action;
 }
 
-void SDPG::evaluateAction(Sample &sample)
-{
-  // Getting parameters for weight and bias update
-  auto action = KORALI_GET(std::vector<double>, sample, "Parameters");
-
-  // Getting states from the minibatch
-  auto state = sample.globals()["State"].get<std::vector<double>>();
-
-  // Saving the negative of the error because we want to minimize it
-  sample["F(x)"] = stateActionValueFunction(state, action);
-}
-
 double SDPG::stateActionValueFunction(const std::vector<double> &state, const std::vector<double> &action)
 {
   // Storage to put together state and action
@@ -249,9 +238,9 @@ void SDPG::trainAgent()
   }
 
   // Running one generation of the optimization method with the given mini-batch
-  _criticExperiment["Solver"]["Termination Criteria"]["Max Generations"] = _criticExperiment._currentGeneration + 1;
   _criticLearner->initialize();
-  engine.resume(_criticExperiment);
+  _criticLearner->runGeneration();
+  _criticLearner->finalize();
 
   // Keeping critic/policy statistics
   _averageQStar = (double)_cumulativeQStar / (double)(_criticMiniBatchSize);
@@ -311,22 +300,38 @@ void SDPG::trainAgent()
     size_t expId = experienceReplayIndexes[i];
     std::vector<double> curState = _experienceReplayHistory[expId]["State"];
 
-   _actionExperiment._globals["State"] = curState;
-   _actionExperiment._currentGeneration = 0;
-   engine.resume(_actionExperiment);
-   auto action = _actionExperiment["Results"]["Best Sample"]["Parameters"].get<std::vector<double>>();
+   _actionExperiment._currentGeneration = 1;
+   _actionOptimizer->setInitialConfiguration();
+   _actionOptimizer->_terminationCriteria.clear();
+
+   while (_actionOptimizer->checkTermination() == false)
+   {
+    _actionOptimizer->prepareGeneration();
+
+    size_t candidateCount = _actionOptimizer->_samplePopulation.size();
+    std::vector<double> candidateEvaluations(candidateCount);
+
+    for (size_t j = 0; j < candidateCount; j++)
+     candidateEvaluations[j] = stateActionValueFunction(curState, _actionOptimizer->_samplePopulation[j]);
+
+    _actionOptimizer->updateDistribution(candidateEvaluations);
+
+    _actionExperiment._currentGeneration++;
+   }
+
+   auto bestAction = _actionOptimizer->_bestEverVariables;
 
    _policyProblem->_inputs[i] = curState;
-   _policyProblem->_solution[i] = action;
+   _policyProblem->_solution[i] = bestAction;
   }
 
   // Getting current hyperparameters
   auto curPolicyHyperparameters = _policyLearner->getHyperparameters();
 
-  // Running one generation of the optimization method on the actor NN with the given mini-batch
-  _policyExperiment["Solver"]["Termination Criteria"]["Max Generations"] = _policyExperiment._currentGeneration + 1;
+  // Running one generation of the optimization method with the given mini-batch
   _policyLearner->initialize();
-  engine.resume(_policyExperiment);
+  _policyLearner->runGeneration();
+  _policyLearner->finalize();
 
   /*******************************************************************
    * Soft adoption of new hyperparameters wrt to adoption rate

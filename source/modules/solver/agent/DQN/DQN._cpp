@@ -58,20 +58,6 @@ void DQN::initializeAgent()
   _hyperparameters["Critic"] = _criticLearner->getHyperparameters();
 }
 
-double DQN::stateActionValueFunction(const std::vector<double> &state, const std::vector<double> &action)
-{
-  // Storage to put together state and action
-  std::vector<double> stateActionInput(_problem->_stateVectorSize + _problem->_actionVectorSize);
-
-  // Forward propagating state/action through the critic
-  for (size_t j = 0; j < state.size(); j++) stateActionInput[j] = state[j];
-  for (size_t j = 0; j < action.size(); j++) stateActionInput[j + state.size()] = action[j];
-  auto evaluation = _criticLearner->getEvaluation(stateActionInput);
-
-  // Getting the value of V(Xt), i.e., Q(xt, best action)
-  return evaluation[0];
-}
-
 void DQN::trainAgent()
 {
   /***********************************************************************************
@@ -115,7 +101,15 @@ void DQN::trainAgent()
       std::vector<double> nextState = _experienceReplayHistory[expId + 1]["State"];
       std::vector<double> bestAction = queryPolicy(nextState);
 
-      qStar += _criticDiscountFactor * stateActionValueFunction(nextState, bestAction);
+      // Storage to put together state and action
+      std::vector<double> stateActionInput(_problem->_stateVectorSize + _problem->_actionVectorSize);
+
+      for (size_t j = 0; j < nextState.size(); j++) stateActionInput[j] = nextState[j];
+      for (size_t j = 0; j < bestAction.size(); j++) stateActionInput[j + nextState.size()] = bestAction[j];
+
+      auto qNextExp = _criticLearner->getEvaluation(stateActionInput)[0];
+
+      qStar += _criticDiscountFactor * qNextExp;
     }
 
     // Updating inputs to training learner

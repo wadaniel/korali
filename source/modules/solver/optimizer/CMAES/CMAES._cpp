@@ -198,7 +198,13 @@ void CMAES::runGeneration()
 
   // Waiting for samples to finish
   KORALI_WAITALL(samples);
-  updateDistribution(samples);
+
+  // Gathering evaluations
+  std::vector<double> evaluations(_currentPopulationSize);
+  for (size_t i = 0; i < _currentPopulationSize; i++)
+   evaluations[i] = KORALI_GET(double, samples[i], "F(x)");
+
+  updateDistribution(evaluations);
 }
 
 void CMAES::initMuWeights(size_t numsamplesmu)
@@ -492,10 +498,9 @@ void CMAES::sampleSingle(size_t sampleIdx)
   }
 }
 
-void CMAES::updateDistribution(std::vector<Sample> &samples)
+void CMAES::updateDistribution(const std::vector<double> &evaluations)
 {
-  for (size_t i = 0; i < _currentPopulationSize; i++)
-    _valueVector[i] = KORALI_GET(double, samples[i], "F(x)");
+  _valueVector = evaluations;
 
   /* Generate _sortingIndex */
   sort_index(_valueVector, _sortingIndex, _currentPopulationSize);

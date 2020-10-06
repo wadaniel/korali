@@ -315,7 +315,6 @@ void SDPG::trainAgent()
    _actionExperiment._currentGeneration = 0;
    engine.resume(_actionExperiment);
    auto action = _actionExperiment["Results"]["Best Sample"]["Parameters"].get<std::vector<double>>();
-   auto actionQ = _actionExperiment["Results"]["Best Sample"]["F(x)"].get<double>();
 
    _policyProblem->_inputs[i] = curState;
    _policyProblem->_solution[i] = action;

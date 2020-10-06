@@ -44,9 +44,6 @@ void NeuralNetwork::initialize()
 
 #endif
 
-  // Checking if batch size if correct
-  if (_batchSize == 0) KORALI_LOG_ERROR("You should provide an input batch size larger than zero.\n");
-
   // Assigning relevant metadata to all the layers
   size_t layerCount = _layers.size();
   for (size_t i = 0; i < layerCount; i++)
@@ -106,9 +103,12 @@ void NeuralNetwork::setInput(const std::vector<std::vector<double>> &input)
   size_t layerCount = _layers.size();
 
   // If batchsize is different than existing one, re-create pipelines
-  _batchSize = batchSize;
-  for (size_t i = 0; i < layerCount; i++) _layers[i]->createForwardPipeline();
-  for (size_t i = 0; i < layerCount; i++) _layers[i]->createBackwardPipeline();
+  if (batchSize != _batchSize)
+  {
+   _batchSize = batchSize;
+   for (size_t i = 0; i < layerCount; i++) _layers[i]->createForwardPipeline();
+   for (size_t i = 0; i < layerCount; i++) _layers[i]->createBackwardPipeline();
+  }
 
   for (size_t i = 0; i < input.size(); i++)
     if (input[i].size() != inputSize)

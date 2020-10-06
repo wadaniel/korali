@@ -119,8 +119,8 @@ void DQN::trainAgent()
     }
 
     // Updating inputs to training learner
-    _criticProblem->_inputs[i] = curState;
-    _criticProblem->_inputs[i].insert(_criticProblem->_inputs[i].end(), curAction.begin(), curAction.end());
+    for (size_t j = 0; j < curState.size(); j++) _criticProblem->_inputs[i][j] = curState[j];
+    for (size_t j = 0; j < curAction.size(); j++) _criticProblem->_inputs[i][j + curState.size()] = curAction[j];
     _criticProblem->_solution[i][0] = qStar;
 
     // Keeping statistics
@@ -128,10 +128,9 @@ void DQN::trainAgent()
   }
 
   // Running one generation of the optimization method with the given mini-batch
-  _criticExperiment["Solver"]["Termination Criteria"]["Max Generations"] = _criticExperiment._currentGeneration + 1;
   _criticLearner->initialize();
-  korali::Engine engine;
-  engine.resume(_criticExperiment);
+  _criticLearner->runGeneration();
+  _criticLearner->finalize();
 
   // Keeping statistics
   _averageQStar = (double)_cumulativeQStar / (double)_criticMiniBatchSize;

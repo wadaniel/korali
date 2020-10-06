@@ -5,6 +5,7 @@
 #include "modules/neuralNetwork/neuralNetwork.hpp"
 #include "modules/problem/supervisedLearning/supervisedLearning.hpp"
 #include "modules/solver/learner/learner.hpp"
+#include "modules/solver/optimizer/Adam/Adam.hpp"
 
 namespace korali
 {
@@ -26,6 +27,11 @@ class DeepGD : public Learner
   korali::Experiment _optExperiment;
 
   /**
+ * @brief ADAM solver pointer to access directly (for performance)
+ */
+  korali::solver::optimizer::Adam *_adamSolver;
+
+  /**
    * @brief A neural network to be trained based on inputs and solutions
    */
   NeuralNetwork *_trainingNeuralNetwork;
@@ -40,16 +46,7 @@ class DeepGD : public Learner
    */
   bool _isLearnerInitialized;
 
-  /**
-  * @brief Model function to evaluate a given NN weight/bias configuration
-  * @param sample The sample containing proposal NN weight/bias configuration.
-  * @param nn The neural network to update
-  * @param solution Solution values from which to calculate loss and differentials
-  */
-  void evaluateHyperparameters(korali::Sample &sample, NeuralNetwork *nn, const std::vector<std::vector<double>> &solution);
-
   std::vector<std::vector<double>> getEvaluation(const std::vector<std::vector<double>> &inputBatch);
-
   std::vector<double> getGradients(const std::vector<double> &outputDiffs) override;
   std::vector<double> getEvaluation(const std::vector<double> &inputBatch) override;
 

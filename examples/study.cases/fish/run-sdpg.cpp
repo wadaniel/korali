@@ -114,9 +114,9 @@ int main(int argc, char *argv[])
 
   ////// Defining Termination Criteria
 
-  e["Solver"]["Training Reward Threshold"] = 300;
+  e["Solver"]["Training Reward Threshold"] = -1.0;
   e["Solver"]["Policy Testing Episodes"] = 20;
-  e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 450;
+  e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = -1.0;
 
   ////// Setting file output configuration
 

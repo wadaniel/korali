@@ -39,20 +39,27 @@ void Adam::runGeneration()
   sample["Operation"] = "Evaluate With Gradients";
   sample["Parameters"] = _currentValue;
   sample["Sample Id"] = 0;
-  _modelEvaluationCount++;
   KORALI_START(sample);
 
   // Waiting for sample to finish
   KORALI_WAIT(sample);
 
-  // Processing results
+  auto evaluation = KORALI_GET(double, sample, "F(x)");
+  auto gradient = KORALI_GET(std::vector<double>, sample, "Gradient");
 
-  _currentEvaluation = KORALI_GET(double, sample, "F(x)");
+  // Processing results
+  processResult(evaluation, gradient);
+}
+
+void Adam::processResult(double evaluation, std::vector<double>& gradient)
+{
+  _modelEvaluationCount++;
+  _currentEvaluation = evaluation;
 
   _currentEvaluation = -_currentEvaluation; //minimize
   _gradientNorm = 0.0;
 
-  _gradient = KORALI_GET(std::vector<double>, sample, "Gradient");
+  _gradient = gradient;
 
   if (_gradient.size() != _k->_variables.size())
     KORALI_LOG_ERROR("Size of sample's gradient evaluations vector (%lu) is different from the number of problem variables defined (%lu).\n", _gradient.size(), _k->_variables.size());

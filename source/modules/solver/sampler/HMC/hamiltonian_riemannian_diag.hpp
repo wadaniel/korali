@@ -296,7 +296,7 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
 
     for (size_t i = 0; i < _stateSpaceDim; ++i)
     {
-      _metric[i] = this->__softAbsFunc(grad[i], _inverseRegularizationParam);
+      _metric[i] = this->__softAbsFunc(grad[i] * grad[i], _inverseRegularizationParam);
       _inverseMetric[i] = 1.0 / _metric[i];
       detMetric *= _metric[i];
     }
@@ -348,32 +348,6 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
     return result;
   }
 
-  /**
-  * @brief Updates diagonal Inverse Metric by using samples to approximate the Variance (diagonal of Fisher Information matrix).
-  * @param samples Contains samples. One row is one sample.
-  * @param positionMean Mean of samples.
-  * @return Error code not needed here to set to 0.
-  */
-  int updateInverseMetric(const std::vector<std::vector<double>> &samples, const std::vector<double> &positionMean) override
-  {
-    double tmpScalar;
-    size_t numSamples = samples.size();
-
-    // calculate covariance matrix of warmup sample via Fisher Infromation
-    for (int i = 0; i < _stateSpaceDim; ++i)
-    {
-      tmpScalar = 0;
-      for (int j = 0; j < numSamples; ++j)
-      {
-        tmpScalar += (samples[j][i] - positionMean[i]) * (samples[j][i] - positionMean[i]);
-      }
-      _inverseMetric[i] = tmpScalar / (numSamples - 1);
-      _metric[i] = 1.0 / _inverseMetric[i];
-    }
-
-    return 0;
-  }
-
   //////////////////////////////////////////////////////////////////////////////////////////////
   //////////////////////////////////// GENERAL FUNCTIONS END ///////////////////////////////////
   //////////////////////////////////////////////////////////////////////////////////////////////
@@ -383,53 +357,10 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
   */
   double _inverseRegularizationParam;
 
+  private:
   //////////////////////////////////////////////////////////////////////////////////////////////
   //////////////////////////////////////// HELPERS START ///////////////////////////////////////
   //////////////////////////////////////////////////////////////////////////////////////////////
-
-  private:
-  /**
-  * @brief Hessian of potential energy function used for Riemannian metric.
-  * @return Hessian of potential energy.
-  */
-  std::vector<double> __hessianU()
-  {
-    auto hessian = KORALI_GET(std::vector<double>, (*_sample), "H(logP(x))");
-
-    // negate to get dU
-    std::transform(hessian.cbegin(), hessian.cend(), hessian.begin(), std::negate<double>());
-
-    if (verbosity == true)
-    {
-      std::cout << "In HamiltonianRiemannianDiag::__hessianU :" << std::endl;
-      std::cout << "__hessianU() = " << std::endl;
-      __printVec(hessian);
-    }
-
-    return hessian;
-  }
-
-  /**
-  * @brief Helper function f(x) = x^2 * coth(alpha * x^2) for SoftAbs metric.
-  * @param x Point of evaluation.
-  * @param alpha Hyperparameter.
-  * @return function value at x.
-  */
-  double __softAbsFunc(const double x, const double alpha)
-  {
-    double result;
-    if (std::abs(x) < 0.5)
-    {
-      double a4 = 1.0 / 3.0;
-      double a8 = -1.0 / 45.0;
-      result = 1.0 / alpha + a4 * std::pow(x, 4) * alpha + a8 * std::pow(x, 8) * std::pow(alpha, 3);
-    }
-    else
-    {
-      result = x * x * 1.0 / std::tanh(alpha * x * x);
-    }
-    return result;
-  }
 
   /**
   * @brief Helper function f(x) = 1/x - alpha * x / (sinh(alpha * x^2) * cosh(alpha * x^2)) for SoftAbs metric.

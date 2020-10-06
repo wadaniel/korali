@@ -147,7 +147,7 @@ class HamiltonianEuclideanDiag : public HamiltonianEuclidean
   * @param positionMean Mean of samples.
   * @return Error code not needed here to set to 0.
   */
-  int updateInverseMetric(const std::vector<std::vector<double>> &samples, const std::vector<double> &positionMean) override
+  int updateMetricMatricesEuclidean(const std::vector<std::vector<double>> &samples, const std::vector<double> &positionMean) override
   {
     double tmpScalar;
     size_t numSamples = samples.size();

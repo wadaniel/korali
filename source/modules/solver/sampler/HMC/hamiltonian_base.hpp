@@ -246,7 +246,25 @@ class Hamiltonian
   * @param positionMean Mean of samples.
   * @return Error code of Cholesky decomposition needed for dense Metric.
   */
-  virtual int updateInverseMetric(const std::vector<std::vector<double>> &samples, const std::vector<double> &positionMean) = 0;
+  virtual int updateMetricMatricesEuclidean(const std::vector<std::vector<double>> &samples, const std::vector<double> &positionMean) 
+  {
+    return -1;
+  };
+
+  /**
+  * @brief Updates Inverse Metric by using hessian.
+  * @param q current position
+  * @param _k Korali experiment object
+  */
+  virtual void updateMetricMatricesRiemannian(const std::vector<double> &q, korali::Experiment *_k) 
+  {
+    if (verbosity == true)
+    {
+      std::cout  << "in Hamiltonian::updateMetricMatricesRiemannian" << std::endl;      
+    }
+
+    return;
+  };
 
   //////////////////////////////////////////////////////////////////////////////////////////////
   //////////////////////////////////// GENERAL FUNCTIONS END ///////////////////////////////////
@@ -348,8 +366,7 @@ class Hamiltonian
   * @brief verbosity boolean for debuggin purposes.
   */
   bool verbosity;
-
-  protected:
+  
   /**
   * @brief Debug printer function for std::vector. TODO: REMOVE
   * @param vec Vector to be printed.
@@ -363,6 +380,7 @@ class Hamiltonian
     return;
   }
 
+  protected:
   //////////////////////////////////////////////////////////////////////////////////////////////
   //////////////////////////////////// DEBUGGER MEMBERS END ////////////////////////////////////
   //////////////////////////////////////////////////////////////////////////////////////////////

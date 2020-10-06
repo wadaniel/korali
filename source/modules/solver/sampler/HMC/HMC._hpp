@@ -12,6 +12,7 @@
 #include "hamiltonian_euclidean_dense.hpp"
 #include "hamiltonian_euclidean_diag.hpp"
 #include "hamiltonian_riemannian_diag.hpp"
+#include "hamiltonian_riemannian_const_diag.hpp"
 #include "leapfrog_explicit.hpp"
 #include "leapfrog_implicit.hpp"
 #include "tree_helper_euclidean.hpp"
@@ -190,6 +191,8 @@ class HMC : public Sampler
   * @param rho Distance of position calculated by integrating momentum and multiplying with Inverse Metric.
   */
   void buildTreeIntegrationCriterion(const std::vector<double> &q, const std::vector<double> &p, const double logUniSample, const int direction, const int depth, const double stepSize, const double rootH, std::vector<double> &qLeft, std::vector<double> &pLeft, std::vector<double> &qRight, std::vector<double> &pRight, std::vector<double> &qProposed, double &numValidLeaves, bool &buildCriterion, double &alpha, int &numLeaves, std::vector<double> &rho);
+
+  void __printVec(const std::vector<double> vec) const;
 };
 
 } // namespace sampler

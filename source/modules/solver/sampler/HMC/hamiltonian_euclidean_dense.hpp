@@ -51,6 +51,31 @@ class HamiltonianEuclideanDense : public HamiltonianEuclidean
   }
 
   /**
+  * @brief Constructor with State Space Dim.
+  * @param stateSpaceDim Dimension of State Space.
+  * @param multivariateGenerator Generator needed for momentum sampling.
+  */
+  HamiltonianEuclideanDense(const size_t stateSpaceDim, korali::distribution::multivariate::Normal *multivariateGenerator, const std::vector<double> metric, const std::vector<double> inverseMetric) : HamiltonianEuclideanDense{stateSpaceDim, multivariateGenerator}
+  {
+    _metric = metric;
+    _inverseMetric = inverseMetric;
+
+    std::vector<double> mean(stateSpaceDim, 0.0);
+
+    // Initialize multivariate normal distribution
+    _multivariateGenerator->_meanVector = std::vector<double>(stateSpaceDim, 0.0);
+    _multivariateGenerator->_sigma = std::vector<double>(stateSpaceDim * stateSpaceDim, 0.0);
+
+    // Cholesky Decomposition
+    for (size_t d = 0; d < stateSpaceDim; ++d)
+    {
+      _multivariateGenerator->_sigma[d * stateSpaceDim + d] = sqrt(metric[d * stateSpaceDim + d]);
+    }
+
+    _multivariateGenerator->updateDistribution();
+  }
+
+  /**
   * @brief Destructor of derived class.
   */
   ~HamiltonianEuclideanDense()

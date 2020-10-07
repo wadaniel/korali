@@ -83,7 +83,7 @@ int main(int argc, char *argv[])
 
   ////// Defining the configuration of replay memory
 
-  e["Solver"]["Experience Replay"]["Start Size"] =   100;
+  e["Solver"]["Experience Replay"]["Start Size"] =   1000;
   e["Solver"]["Experience Replay"]["Maximum Size"] = 100000;
 
   //// Defining Critic Configuration
@@ -91,18 +91,18 @@ int main(int argc, char *argv[])
   e["Solver"]["Critic"]["Optimizer"]["Type"] = "Optimizer/Adam";
   e["Solver"]["Critic"]["Optimizer"]["Eta"] = 0.001;
   e["Solver"]["Critic"]["Discount Factor"] = 0.99;
-  e["Solver"]["Critic"]["Mini Batch Size"] = 64;
+  e["Solver"]["Critic"]["Mini Batch Size"] = 128;
 
   e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense";
   e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear";
 
   e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Type"] = "Layer/Dense";
-  e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Node Count"] = 32;
+  e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Node Count"] = 128;
   e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Activation Function"]["Type"] = "Elementwise/Tanh";
   e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Batch Normalization"]["Enabled"] = true;
 
   e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Type"] = "Layer/Dense";
-  e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Node Count"] = 32;
+  e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Node Count"] = 128;
   e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Elementwise/Tanh";
   e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Batch Normalization"]["Enabled"] = true;
 
@@ -114,18 +114,18 @@ int main(int argc, char *argv[])
 
   e["Solver"]["Policy"]["Optimizer"]["Type"] = "Optimizer/Adam";
   e["Solver"]["Policy"]["Optimizer"]["Eta"] = 0.001;
-  e["Solver"]["Policy"]["Mini Batch Size"] = 32;
+  e["Solver"]["Policy"]["Mini Batch Size"] = 16;
   e["Solver"]["Policy"]["Adoption Rate"] = 0.50;
 
   e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense";
   e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear";
 
   e["Solver"]["Policy"]["Neural Network"]["Layers"][1]["Type"] = "Layer/Dense";
-  e["Solver"]["Policy"]["Neural Network"]["Layers"][1]["Node Count"] = 32;
+  e["Solver"]["Policy"]["Neural Network"]["Layers"][1]["Node Count"] = 128;
   e["Solver"]["Policy"]["Neural Network"]["Layers"][1]["Activation Function"]["Type"] = "Elementwise/Tanh";
 
   e["Solver"]["Policy"]["Neural Network"]["Layers"][2]["Type"] = "Layer/Dense";
-  e["Solver"]["Policy"]["Neural Network"]["Layers"][2]["Node Count"] = 32;
+  e["Solver"]["Policy"]["Neural Network"]["Layers"][2]["Node Count"] = 128;
   e["Solver"]["Policy"]["Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Elementwise/Tanh";
 
   e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Type"] = "Layer/Dense";
@@ -147,9 +147,9 @@ int main(int argc, char *argv[])
 
   ////// Defining Termination Criteria
 
-  e["Solver"]["Training Reward Threshold"] = -1.0;
+  e["Solver"]["Training Reward Threshold"] = 1.0;
   e["Solver"]["Policy Testing Episodes"] = 20;
-  e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = -1.0;
+  e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 1.3;
 
   ////// Setting file output configuration
 

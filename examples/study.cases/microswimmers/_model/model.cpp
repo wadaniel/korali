@@ -3,34 +3,29 @@
 
 #include "model.hpp"
 
-Simulation* _environment;
+std::unique_ptr<msode::rl::MSodeEnvironment> _environment;
 bool _isTraining;
 std::mt19937 _randomGenerator;
-size_t _maxSteps;
-Shape* _object;
-StefanFish* _agent;
 
 void runEnvironment(korali::Sample &s)
 {
  // Setting seed
- size_t seed = s["Sample Id"];
- _randomGenerator.seed(seed);
+ size_t sampleId = s["Sample Id"];
 
  // Reseting environment and setting initial conditions
- _environment->reset();
- setInitialConditions(_agent, _object);
+ setInitialConditions(sampleId);
 
  // Setting initial state
- s["State"] = { _agent->state(_object) };
+ s["State"] = _environment->getState();
 
- // Setting initial time and step conditions
- double t = 0; // Current time
- double tNextAct = 0; // Time until next action
- size_t curStep = 0; // current Step
+ // Defining status variable that tells us whether when the simulation is done
+ Status status {Status::Running};
+
+ // Storing action index
+ size_t curActionIndex = 0;
 
  // Starting main environment loop
- bool done = false;
- while(done == false && curStep < _maxSteps)
+ while(status == Status::Running)
  {
   // Getting new action
   s.update();
@@ -39,91 +34,37 @@ void runEnvironment(korali::Sample &s)
   std::vector<double> action = s["Action"];
 
   // Printing Action:
-  printf("Action: [ %f", action[0]);
+  printf("Action %lu: %f", curActionIndex, action[0]);
   for (size_t i = 1; i < action.size(); i++) printf(", %f", action[i]);
   printf("]\n");
 
   // Setting action
-  _agent->act(t, action);
-
-  // Run the simulation until next action is required
-  tNextAct += _agent->getLearnTPeriod() * 0.5;
-  while (t < tNextAct)
-  {
-    const double dt = _environment->calcMaxTimestep();
-    t += dt;
-
-    // Advance simulation and check whether it is correct
-    if (_environment->advance(dt)){ printf("Error during environment\n"); exit(-1); }
-
-    // Check if simulation is done.
-    if ( isTerminal(_agent, _object) )
-    {
-      done = true;
-      break;
-    }
-  }
-
-  // Checking if it's terminal state
-  done = isTerminal(_agent, _object);
-
-  // Reward is -10 if state is terminal; otherwise obtain it from the agent's efficiency
-  double reward = done ? -10.0 : _agent->EffPDefBnd;
-
-  // Obtaining new agent state
-  std::vector<double> state = { _agent->state(_object) };
+  auto status = _environment->advance(action);
 
   // Storing reward
-  s["Reward"] = reward;
+  s["Reward"] = _environment->getReward();
 
   // Storing new state
-  s["State"] = { state };
+  s["State"] = _environment->getState();
 
-  // Advancing to next step
-  curStep++;
+  // Increasing action count
+  curActionIndex++;
  }
 }
 
-void initializeEnvironment(int argc, char* argv[])
+void initializeEnvironment(const std::string confFileName)
 {
- _maxSteps = 200;
+ std::ifstream confFile(confFileName);
 
- _environment = new Simulation(argc, argv);
- _environment->init();
+ if (!confFile.is_open())
+    msode_die("Could not open the config file '%s'", confFileName.c_str());
 
- _object = _environment->getShapes()[0];
- _agent = dynamic_cast<StefanFish*>(_environment->getShapes()[1] );
- if(_agent == nullptr) { printf("Agent was not a StefanFish!\n"); exit(-1); }
+ const Config config = json::parse(confFile);
+ _environment = rl::factory::createEnvironment(config, ConfPointer(""));
 }
 
-void setInitialConditions(StefanFish* a, Shape* p)
+void setInitialConditions(size_t sampleId)
 {
-  std::uniform_real_distribution<double> disA(-20./180.*M_PI, 20./180.*M_PI);
-  std::uniform_real_distribution<double> disX(0, 0.5),  disY(-0.25, 0.25);
-
-  const double SX = _isTraining ? disX(_randomGenerator) : 0.35;
-  const double SY = _isTraining ? disY(_randomGenerator) : 0.00;
-  const double SA = _isTraining ? disA(_randomGenerator) : 0.00;
-
-  double C[2] = { p->center[0] + (1+SX)*a->length, p->center[1] + SY*a->length };
-  p->centerOfMass[1] = p->center[1] - ( C[1] - p->center[1] );
-  p->center[1] = p->center[1] - ( C[1] - p->center[1] );
-  a->setCenterOfMass(C);
-  a->setOrientation(SA);
+ _environment->reset(_randomGenerator, sampleId, true);
 }
 
-bool isTerminal(StefanFish* a, Shape* p)
-{
-  const double X = ( a->center[0] - p->center[0] ) / a->length;
-  const double Y = ( a->center[1] - p->center[1] ) / a->length;
-  assert(X>0);
-  #if 1
-    // cylFollow
-    return std::fabs(Y)>1 || X<0.5 || X>3;
-  #else
-    // extended follow
-    // return std::fabs(Y)>1 || X<1 || X>3;
-    // restricted follow
-    return std::fabs(Y)>0.75 || X<1 || X>2;
-  #endif
-}

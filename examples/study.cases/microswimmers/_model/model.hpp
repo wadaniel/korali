@@ -1,21 +1,27 @@
 //  Korali model for CubismUP_2D For Fish Following Experiment
 //  Copyright (c) 2020 CSE-Lab, ETH Zurich, Switzerland.
 
-#include <algorithm>
-#include <random>
 #include "korali.hpp"
-#include "Simulation.h"
-#include "Obstacles/StefanFish.h"
+
+#include "msode/core/log.h"
+#include "msode/core/factory.h"
+#include "msode/core/file_parser.h"
+#include "msode/rl/environment.h"
+#include "msode/rl/factory.h"
+
+#include <type_traits>
 
 void runEnvironment(korali::Sample &s);
-void initializeEnvironment(int argc, char* argv[]);
-void setInitialConditions(StefanFish* a, Shape* p);
-bool isTerminal(StefanFish* a, Shape* p);
+void initializeEnvironment(const std::string confFileName);
+void setInitialConditions(size_t sampleId);
+
+using namespace msode;
+using namespace msode::rl;
+using namespace msode::factory;
 
 // Global variables for the simulation (ideal if this would be a class instead)
-extern Simulation* _environment;
+extern std::unique_ptr<msode::rl::MSodeEnvironment> _environment;
 extern bool _isTraining;
 extern std::mt19937 _randomGenerator;
-extern size_t _maxSteps;
-extern Shape* _object;
-extern StefanFish* _agent;
+
+using Status = typename std::remove_pointer<decltype(_environment.get())>::type::Status;

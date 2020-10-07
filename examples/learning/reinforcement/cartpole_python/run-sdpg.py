@@ -91,8 +91,8 @@ e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Batch Normalization"]["Ena
 
 e["Solver"]["Policy"]["Optimizer"]["Type"] = "Optimizer/Adam"
 e["Solver"]["Policy"]["Optimizer"]["Eta"] = 0.001
-e["Solver"]["Policy"]["Mini Batch Size"] = 16
-e["Solver"]["Policy"]["Adoption Rate"] = 0.50
+e["Solver"]["Policy"]["Mini Batch Size"] = 8 
+e["Solver"]["Policy"]["Adoption Rate"] = 0.10
 
 e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
 e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Node Count"] = 5

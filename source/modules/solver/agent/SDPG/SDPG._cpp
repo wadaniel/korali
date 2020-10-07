@@ -90,6 +90,7 @@ void SDPG::initializeAgent()
 
   // Getting pointer to the CMAES solver itself
   _actionOptimizer = dynamic_cast<solver::optimizer::CMAES *>(_actionExperiment._solver);
+  _actionOptimizer->setInitialConfiguration();
 
   /*********************************************************************
    * Initializing Policy-Related Structures
@@ -294,6 +295,9 @@ void SDPG::trainAgent()
    * Now computing new policy with a stochastic method
    ******************************************************************/
 
+  // Reshuffle experiences
+  std::shuffle(experienceReplayIndexes.begin(), experienceReplayIndexes.end(), *mt);
+
   // Accumulating states for evaluation in the policy
   for (size_t i = 0; i < _policyMiniBatchSize; i++)
   {
@@ -301,7 +305,7 @@ void SDPG::trainAgent()
     std::vector<double> curState = _experienceReplayHistory[expId]["State"];
 
    _actionExperiment._currentGeneration = 1;
-   _actionOptimizer->setInitialConfiguration();
+   _actionOptimizer->initCovariance();
    _actionOptimizer->_terminationCriteria.clear();
 
    while (_actionOptimizer->checkTermination() == false)

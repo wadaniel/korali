@@ -13,7 +13,6 @@
 
 void runEnvironment(korali::Sample &s);
 void initializeEnvironment(const std::string confFileName);
-void setInitialConditions(size_t sampleId);
 
 using namespace msode;
 using namespace msode::rl;

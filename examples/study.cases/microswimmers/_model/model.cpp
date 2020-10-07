@@ -13,7 +13,7 @@ void runEnvironment(korali::Sample &s)
  size_t sampleId = s["Sample Id"];
 
  // Reseting environment and setting initial conditions
- setInitialConditions(sampleId);
+ _environment->reset(_randomGenerator, sampleId, true);
 
  // Setting initial state
  s["State"] = _environment->getState();
@@ -34,12 +34,12 @@ void runEnvironment(korali::Sample &s)
   std::vector<double> action = s["Action"];
 
   // Printing Action:
-  printf("Action %lu: %f", curActionIndex, action[0]);
+  printf("Action %lu: [ %f", curActionIndex, action[0]);
   for (size_t i = 1; i < action.size(); i++) printf(", %f", action[i]);
   printf("]\n");
 
   // Setting action
-  auto status = _environment->advance(action);
+  status = _environment->advance(action);
 
   // Storing reward
   s["Reward"] = _environment->getReward();
@@ -63,8 +63,4 @@ void initializeEnvironment(const std::string confFileName)
  _environment = rl::factory::createEnvironment(config, ConfPointer(""));
 }
 
-void setInitialConditions(size_t sampleId)
-{
- _environment->reset(_randomGenerator, sampleId, true);
-}
 

@@ -76,6 +76,12 @@ void NeuralNetwork::initialize()
     if (_outputScaling.size() != _layers[layerCount - 1]->_nodeCount)
       KORALI_LOG_ERROR("Wrong number of output scaling factors passed to the neural network. Expected: %lu, provided: %lu.\n", _layers[layerCount - 1]->_nodeCount, _outputScaling.size());
 
+  // Check output shifting configuration
+  if (_outputShift.empty() == false)
+    if (_outputShift.size() != _layers[layerCount - 1]->_nodeCount)
+      KORALI_LOG_ERROR("Wrong number of output shift factors passed to the neural network. Expected: %lu, provided: %lu.\n", _layers[layerCount - 1]->_nodeCount, _outputShift.size());
+
+
   // Making sure we do not re-initialize
   _isInitialized = true;
 }
@@ -400,6 +406,10 @@ void NeuralNetwork::forward()
     // If we  use scaling, then apply the scaling factors now
     if (_outputScaling.size() > 0)
       for (size_t j = 0; j < nodeCount; j++) _outputValues[i][j] *= _outputScaling[j];
+
+    // If we  use shifting, then apply the scaling factors now
+    if (_outputShift.size() > 0)
+      for (size_t j = 0; j < nodeCount; j++) _outputValues[i][j] += _outputShift[j];
   }
 
 #endif

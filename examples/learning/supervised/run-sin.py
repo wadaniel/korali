@@ -29,9 +29,8 @@ e["Problem"]["Solution"] = trainingSolutionSet
 
 e["Solver"]["Type"] = "Learner/DeepGD"
 e["Solver"]["Loss Function"] = "Mean Squared Error"
-e["Solver"]["Steps Per Generation"] = 100
-e["Solver"]["Optimizer"]["Type"] = "Optimizer/Adam"
-e["Solver"]["Optimizer"]["Eta"] = 0.05
+e["Solver"]["Steps Per Generation"] = 200
+e["Solver"]["Learning Rate"] = 0.05
 
 ### Defining the shape of the neural network
 

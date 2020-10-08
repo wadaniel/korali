@@ -102,7 +102,7 @@ void Discrete::initializeAgent()
   _hyperparameters["Policy"] = _policyCurrentHyperparameters;
 }
 
-std::vector<double> Discrete::queryPolicy(const std::vector<double> &state)
+std::vector<float> Discrete::queryPolicy(const std::vector<float> &state)
 {
  // Forward softmax probability function
  auto pValues = _policyLearner->getEvaluation(state);
@@ -113,20 +113,20 @@ std::vector<double> Discrete::queryPolicy(const std::vector<double> &state)
 void Discrete::getAction(korali::Sample &sample)
 {
   // Getting current state
-  auto state = sample["State"].get<std::vector<double>>();
+  auto state = sample["State"].get<std::vector<float>>();
 
   // Producing random (uniform) number to obtain a value index
-  double x = _uniformGenerator->getRandomNumber();
+  float x = _uniformGenerator->getRandomNumber();
 
   // Forward state to get p(a|s)
   auto pActionVector = queryPolicy(state);
 
   // Iterating over all p(s,a) to select the corresponding action
-  double curSum = 0.0;
+  float curSum = 0.0;
   size_t actionIdx;
   for (actionIdx = 0; actionIdx < pActionVector.size(); actionIdx++)
   {
-    double pAction = pActionVector[actionIdx];
+    float pAction = pActionVector[actionIdx];
     if (x > curSum && x <= curSum + pAction) break;
     curSum += pAction;
   }
@@ -137,7 +137,7 @@ void Discrete::getAction(korali::Sample &sample)
   sample["Action"] = _discreteProblem->_possibleActions[actionIdx];
 }
 
-double Discrete::stateActionValueFunction(const std::vector<double> &state, const size_t &actionIdx)
+float Discrete::stateActionValueFunction(const std::vector<float> &state, const size_t &actionIdx)
 {
   // Forward propagating state through the critic to get Q(s,a) for all A
   auto evaluation = _criticLearner->getEvaluation(state);
@@ -145,7 +145,7 @@ double Discrete::stateActionValueFunction(const std::vector<double> &state, cons
   return evaluation[actionIdx];
 }
 
-double Discrete::stateValueFunction(const std::vector<double> &state)
+float Discrete::stateValueFunction(const std::vector<float> &state)
 {
   // Forward propagating state through the critic to get Q(s,a) for all a
   auto qEval = _criticLearner->getEvaluation(state);
@@ -154,7 +154,7 @@ double Discrete::stateValueFunction(const std::vector<double> &state)
   auto pEval = queryPolicy(state);
 
   // Calculating the sum of p(s,a)*q(s,a) for all a
-  double qSum = 0.0;
+  float qSum = 0.0;
   for (size_t i = 0; i < qEval.size(); i++)
     qSum += qEval[i] * pEval[i];
 
@@ -174,10 +174,10 @@ void Discrete::processTrajectory(size_t startId, size_t endId)
    size_t curId = endId;
 
    // First, get the retrace value for the last experience (just the reward)
-   double qRet = _experienceReplayHistory[curId]["Reward"];
+   float qRet = _experienceReplayHistory[curId]["Reward"];
    if (_experienceReplayHistory[curId]["Is Terminal"] == false)
    {
-    std::vector<double> curState = _experienceReplayHistory[curId]["State"];
+    std::vector<float> curState = _experienceReplayHistory[curId]["State"];
     qRet = _discountFactor * stateValueFunction(curState);
    }
 
@@ -187,13 +187,13 @@ void Discrete::processTrajectory(size_t startId, size_t endId)
     curId--;
 
     // Getting current reward
-    double curReward = _experienceReplayHistory[curId]["Reward"];
+    float curReward = _experienceReplayHistory[curId]["Reward"];
 
     // Getting experience's state
-    std::vector<double> curState = _experienceReplayHistory[curId]["State"];
+    std::vector<float> curState = _experienceReplayHistory[curId]["State"];
 
     // Calculating V(state) with the current policy
-    double vCurState = stateValueFunction(curState);
+    float vCurState = stateValueFunction(curState);
 
     //// Computing quantities needed for updating weights
 
@@ -201,56 +201,56 @@ void Discrete::processTrajectory(size_t startId, size_t endId)
     size_t curActionIdx = _experienceReplayHistory[curId]["Metadata"]["Action Index"];
 
     // Getting probability densities for current action given current policy
-    auto pOldPolicy = _experienceReplayHistory[curId]["Metadata"]["Probability Densities"].get<std::vector<double>>();
+    auto pOldPolicy = _experienceReplayHistory[curId]["Metadata"]["Probability Densities"].get<std::vector<float>>();
 
     // Getting probability densities for current action given current policy
     _policyLearner->setHyperparameters(_policyCurrentHyperparameters); // PW: why?
     auto pCurPolicy = queryPolicy(curState);
 
     // Getting p(s,a) for selected experience, given the old policy
-    double pActionOldPolicy = pOldPolicy[curActionIdx];
+    float pActionOldPolicy = pOldPolicy[curActionIdx];
 
     // Getting p(s,a) for the best action, given the current policy
-    double pActionCurPolicy = pCurPolicy[curActionIdx];
+    float pActionCurPolicy = pCurPolicy[curActionIdx];
 
     // Now calculating importance weight for the old s,a experience
-    double importanceWeight = pActionCurPolicy / pActionOldPolicy;
+    float importanceWeight = pActionCurPolicy / pActionOldPolicy;
 
-    double qCurState = stateActionValueFunction(curState, curActionIdx);
+    float qCurState = stateActionValueFunction(curState, curActionIdx);
 
     /*****************************************
      * Policy Section
      *****************************************/
 
      // Now calculating truncated importance weight
-     double truncatedImportanceWeight = std::min(_importanceWeightTruncation, importanceWeight);
+     float truncatedImportanceWeight = std::min(_importanceWeightTruncation, importanceWeight);
 
      // Now Calculating Acer gradient, from https://arxiv.org/pdf/1611.01224.pdf, Eq. 9
-     std::vector<double> gPolicy(_discreteProblem->_possibleActions.size(), 0.0);
+     std::vector<float> gPolicy(_discreteProblem->_possibleActions.size(), 0.0f);
 
      // First part of the gradient vector
-     gPolicy[curActionIdx] = truncatedImportanceWeight * 1 / pActionCurPolicy * (qRet - vCurState);
+     gPolicy[curActionIdx] = truncatedImportanceWeight * (1.0f / pActionCurPolicy * (qRet - vCurState));
 
      // Compute the expectation for the second part of the gradient vector
      for (size_t newActionIdx = 0; newActionIdx < _discreteProblem->_possibleActions.size(); newActionIdx++)
      {
        // Calculating Qcritic(state,action)
-       double qCritic = stateActionValueFunction(curState, newActionIdx);
+       float qCritic = stateActionValueFunction(curState, newActionIdx);
 
        // Getting p(s,a) for selected action, given the old policy
-       double pNewActionOldPolicy = pOldPolicy[newActionIdx];
+       float pNewActionOldPolicy = pOldPolicy[newActionIdx];
 
        // Getting p(s,a) for selected action, given the current policy
-       double pNewActionCurPolicy = pCurPolicy[newActionIdx];
+       float pNewActionCurPolicy = pCurPolicy[newActionIdx];
 
        // Now calculating importance weight for the old s,a experience
-       double newImportanceWeight = pNewActionCurPolicy / pNewActionOldPolicy;
+       float newImportanceWeight = pNewActionCurPolicy / pNewActionOldPolicy;
 
        // Now calculating r(a) - c / r(a) ratio
-       double importanceRatio = 1.0 - (_importanceWeightTruncation / newImportanceWeight);
+       float importanceRatio = 1.0f - (_importanceWeightTruncation / newImportanceWeight);
 
        // Now calculating the correction weight
-       double correctionWeight = importanceRatio > 0.0 ? importanceRatio : 0.0;
+       float correctionWeight = importanceRatio > 0.0f ? importanceRatio : 0.0f;
 
        // Adding the component of part two to the gradient vector
        gPolicy[newActionIdx] += correctionWeight * (qCritic - vCurState);
@@ -266,7 +266,7 @@ void Discrete::processTrajectory(size_t startId, size_t endId)
       auto pAvgPolicy = queryPolicy(curState);
 
       // Obtaining KL Divergence gradients for the current state. //PW: check this
-      std::vector<double> k(_discreteProblem->_possibleActions.size());
+      std::vector<float> k(_discreteProblem->_possibleActions.size());
       for(size_t i = 0; i < k.size(); i++)
        k[i] = - 1 / pCurPolicy[i];
 
@@ -277,7 +277,7 @@ void Discrete::processTrajectory(size_t startId, size_t endId)
       auto kNormSquared = dotProduct(k, k);
 
       // Getting magnitude of adjustment
-      double adjustmentMagnitude = std::max(0.0, (gkDotProduct - _policyTrustRegionDivergenceConstraint) / kNormSquared);
+      float adjustmentMagnitude = std::max(0.0f, (gkDotProduct - _policyTrustRegionDivergenceConstraint) / kNormSquared);
 
       // Adjusting gradients to trust region
       for(size_t i = 0; i < _discreteProblem->_possibleActions.size(); i++) gPolicy[i] = gPolicy[i] - adjustmentMagnitude * k[i];
@@ -293,7 +293,7 @@ void Discrete::processTrajectory(size_t startId, size_t endId)
      *****************************************/
 
       // Creating storage for the gradient vector
-      std::vector<double> gCritic(_discreteProblem->_possibleActions.size(), 0);
+      std::vector<float> gCritic(_discreteProblem->_possibleActions.size(), 0);
  
       // Update the gradient vector with the value of the retrace function for g  = Q-Qret 
       gCritic[curActionIdx] = qRet; 
@@ -310,7 +310,7 @@ void Discrete::processTrajectory(size_t startId, size_t endId)
       *****************************************/
 
      // Now calculating truncated importance weight with 1.0 as truncation factor
-     truncatedImportanceWeight = std::min(1.0, importanceWeight);
+     truncatedImportanceWeight = std::min(1.0f, importanceWeight);
 
      // Updating qRet
      qRet = curReward + _discountFactor * (truncatedImportanceWeight * (qRet - qCurState) + vCurState);
@@ -340,7 +340,7 @@ void Discrete::processTrajectory(size_t startId, size_t endId)
   for (size_t i = 0; i < _experienceReplayHistory.size()-1; i++) experienceReplayIndexes[i] = i;
 
   // Allocating memory for the mini batch set
-  std::vector<std::vector<std::vector<double>>> miniBatches(_normalizationSteps);
+  std::vector<std::vector<std::vector<float>>> miniBatches(_normalizationSteps);
 
   for (size_t i = 0; i < _normalizationSteps; i++)
     miniBatches[i].resize(_normalizationBatchSize);
@@ -359,7 +359,7 @@ void Discrete::processTrajectory(size_t startId, size_t endId)
     {
       // Selecting a uniformly random selected, yet not repeated experience
       size_t expId = experienceReplayIndexes[i];
-      miniBatches[step][i] = _experienceReplayHistory[expId]["State"].get<std::vector<double>>();
+      miniBatches[step][i] = _experienceReplayHistory[expId]["State"].get<std::vector<float>>();
     }
   }
 
@@ -391,7 +391,7 @@ void Discrete::processTrajectory(size_t startId, size_t endId)
 
 void Discrete::updateHyperparameters(const knlohmann::json &hyperparameters)
 {
-  _policyLearner->setHyperparameters(hyperparameters["Policy"].get<std::vector<double>>());
+  _policyLearner->setHyperparameters(hyperparameters["Policy"].get<std::vector<float>>());
 }
 
 void Discrete::printAgentInformation()

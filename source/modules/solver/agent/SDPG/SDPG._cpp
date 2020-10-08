@@ -73,6 +73,7 @@ void SDPG::initializeAgent()
 
   // Termination Criteria
   _actionOptimizer->_minValueDifferenceThreshold = 0.000001;
+  _actionOptimizer->reset();
 
   /*********************************************************************
    * Initializing Policy-Related Structures
@@ -300,7 +301,7 @@ void SDPG::trainAgent()
 
     _actionOptimizer->updateDistribution(candidateEvaluations);
 
-    _actionExperiment._currentGeneration++;
+    _actionOptimizer->_currentGeneration++;
    }
 
    auto bestAction = _actionOptimizer->_bestEverVariables;

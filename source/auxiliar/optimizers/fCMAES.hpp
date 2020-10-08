@@ -280,6 +280,8 @@ class fCMAES
 */
  float _maxStandardDeviation;
  
+ size_t _maxGenerations;
+
  gsl_vector *_gsl_eval;
  gsl_matrix *_gsl_evec;
  gsl_eigen_symmv_workspace *_gsl_work;
@@ -351,7 +353,7 @@ class fCMAES
   /**
  * @brief Console output after generation.
  */
-  void printGenerationAfter();
+  void printInfo();
 
  /**
  * @brief Final console output at termination.
@@ -359,11 +361,6 @@ class fCMAES
  void reset();
 
  bool isSampleFeasible(const std::vector<float> &sample);
-
- /**
- * @brief Final console output at termination.
- */
-  void finalize();
 };
 
 } // namespace korali

@@ -40,14 +40,6 @@ double vectorNorm(const std::vector<double> &x)
   return sqrt(norm);
 }
 
-double dotProduct(const std::vector<double> &x, const std::vector<double> &y)
-{
- double dotProd = 0.0;
-
- for (size_t i = 0; i < x.size(); i++) dotProd += x[i] * y[i];
-
- return dotProd;
-}
 
 double vectorDistance(const std::vector<double> &x, const std::vector<double> &y)
 {

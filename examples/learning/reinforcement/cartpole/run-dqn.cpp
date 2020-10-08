@@ -51,8 +51,7 @@ int main(int argc, char *argv[])
 
   e["Solver"]["Critic"]["Mini Batch Size"] = 32;
   e["Solver"]["Critic"]["Discount Factor"] = 0.99;
-  e["Solver"]["Critic"]["Optimizer"]["Type"] = "Optimizer/Adam";
-  e["Solver"]["Critic"]["Optimizer"]["Eta"] = 0.01;
+  e["Solver"]["Critic"]["Learning Rate"] = 0.01;
 
   /// Defining the shape of the neural network
 

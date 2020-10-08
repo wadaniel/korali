@@ -207,320 +207,320 @@ float Continuous::stateValueFunction(const std::vector<float> &state)
 
 void Continuous::processTrajectory(size_t startId, size_t endId)
 {
-   // Initializing inputs and solution for the critic and policy problems
-   _vProblem->_inputs.clear();
-   _vProblem->_solution.clear();
-   _aProblem->_inputs.clear();
-   _aProblem->_solution.clear();
-   _policyProblem->_inputs.clear();
-   _policyProblem->_solution.clear();
-
-   // Going straight to the latest experience in the corresponding trajectory
-   size_t curId = endId;
-
-   // First, get the retrace value for the last experience (just the reward)
-   float qRet = _experienceReplayHistory[curId]["Reward"];
-   if (_experienceReplayHistory[curId]["Is Terminal"] == false)
-   {
-    std::vector<float> expState = _experienceReplayHistory[curId]["State"];
-    qRet = _discountFactor * stateValueFunction(expState);
-   }
-
-   // Setting Qopc, which is Qret without the truncated importance ratio
-   float qOpc = qRet;
-
-   while (curId > startId)
-   {
-    // Decreasing current experience index
-    curId--;
-
-    // Getting current reward
-    float curReward = _experienceReplayHistory[curId]["Reward"];
-
-    // Getting experience's state and action
-    std::vector<float> expState = _experienceReplayHistory[curId]["State"];
-    std::vector<float> expAction = _experienceReplayHistory[curId]["Action"];
-
-    // Getting policy distribution parameters from the current policy NN
-    std::vector<float> curMeans = _policyLearner->getEvaluation(expState);
-
-    // Getting policy distribution parameters from the old policy NN
-    std::vector<float> oldMeans = _experienceReplayHistory[curId]["Metadata"]["Means"];
-
-    // Allocating stateAction placeholder vector for combining a state and an action
-    std::vector<float> stateActionVector(_problem->_stateVectorSize + _problem->_actionVectorSize);
-    for (size_t i = 0; i < _problem->_stateVectorSize; i++) stateActionVector[i] = expState[i];
-
-    // Calculating V(state) with the current policy
-    float vExpState = stateValueFunction(expState);
-    _cumulativeQStar += vExpState;
-
-    // Setting policy distributions to follow that of the current policy
-    for (size_t i = 0; i < _problem->_actionVectorSize; i++) _policyDistributions[i]->_mean = curMeans[i];
-
-    // Getting new action given the current policy
-    std::vector<float> newAction = queryPolicy();
-
-    // Getting A of experience action
-    for (size_t i = 0; i < _problem->_actionVectorSize; i++) stateActionVector[_problem->_stateVectorSize + i] = expAction[i];
-    auto aExpStateExpAction = _aLearner->getEvaluation(stateActionVector)[0];
-
-    // Getting A of new action
-    for (size_t i = 0; i < _problem->_actionVectorSize; i++) stateActionVector[_problem->_stateVectorSize + i] = newAction[i];
-    auto aExpStateNewAction = _aLearner->getEvaluation(stateActionVector)[0];
-
-    // Getting n action samples from the policy
-    std::vector<std::vector<float>> actionSamples(_policySamplePopulation);
-    for (size_t i = 0; i < _policySamplePopulation; i++)  actionSamples[i] = queryPolicy();
-
-    // Getting sum_n(A(x,u)) with u ~ policy(x)
-    float aSamplesMean = 0.0;
-    for (size_t sampleIdx = 0; sampleIdx < _policySamplePopulation; sampleIdx++)
-    {
-     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-      stateActionVector[_problem->_stateVectorSize + i] = actionSamples[sampleIdx][i];
-     aSamplesMean += _aLearner->getEvaluation(stateActionVector)[0];
-    }
-    aSamplesMean =  aSamplesMean / (float)_policySamplePopulation;
-
-    // Getting Q(s, a) for the experience action
-    float qExpStateExpAction = vExpState + aExpStateExpAction - aSamplesMean;
-
-    // Getting Q(s, a') for the new (policy) action
-    float qExpStateNewAction = vExpState + aExpStateNewAction - aSamplesMean;
-
-    // Getting p(s,a) for the best action, given the current policy
-    float pExpActionCurPolicy = 1.0;
-    float pNewActionCurPolicy = 1.0;
-    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-    {
-     pExpActionCurPolicy *= _policyDistributions[i]->getDensity(expAction[i]);
-     pNewActionCurPolicy *= _policyDistributions[i]->getDensity(newAction[i]);
-    }
-
-    // Setting policy distributions to follow that of the old policy
-    for (size_t i = 0; i < _problem->_actionVectorSize; i++)  _policyDistributions[i]->_mean = oldMeans[i];
-
-    // Getting p(s,a) for selected experience, given the old policy
-    float pExpActionOldPolicy = 1.0;
-    float pNewActionOldPolicy = 1.0;
-    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-    {
-      pExpActionOldPolicy *= _policyDistributions[i]->getDensity(expAction[i]);
-      pNewActionOldPolicy *= _policyDistributions[i]->getDensity(newAction[i]);
-    }
-
-    // Now calculating importance weight for s,a (old)
-    float oldImportanceWeight = pExpActionCurPolicy / pExpActionOldPolicy;
-
-    // Now calculating importance weight for s, a' (new)
-    float newImportanceWeight = pNewActionCurPolicy / pNewActionOldPolicy;
-
-    /*****************************************
-     * Policy Section
-     *****************************************/
-
-    // Now calculating truncated importance weight
-    float truncatedImportanceWeight = std::min(_importanceWeightTruncation, oldImportanceWeight);
-
-    // First part of the gradient vector
-    float g1 = truncatedImportanceWeight * (qOpc - vExpState);
-
-    // Now calculating r(a) - c / r(a) ratio
-    float importanceRatio = 1.0 - (_importanceWeightTruncation / newImportanceWeight);
-
-    // Now calculating the correction weight
-    float correctionWeight = importanceRatio > 0.0 ? importanceRatio : 0.0;
-
-    // Compute the expectation for the second part of the gradient vector
-    float g2 = correctionWeight * (qExpStateNewAction - vExpState);
-
-    // Now Calculating Acer gradient for all of the action's variables (mean and sigma)
-    std::vector<float> gPolicy(_problem->_actionVectorSize, 0.0);
-    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-    {
-     float diffExpAction = expAction[i] - curMeans[i];
-     float diffNewAction = newAction[i] - curMeans[i];
-     gPolicy[i] = _inverseVariances[i] * (g1*diffExpAction + g2*diffNewAction);
-    }
-
-    ///////////////// KL Calculation /////////////////////
-
-    // Now calculating trust region, if required
-    if (_policyTrustRegionEnabled)
-    {
-     // Getting policy distribution parameters given the average policy
-     _policyLearner->setHyperparameters(_policyAverageHyperparameters);
-
-     // Getting policy distribution parameters from the average policy NN
-     auto avgMeans = _policyLearner->getEvaluation(expState);
-
-     // Obtaining KL Divergence gradients for the current state.
-     std::vector<float> k(_problem->_actionVectorSize);
-     for(size_t i = 0; i < _problem->_actionVectorSize; i++)  k[i] = _inverseVariances[i]*(curMeans[i] - avgMeans[i]);
-
-     // Getting dot product between the gradient vector and k
-     auto gkDotProduct = dotProduct(k, gPolicy);
-
-     // Getting norm(k)^2, simply by dot product of k and itself
-     auto kNormSquared = dotProduct(k, k);
-
-     // Getting magnitude of adjustment
-     float adjustmentMagnitude = std::max(0.0f, (gkDotProduct - _policyTrustRegionDivergenceConstraint) / kNormSquared);
-
-     // Adjusting gradients to trust region
-     for(size_t i = 0; i < gPolicy.size(); i++) gPolicy[i] = gPolicy[i] - adjustmentMagnitude * k[i];
-    }
-
-    ///////////////// Storing Gradients /////////////////////
-
-     _policyProblem->_inputs.push_back(expState);
-     _policyProblem->_solution.push_back(gPolicy);
-
-     /*****************************************
-     * Update Networks for Q (A and V) estimation
-     *****************************************/
-
-     // Calculating simple truncated importance
-     float tImportance = (1.0f + std::min(1.0f, oldImportanceWeight));
-
-     // Calculating error between Qret and Q(s,a)
-     float qErr = qRet - qExpStateExpAction;
-
-    ///////////////// Gradients for the State Function V(s) /////////////////
-
-      // Updating inputs to training learner
-      _vProblem->_inputs.push_back(expState);
-      _vProblem->_solution.push_back({ qErr * tImportance });
-
-    ///////////////// Gradients for the Advantage Function A(s) /////////////////
-
-      // Putting together state and action
-      for (size_t i = 0; i < _problem->_actionVectorSize; i++) stateActionVector[_problem->_stateVectorSize + i] = expAction[i];
-
-      // Updating inputs to training learner
-      _aProblem->_inputs.push_back(stateActionVector);
-      _aProblem->_solution.push_back({ qErr });
-
-      // Now adding all additional action samples
-      for (size_t sampleIdx = 0; sampleIdx < _policySamplePopulation; sampleIdx++)
-      {
-       for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-        stateActionVector[_problem->_stateVectorSize + i] = actionSamples[sampleIdx][i];
-       _aProblem->_inputs.push_back(stateActionVector);
-       _aProblem->_solution.push_back({ - qErr / (float) _policySamplePopulation });
-      }
-
-     /*****************************************
-      * Updating the value of qRet and qOpc
-      *****************************************/
-
-     // Now calculating truncated importance weight with 1.0 as truncation factor
-     truncatedImportanceWeight = std::min(1.0, std::pow(oldImportanceWeight, 1.0 / _problem->_actionVectorSize));
-
-     // Updating qRet and qOpc
-     qRet = curReward + _discountFactor * (truncatedImportanceWeight * (qRet - qExpStateExpAction) + vExpState);
-     qOpc = curReward + _discountFactor * (qOpc - qExpStateExpAction + vExpState);
-   }
-
-   // Declaring engine to launch experiments
-   korali::Engine engine;
-
-   // Running one generation of the optimization method with the given mini-batch
-   _aExperiment["Solver"]["Termination Criteria"]["Max Generations"] = _aExperiment._currentGeneration + 1;
-   _aLearner->initialize();
-   engine.resume(_aExperiment);
-
-   // Running one generation of the optimization method with the given mini-batch
-   _vExperiment["Solver"]["Termination Criteria"]["Max Generations"] = _vExperiment._currentGeneration + 1;
-   _vLearner->initialize();
-   engine.resume(_vExperiment);
-
-   // Running one generation of the optimization method with the given mini-batch
-   _policyExperiment["Solver"]["Termination Criteria"]["Max Generations"] = _policyExperiment._currentGeneration + 1;
-   _policyLearner->initialize();
-   engine.resume(_policyExperiment);
-
-  /****************************************************************************
-  * If batch normalization is being used, we need to adjust mean and variances
-  * by sampling a few more mini-batches after the optimization steps
-  ******************************************************************************/
-
-   // Randomly selecting experiences for the mini-batch and calculating their target Q
-   // Creating state history indexes to choose from
-   std::vector<size_t> experienceReplayIndexes(_experienceReplayHistory.size());
-   for (size_t i = 0; i < _experienceReplayHistory.size()-1; i++) experienceReplayIndexes[i] = i;
-
-   // Allocating memory for the mini batch set
-   std::vector<std::vector<std::vector<float>>> stateMiniBatches(_normalizationSteps);
-   std::vector<std::vector<std::vector<float>>> stateActionMiniBatches(_normalizationSteps);
-
-   for (size_t i = 0; i < _normalizationSteps; i++)
-   {
-     stateMiniBatches[i].resize(_normalizationBatchSize);
-     stateActionMiniBatches[i].resize(_normalizationBatchSize);
-   }
-
-   for (size_t i = 0; i < _normalizationSteps; i++)
-     for (size_t j = 0; j < _normalizationBatchSize; j++)
-     {
-       stateMiniBatches[i][j].resize(_problem->_stateVectorSize);
-       stateActionMiniBatches[i][j].resize(_problem->_stateVectorSize + _problem->_actionVectorSize);
-     }
-
-   // Filling the minibatches
-   for (size_t step = 0; step < _normalizationSteps; step++)
-   {
-     // Shuffling indexes to choose the mini batch from
-     std::shuffle(experienceReplayIndexes.begin(), experienceReplayIndexes.end(), *mt);
-
-     for (size_t i = 0; i < _normalizationBatchSize; i++)
-     {
-       // Selecting a uniformly random selected, yet not repeated experience
-       size_t expId = experienceReplayIndexes[i];
-
-       auto expState = _experienceReplayHistory[expId]["State"].get<std::vector<float>>();
-       auto curAction = _experienceReplayHistory[expId]["Action"].get<std::vector<float>>();
-
-       for (size_t j = 0; j < _problem->_stateVectorSize; j++)
-        {
-         stateMiniBatches[step][i][j] = expState[j];
-         stateActionMiniBatches[step][i][j] = expState[j];
-        }
-
-       for (size_t j = 0; j < _problem->_actionVectorSize; j++)
-        stateActionMiniBatches[step][i][_problem->_stateVectorSize + j] = curAction[j];
-     }
-   }
-
-   _aLearner->_trainingNeuralNetwork->normalize(stateActionMiniBatches);
-   _vLearner->_trainingNeuralNetwork->normalize(stateMiniBatches);
-   _policyLearner->_trainingNeuralNetwork->normalize(stateMiniBatches);
-
-   // Storing new inference parameters
-   auto aHyperparameters = _aLearner->getHyperparameters();
-   _aLearner->setHyperparameters(aHyperparameters);
-
-   auto vHyperparameters = _vLearner->getHyperparameters();
-   _vLearner->setHyperparameters(vHyperparameters);
-
-  /****************************************************************************
-  * Updating Policy
-  ******************************************************************************/
-
-   // Getting new policy hyperparameters
-   _policyCurrentHyperparameters = _policyLearner->getHyperparameters();
-
-   // If using a trust region, softly adopting the new parameters of the average policy, using an adoption rate
-   if (_policyTrustRegionEnabled)
-    for (size_t i = 0; i < _policyCurrentHyperparameters.size(); i++)
-     _policyAverageHyperparameters[i] = _policyTrustRegionAdoptionRate*_policyAverageHyperparameters[i] + (1-_policyTrustRegionAdoptionRate)*_policyCurrentHyperparameters[i];
-
-   // Updating policy with new averaged parameters
-   _policyLearner->setHyperparameters(_policyCurrentHyperparameters);
-
-   // Storing average policy hyperparameters
-   _hyperparameters["Policy"] = _policyCurrentHyperparameters;
+//   // Initializing inputs and solution for the critic and policy problems
+//   _vProblem->_inputs.clear();
+//   _vProblem->_solution.clear();
+//   _aProblem->_inputs.clear();
+//   _aProblem->_solution.clear();
+//   _policyProblem->_inputs.clear();
+//   _policyProblem->_solution.clear();
+//
+//   // Going straight to the latest experience in the corresponding trajectory
+//   size_t curId = endId;
+//
+//   // First, get the retrace value for the last experience (just the reward)
+//   float qRet = _experienceReplay[curId]["Reward"];
+//   if (_experienceReplay[curId]["Is Terminal"] == false)
+//   {
+//    std::vector<float> expState = _experienceReplay[curId]["State"];
+//    qRet = _discountFactor * stateValueFunction(expState);
+//   }
+//
+//   // Setting Qopc, which is Qret without the truncated importance ratio
+//   float qOpc = qRet;
+//
+//   while (curId > startId)
+//   {
+//    // Decreasing current experience index
+//    curId--;
+//
+//    // Getting current reward
+//    float curReward = _experienceReplay[curId]["Reward"];
+//
+//    // Getting experience's state and action
+//    std::vector<float> expState = _experienceReplay[curId]["State"];
+//    std::vector<float> expAction = _experienceReplay[curId]["Action"];
+//
+//    // Getting policy distribution parameters from the current policy NN
+//    std::vector<float> curMeans = _policyLearner->getEvaluation(expState);
+//
+//    // Getting policy distribution parameters from the old policy NN
+//    std::vector<float> oldMeans = _experienceReplay[curId]["Metadata"]["Means"];
+//
+//    // Allocating stateAction placeholder vector for combining a state and an action
+//    std::vector<float> stateActionVector(_problem->_stateVectorSize + _problem->_actionVectorSize);
+//    for (size_t i = 0; i < _problem->_stateVectorSize; i++) stateActionVector[i] = expState[i];
+//
+//    // Calculating V(state) with the current policy
+//    float vExpState = stateValueFunction(expState);
+//    _cumulativeQStar += vExpState;
+//
+//    // Setting policy distributions to follow that of the current policy
+//    for (size_t i = 0; i < _problem->_actionVectorSize; i++) _policyDistributions[i]->_mean = curMeans[i];
+//
+//    // Getting new action given the current policy
+//    std::vector<float> newAction = queryPolicy();
+//
+//    // Getting A of experience action
+//    for (size_t i = 0; i < _problem->_actionVectorSize; i++) stateActionVector[_problem->_stateVectorSize + i] = expAction[i];
+//    auto aExpStateExpAction = _aLearner->getEvaluation(stateActionVector)[0];
+//
+//    // Getting A of new action
+//    for (size_t i = 0; i < _problem->_actionVectorSize; i++) stateActionVector[_problem->_stateVectorSize + i] = newAction[i];
+//    auto aExpStateNewAction = _aLearner->getEvaluation(stateActionVector)[0];
+//
+//    // Getting n action samples from the policy
+//    std::vector<std::vector<float>> actionSamples(_policySamplePopulation);
+//    for (size_t i = 0; i < _policySamplePopulation; i++)  actionSamples[i] = queryPolicy();
+//
+//    // Getting sum_n(A(x,u)) with u ~ policy(x)
+//    float aSamplesMean = 0.0;
+//    for (size_t sampleIdx = 0; sampleIdx < _policySamplePopulation; sampleIdx++)
+//    {
+//     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+//      stateActionVector[_problem->_stateVectorSize + i] = actionSamples[sampleIdx][i];
+//     aSamplesMean += _aLearner->getEvaluation(stateActionVector)[0];
+//    }
+//    aSamplesMean =  aSamplesMean / (float)_policySamplePopulation;
+//
+//    // Getting Q(s, a) for the experience action
+//    float qExpStateExpAction = vExpState + aExpStateExpAction - aSamplesMean;
+//
+//    // Getting Q(s, a') for the new (policy) action
+//    float qExpStateNewAction = vExpState + aExpStateNewAction - aSamplesMean;
+//
+//    // Getting p(s,a) for the best action, given the current policy
+//    float pExpActionCurPolicy = 1.0;
+//    float pNewActionCurPolicy = 1.0;
+//    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+//    {
+//     pExpActionCurPolicy *= _policyDistributions[i]->getDensity(expAction[i]);
+//     pNewActionCurPolicy *= _policyDistributions[i]->getDensity(newAction[i]);
+//    }
+//
+//    // Setting policy distributions to follow that of the old policy
+//    for (size_t i = 0; i < _problem->_actionVectorSize; i++)  _policyDistributions[i]->_mean = oldMeans[i];
+//
+//    // Getting p(s,a) for selected experience, given the old policy
+//    float pExpActionOldPolicy = 1.0;
+//    float pNewActionOldPolicy = 1.0;
+//    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+//    {
+//      pExpActionOldPolicy *= _policyDistributions[i]->getDensity(expAction[i]);
+//      pNewActionOldPolicy *= _policyDistributions[i]->getDensity(newAction[i]);
+//    }
+//
+//    // Now calculating importance weight for s,a (old)
+//    float oldImportanceWeight = pExpActionCurPolicy / pExpActionOldPolicy;
+//
+//    // Now calculating importance weight for s, a' (new)
+//    float newImportanceWeight = pNewActionCurPolicy / pNewActionOldPolicy;
+//
+//    /*****************************************
+//     * Policy Section
+//     *****************************************/
+//
+//    // Now calculating truncated importance weight
+//    float truncatedImportanceWeight = std::min(_importanceWeightTruncation, oldImportanceWeight);
+//
+//    // First part of the gradient vector
+//    float g1 = truncatedImportanceWeight * (qOpc - vExpState);
+//
+//    // Now calculating r(a) - c / r(a) ratio
+//    float importanceRatio = 1.0 - (_importanceWeightTruncation / newImportanceWeight);
+//
+//    // Now calculating the correction weight
+//    float correctionWeight = importanceRatio > 0.0 ? importanceRatio : 0.0;
+//
+//    // Compute the expectation for the second part of the gradient vector
+//    float g2 = correctionWeight * (qExpStateNewAction - vExpState);
+//
+//    // Now Calculating Acer gradient for all of the action's variables (mean and sigma)
+//    std::vector<float> gPolicy(_problem->_actionVectorSize, 0.0);
+//    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+//    {
+//     float diffExpAction = expAction[i] - curMeans[i];
+//     float diffNewAction = newAction[i] - curMeans[i];
+//     gPolicy[i] = _inverseVariances[i] * (g1*diffExpAction + g2*diffNewAction);
+//    }
+//
+//    ///////////////// KL Calculation /////////////////////
+//
+//    // Now calculating trust region, if required
+//    if (_policyTrustRegionEnabled)
+//    {
+//     // Getting policy distribution parameters given the average policy
+//     _policyLearner->setHyperparameters(_policyAverageHyperparameters);
+//
+//     // Getting policy distribution parameters from the average policy NN
+//     auto avgMeans = _policyLearner->getEvaluation(expState);
+//
+//     // Obtaining KL Divergence gradients for the current state.
+//     std::vector<float> k(_problem->_actionVectorSize);
+//     for(size_t i = 0; i < _problem->_actionVectorSize; i++)  k[i] = _inverseVariances[i]*(curMeans[i] - avgMeans[i]);
+//
+//     // Getting dot product between the gradient vector and k
+//     auto gkDotProduct = dotProduct(k, gPolicy);
+//
+//     // Getting norm(k)^2, simply by dot product of k and itself
+//     auto kNormSquared = dotProduct(k, k);
+//
+//     // Getting magnitude of adjustment
+//     float adjustmentMagnitude = std::max(0.0f, (gkDotProduct - _policyTrustRegionDivergenceConstraint) / kNormSquared);
+//
+//     // Adjusting gradients to trust region
+//     for(size_t i = 0; i < gPolicy.size(); i++) gPolicy[i] = gPolicy[i] - adjustmentMagnitude * k[i];
+//    }
+//
+//    ///////////////// Storing Gradients /////////////////////
+//
+//     _policyProblem->_inputs.push_back(expState);
+//     _policyProblem->_solution.push_back(gPolicy);
+//
+//     /*****************************************
+//     * Update Networks for Q (A and V) estimation
+//     *****************************************/
+//
+//     // Calculating simple truncated importance
+//     float tImportance = (1.0f + std::min(1.0f, oldImportanceWeight));
+//
+//     // Calculating error between Qret and Q(s,a)
+//     float qErr = qRet - qExpStateExpAction;
+//
+//    ///////////////// Gradients for the State Function V(s) /////////////////
+//
+//      // Updating inputs to training learner
+//      _vProblem->_inputs.push_back(expState);
+//      _vProblem->_solution.push_back({ qErr * tImportance });
+//
+//    ///////////////// Gradients for the Advantage Function A(s) /////////////////
+//
+//      // Putting together state and action
+//      for (size_t i = 0; i < _problem->_actionVectorSize; i++) stateActionVector[_problem->_stateVectorSize + i] = expAction[i];
+//
+//      // Updating inputs to training learner
+//      _aProblem->_inputs.push_back(stateActionVector);
+//      _aProblem->_solution.push_back({ qErr });
+//
+//      // Now adding all additional action samples
+//      for (size_t sampleIdx = 0; sampleIdx < _policySamplePopulation; sampleIdx++)
+//      {
+//       for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+//        stateActionVector[_problem->_stateVectorSize + i] = actionSamples[sampleIdx][i];
+//       _aProblem->_inputs.push_back(stateActionVector);
+//       _aProblem->_solution.push_back({ - qErr / (float) _policySamplePopulation });
+//      }
+//
+//     /*****************************************
+//      * Updating the value of qRet and qOpc
+//      *****************************************/
+//
+//     // Now calculating truncated importance weight with 1.0 as truncation factor
+//     truncatedImportanceWeight = std::min(1.0, std::pow(oldImportanceWeight, 1.0 / _problem->_actionVectorSize));
+//
+//     // Updating qRet and qOpc
+//     qRet = curReward + _discountFactor * (truncatedImportanceWeight * (qRet - qExpStateExpAction) + vExpState);
+//     qOpc = curReward + _discountFactor * (qOpc - qExpStateExpAction + vExpState);
+//   }
+//
+//   // Declaring engine to launch experiments
+//   korali::Engine engine;
+//
+//   // Running one generation of the optimization method with the given mini-batch
+//   _aExperiment["Solver"]["Termination Criteria"]["Max Generations"] = _aExperiment._currentGeneration + 1;
+//   _aLearner->initialize();
+//   engine.resume(_aExperiment);
+//
+//   // Running one generation of the optimization method with the given mini-batch
+//   _vExperiment["Solver"]["Termination Criteria"]["Max Generations"] = _vExperiment._currentGeneration + 1;
+//   _vLearner->initialize();
+//   engine.resume(_vExperiment);
+//
+//   // Running one generation of the optimization method with the given mini-batch
+//   _policyExperiment["Solver"]["Termination Criteria"]["Max Generations"] = _policyExperiment._currentGeneration + 1;
+//   _policyLearner->initialize();
+//   engine.resume(_policyExperiment);
+//
+//  /****************************************************************************
+//  * If batch normalization is being used, we need to adjust mean and variances
+//  * by sampling a few more mini-batches after the optimization steps
+//  ******************************************************************************/
+//
+//   // Randomly selecting experiences for the mini-batch and calculating their target Q
+//   // Creating state history indexes to choose from
+//   std::vector<size_t> experienceReplayIndexes(_experienceReplayStates.size());
+//   for (size_t i = 0; i < _experienceReplayStates.size(); i++) experienceReplayIndexes[i] = i;
+//
+//   // Allocating memory for the mini batch set
+//   std::vector<std::vector<std::vector<float>>> stateMiniBatches(_normalizationSteps);
+//   std::vector<std::vector<std::vector<float>>> stateActionMiniBatches(_normalizationSteps);
+//
+//   for (size_t i = 0; i < _normalizationSteps; i++)
+//   {
+//     stateMiniBatches[i].resize(_normalizationBatchSize);
+//     stateActionMiniBatches[i].resize(_normalizationBatchSize);
+//   }
+//
+//   for (size_t i = 0; i < _normalizationSteps; i++)
+//     for (size_t j = 0; j < _normalizationBatchSize; j++)
+//     {
+//       stateMiniBatches[i][j].resize(_problem->_stateVectorSize);
+//       stateActionMiniBatches[i][j].resize(_problem->_stateVectorSize + _problem->_actionVectorSize);
+//     }
+//
+//   // Filling the minibatches
+//   for (size_t step = 0; step < _normalizationSteps; step++)
+//   {
+//     // Shuffling indexes to choose the mini batch from
+//     std::shuffle(experienceReplayIndexes.begin(), experienceReplayIndexes.end(), *mt);
+//
+//     for (size_t i = 0; i < _normalizationBatchSize; i++)
+//     {
+//       // Selecting a uniformly random selected, yet not repeated experience
+//       size_t expId = experienceReplayIndexes[i];
+//
+//       auto expState = _experienceReplay[expId]["State"].get<std::vector<float>>();
+//       auto curAction = _experienceReplay[expId]["Action"].get<std::vector<float>>();
+//
+//       for (size_t j = 0; j < _problem->_stateVectorSize; j++)
+//        {
+//         stateMiniBatches[step][i][j] = expState[j];
+//         stateActionMiniBatches[step][i][j] = expState[j];
+//        }
+//
+//       for (size_t j = 0; j < _problem->_actionVectorSize; j++)
+//        stateActionMiniBatches[step][i][_problem->_stateVectorSize + j] = curAction[j];
+//     }
+//   }
+//
+//   _aLearner->_trainingNeuralNetwork->normalize(stateActionMiniBatches);
+//   _vLearner->_trainingNeuralNetwork->normalize(stateMiniBatches);
+//   _policyLearner->_trainingNeuralNetwork->normalize(stateMiniBatches);
+//
+//   // Storing new inference parameters
+//   auto aHyperparameters = _aLearner->getHyperparameters();
+//   _aLearner->setHyperparameters(aHyperparameters);
+//
+//   auto vHyperparameters = _vLearner->getHyperparameters();
+//   _vLearner->setHyperparameters(vHyperparameters);
+//
+//  /****************************************************************************
+//  * Updating Policy
+//  ******************************************************************************/
+//
+//   // Getting new policy hyperparameters
+//   _policyCurrentHyperparameters = _policyLearner->getHyperparameters();
+//
+//   // If using a trust region, softly adopting the new parameters of the average policy, using an adoption rate
+//   if (_policyTrustRegionEnabled)
+//    for (size_t i = 0; i < _policyCurrentHyperparameters.size(); i++)
+//     _policyAverageHyperparameters[i] = _policyTrustRegionAdoptionRate*_policyAverageHyperparameters[i] + (1-_policyTrustRegionAdoptionRate)*_policyCurrentHyperparameters[i];
+//
+//   // Updating policy with new averaged parameters
+//   _policyLearner->setHyperparameters(_policyCurrentHyperparameters);
+//
+//   // Storing average policy hyperparameters
+//   _hyperparameters["Policy"] = _policyCurrentHyperparameters;
 }
 
 void Continuous::updateHyperparameters(const knlohmann::json &hyperparameters)

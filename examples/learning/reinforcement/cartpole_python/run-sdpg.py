@@ -63,8 +63,7 @@ e["Solver"]["Experience Replay"]["Maximum Size"] = 100000
 
 ## Defining Critic Configuration
 
-e["Solver"]["Critic"]["Optimizer"]["Type"] = "Optimizer/Adam"
-e["Solver"]["Critic"]["Optimizer"]["Eta"] = 0.001
+e["Solver"]["Critic"]["Learning Rate"] = 0.001
 e["Solver"]["Critic"]["Discount Factor"] = 0.99
 e["Solver"]["Critic"]["Mini Batch Size"] = 64
 
@@ -89,8 +88,7 @@ e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Batch Normalization"]["Ena
 
 ## Defining Policy Configuration
 
-e["Solver"]["Policy"]["Optimizer"]["Type"] = "Optimizer/Adam"
-e["Solver"]["Policy"]["Optimizer"]["Eta"] = 0.001
+e["Solver"]["Policy"]["Learning Rate"] = 0.001
 e["Solver"]["Policy"]["Mini Batch Size"] = 8 
 e["Solver"]["Policy"]["Adoption Rate"] = 0.10
 

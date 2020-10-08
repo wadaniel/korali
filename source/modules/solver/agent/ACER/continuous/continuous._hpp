@@ -75,23 +75,23 @@ class Continuous : public ACER
   /**
    * @brief Vector with inverse variance for the action variables
    */
-  std::vector<double> _inverseVariances;
+  std::vector<float> _inverseVariances;
 
   /**
    * @brief Calculates the state value function V(s) = Expectation_a [ Q(s,a) | s ] of a given experience using the latest critic
    * @param state state to evaluate
    * @return The value of the V(s)
    */
-  double stateValueFunction(const std::vector<double> &state);
+  float stateValueFunction(const std::vector<float> &state);
 
   /**
    * @brief Updated policy action-generating independent normal distributions given hyperparameters (mean + sigma) for all of them
    * @param parameters The parameters that define the normal distributions (mean+sigma)
    */
-  void updatePolicyDistributions(const std::vector<double> &parameters);
+  void updatePolicyDistributions(const std::vector<float> &parameters);
 
   void processTrajectory(size_t startId, size_t endId) override;
-  std::vector<double> queryPolicy();
+  std::vector<float> queryPolicy();
   void getAction(korali::Sample &sample) override;
   void updateHyperparameters(const knlohmann::json &hyperparameters) override;
   void printAgentInformation() override;

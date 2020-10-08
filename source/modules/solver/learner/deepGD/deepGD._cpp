@@ -46,35 +46,18 @@ void DeepGD::initialize()
    * Setting up weight and bias optimization experiment
    *****************************************************************/
 
-    _optExperiment["Problem"]["Type"] = "Optimization";
-    _optExperiment["Problem"]["Objective Function"] = 0;
-
     _hyperparameters = _trainingNeuralNetwork->generateInitialHyperparameters();
     _normalizationMeans = _trainingNeuralNetwork->getNormalizationMeans();
     _normalizationVariances = _trainingNeuralNetwork->getNormalizationVariances();
 
+    _adamSolver = new korali::fAdam(_hyperparameters.size());
+    _adamSolver->_eta = _learningRate;
+
     for (size_t i = 0; i < _hyperparameters.size(); i++)
-    {
-      _optExperiment["Variables"][i]["Name"] = std::string("Hyperparameter") + std::to_string(i);
-      _optExperiment["Variables"][i]["Initial Value"] = _hyperparameters[i];
-      _optExperiment["Variables"][i]["Initial Mean"] = _hyperparameters[i];
-      _optExperiment["Variables"][i]["Initial Standard Deviation"] = abs(_hyperparameters[i]) * 0.1;
-    }
+      _adamSolver->_initialValues[i]  = _hyperparameters[i];
 
-    _optExperiment["Solver"] = _optimizer;
-    _optExperiment["File Output"]["Frequency"] = 0;
-    _optExperiment["File Output"]["Enabled"] = false;
-    _optExperiment["Console Output"]["Frequency"] = 0;
-    _optExperiment["Console Output"]["Verbosity"] = "Silent";
-    _optExperiment["Random Seed"] = _k->_randomSeed++;
-
-    // Running initialization to verify that the configuration is correct
-    korali::Engine engine;
-    engine.initialize(_optExperiment);
-
-    // Getting direct access to optimization solver
-    _adamSolver = dynamic_cast<solver::optimizer::Adam *>(_optExperiment._solver);
-    _adamSolver->setInitialConfiguration();
+    // Resetting
+    _adamSolver->reset();
 
     // Creating and setting hyperparameter structures
     _trainingNeuralNetwork->setHyperparameters(_hyperparameters);

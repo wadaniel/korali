@@ -5,7 +5,7 @@
 #include "modules/neuralNetwork/neuralNetwork.hpp"
 #include "modules/problem/supervisedLearning/supervisedLearning.hpp"
 #include "modules/solver/learner/learner.hpp"
-#include "modules/solver/optimizer/Adam/Adam.hpp"
+#include "auxiliar/optimizers/fAdam.hpp"
 
 namespace korali
 {
@@ -29,7 +29,7 @@ class DeepGD : public Learner
   /**
  * @brief ADAM solver pointer to access directly (for performance)
  */
-  korali::solver::optimizer::Adam *_adamSolver;
+  korali::fAdam *_adamSolver;
 
   /**
    * @brief A neural network to be trained based on inputs and solutions

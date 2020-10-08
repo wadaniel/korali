@@ -73,8 +73,8 @@ void GaussianProcess::initialize()
   _koraliExperiment["Random Seed"] = _k->_randomSeed++;
 
   // Pass the training data from korali to the GP library
-  float inData[_gpInputDimension];
-  float outData;
+  double inData[_gpInputDimension];
+  double outData;
 
   // Running initialization to verify that the configuration is correct
   korali::Engine engine;
@@ -140,8 +140,10 @@ std::vector<float> GaussianProcess::getEvaluation(const std::vector<float> &inpu
 
   _gp->covf().set_loghyper(toEigen(_gpHyperparameters));
 
-  output[0] = _gp->f(input.data());
-  output[1] = _gp->var(input.data());
+  std::vector<double> inputData(input.begin(), input.end());
+
+  output[0] = _gp->f(inputData.data());
+  output[1] = _gp->var(inputData.data());
 
 #endif
 

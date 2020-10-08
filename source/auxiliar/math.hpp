@@ -97,7 +97,15 @@ double vectorNorm(const std::vector<double> &x);
 * @param y vector of yi values
 * @return The x . y product
 */
-double dotProduct(const std::vector<double> &x, const std::vector<double> &y);
+template<typename T>
+T dotProduct(const std::vector<T> &x, const std::vector<T> &y)
+{
+ T dotProd = 0.0;
+
+ for (size_t i = 0; i < x.size(); i++) dotProd += x[i] * y[i];
+
+ return dotProd;
+}
 
 /**
 * @brief Computes the norm of the difference between two vectors.

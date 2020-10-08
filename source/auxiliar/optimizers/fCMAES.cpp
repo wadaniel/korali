@@ -5,8 +5,99 @@
 
 namespace korali
 {
+
+fCMAES::fCMAES(size_t nVars, size_t populationSize, size_t muSize)
+{
+ _currentGeneration = 1;
+
+ // CMAES Parameters
+ _populationSize = populationSize;
+ _muValue = 0;
+ _initialSigmaCumulationFactor = -1.0;
+ _initialDampFactor = -1.0;
+ _isSigmaBounded = false;
+ _initialCumulativeCovariance = -1.0;
+ _isDiagonal = false;
+ _muType = "Linear";
+
+ // Variable Parameters
+ _nVars = nVars;
+ _initialMeans.resize(_nVars);
+ _initialStandardDeviations.resize(_nVars);
+ _lowerBounds.resize(_nVars);
+ _upperBounds.resize(_nVars);
+
+ for (size_t i = 0; i < _nVars; i++)
+ {
+  _lowerBounds[i] = -std::numeric_limits<float>::infinity();
+  _upperBounds[i] = +std::numeric_limits<float>::infinity();
+  _initialMeans[i] = std::numeric_limits<float>::signaling_NaN();
+  _initialStandardDeviations[i] = std::numeric_limits<float>::signaling_NaN();
+ }
+
+ // Termination Criteria
+ _maxGenerations = 10000000;
+ _maxInfeasibleResamplings = 10000000;
+ _maxConditionCovarianceMatrix = std::numeric_limits<float>::infinity();
+ _minValue = -std::numeric_limits<float>::infinity();
+ _maxValue = +std::numeric_limits<float>::infinity();
+ _minValueDifferenceThreshold = -std::numeric_limits<float>::infinity();
+ _minStandardDeviation = -std::numeric_limits<float>::infinity();
+ _maxStandardDeviation = +std::numeric_limits<float>::infinity();
+
+ // Random Number Generators
+ _normalGenerator = std::normal_distribution<float>(0.0, 1.0);
+
+ // Statistics
+ _bestEverValue = -std::numeric_limits<float>::infinity();
+ _currentMinStandardDeviation = -std::numeric_limits<float>::infinity();
+ _currentMaxStandardDeviation = +std::numeric_limits<float>::infinity();
+ _minimumCovarianceEigenvalue = -std::numeric_limits<float>::infinity();
+ _maximumCovarianceEigenvalue = +std::numeric_limits<float>::infinity();
+
+ if (_populationSize == 0) _populationSize = ceil(4.0 + floor(3 * log((float)_nVars)));
+ if (_muValue == 0) _muValue = _populationSize / 2;
+
+ _chiSquareNumber = sqrtf((float)_nVars) * (1. - 1. / (4. * _nVars) + 1. / (21. * _nVars * _nVars));
+
+ // Allocating Memory
+ _samplePopulation.resize(_populationSize);
+ for (size_t i = 0; i < _populationSize; i++) _samplePopulation[i].resize(_nVars);
+
+ _evolutionPath.resize(_nVars);
+ _conjugateEvolutionPath.resize(_nVars);
+ _auxiliarBDZMatrix.resize(_nVars);
+ _meanUpdate.resize(_nVars);
+ _currentMean.resize(_nVars);
+ _previousMean.resize(_nVars);
+ _bestEverVariables.resize(_nVars);
+ _axisLengths.resize(_nVars);
+ _auxiliarAxisLengths.resize(_nVars);
+ _currentBestVariables.resize(_nVars);
+
+ _sortingIndex.resize(_populationSize);
+ _valueVector.resize(_populationSize);
+
+ _covarianceMatrix.resize(_nVars * _nVars);
+ _auxiliarCovarianceMatrix.resize(_nVars * _nVars);
+ _covarianceEigenvectorMatrix.resize(_nVars * _nVars);
+ _auxiliarCovarianceEigenvectorMatrix.resize(_nVars * _nVars);
+ _bDZMatrix.resize(_populationSize * _nVars);
+
+ _muWeights.resize(_muValue);
+
+ // GSL Workspace
+ _gsl_eval = gsl_vector_alloc(_nVars);
+ _gsl_evec = gsl_matrix_alloc(_nVars, _nVars);
+ _gsl_work = gsl_eigen_symmv_alloc(_nVars);
+
+ reset();
+}
+
 void fCMAES::reset()
 {
+ _currentGeneration = 1;
+
  // Establishing optimization goal
  _bestEverValue = -std::numeric_limits<float>::infinity();
  _previousBestEverValue = -std::numeric_limits<float>::infinity();
@@ -31,7 +122,6 @@ void fCMAES::reset()
     }
   }
 
-  _currentGeneration = 1;
   _globalSuccessRate = -1.0;
   _covarianceMatrixAdaptionFactor = -1.0;
   _covarianceMatrixAdaptationCount = 0;
@@ -395,7 +485,7 @@ void fCMAES::sort_index(const std::vector<float> &vec, std::vector<size_t> &sort
   std::sort(std::begin(sortingIndex), std::begin(sortingIndex) + N, [vec](size_t i1, size_t i2) { return vec[i1] > vec[i2]; });
 }
 
-void fCMAES::printGenerationAfter()
+void fCMAES::printInfo()
 {
   fprintf(stderr, "[fCMAES] Sigma:                        %+6.3e\n", _sigma);
   fprintf(stderr, "[fCMAES] Current Function Value: Max = %+6.3e - Best = %+6.3e\n", _currentBestValue, _bestEverValue);
@@ -414,100 +504,6 @@ void fCMAES::printGenerationAfter()
 
   fprintf(stderr, "[fCMAES] Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
 }
-
-void fCMAES::finalize()
-{
-  fprintf(stderr, "[fCMAES] Optimum found: %e\n", _bestEverValue);
-  fprintf(stderr, "[fCMAES] Optimum found at:\n");
-  for (size_t d = 0; d < _nVars; ++d) fprintf(stderr, "        Var %lu = %+6.3e\n", d, _bestEverVariables[d]);
-  fprintf(stderr, "[fCMAES] Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
-}
-
-fCMAES::fCMAES(size_t nVars, size_t populationSize, size_t muSize)
-{
- // CMAES Parameters
- _currentGeneration = 1;
- _populationSize = populationSize;
- _muValue = 0;
- _initialSigmaCumulationFactor = -1.0;
- _initialDampFactor = -1.0;
- _isSigmaBounded = false;
- _initialCumulativeCovariance = -1.0;
- _isDiagonal = false;
- _muType = "Linear";
-
- // Variable Parameters
- _nVars = nVars;
- _initialMeans.resize(_nVars);
- _initialStandardDeviations.resize(_nVars);
- _lowerBounds.resize(_nVars);
- _upperBounds.resize(_nVars);
-
- for (size_t i = 0; i < _nVars; i++)
- {
-  _lowerBounds[i] = -std::numeric_limits<float>::infinity();
-  _upperBounds[i] = +std::numeric_limits<float>::infinity();
-  _initialMeans[i] = std::numeric_limits<float>::signaling_NaN();
-  _initialStandardDeviations[i] = std::numeric_limits<float>::signaling_NaN();
- }
-
- // Termination Criteria
- _maxInfeasibleResamplings = 10000000;
- _maxConditionCovarianceMatrix = std::numeric_limits<float>::infinity();
- _minValue = -std::numeric_limits<float>::infinity();
- _maxValue = +std::numeric_limits<float>::infinity();
- _minValueDifferenceThreshold = -std::numeric_limits<float>::infinity();
- _minStandardDeviation = -std::numeric_limits<float>::infinity();
- _maxStandardDeviation = +std::numeric_limits<float>::infinity();
-
- // Random Number Generators
- _normalGenerator = std::normal_distribution<float>(0.0, 1.0);
-
- // Statistics
- _bestEverValue = -std::numeric_limits<float>::infinity();
- _currentMinStandardDeviation = -std::numeric_limits<float>::infinity();
- _currentMaxStandardDeviation = +std::numeric_limits<float>::infinity();
- _minimumCovarianceEigenvalue = -std::numeric_limits<float>::infinity();
- _maximumCovarianceEigenvalue = +std::numeric_limits<float>::infinity();
-
- if (_populationSize == 0) _populationSize = ceil(4.0 + floor(3 * log((float)_nVars)));
- if (_muValue == 0) _muValue = _populationSize / 2;
-
- _chiSquareNumber = sqrtf((float)_nVars) * (1. - 1. / (4. * _nVars) + 1. / (21. * _nVars * _nVars));
-
- // Allocating Memory
- _samplePopulation.resize(_populationSize);
- for (size_t i = 0; i < _populationSize; i++) _samplePopulation[i].resize(_nVars);
-
- _evolutionPath.resize(_nVars);
- _conjugateEvolutionPath.resize(_nVars);
- _auxiliarBDZMatrix.resize(_nVars);
- _meanUpdate.resize(_nVars);
- _currentMean.resize(_nVars);
- _previousMean.resize(_nVars);
- _bestEverVariables.resize(_nVars);
- _axisLengths.resize(_nVars);
- _auxiliarAxisLengths.resize(_nVars);
- _currentBestVariables.resize(_nVars);
-
- _sortingIndex.resize(_populationSize);
- _valueVector.resize(_populationSize);
-
- _covarianceMatrix.resize(_nVars * _nVars);
- _auxiliarCovarianceMatrix.resize(_nVars * _nVars);
- _covarianceEigenvectorMatrix.resize(_nVars * _nVars);
- _auxiliarCovarianceEigenvectorMatrix.resize(_nVars * _nVars);
- _bDZMatrix.resize(_populationSize * _nVars);
-
- _muWeights.resize(_muValue);
-
- // GSL Workspace
- _gsl_eval = gsl_vector_alloc(_nVars);
- _gsl_evec = gsl_matrix_alloc(_nVars, _nVars);
- _gsl_work = gsl_eigen_symmv_alloc(_nVars);
-
- reset();
-} 
 
 void fCMAES::setSeed(size_t seed)
 {
@@ -530,6 +526,7 @@ bool fCMAES::checkTermination()
  if (_currentGeneration > 1 && (fabs(_currentBestValue - _previousBestValue) < _minValueDifferenceThreshold))  return true;
  if (_currentGeneration > 1 && (_currentMinStandardDeviation <= _minStandardDeviation)) return true;
  if (_currentGeneration > 1 && (_currentMaxStandardDeviation >= _maxStandardDeviation)) return true;
+ if (_currentGeneration >= _maxGenerations) return true;
 
  return false;
 }

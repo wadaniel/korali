@@ -78,7 +78,7 @@ int main(int argc, char *argv[])
   e["Solver"]["Optimization Steps Per Trajectory"] = 1;
 
   e["Solver"]["Random Action Probability"]["Initial Value"] = 0.5;
-  e["Solver"]["Random Action Probability"]["Target Value"] = 0.02;
+  e["Solver"]["Random Action Probability"]["Target Value"] = 0.01;
   e["Solver"]["Random Action Probability"]["Decrease Rate"] = 0.05;
 
   ////// Defining the configuration of replay memory
@@ -90,7 +90,7 @@ int main(int argc, char *argv[])
 
   e["Solver"]["Critic"]["Learning Rate"] = 0.001;
   e["Solver"]["Critic"]["Discount Factor"] = 0.99;
-  e["Solver"]["Critic"]["Mini Batch Size"] = 32;
+  e["Solver"]["Critic"]["Mini Batch Size"] = 128;
 
   e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense";
   e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear";
@@ -111,10 +111,9 @@ int main(int argc, char *argv[])
 
   //// Defining Policy Configuration
 
-  e["Solver"]["Policy"]["Learning Rate"] = 0.01;
-  e["Solver"]["Policy"]["Mini Batch Size"] = 32;
-  e["Solver"]["Policy"]["Adoption Rate"] = 0.10;
-  e["Solver"]["Policy"]["Target Accuracy"] = 0.001;
+  e["Solver"]["Policy"]["Learning Rate"] = 0.0001;
+  e["Solver"]["Policy"]["Mini Batch Size"] = 16;
+  e["Solver"]["Policy"]["Adoption Rate"] = 0.25;
 
   e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense";
   e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear";
@@ -146,7 +145,7 @@ int main(int argc, char *argv[])
 
   ////// Defining Termination Criteria
 
-  e["Solver"]["Training Reward Threshold"] = 1.2;
+  e["Solver"]["Training Reward Threshold"] = 1.0;
   e["Solver"]["Policy Testing Episodes"] = 20;
   e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 1.3;
 

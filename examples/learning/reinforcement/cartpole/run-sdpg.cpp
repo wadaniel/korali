@@ -58,10 +58,9 @@ int main(int argc, char *argv[])
 
   //// Defining Critic Configuration
 
-  e["Solver"]["Critic"]["Optimizer"]["Type"] = "Optimizer/Adam";
-  e["Solver"]["Critic"]["Optimizer"]["Eta"] = 0.001;
+  e["Solver"]["Critic"]["Learning Rate"] = 0.001;
   e["Solver"]["Critic"]["Discount Factor"] = 0.99;
-  e["Solver"]["Critic"]["Mini Batch Size"] = 32;
+  e["Solver"]["Critic"]["Mini Batch Size"] = 64;
 
   e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense";
   e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Node Count"] = 5;
@@ -84,10 +83,10 @@ int main(int argc, char *argv[])
 
   //// Defining Policy Configuration
 
-  e["Solver"]["Policy"]["Optimizer"]["Type"] = "Optimizer/Adam";
-  e["Solver"]["Policy"]["Optimizer"]["Eta"] = 0.0001;
-  e["Solver"]["Policy"]["Mini Batch Size"] = 16;
-  e["Solver"]["Policy"]["Adoption Rate"] = 0.5;
+  e["Solver"]["Policy"]["Learning Rate"] = 0.001;
+  e["Solver"]["Policy"]["Mini Batch Size"] = 8;
+  e["Solver"]["Policy"]["Adoption Rate"] = 0.10;
+  e["Solver"]["Policy"]["Target Accuracy"] = 0.00001;
 
   e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense";
   e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Node Count"] = 5;
@@ -109,7 +108,7 @@ int main(int argc, char *argv[])
 
   ////// Defining Termination Criteria
 
-  e["Solver"]["Training Reward Threshold"] = 490;
+  e["Solver"]["Training Reward Threshold"] = 400;
   e["Solver"]["Policy Testing Episodes"] = 20;
   e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 490;
 

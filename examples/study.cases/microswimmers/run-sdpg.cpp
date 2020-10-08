@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
   e["Variables"][14]["Exploration Noise"]["Enabled"] = true;
   e["Variables"][14]["Exploration Noise"]["Distribution"]["Type"] = "Univariate/Normal";
   e["Variables"][14]["Exploration Noise"]["Distribution"]["Mean"] = 0.0;
-  e["Variables"][14]["Exploration Noise"]["Distribution"]["Standard Deviation"] = (upperBounds[0] - lowerBounds[0]) * 0.001;
+  e["Variables"][14]["Exploration Noise"]["Distribution"]["Standard Deviation"] = (upperBounds[0] - lowerBounds[0]) * 0.01;
   e["Variables"][14]["Exploration Noise"]["Theta"] = 0.05;
 
   e["Variables"][15]["Name"] = "Rotation X";
@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
   e["Variables"][15]["Exploration Noise"]["Enabled"] = true;
   e["Variables"][15]["Exploration Noise"]["Distribution"]["Type"] = "Univariate/Normal";
   e["Variables"][15]["Exploration Noise"]["Distribution"]["Mean"] = 0.0;
-  e["Variables"][15]["Exploration Noise"]["Distribution"]["Standard Deviation"] = (upperBounds[1] - lowerBounds[1]) * 0.001;
+  e["Variables"][15]["Exploration Noise"]["Distribution"]["Standard Deviation"] = (upperBounds[1] - lowerBounds[1]) * 0.01;
   e["Variables"][15]["Exploration Noise"]["Theta"] = 0.05;
 
   e["Variables"][16]["Name"] = "Rotation Y";
@@ -57,7 +57,7 @@ int main(int argc, char *argv[])
   e["Variables"][16]["Exploration Noise"]["Enabled"] = true;
   e["Variables"][16]["Exploration Noise"]["Distribution"]["Type"] = "Univariate/Normal";
   e["Variables"][16]["Exploration Noise"]["Distribution"]["Mean"] = 0.0;
-  e["Variables"][16]["Exploration Noise"]["Distribution"]["Standard Deviation"] = (upperBounds[2] - lowerBounds[2]) * 0.001;
+  e["Variables"][16]["Exploration Noise"]["Distribution"]["Standard Deviation"] = (upperBounds[2] - lowerBounds[2]) * 0.01;
   e["Variables"][16]["Exploration Noise"]["Theta"] = 0.05;
 
   e["Variables"][17]["Name"] = "Rotation Z";
@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
   e["Variables"][17]["Exploration Noise"]["Enabled"] = true;
   e["Variables"][17]["Exploration Noise"]["Distribution"]["Type"] = "Univariate/Normal";
   e["Variables"][17]["Exploration Noise"]["Distribution"]["Mean"] = 0.0;
-  e["Variables"][17]["Exploration Noise"]["Distribution"]["Standard Deviation"] = (upperBounds[3] - lowerBounds[3]) * 0.001;
+  e["Variables"][17]["Exploration Noise"]["Distribution"]["Standard Deviation"] = (upperBounds[3] - lowerBounds[3]) * 0.01;
   e["Variables"][17]["Exploration Noise"]["Theta"] = 0.05;
 
   ////// Defining Agent Configuration
@@ -88,10 +88,9 @@ int main(int argc, char *argv[])
 
   //// Defining Critic Configuration
 
-  e["Solver"]["Critic"]["Optimizer"]["Type"] = "Optimizer/Adam";
-  e["Solver"]["Critic"]["Optimizer"]["Eta"] = 0.001;
+  e["Solver"]["Critic"]["Learning Rate"] = 0.001;
   e["Solver"]["Critic"]["Discount Factor"] = 0.99;
-  e["Solver"]["Critic"]["Mini Batch Size"] = 128;
+  e["Solver"]["Critic"]["Mini Batch Size"] = 32;
 
   e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense";
   e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear";
@@ -112,10 +111,10 @@ int main(int argc, char *argv[])
 
   //// Defining Policy Configuration
 
-  e["Solver"]["Policy"]["Optimizer"]["Type"] = "Optimizer/Adam";
-  e["Solver"]["Policy"]["Optimizer"]["Eta"] = 0.001;
-  e["Solver"]["Policy"]["Mini Batch Size"] = 16;
-  e["Solver"]["Policy"]["Adoption Rate"] = 0.50;
+  e["Solver"]["Policy"]["Learning Rate"] = 0.01;
+  e["Solver"]["Policy"]["Mini Batch Size"] = 32;
+  e["Solver"]["Policy"]["Adoption Rate"] = 0.10;
+  e["Solver"]["Policy"]["Target Accuracy"] = 0.001;
 
   e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense";
   e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear";
@@ -147,7 +146,7 @@ int main(int argc, char *argv[])
 
   ////// Defining Termination Criteria
 
-  e["Solver"]["Training Reward Threshold"] = 1.0;
+  e["Solver"]["Training Reward Threshold"] = 1.2;
   e["Solver"]["Policy Testing Episodes"] = 20;
   e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 1.3;
 

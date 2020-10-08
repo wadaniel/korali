@@ -103,22 +103,12 @@ void fCMAES::reset()
  _previousBestValue = -std::numeric_limits<float>::infinity();
  _currentBestValue = -std::numeric_limits<float>::infinity();
 
-  // Initializing variable defaults
   for (size_t i = 0; i < _nVars; i++)
   {
-    if (std::isfinite(_initialMeans[i]) == false)
-    {
-      if (std::isfinite(_lowerBounds[i]) == false) { fprintf(stderr, "Initial (Mean) Value of variable \'%lu\' not defined, and cannot be inferred because variable lower bound is not finite.\n", i); std::abort();}
-      if (std::isfinite(_upperBounds[i]) == false) { fprintf(stderr, "Initial (Mean) Value of variable \'%lu\' not defined, and cannot be inferred because variable upper bound is not finite.\n", i); std::abort();}
-      _initialMeans[i] = (_upperBounds[i] + _lowerBounds[i]) * 0.5;
-    }
-
-    if (std::isfinite(_initialStandardDeviations[i]) == false)
-    {
-      if (std::isfinite(_lowerBounds[i]) == false) { fprintf(stderr, "Initial (Mean) Value of variable \'%lu\' not defined, and cannot be inferred because variable lower bound is not finite.\n", i); std::abort();}
-      if (std::isfinite(_upperBounds[i]) == false) { fprintf(stderr, "Initial Standard Deviation \'%lu\' not defined, and cannot be inferred because variable upper bound is not finite.\n", i); std::abort();}
-      _initialStandardDeviations[i] = (_upperBounds[i] - _lowerBounds[i]) * 0.3;
-    }
+    if (std::isfinite(_lowerBounds[i]) == false) { fprintf(stderr, "Lower Bound of variable \'%lu\' not defined.\n", i); std::abort();}
+    if (std::isfinite(_upperBounds[i]) == false) { fprintf(stderr, "Upper Bound of variable \'%lu\' not defined.\n", i); std::abort();}
+    if (std::isfinite(_initialMeans[i]) == false) { fprintf(stderr, "Initial mean of variable \'%lu\' not defined.\n", i); std::abort();}
+    if (std::isfinite(_initialStandardDeviations[i]) == false) { fprintf(stderr, "Initial StdDev of variable \'%lu\' not defined.\n", i); std::abort();}
   }
 
   _globalSuccessRate = -1.0;
@@ -262,6 +252,9 @@ void fCMAES::sampleSingle(size_t sampleIdx)
     {
       _bDZMatrix[sampleIdx * _nVars + d] = 0.0;
       for (size_t e = 0; e < _nVars; ++e) _bDZMatrix[sampleIdx * _nVars + d] += _covarianceEigenvectorMatrix[d * _nVars + e] * _auxiliarBDZMatrix[e];
+
+      auto variance = _sigma * _bDZMatrix[sampleIdx * _nVars + d];
+//      if (variance > abs(_upperBounds[d] - _lowerBounds[d])*10.0) printf("Excessive Variance\n");
       _samplePopulation[sampleIdx][d] = _currentMean[d] + _sigma * _bDZMatrix[sampleIdx * _nVars + d];
     }
 }
@@ -525,6 +518,7 @@ bool fCMAES::checkTermination()
  if (_currentGeneration > 1 && (fabs(_currentBestValue - _previousBestValue) < _minValueDifferenceThreshold))  return true;
  if (_currentGeneration > 1 && (_currentMinStandardDeviation <= _minStandardDeviation)) return true;
  if (_currentGeneration > 1 && (_currentMaxStandardDeviation >= _maxStandardDeviation)) return true;
+
  if (_currentGeneration >= _maxGenerations) return true;
 
  return false;

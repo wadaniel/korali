@@ -2,7 +2,7 @@ BINARIES = run-sdpg
 KORALICXX=$(shell python3 -m korali.cxx --compiler)
 KORALICFLAGS=`python3 -m korali.cxx --cflags`
 KORALILIBS=`python3 -m korali.cxx --libs`
-MSODECFLAGS=-I_deps/msode/src -I../_deps/msode/src -I_deps/msode/extern/json/include/
+MSODECFLAGS=-I_deps/msode/src -I../_deps/msode/src -I_deps/msode/extern/json/include/ -DNDEBUG -O3
 MSODELIBS=_deps/msode/build/lib/libgtest.a \
           _deps/msode/build/src/msode/rl/librl.a\
           -lpthread \

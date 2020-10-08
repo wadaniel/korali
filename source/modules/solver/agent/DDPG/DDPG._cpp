@@ -28,7 +28,7 @@ void DDPG::initializeAgent()
   _criticExperiment["Problem"]["Type"] = "Supervised Learning";
 
   _criticExperiment["Solver"]["Type"] = "Learner/DeepGD";
-  _criticExperiment["Solver"]["Optimizer"] = _criticOptimizer;
+  _criticExperiment["Solver"]["Learning Rate"] = _criticLearningRate;
   _criticExperiment["Solver"]["Loss Function"] = "Mean Squared Error";
   _criticExperiment["Solver"]["Steps Per Generation"] = 1;
   _criticExperiment["Solver"]["Neural Network"] = _criticNeuralNetwork;
@@ -64,7 +64,7 @@ void DDPG::initializeAgent()
 
   _policyExperiment["Solver"]["Type"] = "Learner/DeepGD";
   _policyExperiment["Solver"]["Loss Function"] = "Direct";
-  _policyExperiment["Solver"]["Optimizer"] = _policyOptimizer;
+  _policyExperiment["Solver"]["Learning Rate"] = _policyLearningRate;
   _policyExperiment["Solver"]["Steps Per Generation"] = 1;
   _policyExperiment["Solver"]["Neural Network"] = _policyNeuralNetwork;
 
@@ -155,8 +155,8 @@ void DDPG::trainAgent()
  auto curPolicyHyperparameters = _policyLearner->getHyperparameters();
 
   // Creating storage for state history indexes to choose from
-  std::vector<size_t> experienceReplayIndexes(_experienceReplayHistory.size());
-  for (size_t i = 0; i < _experienceReplayHistory.size()-1; i++) experienceReplayIndexes[i] = i;
+  std::vector<size_t> experienceReplayIndexes(_experienceReplayStates.size());
+  for (size_t i = 0; i < _experienceReplayStates.size()-1; i++) experienceReplayIndexes[i] = i;
 
   // Shuffling indexes to choose the mini batch from
   std::shuffle(experienceReplayIndexes.begin(), experienceReplayIndexes.end(), *mt);
@@ -180,16 +180,16 @@ void DDPG::trainAgent()
    size_t expId = experienceReplayIndexes[i];
 
    // Check if it is a terminal state
-   bool isTerminal = _experienceReplayHistory[expId]["Is Terminal"];
+   bool isTerminal = _experienceReplayTerminal[expId];
 
    // Getting experience's current state and action
-   std::vector<float> curState   = _experienceReplayHistory[expId]["State"];
-   std::vector<float> curAction  = _experienceReplayHistory[expId]["Action"];
-   std::vector<float> nextState  = isTerminal ? std::vector<float>() : _experienceReplayHistory[expId + 1]["State"].get<std::vector<float>>();
+   std::vector<float> curState   = _experienceReplayStates[expId];
+   std::vector<float> curAction  = _experienceReplayActions[expId];
+   std::vector<float> nextState  = isTerminal ? std::vector<float>() : _experienceReplayStates[expId + 1];
    std::vector<float> bestAction = isTerminal ? std::vector<float>() : queryPolicy(nextState);
 
    // Getting current reward
-   float curReward = _experienceReplayHistory[expId]["Reward"].get<float>();
+   float curReward = _experienceReplayRewards[expId];
 
    /*****************************************
     * Critic Section
@@ -277,9 +277,9 @@ void DDPG::trainAgent()
       // Selecting a uniformly random selected, yet not repeated experience
       size_t expId = experienceReplayIndexes[i];
 
-      policyMiniBatches[step][i] = _experienceReplayHistory[expId]["State"].get<std::vector<float>>();
-      for (size_t j = 0; j < _problem->_stateVectorSize; j++) criticMiniBatches[step][i][j] = _experienceReplayHistory[expId]["State"][j];
-      for (size_t j = 0; j < _problem->_actionVectorSize; j++) criticMiniBatches[step][i][_problem->_stateVectorSize + j] = _experienceReplayHistory[expId]["Action"][j];
+      policyMiniBatches[step][i] = _experienceReplayStates[expId];
+      for (size_t j = 0; j < _problem->_stateVectorSize; j++) criticMiniBatches[step][i][j] = _experienceReplayStates[expId][j];
+      for (size_t j = 0; j < _problem->_actionVectorSize; j++) criticMiniBatches[step][i][_problem->_stateVectorSize + j] = _experienceReplayActions[expId][j];
     }
   }
 

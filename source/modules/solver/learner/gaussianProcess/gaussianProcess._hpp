@@ -50,9 +50,9 @@ class GaussianProcess : public Learner
   static void runSample(Sample &sample, libgp::GaussianProcess *gp);
 #endif
 
-  std::vector<double> getEvaluation(const std::vector<double> &input) override;
-  std::vector<double> getHyperparameters() override;
-  void setHyperparameters(const std::vector<double> &hyperparameters) override;
+  std::vector<float> getEvaluation(const std::vector<float> &input) override;
+  std::vector<float> getHyperparameters() override;
+  void setHyperparameters(const std::vector<float> &hyperparameters) override;
   void initialize() override;
   void runGeneration() override;
   void printGenerationAfter() override;

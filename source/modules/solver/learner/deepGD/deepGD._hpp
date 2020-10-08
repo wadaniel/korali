@@ -46,12 +46,12 @@ class DeepGD : public Learner
    */
   bool _isLearnerInitialized;
 
-  std::vector<std::vector<double>> getEvaluation(const std::vector<std::vector<double>> &inputBatch);
-  std::vector<double> getGradients(const std::vector<double> &outputDiffs) override;
-  std::vector<double> getEvaluation(const std::vector<double> &inputBatch) override;
+  std::vector<std::vector<float>> getEvaluation(const std::vector<std::vector<float>> &inputBatch);
+  std::vector<float> getGradients(const std::vector<float> &outputDiffs) override;
+  std::vector<float> getEvaluation(const std::vector<float> &inputBatch) override;
 
-  std::vector<double> getHyperparameters() override;
-  void setHyperparameters(const std::vector<double> &hyperparameters) override;
+  std::vector<float> getHyperparameters() override;
+  void setHyperparameters(const std::vector<float> &hyperparameters) override;
   void finalize() override;
   void initialize() override;
   void runGeneration() override;

@@ -85,24 +85,24 @@ void DQN::trainAgent()
     // Q* = r -- If terminal state
 
     // Calculating target Q value (solution) for Qnew on selected batch
-    double qStar = 0.0;
+    float qStar = 0.0;
 
     // Reward is the first factor in the QLearning algorithm
     qStar = _experienceReplayHistory[expId]["Reward"];
 
     // Getting experience's current state and action
-    std::vector<double> curState = _experienceReplayHistory[expId]["State"];
-    std::vector<double> curAction = _experienceReplayHistory[expId]["Action"];
+    std::vector<float> curState = _experienceReplayHistory[expId]["State"];
+    std::vector<float> curAction = _experienceReplayHistory[expId]["Action"];
 
     // If state is not terminal (next state is filled) then add Qnew to the Q value.
     if (_experienceReplayHistory[expId]["Is Terminal"] == false)
     {
       // Getting experience's next state and action
-      std::vector<double> nextState = _experienceReplayHistory[expId + 1]["State"];
-      std::vector<double> bestAction = queryPolicy(nextState);
+      std::vector<float> nextState = _experienceReplayHistory[expId + 1]["State"];
+      std::vector<float> bestAction = queryPolicy(nextState);
 
       // Storage to put together state and action
-      std::vector<double> stateActionInput(_problem->_stateVectorSize + _problem->_actionVectorSize);
+      std::vector<float> stateActionInput(_problem->_stateVectorSize + _problem->_actionVectorSize);
 
       for (size_t j = 0; j < nextState.size(); j++) stateActionInput[j] = nextState[j];
       for (size_t j = 0; j < bestAction.size(); j++) stateActionInput[j + nextState.size()] = bestAction[j];
@@ -127,7 +127,7 @@ void DQN::trainAgent()
   _criticLearner->finalize();
 
   // Keeping statistics
-  _averageQStar = (double)_cumulativeQStar / (double)_criticMiniBatchSize;
+  _averageQStar = (float)_cumulativeQStar / (float)_criticMiniBatchSize;
 
   /****************************************************************************
   * If batch normalization is being used, we need to adjust mean and variances
@@ -135,7 +135,7 @@ void DQN::trainAgent()
   ******************************************************************************/
 
   // Allocating memory for the mini batch set
-  std::vector<std::vector<std::vector<double>>> miniBatches(_normalizationSteps);
+  std::vector<std::vector<std::vector<float>>> miniBatches(_normalizationSteps);
 
   for (size_t i = 0; i < _normalizationSteps; i++)
     miniBatches[i].resize(_criticMiniBatchSize);
@@ -172,7 +172,7 @@ void DQN::trainAgent()
 void DQN::getAction(korali::Sample &sample)
 {
   // Getting current state
-  auto state = sample["State"].get<std::vector<double>>();
+  auto state = sample["State"].get<std::vector<float>>();
 
   // Obtaining action from policy
   auto action = queryPolicy(state);
@@ -183,19 +183,19 @@ void DQN::getAction(korali::Sample &sample)
 
 void DQN::updateHyperparameters(const knlohmann::json &hyperparameters)
 {
-  _criticLearner->setHyperparameters(hyperparameters["Critic"].get<std::vector<double>>());
+  _criticLearner->setHyperparameters(hyperparameters["Critic"].get<std::vector<float>>());
 }
 
-std::vector<double> DQN::queryPolicy(const std::vector<double> &state)
+std::vector<float> DQN::queryPolicy(const std::vector<float> &state)
 {
   // Creating state/action input
-  std::vector<double> stateActionInput(_problem->_stateVectorSize + _problem->_actionVectorSize);
+  std::vector<float> stateActionInput(_problem->_stateVectorSize + _problem->_actionVectorSize);
 
   // Assigning state first
   for (size_t i = 0; i < state.size(); i++) stateActionInput[i] = state[i];
 
   // Storage for max_a Q(s,a) and its index
-  double maxQVal = -korali::Inf;
+  float maxQVal = -korali::Inf;
   size_t maxQIdx = 0;
 
   // Iterating over all possible actions, checking which one is best
@@ -206,7 +206,7 @@ std::vector<double> DQN::queryPolicy(const std::vector<double> &state)
       stateActionInput[_problem->_stateVectorSize + j] = _discreteProblem->_possibleActions[i][j];
 
     // Computing Q(s,a_i)
-    double curQVal = _criticLearner->getEvaluation(stateActionInput)[0];
+    float curQVal = _criticLearner->getEvaluation(stateActionInput)[0];
 
     // If current action got a larger Q, store it as the best
     if (curQVal > maxQVal)

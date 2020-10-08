@@ -27,7 +27,7 @@ void Discrete::initialize()
 void Discrete::getRandomAction(Sample &sample)
 {
   // Producing random (uniform) number to obtain a value index
-  double x = _randomActionGenerator->getRandomNumber();
+  float x = _randomActionGenerator->getRandomNumber();
 
   // Getting possible action count
   size_t possibleActionCount = _possibleActions.size();
@@ -37,7 +37,7 @@ void Discrete::getRandomAction(Sample &sample)
 
   // Probability Densities is uniform for all possible actions
   for (size_t i = 0; i < possibleActionCount; i++)
-   sample["Metadata"]["Probability Densities"][i] = 1.0 / (double) possibleActionCount;
+   sample["Metadata"]["Probability Densities"][i] = 1.0 / (float) possibleActionCount;
 
   // Storing action index
   sample["Metadata"]["Action Index"] = actionIdx;
@@ -49,7 +49,7 @@ void Discrete::getRandomAction(Sample &sample)
 size_t Discrete::getRandomActionIndex()
 {
   // Producing random (uniform) number to obtain a value index
-  double x = _randomActionGenerator->getRandomNumber();
+  float x = _randomActionGenerator->getRandomNumber();
 
   // Randomly select one of the actions provided in the value vector
   size_t actionIdx = floor(x * _possibleActions.size());

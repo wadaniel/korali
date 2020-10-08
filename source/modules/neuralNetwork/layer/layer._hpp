@@ -257,7 +257,7 @@ class Layer : public Module
    * @brief Generates the initial weight/bias/normalization hyperparameters for the layer
    * @return The initial hyperparameters
    */
-  std::vector<double> generateInitialHyperparameters();
+  std::vector<float> generateInitialHyperparameters();
 
   void createHyperparameterMemory();
 

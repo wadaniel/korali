@@ -32,10 +32,10 @@ void Continuous::getRandomAction(Sample &sample)
     size_t varIdx = _actionVectorIndexes[i];
 
     // Producing random (uniform) number to select within an lower/upper bound range
-    double x = _randomActionGenerator->getRandomNumber();
+    float x = _randomActionGenerator->getRandomNumber();
 
-    double lowerBound = _k->_variables[varIdx]->_lowerBound;
-    double upperBound = _k->_variables[varIdx]->_upperBound;
+    float lowerBound = _k->_variables[varIdx]->_lowerBound;
+    float upperBound = _k->_variables[varIdx]->_upperBound;
     sample["Metadata"]["Means"][i] = (upperBound + lowerBound) * 0.5;
     sample["Action"][i] = lowerBound + x * (upperBound - lowerBound);
   }

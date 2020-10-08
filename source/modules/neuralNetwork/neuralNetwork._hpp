@@ -49,55 +49,55 @@ class NeuralNetwork : public Module
    * @brief Generates the initial values for the hyperparameters
    * @return The initial hyperparameters
    */
-  std::vector<double> generateInitialHyperparameters();
+  std::vector<float> generateInitialHyperparameters();
 
   /**
    * @brief Updates the internal values of the NN inputs
    * @param input The input batch
    */
-  void setInput(const std::vector<std::vector<double>> &input);
+  void setInput(const std::vector<std::vector<float>> &input);
 
   /**
    * @brief Updates the values of weights, biases, and normalization scale/shift configuration to the NN
    * @param hyperparameters The input hyperparameters
    */
-  void setHyperparameters(const std::vector<double> &hyperparameters);
+  void setHyperparameters(const std::vector<float> &hyperparameters);
 
   /**
    * @brief Gets the values of weights, biases, and normalization scale/shift configuration to the NN
    * @return The hyperparameters of the NN
    */
-  std::vector<double> getHyperparameters();
+  std::vector<float> getHyperparameters();
 
   /**
   * @brief Normalizes neural network batch normalization mean and variances
   * @param minibatches The set of mini batches for the neural network to normalize with
   */
-  void normalize(const std::vector<std::vector<std::vector<double>>> &minibatches);
+  void normalize(const std::vector<std::vector<std::vector<float>>> &minibatches);
 
   /**
    * @brief Gets the values of batch normalization means
    * @return The batch normalization means
    */
-  std::vector<double> getNormalizationMeans();
+  std::vector<float> getNormalizationMeans();
 
   /**
   * @brief Updates the values of batch normalization means
   * @param normalizationMeans The batch normalization means
   */
-  void setNormalizationMeans(const std::vector<double> &normalizationMeans);
+  void setNormalizationMeans(const std::vector<float> &normalizationMeans);
 
   /**
    * @brief Gets the values of normalization mean variance
    * @return The batch normalization variances
    */
-  std::vector<double> getNormalizationVariances();
+  std::vector<float> getNormalizationVariances();
 
   /**
   * @brief Updates the values of batch normalization variances
   * @param normalizationVariances The batch normalization variances
   */
-  void setNormalizationVariances(const std::vector<double> &normalizationVariances);
+  void setNormalizationVariances(const std::vector<float> &normalizationVariances);
 
   /**
    * @brief Forward-propagates the input batch data through the network.
@@ -108,19 +108,19 @@ class NeuralNetwork : public Module
    * @brief Backward-propagates the gradients data through the network.
    * @param outputDifferential Output differentials
   */
-  void backward(const std::vector<double> &outputDifferential);
+  void backward(const std::vector<float> &outputDifferential);
 
   /**
   * @brief Runs the backward propagation procedure and returns the gradients of the hyperparameters (weights,bias/normalization) with respect to the output
   * @return The calculated gradients
   */
-  std::vector<double> getHyperparameterGradients();
+  std::vector<float> getHyperparameterGradients();
 
   /**
    * @brief Backward-propagates to find out the gradients of the input data.
    * @return The gradients of the input data wrt to the output data
   */
-  std::vector<double> getDataGradients();
+  std::vector<float> getDataGradients();
 
   /**
    * @brief Creator that sets initialized flag to false

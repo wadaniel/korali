@@ -39,7 +39,7 @@ class DQN : public Agent
    * @param state The input state
    * @return The action value, corresponding to the state and the current policy hyperparameters
    */
-  std::vector<double> queryPolicy(const std::vector<double> &state);
+  std::vector<float> queryPolicy(const std::vector<float> &state);
 
   void getAction(korali::Sample &sample) override;
   void updateHyperparameters(const knlohmann::json &hyperparameters) override;

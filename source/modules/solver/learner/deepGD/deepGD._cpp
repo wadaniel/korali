@@ -107,7 +107,7 @@ void DeepGD::runGeneration()
 
   // Saving values for the loss function and its gradient
   _currentLoss = 0.0;
-  std::vector<double> lossDiff(batchSize * solutionSize);
+  std::vector<float> lossDiff(batchSize * solutionSize);
 
   // Assigning values to evaluation and gradients, depending on the loss function selected
   if (_lossFunction == "Direct")
@@ -122,13 +122,13 @@ void DeepGD::runGeneration()
     for (size_t i = 0; i < batchSize; i++)
       for (size_t j = 0; j < solutionSize; j++)
       {
-        double diff = _problem->_solution[i][j] - _trainingNeuralNetwork->_outputValues[i][j];
+        float diff = _problem->_solution[i][j] - _trainingNeuralNetwork->_outputValues[i][j];
         lossDiff[i * solutionSize + j] = diff;
         _currentLoss += diff * diff;
       }
 
     // Saving the negative of the error because we want to minimize it
-    _currentLoss = _currentLoss / ((double)batchSize * 2);
+    _currentLoss = _currentLoss / ((float)batchSize * 2);
   }
 
   // Backward propagating the gradients through the training neural network
@@ -163,9 +163,9 @@ void DeepGD::finalize()
   _k->_logger->logInfo("Normal", "Current Loss: %.15f\n", _currentLoss);
 }
 
-std::vector<double> DeepGD::getHyperparameters()
+std::vector<float> DeepGD::getHyperparameters()
 {
-  std::vector<double> parameters;
+  std::vector<float> parameters;
 
   // Concatenating parameters
   parameters.insert(parameters.end(), _hyperparameters.begin(), _hyperparameters.end());
@@ -175,23 +175,23 @@ std::vector<double> DeepGD::getHyperparameters()
   return parameters;
 }
 
-void DeepGD::setHyperparameters(const std::vector<double> &hyperparameters)
+void DeepGD::setHyperparameters(const std::vector<float> &hyperparameters)
 {
   size_t curPos = 0;
 
   // Setting NN hyperparameters first
-  _hyperparameters = std::vector<double>(hyperparameters.begin() + curPos, hyperparameters.begin() + _trainingNeuralNetwork->_hyperparameterCount);
+  _hyperparameters = std::vector<float>(hyperparameters.begin() + curPos, hyperparameters.begin() + _trainingNeuralNetwork->_hyperparameterCount);
   curPos += _hyperparameters.size();
 
   // Setting NN normalization means second
-  _normalizationMeans = std::vector<double>(hyperparameters.begin() + curPos, hyperparameters.begin() + curPos + _trainingNeuralNetwork->_normalizationParameterCount);
+  _normalizationMeans = std::vector<float>(hyperparameters.begin() + curPos, hyperparameters.begin() + curPos + _trainingNeuralNetwork->_normalizationParameterCount);
   curPos += _normalizationMeans.size();
 
   // Setting NN normalization variances finally
-  _normalizationVariances = std::vector<double>(hyperparameters.begin() + curPos, hyperparameters.end());
+  _normalizationVariances = std::vector<float>(hyperparameters.begin() + curPos, hyperparameters.end());
 }
 
-std::vector<std::vector<double>> DeepGD::getEvaluation(const std::vector<std::vector<double>> &inputBatch)
+std::vector<std::vector<float>> DeepGD::getEvaluation(const std::vector<std::vector<float>> &inputBatch)
 {
   // Updating NN inputs
   _evaluationNeuralNetwork->setInput(inputBatch);
@@ -202,7 +202,7 @@ std::vector<std::vector<double>> DeepGD::getEvaluation(const std::vector<std::ve
   return _evaluationNeuralNetwork->_outputValues;
 }
 
-std::vector<double> DeepGD::getEvaluation(const std::vector<double> &inputBatch)
+std::vector<float> DeepGD::getEvaluation(const std::vector<float> &inputBatch)
 {
   // Updating NN inputs
   _evaluationNeuralNetwork->setInput({inputBatch});
@@ -213,7 +213,7 @@ std::vector<double> DeepGD::getEvaluation(const std::vector<double> &inputBatch)
   return _evaluationNeuralNetwork->_outputValues[0];
 }
 
-std::vector<double> DeepGD::getGradients(const std::vector<double> &outputDiffs)
+std::vector<float> DeepGD::getGradients(const std::vector<float> &outputDiffs)
 {
   // Backward propagating the gradients through the training neural network
   _evaluationNeuralNetwork->backward(outputDiffs);

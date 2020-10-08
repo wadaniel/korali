@@ -78,7 +78,7 @@ void ReinforcementLearning::runEpisode(Sample &sample)
   size_t actionCount = 0;
 
   // Storage for the action
-  std::vector<double> action(_actionVectorSize);
+  std::vector<float> action(_actionVectorSize);
 
   // Reserving storage for sending back experiences
   knlohmann::json experience;
@@ -88,7 +88,7 @@ void ReinforcementLearning::runEpisode(Sample &sample)
   sample["Metadata"] = knlohmann::json();
 
   // Storage to keep track of cumulative reward
-  double cumulativeReward = 0.0;
+  float cumulativeReward = 0.0;
 
   // Saving experiences
   sample["Is Terminal"] = false;
@@ -128,7 +128,7 @@ void ReinforcementLearning::runEpisode(Sample &sample)
     experience["Is Terminal"] = sample["Is Terminal"];
 
     // Adding to cumulative reward
-    cumulativeReward += sample["Reward"].get<double>();
+    cumulativeReward += sample["Reward"].get<float>();
 
     // If training, updating engine with the current experience
     if (sample["Mode"] == "Training")
@@ -161,10 +161,10 @@ void ReinforcementLearning::runEpisode(Sample &sample)
 void ReinforcementLearning::getAction(korali::Sample& sample)
 {
  // Getting p = U[0,1] for the epsilon strategy
- double p = _randomActionGenerator->getRandomNumber();
+ float p = _randomActionGenerator->getRandomNumber();
 
  // If p < e, then we choose the action randomly, with a uniform probability, among all possible actions.
- if (p < sample["Random Action Probability"].get<double>())
+ if (p < sample["Random Action Probability"].get<float>())
   getRandomAction(sample);
  else // Otherwise we take the action from the policy
   _agent->getAction(sample);

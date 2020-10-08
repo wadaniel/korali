@@ -226,7 +226,7 @@ void Experiment::finalize()
   co_delete(_thread);
 }
 
-std::vector<double> Experiment::getAction(const std::vector<double> &state)
+std::vector<float> Experiment::getAction(const std::vector<float> &state)
 {
   auto agent = dynamic_cast<solver::Agent *>(_k->_solver);
   if (agent != NULL)
@@ -235,13 +235,13 @@ std::vector<double> Experiment::getAction(const std::vector<double> &state)
     sample["State"] = state;
     sample["Mode"] == "Testing";
     agent->getAction(sample);
-    return sample["Action"].get<std::vector<double>>();
+    return sample["Action"].get<std::vector<float>>();
   }
   else
     KORALI_LOG_ERROR("This solver does not support getInferenceAction.\n");
 }
 
-std::vector<double> Experiment::getEvaluation(const std::vector<double> &inputBatch)
+std::vector<float> Experiment::getEvaluation(const std::vector<float> &inputBatch)
 {
   auto learner = dynamic_cast<solver::Learner *>(_k->_solver);
   if (learner != NULL)
@@ -250,7 +250,7 @@ std::vector<double> Experiment::getEvaluation(const std::vector<double> &inputBa
     KORALI_LOG_ERROR("This solver does not support evaluation operations.\n");
 }
 
-std::vector<double> Experiment::getGradients(const std::vector<double> &outputDiffs)
+std::vector<float> Experiment::getGradients(const std::vector<float> &outputDiffs)
 {
   auto learner = dynamic_cast<solver::Learner *>(_k->_solver);
   if (learner != NULL)

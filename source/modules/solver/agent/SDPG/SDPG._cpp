@@ -58,39 +58,21 @@ void SDPG::initializeAgent()
   * Initializing Action Optimizing Experiment
   *********************************************************************/
 
-  _actionExperiment["Problem"]["Type"] = "Optimization";
-  _actionExperiment["Problem"]["Objective Function"] = 0;
+  _actionOptimizer = new korali::fCMAES(_problem->_actionVectorSize);
+  _actionOptimizer->setSeed(_k->_randomSeed++);
 
   // Initializing experiment with an initial zero set
   for (size_t i = 0; i < _problem->_actionVectorSize; i++)
   {
     size_t varIdx = _problem->_actionVectorIndexes[i];
-    std::string name = _k->_variables[varIdx]->_name;
-    double lowerBound = _k->_variables[varIdx]->_lowerBound;
-    double upperBound = _k->_variables[varIdx]->_upperBound;
-    double initialMean = (lowerBound + upperBound)*0.5;
-    double initialStdDev = abs(upperBound - lowerBound)*0.1;
-   _actionExperiment["Variables"][i]["Name"] = name;
-   _actionExperiment["Variables"][i]["Lower Bound"] = lowerBound;
-   _actionExperiment["Variables"][i]["Upper Bound"] = upperBound;
-   _actionExperiment["Variables"][i]["Initial Value"] = initialMean;
-   _actionExperiment["Variables"][i]["Initial Mean"] = initialMean;
-   _actionExperiment["Variables"][i]["Initial Standard Deviation"] = initialStdDev;
+    _actionOptimizer->_lowerBounds[i] = _k->_variables[varIdx]->_lowerBound;
+    _actionOptimizer->_upperBounds[i] = _k->_variables[varIdx]->_upperBound;
+    _actionOptimizer->_initialMeans[i] = (_k->_variables[varIdx]->_lowerBound + _k->_variables[varIdx]->_upperBound)*0.5;
+    _actionOptimizer->_initialStandardDeviations[i] = abs(_k->_variables[varIdx]->_upperBound - _k->_variables[varIdx]->_lowerBound)*0.1;
   }
 
-  _actionExperiment["Solver"]["Type"] = "Optimizer/CMAES";
-  _actionExperiment["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 0.000001;
-  _actionExperiment["Console Output"]["Frequency"] = 0;
-  _actionExperiment["Console Output"]["Verbosity"] = "Silent";
-  _actionExperiment["File Output"]["Enabled"] = false;
-  _actionExperiment["Random Seed"] = _k->_randomSeed++;
-
-  // Running initialization to verify that the configuration is correct
-  engine.initialize(_actionExperiment);
-
-  // Getting pointer to the CMAES solver itself
-  _actionOptimizer = dynamic_cast<solver::optimizer::CMAES *>(_actionExperiment._solver);
-  _actionOptimizer->setInitialConfiguration();
+  // Termination Criteria
+  _actionOptimizer->_minValueDifferenceThreshold = 0.000001;
 
   /*********************************************************************
    * Initializing Policy-Related Structures
@@ -138,7 +120,7 @@ void SDPG::initializeAgent()
 void SDPG::getAction(korali::Sample &sample)
 {
   // Getting current state
-  auto state = sample["State"].get<std::vector<double>>();
+  auto state = sample["State"].get<std::vector<float>>();
 
   // Obtaining action from policy
   auto action = queryPolicy(state);
@@ -156,8 +138,8 @@ void SDPG::getAction(korali::Sample &sample)
       // Check whether the variable requires noise
       if (_k->_variables[varIdx]->_explorationNoiseEnabled == true)
       {
-        double w = _k->_variables[varIdx]->_explorationNoiseDistribution->getRandomNumber();
-        double noise = _k->_variables[varIdx]->_explorationNoiseTheta * _currentActionNoises[i] + w;
+        float w = _k->_variables[varIdx]->_explorationNoiseDistribution->getRandomNumber();
+        float noise = _k->_variables[varIdx]->_explorationNoiseTheta * _currentActionNoises[i] + w;
         action[i] += noise;
         //printf("Theta (%f) * Previous Noise: (%f) + W: (%f) = %f\n",  _k->_variables[varIdx]->_explorationNoiseTheta, _currentActionNoises[i], w, noise);
         _currentActionNoises[i] = noise;
@@ -169,10 +151,10 @@ void SDPG::getAction(korali::Sample &sample)
   sample["Action"] = action;
 }
 
-double SDPG::stateActionValueFunction(const std::vector<double> &state, const std::vector<double> &action)
+float SDPG::stateActionValueFunction(const std::vector<float> &state, const std::vector<float> &action)
 {
   // Storage to put together state and action
-  std::vector<double> stateActionInput(_problem->_stateVectorSize + _problem->_actionVectorSize);
+  std::vector<float> stateActionInput(_problem->_stateVectorSize + _problem->_actionVectorSize);
 
   // Forward propagating state/action through the critic
   for (size_t j = 0; j < state.size(); j++) stateActionInput[j] = state[j];
@@ -211,20 +193,20 @@ void SDPG::trainAgent()
    bool isTerminal = _experienceReplayHistory[expId]["Is Terminal"];
 
    // Getting experience's current state and action
-   std::vector<double> curState   = _experienceReplayHistory[expId]["State"];
-   std::vector<double> curAction  = _experienceReplayHistory[expId]["Action"];
-   std::vector<double> nextState  = isTerminal ? std::vector<double>() : _experienceReplayHistory[expId + 1]["State"].get<std::vector<double>>();
-   std::vector<double> bestAction = isTerminal ? std::vector<double>() : queryPolicy(nextState);
+   std::vector<float> curState   = _experienceReplayHistory[expId]["State"];
+   std::vector<float> curAction  = _experienceReplayHistory[expId]["Action"];
+   std::vector<float> nextState  = isTerminal ? std::vector<float>() : _experienceReplayHistory[expId + 1]["State"].get<std::vector<float>>();
+   std::vector<float> bestAction = isTerminal ? std::vector<float>() : queryPolicy(nextState);
 
    // Getting current reward
-   double curReward = _experienceReplayHistory[expId]["Reward"].get<double>();
+   float curReward = _experienceReplayHistory[expId]["Reward"].get<float>();
 
    /*****************************************
     * Critic Section
     *****************************************/
 
    // Calculating target Q value (solution) for Qnew on selected batch
-   double qStar = curReward;
+   float qStar = curReward;
 
    // If state is not terminal (next state is filled) then add Qnew to the Q value.
    if (isTerminal == false) qStar += _criticDiscountFactor * stateActionValueFunction(nextState, bestAction);
@@ -244,7 +226,7 @@ void SDPG::trainAgent()
   _criticLearner->finalize();
 
   // Keeping critic/policy statistics
-  _averageQStar = (double)_cumulativeQStar / (double)(_criticMiniBatchSize);
+  _averageQStar = (float)_cumulativeQStar / (float)(_criticMiniBatchSize);
 
   /****************************************************************************
  * If batch normalization is being used, we need to adjust mean and variances
@@ -252,8 +234,8 @@ void SDPG::trainAgent()
  ******************************************************************************/
 
   // Allocating memory for the mini batch set
-  std::vector<std::vector<std::vector<double>>> criticMiniBatches(_normalizationSteps);
-  std::vector<std::vector<std::vector<double>>> policyMiniBatches(_normalizationSteps);
+  std::vector<std::vector<std::vector<float>>> criticMiniBatches(_normalizationSteps);
+  std::vector<std::vector<std::vector<float>>> policyMiniBatches(_normalizationSteps);
 
   for (size_t i = 0; i < _normalizationSteps; i++)
   {
@@ -279,7 +261,7 @@ void SDPG::trainAgent()
       // Selecting a uniformly random selected, yet not repeated experience
       size_t expId = experienceReplayIndexes[i];
 
-      policyMiniBatches[step][i] = _experienceReplayHistory[expId]["State"].get<std::vector<double>>();
+      policyMiniBatches[step][i] = _experienceReplayHistory[expId]["State"].get<std::vector<float>>();
       for (size_t j = 0; j < _problem->_stateVectorSize; j++) criticMiniBatches[step][i][j] = _experienceReplayHistory[expId]["State"][j];
       for (size_t j = 0; j < _problem->_actionVectorSize; j++) criticMiniBatches[step][i][_problem->_stateVectorSize + j] = _experienceReplayHistory[expId]["Action"][j];
     }
@@ -302,18 +284,16 @@ void SDPG::trainAgent()
   for (size_t i = 0; i < _policyMiniBatchSize; i++)
   {
     size_t expId = experienceReplayIndexes[i];
-    std::vector<double> curState = _experienceReplayHistory[expId]["State"];
+    std::vector<float> curState = _experienceReplayHistory[expId]["State"];
 
-   _actionExperiment._currentGeneration = 1;
-   _actionOptimizer->initCovariance();
-   _actionOptimizer->_terminationCriteria.clear();
+   _actionOptimizer->reset();
 
    while (_actionOptimizer->checkTermination() == false)
    {
     _actionOptimizer->prepareGeneration();
 
     size_t candidateCount = _actionOptimizer->_samplePopulation.size();
-    std::vector<double> candidateEvaluations(candidateCount);
+    std::vector<float> candidateEvaluations(candidateCount);
 
     for (size_t j = 0; j < candidateCount; j++)
      candidateEvaluations[j] = stateActionValueFunction(curState, _actionOptimizer->_samplePopulation[j]);
@@ -355,14 +335,14 @@ void SDPG::trainAgent()
   _hyperparameters["Policy"] = newPolicyHyperparameters;
 }
 
-std::vector<double> SDPG::queryPolicy(const std::vector<double> &state)
+std::vector<float> SDPG::queryPolicy(const std::vector<float> &state)
 {
  return _policyLearner->getEvaluation({state});
 }
 
 void SDPG::updateHyperparameters(const knlohmann::json &hyperparameters)
 {
- _policyLearner->setHyperparameters(hyperparameters["Policy"].get<std::vector<double>>());
+ _policyLearner->setHyperparameters(hyperparameters["Policy"].get<std::vector<float>>());
 
  // Re-initializing action noises to zero
  size_t actionCount = _problem->_actionVectorIndexes.size();

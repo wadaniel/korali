@@ -10,16 +10,16 @@ namespace korali
 {
 namespace neuralNetwork
 {
-std::vector<double> Layer::generateInitialHyperparameters()
+std::vector<float> Layer::generateInitialHyperparameters()
 {
-  std::vector<double> hyperparameters;
+  std::vector<float> hyperparameters;
 
   // If this is not the initial layer, calculate hyperparameters for weight and bias operation
   if (_prevLayer != NULL)
   {
     // Setting value for this layer's xavier constant
-    double xavierConstant = sqrt(6.0) / sqrt(_nodeCount + _prevLayer->_nodeCount);
-    double initializationConstant = xavierConstant * _weightInitializationScaling;
+    float xavierConstant = sqrt(6.0) / sqrt(_nodeCount + _prevLayer->_nodeCount);
+    float initializationConstant = xavierConstant * _weightInitializationScaling;
 
     // Adding layer's weights hyperparameter values
     for (size_t i = 0; i < _nodeCount; i++)

@@ -107,7 +107,7 @@ void Agent::runGeneration()
       KORALI_SEND_MSG_TO_SAMPLE(agent, _hyperparameters);
 
     // Adding experience's reward to episode's reward
-    _currentReward += experience["Reward"].get<double>();
+    _currentReward += experience["Reward"].get<float>();
 
     // Increasing experience counts
     _currentExperienceCount++;
@@ -164,7 +164,7 @@ void Agent::runGeneration()
     // Calculating average testing reward
     _averageTestingReward = 0.0;
     for (size_t i = 0; i < _policyTestingEpisodes; i++)
-      _averageTestingReward += agents[i]["Cumulative Reward"].get<double>();
+      _averageTestingReward += agents[i]["Cumulative Reward"].get<float>();
     _averageTestingReward = _averageTestingReward / _policyTestingEpisodes;
   }
 

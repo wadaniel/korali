@@ -15,11 +15,11 @@ namespace learner
 {
 #ifdef _KORALI_USE_EIGEN
 /**
-  * @brief Converts a vector of doubles to Eigen format
+  * @brief Converts a vector of floats to Eigen format
   * @param v the vector to convert
   * @return An Eigen vector type
  */
-static Eigen::VectorXd toEigen(const std::vector<double> &v)
+static Eigen::VectorXd toEigen(const std::vector<float> &v)
 {
   Eigen::VectorXd ev(v.size());
   for (size_t i = 0; i < v.size(); ++i)
@@ -73,8 +73,8 @@ void GaussianProcess::initialize()
   _koraliExperiment["Random Seed"] = _k->_randomSeed++;
 
   // Pass the training data from korali to the GP library
-  double inData[_gpInputDimension];
-  double outData;
+  float inData[_gpInputDimension];
+  float outData;
 
   // Running initialization to verify that the configuration is correct
   korali::Engine engine;
@@ -104,7 +104,7 @@ void GaussianProcess::runSample(Sample &sample, libgp::GaussianProcess *gp)
   #ifdef _KORALI_USE_EIGEN
 
   size_t gpParameterDimension = gp->covf().get_param_dim();
-  const Eigen::VectorXd p = toEigen(sample["Parameters"].get<std::vector<double>>());
+  const Eigen::VectorXd p = toEigen(sample["Parameters"].get<std::vector<float>>());
 
   gp->covf().set_loghyper(p);
 
@@ -124,7 +124,7 @@ void GaussianProcess::runGeneration()
   _koraliExperiment["Solver"]["Termination Criteria"]["Max Generations"] = _koraliExperiment._currentGeneration + 1;
   korali::Engine engine;
   engine.resume(_koraliExperiment);
-  _gpHyperparameters = _koraliExperiment["Results"]["Best Sample"]["Parameters"].get<std::vector<double>>();
+  _gpHyperparameters = _koraliExperiment["Results"]["Best Sample"]["Parameters"].get<std::vector<float>>();
 }
 
 void GaussianProcess::printGenerationAfter()
@@ -132,9 +132,9 @@ void GaussianProcess::printGenerationAfter()
   return;
 }
 
-std::vector<double> GaussianProcess::getEvaluation(const std::vector<double> &input)
+std::vector<float> GaussianProcess::getEvaluation(const std::vector<float> &input)
 {
-  std::vector<double> output(2);
+  std::vector<float> output(2);
 
 #ifdef _KORALI_USE_LIBGP
 
@@ -148,12 +148,12 @@ std::vector<double> GaussianProcess::getEvaluation(const std::vector<double> &in
   return output;
 }
 
-std::vector<double> GaussianProcess::getHyperparameters()
+std::vector<float> GaussianProcess::getHyperparameters()
 {
   return _gpHyperparameters;
 }
 
-void GaussianProcess::setHyperparameters(const std::vector<double> &hyperparameters)
+void GaussianProcess::setHyperparameters(const std::vector<float> &hyperparameters)
 {
   _gpHyperparameters = hyperparameters;
 }

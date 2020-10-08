@@ -32,7 +32,7 @@ class Agent : public Solver
   /**
    * @brief The value to use for probability of random actions.
    */
-   double _randomActionProbabilityEffectiveValue;
+   float _randomActionProbabilityEffectiveValue;
 
   /**
    * @brief Gets the next action for the agent, based on the state and current policy, for training purposes (may contain noise)

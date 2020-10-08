@@ -65,8 +65,8 @@ void NeuralNetwork::initialize()
   for (size_t i = 0; i < layerCount; i++) _normalizationParameterCount += _layers[i]->_normalizationParameterCount;
 
   // If we use batch normalization, we set mean and variances to neutral values
-  std::vector<double> meanData(_normalizationParameterCount, 0.0);
-  std::vector<double> varianceData(_normalizationParameterCount, 1.0);
+  std::vector<float> meanData(_normalizationParameterCount, 0.0);
+  std::vector<float> varianceData(_normalizationParameterCount, 1.0);
 
   setNormalizationMeans(meanData);
   setNormalizationVariances(varianceData);
@@ -86,10 +86,10 @@ void NeuralNetwork::initialize()
   _isInitialized = true;
 }
 
-std::vector<double> NeuralNetwork::generateInitialHyperparameters()
+std::vector<float> NeuralNetwork::generateInitialHyperparameters()
 {
   // Setting initial values for hyperparameters
-  std::vector<double> initialHyperparameters;
+  std::vector<float> initialHyperparameters;
 
   for (size_t i = 0; i < _layers.size(); i++)
   {
@@ -100,7 +100,7 @@ std::vector<double> NeuralNetwork::generateInitialHyperparameters()
   return initialHyperparameters;
 }
 
-void NeuralNetwork::setInput(const std::vector<std::vector<double>> &input)
+void NeuralNetwork::setInput(const std::vector<std::vector<float>> &input)
 {
 #ifdef _KORALI_USE_ONEDNN
 
@@ -130,7 +130,7 @@ void NeuralNetwork::setInput(const std::vector<std::vector<double>> &input)
 #endif
 }
 
-void NeuralNetwork::setHyperparameters(const std::vector<double> &hyperparameters)
+void NeuralNetwork::setHyperparameters(const std::vector<float> &hyperparameters)
 {
 #ifdef _KORALI_USE_ONEDNN
 
@@ -173,10 +173,10 @@ void NeuralNetwork::setHyperparameters(const std::vector<double> &hyperparameter
 #endif
 }
 
-std::vector<double> NeuralNetwork::getHyperparameters()
+std::vector<float> NeuralNetwork::getHyperparameters()
 {
   // Creating single precision floating-point version of the hyperparameters
-  auto fParams = std::vector<float>(_hyperparameterCount);
+  auto params = std::vector<float>(_hyperparameterCount);
 
 #ifdef _KORALI_USE_ONEDNN
 
@@ -211,11 +211,11 @@ std::vector<double> NeuralNetwork::getHyperparameters()
 
 #endif
 
-  // Returning the hyperparameters converted to double-precision
-  return std::vector<double>(fParams.begin(), fParams.end());
+  // Returning the hyperparameters converted to float-precision
+  return params;
 }
 
-void NeuralNetwork::backward(const std::vector<double> &outputDifferential)
+void NeuralNetwork::backward(const std::vector<float> &outputDifferential)
 {
 #ifdef _KORALI_USE_ONEDNN
 
@@ -251,7 +251,7 @@ void NeuralNetwork::backward(const std::vector<double> &outputDifferential)
 #endif
 }
 
-std::vector<double> NeuralNetwork::getNormalizationMeans()
+std::vector<float> NeuralNetwork::getNormalizationMeans()
 {
   // Creating single precision floating-point version of the hyperparameters
   auto fParams = std::vector<float>(_normalizationParameterCount);
@@ -270,11 +270,11 @@ std::vector<double> NeuralNetwork::getNormalizationMeans()
 
 #endif
 
-  // Returning the hyperparameters converted to double-precision
-  return std::vector<double>(fParams.begin(), fParams.end());
+  // Returning the hyperparameters converted to float-precision
+  return std::vector<float>(fParams.begin(), fParams.end());
 }
 
-void NeuralNetwork::setNormalizationMeans(const std::vector<double> &normalizationMeans)
+void NeuralNetwork::setNormalizationMeans(const std::vector<float> &normalizationMeans)
 {
 #ifdef _KORALI_USE_ONEDNN
 
@@ -297,10 +297,10 @@ void NeuralNetwork::setNormalizationMeans(const std::vector<double> &normalizati
 #endif
 }
 
-void NeuralNetwork::normalize(const std::vector<std::vector<std::vector<double>>> &miniBatches)
+void NeuralNetwork::normalize(const std::vector<std::vector<std::vector<float>>> &miniBatches)
 {
-  std::vector<double> newMeans(_normalizationParameterCount, 0.0);
-  std::vector<double> newVariances(_normalizationParameterCount, 0.0);
+  std::vector<float> newMeans(_normalizationParameterCount, 0.0);
+  std::vector<float> newVariances(_normalizationParameterCount, 0.0);
 
   for (size_t step = 0; step < miniBatches.size(); step++)
   {
@@ -319,8 +319,8 @@ void NeuralNetwork::normalize(const std::vector<std::vector<std::vector<double>>
   // Calculating the actual mean and variance averages
   for (size_t i = 0; i < _normalizationParameterCount; i++)
   {
-    newMeans[i] = newMeans[i] / (double)miniBatches.size();
-    newVariances[i] = newVariances[i] / (double)(miniBatches.size() - 1.0);
+    newMeans[i] = newMeans[i] / (float)miniBatches.size();
+    newVariances[i] = newVariances[i] / (float)(miniBatches.size() - 1.0);
   }
 
   // Setting the new adjusted means and variances
@@ -328,7 +328,7 @@ void NeuralNetwork::normalize(const std::vector<std::vector<std::vector<double>>
   setNormalizationVariances(newVariances);
 }
 
-std::vector<double> NeuralNetwork::getNormalizationVariances()
+std::vector<float> NeuralNetwork::getNormalizationVariances()
 {
   // Creating single precision floating-point version of the hyperparameters
   auto fParams = std::vector<float>(_normalizationParameterCount);
@@ -347,11 +347,11 @@ std::vector<double> NeuralNetwork::getNormalizationVariances()
 
 #endif
 
-  // Returning the hyperparameters converted to double-precision
-  return std::vector<double>(fParams.begin(), fParams.end());
+  // Returning the hyperparameters converted to float-precision
+  return std::vector<float>(fParams.begin(), fParams.end());
 }
 
-void NeuralNetwork::setNormalizationVariances(const std::vector<double> &normalizationVariances)
+void NeuralNetwork::setNormalizationVariances(const std::vector<float> &normalizationVariances)
 {
 #ifdef _KORALI_USE_ONEDNN
 
@@ -415,10 +415,10 @@ void NeuralNetwork::forward()
 #endif
 }
 
-std::vector<double> NeuralNetwork::getHyperparameterGradients()
+std::vector<float> NeuralNetwork::getHyperparameterGradients()
 {
   // Copying back the gradients and biases back
-  std::vector<float> gradientVectorFloat(_hyperparameterCount);
+  std::vector<float> gradientVector(_hyperparameterCount);
 
 #ifdef _KORALI_USE_ONEDNN
 
@@ -435,13 +435,13 @@ std::vector<double> NeuralNetwork::getHyperparameterGradients()
       const memory::dim IC = _layers[i - 1]->_nodeCount;
 
       // Reading weight gradients
-      read_from_dnnl_memory(&gradientVectorFloat[currPos], _layers[i]->_weightsDiffMem);
+      read_from_dnnl_memory(&gradientVector[currPos], _layers[i]->_weightsDiffMem);
       currPos += OC * IC;
 
       // If not using layer normalization, we get the bias gradients
       if (_layers[i]->_batchNormalizationEnabled == false)
       {
-        read_from_dnnl_memory(&gradientVectorFloat[currPos], _layers[i]->_biasDiffMem);
+        read_from_dnnl_memory(&gradientVector[currPos], _layers[i]->_biasDiffMem);
         currPos += OC;
       }
     }
@@ -449,20 +449,17 @@ std::vector<double> NeuralNetwork::getHyperparameterGradients()
     // If using layer normalization, we get normalization gradients
     if (_layers[i]->_batchNormalizationEnabled == true)
     {
-      read_from_dnnl_memory(&gradientVectorFloat[currPos], _layers[i]->_batchNormalizationScaleShiftDiffMem);
+      read_from_dnnl_memory(&gradientVector[currPos], _layers[i]->_batchNormalizationScaleShiftDiffMem);
       currPos += 2 * OC;
     }
   }
 
 #endif
 
-  // Getting the double version of the gradient vector
-  std::vector<double> gradientVector(gradientVectorFloat.begin(), gradientVectorFloat.end());
-
   return gradientVector;
 }
 
-std::vector<double> NeuralNetwork::getDataGradients()
+std::vector<float> NeuralNetwork::getDataGradients()
 {
 #ifdef _KORALI_USE_ONEDNN
 
@@ -475,10 +472,7 @@ std::vector<double> NeuralNetwork::getDataGradients()
   else
     read_from_dnnl_memory(dataDiff.data(), _layers[0]->_nodeDiffMem);
 
-  // Getting the double version of the gradient vector
-  std::vector<double> gradientVector(dataDiff.begin(), dataDiff.end());
-
-  return gradientVector;
+  return dataDiff;
 
 #endif
 }

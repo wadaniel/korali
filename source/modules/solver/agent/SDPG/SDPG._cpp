@@ -28,7 +28,7 @@ void SDPG::initializeAgent()
   _criticExperiment["Problem"]["Type"] = "Supervised Learning";
 
   _criticExperiment["Solver"]["Type"] = "Learner/DeepGD";
-  _criticExperiment["Solver"]["Optimizer"] = _criticOptimizer;
+  _criticExperiment["Solver"]["Learning Rate"] = _criticLearningRate;
   _criticExperiment["Solver"]["Loss Function"] = "Mean Squared Error";
   _criticExperiment["Solver"]["Steps Per Generation"] = 1;
   _criticExperiment["Solver"]["Neural Network"] = _criticNeuralNetwork;
@@ -73,7 +73,6 @@ void SDPG::initializeAgent()
 
   // Termination Criteria
   _actionOptimizer->_minValueDifferenceThreshold = 0.000001;
-  _actionOptimizer->reset();
 
   /*********************************************************************
    * Initializing Policy-Related Structures
@@ -85,7 +84,7 @@ void SDPG::initializeAgent()
 
    _policyExperiment["Solver"]["Type"] = "Learner/DeepGD";
    _policyExperiment["Solver"]["Loss Function"] = "Mean Squared Error";
-   _policyExperiment["Solver"]["Optimizer"] = _policyOptimizer;
+   _policyExperiment["Solver"]["Learning Rate"] = _policyLearningRate;
    _policyExperiment["Solver"]["Steps Per Generation"] = 1;
    _policyExperiment["Solver"]["Neural Network"] = _policyNeuralNetwork;
 
@@ -227,7 +226,7 @@ void SDPG::trainAgent()
   _criticLearner->finalize();
 
   // Keeping critic/policy statistics
-  _averageQStar = (float)_cumulativeQStar / (float)(_criticMiniBatchSize);
+  _averageQStar = _cumulativeQStar / (float)_criticMiniBatchSize;
 
   /****************************************************************************
  * If batch normalization is being used, we need to adjust mean and variances

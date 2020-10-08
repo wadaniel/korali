@@ -91,7 +91,6 @@ fCMAES::fCMAES(size_t nVars, size_t populationSize, size_t muSize)
  _gsl_evec = gsl_matrix_alloc(_nVars, _nVars);
  _gsl_work = gsl_eigen_symmv_alloc(_nVars);
 
- reset();
 }
 
 void fCMAES::reset()
@@ -109,15 +108,15 @@ void fCMAES::reset()
   {
     if (std::isfinite(_initialMeans[i]) == false)
     {
-      if (std::isfinite(_lowerBounds[i]) == false) { fprintf(stderr, "Initial (Mean) Value of variable \'%lu\' not defined, and cannot be inferred because variable lower bound is not finite.\n", i); exit(-1);}
-      if (std::isfinite(_upperBounds[i]) == false) { fprintf(stderr, "Initial (Mean) Value of variable \'%lu\' not defined, and cannot be inferred because variable upper bound is not finite.\n", i); exit(-1);}
+      if (std::isfinite(_lowerBounds[i]) == false) { fprintf(stderr, "Initial (Mean) Value of variable \'%lu\' not defined, and cannot be inferred because variable lower bound is not finite.\n", i); std::abort();}
+      if (std::isfinite(_upperBounds[i]) == false) { fprintf(stderr, "Initial (Mean) Value of variable \'%lu\' not defined, and cannot be inferred because variable upper bound is not finite.\n", i); std::abort();}
       _initialMeans[i] = (_upperBounds[i] + _lowerBounds[i]) * 0.5;
     }
 
     if (std::isfinite(_initialStandardDeviations[i]) == false)
     {
-      if (std::isfinite(_lowerBounds[i]) == false) { fprintf(stderr, "Initial (Mean) Value of variable \'%lu\' not defined, and cannot be inferred because variable lower bound is not finite.\n", i); exit(-1);}
-      if (std::isfinite(_upperBounds[i]) == false) { fprintf(stderr, "Initial Standard Deviation \'%lu\' not defined, and cannot be inferred because variable upper bound is not finite.\n", i); exit(-1);}
+      if (std::isfinite(_lowerBounds[i]) == false) { fprintf(stderr, "Initial (Mean) Value of variable \'%lu\' not defined, and cannot be inferred because variable lower bound is not finite.\n", i); std::abort();}
+      if (std::isfinite(_upperBounds[i]) == false) { fprintf(stderr, "Initial Standard Deviation \'%lu\' not defined, and cannot be inferred because variable upper bound is not finite.\n", i); std::abort();}
       _initialStandardDeviations[i] = (_upperBounds[i] - _lowerBounds[i]) * 0.3;
     }
   }
@@ -147,7 +146,7 @@ void fCMAES::initMuWeights(size_t numsamplesmu)
   else if (_muType == "Logarithmic")
     for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] = log(std::max((float)numsamplesmu, 0.5f * _populationSize) + 0.5f) - log(i + 1.0f);
   else
-    { fprintf(stderr, "Invalid setting of Mu Type (%s) (Linear, Equal, or Logarithmic accepted).", _muType.c_str()); exit(-1);}
+    { fprintf(stderr, "Invalid setting of Mu Type (%s) (Linear, Equal, or Logarithmic accepted).", _muType.c_str()); std::abort();}
 
   // Normalize weights vector and set mueff
   float s1 = 0.0;
@@ -395,7 +394,7 @@ void fCMAES::updateSigma()
   if (_currentBestValue == _valueVector[_sortingIndex[(int)_muValue]])
   {
     _sigma *= exp(0.2 + _sigmaCumulationFactor / _dampFactor);
-    fprintf(stderr, "Sigma increased due to equal function values.\n");
+    //fprintf(stderr, "Sigma increased due to equal function values.\n");
   }
 
   /* upper bound check for _sigma */
@@ -403,11 +402,11 @@ void fCMAES::updateSigma()
 
   if (_sigma > _upperBound)
   {
-    fprintf(stderr, "[fCMAES] Sigma exceeding inital value of _sigma (%f > %f), increase Initial Standard Deviation of variables.\n", _sigma, _upperBound);
+    //fprintf(stderr, "[fCMAES] Sigma exceeding inital value of _sigma (%f > %f), increase Initial Standard Deviation of variables.\n", _sigma, _upperBound);
     if (_isSigmaBounded)
     {
       _sigma = _upperBound;
-      fprintf(stderr, "[fCMAES] Sigma set to upper bound (%f) due to solver configuration 'Is Sigma Bounded' = 'true'.\n", _sigma);
+      //fprintf(stderr, "[fCMAES] Sigma set to upper bound (%f) due to solver configuration 'Is Sigma Bounded' = 'true'.\n", _sigma);
     }
   }
 }

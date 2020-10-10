@@ -1,12 +1,6 @@
 #include "engine.hpp"
-#include "modules/solver/agent/SDPG/SDPG.hpp"
+#include "modules/solver/agent/continuous/SDPG/SDPG.hpp"
 #include "sample/sample.hpp"
-
-/****************************************
- * Things to fix:
- * - All samples use their own pseudorandom generators
- * - All seeds must be replicable when restarting a job
- *****************************************/
 
 namespace korali
 {
@@ -14,6 +8,9 @@ namespace solver
 {
 namespace agent
 {
+namespace continuous
+{
+
 void SDPG::initializeAgent()
 {
   // Getting continuous problem pointer
@@ -387,8 +384,7 @@ void SDPG::printAgentInformation()
   _policyExperiment._logger->setVerbosityLevel("Silent");
 }
 
+} // namespace continuous
 } // namespace agent
-
 } // namespace solver
-
 } // namespace korali

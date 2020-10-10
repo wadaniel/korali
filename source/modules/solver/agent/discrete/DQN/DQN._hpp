@@ -1,8 +1,8 @@
-#ifndef _KORALI_AGENT_DQN_HPP_
-#define _KORALI_AGENT_DQN_HPP_
+#ifndef _KORALI_AGENT_DISCRETE_DQN_HPP_
+#define _KORALI_AGENT_DISCRETE_DQN_HPP_
 
 #include "modules/problem/reinforcementLearning/discrete/discrete.hpp"
-#include "modules/solver/agent/agent.hpp"
+#include "modules/solver/agent/discrete/discrete.hpp"
 
 namespace korali
 {
@@ -10,7 +10,10 @@ namespace solver
 {
 namespace agent
 {
-class DQN : public Agent
+namespace discrete
+{
+
+class DQN : public Discrete
 {
   public:
 
@@ -48,8 +51,9 @@ class DQN : public Agent
   void initializeAgent() override;
 };
 
+} // namespace discrete
 } // namespace agent
 } // namespace solver
 } // namespace korali
 
-#endif // _KORALI_AGENT_DQN_HPP_
+#endif // _KORALI_AGENT_DISCRETE_DQN_HPP_

@@ -26,7 +26,6 @@ def getCXXVariableName(v):
   cVarName = '_' + cVarName[0].lower() + cVarName[1:]
   return cVarName
 
-
 def getVariablePath(v):
   cVarPath = ''
   for name in v["Name"]:
@@ -510,7 +509,6 @@ modulesDir = koraliDir + '/modules/'
 
 # modules List
 detectedModules = []
-detectedParents = set()
 variableDeclarationList = ''
 variableDeclarationSet = set()
 
@@ -543,7 +541,6 @@ for moduleDir, relDir, fileNames in os.walk(modulesDir):
       ####### Adding module and parent to list
 
       detectedModules.append(moduleConfig)
-      detectedParents.add(moduleConfig["Parent Class"]) 
 
       ###### Producing module code
 
@@ -673,39 +670,6 @@ for moduleDir, relDir, fileNames in os.walk(modulesDir):
           moduleBaseCodeString = file.read()
         moduleBaseCodeString += '\n\n' + moduleCodeString
         save_if_different(moduleNewCodeFile, moduleBaseCodeString)
-
-###### Updating module source file
-
-moduleBaseCodeFileName = modulesDir + '/module._cpp'
-moduleNewCodeFile = modulesDir + '/module.cpp'
-baseFileTime = os.path.getmtime(moduleBaseCodeFileName)
-newFileTime = baseFileTime
-if (os.path.exists(moduleNewCodeFile)):
-  newFileTime = os.path.getmtime(moduleNewCodeFile)
-
-moduleIncludeList = ''
-moduleDetectionList = ''
-
-for module in detectedModules:
- if (not module["Class"] in detectedParents):
-  moduleIncludeList += '#include "' + module["Header Filename"] + '" \n'
-  moduleDetectionList += '  if(moduleType == "' + module["Option Name"] + '") module = new ' + ''.join(n + '::' for n in module["Namespace"]) + module["Class"] + '();\n'
-
-if (baseFileTime >= newFileTime):
-  with open(moduleBaseCodeFileName, 'r') as file:
-   moduleBaseCodeString = file.read()
-  newBaseString = moduleBaseCodeString.replace('// Module Include List', moduleIncludeList)
-  newBaseString = newBaseString.replace(' // Module Selection List', moduleDetectionList)
-  save_if_different(moduleNewCodeFile, newBaseString)
-
-###### Updating module header file
-
-moduleBaseHeaderFileName = modulesDir + '/module._hpp'
-moduleNewHeaderFile = modulesDir + '/module.hpp'
-with open(moduleBaseHeaderFileName, 'r') as file:
-  moduleBaseHeaderString = file.read()
-newBaseString = moduleBaseHeaderString
-save_if_different(moduleNewHeaderFile, newBaseString)
 
 ###### Updating variable header file
 

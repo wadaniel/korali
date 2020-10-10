@@ -1,12 +1,6 @@
 #include "engine.hpp"
-#include "modules/solver/agent/DQN/DQN.hpp"
+#include "modules/solver/agent/discrete/DQN/DQN.hpp"
 #include "sample/sample.hpp"
-
-/****************************************
- * Things to fix:
- * - All samples use their own pseudorandom generators
- * - All seeds must be replicable when restarting a job
- *****************************************/
 
 namespace korali
 {
@@ -14,6 +8,9 @@ namespace solver
 {
 namespace agent
 {
+namespace discrete
+{
+
 void DQN::initializeAgent()
 {
   // Getting discrete problem pointer
@@ -233,8 +230,7 @@ void DQN::printAgentInformation()
 
 }
 
+} // namespace discrete
 } // namespace agent
-
 } // namespace solver
-
 } // namespace korali

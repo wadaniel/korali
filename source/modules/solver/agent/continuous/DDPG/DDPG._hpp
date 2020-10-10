@@ -1,8 +1,8 @@
-#ifndef _KORALI_AGENT_DISCRETE_HPP_
-#define _KORALI_AGENT_DISCRETE_HPP_
+#ifndef _KORALI_AGENT_CONTINUOUS_DDPG_HPP_
+#define _KORALI_AGENT_CONTINUOUS_DDPG_HPP_
 
-#include "modules/problem/reinforcementLearning/discrete/discrete.hpp"
-#include "modules/solver/agent/ACER/ACER.hpp"
+#include "modules/solver/agent/continuous/continuous.hpp"
+#include "modules/problem/reinforcementLearning/continuous/continuous.hpp"
 
 namespace korali
 {
@@ -10,16 +10,17 @@ namespace solver
 {
 namespace agent
 {
-namespace acer
+namespace continuous
 {
 
-class Discrete : public ACER
+class DDPG : public Continuous
 {
   public:
+
   /**
-  * @brief Storage for the pointer to the (discrete) learning problem
+  * @brief Storage for the pointer to the (continuous) learning problem
   */
-  problem::reinforcementLearning::Discrete *_discreteProblem;
+  problem::reinforcementLearning::Continuous *_continuousProblem;
 
   /**
    * @brief Pointer to training experiment's problem
@@ -32,12 +33,12 @@ class Discrete : public ACER
   learner::DeepGD *_criticLearner;
 
   /**
-   * @brief Korali experiment for the training of the Q(s,a)
+   * @brief Korali experiment for the training of the Qvalue-estimator
    */
   korali::Experiment _criticExperiment;
 
   /**
-  * @brief Korali experiment for P(a | s) for all actions
+  * @brief Korali experiment for argmax_action(Q) based on a trained Q-Network
   */
   korali::Experiment _policyExperiment;
 
@@ -52,24 +53,22 @@ class Discrete : public ACER
   problem::SupervisedLearning *_policyProblem;
 
   /**
-   * @brief Variable to calculate the total number of actions in the action space
+   * @brief Storage for statistical data of the policy gradients
    */
-  size_t _actionCount;
+  std::vector<float> _avgGradients;
 
   /**
-   * @brief Calculates the state value function V(s) = Expectation_a [ Q(s,a) | s ] of a given experience using the latest critic
-   * @param state state to evaluate
-   * @return The value of the V(s)
+   * @brief Variable to keep track of the current noise added to the action
    */
-  float stateValueFunction(const std::vector<float> &state);
+  std::vector<float> _currentActionNoises;
 
   /**
    * @brief Calculates the state+action value function Q(s,a) = Expectation_s,a [ R | s,a ] of a given experience using the latest critic
    * @param state state to evaluate
-   * @param actionIdx action to evaluate
+   * @param action action to evaluate
    * @return The value of Q(s,a)
    */
-  float stateActionValueFunction(const std::vector<float> &state, const size_t &actionIdx);
+  float stateActionValueFunction(const std::vector<float> &state, const std::vector<float> &action);
 
   /**
    * @brief Function to query policy and get the best action for the given state
@@ -78,16 +77,16 @@ class Discrete : public ACER
    */
   std::vector<float> queryPolicy(const std::vector<float> &state);
 
-  void processTrajectory(size_t startId, size_t endId) override;
   void getAction(korali::Sample &sample) override;
   void updateHyperparameters(const knlohmann::json &hyperparameters) override;
+  void trainAgent() override;
   void printAgentInformation() override;
   void initializeAgent() override;
 };
 
-} // namespace acer
+} // namespace continuous
 } // namespace agent
 } // namespace solver
 } // namespace korali
 
-#endif // _KORALI_AGENT_DISCRETE_HPP_
+#endif // _KORALI_AGENT_CONTINUOUS_DDPG_HPP_

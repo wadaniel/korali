@@ -47,7 +47,7 @@ e["Variables"][5]["Exploration Noise"]["Theta"] = 0.05
 
 ### Defining Agent Configuration 
 
-e["Solver"]["Type"] = "Agent/SDPG"
+e["Solver"]["Type"] = "Agent/Continuous/SDPG"
 e["Solver"]["Normalization Steps"] = 32
 e["Solver"]["Trajectory Size"] = 1
 e["Solver"]["Optimization Steps Per Trajectory"] = 1

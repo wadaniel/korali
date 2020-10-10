@@ -1,7 +1,8 @@
-#ifndef _KORALI_AGENT_DDPG_HPP_
-#define _KORALI_AGENT_DDPG_HPP_
+#ifndef _KORALI_AGENT_CONTINUOUS_SDPG_HPP_
+#define _KORALI_AGENT_CONTINUOUS_SDPG_HPP_
 
-#include "modules/solver/agent/agent.hpp"
+#include "auxiliar/optimizers/fCMAES.hpp"
+#include "modules/solver/agent/continuous/continuous.hpp"
 #include "modules/problem/reinforcementLearning/continuous/continuous.hpp"
 
 namespace korali
@@ -10,7 +11,10 @@ namespace solver
 {
 namespace agent
 {
-class DDPG : public Agent
+namespace continuous
+{
+
+class SDPG : public Continuous
 {
   public:
 
@@ -35,6 +39,11 @@ class DDPG : public Agent
   korali::Experiment _criticExperiment;
 
   /**
+   * @brief Korali optimizer for finding the optimal action as per the critic
+   */
+  korali::fCMAES *_actionOptimizer;
+
+  /**
   * @brief Korali experiment for argmax_action(Q) based on a trained Q-Network
   */
   korali::Experiment _policyExperiment;
@@ -48,11 +57,6 @@ class DDPG : public Agent
    * @brief Pointer to actor's experiment problem
    */
   problem::SupervisedLearning *_policyProblem;
-
-  /**
-   * @brief Storage for statistical data of the policy gradients
-   */
-  std::vector<float> _avgGradients;
 
   /**
    * @brief Variable to keep track of the current noise added to the action
@@ -81,8 +85,9 @@ class DDPG : public Agent
   void initializeAgent() override;
 };
 
+} // namespace continuous
 } // namespace agent
 } // namespace solver
 } // namespace korali
 
-#endif // _KORALI_AGENT_DDPG_HPP_
+#endif // _KORALI_AGENT_CONTINUOUS_SDPG_HPP_

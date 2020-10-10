@@ -19,11 +19,6 @@ class SDPG : public Continuous
   public:
 
   /**
-  * @brief Storage for the pointer to the (continuous) learning problem
-  */
-  problem::reinforcementLearning::Continuous *_continuousProblem;
-
-  /**
    * @brief Pointer to training experiment's problem
    */
   problem::SupervisedLearning *_criticProblem;

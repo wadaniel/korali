@@ -18,11 +18,6 @@ class DQN : public Discrete
   public:
 
   /**
-  * @brief Storage for the pointer to the (discrete) learning problem
-  */
-  problem::reinforcementLearning::Discrete *_discreteProblem;
-
-  /**
    * @brief Pointer to training experiment's problem
    */
   problem::SupervisedLearning *_criticProblem;

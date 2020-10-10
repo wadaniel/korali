@@ -93,26 +93,18 @@ void DeepGD::runGeneration()
   std::vector<float> lossDiff(batchSize * solutionSize);
 
   // Assigning values to evaluation and gradients, depending on the loss function selected
-  if (_lossFunction == "Direct")
-  {
-    for (size_t i = 0; i < batchSize; i++)
-      for (size_t j = 0; j < solutionSize; j++)
-        lossDiff[i * solutionSize + j] = _problem->_solution[i][j];
-  }
+  for (size_t i = 0; i < batchSize; i++)
+    for (size_t j = 0; j < solutionSize; j++)
+    {
+     float diff = 0.0;
+     if (_lossFunction == "Direct") diff = _problem->_solution[i][j];
+     if (_lossFunction == "Mean Squared Error") diff = _problem->_solution[i][j] - _trainingNeuralNetwork->_outputValues[i][j];
+      lossDiff[i * solutionSize + j] = diff;
+      _currentLoss += diff*diff;
+    }
 
-  if (_lossFunction == "Mean Squared Error")
-  {
-    for (size_t i = 0; i < batchSize; i++)
-      for (size_t j = 0; j < solutionSize; j++)
-      {
-        float diff = _problem->_solution[i][j] - _trainingNeuralNetwork->_outputValues[i][j];
-        lossDiff[i * solutionSize + j] = diff;
-        _currentLoss += diff * diff;
-      }
-
-    // Saving the negative of the error because we want to minimize it
-    _currentLoss = _currentLoss / ((float)batchSize * 2);
-  }
+  // Averaging the loss across the batch size
+  _currentLoss = _currentLoss / ((float)batchSize * 2.0f);
 
   // Backward propagating the gradients through the training neural network
   _trainingNeuralNetwork->backward(lossDiff);

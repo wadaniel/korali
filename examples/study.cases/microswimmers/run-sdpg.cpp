@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
   e["Variables"][14]["Exploration Noise"]["Enabled"] = true;
   e["Variables"][14]["Exploration Noise"]["Distribution"]["Type"] = "Univariate/Normal";
   e["Variables"][14]["Exploration Noise"]["Distribution"]["Mean"] = 0.0;
-  e["Variables"][14]["Exploration Noise"]["Distribution"]["Standard Deviation"] = (upperBounds[0] - lowerBounds[0]) * 0.01;
+  e["Variables"][14]["Exploration Noise"]["Distribution"]["Standard Deviation"] = (upperBounds[0] - lowerBounds[0]) * 0.05;
   e["Variables"][14]["Exploration Noise"]["Theta"] = 0.05;
 
   e["Variables"][15]["Name"] = "Rotation X";
@@ -77,23 +77,24 @@ int main(int argc, char *argv[])
   e["Solver"]["Trajectory Size"] = 1;
   e["Solver"]["Optimization Steps Per Trajectory"] = 1;
 
-  e["Solver"]["Random Action Probability"]["Initial Value"] = 0.5;
+  e["Solver"]["Random Action Probability"]["Initial Value"] = 0.01;
   e["Solver"]["Random Action Probability"]["Target Value"] = 0.01;
-  e["Solver"]["Random Action Probability"]["Decrease Rate"] = 0.05;
+  e["Solver"]["Random Action Probability"]["Decrease Rate"] = 0.00;
 
   ////// Defining the configuration of replay memory
 
-  e["Solver"]["Experience Replay"]["Start Size"] =   1000;
-  e["Solver"]["Experience Replay"]["Maximum Size"] = 100000;
+  e["Solver"]["Experience Replay"]["Start Size"] =   10000;
+  e["Solver"]["Experience Replay"]["Maximum Size"] = 262144;
 
   //// Defining Critic Configuration
 
-  e["Solver"]["Critic"]["Learning Rate"] = 0.001;
+  e["Solver"]["Critic"]["Learning Rate"] = 0.00001;
   e["Solver"]["Critic"]["Discount Factor"] = 0.99;
-  e["Solver"]["Critic"]["Mini Batch Size"] = 128;
+  e["Solver"]["Critic"]["Mini Batch Size"] = 256;
 
   e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense";
   e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear";
+  e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Batch Normalization"]["Enabled"] = true;
 
   e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Type"] = "Layer/Dense";
   e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Node Count"] = 128;
@@ -111,9 +112,9 @@ int main(int argc, char *argv[])
 
   //// Defining Policy Configuration
 
-  e["Solver"]["Policy"]["Learning Rate"] = 0.0001;
+  e["Solver"]["Policy"]["Learning Rate"] = 0.000001;
   e["Solver"]["Policy"]["Mini Batch Size"] = 16;
-  e["Solver"]["Policy"]["Adoption Rate"] = 0.25;
+  e["Solver"]["Policy"]["Adoption Rate"] = 0.80;
 
   e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense";
   e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear";

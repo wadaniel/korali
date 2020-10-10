@@ -70,6 +70,7 @@ e["Solver"]["Critic"]["Mini Batch Size"] = 64
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Node Count"] = 5
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear"
+e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Batch Normalization"]["Enabled"] = False
 
 e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Type"] = "Layer/Dense"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Node Count"] = 32
@@ -90,7 +91,6 @@ e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Batch Normalization"]["Ena
 
 e["Solver"]["Policy"]["Learning Rate"] = 0.001
 e["Solver"]["Policy"]["Mini Batch Size"] = 8 
-e["Solver"]["Policy"]["Adoption Rate"] = 0.10
 e["Solver"]["Policy"]["Target Accuracy"] = 0.1
 
 e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"

@@ -13,8 +13,8 @@ namespace discrete
 
 void DQN::initializeAgent()
 {
-  // Getting discrete problem pointer
-  _discreteProblem = dynamic_cast<problem::reinforcementLearning::Discrete *>(_k->_problem);
+ // Initializing common discrete agent configuration
+ Discrete::initializeAgent();
 
   /*********************************************************************
  * Initializing Critic-Related Structures
@@ -196,11 +196,11 @@ std::vector<float> DQN::queryPolicy(const std::vector<float> &state)
   size_t maxQIdx = 0;
 
   // Iterating over all possible actions, checking which one is best
-  for (size_t i = 0; i < _discreteProblem->_possibleActions.size(); i++)
+  for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
   {
     // Copying the values of the possible action onto the state/action vector
     for (size_t j = 0; j < _problem->_actionVectorSize; j++)
-      stateActionInput[_problem->_stateVectorSize + j] = _discreteProblem->_possibleActions[i][j];
+      stateActionInput[_problem->_stateVectorSize + j] = _problem->_possibleActions[i][j];
 
     // Computing Q(s,a_i)
     float curQVal = _criticLearner->getEvaluation(stateActionInput)[0];
@@ -214,7 +214,7 @@ std::vector<float> DQN::queryPolicy(const std::vector<float> &state)
   }
 
   // Returning the best found
-  return _discreteProblem->_possibleActions[maxQIdx];
+  return _problem->_possibleActions[maxQIdx];
 }
 
 void DQN::printAgentInformation()

@@ -17,6 +17,8 @@ class DQN : public Discrete
 {
   public:
 
+
+
   /**
    * @brief Pointer to training experiment's problem
    */
@@ -32,14 +34,7 @@ class DQN : public Discrete
    */
   korali::Experiment _criticExperiment;
 
-  /**
-   * @brief Function to query policy and get the best action for the given state
-   * @param state The input state
-   * @return The action value, corresponding to the state and the current policy hyperparameters
-   */
-  std::vector<float> queryPolicy(const std::vector<float> &state);
-
-  void getAction(korali::Sample &sample) override;
+  std::vector<float> getActionProbabilities(const std::vector<float> &state) override;
   void updateHyperparameters(const knlohmann::json &hyperparameters) override;
   void trainAgent() override;
   void printAgentInformation() override;

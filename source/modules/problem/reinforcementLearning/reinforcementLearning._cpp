@@ -10,7 +10,6 @@ namespace problem
 void ReinforcementLearning::initialize()
 {
   // Processing state/action variable configuration
-
   _stateVectorIndexes.clear();
   _actionVectorIndexes.clear();
   for (size_t i = 0; i < _k->_variables.size(); i++)
@@ -98,7 +97,7 @@ void ReinforcementLearning::runEpisode(Sample &sample)
     if (actionLastUpdated == 0)
     {
       // Getting new action
-      getAction(sample);
+      _agent->getAction(sample);
 
       // Resetting action repeat counter
       actionLastUpdated = _actionRepeat;
@@ -156,18 +155,6 @@ void ReinforcementLearning::runEpisode(Sample &sample)
 
   // Freeing co-routine memory
   co_delete(envThread);
-}
-
-void ReinforcementLearning::getAction(korali::Sample& sample)
-{
- // Getting p = U[0,1] for the epsilon strategy
- float p = _randomActionGenerator->getRandomNumber();
-
- // If p < e, then we choose the action randomly, with a uniform probability, among all possible actions.
- if (p < sample["Random Action Probability"].get<float>())
-  getRandomAction(sample);
- else // Otherwise we take the action from the policy
-  _agent->getAction(sample);
 }
 
 } // namespace problem

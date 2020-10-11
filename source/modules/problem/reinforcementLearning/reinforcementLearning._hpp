@@ -2,6 +2,7 @@
 #define _KORALI_PROBLEM_REINFORCEMENT_LEARNING_HPP_
 
 #include "modules/neuralNetwork/neuralNetwork.hpp"
+#include "modules/distribution/univariate/uniform/uniform.hpp"
 #include "modules/problem/problem.hpp"
 
 namespace korali
@@ -27,17 +28,6 @@ class ReinforcementLearning : public korali::Problem
    */
   void runEpisode(korali::Sample &sample);
 
-  /**
-   * @brief Gathers the next action either from the policy or randomly
-   * @param sample Sample on which the action and metadata will be stored
-   */
-  void getAction(korali::Sample& sample);
-
-  /**
-   * @brief Provides a uniformly random action within the action space
-   * @param sample Sample on which the action and metadata will be stored
-   */
-  virtual void getRandomAction(korali::Sample &sample) = 0;
 };
 
 } // namespace problem

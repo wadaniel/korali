@@ -58,11 +58,6 @@ class DDPG : public Continuous
   std::vector<float> _avgGradients;
 
   /**
-   * @brief Variable to keep track of the current noise added to the action
-   */
-  std::vector<float> _currentActionNoises;
-
-  /**
    * @brief Calculates the state+action value function Q(s,a) = Expectation_s,a [ R | s,a ] of a given experience using the latest critic
    * @param state state to evaluate
    * @param action action to evaluate
@@ -70,14 +65,9 @@ class DDPG : public Continuous
    */
   float stateActionValueFunction(const std::vector<float> &state, const std::vector<float> &action);
 
-  /**
-   * @brief Function to query policy and get the best action for the given state
-   * @param state The input state
-   * @return The action value, corresponding to the state and the current policy hyperparameters
-   */
-  std::vector<float> queryPolicy(const std::vector<float> &state);
+  std::vector<float> getActionMeans(const std::vector<float> &state) override;
+  std::vector<float> getActionSigmas(const std::vector<float> &state) override;
 
-  void getAction(korali::Sample &sample) override;
   void updateHyperparameters(const knlohmann::json &hyperparameters) override;
   void trainAgent() override;
   void printAgentInformation() override;

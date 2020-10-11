@@ -13,13 +13,6 @@ class Discrete : public korali::problem::ReinforcementLearning
 {
   public:
   void initialize() override;
-  void getRandomAction(korali::Sample &sample) override;
-
-  /**
-   * @brief Gets a random action by index, instead of by value
-   * @return Index of the random action
-   */
-  size_t getRandomActionIndex();
 };
 
 } // namespace reinforcementLearning

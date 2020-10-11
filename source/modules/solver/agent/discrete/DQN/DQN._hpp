@@ -17,23 +17,6 @@ class DQN : public Discrete
 {
   public:
 
-
-
-  /**
-   * @brief Pointer to training experiment's problem
-   */
-  problem::SupervisedLearning *_criticProblem;
-
-  /**
-  * @brief Pointer to training experiment's learner
-  */
-  learner::DeepGD *_criticLearner;
-
-  /**
-   * @brief Korali experiment for the training of the Qvalue-estimator
-   */
-  korali::Experiment _criticExperiment;
-
   std::vector<float> getActionProbabilities(const std::vector<float> &state) override;
   void updateHyperparameters(const knlohmann::json &hyperparameters) override;
   void trainAgent() override;

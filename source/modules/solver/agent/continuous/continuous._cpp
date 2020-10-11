@@ -1,0 +1,122 @@
+#include "sample/sample.hpp"
+#include "engine.hpp"
+#include "modules/solver/agent/continuous/continuous.hpp"
+
+namespace korali
+{
+namespace solver
+{
+namespace agent
+{
+
+void Continuous::initializeAgent()
+{
+  // Getting discrete problem pointer
+  _problem = dynamic_cast<problem::reinforcementLearning::Continuous *>(_k->_problem);
+
+  /*********************************************************************
+  * Initializing Action Noise Sigmas
+  *********************************************************************/
+
+  // Allocating space for the inverse variance calculation
+  _inverseVariances.resize(_problem->_actionVectorSize);
+  _actionSigmas.resize(_problem->_actionVectorSize);
+
+  for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+  {
+   auto varIdx = _problem->_actionVectorIndexes[i];
+   float sigma = _k->_variables[varIdx]->_explorationSigma;
+   if (sigma <= 0.0) KORALI_LOG_ERROR("Value of Exploration Sigma (%f) for action %lu (variable %lu) is not defined or invalid.\n", sigma, i, varIdx);
+
+   // compute inverse variance
+   _actionSigmas[i] = sigma;
+   _inverseVariances[i] = 1.0 / (sigma * sigma);
+  }
+}
+
+void Continuous::getAction(korali::Sample& sample)
+{
+ // Getting current state
+ auto state = sample["State"].get<std::vector<float>>();
+
+ // Getting the Gaussian means of the actions given by the agent's policy
+ auto actionMeans = getActionMeans(state);
+
+ // Getting the Gaussian sigmas of the actions given by the agent's policy
+ auto actionSigmas = getActionSigmas(state);
+
+ // Storage for the action to select
+ std::vector<float> action(_problem->_actionVectorSize);
+
+ /*****************************************************************************
+  * During training, we follow the Epsilon-greedy strategy. Choose, given a
+  * probability (pEpsilon), one from the following:
+  *  - Uniformly random action among all possible actions
+  *  - Sample action guided by the policy's probability distribution
+  ****************************************************************************/
+
+ if (sample["Mode"] == "Training")
+ {
+  // Getting current probability of random action for the agent
+  float pRandom = sample["Random Action Probability"];
+
+  // Getting pGreedy = U[0,1] for the epsilon-greedy strategy
+  float pEpsilon = _uniformGenerator->getRandomNumber();
+
+  // If p < e, then we choose the action randomly, with a uniform probability, among all possible actions.
+  if (pEpsilon < pRandom)
+  {
+   for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+   {
+     // Finding problem variable index corresponding to this action
+     size_t varIdx = _problem->_actionVectorIndexes[i];
+
+     // Producing random (uniform) number to select within an lower/upper bound range
+     float x = _uniformGenerator->getRandomNumber();
+
+     // Obtaining lower and upper bounds for the action
+     float lowerBound = _k->_variables[varIdx]->_lowerBound;
+     float upperBound = _k->_variables[varIdx]->_upperBound;
+
+     // Producing the random value for action element i
+     action[i] = lowerBound + x * (upperBound - lowerBound);
+   }
+  }
+  else // else we select guided by the policy's probability distribution
+  {
+   for (size_t i = 0; i < _problem->_actionVectorIndexes.size(); i++)
+   {
+     // Updating normal distribution for the current action element
+    _normalGenerator->_mean = actionMeans[i];
+    _normalGenerator->_standardDeviation = actionSigmas[i];
+
+     // Generating action from the updated normal distribution
+    action[i] = _normalGenerator->getRandomNumber();
+   }
+  }
+
+  // Storing selection metadata
+  sample["Metadata"]["Means"] = actionMeans;
+  sample["Metadata"]["Sigmas"] = actionSigmas;
+ }
+
+ /*****************************************************************************
+  * During testing, we select the means (point of highest density) for all
+  * elements of the action vector
+  ****************************************************************************/
+
+ // Finding the best action index from the probabilities
+ if (sample["Mode"] == "Testing") action = actionMeans;
+
+ /*****************************************************************************
+  * Storing the action itself
+  ****************************************************************************/
+
+ sample["Action"] = action;
+}
+
+} // namespace agent
+
+} // namespace solver
+
+} // namespace korali

@@ -97,39 +97,6 @@ void DDPG::initializeAgent()
   _avgGradients.resize(_problem->_actionVectorSize);
 }
 
-void DDPG::getAction(korali::Sample &sample)
-{
-  // Getting current state
-  auto state = sample["State"].get<std::vector<float>>();
-
-  // Obtaining action from policy
-  auto action = queryPolicy(state);
-
-  // If currently on a training phase, add noise/random actions.
-  bool isTraining = sample["Mode"] == "Training";
-
-  if (isTraining)
-  {
-    // Introducing random noise to the action
-    for (size_t i = 0; i < _problem->_actionVectorIndexes.size(); i++)
-    {
-      size_t varIdx = _problem->_actionVectorIndexes[i];
-
-      // Check whether the variable requires noise
-      if (_k->_variables[varIdx]->_explorationNoiseEnabled == true)
-      {
-        float w = _k->_variables[varIdx]->_explorationNoiseDistribution->getRandomNumber();
-        float noise = _k->_variables[varIdx]->_explorationNoiseTheta * _currentActionNoises[i] + w;
-        action[i] += noise;
-        //printf("Theta (%f) * Previous Noise: (%f) + W: (%f) = %f\n",  _k->_variables[varIdx]->_explorationNoiseTheta, _currentActionNoises[i], w, noise);
-        _currentActionNoises[i] = noise;
-      }
-    }
-  }
-
-  // Storing the action
-  sample["Action"] = action;
-}
 
 float DDPG::stateActionValueFunction(const std::vector<float> &state, const std::vector<float> &action)
 {
@@ -183,7 +150,7 @@ void DDPG::trainAgent()
    std::vector<float> curState   = _experienceReplayStates[expId];
    std::vector<float> curAction  = _experienceReplayActions[expId];
    std::vector<float> nextState  = isTerminal ? std::vector<float>() : _experienceReplayStates[expId + 1];
-   std::vector<float> bestAction = isTerminal ? std::vector<float>() : queryPolicy(nextState);
+   std::vector<float> bestAction = isTerminal ? std::vector<float>() : getActionMeans(nextState);
 
    // Getting current reward
    float curReward = _experienceReplayRewards[expId];
@@ -313,19 +280,19 @@ void DDPG::trainAgent()
   _hyperparameters["Policy"] = newPolicyHyperparameters;
 }
 
-std::vector<float> DDPG::queryPolicy(const std::vector<float> &state)
+std::vector<float> DDPG::getActionMeans(const std::vector<float> &state)
 {
   return _policyLearner->getEvaluation({state});
+}
+
+std::vector<float> DDPG::getActionSigmas(const std::vector<float> &state)
+{
+ return _actionSigmas;
 }
 
 void DDPG::updateHyperparameters(const knlohmann::json &hyperparameters)
 {
   _policyLearner->setHyperparameters(hyperparameters["Policy"].get<std::vector<float>>());
-
-  // Re-initializing action noises to zero
-  size_t actionCount = _problem->_actionVectorIndexes.size();
-  _currentActionNoises.resize(actionCount);
-  for (size_t i = 0; i < actionCount; i++) _currentActionNoises[i] = 0.0;
 }
 
 void DDPG::printAgentInformation()

@@ -114,40 +114,6 @@ void SDPG::initializeAgent()
    _hyperparameters["Policy"] = _policyLearner->getHyperparameters();
 }
 
-void SDPG::getAction(korali::Sample &sample)
-{
-  // Getting current state
-  auto state = sample["State"].get<std::vector<float>>();
-
-  // Obtaining action from policy
-  auto action = queryPolicy(state);
-
-  // If currently on a training phase, add noise/random actions.
-  bool isTraining = sample["Mode"] == "Training";
-
-  if (isTraining)
-  {
-    // Introducing random noise to the action
-    for (size_t i = 0; i < _problem->_actionVectorIndexes.size(); i++)
-    {
-      size_t varIdx = _problem->_actionVectorIndexes[i];
-
-      // Check whether the variable requires noise
-      if (_k->_variables[varIdx]->_explorationNoiseEnabled == true)
-      {
-        float w = _k->_variables[varIdx]->_explorationNoiseDistribution->getRandomNumber();
-        float noise = _k->_variables[varIdx]->_explorationNoiseTheta * _currentActionNoises[i] + w;
-        action[i] += noise;
-        //printf("Theta (%f) * Previous Noise: (%f) + W: (%f) = %f\n",  _k->_variables[varIdx]->_explorationNoiseTheta, _currentActionNoises[i], w, noise);
-        _currentActionNoises[i] = noise;
-      }
-    }
-  }
-
-  // Storing the action
-  sample["Action"] = action;
-}
-
 float SDPG::stateActionValueFunction(const std::vector<float> &state, const std::vector<float> &action)
 {
   // Storage to put together state and action
@@ -193,7 +159,7 @@ void SDPG::trainAgent()
    auto curState   = _experienceReplayStates[expId];
    auto curAction  = _experienceReplayActions[expId];
    auto nextState  = isTerminal ? std::vector<float>() : _experienceReplayStates[expId + 1];
-   auto bestAction = isTerminal ? std::vector<float>() : queryPolicy(nextState);
+   auto bestAction = isTerminal ? std::vector<float>() : getActionMeans(nextState);
 
    // Getting current reward
    float curReward = _experienceReplayRewards[expId];
@@ -314,10 +280,9 @@ void SDPG::trainAgent()
    }
 
    // Calculating Policy Gradient for the current experience
-
    std::vector<float> policyGradient(_problem->_actionVectorSize);
 
-   auto curAction = queryPolicy(curState);
+   auto curAction = getActionMeans(curState);
    auto bstAction = _actionOptimizer->_bestEverVariables;
 
    for (size_t j = 0; j < _problem->_actionVectorSize; j++)
@@ -351,19 +316,19 @@ void SDPG::trainAgent()
   _hyperparameters["Policy"] = newPolicyHyperparameters;
 }
 
-std::vector<float> SDPG::queryPolicy(const std::vector<float> &state)
+std::vector<float> SDPG::getActionMeans(const std::vector<float> &state)
 {
  return _policyLearner->getEvaluation({state});
+}
+
+std::vector<float> SDPG::getActionSigmas(const std::vector<float> &state)
+{
+ return _actionSigmas;
 }
 
 void SDPG::updateHyperparameters(const knlohmann::json &hyperparameters)
 {
  _policyLearner->setHyperparameters(hyperparameters["Policy"].get<std::vector<float>>());
-
- // Re-initializing action noises to zero
- size_t actionCount = _problem->_actionVectorIndexes.size();
- _currentActionNoises.resize(actionCount);
- for (size_t i = 0; i < actionCount; i++) _currentActionNoises[i] = 0.0;
 }
 
 void SDPG::printAgentInformation()

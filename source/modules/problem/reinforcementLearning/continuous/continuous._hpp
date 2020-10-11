@@ -2,6 +2,7 @@
 #define _KORALI_PROBLEM_REINFORCEMENT_LEARNING_CONTINUOUS_HPP_
 
 #include "modules/problem/reinforcementLearning/reinforcementLearning.hpp"
+#include "modules/distribution/univariate/normal/normal.hpp"
 
 namespace korali
 {
@@ -13,7 +14,6 @@ class Continuous : public korali::problem::ReinforcementLearning
 {
   public:
   void initialize() override;
-  void getRandomAction(korali::Sample &sample) override;
 };
 
 } // namespace reinforcementLearning

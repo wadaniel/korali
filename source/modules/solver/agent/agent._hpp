@@ -35,12 +35,6 @@ class Agent : public Solver
    float _randomActionProbabilityEffectiveValue;
 
   /**
-   * @brief Gets the next action for the agent, based on the state and current policy, for training purposes (may contain noise)
-   * @param sample to update
-   */
-  virtual void getAction(korali::Sample &sample) = 0;
-
-  /**
   * @brief Trains the Agent's critic/policy, based on the new experiences
   */
   virtual void trainAgent() = 0;
@@ -65,6 +59,12 @@ class Agent : public Solver
    * @brief Prints information about the training policy
    */
   virtual void printAgentInformation() = 0;
+
+  /**
+   * @brief Gathers the next action either from the policy or randomly
+   * @param sample Sample on which the action and metadata will be stored
+   */
+  virtual void getAction(korali::Sample& sample) = 0;
 
   void printGenerationAfter() override;
   void initialize() override;

@@ -88,15 +88,23 @@ void DQN::trainAgent()
     qStar = _experienceReplayRewards[expId];
 
     // Getting experience's current state and action
-    std::vector<float> curState = _experienceReplayStates[expId];
-    std::vector<float> curAction = _experienceReplayActions[expId];
+    auto curState = _experienceReplayStates[expId];
+    auto curAction = _experienceReplayActions[expId];
 
     // If state is not terminal (next state is filled) then add Qnew to the Q value.
     if (_experienceReplayTerminal[expId] == false)
     {
-      // Getting experience's next state and action
-      std::vector<float> nextState = _experienceReplayStates[expId + 1];
-      std::vector<float> bestAction = queryPolicy(nextState);
+      // Getting experience's next state
+      auto nextState = _experienceReplayStates[expId + 1];
+
+      // Getting action probabilities for next state, as per the critic
+      auto pActions = getActionProbabilities(nextState);
+
+      // Finding the best action index from the probabilities
+      size_t bestActionIdx = std::distance(pActions.begin(), std::max_element(pActions.begin(), pActions.end()));
+
+      // Getting the best action
+      auto bestAction = _problem->_possibleActions[bestActionIdx];
 
       // Storage to put together state and action
       std::vector<float> stateActionInput(_problem->_stateVectorSize + _problem->_actionVectorSize);
@@ -166,36 +174,26 @@ void DQN::trainAgent()
   _hyperparameters["Critic"] = _criticLearner->getHyperparameters();
 }
 
-void DQN::getAction(korali::Sample &sample)
-{
-  // Getting current state
-  auto state = sample["State"].get<std::vector<float>>();
-
-  // Obtaining action from policy
-  auto action = queryPolicy(state);
-
-  // Storing the action
-  sample["Action"] = action;
-}
-
 void DQN::updateHyperparameters(const knlohmann::json &hyperparameters)
 {
   _criticLearner->setHyperparameters(hyperparameters["Critic"].get<std::vector<float>>());
 }
 
-std::vector<float> DQN::queryPolicy(const std::vector<float> &state)
+std::vector<float> DQN::getActionProbabilities(const std::vector<float> &state)
 {
   // Creating state/action input
   std::vector<float> stateActionInput(_problem->_stateVectorSize + _problem->_actionVectorSize);
 
-  // Assigning state first
+  // Storing state into the critic input (will not change)
   for (size_t i = 0; i < state.size(); i++) stateActionInput[i] = state[i];
 
-  // Storage for max_a Q(s,a) and its index
-  float maxQVal = -korali::Inf;
-  size_t maxQIdx = 0;
+  // Storage for action probabilities
+  std::vector<float> pActions(_problem->_possibleActions.size());
 
-  // Iterating over all possible actions, checking which one is best
+  // Storage for the cumulative e^Q(s,a_i) for softmax calculation
+  float sumExpQVal = 0.0;
+
+  // Iterating over all possible actions, checking their Q(s,a_i)
   for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
   {
     // Copying the values of the possible action onto the state/action vector
@@ -205,16 +203,25 @@ std::vector<float> DQN::queryPolicy(const std::vector<float> &state)
     // Computing Q(s,a_i)
     float curQVal = _criticLearner->getEvaluation(stateActionInput)[0];
 
-    // If current action got a larger Q, store it as the best
-    if (curQVal > maxQVal)
-    {
-      maxQVal = curQVal;
-      maxQIdx = i;
-    }
+    // Computing e^Q(s,a_i)
+    float expCurQVal = std::exp(curQVal);
+
+    // Computing Sum_i(e^Q(s,a_i))
+    sumExpQVal += expCurQVal;
+
+    // Storing partial value of the probability of the action
+    pActions[i] = expCurQVal;
   }
 
+  // Calculating inverse of Sum_i(e^Q(s,a_i))
+  float invSumExpQVal = 1.0f / sumExpQVal;
+
+  // Now calculating the action probabilities using softmax
+  for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
+   pActions[i] *= invSumExpQVal;
+
   // Returning the best found
-  return _problem->_possibleActions[maxQIdx];
+  return pActions;
 }
 
 void DQN::printAgentInformation()

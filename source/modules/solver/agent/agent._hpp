@@ -29,10 +29,40 @@ class Agent : public Solver
   */
   std::mt19937 *mt;
 
+ /**
+  * @brief The value to use for probability of random actions.
+  */
+  float _randomActionProbabilityEffectiveValue;
+
   /**
-   * @brief The value to use for probability of random actions.
+   * @brief Pointer to training experiment's problem
    */
-   float _randomActionProbabilityEffectiveValue;
+  problem::SupervisedLearning *_criticProblem;
+
+  /**
+  * @brief Pointer to training experiment's learner
+  */
+  learner::DeepGD *_criticLearner;
+
+  /**
+   * @brief Korali experiment for the training of the critic
+   */
+  korali::Experiment _criticExperiment;
+
+  /**
+  * @brief Korali experiment for obtaining the agent's action
+  */
+  korali::Experiment _policyExperiment;
+
+  /**
+   * @brief Pointer to training the actor network
+   */
+  learner::DeepGD *_policyLearner;
+
+  /**
+   * @brief Pointer to actor's experiment problem
+   */
+  problem::SupervisedLearning *_policyProblem;
 
   /**
   * @brief Trains the Agent's critic/policy, based on the new experiences
@@ -65,6 +95,22 @@ class Agent : public Solver
    * @param sample Sample on which the action and metadata will be stored
    */
   virtual void getAction(korali::Sample& sample) = 0;
+
+  /**
+   * @brief Mini-batch based normalization routine for Neural Networks with state and action inputs (typically critics)
+   * @param neuralNetwork Neural Network to normalize
+   * @param miniBatchSize Number of entries in the normalization minibatch
+   * @param normalizationSteps How many normalization steps to perform (and grab the average)
+   */
+  void normalizeStateActionNeuralNetwork(NeuralNetwork* neuralNetwork, size_t miniBatchSize, size_t normalizationSteps);
+
+  /**
+   * @brief Mini-batch based normalization routine for Neural Networks with state inputs only (typically policy)
+   * @param neuralNetwork Neural Network to normalize
+   * @param miniBatchSize Number of entries in the normalization minibatch
+   * @param normalizationSteps How many normalization steps to perform (and grab the average)
+   */
+  void normalizeStateNeuralNetwork(NeuralNetwork* neuralNetwork, size_t miniBatchSize, size_t normalizationSteps);
 
   void printGenerationAfter() override;
   void initialize() override;

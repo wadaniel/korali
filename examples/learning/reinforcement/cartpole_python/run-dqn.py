@@ -37,10 +37,9 @@ e["Variables"][5]["Type"] = "Action"
 
 ### Configuring DQN hyperparameters
 
-e["Solver"]["Type"] = "Agent/DQN"
+e["Solver"]["Type"] = "Agent/Discrete/DQN"
 e["Solver"]["Trajectory Size"] = 1
 e["Solver"]["Optimization Steps Per Trajectory"] = 1
-e["Solver"]["Normalization Steps"] = 32
 
 ### Defining Experience Replay configuration
 
@@ -61,10 +60,11 @@ e["Solver"]["Critic"]["Learning Rate"] = 0.01
 
 ### Defining the shape of the neural network
 
+e["Solver"]["Critic"]["Normalization Steps"] = 32
+
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Node Count"] = 6
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Batch Normalization"]["Enabled"] = False
+e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Batch Normalization"]["Enabled"] = True
 
 e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Type"] = "Layer/Dense"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Node Count"] = 32
@@ -77,7 +77,6 @@ e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Activation Function"]["Typ
 e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Batch Normalization"]["Enabled"] = True
 
 e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Type"] = "Layer/Dense"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Node Count"] = 1
 e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Elementwise/Linear"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Batch Normalization"]["Enabled"] = True 
 

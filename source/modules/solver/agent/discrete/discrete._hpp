@@ -1,0 +1,38 @@
+#ifndef _KORALI_AGENT_DISCRETE_HPP_
+#define _KORALI_AGENT_DISCRETE_HPP_
+
+#include "modules/solver/agent/agent.hpp"
+#include "modules/problem/reinforcementLearning/discrete/discrete.hpp"
+
+namespace korali
+{
+namespace solver
+{
+namespace agent
+{
+
+class Discrete : public Agent
+{
+  public:
+
+ /**
+ * @brief Storage for the pointer to the (discrete) learning problem
+ */
+ problem::reinforcementLearning::Discrete *_problem;
+
+ /**
+  * @brief Function to obtain the categorical probability distribution for each possible action
+  * @param state The current state
+  * @return A vector containing all action probabilities, corresponding to the state and the current policy
+  */
+ virtual std::vector<float> getActionProbabilities(const std::vector<float> &state) = 0;
+
+ void getAction(korali::Sample& sample) override;
+ virtual void initializeAgent();
+};
+
+} // namespace agent
+} // namespace solver
+} // namespace korali
+
+#endif // _KORALI_AGENT_DISCRETE_HPP_

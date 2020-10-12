@@ -41,8 +41,8 @@ e["Variables"][5]["Exploration Sigma"] = 0.35
 ### Defining Agent Configuration 
 
 e["Solver"]["Type"] = "Agent/Continuous/SDPG"
-e["Solver"]["Trajectory Size"] = 1
-e["Solver"]["Optimization Steps Per Trajectory"] = 1
+e["Solver"]["Experiences Between Updates"] = 1
+e["Solver"]["Optimization Steps Per Update"] = 1
 
 e["Solver"]["Random Action Probability"]["Initial Value"] = 0.5
 e["Solver"]["Random Action Probability"]["Target Value"] = 0.05

@@ -30,10 +30,10 @@ void Agent::initialize()
      _randomActionProbabilityCurrentValue = _randomActionProbabilityInitialValue;
 
     _currentEpisode = 0;
-    _currentTrajectoryCount = 0;
     _optimizationStepCount = 0;
     _candidatePoliciesTested = 0;
     _currentSampleID = 0;
+    _cumulativeQStar = 0;
 
     // Initialize best rewards
     _averageTestingReward = -korali::Inf;
@@ -69,8 +69,10 @@ void Agent::runGeneration()
   KORALI_START(agent);
 
   // Storage to keep experience information
-  std::vector<knlohmann::json> trajectory;
   knlohmann::json experience;
+
+  // Counter for experiences between updates
+  size_t _curExperienceCount = 0;
 
   // Keep listening to incoming experiences until we reached a terminal state
   do
@@ -78,41 +80,21 @@ void Agent::runGeneration()
     // Listening for incoming experiences
     experience = KORALI_RECV_MSG_FROM_SAMPLE(agent);
 
-    // Setting trajectory position on the experience and whether it is the latest in the trajectory
-    experience["Trajectory Position"] = trajectory.size();
-    experience["Trajectory End"] = false;
+    _experienceReplayStates.push_back(experience["State"].get<std::vector<float>>());
+    _experienceReplayActions.push_back(experience["Action"].get<std::vector<float>>());
+    _experienceReplayRewards.push_back(experience["Reward"].get<float>());
+    _experienceReplayTerminal.push_back(experience["Is Terminal"].get<bool>());
+    if(isDefined(experience, "Metadata", "Action Index")) _experienceReplayActionIndexes.push_back(experience["Metadata"]["Action Index"].get<size_t>());
+    if(isDefined(experience, "Metadata", "Action Probabilities")) _experienceReplayActionProbabilities.push_back(experience["Metadata"]["Action Probabilities"].get<std::vector<float>>());
 
-    // Adding experience to trajectory
-    trajectory.push_back(experience);
+    _curExperienceCount++;
 
-    // If reached desired trajectory size or last experience of the episode, run an optimization step
-    if (trajectory.size() == _trajectorySize || experience["Is Terminal"] == true)
+    if (_curExperienceCount >= _experiencesBetweenUpdates || experience["Is Terminal"] == true) // If we accumulated enough experiences between updates, update now
+    if (_experienceReplayStates.size() > _experienceReplayStartSize) // Perform optimization steps on the critic/policy, if reached the minimum replay memory size
     {
-     // Now this experience is the last in the trajectory
-     trajectory[trajectory.size()-1]["Trajectory End"] = true;
-
-     // Add trajectory to experience
-     for (size_t i = 0; i < trajectory.size(); i++)
-     {
-      _experienceReplayStates.push_back(trajectory[i]["State"].get<std::vector<float>>());
-      _experienceReplayActions.push_back(trajectory[i]["Action"].get<std::vector<float>>());
-      _experienceReplayRewards.push_back(trajectory[i]["Reward"].get<float>());
-      _experienceReplayTerminal.push_back(trajectory[i]["Is Terminal"].get<bool>());
-     }
-
-     // Increasing number of trajectories
-     _currentTrajectoryCount++;
-
-     // Perform optimization steps on the critic/policy, if reached the minimum replay memory size
-     if (_experienceReplayStates.size() > _experienceReplayStartSize)
-     for (size_t i = 0; i < _optimizationStepsPerTrajectory; i++)
-     {
-       trainAgent();
-       _optimizationStepCount++;
-     }
-
-      // Now cleaning trajectory, to create a new one.
-      trajectory.clear();
+     for (size_t i = 0; i < _optimizationStepsPerUpdate; i++) trainAgent();
+     _optimizationStepCount += _optimizationStepsPerUpdate;
+     _curExperienceCount = 0;
     }
 
     // If agent requested new policy, send the new hyperparameters
@@ -121,7 +103,6 @@ void Agent::runGeneration()
 
     // Adding experience's reward to episode's reward
     _currentReward += experience["Reward"].get<float>();
-
 
   } while (experience["Is Terminal"] == false);
 
@@ -143,6 +124,9 @@ void Agent::runGeneration()
     _experienceReplayActions.erase(_experienceReplayActions.begin(), _experienceReplayActions.begin() + excess);
     _experienceReplayRewards.erase(_experienceReplayRewards.begin(), _experienceReplayRewards.begin() + excess);
     _experienceReplayTerminal.erase(_experienceReplayTerminal.begin(), _experienceReplayTerminal.begin() + excess);
+
+    if (_experienceReplayActionIndexes.size() > 0)
+     _experienceReplayActionIndexes.erase(_experienceReplayActionIndexes.begin(), _experienceReplayActionIndexes.begin() + excess);
   }
 
   // Updating if exceeded best training policy so far.
@@ -282,8 +266,6 @@ void Agent::printGenerationAfter()
     _k->_logger->logInfo("Normal", " + Total Experience Count:      %lu/%lu\n", _experienceReplayStates.size(), _maxExperiences);
   else
     _k->_logger->logInfo("Normal", " + Total Experience Count:    %lu\n", _experienceReplayStates.size());
-
-  _k->_logger->logInfo("Normal", " + Total Trajectory Count:    %lu\n", _currentTrajectoryCount);
 
 
   _k->_logger->logInfo("Normal", "Training Statistics:\n");

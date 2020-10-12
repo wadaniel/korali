@@ -23,17 +23,11 @@ void DQN::initializeAgent()
   korali::Engine engine; // Engine to initialize experiments with
 
   _criticExperiment["Problem"]["Type"] = "Supervised Learning";
-
   _criticExperiment["Solver"]["Type"] = "Learner/DeepGD";
   _criticExperiment["Solver"]["Learning Rate"] = _criticLearningRate;
   _criticExperiment["Solver"]["Loss Function"] = "Mean Squared Error";
   _criticExperiment["Solver"]["Steps Per Generation"] = 1;
   _criticExperiment["Solver"]["Neural Network"] = _criticNeuralNetwork;
-
-  _criticExperiment["Console Output"]["Frequency"] = 0;
-  _criticExperiment["Console Output"]["Verbosity"] = "Silent";
-  _criticExperiment["File Output"]["Enabled"] = false;
-  _criticExperiment["Random Seed"] = _k->_randomSeed++;
 
   // Initializing experiment with an initial zero set
   for (size_t i = 0; i < _criticMiniBatchSize; i++)

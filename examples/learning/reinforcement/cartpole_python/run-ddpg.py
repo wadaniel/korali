@@ -53,7 +53,7 @@ e["Solver"]["Experience Replay"]["Maximum Size"] = 100000
 
 e["Solver"]["Critic"]["Discount Factor"] = 0.99
 e["Solver"]["Critic"]["Adoption Rate"] = 0.50
-e["Solver"]["Critic"]["Learning Rate"] = 0.001
+e["Solver"]["Critic"]["Learning Rate"] = 0.01
 e["Solver"]["Critic"]["Mini Batch Size"] = 32
 e["Solver"]["Critic"]["Normalization Steps"] = 32
 

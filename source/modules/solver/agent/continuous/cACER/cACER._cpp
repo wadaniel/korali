@@ -24,18 +24,12 @@ void cACER::initializeAgent()
  *********************************************************************/
 
   _vExperiment["Problem"]["Type"] = "Supervised Learning";
-
   _vExperiment["Solver"]["Type"] = "Learner/DeepGD";
   _vExperiment["Solver"]["Optimizer"]["Type"] = "Adam";
   _vExperiment["Solver"]["Loss Function"] = "Mean Squared Error";
   _vExperiment["Solver"]["Steps Per Generation"] = 1;
   _vExperiment["Solver"]["Neural Network"] = _criticNeuralNetwork;
   _vExperiment["Solver"]["Neural Network"]["Layers"][0]["Node Count"] = _problem->_stateVectorSize;
-
-  _vExperiment["Console Output"]["Frequency"] = 0;
-  _vExperiment["Console Output"]["Verbosity"] = "Silent";
-  _vExperiment["File Output"]["Enabled"] = false;
-  _vExperiment["Random Seed"] = _k->_randomSeed++;
 
   // Initializing experiment with an initial zero set
   for (size_t i = 0; i < _problem->_stateVectorSize; i++)
@@ -54,19 +48,12 @@ void cACER::initializeAgent()
  *********************************************************************/
 
   _aExperiment["Problem"]["Type"] = "Supervised Learning";
-
   _aExperiment["Solver"]["Type"] = "Learner/DeepGD";
   _aExperiment["Solver"]["Optimizer"]["Type"] = "Adam";
   _aExperiment["Solver"]["Loss Function"] = "Mean Squared Error";
   _aExperiment["Solver"]["Steps Per Generation"] = 1;
-
   _aExperiment["Solver"]["Neural Network"] = _criticNeuralNetwork;
   _aExperiment["Solver"]["Neural Network"]["Layers"][0]["Node Count"] = _problem->_stateVectorSize + _problem->_actionVectorSize;
-
-  _aExperiment["Console Output"]["Frequency"] = 0;
-  _aExperiment["Console Output"]["Verbosity"] = "Silent";
-  _aExperiment["File Output"]["Enabled"] = false;
-  _aExperiment["Random Seed"] = _k->_randomSeed++;
 
   // Initializing experiment with an initial zero set
   for (size_t i = 0; i < _problem->_stateVectorSize + _problem->_actionVectorSize; i++)
@@ -95,11 +82,6 @@ void cACER::initializeAgent()
 
   _policyExperiment["Solver"]["Neural Network"] = _policyNeuralNetwork;
   _policyExperiment["Solver"]["Neural Network"]["Layers"][0]["Node Count"] = _problem->_stateVectorSize;
-
-  _policyExperiment["Console Output"]["Frequency"] = 0;
-  _policyExperiment["Console Output"]["Verbosity"] = "Silent";
-  _policyExperiment["File Output"]["Enabled"] = false;
-  _policyExperiment["Random Seed"] = _k->_randomSeed++;
 
   // Initializing experiment with an initial zero set
   for (size_t i = 0; i < _problem->_stateVectorSize; i++)

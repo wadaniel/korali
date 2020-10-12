@@ -30,11 +30,6 @@ void DDPG::initializeAgent()
   _criticExperiment["Solver"]["Steps Per Generation"] = 1;
   _criticExperiment["Solver"]["Neural Network"] = _criticNeuralNetwork;
 
-  _criticExperiment["Console Output"]["Frequency"] = 0;
-  _criticExperiment["Console Output"]["Verbosity"] = "Silent";
-  _criticExperiment["File Output"]["Enabled"] = false;
-  _criticExperiment["Random Seed"] = _k->_randomSeed++;
-
   // Initializing experiment with an initial zero set
   for (size_t i = 0; i < _criticMiniBatchSize; i++)
   {
@@ -64,11 +59,6 @@ void DDPG::initializeAgent()
   _policyExperiment["Solver"]["Learning Rate"] = _policyLearningRate;
   _policyExperiment["Solver"]["Steps Per Generation"] = 1;
   _policyExperiment["Solver"]["Neural Network"] = _policyNeuralNetwork;
-
-  _policyExperiment["Console Output"]["Frequency"] = 0;
-  _policyExperiment["Console Output"]["Verbosity"] = "Silent";
-  _policyExperiment["File Output"]["Enabled"] = false;
-  _policyExperiment["Random Seed"] = _k->_randomSeed++;
 
   // Initializing experiment with an initial zero set
   for (size_t i = 0; i < _criticMiniBatchSize; i++)
@@ -197,9 +187,6 @@ void DDPG::trainAgent()
    {
     // Selecting a uniformly random selected, yet not repeated experience
     size_t expId = experienceReplayIndexes[i];
-
-    // Check if it is a terminal state
-    bool isTerminal = _experienceReplayTerminal[expId];
 
     // Getting experience's current state and action
     std::vector<float> curState   = _experienceReplayStates[expId];

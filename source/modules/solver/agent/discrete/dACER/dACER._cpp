@@ -131,6 +131,73 @@ void dACER::trainAgent()
   }
 }
 
+float dACER::retraceFunction(size_t expId)
+{
+  // Finding last experience in the episode that corresponds to expId
+  size_t curId = expId;
+  while (_experienceReplayTerminal[curId] == false && curId < _experienceReplayStates.size()-1) curId++;
+
+  // Now getting last experience's qRet
+  float qRet = _experienceReplayRewards[curId];
+  if (_experienceReplayTerminal[curId] == false)
+  {
+   std::vector<float> curState = _experienceReplayStates[curId];
+   qRet = stateValueFunction(curState);
+  }
+
+  // Now iterating backwards to calculate the rest of qRet
+  while (curId > expId)
+  {
+   // Decreasing current experience index
+   curId--;
+
+   // Getting current reward
+   float curReward = _experienceReplayRewards[curId];
+
+   // Re-calculating qRet
+   qRet = curReward + _criticDiscountFactor * qRet;
+
+   // If this is the starting experience, return the current value
+   if (curId == expId) break;
+
+   // Getting current state
+   std::vector<float> curState = _experienceReplayStates[curId];
+
+   // Getting current action index
+   size_t curActionIdx = _experienceReplayActionIndexes[curId];
+
+   // Calculating V(state) with the current policy
+   float vCurState = stateValueFunction(curState);
+
+   // Calculating Q(state, action) with the current policy
+   float qCurState = stateActionValueFunction(curState, curActionIdx);
+
+   // Getting probability densities for current action given current policy
+   auto pOldPolicy = _experienceReplayActionProbabilities[curId];
+
+   // Getting probability densities for current action given current policy
+   auto pCurPolicy = getActionProbabilities(curState);
+
+   // Getting p(s,a) for selected experience, given the old policy
+   float pActionOldPolicy = pOldPolicy[curActionIdx];
+
+   // Getting p(s,a) for the best action, given the current policy
+   float pActionCurPolicy = pCurPolicy[curActionIdx];
+
+   // Now calculating importance weight for the old s,a experience
+   float importanceWeight = pActionCurPolicy / pActionOldPolicy;
+
+   // Now calculating truncated importance weight with 1.0 as truncation factor
+   float truncatedImportanceWeight = std::min(1.0f, importanceWeight);
+
+   // Updating qRet
+   qRet = truncatedImportanceWeight * (qRet - qCurState) + vCurState;
+  }
+
+  // Returning qRet
+  return qRet;
+}
+
 void dACER::processTrajectory(size_t startId, size_t endId)
 {
   size_t experienceCount = endId - startId;
@@ -141,14 +208,6 @@ void dACER::processTrajectory(size_t startId, size_t endId)
 
   // Going straight to the latest experience in the corresponding trajectory
   size_t curId = endId;
-
-  // First, get the retrace value for the last experience (just the reward)
-  float qRet = _experienceReplayRewards[curId];
-  if (_experienceReplayTerminal[curId] == false)
-  {
-   std::vector<float> curState = _experienceReplayStates[curId];
-   qRet = stateValueFunction(curState);
-  }
 
   // Keeping track of the current experience
   size_t curExperience = 0;
@@ -161,8 +220,8 @@ void dACER::processTrajectory(size_t startId, size_t endId)
    // Getting current reward
    float curReward = _experienceReplayRewards[curId];
 
-   // Re-calculating qRet
-   qRet = curReward + _criticDiscountFactor * qRet;
+   // Calculating qRet
+   float qRet = retraceFunction(curId);
 
    // Getting experience's state
    std::vector<float> curState = _experienceReplayStates[curId];
@@ -179,7 +238,6 @@ void dACER::processTrajectory(size_t startId, size_t endId)
    auto pOldPolicy = _experienceReplayActionProbabilities[curId];
 
    // Getting probability densities for current action given current policy
-   _policyLearner->setHyperparameters(_policyCurrentHyperparameters); // PW: why?
    auto pCurPolicy = getActionProbabilities(curState);
 
    // Getting p(s,a) for selected experience, given the old policy
@@ -209,26 +267,26 @@ void dACER::processTrajectory(size_t startId, size_t endId)
     // Compute the expectation for the second part of the gradient vector
     for (size_t newActionIdx = 0; newActionIdx < _problem->_possibleActions.size(); newActionIdx++)
     {
-      // Calculating Qcritic(state,action)
-      float qCritic = stateActionValueFunction(curState, newActionIdx);
+     // Calculating Qcritic(state,action)
+     float qCritic = stateActionValueFunction(curState, newActionIdx);
 
-      // Getting p(s,a) for selected action, given the old policy
-      float pNewActionOldPolicy = pOldPolicy[newActionIdx];
+     // Getting p(s,a) for selected action, given the old policy
+     float pNewActionOldPolicy = pOldPolicy[newActionIdx];
 
-      // Getting p(s,a) for selected action, given the current policy
-      float pNewActionCurPolicy = pCurPolicy[newActionIdx];
+     // Getting p(s,a) for selected action, given the current policy
+     float pNewActionCurPolicy = pCurPolicy[newActionIdx];
 
-      // Now calculating importance weight for the old s,a experience
-      float newImportanceWeight = pNewActionCurPolicy / pNewActionOldPolicy;
+     // Now calculating importance weight for the old s,a experience
+     float newImportanceWeight = pNewActionCurPolicy / pNewActionOldPolicy;
 
-      // Now calculating r(a) - c / r(a) ratio
-      float importanceRatio = 1.0f - (_importanceWeightTruncation / newImportanceWeight);
+     // Now calculating r(a) - c / r(a) ratio
+     float importanceRatio = 1.0f - (_importanceWeightTruncation / newImportanceWeight);
 
-      // Now calculating the correction weight
-      float correctionWeight = importanceRatio > 0.0f ? importanceRatio : 0.0f;
+     // Now calculating the correction weight
+     float correctionWeight = importanceRatio > 0.0f ? importanceRatio : 0.0f;
 
-      // Adding the component of part two to the gradient vector
-      gPolicy[newActionIdx] += correctionWeight * (qCritic - vCurState);
+     // Adding the component of part two to the gradient vector
+     gPolicy[newActionIdx] += correctionWeight * (qCritic - vCurState);
     }
 
     ///////////////// KL Calculation /////////////////////
@@ -280,18 +338,8 @@ void dACER::processTrajectory(size_t startId, size_t endId)
      // Keeping statistics
      _cumulativeQStar += gCritic[curActionIdx];
 
-    /*****************************************
-     * Updating the value of qRet
-     *****************************************/
-
-    // Now calculating truncated importance weight with 1.0 as truncation factor
-    truncatedImportanceWeight = std::min(1.0f, importanceWeight);
-
-    // Updating qRet
-    qRet = truncatedImportanceWeight * (qRet - qCurState) + vCurState;
-
-    // Increasing current experience count
-    curExperience++;
+     // Increasing current experience count
+     curExperience++;
   }
 
   // Running one generation of the optimization method with the given mini-batch

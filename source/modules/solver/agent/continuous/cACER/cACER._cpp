@@ -114,37 +114,48 @@ void cACER::initializeAgent()
 
 void cACER::trainAgent()
 {
+//  // Resetting critic statistics
+// _cumulativeQStar = 0;
+//
 //  // Creating storage for the starting index for all current trajectories
 //  std::vector<size_t> trajectoryStartIndexes;
+//  std::vector<size_t> trajectoryEndIndexes;
 //
 //  // Detecting trajectories
+//  size_t curTrajectoryPos = 0;
 //  for (size_t i = 0; i < _experienceReplayStates.size(); i++)
-//   if (_experienceReplay[i]["Trajectory Position"] == 0)
-//    trajectoryStartIndexes.push_back(i);
-//
-//  // Storage for trajectory selections
-//  std::vector<size_t> trajectories;
-//
-//  // Adding on-policy trajectory first
-//  trajectories.push_back(trajectoryStartIndexes[trajectoryStartIndexes.size()-1]);
-//
-//  // Shuffling indexes to choose the off-policy trajectories from
-//  std::shuffle(trajectoryStartIndexes.begin(), trajectoryStartIndexes.end()-1, *mt);
-//
-//  // Adding off-policy trajectories
-//  for (size_t i = 0; i < _offPolicyUpdates; i++) trajectories.push_back(trajectoryStartIndexes[i]);
-//
-//  for (size_t tId = 0; tId < trajectories.size(); tId++)
 //  {
-//   // Getting initial experience id from the trajectory
-//   size_t startId = trajectories[tId];
+//   if (curTrajectoryPos == 0) trajectoryStartIndexes.push_back(i);
 //
-//   // Looking for final experience id from the trajectory
-//   size_t endId = startId;
-//   while (_experienceReplay[endId]["Trajectory End"] == false) endId++;
+//   if ((curTrajectoryPos == _trajectorySize-1) || // Reached specified trajectory size
+//       (_experienceReplayTerminal[i] == true) || // The experience is terminal
+//       (i == _experienceReplayStates.size()-1) ) // Reached the end of the replay experience
+//   {
+//    trajectoryEndIndexes.push_back(i);
+//    curTrajectoryPos = 0;
+//   }
+//   else
+//   {
+//    curTrajectoryPos++;
+//   }
+//  }
 //
-//   // Training from the selected trajectory
-//   processTrajectory(startId, endId);
+//  // Now processing the last trajectory for obligatory on-policy update
+//  size_t lastIdx = trajectoryStartIndexes.size()-1;
+//  processTrajectory(trajectoryStartIndexes[lastIdx], trajectoryEndIndexes[lastIdx]);
+//
+//  // Creating index vector for random off-policy trajectory selection
+//  std::vector<size_t> trajectoryIndexes(trajectoryStartIndexes.size()-1);
+//  for (size_t i = 0; i < trajectoryIndexes.size(); i++) trajectoryIndexes[i] = i;
+//
+//  // Shuffling trajectory
+//  std::shuffle(trajectoryIndexes.begin(), trajectoryIndexes.end(), *mt);
+//
+//  // Performing off-policy updates
+//  for (size_t i = 0; i < _offPolicyUpdates; i++)
+//  {
+//   size_t tIdx = trajectoryIndexes[i];
+//   processTrajectory(trajectoryStartIndexes[tIdx], trajectoryEndIndexes[tIdx]);
 //  }
 }
 

@@ -133,6 +133,7 @@ void Distributed::finalize()
 
 void Distributed::broadcastMessageToWorkers(knlohmann::json &message)
 {
+#ifdef _KORALI_USE_MPI
   // Run broadcast only if this is the master process
   if (!isRoot()) return;
 
@@ -145,6 +146,7 @@ void Distributed::broadcastMessageToWorkers(knlohmann::json &message)
       MPI_Send(&messageStringSize, 1, MPI_UNSIGNED_LONG, _workerProcesses[i][j], MPI_MESSAGE_JSON_SIZE, _mpiCommunicator);
       MPI_Send(messageString.c_str(), messageStringSize, MPI_CHAR, _workerProcesses[i][j], MPI_MESSAGE_JSON_CONTENT, _mpiCommunicator);
     }
+#endif
 }
 
 size_t Distributed::getRootRank()
@@ -174,6 +176,7 @@ void Distributed::abort()
 
 void Distributed::sendMessageToEngine(knlohmann::json &message)
 {
+#ifdef _KORALI_USE_MPI
   if (_localRankId == 0)
   {
     string messageString = message.dump();
@@ -181,10 +184,14 @@ void Distributed::sendMessageToEngine(knlohmann::json &message)
     MPI_Send(&messageStringSize, 1, MPI_UNSIGNED_LONG, getRootRank(), MPI_MESSAGE_JSON_SIZE, _mpiCommunicator);
     MPI_Send(messageString.c_str(), messageStringSize, MPI_CHAR, getRootRank(), MPI_MESSAGE_JSON_CONTENT, _mpiCommunicator);
   }
+#endif
 }
 
 knlohmann::json Distributed::recvMessageFromEngine()
 {
+  auto message = knlohmann::json();
+
+#ifdef _KORALI_USE_MPI
   MPI_Barrier(__KoraliTeamComm);
 
   size_t jsonStringSize;
@@ -194,7 +201,8 @@ knlohmann::json Distributed::recvMessageFromEngine()
   MPI_Recv(jsonStringChar, jsonStringSize, MPI_CHAR, getRootRank(), MPI_MESSAGE_JSON_CONTENT, _mpiCommunicator, MPI_STATUS_IGNORE);
 
   jsonStringChar[jsonStringSize] = '\0';
-  auto message = knlohmann::json::parse(jsonStringChar);
+  message = knlohmann::json::parse(jsonStringChar);
+#endif
 
   return message;
 }
@@ -202,11 +210,14 @@ knlohmann::json Distributed::recvMessageFromEngine()
 knlohmann::json Distributed::recvMessageFromSample(Sample &sample)
 {
   Engine *engine = _engineStack.top();
+  knlohmann::json message;
+
+#ifdef _KORALI_USE_MPI
 
   size_t messageSize;
   MPI_Request messageRequest;
   MPI_Irecv(&messageSize, 1, MPI_UNSIGNED_LONG, _workerProcesses[sample._workerId][0], MPI_MESSAGE_JSON_SIZE, _mpiCommunicator, &messageRequest);
-  knlohmann::json message;
+
 
   int flag = 0;
   while (flag == 0)
@@ -225,11 +236,14 @@ knlohmann::json Distributed::recvMessageFromSample(Sample &sample)
     }
   }
 
+#endif
+
   return message;
 }
 
 void Distributed::sendMessageToSample(Sample &sample, knlohmann::json &message)
 {
+#ifdef _KORALI_USE_MPI
   string messageString = message.dump();
   size_t messageStringSize = messageString.size();
 
@@ -239,10 +253,12 @@ void Distributed::sendMessageToSample(Sample &sample, knlohmann::json &message)
     MPI_Send(&messageStringSize, 1, MPI_UNSIGNED_LONG, workerId, MPI_MESSAGE_JSON_SIZE, _mpiCommunicator);
     MPI_Send(messageString.c_str(), messageStringSize, MPI_CHAR, workerId, MPI_MESSAGE_JSON_CONTENT, _mpiCommunicator);
   }
+#endif
 }
 
 void Distributed::stackEngine(Engine *engine)
 {
+#ifdef _KORALI_USE_MPI
   // (Engine-Side) Adding engine to the stack to support Korali-in-Korali execution
   _engineStack.push(engine);
 
@@ -251,16 +267,19 @@ void Distributed::stackEngine(Engine *engine)
   engine->serialize(engineJs["Engine"]);
 
   broadcastMessageToWorkers(engineJs);
+#endif
 }
 
 void Distributed::popEngine()
 {
+#ifdef _KORALI_USE_MPI
   // (Engine-Side) Removing the current engine to the conduit's engine stack
   _engineStack.pop();
 
   auto popJs = knlohmann::json();
   popJs["Conduit Action"] = "Pop Engine";
   broadcastMessageToWorkers(popJs);
+#endif
 }
 
 } // namespace conduit

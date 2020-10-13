@@ -68,8 +68,6 @@ class dACER : public Discrete
    */
   void processTrajectory(size_t startId, size_t endId);
 
-  float retraceFunction(size_t expId);
-
   std::vector<float> getActionProbabilities(const std::vector<float> &state) override;
   void updateHyperparameters(const knlohmann::json &hyperparameters) override;
   void trainAgent() override;

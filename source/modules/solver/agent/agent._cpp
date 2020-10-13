@@ -86,6 +86,8 @@ void Agent::runGeneration()
     _experienceReplayTerminal.push_back(experience["Is Terminal"].get<bool>());
     if(isDefined(experience, "Metadata", "Action Index")) _experienceReplayActionIndexes.push_back(experience["Metadata"]["Action Index"].get<size_t>());
     if(isDefined(experience, "Metadata", "Action Probabilities")) _experienceReplayActionProbabilities.push_back(experience["Metadata"]["Action Probabilities"].get<std::vector<float>>());
+    if(isDefined(experience, "Metadata", "Action Means")) _experienceReplayActionMeans.push_back(experience["Metadata"]["Action Means"].get<std::vector<float>>());
+    if(isDefined(experience, "Metadata", "Action Sigmas")) _experienceReplayActionSigmas.push_back(experience["Metadata"]["Action Sigmas"].get<std::vector<float>>());
 
     _curExperienceCount++;
 
@@ -127,6 +129,15 @@ void Agent::runGeneration()
 
     if (_experienceReplayActionIndexes.size() > 0)
      _experienceReplayActionIndexes.erase(_experienceReplayActionIndexes.begin(), _experienceReplayActionIndexes.begin() + excess);
+
+    if (_experienceReplayActionProbabilities.size() > 0)
+     _experienceReplayActionProbabilities.erase(_experienceReplayActionProbabilities.begin(), _experienceReplayActionProbabilities.begin() + excess);
+
+    if (_experienceReplayActionMeans.size() > 0)
+     _experienceReplayActionMeans.erase(_experienceReplayActionMeans.begin(), _experienceReplayActionMeans.begin() + excess);
+
+    if (_experienceReplayActionSigmas.size() > 0)
+     _experienceReplayActionSigmas.erase(_experienceReplayActionSigmas.begin(), _experienceReplayActionSigmas.begin() + excess);
   }
 
   // Updating if exceeded best training policy so far.

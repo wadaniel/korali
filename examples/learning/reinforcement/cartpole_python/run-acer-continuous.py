@@ -59,7 +59,7 @@ e["Solver"]["Experience Replay"]["Maximum Size"] = 50000
 ## Defining Q-Critic and Action-selection (policy) optimizers
 
 e["Solver"]["Critic"]["Discount Factor"] = 0.995
-e["Solver"]["Critic"]["Learning Rate"] = 0.001
+e["Solver"]["Critic"]["Learning Rate"] = 0.01
 e["Solver"]["Critic"]["Mini Batch Size"] = 32
 e["Solver"]["Critic"]["Normalization Steps"] = 32
 
@@ -110,9 +110,9 @@ e["Solver"]["Policy"]["Neural Network"]["Output Scaling"] = [ 10.0 ]
 
 ### Defining Termination Criteria
 
-e["Solver"]["Training Reward Threshold"] = 490
+e["Solver"]["Training Reward Threshold"] = 400
 e["Solver"]["Policy Testing Episodes"] = 20
-e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 490
+e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 450
 
 ### Setting file output configuration
 

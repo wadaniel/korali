@@ -135,8 +135,6 @@ void DeepGD::finalize()
   _evaluationNeuralNetwork->setHyperparameters(_hyperparameters);
   _evaluationNeuralNetwork->setNormalizationMeans(_normalizationMeans);
   _evaluationNeuralNetwork->setNormalizationVariances(_normalizationVariances);
-
-  _k->_logger->logInfo("Normal", "Current Loss: %.15f\n", _currentLoss);
 }
 
 std::vector<float> DeepGD::getHyperparameters()

@@ -96,8 +96,8 @@ void Continuous::getAction(korali::Sample& sample)
   }
 
   // Storing selection metadata
-  sample["Metadata"]["Means"] = actionMeans;
-  sample["Metadata"]["Sigmas"] = actionSigmas;
+  sample["Metadata"]["Action Means"] = actionMeans;
+  sample["Metadata"]["Action Sigmas"] = actionSigmas;
  }
 
  /*****************************************************************************

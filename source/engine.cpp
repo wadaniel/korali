@@ -123,8 +123,6 @@ void Engine::run()
 
   // Finalizing Conduit if last engine in the stack
   _conduit->finalize();
-
-  delete conduit;
 }
 
 void Engine::saveProfilingInfo(const bool forceSave)

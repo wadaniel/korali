@@ -74,6 +74,10 @@ void Agent::runGeneration()
   // Counter for experiences between updates
   size_t _curExperienceCount = 0;
 
+  // Forcibly train policy before launching new episodes if minimum number of experiences are received
+  if (_experienceReplayStates.size() > _experienceReplayStartSize)
+  for (size_t i = 0; i < _optimizationStepsPerUpdate; i++) trainAgent();
+
   // Keep listening to incoming experiences until we reached a terminal state
   do
   {
@@ -91,7 +95,7 @@ void Agent::runGeneration()
 
     _curExperienceCount++;
 
-    if (_curExperienceCount >= _experiencesBetweenUpdates || experience["Is Terminal"] == true) // If we accumulated enough experiences between updates, update now
+    if (_curExperienceCount >= _experiencesBetweenUpdates) // If we accumulated enough experiences between updates, update now
     if (_experienceReplayStates.size() > _experienceReplayStartSize) // Perform optimization steps on the critic/policy, if reached the minimum replay memory size
     {
      for (size_t i = 0; i < _optimizationStepsPerUpdate; i++) trainAgent();

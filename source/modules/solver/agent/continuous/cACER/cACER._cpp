@@ -508,6 +508,11 @@ void cACER::printAgentInformation()
   _aExperiment._solver->printGenerationAfter();
   _aExperiment._logger->setVerbosityLevel("Silent");
 
+  _k->_logger->logInfo("Normal", "Policy Information:\n");
+  _policyExperiment._logger->_verbosityLevel = _k->_logger->_verbosityLevel;
+  _policyExperiment._solver->printGenerationAfter();
+  _policyExperiment._logger->setVerbosityLevel("Silent");
+
    // Resetting cumulative Q*, for statistical purposes
    _cumulativeQStar = 0.0;
 }

@@ -200,7 +200,6 @@ void DeepGD::printGenerationAfter()
 {
   // Printing results so far
   _k->_logger->logInfo("Normal", "Training Loss: %.15f\n", _currentLoss);
-  _k->_logger->logInfo("Normal", "Minimum Training Loss: %.15f\n", _minimumLoss);
   _k->_logger->logInfo("Normal", "Suboptimal Generation Count: %lu\n", _suboptimalGenerationCount);
 }
 

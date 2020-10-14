@@ -1,5 +1,12 @@
 #!/bin/bash
 
+###### Check if necessary python modules are installed ######
+python3 -m pip show scipy
+if [ $? -ne 0 ]; then
+ echo "[Korali] Scipy not found, aborting test"
+ exit 0
+fi
+
 ###### Auxiliar Functions and Variables #########
 
 source ../../../../tests/functions.sh

@@ -35,7 +35,17 @@ namespace korali
 /**
  * @brief Macro to broadcast global information to all the workers.
  */
-#define KORALI_BROADCAST(KEY, JSON) _k->_engine->_conduit->broadcastGlobals(KEY, JSON);
+#define KORALI_UPDATE_GLOBALS(KEY, JSON) _k->_engine->_conduit->updateGlobals(KEY, JSON);
+
+/**
+ * @brief Macro to wait for any of the given samples.
+ */
+#define KORALI_SEND_MSG_TO_SAMPLE(SAMPLE, MSG) _k->_engine->_conduit->sendMessageToSample(SAMPLE, MSG);
+
+/**
+ * @brief Macro to wait for any of the given samples.
+ */
+#define KORALI_RECV_MSG_FROM_SAMPLE(SAMPLE) _k->_engine->_conduit->recvMessageFromSample(SAMPLE);
 
 class Solver : public Module
 {

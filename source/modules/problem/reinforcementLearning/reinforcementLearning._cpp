@@ -1,3 +1,4 @@
+#include "engine.hpp"
 #include "modules/problem/reinforcementLearning/reinforcementLearning.hpp"
 #include "modules/solver/agent/agent.hpp"
 #include "sample/sample.hpp"
@@ -9,7 +10,6 @@ namespace problem
 void ReinforcementLearning::initialize()
 {
   // Processing state/action variable configuration
-
   _stateVectorIndexes.clear();
   _actionVectorIndexes.clear();
   for (size_t i = 0; i < _k->_variables.size(); i++)
@@ -46,24 +46,20 @@ void __environmentWrapper()
 
   sample->run(__envFunctionId);
 
-  (*sample)["Finished"] = true;
+  (*sample)["Is Terminal"] = true;
 
   co_switch(sample->_workerThread);
 
   KORALI_LOG_ERROR("Resuming a finished sample\n");
 }
 
-void ReinforcementLearning::runTrainingSample(Sample &sample) { runEnvironment(sample, true); }
-void ReinforcementLearning::runTestingSample(Sample &sample) { runEnvironment(sample, false); }
-void ReinforcementLearning::runEnvironment(Sample &sample, bool useTrainingAction)
+void ReinforcementLearning::runEpisode(Sample &sample)
 {
   // Getting RL-compatible solver
-  auto agent = dynamic_cast<solver::Agent *>(_k->_solver);
+  _agent = dynamic_cast<solver::Agent *>(_k->_solver);
 
-  // First, we update the policy's hyperparameters
-  agent->updateHyperparameters(sample.globals()["Hyperparameters"]);
-
-  sample["Finished"] = false;
+  // First, we update the initial policy's hyperparameters
+  _agent->updateHyperparameters(sample.globals()["Hyperparameters"]);
 
   // Creating sample coroutine
   __currentSample = &sample;
@@ -77,61 +73,87 @@ void ReinforcementLearning::runEnvironment(Sample &sample, bool useTrainingActio
   // Action Repeat Counter
   size_t actionLastUpdated = 0;
 
-  // Initializing episode's experience counter
-  size_t expId = 0;
-
-  // A counter for the cumulative reward
-  double cumulativeReward = 0.0;
+  // Counter for the total number of actions taken
+  size_t actionCount = 0;
 
   // Storage for the action
-  std::vector<double> action(_actionVectorSize);
+  std::vector<float> action(_actionVectorSize);
+
+  // Reserving storage for sending back experiences
+  knlohmann::json experience;
+  experience["Sample Id"] = sample["Sample Id"];
+
+  // Clearing sample metadata in case we need it
+  sample["Metadata"] = knlohmann::json();
+
+  // Storage to keep track of cumulative reward
+  float cumulativeReward = 0.0;
 
   // Saving experiences
-  while (sample["Finished"] == false)
+  sample["Is Terminal"] = false;
+  while (sample["Is Terminal"] == false)
   {
-    // Retrieving state
-    auto state = sample["State"].get<std::vector<double>>();
-
     // Requesting new action, if enough steps have passed, given by the action repeat parameter
     if (actionLastUpdated == 0)
     {
-      if (useTrainingAction == true)
-        action = agent->getTrainingAction(state);
-      else
-        action = agent->getInferenceAction(state);
+      // Getting new action
+      _agent->getAction(sample);
 
+      // Resetting action repeat counter
       actionLastUpdated = _actionRepeat;
+      actionCount++;
     }
     actionLastUpdated--;
 
-    // Setting current action
-    sample["Action"] = action;
-
     // Storing the current state
-    sample["Experience"]["States"][expId] = state;
+    experience["State"] = sample["State"];
 
     // Storing the current action
-    sample["Experience"]["Actions"][expId] = action;
+    experience["Action"] = sample["Action"];
 
-    // Calculating and storing probability density of current state/action
-    sample["Experience"]["Densities"][expId] = agent->getStateActionProbabilityDensity(state, action);
+    // Storing any necesary metadata
+    experience["Metadata"] = sample["Metadata"];
 
-    // Jumping back into the agent's environment
+    // Storing whether this experience was terminal or not
+    experience["Is Terminal"] = false;
+
+    // Jumping back into the _agent's environment
     co_switch(envThread);
 
-    // Returning from the agent's environment with the reward
-    double reward = sample["Reward"].get<double>();
-    sample["Experience"]["Rewards"][expId] = reward;
+    // Storing experience's reward
+    experience["Reward"] = sample["Reward"];
 
-    // Adding this experience's reward to total reward
-    cumulativeReward += reward;
+    // Storing whether the experience is terminal
+    experience["Is Terminal"] = sample["Is Terminal"];
 
-    // Advancing to next experience
-    expId++;
+    // Adding to cumulative reward
+    cumulativeReward += sample["Reward"].get<float>();
+
+    // If training, updating engine with the current experience
+    if (sample["Mode"] == "Training")
+    {
+      // Checking if we requested the given number of actions in between policy updates
+      bool requestNewPolicy = actionCount % _actionsBetweenPolicyUpdates == 0;
+
+      experience["Request New Policy"] = false;
+      if (requestNewPolicy) experience["Request New Policy"] = true;
+
+      // Sending experience to engine
+      KORALI_SEND_MSG_TO_ENGINE(experience);
+
+      // If requested new policy, wait for incoming message containing new hyperparameters
+      if (requestNewPolicy)
+      {
+        auto hyperparameters = KORALI_RECV_MSG_FROM_ENGINE();
+        _agent->updateHyperparameters(hyperparameters);
+      }
+    }
   }
 
+  // Setting cumulative reward
   sample["Cumulative Reward"] = cumulativeReward;
 
+  // Freeing co-routine memory
   co_delete(envThread);
 }
 

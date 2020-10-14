@@ -8,30 +8,123 @@ using namespace std;
 
 namespace korali
 {
-/***********************************
- * Engine-Side Operations
- **********************************/
+/**
+* @brief Temporary storage to hold the pointer to the current sample to process
+*/
+Sample *_currentSample;
 
 void Conduit::coroutineWrapper()
 {
   Engine *engine = _engineStack.top();
-  Sample *currentSample = engine->_engineSample;
+  Sample *sample = _currentSample;
+
+  (*sample)["Experiment Id"] = engine->_currentExperiment->_experimentId;
+  (*sample)["Current Generation"] = engine->_currentExperiment->_currentGeneration;
+
+  while (engine->_conduit->_workerQueue.empty())
+  {
+    sample->_state = SampleState::waiting;
+    co_switch(engine->_currentExperiment->_thread);
+  }
+  sample->_workerId = engine->_conduit->_workerQueue.front();
+  engine->_conduit->_workerQueue.pop();
+
+  auto timelineJs = knlohmann::json();
+  timelineJs["Start Time"] = chrono::duration<double>(chrono::high_resolution_clock::now() - _startTime).count() + _cumulativeTime;
+
+  // Sending sample information to worker
+  auto sampleJs = sample->_js.getJson();
+  sampleJs["Conduit Action"] = "Process Sample";
+  engine->_conduit->sendMessageToSample(*sample, sampleJs);
+
+  // Receiving sample information from worker
+  sample->_js.getJson() = engine->_conduit->recvMessageFromSample(*sample);
+  engine->_conduit->_workerQueue.push(sample->_workerId);
+
+  timelineJs["End Time"] = chrono::duration<double>(chrono::high_resolution_clock::now() - _startTime).count() + _cumulativeTime;
+  timelineJs["Solver Id"] = engine->_currentExperiment->_experimentId;
+  timelineJs["Current Generation"] = engine->_currentExperiment->_currentGeneration;
+  __profiler["Timelines"]["Worker " + to_string(sample->_workerId)] += timelineJs;
+
+  sample->_state = SampleState::finished;
   co_switch(engine->_currentExperiment->_thread);
-  (*currentSample)["Experiment Id"] = engine->_currentExperiment->_experimentId;
-  (*currentSample)["Current Generation"] = engine->_currentExperiment->_currentGeneration;
 
-  engine->_conduit->processSample(*currentSample);
+  if (sample->_state != SampleState::uninitialized) KORALI_LOG_ERROR("Resuming a finished sample\n");
+}
 
-  currentSample->_state = SampleState::finished;
-  co_switch(engine->_currentExperiment->_thread);
+void Conduit::worker()
+{
+  while (true)
+  {
+    auto js = recvMessageFromEngine();
 
-  if (currentSample->_state != SampleState::uninitialized) KORALI_LOG_ERROR("Resuming a finished sample\n");
+    if (js["Conduit Action"] == "Terminate") exit(0);
+    if (js["Conduit Action"] == "Process Sample") workerProcessSample(js);
+    if (js["Conduit Action"] == "Broadcast Globals") workerBroadcastGlobals(js);
+    if (js["Conduit Action"] == "Stack Engine") workerStackEngine(js);
+    if (js["Conduit Action"] == "Pop Engine") workerPopEngine();
+  }
+}
+
+void Conduit::workerProcessSample(const knlohmann::json &js)
+{
+  Engine *engine = _engineStack.top();
+  auto expId = js["Experiment Id"];
+  Sample s;
+  s._globals = &engine->_experimentVector[expId]->_globals;
+  s._js.getJson() = js;
+  s.sampleLauncher();
+  sendMessageToEngine(s._js.getJson());
+}
+
+void Conduit::workerBroadcastGlobals(const knlohmann::json &js)
+{
+  Engine *engine = _engineStack.top();
+  auto expId = js["Experiment Id"];
+  auto key = js["Globals"]["Key"].get<std::string>();
+  engine->_experimentVector[expId]->_globals[key] = js["Globals"]["Values"];
+}
+
+void Conduit::workerStackEngine(const knlohmann::json &js)
+{
+  auto k = new Engine;
+
+  for (size_t i = 0; i < js["Engine"]["Experiment Vector"].size(); i++)
+  {
+    auto e = new Experiment;
+    e->_js.getJson() = js["Engine"]["Experiment Vector"][i];
+    k->_experimentVector.push_back(e);
+  }
+
+  k->initialize();
+
+  _engineStack.push(k);
+}
+
+void Conduit::workerPopEngine()
+{
+  Engine *engine = _engineStack.top();
+  _engineStack.pop();
+}
+
+void Conduit::updateGlobals(std::string key, knlohmann::json &globalsJs)
+{
+  // Run broadcast only if this is the master process
+  if (!isRoot()) return;
+
+  Engine *engine = _engineStack.top();
+
+  knlohmann::json js;
+  js["Experiment Id"] = engine->_currentExperiment->_experimentId;
+  js["Conduit Action"] = "Broadcast Globals";
+  js["Globals"]["Key"] = key;
+  js["Globals"]["Values"] = globalsJs;
+
+  broadcastMessageToWorkers(js);
 }
 
 void Conduit::start(Sample &sample)
 {
-  Engine *engine = _engineStack.top();
-
   // Checking if sample id was defined
   KORALI_GET(size_t, sample, "Sample Id");
 
@@ -43,7 +136,7 @@ void Conduit::start(Sample &sample)
     KORALI_LOG_ERROR("Sample thread is already allocated; has it executed before being re-started?\n");
 
   sample._state = SampleState::initialized;
-  engine->_engineSample = &sample;
+  _currentSample = &sample;
 
   co_switch(sample._sampleThread);
 }
@@ -59,6 +152,8 @@ void Conduit::wait(Sample &sample)
 
     sample._state = SampleState::running;
     co_switch(sample._sampleThread);
+
+    if (sample._state != SampleState::finished) sample._state = SampleState::waiting;
 
     if (sample._state == SampleState::waiting || sample._state == SampleState::initialized) co_switch(engine->_thread);
   }
@@ -92,6 +187,7 @@ size_t Conduit::waitAny(vector<Sample> &samples)
       {
         samples[currentSample]._state = SampleState::running;
         co_switch(samples[currentSample]._sampleThread);
+        if (samples[currentSample]._state != SampleState::finished) samples[currentSample]._state = SampleState::waiting;
       }
 
       if (samples[currentSample]._state == SampleState::finished)
@@ -135,6 +231,8 @@ void Conduit::waitAll(vector<Sample> &samples)
         isFinished = false;
         samples[i]._state = SampleState::running;
         co_switch(samples[i]._sampleThread);
+
+        if (samples[i]._state != SampleState::finished) samples[i]._state = SampleState::waiting;
       }
 
     if (isFinished == false) co_switch(engine->_thread);

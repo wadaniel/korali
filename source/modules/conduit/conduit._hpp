@@ -2,6 +2,7 @@
 #define _KORALI_CONDUIT_HPP_
 
 #include "modules/module.hpp"
+#include <queue>
 #include <vector>
 
 namespace korali
@@ -12,15 +13,14 @@ class Conduit : public Module
 {
   public:
   /**
- * @brief Accepts a sample for processing.
- * @param sample A Korali sample
+ * @brief Lifetime function for korali workers.
  */
-  virtual void processSample(Sample &sample) = 0;
+  void worker();
 
   /**
-  * @brief Initializes the worker/server bifurcation in the conduit
+  * @brief Queue to store idle workers to assign samples to
   */
-  virtual void initServer(){};
+  std::queue<size_t> _workerQueue;
 
   /**
  * @brief Determines whether the caller rank/thread/process is root.
@@ -33,7 +33,30 @@ class Conduit : public Module
  * @param key Key onto which to save the global information
  * @param globalsJs JSON object with information to broadcast
  */
-  virtual void broadcastGlobals(std::string key, knlohmann::json &globalsJs) = 0;
+  void updateGlobals(std::string key, knlohmann::json &globalsJs);
+
+  /**
+ * @brief  (Worker Side) Starts the processing of a sample at the worker side
+ * @param js Contains sample's input data and metadata
+ */
+  void workerProcessSample(const knlohmann::json &js);
+
+  /**
+   * @brief (Worker Side) Accepts an incoming broadcast message containing global variables
+   * @param js Contains global data
+   */
+  void workerBroadcastGlobals(const knlohmann::json &js);
+
+  /**
+  * @brief (Worker Side) Accepts and stacks an incoming Korali engine from the main process
+  * @param js Contains Engine's input data and metadata
+  */
+  void workerStackEngine(const knlohmann::json &js);
+
+  /**
+   * @brief (Worker Side) Pops the top of the engine stack
+   */
+  void workerPopEngine();
 
   /**
  * @brief Aborts execution for all ranks/threads/processes.
@@ -69,17 +92,54 @@ class Conduit : public Module
   * @brief Stacks a new Engine into the engine stack
   * @param engine A Korali Engine
   */
-  virtual void stackEngine(Engine *engine){};
+  virtual void stackEngine(Engine *engine) = 0;
 
   /**
   * @brief Pops the current Engine from the engine stack
   */
-  virtual void popEngine(){};
+  virtual void popEngine() = 0;
 
   /**
   * @brief Wrapper function for the sample coroutine
   */
   static void coroutineWrapper();
+
+  /**
+  * @brief Initializes the worker/server bifurcation in the conduit
+  */
+  virtual void initServer() = 0;
+
+  /**
+  * @brief Broadcasts a message to all workers
+  * @param message JSON object with information to broadcast
+  */
+  virtual void broadcastMessageToWorkers(knlohmann::json &message) = 0;
+
+  /**
+  * @brief Sends an update to the engine to provide partial information while the sample is still active
+  * @param message Message to send to engine
+  */
+  virtual void sendMessageToEngine(knlohmann::json &message) = 0;
+
+  /**
+  * @brief Blocking call that waits until any message incoming from the engine.
+  * @return message from the engine.
+  */
+  virtual knlohmann::json recvMessageFromEngine() = 0;
+
+  /**
+  * @brief Blocking call that waits until any message is received from any sample.
+  * @param sample The sample from which to receive an update
+  * @return Message from the sample.
+  */
+  virtual knlohmann::json recvMessageFromSample(Sample &sample) = 0;
+
+  /**
+  * @brief Sends an update to a still active sample
+  * @param sample The sample from which to receive an update
+  * @param message Message to send to the sample.
+  */
+  virtual void sendMessageToSample(Sample &sample, knlohmann::json &message) = 0;
 };
 
 } // namespace korali

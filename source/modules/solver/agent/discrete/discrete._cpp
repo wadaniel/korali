@@ -1,0 +1,155 @@
+#include "engine.hpp"
+#include "modules/solver/agent/discrete/discrete.hpp"
+#include "sample/sample.hpp"
+
+namespace korali
+{
+namespace solver
+{
+namespace agent
+{
+void Discrete::initializeAgent()
+{
+  // Getting discrete problem pointer
+  _problem = dynamic_cast<problem::reinforcementLearning::Discrete *>(_k->_problem);
+}
+
+void Discrete::getAction(korali::Sample &sample)
+{
+  // Getting current state
+  auto state = sample["State"].get<std::vector<float>>();
+
+  // Getting the probability of the actions given by the agent's policy
+  auto pActions = getActionProbabilities(state);
+
+  // Storage for the action index to use
+  size_t actionIdx = 0;
+
+  /*****************************************************************************
+  * During training, we follow the Epsilon-greedy strategy. Choose, given a
+  * probability (pEpsilon), one from the following:
+  *  - Uniformly random action among all possible actions
+  *  - Sample action guided by the policy's probability distribution
+  ****************************************************************************/
+
+  if (sample["Mode"] == "Training")
+  {
+    // Getting current probability of random action for the agent
+    float pRandom = sample["Random Action Probability"];
+
+    // Getting pGreedy = U[0,1] for the epsilon-greedy strategy
+    float pEpsilon = _uniformGenerator->getRandomNumber();
+
+    // Producing random (uniform) number for the selection of the action
+    float x = _uniformGenerator->getRandomNumber();
+
+    // If p < e, then we choose the action randomly, with a uniform probability, among all possible actions.
+    if (pEpsilon < pRandom)
+    {
+      actionIdx = floor(x * _problem->_possibleActions.size());
+    }
+    else // else we select guided by the policy's probability distribution
+    {
+      // Iterating over all p(s,a) to select the corresponding action
+      float curSum = 0.0;
+      for (actionIdx = 0; actionIdx < pActions.size(); actionIdx++)
+      {
+        float pAction = pActions[actionIdx];
+        if (x > curSum && x <= curSum + pAction) break;
+        curSum += pAction;
+      }
+    }
+
+    // Storing action metadata
+    sample["Metadata"]["Action Index"] = actionIdx;
+    sample["Metadata"]["Action Probabilities"] = pActions;
+  }
+
+  /*****************************************************************************
+  * During testing, we just select the action with the largest probability
+  * given by the policy.
+  ****************************************************************************/
+
+  // Finding the best action index from the probabilities
+  if (sample["Mode"] == "Testing")
+    actionIdx = std::distance(pActions.begin(), std::max_element(pActions.begin(), pActions.end()));
+
+  /*****************************************************************************
+  * Storing the action itself
+  ****************************************************************************/
+
+  sample["Action"] = _problem->_possibleActions[actionIdx];
+}
+
+//float dACER::retraceFunction(size_t expId)
+//{
+//  // Finding last experience in the episode that corresponds to expId
+//  size_t curId = expId;
+//  while (_experienceReplayTerminal[curId] == false && curId < _experienceReplayStates.size()-1) curId++;
+//
+//  // Now getting last experience's qRet
+//  float qRet = 0.0;
+//  if (_experienceReplayTerminal[curId] == false)
+//  {
+//   std::vector<float> curState = _experienceReplayStates[curId];
+//   qRet = stateValueFunction(curState);
+//  }
+//
+//  // Now iterating backwards to calculate the rest of qRet
+//  while (curId > expId)
+//  {
+//   // Decreasing current experience index
+//   curId--;
+//
+//   // Getting current reward
+//   float curReward = _experienceReplayRewards[curId];
+//
+//   // Re-calculating qRet
+//   qRet = curReward + _criticDiscountFactor * qRet;
+//
+//   // If this is the starting experience, return the current value
+//   if (curId == expId) break;
+//
+//   // Getting current state
+//   std::vector<float> curState = _experienceReplayStates[curId];
+//
+//   // Getting current action index
+//   size_t curActionIdx = _experienceReplayActionIndexes[curId];
+//
+//   // Calculating V(state) with the current policy
+//   float vCurState = stateValueFunction(curState);
+//
+//   // Calculating Q(state, action) with the current policy
+//   float qCurState = stateActionValueFunction(curState, curActionIdx);
+//
+//   // Getting probability densities for current action given current policy
+//   auto pOldPolicy = _experienceReplayActionProbabilities[curId];
+//
+//   // Getting probability densities for current action given current policy
+//   auto pCurPolicy = getActionProbabilities(curState);
+//
+//   // Getting p(s,a) for selected experience, given the old policy
+//   float pActionOldPolicy = pOldPolicy[curActionIdx];
+//
+//   // Getting p(s,a) for the best action, given the current policy
+//   float pActionCurPolicy = pCurPolicy[curActionIdx];
+//
+//   // Now calculating importance weight for the old s,a experience
+//   float importanceWeight = pActionCurPolicy / pActionOldPolicy;
+//
+//   // Now calculating truncated importance weight with 1.0 as truncation factor
+//   float truncatedImportanceWeight = std::min(1.0f, importanceWeight);
+//
+//   // Updating qRet
+//   qRet = truncatedImportanceWeight * (qRet - qCurState) + vCurState;
+//  }
+//
+//  // Returning qRet
+//  return qRet;
+//}
+
+} // namespace agent
+
+} // namespace solver
+
+} // namespace korali

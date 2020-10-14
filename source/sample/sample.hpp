@@ -9,6 +9,7 @@
 #include "auxiliar/logger.hpp"
 #include "auxiliar/py2json.hpp"
 #include "libco.h"
+#include <queue>
 #include <string>
 
 #undef _POSIX_C_SOURCE
@@ -24,6 +25,18 @@ class Engine;
  */
 #define KORALI_GET(TYPE, SAMPLE, ...) \
   SAMPLE.get<TYPE>(__FILE__, __LINE__, __VA_ARGS__);
+
+/**
+ * @brief Macro to send message updates to the engine
+ */
+#define KORALI_SEND_MSG_TO_ENGINE(MESSAGE) \
+  _k->_engine->_conduit->sendMessageToEngine(MESSAGE);
+
+/**
+ * @brief Macro to recv message updates from the engine
+ */
+#define KORALI_RECV_MSG_FROM_ENGINE() \
+  _k->_engine->_conduit->recvMessageFromEngine();
 
 /**
 * @brief Execution states of a given sample.
@@ -70,6 +83,11 @@ class Sample
   * @brief User-Level thread (coroutine) containing the CPU execution state of the calling worker.
   */
   cothread_t _workerThread;
+
+  /**
+  * @brief Storage to keep the iD of the worker processing this sample.
+  */
+  size_t _workerId;
 
   /**
   * @brief Determines whether the thread memory has been allocated.

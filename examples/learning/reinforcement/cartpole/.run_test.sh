@@ -2,7 +2,7 @@
 
 ###### Auxiliar Functions and Variables #########
 
-source ../../../tests/functions.sh
+source ../../../../tests/functions.sh
 
 ##### Deleting Previous Results 
 
@@ -17,7 +17,7 @@ rm -rf __test-*; check_result
 
 for file in *.py
 do
- sed -e 's%Defining Termination Criteria%Defining Termination Criteria\ne["Solver"]["Termination Criteria"]["Max Generations"] = 5\n%g' \
+ sed -e 's%Defining Termination Criteria%Defining Termination Criteria\ne["Solver"]["Termination Criteria"]["Max Generations"] = 40\n%g' \
         ${file} > __test-${file}; check_result
 done
 

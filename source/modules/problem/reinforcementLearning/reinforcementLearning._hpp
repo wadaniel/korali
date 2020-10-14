@@ -1,14 +1,16 @@
 #ifndef _KORALI_PROBLEM_REINFORCEMENT_LEARNING_HPP_
 #define _KORALI_PROBLEM_REINFORCEMENT_LEARNING_HPP_
 
-#include "modules/neuralNetwork/neuralNetwork.hpp"
 #include "modules/distribution/univariate/uniform/uniform.hpp"
+#include "modules/neuralNetwork/neuralNetwork.hpp"
 #include "modules/problem/problem.hpp"
 
 namespace korali
 {
-
-namespace solver { class Agent; }
+namespace solver // Necessary to reference Agent
+{
+class Agent;
+}
 
 namespace problem
 {
@@ -27,7 +29,6 @@ class ReinforcementLearning : public korali::Problem
    * @param sample Sample containing current agent/state information.
    */
   void runEpisode(korali::Sample &sample);
-
 };
 
 } // namespace problem

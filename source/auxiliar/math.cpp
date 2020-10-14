@@ -40,7 +40,6 @@ double vectorNorm(const std::vector<double> &x)
   return sqrt(norm);
 }
 
-
 double vectorDistance(const std::vector<double> &x, const std::vector<double> &y)
 {
   double norm = 0.;

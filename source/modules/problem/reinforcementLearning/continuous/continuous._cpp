@@ -8,7 +8,6 @@ namespace problem
 {
 namespace reinforcementLearning
 {
-
 void Continuous::initialize()
 {
   ReinforcementLearning::initialize();

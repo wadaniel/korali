@@ -10,11 +10,10 @@ namespace agent
 {
 namespace continuous
 {
-
 void DDPG::initializeAgent()
 {
- // Initializing common discrete agent configuration
- Continuous::initializeAgent();
+  // Initializing common discrete agent configuration
+  Continuous::initializeAgent();
 
   /*********************************************************************
  * Initializing Critic-Related Structures
@@ -84,7 +83,6 @@ void DDPG::initializeAgent()
   _hyperparameters["Policy"] = _policyLearner->getHyperparameters();
 }
 
-
 float DDPG::stateActionValueFunction(const std::vector<float> &state, const std::vector<float> &action)
 {
   // Storage to put together state and action
@@ -101,13 +99,13 @@ float DDPG::stateActionValueFunction(const std::vector<float> &state, const std:
 
 void DDPG::trainAgent()
 {
- // Getting current hyperparameters for soft adoption later
- auto curCriticHyperparameters = _criticLearner->getHyperparameters();
- auto curPolicyHyperparameters = _policyLearner->getHyperparameters();
+  // Getting current hyperparameters for soft adoption later
+  auto curCriticHyperparameters = _criticLearner->getHyperparameters();
+  auto curPolicyHyperparameters = _policyLearner->getHyperparameters();
 
   // Creating storage for state history indexes to choose from
   std::vector<size_t> experienceReplayIndexes(_experienceReplayStates.size());
-  for (size_t i = 0; i < _experienceReplayStates.size()-1; i++) experienceReplayIndexes[i] = i;
+  for (size_t i = 0; i < _experienceReplayStates.size() - 1; i++) experienceReplayIndexes[i] = i;
 
   /***************************************************************************************
   * Updating Critic Network
@@ -121,38 +119,38 @@ void DDPG::trainAgent()
 
   for (size_t i = 0; i < _criticMiniBatchSize; i++)
   {
-   // Selecting a uniformly random selected, yet not repeated experience
-   size_t expId = experienceReplayIndexes[i];
+    // Selecting a uniformly random selected, yet not repeated experience
+    size_t expId = experienceReplayIndexes[i];
 
-   // Check if it is a terminal state
-   bool isTerminal = _experienceReplayTerminal[expId];
+    // Check if it is a terminal state
+    bool isTerminal = _experienceReplayTerminal[expId];
 
-   // Getting experience's current state and action
-   std::vector<float> curState   = _experienceReplayStates[expId];
-   std::vector<float> curAction  = _experienceReplayActions[expId];
-   std::vector<float> nextState  = isTerminal ? std::vector<float>() : _experienceReplayStates[expId + 1];
-   std::vector<float> bestAction = isTerminal ? std::vector<float>() : getActionMeans(nextState);
+    // Getting experience's current state and action
+    std::vector<float> curState = _experienceReplayStates[expId];
+    std::vector<float> curAction = _experienceReplayActions[expId];
+    std::vector<float> nextState = isTerminal ? std::vector<float>() : _experienceReplayStates[expId + 1];
+    std::vector<float> bestAction = isTerminal ? std::vector<float>() : getActionMeans(nextState);
 
-   // Getting current reward
-   float curReward = _experienceReplayRewards[expId];
+    // Getting current reward
+    float curReward = _experienceReplayRewards[expId];
 
-   /*****************************************
+    /*****************************************
     * Critic Section
     *****************************************/
 
-   // Calculating target Q value (solution) for Qnew on selected batch
-   float qStar = curReward;
+    // Calculating target Q value (solution) for Qnew on selected batch
+    float qStar = curReward;
 
-   // If state is not terminal (next state is filled) then add Qnew to the Q value.
-   if (isTerminal == false) qStar += _criticDiscountFactor * stateActionValueFunction(nextState, bestAction);
+    // If state is not terminal (next state is filled) then add Qnew to the Q value.
+    if (isTerminal == false) qStar += _criticDiscountFactor * stateActionValueFunction(nextState, bestAction);
 
-   // Updating inputs to training learner
-   _criticProblem->_inputs[i] = curState;
-   _criticProblem->_inputs[i].insert(_criticProblem->_inputs[i].end(), curAction.begin(), curAction.end());
-   _criticProblem->_solution[i][0] = qStar;
+    // Updating inputs to training learner
+    _criticProblem->_inputs[i] = curState;
+    _criticProblem->_inputs[i].insert(_criticProblem->_inputs[i].end(), curAction.begin(), curAction.end());
+    _criticProblem->_solution[i][0] = qStar;
 
-   // Keeping statistics
-   _cumulativeQStar += qStar;
+    // Keeping statistics
+    _cumulativeQStar += qStar;
   }
 
   // Running one generation of the optimization method with the given mini-batch
@@ -173,24 +171,24 @@ void DDPG::trainAgent()
   // Softly adopting the new critic parameters, using the adoption rate
   auto newCriticHyperparameters = _criticLearner->getHyperparameters();
   for (size_t i = 0; i < newCriticHyperparameters.size(); i++)
-   newCriticHyperparameters[i] = _criticAdoptionRate*curCriticHyperparameters[i] + (1.0 - _criticAdoptionRate)*newCriticHyperparameters[i];
+    newCriticHyperparameters[i] = _criticAdoptionRate * curCriticHyperparameters[i] + (1.0 - _criticAdoptionRate) * newCriticHyperparameters[i];
   _criticLearner->setHyperparameters(newCriticHyperparameters);
 
   /***************************************************************************************
    * Updating Policy Network
    ***************************************************************************************/
 
-   // Shuffling indexes to choose the mini batch from
-   std::shuffle(experienceReplayIndexes.begin(), experienceReplayIndexes.end(), *mt);
+  // Shuffling indexes to choose the mini batch from
+  std::shuffle(experienceReplayIndexes.begin(), experienceReplayIndexes.end(), *mt);
 
-   for (size_t i = 0; i < _criticMiniBatchSize; i++)
-   {
+  for (size_t i = 0; i < _criticMiniBatchSize; i++)
+  {
     // Selecting a uniformly random selected, yet not repeated experience
     size_t expId = experienceReplayIndexes[i];
 
     // Getting experience's current state and action
-    std::vector<float> curState   = _experienceReplayStates[expId];
-    std::vector<float> curAction  = _experienceReplayActions[expId];
+    std::vector<float> curState = _experienceReplayStates[expId];
+    std::vector<float> curAction = _experienceReplayActions[expId];
 
     // Storage to put together state and action
     std::vector<float> stateActionInput = curState;
@@ -204,21 +202,20 @@ void DDPG::trainAgent()
     // Setting input and gradient for policy update
     _policyProblem->_inputs[i] = curState;
     _policyProblem->_solution[i] = aGradients;
-   }
+  }
 
-   // Running one generation of the optimization method with the given mini-batch
-   _policyLearner->initialize();
-   _policyLearner->runGeneration();
-   _policyLearner->finalize();
+  // Running one generation of the optimization method with the given mini-batch
+  _policyLearner->initialize();
+  _policyLearner->runGeneration();
+  _policyLearner->finalize();
 
+  // Normalizing Policy Network
+  normalizeStateNeuralNetwork(_policyLearner->_trainingNeuralNetwork, _policyMiniBatchSize, _policyNormalizationSteps);
 
-   // Normalizing Policy Network
-   normalizeStateNeuralNetwork(_policyLearner->_trainingNeuralNetwork, _policyMiniBatchSize, _policyNormalizationSteps);
-
-   // Softly adopting the new critic parameters, using the adoption rate
+  // Softly adopting the new critic parameters, using the adoption rate
   auto newPolicyHyperparameters = _policyLearner->getHyperparameters();
   for (size_t i = 0; i < newPolicyHyperparameters.size(); i++)
-   newPolicyHyperparameters[i] = _policyAdoptionRate*curPolicyHyperparameters[i] + (1.0 - _policyAdoptionRate)*newPolicyHyperparameters[i];
+    newPolicyHyperparameters[i] = _policyAdoptionRate * curPolicyHyperparameters[i] + (1.0 - _policyAdoptionRate) * newPolicyHyperparameters[i];
   _policyLearner->setHyperparameters(newPolicyHyperparameters);
 
   // Storing average policy hyperparameters for workers to use
@@ -232,7 +229,7 @@ std::vector<float> DDPG::getActionMeans(const std::vector<float> &state)
 
 std::vector<float> DDPG::getActionSigmas(const std::vector<float> &state)
 {
- return _actionSigmas;
+  return _actionSigmas;
 }
 
 void DDPG::updateHyperparameters(const knlohmann::json &hyperparameters)

@@ -1,6 +1,6 @@
-#include "sample/sample.hpp"
 #include "engine.hpp"
 #include "modules/solver/agent/discrete/discrete.hpp"
+#include "sample/sample.hpp"
 
 namespace korali
 {
@@ -8,78 +8,77 @@ namespace solver
 {
 namespace agent
 {
-
 void Discrete::initializeAgent()
 {
   // Getting discrete problem pointer
- _problem = dynamic_cast<problem::reinforcementLearning::Discrete *>(_k->_problem);
+  _problem = dynamic_cast<problem::reinforcementLearning::Discrete *>(_k->_problem);
 }
 
-void Discrete::getAction(korali::Sample& sample)
+void Discrete::getAction(korali::Sample &sample)
 {
- // Getting current state
- auto state = sample["State"].get<std::vector<float>>();
+  // Getting current state
+  auto state = sample["State"].get<std::vector<float>>();
 
- // Getting the probability of the actions given by the agent's policy
- auto pActions = getActionProbabilities(state);
+  // Getting the probability of the actions given by the agent's policy
+  auto pActions = getActionProbabilities(state);
 
- // Storage for the action index to use
- size_t actionIdx = 0;
+  // Storage for the action index to use
+  size_t actionIdx = 0;
 
- /*****************************************************************************
+  /*****************************************************************************
   * During training, we follow the Epsilon-greedy strategy. Choose, given a
   * probability (pEpsilon), one from the following:
   *  - Uniformly random action among all possible actions
   *  - Sample action guided by the policy's probability distribution
   ****************************************************************************/
 
- if (sample["Mode"] == "Training")
- {
-  // Getting current probability of random action for the agent
-  float pRandom = sample["Random Action Probability"];
-
-  // Getting pGreedy = U[0,1] for the epsilon-greedy strategy
-  float pEpsilon = _uniformGenerator->getRandomNumber();
-
-  // Producing random (uniform) number for the selection of the action
-  float x = _uniformGenerator->getRandomNumber();
-
-  // If p < e, then we choose the action randomly, with a uniform probability, among all possible actions.
-  if (pEpsilon < pRandom)
+  if (sample["Mode"] == "Training")
   {
-   actionIdx = floor(x * _problem->_possibleActions.size());
-  }
-  else // else we select guided by the policy's probability distribution
-  {
-   // Iterating over all p(s,a) to select the corresponding action
-   float curSum = 0.0;
-   for (actionIdx = 0; actionIdx < pActions.size(); actionIdx++)
-   {
-     float pAction = pActions[actionIdx];
-     if (x > curSum && x <= curSum + pAction) break;
-     curSum += pAction;
-   }
+    // Getting current probability of random action for the agent
+    float pRandom = sample["Random Action Probability"];
+
+    // Getting pGreedy = U[0,1] for the epsilon-greedy strategy
+    float pEpsilon = _uniformGenerator->getRandomNumber();
+
+    // Producing random (uniform) number for the selection of the action
+    float x = _uniformGenerator->getRandomNumber();
+
+    // If p < e, then we choose the action randomly, with a uniform probability, among all possible actions.
+    if (pEpsilon < pRandom)
+    {
+      actionIdx = floor(x * _problem->_possibleActions.size());
+    }
+    else // else we select guided by the policy's probability distribution
+    {
+      // Iterating over all p(s,a) to select the corresponding action
+      float curSum = 0.0;
+      for (actionIdx = 0; actionIdx < pActions.size(); actionIdx++)
+      {
+        float pAction = pActions[actionIdx];
+        if (x > curSum && x <= curSum + pAction) break;
+        curSum += pAction;
+      }
+    }
+
+    // Storing action metadata
+    sample["Metadata"]["Action Index"] = actionIdx;
+    sample["Metadata"]["Action Probabilities"] = pActions;
   }
 
-  // Storing action metadata
-  sample["Metadata"]["Action Index"] = actionIdx;
-  sample["Metadata"]["Action Probabilities"] = pActions;
- }
-
- /*****************************************************************************
+  /*****************************************************************************
   * During testing, we just select the action with the largest probability
   * given by the policy.
   ****************************************************************************/
 
- // Finding the best action index from the probabilities
- if (sample["Mode"] == "Testing")
-   actionIdx = std::distance(pActions.begin(), std::max_element(pActions.begin(), pActions.end()));
+  // Finding the best action index from the probabilities
+  if (sample["Mode"] == "Testing")
+    actionIdx = std::distance(pActions.begin(), std::max_element(pActions.begin(), pActions.end()));
 
- /*****************************************************************************
+  /*****************************************************************************
   * Storing the action itself
   ****************************************************************************/
 
- sample["Action"] = _problem->_possibleActions[actionIdx];
+  sample["Action"] = _problem->_possibleActions[actionIdx];
 }
 
 //float dACER::retraceFunction(size_t expId)

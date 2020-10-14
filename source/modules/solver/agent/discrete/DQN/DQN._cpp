@@ -10,11 +10,10 @@ namespace agent
 {
 namespace discrete
 {
-
 void DQN::initializeAgent()
 {
- // Initializing common discrete agent configuration
- Discrete::initializeAgent();
+  // Initializing common discrete agent configuration
+  Discrete::initializeAgent();
 
   /*********************************************************************
  * Initializing Critic-Related Structures
@@ -58,7 +57,7 @@ void DQN::trainAgent()
   // Randomly selecting experiences for the mini-batch and calculating their target Q
   // Creating state history indexes to choose from
   std::vector<size_t> experienceReplayIndexes(_experienceReplayStates.size());
-  for (size_t i = 0; i < _experienceReplayStates.size()-1; i++) experienceReplayIndexes[i] = i;
+  for (size_t i = 0; i < _experienceReplayStates.size() - 1; i++) experienceReplayIndexes[i] = i;
 
   // Calculating cumulative Q*, for statistical purposes
   _cumulativeQStar = 0.0;
@@ -187,7 +186,7 @@ std::vector<float> DQN::getActionProbabilities(const std::vector<float> &state)
 
   // Now calculating the action probabilities using softmax
   for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
-   pActions[i] *= invSumExpQVal;
+    pActions[i] *= invSumExpQVal;
 
   // Returning the best found
   return pActions;
@@ -203,7 +202,6 @@ void DQN::printAgentInformation()
   _criticExperiment._logger->_verbosityLevel = _k->_logger->_verbosityLevel;
   _criticExperiment._solver->printGenerationAfter();
   _criticExperiment._logger->setVerbosityLevel("Silent");
-
 }
 
 } // namespace discrete

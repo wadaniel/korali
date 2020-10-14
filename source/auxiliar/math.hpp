@@ -97,14 +97,14 @@ double vectorNorm(const std::vector<double> &x);
 * @param y vector of yi values
 * @return The x . y product
 */
-template<typename T>
+template <typename T>
 T dotProduct(const std::vector<T> &x, const std::vector<T> &y)
 {
- T dotProd = 0.0;
+  T dotProd = 0.0;
 
- for (size_t i = 0; i < x.size(); i++) dotProd += x[i] * y[i];
+  for (size_t i = 0; i < x.size(); i++) dotProd += x[i] * y[i];
 
- return dotProd;
+  return dotProd;
 }
 
 /**

@@ -1,114 +1,128 @@
 #include "fCMAES.hpp"
 #include <algorithm> // std::sort
-#include <numeric> // std::iota
+#include <numeric>   // std::iota
 #include <stdio.h>
 
 namespace korali
 {
-
 fCMAES::fCMAES(size_t nVars, size_t populationSize, size_t muSize)
 {
- _currentGeneration = 1;
+  _currentGeneration = 1;
 
- // CMAES Parameters
- _populationSize = populationSize;
- _muValue = 0;
- _initialSigmaCumulationFactor = -1.0;
- _initialDampFactor = -1.0;
- _isSigmaBounded = false;
- _initialCumulativeCovariance = -1.0;
- _isDiagonal = false;
- _muType = "Linear";
+  // CMAES Parameters
+  _populationSize = populationSize;
+  _muValue = 0;
+  _initialSigmaCumulationFactor = -1.0;
+  _initialDampFactor = -1.0;
+  _isSigmaBounded = false;
+  _initialCumulativeCovariance = -1.0;
+  _isDiagonal = false;
+  _muType = "Linear";
 
- // Variable Parameters
- _nVars = nVars;
- _initialMeans.resize(_nVars);
- _initialStandardDeviations.resize(_nVars);
- _lowerBounds.resize(_nVars);
- _upperBounds.resize(_nVars);
+  // Variable Parameters
+  _nVars = nVars;
+  _initialMeans.resize(_nVars);
+  _initialStandardDeviations.resize(_nVars);
+  _lowerBounds.resize(_nVars);
+  _upperBounds.resize(_nVars);
 
- for (size_t i = 0; i < _nVars; i++)
- {
-  _lowerBounds[i] = -std::numeric_limits<float>::infinity();
-  _upperBounds[i] = +std::numeric_limits<float>::infinity();
-  _initialMeans[i] = std::numeric_limits<float>::signaling_NaN();
-  _initialStandardDeviations[i] = std::numeric_limits<float>::signaling_NaN();
- }
+  for (size_t i = 0; i < _nVars; i++)
+  {
+    _lowerBounds[i] = -std::numeric_limits<float>::infinity();
+    _upperBounds[i] = +std::numeric_limits<float>::infinity();
+    _initialMeans[i] = std::numeric_limits<float>::signaling_NaN();
+    _initialStandardDeviations[i] = std::numeric_limits<float>::signaling_NaN();
+  }
 
- // Termination Criteria
- _maxGenerations = 10000000;
- _maxInfeasibleResamplings = 10000000;
- _maxConditionCovarianceMatrix = std::numeric_limits<float>::infinity();
- _minValue = -std::numeric_limits<float>::infinity();
- _maxValue = +std::numeric_limits<float>::infinity();
- _minValueDifferenceThreshold = -std::numeric_limits<float>::infinity();
- _minStandardDeviation = -std::numeric_limits<float>::infinity();
- _maxStandardDeviation = +std::numeric_limits<float>::infinity();
+  // Termination Criteria
+  _maxGenerations = 10000000;
+  _maxInfeasibleResamplings = 10000000;
+  _maxConditionCovarianceMatrix = std::numeric_limits<float>::infinity();
+  _minValue = -std::numeric_limits<float>::infinity();
+  _maxValue = +std::numeric_limits<float>::infinity();
+  _minValueDifferenceThreshold = -std::numeric_limits<float>::infinity();
+  _minStandardDeviation = -std::numeric_limits<float>::infinity();
+  _maxStandardDeviation = +std::numeric_limits<float>::infinity();
 
- // Random Number Generators
- _normalGenerator = std::normal_distribution<float>(0.0, 1.0);
+  // Random Number Generators
+  _normalGenerator = std::normal_distribution<float>(0.0, 1.0);
 
- // Statistics
- _bestEverValue = -std::numeric_limits<float>::infinity();
- _currentMinStandardDeviation = -std::numeric_limits<float>::infinity();
- _currentMaxStandardDeviation = +std::numeric_limits<float>::infinity();
- _minimumCovarianceEigenvalue = -std::numeric_limits<float>::infinity();
- _maximumCovarianceEigenvalue = +std::numeric_limits<float>::infinity();
+  // Statistics
+  _bestEverValue = -std::numeric_limits<float>::infinity();
+  _currentMinStandardDeviation = -std::numeric_limits<float>::infinity();
+  _currentMaxStandardDeviation = +std::numeric_limits<float>::infinity();
+  _minimumCovarianceEigenvalue = -std::numeric_limits<float>::infinity();
+  _maximumCovarianceEigenvalue = +std::numeric_limits<float>::infinity();
 
- if (_populationSize == 0) _populationSize = ceil(4.0 + floor(3 * log((float)_nVars)));
- if (_muValue == 0) _muValue = _populationSize / 2;
+  if (_populationSize == 0) _populationSize = ceil(4.0 + floor(3 * log((float)_nVars)));
+  if (_muValue == 0) _muValue = _populationSize / 2;
 
- _chiSquareNumber = sqrtf((float)_nVars) * (1. - 1. / (4. * _nVars) + 1. / (21. * _nVars * _nVars));
+  _chiSquareNumber = sqrtf((float)_nVars) * (1. - 1. / (4. * _nVars) + 1. / (21. * _nVars * _nVars));
 
- // Allocating Memory
- _samplePopulation.resize(_populationSize);
- for (size_t i = 0; i < _populationSize; i++) _samplePopulation[i].resize(_nVars);
+  // Allocating Memory
+  _samplePopulation.resize(_populationSize);
+  for (size_t i = 0; i < _populationSize; i++) _samplePopulation[i].resize(_nVars);
 
- _evolutionPath.resize(_nVars);
- _conjugateEvolutionPath.resize(_nVars);
- _auxiliarBDZMatrix.resize(_nVars);
- _meanUpdate.resize(_nVars);
- _currentMean.resize(_nVars);
- _previousMean.resize(_nVars);
- _bestEverVariables.resize(_nVars);
- _axisLengths.resize(_nVars);
- _auxiliarAxisLengths.resize(_nVars);
- _currentBestVariables.resize(_nVars);
+  _evolutionPath.resize(_nVars);
+  _conjugateEvolutionPath.resize(_nVars);
+  _auxiliarBDZMatrix.resize(_nVars);
+  _meanUpdate.resize(_nVars);
+  _currentMean.resize(_nVars);
+  _previousMean.resize(_nVars);
+  _bestEverVariables.resize(_nVars);
+  _axisLengths.resize(_nVars);
+  _auxiliarAxisLengths.resize(_nVars);
+  _currentBestVariables.resize(_nVars);
 
- _sortingIndex.resize(_populationSize);
- _valueVector.resize(_populationSize);
+  _sortingIndex.resize(_populationSize);
+  _valueVector.resize(_populationSize);
 
- _covarianceMatrix.resize(_nVars * _nVars);
- _auxiliarCovarianceMatrix.resize(_nVars * _nVars);
- _covarianceEigenvectorMatrix.resize(_nVars * _nVars);
- _auxiliarCovarianceEigenvectorMatrix.resize(_nVars * _nVars);
- _bDZMatrix.resize(_populationSize * _nVars);
+  _covarianceMatrix.resize(_nVars * _nVars);
+  _auxiliarCovarianceMatrix.resize(_nVars * _nVars);
+  _covarianceEigenvectorMatrix.resize(_nVars * _nVars);
+  _auxiliarCovarianceEigenvectorMatrix.resize(_nVars * _nVars);
+  _bDZMatrix.resize(_populationSize * _nVars);
 
- _muWeights.resize(_muValue);
+  _muWeights.resize(_muValue);
 
- // GSL Workspace
- _gsl_eval = gsl_vector_alloc(_nVars);
- _gsl_evec = gsl_matrix_alloc(_nVars, _nVars);
- _gsl_work = gsl_eigen_symmv_alloc(_nVars);
-
+  // GSL Workspace
+  _gsl_eval = gsl_vector_alloc(_nVars);
+  _gsl_evec = gsl_matrix_alloc(_nVars, _nVars);
+  _gsl_work = gsl_eigen_symmv_alloc(_nVars);
 }
 
 void fCMAES::reset()
 {
- _currentGeneration = 1;
+  _currentGeneration = 1;
 
- // Establishing optimization goal
- _bestEverValue = -std::numeric_limits<float>::infinity();
- _previousBestEverValue = -std::numeric_limits<float>::infinity();
- _previousBestValue = -std::numeric_limits<float>::infinity();
- _currentBestValue = -std::numeric_limits<float>::infinity();
+  // Establishing optimization goal
+  _bestEverValue = -std::numeric_limits<float>::infinity();
+  _previousBestEverValue = -std::numeric_limits<float>::infinity();
+  _previousBestValue = -std::numeric_limits<float>::infinity();
+  _currentBestValue = -std::numeric_limits<float>::infinity();
 
   for (size_t i = 0; i < _nVars; i++)
   {
-    if (std::isfinite(_lowerBounds[i]) == false) { fprintf(stderr, "Lower Bound of variable \'%lu\' not defined.\n", i); std::abort();}
-    if (std::isfinite(_upperBounds[i]) == false) { fprintf(stderr, "Upper Bound of variable \'%lu\' not defined.\n", i); std::abort();}
-    if (std::isfinite(_initialMeans[i]) == false) { fprintf(stderr, "Initial mean of variable \'%lu\' not defined.\n", i); std::abort();}
-    if (std::isfinite(_initialStandardDeviations[i]) == false) { fprintf(stderr, "Initial StdDev of variable \'%lu\' not defined.\n", i); std::abort();}
+    if (std::isfinite(_lowerBounds[i]) == false)
+    {
+      fprintf(stderr, "Lower Bound of variable \'%lu\' not defined.\n", i);
+      std::abort();
+    }
+    if (std::isfinite(_upperBounds[i]) == false)
+    {
+      fprintf(stderr, "Upper Bound of variable \'%lu\' not defined.\n", i);
+      std::abort();
+    }
+    if (std::isfinite(_initialMeans[i]) == false)
+    {
+      fprintf(stderr, "Initial mean of variable \'%lu\' not defined.\n", i);
+      std::abort();
+    }
+    if (std::isfinite(_initialStandardDeviations[i]) == false)
+    {
+      fprintf(stderr, "Initial StdDev of variable \'%lu\' not defined.\n", i);
+      std::abort();
+    }
   }
 
   _globalSuccessRate = -1.0;
@@ -136,7 +150,10 @@ void fCMAES::initMuWeights(size_t numsamplesmu)
   else if (_muType == "Logarithmic")
     for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] = log(std::max((float)numsamplesmu, 0.5f * _populationSize) + 0.5f) - log(i + 1.0f);
   else
-    { fprintf(stderr, "Invalid setting of Mu Type (%s) (Linear, Equal, or Logarithmic accepted).", _muType.c_str()); std::abort();}
+  {
+    fprintf(stderr, "Invalid setting of Mu Type (%s) (Linear, Equal, or Logarithmic accepted).", _muType.c_str());
+    std::abort();
+  }
 
   // Normalize weights vector and set mueff
   float s1 = 0.0;
@@ -160,7 +177,7 @@ void fCMAES::initMuWeights(size_t numsamplesmu)
   // Setting Sigma Cumulation Factor
   _sigmaCumulationFactor = _initialSigmaCumulationFactor;
   if (_sigmaCumulationFactor <= 0 || _sigmaCumulationFactor >= 1)
-      _sigmaCumulationFactor = (_effectiveMu + 2.0) / (_nVars + _effectiveMu + 3.0);
+    _sigmaCumulationFactor = (_effectiveMu + 2.0) / (_nVars + _effectiveMu + 3.0);
 
   // Setting Damping Factor
   _dampFactor = _initialDampFactor;
@@ -179,7 +196,7 @@ void fCMAES::initCovariance()
   for (size_t i = 0; i < _nVars; ++i)
   {
     _covarianceEigenvectorMatrix[i * _nVars + i] = 1.0;
-    _covarianceMatrix[i * _nVars + i] = _axisLengths[i] = _initialStandardDeviations[i]* sqrtf(_nVars / _trace);
+    _covarianceMatrix[i * _nVars + i] = _axisLengths[i] = _initialStandardDeviations[i] * sqrtf(_nVars / _trace);
     _covarianceMatrix[i * _nVars + i] *= _covarianceMatrix[i * _nVars + i];
   }
 
@@ -254,7 +271,7 @@ void fCMAES::sampleSingle(size_t sampleIdx)
       for (size_t e = 0; e < _nVars; ++e) _bDZMatrix[sampleIdx * _nVars + d] += _covarianceEigenvectorMatrix[d * _nVars + e] * _auxiliarBDZMatrix[e];
 
       auto variance = _sigma * _bDZMatrix[sampleIdx * _nVars + d];
-//      if (variance > abs(_upperBounds[d] - _lowerBounds[d])*10.0) printf("Excessive Variance\n");
+      //      if (variance > abs(_upperBounds[d] - _lowerBounds[d])*10.0) printf("Excessive Variance\n");
       _samplePopulation[sampleIdx][d] = _currentMean[d] + _sigma * _bDZMatrix[sampleIdx * _nVars + d];
     }
 }
@@ -421,13 +438,13 @@ void fCMAES::updateEigensystem(std::vector<float> &M)
     _auxiliarAxisLengths[d] = sqrtf(_auxiliarAxisLengths[d]);
     if (std::isfinite(_auxiliarAxisLengths[d]) == false)
     {
-     fprintf(stderr, "Could not calculate root of Eigenvalue (%+6.3e) after Eigen decomp (no update possible).\n", _auxiliarAxisLengths[d]);
+      fprintf(stderr, "Could not calculate root of Eigenvalue (%+6.3e) after Eigen decomp (no update possible).\n", _auxiliarAxisLengths[d]);
       return;
     }
     for (size_t e = 0; e < _nVars; ++e)
       if (std::isfinite(_covarianceEigenvectorMatrix[d * _nVars + e]) == false)
       {
-       fprintf(stderr, "Non finite value detected in B (no update possible).\n");
+        fprintf(stderr, "Non finite value detected in B (no update possible).\n");
         return;
       }
   }
@@ -499,29 +516,29 @@ void fCMAES::printInfo()
 
 void fCMAES::setSeed(size_t seed)
 {
- _randomGenerator.seed(seed);
+  _randomGenerator.seed(seed);
 }
 
 fCMAES::~fCMAES()
 {
- gsl_vector_free(_gsl_eval);
- gsl_matrix_free(_gsl_evec);
- gsl_eigen_symmv_free(_gsl_work);
+  gsl_vector_free(_gsl_eval);
+  gsl_matrix_free(_gsl_evec);
+  gsl_eigen_symmv_free(_gsl_work);
 }
 
 bool fCMAES::checkTermination()
 {
- if (_currentGeneration > 1 && ((_maxInfeasibleResamplings > 0) && (_infeasibleSampleCount >= _maxInfeasibleResamplings))) return true;
- if (_currentGeneration > 1 && (_maximumCovarianceEigenvalue >= _maxConditionCovarianceMatrix * _minimumCovarianceEigenvalue)) return true;
- if (_currentGeneration > 1 && (-_bestEverValue < _minValue)) return true;
- if (_currentGeneration > 1 && (+_bestEverValue > _maxValue)) return true;
- if (_currentGeneration > 1 && (fabs(_currentBestValue - _previousBestValue) < _minValueDifferenceThreshold))  return true;
- if (_currentGeneration > 1 && (_currentMinStandardDeviation <= _minStandardDeviation)) return true;
- if (_currentGeneration > 1 && (_currentMaxStandardDeviation >= _maxStandardDeviation)) return true;
+  if (_currentGeneration > 1 && ((_maxInfeasibleResamplings > 0) && (_infeasibleSampleCount >= _maxInfeasibleResamplings))) return true;
+  if (_currentGeneration > 1 && (_maximumCovarianceEigenvalue >= _maxConditionCovarianceMatrix * _minimumCovarianceEigenvalue)) return true;
+  if (_currentGeneration > 1 && (-_bestEverValue < _minValue)) return true;
+  if (_currentGeneration > 1 && (+_bestEverValue > _maxValue)) return true;
+  if (_currentGeneration > 1 && (fabs(_currentBestValue - _previousBestValue) < _minValueDifferenceThreshold)) return true;
+  if (_currentGeneration > 1 && (_currentMinStandardDeviation <= _minStandardDeviation)) return true;
+  if (_currentGeneration > 1 && (_currentMaxStandardDeviation >= _maxStandardDeviation)) return true;
 
- if (_currentGeneration >= _maxGenerations) return true;
+  if (_currentGeneration >= _maxGenerations) return true;
 
- return false;
+  return false;
 }
 
 } // namespace korali

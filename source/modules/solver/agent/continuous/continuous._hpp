@@ -1,8 +1,8 @@
 #ifndef _KORALI_AGENT_CONTINUOUS_HPP_
 #define _KORALI_AGENT_CONTINUOUS_HPP_
 
-#include "modules/solver/agent/agent.hpp"
 #include "modules/problem/reinforcementLearning/continuous/continuous.hpp"
+#include "modules/solver/agent/agent.hpp"
 
 namespace korali
 {
@@ -10,42 +10,40 @@ namespace solver
 {
 namespace agent
 {
-
 class Continuous : public Agent
 {
   public:
-
- /**
+  /**
   * @brief Vector with inverse variance for the action variables
   */
- std::vector<float> _inverseVariances;
+  std::vector<float> _inverseVariances;
 
- /**
+  /**
   * @brief Vector with exploration standard deviation for the action variables
   */
- std::vector<float> _actionSigmas;
+  std::vector<float> _actionSigmas;
 
- /**
+  /**
  * @brief Storage for the pointer to the (continuous) learning problem
  */
- problem::reinforcementLearning::Continuous *_problem;
+  problem::reinforcementLearning::Continuous *_problem;
 
- /**
+  /**
   * @brief Function to obtain the Gaussian means of the actions
   * @param state The current state
   * @return The action means, corresponding to the state and the current policy hyperparameters
   */
- virtual std::vector<float> getActionMeans(const std::vector<float> &state) = 0;
+  virtual std::vector<float> getActionMeans(const std::vector<float> &state) = 0;
 
- /**
+  /**
   * @brief Function to obtain the Gaussian standard deviations (exploratory noise) of the actions
   * @param state The current state
   * @return The action standard deviations, corresponding to the state and the current policy hyperparameters
   */
- virtual std::vector<float> getActionSigmas(const std::vector<float> &state) = 0;
+  virtual std::vector<float> getActionSigmas(const std::vector<float> &state) = 0;
 
- void getAction(korali::Sample& sample) override;
- virtual void initializeAgent();
+  void getAction(korali::Sample &sample) override;
+  virtual void initializeAgent();
 };
 
 } // namespace agent

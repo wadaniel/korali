@@ -311,9 +311,9 @@ void Layer::createBackwardPipeline()
     auto backwardDataPrimitiveDesc = inner_product_backward_data::primitive_desc(backwardDataDesc, _nn->_engine, _forwardInnerProductPrimitiveDesc);
     _backwardDataPrimitive = inner_product_backward_data(backwardDataPrimitiveDesc);
 
-    _backwardDataArgs[DNNL_ARG_DIFF_DST] =_nodeDiffMem;                   // Input
-    _backwardDataArgs[DNNL_ARG_WEIGHTS] =_weightsMem;                 // Input
-    _backwardDataArgs[DNNL_ARG_DIFF_SRC] =_prevLayer->_activationDiffMem; // Output
+    _backwardDataArgs[DNNL_ARG_DIFF_DST] = _nodeDiffMem;                   // Input
+    _backwardDataArgs[DNNL_ARG_WEIGHTS] = _weightsMem;                     // Input
+    _backwardDataArgs[DNNL_ARG_DIFF_SRC] = _prevLayer->_activationDiffMem; // Output
 
     auto backwardWeightsDesc = inner_product_backward_weights::desc(
       _prevLayer->_nodeMem.get_desc(),
@@ -325,10 +325,10 @@ void Layer::createBackwardPipeline()
     auto backwardWeightsPrimitiveDesc = inner_product_backward_weights::primitive_desc(backwardWeightsDesc, _nn->_engine, _forwardInnerProductPrimitiveDesc);
     _backwardWeightsPrimitive = inner_product_backward_weights(backwardWeightsPrimitiveDesc);
 
-    _backwardWeightsArgs[DNNL_ARG_SRC] =_prevLayer->_activationMem; // Input
-    _backwardWeightsArgs[DNNL_ARG_DIFF_DST] =_nodeDiffMem;          // Input
-    _backwardWeightsArgs[DNNL_ARG_DIFF_WEIGHTS] =_weightsDiffMem;   // Output
-    _backwardWeightsArgs[DNNL_ARG_DIFF_BIAS] =_biasDiffMem;         // Output
+    _backwardWeightsArgs[DNNL_ARG_SRC] = _prevLayer->_activationMem; // Input
+    _backwardWeightsArgs[DNNL_ARG_DIFF_DST] = _nodeDiffMem;          // Input
+    _backwardWeightsArgs[DNNL_ARG_DIFF_WEIGHTS] = _weightsDiffMem;   // Output
+    _backwardWeightsArgs[DNNL_ARG_DIFF_BIAS] = _biasDiffMem;         // Output
   }
 
   // Initializing backward layer normalization operations

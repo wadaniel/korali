@@ -18,10 +18,10 @@ int main(int argc, char *argv[])
 
   // Setting up the 10 state variables
   size_t curVariable = 0;
-  for(; curVariable < 10; curVariable++)
+  for (; curVariable < 10; curVariable++)
   {
-   e["Variables"][curVariable]["Name"] = std::string("StateVar") + std::to_string(curVariable);
-   e["Variables"][curVariable]["Type"] = "State";
+    e["Variables"][curVariable]["Name"] = std::string("StateVar") + std::to_string(curVariable);
+    e["Variables"][curVariable]["Type"] = "State";
   }
 
   e["Variables"][curVariable]["Name"] = "Curvature";
@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
 
   ////// Defining the configuration of replay memory
 
-  e["Solver"]["Experience Replay"]["Start Size"] =   100;
+  e["Solver"]["Experience Replay"]["Start Size"] = 100;
   e["Solver"]["Experience Replay"]["Maximum Size"] = 100000;
 
   //// Defining Critic Configuration
@@ -110,7 +110,7 @@ int main(int argc, char *argv[])
   e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Node Count"] = 2;
   e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Elementwise/Logistic";
 
-  e["Solver"]["Policy"]["Neural Network"]["Output Scaling"] = { 1.0, 0.25 };
+  e["Solver"]["Policy"]["Neural Network"]["Output Scaling"] = {1.0, 0.25};
 
   ////// Defining Termination Criteria
 
@@ -128,4 +128,3 @@ int main(int argc, char *argv[])
   auto k = korali::Engine();
   k.run(e);
 }
-

@@ -218,7 +218,6 @@ knlohmann::json Distributed::recvMessageFromSample(Sample &sample)
   MPI_Request messageRequest;
   MPI_Irecv(&messageSize, 1, MPI_UNSIGNED_LONG, _workerProcesses[sample._workerId][0], MPI_MESSAGE_JSON_SIZE, _mpiCommunicator, &messageRequest);
 
-
   int flag = 0;
   while (flag == 0)
   {

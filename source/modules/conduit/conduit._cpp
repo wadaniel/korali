@@ -68,21 +68,21 @@ void Conduit::worker()
 
 void Conduit::workerProcessSample(const knlohmann::json &js)
 {
- Engine *engine = _engineStack.top();
- auto expId = js["Experiment Id"];
- Sample s;
- s._globals = &engine->_experimentVector[expId]->_globals;
- s._js.getJson() = js;
- s.sampleLauncher();
- sendMessageToEngine(s._js.getJson());
+  Engine *engine = _engineStack.top();
+  auto expId = js["Experiment Id"];
+  Sample s;
+  s._globals = &engine->_experimentVector[expId]->_globals;
+  s._js.getJson() = js;
+  s.sampleLauncher();
+  sendMessageToEngine(s._js.getJson());
 }
 
 void Conduit::workerBroadcastGlobals(const knlohmann::json &js)
 {
- Engine *engine = _engineStack.top();
- auto expId = js["Experiment Id"];
- auto key = js["Globals"]["Key"].get<std::string>();
- engine->_experimentVector[expId]->_globals[key] = js["Globals"]["Values"];
+  Engine *engine = _engineStack.top();
+  auto expId = js["Experiment Id"];
+  auto key = js["Globals"]["Key"].get<std::string>();
+  engine->_experimentVector[expId]->_globals[key] = js["Globals"]["Values"];
 }
 
 void Conduit::workerStackEngine(const knlohmann::json &js)
@@ -103,18 +103,8 @@ void Conduit::workerStackEngine(const knlohmann::json &js)
 
 void Conduit::workerPopEngine()
 {
- Engine *engine = _engineStack.top();
- _engineStack.pop();
-
- for (size_t i = 0; i < engine->_experimentVector.size(); i ++)
- {
-  delete engine->_experimentVector[i]->_logger;
-  delete engine->_experimentVector[i]->_solver;
-  delete engine->_experimentVector[i]->_problem;
-  for (size_t i = 0; i < engine->_experimentVector[i]->_variables.size(); i++) delete engine->_experimentVector[i]->_variables[i];
-  delete engine->_experimentVector[i];
- }
- delete engine;
+  Engine *engine = _engineStack.top();
+  _engineStack.pop();
 }
 
 void Conduit::updateGlobals(std::string key, knlohmann::json &globalsJs)

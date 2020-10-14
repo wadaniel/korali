@@ -29,7 +29,7 @@ class Agent : public Solver
   */
   std::mt19937 *mt;
 
- /**
+  /**
   * @brief The value to use for probability of random actions.
   */
   float _randomActionProbabilityEffectiveValue;
@@ -94,7 +94,7 @@ class Agent : public Solver
    * @brief Gathers the next action either from the policy or randomly
    * @param sample Sample on which the action and metadata will be stored
    */
-  virtual void getAction(korali::Sample& sample) = 0;
+  virtual void getAction(korali::Sample &sample) = 0;
 
   /**
    * @brief Mini-batch based normalization routine for Neural Networks with state and action inputs (typically critics)
@@ -102,7 +102,7 @@ class Agent : public Solver
    * @param miniBatchSize Number of entries in the normalization minibatch
    * @param normalizationSteps How many normalization steps to perform (and grab the average)
    */
-  void normalizeStateActionNeuralNetwork(NeuralNetwork* neuralNetwork, size_t miniBatchSize, size_t normalizationSteps);
+  void normalizeStateActionNeuralNetwork(NeuralNetwork *neuralNetwork, size_t miniBatchSize, size_t normalizationSteps);
 
   /**
    * @brief Mini-batch based normalization routine for Neural Networks with state inputs only (typically policy)
@@ -110,7 +110,7 @@ class Agent : public Solver
    * @param miniBatchSize Number of entries in the normalization minibatch
    * @param normalizationSteps How many normalization steps to perform (and grab the average)
    */
-  void normalizeStateNeuralNetwork(NeuralNetwork* neuralNetwork, size_t miniBatchSize, size_t normalizationSteps);
+  void normalizeStateNeuralNetwork(NeuralNetwork *neuralNetwork, size_t miniBatchSize, size_t normalizationSteps);
 
   void printGenerationAfter() override;
   void initialize() override;

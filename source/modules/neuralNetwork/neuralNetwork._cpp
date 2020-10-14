@@ -81,7 +81,6 @@ void NeuralNetwork::initialize()
     if (_outputShift.size() != _layers[layerCount - 1]->_nodeCount)
       KORALI_LOG_ERROR("Wrong number of output shift factors passed to the neural network. Expected: %lu, provided: %lu.\n", _layers[layerCount - 1]->_nodeCount, _outputShift.size());
 
-
   // Making sure we do not re-initialize
   _isInitialized = true;
 }
@@ -111,9 +110,9 @@ void NeuralNetwork::setInput(const std::vector<std::vector<float>> &input)
   // If batchsize is different than existing one, re-create pipelines
   if (batchSize != _batchSize)
   {
-   _batchSize = batchSize;
-   for (size_t i = 0; i < layerCount; i++) _layers[i]->createForwardPipeline();
-   for (size_t i = 0; i < layerCount; i++) _layers[i]->createBackwardPipeline();
+    _batchSize = batchSize;
+    for (size_t i = 0; i < layerCount; i++) _layers[i]->createForwardPipeline();
+    for (size_t i = 0; i < layerCount; i++) _layers[i]->createBackwardPipeline();
   }
 
   for (size_t i = 0; i < input.size(); i++)

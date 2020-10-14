@@ -11,66 +11,36 @@ void Agent::initialize()
   // Getting problem pointer
   _problem = dynamic_cast<problem::ReinforcementLearning *>(_k->_problem);
 
-  /*********************************************************************
-  * Creating and running Critic Learning Experiments
-  *********************************************************************/
-
-  _criticExperiment["Problem"]["Type"] = "Supervised Learning";
-
-  _criticExperiment["Solver"]["Type"] = "Learner/DeepGD";
-  _criticExperiment["Solver"]["Optimizer"] = _criticOptimizer;
-  _criticExperiment["Solver"]["Loss Function"] = "Mean Squared Error";
-  _criticExperiment["Solver"]["Steps Per Generation"] = 1;
-  _criticExperiment["Solver"]["Neural Network"] = _criticNeuralNetwork;
-
-  _criticExperiment["Console Output"]["Frequency"] = 0;
-  _criticExperiment["Console Output"]["Verbosity"] = "Silent";
-  _criticExperiment["File Output"]["Enabled"] = false;
-  _criticExperiment["Random Seed"] = _k->_randomSeed++;
-
-  // Initializing experiment with an initial zero set
-  for (size_t i = 0; i < _criticMiniBatchSize; i++)
-  {
-    _criticExperiment["Problem"]["Solution"][i][0] = 0.0;
-
-    for (size_t j = 0; j < _k->_variables.size(); j++)
-      _criticExperiment["Problem"]["Inputs"][i][j] = 0.0;
-  }
-
-  // Running initialization to verify that the configuration is correct
-  korali::Engine engine;
-  engine.initialize(_criticExperiment);
-
-  // Getting learner pointers
-  _criticProblem = dynamic_cast<problem::SupervisedLearning *>(_criticExperiment._problem);
-  _criticLearner = dynamic_cast<solver::learner::DeepGD *>(_criticExperiment._solver);
-
   // Initializing selected policy
-  initializePolicy();
+  initializeAgent();
 
   // Initializing random seed for the shuffle operation
   mt = new std::mt19937(rd());
   mt->seed(_k->_randomSeed++);
 
+  // Pre-allocating space for the experience replay memory
+  _experienceReplayStates.reserve(_experienceReplayMaximumSize);
+  _experienceReplayActions.reserve(_experienceReplayMaximumSize);
+  _experienceReplayRewards.reserve(_experienceReplayMaximumSize);
+  _experienceReplayTerminal.reserve(_experienceReplayMaximumSize);
+
   // If initial generation, set initial agent configuration
   if (_k->_currentGeneration == 0)
   {
+    _randomActionProbabilityCurrentValue = _randomActionProbabilityInitialValue;
+
     _currentEpisode = 0;
     _optimizationStepCount = 0;
     _candidatePoliciesTested = 0;
     _currentSampleID = 0;
+    _cumulativeQStar = 0;
+    _experienceCount = 0;
 
     // Initialize best rewards
     _averageTestingReward = -korali::Inf;
-    _bestAverageTrainingReward = -korali::Inf;
+    _bestTrainingReward = -korali::Inf;
     _bestAverageTestingReward = -korali::Inf;
-
-    // Getting Critic's hyperparameters
-    _hyperparameters["Critic"] = _criticLearner->getHyperparameters();
   }
-
-  // Setting Critic's hyperparameters
-  _criticLearner->setHyperparameters(_hyperparameters["Critic"]);
 
   // Initializing policy hyperparameters
   updateHyperparameters(_hyperparameters);
@@ -78,409 +48,258 @@ void Agent::initialize()
 
 void Agent::runGeneration()
 {
-  // Broadcasting hyperparameters for all workers to use
-  KORALI_BROADCAST("Hyperparameters", _hyperparameters);
+  // Broadcasting initial hyperparameters for all workers to use
+  KORALI_UPDATE_GLOBALS("Hyperparameters", _hyperparameters);
 
-  // Creating storage for agents
-  std::vector<Sample> agents(_agentEpisodesPerGeneration);
-  _currentEpisode += _agentEpisodesPerGeneration;
+  // Calculating effective value for random action probability
+  _randomActionProbabilityEffectiveValue = _experienceReplayStates.size() > _experienceReplayStartSize ? _randomActionProbabilityCurrentValue : 1.0;
 
-  // Initializing the agents and their environments
-  for (size_t i = 0; i < _agentEpisodesPerGeneration; i++)
+  // Configuring current agent
+  Sample agent;
+
+  agent["Sample Id"] = _currentSampleID++;
+  agent["Module"] = "Problem";
+  agent["Operation"] = "Run Episode";
+  agent["Mode"] = "Training";
+  agent["Random Action Probability"] = _randomActionProbabilityEffectiveValue;
+
+  // Initializing statistical information
+  _currentReward = 0.0;
+
+  // Launching agent
+  KORALI_START(agent);
+
+  // Storage to keep experience information
+  knlohmann::json experience;
+
+  // Keep listening to incoming experiences until we reached a terminal state
+  do
   {
-    // Configuring Agent
-    agents[i]["Sample Id"] = _currentSampleID++;
-    agents[i]["Module"] = "Problem";
-    agents[i]["Operation"] = "Run Training";
+    // Listening for incoming experiences
+    experience = KORALI_RECV_MSG_FROM_SAMPLE(agent);
 
-    // Launching agent initialization
-    KORALI_START(agents[i]);
-  }
+    _experienceReplayStates.push_back(experience["State"].get<std::vector<float>>());
+    _experienceReplayActions.push_back(experience["Action"].get<std::vector<float>>());
+    _experienceReplayRewards.push_back(experience["Reward"].get<float>());
+    _experienceReplayTerminal.push_back(experience["Is Terminal"].get<bool>());
+    if (isDefined(experience, "Metadata", "Action Index")) _experienceReplayActionIndexes.push_back(experience["Metadata"]["Action Index"].get<size_t>());
+    if (isDefined(experience, "Metadata", "Action Probabilities")) _experienceReplayActionProbabilities.push_back(experience["Metadata"]["Action Probabilities"].get<std::vector<float>>());
+    if (isDefined(experience, "Metadata", "Action Means")) _experienceReplayActionMeans.push_back(experience["Metadata"]["Action Means"].get<std::vector<float>>());
+    if (isDefined(experience, "Metadata", "Action Sigmas")) _experienceReplayActionSigmas.push_back(experience["Metadata"]["Action Sigmas"].get<std::vector<float>>());
 
-  KORALI_WAITALL(agents);
+    _experienceCount++;
+
+    if (_experienceCount % _experiencesBetweenUpdates == 0)              // If we accumulated enough experiences between updates, update now
+      if (experience["Is Terminal"] == false)                            // Do not update policy if this is terminal
+        if (_experienceReplayStates.size() > _experienceReplayStartSize) // Perform optimization steps on the critic/policy, if reached the minimum replay memory size
+        {
+          for (size_t i = 0; i < _optimizationStepsPerUpdate; i++) trainAgent();
+          _optimizationStepCount += _optimizationStepsPerUpdate;
+        }
+
+    // If agent requested new policy, send the new hyperparameters
+    if (experience["Request New Policy"] == true)
+      KORALI_SEND_MSG_TO_SAMPLE(agent, _hyperparameters);
+
+    // Adding experience's reward to episode's reward
+    _currentReward += experience["Reward"].get<float>();
+
+  } while (experience["Is Terminal"] == false);
+
+  // Waiting for agent to finish
+  KORALI_WAIT(agent);
+
+  // Adding to the number of episodes
+  _currentEpisode++;
 
   /*********************************************************************
-   * Storing new experiences to the history
+   * Updating experience replay memory
    *********************************************************************/
 
-  size_t currentExperienceCount = 0;
-
-  _maxExperienceCount = 0;
-  _minExperienceCount = std::numeric_limits<size_t>::max();
-
-  // Calculating the cumulative reward of this round of experiences
-  double cumulativeReward = 0.0;
-
-  for (size_t i = 0; i < _agentEpisodesPerGeneration; i++)
-  {
-    size_t experienceSize = agents[i]["Experience"]["States"].size();
-
-    // Collecting entire episode's reward
-    cumulativeReward += agents[i]["Cumulative Reward"].get<double>();
-
-    // Storing statistics
-    currentExperienceCount += experienceSize;
-    if (experienceSize > _maxExperienceCount) _maxExperienceCount = experienceSize;
-    if (experienceSize < _minExperienceCount) _minExperienceCount = experienceSize;
-
-    size_t startExpId = experienceSize > _agentExperienceLimit ? experienceSize - _agentExperienceLimit : 0;
-
-    for (size_t j = startExpId; j < experienceSize; j++)
-    {
-      // Storing action/state/reward/probability density experience
-      _stateHistory.push_back(agents[i]["Experience"]["States"][j].get<std::vector<double>>());
-      _actionHistory.push_back(agents[i]["Experience"]["Actions"][j].get<std::vector<double>>());
-      _probabilityDensityHistory.push_back(agents[i]["Experience"]["Densities"][j].get<double>());
-      _rewardHistory.push_back(agents[i]["Experience"]["Rewards"][j].get<double>());
-
-      // Storing whether this experience is terminal
-      _terminalHistory.push_back(j == (experienceSize - 1));
-    }
-  }
-
-  // Updating average experience count
-  _totalExperienceCount += currentExperienceCount;
-  _averageExperienceCount = ((double)currentExperienceCount) / ((double)_agentEpisodesPerGeneration);
-
   // If the maximum number of experiences have been reached, start forgetting older excess experiences
-  if (_stateHistory.size() > _replayMemoryMaximumSize)
+  if (_experienceReplayStates.size() > _experienceReplayMaximumSize)
   {
-    size_t excess = _stateHistory.size() - _replayMemoryMaximumSize;
-    _stateHistory.erase(_stateHistory.begin(), _stateHistory.begin() + excess);
-    _actionHistory.erase(_actionHistory.begin(), _actionHistory.begin() + excess);
-    _rewardHistory.erase(_rewardHistory.begin(), _rewardHistory.begin() + excess);
-    _probabilityDensityHistory.erase(_probabilityDensityHistory.begin(), _probabilityDensityHistory.begin() + excess);
-    _terminalHistory.erase(_terminalHistory.begin(), _terminalHistory.begin() + excess);
+    size_t excess = _experienceReplayStates.size() - _experienceReplayMaximumSize;
+    _experienceReplayStates.erase(_experienceReplayStates.begin(), _experienceReplayStates.begin() + excess);
+    _experienceReplayActions.erase(_experienceReplayActions.begin(), _experienceReplayActions.begin() + excess);
+    _experienceReplayRewards.erase(_experienceReplayRewards.begin(), _experienceReplayRewards.begin() + excess);
+    _experienceReplayTerminal.erase(_experienceReplayTerminal.begin(), _experienceReplayTerminal.begin() + excess);
+
+    if (_experienceReplayActionIndexes.size() > 0)
+      _experienceReplayActionIndexes.erase(_experienceReplayActionIndexes.begin(), _experienceReplayActionIndexes.begin() + excess);
+
+    if (_experienceReplayActionProbabilities.size() > 0)
+      _experienceReplayActionProbabilities.erase(_experienceReplayActionProbabilities.begin(), _experienceReplayActionProbabilities.begin() + excess);
+
+    if (_experienceReplayActionMeans.size() > 0)
+      _experienceReplayActionMeans.erase(_experienceReplayActionMeans.begin(), _experienceReplayActionMeans.begin() + excess);
+
+    if (_experienceReplayActionSigmas.size() > 0)
+      _experienceReplayActionSigmas.erase(_experienceReplayActionSigmas.begin(), _experienceReplayActionSigmas.begin() + excess);
   }
-
-  // If the minimum number of experiences has not yet been reached, there's not much else to do
-  if (_stateHistory.size() < _replayMemoryStartSize) return;
-
-  // Updating best reward so far, it the cumulative reward of this round exceeds it
-  // and store the best hyperparameters used for that
-  _averageTrainingReward = cumulativeReward / (double)_agentEpisodesPerGeneration;
 
   // Updating if exceeded best training policy so far.
-  if (_averageTrainingReward > _bestAverageTrainingReward) _bestAverageTrainingReward = _averageTrainingReward;
+  if (_currentReward > _bestTrainingReward) _bestTrainingReward = _currentReward;
 
   // If the policy has exceeded the threshold during training, it is time to test it properly (without noise)
   // Otherwise, let current testing reward remain as -inf.
-  if (_averageTrainingReward > _averageTrainingRewardThreshold)
+  if (_currentReward >= _trainingRewardThreshold)
   {
     // Increasing tested policy counter
     _candidatePoliciesTested++;
 
     // Creating storage for agents
-    std::vector<Sample> tests(_policyTestingEpisodes);
+    std::vector<Sample> agents(_policyTestingEpisodes);
 
     // Initializing the agents and their environments
     for (size_t i = 0; i < _policyTestingEpisodes; i++)
     {
       // Configuring Agent
-      tests[i]["Sample Id"] = _currentSampleID++;
-      tests[i]["Module"] = "Problem";
-      tests[i]["Operation"] = "Run Testing";
+      agents[i]["Sample Id"] = _currentSampleID++;
+      agents[i]["Module"] = "Problem";
+      agents[i]["Action Source"] = "Policy";
+      agents[i]["Operation"] = "Run Episode";
+      agents[i]["Mode"] = "Testing";
+      agents[i]["Random Action Probability"] = 0.0;
 
       // Launching agent initialization
-      KORALI_START(tests[i]);
+      KORALI_START(agents[i]);
     }
 
-    KORALI_WAITALL(tests);
+    KORALI_WAITALL(agents);
 
     // Calculating average testing reward
     _averageTestingReward = 0.0;
     for (size_t i = 0; i < _policyTestingEpisodes; i++)
-      _averageTestingReward += tests[i]["Cumulative Reward"].get<double>();
+      _averageTestingReward += agents[i]["Cumulative Reward"].get<float>();
     _averageTestingReward = _averageTestingReward / _policyTestingEpisodes;
+  }
+
+  /////////////// Updating the probability of a random action (epsilon)
+
+  // If we reached the starting size
+  if (_experienceReplayStates.size() > _experienceReplayStartSize)
+  {
+    // Decreasing the value of epsilon
+    _randomActionProbabilityCurrentValue = _randomActionProbabilityCurrentValue - _randomActionProbabilityDecreaseRate;
+
+    // Without exceeding the lower bound
+    if (_randomActionProbabilityCurrentValue < _randomActionProbabilityTargetValue) _randomActionProbabilityCurrentValue = _randomActionProbabilityTargetValue;
   }
 
   // If the average testing reward is better than the previous best, replace it
   // and store hyperparameters as best so far.
   if (_averageTestingReward > _bestAverageTestingReward) _bestAverageTestingReward = _averageTestingReward;
-
-  // If we reached our target testing reward, there's nothing else to do
-  if (_targetAverageTestingReward > -korali::Inf)
-    if (_bestAverageTestingReward >= _targetAverageTestingReward) return;
-
-  // Otherwise, continue training critic and policy.
-  trainCritic();
-  trainPolicy();
 }
 
-std::vector<double> Agent::getRandomAction(const std::vector<double> &state)
+void Agent::normalizeStateActionNeuralNetwork(NeuralNetwork *neuralNetwork, size_t miniBatchSize, size_t normalizationSteps)
 {
-  // Storage for action
-  std::vector<double> randomAction(_problem->_actionVectorSize);
+  // Allocating memory for the mini batch set
+  std::vector<std::vector<std::vector<float>>> miniBatches(normalizationSteps);
 
-  for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-  {
-    size_t varIdx = _problem->_actionVectorIndexes[i];
-    double x = _randomActionGenerator->getRandomNumber();
+  for (size_t i = 0; i < normalizationSteps; i++)
+    miniBatches[i].resize(miniBatchSize);
 
-    // If discrete value vector was not provided, use lower and upper bounds
-    if (_k->_variables[varIdx]->_values.size() == 0)
-    {
-      double lowerBound = _k->_variables[varIdx]->_lowerBound;
-      double upperBound = _k->_variables[varIdx]->_upperBound;
-      randomAction[i] = lowerBound + x * (upperBound - lowerBound);
-    }
-    else
-    {
-      // Randomly select one of the actions provided in the value vector
-      size_t valIdx = floor(x * _k->_variables[varIdx]->_values.size());
-      randomAction[i] = _k->_variables[varIdx]->_values[valIdx];
-    }
-  }
+  for (size_t i = 0; i < normalizationSteps; i++)
+    for (size_t j = 0; j < miniBatchSize; j++)
+      miniBatches[i][j].resize(_problem->_stateVectorSize + _problem->_actionVectorSize);
 
-  return randomAction;
-}
+  // Creating storage for state history indexes to choose from
+  std::vector<size_t> experienceReplayIndexes(_experienceReplayStates.size());
+  for (size_t i = 0; i < _experienceReplayStates.size() - 1; i++) experienceReplayIndexes[i] = i;
 
-double Agent::stateActionValueFunction(const std::vector<double> &state, const std::vector<double> &action)
-{
-  // Storage to put together state and action
-  std::vector<double> stateActionInput(_problem->_stateVectorSize + _problem->_actionVectorSize);
-
-  // Forward propagating state/action through the critic
-  for (size_t j = 0; j < state.size(); j++) stateActionInput[j] = state[j];
-  for (size_t j = 0; j < action.size(); j++) stateActionInput[j + state.size()] = action[j];
-  auto evaluation = _criticLearner->getEvaluation(stateActionInput);
-
-  // Getting the value of V(Xt), i.e., Q(xt, best action)
-  return evaluation[0];
-}
-
-double Agent::retraceFunction(size_t expId)
-{
-  // Going straight to the latest experience in the corresponding episode
-  size_t curId = expId;
-  while (_terminalHistory[curId] == false) curId++;
-  //printf("For experience %lu, the last experience in its episode is: %lu\n", expId, curId);
-
-  // First, get the retrace value for the last experience (just the reward)
-  double retraceValue = _rewardHistory[curId];
-
-  // Now going backwards from the last, calculating the retrace value of each experience, one by one
-  while (curId > expId)
-  {
-    // Decreasing index
-    curId--;
-
-    // Getting Q(s+1, a+1) for the selected experience
-    double qNextState = stateActionValueFunction(_stateHistory[curId + 1], _actionHistory[curId + 1]);
-
-    // Getting V(s+1) for the selected experience
-    double vNextState = stateValueFunction(_stateHistory[curId + 1]);
-
-    // Getting p(s,a) for selected experience, given the old policy
-    double pOldExp = _probabilityDensityHistory[curId];
-
-    // Getting p(s,a) for the best action, given the current policy
-    double pCurExp = getStateActionProbabilityDensity(_stateHistory[curId], _actionHistory[curId]);
-
-    // Now calculating importance weight, truncating it to avoid exploding values, and then multiplying it by lambda
-    double importanceWeight = _importanceWeightLambda * std::min(_importanceWeightTruncation, (pCurExp / pOldExp));
-
-    // printf("Importance Weight: %f\n", importanceWeight);
-
-    retraceValue = _rewardHistory[curId] + _criticDiscountFactor * importanceWeight * (retraceValue - qNextState) + _criticDiscountFactor * vNextState;
-  }
-
-  //printf("Retrace Val: %f\n", retraceValue);
-
-  // Returning the retrace value of the required experience
-  return retraceValue;
-}
-
-void Agent::trainCritic()
-{
-  /***********************************************************************************
-  * Randomly selecting experiences for the mini-batch and calculating their target Q
-  ***********************************************************************************/
-
-  // Creating state history indexes to choose from
-  std::vector<size_t> stateHistoryIndexes(_stateHistory.size());
-  for (size_t i = 0; i < _stateHistory.size(); i++) stateHistoryIndexes[i] = i;
-
-  // Calculating cumulative Q*, for statistical purposes
-  _cumulativeQStar = 0.0;
-
-  for (size_t step = 0; step < _criticOptimizationSteps; step++)
-  {
-    // Returning hyperparameters to its pre-training value
-    _criticLearner->setHyperparameters(_hyperparameters["Critic"]);
-
-    // Shuffling indexes to choose the mini batch from
-    std::shuffle(stateHistoryIndexes.begin(), stateHistoryIndexes.end(), *mt);
-
-    for (size_t i = 0; i < _criticMiniBatchSize; i++)
-    {
-      // Selecting a uniformly random selected, yet not repeated experience
-      size_t expId = stateHistoryIndexes[i];
-
-      // Qnew = max_a(q) with s' fixed
-      // Q* = r + y*Qnew -- If not terminal state
-      // Q* = r -- If terminal state
-
-      // Calculating target Q value (solution) for Qnew on selected batch
-      double qStar = 0.0;
-
-      if (_criticUpdateAlgorithm == "Q-Learning")
-      {
-        // Reward is the first factor in the QLearning algorithm
-        qStar = _rewardHistory[expId];
-
-        // If state is not terminal (next state is filled) then add Qnew to the Q value.
-        if (_terminalHistory[expId] == false) qStar += _criticDiscountFactor * stateValueFunction(_stateHistory[expId + 1]);
-      }
-
-      if (_criticUpdateAlgorithm == "Retrace") qStar = retraceFunction(expId);
-
-      // Updating inputs to training learner
-      for (size_t j = 0; j < _problem->_stateVectorSize; j++) _criticProblem->_inputs[i][j] = _stateHistory[expId][j];
-      for (size_t j = 0; j < _problem->_actionVectorSize; j++) _criticProblem->_inputs[i][_problem->_stateVectorSize + j] = _actionHistory[expId][j];
-      _criticProblem->_solution[i][0] = qStar;
-
-      // Keeping statistics
-      _cumulativeQStar += qStar;
-    }
-
-    // Running one generation of the optimization method with the given mini-batch
-    _criticExperiment["Solver"]["Termination Criteria"]["Max Generations"] = _criticExperiment._currentGeneration + 1;
-    _criticLearner->initialize();
-    korali::Engine engine;
-    engine.resume(_criticExperiment);
-
-    // Increasing optimization step counter
-    _optimizationStepCount++;
-  }
-
-  // Keeping statistics
-  _averageQStar = (double)_cumulativeQStar / (double)(_criticOptimizationSteps * _criticMiniBatchSize);
-
-  /****************************************************************************
- * If batch normalization is being used, we need to adjust mean and variances
- * by sampling a few more mini-batches after the optimization steps
- ******************************************************************************/
-
-  normalizeNeuralNetwork(_criticLearner->_trainingNeuralNetwork);
-
-  // Storing new Critic's hyperparameters
-  _hyperparameters["Critic"] = _criticLearner->getHyperparameters();
-}
-
-void Agent::normalizeNeuralNetwork(korali::NeuralNetwork *nn)
-{
-  size_t pCount = nn->_normalizationParameterCount;
-
-  std::vector<double> newMeans(pCount, 0.0);
-  std::vector<double> newVariances(pCount, 0.0);
-
-  std::vector<std::vector<double>> miniBatch(_criticMiniBatchSize);
-  for (size_t i = 0; i < _criticMiniBatchSize; i++) miniBatch[i].resize(_problem->_stateVectorSize + _problem->_actionVectorSize);
-
-  // Creating state history indexes to choose from
-  std::vector<size_t> stateHistoryIndexes(_stateHistory.size());
-  for (size_t i = 0; i < _stateHistory.size(); i++) stateHistoryIndexes[i] = i;
-
-  for (size_t step = 0; step < _criticNormalizationSteps; step++)
+  // Filling the minibatches
+  for (size_t step = 0; step < normalizationSteps; step++)
   {
     // Shuffling indexes to choose the mini batch from
-    std::shuffle(stateHistoryIndexes.begin(), stateHistoryIndexes.end(), *mt);
+    std::shuffle(experienceReplayIndexes.begin(), experienceReplayIndexes.end(), *mt);
 
-    for (size_t i = 0; i < _criticMiniBatchSize; i++)
+    for (size_t i = 0; i < miniBatchSize; i++)
     {
       // Selecting a uniformly random selected, yet not repeated experience
-      size_t expId = stateHistoryIndexes[i];
+      size_t expId = experienceReplayIndexes[i];
 
-      for (size_t j = 0; j < _problem->_stateVectorSize; j++) miniBatch[i][j] = _stateHistory[expId][j];
-      for (size_t j = 0; j < _problem->_actionVectorSize; j++) miniBatch[i][_problem->_stateVectorSize + j] = _actionHistory[expId][j];
+      for (size_t j = 0; j < _problem->_stateVectorSize; j++) miniBatches[step][i][j] = _experienceReplayStates[expId][j];
+      for (size_t j = 0; j < _problem->_actionVectorSize; j++) miniBatches[step][i][_problem->_stateVectorSize + j] = _experienceReplayActions[expId][j];
     }
-
-    nn->setInput(miniBatch);
-    nn->forward();
-
-    // Getting this mini-batch's normalization means and variances
-    auto newMeans = nn->getNormalizationMeans();
-    auto newVariances = nn->getNormalizationVariances();
-
-    // Accuulating their values into the new vector
-    for (size_t i = 0; i < pCount; i++) newMeans[i] += newMeans[i];
-    for (size_t i = 0; i < pCount; i++) newVariances[i] += newVariances[i];
   }
 
-  // Calculating the actual mean and variance averages
-  for (size_t i = 0; i < pCount; i++)
-  {
-    newMeans[i] = newMeans[i] / _criticNormalizationSteps;
-    newVariances[i] = newVariances[i] / (_criticNormalizationSteps - 1.0);
-  }
-
-  // Setting the new adjusted means and variances
-  nn->setNormalizationMeans(newMeans);
-  nn->setNormalizationVariances(newVariances);
+  neuralNetwork->normalize(miniBatches);
 }
 
-std::vector<double> Agent::getInferenceAction(const std::vector<double> &state)
+void Agent::normalizeStateNeuralNetwork(NeuralNetwork *neuralNetwork, size_t miniBatchSize, size_t normalizationSteps)
 {
-  // Querying the policy for the action, given the state
-  auto action = queryPolicy(state);
+  // Allocating memory for the mini batch set
+  std::vector<std::vector<std::vector<float>>> miniBatches(normalizationSteps);
 
-  // Returning action
-  return action;
+  for (size_t i = 0; i < normalizationSteps; i++)
+    miniBatches[i].resize(miniBatchSize);
+
+  for (size_t i = 0; i < normalizationSteps; i++)
+    for (size_t j = 0; j < miniBatchSize; j++)
+      miniBatches[i][j].resize(_problem->_stateVectorSize);
+
+  // Creating storage for state history indexes to choose from
+  std::vector<size_t> experienceReplayIndexes(_experienceReplayStates.size());
+  for (size_t i = 0; i < _experienceReplayStates.size() - 1; i++) experienceReplayIndexes[i] = i;
+
+  // Filling the minibatches
+  for (size_t step = 0; step < normalizationSteps; step++)
+  {
+    // Shuffling indexes to choose the mini batch from
+    std::shuffle(experienceReplayIndexes.begin(), experienceReplayIndexes.end(), *mt);
+
+    for (size_t i = 0; i < miniBatchSize; i++)
+    {
+      // Selecting a uniformly random selected, yet not repeated experience
+      size_t expId = experienceReplayIndexes[i];
+      miniBatches[step][i] = _experienceReplayStates[expId];
+    }
+  }
+
+  neuralNetwork->normalize(miniBatches);
 }
 
 void Agent::printGenerationAfter()
 {
   _k->_logger->logInfo("Normal", "Replay Experience Statistics:\n");
 
-  _k->_logger->logInfo("Normal", " + Experience Memory Size:            %lu/%lu\n", _stateHistory.size(), _replayMemoryMaximumSize);
+  _k->_logger->logInfo("Normal", " + Experience Memory Size:      %lu/%lu\n", _experienceReplayStates.size(), _experienceReplayMaximumSize);
 
   if (_maxEpisodes > 0)
-    _k->_logger->logInfo("Normal", " + Total Episodes Count:            %lu/%lu\n", _currentEpisode, _maxEpisodes);
+    _k->_logger->logInfo("Normal", " + Total Episodes Count:        %lu/%lu\n", _currentEpisode, _maxEpisodes);
   else
-    _k->_logger->logInfo("Normal", " + Total Episodes Count:            %lu\n", _currentEpisode);
+    _k->_logger->logInfo("Normal", " + Total Episodes Count:        %lu\n", _currentEpisode);
 
   if (_maxExperiences > 0)
-    _k->_logger->logInfo("Normal", " + Total Experience Count:          %lu/%lu\n", _totalExperienceCount, _maxExperiences);
+    _k->_logger->logInfo("Normal", " + Total Experience Count:      %lu/%lu\n", _experienceCount, _maxExperiences);
   else
-    _k->_logger->logInfo("Normal", " + Total Experience Count:          %lu\n", _totalExperienceCount);
-
-  _k->_logger->logInfo("Normal", " + Current Max Experiences/Episode: %lu\n", _maxExperienceCount);
-  _k->_logger->logInfo("Normal", " + Current Avg Experiences/Episode: %.0f\n", _averageExperienceCount);
-  _k->_logger->logInfo("Normal", " + Current Min Experiences/Episode: %lu\n", _minExperienceCount);
+    _k->_logger->logInfo("Normal", " + Total Experience Count:    %lu\n", _experienceCount);
 
   _k->_logger->logInfo("Normal", "Training Statistics:\n");
-
-  _k->_logger->logInfo("Normal", " + Average Training Reward:         %f/%f\n", _averageTrainingReward, _averageTrainingRewardThreshold);
-  _k->_logger->logInfo("Normal", " + Best Average Training Reward:    %f\n", _bestAverageTrainingReward);
-
-  _k->_logger->logInfo("Normal", "Testing Statistics:\n");
-
-  _k->_logger->logInfo("Normal", " + Candidate Policies Tested:       %lu\n", _candidatePoliciesTested);
-
-  _k->_logger->logInfo("Normal", " + Latest Average Testing Reward:   %f\n", _averageTestingReward);
-
-  if (_targetAverageTestingReward > -korali::Inf)
-    _k->_logger->logInfo("Normal", " + Best Average Testing Reward:     %f/%f\n", _bestAverageTestingReward, _targetAverageTestingReward);
-  else
-    _k->_logger->logInfo("Normal", " + Best Average Testing Reward:     %f\n", _bestAverageTestingReward);
-
-  _k->_logger->logInfo("Normal", "Critic Information:\n");
 
   if (_maxOptimizationSteps > 0)
     _k->_logger->logInfo("Normal", " + Optimization Step Count:         %lu/%lu\n", _optimizationStepCount, _maxOptimizationSteps);
   else
     _k->_logger->logInfo("Normal", " + Optimization Step Count:         %lu\n", _optimizationStepCount);
 
-  _k->_logger->logInfo("Normal", " + Cumulative Expected Q-Value:     %f\n", _cumulativeQStar);
-  _k->_logger->logInfo("Normal", " + Average Expected Q-Value:        %f\n", _averageQStar);
+  _k->_logger->logInfo("Normal", " + Current Reward:              %f/%f\n", _currentReward, _trainingRewardThreshold);
+  _k->_logger->logInfo("Normal", " + Best Reward:                 %f\n", _bestTrainingReward);
 
-  _criticExperiment._logger->_verbosityLevel = _k->_logger->_verbosityLevel;
-  _criticExperiment._solver->printGenerationAfter();
-  _criticExperiment._logger->setVerbosityLevel("Silent");
+  _k->_logger->logInfo("Normal", "Testing Statistics:\n");
 
-  _k->_logger->logInfo("Normal", "Policy Information:\n");
-  printPolicyInformation();
+  _k->_logger->logInfo("Normal", " + Candidate Policies:          %lu\n", _candidatePoliciesTested);
+
+  _k->_logger->logInfo("Normal", " + Latest Average Reward:       %f\n", _averageTestingReward);
+
+  if (_targetAverageTestingReward > -korali::Inf)
+    _k->_logger->logInfo("Normal", " + Best Average Reward:         %f/%f\n", _bestAverageTestingReward, _targetAverageTestingReward);
+  else
+    _k->_logger->logInfo("Normal", " + Best Average Reward:         %f\n", _bestAverageTestingReward);
+
+  _k->_logger->logInfo("Normal", " + Current p(Random Action):       %f\n", _randomActionProbabilityEffectiveValue);
+
+  printAgentInformation();
 }
 
 } // namespace solver

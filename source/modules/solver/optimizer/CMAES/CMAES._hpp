@@ -14,7 +14,7 @@ namespace optimizer
 {
 class CMAES : public Optimizer
 {
-  private:
+  public:
   /**
   * @brief Prepares generation for the next set of evaluations
  */
@@ -39,8 +39,9 @@ class CMAES : public Optimizer
 
   /**
  * @brief Updates mean and covariance of Gaussian proposal distribution.
+ * @param evaluations Model evaluations for proposed samples
  */
-  void updateDistribution(std::vector<Sample> &samples);
+  void updateDistribution(const std::vector<double> &evaluations);
 
   /**
     * @brief Updates the system of eigenvalues and eigenvectors
@@ -54,13 +55,18 @@ class CMAES : public Optimizer
   void numericalErrorTreatment();
 
   /**
-    * @brief Function for eigenvalue decomposition.
+   * @brief Function for eigenvalue decomposition.
+   * @param N Matrix size
+   * @param C Input matrix
+   * @param diag Means
+   * @param Q Output Matrix
  */
   void eigen(size_t N, std::vector<double> &C, std::vector<double> &diag, std::vector<double> &Q) const;
 
   /**
   * @brief Descending sort of vector elements, stores ordering in _sortingIndex.
-  * @param vec Vector to sort, _sortingIndex Ordering of elements in vector
+  * @param _sortingIndex Ordering of elements in vector
+  * @param vec Vector to sort
   * @param N Number of current samples.
  */
   void sort_index(const std::vector<double> &vec, std::vector<size_t> &_sortingIndex, size_t N) const;
@@ -108,10 +114,10 @@ class CMAES : public Optimizer
 
   /**
  * @brief Discretize variables to given granularity using arithmetic rounding.
+ * @param sample Sample to discretize
  */
   void discretize(std::vector<double> &sample);
 
-  public:
   /**
  * @brief Configures CMA-ES.
  */

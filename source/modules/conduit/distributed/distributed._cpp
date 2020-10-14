@@ -11,8 +11,8 @@ namespace korali
 {
 #ifdef _KORALI_USE_MPI
 
-  #define MPI_TAG_ACTION_JSON_SIZE 1
-  #define MPI_TAG_ACTION_JSON_CONTENT 2
+  #define MPI_MESSAGE_JSON_SIZE 1
+  #define MPI_MESSAGE_JSON_CONTENT 2
 
 MPI_Comm __KoraliTeamComm;
 MPI_Comm getKoraliMPIComm() { return __KoraliTeamComm; }
@@ -59,27 +59,27 @@ void Distributed::initialize()
 
   if (_rankCount == 1) KORALI_LOG_ERROR("Korali Distributed applications require at least 2 Distributed ranks to run.\n");
 
+  size_t teamId = 0;
   _teamCount = (_rankCount - 1) / _workersPerTeam;
-  _teamId = 0;
   _localRankId = 0;
 
   _teamIdSet = false;
   size_t currentRank = 0;
-  _teamWorkers.clear();
-  _teamQueue = queue<size_t>();
-  while (!_teamQueue.empty()) _teamQueue.pop();
+  _workerProcesses.clear();
+  _workerQueue = queue<size_t>();
+  while (!_workerQueue.empty()) _workerQueue.pop();
   for (size_t i = 0; i < _teamCount; i++)
   {
-    _teamQueue.push(i);
+    _workerQueue.push(i);
     for (size_t j = 0; j < _workersPerTeam; j++)
     {
       if (currentRank == _rankId)
       {
-        _teamId = i;
+        teamId = i;
         _localRankId = j;
         _teamIdSet = true;
       }
-      _teamWorkers[i].push_back(currentRank++);
+      _workerProcesses[i].push_back(currentRank++);
     }
   }
 
@@ -91,10 +91,10 @@ void Distributed::initialize()
     if (_rankCount < _workersPerTeam + 1)
       KORALI_LOG_ERROR("You are running Korali with %d ranks. However, you need at least %d ranks to have at least one worker team. \n", _rankCount, _workersPerTeam + 1);
 
-    _teamId = _teamCount + 1;
+    teamId = _teamCount + 1;
   }
 
-  MPI_Comm_split(_mpiCommunicator, _teamId, _rankId, &__KoraliTeamComm);
+  MPI_Comm_split(_mpiCommunicator, teamId, _rankId, &__KoraliTeamComm);
   MPI_Barrier(_mpiCommunicator);
 #endif
 }
@@ -102,7 +102,7 @@ void Distributed::initialize()
 void Distributed::initServer()
 {
 #ifdef _KORALI_USE_MPI
-  if (!isRoot()) workerThread();
+  if (isRoot() == false && _teamIdSet == true) worker();
 #endif
 }
 
@@ -120,8 +120,8 @@ void Distributed::finalize()
     for (size_t i = 0; i < _teamCount; i++)
       for (size_t j = 0; j < _workersPerTeam; j++)
       {
-        MPI_Send(&terminationStringSize, 1, MPI_UNSIGNED_LONG, _teamWorkers[i][j], MPI_TAG_ACTION_JSON_SIZE, _mpiCommunicator);
-        MPI_Send(terminationString.c_str(), terminationStringSize, MPI_CHAR, _teamWorkers[i][j], MPI_TAG_ACTION_JSON_CONTENT, _mpiCommunicator);
+        MPI_Send(&terminationStringSize, 1, MPI_UNSIGNED_LONG, _workerProcesses[i][j], MPI_MESSAGE_JSON_SIZE, _mpiCommunicator);
+        MPI_Send(terminationString.c_str(), terminationStringSize, MPI_CHAR, _workerProcesses[i][j], MPI_MESSAGE_JSON_CONTENT, _mpiCommunicator);
       }
   }
 
@@ -131,142 +131,21 @@ void Distributed::finalize()
   Conduit::finalize();
 }
 
-void Distributed::workerThread()
+void Distributed::broadcastMessageToWorkers(knlohmann::json &message)
 {
 #ifdef _KORALI_USE_MPI
-  if (_teamIdSet == false) return;
-
-  while (true)
-  {
-    size_t jsonStringSize;
-    MPI_Recv(&jsonStringSize, 1, MPI_UNSIGNED_LONG, getRootRank(), MPI_TAG_ACTION_JSON_SIZE, _mpiCommunicator, MPI_STATUS_IGNORE);
-
-    char jsonStringChar[jsonStringSize + 1];
-    MPI_Recv(jsonStringChar, jsonStringSize, MPI_CHAR, getRootRank(), MPI_TAG_ACTION_JSON_CONTENT, _mpiCommunicator, MPI_STATUS_IGNORE);
-
-    jsonStringChar[jsonStringSize] = '\0';
-    auto actionJs = knlohmann::json::parse(jsonStringChar);
-
-    if (actionJs["Conduit Action"] == "Terminate") return;
-    if (actionJs["Conduit Action"] == "Process Sample")
-    {
-      Engine *engine = _engineStack.top();
-      auto expId = actionJs["Experiment Id"];
-      Sample s;
-      s._globals = &engine->_experimentVector[expId]->_globals;
-      s._js.getJson() = actionJs;
-      s.sampleLauncher();
-
-      if (_localRankId == 0)
-      {
-        string resultJsonString = s._js.getJson().dump();
-        size_t resultJsonSize = resultJsonString.size();
-        MPI_Send(&resultJsonSize, 1, MPI_UNSIGNED_LONG, getRootRank(), MPI_TAG_ACTION_JSON_SIZE, _mpiCommunicator);
-        MPI_Send(resultJsonString.c_str(), resultJsonSize, MPI_CHAR, getRootRank(), MPI_TAG_ACTION_JSON_CONTENT, _mpiCommunicator);
-      }
-    }
-    if (actionJs["Conduit Action"] == "Broadcast Globals")
-    {
-      Engine *engine = _engineStack.top();
-      auto expId = actionJs["Experiment Id"];
-      auto key = actionJs["Globals"]["Key"].get<std::string>();
-      engine->_experimentVector[expId]->_globals[key] = actionJs["Globals"]["Values"];
-    }
-    if (actionJs["Conduit Action"] == "Stack Engine") _engineStack.push(Engine::deserialize(actionJs["Engine"]));
-    if (actionJs["Conduit Action"] == "Pop Engine") _engineStack.pop();
-
-    MPI_Barrier(__KoraliTeamComm);
-  }
-#endif
-}
-
-void Distributed::processSample(Sample &sample)
-{
-#ifdef _KORALI_USE_MPI
-  Engine *engine = _engineStack.top();
-
-  int teamId = -1;
-
-  while (_teamQueue.empty())
-  {
-    sample._state = SampleState::waiting;
-    co_switch(engine->_currentExperiment->_thread);
-  }
-  teamId = _teamQueue.front();
-  _teamQueue.pop();
-
-  auto sampleJs = sample._js.getJson();
-  sampleJs["Conduit Action"] = "Process Sample";
-
-  string sampleJsonString = sampleJs.dump();
-  size_t sampleJsonSize = sampleJsonString.size();
-
-  for (size_t i = 0; i < _workersPerTeam; i++)
-  {
-    int workerId = _teamWorkers[teamId][i];
-    MPI_Send(&sampleJsonSize, 1, MPI_UNSIGNED_LONG, workerId, MPI_TAG_ACTION_JSON_SIZE, _mpiCommunicator);
-    MPI_Send(sampleJsonString.c_str(), sampleJsonSize, MPI_CHAR, workerId, MPI_TAG_ACTION_JSON_CONTENT, _mpiCommunicator);
-  }
-
-  size_t resultJsonSize;
-  MPI_Request resultJsonRequest;
-  MPI_Irecv(&resultJsonSize, 1, MPI_UNSIGNED_LONG, _teamWorkers[teamId][0], MPI_TAG_ACTION_JSON_SIZE, _mpiCommunicator, &resultJsonRequest);
-
-  auto timelineJs = knlohmann::json();
-  timelineJs["Start Time"] = chrono::duration<double>(chrono::high_resolution_clock::now() - _startTime).count() + _cumulativeTime;
-
-  int flag = 0;
-  while (flag == 0)
-  {
-    MPI_Test(&resultJsonRequest, &flag, MPI_STATUS_IGNORE);
-    if (flag)
-    {
-      char resultStringChar[resultJsonSize + 1];
-      MPI_Recv(resultStringChar, resultJsonSize, MPI_CHAR, _teamWorkers[teamId][0], MPI_TAG_ACTION_JSON_CONTENT, _mpiCommunicator, MPI_STATUS_IGNORE);
-      resultStringChar[resultJsonSize] = '\0';
-      sample._js.getJson() = knlohmann::json::parse(resultStringChar);
-      _teamQueue.push(teamId);
-    }
-    else
-    {
-      sample._state = SampleState::waiting;
-      co_switch(engine->_currentExperiment->_thread);
-    }
-  }
-
-  timelineJs["End Time"] = chrono::duration<double>(chrono::high_resolution_clock::now() - _startTime).count() + _cumulativeTime;
-  timelineJs["Solver Id"] = engine->_currentExperiment->_experimentId;
-  timelineJs["Current Generation"] = engine->_currentExperiment->_currentGeneration;
-  __profiler["Timelines"]["Worker " + to_string(teamId)] += timelineJs;
-
-#endif
-}
-
-void Distributed::broadcastGlobals(std::string key, knlohmann::json &globalsJs)
-{
-#ifdef _KORALI_USE_MPI
-
   // Run broadcast only if this is the master process
   if (!isRoot()) return;
 
-  Engine *engine = _engineStack.top();
-
-  knlohmann::json js;
-  js["Experiment Id"] = engine->_currentExperiment->_experimentId;
-  js["Conduit Action"] = "Broadcast Globals";
-  js["Globals"]["Key"] = key;
-  js["Globals"]["Values"] = globalsJs;
-
-  string globalsString = js.dump();
-  size_t globalsStringSize = globalsString.size();
+  string messageString = message.dump();
+  size_t messageStringSize = messageString.size();
 
   for (size_t i = 0; i < _teamCount; i++)
     for (size_t j = 0; j < _workersPerTeam; j++)
     {
-      MPI_Send(&globalsStringSize, 1, MPI_UNSIGNED_LONG, _teamWorkers[i][j], MPI_TAG_ACTION_JSON_SIZE, _mpiCommunicator);
-      MPI_Send(globalsString.c_str(), globalsStringSize, MPI_CHAR, _teamWorkers[i][j], MPI_TAG_ACTION_JSON_CONTENT, _mpiCommunicator);
+      MPI_Send(&messageStringSize, 1, MPI_UNSIGNED_LONG, _workerProcesses[i][j], MPI_MESSAGE_JSON_SIZE, _mpiCommunicator);
+      MPI_Send(messageString.c_str(), messageStringSize, MPI_CHAR, _workerProcesses[i][j], MPI_MESSAGE_JSON_CONTENT, _mpiCommunicator);
     }
-
 #endif
 }
 
@@ -295,46 +174,110 @@ void Distributed::abort()
 #endif
 }
 
+void Distributed::sendMessageToEngine(knlohmann::json &message)
+{
+#ifdef _KORALI_USE_MPI
+  if (_localRankId == 0)
+  {
+    string messageString = message.dump();
+    size_t messageStringSize = messageString.size();
+    MPI_Send(&messageStringSize, 1, MPI_UNSIGNED_LONG, getRootRank(), MPI_MESSAGE_JSON_SIZE, _mpiCommunicator);
+    MPI_Send(messageString.c_str(), messageStringSize, MPI_CHAR, getRootRank(), MPI_MESSAGE_JSON_CONTENT, _mpiCommunicator);
+  }
+#endif
+}
+
+knlohmann::json Distributed::recvMessageFromEngine()
+{
+  auto message = knlohmann::json();
+
+#ifdef _KORALI_USE_MPI
+  MPI_Barrier(__KoraliTeamComm);
+
+  size_t jsonStringSize;
+  MPI_Recv(&jsonStringSize, 1, MPI_UNSIGNED_LONG, getRootRank(), MPI_MESSAGE_JSON_SIZE, _mpiCommunicator, MPI_STATUS_IGNORE);
+
+  char jsonStringChar[jsonStringSize + 1];
+  MPI_Recv(jsonStringChar, jsonStringSize, MPI_CHAR, getRootRank(), MPI_MESSAGE_JSON_CONTENT, _mpiCommunicator, MPI_STATUS_IGNORE);
+
+  jsonStringChar[jsonStringSize] = '\0';
+  message = knlohmann::json::parse(jsonStringChar);
+#endif
+
+  return message;
+}
+
+knlohmann::json Distributed::recvMessageFromSample(Sample &sample)
+{
+  Engine *engine = _engineStack.top();
+  knlohmann::json message;
+
+#ifdef _KORALI_USE_MPI
+
+  size_t messageSize;
+  MPI_Request messageRequest;
+  MPI_Irecv(&messageSize, 1, MPI_UNSIGNED_LONG, _workerProcesses[sample._workerId][0], MPI_MESSAGE_JSON_SIZE, _mpiCommunicator, &messageRequest);
+
+  int flag = 0;
+  while (flag == 0)
+  {
+    MPI_Test(&messageRequest, &flag, MPI_STATUS_IGNORE);
+    if (flag)
+    {
+      char messageStringChar[messageSize + 1];
+      MPI_Recv(messageStringChar, messageSize, MPI_CHAR, _workerProcesses[sample._workerId][0], MPI_MESSAGE_JSON_CONTENT, _mpiCommunicator, MPI_STATUS_IGNORE);
+      messageStringChar[messageSize] = '\0';
+      message = knlohmann::json::parse(messageStringChar);
+    }
+    else
+    {
+      co_switch(engine->_currentExperiment->_thread);
+    }
+  }
+
+#endif
+
+  return message;
+}
+
+void Distributed::sendMessageToSample(Sample &sample, knlohmann::json &message)
+{
+#ifdef _KORALI_USE_MPI
+  string messageString = message.dump();
+  size_t messageStringSize = messageString.size();
+
+  for (size_t i = 0; i < _workersPerTeam; i++)
+  {
+    int workerId = _workerProcesses[sample._workerId][i];
+    MPI_Send(&messageStringSize, 1, MPI_UNSIGNED_LONG, workerId, MPI_MESSAGE_JSON_SIZE, _mpiCommunicator);
+    MPI_Send(messageString.c_str(), messageStringSize, MPI_CHAR, workerId, MPI_MESSAGE_JSON_CONTENT, _mpiCommunicator);
+  }
+#endif
+}
+
 void Distributed::stackEngine(Engine *engine)
 {
 #ifdef _KORALI_USE_MPI
+  // (Engine-Side) Adding engine to the stack to support Korali-in-Korali execution
+  _engineStack.push(engine);
 
   knlohmann::json engineJs;
   engineJs["Conduit Action"] = "Stack Engine";
   engine->serialize(engineJs["Engine"]);
 
-  string engineString = engineJs.dump();
-  size_t engineStringSize = engineString.size();
-
-  for (size_t i = 0; i < _teamCount; i++)
-    for (size_t j = 0; j < _workersPerTeam; j++)
-    {
-      MPI_Send(&engineStringSize, 1, MPI_UNSIGNED_LONG, _teamWorkers[i][j], MPI_TAG_ACTION_JSON_SIZE, _mpiCommunicator);
-      MPI_Send(engineString.c_str(), engineStringSize, MPI_CHAR, _teamWorkers[i][j], MPI_TAG_ACTION_JSON_CONTENT, _mpiCommunicator);
-    }
-
+  broadcastMessageToWorkers(engineJs);
 #endif
 }
 
 void Distributed::popEngine()
 {
 #ifdef _KORALI_USE_MPI
+  // (Engine-Side) Removing the current engine to the conduit's engine stack
+  _engineStack.pop();
 
   auto popJs = knlohmann::json();
   popJs["Conduit Action"] = "Pop Engine";
-  string popString = popJs.dump();
-  size_t popStringSize = popString.size();
-
-  if (isRoot())
-  {
-    for (size_t i = 0; i < _teamCount; i++)
-      for (size_t j = 0; j < _workersPerTeam; j++)
-      {
-        MPI_Send(&popStringSize, 1, MPI_UNSIGNED_LONG, _teamWorkers[i][j], MPI_TAG_ACTION_JSON_SIZE, _mpiCommunicator);
-        MPI_Send(popString.c_str(), popStringSize, MPI_CHAR, _teamWorkers[i][j], MPI_TAG_ACTION_JSON_CONTENT, _mpiCommunicator);
-      }
-  }
-
+  broadcastMessageToWorkers(popJs);
 #endif
 }
 

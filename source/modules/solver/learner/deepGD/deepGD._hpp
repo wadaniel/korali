@@ -1,6 +1,7 @@
 #ifndef _KORALI_SOLVER_DeepGD_HPP_
 #define _KORALI_SOLVER_DeepGD_HPP_
 
+#include "auxiliar/optimizers/fAdam.hpp"
 #include "modules/experiment/experiment.hpp"
 #include "modules/neuralNetwork/neuralNetwork.hpp"
 #include "modules/problem/supervisedLearning/supervisedLearning.hpp"
@@ -26,6 +27,11 @@ class DeepGD : public Learner
   korali::Experiment _optExperiment;
 
   /**
+ * @brief ADAM solver pointer to access directly (for performance)
+ */
+  korali::fAdam *_adamSolver;
+
+  /**
    * @brief A neural network to be trained based on inputs and solutions
    */
   NeuralNetwork *_trainingNeuralNetwork;
@@ -41,18 +47,17 @@ class DeepGD : public Learner
   bool _isLearnerInitialized;
 
   /**
-  * @brief Model function to evaluate a given NN weight/bias configuration
-  * @param sample The sample containing proposal NN weight/bias configuration.
-  * @param nn The neural network to update
-  * @param solution Solution values from which to calculate loss and differentials
-  */
-  void evaluateHyperparameters(korali::Sample &sample, NeuralNetwork *nn, const std::vector<std::vector<double>> &solution);
+   * @brief Get the forward evaluation of a full batch
+   * @param inputBatch The input batch
+   * @return The vector of evaluations
+   */
+  std::vector<std::vector<float>> getEvaluation(const std::vector<std::vector<float>> &inputBatch);
 
-  std::vector<double> getGradients(const std::vector<double> &outputDiffs) override;
-  std::vector<double> getEvaluation(const std::vector<double> &inputBatch) override;
+  std::vector<float> getGradients(const std::vector<float> &outputDiffs) override;
+  std::vector<float> getEvaluation(const std::vector<float> &inputBatch) override;
 
-  std::vector<double> getHyperparameters() override;
-  void setHyperparameters(const std::vector<double> &hyperparameters) override;
+  std::vector<float> getHyperparameters() override;
+  void setHyperparameters(const std::vector<float> &hyperparameters) override;
   void finalize() override;
   void initialize() override;
   void runGeneration() override;

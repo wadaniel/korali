@@ -9,6 +9,7 @@
 #include "modules/conduit/distributed/distributed.hpp"
 #include "modules/experiment/experiment.hpp"
 #include <chrono>
+#include <map>
 #include <stack>
 #include <vector>
 
@@ -152,11 +153,6 @@ class Engine : public Module
   * @brief (Worker) Stores a pointer to the current Experiment being processed
   */
   Experiment *_currentExperiment;
-
-  /**
-  * @brief (Engine) Stores a pointer to the current sample to process
-  */
-  Sample *_engineSample;
 
   /**
    * @brief Returns the worker teams MPI communication pointer (Distributed Conduit only).

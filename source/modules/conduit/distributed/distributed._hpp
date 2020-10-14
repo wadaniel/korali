@@ -35,12 +35,6 @@ namespace conduit
 {
 class Distributed : public Conduit
 {
-  private:
-  /**
- * @brief Lifetime function for worker ranks.
- */
-  void workerThread();
-
   public:
 #ifdef _KORALI_USE_MPI
 
@@ -65,11 +59,6 @@ class Distributed : public Conduit
   size_t _teamCount;
 
   /**
-   * @brief ID the Korali Team for the current rank
-   */
-  size_t _teamId;
-
-  /**
   * @brief Signals whether the worker has been assigned a team
   */
   size_t _teamIdSet;
@@ -80,14 +69,9 @@ class Distributed : public Conduit
   size_t _localRankId;
 
   /**
-  * @brief Queue to store idle teams to be used
+  * @brief Map between worker ID and its processes
   */
-  std::queue<size_t> _teamQueue;
-
-  /**
-  * @brief Map between Team ID and its workers
-  */
-  std::map<int, std::vector<size_t>> _teamWorkers;
+  std::map<int, std::vector<size_t>> _workerProcesses;
 
   /**
   * @brief Flag to mark termination for Korali teams.
@@ -98,11 +82,15 @@ class Distributed : public Conduit
   void initServer() override;
   void initialize() override;
   void finalize() override;
-  void broadcastGlobals(std::string key, knlohmann::json &sampleJs) override;
-  void processSample(Sample &sample) override;
-  void stackEngine(Engine *) override;
+
+  void stackEngine(Engine *engine) override;
   void popEngine() override;
 
+  void broadcastMessageToWorkers(knlohmann::json &message) override;
+  void sendMessageToEngine(knlohmann::json &message) override;
+  knlohmann::json recvMessageFromEngine() override;
+  knlohmann::json recvMessageFromSample(Sample &sample) override;
+  void sendMessageToSample(Sample &sample, knlohmann::json &message) override;
   /**
   * @brief Determines which rank is the root.
   * @return The rank id of the root rank.

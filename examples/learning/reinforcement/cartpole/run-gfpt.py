@@ -40,7 +40,7 @@ e["Variables"][5]["Exploration Sigma"] = 0.35
 
 ### Defining Agent Configuration 
 
-e["Solver"]["Type"] = "Agent/Continuous/SDPG"
+e["Solver"]["Type"] = "Agent / Continuous / GFPT"
 e["Solver"]["Experiences Between Updates"] = 1
 e["Solver"]["Optimization Steps Per Update"] = 1
 

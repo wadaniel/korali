@@ -86,7 +86,7 @@ e["Solver"]["Policy"]["Normalization Steps"] = 32
 
 e["Solver"]["Policy"]["Trust Region"]["Enabled"] = True
 e["Solver"]["Policy"]["Trust Region"]["Divergence Constraint"] = 5.0
-e["Solver"]["Policy"]["Trust Region"]["Adoption Rate"] = 0.90
+e["Solver"]["Policy"]["Trust Region"]["Adoption Rate"] = 0.20
 
 e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
 e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Batch Normalization"]["Enabled"] = False

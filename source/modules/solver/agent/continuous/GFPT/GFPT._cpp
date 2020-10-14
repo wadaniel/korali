@@ -1,5 +1,5 @@
 #include "engine.hpp"
-#include "modules/solver/agent/continuous/SDPG/SDPG.hpp"
+#include "modules/solver/agent/continuous/GFPT/GFPT.hpp"
 #include "sample/sample.hpp"
 
 namespace korali
@@ -11,7 +11,7 @@ namespace agent
 namespace continuous
 {
 
-void SDPG::initializeAgent()
+void GFPT::initializeAgent()
 {
  // Initializing common discrete agent configuration
  Continuous::initializeAgent();
@@ -102,7 +102,7 @@ void SDPG::initializeAgent()
    _hyperparameters["Policy"] = _policyLearner->getHyperparameters();
 }
 
-float SDPG::stateActionValueFunction(const std::vector<float> &state, const std::vector<float> &action)
+float GFPT::stateActionValueFunction(const std::vector<float> &state, const std::vector<float> &action)
 {
   // Storage to put together state and action
   std::vector<float> stateActionInput(_problem->_stateVectorSize + _problem->_actionVectorSize);
@@ -116,7 +116,7 @@ float SDPG::stateActionValueFunction(const std::vector<float> &state, const std:
   return evaluation[0];
 }
 
-void SDPG::trainAgent()
+void GFPT::trainAgent()
 {
   // Creating storage for state history indexes to choose from
   std::vector<size_t> experienceReplayIndexes(_experienceReplayStates.size());
@@ -275,22 +275,22 @@ void SDPG::trainAgent()
   _hyperparameters["Policy"] = newPolicyHyperparameters;
 }
 
-std::vector<float> SDPG::getActionMeans(const std::vector<float> &state)
+std::vector<float> GFPT::getActionMeans(const std::vector<float> &state)
 {
  return _policyLearner->getEvaluation({state});
 }
 
-std::vector<float> SDPG::getActionSigmas(const std::vector<float> &state)
+std::vector<float> GFPT::getActionSigmas(const std::vector<float> &state)
 {
  return _actionSigmas;
 }
 
-void SDPG::updateHyperparameters(const knlohmann::json &hyperparameters)
+void GFPT::updateHyperparameters(const knlohmann::json &hyperparameters)
 {
  _policyLearner->setHyperparameters(hyperparameters["Policy"].get<std::vector<float>>());
 }
 
-void SDPG::printAgentInformation()
+void GFPT::printAgentInformation()
 {
   _k->_logger->logInfo("Normal", "Critic Information:\n");
 

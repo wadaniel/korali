@@ -1,5 +1,5 @@
-#ifndef _KORALI_AGENT_CONTINUOUS_SDPG_HPP_
-#define _KORALI_AGENT_CONTINUOUS_SDPG_HPP_
+#ifndef _KORALI_AGENT_CONTINUOUS_GFPT_HPP_
+#define _KORALI_AGENT_CONTINUOUS_GFPT_HPP_
 
 #include "auxiliar/optimizers/fCMAES.hpp"
 #include "modules/solver/agent/continuous/continuous.hpp"
@@ -14,7 +14,7 @@ namespace agent
 namespace continuous
 {
 
-class SDPG : public Continuous
+class GFPT : public Continuous
 {
   public:
 
@@ -74,4 +74,4 @@ class SDPG : public Continuous
 } // namespace solver
 } // namespace korali
 
-#endif // _KORALI_AGENT_CONTINUOUS_SDPG_HPP_
+#endif // _KORALI_AGENT_CONTINUOUS_GFPT_HPP_

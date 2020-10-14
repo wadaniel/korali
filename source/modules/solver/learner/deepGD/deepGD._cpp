@@ -61,7 +61,11 @@ void DeepGD::initialize()
 
     // Creating and setting hyperparameter structures
     _trainingNeuralNetwork->setHyperparameters(_hyperparameters);
+
+    // Copying hyperparameters and normalization parameters from training to evaluation
     _evaluationNeuralNetwork->setHyperparameters(_hyperparameters);
+    _evaluationNeuralNetwork->setNormalizationMeans(_normalizationMeans);
+    _evaluationNeuralNetwork->setNormalizationVariances(_normalizationVariances);
 
     // Setting learner initialized flag
     _isLearnerInitialized = true;

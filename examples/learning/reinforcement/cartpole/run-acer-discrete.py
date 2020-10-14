@@ -17,7 +17,7 @@ e["Problem"]["Possible Actions"] = [ [ -10.0 ], [ -9.0 ], [ -8.0 ], [ -7.0 ], [ 
                                      [  10.0 ], [  9.0 ], [  8.0 ], [  7.0 ], [  6.0 ], [  5.0 ], [  4.0 ], [  3.0 ], [  2.0 ], [  1.0 ]  ]
 e["Problem"]["Environment Function"] = env
 e["Problem"]["Action Repeat"] = 1
-e["Problem"]["Actions Between Policy Updates"] = 1
+e["Problem"]["Actions Between Policy Updates"] = 500
 
 e["Variables"][0]["Name"] = "Cart Position"
 e["Variables"][0]["Type"] = "State"
@@ -42,8 +42,8 @@ e["Variables"][5]["Type"] = "Action"
 e["Solver"]["Type"] = "Agent / Discrete / DACER"
 e["Solver"]["Importance Weight Truncation"] = 2.0
 e["Solver"]["Optimization Steps Per Update"] = 1
-e["Solver"]["Experiences Between Updates"] = 500
-e["Solver"]["Off Policy Updates"] = 8
+e["Solver"]["Experiences Between Updates"] = 20
+e["Solver"]["Off Policy Updates"] = 12
 e["Solver"]["Trajectory Size"] = 500
 
 ### Defining the configuration of replay memory
@@ -53,9 +53,9 @@ e["Solver"]["Experience Replay"]["Maximum Size"] = 500000
 
 ## Defining Q-Critic and Action-selection (policy) optimizers
 
-e["Solver"]["Critic"]["Discount Factor"] = 0.995
-e["Solver"]["Critic"]["Learning Rate"] = 0.01
-e["Solver"]["Critic"]["Mini Batch Size"] = 128
+e["Solver"]["Critic"]["Discount Factor"] = 0.99
+e["Solver"]["Critic"]["Learning Rate"] = 0.001
+e["Solver"]["Critic"]["Mini Batch Size"] = 64
 e["Solver"]["Critic"]["Normalization Steps"] = 32
 
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
@@ -81,11 +81,11 @@ e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Weight Initialization Scal
 ## Defining Policy Configuration
 
 e["Solver"]["Policy"]["Learning Rate"] = 0.01
-e["Solver"]["Policy"]["Mini Batch Size"] = 128
+e["Solver"]["Policy"]["Mini Batch Size"] = 32
 e["Solver"]["Policy"]["Normalization Steps"] = 32
 
 e["Solver"]["Policy"]["Trust Region"]["Enabled"] = True
-e["Solver"]["Policy"]["Trust Region"]["Divergence Constraint"] = 0.05
+e["Solver"]["Policy"]["Trust Region"]["Divergence Constraint"] = 0.5
 e["Solver"]["Policy"]["Trust Region"]["Adoption Rate"] = 0.25
 
 e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"

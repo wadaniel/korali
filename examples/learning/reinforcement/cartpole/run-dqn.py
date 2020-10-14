@@ -37,9 +37,9 @@ e["Variables"][5]["Type"] = "Action"
 
 ### Configuring DQN hyperparameters
 
-e["Solver"]["Type"] = "Agent/Discrete/DQN"
-e["Solver"]["Trajectory Size"] = 1
-e["Solver"]["Optimization Steps Per Trajectory"] = 1
+e["Solver"]["Type"] = "Agent / Discrete / DQN"
+e["Solver"]["Experiences Between Updates"] = 1
+e["Solver"]["Optimization Steps Per Update"] = 1 
 
 ### Defining Experience Replay configuration
 

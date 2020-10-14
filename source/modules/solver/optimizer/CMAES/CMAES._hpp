@@ -114,7 +114,7 @@ class CMAES : public Optimizer
 
   /**
  * @brief Discretize variables to given granularity using arithmetic rounding.
- * @param Sample to discretize
+ * @param sample Sample to discretize
  */
   void discretize(std::vector<double> &sample);
 

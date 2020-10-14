@@ -339,6 +339,7 @@ class fCMAES
 
   /**
    * @brief Defines the random number generator seed
+   * @param seed Random seed
    */
   void setSeed(size_t seed);
 
@@ -372,6 +373,7 @@ class fCMAES
 
   /**
  * @brief Updates mean and covariance of Gaussian proposal distribution.
+ * @param evaluations Model evaluations for all proposed samples
  */
   void updateDistribution(const std::vector<float> &evaluations);
 
@@ -382,7 +384,11 @@ class fCMAES
   void updateEigensystem(std::vector<float> &M);
 
   /**
-    * @brief Function for eigenvalue decomposition.
+   * @brief Function for eigenvalue decomposition.
+   * @param N Matrix size
+   * @param C Input matrix
+   * @param diag Means
+   * @param Q Output Matrix
  */
   void eigen(size_t N, std::vector<float> &C, std::vector<float> &diag, std::vector<float> &Q) const;
 
@@ -417,6 +423,8 @@ class fCMAES
 
   /**
   * @brief Checks whether a proposed sample is feasible (all variables within acceptable range)
+  * @param sample Sample to check
+  * @return Whether the sample is feasible
   */
   bool isSampleFeasible(const std::vector<float> &sample);
 };

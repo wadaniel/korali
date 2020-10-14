@@ -39,6 +39,7 @@ class CMAES : public Optimizer
 
   /**
  * @brief Updates mean and covariance of Gaussian proposal distribution.
+ * @param evaluations Model evaluations for proposed samples
  */
   void updateDistribution(const std::vector<double> &evaluations);
 
@@ -54,7 +55,11 @@ class CMAES : public Optimizer
   void numericalErrorTreatment();
 
   /**
-    * @brief Function for eigenvalue decomposition.
+   * @brief Function for eigenvalue decomposition.
+   * @param N Matrix size
+   * @param C Input matrix
+   * @param diag Means
+   * @param Q Output Matrix
  */
   void eigen(size_t N, std::vector<double> &C, std::vector<double> &diag, std::vector<double> &Q) const;
 
@@ -109,6 +114,7 @@ class CMAES : public Optimizer
 
   /**
  * @brief Discretize variables to given granularity using arithmetic rounding.
+ * @param Sample to discretize
  */
   void discretize(std::vector<double> &sample);
 

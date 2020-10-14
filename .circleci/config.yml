@@ -27,6 +27,10 @@ jobs:
                    echo 'export MPICXX=mpicxx' >> $BASH_ENV
                    
       - run:
+          name: install Scipy
+          command: sudo apt-get install python3-scipy
+                   
+      - run:
           name: install CMAKE
           command: sudo apt-get install cmake;
 

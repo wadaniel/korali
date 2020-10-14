@@ -258,15 +258,6 @@ if [ $? -ne 0 ]; then
   python3 -m pip install $PIP_USER pybind11 >> $logFile 2>&1; check
 fi
 
-######## Checking support for openAI Gym ########
-
-log "[Korali] Checking for openAI Gym using \"python3 -c \"import gym\"\"..."
-python3 -c "import gym" >> $logFile 2>&1
-if [ $? -ne 0 ]; then
-  logEcho "[Korali] openAI Gym not found, trying to install it automatically."
-  python3 -m pip install $PIP_USER gym >> $logFile 2>&1; check
-fi
-
 ######## Determining Library Flags ########
 
 echo "[Korali] Creating configuration files..."

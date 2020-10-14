@@ -39,12 +39,6 @@ void Continuous::getAction(korali::Sample& sample)
  // Getting current state
  auto state = sample["State"].get<std::vector<float>>();
 
- // Getting the Gaussian means of the actions given by the agent's policy
- auto actionMeans = getActionMeans(state);
-
- // Getting the Gaussian sigmas of the actions given by the agent's policy
- auto actionSigmas = getActionSigmas(state);
-
  // Storage for the action to select
  std::vector<float> action(_problem->_actionVectorSize);
 
@@ -80,10 +74,19 @@ void Continuous::getAction(korali::Sample& sample)
 
      // Producing the random value for action element i
      action[i] = lowerBound + x * (upperBound - lowerBound);
+
+     sample["Metadata"]["Action Means"][i] = (upperBound + lowerBound) * 0.5;
+     sample["Metadata"]["Action Sigmas"][i] = (upperBound - lowerBound) / sqrtf(12.0);
    }
   }
   else // else we select guided by the policy's probability distribution
   {
+   // Getting the Gaussian means of the actions given by the agent's policy
+   auto actionMeans = getActionMeans(state);
+
+   // Getting the Gaussian sigmas of the actions given by the agent's policy
+   auto actionSigmas = getActionSigmas(state);
+
    for (size_t i = 0; i < _problem->_actionVectorIndexes.size(); i++)
    {
      // Updating normal distribution for the current action element
@@ -93,11 +96,11 @@ void Continuous::getAction(korali::Sample& sample)
      // Generating action from the updated normal distribution
     action[i] = _normalGenerator->getRandomNumber();
    }
-  }
 
-  // Storing selection metadata
-  sample["Metadata"]["Action Means"] = actionMeans;
-  sample["Metadata"]["Action Sigmas"] = actionSigmas;
+   // Storing selection metadata
+   sample["Metadata"]["Action Means"] = actionMeans;
+   sample["Metadata"]["Action Sigmas"] = actionSigmas;
+  }
  }
 
  /*****************************************************************************
@@ -106,7 +109,7 @@ void Continuous::getAction(korali::Sample& sample)
   ****************************************************************************/
 
  // Finding the best action index from the probabilities
- if (sample["Mode"] == "Testing") action = actionMeans;
+ if (sample["Mode"] == "Testing") action = getActionMeans(state);
 
  /*****************************************************************************
   * Storing the action itself

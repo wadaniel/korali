@@ -34,6 +34,7 @@ void Agent::initialize()
     _candidatePoliciesTested = 0;
     _currentSampleID = 0;
     _cumulativeQStar = 0;
+    _experienceCount = 0;
 
     // Initialize best rewards
     _averageTestingReward = -korali::Inf;
@@ -71,13 +72,6 @@ void Agent::runGeneration()
   // Storage to keep experience information
   knlohmann::json experience;
 
-  // Counter for experiences between updates
-  size_t _curExperienceCount = 0;
-
-  // Forcibly train policy before launching new episodes if minimum number of experiences are received
-  if (_experienceReplayStates.size() > _experienceReplayStartSize)
-  for (size_t i = 0; i < _optimizationStepsPerUpdate; i++) trainAgent();
-
   // Keep listening to incoming experiences until we reached a terminal state
   do
   {
@@ -93,14 +87,14 @@ void Agent::runGeneration()
     if(isDefined(experience, "Metadata", "Action Means")) _experienceReplayActionMeans.push_back(experience["Metadata"]["Action Means"].get<std::vector<float>>());
     if(isDefined(experience, "Metadata", "Action Sigmas")) _experienceReplayActionSigmas.push_back(experience["Metadata"]["Action Sigmas"].get<std::vector<float>>());
 
-    _curExperienceCount++;
+    _experienceCount++;
 
-    if (_curExperienceCount >= _experiencesBetweenUpdates) // If we accumulated enough experiences between updates, update now
+    if (_experienceCount % _experiencesBetweenUpdates == 0) // If we accumulated enough experiences between updates, update now
+    if (experience["Is Terminal"] == false) // Do not update policy if this is terminal
     if (_experienceReplayStates.size() > _experienceReplayStartSize) // Perform optimization steps on the critic/policy, if reached the minimum replay memory size
     {
      for (size_t i = 0; i < _optimizationStepsPerUpdate; i++) trainAgent();
      _optimizationStepCount += _optimizationStepsPerUpdate;
-     _curExperienceCount = 0;
     }
 
     // If agent requested new policy, send the new hyperparameters
@@ -278,9 +272,9 @@ void Agent::printGenerationAfter()
     _k->_logger->logInfo("Normal", " + Total Episodes Count:        %lu\n", _currentEpisode);
 
   if (_maxExperiences > 0)
-    _k->_logger->logInfo("Normal", " + Total Experience Count:      %lu/%lu\n", _experienceReplayStates.size(), _maxExperiences);
+    _k->_logger->logInfo("Normal", " + Total Experience Count:      %lu/%lu\n", _experienceCount, _maxExperiences);
   else
-    _k->_logger->logInfo("Normal", " + Total Experience Count:    %lu\n", _experienceReplayStates.size());
+    _k->_logger->logInfo("Normal", " + Total Experience Count:    %lu\n", _experienceCount);
 
 
   _k->_logger->logInfo("Normal", "Training Statistics:\n");

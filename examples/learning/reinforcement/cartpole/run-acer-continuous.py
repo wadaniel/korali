@@ -43,8 +43,8 @@ e["Variables"][5]["Exploration Sigma"] = 0.35
 e["Solver"]["Type"] = "Agent / Continuous / CACER"
 e["Solver"]["Importance Weight Truncation"] = 2.0
 e["Solver"]["Optimization Steps Per Update"] = 1
-e["Solver"]["Experiences Between Updates"] = 500
-e["Solver"]["Off Policy Updates"] = 12
+e["Solver"]["Experiences Between Updates"] = 10
+e["Solver"]["Off Policy Updates"] = 8
 e["Solver"]["Trajectory Size"] = 500
 
 e["Solver"]["Random Action Probability"]["Initial Value"] = 0.5
@@ -60,7 +60,7 @@ e["Solver"]["Experience Replay"]["Maximum Size"] = 100000
 
 e["Solver"]["Critic"]["Discount Factor"] = 0.99
 e["Solver"]["Critic"]["Learning Rate"] = 0.01
-e["Solver"]["Critic"]["Mini Batch Size"] = 128
+e["Solver"]["Critic"]["Mini Batch Size"] = 32
 e["Solver"]["Critic"]["Normalization Steps"] = 32
 
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
@@ -84,12 +84,12 @@ e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Batch Normalization"]["Ena
 ## Defining Policy Configuration
 
 e["Solver"]["Policy"]["Learning Rate"] = 0.01
-e["Solver"]["Policy"]["Mini Batch Size"] = 128
+e["Solver"]["Policy"]["Mini Batch Size"] = 32
 e["Solver"]["Policy"]["Normalization Steps"] = 32
 e["Solver"]["Policy"]["Sample Population"] = 20
 
 e["Solver"]["Policy"]["Trust Region"]["Enabled"] = True
-e["Solver"]["Policy"]["Trust Region"]["Divergence Constraint"] = 0.05
+e["Solver"]["Policy"]["Trust Region"]["Divergence Constraint"] = 0.5
 e["Solver"]["Policy"]["Trust Region"]["Adoption Rate"] = 0.25
 
 e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"

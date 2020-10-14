@@ -60,7 +60,7 @@ e["Solver"]["Experience Replay"]["Maximum Size"] = 100000
 
 e["Solver"]["Critic"]["Discount Factor"] = 0.99
 e["Solver"]["Critic"]["Learning Rate"] = 0.01
-e["Solver"]["Critic"]["Mini Batch Size"] = 32
+e["Solver"]["Critic"]["Mini Batch Size"] = 128
 e["Solver"]["Critic"]["Normalization Steps"] = 32
 
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
@@ -83,14 +83,14 @@ e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Batch Normalization"]["Ena
 
 ## Defining Policy Configuration
 
-e["Solver"]["Policy"]["Learning Rate"] = 0.001
-e["Solver"]["Policy"]["Mini Batch Size"] = 32
+e["Solver"]["Policy"]["Learning Rate"] = 0.01
+e["Solver"]["Policy"]["Mini Batch Size"] = 128
 e["Solver"]["Policy"]["Normalization Steps"] = 32
 e["Solver"]["Policy"]["Sample Population"] = 20
 
 e["Solver"]["Policy"]["Trust Region"]["Enabled"] = True
 e["Solver"]["Policy"]["Trust Region"]["Divergence Constraint"] = 0.05
-e["Solver"]["Policy"]["Trust Region"]["Adoption Rate"] = 0.99
+e["Solver"]["Policy"]["Trust Region"]["Adoption Rate"] = 0.25
 
 e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
 e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear"

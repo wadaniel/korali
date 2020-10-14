@@ -14,21 +14,35 @@ int main(int argc, char *argv[])
   e["Problem"]["Action Repeat"] = 1;
   e["Problem"]["Actions Between Policy Updates"] = 1;
 
-  e["Variables"][ 0]["Name"] = "Swimmer 1 - Pos X";        e["Variables"][ 0]["Type"] = "State";
-  e["Variables"][ 1]["Name"] = "Swimmer 1 - Pos Y";        e["Variables"][ 1]["Type"] = "State";
-  e["Variables"][ 2]["Name"] = "Swimmer 1 - Pos Z";        e["Variables"][ 2]["Type"] = "State";
-  e["Variables"][ 3]["Name"] = "Swimmer 1 - Quaternion X"; e["Variables"][ 3]["Type"] = "State";
-  e["Variables"][ 4]["Name"] = "Swimmer 1 - Quaternion Y"; e["Variables"][ 4]["Type"] = "State";
-  e["Variables"][ 5]["Name"] = "Swimmer 1 - Quaternion Z"; e["Variables"][ 5]["Type"] = "State";
-  e["Variables"][ 6]["Name"] = "Swimmer 1 - Quaternion W"; e["Variables"][ 6]["Type"] = "State";
+  e["Variables"][0]["Name"] = "Swimmer 1 - Pos X";
+  e["Variables"][0]["Type"] = "State";
+  e["Variables"][1]["Name"] = "Swimmer 1 - Pos Y";
+  e["Variables"][1]["Type"] = "State";
+  e["Variables"][2]["Name"] = "Swimmer 1 - Pos Z";
+  e["Variables"][2]["Type"] = "State";
+  e["Variables"][3]["Name"] = "Swimmer 1 - Quaternion X";
+  e["Variables"][3]["Type"] = "State";
+  e["Variables"][4]["Name"] = "Swimmer 1 - Quaternion Y";
+  e["Variables"][4]["Type"] = "State";
+  e["Variables"][5]["Name"] = "Swimmer 1 - Quaternion Z";
+  e["Variables"][5]["Type"] = "State";
+  e["Variables"][6]["Name"] = "Swimmer 1 - Quaternion W";
+  e["Variables"][6]["Type"] = "State";
 
-  e["Variables"][ 7]["Name"] = "Swimmer 2 - Pos X";        e["Variables"][ 7]["Type"] = "State";
-  e["Variables"][ 8]["Name"] = "Swimmer 2 - Pos Y";        e["Variables"][ 8]["Type"] = "State";
-  e["Variables"][ 9]["Name"] = "Swimmer 2 - Pos Z";        e["Variables"][ 9]["Type"] = "State";
-  e["Variables"][10]["Name"] = "Swimmer 2 - Quaternion X"; e["Variables"][10]["Type"] = "State";
-  e["Variables"][11]["Name"] = "Swimmer 2 - Quaternion Y"; e["Variables"][11]["Type"] = "State";
-  e["Variables"][12]["Name"] = "Swimmer 2 - Quaternion Z"; e["Variables"][12]["Type"] = "State";
-  e["Variables"][13]["Name"] = "Swimmer 2 - Quaternion W"; e["Variables"][13]["Type"] = "State";
+  e["Variables"][7]["Name"] = "Swimmer 2 - Pos X";
+  e["Variables"][7]["Type"] = "State";
+  e["Variables"][8]["Name"] = "Swimmer 2 - Pos Y";
+  e["Variables"][8]["Type"] = "State";
+  e["Variables"][9]["Name"] = "Swimmer 2 - Pos Z";
+  e["Variables"][9]["Type"] = "State";
+  e["Variables"][10]["Name"] = "Swimmer 2 - Quaternion X";
+  e["Variables"][10]["Type"] = "State";
+  e["Variables"][11]["Name"] = "Swimmer 2 - Quaternion Y";
+  e["Variables"][11]["Type"] = "State";
+  e["Variables"][12]["Name"] = "Swimmer 2 - Quaternion Z";
+  e["Variables"][12]["Type"] = "State";
+  e["Variables"][13]["Name"] = "Swimmer 2 - Quaternion W";
+  e["Variables"][13]["Type"] = "State";
 
   e["Variables"][14]["Name"] = "Frequency (w)";
   e["Variables"][14]["Type"] = "Action";
@@ -83,7 +97,7 @@ int main(int argc, char *argv[])
 
   ////// Defining the configuration of replay memory
 
-  e["Solver"]["Experience Replay"]["Start Size"] =   10000;
+  e["Solver"]["Experience Replay"]["Start Size"] = 10000;
   e["Solver"]["Experience Replay"]["Maximum Size"] = 262144;
 
   //// Defining Critic Configuration
@@ -131,18 +145,16 @@ int main(int argc, char *argv[])
   e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Elementwise/Tanh";
 
   e["Solver"]["Policy"]["Neural Network"]["Output Scaling"] = {
-                                                                ( upperBounds[0] - lowerBounds[0] ) * 0.5,
-                                                                ( upperBounds[1] - lowerBounds[1] ) * 0.5,
-                                                                ( upperBounds[2] - lowerBounds[2] ) * 0.5,
-                                                                ( upperBounds[3] - lowerBounds[3] ) * 0.5
-                                                              };
+    (upperBounds[0] - lowerBounds[0]) * 0.5,
+    (upperBounds[1] - lowerBounds[1]) * 0.5,
+    (upperBounds[2] - lowerBounds[2]) * 0.5,
+    (upperBounds[3] - lowerBounds[3]) * 0.5};
 
-  e["Solver"]["Policy"]["Neural Network"]["Output Shift"] =   {
-                                                                ( upperBounds[0] + lowerBounds[0] ) * 0.5,
-                                                                ( upperBounds[1] + lowerBounds[1] ) * 0.5,
-                                                                ( upperBounds[2] + lowerBounds[2] ) * 0.5,
-                                                                ( upperBounds[3] + lowerBounds[3] ) * 0.5
-                                                              };
+  e["Solver"]["Policy"]["Neural Network"]["Output Shift"] = {
+    (upperBounds[0] + lowerBounds[0]) * 0.5,
+    (upperBounds[1] + lowerBounds[1]) * 0.5,
+    (upperBounds[2] + lowerBounds[2]) * 0.5,
+    (upperBounds[3] + lowerBounds[3]) * 0.5};
 
   ////// Defining Termination Criteria
 
@@ -160,4 +172,3 @@ int main(int argc, char *argv[])
   auto k = korali::Engine();
   k.run(e);
 }
-

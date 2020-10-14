@@ -10,7 +10,6 @@ namespace agent
 {
 namespace discrete
 {
-
 void dACER::initializeAgent()
 {
   // Initializing common discrete agent configuration
@@ -30,10 +29,10 @@ void dACER::initializeAgent()
   _criticExperiment["Solver"]["Neural Network"] = _criticNeuralNetwork;
 
   for (size_t i = 0; i < _problem->_stateVectorSize; i++)
-   _criticExperiment["Problem"]["Inputs"][0][i] = 0.0;
+    _criticExperiment["Problem"]["Inputs"][0][i] = 0.0;
 
   for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
-   _criticExperiment["Problem"]["Solution"][0][i] = 0.0;
+    _criticExperiment["Problem"]["Solution"][0][i] = 0.0;
 
   // Running initialization to verify that the configuration is correct
   engine.initialize(_criticExperiment);
@@ -78,7 +77,7 @@ void dACER::initializeAgent()
 
   // Storing initial average policy parameters
   if (_k->_currentGeneration == 0)
-   _policyAverageHyperparameters = _policyCurrentHyperparameters;
+    _policyAverageHyperparameters = _policyCurrentHyperparameters;
 
   // Get the initial set of policy NN hyperparameters
   _hyperparameters["Policy"] = _policyCurrentHyperparameters;
@@ -87,47 +86,47 @@ void dACER::initializeAgent()
 void dACER::trainAgent()
 {
   // Resetting critic statistics
- _cumulativeQStar = 0;
+  _cumulativeQStar = 0;
 
- // Creating storage for the starting index for all current trajectories
- std::vector<size_t> trajectoryStartIndexes;
- std::vector<size_t> trajectoryEndIndexes;
+  // Creating storage for the starting index for all current trajectories
+  std::vector<size_t> trajectoryStartIndexes;
+  std::vector<size_t> trajectoryEndIndexes;
 
- // Detecting trajectories
- size_t curTrajectoryPos = 0;
- for (size_t i = 0; i < _experienceReplayStates.size(); i++)
- {
-  if (curTrajectoryPos == 0) trajectoryStartIndexes.push_back(i);
-
-  if ((curTrajectoryPos == _trajectorySize-1) || // Reached specified trajectory size
-      (_experienceReplayTerminal[i] == true) || // The experience is terminal
-      (i == _experienceReplayStates.size()-1) ) // Reached the end of the replay experience
+  // Detecting trajectories
+  size_t curTrajectoryPos = 0;
+  for (size_t i = 0; i < _experienceReplayStates.size(); i++)
   {
-   trajectoryEndIndexes.push_back(i);
-   curTrajectoryPos = 0;
+    if (curTrajectoryPos == 0) trajectoryStartIndexes.push_back(i);
+
+    if ((curTrajectoryPos == _trajectorySize - 1) || // Reached specified trajectory size
+        (_experienceReplayTerminal[i] == true) ||    // The experience is terminal
+        (i == _experienceReplayStates.size() - 1))   // Reached the end of the replay experience
+    {
+      trajectoryEndIndexes.push_back(i);
+      curTrajectoryPos = 0;
+    }
+    else
+    {
+      curTrajectoryPos++;
+    }
   }
-  else
+
+  // Detecting final complete trajectory
+  size_t lastIdx = trajectoryStartIndexes.size() - 2;
+
+  // Creating index vector for random off-policy trajectory selection
+  std::vector<size_t> trajectoryIndexes(lastIdx);
+  for (size_t i = 0; i < lastIdx; i++) trajectoryIndexes[i] = i;
+
+  // Shuffling trajectory
+  std::shuffle(trajectoryIndexes.begin(), trajectoryIndexes.end(), *mt);
+
+  // Performing off-policy updates
+  for (size_t i = 0; i < _offPolicyUpdates; i++)
   {
-   curTrajectoryPos++;
+    size_t tIdx = trajectoryIndexes[i];
+    processTrajectory(trajectoryStartIndexes[tIdx], trajectoryEndIndexes[tIdx]);
   }
- }
-
- // Detecting final complete trajectory
- size_t lastIdx = trajectoryStartIndexes.size()-2;
-
- // Creating index vector for random off-policy trajectory selection
- std::vector<size_t> trajectoryIndexes(lastIdx);
- for (size_t i = 0; i < lastIdx; i++) trajectoryIndexes[i] = i;
-
- // Shuffling trajectory
- std::shuffle(trajectoryIndexes.begin(), trajectoryIndexes.end(), *mt);
-
- // Performing off-policy updates
- for (size_t i = 0; i < _offPolicyUpdates; i++)
- {
-  size_t tIdx = trajectoryIndexes[i];
-  processTrajectory(trajectoryStartIndexes[tIdx], trajectoryEndIndexes[tIdx]);
- }
 }
 
 void dACER::processTrajectory(size_t startId, size_t endId)
@@ -145,8 +144,8 @@ void dACER::processTrajectory(size_t startId, size_t endId)
   float qRet = _experienceReplayRewards[curId];
   if (_experienceReplayTerminal[curId] == false)
   {
-   std::vector<float> curState = _experienceReplayStates[curId];
-   qRet = stateValueFunction(curState);
+    std::vector<float> curState = _experienceReplayStates[curId];
+    qRet = stateValueFunction(curState);
   }
 
   // Keeping track of the current experience
@@ -154,44 +153,44 @@ void dACER::processTrajectory(size_t startId, size_t endId)
 
   while (curId > startId)
   {
-   // Decreasing current experience index
-   curId--;
+    // Decreasing current experience index
+    curId--;
 
-   // Getting current reward
-   float curReward = _experienceReplayRewards[curId];
+    // Getting current reward
+    float curReward = _experienceReplayRewards[curId];
 
-   // Re-calculating qRet
-   qRet = curReward + _criticDiscountFactor * qRet;
+    // Re-calculating qRet
+    qRet = curReward + _criticDiscountFactor * qRet;
 
-   // Getting experience's state
-   std::vector<float> curState = _experienceReplayStates[curId];
+    // Getting experience's state
+    std::vector<float> curState = _experienceReplayStates[curId];
 
-   // Calculating V(state) with the current policy
-   float vCurState = stateValueFunction(curState);
+    // Calculating V(state) with the current policy
+    float vCurState = stateValueFunction(curState);
 
-   //// Computing quantities needed for updating weights
+    //// Computing quantities needed for updating weights
 
-   // Getting experience's action
-   size_t curActionIdx = _experienceReplayActionIndexes[curId];
+    // Getting experience's action
+    size_t curActionIdx = _experienceReplayActionIndexes[curId];
 
-   // Getting probability densities for current action given current policy
-   auto pOldPolicy = _experienceReplayActionProbabilities[curId];
+    // Getting probability densities for current action given current policy
+    auto pOldPolicy = _experienceReplayActionProbabilities[curId];
 
-   // Getting probability densities for current action given current policy
-   auto pCurPolicy = getActionProbabilities(curState);
+    // Getting probability densities for current action given current policy
+    auto pCurPolicy = getActionProbabilities(curState);
 
-   // Getting p(s,a) for selected experience, given the old policy
-   float pActionOldPolicy = pOldPolicy[curActionIdx];
+    // Getting p(s,a) for selected experience, given the old policy
+    float pActionOldPolicy = pOldPolicy[curActionIdx];
 
-   // Getting p(s,a) for the best action, given the current policy
-   float pActionCurPolicy = pCurPolicy[curActionIdx];
+    // Getting p(s,a) for the best action, given the current policy
+    float pActionCurPolicy = pCurPolicy[curActionIdx];
 
-   // Now calculating importance weight for the old s,a experience
-   float importanceWeight = pActionCurPolicy / pActionOldPolicy;
+    // Now calculating importance weight for the old s,a experience
+    float importanceWeight = pActionCurPolicy / pActionOldPolicy;
 
-   float qCurState = stateActionValueFunction(curState, curActionIdx);
+    float qCurState = stateActionValueFunction(curState, curActionIdx);
 
-   /*****************************************
+    /*****************************************
     * Policy Section
     *****************************************/
 
@@ -234,26 +233,26 @@ void dACER::processTrajectory(size_t startId, size_t endId)
     // Now calculating trust region, if required
     if (_policyTrustRegionEnabled)
     {
-     // Getting probability densities for current action given average policy
-     _policyLearner->setHyperparameters(_policyAverageHyperparameters);
-     auto pAvgPolicy = getActionProbabilities(curState);
+      // Getting probability densities for current action given average policy
+      _policyLearner->setHyperparameters(_policyAverageHyperparameters);
+      auto pAvgPolicy = getActionProbabilities(curState);
 
-     // Obtaining KL Divergence gradients for the current state. //PW: check this
-     std::vector<float> k(_problem->_possibleActions.size());
-     for(size_t i = 0; i < k.size(); i++)
-      k[i] = - 1 / pCurPolicy[i];
+      // Obtaining KL Divergence gradients for the current state. //PW: check this
+      std::vector<float> k(_problem->_possibleActions.size());
+      for (size_t i = 0; i < k.size(); i++)
+        k[i] = -1 / pCurPolicy[i];
 
-     // Getting dot product between the gradient vector and k
-     auto gkDotProduct = dotProduct(k, gPolicy);
+      // Getting dot product between the gradient vector and k
+      auto gkDotProduct = dotProduct(k, gPolicy);
 
-     // Getting norm(k)^2, simply by dot product of k and itself
-     auto kNormSquared = dotProduct(k, k);
+      // Getting norm(k)^2, simply by dot product of k and itself
+      auto kNormSquared = dotProduct(k, k);
 
-     // Getting magnitude of adjustment
-     float adjustmentMagnitude = std::max(0.0f, (gkDotProduct - _policyTrustRegionDivergenceConstraint) / kNormSquared);
+      // Getting magnitude of adjustment
+      float adjustmentMagnitude = std::max(0.0f, (gkDotProduct - _policyTrustRegionDivergenceConstraint) / kNormSquared);
 
-     // Adjusting gradients to trust region
-     for(size_t i = 0; i < _problem->_possibleActions.size(); i++) gPolicy[i] = gPolicy[i] - adjustmentMagnitude * k[i];
+      // Adjusting gradients to trust region
+      for (size_t i = 0; i < _problem->_possibleActions.size(); i++) gPolicy[i] = gPolicy[i] - adjustmentMagnitude * k[i];
     }
 
     ///////////////// Storing Gradients /////////////////////
@@ -261,22 +260,22 @@ void dACER::processTrajectory(size_t startId, size_t endId)
     _policyProblem->_inputs[curExperience] = curState;
     _policyProblem->_solution[curExperience] = gPolicy;
 
-   /*****************************************
+    /*****************************************
     * Critic Section
     *****************************************/
 
-     // Creating storage for the gradient vector
-     std::vector<float> gCritic(_problem->_possibleActions.size(), 0);
+    // Creating storage for the gradient vector
+    std::vector<float> gCritic(_problem->_possibleActions.size(), 0);
 
-     // Update the gradient vector with the value of the retrace function for g  = Q-Qret
-     gCritic[curActionIdx] = qRet;
+    // Update the gradient vector with the value of the retrace function for g  = Q-Qret
+    gCritic[curActionIdx] = qRet;
 
-     // Updating inputs to training learner
-     _criticProblem->_inputs[curExperience] = curState;
-     _criticProblem->_solution[curExperience] = gCritic;
+    // Updating inputs to training learner
+    _criticProblem->_inputs[curExperience] = curState;
+    _criticProblem->_solution[curExperience] = gCritic;
 
-     // Keeping statistics
-     _cumulativeQStar += gCritic[curActionIdx];
+    // Keeping statistics
+    _cumulativeQStar += gCritic[curActionIdx];
 
     /*****************************************
      * Updating the value of qRet
@@ -302,7 +301,7 @@ void dACER::processTrajectory(size_t startId, size_t endId)
   _policyLearner->runGeneration();
   _policyLearner->finalize();
 
- /****************************************************************************
+  /****************************************************************************
  * If batch normalization is being used, we need to adjust mean and variances
  * by sampling a few more mini-batches after the optimization steps
  ******************************************************************************/
@@ -314,7 +313,7 @@ void dACER::processTrajectory(size_t startId, size_t endId)
   auto criticHyperparameters = _criticLearner->getHyperparameters();
   _criticLearner->setHyperparameters(criticHyperparameters);
 
- /****************************************************************************
+  /****************************************************************************
  * Updating Policy
  ******************************************************************************/
 
@@ -323,8 +322,8 @@ void dACER::processTrajectory(size_t startId, size_t endId)
 
   // If using a trust region, softly adopting the new parameters of the average policy, using an adoption rate
   if (_policyTrustRegionEnabled)
-   for (size_t i = 0; i < _policyCurrentHyperparameters.size(); i++)
-    _policyAverageHyperparameters[i] = _policyTrustRegionAdoptionRate*_policyAverageHyperparameters[i] + (1-_policyTrustRegionAdoptionRate)*_policyCurrentHyperparameters[i];
+    for (size_t i = 0; i < _policyCurrentHyperparameters.size(); i++)
+      _policyAverageHyperparameters[i] = _policyTrustRegionAdoptionRate * _policyAverageHyperparameters[i] + (1 - _policyTrustRegionAdoptionRate) * _policyCurrentHyperparameters[i];
 
   // Updating policy with new averaged parameters
   _policyLearner->setHyperparameters(_policyCurrentHyperparameters);
@@ -333,13 +332,12 @@ void dACER::processTrajectory(size_t startId, size_t endId)
   _hyperparameters["Policy"] = _policyCurrentHyperparameters;
 }
 
-
 std::vector<float> dACER::getActionProbabilities(const std::vector<float> &state)
 {
- // Forward softmax probability function
- auto pValues = _policyLearner->getEvaluation(state);
+  // Forward softmax probability function
+  auto pValues = _policyLearner->getEvaluation(state);
 
- return pValues;
+  return pValues;
 }
 
 float dACER::stateActionValueFunction(const std::vector<float> &state, const size_t &actionIdx)
@@ -352,7 +350,6 @@ float dACER::stateActionValueFunction(const std::vector<float> &state, const siz
 
 float dACER::stateValueFunction(const std::vector<float> &state)
 {
-
   // Forward propagating state through the critic to get Q(s,a) for all a
   auto qEval = _criticLearner->getEvaluation(state);
 
@@ -389,7 +386,6 @@ void dACER::printAgentInformation()
   _policyExperiment._logger->_verbosityLevel = _k->_logger->_verbosityLevel;
   _policyExperiment._solver->printGenerationAfter();
   _policyExperiment._logger->setVerbosityLevel("Silent");
-
 }
 
 } // namespace discrete

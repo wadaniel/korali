@@ -3,9 +3,9 @@
 
 #include "korali.hpp"
 
-#include "msode/core/log.h"
 #include "msode/core/factory.h"
 #include "msode/core/file_parser.h"
+#include "msode/core/log.h"
 #include "msode/rl/environment.h"
 #include "msode/rl/factory.h"
 

@@ -51,7 +51,7 @@ void Adam::runGeneration()
   processResult(evaluation, gradient);
 }
 
-void Adam::processResult(double evaluation, std::vector<double>& gradient)
+void Adam::processResult(double evaluation, std::vector<double> &gradient)
 {
   _modelEvaluationCount++;
   _currentEvaluation = evaluation;

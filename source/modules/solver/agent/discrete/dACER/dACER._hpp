@@ -12,11 +12,9 @@ namespace agent
 {
 namespace discrete
 {
-
 class dACER : public Discrete
 {
   public:
-
   /**
    * @brief Pointer to training experiment's problem
    */
@@ -65,6 +63,7 @@ class dACER : public Discrete
   /**
    * @brief Processes a selected trajectory to learn from it, depending on whether it uses a discrete or continuous action space
    * @param startId ID to the first experience of the trajectory
+   * @param endId ID to the last experience of the trajectory
    */
   void processTrajectory(size_t startId, size_t endId);
 

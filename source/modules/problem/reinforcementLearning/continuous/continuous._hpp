@@ -1,8 +1,8 @@
 #ifndef _KORALI_PROBLEM_REINFORCEMENT_LEARNING_CONTINUOUS_HPP_
 #define _KORALI_PROBLEM_REINFORCEMENT_LEARNING_CONTINUOUS_HPP_
 
-#include "modules/problem/reinforcementLearning/reinforcementLearning.hpp"
 #include "modules/distribution/univariate/normal/normal.hpp"
+#include "modules/problem/reinforcementLearning/reinforcementLearning.hpp"
 
 namespace korali
 {

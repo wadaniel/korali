@@ -202,7 +202,7 @@ void CMAES::runGeneration()
   // Gathering evaluations
   std::vector<double> evaluations(_currentPopulationSize);
   for (size_t i = 0; i < _currentPopulationSize; i++)
-   evaluations[i] = KORALI_GET(double, samples[i], "F(x)");
+    evaluations[i] = KORALI_GET(double, samples[i], "F(x)");
 
   updateDistribution(evaluations);
 }

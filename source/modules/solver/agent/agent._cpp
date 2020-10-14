@@ -27,7 +27,7 @@ void Agent::initialize()
   // If initial generation, set initial agent configuration
   if (_k->_currentGeneration == 0)
   {
-     _randomActionProbabilityCurrentValue = _randomActionProbabilityInitialValue;
+    _randomActionProbabilityCurrentValue = _randomActionProbabilityInitialValue;
 
     _currentEpisode = 0;
     _optimizationStepCount = 0;
@@ -82,20 +82,20 @@ void Agent::runGeneration()
     _experienceReplayActions.push_back(experience["Action"].get<std::vector<float>>());
     _experienceReplayRewards.push_back(experience["Reward"].get<float>());
     _experienceReplayTerminal.push_back(experience["Is Terminal"].get<bool>());
-    if(isDefined(experience, "Metadata", "Action Index")) _experienceReplayActionIndexes.push_back(experience["Metadata"]["Action Index"].get<size_t>());
-    if(isDefined(experience, "Metadata", "Action Probabilities")) _experienceReplayActionProbabilities.push_back(experience["Metadata"]["Action Probabilities"].get<std::vector<float>>());
-    if(isDefined(experience, "Metadata", "Action Means")) _experienceReplayActionMeans.push_back(experience["Metadata"]["Action Means"].get<std::vector<float>>());
-    if(isDefined(experience, "Metadata", "Action Sigmas")) _experienceReplayActionSigmas.push_back(experience["Metadata"]["Action Sigmas"].get<std::vector<float>>());
+    if (isDefined(experience, "Metadata", "Action Index")) _experienceReplayActionIndexes.push_back(experience["Metadata"]["Action Index"].get<size_t>());
+    if (isDefined(experience, "Metadata", "Action Probabilities")) _experienceReplayActionProbabilities.push_back(experience["Metadata"]["Action Probabilities"].get<std::vector<float>>());
+    if (isDefined(experience, "Metadata", "Action Means")) _experienceReplayActionMeans.push_back(experience["Metadata"]["Action Means"].get<std::vector<float>>());
+    if (isDefined(experience, "Metadata", "Action Sigmas")) _experienceReplayActionSigmas.push_back(experience["Metadata"]["Action Sigmas"].get<std::vector<float>>());
 
     _experienceCount++;
 
-    if (_experienceCount % _experiencesBetweenUpdates == 0) // If we accumulated enough experiences between updates, update now
-    if (experience["Is Terminal"] == false) // Do not update policy if this is terminal
-    if (_experienceReplayStates.size() > _experienceReplayStartSize) // Perform optimization steps on the critic/policy, if reached the minimum replay memory size
-    {
-     for (size_t i = 0; i < _optimizationStepsPerUpdate; i++) trainAgent();
-     _optimizationStepCount += _optimizationStepsPerUpdate;
-    }
+    if (_experienceCount % _experiencesBetweenUpdates == 0)              // If we accumulated enough experiences between updates, update now
+      if (experience["Is Terminal"] == false)                            // Do not update policy if this is terminal
+        if (_experienceReplayStates.size() > _experienceReplayStartSize) // Perform optimization steps on the critic/policy, if reached the minimum replay memory size
+        {
+          for (size_t i = 0; i < _optimizationStepsPerUpdate; i++) trainAgent();
+          _optimizationStepCount += _optimizationStepsPerUpdate;
+        }
 
     // If agent requested new policy, send the new hyperparameters
     if (experience["Request New Policy"] == true)
@@ -126,16 +126,16 @@ void Agent::runGeneration()
     _experienceReplayTerminal.erase(_experienceReplayTerminal.begin(), _experienceReplayTerminal.begin() + excess);
 
     if (_experienceReplayActionIndexes.size() > 0)
-     _experienceReplayActionIndexes.erase(_experienceReplayActionIndexes.begin(), _experienceReplayActionIndexes.begin() + excess);
+      _experienceReplayActionIndexes.erase(_experienceReplayActionIndexes.begin(), _experienceReplayActionIndexes.begin() + excess);
 
     if (_experienceReplayActionProbabilities.size() > 0)
-     _experienceReplayActionProbabilities.erase(_experienceReplayActionProbabilities.begin(), _experienceReplayActionProbabilities.begin() + excess);
+      _experienceReplayActionProbabilities.erase(_experienceReplayActionProbabilities.begin(), _experienceReplayActionProbabilities.begin() + excess);
 
     if (_experienceReplayActionMeans.size() > 0)
-     _experienceReplayActionMeans.erase(_experienceReplayActionMeans.begin(), _experienceReplayActionMeans.begin() + excess);
+      _experienceReplayActionMeans.erase(_experienceReplayActionMeans.begin(), _experienceReplayActionMeans.begin() + excess);
 
     if (_experienceReplayActionSigmas.size() > 0)
-     _experienceReplayActionSigmas.erase(_experienceReplayActionSigmas.begin(), _experienceReplayActionSigmas.begin() + excess);
+      _experienceReplayActionSigmas.erase(_experienceReplayActionSigmas.begin(), _experienceReplayActionSigmas.begin() + excess);
   }
 
   // Updating if exceeded best training policy so far.
@@ -180,11 +180,11 @@ void Agent::runGeneration()
   // If we reached the starting size
   if (_experienceReplayStates.size() > _experienceReplayStartSize)
   {
-   // Decreasing the value of epsilon
-   _randomActionProbabilityCurrentValue = _randomActionProbabilityCurrentValue - _randomActionProbabilityDecreaseRate;
+    // Decreasing the value of epsilon
+    _randomActionProbabilityCurrentValue = _randomActionProbabilityCurrentValue - _randomActionProbabilityDecreaseRate;
 
-   // Without exceeding the lower bound
-   if (_randomActionProbabilityCurrentValue < _randomActionProbabilityTargetValue) _randomActionProbabilityCurrentValue = _randomActionProbabilityTargetValue;
+    // Without exceeding the lower bound
+    if (_randomActionProbabilityCurrentValue < _randomActionProbabilityTargetValue) _randomActionProbabilityCurrentValue = _randomActionProbabilityTargetValue;
   }
 
   // If the average testing reward is better than the previous best, replace it
@@ -192,72 +192,72 @@ void Agent::runGeneration()
   if (_averageTestingReward > _bestAverageTestingReward) _bestAverageTestingReward = _averageTestingReward;
 }
 
-void Agent::normalizeStateActionNeuralNetwork(NeuralNetwork* neuralNetwork, size_t miniBatchSize, size_t normalizationSteps)
+void Agent::normalizeStateActionNeuralNetwork(NeuralNetwork *neuralNetwork, size_t miniBatchSize, size_t normalizationSteps)
 {
- // Allocating memory for the mini batch set
- std::vector<std::vector<std::vector<float>>> miniBatches(normalizationSteps);
+  // Allocating memory for the mini batch set
+  std::vector<std::vector<std::vector<float>>> miniBatches(normalizationSteps);
 
- for (size_t i = 0; i < normalizationSteps; i++)
-   miniBatches[i].resize(miniBatchSize);
+  for (size_t i = 0; i < normalizationSteps; i++)
+    miniBatches[i].resize(miniBatchSize);
 
- for (size_t i = 0; i < normalizationSteps; i++)
-   for (size_t j = 0; j < miniBatchSize; j++)
-     miniBatches[i][j].resize(_problem->_stateVectorSize + _problem->_actionVectorSize);
+  for (size_t i = 0; i < normalizationSteps; i++)
+    for (size_t j = 0; j < miniBatchSize; j++)
+      miniBatches[i][j].resize(_problem->_stateVectorSize + _problem->_actionVectorSize);
 
- // Creating storage for state history indexes to choose from
- std::vector<size_t> experienceReplayIndexes(_experienceReplayStates.size());
- for (size_t i = 0; i < _experienceReplayStates.size()-1; i++) experienceReplayIndexes[i] = i;
+  // Creating storage for state history indexes to choose from
+  std::vector<size_t> experienceReplayIndexes(_experienceReplayStates.size());
+  for (size_t i = 0; i < _experienceReplayStates.size() - 1; i++) experienceReplayIndexes[i] = i;
 
- // Filling the minibatches
- for (size_t step = 0; step < normalizationSteps; step++)
- {
-   // Shuffling indexes to choose the mini batch from
-   std::shuffle(experienceReplayIndexes.begin(), experienceReplayIndexes.end(), *mt);
+  // Filling the minibatches
+  for (size_t step = 0; step < normalizationSteps; step++)
+  {
+    // Shuffling indexes to choose the mini batch from
+    std::shuffle(experienceReplayIndexes.begin(), experienceReplayIndexes.end(), *mt);
 
-   for (size_t i = 0; i < miniBatchSize; i++)
-   {
-     // Selecting a uniformly random selected, yet not repeated experience
-     size_t expId = experienceReplayIndexes[i];
+    for (size_t i = 0; i < miniBatchSize; i++)
+    {
+      // Selecting a uniformly random selected, yet not repeated experience
+      size_t expId = experienceReplayIndexes[i];
 
-     for (size_t j = 0; j < _problem->_stateVectorSize; j++) miniBatches[step][i][j] = _experienceReplayStates[expId][j];
-     for (size_t j = 0; j < _problem->_actionVectorSize; j++) miniBatches[step][i][_problem->_stateVectorSize + j] = _experienceReplayActions[expId][j];
-   }
- }
+      for (size_t j = 0; j < _problem->_stateVectorSize; j++) miniBatches[step][i][j] = _experienceReplayStates[expId][j];
+      for (size_t j = 0; j < _problem->_actionVectorSize; j++) miniBatches[step][i][_problem->_stateVectorSize + j] = _experienceReplayActions[expId][j];
+    }
+  }
 
- neuralNetwork->normalize(miniBatches);
+  neuralNetwork->normalize(miniBatches);
 }
 
-void Agent::normalizeStateNeuralNetwork(NeuralNetwork* neuralNetwork, size_t miniBatchSize, size_t normalizationSteps)
+void Agent::normalizeStateNeuralNetwork(NeuralNetwork *neuralNetwork, size_t miniBatchSize, size_t normalizationSteps)
 {
- // Allocating memory for the mini batch set
- std::vector<std::vector<std::vector<float>>> miniBatches(normalizationSteps);
+  // Allocating memory for the mini batch set
+  std::vector<std::vector<std::vector<float>>> miniBatches(normalizationSteps);
 
- for (size_t i = 0; i < normalizationSteps; i++)
-   miniBatches[i].resize(miniBatchSize);
+  for (size_t i = 0; i < normalizationSteps; i++)
+    miniBatches[i].resize(miniBatchSize);
 
- for (size_t i = 0; i < normalizationSteps; i++)
-   for (size_t j = 0; j < miniBatchSize; j++)
-     miniBatches[i][j].resize(_problem->_stateVectorSize);
+  for (size_t i = 0; i < normalizationSteps; i++)
+    for (size_t j = 0; j < miniBatchSize; j++)
+      miniBatches[i][j].resize(_problem->_stateVectorSize);
 
- // Creating storage for state history indexes to choose from
- std::vector<size_t> experienceReplayIndexes(_experienceReplayStates.size());
- for (size_t i = 0; i < _experienceReplayStates.size()-1; i++) experienceReplayIndexes[i] = i;
+  // Creating storage for state history indexes to choose from
+  std::vector<size_t> experienceReplayIndexes(_experienceReplayStates.size());
+  for (size_t i = 0; i < _experienceReplayStates.size() - 1; i++) experienceReplayIndexes[i] = i;
 
- // Filling the minibatches
- for (size_t step = 0; step < normalizationSteps; step++)
- {
-   // Shuffling indexes to choose the mini batch from
-   std::shuffle(experienceReplayIndexes.begin(), experienceReplayIndexes.end(), *mt);
+  // Filling the minibatches
+  for (size_t step = 0; step < normalizationSteps; step++)
+  {
+    // Shuffling indexes to choose the mini batch from
+    std::shuffle(experienceReplayIndexes.begin(), experienceReplayIndexes.end(), *mt);
 
-   for (size_t i = 0; i < miniBatchSize; i++)
-   {
-     // Selecting a uniformly random selected, yet not repeated experience
-     size_t expId = experienceReplayIndexes[i];
-     miniBatches[step][i] = _experienceReplayStates[expId];
-   }
- }
+    for (size_t i = 0; i < miniBatchSize; i++)
+    {
+      // Selecting a uniformly random selected, yet not repeated experience
+      size_t expId = experienceReplayIndexes[i];
+      miniBatches[step][i] = _experienceReplayStates[expId];
+    }
+  }
 
- neuralNetwork->normalize(miniBatches);
+  neuralNetwork->normalize(miniBatches);
 }
 
 void Agent::printGenerationAfter()
@@ -275,7 +275,6 @@ void Agent::printGenerationAfter()
     _k->_logger->logInfo("Normal", " + Total Experience Count:      %lu/%lu\n", _experienceCount, _maxExperiences);
   else
     _k->_logger->logInfo("Normal", " + Total Experience Count:    %lu\n", _experienceCount);
-
 
   _k->_logger->logInfo("Normal", "Training Statistics:\n");
 
@@ -298,7 +297,7 @@ void Agent::printGenerationAfter()
   else
     _k->_logger->logInfo("Normal", " + Best Average Reward:         %f\n", _bestAverageTestingReward);
 
- _k->_logger->logInfo("Normal", " + Current p(Random Action):       %f\n", _randomActionProbabilityEffectiveValue);
+  _k->_logger->logInfo("Normal", " + Current p(Random Action):       %f\n", _randomActionProbabilityEffectiveValue);
 
   printAgentInformation();
 }

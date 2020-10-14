@@ -1,8 +1,8 @@
 #ifndef _KORALI_AGENT_CONTINUOUS_DDPG_HPP_
 #define _KORALI_AGENT_CONTINUOUS_DDPG_HPP_
 
-#include "modules/solver/agent/continuous/continuous.hpp"
 #include "modules/problem/reinforcementLearning/continuous/continuous.hpp"
+#include "modules/solver/agent/continuous/continuous.hpp"
 
 namespace korali
 {
@@ -12,11 +12,9 @@ namespace agent
 {
 namespace continuous
 {
-
 class DDPG : public Continuous
 {
   public:
-
   /**
   * @brief Storage for the pointer to the (continuous) learning problem
   */

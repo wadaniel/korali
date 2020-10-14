@@ -2,8 +2,8 @@
 #define _KORALI_AGENT_CONTINUOUS_GFPT_HPP_
 
 #include "auxiliar/optimizers/fCMAES.hpp"
-#include "modules/solver/agent/continuous/continuous.hpp"
 #include "modules/problem/reinforcementLearning/continuous/continuous.hpp"
+#include "modules/solver/agent/continuous/continuous.hpp"
 
 namespace korali
 {
@@ -13,11 +13,9 @@ namespace agent
 {
 namespace continuous
 {
-
 class GFPT : public Continuous
 {
   public:
-
   /**
    * @brief Pointer to training experiment's problem
    */

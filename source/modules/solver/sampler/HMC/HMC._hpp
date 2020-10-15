@@ -190,6 +190,10 @@ class HMC : public Sampler
   */
   void buildTreeIntegrationCriterion(const std::vector<double> &q, const std::vector<double> &p, const double logUniSample, const int direction, const int depth, const double stepSize, const double rootH, std::vector<double> &qLeft, std::vector<double> &pLeft, std::vector<double> &qRight, std::vector<double> &pRight, std::vector<double> &qProposed, double &numValidLeaves, bool &buildCriterion, double &alpha, int &numLeaves, std::vector<double> &rho);
 
+  /**
+  * @brief Helper function to print std::vector.
+  * @param vec Vector to be printed.
+  */
   void __printVec(const std::vector<double> vec) const;
 
   /**

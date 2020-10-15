@@ -255,6 +255,7 @@ class Hamiltonian
   * @brief Updates Inverse Metric by using hessian.
   * @param q current position
   * @param _k Korali experiment object
+  * @return Error code to indicate if update was successful.
   */
   virtual int updateMetricMatricesRiemannian(const std::vector<double> &q, korali::Experiment *_k)
   {

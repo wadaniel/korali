@@ -56,7 +56,7 @@ void HMC::setInitialConfiguration()
     _positionLeader[i] = _k->_variables[i]->_initialMean;
   }
 
-  // Initializing metric and inverseMetric for diagonal and dense 
+  // Initializing metric and inverseMetric for diagonal and dense
   std::vector<double> metric;
   std::vector<double> inverseMetric;
 
@@ -115,7 +115,7 @@ void HMC::setInitialConfiguration()
 
   _hamiltonian->verbosity = _hamiltonianVerbosity;
   _integrator->verbosity = _integratorVerbosity;
-  
+
   if (_useAdaptiveStepSize == true)
   {
     _stepSize = findReasonableStepSize(_positionLeader);

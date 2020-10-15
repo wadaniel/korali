@@ -3,8 +3,8 @@
 
 #include "hamiltonian_riemannian_const_base.hpp"
 #include "modules/distribution/multivariate/normal/normal.hpp"
-#include <gsl/gsl_eigen.h>
 #include <gsl/gsl_blas.h>
+#include <gsl/gsl_eigen.h>
 
 namespace korali
 {
@@ -47,7 +47,7 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannianConst
   /**
   * @brief Constructor with State Space Dim.
   * @param stateSpaceDim Dimension of State Space.
-  * @param normalGenerator Generator needed for momentum sampling.
+  * @param multivariateGenerator Multivariate generator needed for momentum sampling.
   */
   HamiltonianRiemannianConstDense(const size_t stateSpaceDim, korali::distribution::multivariate::Normal *multivariateGenerator) : HamiltonianRiemannianConst{stateSpaceDim}
   {
@@ -61,7 +61,7 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannianConst
   /**
   * @brief Constructor with State Space Dim.
   * @param stateSpaceDim Dimension of State Space.
-  * @param normalGenerator Generator needed for momentum sampling.
+  * @param multivariateGenerator Generator needed for momentum sampling.
   * @param inverseRegularizationParam Inverse regularization parameter of SoftAbs metric that controls hardness of approximation: For large values _inverseMetric is closer to analytical formula (and therefore closer to degeneracy in certain cases). 
   */
   HamiltonianRiemannianConstDense(const size_t stateSpaceDim, korali::distribution::multivariate::Normal *multivariateGenerator, const double inverseRegularizationParam) : HamiltonianRiemannianConst{stateSpaceDim}
@@ -77,6 +77,9 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannianConst
   * @brief Constructor with State Space Dim.
   * @param stateSpaceDim Dimension of State Space.
   * @param multivariateGenerator Generator needed for momentum sampling.
+  * @param metric Metric for initialization. 
+  * @param inverseMetric Inverse Metric for initialization. 
+  * @param inverseRegularizationParam Inverse regularization parameter of SoftAbs metric that controls hardness of approximation: For large values _inverseMetric is closer to analytical formula (and therefore closer to degeneracy in certain cases). 
   */
   HamiltonianRiemannianConstDense(const size_t stateSpaceDim, korali::distribution::multivariate::Normal *multivariateGenerator, const std::vector<double> metric, const std::vector<double> inverseMetric, const double inverseRegularizationParam) : HamiltonianRiemannianConstDense{stateSpaceDim, multivariateGenerator, inverseRegularizationParam}
   {
@@ -321,6 +324,12 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannianConst
     return result;
   }
 
+  /**
+  * @brief Updates Metric and Inverse Metric according to SoftAbs.
+  * @param q Current position.
+  * @param _k Experiment object.
+  * @return Returns error code of Cholesky decomposition of GSL.
+  */
   int updateMetricMatricesRiemannian(const std::vector<double> &q, korali::Experiment *_k) override
   {
     (*_sample)["Parameters"] = q;
@@ -340,18 +349,18 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannianConst
     auto hessian = KORALI_GET(std::vector<double>, (*_sample), "H(logP(x))");
 
     gsl_matrix_view Xv = gsl_matrix_view_array(hessian.data(), _stateSpaceDim, _stateSpaceDim);
-    gsl_matrix* X = &Xv.matrix;
-    gsl_matrix* Q = gsl_matrix_alloc(_stateSpaceDim, _stateSpaceDim);
-    gsl_vector* lambda = gsl_vector_alloc(_stateSpaceDim);
+    gsl_matrix *X = &Xv.matrix;
+    gsl_matrix *Q = gsl_matrix_alloc(_stateSpaceDim, _stateSpaceDim);
+    gsl_vector *lambda = gsl_vector_alloc(_stateSpaceDim);
 
-    gsl_eigen_symmv_workspace* w = gsl_eigen_symmv_alloc(_stateSpaceDim);
+    gsl_eigen_symmv_workspace *w = gsl_eigen_symmv_alloc(_stateSpaceDim);
 
     gsl_eigen_symmv(X, lambda, Q, w);
 
-    gsl_matrix* lambdaSoftAbs = gsl_matrix_alloc(_stateSpaceDim, _stateSpaceDim);
+    gsl_matrix *lambdaSoftAbs = gsl_matrix_alloc(_stateSpaceDim, _stateSpaceDim);
     gsl_matrix_set_all(lambdaSoftAbs, 0.0);
-    
-    gsl_matrix* inverseLambdaSoftAbs = gsl_matrix_alloc(_stateSpaceDim, _stateSpaceDim);
+
+    gsl_matrix *inverseLambdaSoftAbs = gsl_matrix_alloc(_stateSpaceDim, _stateSpaceDim);
     gsl_matrix_set_all(inverseLambdaSoftAbs, 0.0);
 
     _logDetMetric = 0.0;
@@ -363,14 +372,14 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannianConst
       _logDetMetric += std::log(lambdaSoftAbs_i);
     }
 
-    gsl_matrix* tmpMatOne = gsl_matrix_alloc(_stateSpaceDim, _stateSpaceDim);
-    gsl_matrix* tmpMatTwo = gsl_matrix_alloc(_stateSpaceDim, _stateSpaceDim);
+    gsl_matrix *tmpMatOne = gsl_matrix_alloc(_stateSpaceDim, _stateSpaceDim);
+    gsl_matrix *tmpMatTwo = gsl_matrix_alloc(_stateSpaceDim, _stateSpaceDim);
 
     gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1.0, Q, lambdaSoftAbs, 0.0, tmpMatOne);
     gsl_blas_dgemm(CblasNoTrans, CblasTrans, 1.0, lambdaSoftAbs, Q, 0.0, tmpMatTwo);
 
-    gsl_matrix* tmpMatThree = gsl_matrix_alloc(_stateSpaceDim, _stateSpaceDim);
-    gsl_matrix* tmpMatFour = gsl_matrix_alloc(_stateSpaceDim, _stateSpaceDim);
+    gsl_matrix *tmpMatThree = gsl_matrix_alloc(_stateSpaceDim, _stateSpaceDim);
+    gsl_matrix *tmpMatFour = gsl_matrix_alloc(_stateSpaceDim, _stateSpaceDim);
 
     gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1.0, Q, lambdaSoftAbs, 0.0, tmpMatThree);
     gsl_blas_dgemm(CblasNoTrans, CblasTrans, 1.0, inverseLambdaSoftAbs, Q, 0.0, tmpMatFour);
@@ -402,13 +411,17 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannianConst
       __printVec(_inverseMetric);
     }
 
+    gsl_matrix_free(X);
     gsl_matrix_free(Q);
+    gsl_vector_free(lambda);
+    gsl_eigen_symmv_free(w);
     gsl_matrix_free(lambdaSoftAbs);
     gsl_matrix_free(inverseLambdaSoftAbs);
 
-    gsl_vector_free(lambda);
-
-    gsl_eigen_symmv_free(w);
+    gsl_matrix_free(tmpMatOne);
+    gsl_matrix_free(tmpMatTwo);
+    gsl_matrix_free(tmpMatThree);
+    gsl_matrix_free(tmpMatFour);
 
     _multivariateGenerator->_sigma = _metric;
 

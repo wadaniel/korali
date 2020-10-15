@@ -47,6 +47,8 @@ class HamiltonianEuclideanDiag : public HamiltonianEuclidean
   * @brief Constructor with State Space Dim.
   * @param stateSpaceDim Dimension of State Space.
   * @param normalGenerator Generator needed for momentum sampling.
+  * @param metric Metric for initialization. 
+  * @param inverseMetric Inverse Metric for initialization. 
   */
   HamiltonianEuclideanDiag(const size_t stateSpaceDim, korali::distribution::univariate::Normal *normalGenerator, const std::vector<double> metric, const std::vector<double> inverseMetric) : HamiltonianEuclideanDiag{stateSpaceDim, normalGenerator}
   {

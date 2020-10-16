@@ -23,8 +23,8 @@ void dACER::initializeAgent()
 
   _criticExperiment["Problem"]["Type"] = "Supervised Learning";
   _criticExperiment["Solver"]["Type"] = "Learner/DeepGD";
-  _criticExperiment["Solver"]["Learning Rate"] = _criticLearningRate;
   _criticExperiment["Solver"]["Loss Function"] = "Mean Squared Error";
+  _criticExperiment["Solver"]["Learning Rate"] = _criticLearningRate;
   _criticExperiment["Solver"]["Steps Per Generation"] = 1;
   _criticExperiment["Solver"]["Neural Network"] = _criticNeuralNetwork;
 
@@ -177,7 +177,7 @@ void dACER::processTrajectory(size_t startId, size_t endId)
     auto pOldPolicy = _experienceReplayActionProbabilities[curId];
 
     // Getting probability densities for current action given current policy
-    auto pCurPolicy = getActionProbabilities(curState);
+    auto pCurPolicy = getActionProbabilitiesFromQ(curState);
 
     // Getting p(s,a) for selected experience, given the old policy
     float pActionOldPolicy = pOldPolicy[curActionIdx];
@@ -235,7 +235,7 @@ void dACER::processTrajectory(size_t startId, size_t endId)
     {
       // Getting probability densities for current action given average policy
       _policyLearner->setHyperparameters(_policyAverageHyperparameters);
-      auto pAvgPolicy = getActionProbabilities(curState);
+      auto pAvgPolicy = getActionProbabilitiesFromQ(curState);
 
       // Obtaining KL Divergence gradients for the current state. //PW: check this
       std::vector<float> k(_problem->_possibleActions.size());
@@ -332,10 +332,20 @@ void dACER::processTrajectory(size_t startId, size_t endId)
   _hyperparameters["Policy"] = _policyCurrentHyperparameters;
 }
 
-std::vector<float> dACER::getActionProbabilities(const std::vector<float> &state)
+std::vector<float> dACER::getActionProbabilitiesFromQ(const std::vector<float> &state)
+{
+  return getActionProbabilities(state, _policyLearner);
+}
+
+std::vector<float> dACER::getActionProbabilitiesFromTarget(const std::vector<float> &state)
+{
+  return getActionProbabilities(state, _criticLearner);
+}
+
+std::vector<float> dACER::getActionProbabilities(const std::vector<float> &state, learner::DeepGD * _learner)
 {
   // Forward softmax probability function
-  auto pValues = _policyLearner->getEvaluation(state);
+  auto pValues = _learner->getEvaluation(state);
 
   return pValues;
 }
@@ -354,7 +364,7 @@ float dACER::stateValueFunction(const std::vector<float> &state)
   auto qEval = _criticLearner->getEvaluation(state);
 
   // Forward propagating state through the policy to get P(s,a) for all a
-  auto pEval = getActionProbabilities(state);
+  auto pEval = getActionProbabilitiesFromQ(state);
 
   // Calculating the sum of p(s,a)*q(s,a) for all a
   float qSum = 0.0;

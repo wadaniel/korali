@@ -20,7 +20,7 @@ void Discrete::getAction(korali::Sample &sample)
   auto state = sample["State"].get<std::vector<float>>();
 
   // Getting the probability of the actions given by the agent's policy
-  auto pActions = getActionProbabilities(state);
+  auto pActions = getActionProbabilitiesFromQ(state);
 
   // Storage for the action index to use
   size_t actionIdx = 0;
@@ -50,14 +50,19 @@ void Discrete::getAction(korali::Sample &sample)
     }
     else // else we select guided by the policy's probability distribution
     {
-      // Iterating over all p(s,a) to select the corresponding action
+  
       float curSum = 0.0;
       for (actionIdx = 0; actionIdx < pActions.size(); actionIdx++)
       {
-        float pAction = pActions[actionIdx];
-        if (x > curSum && x <= curSum + pAction) break;
-        curSum += pAction;
+        curSum += pActions[actionIdx];
+        if (x < curSum) break;
       }
+      
+      // NOTE: In origianl DQN paper [Mnih2015] we choose max (D.W.)
+      
+      // Finding the best action index from the probabilities
+      actionIdx = std::distance(pActions.begin(), std::max_element(pActions.begin(), pActions.end()));
+
     }
 
     // Storing action metadata
@@ -76,77 +81,10 @@ void Discrete::getAction(korali::Sample &sample)
 
   /*****************************************************************************
   * Storing the action itself
-  ****************************************************************************/
+ ****************************************************************************/
 
   sample["Action"] = _problem->_possibleActions[actionIdx];
 }
-
-//float dACER::retraceFunction(size_t expId)
-//{
-//  // Finding last experience in the episode that corresponds to expId
-//  size_t curId = expId;
-//  while (_experienceReplayTerminal[curId] == false && curId < _experienceReplayStates.size()-1) curId++;
-//
-//  // Now getting last experience's qRet
-//  float qRet = 0.0;
-//  if (_experienceReplayTerminal[curId] == false)
-//  {
-//   std::vector<float> curState = _experienceReplayStates[curId];
-//   qRet = stateValueFunction(curState);
-//  }
-//
-//  // Now iterating backwards to calculate the rest of qRet
-//  while (curId > expId)
-//  {
-//   // Decreasing current experience index
-//   curId--;
-//
-//   // Getting current reward
-//   float curReward = _experienceReplayRewards[curId];
-//
-//   // Re-calculating qRet
-//   qRet = curReward + _criticDiscountFactor * qRet;
-//
-//   // If this is the starting experience, return the current value
-//   if (curId == expId) break;
-//
-//   // Getting current state
-//   std::vector<float> curState = _experienceReplayStates[curId];
-//
-//   // Getting current action index
-//   size_t curActionIdx = _experienceReplayActionIndexes[curId];
-//
-//   // Calculating V(state) with the current policy
-//   float vCurState = stateValueFunction(curState);
-//
-//   // Calculating Q(state, action) with the current policy
-//   float qCurState = stateActionValueFunction(curState, curActionIdx);
-//
-//   // Getting probability densities for current action given current policy
-//   auto pOldPolicy = _experienceReplayActionProbabilities[curId];
-//
-//   // Getting probability densities for current action given current policy
-//   auto pCurPolicy = getActionProbabilities(curState);
-//
-//   // Getting p(s,a) for selected experience, given the old policy
-//   float pActionOldPolicy = pOldPolicy[curActionIdx];
-//
-//   // Getting p(s,a) for the best action, given the current policy
-//   float pActionCurPolicy = pCurPolicy[curActionIdx];
-//
-//   // Now calculating importance weight for the old s,a experience
-//   float importanceWeight = pActionCurPolicy / pActionOldPolicy;
-//
-//   // Now calculating truncated importance weight with 1.0 as truncation factor
-//   float truncatedImportanceWeight = std::min(1.0f, importanceWeight);
-//
-//   // Updating qRet
-//   qRet = truncatedImportanceWeight * (qRet - qCurState) + vCurState;
-//  }
-//
-//  // Returning qRet
-//  return qRet;
-//}
 
 } // namespace agent
 

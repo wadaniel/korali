@@ -35,11 +35,6 @@ class Agent : public Solver
   float _randomActionProbabilityEffectiveValue;
 
   /**
-   * @brief Pointer to training experiment's problem
-   */
-  problem::SupervisedLearning *_criticProblem;
-
-  /**
   * @brief Pointer to training experiment's learner
   */
   learner::DeepGD *_criticLearner;
@@ -48,16 +43,21 @@ class Agent : public Solver
    * @brief Korali experiment for the training of the critic
    */
   korali::Experiment _criticExperiment;
-
+ 
   /**
-  * @brief Korali experiment for obtaining the agent's action
-  */
-  korali::Experiment _policyExperiment;
+   * @brief Pointer to training experiment's problem
+   */
+  problem::SupervisedLearning *_criticProblem;
 
   /**
    * @brief Pointer to training the actor network
    */
   learner::DeepGD *_policyLearner;
+ 
+  /**
+  * @brief Korali experiment for obtaining the agent's action
+  */
+  korali::Experiment _policyExperiment;
 
   /**
    * @brief Pointer to actor's experiment problem
@@ -68,6 +68,11 @@ class Agent : public Solver
   * @brief Trains the Agent's critic/policy, based on the new experiences
   */
   virtual void trainAgent() = 0;
+
+  /** 
+   * @brief Update Hyperparameter of critic
+   */
+  void updateCritic();
 
   /**
   * @brief Updates the agent's hyperparameters

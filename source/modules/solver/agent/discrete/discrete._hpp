@@ -23,7 +23,9 @@ class Discrete : public Agent
   * @param state The current state
   * @return A vector containing all action probabilities, corresponding to the state and the current policy
   */
-  virtual std::vector<float> getActionProbabilities(const std::vector<float> &state) = 0;
+  virtual std::vector<float> getActionProbabilities(const std::vector<float> &state, learner::DeepGD * _learner) = 0;
+  virtual std::vector<float> getActionProbabilitiesFromQ(const std::vector<float> &state) = 0;
+  virtual std::vector<float> getActionProbabilitiesFromTarget(const std::vector<float> &state) = 0;
 
   void getAction(korali::Sample &sample) override;
   virtual void initializeAgent();

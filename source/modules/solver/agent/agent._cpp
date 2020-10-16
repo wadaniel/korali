@@ -42,7 +42,7 @@ void Agent::initialize()
     _bestAverageTestingReward = -korali::Inf;
   }
 
-  // Initializing policy hyperparameters
+  // Initializing critic hyperparameters
   updateHyperparameters(_hyperparameters);
 }
 
@@ -96,6 +96,9 @@ void Agent::runGeneration()
           for (size_t i = 0; i < _optimizationStepsPerUpdate; i++) trainAgent();
           _optimizationStepCount += _optimizationStepsPerUpdate;
         }
+
+    if (_experienceCount % _experiencesBetweenUpdates == 0) updateCritic();
+    //if (_experienceCount % _experiencesBetweenUpdates == 0) updateHyperparametersQ(); (TODO: copy to actor in X steps)
 
     // If agent requested new policy, send the new hyperparameters
     if (experience["Request New Policy"] == true)
@@ -192,6 +195,15 @@ void Agent::runGeneration()
   if (_averageTestingReward > _bestAverageTestingReward) _bestAverageTestingReward = _averageTestingReward;
 }
 
+
+void Agent::updateCritic()
+{
+  // Storing new Critic's hyperparameters
+  _hyperparameters["Critic"] = _policyLearner->getHyperparameters();
+  updateHyperparameters(_hyperparameters);
+}
+
+
 void Agent::normalizeStateActionNeuralNetwork(NeuralNetwork *neuralNetwork, size_t miniBatchSize, size_t normalizationSteps)
 {
   // Allocating memory for the mini batch set
@@ -285,6 +297,7 @@ void Agent::printGenerationAfter()
 
   _k->_logger->logInfo("Normal", " + Current Reward:              %f/%f\n", _currentReward, _trainingRewardThreshold);
   _k->_logger->logInfo("Normal", " + Best Reward:                 %f\n", _bestTrainingReward);
+  _k->_logger->logInfo("Normal", " + Current p(Random Action):       %f\n", _randomActionProbabilityEffectiveValue);
 
   _k->_logger->logInfo("Normal", "Testing Statistics:\n");
 
@@ -297,7 +310,6 @@ void Agent::printGenerationAfter()
   else
     _k->_logger->logInfo("Normal", " + Best Average Reward:         %f\n", _bestAverageTestingReward);
 
-  _k->_logger->logInfo("Normal", " + Current p(Random Action):       %f\n", _randomActionProbabilityEffectiveValue);
 
   printAgentInformation();
 }

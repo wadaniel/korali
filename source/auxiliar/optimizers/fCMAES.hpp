@@ -18,8 +18,7 @@ namespace korali
 class fCMAES
 {
   public:
-
- /**
+  /**
  * @brief Default constructor for the optimizer
  * @param nVars Variable-space dimensionality
  * @param populationSize How many samples per generation to use

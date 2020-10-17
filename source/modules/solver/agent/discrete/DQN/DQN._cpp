@@ -44,7 +44,6 @@ void DQN::initializeAgent()
   _criticProblem = dynamic_cast<problem::SupervisedLearning *>(_criticExperiment._problem);
   _criticLearner = dynamic_cast<solver::learner::DeepGD *>(_criticExperiment._solver);
 
-
   /*********************************************************************
   * Initializing Policy-Related Structures
   *********************************************************************/
@@ -73,7 +72,7 @@ void DQN::initializeAgent()
   // Getting learner pointers
   _policyProblem = dynamic_cast<problem::SupervisedLearning *>(_policyExperiment._problem);
   _policyLearner = dynamic_cast<solver::learner::DeepGD *>(_policyExperiment._solver);
- 
+
   /*********************************************************************
   * Loading/Setting Hyperparameters
   *********************************************************************/
@@ -152,17 +151,17 @@ void DQN::trainAgent()
 
     // Keeping statistics
     _cumulativeQStar += qStar;
-    _cumulativeQStarSquared += qStar*qStar;
+    _cumulativeQStarSquared += qStar * qStar;
   }
 
   // Running one generation of the optimization method with the given mini-batch
   _policyLearner->initialize();
   _policyLearner->runGeneration();
   _policyLearner->finalize();
-  
+
   // Keeping statistics
   _averageQStar = (float)_cumulativeQStar / (float)_criticMiniBatchSize;
-  _stdevQStar = sqrt(_cumulativeQStarSquared/(float)_criticMiniBatchSize - _cumulativeQStar*_cumulativeQStar / (float)(_criticMiniBatchSize*_criticMiniBatchSize));
+  _stdevQStar = sqrt(_cumulativeQStarSquared / (float)_criticMiniBatchSize - _cumulativeQStar * _cumulativeQStar / (float)(_criticMiniBatchSize * _criticMiniBatchSize));
 
   /****************************************************************************
   * If batch normalization is being used, we need to adjust mean and variances
@@ -174,16 +173,15 @@ void DQN::trainAgent()
   /*********************************************************************
    * Updating hyperparameters and broadcasting them to the workers
    *********************************************************************/
- 
+
   // Storing new Critic's hyperparameters
   _hyperparameters["Critic"] = _policyLearner->getHyperparameters();
-
 }
 
 void DQN::updateHyperparameters(const knlohmann::json &hyperparameters)
 {
   _criticLearner->setHyperparameters(hyperparameters["Critic"].get<std::vector<float>>());
-  _criticLearner->finalize(); //OMG
+  //_criticLearner->finalize(); //OMG
 }
 
 std::vector<float> DQN::getActionProbabilitiesFromQ(const std::vector<float> &state)
@@ -196,7 +194,7 @@ std::vector<float> DQN::getActionProbabilitiesFromTarget(const std::vector<float
   return getActionProbabilities(state, _criticLearner);
 }
 
-std::vector<float> DQN::getActionProbabilities(const std::vector<float> &state, learner::DeepGD * _learner)
+std::vector<float> DQN::getActionProbabilities(const std::vector<float> &state, learner::DeepGD *_learner)
 {
   // Creating state/action input
   std::vector<float> stateActionInput(_problem->_stateVectorSize + _problem->_actionVectorSize);

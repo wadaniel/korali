@@ -43,7 +43,7 @@ class Agent : public Solver
    * @brief Korali experiment for the training of the critic
    */
   korali::Experiment _criticExperiment;
- 
+
   /**
    * @brief Pointer to training experiment's problem
    */
@@ -53,7 +53,7 @@ class Agent : public Solver
    * @brief Pointer to training the actor network
    */
   learner::DeepGD *_policyLearner;
- 
+
   /**
   * @brief Korali experiment for obtaining the agent's action
   */

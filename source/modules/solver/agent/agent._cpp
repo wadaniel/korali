@@ -195,14 +195,12 @@ void Agent::runGeneration()
   if (_averageTestingReward > _bestAverageTestingReward) _bestAverageTestingReward = _averageTestingReward;
 }
 
-
 void Agent::updateCritic()
 {
   // Storing new Critic's hyperparameters
   _hyperparameters["Critic"] = _policyLearner->getHyperparameters();
   updateHyperparameters(_hyperparameters);
 }
-
 
 void Agent::normalizeStateActionNeuralNetwork(NeuralNetwork *neuralNetwork, size_t miniBatchSize, size_t normalizationSteps)
 {
@@ -309,7 +307,6 @@ void Agent::printGenerationAfter()
     _k->_logger->logInfo("Normal", " + Best Average Reward:         %f/%f\n", _bestAverageTestingReward, _targetAverageTestingReward);
   else
     _k->_logger->logInfo("Normal", " + Best Average Reward:         %f\n", _bestAverageTestingReward);
-
 
   printAgentInformation();
 }

@@ -25,7 +25,6 @@ void ReinforcementLearning::initialize()
   if (_stateVectorSize == 0) KORALI_LOG_ERROR("No state variables have been defined.\n");
 
   if (_actionRepeat == 0) KORALI_LOG_ERROR("Action repeat cannot be zero.\n");
-
 }
 
 /**
@@ -55,7 +54,7 @@ void __environmentWrapper()
 }
 
 void ReinforcementLearning::runEpisode(Sample &sample)
-{ 
+{
   // Getting RL-compatible solver
   _agent = dynamic_cast<solver::Agent *>(_k->_solver);
 

@@ -342,7 +342,7 @@ std::vector<float> dACER::getActionProbabilitiesFromTarget(const std::vector<flo
   return getActionProbabilities(state, _criticLearner);
 }
 
-std::vector<float> dACER::getActionProbabilities(const std::vector<float> &state, learner::DeepGD * _learner)
+std::vector<float> dACER::getActionProbabilities(const std::vector<float> &state, learner::DeepGD *_learner)
 {
   // Forward softmax probability function
   auto pValues = _learner->getEvaluation(state);

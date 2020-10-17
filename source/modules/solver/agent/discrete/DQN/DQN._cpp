@@ -169,7 +169,7 @@ void DQN::trainAgent()
   * by sampling a few more mini-batches after the optimization steps
   ******************************************************************************/
 
-  normalizeStateActionNeuralNetwork(_policyLearner->_trainingNeuralNetwork, _criticMiniBatchSize, _criticNormalizationSteps);
+  //normalizeStateActionNeuralNetwork(_policyLearner->_trainingNeuralNetwork, _criticMiniBatchSize, _criticNormalizationSteps);
 
   /*********************************************************************
    * Updating hyperparameters and broadcasting them to the workers
@@ -183,6 +183,7 @@ void DQN::trainAgent()
 void DQN::updateHyperparameters(const knlohmann::json &hyperparameters)
 {
   _criticLearner->setHyperparameters(hyperparameters["Critic"].get<std::vector<float>>());
+  _criticLearner->finalize(); //OMG
 }
 
 std::vector<float> DQN::getActionProbabilitiesFromQ(const std::vector<float> &state)

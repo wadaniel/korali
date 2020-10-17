@@ -38,8 +38,8 @@ e["Variables"][5]["Type"] = "Action"
 ### Configuring DQN hyperparameters
 
 e["Solver"]["Type"] = "Agent / Discrete / DQN"
-e["Solver"]["Experiences Between Updates"] = 1
-e["Solver"]["Optimization Steps Per Update"] = 1 
+e["Solver"]["Experiences Between Updates"] = 100
+e["Solver"]["Optimization Steps Per Update"] = 1
 
 ### Defining Experience Replay configuration
 
@@ -55,8 +55,8 @@ e["Solver"]["Random Action Probability"]["Decrease Rate"] = 0.10
 ## Defining Q-Critic and Action-selection (policy) optimizers
 
 e["Solver"]["Critic"]["Mini Batch Size"] = 32
+e["Solver"]["Critic"]["Learning Rate"] = 0.01
 e["Solver"]["Critic"]["Discount Factor"] = 0.9999
-e["Solver"]["Critic"]["Learning Rate"] = 0.1
 
 ### Defining the shape of the neural network
 
@@ -82,8 +82,7 @@ e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Batch Normalization"]["Ena
 
 ## Defining Q-Critic and Action-selection (policy) optimizers
 
-e["Solver"]["Policy"]["Mini Batch Size"] = 64
-#e["Solver"]["Policy"]["Discount Factor"] = 0.99
+e["Solver"]["Policy"]["Mini Batch Size"] = 32
 e["Solver"]["Policy"]["Learning Rate"] = 0.01
 
 ### Defining the shape of the neural network

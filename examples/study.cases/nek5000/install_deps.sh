@@ -27,7 +27,7 @@ popd
 
 # Building turbChannel
 cp _config/* ${NEK5000_DIR}/examples/turbChannel
-cp _model/turbChannel.usr ${NEK5000_DIR}/examples/turbChannel
+cp _environment/turbChannel.usr ${NEK5000_DIR}/examples/turbChannel
 pushd ${NEK5000_DIR}/examples/turbChannel
 MPI=0 FFLAGS='-O3 -g' CFLAGS='-O3 -g' ${NEK5000_DIR}/bin/nekconfig -build-dep;
 MPI=0 FFLAGS='-O3 -g' CFLAGS='-O3 -g' ${NEK5000_DIR}/bin/nekconfig;

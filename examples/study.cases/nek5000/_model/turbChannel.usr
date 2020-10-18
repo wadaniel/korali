@@ -57,8 +57,11 @@ c-----------------------------------------------------------------------
 
       if (any(isnan(vx))) lastep = 1 ! kills Nek if NaN
 
+      ! Obtaining latest state/reward
       call getStateReward()
-      call updateAgent(state, reward, action)
+      
+      ! Updating agent with the current state/reward and producing new action
+      call updateAgent()
 
       return
       end
@@ -67,8 +70,14 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'TOTAL'
       include 'NEKUSE'
-      include 'AGENT'
-
+      
+      integer NUM_ACTIONS
+      parameter (NUM_ACTIONS=1)
+      double precision action(NUM_ACTIONS)
+      
+      ! Requesting action from agent
+      call getAction(action)
+      
       ! sets Neumann boundary condition to agent action
       TRX = action(1)
       TRY = 0.
@@ -165,8 +174,13 @@ c-----------------------------------------------------------------------
       subroutine getStateReward()
       include 'SIZE'
       include 'TOTAL'
-      include 'AGENT'
 
+      integer STATE_SIZE
+      parameter (STATE_SIZE=6)
+
+      double precision reward
+      double precision state(STATE_SIZE)
+      
       common /gaaa/    wo1(lx1,ly1,lz1,lelv)
      &              ,  wo2(lx1,ly1,lz1,lelv)
      &              ,  wo3(lx1,ly1,lz1,lelv)
@@ -224,6 +238,11 @@ c-----------------------------------------------------------------------
       reward = 10-3000.*abs(-dnu*state(3) - DPDX)*rho
       write(*,*) 'reward', reward
       if (isnan(reward)) reward = -10000
+      
+      ! Sending reward and state to agent
+      call setReward(reward)
+      call setState(state)
 
       return
       end
+     

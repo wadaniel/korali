@@ -12,25 +12,25 @@ int main(int argc, char *argv[])
   e["Problem"]["Action Repeat"] = 1;
   e["Problem"]["Actions Between Policy Updates"] = 1;
 
-  e["Variables"][0]["Name"] = "Some State Variable 1";
+  e["Variables"][0]["Name"] = "Mean u at wall";
   e["Variables"][0]["Type"] = "State";
 
-  e["Variables"][1]["Name"] = "Some State Variable 2";
+  e["Variables"][1]["Name"] = "Mean u off wall";
   e["Variables"][1]["Type"] = "State";
 
-  e["Variables"][2]["Name"] = "Some State Variable 3";
+  e["Variables"][2]["Name"] = "Mean du/dy at wall";
   e["Variables"][2]["Type"] = "State";
 
-  e["Variables"][3]["Name"] = "Some State Variable 4";
+  e["Variables"][3]["Name"] = "Mean du/dy off wall";
   e["Variables"][3]["Type"] = "State";
 
-  e["Variables"][4]["Name"] = "Some State Variable 5";
+  e["Variables"][4]["Name"] = "Mean w at wall";
   e["Variables"][4]["Type"] = "State";
 
-  e["Variables"][5]["Name"] = "Some State Variable 5";
+  e["Variables"][5]["Name"] = "Mean w off wall";
   e["Variables"][5]["Type"] = "State";
 
-  e["Variables"][6]["Name"] = "Some Action";
+  e["Variables"][6]["Name"] = "Boundary Condition (x)";
   e["Variables"][6]["Type"] = "Action";
   e["Variables"][6]["Lower Bound"] = 0.0;
   e["Variables"][6]["Upper Bound"] = 0.01;

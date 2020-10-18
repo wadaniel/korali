@@ -6,14 +6,27 @@
 #include "stdio.h"
 
 korali::Sample* sample;
+double _reward;
+double _state[STATE_SIZE];
+double _action[ACTION_SIZE];
 
 void runEnvironment(korali::Sample &s)
 {
   // Storing sample pointer
   sample = &s;
 
-  // Switching to work directory
-  chdir("_config");
+  // Getting sample ID to create working environment
+  size_t sampleId = s["Sample Id"];
+
+  // Creating work environment
+  char envdir[1024];
+  sprintf(envdir, "_work%lu", sampleId);
+
+  char command[1024];
+  sprintf(command, "rm -rf %s", envdir); system(command);
+  sprintf(command, "mkdir %s", envdir); system(command);
+  sprintf(command, "cp _config/* %s", envdir); system(command);
+  chdir(envdir);
 
   // Initializing environment
   auto comm = MPI_COMM_WORLD;
@@ -27,28 +40,28 @@ void runEnvironment(korali::Sample &s)
   chdir("..");
 }
 
-void updateAgent(double* state, double reward, double* action)
+void updateAgent()
 {
  // Setting states
- (*sample)["State"][0] = state[0];
- (*sample)["State"][1] = state[1];
- (*sample)["State"][2] = state[2];
- (*sample)["State"][3] = state[3];
- (*sample)["State"][4] = state[4];
- (*sample)["State"][5] = state[5];
+ for (size_t i = 0; i < STATE_SIZE; i++)
+  (*sample)["State"][i] = _state[i];
 
  // Setting Reward
- (*sample)["Reward"] = reward;
+ (*sample)["Reward"] = _reward;
 
  // Getting new action
  sample->update();
 
  // Reading new action
- action[0] = (*sample)["Action"][0];
+ for (size_t i = 0; i < ACTION_SIZE; i++)
+  _action[i] = (*sample)["Action"][i];
 
  // Printing step info
- printf("State: [ %f, %f, %f, %f, %f, %f ]", state[0], state[1], state[2], state[3], state[4], state[5]);
- printf("Reward: %f", reward);
- printf("Action: %f", action[0]);
+ printf("[Korali] ----------------------------------------------------\n");
+ printf("[Korali] Step Information:\n");
+ printf("[Korali] State: [ %f, %f, %f, %f, %f, %f ]\n", _state[0], _state[1], _state[2], _state[3], _state[4], _state[5]);
+ printf("[Korali] Reward: %f\n", _reward);
+ printf("[Korali] Action: %f\n", _action[0]);
+ printf("[Korali] ----------------------------------------------------\n");
 }
 

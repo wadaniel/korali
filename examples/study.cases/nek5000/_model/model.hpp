@@ -5,11 +5,8 @@
 #include <random>
 
 void runEnvironment(korali::Sample &s);
-void initializeEnvironment();
+void createWorkEnvironment(size_t envId);
 
 extern "C" void nek_init_(int* comm);
-extern "C" void nek_solve_(int* comm);
-extern "C" void nek_end_(int* comm);
-
-extern std::mt19937 _randomGenerator;
-
+extern "C" void nek_solve_();
+extern "C" void nek_end_();

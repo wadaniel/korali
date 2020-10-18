@@ -19,22 +19,13 @@ export NEK_SOURCE_ROOT=${NEK5000_DIR}
 rm -rf _deps
 git clone --depth 1 --recursive https://github.com/Nek5000/Nek5000.git ${NEK5000_DIR}
 
-# Building tools
-pushd ${NEK5000_DIR}/tools
-./maketools genmap; ./maketools genbox
-popd
-
-# Building example
+# Building turbChannel
 cp _config/* ${NEK5000_DIR}/examples/turbChannel
+cp _model/AGENT _model/*.usr ${NEK5000_DIR}/examples/turbChannel
 pushd ${NEK5000_DIR}/examples/turbChannel
 MPI=0 FFLAGS='-O3 -g' CFLAGS='-O3 -g' ${NEK5000_DIR}/bin/nekconfig -build-dep;
 MPI=0 FFLAGS='-O3 -g' CFLAGS='-O3 -g' ${NEK5000_DIR}/bin/nekconfig;
 make -j 6 lib usrfile 
 popd
-
-# Copying work files into the work directory
-rm -rf _work
-mkdir _work
-cp ${NEK5000_DIR}/examples/turbChannel/* _work
   
 

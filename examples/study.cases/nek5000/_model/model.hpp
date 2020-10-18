@@ -5,8 +5,16 @@
 #include <random>
 
 void runEnvironment(korali::Sample &s);
-void createWorkEnvironment(size_t envId);
 
-extern "C" void nek_init_(int* comm);
-extern "C" void nek_solve_();
-extern "C" void nek_end_();
+extern "C"
+{
+ void nek_init_(int* comm);
+ void nek_solve_();
+ void nek_end_();
+ void updateagent_(double* state, double* reward, double* action);
+}
+
+void updateAgent(double* state, double reward, double* action);
+void updateagent_(double* state, double* reward, double* action) { updateAgent(state, *reward, action); }
+
+extern korali::Sample* sample;

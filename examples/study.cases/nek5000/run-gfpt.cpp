@@ -27,11 +27,14 @@ int main(int argc, char *argv[])
   e["Variables"][4]["Name"] = "Some State Variable 5";
   e["Variables"][4]["Type"] = "State";
 
-  e["Variables"][5]["Name"] = "Some Action";
-  e["Variables"][5]["Type"] = "Action";
-  e["Variables"][5]["Lower Bound"] = 0.0;
-  e["Variables"][5]["Upper Bound"] = 0.01;
-  e["Variables"][5]["Exploration Sigma"] = 0.0005;
+  e["Variables"][5]["Name"] = "Some State Variable 5";
+  e["Variables"][5]["Type"] = "State";
+
+  e["Variables"][6]["Name"] = "Some Action";
+  e["Variables"][6]["Type"] = "Action";
+  e["Variables"][6]["Lower Bound"] = 0.0;
+  e["Variables"][6]["Upper Bound"] = 0.01;
+  e["Variables"][6]["Exploration Sigma"] = 0.0005;
 
   //// Defining Agent Configuration
 
@@ -100,7 +103,7 @@ int main(int argc, char *argv[])
 
   ////// Setting file output configuration
 
-  e["File Output"]["Frequency"] = 10000;
+  e["File Output"]["Enabled"] = false;
 
   ////// Running Experiment
 

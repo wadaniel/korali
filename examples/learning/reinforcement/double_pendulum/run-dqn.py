@@ -115,6 +115,7 @@ e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Batch Normalization"]["Ena
 e["Solver"]["Training Reward Threshold"] = 400
 e["Solver"]["Policy Testing Episodes"] = 20
 e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 450
+#e["Solver"]["Termination Criteria"]["Max Generations"] = 10
 
 ### Setting file output configuration
 

@@ -1,8 +1,8 @@
-//  Korali environment for Nek5000
+//  Korali Environment for Nek5000
 //  Copyright (c) 2020 CSE-Lab, ETH Zurich, Switzerland.
 
-#ifndef _NEK5000_MODEL_HPP
-#define _NEK5000_MODEL_HPP
+#ifndef _NEK5000_ENVIRONMENT_HPP
+#define _NEK5000_ENVIRONMENT_HPP
 
 #define STATE_SIZE 6
 #define ACTION_SIZE 1
@@ -20,6 +20,7 @@ extern double _action[ACTION_SIZE];
 
 extern "C"
 {
+ void resetenv_();
  void nek_init_(int* comm);
  void nek_solve_();
  void nek_end_();

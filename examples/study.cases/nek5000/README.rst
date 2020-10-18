@@ -1,29 +1,22 @@
-Study Case: Reinforcement Learning on Fish Swimming
+Study Case: Nek5000
 =======================================================
 
-In this study case, we replicate the fish swimming experiment from CSELab.
+This study case provides an environment that connects to Nek5000
 
 Dependencies
 --------------------------
 
-This study case has the following prerequisite libraries:
+This study case has the following prerequisites:
 
-- HYPRE, with the $HYPRE_ROOT environment variable defined.
-- GSL, with the $GSL_ROOT_DIR environment variable defined.
-- HDF5, with the $HDF5_ROOT environment variable defined.
+- Fortran 77 compiler, defined by the environment variable $F77 
+- C compiler, defined by the environment variable $CC
 
 Setup
 ---------------------------
 
-[Optional] Setup Cubism-related configuration through the CUBISM_BLOCK_SIZE and CUBISM_NTHREAD environment variables. For example:
+0) [Optional] Change the experiments configuration set in the _config folder.
 
-
-.. code-block:: bash
-
-   export CUBISM_BLOCK_SIZE=32
-   export CUBISM_NTHREADS=8
-
-1) Install CubismUP2D by running:
+1) Install and configure Nek5000 
 
 .. code-block:: bash
 
@@ -33,10 +26,10 @@ Setup
 
 .. code-block:: bash
    
-  make -j6
+  make
 
-3) Run the test:
+3) Run the agent:
 
 .. code-block:: bash
    
-  ./run_test.sh
+  ./run-korali

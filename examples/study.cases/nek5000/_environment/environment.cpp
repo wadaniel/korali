@@ -1,7 +1,7 @@
-//  Korali environment for Nek5000
+//  Korali Environment for Nek5000
 //  Copyright (c) 2020 CSE-Lab, ETH Zurich, Switzerland.
 
-#include "model.hpp"
+#include "environment.hpp"
 #include "unistd.h"
 #include "stdio.h"
 
@@ -29,6 +29,7 @@ void runEnvironment(korali::Sample &s)
   chdir(envdir);
 
   // Initializing environment
+  resetenv_(); // Cleans Nek5000 global variables for re-run
   auto comm = MPI_COMM_WORLD;
   nek_init_(&comm); // When running with MPI, this should be the MPI team
 

@@ -1,4 +1,4 @@
-#include "_model/model.hpp"
+#include "_environment/environment.hpp"
 #include "korali.hpp"
 
 int main(int argc, char *argv[])

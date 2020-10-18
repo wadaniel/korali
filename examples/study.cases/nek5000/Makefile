@@ -1,4 +1,4 @@
-BINARIES = run-gfpt
+BINARIES = run-korali
 KORALICXX=$(shell python3 -m korali.cxx --compiler)
 KORALICFLAGS=`python3 -m korali.cxx --cflags`
 KORALILIBS=`python3 -m korali.cxx --libs`
@@ -11,13 +11,13 @@ NEK5000LIBS=$(NEKDIR)/examples/turbChannel/turbChannel.o $(NEKDIR)/examples/turb
 .PHONY: all 
 all: $(BINARIES)
 
-$(BINARIES) : % : %.o model.o
+$(BINARIES) : % : %.o environment.o
 	$(KORALICXX) -o $@ $^ $(KORALILIBS) $(NEK5000LIBS)
 
 %.o: %.cpp
 	$(KORALICXX) -c $< $(KORALICFLAGS) $(NEK5000CFLAGS)
 
-model.o: _model/model.cpp
+environment.o: _environment/environment.cpp
 	$(KORALICXX) -c $< $(KORALICFLAGS) $(NEK5000CFLAGS)
  
 .PHONY: clean

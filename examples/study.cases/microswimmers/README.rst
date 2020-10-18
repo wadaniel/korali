@@ -1,29 +1,12 @@
-Study Case: Reinforcement Learning on Fish Swimming
-=======================================================
+Study Case: Reinforcement Learning on Magnetic Microswimmers
+=============================================================
 
-In this study case, we replicate the fish swimming experiment from CSELab.
-
-Dependencies
---------------------------
-
-This study case has the following prerequisite libraries:
-
-- HYPRE, with the $HYPRE_ROOT environment variable defined.
-- GSL, with the $GSL_ROOT_DIR environment variable defined.
-- HDF5, with the $HDF5_ROOT environment variable defined.
+In this study case, we drive a magnetic field to guide two coils towards a common goal.
 
 Setup
 ---------------------------
 
-[Optional] Setup Cubism-related configuration through the CUBISM_BLOCK_SIZE and CUBISM_NTHREAD environment variables. For example:
-
-
-.. code-block:: bash
-
-   export CUBISM_BLOCK_SIZE=32
-   export CUBISM_NTHREADS=8
-
-1) Install CubismUP2D by running:
+1) Install Microswimmers ODE solver
 
 .. code-block:: bash
 

@@ -1,64 +1,57 @@
-//  Korali model for CubismUP_2D For Fish Following Experiment
+//  Korali environment for Nek5000
 //  Copyright (c) 2020 CSE-Lab, ETH Zurich, Switzerland.
 
 #include "model.hpp"
 
-std::mt19937 _randomGenerator;
-
 void runEnvironment(korali::Sample &s)
 {
-  MPI_Comm comm = MPI_COMM_WORLD;
-  nek_init_(&comm);
-  /*
-  // Setting seed
+  // Getting sample ID to create working environment
   size_t sampleId = s["Sample Id"];
 
-  // Reseting environment and setting initial conditions
-  _environment->reset(_randomGenerator, sampleId, true);
+  // Creating work environment
+  createWorkEnvironment(sampleId);
 
-  // Setting initial state
-  s["State"] = _environment->getState();
+  // Initializing State
+  auto comm = MPI_COMM_WORLD;
+  nek_init_(&comm); // When running with MPI, this should be the MPI team
 
-  // Defining status variable that tells us whether when the simulation is done
-  Status status{Status::Running};
+  // Setting initial state (unknown for now)
+  s["State"] = { 0.0, 0.0, 0.0, 0.0, 0.0, }; // getState();
 
-  // Storing action index
-  size_t curActionIndex = 0;
+  // Getting new action
+  s.update();
 
-  // Starting main environment loop
-  while (status == Status::Running)
-  {
-    // Getting new action
-    s.update();
+  // Reading new action
+  std::vector<double> action = s["Action"];
 
-    // Reading new action
-    std::vector<double> action = s["Action"];
+  // Printing Action:
+  printf("Action: [ %f", action[0]);
+  for (size_t i = 1; i < action.size(); i++) printf(", %f", action[i]);
+  printf("]\n");
 
-    // Printing Action:
-    if (curActionIndex % 20 == 0)
-    {
-      printf("Action %lu: [ %f", curActionIndex, action[0]);
-      for (size_t i = 1; i < action.size(); i++) printf(", %f", action[i]);
-      printf("]\n");
-    }
+  // Setting action (not defined yet)
+  //setAction()
 
-    // Setting action
-    status = _environment->advance(action);
+  // Running simulation
+  nek_solve_();
 
-    // Storing reward
-    s["Reward"] = _environment->getReward();
+  // Storing reward (unknown for now)
+  s["Reward"] = 0.0; // getReward();
 
-    // Storing new state
-    s["State"] = _environment->getState();
+  // Storing new state (unkown for now)
+  s["State"] = { 0.0, 0.0, 0.0, 0.0, 0.0, };
 
-    // Increasing action count
-    curActionIndex++;
-  }
-*/
+  // Finalizing environment
+  nek_end_();
 }
 
-void initializeEnvironment()
+void createWorkEnvironment(size_t envId)
 {
- MPI_Comm comm = MPI_COMM_WORLD;
- nek_init_(&comm);
+ char envdir[1024];
+ sprintf(envdir, "_env%6lu", envId);
+
+ char command[1024];
+ sprintf(command, "rm -r %s", envdir); system(command);
+ sprintf(command, "mkdir %s", envdir); system(command);
+ sprintf(command, "_model/turbChannel* %s", envdir); system(command);
 }

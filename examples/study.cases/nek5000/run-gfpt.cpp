@@ -3,9 +3,9 @@
 
 int main(int argc, char *argv[])
 {
-  initializeEnvironment();
-
   auto e = korali::Experiment();
+
+  //// Defining Experiment
 
   e["Problem"]["Type"] = "Reinforcement Learning / Continuous";
   e["Problem"]["Environment Function"] = &runEnvironment;
@@ -31,33 +31,26 @@ int main(int argc, char *argv[])
   e["Variables"][5]["Type"] = "Action";
   e["Variables"][5]["Lower Bound"] = 0.0;
   e["Variables"][5]["Upper Bound"] = 0.01;
-  e["Variables"][5]["Exploration Noise"]["Enabled"] = true;
-  e["Variables"][5]["Exploration Noise"]["Distribution"]["Type"] = "Univariate/Normal";
-  e["Variables"][5]["Exploration Noise"]["Distribution"]["Mean"] = 0.0;
-  e["Variables"][5]["Exploration Noise"]["Distribution"]["Standard Deviation"] = 0.0005;
-  e["Variables"][5]["Exploration Noise"]["Theta"] = 0.05;
+  e["Variables"][5]["Exploration Sigma"] = 0.0005;
 
-  ////// Defining Agent Configuration
+  //// Defining Agent Configuration
 
-  e["Solver"]["Type"] = "Agent/SDPG";
-  e["Solver"]["Normalization Steps"] = 32;
-  e["Solver"]["Trajectory Size"] = 1;
-  e["Solver"]["Optimization Steps Per Trajectory"] = 1;
+  e["Solver"]["Type"] = "Agent / Continuous / GFPT";
+  e["Solver"]["Experiences Between Updates"] = 1;
+  e["Solver"]["Optimization Steps Per Update"] = 1;
 
-  e["Solver"]["Random Action Probability"]["Initial Value"] = 0.01;
-  e["Solver"]["Random Action Probability"]["Target Value"] = 0.01;
-  e["Solver"]["Random Action Probability"]["Decrease Rate"] = 0.00;
+  e["Solver"]["Random Action Probability"]["Initial Value"] = 0.5;
+  e["Solver"]["Random Action Probability"]["Target Value"] = 0.05;
+  e["Solver"]["Random Action Probability"]["Decrease Rate"] = 0.05;
 
-  ////// Defining the configuration of replay memory
-
-  e["Solver"]["Experience Replay"]["Start Size"] = 10000;
-  e["Solver"]["Experience Replay"]["Maximum Size"] = 262144;
+  e["Solver"]["Experience Replay"]["Start Size"] =   1000;
+  e["Solver"]["Experience Replay"]["Maximum Size"] = 100000;
 
   //// Defining Critic Configuration
 
-  e["Solver"]["Critic"]["Learning Rate"] = 0.00001;
+  e["Solver"]["Critic"]["Learning Rate"] = 0.01;
   e["Solver"]["Critic"]["Discount Factor"] = 0.99;
-  e["Solver"]["Critic"]["Mini Batch Size"] = 256;
+  e["Solver"]["Critic"]["Mini Batch Size"] = 64;
 
   e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense";
   e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear";
@@ -79,7 +72,7 @@ int main(int argc, char *argv[])
 
   //// Defining Policy Configuration
 
-  e["Solver"]["Policy"]["Learning Rate"] = 0.000001;
+  e["Solver"]["Policy"]["Learning Rate"] = 0.0001;
   e["Solver"]["Policy"]["Mini Batch Size"] = 16;
   e["Solver"]["Policy"]["Adoption Rate"] = 0.80;
 

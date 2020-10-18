@@ -2,56 +2,53 @@
 //  Copyright (c) 2020 CSE-Lab, ETH Zurich, Switzerland.
 
 #include "model.hpp"
+#include "unistd.h"
+#include "stdio.h"
+
+korali::Sample* sample;
 
 void runEnvironment(korali::Sample &s)
 {
-  // Getting sample ID to create working environment
-  size_t sampleId = s["Sample Id"];
+  // Storing sample pointer
+  sample = &s;
 
-  // Creating work environment
-  createWorkEnvironment(sampleId);
+  // Switching to work directory
+  chdir("_work");
 
-  // Initializing State
+  // Initializing environment
   auto comm = MPI_COMM_WORLD;
   nek_init_(&comm); // When running with MPI, this should be the MPI team
 
-  // Setting initial state (unknown for now)
-  s["State"] = { 0.0, 0.0, 0.0, 0.0, 0.0, }; // getState();
-
-  // Getting new action
-  s.update();
-
-  // Reading new action
-  std::vector<double> action = s["Action"];
-
-  // Printing Action:
-  printf("Action: [ %f", action[0]);
-  for (size_t i = 1; i < action.size(); i++) printf(", %f", action[i]);
-  printf("]\n");
-
-  // Setting action (not defined yet)
-  //setAction()
-
-  // Running simulation
+  // Running environment
   nek_solve_();
 
-  // Storing reward (unknown for now)
-  s["Reward"] = 0.0; // getReward();
-
-  // Storing new state (unkown for now)
-  s["State"] = { 0.0, 0.0, 0.0, 0.0, 0.0, };
-
-  // Finalizing environment
+  // Cleaning Environment
   nek_end_();
+  chdir("..");
 }
 
-void createWorkEnvironment(size_t envId)
+void updateAgent(double* state, double reward, double* action)
 {
- char envdir[1024];
- sprintf(envdir, "_env%6lu", envId);
+ // Setting states
+ (*sample)["State"][0] = state[0];
+ (*sample)["State"][1] = state[1];
+ (*sample)["State"][2] = state[2];
+ (*sample)["State"][3] = state[3];
+ (*sample)["State"][4] = state[4];
+ (*sample)["State"][5] = state[5];
 
- char command[1024];
- sprintf(command, "rm -r %s", envdir); system(command);
- sprintf(command, "mkdir %s", envdir); system(command);
- sprintf(command, "_model/turbChannel* %s", envdir); system(command);
+ // Setting Reward
+ (*sample)["Reward"] = reward;
+
+ // Getting new action
+ sample->update();
+
+ // Reading new action
+ action[0] = (*sample)["Action"][0];
+
+ // Printing step info
+ printf("State: [ %f, %f, %f, %f, %f, %f ]", state[0], state[1], state[2], state[3], state[4], state[5]);
+ printf("Reward: %f", reward);
+ printf("Action: %f", action[0]);
 }
+

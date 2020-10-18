@@ -1,0 +1,8 @@
+      integer NUM_ACTIONS
+      integer STATE_SIZE
+      parameter (NUM_ACTIONS=1)
+      parameter (STATE_SIZE=6)
+
+      double precision reward
+      double precision state(STATE_SIZE)
+      double precision action(NUM_ACTIONS)

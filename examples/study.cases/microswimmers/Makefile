@@ -1,8 +1,8 @@
-BINARIES = run-sdpg
+BINARIES = run-korali
 KORALICXX=$(shell python3 -m korali.cxx --compiler)
 KORALICFLAGS=`python3 -m korali.cxx --cflags`
 KORALILIBS=`python3 -m korali.cxx --libs`
-MSODECFLAGS=-I_deps/msode/src -I../_deps/msode/src -I_deps/msode/extern/json/include/ -DNDEBUG -O3
+MSODECFLAGS=-I_deps/msode/src -I../_deps/msode/src -I_deps/msode/extern/json/include/ -I. -DNDEBUG -O3
 MSODELIBS=_deps/msode/build/lib/libgtest.a \
           _deps/msode/build/src/msode/rl/librl.a\
           -lpthread \
@@ -15,16 +15,15 @@ MSODELIBS=_deps/msode/build/lib/libgtest.a \
 .PHONY: all 
 all: $(BINARIES)
 
-$(BINARIES) : % : %.o model.o
+$(BINARIES) : % : %.o environment.o
 	$(KORALICXX) -o $@ $^ $(KORALILIBS) $(MSODELIBS)
 
 %.o: %.cpp
 	$(KORALICXX) -c $< $(KORALICFLAGS) $(MSODECFLAGS)
 
-model.o: _model/model.cpp
+environment.o: _environment/environment.cpp
 	$(KORALICXX) -c $< $(KORALICFLAGS) $(MSODECFLAGS)
 
 .PHONY: clean
 clean:
-	$(MAKE) -C _model clean
-	$(RM) $(BINARIES) *.o *.ti *.optrpt *.h5 *.dat *.xmf
+		$(RM) $(BINARIES) *.o *.ti *.optrpt *.h5 *.dat *.xmf

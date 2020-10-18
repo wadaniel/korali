@@ -1,7 +1,7 @@
-//  Korali model for CubismUP_2D For Fish Following Experiment
+//  Korali environment for CubismUP_2D For Fish Following Experiment
 //  Copyright (c) 2020 CSE-Lab, ETH Zurich, Switzerland.
 
-#include "model.hpp"
+#include "environment.hpp"
 
 Simulation *_environment;
 bool _isTraining;
@@ -21,7 +21,7 @@ void runEnvironment(korali::Sample &s)
   setInitialConditions(_agent, _object);
 
   // Setting initial state
-  s["State"] = {_agent->state(_object)};
+  s["State"] = _agent->state(_object);
 
   // Setting initial time and step conditions
   double t = 0;        // Current time
@@ -75,13 +75,13 @@ void runEnvironment(korali::Sample &s)
     double reward = done ? -10.0 : _agent->EffPDefBnd;
 
     // Obtaining new agent state
-    std::vector<double> state = {_agent->state(_object)};
+    std::vector<double> state = _agent->state(_object);
 
     // Storing reward
     s["Reward"] = reward;
 
     // Storing new state
-    s["State"] = {state};
+    s["State"] = state;
 
     // Advancing to next step
     curStep++;

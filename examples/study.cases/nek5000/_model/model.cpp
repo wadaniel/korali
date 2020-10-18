@@ -13,7 +13,7 @@ void runEnvironment(korali::Sample &s)
   sample = &s;
 
   // Switching to work directory
-  chdir("_work");
+  chdir("_config");
 
   // Initializing environment
   auto comm = MPI_COMM_WORLD;

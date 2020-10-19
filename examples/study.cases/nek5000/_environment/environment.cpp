@@ -3,17 +3,15 @@
 
 #include "environment.hpp"
 #include "unistd.h"
+#include <dlfcn.h>
 #include "stdio.h"
-
-korali::Sample* sample;
-double _reward;
-double _state[STATE_SIZE];
-double _action[ACTION_SIZE];
 
 void runEnvironment(korali::Sample &s)
 {
-  // Storing sample pointer
-  sample = &s;
+  // Loading the agent as dynamic library because Nek5000 has non-reentrant code
+  // that needs to be wiped out in between runs.
+  void *agent = dlopen("./libagent.so", RTLD_LAZY);
+  if (!agent) { fprintf(stderr, "[Korali] Error loading libagent.so (%s).\n", dlerror()); exit(1); }
 
   // Getting sample ID to create working environment
   size_t sampleId = s["Sample Id"];
@@ -28,41 +26,28 @@ void runEnvironment(korali::Sample &s)
   sprintf(command, "cp _config/* %s", envdir); system(command);
   chdir(envdir);
 
+  // Storing sample pointer
+  auto sample = (korali::Sample**) dlsym(agent, "sample");
+  *sample = &s;
+
   // Initializing environment
-  resetenv_(); // Cleans Nek5000 global variables for re-run
   auto comm = MPI_COMM_WORLD;
-  nek_init_(&comm); // When running with MPI, this should be the MPI team
+  void (*nek_init)(MPI_Comm*);
+  *(void**)(&nek_init) = dlsym(agent, "nek_init_");
+  nek_init(&comm); // When running with MPI, this should be the MPI team
 
   // Running environment
-  nek_solve_();
+  void (*nek_solve)();
+  *(void**)(&nek_solve) = dlsym(agent, "nek_solve_");
+  nek_solve();
 
   // Cleaning Environment
-  nek_end_();
+  void (*nek_end)();
+  *(void**)(&nek_end) = dlsym(agent, "nek_end_");
+  nek_end();
+
+  // Closing agent dynamic library
+  dlclose(agent);
   chdir("..");
-}
-
-void updateAgent()
-{
- // Setting states
- for (size_t i = 0; i < STATE_SIZE; i++)
-  (*sample)["State"][i] = _state[i];
-
- // Setting Reward
- (*sample)["Reward"] = _reward;
-
- // Getting new action
- sample->update();
-
- // Reading new action
- for (size_t i = 0; i < ACTION_SIZE; i++)
-  _action[i] = (*sample)["Action"][i];
-
- // Printing step info
- printf("[Korali] ----------------------------------------------------\n");
- printf("[Korali] Step Information:\n");
- printf("[Korali] State: [ %f, %f, %f, %f, %f, %f ]\n", _state[0], _state[1], _state[2], _state[3], _state[4], _state[5]);
- printf("[Korali] Reward: %f\n", _reward);
- printf("[Korali] Action: %f\n", _action[0]);
- printf("[Korali] ----------------------------------------------------\n");
 }
 

@@ -124,10 +124,7 @@ void DeepSupervisor::runGeneration()
 
     // Updating best loss if better, or increasing suboptimal generation count
     if (_currentLoss < _minimumLoss)
-    {
       _minimumLoss = _currentLoss;
-      _suboptimalGenerationCount = 0;
-    }
     else
       _suboptimalGenerationCount++;
 
@@ -175,7 +172,7 @@ void DeepSupervisor::setHyperparameters(const std::vector<float> &hyperparameter
   // Setting NN normalization variances finally
   _normalizationVariances = std::vector<float>(hyperparameters.begin() + curPos, hyperparameters.end());
 
-  // Copying hyperparameters and normalization parameters from training to evaluation
+  // Update evaluation network
   _evaluationNeuralNetwork->setHyperparameters(_hyperparameters);
   _evaluationNeuralNetwork->setNormalizationMeans(_normalizationMeans);
   _evaluationNeuralNetwork->setNormalizationVariances(_normalizationVariances);

@@ -22,7 +22,7 @@ class CartPole:
     self.ODE = ode(self.system).set_integrator('dopri5')
 
   def reset(self):
-    self.u = np.random.uniform(-0.05, 0.05, 4)
+    self.u = np.random.uniform(-0.01, 0.01, 4)
     self.step = 0
     self.F = 0
     self.t = 0

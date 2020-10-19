@@ -50,7 +50,7 @@ void DQN::initializeAgent()
 
   // Setting Initial Hyperparameters
   _hyperparameters["Critic"] = _criticLearner->getHyperparameters();
-  _qHatHyperparameter = criticLearner->getHyperparameters();
+  _qHatHyperparameter = _criticLearner->getHyperparameters();
 }
 
 void DQN::trainAgent()

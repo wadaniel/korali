@@ -15,8 +15,7 @@ namespace korali
 class fAdaBelief : public fAdam
 {
   public:
-
- /**
+  /**
  * @brief Default constructor for the optimizer
  * @param nVars Variable-space dimensionality
  */

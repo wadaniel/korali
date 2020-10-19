@@ -144,6 +144,8 @@ def processModule(parentModuleConfig, moduleRelPath, moduleName):
     fullPath = os.path.join(modulePath, f)
     if not os.path.isfile(fullPath):
       if (not '.o/' in fullPath and not '.d/' in fullPath):
+       subModuleSourceFilePath = os.path.join(fullPath, f + '._cpp')
+       if (os.path.exists(subModuleSourceFilePath)):
         subFolderList.append(f)
 
   # Determining if its a parent or leaf module
@@ -159,6 +161,7 @@ def processModule(parentModuleConfig, moduleRelPath, moduleName):
 
     for f in subFolderList:
       subModuleFullPath = os.path.join(modulePath, f)
+      moduleSourceFile = modulePath + '/' + moduleName + '._cpp'
       moduleReadmeString += '   ' + f + '/' + f + '\n'
       subPath = os.path.join(moduleRelPath, f)
       processModule(moduleConfig, subPath, f)

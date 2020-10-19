@@ -152,7 +152,7 @@ void DQN::trainAgent()
 
 void DQN::updateHyperparameters(const knlohmann::json &hyperparameters)
 {
-  _qHatHyperparameter = _hyperparameters["Critic"];
+  _qHatHyperparameter = _criticLearner->getHyperparameters();
 }
 
 std::vector<float> DQN::getActionProbabilitiesFromQ(const std::vector<float> &state)
@@ -166,7 +166,7 @@ std::vector<float> DQN::getActionProbabilitiesFromQHat(const std::vector<float> 
   _criticLearner->setHyperparameters(_qHatHyperparameter);
   auto actionps = getActionProbabilities(state);
 
-  _criticLearner->setHyperparameters(_hpq);
+  _criticLearner->setHyperparameters(hpq);
   return actionps;
 }
 

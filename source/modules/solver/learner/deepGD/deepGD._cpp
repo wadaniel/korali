@@ -169,7 +169,7 @@ void DeepGD::setHyperparameters(const std::vector<float> &hyperparameters)
 
   // Setting NN normalization variances finally
   _normalizationVariances = std::vector<float>(hyperparameters.begin() + curPos, hyperparameters.end());
- 
+
   // Update evaluation network
   _evaluationNeuralNetwork->setHyperparameters(_hyperparameters);
   _evaluationNeuralNetwork->setNormalizationMeans(_normalizationMeans);

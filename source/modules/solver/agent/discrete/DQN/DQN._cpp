@@ -14,7 +14,7 @@ void DQN::initializeAgent()
 {
   // Initializing common discrete agent configuration
   Discrete::initializeAgent();
- 
+
   /*********************************************************************
  * Initializing Policy-Related Structures
  *********************************************************************/
@@ -49,7 +49,7 @@ void DQN::initializeAgent()
   *********************************************************************/
 
   // Setting Initial Hyperparameters
-  _hyperparameters["Q"]     = _policyLearner->getHyperparameters();
+  _hyperparameters["Q"] = _policyLearner->getHyperparameters();
   _hyperparameters["Q Hat"] = _policyLearner->getHyperparameters();
 }
 
@@ -111,7 +111,7 @@ void DQN::trainAgent()
       for (size_t j = 0; j < nextState.size(); j++) stateActionInput[j] = nextState[j];
       for (size_t j = 0; j < bestAction.size(); j++) stateActionInput[j + nextState.size()] = bestAction[j];
 
-      auto qNextExp =_policyLearner->getEvaluation(stateActionInput)[0];
+      auto qNextExp = _policyLearner->getEvaluation(stateActionInput)[0];
 
       qStar += _criticDiscountFactor * qNextExp;
     }
@@ -119,21 +119,21 @@ void DQN::trainAgent()
     // Updating inputs to training learner
     for (size_t j = 0; j < curState.size(); j++) _policyProblem->_inputs[i][j] = curState[j];
     for (size_t j = 0; j < curAction.size(); j++) _policyProblem->_inputs[i][j + curState.size()] = curAction[j];
-     _policyProblem->_solution[i][0] = qStar;
+    _policyProblem->_solution[i][0] = qStar;
 
     // Keeping statistics
     _cumulativeQStar += qStar;
-    _cumulativeQStarSquared += qStar*qStar;
+    _cumulativeQStarSquared += qStar * qStar;
   }
 
   // Running one generation of the optimization method with the given mini-batch
   _policyLearner->initialize();
   _policyLearner->runGeneration();
   _policyLearner->finalize();
-  
+
   // Keeping statistics
   _averageQStar = (float)_cumulativeQStar / (float)_policyMiniBatchSize;
-  _stdevQStar = sqrt(_cumulativeQStarSquared/(float)_policyMiniBatchSize - _cumulativeQStar*_cumulativeQStar / (float)(_policyMiniBatchSize*_policyMiniBatchSize));
+  _stdevQStar = sqrt(_cumulativeQStarSquared / (float)_policyMiniBatchSize - _cumulativeQStar * _cumulativeQStar / (float)(_policyMiniBatchSize * _policyMiniBatchSize));
 
   /****************************************************************************
   * If batch normalization is being used, we need to adjust mean and variances
@@ -146,9 +146,9 @@ void DQN::trainAgent()
   /*********************************************************************
    * Updating hyperparameters and broadcasting them to the workers
    *********************************************************************/
- 
+
   // Storing new Policy's hyperparameters
-  _hyperparameters["Q"] =_policyLearner->getHyperparameters();
+  _hyperparameters["Q"] = _policyLearner->getHyperparameters();
 }
 
 void DQN::updateHyperparameters(const knlohmann::json &hyperparameters)
@@ -192,7 +192,7 @@ std::vector<float> DQN::getActionProbabilities(const std::vector<float> &state)
       stateActionInput[_problem->_stateVectorSize + j] = _problem->_possibleActions[i][j];
 
     // Computing Q(s,a_i)
-    float curQVal =_policyLearner->getEvaluation(stateActionInput)[0];
+    float curQVal = _policyLearner->getEvaluation(stateActionInput)[0];
 
     // Computing e^Q(s,a_i)
     float expCurQVal = std::exp(curQVal);

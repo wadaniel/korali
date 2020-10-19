@@ -71,13 +71,19 @@ void DQN::trainAgent()
   // Shuffling indexes to choose the mini batch from
   std::shuffle(experienceReplayIndexes.begin(), experienceReplayIndexes.end(), *mt);
 
+  // Temporary storage of hyperp arams
+  auto qHyperparam = _criticLearner->getHyperparameters();
+
+  // Set Hyperparameter from target network
+  _criticLearner->setHyperparameters(_qHatHyperparameter);
+
   for (size_t i = 0; i < _criticMiniBatchSize; i++)
   {
     // Selecting a uniformly random selected, yet not repeated experience
     size_t expId = experienceReplayIndexes[i];
 
-    // Qnew = max_a(q) with s' fixed
-    // Q* = r + y*Qnew -- If not terminal state
+    // Qhat = max_a(qhat) with s' fixed
+    // Q* = r + y*Qhat -- If not terminal state
     // Q* = r -- If terminal state
 
     // Calculating target Q value (solution) for Qnew on selected batch
@@ -97,7 +103,7 @@ void DQN::trainAgent()
       auto nextState = _experienceReplayStates[expId + 1];
 
       // Getting action probabilities for next state, as per the critic
-      auto pActions = getActionProbabilitiesFromQHat(nextState);
+      auto pActions = getActionProbabilities(nextState);
 
       // Finding the best action index from the probabilities
       size_t bestActionIdx = std::distance(pActions.begin(), std::max_element(pActions.begin(), pActions.end()));
@@ -126,6 +132,9 @@ void DQN::trainAgent()
     _cumulativeQStarSquared += qStar * qStar;
   }
 
+  // Set Hyperparameter from q network
+  _criticLearner->setHyperparameters(qHyperparam);
+
   // Running one generation of the optimization method with the given mini-batch
   _criticLearner->initialize();
   _criticLearner->runGeneration();
@@ -140,7 +149,8 @@ void DQN::trainAgent()
   * by sampling a few more mini-batches after the optimization steps
   ******************************************************************************/
 
-  //normalizeStateActionNeuralNetwork(_criticLearner>_trainingNeuralNetwork, _criticMiniBatchSize, _criticNormalizationSteps);
+  // TODO: evaluate if this improves training (D.W)
+  // normalizeStateActionNeuralNetwork(_criticLearner>_trainingNeuralNetwork, _criticMiniBatchSize, _criticNormalizationSteps);
 
   /*********************************************************************
    * Updating hyperparameters and broadcasting them to the workers
@@ -153,21 +163,6 @@ void DQN::trainAgent()
 void DQN::updateHyperparameters(const knlohmann::json &hyperparameters)
 {
   _qHatHyperparameter = _criticLearner->getHyperparameters();
-}
-
-std::vector<float> DQN::getActionProbabilitiesFromQ(const std::vector<float> &state)
-{
-  return getActionProbabilities(state);
-}
-
-std::vector<float> DQN::getActionProbabilitiesFromQHat(const std::vector<float> &state)
-{
-  auto hpq = _criticLearner->getHyperparameters();
-  _criticLearner->setHyperparameters(_qHatHyperparameter);
-  auto actionps = getActionProbabilities(state);
-
-  _criticLearner->setHyperparameters(hpq);
-  return actionps;
 }
 
 std::vector<float> DQN::getActionProbabilities(const std::vector<float> &state)

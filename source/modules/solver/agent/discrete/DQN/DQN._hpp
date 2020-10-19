@@ -16,20 +16,6 @@ namespace discrete
 class DQN : public Discrete
 {
   public:
-  /**
- * @brief Get action probabilities from Q function
- * @param state The current state
- * @return vector of action probabilities
- */
-  std::vector<float> getActionProbabilitiesFromQ(const std::vector<float> &state);
-
-  /**
- * @brief Get action probabilities from Q-Hat function, to calculate targets.
- * @param state The current state
- * @return vector of action probabilities
- */
-  std::vector<float> getActionProbabilitiesFromQHat(const std::vector<float> &state);
-
   std::vector<float> getActionProbabilities(const std::vector<float> &state) override;
   void updateHyperparameters(const knlohmann::json &hyperparameters) override;
   void trainAgent() override;

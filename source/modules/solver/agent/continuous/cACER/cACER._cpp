@@ -49,7 +49,8 @@ void cACER::initializeAgent()
  *********************************************************************/
 
   _vExperiment["Problem"]["Type"] = "Supervised Learning";
-  _vExperiment["Solver"]["Type"] = "Learner/DeepGD";
+  _vExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
+  _vExperiment["Solver"]["Optimizer"] = _criticOptimizer;
   _vExperiment["Solver"]["Learning Rate"] = _criticLearningRate;
   _vExperiment["Solver"]["Loss Function"] = "Mean Squared Error";
   _vExperiment["Solver"]["Steps Per Generation"] = 1;
@@ -65,14 +66,15 @@ void cACER::initializeAgent()
 
   // Getting learner pointers
   _vProblem = dynamic_cast<problem::SupervisedLearning *>(_vExperiment._problem);
-  _vLearner = dynamic_cast<solver::learner::DeepGD *>(_vExperiment._solver);
+  _vLearner = dynamic_cast<solver::learner::DeepSupervisor *>(_vExperiment._solver);
 
   /*********************************************************************
  * Initializing A(s,a)
  *********************************************************************/
 
   _aExperiment["Problem"]["Type"] = "Supervised Learning";
-  _aExperiment["Solver"]["Type"] = "Learner/DeepGD";
+  _aExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
+  _aExperiment["Solver"]["Optimizer"] = _criticOptimizer;
   _aExperiment["Solver"]["Learning Rate"] = _criticLearningRate;
   _aExperiment["Solver"]["Loss Function"] = "Mean Squared Error";
   _aExperiment["Solver"]["Steps Per Generation"] = 1;
@@ -88,7 +90,7 @@ void cACER::initializeAgent()
 
   // Getting learner pointers
   _aProblem = dynamic_cast<problem::SupervisedLearning *>(_aExperiment._problem);
-  _aLearner = dynamic_cast<solver::learner::DeepGD *>(_aExperiment._solver);
+  _aLearner = dynamic_cast<solver::learner::DeepSupervisor *>(_aExperiment._solver);
 
   /*********************************************************************
   * Initializing Policy-Related Structures
@@ -97,8 +99,9 @@ void cACER::initializeAgent()
   // Creating and running Actor Learning Experiments
 
   _policyExperiment["Problem"]["Type"] = "Supervised Learning";
-  _policyExperiment["Solver"]["Type"] = "Learner/DeepGD";
-  _policyExperiment["Solver"]["Loss Function"] = "Direct";
+  _policyExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
+  _policyExperiment["Solver"]["Loss Function"] = "Direct Gradient";
+  _policyExperiment["Solver"]["Optimizer"] = _policyOptimizer;
   _policyExperiment["Solver"]["Learning Rate"] = _policyLearningRate;
   _policyExperiment["Solver"]["Steps Per Generation"] = 1;
   _policyExperiment["Solver"]["Neural Network"] = _policyNeuralNetwork;
@@ -115,7 +118,7 @@ void cACER::initializeAgent()
 
   // Getting learner pointers
   _policyProblem = dynamic_cast<problem::SupervisedLearning *>(_policyExperiment._problem);
-  _policyLearner = dynamic_cast<solver::learner::DeepGD *>(_policyExperiment._solver);
+  _policyLearner = dynamic_cast<solver::learner::DeepSupervisor *>(_policyExperiment._solver);
 
   /*********************************************************************
   * Loading/Setting Hyperparameters

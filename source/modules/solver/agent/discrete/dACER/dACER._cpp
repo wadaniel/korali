@@ -22,9 +22,10 @@ void dACER::initializeAgent()
   korali::Engine engine; // Engine to initialize experiments with
 
   _criticExperiment["Problem"]["Type"] = "Supervised Learning";
-  _criticExperiment["Solver"]["Type"] = "Learner/DeepGD";
-  _criticExperiment["Solver"]["Loss Function"] = "Mean Squared Error";
+  _criticExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
+  _criticExperiment["Solver"]["Optimizer"] = _criticOptimizer;
   _criticExperiment["Solver"]["Learning Rate"] = _criticLearningRate;
+  _criticExperiment["Solver"]["Loss Function"] = "Mean Squared Error";
   _criticExperiment["Solver"]["Steps Per Generation"] = 1;
   _criticExperiment["Solver"]["Neural Network"] = _criticNeuralNetwork;
 
@@ -39,7 +40,7 @@ void dACER::initializeAgent()
 
   // Getting learner pointers
   _criticProblem = dynamic_cast<problem::SupervisedLearning *>(_criticExperiment._problem);
-  _criticLearner = dynamic_cast<solver::learner::DeepGD *>(_criticExperiment._solver);
+  _criticLearner = dynamic_cast<solver::learner::DeepSupervisor *>(_criticExperiment._solver);
 
   /*********************************************************************
   * Initializing Policy-Related Structures
@@ -48,8 +49,9 @@ void dACER::initializeAgent()
   // Creating and running Actor Learning Experiments
 
   _policyExperiment["Problem"]["Type"] = "Supervised Learning";
-  _policyExperiment["Solver"]["Type"] = "Learner/DeepGD";
-  _policyExperiment["Solver"]["Loss Function"] = "Direct";
+  _policyExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
+  _policyExperiment["Solver"]["Loss Function"] = "Direct Gradient";
+  _policyExperiment["Solver"]["Optimizer"] = _policyOptimizer;
   _policyExperiment["Solver"]["Learning Rate"] = _policyLearningRate;
   _policyExperiment["Solver"]["Steps Per Generation"] = 1;
   _policyExperiment["Solver"]["Neural Network"] = _policyNeuralNetwork;
@@ -66,7 +68,7 @@ void dACER::initializeAgent()
 
   // Getting learner pointers
   _policyProblem = dynamic_cast<problem::SupervisedLearning *>(_policyExperiment._problem);
-  _policyLearner = dynamic_cast<solver::learner::DeepGD *>(_policyExperiment._solver);
+  _policyLearner = dynamic_cast<solver::learner::DeepSupervisor *>(_policyExperiment._solver);
 
   /*********************************************************************
   * Loading/Setting Hyperparameters

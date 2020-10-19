@@ -24,7 +24,7 @@ class cACER : public Continuous
   /**
   * @brief Pointer to training experiment's V(s) critic learner
   */
-  learner::DeepGD *_vLearner;
+  learner::DeepSupervisor *_vLearner;
 
   /**
    * @brief Korali experiment for the training of V(s)
@@ -39,7 +39,7 @@ class cACER : public Continuous
   /**
   * @brief Pointer to training experiment's A(s,x) learner
   */
-  learner::DeepGD *_aLearner;
+  learner::DeepSupervisor *_aLearner;
 
   /**
    * @brief Korali experiment for the training of A(s,x)

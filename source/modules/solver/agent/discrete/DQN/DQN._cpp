@@ -23,8 +23,8 @@ void DQN::initializeAgent()
 
   _criticExperiment["Problem"]["Type"] = "Supervised Learning";
   _criticExperiment["Solver"]["Type"] = "Learner/DeepGD";
-  _criticExperiment["Solver"]["Learning Rate"] = _criticLearningRate;
   _criticExperiment["Solver"]["Loss Function"] = "Mean Squared Error";
+  _criticExperiment["Solver"]["Learning Rate"] = _criticLearningRate;
   _criticExperiment["Solver"]["Steps Per Generation"] = 1;
   _criticExperiment["Solver"]["Neural Network"] = _criticNeuralNetwork;
 
@@ -44,14 +44,19 @@ void DQN::initializeAgent()
   _criticProblem = dynamic_cast<problem::SupervisedLearning *>(_criticExperiment._problem);
   _criticLearner = dynamic_cast<solver::learner::DeepGD *>(_criticExperiment._solver);
 
+  /*********************************************************************
+  * Loading/Setting Hyperparameters
+  *********************************************************************/
+
   // Setting Initial Hyperparameters
   _hyperparameters["Critic"] = _criticLearner->getHyperparameters();
+  _qHatHyperparameter = _criticLearner->getHyperparameters();
 }
 
 void DQN::trainAgent()
 {
   /***********************************************************************************
-   * Critic Training Phase
+   * Training Phase
    **********************************************************************************/
 
   // Randomly selecting experiences for the mini-batch and calculating their target Q
@@ -61,17 +66,24 @@ void DQN::trainAgent()
 
   // Calculating cumulative Q*, for statistical purposes
   _cumulativeQStar = 0.0;
+  _cumulativeQStarSquared = 0.0;
 
   // Shuffling indexes to choose the mini batch from
   std::shuffle(experienceReplayIndexes.begin(), experienceReplayIndexes.end(), *mt);
+
+  // Temporary storage of hyperp arams
+  auto qHyperparam = _criticLearner->getHyperparameters();
+
+  // Set Hyperparameter from target network
+  _criticLearner->setHyperparameters(_qHatHyperparameter);
 
   for (size_t i = 0; i < _criticMiniBatchSize; i++)
   {
     // Selecting a uniformly random selected, yet not repeated experience
     size_t expId = experienceReplayIndexes[i];
 
-    // Qnew = max_a(q) with s' fixed
-    // Q* = r + y*Qnew -- If not terminal state
+    // Qhat = max_a(qhat) with s' fixed
+    // Q* = r + y*Qhat -- If not terminal state
     // Q* = r -- If terminal state
 
     // Calculating target Q value (solution) for Qnew on selected batch
@@ -117,7 +129,11 @@ void DQN::trainAgent()
 
     // Keeping statistics
     _cumulativeQStar += qStar;
+    _cumulativeQStarSquared += qStar * qStar;
   }
+
+  // Set Hyperparameter from q network
+  _criticLearner->setHyperparameters(qHyperparam);
 
   // Running one generation of the optimization method with the given mini-batch
   _criticLearner->initialize();
@@ -126,25 +142,27 @@ void DQN::trainAgent()
 
   // Keeping statistics
   _averageQStar = (float)_cumulativeQStar / (float)_criticMiniBatchSize;
+  _stdevQStar = sqrt(_cumulativeQStarSquared / (float)_criticMiniBatchSize - _cumulativeQStar * _cumulativeQStar / (float)(_criticMiniBatchSize * _criticMiniBatchSize));
 
   /****************************************************************************
   * If batch normalization is being used, we need to adjust mean and variances
   * by sampling a few more mini-batches after the optimization steps
   ******************************************************************************/
 
-  normalizeStateActionNeuralNetwork(_criticLearner->_trainingNeuralNetwork, _criticMiniBatchSize, _criticNormalizationSteps);
+  // TODO: evaluate if this improves training (D.W)
+  // normalizeStateActionNeuralNetwork(_criticLearner>_trainingNeuralNetwork, _criticMiniBatchSize, _criticNormalizationSteps);
 
   /*********************************************************************
    * Updating hyperparameters and broadcasting them to the workers
    *********************************************************************/
 
-  // Storing new Critic's hyperparameters
+  // Storing new Critics' hyperparameters
   _hyperparameters["Critic"] = _criticLearner->getHyperparameters();
 }
 
 void DQN::updateHyperparameters(const knlohmann::json &hyperparameters)
 {
-  _criticLearner->setHyperparameters(hyperparameters["Critic"].get<std::vector<float>>());
+  _qHatHyperparameter = _criticLearner->getHyperparameters();
 }
 
 std::vector<float> DQN::getActionProbabilities(const std::vector<float> &state)
@@ -184,7 +202,7 @@ std::vector<float> DQN::getActionProbabilities(const std::vector<float> &state)
   // Calculating inverse of Sum_i(e^Q(s,a_i))
   float invSumExpQVal = 1.0f / sumExpQVal;
 
-  // Now calculating the action probabilities using softmax
+  // Normalizing action probabilities
   for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
     pActions[i] *= invSumExpQVal;
 
@@ -195,9 +213,7 @@ std::vector<float> DQN::getActionProbabilities(const std::vector<float> &state)
 void DQN::printAgentInformation()
 {
   _k->_logger->logInfo("Normal", "Critic Information:\n");
-
-  _k->_logger->logInfo("Normal", " + Cumulative Expected Q-Value:     %f\n", _cumulativeQStar);
-  _k->_logger->logInfo("Normal", " + Average Expected Q-Value:        %f\n", _averageQStar);
+  _k->_logger->logInfo("Normal", " + Average (Std) Q-Value in Mini-Batch:  %f (%f)\n", _averageQStar, _stdevQStar);
 
   _criticExperiment._logger->_verbosityLevel = _k->_logger->_verbosityLevel;
   _criticExperiment._solver->printGenerationAfter();

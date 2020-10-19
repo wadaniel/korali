@@ -43,7 +43,9 @@ e["Variables"][5]["Exploration Sigma"] = 0.35
 e["Solver"]["Type"] = "Agent / Continuous / CACER"
 e["Solver"]["Importance Weight Truncation"] = 2.0
 e["Solver"]["Optimization Steps Per Update"] = 1
-e["Solver"]["Experiences Between Updates"] = 10
+e["Solver"]["Experiences Between Agent Trainings"] = 1
+e["Solver"]["Experiences Between Target Network Updates"] = 1
+
 e["Solver"]["Off Policy Updates"] = 8
 e["Solver"]["Trajectory Size"] = 500
 

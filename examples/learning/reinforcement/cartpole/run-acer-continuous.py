@@ -44,6 +44,7 @@ e["Solver"]["Type"] = "Agent / Continuous / CACER"
 e["Solver"]["Importance Weight Truncation"] = 2.0
 e["Solver"]["Optimization Steps Per Update"] = 1
 e["Solver"]["Experiences Between Updates"] = 10
+e["Solver"]["Experiences Between Hyperparameter Updates"] = 20
 e["Solver"]["Off Policy Updates"] = 8
 e["Solver"]["Trajectory Size"] = 500
 

@@ -52,7 +52,7 @@ e["Solver"]["Random Action Probability"]["Initial Value"] = 1.0
 e["Solver"]["Random Action Probability"]["Target Value"] = 0.05
 e["Solver"]["Random Action Probability"]["Decrease Rate"] = 0.10
 
-## Defining Q-Policy and Action-selection (policy) optimizers
+## Defining Q-Critic and Action-selection (policy) optimizers
 
 e["Solver"]["Critic"]["Mini Batch Size"] = 32
 e["Solver"]["Critic"]["Learning Rate"] = 0.01

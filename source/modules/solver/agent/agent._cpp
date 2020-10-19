@@ -145,6 +145,9 @@ void Agent::runGeneration()
   // Otherwise, let current testing reward remain as -inf.
   if (_currentReward >= _trainingRewardThreshold)
   {
+    // Re-broadcasting hyperparameters for all workers to use
+    KORALI_UPDATE_GLOBALS("Hyperparameters", _hyperparameters);
+
     // Increasing tested policy counter
     _candidatePoliciesTested++;
 

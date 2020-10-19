@@ -49,8 +49,8 @@ void DQN::initializeAgent()
   *********************************************************************/
 
   // Setting Initial Hyperparameters
-  _hyperparameters["Q"] = _criticLearner->getHyperparameters();
-  _hyperparameters["Q Hat"] = _criticLearner->getHyperparameters();
+  _hyperparameters["Critic"] = _criticLearner->getHyperparameters();
+  _qHatHyperparameter = criticLearner->getHyperparameters();
 }
 
 void DQN::trainAgent()
@@ -147,12 +147,12 @@ void DQN::trainAgent()
    *********************************************************************/
 
   // Storing new Critics' hyperparameters
-  _hyperparameters["Q"] = _criticLearner->getHyperparameters();
+  _hyperparameters["Critic"] = _criticLearner->getHyperparameters();
 }
 
 void DQN::updateHyperparameters(const knlohmann::json &hyperparameters)
 {
-  _hyperparameters["Q Hat"] = _hyperparameters["Q"];
+  _qHatHyperparameter = _hyperparameters["Critic"];
 }
 
 std::vector<float> DQN::getActionProbabilitiesFromQ(const std::vector<float> &state)
@@ -162,10 +162,11 @@ std::vector<float> DQN::getActionProbabilitiesFromQ(const std::vector<float> &st
 
 std::vector<float> DQN::getActionProbabilitiesFromQHat(const std::vector<float> &state)
 {
-  _criticLearner->setHyperparameters(_hyperparameters["Q Hat"]);
+  auto hpq = _criticLearner->getHyperparameters();
+  _criticLearner->setHyperparameters(_qHatHyperparameter);
   auto actionps = getActionProbabilities(state);
 
-  _criticLearner->setHyperparameters(_hyperparameters["Q"]);
+  _criticLearner->setHyperparameters(_hpq);
   return actionps;
 }
 

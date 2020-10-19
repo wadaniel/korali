@@ -8,7 +8,6 @@
 #define ACTION_SIZE 1
 
 #include "korali.hpp"
-#include <random>
 
 extern void updateAgent();
 
@@ -19,9 +18,6 @@ extern double _action[ACTION_SIZE];
 
 extern "C"
 {
- void nek_init_(int* comm);
- void nek_solve_();
- void nek_end_();
  void setreward_(double* reward);
  void setstate_(double state[STATE_SIZE]);
  void getaction_(double action[ACTION_SIZE]);

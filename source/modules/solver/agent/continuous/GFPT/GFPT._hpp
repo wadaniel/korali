@@ -1,9 +1,9 @@
 #ifndef _KORALI_AGENT_CONTINUOUS_GFPT_HPP_
 #define _KORALI_AGENT_CONTINUOUS_GFPT_HPP_
 
-#include "modules/solver/learner/deepSupervisor/optimizers/fCMAES.hpp"
 #include "modules/problem/reinforcementLearning/continuous/continuous.hpp"
 #include "modules/solver/agent/continuous/continuous.hpp"
+#include "modules/solver/learner/deepSupervisor/optimizers/fCMAES.hpp"
 
 namespace korali
 {

@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
   e["Solver"]["Random Action Probability"]["Target Value"] = 0.05;
   e["Solver"]["Random Action Probability"]["Decrease Rate"] = 0.05;
 
-  e["Solver"]["Experience Replay"]["Start Size"] =   1000;
+  e["Solver"]["Experience Replay"]["Start Size"] = 1000;
   e["Solver"]["Experience Replay"]["Maximum Size"] = 100000;
 
   //// Defining Critic Configuration
@@ -93,7 +93,7 @@ int main(int argc, char *argv[])
   e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Type"] = "Layer/Dense";
   e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Elementwise/Logistic";
 
-  e["Solver"]["Policy"]["Neural Network"]["Output Scaling"] = { 0.01 };
+  e["Solver"]["Policy"]["Neural Network"]["Output Scaling"] = {0.01};
 
   ////// Defining Termination Criteria
 

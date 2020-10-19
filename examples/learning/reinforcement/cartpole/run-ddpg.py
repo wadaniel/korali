@@ -54,7 +54,7 @@ e["Solver"]["Experience Replay"]["Maximum Size"] = 100000
 
 e["Solver"]["Critic"]["Discount Factor"] = 0.99
 e["Solver"]["Critic"]["Adoption Rate"] = 0.50
-e["Solver"]["Critic"]["Learning Rate"] = 0.01
+e["Solver"]["Critic"]["Learning Rate"] = 0.001
 e["Solver"]["Critic"]["Mini Batch Size"] = 32
 e["Solver"]["Critic"]["Normalization Steps"] = 32
 
@@ -78,7 +78,7 @@ e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Batch Normalization"]["Ena
 
 ## Defining Policy Configuration
 
-e["Solver"]["Policy"]["Learning Rate"] = 0.001
+e["Solver"]["Policy"]["Learning Rate"] = 0.0001
 e["Solver"]["Policy"]["Adoption Rate"] = 0.50
 e["Solver"]["Policy"]["Mini Batch Size"] = 32
 e["Solver"]["Policy"]["Normalization Steps"] = 32

@@ -67,9 +67,7 @@ class dACER : public Discrete
    */
   void processTrajectory(size_t startId, size_t endId);
 
-  std::vector<float> getActionProbabilities(const std::vector<float> &state, learner::DeepGD *_learner) override;
-  std::vector<float> getActionProbabilitiesFromQ(const std::vector<float> &state) override;
-  std::vector<float> getActionProbabilitiesFromTarget(const std::vector<float> &state) override;
+  std::vector<float> getActionProbabilities(const std::vector<float> &state) override;
 
   void updateHyperparameters(const knlohmann::json &hyperparameters) override;
   void trainAgent() override;

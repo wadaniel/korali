@@ -20,7 +20,7 @@ void Discrete::getAction(korali::Sample &sample)
   auto state = sample["State"].get<std::vector<float>>();
 
   // Getting the probability of the actions given by the agent's policy
-  auto pActions = getActionProbabilitiesFromQ(state);
+  auto pActions = getActionProbabilities(state);
 
   // Storage for the action index to use
   size_t actionIdx = 0;
@@ -50,19 +50,21 @@ void Discrete::getAction(korali::Sample &sample)
     }
     else // else we select guided by the policy's probability distribution
     {
+  
       float curSum = 0.0;
       for (actionIdx = 0; actionIdx < pActions.size(); actionIdx++)
       {
         curSum += pActions[actionIdx];
         if (x < curSum) break;
       }
-
+      
       //for (size_t i = 0; i < pActions.size(); i++) printf(" %lf ",pActions[i]);
       // NOTE: In origianl DQN paper [Minh2015] we choose max (D.W.)
-
+      
       // Finding the best action index from the probabilities
       actionIdx = std::distance(pActions.begin(), std::max_element(pActions.begin(), pActions.end()));
       //printf("aidx %zu\n", actionIdx);
+
     }
 
     // Storing action metadata

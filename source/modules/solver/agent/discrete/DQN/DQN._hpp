@@ -1,4 +1,5 @@
 #ifndef _KORALI_AGENT_DISCRETE_DQN_HPP_
+
 #define _KORALI_AGENT_DISCRETE_DQN_HPP_
 
 #include "modules/problem/reinforcementLearning/discrete/discrete.hpp"
@@ -15,9 +16,20 @@ namespace discrete
 class DQN : public Discrete
 {
   public:
-  std::vector<float> getActionProbabilities(const std::vector<float> &state, learner::DeepGD *_learner) override;
-  std::vector<float> getActionProbabilitiesFromQ(const std::vector<float> &state) override;
-  std::vector<float> getActionProbabilitiesFromTarget(const std::vector<float> &state) override;
+ 
+ /**
+ * @brief Get action probabilities from Q function
+ * @param state The current state
+ */
+  std::vector<float> getActionProbabilitiesFromQ(const std::vector<float> &state); 
+ 
+  /**
+ * @brief Get action probabilities from Q-Hat function, to calculate targets.
+ * @param state The current state
+ */
+  std::vector<float> getActionProbabilitiesFromQHat(const std::vector<float> &state);
+    
+  std::vector<float> getActionProbabilities(const std::vector<float> &state) override;
   void updateHyperparameters(const knlohmann::json &hyperparameters) override;
   void trainAgent() override;
   void printAgentInformation() override;

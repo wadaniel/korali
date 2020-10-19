@@ -1,4 +1,4 @@
-#include "_model/model.hpp"
+#include "_environment/environment.hpp"
 #include "korali.hpp"
 
 int main(int argc, char *argv[])
@@ -48,63 +48,44 @@ int main(int argc, char *argv[])
   e["Variables"][14]["Type"] = "Action";
   e["Variables"][14]["Lower Bound"] = lowerBounds[0];
   e["Variables"][14]["Upper Bound"] = upperBounds[0];
-  e["Variables"][14]["Exploration Noise"]["Enabled"] = true;
-  e["Variables"][14]["Exploration Noise"]["Distribution"]["Type"] = "Univariate/Normal";
-  e["Variables"][14]["Exploration Noise"]["Distribution"]["Mean"] = 0.0;
-  e["Variables"][14]["Exploration Noise"]["Distribution"]["Standard Deviation"] = (upperBounds[0] - lowerBounds[0]) * 0.05;
-  e["Variables"][14]["Exploration Noise"]["Theta"] = 0.05;
+  e["Variables"][14]["Exploration Sigma"] = (upperBounds[0] - lowerBounds[0]) * 0.05;
 
   e["Variables"][15]["Name"] = "Rotation X";
   e["Variables"][15]["Type"] = "Action";
   e["Variables"][15]["Lower Bound"] = lowerBounds[1];
   e["Variables"][15]["Upper Bound"] = upperBounds[1];
-  e["Variables"][15]["Exploration Noise"]["Enabled"] = true;
-  e["Variables"][15]["Exploration Noise"]["Distribution"]["Type"] = "Univariate/Normal";
-  e["Variables"][15]["Exploration Noise"]["Distribution"]["Mean"] = 0.0;
-  e["Variables"][15]["Exploration Noise"]["Distribution"]["Standard Deviation"] = (upperBounds[1] - lowerBounds[1]) * 0.01;
-  e["Variables"][15]["Exploration Noise"]["Theta"] = 0.05;
+  e["Variables"][15]["Exploration Sigma"] = (upperBounds[1] - lowerBounds[1]) * 0.01;
 
   e["Variables"][16]["Name"] = "Rotation Y";
   e["Variables"][16]["Type"] = "Action";
   e["Variables"][16]["Lower Bound"] = lowerBounds[2];
   e["Variables"][16]["Upper Bound"] = upperBounds[2];
-  e["Variables"][16]["Exploration Noise"]["Enabled"] = true;
-  e["Variables"][16]["Exploration Noise"]["Distribution"]["Type"] = "Univariate/Normal";
-  e["Variables"][16]["Exploration Noise"]["Distribution"]["Mean"] = 0.0;
-  e["Variables"][16]["Exploration Noise"]["Distribution"]["Standard Deviation"] = (upperBounds[2] - lowerBounds[2]) * 0.01;
-  e["Variables"][16]["Exploration Noise"]["Theta"] = 0.05;
+  e["Variables"][16]["Exploration Sigma"] = (upperBounds[2] - lowerBounds[2]) * 0.01;
 
   e["Variables"][17]["Name"] = "Rotation Z";
   e["Variables"][17]["Type"] = "Action";
   e["Variables"][17]["Lower Bound"] = lowerBounds[3];
   e["Variables"][17]["Upper Bound"] = upperBounds[3];
-  e["Variables"][17]["Exploration Noise"]["Enabled"] = true;
-  e["Variables"][17]["Exploration Noise"]["Distribution"]["Type"] = "Univariate/Normal";
-  e["Variables"][17]["Exploration Noise"]["Distribution"]["Mean"] = 0.0;
-  e["Variables"][17]["Exploration Noise"]["Distribution"]["Standard Deviation"] = (upperBounds[3] - lowerBounds[3]) * 0.01;
-  e["Variables"][17]["Exploration Noise"]["Theta"] = 0.05;
+  e["Variables"][17]["Exploration Sigma"] = (upperBounds[3] - lowerBounds[3]) * 0.01;
 
-  ////// Defining Agent Configuration
+  //// Defining Agent Configuration
 
-  e["Solver"]["Type"] = "Agent/SDPG";
-  e["Solver"]["Normalization Steps"] = 32;
-  e["Solver"]["Trajectory Size"] = 1;
-  e["Solver"]["Optimization Steps Per Trajectory"] = 1;
+  e["Solver"]["Type"] = "Agent / Continuous / GFPT";
+  e["Solver"]["Experiences Between Updates"] = 1;
+  e["Solver"]["Optimization Steps Per Update"] = 1;
 
-  e["Solver"]["Random Action Probability"]["Initial Value"] = 0.01;
-  e["Solver"]["Random Action Probability"]["Target Value"] = 0.01;
-  e["Solver"]["Random Action Probability"]["Decrease Rate"] = 0.00;
+  e["Solver"]["Random Action Probability"]["Initial Value"] = 0.5;
+  e["Solver"]["Random Action Probability"]["Target Value"] = 0.05;
+  e["Solver"]["Random Action Probability"]["Decrease Rate"] = 0.05;
 
-  ////// Defining the configuration of replay memory
-
-  e["Solver"]["Experience Replay"]["Start Size"] = 10000;
-  e["Solver"]["Experience Replay"]["Maximum Size"] = 262144;
+  e["Solver"]["Experience Replay"]["Start Size"] =   1000;
+  e["Solver"]["Experience Replay"]["Maximum Size"] = 100000;
 
   //// Defining Critic Configuration
 
-  e["Solver"]["Critic"]["Learning Rate"] = 0.00001;
+  e["Solver"]["Critic"]["Learning Rate"] = 0.001;
   e["Solver"]["Critic"]["Discount Factor"] = 0.99;
-  e["Solver"]["Critic"]["Mini Batch Size"] = 256;
+  e["Solver"]["Critic"]["Mini Batch Size"] = 64;
 
   e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense";
   e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear";
@@ -126,7 +107,7 @@ int main(int argc, char *argv[])
 
   //// Defining Policy Configuration
 
-  e["Solver"]["Policy"]["Learning Rate"] = 0.000001;
+  e["Solver"]["Policy"]["Learning Rate"] = 0.001;
   e["Solver"]["Policy"]["Mini Batch Size"] = 16;
   e["Solver"]["Policy"]["Adoption Rate"] = 0.80;
 
@@ -164,8 +145,7 @@ int main(int argc, char *argv[])
 
   ////// Setting file output configuration
 
-  e["File Output"]["Frequency"] = 10000;
-  //e["Console Output"]["Verbosity"] = "Silent"
+  e["File Output"]["Enabled"] = false;
 
   ////// Running Experiment
 

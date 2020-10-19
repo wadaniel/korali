@@ -56,8 +56,8 @@ e["Solver"]["Experience Replay"]["Maximum Size"] = 100000
 
 ## Defining Critic Configuration
 
-e["Solver"]["Critic"]["Learning Rate"] = 0.001
 e["Solver"]["Critic"]["Discount Factor"] = 0.99
+e["Solver"]["Critic"]["Learning Rate"] = 0.001
 e["Solver"]["Critic"]["Mini Batch Size"] = 64
 e["Solver"]["Critic"]["Normalization Steps"] = 32
 

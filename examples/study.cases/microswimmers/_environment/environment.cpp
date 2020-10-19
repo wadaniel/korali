@@ -1,7 +1,7 @@
-//  Korali model for CubismUP_2D For Fish Following Experiment
+//  Korali environment for CubismUP_2D For Fish Following Experiment
 //  Copyright (c) 2020 CSE-Lab, ETH Zurich, Switzerland.
 
-#include "model.hpp"
+#include "environment.hpp"
 
 std::unique_ptr<msode::rl::MSodeEnvironment> _environment;
 bool _isTraining;

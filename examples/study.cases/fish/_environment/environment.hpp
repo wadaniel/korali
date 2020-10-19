@@ -1,4 +1,4 @@
-//  Korali model for CubismUP_2D For Fish Following Experiment
+//  Korali environment for CubismUP_2D For Fish Following Experiment
 //  Copyright (c) 2020 CSE-Lab, ETH Zurich, Switzerland.
 
 #include "Obstacles/StefanFish.h"

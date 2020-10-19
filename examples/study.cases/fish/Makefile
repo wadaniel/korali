@@ -1,4 +1,4 @@
-BINARIES = run-ddpg run-sdpg
+BINARIES = run-korali
 KORALICXX=$(shell python3 -m korali.cxx --compiler)
 KORALICFLAGS=`python3 -m korali.cxx --cflags`
 KORALILIBS=`python3 -m korali.cxx --libs`
@@ -9,16 +9,16 @@ CUBISMLIBS=`cat cubism.libs.txt`
 .PHONY: all 
 all: $(BINARIES)
 
-$(BINARIES) : % : %.o model.o libcubism.a
+$(BINARIES) : % : %.o environment.o libcubism.a
 	$(KORALICXX) -o $@ $^ $(KORALILIBS) $(CUBISMLIBS)
 
 %.o: %.cpp
 	$(KORALICXX) -c $< $(KORALICFLAGS) $(CUBISMCFLAGS)
 
-model.o: _model/model.cpp
+environment.o: _environment/environment.cpp
 	$(KORALICXX) -c $< $(KORALICFLAGS) $(CUBISMCFLAGS)
 
 .PHONY: clean
 clean:
-	$(MAKE) -C _model clean
+	$(MAKE) -C _environment clean
 	$(RM) $(BINARIES) *.o *.ti *.optrpt *.h5 *.dat *.xmf

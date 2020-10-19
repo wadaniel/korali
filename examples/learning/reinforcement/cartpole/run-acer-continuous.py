@@ -15,7 +15,7 @@ e = korali.Experiment()
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = env
 e["Problem"]["Action Repeat"] = 1
-e["Problem"]["Actions Between Policy Updates"] = 500 
+e["Problem"]["Actions Between Policy Updates"] = 10 
 
 e["Variables"][0]["Name"] = "Cart Position"
 e["Variables"][0]["Type"] = "State"
@@ -84,14 +84,14 @@ e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Batch Normalization"]["Ena
 
 ## Defining Policy Configuration
 
-e["Solver"]["Policy"]["Learning Rate"] = 0.01
+e["Solver"]["Policy"]["Learning Rate"] = 0.001
 e["Solver"]["Policy"]["Mini Batch Size"] = 32
 e["Solver"]["Policy"]["Normalization Steps"] = 32
-e["Solver"]["Policy"]["Sample Population"] = 20
+e["Solver"]["Policy"]["Sample Population"] = 32
 
 e["Solver"]["Policy"]["Trust Region"]["Enabled"] = True
-e["Solver"]["Policy"]["Trust Region"]["Divergence Constraint"] = 0.5
-e["Solver"]["Policy"]["Trust Region"]["Adoption Rate"] = 0.25
+e["Solver"]["Policy"]["Trust Region"]["Divergence Constraint"] = 0.25
+e["Solver"]["Policy"]["Trust Region"]["Adoption Rate"] = 0.99
 
 e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
 e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear"
@@ -115,9 +115,9 @@ e["Solver"]["Policy"]["Neural Network"]["Output Scaling"] = [ 10.0 ]
 
 ### Defining Termination Criteria
 
-e["Solver"]["Training Reward Threshold"] = 400
+e["Solver"]["Training Reward Threshold"] = 450
 e["Solver"]["Policy Testing Episodes"] = 20
-e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 450
+e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 0
 
 ### Setting file output configuration
 

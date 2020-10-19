@@ -97,7 +97,7 @@ void Agent::runGeneration()
           _optimizationStepCount += _optimizationStepsPerUpdate;
         }
 
-    if (_experienceCount % _experiencesBetweenUpdates == 0) updateHyperparameters(_hyperparameters); 
+    if (_experienceCount % _experiencesBetweenHyperparameterUpdates == 0) updateHyperparameters(_hyperparameters);
 
     // If agent requested new policy, send the new hyperparameters
     if (experience["Request New Policy"] == true)
@@ -193,7 +193,6 @@ void Agent::runGeneration()
   // and store hyperparameters as best so far.
   if (_averageTestingReward > _bestAverageTestingReward) _bestAverageTestingReward = _averageTestingReward;
 }
-
 
 void Agent::normalizeStateActionNeuralNetwork(NeuralNetwork *neuralNetwork, size_t miniBatchSize, size_t normalizationSteps)
 {
@@ -300,7 +299,6 @@ void Agent::printGenerationAfter()
     _k->_logger->logInfo("Normal", " + Best Average Reward:         %f/%f\n", _bestAverageTestingReward, _targetAverageTestingReward);
   else
     _k->_logger->logInfo("Normal", " + Best Average Reward:         %f\n", _bestAverageTestingReward);
-
 
   printAgentInformation();
 }

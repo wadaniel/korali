@@ -42,9 +42,10 @@ e["Variables"][5]["Exploration Sigma"] = 0.35
 
 e["Solver"]["Type"] = "Agent / Continuous / GFPT"
 e["Solver"]["Optimization Steps Per Update"] = 1
-e["Solver"]["Experiences Between Updates"] = 1
-e["Solver"]["Experiences Between Hyperparameter Updates"] = 1
+e["Solver"]["Experiences Between Agent Trainings"] = 1
+e["Solver"]["Experiences Between Target Network Updates"] = 1
 
+#
 e["Solver"]["Random Action Probability"]["Initial Value"] = 0.5
 e["Solver"]["Random Action Probability"]["Target Value"] = 0.05
 e["Solver"]["Random Action Probability"]["Decrease Rate"] = 0.05

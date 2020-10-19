@@ -19,12 +19,14 @@ class DQN : public Discrete
   /**
  * @brief Get action probabilities from Q function
  * @param state The current state
+ * @return vector of action probabilities
  */
   std::vector<float> getActionProbabilitiesFromQ(const std::vector<float> &state);
 
   /**
  * @brief Get action probabilities from Q-Hat function, to calculate targets.
  * @param state The current state
+ * @return vector of action probabilities
  */
   std::vector<float> getActionProbabilitiesFromQHat(const std::vector<float> &state);
 

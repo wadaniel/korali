@@ -45,7 +45,8 @@ e["Solver"]["Optimization Steps Per Update"] = 1
 e["Solver"]["Experiences Between Agent Trainings"] = 1
 e["Solver"]["Experiences Between Target Network Updates"] = 1
 
-#
+### Defining probability of taking a random action (epsilon)
+
 e["Solver"]["Random Action Probability"]["Initial Value"] = 0.5
 e["Solver"]["Random Action Probability"]["Target Value"] = 0.05
 e["Solver"]["Random Action Probability"]["Decrease Rate"] = 0.05
@@ -85,7 +86,7 @@ e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Batch Normalization"]["Ena
 ## Defining Policy Configuration
 
 e["Solver"]["Policy"]["Learning Rate"] = 0.001
-e["Solver"]["Policy"]["Mini Batch Size"] = 8 
+e["Solver"]["Policy"]["Mini Batch Size"] = 16
 e["Solver"]["Policy"]["Target Accuracy"] = 0.1
 e["Solver"]["Policy"]["Normalization Steps"] = 32
 
@@ -114,8 +115,8 @@ e["Solver"]["Policy"]["Neural Network"]["Output Scaling"] = [ 10.0 ]
 ### Defining Termination Criteria
 
 e["Solver"]["Training Reward Threshold"] = 400
-e["Solver"]["Policy Testing Episodes"] = 20
-e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 450
+e["Solver"]["Policy Testing Episodes"] = 1
+e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 400
 
 ### Setting file output configuration
 

@@ -45,8 +45,6 @@ e["Solver"]["Optimization Steps Per Update"] = 1
 e["Solver"]["Experiences Between Agent Trainings"] = 1
 e["Solver"]["Experiences Between Target Network Updates"] = 1
 
-
-
 e["Solver"]["Off Policy Updates"] = 12
 e["Solver"]["Trajectory Size"] = 500
 
@@ -109,7 +107,6 @@ e["Solver"]["Policy"]["Neural Network"]["Layers"][2]["Activation Function"]["Typ
 e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Type"] = "Layer/Dense"
 e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Batch Normalization"]["Enabled"] = False
 e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Softmax" 
-
 
 ### Defining Termination Criteria
 

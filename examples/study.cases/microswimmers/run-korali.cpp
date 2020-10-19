@@ -71,7 +71,8 @@ int main(int argc, char *argv[])
   //// Defining Agent Configuration
 
   e["Solver"]["Type"] = "Agent / Continuous / GFPT";
-  e["Solver"]["Experiences Between Updates"] = 1;
+  e["Solver"]["Experiences Between Agent Trainings"] = 1;
+  e["Solver"]["Experiences Between Target Network Updates"] = 1;
   e["Solver"]["Optimization Steps Per Update"] = 1;
 
   e["Solver"]["Random Action Probability"]["Initial Value"] = 0.5;

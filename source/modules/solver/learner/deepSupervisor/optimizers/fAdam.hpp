@@ -115,29 +115,24 @@ class fAdam
    * @brief Determines whether the module can trigger termination of an experiment run.
    * @return True, if it should trigger termination; false, otherwise.
    */
-  bool checkTermination();
+  virtual bool checkTermination();
 
   /**
   * @brief Takes a sample evaluation and its gradient and calculates the next set of parameters
   * @param evaluation The value of the objective function at the current set of parameters
   * @param gradient The gradient of the objective function at the current set of parameters
   */
-  void processResult(float evaluation, std::vector<float> &gradient);
+  virtual void processResult(float evaluation, std::vector<float> &gradient);
 
   /**
   * @brief Restores the optimizer to the initial state
   */
-  void reset();
-
-  /**
-   * @brief Runs a single generation of the optimizer
-   */
-  void runGeneration();
+  virtual void reset();
 
   /**
    * @brief Prints progress information
    */
-  void printInfo();
+  virtual void printInfo();
 };
 
 } // namespace korali

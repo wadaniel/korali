@@ -14,43 +14,44 @@ void DQN::initializeAgent()
 {
   // Initializing common discrete agent configuration
   Discrete::initializeAgent();
-
+ 
   /*********************************************************************
- * Initializing Policy-Related Structures
+ * Initializing Critic-Related Structures
  *********************************************************************/
 
   korali::Engine engine; // Engine to initialize experiments with
 
-  _policyExperiment["Problem"]["Type"] = "Supervised Learning";
-  _policyExperiment["Solver"]["Type"] = "Learner/DeepGD";
-  _policyExperiment["Solver"]["Loss Function"] = "Mean Squared Error";
-  _policyExperiment["Solver"]["Learning Rate"] = _policyLearningRate;
-  _policyExperiment["Solver"]["Steps Per Generation"] = 1;
-  _policyExperiment["Solver"]["Neural Network"] = _policyNeuralNetwork;
+  _criticExperiment["Problem"]["Type"] = "Supervised Learning";
+  _criticExperiment["Solver"]["Type"] = "Learner/DeepGD";
+  _criticExperiment["Solver"]["Loss Function"] = "Mean Squared Error";
+  _criticExperiment["Solver"]["Learning Rate"] = _criticLearningRate;
+  _criticExperiment["Solver"]["Steps Per Generation"] = 1;
+  _criticExperiment["Solver"]["Neural Network"] = _criticNeuralNetwork;
 
   // Initializing experiment with an initial zero set
-  for (size_t i = 0; i < _policyMiniBatchSize; i++)
+  for (size_t i = 0; i < _criticMiniBatchSize; i++)
   {
-    _policyExperiment["Problem"]["Solution"][i][0] = 0.0;
+    _criticExperiment["Problem"]["Solution"][i][0] = 0.0;
 
     for (size_t j = 0; j < _k->_variables.size(); j++)
-      _policyExperiment["Problem"]["Inputs"][i][j] = 0.0;
+      _criticExperiment["Problem"]["Inputs"][i][j] = 0.0;
   }
 
   // Running initialization to verify that the configuration is correct
-  engine.initialize(_policyExperiment);
+  printf("XXX\n");
+  engine.initialize(_criticExperiment);
 
   // Getting learner pointers
-  _policyProblem = dynamic_cast<problem::SupervisedLearning *>(_policyExperiment._problem);
-  _policyLearner = dynamic_cast<solver::learner::DeepGD *>(_policyExperiment._solver);
+  _criticProblem = dynamic_cast<problem::SupervisedLearning *>(_criticExperiment._problem);
+  _criticLearner = dynamic_cast<solver::learner::DeepGD *>(_criticExperiment._solver);
 
   /*********************************************************************
   * Loading/Setting Hyperparameters
   *********************************************************************/
 
   // Setting Initial Hyperparameters
-  _hyperparameters["Q"] = _policyLearner->getHyperparameters();
-  _hyperparameters["Q Hat"] = _policyLearner->getHyperparameters();
+  _hyperparameters["Q"]     = _criticLearner->getHyperparameters();
+  _hyperparameters["Q Hat"] = _criticLearner->getHyperparameters();
 }
 
 void DQN::trainAgent()
@@ -71,7 +72,7 @@ void DQN::trainAgent()
   // Shuffling indexes to choose the mini batch from
   std::shuffle(experienceReplayIndexes.begin(), experienceReplayIndexes.end(), *mt);
 
-  for (size_t i = 0; i < _policyMiniBatchSize; i++)
+  for (size_t i = 0; i < _criticMiniBatchSize; i++)
   {
     // Selecting a uniformly random selected, yet not repeated experience
     size_t expId = experienceReplayIndexes[i];
@@ -111,29 +112,29 @@ void DQN::trainAgent()
       for (size_t j = 0; j < nextState.size(); j++) stateActionInput[j] = nextState[j];
       for (size_t j = 0; j < bestAction.size(); j++) stateActionInput[j + nextState.size()] = bestAction[j];
 
-      auto qNextExp = _policyLearner->getEvaluation(stateActionInput)[0];
+      auto qNextExp = _criticLearner->getEvaluation(stateActionInput)[0];
 
       qStar += _criticDiscountFactor * qNextExp;
     }
 
     // Updating inputs to training learner
-    for (size_t j = 0; j < curState.size(); j++) _policyProblem->_inputs[i][j] = curState[j];
-    for (size_t j = 0; j < curAction.size(); j++) _policyProblem->_inputs[i][j + curState.size()] = curAction[j];
-    _policyProblem->_solution[i][0] = qStar;
+    for (size_t j = 0; j < curState.size(); j++) _criticProblem->_inputs[i][j] = curState[j];
+    for (size_t j = 0; j < curAction.size(); j++) _criticProblem->_inputs[i][j + curState.size()] = curAction[j];
+     _criticProblem->_solution[i][0] = qStar;
 
     // Keeping statistics
     _cumulativeQStar += qStar;
-    _cumulativeQStarSquared += qStar * qStar;
+    _cumulativeQStarSquared += qStar*qStar;
   }
 
   // Running one generation of the optimization method with the given mini-batch
-  _policyLearner->initialize();
-  _policyLearner->runGeneration();
-  _policyLearner->finalize();
-
+  _criticLearner->initialize();
+  _criticLearner->runGeneration();
+  _criticLearner->finalize();
+  
   // Keeping statistics
-  _averageQStar = (float)_cumulativeQStar / (float)_policyMiniBatchSize;
-  _stdevQStar = sqrt(_cumulativeQStarSquared / (float)_policyMiniBatchSize - _cumulativeQStar * _cumulativeQStar / (float)(_policyMiniBatchSize * _policyMiniBatchSize));
+  _averageQStar = (float)_cumulativeQStar / (float)_criticMiniBatchSize;
+  _stdevQStar = sqrt(_cumulativeQStarSquared/(float)_criticMiniBatchSize - _cumulativeQStar*_cumulativeQStar / (float)(_criticMiniBatchSize*_criticMiniBatchSize));
 
   /****************************************************************************
   * If batch normalization is being used, we need to adjust mean and variances
@@ -141,14 +142,14 @@ void DQN::trainAgent()
   ******************************************************************************/
 
   // TODO: Check this (D.W.)
-  //normalizeStateActionNeuralNetwork(_policyLearner->_trainingNeuralNetwork, _policyMiniBatchSize, _policyNormalizationSteps);
+  //normalizeStateActionNeuralNetwork(_criticLearner>_trainingNeuralNetwork, _criticMiniBatchSize, _criticNormalizationSteps);
 
   /*********************************************************************
    * Updating hyperparameters and broadcasting them to the workers
    *********************************************************************/
-
-  // Storing new Policy's hyperparameters
-  _hyperparameters["Q"] = _policyLearner->getHyperparameters();
+ 
+  // Storing new Critics' hyperparameters
+  _hyperparameters["Q"] =_criticLearner->getHyperparameters();
 }
 
 void DQN::updateHyperparameters(const knlohmann::json &hyperparameters)
@@ -163,10 +164,10 @@ std::vector<float> DQN::getActionProbabilitiesFromQ(const std::vector<float> &st
 
 std::vector<float> DQN::getActionProbabilitiesFromQHat(const std::vector<float> &state)
 {
-  _policyLearner->setHyperparameters(_hyperparameters["Q Hat"]);
+  _criticLearner->setHyperparameters(_hyperparameters["Q Hat"]);
   auto actionps = getActionProbabilities(state);
 
-  _policyLearner->setHyperparameters(_hyperparameters["Q"]);
+  _criticLearner->setHyperparameters(_hyperparameters["Q"]);
   return actionps;
 }
 
@@ -192,7 +193,7 @@ std::vector<float> DQN::getActionProbabilities(const std::vector<float> &state)
       stateActionInput[_problem->_stateVectorSize + j] = _problem->_possibleActions[i][j];
 
     // Computing Q(s,a_i)
-    float curQVal = _policyLearner->getEvaluation(stateActionInput)[0];
+    float curQVal =_criticLearner->getEvaluation(stateActionInput)[0];
 
     // Computing e^Q(s,a_i)
     float expCurQVal = std::exp(curQVal);
@@ -217,12 +218,12 @@ std::vector<float> DQN::getActionProbabilities(const std::vector<float> &state)
 
 void DQN::printAgentInformation()
 {
-  _k->_logger->logInfo("Normal", "Policy Information:\n");
+  _k->_logger->logInfo("Normal", "Critic Information:\n");
   _k->_logger->logInfo("Normal", " + Average (Std) Q-Value in Mini-Batch:  %f (%f)\n", _averageQStar, _stdevQStar);
 
-  _policyExperiment._logger->_verbosityLevel = _k->_logger->_verbosityLevel;
-  _policyExperiment._solver->printGenerationAfter();
-  _policyExperiment._logger->setVerbosityLevel("Silent");
+  _criticExperiment._logger->_verbosityLevel = _k->_logger->_verbosityLevel;
+  _criticExperiment._solver->printGenerationAfter();
+  _criticExperiment._logger->setVerbosityLevel("Silent");
 }
 
 } // namespace discrete

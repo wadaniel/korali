@@ -3,7 +3,7 @@
 
 #include "modules/problem/reinforcementLearning/reinforcementLearning.hpp"
 #include "modules/problem/supervisedLearning/supervisedLearning.hpp"
-#include "modules/solver/learner/deepGD/deepGD.hpp"
+#include "modules/solver/learner/deepSupervisor/deepSupervisor.hpp"
 #include <algorithm> // std::shuffle
 #include <random>
 
@@ -42,7 +42,7 @@ class Agent : public Solver
   /**
   * @brief Pointer to training experiment's learner
   */
-  learner::DeepGD *_criticLearner;
+  learner::DeepSupervisor *_criticLearner;
 
   /**
    * @brief Korali experiment for the training of the critic
@@ -57,7 +57,7 @@ class Agent : public Solver
   /**
    * @brief Pointer to training the actor network
    */
-  learner::DeepGD *_policyLearner;
+  learner::DeepSupervisor *_policyLearner;
 
   /**
    * @brief Pointer to actor's experiment problem

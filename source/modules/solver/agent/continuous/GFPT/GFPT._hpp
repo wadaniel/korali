@@ -1,7 +1,7 @@
 #ifndef _KORALI_AGENT_CONTINUOUS_GFPT_HPP_
 #define _KORALI_AGENT_CONTINUOUS_GFPT_HPP_
 
-#include "auxiliar/optimizers/fCMAES.hpp"
+#include "modules/solver/learner/deepSupervisor/optimizers/fCMAES.hpp"
 #include "modules/problem/reinforcementLearning/continuous/continuous.hpp"
 #include "modules/solver/agent/continuous/continuous.hpp"
 
@@ -24,7 +24,7 @@ class GFPT : public Continuous
   /**
   * @brief Pointer to training experiment's learner
   */
-  learner::DeepGD *_criticLearner;
+  learner::DeepSupervisor *_criticLearner;
 
   /**
    * @brief Korali experiment for the training of the Qvalue-estimator
@@ -44,7 +44,7 @@ class GFPT : public Continuous
   /**
    * @brief Pointer to training the actor network
    */
-  learner::DeepGD *_policyLearner;
+  learner::DeepSupervisor *_policyLearner;
 
   /**
    * @brief Pointer to actor's experiment problem

@@ -112,8 +112,8 @@ e["Solver"]["Policy"]["Neural Network"]["Output Scaling"] = [ 10.0 ]
 ### Defining Termination Criteria
 
 e["Solver"]["Training Reward Threshold"] = 400
-e["Solver"]["Policy Testing Episodes"] = 20
-e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 450
+e["Solver"]["Policy Testing Episodes"] = 1
+e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 0
 
 ### Setting file output configuration
 

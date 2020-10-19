@@ -27,9 +27,10 @@ e["Problem"]["Solution"] = trainingSolutionSet
 
 ### Using a neural network solver (deep learning) for inference
 
-e["Solver"]["Type"] = "Learner/DeepGD"
+e["Solver"]["Type"] = "Learner/DeepSupervisor"
 e["Solver"]["Loss Function"] = "Mean Squared Error"
 e["Solver"]["Steps Per Generation"] = 200
+e["Solver"]["Optimizer"] = "AdaBelief"
 e["Solver"]["Learning Rate"] = 0.05
 
 ### Defining the shape of the neural network

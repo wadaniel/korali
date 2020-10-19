@@ -23,8 +23,8 @@ void dACER::initializeAgent()
 
   _criticExperiment["Problem"]["Type"] = "Supervised Learning";
   _criticExperiment["Solver"]["Type"] = "Learner/DeepGD";
-  _criticExperiment["Solver"]["Learning Rate"] = _criticLearningRate;
   _criticExperiment["Solver"]["Loss Function"] = "Mean Squared Error";
+  _criticExperiment["Solver"]["Learning Rate"] = _criticLearningRate;
   _criticExperiment["Solver"]["Steps Per Generation"] = 1;
   _criticExperiment["Solver"]["Neural Network"] = _criticNeuralNetwork;
 

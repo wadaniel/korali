@@ -34,6 +34,9 @@ e["Variables"][4]["Type"] = "State"
 e["Variables"][5]["Name"] = "Angular Velocity 2"
 e["Variables"][5]["Type"] = "State"
 
+e["Variables"][6]["Name"] = "Height Proxy"
+e["Variables"][6]["Type"] = "State"
+
 e["Variables"][6]["Name"] = "Force"
 e["Variables"][6]["Type"] = "Action"
 

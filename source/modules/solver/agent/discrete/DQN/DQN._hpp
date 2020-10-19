@@ -1,4 +1,5 @@
 #ifndef _KORALI_AGENT_DISCRETE_DQN_HPP_
+
 #define _KORALI_AGENT_DISCRETE_DQN_HPP_
 
 #include "modules/problem/reinforcementLearning/discrete/discrete.hpp"

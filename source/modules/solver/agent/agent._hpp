@@ -35,11 +35,6 @@ class Agent : public Solver
   float _randomActionProbabilityEffectiveValue;
 
   /**
-   * @brief Pointer to training experiment's problem
-   */
-  problem::SupervisedLearning *_criticProblem;
-
-  /**
   * @brief Pointer to training experiment's learner
   */
   learner::DeepSupervisor *_criticLearner;
@@ -50,14 +45,19 @@ class Agent : public Solver
   korali::Experiment _criticExperiment;
 
   /**
-  * @brief Korali experiment for obtaining the agent's action
-  */
-  korali::Experiment _policyExperiment;
+   * @brief Pointer to training experiment's problem
+   */
+  problem::SupervisedLearning *_criticProblem;
 
   /**
    * @brief Pointer to training the actor network
    */
   learner::DeepSupervisor *_policyLearner;
+
+  /**
+  * @brief Korali experiment for obtaining the agent's action
+  */
+  korali::Experiment _policyExperiment;
 
   /**
    * @brief Pointer to actor's experiment problem

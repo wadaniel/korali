@@ -42,7 +42,7 @@ void Agent::initialize()
     _bestAverageTestingReward = -korali::Inf;
   }
 
-  // Initializing policy hyperparameters
+  // Initializing critic hyperparameters
   updateHyperparameters(_hyperparameters);
 }
 
@@ -89,13 +89,15 @@ void Agent::runGeneration()
 
     _experienceCount++;
 
-    if (_experienceCount % _experiencesBetweenUpdates == 0)              // If we accumulated enough experiences between updates, update now
+    if (_experienceCount % _experiencesBetweenAgentTrainings == 0)       // If we accumulated enough experiences between updates, update now
       if (experience["Is Terminal"] == false)                            // Do not update policy if this is terminal
         if (_experienceReplayStates.size() > _experienceReplayStartSize) // Perform optimization steps on the critic/policy, if reached the minimum replay memory size
         {
           for (size_t i = 0; i < _optimizationStepsPerUpdate; i++) trainAgent();
           _optimizationStepCount += _optimizationStepsPerUpdate;
         }
+
+    if (_experienceCount % _experiencesBetweenTargetNetworkUpdates == 0) updateHyperparameters(_hyperparameters);
 
     // If agent requested new policy, send the new hyperparameters
     if (experience["Request New Policy"] == true)
@@ -145,9 +147,6 @@ void Agent::runGeneration()
   // Otherwise, let current testing reward remain as -inf.
   if (_currentReward >= _trainingRewardThreshold)
   {
-    // Re-broadcasting hyperparameters for all workers to use
-    KORALI_UPDATE_GLOBALS("Hyperparameters", _hyperparameters);
-
     // Increasing tested policy counter
     _candidatePoliciesTested++;
 
@@ -288,6 +287,7 @@ void Agent::printGenerationAfter()
 
   _k->_logger->logInfo("Normal", " + Current Reward:              %f/%f\n", _currentReward, _trainingRewardThreshold);
   _k->_logger->logInfo("Normal", " + Best Reward:                 %f\n", _bestTrainingReward);
+  _k->_logger->logInfo("Normal", " + Current p(Random Action):       %f\n", _randomActionProbabilityEffectiveValue);
 
   _k->_logger->logInfo("Normal", "Testing Statistics:\n");
 
@@ -299,8 +299,6 @@ void Agent::printGenerationAfter()
     _k->_logger->logInfo("Normal", " + Best Average Reward:         %f/%f\n", _bestAverageTestingReward, _targetAverageTestingReward);
   else
     _k->_logger->logInfo("Normal", " + Best Average Reward:         %f\n", _bestAverageTestingReward);
-
-  _k->_logger->logInfo("Normal", " + Current p(Random Action):       %f\n", _randomActionProbabilityEffectiveValue);
 
   printAgentInformation();
 }

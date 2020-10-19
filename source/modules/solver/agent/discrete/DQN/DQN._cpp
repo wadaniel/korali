@@ -14,7 +14,7 @@ void DQN::initializeAgent()
 {
   // Initializing common discrete agent configuration
   Discrete::initializeAgent();
- 
+
   /*********************************************************************
  * Initializing Critic-Related Structures
  *********************************************************************/
@@ -49,7 +49,7 @@ void DQN::initializeAgent()
   *********************************************************************/
 
   // Setting Initial Hyperparameters
-  _hyperparameters["Q"]     = _criticLearner->getHyperparameters();
+  _hyperparameters["Q"] = _criticLearner->getHyperparameters();
   _hyperparameters["Q Hat"] = _criticLearner->getHyperparameters();
 }
 
@@ -119,36 +119,35 @@ void DQN::trainAgent()
     // Updating inputs to training learner
     for (size_t j = 0; j < curState.size(); j++) _criticProblem->_inputs[i][j] = curState[j];
     for (size_t j = 0; j < curAction.size(); j++) _criticProblem->_inputs[i][j + curState.size()] = curAction[j];
-     _criticProblem->_solution[i][0] = qStar;
+    _criticProblem->_solution[i][0] = qStar;
 
     // Keeping statistics
     _cumulativeQStar += qStar;
-    _cumulativeQStarSquared += qStar*qStar;
+    _cumulativeQStarSquared += qStar * qStar;
   }
 
   // Running one generation of the optimization method with the given mini-batch
   _criticLearner->initialize();
   _criticLearner->runGeneration();
   _criticLearner->finalize();
-  
+
   // Keeping statistics
   _averageQStar = (float)_cumulativeQStar / (float)_criticMiniBatchSize;
-  _stdevQStar = sqrt(_cumulativeQStarSquared/(float)_criticMiniBatchSize - _cumulativeQStar*_cumulativeQStar / (float)(_criticMiniBatchSize*_criticMiniBatchSize));
+  _stdevQStar = sqrt(_cumulativeQStarSquared / (float)_criticMiniBatchSize - _cumulativeQStar * _cumulativeQStar / (float)(_criticMiniBatchSize * _criticMiniBatchSize));
 
   /****************************************************************************
   * If batch normalization is being used, we need to adjust mean and variances
   * by sampling a few more mini-batches after the optimization steps
   ******************************************************************************/
 
-  // TODO: Check this (D.W.)
   //normalizeStateActionNeuralNetwork(_criticLearner>_trainingNeuralNetwork, _criticMiniBatchSize, _criticNormalizationSteps);
 
   /*********************************************************************
    * Updating hyperparameters and broadcasting them to the workers
    *********************************************************************/
- 
+
   // Storing new Critics' hyperparameters
-  _hyperparameters["Q"] =_criticLearner->getHyperparameters();
+  _hyperparameters["Q"] = _criticLearner->getHyperparameters();
 }
 
 void DQN::updateHyperparameters(const knlohmann::json &hyperparameters)
@@ -192,7 +191,7 @@ std::vector<float> DQN::getActionProbabilities(const std::vector<float> &state)
       stateActionInput[_problem->_stateVectorSize + j] = _problem->_possibleActions[i][j];
 
     // Computing Q(s,a_i)
-    float curQVal =_criticLearner->getEvaluation(stateActionInput)[0];
+    float curQVal = _criticLearner->getEvaluation(stateActionInput)[0];
 
     // Computing e^Q(s,a_i)
     float expCurQVal = std::exp(curQVal);

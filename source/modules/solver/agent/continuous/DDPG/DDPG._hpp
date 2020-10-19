@@ -28,7 +28,7 @@ class DDPG : public Continuous
   /**
   * @brief Pointer to training experiment's learner
   */
-  learner::DeepGD *_criticLearner;
+  learner::DeepSupervisor *_criticLearner;
 
   /**
    * @brief Korali experiment for the training of the Qvalue-estimator

@@ -1,6 +1,6 @@
 #include "engine.hpp"
 #include "modules/experiment/experiment.hpp"
-#include "modules/solver/learner/deepGD/deepGD.hpp"
+#include "modules/solver/learner/deepSupervisor/deepSupervisor.hpp"
 #include "sample/sample.hpp"
 
 /******************************************************************
@@ -14,7 +14,7 @@ namespace solver
 {
 namespace learner
 {
-void DeepGD::initialize()
+void DeepSupervisor::initialize()
 {
   // If the learner is alread initialized, do not do anything else
   if (_isLearnerInitialized == false)
@@ -50,7 +50,9 @@ void DeepGD::initialize()
     _normalizationMeans = _trainingNeuralNetwork->getNormalizationMeans();
     _normalizationVariances = _trainingNeuralNetwork->getNormalizationVariances();
 
-    _adamSolver = new korali::fAdam(_hyperparameters.size());
+    if (_optimizer == "Adam") _adamSolver = new korali::fAdam(_hyperparameters.size());
+    if (_optimizer == "AdaBelief") _adamSolver = new korali::fAdaBelief(_hyperparameters.size());
+
     _adamSolver->_eta = _learningRate;
 
     for (size_t i = 0; i < _hyperparameters.size(); i++)
@@ -82,7 +84,7 @@ void DeepGD::initialize()
   _trainingNeuralNetwork->setInput(_problem->_inputs);
 }
 
-void DeepGD::runGeneration()
+void DeepSupervisor::runGeneration()
 {
   for (size_t step = 0; step < _stepsPerGeneration; step++)
   {
@@ -102,7 +104,7 @@ void DeepGD::runGeneration()
       for (size_t j = 0; j < solutionSize; j++)
       {
         float diff = 0.0;
-        if (_lossFunction == "Direct") diff = _problem->_solution[i][j];
+        if (_lossFunction == "Direct Gradient") diff = _problem->_solution[i][j];
         if (_lossFunction == "Mean Squared Error") diff = _problem->_solution[i][j] - _trainingNeuralNetwork->_outputValues[i][j];
         lossDiff[i * solutionSize + j] = diff;
         _currentLoss += diff * diff;
@@ -134,7 +136,7 @@ void DeepGD::runGeneration()
   }
 }
 
-void DeepGD::finalize()
+void DeepSupervisor::finalize()
 {
   _hyperparameters = _trainingNeuralNetwork->getHyperparameters();
   _normalizationMeans = _trainingNeuralNetwork->getNormalizationMeans();
@@ -146,7 +148,7 @@ void DeepGD::finalize()
   _evaluationNeuralNetwork->setNormalizationVariances(_normalizationVariances);
 }
 
-std::vector<float> DeepGD::getHyperparameters()
+std::vector<float> DeepSupervisor::getHyperparameters()
 {
   std::vector<float> parameters;
 
@@ -158,7 +160,7 @@ std::vector<float> DeepGD::getHyperparameters()
   return parameters;
 }
 
-void DeepGD::setHyperparameters(const std::vector<float> &hyperparameters)
+void DeepSupervisor::setHyperparameters(const std::vector<float> &hyperparameters)
 {
   size_t curPos = 0;
 
@@ -172,9 +174,14 @@ void DeepGD::setHyperparameters(const std::vector<float> &hyperparameters)
 
   // Setting NN normalization variances finally
   _normalizationVariances = std::vector<float>(hyperparameters.begin() + curPos, hyperparameters.end());
+
+  // Copying hyperparameters and normalization parameters from training to evaluation
+  _evaluationNeuralNetwork->setHyperparameters(_hyperparameters);
+  _evaluationNeuralNetwork->setNormalizationMeans(_normalizationMeans);
+  _evaluationNeuralNetwork->setNormalizationVariances(_normalizationVariances);
 }
 
-std::vector<std::vector<float>> DeepGD::getEvaluation(const std::vector<std::vector<float>> &inputBatch)
+std::vector<std::vector<float>> DeepSupervisor::getEvaluation(const std::vector<std::vector<float>> &inputBatch)
 {
   // Updating NN inputs
   _evaluationNeuralNetwork->setInput(inputBatch);
@@ -185,7 +192,7 @@ std::vector<std::vector<float>> DeepGD::getEvaluation(const std::vector<std::vec
   return _evaluationNeuralNetwork->_outputValues;
 }
 
-std::vector<float> DeepGD::getEvaluation(const std::vector<float> &inputBatch)
+std::vector<float> DeepSupervisor::getEvaluation(const std::vector<float> &inputBatch)
 {
   // Updating NN inputs
   _evaluationNeuralNetwork->setInput({inputBatch});
@@ -196,7 +203,7 @@ std::vector<float> DeepGD::getEvaluation(const std::vector<float> &inputBatch)
   return _evaluationNeuralNetwork->_outputValues[0];
 }
 
-std::vector<float> DeepGD::getGradients(const std::vector<float> &outputDiffs)
+std::vector<float> DeepSupervisor::getGradients(const std::vector<float> &outputDiffs)
 {
   // Backward propagating the gradients through the training neural network
   _evaluationNeuralNetwork->backward(outputDiffs);
@@ -205,7 +212,7 @@ std::vector<float> DeepGD::getGradients(const std::vector<float> &outputDiffs)
   return _evaluationNeuralNetwork->getDataGradients();
 }
 
-void DeepGD::printGenerationAfter()
+void DeepSupervisor::printGenerationAfter()
 {
   // Printing results so far
   _k->_logger->logInfo("Normal", "Training Loss: %.15f\n", _currentLoss);

@@ -43,6 +43,7 @@ e["Variables"][5]["Exploration Sigma"] = 0.35
 e["Solver"]["Type"] = "Agent / Continuous / DDPG"
 e["Solver"]["Optimization Steps Per Update"] = 1
 e["Solver"]["Experiences Between Updates"] = 1
+e["Solver"]["Experiences Between Hyperparameter Updates"] = 1
 
 ### Defining the configuration of replay memory
 

@@ -42,7 +42,8 @@ e["Variables"][5]["Type"] = "Action"
 e["Solver"]["Type"] = "Agent / Discrete / DACER"
 e["Solver"]["Importance Weight Truncation"] = 2.0
 e["Solver"]["Optimization Steps Per Update"] = 1
-e["Solver"]["Experiences Between Updates"] = 20
+e["Solver"]["Experiences Between Updates"] = 1
+e["Solver"]["Experiences Between Hyperparameter Updates"] = 20
 e["Solver"]["Off Policy Updates"] = 12
 e["Solver"]["Trajectory Size"] = 500
 

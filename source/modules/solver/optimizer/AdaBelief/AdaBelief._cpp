@@ -1,0 +1,124 @@
+#include "engine.hpp"
+#include "modules/solver/optimizer/AdaBelief/AdaBelief.hpp"
+#include "sample/sample.hpp"
+
+namespace korali
+{
+namespace solver
+{
+namespace optimizer
+{
+void AdaBelief::setInitialConfiguration()
+{
+  for (size_t i = 0; i < _k->_variables.size(); i++)
+    if (std::isfinite(_k->_variables[i]->_initialValue) == false)
+      KORALI_LOG_ERROR("Initial Value of variable \'%s\' not defined (no defaults can be calculated).\n", _k->_variables[i]->_name.c_str());
+
+  _currentValue.resize(_k->_variables.size());
+  for (size_t i = 0; i < _k->_variables.size(); i++)
+    _currentValue[i] = _k->_variables[i]->_initialValue;
+
+  _gradient.resize(_k->_variables.size());
+  _firstMoment.resize(_k->_variables.size(), 0.0);
+  _biasCorrectedFirstMoment.resize(_k->_variables.size(), 0.0);
+  _secondCentralMoment.resize(_k->_variables.size(), 0.0);
+  _biasCorrectedSecondCentralMoment.resize(_k->_variables.size(), 0.0);
+
+  _bestEvaluation = Inf;
+  _gradientNorm = 1;
+}
+
+void AdaBelief::runGeneration()
+{
+  if (_k->_currentGeneration == 1) setInitialConfiguration();
+
+  // Initializing Sample Evaluation
+  Sample sample;
+  sample["Module"] = "Problem";
+  sample["Operation"] = "Evaluate With Gradients";
+  sample["Parameters"] = _currentValue;
+  sample["Sample Id"] = 0;
+  KORALI_START(sample);
+
+  // Waiting for sample to finish
+  KORALI_WAIT(sample);
+
+  auto evaluation = KORALI_GET(double, sample, "F(x)");
+  auto gradient = KORALI_GET(std::vector<double>, sample, "Gradient");
+
+  // Processing results
+  processResult(evaluation, gradient);
+}
+
+void AdaBelief::processResult(double evaluation, std::vector<double> &gradient)
+{
+  _modelEvaluationCount++;
+  _currentEvaluation = evaluation;
+
+  _currentEvaluation = -_currentEvaluation; //minimize
+  _gradientNorm = 0.0;
+
+  _gradient = gradient;
+
+  if (_gradient.size() != _k->_variables.size())
+    KORALI_LOG_ERROR("Size of sample's gradient evaluations vector (%lu) is different from the number of problem variables defined (%lu).\n", _gradient.size(), _k->_variables.size());
+
+  for (size_t i = 0; i < _k->_variables.size(); i++)
+  {
+    _gradient[i] = -_gradient[i]; // minimize
+    _gradientNorm += _gradient[i] * _gradient[i];
+  }
+  _gradientNorm = std::sqrt(_gradientNorm);
+
+  if (_currentEvaluation < _bestEvaluation)
+    _bestEvaluation = _currentEvaluation;
+
+  // update first and second moment estimators and bias corrected versions
+  for (size_t i = 0; i < _k->_variables.size(); i++)
+  {
+    _firstMoment[i] = _beta1 * _firstMoment[i] + (1 - _beta1) * _gradient[i];
+    _biasCorrectedFirstMoment[i] = _firstMoment[i] / (1 - std::pow(_beta1, _modelEvaluationCount));
+    _secondCentralMoment[i] = _beta2 * _secondCentralMoment[i] + (1 - _beta2) * (_gradient[i] - _firstMoment[i]) * (_gradient[i] - _firstMoment[i]);
+    _biasCorrectedSecondCentralMoment[i] = _secondCentralMoment[i] / (1 - std::pow(_beta2, _modelEvaluationCount));
+  }
+
+  // update parameters
+  for (size_t i = 0; i < _k->_variables.size(); i++)
+  {
+    _currentValue[i] -= _eta / (std::sqrt(_biasCorrectedSecondCentralMoment[i]) + _epsilon) * _biasCorrectedFirstMoment[i];
+  }
+}
+
+void AdaBelief::printGenerationBefore()
+{
+  _k->_logger->logInfo("Normal", "Starting generation %lu...\n", _k->_currentGeneration);
+}
+
+void AdaBelief::printGenerationAfter()
+{
+  _k->_logger->logInfo("Normal", "x = [ ");
+  for (size_t k = 0; k < _k->_variables.size(); k++) _k->_logger->logData("Normal", " %.5le  ", _currentValue[k]);
+  _k->_logger->logData("Normal", " ]\n");
+
+  _k->_logger->logInfo("Normal", "F(X) = %le \n", _currentEvaluation);
+
+  _k->_logger->logInfo("Normal", "DF(X) = [ ");
+  for (size_t k = 0; k < _k->_variables.size(); k++) _k->_logger->logData("Normal", " %.5le  ", _gradient[k]);
+  _k->_logger->logData("Normal", " ]\n");
+
+  _k->_logger->logInfo("Normal", "|DF(X)| = %le \n", _gradientNorm);
+}
+
+void AdaBelief::finalize()
+{
+  // Updating Results
+  (*_k)["Results"]["Best Sample"]["F(x)"] = _currentEvaluation;
+  (*_k)["Results"]["Best Sample"]["Gradient(x)"] = _gradient;
+  (*_k)["Results"]["Best Sample"]["Parameters"] = _currentValue;
+}
+
+} // namespace optimizer
+
+} // namespace solver
+
+} // namespace korali

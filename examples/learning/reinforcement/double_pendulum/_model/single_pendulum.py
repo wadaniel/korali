@@ -42,7 +42,7 @@ class SinglePendulum:
 
   @staticmethod
   def system(t, y, fact): #dynamics function
-    #comi: center of mass of link i (at li/2)
+    #comi: mass of link i
     #lci: half length of links
     #g: gravitational constant
     com1, lc1, J1, c, g = 0.41, 0.22, 0.116, 0.005, 9.81

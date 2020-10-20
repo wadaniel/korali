@@ -25,7 +25,7 @@ e["Variables"][1]["Type"] = "State"
 e["Variables"][2]["Name"] = "Angle 2"
 e["Variables"][2]["Type"] = "State"
 
-e["Variables"][3]["Name"] = "Car Velocity 1"
+e["Variables"][3]["Name"] = "Car Velocity"
 e["Variables"][3]["Type"] = "State"
 
 e["Variables"][4]["Name"] = "Angular Velocity 1"

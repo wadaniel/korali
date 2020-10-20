@@ -212,8 +212,8 @@ std::vector<float> DeepSupervisor::getGradients(const std::vector<float> &output
 void DeepSupervisor::printGenerationAfter()
 {
   // Printing results so far
-  _k->_logger->logInfo("Normal", "Training Loss: %.15f\n", _currentLoss);
-  _k->_logger->logInfo("Normal", "Suboptimal Generation Count: %lu\n", _suboptimalGenerationCount);
+  _k->_logger->logInfo("Normal", " + Training Loss: %.15f\n", _currentLoss);
+  _k->_logger->logInfo("Detailed", " + Suboptimal Generation Count: %lu\n", _suboptimalGenerationCount);
 }
 
 } // namespace learner

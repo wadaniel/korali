@@ -276,7 +276,7 @@ void Agent::printGenerationAfter()
   if (_maxExperiences > 0)
     _k->_logger->logInfo("Normal", " + Total Experience Count:      %lu/%lu\n", _experienceCount, _maxExperiences);
   else
-    _k->_logger->logInfo("Normal", " + Total Experience Count:    %lu\n", _experienceCount);
+    _k->_logger->logInfo("Normal", " + Total Experience Count:      %lu\n", _experienceCount);
 
   _k->_logger->logInfo("Normal", "Training Statistics:\n");
 

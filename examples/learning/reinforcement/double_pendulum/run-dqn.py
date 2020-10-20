@@ -37,8 +37,8 @@ e["Variables"][5]["Type"] = "State"
 e["Variables"][6]["Name"] = "Height Proxy"
 e["Variables"][6]["Type"] = "State"
 
-e["Variables"][6]["Name"] = "Force"
-e["Variables"][6]["Type"] = "Action"
+e["Variables"][7]["Name"] = "Force"
+e["Variables"][7]["Type"] = "Action"
 
 ### Configuring DQN hyperparameters
 

@@ -13,7 +13,7 @@ from scipy.integrate import ode
 
 class SinglePendulum:
   def __init__(self):
-    self.dt = 0.01
+    self.dt = 0.02
     self.step=0
     # x, th1, xdot, th1dot,
     self.u = np.asarray([0, 0, 0, 0 ])
@@ -29,13 +29,13 @@ class SinglePendulum:
     self.t = 0
 
   def isFailed(self):
-    return (abs(self.u[0])>5.0)
+    return (abs(self.u[0])>3.0)
 
   def isOver(self): # is episode over
     return self.isFailed()
 
   def isTruncated(self):  # check that cause for termination is time limits
-    return (abs(self.u[0])<=5.0)
+    return (abs(self.u[0])<=3.0)
 
   """Based on 'Swing-up Control of a Single Inverted Pendulum
   on a Cart With Input and Output Constraints' [Meta Tum, et. al.]"""
@@ -88,6 +88,7 @@ class SinglePendulum:
     # maybe transform state 
     # ..
     # ..
+    #print(self.F)
     #print(state, flush=True)
     
     return state

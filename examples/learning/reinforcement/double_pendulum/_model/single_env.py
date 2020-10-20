@@ -4,7 +4,7 @@ from single_pendulum import *
 ######## Defining Environment Storage
 
 upswing = SinglePendulum()
-maxSteps = 1000
+maxSteps = 500
 
 def env(s):
 

@@ -173,7 +173,7 @@ void dACER::processTrajectory(size_t startId, size_t endId)
     // Getting experience's action
     size_t curActionIdx = _experienceReplayActionIndexes[curId];
 
-    // Getting probability densities for current action given current policy
+    // Getting probability densities for current action given past behaviour
     auto pOldPolicy = _experienceReplayActionProbabilities[curId];
 
     // Getting probability densities for current action given current policy
@@ -334,8 +334,13 @@ void dACER::processTrajectory(size_t startId, size_t endId)
 
 std::vector<float> dACER::getActionProbabilities(const std::vector<float> &state)
 {
-  // Forward softmax probability function
+  // Forward policy
   auto pValues = _policyLearner->getEvaluation(state);
+  
+  // Normalize Probabilities
+  double sum = 0.0;
+  for(size_t i = 0; i < pValues.size(); ++i) sum += pValues[i];
+  for(size_t i = 0; i < pValues.size(); ++i) pValues[i] /= sum;
 
   return pValues;
 }

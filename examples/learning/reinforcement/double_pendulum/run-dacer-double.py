@@ -2,7 +2,7 @@
 import os
 import sys
 sys.path.append('./_model')
-from env import *
+from double_env import *
 
 ####### Defining Korali Problem
 
@@ -10,8 +10,10 @@ import korali
 k = korali.Engine()
 e = korali.Experiment()
 
+actions = [[i] for i in range(-20,20)]
+
 e["Problem"]["Type"] = "Reinforcement Learning / Discrete"
-e["Problem"]["Possible Actions"] = [ [ -100.0 ], [ -90.0 ], [ -80.0 ], [ -70.0 ], [ -60.0 ], [ -50.0 ], [ -40.0 ], [ -30.0 ], [ -20.0 ], [ -10.0 ], [0.0], [  10.0 ], [ 20.0 ], [ 30.0 ], [  40.0 ], [  50.0 ], [  60.0 ], [ 70.0 ], [ 80.0 ], [ 90.0 ], [ 100.0 ]  ]
+e["Problem"]["Possible Actions"] = actions
 e["Problem"]["Environment Function"] = env
 e["Problem"]["Action Repeat"] = 1
 e["Problem"]["Actions Between Policy Updates"] = 1

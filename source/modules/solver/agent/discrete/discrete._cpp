@@ -52,7 +52,7 @@ void Discrete::getAction(korali::Sample &sample)
     {
       // Categroial action sampled from action probabilites (from ACER paper [Wang2017])
       float curSum = 0.0;
-      for (actionIdx = 0; actionIdx < pActions.size()-1; actionIdx++)
+      for (actionIdx = 0; actionIdx < pActions.size() - 1; actionIdx++)
       {
         curSum += pActions[actionIdx];
         if (x < curSum) break;

@@ -336,11 +336,11 @@ std::vector<float> dACER::getActionProbabilities(const std::vector<float> &state
 {
   // Forward policy
   auto pValues = _policyLearner->getEvaluation(state);
-  
+
   // Normalize Probabilities
   double sum = 0.0;
-  for(size_t i = 0; i < pValues.size(); ++i) sum += pValues[i];
-  for(size_t i = 0; i < pValues.size(); ++i) pValues[i] /= sum;
+  for (size_t i = 0; i < pValues.size(); ++i) sum += pValues[i];
+  for (size_t i = 0; i < pValues.size(); ++i) pValues[i] /= sum;
 
   return pValues;
 }

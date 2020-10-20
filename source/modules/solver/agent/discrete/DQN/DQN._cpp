@@ -190,16 +190,15 @@ std::vector<float> DQN::getActionProbabilities(const std::vector<float> &state)
 
     // Extracting max Q(s,a_i)
     if (qval[i] > maxq) maxq = qval[i];
-
   }
-  
+
   // Storage for the cumulative e^Q(s,a_i)/maxq
   float sumExpQVal = 0.0;
- 
+
   for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
   {
     // Computing e^(Q(s,a_i) - maxq)
-    float expCurQVal = std::exp(qval[i]-maxq);
+    float expCurQVal = std::exp(qval[i] - maxq);
 
     // Computing Sum_i(e^Q(s,a_i)/e^maxq)
     sumExpQVal += expCurQVal;
@@ -210,7 +209,7 @@ std::vector<float> DQN::getActionProbabilities(const std::vector<float> &state)
 
   // Normalizing action probabilities
   for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
-    pActions[i] = std::exp(qval[i]-logSumExpQVal);
+    pActions[i] = std::exp(qval[i] - logSumExpQVal);
 
   // Returning the best found
   return pActions;
@@ -230,4 +229,4 @@ void DQN::printAgentInformation()
 } // namespace agent
 } // namespace solver
 } // namespace korali
-    // Updating qRet (equation 5 in ACER paper)
+  // Updating qRet (equation 5 in ACER paper)

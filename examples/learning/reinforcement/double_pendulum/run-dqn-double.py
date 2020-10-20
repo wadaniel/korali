@@ -10,8 +10,11 @@ import korali
 k = korali.Engine()
 e = korali.Experiment()
 
+
+actions = [[i] for i in range(-20,20)]
+
 e["Problem"]["Type"] = "Reinforcement Learning / Discrete"
-e["Problem"]["Possible Actions"] = [ [ -10.0 ], [ -9.0 ], [ -8.0 ], [ -7.0 ], [ -6.0 ], [ -5.0 ], [ -4.0 ], [ -3.0 ], [ -2.0 ], [ -1.0 ], [0.0], [  1.0 ], [ 2.0 ], [ 3.0 ], [  4.0 ], [  5.0 ], [  6.0 ], [ 7.0 ], [ 8.0 ], [ 9.0 ], [ 10.0 ]  ]
+e["Problem"]["Possible Actions"] = actions
 e["Problem"]["Environment Function"] = env
 e["Problem"]["Action Repeat"] = 1
 e["Problem"]["Actions Between Policy Updates"] = 1
@@ -88,9 +91,9 @@ e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Batch Normalization"]["Ena
 
 ### Defining Termination Criteria
 
-e["Solver"]["Training Reward Threshold"] = 500
+e["Solver"]["Training Reward Threshold"] = 3000
 e["Solver"]["Policy Testing Episodes"] = 20
-e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 500
+e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 3500
 e["Solver"]["Termination Criteria"]["Max Generations"] = 15000
 
 ### Setting file output configuration

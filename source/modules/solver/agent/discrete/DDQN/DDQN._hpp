@@ -50,22 +50,22 @@ class DDQN : public Discrete
   /**
    * Storage for  A(s,a_i) for all actions
    */
-  std::vector<float> actionAVal;
+  std::vector<float> aValAction;
 
   /**
    * Storage for average A(s,a_i) for all actions
    */
-  float avgAVal;
+  float aValAverage;
 
   /*
-   * Storage for  Q(s,a_i) for all actions
+   * Storage for Q(s,a_i) for all actions
    */
-  std::vector<float> actionQVal;
+  std::vector<float> qValStateAction;
 
   /*
    * Storage for V(s)
    */
-  float stateVVal;
+  float vValState;
 
   std::vector<float> getActionProbabilities(const std::vector<float> &state) override;
   void updateHyperparameters(const knlohmann::json &hyperparameters) override;

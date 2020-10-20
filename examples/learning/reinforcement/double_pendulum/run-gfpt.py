@@ -10,7 +10,7 @@ import korali
 k = korali.Engine()
 e = korali.Experiment()
 
-### Defining the Cartpole problem's configuration
+### Defining the Pendulum problem's configuration
 
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = env
@@ -23,20 +23,26 @@ e["Variables"][0]["Type"] = "State"
 e["Variables"][1]["Name"] = "Cart Velocity"
 e["Variables"][1]["Type"] = "State"
 
-e["Variables"][2]["Name"] = "Pole Omega"
+e["Variables"][2]["Name"] = "Angle 1"
 e["Variables"][2]["Type"] = "State"
 
-e["Variables"][3]["Name"] = "Pole Cos(Angle)"
+e["Variables"][3]["Name"] = "Angular Velocity 1"
 e["Variables"][3]["Type"] = "State"
 
-e["Variables"][4]["Name"] = "Pole Sin(Angle)"
+e["Variables"][4]["Name"] = "Angle 2"
 e["Variables"][4]["Type"] = "State"
 
-e["Variables"][5]["Name"] = "Force"
-e["Variables"][5]["Type"] = "Action"
-e["Variables"][5]["Lower Bound"] = -10.0
-e["Variables"][5]["Upper Bound"] = +10.0
-e["Variables"][5]["Exploration Sigma"] = 0.35
+e["Variables"][5]["Name"] = "Angular Velocity 2"
+e["Variables"][5]["Type"] = "State"
+
+e["Variables"][6]["Name"] = "Height Proxy"
+e["Variables"][6]["Type"] = "State"
+
+e["Variables"][7]["Name"] = "Force"
+e["Variables"][7]["Type"] = "Action"
+e["Variables"][7]["Lower Bound"] = -100.0
+e["Variables"][7]["Upper Bound"] = +100.0
+e["Variables"][7]["Exploration Sigma"] = 3.50
 
 ### Defining Agent Configuration 
 

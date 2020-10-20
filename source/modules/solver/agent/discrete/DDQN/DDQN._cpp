@@ -75,10 +75,10 @@ void DDQN::initializeAgent()
   *********************************************************************/
 
   // Storage for  A(s,a_i) for all actions
-  actionAVal.resize(_problem->_possibleActions.size());
+  aValAction.resize(_problem->_possibleActions.size());
 
   // Storage for  Q(s,a_i) for all actions
-  actionQVal.resize(_problem->_possibleActions.size());
+  qValStateAction.resize(_problem->_possibleActions.size());
 
   /*********************************************************************
   * Loading/Setting Hyperparameters
@@ -151,7 +151,7 @@ void DDQN::trainAgent()
       auto bestAction = _problem->_possibleActions[bestActionIdx];
 
       // Evaluating Q = V(s) + A(s, a_best) - 1/n * A(s, a')
-      auto qNextExp = stateVVal + actionQVal[bestActionIdx] - avgAVal;
+      auto qNextExp = vValState + qValStateAction[bestActionIdx] - aValAverage;
 
       // Calculating Q*
       qStar += _criticDiscountFactor * qNextExp;
@@ -161,8 +161,8 @@ void DDQN::trainAgent()
     auto pActions = getActionProbabilities(curState);
 
     // Now calculating targets for V(s) and A(s,a)
-    float vTarget = qStar - actionQVal[curActionIdx] + avgAVal;
-    float aTarget = qStar - stateVVal + avgAVal;
+    float vTarget = qStar - qValStateAction[curActionIdx] + aValAverage;
+    float aTarget = qStar - vValState + aValAverage;
 
     // Updating inputs to training learners
     for (size_t j = 0; j < curState.size(); j++) _aProblem->_inputs[i][j] = curState[j];
@@ -223,13 +223,13 @@ std::vector<float> DDQN::getActionProbabilities(const std::vector<float> &state)
   std::vector<float> stateActionInput(_problem->_stateVectorSize + _problem->_actionVectorSize);
 
   // Computing V(s)
-  stateVVal = _vLearner->getEvaluation(state)[0];
+  vValState = _vLearner->getEvaluation(state)[0];
 
   // Storing state into the critic input (will not change)
   for (size_t i = 0; i < state.size(); i++) stateActionInput[i] = state[i];
 
   // Initializing calculation of average A(s,a')
-  avgAVal = 0.0;
+  aValAverage = 0.0;
 
   // Iterating over all possible actions, calculating their A(s,a)
   for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
@@ -239,14 +239,14 @@ std::vector<float> DDQN::getActionProbabilities(const std::vector<float> &state)
       stateActionInput[_problem->_stateVectorSize + j] = _problem->_possibleActions[i][j];
 
     // Computing Q(s,a)
-    actionAVal[i] = _aLearner->getEvaluation(stateActionInput)[0];
+    aValAction[i] = _aLearner->getEvaluation(stateActionInput)[0];
 
     // Adding to sum counter
-    avgAVal += actionAVal[i];
+    aValAverage += aValAction[i];
   }
 
   // Calculating average A(s,a')
-  avgAVal = avgAVal / (float)_problem->_possibleActions.size();
+  aValAverage = aValAverage / (float)_problem->_possibleActions.size();
 
   // Storage for action probabilities
   std::vector<float> pActions(_problem->_possibleActions.size());
@@ -258,7 +258,7 @@ std::vector<float> DDQN::getActionProbabilities(const std::vector<float> &state)
   for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
   {
     // Computing Q(s,a_i) = V(s) + A(s,a) - 1/n A(s,a')
-    float curQVal = stateVVal + actionAVal[i] - avgAVal;
+    float curQVal = vValState + aValAction[i] - aValAverage;
 
     // Computing e^Q(s,a_i)
     float expCurQVal = std::exp(curQVal);
@@ -271,7 +271,7 @@ std::vector<float> DDQN::getActionProbabilities(const std::vector<float> &state)
   }
 
   // Computing 1/n A(s,a') for all a' belonging to the action space
-  float avgAVal = 0.0;
+  float aValAverage = 0.0;
 
   // Calculating inverse of Sum_i(e^Q(s,a_i))
   float invSumExpQVal = 1.0f / sumExpQVal;
@@ -286,7 +286,6 @@ std::vector<float> DDQN::getActionProbabilities(const std::vector<float> &state)
 
 void DDQN::printAgentInformation()
 {
-
  _k->_logger->logInfo("Normal", "Critic Information:\n");
 
  _k->_logger->logInfo("Normal", " + Average (Std) Q-Value in Mini-Batch:  %f (%f)\n", _averageQStar, _stdevQStar);

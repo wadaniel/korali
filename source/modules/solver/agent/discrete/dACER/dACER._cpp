@@ -159,7 +159,7 @@ void dACER::processTrajectory(size_t startId, size_t endId)
     // Getting current reward
     float curReward = _experienceReplayRewards[curId];
 
-    // Re-calculating qRet
+    // Re-calculating qRet (equation 5 in ACER paper, also see below)
     qRet = curReward + _criticDiscountFactor * qRet;
 
     // Getting experience's state
@@ -284,7 +284,7 @@ void dACER::processTrajectory(size_t startId, size_t endId)
     // Now calculating truncated importance weight with 1.0 as truncation factor
     truncatedImportanceWeight = std::min(1.0f, importanceWeight);
 
-    // Updating qRet
+    // Updating qRet (equation 5 in ACER paper)
     qRet = truncatedImportanceWeight * (qRet - qCurState) + vCurState;
 
     // Increasing current experience count

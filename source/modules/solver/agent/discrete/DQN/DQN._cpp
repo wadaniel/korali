@@ -162,7 +162,7 @@ void DQN::trainAgent()
 
 void DQN::updateHyperparameters(const knlohmann::json &hyperparameters)
 {
-  _qHatHyperparameter = _criticLearner->getHyperparameters();
+  _criticLearner->setHyperparameters(hyperparameters["Critic"].get<std::vector<float>>());
 }
 
 std::vector<float> DQN::getActionProbabilities(const std::vector<float> &state)
@@ -224,3 +224,4 @@ void DQN::printAgentInformation()
 } // namespace agent
 } // namespace solver
 } // namespace korali
+    // Updating qRet (equation 5 in ACER paper)

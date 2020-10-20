@@ -40,7 +40,7 @@ e["Variables"][5]["Type"] = "Action"
 e["Solver"]["Type"] = "Agent / Discrete / DQN"
 e["Solver"]["Optimization Steps Per Update"] = 1
 e["Solver"]["Experiences Between Agent Trainings"] = 1
-e["Solver"]["Experiences Between Target Network Updates"] = 50
+e["Solver"]["Experiences Between Target Network Updates"] = 500
 
 ### Defining Experience Replay configuration
 
@@ -83,9 +83,9 @@ e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Batch Normalization"]["Ena
 
 ### Defining Termination Criteria
 
-e["Solver"]["Training Reward Threshold"] = 400
+e["Solver"]["Training Reward Threshold"] = 950
 e["Solver"]["Policy Testing Episodes"] = 20
-e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 450
+e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 950
 
 ### Setting file output configuration
 

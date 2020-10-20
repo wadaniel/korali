@@ -44,6 +44,7 @@
 #include "solver/agent/continuous/cACER/cACER.hpp"
 #include "solver/agent/continuous/continuous.hpp"
 #include "solver/agent/discrete/DQN/DQN.hpp"
+#include "solver/agent/discrete/DDQN/DDQN.hpp"
 #include "solver/agent/discrete/dACER/dACER.hpp"
 #include "solver/agent/discrete/discrete.hpp"
 #include "solver/executor/executor.hpp"
@@ -135,6 +136,7 @@ Module *Module::getModule(knlohmann::json &js, Experiment *e)
   if (moduleType == "Learner/DeepSupervisor") module = new korali::solver::learner::DeepSupervisor();
   if (moduleType == "Agent/Discrete/DACER") module = new korali::solver::agent::discrete::dACER();
   if (moduleType == "Agent/Discrete/DQN") module = new korali::solver::agent::discrete::DQN();
+  if (moduleType == "Agent/Discrete/DDQN") module = new korali::solver::agent::discrete::DDQN();
   if (moduleType == "Agent/Continuous/CACER") module = new korali::solver::agent::continuous::cACER();
   if (moduleType == "Agent/Continuous/DDPG") module = new korali::solver::agent::continuous::DDPG();
   if (moduleType == "Agent/Continuous/GFPT") module = new korali::solver::agent::continuous::GFPT();

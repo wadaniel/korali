@@ -59,7 +59,7 @@ void Discrete::getAction(korali::Sample &sample)
       }
 
       // NOTE: In origianl DQN paper [Minh2015] we choose max (D.W.)
-      // actionIdx = std::distance(pActions.begin(), std::max_element(pActions.begin(), pActions.end()));
+      actionIdx = std::distance(pActions.begin(), std::max_element(pActions.begin(), pActions.end()));
     }
 
     // Storing action metadata

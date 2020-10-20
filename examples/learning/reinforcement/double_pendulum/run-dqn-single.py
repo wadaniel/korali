@@ -2,7 +2,7 @@
 import os
 import sys
 sys.path.append('./_model')
-from env import *
+from single_env import *
 
 ####### Defining Korali Problem
 
@@ -22,30 +22,24 @@ e["Variables"][0]["Type"] = "State"
 e["Variables"][1]["Name"] = "Angle 1"
 e["Variables"][1]["Type"] = "State"
 
-e["Variables"][2]["Name"] = "Angle 2"
+e["Variables"][2]["Name"] = "Car Velocity"
 e["Variables"][2]["Type"] = "State"
 
-e["Variables"][3]["Name"] = "Car Velocity 1"
+e["Variables"][3]["Name"] = "Angular Velocity 1"
 e["Variables"][3]["Type"] = "State"
 
-e["Variables"][4]["Name"] = "Angular Velocity 1"
+e["Variables"][4]["Name"] = "Height Proxy"
 e["Variables"][4]["Type"] = "State"
 
-e["Variables"][5]["Name"] = "Angular Velocity 2"
-e["Variables"][5]["Type"] = "State"
-
-e["Variables"][6]["Name"] = "Height Proxy"
-e["Variables"][6]["Type"] = "State"
-
-e["Variables"][7]["Name"] = "Force"
-e["Variables"][7]["Type"] = "Action"
+e["Variables"][5]["Name"] = "Force"
+e["Variables"][5]["Type"] = "Action"
 
 ### Configuring DQN hyperparameters
 
 e["Solver"]["Type"] = "Agent / Discrete / DQN"
 e["Solver"]["Optimization Steps Per Update"] = 1
 e["Solver"]["Experiences Between Agent Trainings"] = 1
-e["Solver"]["Experiences Between Target Network Updates"] = 500
+e["Solver"]["Experiences Between Target Network Updates"] = 50
 
 ### Defining Experience Replay configuration
 

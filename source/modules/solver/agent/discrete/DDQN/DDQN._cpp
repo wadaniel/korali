@@ -238,7 +238,7 @@ std::vector<float> DDQN::getActionProbabilities(const std::vector<float> &state)
     for (size_t j = 0; j < _problem->_actionVectorSize; j++)
       stateActionInput[_problem->_stateVectorSize + j] = _problem->_possibleActions[i][j];
 
-    // Computing Q(s,a)
+    // Computing A(s,a)
     aValAction[i] = _aLearner->getEvaluation(stateActionInput)[0];
 
     // Adding to sum counter

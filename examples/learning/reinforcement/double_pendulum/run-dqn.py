@@ -31,14 +31,14 @@ e["Variables"][3]["Type"] = "State"
 e["Variables"][4]["Name"] = "Angular Velocity 1"
 e["Variables"][4]["Type"] = "State"
 
-#e["Variables"][5]["Name"] = "Angular Velocity 2"
-#e["Variables"][5]["Type"] = "State"
+e["Variables"][5]["Name"] = "Angular Velocity 2"
+e["Variables"][5]["Type"] = "State"
 
-#e["Variables"][3]["Name"] = "Height Proxy"
-#e["Variables"][3]["Type"] = "State"
+e["Variables"][6]["Name"] = "Height Proxy"
+e["Variables"][6]["Type"] = "State"
 
-e["Variables"][5]["Name"] = "Force"
-e["Variables"][5]["Type"] = "Action"
+e["Variables"][7]["Name"] = "Force"
+e["Variables"][7]["Type"] = "Action"
 
 ### Configuring DQN hyperparameters
 

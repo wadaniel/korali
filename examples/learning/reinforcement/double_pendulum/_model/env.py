@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
 from double_pendulum import *
-from cartpole import *
 
 ######## Defining Environment Storage
 
 upswing = DoublePendulum()
-#upswing = CartPole()
 maxSteps = 1000
 
 def env(s):

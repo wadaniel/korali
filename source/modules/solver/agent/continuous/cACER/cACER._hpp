@@ -47,6 +47,21 @@ class cACER : public Continuous
   korali::Experiment _aExperiment;
 
   /**
+   * @brief Pointer to training the actor network
+   */
+  learner::DeepSupervisor *_policyLearner;
+
+  /**
+  * @brief Korali experiment for obtaining the agent's action
+  */
+  korali::Experiment _policyExperiment;
+
+  /**
+   * @brief Pointer to actor's experiment problem
+   */
+  problem::SupervisedLearning *_policyProblem;
+
+  /**
    * @brief Variable to calculate the total number of actions in the action space
    */
   size_t _actionCount;

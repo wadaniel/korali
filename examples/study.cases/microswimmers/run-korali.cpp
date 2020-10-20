@@ -76,7 +76,7 @@ int main(int argc, char *argv[])
   e["Solver"]["Optimization Steps Per Update"] = 1;
 
   e["Solver"]["Random Action Probability"]["Initial Value"] = 0.5;
-  e["Solver"]["Random Action Probability"]["Target Value"] = 0.05;
+  e["Solver"]["Random Action Probability"]["Target Value"] = 0.01;
   e["Solver"]["Random Action Probability"]["Decrease Rate"] = 0.05;
 
   e["Solver"]["Experience Replay"]["Start Size"] = 1000;
@@ -109,8 +109,7 @@ int main(int argc, char *argv[])
   //// Defining Policy Configuration
 
   e["Solver"]["Policy"]["Learning Rate"] = 0.001;
-  e["Solver"]["Policy"]["Mini Batch Size"] = 16;
-  e["Solver"]["Policy"]["Adoption Rate"] = 0.80;
+  e["Solver"]["Policy"]["Mini Batch Size"] = 32;
 
   e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense";
   e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear";

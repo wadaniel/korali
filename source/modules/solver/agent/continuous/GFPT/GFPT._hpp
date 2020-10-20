@@ -16,7 +16,6 @@ namespace continuous
 class GFPT : public Continuous
 {
   public:
-
   /**
    * @brief Pointer to training experiment's V(s) problem
    */
@@ -77,12 +76,12 @@ class GFPT : public Continuous
    */
   float aValAverage;
 
-  /*
+  /**
    * Storage for  Q(s,a_i) for all actions
    */
   std::vector<float> qValStateAction;
 
-  /*
+  /**
    * Storage for V(s)
    */
   float vValState;

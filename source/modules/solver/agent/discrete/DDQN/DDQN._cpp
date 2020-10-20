@@ -59,7 +59,7 @@ void DDQN::initializeAgent()
   {
     _aExperiment["Problem"]["Solution"][i][0] = 0.0;
 
-    for (size_t j = 0; j < _problem->_stateVectorSize + _problem->_actionVectorSize;  j++)
+    for (size_t j = 0; j < _problem->_stateVectorSize + _problem->_actionVectorSize; j++)
       _aExperiment["Problem"]["Inputs"][i][j] = 0.0;
   }
 
@@ -70,7 +70,7 @@ void DDQN::initializeAgent()
   _aProblem = dynamic_cast<problem::SupervisedLearning *>(_aExperiment._problem);
   _aLearner = dynamic_cast<solver::learner::DeepSupervisor *>(_aExperiment._solver);
 
- /*********************************************************************
+  /*********************************************************************
   * Initializing critic evaluation storage
   *********************************************************************/
 
@@ -199,8 +199,8 @@ void DDQN::trainAgent()
   * by sampling a few more mini-batches after the optimization steps
   ******************************************************************************/
 
-   normalizeStateActionNeuralNetwork(_aLearner->_trainingNeuralNetwork, _criticMiniBatchSize, _criticNormalizationSteps);
-   normalizeStateNeuralNetwork(_vLearner->_trainingNeuralNetwork, _criticMiniBatchSize, _criticNormalizationSteps);
+  normalizeStateActionNeuralNetwork(_aLearner->_trainingNeuralNetwork, _criticMiniBatchSize, _criticNormalizationSteps);
+  normalizeStateNeuralNetwork(_vLearner->_trainingNeuralNetwork, _criticMiniBatchSize, _criticNormalizationSteps);
 
   /*********************************************************************
    * Updating hyperparameters and broadcasting them to the workers
@@ -286,21 +286,21 @@ std::vector<float> DDQN::getActionProbabilities(const std::vector<float> &state)
 
 void DDQN::printAgentInformation()
 {
- _k->_logger->logInfo("Normal", "Critic Information:\n");
+  _k->_logger->logInfo("Normal", "Critic Information:\n");
 
- _k->_logger->logInfo("Normal", " + Average (Std) Q-Value in Mini-Batch:  %f (%f)\n", _averageQStar, _stdevQStar);
+  _k->_logger->logInfo("Normal", " + Average (Std) Q-Value in Mini-Batch:  %f (%f)\n", _averageQStar, _stdevQStar);
 
- _k->_logger->logInfo("Normal", "A Function Information:\n");
+  _k->_logger->logInfo("Normal", "A Function Information:\n");
 
- _aExperiment._logger->_verbosityLevel = _k->_logger->_verbosityLevel;
- _aExperiment._solver->printGenerationAfter();
- _aExperiment._logger->setVerbosityLevel("Silent");
+  _aExperiment._logger->_verbosityLevel = _k->_logger->_verbosityLevel;
+  _aExperiment._solver->printGenerationAfter();
+  _aExperiment._logger->setVerbosityLevel("Silent");
 
- _k->_logger->logInfo("Normal", "V Function Information:\n");
+  _k->_logger->logInfo("Normal", "V Function Information:\n");
 
- _vExperiment._logger->_verbosityLevel = _k->_logger->_verbosityLevel;
- _vExperiment._solver->printGenerationAfter();
- _vExperiment._logger->setVerbosityLevel("Silent");
+  _vExperiment._logger->_verbosityLevel = _k->_logger->_verbosityLevel;
+  _vExperiment._solver->printGenerationAfter();
+  _vExperiment._logger->setVerbosityLevel("Silent");
 }
 
 } // namespace discrete

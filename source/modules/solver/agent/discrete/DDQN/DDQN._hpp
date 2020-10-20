@@ -16,7 +16,6 @@ namespace discrete
 class DDQN : public Discrete
 {
   public:
-
   /**
    * @brief Pointer to training experiment's V(s) problem
    */
@@ -57,12 +56,12 @@ class DDQN : public Discrete
    */
   float aValAverage;
 
-  /*
+  /**
    * Storage for Q(s,a_i) for all actions
    */
   std::vector<float> qValStateAction;
 
-  /*
+  /**
    * Storage for V(s)
    */
   float vValState;

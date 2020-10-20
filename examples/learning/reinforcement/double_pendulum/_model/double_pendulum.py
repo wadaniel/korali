@@ -13,7 +13,7 @@ from scipy.integrate import ode
 
 class DoublePendulum:
   def __init__(self):
-    self.dt = 0.02
+    self.dt = 0.01
     self.step=0
     # x, th1, th2, xdot, th1dot, th2dot
     self.u = np.asarray([0, 0, 0, 0, 0, 0])
@@ -30,7 +30,7 @@ class DoublePendulum:
     self.t = 0
 
   def isFailed(self):
-    return (abs(self.u[0])>0.5)
+    return (abs(self.u[0])>5.0)
 
   def isOver(self): # is episode over
     return self.isFailed()
@@ -70,7 +70,6 @@ class DoublePendulum:
 
     qdot = np.array([xdot, th1dot, th2dot])
     
-    """
     B = np.array([1, 0, 0])
 
     M = np.array([
@@ -85,14 +84,9 @@ class DoublePendulum:
 
     G = np.array([0.0, -b1*sin(th1), -b2*sin(th2)])
     
-    #Minv = np.linalg.inv(M)
-    #RHS  = np.matmul(Minv,B*fact-G-np.matmul(C,qdot))
-    #RHS = np.linalg.solve(M, B*fact-G-np.matmul(C,qdot))
-    #RHS = B*fact-G-np.matmul(C,qdot)
-    """
+    RHS = np.linalg.solve(M, B*fact-G-np.matmul(C,qdot))
+    
     # xdot, th1dot, th2dot, xdotdot, th1dotdot, th2dotdot
-    RHS = np.array([0.0, 0.0, 0.0])
-    qdot = np.array([1.0, 1.0, 1.0])
     return np.concatenate((qdot,RHS))
     
   def wrapToNPiPi(self, rad):
@@ -101,45 +95,41 @@ class DoublePendulum:
   def advance(self, action):
     
     self.F = action[0]
-    #self.u += self.dt*self.system(self.t, self.u, self.F)
-    self.ODE.set_initial_value(self.u, self.t).set_f_params(self.F)
-    self.u = self.ODE.integrate(self.t + self.dt)
-    #bla = self.ODE.integrate(self.t + self.dt)
-    #print(bla)
-    #self.u=bla
-    #self.u[1] = self.wrapToNPiPi(self.u[1])
-    #self.u[2] = self.wrapToNPiPi(self.u[2])
+    self.u += self.dt*self.system(self.t, self.u, self.F)
+    #self.ODE.set_initial_value(self.u, self.t).set_f_params(self.F)
+    #self.u = self.ODE.integrate(self.t + self.dt)
+    self.u[1] = self.wrapToNPiPi(self.u[1])
+    self.u[2] = self.wrapToNPiPi(self.u[2])
  
     self.t = self.t + self.dt
     self.step = self.step + 1
-    print("{}: {}".format(self.step,self.u), flush=True)
+    #print("{}: {}".format(self.step,self.u), flush=True)
     if self.isOver(): return 1
     else: return 0
 
   def getState(self):
-    state = np.zeros(5)
+    state = np.zeros(7)
     state[0] = np.copy(self.u[0])
     state[1] = np.copy(self.u[1])
     state[2] = np.copy(self.u[2]) 
-    state[3] = cos(state[1]) + cos(state[2])
-    state[4] = cos(state[1]) + cos(state[2])
-#    state[3] = np.cos(self.u[2]) # Cos(Angle) 
-#    state[4] = np.sin(self.u[2]) # Sin(Angle)
+    state[3] = np.copy(self.u[3])
+    state[4] = np.copy(self.u[4])
+    state[5] = np.copy(self.u[3])
+    state[6] = cos(state[1])+cos(state[2])
+
     # maybe transform state 
     # ..
     # ..
-    #print(self.F)
-    print(state, flush=True)
+    #print(state, flush=True)
+    
     return state
 
   def getReward(self):
 
     th1 = np.copy(self.u[1])
     th2 = np.copy(self.u[2])
-    #return float(abs(th1)<math.pi/8) + float(abs(th2)<math.pi/8) - 2.*self.isFailed()
-    #return np.exp(-0.5 * ((1-cos(th1))**2 + (1-cos(th2))**2))
-    return 2 + cos(th1) + cos(th2) - 200.*float(self.isFailed())
-
+#    return 2 + cos(th1) + cos(th2) - 200.*float(self.isFailed())
+    return 2 + cos(th1) + cos(th2) 
 
 if __name__ == '__main__':
     print("init..")

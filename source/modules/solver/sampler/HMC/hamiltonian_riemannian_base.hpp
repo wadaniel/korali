@@ -79,11 +79,11 @@ class HamiltonianRiemannian : public Hamiltonian
   double __softAbsFunc(const double x, const double alpha)
   {
     double result;
-    if (std::abs(x) < 0.5)
+    if (std::abs(x * alpha) < 0.5)
     {
       double a2 = 1.0 / 3.0;
       double a4 = -1.0 / 45.0;
-      result = 1.0 / alpha + a2 * std::pow(x, 4) * alpha + a4 * std::pow(x, 8) * std::pow(alpha, 3);
+      result = 1.0 / alpha + a2 * std::pow(x, 2) * alpha + a4 * std::pow(x, 4) * std::pow(alpha, 3);
     }
     else
     {

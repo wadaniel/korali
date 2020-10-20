@@ -59,7 +59,7 @@ void GFPT::initializeAgent()
   {
     _aExperiment["Problem"]["Solution"][i][0] = 0.0;
 
-    for (size_t j = 0; j < _problem->_stateVectorSize + _problem->_actionVectorSize;  j++)
+    for (size_t j = 0; j < _problem->_stateVectorSize + _problem->_actionVectorSize; j++)
       _aExperiment["Problem"]["Inputs"][i][j] = 0.0;
   }
 
@@ -130,50 +130,50 @@ void GFPT::initializeAgent()
 
 float GFPT::stateActionValueFunction(const std::vector<float> &state, const std::vector<float> &action)
 {
- // Calculating V(s_i+1)
- vValState = _vLearner->getEvaluation(state)[0];
+  // Calculating V(s_i+1)
+  vValState = _vLearner->getEvaluation(state)[0];
 
- // Storage to put together state and action
- std::vector<float> stateActionInput(_problem->_stateVectorSize + _problem->_actionVectorSize);
+  // Storage to put together state and action
+  std::vector<float> stateActionInput(_problem->_stateVectorSize + _problem->_actionVectorSize);
 
- // Calculating max_a A(s_i+1, a)
- for (size_t j = 0; j < _problem->_stateVectorSize; j++) stateActionInput[j] = state[j];
- for (size_t j = 0; j < _problem->_actionVectorSize; j++) stateActionInput[j + _problem->_stateVectorSize] = action[j];
- aValAction = _aLearner->getEvaluation(stateActionInput)[0];
+  // Calculating max_a A(s_i+1, a)
+  for (size_t j = 0; j < _problem->_stateVectorSize; j++) stateActionInput[j] = state[j];
+  for (size_t j = 0; j < _problem->_actionVectorSize; j++) stateActionInput[j + _problem->_stateVectorSize] = action[j];
+  aValAction = _aLearner->getEvaluation(stateActionInput)[0];
 
- // Getting the Gaussian means of the actions given by the agent's policy
- auto actionMeans = getActionMeans(state);
+  // Getting the Gaussian means of the actions given by the agent's policy
+  auto actionMeans = getActionMeans(state);
 
- // Getting the Gaussian sigmas of the actions given by the agent's policy
- auto actionSigmas = getActionSigmas(state);
+  // Getting the Gaussian sigmas of the actions given by the agent's policy
+  auto actionSigmas = getActionSigmas(state);
 
- // Initializing average A(s,a) counter
- aValAverage = 0.0;
+  // Initializing average A(s,a) counter
+  aValAverage = 0.0;
 
- // Calculating avg A(s_i+1, a') for many a'
- for (size_t sampleId = 0; sampleId < _policySamplePopulation; sampleId++)
- {
-  for (size_t j = 0; j < _problem->_actionVectorSize; j++)
+  // Calculating avg A(s_i+1, a') for many a'
+  for (size_t sampleId = 0; sampleId < _policySamplePopulation; sampleId++)
   {
-   // Updating normal distribution for the current action element
-   _normalGenerator->_mean = actionMeans[j];
-   _normalGenerator->_standardDeviation = actionSigmas[j];
+    for (size_t j = 0; j < _problem->_actionVectorSize; j++)
+    {
+      // Updating normal distribution for the current action element
+      _normalGenerator->_mean = actionMeans[j];
+      _normalGenerator->_standardDeviation = actionSigmas[j];
 
-   // Generating action from the updated normal distribution
-   stateActionInput[j + _problem->_stateVectorSize] = _normalGenerator->getRandomNumber();
+      // Generating action from the updated normal distribution
+      stateActionInput[j + _problem->_stateVectorSize] = _normalGenerator->getRandomNumber();
+    }
+
+    // Calculating A(s,a)
+    aValAverage += _aLearner->getEvaluation(stateActionInput)[0];
   }
 
-  // Calculating A(s,a)
-  aValAverage += _aLearner->getEvaluation(stateActionInput)[0];
- }
+  // Normalizing Average
+  aValAverage /= (float)_policySamplePopulation;
 
- // Normalizing Average
- aValAverage /= (float) _policySamplePopulation;
+  // Returning Q(s,a) = V(s,a) + A(s,a) - avg A(s,a')
+  float qVal = vValState + aValAction - aValAverage;
 
- // Returning Q(s,a) = V(s,a) + A(s,a) - avg A(s,a')
- float qVal = vValState + aValAction - aValAverage;
-
- return qVal;
+  return qVal;
 }
 
 void GFPT::trainAgent()
@@ -220,7 +220,7 @@ void GFPT::trainAgent()
     float qStar = curReward;
 
     // If state is not terminal (next state is filled) then add Qnew to the Q value.
-    if (isTerminal == false)  qStar += _criticDiscountFactor * stateActionValueFunction(nextState, bestAction);
+    if (isTerminal == false) qStar += _criticDiscountFactor * stateActionValueFunction(nextState, bestAction);
 
     // Now calculating Q, V, A, and avgA for current state/action
     float qCurrent = stateActionValueFunction(curState, curAction);
@@ -372,7 +372,7 @@ void GFPT::printAgentInformation()
 {
   _k->_logger->logInfo("Normal", "Critic Information:\n");
 
-  _k->_logger->logInfo("Normal", " + Average Q-Value in Mini-Batch:  %f (%f)\n", _averageQStar);
+  _k->_logger->logInfo("Normal", " + Average Q-Value in Mini-Batch:  %f\n", _averageQStar);
 
   _k->_logger->logInfo("Normal", "A Function Information:\n");
 

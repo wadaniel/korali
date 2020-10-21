@@ -339,7 +339,7 @@ std::vector<float> dACER::getActionProbabilities(const std::vector<float> &state
 {
   // Forward policy
   auto pValues = _policyLearner->getEvaluation(state);
-  
+
   return pValues;
 }
 

@@ -4,6 +4,8 @@ import sys
 sys.path.append('./_model')
 from env import *
 
+actions = [[i] for i in range(-10,10)]
+
 ####### Defining Korali Problem
 
 import korali
@@ -11,8 +13,7 @@ k = korali.Engine()
 e = korali.Experiment()
 
 e["Problem"]["Type"] = "Reinforcement Learning / Discrete"
-e["Problem"]["Possible Actions"] = [ [ -10.0 ], [ -9.0 ], [ -8.0 ], [ -7.0 ], [ -6.0 ], [ -5.0 ], [ -4.0 ], [ -3.0 ], [ -2.0 ], [ -1.0 ], [0.0],
-                                     [  10.0 ], [  9.0 ], [  8.0 ], [  7.0 ], [  6.0 ], [  5.0 ], [  4.0 ], [  3.0 ], [  2.0 ], [  1.0 ]  ]
+e["Problem"]["Possible Actions"] = actions
 e["Problem"]["Environment Function"] = env
 e["Problem"]["Action Repeat"] = 1
 e["Problem"]["Actions Between Policy Updates"] = 1
@@ -40,7 +41,7 @@ e["Variables"][5]["Type"] = "Action"
 e["Solver"]["Type"] = "Agent / Discrete / DQN"
 e["Solver"]["Optimization Steps Per Update"] = 1
 e["Solver"]["Experiences Between Agent Trainings"] = 1
-e["Solver"]["Experiences Between Target Network Updates"] = 500
+e["Solver"]["Experiences Between Target Network Updates"] = 50
 
 ### Defining Experience Replay configuration
 
@@ -83,9 +84,9 @@ e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Batch Normalization"]["Ena
 
 ### Defining Termination Criteria
 
-e["Solver"]["Training Reward Threshold"] = 950
+e["Solver"]["Training Reward Threshold"] = 400
 e["Solver"]["Policy Testing Episodes"] = 20
-e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 950
+e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 450
 
 ### Setting file output configuration
 

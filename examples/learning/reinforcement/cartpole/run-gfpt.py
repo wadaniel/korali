@@ -54,7 +54,7 @@ e["Solver"]["Random Action Probability"]["Decrease Rate"] = 0.05
 ### Defining the configuration of replay memory
 
 e["Solver"]["Experience Replay"]["Start Size"] =   1000
-e["Solver"]["Experience Replay"]["Maximum Size"] = 100000
+e["Solver"]["Experience Replay"]["Maximum Size"] = 10000
 
 ## Defining Critic Configuration
 

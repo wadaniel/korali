@@ -17,6 +17,9 @@ void cACER::initializeAgent()
 
   // Engine to initialize experiments with
   korali::Engine engine;
+ 
+  if (_experienceReplayStartSize < _trajectorySize*(_offPolicyUpdates+1.))
+      KORALI_LOG_ERROR("Experience Replay Start Size too small, this might cause undefined behaviour. Increase value of Start Size.");
 
   /*********************************************************************
   * Initializing Normal Distributions for the Policy
@@ -37,6 +40,7 @@ void cACER::initializeAgent()
     js["Standard Deviation"] = sigma;
 
     auto d = dynamic_cast<distribution::univariate::Normal *>(getModule(js, _k));
+    d->updateDistribution();
 
     _policyDistributions.push_back(d);
 

@@ -251,27 +251,36 @@ std::vector<float> DDQN::getActionProbabilities(const std::vector<float> &state)
   // Storage for action probabilities
   std::vector<float> pActions(_problem->_possibleActions.size());
 
-  // Storage for the cumulative e^Q(s,a_i) for softmax calculation
-  float sumExpQVal = 0.0;
+  // Storage for action probabilities
+  float maxq = -korali::Inf;
+  std::vector<float> qval(_problem->_possibleActions.size());
+  std::vector<float> pActions(_problem->_possibleActions.size());
 
   // Iterating over all possible actions, checking their Q(s,a)
   for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
   {
     // Computing Q(s,a_i) = V(s) + A(s,a) - 1/n A(s,a')
-    float curQVal = vValState + aValAction[i] - aValAverage;
+    float qval[i] = vValState + aValAction[i] - aValAverage;
 
+    // Retrieving max Q(s,a_i)
+    if (qval[i] > maxq) maxq = qval[i];
+  }
+ 
+  // Storage for the cumulative e^Q(s,a_i) for softmax calculation
+  float sumExpQVal = 0.0; 
+ 
+  for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
+  {
     // Computing e^Q(s,a_i)
-    float expCurQVal = std::exp(curQVal);
-
+    float expCurQVal = std::exp(curQVal-maxq);
+ 
     // Computing Sum_i(e^Q(s,a_i))
     sumExpQVal += expCurQVal;
 
     // Storing partial value of the probability of the action
     pActions[i] = expCurQVal;
-  }
 
-  // Computing 1/n A(s,a') for all a' belonging to the action space
-  float aValAverage = 0.0;
+  }
 
   // Calculating inverse of Sum_i(e^Q(s,a_i))
   float invSumExpQVal = 1.0f / sumExpQVal;

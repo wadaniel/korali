@@ -13,6 +13,16 @@ namespace agent
 class Discrete : public Agent
 {
   public:
+
+ /**
+ * @brief Stores experience replay action indexes.
+ */
+  cBuffer<size_t> _experienceReplayActionIndexes;
+ /**
+ * @brief Stores experience replay action probability densities.
+ */
+  cBuffer<std::vector<float>> _experienceReplayActionProbabilities;
+
   /**
  * @brief Storage for the pointer to the (discrete) learning problem
  */
@@ -26,6 +36,7 @@ class Discrete : public Agent
   virtual std::vector<float> getActionProbabilities(const std::vector<float> &state) = 0;
 
   void getAction(korali::Sample &sample) override;
+  void processExperience(knlohmann::json& experience) override;
   virtual void initializeAgent();
 };
 

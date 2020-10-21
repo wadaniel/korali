@@ -13,6 +13,10 @@ void Continuous::initializeAgent()
   // Getting discrete problem pointer
   _problem = dynamic_cast<problem::reinforcementLearning::Continuous *>(_k->_problem);
 
+  // Allocating continuous-specific replay memory items
+  _experienceReplayActionMeans.resize(_experienceReplayMaximumSize);
+  _experienceReplayActionSigmas.resize(_experienceReplayMaximumSize);
+
   /*********************************************************************
   * Initializing Action Noise Sigmas
   *********************************************************************/
@@ -31,6 +35,16 @@ void Continuous::initializeAgent()
     _actionSigmas[i] = sigma;
     _inverseVariances[i] = 1.0 / (sigma * sigma);
   }
+}
+
+void Continuous::processExperience(knlohmann::json& experience)
+{
+ // Running common experience processor first
+ Agent::processExperience(experience);
+
+ // Adding discrete-specific information to the memory
+ _experienceReplayActionMeans.add(experience["Metadata"]["Action Means"].get<std::vector<float>>());
+ _experienceReplayActionSigmas.add(experience["Metadata"]["Action Sigmas"].get<std::vector<float>>());
 }
 
 void Continuous::getAction(korali::Sample &sample)

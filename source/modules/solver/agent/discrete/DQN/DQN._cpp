@@ -229,4 +229,4 @@ void DQN::printAgentInformation()
 } // namespace agent
 } // namespace solver
 } // namespace korali
-  // Updating qRet (equation 5 in ACER paper)
+// Updating qRet (equation 5 in ACER paper)

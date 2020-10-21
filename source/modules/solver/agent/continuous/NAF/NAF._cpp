@@ -1,0 +1,231 @@
+#include "engine.hpp"
+#include "modules/solver/agent/continuous/NAF/NAF.hpp"
+#include "sample/sample.hpp"
+
+namespace korali
+{
+namespace solver
+{
+namespace agent
+{
+namespace continuous
+{
+void NAF::initializeAgent()
+{
+  // Initializing common continuous agent configuration
+  Discrete::initializeAgent();
+
+  /*********************************************************************
+ * Initializing Critic-Related Structures
+ *********************************************************************/
+
+  korali::Engine engine; // Engine to initialize experiments with
+
+  _criticExperiment["Problem"]["Type"] = "Supervised Learning";
+  _criticExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
+  _criticExperiment["Solver"]["Optimizer"] = _criticOptimizer;
+  _criticExperiment["Solver"]["Learning Rate"] = _criticLearningRate;
+  _criticExperiment["Solver"]["Loss Function"] = "Mean Squared Error";
+  _criticExperiment["Solver"]["Steps Per Generation"] = 1;
+  _criticExperiment["Solver"]["Neural Network"] = _criticNeuralNetwork;
+
+  // Initializing experiment with an initial zero set
+  for (size_t i = 0; i < _criticMiniBatchSize; i++)
+  {
+    _criticExperiment["Problem"]["Solution"][i][0] = 0.0;
+
+    for (size_t j = 0; j < _k->_variables.size(); j++)
+      _criticExperiment["Problem"]["Inputs"][i][j] = 0.0;
+  }
+
+  // Running initialization to verify that the configuration is correct
+  engine.initialize(_criticExperiment);
+
+  // Getting learner pointers
+  _criticProblem = dynamic_cast<problem::SupervisedLearning *>(_criticExperiment._problem);
+  _criticLearner = dynamic_cast<solver::learner::DeepSupervisor *>(_criticExperiment._solver);
+
+  /*********************************************************************
+  * Loading/Setting Hyperparameters
+  *********************************************************************/
+
+  // Setting Initial Hyperparameters
+  _hyperparameters["Critic"] = _criticLearner->getHyperparameters();
+  _qHatHyperparameter = _criticLearner->getHyperparameters();
+}
+
+void NAF::trainAgent()
+{
+  /***********************************************************************************
+   * Training Phase
+   **********************************************************************************/
+
+  // Calculating cumulative Q*, for statistical purposes
+  _cumulativeQStar = 0.0;
+  _cumulativeQStarSquared = 0.0;
+
+  // Temporary storage of hyperp arams
+  auto qHyperparam = _criticLearner->getHyperparameters();
+
+  // Set Hyperparameter from target network
+  _criticLearner->setHyperparameters(_qHatHyperparameter);
+
+  // Creating minibatch for the critic update
+  auto miniBatchIndexes = generateMiniBatch(_criticMiniBatchSize);
+
+  for (size_t i = 0; i < _criticMiniBatchSize; i++)
+  {
+    // Selecting a uniformly random selected, yet not repeated experience
+    size_t expId = miniBatchIndexes[i];
+
+    // Qhat = max_a(qhat) with s' fixed
+    // Q* = r + y*Qhat -- If not terminal state
+    // Q* = r -- If terminal state
+
+    // Calculating target Q value (solution) for Qnew on selected batch
+    float qStar = 0.0;
+
+    // Reward is the first factor in the QLearning algorithm
+    qStar = _experienceReplayRewards[expId];
+
+    // Getting experience's current state and action
+    auto curState = _experienceReplayStates[expId];
+    auto curAction = _experienceReplayActions[expId];
+
+    // If state is not terminal (next state is filled) then add Qnew to the Q value.
+    if (_experienceReplayTerminal[expId] == false)
+    {
+      // Getting experience's next state
+      auto nextState = _experienceReplayStates[expId + 1];
+
+      // Getting action probabilities for next state, as per the critic
+      auto pActions = getActionProbabilities(nextState);
+
+      // Finding the best action index from the probabilities
+      size_t bestActionIdx = std::distance(pActions.begin(), std::max_element(pActions.begin(), pActions.end()));
+
+      // Getting the best action
+      auto bestAction = _problem->_possibleActions[bestActionIdx];
+
+      // Storage to put together state and action
+      std::vector<float> stateActionInput(_problem->_stateVectorSize + _problem->_actionVectorSize);
+
+      for (size_t j = 0; j < nextState.size(); j++) stateActionInput[j] = nextState[j];
+      for (size_t j = 0; j < bestAction.size(); j++) stateActionInput[j + nextState.size()] = bestAction[j];
+
+      auto qNextExp = _criticLearner->getEvaluation(stateActionInput)[0];
+
+      qStar += _criticDiscountFactor * qNextExp;
+    }
+
+    // Updating inputs to training learner
+    for (size_t j = 0; j < curState.size(); j++) _criticProblem->_inputs[i][j] = curState[j];
+    for (size_t j = 0; j < curAction.size(); j++) _criticProblem->_inputs[i][j + curState.size()] = curAction[j];
+    _criticProblem->_solution[i][0] = qStar;
+
+    // Keeping statistics
+    _cumulativeQStar += qStar;
+    _cumulativeQStarSquared += qStar * qStar;
+  }
+
+  // Set Hyperparameter from q network
+  _criticLearner->setHyperparameters(qHyperparam);
+
+  // Running one generation of the optimization method with the given mini-batch
+  _criticLearner->initialize();
+  _criticLearner->runGeneration();
+  _criticLearner->finalize();
+
+  // Keeping statistics
+  _averageQStar = (float)_cumulativeQStar / (float)_criticMiniBatchSize;
+  _stdevQStar = sqrt(_cumulativeQStarSquared / (float)_criticMiniBatchSize - _averageQStar * _averageQStar);
+
+  /****************************************************************************
+  * If batch normalization is being used, we need to adjust mean and variances
+  * by sampling a few more mini-batches after the optimization steps
+  ******************************************************************************/
+
+  // TODO: evaluate if this improves training (D.W)
+  normalizeStateActionNeuralNetwork(_criticLearner->_trainingNeuralNetwork, _criticMiniBatchSize, _criticNormalizationSteps);
+
+  /*********************************************************************
+   * Updating hyperparameters and broadcasting them to the workers
+   *********************************************************************/
+
+  // Storing new Critics' hyperparameters
+  _hyperparameters["Critic"] = _criticLearner->getHyperparameters();
+}
+
+void NAF::updateHyperparameters(const knlohmann::json &hyperparameters)
+{
+  _criticLearner->setHyperparameters(hyperparameters["Critic"].get<std::vector<float>>());
+}
+
+std::vector<float> NAF::getActionProbabilities(const std::vector<float> &state)
+{
+  // Creating state/action input
+  std::vector<float> stateActionInput(_problem->_stateVectorSize + _problem->_actionVectorSize);
+
+  // Storing state into the critic input (will not change)
+  for (size_t i = 0; i < state.size(); i++) stateActionInput[i] = state[i];
+
+  // Storage for action probabilities
+  float maxq = -korali::Inf;
+  std::vector<float> qval(_problem->_possibleActions.size());
+  std::vector<float> pActions(_problem->_possibleActions.size());
+
+  // Iterating over all possible actions, checking their Q(s,a_i)
+  for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
+  {
+    // Copying the values of the possible action onto the state/action vector
+    for (size_t j = 0; j < _problem->_actionVectorSize; j++)
+      stateActionInput[_problem->_stateVectorSize + j] = _problem->_possibleActions[i][j];
+
+    // Computing Q(s,a_i)
+    qval[i] = _criticLearner->getEvaluation(stateActionInput)[0];
+
+    // Extracting max Q(s,a_i)
+    if (qval[i] > maxq) maxq = qval[i];
+  }
+
+  // Storage for the cumulative e^Q(s,a_i)/maxq
+  float sumExpQVal = 0.0;
+
+  for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
+  {
+    // Computing e^(Q(s,a_i) - maxq)
+    float expCurQVal = std::exp(qval[i] - maxq);
+
+    // Computing Sum_i(e^Q(s,a_i)/e^maxq)
+    sumExpQVal += expCurQVal;
+
+    // Storing partial value of the probability of the action
+    pActions[i] = expCurQVal;
+  }
+
+  // Calculating inverse of Sum_i(e^Q(s,a_i))
+  float invSumExpQVal = 1.0f / sumExpQVal;
+
+  // Normalizing action probabilities
+  for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
+    pActions[i] *= invSumExpQVal;
+
+  // Returning the best found
+  return pActions;
+}
+
+void NAF::printAgentInformation()
+{
+  _k->_logger->logInfo("Normal", "Critic Information:\n");
+  _k->_logger->logInfo("Normal", " + Average (Std) Q-Value in Mini-Batch:  %f (%f)\n", _averageQStar, _stdevQStar);
+
+  _criticExperiment._logger->_verbosityLevel = _k->_logger->_verbosityLevel;
+  _criticExperiment._solver->printGenerationAfter();
+  _criticExperiment._logger->setVerbosityLevel("Silent");
+}
+
+} // namespace continuous
+} // namespace agent
+} // namespace solver
+} // namespace korali
+// Updating qRet (equation 5 in ACER paper)

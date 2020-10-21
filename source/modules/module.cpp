@@ -43,12 +43,13 @@
 #include "solver/agent/continuous/GFPT/GFPT.hpp"
 #include "solver/agent/continuous/cACER/cACER.hpp"
 #include "solver/agent/continuous/continuous.hpp"
+#include "solver/agent/discrete/DDQN/DDQN.hpp"
 #include "solver/agent/discrete/DQN/DQN.hpp"
 #include "solver/agent/discrete/dACER/dACER.hpp"
 #include "solver/agent/discrete/discrete.hpp"
 #include "solver/executor/executor.hpp"
 #include "solver/integrator/integrator.hpp"
-#include "solver/learner/deepGD/deepGD.hpp"
+#include "solver/learner/deepSupervisor/deepSupervisor.hpp"
 #include "solver/learner/gaussianProcess/gaussianProcess.hpp"
 #include "solver/optimizer/Adam/Adam.hpp"
 #include "solver/optimizer/CMAES/CMAES.hpp"
@@ -132,9 +133,10 @@ Module *Module::getModule(knlohmann::json &js, Experiment *e)
   if (moduleType == "Integrator") module = new korali::solver::Integrator();
   if (moduleType == "SAEM") module = new korali::solver::SAEM();
   if (moduleType == "Learner/GaussianProcess") module = new korali::solver::learner::GaussianProcess();
-  if (moduleType == "Learner/DeepGD") module = new korali::solver::learner::DeepGD();
+  if (moduleType == "Learner/DeepSupervisor") module = new korali::solver::learner::DeepSupervisor();
   if (moduleType == "Agent/Discrete/DACER") module = new korali::solver::agent::discrete::dACER();
   if (moduleType == "Agent/Discrete/DQN") module = new korali::solver::agent::discrete::DQN();
+  if (moduleType == "Agent/Discrete/DDQN") module = new korali::solver::agent::discrete::DDQN();
   if (moduleType == "Agent/Continuous/CACER") module = new korali::solver::agent::continuous::cACER();
   if (moduleType == "Agent/Continuous/DDPG") module = new korali::solver::agent::continuous::DDPG();
   if (moduleType == "Agent/Continuous/GFPT") module = new korali::solver::agent::continuous::GFPT();

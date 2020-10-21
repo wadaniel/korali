@@ -3,7 +3,7 @@
 
 #include "modules/problem/reinforcementLearning/reinforcementLearning.hpp"
 #include "modules/problem/supervisedLearning/supervisedLearning.hpp"
-#include "modules/solver/learner/deepGD/deepGD.hpp"
+#include "modules/solver/learner/deepSupervisor/deepSupervisor.hpp"
 #include <algorithm> // std::shuffle
 #include <random>
 
@@ -33,36 +33,6 @@ class Agent : public Solver
   * @brief The value to use for probability of random actions.
   */
   float _randomActionProbabilityEffectiveValue;
-
-  /**
-  * @brief Pointer to training experiment's learner
-  */
-  learner::DeepGD *_criticLearner;
-
-  /**
-   * @brief Korali experiment for the training of the critic
-   */
-  korali::Experiment _criticExperiment;
-
-  /**
-   * @brief Pointer to training experiment's problem
-   */
-  problem::SupervisedLearning *_criticProblem;
-
-  /**
-   * @brief Pointer to training the actor network
-   */
-  learner::DeepGD *_policyLearner;
-
-  /**
-  * @brief Korali experiment for obtaining the agent's action
-  */
-  korali::Experiment _policyExperiment;
-
-  /**
-   * @brief Pointer to actor's experiment problem
-   */
-  problem::SupervisedLearning *_policyProblem;
 
   /**
   * @brief Trains the Agent's critic/policy, based on the new experiences

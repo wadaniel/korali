@@ -122,7 +122,8 @@ void dACER::trainAgent()
   std::shuffle(trajectoryIndexes.begin(), trajectoryIndexes.end(), *mt);
 
   // Performing off-policy updates
-  for (size_t i = 0; i < _offPolicyUpdates; i++)
+  size_t numOffPolicyUpdates = trajectoryIndexes.size() < _offPolicyUpdates ? trajectoryIndexes.size() : _offPolicyUpdates;
+  for (size_t i = 0; i < numOffPolicyUpdates; i++)
   {
     size_t tIdx = trajectoryIndexes[i];
     processTrajectory(trajectoryStartIndexes[tIdx], trajectoryEndIndexes[tIdx]);
@@ -336,12 +337,7 @@ std::vector<float> dACER::getActionProbabilities(const std::vector<float> &state
 {
   // Forward policy
   auto pValues = _policyLearner->getEvaluation(state);
-
-  // Normalize Probabilities
-  double sum = 0.0;
-  for (size_t i = 0; i < pValues.size(); ++i) sum += pValues[i];
-  for (size_t i = 0; i < pValues.size(); ++i) pValues[i] /= sum;
-
+  
   return pValues;
 }
 

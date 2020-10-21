@@ -1,7 +1,9 @@
-#ifndef _KORALI_SOLVER_DeepGD_HPP_
-#define _KORALI_SOLVER_DeepGD_HPP_
+#ifndef _KORALI_SOLVER_DEEPSUPERVISOR_HPP_
+#define _KORALI_SOLVER_DEEPSUPERVISOR_HPP_
 
-#include "auxiliar/optimizers/fAdam.hpp"
+#include "modules/solver/learner/deepSupervisor/optimizers/fAdaBelief.hpp"
+#include "modules/solver/learner/deepSupervisor/optimizers/fAdam.hpp"
+
 #include "modules/experiment/experiment.hpp"
 #include "modules/neuralNetwork/neuralNetwork.hpp"
 #include "modules/problem/supervisedLearning/supervisedLearning.hpp"
@@ -13,7 +15,7 @@ namespace solver
 {
 namespace learner
 {
-class DeepGD : public Learner
+class DeepSupervisor : public Learner
 {
   public:
   /**
@@ -68,4 +70,4 @@ class DeepGD : public Learner
 } // namespace solver
 } // namespace korali
 
-#endif // _KORALI_SOLVER_DEEP_DeepGD_HPP_
+#endif // _KORALI_SOLVER_DEEP_DEEPSUPERVISOR_HPP_

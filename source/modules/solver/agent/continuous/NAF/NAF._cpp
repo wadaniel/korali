@@ -14,36 +14,65 @@ void NAF::initializeAgent()
 {
   // Initializing common continuous agent configuration
   Discrete::initializeAgent();
+  
+   /*********************************************************************
+  * Initializing Normal Distributions for the Policy
+  *********************************************************************/
 
-  /*********************************************************************
- * Initializing Critic-Related Structures
- *********************************************************************/
 
-  korali::Engine engine; // Engine to initialize experiments with
-
-  _criticExperiment["Problem"]["Type"] = "Supervised Learning";
-  _criticExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
-  _criticExperiment["Solver"]["Optimizer"] = _criticOptimizer;
-  _criticExperiment["Solver"]["Learning Rate"] = _criticLearningRate;
-  _criticExperiment["Solver"]["Loss Function"] = "Mean Squared Error";
-  _criticExperiment["Solver"]["Steps Per Generation"] = 1;
-  _criticExperiment["Solver"]["Neural Network"] = _criticNeuralNetwork;
-
-  // Initializing experiment with an initial zero set
-  for (size_t i = 0; i < _criticMiniBatchSize; i++)
+ // Allocating space for the Cholesky decomposition of the quadratic advantage Term
+  _choleskyDecompSigma.resize(_problem->_actionVectorSize*(_problem->_actionVectorSize/2.0 + 1.0/2.0), 0.0);
+ 
+  size_t sigIdx = 0.0;
+  for (size_t i = 0; i < _problem->_actionVectorSize; i++)
   {
-    _criticExperiment["Problem"]["Solution"][i][0] = 0.0;
+    auto varIdx = _problem->_actionVectorIndexes[i];
+    float sigma = _k->_variables[varIdx]->_explorationSigma;
+    if (sigma <= 0.0) KORALI_LOG_ERROR("Value of Noise Sigma (%f) for action variable %lu is not defined or invalid.\n", sigma, i);
 
-    for (size_t j = 0; j < _k->_variables.size(); j++)
-      _criticExperiment["Problem"]["Inputs"][i][j] = 0.0;
+    knlohmann::json js;
+    js["Type"] = "Univariate/Normal";
+    js["Mean"] = 0.0;
+    js["Standard Deviation"] = 1.0;
+
+    auto d = dynamic_cast<distribution::univariate::Normal *>(getModule(js, _k));
+
+    _policyDistributions.push_back(d);
+    
+    sigIdx += i;
+    _choleskyDecompSigma[sigIdx] = sigma; // Fill Diagonal Elements of Lower Triangular Matrix
   }
 
+  /*********************************************************************
+ * Initializing Q(a,s) = A(a,s) + V(s)
+ *********************************************************************/
+
+  _vExperiment["Problem"]["Type"] = "Supervised Learning";
+  _vExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
+  _vExperiment["Solver"]["Optimizer"] = _criticOptimizer;
+  _vExperiment["Solver"]["Learning Rate"] = _criticLearningRate;
+  _vExperiment["Solver"]["Loss Function"] = "Mean Squared Error";
+  _vExperiment["Solver"]["Steps Per Generation"] = 1;
+  _vExperiment["Solver"]["Neural Network"] = _criticNeuralNetwork;
+
+  // Initializing experiment with an initial zero set
+  for (size_t i = 0; i < _problem->_stateVectorSize; i++)
+    _vExperiment["Problem"]["Inputs"][0][i] = 0.0;
+
+  _vExperiment["Problem"]["Solution"][0][0] = 0.0; // V(s)
+  for (size_t i = 0; i < _problem->_stateVectorSize; i++)
+
+  // Initializing quadratic advantage function A(a,s) = -1/2(s-mu(s))^TL*L^T(s-mu(s))
+    _vExperiment["Problem"]["Solution"][0][i+1] = 0.0; // mu(s)
+  for (size_t i = 0; i < _problem->_stateVectorSize*(_problem->_stateVectorSize/2.+1./2.); i++)
+    _vExperiment["Problem"]["Solution"][0][i+_problem->_stateVectorSize+1] = 0.0; // L(s)
+
   // Running initialization to verify that the configuration is correct
-  engine.initialize(_criticExperiment);
+  engine.initialize(_vExperiment);
 
   // Getting learner pointers
-  _criticProblem = dynamic_cast<problem::SupervisedLearning *>(_criticExperiment._problem);
-  _criticLearner = dynamic_cast<solver::learner::DeepSupervisor *>(_criticExperiment._solver);
+  _vProblem = dynamic_cast<problem::SupervisedLearning *>(_vExperiment._problem);
+  _vLearner = dynamic_cast<solver::learner::DeepSupervisor *>(_vExperiment._solver);
 
   /*********************************************************************
   * Loading/Setting Hyperparameters
@@ -64,7 +93,7 @@ void NAF::trainAgent()
   _cumulativeQStar = 0.0;
   _cumulativeQStarSquared = 0.0;
 
-  // Temporary storage of hyperp arams
+  // Temporary storage of hyperparams
   auto qHyperparam = _criticLearner->getHyperparameters();
 
   // Set Hyperparameter from target network
@@ -158,8 +187,22 @@ void NAF::trainAgent()
 
 void NAF::updateHyperparameters(const knlohmann::json &hyperparameters)
 {
-  _criticLearner->setHyperparameters(hyperparameters["Critic"].get<std::vector<float>>());
+  auto qHyperparam = hyperparameters["Critic"].get<std::vector<float>>());
+  for(size_t i = 0; i < qHyperparam.size(); ++i)
+  _qHatHyperparameter[i] = targetLearningRate * qHyperParam[i] + (1.-targetLearningRate)*_qHatHyperparameter[i];
+  _criticLearner->setHyperparameters(_qHatHyperparameter);
 }
+
+std::vector<float> NAF::getActionMeans(const std::vector<float> &state)
+{
+  // TODO
+}
+
+std::vector<float> NAF::getActionSigmas(const std::vector<float> &state)
+{
+  // TODO
+}
+
 
 std::vector<float> NAF::getActionProbabilities(const std::vector<float> &state)
 {

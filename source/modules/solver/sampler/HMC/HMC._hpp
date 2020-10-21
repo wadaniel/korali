@@ -11,6 +11,8 @@
 
 #include "hamiltonian_euclidean_dense.hpp"
 #include "hamiltonian_euclidean_diag.hpp"
+#include "hamiltonian_riemannian_const_dense.hpp"
+#include "hamiltonian_riemannian_const_diag.hpp"
 #include "hamiltonian_riemannian_diag.hpp"
 #include "leapfrog_explicit.hpp"
 #include "leapfrog_implicit.hpp"
@@ -27,9 +29,6 @@ class HMC : public Sampler
 {
   Hamiltonian *_hamiltonian;
   Leapfrog *_integrator;
-
-  HamiltonianRiemannianDiag *_hamiltonianRiemannian;
-  LeapfrogImplicit *_integratorImplicit;
 
   /**
   * @brief Updates internal state such as mean, Metric and InverseMetric.
@@ -190,6 +189,19 @@ class HMC : public Sampler
   * @param rho Distance of position calculated by integrating momentum and multiplying with Inverse Metric.
   */
   void buildTreeIntegrationCriterion(const std::vector<double> &q, const std::vector<double> &p, const double logUniSample, const int direction, const int depth, const double stepSize, const double rootH, std::vector<double> &qLeft, std::vector<double> &pLeft, std::vector<double> &qRight, std::vector<double> &pRight, std::vector<double> &qProposed, double &numValidLeaves, bool &buildCriterion, double &alpha, int &numLeaves, std::vector<double> &rho);
+
+  /**
+  * @brief Helper function to print std::vector.
+  * @param vec Vector to be printed.
+  */
+  void __printVec(const std::vector<double> vec) const;
+
+  /**
+  * @brief Checks if vector is Nan.
+  * @param vec Input vector.
+  * @return True if at least one value in vec is nan.
+  */
+  bool isNan(const std::vector<double> vec) const;
 };
 
 } // namespace sampler

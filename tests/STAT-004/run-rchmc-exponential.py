@@ -33,15 +33,17 @@ for useDiagonalMetric in [False, True]:
     e["Solver"]["Termination Criteria"]["Max Samples"] = 100000
 
     # HMC specific parameters
-    e["Solver"]["Num Integration Steps"] = 20
-    e["Solver"]["Step Size"] = 0.05
-    e["Solver"]["Version"] = 'Euclidean'
+    e["Solver"]["Num Integration Steps"] = 5
+    e["Solver"]["Step Size"] = 0.01
+    e["Solver"]["Version"] = 'Riemannian Const'
     e["Solver"]["Use Diagonal Metric"] = useDiagonalMetric
-    e["Solver"]["Use Adaptive Step Size"] = True
-    e["Solver"]["Target Integration Time"] = 0.55
+    e["Solver"]["Use Adaptive Step Size"] = False
+    e["Solver"]["Target Integration Time"] = 0.70
+    e["Solver"]["Step Size Jitter"] = 0.1
     e["Solver"]["Desired Average Acceptance Rate"] = 0.65
     e["Solver"]["Use NUTS"] = False
 
+    e["Console Output"]["Verbosity"] = "Detailed"
     # Running Korali
     e["Random Seed"] = 1337
     k.run(e)

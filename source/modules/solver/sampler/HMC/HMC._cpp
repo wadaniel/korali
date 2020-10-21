@@ -21,7 +21,7 @@ namespace sampler
 {
 void HMC::setInitialConfiguration()
 {
-  if (!(_version == "Static" || _version == "Euclidean" || _version == "Riemannian")) KORALI_LOG_ERROR("Version must be either 'Static', 'Euclidean' or 'Riemannian' (is %s)\n", _version.c_str());
+  if (!(_version == "Static" || _version == "Euclidean" || _version == "Riemannian" || _version == "Riemannian Const")) KORALI_LOG_ERROR("Version must be either 'Static', 'Euclidean' or 'Riemannian' (is %s)\n", _version.c_str());
   // TODO: Check exact intervals (i.e. inclusion and exclusion)
   if (!(_burnIn >= 0)) KORALI_LOG_ERROR("Burn In must be larger equal 0 (is %zu).\n", _burnIn);
   if (!(_metricEstimateQuotient > 0.0 && _metricEstimateQuotient <= 1.0)) KORALI_LOG_ERROR("Metric Estimate Quotient must be in interval (0.0, 1.0] (is %lf).\n", _metricEstimateQuotient);
@@ -56,69 +56,65 @@ void HMC::setInitialConfiguration()
     _positionLeader[i] = _k->_variables[i]->_initialMean;
   }
 
-  if (_useDiagonalMetric)
+  // Initializing metric and inverseMetric for diagonal and dense
+  std::vector<double> metric;
+  std::vector<double> inverseMetric;
+
+  if (_useDiagonalMetric == true || _version == "Static")
   {
-    _metric.resize(_dimensions);
-    _inverseMetric.resize(_dimensions);
+    metric.resize(_dimensions);
+    inverseMetric.resize(_dimensions);
     for (size_t i = 0; i < _dimensions; ++i)
     {
-      _metric[i] = _k->_variables[i]->_initialStandardDeviation * _k->_variables[i]->_initialStandardDeviation;
-      _inverseMetric[i] = 1.0 / _metric[i];
+      metric[i] = _k->_variables[i]->_initialStandardDeviation * _k->_variables[i]->_initialStandardDeviation;
+      inverseMetric[i] = 1.0 / metric[i];
     }
   }
   else
   {
-    _metric.resize(_dimensions * _dimensions, 0.0);
-    _inverseMetric.resize(_dimensions * _dimensions, 0.0);
+    metric.resize(_dimensions * _dimensions, 0.0);
+    inverseMetric.resize(_dimensions * _dimensions, 0.0);
 
     for (size_t d = 0; d < _dimensions; ++d)
     {
-      _metric[d * _dimensions + d] = _k->_variables[d]->_initialStandardDeviation * _k->_variables[d]->_initialStandardDeviation;
-      _inverseMetric[d * _dimensions + d] = 1.0 / _metric[d * _dimensions + d];
+      metric[d * _dimensions + d] = _k->_variables[d]->_initialStandardDeviation * _k->_variables[d]->_initialStandardDeviation;
+      inverseMetric[d * _dimensions + d] = 1.0 / metric[d * _dimensions + d];
     }
-
-    // Initialize multivariate normal distribution
-    _multivariateGenerator->_meanVector = std::vector<double>(_dimensions, 0.0);
-    _multivariateGenerator->_sigma = std::vector<double>(_dimensions * _dimensions, 0.0);
-
-    // Cholesky Decomposition
-    for (size_t d = 0; d < _dimensions; ++d)
-      _multivariateGenerator->_sigma[d * _dimensions + d] = sqrt(_metric[d * _dimensions + d]);
-
-    _multivariateGenerator->updateDistribution();
   }
 
+  // Initializing Integrator and Hamiltonian
   if (_version == "Static")
   {
-    // Setting position to inital mean
-    _hamiltonian = new HamiltonianEuclideanDiag{_dimensions, _normalGenerator};
     _integrator = new LeapfrogExplicit;
+    _hamiltonian = new HamiltonianEuclideanDiag{_dimensions, _normalGenerator, metric, inverseMetric};
   }
   else if (_version == "Euclidean")
   {
-    if (_useDiagonalMetric)
-      _hamiltonian = new HamiltonianEuclideanDiag{_dimensions, _normalGenerator};
-    else
-      _hamiltonian = new HamiltonianEuclideanDense{_dimensions, _multivariateGenerator};
     _integrator = new LeapfrogExplicit;
+    if (_useDiagonalMetric)
+      _hamiltonian = new HamiltonianEuclideanDiag{_dimensions, _normalGenerator, metric, inverseMetric};
+    else
+      _hamiltonian = new HamiltonianEuclideanDense{_dimensions, _multivariateGenerator, metric, inverseMetric};
   }
   else if (_version == "Riemannian")
   {
+    _integrator = new LeapfrogImplicit(_maxNumFixedPointIteration);
     if (_useDiagonalMetric)
-      _hamiltonian = new HamiltonianRiemannianDiag{_dimensions, _normalGenerator, _inverseRegularizationParameter};
+      _hamiltonian = new HamiltonianRiemannianDiag{_dimensions, _normalGenerator, metric, inverseMetric, _inverseRegularizationParameter};
     else
       KORALI_LOG_ERROR("Riemannian Metric only supported with Diagonal Metric");
-    _integrator = new LeapfrogImplicit(_maxNumFixedPointIteration);
+  }
+  else if (_version == "Riemannian Const")
+  {
+    _integrator = new LeapfrogExplicit;
+    if (_useDiagonalMetric)
+      _hamiltonian = new HamiltonianRiemannianConstDiag{_dimensions, _normalGenerator, metric, inverseMetric, _inverseRegularizationParameter};
+    else
+      _hamiltonian = new HamiltonianRiemannianConstDense{_dimensions, _multivariateGenerator, metric, inverseMetric, _inverseRegularizationParameter};
   }
 
   _hamiltonian->verbosity = _hamiltonianVerbosity;
   _integrator->verbosity = _integratorVerbosity;
-
-  _hamiltonian->updateHamiltonian(_positionLeader, _k);
-
-  // Set _inverseMetric of hamiltonian
-  _hamiltonian->setInverseMetric(_inverseMetric);
-  _hamiltonian->setMetric(_metric);
 
   if (_useAdaptiveStepSize == true)
   {
@@ -138,6 +134,7 @@ void HMC::runGeneration()
 {
   fflush(stdout);
   if (_k->_currentGeneration == 1) setInitialConfiguration();
+  _hamiltonian->updateHamiltonian(_positionLeader, _k);
 
   // Samples Momentum Candidate from N(0.0, metric)
 
@@ -149,12 +146,46 @@ void HMC::runGeneration()
 
   const double logUniSample = std::log(_uniformGenerator->getRandomNumber());
 
+  if (_version == "Riemannian Const")
+  {
+    // std::cout << "In Riemannian Const update metric" << std::endl;
+    // __printVec(_hamiltonian->getMetric());
+    _hamiltonian->updateMetricMatricesRiemannian(_positionLeader, _k);
+    // __printVec(_hamiltonian->getMetric());
+  }
+
   if (_useNUTS)
   {
-    TreeHelperEuclidean *helper = new TreeHelperEuclidean;
-    helper->logUniSampleIn = logUniSample;
-    runGenerationNUTSUtil(helper);
-    delete helper;
+    if (_version == "Euclidean" || _version == "Static")
+    {
+      TreeHelperEuclidean *helper = new TreeHelperEuclidean;
+      helper->logUniSampleIn = logUniSample;
+      runGenerationNUTSUtil(helper);
+      delete helper;
+      // TreeHelperRiemannian *helper = new TreeHelperRiemannian;
+      // helper->logUniSampleIn = logUniSample;
+      // runGenerationNUTSUtilRiemannian(helper);
+      // delete helper;
+    }
+    else if (_version == "Riemannian")
+    {
+      // TreeHelperEuclidean *helper = new TreeHelperEuclidean;
+      // helper->logUniSampleIn = logUniSample;
+      // runGenerationNUTSUtil(helper);
+      // delete helper;
+      TreeHelperRiemannian *helper = new TreeHelperRiemannian;
+      helper->logUniSampleIn = logUniSample;
+      runGenerationNUTSUtilRiemannian(helper);
+      delete helper;
+    }
+    else if (_version == "Riemannian Const")
+    {
+      // std::cout << "runGeneration" << std::endl;
+      TreeHelperEuclidean *helper = new TreeHelperEuclidean;
+      helper->logUniSampleIn = logUniSample;
+      runGenerationNUTSUtil(helper);
+      delete helper;
+    }
   }
   else
   {
@@ -172,7 +203,7 @@ void HMC::runGeneration()
 
 void HMC::runGenerationHMC(const double logUniSample)
 {
-  _hamiltonian->updateHamiltonian(_positionLeader, _k);
+  // _hamiltonian->updateHamiltonian(_positionLeader, _k);
   const double oldK = _hamiltonian->K(_momentumLeader);
   const double oldU = _hamiltonian->U();
 
@@ -182,16 +213,21 @@ void HMC::runGenerationHMC(const double logUniSample)
   }
 
   // Perform Num Integration Steps of Leapfrog scheme to Momentum Candidate and Position Candidate
+  // std::cout << "in front of _integrator->step(...)" << std::endl;
   for (size_t i = 0; i < _numIntegrationSteps; ++i)
   {
     _integrator->step(_positionCandidate, _momentumCandidate, _stepSize, _hamiltonian, _k);
   }
+  // std::cout << "after _integrator->step(...)" << std::endl;
 
   // Negate proposed momentum to make proposal symmetric
+
   std::transform(std::cbegin(_momentumCandidate), std::cend(_momentumCandidate), std::begin(_momentumCandidate), std::negate<double>());
 
   // Save new Energies
+  // std::cout << "in front of _hamiltonian->updateHamiltonian(...)" << std::endl;
   _hamiltonian->updateHamiltonian(_positionCandidate, _k);
+  // std::cout << "after _hamiltonian->updateHamiltonian(...)" << std::endl;
   const double newK = _hamiltonian->K(_momentumCandidate);
   const double newU = _hamiltonian->U();
 
@@ -199,7 +235,7 @@ void HMC::runGenerationHMC(const double logUniSample)
   const double logAlpha = std::min(0.0, -(newK - oldK + newU - oldU));
   _acceptanceProbability = std::exp(logAlpha);
 
-  if (logUniSample <= logAlpha)
+  if (logUniSample <= logAlpha && isNan(_positionCandidate) == false)
   {
     printf("accepted\n");
     ++_acceptanceCount;
@@ -297,7 +333,7 @@ void HMC::runGenerationNUTS(const double logUniSample)
 
 void HMC::runGenerationNUTSUtil(TreeHelperEuclidean *helper)
 {
-  _hamiltonian->updateHamiltonian(_positionLeader, _k);
+  // _hamiltonian->updateHamiltonian(_positionLeader, _k);
   const double oldK = _hamiltonian->K(_momentumLeader);
   const double oldU = _hamiltonian->U();
 
@@ -367,7 +403,7 @@ void HMC::runGenerationNUTSUtil(TreeHelperEuclidean *helper)
       {
         KORALI_LOG_ERROR("Division by zero encountered in NUTS (numValidLeaves is %lf).\n", numValidLeaves);
       }
-      if (_uniformGenerator->getRandomNumber() < numValidLeavesSubtree / numValidLeaves)
+      if (_uniformGenerator->getRandomNumber() < numValidLeavesSubtree / numValidLeaves && isNan(_positionCandidate) == false)
       {
         _positionLeader = _positionCandidate;
       }
@@ -388,6 +424,7 @@ void HMC::runGenerationNUTSUtil(TreeHelperEuclidean *helper)
 
 void HMC::runGenerationNUTSUtilRiemannian(TreeHelperRiemannian *helper)
 {
+  // _hamiltonian->updateHamiltonian(_positionLeader, _k);
   const double oldK = _hamiltonian->K(_momentumLeader);
   const double oldU = _hamiltonian->U();
 
@@ -409,7 +446,7 @@ void HMC::runGenerationNUTSUtilRiemannian(TreeHelperRiemannian *helper)
   helper->buildCriterionOut = true;
 
   std::vector<double> tmp(_dimensions, 0.0);
-  std::vector<double> rhoInit = pRight;
+  std::vector<double> rhoInit = _momentumLeader;
   std::vector<double> rhoLeft(_dimensions, 0.0);
   std::vector<double> rhoRight(_dimensions, 0.0);
   while (buildCriterion == true && depth <= _maxDepth)
@@ -461,7 +498,7 @@ void HMC::runGenerationNUTSUtilRiemannian(TreeHelperRiemannian *helper)
       {
         KORALI_LOG_ERROR("Division by zero encountered in NUTS (numValidLeaves is %lf).\n", numValidLeaves);
       }
-      if (_uniformGenerator->getRandomNumber() < numValidLeavesSubtree / numValidLeaves)
+      if (_uniformGenerator->getRandomNumber() < numValidLeavesSubtree / numValidLeaves && isNan(_positionCandidate) == false)
       {
         _positionLeader = _positionCandidate;
       }
@@ -486,15 +523,17 @@ void HMC::runGenerationNUTSUtilRiemannian(TreeHelperRiemannian *helper)
   return;
 }
 
+// TODO: Remove
 double HMC::dotProduct(const std::vector<double> &pLeft, const std::vector<double> &pRight) const
 {
   double tmpScalar = 0.0;
 
+  std::vector<double> inverseMetric = _hamiltonian->getInverseMetric();
   for (size_t i = 0; i < _dimensions; ++i)
   {
     for (size_t j = 0; j < _dimensions; ++j)
     {
-      tmpScalar += pLeft[i] * _inverseMetric[i * _dimensions + j] * pRight[j];
+      tmpScalar += pLeft[i] * inverseMetric[i * _dimensions + j] * pRight[j];
     }
   }
 
@@ -535,7 +574,9 @@ void HMC::updateState()
 {
   _acceptanceRate = _useNUTS == true ? (double)_acceptanceCountNUTS / ((double)_chainLength + 1) : (double)_acceptanceCount / ((double)(_chainLength + 1));
 
+  // std::cout << "in front of _chainlength..." << std::endl;
   _chainLength < _burnIn ? updateStateWarmup() : updateStateSampling();
+  // std::cout << "after _chainlength..." << std::endl;
 
   return;
 }
@@ -578,10 +619,10 @@ void HMC::updateStateWarmup()
   //       Approximate Inverse Matrix via Fisher Information
   if (_version == "Euclidean" && (int)(_metricEstimateQuotient * (double)_burnIn) == _chainLength + 1)
   {
-    int err = _hamiltonian->updateInverseMetric(_warmupSampleDatabase, _positionMean);
+    int err = _hamiltonian->updateMetricMatricesEuclidean(_warmupSampleDatabase, _positionMean);
 
-    _metric = _hamiltonian->getMetric();
-    _inverseMetric = _hamiltonian->getInverseMetric();
+    // metric = _hamiltonian->getMetric();
+    // inverseMetric = _hamiltonian->getInverseMetric();
 
     if (err == GSL_EDOM)
     {
@@ -741,6 +782,11 @@ double HMC::findReasonableStepSize(std::vector<double> q)
   double stepSize = _stepSize;
   double oldLogP, newLogP;
 
+  if (_version == "Riemannian Const")
+  {
+    _hamiltonian->updateMetricMatricesRiemannian(q, _k);
+  }
+
   std::vector<double> p = _hamiltonian->sampleMomentum();
   ++_proposedSampleCount;
 
@@ -748,6 +794,12 @@ double HMC::findReasonableStepSize(std::vector<double> q)
   oldLogP = -_hamiltonian->H(p);
 
   _integrator->step(q, p, stepSize, _hamiltonian, _k);
+
+  if (_version == "Riemannian Const")
+  {
+    _hamiltonian->updateMetricMatricesRiemannian(q, _k);
+  }
+
   _hamiltonian->updateHamiltonian(q, _k);
   newLogP = -_hamiltonian->H(p);
 
@@ -763,6 +815,12 @@ double HMC::findReasonableStepSize(std::vector<double> q)
     // Here leapfrog uses Kinetic Energy with metric instead of Identity
     _integrator->step(q, p, stepSize, _hamiltonian, _k);
     _hamiltonian->updateHamiltonian(q, _k);
+
+    if (_version == "Riemannian Const")
+    {
+      _hamiltonian->updateMetricMatricesRiemannian(q, _k);
+    }
+
     newLogP = -_hamiltonian->H(p);
   }
 
@@ -928,8 +986,15 @@ void HMC::buildTreeUtilIntegration(TreeHelperRiemannian *helper, std::vector<dou
     helper->pRightOut = helper->pLeftOut;
     helper->qProposedOut = helper->qLeftOut;
 
+    std::cout << "rho (before sum) = " << std::endl;
+    __printVec(rho);
     // add latest p to rho
     std::transform(std::cbegin(rho), std::cend(rho), std::cbegin(helper->pRightOut), std::begin(rho), std::plus<double>());
+
+    std::cout << "helper->pRightOut" << std::endl;
+    __printVec(helper->pRightOut);
+    std::cout << "rho (after sum) = " << std::endl;
+    __printVec(rho);
   }
   else
   {
@@ -944,8 +1009,8 @@ void HMC::buildTreeUtilIntegration(TreeHelperRiemannian *helper, std::vector<dou
 
     std::vector<double> pStart = helper->pIn;
 
-    std::vector<double> rhoLeftSubtree(_dimensions, 0.0);
-    buildTreeUtilIntegration(helper, rhoLeftSubtree);
+    std::vector<double> rhoFirstSubtree(_dimensions, 0.0);
+    buildTreeUtilIntegration(helper, rhoFirstSubtree);
 
     if (helper->buildCriterionOut == true)
     {
@@ -955,13 +1020,13 @@ void HMC::buildTreeUtilIntegration(TreeHelperRiemannian *helper, std::vector<dou
       helperSubtree->depthIn = helper->depthIn;
       helperSubtree->rootHIn = helper->rootHIn;
 
-      std::vector<double> rhoRightSubtree(_dimensions, 0.0);
+      std::vector<double> rhoSecondSubtree(_dimensions, 0.0);
       if (helper->directionIn == -1)
       {
         helperSubtree->qIn = helper->qLeftOut;
         helperSubtree->pIn = helper->pLeftOut;
 
-        buildTreeUtilIntegration(helperSubtree, rhoRightSubtree);
+        buildTreeUtilIntegration(helperSubtree, rhoSecondSubtree);
 
         // helperSubtree->qRightOut = --
         // helperSubtree->pRightOut = --
@@ -975,7 +1040,7 @@ void HMC::buildTreeUtilIntegration(TreeHelperRiemannian *helper, std::vector<dou
         helperSubtree->qIn = helper->qRightOut;
         helperSubtree->pIn = helper->pRightOut;
 
-        buildTreeUtilIntegration(helperSubtree, rhoRightSubtree);
+        buildTreeUtilIntegration(helperSubtree, rhoSecondSubtree);
 
         // helperSubtree->qLeftOut = --
         // helperSubtree->pLeftOut = --
@@ -985,12 +1050,27 @@ void HMC::buildTreeUtilIntegration(TreeHelperRiemannian *helper, std::vector<dou
         numLeavesSubtree = helperSubtree->numLeavesOut;
       }
 
-      std::vector<double> rhoSubtree = rhoLeftSubtree;
+      std::cout << "rhoFirstSubtree = " << std::endl;
+      __printVec(rhoFirstSubtree);
 
-      std::transform(std::cbegin(rhoSubtree), std::cend(rhoSubtree), std::cbegin(rhoRightSubtree), std::begin(rhoSubtree), std::plus<double>());
+      std::cout << "rhoSecondSubtree = " << std::endl;
+      __printVec(rhoSecondSubtree);
+
+      std::vector<double> rhoSubtree = rhoFirstSubtree;
+
+      std::cout << "rhoSubtree = (rhoSubtree = rhoFirstSubtree) " << std::endl;
+      __printVec(rhoSubtree);
+
+      std::transform(std::cbegin(rhoSubtree), std::cend(rhoSubtree), std::cbegin(rhoSecondSubtree), std::begin(rhoSubtree), std::plus<double>());
+
+      std::cout << "rhoSubtree = (rhoSubtree = rhoFirstSubtree + rhoSecondSubtree) " << std::endl;
+      __printVec(rhoSubtree);
 
       // add rho of subtree to main rho
       std::transform(std::cbegin(rho), std::cend(rho), std::cbegin(rhoSubtree), std::begin(rho), std::plus<double>());
+
+      std::cout << "rho = (rho = rho + rhoFirstSubtree + rhoSecondSubtree)" << std::endl;
+      __printVec(rho);
 
       // First check to avoid divising by zero
       if (numValidLeavesSubtree != 0 && _uniformGenerator->getRandomNumber() < numValidLeavesSubtree / (helper->numValidLeavesOut + numValidLeavesSubtree))
@@ -1003,7 +1083,8 @@ void HMC::buildTreeUtilIntegration(TreeHelperRiemannian *helper, std::vector<dou
       helper->numLeavesOut += numLeavesSubtree;
 
       std::vector<double> pEnd = helper->directionIn == -1 ? helperSubtree->pLeftOut : helperSubtree->pRightOut;
-      helper->buildCriterionOut = buildCriterionSubtree && helper->computeCriterion(_hamiltonian, pStart, pEnd, rhoSubtree);
+      // helper->buildCriterionOut = buildCriterionSubtree && helper->computeCriterion(_hamiltonian, pStart, pEnd, rhoSubtree);
+      helper->buildCriterionOut = false;
 
       delete helperSubtree;
     }
@@ -1160,7 +1241,7 @@ void HMC::buildTreeIntegrationCriterion(const std::vector<double> &q, const std:
 
       // std::vector<double> rhoSubtree = rho1;
 
-      // std::transform(std::cbegin(rhoRightSubtree), std::cend(rhoRightSubtree), std::cbegin(rhoSubtree), std::begin(rhoSubtree), std::plus<double>());
+      // std::transform(std::cbegin(rhoSecondSubtree), std::cend(rhoSecondSubtree), std::cbegin(rhoSubtree), std::begin(rhoSubtree), std::plus<double>());
       // std::transform(std::cbegin(rhoSubtree), std::cend(rhoSubtree), std::cbegin(rho), std::begin(rho), std::plus<double>());
       // for (size_t i = 0; i <_dimensions; ++i)
       // {
@@ -1174,6 +1255,29 @@ void HMC::buildTreeIntegrationCriterion(const std::vector<double> &q, const std:
   }
 
   return;
+}
+
+void HMC::__printVec(const std::vector<double> vec) const
+{
+  for (size_t i = 0; i < vec.size(); ++i)
+  {
+    std::cout << vec[i] << std::endl;
+  }
+  return;
+}
+
+bool HMC::isNan(const std::vector<double> vec) const
+{
+  bool result = false;
+  for (size_t i = 0; i < vec.size(); ++i)
+  {
+    if (std::isfinite(vec[i]) == false)
+    {
+      result = true;
+    }
+  }
+
+  return result;
 }
 
 } // namespace sampler

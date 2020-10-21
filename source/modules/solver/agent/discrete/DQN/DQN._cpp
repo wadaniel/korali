@@ -151,7 +151,7 @@ void DQN::trainAgent()
   ******************************************************************************/
 
   // TODO: evaluate if this improves training (D.W)
-  // normalizeStateActionNeuralNetwork(_criticLearner>_trainingNeuralNetwork, _criticMiniBatchSize, _criticNormalizationSteps);
+  normalizeStateActionNeuralNetwork(_criticLearner->_trainingNeuralNetwork, _criticMiniBatchSize, _criticNormalizationSteps);
 
   /*********************************************************************
    * Updating hyperparameters and broadcasting them to the workers
@@ -163,7 +163,7 @@ void DQN::trainAgent()
 
 void DQN::updateHyperparameters(const knlohmann::json &hyperparameters)
 {
-  _qHatHyperparameter = _criticLearner->getHyperparameters();
+  _criticLearner->setHyperparameters(hyperparameters["Critic"].get<std::vector<float>>());
 }
 
 std::vector<float> DQN::getActionProbabilities(const std::vector<float> &state)
@@ -175,10 +175,9 @@ std::vector<float> DQN::getActionProbabilities(const std::vector<float> &state)
   for (size_t i = 0; i < state.size(); i++) stateActionInput[i] = state[i];
 
   // Storage for action probabilities
+  float maxq = -korali::Inf;
+  std::vector<float> qval(_problem->_possibleActions.size());
   std::vector<float> pActions(_problem->_possibleActions.size());
-
-  // Storage for the cumulative e^Q(s,a_i) for softmax calculation
-  float sumExpQVal = 0.0;
 
   // Iterating over all possible actions, checking their Q(s,a_i)
   for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
@@ -188,24 +187,30 @@ std::vector<float> DQN::getActionProbabilities(const std::vector<float> &state)
       stateActionInput[_problem->_stateVectorSize + j] = _problem->_possibleActions[i][j];
 
     // Computing Q(s,a_i)
-    float curQVal = _criticLearner->getEvaluation(stateActionInput)[0];
+    qval[i] = _criticLearner->getEvaluation(stateActionInput)[0];
 
-    // Computing e^Q(s,a_i)
-    float expCurQVal = std::exp(curQVal);
-
-    // Computing Sum_i(e^Q(s,a_i))
-    sumExpQVal += expCurQVal;
-
-    // Storing partial value of the probability of the action
-    pActions[i] = expCurQVal;
+    // Extracting max Q(s,a_i)
+    if (qval[i] > maxq) maxq = qval[i];
   }
 
-  // Calculating inverse of Sum_i(e^Q(s,a_i))
-  float invSumExpQVal = 1.0f / sumExpQVal;
+  // Storage for the cumulative e^Q(s,a_i)/maxq
+  float sumExpQVal = 0.0;
+
+  for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
+  {
+    // Computing e^(Q(s,a_i) - maxq)
+    float expCurQVal = std::exp(qval[i] - maxq);
+
+    // Computing Sum_i(e^Q(s,a_i)/e^maxq)
+    sumExpQVal += expCurQVal;
+  }
+
+  // Calculating log of Sum_i(e^Q(s,a_i))
+  float logSumExpQVal = maxq + std::log(sumExpQVal);
 
   // Normalizing action probabilities
   for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
-    pActions[i] *= invSumExpQVal;
+    pActions[i] = std::exp(qval[i] - logSumExpQVal);
 
   // Returning the best found
   return pActions;
@@ -225,3 +230,4 @@ void DQN::printAgentInformation()
 } // namespace agent
 } // namespace solver
 } // namespace korali
+// Updating qRet (equation 5 in ACER paper)

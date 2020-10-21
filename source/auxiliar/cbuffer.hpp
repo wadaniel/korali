@@ -11,17 +11,16 @@
 
 namespace korali
 {
-
-template<typename T> class cBuffer {
-
+template <typename T>
+class cBuffer
+{
   size_t _max_size;
   size_t _size;
   std::unique_ptr<T[]> _data;
   size_t _start;
   size_t _end;
 
-public:
-
+  public:
   cBuffer()
   {
     _max_size = 0;
@@ -39,15 +38,15 @@ public:
 
   void resize(size_t size)
   {
-   _data = std::make_unique<T[]>(size);
+    _data = std::make_unique<T[]>(size);
 
-   _size = 0;
-   _max_size = size;
-   _start = 0;
-   _end = 0;
+    _size = 0;
+    _max_size = size;
+    _start = 0;
+    _end = 0;
   }
 
-  void add(const T& v)
+  void add(const T &v)
   {
     // Storing value
     _data[_end] = v;
@@ -66,12 +65,12 @@ public:
     if (_start == _max_size) _start = 0;
   }
 
-  T& operator[](size_t pos)
+  T &operator[](size_t pos)
   {
-   return _data[(_start + pos) % _max_size];
+    return _data[(_start + pos) % _max_size];
   }
 };
 
-}
+} // namespace korali
 
 #endif

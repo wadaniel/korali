@@ -13,12 +13,11 @@ namespace agent
 class Continuous : public Agent
 {
   public:
-
- /**
+  /**
  * @brief Stores experience replay action probability gaussian means.
  */
   cBuffer<std::vector<float>> _experienceReplayActionMeans;
- /**
+  /**
  * @brief Stores experience replay action probability gaussian standard deviations.
  */
   cBuffer<std::vector<float>> _experienceReplayActionSigmas;
@@ -53,7 +52,7 @@ class Continuous : public Agent
   virtual std::vector<float> getActionSigmas(const std::vector<float> &state) = 0;
 
   void getAction(korali::Sample &sample) override;
-  void processExperience(knlohmann::json& experience) override;
+  void processExperience(knlohmann::json &experience) override;
   virtual void initializeAgent();
 };
 

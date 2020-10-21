@@ -60,7 +60,6 @@ void DQN::trainAgent()
    * Training Phase
    **********************************************************************************/
 
-
   // Calculating cumulative Q*, for statistical purposes
   _cumulativeQStar = 0.0;
   _cumulativeQStarSquared = 0.0;

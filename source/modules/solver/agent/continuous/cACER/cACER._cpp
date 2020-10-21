@@ -144,11 +144,11 @@ void cACER::trainAgent()
   _cumulativeQStar = 0.;
   _cumulativeQStarSquared = 0.;
 
- // Creating a minibatch of starting experiences for the trajectories update
- auto trajectoryStartIndexes = generateMiniBatch(_offPolicyUpdates);
+  // Creating a minibatch of starting experiences for the trajectories update
+  auto trajectoryStartIndexes = generateMiniBatch(_offPolicyUpdates);
 
- // Performing off-policy updates
- for (size_t i = 0; i < _offPolicyUpdates; i++) processTrajectory(trajectoryStartIndexes[i]);
+  // Performing off-policy updates
+  for (size_t i = 0; i < _offPolicyUpdates; i++) processTrajectory(trajectoryStartIndexes[i]);
 }
 
 std::vector<float> cACER::generateAction()
@@ -185,15 +185,15 @@ float cACER::stateValueFunction(const std::vector<float> &state)
 
 void cACER::processTrajectory(size_t startId)
 {
- // Going straight to the latest experience in the corresponding trajectory
- size_t endId = startId;
+  // Going straight to the latest experience in the corresponding trajectory
+  size_t endId = startId;
 
- // Increase trajectory end position pointer until
- while (
-         ( (endId - startId) < _trajectorySize           ) && // Has not reached specified trajectory size
-         ( _experienceReplayTerminal[endId] == false     ) && // The experience is not terminal
-         ( endId < (_experienceReplayStates.size() - 1)  )    // Has not reached the end of the replay experience
-       ) endId++;
+  // Increase trajectory end position pointer until
+  while (
+    ((endId - startId) < _trajectorySize) &&       // Has not reached specified trajectory size
+    (_experienceReplayTerminal[endId] == false) && // The experience is not terminal
+    (endId < (_experienceReplayStates.size() - 1)) // Has not reached the end of the replay experience
+    ) endId++;
 
   // Initializing inputs and solution for the critic and policy problems
   _vProblem->_inputs.clear();

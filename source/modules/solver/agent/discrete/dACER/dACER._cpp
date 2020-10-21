@@ -104,17 +104,17 @@ void dACER::trainAgent()
 
 void dACER::processTrajectory(size_t startId)
 {
- // Going straight to the latest experience in the corresponding trajectory
- size_t endId = startId;
+  // Going straight to the latest experience in the corresponding trajectory
+  size_t endId = startId;
 
- // Increase trajectory end position pointer until
- while (
-         ( (endId - startId) < _trajectorySize           ) && // Has not reached specified trajectory size
-         ( _experienceReplayTerminal[endId] == false     ) && // The experience is not terminal
-         ( endId < (_experienceReplayStates.size() - 1)  )    // Has not reached the end of the replay experience
-       ) endId++;
+  // Increase trajectory end position pointer until
+  while (
+    ((endId - startId) < _trajectorySize) &&       // Has not reached specified trajectory size
+    (_experienceReplayTerminal[endId] == false) && // The experience is not terminal
+    (endId < (_experienceReplayStates.size() - 1)) // Has not reached the end of the replay experience
+    ) endId++;
 
- // Resizing NN input/outputs given the current trajectory size
+  // Resizing NN input/outputs given the current trajectory size
   size_t experienceCount = endId - startId;
   _criticProblem->_inputs.resize(experienceCount);
   _criticProblem->_solution.resize(experienceCount);

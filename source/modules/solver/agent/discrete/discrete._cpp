@@ -18,14 +18,14 @@ void Discrete::initializeAgent()
   _experienceReplayActionProbabilities.resize(_experienceReplayMaximumSize);
 }
 
-void Discrete::processExperience(knlohmann::json& experience)
+void Discrete::processExperience(knlohmann::json &experience)
 {
- // Running common experience processor first
- Agent::processExperience(experience);
+  // Running common experience processor first
+  Agent::processExperience(experience);
 
- // Adding discrete-specific information to the memory
- _experienceReplayActionIndexes.add(experience["Metadata"]["Action Index"].get<size_t>());
- _experienceReplayActionProbabilities.add(experience["Metadata"]["Action Probabilities"].get<std::vector<float>>());
+  // Adding discrete-specific information to the memory
+  _experienceReplayActionIndexes.add(experience["Metadata"]["Action Index"].get<size_t>());
+  _experienceReplayActionProbabilities.add(experience["Metadata"]["Action Probabilities"].get<std::vector<float>>());
 }
 
 void Discrete::getAction(korali::Sample &sample)

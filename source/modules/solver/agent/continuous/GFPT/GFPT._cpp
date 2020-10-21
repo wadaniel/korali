@@ -190,16 +190,6 @@ float GFPT::stateActionValueFunction(const std::vector<float> &state, const std:
 
 void GFPT::trainAgent()
 {
-  // Creating storage for state history indexes to choose from
-  std::vector<size_t> experienceReplayIndexes(_experienceReplayStates.size());
-  for (size_t i = 0; i < _experienceReplayStates.size() - 1; i++) experienceReplayIndexes[i] = i;
-
-  // Shuffling indexes to choose the mini batch from
-  std::shuffle(experienceReplayIndexes.begin(), experienceReplayIndexes.end(), *mt);
-
-  // Engine to run experiments
-  korali::Engine engine;
-
   /***************************************************************************************
   * Updating Policy Network by performing a Gradient descent step with latest experiences
   ***************************************************************************************/
@@ -207,10 +197,13 @@ void GFPT::trainAgent()
   // Calculating cumulative Q*, for statistical purposes
   _cumulativeQStar = 0.0;
 
+  // Creating minibatch for the critic update
+  auto miniBatchIndexes = generateMiniBatch(_criticMiniBatchSize);
+
   for (size_t i = 0; i < _criticMiniBatchSize; i++)
   {
     // Selecting a uniformly random selected, yet not repeated experience
-    size_t expId = experienceReplayIndexes[i];
+    size_t expId = miniBatchIndexes[i];
 
     // Check if it is a terminal state
     bool isTerminal = _experienceReplayTerminal[expId];
@@ -283,13 +276,13 @@ void GFPT::trainAgent()
   * Now computing new policy gradients with a stochastic method (CMAES)
   ******************************************************************/
 
-  // Reshuffle experiences
-  std::shuffle(experienceReplayIndexes.begin(), experienceReplayIndexes.end(), *mt);
+  // Creating minibatch for the policy update
+  miniBatchIndexes = generateMiniBatch(_policyMiniBatchSize);
 
   // Accumulating states for evaluation in the policy
   for (size_t i = 0; i < _policyMiniBatchSize; i++)
   {
-    size_t expId = experienceReplayIndexes[i];
+    size_t expId = miniBatchIndexes[i];
     std::vector<float> curState = _experienceReplayStates[expId];
 
     size_t candidateCount = _actionOptimizer->_populationSize;

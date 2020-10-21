@@ -59,12 +59,11 @@ e["Solver"]["Experience Replay"]["Maximum Size"] = 10000
 ## Defining Critic Configuration
 
 e["Solver"]["Critic"]["Discount Factor"] = 0.99
-e["Solver"]["Critic"]["Learning Rate"] = 0.001
-e["Solver"]["Critic"]["Mini Batch Size"] = 64
-e["Solver"]["Critic"]["Normalization Steps"] = 32
+e["Solver"]["Critic"]["Learning Rate"] = 0.01
+e["Solver"]["Critic"]["Mini Batch Size"] = 32
+e["Solver"]["Critic"]["Normalization Steps"] = 12
 
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Node Count"] = 5
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Batch Normalization"]["Enabled"] = True
 
@@ -79,19 +78,17 @@ e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Activation Function"]["Typ
 e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Batch Normalization"]["Enabled"] = True
 
 e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Type"] = "Layer/Dense"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Node Count"] = 1
 e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Elementwise/Linear"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Batch Normalization"]["Enabled"] = True 
 
 ## Defining Policy Configuration
 
-e["Solver"]["Policy"]["Learning Rate"] = 0.001
+e["Solver"]["Policy"]["Learning Rate"] = 0.01
 e["Solver"]["Policy"]["Mini Batch Size"] = 16
 e["Solver"]["Policy"]["Target Accuracy"] = 0.1
-e["Solver"]["Policy"]["Normalization Steps"] = 32
+e["Solver"]["Policy"]["Normalization Steps"] = 12
 
 e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
-e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Node Count"] = 5
 e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear"
 e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Batch Normalization"]["Enabled"] = True
 
@@ -106,7 +103,6 @@ e["Solver"]["Policy"]["Neural Network"]["Layers"][2]["Activation Function"]["Typ
 e["Solver"]["Policy"]["Neural Network"]["Layers"][2]["Batch Normalization"]["Enabled"] = True
 
 e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Type"] = "Layer/Dense"
-e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Node Count"] = 1
 e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Elementwise/Tanh"
 e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Batch Normalization"]["Enabled"] = True 
 

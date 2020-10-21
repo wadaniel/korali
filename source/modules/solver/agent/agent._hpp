@@ -108,6 +108,13 @@ class Agent : public Solver
   */
   virtual void processExperience(knlohmann::json& experience);
 
+  /**
+  * @brief Generates an experience mini batch from the replay memory
+  * @param size Size of the mini batch to create
+  * @return A vector with the indexes to the experiences in the mini batch
+  */
+  std::vector<size_t> generateMiniBatch(size_t size);
+
   void printGenerationAfter() override;
   void initialize() override;
 };

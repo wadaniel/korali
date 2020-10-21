@@ -15,8 +15,8 @@ void dACER::initializeAgent()
   // Initializing common discrete agent configuration
   Discrete::initializeAgent();
 
-  if (_experienceReplayStartSize < _trajectorySize*(_offPolicyUpdates+1.))
-      KORALI_LOG_ERROR("Experience Replay Start Size too small, this might cause undefined behaviour. Increase value of Start Size.");
+  if (_experienceReplayStartSize < _trajectorySize * (_offPolicyUpdates + 1.))
+    KORALI_LOG_ERROR("Experience Replay Start Size too small, this might cause undefined behaviour. Increase value of Start Size.");
   /*********************************************************************
  * Initializing Critic-Related Structures
  *********************************************************************/

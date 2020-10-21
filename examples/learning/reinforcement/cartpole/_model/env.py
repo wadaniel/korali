@@ -4,7 +4,7 @@ from cartpole import *
 ######## Defining Environment Storage
 
 cart = CartPole()
-maxSteps = 1000
+maxSteps = 500
 
 def env(s):
 

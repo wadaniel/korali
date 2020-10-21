@@ -49,7 +49,7 @@ e["Solver"]["Trajectory Size"] = 500
 
 ### Defining Experience Replay configuration
 
-e["Solver"]["Experience Replay"]["Start Size"] = 500
+e["Solver"]["Experience Replay"]["Start Size"] = 10000
 e["Solver"]["Experience Replay"]["Maximum Size"] = 150000
 
 e["Solver"]["Critic"]["Discount Factor"] = 0.99
@@ -75,7 +75,7 @@ e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Type"] = "Layer/Dense"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Elementwise/Linear"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Batch Normalization"]["Enabled"] = True
 
-e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Weight Initialization Scaling"] = 0.000000001
+e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Weight Initialization Scaling"] = 0.001
 
 ## Defining Policy Configuration
 

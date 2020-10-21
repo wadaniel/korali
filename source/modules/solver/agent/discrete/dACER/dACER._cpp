@@ -15,6 +15,8 @@ void dACER::initializeAgent()
   // Initializing common discrete agent configuration
   Discrete::initializeAgent();
 
+  if (_experienceReplayStartSize < _trajectorySize * (_offPolicyUpdates + 1.))
+    KORALI_LOG_ERROR("Experience Replay Start Size too small, this might cause undefined behaviour. Increase value of Start Size.");
   /*********************************************************************
  * Initializing Critic-Related Structures
  *********************************************************************/
@@ -161,7 +163,7 @@ void dACER::processTrajectory(size_t startId, size_t endId)
     // Getting current reward
     float curReward = _experienceReplayRewards[curId];
 
-    // Re-calculating qRet
+    // Re-calculating qRet (equation 5 in ACER paper, also see below)
     qRet = curReward + _criticDiscountFactor * qRet;
 
     // Getting experience's state
@@ -175,7 +177,7 @@ void dACER::processTrajectory(size_t startId, size_t endId)
     // Getting experience's action
     size_t curActionIdx = _experienceReplayActionIndexes[curId];
 
-    // Getting probability densities for current action given current policy
+    // Getting probability densities for current action given past behaviour
     auto pOldPolicy = _experienceReplayActionProbabilities[curId];
 
     // Getting probability densities for current action given current policy
@@ -286,7 +288,7 @@ void dACER::processTrajectory(size_t startId, size_t endId)
     // Now calculating truncated importance weight with 1.0 as truncation factor
     truncatedImportanceWeight = std::min(1.0f, importanceWeight);
 
-    // Updating qRet
+    // Updating qRet (equation 5 in ACER paper)
     qRet = truncatedImportanceWeight * (qRet - qCurState) + vCurState;
 
     // Increasing current experience count
@@ -336,7 +338,7 @@ void dACER::processTrajectory(size_t startId, size_t endId)
 
 std::vector<float> dACER::getActionProbabilities(const std::vector<float> &state)
 {
-  // Forward softmax probability function
+  // Forward policy
   auto pValues = _policyLearner->getEvaluation(state);
 
   return pValues;

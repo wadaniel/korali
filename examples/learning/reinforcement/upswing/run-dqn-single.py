@@ -2,15 +2,15 @@
 import os
 import sys
 sys.path.append('./_model')
-from env import *
-
-actions = [[i] for i in range(-10,10)]
+from single_env import *
 
 ####### Defining Korali Problem
 
 import korali
 k = korali.Engine()
 e = korali.Experiment()
+
+actions = [[i] for i in range(-20,20)]
 
 e["Problem"]["Type"] = "Reinforcement Learning / Discrete"
 e["Problem"]["Possible Actions"] = actions
@@ -21,16 +21,16 @@ e["Problem"]["Actions Between Policy Updates"] = 1
 e["Variables"][0]["Name"] = "Cart Position"
 e["Variables"][0]["Type"] = "State"
 
-e["Variables"][1]["Name"] = "Cart Velocity"
+e["Variables"][1]["Name"] = "Angle 1"
 e["Variables"][1]["Type"] = "State"
 
-e["Variables"][2]["Name"] = "Pole Omega"
+e["Variables"][2]["Name"] = "Car Velocity"
 e["Variables"][2]["Type"] = "State"
 
-e["Variables"][3]["Name"] = "Pole Cos(Angle)"
+e["Variables"][3]["Name"] = "Angular Velocity 1"
 e["Variables"][3]["Type"] = "State"
 
-e["Variables"][4]["Name"] = "Pole Sin(Angle)"
+e["Variables"][4]["Name"] = "Height Proxy"
 e["Variables"][4]["Type"] = "State"
 
 e["Variables"][5]["Name"] = "Force"
@@ -58,7 +58,7 @@ e["Solver"]["Random Action Probability"]["Decrease Rate"] = 0.10
 
 e["Solver"]["Critic"]["Mini Batch Size"] = 32
 e["Solver"]["Critic"]["Learning Rate"] = 0.01
-e["Solver"]["Critic"]["Discount Factor"] = 0.9999
+e["Solver"]["Critic"]["Discount Factor"] = 1.0
 
 ### Defining the shape of the neural network
 
@@ -84,13 +84,13 @@ e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Batch Normalization"]["Ena
 
 ### Defining Termination Criteria
 
-e["Solver"]["Training Reward Threshold"] = 400
+e["Solver"]["Training Reward Threshold"] = 750
 e["Solver"]["Policy Testing Episodes"] = 20
-e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 450
+e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 900
 
 ### Setting file output configuration
 
-e["File Output"]["Frequency"] = 100
+e["File Output"]["Frequency"] = 1000
 
 ### Running Experiment
 

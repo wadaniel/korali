@@ -15,6 +15,8 @@ void dACER::initializeAgent()
   // Initializing common discrete agent configuration
   Discrete::initializeAgent();
 
+  if (_experienceReplayStartSize < _trajectorySize*(_offPolicyUpdates+1.))
+      KORALI_LOG_ERROR("Experience Replay Start Size too small, this might cause undefined behaviour. Increase value of Start Size.");
   /*********************************************************************
  * Initializing Critic-Related Structures
  *********************************************************************/
@@ -124,8 +126,7 @@ void dACER::trainAgent()
   std::shuffle(trajectoryIndexes.begin(), trajectoryIndexes.end(), *mt);
 
   // Performing off-policy updates
-  size_t numOffPolicyUpdates = trajectoryIndexes.size() < _offPolicyUpdates ? trajectoryIndexes.size() : _offPolicyUpdates;
-  for (size_t i = 0; i < numOffPolicyUpdates; i++)
+  for (size_t i = 0; i < _numOffPolicyUpdates; i++)
   {
     size_t tIdx = trajectoryIndexes[i];
     processTrajectory(trajectoryStartIndexes[tIdx], trajectoryEndIndexes[tIdx]);

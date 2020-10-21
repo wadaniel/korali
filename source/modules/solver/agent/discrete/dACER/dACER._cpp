@@ -88,13 +88,18 @@ void dACER::initializeAgent()
 void dACER::trainAgent()
 {
   // Resetting critic statistics
-  _cumulativeQStar = 0;
+  _cumulativeQStar = 0.0;        // Cumulative Q Retrace
+  _cumulativeQStarSquared = 0.0; // Stdev Q Retrace
 
   // Creating a minibatch of starting experiences for the trajectories update
   auto trajectoryStartIndexes = generateMiniBatch(_offPolicyUpdates);
 
   // Performing off-policy updates
   for (size_t i = 0; i < _offPolicyUpdates; i++) processTrajectory(trajectoryStartIndexes[i]);
+
+  // Updating Statistics
+  _averageQStar = _cumulativeQStar / (float)_offPolicyUpdates;                                            // Average Q Retrace
+  _stdevQStar = sqrt(_cumulativeQStarSquared / (float)_offPolicyUpdates - _averageQStar * _averageQStar); // Sdev Q Retrace
 }
 
 void dACER::processTrajectory(size_t startId)
@@ -253,9 +258,6 @@ void dACER::processTrajectory(size_t startId)
     _criticProblem->_inputs[curExperience] = curState;
     _criticProblem->_solution[curExperience] = gCritic;
 
-    // Keeping statistics
-    _cumulativeQStar += gCritic[curActionIdx];
-
     /*****************************************
      * Updating the value of qRet
      *****************************************/
@@ -270,12 +272,12 @@ void dACER::processTrajectory(size_t startId)
     curExperience++;
   }
 
-  // Running one generation of the optimization method with the given mini-batch
+  // Running one generation of the optimization method with the given trajectory
   _criticLearner->initialize();
   _criticLearner->runGeneration();
   _criticLearner->finalize();
 
-  // Running one generation of the optimization method with the given mini-batch
+  // Running one generation of the optimization method with the given trajectory
   _policyLearner->initialize();
   _policyLearner->runGeneration();
   _policyLearner->finalize();
@@ -291,6 +293,10 @@ void dACER::processTrajectory(size_t startId)
   // Storing new inference parameters
   auto criticHyperparameters = _criticLearner->getHyperparameters();
   _criticLearner->setHyperparameters(criticHyperparameters);
+
+  // Keeping statistics
+  _cumulativeQStar += qRet;
+  _cumulativeQStarSquared += qRet * qRet;
 
   /****************************************************************************
  * Updating Policy
@@ -352,9 +358,7 @@ void dACER::updateHyperparameters(const knlohmann::json &hyperparameters)
 void dACER::printAgentInformation()
 {
   _k->_logger->logInfo("Normal", "Critic Information:\n");
-
-  _k->_logger->logInfo("Normal", " + Cumulative Expected Q-Value:     %f\n", _cumulativeQStar);
-  _k->_logger->logInfo("Normal", " + Average Expected Q-Value:        %f\n", _averageQStar);
+  _k->_logger->logInfo("Normal", " + Average (Std) Q-Retrace in Trajectories:  %f (%f)\n", _averageQStar, _stdevQStar);
 
   _criticExperiment._logger->_verbosityLevel = _k->_logger->_verbosityLevel;
   _criticExperiment._solver->printGenerationAfter();

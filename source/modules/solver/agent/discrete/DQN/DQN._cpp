@@ -143,7 +143,7 @@ void DQN::trainAgent()
 
   // Keeping statistics
   _averageQStar = (float)_cumulativeQStar / (float)_criticMiniBatchSize;
-  _stdevQStar = sqrt(_cumulativeQStarSquared / (float)_criticMiniBatchSize - _cumulativeQStar * _cumulativeQStar / (float)(_criticMiniBatchSize * _criticMiniBatchSize));
+  _stdevQStar = sqrt(_cumulativeQStarSquared / (float)_criticMiniBatchSize - _averageQStar * _averageQStar);
 
   /****************************************************************************
   * If batch normalization is being used, we need to adjust mean and variances
@@ -207,7 +207,7 @@ std::vector<float> DQN::getActionProbabilities(const std::vector<float> &state)
     // Storing partial value of the probability of the action
     pActions[i] = expCurQVal;
   }
- 
+
   // Calculating inverse of Sum_i(e^Q(s,a_i))
   float invSumExpQVal = 1.0f / sumExpQVal;
 

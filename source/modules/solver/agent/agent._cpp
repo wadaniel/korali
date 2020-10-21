@@ -113,6 +113,9 @@ void Agent::runGeneration()
   // Otherwise, let current testing reward remain as -inf.
   if (_currentReward >= _trainingRewardThreshold)
   {
+   // Broadcasting hyperparameters testing
+    KORALI_UPDATE_GLOBALS("Hyperparameters", _hyperparameters);
+
     // Increasing tested policy counter
     _candidatePoliciesTested++;
 
@@ -184,6 +187,29 @@ void Agent::processExperience(knlohmann::json& experience)
  _experienceCount++;
 }
 
+std::vector<size_t> Agent::generateMiniBatch(size_t size)
+{
+ // Allocating storage for mini batch experiecne indexes
+ std::vector<size_t> miniBatch(size);
+
+ if (_miniBatchStrategy == "Uniform")
+ {
+  for (size_t i = 0; i < size; i++)
+  {
+   // Producing random (uniform) number for the selection of the experience
+   float x = _uniformGenerator->getRandomNumber();
+
+   // Selecting experience
+   size_t expId = floor(x * (float) (_experienceReplayStates.size()-1) );
+
+   // Setting experience
+   miniBatch[i] = expId;
+  }
+ }
+
+ return miniBatch;
+}
+
 void Agent::normalizeStateActionNeuralNetwork(NeuralNetwork *neuralNetwork, size_t miniBatchSize, size_t normalizationSteps)
 {
   // Allocating memory for the mini batch set
@@ -196,25 +222,19 @@ void Agent::normalizeStateActionNeuralNetwork(NeuralNetwork *neuralNetwork, size
     for (size_t j = 0; j < miniBatchSize; j++)
       miniBatches[i][j].resize(_problem->_stateVectorSize + _problem->_actionVectorSize);
 
-  // Creating storage for state history indexes to choose from
-  std::vector<size_t> experienceReplayIndexes(_experienceReplayStates.size());
-  for (size_t i = 0; i < _experienceReplayStates.size() - 1; i++) experienceReplayIndexes[i] = i;
+  // Creating minibatch to normalize from
+  auto miniBatchIndexes = generateMiniBatch(miniBatchSize);
 
   // Filling the minibatches
   for (size_t step = 0; step < normalizationSteps; step++)
-  {
-    // Shuffling indexes to choose the mini batch from
-    std::shuffle(experienceReplayIndexes.begin(), experienceReplayIndexes.end(), *mt);
+   for (size_t i = 0; i < miniBatchSize; i++)
+   {
+     // Selecting a uniformly random selected, yet not repeated experience
+     size_t expId = miniBatchIndexes[i];
 
-    for (size_t i = 0; i < miniBatchSize; i++)
-    {
-      // Selecting a uniformly random selected, yet not repeated experience
-      size_t expId = experienceReplayIndexes[i];
-
-      for (size_t j = 0; j < _problem->_stateVectorSize; j++) miniBatches[step][i][j] = _experienceReplayStates[expId][j];
-      for (size_t j = 0; j < _problem->_actionVectorSize; j++) miniBatches[step][i][_problem->_stateVectorSize + j] = _experienceReplayActions[expId][j];
-    }
-  }
+     for (size_t j = 0; j < _problem->_stateVectorSize; j++) miniBatches[step][i][j] = _experienceReplayStates[expId][j];
+     for (size_t j = 0; j < _problem->_actionVectorSize; j++) miniBatches[step][i][_problem->_stateVectorSize + j] = _experienceReplayActions[expId][j];
+   }
 
   neuralNetwork->normalize(miniBatches);
 }

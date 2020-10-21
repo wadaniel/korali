@@ -60,17 +60,10 @@ void DQN::trainAgent()
    * Training Phase
    **********************************************************************************/
 
-  // Randomly selecting experiences for the mini-batch and calculating their target Q
-  // Creating state history indexes to choose from
-  std::vector<size_t> experienceReplayIndexes(_experienceReplayStates.size());
-  for (size_t i = 0; i < _experienceReplayStates.size() - 1; i++) experienceReplayIndexes[i] = i;
 
   // Calculating cumulative Q*, for statistical purposes
   _cumulativeQStar = 0.0;
   _cumulativeQStarSquared = 0.0;
-
-  // Shuffling indexes to choose the mini batch from
-  std::shuffle(experienceReplayIndexes.begin(), experienceReplayIndexes.end(), *mt);
 
   // Temporary storage of hyperp arams
   auto qHyperparam = _criticLearner->getHyperparameters();
@@ -78,10 +71,13 @@ void DQN::trainAgent()
   // Set Hyperparameter from target network
   _criticLearner->setHyperparameters(_qHatHyperparameter);
 
+  // Creating minibatch for the critic update
+  auto miniBatchIndexes = generateMiniBatch(_criticMiniBatchSize);
+
   for (size_t i = 0; i < _criticMiniBatchSize; i++)
   {
     // Selecting a uniformly random selected, yet not repeated experience
-    size_t expId = experienceReplayIndexes[i];
+    size_t expId = miniBatchIndexes[i];
 
     // Qhat = max_a(qhat) with s' fixed
     // Q* = r + y*Qhat -- If not terminal state

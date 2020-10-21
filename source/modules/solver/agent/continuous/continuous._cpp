@@ -37,14 +37,14 @@ void Continuous::initializeAgent()
   }
 }
 
-void Continuous::processExperience(knlohmann::json& experience)
+void Continuous::processExperience(knlohmann::json &experience)
 {
- // Running common experience processor first
- Agent::processExperience(experience);
+  // Running common experience processor first
+  Agent::processExperience(experience);
 
- // Adding discrete-specific information to the memory
- _experienceReplayActionMeans.add(experience["Metadata"]["Action Means"].get<std::vector<float>>());
- _experienceReplayActionSigmas.add(experience["Metadata"]["Action Sigmas"].get<std::vector<float>>());
+  // Adding discrete-specific information to the memory
+  _experienceReplayActionMeans.add(experience["Metadata"]["Action Means"].get<std::vector<float>>());
+  _experienceReplayActionSigmas.add(experience["Metadata"]["Action Sigmas"].get<std::vector<float>>());
 }
 
 void Continuous::getAction(korali::Sample &sample)

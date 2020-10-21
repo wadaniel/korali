@@ -15,24 +15,23 @@ namespace solver
 class Agent : public Solver
 {
   public:
-
   /**
   * @brief Stores experience replay states.
   */
-   cBuffer<std::vector<float>> _experienceReplayStates;
+  cBuffer<std::vector<float>> _experienceReplayStates;
   /**
   * @brief Stores experience replay actions.
   */
-   cBuffer<std::vector<float>> _experienceReplayActions;
+  cBuffer<std::vector<float>> _experienceReplayActions;
 
   /**
   * @brief Stores experience replay rewards.
   */
-   cBuffer<float> _experienceReplayRewards;
+  cBuffer<float> _experienceReplayRewards;
   /**
   * @brief Stores whether the experience is terminal .
   */
-   cBuffer<int> _experienceReplayTerminal;
+  cBuffer<int> _experienceReplayTerminal;
 
   /**
   * @brief Storage for the pointer to the learning problem
@@ -106,7 +105,7 @@ class Agent : public Solver
   * @brief Handles the addition of experience information to the replay memory and other management operations
   * @param experience The experience to process
   */
-  virtual void processExperience(knlohmann::json& experience);
+  virtual void processExperience(knlohmann::json &experience);
 
   /**
   * @brief Generates an experience mini batch from the replay memory

@@ -23,12 +23,12 @@ for useDiagonalMetric in [False, True]:
 
     # Defining problem's variables and their HMC settings
     e["Variables"][0]["Name"] = "X0"
-    e["Variables"][0]["Initial Mean"] = 0.0
+    e["Variables"][0]["Initial Mean"] = 1.0
     e["Variables"][0]["Initial Standard Deviation"] = 1.0
 
     # Configuring the HMC sampler parameters
     e["Solver"]["Type"] = "Sampler/HMC"
-    e["Solver"]["Burn In"] = 500
+    e["Solver"]["Burn In"] = 1000
 
     e["Solver"]["Termination Criteria"]["Max Samples"] = 100000
 

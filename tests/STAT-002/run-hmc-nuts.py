@@ -40,4 +40,3 @@ k = korali.Engine()
 k.run(e)
 
 compareMeanHMC(e)
-compareStdHMC(e)

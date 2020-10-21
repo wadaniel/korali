@@ -203,14 +203,17 @@ std::vector<float> DQN::getActionProbabilities(const std::vector<float> &state)
 
     // Computing Sum_i(e^Q(s,a_i)/e^maxq)
     sumExpQVal += expCurQVal;
-  }
 
-  // Calculating log of Sum_i(e^Q(s,a_i))
-  float logSumExpQVal = maxq + std::log(sumExpQVal);
+    // Storing partial value of the probability of the action
+    pActions[i] = expCurQVal;
+  }
+ 
+  // Calculating inverse of Sum_i(e^Q(s,a_i))
+  float invSumExpQVal = 1.0f / sumExpQVal;
 
   // Normalizing action probabilities
   for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
-    pActions[i] = std::exp(qval[i] - logSumExpQVal);
+    pActions[i] *= invSumExpQVal;
 
   // Returning the best found
   return pActions;

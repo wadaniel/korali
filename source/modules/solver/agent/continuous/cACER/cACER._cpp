@@ -18,6 +18,9 @@ void cACER::initializeAgent()
   // Engine to initialize experiments with
   korali::Engine engine;
 
+  if (_experienceReplayStartSize < _trajectorySize * (_offPolicyUpdates + 1.))
+    KORALI_LOG_ERROR("Experience Replay Start Size too small, this might cause undefined behaviour. Increase value of Start Size.");
+
   /*********************************************************************
   * Initializing Normal Distributions for the Policy
   *********************************************************************/
@@ -137,8 +140,9 @@ void cACER::initializeAgent()
 
 void cACER::trainAgent()
 {
-  // Resetting critic statistics
-  _cumulativeQStar = 0;
+  // Resetting cumulative Q*, for statistical purposes
+  _cumulativeQStar = 0.;
+  _cumulativeQStarSquared = 0.;
 
   // Creating storage for the starting index for all current trajectories
   std::vector<size_t> trajectoryStartIndexes;
@@ -262,6 +266,7 @@ void cACER::processTrajectory(size_t startId, size_t endId)
     // Calculating V(state) with the current policy
     float vExpState = stateValueFunction(expState);
     _cumulativeQStar += vExpState;
+    _cumulativeQStar += vExpState * vExpState;
 
     // Setting policy distributions to follow that of the current policy
     for (size_t i = 0; i < _problem->_actionVectorSize; i++) _policyDistributions[i]->_mean = curMeans[i];
@@ -493,11 +498,10 @@ void cACER::printAgentInformation()
 {
   // Updating average Q*, for statistical purposes
   _averageQStar = _cumulativeQStar / _aProblem->_solution.size();
+  _stdevQStar = sqrt(_cumulativeQStarSquared / _aProblem->_solution.size() - _averageQStar * _averageQStar);
 
   _k->_logger->logInfo("Normal", "Critic Information:\n");
-
-  _k->_logger->logInfo("Normal", " + Cumulative Expected Q-Value:     %f\n", _cumulativeQStar);
-  _k->_logger->logInfo("Normal", " + Average Expected Q-Value:        %f\n", _averageQStar);
+  _k->_logger->logInfo("Normal", " + Average (Std) Q-Value:  %f (%f)\n", _averageQStar, _stdevQStar);
 
   _k->_logger->logInfo("Normal", "State Value (V) Information:\n");
   _vExperiment._logger->_verbosityLevel = _k->_logger->_verbosityLevel;
@@ -513,9 +517,6 @@ void cACER::printAgentInformation()
   _policyExperiment._logger->_verbosityLevel = _k->_logger->_verbosityLevel;
   _policyExperiment._solver->printGenerationAfter();
   _policyExperiment._logger->setVerbosityLevel("Silent");
-
-  // Resetting cumulative Q*, for statistical purposes
-  _cumulativeQStar = 0.0;
 }
 
 } // namespace continuous

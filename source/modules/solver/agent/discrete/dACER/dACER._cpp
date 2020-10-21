@@ -15,8 +15,6 @@ void dACER::initializeAgent()
   // Initializing common discrete agent configuration
   Discrete::initializeAgent();
 
-  if (_experienceReplayStartSize < _trajectorySize * (_offPolicyUpdates + 1.))
-    KORALI_LOG_ERROR("Experience Replay Start Size too small, this might cause undefined behaviour. Increase value of Start Size.");
   /*********************************************************************
  * Initializing Critic-Related Structures
  *********************************************************************/
@@ -93,53 +91,30 @@ void dACER::trainAgent()
   _cumulativeQStar = 0.0;        // Cumulative Q Retrace
   _cumulativeQStarSquared = 0.0; // Stdev Q Retrace
 
-  // Creating storage for the starting index for all current trajectories
-  std::vector<size_t> trajectoryStartIndexes;
-  std::vector<size_t> trajectoryEndIndexes;
-
-  // Detecting trajectories
-  size_t curTrajectoryPos = 0;
-  for (size_t i = 0; i < _experienceReplayStates.size(); i++)
-  {
-    if (curTrajectoryPos == 0) trajectoryStartIndexes.push_back(i);
-
-    if ((curTrajectoryPos == _trajectorySize - 1) || // Reached specified trajectory size
-        (_experienceReplayTerminal[i] == true) ||    // The experience is terminal
-        (i == _experienceReplayStates.size() - 1))   // Reached the end of the replay experience
-    {
-      trajectoryEndIndexes.push_back(i);
-      curTrajectoryPos = 0;
-    }
-    else
-    {
-      curTrajectoryPos++;
-    }
-  }
-
-  // Detecting final complete trajectory
-  size_t lastIdx = trajectoryStartIndexes.size() - 2;
-
-  // Creating index vector for random off-policy trajectory selection
-  std::vector<size_t> trajectoryIndexes(lastIdx);
-  for (size_t i = 0; i < lastIdx; i++) trajectoryIndexes[i] = i;
-
-  // Shuffling trajectory
-  std::shuffle(trajectoryIndexes.begin(), trajectoryIndexes.end(), *mt);
+  // Creating a minibatch of starting experiences for the trajectories update
+  auto trajectoryStartIndexes = generateMiniBatch(_offPolicyUpdates);
 
   // Performing off-policy updates
-  for (size_t i = 0; i < _offPolicyUpdates; i++)
-  {
-    size_t tIdx = trajectoryIndexes[i];
-    processTrajectory(trajectoryStartIndexes[tIdx], trajectoryEndIndexes[tIdx]);
-  }
+  for (size_t i = 0; i < _offPolicyUpdates; i++) processTrajectory(trajectoryStartIndexes[i]);
 
   // Updating Statistics
   _averageQStar = _cumulativeQStar / (float)_offPolicyUpdates;                                            // Average Q Retrace
   _stdevQStar = sqrt(_cumulativeQStarSquared / (float)_offPolicyUpdates - _averageQStar * _averageQStar); // Sdev Q Retrace
 }
 
-void dACER::processTrajectory(size_t startId, size_t endId)
+void dACER::processTrajectory(size_t startId)
 {
+  // Going straight to the latest experience in the corresponding trajectory
+  size_t endId = startId;
+
+  // Increase trajectory end position pointer until
+  while (
+    ((endId - startId) < _trajectorySize) &&       // Has not reached specified trajectory size
+    (_experienceReplayTerminal[endId] == false) && // The experience is not terminal
+    (endId < (_experienceReplayStates.size() - 1)) // Has not reached the end of the replay experience
+    ) endId++;
+
+  // Resizing NN input/outputs given the current trajectory size
   size_t experienceCount = endId - startId;
   _criticProblem->_inputs.resize(experienceCount);
   _criticProblem->_solution.resize(experienceCount);

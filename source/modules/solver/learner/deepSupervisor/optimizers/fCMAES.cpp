@@ -270,7 +270,7 @@ void fCMAES::sampleSingle(size_t sampleIdx)
       _bDZMatrix[sampleIdx * _nVars + d] = 0.0;
       for (size_t e = 0; e < _nVars; ++e) _bDZMatrix[sampleIdx * _nVars + d] += _covarianceEigenvectorMatrix[d * _nVars + e] * _auxiliarBDZMatrix[e];
 
-      auto variance = _sigma * _bDZMatrix[sampleIdx * _nVars + d];
+      //auto variance = _sigma * _bDZMatrix[sampleIdx * _nVars + d];
       //      if (variance > abs(_upperBounds[d] - _lowerBounds[d])*10.0) printf("Excessive Variance\n");
       _samplePopulation[sampleIdx][d] = _currentMean[d] + _sigma * _bDZMatrix[sampleIdx * _nVars + d];
     }

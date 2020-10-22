@@ -13,29 +13,41 @@ namespace agent
 {
 namespace continuous
 {
-class DQN : public Discrete
+class NAF : public Continuous
 {
   public:
   /**
-  * @brief Pointer to training experiment's learner
+   * @brief Pointer to training experiment's V(s) problem
+   */
+  problem::SupervisedLearning *_qProblem;
+
+  /**
+  * @brief Pointer to training experiment's V(s) critic learner
   */
-  learner::DeepSupervisor *_criticLearner;
+  learner::DeepSupervisor *_qLearner;
 
   /**
-   * @brief Korali experiment for the training of the critic
+   * @brief Korali experiment for the training of V(s)
    */
-  korali::Experiment _criticExperiment;
-
+  korali::Experiment _qExperiment;
+ 
   /**
-   * @brief Pointer to training experiment's problem
-   */
-  problem::SupervisedLearning *_criticProblem;
+  * @brief Function to calculate the quadric expression of the Q(s,a) term.
+  * @param action The current action a
+  * @param qEvaluation Output of the NN evaluated for state s
+  * @return value of Q(s,a)
+  */
+  float quadraticQFunction(const std::vector<float> &action, const std::vector<float> &qEvaluation);
+  
 
-  std::vector<float> getActionProbabilities(const std::vector<float> &state) override;
   void updateHyperparameters(const knlohmann::json &hyperparameters) override;
   void trainAgent() override;
   void printAgentInformation() override;
   void initializeAgent() override;
+
+  std::vector<float> getActionMeans(const std::vector<float> &state) override;
+  std::vector<float> getActionSigmas(const std::vector<float> &state) override;
+  
 };
 
 } // namespace continuous

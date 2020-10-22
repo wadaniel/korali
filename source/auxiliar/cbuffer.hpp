@@ -15,7 +15,6 @@
 */
 namespace korali
 {
-
 /**
 * \class cBuffer
 * @brief This class defines a circular buffer with overwrite policy on add
@@ -23,8 +22,7 @@ namespace korali
 template <typename T>
 class cBuffer
 {
-
- /**
+  /**
   * @brief Size of buffer container
   */
   size_t _max_size;
@@ -50,7 +48,6 @@ class cBuffer
   size_t _end;
 
   public:
-
   /**
    * @brief Default constructor
    */

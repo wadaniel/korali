@@ -138,6 +138,7 @@ void NAF::trainAgent()
       // Getting experience's next state
       auto nextState = _experienceReplayStates[expId + 1];
 
+      // Calculate target y
       float vHat = _qLearner->getEvaluation(nextState)[i];
       yHat += _criticDiscountFactor * vHat;
     }
@@ -162,7 +163,7 @@ void NAF::trainAgent()
     {
       float sig = qEvaluations[i][1 + curState.size() + j];
       float dmu = curAction[j] - qEvaluations[i][1 + j];
-      policyGradient[j + 1] = diff * dmu * dmu * sig;
+      policyGradient[1 + curState.size() + j] = diff * dmu * dmu * sig;
     }
 
     // Updating inputs to training learner

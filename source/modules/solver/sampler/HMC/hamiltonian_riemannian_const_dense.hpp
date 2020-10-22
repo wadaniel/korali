@@ -83,6 +83,9 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannianConst
   */
   HamiltonianRiemannianConstDense(const size_t stateSpaceDim, korali::distribution::multivariate::Normal *multivariateGenerator, const std::vector<double> metric, const std::vector<double> inverseMetric, const double inverseRegularizationParam) : HamiltonianRiemannianConstDense{stateSpaceDim, multivariateGenerator, inverseRegularizationParam}
   {
+    assert(metric.size() == stateSpaceDim * stateSpaceDim);
+    assert(inverseMetric.size() == stateSpaceDim * stateSpaceDim);
+
     _metric = metric;
     _inverseMetric = inverseMetric;
 
@@ -373,13 +376,18 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannianConst
     }
 
     gsl_matrix *tmpMatOne = gsl_matrix_alloc(_stateSpaceDim, _stateSpaceDim);
+    gsl_matrix_set_all(tmpMatOne, 0.0);
     gsl_matrix *tmpMatTwo = gsl_matrix_alloc(_stateSpaceDim, _stateSpaceDim);
+    gsl_matrix_set_all(tmpMatTwo, 0.0);
 
     gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1.0, Q, lambdaSoftAbs, 0.0, tmpMatOne);
     gsl_blas_dgemm(CblasNoTrans, CblasTrans, 1.0, lambdaSoftAbs, Q, 0.0, tmpMatTwo);
 
+
     gsl_matrix *tmpMatThree = gsl_matrix_alloc(_stateSpaceDim, _stateSpaceDim);
+    gsl_matrix_set_all(tmpMatThree, 0.0);
     gsl_matrix *tmpMatFour = gsl_matrix_alloc(_stateSpaceDim, _stateSpaceDim);
+    gsl_matrix_set_all(tmpMatFour, 0.0);
 
     gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1.0, Q, lambdaSoftAbs, 0.0, tmpMatThree);
     gsl_blas_dgemm(CblasNoTrans, CblasTrans, 1.0, inverseLambdaSoftAbs, Q, 0.0, tmpMatFour);
@@ -411,7 +419,6 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannianConst
       __printVec(_inverseMetric);
     }
 
-    gsl_matrix_free(X);
     gsl_matrix_free(Q);
     gsl_vector_free(lambda);
     gsl_eigen_symmv_free(w);
@@ -422,6 +429,12 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannianConst
     gsl_matrix_free(tmpMatTwo);
     gsl_matrix_free(tmpMatThree);
     gsl_matrix_free(tmpMatFour);
+
+    for (size_t i = 0; i < _stateSpaceDim; ++i)
+    {
+      _metric[i * _stateSpaceDim + i] = 1.0;
+      _inverseMetric[i * _stateSpaceDim + i] = 1.0;
+    }
 
     _multivariateGenerator->_sigma = _metric;
 

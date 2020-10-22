@@ -241,6 +241,10 @@ void HMC::runGenerationHMC(const double logUniSample)
     ++_acceptanceCount;
     _positionLeader = _positionCandidate;
   }
+  if (isNan(_positionCandidate) == true)
+  {
+    std::cout << "rejected cause isNan() = true" << std::endl;
+  }
 
   return;
 }

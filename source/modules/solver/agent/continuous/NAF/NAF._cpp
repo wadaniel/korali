@@ -113,6 +113,7 @@ void NAF::trainAgent()
   // Set Hyperparameter from target network
   _qLearner->setHyperparameters(_qHatHyperparameter);
 
+  // Reevaluating minibatch with Qhat
   for (size_t i = 0; i < _criticMiniBatchSize; i++)
   {
     // Selecting a uniformly random selected, yet not repeated experience
@@ -148,17 +149,17 @@ void NAF::trainAgent()
 
     std::vector<float> policyGradient(1 + 2 * _problem->_stateVectorSize);
 
-    // Gradient Loss_i of V
+    // Calculating Gradients of Loss Li wrt. V(s)
     policyGradient[0] = -diff;
 
-    // Calculating Gradients of mu
+    // Calculating Gradients of Li wrt. mu(s)
     for (size_t j = 0; j < curState.size(); j++)
     {
       float sig = qEvaluations[i][1 + curState.size() + j];
       policyGradient[j + 1] = -diff * (curAction[j] - qEvaluations[i][j + 1]) * sig * sig;
     }
 
-    // Calculating Gradients of P
+    // Calculating Gradients of Li wrt P(s)
     for (size_t j = 0; j < curState.size(); j++)
     {
       float sig = qEvaluations[i][1 + curState.size() + j];

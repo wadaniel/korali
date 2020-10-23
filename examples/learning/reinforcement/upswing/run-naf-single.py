@@ -58,7 +58,7 @@ e["Solver"]["Experience Replay"]["Maximum Size"] = 100000
 ## Defining Q-Network
 
 e["Solver"]["Critic"]["Discount Factor"] = 1.0
-e["Solver"]["Critic"]["Learning Rate"] = 0.01
+e["Solver"]["Critic"]["Learning Rate"] = 0.0001
 e["Solver"]["Critic"]["Mini Batch Size"] = 32
 e["Solver"]["Critic"]["Normalization Steps"] = 32
 

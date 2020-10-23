@@ -14,6 +14,8 @@ def env(s):
  step = 0
  done = False
 
+ maxs = np.ones(len(upswing.getState().tolist()))
+
  while not done and step < maxSteps:
 
   # Getting new action
@@ -26,7 +28,14 @@ def env(s):
   s["Reward"] = upswing.getReward()
    
   # Storing New State
-  s["State"] = upswing.getState().tolist()
-  
+  state = upswing.getState().tolist()
+  s["State"] = state
+ 
+  maxs = np.maximum(maxs, state)
+ 
   # Advancing step counter
   step = step + 1
+
+ print(step)
+ print(s["State"])
+ print(maxs, flush=True)

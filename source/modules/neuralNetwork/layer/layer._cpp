@@ -102,7 +102,7 @@ void Layer::createHyperparameterMemory()
 
     // Adding normalization scale/shift hyperparameters to the count
     _weightParameterCount += 2 * OC;
-    _normalizationParameterCount += 2 * OC;
+    _normalizationParameterCount += OC;
 
     // Allocating normalization scale/shift memory structure
     auto normalizationScaleShiftMemDesc = memory::desc(scale_shift_dims, memory::data_type::f32, memory::format_tag::nc);

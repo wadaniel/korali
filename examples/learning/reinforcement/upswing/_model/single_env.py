@@ -35,7 +35,3 @@ def env(s):
  
   # Advancing step counter
   step = step + 1
-
- print(step)
- print(s["State"])
- print(maxs, flush=True)

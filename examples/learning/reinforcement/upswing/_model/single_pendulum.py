@@ -65,9 +65,9 @@ class SinglePendulum:
   def advance(self, action):
     
     self.F = action[0]
-    self.u += self.dt*self.system(self.t, self.u, self.F)
-    #self.ODE.set_initial_value(self.u, self.t).set_f_params(self.F)
-    #self.u = self.ODE.integrate(self.t + self.dt)
+    #self.u += self.dt*self.system(self.t, self.u, self.F)
+    self.ODE.set_initial_value(self.u, self.t).set_f_params(self.F)
+    self.u = self.ODE.integrate(self.t + self.dt)
     self.u[1] = self.wrapToNPiPi(self.u[1])
     self.u[2] = self.wrapToNPiPi(self.u[2])
  
@@ -94,7 +94,6 @@ class SinglePendulum:
     return state
 
   def getReward(self):
-
     th1 = np.copy(self.u[1])
     return 1 + cos(th1)
 

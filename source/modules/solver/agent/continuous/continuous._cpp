@@ -24,12 +24,18 @@ void Continuous::initializeAgent()
   // Allocating space for the inverse variance calculation
   _inverseVariances.resize(_problem->_actionVectorSize);
   _actionSigmas.resize(_problem->_actionVectorSize);
+  _actionLowerBounds.resize(_problem->_actionVectorSize);
+  _actionUpperBounds.resize(_problem->_actionVectorSize);
 
   for (size_t i = 0; i < _problem->_actionVectorSize; i++)
   {
     auto varIdx = _problem->_actionVectorIndexes[i];
     float sigma = _k->_variables[varIdx]->_explorationSigma;
     if (sigma <= 0.0) KORALI_LOG_ERROR("Value of Exploration Sigma (%f) for action %lu (variable %lu) is not defined or invalid.\n", sigma, i, varIdx);
+
+    // Obtaining lower and upper bounds for the action
+    _actionLowerBounds[i] = _k->_variables[varIdx]->_lowerBound;
+    _actionUpperBounds[i] = _k->_variables[varIdx]->_upperBound;
 
     // compute inverse variance
     _actionSigmas[i] = sigma;
@@ -75,21 +81,14 @@ void Continuous::getAction(korali::Sample &sample)
     {
       for (size_t i = 0; i < _problem->_actionVectorSize; i++)
       {
-        // Finding problem variable index corresponding to this action
-        size_t varIdx = _problem->_actionVectorIndexes[i];
-
         // Producing random (uniform) number to select within an lower/upper bound range
         float x = _uniformGenerator->getRandomNumber();
 
-        // Obtaining lower and upper bounds for the action
-        float lowerBound = _k->_variables[varIdx]->_lowerBound;
-        float upperBound = _k->_variables[varIdx]->_upperBound;
-
         // Producing the random value for action element i
-        action[i] = lowerBound + x * (upperBound - lowerBound);
+        action[i] = _actionLowerBounds[i] + x * (_actionUpperBounds[i] - _actionLowerBounds[i]);
 
-        sample["Metadata"]["Action Means"][i] = (upperBound + lowerBound) * 0.5;
-        sample["Metadata"]["Action Sigmas"][i] = (upperBound - lowerBound) / sqrtf(12.0);
+        sample["Metadata"]["Action Means"][i] = 0.5 * (_actionLowerBounds[i] + _actionUpperBounds[i]);
+        sample["Metadata"]["Action Sigmas"][i] = 0.3 * (_actionUpperBounds[i] - _actionLowerBounds[i]);
       }
     }
     else // else we select guided by the policy's probability distribution
@@ -105,6 +104,10 @@ void Continuous::getAction(korali::Sample &sample)
 
         // Generating action from the updated normal distribution
         action[i] = _normalGenerator->getRandomNumber();
+  
+        // Clipping actions
+        if(action[i] > _actionUpperBounds[i]) action[i] = _actionUpperBounds[i];
+        else if(action[i] < _actionLowerBounds[i]) action[i] = _actionLowerBounds[i];
       }
 
       // Storing selection metadata

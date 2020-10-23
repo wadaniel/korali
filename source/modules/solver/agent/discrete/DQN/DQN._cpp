@@ -158,7 +158,8 @@ void DQN::trainAgent()
 
 void DQN::updateHyperparameters(const knlohmann::json &hyperparameters)
 {
-  _criticLearner->setHyperparameters(hyperparameters["Critic"].get<std::vector<float>>());
+  auto criticHyperparameters = hyperparameters["Critic"].get<std::vector<float>>();
+  _criticLearner->setHyperparameters(criticHyperparameters);
 }
 
 std::vector<float> DQN::getActionProbabilities(const std::vector<float> &state)

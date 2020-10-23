@@ -2,7 +2,7 @@
 import os
 import sys
 sys.path.append('./_model')
-from double_env import *
+from single_env import *
 
 ####### Defining Korali Problem
 
@@ -20,29 +20,23 @@ e["Problem"]["Actions Between Policy Updates"] = 1
 e["Variables"][0]["Name"] = "Cart Position"
 e["Variables"][0]["Type"] = "State"
 
-e["Variables"][1]["Name"] = "Cart Velocity"
+e["Variables"][1]["Name"] = "Angle 1"
 e["Variables"][1]["Type"] = "State"
 
-e["Variables"][2]["Name"] = "Angle 1"
+e["Variables"][2]["Name"] = "Car Velocity"
 e["Variables"][2]["Type"] = "State"
 
 e["Variables"][3]["Name"] = "Angular Velocity 1"
 e["Variables"][3]["Type"] = "State"
 
-e["Variables"][4]["Name"] = "Angle 2"
+e["Variables"][4]["Name"] = "Height Proxy"
 e["Variables"][4]["Type"] = "State"
 
-e["Variables"][5]["Name"] = "Angular Velocity 2"
-e["Variables"][5]["Type"] = "State"
-
-e["Variables"][6]["Name"] = "Height Proxy"
-e["Variables"][6]["Type"] = "State"
-
-e["Variables"][7]["Name"] = "Force"
-e["Variables"][7]["Type"] = "Action"
-e["Variables"][7]["Lower Bound"] = -20.0
-e["Variables"][7]["Upper Bound"] = +20.0
-e["Variables"][7]["Exploration Sigma"] = 1.00
+e["Variables"][5]["Name"] = "Force"
+e["Variables"][5]["Type"] = "Action"
+e["Variables"][5]["Lower Bound"] = -20.0
+e["Variables"][5]["Upper Bound"] = +20.0
+e["Variables"][5]["Exploration Sigma"] = 1.00
 
 ### Defining Agent Configuration 
 

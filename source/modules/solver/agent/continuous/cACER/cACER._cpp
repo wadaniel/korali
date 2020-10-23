@@ -190,9 +190,8 @@ void cACER::processTrajectory(size_t startId)
 
   // Increase trajectory end position pointer until
   while (
-    ((endId - startId) < _trajectorySize) &&       // Has not reached specified trajectory size
-    (_experienceReplayTerminal[endId] == false) && // The experience is not terminal
-    (endId < (_experienceReplayStates.size() - 1)) // Has not reached the end of the replay experience
+    ((endId - startId) < _trajectorySize) &&    // Has not reached specified trajectory size
+    (_experienceReplayTerminal[endId] == false) // The experience is not terminal
     ) endId++;
 
   // Initializing inputs and solution for the critic and policy problems
@@ -467,7 +466,8 @@ void cACER::processTrajectory(size_t startId)
 
 void cACER::updateHyperparameters(const knlohmann::json &hyperparameters)
 {
-  _policyLearner->setHyperparameters(hyperparameters["Policy"].get<std::vector<float>>());
+  auto policyHyperparameters = hyperparameters["Policy"].get<std::vector<float>>();
+  _policyLearner->setHyperparameters(policyHyperparameters);
 }
 
 void cACER::printAgentInformation()

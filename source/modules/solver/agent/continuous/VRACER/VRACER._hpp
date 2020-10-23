@@ -1,0 +1,78 @@
+#ifndef _KORALI_AGENT_CONTINUOUS_VRACER_HPP_
+#define _KORALI_AGENT_CONTINUOUS_VRACER_HPP_
+
+#include "modules/distribution/univariate/normal/normal.hpp"
+#include "modules/problem/reinforcementLearning/continuous/continuous.hpp"
+#include "modules/solver/agent/continuous/continuous.hpp"
+
+namespace korali
+{
+namespace solver
+{
+namespace agent
+{
+namespace continuous
+{
+class VRACER : public Continuous
+{
+  public:
+  /**
+  * @brief Stores experience replay action probability gaussian means.
+  */
+  cBuffer<float> _experienceReplayVtbc;
+
+  /**
+  * @brief Stores experience replay action probability gaussian standard deviations.
+  */
+  cBuffer<float> _experienceReplayActionProbability;
+
+  /**
+   * @brief Pointer to training the actor network
+   */
+  learner::DeepSupervisor *_criticPolicyLearner;
+
+  /**
+  * @brief Korali experiment for obtaining the agent's action
+  */
+  korali::Experiment _criticPolicyExperiment;
+
+  /**
+   * @brief Pointer to actor's experiment problem
+   */
+  problem::SupervisedLearning *_criticPolicyProblem;
+
+  /**
+   * @brief Variable to calculate the total number of actions in the action space
+   */
+  size_t _actionCount;
+
+  /**
+  * @brief Variable with state value
+  */
+  float _stateValue;
+
+  /**
+   * @brief Processes a selected trajectory to learn from it, depending on whether it uses a discrete or continuous action space
+   * @param startId ID to the first experience of the trajectory
+   * @param endId ID to the last experience of the trajectory
+   */
+  void processTrajectory(size_t startId, size_t endId);
+
+  void forwardPolicy(const std::vector<float> &state) override;
+
+  void trainAgent() override;
+
+  void processExperience(knlohmann::json &experience) override;
+  void getAction(korali::Sample &sample) override;
+  
+  void updateHyperparameters(const knlohmann::json &hyperparameters) override;
+  void printAgentInformation() override;
+  void initializeAgent() override;
+};
+
+} // namespace continuous
+} // namespace agent
+} // namespace solver
+} // namespace korali
+
+#endif // _KORALI_AGENT_CONTINUOUS_VRACER_HPP_

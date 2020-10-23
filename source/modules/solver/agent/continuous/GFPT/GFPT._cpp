@@ -141,11 +141,8 @@ float GFPT::stateActionValueFunction(const std::vector<float> &state, const std:
   for (size_t j = 0; j < _problem->_actionVectorSize; j++) stateActionInput[j + _problem->_stateVectorSize] = action[j];
   aValAction = _aLearner->getEvaluation(stateActionInput)[0];
 
-  // Getting the Gaussian means of the actions given by the agent's policy
-  auto actionMeans = getActionMeans(state);
-
-  // Getting the Gaussian sigmas of the actions given by the agent's policy
-  auto actionSigmas = getActionSigmas(state);
+  // Evaluate policy to get Gaussian means
+  forwardPolicy( state );
 
   // Creating storage for average action minibatch
   std::vector<std::vector<float>> avgActionMinibatch(_policySamplePopulation);
@@ -162,8 +159,8 @@ float GFPT::stateActionValueFunction(const std::vector<float> &state, const std:
     for (size_t j = 0; j < _problem->_actionVectorSize; j++)
     {
       // Updating normal distribution for the current action element
-      _normalGenerator->_mean = actionMeans[j];
-      _normalGenerator->_standardDeviation = actionSigmas[j];
+      _normalGenerator->_mean = _actionMeans[j];
+      _normalGenerator->_standardDeviation = _actionSigmas[j];
 
       // Generating action from the updated normal distribution
       avgActionMinibatch[i][j + _problem->_stateVectorSize] = _normalGenerator->getRandomNumber();
@@ -212,7 +209,14 @@ void GFPT::trainAgent()
     auto curState = _experienceReplayStates[expId];
     auto curAction = _experienceReplayActions[expId];
     auto nextState = isTerminal ? std::vector<float>() : _experienceReplayStates[expId + 1];
-    auto bestAction = isTerminal ? std::vector<float>() : getActionMeans(nextState);
+    std::vector<float> bestAction;
+    if( isTerminal )
+      bestAction = std::vector<float>();
+    else
+    {
+      forwardPolicy( nextState );
+      bestAction = _actionMeans;
+    }
 
     // Getting current reward
     float curReward = _experienceReplayRewards[expId];
@@ -318,11 +322,11 @@ void GFPT::trainAgent()
     // Calculating Policy Gradient for the current experience
     std::vector<float> policyGradient(_problem->_actionVectorSize);
 
-    auto curAction = getActionMeans(curState);
+    forwardPolicy( curState );
     auto bstAction = _actionOptimizer->_bestEverVariables;
 
     for (size_t j = 0; j < _problem->_actionVectorSize; j++)
-      policyGradient[j] = bstAction[j] - curAction[j];
+      policyGradient[j] = bstAction[j] - _actionMeans[j];
 
     _policyProblem->_inputs[i] = curState;
     _policyProblem->_solution[i] = policyGradient;
@@ -358,14 +362,9 @@ void GFPT::trainAgent()
   _hyperparameters["Policy"] = newPolicyHyperparameters;
 }
 
-std::vector<float> GFPT::getActionMeans(const std::vector<float> &state)
+void GFPT::forwardPolicy(const std::vector<float> &state)
 {
-  return _policyLearner->getEvaluation({state});
-}
-
-std::vector<float> GFPT::getActionSigmas(const std::vector<float> &state)
-{
-  return _actionSigmas;
+  _actionMeans = _policyLearner->getEvaluation({state});
 }
 
 void GFPT::updateHyperparameters(const knlohmann::json &hyperparameters)

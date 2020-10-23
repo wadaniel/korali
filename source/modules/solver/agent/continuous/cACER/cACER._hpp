@@ -91,8 +91,8 @@ class cACER : public Continuous
    */
   std::vector<float> generateAction();
 
-  std::vector<float> getActionMeans(const std::vector<float> &state) override;
-  std::vector<float> getActionSigmas(const std::vector<float> &state) override;
+  void forwardPolicy(const std::vector<float> &state) override;
+  
   void trainAgent() override;
   void updateHyperparameters(const knlohmann::json &hyperparameters) override;
   void printAgentInformation() override;

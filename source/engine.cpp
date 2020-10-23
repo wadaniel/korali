@@ -70,9 +70,6 @@ void Engine::initialize()
 
 void Engine::run()
 {
-  _forwardStreamTime = 0.0;
-  _backwardStreamTime = 0.0;
-
   // Checking if its a dry run and return if it is
   if (_isDryRun) return;
 

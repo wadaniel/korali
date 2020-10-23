@@ -46,12 +46,12 @@ class Layer : public Module
    *******************************************************/
 
   /**
-   * @brief Number of layer's hyperparameters (weights/bias/normalization shift/scale)
+   * @brief Number of NN hyperparameters (weights/bias)
    */
-  size_t _hyperparameterCount;
+  size_t _weightParameterCount;
 
   /**
-   * @brief Number of layer's normalization parameters (mean/variance)
+   * @brief Number of normalization parameters (mean/variance)
    */
   size_t _normalizationParameterCount;
 

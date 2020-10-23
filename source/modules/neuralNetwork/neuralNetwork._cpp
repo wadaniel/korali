@@ -71,7 +71,7 @@ void NeuralNetwork::initialize()
   _weightParameterCount = 0;
 
   for (size_t i = 0; i < layerCount; i++) _weightParameterCount += _layers[i]->_weightParameterCount;
-  for (size_t i = 0; i < layerCount; i++) _normalizationParameterCount += _layers[i]->_normalizationParameterCount;
+  for (size_t i = 0; i < layerCount; i++) _normalizationParameterCount += 2 * _layers[i]->_normalizationParameterCount;
 
   // Calculating total hyperparameter count
   _hyperparameterCount = _weightParameterCount + _normalizationParameterCount;
@@ -251,19 +251,22 @@ void NeuralNetwork::normalize(const std::vector<std::vector<std::vector<float>>>
     forward();
 
     // Getting this mini-batch's normalization means and variances
-    auto newMeans = getNormalizationMeans();
-    auto newVariances = getNormalizationVariances();
+    auto curMeans = getNormalizationMeans();
+    auto curVariances = getNormalizationVariances();
 
     // Accuulating their values into the new vector
-    for (size_t i = 0; i < _normalizationParameterCount; i++) newMeans[i] += newMeans[i];
-    for (size_t i = 0; i < _normalizationParameterCount; i++) newVariances[i] += newVariances[i];
+    for (size_t i = 0; i < _normalizationParameterCount; i++) newMeans[i] += curMeans[i];
+    for (size_t i = 0; i < _normalizationParameterCount; i++) newVariances[i] += curVariances[i];
   }
 
   // Calculating the actual mean and variance averages
+  float invMiniBatchSize = 1.0f / (float)miniBatches.size();
+  float unbiasedInvMiniBatchSize = 1.0f / ( (float)miniBatches.size() - 1.0f );
+
   for (size_t i = 0; i < _normalizationParameterCount; i++)
   {
-    newMeans[i] = newMeans[i] / (float)miniBatches.size();
-    newVariances[i] = newVariances[i] / (float)(miniBatches.size() - 1.0);
+    newMeans[i] = newMeans[i] * invMiniBatchSize;
+    newVariances[i] = newVariances[i] * unbiasedInvMiniBatchSize;
   }
 
   // Setting the new adjusted means and variances

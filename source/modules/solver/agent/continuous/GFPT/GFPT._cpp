@@ -142,7 +142,7 @@ float GFPT::stateActionValueFunction(const std::vector<float> &state, const std:
   aValAction = _aLearner->getEvaluation(stateActionInput)[0];
 
   // Evaluate policy to get Gaussian means
-  forwardPolicy( state );
+  forwardPolicy(state);
 
   // Creating storage for average action minibatch
   std::vector<std::vector<float>> avgActionMinibatch(_policySamplePopulation);
@@ -210,11 +210,11 @@ void GFPT::trainAgent()
     auto curAction = _experienceReplayActions[expId];
     auto nextState = isTerminal ? std::vector<float>() : _experienceReplayStates[expId + 1];
     std::vector<float> bestAction;
-    if( isTerminal )
+    if (isTerminal)
       bestAction = std::vector<float>();
     else
     {
-      forwardPolicy( nextState );
+      forwardPolicy(nextState);
       bestAction = _actionMeans;
     }
 
@@ -322,7 +322,7 @@ void GFPT::trainAgent()
     // Calculating Policy Gradient for the current experience
     std::vector<float> policyGradient(_problem->_actionVectorSize);
 
-    forwardPolicy( curState );
+    forwardPolicy(curState);
     auto bstAction = _actionOptimizer->_bestEverVariables;
 
     for (size_t j = 0; j < _problem->_actionVectorSize; j++)

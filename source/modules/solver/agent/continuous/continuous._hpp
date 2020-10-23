@@ -42,7 +42,6 @@ class Continuous : public Agent
  */
   problem::reinforcementLearning::Continuous *_problem;
 
-
   /**
   * @brief Function to pass state through the NN and prepares the Gaussian means and sigmas of the actions (updates members _actionMeans and _actionSigmas)
   * @param state The current state

@@ -30,7 +30,7 @@ class NAF : public Continuous
    * @brief Korali experiment for the training of V(s)
    */
   korali::Experiment _qExperiment;
- 
+
   /**
   * @brief Function to calculate the quadric expression of the Q(s,a) term.
   * @param action The current action a
@@ -38,7 +38,6 @@ class NAF : public Continuous
   * @return value of Q(s,a)
   */
   float quadraticQFunction(const std::vector<float> &action, const std::vector<float> &qEvaluation);
-  
 
   void updateHyperparameters(const knlohmann::json &hyperparameters) override;
   void trainAgent() override;
@@ -46,7 +45,6 @@ class NAF : public Continuous
   void initializeAgent() override;
 
   void forwardPolicy(const std::vector<float> &state) override;
-  
 };
 
 } // namespace continuous

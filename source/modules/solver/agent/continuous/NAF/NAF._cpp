@@ -141,7 +141,7 @@ void NAF::trainAgent()
       yHat += _criticDiscountFactor * vHat;
     }
 
-    float qval = quadraticQFunction(curAction, qEvaluations[i]);
+    float qval = quadraticAdvantageFunction(curAction, qEvaluations[i]) + qEvaluations[i][0]; // A(s,a) + V(s)
     float diff = yHat - qval;
 
     std::vector<float> policyGradient(1 + 2 * _problem->_actionVectorSize);
@@ -213,7 +213,7 @@ void NAF::forwardPolicy(const std::vector<float> &state)
   for (size_t i = 0; i < state.size(); ++i) _actionSigmas[i] = sqrt(exp(-tanh(qNNoutput[i + 1 + state.size()])));
 }
 
-float NAF::quadraticQFunction(const std::vector<float> &action, const std::vector<float> &qEvaluation)
+float NAF::quadraticAdvantageFunction(const std::vector<float> &action, const std::vector<float> &qEvaluation)
 {
   float qval = 0;
   for (size_t i = 0; i < action.size(); ++i)
@@ -222,7 +222,7 @@ float NAF::quadraticQFunction(const std::vector<float> &action, const std::vecto
     float var = qEvaluation[i + 1 + action.size()];
     qval += dmu * var * dmu;
   }
-  return 0.5 * qval;
+  return -0.5 * qval;
 }
 
 void NAF::printAgentInformation()

@@ -467,7 +467,8 @@ void cACER::processTrajectory(size_t startId)
 
 void cACER::updateHyperparameters(const knlohmann::json &hyperparameters)
 {
-  _policyLearner->setHyperparameters(hyperparameters["Policy"].get<std::vector<float>>());
+  auto policyHyperparameters = hyperparameters["Policy"].get<std::vector<float>>();
+  _policyLearner->setHyperparameters(policyHyperparameters);
 }
 
 void cACER::printAgentInformation()

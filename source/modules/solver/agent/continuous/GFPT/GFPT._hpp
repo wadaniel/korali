@@ -16,6 +16,12 @@ namespace continuous
 class GFPT : public Continuous
 {
   public:
+
+  /**
+   * @brief A neural network for the inference of the averaged advantage function
+   */
+  NeuralNetwork *_averageAdvantageNeuralNetwork;
+
   /**
    * @brief Pointer to training experiment's V(s) problem
    */

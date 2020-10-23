@@ -42,32 +42,35 @@ void DeepSupervisor::initialize()
     neuralNetworkConfig["Use Preloaded Normalization Data"] = true;
     _evaluationNeuralNetwork = dynamic_cast<NeuralNetwork *>(getModule(neuralNetworkConfig, _k));
 
-    /*****************************************************************
-   * Setting up weight and bias optimization experiment
+   /*****************************************************************
+   * Initializing NN hyperparameters
    *****************************************************************/
 
     _hyperparameters = _trainingNeuralNetwork->generateInitialHyperparameters();
-    _normalizationMeans = _trainingNeuralNetwork->getNormalizationMeans();
-    _normalizationVariances = _trainingNeuralNetwork->getNormalizationVariances();
-
-    if (_optimizer == "Adam") _adamSolver = new korali::fAdam(_hyperparameters.size());
-    if (_optimizer == "AdaBelief") _adamSolver = new korali::fAdaBelief(_hyperparameters.size());
-
-    _adamSolver->_eta = _learningRate;
-
-    for (size_t i = 0; i < _hyperparameters.size(); i++)
-      _adamSolver->_initialValues[i] = _hyperparameters[i];
-
-    // Resetting
-    _adamSolver->reset();
 
     // Creating and setting hyperparameter structures
     _trainingNeuralNetwork->setHyperparameters(_hyperparameters);
 
     // Copying hyperparameters and normalization parameters from training to evaluation
     _evaluationNeuralNetwork->setHyperparameters(_hyperparameters);
-    _evaluationNeuralNetwork->setNormalizationMeans(_normalizationMeans);
-    _evaluationNeuralNetwork->setNormalizationVariances(_normalizationVariances);
+
+   /*****************************************************************
+   * Setting up weight and bias optimization experiment
+   *****************************************************************/
+
+    auto weightAndBiasParameters = _trainingNeuralNetwork->getWeightsAndBiases();
+
+    if (_optimizer == "Adam") _adamSolver = new korali::fAdam(weightAndBiasParameters.size());
+    if (_optimizer == "AdaBelief") _adamSolver = new korali::fAdaBelief(weightAndBiasParameters.size());
+
+    // Setting learning rate
+    _adamSolver->_eta = _learningRate;
+
+    for (size_t i = 0; i < weightAndBiasParameters.size(); i++)
+      _adamSolver->_initialValues[i] = weightAndBiasParameters[i];
+
+    // Resetting
+    _adamSolver->reset();
 
     // Setting learner initialized flag
     _isLearnerInitialized = true;
@@ -117,7 +120,7 @@ void DeepSupervisor::runGeneration()
     _trainingNeuralNetwork->backward(lossDiff);
 
     // If we need the gradients of the weights, we also compute them
-    auto gradient = _trainingNeuralNetwork->getHyperparameterGradients();
+    auto gradient = _trainingNeuralNetwork->getWeightAndBiasesGradients();
 
     // Passing loss and gradient through an ADAM update
     _adamSolver->processResult(_currentLoss, gradient);
@@ -129,53 +132,27 @@ void DeepSupervisor::runGeneration()
       _suboptimalGenerationCount++;
 
     // Getting new set of hyperparameters from Adam
-    _trainingNeuralNetwork->setHyperparameters(_adamSolver->_currentValue);
+    _trainingNeuralNetwork->setWeightsAndBiases(_adamSolver->_currentValue);
   }
 }
 
 void DeepSupervisor::finalize()
 {
   _hyperparameters = _trainingNeuralNetwork->getHyperparameters();
-  _normalizationMeans = _trainingNeuralNetwork->getNormalizationMeans();
-  _normalizationVariances = _trainingNeuralNetwork->getNormalizationVariances();
 
   // Copying hyperparameters and normalization parameters from training to evaluation
   _evaluationNeuralNetwork->setHyperparameters(_hyperparameters);
-  _evaluationNeuralNetwork->setNormalizationMeans(_normalizationMeans);
-  _evaluationNeuralNetwork->setNormalizationVariances(_normalizationVariances);
 }
 
 std::vector<float> DeepSupervisor::getHyperparameters()
 {
-  std::vector<float> parameters;
-
-  // Concatenating parameters
-  parameters.insert(parameters.end(), _hyperparameters.begin(), _hyperparameters.end());
-  parameters.insert(parameters.end(), _normalizationMeans.begin(), _normalizationMeans.end());
-  parameters.insert(parameters.end(), _normalizationVariances.begin(), _normalizationVariances.end());
-
-  return parameters;
+  return _hyperparameters;
 }
 
 void DeepSupervisor::setHyperparameters(const std::vector<float> &hyperparameters)
 {
-  size_t curPos = 0;
-
-  // Setting NN hyperparameters first
-  _hyperparameters = std::vector<float>(hyperparameters.begin() + curPos, hyperparameters.begin() + _trainingNeuralNetwork->_hyperparameterCount);
-  curPos += _hyperparameters.size();
-
-  // Setting NN normalization means second
-  _normalizationMeans = std::vector<float>(hyperparameters.begin() + curPos, hyperparameters.begin() + curPos + _trainingNeuralNetwork->_normalizationParameterCount);
-  curPos += _normalizationMeans.size();
-
-  // Setting NN normalization variances finally
-  _normalizationVariances = std::vector<float>(hyperparameters.begin() + curPos, hyperparameters.end());
-
   // Update evaluation network
-  _evaluationNeuralNetwork->setHyperparameters(_hyperparameters);
-  _evaluationNeuralNetwork->setNormalizationMeans(_normalizationMeans);
-  _evaluationNeuralNetwork->setNormalizationVariances(_normalizationVariances);
+  _evaluationNeuralNetwork->setHyperparameters(hyperparameters);
 }
 
 std::vector<std::vector<float>> DeepSupervisor::getEvaluation(const std::vector<std::vector<float>> &inputBatch)

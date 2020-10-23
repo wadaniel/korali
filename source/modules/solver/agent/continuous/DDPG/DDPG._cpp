@@ -132,7 +132,7 @@ void DDPG::trainAgent()
     std::vector<float> curAction = _experienceReplayActions[expId];
     std::vector<float> nextState = isTerminal ? std::vector<float>() : _experienceReplayStates[expId + 1];
     std::vector<float> bestAction;
-    if( isTerminal )
+    if (isTerminal)
       bestAction = std::vector<float>();
     else
     {

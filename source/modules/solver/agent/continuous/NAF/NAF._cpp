@@ -33,7 +33,7 @@ void NAF::initializeAgent()
     if (sigma <= 0.0) KORALI_LOG_ERROR("Value of Noise Sigma (%f) for action variable %lu is not defined or invalid.\n", sigma, i);
 
     _actionSigmas[i] = sigma;
-    
+
     knlohmann::json js;
     js["Type"] = "Univariate/Normal";
     js["Mean"] = 0.0;
@@ -41,7 +41,6 @@ void NAF::initializeAgent()
 
     auto d = dynamic_cast<distribution::univariate::Normal *>(getModule(js, _k));
     _policyDistributions.push_back(d);
-
   }
 
   /*********************************************************************
@@ -58,14 +57,13 @@ void NAF::initializeAgent()
 
   for (size_t i = 0; i < _problem->_stateVectorSize; i++) _qExperiment["Problem"]["Inputs"][0][i] = 0.0;
   for (size_t i = 0; i < 1 + 2 * _problem->_actionVectorSize; i++) _qExperiment["Problem"]["Solution"][0][i] = 0.0;
-  
-   // Running initialization to verify that the configuration is correct
+
+  // Running initialization to verify that the configuration is correct
   engine.initialize(_qExperiment);
 
-   // Getting learner pointers
+  // Getting learner pointers
   _qProblem = dynamic_cast<problem::SupervisedLearning *>(_qExperiment._problem);
   _qLearner = dynamic_cast<solver::learner::DeepSupervisor *>(_qExperiment._solver);
-
 
   /*********************************************************************
   * Loading/Setting Hyperparameters
@@ -74,7 +72,6 @@ void NAF::initializeAgent()
   // Setting Initial Hyperparameters
   _hyperparameters["Critic"] = _qLearner->getHyperparameters();
   _qHatHyperparameter = _qLearner->getHyperparameters();
-
 }
 
 void NAF::trainAgent()
@@ -161,14 +158,14 @@ void NAF::trainAgent()
       float dmu = curAction[j] - qEvaluations[i][1 + j];
       policyGradient[1 + curAction.size() + j] = diff * dmu * dmu * sig;
     }
- 
+
     _qProblem->_inputs.push_back(curState);
     _qProblem->_solution.push_back(policyGradient);
 
     // Keeping statistics
     _cumulativeQStar += yHat;
     _cumulativeQStarSquared += yHat * yHat;
-    for (size_t j = 0; j < curAction.size(); j++) _averageActionSigmas[j] += qEvaluations[i][1+curAction.size()+j];
+    for (size_t j = 0; j < curAction.size(); j++) _averageActionSigmas[j] += qEvaluations[i][1 + curAction.size() + j];
   }
 
   // Set Hyperparameter from q network
@@ -228,7 +225,7 @@ void NAF::printAgentInformation()
   _k->_logger->logInfo("Normal", "Critic Information:\n");
   _k->_logger->logInfo("Normal", " + Average (Std) Q-Value in Mini-Batch:  %f (%f)\n", _averageQStar, _stdevQStar);
   _k->_logger->logInfo("Normal", " + Average Action Sigmas in Mini-Batch: \n");
-  for(size_t i = 0; i < _averageActionSigmas.size(); ++i)  _k->_logger->logInfo("Normal", " +  [ %f ]\n", _averageActionSigmas[i]);
+  for (size_t i = 0; i < _averageActionSigmas.size(); ++i) _k->_logger->logInfo("Normal", " +  [ %f ]\n", _averageActionSigmas[i]);
 
   _qExperiment._logger->_verbosityLevel = _k->_logger->_verbosityLevel;
   _qExperiment._solver->printGenerationAfter();

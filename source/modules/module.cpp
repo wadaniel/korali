@@ -42,6 +42,7 @@
 #include "solver/agent/continuous/DDPG/DDPG.hpp"
 #include "solver/agent/continuous/GFPT/GFPT.hpp"
 #include "solver/agent/continuous/cACER/cACER.hpp"
+#include "solver/agent/continuous/VRACER/VRACER.hpp"
 #include "solver/agent/continuous/continuous.hpp"
 #include "solver/agent/discrete/DDQN/DDQN.hpp"
 #include "solver/agent/discrete/DQN/DQN.hpp"
@@ -140,6 +141,7 @@ Module *Module::getModule(knlohmann::json &js, Experiment *e)
   if (moduleType == "Agent/Continuous/CACER") module = new korali::solver::agent::continuous::cACER();
   if (moduleType == "Agent/Continuous/DDPG") module = new korali::solver::agent::continuous::DDPG();
   if (moduleType == "Agent/Continuous/GFPT") module = new korali::solver::agent::continuous::GFPT();
+  if (moduleType == "Agent/Continuous/VRACER") module = new korali::solver::agent::continuous::VRACER();
   if (moduleType == "Optimizer/CMAES") module = new korali::solver::optimizer::CMAES();
   if (moduleType == "Optimizer/DEA") module = new korali::solver::optimizer::DEA();
   if (moduleType == "Optimizer/Adam") module = new korali::solver::optimizer::Adam();

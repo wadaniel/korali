@@ -104,10 +104,12 @@ void Continuous::getAction(korali::Sample &sample)
 
         // Generating action from the updated normal distribution
         action[i] = _normalGenerator->getRandomNumber();
-  
+
         // Clipping actions
-        if(action[i] > _actionUpperBounds[i]) action[i] = _actionUpperBounds[i];
-        else if(action[i] < _actionLowerBounds[i]) action[i] = _actionLowerBounds[i];
+        if (action[i] > _actionUpperBounds[i])
+          action[i] = _actionUpperBounds[i];
+        else if (action[i] < _actionLowerBounds[i])
+          action[i] = _actionLowerBounds[i];
       }
 
       // Storing selection metadata

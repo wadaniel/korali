@@ -44,9 +44,8 @@ class Continuous : public Agent
 
 
   /**
-  * @brief Function to update the Gaussian means and sigmas of the actions
+  * @brief Function to pass state through the NN and prepares the Gaussian means and sigmas of the actions (updates members _actionMeans and _actionSigmas)
   * @param state The current state
-  * @return Updated members _actionMeans and _actionSigmas
   */
   virtual void forwardPolicy(const std::vector<float> &state) = 0;
 

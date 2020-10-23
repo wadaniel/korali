@@ -21,9 +21,9 @@ void NAF::initializeAgent()
 
   korali::Engine engine; // Engine to initialize experiments with
 
-  // Allocating space for the Cholesky decomposition of the quadratic advantage Term
-  // _choleskyDecompVariance.resize(_problem->_actionVectorSize*(_problem->_actionVectorSize/2.0 + 1.0/2.0), 0.0);
+  _actionMeans.resize(_problem->_actionVectorSize);
   _actionSigmas.resize(_problem->_actionVectorSize);
+  _averageActionSigmas.resize(_problem->_actionVectorSize);
 
   //size_t sigIdx = 0.0;
   for (size_t i = 0; i < _problem->_actionVectorSize; i++)
@@ -32,18 +32,16 @@ void NAF::initializeAgent()
     float sigma = _k->_variables[varIdx]->_explorationSigma;
     if (sigma <= 0.0) KORALI_LOG_ERROR("Value of Noise Sigma (%f) for action variable %lu is not defined or invalid.\n", sigma, i);
 
+    _actionSigmas[i] = sigma;
+    
     knlohmann::json js;
     js["Type"] = "Univariate/Normal";
     js["Mean"] = 0.0;
     js["Standard Deviation"] = 1.0;
 
     auto d = dynamic_cast<distribution::univariate::Normal *>(getModule(js, _k));
-
     _policyDistributions.push_back(d);
 
-    //sigIdx += i;
-    //_choleskyDecompVariance[sigIdx] = sigma; // Fill Diagonal Elements of Lower Triangular Matrix
-    _actionSigmas[i] = sigma;
   }
 
   /*********************************************************************
@@ -58,21 +56,16 @@ void NAF::initializeAgent()
   _qExperiment["Solver"]["Steps Per Generation"] = 1;
   _qExperiment["Solver"]["Neural Network"] = _criticNeuralNetwork;
 
-  // Running initialization to verify that the configuration is correct
+  for (size_t i = 0; i < _problem->_stateVectorSize; i++) _qExperiment["Problem"]["Inputs"][0][i] = 0.0;
+  for (size_t i = 0; i < 1 + 2 * _problem->_actionVectorSize; i++) _qExperiment["Problem"]["Solution"][0][i] = 0.0;
+  
+   // Running initialization to verify that the configuration is correct
   engine.initialize(_qExperiment);
 
-  // Getting learner pointers
+   // Getting learner pointers
   _qProblem = dynamic_cast<problem::SupervisedLearning *>(_qExperiment._problem);
   _qLearner = dynamic_cast<solver::learner::DeepSupervisor *>(_qExperiment._solver);
 
-  // Initializing experiment with an initial zero set
-  for (size_t i = 0; i < _problem->_stateVectorSize; i++)
-  {
-    _qExperiment["Problem"]["Inputs"][0][i] = 0.0;
-
-    for (size_t j = 0; j < 1 + 2 * _problem->_stateVectorSize; j++)
-      _qExperiment["Problem"]["Solution"][i][j] = 0.0;
-  }
 
   /*********************************************************************
   * Loading/Setting Hyperparameters
@@ -81,6 +74,7 @@ void NAF::initializeAgent()
   // Setting Initial Hyperparameters
   _hyperparameters["Critic"] = _qLearner->getHyperparameters();
   _qHatHyperparameter = _qLearner->getHyperparameters();
+
 }
 
 void NAF::trainAgent()
@@ -92,6 +86,7 @@ void NAF::trainAgent()
   // Calculating cumulative Q*, for statistical purposes
   _cumulativeQStar = 0.0;
   _cumulativeQStarSquared = 0.0;
+  std::fill(_averageActionSigmas.begin(), _averageActionSigmas.end(), 0);
 
   // Creating minibatch for the critic update
   auto miniBatchIndexes = generateMiniBatch(_criticMiniBatchSize);
@@ -140,43 +135,40 @@ void NAF::trainAgent()
       auto nextState = _experienceReplayStates[expId + 1];
 
       // Calculate target y
-      float vHat = _qLearner->getEvaluation(nextState)[i];
+      float vHat = _qLearner->getEvaluation(nextState)[0];
       yHat += _criticDiscountFactor * vHat;
     }
 
     float qval = quadraticQFunction(curAction, qEvaluations[i]);
     float diff = yHat - qval;
 
-    std::vector<float> policyGradient(1 + 2 * _problem->_stateVectorSize);
+    std::vector<float> policyGradient(1 + 2 * _problem->_actionVectorSize);
 
     // Calculating Gradients of Loss Li wrt. V(s)
     policyGradient[0] = -diff;
 
     // Calculating Gradients of Li wrt. mu(s)
-    for (size_t j = 0; j < curState.size(); j++)
+    for (size_t j = 0; j < curAction.size(); j++)
     {
-      float sig = qEvaluations[i][1 + curState.size() + j];
+      float sig = qEvaluations[i][1 + curAction.size() + j];
       policyGradient[j + 1] = -diff * (curAction[j] - qEvaluations[i][j + 1]) * sig * sig;
     }
 
     // Calculating Gradients of Li wrt P(s)
-    for (size_t j = 0; j < curState.size(); j++)
+    for (size_t j = 0; j < curAction.size(); j++)
     {
-      float sig = qEvaluations[i][1 + curState.size() + j];
+      float sig = qEvaluations[i][1 + curAction.size() + j];
       float dmu = curAction[j] - qEvaluations[i][1 + j];
-      policyGradient[1 + curState.size() + j] = diff * dmu * dmu * sig;
+      policyGradient[1 + curAction.size() + j] = diff * dmu * dmu * sig;
     }
-
-    // Updating inputs to training learner
-    for (size_t j = 0; j < curState.size(); j++)
-    {
-      _qProblem->_inputs[i] = curState;
-      _qProblem->_solution[i] = policyGradient;
-    }
+ 
+    _qProblem->_inputs.push_back(curState);
+    _qProblem->_solution.push_back(policyGradient);
 
     // Keeping statistics
     _cumulativeQStar += yHat;
     _cumulativeQStarSquared += yHat * yHat;
+    for (size_t j = 0; j < curAction.size(); j++) _averageActionSigmas[j] += qEvaluations[i][1+curAction.size()+j];
   }
 
   // Set Hyperparameter from q network
@@ -190,14 +182,9 @@ void NAF::trainAgent()
   // Keeping statistics
   _averageQStar = (float)_cumulativeQStar / (float)_criticMiniBatchSize;
   _stdevQStar = sqrt(_cumulativeQStarSquared / (float)_criticMiniBatchSize - _averageQStar * _averageQStar);
+  for (size_t j = 0; j < _averageActionSigmas.size(); j++) _averageActionSigmas[j] /= (float)_criticMiniBatchSize;
 
-  /****************************************************************************
-  * If batch normalization is being used, we need to adjust mean and variances
-  * by sampling a few more mini-batches after the optimization steps
-  ******************************************************************************/
-
-  // TODO: evaluate if this improves training (D.W)
-  normalizeStateActionNeuralNetwork(_qLearner->_trainingNeuralNetwork, _criticMiniBatchSize, _criticNormalizationSteps);
+  // TODO: evaluate if batch normalization is appropriate for NAF (D.W)
 
   /*********************************************************************
    * Updating hyperparameters and broadcasting them to the workers
@@ -217,20 +204,11 @@ void NAF::updateHyperparameters(const knlohmann::json &hyperparameters)
   _qLearner->setHyperparameters(_qHatHyperparameter);
 }
 
-std::vector<float> NAF::getActionMeans(const std::vector<float> &state)
+void NAF::forwardPolicy(const std::vector<float> &state)
 {
   auto qNNoutput = _qLearner->getEvaluation(state);
-  auto mean = std::vector<float>(_problem->_actionVectorSize);
-  for (size_t i = 0; i < mean.size(); ++i) mean[i] = qNNoutput[i + 1];
-  return mean;
-}
-
-std::vector<float> NAF::getActionSigmas(const std::vector<float> &state)
-{
-  auto qNNoutput = _qLearner->getEvaluation(state);
-  auto sigmas = std::vector<float>(_problem->_actionVectorSize);
-  for (size_t i = 0; i < sigmas.size(); ++i) sigmas[i] = qNNoutput[i + 1 + sigmas.size()];
-  return sigmas;
+  for (size_t i = 0; i < state.size(); ++i) _actionMeans[i] = qNNoutput[i + 1];
+  for (size_t i = 0; i < state.size(); ++i) _actionSigmas[i] = qNNoutput[i + 1 + state.size()];
 }
 
 float NAF::quadraticQFunction(const std::vector<float> &action, const std::vector<float> &qEvaluation)
@@ -249,6 +227,8 @@ void NAF::printAgentInformation()
 {
   _k->_logger->logInfo("Normal", "Critic Information:\n");
   _k->_logger->logInfo("Normal", " + Average (Std) Q-Value in Mini-Batch:  %f (%f)\n", _averageQStar, _stdevQStar);
+  _k->_logger->logInfo("Normal", " + Average Action Sigmas in Mini-Batch: \n");
+  for(size_t i = 0; i < _averageActionSigmas.size(); ++i)  _k->_logger->logInfo("Normal", " +  [ %f ]\n", _averageActionSigmas[i]);
 
   _qExperiment._logger->_verbosityLevel = _k->_logger->_verbosityLevel;
   _qExperiment._solver->printGenerationAfter();

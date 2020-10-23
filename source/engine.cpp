@@ -12,13 +12,6 @@
 
 namespace korali
 {
-
-extern double _inputWriteTime;
-extern double _outputReadTime;
-extern double _normalizationTime;
-extern double _forwardStreamTime;
-extern double _backwardStreamTime;
-
 std::stack<Engine *> _engineStack;
 bool isPythonActive = 0;
 
@@ -133,12 +126,6 @@ void Engine::run()
 
   // Finalizing Conduit if last engine in the stack
   _conduit->finalize();
-
-  printf("Input Write Time: %fs\n", _inputWriteTime/1000000000);
-  printf("Output Read Time: %fs\n", _outputReadTime/1000000000);
-  printf("Normalization Time: %fs\n", _outputReadTime/1000000000);
-  printf("Forward Propagation Time: %fs\n", _forwardStreamTime/1000000000);
-  printf("Backward Propagation Time: %fs\n", _backwardStreamTime/1000000000);
 }
 
 void Engine::saveProfilingInfo(const bool forceSave)

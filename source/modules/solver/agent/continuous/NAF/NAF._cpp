@@ -198,7 +198,6 @@ void NAF::updateHyperparameters(const knlohmann::json &hyperparameters)
   // Update the target network
   for (size_t i = 0; i < qHyperparam.size(); ++i)
     _qHatHyperparameter[i] = _targetLearningRate * qHyperparam[i] + (1. - _targetLearningRate) * _qHatHyperparameter[i];
-  _qLearner->setHyperparameters(_qHatHyperparameter);
 }
 
 void NAF::forwardPolicy(const std::vector<float> &state)

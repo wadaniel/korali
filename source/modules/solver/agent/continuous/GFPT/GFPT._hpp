@@ -17,6 +17,16 @@ class GFPT : public Continuous
 {
   public:
   /**
+   * @brief A neural network for the inference of the averaged advantage function
+   */
+  NeuralNetwork *_actionAverageEvaluationNetwork;
+
+  /**
+   * @brief A neural network for the simultaneous evaluation of CMAES candidates
+   */
+  NeuralNetwork *_batchOptimizationNetwork;
+
+  /**
    * @brief Pointer to training experiment's V(s) problem
    */
   problem::SupervisedLearning *_vProblem;

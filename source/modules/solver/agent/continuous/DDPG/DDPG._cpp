@@ -238,7 +238,8 @@ void DDPG::forwardPolicy(const std::vector<float> &state)
 
 void DDPG::updateHyperparameters(const knlohmann::json &hyperparameters)
 {
-  _policyLearner->setHyperparameters(hyperparameters["Policy"].get<std::vector<float>>());
+  auto policyHyperparameters = hyperparameters["Policy"].get<std::vector<float>>();
+  _policyLearner->setHyperparameters(policyHyperparameters);
 }
 
 void DDPG::printAgentInformation()

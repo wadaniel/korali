@@ -1,5 +1,6 @@
 #include "modules/experiment/experiment.hpp"
 #include "modules/neuralNetwork/neuralNetwork.hpp"
+#include <chrono>
 
 #ifdef _KORALI_USE_ONEDNN
   #include "auxiliar/dnnUtils.hpp"
@@ -17,6 +18,12 @@ using namespace dnnl;
 
 namespace korali
 {
+double _inputWriteTime;
+double _outputReadTime;
+double _normalizationTime;
+double _forwardStreamTime;
+double _backwardStreamTime;
+
 NeuralNetwork::NeuralNetwork()
 {
   _isInitialized = false;
@@ -57,19 +64,15 @@ void NeuralNetwork::initialize()
   // Creating forward and backward-propagation pipeline
   for (size_t i = 0; i < layerCount; i++) _layers[i]->createHyperparameterMemory();
 
-  // Getting hyperparameter and normalization parameter counts
-  _hyperparameterCount = 0;
+  // Getting normalization and weight/bias parameter counts
   _normalizationParameterCount = 0;
+  _weightParameterCount = 0;
 
-  for (size_t i = 0; i < layerCount; i++) _hyperparameterCount += _layers[i]->_hyperparameterCount;
-  for (size_t i = 0; i < layerCount; i++) _normalizationParameterCount += _layers[i]->_normalizationParameterCount;
+  for (size_t i = 0; i < layerCount; i++) _weightParameterCount += _layers[i]->_weightParameterCount;
+  for (size_t i = 0; i < layerCount; i++) _normalizationParameterCount += 2 * _layers[i]->_normalizationParameterCount;
 
-  // If we use batch normalization, we set mean and variances to neutral values
-  std::vector<float> meanData(_normalizationParameterCount, 0.0);
-  std::vector<float> varianceData(_normalizationParameterCount, 1.0);
-
-  setNormalizationMeans(meanData);
-  setNormalizationVariances(varianceData);
+  // Calculating total hyperparameter count
+  _hyperparameterCount = _weightParameterCount + _normalizationParameterCount;
 
   // Check output scaling configuration
   if (_outputScaling.empty() == false)
@@ -103,6 +106,8 @@ void NeuralNetwork::setInput(const std::vector<std::vector<float>> &input)
 {
 #ifdef _KORALI_USE_ONEDNN
 
+  std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+
   size_t batchSize = input.size();
   size_t inputSize = _layers[0]->_nodeCount;
   size_t layerCount = _layers.size();
@@ -110,6 +115,7 @@ void NeuralNetwork::setInput(const std::vector<std::vector<float>> &input)
   // If batchsize is different than existing one, re-create pipelines
   if (batchSize != _batchSize)
   {
+    //printf("BatchSize: %lu\n", batchSize);
     _batchSize = batchSize;
     for (size_t i = 0; i < layerCount; i++) _layers[i]->createForwardPipeline();
     for (size_t i = 0; i < layerCount; i++) _layers[i]->createBackwardPipeline();
@@ -126,7 +132,195 @@ void NeuralNetwork::setInput(const std::vector<std::vector<float>> &input)
       batchInput[i * inputSize + j] = input[i][j];
 
   write_to_dnnl_memory(batchInput.data(), _layers[0]->_nodeMem);
+
+  std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+
+  _inputWriteTime += std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count();
+
 #endif
+}
+
+void NeuralNetwork::forward()
+{
+#ifdef _KORALI_USE_ONEDNN
+
+  size_t layerCount = _layers.size();
+
+  std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+
+  // forward propagating neural network
+  for (size_t i = 0; i < layerCount; i++)
+  {
+    if (i > 0) _layers[i]->_forwardInnerProductPrimitive.execute(_stream, _layers[i]->_forwardInnerProductArgs);
+    if (_layers[i]->_batchNormalizationEnabled) _layers[i]->_forwardNormalizationPrimitive.execute(_stream, _layers[i]->_forwardNormalizationArgs);
+    _layers[i]->_forwardActivationPrimitive.execute(_stream, _layers[i]->_forwardActivationArgs);
+  }
+
+  // Wait for the computation to finalize.
+  _stream.wait();
+
+  std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+
+  _forwardStreamTime += std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count();
+
+  begin = std::chrono::steady_clock::now();
+
+  // Restoring the output later node values
+  size_t lastLayer = layerCount - 1;
+  size_t nodeCount = _layers[lastLayer]->_nodeCount;
+  std::vector<float> resultData(_batchSize * nodeCount);
+  read_from_dnnl_memory(resultData.data(), _layers[lastLayer]->_activationMem);
+
+  _outputValues.resize(_batchSize);
+  for (size_t i = 0; i < _batchSize; i++)
+  {
+    _outputValues[i].resize(nodeCount);
+    for (size_t j = 0; j < nodeCount; j++) _outputValues[i][j] = resultData[i * nodeCount + j];
+
+    // If we  use scaling, then apply the scaling factors now
+    if (_outputScaling.size() > 0)
+      for (size_t j = 0; j < nodeCount; j++) _outputValues[i][j] *= _outputScaling[j];
+
+    // If we  use shifting, then apply the scaling factors now
+    if (_outputShift.size() > 0)
+      for (size_t j = 0; j < nodeCount; j++) _outputValues[i][j] += _outputShift[j];
+  }
+
+  end = std::chrono::steady_clock::now();
+
+  _outputReadTime += std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count();
+
+#endif
+}
+
+void NeuralNetwork::backward(const std::vector<float> &outputDifferential)
+{
+#ifdef _KORALI_USE_ONEDNN
+
+  std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+
+  // Running backward propagation
+  size_t layerCount = _layers.size();
+  size_t lastLayer = layerCount - 1;
+
+  // Writing to last layers differential information wrt data
+  std::vector<float> floatDiffs(outputDifferential.begin(), outputDifferential.end());
+
+  // If we  use scaling, then apply the scaling factors gradient now
+  if (_outputScaling.size() > 0)
+    for (size_t i = 0; i < _outputScaling.size(); i++) floatDiffs[i] /= _outputScaling[i];
+
+  write_to_dnnl_memory(floatDiffs.data(), _layers[lastLayer]->_activationDiffMem);
+
+  // Backward propagating neural network
+  for (ssize_t i = lastLayer; i >= 0; i--)
+  {
+    _layers[i]->_backwardActivationPrimitive.execute(_stream, _layers[i]->_backwardActivationArgs);
+    if (_layers[i]->_batchNormalizationEnabled) _layers[i]->_backwardNormalizationPrimitive.execute(_stream, _layers[i]->_backwardNormalizationArgs);
+
+    if (i > 0)
+    {
+      _layers[i]->_backwardDataPrimitive.execute(_stream, _layers[i]->_backwardDataArgs);
+      _layers[i]->_backwardWeightsPrimitive.execute(_stream, _layers[i]->_backwardWeightsArgs);
+    }
+  }
+
+  // Wait for the computation to finalize.
+  _stream.wait();
+
+  std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+
+  _backwardStreamTime += std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count();
+
+#endif
+}
+
+void NeuralNetwork::normalize(const std::vector<std::vector<std::vector<float>>> &miniBatches)
+{
+  std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+
+  std::vector<float> newMeans(_normalizationParameterCount, 0.0);
+  std::vector<float> newVariances(_normalizationParameterCount, 0.0);
+
+  for (size_t step = 0; step < miniBatches.size(); step++)
+  {
+    setInput(miniBatches[step]);
+    forward();
+
+    // Getting this mini-batch's normalization means and variances
+    auto curMeans = getNormalizationMeans();
+    auto curVariances = getNormalizationVariances();
+
+    // Accuulating their values into the new vector
+    for (size_t i = 0; i < _normalizationParameterCount; i++) newMeans[i] += curMeans[i];
+    for (size_t i = 0; i < _normalizationParameterCount; i++) newVariances[i] += curVariances[i];
+  }
+
+  // Calculating the actual mean and variance averages
+  float invMiniBatchSize = 1.0f / (float)miniBatches.size();
+  float unbiasedInvMiniBatchSize = 1.0f / ((float)miniBatches.size() - 1.0f);
+
+  for (size_t i = 0; i < _normalizationParameterCount; i++)
+  {
+    newMeans[i] = newMeans[i] * invMiniBatchSize;
+    newVariances[i] = newVariances[i] * unbiasedInvMiniBatchSize;
+  }
+
+  // Setting the new adjusted means and variances
+  setNormalizationMeans(newMeans);
+  setNormalizationVariances(newVariances);
+
+  std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+
+  _normalizationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count();
+}
+
+std::vector<float> NeuralNetwork::getHyperparameters()
+{
+  // Creating single precision floating-point version of the hyperparameters
+  auto params = std::vector<float>(_hyperparameterCount);
+
+#ifdef _KORALI_USE_ONEDNN
+
+  size_t layerCount = _layers.size();
+  size_t currPos = 0;
+  for (size_t i = 0; i < layerCount; i++)
+  {
+    const memory::dim IC = _layers[i - 1]->_nodeCount;
+    const memory::dim OC = _layers[i]->_nodeCount;
+
+    // Setting weight data to the layer's weight memory
+    if (i > 0)
+    {
+      read_from_dnnl_memory(&params[currPos], _layers[i]->_weightsMem);
+      currPos += IC * OC;
+
+      // Setting weight data to the layer's weight memory, only if batch normalization is not being used
+      if (_layers[i]->_batchNormalizationEnabled == false)
+      {
+        read_from_dnnl_memory(&params[currPos], _layers[i]->_biasMem);
+        currPos += OC;
+      }
+    }
+
+    // If layer normalization is enabled, we fill in scale/shift data
+    if (_layers[i]->_batchNormalizationEnabled == true)
+    {
+      read_from_dnnl_memory(&params[currPos], _layers[i]->_batchNormalizationScaleShiftMem);
+      currPos += 2 * OC;
+
+      read_from_dnnl_memory(&params[currPos], _layers[i]->_batchNormalizationMeanMem);
+      currPos += OC;
+
+      read_from_dnnl_memory(&params[currPos], _layers[i]->_batchNormalizationVarianceMem);
+      currPos += OC;
+    }
+  }
+
+#endif
+
+  // Returning the hyperparameters converted to float-precision
+  return params;
 }
 
 void NeuralNetwork::setHyperparameters(const std::vector<float> &hyperparameters)
@@ -166,16 +360,22 @@ void NeuralNetwork::setHyperparameters(const std::vector<float> &hyperparameters
     {
       write_to_dnnl_memory(&fParams[currPos], _layers[i]->_batchNormalizationScaleShiftMem);
       currPos += 2 * OC;
+
+      write_to_dnnl_memory(&fParams[currPos], _layers[i]->_batchNormalizationMeanMem);
+      currPos += OC;
+
+      write_to_dnnl_memory(&fParams[currPos], _layers[i]->_batchNormalizationVarianceMem);
+      currPos += OC;
     }
   }
 
 #endif
 }
 
-std::vector<float> NeuralNetwork::getHyperparameters()
+std::vector<float> NeuralNetwork::getWeightsAndBiases()
 {
   // Creating single precision floating-point version of the hyperparameters
-  auto params = std::vector<float>(_hyperparameterCount);
+  auto params = std::vector<float>(_weightParameterCount);
 
 #ifdef _KORALI_USE_ONEDNN
 
@@ -214,38 +414,91 @@ std::vector<float> NeuralNetwork::getHyperparameters()
   return params;
 }
 
-void NeuralNetwork::backward(const std::vector<float> &outputDifferential)
+void NeuralNetwork::setWeightsAndBiases(const std::vector<float> &weights)
 {
 #ifdef _KORALI_USE_ONEDNN
 
-  // Running backward propagation
+  if (weights.size() != _weightParameterCount)
+    KORALI_LOG_ERROR("Wrong number of weight parameters passed to the neural network. Expected: %lu, provided: %lu.\n", _weightParameterCount, weights.size());
+
+  // Creating single precision floating-point version of the hyperparameters
+  auto fParams = weights;
+
   size_t layerCount = _layers.size();
-  size_t lastLayer = layerCount - 1;
-
-  // Writing to last layers differential information wrt data
-  std::vector<float> floatDiffs(outputDifferential.begin(), outputDifferential.end());
-
-  // If we  use scaling, then apply the scaling factors gradient now
-  if (_outputScaling.size() > 0)
-    for (size_t i = 0; i < _outputScaling.size(); i++) floatDiffs[i] /= _outputScaling[i];
-
-  write_to_dnnl_memory(floatDiffs.data(), _layers[lastLayer]->_activationDiffMem);
-
-  // Backward propagating neural network
-  for (ssize_t i = lastLayer; i >= 0; i--)
+  size_t currPos = 0;
+  for (size_t i = 0; i < layerCount; i++)
   {
-    _layers[i]->_backwardActivationPrimitive.execute(_stream, _layers[i]->_backwardActivationArgs);
-    if (_layers[i]->_batchNormalizationEnabled) _layers[i]->_backwardNormalizationPrimitive.execute(_stream, _layers[i]->_backwardNormalizationArgs);
+    const memory::dim OC = _layers[i]->_nodeCount;
 
     if (i > 0)
     {
-      _layers[i]->_backwardDataPrimitive.execute(_stream, _layers[i]->_backwardDataArgs);
-      _layers[i]->_backwardWeightsPrimitive.execute(_stream, _layers[i]->_backwardWeightsArgs);
+      const memory::dim IC = _layers[i - 1]->_nodeCount;
+
+      // Setting weight data to the layer's weight memory
+      write_to_dnnl_memory(&fParams[currPos], _layers[i]->_weightsMem);
+      currPos += IC * OC;
+
+      // Setting weight data to the layer's weight memory, only if batch normalization is not being used
+      if (_layers[i]->_batchNormalizationEnabled == false)
+      {
+        write_to_dnnl_memory(&fParams[currPos], _layers[i]->_biasMem);
+        currPos += OC;
+      }
+    }
+
+    // If layer normalization is enabled, we fill in scale/shift data
+    if (_layers[i]->_batchNormalizationEnabled == true)
+    {
+      write_to_dnnl_memory(&fParams[currPos], _layers[i]->_batchNormalizationScaleShiftMem);
+      currPos += 2 * OC;
     }
   }
 
-  // Wait for the computation to finalize.
-  _stream.wait();
+#endif
+}
+
+std::vector<float> NeuralNetwork::getNormalizationVariances()
+{
+  // Creating single precision floating-point version of the hyperparameters
+  auto params = std::vector<float>(_normalizationParameterCount);
+
+#ifdef _KORALI_USE_ONEDNN
+
+  size_t layerCount = _layers.size();
+  size_t currPos = 0;
+  for (size_t i = 0; i < layerCount; i++)
+    if (_layers[i]->_batchNormalizationEnabled == true)
+    {
+      const memory::dim OC = _layers[i]->_nodeCount;
+      read_from_dnnl_memory(&params[currPos], _layers[i]->_batchNormalizationVarianceMem);
+      currPos += OC;
+    }
+
+#endif
+
+  // Returning the hyperparameters converted to float-precision
+  return params;
+}
+
+void NeuralNetwork::setNormalizationVariances(const std::vector<float> &normalizationVariances)
+{
+#ifdef _KORALI_USE_ONEDNN
+
+  if (normalizationVariances.size() != _normalizationParameterCount)
+    KORALI_LOG_ERROR("Wrong number of normalization parameters passed to the neural network. Expected: %lu, provided: %lu.\n", _normalizationParameterCount, normalizationVariances.size());
+
+  // Creating single precision floating-point version of the normalization parameters
+  auto params = normalizationVariances;
+
+  size_t layerCount = _layers.size();
+  size_t currPos = 0;
+  for (size_t i = 0; i < layerCount; i++)
+    if (_layers[i]->_batchNormalizationEnabled == true)
+    {
+      const memory::dim OC = _layers[i]->_nodeCount;
+      write_to_dnnl_memory(&params[currPos], _layers[i]->_batchNormalizationVarianceMem);
+      currPos += OC;
+    }
 
 #endif
 }
@@ -280,7 +533,7 @@ void NeuralNetwork::setNormalizationMeans(const std::vector<float> &normalizatio
   if (normalizationMeans.size() != _normalizationParameterCount)
     KORALI_LOG_ERROR("Wrong number of normalization parameters passed to the neural network. Expected: %lu, provided: %lu.\n", _normalizationParameterCount, normalizationMeans.size());
 
-  auto params = std::vector<float>(normalizationMeans.begin(), normalizationMeans.end());
+  auto params = normalizationMeans;
 
   size_t layerCount = _layers.size();
   size_t currPos = 0;
@@ -295,128 +548,10 @@ void NeuralNetwork::setNormalizationMeans(const std::vector<float> &normalizatio
 #endif
 }
 
-void NeuralNetwork::normalize(const std::vector<std::vector<std::vector<float>>> &miniBatches)
-{
-  std::vector<float> newMeans(_normalizationParameterCount, 0.0);
-  std::vector<float> newVariances(_normalizationParameterCount, 0.0);
-
-  for (size_t step = 0; step < miniBatches.size(); step++)
-  {
-    setInput(miniBatches[step]);
-    forward();
-
-    // Getting this mini-batch's normalization means and variances
-    auto newMeans = getNormalizationMeans();
-    auto newVariances = getNormalizationVariances();
-
-    // Accuulating their values into the new vector
-    for (size_t i = 0; i < _normalizationParameterCount; i++) newMeans[i] += newMeans[i];
-    for (size_t i = 0; i < _normalizationParameterCount; i++) newVariances[i] += newVariances[i];
-  }
-
-  // Calculating the actual mean and variance averages
-  for (size_t i = 0; i < _normalizationParameterCount; i++)
-  {
-    newMeans[i] = newMeans[i] / (float)miniBatches.size();
-    newVariances[i] = newVariances[i] / (float)(miniBatches.size() - 1.0);
-  }
-
-  // Setting the new adjusted means and variances
-  setNormalizationMeans(newMeans);
-  setNormalizationVariances(newVariances);
-}
-
-std::vector<float> NeuralNetwork::getNormalizationVariances()
-{
-  // Creating single precision floating-point version of the hyperparameters
-  auto params = std::vector<float>(_normalizationParameterCount);
-
-#ifdef _KORALI_USE_ONEDNN
-
-  size_t layerCount = _layers.size();
-  size_t currPos = 0;
-  for (size_t i = 0; i < layerCount; i++)
-    if (_layers[i]->_batchNormalizationEnabled == true)
-    {
-      const memory::dim OC = _layers[i]->_nodeCount;
-      read_from_dnnl_memory(&params[currPos], _layers[i]->_batchNormalizationVarianceMem);
-      currPos += OC;
-    }
-
-#endif
-
-  // Returning the hyperparameters converted to float-precision
-  return params;
-}
-
-void NeuralNetwork::setNormalizationVariances(const std::vector<float> &normalizationVariances)
-{
-#ifdef _KORALI_USE_ONEDNN
-
-  if (normalizationVariances.size() != _normalizationParameterCount)
-    KORALI_LOG_ERROR("Wrong number of normalization parameters passed to the neural network. Expected: %lu, provided: %lu.\n", _normalizationParameterCount, normalizationVariances.size());
-
-  // Creating single precision floating-point version of the normalization parameters
-  auto params = std::vector<float>(normalizationVariances.begin(), normalizationVariances.end());
-
-  size_t layerCount = _layers.size();
-  size_t currPos = 0;
-  for (size_t i = 0; i < layerCount; i++)
-    if (_layers[i]->_batchNormalizationEnabled == true)
-    {
-      const memory::dim OC = _layers[i]->_nodeCount;
-      write_to_dnnl_memory(&params[currPos], _layers[i]->_batchNormalizationVarianceMem);
-      currPos += OC;
-    }
-
-#endif
-}
-
-void NeuralNetwork::forward()
-{
-#ifdef _KORALI_USE_ONEDNN
-
-  size_t layerCount = _layers.size();
-
-  // forward propagating neural network
-  for (size_t i = 0; i < layerCount; i++)
-  {
-    if (i > 0) _layers[i]->_forwardInnerProductPrimitive.execute(_stream, _layers[i]->_forwardInnerProductArgs);
-    if (_layers[i]->_batchNormalizationEnabled) _layers[i]->_forwardNormalizationPrimitive.execute(_stream, _layers[i]->_forwardNormalizationArgs);
-    _layers[i]->_forwardActivationPrimitive.execute(_stream, _layers[i]->_forwardActivationArgs);
-  }
-
-  // Wait for the computation to finalize.
-  _stream.wait();
-
-  // Restoring the output later node values
-  size_t lastLayer = layerCount - 1;
-  size_t nodeCount = _layers[lastLayer]->_nodeCount;
-  std::vector<float> resultData(_batchSize * nodeCount);
-  read_from_dnnl_memory(resultData.data(), _layers[lastLayer]->_activationMem);
-
-  _outputValues.resize(_batchSize);
-  for (size_t i = 0; i < _batchSize; i++)
-  {
-    _outputValues[i].resize(nodeCount);
-    for (size_t j = 0; j < nodeCount; j++) _outputValues[i][j] = resultData[i * nodeCount + j];
-
-    // If we  use scaling, then apply the scaling factors now
-    if (_outputScaling.size() > 0)
-      for (size_t j = 0; j < nodeCount; j++) _outputValues[i][j] *= _outputScaling[j];
-
-    // If we  use shifting, then apply the scaling factors now
-    if (_outputShift.size() > 0)
-      for (size_t j = 0; j < nodeCount; j++) _outputValues[i][j] += _outputShift[j];
-  }
-
-#endif
-}
-
-std::vector<float> NeuralNetwork::getHyperparameterGradients()
+std::vector<float> NeuralNetwork::getWeightAndBiasesGradients()
 {
   // Copying back the gradients and biases back
-  std::vector<float> gradientVector(_hyperparameterCount);
+  std::vector<float> gradientVector(_weightParameterCount);
 
 #ifdef _KORALI_USE_ONEDNN
 

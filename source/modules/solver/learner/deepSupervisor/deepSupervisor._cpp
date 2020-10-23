@@ -42,7 +42,7 @@ void DeepSupervisor::initialize()
     neuralNetworkConfig["Use Preloaded Normalization Data"] = true;
     _evaluationNeuralNetwork = dynamic_cast<NeuralNetwork *>(getModule(neuralNetworkConfig, _k));
 
-   /*****************************************************************
+    /*****************************************************************
    * Initializing NN hyperparameters
    *****************************************************************/
 
@@ -54,7 +54,7 @@ void DeepSupervisor::initialize()
     // Copying hyperparameters and normalization parameters from training to evaluation
     _evaluationNeuralNetwork->setHyperparameters(_hyperparameters);
 
-   /*****************************************************************
+    /*****************************************************************
    * Setting up weight and bias optimization experiment
    *****************************************************************/
 

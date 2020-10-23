@@ -236,8 +236,8 @@ std::vector<float> DDPG::getActionSigmas(const std::vector<float> &state)
 
 void DDPG::updateHyperparameters(const knlohmann::json &hyperparameters)
 {
- auto policyHyperparameters = hyperparameters["Policy"].get<std::vector<float>>();
- _policyLearner->setHyperparameters(policyHyperparameters);
+  auto policyHyperparameters = hyperparameters["Policy"].get<std::vector<float>>();
+  _policyLearner->setHyperparameters(policyHyperparameters);
 }
 
 void DDPG::printAgentInformation()

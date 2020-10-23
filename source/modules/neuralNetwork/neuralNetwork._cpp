@@ -18,8 +18,6 @@ using namespace dnnl;
 
 namespace korali
 {
-
-// Common for profiling
 double _inputWriteTime;
 double _outputReadTime;
 double _normalizationTime;
@@ -108,7 +106,7 @@ void NeuralNetwork::setInput(const std::vector<std::vector<float>> &input)
 {
 #ifdef _KORALI_USE_ONEDNN
 
- std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+  std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 
   size_t batchSize = input.size();
   size_t inputSize = _layers[0]->_nodeCount;
@@ -188,7 +186,7 @@ void NeuralNetwork::forward()
       for (size_t j = 0; j < nodeCount; j++) _outputValues[i][j] += _outputShift[j];
   }
 
-   end = std::chrono::steady_clock::now();
+  end = std::chrono::steady_clock::now();
 
   _outputReadTime += std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count();
 
@@ -199,7 +197,7 @@ void NeuralNetwork::backward(const std::vector<float> &outputDifferential)
 {
 #ifdef _KORALI_USE_ONEDNN
 
- std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+  std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 
   // Running backward propagation
   size_t layerCount = _layers.size();
@@ -237,10 +235,9 @@ void NeuralNetwork::backward(const std::vector<float> &outputDifferential)
 #endif
 }
 
-
 void NeuralNetwork::normalize(const std::vector<std::vector<std::vector<float>>> &miniBatches)
 {
- std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+  std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 
   std::vector<float> newMeans(_normalizationParameterCount, 0.0);
   std::vector<float> newVariances(_normalizationParameterCount, 0.0);
@@ -261,7 +258,7 @@ void NeuralNetwork::normalize(const std::vector<std::vector<std::vector<float>>>
 
   // Calculating the actual mean and variance averages
   float invMiniBatchSize = 1.0f / (float)miniBatches.size();
-  float unbiasedInvMiniBatchSize = 1.0f / ( (float)miniBatches.size() - 1.0f );
+  float unbiasedInvMiniBatchSize = 1.0f / ((float)miniBatches.size() - 1.0f);
 
   for (size_t i = 0; i < _normalizationParameterCount; i++)
   {
@@ -277,7 +274,6 @@ void NeuralNetwork::normalize(const std::vector<std::vector<std::vector<float>>>
 
   _normalizationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count();
 }
-
 
 std::vector<float> NeuralNetwork::getHyperparameters()
 {
@@ -551,7 +547,6 @@ void NeuralNetwork::setNormalizationMeans(const std::vector<float> &normalizatio
 
 #endif
 }
-
 
 std::vector<float> NeuralNetwork::getWeightAndBiasesGradients()
 {

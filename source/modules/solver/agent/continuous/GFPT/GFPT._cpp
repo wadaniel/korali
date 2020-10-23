@@ -122,6 +122,24 @@ void GFPT::initializeAgent()
   _policyLearner = dynamic_cast<solver::learner::DeepSupervisor *>(_policyExperiment._solver);
 
   /*********************************************************************
+  * Creating special evaluation networks for cases with different mini batch sizes
+  *********************************************************************/
+
+  // NN For action average calculation (required in dueling DQN)
+  auto actionAverageEvaluationNetworkConfig = _criticNeuralNetwork;
+  actionAverageEvaluationNetworkConfig["Layers"][0]["Node Count"] = _problem->_stateVectorSize + _problem->_actionVectorSize;
+  actionAverageEvaluationNetworkConfig["Layers"][actionAverageEvaluationNetworkConfig["Layers"].size() - 1]["Node Count"] = 1;
+  actionAverageEvaluationNetworkConfig["Use Preloaded Normalization Data"] = true;
+  _actionAverageEvaluationNetwork = dynamic_cast<NeuralNetwork *>(getModule(actionAverageEvaluationNetworkConfig, _k));
+
+  // NN For calculating samples from CMAES
+  auto batchOptimizationNetworkConfig = _criticNeuralNetwork;
+  batchOptimizationNetworkConfig["Layers"][0]["Node Count"] = _problem->_stateVectorSize + _problem->_actionVectorSize;
+  batchOptimizationNetworkConfig["Layers"][batchOptimizationNetworkConfig["Layers"].size() - 1]["Node Count"] = 1;
+  batchOptimizationNetworkConfig["Use Preloaded Normalization Data"] = true;
+  _batchOptimizationNetwork = dynamic_cast<NeuralNetwork *>(getModule(batchOptimizationNetworkConfig, _k));
+
+  /*********************************************************************
   * Loading/Setting Hyperparameters
   *********************************************************************/
 
@@ -171,7 +189,9 @@ float GFPT::stateActionValueFunction(const std::vector<float> &state, const std:
   }
 
   // Running evaluation of the entire minibatch
-  auto avgActionEvaluation = _aLearner->getEvaluation(avgActionMinibatch);
+  _actionAverageEvaluationNetwork->setInput(avgActionMinibatch);
+  _actionAverageEvaluationNetwork->forward();
+  auto avgActionEvaluation = _actionAverageEvaluationNetwork->_outputValues;
 
   // Initializing average A(s,a) counter
   aValAverage = 0.0;
@@ -196,6 +216,18 @@ void GFPT::trainAgent()
 
   // Calculating cumulative Q*, for statistical purposes
   _cumulativeQStar = 0.0;
+
+  // Getting current policy hyperparameters
+  auto curPolicyHyperparameters = _policyLearner->getHyperparameters();
+
+  // Getting current Advantage hyperparameters
+  auto curAdvantageHyperparameters = _aLearner->getHyperparameters();
+
+  // Updating action average NN hyperparameters
+  _actionAverageEvaluationNetwork->setHyperparameters(curAdvantageHyperparameters);
+
+  // Updating batch evaluation network for the advantage function for CMAES steps
+  _batchOptimizationNetwork->setHyperparameters(curAdvantageHyperparameters);
 
   // Creating minibatch for the critic update
   auto miniBatchIndexes = generateMiniBatch(_criticMiniBatchSize);
@@ -306,9 +338,13 @@ void GFPT::trainAgent()
         for (size_t j = 0; j < _problem->_actionVectorSize; j++)
           candidateMiniBatch[i][j + _problem->_stateVectorSize] = _actionOptimizer->_samplePopulation[i][j];
 
-      auto criticEvaluations = _aLearner->getEvaluation(candidateMiniBatch);
+      // Running evaluation of the entire minibatch
+      _batchOptimizationNetwork->setInput(candidateMiniBatch);
+      _batchOptimizationNetwork->forward();
+      auto criticEvaluations = _batchOptimizationNetwork->_outputValues;
 
-      for (size_t i = 0; i < candidateCount; i++) candidateEvaluations[i] = criticEvaluations[i][0];
+      for (size_t i = 0; i < candidateCount; i++)
+        candidateEvaluations[i] = criticEvaluations[i][0];
 
       _actionOptimizer->updateDistribution(candidateEvaluations);
 
@@ -329,9 +365,6 @@ void GFPT::trainAgent()
 
     // Calculating KL Divergence
   }
-
-  // Getting current hyperparameters
-  auto curPolicyHyperparameters = _policyLearner->getHyperparameters();
 
   // Running one generation of the optimization method with the given mini-batch
   _policyLearner->initialize();
@@ -370,8 +403,8 @@ std::vector<float> GFPT::getActionSigmas(const std::vector<float> &state)
 
 void GFPT::updateHyperparameters(const knlohmann::json &hyperparameters)
 {
- auto policyHyperparameters = hyperparameters["Policy"].get<std::vector<float>>();
- _policyLearner->setHyperparameters(policyHyperparameters);
+  auto policyHyperparameters = hyperparameters["Policy"].get<std::vector<float>>();
+  _policyLearner->setHyperparameters(policyHyperparameters);
 }
 
 void GFPT::printAgentInformation()

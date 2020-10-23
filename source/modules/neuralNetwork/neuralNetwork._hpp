@@ -88,7 +88,7 @@ class NeuralNetwork : public Module
 
   /**
   * @brief Updates the values of the weights and biases of the network
-  * @param normalizationMeans The weights and biases to set
+  * @param weights The weights and biases to set
   */
   void setWeightsAndBiases(const std::vector<float> &weights);
 
@@ -144,6 +144,31 @@ class NeuralNetwork : public Module
    */
   NeuralNetwork();
 };
+
+/**
+ * @brief [Profiling] Stores the time spent writing the input to the NN
+ */
+extern double _inputWriteTime;
+
+/**
+ * @brief [Profiling] Stores the time spent reading the output to the NN
+ */
+extern double _outputReadTime;
+
+/**
+ * @brief [Profiling] Stores the time spent normalizing the NN
+ */
+extern double _normalizationTime;
+
+/**
+ * @brief [Profiling] Stores the time spent forward-propagating the NN
+ */
+extern double _forwardStreamTime;
+
+/**
+ * @brief [Profiling] Stores the time spent backward-propagating the NN
+ */
+extern double _backwardStreamTime;
 
 } // namespace korali
 

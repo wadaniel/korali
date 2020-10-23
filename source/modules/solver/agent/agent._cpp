@@ -2,6 +2,12 @@
 #include "modules/solver/agent/agent.hpp"
 #include "sample/sample.hpp"
 
+//printf("Input Write Time: %fs\n", _inputWriteTime/1000000000);
+//printf("Output Read Time: %fs\n", _outputReadTime/1000000000);
+//printf("Normalization Time: %fs\n", _outputReadTime/1000000000);
+//printf("Forward Propagation Time: %fs\n", _forwardStreamTime/1000000000);
+//printf("Backward Propagation Time: %fs\n", _backwardStreamTime/1000000000);
+
 namespace korali
 {
 namespace solver
@@ -71,14 +77,17 @@ void Agent::runGeneration()
   // Launching agent
   KORALI_START(agent);
 
+  // Creating storage for the entire episode before adding it to the replay memory
+  std::vector<knlohmann::json> episode;
+
   // Keep listening to incoming experiences until we reached a terminal state
   while (isTerminal == false)
   {
     // Listening for incoming experiences
     experience = KORALI_RECV_MSG_FROM_SAMPLE(agent);
 
-    // Once received, add it to replay memory
-    processExperience(experience);
+    // Storing experience in the episode
+    episode.push_back(experience);
 
     // Check if experience is terminal
     isTerminal = experience["Is Terminal"];
@@ -99,6 +108,9 @@ void Agent::runGeneration()
     // If agent requested new policy, send the new hyperparameters
     if (experience["Request New Policy"] == true) KORALI_SEND_MSG_TO_SAMPLE(agent, _hyperparameters);
   }
+
+  // Now that we have the entire episode, process its experiences (add them to replay memory)
+  for (size_t i = 0; i < episode.size(); i++) processExperience(episode[i]);
 
   // Waiting for agent to finish
   KORALI_WAIT(agent);

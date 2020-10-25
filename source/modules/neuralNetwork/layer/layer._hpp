@@ -3,6 +3,11 @@
 
 #ifdef _KORALI_USE_ONEDNN
   #include "dnnl.hpp"
+  #define _NN_MEM dnnl::memory
+#endif
+
+#ifndef _NN_MEM
+   #define _NN_MEM void*
 #endif
 
 #include "modules/distribution/univariate/uniform/uniform.hpp"

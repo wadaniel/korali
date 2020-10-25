@@ -353,9 +353,15 @@ echo GSLLIBS=$GSLLIBS  >> source/Makefile.conf
 if [ $DISTRIBUTION == "production" ]; then
   OPTFLAGS="-O3 -DNDEBUG"
   WARNINGFLAGS=""
-else
+elif [ $DISTRIBUTION == "debug" ]; then
   OPTFLAGS="-O0 -g"
   WARNINGFLAGS="-Wall -Werror"
+elif [ $DISTRIBUTION == "profile" ]; then
+  OPTFLAGS="-O3 -pg"
+else
+  echo "[Korali] Distribution ($DISTRIBUTION) not recognized."
+  echo "[Korali] Exit.."
+  exit
 fi
 
 echo OPTFLAGS=$OPTFLAGS >> source/Makefile.conf

@@ -91,10 +91,9 @@ e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Batch Normalization"]["Ena
 
 ### Defining Termination Criteria
 
-e["Solver"]["Training Reward Threshold"] = 3000
-e["Solver"]["Policy Testing Episodes"] = 20
-e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 3500
-e["Solver"]["Termination Criteria"]["Max Generations"] = 15000
+e["Solver"]["Training Reward Threshold"] = 750
+e["Solver"]["Policy Testing Episodes"] = 10
+e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 900
 
 ### Setting file output configuration
 

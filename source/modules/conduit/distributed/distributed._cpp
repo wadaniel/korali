@@ -209,11 +209,11 @@ knlohmann::json Distributed::recvMessageFromEngine()
 
 knlohmann::json Distributed::recvMessageFromSample(Sample &sample)
 {
-  Engine *engine = _engineStack.top();
   knlohmann::json message;
 
 #ifdef _KORALI_USE_MPI
 
+  Engine *engine = _engineStack.top();
   size_t messageSize;
   MPI_Request messageRequest;
   MPI_Irecv(&messageSize, 1, MPI_UNSIGNED_LONG, _workerProcesses[sample._workerId][0], MPI_MESSAGE_JSON_SIZE, _mpiCommunicator, &messageRequest);

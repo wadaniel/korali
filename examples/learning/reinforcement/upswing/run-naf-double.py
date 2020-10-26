@@ -2,7 +2,7 @@
 import os
 import sys
 sys.path.append('./_model')
-from single_env import *
+from double_env import *
 
 ####### Defining Korali Problem
 
@@ -15,7 +15,7 @@ e = korali.Experiment()
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = env
 e["Problem"]["Action Repeat"] = 1
-e["Problem"]["Actions Between Policy Updates"] = 1
+e["Problem"]["Actions Between Policy Updates"] = 10 
 
 e["Variables"][0]["Name"] = "Cart Position"
 e["Variables"][0]["Type"] = "State"
@@ -23,25 +23,31 @@ e["Variables"][0]["Type"] = "State"
 e["Variables"][1]["Name"] = "Angle 1"
 e["Variables"][1]["Type"] = "State"
 
-e["Variables"][2]["Name"] = "Car Velocity"
+e["Variables"][2]["Name"] = "Angle 2"
 e["Variables"][2]["Type"] = "State"
 
-e["Variables"][3]["Name"] = "Angular Velocity 1"
+e["Variables"][3]["Name"] = "Car Velocity"
 e["Variables"][3]["Type"] = "State"
 
-e["Variables"][4]["Name"] = "Height Proxy"
+e["Variables"][4]["Name"] = "Angular Velocity 1"
 e["Variables"][4]["Type"] = "State"
 
-e["Variables"][5]["Name"] = "Force"
-e["Variables"][5]["Type"] = "Action"
-e["Variables"][5]["Lower Bound"] = -20.0
-e["Variables"][5]["Upper Bound"] = +20.0
-e["Variables"][5]["Exploration Sigma"] = 5.0
+e["Variables"][5]["Name"] = "Angular Velocity 2"
+e["Variables"][5]["Type"] = "State"
+
+e["Variables"][6]["Name"] = "Height Proxy"
+e["Variables"][6]["Type"] = "State"
+
+e["Variables"][7]["Name"] = "Force"
+e["Variables"][7]["Type"] = "Action"
+e["Variables"][7]["Lower Bound"] = -20.0
+e["Variables"][7]["Upper Bound"] = +20.0
+e["Variables"][7]["Exploration Sigma"] = 5.0
 
 ### Configuring NAF hyperparameters
 
 e["Solver"]["Type"] = "Agent / Continuous / NAF"
-e["Solver"]["Target Learning Rate"] = 0.8
+e["Solver"]["Target Learning Rate"] = 0.7
 e["Solver"]["Optimization Steps Per Update"] = 1
 e["Solver"]["Experiences Between Agent Trainings"] = 1
 e["Solver"]["Experiences Between Target Network Updates"] = 1
@@ -85,6 +91,8 @@ e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Batch Normalization"]["Ena
 e["Solver"]["Training Reward Threshold"] = 750
 e["Solver"]["Policy Testing Episodes"] = 20
 e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 900
+e["Solver"]["Termination Criteria"]["Max Generations"] = 30
+
 
 ### Setting file output configuration
 

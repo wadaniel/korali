@@ -51,6 +51,10 @@ void NeuralNetwork::initialize()
 
   #endif
 
+  #ifdef _KORALI_USE_CUDNN
+  cublasCreate(&_cublasHandle);
+  #endif
+
   // Assigning relevant metadata to all the layers
   size_t layerCount = _layers.size();
   for (size_t i = 0; i < layerCount; i++)
@@ -364,6 +368,7 @@ void NeuralNetwork::setHyperparameters(const std::vector<float> &hyperparameters
       // Setting weight data to the layer's weight memory
       #ifdef _KORALI_USE_ONEDNN
       write_to_dnnl_memory(&fParams[currPos], _layers[i]->_weightsMem);
+      if (cudaMemcpy(_layers[i]->_cudaWeightsMem, &fParams[currPos], OC*IC*sizeof(float), cudaMemcpyHostToDevice) != cudaSuccess) KORALI_LOG_ERROR("Host->Device memcopy failed");
       #endif
 
       currPos += IC * OC;
@@ -373,6 +378,7 @@ void NeuralNetwork::setHyperparameters(const std::vector<float> &hyperparameters
       {
         #ifdef _KORALI_USE_ONEDNN
         write_to_dnnl_memory(&fParams[currPos], _layers[i]->_biasMem);
+        if (cudaMemcpy(_layers[i]->_cudaBiasMem, &fParams[currPos], OC*sizeof(float), cudaMemcpyHostToDevice) != cudaSuccess) KORALI_LOG_ERROR("Host->Device memcopy failed");
         #endif
 
         currPos += OC;
@@ -471,6 +477,7 @@ void NeuralNetwork::setWeightsAndBiases(const std::vector<float> &weights)
       // Setting weight data to the layer's weight memory
       #ifdef _KORALI_USE_ONEDNN
       write_to_dnnl_memory(&fParams[currPos], _layers[i]->_weightsMem);
+      if (cudaMemcpy(_layers[i]->_cudaWeightsMem, &fParams[currPos], OC*IC*sizeof(float), cudaMemcpyHostToDevice) != cudaSuccess) KORALI_LOG_ERROR("Host->Device memcopy failed");
       #endif
 
       currPos += IC * OC;
@@ -480,6 +487,7 @@ void NeuralNetwork::setWeightsAndBiases(const std::vector<float> &weights)
       {
         #ifdef _KORALI_USE_ONEDNN
         write_to_dnnl_memory(&fParams[currPos], _layers[i]->_biasMem);
+        if (cudaMemcpy(_layers[i]->_cudaBiasMem, &fParams[currPos], OC*sizeof(float), cudaMemcpyHostToDevice) != cudaSuccess) KORALI_LOG_ERROR("Host->Device memcopy failed");
         #endif
 
         currPos += OC;

@@ -75,12 +75,18 @@ void Layer::createHyperparameterMemory()
     // Allocating weight memory
     memory::dims weightDims = {OC, IC};
     auto weightMemDesc = memory::desc(weightDims, memory::data_type::f32, memory::format_tag::ab);
+
     _weightsMem = memory(weightMemDesc, _nn->_engine);
+    if ( cudaMalloc ((void**)&_cudaWeightsMem, IC*OC*sizeof(float)) != cudaSuccess) KORALI_LOG_ERROR("Device memory allocation failed");
+
     _weightsDiffMem = memory(_weightsMem.get_desc(), _nn->_engine);
 
     // Allocating bias memory
     auto biasMemDesc = memory::desc({OC}, memory::data_type::f32, memory::format_tag::a);
+
     _biasMem = memory(biasMemDesc, _nn->_engine);
+    if ( cudaMalloc ((void**)&_cudaBiasMem, OC*sizeof(float)) != cudaSuccess) KORALI_LOG_ERROR("Device memory allocation failed");
+
     _biasDiffMem = memory(_biasMem.get_desc(), _nn->_engine);
 
     // Adding bias hyperparameters to the count if not using normalization
@@ -142,10 +148,22 @@ void Layer::createForwardPipeline()
   *********************************************************************************/
 
   // Creating layer's data memory storage and activation function
-  auto dataMemDesc = memory::desc(layerDims, memory::data_type::f32, memory::format_tag::ab);
+  auto dataMemDesc = memory::desc(layerDims, memory::data_type::f32, memory::format_tag::nc);
+
+  // Creating input (node) layer memory
   _nodeMem = memory(dataMemDesc, _nn->_engine);
+  if ( cudaMalloc ((void**)&_cudaNodeMem, N*OC*sizeof(float)) != cudaSuccess) KORALI_LOG_ERROR("Device memory allocation failed");
+
+  // Creating activation layer memory
   _activationMem = memory(dataMemDesc, _nn->_engine);
-  if (_batchNormalizationEnabled) _batchNormalizationMem = memory(dataMemDesc, _nn->_engine);
+  if ( cudaMalloc ((void**)&_cudaActivationMem, N*OC*sizeof(float)) != cudaSuccess) KORALI_LOG_ERROR("Device memory allocation failed");
+
+  // Creating batch normalization layer memory (if necessary
+  if (_batchNormalizationEnabled)
+  {
+   _batchNormalizationMem = memory(dataMemDesc, _nn->_engine);
+   if ( cudaMalloc ((void**)&_cudaBatchNormalizationMem, N*OC*sizeof(float)) != cudaSuccess) KORALI_LOG_ERROR("Device memory allocation failed");
+  }
 
   /*****************************************
   * Creating Activation Function primitive and memory

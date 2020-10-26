@@ -15,7 +15,7 @@ e = korali.Experiment()
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = env
 e["Problem"]["Action Repeat"] = 1
-e["Problem"]["Actions Between Policy Updates"] = 10 
+e["Problem"]["Actions Between Policy Updates"] = 1
 
 e["Variables"][0]["Name"] = "Cart Position"
 e["Variables"][0]["Type"] = "State"
@@ -47,7 +47,7 @@ e["Variables"][7]["Exploration Sigma"] = 5.0
 ### Configuring NAF hyperparameters
 
 e["Solver"]["Type"] = "Agent / Continuous / NAF"
-e["Solver"]["Target Learning Rate"] = 0.7
+e["Solver"]["Target Learning Rate"] = 0.8
 e["Solver"]["Optimization Steps Per Update"] = 1
 e["Solver"]["Experiences Between Agent Trainings"] = 1
 e["Solver"]["Experiences Between Target Network Updates"] = 1
@@ -64,7 +64,7 @@ e["Solver"]["Experience Replay"]["Maximum Size"] = 100000
 ## Defining Q-Network
 
 e["Solver"]["Critic"]["Discount Factor"] = 1.0
-e["Solver"]["Critic"]["Learning Rate"] = 0.0001
+e["Solver"]["Critic"]["Learning Rate"] = 0.000001
 e["Solver"]["Critic"]["Mini Batch Size"] = 32
 e["Solver"]["Critic"]["Normalization Steps"] = 32
 

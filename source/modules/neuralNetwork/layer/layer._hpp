@@ -67,34 +67,39 @@ class Layer : public Module
   *******************************************************/
 
   /**
+   * @brief oneDNN Memory object descriptor to contain the result value of inner product (Wx+b) operation
+   */
+  _NN_MEM _nodeMem;
+  void* _cudaNodeMem;
+
+  /**
    * @brief oneDNN Memory object descriptor to contain the result value of applying the activation function on incoming data
    */
-  dnnl::memory _activationMem;
+  _NN_MEM _activationMem;
+  void* _cudaActivationMem;
 
   /**
    * @brief oneDNN Memory object descriptor to contain the result value of inner product (Wx+b) operation
    */
-  dnnl::memory _nodeMem;
+  _NN_MEM _batchNormalizationWorkMem;
 
   /**
    * @brief oneDNN Memory object descriptor to contain the result value of inner product (Wx+b) operation
    */
-  dnnl::memory _batchNormalizationWorkMem;
-
-  /**
-   * @brief oneDNN Memory object descriptor to contain the result value of inner product (Wx+b) operation
-   */
-  dnnl::memory _batchNormalizationMem;
+  _NN_MEM _batchNormalizationMem;
+  void* _cudaBatchNormalizationMem;
 
   /**
    * @brief oneDNN Memory object descriptor to contain the weights of inner product with incoming channels
    */
-  dnnl::memory _weightsMem;
+  _NN_MEM _weightsMem;
+  void* _cudaWeightsMem;
 
   /**
    * @brief oneDNN Memory object descriptor to contain the bias to add to incoming channels
    */
-  dnnl::memory _biasMem;
+  _NN_MEM _biasMem;
+  void* _cudaBiasMem;
 
   /********************************************************
   * Declaring Layers's Memory Structures for Gradients
@@ -103,32 +108,32 @@ class Layer : public Module
   /**
    * @brief oneDNN Memory object descriptor to contain the gradient of the weights
    */
-  dnnl::memory _weightsDiffMem;
+  _NN_MEM _weightsDiffMem;
 
   /**
    * @brief oneDNN Memory object descriptor to contain the gradient of the biases
    */
-  dnnl::memory _biasDiffMem;
+  _NN_MEM _biasDiffMem;
 
   /**
    * @brief oneDNN Gradient of the data at the inner product (Wx+b) stage
    */
-  dnnl::memory _nodeDiffMem;
+  _NN_MEM _nodeDiffMem;
 
   /*
   * @brief oneDNN Gradient of the data at the normalization stage
   */
-  dnnl::memory _batchNormalizationDiffMem;
+  _NN_MEM _batchNormalizationDiffMem;
 
   /*
   * @brief oneDNN Gradients of the operation wrt to activation function
   */
-  dnnl::memory _activationDiffMem;
+  _NN_MEM _activationDiffMem;
 
   /*
    * @brief oneDNN Gradients of the operation wrt to the layer normalization function
    */
-  dnnl::memory _batchNormalizationScaleShiftDiffMem;
+  _NN_MEM _batchNormalizationScaleShiftDiffMem;
 
   /*****************************************************************
    * Declaring Layers's Forward Propagation Normalization
@@ -137,22 +142,22 @@ class Layer : public Module
   /*
    * @brief oneDNN Stores the mean of the normalized batch on this node
    */
-  dnnl::memory _batchNormalizationMeanMem;
+  _NN_MEM _batchNormalizationMeanMem;
 
   /*
    * @brief oneDNN Stores the variance of the normalized batch on this node
    */
-  dnnl::memory _batchNormalizationVarianceMem;
+  _NN_MEM _batchNormalizationVarianceMem;
 
   /*
    * @brief oneDNN Provides the scale/shift values for each channel in the layer
    */
-  dnnl::memory _batchNormalizationScaleShiftMem;
+  _NN_MEM _batchNormalizationScaleShiftMem;
 
   /**
    * @brief oneDNN Arguments to the layer normalization operation
    */
-  std::unordered_map<int, dnnl::memory> _forwardNormalizationArgs;
+  std::unordered_map<int, _NN_MEM> _forwardNormalizationArgs;
 
   /**
    * @brief oneDNN primitive attributes that describe the forward normalization operation
@@ -176,7 +181,7 @@ class Layer : public Module
   /**
    * @brief oneDNN Arguments to the activation function
    */
-  std::unordered_map<int, dnnl::memory> _forwardActivationArgs;
+  std::unordered_map<int, _NN_MEM> _forwardActivationArgs;
 
   /**
    * @brief oneDNN primitive attributes that describe a softmax activation function
@@ -200,7 +205,7 @@ class Layer : public Module
   /**
    * @brief oneDNN Arguments to the inner product operation
    */
-  std::unordered_map<int, dnnl::memory> _forwardInnerProductArgs;
+  std::unordered_map<int, _NN_MEM> _forwardInnerProductArgs;
 
   /**
    * @brief oneDNN primitive attributes that describe the full forward propagation primitive
@@ -219,7 +224,7 @@ class Layer : public Module
   /**
    * @brief oneDNN Arguments for the backward propagation of the gradient wrt activation functions
    */
-  std::unordered_map<int, dnnl::memory> _backwardActivationArgs;
+  std::unordered_map<int, _NN_MEM> _backwardActivationArgs;
 
   /**
    * @brief oneDNN primitive for the backward propagation of the gradient wrt activation functions
@@ -229,7 +234,7 @@ class Layer : public Module
   /**
    * @brief oneDNN Arguments for the backward propagation of the gradient wrt Data
    */
-  std::unordered_map<int, dnnl::memory> _backwardDataArgs;
+  std::unordered_map<int, _NN_MEM> _backwardDataArgs;
 
   /**
    * @brief oneDNN primitive for the backward propagation of the gradient wrt Data
@@ -239,7 +244,7 @@ class Layer : public Module
   /**
    * @brief oneDNN Arguments for the backward propagation of the gradient wrt Weights and Biases
    */
-  std::unordered_map<int, dnnl::memory> _backwardWeightsArgs;
+  std::unordered_map<int, _NN_MEM> _backwardWeightsArgs;
 
   /**
    * @brief oneDNN primitive for the backward propagation of the gradient wrt Weights and Biases
@@ -249,7 +254,7 @@ class Layer : public Module
   /**
    * @brief oneDNN Arguments for the backward propagation of the gradient wrt normalization
    */
-  std::unordered_map<int, dnnl::memory> _backwardNormalizationArgs;
+  std::unordered_map<int, _NN_MEM> _backwardNormalizationArgs;
 
   /**
    * @brief oneDNN primitive for the backward propagation of the gradient wrt normalization

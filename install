@@ -280,11 +280,11 @@ if [ $NN_LIBRARY == "OneDNN" ]; then
  DNNLROOT=`readlink external/oneDNNlink`; check
  NNCFLAGS="-D_KORALI_USE_ONEDNN -I${DNNLROOT}/include"
  NNLIBS="-Wl,-rpath -Wl,${DNNLROOT}/lib64/ -L${DNNLROOT}/lib64/ -Wl,-rpath -Wl,${DNNLROOT}/lib/ -L${DNNLROOT}/lib -ldnnl"
-fi
+#fi
 
-if [ $NN_LIBRARY == "cuDNN" ]; then
-  NNCFLAGS="-D_KORALI_USE_CUDNN -I${CUDA_ROOT}/include -I${CUDNN_ROOT}/include"
-  NNLIBS="-lcudart -lcudnn -Wl,-rpath -Wl,${CUDA_ROOT}/lib64/ -L${CUDA_ROOT}/lib64/ -Wl,-rpath -Wl,${CUDA_ROOT}/lib -L${CUDA_ROOT}/lib -Wl,-rpath -Wl,${CUDNN_ROOT}/lib64/ -L${CUDNN_ROOT}/lib64/ -Wl,-rpath -Wl,${CUDNN_ROOT}/lib -L${CUDNN_ROOT}/lib"
+#if [ $NN_LIBRARY == "cuDNN" ]; then
+  NNCFLAGS+=" -D_KORALI_USE_CUDNN -I${CUDA_ROOT}/include -I${CUDNN_ROOT}/include"
+  NNLIBS+=" -lcudart -lcudnn -lcublas -Wl,-rpath -Wl,${CUDA_ROOT}/lib64/ -L${CUDA_ROOT}/lib64/ -Wl,-rpath -Wl,${CUDA_ROOT}/lib -L${CUDA_ROOT}/lib -Wl,-rpath -Wl,${CUDNN_ROOT}/lib64/ -L${CUDNN_ROOT}/lib64/ -Wl,-rpath -Wl,${CUDNN_ROOT}/lib -L${CUDNN_ROOT}/lib"
 fi
 
 if [ $NN_LIBRARY == "NONE" ]; then 

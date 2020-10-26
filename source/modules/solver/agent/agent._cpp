@@ -89,6 +89,12 @@ void Agent::runGeneration()
     // Storing experience in the episode
     episode.push_back(experience);
 
+    // Adding experience's reward to episode's reward
+    _currentReward += reward;
+
+    // Increasing total experience counter
+    _experienceCount++;
+
     // Check if experience is terminal
     isTerminal = experience["Is Terminal"];
 
@@ -97,6 +103,7 @@ void Agent::runGeneration()
       if (isTerminal == false)                                           // Do not update policy if this is terminal
         if (_experienceReplayStates.size() > _experienceReplayStartSize) // Perform optimization steps on the critic/policy, if reached the minimum replay memory size
         {
+         printf("Steps: %lu\n", _optimizationStepsPerUpdate);
           for (size_t i = 0; i < _optimizationStepsPerUpdate; i++) trainAgent();
           _optimizationStepCount += _optimizationStepsPerUpdate;
         }
@@ -191,12 +198,6 @@ void Agent::processExperience(knlohmann::json &experience)
   _experienceReplayActions.add(action);
   _experienceReplayRewards.add(reward);
   _experienceReplayTerminal.add(isTerminal);
-
-  // Adding experience's reward to episode's reward
-  _currentReward += reward;
-
-  // Increasing total experience counter
-  _experienceCount++;
 }
 
 std::vector<size_t> Agent::generateMiniBatch(size_t size)
@@ -323,6 +324,13 @@ void Agent::printGenerationAfter()
     _k->_logger->logInfo("Normal", " + Best Average Reward:         %f\n", _bestAverageTestingReward);
 
   printAgentInformation();
+
+  _k->_logger->logInfo("Normal", "Profiling Information:\n");
+  _k->_logger->logInfo("Normal", " + NN Input Write Time:         %fs\n", _inputWriteTime / 1.0e+9f);
+  _k->_logger->logInfo("Normal", " + NN Output Read Time:         %fs\n", _outputReadTime / 1.0e+9f);
+  _k->_logger->logInfo("Normal", " + NN Normalization Time:       %fs\n", _normalizationTime / 1.0e+9f);
+  _k->_logger->logInfo("Normal", " + NN Forward Propagation Time: %fs\n", _forwardStreamTime / 1.0e+9f);
+  _k->_logger->logInfo("Normal", " + NN Back Propagation Time:    %fs\n", _backwardStreamTime / 1.0e+9f);
 }
 
 } // namespace solver

@@ -386,9 +386,8 @@ void Reference::gradientLoglikelihoodNegativeBinomial(Sample &sample)
     KORALI_LOG_ERROR("This Bayesian (%s) problem requires a %lu-sized Dispersion array. Provided: %lu.\n", _likelihoodModel.c_str(), Nd, dispersion.size());
 
   if (gradientMean.size() != Nd) KORALI_LOG_ERROR("Bayesian problem requires a gradient of the Mean for each reference evaluation (provided %zu required %zu).", gradientMean.size(), Nd);
- 
-if (gradientDispersion.size() != Nd) KORALI_LOG_ERROR("Bayesian problem requires a gradient of the Dispersion for each reference evaluation (provided %zu required %zu).", gradientDispersion.size(), Nd);
 
+  if (gradientDispersion.size() != Nd) KORALI_LOG_ERROR("Bayesian problem requires a gradient of the Dispersion for each reference evaluation (provided %zu required %zu).", gradientDispersion.size(), Nd);
 
   std::vector<double> llkgradient(Nth, 0.0);
 
@@ -403,13 +402,12 @@ if (gradientDispersion.size() != Nd) KORALI_LOG_ERROR("Bayesian problem requires
 
     for (size_t d = 0; d < Nth; ++d)
     {
-      llkgradient[d] += r*(k-m)*gradientMean[i][d]/ (m*tmpsum);
-      llkgradient[d] += (gsl_sf_psi(r + k) - gsl_sf_psi(r))*gradientDispersion[i][d];
-      llkgradient[d] += gradientDispersion[i][d]*(m*log(r/tmpsum)+r*log(r/tmpsum)+m-k)/tmpsum;
+      llkgradient[d] += r * (k - m) * gradientMean[i][d] / (m * tmpsum);
+      llkgradient[d] += (gsl_sf_psi(r + k) - gsl_sf_psi(r)) * gradientDispersion[i][d];
+      llkgradient[d] += gradientDispersion[i][d] * (m * log(r / tmpsum) + r * log(r / tmpsum) + m - k) / tmpsum;
     }
-
   }
-  
+
   for (size_t d = 0; d < Nth; ++d) printf("llk grad %zu : %lf\n", d, llkgradient[d]);
 
   sample["logLikelihood Gradient"] = llkgradient;

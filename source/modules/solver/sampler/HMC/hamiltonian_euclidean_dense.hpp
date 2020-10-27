@@ -252,7 +252,7 @@ class HamiltonianEuclideanDense : public HamiltonianEuclidean
   */
   int __invertMatrix(std::vector<double> &mat, std::vector<double> &inverseMat)
   {
-    int _stateSpaceDim = (int)std::sqrt(mat.size());
+    size_t _stateSpaceDim = (size_t)std::sqrt(mat.size());
     gsl_matrix *A = gsl_matrix_alloc(_stateSpaceDim, _stateSpaceDim);
 
     // copy mat to gsl matrix

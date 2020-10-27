@@ -285,7 +285,7 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
     sample["Module"] = "Problem";
     sample["Operation"] = "Evaluate";
     sample["Parameters"] = q;
- 
+
     KORALI_START(sample);
     KORALI_WAIT(sample);
     _currentEvaluation = KORALI_GET(double, sample, "logP(x)");
@@ -296,17 +296,17 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
     sampleGrad["Module"] = "Problem";
     sampleGrad["Operation"] = "Evaluate Gradient";
     sampleGrad["Parameters"] = q;
- 
+
     KORALI_START(sampleGrad);
     KORALI_WAIT(sampleGrad);
     _currentGradient = KORALI_GET(std::vector<double>, sampleGrad, "grad(logP(x))");
-  
+
     auto sampleHessian = korali::Sample();
     sampleHessian["Sample Id"] = _numHamiltonianObjectUpdates++;
     sampleHessian["Module"] = "Problem";
     sampleHessian["Operation"] = "Evaluate Hessian";
     sampleHessian["Parameters"] = q;
- 
+
     // TODO: remove hack, evaluate Hessian only when required by the solver (D.W.)
     KORALI_START(sampleHessian);
     KORALI_WAIT(sampleHessian);

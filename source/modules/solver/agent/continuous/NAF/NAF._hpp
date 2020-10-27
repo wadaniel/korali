@@ -30,8 +30,8 @@ class NAF : public Continuous
    * @brief Korali experiment for the training of Q(a,s)
    */
   korali::Experiment _qExperiment;
- 
-   /**
+
+  /**
    * @brief Pointer to target problem
    */
   problem::SupervisedLearning *_criticProblem;
@@ -45,7 +45,6 @@ class NAF : public Continuous
    * @brief Korali experiment for target
    */
   korali::Experiment _criticExperiment;
-
 
   /**
   * @brief Function to calculate the advantage A(s,a).

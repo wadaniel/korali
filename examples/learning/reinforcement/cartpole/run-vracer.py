@@ -2,7 +2,7 @@
 import os
 import sys
 sys.path.append('./_model')
-from double_env import *
+from env import *
 
 ####### Defining Korali Problem
 
@@ -10,11 +10,9 @@ import korali
 k = korali.Engine()
 e = korali.Experiment()
 
+### Defining the Cartpole problem's configuration
 
-actions = [[i] for i in range(-20,20)]
-
-e["Problem"]["Type"] = "Reinforcement Learning / Discrete"
-e["Problem"]["Possible Actions"] = actions
+e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = env
 e["Problem"]["Action Repeat"] = 1
 e["Problem"]["Actions Between Policy Updates"] = 1
@@ -22,53 +20,42 @@ e["Problem"]["Actions Between Policy Updates"] = 1
 e["Variables"][0]["Name"] = "Cart Position"
 e["Variables"][0]["Type"] = "State"
 
-e["Variables"][1]["Name"] = "Angle 1"
+e["Variables"][1]["Name"] = "Cart Velocity"
 e["Variables"][1]["Type"] = "State"
 
-e["Variables"][2]["Name"] = "Angle 2"
+e["Variables"][2]["Name"] = "Pole Omega"
 e["Variables"][2]["Type"] = "State"
 
-e["Variables"][3]["Name"] = "Car Velocity"
+e["Variables"][3]["Name"] = "Pole Cos(Angle)"
 e["Variables"][3]["Type"] = "State"
 
-e["Variables"][4]["Name"] = "Angular Velocity 1"
+e["Variables"][4]["Name"] = "Pole Sin(Angle)"
 e["Variables"][4]["Type"] = "State"
 
-e["Variables"][5]["Name"] = "Angular Velocity 2"
-e["Variables"][5]["Type"] = "State"
+e["Variables"][5]["Name"] = "Force"
+e["Variables"][5]["Type"] = "Action"
+e["Variables"][5]["Lower Bound"] = -10.0
+e["Variables"][5]["Upper Bound"] = +10.0
+e["Variables"][5]["Exploration Sigma"] = 0.35
 
-e["Variables"][6]["Name"] = "Height Proxy"
-e["Variables"][6]["Type"] = "State"
+### Defining Agent Configuration 
 
-e["Variables"][7]["Name"] = "Force"
-e["Variables"][7]["Type"] = "Action"
-
-### Configuring DQN hyperparameters
-
-e["Solver"]["Type"] = "Agent / Discrete / DQN"
+e["Solver"]["Type"] = "Agent / Continuous / VRACER"
 e["Solver"]["Optimization Steps Per Update"] = 1
 e["Solver"]["Experiences Between Agent Trainings"] = 1
-e["Solver"]["Experiences Between Target Network Updates"] = 50
+e["Solver"]["Experiences Between Target Network Updates"] = 1
 
-### Defining Experience Replay configuration
+### Defining the configuration of replay memory
 
-e["Solver"]["Experience Replay"]["Start Size"] = 500
-e["Solver"]["Experience Replay"]["Maximum Size"] = 150000
+e["Solver"]["Experience Replay"]["Start Size"] =   500
+e["Solver"]["Experience Replay"]["Maximum Size"] = 100000
 
-### Defining probability of taking a random action (epsilon)
+## Defining Neural Network Configuration for Policy and Critic into Critic Container
 
-e["Solver"]["Random Action Probability"]["Initial Value"] = 1.0
-e["Solver"]["Random Action Probability"]["Target Value"] = 0.05
-e["Solver"]["Random Action Probability"]["Decrease Rate"] = 0.10
-
-## Defining Q-Critic and Action-selection (policy) optimizers
-
+e["Solver"]["Critic"]["Discount Factor"] = 0.99
+e["Solver"]["Critic"]["Adoption Rate"] = 0.50
+e["Solver"]["Critic"]["Learning Rate"] = 0.001
 e["Solver"]["Critic"]["Mini Batch Size"] = 32
-e["Solver"]["Critic"]["Learning Rate"] = 0.01
-e["Solver"]["Critic"]["Discount Factor"] = 1.0
-
-### Defining the shape of the neural network
-
 e["Solver"]["Critic"]["Normalization Steps"] = 32
 
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
@@ -91,13 +78,14 @@ e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Batch Normalization"]["Ena
 
 ### Defining Termination Criteria
 
-e["Solver"]["Training Reward Threshold"] = 750
-e["Solver"]["Policy Testing Episodes"] = 10
-e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 900
+e["Solver"]["Training Reward Threshold"] = 400
+e["Solver"]["Policy Testing Episodes"] = 20
+e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 450
 
 ### Setting file output configuration
 
-e["File Output"]["Frequency"] = 1000
+e["File Output"]["Frequency"] = 10000
+#e["Console Output"]["Verbosity"] = "Silent"
 
 ### Running Experiment
 

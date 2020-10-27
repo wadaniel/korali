@@ -10,7 +10,7 @@ namespace agent
 {
 void Continuous::initializeAgent()
 {
-  // Getting discrete problem pointer
+  // Getting continuous problem pointer
   _problem = dynamic_cast<problem::reinforcementLearning::Continuous *>(_k->_problem);
 
   // Allocating continuous-specific replay memory items
@@ -23,13 +23,25 @@ void Continuous::initializeAgent()
 
   // Allocating space for the inverse variance calculation
   _inverseVariances.resize(_problem->_actionVectorSize);
+  _actionMeans.resize(_problem->_actionVectorSize);
   _actionSigmas.resize(_problem->_actionVectorSize);
+  _actionScalings.resize(_problem->_actionVectorSize);
+  _actionLowerBounds.resize(_problem->_actionVectorSize);
+  _actionUpperBounds.resize(_problem->_actionVectorSize);
 
   for (size_t i = 0; i < _problem->_actionVectorSize; i++)
   {
     auto varIdx = _problem->_actionVectorIndexes[i];
     float sigma = _k->_variables[varIdx]->_explorationSigma;
+    float lowerBound = _k->_variables[varIdx]->_lowerBound;
+    float upperBound = _k->_variables[varIdx]->_upperBound;
     if (sigma <= 0.0) KORALI_LOG_ERROR("Value of Exploration Sigma (%f) for action %lu (variable %lu) is not defined or invalid.\n", sigma, i, varIdx);
+    if (upperBound - lowerBound <= 0.0) KORALI_LOG_ERROR("Upper (%f) and Lower Bound (%f) of action variable %lu invalid.\n", upperBound, lowerBound, i);
+
+    // Obtaining lower and upper bounds for the action
+    _actionLowerBounds[i] = lowerBound;
+    _actionUpperBounds[i] = upperBound;
+    _actionScalings[i] = upperBound - lowerBound;
 
     // compute inverse variance
     _actionSigmas[i] = sigma;
@@ -42,7 +54,7 @@ void Continuous::processExperience(knlohmann::json &experience)
   // Running common experience processor first
   Agent::processExperience(experience);
 
-  // Adding discrete-specific information to the memory
+  // Adding specific information to the memory
   _experienceReplayActionMeans.add(experience["Metadata"]["Action Means"].get<std::vector<float>>());
   _experienceReplayActionSigmas.add(experience["Metadata"]["Action Sigmas"].get<std::vector<float>>());
 }
@@ -75,44 +87,41 @@ void Continuous::getAction(korali::Sample &sample)
     {
       for (size_t i = 0; i < _problem->_actionVectorSize; i++)
       {
-        // Finding problem variable index corresponding to this action
-        size_t varIdx = _problem->_actionVectorIndexes[i];
-
         // Producing random (uniform) number to select within an lower/upper bound range
         float x = _uniformGenerator->getRandomNumber();
 
-        // Obtaining lower and upper bounds for the action
-        float lowerBound = _k->_variables[varIdx]->_lowerBound;
-        float upperBound = _k->_variables[varIdx]->_upperBound;
-
         // Producing the random value for action element i
-        action[i] = lowerBound + x * (upperBound - lowerBound);
+        action[i] = _actionLowerBounds[i] + x * (_actionUpperBounds[i] - _actionLowerBounds[i]);
 
-        sample["Metadata"]["Action Means"][i] = (upperBound + lowerBound) * 0.5;
-        sample["Metadata"]["Action Sigmas"][i] = (upperBound - lowerBound) / sqrtf(12.0);
+        sample["Metadata"]["Action Means"][i] = 0.5 * (_actionLowerBounds[i] + _actionUpperBounds[i]);
+        sample["Metadata"]["Action Sigmas"][i] = 0.3 * (_actionUpperBounds[i] - _actionLowerBounds[i]);
       }
     }
     else // else we select guided by the policy's probability distribution
     {
-      // Getting the Gaussian means of the actions given by the agent's policy
-      auto actionMeans = getActionMeans(state);
-
-      // Getting the Gaussian sigmas of the actions given by the agent's policy
-      auto actionSigmas = getActionSigmas(state);
+      // Update the Gaussian means and sigmas of the actions given by the agent's policy
+      forwardPolicy(state);
 
       for (size_t i = 0; i < _problem->_actionVectorIndexes.size(); i++)
       {
         // Updating normal distribution for the current action element
-        _normalGenerator->_mean = actionMeans[i];
-        _normalGenerator->_standardDeviation = actionSigmas[i];
+        _normalGenerator->_mean = _actionMeans[i];
+        _normalGenerator->_standardDeviation = _actionSigmas[i];
+        //printf("mean %f sigma %f\n", _actionMeans[i], _actionSigmas[i]);
 
         // Generating action from the updated normal distribution
         action[i] = _normalGenerator->getRandomNumber();
+
+        // Clipping actions
+        if (action[i] > _actionUpperBounds[i])
+          action[i] = _actionUpperBounds[i];
+        else if (action[i] < _actionLowerBounds[i])
+          action[i] = _actionLowerBounds[i];
       }
 
       // Storing selection metadata
-      sample["Metadata"]["Action Means"] = actionMeans;
-      sample["Metadata"]["Action Sigmas"] = actionSigmas;
+      sample["Metadata"]["Action Means"] = _actionMeans;
+      sample["Metadata"]["Action Sigmas"] = _actionSigmas;
     }
   }
 
@@ -121,8 +130,11 @@ void Continuous::getAction(korali::Sample &sample)
   * elements of the action vector
   ****************************************************************************/
 
-  // Finding the best action index from the probabilities
-  if (sample["Mode"] == "Testing") action = getActionMeans(state);
+  if (sample["Mode"] == "Testing")
+  {
+    forwardPolicy(state);
+    action = _actionMeans;
+  }
 
   /*****************************************************************************
   * Storing the action itself

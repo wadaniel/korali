@@ -17,14 +17,14 @@ e = korali.Experiment()
 e["Problem"]["Type"] = "Bayesian/Reference"
 e["Problem"]["Likelihood Model"] = "Negative Binomial"
 e["Problem"]["Reference Data"] = getReferenceData()
-e["Problem"]["Computational Model"] = lambda sampleData: modelWithGradients(sampleData, getReferencePoints())
+e["Problem"]["Computational Model"] = lambda sampleData: modelWithGradientsAndHessians(sampleData, getReferencePoints())
 
 # Configuring HMC parameters
 e["Solver"]["Type"] = "Sampler/HMC"
-e["Solver"]["Version"] = "Euclidean"
+e["Solver"]["Version"] = "Riemannian Const"
 e["Solver"]["Inverse Regularization Parameter"] = 0.1
 e["Solver"]["Max Num Fixed Point Iteration"] = 5
-e["Solver"]["Burn In"] = 500
+e["Solver"]["Burn In"] = 100
 e["Solver"]["Use NUTS"] = False
 e["Solver"]["Use Diagonal Metric"] = True
 e["Solver"]["Max Depth"] = 10
@@ -35,7 +35,7 @@ e["Solver"]["Use Adaptive Step Size"] = True
 e["Solver"]["Desired Average Acceptance Rate"] = 0.75
 e["Solver"]["Integrator Verbosity"] = False
 e["Solver"]["Hamiltonian Verbosity"] = False
-e["Solver"]["Termination Criteria"]["Max Samples"] = 10000
+e["Solver"]["Termination Criteria"]["Max Samples"] = 1000
 
 # Configuring the problem's random distributions
 e["Distributions"][0]["Name"] = "Uniform 0"
@@ -73,7 +73,7 @@ e["Variables"][2]["Initial Standard Deviation"] = 1.0
 e["File Output"]["Frequency"] = 50000
 e["Console Output"]["Frequency"] = 500
 
-e["File Output"]["Path"] = '_korali_result_hmc'
+e["File Output"]["Path"] = '_korali_result_hmc_const'
 e["Console Output"]["Verbosity"] = "Detailed"
 
 # Starting Korali's Engine and running experiment

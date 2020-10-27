@@ -251,6 +251,7 @@ void Reference::loglikelihoodNegativeBinomial(Sample &sample)
     loglike += y * log(p);
   }
 
+  printf("llk %lf\n", loglike);
   sample["logLikelihood"] = loglike;
 }
 
@@ -375,7 +376,8 @@ void Reference::gradientLoglikelihoodNegativeBinomial(Sample &sample)
 
   auto refEvals = KORALI_GET(std::vector<double>, sample, "Reference Evaluations");
   auto dispersion = KORALI_GET(std::vector<double>, sample, "Dispersion");
-  auto gradient = KORALI_GET(std::vector<std::vector<double>>, sample, "Gradient Mean");
+  auto gradientMean = KORALI_GET(std::vector<std::vector<double>>, sample, "Gradient Mean");
+  auto gradientDispersion = KORALI_GET(std::vector<std::vector<double>>, sample, "Gradient Dispersion");
 
   if (refEvals.size() != Nd)
     KORALI_LOG_ERROR("This Bayesian (%s) problem requires a %lu-sized Reference Evaluations array. Provided: %lu.\n", _likelihoodModel.c_str(), Nd, refEvals.size());
@@ -383,26 +385,32 @@ void Reference::gradientLoglikelihoodNegativeBinomial(Sample &sample)
   if (dispersion.size() != Nd)
     KORALI_LOG_ERROR("This Bayesian (%s) problem requires a %lu-sized Dispersion array. Provided: %lu.\n", _likelihoodModel.c_str(), Nd, dispersion.size());
 
-  if (gradient.size() != Nd) KORALI_LOG_ERROR("Bayesian problem requires a gradient of the Mean for each reference evaluation (provided %zu required %zu).", gradient.size(), Nd);
+  if (gradientMean.size() != Nd) KORALI_LOG_ERROR("Bayesian problem requires a gradient of the Mean for each reference evaluation (provided %zu required %zu).", gradientMean.size(), Nd);
+ 
+if (gradientDispersion.size() != Nd) KORALI_LOG_ERROR("Bayesian problem requires a gradient of the Dispersion for each reference evaluation (provided %zu required %zu).", gradientDispersion.size(), Nd);
+
 
   std::vector<double> llkgradient(Nth, 0.0);
 
-  double r, m, d, tmpsum;
+  double r, m, k, tmpsum;
   for (size_t i = 0; i < Nd; i++)
   {
     r = dispersion[i];
     m = refEvals[i];
-    d = _referenceData[i];
+    k = _referenceData[i];
 
     tmpsum = r + m;
 
-    for (size_t d = 0; d < _k->_variables.size() - 1; ++d)
+    for (size_t d = 0; d < Nth; ++d)
     {
-      llkgradient[d] += d * (r + gradient[i][d]) / (tmpsum * tmpsum) - r / tmpsum * gradient[i][d];
+      llkgradient[d] += r*(k-m)*gradientMean[i][d]/ (m*tmpsum);
+      llkgradient[d] += (gsl_sf_psi(r + k) - gsl_sf_psi(r))*gradientDispersion[i][d];
+      llkgradient[d] += gradientDispersion[i][d]*(m*log(r/tmpsum)+r*log(r/tmpsum)+m-k)/tmpsum;
     }
 
-    llkgradient[_k->_variables.size() - 1] = gsl_sf_psi(r + d) + log(r / tmpsum) + (m - d) / tmpsum - gsl_sf_psi(r);
   }
+  
+  for (size_t d = 0; d < Nth; ++d) printf("llk grad %zu : %lf\n", d, llkgradient[d]);
 
   sample["logLikelihood Gradient"] = llkgradient;
 }

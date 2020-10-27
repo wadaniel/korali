@@ -20,6 +20,7 @@ for useDiagonalMetric in [False, True]:
   e["Problem"]["Type"] = "Sampling"
   e["Problem"]["Probability Function"] = lg5
   e["Console Output"]["Frequency"] = 5000
+  e["File Output"]["Enabled"] = False
   e["File Output"]["Frequency"] = 0
 
   # Defining problem's variables and their HMC settings

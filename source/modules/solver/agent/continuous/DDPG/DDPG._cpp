@@ -131,7 +131,14 @@ void DDPG::trainAgent()
     std::vector<float> curState = _experienceReplayStates[expId];
     std::vector<float> curAction = _experienceReplayActions[expId];
     std::vector<float> nextState = isTerminal ? std::vector<float>() : _experienceReplayStates[expId + 1];
-    std::vector<float> bestAction = isTerminal ? std::vector<float>() : getActionMeans(nextState);
+    std::vector<float> bestAction;
+    if (isTerminal)
+      bestAction = std::vector<float>();
+    else
+    {
+      forwardPolicy(nextState);
+      bestAction = _actionMeans;
+    }
 
     // Getting current reward
     float curReward = _experienceReplayRewards[expId];
@@ -224,14 +231,9 @@ void DDPG::trainAgent()
   _hyperparameters["Policy"] = newPolicyHyperparameters;
 }
 
-std::vector<float> DDPG::getActionMeans(const std::vector<float> &state)
+void DDPG::forwardPolicy(const std::vector<float> &state)
 {
-  return _policyLearner->getEvaluation({state});
-}
-
-std::vector<float> DDPG::getActionSigmas(const std::vector<float> &state)
-{
-  return _actionSigmas;
+  _actionMeans = _policyLearner->getEvaluation({state});
 }
 
 void DDPG::updateHyperparameters(const knlohmann::json &hyperparameters)

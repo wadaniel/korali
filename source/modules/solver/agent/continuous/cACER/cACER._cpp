@@ -164,14 +164,9 @@ std::vector<float> cACER::generateAction()
   return action;
 }
 
-std::vector<float> cACER::getActionMeans(const std::vector<float> &state)
+void cACER::forwardPolicy(const std::vector<float> &state)
 {
-  return _policyLearner->getEvaluation(state);
-}
-
-std::vector<float> cACER::getActionSigmas(const std::vector<float> &state)
-{
-  return _actionSigmas;
+  _actionMeans = _policyLearner->getEvaluation({state});
 }
 
 float cACER::stateValueFunction(const std::vector<float> &state)

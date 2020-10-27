@@ -36,7 +36,7 @@ void Continuous::initializeAgent()
     float lowerBound = _k->_variables[varIdx]->_lowerBound;
     float upperBound = _k->_variables[varIdx]->_upperBound;
     if (sigma <= 0.0) KORALI_LOG_ERROR("Value of Exploration Sigma (%f) for action %lu (variable %lu) is not defined or invalid.\n", sigma, i, varIdx);
-    if (upperBound-lowerBound <= 0.0) KORALI_LOG_ERROR("Upper (%f) and Lower Bound (%f) of action variable %lu invalid.\n", upperBound, lowerBound, i);
+    if (upperBound - lowerBound <= 0.0) KORALI_LOG_ERROR("Upper (%f) and Lower Bound (%f) of action variable %lu invalid.\n", upperBound, lowerBound, i);
 
     // Obtaining lower and upper bounds for the action
     _actionLowerBounds[i] = lowerBound;

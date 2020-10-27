@@ -335,15 +335,19 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannianConst
     _currentEvaluation = KORALI_GET(double, sample, "logP(x)");
 
     // TODO: remove hack, evaluate Gradient only when required by the solver (D.W.)
-    auto sampleGrad = korali::Sample();
-    sampleGrad["Sample Id"] = _numHamiltonianObjectUpdates++;
-    sampleGrad["Module"] = "Problem";
-    sampleGrad["Operation"] = "Evaluate Gradient";
-    sampleGrad["Parameters"] = q;
+    sample["Operation"] = "Evaluate Gradient";
 
-    KORALI_START(sampleGrad);
-    KORALI_WAIT(sampleGrad);
-    _currentGradient = KORALI_GET(std::vector<double>, sampleGrad, "grad(logP(x))");
+    KORALI_START(sample);
+    KORALI_WAIT(sample);
+    _currentGradient = KORALI_GET(std::vector<double>, sample, "grad(logP(x))");
+ 
+    sample["Operation"] = "Evaluate Hessian";
+
+    KORALI_START(sample);
+    KORALI_WAIT(sample);
+
+    _currentHessian = KORALI_GET(std::vector<double>, sample, "H(logP(x))");
+
   }
 
   /**
@@ -386,20 +390,8 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannianConst
   */
   int updateMetricMatricesRiemannian(const std::vector<double> &q, korali::Experiment *_k) override
   {
-    auto sampleHessian = korali::Sample();
-    sampleHessian["Sample Id"] = _numHamiltonianObjectUpdates++;
-    sampleHessian["Module"] = "Problem";
-    sampleHessian["Operation"] = "Evaluate Hessian";
-    sampleHessian["Parameters"] = q;
-
-    // TODO: remove hack, evaluate Hessian only when required by the solver (D.W.)
-    KORALI_START(sampleHessian);
-    KORALI_WAIT(sampleHessian);
-
     // constant for condition number of _metric
     double detMetric = 1.0;
-
-    auto _currentHessian = KORALI_GET(std::vector<double>, sampleHessian, "H(logP(x))");
 
     auto hessian = _currentHessian;
     gsl_matrix_view Xv = gsl_matrix_view_array(hessian.data(), _stateSpaceDim, _stateSpaceDim);

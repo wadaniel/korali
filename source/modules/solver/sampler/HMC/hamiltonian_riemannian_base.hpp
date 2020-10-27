@@ -31,7 +31,7 @@ class HamiltonianRiemannian : public Hamiltonian
   * @brief Constructor with State Space Dim.
   * @param stateSpaceDim Dimension of State Space.
   */
-  HamiltonianRiemannian(const size_t stateSpaceDim) : Hamiltonian{stateSpaceDim}, _logDetMetric{1.0} {}
+  HamiltonianRiemannian(const size_t stateSpaceDim) : Hamiltonian{stateSpaceDim}, _logDetMetric{1.0} { _currentHessian.resize(stateSpaceDim*stateSpaceDim); }
 
   /**
   * @brief Destructor of abstract base class.
@@ -45,6 +45,7 @@ class HamiltonianRiemannian : public Hamiltonian
   //////////////////////////////////////////////////////////////////////////////////////////////
 
   protected:
+
   /**
   * @brief Current Hessian of objective (return value of sample evaluation).
   */

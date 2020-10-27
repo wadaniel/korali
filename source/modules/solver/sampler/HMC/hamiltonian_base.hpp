@@ -37,10 +37,6 @@ class Hamiltonian
   */
   Hamiltonian(const size_t stateSpaceDim) : _stateSpaceDim{stateSpaceDim}, _numHamiltonianObjectUpdates{0}
   {
-    _sample = new korali::Sample();
-    (*_sample)["Sample Id"] = 0;
-    (*_sample)["Module"] = "Problem";
-    (*_sample)["Operation"] = "Evaluate";
     verbosity = false;
   }
 
@@ -49,7 +45,6 @@ class Hamiltonian
   */
   virtual ~Hamiltonian()
   {
-    delete _sample;
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////
@@ -87,8 +82,7 @@ class Hamiltonian
   */
   virtual double U()
   {
-    ++_numHamiltonianObjectUpdates;
-    double evaluation = KORALI_GET(double, (*_sample), "logP(x)");
+    double evaluation = _currentEvaluation;
     evaluation *= -1.0;
 
     // if (verbosity == true)
@@ -107,8 +101,8 @@ class Hamiltonian
   */
   virtual std::vector<double> dU()
   {
-    // evaluate grad(logP(x)) (extremely slow)
-    auto grad = KORALI_GET(std::vector<double>, (*_sample), "grad(logP(x))");
+
+    auto grad = _currentGradient;
 
     // negate to get dU
     std::transform(grad.cbegin(), grad.cend(), grad.begin(), std::negate<double>());
@@ -172,21 +166,31 @@ class Hamiltonian
   */
   virtual void updateHamiltonian(const std::vector<double> &q, korali::Experiment *_k)
   {
-    (*_sample)["Parameters"] = q;
+    auto sample = korali::Sample();
+    sample["Sample Id"] = _numHamiltonianObjectUpdates++;
+    sample["Module"] = "Problem";
+    sample["Operation"] = "Evaluate";
+    sample["Parameters"] = q;
+ 
+    KORALI_START(sample);
+    KORALI_WAIT(sample);
+    _currentEvaluation = KORALI_GET(double, sample, "logP(x)");
 
-    KORALI_START((*_sample));
-    KORALI_WAIT((*_sample));
-
+    auto sampleGrad = korali::Sample();
+    sampleGrad["Sample Id"] = _numHamiltonianObjectUpdates++;
+    sampleGrad["Module"] = "Problem";
+    sampleGrad["Operation"] = "Evaluate Gradient";
+    sampleGrad["Parameters"] = q;
+ 
     // TODO: remove hack, evaluate Gradient only when required by the solver (D.W.)
-    (*_sample)["Operation"] = "Evaluate Gradient";
-    KORALI_START((*_sample));
-    KORALI_WAIT((*_sample));
-    (*_sample)["Operation"] = "Evaluate";
+    KORALI_START(sampleGrad);
+    KORALI_WAIT(sampleGrad);
+    _currentGradient = KORALI_GET(std::vector<double>, sampleGrad, "grad(logP(x))");
 
     // if (verbosity == true)
     // {
     //   std::cout << "In Hamiltonian::updateHamiltonian " << std::endl;
-    //   printf("%s\n", _sample->_js.getJson().dump(2).c_str());
+    //   printf("%s\n", sample->_js.getJson().dump(2).c_str());
     // }
   }
 
@@ -387,9 +391,14 @@ class Hamiltonian
   //////////////////////////////////////////////////////////////////////////////////////////////
 
   /**
-  * @brief Pointer to current sample object.
+  @brief Current evaluation of objective (return value of sample evaluation).
   */
-  korali::Sample *_sample;
+  double _currentEvaluation;
+
+  /**
+  * @brief Current gradient of objective (return value of sample evaluation).
+  */
+  std::vector<double>  _currentGradient;
 
   /**
   * @brief _stateSpaceDim

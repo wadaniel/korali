@@ -14,6 +14,7 @@ for useDiagonalMetric in [False, True]:
     k = korali.Engine()
     e = korali.Experiment()
 
+    e["File Output"]["Enabled"] = False
     e["File Output"]["Frequency"] = 0
     e["Console Output"]["Frequency"] = 5000
 

@@ -245,7 +245,7 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannianConst
     if (verbosity == true)
     {
       std::cout << "In HamiltonianRiemannianConstDense::phi :" << std::endl;
-      printf("%s\n", _sample->_js.getJson().dump(2).c_str());
+      //printf("%s\n", _sample->_js.getJson().dump(2).c_str());
     }
 
     return this->U() + 0.5 * _logDetMetric;
@@ -283,16 +283,27 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannianConst
   */
   void updateHamiltonian(const std::vector<double> &q, korali::Experiment *_k) override
   {
-    (*_sample)["Parameters"] = q;
-
-    KORALI_START((*_sample));
-    KORALI_WAIT((*_sample));
+    // TODO: I think this is the same function as in hamiltonian base (D.W.)
+    auto sample = korali::Sample();
+    sample["Sample Id"] = _numHamiltonianObjectUpdates++;
+    sample["Module"] = "Problem";
+    sample["Operation"] = "Evaluate";
+    sample["Parameters"] = q;
+ 
+    KORALI_START(sample);
+    KORALI_WAIT(sample);
+    _currentEvaluation = KORALI_GET(double, sample, "logP(x)");
 
     // TODO: remove hack, evaluate Gradient only when required by the solver (D.W.)
-    (*_sample)["Operation"] = "Evaluate Gradient";
-    KORALI_START((*_sample));
-    KORALI_WAIT((*_sample));
-    (*_sample)["Operation"] = "Evaluate";
+    auto sampleGrad = korali::Sample();
+    sampleGrad["Sample Id"] = _numHamiltonianObjectUpdates++;
+    sampleGrad["Module"] = "Problem";
+    sampleGrad["Operation"] = "Evaluate Gradient";
+    sampleGrad["Parameters"] = q;
+ 
+    KORALI_START(sampleGrad);
+    KORALI_WAIT(sampleGrad);
+    _currentGradient = KORALI_GET(std::vector<double>, sampleGrad, "grad(logP(x))");
   }
 
   /**
@@ -335,22 +346,22 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannianConst
   */
   int updateMetricMatricesRiemannian(const std::vector<double> &q, korali::Experiment *_k) override
   {
-    (*_sample)["Parameters"] = q;
-
-    KORALI_START((*_sample));
-    KORALI_WAIT((*_sample));
-
+    auto sampleHessian = korali::Sample();
+    sampleHessian["Sample Id"] = _numHamiltonianObjectUpdates++;
+    sampleHessian["Module"] = "Problem";
+    sampleHessian["Operation"] = "Evaluate Hessian";
+    sampleHessian["Parameters"] = q;
+ 
     // TODO: remove hack, evaluate Hessian only when required by the solver (D.W.)
-    (*_sample)["Operation"] = "Evaluate Hessian";
-    KORALI_START((*_sample));
-    KORALI_WAIT((*_sample));
-    (*_sample)["Operation"] = "Evaluate";
+    KORALI_START(sampleHessian);
+    KORALI_WAIT(sampleHessian);
 
     // constant for condition number of _metric
     double detMetric = 1.0;
 
-    auto hessian = KORALI_GET(std::vector<double>, (*_sample), "H(logP(x))");
-
+    auto _currentHessian = KORALI_GET(std::vector<double>, sampleHessian, "H(logP(x))");
+    
+    auto hessian = _currentHessian;
     gsl_matrix_view Xv = gsl_matrix_view_array(hessian.data(), _stateSpaceDim, _stateSpaceDim);
     gsl_matrix *X = &Xv.matrix;
     gsl_matrix *Q = gsl_matrix_alloc(_stateSpaceDim, _stateSpaceDim);
@@ -411,7 +422,7 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannianConst
     if (verbosity == true)
     {
       std::cout << "In HamiltonianRiemannianConstDense::updateMetricMatricesRiemannian end :" << std::endl;
-      printf("%s\n", _sample->_js.getJson().dump(2).c_str());
+      //printf("%s\n", _sample->_js.getJson().dump(2).c_str());
       std::cout << "_logDetMetric = " << _logDetMetric << std::endl;
       std::cout << "_metric = " << std::endl;
       __printVec(_metric);

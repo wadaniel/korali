@@ -15,6 +15,7 @@ for useDiagonalMetric in [False, True]:
     k = korali.Engine()
     e = korali.Experiment()
 
+    e["File Output"]["Enabled"] = False
     e["File Output"]["Frequency"] = 0
     e["Console Output"]["Frequency"] = 5000
 
@@ -30,7 +31,7 @@ for useDiagonalMetric in [False, True]:
     # Configuring the HMC sampler parameters
     e["Solver"]["Type"] = "Sampler/HMC"
     e["Solver"]["Burn In"] = 1000
-    e["Solver"]["Termination Criteria"]["Max Samples"] = 100000
+    e["Solver"]["Termination Criteria"]["Max Samples"] = 10000
 
     # HMC specific parameters
     e["Solver"]["Num Integration Steps"] = 5
@@ -44,6 +45,7 @@ for useDiagonalMetric in [False, True]:
     e["Solver"]["Use NUTS"] = False
 
     e["Console Output"]["Verbosity"] = "Detailed"
+
     # Running Korali
     e["Random Seed"] = 1337
     k.run(e)

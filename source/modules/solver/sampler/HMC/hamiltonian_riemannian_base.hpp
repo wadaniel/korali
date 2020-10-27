@@ -45,6 +45,12 @@ class HamiltonianRiemannian : public Hamiltonian
   //////////////////////////////////////////////////////////////////////////////////////////////
 
   protected:
+  
+  /**
+  * @brief Current Hessian of objective (return value of sample evaluation).
+  */
+  std::vector<double>  _currentHessian;
+
   //////////////////////////////////////////////////////////////////////////////////////////////
   //////////////////////////////////////// HELPERS START ///////////////////////////////////////
   //////////////////////////////////////////////////////////////////////////////////////////////
@@ -55,7 +61,7 @@ class HamiltonianRiemannian : public Hamiltonian
   */
   std::vector<double> __hessianU()
   {
-    auto hessian = KORALI_GET(std::vector<double>, (*_sample), "H(logP(x))");
+    auto hessian = _currentHessian;
 
     // negate to get dU
     std::transform(hessian.cbegin(), hessian.cend(), hessian.begin(), std::negate<double>());

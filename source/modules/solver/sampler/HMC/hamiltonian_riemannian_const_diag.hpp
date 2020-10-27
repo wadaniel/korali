@@ -149,7 +149,7 @@ class HamiltonianRiemannianConstDiag : public HamiltonianRiemannianConst
 
     // this->updateHamiltonian(q, _k);
 
-    for (int i = 0; i < _stateSpaceDim; ++i)
+    for (size_t i = 0; i < _stateSpaceDim; ++i)
     {
       tmpScalar += p[i] * _inverseMetric[i] * p[i];
     }
@@ -257,7 +257,7 @@ class HamiltonianRiemannianConstDiag : public HamiltonianRiemannianConst
     sample["Module"] = "Problem";
     sample["Operation"] = "Evaluate";
     sample["Parameters"] = q;
- 
+
     KORALI_START(sample);
     KORALI_WAIT(sample);
     _currentEvaluation = KORALI_GET(double, sample, "logP(x)");
@@ -268,7 +268,7 @@ class HamiltonianRiemannianConstDiag : public HamiltonianRiemannianConst
     sampleGrad["Module"] = "Problem";
     sampleGrad["Operation"] = "Evaluate Gradient";
     sampleGrad["Parameters"] = q;
- 
+
     KORALI_START(sampleGrad);
     KORALI_WAIT(sampleGrad);
     _currentGradient = KORALI_GET(std::vector<double>, sampleGrad, "grad(logP(x))");
@@ -282,7 +282,7 @@ class HamiltonianRiemannianConstDiag : public HamiltonianRiemannianConst
   {
     std::vector<double> result(_stateSpaceDim);
 
-    for (int i = 0; i < _stateSpaceDim; ++i)
+    for (size_t i = 0; i < _stateSpaceDim; ++i)
     {
       result[i] = std::sqrt(_metric[i]) * _normalGenerator->getRandomNumber();
     }
@@ -306,7 +306,7 @@ class HamiltonianRiemannianConstDiag : public HamiltonianRiemannianConst
   {
     double result = 0.0;
 
-    for (int i = 0; i < _stateSpaceDim; ++i)
+    for (size_t i = 0; i < _stateSpaceDim; ++i)
     {
       result += pLeft[i] * _inverseMetric[i] * pRight[i];
     }
@@ -327,7 +327,7 @@ class HamiltonianRiemannianConstDiag : public HamiltonianRiemannianConst
     sampleHessian["Module"] = "Problem";
     sampleHessian["Operation"] = "Evaluate Hessian";
     sampleHessian["Parameters"] = q;
- 
+
     // TODO: remove hack, evaluate Hessian only when required by the solver (D.W.)
     KORALI_START(sampleHessian);
     KORALI_WAIT(sampleHessian);
@@ -341,7 +341,7 @@ class HamiltonianRiemannianConstDiag : public HamiltonianRiemannianConst
     //   std::cout << "H = " << std::endl;
     //   __printVec(hessian);
     // }
- 
+
     // constant for condition number of _metric
     double detMetric = 1.0;
 

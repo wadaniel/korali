@@ -42,6 +42,16 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannianConst
       _multivariateGenerator->_sigma[d * _stateSpaceDim + d] = sqrt(_metric[d * _stateSpaceDim + d]);
 
     _multivariateGenerator->updateDistribution();
+
+    Q = gsl_matrix_alloc(stateSpaceDim, stateSpaceDim);
+    lambda = gsl_vector_alloc(stateSpaceDim);
+    w = gsl_eigen_symmv_alloc(stateSpaceDim);
+    lambdaSoftAbs = gsl_matrix_alloc(stateSpaceDim, stateSpaceDim);
+    inverseLambdaSoftAbs = gsl_matrix_alloc(stateSpaceDim, stateSpaceDim);
+    tmpMatOne = gsl_matrix_alloc(stateSpaceDim, stateSpaceDim);
+    tmpMatTwo = gsl_matrix_alloc(stateSpaceDim, stateSpaceDim);
+    tmpMatThree = gsl_matrix_alloc(stateSpaceDim, stateSpaceDim);
+    tmpMatFour = gsl_matrix_alloc(stateSpaceDim, stateSpaceDim);
   }
 
   /**
@@ -56,6 +66,16 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannianConst
 
     _multivariateGenerator = multivariateGenerator;
     _inverseRegularizationParam = 1.0;
+
+    Q = gsl_matrix_alloc(stateSpaceDim, stateSpaceDim);
+    lambda = gsl_vector_alloc(stateSpaceDim);
+    w = gsl_eigen_symmv_alloc(stateSpaceDim);
+    lambdaSoftAbs = gsl_matrix_alloc(stateSpaceDim, stateSpaceDim);
+    inverseLambdaSoftAbs = gsl_matrix_alloc(stateSpaceDim, stateSpaceDim);
+    tmpMatOne = gsl_matrix_alloc(stateSpaceDim, stateSpaceDim);
+    tmpMatTwo = gsl_matrix_alloc(stateSpaceDim, stateSpaceDim);
+    tmpMatThree = gsl_matrix_alloc(stateSpaceDim, stateSpaceDim);
+    tmpMatFour = gsl_matrix_alloc(stateSpaceDim, stateSpaceDim);
   }
 
   /**
@@ -71,6 +91,16 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannianConst
 
     _multivariateGenerator = multivariateGenerator;
     _inverseRegularizationParam = inverseRegularizationParam;
+
+    Q = gsl_matrix_alloc(stateSpaceDim, stateSpaceDim);
+    lambda = gsl_vector_alloc(stateSpaceDim);
+    w = gsl_eigen_symmv_alloc(stateSpaceDim);
+    lambdaSoftAbs = gsl_matrix_alloc(stateSpaceDim, stateSpaceDim);
+    inverseLambdaSoftAbs = gsl_matrix_alloc(stateSpaceDim, stateSpaceDim);
+    tmpMatOne = gsl_matrix_alloc(stateSpaceDim, stateSpaceDim);
+    tmpMatTwo = gsl_matrix_alloc(stateSpaceDim, stateSpaceDim);
+    tmpMatThree = gsl_matrix_alloc(stateSpaceDim, stateSpaceDim);
+    tmpMatFour = gsl_matrix_alloc(stateSpaceDim, stateSpaceDim);
   }
 
   /**
@@ -102,6 +132,16 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannianConst
     }
 
     _multivariateGenerator->updateDistribution();
+
+    Q = gsl_matrix_alloc(_stateSpaceDim, _stateSpaceDim);
+    lambda = gsl_vector_alloc(_stateSpaceDim);
+    w = gsl_eigen_symmv_alloc(_stateSpaceDim);
+    lambdaSoftAbs = gsl_matrix_alloc(_stateSpaceDim, _stateSpaceDim);
+    inverseLambdaSoftAbs = gsl_matrix_alloc(_stateSpaceDim, _stateSpaceDim);
+    tmpMatOne = gsl_matrix_alloc(_stateSpaceDim, _stateSpaceDim);
+    tmpMatTwo = gsl_matrix_alloc(_stateSpaceDim, _stateSpaceDim);
+    tmpMatThree = gsl_matrix_alloc(_stateSpaceDim, _stateSpaceDim);
+    tmpMatFour = gsl_matrix_alloc(_stateSpaceDim, _stateSpaceDim);
   }
 
   /**
@@ -289,7 +329,7 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannianConst
     sample["Module"] = "Problem";
     sample["Operation"] = "Evaluate";
     sample["Parameters"] = q;
- 
+
     KORALI_START(sample);
     KORALI_WAIT(sample);
     _currentEvaluation = KORALI_GET(double, sample, "logP(x)");
@@ -300,7 +340,7 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannianConst
     sampleGrad["Module"] = "Problem";
     sampleGrad["Operation"] = "Evaluate Gradient";
     sampleGrad["Parameters"] = q;
- 
+
     KORALI_START(sampleGrad);
     KORALI_WAIT(sampleGrad);
     _currentGradient = KORALI_GET(std::vector<double>, sampleGrad, "grad(logP(x))");
@@ -351,7 +391,7 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannianConst
     sampleHessian["Module"] = "Problem";
     sampleHessian["Operation"] = "Evaluate Hessian";
     sampleHessian["Parameters"] = q;
- 
+
     // TODO: remove hack, evaluate Hessian only when required by the solver (D.W.)
     KORALI_START(sampleHessian);
     KORALI_WAIT(sampleHessian);
@@ -360,21 +400,21 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannianConst
     double detMetric = 1.0;
 
     auto _currentHessian = KORALI_GET(std::vector<double>, sampleHessian, "H(logP(x))");
-    
+
     auto hessian = _currentHessian;
     gsl_matrix_view Xv = gsl_matrix_view_array(hessian.data(), _stateSpaceDim, _stateSpaceDim);
     gsl_matrix *X = &Xv.matrix;
-    gsl_matrix *Q = gsl_matrix_alloc(_stateSpaceDim, _stateSpaceDim);
-    gsl_vector *lambda = gsl_vector_alloc(_stateSpaceDim);
+    //gsl_matrix *Q = gsl_matrix_alloc(_stateSpaceDim, _stateSpaceDim);
+    //gsl_vector *lambda = gsl_vector_alloc(_stateSpaceDim);
 
-    gsl_eigen_symmv_workspace *w = gsl_eigen_symmv_alloc(_stateSpaceDim);
+    //gsl_eigen_symmv_workspace *w = gsl_eigen_symmv_alloc(_stateSpaceDim);
 
     gsl_eigen_symmv(X, lambda, Q, w);
 
-    gsl_matrix *lambdaSoftAbs = gsl_matrix_alloc(_stateSpaceDim, _stateSpaceDim);
+    //gsl_matrix *lambdaSoftAbs = gsl_matrix_alloc(_stateSpaceDim, _stateSpaceDim);
     gsl_matrix_set_all(lambdaSoftAbs, 0.0);
 
-    gsl_matrix *inverseLambdaSoftAbs = gsl_matrix_alloc(_stateSpaceDim, _stateSpaceDim);
+    //gsl_matrix *inverseLambdaSoftAbs = gsl_matrix_alloc(_stateSpaceDim, _stateSpaceDim);
     gsl_matrix_set_all(inverseLambdaSoftAbs, 0.0);
 
     _logDetMetric = 0.0;
@@ -386,18 +426,17 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannianConst
       _logDetMetric += std::log(lambdaSoftAbs_i);
     }
 
-    gsl_matrix *tmpMatOne = gsl_matrix_alloc(_stateSpaceDim, _stateSpaceDim);
+    //gsl_matrix *tmpMatOne = gsl_matrix_alloc(_stateSpaceDim, _stateSpaceDim);
     gsl_matrix_set_all(tmpMatOne, 0.0);
-    gsl_matrix *tmpMatTwo = gsl_matrix_alloc(_stateSpaceDim, _stateSpaceDim);
+    //gsl_matrix *tmpMatTwo = gsl_matrix_alloc(_stateSpaceDim, _stateSpaceDim);
     gsl_matrix_set_all(tmpMatTwo, 0.0);
 
     gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1.0, Q, lambdaSoftAbs, 0.0, tmpMatOne);
     gsl_blas_dgemm(CblasNoTrans, CblasTrans, 1.0, lambdaSoftAbs, Q, 0.0, tmpMatTwo);
 
-
-    gsl_matrix *tmpMatThree = gsl_matrix_alloc(_stateSpaceDim, _stateSpaceDim);
+    //gsl_matrix *tmpMatThree = gsl_matrix_alloc(_stateSpaceDim, _stateSpaceDim);
     gsl_matrix_set_all(tmpMatThree, 0.0);
-    gsl_matrix *tmpMatFour = gsl_matrix_alloc(_stateSpaceDim, _stateSpaceDim);
+    //gsl_matrix *tmpMatFour = gsl_matrix_alloc(_stateSpaceDim, _stateSpaceDim);
     gsl_matrix_set_all(tmpMatFour, 0.0);
 
     gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1.0, Q, lambdaSoftAbs, 0.0, tmpMatThree);
@@ -430,6 +469,7 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannianConst
       __printVec(_inverseMetric);
     }
 
+    /*
     gsl_matrix_free(Q);
     gsl_vector_free(lambda);
     gsl_eigen_symmv_free(w);
@@ -440,6 +480,7 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannianConst
     gsl_matrix_free(tmpMatTwo);
     gsl_matrix_free(tmpMatThree);
     gsl_matrix_free(tmpMatFour);
+    */
 
     for (size_t i = 0; i < _stateSpaceDim; ++i)
     {
@@ -453,11 +494,7 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannianConst
     gsl_matrix_view sigma = gsl_matrix_view_array(&_multivariateGenerator->_sigma[0], _stateSpaceDim, _stateSpaceDim);
 
     int err = gsl_linalg_cholesky_decomp(&sigma.matrix);
-    if (err == GSL_EDOM)
-    {
-      // Do nothing if error occurs
-    }
-    else
+    if (err != GSL_EDOM)
     {
       _multivariateGenerator->updateDistribution();
     }
@@ -479,6 +516,17 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannianConst
   * @brief Multi dimensional normal generator needed for sampling of momentum from dense _metric.
   */
   korali::distribution::multivariate::Normal *_multivariateGenerator;
+
+  gsl_matrix *Q;
+  gsl_vector *lambda;
+  gsl_eigen_symmv_workspace *w;
+  gsl_matrix *lambdaSoftAbs;
+  gsl_matrix *inverseLambdaSoftAbs;
+
+  gsl_matrix *tmpMatOne;
+  gsl_matrix *tmpMatTwo;
+  gsl_matrix *tmpMatThree;
+  gsl_matrix *tmpMatFour;
 };
 
 } // namespace sampler

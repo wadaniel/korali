@@ -150,7 +150,8 @@ void HMC::runGeneration()
   {
     // std::cout << "In Riemannian Const update metric" << std::endl;
     // __printVec(_hamiltonian->getMetric());
-    _hamiltonian->updateMetricMatricesRiemannian(_positionLeader, _k);
+    int err = _hamiltonian->updateMetricMatricesRiemannian(_positionLeader, _k);
+    if (err > 0) _k->_logger->logWarning("Minimal", "Error during metric update.");
     // __printVec(_hamiltonian->getMetric());
   }
 
@@ -210,6 +211,11 @@ void HMC::runGenerationHMC(const double logUniSample)
   if (_useAdaptiveStepSize == true && _chainLength <= _burnIn)
   {
     _numIntegrationSteps = std::max((size_t)1, (size_t)std::round(_targetIntegrationTime / _stepSize));
+    if (_numIntegrationSteps > _maxIntegrationSteps)
+    {
+      _k->_logger->logWarning("Minimal", "Num Integration Steps (%zu) exceeding hard limit (%zu).\n", _numIntegrationSteps, _maxIntegrationSteps);
+      _numIntegrationSteps = _maxIntegrationSteps;
+    }
   }
 
   // Perform Num Integration Steps of Leapfrog scheme to Momentum Candidate and Position Candidate
@@ -231,13 +237,11 @@ void HMC::runGenerationHMC(const double logUniSample)
   const double newK = _hamiltonian->K(_momentumCandidate);
   const double newU = _hamiltonian->U();
 
-  printf("oldU %lf -- newU %lf\n", oldU, newU);
   const double logAlpha = std::min(0.0, -(newK - oldK + newU - oldU));
   _acceptanceProbability = std::exp(logAlpha);
 
   if (logUniSample <= logAlpha && isNan(_positionCandidate) == false)
   {
-    printf("accepted\n");
     ++_acceptanceCount;
     _positionLeader = _positionCandidate;
   }
@@ -267,7 +271,7 @@ void HMC::runGenerationNUTS(const double logUniSample)
   std::vector<double> pLeft = _momentumLeader;
   std::vector<double> pRight = _momentumLeader;
 
-  int depth = 0;
+  size_t depth = 0;
   int numLeavesSubtree;
   bool buildCriterion = true;
   bool buildCriterionSubtree;
@@ -534,12 +538,8 @@ double HMC::dotProduct(const std::vector<double> &pLeft, const std::vector<doubl
 
   std::vector<double> inverseMetric = _hamiltonian->getInverseMetric();
   for (size_t i = 0; i < _dimensions; ++i)
-  {
     for (size_t j = 0; j < _dimensions; ++j)
-    {
       tmpScalar += pLeft[i] * inverseMetric[i * _dimensions + j] * pRight[j];
-    }
-  }
 
   return tmpScalar;
 }
@@ -547,13 +547,9 @@ double HMC::dotProduct(const std::vector<double> &pLeft, const std::vector<doubl
 void HMC::saveSample()
 {
   if (_chainLength >= _burnIn)
-  {
     _sampleDatabase.push_back(_positionLeader);
-  }
   else if (_version == "Euclidean")
-  {
     _warmupSampleDatabase.push_back(_positionLeader);
-  }
 
   return;
 }
@@ -588,36 +584,21 @@ void HMC::updateState()
 void HMC::updateStateWarmup()
 {
   // Update Step Size, Dual Step Size, H Bar for Adaptive Step Size option
-  if (_useAdaptiveStepSize == true && _chainLength <= _burnIn)
-  {
-    updateStepSize();
-  }
+  if (_useAdaptiveStepSize == true && _chainLength <= _burnIn) updateStepSize();
 
   // return if no samples available
-  if (_warmupSampleDatabase.size() == 0)
-  {
-    return;
-  }
+  if (_warmupSampleDatabase.size() == 0) return;
 
   // for one sample simply set average to current value (to avoid dividing by zero)
   if (_warmupSampleDatabase.size() == 1)
   {
-    for (size_t d = 0; d < _dimensions; ++d)
-    {
-      _positionMean[d] = _positionLeader[d];
-    }
-
+    for (size_t d = 0; d < _dimensions; ++d) _positionMean[d] = _positionLeader[d];
     return;
   }
 
   // calculate chain mean for > 1 sample
   if (_warmupSampleDatabase.size() > 1)
-  {
-    for (size_t d = 0; d < _dimensions; ++d)
-    {
-      _positionMean[d] = (_positionMean[d] * (_warmupSampleDatabase.size() - 1) + _positionLeader[d]) / _warmupSampleDatabase.size();
-    }
-  }
+    for (size_t d = 0; d < _dimensions; ++d) _positionMean[d] = (_positionMean[d] * (_warmupSampleDatabase.size() - 1) + _positionLeader[d]) / _warmupSampleDatabase.size();
 
   // case: Use Adaptive Sampling = True
   //       Approximate Inverse Matrix via Fisher Information
@@ -643,31 +624,13 @@ void HMC::updateStateSampling()
   // Apply Step Size Jitter
   _stepSize = _dualStepSize * (1.0 + _stepSizeJitter * (2.0 * _uniformGenerator->getRandomNumber() - 1.0));
 
-  // return if no samples available
-  if (_sampleDatabase.size() == 0)
-  {
-    return;
-  }
-
   // for one sample simply set average to current value (to avoid dividing by zero)
   if (_sampleDatabase.size() == 1)
-  {
-    for (size_t d = 0; d < _dimensions; ++d)
-    {
-      _positionMean[d] = _positionLeader[d];
-    }
-
-    return;
-  }
+    for (size_t d = 0; d < _dimensions; ++d) _positionMean[d] = _positionLeader[d];
 
   // calculate chain mean for > 1 sample
   if (_sampleDatabase.size() > 1)
-  {
-    for (size_t d = 0; d < _dimensions; ++d)
-    {
-      _positionMean[d] = (_positionMean[d] * (_sampleDatabase.size() - 1) + _positionLeader[d]) / _sampleDatabase.size();
-    }
-  }
+    for (size_t d = 0; d < _dimensions; ++d) _positionMean[d] = (_positionMean[d] * (_sampleDatabase.size() - 1) + _positionLeader[d]) / _sampleDatabase.size();
 
   return;
 }
@@ -788,7 +751,8 @@ double HMC::findReasonableStepSize(std::vector<double> q)
 
   if (_version == "Riemannian Const")
   {
-    _hamiltonian->updateMetricMatricesRiemannian(q, _k);
+    int err = _hamiltonian->updateMetricMatricesRiemannian(q, _k);
+    if (err > 0) _k->_logger->logWarning("Minimal", "Error during metric update.");
   }
 
   std::vector<double> p = _hamiltonian->sampleMomentum();
@@ -801,7 +765,8 @@ double HMC::findReasonableStepSize(std::vector<double> q)
 
   if (_version == "Riemannian Const")
   {
-    _hamiltonian->updateMetricMatricesRiemannian(q, _k);
+    int err = _hamiltonian->updateMetricMatricesRiemannian(q, _k);
+    if (err > 0) _k->_logger->logWarning("Minimal", "Error during metric update.");
   }
 
   _hamiltonian->updateHamiltonian(q, _k);
@@ -810,6 +775,7 @@ double HMC::findReasonableStepSize(std::vector<double> q)
   int a = (newLogP - oldLogP > std::log(0.5)) ? 1 : -1;
 
   // TODO: Ask why Tobias updates oldLogP as this is not what Algorithm 5 says
+  size_t i = 0;
   while (std::pow(std::exp(newLogP - oldLogP), a) > std::pow(2, -a))
   {
     stepSize = std::pow(2, a) * stepSize;
@@ -822,7 +788,8 @@ double HMC::findReasonableStepSize(std::vector<double> q)
 
     if (_version == "Riemannian Const")
     {
-      _hamiltonian->updateMetricMatricesRiemannian(q, _k);
+      int err = _hamiltonian->updateMetricMatricesRiemannian(q, _k);
+      if (err > 0) _k->_logger->logWarning("Minimal", "Error during metric update.");
     }
 
     newLogP = -_hamiltonian->H(p);

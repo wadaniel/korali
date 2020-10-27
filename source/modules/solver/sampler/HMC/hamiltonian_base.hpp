@@ -101,7 +101,6 @@ class Hamiltonian
   */
   virtual std::vector<double> dU()
   {
-
     auto grad = _currentGradient;
 
     // negate to get dU
@@ -171,7 +170,7 @@ class Hamiltonian
     sample["Module"] = "Problem";
     sample["Operation"] = "Evaluate";
     sample["Parameters"] = q;
- 
+
     KORALI_START(sample);
     KORALI_WAIT(sample);
     _currentEvaluation = KORALI_GET(double, sample, "logP(x)");
@@ -181,7 +180,7 @@ class Hamiltonian
     sampleGrad["Module"] = "Problem";
     sampleGrad["Operation"] = "Evaluate Gradient";
     sampleGrad["Parameters"] = q;
- 
+
     // TODO: remove hack, evaluate Gradient only when required by the solver (D.W.)
     KORALI_START(sampleGrad);
     KORALI_WAIT(sampleGrad);
@@ -398,7 +397,7 @@ class Hamiltonian
   /**
   * @brief Current gradient of objective (return value of sample evaluation).
   */
-  std::vector<double>  _currentGradient;
+  std::vector<double> _currentGradient;
 
   /**
   * @brief _stateSpaceDim

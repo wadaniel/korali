@@ -175,16 +175,11 @@ class Hamiltonian
     KORALI_WAIT(sample);
     _currentEvaluation = KORALI_GET(double, sample, "logP(x)");
 
-    auto sampleGrad = korali::Sample();
-    sampleGrad["Sample Id"] = _numHamiltonianObjectUpdates++;
-    sampleGrad["Module"] = "Problem";
-    sampleGrad["Operation"] = "Evaluate Gradient";
-    sampleGrad["Parameters"] = q;
+    sample["Operation"] = "Evaluate Gradient";
 
-    // TODO: remove hack, evaluate Gradient only when required by the solver (D.W.)
-    KORALI_START(sampleGrad);
-    KORALI_WAIT(sampleGrad);
-    _currentGradient = KORALI_GET(std::vector<double>, sampleGrad, "grad(logP(x))");
+    KORALI_START(sample);
+    KORALI_WAIT(sample);
+    _currentGradient = KORALI_GET(std::vector<double>, sample, "grad(logP(x))");
 
     // if (verbosity == true)
     // {

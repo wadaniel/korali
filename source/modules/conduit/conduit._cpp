@@ -103,7 +103,6 @@ void Conduit::workerStackEngine(const knlohmann::json &js)
 
 void Conduit::workerPopEngine()
 {
-  Engine *engine = _engineStack.top();
   _engineStack.pop();
 }
 

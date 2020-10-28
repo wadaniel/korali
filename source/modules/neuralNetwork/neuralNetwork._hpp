@@ -10,12 +10,18 @@
   #include "dnnl.hpp"
 #endif
 
+#ifdef _KORALI_USE_CUDNN
+  #include <cuda.h>
+  #include <cudnn.h>
+#endif
+
 namespace korali
 {
 class NeuralNetwork : public Module
 {
   public:
 #ifdef _KORALI_USE_ONEDNN
+
   /**
    * @brief oneDNN Engine
    */
@@ -25,6 +31,12 @@ class NeuralNetwork : public Module
    * @brief oneDNN Stream to run operations
    */
   dnnl::stream _stream;
+
+#endif
+
+#ifdef _KORALI_USE_CUDNN
+
+  cudnnHandle_t _cuDNNHandle;
 
 #endif
 

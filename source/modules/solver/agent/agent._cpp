@@ -89,6 +89,9 @@ void Agent::runGeneration()
     // Storing experience in the episode
     episode.push_back(experience);
 
+    // Increasing total experience counter
+    _experienceCount++;
+
     // Check if experience is terminal
     isTerminal = experience["Is Terminal"];
 
@@ -194,9 +197,6 @@ void Agent::processExperience(knlohmann::json &experience)
 
   // Adding experience's reward to episode's reward
   _currentReward += reward;
-
-  // Increasing total experience counter
-  _experienceCount++;
 }
 
 std::vector<size_t> Agent::generateMiniBatch(size_t size)
@@ -323,6 +323,13 @@ void Agent::printGenerationAfter()
     _k->_logger->logInfo("Normal", " + Best Average Reward:         %f\n", _bestAverageTestingReward);
 
   printAgentInformation();
+
+  _k->_logger->logInfo("Normal", "Profiling Information:\n");
+  _k->_logger->logInfo("Normal", " + NN Input Write Time:         %fs\n", _inputWriteTime / 1.0e+9f);
+  _k->_logger->logInfo("Normal", " + NN Output Read Time:         %fs\n", _outputReadTime / 1.0e+9f);
+  _k->_logger->logInfo("Normal", " + NN Normalization Time:       %fs\n", _normalizationTime / 1.0e+9f);
+  _k->_logger->logInfo("Normal", " + NN Forward Propagation Time: %fs\n", _forwardStreamTime / 1.0e+9f);
+  _k->_logger->logInfo("Normal", " + NN Back Propagation Time:    %fs\n", _backwardStreamTime / 1.0e+9f);
 }
 
 } // namespace solver

@@ -3,5 +3,5 @@ def getcflags(extdir, makeFlags):
   print(fixedflags + ' ' + makeFlags['OPTFLAGS'] + ' ' + makeFlags['MPIFLAGS'] +
         ' ' + makeFlags['GSLCFLAGS'] + ' ' + makeFlags['RTNORMCFLAGS'] + ' ' +
         makeFlags['LIBCOCFLAGS'] + ' ' + makeFlags['EIGENCFLAGS'] + ' ' +
-        makeFlags['ONEDNNCFLAGS'] + ' ' + makeFlags['CXXARCH'] + ' ' +
+        makeFlags['NNCFLAGS'] + ' ' + makeFlags['CXXARCH'] + ' ' +
         makeFlags['PYBIND11INCLUDES'])

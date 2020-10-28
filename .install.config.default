@@ -31,7 +31,7 @@ USE_LIBGP=NO
 ### Specify whether to use the rtnorm library. Some Korali modules will be disabled if not used.
 USE_RTNORM=NO
 
-### Specify whether to use the OneDNN library. Some Korali modules will be disabled if not used.
-USE_ONEDNN=NO
+### Specify which library to use for Neural Network support.
+NN_LIBRARY=NONE # Options: NONE, OneDNN, cuDNN
 
 

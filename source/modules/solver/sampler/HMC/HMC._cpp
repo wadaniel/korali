@@ -553,10 +553,9 @@ void HMC::saveSample()
 }
 
 void HMC::updateStepSize()
-{ 
+{
   if (_chainLength + 1 < _burnIn)
   {
-  
     // update taken from https://arxiv.org/pdf/1111.4246.pdf
     //  _hBar = (1.0 - 1.0 / (_chainLength + 1 + _adaptiveStepSizeStabilizationConstant)) * _hBar + (_targetAcceptanceRate - _acceptanceProbability) / (_chainLength + 1 + _adaptiveStepSizeStabilizationConstant);
     // _stepSize = std::exp(_mu - std::sqrt(_chainLength + 1) / _adaptiveStepSizeSpeedConstant * _hBar);

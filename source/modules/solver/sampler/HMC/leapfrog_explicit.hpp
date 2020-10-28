@@ -25,16 +25,16 @@ class LeapfrogExplicit : public Leapfrog
   * @param hamiltonian Hamiltonian object to calulcate energies.
   * @param _k Experiment object.
   */
-  void step(std::vector<double> &q, std::vector<double> &p, const double stepSize, Hamiltonian *hamiltonian, korali::Experiment *_k) override
+  void step(std::vector<double> &q, std::vector<double> &p, const double stepSize, Hamiltonian &hamiltonian, korali::Experiment *_k) override
   {
     if (verbosity == true)
     {
       std::cout << "-------------START OF LeapfrogExplicit Step--------------" << std::endl;
     }
 
-    size_t stateSpaceDim = hamiltonian->getStateSpaceDim();
-    hamiltonian->updateHamiltonian(q, _k);
-    std::vector<double> dU = hamiltonian->dU();
+    size_t stateSpaceDim = hamiltonian.getStateSpaceDim();
+    hamiltonian.updateHamiltonian(q, _k);
+    std::vector<double> dU = hamiltonian.dU();
 
     if (verbosity == true)
     {
@@ -54,7 +54,7 @@ class LeapfrogExplicit : public Leapfrog
     }
 
     // would need to update in Riemannian case
-    std::vector<double> dK = hamiltonian->dK(p);
+    std::vector<double> dK = hamiltonian.dK(p);
 
     if (verbosity == true)
     {
@@ -73,8 +73,8 @@ class LeapfrogExplicit : public Leapfrog
       __printVec(q);
     }
 
-    hamiltonian->updateHamiltonian(q, _k);
-    dU = hamiltonian->dU();
+    hamiltonian.updateHamiltonian(q, _k);
+    dU = hamiltonian.dU();
 
     if (verbosity == true)
     {

@@ -27,8 +27,8 @@ namespace sampler
 {
 class HMC : public Sampler
 {
-  Hamiltonian *_hamiltonian;
-  Leapfrog *_integrator;
+  std::unique_ptr<Hamiltonian> _hamiltonian;
+  std::unique_ptr<Leapfrog> _integrator;
 
   /**
   * @brief Updates internal state such as mean, Metric and InverseMetric.
@@ -76,13 +76,13 @@ class HMC : public Sampler
   * @brief Rund NUTS algorithm with buildTreeUtil.
   * @param helper Helper struct for large argument list.
   */
-  void runGenerationNUTSUtil(TreeHelperEuclidean *helper);
+  void runGenerationNUTSUtil(std::shared_ptr<TreeHelperEuclidean> helper);
 
   /**
   * @brief Rund NUTS algorithm with buildTreeUtil.
   * @param helper Helper struct for large argument list.
   */
-  void runGenerationNUTSUtilRiemannian(TreeHelperRiemannian *helper);
+  void runGenerationNUTSUtilRiemannian(std::shared_ptr<TreeHelperRiemannian> helper);
 
   /**
   * @brief Runs generation for NUTS.
@@ -130,7 +130,7 @@ class HMC : public Sampler
   * @brief Recursive binary tree building algorithm. Used if Use NUTS is set to True.
   * @param helper Helper struct for large argument list.
   */
-  void buildTreeUtil(TreeHelperEuclidean *helper);
+  void buildTreeUtil(std::shared_ptr<TreeHelperEuclidean> helper);
 
   /**
   * @brief Dot product induced by inverse metric.
@@ -145,7 +145,7 @@ class HMC : public Sampler
   * @param helper Helper struct for large argument list.
   * @param rho Sum of momenta encountered along momentum.
   */
-  void buildTreeUtilIntegration(TreeHelperRiemannian *helper, std::vector<double> &rho);
+  void buildTreeUtilIntegration(std::shared_ptr<TreeHelperRiemannian> helper, std::vector<double> &rho);
 
   /**
   * @brief Recursive binary tree building algorithm. Used if Use NUTS is set to True.

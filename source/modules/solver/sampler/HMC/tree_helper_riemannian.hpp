@@ -22,15 +22,15 @@ struct TreeHelperRiemannian : public TreeHelper
     * @param rho Sum of momenta encountered in trajectory
     * @return Returns of tree should be built further.
     */
-  bool computeCriterion(Hamiltonian *hamiltonian, const std::vector<double> pStart, const std::vector<double> pEnd, std::vector<double> rho)
+  bool computeCriterion(Hamiltonian &hamiltonian, const std::vector<double> pStart, const std::vector<double> pEnd, std::vector<double> rho)
   {
-    std::vector<double> tmpVectorOne(hamiltonian->getStateSpaceDim(), 0.0);
+    std::vector<double> tmpVectorOne(hamiltonian.getStateSpaceDim(), 0.0);
     std::transform(std::cbegin(rho), std::cend(rho), std::cbegin(pStart), std::begin(tmpVectorOne), std::minus<double>());
 
-    std::vector<double> tmpVectorTwo(hamiltonian->getStateSpaceDim(), 0.0);
+    std::vector<double> tmpVectorTwo(hamiltonian.getStateSpaceDim(), 0.0);
     std::transform(std::cbegin(rho), std::cend(rho), std::cbegin(pStart), std::begin(tmpVectorTwo), std::minus<double>());
 
-    return hamiltonian->innerProduct(pStart, tmpVectorOne) > 0.0 && hamiltonian->innerProduct(pEnd, tmpVectorTwo) > 0.0;
+    return hamiltonian.innerProduct(pStart, tmpVectorOne) > 0.0 && hamiltonian.innerProduct(pEnd, tmpVectorTwo) > 0.0;
   }
 };
 

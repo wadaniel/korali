@@ -37,7 +37,7 @@ std::vector<float> Layer::generateInitialHyperparameters()
   // If using batch normalization, add layer's batch normalization scale and shift hyperparameters
   if (_batchNormalizationEnabled == true)
   {
-     // Adding layer's batch normalization scale hyperparameters
+    // Adding layer's batch normalization scale hyperparameters
     for (size_t i = 0; i < _nodeCount; i++)
       hyperparameters.push_back(1.0 + 0.0001 * _nn->_xavierGenerator->getRandomNumber());
 
@@ -73,7 +73,7 @@ void Layer::createHyperparameterMemory()
 
     // Allocating weight memory
 
-    #ifdef _KORALI_USE_ONEDNN
+#ifdef _KORALI_USE_ONEDNN
 
     memory::dims weightDims = {OC, IC};
     auto weightMemDesc = memory::desc(weightDims, memory::data_type::f32, memory::format_tag::ab);
@@ -81,38 +81,38 @@ void Layer::createHyperparameterMemory()
     _weightsMem = memory(weightMemDesc, _nn->_engine);
     _weightsDiffMem = memory(_weightsMem.get_desc(), _nn->_engine);
 
-    #endif
+#endif
 
-    #ifdef _KORALI_USE_CUDNN
+#ifdef _KORALI_USE_CUDNN
 
     if (cudnnCreateFilterDescriptor(&_weightsFilterDesc) != CUDNN_STATUS_SUCCESS) KORALI_LOG_ERROR("Error creating weights filter descriptor\n");
     if (cudnnSetFilter4dDescriptor(_weightsFilterDesc, CUDNN_DATA_FLOAT, CUDNN_TENSOR_NCHW, OC, IC, 1, 1) != CUDNN_STATUS_SUCCESS) KORALI_LOG_ERROR("Error setting weight filter descriptor\n");
 
-    if (cudaMalloc ((void**)&_weightsFilter, IC*OC*sizeof(float)) != cudaSuccess) KORALI_LOG_ERROR("Error creating memory for Weights filter");
-    if (cudaMalloc ((void**)&_weightsDiffFilter, IC*OC*sizeof(float)) != cudaSuccess) KORALI_LOG_ERROR("Error creating memory for Weights filter");
+    if (cudaMalloc((void **)&_weightsFilter, IC * OC * sizeof(float)) != cudaSuccess) KORALI_LOG_ERROR("Error creating memory for Weights filter");
+    if (cudaMalloc((void **)&_weightsDiffFilter, IC * OC * sizeof(float)) != cudaSuccess) KORALI_LOG_ERROR("Error creating memory for Weights filter");
 
-    #endif
+#endif
 
-    // Allocating bias memory
+      // Allocating bias memory
 
-    #ifdef _KORALI_USE_ONEDNN
+#ifdef _KORALI_USE_ONEDNN
 
     auto biasMemDesc = memory::desc({OC}, memory::data_type::f32, memory::format_tag::a);
 
     _biasMem = memory(biasMemDesc, _nn->_engine);
     _biasDiffMem = memory(_biasMem.get_desc(), _nn->_engine);
 
-    #endif
+#endif
 
-    #ifdef _KORALI_USE_CUDNN
+#ifdef _KORALI_USE_CUDNN
 
     if (cudnnCreateTensorDescriptor(&_biasTensorDesc) != CUDNN_STATUS_SUCCESS) KORALI_LOG_ERROR("Error creating weights filter descriptor\n");
     if (cudnnSetTensor4dDescriptor(_biasTensorDesc, CUDNN_TENSOR_NCHW, CUDNN_DATA_FLOAT, 1, OC, 1, 1) != CUDNN_STATUS_SUCCESS) KORALI_LOG_ERROR("Error setting weight filter descriptor\n");
 
-    if (cudaMalloc ((void**)&_biasTensor, OC*sizeof(float)) != cudaSuccess) KORALI_LOG_ERROR("Error creating memory for Weights filter");
-    if (cudaMalloc ((void**)&_biasDiffTensor, OC*sizeof(float)) != cudaSuccess) KORALI_LOG_ERROR("Error creating memory for Weights filter");
+    if (cudaMalloc((void **)&_biasTensor, OC * sizeof(float)) != cudaSuccess) KORALI_LOG_ERROR("Error creating memory for Weights filter");
+    if (cudaMalloc((void **)&_biasDiffTensor, OC * sizeof(float)) != cudaSuccess) KORALI_LOG_ERROR("Error creating memory for Weights filter");
 
-    #endif
+#endif
 
     // Adding bias hyperparameters to the count if not using normalization
     if (_batchNormalizationEnabled == false)
@@ -121,12 +121,12 @@ void Layer::createHyperparameterMemory()
     }
     else // Otherwise, if we use batch normalization, we set bias to zero
     {
-      #ifdef _KORALI_USE_ONEDNN
+#ifdef _KORALI_USE_ONEDNN
 
       std::vector<float> biasData(_nodeCount, 0.0);
       write_to_dnnl_memory(biasData.data(), _biasMem);
 
-      #endif
+#endif
     }
   }
 
@@ -137,7 +137,7 @@ void Layer::createHyperparameterMemory()
     _weightParameterCount += 2 * OC;
     _normalizationParameterCount += OC;
 
-    #ifdef _KORALI_USE_ONEDNN
+#ifdef _KORALI_USE_ONEDNN
 
     memory::dims scale_shift_dims = {2, OC};
 
@@ -154,20 +154,20 @@ void Layer::createHyperparameterMemory()
     // Creating mean and variance mem structures
     _batchNormalizationWorkMem = memory(normalizationMemDesc, _nn->_engine);
 
-    #endif
+#endif
 
-    #ifdef _KORALI_USE_CUDNN
+#ifdef _KORALI_USE_CUDNN
 
-    if (cudaMalloc ((void**)&_batchNormalizationMeanTensor, OC*sizeof(float)) != cudaSuccess) KORALI_LOG_ERROR("Error creating memory for Weights filter");
-    if (cudaMalloc ((void**)&_batchNormalizationVarianceTensor, OC*sizeof(float)) != cudaSuccess) KORALI_LOG_ERROR("Error creating memory for Weights filter");
-    if (cudaMalloc ((void**)&_batchNormalizationMeanTensorCache, OC*sizeof(float)) != cudaSuccess) KORALI_LOG_ERROR("Error creating memory for Weights filter");
-    if (cudaMalloc ((void**)&_batchNormalizationVarianceTensorCache, OC*sizeof(float)) != cudaSuccess) KORALI_LOG_ERROR("Error creating memory for Weights filter");
+    if (cudaMalloc((void **)&_batchNormalizationMeanTensor, OC * sizeof(float)) != cudaSuccess) KORALI_LOG_ERROR("Error creating memory for Weights filter");
+    if (cudaMalloc((void **)&_batchNormalizationVarianceTensor, OC * sizeof(float)) != cudaSuccess) KORALI_LOG_ERROR("Error creating memory for Weights filter");
+    if (cudaMalloc((void **)&_batchNormalizationMeanTensorCache, OC * sizeof(float)) != cudaSuccess) KORALI_LOG_ERROR("Error creating memory for Weights filter");
+    if (cudaMalloc((void **)&_batchNormalizationVarianceTensorCache, OC * sizeof(float)) != cudaSuccess) KORALI_LOG_ERROR("Error creating memory for Weights filter");
 
-    if (cudaMalloc ((void**)&_batchNormalizationShiftTensor, OC*sizeof(float)) != cudaSuccess) KORALI_LOG_ERROR("Error creating memory for Weights filter");
-    if (cudaMalloc ((void**)&_batchNormalizationScaleTensor, OC*sizeof(float)) != cudaSuccess) KORALI_LOG_ERROR("Error creating memory for Weights filter");
-    if (cudaMalloc ((void**)&_batchNormalizationShiftDiffTensor, OC*sizeof(float)) != cudaSuccess) KORALI_LOG_ERROR("Error creating memory for Weights filter");
-    if (cudaMalloc ((void**)&_batchNormalizationScaleDiffTensor, OC*sizeof(float)) != cudaSuccess) KORALI_LOG_ERROR("Error creating memory for Weights filter");
-    #endif
+    if (cudaMalloc((void **)&_batchNormalizationShiftTensor, OC * sizeof(float)) != cudaSuccess) KORALI_LOG_ERROR("Error creating memory for Weights filter");
+    if (cudaMalloc((void **)&_batchNormalizationScaleTensor, OC * sizeof(float)) != cudaSuccess) KORALI_LOG_ERROR("Error creating memory for Weights filter");
+    if (cudaMalloc((void **)&_batchNormalizationShiftDiffTensor, OC * sizeof(float)) != cudaSuccess) KORALI_LOG_ERROR("Error creating memory for Weights filter");
+    if (cudaMalloc((void **)&_batchNormalizationScaleDiffTensor, OC * sizeof(float)) != cudaSuccess) KORALI_LOG_ERROR("Error creating memory for Weights filter");
+#endif
   }
 }
 
@@ -188,7 +188,7 @@ void Layer::createForwardPipeline()
   *  Initializing memory objects and primitives for FORWARD propagation
   *********************************************************************************/
 
-  #ifdef _KORALI_USE_ONEDNN
+#ifdef _KORALI_USE_ONEDNN
 
   // Creating layer's data memory storage and activation function
   const memory::dims layerDims = {N, OC};
@@ -203,23 +203,23 @@ void Layer::createForwardPipeline()
   // Creating batch normalization layer memory (if necessary
   if (_batchNormalizationEnabled) _batchNormalizationMem = memory(dataMemDesc, _nn->_engine);
 
-  #endif
+#endif
 
-  #ifdef _KORALI_USE_CUDNN
+#ifdef _KORALI_USE_CUDNN
 
   if (cudnnCreateTensorDescriptor(&_nodeTensorDesc) != CUDNN_STATUS_SUCCESS) KORALI_LOG_ERROR("Error creating node tensor descriptor\n");
   if (cudnnSetTensor4dDescriptor(_nodeTensorDesc, CUDNN_TENSOR_NCHW, CUDNN_DATA_FLOAT, N, OC, 1, 1) != CUDNN_STATUS_SUCCESS) KORALI_LOG_ERROR("Error setting node tensor descriptor\n");
-  if (cudaMalloc ((void**)&_nodeTensor, N*OC*sizeof(float)) != cudaSuccess) KORALI_LOG_ERROR("Error creating memory for node tensor ");
-  if (cudaMalloc ((void**)&_activationTensor, N*OC*sizeof(float)) != cudaSuccess) KORALI_LOG_ERROR("Error creating activation tensor memory");
-  if (cudaMalloc ((void**)&_batchNormalizationTensor, N*OC*sizeof(float)) != cudaSuccess) KORALI_LOG_ERROR("Error creating activation tensor memory");
+  if (cudaMalloc((void **)&_nodeTensor, N * OC * sizeof(float)) != cudaSuccess) KORALI_LOG_ERROR("Error creating memory for node tensor ");
+  if (cudaMalloc((void **)&_activationTensor, N * OC * sizeof(float)) != cudaSuccess) KORALI_LOG_ERROR("Error creating activation tensor memory");
+  if (cudaMalloc((void **)&_batchNormalizationTensor, N * OC * sizeof(float)) != cudaSuccess) KORALI_LOG_ERROR("Error creating activation tensor memory");
 
-  #endif
+#endif
 
-  /*****************************************
+    /*****************************************
   * Creating Activation Function primitive and memory
   * ***************************************/
 
-  #ifdef _KORALI_USE_ONEDNN
+#ifdef _KORALI_USE_ONEDNN
 
   // If it is an element-wise operation, create an element-wise primitive
   if (_activationFunctionType.rfind("Elementwise", 0) == 0)
@@ -266,9 +266,9 @@ void Layer::createForwardPipeline()
 
   _forwardActivationArgs[DNNL_ARG_DST] = _activationMem;
 
-  #endif
+#endif
 
-  #ifdef _KORALI_USE_CUDNN
+#ifdef _KORALI_USE_CUDNN
 
   if (cudnnCreateActivationDescriptor(&_activationDesc) != CUDNN_STATUS_SUCCESS) KORALI_LOG_ERROR("Error creating activation algorithm\n");
   cudnnActivationMode_t activationMode;
@@ -283,12 +283,12 @@ void Layer::createForwardPipeline()
 
   if (cudnnSetActivationDescriptor(_activationDesc, activationMode, CUDNN_PROPAGATE_NAN, _activationFunctionAlpha) != CUDNN_STATUS_SUCCESS) KORALI_LOG_ERROR("Error creating activation algorithm\n");
 
-  #endif
+#endif
 
   // If this is not the input layer, we create the inner product (Wx + b) operation
   if (_prevLayer != NULL)
   {
-    #ifdef _KORALI_USE_ONEDNN
+#ifdef _KORALI_USE_ONEDNN
 
     // Create operation descriptor.
     auto inner_product_d = inner_product_forward::desc(prop_kind::forward_training, _prevLayer->_activationMem.get_desc(), _weightsMem.get_desc(), _biasMem.get_desc(), _nodeMem.get_desc());
@@ -306,22 +306,22 @@ void Layer::createForwardPipeline()
     _forwardInnerProductArgs[DNNL_ARG_BIAS] = _biasMem;
     _forwardInnerProductArgs[DNNL_ARG_DST] = _nodeMem;
 
-    #endif
+#endif
 
-    #ifdef _KORALI_USE_CUDNN
+#ifdef _KORALI_USE_CUDNN
 
     if (cudnnCreateConvolutionDescriptor(&_convolutionDesc) != CUDNN_STATUS_SUCCESS) KORALI_LOG_ERROR("Error creating convolution descriptor\n");
     if (cudnnSetConvolution2dDescriptor(_convolutionDesc, 0, 0, 1, 1, 1, 1, CUDNN_CONVOLUTION, CUDNN_DATA_FLOAT) != CUDNN_STATUS_SUCCESS) KORALI_LOG_ERROR("Error initializing convolution descriptor\n");
     if (cudnnGetConvolutionForwardWorkspaceSize(_nn->_cuDNNHandle, _prevLayer->_nodeTensorDesc, _weightsFilterDesc, _convolutionDesc, _nodeTensorDesc, CUDNN_CONVOLUTION_FWD_ALGO_IMPLICIT_GEMM, &_convolutionWorkspaceSize) != CUDNN_STATUS_SUCCESS) KORALI_LOG_ERROR("Error obtaining convolution workspace size\n");
-    if (cudaMalloc ((void**)&_convolutionWorkspace, _convolutionWorkspaceSize*sizeof(float)) != cudaSuccess) KORALI_LOG_ERROR("Error creating convolution memory");
+    if (cudaMalloc((void **)&_convolutionWorkspace, _convolutionWorkspaceSize * sizeof(float)) != cudaSuccess) KORALI_LOG_ERROR("Error creating convolution memory");
 
-    #endif
+#endif
   }
 
   // Initializing forward layer normalization operations
   if (_batchNormalizationEnabled)
   {
-    #ifdef _KORALI_USE_ONEDNN
+#ifdef _KORALI_USE_ONEDNN
 
     auto normalizationFlags = normalization_flags::use_scale_shift;
 
@@ -346,19 +346,18 @@ void Layer::createForwardPipeline()
     _forwardNormalizationArgs[DNNL_ARG_WORKSPACE] = _batchNormalizationWorkMem;         // Output
     _forwardNormalizationArgs[DNNL_ARG_DST] = _batchNormalizationMem;                   // Output
 
-    #endif
+#endif
 
-    #ifdef _KORALI_USE_CUDNN
+#ifdef _KORALI_USE_CUDNN
 
     if (cudnnCreateTensorDescriptor(&_batchNormalizationDerivedTensorDesc) != CUDNN_STATUS_SUCCESS) KORALI_LOG_ERROR("Error creating node tensor descriptor\n");
 
-    if ( cudnnDeriveBNTensorDescriptor(
-        _batchNormalizationDerivedTensorDesc,
-         _nodeTensorDesc,
-         CUDNN_BATCHNORM_SPATIAL)
-      != CUDNN_STATUS_SUCCESS) KORALI_LOG_ERROR("Error creating derived descriptor for batch normalization\n");
+    if (cudnnDeriveBNTensorDescriptor(
+          _batchNormalizationDerivedTensorDesc,
+          _nodeTensorDesc,
+          CUDNN_BATCHNORM_SPATIAL) != CUDNN_STATUS_SUCCESS) KORALI_LOG_ERROR("Error creating derived descriptor for batch normalization\n");
 
-    #endif
+#endif
   }
 }
 
@@ -368,29 +367,29 @@ void Layer::createBackwardPipeline()
   *  Initializing memory objects and primitives for BACKWARD propagation
   *********************************************************************************/
 
-  #ifdef _KORALI_USE_ONEDNN
+#ifdef _KORALI_USE_ONEDNN
 
   // Creating data-related gradient memory
   _nodeDiffMem = memory(_nodeMem.get_desc(), _nn->_engine);
   _batchNormalizationDiffMem = memory(_nodeMem.get_desc(), _nn->_engine);
   _activationDiffMem = memory(_nodeMem.get_desc(), _nn->_engine);
 
-  #endif
+#endif
 
-   #ifdef _KORALI_USE_CUDNN
+#ifdef _KORALI_USE_CUDNN
 
-   ssize_t N = _nn->_batchSize;
-   ssize_t OC = _nodeCount;
+  ssize_t N = _nn->_batchSize;
+  ssize_t OC = _nodeCount;
 
-   if (cudaMalloc ((void**)&_nodeDiffTensor, N*OC*sizeof(float)) != cudaSuccess) KORALI_LOG_ERROR("Error creating memory for node tensor ");
-   if (cudaMalloc ((void**)&_activationDiffTensor, N*OC*sizeof(float)) != cudaSuccess) KORALI_LOG_ERROR("Error creating activation tensor memory");
-   if (cudaMalloc ((void**)&_batchNormalizationDiffTensor, N*OC*sizeof(float)) != cudaSuccess) KORALI_LOG_ERROR("Error creating activation tensor memory");
+  if (cudaMalloc((void **)&_nodeDiffTensor, N * OC * sizeof(float)) != cudaSuccess) KORALI_LOG_ERROR("Error creating memory for node tensor ");
+  if (cudaMalloc((void **)&_activationDiffTensor, N * OC * sizeof(float)) != cudaSuccess) KORALI_LOG_ERROR("Error creating activation tensor memory");
+  if (cudaMalloc((void **)&_batchNormalizationDiffTensor, N * OC * sizeof(float)) != cudaSuccess) KORALI_LOG_ERROR("Error creating activation tensor memory");
 
-   #endif
+#endif
 
-  // Creating backward propagation primitives for activation functions
+    // Creating backward propagation primitives for activation functions
 
-  #ifdef _KORALI_USE_ONEDNN
+#ifdef _KORALI_USE_ONEDNN
 
   float alpha = _activationFunctionAlpha;
   float beta = _activationFunctionBeta;
@@ -425,9 +424,9 @@ void Layer::createBackwardPipeline()
     _backwardActivationArgs[DNNL_ARG_DST] = _activationMem; // Input
   }
 
-  #endif
+#endif
 
-  #ifdef _KORALI_USE_ONEDNN
+#ifdef _KORALI_USE_ONEDNN
 
   // Primitive arguments.
   _backwardActivationArgs[DNNL_ARG_DIFF_DST] = _activationDiffMem; // Input
@@ -443,12 +442,12 @@ void Layer::createBackwardPipeline()
     _backwardActivationArgs[DNNL_ARG_DIFF_SRC] = _nodeDiffMem; // Output
   }
 
-  #endif
+#endif
 
   // We do not define the following primitives for the input layer
   if (_prevLayer != NULL)
   {
-    #ifdef _KORALI_USE_ONEDNN
+#ifdef _KORALI_USE_ONEDNN
 
     auto backwardDataDesc = inner_product_backward_data::desc(
       _prevLayer->_nodeMem.get_desc(),
@@ -478,13 +477,13 @@ void Layer::createBackwardPipeline()
     _backwardWeightsArgs[DNNL_ARG_DIFF_WEIGHTS] = _weightsDiffMem;   // Output
     _backwardWeightsArgs[DNNL_ARG_DIFF_BIAS] = _biasDiffMem;         // Output
 
-    #endif
+#endif
   }
 
   // Initializing backward layer normalization operations
   if (_batchNormalizationEnabled)
   {
-    #ifdef _KORALI_USE_ONEDNN
+#ifdef _KORALI_USE_ONEDNN
 
     auto backwardNormalizationDesc = batch_normalization_backward::desc(
       prop_kind::backward,
@@ -505,7 +504,7 @@ void Layer::createBackwardPipeline()
     _backwardNormalizationArgs[DNNL_ARG_DIFF_SRC] = _nodeDiffMem;                                 // Output
     _backwardNormalizationArgs[DNNL_ARG_DIFF_SCALE_SHIFT] = _batchNormalizationScaleShiftDiffMem; // Output
 
-    #endif
+#endif
   }
 }
 

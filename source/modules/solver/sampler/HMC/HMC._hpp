@@ -36,16 +36,6 @@ class HMC : public Sampler
   void updateState();
 
   /**
-  * @brief Updates internal state such as mean, Metric and InverseMetric during warmup phase.
-  */
-  void updateStateWarmup();
-
-  /**
-  * @brief Updates internal state such as mean, Metric and InverseMetric during sampling phase.
-  */
-  void updateStateSampling();
-
-  /**
   * @brief Process sample after evaluation.
   */
   void finishSample(size_t sampleId);

@@ -11,8 +11,8 @@
 #endif
 
 #ifdef _KORALI_USE_CUDNN
- #include <cuda.h>
- #include <cudnn.h>
+  #include <cuda.h>
+  #include <cudnn.h>
 #endif
 
 namespace korali
@@ -20,8 +20,7 @@ namespace korali
 class NeuralNetwork : public Module
 {
   public:
-
-  #ifdef _KORALI_USE_ONEDNN
+#ifdef _KORALI_USE_ONEDNN
 
   /**
    * @brief oneDNN Engine
@@ -33,13 +32,13 @@ class NeuralNetwork : public Module
    */
   dnnl::stream _stream;
 
-  #endif
+#endif
 
-  #ifdef _KORALI_USE_CUDNN
+#ifdef _KORALI_USE_CUDNN
 
   cudnnHandle_t _cuDNNHandle;
 
-  #endif
+#endif
 
   /**
    * @brief Flag to make sure the NN is initialized before creating

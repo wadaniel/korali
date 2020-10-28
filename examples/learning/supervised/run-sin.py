@@ -7,7 +7,7 @@ import time
 import korali
 k = korali.Engine()
 
-scaling = 1.0
+scaling = 5.0
 np.random.seed(0xC0FFEE)
 
 # The input set has scaling and a linear element to break symmetry

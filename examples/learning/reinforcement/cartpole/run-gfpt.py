@@ -116,6 +116,7 @@ e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 400
 
 ### Setting file output configuration
 
+e["Random Seed"] = 0xC0FFEE
 e["File Output"]["Frequency"] = 10000
 #e["Console Output"]["Verbosity"] = "Silent"
 

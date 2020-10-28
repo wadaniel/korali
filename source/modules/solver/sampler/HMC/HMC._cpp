@@ -554,8 +554,7 @@ void HMC::saveSample()
 
 void HMC::updateStepSize()
 {
-
-/*
+  /*
   if (_chainLength + 1 < _burnIn)
   {
     _hBar = (1.0 - 1.0 / (_chainLength + 1 + _adaptiveStepSizeStabilizationConstant)) * _hBar + (_targetAcceptanceRate - _acceptanceProbability) / (_chainLength + 1 + _adaptiveStepSizeStabilizationConstant);
@@ -567,87 +566,52 @@ void HMC::updateStepSize()
     _stepSize = _dualStepSize;
   }
 */
-  
-  // taken from https://colindcarroll.com/2019/04/21/step-size-adaptation-in-hamiltonian-monte-carlo/
+
   if (_chainLength + 1 < _burnIn)
   {
-    double logStep = _mu - _acceptanceRateError / (sqrt(_chainLength+1.) * _adaptiveStepSizeSpeedConstant);
+    // update taken from https://colindcarroll.com/2019/04/21/step-size-adaptation-in-hamiltonian-monte-carlo/
+    double logStep = _mu - _acceptanceRateError / (sqrt(_chainLength + 1.) * _adaptiveStepSizeSpeedConstant);
     _hBar = std::pow(_chainLength + 1., -_adaptiveStepSizeScheduleConstant);
-    double logAveragedStep = _hBar * logStep + (1.-_hBar)*logStep;
+    double logAveragedStep = _hBar * logStep + (1. - _hBar) * logStep;
     _stepSize = std::exp(logStep);
     _dualStepSize = std::exp(logAveragedStep);
   }
   else
   {
-    _stepSize = _dualStepSize;
+    // Apply Step Size Jitter
+    _stepSize = _dualStepSize * (1.0 + _stepSizeJitter * (2.0 * _uniformGenerator->getRandomNumber() - 1.0));
   }
-
 }
 
 void HMC::updateState()
 {
   _acceptanceRate = _useNUTS == true ? (double)_acceptanceCountNUTS / ((double)_chainLength + 1) : (double)_acceptanceCount / ((double)(_chainLength + 1));
 
-  _acceptanceRateError += (_targetAcceptanceRate-_acceptanceRate);
-  // std::cout << "in front of _chainlength..." << std::endl;
-  _chainLength < _burnIn ? updateStateWarmup() : updateStateSampling();
-  // std::cout << "after _chainlength..." << std::endl;
+  _acceptanceRateError += (_targetAcceptanceRate - _acceptanceRate);
 
-  return;
-}
-
-void HMC::updateStateWarmup()
-{
-  // Update Step Size, Dual Step Size, H Bar for Adaptive Step Size option
-  if (_useAdaptiveStepSize == true && (_chainLength + 1) <= _burnIn) updateStepSize();
-
-  // return if no samples available
-  if (_warmupSampleDatabase.size() == 0) return;
+  // Update Step Size, Dual Step Size and H Bar
+  updateStepSize();
 
   // for one sample simply set average to current value (to avoid dividing by zero)
   if (_warmupSampleDatabase.size() == 1)
-  {
     for (size_t d = 0; d < _dimensions; ++d) _positionMean[d] = _positionLeader[d];
-    return;
-  }
-
   // calculate chain mean for > 1 sample
-  if (_warmupSampleDatabase.size() > 1)
+  else if (_warmupSampleDatabase.size() > 1)
     for (size_t d = 0; d < _dimensions; ++d) _positionMean[d] = (_positionMean[d] * (_warmupSampleDatabase.size() - 1) + _positionLeader[d]) / _warmupSampleDatabase.size();
-
-  // case: Use Adaptive Sampling = True
-  //       Approximate Inverse Matrix via Fisher Information
-  if (_version == "Euclidean" && (size_t)(_metricEstimateQuotient * (double)_burnIn) == _chainLength + 1)
-  {
-    int err = _hamiltonian->updateMetricMatricesEuclidean(_warmupSampleDatabase, _positionMean);
-
-    // metric = _hamiltonian->getMetric();
-    // inverseMetric = _hamiltonian->getInverseMetric();
-
-    if (err == GSL_EDOM)
-    {
-      // error handling for non s.p.d. matrices
-      _k->_logger->logWarning("Normal", "Inverse Metric negative definite (not updating Metric). Try Increasing Burn In.\n");
-    }
-  }
-
-  return;
-}
-
-void HMC::updateStateSampling()
-{
-  // Apply Step Size Jitter
-  _stepSize = _dualStepSize * (1.0 + _stepSizeJitter * (2.0 * _uniformGenerator->getRandomNumber() - 1.0));
 
   // for one sample simply set average to current value (to avoid dividing by zero)
   if (_sampleDatabase.size() == 1)
     for (size_t d = 0; d < _dimensions; ++d) _positionMean[d] = _positionLeader[d];
-
   // calculate chain mean for > 1 sample
-  if (_sampleDatabase.size() > 1)
+  else if (_sampleDatabase.size() > 1)
     for (size_t d = 0; d < _dimensions; ++d) _positionMean[d] = (_positionMean[d] * (_sampleDatabase.size() - 1) + _positionLeader[d]) / _sampleDatabase.size();
 
-  return;
+  // Define metric from warm up samples
+  if (((size_t)(_metricEstimateQuotient * (double)_burnIn) == _chainLength + 1) && (_version == "Euclidean"))
+  {
+    int err = _hamiltonian->updateMetricMatricesEuclidean(_warmupSampleDatabase, _positionMean);
+    if (err == GSL_EDOM) KORALI_LOG_ERROR("Inverse Metric negative definite (not updating Metric). Increase Burn In period.");
+  }
 }
 
 void HMC::printGenerationBefore()

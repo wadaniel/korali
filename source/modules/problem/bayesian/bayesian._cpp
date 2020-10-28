@@ -42,8 +42,6 @@ void Bayesian::evaluateLogPosterior(Sample &sample)
   {
     sample["logLikelihood"] = -Inf;
     sample["logPosterior"] = -Inf;
-    printf("logPrior negative!!!\n");
-    printf("logPrior -Inf\n");
   }
   else
   {

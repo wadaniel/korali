@@ -28,6 +28,11 @@ class Continuous : public Agent
   std::vector<float> _inverseVariances;
 
   /**
+  * @brief Vector with means for the action variables
+  */
+  std::vector<float> _actionMeans;
+
+  /**
   * @brief Vector with exploration standard deviation for the action variables
   */
   std::vector<float> _actionSigmas;
@@ -38,21 +43,13 @@ class Continuous : public Agent
   problem::reinforcementLearning::Continuous *_problem;
 
   /**
-  * @brief Function to obtain the Gaussian means of the actions
+  * @brief Function to pass state through the NN and prepares the Gaussian means and sigmas of the actions (updates members _actionMeans and _actionSigmas)
   * @param state The current state
-  * @return The action means, corresponding to the state and the current policy hyperparameters
   */
-  virtual std::vector<float> getActionMeans(const std::vector<float> &state) = 0;
+  virtual void forwardPolicy(const std::vector<float> &state) = 0;
 
-  /**
-  * @brief Function to obtain the Gaussian standard deviations (exploratory noise) of the actions
-  * @param state The current state
-  * @return The action standard deviations, corresponding to the state and the current policy hyperparameters
-  */
-  virtual std::vector<float> getActionSigmas(const std::vector<float> &state) = 0;
-
-  void getAction(korali::Sample &sample) override;
-  void processExperience(knlohmann::json &experience) override;
+  virtual void getAction(korali::Sample &sample) override;
+  virtual void processExperience(knlohmann::json &experience) override;
   virtual void initializeAgent();
 };
 

@@ -37,7 +37,7 @@ for useDiagonalMetric in [False, True]:
     e["Solver"]["Use Diagonal Metric"] = useDiagonalMetric
     e["Solver"]["Use Adaptive Step Size"] = True
     e["Solver"]["Use NUTS"] = True
-    e["Solver"]["Desired Average Acceptance Rate"] = 0.45
+    e["Solver"]["Target Acceptance Rate"] = 0.45
 
     # Running Korali
     e["Random Seed"] = 1337

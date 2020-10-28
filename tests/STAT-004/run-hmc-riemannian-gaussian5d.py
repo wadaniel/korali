@@ -39,7 +39,7 @@ e["Solver"]["Inverse Regularization Parameter"] = 0.5
 e["Solver"]["Use Diagonal Metric"] = True
 e["Solver"]["Use Adaptive Step Size"] = False
 e["Solver"]["Target Integration Time"] = 0.5
-e["Solver"]["Desired Average Acceptance Rate"] = 0.80
+e["Solver"]["Target Acceptance Rate"] = 0.80
 e["Solver"]["Use NUTS"] = False
 # Running Korali
 e["Random Seed"] = 1337

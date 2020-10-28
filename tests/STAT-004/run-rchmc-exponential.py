@@ -41,7 +41,7 @@ for useDiagonalMetric in [False, True]:
     e["Solver"]["Use Adaptive Step Size"] = False
     e["Solver"]["Target Integration Time"] = 0.70
     e["Solver"]["Step Size Jitter"] = 0.1
-    e["Solver"]["Desired Average Acceptance Rate"] = 0.65
+    e["Solver"]["Target Acceptance Rate"] = 0.65
     e["Solver"]["Use NUTS"] = False
 
     e["Console Output"]["Verbosity"] = "Detailed"

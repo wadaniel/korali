@@ -89,9 +89,6 @@ void Agent::runGeneration()
     // Storing experience in the episode
     episode.push_back(experience);
 
-    // Adding experience's reward to episode's reward
-    _currentReward += reward;
-
     // Increasing total experience counter
     _experienceCount++;
 
@@ -103,7 +100,6 @@ void Agent::runGeneration()
       if (isTerminal == false)                                           // Do not update policy if this is terminal
         if (_experienceReplayStates.size() > _experienceReplayStartSize) // Perform optimization steps on the critic/policy, if reached the minimum replay memory size
         {
-         printf("Steps: %lu\n", _optimizationStepsPerUpdate);
           for (size_t i = 0; i < _optimizationStepsPerUpdate; i++) trainAgent();
           _optimizationStepCount += _optimizationStepsPerUpdate;
         }
@@ -198,6 +194,9 @@ void Agent::processExperience(knlohmann::json &experience)
   _experienceReplayActions.add(action);
   _experienceReplayRewards.add(reward);
   _experienceReplayTerminal.add(isTerminal);
+
+  // Adding experience's reward to episode's reward
+  _currentReward += reward;
 }
 
 std::vector<size_t> Agent::generateMiniBatch(size_t size)

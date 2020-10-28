@@ -1,13 +1,16 @@
 #ifndef _KORALI_LAYER_HPP_
 #define _KORALI_LAYER_HPP_
 
+#undef _KORALI_USE_ONEDNN
+//#undef _KORALI_USE_CUDNN
+
 #ifdef _KORALI_USE_ONEDNN
   #include "dnnl.hpp"
-  #define _NN_MEM dnnl::memory
 #endif
 
-#ifndef _NN_MEM
-   #define _NN_MEM void*
+#ifdef _KORALI_USE_CUDNN
+ #include <cuda.h>
+ #include <cudnn.h>
 #endif
 
 #include "modules/distribution/univariate/uniform/uniform.hpp"
@@ -60,46 +63,43 @@ class Layer : public Module
    */
   size_t _normalizationParameterCount;
 
-#ifdef _KORALI_USE_ONEDNN
 
   /********************************************************
-  * Layers's Memory Structures for Forward Propagation
+  * oneDNN Layers's Memory Structures for Forward Propagation
   *******************************************************/
+
+  #ifdef _KORALI_USE_ONEDNN
 
   /**
    * @brief oneDNN Memory object descriptor to contain the result value of inner product (Wx+b) operation
    */
-  _NN_MEM _nodeMem;
-  void* _cudaNodeMem;
+  dnnl::memory _nodeMem;
 
   /**
    * @brief oneDNN Memory object descriptor to contain the result value of applying the activation function on incoming data
    */
-  _NN_MEM _activationMem;
-  void* _cudaActivationMem;
+  dnnl::memory _activationMem;
+
 
   /**
    * @brief oneDNN Memory object descriptor to contain the result value of inner product (Wx+b) operation
    */
-  _NN_MEM _batchNormalizationWorkMem;
+  dnnl::memory _batchNormalizationWorkMem;
 
   /**
    * @brief oneDNN Memory object descriptor to contain the result value of inner product (Wx+b) operation
    */
-  _NN_MEM _batchNormalizationMem;
-  void* _cudaBatchNormalizationMem;
+  dnnl::memory _batchNormalizationMem;
 
   /**
    * @brief oneDNN Memory object descriptor to contain the weights of inner product with incoming channels
    */
-  _NN_MEM _weightsMem;
-  void* _cudaWeightsMem;
+  dnnl::memory _weightsMem;
 
   /**
    * @brief oneDNN Memory object descriptor to contain the bias to add to incoming channels
    */
-  _NN_MEM _biasMem;
-  void* _cudaBiasMem;
+  dnnl::memory _biasMem;
 
   /********************************************************
   * Declaring Layers's Memory Structures for Gradients
@@ -108,32 +108,32 @@ class Layer : public Module
   /**
    * @brief oneDNN Memory object descriptor to contain the gradient of the weights
    */
-  _NN_MEM _weightsDiffMem;
+  dnnl::memory _weightsDiffMem;
 
   /**
    * @brief oneDNN Memory object descriptor to contain the gradient of the biases
    */
-  _NN_MEM _biasDiffMem;
+  dnnl::memory _biasDiffMem;
 
   /**
    * @brief oneDNN Gradient of the data at the inner product (Wx+b) stage
    */
-  _NN_MEM _nodeDiffMem;
+  dnnl::memory _nodeDiffMem;
 
   /*
   * @brief oneDNN Gradient of the data at the normalization stage
   */
-  _NN_MEM _batchNormalizationDiffMem;
+  dnnl::memory _batchNormalizationDiffMem;
 
   /*
   * @brief oneDNN Gradients of the operation wrt to activation function
   */
-  _NN_MEM _activationDiffMem;
+  dnnl::memory _activationDiffMem;
 
   /*
    * @brief oneDNN Gradients of the operation wrt to the layer normalization function
    */
-  _NN_MEM _batchNormalizationScaleShiftDiffMem;
+  dnnl::memory _batchNormalizationScaleShiftDiffMem;
 
   /*****************************************************************
    * Declaring Layers's Forward Propagation Normalization
@@ -142,22 +142,22 @@ class Layer : public Module
   /*
    * @brief oneDNN Stores the mean of the normalized batch on this node
    */
-  _NN_MEM _batchNormalizationMeanMem;
+  dnnl::memory _batchNormalizationMeanMem;
 
   /*
    * @brief oneDNN Stores the variance of the normalized batch on this node
    */
-  _NN_MEM _batchNormalizationVarianceMem;
+  dnnl::memory _batchNormalizationVarianceMem;
 
   /*
    * @brief oneDNN Provides the scale/shift values for each channel in the layer
    */
-  _NN_MEM _batchNormalizationScaleShiftMem;
+  dnnl::memory _batchNormalizationScaleShiftMem;
 
   /**
    * @brief oneDNN Arguments to the layer normalization operation
    */
-  std::unordered_map<int, _NN_MEM> _forwardNormalizationArgs;
+  std::unordered_map<int, dnnl::memory> _forwardNormalizationArgs;
 
   /**
    * @brief oneDNN primitive attributes that describe the forward normalization operation
@@ -181,7 +181,7 @@ class Layer : public Module
   /**
    * @brief oneDNN Arguments to the activation function
    */
-  std::unordered_map<int, _NN_MEM> _forwardActivationArgs;
+  std::unordered_map<int, dnnl::memory> _forwardActivationArgs;
 
   /**
    * @brief oneDNN primitive attributes that describe a softmax activation function
@@ -205,7 +205,7 @@ class Layer : public Module
   /**
    * @brief oneDNN Arguments to the inner product operation
    */
-  std::unordered_map<int, _NN_MEM> _forwardInnerProductArgs;
+  std::unordered_map<int, dnnl::memory> _forwardInnerProductArgs;
 
   /**
    * @brief oneDNN primitive attributes that describe the full forward propagation primitive
@@ -224,7 +224,7 @@ class Layer : public Module
   /**
    * @brief oneDNN Arguments for the backward propagation of the gradient wrt activation functions
    */
-  std::unordered_map<int, _NN_MEM> _backwardActivationArgs;
+  std::unordered_map<int, dnnl::memory> _backwardActivationArgs;
 
   /**
    * @brief oneDNN primitive for the backward propagation of the gradient wrt activation functions
@@ -234,7 +234,7 @@ class Layer : public Module
   /**
    * @brief oneDNN Arguments for the backward propagation of the gradient wrt Data
    */
-  std::unordered_map<int, _NN_MEM> _backwardDataArgs;
+  std::unordered_map<int, dnnl::memory> _backwardDataArgs;
 
   /**
    * @brief oneDNN primitive for the backward propagation of the gradient wrt Data
@@ -244,7 +244,7 @@ class Layer : public Module
   /**
    * @brief oneDNN Arguments for the backward propagation of the gradient wrt Weights and Biases
    */
-  std::unordered_map<int, _NN_MEM> _backwardWeightsArgs;
+  std::unordered_map<int, dnnl::memory> _backwardWeightsArgs;
 
   /**
    * @brief oneDNN primitive for the backward propagation of the gradient wrt Weights and Biases
@@ -254,14 +254,56 @@ class Layer : public Module
   /**
    * @brief oneDNN Arguments for the backward propagation of the gradient wrt normalization
    */
-  std::unordered_map<int, _NN_MEM> _backwardNormalizationArgs;
+  std::unordered_map<int, dnnl::memory> _backwardNormalizationArgs;
 
   /**
    * @brief oneDNN primitive for the backward propagation of the gradient wrt normalization
    */
   dnnl::primitive _backwardNormalizationPrimitive;
 
-#endif
+  #endif
+
+  #ifdef _KORALI_USE_CUDNN
+
+  cudnnTensorDescriptor_t _nodeTensorDesc;
+
+  cudnnFilterDescriptor_t _weightsFilterDesc;
+  void* _weightsFilter;
+
+  cudnnTensorDescriptor_t _biasTensorDesc;
+  void* _biasTensor;
+
+  void* _activationTensor;
+  void* _activationDiffTensor;
+
+  void* _nodeTensor;
+  void* _nodeDiffTensor;
+
+  // Workspace needed by CUDA
+  size_t _convolutionWorkspaceSize;
+  void* _convolutionWorkspace;
+  cudnnConvolutionDescriptor_t _convolutionDesc;
+
+  // Activation function
+  cudnnActivationDescriptor_t _activationDesc;
+
+  cudnnTensorDescriptor_t _batchNormalizationDerivedTensorDesc;
+  void* _weightsDiffFilter;
+  void* _biasDiffTensor;
+  void* _batchNormalizationTensor;
+  void* _batchNormalizationDiffTensor;
+
+  void* _batchNormalizationMeanTensor;
+  void* _batchNormalizationVarianceTensor;
+  void* _batchNormalizationMeanTensorCache;
+  void* _batchNormalizationVarianceTensorCache;
+
+  void* _batchNormalizationShiftTensor;
+  void* _batchNormalizationScaleTensor;
+  void* _batchNormalizationShiftDiffTensor;
+  void* _batchNormalizationScaleDiffTensor;
+
+  #endif
 
   /**
    * @brief Generates the initial weight/bias/normalization hyperparameters for the layer

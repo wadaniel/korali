@@ -21,7 +21,7 @@ class NeuralNetwork : public Module
 {
   public:
 
-#ifdef _KORALI_USE_ONEDNN
+  #ifdef _KORALI_USE_ONEDNN
 
   /**
    * @brief oneDNN Engine
@@ -33,7 +33,13 @@ class NeuralNetwork : public Module
    */
   dnnl::stream _stream;
 
-#endif
+  #endif
+
+  #ifdef _KORALI_USE_CUDNN
+
+  cudnnHandle_t _cuDNNHandle;
+
+  #endif
 
   /**
    * @brief Flag to make sure the NN is initialized before creating

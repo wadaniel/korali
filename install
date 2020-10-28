@@ -284,7 +284,7 @@ if [ $NN_LIBRARY == "OneDNN" ]; then
 
 #if [ $NN_LIBRARY == "cuDNN" ]; then
   NNCFLAGS+=" -D_KORALI_USE_CUDNN -I${CUDA_ROOT}/include -I${CUDNN_ROOT}/include"
-  NNLIBS+=" -lcudart -lcudnn -lcublas -Wl,-rpath -Wl,${CUDA_ROOT}/lib64/ -L${CUDA_ROOT}/lib64/ -Wl,-rpath -Wl,${CUDA_ROOT}/lib -L${CUDA_ROOT}/lib -Wl,-rpath -Wl,${CUDNN_ROOT}/lib64/ -L${CUDNN_ROOT}/lib64/ -Wl,-rpath -Wl,${CUDNN_ROOT}/lib -L${CUDNN_ROOT}/lib"
+  NNLIBS+=" -lcudart -lcudnn -lcudnn_ops_infer -lcudnn_ops_train -lcudnn_cnn_infer -lcudnn_cnn_train -Wl,-rpath -Wl,${CUDA_ROOT}/lib64/ -L${CUDA_ROOT}/lib64/ -Wl,-rpath -Wl,${CUDA_ROOT}/lib -L${CUDA_ROOT}/lib -Wl,-rpath -Wl,${CUDNN_ROOT}/lib64/ -L${CUDNN_ROOT}/lib64/ -Wl,-rpath -Wl,${CUDNN_ROOT}/lib -L${CUDNN_ROOT}/lib"
 fi
 
 if [ $NN_LIBRARY == "NONE" ]; then 

@@ -43,6 +43,7 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannianConst
 
     _multivariateGenerator->updateDistribution();
 
+    // Memory allocation
     Q = gsl_matrix_alloc(stateSpaceDim, stateSpaceDim);
     lambda = gsl_vector_alloc(stateSpaceDim);
     w = gsl_eigen_symmv_alloc(stateSpaceDim);
@@ -67,6 +68,7 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannianConst
     _multivariateGenerator = multivariateGenerator;
     _inverseRegularizationParam = 1.0;
 
+    // Memory allocation
     Q = gsl_matrix_alloc(stateSpaceDim, stateSpaceDim);
     lambda = gsl_vector_alloc(stateSpaceDim);
     w = gsl_eigen_symmv_alloc(stateSpaceDim);
@@ -92,6 +94,7 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannianConst
     _multivariateGenerator = multivariateGenerator;
     _inverseRegularizationParam = inverseRegularizationParam;
 
+    // Memory allocation
     Q = gsl_matrix_alloc(stateSpaceDim, stateSpaceDim);
     lambda = gsl_vector_alloc(stateSpaceDim);
     w = gsl_eigen_symmv_alloc(stateSpaceDim);
@@ -221,7 +224,7 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannianConst
 
     // this->updateHamiltonian(q, _k);
 
-    for (int i = 0; i < _stateSpaceDim; ++i)
+    for (size_t i = 0; i < _stateSpaceDim; ++i)
     {
       tmpScalar += p[i] * _inverseMetric[i] * p[i];
     }
@@ -340,14 +343,13 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannianConst
     KORALI_START(sample);
     KORALI_WAIT(sample);
     _currentGradient = KORALI_GET(std::vector<double>, sample, "grad(logP(x))");
- 
+
     sample["Operation"] = "Evaluate Hessian";
 
     KORALI_START(sample);
     KORALI_WAIT(sample);
 
     _currentHessian = KORALI_GET(std::vector<double>, sample, "H(logP(x))");
-
   }
 
   /**
@@ -391,22 +393,16 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannianConst
   int updateMetricMatricesRiemannian(const std::vector<double> &q, korali::Experiment *_k) override
   {
     // constant for condition number of _metric
-    double detMetric = 1.0;
+    // double detMetric = 1.0; // unused
 
     auto hessian = _currentHessian;
     gsl_matrix_view Xv = gsl_matrix_view_array(hessian.data(), _stateSpaceDim, _stateSpaceDim);
     gsl_matrix *X = &Xv.matrix;
-    //gsl_matrix *Q = gsl_matrix_alloc(_stateSpaceDim, _stateSpaceDim);
-    //gsl_vector *lambda = gsl_vector_alloc(_stateSpaceDim);
-
-    //gsl_eigen_symmv_workspace *w = gsl_eigen_symmv_alloc(_stateSpaceDim);
 
     gsl_eigen_symmv(X, lambda, Q, w);
 
-    //gsl_matrix *lambdaSoftAbs = gsl_matrix_alloc(_stateSpaceDim, _stateSpaceDim);
     gsl_matrix_set_all(lambdaSoftAbs, 0.0);
 
-    //gsl_matrix *inverseLambdaSoftAbs = gsl_matrix_alloc(_stateSpaceDim, _stateSpaceDim);
     gsl_matrix_set_all(inverseLambdaSoftAbs, 0.0);
 
     _logDetMetric = 0.0;
@@ -418,20 +414,16 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannianConst
       _logDetMetric += std::log(lambdaSoftAbs_i);
     }
 
-    //gsl_matrix *tmpMatOne = gsl_matrix_alloc(_stateSpaceDim, _stateSpaceDim);
     gsl_matrix_set_all(tmpMatOne, 0.0);
-    //gsl_matrix *tmpMatTwo = gsl_matrix_alloc(_stateSpaceDim, _stateSpaceDim);
     gsl_matrix_set_all(tmpMatTwo, 0.0);
 
     gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1.0, Q, lambdaSoftAbs, 0.0, tmpMatOne);
     gsl_blas_dgemm(CblasNoTrans, CblasTrans, 1.0, lambdaSoftAbs, Q, 0.0, tmpMatTwo);
 
-    //gsl_matrix *tmpMatThree = gsl_matrix_alloc(_stateSpaceDim, _stateSpaceDim);
-    gsl_matrix_set_all(tmpMatThree, 0.0);
-    //gsl_matrix *tmpMatFour = gsl_matrix_alloc(_stateSpaceDim, _stateSpaceDim);
+    // gsl_matrix_set_all(tmpMatThree, 0.0); // unused
     gsl_matrix_set_all(tmpMatFour, 0.0);
 
-    gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1.0, Q, lambdaSoftAbs, 0.0, tmpMatThree);
+    // gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1.0, Q, lambdaSoftAbs, 0.0, tmpMatThree); // unused
     gsl_blas_dgemm(CblasNoTrans, CblasTrans, 1.0, inverseLambdaSoftAbs, Q, 0.0, tmpMatFour);
 
     for (size_t i = 0; i < _stateSpaceDim; ++i)
@@ -460,19 +452,6 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannianConst
       std::cout << "_inverseMetric = " << std::endl;
       __printVec(_inverseMetric);
     }
-
-    /*
-    gsl_matrix_free(Q);
-    gsl_vector_free(lambda);
-    gsl_eigen_symmv_free(w);
-    gsl_matrix_free(lambdaSoftAbs);
-    gsl_matrix_free(inverseLambdaSoftAbs);
-
-    gsl_matrix_free(tmpMatOne);
-    gsl_matrix_free(tmpMatTwo);
-    gsl_matrix_free(tmpMatThree);
-    gsl_matrix_free(tmpMatFour);
-    */
 
     for (size_t i = 0; i < _stateSpaceDim; ++i)
     {

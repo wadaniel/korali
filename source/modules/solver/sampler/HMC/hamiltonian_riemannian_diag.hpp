@@ -124,7 +124,7 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
   std::vector<double> dK(const std::vector<double> &p) override
   {
     std::vector<double> tmpVector(_stateSpaceDim, 0.0);
-    for (int i = 0; i < _stateSpaceDim; ++i)
+    for (size_t i = 0; i < _stateSpaceDim; ++i)
     {
       tmpVector[i] = _inverseMetric[i] * p[i];
     }
@@ -142,7 +142,7 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
 
     // this->updateHamiltonian(q, _k);
 
-    for (int i = 0; i < _stateSpaceDim; ++i)
+    for (size_t i = 0; i < _stateSpaceDim; ++i)
     {
       tmpScalar += p[i] * _inverseMetric[i] * p[i];
     }
@@ -173,7 +173,7 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
       result[j] = 0.0;
       for (size_t i = 0; i < _stateSpaceDim; ++i)
       {
-        double arg = _inverseRegularizationParam * (gradU[i] * gradU[i]);
+        // double arg = _inverseRegularizationParam * (gradU[i] * gradU[i]); // unused
         result[j] += hessianU[i * _stateSpaceDim + j] * this->__taylorSeriesTauFunc(gradU[i], _inverseRegularizationParam) * p[i] * p[i];
       }
     }
@@ -240,7 +240,7 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
       dLogDetMetric_dq[j] = 0.0;
       for (size_t i = 0; i < _stateSpaceDim; ++i)
       {
-        double arg = _inverseRegularizationParam * (gradU[i] * gradU[i]);
+        // double arg = _inverseRegularizationParam * (gradU[i] * gradU[i]);
         // dLogDetMetric_dq[j] += 1.0 / _metric[i] * ( 2.0 * hessianU[i*_stateSpaceDim + j] * gradU[i] * 1.0 / std::tanh(arg) - 2.0 * _inverseRegularizationParam * hessianU[i*_stateSpaceDim + j] * gradU[i] / (std::sinh(arg) * std::sinh(arg)) );
         dLogDetMetric_dq[j] += 2.0 * hessianU[i * _stateSpaceDim + j] * this->__taylorSeriesPhiFunc(gradU[i], _inverseRegularizationParam);
       }
@@ -345,7 +345,7 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
   {
     std::vector<double> result(_stateSpaceDim);
 
-    for (int i = 0; i < _stateSpaceDim; ++i)
+    for (size_t i = 0; i < _stateSpaceDim; ++i)
     {
       result[i] = std::sqrt(_metric[i]) * _normalGenerator->getRandomNumber();
     }
@@ -363,7 +363,7 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
   {
     double result = 0.0;
 
-    for (int i = 0; i < _stateSpaceDim; ++i)
+    for (size_t i = 0; i < _stateSpaceDim; ++i)
     {
       result += pLeft[i] * _inverseMetric[i] * pRight[i];
     }

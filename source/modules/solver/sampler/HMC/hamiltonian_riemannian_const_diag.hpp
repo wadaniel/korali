@@ -124,7 +124,7 @@ class HamiltonianRiemannianConstDiag : public HamiltonianRiemannianConst
   std::vector<double> dK(const std::vector<double> &p) override
   {
     std::vector<double> tmpVector(_stateSpaceDim, 0.0);
-    for (int i = 0; i < _stateSpaceDim; ++i)
+    for (size_t i = 0; i < _stateSpaceDim; ++i)
     {
       tmpVector[i] = _inverseMetric[i] * p[i];
     }
@@ -275,7 +275,6 @@ class HamiltonianRiemannianConstDiag : public HamiltonianRiemannianConst
     KORALI_WAIT(sample);
 
     _currentHessian = KORALI_GET(std::vector<double>, sample, "H(logP(x))");
- 
   }
 
   /**
@@ -326,7 +325,6 @@ class HamiltonianRiemannianConstDiag : public HamiltonianRiemannianConst
   */
   int updateMetricMatricesRiemannian(const std::vector<double> &q, korali::Experiment *_k) override
   {
-   
     auto hessian = _currentHessian;
 
     // if (verbosity == true)

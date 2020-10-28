@@ -19,9 +19,9 @@ struct TreeHelperEuclidean : public TreeHelper
     * @param hamiltonian Hamiltonian object of system
     * @return Returns of tree should be built further.
     */
-  bool computeCriterion(Hamiltonian *hamiltonian)
+  bool computeCriterion(Hamiltonian &hamiltonian)
   {
-    return hamiltonian->computeStandardCriterion(qLeftOut, pLeftOut, qRightOut, pRightOut);
+    return hamiltonian.computeStandardCriterion(qLeftOut, pLeftOut, qRightOut, pRightOut);
   }
 };
 

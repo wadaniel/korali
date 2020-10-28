@@ -25,7 +25,7 @@ class Leapfrog
   * @param hamiltonian Hamiltonian object to calulcate energies.
   * @param _k Experiment object.
   */
-  virtual void step(std::vector<double> &q, std::vector<double> &p, const double stepSize, Hamiltonian *hamiltonian, korali::Experiment *_k) = 0;
+  virtual void step(std::vector<double> &q, std::vector<double> &p, const double stepSize, Hamiltonian &hamiltonian, korali::Experiment *_k) = 0;
 
   /**
   * @brief Debugging member variable to control verbosity.

@@ -139,7 +139,6 @@ int main(int argc, char *argv[])
 
   ////// Defining Termination Criteria
 
-  //e["Solver"]["Termination Criteria"]["Max Generations"] = 5;
   e["Solver"]["Training Reward Threshold"] = 1.0;
   e["Solver"]["Policy Testing Episodes"] = 20;
   e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 1.3;

@@ -161,7 +161,7 @@ jobs:
    
       - run:
           name: Build Config File
-          command: cat .install.config.default | sed -e 's/=NO/=YES/g' -e 's/NJOBS=/NJOBS=4 \#/g' > install.config
+          command: cat .install.config.default | sed -e 's/NN_LIBRARY=NONE/NN_LIBRARY=OneDNN/g' -e 's/=NO/=YES/g' -e 's/NJOBS=/NJOBS=4 \#/g' > install.config
    
    
       - restore_cache:

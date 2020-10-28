@@ -1,9 +1,6 @@
 #ifndef _KORALI_LAYER_HPP_
 #define _KORALI_LAYER_HPP_
 
-#undef _KORALI_USE_ONEDNN
-//#undef _KORALI_USE_CUDNN
-
 #ifdef _KORALI_USE_ONEDNN
   #include "dnnl.hpp"
 #endif

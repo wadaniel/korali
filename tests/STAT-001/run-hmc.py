@@ -30,7 +30,7 @@ e["Solver"]["Use NUTS"] = False
 e["Solver"]["Num Integration Steps"] = 20
 e["Solver"]["Step Size"] = 0.1
 e["Solver"]["Target Integration Time"] = 20.0
-e["Solver"]["Desired Average Acceptance Rate"] = 0.98
+e["Solver"]["Target Acceptance Rate"] = 0.98
 
 # Defining problem's variables and their HMC settings
 e["Variables"][0]["Name"] = "X"

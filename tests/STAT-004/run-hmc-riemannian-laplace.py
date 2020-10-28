@@ -34,7 +34,7 @@ e["Solver"]["Step Size"] = 0.05
 e["Solver"]["Use Diagonal Metric"] = True
 e["Solver"]["Use Adaptive Step Size"] = 1
 e["Solver"]["Target Integration Time"] = 0.5
-e["Solver"]["Desired Average Acceptance Rate"] = 0.80
+e["Solver"]["Target Acceptance Rate"] = 0.80
 e["Solver"]["Use NUTS"] = 0
 
 e["Console Output"]["Frequency"] = 5000

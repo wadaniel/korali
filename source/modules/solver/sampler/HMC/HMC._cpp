@@ -661,7 +661,6 @@ void HMC::printGenerationAfter()
     for (size_t e = 0; e < _dimensions; ++e)
     {
       _k->_logger->logData("Normal", "         %+6.3e  ", inverseMetric[e]);
-      _k->_logger->logInfo("Normal", "\n");
     }
   }
   else

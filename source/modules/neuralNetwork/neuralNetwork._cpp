@@ -316,6 +316,10 @@ void NeuralNetwork::forward()
   _stream.wait();
   #endif
 
+  #ifdef _KORALI_USE_CUDNN
+  if (cudaDeviceSynchronize());
+  #endif
+
   // [Profiling]
   std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
   _forwardStreamTime += std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count();

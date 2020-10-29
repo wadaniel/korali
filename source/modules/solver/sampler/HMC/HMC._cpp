@@ -206,16 +206,6 @@ void HMC::runGenerationHMC(const double logUniSample)
   const double oldK = _hamiltonian->K(_momentumLeader);
   const double oldU = _hamiltonian->U();
 
-  if (_useAdaptiveStepSize == true && _chainLength <= _burnIn)
-  {
-    _numIntegrationSteps = std::max((size_t)1, (size_t)std::round(_targetIntegrationTime / _stepSize));
-    if (_numIntegrationSteps > _maxIntegrationSteps)
-    {
-      _k->_logger->logWarning("Minimal", "Num Integration Steps (%zu) exceeding hard limit (%zu).\n", _numIntegrationSteps, _maxIntegrationSteps);
-      _numIntegrationSteps = _maxIntegrationSteps;
-    }
-  }
-
   // Perform Num Integration Steps of Leapfrog scheme to Momentum Candidate and Position Candidate
   // std::cout << "in front of _integrator->step(...)" << std::endl;
   for (size_t i = 0; i < _numIntegrationSteps; ++i)
@@ -242,6 +232,7 @@ void HMC::runGenerationHMC(const double logUniSample)
   {
     ++_acceptanceCount;
     _positionLeader = _positionCandidate;
+    _leaderEvaluation = -newU;
   }
   if (isNan(_positionCandidate) == true)
   {
@@ -545,7 +536,10 @@ double HMC::dotProduct(const std::vector<double> &pLeft, const std::vector<doubl
 void HMC::saveSample()
 {
   if (_chainLength >= _burnIn)
+  {
     _sampleDatabase.push_back(_positionLeader);
+    _sampleEvaluationDatabase.push_back(_leaderEvaluation);
+  }
   else if (_version == "Euclidean")
     _warmupSampleDatabase.push_back(_positionLeader);
 
@@ -553,9 +547,10 @@ void HMC::saveSample()
 }
 
 void HMC::updateStepSize()
-{
+{ 
   if (_chainLength + 1 < _burnIn)
   {
+  
     // update taken from https://arxiv.org/pdf/1111.4246.pdf
     //  _hBar = (1.0 - 1.0 / (_chainLength + 1 + _adaptiveStepSizeStabilizationConstant)) * _hBar + (_targetAcceptanceRate - _acceptanceProbability) / (_chainLength + 1 + _adaptiveStepSizeStabilizationConstant);
     // _stepSize = std::exp(_mu - std::sqrt(_chainLength + 1) / _adaptiveStepSizeSpeedConstant * _hBar);
@@ -583,6 +578,18 @@ void HMC::updateState()
 
   // Update Step Size, Dual Step Size and H Bar
   updateStepSize();
+ 
+  //if (_useAdaptiveStepSize == true && _chainLength <= _burnIn)
+  if (_useAdaptiveStepSize == true)
+  {
+    _numIntegrationSteps = std::max((size_t)1, (size_t)std::round(_targetIntegrationTime / _stepSize));
+    if (_numIntegrationSteps > _maxIntegrationSteps)
+    {
+      _k->_logger->logWarning("Minimal", "Num Integration Steps (%zu) exceeding hard limit (%zu). Actual integration time is %f.\n", _numIntegrationSteps, _maxIntegrationSteps, _maxIntegrationSteps * _stepSize);
+      _numIntegrationSteps = _maxIntegrationSteps;
+    }
+  }
+
 
   // for one sample simply set average to current value (to avoid dividing by zero)
   if (_warmupSampleDatabase.size() == 1)
@@ -628,21 +635,17 @@ void HMC::printGenerationAfter()
   _k->_logger->logInfo("Detailed", "Current Metric:\n");
 
   auto metric = _hamiltonian->getMetric();
-  if (_useDiagonalMetric)
+  if (_useDiagonalMetric == true)
   {
     for (size_t d = 0; d < _dimensions; ++d)
-    {
       _k->_logger->logData("Detailed", "         %+6.3e  \n", metric[d]);
-    }
   }
   else
   {
     for (size_t d = 0; d < _dimensions; ++d)
     {
       for (size_t e = 0; e < _dimensions; ++e)
-      {
-        _k->_logger->logData("Detailed", "         %+6.3e  \n", metric[d * _dimensions + e]);
-      }
+        _k->_logger->logData("Detailed", "         %+6.3e  ", metric[d * _dimensions + e]);
       _k->_logger->logInfo("Detailed", "\n");
     }
   }
@@ -656,21 +659,17 @@ void HMC::printGenerationAfter()
   _k->_logger->logInfo("Normal", "Current Inverse Metric:\n");
 
   auto inverseMetric = _hamiltonian->getInverseMetric();
-  if (_useDiagonalMetric)
+  if (_useDiagonalMetric == true)
   {
     for (size_t e = 0; e < _dimensions; ++e)
-    {
-      _k->_logger->logData("Normal", "         %+6.3e  ", inverseMetric[e]);
-    }
+      _k->_logger->logData("Normal", "         %+6.3e  \n", inverseMetric[e]);
   }
   else
   {
     for (size_t d = 0; d < _dimensions; ++d)
     {
       for (size_t e = 0; e < _dimensions; ++e)
-      {
         _k->_logger->logData("Normal", "         %+6.3e  ", inverseMetric[d * _dimensions + e]);
-      }
       _k->_logger->logInfo("Normal", "\n");
     }
   }

@@ -213,6 +213,7 @@ class HamiltonianEuclideanDense : public HamiltonianEuclidean
 
     // update Metric to be consisitent with Inverse Metric
     int err = __invertMatrix(_inverseMetric, _metric);
+    if (err > 0) return err;
 
     _multivariateGenerator->_sigma = _metric;
 
@@ -220,14 +221,7 @@ class HamiltonianEuclideanDense : public HamiltonianEuclidean
     gsl_matrix_view sigma = gsl_matrix_view_array(&_multivariateGenerator->_sigma[0], _stateSpaceDim, _stateSpaceDim);
 
     err = gsl_linalg_cholesky_decomp(&sigma.matrix);
-    if (err == GSL_EDOM)
-    {
-      // Do nothing if error occurs
-    }
-    else
-    {
-      _multivariateGenerator->updateDistribution();
-    }
+    if (err == 0) _multivariateGenerator->updateDistribution();
 
     return err;
   }

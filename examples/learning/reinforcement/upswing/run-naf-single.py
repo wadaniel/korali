@@ -42,7 +42,7 @@ e["Variables"][5]["Exploration Sigma"] = 5.0
 
 e["Solver"]["Type"] = "Agent / Continuous / NAF"
 e["Solver"]["Target Learning Rate"] = 0.99
-e["Solver"]["Optimization Steps Per Update"] = 5
+e["Solver"]["Optimization Steps Per Update"] = 10
 e["Solver"]["Experiences Between Agent Trainings"] = 1
 e["Solver"]["Experiences Between Target Network Updates"] = 1
 
@@ -52,7 +52,7 @@ e["Solver"]["Random Action Probability"]["Decrease Rate"] = 0.03
 
 ### Defining Experience Replay configuration
 
-e["Solver"]["Experience Replay"]["Start Size"] =   40000
+e["Solver"]["Experience Replay"]["Start Size"] =   10000
 e["Solver"]["Experience Replay"]["Maximum Size"] = 100000
 
 ## Defining Q-Network
@@ -66,12 +66,12 @@ e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Activation Function"]["Typ
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Batch Normalization"]["Enabled"] = False
 
 e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Type"] = "Layer/Dense"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Node Count"] = 256
+e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Node Count"] = 64
 e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Activation Function"]["Type"] = "Elementwise/Tanh"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Batch Normalization"]["Enabled"] = False
 
 e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Type"] = "Layer/Dense"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Node Count"] = 256
+e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Node Count"] = 64
 e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Elementwise/Tanh"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Batch Normalization"]["Enabled"] = False
 

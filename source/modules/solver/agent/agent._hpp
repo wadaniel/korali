@@ -50,6 +50,16 @@ class Agent : public Solver
   float _experienceReplayMaxPriority;
 
   /**
+  * @brief Stores the priority annealing rate.
+  */
+  float _priorityAnnealingRate;
+
+  /**
+  * @brief Stores the importance weight annealing factor.
+  */
+  float _importanceWeightAnnealingRate;
+
+  /**
   * @brief Storage for the pointer to the learning problem
   */
   problem::ReinforcementLearning *_problem;

@@ -202,14 +202,13 @@ void Agent::updateExperienceReplayProbabilities()
   sort(experienceRanking.begin(), experienceRanking.end());
 
   // Calculate rank based probabilities
-  float priorityAnnealingFactor = 1.0; // (0 is uniform)
   float prioritySum = 0.0;
   for (size_t i = 0; i < _experienceReplayStates.size(); ++i)
-    prioritySum += pow((float)i, priorityAnnealingFactor);
+    prioritySum += pow((float)i, _priorityAnnealingRate);
 
   // Update probabilities
   for (size_t i = 0; i < _experienceReplayStates.size(); ++i)
-    _experienceReplayProbabilities[i] = pow((float)experienceRanking[i].second, priorityAnnealingFactor) / prioritySum;
+    _experienceReplayProbabilities[i] = pow((float)experienceRanking[i].second, _priorityAnnealingRate) / prioritySum;
 }
 
 void Agent::updateExperienceReplayPriority(size_t expId, float priority)
@@ -221,11 +220,10 @@ void Agent::updateExperienceReplayPriority(size_t expId, float priority)
 
 std::vector<float> Agent::calculateImportanceWeights(std::vector<size_t> miniBatch)
 {
-  float compensationAnnealingFactor = 1.0; // full compensation for 1.0, no compensation for 0.0
   auto importanceWeights = std::vector<float>(miniBatch.size());
 
   for (size_t i = 0; i < miniBatch.size(); ++i)
-    importanceWeights[i] = pow((float)_experienceReplayStates.size() * _experienceReplayProbabilities[miniBatch[i]], -compensationAnnealingFactor);
+    importanceWeights[i] = pow((float)_experienceReplayStates.size() * _experienceReplayProbabilities[miniBatch[i]], -_importanceWeightAnnealingRate);
 
   return importanceWeights;
 }

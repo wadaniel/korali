@@ -42,7 +42,7 @@ e["Variables"][5]["Exploration Sigma"] = 5.0
 
 e["Solver"]["Type"] = "Agent / Continuous / NAF"
 e["Solver"]["Target Learning Rate"] = 0.95
-e["Solver"]["Optimization Steps Per Update"] = 10
+e["Solver"]["Optimization Steps Per Update"] = 1
 e["Solver"]["Experiences Between Agent Trainings"] = 1
 e["Solver"]["Experiences Between Target Network Updates"] = 1
 
@@ -58,7 +58,7 @@ e["Solver"]["Experience Replay"]["Maximum Size"] = 100000
 ## Defining Q-Network
 
 e["Solver"]["Critic"]["Discount Factor"] = 1.0
-e["Solver"]["Critic"]["Learning Rate"] = 1e-3
+e["Solver"]["Critic"]["Learning Rate"] = 1e-5
 e["Solver"]["Critic"]["Mini Batch Size"] = 128
 
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"

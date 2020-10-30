@@ -600,12 +600,13 @@ std::vector<float> NeuralNetwork::getHyperparameters()
   size_t currPos = 0;
   for (size_t i = 0; i < layerCount; i++)
   {
-    size_t IC = _layers[i - 1]->_nodeCount;
     size_t OC = _layers[i]->_nodeCount;
 
     // Setting weight data to the layer's weight memory
     if (i > 0)
     {
+      size_t IC = _layers[i - 1]->_nodeCount;
+
 #ifdef _KORALI_USE_ONEDNN
       read_from_dnnl_memory(&params[currPos], _layers[i]->_weightsMem);
 #endif

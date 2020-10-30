@@ -163,9 +163,9 @@ void NAF::trainAgent()
       float mu = _actionScalings[j] * (tanh(qEvaluation[1 + j]) + 0.5) + _actionLowerBounds[j];
       float diagP = qEvaluation[1 + curAction.size() + j];
       float dmu = curAction[j] - mu;
-      float tanhv = log(2.0 / _actionScalings[j] * diagP);                                      // back transformation ( diagP=1/2scaling*exp(2*tanh(x))
-      float tanhm = (mu - _actionLowerBounds[j]) / _actionScalings[j] - 0.5;                    // back transformation ( mu=1/2scaling*tanh(x+1)+lowerbound )
-      policyGradient[1 + j] = -diff * dmu * diagP * _actionScalings[j] * (1 - tanhm * tanhm);   // dLi/dmu
+      float tanhv = log(2.0 / _actionScalings[j] * diagP);                                              // back transformation ( diagP=1/2scaling*exp(2*tanh(x))
+      float tanhm = (mu - _actionLowerBounds[j]) / _actionScalings[j] - 0.5;                            // back transformation ( mu=1/2scaling*tanh(x+1)+lowerbound )
+      policyGradient[1 + j] = -diff * dmu * diagP * _actionScalings[j] * (1 - tanhm * tanhm);           // dLi/dmu
       policyGradient[1 + curAction.size() + j] = 0.5 * diff * dmu * dmu * diagP * (1. - tanhv * tanhv); // dLi/dP(s)
     }
 

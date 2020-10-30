@@ -34,14 +34,14 @@ e["Variables"][4]["Type"] = "State"
 
 e["Variables"][5]["Name"] = "Force"
 e["Variables"][5]["Type"] = "Action"
-e["Variables"][5]["Lower Bound"] = -20.0
-e["Variables"][5]["Upper Bound"] = +20.0
+e["Variables"][5]["Lower Bound"] = -30.0
+e["Variables"][5]["Upper Bound"] = +30.0
 e["Variables"][5]["Exploration Sigma"] = 5.0
 
 ### Configuring NAF hyperparameters
 
 e["Solver"]["Type"] = "Agent / Continuous / NAF"
-e["Solver"]["Target Learning Rate"] = 0.99
+e["Solver"]["Target Learning Rate"] = 0.95
 e["Solver"]["Optimization Steps Per Update"] = 10
 e["Solver"]["Experiences Between Agent Trainings"] = 1
 e["Solver"]["Experiences Between Target Network Updates"] = 1

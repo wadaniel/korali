@@ -29,6 +29,8 @@ void Agent::initialize()
   _experienceReplayActions.resize(_experienceReplayMaximumSize);
   _experienceReplayRewards.resize(_experienceReplayMaximumSize);
   _experienceReplayTerminal.resize(_experienceReplayMaximumSize);
+  _experienceReplayPriorities.resize(_experienceReplayMaximumSize);
+  _experienceReplayProbabilities.resize(_experienceReplayMaximumSize);
 
   // If initial generation, set initial agent configuration
   if (_k->_currentGeneration == 0)
@@ -41,6 +43,8 @@ void Agent::initialize()
     _currentSampleID = 0;
     _cumulativeQStar = 0;
     _experienceCount = 0;
+    _experienceReplayMaxPriority = 0.0;
+    _randomActionProbabilityEffectiveValue = 1.0;
 
     // Initialize best rewards
     _averageTestingReward = -korali::Inf;
@@ -161,6 +165,10 @@ void Agent::runGeneration()
     _averageTestingReward = _averageTestingReward / _policyTestingEpisodes;
   }
 
+  /////////////// Updating experience probabilities
+
+  updateExperienceReplayProbabilities();
+
   /////////////// Updating the probability of a random action (epsilon)
 
   // If we reached the starting size
@@ -194,9 +202,47 @@ void Agent::processExperience(knlohmann::json &experience)
   _experienceReplayActions.add(action);
   _experienceReplayRewards.add(reward);
   _experienceReplayTerminal.add(isTerminal);
+  _experienceReplayPriorities.add(_experienceReplayMaxPriority);
+  _experienceReplayProbabilities.add(0.0);
 
   // Adding experience's reward to episode's reward
   _currentReward += reward;
+}
+
+void Agent::updateExperienceReplayProbabilities()
+{
+  // Rank priorities
+  auto experienceRanking = std::vector<std::pair<float, size_t>>(_experienceReplayStates.size());
+  for (size_t i = 0; i < _experienceReplayStates.size(); ++i) experienceRanking[i] = std::make_pair(_experienceReplayPriorities[i], i + 1);
+  sort(experienceRanking.begin(), experienceRanking.end());
+
+  // Calculate rank based probabilities
+  float priorityAnnealingFactor = 1.0; // (0 is uniform)
+  float prioritySum = 0.0;
+  for (size_t i = 0; i < _experienceReplayStates.size(); ++i)
+    prioritySum += pow((float)i, priorityAnnealingFactor);
+
+  // Update probabilities
+  for (size_t i = 0; i < _experienceReplayStates.size(); ++i)
+    _experienceReplayProbabilities[i] = pow((float)experienceRanking[i].second, priorityAnnealingFactor) / prioritySum;
+}
+
+void Agent::updateExperienceReplayPriority(size_t expId, float priority)
+{
+  // Insert priority calculated in learner
+  if (priority > _experienceReplayMaxPriority) _experienceReplayMaxPriority = priority;
+  _experienceReplayPriorities[expId] = priority;
+}
+
+std::vector<float> Agent::calculateImportanceWeights(std::vector<size_t> miniBatch)
+{
+  float compensationAnnealingFactor = 1.0; // full compensation for 1.0, no compensation for 0.0
+  auto importanceWeights = std::vector<float>(miniBatch.size());
+
+  for (size_t i = 0; i < miniBatch.size(); ++i)
+    importanceWeights[i] = pow((float)_experienceReplayStates.size() * _experienceReplayProbabilities[miniBatch[i]], -compensationAnnealingFactor);
+
+  return importanceWeights;
 }
 
 std::vector<size_t> Agent::generateMiniBatch(size_t size)
@@ -217,6 +263,30 @@ std::vector<size_t> Agent::generateMiniBatch(size_t size)
       // Setting experience
       miniBatch[i] = expId;
     }
+  }
+  else if (_miniBatchStrategy == "Prioritized")
+  {
+    // Allocating storage for random selections
+    auto pvalues = std::vector<float>(size);
+
+    for (size_t i = 0; i < size; i++)
+      pvalues[i] = _uniformGenerator->getRandomNumber();
+
+    // Sort selections ascending for traversal
+    sort(pvalues.begin(), pvalues.end());
+
+    size_t j = 0;
+    float cumulativeProbability = 0;
+    for (size_t i = 0; i < _experienceReplayProbabilities.size(); i++)
+    {
+      cumulativeProbability += _experienceReplayProbabilities[i];
+      if (cumulativeProbability >= pvalues[i]) { miniBatch[j++] = i; }
+    }
+    if (j != size) KORALI_LOG_ERROR("ERROR IN MINIBATCH");
+  }
+  else
+  {
+    KORALI_LOG_ERROR("Mini Batch Strategy not recognized.");
   }
 
   return miniBatch;

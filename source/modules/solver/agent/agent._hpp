@@ -124,14 +124,19 @@ class Agent : public Solver
   virtual void processExperience(knlohmann::json &experience);
 
   /**
+  * @brief Updates priority of experience.
+  */
+  void updateExperienceReplayPriority(size_t expId, float priority);
+
+  /**
   * @brief Updates probabilities of experiences stored based on their priority.
   */
   void updateExperienceReplayProbabilities();
 
   /**
-  * @brief Updates priority of experience.
+  * @brief Update random action probability.
   */
-  virtual void updateExperienceReplayPriority(size_t expId, float priority);
+  void updateRandomActionProbability();
 
   /**
   * @brief Generates an experience mini batch from the replay memory

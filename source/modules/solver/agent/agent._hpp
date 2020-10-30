@@ -28,10 +28,26 @@ class Agent : public Solver
   * @brief Stores experience replay rewards.
   */
   cBuffer<float> _experienceReplayRewards;
+
   /**
   * @brief Stores whether the experience is terminal .
   */
   cBuffer<int> _experienceReplayTerminal;
+
+  /**
+  * @brief Stores the priority of the experience.
+  */
+  cBuffer<float> _experienceReplayPriorities;
+
+  /**
+  * @brief Stores the priority of the experience.
+  */
+  cBuffer<float> _experienceReplayProbabilities;
+
+  /**
+  * @brief Stores the priority of the experience.
+  */
+  float _experienceReplayMaxPriority;
 
   /**
   * @brief Storage for the pointer to the learning problem
@@ -108,11 +124,28 @@ class Agent : public Solver
   virtual void processExperience(knlohmann::json &experience);
 
   /**
+  * @brief Updates probabilities of experiences stored based on their priority.
+  */
+  void updateExperienceReplayProbabilities();
+
+  /**
+  * @brief Updates priority of experience.
+  */
+  virtual void updateExperienceReplayPriority(size_t expId, float priority);
+
+  /**
   * @brief Generates an experience mini batch from the replay memory
   * @param size Size of the mini batch to create
   * @return A vector with the indexes to the experiences in the mini batch
   */
   std::vector<size_t> generateMiniBatch(size_t size);
+
+  /**
+  * @brief Calculates importance weights of experiences.
+  * @param miniBatch vector of experience indices.
+  * @return A vector with the importance weights corresponding to the experience indices.
+  */
+  std::vector<float> calculateImportanceWeights(std::vector<size_t> miniBatch);
 
   void printGenerationAfter() override;
   void initialize() override;

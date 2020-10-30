@@ -171,22 +171,7 @@ void Agent::runGeneration()
 
   /////////////// Updating the probability of a random action (epsilon)
 
-  // If we reached the starting size
-  if (_experienceReplayStates.size() > _experienceReplayStartSize)
-  {
-    // Decreasing the value of epsilon
-    _randomActionProbabilityCurrentValue = _randomActionProbabilityCurrentValue - _randomActionProbabilityDecreaseRate;
-
-    // Without exceeding the lower bound
-    if (_randomActionProbabilityCurrentValue < _randomActionProbabilityTargetValue) _randomActionProbabilityCurrentValue = _randomActionProbabilityTargetValue;
-  }
-
-  // Calculating effective value for random action probability
-  _randomActionProbabilityEffectiveValue = _experienceReplayStates.size() > _experienceReplayStartSize ? _randomActionProbabilityCurrentValue : 1.0;
-
-  // If the average testing reward is better than the previous best, replace it
-  // and store hyperparameters as best so far.
-  if (_averageTestingReward > _bestAverageTestingReward) _bestAverageTestingReward = _averageTestingReward;
+  updateRandomActionProbability();
 }
 
 void Agent::processExperience(knlohmann::json &experience)
@@ -290,6 +275,26 @@ std::vector<size_t> Agent::generateMiniBatch(size_t size)
   }
 
   return miniBatch;
+}
+
+void Agent::updateRandomActionProbability()
+{
+  // If we reached the starting size
+  if (_experienceReplayStates.size() > _experienceReplayStartSize)
+  {
+    // Decreasing the value of epsilon
+    _randomActionProbabilityCurrentValue = _randomActionProbabilityCurrentValue - _randomActionProbabilityDecreaseRate;
+
+    // Without exceeding the lower bound
+    if (_randomActionProbabilityCurrentValue < _randomActionProbabilityTargetValue) _randomActionProbabilityCurrentValue = _randomActionProbabilityTargetValue;
+  }
+
+  // Calculating effective value for random action probability
+  _randomActionProbabilityEffectiveValue = _experienceReplayStates.size() > _experienceReplayStartSize ? _randomActionProbabilityCurrentValue : 1.0;
+
+  // If the average testing reward is better than the previous best, replace it
+  // and store hyperparameters as best so far.
+  if (_averageTestingReward > _bestAverageTestingReward) _bestAverageTestingReward = _averageTestingReward;
 }
 
 void Agent::normalizeStateActionNeuralNetwork(NeuralNetwork *neuralNetwork, size_t miniBatchSize, size_t normalizationSteps)

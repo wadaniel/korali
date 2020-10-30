@@ -157,7 +157,7 @@ void NAF::trainAgent()
     policyGradient[0] = -diff;
 
     // Calculating Gradients of Li wrt. mu(s) and P(s)
-    // We include the gradients of the ammpings to mu and P
+    // We include the gradients of the mappings to mu and P
     for (size_t j = 0; j < curAction.size(); j++)
     {
       float mu = _actionScalings[j] * (tanh(qEvaluation[1 + j]) + 0.5) + _actionLowerBounds[j];
@@ -179,12 +179,9 @@ void NAF::trainAgent()
   }
 
   // Running one generation of the optimization method with the given mini-batch
-  auto blob0 = _qLearner->getHyperparameters();
   _qLearner->initialize();
   _qLearner->runGeneration();
-  auto blob1 = _qLearner->getHyperparameters();
   _qLearner->finalize();
-  auto blob2 = _qLearner->getHyperparameters();
 
   // Keeping statistics
   _averageQStar = (float)_cumulativeQStar / (float)_criticMiniBatchSize;

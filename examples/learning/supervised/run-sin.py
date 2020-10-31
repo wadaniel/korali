@@ -52,7 +52,7 @@ e["Solver"]["Neural Network"]["Layers"][2]["Batch Normalization"]["Enabled"] = T
 
 e["Solver"]["Neural Network"]["Layers"][3]["Type"] = "Layer/Dense"
 e["Solver"]["Neural Network"]["Layers"][3]["Node Count"] = 1
-e["Solver"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Softmax"
+e["Solver"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Elementwise/Linear"
 e["Solver"]["Neural Network"]["Layers"][3]["Batch Normalization"]["Enabled"] = True
 
 e["Console Output"]["Frequency"] = 1

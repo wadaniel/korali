@@ -203,12 +203,12 @@ void Agent::updateExperienceReplayProbabilities()
 
   // Calculate rank based probabilities
   float prioritySum = 0.0;
-  for (size_t i = 0; i < _experienceReplayStates.size(); ++i)
+  for (size_t i = 1; i < _experienceReplayStates.size() + 1; ++i)
     prioritySum += pow((float)i, _priorityAnnealingRate);
 
   // Update probabilities
   for (size_t i = 0; i < _experienceReplayStates.size(); ++i)
-    _experienceReplayProbabilities[i] = pow((float)experienceRanking[i].second, _priorityAnnealingRate) / prioritySum;
+    _experienceReplayProbabilities[i] = pow((float)experienceRanking[i].second, _priorityAnnealingRate) / (prioritySum);
 }
 
 void Agent::updateExperienceReplayPriority(size_t expId, float priority)
@@ -220,10 +220,13 @@ void Agent::updateExperienceReplayPriority(size_t expId, float priority)
 
 std::vector<float> Agent::calculateImportanceWeights(std::vector<size_t> miniBatch)
 {
-  auto importanceWeights = std::vector<float>(miniBatch.size());
+  auto importanceWeights = std::vector<float>(miniBatch.size(), 1.0);
 
-  for (size_t i = 0; i < miniBatch.size(); ++i)
-    importanceWeights[i] = pow((float)_experienceReplayStates.size() * _experienceReplayProbabilities[miniBatch[i]], -_importanceWeightAnnealingRate);
+  if (_miniBatchStrategy == "Prioritized")
+  {
+    for (size_t i = 0; i < miniBatch.size(); ++i)
+      importanceWeights[i] = pow((float)_experienceReplayStates.size() * _experienceReplayProbabilities[miniBatch[i]], -_importanceWeightAnnealingRate);
+  }
 
   return importanceWeights;
 }
@@ -249,7 +252,7 @@ std::vector<size_t> Agent::generateMiniBatch(size_t size)
   }
   else if (_miniBatchStrategy == "Prioritized")
   {
-    // Allocating storage for random selections
+    // Allocating storage for uniform random numbers
     auto pvalues = std::vector<float>(size);
 
     for (size_t i = 0; i < size; i++)
@@ -258,14 +261,22 @@ std::vector<size_t> Agent::generateMiniBatch(size_t size)
     // Sort selections ascending for traversal
     sort(pvalues.begin(), pvalues.end());
 
-    size_t j = 0;
+    size_t expId = 0;
+    size_t batchIdx = 0;
     float cumulativeProbability = 0;
-    for (size_t i = 0; i < _experienceReplayProbabilities.size(); i++)
+
+    // Sampling from multinomial distribution using inverse transform
+    cumulativeProbability += _experienceReplayProbabilities[0];
+    while (batchIdx < size && expId < _experienceReplayStates.size())
     {
-      cumulativeProbability += _experienceReplayProbabilities[i];
-      if (cumulativeProbability >= pvalues[i]) { miniBatch[j++] = i; }
+      if (cumulativeProbability > pvalues[batchIdx])
+        miniBatch[batchIdx++] = expId;
+      else
+        cumulativeProbability += _experienceReplayProbabilities[++expId];
     }
-    if (j != size) KORALI_LOG_ERROR("ERROR IN MINIBATCH");
+
+    // Uniform fill if miniBatch not full due to numerical precision during probability accumulation (cumulative probability < 1)
+    while (batchIdx < size) miniBatch[batchIdx++] = floor(_uniformGenerator->getRandomNumber() * (float)(_experienceReplayStates.size() - 1));
   }
   else
   {

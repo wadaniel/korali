@@ -135,6 +135,8 @@ class Agent : public Solver
 
   /**
   * @brief Updates priority of experience.
+  * @param expId The experience to update
+  * @param priority New value for experience expId
   */
   void updateExperienceReplayPriority(size_t expId, float priority);
 

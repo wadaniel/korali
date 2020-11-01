@@ -146,21 +146,32 @@ void GFPT::initializeAgent()
   _hyperparameters["Policy"] = _policyLearner->getHyperparameters();
 }
 
-float GFPT::stateActionValueFunction(const std::vector<float> &state, const std::vector<float> &action)
+float GFPT::stateValueFunction(const std::vector<float> &state)
 {
   // Calculating V(s_i+1)
-  vValState = _vLearner->getEvaluation(state)[0];
+  float v = _vLearner->getEvaluation(state)[0];
 
+  return v;
+}
+
+float GFPT::currentActionAdvantageFunction(const std::vector<float> &state, const std::vector<float> &action)
+{
+ // Storage to put together state and action
+ std::vector<float> stateActionInput(_problem->_stateVectorSize + _problem->_actionVectorSize);
+
+ // Calculating max_a A(s_i+1, a)
+ for (size_t j = 0; j < _problem->_stateVectorSize; j++) stateActionInput[j] = state[j];
+ for (size_t j = 0; j < _problem->_actionVectorSize; j++) stateActionInput[j + _problem->_stateVectorSize] = action[j];
+ float a = _aLearner->getEvaluation(stateActionInput)[0];
+
+ return a;
+}
+
+float GFPT::averageActionAdvantageFunction(const std::vector<float> &state)
+{
   // Storage to put together state and action
   std::vector<float> stateActionInput(_problem->_stateVectorSize + _problem->_actionVectorSize);
-
-  // Calculating max_a A(s_i+1, a)
   for (size_t j = 0; j < _problem->_stateVectorSize; j++) stateActionInput[j] = state[j];
-  for (size_t j = 0; j < _problem->_actionVectorSize; j++) stateActionInput[j + _problem->_stateVectorSize] = action[j];
-  aValAction = _aLearner->getEvaluation(stateActionInput)[0];
-
-  // Evaluate policy to get Gaussian means
-  forwardPolicy(state);
 
   // Creating storage for average action minibatch
   std::vector<std::vector<float>> avgActionMinibatch(_policySamplePopulation);
@@ -191,18 +202,15 @@ float GFPT::stateActionValueFunction(const std::vector<float> &state, const std:
   auto avgActionEvaluation = _actionAverageEvaluationNetwork->_outputValues;
 
   // Initializing average A(s,a) counter
-  aValAverage = 0.0;
+  float avgA = 0.0;
 
   // Summing A(s_i+1, a') for many a'
-  for (size_t i = 0; i < _policySamplePopulation; i++) aValAverage += avgActionEvaluation[i][0];
+  for (size_t i = 0; i < _policySamplePopulation; i++) avgA += avgActionEvaluation[i][0];
 
   // Normalizing Average
-  aValAverage /= (float)_policySamplePopulation;
+  avgA /= (float)_policySamplePopulation;
 
-  // Returning Q(s,a) = V(s,a) + A(s,a) - avg A(s,a')
-  float qVal = vValState + aValAction - aValAverage;
-
-  return qVal;
+  return avgA;
 }
 
 void GFPT::trainAgent()
@@ -237,38 +245,55 @@ void GFPT::trainAgent()
     // Check if it is a terminal state
     bool isTerminal = _experienceReplayTerminal[expId];
 
-    // Getting experience's current state and action
-    auto curState = _experienceReplayStates[expId];
-    auto curAction = _experienceReplayActions[expId];
-    auto nextState = isTerminal ? std::vector<float>() : _experienceReplayStates[expId + 1];
-    std::vector<float> bestAction;
-    if (isTerminal)
-      bestAction = std::vector<float>();
-    else
-    {
-      forwardPolicy(nextState);
-      bestAction = _actionMeans;
-    }
-
-    // Getting current reward
-    float curReward = _experienceReplayRewards[expId];
-
     /*****************************************
     * Critic Section
     *****************************************/
+
+    // Getting the reward for the current experience
+    float curReward = _experienceReplayRewards[expId];
 
     // Calculating target Q value (solution) for Qnew on selected batch
     float qStar = curReward;
 
     // If state is not terminal (next state is filled) then add Qnew to the Q value.
-    if (isTerminal == false) qStar += _criticDiscountFactor * stateActionValueFunction(nextState, bestAction);
+    if (isTerminal == false)
+    {
+     // Getting next state
+     auto nextState = _experienceReplayStates[expId + 1];
 
-    // Now calculating Q, V, A, and avgA for current state/action
-    float qCurrent = stateActionValueFunction(curState, curAction);
+     // Updating action distributions for the next state
+     forwardPolicy(nextState);
+
+     // Getting best action for next state
+     auto bestAction = _actionMeans;
+
+     // Now calculating V, A, and avgA for next state/best action
+     float curA = currentActionAdvantageFunction(nextState, bestAction);
+     float avgA = averageActionAdvantageFunction(nextState);
+     float curV = stateValueFunction(nextState);
+
+     // Adding q(nextstate, bestaction) to Q*
+     qStar += _criticDiscountFactor * (curV + curA - avgA);
+    }
+
+    // Getting experience's current state, action
+    auto curState = _experienceReplayStates[expId];
+    auto curAction = _experienceReplayActions[expId];
+
+    // Updating action distributions for the current state
+    forwardPolicy(curState);
+
+    // Now calculating V, A, and avgA for current state/action
+    float curA = currentActionAdvantageFunction(curState, curAction);
+    float avgA = averageActionAdvantageFunction(curState);
+    float curV = stateValueFunction(curState);
+
+    // Current Q = V - A - avgA
+    float curQ = curV + curA - avgA;
 
     // Now calculating targets for V(s) and A(s,a)
-    float vTarget = qStar - qCurrent + aValAverage;
-    float aTarget = qStar - vValState + aValAverage;
+    float vTarget = qStar - curQ + avgA;
+    float aTarget = qStar - curV + avgA;
 
     // Updating inputs to training learners
     for (size_t j = 0; j < curState.size(); j++) _aProblem->_inputs[i][j] = curState[j];

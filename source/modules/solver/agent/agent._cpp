@@ -29,6 +29,8 @@ void Agent::initialize()
   _experienceReplayActions.resize(_experienceReplayMaximumSize);
   _experienceReplayRewards.resize(_experienceReplayMaximumSize);
   _experienceReplayTerminal.resize(_experienceReplayMaximumSize);
+  _experienceReplayPriorities.resize(_experienceReplayMaximumSize);
+  _experienceReplayProbabilities.resize(_experienceReplayMaximumSize);
 
   // If initial generation, set initial agent configuration
   if (_k->_currentGeneration == 0)
@@ -41,6 +43,8 @@ void Agent::initialize()
     _currentSampleID = 0;
     _cumulativeQStar = 0;
     _experienceCount = 0;
+    _experienceReplayMaxPriority = 0.0;
+    _randomActionProbabilityEffectiveValue = 1.0;
 
     // Initialize best rewards
     _averageTestingReward = -korali::Inf;
@@ -161,8 +165,129 @@ void Agent::runGeneration()
     _averageTestingReward = _averageTestingReward / _policyTestingEpisodes;
   }
 
+  /////////////// Updating experience probabilities
+
+  updateExperienceReplayProbabilities();
+
   /////////////// Updating the probability of a random action (epsilon)
 
+  updateRandomActionProbability();
+}
+
+void Agent::processExperience(knlohmann::json &experience)
+{
+  // Getting state, action, reward, and whether it's terminal
+  std::vector<float> state = experience["State"];
+  std::vector<float> action = experience["Action"];
+  float reward = experience["Reward"];
+  bool isTerminal = experience["Is Terminal"];
+
+  // Adding common information to experience replay
+  _experienceReplayStates.add(state);
+  _experienceReplayActions.add(action);
+  _experienceReplayRewards.add(reward);
+  _experienceReplayTerminal.add(isTerminal);
+  _experienceReplayPriorities.add(_experienceReplayMaxPriority);
+  _experienceReplayProbabilities.add(0.0);
+
+  // Adding experience's reward to episode's reward
+  _currentReward += reward;
+}
+
+void Agent::updateExperienceReplayProbabilities()
+{
+  // Rank priorities
+  auto experienceRanking = std::vector<std::pair<float, size_t>>(_experienceReplayStates.size());
+  for (size_t i = 0; i < _experienceReplayStates.size(); ++i) experienceRanking[i] = std::make_pair(_experienceReplayPriorities[i], i + 1);
+  sort(experienceRanking.begin(), experienceRanking.end());
+
+  // Calculate rank based probabilities
+  float prioritySum = 0.0;
+  for (size_t i = 1; i < _experienceReplayStates.size() + 1; ++i)
+    prioritySum += std::pow((float)i, _priorityAnnealingRate);
+
+  // Update probabilities
+  for (size_t i = 0; i < _experienceReplayStates.size(); ++i)
+    _experienceReplayProbabilities[i] = std::pow((float)experienceRanking[i].second, _priorityAnnealingRate) / (prioritySum);
+}
+
+void Agent::updateExperienceReplayPriority(size_t expId, float priority)
+{
+  // Insert priority calculated in learner
+  if (priority > _experienceReplayMaxPriority) _experienceReplayMaxPriority = priority;
+  _experienceReplayPriorities[expId] = priority;
+}
+
+std::vector<float> Agent::calculateImportanceWeights(std::vector<size_t> miniBatch)
+{
+  auto importanceWeights = std::vector<float>(miniBatch.size(), 1.0);
+
+  if (_miniBatchStrategy == "Prioritized")
+  {
+    for (size_t i = 0; i < miniBatch.size(); ++i)
+      importanceWeights[i] = std::pow((float)_experienceReplayStates.size() * _experienceReplayProbabilities[miniBatch[i]], -_importanceWeightAnnealingRate);
+  }
+
+  return importanceWeights;
+}
+
+std::vector<size_t> Agent::generateMiniBatch(size_t size)
+{
+  // Allocating storage for mini batch experiecne indexes
+  std::vector<size_t> miniBatch(size);
+
+  if (_miniBatchStrategy == "Uniform")
+  {
+    for (size_t i = 0; i < size; i++)
+    {
+      // Producing random (uniform) number for the selection of the experience
+      float x = _uniformGenerator->getRandomNumber();
+
+      // Selecting experience
+      size_t expId = std::floor(x * (float)(_experienceReplayStates.size() - 1));
+
+      // Setting experience
+      miniBatch[i] = expId;
+    }
+  }
+  else if (_miniBatchStrategy == "Prioritized")
+  {
+    // Allocating storage for uniform random numbers
+    auto pvalues = std::vector<float>(size);
+
+    for (size_t i = 0; i < size; i++)
+      pvalues[i] = _uniformGenerator->getRandomNumber();
+
+    // Sort selections ascending for traversal
+    std::sort(pvalues.begin(), pvalues.end());
+
+    size_t expId = 0;
+    size_t batchIdx = 0;
+    float cumulativeProbability = 0;
+
+    // Sampling from multinomial distribution using inverse transform
+    cumulativeProbability += _experienceReplayProbabilities[0];
+    while (batchIdx < size && expId < _experienceReplayStates.size())
+    {
+      if (cumulativeProbability > pvalues[batchIdx])
+        miniBatch[batchIdx++] = expId;
+      else
+        cumulativeProbability += _experienceReplayProbabilities[++expId];
+    }
+
+    // Uniform fill if miniBatch not full due to numerical precision during probability accumulation (cumulative probability < 1)
+    while (batchIdx < size) miniBatch[batchIdx++] = std::floor(_uniformGenerator->getRandomNumber() * (float)(_experienceReplayStates.size() - 1));
+  }
+  else
+  {
+    KORALI_LOG_ERROR("Mini Batch Strategy not recognized.");
+  }
+
+  return miniBatch;
+}
+
+void Agent::updateRandomActionProbability()
+{
   // If we reached the starting size
   if (_experienceReplayStates.size() > _experienceReplayStartSize)
   {
@@ -179,47 +304,6 @@ void Agent::runGeneration()
   // If the average testing reward is better than the previous best, replace it
   // and store hyperparameters as best so far.
   if (_averageTestingReward > _bestAverageTestingReward) _bestAverageTestingReward = _averageTestingReward;
-}
-
-void Agent::processExperience(knlohmann::json &experience)
-{
-  // Getting state, action, reward, and whether it's terminal
-  std::vector<float> state = experience["State"];
-  std::vector<float> action = experience["Action"];
-  float reward = experience["Reward"];
-  bool isTerminal = experience["Is Terminal"];
-
-  // Adding common information to experience replay
-  _experienceReplayStates.add(state);
-  _experienceReplayActions.add(action);
-  _experienceReplayRewards.add(reward);
-  _experienceReplayTerminal.add(isTerminal);
-
-  // Adding experience's reward to episode's reward
-  _currentReward += reward;
-}
-
-std::vector<size_t> Agent::generateMiniBatch(size_t size)
-{
-  // Allocating storage for mini batch experiecne indexes
-  std::vector<size_t> miniBatch(size);
-
-  if (_miniBatchStrategy == "Uniform")
-  {
-    for (size_t i = 0; i < size; i++)
-    {
-      // Producing random (uniform) number for the selection of the experience
-      float x = _uniformGenerator->getRandomNumber();
-
-      // Selecting experience
-      size_t expId = floor(x * (float)(_experienceReplayStates.size() - 1));
-
-      // Setting experience
-      miniBatch[i] = expId;
-    }
-  }
-
-  return miniBatch;
 }
 
 void Agent::normalizeStateActionNeuralNetwork(NeuralNetwork *neuralNetwork, size_t miniBatchSize, size_t normalizationSteps)

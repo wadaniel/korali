@@ -104,13 +104,8 @@ void Continuous::getAction(korali::Sample &sample)
 
       for (size_t i = 0; i < _problem->_actionVectorIndexes.size(); i++)
       {
-        // Updating normal distribution for the current action element
-        _normalGenerator->_mean = _actionMeans[i];
-        _normalGenerator->_standardDeviation = _actionSigmas[i];
-        //printf("mean %f sigma %f\n", _actionMeans[i], _actionSigmas[i]);
-
-        // Generating action from the updated normal distribution
-        action[i] = _normalGenerator->getRandomNumber();
+        // Generating action from the normal distribution
+        action[i] = _actionMeans[i] + _actionSigmas[i] * _normalGenerator->getRandomNumber();
 
         // Clipping actions
         if (action[i] > _actionUpperBounds[i])

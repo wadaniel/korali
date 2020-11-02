@@ -107,10 +107,13 @@ void NAF::trainAgent()
   // Calculating cumulative Q*, for statistical purposes
   _cumulativeQStar = 0.0;
   _cumulativeQStarSquared = 0.0;
+  float cumulativeTdError = 0.0;
+  float cumulativeTdErrorSquarred = 0.0;
   std::fill(_averageActionSigmas.begin(), _averageActionSigmas.end(), 0.0);
 
   // Creating minibatch for the critic update
   auto miniBatchIndexes = generateMiniBatch(_criticMiniBatchSize);
+  auto importanceWeights = calculateImportanceWeights(miniBatchIndexes);
 
   // Reevaluating minibatch with Qhat
   for (size_t i = 0; i < _criticMiniBatchSize; i++)
@@ -151,10 +154,19 @@ void NAF::trainAgent()
     float qval = quadraticAdvantageFunction(curAction, qEvaluation) + qEvaluation[0]; // A(s,a) + V(s)
     float diff = yHat - qval;
 
+    cumulativeTdError += diff;
+    cumulativeTdErrorSquarred += (diff * diff);
+
+    // Update experience priority
+    updateExperienceReplayPriority(expId, abs(diff));
+
     std::vector<float> policyGradient(1 + 2 * _problem->_actionVectorSize);
 
+    // Fetch importance weight
+    float weight = importanceWeights[i];
+
     // Calculating Gradients of Loss Li wrt. V(s)
-    policyGradient[0] = -diff;
+    policyGradient[0] = -weight * diff;
 
     // Calculating Gradients of Li wrt. mu(s) and P(s)
     // We include the gradients of the mappings to mu and P
@@ -163,10 +175,10 @@ void NAF::trainAgent()
       float mu = _actionScalings[j] * (tanh(qEvaluation[1 + j]) + 0.5) + _actionLowerBounds[j];
       float diagP = qEvaluation[1 + curAction.size() + j];
       float dmu = curAction[j] - mu;
-      float tanhv = log(2.0 / _actionScalings[j] * diagP);                                              // back transformation ( diagP=1/2scaling*exp(2*tanh(x))
-      float tanhm = (mu - _actionLowerBounds[j]) / _actionScalings[j] - 0.5;                            // back transformation ( mu=1/2scaling*tanh(x+1)+lowerbound )
-      policyGradient[1 + j] = -diff * dmu * diagP * _actionScalings[j] * (1 - tanhm * tanhm);           // dLi/dmu
-      policyGradient[1 + curAction.size() + j] = 0.5 * diff * dmu * dmu * diagP * (1. - tanhv * tanhv); // dLi/dP(s)
+      float tanhv = log(2.0 / _actionScalings[j] * diagP);                                                       // back transformation ( diagP=1/2scaling*exp(2*tanh(v))
+      float tanhm = (mu - _actionLowerBounds[j]) / _actionScalings[j] - 0.5;                                     // back transformation ( mu=scaling*(tanh(m)+1/2)+lowerbound
+      policyGradient[1 + j] = -weight * diff * dmu * diagP * _actionScalings[j] * (1 - tanhm * tanhm);           // dLi/dmu
+      policyGradient[1 + curAction.size() + j] = weight * 0.5 * diff * dmu * dmu * diagP * (1. - tanhv * tanhv); // dLi/dP(s)
     }
 
     _qProblem->_inputs[i] = curState;
@@ -184,8 +196,10 @@ void NAF::trainAgent()
   _qLearner->finalize();
 
   // Keeping statistics
-  _averageQStar = (float)_cumulativeQStar / (float)_criticMiniBatchSize;
+  _averageQStar = _cumulativeQStar / (float)_criticMiniBatchSize;
   _stdevQStar = sqrt(_cumulativeQStarSquared / (float)_criticMiniBatchSize - _averageQStar * _averageQStar);
+  _averageTDError = cumulativeTdError / (float)_criticMiniBatchSize;
+  _stdevTDError = sqrt(cumulativeTdErrorSquarred / (float)_criticMiniBatchSize - _averageTDError * _averageTDError);
   for (size_t j = 0; j < _averageActionSigmas.size(); j++) _averageActionSigmas[j] /= (float)_criticMiniBatchSize;
 
   /*********************************************************************
@@ -239,6 +253,7 @@ void NAF::printAgentInformation()
 {
   _k->_logger->logInfo("Normal", "Critic Information:\n");
   _k->_logger->logInfo("Normal", " + Average (Std) Q-Value in Mini-Batch:  %f (%f)\n", _averageQStar, _stdevQStar);
+  _k->_logger->logInfo("Normal", " + Average (Std) TD-Error in Mini-Batch:  %f (%f)\n", _averageTDError, _stdevTDError);
   _k->_logger->logInfo("Normal", " + Average P values in Mini-Batch: \n");
   for (size_t i = 0; i < _averageActionSigmas.size(); ++i) _k->_logger->logInfo("Normal", " +  [ %f ]\n", _averageActionSigmas[i]);
 

@@ -36,15 +36,16 @@ e["Variables"][5]["Name"] = "Force"
 e["Variables"][5]["Type"] = "Action"
 e["Variables"][5]["Lower Bound"] = -20.0
 e["Variables"][5]["Upper Bound"] = +20.0
-e["Variables"][5]["Exploration Sigma"] = 5.0
+e["Variables"][5]["Exploration Sigma"] = 0.35
 
 ### Configuring NAF hyperparameters
 
 e["Solver"]["Type"] = "Agent / Continuous / NAF"
-e["Solver"]["Target Learning Rate"] = 0.99
-e["Solver"]["Optimization Steps Per Update"] = 10
+e["Solver"]["Target Learning Rate"] = 0.95
+e["Solver"]["Optimization Steps Per Update"] = 1
 e["Solver"]["Experiences Between Agent Trainings"] = 1
 e["Solver"]["Experiences Between Target Network Updates"] = 1
+e["Solver"]["Mini Batch Strategy"] = "Prioritized"
 
 e["Solver"]["Random Action Probability"]["Initial Value"] = 0.5
 e["Solver"]["Random Action Probability"]["Target Value"] = 0.01
@@ -52,7 +53,7 @@ e["Solver"]["Random Action Probability"]["Decrease Rate"] = 0.03
 
 ### Defining Experience Replay configuration
 
-e["Solver"]["Experience Replay"]["Start Size"] =   10000
+e["Solver"]["Experience Replay"]["Start Size"] =   5000
 e["Solver"]["Experience Replay"]["Maximum Size"] = 100000
 
 ## Defining Q-Network

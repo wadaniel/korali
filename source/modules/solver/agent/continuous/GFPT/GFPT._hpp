@@ -76,6 +76,9 @@ class GFPT : public Continuous
    */
   problem::SupervisedLearning *_policyProblem;
 
+  std::vector<float> _qRetCacheValue;
+  std::vector<ssize_t> _qRetCacheAge;
+
   /**
    * @brief Calculates the state+action value function Q(s,a) = Expectation_s,a [ R | s,a ] of a given experience using the latest critic
    * @param state state to evaluate
@@ -85,7 +88,8 @@ class GFPT : public Continuous
   float stateValueFunction(const std::vector<float> &state);
   float currentActionAdvantageFunction(const std::vector<float> &state, const std::vector<float> &action);
   float averageActionAdvantageFunction(const std::vector<float> &state);
-
+  float retraceFunction(size_t expId);
+  float averageActionAdvantageFunctionInference(const std::vector<float> &state);
   void forwardPolicy(const std::vector<float> &state) override;
 
   void updateHyperparameters(const knlohmann::json &hyperparameters) override;

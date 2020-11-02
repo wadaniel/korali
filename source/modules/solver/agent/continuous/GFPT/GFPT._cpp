@@ -19,7 +19,7 @@ void GFPT::initializeAgent()
   korali::Engine engine;
 
   /*********************************************************************
-  * Initializing Critic-Related Structures
+  * State Value Function Learner
   *********************************************************************/
 
   _vExperiment["Problem"]["Type"] = "Supervised Learning";
@@ -45,6 +45,10 @@ void GFPT::initializeAgent()
   // Getting learner pointers
   _vProblem = dynamic_cast<problem::SupervisedLearning *>(_vExperiment._problem);
   _vLearner = dynamic_cast<solver::learner::DeepSupervisor *>(_vExperiment._solver);
+
+  /*********************************************************************
+  * Advantage Function learner
+  *********************************************************************/
 
   _aExperiment["Problem"]["Type"] = "Supervised Learning";
   _aExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
@@ -139,12 +143,117 @@ void GFPT::initializeAgent()
   batchOptimizationNetworkConfig["Use Preloaded Normalization Data"] = true;
   _batchOptimizationNetwork = dynamic_cast<NeuralNetwork *>(getModule(batchOptimizationNetworkConfig, _k));
 
+
+  /*********************************************************************
+  * Initializing Qret cache
+  *********************************************************************/
+
+  _qRetCacheValue.resize(_experienceReplayMaximumSize);
+  _qRetCacheAge.resize(_experienceReplayMaximumSize);
+  for (size_t i = 0; i < _experienceReplayMaximumSize; i++) _qRetCacheAge[i] = -50000;
+
   /*********************************************************************
   * Loading/Setting Hyperparameters
   *********************************************************************/
 
   _hyperparameters["Policy"] = _policyLearner->getHyperparameters();
 }
+
+float GFPT::retraceFunction(size_t expId)
+{
+  // Finding last experience in the episode that corresponds to expId
+  ssize_t startId = expId;
+  ssize_t endId = startId;
+  while (_experienceReplayTerminal[endId] == false) endId++;
+
+  // Initializing qRet to zero
+  float qRet = 0.0;
+
+  // Initializing values coming from the next experience (for latest experience, just reward)
+  float qTmp = _experienceReplayRewards[endId];
+
+  // Setting starting experience as the second to last
+  ssize_t curId = endId-1;
+
+  // Now checking whether any necessary qTmp is present in cache
+  for (ssize_t i = startId; i < endId; i++)
+  {
+   // If the difference in age is within the range, then it's a cache hit
+   if (_optimizationStepCount - _qRetCacheAge[i] < _criticRetraceCachePersistence)
+   {
+    qTmp = _qRetCacheValue[i];
+    curId = i;
+    break;
+   }
+  }
+
+  // Now iterating backwards to calculate the rest of qRet
+  for (; curId >= startId; curId--)
+  {
+   // Getting current reward
+   float curReward = _experienceReplayRewards[curId];
+
+   // Re-calculating qRet
+   qRet = curReward + _criticDiscountFactor * qTmp;
+
+   // If this is the starting experience, return the current value
+   if (curId == startId) break;
+
+   // Getting current state
+   std::vector<float> curState = _experienceReplayStates[curId];
+
+   // Getting current action index
+   auto curAction = _experienceReplayActions[curId];
+
+   // Updating action distributions for the current state
+   forwardPolicy(curState);
+
+   // Now calculating V, A, and avgA for current state/action
+   float curA = currentActionAdvantageFunction(curState, curAction);
+   float avgA = averageActionAdvantageFunction(curState);
+   float curV = stateValueFunction(curState);
+
+   // Current Q = V - A - avgA
+   float curQ = curV + curA - avgA;
+
+   // Getting probability densities for current action given current policy
+   float pCurPolicy = 1.0f;
+   for (size_t i = 0; i < curAction.size(); i++)
+   {
+    _normalGenerator->_mean = _actionMeans[i];
+    _normalGenerator->_standardDeviation = _actionSigmas[i];
+    _normalGenerator->updateDistribution();
+    pCurPolicy *= _normalGenerator->getDensity(curAction[i]);
+   }
+
+   // Getting probability densities for current action given current policy
+   float pOldPolicy = 1.0f;
+   for (size_t i = 0; i < curAction.size(); i++)
+   {
+    _normalGenerator->_mean = _experienceReplayActionMeans[curId][i];
+    _normalGenerator->_standardDeviation = _experienceReplayActionSigmas[curId][i];
+    _normalGenerator->updateDistribution();
+    pOldPolicy *= _normalGenerator->getDensity(curAction[i]);
+   }
+
+   // Now calculating importance weight for the old s,a experience
+   float importanceWeight = pCurPolicy / pOldPolicy;
+
+   // Now calculating truncated importance weight with 1.0 as truncation factor
+   float truncatedImportanceWeight = std::min(1.0f, importanceWeight);
+
+   // Updating qRet
+   qTmp = truncatedImportanceWeight * (qRet - curQ) + curV;
+
+   // Refreshing cache with the calculated value
+   _qRetCacheValue[curId-1] = qTmp;
+   _qRetCacheAge[curId-1] = _optimizationStepCount;
+  }
+
+  // Returning qRet
+  return qRet;
+}
+
 
 float GFPT::stateValueFunction(const std::vector<float> &state)
 {
@@ -253,27 +362,37 @@ void GFPT::trainAgent()
     float curReward = _experienceReplayRewards[expId];
 
     // Calculating target Q value (solution) for Qnew on selected batch
-    float qStar = curReward;
+    float qStar = 0.0f;
 
-    // If state is not terminal (next state is filled) then add Qnew to the Q value.
-    if (isTerminal == false)
+    // We calculate qStar depending on whether we use retrace or not
+    if (_criticRetraceEnabled == true)
     {
-     // Getting next state
-     auto nextState = _experienceReplayStates[expId + 1];
+     qStar = retraceFunction(expId);
+    }
+    else
+    {
+     qStar = curReward;
 
-     // Updating action distributions for the next state
-     forwardPolicy(nextState);
+     // If state is not terminal (next state is filled) then add Qnew to the Q value.
+     if (isTerminal == false)
+     {
+      // Getting next state
+      auto nextState = _experienceReplayStates[expId + 1];
 
-     // Getting best action for next state
-     auto bestAction = _actionMeans;
+      // Updating action distributions for the next state
+      forwardPolicy(nextState);
 
-     // Now calculating V, A, and avgA for next state/best action
-     float curA = currentActionAdvantageFunction(nextState, bestAction);
-     float avgA = averageActionAdvantageFunction(nextState);
-     float curV = stateValueFunction(nextState);
+      // Getting best action for next state
+      auto bestAction = _actionMeans;
 
-     // Adding q(nextstate, bestaction) to Q*
-     qStar += _criticDiscountFactor * (curV + curA - avgA);
+      // Now calculating V, A, and avgA for next state/best action
+      float curA = currentActionAdvantageFunction(nextState, bestAction);
+      float avgA = averageActionAdvantageFunction(nextState);
+      float curV = stateValueFunction(nextState);
+
+      // Adding q(nextstate, bestaction) to Q*
+      qStar += _criticDiscountFactor * (curV + curA - avgA);
+     }
     }
 
     // Getting experience's current state, action
@@ -399,6 +518,7 @@ void GFPT::trainAgent()
   _policyLearner->initialize();
   _policyLearner->runGeneration();
   _policyLearner->finalize();
+
 
   /****************************************************************************
   * Policy Normalization

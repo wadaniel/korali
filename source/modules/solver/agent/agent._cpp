@@ -203,12 +203,12 @@ void Agent::updateExperienceReplayProbabilities()
 
   // Calculate rank based probabilities
   float prioritySum = 0.0;
-  for (size_t i = 1; i < _experienceReplayStates.size() + 1; ++i)
-    prioritySum += pow((float)i, _priorityAnnealingRate);
-
+  for (size_t i = 1; i < _experienceReplayStates.size()+1; ++i)
+    prioritySum += std::pow((float)i, _priorityAnnealingRate);
+  
   // Update probabilities
   for (size_t i = 0; i < _experienceReplayStates.size(); ++i)
-    _experienceReplayProbabilities[i] = pow((float)experienceRanking[i].second, _priorityAnnealingRate) / (prioritySum);
+    _experienceReplayProbabilities[i] = std::pow((float)experienceRanking[i].second, _priorityAnnealingRate) / (prioritySum);
 }
 
 void Agent::updateExperienceReplayPriority(size_t expId, float priority)
@@ -225,7 +225,7 @@ std::vector<float> Agent::calculateImportanceWeights(std::vector<size_t> miniBat
   if (_miniBatchStrategy == "Prioritized")
   {
     for (size_t i = 0; i < miniBatch.size(); ++i)
-      importanceWeights[i] = pow((float)_experienceReplayStates.size() * _experienceReplayProbabilities[miniBatch[i]], -_importanceWeightAnnealingRate);
+      importanceWeights[i] = std::pow((float)_experienceReplayStates.size() * _experienceReplayProbabilities[miniBatch[i]], -_importanceWeightAnnealingRate);
   }
 
   return importanceWeights;
@@ -244,7 +244,7 @@ std::vector<size_t> Agent::generateMiniBatch(size_t size)
       float x = _uniformGenerator->getRandomNumber();
 
       // Selecting experience
-      size_t expId = floor(x * (float)(_experienceReplayStates.size() - 1));
+      size_t expId = std::floor(x * (float)(_experienceReplayStates.size() - 1));
 
       // Setting experience
       miniBatch[i] = expId;
@@ -259,24 +259,24 @@ std::vector<size_t> Agent::generateMiniBatch(size_t size)
       pvalues[i] = _uniformGenerator->getRandomNumber();
 
     // Sort selections ascending for traversal
-    sort(pvalues.begin(), pvalues.end());
+    std::sort(pvalues.begin(), pvalues.end());
 
     size_t expId = 0;
     size_t batchIdx = 0;
     float cumulativeProbability = 0;
-
+    
     // Sampling from multinomial distribution using inverse transform
     cumulativeProbability += _experienceReplayProbabilities[0];
-    while (batchIdx < size && expId < _experienceReplayStates.size())
+    while(batchIdx < size && expId <_experienceReplayStates.size())
     {
-      if (cumulativeProbability > pvalues[batchIdx])
+      if(cumulativeProbability > pvalues[batchIdx]) 
         miniBatch[batchIdx++] = expId;
       else
         cumulativeProbability += _experienceReplayProbabilities[++expId];
     }
-
+  
     // Uniform fill if miniBatch not full due to numerical precision during probability accumulation (cumulative probability < 1)
-    while (batchIdx < size) miniBatch[batchIdx++] = floor(_uniformGenerator->getRandomNumber() * (float)(_experienceReplayStates.size() - 1));
+    while(batchIdx < size) miniBatch[batchIdx++] = std::floor(_uniformGenerator->getRandomNumber() * (float)(_experienceReplayStates.size() - 1));
   }
   else
   {

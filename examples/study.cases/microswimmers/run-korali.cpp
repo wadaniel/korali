@@ -84,11 +84,11 @@ int main(int argc, char *argv[])
 
   e["Solver"]["Critic"]["Learning Rate"] = 0.0001;
   e["Solver"]["Critic"]["Discount Factor"] = 0.99;
-  e["Solver"]["Critic"]["Mini Batch Size"] = 32;
+  e["Solver"]["Critic"]["Mini Batch Size"] = 64;
   e["Solver"]["Critic"]["Normalization Steps"] = 0;
 
   e["Solver"]["Critic"]["Retrace"]["Enabled"] = true;
-  e["Solver"]["Critic"]["Retrace"]["Cache Persistence"] = 5;
+  e["Solver"]["Critic"]["Retrace"]["Cache Persistence"] = 10;
 
   e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense";
   e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear";
@@ -110,10 +110,10 @@ int main(int argc, char *argv[])
 
   //// Defining Policy Configuration
 
-  e["Solver"]["Policy"]["Learning Rate"] = 0.0001;
+  e["Solver"]["Policy"]["Learning Rate"] = 0.00001;
   e["Solver"]["Policy"]["Mini Batch Size"] = 64;
   e["Solver"]["Policy"]["Sample Population"] = 16;
-  e["Solver"]["Policy"]["Target Accuracy"] = 0.000001;
+  e["Solver"]["Policy"]["Target Accuracy"] = 0.0001;
   e["Solver"]["Policy"]["Normalization Steps"] = 0;
 
   e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense";

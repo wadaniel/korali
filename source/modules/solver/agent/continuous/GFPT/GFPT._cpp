@@ -479,15 +479,18 @@ void GFPT::trainAgent()
     // To prevent CMAES from failing.
     _actionOptimizer->reset();
 
+    // Run the CMAES experiment until the desired convergence
     while (_actionOptimizer->checkTermination() == false)
     {
+      // Asking CMAES to generate candidates
       _actionOptimizer->prepareGeneration();
 
+      // Gathering candidate states into a single minibatch
       for (size_t i = 0; i < candidateCount; i++)
         for (size_t j = 0; j < _problem->_actionVectorSize; j++)
           candidateMiniBatch[i][j + _problem->_stateVectorSize] = _actionOptimizer->_samplePopulation[i][j];
 
-      // Running evaluation of the entire candidate
+      // Running evaluation of the entire set of candidates
       _batchOptimizationNetwork->setInput(candidateMiniBatch);
       _batchOptimizationNetwork->forward();
       auto criticEvaluations = _batchOptimizationNetwork->_outputValues;

@@ -86,6 +86,7 @@ class GFPT : public Continuous
    * @return The value of Q(s,a)
    */
   float stateValueFunction(const std::vector<float> &state);
+  std::vector<float> argmaxAction(const std::vector<float> &state);
   float currentActionAdvantageFunction(const std::vector<float> &state, const std::vector<float> &action);
   float averageActionAdvantageFunction(const std::vector<float> &state);
   float retraceFunction(size_t expId);

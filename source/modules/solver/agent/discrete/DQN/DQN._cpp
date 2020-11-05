@@ -62,8 +62,8 @@ void DQN::trainAgent()
   // Delay using latest critic taget for training until reaching a number of experiences
   if (_optimizationStepCount % _criticTargetUpdateDelay == 0)
   {
-   auto criticHyperparameters = _hyperparameters["Critic"].get<std::vector<float>>();
-   _criticLearner->setHyperparameters(criticHyperparameters);
+    auto criticHyperparameters = _hyperparameters["Critic"].get<std::vector<float>>();
+    _criticLearner->setHyperparameters(criticHyperparameters);
   }
 
   // Calculating cumulative Q*, for statistical purposes

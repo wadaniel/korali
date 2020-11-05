@@ -43,7 +43,6 @@ e["Variables"][5]["Exploration Sigma"] = 1.00
 e["Solver"]["Type"] = "Agent / Continuous / GFPT"
 e["Solver"]["Optimization Steps Per Update"] = 1
 e["Solver"]["Experiences Between Agent Trainings"] = 1
-e["Solver"]["Experiences Between Target Network Updates"] = 50
 
 ### Defining probability of taking a random action (epsilon)
 

@@ -48,7 +48,6 @@ e["Solver"]["Type"] = "Agent / Discrete / DACER "
 e["Solver"]["Importance Weight Truncation"] = 2.0
 e["Solver"]["Optimization Steps Per Update"] = 1
 e["Solver"]["Experiences Between Agent Trainings"] = 1
-e["Solver"]["Experiences Between Target Network Updates"] = 1
 
 e["Solver"]["Off Policy Updates"] = 12
 e["Solver"]["Trajectory Size"] = 500

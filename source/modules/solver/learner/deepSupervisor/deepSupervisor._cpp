@@ -46,13 +46,13 @@ void DeepSupervisor::initialize()
    * Initializing NN hyperparameters
    *****************************************************************/
 
-    _hyperparameters = _trainingNeuralNetwork->generateInitialHyperparameters();
+    auto hyperparameters = _trainingNeuralNetwork->generateInitialHyperparameters();
 
     // Creating and setting hyperparameter structures
-    _trainingNeuralNetwork->setHyperparameters(_hyperparameters);
+    _trainingNeuralNetwork->setHyperparameters(hyperparameters);
 
     // Copying hyperparameters and normalization parameters from training to evaluation
-    _evaluationNeuralNetwork->setHyperparameters(_hyperparameters);
+    _evaluationNeuralNetwork->setHyperparameters(hyperparameters);
 
     /*****************************************************************
    * Setting up weight and bias optimization experiment
@@ -138,15 +138,15 @@ void DeepSupervisor::runGeneration()
 
 void DeepSupervisor::finalize()
 {
-  _hyperparameters = _trainingNeuralNetwork->getHyperparameters();
-
   // Copying hyperparameters and normalization parameters from training to evaluation
-  _evaluationNeuralNetwork->setHyperparameters(_hyperparameters);
+  auto hyperparameters = _trainingNeuralNetwork->getHyperparameters();
+  _evaluationNeuralNetwork->setHyperparameters(hyperparameters);
+  _hyperparameters = hyperparameters;
 }
 
 std::vector<float> DeepSupervisor::getHyperparameters()
 {
-  return _hyperparameters;
+  return _trainingNeuralNetwork->getHyperparameters();
 }
 
 void DeepSupervisor::setHyperparameters(const std::vector<float> &hyperparameters)

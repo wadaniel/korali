@@ -57,7 +57,7 @@ e["Solver"]["Random Action Probability"]["Decrease Rate"] = 0.10
 e["Solver"]["Critic"]["Mini Batch Size"] = 32
 e["Solver"]["Critic"]["Learning Rate"] = 0.01
 e["Solver"]["Critic"]["Discount Factor"] = 0.99
-e["Solver"]["Critic"]["Target Update Delay"] = 1
+e["Solver"]["Critic"]["Target Update Delay"] = 5
 
 ### Defining the shape of the neural network
 

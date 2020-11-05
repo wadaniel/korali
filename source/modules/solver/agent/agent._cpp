@@ -97,13 +97,13 @@ void Agent::runGeneration()
     isTerminal = experience["Is Terminal"];
 
     // Running Agent training if the following conditions are met
-    if (_experienceCount % _experiencesBetweenAgentTrainings == 0)       // If we accumulated enough experiences between updates, update now
+    if (_experienceCount % _experiencesBetweenAgentTrainings == 0)     // If we accumulated enough experiences between updates, update now
       if (_experienceReplayStates.size() > _experienceReplayStartSize) // Perform optimization steps on the critic/policy, if reached the minimum replay memory size
         for (size_t i = 0; i < _optimizationStepsPerUpdate; i++)
-         {
+        {
           trainAgent();
           _optimizationStepCount++;
-         }
+        }
 
     // If agent requested new policy, send the new hyperparameters
     if (experience["Request New Policy"] == true) KORALI_SEND_MSG_TO_SAMPLE(agent, _hyperparameters);

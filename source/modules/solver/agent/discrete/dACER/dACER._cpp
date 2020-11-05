@@ -349,7 +349,7 @@ float dACER::stateValueFunction(const std::vector<float> &state)
   return qSum;
 }
 
-void dACER::updateHyperparameters(const knlohmann::json &hyperparameters)
+void dACER::updateAgentPolicy(const knlohmann::json &hyperparameters)
 {
   auto policyHyperparameters = hyperparameters["Policy"].get<std::vector<float>>();
   _policyLearner->setHyperparameters(policyHyperparameters);

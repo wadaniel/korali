@@ -106,7 +106,7 @@ class GFPT : public Continuous
 
   void forwardPolicy(const std::vector<float> &state) override;
 
-  void updateHyperparameters(const knlohmann::json &hyperparameters) override;
+  void updateAgentPolicy(const knlohmann::json &hyperparameters) override;
   void trainAgent() override;
   void printAgentInformation() override;
   void initializeAgent() override;

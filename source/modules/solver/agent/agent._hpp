@@ -79,6 +79,9 @@ class Agent : public Solver
   */
   float _randomActionProbabilityEffectiveValue;
 
+  std::vector<float> _qRetCacheValue;
+  std::vector<ssize_t> _qRetCacheAge;
+
   /**
   * @brief Trains the Agent's critic/policy, based on the new experiences
   */

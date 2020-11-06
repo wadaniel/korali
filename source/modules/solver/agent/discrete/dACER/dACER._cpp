@@ -29,11 +29,14 @@ void dACER::initializeAgent()
   _criticExperiment["Solver"]["Steps Per Generation"] = 1;
   _criticExperiment["Solver"]["Neural Network"] = _criticNeuralNetwork;
 
-  for (size_t i = 0; i < _problem->_stateVectorSize; i++)
-    _criticExperiment["Problem"]["Inputs"][0][i] = 0.0;
+  for (size_t i = 0; i < _criticMiniBatchSize; i++)
+  {
+   for (size_t j = 0; j < _problem->_stateVectorSize; j++)
+     _criticExperiment["Problem"]["Inputs"][i][j] = 0.0;
 
-  for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
-    _criticExperiment["Problem"]["Solution"][0][i] = 0.0;
+   for (size_t j = 0; j < _problem->_possibleActions.size(); j++)
+     _criticExperiment["Problem"]["Solution"][i][j] = 0.0;
+  }
 
   // Running initialization to verify that the configuration is correct
   engine.initialize(_criticExperiment);
@@ -56,12 +59,15 @@ void dACER::initializeAgent()
   _policyExperiment["Solver"]["Steps Per Generation"] = 1;
   _policyExperiment["Solver"]["Neural Network"] = _policyNeuralNetwork;
 
-  // Initializing experiment with an initial zero set
-  for (size_t j = 0; j < _problem->_stateVectorSize; j++)
-    _policyExperiment["Problem"]["Inputs"][0][j] = 0.0;
+  for (size_t i = 0; i < _criticMiniBatchSize; i++)
+  {
+   // Initializing experiment with an initial zero set
+   for (size_t j = 0; j < _problem->_stateVectorSize; j++)
+     _policyExperiment["Problem"]["Inputs"][i][j] = 0.0;
 
-  for (size_t j = 0; j < _problem->_possibleActions.size(); j++)
-    _policyExperiment["Problem"]["Solution"][0][j] = 0.0;
+   for (size_t j = 0; j < _problem->_possibleActions.size(); j++)
+     _policyExperiment["Problem"]["Solution"][i][j] = 0.0;
+  }
 
   // Running initialization to verify that the configuration is correct
   engine.initialize(_policyExperiment);
@@ -99,9 +105,6 @@ void dACER::trainAgent()
     // Selecting a uniformly random selected, yet not repeated experience
     size_t expId = miniBatchIndexes[i];
 
-    // Getting current reward
-    float curReward = _experienceReplayRewards[expId];
-
     // Re-calculating qRet (equation 5 in ACER paper, also see below)
     float qRet = retraceFunction(expId);
 
@@ -130,8 +133,6 @@ void dACER::trainAgent()
 
     // Now calculating importance weight for the old s,a experience
     float importanceWeight = pActionCurPolicy / pActionOldPolicy;
-
-    float qCurState = stateActionValueFunction(curState, curActionIdx);
 
     /*****************************************
     * Policy Section
@@ -200,8 +201,8 @@ void dACER::trainAgent()
 
     ///////////////// Storing Gradients /////////////////////
 
-    _policyProblem->_inputs[curExperience] = curState;
-    _policyProblem->_solution[curExperience] = gPolicy;
+    _policyProblem->_inputs[i] = curState;
+    _policyProblem->_solution[i] = gPolicy;
 
     /*****************************************
     * Critic Section
@@ -214,8 +215,8 @@ void dACER::trainAgent()
     gCritic[curActionIdx] = qRet;
 
     // Updating inputs to training learner
-    _criticProblem->_inputs[curExperience] = curState;
-    _criticProblem->_solution[curExperience] = gCritic;
+    _criticProblem->_inputs[i] = curState;
+    _criticProblem->_solution[i] = gCritic;
 
     /*****************************************
      * Updating the value of qRet
@@ -224,8 +225,9 @@ void dACER::trainAgent()
     // Now calculating truncated importance weight with 1.0 as truncation factor
     truncatedImportanceWeight = std::min(1.0f, importanceWeight);
 
-    // Increasing current experience count
-    curExperience++;
+    // Keeping statistics
+    _cumulativeQStar += qRet;
+    _cumulativeQStarSquared += qRet * qRet;
   }
 
   // Running one generation of the optimization method with the given trajectory
@@ -243,16 +245,12 @@ void dACER::trainAgent()
  * by sampling a few more mini-batches after the optimization steps
  ******************************************************************************/
 
-  normalizeStateNeuralNetwork(_criticLearner->_trainingNeuralNetwork, curExperience, _criticNormalizationSteps);
-  normalizeStateNeuralNetwork(_policyLearner->_trainingNeuralNetwork, curExperience, _policyNormalizationSteps);
+  normalizeStateNeuralNetwork(_criticLearner->_trainingNeuralNetwork, _criticMiniBatchSize, _criticNormalizationSteps);
+  normalizeStateNeuralNetwork(_policyLearner->_trainingNeuralNetwork, _criticMiniBatchSize, _policyNormalizationSteps);
 
   // Storing new inference parameters
   auto criticHyperparameters = _criticLearner->getHyperparameters();
   _criticLearner->setHyperparameters(criticHyperparameters);
-
-  // Keeping statistics
-  _cumulativeQStar += qRet;
-  _cumulativeQStarSquared += qRet * qRet;
 
   /****************************************************************************
  * Updating Policy
@@ -273,8 +271,87 @@ void dACER::trainAgent()
   _hyperparameters["Policy"] = _policyCurrentHyperparameters;
 
   // Updating Statistics
-   _averageQStar = _cumulativeQStar / (float)_offPolicyUpdates;                                            // Average Q Retrace
-   _stdevQStar = sqrt(_cumulativeQStarSquared / (float)_offPolicyUpdates - _averageQStar * _averageQStar); // Sdev Q Retrace
+   _averageQStar = _cumulativeQStar / (float)_criticMiniBatchSize;                                            // Average Q Retrace
+   _stdevQStar = sqrt(_cumulativeQStarSquared / (float)_criticMiniBatchSize - _averageQStar * _averageQStar); // Sdev Q Retrace
+}
+
+float dACER::retraceFunction(size_t expId)
+{
+  // Finding last experience in the episode that corresponds to expId
+  ssize_t startId = expId;
+  ssize_t endId = startId;
+  while (_experienceReplayTerminal[endId] == false) endId++;
+
+  // Initializing qRet to zero
+  float qRet = 0.0;
+
+  // Initializing values coming from the next experience (for latest experience, just reward)
+  float qTmp = _experienceReplayRewards[endId];
+
+  // Setting starting experience as the second to last
+  ssize_t curId = endId-1;
+
+  // Now checking whether any necessary qTmp is present in cache
+  for (ssize_t i = startId; i < endId; i++)
+  {
+   // If the difference in age is within the range, then it's a cache hit
+   if (_optimizationStepCount - _qRetCacheAge[i] < _criticRetraceCachePersistence)
+   {
+    qTmp = _qRetCacheValue[i];
+    curId = i;
+    break;
+   }
+  }
+
+  // Now iterating backwards to calculate the rest of qRet
+  for (; curId >= startId; curId--)
+  {
+   // Getting current reward
+   float curReward = _experienceReplayRewards[curId];
+
+   // Re-calculating qRet
+   qRet = curReward + _criticDiscountFactor * qTmp;
+
+   // If this is the starting experience, return the current value
+   if (curId == startId) break;
+
+   // Getting current state
+   std::vector<float> curState = _experienceReplayStates[curId];
+
+   // Getting current action index
+   auto curActionIdx = _experienceReplayActionIndexes[curId];
+
+   // Now calculating V
+   float curV = stateValueFunction(curState);
+
+   // Now calculating Q
+   float curQ = stateActionValueFunction(curState, curActionIdx);
+
+   // Getting the probability of the actions given by the agent's policy
+   auto pActionsCurPolicy = getActionProbabilities(curState);
+
+   // Getting probability density of action for current policy
+   float pCurPolicy = pActionsCurPolicy[curActionIdx];
+
+   // Getting probability density of action for old policy
+   float pOldPolicy = _experienceReplayActionProbabilities[curId][curActionIdx];
+
+   // Now calculating importance weight for the old s,a experience
+   float importanceWeight = pCurPolicy / pOldPolicy;
+
+   // Now calculating truncated importance weight with 1.0 as truncation factor
+   float truncatedImportanceWeight = std::min(1.0f, importanceWeight);
+
+   // Updating qRet
+   qTmp = truncatedImportanceWeight * (qRet - curQ) + curV;
+
+   // Refreshing cache with the calculated value
+   _qRetCacheValue[curId-1] = qTmp;
+   _qRetCacheAge[curId-1] = _optimizationStepCount;
+  }
+
+  // Returning qRet
+  return qRet;
 }
 
 std::vector<float> dACER::getActionProbabilities(const std::vector<float> &state)

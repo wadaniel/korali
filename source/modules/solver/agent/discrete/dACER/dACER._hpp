@@ -61,7 +61,7 @@ class dACER : public Discrete
   float stateActionValueFunction(const std::vector<float> &state, const size_t &actionIdx);
 
   std::vector<float> getActionProbabilities(const std::vector<float> &state) override;
-
+  float retraceFunction(size_t expId);
   void updateAgentPolicy(const knlohmann::json &hyperparameters) override;
   void trainAgent() override;
   void printAgentInformation() override;

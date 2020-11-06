@@ -2,12 +2,6 @@
 #include "modules/solver/agent/agent.hpp"
 #include "sample/sample.hpp"
 
-//printf("Input Write Time: %fs\n", _inputWriteTime/1000000000);
-//printf("Output Read Time: %fs\n", _outputReadTime/1000000000);
-//printf("Normalization Time: %fs\n", _outputReadTime/1000000000);
-//printf("Forward Propagation Time: %fs\n", _forwardStreamTime/1000000000);
-//printf("Backward Propagation Time: %fs\n", _backwardStreamTime/1000000000);
-
 namespace korali
 {
 namespace solver
@@ -24,7 +18,17 @@ void Agent::initialize()
   mt = new std::mt19937(rd());
   mt->seed(_k->_randomSeed++);
 
-  // Pre-allocating space for the experience replay memory
+  /*********************************************************************
+  * Initializing Qret cache
+  *********************************************************************/
+
+  _qRetCacheValue.resize(_experienceReplayMaximumSize);
+  _qRetCacheAge.resize(_experienceReplayMaximumSize);
+
+  /*********************************************************************
+  *  Pre-allocating space for the experience replay memory
+  *********************************************************************/
+
   _experienceReplayStates.resize(_experienceReplayMaximumSize);
   _experienceReplayActions.resize(_experienceReplayMaximumSize);
   _experienceReplayRewards.resize(_experienceReplayMaximumSize);
@@ -32,10 +36,15 @@ void Agent::initialize()
   _experienceReplayPriorities.resize(_experienceReplayMaximumSize);
   _experienceReplayProbabilities.resize(_experienceReplayMaximumSize);
 
-  // If initial generation, set initial agent configuration
+  /*********************************************************************
+   *   // If initial generation, set initial agent configuration
+   *********************************************************************/
+
   if (_k->_currentGeneration == 0)
   {
     _randomActionProbabilityCurrentValue = _randomActionProbabilityInitialValue;
+
+    for (size_t i = 0; i < _experienceReplayMaximumSize; i++) _qRetCacheAge[i] = -50000;
 
     _currentEpisode = 0;
     _optimizationStepCount = 0;

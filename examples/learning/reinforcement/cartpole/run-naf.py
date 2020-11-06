@@ -44,7 +44,6 @@ e["Solver"]["Type"] = "Agent / Continuous / NAF"
 e["Solver"]["Target Learning Rate"] = 0.99
 e["Solver"]["Optimization Steps Per Update"] = 10
 e["Solver"]["Experiences Between Agent Trainings"] = 1
-e["Solver"]["Experiences Between Target Network Updates"] = 1
 e["Solver"]["Mini Batch Strategy"] = "Prioritized"
 
 e["Solver"]["Random Action Probability"]["Initial Value"] = 0.5

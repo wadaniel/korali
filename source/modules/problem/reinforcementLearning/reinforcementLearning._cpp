@@ -59,7 +59,7 @@ void ReinforcementLearning::runEpisode(Sample &sample)
   _agent = dynamic_cast<solver::Agent *>(_k->_solver);
 
   // First, we update the initial policy's hyperparameters
-  _agent->updateHyperparameters(sample.globals()["Hyperparameters"]);
+  _agent->updateAgentPolicy(sample.globals()["Hyperparameters"]);
 
   // Creating sample coroutine
   __currentSample = &sample;
@@ -145,7 +145,7 @@ void ReinforcementLearning::runEpisode(Sample &sample)
       if (requestNewPolicy)
       {
         auto hyperparameters = KORALI_RECV_MSG_FROM_ENGINE();
-        _agent->updateHyperparameters(hyperparameters);
+        _agent->updateAgentPolicy(hyperparameters);
       }
     }
   }

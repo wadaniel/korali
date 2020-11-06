@@ -88,7 +88,7 @@ class Agent : public Solver
   * @brief Updates the agent's hyperparameters
   * @param hyperparameters The hyperparameters to update the agent.
   */
-  virtual void updateHyperparameters(const knlohmann::json &hyperparameters) = 0;
+  virtual void updateAgentPolicy(const knlohmann::json &hyperparameters) = 0;
 
   /**
     * @brief Initializes the internal state of the policy

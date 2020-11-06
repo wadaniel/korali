@@ -51,7 +51,6 @@ void DQN::initializeAgent()
 
   // Setting Initial Hyperparameters
   _hyperparameters["Critic"] = _criticLearner->getHyperparameters();
-  _qHatHyperparameter = _criticLearner->getHyperparameters();
 }
 
 void DQN::trainAgent()
@@ -60,15 +59,16 @@ void DQN::trainAgent()
    * Training Phase
    **********************************************************************************/
 
+  // Delay using latest critic taget for training until reaching a number of experiences
+  if (_optimizationStepCount % _criticTargetUpdateDelay == 0)
+  {
+    auto criticHyperparameters = _hyperparameters["Critic"].get<std::vector<float>>();
+    _criticLearner->setHyperparameters(criticHyperparameters);
+  }
+
   // Calculating cumulative Q*, for statistical purposes
   _cumulativeQStar = 0.0;
   _cumulativeQStarSquared = 0.0;
-
-  // Temporary storage of hyperp arams
-  auto qHyperparam = _criticLearner->getHyperparameters();
-
-  // Set Hyperparameter from target network
-  _criticLearner->setHyperparameters(_qHatHyperparameter);
 
   // Creating minibatch for the critic update
   auto miniBatchIndexes = generateMiniBatch(_criticMiniBatchSize);
@@ -128,13 +128,9 @@ void DQN::trainAgent()
     _cumulativeQStarSquared += qStar * qStar;
   }
 
-  // Set Hyperparameter from q network
-  _criticLearner->setHyperparameters(qHyperparam);
-
   // Running one generation of the optimization method with the given mini-batch
   _criticLearner->initialize();
   _criticLearner->runGeneration();
-  _criticLearner->finalize();
 
   // Keeping statistics
   _averageQStar = (float)_cumulativeQStar / (float)_criticMiniBatchSize;
@@ -156,7 +152,7 @@ void DQN::trainAgent()
   _hyperparameters["Critic"] = _criticLearner->getHyperparameters();
 }
 
-void DQN::updateHyperparameters(const knlohmann::json &hyperparameters)
+void DQN::updateAgentPolicy(const knlohmann::json &hyperparameters)
 {
   auto criticHyperparameters = hyperparameters["Critic"].get<std::vector<float>>();
   _criticLearner->setHyperparameters(criticHyperparameters);
@@ -218,7 +214,7 @@ std::vector<float> DQN::getActionProbabilities(const std::vector<float> &state)
 void DQN::printAgentInformation()
 {
   _k->_logger->logInfo("Normal", "Critic Information:\n");
-  _k->_logger->logInfo("Normal", " + Average (Std) Q-Value in Mini-Batch:  %f (%f)\n", _averageQStar, _stdevQStar);
+  _k->_logger->logInfo("Normal", " + Avg Q-Value in Mini-Batch:  %f (%f)\n", _averageQStar, _stdevQStar);
 
   _criticExperiment._logger->_verbosityLevel = _k->_logger->_verbosityLevel;
   _criticExperiment._solver->printGenerationAfter();

@@ -219,7 +219,7 @@ void NAF::trainAgent()
   _hyperparameters["Critic"] = qHyperparam;
 }
 
-void NAF::updateHyperparameters(const knlohmann::json &hyperparameters)
+void NAF::updateAgentPolicy(const knlohmann::json &hyperparameters)
 {
   _qLearner->setHyperparameters(hyperparameters["Critic"].get<std::vector<float>>());
 }

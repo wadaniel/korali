@@ -91,62 +91,22 @@ void dACER::trainAgent()
   _cumulativeQStar = 0.0;        // Cumulative Q Retrace
   _cumulativeQStarSquared = 0.0; // Stdev Q Retrace
 
-  // Creating a minibatch of starting experiences for the trajectories update
-  auto trajectoryStartIndexes = generateMiniBatch(_offPolicyUpdates);
+  // Creating minibatch for the critic update
+  auto miniBatchIndexes = generateMiniBatch(_criticMiniBatchSize);
 
-  // Performing off-policy updates
-  for (size_t i = 0; i < _offPolicyUpdates; i++) processTrajectory(trajectoryStartIndexes[i]);
-
-  // Updating Statistics
-  _averageQStar = _cumulativeQStar / (float)_offPolicyUpdates;                                            // Average Q Retrace
-  _stdevQStar = sqrt(_cumulativeQStarSquared / (float)_offPolicyUpdates - _averageQStar * _averageQStar); // Sdev Q Retrace
-}
-
-void dACER::processTrajectory(size_t startId)
-{
-  // Going straight to the latest experience in the corresponding trajectory
-  size_t endId = startId;
-
-  // Increase trajectory end position pointer until
-  while (
-    ((endId - startId) < _trajectorySize) &&    // Has not reached specified trajectory size
-    (_experienceReplayTerminal[endId] == false) // The experience is not terminal
-    ) endId++;
-
-  // Resizing NN input/outputs given the current trajectory size
-  size_t experienceCount = endId - startId;
-  _criticProblem->_inputs.resize(experienceCount);
-  _criticProblem->_solution.resize(experienceCount);
-  _policyProblem->_inputs.resize(experienceCount);
-  _policyProblem->_solution.resize(experienceCount);
-
-  // Going straight to the latest experience in the corresponding trajectory
-  size_t curId = endId;
-
-  // First, get the retrace value for the last experience (just the reward)
-  float qRet = _experienceReplayRewards[curId];
-  if (_experienceReplayTerminal[curId] == false)
+  for (size_t i = 0; i < _criticMiniBatchSize; i++)
   {
-    std::vector<float> curState = _experienceReplayStates[curId];
-    qRet = stateValueFunction(curState);
-  }
-
-  // Keeping track of the current experience
-  size_t curExperience = 0;
-
-  while (curId > startId)
-  {
-    // Decreasing current experience index
-    curId--;
+    // Selecting a uniformly random selected, yet not repeated experience
+    size_t expId = miniBatchIndexes[i];
 
     // Getting current reward
-    float curReward = _experienceReplayRewards[curId];
+    float curReward = _experienceReplayRewards[expId];
 
     // Re-calculating qRet (equation 5 in ACER paper, also see below)
-    qRet = curReward + _criticDiscountFactor * qRet;
+    float qRet = retraceFunction(expId);
 
     // Getting experience's state
-    std::vector<float> curState = _experienceReplayStates[curId];
+    std::vector<float> curState = _experienceReplayStates[expId];
 
     // Calculating V(state) with the current policy
     float vCurState = stateValueFunction(curState);
@@ -154,10 +114,10 @@ void dACER::processTrajectory(size_t startId)
     //// Computing quantities needed for updating weights
 
     // Getting experience's action
-    size_t curActionIdx = _experienceReplayActionIndexes[curId];
+    size_t curActionIdx = _experienceReplayActionIndexes[expId];
 
     // Getting probability densities for current action given past behaviour
-    auto pOldPolicy = _experienceReplayActionProbabilities[curId];
+    auto pOldPolicy = _experienceReplayActionProbabilities[expId];
 
     // Getting probability densities for current action given current policy
     auto pCurPolicy = getActionProbabilities(curState);
@@ -264,9 +224,6 @@ void dACER::processTrajectory(size_t startId)
     // Now calculating truncated importance weight with 1.0 as truncation factor
     truncatedImportanceWeight = std::min(1.0f, importanceWeight);
 
-    // Updating qRet (equation 5 in ACER paper)
-    qRet = truncatedImportanceWeight * (qRet - qCurState) + vCurState;
-
     // Increasing current experience count
     curExperience++;
   }
@@ -314,6 +271,10 @@ void dACER::processTrajectory(size_t startId)
 
   // Storing average policy hyperparameters
   _hyperparameters["Policy"] = _policyCurrentHyperparameters;
+
+  // Updating Statistics
+   _averageQStar = _cumulativeQStar / (float)_offPolicyUpdates;                                            // Average Q Retrace
+   _stdevQStar = sqrt(_cumulativeQStarSquared / (float)_offPolicyUpdates - _averageQStar * _averageQStar); // Sdev Q Retrace
 }
 
 std::vector<float> dACER::getActionProbabilities(const std::vector<float> &state)

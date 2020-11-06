@@ -60,12 +60,6 @@ class dACER : public Discrete
    */
   float stateActionValueFunction(const std::vector<float> &state, const size_t &actionIdx);
 
-  /**
-   * @brief Processes a selected trajectory to learn from it, depending on whether it uses a discrete or continuous action space
-   * @param startId ID to the first experience of the trajectory
-   */
-  void processTrajectory(size_t startId);
-
   std::vector<float> getActionProbabilities(const std::vector<float> &state) override;
 
   void updateAgentPolicy(const knlohmann::json &hyperparameters) override;

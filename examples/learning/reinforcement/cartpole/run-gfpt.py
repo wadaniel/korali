@@ -60,8 +60,11 @@ e["Solver"]["Experience Replay"]["Maximum Size"] = 10000
 e["Solver"]["Critic"]["Discount Factor"] = 0.99
 e["Solver"]["Critic"]["Learning Rate"] = 0.01
 e["Solver"]["Critic"]["Mini Batch Size"] = 32
-e["Solver"]["Critic"]["Normalization Steps"] = 12
+e["Solver"]["Critic"]["Normalization Steps"] = 0
 
+e["Solver"]["Critic"]["Retrace"]["Enabled"] = True
+e["Solver"]["Critic"]["Retrace"]["Cache Persistence"] = 5
+  
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Batch Normalization"]["Enabled"] = True

@@ -10,15 +10,14 @@ import korali
 k = korali.Engine()
 e = korali.Experiment()
 
-actions = [[i] for i in range(-10,10)]
-
 ### Defining the Cartpole problem's configuration
 
 e["Problem"]["Type"] = "Reinforcement Learning / Discrete"
-e["Problem"]["Possible Actions"] = actions
+e["Problem"]["Possible Actions"] = [ [ -10.0 ], [ -9.0 ], [ -8.0 ], [ -7.0 ], [ -6.0 ], [ -5.0 ], [ -4.0 ], [ -3.0 ], [ -2.0 ], [ -1.0 ], [0.0],
+                                     [  10.0 ], [  9.0 ], [  8.0 ], [  7.0 ], [  6.0 ], [  5.0 ], [  4.0 ], [  3.0 ], [  2.0 ], [  1.0 ]  ]
 e["Problem"]["Environment Function"] = env
 e["Problem"]["Action Repeat"] = 1
-e["Problem"]["Actions Between Policy Updates"] = 500
+e["Problem"]["Actions Between Policy Updates"] = 1
 
 e["Variables"][0]["Name"] = "Cart Position"
 e["Variables"][0]["Type"] = "State"
@@ -43,22 +42,21 @@ e["Variables"][5]["Type"] = "Action"
 e["Solver"]["Type"] = "Agent / Discrete / DACER"
 e["Solver"]["Importance Weight Truncation"] = 2.0
 e["Solver"]["Optimization Steps Per Update"] = 1
-e["Solver"]["Experiences Between Agent Trainings"] = 1
-
-e["Solver"]["Off Policy Updates"] = 12
-e["Solver"]["Trajectory Size"] = 500
+e["Solver"]["Experiences Between Agent Trainings"] = 10
 
 ### Defining the configuration of replay memory
 
-e["Solver"]["Experience Replay"]["Start Size"] = 1500
-e["Solver"]["Experience Replay"]["Maximum Size"] = 500000
+e["Solver"]["Experience Replay"]["Start Size"] = 500
+e["Solver"]["Experience Replay"]["Maximum Size"] = 150000
 
 ## Defining Q-Critic and Action-selection (policy) optimizers
 
 e["Solver"]["Critic"]["Discount Factor"] = 0.99
 e["Solver"]["Critic"]["Learning Rate"] = 0.001
-e["Solver"]["Critic"]["Mini Batch Size"] = 64
-e["Solver"]["Critic"]["Normalization Steps"] = 32
+e["Solver"]["Critic"]["Mini Batch Size"] = 32
+e["Solver"]["Critic"]["Normalization Steps"] = 8
+e["Solver"]["Critic"]["Retrace"]["Enabled"] = True
+e["Solver"]["Critic"]["Retrace"]["Cache Persistence"] = 5
 
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear"
@@ -82,13 +80,13 @@ e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Weight Initialization Scal
 
 ## Defining Policy Configuration
 
-e["Solver"]["Policy"]["Learning Rate"] = 0.01
+e["Solver"]["Policy"]["Learning Rate"] = 0.001
 e["Solver"]["Policy"]["Mini Batch Size"] = 32
-e["Solver"]["Policy"]["Normalization Steps"] = 32
+e["Solver"]["Policy"]["Normalization Steps"] = 8
 
 e["Solver"]["Policy"]["Trust Region"]["Enabled"] = True
 e["Solver"]["Policy"]["Trust Region"]["Divergence Constraint"] = 0.5
-e["Solver"]["Policy"]["Trust Region"]["Adoption Rate"] = 0.25
+e["Solver"]["Policy"]["Trust Region"]["Adoption Rate"] = 0.9
 
 e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
 e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Batch Normalization"]["Enabled"] = False
@@ -116,7 +114,7 @@ e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 450
 
 ### Setting file output configuration
 
-e["File Output"]["Frequency"] = 100000
+e["File Output"]["Enabled"] = False
 
 ### Running Experiment
 k.run(e)

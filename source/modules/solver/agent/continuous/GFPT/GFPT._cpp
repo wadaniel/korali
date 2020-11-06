@@ -143,15 +143,6 @@ void GFPT::initializeAgent()
   batchOptimizationNetworkConfig["Use Preloaded Normalization Data"] = true;
   _batchOptimizationNetwork = dynamic_cast<NeuralNetwork *>(getModule(batchOptimizationNetworkConfig, _k));
 
-
-  /*********************************************************************
-  * Initializing Qret cache
-  *********************************************************************/
-
-  _qRetCacheValue.resize(_experienceReplayMaximumSize);
-  _qRetCacheAge.resize(_experienceReplayMaximumSize);
-  for (size_t i = 0; i < _experienceReplayMaximumSize; i++) _qRetCacheAge[i] = -50000;
-
   /*********************************************************************
   * Loading/Setting Hyperparameters
   *********************************************************************/

@@ -400,7 +400,7 @@ void GFPT::forwardPolicy(const std::vector<float> &state)
   _actionMeans = _policyLearner->getEvaluation({state});
 }
 
-void GFPT::updateHyperparameters(const knlohmann::json &hyperparameters)
+void GFPT::updateAgentPolicy(const knlohmann::json &hyperparameters)
 {
   auto policyHyperparameters = hyperparameters["Policy"].get<std::vector<float>>();
   _policyLearner->setHyperparameters(policyHyperparameters);

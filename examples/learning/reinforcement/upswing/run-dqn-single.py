@@ -41,7 +41,6 @@ e["Variables"][5]["Type"] = "Action"
 e["Solver"]["Type"] = "Agent / Discrete / DQN"
 e["Solver"]["Optimization Steps Per Update"] = 1
 e["Solver"]["Experiences Between Agent Trainings"] = 1
-e["Solver"]["Experiences Between Target Network Updates"] = 50
 
 ### Defining Experience Replay configuration
 
@@ -59,6 +58,7 @@ e["Solver"]["Random Action Probability"]["Decrease Rate"] = 0.10
 e["Solver"]["Critic"]["Mini Batch Size"] = 32
 e["Solver"]["Critic"]["Learning Rate"] = 0.01
 e["Solver"]["Critic"]["Discount Factor"] = 1.0
+e["Solver"]["Critic"]["Target Update Delay"] = 5
 
 ### Defining the shape of the neural network
 

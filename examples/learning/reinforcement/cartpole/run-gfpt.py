@@ -53,17 +53,17 @@ e["Solver"]["Random Action Probability"]["Decrease Rate"] = 0.05
 ### Defining the configuration of replay memory
 
 e["Solver"]["Experience Replay"]["Start Size"] =   1000
-e["Solver"]["Experience Replay"]["Maximum Size"] = 10000
+e["Solver"]["Experience Replay"]["Maximum Size"] = 100000
 
 ## Defining Critic Configuration
 
 e["Solver"]["Critic"]["Discount Factor"] = 0.99
 e["Solver"]["Critic"]["Learning Rate"] = 0.01
 e["Solver"]["Critic"]["Mini Batch Size"] = 32
-e["Solver"]["Critic"]["Normalization Steps"] = 0
+e["Solver"]["Critic"]["Normalization Steps"] = 8
 
 e["Solver"]["Critic"]["Retrace"]["Enabled"] = True
-e["Solver"]["Critic"]["Retrace"]["Cache Persistence"] = 5
+e["Solver"]["Critic"]["Retrace"]["Cache Persistence"] = 15
   
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear"
@@ -87,8 +87,8 @@ e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Batch Normalization"]["Ena
 
 e["Solver"]["Policy"]["Learning Rate"] = 0.01
 e["Solver"]["Policy"]["Mini Batch Size"] = 16
-e["Solver"]["Policy"]["Target Accuracy"] = 0.1
-e["Solver"]["Policy"]["Normalization Steps"] = 12
+e["Solver"]["Policy"]["Target Accuracy"] = 0.01
+e["Solver"]["Policy"]["Normalization Steps"] = 8
 
 e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
 e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear"
@@ -118,9 +118,7 @@ e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 400
 
 ### Setting file output configuration
 
-e["Random Seed"] = 0xC0FFEE
-e["File Output"]["Frequency"] = 10000
-#e["Console Output"]["Verbosity"] = "Silent"
+e["File Output"]["Enabled"] = False
 
 ### Running Experiment
 

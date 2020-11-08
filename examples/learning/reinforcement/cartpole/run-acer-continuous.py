@@ -15,7 +15,7 @@ e = korali.Experiment()
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = env
 e["Problem"]["Action Repeat"] = 1
-e["Problem"]["Actions Between Policy Updates"] = 10 
+e["Problem"]["Actions Between Policy Updates"] = 1 
 
 e["Variables"][0]["Name"] = "Cart Position"
 e["Variables"][0]["Type"] = "State"
@@ -45,9 +45,6 @@ e["Solver"]["Importance Weight Truncation"] = 2.0
 e["Solver"]["Optimization Steps Per Update"] = 1
 e["Solver"]["Experiences Between Agent Trainings"] = 1
 
-e["Solver"]["Off Policy Updates"] = 8
-e["Solver"]["Trajectory Size"] = 500
-
 e["Solver"]["Random Action Probability"]["Initial Value"] = 0.5
 e["Solver"]["Random Action Probability"]["Target Value"] = 0.01
 e["Solver"]["Random Action Probability"]["Decrease Rate"] = 0.03
@@ -60,9 +57,11 @@ e["Solver"]["Experience Replay"]["Maximum Size"] = 100000
 ## Defining Q-Critic and Action-selection (policy) optimizers
 
 e["Solver"]["Critic"]["Discount Factor"] = 0.99
-e["Solver"]["Critic"]["Learning Rate"] = 0.01
+e["Solver"]["Critic"]["Learning Rate"] = 0.001
 e["Solver"]["Critic"]["Mini Batch Size"] = 32
-e["Solver"]["Critic"]["Normalization Steps"] = 32
+e["Solver"]["Critic"]["Normalization Steps"] = 8
+e["Solver"]["Critic"]["Retrace"]["Enabled"] = True
+e["Solver"]["Critic"]["Retrace"]["Cache Persistence"] = 5
 
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear"
@@ -86,12 +85,12 @@ e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Batch Normalization"]["Ena
 
 e["Solver"]["Policy"]["Learning Rate"] = 0.001
 e["Solver"]["Policy"]["Mini Batch Size"] = 32
-e["Solver"]["Policy"]["Normalization Steps"] = 32
+e["Solver"]["Policy"]["Normalization Steps"] = 8
 e["Solver"]["Policy"]["Sample Population"] = 32
 
 e["Solver"]["Policy"]["Trust Region"]["Enabled"] = True
-e["Solver"]["Policy"]["Trust Region"]["Divergence Constraint"] = 0.25
-e["Solver"]["Policy"]["Trust Region"]["Adoption Rate"] = 0.99
+e["Solver"]["Policy"]["Trust Region"]["Divergence Constraint"] = 0.5
+e["Solver"]["Policy"]["Trust Region"]["Adoption Rate"] = 0.9
 
 e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
 e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear"
@@ -121,7 +120,7 @@ e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 0
 
 ### Setting file output configuration
 
-e["File Output"]["Frequency"] = 100000
+e["File Output"]["Enabled"] = False
 
 ### Running Experiment
 

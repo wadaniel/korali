@@ -22,8 +22,9 @@ void Agent::initialize()
   * Initializing Qret cache
   *********************************************************************/
 
-  _qRetCacheValue.resize(_experienceReplayMaximumSize);
-  _qRetCacheAge.resize(_experienceReplayMaximumSize);
+  _qRetNextCache.resize(_experienceReplayMaximumSize);
+  _qOpcNextCache.resize(_experienceReplayMaximumSize);
+  _qCacheAge.resize(_experienceReplayMaximumSize);
 
   /*********************************************************************
   *  Pre-allocating space for the experience replay memory
@@ -44,7 +45,7 @@ void Agent::initialize()
   {
     _randomActionProbabilityCurrentValue = _randomActionProbabilityInitialValue;
 
-    for (size_t i = 0; i < _experienceReplayMaximumSize; i++) _qRetCacheAge[i] = -50000;
+    for (size_t i = 0; i < _experienceReplayMaximumSize; i++) _qCacheAge[i] = -50000;
 
     _currentEpisode = 0;
     _optimizationStepCount = 0;

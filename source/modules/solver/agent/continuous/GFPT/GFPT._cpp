@@ -161,18 +161,18 @@ float GFPT::retraceFunction(size_t expId)
   float qRet = 0.0;
 
   // Initializing values coming from the next experience (for latest experience, just reward)
-  float qTmp = _experienceReplayRewards[endId];
+  float qRetNext = _experienceReplayRewards[endId];
 
   // Setting starting experience as the second to last
   ssize_t curId = endId-1;
 
-  // Now checking whether any necessary qTmp is present in cache
+  // Now checking whether any necessary qRetNext is present in cache
   for (ssize_t i = startId; i < endId; i++)
   {
    // If the difference in age is within the range, then it's a cache hit
-   if (_optimizationStepCount - _qRetCacheAge[i] < _criticRetraceCachePersistence)
+   if (_optimizationStepCount - _qCacheAge[i] < _criticRetraceCachePersistence)
    {
-    qTmp = _qRetCacheValue[i];
+    qRetNext = _qRetNextCache[i];
     curId = i;
     break;
    }
@@ -185,7 +185,7 @@ float GFPT::retraceFunction(size_t expId)
    float curReward = _experienceReplayRewards[curId];
 
    // Re-calculating qRet
-   qRet = curReward + _criticDiscountFactor * qTmp;
+   qRet = curReward + _criticDiscountFactor * qRetNext;
 
    // If this is the starting experience, return the current value
    if (curId == startId) break;
@@ -234,11 +234,11 @@ float GFPT::retraceFunction(size_t expId)
    float truncatedImportanceWeight = std::min(1.0f, importanceWeight);
 
    // Updating qRet
-   qTmp = truncatedImportanceWeight * (qRet - curQ) + curV;
+   qRetNext = truncatedImportanceWeight * (qRet - curQ) + curV;
 
    // Refreshing cache with the calculated value
-   _qRetCacheValue[curId-1] = qTmp;
-   _qRetCacheAge[curId-1] = _optimizationStepCount;
+   _qRetNextCache[curId-1] = qRetNext;
+   _qCacheAge[curId-1] = _optimizationStepCount;
   }
 
   // Returning qRet

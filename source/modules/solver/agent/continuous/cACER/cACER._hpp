@@ -16,6 +16,12 @@ namespace continuous
 class cACER : public Continuous
 {
   public:
+
+  /**
+   * @brief A neural network for the inference of the averaged advantage function
+   */
+  NeuralNetwork *_actionAverageEvaluationNetwork;
+
   /**
    * @brief Pointer to training experiment's V(s) problem
    */
@@ -91,8 +97,10 @@ class cACER : public Continuous
    */
   std::vector<float> generateAction();
 
+  float currentActionAdvantageFunction(const std::vector<float> &state, const std::vector<float> &action);
+  float averageActionAdvantageFunction(const std::vector<float> &state);
+  std::tuple<float, float> retraceFunction(size_t expId);
   void forwardPolicy(const std::vector<float> &state) override;
-
   void trainAgent() override;
   void updateAgentPolicy(const knlohmann::json &hyperparameters) override;
   void printAgentInformation() override;

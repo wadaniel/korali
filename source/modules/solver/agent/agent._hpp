@@ -90,6 +90,11 @@ class Agent : public Solver
   std::vector<float> _qOpcNextCache;
 
   /**
+   * @brief Storage for the cache for the vTbc value of the next experience
+   */
+  std::vector<float> _vTbcNextCache;
+
+  /**
    * @brief Storage for the age of each element of the retrace cache
    */
   std::vector<ssize_t> _qCacheAge;

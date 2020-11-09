@@ -24,6 +24,7 @@ void Agent::initialize()
 
   _qRetNextCache.resize(_experienceReplayMaximumSize);
   _qOpcNextCache.resize(_experienceReplayMaximumSize);
+  _vTbcNextCache.resize(_experienceReplayMaximumSize);
   _qCacheAge.resize(_experienceReplayMaximumSize);
 
   /*********************************************************************

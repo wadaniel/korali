@@ -230,7 +230,7 @@ float GFPT::calculateImportanceWeight(size_t expId, const std::vector<float> &ac
       _normalGenerator->_mean = _actionMeans[i];
       _normalGenerator->_standardDeviation = _actionSigmas[i];
       _normalGenerator->updateDistribution();
-      logProbCurPolicy *= _normalGenerator->getLogDensity(action[i]);
+      logProbCurPolicy += _normalGenerator->getLogDensity(action[i]);
     }
 
     // Getting probability densities for current action given current policy
@@ -240,7 +240,7 @@ float GFPT::calculateImportanceWeight(size_t expId, const std::vector<float> &ac
       _normalGenerator->_mean = _experienceReplayActionMeans[expId][i];
       _normalGenerator->_standardDeviation = _experienceReplayActionSigmas[expId][i];
       _normalGenerator->updateDistribution();
-      logProbOldPolicy *= _normalGenerator->getLogDensity(action[i]);
+      logProbOldPolicy += _normalGenerator->getLogDensity(action[i]);
     }
 
     // Now calculating importance weight for the old s,a experience

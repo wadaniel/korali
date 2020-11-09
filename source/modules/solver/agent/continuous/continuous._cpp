@@ -138,14 +138,14 @@ void Continuous::getAction(korali::Sample &sample)
   sample["Action"] = action;
 }
 
-float Continuous::calculateImportanceWeight(size_t expId, const std::vector<float> &action)
+float Continuous::calculateImportanceWeight(const std::vector<float> &action, const std::vector<float> &curMeans, const std::vector<float> &curSigmas, const std::vector<float> &oldMeans, const std::vector<float> &oldSigmas)
 {
   // Getting probability densities for current action given current policy
   float logpCurPolicy = 0.0f;
   for (size_t i = 0; i < action.size(); i++)
   {
-    _normalGenerator->_mean = _actionMeans[i];
-    _normalGenerator->_standardDeviation = _actionSigmas[i];
+    _normalGenerator->_mean = curMeans[i];
+    _normalGenerator->_standardDeviation = curSigmas[i];
     _normalGenerator->updateDistribution();
     logpCurPolicy += _normalGenerator->getLogDensity(action[i]);
   }
@@ -154,8 +154,8 @@ float Continuous::calculateImportanceWeight(size_t expId, const std::vector<floa
   float logpOldPolicy = 0.0f;
   for (size_t i = 0; i < action.size(); i++)
   {
-    _normalGenerator->_mean = _experienceReplayActionMeans[expId][i];
-    _normalGenerator->_standardDeviation = _experienceReplayActionSigmas[expId][i];
+    _normalGenerator->_mean = oldMeans[i];
+    _normalGenerator->_standardDeviation = oldSigmas[i];
     _normalGenerator->updateDistribution();
     logpOldPolicy += _normalGenerator->getLogDensity(action[i]);
   }

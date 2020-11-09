@@ -42,7 +42,7 @@ e["Variables"][5]["Type"] = "Action"
 e["Solver"]["Type"] = "Agent / Discrete / DACER"
 e["Solver"]["Importance Weight Truncation"] = 2.0
 e["Solver"]["Optimization Steps Per Update"] = 1
-e["Solver"]["Experiences Between Agent Trainings"] = 10
+e["Solver"]["Experiences Between Agent Trainings"] = 1
 
 ### Defining the configuration of replay memory
 

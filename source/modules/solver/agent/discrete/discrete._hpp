@@ -34,6 +34,15 @@ class Discrete : public Agent
   */
   virtual std::vector<float> getActionProbabilities(const std::vector<float> &state) = 0;
 
+  /**
+   * @brief Calculates importance weight of current action from old and current policies
+   * @param action The action taken
+   * @param curProbabilities Probability distributions of current policy
+   * @param oldProbabilities Probability distributions of old policy
+   * @return The importance weight
+   */
+  float calculateImportanceWeight(const size_t actionIdx, const std::vector<float> &curProbabilities, const std::vector<float> &oldProbabilities);
+
   void getAction(korali::Sample &sample) override;
   void processExperience(knlohmann::json &experience) override;
   virtual void initializeAgent();

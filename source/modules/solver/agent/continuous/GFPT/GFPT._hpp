@@ -112,14 +112,6 @@ class GFPT : public Continuous
    */
   float retraceFunction(size_t expId);
 
-  /**
-   * @brief Calculates importance weight of current action from old and new policy
-   * @param expId Experience Id of old policy
-   * @param action The current action
-   * @return truncated importance weight
-   */
-  float calculateImportanceWeight(size_t expId, const std::vector<float> &action);
-
   void forwardPolicy(const std::vector<float> &state) override;
   void updateAgentPolicy(const knlohmann::json &hyperparameters) override;
   void trainAgent() override;

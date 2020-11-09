@@ -46,16 +46,15 @@ e["Solver"]["Experiences Between Agent Trainings"] = 1
 
 ### Defining the configuration of replay memory
 
-e["Solver"]["Experience Replay"]["Start Size"] =   500
-e["Solver"]["Experience Replay"]["Maximum Size"] = 100000
+e["Solver"]["Experience Replay"]["Start Size"] =   4000
+e["Solver"]["Experience Replay"]["Maximum Size"] = 16000
 
 ## Defining Neural Network Configuration for Policy and Critic into Critic Container
 
 e["Solver"]["Critic"]["Discount Factor"] = 0.99
-e["Solver"]["Critic"]["Adoption Rate"] = 0.50
-e["Solver"]["Critic"]["Learning Rate"] = 0.001
+e["Solver"]["Critic"]["Learning Rate"] = 0.001 
 e["Solver"]["Critic"]["Mini Batch Size"] = 32
-e["Solver"]["Critic"]["Normalization Steps"] = 32
+e["Solver"]["Critic"]["Normalization Steps"] = 8
 
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear"
@@ -83,8 +82,7 @@ e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 450
 
 ### Setting file output configuration
 
-e["File Output"]["Frequency"] = 10000
-#e["Console Output"]["Verbosity"] = "Silent"
+e["File Output"]["Enabled"] = False
 
 ### Running Experiment
 

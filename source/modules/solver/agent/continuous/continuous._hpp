@@ -43,6 +43,14 @@ class Continuous : public Agent
   problem::reinforcementLearning::Continuous *_problem;
 
   /**
+   * @brief Calculates importance weight of current action from old and new policy
+   * @param expId Experience Id of old policy
+   * @param action The current action
+   * @return importance weight
+   */
+  float calculateImportanceWeight(size_t expId, const std::vector<float> &action);
+
+  /**
   * @brief Function to pass state through the NN and prepares the Gaussian means and sigmas of the actions (updates members _actionMeans and _actionSigmas)
   * @param state The current state
   */

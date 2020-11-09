@@ -275,28 +275,7 @@ std::tuple<float, float> cACER::retraceFunction(size_t expId)
     // Current Q = V - A - avgA
     float curQ = curV + curA - avgA;
 
-    // Getting probability densities for current action given current policy
-    float pCurPolicy = 1.0f;
-    for (size_t i = 0; i < curAction.size(); i++)
-    {
-      _normalGenerator->_mean = _actionMeans[i];
-      _normalGenerator->_standardDeviation = _actionSigmas[i];
-      _normalGenerator->updateDistribution();
-      pCurPolicy *= _normalGenerator->getDensity(curAction[i]);
-    }
-
-    // Getting probability densities for current action given current policy
-    float pOldPolicy = 1.0f;
-    for (size_t i = 0; i < curAction.size(); i++)
-    {
-      _normalGenerator->_mean = _experienceReplayActionMeans[curId][i];
-      _normalGenerator->_standardDeviation = _experienceReplayActionSigmas[curId][i];
-      _normalGenerator->updateDistribution();
-      pOldPolicy *= _normalGenerator->getDensity(curAction[i]);
-    }
-
-    // Now calculating importance weight for the old s,a experience
-    float importanceWeight = pCurPolicy / pOldPolicy;
+    float importanceWeight = calculateImportanceWeight(curId, curAction);
 
     // Now calculating truncated importance weight with 1.0 as truncation factor
     float truncatedImportanceWeight = std::min(1.0f, importanceWeight);
@@ -422,31 +401,31 @@ void cACER::trainAgent()
     float qExpStateNewAction = vExpState + aExpStateNewAction - aSamplesMean;
 
     // Getting p(s,a) for the best action, given the current policy
-    float pExpActionCurPolicy = 1.0;
-    float pNewActionCurPolicy = 1.0;
+    float logpExpActionCurPolicy = 0.0;
+    float logpNewActionCurPolicy = 0.0;
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
     {
-      pExpActionCurPolicy *= _policyDistributions[i]->getDensity(expAction[i]);
-      pNewActionCurPolicy *= _policyDistributions[i]->getDensity(newAction[i]);
+      logpExpActionCurPolicy += _policyDistributions[i]->getLogDensity(expAction[i]);
+      logpNewActionCurPolicy += _policyDistributions[i]->getLogDensity(newAction[i]);
     }
 
     // Setting policy distributions to follow that of the old policy
     for (size_t i = 0; i < _problem->_actionVectorSize; i++) _policyDistributions[i]->_mean = oldMeans[i];
 
     // Getting p(s,a) for selected experience, given the old policy
-    float pExpActionOldPolicy = 1.0;
-    float pNewActionOldPolicy = 1.0;
+    float logpExpActionOldPolicy = 0.0;
+    float logpNewActionOldPolicy = 0.0;
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
     {
-      pExpActionOldPolicy *= _policyDistributions[i]->getDensity(expAction[i]);
-      pNewActionOldPolicy *= _policyDistributions[i]->getDensity(newAction[i]);
+      logpExpActionOldPolicy += _policyDistributions[i]->getLogDensity(expAction[i]);
+      logpNewActionOldPolicy += _policyDistributions[i]->getLogDensity(newAction[i]);
     }
 
     // Now calculating importance weight for s,a (old)
-    float oldImportanceWeight = pExpActionCurPolicy / pExpActionOldPolicy;
+    float oldImportanceWeight = std::exp(logpExpActionCurPolicy - logpExpActionOldPolicy);
 
     // Now calculating importance weight for s, a' (new)
-    float newImportanceWeight = pNewActionCurPolicy / pNewActionOldPolicy;
+    float newImportanceWeight = std::exp(logpNewActionCurPolicy - logpNewActionOldPolicy);
 
     /*****************************************
      * Policy Section

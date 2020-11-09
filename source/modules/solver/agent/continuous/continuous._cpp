@@ -138,6 +138,34 @@ void Continuous::getAction(korali::Sample &sample)
   sample["Action"] = action;
 }
 
+float Continuous::calculateImportanceWeight(const std::vector<float> &action, const std::vector<float> &curMeans, const std::vector<float> &curSigmas, const std::vector<float> &oldMeans, const std::vector<float> &oldSigmas)
+{
+  // Getting probability densities for current action given current policy
+  float logpCurPolicy = 0.0f;
+  for (size_t i = 0; i < action.size(); i++)
+  {
+    _normalGenerator->_mean = curMeans[i];
+    _normalGenerator->_standardDeviation = curSigmas[i];
+    _normalGenerator->updateDistribution();
+    logpCurPolicy += _normalGenerator->getLogDensity(action[i]);
+  }
+
+  // Getting probability densities for current action given current policy
+  float logpOldPolicy = 0.0f;
+  for (size_t i = 0; i < action.size(); i++)
+  {
+    _normalGenerator->_mean = oldMeans[i];
+    _normalGenerator->_standardDeviation = oldSigmas[i];
+    _normalGenerator->updateDistribution();
+    logpOldPolicy += _normalGenerator->getLogDensity(action[i]);
+  }
+
+  // Now calculating importance weight for the old s,a experience
+  float importanceWeight = std::exp(logpCurPolicy - logpOldPolicy);
+
+  return importanceWeight;
+}
+
 } // namespace agent
 
 } // namespace solver

@@ -79,8 +79,19 @@ class Agent : public Solver
   */
   float _randomActionProbabilityEffectiveValue;
 
+  /**
+  * @brief Storage for the cache for the qRet value of the next experience
+  */
   std::vector<float> _qRetNextCache;
+
+  /**
+   * @brief Storage for the cache for the qOpc value of the next experience
+   */
   std::vector<float> _qOpcNextCache;
+
+  /**
+   * @brief Storage for the age of each element of the retrace cache
+   */
   std::vector<ssize_t> _qCacheAge;
 
   /**

@@ -60,8 +60,14 @@ class dACER : public Discrete
    */
   float stateActionValueFunction(const std::vector<float> &state, const size_t &actionIdx);
 
-  std::vector<float> getActionProbabilities(const std::vector<float> &state) override;
+  /**
+   * @brief Returns the retrace value for the given experience
+   * @param expId The id (position within the replay memory) of the experience
+   * @return The qRet value of the experience
+   */
   float retraceFunction(size_t expId);
+
+  std::vector<float> getActionProbabilities(const std::vector<float> &state) override;
   void updateAgentPolicy(const knlohmann::json &hyperparameters) override;
   void trainAgent() override;
   void printAgentInformation() override;

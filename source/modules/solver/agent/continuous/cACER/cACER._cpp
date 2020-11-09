@@ -59,9 +59,9 @@ void cACER::initializeAgent()
   // Initializing experiment with an initial zero set
   for (size_t p = 0; p < _criticMiniBatchSize; p++)
   {
-   for (size_t i = 0; i < _problem->_stateVectorSize; i++)
-    _vExperiment["Problem"]["Inputs"][p][i] = 0.0;
-   _vExperiment["Problem"]["Solution"][p][0] = 0.0; // V(s)
+    for (size_t i = 0; i < _problem->_stateVectorSize; i++)
+      _vExperiment["Problem"]["Inputs"][p][i] = 0.0;
+    _vExperiment["Problem"]["Solution"][p][0] = 0.0; // V(s)
   }
 
   // Running initialization to verify that the configuration is correct
@@ -84,11 +84,11 @@ void cACER::initializeAgent()
   _aExperiment["Solver"]["Neural Network"] = _criticNeuralNetwork;
 
   // Initializing experiment with an initial zero set
-  for (size_t p = 0; p < _criticMiniBatchSize + _criticMiniBatchSize*_policySamplePopulation; p++)
+  for (size_t p = 0; p < _criticMiniBatchSize + _criticMiniBatchSize * _policySamplePopulation; p++)
   {
-   for (size_t i = 0; i < _problem->_stateVectorSize + _problem->_actionVectorSize; i++)
-    _aExperiment["Problem"]["Inputs"][p][i] = 0.0;
-   _aExperiment["Problem"]["Solution"][p][0] = 0.0; // A(s,a)
+    for (size_t i = 0; i < _problem->_stateVectorSize + _problem->_actionVectorSize; i++)
+      _aExperiment["Problem"]["Inputs"][p][i] = 0.0;
+    _aExperiment["Problem"]["Solution"][p][0] = 0.0; // A(s,a)
   }
 
   // Running initialization to verify that the configuration is correct
@@ -115,11 +115,11 @@ void cACER::initializeAgent()
   // Initializing experiment with an initial zero set
   for (size_t p = 0; p < _criticMiniBatchSize; p++)
   {
-   for (size_t i = 0; i < _problem->_stateVectorSize; i++)
-     _policyExperiment["Problem"]["Inputs"][p][i] = 0.0;
+    for (size_t i = 0; i < _problem->_stateVectorSize; i++)
+      _policyExperiment["Problem"]["Inputs"][p][i] = 0.0;
 
-   for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-     _policyExperiment["Problem"]["Solution"][p][i] = 0.0; // Gaussian Mean
+    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+      _policyExperiment["Problem"]["Solution"][p][i] = 0.0; // Gaussian Mean
   }
 
   // Running initialization to verify that the configuration is correct
@@ -157,15 +157,15 @@ void cACER::initializeAgent()
 
 float cACER::currentActionAdvantageFunction(const std::vector<float> &state, const std::vector<float> &action)
 {
- // Storage to put together state and action
- std::vector<float> stateActionInput(_problem->_stateVectorSize + _problem->_actionVectorSize);
+  // Storage to put together state and action
+  std::vector<float> stateActionInput(_problem->_stateVectorSize + _problem->_actionVectorSize);
 
- // Calculating max_a A(s_i+1, a)
- for (size_t j = 0; j < _problem->_stateVectorSize; j++) stateActionInput[j] = state[j];
- for (size_t j = 0; j < _problem->_actionVectorSize; j++) stateActionInput[j + _problem->_stateVectorSize] = action[j];
- float a = _aLearner->getEvaluation(stateActionInput)[0];
+  // Calculating max_a A(s_i+1, a)
+  for (size_t j = 0; j < _problem->_stateVectorSize; j++) stateActionInput[j] = state[j];
+  for (size_t j = 0; j < _problem->_actionVectorSize; j++) stateActionInput[j + _problem->_stateVectorSize] = action[j];
+  float a = _aLearner->getEvaluation(stateActionInput)[0];
 
- return a;
+  return a;
 }
 
 float cACER::averageActionAdvantageFunction(const std::vector<float> &state)
@@ -230,85 +230,85 @@ std::tuple<float, float> cACER::retraceFunction(size_t expId)
   float qOpcNext = _experienceReplayRewards[endId];
 
   // Setting starting experience as the second to last
-  ssize_t curId = endId-1;
+  ssize_t curId = endId - 1;
 
   // Now checking whether any necessary qTmp is present in cache
   for (ssize_t i = startId; i < endId; i++)
   {
-   // If the difference in age is within the range, then it's a cache hit
-   if (_optimizationStepCount - _qCacheAge[i] < _criticRetraceCachePersistence)
-   {
-    qRetNext = _qRetNextCache[i];
-    qOpcNext = _qOpcNextCache[i];
-    curId = i;
-    break;
-   }
+    // If the difference in age is within the range, then it's a cache hit
+    if (_optimizationStepCount - _qCacheAge[i] < _criticRetraceCachePersistence)
+    {
+      qRetNext = _qRetNextCache[i];
+      qOpcNext = _qOpcNextCache[i];
+      curId = i;
+      break;
+    }
   }
 
   // Now iterating backwards to calculate the rest of qRet
   for (; curId >= startId; curId--)
   {
-   // Getting current reward
-   float curReward = _experienceReplayRewards[curId];
+    // Getting current reward
+    float curReward = _experienceReplayRewards[curId];
 
-   // Re-calculating qRet and qOpc
-   qRet = curReward + _criticDiscountFactor * qRetNext;
-   qOpc = curReward + _criticDiscountFactor * qOpcNext;
+    // Re-calculating qRet and qOpc
+    qRet = curReward + _criticDiscountFactor * qRetNext;
+    qOpc = curReward + _criticDiscountFactor * qOpcNext;
 
-   // If this is the starting experience, return the current value
-   if (curId == startId) break;
+    // If this is the starting experience, return the current value
+    if (curId == startId) break;
 
-   // Getting current state
-   std::vector<float> curState = _experienceReplayStates[curId];
+    // Getting current state
+    std::vector<float> curState = _experienceReplayStates[curId];
 
-   // Getting current action index
-   auto curAction = _experienceReplayActions[curId];
+    // Getting current action index
+    auto curAction = _experienceReplayActions[curId];
 
-   // Updating action distributions for the current state
-   forwardPolicy(curState);
+    // Updating action distributions for the current state
+    forwardPolicy(curState);
 
-   // Now calculating V, A, and avgA for current state/action
-   float curA = currentActionAdvantageFunction(curState, curAction);
-   float avgA = averageActionAdvantageFunction(curState);
-   float curV = stateValueFunction(curState);
+    // Now calculating V, A, and avgA for current state/action
+    float curA = currentActionAdvantageFunction(curState, curAction);
+    float avgA = averageActionAdvantageFunction(curState);
+    float curV = stateValueFunction(curState);
 
-   // Current Q = V - A - avgA
-   float curQ = curV + curA - avgA;
+    // Current Q = V - A - avgA
+    float curQ = curV + curA - avgA;
 
-   // Getting probability densities for current action given current policy
-   float pCurPolicy = 1.0f;
-   for (size_t i = 0; i < curAction.size(); i++)
-   {
-    _normalGenerator->_mean = _actionMeans[i];
-    _normalGenerator->_standardDeviation = _actionSigmas[i];
-    _normalGenerator->updateDistribution();
-    pCurPolicy *= _normalGenerator->getDensity(curAction[i]);
-   }
+    // Getting probability densities for current action given current policy
+    float pCurPolicy = 1.0f;
+    for (size_t i = 0; i < curAction.size(); i++)
+    {
+      _normalGenerator->_mean = _actionMeans[i];
+      _normalGenerator->_standardDeviation = _actionSigmas[i];
+      _normalGenerator->updateDistribution();
+      pCurPolicy *= _normalGenerator->getDensity(curAction[i]);
+    }
 
-   // Getting probability densities for current action given current policy
-   float pOldPolicy = 1.0f;
-   for (size_t i = 0; i < curAction.size(); i++)
-   {
-    _normalGenerator->_mean = _experienceReplayActionMeans[curId][i];
-    _normalGenerator->_standardDeviation = _experienceReplayActionSigmas[curId][i];
-    _normalGenerator->updateDistribution();
-    pOldPolicy *= _normalGenerator->getDensity(curAction[i]);
-   }
+    // Getting probability densities for current action given current policy
+    float pOldPolicy = 1.0f;
+    for (size_t i = 0; i < curAction.size(); i++)
+    {
+      _normalGenerator->_mean = _experienceReplayActionMeans[curId][i];
+      _normalGenerator->_standardDeviation = _experienceReplayActionSigmas[curId][i];
+      _normalGenerator->updateDistribution();
+      pOldPolicy *= _normalGenerator->getDensity(curAction[i]);
+    }
 
-   // Now calculating importance weight for the old s,a experience
-   float importanceWeight = pCurPolicy / pOldPolicy;
+    // Now calculating importance weight for the old s,a experience
+    float importanceWeight = pCurPolicy / pOldPolicy;
 
-   // Now calculating truncated importance weight with 1.0 as truncation factor
-   float truncatedImportanceWeight = std::min(1.0f, importanceWeight);
+    // Now calculating truncated importance weight with 1.0 as truncation factor
+    float truncatedImportanceWeight = std::min(1.0f, importanceWeight);
 
-   // Updating qRet
-   qRetNext = truncatedImportanceWeight * (qRet - curQ) + curV;
-   qOpcNext = (qOpc - curQ) + curV;
+    // Updating qRet
+    qRetNext = truncatedImportanceWeight * (qRet - curQ) + curV;
+    qOpcNext = (qOpc - curQ) + curV;
 
-   // Refreshing cache with the calculated value
-   _qRetNextCache[curId-1] = qRetNext;
-   _qOpcNextCache[curId-1] = qOpcNext;
-   _qCacheAge[curId-1] = _optimizationStepCount;
+    // Refreshing cache with the calculated value
+    _qRetNextCache[curId - 1] = qRetNext;
+    _qOpcNextCache[curId - 1] = qOpcNext;
+    _qCacheAge[curId - 1] = _optimizationStepCount;
   }
 
   // Returning qRet

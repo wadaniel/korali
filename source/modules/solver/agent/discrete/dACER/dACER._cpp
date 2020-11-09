@@ -31,11 +31,11 @@ void dACER::initializeAgent()
 
   for (size_t i = 0; i < _criticMiniBatchSize; i++)
   {
-   for (size_t j = 0; j < _problem->_stateVectorSize; j++)
-     _criticExperiment["Problem"]["Inputs"][i][j] = 0.0;
+    for (size_t j = 0; j < _problem->_stateVectorSize; j++)
+      _criticExperiment["Problem"]["Inputs"][i][j] = 0.0;
 
-   for (size_t j = 0; j < _problem->_possibleActions.size(); j++)
-     _criticExperiment["Problem"]["Solution"][i][j] = 0.0;
+    for (size_t j = 0; j < _problem->_possibleActions.size(); j++)
+      _criticExperiment["Problem"]["Solution"][i][j] = 0.0;
   }
 
   // Running initialization to verify that the configuration is correct
@@ -61,12 +61,12 @@ void dACER::initializeAgent()
 
   for (size_t i = 0; i < _criticMiniBatchSize; i++)
   {
-   // Initializing experiment with an initial zero set
-   for (size_t j = 0; j < _problem->_stateVectorSize; j++)
-     _policyExperiment["Problem"]["Inputs"][i][j] = 0.0;
+    // Initializing experiment with an initial zero set
+    for (size_t j = 0; j < _problem->_stateVectorSize; j++)
+      _policyExperiment["Problem"]["Inputs"][i][j] = 0.0;
 
-   for (size_t j = 0; j < _problem->_possibleActions.size(); j++)
-     _policyExperiment["Problem"]["Solution"][i][j] = 0.0;
+    for (size_t j = 0; j < _problem->_possibleActions.size(); j++)
+      _policyExperiment["Problem"]["Solution"][i][j] = 0.0;
   }
 
   // Running initialization to verify that the configuration is correct
@@ -271,8 +271,8 @@ void dACER::trainAgent()
   _hyperparameters["Policy"] = _policyCurrentHyperparameters;
 
   // Updating Statistics
-   _averageQStar = _cumulativeQStar / (float)_criticMiniBatchSize;                                            // Average Q Retrace
-   _stdevQStar = sqrt(_cumulativeQStarSquared / (float)_criticMiniBatchSize - _averageQStar * _averageQStar); // Sdev Q Retrace
+  _averageQStar = _cumulativeQStar / (float)_criticMiniBatchSize;                                            // Average Q Retrace
+  _stdevQStar = sqrt(_cumulativeQStarSquared / (float)_criticMiniBatchSize - _averageQStar * _averageQStar); // Sdev Q Retrace
 }
 
 float dACER::retraceFunction(size_t expId)
@@ -289,65 +289,65 @@ float dACER::retraceFunction(size_t expId)
   float qRetNext = _experienceReplayRewards[endId];
 
   // Setting starting experience as the second to last
-  ssize_t curId = endId-1;
+  ssize_t curId = endId - 1;
 
   // Now checking whether any necessary qRetNext is present in cache
   for (ssize_t i = startId; i < endId; i++)
   {
-   // If the difference in age is within the range, then it's a cache hit
-   if (_optimizationStepCount - _qCacheAge[i] < _criticRetraceCachePersistence)
-   {
-    qRetNext = _qRetNextCache[i];
-    curId = i;
-    break;
-   }
+    // If the difference in age is within the range, then it's a cache hit
+    if (_optimizationStepCount - _qCacheAge[i] < _criticRetraceCachePersistence)
+    {
+      qRetNext = _qRetNextCache[i];
+      curId = i;
+      break;
+    }
   }
 
   // Now iterating backwards to calculate the rest of qRet
   for (; curId >= startId; curId--)
   {
-   // Getting current reward
-   float curReward = _experienceReplayRewards[curId];
+    // Getting current reward
+    float curReward = _experienceReplayRewards[curId];
 
-   // Re-calculating qRet
-   qRet = curReward + _criticDiscountFactor * qRetNext;
+    // Re-calculating qRet
+    qRet = curReward + _criticDiscountFactor * qRetNext;
 
-   // If this is the starting experience, return the current value
-   if (curId == startId) break;
+    // If this is the starting experience, return the current value
+    if (curId == startId) break;
 
-   // Getting current state
-   std::vector<float> curState = _experienceReplayStates[curId];
+    // Getting current state
+    std::vector<float> curState = _experienceReplayStates[curId];
 
-   // Getting current action index
-   auto curActionIdx = _experienceReplayActionIndexes[curId];
+    // Getting current action index
+    auto curActionIdx = _experienceReplayActionIndexes[curId];
 
-   // Now calculating V
-   float curV = stateValueFunction(curState);
+    // Now calculating V
+    float curV = stateValueFunction(curState);
 
-   // Now calculating Q
-   float curQ = stateActionValueFunction(curState, curActionIdx);
+    // Now calculating Q
+    float curQ = stateActionValueFunction(curState, curActionIdx);
 
-   // Getting the probability of the actions given by the agent's policy
-   auto pActionsCurPolicy = getActionProbabilities(curState);
+    // Getting the probability of the actions given by the agent's policy
+    auto pActionsCurPolicy = getActionProbabilities(curState);
 
-   // Getting probability density of action for current policy
-   float pCurPolicy = pActionsCurPolicy[curActionIdx];
+    // Getting probability density of action for current policy
+    float pCurPolicy = pActionsCurPolicy[curActionIdx];
 
-   // Getting probability density of action for old policy
-   float pOldPolicy = _experienceReplayActionProbabilities[curId][curActionIdx];
+    // Getting probability density of action for old policy
+    float pOldPolicy = _experienceReplayActionProbabilities[curId][curActionIdx];
 
-   // Now calculating importance weight for the old s,a experience
-   float importanceWeight = pCurPolicy / pOldPolicy;
+    // Now calculating importance weight for the old s,a experience
+    float importanceWeight = pCurPolicy / pOldPolicy;
 
-   // Now calculating truncated importance weight with 1.0 as truncation factor
-   float truncatedImportanceWeight = std::min(1.0f, importanceWeight);
+    // Now calculating truncated importance weight with 1.0 as truncation factor
+    float truncatedImportanceWeight = std::min(1.0f, importanceWeight);
 
-   // Updating qRet
-   qRetNext = truncatedImportanceWeight * (qRet - curQ) + curV;
+    // Updating qRet
+    qRetNext = truncatedImportanceWeight * (qRet - curQ) + curV;
 
-   // Refreshing cache with the calculated value
-   _qRetNextCache[curId-1] = qRetNext;
-   _qCacheAge[curId-1] = _optimizationStepCount;
+    // Refreshing cache with the calculated value
+    _qRetNextCache[curId - 1] = qRetNext;
+    _qCacheAge[curId - 1] = _optimizationStepCount;
   }
 
   // Returning qRet

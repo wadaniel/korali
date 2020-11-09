@@ -133,7 +133,6 @@ int main(int argc, char *argv[])
   e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Elementwise/Tanh";
   e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Batch Normalization"]["Enabled"] = false;
 
-
   ////// Defining Termination Criteria
 
   e["Solver"]["Training Reward Threshold"] = 1.0;

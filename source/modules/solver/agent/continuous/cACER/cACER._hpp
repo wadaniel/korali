@@ -16,7 +16,6 @@ namespace continuous
 class cACER : public Continuous
 {
   public:
-
   /**
    * @brief A neural network for the inference of the averaged advantage function
    */
@@ -97,9 +96,28 @@ class cACER : public Continuous
    */
   std::vector<float> generateAction();
 
+  /**
+   * @brief Returns the advantage value of the given state/action
+   * @param state State to evaluate
+   * @param action Action to evaluate
+   * @return The advantage value
+   */
   float currentActionAdvantageFunction(const std::vector<float> &state, const std::vector<float> &action);
+
+  /**
+   * @brief Returns the average advantage value of all actions given the state
+   * @param state State to evaluate
+   * @return The average advantage value
+   */
   float averageActionAdvantageFunction(const std::vector<float> &state);
+
+  /**
+   * @brief Returns the retrace value for the given experience
+   * @param expId The id (position within the replay memory) of the experience
+   * @return The qRet and qOpc values of the experience
+   */
   std::tuple<float, float> retraceFunction(size_t expId);
+
   void forwardPolicy(const std::vector<float> &state) override;
   void trainAgent() override;
   void updateAgentPolicy(const knlohmann::json &hyperparameters) override;

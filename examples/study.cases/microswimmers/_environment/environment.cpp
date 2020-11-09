@@ -22,16 +22,16 @@ void runEnvironment(korali::Sample &s)
   auto [lowerBounds, upperBounds] = _environment->getActionBounds();
 
   std::vector<double> scales = {
-     (upperBounds[0] - lowerBounds[0]) * 0.5,
-     (upperBounds[1] - lowerBounds[1]) * 0.5,
-     (upperBounds[2] - lowerBounds[2]) * 0.5,
-     (upperBounds[3] - lowerBounds[3]) * 0.5};
+    (upperBounds[0] - lowerBounds[0]) * 0.5,
+    (upperBounds[1] - lowerBounds[1]) * 0.5,
+    (upperBounds[2] - lowerBounds[2]) * 0.5,
+    (upperBounds[3] - lowerBounds[3]) * 0.5};
 
   std::vector<double> shifts = {
-     (upperBounds[0] + lowerBounds[0]) * 0.5,
-     (upperBounds[1] + lowerBounds[1]) * 0.5,
-     (upperBounds[2] + lowerBounds[2]) * 0.5,
-     (upperBounds[3] + lowerBounds[3]) * 0.5};
+    (upperBounds[0] + lowerBounds[0]) * 0.5,
+    (upperBounds[1] + lowerBounds[1]) * 0.5,
+    (upperBounds[2] + lowerBounds[2]) * 0.5,
+    (upperBounds[3] + lowerBounds[3]) * 0.5};
 
   // Defining status variable that tells us whether when the simulation is done
   Status status{Status::Running};
@@ -50,7 +50,7 @@ void runEnvironment(korali::Sample &s)
 
     // Scaling/shifting action
     for (size_t i = 0; i < action.size(); i++)
-     action[i] = scales[i]*action[i] + shifts[i];
+      action[i] = scales[i] * action[i] + shifts[i];
 
     // Printing Action:
     if (curActionIndex % 20 == 0)

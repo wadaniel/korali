@@ -195,7 +195,9 @@ void DDPG::trainAgent()
 
     // Now calculating Gradient of q with respect to state+action for the critic NN
     _criticLearner->getEvaluation(stateActionInput);
-    auto qGradients = _criticLearner->getGradients({{-1.0f}}); // Identity, to estimate the exact gradient dQ/dAS
+
+    // Passing 1.0 (identity), to estimate the exact gradient dQ/dAS. The minus sign is to ensure that we maximize Q in this case, do not remove.
+    auto qGradients = _criticLearner->getGradients({{-1.0f}});
     std::vector<float> aGradients = std::vector<float>(qGradients.begin() + _problem->_stateVectorSize, qGradients.end());
 
     // Setting input and gradient for policy update

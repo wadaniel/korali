@@ -264,9 +264,6 @@ std::vector<float> DDQN::getActionProbabilities(const std::vector<float> &state)
     pActions[i] = expCurQVal;
   }
 
-  // Computing 1/n A(s,a') for all a' belonging to the action space
-  float aValAverage = 0.0;
-
   // Calculating inverse of Sum_i(e^Q(s,a_i))
   float invSumExpQVal = 1.0f / sumExpQVal;
 

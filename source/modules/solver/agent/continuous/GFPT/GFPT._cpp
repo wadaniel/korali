@@ -207,14 +207,8 @@ float GFPT::retraceFunction(size_t expId)
     // Current Q = V - A - avgA
     float curQ = curV + curA - avgA;
 
-    // Calculating importance weight
-    float importanceWeight = calculateImportanceWeight(curAction, _actionMeans, _actionSigmas, _experienceReplayActionMeans[expId], _experienceReplayActionSigmas[expId]);
-
-    // Now calculating truncated importance weight with 1.0 as truncation factor
-    float truncatedImportanceWeight = std::min(1.0f, importanceWeight);
-
-    // Updating qRet
-    qRetNext = truncatedImportanceWeight * (qRet - curQ) + curV;
+    // Updating qRet (no importance weight as it seems not to work well with this algorithm)
+    qRetNext = (qRet - curQ) + curV;
 
     // Refreshing cache with the calculated value
     _qRetNextCache[curId - 1] = qRetNext;

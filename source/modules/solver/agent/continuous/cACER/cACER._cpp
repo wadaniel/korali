@@ -275,28 +275,8 @@ std::tuple<float, float> cACER::retraceFunction(size_t expId)
     // Current Q = V - A - avgA
     float curQ = curV + curA - avgA;
 
-    // Getting probability densities for current action given current policy
-    float pCurPolicy = 1.0f;
-    for (size_t i = 0; i < curAction.size(); i++)
-    {
-      _normalGenerator->_mean = _actionMeans[i];
-      _normalGenerator->_standardDeviation = _actionSigmas[i];
-      _normalGenerator->updateDistribution();
-      pCurPolicy *= _normalGenerator->getDensity(curAction[i]);
-    }
-
-    // Getting probability densities for current action given current policy
-    float pOldPolicy = 1.0f;
-    for (size_t i = 0; i < curAction.size(); i++)
-    {
-      _normalGenerator->_mean = _experienceReplayActionMeans[curId][i];
-      _normalGenerator->_standardDeviation = _experienceReplayActionSigmas[curId][i];
-      _normalGenerator->updateDistribution();
-      pOldPolicy *= _normalGenerator->getDensity(curAction[i]);
-    }
-
-    // Now calculating importance weight for the old s,a experience
-    float importanceWeight = pCurPolicy / pOldPolicy;
+    // Calculating importance weight
+    float importanceWeight = calculateImportanceWeight(curAction, _actionMeans, _actionSigmas, _experienceReplayActionMeans[expId], _experienceReplayActionSigmas[expId]);
 
     // Now calculating truncated importance weight with 1.0 as truncation factor
     float truncatedImportanceWeight = std::min(1.0f, importanceWeight);
@@ -421,32 +401,11 @@ void cACER::trainAgent()
     // Getting Q(s, a') for the new (policy) action
     float qExpStateNewAction = vExpState + aExpStateNewAction - aSamplesMean;
 
-    // Getting p(s,a) for the best action, given the current policy
-    float pExpActionCurPolicy = 1.0;
-    float pNewActionCurPolicy = 1.0;
-    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-    {
-      pExpActionCurPolicy *= _policyDistributions[i]->getDensity(expAction[i]);
-      pNewActionCurPolicy *= _policyDistributions[i]->getDensity(newAction[i]);
-    }
-
-    // Setting policy distributions to follow that of the old policy
-    for (size_t i = 0; i < _problem->_actionVectorSize; i++) _policyDistributions[i]->_mean = oldMeans[i];
-
-    // Getting p(s,a) for selected experience, given the old policy
-    float pExpActionOldPolicy = 1.0;
-    float pNewActionOldPolicy = 1.0;
-    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-    {
-      pExpActionOldPolicy *= _policyDistributions[i]->getDensity(expAction[i]);
-      pNewActionOldPolicy *= _policyDistributions[i]->getDensity(newAction[i]);
-    }
-
     // Now calculating importance weight for s,a (old)
-    float oldImportanceWeight = pExpActionCurPolicy / pExpActionOldPolicy;
+    float oldImportanceWeight = calculateImportanceWeight(expAction, curMeans, _actionSigmas, oldMeans, _actionSigmas);
 
     // Now calculating importance weight for s, a' (new)
-    float newImportanceWeight = pNewActionCurPolicy / pNewActionOldPolicy;
+    float newImportanceWeight = calculateImportanceWeight(newAction, curMeans, _actionSigmas, oldMeans, _actionSigmas);
 
     /*****************************************
      * Policy Section
@@ -459,7 +418,7 @@ void cACER::trainAgent()
     float g1 = truncatedImportanceWeight * (qOpc - vExpState);
 
     // Now calculating r(a) - c / r(a) ratio
-    float importanceRatio = 1.0 - (_importanceWeightTruncation / newImportanceWeight);
+    float importanceRatio = 1.0f - (_importanceWeightTruncation / newImportanceWeight);
 
     // Now calculating the correction weight
     float correctionWeight = importanceRatio > 0.0 ? importanceRatio : 0.0;

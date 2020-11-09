@@ -36,7 +36,7 @@ class Discrete : public Agent
 
   /**
    * @brief Calculates importance weight of current action from old and current policies
-   * @param action The action taken
+   * @param actionIdx Index of the action taken
    * @param curProbabilities Probability distributions of current policy
    * @param oldProbabilities Probability distributions of old policy
    * @return The importance weight

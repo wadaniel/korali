@@ -61,13 +61,13 @@ class dACER : public Discrete
   float stateActionValueFunction(const std::vector<float> &state, const size_t &actionIdx);
 
   /**
-   * @brief Processes a selected trajectory to learn from it, depending on whether it uses a discrete or continuous action space
-   * @param startId ID to the first experience of the trajectory
+   * @brief Returns the retrace value for the given experience
+   * @param expId The id (position within the replay memory) of the experience
+   * @return The qRet value of the experience
    */
-  void processTrajectory(size_t startId);
+  float retraceFunction(size_t expId);
 
   std::vector<float> getActionProbabilities(const std::vector<float> &state) override;
-
   void updateAgentPolicy(const knlohmann::json &hyperparameters) override;
   void trainAgent() override;
   void printAgentInformation() override;

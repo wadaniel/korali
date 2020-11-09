@@ -125,14 +125,11 @@ void dACER::trainAgent()
     // Getting probability densities for current action given current policy
     auto pCurPolicy = getActionProbabilities(curState);
 
-    // Getting p(s,a) for selected experience, given the old policy
-    float pActionOldPolicy = pOldPolicy[curActionIdx];
-
     // Getting p(s,a) for the best action, given the current policy
     float pActionCurPolicy = pCurPolicy[curActionIdx];
 
     // Now calculating importance weight for the old s,a experience
-    float importanceWeight = pActionCurPolicy / pActionOldPolicy;
+    float importanceWeight = calculateImportanceWeight(curActionIdx, pCurPolicy, pOldPolicy);
 
     /*****************************************
     * Policy Section
@@ -330,14 +327,8 @@ float dACER::retraceFunction(size_t expId)
     // Getting the probability of the actions given by the agent's policy
     auto pActionsCurPolicy = getActionProbabilities(curState);
 
-    // Getting probability density of action for current policy
-    float pCurPolicy = pActionsCurPolicy[curActionIdx];
-
-    // Getting probability density of action for old policy
-    float pOldPolicy = _experienceReplayActionProbabilities[curId][curActionIdx];
-
     // Now calculating importance weight for the old s,a experience
-    float importanceWeight = pCurPolicy / pOldPolicy;
+    float importanceWeight = calculateImportanceWeight(curActionIdx, pActionsCurPolicy, _experienceReplayActionProbabilities[curId]);
 
     // Now calculating truncated importance weight with 1.0 as truncation factor
     float truncatedImportanceWeight = std::min(1.0f, importanceWeight);

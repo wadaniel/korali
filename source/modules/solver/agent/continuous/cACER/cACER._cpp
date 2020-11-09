@@ -275,7 +275,8 @@ std::tuple<float, float> cACER::retraceFunction(size_t expId)
     // Current Q = V - A - avgA
     float curQ = curV + curA - avgA;
 
-    float importanceWeight = calculateImportanceWeight(curId, curAction);
+    // Calculating importance weight
+    float importanceWeight = calculateImportanceWeight(curAction, _actionMeans, _actionSigmas, _experienceReplayActionMeans[expId], _experienceReplayActionSigmas[expId]);
 
     // Now calculating truncated importance weight with 1.0 as truncation factor
     float truncatedImportanceWeight = std::min(1.0f, importanceWeight);
@@ -400,32 +401,11 @@ void cACER::trainAgent()
     // Getting Q(s, a') for the new (policy) action
     float qExpStateNewAction = vExpState + aExpStateNewAction - aSamplesMean;
 
-    // Getting p(s,a) for the best action, given the current policy
-    float logpExpActionCurPolicy = 0.0;
-    float logpNewActionCurPolicy = 0.0;
-    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-    {
-      logpExpActionCurPolicy += _policyDistributions[i]->getLogDensity(expAction[i]);
-      logpNewActionCurPolicy += _policyDistributions[i]->getLogDensity(newAction[i]);
-    }
-
-    // Setting policy distributions to follow that of the old policy
-    for (size_t i = 0; i < _problem->_actionVectorSize; i++) _policyDistributions[i]->_mean = oldMeans[i];
-
-    // Getting p(s,a) for selected experience, given the old policy
-    float logpExpActionOldPolicy = 0.0;
-    float logpNewActionOldPolicy = 0.0;
-    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-    {
-      logpExpActionOldPolicy += _policyDistributions[i]->getLogDensity(expAction[i]);
-      logpNewActionOldPolicy += _policyDistributions[i]->getLogDensity(newAction[i]);
-    }
-
     // Now calculating importance weight for s,a (old)
-    float oldImportanceWeight = std::exp(logpExpActionCurPolicy - logpExpActionOldPolicy);
+    float oldImportanceWeight = calculateImportanceWeight(expAction, curMeans, _actionSigmas, oldMeans, _actionSigmas);
 
     // Now calculating importance weight for s, a' (new)
-    float newImportanceWeight = std::exp(logpNewActionCurPolicy - logpNewActionOldPolicy);
+    float newImportanceWeight = calculateImportanceWeight(newAction, curMeans, _actionSigmas, oldMeans, _actionSigmas);
 
     /*****************************************
      * Policy Section
@@ -438,7 +418,7 @@ void cACER::trainAgent()
     float g1 = truncatedImportanceWeight * (qOpc - vExpState);
 
     // Now calculating r(a) - c / r(a) ratio
-    float importanceRatio = 1.0 - (_importanceWeightTruncation / newImportanceWeight);
+    float importanceRatio = 1.0f - (_importanceWeightTruncation / newImportanceWeight);
 
     // Now calculating the correction weight
     float correctionWeight = importanceRatio > 0.0 ? importanceRatio : 0.0;

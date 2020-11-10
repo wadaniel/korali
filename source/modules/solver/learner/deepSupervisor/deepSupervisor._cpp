@@ -100,18 +100,22 @@ void DeepSupervisor::runGeneration()
 
     // Saving values for the loss function and its gradient
     _currentLoss = 0.0;
-    std::vector<float> lossDiff(batchSize * solutionSize);
+    std::vector<std::vector<float>> lossDiff(batchSize);
 
     // Assigning values to evaluation and gradients, depending on the loss function selected
     for (size_t i = 0; i < batchSize; i++)
+    {
+      lossDiff[i].resize(solutionSize);
+
       for (size_t j = 0; j < solutionSize; j++)
       {
         float diff = 0.0;
         if (_lossFunction == "Direct Gradient") diff = _problem->_solution[i][j];
         if (_lossFunction == "Mean Squared Error") diff = _problem->_solution[i][j] - _trainingNeuralNetwork->_outputValues[i][j];
-        lossDiff[i * solutionSize + j] = diff;
+        lossDiff[i][j] = diff;
         _currentLoss += diff * diff;
       }
+    }
 
     // Averaging the loss across the batch size
     _currentLoss = _currentLoss / ((float)batchSize * 2.0f);
@@ -180,7 +184,7 @@ std::vector<float> DeepSupervisor::getEvaluation(const std::vector<float> &input
 std::vector<float> DeepSupervisor::getGradients(const std::vector<float> &outputDiffs)
 {
   // Backward propagating the gradients through the training neural network
-  _evaluationNeuralNetwork->backward(outputDiffs);
+  _evaluationNeuralNetwork->backward({ outputDiffs });
 
   // Running backward propagation wrt data
   return _evaluationNeuralNetwork->getDataGradients();

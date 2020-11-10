@@ -20,20 +20,11 @@ e["Problem"]["Actions Between Policy Updates"] = 1
 e["Variables"][0]["Name"] = "Cart Position"
 e["Variables"][0]["Type"] = "State"
 
-e["Variables"][1]["Name"] = "Cart Velocity"
-e["Variables"][1]["Type"] = "State"
-
-e["Variables"][2]["Name"] = "Pole Angle"
-e["Variables"][2]["Type"] = "State"
-
-e["Variables"][3]["Name"] = "Pole Angular Velocity"
-e["Variables"][3]["Type"] = "State"
-
-e["Variables"][4]["Name"] = "Force"
-e["Variables"][4]["Type"] = "Action"
-e["Variables"][4]["Lower Bound"] = -10.0
-e["Variables"][4]["Upper Bound"] = +10.0
-e["Variables"][4]["Exploration Sigma"] = 0.35
+e["Variables"][1]["Name"] = "Force"
+e["Variables"][1]["Type"] = "Action"
+e["Variables"][1]["Lower Bound"] = -10.0
+e["Variables"][1]["Upper Bound"] = +10.0
+e["Variables"][1]["Exploration Sigma"] = 0.35
 
 ### Defining Agent Configuration 
 
@@ -74,14 +65,13 @@ e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Batch Normalization"]["Ena
 
 ### Defining Termination Criteria
 
-e["Solver"]["Training Reward Threshold"] = 400
+e["Solver"]["Training Reward Threshold"] = 95
 e["Solver"]["Policy Testing Episodes"] = 20
-e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 450
+e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 95
 
 ### Setting file output configuration
 
-e["File Output"]["Frequency"] = 10000
-#e["Console Output"]["Verbosity"] = "Silent"
+e["File Output"]["Enabled"] = False
 
 ### Running Experiment
 

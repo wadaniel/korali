@@ -10,7 +10,7 @@ import korali
 k = korali.Engine()
 e = korali.Experiment()
 
-### Defining the Cartpole problem's configuration
+### Defining the Cart problem's configuration
 
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = env
@@ -20,26 +20,17 @@ e["Problem"]["Actions Between Policy Updates"] = 1
 e["Variables"][0]["Name"] = "Cart Position"
 e["Variables"][0]["Type"] = "State"
 
-e["Variables"][1]["Name"] = "Cart Velocity"
-e["Variables"][1]["Type"] = "State"
-
-e["Variables"][2]["Name"] = "Pole Angle"
-e["Variables"][2]["Type"] = "State"
-
-e["Variables"][3]["Name"] = "Pole Angular Velocity"
-e["Variables"][3]["Type"] = "State"
-
-e["Variables"][4]["Name"] = "Force"
-e["Variables"][4]["Type"] = "Action"
-e["Variables"][4]["Lower Bound"] = -5.0
-e["Variables"][4]["Upper Bound"] = +5.0
-e["Variables"][4]["Exploration Sigma"] = 0.35
+e["Variables"][1]["Name"] = "Force"
+e["Variables"][1]["Type"] = "Action"
+e["Variables"][1]["Lower Bound"] = -3.0
+e["Variables"][1]["Upper Bound"] = +3.0
+e["Variables"][1]["Exploration Sigma"] = 0.35
 
 ### Configuring NAF hyperparameters
 
 e["Solver"]["Type"] = "Agent / Continuous / NAF"
 e["Solver"]["Target Learning Rate"] = 0.0001
-e["Solver"]["Optimization Steps Per Update"] = 20
+e["Solver"]["Optimization Steps Per Update"] = 100
 e["Solver"]["Experiences Between Agent Trainings"] = 1
 e["Solver"]["Mini Batch Strategy"] = "Prioritized"
 
@@ -56,7 +47,7 @@ e["Solver"]["Experience Replay"]["Maximum Size"] = 5000
 
 e["Solver"]["Critic"]["Discount Factor"] = 0.99
 e["Solver"]["Critic"]["Learning Rate"] = 1e-3
-e["Solver"]["Critic"]["Mini Batch Size"] = 64
+e["Solver"]["Critic"]["Mini Batch Size"] = 128
 
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear"
@@ -78,13 +69,13 @@ e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Batch Normalization"]["Ena
 
 ### Defining Termination Criteria
 
-e["Solver"]["Training Reward Threshold"] = 400
+e["Solver"]["Training Reward Threshold"] = 95
 e["Solver"]["Policy Testing Episodes"] = 20
-e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 450
+e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 95
 
 ### Setting file output configuration
 
-e["File Output"]["Frequency"] = 100000
+e["File Output"]["Enabled"] = False
 
 ### Running Experiment
 

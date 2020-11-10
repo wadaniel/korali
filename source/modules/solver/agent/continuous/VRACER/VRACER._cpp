@@ -214,6 +214,7 @@ void VRACER::trainAgent()
     if(importanceWeight < _cutoff && importanceWeight > 1.0f/_cutoff)
     {
       // Compute -rho(Qret-V) = rho(V-Qret)
+      // TODO (PW): Should this be the Reward?
       float Qret = 0.0f;
 
       if( _experienceReplayTerminal[curId] == false )
@@ -302,6 +303,7 @@ float VRACER::retraceFunction(size_t expId)
   while (_experienceReplayTerminal[endId] == false) endId++;
 
   // Initializing vTbc to zero
+  // TODO (PW): Should this be the Reward?
   float vTbc = 0.0;
 
   // Initializing values coming from the next experience (for latest experience, just reward)

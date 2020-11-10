@@ -135,9 +135,9 @@ class NeuralNetwork : public Module
 
   /**
    * @brief Backward-propagates the gradients data through the network.
-   * @param outputDifferential Output differentials
+   * @param gradients Output differentials
   */
-  void backward(const std::vector<float> &outputDifferential);
+  void backward(const std::vector<std::vector<float>> &gradients);
 
   /**
   * @brief Runs the backward propagation procedure and returns the gradients of the weights and biases with respect to the output

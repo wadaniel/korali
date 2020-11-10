@@ -86,14 +86,21 @@ void NeuralNetwork::initialize()
   _hyperparameterCount = _weightParameterCount + _normalizationParameterCount;
 
   // Check output scaling configuration
+  size_t outputSize = _layers[layerCount - 1]->_nodeCount;
+
   if (_outputScaling.empty() == false)
-    if (_outputScaling.size() != _layers[layerCount - 1]->_nodeCount)
-      KORALI_LOG_ERROR("Wrong number of output scaling factors passed to the neural network. Expected: %lu, provided: %lu.\n", _layers[layerCount - 1]->_nodeCount, _outputScaling.size());
+    if (_outputScaling.size() != outputSize)
+      KORALI_LOG_ERROR("Wrong number of output scaling factors passed to the neural network. Expected: %lu, provided: %lu.\n", outputSize, _outputScaling.size());
 
   // Check output shifting configuration
   if (_outputShift.empty() == false)
-    if (_outputShift.size() != _layers[layerCount - 1]->_nodeCount)
-      KORALI_LOG_ERROR("Wrong number of output shift factors passed to the neural network. Expected: %lu, provided: %lu.\n", _layers[layerCount - 1]->_nodeCount, _outputShift.size());
+    if (_outputShift.size() != outputSize)
+      KORALI_LOG_ERROR("Wrong number of output shift factors passed to the neural network. Expected: %lu, provided: %lu.\n", outputSize, _outputShift.size());
+
+  // Check output shifting configuration
+  if (_outputAbsoluteMask.empty() == false)
+    if (_outputAbsoluteMask.size() != outputSize)
+      KORALI_LOG_ERROR("Wrong size of output absolute mask passed to the neural network. Expected: %lu, provided: %lu.\n", outputSize, _outputAbsoluteMask.size());
 
   // Making sure we do not re-initialize
   _isInitialized = true;
@@ -332,10 +339,30 @@ void NeuralNetwork::forward()
 
   // Copying NN output to class output
   _outputValues.resize(_batchSize);
+
+  // Creating storage for output value sign, if using absolute mask
+  if (_outputAbsoluteMask.size() > 0)
+   _outputSign.resize(_batchSize);
+
   for (size_t i = 0; i < _batchSize; i++)
   {
     _outputValues[i].resize(nodeCount);
     for (size_t j = 0; j < nodeCount; j++) _outputValues[i][j] = resultData[i * nodeCount + j];
+
+    // If we use an absolute mask, then apply the mask now
+    if (_outputAbsoluteMask.size() > 0)
+    {
+     _outputSign[i].resize(nodeCount);
+      for (size_t j = 0; j < nodeCount; j++)
+      {
+       // Storing original sign bit
+       _outputSign[i][j] = std::signbit(_outputValues[i][j]);
+
+       // Using an absolute function to remove sign from number
+       if (_outputAbsoluteMask[j] == true)
+        _outputValues[i][j] = std::fabs(_outputValues[i][j]);
+      }
+    }
 
     // If we  use scaling, then apply the scaling factors now
     if (_outputScaling.size() > 0)
@@ -351,21 +378,40 @@ void NeuralNetwork::forward()
   _outputReadTime += std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count();
 }
 
-void NeuralNetwork::backward(const std::vector<float> &outputDifferential)
+void NeuralNetwork::backward(const std::vector<std::vector<float>> &gradients)
 {
   // [Profiling]
   std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 
+  // Getting batch dimensions
+  size_t batchSize = gradients.size();
+
+  // If gradients batch size is different than forwarding batch size, fail with error
+  if (batchSize != _batchSize)
+   KORALI_LOG_ERROR("Wrong batch size passed for backward propagation. Expected: %lu, provided: %lu.\n", _batchSize, batchSize);
+
   // Running backward propagation
   size_t layerCount = _layers.size();
   size_t lastLayer = layerCount - 1;
+  size_t outputSize = _layers[lastLayer]->_nodeCount;
 
-  // Writing to last layers differential information wrt data
-  std::vector<float> floatDiffs(outputDifferential.begin(), outputDifferential.end());
+  // Copying incoming gradients to a contiguous vector
+  std::vector<float> floatDiffs(_batchSize * outputSize);
+  for (size_t i = 0; i < _batchSize; i++)
+   for (size_t j = 0; j < outputSize; j++)
+   {
+    // Copying to vector
+    floatDiffs[i*outputSize + j] = gradients[i][j];
 
-  // If we use scaling, then apply the scaling factors gradient now
-  if (_outputScaling.size() > 0)
-    for (size_t i = 0; i < _outputScaling.size(); i++) floatDiffs[i] /= _outputScaling[i];
+    // If we use an absolute mask, then restore the corresponding sign now
+    if (_outputAbsoluteMask.size() > 0)
+     if (_outputAbsoluteMask[j] == true)
+      if (_outputSign[i][j])
+       floatDiffs[i*outputSize + j] *= -1.0f;
+
+    // If we use scaling, then apply the scaling factors gradient now
+    if (_outputScaling.size() > 0) floatDiffs[i*outputSize + j] /= _outputScaling[j];
+   }
 
 // Copying gradients to the output end of the NN
 #ifdef _KORALI_USE_ONEDNN

@@ -108,7 +108,7 @@ e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Type"] = "Layer/Dense"
 e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Elementwise/Tanh"
 e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Batch Normalization"]["Enabled"] = True 
 
-e["Solver"]["Policy"]["Neural Network"]["Output Scaling"] = [ 10.0 ]
+e["Solver"]["Policy"]["Neural Network"]["Output"]["Scaling"] = [ 10.0 ]
 
 ### Defining Termination Criteria
 

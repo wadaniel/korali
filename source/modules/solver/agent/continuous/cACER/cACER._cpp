@@ -236,7 +236,7 @@ std::tuple<float, float> cACER::retraceFunction(size_t expId)
   for (ssize_t i = startId; i < endId; i++)
   {
     // If the difference in age is within the range, then it's a cache hit
-    if (_optimizationStepCount - _qCacheAge[i] < _criticRetraceCachePersistence)
+    if (_optimizationStepCount - _qCacheAge[i] < _retraceCachePersistence)
     {
       qRetNext = _qRetNextCache[i];
       qOpcNext = _qOpcNextCache[i];

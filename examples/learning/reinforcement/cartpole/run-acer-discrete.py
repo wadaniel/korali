@@ -36,70 +36,70 @@ e["Variables"][4]["Type"] = "Action"
 ### Configuring ACER hyperparameters
 
 e["Solver"]["Type"] = "Agent / Discrete / DACER"
-e["Solver"]["Importance Weight Truncation"] = 2.0
+e["Solver"]["Importance Weight Truncation"] = 1.0
 e["Solver"]["Optimization Steps Per Update"] = 100
-e["Solver"]["Experiences Between Agent Trainings"] = 5
+e["Solver"]["Experiences Between Agent Trainings"] = 10
 
 ### Defining the configuration of replay memory
 
 e["Solver"]["Experience Replay"]["Start Size"] = 1000
 e["Solver"]["Experience Replay"]["Maximum Size"] = 10000
 
-## Defining Q-Critic and Action-selection (policy) optimizers
-
-e["Solver"]["Critic"]["Retrace"]["Enabled"] = True
-e["Solver"]["Critic"]["Retrace"]["Cache Persistence"] = 5
-
-e["Solver"]["Critic"]["Discount Factor"] = 0.99
-e["Solver"]["Critic"]["Learning Rate"] = 0.001
-e["Solver"]["Critic"]["Mini Batch Size"] = 32
-e["Solver"]["Critic"]["Normalization Steps"] = 8
-
-e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Batch Normalization"]["Enabled"] = True
-
-e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Type"] = "Layer/Dense"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Node Count"] = 32
-e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Activation Function"]["Type"] = "Elementwise/Tanh"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Batch Normalization"]["Enabled"] = True
-
-e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Type"] = "Layer/Dense"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Node Count"] = 32
-e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Elementwise/Tanh"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Batch Normalization"]["Enabled"] = True
-
-e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Type"] = "Layer/Dense"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Elementwise/Linear"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Batch Normalization"]["Enabled"] = True
+e["Solver"]["Retrace"]["Cache Persistence"] = 0
 
 ## Defining Policy Configuration
 
-e["Solver"]["Policy"]["Learning Rate"] = 0.01
+e["Solver"]["Policy"]["Learning Rate"] = 1e-4
 e["Solver"]["Policy"]["Mini Batch Size"] = 32
-e["Solver"]["Policy"]["Normalization Steps"] = 8
+e["Solver"]["Policy"]["Normalization Steps"] = 0
 
-e["Solver"]["Policy"]["Trust Region"]["Enabled"] = True
-e["Solver"]["Policy"]["Trust Region"]["Divergence Constraint"] = 0.5
-e["Solver"]["Policy"]["Trust Region"]["Adoption Rate"] = 0.9
+e["Solver"]["Policy"]["Trust Region"]["Enabled"] = False
+#e["Solver"]["Policy"]["Trust Region"]["Divergence Constraint"] = 0.5
+#e["Solver"]["Policy"]["Trust Region"]["Adoption Rate"] = 0.9
 
 e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
-e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Batch Normalization"]["Enabled"] = True
+e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Batch Normalization"]["Enabled"] = False
 e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear"
 
 e["Solver"]["Policy"]["Neural Network"]["Layers"][1]["Type"] = "Layer/Dense"
 e["Solver"]["Policy"]["Neural Network"]["Layers"][1]["Node Count"] = 32
-e["Solver"]["Policy"]["Neural Network"]["Layers"][1]["Batch Normalization"]["Enabled"] = True
+e["Solver"]["Policy"]["Neural Network"]["Layers"][1]["Batch Normalization"]["Enabled"] = False
 e["Solver"]["Policy"]["Neural Network"]["Layers"][1]["Activation Function"]["Type"] = "Elementwise/Tanh"
 
 e["Solver"]["Policy"]["Neural Network"]["Layers"][2]["Type"] = "Layer/Dense"
 e["Solver"]["Policy"]["Neural Network"]["Layers"][2]["Node Count"] = 32
-e["Solver"]["Policy"]["Neural Network"]["Layers"][2]["Batch Normalization"]["Enabled"] = True
+e["Solver"]["Policy"]["Neural Network"]["Layers"][2]["Batch Normalization"]["Enabled"] = False
 e["Solver"]["Policy"]["Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Elementwise/Tanh"
 
 e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Type"] = "Layer/Dense"
-e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Batch Normalization"]["Enabled"] = True
+e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Batch Normalization"]["Enabled"] = False
 e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Softmax" 
+
+## Defining Q-Critic
+
+e["Solver"]["Critic"]["Discount Factor"] = 0.99
+e["Solver"]["Critic"]["Learning Rate"] = 1e-5
+e["Solver"]["Critic"]["Mini Batch Size"] = 32
+e["Solver"]["Critic"]["Normalization Steps"] = 0
+
+e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
+e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear"
+e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Batch Normalization"]["Enabled"] = False
+
+e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Type"] = "Layer/Dense"
+e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Node Count"] = 32
+e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Activation Function"]["Type"] = "Elementwise/Tanh"
+e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Batch Normalization"]["Enabled"] = False
+
+e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Type"] = "Layer/Dense"
+e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Node Count"] = 32
+e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Elementwise/Tanh"
+e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Batch Normalization"]["Enabled"] = False
+
+e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Type"] = "Layer/Dense"
+e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Elementwise/Linear"
+e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Batch Normalization"]["Enabled"] = False
+
 
 ### Defining Termination Criteria
 

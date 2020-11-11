@@ -40,7 +40,8 @@ void cACER::initializeAgent()
 
     _policyDistributions.push_back(d);
 
-    // compute inverse variance
+    // init action standard dev and inverse variance
+    _actionSigmas[i] = sigma;
     _inverseVariances[i] = 1.0 / (sigma * sigma);
   }
 

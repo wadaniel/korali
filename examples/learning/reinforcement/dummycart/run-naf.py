@@ -36,7 +36,7 @@ e["Solver"]["Experiences Between Agent Trainings"] = 1
 e["Solver"]["Mini Batch Strategy"] = "Prioritized"
 
 e["Solver"]["Random Action Probability"]["Initial Value"] = 0.5
-e["Solver"]["Random Action Probability"]["Target Value"] = 0.01
+e["Solver"]["Random Action Probability"]["Target Value"] = 0.00
 e["Solver"]["Random Action Probability"]["Decrease Rate"] = 0.03
 
 ### Defining Experience Replay configuration

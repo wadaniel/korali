@@ -57,8 +57,8 @@ e["Solver"]["Critic"]["Discount Factor"] = 0.99
 e["Solver"]["Critic"]["Learning Rate"] = 0.001
 e["Solver"]["Critic"]["Mini Batch Size"] = 32
 e["Solver"]["Critic"]["Normalization Steps"] = 8
-e["Solver"]["Critic"]["Retrace"]["Enabled"] = True
-e["Solver"]["Critic"]["Retrace"]["Cache Persistence"] = 5
+
+e["Solver"]["Retrace"]["Cache Persistence"] = 0
 
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear"

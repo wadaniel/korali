@@ -69,6 +69,10 @@ void dACER::initializeAgent()
       _policyExperiment["Problem"]["Solution"][i][j] = 0.0;
   }
 
+  size_t outputLayerId = _policyNeuralNetwork["Layers"].size() - 1;
+  if (_policyNeuralNetwork["Layers"][outputLayerId]["Activation Function"]["Type"] != "Softmax")
+    KORALI_LOG_ERROR("Policy Neural Net Last Layers' Activation Function must be of type 'Softmax'");
+
   // Running initialization to verify that the configuration is correct
   engine.initialize(_policyExperiment);
 
@@ -181,7 +185,7 @@ void dACER::trainAgent()
       // Obtaining KL Divergence gradients for the current state. //PW: check this
       std::vector<float> k(_problem->_possibleActions.size());
       for (size_t i = 0; i < k.size(); i++)
-        k[i] = -1 / pCurPolicy[i];
+        k[i] = -pAvgPolicy[i] / pCurPolicy[i];
 
       // Getting dot product between the gradient vector and k
       auto gkDotProduct = dotProduct(k, gPolicy);
@@ -218,9 +222,6 @@ void dACER::trainAgent()
     /*****************************************
      * Updating the value of qRet
      *****************************************/
-
-    // Now calculating truncated importance weight with 1.0 as truncation factor
-    truncatedImportanceWeight = std::min(1.0f, importanceWeight);
 
     // Keeping statistics
     _cumulativeQStar += qRet;
@@ -292,7 +293,7 @@ float dACER::retraceFunction(size_t expId)
   for (ssize_t i = startId; i < endId; i++)
   {
     // If the difference in age is within the range, then it's a cache hit
-    if (_optimizationStepCount - _qCacheAge[i] < _criticRetraceCachePersistence)
+    if (_optimizationStepCount - _qCacheAge[i] < _retraceCachePersistence)
     {
       qRetNext = _qRetNextCache[i];
       curId = i;

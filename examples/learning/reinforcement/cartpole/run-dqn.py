@@ -38,7 +38,6 @@ e["Variables"][4]["Type"] = "Action"
 e["Solver"]["Type"] = "Agent / Discrete / DQN"
 e["Solver"]["Optimization Steps Per Update"] = 100
 e["Solver"]["Experiences Between Agent Trainings"] = 10
-e["Solver"]["Mini Batch Strategy"] = "Prioritized"
 
 ### Defining Experience Replay configuration
 

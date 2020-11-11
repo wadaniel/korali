@@ -33,7 +33,7 @@ e["Solver"]["Target Learning Rate"] = 0.001
 e["Solver"]["Optimization Steps Per Update"] = 100
 e["Solver"]["Experiences Between Agent Trainings"] = 10
 e["Solver"]["Covariance Scaling"] = 0.01
-e["Solver"]["Mini Batch Strategy"] = "Prioritized"
+#e["Solver"]["Mini Batch Strategy"] = "Prioritized"
 
 e["Solver"]["Random Action Probability"]["Initial Value"] = 0.0
 e["Solver"]["Random Action Probability"]["Target Value"] = 0.0

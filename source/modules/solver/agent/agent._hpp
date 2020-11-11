@@ -12,6 +12,7 @@ namespace korali
 {
 namespace solver
 {
+
 class Agent : public Solver
 {
   public:

@@ -637,7 +637,7 @@ for moduleDir, relDir, fileNames in os.walk(modulesDir):
       doxyClassHeader = '/**\n'
       doxyClassHeader += '* @brief Class declaration for module: ' + moduleConfig["Class"] + '.\n'
       doxyClassHeader += '*/\n'
-      newHeaderString = newHeaderString.replace('class ', doxyClassHeader + 'class ')
+      #newHeaderString = newHeaderString.replace('class ', doxyClassHeader + 'class ')
 
       doxyNamespaceHeader = '/** \\namespace ' + moduleConfig["Namespace"][-1] + '\n'
       doxyNamespaceHeader += '* @brief Namespace declaration for modules of type: ' + moduleConfig["Namespace"][-1] + '.\n'

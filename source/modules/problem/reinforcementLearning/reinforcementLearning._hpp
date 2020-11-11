@@ -7,22 +7,12 @@
 
 namespace korali
 {
-namespace solver // Necessary to reference Agent
-{
-class Agent;
-}
-
 namespace problem
 {
 class ReinforcementLearning : public korali::Problem
 {
   public:
   void initialize() override;
-
-  /**
-   * @brief Pointer to the policy-generating agent
-   */
-  solver::Agent *_agent;
 
   /**
    * @brief Runs an episode of the agent within the environment

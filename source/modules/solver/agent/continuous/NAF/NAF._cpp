@@ -15,6 +15,8 @@ void NAF::initializeAgent()
   // Initializing common continuous agent configuration
   Continuous::initializeAgent();
 
+  if (_covarianceScaling <= 0.0) KORALI_LOG_ERROR("Covariance scaling must be larger 0.0 (is %f).\n", _covarianceScaling);
+
   /*********************************************************************
   * Initializing Normal Distributions for the Policy
   *********************************************************************/
@@ -25,10 +27,6 @@ void NAF::initializeAgent()
   //size_t sigIdx = 0.0;
   for (size_t i = 0; i < _problem->_actionVectorSize; i++)
   {
-    auto varIdx = _problem->_actionVectorIndexes[i];
-    float sigma = _k->_variables[varIdx]->_explorationSigma;
-    if (sigma <= 0.0) KORALI_LOG_ERROR("Value of Noise Sigma (%f) for action variable %lu is not defined or invalid.\n", sigma, i);
-
     knlohmann::json js;
     js["Type"] = "Univariate/Normal";
     js["Mean"] = 0.0;
@@ -95,7 +93,6 @@ void NAF::initializeAgent()
   _hyperparameters["Critic"] = _qLearner->getHyperparameters();
   _qHatHyperparameter = _qLearner->getHyperparameters();
   _criticLearner->setHyperparameters(_qLearner->getHyperparameters());
-  auto blobinit = _qLearner->getHyperparameters();
 }
 
 void NAF::trainAgent()
@@ -132,9 +129,9 @@ void NAF::trainAgent()
     // Transforming NN output to receive mu and diagonal of P
     for (size_t j = 0; j < _problem->_actionVectorSize; j++)
     {
-      // mapping mean to [lowerbound - width/2, upperbound + width/2]
-      qEvaluation[1 + j] = _actionScalings[j] * (tanh(qEvaluation[1 + j]) + 0.5) + _actionLowerBounds[j];
-      qEvaluation[1 + curAction.size() + j] = 0.5 * _actionScalings[j] * exp(2 * tanh(qEvaluation[1 + curAction.size() + j]));
+      // mapping mean to [lowerbound, upperbound]
+      qEvaluation[1 + j] = 0.5 * _actionScalings[j] * (std::tanh(qEvaluation[1 + j]) + 1.0) + _actionLowerBounds[j];
+      qEvaluation[1 + curAction.size() + j] = 1. / _actionScalings[j] * std::exp(2.0 * std::tanh(qEvaluation[1 + curAction.size() + j]));
     }
 
     // yHat* = r -- If terminal state
@@ -166,19 +163,19 @@ void NAF::trainAgent()
     float weight = importanceWeights[i];
 
     // Calculating Gradients of Loss Li wrt. V(s)
-    policyGradient[0] = -weight * diff;
+    policyGradient[0] = weight * diff;
 
     // Calculating Gradients of Li wrt. mu(s) and P(s)
     // We include the gradients of the mappings to mu and P
     for (size_t j = 0; j < curAction.size(); j++)
     {
-      float mu = _actionScalings[j] * (tanh(qEvaluation[1 + j]) + 0.5) + _actionLowerBounds[j];
+      float mu = qEvaluation[1 + j];
       float diagP = qEvaluation[1 + curAction.size() + j];
       float dmu = curAction[j] - mu;
-      float tanhv = log(2.0 / _actionScalings[j] * diagP);                                                       // back transformation ( diagP=1/2scaling*exp(2*tanh(v))
-      float tanhm = (mu - _actionLowerBounds[j]) / _actionScalings[j] - 0.5;                                     // back transformation ( mu=scaling*(tanh(m)+1/2)+lowerbound
-      policyGradient[1 + j] = -weight * diff * dmu * diagP * _actionScalings[j] * (1 - tanhm * tanhm);           // dLi/dmu
-      policyGradient[1 + curAction.size() + j] = weight * 0.5 * diff * dmu * dmu * diagP * (1. - tanhv * tanhv); // dLi/dP(s)
+      float tanhv = 0.5 * std::log(_actionScalings[j] * diagP);                                                   // back transformation ( diagP=1/scaling*exp(2*tanh(v))
+      float tanhm = (mu - _actionLowerBounds[j]) / _actionScalings[j] - 1.0;                                      // back transformation ( mu=scaling*(tanh(m)+1/2)+lowerbound
+      policyGradient[1 + j] = weight * diff * dmu * diagP * _actionScalings[j] * (1 - tanhm * tanhm);             // dLi/dmu
+      policyGradient[1 + curAction.size() + j] = -weight * 0.5 * diff * dmu * dmu * diagP * (1. - tanhv * tanhv); // dLi/dP(s)
     }
 
     _qProblem->_inputs[i] = curState;
@@ -187,7 +184,7 @@ void NAF::trainAgent()
     // Keeping statistics
     _cumulativeQStar += yHat;
     _cumulativeQStarSquared += yHat * yHat;
-    for (size_t j = 0; j < curAction.size(); j++) _averageActionSigmas[j] += sqrt(qEvaluation[1 + curAction.size() + j]);
+    for (size_t j = 0; j < curAction.size(); j++) _averageActionSigmas[j] += std::sqrt(qEvaluation[1 + curAction.size() + j]);
   }
 
   // Running one generation of the optimization method with the given mini-batch
@@ -197,9 +194,9 @@ void NAF::trainAgent()
 
   // Keeping statistics
   _averageQStar = _cumulativeQStar / (float)_criticMiniBatchSize;
-  _stdevQStar = sqrt(_cumulativeQStarSquared / (float)_criticMiniBatchSize - _averageQStar * _averageQStar);
+  _stdevQStar = std::sqrt(_cumulativeQStarSquared / (float)_criticMiniBatchSize - _averageQStar * _averageQStar);
   _averageTDError = cumulativeTdError / (float)_criticMiniBatchSize;
-  _stdevTDError = sqrt(cumulativeTdErrorSquarred / (float)_criticMiniBatchSize - _averageTDError * _averageTDError);
+  _stdevTDError = std::sqrt(cumulativeTdErrorSquarred / (float)_criticMiniBatchSize - _averageTDError * _averageTDError);
   for (size_t j = 0; j < _averageActionSigmas.size(); j++) _averageActionSigmas[j] /= (float)_criticMiniBatchSize;
 
   /*********************************************************************
@@ -231,9 +228,9 @@ void NAF::forwardPolicy(const std::vector<float> &state)
   // Transforming NN output to receive mu and diagonal of P
   for (size_t i = 0; i < _actionMeans.size(); ++i)
   {
-    // mapping mean to [lowerbound - width/2, upperbound + width/2]
-    _actionMeans[i] = _actionScalings[i] * (tanh(qNNoutput[1 + i]) + 0.5) + _actionLowerBounds[i];
-    _actionSigmas[i] = sqrt(0.5 * _actionScalings[i]) * exp(-tanh(qNNoutput[i + 1 + _actionMeans.size()]));
+    // mapping mean to [lowerbound, upperbound]
+    _actionMeans[i] = 0.5 * _actionScalings[i] * (std::tanh(qNNoutput[1 + i]) + 1.0) + _actionLowerBounds[i];
+    _actionSigmas[i] = std::sqrt(_covarianceScaling * _actionScalings[i]) * std::exp(-1.0 * std::tanh(qNNoutput[i + 1 + _actionMeans.size()]));
   }
 }
 

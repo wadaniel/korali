@@ -38,7 +38,7 @@ e["Variables"][4]["Exploration Sigma"] = 0.35
 ### Configuring NAF hyperparameters
 
 e["Solver"]["Type"] = "Agent / Continuous / NAF"
-e["Solver"]["Target Learning Rate"] = 0.001
+e["Solver"]["Target Learning Rate"] = 0.01
 e["Solver"]["Optimization Steps Per Update"] = 100
 e["Solver"]["Experiences Between Agent Trainings"] = 5
 e["Solver"]["Covariance Scaling"] = 0.01

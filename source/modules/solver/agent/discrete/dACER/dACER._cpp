@@ -109,7 +109,7 @@ void dACER::trainAgent()
     float qRet = retraceFunction(expId);
 
     // Getting experience's state
-    std::vector<float> curState = _experienceReplayStates[expId];
+    std::vector<float> curState = _experienceReplay[expId].state;
 
     // Calculating V(state) with the current policy
     float vCurState = stateValueFunction(curState);
@@ -117,10 +117,10 @@ void dACER::trainAgent()
     //// Computing quantities needed for updating weights
 
     // Getting experience's action
-    size_t curActionIdx = _experienceReplayActionIndexes[expId];
+    size_t curActionIdx = _experienceReplay[expId].metadata["Action Index"].get<size_t>();
 
     // Getting probability densities for current action given past behaviour
-    auto pOldPolicy = _experienceReplayActionProbabilities[expId];
+    auto pOldPolicy = _experienceReplay[expId].metadata["Action Probabilities"].get<std::vector<float>>();
 
     // Getting probability densities for current action given current policy
     auto pCurPolicy = getActionProbabilities(curState);
@@ -277,13 +277,13 @@ float dACER::retraceFunction(size_t expId)
   // Finding last experience in the episode that corresponds to expId
   ssize_t startId = expId;
   ssize_t endId = startId;
-  while (_experienceReplayTerminal[endId] == false) endId++;
+  while (_experienceReplay[endId].isTerminal == false) endId++;
 
   // Initializing qRet to zero
   float qRet = 0.0;
 
   // Initializing values coming from the next experience (for latest experience, just reward)
-  float qRetNext = _experienceReplayRewards[endId];
+  float qRetNext = _experienceReplay[endId].reward;
 
   // Setting starting experience as the second to last
   ssize_t curId = endId - 1;
@@ -304,7 +304,7 @@ float dACER::retraceFunction(size_t expId)
   for (; curId >= startId; curId--)
   {
     // Getting current reward
-    float curReward = _experienceReplayRewards[curId];
+    float curReward = _experienceReplay[curId].reward;
 
     // Re-calculating qRet
     qRet = curReward + _criticDiscountFactor * qRetNext;
@@ -313,10 +313,10 @@ float dACER::retraceFunction(size_t expId)
     if (curId == startId) break;
 
     // Getting current state
-    std::vector<float> curState = _experienceReplayStates[curId];
+    std::vector<float> curState = _experienceReplay[curId].state;
 
     // Getting current action index
-    auto curActionIdx = _experienceReplayActionIndexes[curId];
+    auto curActionIdx = _experienceReplay[curId].metadata["Action Index"].get<size_t>();;
 
     // Now calculating V
     float curV = stateValueFunction(curState);
@@ -326,9 +326,10 @@ float dACER::retraceFunction(size_t expId)
 
     // Getting the probability of the actions given by the agent's policy
     auto pActionsCurPolicy = getActionProbabilities(curState);
+    auto pActionsOldPolicy = _experienceReplay[curId].metadata["Action Probabilities"].get<std::vector<float>>();
 
     // Now calculating importance weight for the old s,a experience
-    float importanceWeight = calculateImportanceWeight(curActionIdx, pActionsCurPolicy, _experienceReplayActionProbabilities[curId]);
+    float importanceWeight = calculateImportanceWeight(curActionIdx, pActionsCurPolicy, pActionsOldPolicy);
 
     // Now calculating truncated importance weight with 1.0 as truncation factor
     float truncatedImportanceWeight = std::min(1.0f, importanceWeight);

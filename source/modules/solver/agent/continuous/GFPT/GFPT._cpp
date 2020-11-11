@@ -155,13 +155,13 @@ float GFPT::retraceFunction(size_t expId)
   // Finding last experience in the episode that corresponds to expId
   ssize_t startId = expId;
   ssize_t endId = startId;
-  while (_experienceReplayTerminal[endId] == false) endId++;
+  while (_experienceReplay[endId].isTerminal == false) endId++;
 
   // Initializing qRet to zero
   float qRet = 0.0;
 
   // Initializing values coming from the next experience (for latest experience, just reward)
-  float qRetNext = _experienceReplayRewards[endId];
+  float qRetNext = _experienceReplay[endId].reward;
 
   // Setting starting experience as the second to last
   ssize_t curId = endId - 1;
@@ -182,7 +182,7 @@ float GFPT::retraceFunction(size_t expId)
   for (; curId >= startId; curId--)
   {
     // Getting current reward
-    float curReward = _experienceReplayRewards[curId];
+    float curReward = _experienceReplay[curId].reward;
 
     // Re-calculating qRet
     qRet = curReward + _criticDiscountFactor * qRetNext;
@@ -191,10 +191,10 @@ float GFPT::retraceFunction(size_t expId)
     if (curId == startId) break;
 
     // Getting current state
-    std::vector<float> curState = _experienceReplayStates[curId];
+    auto curState = _experienceReplay[curId].state;
 
     // Getting current action index
-    auto curAction = _experienceReplayActions[curId];
+    auto curAction = _experienceReplay[curId].action;
 
     // Updating action distributions for the current state
     forwardPolicy(curState);
@@ -316,14 +316,14 @@ void GFPT::trainAgent()
     size_t expId = miniBatchIndexes[i];
 
     // Check if it is a terminal state
-    bool isTerminal = _experienceReplayTerminal[expId];
+    bool isTerminal = _experienceReplay[expId].isTerminal;
 
     /*****************************************
     * Critic Section
     *****************************************/
 
     // Getting the reward for the current experience
-    float curReward = _experienceReplayRewards[expId];
+    float curReward = _experienceReplay[expId].reward;
 
     // Calculating target Q value (solution) for Qnew on selected batch
     float qStar = 0.0f;
@@ -341,7 +341,7 @@ void GFPT::trainAgent()
       if (isTerminal == false)
       {
         // Getting next state
-        auto nextState = _experienceReplayStates[expId + 1];
+        auto nextState = _experienceReplay[expId + 1].state;
 
         // Updating action distributions for the next state
         forwardPolicy(nextState);
@@ -360,8 +360,8 @@ void GFPT::trainAgent()
     }
 
     // Getting experience's current state, action
-    auto curState = _experienceReplayStates[expId];
-    auto curAction = _experienceReplayActions[expId];
+    auto curState = _experienceReplay[expId].state;
+    auto curAction = _experienceReplay[expId].action;
 
     // Updating action distributions for the current state
     forwardPolicy(curState);
@@ -429,7 +429,7 @@ void GFPT::trainAgent()
     size_t expId = miniBatchIndexes[i];
 
     // Getting current state
-    std::vector<float> curState = _experienceReplayStates[expId];
+    std::vector<float> curState = _experienceReplay[expId].state;
 
     size_t candidateCount = _actionOptimizer->_populationSize;
     std::vector<float> candidateEvaluations(candidateCount);

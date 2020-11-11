@@ -219,15 +219,15 @@ std::tuple<float, float> cACER::retraceFunction(size_t expId)
   // Finding last experience in the episode that corresponds to expId
   ssize_t startId = expId;
   ssize_t endId = startId;
-  while (_experienceReplayTerminal[endId] == false) endId++;
+  while (_experienceReplay[endId].isTerminal == false) endId++;
 
   // Initializing qRet and qOpc to zero
   float qRet = 0.0;
   float qOpc = 0.0;
 
   // Initializing values coming from the next experience (for latest experience, just reward)
-  float qRetNext = _experienceReplayRewards[endId];
-  float qOpcNext = _experienceReplayRewards[endId];
+  float qRetNext = _experienceReplay[endId].reward;
+  float qOpcNext = _experienceReplay[endId].reward;
 
   // Setting starting experience as the second to last
   ssize_t curId = endId - 1;
@@ -249,7 +249,7 @@ std::tuple<float, float> cACER::retraceFunction(size_t expId)
   for (; curId >= startId; curId--)
   {
     // Getting current reward
-    float curReward = _experienceReplayRewards[curId];
+    float curReward = _experienceReplay[curId].reward;
 
     // Re-calculating qRet and qOpc
     qRet = curReward + _criticDiscountFactor * qRetNext;
@@ -259,10 +259,10 @@ std::tuple<float, float> cACER::retraceFunction(size_t expId)
     if (curId == startId) break;
 
     // Getting current state
-    std::vector<float> curState = _experienceReplayStates[curId];
+    std::vector<float> curState = _experienceReplay[curId].state;
 
     // Getting current action index
-    auto curAction = _experienceReplayActions[curId];
+    auto curAction = _experienceReplay[curId].action;
 
     // Updating action distributions for the current state
     forwardPolicy(curState);
@@ -275,8 +275,14 @@ std::tuple<float, float> cACER::retraceFunction(size_t expId)
     // Current Q = V - A - avgA
     float curQ = curV + curA - avgA;
 
+    // Getting means and sigmas
+    auto curMeans = _actionMeans;
+    auto curSigmas = _actionSigmas;
+    auto oldMeans = _experienceReplay[curId].metadata["Action Means"].get<std::vector<float>>();
+    auto oldSigmas = _experienceReplay[curId].metadata["Action Sigmas"].get<std::vector<float>>();
+
     // Calculating importance weight
-    float importanceWeight = calculateImportanceWeight(curAction, _actionMeans, _actionSigmas, _experienceReplayActionMeans[expId], _experienceReplayActionSigmas[expId]);
+    float importanceWeight = calculateImportanceWeight(curAction, curMeans, curSigmas, oldMeans, oldSigmas);
 
     // Now calculating truncated importance weight with 1.0 as truncation factor
     float truncatedImportanceWeight = std::min(1.0f, importanceWeight);
@@ -349,14 +355,14 @@ void cACER::trainAgent()
     std::tie(qRet, qOpc) = retraceFunction(expId);
 
     // Getting experience's state and action
-    std::vector<float> expState = _experienceReplayStates[expId];
-    std::vector<float> expAction = _experienceReplayActions[expId];
+    std::vector<float> expState = _experienceReplay[expId].state;
+    std::vector<float> expAction = _experienceReplay[expId].action;
 
     // Getting policy distribution parameters from the current policy NN
     std::vector<float> curMeans = _policyLearner->getEvaluation(expState);
 
     // Getting policy distribution parameters from the old policy NN
-    std::vector<float> oldMeans = _experienceReplayActionMeans[expId];
+    std::vector<float> oldMeans =_experienceReplay[expId].metadata["Action Means"].get<std::vector<float>>();
 
     // Allocating stateAction placeholder vector for combining a state and an action
     std::vector<float> stateActionVector(_problem->_stateVectorSize + _problem->_actionVectorSize);

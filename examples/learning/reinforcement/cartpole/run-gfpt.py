@@ -52,6 +52,7 @@ e["Solver"]["Random Action Probability"]["Decrease Rate"] = 0.05
 
 ### Defining the configuration of replay memory
 
+e["Solver"]["Mini Batch Strategy"] = "Prioritized"
 e["Solver"]["Experience Replay"]["Start Size"] =   1000
 e["Solver"]["Experience Replay"]["Maximum Size"] = 100000
 

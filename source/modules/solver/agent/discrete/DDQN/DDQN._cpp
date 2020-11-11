@@ -122,18 +122,18 @@ void DDQN::trainAgent()
     // Q* = r -- If terminal state
 
     // Calculating target Q value (solution) for Qnew on selected batch
-    float qStar = _experienceReplayRewards[expId];
+    float qStar = _experienceReplay[expId].reward;
 
     // Getting experience's current state and action
-    auto curState = _experienceReplayStates[expId];
-    auto curAction = _experienceReplayActions[expId];
-    auto curActionIdx = _experienceReplayActionIndexes[expId];
+    auto curState = _experienceReplay[expId].state;
+    auto curAction = _experienceReplay[expId].action;
+    auto curActionIdx = _experienceReplay[expId].metadata["Action Index"].get<size_t>();
 
     // If state is not terminal (next state is filled) then add Qnew to the Q value.
-    if (_experienceReplayTerminal[expId] == false)
+    if (_experienceReplay[expId].isTerminal == false)
     {
       // Getting experience's next state
-      auto nextState = _experienceReplayStates[expId + 1];
+      auto nextState = _experienceReplay[expId + 1].state;
 
       // Getting action probabilities for next state, as per the critic
       auto pActions = getActionProbabilities(nextState);

@@ -122,9 +122,9 @@ void NAF::trainAgent()
     size_t expId = miniBatchIndexes[i];
 
     // Access experiences
-    auto curState = _experienceReplayStates[expId];
-    auto curAction = _experienceReplayActions[expId];
-    float yHat = _experienceReplayRewards[expId];
+    auto curState = _experienceReplay[expId].state;
+    auto curAction = _experienceReplay[expId].action;
+    float yHat = _experienceReplay[expId].reward;
 
     // Evaluate Q
     auto qEvaluation = _qLearner->getEvaluation(curState);
@@ -141,10 +141,10 @@ void NAF::trainAgent()
     // yHat* = r + gamma*V(s) -- If not terminal state
 
     // If state is not terminal (next state is filled) then add Qnew to the Q value.
-    if (_experienceReplayTerminal[expId] == false)
+    if (_experienceReplay[expId].isTerminal == false)
     {
       // Getting experience's next state
-      auto nextState = _experienceReplayStates[expId + 1];
+      auto nextState = _experienceReplay[expId + 1].state;
 
       // Calculate target y
       float vHat = _criticLearner->getEvaluation(nextState)[0];

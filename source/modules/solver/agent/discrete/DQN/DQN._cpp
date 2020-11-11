@@ -86,17 +86,17 @@ void DQN::trainAgent()
     float qStar = 0.0;
 
     // Reward is the first factor in the QLearning algorithm
-    qStar = _experienceReplayRewards[expId];
+    qStar = _experienceReplay[expId].reward;
 
     // Getting experience's current state and action
-    auto curState = _experienceReplayStates[expId];
-    auto curAction = _experienceReplayActions[expId];
+    auto curState = _experienceReplay[expId].state;
+    auto curAction = _experienceReplay[expId].action;
 
     // If state is not terminal (next state is filled) then add Qnew to the Q value.
-    if (_experienceReplayTerminal[expId] == false)
+    if (_experienceReplay[expId].isTerminal == false)
     {
       // Getting experience's next state
-      auto nextState = _experienceReplayStates[expId + 1];
+      auto nextState = _experienceReplay[expId + 1].state;
 
       // Getting action probabilities for next state, as per the critic
       auto pActions = getActionProbabilities(nextState);

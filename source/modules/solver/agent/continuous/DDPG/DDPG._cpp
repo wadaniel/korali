@@ -101,10 +101,6 @@ float DDPG::stateActionValueFunction(const std::vector<float> &state, const std:
 
 void DDPG::trainAgent()
 {
-  // Creating storage for state history indexes to choose from
-  std::vector<size_t> experienceReplayIndexes(_experienceReplayStates.size());
-  for (size_t i = 0; i < _experienceReplayStates.size() - 1; i++) experienceReplayIndexes[i] = i;
-
   /***************************************************************************************
   * Updating Critic Network
   ***************************************************************************************/
@@ -121,12 +117,12 @@ void DDPG::trainAgent()
     size_t expId = miniBatchIndexes[i];
 
     // Check if it is a terminal state
-    bool isTerminal = _experienceReplayTerminal[expId];
+    bool isTerminal = _experienceReplay[expId].isTerminal;
 
     // Getting experience's current state and action
-    std::vector<float> curState = _experienceReplayStates[expId];
-    std::vector<float> curAction = _experienceReplayActions[expId];
-    std::vector<float> nextState = isTerminal ? std::vector<float>() : _experienceReplayStates[expId + 1];
+    std::vector<float> curState = _experienceReplay[expId].state;
+    std::vector<float> curAction = _experienceReplay[expId].action;
+    std::vector<float> nextState = isTerminal ? std::vector<float>() : _experienceReplay[expId + 1].state;
     std::vector<float> bestAction;
     if (isTerminal)
       bestAction = std::vector<float>();
@@ -137,7 +133,7 @@ void DDPG::trainAgent()
     }
 
     // Getting current reward
-    float curReward = _experienceReplayRewards[expId];
+    float curReward = _experienceReplay[expId].reward;
 
     /*****************************************
     * Critic Section
@@ -186,8 +182,8 @@ void DDPG::trainAgent()
     size_t expId = miniBatchIndexes[i];
 
     // Getting experience's current state and action
-    std::vector<float> curState = _experienceReplayStates[expId];
-    std::vector<float> curAction = _experienceReplayActions[expId];
+    std::vector<float> curState = _experienceReplay[expId].state;
+    std::vector<float> curAction = _experienceReplay[expId].action;
 
     // Storage to put together state and action
     std::vector<float> stateActionInput = curState;

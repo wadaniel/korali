@@ -23,20 +23,17 @@ e["Variables"][0]["Type"] = "State"
 e["Variables"][1]["Name"] = "Cart Velocity"
 e["Variables"][1]["Type"] = "State"
 
-e["Variables"][2]["Name"] = "Pole Omega"
+e["Variables"][2]["Name"] = "Pole Angle"
 e["Variables"][2]["Type"] = "State"
 
-e["Variables"][3]["Name"] = "Pole Cos(Angle)"
+e["Variables"][3]["Name"] = "Pole Angular Velocity"
 e["Variables"][3]["Type"] = "State"
 
-e["Variables"][4]["Name"] = "Pole Sin(Angle)"
-e["Variables"][4]["Type"] = "State"
-
-e["Variables"][5]["Name"] = "Force"
-e["Variables"][5]["Type"] = "Action"
-e["Variables"][5]["Lower Bound"] = -10.0
-e["Variables"][5]["Upper Bound"] = +10.0
-e["Variables"][5]["Exploration Sigma"] = 0.35
+e["Variables"][4]["Name"] = "Force"
+e["Variables"][4]["Type"] = "Action"
+e["Variables"][4]["Lower Bound"] = -10.0
+e["Variables"][4]["Upper Bound"] = +10.0
+e["Variables"][4]["Exploration Sigma"] = 0.35
 
 ### Configuring ACER hyperparameters
 

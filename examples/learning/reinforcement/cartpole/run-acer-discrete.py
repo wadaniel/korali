@@ -53,7 +53,7 @@ e["Solver"]["Policy"]["Learning Rate"] = 1e-4
 e["Solver"]["Policy"]["Mini Batch Size"] = 32
 e["Solver"]["Policy"]["Normalization Steps"] = 0
 
-e["Solver"]["Policy"]["Trust Region"]["Enabled"] = False
+e["Solver"]["Policy"]["Trust Region"]["Enabled"] = True
 #e["Solver"]["Policy"]["Trust Region"]["Divergence Constraint"] = 0.5
 #e["Solver"]["Policy"]["Trust Region"]["Adoption Rate"] = 0.9
 

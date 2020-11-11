@@ -214,14 +214,12 @@ void VRACER::trainAgent()
     if(importanceWeight < _cutoff && importanceWeight > 1.0f/_cutoff)
     {
       // Compute -rho(Qret-V) = rho(V-Qret)
-      // TODO (PW): Should this be the Reward?
-      float Qret = 0.0f;
+      float Qret = _experienceReplayRewards[curId];
 
       if( _experienceReplayTerminal[curId] == false )
       {
         float nextExpVtbc = retraceFunction(curId+1);
-        float nextExpReward = _experienceReplayRewards[curId+1];
-        Qret = nextExpReward + _criticDiscountFactor*nextExpVtbc;
+        Qret += _criticDiscountFactor*nextExpVtbc;
       }
 
       float valueDiff = importanceWeight * (V - Qret);
@@ -302,12 +300,21 @@ float VRACER::retraceFunction(size_t expId)
   ssize_t endId = startId;
   while (_experienceReplayTerminal[endId] == false) endId++;
 
-  // Initializing vTbc to zero
-  // TODO (PW): Should this be the Reward?
-  float vTbc = 0.0;
+  // Get state for last experience and forward policy to set _actionMean and _actionSigma
+  auto curState = _experienceReplayStates[endId];
+  forwardPolicy(curState);
 
-  // Initializing values coming from the next experience (for latest experience, just reward)
-  float vTbcNext = _experienceReplayRewards[endId];
+  // Compute importance weight
+  float importanceWeight = calculateImportanceWeight(_experienceReplayActions[endId], _actionMeans, _actionSigmas, _experienceReplayActionMeans[endId], _experienceReplayActionSigmas[endId]);
+
+  // Truncate Importance Weight
+  float truncatedImportanceWeight = std::min(1.0f, importanceWeight);
+
+  // vTbc for terminal experience is weighted reward
+  float vTbcNext = truncatedImportanceWeight * _experienceReplayRewards[endId];
+
+  // Initialize vTbc
+  float vTbc = vTbcNext;
 
   // Setting starting experience as the second to last
   ssize_t curId = endId - 1;
@@ -326,26 +333,14 @@ float VRACER::retraceFunction(size_t expId)
   // Now iterating backwards to calculate the rest of vTbc
   for (; curId >= startId; curId--)
   {
-    // Getting current reward
-    float curReward = _experienceReplayRewards[curId];
-
-    // Re-calculating vTbc
-    vTbc = curReward + _criticDiscountFactor * vTbcNext;
-
-    // If this is the starting experience, return the current value
-    if (curId == startId) break;
-
-    // Getting current state
-    std::vector<float> curState = _experienceReplayStates[curId];
-
-    // Getting current action index
-    auto curAction = _experienceReplayActions[curId];
 
     // Updating action distributions for the current state
+    auto curState = _experienceReplayStates[curId];
     forwardPolicy(curState);
 
-    // Now calculating V, A, and avgA for current state/action
-    float curV = stateValueFunction(curState);
+    // Getting current action and reward
+    auto curReward = _experienceReplayRewards[curId];
+    auto curAction = _experienceReplayActions[curId];
 
     // Now calculating importance weight for the experience
     float importanceWeight = calculateImportanceWeight(curAction, _actionMeans, _actionSigmas, _experienceReplayActionMeans[curId], _experienceReplayActionSigmas[curId]);
@@ -353,11 +348,14 @@ float VRACER::retraceFunction(size_t expId)
     // Now calculating truncated importance weight with 1.0 as truncation factor
     float truncatedImportanceWeight = std::min(1.0f, importanceWeight);
 
-    // Updating vTbc
-    vTbcNext = truncatedImportanceWeight * vTbcNext - curV;
+    // Re-calculating vTbc
+    vTbc = _stateValue +  truncatedImportanceWeight*( curReward + _criticDiscountFactor * vTbcNext - _stateValue );
+
+    // If this is the starting experience, return the current value
+    if (curId == startId) break;
 
     // Refreshing cache with the calculated value
-    _vTbcNextCache[curId - 1] = vTbcNext;
+    _vTbcNextCache[curId - 1] = vTbc;
     _qCacheAge[curId - 1] = _optimizationStepCount;
   }
 

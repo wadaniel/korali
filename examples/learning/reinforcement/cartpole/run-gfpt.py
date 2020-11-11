@@ -39,7 +39,7 @@ e["Variables"][4]["Exploration Sigma"] = 0.35
 
 e["Solver"]["Type"] = "Agent / Continuous / GFPT"
 e["Solver"]["Optimization Steps Per Update"] = 1
-e["Solver"]["Experiences Between Agent Trainings"] = 1
+e["Solver"]["Experiences Between Agent Trainings"] = 5
 
 ### Defining probability of taking a random action (epsilon)
 
@@ -83,7 +83,7 @@ e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Batch Normalization"]["Ena
 ## Defining Policy Configuration
 
 e["Solver"]["Policy"]["Learning Rate"] = 0.01
-e["Solver"]["Policy"]["Mini Batch Size"] = 16
+e["Solver"]["Policy"]["Mini Batch Size"] = 32
 e["Solver"]["Policy"]["Target Accuracy"] = 0.01
 e["Solver"]["Policy"]["Normalization Steps"] = 8
 
@@ -111,7 +111,7 @@ e["Solver"]["Policy"]["Neural Network"]["Output Scaling"] = [ 10.0 ]
 
 e["Solver"]["Training Reward Threshold"] = 400
 e["Solver"]["Policy Testing Episodes"] = 1
-e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 400
+e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 450
 
 ### Setting file output configuration
 

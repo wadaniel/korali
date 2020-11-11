@@ -56,7 +56,7 @@ void __environmentWrapper()
 void ReinforcementLearning::runEpisode(Sample &sample)
 {
   // Getting RL-compatible solver
-  _agent = dynamic_cast<solver::Agent *>(_k->_solver);
+  auto _agent = dynamic_cast<solver::Agent *>(_k->_solver);
 
   // First, we update the initial policy's hyperparameters
   _agent->updateAgentPolicy(sample.globals()["Hyperparameters"]);

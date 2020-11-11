@@ -58,12 +58,12 @@ e["Solver"]["Experience Replay"]["Maximum Size"] = 100000
 ## Defining Critic Configuration
 
 e["Solver"]["Critic"]["Discount Factor"] = 0.99
-e["Solver"]["Critic"]["Learning Rate"] = 0.01
+e["Solver"]["Critic"]["Learning Rate"] = 0.001
 e["Solver"]["Critic"]["Mini Batch Size"] = 32
 e["Solver"]["Critic"]["Normalization Steps"] = 8
 
 e["Solver"]["Critic"]["Retrace"]["Enabled"] = True
-e["Solver"]["Critic"]["Retrace"]["Cache Persistence"] = 15
+e["Solver"]["Critic"]["Retrace"]["Cache Persistence"] = 100
   
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear"

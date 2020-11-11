@@ -57,7 +57,7 @@ e["Solver"]["Neural Network"]["Layers"][3]["Batch Normalization"]["Enabled"] = T
 
 e["Console Output"]["Frequency"] = 1
 e["File Output"]["Enabled"] = False
-#e["Random Seed"] = 0xC0FFEE
+e["Random Seed"] = 0xC0FFEE
 
 ### Training the neural network
 

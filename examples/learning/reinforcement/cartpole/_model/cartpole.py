@@ -64,4 +64,4 @@ class CartPole:
     return state
 
   def getReward(self):
-    return 1.0 - self.isFailed();
+    return 1.0 - 1.0*self.isFailed();

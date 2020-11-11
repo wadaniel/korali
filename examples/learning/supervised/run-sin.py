@@ -73,6 +73,12 @@ testInferredSet = [ e.getEvaluation(x) for x in testInputSet ]
 testGradientSet = [ e.getGradients(x) for x in testInferredSet ]
 testOutputSet = np.tanh(np.exp(np.sin(testInputSet))) * scaling 
 
+
+### Calc MSE on test set
+
+mse = np.mean((np.array(testInferredSet) - np.array(testOutputSet))**2)
+print("MSE on test set: {}".format(mse))
+
 ### Plotting Results
 
 plt.plot(testInputSet, testOutputSet, "o")

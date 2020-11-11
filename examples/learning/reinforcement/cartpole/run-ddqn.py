@@ -39,13 +39,13 @@ e["Solver"]["Experiences Between Agent Trainings"] = 5
 
 ### Defining Experience Replay configuration
 
-e["Solver"]["Experience Replay"]["Start Size"] = 500
-e["Solver"]["Experience Replay"]["Maximum Size"] = 150000
+e["Solver"]["Experience Replay"]["Start Size"] = 1000
+e["Solver"]["Experience Replay"]["Maximum Size"] = 10000
 
 ### Defining probability of taking a random action (epsilon)
 
 e["Solver"]["Random Action Probability"]["Initial Value"] = 1.0
-e["Solver"]["Random Action Probability"]["Target Value"] = 0.05
+e["Solver"]["Random Action Probability"]["Target Value"] = 0.01
 e["Solver"]["Random Action Probability"]["Decrease Rate"] = 0.10
 
 ## Defining Q-Critic and Action-selection (policy) optimizers

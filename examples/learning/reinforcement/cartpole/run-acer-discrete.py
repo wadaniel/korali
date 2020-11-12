@@ -37,8 +37,8 @@ e["Variables"][4]["Type"] = "Action"
 
 e["Solver"]["Type"] = "Agent / Discrete / DACER"
 e["Solver"]["Importance Weight Truncation"] = 1.0
-e["Solver"]["Optimization Steps Per Update"] = 100
-e["Solver"]["Experiences Between Agent Trainings"] = 10
+e["Solver"]["Optimization Steps Per Update"] = 50
+e["Solver"]["Experiences Between Agent Trainings"] = 20
 
 ### Defining the configuration of replay memory
 
@@ -53,7 +53,7 @@ e["Solver"]["Policy"]["Learning Rate"] = 1e-4
 e["Solver"]["Policy"]["Mini Batch Size"] = 32
 e["Solver"]["Policy"]["Normalization Steps"] = 0
 
-e["Solver"]["Policy"]["Trust Region"]["Enabled"] = True
+e["Solver"]["Policy"]["Trust Region"]["Enabled"] = False
 #e["Solver"]["Policy"]["Trust Region"]["Divergence Constraint"] = 0.5
 #e["Solver"]["Policy"]["Trust Region"]["Adoption Rate"] = 0.9
 

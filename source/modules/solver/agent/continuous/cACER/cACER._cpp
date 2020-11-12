@@ -333,7 +333,7 @@ void cACER::trainAgent()
   _cumulativeQStar = 0.0;        // Cumulative Q Retrace
   _cumulativeQStarSquared = 0.0; // Stdev Q Retrace
 
-  // Clearing inputs for advantage problem
+  // Clearing inputs
   _aProblem->_inputs.clear();
   _aProblem->_solution.clear();
 
@@ -494,12 +494,14 @@ void cACER::trainAgent()
     _aProblem->_inputs.push_back(stateActionVector);
     _aProblem->_solution.push_back({qErr});
 
+    // WHY THIS? (DW)
     // Now adding all additional action samples
     for (size_t sampleIdx = 0; sampleIdx < _policySamplePopulation; sampleIdx++)
     {
       for (size_t i = 0; i < _problem->_actionVectorSize; i++)
         stateActionVector[_problem->_stateVectorSize + i] = actionSamples[sampleIdx][i];
       _aProblem->_inputs.push_back(stateActionVector);
+      // AND SPECIALLY THIS? (DW)
       _aProblem->_solution.push_back({-qErr / (float)_policySamplePopulation});
     }
   }

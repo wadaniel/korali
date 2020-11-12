@@ -18,19 +18,7 @@ void Agent::initialize()
   mt = new std::mt19937(rd());
   mt->seed(_k->_randomSeed++);
 
-  /*********************************************************************
-  * Initializing Qret cache
-  *********************************************************************/
-
-  _qRetNextCache.resize(_experienceReplayMaximumSize);
-  _qOpcNextCache.resize(_experienceReplayMaximumSize);
-  _vTbcNextCache.resize(_experienceReplayMaximumSize);
-  _qCacheAge.resize(_experienceReplayMaximumSize);
-
-  /*********************************************************************
-  *  Pre-allocating space for the experience replay memory
-  *********************************************************************/
-
+  //  Pre-allocating space for the experience replay memory
   _experienceReplay.resize(_experienceReplayMaximumSize);
 
   /*********************************************************************
@@ -40,9 +28,6 @@ void Agent::initialize()
   if (_k->_currentGeneration == 0)
   {
     _randomActionProbabilityCurrentValue = _randomActionProbabilityInitialValue;
-
-    for (size_t i = 0; i < _experienceReplayMaximumSize; i++) _qCacheAge[i] = -50000;
-
     _currentEpisode = 0;
     _optimizationStepCount = 0;
     _candidatePoliciesTested = 0;
@@ -176,6 +161,9 @@ void Agent::runGeneration()
 void Agent::processExperience(knlohmann::json &experience)
 {
   experience_t e;
+
+  e.cache.setMaxAge(_cachePersistence);
+  e.cache.setTimer(&_optimizationStepCount);
 
   // Getting state, action, reward, and whether it's terminal
   e.state = experience["State"].get<std::vector<float>>();

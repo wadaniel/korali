@@ -22,6 +22,8 @@ namespace korali
 template <typename T>
 class cBuffer
 {
+  private:
+
   /**
   * @brief Size of buffer container
   */

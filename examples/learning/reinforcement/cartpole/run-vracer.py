@@ -38,8 +38,9 @@ e["Variables"][4]["Exploration Sigma"] = 0.35
 ### Defining Agent Configuration 
 
 e["Solver"]["Type"] = "Agent / Continuous / VRACER"
-e["Solver"]["Optimization Steps Per Update"] = 1
-e["Solver"]["Experiences Between Agent Trainings"] = 1
+e["Solver"]["Optimization Steps Per Update"] = 50
+e["Solver"]["Experiences Between Agent Trainings"] = 50
+e["Solver"]["Cache Persistence"] = 200
 
 ### Defining the configuration of replay memory
 
@@ -49,7 +50,7 @@ e["Solver"]["Experience Replay"]["Maximum Size"] = 16000
 ## Defining Neural Network Configuration for Policy and Critic into Critic Container
 
 e["Solver"]["Critic"]["Discount Factor"] = 0.99
-e["Solver"]["Critic"]["Learning Rate"] = 0.001 
+e["Solver"]["Critic"]["Learning Rate"] = 0.0001 
 e["Solver"]["Critic"]["Mini Batch Size"] = 32
 e["Solver"]["Critic"]["Normalization Steps"] = 8
 

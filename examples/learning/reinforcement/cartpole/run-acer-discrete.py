@@ -36,8 +36,8 @@ e["Variables"][4]["Type"] = "Action"
 ### Configuring ACER hyperparameters
 
 e["Solver"]["Type"] = "Agent / Discrete / DACER"
-e["Solver"]["Optimization Steps Per Update"] = 20
-e["Solver"]["Experiences Between Agent Trainings"] = 20
+e["Solver"]["Optimization Steps Per Update"] = 10
+e["Solver"]["Experiences Between Agent Trainings"] = 25
 
 ### Defining the configuration of replay memory
 
@@ -52,9 +52,9 @@ e["Solver"]["Policy"]["Learning Rate"] = 1e-4
 e["Solver"]["Policy"]["Mini Batch Size"] = 32
 e["Solver"]["Policy"]["Normalization Steps"] = 0
 
-e["Solver"]["Policy"]["Trust Region"]["Enabled"] = False
-#e["Solver"]["Policy"]["Trust Region"]["Divergence Constraint"] = 0.5
-#e["Solver"]["Policy"]["Trust Region"]["Adoption Rate"] = 0.9
+e["Solver"]["Policy"]["Trust Region"]["Enabled"] = True
+e["Solver"]["Policy"]["Trust Region"]["Divergence Constraint"] = 1.0
+e["Solver"]["Policy"]["Trust Region"]["Adoption Rate"] = 0.99
 
 e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
 e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Batch Normalization"]["Enabled"] = False

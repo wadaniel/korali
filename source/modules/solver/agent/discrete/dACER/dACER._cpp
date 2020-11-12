@@ -280,8 +280,8 @@ float dACER::retraceFunction(size_t expId)
   ssize_t endId = startId;
   while (_experienceReplayTerminal[endId] == false) endId++;
 
-  // Initializing qRet to zero
-  float qRet = 0.0;
+  // Initializing qRet to termianl reward
+  float qRet = _experienceReplayRewards[endId];
 
   // Initializing values coming from the next experience (for latest experience, just reward)
   float qRetNext = _experienceReplayRewards[endId];

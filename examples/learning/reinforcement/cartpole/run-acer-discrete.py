@@ -36,8 +36,7 @@ e["Variables"][4]["Type"] = "Action"
 ### Configuring ACER hyperparameters
 
 e["Solver"]["Type"] = "Agent / Discrete / DACER"
-e["Solver"]["Importance Weight Truncation"] = 1.0
-e["Solver"]["Optimization Steps Per Update"] = 50
+e["Solver"]["Optimization Steps Per Update"] = 20
 e["Solver"]["Experiences Between Agent Trainings"] = 20
 
 ### Defining the configuration of replay memory
@@ -78,7 +77,7 @@ e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Activation Function"]["Typ
 ## Defining Q-Critic
 
 e["Solver"]["Critic"]["Discount Factor"] = 0.99
-e["Solver"]["Critic"]["Learning Rate"] = 1e-5
+e["Solver"]["Critic"]["Learning Rate"] = 5e-5
 e["Solver"]["Critic"]["Mini Batch Size"] = 32
 e["Solver"]["Critic"]["Normalization Steps"] = 0
 

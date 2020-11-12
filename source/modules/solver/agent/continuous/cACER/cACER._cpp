@@ -236,10 +236,10 @@ std::tuple<float, float> cACER::retraceFunction(size_t expId)
   for (ssize_t i = startId; i < endId; i++)
   {
     // If the difference in age is within the range, then it's a cache hit
-    if (_optimizationStepCount - _qCacheAge[i] < _criticRetraceCachePersistence)
-    {
-      qRetNext = _qRetNextCache[i];
-      qOpcNext = _qOpcNextCache[i];
+   if (_experienceReplay[i].cache.contains("QRetNext") && _experienceReplay[i].cache.contains("QOpcNext"))
+   {
+      qRetNext = _experienceReplay[i].cache.get("QRetNext");
+      qOpcNext = _experienceReplay[i].cache.get("QOpcNext");
       curId = i;
       break;
     }
@@ -292,9 +292,8 @@ std::tuple<float, float> cACER::retraceFunction(size_t expId)
     qOpcNext = (qOpc - curQ) + curV;
 
     // Refreshing cache with the calculated value
-    _qRetNextCache[curId - 1] = qRetNext;
-    _qOpcNextCache[curId - 1] = qOpcNext;
-    _qCacheAge[curId - 1] = _optimizationStepCount;
+    _experienceReplay[curId-1].cache.set("QRetNext", qRetNext);
+    _experienceReplay[curId-1].cache.set("qOpcNext", qOpcNext);
   }
 
   // Returning qRet

@@ -69,8 +69,9 @@ int main(int argc, char *argv[])
   //// Defining Agent Configuration
 
   e["Solver"]["Type"] = "Agent / Continuous / GFPT";
-  e["Solver"]["Experiences Between Agent Trainings"] = 20;
+  e["Solver"]["Experiences Between Agent Trainings"] = 243;
   e["Solver"]["Optimization Steps Per Update"] = 1;
+  e["Solver"]["Cache Persistence"] = 10;
 
   e["Solver"]["Random Action Probability"]["Initial Value"] = 0.5;
   e["Solver"]["Random Action Probability"]["Target Value"] = 0.00;
@@ -85,9 +86,7 @@ int main(int argc, char *argv[])
   e["Solver"]["Critic"]["Discount Factor"] = 0.99;
   e["Solver"]["Critic"]["Mini Batch Size"] = 64;
   e["Solver"]["Critic"]["Normalization Steps"] = 0;
-
   e["Solver"]["Critic"]["Retrace"]["Enabled"] = true;
-  e["Solver"]["Critic"]["Retrace"]["Cache Persistence"] = 10;
 
   e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense";
   e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear";

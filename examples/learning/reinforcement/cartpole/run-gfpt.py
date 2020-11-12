@@ -39,7 +39,8 @@ e["Variables"][4]["Exploration Sigma"] = 0.35
 
 e["Solver"]["Type"] = "Agent / Continuous / GFPT"
 e["Solver"]["Optimization Steps Per Update"] = 1
-e["Solver"]["Experiences Between Agent Trainings"] = 5
+e["Solver"]["Experiences Between Agent Trainings"] = 1
+e["Solver"]["Cache Persistence"] = 100
 
 ### Defining probability of taking a random action (epsilon)
 
@@ -56,12 +57,10 @@ e["Solver"]["Experience Replay"]["Maximum Size"] = 100000
 ## Defining Critic Configuration
 
 e["Solver"]["Critic"]["Discount Factor"] = 0.99
-e["Solver"]["Critic"]["Learning Rate"] = 0.001
+e["Solver"]["Critic"]["Learning Rate"] = 0.01
 e["Solver"]["Critic"]["Mini Batch Size"] = 32
 e["Solver"]["Critic"]["Normalization Steps"] = 8
-
 e["Solver"]["Critic"]["Retrace"]["Enabled"] = True
-e["Solver"]["Critic"]["Retrace"]["Cache Persistence"] = 100
   
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear"

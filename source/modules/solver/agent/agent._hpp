@@ -2,6 +2,7 @@
 #define _KORALI_AGENT_HPP_
 
 #include "auxiliar/cbuffer.hpp"
+#include "auxiliar/kcache.hpp"
 #include "modules/problem/reinforcementLearning/reinforcementLearning.hpp"
 #include "modules/problem/supervisedLearning/supervisedLearning.hpp"
 #include "modules/solver/learner/deepSupervisor/deepSupervisor.hpp"
@@ -23,16 +24,17 @@ struct experience_t
  bool isTerminal;
 
  knlohmann::json metadata;
- knlohmann::json cache;
+
+ kCache<std::string, float, size_t> cache;
 };
 
 class Agent : public Solver
 {
   public:
 
- /**
- * @brief Stores experience replay states.
- */
+  /**
+  * @brief Stores experience replay states.
+  */
   cBuffer<experience_t> _experienceReplay;
 
   /**
@@ -64,26 +66,6 @@ class Agent : public Solver
   * @brief The value to use for probability of random actions.
   */
   float _randomActionProbabilityEffectiveValue;
-
-  /**
-  * @brief Storage for the cache for the qRet value of the next experience
-  */
-  std::vector<float> _qRetNextCache;
-
-  /**
-   * @brief Storage for the cache for the qOpc value of the next experience
-   */
-  std::vector<float> _qOpcNextCache;
-
-  /**
-   * @brief Storage for the cache for the vTbc value of the next experience
-   */
-  std::vector<float> _vTbcNextCache;
-
-  /**
-   * @brief Storage for the age of each element of the retrace cache
-   */
-  std::vector<ssize_t> _qCacheAge;
 
   /**
   * @brief Trains the Agent's critic/policy, based on the new experiences

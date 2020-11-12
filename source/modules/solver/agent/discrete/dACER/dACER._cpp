@@ -292,9 +292,9 @@ float dACER::retraceFunction(size_t expId)
   for (ssize_t i = startId; i < endId; i++)
   {
     // If the difference in age is within the range, then it's a cache hit
-    if (_optimizationStepCount - _qCacheAge[i] < _criticRetraceCachePersistence)
-    {
-      qRetNext = _qRetNextCache[i];
+   if (_experienceReplay[i].cache.contains("QRetNext"))
+   {
+      qRetNext = _experienceReplay[i].cache.get("QRetNext");
       curId = i;
       break;
     }
@@ -338,8 +338,7 @@ float dACER::retraceFunction(size_t expId)
     qRetNext = truncatedImportanceWeight * (qRet - curQ) + curV;
 
     // Refreshing cache with the calculated value
-    _qRetNextCache[curId - 1] = qRetNext;
-    _qCacheAge[curId - 1] = _optimizationStepCount;
+    _experienceReplay[curId-1].cache.set("QRetNext", qRetNext);
   }
 
   // Returning qRet

@@ -157,8 +157,8 @@ float GFPT::retraceFunction(size_t expId)
   ssize_t endId = startId;
   while (_experienceReplay[endId].isTerminal == false) endId++;
 
-  // Initializing qRet to zero
-  float qRet = 0.0;
+  // Initializing qRet to reward of the last
+  float qRet = _experienceReplay[endId].reward;
 
   // Initializing values coming from the next experience (for latest experience, just reward)
   float qRetNext = _experienceReplay[endId].reward;
@@ -170,9 +170,9 @@ float GFPT::retraceFunction(size_t expId)
   for (ssize_t i = startId; i < endId; i++)
   {
     // If the difference in age is within the range, then it's a cache hit
-    if (_optimizationStepCount - _qCacheAge[i] < _criticRetraceCachePersistence)
+    if (_experienceReplay[i].cache.contains("QRetNext"))
     {
-      qRetNext = _qRetNextCache[i];
+      qRetNext = _experienceReplay[i].cache.get("QRetNext");
       curId = i;
       break;
     }
@@ -211,8 +211,7 @@ float GFPT::retraceFunction(size_t expId)
     qRetNext = (qRet - curQ) + curV;
 
     // Refreshing cache with the calculated value
-    _qRetNextCache[curId - 1] = qRetNext;
-    _qCacheAge[curId - 1] = _optimizationStepCount;
+    _experienceReplay[curId-1].cache.set("QRetNext", qRetNext);
   }
 
   // Returning qRet

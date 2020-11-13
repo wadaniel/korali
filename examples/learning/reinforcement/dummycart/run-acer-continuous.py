@@ -42,7 +42,7 @@ e["Solver"]["Random Action Probability"]["Decrease Rate"] = 0.03
 
 ### Defining Experience Replay configuration
 
-e["Solver"]["Experience Replay"]["Start Size"] =   300
+e["Solver"]["Experience Replay"]["Start Size"] =   2000
 e["Solver"]["Experience Replay"]["Maximum Size"] = 10000
 
 ## Defining Policy Configuration
@@ -52,9 +52,9 @@ e["Solver"]["Policy"]["Mini Batch Size"] = 16
 e["Solver"]["Policy"]["Normalization Steps"] = 0
 e["Solver"]["Policy"]["Sample Population"] = 5
 
-e["Solver"]["Policy"]["Trust Region"]["Enabled"] = True
-#e["Solver"]["Policy"]["Trust Region"]["Divergence Constraint"] = 1.0
-#e["Solver"]["Policy"]["Trust Region"]["Adoption Rate"] = 0.99
+e["Solver"]["Policy"]["Trust Region"]["Enabled"] = False
+e["Solver"]["Policy"]["Trust Region"]["Divergence Constraint"] = 1.0
+e["Solver"]["Policy"]["Trust Region"]["Average Network Adoption Rate"] = 0.99
 
 e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
 e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear"

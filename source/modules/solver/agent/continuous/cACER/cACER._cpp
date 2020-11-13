@@ -525,7 +525,7 @@ void cACER::trainAgent()
   // If using a trust region, softly adopting the new parameters of the average policy, using an adoption rate
   if (_policyTrustRegionEnabled)
     for (size_t i = 0; i < _policyCurrentHyperparameters.size(); i++)
-      _policyAverageHyperparameters[i] = _policyTrustRegionAdoptionRate * _policyAverageHyperparameters[i] + (1 - _policyTrustRegionAdoptionRate) * _policyCurrentHyperparameters[i];
+      _policyAverageHyperparameters[i] = _policyTrustRegionAverageNetworkAdoptionRate * _policyAverageHyperparameters[i] + (1 - _policyTrustRegionAverageNetworkAdoptionRate) * _policyCurrentHyperparameters[i];
 
   // Updating policy with new averaged parameters
   _policyLearner->setHyperparameters(_policyCurrentHyperparameters);

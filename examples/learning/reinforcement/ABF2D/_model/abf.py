@@ -116,21 +116,32 @@ if __name__ == '__main__':
     over = False
 
     traj = list()
+    rewards = list()
 
     while not over:
       sim.advance(action1)
       traj.append(sim.getState())
+      rewards.append(sim.getReward())
       over = sim.advance(action2)
       traj.append(sim.getState())
+      rewards.append(sim.getReward())
 
     traj = np.array(traj)
-    fig, ax = plt.subplots()
+    rewards = np.array(rewards)
+
+    fig, axes = plt.subplots(nrows=1, ncols=2)
+
     for i in range(len(sim.ABFs)):
-      ax.plot(traj[:,i*2], traj[:,i*2+1])
+      axes[0].plot(traj[:,i*2], traj[:,i*2+1])
     target = plt.Circle((0, 0), sim.target_radius, color='r', alpha = 0.3)
-    ax.add_artist(target)
-    ax.set_xlabel(r'$x$')
-    ax.set_ylabel(r'$y$')
+    axes[0].add_artist(target)
+    axes[0].set_xlabel(r'$x$')
+    axes[0].set_ylabel(r'$y$')
+
+    axes[1].plot(np.arange(len(rewards)), rewards)
+    axes[1].set_xlabel('$t$')
+    axes[1].set_ylabel('$r_t$')
+
     plt.show()
 
   #plot_velocity_curves()

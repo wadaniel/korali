@@ -329,10 +329,6 @@ void cACER::trainAgent()
   _cumulativeQStar = 0.;
   _cumulativeQStarSquared = 0.;
 
-  // Resetting critic statistics
-  _cumulativeQStar = 0.0;        // Cumulative Q Retrace
-  _cumulativeQStarSquared = 0.0; // Stdev Q Retrace
-
   // Clearing inputs
   _aProblem->_inputs.clear();
   _aProblem->_solution.clear();
@@ -366,7 +362,7 @@ void cACER::trainAgent()
     // Calculating V(state) with the current policy
     float vExpState = stateValueFunction(expState);
     _cumulativeQStar += vExpState;
-    _cumulativeQStar += vExpState * vExpState;
+    _cumulativeQStarSquared += vExpState * vExpState;
 
     // Setting policy distributions to follow that of the current policy
     for (size_t i = 0; i < _problem->_actionVectorSize; i++) _policyDistributions[i]->_mean = curMeans[i];

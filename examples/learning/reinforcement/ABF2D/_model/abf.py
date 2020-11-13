@@ -91,6 +91,9 @@ class Swimmers:
       r += 1
     return r
 
+  def getRemainingTime(self):
+    return self.t_max - self.t
+
   def dumpTrajectoryToCsv(self, fname: str):
     import pandas as pd
     traj = np.array(self.trajectory)

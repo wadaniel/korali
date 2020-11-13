@@ -83,7 +83,11 @@ class Swimmers:
 
   def getReward(self):
     currDistance = self.getSumDistances()
-    return -dt + (self.prevDistance - currDistance)
+    r = -self.dt / self.t_max
+    r += self.prevDistance - currDistance # reward shaping
+    if self.isSuccess():
+      r += 1
+    return r
 
 
 if __name__ == '__main__':

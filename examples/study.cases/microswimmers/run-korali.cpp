@@ -10,7 +10,7 @@ int main(int argc, char *argv[])
   e["Problem"]["Type"] = "Reinforcement Learning / Continuous";
   e["Problem"]["Environment Function"] = &runEnvironment;
   e["Problem"]["Action Repeat"] = 1;
-  e["Problem"]["Actions Between Policy Updates"] = 20;
+  e["Problem"]["Actions Between Policy Updates"] = 1;
 
   e["Variables"][0]["Name"] = "Swimmer 1 - Pos X";
   e["Variables"][0]["Type"] = "State";
@@ -41,48 +41,50 @@ int main(int argc, char *argv[])
   e["Variables"][12]["Type"] = "State";
   e["Variables"][13]["Name"] = "Swimmer 2 - Quaternion W";
   e["Variables"][13]["Type"] = "State";
+  e["Variables"][14]["Name"] = "Remaining Time";
+  e["Variables"][14]["Type"] = "State";
 
-  e["Variables"][14]["Name"] = "Frequency (w)";
-  e["Variables"][14]["Type"] = "Action";
-  e["Variables"][14]["Lower Bound"] = -1.0;
-  e["Variables"][14]["Upper Bound"] = +1.0;
-  e["Variables"][14]["Exploration Sigma"] = 0.2;
-
-  e["Variables"][15]["Name"] = "Rotation X";
+  e["Variables"][15]["Name"] = "Frequency (w)";
   e["Variables"][15]["Type"] = "Action";
   e["Variables"][15]["Lower Bound"] = -1.0;
   e["Variables"][15]["Upper Bound"] = +1.0;
   e["Variables"][15]["Exploration Sigma"] = 0.2;
 
-  e["Variables"][16]["Name"] = "Rotation Y";
+  e["Variables"][16]["Name"] = "Rotation X";
   e["Variables"][16]["Type"] = "Action";
   e["Variables"][16]["Lower Bound"] = -1.0;
   e["Variables"][16]["Upper Bound"] = +1.0;
   e["Variables"][16]["Exploration Sigma"] = 0.2;
 
-  e["Variables"][17]["Name"] = "Rotation Z";
+  e["Variables"][17]["Name"] = "Rotation Y";
   e["Variables"][17]["Type"] = "Action";
   e["Variables"][17]["Lower Bound"] = -1.0;
   e["Variables"][17]["Upper Bound"] = +1.0;
   e["Variables"][17]["Exploration Sigma"] = 0.2;
 
+  e["Variables"][18]["Name"] = "Rotation Z";
+  e["Variables"][18]["Type"] = "Action";
+  e["Variables"][18]["Lower Bound"] = -1.0;
+  e["Variables"][18]["Upper Bound"] = +1.0;
+  e["Variables"][18]["Exploration Sigma"] = 0.2;
+
   //// Defining Agent Configuration
 
   e["Solver"]["Type"] = "Agent / Continuous / GFPT";
   e["Solver"]["Experiences Between Agent Trainings"] = 243;
-  e["Solver"]["Optimization Steps Per Update"] = 1;
-  e["Solver"]["Cache Persistence"] = 10;
+  e["Solver"]["Optimization Steps Per Update"] = 50;
+  e["Solver"]["Cache Persistence"] = 200;
 
   e["Solver"]["Random Action Probability"]["Initial Value"] = 0.5;
   e["Solver"]["Random Action Probability"]["Target Value"] = 0.00;
   e["Solver"]["Random Action Probability"]["Decrease Rate"] = 0.05;
 
-  e["Solver"]["Experience Replay"]["Start Size"] = 256;
-  e["Solver"]["Experience Replay"]["Maximum Size"] = 65536;
+  e["Solver"]["Experience Replay"]["Start Size"] = 2048;
+  e["Solver"]["Experience Replay"]["Maximum Size"] = 131072;
 
   //// Defining Critic Configuration
 
-  e["Solver"]["Critic"]["Learning Rate"] = 0.0001;
+  e["Solver"]["Critic"]["Learning Rate"] = 0.001;
   e["Solver"]["Critic"]["Discount Factor"] = 0.99;
   e["Solver"]["Critic"]["Mini Batch Size"] = 64;
   e["Solver"]["Critic"]["Normalization Steps"] = 0;
@@ -108,7 +110,7 @@ int main(int argc, char *argv[])
 
   //// Defining Policy Configuration
 
-  e["Solver"]["Policy"]["Learning Rate"] = 0.00001;
+  e["Solver"]["Policy"]["Learning Rate"] = 0.001;
   e["Solver"]["Policy"]["Mini Batch Size"] = 64;
   e["Solver"]["Policy"]["Sample Population"] = 16;
   e["Solver"]["Policy"]["Target Accuracy"] = 0.0001;

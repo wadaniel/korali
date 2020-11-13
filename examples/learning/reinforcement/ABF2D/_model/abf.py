@@ -52,6 +52,7 @@ class Swimmers:
     self.t = 0
     self.positions = np.array([[15., 10.], [-5., 15.]])
     self.prevDistance = self.getSumDistances()
+    self.trajectory = list() # trace for dumping
 
   def isSuccess(self):
     diatances = np.sqrt(np.sum(self.positions**2, axis=1))
@@ -76,6 +77,7 @@ class Swimmers:
     self.positions += self.dt * self.system(self.t, self.positions, action) # Forward Euler is exact here
     self.t += self.dt
     self.step += 1
+    self.trajectory.append(self.positions.flatten())
     return self.isOver()
 
   def getState(self):
@@ -88,6 +90,16 @@ class Swimmers:
     if self.isSuccess():
       r += 1
     return r
+
+  def dumpTrajectoryToCsv(self, fname: str):
+    import pandas as pd
+    traj = np.array(self.trajectory)
+    data = dict()
+    for i in range(len(self.ABFs)):
+      data[f"x{i}"] = traj[:,2*i]
+      data[f"y{i}"] = traj[:,2*i+1]
+    df = pd.DataFrame(data)
+    df.to_csv(fname, index=False)
 
 
 if __name__ == '__main__':
@@ -125,6 +137,8 @@ if __name__ == '__main__':
       over = sim.advance(action2)
       traj.append(sim.getState())
       rewards.append(sim.getReward())
+
+    sim.dumpTrajectoryToCsv('test.csv')
 
     traj = np.array(traj)
     rewards = np.array(rewards)

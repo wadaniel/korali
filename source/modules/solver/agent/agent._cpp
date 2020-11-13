@@ -58,6 +58,8 @@ void Agent::initialize()
 
     // Initialize best rewards
     _averageTestingReward = -korali::Inf;
+    _bestTestingReward = -korali::Inf;
+    _worstTestingReward = +korali::Inf;
     _bestTrainingReward = -korali::Inf;
     _bestAverageTestingReward = -korali::Inf;
   }
@@ -163,8 +165,15 @@ void Agent::runGeneration()
 
     // Calculating average testing reward
     _averageTestingReward = 0.0;
+    _bestTestingReward = -korali::Inf;
+    _worstTestingReward = +korali::Inf;
     for (size_t i = 0; i < _policyTestingEpisodes; i++)
-      _averageTestingReward += agents[i]["Cumulative Reward"].get<float>();
+    {
+      float reward = agents[i]["Cumulative Reward"].get<float>();
+      _averageTestingReward += reward;
+      if (reward > _bestTestingReward) _bestTestingReward = reward;
+      if (reward < _worstTestingReward) _worstTestingReward = reward;
+    }
     _averageTestingReward = _averageTestingReward / _policyTestingEpisodes;
   }
 
@@ -402,12 +411,12 @@ void Agent::printGenerationAfter()
 
   _k->_logger->logInfo("Normal", " + Candidate Policies:          %lu\n", _candidatePoliciesTested);
 
-  _k->_logger->logInfo("Normal", " + Latest Average Reward:       %f\n", _averageTestingReward);
+  _k->_logger->logInfo("Normal", " + Latest Average (Worst / Best) Reward: %f (%f / %f)\n", _averageTestingReward, _worstTestingReward, _bestTestingReward);
 
   if (_targetAverageTestingReward > -korali::Inf)
-    _k->_logger->logInfo("Normal", " + Best Average Reward:         %f/%f\n", _bestAverageTestingReward, _targetAverageTestingReward);
+    _k->_logger->logInfo("Normal", " + Best Average Reward: %f/%f\n", _bestAverageTestingReward, _targetAverageTestingReward);
   else
-    _k->_logger->logInfo("Normal", " + Best Average Reward:         %f\n", _bestAverageTestingReward);
+    _k->_logger->logInfo("Normal", " + Best Average Reward: %f\n", _bestAverageTestingReward);
 
   printAgentInformation();
 

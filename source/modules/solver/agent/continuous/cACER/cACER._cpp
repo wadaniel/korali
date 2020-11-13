@@ -73,17 +73,6 @@ void cACER::initializeAgent()
   _vLearner = dynamic_cast<solver::learner::DeepSupervisor *>(_vExperiment._solver);
 
   /*********************************************************************
-  * Creating special evaluation networks for cases with different mini batch sizes
-  *********************************************************************/
-
-  // NN For action average calculation (required in dueling DQN)
-  //auto actionAverageEvaluationNetworkConfig = _criticNeuralNetwork;
-  //actionAverageEvaluationNetworkConfig["Layers"][0]["Node Count"] = _problem->_stateVectorSize + _problem->_actionVectorSize;
-  //actionAverageEvaluationNetworkConfig["Layers"][actionAverageEvaluationNetworkConfig["Layers"].size() - 1]["Node Count"] = 1;
-  //actionAverageEvaluationNetworkConfig["Use Preloaded Normalization Data"] = true;
-  //_actionAverageEvaluationNetwork = dynamic_cast<NeuralNetwork *>(getModule(actionAverageEvaluationNetworkConfig, _k));
-
-  /*********************************************************************
  * Initializing A(s,a)
  *********************************************************************/
 

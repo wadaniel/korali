@@ -27,7 +27,6 @@ def compute_V(bmb: float,
 
         return bmb * integrate.quad(integrand, 0, period)[0] / period
 
-
 @dataclass
 class ABF:
   # parameters of the shape
@@ -37,12 +36,10 @@ class ABF:
   def velocity(self, omega: float):
     return compute_V(self.bmb, self.cmb, omega)
 
-
-
 class Swimmers:
   def __init__(self):
     self.dt = 1
-    self.t_max = 100
+    self.t_max = 200
     self.target_radius = 1
     self.ABFs = [ABF(bmb=1, cmb=1), ABF(bmb=1, cmb=2)]
     self.reset()
@@ -59,7 +56,7 @@ class Swimmers:
     return np.max(diatances) < self.target_radius
 
   def isOver(self):
-    return self.isSuccess() or self.t > self.t_max
+    return self.isSuccess() or self.t >= self.t_max
 
   def system(self, t, y, act):
     wx, wy, omega = act
@@ -88,7 +85,7 @@ class Swimmers:
     r = -self.dt / self.t_max
     r += self.prevDistance - currDistance # reward shaping
     if self.isSuccess():
-      r += 1
+      r += 10
     return r
 
   def getRemainingTime(self):

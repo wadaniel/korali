@@ -219,7 +219,7 @@ std::tuple<float, float> cACER::retraceFunction(size_t expId)
   // Finding last experience in the episode that corresponds to expId
   ssize_t startId = expId;
   ssize_t endId = startId;
-  while (_experienceReplay[endId].isTerminal == false) endId++;
+  while (_experienceReplay[endId].termination == e_nonTerminal) endId++;
 
   // Initializing qRet and qOpc to zero
   float qRet = 0.0;

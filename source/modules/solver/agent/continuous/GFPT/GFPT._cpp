@@ -155,10 +155,36 @@ float GFPT::retraceFunction(size_t expId)
   // Finding last experience in the episode that corresponds to expId
   ssize_t startId = expId;
   ssize_t endId = startId;
-  while (_experienceReplay[endId].isTerminal == false) endId++;
+  while (_experienceReplay[endId].termination == e_nonTerminal) endId++;
 
   // Initializing qRet to reward of the last
   float qRet = _experienceReplay[endId].reward;
+
+  // If the episode was truncated, then add also the state value function
+  if (_experienceReplay[endId].termination == e_truncated)
+  {
+   float curV = 0.0f;
+
+   // Checking if the state value is in the cache
+   if (_experienceReplay[endId].cache.contains("State Value"))
+   {
+    // If it is, we take it straight from cache
+    curV = _experienceReplay[endId].cache.get("State Value");
+   }
+   else
+   {
+    // If not we recalculate it
+    auto curState = _experienceReplay[endId].state;
+    forwardPolicy(curState);
+    curV = stateValueFunction(curState);
+
+    // And save it into cache
+    _experienceReplay[endId].cache.set("State Value", curV);
+   }
+
+   // Now adding the effect of the state value on the qRet of the truncated experience
+   qRet += _criticDiscountFactor * curV;
+  }
 
   // Initializing values coming from the next experience (for latest experience, just reward)
   float qRetNext = _experienceReplay[endId].reward;
@@ -315,7 +341,7 @@ void GFPT::trainAgent()
     size_t expId = miniBatchIndexes[i];
 
     // Check if it is a terminal state
-    bool isTerminal = _experienceReplay[expId].isTerminal;
+    bool isTerminal = _experienceReplay[expId].termination != e_nonTerminal;
 
     /*****************************************
     * Critic Section
@@ -324,39 +350,8 @@ void GFPT::trainAgent()
     // Getting the reward for the current experience
     float curReward = _experienceReplay[expId].reward;
 
-    // Calculating target Q value (solution) for Qnew on selected batch
-    float qStar = 0.0f;
-
     // We calculate qStar depending on whether we use retrace or not
-    if (_criticRetraceEnabled == true)
-    {
-      qStar = retraceFunction(expId);
-    }
-    else
-    {
-      qStar = curReward;
-
-      // If state is not terminal (next state is filled) then add Qnew to the Q value.
-      if (isTerminal == false)
-      {
-        // Getting next state
-        auto nextState = _experienceReplay[expId + 1].state;
-
-        // Updating action distributions for the next state
-        forwardPolicy(nextState);
-
-        // Getting best action for next state
-        auto bestAction = _actionMeans;
-
-        // Now calculating V, A, and avgA for next state/best action
-        float curA = currentActionAdvantageFunction(nextState, bestAction);
-        float avgA = averageActionAdvantageFunction(nextState);
-        float curV = stateValueFunction(nextState);
-
-        // Adding q(nextstate, bestaction) to Q*
-        qStar += _criticDiscountFactor * (curV + curA - avgA);
-      }
-    }
+    float qRet = retraceFunction(expId);
 
     // Getting experience's current state, action
     auto curState = _experienceReplay[expId].state;
@@ -374,8 +369,8 @@ void GFPT::trainAgent()
     float curQ = curV + curA - avgA;
 
     // Now calculating targets for V(s) and A(s,a)
-    float vTarget = qStar - curQ + avgA;
-    float aTarget = qStar - curV + avgA;
+    float vTarget = qRet - curQ + avgA;
+    float aTarget = qRet - curV + avgA;
 
     // Updating inputs to training learners
     for (size_t j = 0; j < curState.size(); j++) _aProblem->_inputs[i][j] = curState[j];
@@ -386,7 +381,7 @@ void GFPT::trainAgent()
     _vProblem->_solution[i][0] = vTarget;
 
     // Keeping statistics
-    _cumulativeQStar += qStar;
+    _cumulativeQStar += qRet;
   }
 
   // Running one generation of the optimization method with the given mini-batch

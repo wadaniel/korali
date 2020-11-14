@@ -229,7 +229,7 @@ void VRACER::trainAgent()
       // Compute -rho(Qret-V) = rho(V-Qret)
       float Qret = _experienceReplay[curId].reward;
 
-      bool isTerminal = _experienceReplay[curId].isTerminal;
+      bool isTerminal = _experienceReplay[curId].termination != e_nonTerminal;
 
       if(isTerminal == false)
       {
@@ -313,7 +313,7 @@ float VRACER::retraceFunction(size_t expId)
   // Finding last experience in the episode that corresponds to expId
   ssize_t startId = expId;
   ssize_t endId = startId;
-  while (_experienceReplay[endId].isTerminal == false) endId++;
+  while (_experienceReplay[endId].termination == e_nonTerminal) endId++;
 
   // vTbc for terminal experience is weighted reward
   float vTbc = 0.0;
@@ -345,7 +345,7 @@ float VRACER::retraceFunction(size_t expId)
     float stateValue = 0.0f;
 
     // Calculating state value if this is not a terminal state
-    if (_experienceReplay[curId].isTerminal == false)
+    if (_experienceReplay[curId].termination == e_nonTerminal)
     {
      // Now getting state value from cache or (if not there) recalculating it.
      if (_experienceReplay[curId].cache.contains("State Value"))
@@ -367,10 +367,10 @@ float VRACER::retraceFunction(size_t expId)
     float truncatedImportanceWeight = std::min(1.0f, importanceWeight);
 
     // Re-calculating vTbc
-    if (_experienceReplay[curId].isTerminal == true)
-     vTbc = truncatedImportanceWeight * curReward;
-    else
+    if (_experienceReplay[curId].termination == e_nonTerminal)
      vTbc = stateValue +  truncatedImportanceWeight*(curReward + _criticDiscountFactor * vTbc - stateValue);
+    else
+     vTbc = truncatedImportanceWeight * curReward;
 
     // Refreshing cache with the calculated value
     _experienceReplay[curId].cache.set("vTbc", vTbc);

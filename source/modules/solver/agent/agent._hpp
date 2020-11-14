@@ -14,6 +14,8 @@ namespace korali
 namespace solver
 {
 
+enum termination_t {e_nonTerminal = 0, e_success = 1, e_truncated = 2};
+
 struct experience_t
 {
  std::vector<float> state;
@@ -21,7 +23,7 @@ struct experience_t
  float reward;
  float priority;
  float probability;
- bool isTerminal;
+ termination_t termination;
 
  knlohmann::json metadata;
 

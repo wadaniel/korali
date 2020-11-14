@@ -85,7 +85,7 @@ void Agent::runGeneration()
     _experienceCount++;
 
     // Check if experience is terminal
-    isTerminal = experience["Is Terminal"];
+    isTerminal = experience["Termination"] != "Non Terminal";
 
     // Running Agent training if the following conditions are met
     if (_experienceCount % _experiencesBetweenAgentTrainings == 0)     // If we accumulated enough experiences between updates, update now
@@ -97,7 +97,8 @@ void Agent::runGeneration()
         }
 
     // If agent requested new policy, send the new hyperparameters
-    if (experience["Request New Policy"] == true) KORALI_SEND_MSG_TO_SAMPLE(agent, _hyperparameters);
+    if (experience["Request New Policy"] == true)
+     KORALI_SEND_MSG_TO_SAMPLE(agent, _hyperparameters);
   }
 
   // Now that we have the entire episode, process its experiences (add them to replay memory)
@@ -169,7 +170,11 @@ void Agent::processExperience(knlohmann::json &experience)
   e.state = experience["State"].get<std::vector<float>>();
   e.action = experience["Action"].get<std::vector<float>>();
   e.reward = experience["Reward"].get<float>();
-  e.isTerminal = experience["Is Terminal"].get<bool>();
+
+  if (experience["Termination"] == "Non Terminal") e.termination = e_nonTerminal;
+  if (experience["Termination"] == "Success") e.termination = e_success;
+  if (experience["Termination"] == "Truncated") e.termination = e_truncated;
+
   e.priority = _experienceReplayMaxPriority;
   e.probability = 0.0;
   e.metadata = experience["Metadata"];

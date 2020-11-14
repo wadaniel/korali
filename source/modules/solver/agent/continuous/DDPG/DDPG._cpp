@@ -117,13 +117,14 @@ void DDPG::trainAgent()
     size_t expId = miniBatchIndexes[i];
 
     // Check if it is a terminal state
-    bool isTerminal = _experienceReplay[expId].isTerminal;
+    bool isTerminal = _experienceReplay[expId].termination != e_nonTerminal;
 
     // Getting experience's current state and action
     std::vector<float> curState = _experienceReplay[expId].state;
     std::vector<float> curAction = _experienceReplay[expId].action;
     std::vector<float> nextState = isTerminal ? std::vector<float>() : _experienceReplay[expId + 1].state;
     std::vector<float> bestAction;
+
     if (isTerminal)
       bestAction = std::vector<float>();
     else

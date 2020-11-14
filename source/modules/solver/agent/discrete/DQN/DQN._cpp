@@ -93,7 +93,7 @@ void DQN::trainAgent()
     auto curAction = _experienceReplay[expId].action;
 
     // If state is not terminal (next state is filled) then add Qnew to the Q value.
-    if (_experienceReplay[expId].isTerminal == false)
+    if (_experienceReplay[expId].termination == e_nonTerminal)
     {
       // Getting experience's next state
       auto nextState = _experienceReplay[expId + 1].state;

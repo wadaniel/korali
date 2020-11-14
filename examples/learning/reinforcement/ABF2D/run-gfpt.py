@@ -33,19 +33,19 @@ e["Variables"][4]["Name"] = "Magnet Rotation X"
 e["Variables"][4]["Type"] = "Action"
 e["Variables"][4]["Lower Bound"] = -1.0
 e["Variables"][4]["Upper Bound"] = +1.0
-e["Variables"][4]["Exploration Sigma"] = 0.05
+e["Variables"][4]["Exploration Sigma"] = 0.01
 
 e["Variables"][5]["Name"] = "Magnet Rotation Y"
 e["Variables"][5]["Type"] = "Action"
 e["Variables"][5]["Lower Bound"] = -1.0
 e["Variables"][5]["Upper Bound"] = +1.0
-e["Variables"][5]["Exploration Sigma"] = 0.05
+e["Variables"][5]["Exploration Sigma"] = 0.01
 
 e["Variables"][6]["Name"] = "Magnet Intensity"
 e["Variables"][6]["Type"] = "Action"
 e["Variables"][6]["Lower Bound"] = -1.0
 e["Variables"][6]["Upper Bound"] = +1.0
-e["Variables"][6]["Exploration Sigma"] = 0.05
+e["Variables"][6]["Exploration Sigma"] = 0.01
 
 ### Defining Agent Configuration 
 
@@ -56,9 +56,9 @@ e["Solver"]["Cache Persistence"] = 20
 
 ### Defining probability of taking a random action (epsilon)
 
-e["Solver"]["Random Action Probability"]["Initial Value"] = 0.5
-e["Solver"]["Random Action Probability"]["Target Value"] = 0.05
-e["Solver"]["Random Action Probability"]["Decrease Rate"] = 0.05
+e["Solver"]["Random Action Probability"]["Initial Value"] = 0.0
+e["Solver"]["Random Action Probability"]["Target Value"] = 0.00
+e["Solver"]["Random Action Probability"]["Decrease Rate"] = 0.00
 
 ### Defining the configuration of replay memory
 
@@ -95,7 +95,7 @@ e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Batch Normalization"]["Ena
 
 e["Solver"]["Policy"]["Learning Rate"] = 0.001
 e["Solver"]["Policy"]["Mini Batch Size"] = 32
-e["Solver"]["Policy"]["Target Accuracy"] = 0.001
+e["Solver"]["Policy"]["Target Accuracy"] = 0.00001
 e["Solver"]["Policy"]["Normalization Steps"] = 8
 
 e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"

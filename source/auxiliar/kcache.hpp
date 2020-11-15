@@ -82,7 +82,9 @@ class kCache
 
   valType access(const keyType& key, std::function<valType(void)> func)
   {
-   return contains(key) ? _data[key].value : func();
+   if (contains(key)) return _data[key].value;
+   set(key, func());
+   return _data[key].value;
   }
 
 };

@@ -163,26 +163,8 @@ float GFPT::retraceFunction(size_t expId)
   // If the episode was truncated, then add also the state value function
   if (_experienceReplay[endId].termination == e_truncated)
   {
-   float curV = 0.0f;
-
-   // Checking if the state value is in the cache
-   if (_experienceReplay[endId].cache.contains("State Value"))
-   {
-    // If it is, we take it straight from cache
-    curV = _experienceReplay[endId].cache.get("State Value");
-   }
-   else
-   {
-    // If not we recalculate it
-    auto curState = _experienceReplay[endId].state;
-    forwardPolicy(curState);
-    curV = stateValueFunction(curState);
-
-    // And save it into cache
-    _experienceReplay[endId].cache.set("State Value", curV);
-   }
-
-   // Now adding the effect of the state value on the qRet of the truncated experience
+   auto curState = _experienceReplay[endId].state;
+   float curV = _experienceReplay[endId].cache.access("State Value", [this, curState](){return this->stateValueFunction(curState);});
    qRet += _criticDiscountFactor * curV;
   }
 
@@ -192,7 +174,7 @@ float GFPT::retraceFunction(size_t expId)
     // Getting current reward
     float curReward = _experienceReplay[curId].reward;
 
-    // Re-calculating qRet
+    // Calculating qRet
     qRet = curReward + _criticDiscountFactor * qRet;
 
     // If this is the starting experience, return the current value
@@ -211,7 +193,7 @@ float GFPT::retraceFunction(size_t expId)
     float curA = _experienceReplay[curId].cache.access("Current Advantage", [this, curState, curAction](){return this->currentActionAdvantageFunction(curState, curAction);});
     float avgA = _experienceReplay[curId].cache.access("Average Advantage", [this, curState](){return this->averageActionAdvantageFunction(curState);});
 
-    // Updating qRet
+    // Updating qRet for the next experience
     qRet = qRet - curA + avgA;
   }
 
@@ -340,7 +322,7 @@ void GFPT::trainAgent()
     float avgA = averageActionAdvantageFunction(curState);
     float curV = stateValueFunction(curState);
 
-    // Current Q = V - A - avgA
+    // Current Q = V + A - avgA
     float curQ = curV + curA - avgA;
 
     // Now calculating targets for V(s) and A(s,a)

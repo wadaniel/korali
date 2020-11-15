@@ -14,7 +14,7 @@ namespace korali
 namespace solver
 {
 
-enum termination_t {e_nonTerminal = 0, e_success = 1, e_truncated = 2};
+enum termination_t {e_nonTerminal = 0, e_normal = 1, e_truncated = 2};
 
 struct experience_t
 {

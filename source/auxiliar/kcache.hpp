@@ -8,6 +8,7 @@
 ******************************************************************************/
 
 #include <map>
+#include <functional>
 
 /**
 * \namespace korali
@@ -77,6 +78,11 @@ class kCache
   valType get(const keyType& key)
   {
    return _data[key].value;
+  }
+
+  valType access(const keyType& key, std::function<valType(void)> func)
+  {
+   return contains(key) ? _data[key].value : func();
   }
 
 };

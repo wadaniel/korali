@@ -31,3 +31,9 @@ def env(s):
   
   # Advancing step counter
   step = step + 1
+
+ # Setting finalization status
+ if (cart.isOver()):
+  s["Termination"] = "Normal"
+ else:
+  s["Termination"] = "Truncated"

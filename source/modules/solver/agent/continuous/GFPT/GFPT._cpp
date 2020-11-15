@@ -186,32 +186,14 @@ float GFPT::retraceFunction(size_t expId)
    qRet += _criticDiscountFactor * curV;
   }
 
-  // Initializing values coming from the next experience (for latest experience, just reward)
-  float qRetNext = _experienceReplay[endId].reward;
-
-  // Setting starting experience as the second to last
-  ssize_t curId = endId - 1;
-
-  // Now checking whether any necessary qRetNext is present in cache
-  for (ssize_t i = startId; i < endId; i++)
-  {
-    // If the difference in age is within the range, then it's a cache hit
-    if (_experienceReplay[i].cache.contains("QRetNext"))
-    {
-      qRetNext = _experienceReplay[i].cache.get("QRetNext");
-      curId = i;
-      break;
-    }
-  }
-
   // Now iterating backwards to calculate the rest of qRet
-  for (; curId >= startId; curId--)
+  for (ssize_t curId = endId-1; curId >= startId; curId--)
   {
     // Getting current reward
     float curReward = _experienceReplay[curId].reward;
 
     // Re-calculating qRet
-    qRet = curReward + _criticDiscountFactor * qRetNext;
+    qRet = curReward + _criticDiscountFactor * qRet;
 
     // If this is the starting experience, return the current value
     if (curId == startId) break;
@@ -222,22 +204,15 @@ float GFPT::retraceFunction(size_t expId)
     // Getting current action index
     auto curAction = _experienceReplay[curId].action;
 
-    // Updating action distributions for the current state
-    forwardPolicy(curState);
+    // If we don't have the current and average advantage values in cache, we need to re-calculate means (forward policy)
+    if (_experienceReplay[curId].cache.contains("Current Advantage") == false) forwardPolicy(curState);
 
     // Now calculating V, A, and avgA for current state/action
-    float curA = currentActionAdvantageFunction(curState, curAction);
-    float avgA = averageActionAdvantageFunction(curState);
-    float curV = stateValueFunction(curState);
+    float curA = _experienceReplay[curId].cache.access("Current Advantage", [this, curState, curAction](){return this->currentActionAdvantageFunction(curState, curAction);});
+    float avgA = _experienceReplay[curId].cache.access("Average Advantage", [this, curState](){return this->averageActionAdvantageFunction(curState);});
 
-    // Current Q = V - A - avgA
-    float curQ = curV + curA - avgA;
-
-    // Updating qRet (no importance weight as it seems not to work well with this algorithm)
-    qRetNext = (qRet - curQ) + curV;
-
-    // Refreshing cache with the calculated value
-    _experienceReplay[curId-1].cache.set("QRetNext", qRetNext);
+    // Updating qRet
+    qRet = qRet - curA + avgA;
   }
 
   // Returning qRet

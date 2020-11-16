@@ -17,17 +17,14 @@ e["Problem"]["Environment Function"] = env
 e["Problem"]["Action Repeat"] = 1
 e["Problem"]["Actions Between Policy Updates"] = 1
 
+### Defining state variables
+
 e["Variables"][0]["Name"] = "Cart Position"
-e["Variables"][0]["Type"] = "State"
-
 e["Variables"][1]["Name"] = "Cart Velocity"
-e["Variables"][1]["Type"] = "State"
-
 e["Variables"][2]["Name"] = "Pole Angle"
-e["Variables"][2]["Type"] = "State"
-
 e["Variables"][3]["Name"] = "Pole Angular Velocity"
-e["Variables"][3]["Type"] = "State"
+
+### Defining action variables
 
 e["Variables"][4]["Name"] = "Force"
 e["Variables"][4]["Type"] = "Action"
@@ -50,7 +47,7 @@ e["Solver"]["Random Action Probability"]["Decrease Rate"] = 0.05
 
 ### Defining the configuration of replay memory
 
-e["Solver"]["Mini Batch Strategy"] = "Prioritized"
+e["Solver"]["Mini Batch Strategy"] = "Uniform"
 e["Solver"]["Experience Replay"]["Start Size"] =   1000
 e["Solver"]["Experience Replay"]["Maximum Size"] = 100000
 
@@ -101,10 +98,8 @@ e["Solver"]["Policy"]["Neural Network"]["Layers"][2]["Activation Function"]["Typ
 e["Solver"]["Policy"]["Neural Network"]["Layers"][2]["Batch Normalization"]["Enabled"] = True
 
 e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Type"] = "Layer/Dense"
-e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Elementwise/Tanh"
+e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Elementwise/Linear"
 e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Batch Normalization"]["Enabled"] = True 
-
-e["Solver"]["Policy"]["Neural Network"]["Output"]["Scaling"] = [ 10.0 ]
 
 ### Defining Termination Criteria
 

@@ -88,19 +88,24 @@ void NeuralNetwork::initialize()
   // Check output scaling configuration
   size_t outputSize = _layers[layerCount - 1]->_nodeCount;
 
-  if (_outputScaling.empty() == false)
-    if (_outputScaling.size() != outputSize)
-      KORALI_LOG_ERROR("Wrong number of output scaling factors passed to the neural network. Expected: %lu, provided: %lu.\n", outputSize, _outputScaling.size());
+  if (_outputScale.empty() == false)
+    if (_outputScale.size() != outputSize)
+      KORALI_LOG_ERROR("Wrong number of output scaling factors passed to the neural network. Expected: %lu, provided: %lu.\n", outputSize, _outputScale.size());
 
   // Check output shifting configuration
   if (_outputShift.empty() == false)
     if (_outputShift.size() != outputSize)
       KORALI_LOG_ERROR("Wrong number of output shift factors passed to the neural network. Expected: %lu, provided: %lu.\n", outputSize, _outputShift.size());
 
-  // Check output shifting configuration
+  // Check output absolute mask configuration
   if (_outputAbsoluteMask.empty() == false)
     if (_outputAbsoluteMask.size() != outputSize)
       KORALI_LOG_ERROR("Wrong size of output absolute mask passed to the neural network. Expected: %lu, provided: %lu.\n", outputSize, _outputAbsoluteMask.size());
+
+  // Check output absolute mask configuration
+  if (_outputTanhMask.empty() == false)
+    if (_outputTanhMask.size() != outputSize)
+      KORALI_LOG_ERROR("Wrong size of output Tanh mask passed to the neural network. Expected: %lu, provided: %lu.\n", outputSize, _outputTanhMask.size());
 
   // Making sure we do not re-initialize
   _isInitialized = true;
@@ -315,8 +320,7 @@ void NeuralNetwork::forward()
 #endif
 
 #ifdef _KORALI_USE_CUDNN
-  if (cudaDeviceSynchronize())
-    ;
+  cudaDeviceSynchronize();
 #endif
 
   // [Profiling]
@@ -339,38 +343,43 @@ void NeuralNetwork::forward()
 
   // Copying NN output to class output
   _outputValues.resize(_batchSize);
+  for (size_t i = 0; i < _batchSize; i++) _outputValues[i].resize(nodeCount);
 
   // Creating storage for output value sign, if using absolute mask
   if (_outputAbsoluteMask.size() > 0)
+  {
    _outputSign.resize(_batchSize);
+   for (size_t i = 0; i < _batchSize; i++) _outputSign[i].resize(nodeCount);
+  }
 
   for (size_t i = 0; i < _batchSize; i++)
-  {
-    _outputValues[i].resize(nodeCount);
-    for (size_t j = 0; j < nodeCount; j++) _outputValues[i][j] = resultData[i * nodeCount + j];
+   for (size_t j = 0; j < nodeCount; j++)
+   {
+     auto x = resultData[i * nodeCount + j];
 
-    // If we use an absolute mask, then apply the mask now
-    if (_outputAbsoluteMask.size() > 0)
-    {
-     _outputSign[i].resize(nodeCount);
-      for (size_t j = 0; j < nodeCount; j++)
-      {
-       // Storing original sign bit
-       _outputSign[i][j] = std::signbit(_outputValues[i][j]);
+     // If we use a tanh mask, then apply the mask now
+     if (_outputTanhMask.size() > 0)
+       if (_outputTanhMask[j] == true)
+        x = std::tanh(x);
 
-       // Using an absolute function to remove sign from number
-       if (_outputAbsoluteMask[j] == true)
-        _outputValues[i][j] = std::fabs(_outputValues[i][j]);
-      }
-    }
+     // If we use an absolute mask, then apply the mask now
+     if (_outputAbsoluteMask.size() > 0)
+     {
+        // Storing original sign bit
+        _outputSign[i][j] = std::signbit(x);
+
+        // Using an absolute function to remove sign from number
+        if (_outputAbsoluteMask[j] == true)
+         x = std::fabs(x);
+     }
 
     // If we  use scaling, then apply the scaling factors now
-    if (_outputScaling.size() > 0)
-      for (size_t j = 0; j < nodeCount; j++) _outputValues[i][j] *= _outputScaling[j];
+    if (_outputScale.size() > 0) x *= _outputScale[j];
 
     // If we  use shifting, then apply the scaling factors now
-    if (_outputShift.size() > 0)
-      for (size_t j = 0; j < nodeCount; j++) _outputValues[i][j] += _outputShift[j];
+    if (_outputShift.size() > 0) x += _outputShift[j];
+
+    _outputValues[i][j] = x;
   }
 
   // [Profiling]
@@ -400,17 +409,35 @@ void NeuralNetwork::backward(const std::vector<std::vector<float>> &gradients)
   for (size_t i = 0; i < _batchSize; i++)
    for (size_t j = 0; j < outputSize; j++)
    {
-    // Copying to vector
-    floatDiffs[i*outputSize + j] = gradients[i][j];
+    // Getting forward propagation output and passed gradients
+    float x = _outputValues[i][j];
+    float g = gradients[i][j];
+
+    // If we use shift, then apply the inverse shift to the forward output
+    if (_outputShift.size() > 0)
+     x = x - _outputShift[j];
+
+    // If we use scaling, then apply the inverse scaling factors gradient now
+    if (_outputScale.size() > 0)
+    {
+     x = x / _outputScale[j];
+     g = g / _outputScale[j];
+    }
 
     // If we use an absolute mask, then restore the corresponding sign now
     if (_outputAbsoluteMask.size() > 0)
      if (_outputAbsoluteMask[j] == true)
       if (_outputSign[i][j])
-       floatDiffs[i*outputSize + j] *= -1.0f;
+       g = -g;
 
-    // If we use scaling, then apply the scaling factors gradient now
-    if (_outputScaling.size() > 0) floatDiffs[i*outputSize + j] /= _outputScaling[j];
+    // If we use an tanh mask, then apply its derivative
+    if (_outputTanhMask.size() > 0)
+     if (_outputTanhMask[j] == true)
+     {
+       g = g * (1.0f - x*x); // x is still tanh(x)
+     }
+
+    floatDiffs[i*outputSize + j] = g;
    }
 
 // Copying gradients to the output end of the NN

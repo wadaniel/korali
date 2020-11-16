@@ -108,6 +108,18 @@ void GFPT::initializeAgent()
   _policyExperiment["Solver"]["Steps Per Generation"] = 1;
   _policyExperiment["Solver"]["Neural Network"] = _policyNeuralNetwork;
 
+  for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+  {
+   size_t varIdx = _problem->_actionVectorIndexes[i];
+   auto lowerBound = _k->_variables[varIdx]->_lowerBound;
+   auto upperBound = _k->_variables[varIdx]->_upperBound;
+   float scale = (upperBound - lowerBound) * 0.5;
+   float shift = (upperBound + lowerBound) * 0.5;
+   _policyExperiment["Solver"]["Neural Network"]["Output"]["Scale"][i] = scale;
+   _policyExperiment["Solver"]["Neural Network"]["Output"]["Shift"][i] = shift;
+   _policyExperiment["Solver"]["Neural Network"]["Output"]["Tanh Mask"][i] = true;
+  }
+
   // Initializing experiment with an initial zero set
   for (size_t i = 0; i < _policyMiniBatchSize; i++)
   {
@@ -297,9 +309,15 @@ void GFPT::trainAgent()
     // Selecting a uniformly random selected, yet not repeated experience
     size_t expId = miniBatchIndexes[i];
 
+    // Check if it is a terminal state
+    bool isTerminal = _experienceReplay[expId].termination != e_nonTerminal;
+
     /*****************************************
     * Critic Section
     *****************************************/
+
+    // Getting the reward for the current experience
+    float curReward = _experienceReplay[expId].reward;
 
     // We calculate qStar depending on whether we use retrace or not
     float qRet = retraceFunction(expId);

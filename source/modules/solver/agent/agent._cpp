@@ -152,7 +152,7 @@ void Agent::runGeneration()
 
   /////////////// Updating experience probabilities
 
-  updateExperienceReplayProbabilities();
+  if (_miniBatchStrategy == "Prioritized") updateExperienceReplayProbabilities();
 
   /////////////// Updating the probability of a random action (epsilon)
 

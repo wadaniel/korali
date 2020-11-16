@@ -26,6 +26,8 @@ class GFPT : public Continuous
    */
   NeuralNetwork *_batchOptimizationNetwork;
 
+  float _stateValue;
+
   /**
    * @brief Pointer to training experiment's V(s) problem
    */

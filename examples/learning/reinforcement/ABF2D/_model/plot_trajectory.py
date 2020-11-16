@@ -12,7 +12,7 @@ def plot(csv_file: str,
 
     nabfs = len(df.columns) // 2
 
-    fig, ax = plt.subplots(figsize=(6.4, 6.4))
+    fig, ax = plt.subplots()
 
     d = minspace
     xmin = -d
@@ -36,15 +36,13 @@ def plot(csv_file: str,
     target = plt.Circle((0, 0), target_radius, color='r', alpha = 0.3)
     ax.add_artist(target)
 
-    _min = min([xmin, ymin])
-    _max = max([xmax, ymax])
-
-    ax.set_xlim(_min, _max)
-    ax.set_ylim(_min, _max)
+    ax.set_xlim(xmin, xmax)
+    ax.set_ylim(ymin, ymax)
 
     ax.set_xlabel(r'$x$')
     ax.set_ylabel(r'$y$')
 
+    plt.gca().set_aspect('equal', adjustable='box')
     plt.show()
 
 

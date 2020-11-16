@@ -53,14 +53,21 @@ if __name__ == '__main__':
     def execute(n):
         d = np.dot(X, n)
         betas = np.dot(Vinv, d)
+        steps = 0
 
         for b, wc in zip(betas, wcs):
             nsteps = abs(round(b / sim.dt))
             s = np.sign(b)
             action = [-s*n[0], -s*n[1], wc]
+            steps += nsteps
             for step in range(nsteps):
                 sim.advance(action)
+        return steps
 
-    execute(n1)
-    execute(n2)
+
+    tot_steps = 0
+    tot_steps += execute(n1)
+    tot_steps += execute(n2)
     sim.dumpTrajectoryToCsv("optimal.csv")
+
+    print(f"took {tot_steps} steps")

@@ -297,15 +297,9 @@ void GFPT::trainAgent()
     // Selecting a uniformly random selected, yet not repeated experience
     size_t expId = miniBatchIndexes[i];
 
-    // Check if it is a terminal state
-    bool isTerminal = _experienceReplay[expId].termination != e_nonTerminal;
-
     /*****************************************
     * Critic Section
     *****************************************/
-
-    // Getting the reward for the current experience
-    float curReward = _experienceReplay[expId].reward;
 
     // We calculate qStar depending on whether we use retrace or not
     float qRet = retraceFunction(expId);

@@ -339,9 +339,15 @@ float VRACER::retraceFunction(size_t expId)
     float curReward = _experienceReplay[curId].reward;
 
     // Get state value function
-    auto curState = _experienceReplay[endId].state;
+    auto curState = _experienceReplay[curId].state;
 
-    float curV = _experienceReplay[endId].cache.access("State Value", [this, curState](){return this->stateValueFunction(curState);});
+    float curV = _experienceReplay[curId].cache.access("State Value", [this, curState](){return this->stateValueFunction(curState);});
+
+    // get importance weight (will be updated from trainAgent)
+    float importanceWeight = _experienceReplay[curId].cache.get("Importance Weight");
+
+    // truncate importance weight
+    float truncatedImportanceWeight = std::min(1.0f, importanceWeight);
 
     // Calculating vTbc
     vTbc = curV +  truncatedImportanceWeight * (curReward + _criticDiscountFactor * vTbc - curV);

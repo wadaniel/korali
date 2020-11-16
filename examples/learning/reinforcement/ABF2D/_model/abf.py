@@ -36,6 +36,9 @@ class ABF:
   def velocity(self, omega: float):
     return compute_V(self.bmb, self.cmb, omega)
 
+  def stepOutFrequency(self):
+    return self.cmb
+
 class Swimmers:
   def __init__(self):
     self.dt = 1

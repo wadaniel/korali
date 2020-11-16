@@ -60,20 +60,28 @@ void VRACER::initializeAgent()
     }
   }
 
-  // Assigning absolute value mask for the sigma outputs
-  _criticPolicyExperiment["Solver"]["Neural Network"]["Output"]["Absolute Mask"][0] = false; // V is not masked
-  for(size_t i = 0; i < dimAction; i++)
+  // No output mask for value
+  _criticPolicyExperiment["Solver"]["Neural Network"]["Output"]["Scale"][0] = 1.0f;
+  _criticPolicyExperiment["Solver"]["Neural Network"]["Output"]["Shift"][0] = 0.0f;
+  _criticPolicyExperiment["Solver"]["Neural Network"]["Output"]["Absolute Mask"][0] = false;
+  _criticPolicyExperiment["Solver"]["Neural Network"]["Output"]["Tanh Mask"][0] = false;
+  for (size_t i = 0; i < dimAction; i++)
   {
-   _criticPolicyExperiment["Solver"]["Neural Network"]["Output"]["Absolute Mask"][1 + i] = false; // Means are not masked
-   _criticPolicyExperiment["Solver"]["Neural Network"]["Output"]["Absolute Mask"][dimAction + 1 + i] = true; // Sigmas are masked
-  }
-
-  // Assigning epsilon shift to sigmas to prevent them to become zero
-  _criticPolicyExperiment["Solver"]["Neural Network"]["Output"]["Shift"][0] = 0.0f; // V requires no shift
-  for(size_t i = 0; i < dimAction; i++)
-  {
-   _criticPolicyExperiment["Solver"]["Neural Network"]["Output"]["Shift"][1 + i] = 0.0f; // Means require no shift
-   _criticPolicyExperiment["Solver"]["Neural Network"]["Output"]["Shift"][dimAction + 1 + i] = 1e-7f; // Sigmas require epsilon shift
+   size_t varIdx = _problem->_actionVectorIndexes[i];
+   auto lowerBound = _k->_variables[varIdx]->_lowerBound;
+   auto upperBound = _k->_variables[varIdx]->_upperBound;
+   float scale = (upperBound - lowerBound) * 0.5;
+   float shift = (upperBound + lowerBound) * 0.5;
+   // Tanh output mask for Mean
+   _criticPolicyExperiment["Solver"]["Neural Network"]["Output"]["Scale"][i+1] = scale;
+   _criticPolicyExperiment["Solver"]["Neural Network"]["Output"]["Shift"][i+1] = shift;
+   _criticPolicyExperiment["Solver"]["Neural Network"]["Output"]["Absolute Mask"][i+1] = false;
+   _criticPolicyExperiment["Solver"]["Neural Network"]["Output"]["Tanh Mask"][i+1] = true;
+   // Absolute Value output mask for Sigma
+   _criticPolicyExperiment["Solver"]["Neural Network"]["Output"]["Scale"][dimAction+i+1] = 1.0;
+   _criticPolicyExperiment["Solver"]["Neural Network"]["Output"]["Shift"][dimAction+i+1] = 0.0;
+   _criticPolicyExperiment["Solver"]["Neural Network"]["Output"]["Absolute Mask"][dimAction+i+1] = true;
+   _criticPolicyExperiment["Solver"]["Neural Network"]["Output"]["Tanh Mask"][dimAction+i+1] = false;
   }
 
   // Running initialization to verify that the configuration is correct

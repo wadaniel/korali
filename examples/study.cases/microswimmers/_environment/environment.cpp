@@ -17,7 +17,6 @@ void runEnvironment(korali::Sample &s)
 
   // Setting initial state
   s["State"] = _environment->getState();
-  s["State"][14] = _environment->getRemainingTimeBeforeCutting();
 
   // Calculating action scaling/shifting factors
   auto [lowerBounds, upperBounds] = _environment->getActionBounds();
@@ -53,15 +52,12 @@ void runEnvironment(korali::Sample &s)
     for (size_t i = 0; i < action.size(); i++)
       action[i] = scales[i] * action[i] + shifts[i];
 
-    // Getting time left
-    auto tLeft = _environment->getRemainingTimeBeforeCutting();
-
     // Printing Action:
     if (curActionIndex % 20 == 0)
     {
       printf("Action %lu: [ %f", curActionIndex, action[0]);
       for (size_t i = 1; i < action.size(); i++) printf(", %f", action[i]);
-      printf("] (tLeft: %f) \n", tLeft);
+      printf("]\n");
     }
 
     // Setting action
@@ -72,11 +68,16 @@ void runEnvironment(korali::Sample &s)
 
     // Storing new state
     s["State"] = _environment->getState();
-    s["State"][14] = tLeft;
 
     // Increasing action count
     curActionIndex++;
   }
+
+  // Setting finalization status
+  if (status == Status::Success)
+   s["Termination"] = "Normal";
+  else
+   s["Termination"] = "Truncated";
 }
 
 void initializeEnvironment(const std::string confFileName)

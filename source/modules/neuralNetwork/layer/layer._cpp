@@ -29,7 +29,7 @@ std::vector<float> Layer::generateInitialHyperparameters()
     if (_batchNormalizationEnabled == false)
     {
       for (size_t i = 0; i < _nodeCount; i++)
-        hyperparameters.push_back(_nn->_xavierGenerator->getRandomNumber());
+        hyperparameters.push_back(xavierConstant * _nn->_xavierGenerator->getRandomNumber());
     }
   }
 

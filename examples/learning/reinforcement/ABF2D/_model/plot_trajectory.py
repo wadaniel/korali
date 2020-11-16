@@ -22,6 +22,7 @@ def plot(csv_file: str,
 
     ax.set_xlabel(r'$x$')
     ax.set_ylabel(r'$y$')
+    ax.axis('equal')
     plt.show()
 
 

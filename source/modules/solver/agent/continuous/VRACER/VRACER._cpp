@@ -315,65 +315,36 @@ float VRACER::retraceFunction(size_t expId)
   ssize_t endId = startId;
   while (_experienceReplay[endId].termination == e_nonTerminal) endId++;
 
-  // vTbc for terminal experience is weighted reward
-  float vTbc = 0.0;
+  // get importance weight (will be updated from trainAgent)
+  float importanceWeight = _experienceReplay[endId].cache.get("Importance Weight");
 
-  // Setting starting experience as the second to last
-  ssize_t curId = endId;
+  // truncate importance weight
+  float truncatedImportanceWeight = std::min(1.0f, importanceWeight);
 
-  // Looking in the cache for saved retrace values of any of the required experiences
-  for (ssize_t i = startId; i < endId; i++)
+  // Initializing vTbc to weighted reward of the last
+  float vTbc = truncatedImportanceWeight * _experienceReplay[endId].reward;
+
+  // If the episode was truncated, then add also the weighted state value function
+  if (_experienceReplay[endId].termination == e_truncated)
   {
-    // If the difference in age is within the range, then it's a cache hit
-    if (_experienceReplay[i+1].cache.contains("vTbc"))
-    {
-      vTbc = _experienceReplay[i+1].cache.get("vTbc");
-      curId = i;
-      break;
-    }
+   auto curState = _experienceReplay[endId].state;
+   float curV = _experienceReplay[endId].cache.access("State Value", [this, curState](){return this->stateValueFunction(curState);});
+   vTbc += (1 - truncatedImportanceWeight) * curV;
   }
 
   // Now iterating backwards to calculate the rest of vTbc
-  for (; curId >= startId; curId--)
+  for (ssize_t curId = endId-1; curId >= startId; curId--)
   {
-    // Getting current state, action and reward
-    auto curReward = _experienceReplay[curId].reward;
-    auto curAction = _experienceReplay[curId].action;
-    auto curState = _experienceReplay[curId].state;
+    // Getting current reward
+    float curReward = _experienceReplay[curId].reward;
 
-    // Storage for state value
-    float stateValue = 0.0f;
+    // Get state value function
+    auto curState = _experienceReplay[endId].state;
 
-    // Calculating state value if this is not a terminal state
-    if (_experienceReplay[curId].termination == e_nonTerminal)
-    {
-     // Now getting state value from cache or (if not there) recalculating it.
-     if (_experienceReplay[curId].cache.contains("State Value"))
-     {
-      stateValue = _experienceReplay[curId].cache.get("State Value");
-     }
-     else
-     {
-      forwardPolicy(curState);
-      stateValue = _stateValue;
-      _experienceReplay[curId].cache.set("State Value", stateValue);
-     }
-    }
+    float curV = _experienceReplay[endId].cache.access("State Value", [this, curState](){return this->stateValueFunction(curState);});
 
-    // Now calculating getting importance weight from cache (we know it's there because we refreshed them at the beginning)
-    float importanceWeight = _experienceReplay[curId].cache.get("Importance Weight");
-
-    // Now calculating truncated importance weight with 1.0 as truncation factor
-    float truncatedImportanceWeight = std::min(1.0f, importanceWeight);
-
-    // Re-calculating vTbc
-    if (_experienceReplay[curId].termination == e_nonTerminal)
-     vTbc = stateValue +  truncatedImportanceWeight*(curReward + _criticDiscountFactor * vTbc - stateValue);
-    else
-     vTbc = truncatedImportanceWeight * curReward;
-
-    // Refreshing cache with the calculated value
-    _experienceReplay[curId].cache.set("vTbc", vTbc);
+    // Calculating vTbc
+    vTbc = curV +  truncatedImportanceWeight * (curReward + _criticDiscountFactor * vTbc - curV);
   }
 
   // Returning vTbc

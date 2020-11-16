@@ -85,6 +85,12 @@ void GFPT::initializeAgent()
   for (size_t i = 0; i < _problem->_actionVectorSize; i++)
   {
     size_t varIdx = _problem->_actionVectorIndexes[i];
+
+    // init action standard dev
+    float sigma = _k->_variables[varIdx]->_explorationSigma;
+    if (sigma <= 0.0) KORALI_LOG_ERROR("Value of Noise Sigma (%f) for action variable %lu is not defined or invalid.\n", sigma, i);
+    _actionSigmas[i] = sigma;
+
     _actionOptimizer->_lowerBounds[i] = _k->_variables[varIdx]->_lowerBound;
     _actionOptimizer->_upperBounds[i] = _k->_variables[varIdx]->_upperBound;
     _actionOptimizer->_initialMeans[i] = (_k->_variables[varIdx]->_lowerBound + _k->_variables[varIdx]->_upperBound) * 0.5;

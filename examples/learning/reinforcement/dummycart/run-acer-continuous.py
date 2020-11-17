@@ -24,13 +24,13 @@ e["Variables"][1]["Name"] = "Force"
 e["Variables"][1]["Type"] = "Action"
 e["Variables"][1]["Lower Bound"] = -1.0
 e["Variables"][1]["Upper Bound"] = +1.0
-e["Variables"][1]["Exploration Sigma"] = 0.1
+e["Variables"][1]["Exploration Sigma"] = 0.35
 
 ### Configuring ACER hyperparameters
 
 e["Solver"]["Type"] = "Agent / Continuous / CACER"
-e["Solver"]["Optimization Steps Per Update"] = 100
-e["Solver"]["Experiences Between Agent Trainings"] = 25
+e["Solver"]["Optimization Steps Per Update"] = 10
+e["Solver"]["Experiences Between Agent Trainings"] = 10
 e["Solver"]["Retrace"]["Cache Persistence"] = 0
 
 e["Solver"]["Retrace"]["Cache Persistence"] = 0
@@ -47,7 +47,7 @@ e["Solver"]["Experience Replay"]["Maximum Size"] = 10000
 
 ## Defining Policy Configuration
 
-e["Solver"]["Policy"]["Learning Rate"] = 1e-4
+e["Solver"]["Policy"]["Learning Rate"] = 5e-5
 e["Solver"]["Policy"]["Mini Batch Size"] = 16
 e["Solver"]["Policy"]["Normalization Steps"] = 0
 e["Solver"]["Policy"]["Sample Population"] = 5
@@ -57,7 +57,7 @@ e["Solver"]["Policy"]["Trust Region"]["Divergence Constraint"] = 1.0
 e["Solver"]["Policy"]["Trust Region"]["Average Network Adoption Rate"] = 0.99
 
 e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
-e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear"
+e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Tanh"
 e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Batch Normalization"]["Enabled"] = False
 
 e["Solver"]["Policy"]["Neural Network"]["Layers"][1]["Type"] = "Layer/Dense"
@@ -79,12 +79,12 @@ e["Solver"]["Policy"]["Neural Network"]["Output Scaling"] = [ 1.0 ]
 ## Defining Q-Critic
 
 e["Solver"]["Critic"]["Discount Factor"] = 0.99
-e["Solver"]["Critic"]["Learning Rate"] = 5e-5
+e["Solver"]["Critic"]["Learning Rate"] = 5e-6
 e["Solver"]["Critic"]["Mini Batch Size"] = 16
 e["Solver"]["Critic"]["Normalization Steps"] = 0
 
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear"
+e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Tanh"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Batch Normalization"]["Enabled"] = False
 
 e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Type"] = "Layer/Dense"

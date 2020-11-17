@@ -91,6 +91,10 @@ void cACER::initializeAgent()
       _aExperiment["Problem"]["Inputs"][p][i] = 0.0;
     _aExperiment["Problem"]["Solution"][p][0] = 0.0; // A(s,a)
   }
+ 
+   size_t criticOutputLayerId = _criticNeuralNetwork["Layers"].size() - 1;
+  if (_criticNeuralNetwork["Layers"][criticOutputLayerId]["Activation Function"]["Type"] != "Elementwise/Linear")
+    KORALI_LOG_ERROR("Critic Network Output Layers' (%zu) Activation Function must be of type 'Elementwise/Linear'", criticOutputLayerId);
 
   // Running initialization to verify that the configuration is correct
   engine.initialize(_aExperiment);
@@ -123,9 +127,9 @@ void cACER::initializeAgent()
       _policyExperiment["Problem"]["Solution"][p][i] = 0.0; // Gaussian Mean
   }
 
-  size_t outputLayerId = _policyNeuralNetwork["Layers"].size() - 1;
-  if (_policyNeuralNetwork["Layers"][outputLayerId]["Activation Function"]["Type"] != "Elementwise/Tanh")
-    KORALI_LOG_ERROR("Policy Network Output Layers' (%zu) Activation Function must be of type 'Elementwise/Tanh'", outputLayerId);
+  size_t policyOutputLayerId = _policyNeuralNetwork["Layers"].size() - 1;
+  if (_policyNeuralNetwork["Layers"][policyOutputLayerId]["Activation Function"]["Type"] != "Elementwise/Tanh")
+    KORALI_LOG_ERROR("Policy Network Output Layers' (%zu) Activation Function must be of type 'Elementwise/Tanh'", policyOutputLayerId);
 
   // Running initialization to verify that the configuration is correct
   engine.initialize(_policyExperiment);
@@ -186,7 +190,7 @@ float cACER::averageActionAdvantageFunction(const std::vector<float> &state)
     for (size_t j = 0; j < _problem->_actionVectorSize; j++)
     {
       // Generating action from the updated normal distribution
-      avgActionMinibatch[i][j + _problem->_stateVectorSize] = _actionMeans[j] + _actionSigmas[j] * _normalGenerator->getRandomNumber();
+      avgActionMinibatch[i][j + _problem->_stateVectorSize] = _actionMeans[j] + _policyDistributions[j]->getRandomNumber();
     }
     avgA += _aLearner->getEvaluation(avgActionMinibatch[i])[0];
   }
@@ -278,19 +282,6 @@ std::tuple<float, float> cACER::retraceFunction(size_t expId)
   return std::make_tuple(qRet, qOpc);
 }
 
-std::vector<float> cACER::generateAction()
-{
-  // Creating storage for action
-  std::vector<float> action(_problem->_actionVectorSize);
-
-  // Sampling value for the action variable for each of the problem's action dimensions
-  for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-    action[i] = _policyDistributions[i]->getRandomNumber();
-
-  // Returning action
-  return action;
-}
-
 void cACER::forwardPolicy(const std::vector<float> &state)
 {
   _actionMeans = _policyLearner->getEvaluation({state});
@@ -331,7 +322,7 @@ void cACER::trainAgent()
     std::vector<float> expAction = _experienceReplayActions[expId];
 
     // Getting policy distribution parameters from the current policy NN
-    std::vector<float> curMeans = _policyLearner->getEvaluation(expState);
+    std::vector<float> expMeans = _policyLearner->getEvaluation(expState);
 
     // Getting policy distribution parameters from the old policy NN
     std::vector<float> oldMeans = _experienceReplayActionMeans[expId];
@@ -344,12 +335,10 @@ void cACER::trainAgent()
     float vExpState = stateValueFunction(expState);
     _cumulativeQStar += vExpState;
     _cumulativeQStarSquared += vExpState * vExpState;
-
-    // Setting policy distributions to follow that of the current policy
-    for (size_t i = 0; i < _problem->_actionVectorSize; i++) _policyDistributions[i]->_mean = curMeans[i];
-
+ 
     // Getting new action given the current policy
-    std::vector<float> newAction = generateAction();
+    auto newAction = std::vector<float>(_problem->_actionVectorSize);
+    for (size_t i = 0; i < _problem->_actionVectorSize; i++) newAction[i] = expMeans[i] + _policyDistributions[i]->getRandomNumber();
 
     // Getting A of experience action
     for (size_t i = 0; i < _problem->_actionVectorSize; i++) stateActionVector[_problem->_stateVectorSize + i] = expAction[i];
@@ -358,10 +347,15 @@ void cACER::trainAgent()
     // Getting A of new action
     for (size_t i = 0; i < _problem->_actionVectorSize; i++) stateActionVector[_problem->_stateVectorSize + i] = newAction[i];
     auto aExpStateNewAction = _aLearner->getEvaluation(stateActionVector)[0];
-
+ 
     // Getting n action samples from the policy
     std::vector<std::vector<float>> actionSamples(_policySamplePopulation);
-    for (size_t i = 0; i < _policySamplePopulation; i++) actionSamples[i] = generateAction();
+    for (size_t sampleIdx = 0; sampleIdx < _policySamplePopulation; sampleIdx++)
+    {
+      actionSamples[sampleIdx].resize(_problem->_actionVectorSize);
+      for (size_t j = 0; j < _problem->_actionVectorSize; j++)
+        actionSamples[sampleIdx][j] = expMeans[j] + _policyDistributions[j]->getRandomNumber();
+    }
 
     // Getting sum_n(A(x,u)) with u ~ policy(x)
     float aSamplesMean = 0.0;
@@ -380,10 +374,10 @@ void cACER::trainAgent()
     float qExpStateNewAction = vExpState + aExpStateNewAction - aSamplesMean;
 
     // Now calculating importance weight for s,a (old)
-    float oldImportanceWeight = calculateImportanceWeight(expAction, curMeans, _actionSigmas, oldMeans, _actionSigmas);
+    float oldImportanceWeight = calculateImportanceWeight(expAction, expMeans, _actionSigmas, oldMeans, _actionSigmas);
 
     // Now calculating importance weight for s, a' (new)
-    float newImportanceWeight = calculateImportanceWeight(newAction, curMeans, _actionSigmas, oldMeans, _actionSigmas);
+    float newImportanceWeight = calculateImportanceWeight(newAction, expMeans, _actionSigmas, oldMeans, _actionSigmas);
 
     /*****************************************
      * Policy Section
@@ -394,7 +388,7 @@ void cACER::trainAgent()
 
     // First part of the gradient vector
     float g1 = truncatedImportanceWeight * (qOpc - vExpState);
-
+    
     // Now calculating r(a) - c / r(a) ratio
     float importanceRatio = 1.0f - (_importanceWeightTruncation / newImportanceWeight);
 
@@ -408,8 +402,8 @@ void cACER::trainAgent()
     std::vector<float> gPolicy(_problem->_actionVectorSize, 0.0);
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
     {
-      float diffExpAction = expAction[i] - curMeans[i];
-      float diffNewAction = newAction[i] - curMeans[i];
+      float diffExpAction = expMeans[i] - expAction[i];
+      float diffNewAction = expMeans[i] - newAction[i];
       gPolicy[i] = _inverseVariances[i] * (g1 * diffExpAction + g2 * diffNewAction);
     }
 
@@ -426,7 +420,7 @@ void cACER::trainAgent()
 
       // Obtaining KL Divergence gradients for the current state.
       std::vector<float> k(_problem->_actionVectorSize);
-      for (size_t i = 0; i < _problem->_actionVectorSize; i++) k[i] = _inverseVariances[i] * (curMeans[i] - avgMeans[i]);
+      for (size_t i = 0; i < _problem->_actionVectorSize; i++) k[i] = _inverseVariances[i] * (expMeans[i] - avgMeans[i]);
 
       // Getting dot product between the gradient vector and k
       auto gkDotProduct = dotProduct(k, gPolicy);
@@ -439,6 +433,9 @@ void cACER::trainAgent()
 
       // Adjusting gradients to trust region
       for (size_t i = 0; i < gPolicy.size(); i++) gPolicy[i] = gPolicy[i] - adjustmentMagnitude * k[i];
+
+      // Getting policy distribution parameters given the average policy
+      _policyLearner->setHyperparameters(_policyCurrentHyperparameters);
     }
 
     ///////////////// Storing Gradients /////////////////////
@@ -493,6 +490,9 @@ void cACER::trainAgent()
   _vLearner->initialize();
   _vLearner->runGeneration();
   _vLearner->finalize();
+ 
+   // Getting new policy hyperparameters
+  _policyCurrentHyperparameters = _policyLearner->getHyperparameters();
 
   // Running one generation of the optimization method with the given mini-batch
   _policyLearner->initialize();
@@ -528,7 +528,7 @@ void cACER::trainAgent()
       _policyAverageHyperparameters[i] = _policyTrustRegionAverageNetworkAdoptionRate * _policyAverageHyperparameters[i] + (1 - _policyTrustRegionAverageNetworkAdoptionRate) * _policyCurrentHyperparameters[i];
 
   // Updating policy with new averaged parameters
-  _policyLearner->setHyperparameters(_policyCurrentHyperparameters);
+  //_policyLearner->setHyperparameters(_policyCurrentHyperparameters);
 
   // Storing average policy hyperparameters
   _hyperparameters["Policy"] = _policyCurrentHyperparameters;

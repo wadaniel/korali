@@ -82,13 +82,15 @@ void Continuous::getAction(korali::Sample &sample)
       for (size_t i = 0; i < _problem->_actionVectorSize; i++)
       {
         // Producing random (uniform) number to select within an lower/upper bound range
-        float x = _uniformGenerator->getRandomNumber();
+        float x = _normalGenerator->getRandomNumber();
 
         // Producing the random value for action element i
-        action[i] = _actionLowerBounds[i] + x * (_actionUpperBounds[i] - _actionLowerBounds[i]);
+        float mean = 0.5*(_actionLowerBounds[i] + _actionUpperBounds[i]);
+        float sdev = 0.3*(_actionUpperBounds[i] - _actionLowerBounds[i]);
+        action[i] = mean + sdev * x;
 
-        sample["Metadata"]["Action Means"][i] = 0.5 * (_actionLowerBounds[i] + _actionUpperBounds[i]);
-        sample["Metadata"]["Action Sigmas"][i] = 0.3 * (_actionUpperBounds[i] - _actionLowerBounds[i]);
+        sample["Metadata"]["Action Means"][i] = mean;
+        sample["Metadata"]["Action Sigmas"][i] = sdev;
       }
     }
     else // else we select guided by the policy's probability distribution
@@ -100,19 +102,21 @@ void Continuous::getAction(korali::Sample &sample)
       {
         // Generating action from the normal distribution
         action[i] = _actionMeans[i] + _actionSigmas[i] * _normalGenerator->getRandomNumber();
-
-        // Clipping actions
-        if (action[i] > _actionUpperBounds[i])
-          action[i] = _actionUpperBounds[i];
-        else if (action[i] < _actionLowerBounds[i])
-          action[i] = _actionLowerBounds[i];
-      }
+     }
+ 
 
       // Storing selection metadata
       sample["Metadata"]["Action Means"] = _actionMeans;
       sample["Metadata"]["Action Sigmas"] = _actionSigmas;
     }
+
+   // Clipping actions
+   for (size_t i = 0; i < _problem->_actionVectorIndexes.size(); i++)
+    if (action[i] > _actionUpperBounds[i]) action[i] = _actionUpperBounds[i];
+    else if (action[i] < _actionLowerBounds[i]) action[i] = _actionLowerBounds[i];
+ 
   }
+
 
   /*****************************************************************************
   * During testing, we select the means (point of highest density) for all

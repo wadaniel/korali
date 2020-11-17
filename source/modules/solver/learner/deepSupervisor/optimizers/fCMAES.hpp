@@ -316,6 +316,8 @@ class fCMAES
 */
   float _maxStandardDeviation;
 
+  std::vector<float> _minMeanUpdates;
+
   /**
   * @brief Stores how many generations to run for
   */

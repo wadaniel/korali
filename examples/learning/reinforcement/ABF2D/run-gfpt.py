@@ -60,14 +60,14 @@ e["Solver"]["Random Action Probability"]["Decrease Rate"] = 0.00
 ### Defining the configuration of replay memory
 
 e["Solver"]["Experience Replay"]["Start Size"] =   5000
-e["Solver"]["Experience Replay"]["Maximum Size"] = 100000
+e["Solver"]["Experience Replay"]["Maximum Size"] = 500000
 e["Solver"]["Mini Batch Strategy"] = "Prioritized"
 
 ## Defining Critic Configuration
 
 e["Solver"]["Critic"]["Discount Factor"] = 0.99
-e["Solver"]["Critic"]["Learning Rate"] = 0.001
-e["Solver"]["Critic"]["Mini Batch Size"] = 64
+e["Solver"]["Critic"]["Learning Rate"] = 0.0001
+e["Solver"]["Critic"]["Mini Batch Size"] = 256
 e["Solver"]["Critic"]["Normalization Steps"] = 4
   
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
@@ -75,12 +75,12 @@ e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Activation Function"]["Typ
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Batch Normalization"]["Enabled"] = True
 
 e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Type"] = "Layer/Dense"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Node Count"] = 128
+e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Node Count"] = 64
 e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Activation Function"]["Type"] = "Elementwise/Tanh"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Batch Normalization"]["Enabled"] = True
 
 e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Type"] = "Layer/Dense"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Node Count"] = 128
+e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Node Count"] = 64
 e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Elementwise/Tanh"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Batch Normalization"]["Enabled"] = True
 
@@ -92,7 +92,7 @@ e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Batch Normalization"]["Ena
 
 e["Solver"]["Policy"]["Learning Rate"] = 0.0001
 e["Solver"]["Policy"]["Mini Batch Size"] = 32
-e["Solver"]["Policy"]["Target Accuracy"] = 0.00001
+e["Solver"]["Policy"]["Target Accuracy"] = 0.000001
 e["Solver"]["Policy"]["Normalization Steps"] = 8
 
 e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"

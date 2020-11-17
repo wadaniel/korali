@@ -25,9 +25,11 @@ fCMAES::fCMAES(size_t nVars, size_t populationSize, size_t muSize)
   _initialStandardDeviations.resize(_nVars);
   _lowerBounds.resize(_nVars);
   _upperBounds.resize(_nVars);
+  _minMeanUpdates.resize(_nVars);
 
   for (size_t i = 0; i < _nVars; i++)
   {
+    _minMeanUpdates[i] = -std::numeric_limits<float>::infinity();
     _lowerBounds[i] = -std::numeric_limits<float>::infinity();
     _upperBounds[i] = +std::numeric_limits<float>::infinity();
     _initialMeans[i] = std::numeric_limits<float>::signaling_NaN();
@@ -535,6 +537,14 @@ bool fCMAES::checkTermination()
   if (_currentGeneration > 1 && (fabs(_currentBestValue - _previousBestValue) < _minValueDifferenceThreshold)) return true;
   if (_currentGeneration > 1 && (_currentMinStandardDeviation <= _minStandardDeviation)) return true;
   if (_currentGeneration > 1 && (_currentMaxStandardDeviation >= _maxStandardDeviation)) return true;
+
+  if (_currentGeneration > 1)
+  {
+   bool areMeansAbove = false;
+   for (size_t d = 0; d < _nVars; d++)
+    if (std::fabs(_meanUpdate[d]) > _minMeanUpdates[d]) areMeansAbove = true;
+   if (areMeansAbove == false) return true;
+  }
 
   if (_currentGeneration >= _maxGenerations) return true;
 

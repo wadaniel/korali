@@ -88,11 +88,12 @@ void GFPT::initializeAgent()
     _actionOptimizer->_lowerBounds[i] = _k->_variables[varIdx]->_lowerBound;
     _actionOptimizer->_upperBounds[i] = _k->_variables[varIdx]->_upperBound;
     _actionOptimizer->_initialMeans[i] = (_k->_variables[varIdx]->_lowerBound + _k->_variables[varIdx]->_upperBound) * 0.5;
-    _actionOptimizer->_initialStandardDeviations[i] = abs(_k->_variables[varIdx]->_upperBound - _k->_variables[varIdx]->_lowerBound) * 1.0;
+    _actionOptimizer->_initialStandardDeviations[i] = (_k->_variables[varIdx]->_upperBound - _k->_variables[varIdx]->_lowerBound) * 0.5;
+    _actionOptimizer->_minMeanUpdates[i] = (_k->_variables[varIdx]->_upperBound - _k->_variables[varIdx]->_lowerBound) * 0.001;
   }
 
   // Termination Criteria
-  _actionOptimizer->_minValueDifferenceThreshold = _policyTargetAccuracy;
+  //_actionOptimizer->_minValueDifferenceThreshold = _policyTargetAccuracy;
 
   /*********************************************************************
    * Initializing Policy-Related Structures
@@ -204,9 +205,13 @@ float GFPT::retraceFunction(size_t expId)
     // Now calculating V, A, and avgA for current state/action
     float curA = _experienceReplay[curId].cache.access("Current Advantage", [this, curState, curAction](){return this->currentActionAdvantageFunction(curState, curAction);});
     float avgA = _experienceReplay[curId].cache.access("Average Advantage", [this, curState](){return this->averageActionAdvantageFunction(curState);});
+    float curV = 0.0f; // Not needed for now, that we do not consider importance weight
+
+    // Calculating Q = V + A - avgA
+    float curQ = curV + curA - avgA;
 
     // Updating qRet for the next experience
-    qRet = qRet - curA + avgA;
+    qRet = (qRet - curQ) + curV;
   }
 
   // Returning qRet
@@ -289,18 +294,6 @@ void GFPT::trainAgent()
   // Calculating cumulative Q*, for statistical purposes
   _cumulativeQStar = 0.0;
 
-  // Getting current policy hyperparameters
-  auto curPolicyHyperparameters = _policyLearner->getHyperparameters();
-
-  // Getting current Advantage hyperparameters
-  auto curAdvantageHyperparameters = _aLearner->getHyperparameters();
-
-  // Updating action average NN hyperparameters
-  _actionAverageEvaluationNetwork->setHyperparameters(curAdvantageHyperparameters);
-
-  // Updating batch evaluation network for the advantage function for CMAES steps
-  _batchOptimizationNetwork->setHyperparameters(curAdvantageHyperparameters);
-
   // Creating minibatch for the critic update
   auto miniBatchIndexes = generateMiniBatch(_criticMiniBatchSize);
 
@@ -309,15 +302,9 @@ void GFPT::trainAgent()
     // Selecting a uniformly random selected, yet not repeated experience
     size_t expId = miniBatchIndexes[i];
 
-    // Check if it is a terminal state
-    bool isTerminal = _experienceReplay[expId].termination != e_nonTerminal;
-
     /*****************************************
     * Critic Section
     *****************************************/
-
-    // Getting the reward for the current experience
-    float curReward = _experienceReplay[expId].reward;
 
     // We calculate qStar depending on whether we use retrace or not
     float qRet = retraceFunction(expId);
@@ -379,6 +366,12 @@ void GFPT::trainAgent()
   auto vHyperparameters = _vLearner->getHyperparameters();
   _vLearner->setHyperparameters(vHyperparameters);
 
+  // Updating action average NN hyperparameters
+  _actionAverageEvaluationNetwork->setHyperparameters(aHyperparameters);
+
+  // Updating batch evaluation network for the advantage function for CMAES steps
+  _batchOptimizationNetwork->setHyperparameters(aHyperparameters);
+
   /*******************************************************************
   * Now computing new policy gradients with a stochastic method (CMAES)
   ******************************************************************/
@@ -402,6 +395,12 @@ void GFPT::trainAgent()
       candidateMiniBatch[i].resize(_problem->_stateVectorSize + _problem->_actionVectorSize);
       for (size_t j = 0; j < _problem->_stateVectorSize; j++) candidateMiniBatch[i][j] = curState[j];
     }
+
+    // Updating action distributions for the current state to get its current means
+    forwardPolicy(curState);
+
+    // Setting initial means from the previous policy estimates
+    _actionOptimizer->_initialMeans = _actionMeans;
 
     // To prevent CMAES from failing.
     _actionOptimizer->reset();
@@ -431,8 +430,20 @@ void GFPT::trainAgent()
       _actionOptimizer->_currentGeneration++;
     }
 
+//    printf("Mean Change: (%f", std::fabs(_actionOptimizer->_meanUpdate[0]));
+//    for (size_t j = 1; j < _problem->_actionVectorSize; j++)
+//     printf(", %f", std::fabs(_actionOptimizer->_meanUpdate[j]));
+//    printf(") Sigma: (%f", std::fabs(_actionOptimizer->_covarianceMatrix[0] / 0.001));
+//    for (size_t j = 1; j < _problem->_actionVectorSize; j++)
+//     printf(", %f", std::fabs(_actionOptimizer->_covarianceMatrix[j*_problem->_actionVectorSize + j] / 0.001));
+//    printf(") Gen: %lu\n", _actionOptimizer->_currentGeneration);
+
     // Getting set of means that maximize advantage for the given state
     auto bestMeans = _actionOptimizer->_bestEverVariables;
+
+    // Adding means to the policy update
+    _policyProblem->_inputs[i] = curState;
+    _policyProblem->_solution[i] = bestMeans;
 
     // Adding means to the policy update
     _policyProblem->_inputs[i] = curState;

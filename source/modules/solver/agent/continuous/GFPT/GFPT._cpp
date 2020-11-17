@@ -430,20 +430,8 @@ void GFPT::trainAgent()
       _actionOptimizer->_currentGeneration++;
     }
 
-//    printf("Mean Change: (%f", std::fabs(_actionOptimizer->_meanUpdate[0]));
-//    for (size_t j = 1; j < _problem->_actionVectorSize; j++)
-//     printf(", %f", std::fabs(_actionOptimizer->_meanUpdate[j]));
-//    printf(") Sigma: (%f", std::fabs(_actionOptimizer->_covarianceMatrix[0] / 0.001));
-//    for (size_t j = 1; j < _problem->_actionVectorSize; j++)
-//     printf(", %f", std::fabs(_actionOptimizer->_covarianceMatrix[j*_problem->_actionVectorSize + j] / 0.001));
-//    printf(") Gen: %lu\n", _actionOptimizer->_currentGeneration);
-
     // Getting set of means that maximize advantage for the given state
     auto bestMeans = _actionOptimizer->_bestEverVariables;
-
-    // Adding means to the policy update
-    _policyProblem->_inputs[i] = curState;
-    _policyProblem->_solution[i] = bestMeans;
 
     // Adding means to the policy update
     _policyProblem->_inputs[i] = curState;

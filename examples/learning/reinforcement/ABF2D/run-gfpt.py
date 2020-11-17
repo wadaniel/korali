@@ -50,6 +50,7 @@ e["Solver"]["Type"] = "Agent / Continuous / GFPT"
 e["Solver"]["Optimization Steps Per Update"] = 1
 e["Solver"]["Experiences Between Agent Trainings"] = 200
 e["Solver"]["Cache Persistence"] = 10
+e["Solver"]["Refer"]["Target Off Policy Fraction"] = 0.25
 
 ### Defining probability of taking a random action (epsilon)
 
@@ -59,7 +60,7 @@ e["Solver"]["Random Action Probability"]["Decrease Rate"] = 0.00
 
 ### Defining the configuration of replay memory
 
-e["Solver"]["Experience Replay"]["Start Size"] =   5000
+e["Solver"]["Experience Replay"]["Start Size"] =   256
 e["Solver"]["Experience Replay"]["Maximum Size"] = 500000
 e["Solver"]["Mini Batch Strategy"] = "Prioritized"
 
@@ -92,7 +93,7 @@ e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Batch Normalization"]["Ena
 
 e["Solver"]["Policy"]["Learning Rate"] = 0.0001
 e["Solver"]["Policy"]["Mini Batch Size"] = 32
-e["Solver"]["Policy"]["Target Accuracy"] = 0.000001
+e["Solver"]["Policy"]["Target Accuracy"] = 0.001
 e["Solver"]["Policy"]["Normalization Steps"] = 8
 
 e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"

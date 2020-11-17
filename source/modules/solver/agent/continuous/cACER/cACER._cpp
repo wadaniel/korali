@@ -91,8 +91,8 @@ void cACER::initializeAgent()
       _aExperiment["Problem"]["Inputs"][p][i] = 0.0;
     _aExperiment["Problem"]["Solution"][p][0] = 0.0; // A(s,a)
   }
- 
-   size_t criticOutputLayerId = _criticNeuralNetwork["Layers"].size() - 1;
+
+  size_t criticOutputLayerId = _criticNeuralNetwork["Layers"].size() - 1;
   if (_criticNeuralNetwork["Layers"][criticOutputLayerId]["Activation Function"]["Type"] != "Elementwise/Linear")
     KORALI_LOG_ERROR("Critic Network Output Layers' (%zu) Activation Function must be of type 'Elementwise/Linear'", criticOutputLayerId);
 
@@ -335,7 +335,7 @@ void cACER::trainAgent()
     float vExpState = stateValueFunction(expState);
     _cumulativeQStar += vExpState;
     _cumulativeQStarSquared += vExpState * vExpState;
- 
+
     // Getting new action given the current policy
     auto newAction = std::vector<float>(_problem->_actionVectorSize);
     for (size_t i = 0; i < _problem->_actionVectorSize; i++) newAction[i] = expMeans[i] + _policyDistributions[i]->getRandomNumber();
@@ -347,7 +347,7 @@ void cACER::trainAgent()
     // Getting A of new action
     for (size_t i = 0; i < _problem->_actionVectorSize; i++) stateActionVector[_problem->_stateVectorSize + i] = newAction[i];
     auto aExpStateNewAction = _aLearner->getEvaluation(stateActionVector)[0];
- 
+
     // Getting n action samples from the policy
     std::vector<std::vector<float>> actionSamples(_policySamplePopulation);
     for (size_t sampleIdx = 0; sampleIdx < _policySamplePopulation; sampleIdx++)
@@ -388,7 +388,7 @@ void cACER::trainAgent()
 
     // First part of the gradient vector
     float g1 = truncatedImportanceWeight * (qOpc - vExpState);
-    
+
     // Now calculating r(a) - c / r(a) ratio
     float importanceRatio = 1.0f - (_importanceWeightTruncation / newImportanceWeight);
 
@@ -490,8 +490,8 @@ void cACER::trainAgent()
   _vLearner->initialize();
   _vLearner->runGeneration();
   _vLearner->finalize();
- 
-   // Getting new policy hyperparameters
+
+  // Getting new policy hyperparameters
   _policyCurrentHyperparameters = _policyLearner->getHyperparameters();
 
   // Running one generation of the optimization method with the given mini-batch

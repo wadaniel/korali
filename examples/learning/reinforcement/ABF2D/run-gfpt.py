@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import os
 import sys
+import argparse
 sys.path.append('./_model')
 from env import *
 
@@ -10,7 +11,10 @@ import korali
 k = korali.Engine()
 e = korali.Experiment()
 
-if not os.path.exists('_result'): os.makedirs('_result')
+parser = argparse.ArgumentParser(prog='GFPT', description='Runs the GFPT algorithm on ABF2D')
+parser.add_argument('--dir', help='directory of result files',  default='_result', required=False)
+args = parser.parse_args()
+setResultsDir(args.dir)
     
 ### Defining the Cartpole problem's configuration
 
@@ -51,9 +55,9 @@ e["Variables"][6]["Exploration Sigma"] = 0.1
 e["Solver"]["Type"] = "Agent / Continuous / GFPT"
 e["Solver"]["Optimization Steps Per Update"] = 10
 e["Solver"]["Experiences Between Agent Trainings"] = 100
-e["Solver"]["Cache Persistence"] = 100
+e["Solver"]["Cache Persistence"] = 30
 
-e["Solver"]["Refer"]["Target Off Policy Fraction"] = 0.10
+e["Solver"]["Refer"]["Target Off Policy Fraction"] = 0.20
 e["Solver"]["Refer"]["Cutoff Scale"] = 4.0
 e["Solver"]["Refer"]["Start Size"] = 4000
 
@@ -67,13 +71,13 @@ e["Solver"]["Random Action Probability"]["Decrease Rate"] = 0.00
 
 e["Solver"]["Experience Replay"]["Start Size"] =   2000
 e["Solver"]["Experience Replay"]["Maximum Size"] = 100000
-e["Solver"]["Mini Batch Strategy"] = "Prioritized"
+e["Solver"]["Mini Batch Strategy"] = "Uniform"
 
 ## Defining Critic Configuration
 
 e["Solver"]["Critic"]["Discount Factor"] = 0.99
-e["Solver"]["Critic"]["Learning Rate"] = 0.0001
-e["Solver"]["Critic"]["Mini Batch Size"] = 64
+e["Solver"]["Critic"]["Learning Rate"] = 0.001
+e["Solver"]["Critic"]["Mini Batch Size"] = 128
 e["Solver"]["Critic"]["Normalization Steps"] = 8
   
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
@@ -96,8 +100,8 @@ e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Batch Normalization"]["Ena
 
 ## Defining Policy Configuration
 
-e["Solver"]["Policy"]["Learning Rate"] = 0.0001
-e["Solver"]["Policy"]["Mini Batch Size"] = 64
+e["Solver"]["Policy"]["Learning Rate"] = 0.001
+e["Solver"]["Policy"]["Mini Batch Size"] = 128
 e["Solver"]["Policy"]["Target Accuracy"] = 0.01
 e["Solver"]["Policy"]["Normalization Steps"] = 8
 

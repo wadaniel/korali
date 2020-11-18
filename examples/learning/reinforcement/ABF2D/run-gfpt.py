@@ -48,9 +48,11 @@ e["Variables"][6]["Exploration Sigma"] = 0.1
 
 e["Solver"]["Type"] = "Agent / Continuous / GFPT"
 e["Solver"]["Optimization Steps Per Update"] = 1
-e["Solver"]["Experiences Between Agent Trainings"] = 200
+e["Solver"]["Experiences Between Agent Trainings"] = 100
 e["Solver"]["Cache Persistence"] = 10
-e["Solver"]["Refer"]["Target Off Policy Fraction"] = 0.25
+e["Solver"]["Refer"]["Target Off Policy Fraction"] = 0.20
+e["Solver"]["Refer"]["Cutoff Scale"] = 4.0
+e["Solver"]["Refer"]["Start Size"] = 20000
 
 ### Defining probability of taking a random action (epsilon)
 
@@ -60,8 +62,8 @@ e["Solver"]["Random Action Probability"]["Decrease Rate"] = 0.00
 
 ### Defining the configuration of replay memory
 
-e["Solver"]["Experience Replay"]["Start Size"] =   256
-e["Solver"]["Experience Replay"]["Maximum Size"] = 500000
+e["Solver"]["Experience Replay"]["Start Size"] =   10000
+e["Solver"]["Experience Replay"]["Maximum Size"] = 100000
 e["Solver"]["Mini Batch Strategy"] = "Prioritized"
 
 ## Defining Critic Configuration
@@ -69,7 +71,7 @@ e["Solver"]["Mini Batch Strategy"] = "Prioritized"
 e["Solver"]["Critic"]["Discount Factor"] = 0.99
 e["Solver"]["Critic"]["Learning Rate"] = 0.0001
 e["Solver"]["Critic"]["Mini Batch Size"] = 256
-e["Solver"]["Critic"]["Normalization Steps"] = 4
+e["Solver"]["Critic"]["Normalization Steps"] = 8
   
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear"
@@ -92,7 +94,7 @@ e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Batch Normalization"]["Ena
 ## Defining Policy Configuration
 
 e["Solver"]["Policy"]["Learning Rate"] = 0.0001
-e["Solver"]["Policy"]["Mini Batch Size"] = 32
+e["Solver"]["Policy"]["Mini Batch Size"] = 128
 e["Solver"]["Policy"]["Target Accuracy"] = 0.001
 e["Solver"]["Policy"]["Normalization Steps"] = 8
 

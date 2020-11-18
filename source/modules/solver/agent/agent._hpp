@@ -154,6 +154,9 @@ class Agent : public Solver
   */
   std::vector<float> calculateImportanceWeights(std::vector<size_t> miniBatch);
 
+  double _agentStartTime;
+  double _agentWaitTime;
+
   void printGenerationAfter() override;
   void initialize() override;
 };

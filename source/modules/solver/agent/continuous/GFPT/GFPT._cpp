@@ -137,6 +137,8 @@ void GFPT::initializeAgent()
 
   // Get initial learning rate
   _referInitialLearningRate = _policyLearner->_learningRate;
+  _referBeta = 1.0f;
+  _referCutoff = _referCutoffScale + 1.0f;
 
   /*********************************************************************
   * Creating special evaluation networks for cases with different mini batch sizes
@@ -291,66 +293,25 @@ void GFPT::trainAgent()
    * Adjusting REFER off-policiness and learning rate parameters
    ***************************************************************************/
 
+ // Update REFER parameters only after reaching this number of experiences in memory
+ if (_experienceReplay.size() > _referStartSize)
+ {
   // Updating cutoff
   _referCutoff = 1.0f+_referCutoffScale/(1.0f+_referAnnealingRate*(float)_optimizationStepCount);
-
-  // Count the number of off-policy samples in the entire replay memory
-  size_t offPolicyCount = 0;
-
-  size_t expCount = _experienceReplay.size();
-  for(size_t expId = 0; expId < expCount; expId++)
-  {
-   float expImportanceWeight = 0.0f;
-
-   if (_experienceReplay[expId].cache.contains("Importance Weight"))
-   {
-    expImportanceWeight = _experienceReplay[expId].cache.get("Importance Weight");
-   }
-   else
-   {
-    // Getting state and action from the selected experience
-    auto expState = _experienceReplay[expId].state;
-    auto expAction = _experienceReplay[expId].action;
-    auto expMean = _experienceReplay[expId].metadata["Action Means"].get<std::vector<float>>();
-    auto expSigma = _experienceReplay[expId].metadata["Action Sigmas"].get<std::vector<float>>();
-
-    // Forward the neural network for this state to get current means and sigmas
-    forwardPolicy(expState);
-    auto curMean = _actionMeans;
-    auto curSigma = _actionSigmas;
-
-    // Now calculating importance weight for the experience
-    expImportanceWeight = calculateImportanceWeight(expAction, curMean, curSigma, expMean, expSigma);
-
-    // Setting the recalculated value to cache
-    _experienceReplay[expId].cache.set("Importance Weight", expImportanceWeight);
-   }
-
-    // Counting the number of off-policy experiences
-    if (expImportanceWeight > _referCutoff || expImportanceWeight < (1.0f/_referCutoff) ) offPolicyCount++;
-  }
-
-  // Calculating off-policy fraction
-  float offPolicyFraction = (float)offPolicyCount / (float)expCount;
-
-  printf("-------------------\n");
-  printf("REF-ER Information\n");
-  printf(" + OffPolicy Fraction: %.12f (Goal: %.12f)\n", offPolicyFraction, _referTargetOffPolicyFraction);
-  printf(" + Policy Learning Rate: %.12f\n", _policyLearner->_learningRate);
-  printf(" + Beta: %.12f\n", _referBeta);
-  printf(" + Cut-off: %.12f\n", _referCutoff);
-  printf(" + Cut-off Scale: %.12f\n", _referCutoffScale);
-  printf(" + Annealing Rate: %.12f\n", _referAnnealingRate);
-  printf("-------------------\n");
 
   // Update learning rate
   _policyLearner->_learningRate = _referInitialLearningRate/(1.0f+_referAnnealingRate*_optimizationStepCount);
 
   // Updating beta parameter
-  if(offPolicyFraction > _referTargetOffPolicyFraction)
-    _referBeta=(1.0f-_policyLearner->_learningRate)*_referBeta;
-  else
-    _referBeta=(1.0f-_policyLearner->_learningRate)*_referBeta + _policyLearner->_learningRate;
+//  if(offPolicyFraction > _referTargetOffPolicyFraction)
+//    _referBeta=(1.0f-_policyLearner->_learningRate)*_referBeta;
+//  else
+//    _referBeta=(1.0f-_policyLearner->_learningRate)*_referBeta + _policyLearner->_learningRate;
+   if(_referOffPolicyFraction > _referTargetOffPolicyFraction)
+     _referBeta=(1.0f-0.01f)*_referBeta;
+   else
+     _referBeta=(1.0f-0.01f)*_referBeta + 0.01f;
+ }
 
   /***************************************************************************************
   * Updating Policy Network by performing a Gradient descent step with latest experiences
@@ -372,8 +333,7 @@ void GFPT::trainAgent()
     *****************************************/
 
     // We calculate qStar depending on whether we use retrace or not
-    float qRet = 0.0f;
-    //float qRet = retraceFunction(expId);
+    float qRet = _experienceReplay[expId].cache.access("Qret", [this, expId](){return this->retraceFunction(expId);});
 
     // Getting experience's current state, action
     auto curState = _experienceReplay[expId].state;
@@ -445,6 +405,8 @@ void GFPT::trainAgent()
   // Creating minibatch for the policy update
   miniBatchIndexes = generateMiniBatch(_policyMiniBatchSize);
 
+  size_t onPolicySamples = 0;
+
   // Accumulating states for evaluation in the policy
   for (size_t idx = 0; idx < _policyMiniBatchSize; idx++)
   {
@@ -453,6 +415,7 @@ void GFPT::trainAgent()
 
     // Getting current state
     std::vector<float> curState = _experienceReplay[expId].state;
+    std::vector<float> curAction = _experienceReplay[expId].action;
 
     size_t candidateCount = _actionOptimizer->_populationSize;
     std::vector<float> candidateEvaluations(candidateCount);
@@ -482,68 +445,65 @@ void GFPT::trainAgent()
      oldInvVariance[i] = 1.0f / (oldSigma[i] * oldSigma[i]);
     }
 
-    // Setting initial means from the previous policy estimates
-    _actionOptimizer->_initialMeans = _actionMeans;
+    // Storage for policy gradients
+    std::vector<float> meanGradients(_problem->_actionVectorSize, 0.0f);
 
-//    // To prevent CMAES from failing.
-//    _actionOptimizer->reset();
-//
-//    // Run the CMAES experiment until the desired convergence
-//    while (_actionOptimizer->checkTermination() == false)
-//    {
-//      // Asking CMAES to generate candidates
-//      _actionOptimizer->prepareGeneration();
-//
-//      // Gathering candidate states into a single minibatch
-//      for (size_t i = 0; i < candidateCount; i++)
-//        for (size_t j = 0; j < _problem->_actionVectorSize; j++)
-//          candidateMiniBatch[i][j + _problem->_stateVectorSize] = _actionOptimizer->_samplePopulation[i][j];
-//
-//      // Running evaluation of the entire set of candidates
-//      _batchOptimizationNetwork->setInput(candidateMiniBatch);
-//      _batchOptimizationNetwork->forward();
-//      auto criticEvaluations = _batchOptimizationNetwork->_outputValues;
-//
-//      // Getting the advantage function for all candidates
-//      for (size_t i = 0; i < candidateCount; i++)
-//        candidateEvaluations[i] = criticEvaluations[i][0];
-//
-//      // Running one more CMAES iteration
-//      _actionOptimizer->updateDistribution(candidateEvaluations);
-//      _actionOptimizer->_currentGeneration++;
-//    }
+    // Now calculating importance weight for the experience (if REFER has not started, just assume 1.0)
+    float expImportanceWeight = _experienceReplay.size() > _referStartSize ? calculateImportanceWeight(curAction, curMean, curSigma, oldMean, oldSigma) : 1.0f;
 
-    // Calculating gradient of means that maximize advantage for the given state
-    std::vector<float> meanGradients(_problem->_actionVectorSize);
-    _actionOptimizer->_bestEverVariables;
-    for (size_t j = 0; j < _problem->_actionVectorSize; j++)
-     meanGradients[j] = 0.0f;//_actionOptimizer->_bestEverVariables[j] - curMean[j];
-
-    // Compute derivative of Kullback-Leibler Divergence
-    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+    // If the experiment if on-policy, we use it for the calculation of the gradients
+    if (expImportanceWeight < _referCutoff && expImportanceWeight > (1.0f/_referCutoff))
     {
-      // Gradient with respect to Mean
-      meanGradients[i] += ( 1.0f - _referBeta ) * (curMean[i] - oldMean[i]);
-      //meanGradients[i] -= ( 1.0f - _referBeta ) * ( oldMean[i] - curMean[i] ) * curInvVariance[i];
+     // Setting initial means from the previous policy estimates
+     _actionOptimizer->_initialMeans = _actionMeans;
 
-      //// Gradient with respect to Sigma
-      // Contribution to Sigma from Trace
-//      float gradTr = -1.0f / expInvVariance[i] * curInvVariance[i] / curSigma[i];
-//
-//      // Contribution to Sigma from Determinant
-//      float gradDet = 0.0f;
-//      for( size_t i = 0; i<_problem->_actionVectorSize; i++ )gradDet += curInvVariance[i];
-//      gradDet /= -curSigma[i];
+     // To prevent CMAES from failing.
+     _actionOptimizer->reset();
 
-      // Setting total contribution to Sigma
-//      gradientLoss[_problem->_actionVectorSize+1+i] -= ( 1.0f - _referBeta ) * (gradTr + gradDet);
-      // std::cout << "with KL part 1: dL_p/dsigma=" << gradientLoss[_problem->_actionVectorSize+1+i] << "\n";
+     // Run the CMAES experiment until the desired convergence
+     while (_actionOptimizer->checkTermination() == false)
+     {
+       // Asking CMAES to generate candidates
+       _actionOptimizer->prepareGeneration();
+
+       // Gathering candidate states into a single minibatch
+       for (size_t i = 0; i < candidateCount; i++)
+         for (size_t j = 0; j < _problem->_actionVectorSize; j++)
+           candidateMiniBatch[i][j + _problem->_stateVectorSize] = _actionOptimizer->_samplePopulation[i][j];
+
+       // Running evaluation of the entire set of candidates
+       _batchOptimizationNetwork->setInput(candidateMiniBatch);
+       _batchOptimizationNetwork->forward();
+       auto criticEvaluations = _batchOptimizationNetwork->_outputValues;
+
+       // Getting the advantage function for all candidates
+       for (size_t i = 0; i < candidateCount; i++)
+         candidateEvaluations[i] = criticEvaluations[i][0];
+
+       // Running one more CMAES iteration
+       _actionOptimizer->updateDistribution(candidateEvaluations);
+       _actionOptimizer->_currentGeneration++;
+     }
+
+     // Calculating gradient of means that maximize advantage for the given state
+     auto bestMean = _actionOptimizer->_bestEverVariables;
+     for (size_t j = 0; j < _problem->_actionVectorSize; j++)
+      meanGradients[j] += _referBeta * (bestMean[j] - curMean[j]);
+
+     onPolicySamples++;
     }
+
+    // Applying off-policy penalty (Following KL gradient towards old policies)
+    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+      meanGradients[i] += ( 1.0f - _referBeta ) * (oldMean[i] - curMean[i]) * curInvVariance[i];
 
     // Adding means to the policy update
     _policyProblem->_inputs[idx] = curState;
     _policyProblem->_solution[idx] = meanGradients;
   }
+
+  size_t offPolicySamples = _policyMiniBatchSize - onPolicySamples;
+  _referOffPolicyFraction = (float) offPolicySamples / (float)_policyMiniBatchSize;
 
   // Running one generation of the optimization method with the given mini-batch
   _policyLearner->initialize();
@@ -604,6 +564,13 @@ void GFPT::printAgentInformation()
   _policyExperiment._logger->_verbosityLevel = _k->_logger->_verbosityLevel;
   _policyExperiment._solver->printGenerationAfter();
   _policyExperiment._logger->setVerbosityLevel("Silent");
+
+  _k->_logger->logInfo("Normal", "REF-ER Information\n");
+  _k->_logger->logInfo("Normal", " + Off-Policy Fraction: %.6f (Goal: %.6f)\n", _referOffPolicyFraction, _referTargetOffPolicyFraction);
+  _k->_logger->logInfo("Normal", " + Policy Learning Rate: %.6f\n", _policyLearner->_learningRate);
+  _k->_logger->logInfo("Normal", " + Beta: %.6f\n", _referBeta);
+  _k->_logger->logInfo("Normal", " + Cut-off: %.6f\n", _referCutoff);
+
 }
 
 } // namespace continuous

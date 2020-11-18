@@ -101,13 +101,6 @@ void Continuous::getAction(korali::Sample &sample)
     }
   }
 
-  // Clipping actions
-  for (size_t i = 0; i < _problem->_actionVectorIndexes.size(); i++)
-  {
-   if (action[i] > _actionUpperBounds[i]) action[i] = _actionUpperBounds[i];
-   if (action[i] < _actionLowerBounds[i]) action[i] = _actionLowerBounds[i];
-  }
-
   /*****************************************************************************
   * During testing, we select the means (point of highest density) for all
   * elements of the action vector
@@ -117,6 +110,13 @@ void Continuous::getAction(korali::Sample &sample)
   {
     forwardPolicy(state);
     action = _actionMeans;
+  }
+
+  // Clipping actions
+  for (size_t i = 0; i < _problem->_actionVectorIndexes.size(); i++)
+  {
+   if (action[i] > _actionUpperBounds[i]) action[i] = _actionUpperBounds[i];
+   if (action[i] < _actionLowerBounds[i]) action[i] = _actionLowerBounds[i];
   }
 
   /*****************************************************************************

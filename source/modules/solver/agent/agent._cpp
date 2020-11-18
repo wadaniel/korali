@@ -1,6 +1,7 @@
 #include "engine.hpp"
 #include "modules/solver/agent/agent.hpp"
 #include "sample/sample.hpp"
+#include <chrono>
 
 namespace korali
 {
@@ -42,6 +43,15 @@ void Agent::initialize()
     _bestTrainingReward = -korali::Inf;
     _bestAverageTestingReward = -korali::Inf;
   }
+
+  // Initializing profiling timers
+  _inputWriteTime = 0.0;
+  _outputReadTime = 0.0;
+  _normalizationTime = 0.0;
+  _forwardStreamTime = 0.0;
+  _backwardStreamTime = 0.0;
+  _agentStartTime = 0.0;
+  _agentWaitTime = 0.0;
 }
 
 void Agent::runGeneration()
@@ -67,7 +77,10 @@ void Agent::runGeneration()
   bool isTerminal = false;
 
   // Launching agent
+  auto beginTime = std::chrono::steady_clock::now(); // Profiling
   KORALI_START(agent);
+  auto endTime = std::chrono::steady_clock::now(); // Profiling
+  _agentStartTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
 
   // Creating storage for the entire episode before adding it to the replay memory
   std::vector<knlohmann::json> episode;
@@ -76,7 +89,10 @@ void Agent::runGeneration()
   while (isTerminal == false)
   {
     // Listening for incoming experiences
+    auto beginTime = std::chrono::steady_clock::now(); // Profiling
     experience = KORALI_RECV_MSG_FROM_SAMPLE(agent);
+    auto endTime = std::chrono::steady_clock::now(); // Profiling
+    _agentWaitTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
 
     // Storing experience in the episode
     episode.push_back(experience);
@@ -410,6 +426,8 @@ void Agent::printGenerationAfter()
   _k->_logger->logInfo("Normal", " + NN Normalization Time:       %fs\n", _normalizationTime / 1.0e+9f);
   _k->_logger->logInfo("Normal", " + NN Forward Propagation Time: %fs\n", _forwardStreamTime / 1.0e+9f);
   _k->_logger->logInfo("Normal", " + NN Back Propagation Time:    %fs\n", _backwardStreamTime / 1.0e+9f);
+  _k->_logger->logInfo("Normal", " + Agent Start Time:            %fs\n", _agentStartTime / 1.0e+9f);
+  _k->_logger->logInfo("Normal", " + Agent Wait Time:             %fs\n", _agentWaitTime / 1.0e+9f);
 }
 
 } // namespace solver

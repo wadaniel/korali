@@ -10,6 +10,6 @@
 #SBATCH --partition=normal
 #SBATCH --constraint=gpu
 
-pip3 uninstall korali -y; pushd ~/korali; ./install; popd
+#pip3 uninstall korali -y; pushd ~/korali; ./install; popd
 cat run-gfpt.py
 python3 ./run-gfpt.py --dir ${SCRATCH}/swim2d/${SLURM_JOB_ID}

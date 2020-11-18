@@ -308,9 +308,9 @@ void GFPT::trainAgent()
 //  else
 //    _referBeta=(1.0f-_policyLearner->_learningRate)*_referBeta + _policyLearner->_learningRate;
    if(_referOffPolicyFraction > _referTargetOffPolicyFraction)
-     _referBeta=(1.0f-0.01f)*_referBeta;
+     _referBeta=(1.0f-_policyLearner->_learningRate)*_referBeta;
    else
-     _referBeta=(1.0f-0.01f)*_referBeta + 0.01f;
+     _referBeta=(1.0f-_policyLearner->_learningRate)*_referBeta + _policyLearner->_learningRate;
  }
 
   /***************************************************************************************

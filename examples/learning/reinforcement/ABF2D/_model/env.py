@@ -8,6 +8,9 @@ swimmers = Swimmers()
 
 def env(s):
 
+ # Getting sample id
+ sampleId = s["Sample Id"]
+ 
  # Initializing environment
  swimmers.reset()
  
@@ -37,9 +40,12 @@ def env(s):
  else:
   s["Termination"] = "Truncated"
   
- # Saving the trajectory for visualization
+ # Saving the last/best trajectories for visualization
  global maxReward
  if (cumulativeReward > maxReward):
   maxReward = cumulativeReward
-  swimmers.dumpTrajectoryToCsv('best.csv')
- swimmers.dumpTrajectoryToCsv('last.csv')
+  swimmers.dumpTrajectoryToCsv('_result/best.csv')
+ swimmers.dumpTrajectoryToCsv('_result/last.csv')
+ 
+ # Saving current trajectory
+ swimmers.dumpTrajectoryToCsv('_result/trajectory' + str(sampleId).zfill(6) + '.csv')

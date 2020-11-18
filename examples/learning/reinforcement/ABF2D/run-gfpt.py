@@ -10,6 +10,8 @@ import korali
 k = korali.Engine()
 e = korali.Experiment()
 
+if not os.path.exists('_result'): os.makedirs('_result')
+    
 ### Defining the Cartpole problem's configuration
 
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"

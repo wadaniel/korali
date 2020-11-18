@@ -41,6 +41,7 @@ void Agent::initialize()
     // Initialize best rewards
     _averageTestingReward = -korali::Inf;
     _bestTrainingReward = -korali::Inf;
+    _bestTrainingEpisode = 0;
     _bestAverageTestingReward = -korali::Inf;
   }
 
@@ -123,11 +124,15 @@ void Agent::runGeneration()
   // Waiting for agent to finish
   KORALI_WAIT(agent);
 
+  // Updating if exceeded best training policy so far.
+  if (_currentReward > _bestTrainingReward)
+  {
+   _bestTrainingReward = _currentReward;
+   _bestTrainingEpisode = _currentEpisode;
+  }
+
   // Adding to the number of episodes
   _currentEpisode++;
-
-  // Updating if exceeded best training policy so far.
-  if (_currentReward > _bestTrainingReward) _bestTrainingReward = _currentReward;
 
   // If the policy has exceeded the threshold during training, it is time to test it properly (without noise)
   // Otherwise, let current testing reward remain as -inf.
@@ -404,7 +409,7 @@ void Agent::printGenerationAfter()
     _k->_logger->logInfo("Normal", " + Optimization Step Count:         %lu\n", _optimizationStepCount);
 
   _k->_logger->logInfo("Normal", " + Current Reward:              %f/%f\n", _currentReward, _trainingRewardThreshold);
-  _k->_logger->logInfo("Normal", " + Best Reward:                 %f\n", _bestTrainingReward);
+  _k->_logger->logInfo("Normal", " + Best Reward:                 %f (%lu)\n", _bestTrainingReward, _bestTrainingEpisode);
   _k->_logger->logInfo("Normal", " + Current p(Random Action):       %f\n", _randomActionProbabilityEffectiveValue);
 
   _k->_logger->logInfo("Normal", "Testing Statistics:\n");

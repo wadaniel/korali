@@ -40,7 +40,11 @@ e["Variables"][4]["Exploration Sigma"] = 0.35
 e["Solver"]["Type"] = "Agent / Continuous / VRACER"
 e["Solver"]["Optimization Steps Per Update"] = 50
 e["Solver"]["Experiences Between Agent Trainings"] = 50
-e["Solver"]["Cache Persistence"] = 200
+e["Solver"]["Cache Persistence"] = 20
+
+e["Solver"]["Refer"]["Target Off Policy Fraction"] = 0.10
+e["Solver"]["Refer"]["Cutoff Scale"] = 4.0
+e["Solver"]["Refer"]["Start Size"] = 4000
 
 ### Defining the configuration of replay memory
 
@@ -56,21 +60,21 @@ e["Solver"]["Critic"]["Normalization Steps"] = 8
 
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Batch Normalization"]["Enabled"] = True
+e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Batch Normalization"]["Enabled"] = False
 
 e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Type"] = "Layer/Dense"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Node Count"] = 32
 e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Activation Function"]["Type"] = "Elementwise/Tanh"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Batch Normalization"]["Enabled"] = True
+e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Batch Normalization"]["Enabled"] = False
 
 e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Type"] = "Layer/Dense"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Node Count"] = 32
 e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Elementwise/Tanh"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Batch Normalization"]["Enabled"] = True
+e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Batch Normalization"]["Enabled"] = False
 
 e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Type"] = "Layer/Dense"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Elementwise/Linear"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Batch Normalization"]["Enabled"] = True 
+e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Batch Normalization"]["Enabled"] = False 
 
 ### Defining Termination Criteria
 

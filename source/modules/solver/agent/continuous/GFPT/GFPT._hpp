@@ -78,6 +78,9 @@ class GFPT : public Continuous
    */
   problem::SupervisedLearning *_policyProblem;
 
+  double _criticUpdateTime;
+  double _policyUpdateTime;
+
   /**
    * @brief Calculates the state value function V(s,a)
    * @param state state to evaluate

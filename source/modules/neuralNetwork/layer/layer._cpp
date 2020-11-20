@@ -18,18 +18,18 @@ std::vector<float> Layer::generateInitialHyperparameters()
   if (_prevLayer != NULL)
   {
     // Setting value for this layer's xavier constant
-    float xavierConstant = sqrt(6.0) / sqrt(_nodeCount + _prevLayer->_nodeCount + 2.0);
+    float xavierConstant = sqrt(6.0) / sqrt(_nodeCount + _prevLayer->_nodeCount);
 
     // Adding layer's weights hyperparameter values
     for (size_t i = 0; i < _nodeCount; i++)
       for (size_t j = 0; j < _prevLayer->_nodeCount; j++)
-        hyperparameters.push_back(xavierConstant * _nn->_xavierGenerator->getRandomNumber());
+        hyperparameters.push_back(xavierConstant * _nn->_uniformGenerator->getRandomNumber());
 
     // Adding layer's bias hyperparameter values, if not using batch initialization
     if (_batchNormalizationEnabled == false)
     {
       for (size_t i = 0; i < _nodeCount; i++)
-        hyperparameters.push_back(xavierConstant * _nn->_xavierGenerator->getRandomNumber());
+        hyperparameters.push_back(0.0);
     }
   }
 
@@ -38,11 +38,11 @@ std::vector<float> Layer::generateInitialHyperparameters()
   {
     // Adding layer's batch normalization scale hyperparameters
     for (size_t i = 0; i < _nodeCount; i++)
-      hyperparameters.push_back(1.0 + 0.1 * _nn->_xavierGenerator->getRandomNumber());
+      hyperparameters.push_back(1.0 + 0.1 * _nn->_uniformGenerator->getRandomNumber());
 
     // Adding layer's batch normalization shift hyperparameters
     for (size_t i = 0; i < _nodeCount; i++)
-      hyperparameters.push_back(0.0 + 0.1 * _nn->_xavierGenerator->getRandomNumber());
+      hyperparameters.push_back(0.0 + 0.1 * _nn->_uniformGenerator->getRandomNumber());
 
     // Adding layer's batch normalization mean hyperparameters
     for (size_t i = 0; i < _nodeCount; i++)

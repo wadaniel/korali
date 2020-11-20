@@ -96,7 +96,7 @@ void VRACER::initializeAgent()
 
   // Get initial learning rate
   _referInitialLearningRate = _criticPolicyLearner->_learningRate;
-  _referBeta = 1e-4f;
+  _referBeta = 0.0f;
   _referCutoff = _referCutoffScale + 1.0f;
   _referOffPolicyFraction = 0.0f;
 
@@ -115,8 +115,16 @@ void VRACER::updateAgentPolicy(const knlohmann::json &hyperparameters)
 
 void VRACER::trainAgent()
 {
-  // Resetting critic statistics
-  _cumulativeQStar = 0;
+  // Resetting statistics
+  _cumulativeQStar = 0.0;
+  _cumulativeQStarSquared = 0.0;
+
+  float cumulativeTdError = 0.0;
+  float cumulativeTdErrorSquared = 0.0;
+
+  float cumulativePolicyError = 0.0;
+  float cumulativePolicyErrorSquared = 0.0;
+  size_t policyErrorCounter = 0;
 
   /***************************************************************************
    * Adjusting REFER off-policiness and learning rate parameters
@@ -195,11 +203,11 @@ void VRACER::trainAgent()
     else if( expOnPolicy == false && onPolicy == true )
       _referOffPolicyFraction -= 1.0f/(float)expCount; // was off-policy, now on-policy
 
-    std::cout << "importanceWeight = " << importanceWeight << "\n"; 
-    std::cout << "expImportanceWeight = " << expImportanceWeight << "\n";
-    std::cout << "_referOffPolicyFraction = " << _referOffPolicyFraction << "\n";
-    if( '.' == getchar() )
-      abort();
+    // std::cout << "importanceWeight = " << importanceWeight << "\n"; 
+    // std::cout << "expImportanceWeight = " << expImportanceWeight << "\n";
+    // std::cout << "_referOffPolicyFraction = " << _referOffPolicyFraction << "\n";
+    // if( '.' == getchar() )
+    //   abort();
 
     /******************************************************
     * Gradient calculation
@@ -213,9 +221,14 @@ void VRACER::trainAgent()
 
     // update critic statistics
     _cumulativeQStar += expVtbc;
+    _cumulativeQStarSquared += expVtbc*expVtbc;
 
     // Gradient of Value Function V(s) (eq. (9); *-1 for minimisation)
     gradientLoss[0] = -( V - expVtbc );
+
+    cumulativeTdError -= ( V - expVtbc );
+    cumulativeTdErrorSquared += gradientLoss[0]*gradientLoss[0];
+
     // std::cout << "dL_V=" << gradientLoss[0] << "\n";
     // getchar();
 
@@ -237,6 +250,10 @@ void VRACER::trainAgent()
 
       // Compute Off-Policy Objective (eq. 5)
       float lossOffPolicyGradient = importanceWeight * ( Qret - V );
+
+      cumulativePolicyError += lossOffPolicyGradient;
+      cumulativePolicyErrorSquared += lossOffPolicyGradient*lossOffPolicyGradient;
+      policyErrorCounter++;
       // std::cout << "dL_p=" << valueDiff << "\n";
       // getchar();
 
@@ -310,8 +327,15 @@ void VRACER::trainAgent()
     _criticPolicyProblem->_solution[step] = gradientLoss;
   }
 
-  // Divide cumulative Q-star by minibatch size
+  // Compute average and std of Value target
   _averageQStar = _cumulativeQStar / (float)_criticMiniBatchSize;
+  _stdevQStar = sqrt(_cumulativeQStarSquared / (float)_criticMiniBatchSize - _averageQStar * _averageQStar);
+  // Compute average and std of Value Loss
+  _averageTDError = cumulativeTdError / (float)_criticMiniBatchSize;
+  _stdevTDError = std::sqrt(cumulativeTdErrorSquared / (float)_criticMiniBatchSize - _averageTDError * _averageTDError);
+  // Compute average and std of Off-Policy Gradient Objective
+  _averagePolicyError = cumulativePolicyError / (float)policyErrorCounter;
+  _stdevPolicyError = std::sqrt(cumulativePolicyErrorSquared / (float)policyErrorCounter - _averagePolicyError * _averagePolicyError); 
 
   // Running one generation of the optimization method with the given mini-batch
   _criticPolicyLearner->initialize();
@@ -401,7 +425,9 @@ void VRACER::getAction(korali::Sample &sample)
 void VRACER::printAgentInformation()
 {
   _k->_logger->logInfo("Normal", "Critic Information:\n");
-  _k->_logger->logInfo("Normal", " + Average Q-Value in Mini-Batch:  %f\n", _averageQStar);
+  _k->_logger->logInfo("Normal", " + Average (Std) Vtbc in Mini-Batch:  %f (%f)\n", _averageQStar, _stdevQStar);
+  _k->_logger->logInfo("Normal", " + Average (Std) TD-Error in Mini-Batch:  %f (%f)\n", _averageTDError, _stdevTDError);
+  _k->_logger->logInfo("Normal", " + Average (Std) Off-Policy Objective in Mini-Batch:  %f (%f)\n", _averagePolicyError, _stdevPolicyError);
 
   _k->_logger->logInfo("Normal", "Neural Network Information:\n");
   _criticPolicyExperiment._logger->_verbosityLevel = _k->_logger->_verbosityLevel;

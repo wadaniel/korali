@@ -102,10 +102,17 @@ void NeuralNetwork::initialize()
     if (_outputAbsoluteMask.size() != outputSize)
       KORALI_LOG_ERROR("Wrong size of output absolute mask passed to the neural network. Expected: %lu, provided: %lu.\n", outputSize, _outputAbsoluteMask.size());
 
-  // Check output absolute mask configuration
+  // Check output tanh mask configuration
   if (_outputTanhMask.empty() == false)
     if (_outputTanhMask.size() != outputSize)
       KORALI_LOG_ERROR("Wrong size of output Tanh mask passed to the neural network. Expected: %lu, provided: %lu.\n", outputSize, _outputTanhMask.size());
+
+  // Check output SoftPlus mask configuration
+  if (_outputSoftplusMask.empty() == false)
+  {
+    if (_outputSoftplusMask.size() != outputSize)
+      KORALI_LOG_ERROR("Wrong size of output SoftPlus mask passed to the neural network. Expected: %lu, provided: %lu.\n", outputSize, _outputSoftplusMask.size());
+  }
 
   // Making sure we do not re-initialize
   _isInitialized = true;
@@ -357,6 +364,11 @@ void NeuralNetwork::forward()
    {
      auto x = resultData[i * nodeCount + j];
 
+      // If we use a softplus mask, then apply the mask now
+      if (_outputSoftplusMask.size() > 0)
+        if (_outputSoftplusMask[j] == true)
+          x = 0.5 * (x + std::sqrt(1. + x * x));
+
      // If we use a tanh mask, then apply the mask now
      if (_outputTanhMask.size() > 0)
        if (_outputTanhMask[j] == true)
@@ -436,6 +448,15 @@ void NeuralNetwork::backward(const std::vector<std::vector<float>> &gradients)
      {
        g = g * (1.0f - x*x); // x is still tanh(x)
      }
+
+    // If we use a softplus  mask, then apply its derivative
+    if (_outputSoftplusMask.size() > 0)
+      if (_outputSoftplusMask[j] == true)
+      {
+        //float nnx = resultData[i * nodeCount + j];
+        float nnx = x - 0.25 / x; // Approximation
+        g = g * 0.5 * (nnx / std::sqrt(nnx * nnx + 1) + 1);
+      }
 
     floatDiffs[i*outputSize + j] = g;
    }

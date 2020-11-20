@@ -43,7 +43,7 @@ def env(s):
   
  # Setting finalization status
  if (swimmers.isSuccess()):
-  s["Termination"] = "Normal"
+  s["Termination"] = "Terminal"
  else:
   s["Termination"] = "Truncated"
   

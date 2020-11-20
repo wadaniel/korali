@@ -34,6 +34,6 @@ def env(s):
 
  # Setting finalization status
  if (cart.isOver()):
-  s["Termination"] = "Normal"
+  s["Termination"] = "Terminal"
  else:
   s["Termination"] = "Truncated"

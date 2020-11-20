@@ -193,7 +193,7 @@ void Agent::processExperience(knlohmann::json &experience)
   e.reward = experience["Reward"].get<float>();
 
   if (experience["Termination"] == "Non Terminal") e.termination = e_nonTerminal;
-  if (experience["Termination"] == "Normal") e.termination = e_normal;
+  if (experience["Termination"] == "Terminal") e.termination = e_terminal;
   if (experience["Termination"] == "Truncated") e.termination = e_truncated;
 
   e.priority = _experienceReplayMaxPriority;

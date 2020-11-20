@@ -36,17 +36,16 @@ class VRACER : public Continuous
   * @brief Variable with state value
   */
   float _stateValue;
-
+  
   /**
-   * @brief Compute Qret using all experiences after
-   * @param startId ID to current experience
-   * @return The value of Qret
+   * @brief Calculates the V-target
+   * @param expId Experience Id
+   * @return vTbc
    */
-  // float computeQret(size_t startId);
+  float computeVtbc(size_t expId);
 
-  float retraceFunction(size_t expId);
   void forwardPolicy(const std::vector<float> &state) override;
-  float stateValueFunction(const std::vector<float> &state);
+  void getAction(korali::Sample &sample) override;
   void trainAgent() override;
   void updateAgentPolicy(const knlohmann::json &hyperparameters) override;
   void printAgentInformation() override;

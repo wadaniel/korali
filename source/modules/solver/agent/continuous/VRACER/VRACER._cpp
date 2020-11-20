@@ -36,7 +36,6 @@ void VRACER::initializeAgent()
  *********************************************************************/
 
   _criticPolicyExperiment["Problem"]["Type"] = "Supervised Learning";
-
   _criticPolicyExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
   _criticPolicyExperiment["Solver"]["Optimizer"] = _criticOptimizer;
   _criticPolicyExperiment["Solver"]["Learning Rate"] = _criticLearningRate;
@@ -65,6 +64,7 @@ void VRACER::initializeAgent()
   _criticPolicyExperiment["Solver"]["Neural Network"]["Output"]["Shift"][0] = 0.0f;
   _criticPolicyExperiment["Solver"]["Neural Network"]["Output"]["Absolute Mask"][0] = false;
   _criticPolicyExperiment["Solver"]["Neural Network"]["Output"]["Tanh Mask"][0] = false;
+  _criticPolicyExperiment["Solver"]["Neural Network"]["Output"]["Softplus Mask"][0] = false;
   for (size_t i = 0; i < dimAction; i++)
   {
    size_t varIdx = _problem->_actionVectorIndexes[i];
@@ -72,16 +72,18 @@ void VRACER::initializeAgent()
    auto upperBound = _k->_variables[varIdx]->_upperBound;
    float scale = (upperBound - lowerBound) * 0.5;
    float shift = (upperBound + lowerBound) * 0.5;
-   // Tanh output mask for Mean
+   // Tanh mask for Mean
    _criticPolicyExperiment["Solver"]["Neural Network"]["Output"]["Scale"][i+1] = scale;
    _criticPolicyExperiment["Solver"]["Neural Network"]["Output"]["Shift"][i+1] = shift;
    _criticPolicyExperiment["Solver"]["Neural Network"]["Output"]["Absolute Mask"][i+1] = false;
    _criticPolicyExperiment["Solver"]["Neural Network"]["Output"]["Tanh Mask"][i+1] = true;
-   // Absolute Value output mask for Sigma
+   _criticPolicyExperiment["Solver"]["Neural Network"]["Output"]["Softplus Mask"][i+1] = false;
+   // Softplus mask for Sigma
    _criticPolicyExperiment["Solver"]["Neural Network"]["Output"]["Scale"][dimAction+i+1] = 1.0;
    _criticPolicyExperiment["Solver"]["Neural Network"]["Output"]["Shift"][dimAction+i+1] = 0.0;
-   _criticPolicyExperiment["Solver"]["Neural Network"]["Output"]["Absolute Mask"][dimAction+i+1] = true;
+   _criticPolicyExperiment["Solver"]["Neural Network"]["Output"]["Absolute Mask"][dimAction+i+1] = false;
    _criticPolicyExperiment["Solver"]["Neural Network"]["Output"]["Tanh Mask"][dimAction+i+1] = false;
+   _criticPolicyExperiment["Solver"]["Neural Network"]["Output"]["Softplus Mask"][dimAction+i+1] = true;
   }
 
   // Running initialization to verify that the configuration is correct
@@ -94,8 +96,9 @@ void VRACER::initializeAgent()
 
   // Get initial learning rate
   _referInitialLearningRate = _criticPolicyLearner->_learningRate;
-  _referBeta = 1.0f;
+  _referBeta = 1e-4f;
   _referCutoff = _referCutoffScale + 1.0f;
+  _referOffPolicyFraction = 0.0f;
 
   /*********************************************************************
   * Loading/Setting Hyperparameters
@@ -119,21 +122,21 @@ void VRACER::trainAgent()
    * Adjusting REFER off-policiness and learning rate parameters
    **************************************************************************/
 
- // Update REFER parameters only after reaching this number of experiences in memory
- if (_experienceReplay.size() > _referStartSize)
- {
-  // Updating cutoff
-  _referCutoff = 1.0f+_referCutoffScale/(1.0f+_referAnnealingRate*(float)_optimizationStepCount);
+   // Update REFER parameters only after reaching this number of experiences in memory
+  if (_experienceReplay.size() > _referStartSize)
+  {
+   // Updating cutoff
+   _referCutoff = 1.0f+_referCutoffScale/(1.0f+_referAnnealingRate*(float)_optimizationStepCount);
 
-  // Update learning rate
-  _criticPolicyLearner->_learningRate = _referInitialLearningRate/(1.0f+_referAnnealingRate*_optimizationStepCount);
+   // Update learning rate
+   _criticPolicyLearner->_learningRate = _referInitialLearningRate/(1.0f+_referAnnealingRate*_optimizationStepCount);
 
-  // Updating beta parameter
-  if(_referOffPolicyFraction > _referTargetOffPolicyFraction)
+   // Updating beta parameter
+   if(_referOffPolicyFraction > _referTargetOffPolicyFraction)
     _referBeta=(1.0f-_criticPolicyLearner->_learningRate)*_referBeta;
-  else
+   else
     _referBeta=(1.0f-_criticPolicyLearner->_learningRate)*_referBeta + _criticPolicyLearner->_learningRate;
- }
+  }
 
  /****************************************************************************
   * Training the critic/learner network with a mini-batch
@@ -142,33 +145,18 @@ void VRACER::trainAgent()
   // Creating a minibatch of starting experiences for the trajectories update
   auto miniBatchIndexes = generateMiniBatch(_criticMiniBatchSize);
 
-  size_t onPolicyCount = 0;
-
   // Fill Minibatch
   for(size_t step = 0; step < _criticMiniBatchSize; step++)
   {
     // Getting index of current experiment
     size_t curId = miniBatchIndexes[step];
 
-    // Getting Vtbc from retrace function
-    float expVtbc = retraceFunction(curId);
-
-    // Get state, action,  mean and Sigma for this experience
+    // Get state, action, mean, Sigma and importance weight for this experience
     auto expState = _experienceReplay[curId].state;
     auto expAction = _experienceReplay[curId].action;
     auto expMean = _experienceReplay[curId].metadata["Action Means"].get<std::vector<float>>();
     auto expSigma = _experienceReplay[curId].metadata["Action Sigmas"].get<std::vector<float>>();
-
-    // Set action probability distributions to follow mean/sigma for old policy
-    // and compute probability of action under current policy
-    float pExpActionOldPolicy = 1.0;
-    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-    {
-      _policyDistributions[i]->_mean = expMean[i];
-      _policyDistributions[i]->_standardDeviation = expSigma[i];
-      _policyDistributions[i]->updateDistribution();
-      pExpActionOldPolicy *= _policyDistributions[i]->getDensity(expAction[i]);
-    }
+    auto expImportanceWeight = _experienceReplay[curId].metadata["Importance Weight"].get<float>();
 
     // Forward the neural network for this state to get current means and sigmas and Value
     forwardPolicy(expState);
@@ -176,13 +164,42 @@ void VRACER::trainAgent()
     auto curSigma = _actionSigmas;
     auto V = _stateValue;
 
-    // Compute inverse variance
+    // Compute inverse variance for current policy
     std::vector<float> curInvVariance(_problem->_actionVectorSize);
     for( size_t i = 0; i<_problem->_actionVectorSize; i++ )
       curInvVariance[i] = 1.0f/(_actionSigmas[i]*_actionSigmas[i]);
 
+    // Update State Value in Metadata
+    _experienceReplay[curId].metadata["State Value"] = V;
+
     // Compute importance weight
     float importanceWeight = calculateImportanceWeight(expAction, curMean, curSigma, expMean, expSigma);
+
+    // Update Importance Weight in Metadata
+    _experienceReplay[curId].metadata["Importance Weight"] = importanceWeight;
+
+    // Check if experience IS on policy
+    bool onPolicy = false;
+    if (importanceWeight < _referCutoff && importanceWeight > (1.0f/_referCutoff)) 
+      onPolicy = true;
+
+    // Check if experience WAS on policy
+    bool expOnPolicy = false;
+    if (expImportanceWeight < _referCutoff && expImportanceWeight > (1.0f/_referCutoff)) 
+      expOnPolicy = true;
+
+    // Update running average for off-policy fraction
+    size_t expCount = _experienceReplay.size();
+    if( expOnPolicy == true && onPolicy == false )
+      _referOffPolicyFraction += 1.0f/(float)expCount; // was on-policy, now off-policy
+    else if( expOnPolicy == false && onPolicy == true )
+      _referOffPolicyFraction -= 1.0f/(float)expCount; // was off-policy, now on-policy
+
+    std::cout << "importanceWeight = " << importanceWeight << "\n"; 
+    std::cout << "expImportanceWeight = " << expImportanceWeight << "\n";
+    std::cout << "_referOffPolicyFraction = " << _referOffPolicyFraction << "\n";
+    if( '.' == getchar() )
+      abort();
 
     /******************************************************
     * Gradient calculation
@@ -191,49 +208,67 @@ void VRACER::trainAgent()
     // Storage for the update gradient
     std::vector<float> gradientLoss(2*_problem->_actionVectorSize+1, 0.0f);
 
-    // Gradient of Value Function V(s)
-    gradientLoss[0] = ( expVtbc - V );
+    // Compute Vtbc
+    float expVtbc = computeVtbc( curId );
+
+    // update critic statistics
+    _cumulativeQStar += expVtbc;
+
+    // Gradient of Value Function V(s) (eq. (9); *-1 for minimisation)
+    gradientLoss[0] = -( V - expVtbc );
     // std::cout << "dL_V=" << gradientLoss[0] << "\n";
+    // getchar();
 
     // Compute policy gradient only if inside trust region
-    if (importanceWeight < _referCutoff && importanceWeight > (1.0f/_referCutoff))
+    if ( onPolicy )
     {
-      // Compute -rho(Qret-V) = rho(V-Qret)
+      // Qret for terminal state is just reward
       float Qret = _experienceReplay[curId].reward;
 
-      bool isTerminal = _experienceReplay[curId].termination != e_nonTerminal;
-
+      // Check whether experience is terminal or truncated
+      bool isTerminal = _experienceReplay[curId].termination == e_terminal;
+      
+      // TODO: the state for curId+1 needs to be accessed here
       if(isTerminal == false)
       {
-        float nextExpVtbc = retraceFunction(curId+1);
+        float nextExpVtbc = computeVtbc(curId+1);
         Qret += _criticDiscountFactor*nextExpVtbc;
       }
 
-      float lossOffPolicyGradient = -_referBeta * importanceWeight * ( Qret - V );
+      // Compute Off-Policy Objective (eq. 5)
+      float lossOffPolicyGradient = importanceWeight * ( Qret - V );
       // std::cout << "dL_p=" << valueDiff << "\n";
+      // getchar();
 
-      // Compute gradient[rho(V-Qret)]
+      // Compute Off-Policy Gradient
       for( size_t i = 0; i<_problem->_actionVectorSize; i++ )
       {
         // Deviation from expAction and current Mean
         float actionDiff = ( expAction[i] - curMean[i] );
 
         // Gradient with respect to Mean
-        gradientLoss[1+i] = -lossOffPolicyGradient * actionDiff * curInvVariance[i];
+        float gradMean = actionDiff * curInvVariance[i];
+
+        // Set gradient for Mean (no -1 because we want to maximize Off-Policy Objective)
+        gradientLoss[1+i] = _referBeta * lossOffPolicyGradient * gradMean;
         // std::cout << "without KL: dL_p/dmu=" << gradientLoss[1+i] << "\n";
 
         // Gradient with respect to Sigma
-        gradientLoss[_problem->_actionVectorSize+1+i] = -lossOffPolicyGradient * ( (actionDiff * actionDiff) * (curInvVariance[i] / curSigma[i]) - 1.0f / curSigma[i] ); 
+        float gradSigma = (actionDiff * actionDiff) * (curInvVariance[i] / curSigma[i]) - 1.0f / curSigma[i];
+
+        // Set gradient for Sigma (no -1 because we want to maximize Off-Policy Objective)
+        gradientLoss[_problem->_actionVectorSize+1+i] = _referBeta*lossOffPolicyGradient * gradSigma; 
         // std::cout << "dL_p/dsigma=" << gradientLoss[_problem->_actionVectorSize+1+i] << "\n";
       }
-      onPolicyCount++;
     }
 
-    // Compute inverse variance
+    // Compute inverse variance for experience
     std::vector<float> expInvVariance(_problem->_actionVectorSize);
+    std::vector<float> expVariance(_problem->_actionVectorSize);
     for( size_t i = 0; i<_problem->_actionVectorSize; i++ )
     {
-      expInvVariance[i] = 1.0f/(expSigma[i]*expSigma[i]);
+      expVariance[i] = expSigma[i]*expSigma[i];
+      expInvVariance[i] = 1.0f/expVariance[i];
     }
 
     // Compute derivative of Kullback-Leibler Divergence
@@ -241,21 +276,30 @@ void VRACER::trainAgent()
     {
       float actionDiff = ( curMean[i] - expMean[i] );
 
-      // Gradient with respect to Mean
-      gradientLoss[1+i] += ( 1.0f - _referBeta ) * actionDiff * curInvVariance[i];
+      //// KL-Gradient with respect to Mean ///
 
-      //// Gradient with respect to Sigma
+      // KL-Gradient with respect to Mean
+      float gradMean = actionDiff * curInvVariance[i];
+
+      // Set KL-gradient for Mean (no -1 because we want to maximize Off-Policy Objective)
+      gradientLoss[1+i] -= ( 1.0f - _referBeta ) * gradMean;
+
+      /// KL-Gradient with respect to Sigma ///
+
       // Contribution to Sigma from Trace
-      float gradTr = - curInvVariance[i] / ( expInvVariance[i] * curSigma[i] );
+      float gradTr = - (curInvVariance[i] / curSigma[i] ) * expVariance[i];
 
       // Contribution to Sigma from Quadratic form
-      float gradQuad = - actionDiff * actionDiff * curInvVariance[i] / curSigma[i];
+      float gradQuad = - (actionDiff * actionDiff) * (curInvVariance[i] / curSigma[i]);
 
       // Contribution to Sigma from Determinant
       float gradDet = 1.0f / curSigma[i];
 
-      // Setting total contribution to Sigma
-      gradientLoss[_problem->_actionVectorSize+1+i] += ( 1.0f - _referBeta ) * ( gradTr + gradQuad + gradDet );
+      // KL-Gradient with respect to Mean
+      float gradSigma = gradTr + gradQuad + gradDet;
+
+      // Set KL-gradient for Sigma (no -1 because we want to maximize Off-Policy Objective)
+      gradientLoss[_problem->_actionVectorSize+1+i] -= ( 1.0f - _referBeta ) * gradSigma;
       // std::cout << "with KL part 1: dL_p/dsigma=" << gradientLoss[_problem->_actionVectorSize+1+i] << "\n";
     }
 
@@ -265,7 +309,9 @@ void VRACER::trainAgent()
     // Set Gradient of Loss as Solution
     _criticPolicyProblem->_solution[step] = gradientLoss;
   }
-  _referOffPolicyFraction = (float)onPolicyCount / (float)_criticMiniBatchSize;
+
+  // Divide cumulative Q-star by minibatch size
+  _averageQStar = _cumulativeQStar / (float)_criticMiniBatchSize;
 
   // Running one generation of the optimization method with the given mini-batch
   _criticPolicyLearner->initialize();
@@ -283,23 +329,15 @@ void VRACER::trainAgent()
   _hyperparameters["Policy"] = _criticPolicyLearner->getHyperparameters();
 }
 
-float VRACER::stateValueFunction(const std::vector<float> &state)
-{
-  // Calculating V(s)
-  float v = _criticPolicyLearner->getEvaluation(state)[0];
-
-  return v;
-}
-
-float VRACER::retraceFunction(size_t expId)
+float VRACER::computeVtbc(size_t expId)
 {
   // Finding last experience in the episode that corresponds to expId
   ssize_t startId = expId;
   ssize_t endId = startId;
   while (_experienceReplay[endId].termination == e_nonTerminal) endId++;
 
-  // get importance weight (will be updated from trainAgent)
-  float importanceWeight = _experienceReplay[endId].cache.get("Importance Weight");
+  // get importance weight
+  auto importanceWeight = _experienceReplay[endId].metadata["Importance Weight"].get<float>();
 
   // truncate importance weight
   float truncatedImportanceWeight = std::min(1.0f, importanceWeight);
@@ -311,7 +349,7 @@ float VRACER::retraceFunction(size_t expId)
   if (_experienceReplay[endId].termination == e_truncated)
   {
    auto curState = _experienceReplay[endId].state;
-   float curV = _experienceReplay[endId].cache.access("State Value", [this, curState](){return this->stateValueFunction(curState);});
+   float curV = _experienceReplay[endId].metadata["State Value"].get<float>();
    vTbc += (1 - truncatedImportanceWeight) * curV;
   }
 
@@ -322,12 +360,10 @@ float VRACER::retraceFunction(size_t expId)
     float curReward = _experienceReplay[curId].reward;
 
     // Get state value function
-    auto curState = _experienceReplay[curId].state;
+    float curV = _experienceReplay[curId].metadata["State Value"].get<float>();
 
-    float curV = _experienceReplay[curId].cache.access("State Value", [this, curState](){return this->stateValueFunction(curState);});
-
-    // get importance weight (will be updated from trainAgent)
-    float importanceWeight = _experienceReplay[curId].cache.get("Importance Weight");
+    // get importance weight
+    auto importanceWeight = _experienceReplay[curId].metadata["Importance Weight"].get<float>();
 
     // truncate importance weight
     float truncatedImportanceWeight = std::min(1.0f, importanceWeight);
@@ -353,8 +389,20 @@ void VRACER::forwardPolicy(const std::vector<float> &state)
   }
 }
 
+void VRACER::getAction(korali::Sample &sample)
+{
+  // Here the neural network is forwarded, the action selected and mean, standard deviation stored
+  Continuous::getAction(sample);
+  // For VRACER also store state-value and importance weight
+  sample["Metadata"]["State Value"] = _stateValue;
+  sample["Metadata"]["Importance Weight"] = 1.0f;
+}
+
 void VRACER::printAgentInformation()
 {
+  _k->_logger->logInfo("Normal", "Critic Information:\n");
+  _k->_logger->logInfo("Normal", " + Average Q-Value in Mini-Batch:  %f\n", _averageQStar);
+
   _k->_logger->logInfo("Normal", "Neural Network Information:\n");
   _criticPolicyExperiment._logger->_verbosityLevel = _k->_logger->_verbosityLevel;
   _criticPolicyExperiment._solver->printGenerationAfter();

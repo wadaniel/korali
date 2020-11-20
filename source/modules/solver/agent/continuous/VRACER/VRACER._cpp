@@ -164,7 +164,6 @@ void VRACER::trainAgent()
     auto expAction = _experienceReplay[curId].action;
     auto expMean = _experienceReplay[curId].metadata["Action Means"].get<std::vector<float>>();
     auto expSigma = _experienceReplay[curId].metadata["Action Sigmas"].get<std::vector<float>>();
-    auto expImportanceWeight = _experienceReplay[curId].metadata["Importance Weight"].get<float>();
 
     // Forward the neural network for this state to get current means and sigmas and Value
     forwardPolicy(expState);
@@ -186,28 +185,23 @@ void VRACER::trainAgent()
     // Update Importance Weight in Metadata
     _experienceReplay[curId].metadata["Importance Weight"] = importanceWeight;
 
-    // Check if experience IS on policy
-    bool onPolicy = false;
-    if (importanceWeight < _referCutoff && importanceWeight > (1.0f/_referCutoff)) 
-      onPolicy = true;
-
-    // Check if experience WAS on policy
-    bool expOnPolicy = false;
-    if (expImportanceWeight < _referCutoff && expImportanceWeight > (1.0f/_referCutoff)) 
-      expOnPolicy = true;
-
-    // Update running average for off-policy fraction
+    // Update off-policy fraction
     size_t expCount = _experienceReplay.size();
-    if( expOnPolicy == true && onPolicy == false )
-      _referOffPolicyFraction += 1.0f/(float)expCount; // was on-policy, now off-policy
-    else if( expOnPolicy == false && onPolicy == true )
-      _referOffPolicyFraction -= 1.0f/(float)expCount; // was off-policy, now on-policy
+    size_t offPolicyCount = 0;
+    for( size_t expId = 0; expId<expCount; expId++ )
+    {
+      float expImportanceWeight = _experienceReplay[expId].metadata["Importance Weight"];
+      // std::cout << "expImportanceWeight = " << expImportanceWeight << "\n";
+      if( expImportanceWeight > _referCutoff || expImportanceWeight < (1.0f/_referCutoff) )
+        offPolicyCount++;
 
-    // std::cout << "importanceWeight = " << importanceWeight << "\n"; 
-    // std::cout << "expImportanceWeight = " << expImportanceWeight << "\n";
-    // std::cout << "_referOffPolicyFraction = " << _referOffPolicyFraction << "\n";
-    // if( '.' == getchar() )
+    }
+    // std::cout << "offPolicyCount = " << offPolicyCount << "\n";
+    // std::cout << "expCount = " << expCount << "\n";
+    // if( '.' == getchar())
     //   abort();
+    _referOffPolicyFraction = (float)offPolicyCount / (float)expCount;
+
 
     /******************************************************
     * Gradient calculation
@@ -233,7 +227,7 @@ void VRACER::trainAgent()
     // getchar();
 
     // Compute policy gradient only if inside trust region
-    if ( onPolicy )
+    if ( importanceWeight > _referCutoff || importanceWeight < (1.0f/_referCutoff) )
     {
       // Qret for terminal state is just reward
       float Qret = _experienceReplay[curId].reward;

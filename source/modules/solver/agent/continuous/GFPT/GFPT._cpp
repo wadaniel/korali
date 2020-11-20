@@ -119,7 +119,7 @@ void GFPT::initializeAgent()
   }
 
   // Initializing experiment with an initial zero set
-  for (size_t i = 0; i < _policyMiniBatchSize; i++)
+  for (size_t i = 0; i < _criticMiniBatchSize; i++)
   {
     for (size_t j = 0; j < _problem->_stateVectorSize; j++)
       _policyExperiment["Problem"]["Inputs"][i][j] = 0.0;
@@ -163,6 +163,10 @@ void GFPT::initializeAgent()
   *********************************************************************/
 
   _hyperparameters["Policy"] = _policyLearner->getHyperparameters();
+
+  // Profiling
+  _criticUpdateTime = 0.0;
+  _policyUpdateTime = 0.0;
 }
 
 float GFPT::retraceFunction(size_t expId)
@@ -172,52 +176,50 @@ float GFPT::retraceFunction(size_t expId)
   ssize_t endId = startId;
   while (_experienceReplay[endId].termination == e_nonTerminal) endId++;
 
-  // Initializing qRet to reward of the last
-  float qRet = _experienceReplay[endId].reward;
+  // Calculating Vtbc for the last experience
+  float Vtbc = _experienceReplay[endId].reward;
 
-  // If the episode was truncated, then add also the state value function
+  // If it was a truncated episode, also add the value function
   if (_experienceReplay[endId].termination == e_truncated)
   {
    auto curState = _experienceReplay[endId].state;
    float curV = _experienceReplay[endId].cache.access("State Value", [this, curState](){return this->stateValueFunction(curState);});
-   qRet += _criticDiscountFactor * curV;
+   Vtbc += _criticDiscountFactor * curV;
   }
 
-  // Now iterating backwards to calculate the rest of qRet
+  // Now iterating backwards to calculate the rest of vTbc
   for (ssize_t curId = endId-1; curId >= startId; curId--)
   {
-    // Getting current reward
-    float curReward = _experienceReplay[curId].reward;
-
-    // Calculating qRet
-    qRet = curReward + _criticDiscountFactor * qRet;
-
-    // If this is the starting experience, return the current value
-    if (curId == startId) break;
-
-    // Getting current state
+    // Getting current reward, action, and state
+    auto curReward = _experienceReplay[curId].reward;
     auto curState = _experienceReplay[curId].state;
-
-    // Getting current action index
     auto curAction = _experienceReplay[curId].action;
 
-    // If we don't have the current and average advantage values in cache, we need to re-calculate means (forward policy)
-    if (_experienceReplay[curId].cache.contains("Average Advantage") == false) forwardPolicy(curState);
+    // Calculating state value function
+    float curV = _experienceReplay[curId].cache.access("State Value", [this, curState](){return this->stateValueFunction(curState);});
 
-    // Now calculating V, A, and avgA for current state/action
-    float curA = _experienceReplay[curId].cache.access("Current Advantage", [this, curState, curAction](){return this->currentActionAdvantageFunction(curState, curAction);});
-    float avgA = _experienceReplay[curId].cache.access("Average Advantage", [this, curState](){return this->averageActionAdvantageFunction(curState);});
-    float curV = 0.0f; // Not needed for now, that we do not consider importance weight
+//    // Updating action distributions for the current state to get its current means
+//    forwardPolicy(curState);
+//
+//    // Getting means and sigmas for current and old policy for the given state
+//    auto oldMean = _experienceReplay[curId].metadata["Action Means"].get<std::vector<float>>();
+//    auto oldSigma = _experienceReplay[curId].metadata["Action Sigmas"].get<std::vector<float>>();
+//    auto curMean = _actionMeans;
+//    auto curSigma = _actionSigmas;
+//
+//    // Calculate importance weight
+//    float importanceWeight = calculateImportanceWeight(curAction, curMean, curSigma, oldMean, oldSigma);
+    float importanceWeight = 1.0f;
 
-    // Calculating Q = V + A - avgA
-    float curQ = curV + curA - avgA;
+    // Truncate importance weight
+    float truncatedImportanceWeight = std::min(1.0f, importanceWeight);
 
-    // Updating qRet for the next experience
-    qRet = (qRet - curQ) + curV;
+    // Calculating Vtbc
+    Vtbc = curV + truncatedImportanceWeight * (curReward + _criticDiscountFactor * Vtbc - curV);
   }
 
-  // Returning qRet
-  return qRet;
+  // Returning Vtbc
+  return Vtbc;
 }
 
 float GFPT::stateValueFunction(const std::vector<float> &state)
@@ -308,14 +310,16 @@ void GFPT::trainAgent()
 //  else
 //    _referBeta=(1.0f-_policyLearner->_learningRate)*_referBeta + _policyLearner->_learningRate;
    if(_referOffPolicyFraction > _referTargetOffPolicyFraction)
-     _referBeta=(1.0f-_policyLearner->_learningRate)*_referBeta;
+     _referBeta=(1.0f-0.01f)*_referBeta;
    else
-     _referBeta=(1.0f-_policyLearner->_learningRate)*_referBeta + _policyLearner->_learningRate;
+     _referBeta=(1.0f-0.01f)*_referBeta + 0.01f;
  }
 
   /***************************************************************************************
   * Updating Policy Network by performing a Gradient descent step with latest experiences
   ***************************************************************************************/
+
+  auto beginTime = std::chrono::steady_clock::now(); // Profiling
 
   // Calculating cumulative Q*, for statistical purposes
   _cumulativeQStar = 0.0;
@@ -333,7 +337,7 @@ void GFPT::trainAgent()
     *****************************************/
 
     // We calculate qStar depending on whether we use retrace or not
-    float qRet = _experienceReplay[expId].cache.access("Qret", [this, expId](){return this->retraceFunction(expId);});
+    float Vtbc = retraceFunction(expId);
 
     // Getting experience's current state, action
     auto curState = _experienceReplay[expId].state;
@@ -347,12 +351,9 @@ void GFPT::trainAgent()
     float avgA = averageActionAdvantageFunction(curState);
     float curV = stateValueFunction(curState);
 
-    // Current Q = V + A - avgA
-    float curQ = curV + curA - avgA;
-
     // Now calculating targets for V(s) and A(s,a)
-    float vTarget = qRet - curQ + avgA;
-    float aTarget = qRet - curV + avgA;
+    float vTarget = Vtbc - curV + curA;
+    float aTarget = Vtbc - curV + avgA;
 
     // Updating inputs to training learners
     for (size_t j = 0; j < curState.size(); j++) _aProblem->_inputs[i][j] = curState[j];
@@ -363,7 +364,7 @@ void GFPT::trainAgent()
     _vProblem->_solution[i][0] = vTarget;
 
     // Keeping statistics
-    _cumulativeQStar += qRet;
+    _cumulativeQStar += Vtbc;
   }
 
   // Running one generation of the optimization method with the given mini-batch
@@ -398,17 +399,19 @@ void GFPT::trainAgent()
   // Updating batch evaluation network for the advantage function for CMAES steps
   _batchOptimizationNetwork->setHyperparameters(aHyperparameters);
 
+  auto endTime = std::chrono::steady_clock::now(); // Profiling
+  _criticUpdateTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
+
   /*******************************************************************
   * Now computing new policy gradients with a stochastic method (CMAES)
   ******************************************************************/
 
-  // Creating minibatch for the policy update
-  miniBatchIndexes = generateMiniBatch(_policyMiniBatchSize);
+  beginTime = std::chrono::steady_clock::now(); // Profiling
 
   size_t onPolicySamples = 0;
 
   // Accumulating states for evaluation in the policy
-  for (size_t idx = 0; idx < _policyMiniBatchSize; idx++)
+  for (size_t idx = 0; idx < _criticMiniBatchSize; idx++)
   {
     // Getting experience id
     size_t expId = miniBatchIndexes[idx];
@@ -435,24 +438,24 @@ void GFPT::trainAgent()
     auto curMean = _actionMeans;
     auto curSigma = _actionSigmas;
 
-    // Calculating inverse variances of the current policy for this state
-    std::vector<float> oldInvVariance(_problem->_actionVectorSize);
-    std::vector<float> curInvVariance(_problem->_actionVectorSize);
-
-    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-    {
-     curInvVariance[i] = 1.0f / (curSigma[i] * curSigma[i]);
-     oldInvVariance[i] = 1.0f / (oldSigma[i] * oldSigma[i]);
-    }
+//    // Calculating inverse variances of the current policy for this state
+//    std::vector<float> oldInvVariance(_problem->_actionVectorSize);
+//    std::vector<float> curInvVariance(_problem->_actionVectorSize);
+//
+//    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+//    {
+//     curInvVariance[i] = 1.0f / (curSigma[i] * curSigma[i]);
+//     oldInvVariance[i] = 1.0f / (oldSigma[i] * oldSigma[i]);
+//    }
 
     // Storage for policy gradients
     std::vector<float> meanGradients(_problem->_actionVectorSize, 0.0f);
 
     // Now calculating importance weight for the experience (if REFER has not started, just assume 1.0)
-    float expImportanceWeight = _experienceReplay.size() > _referStartSize ? calculateImportanceWeight(curAction, curMean, curSigma, oldMean, oldSigma) : 1.0f;
+    //float expImportanceWeight = _experienceReplay.size() > _referStartSize ? calculateImportanceWeight(curAction, curMean, curSigma, oldMean, oldSigma) : 1.0f;
 
     // If the experiment if on-policy, we use it for the calculation of the gradients
-    if (expImportanceWeight < _referCutoff && expImportanceWeight > (1.0f/_referCutoff))
+    //if (expImportanceWeight < _referCutoff && expImportanceWeight > (1.0f/_referCutoff))
     {
      // Setting initial means from the previous policy estimates
      _actionOptimizer->_initialMeans = _actionMeans;
@@ -488,22 +491,23 @@ void GFPT::trainAgent()
      // Calculating gradient of means that maximize advantage for the given state
      auto bestMean = _actionOptimizer->_bestEverVariables;
      for (size_t j = 0; j < _problem->_actionVectorSize; j++)
-      meanGradients[j] += _referBeta * (bestMean[j] - curMean[j]);
+      //meanGradients[j] += _referBeta * (bestMean[j] - curMean[j]);
+      meanGradients[j] += bestMean[j] - curMean[j];
 
      onPolicySamples++;
     }
 
     // Applying off-policy penalty (Following KL gradient towards old policies)
-    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-      meanGradients[i] += ( 1.0f - _referBeta ) * (oldMean[i] - curMean[i]) * curInvVariance[i];
+    //for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+    //  meanGradients[i] += ( 1.0f - _referBeta ) * (oldMean[i] - curMean[i]) * curInvVariance[i];
 
     // Adding means to the policy update
     _policyProblem->_inputs[idx] = curState;
     _policyProblem->_solution[idx] = meanGradients;
   }
 
-  size_t offPolicySamples = _policyMiniBatchSize - onPolicySamples;
-  _referOffPolicyFraction = (float) offPolicySamples / (float)_policyMiniBatchSize;
+  size_t offPolicySamples = _criticMiniBatchSize - onPolicySamples;
+  _referOffPolicyFraction = (float) offPolicySamples / (float)_criticMiniBatchSize;
 
   // Running one generation of the optimization method with the given mini-batch
   _policyLearner->initialize();
@@ -514,7 +518,7 @@ void GFPT::trainAgent()
   * Policy Normalization
   ******************************************************************************/
 
-  normalizeStateNeuralNetwork(_policyLearner->_trainingNeuralNetwork, _policyMiniBatchSize, _policyNormalizationSteps);
+  normalizeStateNeuralNetwork(_policyLearner->_trainingNeuralNetwork, _criticMiniBatchSize, _policyNormalizationSteps);
 
   /*******************************************************************
    * Soft adoption of new hyperparameters wrt to adoption rate
@@ -528,6 +532,10 @@ void GFPT::trainAgent()
 
   // Storing average policy hyperparameters for workers to use
   _hyperparameters["Policy"] = newPolicyHyperparameters;
+
+  endTime = std::chrono::steady_clock::now(); // Profiling
+  _policyUpdateTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
+
 }
 
 void GFPT::forwardPolicy(const std::vector<float> &state)
@@ -571,6 +579,8 @@ void GFPT::printAgentInformation()
   _k->_logger->logInfo("Normal", " + Beta: %.6f\n", _referBeta);
   _k->_logger->logInfo("Normal", " + Cut-off: %.6f\n", _referCutoff);
 
+  _k->_logger->logInfo("Normal", " + Critic Update Time:         %fs\n", _criticUpdateTime / 1.0e+9f);
+  _k->_logger->logInfo("Normal", " + Policy Update Time:         %fs\n", _policyUpdateTime / 1.0e+9f);
 }
 
 } // namespace continuous

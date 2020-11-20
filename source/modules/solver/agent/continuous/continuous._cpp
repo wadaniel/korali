@@ -54,51 +54,21 @@ void Continuous::getAction(korali::Sample &sample)
   std::vector<float> action(_problem->_actionVectorSize);
 
   /*****************************************************************************
-  * During training, we follow the Epsilon-greedy strategy. Choose, given a
-  * probability (pEpsilon), one from the following:
-  *  - Uniformly random action among all possible actions
-  *  - Sample action guided by the policy's probability distribution
+  * During Training we select action according to policy's probability 
+  * distribution
   ****************************************************************************/
 
   if (sample["Mode"] == "Training")
   {
-    // Getting current probability of random action for the agent
-    float pRandom = sample["Random Action Probability"];
+    // Forward Policy to get the Gaussian means and sigmas from policy
+    forwardPolicy(state);
 
-    // Getting pGreedy = U[0,1] for the epsilon-greedy strategy
-    float pEpsilon = _uniformGenerator->getRandomNumber();
+    // Generating action from the normal distribution
+    for (size_t i = 0; i < _problem->_actionVectorIndexes.size(); i++)
+      action[i] = _actionMeans[i] + _actionSigmas[i] * _normalGenerator->getRandomNumber();
 
-    // If p < e, then we choose the action randomly, with a uniform probability, among all possible actions.
-    if (pEpsilon < pRandom)
-    {
-      for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-      {
-        // Producing random (uniform) number to select within an lower/upper bound range
-        float x = _normalGenerator->getRandomNumber();
-
-        float mean = 0.5 * (_actionLowerBounds[i] + _actionUpperBounds[i]);
-        float sigma = 0.3 * (_actionUpperBounds[i] - _actionLowerBounds[i]);
-
-        // Producing the random value for action element i
-        action[i] = mean + x * sigma;
-
-        // Storing selection metadata
-        sample["Metadata"]["Action Means"][i] = mean;
-        sample["Metadata"]["Action Sigmas"][i] = sigma;
-      }
-    }
-    else // else we select guided by the policy's probability distribution
-    {
-      // Update the Gaussian means and sigmas of the actions given by the agent's policy
-      forwardPolicy(state);
-
-      // Generating action from the normal distribution
-      for (size_t i = 0; i < _problem->_actionVectorIndexes.size(); i++)
-        action[i] = _actionMeans[i] + _actionSigmas[i] * _normalGenerator->getRandomNumber();
-
-      sample["Metadata"]["Action Means"] = _actionMeans;
-      sample["Metadata"]["Action Sigmas"] = _actionSigmas;
-    }
+    sample["Metadata"]["Action Means"] = _actionMeans;
+    sample["Metadata"]["Action Sigmas"] = _actionSigmas;
   }
 
   /*****************************************************************************
@@ -112,7 +82,7 @@ void Continuous::getAction(korali::Sample &sample)
     action = _actionMeans;
   }
 
-  // Clipping actions
+  // Clipping actions TODO: Use truncated Normal or Beta distribution!!! (PW)
   for (size_t i = 0; i < _problem->_actionVectorIndexes.size(); i++)
   {
    if (action[i] > _actionUpperBounds[i]) action[i] = _actionUpperBounds[i];
@@ -149,7 +119,8 @@ float Continuous::calculateImportanceWeight(const std::vector<float> &action, co
   }
 
   // Now calculating importance weight for the old s,a experience
-  float importanceWeight = std::exp(logpCurPolicy - logpOldPolicy);
+  float logImportanceWeight = logpCurPolicy - logpOldPolicy;
+  float importanceWeight = std::exp( logImportanceWeight > 7 ? 7 : ( logImportanceWeight < -7 ? -7 : logImportanceWeight ) );
 
   return importanceWeight;
 }

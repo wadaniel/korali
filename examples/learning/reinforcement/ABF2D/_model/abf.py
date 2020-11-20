@@ -42,7 +42,7 @@ class ABF:
 class Swimmers:
   def __init__(self):
     self.dt = 1
-    self.t_max = 100
+    self.t_max = 200
     self.target_radius = 1
     self.ABFs = [ABF(bmb=1, cmb=1), ABF(bmb=1, cmb=2)]
     self.reset()

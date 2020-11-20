@@ -159,6 +159,7 @@ class Agent : public Solver
 
   void printGenerationAfter() override;
   void initialize() override;
+  void finalize() override;
 };
 
 } // namespace solver

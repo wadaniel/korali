@@ -233,12 +233,12 @@ std::vector<float> Experiment::getAction(const std::vector<float> &state)
   {
     korali::Sample sample;
     sample["State"] = state;
-    sample["Mode"] == "Testing";
+    sample["Mode"] = "Testing";
     agent->getAction(sample);
     return sample["Action"].get<std::vector<float>>();
   }
   else
-    KORALI_LOG_ERROR("This solver does not support getInferenceAction.\n");
+    KORALI_LOG_ERROR("This solver does not support getAction.\n");
 }
 
 std::vector<float> Experiment::getEvaluation(const std::vector<float> &inputBatch)

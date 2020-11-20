@@ -52,8 +52,8 @@ e["Variables"][10]["Type"] = "State"
 
 e["Variables"][11]["Name"] = "Force"
 e["Variables"][11]["Type"] = "Action"
-e["Variables"][11]["Lower Bound"] = -10.0
-e["Variables"][11]["Upper Bound"] = +10.0
+e["Variables"][11]["Lower Bound"] = -1.0
+e["Variables"][11]["Upper Bound"] = +1.0
 
 ### Configuring NAF hyperparameters
 

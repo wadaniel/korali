@@ -136,6 +136,9 @@ void ReinforcementLearning::runEpisode(Sample &sample)
     // Storing termination status
     experience["Termination"] = sample["Termination"];
 
+    // If the episode was truncated, then save the terminal state
+    if (sample["Termination"] == "Truncated") experience["Metadata"]["Terminal State"] = sample["State"];
+
     // Adding to cumulative reward
     cumulativeReward += sample["Reward"].get<float>();
 

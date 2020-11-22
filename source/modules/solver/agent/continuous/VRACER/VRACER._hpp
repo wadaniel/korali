@@ -44,7 +44,7 @@ class VRACER : public Continuous
    */
   float computeVtbc(size_t expId);
 
-  void forwardPolicy(const std::vector<float> &state) override;
+  std::pair<std::vector<float>, std::vector<float>> getPolicyDistribution(const std::vector<float> &state) override;
   void getAction(korali::Sample &sample) override;
   void trainAgent() override;
   void updateAgentPolicy(const knlohmann::json &hyperparameters) override;

@@ -162,25 +162,25 @@ void VRACER::trainAgent()
     // Get state, action, mean, Sigma and importance weight for this experience
     auto expState = _experienceReplay[curId].state;
     auto expAction = _experienceReplay[curId].action;
-    auto expMean = _experienceReplay[curId].metadata["Action Means"].get<std::vector<float>>();
-    auto expSigma = _experienceReplay[curId].metadata["Action Sigmas"].get<std::vector<float>>();
+    auto expMeans = _experienceReplay[curId].metadata["Action Means"].get<std::vector<float>>();
+    auto expSigmas = _experienceReplay[curId].metadata["Action Sigmas"].get<std::vector<float>>();
 
     // Forward the neural network for this state to get current means and sigmas and Value
-    forwardPolicy(expState);
-    auto curMean = _actionMeans;
-    auto curSigma = _actionSigmas;
+    std::vector<float> curMeans;
+    std::vector<float> curSigmas;
+    std::tie(curMeans, curSigmas) = getPolicyDistribution(expState);
     auto V = _stateValue;
 
     // Compute inverse variance for current policy
     std::vector<float> curInvVariance(_problem->_actionVectorSize);
     for( size_t i = 0; i<_problem->_actionVectorSize; i++ )
-      curInvVariance[i] = 1.0f/(_actionSigmas[i]*_actionSigmas[i]);
+      curInvVariance[i] = 1.0f/(curSigmas[i]*curSigmas[i]);
 
     // Update State Value in Metadata
     _experienceReplay[curId].metadata["State Value"] = V;
 
     // Compute importance weight
-    float importanceWeight = calculateImportanceWeight(expAction, curMean, curSigma, expMean, expSigma);
+    float importanceWeight = calculateImportanceWeight(expAction, curMeans, curSigmas, expMeans, expSigmas);
 
     // Update Importance Weight in Metadata
     _experienceReplay[curId].metadata["Importance Weight"] = importanceWeight;
@@ -255,7 +255,7 @@ void VRACER::trainAgent()
       for( size_t i = 0; i<_problem->_actionVectorSize; i++ )
       {
         // Deviation from expAction and current Mean
-        float actionDiff = ( expAction[i] - curMean[i] );
+        float actionDiff = ( expAction[i] - curMeans[i] );
 
         // Gradient with respect to Mean
         float gradMean = actionDiff * curInvVariance[i];
@@ -265,7 +265,7 @@ void VRACER::trainAgent()
         // std::cout << "without KL: dL_p/dmu=" << gradientLoss[1+i] << "\n";
 
         // Gradient with respect to Sigma
-        float gradSigma = (actionDiff * actionDiff) * (curInvVariance[i] / curSigma[i]) - 1.0f / curSigma[i];
+        float gradSigma = (actionDiff * actionDiff) * (curInvVariance[i] / curSigmas[i]) - 1.0f / curSigmas[i];
 
         // Set gradient for Sigma (no -1 because we want to maximize Off-Policy Objective)
         gradientLoss[_problem->_actionVectorSize+1+i] = _referBeta*lossOffPolicyGradient * gradSigma; 
@@ -278,14 +278,14 @@ void VRACER::trainAgent()
     std::vector<float> expVariance(_problem->_actionVectorSize);
     for( size_t i = 0; i<_problem->_actionVectorSize; i++ )
     {
-      expVariance[i] = expSigma[i]*expSigma[i];
+      expVariance[i] = expSigmas[i]*expSigmas[i];
       expInvVariance[i] = 1.0f/expVariance[i];
     }
 
     // Compute derivative of Kullback-Leibler Divergence
     for( size_t i = 0; i<_problem->_actionVectorSize; i++ )
     {
-      float actionDiff = ( curMean[i] - expMean[i] );
+      float actionDiff = ( curMeans[i] - expMeans[i] );
 
       //// KL-Gradient with respect to Mean ///
 
@@ -298,13 +298,13 @@ void VRACER::trainAgent()
       /// KL-Gradient with respect to Sigma ///
 
       // Contribution to Sigma from Trace
-      float gradTr = - (curInvVariance[i] / curSigma[i] ) * expVariance[i];
+      float gradTr = - (curInvVariance[i] / curSigmas[i] ) * expVariance[i];
 
       // Contribution to Sigma from Quadratic form
-      float gradQuad = - (actionDiff * actionDiff) * (curInvVariance[i] / curSigma[i]);
+      float gradQuad = - (actionDiff * actionDiff) * (curInvVariance[i] / curSigmas[i]);
 
       // Contribution to Sigma from Determinant
-      float gradDet = 1.0f / curSigma[i];
+      float gradDet = 1.0f / curSigmas[i];
 
       // KL-Gradient with respect to Mean
       float gradSigma = gradTr + gradQuad + gradDet;
@@ -394,17 +394,22 @@ float VRACER::computeVtbc(size_t expId)
   return vTbc;
 }
 
-void VRACER::forwardPolicy(const std::vector<float> &state)
+std::pair<std::vector<float>, std::vector<float>> VRACER::getPolicyDistribution(const std::vector<float> &state)
 {
   // Forward the neural network for this state
   std::vector<float> evaluation = _criticPolicyLearner->getEvaluation(state);
   _stateValue = evaluation[0];
-  size_t dimAction = _problem->_actionVectorSize;
-  for( size_t i = 0; i<dimAction; i++ )
+
+  std::vector<float> actionMeans(_problem->_actionVectorSize);
+  std::vector<float> actionSigmas(_problem->_actionVectorSize);
+
+  for( size_t i = 0; i < _problem->_actionVectorSize; i++ )
   {
-    _actionMeans[i] = evaluation[1+i];
-    _actionSigmas[i] = evaluation[dimAction+1+i];
+   actionMeans[i] = evaluation[i+1];
+   actionSigmas[i] = evaluation[_problem->_actionVectorSize+i+1];
   }
+
+  return std::make_pair(actionMeans, actionSigmas);
 }
 
 void VRACER::getAction(korali::Sample &sample)

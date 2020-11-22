@@ -184,6 +184,11 @@ extern bool isPythonActive;
 */
 extern std::stack<Engine *> _engineStack;
 
+/**
+ * @brief Stores the maximum number of threads that Korali modules can use
+ */
+extern size_t _maxThreads;
+
 } // namespace korali
 
 #endif

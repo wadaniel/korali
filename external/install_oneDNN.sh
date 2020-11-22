@@ -102,6 +102,7 @@ if [ ${fileFound} == 0 ]; then
      -DDNNL_BUILD_EXAMPLES=OFF \
      -DDNNL_BUILD_TESTS=OFF \
      -DCMAKE_INSTALL_PREFIX=${installDir} \
+     -DDNNL_CPU_RUNTIME=SEQ \
      -DBUILD_SHARED_LIBS=true; check
 
  echo "[Korali] Building ${libName}... "

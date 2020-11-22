@@ -232,13 +232,28 @@ void VRACER::trainAgent()
       // Qret for terminal state is just reward
       float Qret = _experienceReplay[curId].reward;
 
-      // Check whether experience is terminal or truncated
-      bool isTerminal = _experienceReplay[curId].termination == e_terminal;
-      
-      // TODO: the state for curId+1 needs to be accessed here
-      if(isTerminal == false)
+      // Check whether experience is non-terminal
+      bool isNormal = _experienceReplay[curId].termination == e_nonTerminal;
+
+      // In this case add Vtbc
+      if(isNormal == true )
       {
         float nextExpVtbc = computeVtbc(curId+1);
+        Qret += _criticDiscountFactor*nextExpVtbc;
+      }
+
+      // Check whether experience is truncated
+      bool isTrucated = _experienceReplay[curId].termination == e_truncated;
+
+      // For truncated state add value
+      if(isTrucated == true)
+      {
+        // get truncated state
+        auto truncatedState = _experienceReplay[curId].metadata["Terminal State"].get<std::vector<float>>();
+        // for truncated state, Vtbc == V - forward network
+        forwardPolicy(truncatedState);
+        float nextExpVtbc = _stateValue;
+        // add value to Qret
         Qret += _criticDiscountFactor*nextExpVtbc;
       }
 

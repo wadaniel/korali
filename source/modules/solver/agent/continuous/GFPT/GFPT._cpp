@@ -176,19 +176,19 @@ float GFPT::retraceFunction(size_t expId)
   ssize_t endId = startId;
   while (_experienceReplay[endId].termination == e_nonTerminal) endId++;
 
-  // Calculating Vtbc for the last experience
-  float Vtbc = _experienceReplay[endId].reward;
+  // Calculating initial Vtbc
+  float Vtbc = 0.0f;
 
-  // If it was a truncated episode, also add the value function
+  // If it was a truncated episode, add the value function for the terminal state to Vtbc
   if (_experienceReplay[endId].termination == e_truncated)
   {
-   auto curState = _experienceReplay[endId].state;
-   float curV = _experienceReplay[endId].cache.access("State Value", [this, curState](){return this->stateValueFunction(curState);});
-   Vtbc += _criticDiscountFactor * curV;
+   auto terminalState = _experienceReplay[endId].metadata["Terminal State"].get<std::vector<float>>();
+   float terminalV = _experienceReplay[endId].cache.access("Terminal State Value", [this, terminalState](){return this->stateValueFunction(terminalState);});
+   Vtbc = terminalV;
   }
 
   // Now iterating backwards to calculate the rest of vTbc
-  for (ssize_t curId = endId-1; curId >= startId; curId--)
+  for (ssize_t curId = endId; curId >= startId; curId--)
   {
     // Getting current reward, action, and state
     auto curReward = _experienceReplay[curId].reward;

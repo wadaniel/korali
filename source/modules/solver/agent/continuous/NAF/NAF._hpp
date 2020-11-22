@@ -58,8 +58,7 @@ class NAF : public Continuous
   void trainAgent() override;
   void printAgentInformation() override;
   void initializeAgent() override;
-
-  void forwardPolicy(const std::vector<float> &state) override;
+  std::pair<std::vector<float>, std::vector<float>> getPolicyDistribution(const std::vector<float> &state) override;
 };
 
 } // namespace continuous

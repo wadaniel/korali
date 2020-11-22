@@ -91,12 +91,6 @@ class cACER : public Continuous
   void processTrajectory(size_t startId);
 
   /**
-   * @brief Generates a random action based on the current policy probability distribution
-   * @return The random action
-   */
-  std::vector<float> generateAction();
-
-  /**
    * @brief Returns the advantage value of the given state/action
    * @param state State to evaluate
    * @param action Action to evaluate
@@ -109,7 +103,7 @@ class cACER : public Continuous
    * @param state State to evaluate
    * @return The average advantage value
    */
-  float averageActionAdvantageFunction(const std::vector<float> &state);
+  float averageActionAdvantageFunction(const std::vector<float> &curMeans, const std::vector<float> &curSigmas, const std::vector<float> &state);
 
   /**
    * @brief Returns the retrace value for the given experience
@@ -118,7 +112,7 @@ class cACER : public Continuous
    */
   std::tuple<float, float> retraceFunction(size_t expId);
 
-  void forwardPolicy(const std::vector<float> &state) override;
+  std::pair<std::vector<float>, std::vector<float>> getPolicyDistribution(const std::vector<float> &state) override;
   void trainAgent() override;
   void updateAgentPolicy(const knlohmann::json &hyperparameters) override;
   void printAgentInformation() override;

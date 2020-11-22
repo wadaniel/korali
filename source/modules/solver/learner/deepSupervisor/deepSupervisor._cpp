@@ -2,6 +2,7 @@
 #include "modules/experiment/experiment.hpp"
 #include "modules/solver/learner/deepSupervisor/deepSupervisor.hpp"
 #include "sample/sample.hpp"
+#include <omp.h>
 
 /******************************************************************
  * Performance considerations:
@@ -23,6 +24,11 @@ void DeepSupervisor::initialize()
     _problem = dynamic_cast<problem::SupervisedLearning *>(_k->_problem);
 
     /*****************************************************************
+    * Obtaining parallel configuration
+    *****************************************************************/
+    _evaluationNeuralNetworks.resize(_maxThreads);
+
+    /*****************************************************************
    * Setting up Neural Networks
    *****************************************************************/
 
@@ -40,7 +46,12 @@ void DeepSupervisor::initialize()
     // Creating inference neural network, setting its batch size as one (evaluation per call) and following the global (mean/variance) stats of the trained NN
     neuralNetworkConfig = _neuralNetwork;
     neuralNetworkConfig["Use Preloaded Normalization Data"] = true;
-    _evaluationNeuralNetwork = dynamic_cast<NeuralNetwork *>(getModule(neuralNetworkConfig, _k));
+
+    for (size_t i = 0; i < _maxThreads; i++)
+    {
+     auto nnConfig = neuralNetworkConfig;
+     _evaluationNeuralNetworks[i] = dynamic_cast<NeuralNetwork *>(getModule(nnConfig, _k));
+    }
 
     /*****************************************************************
    * Initializing NN hyperparameters
@@ -52,9 +63,10 @@ void DeepSupervisor::initialize()
     _trainingNeuralNetwork->setHyperparameters(hyperparameters);
 
     // Copying hyperparameters and normalization parameters from training to evaluation
-    _evaluationNeuralNetwork->setHyperparameters(hyperparameters);
+    for (size_t i = 0; i < _maxThreads; i++)
+     _evaluationNeuralNetworks[i]->setHyperparameters(hyperparameters);
 
-    /*****************************************************************
+   /*****************************************************************
    * Setting up weight and bias optimization experiment
    *****************************************************************/
 
@@ -144,7 +156,10 @@ void DeepSupervisor::finalize()
 {
   // Copying hyperparameters and normalization parameters from training to evaluation
   auto hyperparameters = _trainingNeuralNetwork->getHyperparameters();
-  _evaluationNeuralNetwork->setHyperparameters(hyperparameters);
+
+  for (size_t i = 0; i < _maxThreads; i++)
+   _evaluationNeuralNetworks[i]->setHyperparameters(hyperparameters);
+
   _hyperparameters = hyperparameters;
 }
 
@@ -156,38 +171,48 @@ std::vector<float> DeepSupervisor::getHyperparameters()
 void DeepSupervisor::setHyperparameters(const std::vector<float> &hyperparameters)
 {
   // Update evaluation network
-  _evaluationNeuralNetwork->setHyperparameters(hyperparameters);
+  for (size_t i = 0; i < _maxThreads; i++)
+   _evaluationNeuralNetworks[i]->setHyperparameters(hyperparameters);
 }
 
 std::vector<std::vector<float>> DeepSupervisor::getEvaluation(const std::vector<std::vector<float>> &inputBatch)
 {
+  // Getting current thread ID
+  size_t curThread = omp_get_thread_num();
+
   // Updating NN inputs
-  _evaluationNeuralNetwork->setInput(inputBatch);
+  _evaluationNeuralNetworks[curThread]->setInput(inputBatch);
 
   // Running the input values through the neural network
-  _evaluationNeuralNetwork->forward();
+  _evaluationNeuralNetworks[curThread]->forward();
 
-  return _evaluationNeuralNetwork->_outputValues;
+  return _evaluationNeuralNetworks[curThread]->_outputValues;
 }
 
 std::vector<float> DeepSupervisor::getEvaluation(const std::vector<float> &inputBatch)
 {
+  // Getting current thread ID
+  size_t curThread = omp_get_thread_num();
+
   // Updating NN inputs
-  _evaluationNeuralNetwork->setInput({inputBatch});
+  _evaluationNeuralNetworks[curThread]->setInput({inputBatch});
 
   // Running the input values through the neural network
-  _evaluationNeuralNetwork->forward();
+  _evaluationNeuralNetworks[curThread]->forward();
 
-  return _evaluationNeuralNetwork->_outputValues[0];
+  return _evaluationNeuralNetworks[curThread]->_outputValues[0];
 }
 
 std::vector<float> DeepSupervisor::getGradients(const std::vector<float> &outputDiffs)
 {
+  // Getting current thread ID
+  size_t curThread = omp_get_thread_num();
+
   // Backward propagating the gradients through the training neural network
-  _evaluationNeuralNetwork->backward({ outputDiffs });
+  _evaluationNeuralNetworks[curThread]->backward({ outputDiffs });
 
   // Running backward propagation wrt data
-  return _evaluationNeuralNetwork->getDataGradients();
+  return _evaluationNeuralNetworks[curThread]->getDataGradients();
 }
 
 void DeepSupervisor::printGenerationAfter()

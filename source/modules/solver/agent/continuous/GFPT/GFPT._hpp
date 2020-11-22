@@ -17,14 +17,14 @@ class GFPT : public Continuous
 {
   public:
   /**
-   * @brief A neural network for the inference of the averaged advantage function
+   * @brief A neural network for the inference of the averaged advantage function (one per thread)
    */
-  NeuralNetwork *_actionAverageEvaluationNetwork;
+  std::vector<NeuralNetwork*> _actionAverageEvaluationNetworks;
 
   /**
-   * @brief A neural network for the simultaneous evaluation of CMAES candidates
+   * @brief A neural network for the simultaneous evaluation of CMAES candidates (one per thread)
    */
-  NeuralNetwork *_batchOptimizationNetwork;
+  std::vector<NeuralNetwork*> _batchOptimizationNetworks;
 
   float _stateValue;
 
@@ -59,9 +59,9 @@ class GFPT : public Continuous
   korali::Experiment _aExperiment;
 
   /**
-   * @brief Korali optimizer for finding the optimal action as per the critic
+   * @brief Korali optimizer for finding the optimal action as per the critic. One instance per parallel thread.
    */
-  korali::fCMAES *_actionOptimizer;
+  std::vector<korali::fCMAES*> _actionOptimizers;
 
   /**
   * @brief Korali experiment for argmax_action(Q) based on a trained Q-Network
@@ -101,7 +101,7 @@ class GFPT : public Continuous
    * @param state State to evaluate
    * @return The average advantage value
    */
-  float averageActionAdvantageFunction(const std::vector<float> &state);
+  float averageActionAdvantageFunction(const std::vector<float> &curMeans, const std::vector<float> &curSigmas, const std::vector<float> &state);
 
   /**
    * @brief Returns the best action: that with highest advantage for the given state
@@ -117,7 +117,7 @@ class GFPT : public Continuous
    */
   float retraceFunction(size_t expId);
 
-  void forwardPolicy(const std::vector<float> &state) override;
+  std::pair<std::vector<float>, std::vector<float>> getPolicyDistribution(const std::vector<float> &state) override;
   void updateAgentPolicy(const knlohmann::json &hyperparameters) override;
   void trainAgent() override;
   void printAgentInformation() override;

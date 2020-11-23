@@ -361,7 +361,7 @@ void cACER::trainAgent()
     for (size_t i = 0; i < _problem->_actionVectorSize; i++) _policyDistributions[i]->_mean = curMeans[i];
 
     // Getting new action given the current policy
-    std::vector<float> newAction = generateAction(curMeans, curSigmas);
+    std::vector<float> newAction = generateTrainingAction(curMeans, curSigmas);
 
     // Getting A of experience action
     for (size_t i = 0; i < _problem->_actionVectorSize; i++) stateActionVector[_problem->_stateVectorSize + i] = expAction[i];
@@ -373,7 +373,7 @@ void cACER::trainAgent()
 
     // Getting n action samples from the policy
     std::vector<std::vector<float>> actionSamples(_policySamplePopulation);
-    for (size_t i = 0; i < _policySamplePopulation; i++) actionSamples[i] = generateAction(curMeans, curSigmas);
+    for (size_t i = 0; i < _policySamplePopulation; i++) actionSamples[i] = generateTrainingAction(curMeans, curSigmas);
 
     // Getting sum_n(A(x,u)) with u ~ policy(x)
     float aSamplesMean = 0.0;

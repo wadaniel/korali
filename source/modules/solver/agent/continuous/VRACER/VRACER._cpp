@@ -250,9 +250,11 @@ void VRACER::trainAgent()
       {
         // get truncated state
         auto truncatedState = _experienceReplay[curId].metadata["Terminal State"].get<std::vector<float>>();
+
         // for truncated state, Vtbc == V - forward network
-        forwardPolicy(truncatedState);
+        getPolicyDistribution(truncatedState);
         float nextExpVtbc = _stateValue;
+
         // add value to Qret
         Qret += _criticDiscountFactor*nextExpVtbc;
       }
@@ -384,7 +386,7 @@ float VRACER::computeVtbc(size_t expId)
    // get truncated state
     auto truncatedState = _experienceReplay[endId].metadata["Terminal State"].get<std::vector<float>>();
     // for truncated state, Vtbc == V - forward network
-    forwardPolicy(truncatedState);
+    getPolicyDistribution(truncatedState);
     float nextExpVtbc = _stateValue;
     float curV = _experienceReplay[endId].metadata["State Value"].get<float>();
     vTbc += curV + truncatedImportanceWeight * ( _criticDiscountFactor*nextExpVtbc - curV ) ;

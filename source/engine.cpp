@@ -17,6 +17,10 @@ std::stack<Engine *> _engineStack;
 bool isPythonActive = 0;
 size_t _maxThreads;
 
+#ifdef _KORALI_USE_ONEDNN
+  dnnl::engine _engine;
+#endif
+
 Engine::Engine()
 {
   _cumulativeTime = 0.0;
@@ -25,6 +29,10 @@ Engine::Engine()
 
   // Detecting maximum number of threads that modules can run
   _maxThreads = omp_get_max_threads();
+
+ #ifdef _KORALI_USE_ONEDNN
+  _engine = dnnl::engine(dnnl::engine::kind::cpu, 0);
+ #endif
 
   // Turn Off GSL Error Handler
   gsl_set_error_handler_off();

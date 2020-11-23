@@ -47,11 +47,6 @@ void NeuralNetwork::initialize()
 
 #ifdef _KORALI_USE_ONEDNN
 
-  // Initializing Engine and stream
-
-  if (_engineKind == "CPU") _engine = engine(engine::kind::cpu, 0);
-  if (_engineKind == "GPU") _engine = engine(engine::kind::gpu, 0);
-
   _stream = stream(_engine);
 
 #endif

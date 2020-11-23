@@ -54,7 +54,7 @@ e["Variables"][6]["Exploration Sigma"] = 0.3
 
 e["Solver"]["Type"] = "Agent / Continuous / GFPT"
 e["Solver"]["Optimization Steps Per Update"] = 1
-e["Solver"]["Experiences Between Agent Trainings"] = 200
+e["Solver"]["Experiences Between Agent Trainings"] = 10
 e["Solver"]["Cache Persistence"] = 10
 
 e["Solver"]["Refer"]["Target Off Policy Fraction"] = 0.10

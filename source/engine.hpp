@@ -13,8 +13,13 @@
 #include <stack>
 #include <vector>
 
+#ifdef _KORALI_USE_ONEDNN
+  #include "dnnl.hpp"
+#endif
+
 namespace korali
 {
+
 class Sample;
 
 /**

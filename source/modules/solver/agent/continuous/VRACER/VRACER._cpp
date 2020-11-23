@@ -29,7 +29,7 @@ void VRACER::initializeAgent()
     auto d = dynamic_cast<distribution::univariate::Normal *>(getModule(jsNormal, _k));
 
     _policyDistributions.push_back(d);
-    
+
     //knlohmann::json jsBeta;
     //jsBeta["Type"] = "Univariate/Beta";
     //jsBeta["Alpha"] = 0.5;
@@ -38,7 +38,6 @@ void VRACER::initializeAgent()
     //auto d = dynamic_cast<distribution::univariate::Beta *>(getModule(jsBeta, _k));
 
     //_policyDistributions.push_back(d);
-
   }
 
   /*********************************************************************
@@ -82,15 +81,16 @@ void VRACER::initializeAgent()
     auto upperBound = _k->_variables[varIdx]->_upperBound;
     float scale = (upperBound - lowerBound) * 0.5;
     float shift = (upperBound + lowerBound) * 0.5;
-    
-    if(_policyDistribution == "Normal")
+
+    if (_policyDistribution == "Normal")
     {
-      // Tanh mask for Mean (WHY? DW)
+      // Tanh mask for Mean
       _criticPolicyExperiment["Solver"]["Neural Network"]["Output"]["Scale"][i + 1] = scale;
       _criticPolicyExperiment["Solver"]["Neural Network"]["Output"]["Shift"][i + 1] = shift;
       _criticPolicyExperiment["Solver"]["Neural Network"]["Output"]["Absolute Mask"][i + 1] = false;
       _criticPolicyExperiment["Solver"]["Neural Network"]["Output"]["Tanh Mask"][i + 1] = true;
       _criticPolicyExperiment["Solver"]["Neural Network"]["Output"]["Softplus Mask"][i + 1] = false;
+
       // Softplus mask for Sigma
       _criticPolicyExperiment["Solver"]["Neural Network"]["Output"]["Scale"][dimAction + i + 1] = 1.0;
       _criticPolicyExperiment["Solver"]["Neural Network"]["Output"]["Shift"][dimAction + i + 1] = 0.0;
@@ -206,7 +206,7 @@ void VRACER::trainAgent()
       if (expImportanceWeight > _referCutoff || expImportanceWeight < (1.0f / _referCutoff))
         offPolicyCount++;
     }
-    
+
     _referOffPolicyFraction = (float)offPolicyCount / (float)expCount;
 
     /******************************************************
@@ -375,7 +375,6 @@ float VRACER::computeVtbc(size_t expId)
   return vTbc;
 }
 
-
 std::vector<float> VRACER::calculateImportanceWeightGradient(const std::vector<float> &oldAction, const std::vector<float> &curParamsOne, const std::vector<float> &curParamsTwo, const std::vector<float> &oldParamsOne, const std::vector<float> &oldParamsTwo)
 {
   std::vector<float> grad(2 * _problem->_actionVectorSize, 0.0);
@@ -389,17 +388,17 @@ std::vector<float> VRACER::calculateImportanceWeightGradient(const std::vector<f
     {
       // Deviation from expAction and current Mean
       float curActionDiff = (oldAction[i] - curParamsOne[i]);
- 
+
       // Deviation from expAction and old Mean
       float oldActionDiff = (oldAction[i] - oldParamsOne[i]);
- 
+
       // Inverse Variances
       float curInvVar = 1. / (curParamsTwo[i] * curParamsTwo[i]);
       float oldInvVar = 1. / (oldParamsTwo[i] * oldParamsTwo[i]);
 
       // Calc Imp Weight
-      logImportanceWeight += std::log(oldParamsTwo[i]/curParamsTwo[i]);
-      logImportanceWeight += 0.5*(oldActionDiff*oldActionDiff*oldInvVar - curActionDiff*curActionDiff*curInvVar);
+      logImportanceWeight += std::log(oldParamsTwo[i] / curParamsTwo[i]);
+      logImportanceWeight += 0.5 * (oldActionDiff * oldActionDiff * oldInvVar - curActionDiff * curActionDiff * curInvVar);
 
       // Gradient with respect to Mean
       grad[i] = curActionDiff * curInvVar;
@@ -407,13 +406,12 @@ std::vector<float> VRACER::calculateImportanceWeightGradient(const std::vector<f
       // Gradient with respect to Sigma
       grad[_problem->_actionVectorSize + i] = (curActionDiff * curActionDiff) * (curInvVar / curParamsTwo[i]) - 1.0f / curParamsTwo[i];
     }
-    
+
     float importanceWeight = std::exp(logImportanceWeight);
 
     // Scale by importance weight to get gradient
-    for(size_t i = 0; i < 2*_problem->_actionVectorSize; i++)
+    for (size_t i = 0; i < 2 * _problem->_actionVectorSize; i++)
       grad[i] *= importanceWeight;
-
   }
   else /* _policyDistribution == "Beta" */
   {
@@ -426,23 +424,22 @@ std::vector<float> VRACER::calculateImportanceWeightGradient(const std::vector<f
       const float x = oldAction[i];
       const float a = curParamsOne[i];
       const float b = curParamsTwo[i];
-      const float Bab = gsl_sf_beta(a,b);
-      const float psiAb = gsl_sf_psi(a+b);
-      
+      const float Bab = gsl_sf_beta(a, b);
+      const float psiAb = gsl_sf_psi(a + b);
+
       // Gradient wrt alpha
-      grad[i] = (x-1.)*std::pow(x, a-2.);
-      grad[i] -= std::pow(x, a-1.)*(gsl_sf_psi(a)-psiAb);
-      grad[i] *= std::pow(1.-x, b-1.)*invpOldPolicy/Bab;
+      grad[i] = (x - 1.) * std::pow(x, a - 2.);
+      grad[i] -= std::pow(x, a - 1.) * (gsl_sf_psi(a) - psiAb);
+      grad[i] *= std::pow(1. - x, b - 1.) * invpOldPolicy / Bab;
 
       // Gradient wrt beta
-      grad[_problem->_actionVectorSize+i] = (b-1.)*std::pow(1.-x,b-2.);
-      grad[_problem->_actionVectorSize+i] -= std::pow(1.-x, b-1.)*(gsl_sf_psi(b)-psiAb);
-      grad[_problem->_actionVectorSize+i] += std::pow(x, a-1.)*invpOldPolicy/Bab;
+      grad[_problem->_actionVectorSize + i] = (b - 1.) * std::pow(1. - x, b - 2.);
+      grad[_problem->_actionVectorSize + i] -= std::pow(1. - x, b - 1.) * (gsl_sf_psi(b) - psiAb);
+      grad[_problem->_actionVectorSize + i] += std::pow(x, a - 1.) * invpOldPolicy / Bab;
     }
   }
   return grad;
 }
-
 
 knlohmann::json VRACER::runPolicy(const std::vector<float> &state)
 {

@@ -118,8 +118,8 @@ void Agent::runGeneration()
 
   // Waiting for agent to finish
   KORALI_WAIT(agent);
- 
-   // Adding to the number of episodes
+
+  // Adding to the number of episodes
   _currentEpisode++;
 
   // Updating if exceeded best training policy so far.

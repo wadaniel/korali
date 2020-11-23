@@ -47,7 +47,8 @@ class Continuous : public Agent
   */
   virtual knlohmann::json runPolicy(const std::vector<float> &state) = 0;
 
-  std::vector<float> generateAction(const std::vector<float> &curMeans, const std::vector<float> &curSigmas);
+  std::vector<float> generateTrainingAction(const std::vector<float> &curMeans, const std::vector<float> &curSigmas);
+  std::vector<float> generateTestingAction(const std::vector<float> &curMeans, const std::vector<float> &curSigmas);
   virtual void getAction(korali::Sample &sample) override;
   virtual void initializeAgent();
 };

@@ -60,14 +60,14 @@ void Continuous::getAction(korali::Sample &sample)
   * distribution
   ****************************************************************************/
 
-  if (sample["Mode"] == "Training") action = generateAction(curMeans, curSigmas);
+  if (sample["Mode"] == "Training") action = generateTrainingAction(curMeans, curSigmas);
 
   /*****************************************************************************
   * During testing, we select the means (point of highest density) for all
   * elements of the action vector
   ****************************************************************************/
 
-  if (sample["Mode"] == "Testing") action = curMeans;
+  if (sample["Mode"] == "Testing") action = generateTestingAction(curMeans, curSigmas);
 
   /*****************************************************************************
   * Storing the action itself and associated metadata
@@ -77,7 +77,7 @@ void Continuous::getAction(korali::Sample &sample)
   sample["Action"] = action;
 }
 
-std::vector<float> Continuous::generateAction(const std::vector<float> &paramsOne, const std::vector<float> &paramsTwo)
+std::vector<float> Continuous::generateTrainingAction(const std::vector<float> &paramsOne, const std::vector<float> &paramsTwo)
 {
   std::vector<float> action(_problem->_actionVectorSize);
   if (_policyDistribution == "Normal")
@@ -91,6 +91,38 @@ std::vector<float> Continuous::generateAction(const std::vector<float> &paramsOn
     // ParamsOne are the Alphas, ParamsTwo are the Betas
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
       action[i] = _actionLowerBounds[i] + _actionScalings[i] * gsl_ran_beta(_normalGenerator->_range, paramsOne[i], paramsTwo[i]);
+  }
+
+  return action;
+}
+
+std::vector<float> Continuous::generateTestingAction(const std::vector<float> &paramsOne, const std::vector<float> &paramsTwo)
+{
+  std::vector<float> action(_problem->_actionVectorSize);
+  if (_policyDistribution == "Normal")
+  {
+    // ParamsOne are the Means, ParamsTwo are the Sigmas
+    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+      action[i] = paramsOne[i];
+  }
+  else /* _policyDistribution == "Beta" */
+  {
+    // ParamsOne are the Alphas, ParamsTwo are the Betas
+    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+    {
+      float act = 0.0;
+
+      if (paramsOne[i] > 1. && paramsTwo[i] > 1.)
+        act = (paramsOne[i] - 1.) / (paramsOne[i] + paramsTwo[i] - 2);
+      else if (paramsOne[i] <= 1. && paramsTwo[i] > 1.)
+        act = 0.0;
+      else if (paramsOne[i] > 1. && paramsTwo[i] <= 1.)
+        act = 0.0;
+      else
+        KORALI_LOG_ERROR("Case (a<=1 and b<=1) not yet treated.");
+
+      action[i] = _actionLowerBounds[i] * _actionScalings[i] * act;
+    }
   }
 
   return action;

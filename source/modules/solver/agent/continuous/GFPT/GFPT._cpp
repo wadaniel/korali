@@ -256,7 +256,7 @@ float GFPT::averageActionAdvantageFunction(const std::vector<float> &curMeans, c
   for (size_t i = 0; i < _criticAdvantageFunctionPopulation; i++)
   {
     // Generating random a'
-    auto newAction = generateAction(curMeans, curSigmas);
+    auto newAction = generateTrainingAction(curMeans, curSigmas);
 
     // Running evaluation of the entire minibatch
     aResults[i] = currentActionAdvantageFunction(state, newAction);

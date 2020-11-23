@@ -106,7 +106,7 @@ void Agent::runGeneration()
 
     // Running Agent training if the following conditions are met
     if (_experienceCount % _experiencesBetweenAgentTrainings == 0)     // If we accumulated enough experiences between updates, update now
-      if (_experienceReplay.size() > _experienceReplayStartSize) // Perform optimization steps on the critic/policy, if reached the minimum replay memory size
+      if (_experienceReplay.size() >= _experienceReplayStartSize) // Perform optimization steps on the critic/policy, if reached the minimum replay memory size
         for (size_t i = 0; i < _optimizationStepsPerUpdate; i++)
         {
           trainAgent();

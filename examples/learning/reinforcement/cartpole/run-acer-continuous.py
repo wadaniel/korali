@@ -38,8 +38,8 @@ e["Variables"][4]["Exploration Sigma"] = 0.1
 ### Configuring ACER hyperparameters
 
 e["Solver"]["Type"] = "Agent / Continuous / CACER"
-e["Solver"]["Optimization Steps Per Update"] = 100
-e["Solver"]["Experiences Between Agent Trainings"] = 10
+e["Solver"]["Optimization Steps Per Update"] = 50
+e["Solver"]["Experiences Between Agent Trainings"] = 25
 e["Solver"]["Retrace"]["Cache Persistence"] = 0
 
 e["Solver"]["Random Action Probability"]["Initial Value"] = 0.3
@@ -48,19 +48,19 @@ e["Solver"]["Random Action Probability"]["Decrease Rate"] = 0.03
 
 ### Defining Experience Replay configuration
 
-e["Solver"]["Experience Replay"]["Start Size"] =   1000
+e["Solver"]["Experience Replay"]["Start Size"] =   2000
 e["Solver"]["Experience Replay"]["Maximum Size"] = 100000
 
 ## Defining Policy Configuration
 
-e["Solver"]["Policy"]["Learning Rate"] = 1-5
+e["Solver"]["Policy"]["Learning Rate"] = 1-3
 e["Solver"]["Policy"]["Mini Batch Size"] = 32
 e["Solver"]["Policy"]["Normalization Steps"] = 0
 e["Solver"]["Policy"]["Sample Population"] = 5
 
-e["Solver"]["Policy"]["Trust Region"]["Enabled"] = True
+e["Solver"]["Policy"]["Trust Region"]["Enabled"] = False
 #e["Solver"]["Policy"]["Trust Region"]["Divergence Constraint"] = 0.5
-#e["Solver"]["Policy"]["Trust Region"]["Adoption Rate"] = 0.9
+#e["Solver"]["Policy"]["Trust Region"]["Average Network Adoption Rate"] = 0.9
 
 e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
 e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear"
@@ -85,7 +85,7 @@ e["Solver"]["Policy"]["Neural Network"]["Output Scaling"] = [ 10.0 ]
 ## Defining Q-Critic
 
 e["Solver"]["Critic"]["Discount Factor"] = 0.99
-e["Solver"]["Critic"]["Learning Rate"] = 5e-6
+e["Solver"]["Critic"]["Learning Rate"] = 5e-4
 e["Solver"]["Critic"]["Mini Batch Size"] = 32
 e["Solver"]["Critic"]["Normalization Steps"] = 0
 

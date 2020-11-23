@@ -17,15 +17,14 @@
 
 namespace korali
 {
+#ifdef _KORALI_USE_ONEDNN
+extern dnnl::engine _engine;
+#endif
+
 class NeuralNetwork : public Module
 {
   public:
 #ifdef _KORALI_USE_ONEDNN
-
-  /**
-   * @brief oneDNN Engine
-   */
-  dnnl::engine _engine;
 
   /**
    * @brief oneDNN Stream to run operations

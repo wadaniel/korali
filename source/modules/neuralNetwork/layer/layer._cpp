@@ -77,8 +77,8 @@ void Layer::createHyperparameterMemory()
     memory::dims weightDims = {OC, IC};
     auto weightMemDesc = memory::desc(weightDims, memory::data_type::f32, memory::format_tag::ab);
 
-    _weightsMem = memory(weightMemDesc, _nn->_engine);
-    _weightsDiffMem = memory(_weightsMem.get_desc(), _nn->_engine);
+    _weightsMem = memory(weightMemDesc, _engine);
+    _weightsDiffMem = memory(_weightsMem.get_desc(), _engine);
 
 #endif
 
@@ -98,8 +98,8 @@ void Layer::createHyperparameterMemory()
 
     auto biasMemDesc = memory::desc({OC}, memory::data_type::f32, memory::format_tag::a);
 
-    _biasMem = memory(biasMemDesc, _nn->_engine);
-    _biasDiffMem = memory(_biasMem.get_desc(), _nn->_engine);
+    _biasMem = memory(biasMemDesc, _engine);
+    _biasDiffMem = memory(_biasMem.get_desc(), _engine);
 
 #endif
 
@@ -142,16 +142,16 @@ void Layer::createHyperparameterMemory()
 
     // Allocating normalization scale/shift memory structure
     auto normalizationScaleShiftMemDesc = memory::desc(scale_shift_dims, memory::data_type::f32, memory::format_tag::nc);
-    _batchNormalizationScaleShiftMem = memory(normalizationScaleShiftMemDesc, _nn->_engine);
-    _batchNormalizationScaleShiftDiffMem = memory(_batchNormalizationScaleShiftMem.get_desc(), _nn->_engine);
+    _batchNormalizationScaleShiftMem = memory(normalizationScaleShiftMemDesc, _engine);
+    _batchNormalizationScaleShiftDiffMem = memory(_batchNormalizationScaleShiftMem.get_desc(), _engine);
 
     // Creating mean and variance mem structures
     auto normalizationMemDesc = memory::desc({OC}, memory::data_type::f32, memory::format_tag::a);
-    _batchNormalizationMeanMem = memory(normalizationMemDesc, _nn->_engine);
-    _batchNormalizationVarianceMem = memory(normalizationMemDesc, _nn->_engine);
+    _batchNormalizationMeanMem = memory(normalizationMemDesc, _engine);
+    _batchNormalizationVarianceMem = memory(normalizationMemDesc, _engine);
 
     // Creating mean and variance mem structures
-    _batchNormalizationWorkMem = memory(normalizationMemDesc, _nn->_engine);
+    _batchNormalizationWorkMem = memory(normalizationMemDesc, _engine);
 
 #endif
 
@@ -194,13 +194,13 @@ void Layer::createForwardPipeline()
   auto dataMemDesc = memory::desc(layerDims, memory::data_type::f32, memory::format_tag::nc);
 
   // Creating input (node) layer memory
-  _nodeMem = memory(dataMemDesc, _nn->_engine);
+  _nodeMem = memory(dataMemDesc, _engine);
 
   // Creating activation layer memory
-  _activationMem = memory(dataMemDesc, _nn->_engine);
+  _activationMem = memory(dataMemDesc, _engine);
 
   // Creating batch normalization layer memory (if necessary
-  if (_batchNormalizationEnabled) _batchNormalizationMem = memory(dataMemDesc, _nn->_engine);
+  if (_batchNormalizationEnabled) _batchNormalizationMem = memory(dataMemDesc, _engine);
 
 #endif
 
@@ -237,7 +237,7 @@ void Layer::createForwardPipeline()
     auto activationDesc = eltwise_forward::desc(prop_kind::forward_training, _activationAlgorithm, _nodeMem.get_desc(), alpha, beta);
 
     // Create primitive descriptor.
-    _forwardEltwiseActivationPrimitiveDesc = eltwise_forward::primitive_desc(activationDesc, _nn->_engine);
+    _forwardEltwiseActivationPrimitiveDesc = eltwise_forward::primitive_desc(activationDesc, _engine);
 
     // Create the primitive.
     _forwardActivationPrimitive = eltwise_forward(_forwardEltwiseActivationPrimitiveDesc);
@@ -251,7 +251,7 @@ void Layer::createForwardPipeline()
     auto activationDesc = softmax_forward::desc(prop_kind::forward_training, _nodeMem.get_desc(), axis);
 
     // Create primitive descriptor.
-    _forwardSoftmaxActivationPrimitiveDesc = softmax_forward::primitive_desc(activationDesc, _nn->_engine);
+    _forwardSoftmaxActivationPrimitiveDesc = softmax_forward::primitive_desc(activationDesc, _engine);
 
     // Create the primitive.
     _forwardActivationPrimitive = softmax_forward(_forwardSoftmaxActivationPrimitiveDesc);
@@ -294,7 +294,7 @@ void Layer::createForwardPipeline()
 
     // Create inner product primitive descriptor.
     dnnl::primitive_attr forwardPrimitiveAttributes;
-    _forwardInnerProductPrimitiveDesc = inner_product_forward::primitive_desc(inner_product_d, forwardPrimitiveAttributes, _nn->_engine);
+    _forwardInnerProductPrimitiveDesc = inner_product_forward::primitive_desc(inner_product_d, forwardPrimitiveAttributes, _engine);
 
     // Create the weights+bias primitive.
     _forwardInnerProductPrimitive = inner_product_forward(_forwardInnerProductPrimitiveDesc);
@@ -332,7 +332,7 @@ void Layer::createForwardPipeline()
     auto forwardNormalizationDesc = batch_normalization_forward::desc(prop_kind::forward_training, _nodeMem.get_desc(), _batchNormalizationEpsilon, normalizationFlags);
 
     // Create inner product primitive descriptor.
-    _forwardNormalizationPrimitiveDesc = batch_normalization_forward::primitive_desc(forwardNormalizationDesc, _nn->_engine);
+    _forwardNormalizationPrimitiveDesc = batch_normalization_forward::primitive_desc(forwardNormalizationDesc, _engine);
 
     // Create the normalization primitive.
     _forwardNormalizationPrimitive = batch_normalization_forward(_forwardNormalizationPrimitiveDesc);
@@ -369,9 +369,9 @@ void Layer::createBackwardPipeline()
 #ifdef _KORALI_USE_ONEDNN
 
   // Creating data-related gradient memory
-  _nodeDiffMem = memory(_nodeMem.get_desc(), _nn->_engine);
-  _batchNormalizationDiffMem = memory(_nodeMem.get_desc(), _nn->_engine);
-  _activationDiffMem = memory(_nodeMem.get_desc(), _nn->_engine);
+  _nodeDiffMem = memory(_nodeMem.get_desc(), _engine);
+  _batchNormalizationDiffMem = memory(_nodeMem.get_desc(), _engine);
+  _activationDiffMem = memory(_nodeMem.get_desc(), _engine);
 
 #endif
 
@@ -400,7 +400,7 @@ void Layer::createBackwardPipeline()
     auto activationDesc = eltwise_backward::desc(_activationAlgorithm, _nodeMem.get_desc(), _activationMem.get_desc(), alpha, beta);
 
     // Create primitive descriptor.
-    auto backwardActivationPrimitiveDesc = eltwise_backward::primitive_desc(activationDesc, _nn->_engine, _forwardEltwiseActivationPrimitiveDesc);
+    auto backwardActivationPrimitiveDesc = eltwise_backward::primitive_desc(activationDesc, _engine, _forwardEltwiseActivationPrimitiveDesc);
 
     // Create the primitive.
     _backwardActivationPrimitive = eltwise_backward(backwardActivationPrimitiveDesc);
@@ -414,7 +414,7 @@ void Layer::createBackwardPipeline()
     auto activationDesc = softmax_backward::desc(_nodeMem.get_desc(), _activationMem.get_desc(), axis);
 
     // Create primitive descriptor.
-    auto backwardActivationPrimitiveDesc = softmax_backward::primitive_desc(activationDesc, _nn->_engine, _forwardSoftmaxActivationPrimitiveDesc);
+    auto backwardActivationPrimitiveDesc = softmax_backward::primitive_desc(activationDesc, _engine, _forwardSoftmaxActivationPrimitiveDesc);
 
     // Create the primitive.
     _backwardActivationPrimitive = softmax_backward(backwardActivationPrimitiveDesc);
@@ -454,7 +454,7 @@ void Layer::createBackwardPipeline()
       _nodeMem.get_desc());
 
     // Create the primitive.
-    auto backwardDataPrimitiveDesc = inner_product_backward_data::primitive_desc(backwardDataDesc, _nn->_engine, _forwardInnerProductPrimitiveDesc);
+    auto backwardDataPrimitiveDesc = inner_product_backward_data::primitive_desc(backwardDataDesc, _engine, _forwardInnerProductPrimitiveDesc);
     _backwardDataPrimitive = inner_product_backward_data(backwardDataPrimitiveDesc);
 
     _backwardDataArgs[DNNL_ARG_DIFF_DST] = _nodeDiffMem;                   // Input
@@ -468,7 +468,7 @@ void Layer::createBackwardPipeline()
       _nodeDiffMem.get_desc());
 
     // Create the primitive.
-    auto backwardWeightsPrimitiveDesc = inner_product_backward_weights::primitive_desc(backwardWeightsDesc, _nn->_engine, _forwardInnerProductPrimitiveDesc);
+    auto backwardWeightsPrimitiveDesc = inner_product_backward_weights::primitive_desc(backwardWeightsDesc, _engine, _forwardInnerProductPrimitiveDesc);
     _backwardWeightsPrimitive = inner_product_backward_weights(backwardWeightsPrimitiveDesc);
 
     _backwardWeightsArgs[DNNL_ARG_SRC] = _prevLayer->_activationMem; // Input
@@ -492,7 +492,7 @@ void Layer::createBackwardPipeline()
       normalization_flags::use_scale_shift);
 
     // Create the primitive.
-    auto normalizationPrimitiveDesc = batch_normalization_backward::primitive_desc(backwardNormalizationDesc, _nn->_engine, _forwardNormalizationPrimitiveDesc);
+    auto normalizationPrimitiveDesc = batch_normalization_backward::primitive_desc(backwardNormalizationDesc, _engine, _forwardNormalizationPrimitiveDesc);
     _backwardNormalizationPrimitive = batch_normalization_backward(normalizationPrimitiveDesc);
 
     _backwardNormalizationArgs[DNNL_ARG_SRC] = _nodeMem;                                          // Input

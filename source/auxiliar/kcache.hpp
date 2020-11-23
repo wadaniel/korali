@@ -3,12 +3,14 @@
 
 /** \file
 * @brief Implements an LRU cache that returns a pre-calculated value if it is not
-*        too old. Age is determined by an external timer.
+*        too old. Age is determined by an external timer. Mutual exclusion mechanisms
+*        have been added for thread-safe access.
 *        by Sergio Martin (2020)
 ******************************************************************************/
 
 #include <map>
 #include <functional>
+#include <omp.h>
 
 /**
 * \namespace korali
@@ -40,6 +42,7 @@ class kCache
 
   timerType* _timer;
   timerType _maxAge;
+  omp_lock_t _lock;
 
   public:
 
@@ -47,6 +50,7 @@ class kCache
   {
    _timer = &_maxAge;
    _maxAge = 0;
+   omp_init_lock(&_lock);
   }
 
   void setMaxAge(const valType& maxAge)
@@ -61,15 +65,25 @@ class kCache
 
   void set(const keyType& key, const valType& val)
   {
+   omp_set_lock(&_lock);
    _data[key].value = val;
    _data[key].time = *_timer;
+   omp_unset_lock(&_lock);
   }
 
   bool contains(const keyType& key)
   {
-   if (_data.count(key) == 0) return false;
+
+   omp_set_lock(&_lock);
+   if (_data.count(key) == 0)
+   {
+    omp_unset_lock(&_lock);
+    return false;
+   }
 
    timerType age = *_timer - _data[key].time;
+   omp_unset_lock(&_lock);
+
    if (age >= _maxAge) return false;
 
    return true;
@@ -77,14 +91,17 @@ class kCache
 
   valType get(const keyType& key)
   {
+   omp_set_lock(&_lock);
    return _data[key].value;
+   omp_unset_lock(&_lock);
   }
 
   valType access(const keyType& key, std::function<valType(void)> func)
   {
    if (contains(key)) return _data[key].value;
-   set(key, func());
-   return _data[key].value;
+   auto val = func();
+   set(key, val);
+   return val;
   }
 
 };

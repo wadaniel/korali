@@ -91,12 +91,6 @@ class cACER : public Continuous
   void processTrajectory(size_t startId);
 
   /**
-   * @brief Generates a random action based on the current policy probability distribution
-   * @return The random action
-   */
-  std::vector<float> generateAction();
-
-  /**
    * @brief Returns the advantage value of the given state/action
    * @param state State to evaluate
    * @param action Action to evaluate

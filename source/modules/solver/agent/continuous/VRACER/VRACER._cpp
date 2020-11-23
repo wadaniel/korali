@@ -203,14 +203,10 @@ void VRACER::trainAgent()
     for (size_t expId = 0; expId < expCount; expId++)
     {
       float expImportanceWeight = _experienceReplay[expId].policy["Importance Weight"];
-      // std::cout << "expImportanceWeight = " << expImportanceWeight << "\n";
       if (expImportanceWeight > _referCutoff || expImportanceWeight < (1.0f / _referCutoff))
         offPolicyCount++;
     }
-    // std::cout << "offPolicyCount = " << offPolicyCount << "\n";
-    // std::cout << "expCount = " << expCount << "\n";
-    // if( '.' == getchar())
-    //   abort();
+    
     _referOffPolicyFraction = (float)offPolicyCount / (float)expCount;
 
     /******************************************************
@@ -267,20 +263,20 @@ void VRACER::trainAgent()
       }
 
       // Compute Off-Policy Objective (eq. 5)
-      float lossOffPolicyGradient = -importanceWeight * (Qret - V);
+      float lossOffPolicy = -(Qret - V);
 
-      cumulativePolicyError += lossOffPolicyGradient;
-      cumulativePolicyErrorSquared += lossOffPolicyGradient * lossOffPolicyGradient;
+      cumulativePolicyError += lossOffPolicy;
+      cumulativePolicyErrorSquared += lossOffPolicy * lossOffPolicy;
       policyErrorCounter++;
 
       // Compute Policy Gradient wrt Params
-      auto polGrad = calculatePolicyGradient(expAction, curMeans, curSigmas);
+      auto polGrad = calculateImportanceWeightGradient(expAction, curMeans, curSigmas, expMeans, expSigmas);
 
       // Set Gradient of Loss wrt Params
       for (size_t i = 0; i < 2 * _problem->_actionVectorSize; i++)
       {
-        // *-1 because the optimizer is maximizing
-        gradientLoss[1 + i] = -_referBeta * lossOffPolicyGradient * polGrad[i];
+        // '-' because the optimizer is maximizing
+        gradientLoss[1 + i] = -_referBeta * lossOffPolicy * polGrad[i];
       }
     }
 
@@ -289,6 +285,7 @@ void VRACER::trainAgent()
 
     for (size_t i = 0; i < 2 * _problem->_actionVectorSize; i++)
     {
+      // Step towards old policy (gradient pointing to larger difference between old and current policy)
       gradientLoss[1 + i] -= (1.0f - _referBeta) * klGrad[i];
     }
 
@@ -377,6 +374,75 @@ float VRACER::computeVtbc(size_t expId)
   // Returning vTbc
   return vTbc;
 }
+
+
+std::vector<float> VRACER::calculateImportanceWeightGradient(const std::vector<float> &oldAction, const std::vector<float> &curParamsOne, const std::vector<float> &curParamsTwo, const std::vector<float> &oldParamsOne, const std::vector<float> &oldParamsTwo)
+{
+  std::vector<float> grad(2 * _problem->_actionVectorSize, 0.0);
+
+  if (_policyDistribution == "Normal")
+  {
+    float logImportanceWeight = 0.0;
+
+    // ParamsOne are the Means, ParamsTwo are the Sigmas
+    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+    {
+      // Deviation from expAction and current Mean
+      float curActionDiff = (oldAction[i] - curParamsOne[i]);
+ 
+      // Deviation from expAction and old Mean
+      float oldActionDiff = (oldAction[i] - oldParamsOne[i]);
+ 
+      // Inverse Variances
+      float curInvVar = 1. / (curParamsTwo[i] * curParamsTwo[i]);
+      float oldInvVar = 1. / (oldParamsTwo[i] * oldParamsTwo[i]);
+
+      // Calc Imp Weight
+      logImportanceWeight += std::log(oldParamsTwo[i]/curParamsTwo[i]);
+      logImportanceWeight += 0.5*(oldActionDiff*oldActionDiff*oldInvVar - curActionDiff*curActionDiff*curInvVar);
+
+      // Gradient with respect to Mean
+      grad[i] = curActionDiff * curInvVar;
+
+      // Gradient with respect to Sigma
+      grad[_problem->_actionVectorSize + i] = (curActionDiff * curActionDiff) * (curInvVar / curParamsTwo[i]) - 1.0f / curParamsTwo[i];
+    }
+    
+    float importanceWeight = std::exp(logImportanceWeight);
+
+    // Scale by importance weight to get gradient
+    for(size_t i = 0; i < 2*_problem->_actionVectorSize; i++)
+      grad[i] *= importanceWeight;
+
+  }
+  else /* _policyDistribution == "Beta" */
+  {
+    // ParamsOne are the Alphas, ParamsTwo are the Betas
+    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+    {
+      float logpOldPolicy = betaLogDensity(oldAction[i], oldParamsOne[i], oldParamsTwo[i]);
+      float invpOldPolicy = std::exp(-logpOldPolicy);
+
+      const float x = oldAction[i];
+      const float a = curParamsOne[i];
+      const float b = curParamsTwo[i];
+      const float Bab = gsl_sf_beta(a,b);
+      const float psiAb = gsl_sf_psi(a+b);
+      
+      // Gradient wrt alpha
+      grad[i] = (x-1.)*std::pow(x, a-2.);
+      grad[i] -= std::pow(x, a-1.)*(gsl_sf_psi(a)-psiAb);
+      grad[i] *= std::pow(1.-x, b-1.)*invpOldPolicy/Bab;
+
+      // Gradient wrt beta
+      grad[_problem->_actionVectorSize+i] = (b-1.)*std::pow(1.-x,b-2.);
+      grad[_problem->_actionVectorSize+i] -= std::pow(1.-x, b-1.)*(gsl_sf_psi(b)-psiAb);
+      grad[_problem->_actionVectorSize+i] += std::pow(x, a-1.)*invpOldPolicy/Bab;
+    }
+  }
+  return grad;
+}
+
 
 knlohmann::json VRACER::runPolicy(const std::vector<float> &state)
 {

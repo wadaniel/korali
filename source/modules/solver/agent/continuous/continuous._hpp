@@ -31,11 +31,11 @@ class Continuous : public Agent
   float calculateImportanceWeight(const std::vector<float> &action, const std::vector<float> &curMeans, const std::vector<float> &curSigmas, const std::vector<float> &oldMeans, const std::vector<float> &oldSigmas);
 
   /**
-  * @brief Function to pass state through the NN and prepares the Gaussian means and sigmas of the actions (updates members _actionMeans and _actionSigmas)
+  * @brief Function to pass state through the NN and prepares the Gaussian means and sigmas of the actions, along with any additional information
   * @param state The current state
-  * @return Two vectors, one for the Gaussian means, and the other for the sigmas
+  * @return A JSON object containing the information produced by the policy given the current state
   */
-  virtual std::pair<std::vector<float>, std::vector<float>> getPolicyDistribution(const std::vector<float> &state) = 0;
+  virtual knlohmann::json runPolicy(const std::vector<float> &state) = 0;
 
   std::vector<float> generateAction(const std::vector<float> &curMeans, const std::vector<float> &curSigmas);
   virtual void getAction(korali::Sample &sample) override;

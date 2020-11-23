@@ -117,10 +117,10 @@ void dACER::trainAgent()
     //// Computing quantities needed for updating weights
 
     // Getting experience's action
-    size_t curActionIdx = _experienceReplay[expId].metadata["Action Index"].get<size_t>();
+    size_t curActionIdx = _experienceReplay[expId].policy["Action Index"].get<size_t>();
 
     // Getting probability densities for current action given past behaviour
-    auto pOldPolicy = _experienceReplay[expId].metadata["Action Probabilities"].get<std::vector<float>>();
+    auto pOldPolicy = _experienceReplay[expId].policy["Action Probabilities"].get<std::vector<float>>();
 
     // Getting probability densities for current action given current policy
     auto pCurPolicy = getActionProbabilities(curState);
@@ -316,7 +316,7 @@ float dACER::retraceFunction(size_t expId)
     std::vector<float> curState = _experienceReplay[curId].state;
 
     // Getting current action index
-    auto curActionIdx = _experienceReplay[curId].metadata["Action Index"].get<size_t>();;
+    auto curActionIdx = _experienceReplay[curId].policy["Action Index"].get<size_t>();;
 
     // Now calculating V
     float curV = stateValueFunction(curState);
@@ -326,7 +326,7 @@ float dACER::retraceFunction(size_t expId)
 
     // Getting the probability of the actions given by the agent's policy
     auto pActionsCurPolicy = getActionProbabilities(curState);
-    auto pActionsOldPolicy = _experienceReplay[curId].metadata["Action Probabilities"].get<std::vector<float>>();
+    auto pActionsOldPolicy = _experienceReplay[curId].policy["Action Probabilities"].get<std::vector<float>>();
 
     // Now calculating importance weight for the old s,a experience
     float importanceWeight = calculateImportanceWeight(curActionIdx, pActionsCurPolicy, pActionsOldPolicy);

@@ -58,7 +58,7 @@ class DDPG : public Continuous
    */
   float stateActionValueFunction(const std::vector<float> &state, const std::vector<float> &action);
 
-  std::pair<std::vector<float>, std::vector<float>> getPolicyDistribution(const std::vector<float> &state) override;
+  knlohmann::json runPolicy(const std::vector<float> &state) override;
   void updateAgentPolicy(const knlohmann::json &hyperparameters) override;
   void trainAgent() override;
   void printAgentInformation() override;

@@ -85,9 +85,6 @@ void ReinforcementLearning::runEpisode(Sample &sample)
   knlohmann::json experience;
   experience["Sample Id"] = sample["Sample Id"];
 
-  // Clearing sample metadata in case we need it
-  sample["Metadata"] = knlohmann::json();
-
   // Storage to keep track of cumulative reward
   float cumulativeReward = 0.0;
 
@@ -124,8 +121,8 @@ void ReinforcementLearning::runEpisode(Sample &sample)
     // Storing the current action
     experience["Action"] = sample["Action"];
 
-    // Storing any necesary metadata
-    experience["Metadata"] = sample["Metadata"];
+    // Storing the experience's policy
+    experience["Policy"] = sample["Policy"];
 
     // Jumping back into the _agent's environment
     co_switch(envThread);
@@ -137,7 +134,7 @@ void ReinforcementLearning::runEpisode(Sample &sample)
     experience["Termination"] = sample["Termination"];
 
     // If the episode was truncated, then save the terminal state
-    if (sample["Termination"] == "Truncated") experience["Metadata"]["Terminal State"] = sample["State"];
+    if (sample["Termination"] == "Truncated") experience["Truncated State"] = sample["State"];
 
     // Adding to cumulative reward
     cumulativeReward += sample["Reward"].get<float>();

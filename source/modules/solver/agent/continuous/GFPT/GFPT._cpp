@@ -186,8 +186,8 @@ float GFPT::retraceFunction(size_t expId)
   // If it was a truncated episode, add the value function for the terminal state to Vtbc
   if (_experienceReplay[endId].termination == e_truncated)
   {
-   auto terminalState = _experienceReplay[endId].metadata["Terminal State"].get<std::vector<float>>();
-   float terminalV = _experienceReplay[endId].cache.access("Terminal State Value", [this, terminalState](){return this->stateValueFunction(terminalState);});
+   auto truncatedState = _experienceReplay[endId].truncatedState;
+   float terminalV = _experienceReplay[endId].cache.access("Terminal State Value", [this, truncatedState](){return this->stateValueFunction(truncatedState);});
    Vtbc = terminalV;
   }
 
@@ -206,8 +206,8 @@ float GFPT::retraceFunction(size_t expId)
 //    forwardPolicy(curState);
 //
 //    // Getting means and sigmas for current and old policy for the given state
-//    auto oldMean = _experienceReplay[curId].metadata["Action Means"].get<std::vector<float>>();
-//    auto oldSigma = _experienceReplay[curId].metadata["Action Sigmas"].get<std::vector<float>>();
+//    auto oldMean = _experienceReplay[curId].policy["Action Means"].get<std::vector<float>>();
+//    auto oldSigma = _experienceReplay[curId].policy["Action Sigmas"].get<std::vector<float>>();
 //    auto curMean = _actionMeans;
 //    auto curSigma = _actionSigmas;
 //
@@ -331,9 +331,9 @@ void GFPT::trainAgent()
     auto curAction = _experienceReplay[expId].action;
 
     // Updating action distributions for the current state
-    std::vector<float> curMeans;
-    std::vector<float> curSigmas;
-    std::tie(curMeans, curSigmas) = getPolicyDistribution(curState);
+    auto policy = runPolicy(curState);
+    auto curMeans = policy["Action Means"].get<std::vector<float>>();
+    auto curSigmas = policy["Action Sigmas"].get<std::vector<float>>();
 
     // Now calculating V, A, and avgA for current state/action
     float curA = currentActionAdvantageFunction(curState, curAction);
@@ -401,7 +401,6 @@ void GFPT::trainAgent()
   size_t onPolicySamples = 0;
 
   // Accumulating states for evaluation in the policy
-  //printf("-----------------------------------------------\n");
   #pragma omp parallel for schedule (dynamic, 1)
   for (size_t idx = 0; idx < _criticMiniBatchSize; idx++)
   {
@@ -429,13 +428,13 @@ void GFPT::trainAgent()
     }
 
     // Updating action distributions for the current state to get its current means
-    std::vector<float> curMeans;
-    std::vector<float> curSigmas;
-    std::tie(curMeans, curSigmas) = getPolicyDistribution(curState);
+    auto policy = runPolicy(curState);
+    auto curMeans = policy["Action Means"].get<std::vector<float>>();
+    auto curSigmas = policy["Action Sigmas"].get<std::vector<float>>();
 
     // Getting means and sigmas for current and old policy for the given state
-    auto oldMean = _experienceReplay[expId].metadata["Action Means"].get<std::vector<float>>();
-    auto oldSigma = _experienceReplay[expId].metadata["Action Sigmas"].get<std::vector<float>>();
+    auto oldMean = _experienceReplay[expId].policy["Action Means"].get<std::vector<float>>();
+    auto oldSigma = _experienceReplay[expId].policy["Action Sigmas"].get<std::vector<float>>();
 
 //    // Calculating inverse variances of the current policy for this state
 //    std::vector<float> oldInvVariance(_problem->_actionVectorSize);
@@ -504,8 +503,6 @@ void GFPT::trainAgent()
     _policyProblem->_inputs[idx] = curState;
     _policyProblem->_solution[idx] = meanGradients;
   }
-  //printf("-----------------------------------------------\n");
-  //exit(0);
 
   size_t offPolicySamples = _criticMiniBatchSize - onPolicySamples;
   _referOffPolicyFraction = (float) offPolicySamples / (float)_criticMiniBatchSize;
@@ -539,7 +536,7 @@ void GFPT::trainAgent()
 
 }
 
-std::pair<std::vector<float>, std::vector<float>> GFPT::getPolicyDistribution(const std::vector<float> &state)
+knlohmann::json GFPT::runPolicy(const std::vector<float> &state)
 {
   auto eval = _policyLearner->getEvaluation({state});
 
@@ -555,7 +552,10 @@ std::pair<std::vector<float>, std::vector<float>> GFPT::getPolicyDistribution(co
    actionSigmas[i] = sigma;
   }
 
-  return std::make_pair(actionMeans, actionSigmas);
+  knlohmann::json policy;
+  policy["Action Means"] = actionMeans;
+  policy["Action Sigmas"] = actionSigmas;
+  return policy;
 }
 
 void GFPT::updateAgentPolicy(const knlohmann::json &hyperparameters)

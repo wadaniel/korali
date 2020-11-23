@@ -20,11 +20,13 @@ struct experience_t
 {
  std::vector<float> state;
  std::vector<float> action;
+ std::vector<float> truncatedState;
  float reward;
  float priority;
  float probability;
  termination_t termination;
 
+ knlohmann::json policy;
  knlohmann::json metadata;
 
  kCache<std::string, float, size_t> cache;

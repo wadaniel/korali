@@ -239,9 +239,9 @@ std::tuple<float, float> cACER::retraceFunction(size_t expId)
     auto curAction = _experienceReplay[curId].action;
 
     // Updating action distributions for the current state
-    std::vector<float> curMeans;
-    std::vector<float> curSigmas;
-    std::tie(curMeans, curSigmas) = getPolicyDistribution(curState);
+    auto policy = runPolicy(curState);
+    auto curMeans = policy["Action Means"].get<std::vector<float>>();
+    auto curSigmas = policy["Action Sigmas"].get<std::vector<float>>();
 
     // Now calculating V, A, and avgA for current state/action
     float curA = currentActionAdvantageFunction(curState, curAction);
@@ -252,8 +252,8 @@ std::tuple<float, float> cACER::retraceFunction(size_t expId)
     float curQ = curV + curA - avgA;
 
     // Getting means and sigmas
-    auto oldMeans = _experienceReplay[curId].metadata["Action Means"].get<std::vector<float>>();
-    auto oldSigmas = _experienceReplay[curId].metadata["Action Sigmas"].get<std::vector<float>>();
+    auto oldMeans = _experienceReplay[curId].policy["Action Means"].get<std::vector<float>>();
+    auto oldSigmas = _experienceReplay[curId].policy["Action Sigmas"].get<std::vector<float>>();
 
     // Calculating importance weight
     float importanceWeight = calculateImportanceWeight(curAction, curMeans, curSigmas, oldMeans, oldSigmas);
@@ -274,7 +274,7 @@ std::tuple<float, float> cACER::retraceFunction(size_t expId)
   return std::make_tuple(qRet, qOpc);
 }
 
-std::pair<std::vector<float>, std::vector<float>> cACER::getPolicyDistribution(const std::vector<float> &state)
+knlohmann::json cACER::runPolicy(const std::vector<float> &state)
 {
   auto eval = _policyLearner->getEvaluation({state});
 
@@ -290,7 +290,10 @@ std::pair<std::vector<float>, std::vector<float>> cACER::getPolicyDistribution(c
    actionSigmas[i] = sigma;
   }
 
-  return std::make_pair(actionMeans, actionSigmas);
+  knlohmann::json policy;
+  policy["Action Means"] = actionMeans;
+  policy["Action Sigmas"] = actionSigmas;
+  return policy;
 }
 
 float cACER::stateValueFunction(const std::vector<float> &state)
@@ -333,17 +336,17 @@ void cACER::trainAgent()
     std::vector<float> expAction = _experienceReplay[expId].action;
 
     // Getting policy distribution parameters from the current policy NN
-    std::vector<float> curMeans;
-    std::vector<float> curSigmas;
-    std::tie(curMeans, curSigmas) = getPolicyDistribution(expState);
+    auto policy = runPolicy(expState);
+    auto curMeans = policy["Action Means"].get<std::vector<float>>();
+    auto curSigmas = policy["Action Sigmas"].get<std::vector<float>>();
 
     // Calculating inverse variances
     std::vector<float> inverseVariances(_problem->_actionVectorSize);
     for (size_t i = 0; i < _problem->_actionVectorSize; i++) inverseVariances[i] = 1.0f / (curSigmas[i] * curSigmas[i]);
 
     // Getting policy distribution parameters from the old policy NN
-    std::vector<float> oldMeans =_experienceReplay[expId].metadata["Action Means"].get<std::vector<float>>();
-    std::vector<float> oldSigmas =_experienceReplay[expId].metadata["Action Sigmas"].get<std::vector<float>>();
+    std::vector<float> oldMeans =_experienceReplay[expId].policy["Action Means"].get<std::vector<float>>();
+    std::vector<float> oldSigmas =_experienceReplay[expId].policy["Action Sigmas"].get<std::vector<float>>();
 
     // Allocating stateAction placeholder vector for combining a state and an action
     std::vector<float> stateActionVector(_problem->_stateVectorSize + _problem->_actionVectorSize);

@@ -5,6 +5,8 @@
 #ifndef _KORALI_AUXILIARS_KORALIMATH_HPP_
 #define _KORALI_AUXILIARS_KORALIMATH_HPP_
 
+#define _USE_MATH_DEFINES
+#include <cmath>
 #include <gsl/gsl_rng.h>
 #include <limits>
 #include <stdlib.h>
@@ -105,6 +107,14 @@ T dotProduct(const std::vector<T> &x, const std::vector<T> &y)
   for (size_t i = 0; i < x.size(); i++) dotProd += x[i] * y[i];
 
   return dotProd;
+}
+
+template <typename T>
+T normalLogDensity(const T& x, const T& mean, const T& sigma)
+{
+ T norm = -0.5 * log(2 * M_PI * sigma * sigma);
+ T d = (x - mean) / sigma;
+ return norm - 0.5 * d * d;
 }
 
 /**

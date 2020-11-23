@@ -58,7 +58,7 @@ e["Variables"][11]["Upper Bound"] = +1.0
 ### Configuring NAF hyperparameters
 
 e["Solver"]["Type"] = "Agent / Continuous / NAF"
-e["Solver"]["Target Learning Rate"] = 0.001
+e["Solver"]["Target Learning Rate"] = 0.0001
 e["Solver"]["Optimization Steps Per Update"] = 100
 e["Solver"]["Experiences Between Agent Trainings"] = 5
 e["Solver"]["Mini Batch Strategy"] = "Prioritized"

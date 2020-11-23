@@ -33,6 +33,9 @@ void DeepSupervisor::initialize()
     size_t outputLayerId = _neuralNetwork["Layers"].size() - 1;
     _neuralNetwork["Layers"][outputLayerId]["Node Count"] = _problem->_solutionVectorSize;
 
+    // Scale down weights of last layer
+    _neuralNetwork["Layers"][outputLayerId]["Weight Scaling"] = 0.1;
+
     // Creating training neural network, setting its batch size as the number of inputs to the problem
     auto neuralNetworkConfig = _neuralNetwork;
     _trainingNeuralNetwork = dynamic_cast<NeuralNetwork *>(getModule(neuralNetworkConfig, _k));

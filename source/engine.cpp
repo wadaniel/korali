@@ -7,9 +7,9 @@
 #include "modules/problem/problem.hpp"
 #include "modules/solver/solver.hpp"
 #include "sample/sample.hpp"
+#include <omp.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <omp.h>
 
 namespace korali
 {
@@ -18,7 +18,7 @@ bool isPythonActive = 0;
 size_t _maxThreads;
 
 #ifdef _KORALI_USE_ONEDNN
-  dnnl::engine _engine;
+dnnl::engine _engine;
 #endif
 
 Engine::Engine()
@@ -30,9 +30,9 @@ Engine::Engine()
   // Detecting maximum number of threads that modules can run
   _maxThreads = omp_get_max_threads();
 
- #ifdef _KORALI_USE_ONEDNN
+#ifdef _KORALI_USE_ONEDNN
   _engine = dnnl::engine(dnnl::engine::kind::cpu, 0);
- #endif
+#endif
 
   // Turn Off GSL Error Handler
   gsl_set_error_handler_off();

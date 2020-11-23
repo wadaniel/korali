@@ -13,29 +13,32 @@ namespace korali
 {
 namespace solver
 {
-
-enum termination_t {e_nonTerminal = 0, e_terminal = 1, e_truncated = 2};
+enum termination_t
+{
+  e_nonTerminal = 0,
+  e_terminal = 1,
+  e_truncated = 2
+};
 
 struct experience_t
 {
- std::vector<float> state;
- std::vector<float> action;
- std::vector<float> truncatedState;
- float reward;
- float priority;
- float probability;
- termination_t termination;
+  std::vector<float> state;
+  std::vector<float> action;
+  std::vector<float> truncatedState;
+  float reward;
+  float priority;
+  float probability;
+  termination_t termination;
 
- knlohmann::json policy;
- knlohmann::json metadata;
+  knlohmann::json policy;
+  knlohmann::json metadata;
 
- kCache<std::string, float, size_t> cache;
+  kCache<std::string, float, size_t> cache;
 };
 
 class Agent : public Solver
 {
   public:
-
   /**
   * @brief Stores experience replay states.
   */

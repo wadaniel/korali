@@ -232,8 +232,8 @@ knlohmann::json NAF::runPolicy(const std::vector<float> &state)
   for (size_t i = 0; i < _problem->_actionVectorSize; ++i)
   {
     // mapping mean to [lowerbound, upperbound]
-   actionMeans[i] = 0.5 * _actionScalings[i] * (std::tanh(qNNoutput[1 + i]) + 1.0) + _actionLowerBounds[i];
-   actionSigmas[i] = std::sqrt(_covarianceScaling * _actionScalings[i]) * std::exp(-1.0 * std::tanh(qNNoutput[i + 1 + _problem->_actionVectorSize]));
+    actionMeans[i] = 0.5 * _actionScalings[i] * (std::tanh(qNNoutput[1 + i]) + 1.0) + _actionLowerBounds[i];
+    actionSigmas[i] = std::sqrt(_covarianceScaling * _actionScalings[i]) * std::exp(-1.0 * std::tanh(qNNoutput[i + 1 + _problem->_actionVectorSize]));
   }
 
   knlohmann::json policy;

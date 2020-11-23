@@ -8,6 +8,7 @@
 #define _USE_MATH_DEFINES
 #include <cmath>
 #include <gsl/gsl_rng.h>
+#include <gsl/gsl_sf_gamma.h>
 #include <limits>
 #include <stdlib.h>
 #include <string>
@@ -109,12 +110,37 @@ T dotProduct(const std::vector<T> &x, const std::vector<T> &y)
   return dotProd;
 }
 
+/**
+* @brief Computes the log density of a normal distribution.
+* @param x denisty evaluation point
+* @param mean Mean of normal distribution
+* @param sigma Standard Deviation of normal distribution
+* @return The log density
+*/
 template <typename T>
-T normalLogDensity(const T& x, const T& mean, const T& sigma)
+T normalLogDensity(const T &x, const T &mean, const T &sigma)
 {
- T norm = -0.5 * log(2 * M_PI * sigma * sigma);
- T d = (x - mean) / sigma;
- return norm - 0.5 * d * d;
+  T norm = -0.5 * log(2 * M_PI * sigma * sigma);
+  T d = (x - mean) / sigma;
+  return norm - 0.5 * d * d;
+}
+
+/**
+* @brief Computes the log density of the beta distribution.
+* @param x denisty evaluation point
+* @param mean Mean of Beta distribution
+* @param sigma Standard Deviation of Beta distribution
+* @return The log density
+*/
+template <typename T>
+T betaLogDensity(const T &x, const T &mean, const T &sigma)
+{
+  T mu2 = mean * mean;
+  T var = sigma * sigma;
+  T alpha = -mean * (var + mu2 - mean) / var;
+  T beta = (var + mu2 - mean * (mean - 1.0)) / sigma;
+
+  return gsl_sf_lngamma(alpha + beta) - gsl_sf_lngamma(alpha) - gsl_sf_lngamma(beta);
 }
 
 /**

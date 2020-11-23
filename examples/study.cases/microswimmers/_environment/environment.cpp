@@ -56,9 +56,9 @@ void runEnvironment(korali::Sample &s)
 
   // Setting finalization status
   if (status == Status::Success)
-   s["Termination"] = "Normal";
+    s["Termination"] = "Normal";
   else
-   s["Termination"] = "Truncated";
+    s["Termination"] = "Truncated";
 }
 
 void initializeEnvironment(const std::string confFileName)

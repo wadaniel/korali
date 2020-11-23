@@ -38,25 +38,25 @@ e["Variables"][4]["Exploration Sigma"] = 0.35
 ### Defining Agent Configuration 
 
 e["Solver"]["Type"] = "Agent / Continuous / VRACER"
-e["Solver"]["Optimization Steps Per Update"] = 50
-e["Solver"]["Experiences Between Agent Trainings"] = 50
-e["Solver"]["Cache Persistence"] = 20
+e["Solver"]["Optimization Steps Per Update"] = 20
+e["Solver"]["Experiences Between Agent Trainings"] = 5
+e["Solver"]["Cache Persistence"] = 0
 
 e["Solver"]["Refer"]["Target Off Policy Fraction"] = 0.10
 e["Solver"]["Refer"]["Cutoff Scale"] = 4.0
-e["Solver"]["Refer"]["Start Size"] = 4000
+e["Solver"]["Refer"]["Start Size"] = 1000
 
 ### Defining the configuration of replay memory
 
-e["Solver"]["Experience Replay"]["Start Size"] =   4000
-e["Solver"]["Experience Replay"]["Maximum Size"] = 16000
+e["Solver"]["Experience Replay"]["Start Size"] =   1000
+e["Solver"]["Experience Replay"]["Maximum Size"] = 10000
 
 ## Defining Neural Network Configuration for Policy and Critic into Critic Container
 
 e["Solver"]["Critic"]["Discount Factor"] = 0.99
 e["Solver"]["Critic"]["Learning Rate"] = 0.0001 
 e["Solver"]["Critic"]["Mini Batch Size"] = 32
-e["Solver"]["Critic"]["Normalization Steps"] = 8
+e["Solver"]["Critic"]["Normalization Steps"] = 0
 
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear"

@@ -13,7 +13,6 @@ namespace agent
 class Discrete : public Agent
 {
   public:
-
   /**
  * @brief Storage for the pointer to the (discrete) learning problem
  */

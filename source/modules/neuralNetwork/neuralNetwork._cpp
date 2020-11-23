@@ -22,7 +22,6 @@ using namespace dnnl;
 
 namespace korali
 {
-
 NeuralNetwork::NeuralNetwork()
 {
   _isInitialized = false;
@@ -115,6 +114,10 @@ std::vector<float> NeuralNetwork::generateInitialHyperparameters()
   for (size_t i = 0; i < _layers.size(); i++)
   {
     auto layerParameters = _layers[i]->generateInitialHyperparameters();
+    // tmp fix (DW)
+    if(i == _layers.size() - 1)
+      for (size_t j = 0; j < layerParameters.size(); ++j)
+        layerParameters[j] *= 0.1;
     initialHyperparameters.insert(initialHyperparameters.end(), layerParameters.begin(), layerParameters.end());
   }
 
@@ -158,7 +161,7 @@ void NeuralNetwork::setInput(const std::vector<std::vector<float>> &input)
 
 void NeuralNetwork::forward()
 {
- size_t layerCount = _layers.size();
+  size_t layerCount = _layers.size();
 
   // forward propagating neural network
   for (size_t i = 0; i < layerCount; i++)
@@ -330,44 +333,44 @@ void NeuralNetwork::forward()
   // Creating storage for output value sign, if using absolute mask
   if (_outputAbsoluteMask.size() > 0)
   {
-   _outputSign.resize(_batchSize);
-   for (size_t i = 0; i < _batchSize; i++) _outputSign[i].resize(nodeCount);
+    _outputSign.resize(_batchSize);
+    for (size_t i = 0; i < _batchSize; i++) _outputSign[i].resize(nodeCount);
   }
 
   for (size_t i = 0; i < _batchSize; i++)
-   for (size_t j = 0; j < nodeCount; j++)
-   {
-     auto x = resultData[i * nodeCount + j];
+    for (size_t j = 0; j < nodeCount; j++)
+    {
+      auto x = resultData[i * nodeCount + j];
 
       // If we use a softplus mask, then apply the mask now
       if (_outputSoftplusMask.size() > 0)
         if (_outputSoftplusMask[j] == true)
           x = 0.5 * (x + std::sqrt(1. + x * x));
 
-     // If we use a tanh mask, then apply the mask now
-     if (_outputTanhMask.size() > 0)
-       if (_outputTanhMask[j] == true)
-        x = std::tanh(x);
+      // If we use a tanh mask, then apply the mask now
+      if (_outputTanhMask.size() > 0)
+        if (_outputTanhMask[j] == true)
+          x = std::tanh(x);
 
-     // If we use an absolute mask, then apply the mask now
-     if (_outputAbsoluteMask.size() > 0)
-     {
+      // If we use an absolute mask, then apply the mask now
+      if (_outputAbsoluteMask.size() > 0)
+      {
         // Storing original sign bit
         _outputSign[i][j] = std::signbit(x);
 
         // Using an absolute function to remove sign from number
         if (_outputAbsoluteMask[j] == true)
-         x = std::fabs(x);
-     }
+          x = std::fabs(x);
+      }
 
-    // If we  use scaling, then apply the scaling factors now
-    if (_outputScale.size() > 0) x *= _outputScale[j];
+      // If we  use scaling, then apply the scaling factors now
+      if (_outputScale.size() > 0) x *= _outputScale[j];
 
-    // If we  use shifting, then apply the scaling factors now
-    if (_outputShift.size() > 0) x += _outputShift[j];
+      // If we  use shifting, then apply the scaling factors now
+      if (_outputShift.size() > 0) x += _outputShift[j];
 
-    _outputValues[i][j] = x;
-  }
+      _outputValues[i][j] = x;
+    }
 }
 
 void NeuralNetwork::backward(const std::vector<std::vector<float>> &gradients)
@@ -377,7 +380,7 @@ void NeuralNetwork::backward(const std::vector<std::vector<float>> &gradients)
 
   // If gradients batch size is different than forwarding batch size, fail with error
   if (batchSize != _batchSize)
-   KORALI_LOG_ERROR("Wrong batch size passed for backward propagation. Expected: %lu, provided: %lu.\n", _batchSize, batchSize);
+    KORALI_LOG_ERROR("Wrong batch size passed for backward propagation. Expected: %lu, provided: %lu.\n", _batchSize, batchSize);
 
   // Running backward propagation
   size_t layerCount = _layers.size();
@@ -387,47 +390,47 @@ void NeuralNetwork::backward(const std::vector<std::vector<float>> &gradients)
   // Copying incoming gradients to a contiguous vector
   std::vector<float> floatDiffs(_batchSize * outputSize);
   for (size_t i = 0; i < _batchSize; i++)
-   for (size_t j = 0; j < outputSize; j++)
-   {
-    // Getting forward propagation output and passed gradients
-    float x = _outputValues[i][j];
-    float g = gradients[i][j];
-
-    // If we use shift, then apply the inverse shift to the forward output
-    if (_outputShift.size() > 0)
-     x = x - _outputShift[j];
-
-    // If we use scaling, then apply the inverse scaling factors gradient now
-    if (_outputScale.size() > 0)
+    for (size_t j = 0; j < outputSize; j++)
     {
-     x = x / _outputScale[j];
-     g = g * _outputScale[j];
-    }
+      // Getting forward propagation output and passed gradients
+      float x = _outputValues[i][j];
+      float g = gradients[i][j];
 
-    // If we use an absolute mask, then restore the corresponding sign now
-    if (_outputAbsoluteMask.size() > 0)
-     if (_outputAbsoluteMask[j] == true)
-      if (_outputSign[i][j])
-       g = -g;
+      // If we use shift, then apply the inverse shift to the forward output
+      if (_outputShift.size() > 0)
+        x = x - _outputShift[j];
 
-    // If we use an tanh mask, then apply its derivative
-    if (_outputTanhMask.size() > 0)
-     if (_outputTanhMask[j] == true)
-     {
-       g = g * (1.0f - x*x); // x is still tanh(x)
-     }
-
-    // If we use a softplus  mask, then apply its derivative
-    if (_outputSoftplusMask.size() > 0)
-      if (_outputSoftplusMask[j] == true)
+      // If we use scaling, then apply the inverse scaling factors gradient now
+      if (_outputScale.size() > 0)
       {
-        //float nnx = resultData[i * nodeCount + j];
-        float nnx = x - 0.25 / x; // Approximation
-        g = g * 0.5 * (nnx / std::sqrt(nnx * nnx + 1) + 1);
+        x = x / _outputScale[j];
+        g = g * _outputScale[j];
       }
 
-    floatDiffs[i*outputSize + j] = g;
-   }
+      // If we use an absolute mask, then restore the corresponding sign now
+      if (_outputAbsoluteMask.size() > 0)
+        if (_outputAbsoluteMask[j] == true)
+          if (_outputSign[i][j])
+            g = -g;
+
+      // If we use an tanh mask, then apply its derivative
+      if (_outputTanhMask.size() > 0)
+        if (_outputTanhMask[j] == true)
+        {
+          g = g * (1.0f - x * x); // x is still tanh(x)
+        }
+
+      // If we use a softplus  mask, then apply its derivative
+      if (_outputSoftplusMask.size() > 0)
+        if (_outputSoftplusMask[j] == true)
+        {
+          //float nnx = resultData[i * nodeCount + j];
+          float nnx = x - 0.25 / x; // Approximation
+          g = g * 0.5 * (nnx / std::sqrt(nnx * nnx + 1) + 1);
+        }
+
+      floatDiffs[i * outputSize + j] = g;
+    }
 
 // Copying gradients to the output end of the NN
 #ifdef _KORALI_USE_ONEDNN

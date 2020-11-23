@@ -41,7 +41,7 @@ class DeepSupervisor : public Learner
   /**
    * @brief A neural network to perform inference of inputs and obtain gradients, one per thread.
    */
-  std::vector<NeuralNetwork*> _evaluationNeuralNetworks;
+  std::vector<NeuralNetwork *> _evaluationNeuralNetworks;
 
   /**
    * @brief Keeps track of whether the training/validation configuration has been built

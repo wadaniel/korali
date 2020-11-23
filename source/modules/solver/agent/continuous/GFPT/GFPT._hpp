@@ -16,11 +16,10 @@ namespace continuous
 class GFPT : public Continuous
 {
   public:
-
   /**
    * @brief A neural network for the simultaneous evaluation of CMAES candidates (one per thread)
    */
-  std::vector<NeuralNetwork*> _batchOptimizationNetworks;
+  std::vector<NeuralNetwork *> _batchOptimizationNetworks;
 
   float _stateValue;
 
@@ -57,7 +56,7 @@ class GFPT : public Continuous
   /**
    * @brief Korali optimizer for finding the optimal action as per the critic. One instance per parallel thread.
    */
-  std::vector<korali::fCMAES*> _actionOptimizers;
+  std::vector<korali::fCMAES *> _actionOptimizers;
 
   /**
   * @brief Korali experiment for argmax_action(Q) based on a trained Q-Network

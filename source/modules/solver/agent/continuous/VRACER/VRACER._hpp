@@ -16,7 +16,6 @@ namespace continuous
 class VRACER : public Continuous
 {
   public:
-
   /**
    * @brief Pointer to training the actor network
    */

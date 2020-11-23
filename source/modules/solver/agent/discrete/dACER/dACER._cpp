@@ -292,8 +292,8 @@ float dACER::retraceFunction(size_t expId)
   for (ssize_t i = startId; i < endId; i++)
   {
     // If the difference in age is within the range, then it's a cache hit
-   if (_experienceReplay[i].cache.contains("QRetNext"))
-   {
+    if (_experienceReplay[i].cache.contains("QRetNext"))
+    {
       qRetNext = _experienceReplay[i].cache.get("QRetNext");
       curId = i;
       break;
@@ -316,7 +316,8 @@ float dACER::retraceFunction(size_t expId)
     std::vector<float> curState = _experienceReplay[curId].state;
 
     // Getting current action index
-    auto curActionIdx = _experienceReplay[curId].policy["Action Index"].get<size_t>();;
+    auto curActionIdx = _experienceReplay[curId].policy["Action Index"].get<size_t>();
+    ;
 
     // Now calculating V
     float curV = stateValueFunction(curState);
@@ -338,7 +339,7 @@ float dACER::retraceFunction(size_t expId)
     qRetNext = truncatedImportanceWeight * (qRet - curQ) + curV;
 
     // Refreshing cache with the calculated value
-    _experienceReplay[curId-1].cache.set("QRetNext", qRetNext);
+    _experienceReplay[curId - 1].cache.set("QRetNext", qRetNext);
   }
 
   // Returning qRet

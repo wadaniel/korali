@@ -75,7 +75,7 @@ void Agent::runGeneration()
   // Launching agent
   auto beginTime = std::chrono::steady_clock::now(); // Profiling
   KORALI_START(agent);
-  auto endTime = std::chrono::steady_clock::now(); // Profiling
+  auto endTime = std::chrono::steady_clock::now();                                                      // Profiling
   _agentStartTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
 
   // Creating storage for the entire episode before adding it to the replay memory
@@ -87,7 +87,7 @@ void Agent::runGeneration()
     // Listening for incoming experiences
     auto beginTime = std::chrono::steady_clock::now(); // Profiling
     experience = KORALI_RECV_MSG_FROM_SAMPLE(agent);
-    auto endTime = std::chrono::steady_clock::now(); // Profiling
+    auto endTime = std::chrono::steady_clock::now();                                                     // Profiling
     _agentWaitTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
 
     // Storing experience in the episode
@@ -100,8 +100,8 @@ void Agent::runGeneration()
     isTerminal = experience["Termination"] != "Non Terminal";
 
     // Running Agent training if the following conditions are met
-    if (_experienceCount % _experiencesBetweenAgentTrainings == 0)     // If we accumulated enough experiences between updates, update now
-      if (_experienceReplay.size() >= _experienceReplayStartSize) // Perform optimization steps on the critic/policy, if reached the minimum replay memory size
+    if (_experienceCount % _experiencesBetweenAgentTrainings == 0) // If we accumulated enough experiences between updates, update now
+      if (_experienceReplay.size() >= _experienceReplayStartSize)  // Perform optimization steps on the critic/policy, if reached the minimum replay memory size
         for (size_t i = 0; i < _optimizationStepsPerUpdate; i++)
         {
           trainAgent();
@@ -110,7 +110,7 @@ void Agent::runGeneration()
 
     // If agent requested new policy, send the new hyperparameters
     if (experience["Request New Policy"] == true)
-     KORALI_SEND_MSG_TO_SAMPLE(agent, _hyperparameters);
+      KORALI_SEND_MSG_TO_SAMPLE(agent, _hyperparameters);
   }
 
   // Now that we have the entire episode, process its experiences (add them to replay memory)
@@ -122,8 +122,8 @@ void Agent::runGeneration()
   // Updating if exceeded best training policy so far.
   if (_currentReward > _bestTrainingReward)
   {
-   _bestTrainingReward = _currentReward;
-   _bestTrainingEpisode = _currentEpisode;
+    _bestTrainingReward = _currentReward;
+    _bestTrainingEpisode = _currentEpisode;
   }
 
   // Adding to the number of episodes
@@ -169,8 +169,8 @@ void Agent::runGeneration()
     // and store hyperparameters as best so far.
     if (_averageTestingReward > _bestAverageTestingReward)
     {
-     _bestAverageTestingReward = _averageTestingReward;
-     _bestHyperparameters = _hyperparameters;
+      _bestAverageTestingReward = _averageTestingReward;
+      _bestHyperparameters = _hyperparameters;
     }
   }
 
@@ -199,8 +199,8 @@ void Agent::processExperience(knlohmann::json &experience)
   if (experience["Termination"] == "Terminal") e.termination = e_terminal;
   if (experience["Termination"] == "Truncated")
   {
-   e.termination = e_truncated;
-   e.truncatedState = experience["Truncated State"].get<std::vector<float>>();
+    e.termination = e_truncated;
+    e.truncatedState = experience["Truncated State"].get<std::vector<float>>();
   }
 
   e.priority = _experienceReplayMaxPriority;
@@ -296,7 +296,7 @@ std::vector<size_t> Agent::generateMiniBatch(size_t size)
 
     // Uniform fill if miniBatch not full due to numerical precision during probability accumulation (cumulative probability < 1)
     while (batchIdx < size)
-     miniBatch[batchIdx++] = std::floor(_uniformGenerator->getRandomNumber() * (float)(_experienceReplay.size() - 1));
+      miniBatch[batchIdx++] = std::floor(_uniformGenerator->getRandomNumber() * (float)(_experienceReplay.size() - 1));
   }
 
   return miniBatch;
@@ -390,8 +390,8 @@ void Agent::normalizeStateNeuralNetwork(NeuralNetwork *neuralNetwork, size_t min
 
 void Agent::finalize()
 {
- // Updating policy with the best parameters produced during training
- updateAgentPolicy(_bestHyperparameters);
+  // Updating policy with the best parameters produced during training
+  updateAgentPolicy(_bestHyperparameters);
 }
 
 void Agent::printGenerationAfter()

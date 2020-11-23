@@ -19,7 +19,6 @@
 
 namespace korali
 {
-
 class Sample;
 
 /**

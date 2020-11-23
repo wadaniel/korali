@@ -227,18 +227,33 @@ void VRACER::trainAgent()
     // getchar();
 
     // Compute policy gradient only if inside trust region
-    if ( importanceWeight > _referCutoff || importanceWeight < (1.0f/_referCutoff) )
+    if ( importanceWeight < _referCutoff || importanceWeight > (1.0f/_referCutoff) )
     {
       // Qret for terminal state is just reward
       float Qret = _experienceReplay[curId].reward;
 
-      // Check whether experience is terminal or truncated
-      bool isTerminal = _experienceReplay[curId].termination == e_terminal;
-      
-      // TODO: the state for curId+1 needs to be accessed here
-      if(isTerminal == false)
+      // Check whether experience is non-terminal
+      bool isNormal = _experienceReplay[curId].termination == e_nonTerminal;
+
+      // In this case add Vtbc
+      if(isNormal == true )
       {
         float nextExpVtbc = computeVtbc(curId+1);
+        Qret += _criticDiscountFactor*nextExpVtbc;
+      }
+
+      // Check whether experience is truncated
+      bool isTrucated = _experienceReplay[curId].termination == e_truncated;
+
+      // For truncated state add value
+      if(isTrucated == true)
+      {
+        // get truncated state
+        auto truncatedState = _experienceReplay[curId].metadata["Terminal State"].get<std::vector<float>>();
+        // for truncated state, Vtbc == V - forward network
+        forwardPolicy(truncatedState);
+        float nextExpVtbc = _stateValue;
+        // add value to Qret
         Qret += _criticDiscountFactor*nextExpVtbc;
       }
 
@@ -363,12 +378,16 @@ float VRACER::computeVtbc(size_t expId)
   // Initializing vTbc to weighted reward of the last
   float vTbc = truncatedImportanceWeight * _experienceReplay[endId].reward;
 
-  // If the episode was truncated, then add also the weighted state value function
+  // If the episode was truncated add contribution
   if (_experienceReplay[endId].termination == e_truncated)
   {
-   auto curState = _experienceReplay[endId].state;
-   float curV = _experienceReplay[endId].metadata["State Value"].get<float>();
-   vTbc += (1 - truncatedImportanceWeight) * curV;
+   // get truncated state
+    auto truncatedState = _experienceReplay[endId].metadata["Terminal State"].get<std::vector<float>>();
+    // for truncated state, Vtbc == V - forward network
+    forwardPolicy(truncatedState);
+    float nextExpVtbc = _stateValue;
+    float curV = _experienceReplay[endId].metadata["State Value"].get<float>();
+    vTbc += curV + truncatedImportanceWeight * ( _criticDiscountFactor*nextExpVtbc - curV ) ;
   }
 
   // Now iterating backwards to calculate the rest of vTbc

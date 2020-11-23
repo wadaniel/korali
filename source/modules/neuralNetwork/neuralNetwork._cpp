@@ -107,8 +107,6 @@ std::vector<float> NeuralNetwork::generateInitialHyperparameters()
   for (size_t i = 0; i < _layers.size(); i++)
   {
     auto layerParameters = _layers[i]->generateInitialHyperparameters();
-    if (i == _layers.size() - 1)
-      for (size_t j = 0; j < layerParameters.size(); ++j) layerParameters[j] *= 0.1;
     initialHyperparameters.insert(initialHyperparameters.end(), layerParameters.begin(), layerParameters.end());
   }
 

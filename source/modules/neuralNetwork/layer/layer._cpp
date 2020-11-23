@@ -18,7 +18,7 @@ std::vector<float> Layer::generateInitialHyperparameters()
   if (_prevLayer != NULL)
   {
     // Setting value for this layer's xavier constant
-    float xavierConstant = sqrt(6.0) / sqrt(_nodeCount + _prevLayer->_nodeCount);
+    float xavierConstant = sqrt(6.0) / sqrt(_nodeCount + _prevLayer->_nodeCount) * _weightScaling;
 
     // Adding layer's weights hyperparameter values
     for (size_t i = 0; i < _nodeCount; i++)

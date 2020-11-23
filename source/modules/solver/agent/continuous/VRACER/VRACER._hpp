@@ -33,19 +33,13 @@ class VRACER : public Continuous
   problem::SupervisedLearning *_criticPolicyProblem;
 
   /**
-  * @brief Variable with state value
-  */
-  float _stateValue;
-  
-  /**
    * @brief Calculates the V-target
    * @param expId Experience Id
    * @return vTbc
    */
   float computeVtbc(size_t expId);
 
-  std::pair<std::vector<float>, std::vector<float>> getPolicyDistribution(const std::vector<float> &state) override;
-  void getAction(korali::Sample &sample) override;
+  knlohmann::json runPolicy(const std::vector<float> &state) override;
   void trainAgent() override;
   void updateAgentPolicy(const knlohmann::json &hyperparameters) override;
   void printAgentInformation() override;

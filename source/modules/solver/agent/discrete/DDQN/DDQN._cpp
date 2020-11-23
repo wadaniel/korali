@@ -127,7 +127,7 @@ void DDQN::trainAgent()
     // Getting experience's current state and action
     auto curState = _experienceReplay[expId].state;
     auto curAction = _experienceReplay[expId].action;
-    auto curActionIdx = _experienceReplay[expId].metadata["Action Index"].get<size_t>();
+    auto curActionIdx = _experienceReplay[expId].policy["Action Index"].get<size_t>();
 
     // If state is not terminal (next state is filled) then add Qnew to the Q value.
     if (_experienceReplay[expId].termination == e_nonTerminal)

@@ -156,31 +156,6 @@ class NeuralNetwork : public Module
   NeuralNetwork();
 };
 
-/**
- * @brief [Profiling] Stores the time spent writing the input to the NN
- */
-extern double _inputWriteTime;
-
-/**
- * @brief [Profiling] Stores the time spent reading the output to the NN
- */
-extern double _outputReadTime;
-
-/**
- * @brief [Profiling] Stores the time spent normalizing the NN
- */
-extern double _normalizationTime;
-
-/**
- * @brief [Profiling] Stores the time spent forward-propagating the NN
- */
-extern double _forwardStreamTime;
-
-/**
- * @brief [Profiling] Stores the time spent backward-propagating the NN
- */
-extern double _backwardStreamTime;
-
 } // namespace korali
 
 #endif // _KORALI_SOLVER_NEURAL_NETWORK_HPP_

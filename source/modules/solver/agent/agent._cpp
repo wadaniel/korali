@@ -46,11 +46,6 @@ void Agent::initialize()
   }
 
   // Initializing profiling timers
-  _inputWriteTime = 0.0;
-  _outputReadTime = 0.0;
-  _normalizationTime = 0.0;
-  _forwardStreamTime = 0.0;
-  _backwardStreamTime = 0.0;
   _agentStartTime = 0.0;
   _agentWaitTime = 0.0;
 }
@@ -202,11 +197,15 @@ void Agent::processExperience(knlohmann::json &experience)
 
   if (experience["Termination"] == "Non Terminal") e.termination = e_nonTerminal;
   if (experience["Termination"] == "Terminal") e.termination = e_terminal;
-  if (experience["Termination"] == "Truncated") e.termination = e_truncated;
+  if (experience["Termination"] == "Truncated")
+  {
+   e.termination = e_truncated;
+   e.truncatedState = experience["Truncated State"].get<std::vector<float>>();
+  }
 
   e.priority = _experienceReplayMaxPriority;
   e.probability = 0.0;
-  e.metadata = experience["Metadata"];
+  e.policy = experience["Policy"];
   _experienceReplay.add(e);
 
   // Adding experience's reward to episode's reward
@@ -436,11 +435,6 @@ void Agent::printGenerationAfter()
   printAgentInformation();
 
   _k->_logger->logInfo("Normal", "Profiling Information:\n");
-  _k->_logger->logInfo("Normal", " + NN Input Write Time:         %fs\n", _inputWriteTime / 1.0e+9f);
-  _k->_logger->logInfo("Normal", " + NN Output Read Time:         %fs\n", _outputReadTime / 1.0e+9f);
-  _k->_logger->logInfo("Normal", " + NN Normalization Time:       %fs\n", _normalizationTime / 1.0e+9f);
-  _k->_logger->logInfo("Normal", " + NN Forward Propagation Time: %fs\n", _forwardStreamTime / 1.0e+9f);
-  _k->_logger->logInfo("Normal", " + NN Back Propagation Time:    %fs\n", _backwardStreamTime / 1.0e+9f);
   _k->_logger->logInfo("Normal", " + Agent Start Time:            %fs\n", _agentStartTime / 1.0e+9f);
   _k->_logger->logInfo("Normal", " + Agent Wait Time:             %fs\n", _agentWaitTime / 1.0e+9f);
 }

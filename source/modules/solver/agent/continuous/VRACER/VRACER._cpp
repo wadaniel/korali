@@ -162,14 +162,14 @@ void VRACER::trainAgent()
     // Get state, action, mean, Sigma and importance weight for this experience
     auto expState = _experienceReplay[curId].state;
     auto expAction = _experienceReplay[curId].action;
-    auto expMeans = _experienceReplay[curId].metadata["Action Means"].get<std::vector<float>>();
-    auto expSigmas = _experienceReplay[curId].metadata["Action Sigmas"].get<std::vector<float>>();
+    auto expMeans = _experienceReplay[curId].policy["Action Means"].get<std::vector<float>>();
+    auto expSigmas = _experienceReplay[curId].policy["Action Sigmas"].get<std::vector<float>>();
 
     // Forward the neural network for this state to get current means and sigmas and Value
-    std::vector<float> curMeans;
-    std::vector<float> curSigmas;
-    std::tie(curMeans, curSigmas) = getPolicyDistribution(expState);
-    auto V = _stateValue;
+    auto policy = runPolicy(expState);
+    auto curMeans = policy["Action Means"].get<std::vector<float>>();
+    auto curSigmas = policy["Action Sigmas"].get<std::vector<float>>();
+    auto V = policy["State Value"].get<float>();
 
     // Compute inverse variance for current policy
     std::vector<float> curInvVariance(_problem->_actionVectorSize);
@@ -177,20 +177,20 @@ void VRACER::trainAgent()
       curInvVariance[i] = 1.0f/(curSigmas[i]*curSigmas[i]);
 
     // Update State Value in Metadata
-    _experienceReplay[curId].metadata["State Value"] = V;
+    _experienceReplay[curId].policy["State Value"] = V;
 
     // Compute importance weight
     float importanceWeight = calculateImportanceWeight(expAction, curMeans, curSigmas, expMeans, expSigmas);
 
     // Update Importance Weight in Metadata
-    _experienceReplay[curId].metadata["Importance Weight"] = importanceWeight;
+    _experienceReplay[curId].policy["Importance Weight"] = importanceWeight;
 
     // Update off-policy fraction
     size_t expCount = _experienceReplay.size();
     size_t offPolicyCount = 0;
     for( size_t expId = 0; expId<expCount; expId++ )
     {
-      float expImportanceWeight = _experienceReplay[expId].metadata["Importance Weight"];
+      float expImportanceWeight = _experienceReplay[expId].policy["Importance Weight"];
       // std::cout << "expImportanceWeight = " << expImportanceWeight << "\n";
       if( expImportanceWeight > _referCutoff || expImportanceWeight < (1.0f/_referCutoff) )
         offPolicyCount++;
@@ -249,11 +249,11 @@ void VRACER::trainAgent()
       if(isTrucated == true)
       {
         // get truncated state
-        auto truncatedState = _experienceReplay[curId].metadata["Terminal State"].get<std::vector<float>>();
+        auto truncatedState = _experienceReplay[curId].truncatedState;
 
         // for truncated state, Vtbc == V - forward network
-        getPolicyDistribution(truncatedState);
-        float nextExpVtbc = _stateValue;
+        auto policy = runPolicy(truncatedState);
+        auto nextExpVtbc = policy["State Value"].get<float>();
 
         // add value to Qret
         Qret += _criticDiscountFactor*nextExpVtbc;
@@ -372,7 +372,7 @@ float VRACER::computeVtbc(size_t expId)
   while (_experienceReplay[endId].termination == e_nonTerminal) endId++;
 
   // get importance weight
-  auto importanceWeight = _experienceReplay[endId].metadata["Importance Weight"].get<float>();
+  auto importanceWeight = _experienceReplay[endId].policy["Importance Weight"].get<float>();
 
   // truncate importance weight
   float truncatedImportanceWeight = std::min(1.0f, importanceWeight);
@@ -384,11 +384,13 @@ float VRACER::computeVtbc(size_t expId)
   if (_experienceReplay[endId].termination == e_truncated)
   {
    // get truncated state
-    auto truncatedState = _experienceReplay[endId].metadata["Terminal State"].get<std::vector<float>>();
+    auto truncatedState = _experienceReplay[endId].truncatedState;
+
     // for truncated state, Vtbc == V - forward network
-    getPolicyDistribution(truncatedState);
-    float nextExpVtbc = _stateValue;
-    float curV = _experienceReplay[endId].metadata["State Value"].get<float>();
+    auto policy = runPolicy(truncatedState);
+    auto nextExpVtbc = policy["State Value"].get<float>();
+
+    float curV = _experienceReplay[endId].policy["State Value"].get<float>();
     vTbc += curV + truncatedImportanceWeight * ( _criticDiscountFactor*nextExpVtbc - curV ) ;
   }
 
@@ -399,10 +401,10 @@ float VRACER::computeVtbc(size_t expId)
     float curReward = _experienceReplay[curId].reward;
 
     // Get state value function
-    float curV = _experienceReplay[curId].metadata["State Value"].get<float>();
+    float curV = _experienceReplay[curId].policy["State Value"].get<float>();
 
     // get importance weight
-    auto importanceWeight = _experienceReplay[curId].metadata["Importance Weight"].get<float>();
+    auto importanceWeight = _experienceReplay[curId].policy["Importance Weight"].get<float>();
 
     // truncate importance weight
     float truncatedImportanceWeight = std::min(1.0f, importanceWeight);
@@ -415,31 +417,26 @@ float VRACER::computeVtbc(size_t expId)
   return vTbc;
 }
 
-std::pair<std::vector<float>, std::vector<float>> VRACER::getPolicyDistribution(const std::vector<float> &state)
+knlohmann::json VRACER::runPolicy(const std::vector<float> &state)
 {
   // Forward the neural network for this state
   std::vector<float> evaluation = _criticPolicyLearner->getEvaluation(state);
-  _stateValue = evaluation[0];
+  auto stateValue = evaluation[0];
 
   std::vector<float> actionMeans(_problem->_actionVectorSize);
   std::vector<float> actionSigmas(_problem->_actionVectorSize);
-
   for( size_t i = 0; i < _problem->_actionVectorSize; i++ )
   {
    actionMeans[i] = evaluation[i+1];
    actionSigmas[i] = evaluation[_problem->_actionVectorSize+i+1];
   }
 
-  return std::make_pair(actionMeans, actionSigmas);
-}
-
-void VRACER::getAction(korali::Sample &sample)
-{
-  // Here the neural network is forwarded, the action selected and mean, standard deviation stored
-  Continuous::getAction(sample);
-  // For VRACER also store state-value and importance weight
-  sample["Metadata"]["State Value"] = _stateValue;
-  sample["Metadata"]["Importance Weight"] = 1.0f;
+  knlohmann::json policy;
+  policy["Action Means"] = actionMeans;
+  policy["Action Sigmas"] = actionSigmas;
+  policy["State Value"] = stateValue;
+  policy["Importance Weight"] = 1.0f;
+  return policy;
 }
 
 void VRACER::printAgentInformation()

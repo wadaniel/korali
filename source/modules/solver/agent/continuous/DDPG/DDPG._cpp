@@ -130,9 +130,9 @@ void DDPG::trainAgent()
     else
     {
       // Updating action distributions for the current state
-      std::vector<float> curMeans;
-      std::vector<float> curSigmas;
-      std::tie(curMeans, curSigmas) = getPolicyDistribution(curState);
+     auto policy = runPolicy(curState);
+     auto curMeans = policy["Action Means"].get<std::vector<float>>();
+     auto curSigmas = policy["Action Sigmas"].get<std::vector<float>>();
 
       bestAction = curMeans;
     }
@@ -227,7 +227,7 @@ void DDPG::trainAgent()
   _hyperparameters["Policy"] = newPolicyHyperparameters;
 }
 
-std::pair<std::vector<float>, std::vector<float>> DDPG::getPolicyDistribution(const std::vector<float> &state)
+knlohmann::json DDPG::runPolicy(const std::vector<float> &state)
 {
   auto eval = _policyLearner->getEvaluation({state});
 
@@ -243,7 +243,10 @@ std::pair<std::vector<float>, std::vector<float>> DDPG::getPolicyDistribution(co
    actionSigmas[i] = sigma;
   }
 
-  return std::make_pair(actionMeans, actionSigmas);
+  knlohmann::json policy;
+  policy["Action Means"] = actionMeans;
+  policy["Action Sigmas"] = actionSigmas;
+  return policy;
 }
 
 void DDPG::updateAgentPolicy(const knlohmann::json &hyperparameters)

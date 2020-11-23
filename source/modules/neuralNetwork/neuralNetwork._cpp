@@ -1,6 +1,5 @@
 #include "modules/experiment/experiment.hpp"
 #include "modules/neuralNetwork/neuralNetwork.hpp"
-#include <chrono>
 
 #ifdef _KORALI_USE_ONEDNN
   #include "auxiliar/dnnUtils.hpp"
@@ -23,11 +22,6 @@ using namespace dnnl;
 
 namespace korali
 {
-double _inputWriteTime;
-double _outputReadTime;
-double _normalizationTime;
-double _forwardStreamTime;
-double _backwardStreamTime;
 
 NeuralNetwork::NeuralNetwork()
 {
@@ -129,9 +123,6 @@ std::vector<float> NeuralNetwork::generateInitialHyperparameters()
 
 void NeuralNetwork::setInput(const std::vector<std::vector<float>> &input)
 {
-  // [Profiling]
-  std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-
   // Getting batch dimensions
   size_t batchSize = input.size();
   size_t inputSize = _layers[0]->_nodeCount;
@@ -163,17 +154,11 @@ void NeuralNetwork::setInput(const std::vector<std::vector<float>> &input)
 #ifdef _KORALI_USE_CUDNN
   if (cudaMemcpy(_layers[0]->_nodeTensor, batchInput.data(), batchInput.size() * sizeof(float), cudaMemcpyHostToDevice) != cudaSuccess) KORALI_LOG_ERROR("Error copying bias memory to device");
 #endif
-
-  // [Profiling]
-  std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-  _inputWriteTime += std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count();
 }
 
 void NeuralNetwork::forward()
 {
-  // [Profiling]
-  size_t layerCount = _layers.size();
-  std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+ size_t layerCount = _layers.size();
 
   // forward propagating neural network
   for (size_t i = 0; i < layerCount; i++)
@@ -325,11 +310,6 @@ void NeuralNetwork::forward()
   cudaDeviceSynchronize();
 #endif
 
-  // [Profiling]
-  std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-  _forwardStreamTime += std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count();
-  begin = std::chrono::steady_clock::now();
-
   // Restoring the output later node values
   size_t lastLayer = layerCount - 1;
   size_t nodeCount = _layers[lastLayer]->_nodeCount;
@@ -388,17 +368,10 @@ void NeuralNetwork::forward()
 
     _outputValues[i][j] = x;
   }
-
-  // [Profiling]
-  end = std::chrono::steady_clock::now();
-  _outputReadTime += std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count();
 }
 
 void NeuralNetwork::backward(const std::vector<std::vector<float>> &gradients)
 {
-  // [Profiling]
-  std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-
   // Getting batch dimensions
   size_t batchSize = gradients.size();
 
@@ -633,17 +606,10 @@ void NeuralNetwork::backward(const std::vector<std::vector<float>> &gradients)
 #ifdef _KORALI_USE_ONEDNN
   _stream.wait();
 #endif
-
-  // [Profiling]
-  std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-  _backwardStreamTime += std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count();
 }
 
 void NeuralNetwork::normalize(const std::vector<std::vector<std::vector<float>>> &miniBatches)
 {
-  // [Profiling]
-  std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-
   std::vector<float> newMeans(_normalizationParameterCount, 0.0);
   std::vector<float> newVariances(_normalizationParameterCount, 0.0);
 
@@ -674,10 +640,6 @@ void NeuralNetwork::normalize(const std::vector<std::vector<std::vector<float>>>
   // Setting the new adjusted means and variances
   setNormalizationMeans(newMeans);
   setNormalizationVariances(newVariances);
-
-  // [Profiling]
-  std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-  _normalizationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count();
 }
 
 std::vector<float> NeuralNetwork::getHyperparameters()

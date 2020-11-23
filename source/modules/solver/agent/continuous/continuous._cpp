@@ -28,6 +28,7 @@ void Continuous::initializeAgent()
     float sigma = _k->_variables[varIdx]->_explorationSigma;
     float lowerBound = _k->_variables[varIdx]->_lowerBound;
     float upperBound = _k->_variables[varIdx]->_upperBound;
+
     if (sigma <= 0.0) KORALI_LOG_ERROR("Value of Exploration Sigma (%f) for action %lu (variable %lu) is not defined or invalid.\n", sigma, i, varIdx);
     if (upperBound - lowerBound <= 0.0) KORALI_LOG_ERROR("Upper (%f) and Lower Bound (%f) of action variable %lu invalid.\n", upperBound, lowerBound, i);
 
@@ -47,9 +48,9 @@ void Continuous::getAction(korali::Sample &sample)
   std::vector<float> action(_problem->_actionVectorSize);
 
   // Forward Policy to get the Gaussian means and sigmas from policy
-  std::vector<float> curMeans;
-  std::vector<float> curSigmas;
-  std::tie(curMeans, curSigmas) = getPolicyDistribution(state);
+  auto policy = runPolicy(state);
+  auto curMeans = policy["Action Means"].get<std::vector<float>>();
+  auto curSigmas = policy["Action Sigmas"].get<std::vector<float>>();
 
   /*****************************************************************************
   * During Training we select action according to policy's probability 
@@ -76,23 +77,16 @@ void Continuous::getAction(korali::Sample &sample)
    if (action[i] < _actionLowerBounds[i]) action[i] = _actionLowerBounds[i];
   }
 
-  sample["Metadata"]["Action Means"] = curMeans;
-  sample["Metadata"]["Action Sigmas"] = curSigmas;
+  sample["Policy"] = policy;
   sample["Action"] = action;
 }
 
 std::vector<float> Continuous::generateAction(const std::vector<float> &curMeans, const std::vector<float> &curSigmas)
 {
  std::vector<float> action(_problem->_actionVectorSize);
- for (size_t i = 0; i < _problem->_actionVectorSize; i++)
- {
-   // Updating normal distribution for the current action element
-   _normalGenerator->_mean = curMeans[i];
-   _normalGenerator->_standardDeviation = curSigmas[i];
 
-   // Generating action from the updated normal distribution
-   action[i] = _normalGenerator->getRandomNumber();
- }
+ for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+   action[i] = curMeans[i] + curSigmas[i]*_normalGenerator->getRandomNumber();
 
  return action;
 }
@@ -102,26 +96,22 @@ float Continuous::calculateImportanceWeight(const std::vector<float> &action, co
   // Getting probability densities for current action given current policy
   float logpCurPolicy = 0.0f;
   for (size_t i = 0; i < action.size(); i++)
-  {
-    _normalGenerator->_mean = curMeans[i];
-    _normalGenerator->_standardDeviation = curSigmas[i];
-    _normalGenerator->updateDistribution();
-    logpCurPolicy += _normalGenerator->getLogDensity(action[i]);
-  }
+    logpCurPolicy += normalLogDensity(action[i], curMeans[i], curSigmas[i]);
 
   // Getting probability densities for current action given current policy
   float logpOldPolicy = 0.0f;
   for (size_t i = 0; i < action.size(); i++)
-  {
-    _normalGenerator->_mean = oldMeans[i];
-    _normalGenerator->_standardDeviation = oldSigmas[i];
-    _normalGenerator->updateDistribution();
-    logpOldPolicy += _normalGenerator->getLogDensity(action[i]);
-  }
+    logpOldPolicy += normalLogDensity(action[i], curMeans[i], curSigmas[i]);
 
   // Now calculating importance weight for the old s,a experience
   float logImportanceWeight = logpCurPolicy - logpOldPolicy;
-  float importanceWeight = std::exp( logImportanceWeight > 7 ? 7 : ( logImportanceWeight < -7 ? -7 : logImportanceWeight ) );
+
+  // Normalizing extreme values to prevent loss of precision
+  if (logImportanceWeight > +7.0f) logImportanceWeight = +7.0f;
+  if (logImportanceWeight < -7.0f) logImportanceWeight = -7.0f;
+
+  // Calculating actual importance weight by exp
+  float importanceWeight = std::exp(logImportanceWeight);
 
   return importanceWeight;
 }

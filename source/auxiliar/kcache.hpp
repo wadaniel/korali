@@ -92,15 +92,25 @@ class kCache
   valType get(const keyType& key)
   {
    omp_set_lock(&_lock);
-   return _data[key].value;
+   valType val = _data[key].value;
    omp_unset_lock(&_lock);
+   return val;
   }
 
   valType access(const keyType& key, std::function<valType(void)> func)
   {
-   if (contains(key)) return _data[key].value;
-   auto val = func();
-   set(key, val);
+   valType val;
+
+   if (contains(key))
+   {
+    val = get(key);
+   }
+   else
+   {
+    val = func();
+    set(key, val);
+   }
+
    return val;
   }
 

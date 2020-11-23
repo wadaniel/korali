@@ -31,15 +31,6 @@ class Continuous : public Agent
   float calculateImportanceWeight(const std::vector<float> &action, const std::vector<float> &curMeans, const std::vector<float> &curSigmas, const std::vector<float> &oldMeans, const std::vector<float> &oldSigmas);
 
   /**
-   * @brief Calculates the gradient of policy wrt to the parameter of the 2nd (current) distribution evaluated at old action.
-   * @param oldAction Action from memory
-   * @param curParamsOne cur means for Normal distribution, beta for Beta distribution
-   * @param curParamsTwo cur sigmas for Normal distribution, alpha for Beta distribution
-   * @return gradient of policy wrt curParamsOne and curParamsTwo
-   */
-  std::vector<float> calculatePolicyGradient(const std::vector<float> &oldAction, const std::vector<float> &curParamsOne, const std::vector<float> &curParamsTwo);
-
-  /**
    * @brief Calculates the gradient of KL(p_old, p_cur) wrt to the parameter of the 2nd (current) distribution.
    * @param oldParamsOne old means for Normal distribution, alpha for Beta distribution
    * @param oldParamsTwo old sigmas for Normal distribution, beta for Beta distribution

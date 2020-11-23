@@ -413,7 +413,7 @@ void VRACER::printAgentInformation()
   _criticPolicyExperiment._logger->setVerbosityLevel("Silent");
 
   _k->_logger->logInfo("Normal", "REF-ER Information\n");
-  _k->_logger->logInfo("Normal", " + Off-Policy Fraction: %.6f (Goal: %.6f)\n", _referOffPolicyFraction, _referTargetOffPolicyFraction);
+  _k->_logger->logInfo("Normal", " + Off-Policy Fraction: %.6f (Target: %.6f)\n", _referOffPolicyFraction, _referTargetOffPolicyFraction);
   _k->_logger->logInfo("Normal", " + Policy Learning Rate: %.6f\n", _criticPolicyLearner->_learningRate);
   _k->_logger->logInfo("Normal", " + Beta: %.6f\n", _referBeta);
   _k->_logger->logInfo("Normal", " + Cut-off: %.6f\n", _referCutoff);

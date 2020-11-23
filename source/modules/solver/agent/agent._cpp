@@ -118,6 +118,9 @@ void Agent::runGeneration()
 
   // Waiting for agent to finish
   KORALI_WAIT(agent);
+ 
+   // Adding to the number of episodes
+  _currentEpisode++;
 
   // Updating if exceeded best training policy so far.
   if (_currentReward > _bestTrainingReward)
@@ -125,9 +128,6 @@ void Agent::runGeneration()
     _bestTrainingReward = _currentReward;
     _bestTrainingEpisode = _currentEpisode;
   }
-
-  // Adding to the number of episodes
-  _currentEpisode++;
 
   // If the policy has exceeded the threshold during training, it is time to test it properly (without noise)
   // Otherwise, let current testing reward remain as -inf.

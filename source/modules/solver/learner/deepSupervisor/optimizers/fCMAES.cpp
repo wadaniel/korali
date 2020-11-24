@@ -540,10 +540,10 @@ bool fCMAES::checkTermination()
 
   if (_currentGeneration > 1)
   {
-   bool areMeansAbove = false;
-   for (size_t d = 0; d < _nVars; d++)
-    if (std::fabs(_meanUpdate[d]) > _minMeanUpdates[d]) areMeansAbove = true;
-   if (areMeansAbove == false) return true;
+    bool areMeansAbove = false;
+    for (size_t d = 0; d < _nVars; d++)
+      if (std::fabs(_meanUpdate[d]) > _minMeanUpdates[d]) areMeansAbove = true;
+    if (areMeansAbove == false) return true;
   }
 
   if (_currentGeneration >= _maxGenerations) return true;

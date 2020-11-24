@@ -25,6 +25,24 @@ def model_1(s):
   # print((-cov_inv).tolist())
   s["H(logP(x))"] = (-cov_inv).tolist()
 
+
+def model_1b(s):
+  v = np.array(s["Parameters"])
+  dim = len(v)
+
+  cov = np.array([[2.25, 0.0], [0.0, 0.0001]], dtype=float)
+  cov_inv = np.linalg.inv(cov)
+
+  mu = np.zeros(dim, dtype=float)
+  v_centred = v - mu
+
+  s["logP(x)"] = -0.5 * np.matmul(np.matmul(v_centred.T, cov_inv), v_centred)
+
+  s["grad(logP(x))"] = (-np.matmul(cov_inv, v_centred)).tolist()
+
+  # print((-cov_inv).tolist())
+  s["H(logP(x))"] = (-cov_inv).tolist()
+
 def model_2(s):
   v = np.array(s["Parameters"])
   dim = len(v)
@@ -108,7 +126,5 @@ def lfunnel(s):
   s["logP(x)"] = logp
   #s["grad(logP(x))"] = 
   #s["H(logP(x))"] = 
-
-
 
 

@@ -18,8 +18,8 @@ useRiemannian = True
 
 # Selecting problem and solver types.
 e["Problem"]["Type"] = "Sampling"
-e["Problem"]["Probability Function"] = lcauchy
-dim = 1
+e["Problem"]["Probability Function"] = model_1b
+dim = 2
 
 e["Solver"]["Type"] = "Sampler/HMC"
 e["Solver"]["Termination Criteria"]["Max Samples"] = 10000

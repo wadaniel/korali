@@ -433,12 +433,12 @@ std::vector<float> VRACER::calculateImportanceWeightGradient(const std::vector<f
       // Gradient wrt alpha
       grad[i] = (x - 1.) * std::pow(x, a - 2.);
       grad[i] -= std::pow(x, a - 1.) * (gsl_sf_psi(a) - psiAb);
-      grad[i] *= std::pow(1. - x, b - 1.) * invpOldPolicy / Bab;
+      grad[i] *= std::pow(1. - x, b - 1.) * invpOldPolicy / ( Bab * _actionScalings[i] );
 
       // Gradient wrt beta
       grad[_problem->_actionVectorSize + i] = (b - 1.) * std::pow(1. - x, b - 2.);
       grad[_problem->_actionVectorSize + i] -= std::pow(1. - x, b - 1.) * (gsl_sf_psi(b) - psiAb);
-      grad[_problem->_actionVectorSize + i] += std::pow(x, a - 1.) * invpOldPolicy / Bab;
+      grad[_problem->_actionVectorSize + i] *= std::pow(x, a - 1.) * invpOldPolicy / ( Bab * _actionScalings[i] );
     }
   }
   return grad;

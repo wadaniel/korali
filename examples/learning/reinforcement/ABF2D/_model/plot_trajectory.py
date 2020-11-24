@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 
 def plot(csv_file: str,
+         png_file: str,
          target_radius: float,
          start_radius: float=1,
          minspace: float=3):
@@ -28,10 +29,15 @@ def plot(csv_file: str,
         start = plt.Circle((x[0], y[0]), start_radius, color='g', alpha = 0.3)
         ax.add_artist(start)
 
-        xmin = min([xmin, min(x)-d])
-        xmax = max([xmax, max(x)+d])
-        ymin = min([ymin, min(y)-d])
-        ymax = max([ymax, max(y)+d])
+        #xmin = min([xmin, min(x)-d])
+        #xmax = max([xmax, max(x)+d])
+        #ymin = min([ymin, min(y)-d])
+        #ymax = max([ymax, max(y)+d])
+
+        xmin = -20
+        xmax = +40
+        ymin = -20
+        ymax = +40
 
     target = plt.Circle((0, 0), target_radius, color='r', alpha = 0.3)
     ax.add_artist(target)
@@ -43,14 +49,18 @@ def plot(csv_file: str,
     ax.set_ylabel(r'$y$')
 
     plt.gca().set_aspect('equal', adjustable='box')
-    plt.show()
+    if (png_file is None):
+     plt.show() 
+    else: 
+     plt.savefig(png_file, bbox_inches='tight')
 
 
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('traj', type=str, help='The trajectory file, in csv format.')
+    parser.add_argument('--input', help='Indicates the input file path.', default = '_result/best.csv', required = False)
+    parser.add_argument('--output', help='Indicates the output file path. If not specified, it prints to screen.', required = False)
     parser.add_argument('--target-radius', type=float, default=1)
     args = parser.parse_args()
 
-    plot(args.traj, args.target_radius)
+    plot(args.input, args.output, args.target_radius)

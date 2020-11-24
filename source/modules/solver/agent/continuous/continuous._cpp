@@ -117,7 +117,7 @@ std::vector<float> Continuous::generateTestingAction(const std::vector<float> &p
       else if (paramsOne[i] <= 1. && paramsTwo[i] > 1.)
         act = 0.0;
       else if (paramsOne[i] > 1. && paramsTwo[i] <= 1.)
-        act = 0.0;
+        act = 1.0;
       else
         KORALI_LOG_ERROR("Case (a<=1 and b<=1) not yet treated (a = %f, b = %f).", paramsOne[i], paramsTwo[i]);
 

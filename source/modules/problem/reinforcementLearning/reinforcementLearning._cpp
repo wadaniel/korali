@@ -47,7 +47,7 @@ void __environmentWrapper()
   sample->run(__envFunctionId);
 
   if ((*sample)["Termination"] == "Non Terminal")
-   KORALI_LOG_ERROR("Environment function terminated, but sample termination status (success or truncated) was not set.\n");
+    KORALI_LOG_ERROR("Environment function terminated, but sample termination status (success or truncated) was not set.\n");
 
   co_switch(sample->_workerThread);
 
@@ -88,7 +88,7 @@ void ReinforcementLearning::runEpisode(Sample &sample)
   // Storage to keep track of cumulative reward
   float cumulativeReward = 0.0;
 
- /***************************************************************
+  /***************************************************************
   * Environment Execution section
   ***************************************************************/
 

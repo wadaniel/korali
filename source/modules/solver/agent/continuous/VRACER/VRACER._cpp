@@ -100,8 +100,21 @@ void VRACER::initializeAgent()
     }
     else /* _policyDistribution == "Beta" */
     {
-      KORALI_LOG_ERROR("MASK NOT YET IMPLEMENTED FOR BETA DISTRIBUTION.");
+      // Softplus mask for Alpha
+      _criticPolicyExperiment["Solver"]["Neural Network"]["Output"]["Scale"][i + 1] = 1.0;
+      _criticPolicyExperiment["Solver"]["Neural Network"]["Output"]["Shift"][i + 1] = 1.0;
+      _criticPolicyExperiment["Solver"]["Neural Network"]["Output"]["Absolute Mask"][i + 1] = false;
+      _criticPolicyExperiment["Solver"]["Neural Network"]["Output"]["Tanh Mask"][i + 1] = false;
+      _criticPolicyExperiment["Solver"]["Neural Network"]["Output"]["Softplus Mask"][i + 1] = true;
+
+      // Softplus mask for Beta
+      _criticPolicyExperiment["Solver"]["Neural Network"]["Output"]["Scale"][dimAction + i + 1] = 1.0;
+      _criticPolicyExperiment["Solver"]["Neural Network"]["Output"]["Shift"][dimAction + i + 1] = 1.0;
+      _criticPolicyExperiment["Solver"]["Neural Network"]["Output"]["Absolute Mask"][dimAction + i + 1] = false;
+      _criticPolicyExperiment["Solver"]["Neural Network"]["Output"]["Tanh Mask"][dimAction + i + 1] = false;
+      _criticPolicyExperiment["Solver"]["Neural Network"]["Output"]["Softplus Mask"][dimAction + i + 1] = true;
     }
+
   }
 
   // Running initialization to verify that the configuration is correct

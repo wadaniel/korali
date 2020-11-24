@@ -41,7 +41,7 @@ e["Solver"]["Type"] = "Agent / Continuous / VRACER"
 e["Solver"]["Optimization Steps Per Update"] = 20
 e["Solver"]["Experiences Between Agent Trainings"] = 5
 e["Solver"]["Cache Persistence"] = 0
-e["Solver"]["Policy Distribution"] = "Normal"
+e["Solver"]["Policy Distribution"] = "Beta"
 
 e["Solver"]["Refer"]["Target Off Policy Fraction"] = 0.10
 e["Solver"]["Refer"]["Cutoff Scale"] = 4.0

@@ -27,17 +27,7 @@ void VRACER::initializeAgent()
     jsNormal["Standard Deviation"] = 1.0;
 
     auto d = dynamic_cast<distribution::univariate::Normal *>(getModule(jsNormal, _k));
-
     _policyDistributions.push_back(d);
-
-    //knlohmann::json jsBeta;
-    //jsBeta["Type"] = "Univariate/Beta";
-    //jsBeta["Alpha"] = 0.5;
-    //jsBeta["Beta"] = 0.5;
-
-    //auto d = dynamic_cast<distribution::univariate::Beta *>(getModule(jsBeta, _k));
-
-    //_policyDistributions.push_back(d);
   }
 
   /*********************************************************************
@@ -434,7 +424,7 @@ std::vector<float> VRACER::calculateImportanceWeightGradient(const std::vector<f
       float logpOldPolicy = betaLogDensity(oldAction[i], oldParamsOne[i], oldParamsTwo[i]);
       float invpOldPolicy = std::exp(-logpOldPolicy);
 
-      const float x = oldAction[i];
+      const float x = (oldAction[i]-_actionLowerBounds[i])/_actionScalings[i];
       const float a = curParamsOne[i];
       const float b = curParamsTwo[i];
       const float Bab = gsl_sf_beta(a, b);

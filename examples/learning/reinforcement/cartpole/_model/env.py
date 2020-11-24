@@ -21,6 +21,7 @@ def env(s):
   
   # Performing the action
   done = cart.advance(s["Action"])
+  #print(s["Action"]) 
   
   # Getting Reward
   s["Reward"] = cart.getReward()

@@ -119,9 +119,9 @@ std::vector<float> Continuous::generateTestingAction(const std::vector<float> &p
       else if (paramsOne[i] > 1. && paramsTwo[i] <= 1.)
         act = 0.0;
       else
-        KORALI_LOG_ERROR("Case (a<=1 and b<=1) not yet treated.");
+        KORALI_LOG_ERROR("Case (a<=1 and b<=1) not yet treated (a = %f, b = %f).", paramsOne[i], paramsTwo[i]);
 
-      action[i] = _actionLowerBounds[i] * _actionScalings[i] * act;
+      action[i] = _actionLowerBounds[i] + _actionScalings[i] * act;
     }
   }
 
@@ -145,10 +145,17 @@ float Continuous::calculateImportanceWeight(const std::vector<float> &action, co
   else /* _policyDistribution == "Beta" */
   {
     for (size_t i = 0; i < action.size(); i++)
-      logpCurPolicy += betaLogDensity(action[i], curParamsOne[i], curParamsTwo[i]);
+    {
+      float x = (action[i]-_actionLowerBounds[i])/_actionScalings[i];
+      logpCurPolicy += betaLogDensity(x, curParamsOne[i], curParamsTwo[i]);
+    }
 
     for (size_t i = 0; i < action.size(); i++)
-      logpOldPolicy += betaLogDensity(action[i], oldParamsOne[i], oldParamsTwo[i]);
+    {
+      float x = (action[i]-_actionLowerBounds[i])/_actionScalings[i];
+      logpOldPolicy += betaLogDensity(x, oldParamsOne[i], oldParamsTwo[i]);
+    }
+
   }
 
   // Now calculating importance weight for the old s,a experience

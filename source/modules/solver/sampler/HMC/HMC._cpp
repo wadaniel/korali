@@ -547,10 +547,9 @@ void HMC::saveSample()
 }
 
 void HMC::updateStepSize()
-{ 
-  if (_chainLength + 1 < _burnIn)
+{
+  if (_chainLength + 1 < _burnIn && _useAdaptiveStepSize == true)
   {
-  
     // update taken from https://arxiv.org/pdf/1111.4246.pdf
     //  _hBar = (1.0 - 1.0 / (_chainLength + 1 + _adaptiveStepSizeStabilizationConstant)) * _hBar + (_targetAcceptanceRate - _acceptanceProbability) / (_chainLength + 1 + _adaptiveStepSizeStabilizationConstant);
     // _stepSize = std::exp(_mu - std::sqrt(_chainLength + 1) / _adaptiveStepSizeSpeedConstant * _hBar);
@@ -576,9 +575,9 @@ void HMC::updateState()
 
   _acceptanceRateError += (_targetAcceptanceRate - _acceptanceRate);
 
-  // Update Step Size, Dual Step Size and H Bar
+  // Update Step Size, Dual Step Size, H Bar and apply step size jitter
   updateStepSize();
- 
+
   //if (_useAdaptiveStepSize == true && _chainLength <= _burnIn)
   if (_useAdaptiveStepSize == true)
   {
@@ -589,7 +588,6 @@ void HMC::updateState()
       _numIntegrationSteps = _maxIntegrationSteps;
     }
   }
-
 
   // for one sample simply set average to current value (to avoid dividing by zero)
   if (_warmupSampleDatabase.size() == 1)

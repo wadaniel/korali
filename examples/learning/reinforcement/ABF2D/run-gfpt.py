@@ -36,25 +36,25 @@ e["Variables"][4]["Name"] = "Magnet Rotation X"
 e["Variables"][4]["Type"] = "Action"
 e["Variables"][4]["Lower Bound"] = -1.0
 e["Variables"][4]["Upper Bound"] = +1.0
-e["Variables"][4]["Exploration Sigma"] = 0.3
+e["Variables"][4]["Exploration Sigma"] = 0.5
 
 e["Variables"][5]["Name"] = "Magnet Rotation Y"
 e["Variables"][5]["Type"] = "Action"
 e["Variables"][5]["Lower Bound"] = -1.0
 e["Variables"][5]["Upper Bound"] = +1.0
-e["Variables"][5]["Exploration Sigma"] = 0.3
+e["Variables"][5]["Exploration Sigma"] = 0.5
 
 e["Variables"][6]["Name"] = "Magnet Intensity"
 e["Variables"][6]["Type"] = "Action"
 e["Variables"][6]["Lower Bound"] = +0.0
 e["Variables"][6]["Upper Bound"] = +2.0
-e["Variables"][6]["Exploration Sigma"] = 0.3
+e["Variables"][6]["Exploration Sigma"] = 0.5
 
 ### Defining Agent Configuration 
 
 e["Solver"]["Type"] = "Agent / Continuous / GFPT"
-e["Solver"]["Optimization Steps Per Update"] = 1
-e["Solver"]["Experiences Between Agent Trainings"] = 10
+e["Solver"]["Optimization Steps Per Update"] = 10
+e["Solver"]["Experiences Between Agent Trainings"] = 243
 e["Solver"]["Cache Persistence"] = 10
 
 e["Solver"]["Refer"]["Target Off Policy Fraction"] = 0.10
@@ -69,16 +69,15 @@ e["Solver"]["Random Action Probability"]["Decrease Rate"] = 0.00
 
 ### Defining the configuration of replay memory
 
-e["Solver"]["Experience Replay"]["Start Size"] =   10000
-e["Solver"]["Experience Replay"]["Maximum Size"] = 500000
+e["Solver"]["Experience Replay"]["Start Size"] =   20000
+e["Solver"]["Experience Replay"]["Maximum Size"] = 100000
 e["Solver"]["Mini Batch Strategy"] = "Uniform"
 
 ## Defining Critic Configuration
 
 e["Solver"]["Critic"]["Discount Factor"] = 0.99
-e["Solver"]["Critic"]["Learning Rate"] = 0.001
-e["Solver"]["Critic"]["Mini Batch Size"] = 64
-e["Solver"]["Critic"]["Normalization Steps"] = 8
+e["Solver"]["Critic"]["Learning Rate"] = 0.0001
+e["Solver"]["Critic"]["Mini Batch Size"] = 128
   
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear"
@@ -100,10 +99,9 @@ e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Batch Normalization"]["Ena
 
 ## Defining Policy Configuration
 
-e["Solver"]["Policy"]["Learning Rate"] = 0.0001
-e["Solver"]["Policy"]["Mini Batch Size"] = 64
+e["Solver"]["Policy"]["Learning Rate"] = 0.000001
+e["Solver"]["Policy"]["Mini Batch Size"] = 128
 e["Solver"]["Policy"]["Target Accuracy"] = 0.0001
-e["Solver"]["Policy"]["Normalization Steps"] = 8
 
 e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
 e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear"

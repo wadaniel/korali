@@ -104,7 +104,6 @@ void VRACER::initializeAgent()
       _criticPolicyExperiment["Solver"]["Neural Network"]["Output"]["Tanh Mask"][dimAction + i + 1] = false;
       _criticPolicyExperiment["Solver"]["Neural Network"]["Output"]["Softplus Mask"][dimAction + i + 1] = true;
     }
-
   }
 
   // Running initialization to verify that the configuration is correct
@@ -217,7 +216,7 @@ void VRACER::trainAgent()
     *******************************************************/
 
     // Storage for the update gradient
-    std::vector<float> gradientLoss(2 * _problem->_actionVectorSize + 1, 0.0f);
+    std::vector<float> gradientLoss(2 * _problem->_actionVectorSize);
 
     // Compute Vtbc
     float expVtbc = computeVtbc(curId);
@@ -421,26 +420,30 @@ std::vector<float> VRACER::calculateImportanceWeightGradient(const std::vector<f
     // ParamsOne are the Alphas, ParamsTwo are the Betas
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
     {
-      float logpOldPolicy = betaLogDensity(oldAction[i], oldParamsOne[i], oldParamsTwo[i]);
-      float invpOldPolicy = std::exp(-logpOldPolicy);
+      const float y = oldAction[i];
+      const float x = (y - _actionLowerBounds[i]) / _actionScalings[i];
+      const float logpOldPolicy = betaLogDensity(x, oldParamsOne[i], oldParamsTwo[i]);
+      const float invpOldPolicy = std::exp(-logpOldPolicy) * _actionScalings[i];
 
-      const float x = (oldAction[i]-_actionLowerBounds[i])/_actionScalings[i];
       const float a = curParamsOne[i];
       const float b = curParamsTwo[i];
       const float Bab = gsl_sf_beta(a, b);
       const float psiAb = gsl_sf_psi(a + b);
 
+      const float logscale = std::log(_actionScalings[i]);
+      const float powscale = std::pow(_actionScalings[i], -b - a + 1.);
+      const float factor = -1. * std::pow(y - _actionLowerBounds[i], a - 1.) * powscale * std::pow(_actionUpperBounds[i] - y, b - 1.) * invpOldPolicy / Bab;
+
       // Gradient wrt alpha
-      grad[i] = (x - 1.) * std::pow(x, a - 2.);
-      grad[i] -= std::pow(x, a - 1.) * (gsl_sf_psi(a) - psiAb);
-      grad[i] *= std::pow(1. - x, b - 1.) * invpOldPolicy / ( Bab * _actionScalings[i] );
+      const float daBab = gsl_sf_psi(a) - psiAb;
+      grad[i] = ((logscale - std::log(y - _actionLowerBounds[i])) + daBab) * factor;
 
       // Gradient wrt beta
-      grad[_problem->_actionVectorSize + i] = (b - 1.) * std::pow(1. - x, b - 2.);
-      grad[_problem->_actionVectorSize + i] -= std::pow(1. - x, b - 1.) * (gsl_sf_psi(b) - psiAb);
-      grad[_problem->_actionVectorSize + i] *= std::pow(x, a - 1.) * invpOldPolicy / ( Bab * _actionScalings[i] );
+      const float dbBab = gsl_sf_psi(b) - psiAb;
+      grad[_problem->_actionVectorSize + i] = (logscale - std::log(_actionUpperBounds[i] - y) + dbBab) * factor;
     }
   }
+  //printf("iwgrad %f %f\n", grad[0], grad[1]);
   return grad;
 }
 

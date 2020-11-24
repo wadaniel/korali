@@ -20,7 +20,6 @@ def env(s):
   s.update()
   
   # Performing the action
-  #print(s["Action"]) 
   done = cart.advance(s["Action"])
   
   # Getting Reward

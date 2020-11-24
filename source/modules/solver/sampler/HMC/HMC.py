@@ -111,11 +111,15 @@ def plotGen(genList, idx):
   isFinite = [~np.isnan(s - s).any() for s in samples]  # Filter trick
   samples = samples[isFinite]
 
-  lpo = genList[lastGen]['Solver']['Sample Evaluation Database']
+  lpo = np.array( genList[lastGen]['Solver']['Sample Evaluation Database'] )
+  lpo = lpo[isFinite]
+  lpo = lpo.tolist()
+ 
+  tmp1 = zip(lpo, samples)
+  tmp2 = sorted(tmp1, key=lambda x: x[0]) # Avoid erros if equal lpo's exist
+  lpo, samples = zip(*tmp2)
 
-  lpo, samples = zip(*(sorted(zip(lpo, samples))))
   numentries = len(samples)
-
   fig, ax = plt.subplots(numdim, numdim, figsize=(8, 8))
   samplesTmp = np.reshape(samples, (numentries, numdim))
   plt.suptitle(

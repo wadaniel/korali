@@ -453,12 +453,6 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannianConst
       __printVec(_inverseMetric);
     }
 
-    for (size_t i = 0; i < _stateSpaceDim; ++i)
-    {
-      _metric[i * _stateSpaceDim + i] = 1.0;
-      _inverseMetric[i * _stateSpaceDim + i] = 1.0;
-    }
-
     _multivariateGenerator->_sigma = _metric;
 
     // Cholesky Decomp

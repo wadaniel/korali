@@ -93,6 +93,8 @@ std::vector<float> Continuous::generateTrainingAction(const std::vector<float> &
       action[i] = _actionLowerBounds[i] + _actionScalings[i] * gsl_ran_beta(_normalGenerator->_range, paramsOne[i], paramsTwo[i]);
   }
 
+  //printf("a %f, b %f\n", paramsOne[0], paramsTwo[0]);
+
   return action;
 }
 
@@ -121,6 +123,7 @@ std::vector<float> Continuous::generateTestingAction(const std::vector<float> &p
       else
         KORALI_LOG_ERROR("Case (a<=1 and b<=1) not yet treated (a = %f, b = %f).", paramsOne[i], paramsTwo[i]);
 
+      // Adjust actions to domain
       action[i] = _actionLowerBounds[i] + _actionScalings[i] * act;
     }
   }
@@ -137,25 +140,19 @@ float Continuous::calculateImportanceWeight(const std::vector<float> &action, co
   if (_policyDistribution == "Normal")
   {
     for (size_t i = 0; i < action.size(); i++)
-      logpCurPolicy += normalLogDensity(action[i], curParamsOne[i], curParamsTwo[i]);
-
-    for (size_t i = 0; i < action.size(); i++)
+    {
       logpOldPolicy += normalLogDensity(action[i], oldParamsOne[i], oldParamsTwo[i]);
+      logpCurPolicy += normalLogDensity(action[i], curParamsOne[i], curParamsTwo[i]);
+    }
   }
   else /* _policyDistribution == "Beta" */
   {
     for (size_t i = 0; i < action.size(); i++)
     {
-      float x = (action[i]-_actionLowerBounds[i])/_actionScalings[i];
+      float x = (action[i] - _actionLowerBounds[i]) / _actionScalings[i];
+      logpOldPolicy += betaLogDensity(x, oldParamsOne[i], oldParamsTwo[i]);
       logpCurPolicy += betaLogDensity(x, curParamsOne[i], curParamsTwo[i]);
     }
-
-    for (size_t i = 0; i < action.size(); i++)
-    {
-      float x = (action[i]-_actionLowerBounds[i])/_actionScalings[i];
-      logpOldPolicy += betaLogDensity(x, oldParamsOne[i], oldParamsTwo[i]);
-    }
-
   }
 
   // Now calculating importance weight for the old s,a experience
@@ -167,7 +164,7 @@ float Continuous::calculateImportanceWeight(const std::vector<float> &action, co
 
   // Calculating actual importance weight by exp
   float importanceWeight = std::exp(logImportanceWeight);
-
+  //printf("iw %f\n", importanceWeight);
   return importanceWeight;
 }
 
@@ -208,13 +205,14 @@ std::vector<float> Continuous::calculateKLDivergenceGradient(const std::vector<f
       float psiAbCur = gsl_sf_psi(curParamsOne[i] + curParamsTwo[i]);
 
       // KL-Gradient with respect to Alpha
-      klGrad[i] = gsl_sf_psi(curParamsOne[i]) - psiAbCur - gsl_sf_psi(oldParamsOne[i]) - psiAbOld;
+      klGrad[i] = (gsl_sf_psi(curParamsOne[i]) - psiAbCur - gsl_sf_psi(oldParamsOne[i]) - psiAbOld) / _actionScalings[i];
 
       // KL-Gradient with respect to Beta
-      klGrad[_problem->_actionVectorSize + i] = gsl_sf_psi(curParamsTwo[i]) - psiAbCur - gsl_sf_psi(oldParamsTwo[i]) - psiAbOld;
+      klGrad[_problem->_actionVectorSize + i] = (gsl_sf_psi(curParamsTwo[i]) - psiAbCur - gsl_sf_psi(oldParamsTwo[i]) - psiAbOld) / _actionScalings[i];
     }
   }
 
+  //printf("grad %f %f\n", klGrad[0], klGrad[1]);
   return klGrad;
 }
 

@@ -133,14 +133,10 @@ T normalLogDensity(const T &x, const T &mean, const T &sigma)
 * @return The log density
 */
 template <typename T>
-T betaLogDensity(const T &x, const T &mean, const T &sigma)
+T betaLogDensity(const T &x, const T &alpha, const T &beta)
 {
-  T mu2 = mean * mean;
-  T var = sigma * sigma;
-  T alpha = -mean * (var + mu2 - mean) / var;
-  T beta = (var + mu2 - mean * (mean - 1.0)) / sigma;
-
-  return gsl_sf_lngamma(alpha + beta) - gsl_sf_lngamma(alpha) - gsl_sf_lngamma(beta);
+  T invBab = gsl_sf_lngamma(alpha) + gsl_sf_lngamma(beta) - gsl_sf_lngamma(alpha + beta);
+  return (alpha - 1.) * std::log(x) + (beta - 1.) * std::log(1. - x) * invBab;
 }
 
 /**

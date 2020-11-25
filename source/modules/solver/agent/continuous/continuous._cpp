@@ -93,8 +93,6 @@ std::vector<float> Continuous::generateTrainingAction(const std::vector<float> &
       action[i] = ranBetaAlt(_normalGenerator->_range, paramsOne[i], paramsTwo[i], _actionLowerBounds[i], _actionUpperBounds[i]);
   }
 
-  //printf("a %f, b %f\n", paramsOne[0], paramsTwo[0]);
-
   return action;
 }
 
@@ -164,7 +162,7 @@ float Continuous::calculateImportanceWeight(const std::vector<float> &action, co
 
   // Calculating actual importance weight by exp
   float importanceWeight = std::exp(logImportanceWeight);
-  //printf("iw %f\n", importanceWeight);
+  printf("iw %f\n", importanceWeight);
   return importanceWeight;
 }
 
@@ -235,7 +233,7 @@ std::vector<float> Continuous::calculateKLDivergenceGradient(const std::vector<f
     }
   }
 
-  //printf("grad %f %f\n", klGrad[0], klGrad[1]);
+  printf("grad %f %f\n", klGrad[0], klGrad[1]);
   return klGrad;
 }
 

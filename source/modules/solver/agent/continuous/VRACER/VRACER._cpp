@@ -456,7 +456,8 @@ std::vector<float> VRACER::calculateImportanceWeightGradient(const std::vector<f
       grad[_problem->_actionVectorSize + i] = drhoda * dadvarc + drhodb * dbdvarc;
     }
   }
-  printf("iwgrad %f %f\n", grad[0], grad[1]);
+  //printf("grad %f %f\n", grad[0], grad[1]);
+
   return grad;
 }
 

@@ -38,7 +38,7 @@ e["Variables"][4]["Exploration Sigma"] = 0.35
 ### Defining Agent Configuration 
 
 e["Solver"]["Type"] = "Agent / Continuous / VRACER"
-e["Solver"]["Optimization Steps Per Update"] = 20
+e["Solver"]["Optimization Steps Per Update"] = 100
 e["Solver"]["Experiences Between Agent Trainings"] = 5
 e["Solver"]["Cache Persistence"] = 0
 e["Solver"]["Policy Distribution"] = "Beta"

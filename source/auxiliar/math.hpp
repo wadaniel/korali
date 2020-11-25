@@ -229,7 +229,6 @@ T ranBetaAlt(const gsl_rng * rng, const T &mean, const T &varcof, const T& lb, c
   T beta;
   std::tie(alpha, beta) = betaParamTransformAlt(mean, varcof, lb, ub);
   
-  //printf("a %f b %f sdev %f\n", alpha, beta, std::sqrt(varcof*(mean-lb)*(ub-mean)));
   return lb + (ub-lb) * gsl_ran_beta(rng, alpha, beta);
 }
 

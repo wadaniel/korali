@@ -377,7 +377,7 @@ float VRACER::computeVtbc(size_t expId)
   return vTbc;
 }
 
-std::vector<float> VRACER::calculateImportanceWeightGradient(const std::vector<float> &oldAction, const std::vector<float> &curParamsOne, const std::vector<float> &curParamsTwo, const std::vector<float> &oldParamsOne, const std::vector<float> &oldParamsTwo)
+std::vector<float> VRACER::calculateImportanceWeightGradient(const std::vector<float> &action, const std::vector<float> &curParamsOne, const std::vector<float> &curParamsTwo, const std::vector<float> &oldParamsOne, const std::vector<float> &oldParamsTwo)
 {
   std::vector<float> grad(2 * _problem->_actionVectorSize, 0.0);
 
@@ -389,10 +389,10 @@ std::vector<float> VRACER::calculateImportanceWeightGradient(const std::vector<f
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
     {
       // Deviation from expAction and current Mean
-      float curActionDiff = (oldAction[i] - curParamsOne[i]);
+      float curActionDiff = (action[i] - curParamsOne[i]);
 
       // Deviation from expAction and old Mean
-      float oldActionDiff = (oldAction[i] - oldParamsOne[i]);
+      float oldActionDiff = (action[i] - oldParamsOne[i]);
 
       // Inverse Variances
       float curInvVar = 1. / (curParamsTwo[i] * curParamsTwo[i]);
@@ -417,30 +417,49 @@ std::vector<float> VRACER::calculateImportanceWeightGradient(const std::vector<f
   }
   else /* _policyDistribution == "Beta" */
   {
-    // ParamsOne are the Alphas, ParamsTwo are the Betas
+    // ParamsOne are the Means, ParamsTwo are the Variance Coefficients
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
     {
-      const float y = oldAction[i];
-      const float x = (y - _actionLowerBounds[i]) / _actionScalings[i];
-      const float logpOldPolicy = betaLogDensity(x, oldParamsOne[i], oldParamsTwo[i]);
-      const float invpOldPolicy = std::exp(-logpOldPolicy) * _actionScalings[i];
+      // Variable preparation
+      const float muCur = curParamsOne[i];
+      const float varcoefCur = curParamsTwo[i];
 
-      const float a = curParamsOne[i];
-      const float b = curParamsTwo[i];
-      const float Bab = gsl_sf_beta(a, b);
-      const float psiAb = gsl_sf_psi(a + b);
+      float alphaCur;
+      float betaCur;
+      std::tie(alphaCur, betaCur) = betaParamTransformAlt(muCur, varcoefCur, _actionLowerBounds[i], _actionUpperBounds[i]);
+
+      const float muOld = oldParamsOne[i];
+      const float varcoefOld = oldParamsTwo[i];
+
+      float alphaOld;
+      float betaOld;
+      std::tie(alphaOld, betaOld) = betaParamTransformAlt(muOld, varcoefOld, _actionLowerBounds[i], _actionUpperBounds[i]);
+
+      // Log probability of action with old policy params
+      const float logpOldPolicy = betaLogDensityAlt(action[i], muOld, varcoefOld, _actionLowerBounds[i], _actionUpperBounds[i]);
+      const float invpOldPolicy = std::exp(-logpOldPolicy);
+
+      // Variable preparation
+      const float Bab = gsl_sf_beta(alphaCur, betaCur);
+      const float psiAb = gsl_sf_psi(alphaCur + betaCur);
 
       const float logscale = std::log(_actionScalings[i]);
-      const float powscale = std::pow(_actionScalings[i], -b - a + 1.);
-      const float factor = -1. * std::pow(y - _actionLowerBounds[i], a - 1.) * powscale * std::pow(_actionUpperBounds[i] - y, b - 1.) * invpOldPolicy / Bab;
+      const float powscale = std::pow(_actionScalings[i], -betaCur - alphaCur + 1.);
+      const float factor = -1. * std::pow(action[i] - _actionLowerBounds[i], alphaCur - 1.) * powscale * std::pow(_actionUpperBounds[i] - action[i], betaCur - 1.) * invpOldPolicy / Bab;
 
-      // Gradient wrt alpha
-      const float daBab = gsl_sf_psi(a) - psiAb;
-      grad[i] = ((logscale - std::log(y - _actionLowerBounds[i])) + daBab) * factor;
+      // Rho Grad wrt alpha and beta
+      const float daBab = gsl_sf_psi(alphaCur) - psiAb;
+      const float drhoda = ((logscale - std::log(action[i] - _actionLowerBounds[i])) + daBab) * factor;
+      const float dbBab = gsl_sf_psi(betaCur) - psiAb;
+      const float drhodb = (logscale - std::log(_actionUpperBounds[i] - action[i]) + dbBab) * factor;
 
-      // Gradient wrt beta
-      const float dbBab = gsl_sf_psi(b) - psiAb;
-      grad[_problem->_actionVectorSize + i] = (logscale - std::log(_actionUpperBounds[i] - y) + dbBab) * factor;
+      // Derivatives of alpha and beta wrt mu and varc
+      float dadmu, dadvarc, dbdmu, dbdvarc;
+      std::tie(dadmu, dadvarc, dbdmu, dbdvarc) = derivativesBetaParamTransformAlt(muCur, varcoefCur, _actionLowerBounds[i], _actionUpperBounds[i]);
+
+      // Rho Grad wrt mu and varc
+      grad[i] = drhoda * dadmu + drhodb * dbdmu;
+      grad[_problem->_actionVectorSize + i] = drhoda * dadvarc + drhodb * dbdvarc;
     }
   }
   //printf("iwgrad %f %f\n", grad[0], grad[1]);

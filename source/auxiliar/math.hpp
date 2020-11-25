@@ -12,8 +12,8 @@
 #include <limits>
 #include <stdlib.h>
 #include <string>
-#include <vector>
 #include <tuple>
+#include <vector>
 
 namespace korali
 {
@@ -149,14 +149,14 @@ T betaLogDensity(const T &x, const T &alpha, const T &beta)
 * @return tuple containing alpha and beta
 */
 template <typename T>
-std::tuple<T, T> betaParamTransformAlt(const T &mean, const T &varcof, const T& lb, const T& ub)
+std::tuple<T, T> betaParamTransformAlt(const T &mean, const T &varcof, const T &lb, const T &ub)
 {
-  const T scale = ub-lb;
-  const T var = varcof*(mean-lb)*(ub-mean)/3.0;
-  
-  const T v = (lb*ub-lb*mean-ub*mean+mean*mean+var)/(var*scale);
-  const T alpha = (lb-mean)*v;
-  const T beta = (mean-ub)*v;
+  const T scale = ub - lb;
+  const T var = varcof * (mean - lb) * (ub - mean) / 3.0; // Division by three guarantees that alpha + beta > 2, we avoid alpha < 1 and beta < 1
+
+  const T v = (lb * ub - lb * mean - ub * mean + mean * mean + var) / (var * scale);
+  const T alpha = (lb - mean) * v;
+  const T beta = (mean - ub) * v;
   return std::tuple<T, T>{alpha, beta};
 }
 
@@ -169,25 +169,25 @@ std::tuple<T, T> betaParamTransformAlt(const T &mean, const T &varcof, const T& 
 * @return tuple containing dalpha/dmean, dalpha/dvarcof, dbeta/dmean, dbeta/dvarcof
 */
 template <typename T>
-std::tuple<T, T, T, T> derivativesBetaParamTransformAlt(const T &mean, const T &varcof, const T& lb, const T& ub)
+std::tuple<T, T, T, T> derivativesBetaParamTransformAlt(const T &mean, const T &varcof, const T &lb, const T &ub)
 {
-  const T scale = ub-lb;
-  const T var = varcof*(mean-lb)*(ub-mean)/3.0;
+  const T scale = ub - lb;
+  const T var = varcof * (mean - lb) * (ub - mean) / 3.0; // Division by three guarantees that alpha + beta > 2, we avoid alpha < 1 and beta < 1
 
-  const T dvardvarcof = (mean*(lb+ub-mean)-lb*ub)/3.0;
-  const T dvardmean = varcof*(lb+ub-2.*mean)/3.0;
+  const T dvardvarcof = (mean * (lb + ub - mean) - lb * ub) / 3.0;
+  const T dvardmean = varcof * (lb + ub - 2. * mean) / 3.0;
 
-  const T v = (lb*ub-lb*mean-ub*mean+mean*mean+var)/(var*scale);
-  const T dvdvar =  (lb*mean+ub*mean-lb*ub-mean*mean)/(var*var*scale);
-  const T dvdmean = (-lb-ub+2.*mean)/(var*scale) + dvdvar * dvardmean;
+  const T v = (lb * ub - lb * mean - ub * mean + mean * mean + var) / (var * scale);
+  const T dvdvar = (lb * mean + ub * mean - lb * ub - mean * mean) / (var * var * scale);
+  const T dvdmean = (-lb - ub + 2. * mean) / (var * scale) + dvdvar * dvardmean;
 
   const T dvdvarcof = dvdvar * dvardvarcof;
-  
-  const T dalphadmean = (lb-mean)*dvdmean-v;
-  const T dalphadvarcof = (lb-mean)*dvdvarcof;
 
-  const T dbetadmean = (mean-ub)*dvdmean+v;
-  const T dbetadvarcof = (mean-ub)*dvdvarcof;
+  const T dalphadmean = (lb - mean) * dvdmean - v;
+  const T dalphadvarcof = (lb - mean) * dvdvarcof;
+
+  const T dbetadmean = (mean - ub) * dvdmean + v;
+  const T dbetadvarcof = (mean - ub) * dvdvarcof;
   return std::tuple<T, T, T, T>{dalphadmean, dalphadvarcof, dbetadmean, dbetadvarcof};
 }
 
@@ -201,16 +201,15 @@ std::tuple<T, T, T, T> derivativesBetaParamTransformAlt(const T &mean, const T &
 * @return The log density
 */
 template <typename T>
-T betaLogDensityAlt(const T &x, const T &mean, const T &varcof, const T& lb, const T& ub)
+T betaLogDensityAlt(const T &x, const T &mean, const T &varcof, const T &lb, const T &ub)
 {
   T alpha;
   T beta;
   std::tie(alpha, beta) = betaParamTransformAlt(mean, varcof, lb, ub);
 
-  T scale = ub-lb;
+  T scale = ub - lb;
   T logBab = gsl_sf_lngamma(alpha) + gsl_sf_lngamma(beta) - gsl_sf_lngamma(alpha + beta);
-  return (alpha - 1.) * std::log(x-lb) + (beta - 1.) * std::log(ub - x) - (alpha+beta-1.)*std::log(scale) - logBab;
-
+  return (alpha - 1.) * std::log(x - lb) + (beta - 1.) * std::log(ub - x) - (alpha + beta - 1.) * std::log(scale) - logBab;
 }
 
 /**
@@ -223,16 +222,14 @@ T betaLogDensityAlt(const T &x, const T &mean, const T &varcof, const T& lb, con
 * @return a random number
 */
 template <typename T>
-T ranBetaAlt(const gsl_rng * rng, const T &mean, const T &varcof, const T& lb, const T& ub)
+T ranBetaAlt(const gsl_rng *rng, const T &mean, const T &varcof, const T &lb, const T &ub)
 {
   T alpha;
   T beta;
   std::tie(alpha, beta) = betaParamTransformAlt(mean, varcof, lb, ub);
-  
-  return lb + (ub-lb) * gsl_ran_beta(rng, alpha, beta);
+
+  return lb + (ub - lb) * gsl_ran_beta(rng, alpha, beta);
 }
-
-
 
 /**
 * @brief Computes the norm of the difference between two vectors.

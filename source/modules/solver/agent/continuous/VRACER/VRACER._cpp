@@ -72,15 +72,14 @@ void VRACER::initializeAgent()
     auto upperBound = _k->_variables[varIdx]->_upperBound;
     float scale = (upperBound - lowerBound) * 0.5;
     float shift = (upperBound + lowerBound) * 0.5;
- 
-     // Tanh mask for Mean
-     _criticPolicyExperiment["Solver"]["Neural Network"]["Output"]["Scale"][i + 1] = scale;
-     _criticPolicyExperiment["Solver"]["Neural Network"]["Output"]["Shift"][i + 1] = shift;
-     _criticPolicyExperiment["Solver"]["Neural Network"]["Output"]["Absolute Mask"][i + 1] = false;
-     _criticPolicyExperiment["Solver"]["Neural Network"]["Output"]["Tanh Mask"][i + 1] = true;
-     _criticPolicyExperiment["Solver"]["Neural Network"]["Output"]["Softplus Mask"][i + 1] = false;
-     _criticPolicyExperiment["Solver"]["Neural Network"]["Output"]["Sigmoid Mask"][i + 1] = false;
 
+    // Tanh mask for Mean
+    _criticPolicyExperiment["Solver"]["Neural Network"]["Output"]["Scale"][i + 1] = scale;
+    _criticPolicyExperiment["Solver"]["Neural Network"]["Output"]["Shift"][i + 1] = shift;
+    _criticPolicyExperiment["Solver"]["Neural Network"]["Output"]["Absolute Mask"][i + 1] = false;
+    _criticPolicyExperiment["Solver"]["Neural Network"]["Output"]["Tanh Mask"][i + 1] = true;
+    _criticPolicyExperiment["Solver"]["Neural Network"]["Output"]["Softplus Mask"][i + 1] = false;
+    _criticPolicyExperiment["Solver"]["Neural Network"]["Output"]["Sigmoid Mask"][i + 1] = false;
 
     if (_policyDistribution == "Normal")
     {

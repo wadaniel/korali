@@ -12,15 +12,15 @@ from helpers import *
 import korali
 
 e = korali.Experiment()
-e["Console Output"]["Frequency"] = 500
-e["File Output"]["Frequency"] = 500
+e["Console Output"]["Frequency"] = 100
+e["File Output"]["Enabled"] = False
 
 e["Problem"]["Type"] = "Sampling"
 e["Problem"]["Probability Function"] = model
 
 # Configuring the HMC sampler parameters
 e["Solver"]["Type"] = "Sampler/HMC"
-e["Solver"]["Burn In"] = 500
+e["Solver"]["Burn In"] = 900
 e["Solver"]["Termination Criteria"]["Max Samples"] = 5000
 
 # HMC specific parameters

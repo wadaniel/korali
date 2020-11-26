@@ -24,7 +24,6 @@ void HMC::setInitialConfiguration()
   if (!(_version == "Static" || _version == "Euclidean" || _version == "Riemannian" || _version == "Riemannian Const")) KORALI_LOG_ERROR("Version must be either 'Static', 'Euclidean', 'Riemannian' or 'Riemannian Const' (is %s)\n", _version.c_str());
   // TODO: Check exact intervals (i.e. inclusion and exclusion)
   if (_burnIn < 0) KORALI_LOG_ERROR("Burn In must be larger equal 0 (is %zu).\n", _burnIn);
-  if (_metricEstimateQuotient < 0.0 || _metricEstimateQuotient >= 1.0) KORALI_LOG_ERROR("Metric Estimate Quotient must be in interval (0.0, 1.0] (is %lf).\n", _metricEstimateQuotient);
   if (_maxDepth < 0) KORALI_LOG_ERROR("Max Depth must be non-negative (is %zu).\n", _maxDepth);
 
   // Check Adaptive Step Size settings
@@ -606,7 +605,7 @@ void HMC::updateState()
 
   _acceptanceRateError += (_targetAcceptanceRate - _acceptanceRate);
 
-  // Update Step Size, Dual Step Size and H Bar
+  // Update Step Size, Dual Step Size, H Bar and apply step size jitter
   updateStepSize();
 
   // init warm-up chain mean
@@ -677,7 +676,7 @@ void HMC::printGenerationAfter()
   _k->_logger->logInfo("Detailed", "Current Metric:\n");
 
   auto metric = _hamiltonian->getMetric();
-  if (_useDiagonalMetric == true)
+  if (_useDiagonalMetric == true || _version == "Static")
   {
     for (size_t d = 0; d < _dimensions; ++d)
       _k->_logger->logData("Detailed", "         %+6.3e  \n", metric[d]);
@@ -701,7 +700,7 @@ void HMC::printGenerationAfter()
   _k->_logger->logInfo("Normal", "Current Inverse Metric:\n");
 
   auto inverseMetric = _hamiltonian->getInverseMetric();
-  if (_useDiagonalMetric == true)
+  if (_useDiagonalMetric == true || _version == "Static")
   {
     for (size_t e = 0; e < _dimensions; ++e)
       _k->_logger->logData("Normal", "         %+6.3e  \n", inverseMetric[e]);

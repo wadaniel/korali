@@ -13,18 +13,18 @@ import korali
 
 e = korali.Experiment()
 e["Console Output"]["Frequency"] = 500
-e["File Output"]["Frequency"] = 500
+e["File Output"]["Enabled"] = False
 
 e["Problem"]["Type"] = "Sampling"
 e["Problem"]["Probability Function"] = model
 
 # Configuring the HMC sampler parameters
 e["Solver"]["Type"] = "Sampler/HMC"
-e["Solver"]["Burn In"] = 500
+e["Solver"]["Burn In"] = 1000
 e["Solver"]["Termination Criteria"]["Max Samples"] = 5000
 
 # HMC specific parameters
-e["Solver"]["Use Adaptive Step Size"] = False
+e["Solver"]["Use Adaptive Step Size"] = True
 e["Solver"]["Version"] = 'Static'
 e["Solver"]["Use NUTS"] = False
 e["Solver"]["Num Integration Steps"] = 20

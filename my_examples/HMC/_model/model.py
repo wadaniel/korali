@@ -112,19 +112,29 @@ def lcauchy(s):
 
 # helper
 def lognormal(x, sdev):
-    return -0.5*math.log(2*math.pi*sdev**2)-0.5*(x/sdev)**2
+  return -0.5*math.log(2*math.pi*sdev**2)-0.5*(x/sdev)**2
 
 # funnel function from paper
 def lfunnel(s):
   param = s["Parameters"]
   v = param[0]
   logp = lognormal(v, 9.0)
-  for i in range(len(param)-1):
-    logp += lognormal(param[i+1], math.exp(-v))
 
-  
+  n = len(param) - 1
+  grad_logp = np.zeros(n+1)
+  grad_logp[0] = -v / 9.0
+
+  hessian_logp = np.zeros((n+1, n+1))
+  hessian_logp[0, 0] = -1.0 / 9.0
+
+  for i in range(n):
+    logp += lognormal(param[i+1], math.exp(-v))
+    grad_logp[i+1] = - param[i+1] * math.exp(v)
+    hessian_logp[i+1, i+1] = - math.exp(v)
+
   s["logP(x)"] = logp
-  #s["grad(logP(x))"] = 
-  #s["H(logP(x))"] = 
+  s["grad(logP(x))"] = grad_logp.tolist()
+  s["H(logP(x))"] = hessian_logp.tolist()
+
 
 

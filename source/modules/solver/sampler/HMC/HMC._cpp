@@ -633,7 +633,7 @@ void HMC::printGenerationAfter()
   _k->_logger->logInfo("Detailed", "Current Metric:\n");
 
   auto metric = _hamiltonian->getMetric();
-  if (_useDiagonalMetric == true)
+  if (_useDiagonalMetric == true || _version == "Static")
   {
     for (size_t d = 0; d < _dimensions; ++d)
       _k->_logger->logData("Detailed", "         %+6.3e  \n", metric[d]);
@@ -657,7 +657,7 @@ void HMC::printGenerationAfter()
   _k->_logger->logInfo("Normal", "Current Inverse Metric:\n");
 
   auto inverseMetric = _hamiltonian->getInverseMetric();
-  if (_useDiagonalMetric == true)
+  if (_useDiagonalMetric == true || _version == "Static")
   {
     for (size_t e = 0; e < _dimensions; ++e)
       _k->_logger->logData("Normal", "         %+6.3e  \n", inverseMetric[e]);

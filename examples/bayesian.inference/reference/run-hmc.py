@@ -15,7 +15,7 @@ e = korali.Experiment()
 
 # Setting up the reference likelihood for the Bayesian Problem
 e["Problem"]["Type"] = "Bayesian/Reference"
-e["Problem"]["Likelihood Model"] = "Negative Binomial"
+e["Problem"]["Likelihood Model"] = "Normal"
 e["Problem"]["Reference Data"] = getReferenceData()
 e["Problem"]["Computational Model"] = lambda sampleData: modelWithGradients(sampleData, getReferencePoints())
 
@@ -24,7 +24,7 @@ e["Solver"]["Type"] = "Sampler/HMC"
 e["Solver"]["Version"] = "Euclidean"
 e["Solver"]["Inverse Regularization Parameter"] = 0.1
 e["Solver"]["Max Num Fixed Point Iteration"] = 5
-e["Solver"]["Burn In"] = 500
+e["Solver"]["Burn In"] = 1000
 e["Solver"]["Use NUTS"] = False
 e["Solver"]["Use Diagonal Metric"] = True
 e["Solver"]["Max Depth"] = 10
@@ -66,11 +66,11 @@ e["Variables"][1]["Initial Standard Deviation"] = 1.0
 
 e["Variables"][2]["Name"] = "Dispersion"
 e["Variables"][2]["Prior Distribution"] = "Uniform 2"
-e["Variables"][2]["Initial Mean"] = 75
+e["Variables"][2]["Initial Mean"] = 2.50
 e["Variables"][2]["Initial Standard Deviation"] = 1.0
 
 # Configuring output settings
-e["File Output"]["Frequency"] = 50000
+e["File Output"]["Frequency"] = 1e6
 e["Console Output"]["Frequency"] = 500
 
 e["File Output"]["Path"] = '_korali_result_hmc'

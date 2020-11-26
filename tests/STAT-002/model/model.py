@@ -6,6 +6,7 @@
 def model(s):
   v = s["Parameters"][0]
   r = -0.5 * v * v
+  s["F(x)"] = r
   s["logP(x)"] = r
   s["grad(logP(x))"] = [-v]
   s["H(logP(x))"] = [[-1.0]]

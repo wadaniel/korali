@@ -19,8 +19,8 @@ for useDiagonalMetric in [False, True]:
   # Selecting problem and solver types.
   e["Problem"]["Type"] = "Sampling"
   e["Problem"]["Probability Function"] = lg5
-  e["Console Output"]["Frequency"] = 5000
-  e["File Output"]["Frequency"] = 0
+  e["File Output"]["Enabled"] = False
+  e["Console Output"]["Frequency"] = 500
 
   # Defining problem's variables and their HMC settings
   for i in range(5):
@@ -30,8 +30,8 @@ for useDiagonalMetric in [False, True]:
 
   # Configuring the HMC sampler parameters
   e["Solver"]["Type"] = "Sampler/HMC"
-  e["Solver"]["Burn In"] = 500
-  e["Solver"]["Termination Criteria"]["Max Samples"] = 50000
+  e["Solver"]["Burn In"] = 1000
+  e["Solver"]["Termination Criteria"]["Max Samples"] = 5000
 
   # HMC specific parameters
   e["Solver"]["Num Integration Steps"] = 20
@@ -39,7 +39,6 @@ for useDiagonalMetric in [False, True]:
   e["Solver"]["Version"] = 'Euclidean'
   e["Solver"]["Use Diagonal Metric"] = useDiagonalMetric
   e["Solver"]["Use Adaptive Step Size"] = True
-  e["Solver"]["Target Integration Time"] = 0.5
   e["Solver"]["Target Acceptance Rate"] = 0.80
   e["Solver"]["Use NUTS"] = False
 
@@ -47,5 +46,5 @@ for useDiagonalMetric in [False, True]:
   e["Random Seed"] = 1337
   k.run(e)
 
-  verifyMean(e["Solver"]["Sample Database"], [0.0, 0.0, 0.0, 0.0, 0.0], 0.05)
-  verifyStd(e["Solver"]["Sample Database"], [1.0, 1.0, 1.0, 1.0, 1.0], 0.05)
+  verifyMean(e["Solver"]["Sample Database"], [0.0, 0.0, 0.0, 0.0, 0.0], 0.5)
+  verifyStd(e["Solver"]["Sample Database"], [1.0, 1.0, 1.0, 1.0, 1.0], 0.5)

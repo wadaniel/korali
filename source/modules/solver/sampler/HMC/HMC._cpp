@@ -37,6 +37,13 @@ void HMC::setInitialConfiguration()
   if (_adaptiveStepSizeScheduleConstant <= 0.0 || _adaptiveStepSizeScheduleConstant > 1.0) KORALI_LOG_ERROR("Adaptive Step Size Schedule Constant must be in the interval (0.0, 1.0] (is %lf).\n", _adaptiveStepSizeScheduleConstant);
   if (_stepSizeJitter < 0.0 || _stepSizeJitter > 1.0) KORALI_LOG_ERROR("Step Size Jitter has to in [0.0, 1.0] (is %lf).\n", _stepSizeJitter);
 
+  if (_version == "Euclidean" || _useAdaptiveStepSize)
+  {
+    size_t minBurnInLength = _initialFastAdaptionInterval + 31 * _initialSlowAdaptionInterval + _finalFastAdaptionInterval;
+    if (_burnIn < minBurnInLength)
+      KORALI_LOG_ERROR("Burn in too small for adaptive step size, must be larger than %zu (is %zu).", minBurnInLength, _burnIn);
+  }
+
   _dimensions = _k->_variables.size();
 
   // Resizing vectors of internal settings to correct dimensions
@@ -45,6 +52,10 @@ void HMC::setInitialConfiguration()
   _momentumLeader.resize(_dimensions);
   _momentumCandidate.resize(_dimensions);
   _positionMean.resize(_dimensions);
+
+  // Prepare DBs
+  _sampleDatabase.resize(0);
+  _euclideanWarmupSampleDatabase.resize(0);
 
   // initializing variable defaults
   for (size_t i = 0; i < _dimensions; i++)
@@ -158,7 +169,7 @@ void HMC::runGeneration()
 
   if (_useNUTS)
   {
-    if (_version == "Euclidean" || _version == "Static")
+    if (_version == "Static" || _version == "Euclidean")
     {
       auto helperPtr = std::make_shared<TreeHelperEuclidean>();
       helperPtr->logUniSampleIn = logUniSample;
@@ -538,30 +549,45 @@ void HMC::saveSample()
   if (_chainLength >= _burnIn)
   {
     _sampleDatabase.push_back(_positionLeader);
-    _sampleEvaluationDatabase.push_back(_leaderEvaluation);
   }
-  else if (_version == "Euclidean")
-    _warmupSampleDatabase.push_back(_positionLeader);
+  if (_version == "Euclidean")
+  {
+    _euclideanWarmupSampleDatabase.push_back(_positionLeader);
+  }
 
   return;
 }
 
 void HMC::updateStepSize()
-{ 
-  if (_chainLength + 1 < _burnIn)
+{
+  if (_chainLength <= _burnIn)
   {
-  
-    // update taken from https://arxiv.org/pdf/1111.4246.pdf
-    //  _hBar = (1.0 - 1.0 / (_chainLength + 1 + _adaptiveStepSizeStabilizationConstant)) * _hBar + (_targetAcceptanceRate - _acceptanceProbability) / (_chainLength + 1 + _adaptiveStepSizeStabilizationConstant);
-    // _stepSize = std::exp(_mu - std::sqrt(_chainLength + 1) / _adaptiveStepSizeSpeedConstant * _hBar);
-    // _dualStepSize = std::pow((_stepSize / _dualStepSize), std::pow(_chainLength + 1, -_adaptiveStepSizeScheduleConstant)) * _dualStepSize;
+    size_t terminalFastPeriodStart = _initialFastAdaptionInterval + _initialFastAdaptionInterval * 31;
+    size_t terminalFastPeriodEnd = _initialFastAdaptionInterval + _initialSlowAdaptionInterval * 31 + _finalFastAdaptionInterval;
+    bool isTerminalFastPeriod = (_chainLength > terminalFastPeriodStart) && (_chainLength <= terminalFastPeriodEnd);
 
-    // update taken from https://colindcarroll.com/2019/04/21/step-size-adaptation-in-hamiltonian-monte-carlo/
-    double logStep = _mu - _acceptanceRateError / (sqrt(_chainLength + 1.) * _adaptiveStepSizeSpeedConstant);
-    _hBar = std::pow(_chainLength + 1., -_adaptiveStepSizeScheduleConstant);
-    double logAveragedStep = _hBar * logStep + (1. - _hBar) * logStep;
-    _stepSize = std::exp(logStep);
-    _dualStepSize = std::exp(logAveragedStep);
+    // Check warm-up window
+    if ((_chainLength <= _initialFastAdaptionInterval) || isTerminalFastPeriod)
+    {
+      // Adjust step size according to acceptance rate
+      // update taken from https://colindcarroll.com/2019/04/21/step-size-adaptation-in-hamiltonian-monte-carlo/
+
+      double logStep = _mu - _acceptanceRateError / (sqrt(_chainLength + 1.) * _adaptiveStepSizeSpeedConstant);
+      _hBar = std::pow(_chainLength + 1., -_adaptiveStepSizeScheduleConstant);
+      double logAveragedStep = _hBar * logStep + (1. - _hBar) * logStep;
+      _stepSize = std::exp(logStep);
+      _dualStepSize = std::exp(logAveragedStep);
+
+      if (_useAdaptiveStepSize == true)
+      {
+        _numIntegrationSteps = std::max((size_t)1, (size_t)std::round(_targetIntegrationTime / _stepSize));
+        if (_numIntegrationSteps > _maxIntegrationSteps)
+        {
+          _k->_logger->logWarning("Minimal", "Num Integration Steps (%zu) exceeding hard limit 'Max Integration Steps' (%zu). Actual integration time is %f.\n", _numIntegrationSteps, _maxIntegrationSteps, _maxIntegrationSteps * _stepSize);
+          _numIntegrationSteps = _maxIntegrationSteps;
+        }
+      }
+    }
   }
   else
   {
@@ -572,43 +598,59 @@ void HMC::updateStepSize()
 
 void HMC::updateState()
 {
-  _acceptanceRate = _useNUTS == true ? (double)_acceptanceCountNUTS / ((double)_chainLength + 1) : (double)_acceptanceCount / ((double)(_chainLength + 1));
+  // Update Acceptance Rate
+  if (_useNUTS)
+    _acceptanceRate = (double)_acceptanceCountNUTS / ((double)_chainLength + 1);
+  else
+    _acceptanceRate = (double)_acceptanceCount / ((double)(_chainLength + 1));
 
   _acceptanceRateError += (_targetAcceptanceRate - _acceptanceRate);
 
   // Update Step Size, Dual Step Size and H Bar
   updateStepSize();
- 
-  //if (_useAdaptiveStepSize == true && _chainLength <= _burnIn)
-  if (_useAdaptiveStepSize == true)
-  {
-    _numIntegrationSteps = std::max((size_t)1, (size_t)std::round(_targetIntegrationTime / _stepSize));
-    if (_numIntegrationSteps > _maxIntegrationSteps)
-    {
-      _k->_logger->logWarning("Minimal", "Num Integration Steps (%zu) exceeding hard limit (%zu). Actual integration time is %f.\n", _numIntegrationSteps, _maxIntegrationSteps, _maxIntegrationSteps * _stepSize);
-      _numIntegrationSteps = _maxIntegrationSteps;
-    }
-  }
 
-
-  // for one sample simply set average to current value (to avoid dividing by zero)
-  if (_warmupSampleDatabase.size() == 1)
+  // init warm-up chain mean
+  if (_euclideanWarmupSampleDatabase.size() == 1)
     for (size_t d = 0; d < _dimensions; ++d) _positionMean[d] = _positionLeader[d];
-  // calculate chain mean for > 1 sample
-  else if (_warmupSampleDatabase.size() > 1)
-    for (size_t d = 0; d < _dimensions; ++d) _positionMean[d] = (_positionMean[d] * (_warmupSampleDatabase.size() - 1) + _positionLeader[d]) / _warmupSampleDatabase.size();
+  // calculate warm-up chain mean for > 1 sample
+  else if (_euclideanWarmupSampleDatabase.size() > 1)
+    for (size_t d = 0; d < _dimensions; ++d) _positionMean[d] = (_positionMean[d] * (_euclideanWarmupSampleDatabase.size() - 1) + _positionLeader[d]) / _euclideanWarmupSampleDatabase.size();
 
-  // for one sample simply set average to current value (to avoid dividing by zero)
+  // init chain mean
   if (_sampleDatabase.size() == 1)
     for (size_t d = 0; d < _dimensions; ++d) _positionMean[d] = _positionLeader[d];
   // calculate chain mean for > 1 sample
   else if (_sampleDatabase.size() > 1)
     for (size_t d = 0; d < _dimensions; ++d) _positionMean[d] = (_positionMean[d] * (_sampleDatabase.size() - 1) + _positionLeader[d]) / _sampleDatabase.size();
 
-  // Define metric from warm up samples
-  if (((size_t)(_metricEstimateQuotient * (double)_burnIn) == _chainLength + 1) && (_version == "Euclidean"))
+  if (_version == "Euclidean")
   {
-    int err = _hamiltonian->updateMetricMatricesEuclidean(_warmupSampleDatabase, _positionMean);
+    int err;
+    if (_chainLength == _initialFastAdaptionInterval + 1 * _initialSlowAdaptionInterval)
+    {
+      err = _hamiltonian->updateMetricMatricesEuclidean(_euclideanWarmupSampleDatabase, _positionMean);
+      _euclideanWarmupSampleDatabase.clear();
+    }
+    else if (_chainLength == _initialFastAdaptionInterval + 2 * _initialSlowAdaptionInterval)
+    {
+      err = _hamiltonian->updateMetricMatricesEuclidean(_euclideanWarmupSampleDatabase, _positionMean);
+      _euclideanWarmupSampleDatabase.clear();
+    }
+    else if (_chainLength == _initialFastAdaptionInterval + 4 * _initialSlowAdaptionInterval)
+    {
+      err = _hamiltonian->updateMetricMatricesEuclidean(_euclideanWarmupSampleDatabase, _positionMean);
+      _euclideanWarmupSampleDatabase.clear();
+    }
+    else if (_chainLength == _initialFastAdaptionInterval + 8 * _initialSlowAdaptionInterval)
+    {
+      err = _hamiltonian->updateMetricMatricesEuclidean(_euclideanWarmupSampleDatabase, _positionMean);
+      _euclideanWarmupSampleDatabase.clear();
+    }
+    else if (_chainLength == _initialFastAdaptionInterval + 16 * _initialSlowAdaptionInterval)
+    {
+      err = _hamiltonian->updateMetricMatricesEuclidean(_euclideanWarmupSampleDatabase, _positionMean);
+      _euclideanWarmupSampleDatabase.clear();
+    }
     if (err == GSL_EDOM) KORALI_LOG_ERROR("Inverse Metric negative definite (not updating Metric). Increase Burn In period.");
   }
 }
@@ -740,7 +782,6 @@ double HMC::findReasonableStepSize(std::vector<double> q)
   int a = (newLogP - oldLogP > std::log(0.5)) ? 1 : -1;
 
   // TODO: Ask why Tobias updates oldLogP as this is not what Algorithm 5 says
-  size_t i = 0;
   while (std::pow(std::exp(newLogP - oldLogP), a) > std::pow(2, -a))
   {
     stepSize = std::pow(2, a) * stepSize;

@@ -111,7 +111,6 @@ void cACER::initializeAgent()
   auto actionAverageEvaluationNetworkConfig = _criticNeuralNetwork;
   actionAverageEvaluationNetworkConfig["Layers"][0]["Node Count"] = _problem->_stateVectorSize + _problem->_actionVectorSize;
   actionAverageEvaluationNetworkConfig["Layers"][actionAverageEvaluationNetworkConfig["Layers"].size() - 1]["Node Count"] = 1;
-  actionAverageEvaluationNetworkConfig["Use Preloaded Normalization Data"] = true;
   _actionAverageEvaluationNetwork = dynamic_cast<NeuralNetwork *>(getModule(actionAverageEvaluationNetworkConfig, _k));
 
   /*********************************************************************

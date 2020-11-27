@@ -341,6 +341,7 @@ if [ $? -eq 0 ]; then
   fi
 fi
 
+BLASLIBS="-lblas"
 PTHREADFLAGS="-pthread"
 OMPFLAGS="-fopenmp"
 if [[ "$USE_CXX" == "icpc" || "$USE_CXX" == "icc" ]]; then
@@ -366,13 +367,14 @@ echo PTHREADFLAGS=$PTHREADFLAGS >> source/Makefile.conf
 echo OMPFLAGS=$OMPFLAGS >> source/Makefile.conf
 echo SHAREDLIB_FLAG=$SHAREDLIB_FLAG >> source/Makefile.conf
 echo MPIFLAGS=$MPIFLAGS >> source/Makefile.conf
+echo BLASLIBS=$BLASLIBS >> source/Makefile.conf
 
 echo NNCFLAGS=$NNCFLAGS >> source/Makefile.conf
 echo NNLIBS=$NNLIBS >> source/Makefile.conf
 
 echo LIBGPCFLAGS=$LIBGPCFLAGS >> source/Makefile.conf
 echo LIBGPLIBS=$LIBGPLIBS >> source/Makefile.conf
-
+ 
 echo LIBCOCFLAGS=$LIBCOCFLAGS >> source/Makefile.conf
 echo LIBCOLIBS=$LIBCOLIBS >> source/Makefile.conf
 
@@ -433,24 +435,40 @@ fi
 
 logEcho "[Korali] Installing Korali..."
 
-cp source/libkorali.so . >> $logFile 2>&1
+rm -rf .setup >> $logFile 2>&1
+mkdir -p .setup >> $logFile 2>&1
+
+cp docs/VERSION .setup >> $logFile 2>&1
 if [ $? -ne 0 ]; then
-  logEcho "[Korali] Error obtaining libkorali.so"
+  logEcho "[Korali] Error copying version file to install folder"
   exitWithError
 fi
-if [ $DISTRIBUTION == "debug" ]; then
-    # strip symbols is not debug build
-    strip libkorali.so
+
+cp source -r .setup/source >> $logFile 2>&1
+if [ $? -ne 0 ]; then
+  logEcho "[Korali] Error copying source files to install folder"
+  exitWithError
 fi
 
-cp source/setup.py .
-python3 -m pip install . $PIP_USER --upgrade >> $logFile 2>&1
+cp tools -r .setup/tools >> $logFile 2>&1
+if [ $? -ne 0 ]; then
+  logEcho "[Korali] Error copying tool files to install folder"
+  exitWithError
+fi
+
+# strip symbols is not debug build
+if [ $DISTRIBUTION == "debug" ]; then
+    strip .setup/libkorali.so >> $logFile 2>&1
+fi
+
+cp source/setup.py .setup
+python3 -m pip install .setup $PIP_USER --upgrade >> $logFile 2>&1
 if [ $? -ne 0 ]; then
   logEcho "[Korali] Error installing Korali's Python module."
   exitWithError
 fi
 
-rm -f libkorali.so >> $logFile 2>&1 
+rm -rf .setup >> $logFile 2>&1
 
 echo "------------------------------------------------------------------"
 echo "[Korali] Finished installation successfully."

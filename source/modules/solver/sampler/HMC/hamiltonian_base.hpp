@@ -241,10 +241,9 @@ class Hamiltonian
   /**
   * @brief Updates Inverse Metric by using samples to approximate the covariance matrix via the Fisher information.
   * @param samples Contains samples. One row is one sample.
-  * @param positionMean Mean of samples.
   * @return Error code of Cholesky decomposition needed for dense Metric.
   */
-  virtual int updateMetricMatricesEuclidean(const std::vector<std::vector<double>> &samples, const std::vector<double> &positionMean)
+  virtual int updateMetricMatricesEuclidean(const std::vector<std::vector<double>> &samples)
   {
     return -1;
   };

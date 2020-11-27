@@ -160,7 +160,7 @@ class HamiltonianEuclideanDiag : public HamiltonianEuclidean
   * @param positionMean Mean of samples.
   * @return Error code not needed here to set to 0.
   */
-  int updateMetricMatricesEuclidean(const std::vector<std::vector<double>> &samples, const std::vector<double> &positionMean) override
+  int updateMetricMatricesEuclidean(const std::vector<std::vector<double>> &samples) override
   {
     double mean, cov, sum;
     double sumOfSquares;

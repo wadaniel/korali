@@ -162,19 +162,24 @@ class HamiltonianEuclideanDiag : public HamiltonianEuclidean
   */
   int updateMetricMatricesEuclidean(const std::vector<std::vector<double>> &samples, const std::vector<double> &positionMean) override
   {
-    double tmpScalar;
-    size_t numSamples = samples.size();
+    double mean, cov, sum;
+    double sumOfSquares;
+    double numSamples = samples.size();
 
-    // calculate covariance matrix of warmup sample via Fisher Infromation
+    // calculate sample covariance
     for (size_t i = 0; i < _stateSpaceDim; ++i)
     {
-      tmpScalar = 0;
+      sum = 0.0;
+      sumOfSquares = 0.0;
       for (size_t j = 0; j < numSamples; ++j)
       {
-        tmpScalar += (samples[j][i] - positionMean[i]) * (samples[j][i] - positionMean[i]);
+        sum += samples[j][i];
+        sumOfSquares += samples[j][i]*samples[j][i];
       }
-      _inverseMetric[i] = tmpScalar / (numSamples - 1);
-      _metric[i] = 1.0 / _inverseMetric[i];
+      mean = sum/(numSamples);
+      cov = sumOfSquares/(numSamples) - mean*mean;
+      _inverseMetric[i] = cov;
+      _metric[i] = 1.0/cov;
     }
 
     return 0;

@@ -153,7 +153,6 @@ void GFPT::initializeAgent()
   auto batchOptimizationNetworkConfig = _criticNeuralNetwork;
   batchOptimizationNetworkConfig["Layers"][0]["Node Count"] = _problem->_stateVectorSize + _problem->_actionVectorSize;
   batchOptimizationNetworkConfig["Layers"][batchOptimizationNetworkConfig["Layers"].size() - 1]["Node Count"] = 1;
-  batchOptimizationNetworkConfig["Use Preloaded Normalization Data"] = true;
 
   _batchOptimizationNetworks.resize(_maxThreads);
   for (size_t threadIdx = 0; threadIdx < _maxThreads; threadIdx++)

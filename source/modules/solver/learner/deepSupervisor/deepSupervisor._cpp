@@ -45,7 +45,6 @@ void DeepSupervisor::initialize()
 
     // Creating inference neural network, setting its batch size as one (evaluation per call) and following the global (mean/variance) stats of the trained NN
     neuralNetworkConfig = _neuralNetwork;
-    neuralNetworkConfig["Use Preloaded Normalization Data"] = true;
 
     for (size_t i = 0; i < _maxThreads; i++)
     {

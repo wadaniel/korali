@@ -23,19 +23,16 @@ e["Problem"]["Computational Model"] = lambda sampleData: modelWithGradients(samp
 e["Solver"]["Type"] = "Sampler/HMC"
 e["Solver"]["Version"] = "Euclidean"
 e["Solver"]["Inverse Regularization Parameter"] = 0.1
-e["Solver"]["Max Num Fixed Point Iteration"] = 5
-e["Solver"]["Burn In"] = 1000
+e["Solver"]["Burn In"] = 1500
 e["Solver"]["Use NUTS"] = False
-e["Solver"]["Use Diagonal Metric"] = True
+e["Solver"]["Use Diagonal Metric"] = False
 e["Solver"]["Max Depth"] = 10
-#e["Solver"]["Num Integration Steps"] = 20
+e["Solver"]["Num Integration Steps"] = 20
 e["Solver"]["Target Integration Time"] = 0.5
-e["Solver"]["Step Size"] = 1.0
+e["Solver"]["Step Size"] = 0.1
 e["Solver"]["Use Adaptive Step Size"] = True
 e["Solver"]["Target Acceptance Rate"] = 0.75
-e["Solver"]["Integrator Verbosity"] = False
-e["Solver"]["Hamiltonian Verbosity"] = False
-e["Solver"]["Termination Criteria"]["Max Samples"] = 10000
+e["Solver"]["Termination Criteria"]["Max Samples"] = 5000
 
 # Configuring the problem's random distributions
 e["Distributions"][0]["Name"] = "Uniform 0"
@@ -70,7 +67,7 @@ e["Variables"][2]["Initial Mean"] = 2.50
 e["Variables"][2]["Initial Standard Deviation"] = 1.0
 
 # Configuring output settings
-e["File Output"]["Frequency"] = 1e6
+e["File Output"]["Frequency"] = 1e3
 e["Console Output"]["Frequency"] = 500
 
 e["File Output"]["Path"] = '_korali_result_hmc'

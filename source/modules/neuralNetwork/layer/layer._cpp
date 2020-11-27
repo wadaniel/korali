@@ -428,7 +428,7 @@ void Layer::forwardActivationFunction()
 #endif
 }
 
-void Layer::getOutput(float* output)
+void Layer::getOutputValues(float* output)
 {
  #ifdef _KORALI_USE_ONEDNN
    _nn->_stream.wait();
@@ -562,6 +562,102 @@ void Layer::backwardWeightsAndBias()
             _weightsFilterDesc,
             _weightsDiffFilter) != CUDNN_STATUS_SUCCESS) KORALI_LOG_ERROR("Error running filter backward filter propagation\n");
 
+#endif
+}
+
+void Layer::setOutputGradients(float* gradient)
+{
+  #ifdef _KORALI_USE_ONEDNN
+    write_to_dnnl_memory(gradient, _activationDiffMem);
+  #endif
+
+  #ifdef _KORALI_USE_CUDNN
+    if (cudaMemcpy(_activationDiffTensor, gradient, _nodeCount * sizeof(float), cudaMemcpyHostToDevice) != cudaSuccess) KORALI_LOG_ERROR("Error copying bias memory to device");
+  #endif
+}
+
+void Layer::setHyperparameters(float* hyperparameters)
+{
+ if (_prevLayer != NULL)
+ {
+  size_t IC = _prevLayer->_nodeCount;
+  size_t OC = _nodeCount;
+
+#ifdef _KORALI_USE_ONEDNN
+   write_to_dnnl_memory(&hyperparameters[0], _weightsMem);
+   write_to_dnnl_memory(&hyperparameters[IC*OC], _biasMem);
+#endif
+
+#ifdef _KORALI_USE_CUDNN
+   if (cudaMemcpy(_weightsFilter, &hyperparameters[0], IC * OC * sizeof(float), cudaMemcpyHostToDevice) != cudaSuccess) KORALI_LOG_ERROR("Error copying weights memory to device");
+   if (cudaMemcpy(_biasTensor, &hyperparameters[IC*OC], OC * sizeof(float), cudaMemcpyHostToDevice) != cudaSuccess) KORALI_LOG_ERROR("Error copying bias memory to device");
+#endif
+ }
+}
+
+void Layer::getHyperparameters(float* hyperparameters)
+{
+ if (_prevLayer != NULL)
+ {
+  size_t IC = _prevLayer->_nodeCount;
+  size_t OC = _nodeCount;
+
+#ifdef _KORALI_USE_ONEDNN
+      read_from_dnnl_memory(&hyperparameters[0], _weightsMem);
+      read_from_dnnl_memory(&hyperparameters[IC*OC], _biasMem);
+#endif
+
+#ifdef _KORALI_USE_CUDNN
+      if (cudaMemcpy(&hyperparameters[0], _weightsFilter, IC * OC * sizeof(float), cudaMemcpyDeviceToHost) != cudaSuccess) KORALI_LOG_ERROR("Error copying memory");
+      if (cudaMemcpy(&hyperparameters[IC*OC], _biasTensor, OC * sizeof(float), cudaMemcpyDeviceToHost) != cudaSuccess) KORALI_LOG_ERROR("Error copying memory");
+#endif
+ }
+}
+
+void Layer::getHyperparameterGradients(float* gradient)
+{
+  if (_prevLayer != NULL)
+  {
+   size_t IC = _prevLayer->_nodeCount;
+   size_t OC = _nodeCount;
+
+ #ifdef _KORALI_USE_ONEDNN
+       read_from_dnnl_memory(&gradient[0], _weightsDiffMem);
+       read_from_dnnl_memory(&gradient[IC*OC], _biasDiffMem);
+ #endif
+
+ #ifdef _KORALI_USE_CUDNN
+       if (cudaMemcpy(&gradient[0], _weightsDiffFilter, IC * OC * sizeof(float), cudaMemcpyDeviceToHost) != cudaSuccess) KORALI_LOG_ERROR("Error copying memory");
+       if (cudaMemcpy(&gradient[IC*OC], _biasDiffTensor, OC * sizeof(float), cudaMemcpyDeviceToHost) != cudaSuccess) KORALI_LOG_ERROR("Error copying memory");
+ #endif
+  }
+}
+
+void Layer::getInputGradients(float* gradient)
+{
+ size_t N = _nn->_batchSize;
+ size_t OC = _nodeCount;
+
+#ifdef _KORALI_USE_ONEDNN
+    read_from_dnnl_memory(gradient, _nodeDiffMem);
+#endif
+
+#ifdef _KORALI_USE_CUDNN
+    if (cudaMemcpy(gradient, _nodeDiffTensor, N * OC * sizeof(float), cudaMemcpyDeviceToHost) != cudaSuccess) KORALI_LOG_ERROR("Error copying memory");
+#endif
+}
+
+void Layer::setInputValues(float* input)
+{
+ size_t N = _nn->_batchSize;
+ size_t OC = _nodeCount;
+
+#ifdef _KORALI_USE_ONEDNN
+  write_to_dnnl_memory(input, _nodeMem);
+#endif
+
+#ifdef _KORALI_USE_CUDNN
+  if (cudaMemcpy(_nodeTensor, input, N * OC * sizeof(float), cudaMemcpyHostToDevice) != cudaSuccess) KORALI_LOG_ERROR("Error copying bias memory to device");
 #endif
 }
 

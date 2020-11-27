@@ -291,7 +291,16 @@ class Layer : public Module
 
   void forwardWeightsAndBias();
   void forwardActivationFunction();
-  void getOutput(float* output);
+
+  void setOutputGradients(float* gradient);
+  void getOutputValues(float* output);
+
+  void setInputValues(float* input);
+  void getInputGradients(float* gradient);
+
+  void setHyperparameters(float* hyperparameters);
+  void getHyperparameters(float* hyperparameters);
+  void getHyperparameterGradients(float* gradient);
 
   void backwardActivationFunction();
   void backwardDataPropagation();

@@ -25,15 +25,14 @@ e["Variables"][0]["Initial Standard Deviation"] = 1.0
 # Configuring the HMC sampler parameters
 e["Solver"]["Type"] = "Sampler/HMC"
 e["Solver"]["Version"] = "Riemannian"
-e["Solver"]["Burn In"] = 500
-e["Solver"]["Termination Criteria"]["Max Samples"] = 25000
+e["Solver"]["Burn In"] = 1000
+e["Solver"]["Termination Criteria"]["Max Samples"] = 5000
 
 # HMC specific parameters
 e["Solver"]["Num Integration Steps"] = 20
 e["Solver"]["Step Size"] = 0.05
 e["Solver"]["Use Diagonal Metric"] = True
-e["Solver"]["Use Adaptive Step Size"] = 1
-e["Solver"]["Target Integration Time"] = 0.5
+e["Solver"]["Use Adaptive Step Size"] = True
 e["Solver"]["Target Acceptance Rate"] = 0.80
 e["Solver"]["Use NUTS"] = 0
 
@@ -45,4 +44,4 @@ e["Random Seed"] = 1227
 k.run(e)
 
 verifyMean(e["Solver"]["Sample Database"], [4.0], 0.05)
-verifyStd(e["Solver"]["Sample Database"], [math.sqrt(2)], 0.05)
+verifyStd(e["Solver"]["Sample Database"], [math.sqrt(2)], 0.25)

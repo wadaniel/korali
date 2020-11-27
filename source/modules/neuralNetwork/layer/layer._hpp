@@ -288,6 +288,14 @@ class Layer : public Module
   * @brief Initializes the internal memory structures for the backward pipeline
   */
   void createBackwardPipeline();
+
+  void forwardWeightsAndBias();
+  void forwardActivationFunction();
+  void getOutput(float* output);
+
+  void backwardActivationFunction();
+  void backwardDataPropagation();
+  void backwardWeightsAndBias();
 };
 
 } // namespace neuralNetwork

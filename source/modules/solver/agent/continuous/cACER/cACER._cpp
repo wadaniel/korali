@@ -111,7 +111,6 @@ void cACER::initializeAgent()
   auto actionAverageEvaluationNetworkConfig = _criticNeuralNetwork;
   actionAverageEvaluationNetworkConfig["Layers"][0]["Node Count"] = _problem->_stateVectorSize + _problem->_actionVectorSize;
   actionAverageEvaluationNetworkConfig["Layers"][actionAverageEvaluationNetworkConfig["Layers"].size() - 1]["Node Count"] = 1;
-  actionAverageEvaluationNetworkConfig["Use Preloaded Normalization Data"] = true;
   _actionAverageEvaluationNetwork = dynamic_cast<NeuralNetwork *>(getModule(actionAverageEvaluationNetworkConfig, _k));
 
   /*********************************************************************
@@ -210,8 +209,8 @@ std::tuple<float, float> cACER::retraceFunction(size_t expId)
   for (ssize_t i = startId; i < endId; i++)
   {
     // If the difference in age is within the range, then it's a cache hit
-   if (_experienceReplay[i].cache.contains("QRetNext") && _experienceReplay[i].cache.contains("QOpcNext"))
-   {
+    if (_experienceReplay[i].cache.contains("QRetNext") && _experienceReplay[i].cache.contains("QOpcNext"))
+    {
       qRetNext = _experienceReplay[i].cache.get("QRetNext");
       qOpcNext = _experienceReplay[i].cache.get("QOpcNext");
       curId = i;
@@ -266,8 +265,8 @@ std::tuple<float, float> cACER::retraceFunction(size_t expId)
     qOpcNext = (qOpc - curQ) + curV;
 
     // Refreshing cache with the calculated value
-    _experienceReplay[curId-1].cache.set("QRetNext", qRetNext);
-    _experienceReplay[curId-1].cache.set("qOpcNext", qOpcNext);
+    _experienceReplay[curId - 1].cache.set("QRetNext", qRetNext);
+    _experienceReplay[curId - 1].cache.set("qOpcNext", qOpcNext);
   }
 
   // Returning qRet
@@ -283,11 +282,11 @@ knlohmann::json cACER::runPolicy(const std::vector<float> &state)
 
   for (size_t i = 0; i < _problem->_actionVectorSize; ++i)
   {
-   auto varIdx = _problem->_actionVectorIndexes[i];
-   float sigma = _k->_variables[varIdx]->_explorationSigma;
+    auto varIdx = _problem->_actionVectorIndexes[i];
+    float sigma = _k->_variables[varIdx]->_explorationSigma;
 
-   actionMeans[i] = eval[i];
-   actionSigmas[i] = sigma;
+    actionMeans[i] = eval[i];
+    actionSigmas[i] = sigma;
   }
 
   knlohmann::json policy;
@@ -345,8 +344,8 @@ void cACER::trainAgent()
     for (size_t i = 0; i < _problem->_actionVectorSize; i++) inverseVariances[i] = 1.0f / (curSigmas[i] * curSigmas[i]);
 
     // Getting policy distribution parameters from the old policy NN
-    std::vector<float> oldMeans =_experienceReplay[expId].policy["Action Means"].get<std::vector<float>>();
-    std::vector<float> oldSigmas =_experienceReplay[expId].policy["Action Sigmas"].get<std::vector<float>>();
+    std::vector<float> oldMeans = _experienceReplay[expId].policy["Action Means"].get<std::vector<float>>();
+    std::vector<float> oldSigmas = _experienceReplay[expId].policy["Action Sigmas"].get<std::vector<float>>();
 
     // Allocating stateAction placeholder vector for combining a state and an action
     std::vector<float> stateActionVector(_problem->_stateVectorSize + _problem->_actionVectorSize);
@@ -361,7 +360,7 @@ void cACER::trainAgent()
     for (size_t i = 0; i < _problem->_actionVectorSize; i++) _policyDistributions[i]->_mean = curMeans[i];
 
     // Getting new action given the current policy
-    std::vector<float> newAction = generateAction(curMeans, curSigmas);
+    std::vector<float> newAction = generateTrainingAction(curMeans, curSigmas);
 
     // Getting A of experience action
     for (size_t i = 0; i < _problem->_actionVectorSize; i++) stateActionVector[_problem->_stateVectorSize + i] = expAction[i];
@@ -373,7 +372,7 @@ void cACER::trainAgent()
 
     // Getting n action samples from the policy
     std::vector<std::vector<float>> actionSamples(_policySamplePopulation);
-    for (size_t i = 0; i < _policySamplePopulation; i++) actionSamples[i] = generateAction(curMeans, curSigmas);
+    for (size_t i = 0; i < _policySamplePopulation; i++) actionSamples[i] = generateTrainingAction(curMeans, curSigmas);
 
     // Getting sum_n(A(x,u)) with u ~ policy(x)
     float aSamplesMean = 0.0;
@@ -510,22 +509,6 @@ void cACER::trainAgent()
   _policyLearner->initialize();
   _policyLearner->runGeneration();
   _policyLearner->finalize();
-
-  /****************************************************************************
-  * If batch normalization is being used, we need to adjust mean and variances
-  * by sampling a few more mini-batches after the optimization steps
-  ******************************************************************************/
-
-  normalizeStateActionNeuralNetwork(_aLearner->_trainingNeuralNetwork, _criticMiniBatchSize, _criticNormalizationSteps);
-  normalizeStateNeuralNetwork(_vLearner->_trainingNeuralNetwork, _criticMiniBatchSize, _criticNormalizationSteps);
-  normalizeStateNeuralNetwork(_policyLearner->_trainingNeuralNetwork, _policyMiniBatchSize, _policyNormalizationSteps);
-
-  // Storing new inference parameters
-  auto aHyperparameters = _aLearner->getHyperparameters();
-  _aLearner->setHyperparameters(aHyperparameters);
-
-  auto vHyperparameters = _vLearner->getHyperparameters();
-  _vLearner->setHyperparameters(vHyperparameters);
 
   /****************************************************************************
   * Updating Policy

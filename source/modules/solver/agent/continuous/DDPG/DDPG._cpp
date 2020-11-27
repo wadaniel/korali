@@ -130,9 +130,9 @@ void DDPG::trainAgent()
     else
     {
       // Updating action distributions for the current state
-     auto policy = runPolicy(curState);
-     auto curMeans = policy["Action Means"].get<std::vector<float>>();
-     auto curSigmas = policy["Action Sigmas"].get<std::vector<float>>();
+      auto policy = runPolicy(curState);
+      auto curMeans = policy["Action Means"].get<std::vector<float>>();
+      auto curSigmas = policy["Action Sigmas"].get<std::vector<float>>();
 
       bestAction = curMeans;
     }
@@ -164,12 +164,6 @@ void DDPG::trainAgent()
   _criticLearner->runGeneration();
   _criticLearner->finalize();
 
-  // Normalizing Critic Network
-  normalizeStateActionNeuralNetwork(_criticLearner->_trainingNeuralNetwork, _criticMiniBatchSize, _criticNormalizationSteps);
-
-  // Updating Policy and critic inference hyperparameters
-  auto criticHyperparameters = _criticLearner->getHyperparameters();
-  _criticLearner->setHyperparameters(criticHyperparameters);
 
   // Keeping critic statistics
   _averageQStar = (float)_cumulativeQStar / (float)(_criticMiniBatchSize);
@@ -214,9 +208,6 @@ void DDPG::trainAgent()
   _policyLearner->runGeneration();
   _policyLearner->finalize();
 
-  // Normalizing Policy Network
-  normalizeStateNeuralNetwork(_policyLearner->_trainingNeuralNetwork, _policyMiniBatchSize, _policyNormalizationSteps);
-
   // Softly adopting the new critic parameters, using the adoption rate
   auto newPolicyHyperparameters = _policyLearner->getHyperparameters();
   for (size_t i = 0; i < newPolicyHyperparameters.size(); i++)
@@ -236,11 +227,11 @@ knlohmann::json DDPG::runPolicy(const std::vector<float> &state)
 
   for (size_t i = 0; i < _problem->_actionVectorSize; ++i)
   {
-   auto varIdx = _problem->_actionVectorIndexes[i];
-   float sigma = _k->_variables[varIdx]->_explorationSigma;
+    auto varIdx = _problem->_actionVectorIndexes[i];
+    float sigma = _k->_variables[varIdx]->_explorationSigma;
 
-   actionMeans[i] = eval[i];
-   actionSigmas[i] = sigma;
+    actionMeans[i] = eval[i];
+    actionSigmas[i] = sigma;
   }
 
   knlohmann::json policy;

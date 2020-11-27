@@ -16,7 +16,6 @@ namespace continuous
 class VRACER : public Continuous
 {
   public:
-
   /**
    * @brief Pointer to training the actor network
    */
@@ -38,6 +37,17 @@ class VRACER : public Continuous
    * @return vTbc
    */
   float computeVtbc(size_t expId);
+
+  /**
+   * @brief Calculates the gradient of policy wrt to the parameter of the 2nd (current) distribution evaluated at old action.
+   * @param oldAction Action from memory
+   * @param curParamsOne cur means for Normal distribution, beta for Beta distribution
+   * @param curParamsTwo cur sigmas for Normal distribution, alpha for Beta distribution
+   * @param oldParamsOne old means for Normal distribution, beta for Beta distribution
+   * @param oldParamsTwo old sigmas for Normal distribution, alpha for Beta distribution
+   * @return gradient of policy wrt curParamsOne and curParamsTwo
+   */
+  std::vector<float> calculateImportanceWeightGradient(const std::vector<float> &oldAction, const std::vector<float> &curParamsOne, const std::vector<float> &curParamsTwo, const std::vector<float> &oldParamsOne, const std::vector<float> &oldParamsTwo);
 
   knlohmann::json runPolicy(const std::vector<float> &state) override;
   void trainAgent() override;

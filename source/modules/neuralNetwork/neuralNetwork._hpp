@@ -86,12 +86,6 @@ class NeuralNetwork : public Module
   std::vector<float> getHyperparameters();
 
   /**
-  * @brief Normalizes neural network batch normalization mean and variances
-  * @param minibatches The set of mini batches for the neural network to normalize with
-  */
-  void normalize(const std::vector<std::vector<std::vector<float>>> &minibatches);
-
-  /**
    * @brief Gets the values of the weights and biases of the network
    * @return The weights and biases of the network
    */

@@ -55,6 +55,7 @@ void HMC::setInitialConfiguration()
   // Prepare DBs
   _sampleDatabase.resize(0);
   _euclideanWarmupSampleDatabase.resize(0);
+  _sampleEvaluationDatabase.resize(0);
 
   // initializing variable defaults
   for (size_t i = 0; i < _dimensions; i++)
@@ -548,6 +549,7 @@ void HMC::saveSample()
   if (_chainLength >= _burnIn)
   {
     _sampleDatabase.push_back(_positionLeader);
+    _sampleEvaluationDatabase.push_back(_leaderEvaluation);
   }
   if (_version == "Euclidean")
   {
@@ -608,13 +610,6 @@ void HMC::updateState()
   // Update Step Size, Dual Step Size, H Bar and apply step size jitter
   updateStepSize();
 
-  // init warm-up chain mean
-  if (_euclideanWarmupSampleDatabase.size() == 1)
-    for (size_t d = 0; d < _dimensions; ++d) _positionMean[d] = _positionLeader[d];
-  // calculate warm-up chain mean for > 1 sample
-  else if (_euclideanWarmupSampleDatabase.size() > 1)
-    for (size_t d = 0; d < _dimensions; ++d) _positionMean[d] = (_positionMean[d] * (_euclideanWarmupSampleDatabase.size() - 1) + _positionLeader[d]) / _euclideanWarmupSampleDatabase.size();
-
   // init chain mean
   if (_sampleDatabase.size() == 1)
     for (size_t d = 0; d < _dimensions; ++d) _positionMean[d] = _positionLeader[d];
@@ -627,27 +622,32 @@ void HMC::updateState()
     int err;
     if (_chainLength == _initialFastAdaptionInterval + 1 * _initialSlowAdaptionInterval)
     {
-      err = _hamiltonian->updateMetricMatricesEuclidean(_euclideanWarmupSampleDatabase, _positionMean);
+      // First slow adaption phase
+      err = _hamiltonian->updateMetricMatricesEuclidean(_euclideanWarmupSampleDatabase);
       _euclideanWarmupSampleDatabase.clear();
     }
     else if (_chainLength == _initialFastAdaptionInterval + 2 * _initialSlowAdaptionInterval)
     {
-      err = _hamiltonian->updateMetricMatricesEuclidean(_euclideanWarmupSampleDatabase, _positionMean);
+      // Second slow adaption phase
+      err = _hamiltonian->updateMetricMatricesEuclidean(_euclideanWarmupSampleDatabase);
       _euclideanWarmupSampleDatabase.clear();
     }
     else if (_chainLength == _initialFastAdaptionInterval + 4 * _initialSlowAdaptionInterval)
     {
-      err = _hamiltonian->updateMetricMatricesEuclidean(_euclideanWarmupSampleDatabase, _positionMean);
+      // Third slow adaption phase
+      err = _hamiltonian->updateMetricMatricesEuclidean(_euclideanWarmupSampleDatabase);
       _euclideanWarmupSampleDatabase.clear();
     }
     else if (_chainLength == _initialFastAdaptionInterval + 8 * _initialSlowAdaptionInterval)
     {
-      err = _hamiltonian->updateMetricMatricesEuclidean(_euclideanWarmupSampleDatabase, _positionMean);
+      // Fourth slow adaption phase
+      err = _hamiltonian->updateMetricMatricesEuclidean(_euclideanWarmupSampleDatabase);
       _euclideanWarmupSampleDatabase.clear();
     }
     else if (_chainLength == _initialFastAdaptionInterval + 16 * _initialSlowAdaptionInterval)
     {
-      err = _hamiltonian->updateMetricMatricesEuclidean(_euclideanWarmupSampleDatabase, _positionMean);
+      // Fifth slow adaption phase
+      err = _hamiltonian->updateMetricMatricesEuclidean(_euclideanWarmupSampleDatabase);
       _euclideanWarmupSampleDatabase.clear();
     }
     if (err == GSL_EDOM) KORALI_LOG_ERROR("Inverse Metric negative definite (not updating Metric). Increase Burn In period.");

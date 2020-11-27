@@ -35,16 +35,16 @@ for useDiagonalMetric in [False, True]:
 
   # HMC specific parameters
   e["Solver"]["Num Integration Steps"] = 20
-  e["Solver"]["Step Size"] = 0.05
+  e["Solver"]["Step Size"] = 0.1
   e["Solver"]["Version"] = 'Euclidean'
   e["Solver"]["Use Diagonal Metric"] = useDiagonalMetric
   e["Solver"]["Use Adaptive Step Size"] = True
-  e["Solver"]["Target Acceptance Rate"] = 0.80
+  e["Solver"]["Max Integration Steps"] = 1000
   e["Solver"]["Use NUTS"] = False
 
   # Running Korali
   e["Random Seed"] = 1337
   k.run(e)
 
-  verifyMean(e["Solver"]["Sample Database"], [0.0, 0.0, 0.0, 0.0, 0.0], 0.5)
-  verifyStd(e["Solver"]["Sample Database"], [1.0, 1.0, 1.0, 1.0, 1.0], 0.5)
+  verifyMean(e["Solver"]["Sample Database"], [0.0, 0.0, 0.0, 0.0, 0.0], 0.1)
+  verifyStd(e["Solver"]["Sample Database"], [1.0, 1.0, 1.0, 1.0, 1.0], 0.1)

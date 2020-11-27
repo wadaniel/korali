@@ -33,16 +33,15 @@ e["Solver"]["Termination Criteria"]["Max Samples"] = 5000
 
 # HMC specific parameters
 e["Solver"]["Num Integration Steps"] = 20
-e["Solver"]["Step Size"] = 0.01
 e["Solver"]["Version"] = 'Euclidean'
 e["Solver"]["Use Diagonal Metric"] = True
 e["Solver"]["Use Adaptive Step Size"] = True
-e["Solver"]["Target Acceptance Rate"] = 0.85
+e["Solver"]["Max Integration Steps"] = 1000
 e["Solver"]["Use NUTS"] = False
 
 # Running Korali
 e["Random Seed"] = 1337
 k.run(e)
 
-verifyMean(e["Solver"]["Sample Database"], [4.0], 0.5)
-verifyStd(e["Solver"]["Sample Database"], [4.0], 0.5)
+verifyMean(e["Solver"]["Sample Database"], [4.0], 0.2)
+verifyStd(e["Solver"]["Sample Database"], [4.0], 0.1)

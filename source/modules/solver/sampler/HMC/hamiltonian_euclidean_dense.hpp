@@ -191,23 +191,31 @@ class HamiltonianEuclideanDense : public HamiltonianEuclidean
   * @param positionMean Mean of samples.
   * @return Error code of Cholesky decomposition used to invert matrix.
   */
-  int updateMetricMatricesEuclidean(const std::vector<std::vector<double>> &samples, const std::vector<double> &positionMean) override
+  int updateMetricMatricesEuclidean(const std::vector<std::vector<double>> &samples) override
   {
-    double tmpScalar;
-    size_t numSamples = samples.size();
+    double sumk, sumi, sumOfSquares;
+    double meank, meani, cov;
+    double numSamples = samples.size();
 
-    // calculate covariance matrix of warmup sample via Fisher Infromation
+    // calculate sample covariance
     for (size_t i = 0; i < _stateSpaceDim; ++i)
     {
       for (size_t k = i; k < _stateSpaceDim; ++k)
       {
-        tmpScalar = 0;
+        sumk = 0.;
+        sumi = 0.;
+        sumOfSquares = 0.;
         for (size_t j = 0; j < numSamples; ++j)
         {
-          tmpScalar += (samples[j][i] - positionMean[i]) * (samples[j][k] - positionMean[k]);
+          sumi += samples[j][i];
+          sumk += samples[j][k];
+          sumOfSquares += samples[j][i]*samples[j][k];
         }
-        _inverseMetric[i * _stateSpaceDim + k] = tmpScalar / (numSamples - 1);
-        _inverseMetric[k * _stateSpaceDim + i] = _inverseMetric[i * _stateSpaceDim + k];
+        meank = sumk/numSamples;
+        meani = sumi/numSamples;
+        cov = sumOfSquares/numSamples - meani*meank;
+        _inverseMetric[i * _stateSpaceDim + k] = cov;
+        _inverseMetric[k * _stateSpaceDim + i] = cov;
       }
     }
 
@@ -244,48 +252,23 @@ class HamiltonianEuclideanDense : public HamiltonianEuclidean
   * @param inverseMat Result of inversion.
   * @return Error code of Cholesky decomposition used to invert matrix.
   */
-  int __invertMatrix(std::vector<double> &mat, std::vector<double> &inverseMat)
+  int __invertMatrix(const std::vector<double> &matrix, std::vector<double> &inverseMat)
   {
-    size_t _stateSpaceDim = (size_t)std::sqrt(mat.size());
-    gsl_matrix *A = gsl_matrix_alloc(_stateSpaceDim, _stateSpaceDim);
+    const size_t dim = (size_t)std::sqrt(matrix.size());
+    gsl_matrix_view invView = gsl_matrix_view_array(&inverseMat[0], dim, dim);
+    gsl_matrix_const_view matView = gsl_matrix_const_view_array(&matrix[0], dim, dim);
 
-    // copy mat to gsl matrix
-    for (size_t d = 0; d < _stateSpaceDim; ++d)
-    {
-      for (size_t e = 0; e < d; ++e)
-      {
-        gsl_matrix_set(A, d, e, mat[d * _stateSpaceDim + e]);
-        gsl_matrix_set(A, e, d, mat[e * _stateSpaceDim + d]);
-      }
-      gsl_matrix_set(A, d, d, mat[d * _stateSpaceDim + d]);
-    }
-
-    // calculate cholesky decomposition
-    int err = gsl_linalg_cholesky_decomp(A);
-    if (err == GSL_EDOM)
-    {
-      // error handling for non s.p.d. matrices
-    }
-    else
-    {
-      // Invert matrix
-      gsl_linalg_cholesky_invert(A);
-
-      // copy gsl matrix to inverseMat
-      // TODO: Find out if there is a better way to do this
-      for (size_t d = 0; d < _stateSpaceDim; ++d)
-      {
-        for (size_t e = 0; e < d; ++e)
-        {
-          inverseMat[d * _stateSpaceDim + e] = gsl_matrix_get(A, d, e);
-          inverseMat[e * _stateSpaceDim + d] = gsl_matrix_get(A, d, e);
-        }
-        inverseMat[d * _stateSpaceDim + d] = gsl_matrix_get(A, d, d);
-      }
-    }
+    gsl_permutation *p = gsl_permutation_alloc(dim);
+    int s;
+    
+    gsl_matrix *luMat = gsl_matrix_alloc(dim, dim);
+    gsl_matrix_memcpy(luMat, &matView.matrix);
+    gsl_linalg_LU_decomp(luMat, p, &s);
+    int err = gsl_linalg_LU_invert(luMat, p, &invView.matrix);
 
     // free up memory of gsl matrix
-    gsl_matrix_free(A);
+    gsl_permutation_free(p);
+    gsl_matrix_free(luMat);
 
     return err;
   }

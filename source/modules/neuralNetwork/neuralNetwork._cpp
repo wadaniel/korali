@@ -11,15 +11,6 @@ using namespace dnnl;
   #include <cudnn.h>
 #endif
 
-/********************************************
- * Pending Performance Improvements
- * - Make sure all operations are made on memory objects with format_tag::any, reordered by oneDNN during creation.
- *   This guarantees that the best memory landscape is selected for all these operations
- * - Do not reserve memory nor create/execute primitives for differentiation when just inferring
- * - Use prop_kind::forward_inference always when inferring
- * - Some memory structures can be re-used (instead of having a separate diff vector, reuse the data vector)
- ********************************************/
-
 namespace korali
 {
 NeuralNetwork::NeuralNetwork()
@@ -64,14 +55,8 @@ void NeuralNetwork::initialize()
   for (size_t i = 0; i < layerCount; i++) _layers[i]->createHyperparameterMemory();
 
   // Getting normalization and weight/bias parameter counts
-  _normalizationParameterCount = 0;
-  _weightParameterCount = 0;
-
-  for (size_t i = 0; i < layerCount; i++) _weightParameterCount += _layers[i]->_weightParameterCount;
-  for (size_t i = 0; i < layerCount; i++) _normalizationParameterCount += 2 * _layers[i]->_normalizationParameterCount;
-
-  // Calculating total hyperparameter count
-  _hyperparameterCount = _weightParameterCount + _normalizationParameterCount;
+  _hyperparameterCount = 0;
+  for (size_t i = 0; i < layerCount; i++) _hyperparameterCount += _layers[i]->_hyperparameterCount;
 
   // Check output scaling configuration
   size_t outputSize = _layers[layerCount - 1]->_nodeCount;
@@ -816,7 +801,7 @@ void NeuralNetwork::setHyperparameters(const std::vector<float> &hyperparameters
 std::vector<float> NeuralNetwork::getWeightsAndBiases()
 {
   // Creating single precision floating-point version of the hyperparameters
-  auto params = std::vector<float>(_weightParameterCount);
+  auto params = std::vector<float>(_hyperparameterCount);
 
   size_t layerCount = _layers.size();
   size_t currPos = 0;
@@ -879,8 +864,8 @@ std::vector<float> NeuralNetwork::getWeightsAndBiases()
 
 void NeuralNetwork::setWeightsAndBiases(const std::vector<float> &weights)
 {
-  if (weights.size() != _weightParameterCount)
-    KORALI_LOG_ERROR("Wrong number of weight parameters passed to the neural network. Expected: %lu, provided: %lu.\n", _weightParameterCount, weights.size());
+  if (weights.size() != _hyperparameterCount)
+    KORALI_LOG_ERROR("Wrong number of weight parameters passed to the neural network. Expected: %lu, provided: %lu.\n", _hyperparameterCount, weights.size());
 
   // Creating single precision floating-point version of the hyperparameters
   auto params = weights;
@@ -1055,7 +1040,7 @@ void NeuralNetwork::setNormalizationMeans(const std::vector<float> &normalizatio
 std::vector<float> NeuralNetwork::getWeightAndBiasesGradients()
 {
   // Copying back the gradients and biases back
-  std::vector<float> gradientVector(_weightParameterCount);
+  std::vector<float> gradientVector(_hyperparameterCount);
 
   // Retrieving hyperparameter gradients
   size_t currPos = 0;

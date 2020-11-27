@@ -123,14 +123,6 @@ class HMC : public Sampler
   void buildTreeUtil(std::shared_ptr<TreeHelperEuclidean> helper);
 
   /**
-  * @brief Dot product induced by inverse metric.
-  * @param pLeft Left argument (momentum).
-  * @param pRight Right argument (momentum).
-  * @return pLeft.T * inverseMetric * pRight
-  */
-  double dotProduct(const std::vector<double> &pLeft, const std::vector<double> &pRight) const;
-
-  /**
   * @brief Recursive binary tree building algorithm. Used if Use NUTS is set to True.
   * @param helper Helper struct for large argument list.
   * @param rho Sum of momenta encountered along momentum.

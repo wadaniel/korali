@@ -46,6 +46,11 @@ class CartPole:
 
   def advance(self, action):
     self.F = action[0]
+    if (self.F > 10.0):
+      self.F = 10.0
+    elif self.F < -10.0:
+      self.F = -10.0
+
     self.ODE.set_initial_value(self.u, self.t).set_f_params(self.F)
     self.u = self.ODE.integrate(self.t + self.dt)
     self.t = self.t + self.dt

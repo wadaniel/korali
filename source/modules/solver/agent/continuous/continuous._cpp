@@ -13,6 +13,9 @@ void Continuous::initializeAgent()
   // Getting continuous problem pointer
   _problem = dynamic_cast<problem::reinforcementLearning::Continuous *>(_k->_problem);
 
+  if ((_policyDistribution != "Normal") && (_policyDistribution != "Beta"))
+    KORALI_LOG_ERROR("Policy Distribution must be either 'Normal' or 'Beta' (is '%s').", _policyDistribution.c_str());
+
   /*********************************************************************
   * Initializing Action Noise Sigmas
   *********************************************************************/
@@ -57,51 +60,100 @@ void Continuous::getAction(korali::Sample &sample)
   * distribution
   ****************************************************************************/
 
-  if (sample["Mode"] == "Training") action = generateAction(curMeans, curSigmas);
+  if (sample["Mode"] == "Training") action = generateTrainingAction(curMeans, curSigmas);
 
   /*****************************************************************************
   * During testing, we select the means (point of highest density) for all
   * elements of the action vector
   ****************************************************************************/
 
-  if (sample["Mode"] == "Testing")  action = curMeans;
+  if (sample["Mode"] == "Testing") action = generateTestingAction(curMeans, curSigmas);
 
   /*****************************************************************************
   * Storing the action itself and associated metadata
   ****************************************************************************/
 
-  // Clipping actions TODO: Use truncated Normal or Beta distribution!!! (PW)
-  for (size_t i = 0; i < _problem->_actionVectorIndexes.size(); i++)
-  {
-   if (action[i] > _actionUpperBounds[i]) action[i] = _actionUpperBounds[i];
-   if (action[i] < _actionLowerBounds[i]) action[i] = _actionLowerBounds[i];
-  }
-
   sample["Policy"] = policy;
   sample["Action"] = action;
 }
 
-std::vector<float> Continuous::generateAction(const std::vector<float> &curMeans, const std::vector<float> &curSigmas)
+std::vector<float> Continuous::generateTrainingAction(const std::vector<float> &paramsOne, const std::vector<float> &paramsTwo)
 {
- std::vector<float> action(_problem->_actionVectorSize);
+  std::vector<float> action(_problem->_actionVectorSize);
+  if (_policyDistribution == "Normal")
+  {
+    // ParamsOne are the Means, ParamsTwo are the Sigmas
+    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+      action[i] = paramsOne[i] + paramsTwo[i] * _normalGenerator->getRandomNumber();
+  }
+  else /* _policyDistribution == "Beta" */
+  {
+    // ParamsOne are the Alphas, ParamsTwo are the Betas
+    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+      action[i] = _actionLowerBounds[i] + _actionScalings[i] * gsl_ran_beta(_normalGenerator->_range, paramsOne[i], paramsTwo[i]);
+  }
 
- for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-   action[i] = curMeans[i] + curSigmas[i]*_normalGenerator->getRandomNumber();
+  //printf("a %f, b %f\n", paramsOne[0], paramsTwo[0]);
 
- return action;
+  return action;
 }
 
-float Continuous::calculateImportanceWeight(const std::vector<float> &action, const std::vector<float> &curMeans, const std::vector<float> &curSigmas, const std::vector<float> &oldMeans, const std::vector<float> &oldSigmas)
+std::vector<float> Continuous::generateTestingAction(const std::vector<float> &paramsOne, const std::vector<float> &paramsTwo)
 {
-  // Getting probability densities for current action given current policy
-  float logpCurPolicy = 0.0f;
-  for (size_t i = 0; i < action.size(); i++)
-    logpCurPolicy += normalLogDensity(action[i], curMeans[i], curSigmas[i]);
+  std::vector<float> action(_problem->_actionVectorSize);
+  if (_policyDistribution == "Normal")
+  {
+    // ParamsOne are the Means, ParamsTwo are the Sigmas
+    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+      action[i] = paramsOne[i];
+  }
+  else /* _policyDistribution == "Beta" */
+  {
+    // ParamsOne are the Alphas, ParamsTwo are the Betas
+    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+    {
+      float act = 0.0;
 
-  // Getting probability densities for current action given current policy
+      if (paramsOne[i] > 1. && paramsTwo[i] > 1.)
+        act = (paramsOne[i] - 1.) / (paramsOne[i] + paramsTwo[i] - 2);
+      else if (paramsOne[i] <= 1. && paramsTwo[i] > 1.)
+        act = 0.0;
+      else if (paramsOne[i] > 1. && paramsTwo[i] <= 1.)
+        act = 1.0;
+      else
+        KORALI_LOG_ERROR("Case (a<=1 and b<=1) not yet treated (a = %f, b = %f).", paramsOne[i], paramsTwo[i]);
+
+      // Adjust actions to domain
+      action[i] = _actionLowerBounds[i] + _actionScalings[i] * act;
+    }
+  }
+
+  return action;
+}
+
+float Continuous::calculateImportanceWeight(const std::vector<float> &action, const std::vector<float> &curParamsOne, const std::vector<float> &curParamsTwo, const std::vector<float> &oldParamsOne, const std::vector<float> &oldParamsTwo)
+{
+  float logpCurPolicy = 0.0f;
   float logpOldPolicy = 0.0f;
-  for (size_t i = 0; i < action.size(); i++)
-    logpOldPolicy += normalLogDensity(action[i], curMeans[i], curSigmas[i]);
+
+  // Getting probability densities for current and past action given current policy
+  if (_policyDistribution == "Normal")
+  {
+    for (size_t i = 0; i < action.size(); i++)
+    {
+      logpOldPolicy += normalLogDensity(action[i], oldParamsOne[i], oldParamsTwo[i]);
+      logpCurPolicy += normalLogDensity(action[i], curParamsOne[i], curParamsTwo[i]);
+    }
+  }
+  else /* _policyDistribution == "Beta" */
+  {
+    for (size_t i = 0; i < action.size(); i++)
+    {
+      float x = (action[i] - _actionLowerBounds[i]) / _actionScalings[i];
+      logpOldPolicy += betaLogDensity(x, oldParamsOne[i], oldParamsTwo[i]);
+      logpCurPolicy += betaLogDensity(x, curParamsOne[i], curParamsTwo[i]);
+    }
+  }
 
   // Now calculating importance weight for the old s,a experience
   float logImportanceWeight = logpCurPolicy - logpOldPolicy;
@@ -112,8 +164,56 @@ float Continuous::calculateImportanceWeight(const std::vector<float> &action, co
 
   // Calculating actual importance weight by exp
   float importanceWeight = std::exp(logImportanceWeight);
-
+  //printf("iw %f\n", importanceWeight);
   return importanceWeight;
+}
+
+std::vector<float> Continuous::calculateKLDivergenceGradient(const std::vector<float> &oldParamsOne, const std::vector<float> &oldParamsTwo, const std::vector<float> &curParamsOne, const std::vector<float> &curParamsTwo)
+{
+  std::vector<float> klGrad(2.0 * _problem->_actionVectorSize, 0.0);
+
+  if (_policyDistribution == "Normal")
+  {
+    // ParamsOne are the Means, ParamsTwo are the Sigmas
+    for (size_t i = 0; i < _problem->_actionVectorSize; ++i)
+    {
+      float curInvVar = 1. / (curParamsTwo[i] * curParamsTwo[i]);
+      float actionDiff = (curParamsOne[i] - oldParamsOne[i]);
+
+      // KL-Gradient with respect to Mean
+      klGrad[i] = actionDiff * curInvVar;
+
+      // Contribution to Sigma from Trace
+      float gradTr = -(curInvVar / curParamsTwo[i]) * oldParamsTwo[i] * oldParamsTwo[i];
+
+      // Contribution to Sigma from Quadratic term
+      float gradQuad = -(actionDiff * actionDiff) * (curInvVar / curParamsTwo[i]);
+
+      // Contribution to Sigma from Determinant
+      float gradDet = 1.0f / curParamsTwo[i];
+
+      // KL-Gradient with respect to Sigma
+      klGrad[_problem->_actionVectorSize + i] = gradTr + gradQuad + gradDet;
+    }
+  }
+  else /* _policyDistribution == "Beta" */
+  {
+    // ParamsOne are the Alphas, ParamsTwo are the Betas
+    for (size_t i = 0; i < _problem->_actionVectorSize; ++i)
+    {
+      float psiAbOld = gsl_sf_psi(oldParamsOne[i] + oldParamsTwo[i]);
+      float psiAbCur = gsl_sf_psi(curParamsOne[i] + curParamsTwo[i]);
+
+      // KL-Gradient with respect to Alpha
+      klGrad[i] = (gsl_sf_psi(curParamsOne[i]) - psiAbCur - gsl_sf_psi(oldParamsOne[i]) - psiAbOld) / _actionScalings[i];
+
+      // KL-Gradient with respect to Beta
+      klGrad[_problem->_actionVectorSize + i] = (gsl_sf_psi(curParamsTwo[i]) - psiAbCur - gsl_sf_psi(oldParamsTwo[i]) - psiAbOld) / _actionScalings[i];
+    }
+  }
+
+  //printf("grad %f %f\n", klGrad[0], klGrad[1]);
+  return klGrad;
 }
 
 } // namespace agent

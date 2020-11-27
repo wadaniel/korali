@@ -45,12 +45,11 @@ void DeepSupervisor::initialize()
 
     // Creating inference neural network, setting its batch size as one (evaluation per call) and following the global (mean/variance) stats of the trained NN
     neuralNetworkConfig = _neuralNetwork;
-    neuralNetworkConfig["Use Preloaded Normalization Data"] = true;
 
     for (size_t i = 0; i < _maxThreads; i++)
     {
-     auto nnConfig = neuralNetworkConfig;
-     _evaluationNeuralNetworks[i] = dynamic_cast<NeuralNetwork *>(getModule(nnConfig, _k));
+      auto nnConfig = neuralNetworkConfig;
+      _evaluationNeuralNetworks[i] = dynamic_cast<NeuralNetwork *>(getModule(nnConfig, _k));
     }
 
     /*****************************************************************
@@ -64,13 +63,13 @@ void DeepSupervisor::initialize()
 
     // Copying hyperparameters and normalization parameters from training to evaluation
     for (size_t i = 0; i < _maxThreads; i++)
-     _evaluationNeuralNetworks[i]->setHyperparameters(hyperparameters);
+      _evaluationNeuralNetworks[i]->setHyperparameters(hyperparameters);
 
-   /*****************************************************************
+    /*****************************************************************
    * Setting up weight and bias optimization experiment
    *****************************************************************/
 
-    auto weightAndBiasParameters = _trainingNeuralNetwork->getWeightsAndBiases();
+    auto weightAndBiasParameters = _trainingNeuralNetwork->getHyperparameters();
 
     if (_optimizer == "Adam") _adamSolver = new korali::fAdam(weightAndBiasParameters.size());
     if (_optimizer == "AdaBelief") _adamSolver = new korali::fAdaBelief(weightAndBiasParameters.size());
@@ -136,7 +135,7 @@ void DeepSupervisor::runGeneration()
     _trainingNeuralNetwork->backward(lossDiff);
 
     // If we need the gradients of the weights, we also compute them
-    auto gradient = _trainingNeuralNetwork->getWeightAndBiasesGradients();
+    auto gradient = _trainingNeuralNetwork->getHyperparameterGradients();
 
     // Passing loss and gradient through an ADAM update
     _adamSolver->processResult(_currentLoss, gradient);
@@ -148,7 +147,7 @@ void DeepSupervisor::runGeneration()
       _suboptimalGenerationCount++;
 
     // Getting new set of hyperparameters from Adam
-    _trainingNeuralNetwork->setWeightsAndBiases(_adamSolver->_currentValue);
+    _trainingNeuralNetwork->setHyperparameters(_adamSolver->_currentValue);
   }
 }
 
@@ -158,7 +157,7 @@ void DeepSupervisor::finalize()
   auto hyperparameters = _trainingNeuralNetwork->getHyperparameters();
 
   for (size_t i = 0; i < _maxThreads; i++)
-   _evaluationNeuralNetworks[i]->setHyperparameters(hyperparameters);
+    _evaluationNeuralNetworks[i]->setHyperparameters(hyperparameters);
 
   _hyperparameters = hyperparameters;
 }
@@ -172,7 +171,7 @@ void DeepSupervisor::setHyperparameters(const std::vector<float> &hyperparameter
 {
   // Update evaluation network
   for (size_t i = 0; i < _maxThreads; i++)
-   _evaluationNeuralNetworks[i]->setHyperparameters(hyperparameters);
+    _evaluationNeuralNetworks[i]->setHyperparameters(hyperparameters);
 }
 
 std::vector<std::vector<float>> DeepSupervisor::getEvaluation(const std::vector<std::vector<float>> &inputBatch)
@@ -209,7 +208,7 @@ std::vector<float> DeepSupervisor::getGradients(const std::vector<float> &output
   size_t curThread = omp_get_thread_num();
 
   // Backward propagating the gradients through the training neural network
-  _evaluationNeuralNetworks[curThread]->backward({ outputDiffs });
+  _evaluationNeuralNetworks[curThread]->backward({outputDiffs});
 
   // Running backward propagation wrt data
   return _evaluationNeuralNetworks[curThread]->getDataGradients();

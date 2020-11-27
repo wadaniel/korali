@@ -26,8 +26,7 @@ void NeuralNetwork::initialize()
 
 #endif
 
-  if (_isInitialized)
-    KORALI_LOG_ERROR("Neural Network has already been initialized!.\n");
+  if (_isInitialized)  KORALI_LOG_ERROR("Neural Network has already been initialized!.\n");
 
 #ifdef _KORALI_USE_ONEDNN
 
@@ -134,14 +133,8 @@ void NeuralNetwork::setInput(const std::vector<std::vector<float>> &input)
     for (size_t j = 0; j < inputSize; j++)
       batchInput[i * inputSize + j] = input[i][j];
 
-// Writing input to the NN
-#ifdef _KORALI_USE_ONEDNN
-  write_to_dnnl_memory(batchInput.data(), _layers[0]->_nodeMem);
-#endif
-
-#ifdef _KORALI_USE_CUDNN
-  if (cudaMemcpy(_layers[0]->_nodeTensor, batchInput.data(), batchInput.size() * sizeof(float), cudaMemcpyHostToDevice) != cudaSuccess) KORALI_LOG_ERROR("Error copying bias memory to device");
-#endif
+ // Writing input to the NN
+ _layers[0]->setInputValues(batchInput.data());
 }
 
 void NeuralNetwork::forward()
@@ -162,7 +155,7 @@ void NeuralNetwork::forward()
   size_t lastLayer = layerCount - 1;
   size_t nodeCount = _layers[lastLayer]->_nodeCount;
   std::vector<float> resultData(_batchSize * nodeCount);
-  _layers[lastLayer]->getOutput(resultData.data());
+  _layers[lastLayer]->getOutputValues(resultData.data());
 
   // Copying NN output to class output
   _outputValues.resize(_batchSize);
@@ -270,14 +263,8 @@ void NeuralNetwork::backward(const std::vector<std::vector<float>> &gradients)
       floatDiffs[i * outputSize + j] = g;
     }
 
-// Copying gradients to the output end of the NN
-#ifdef _KORALI_USE_ONEDNN
-  write_to_dnnl_memory(floatDiffs.data(), _layers[lastLayer]->_activationDiffMem);
-#endif
-
-#ifdef _KORALI_USE_CUDNN
-  if (cudaMemcpy(_layers[lastLayer]->_activationDiffTensor, floatDiffs.data(), floatDiffs.size() * sizeof(float), cudaMemcpyHostToDevice) != cudaSuccess) KORALI_LOG_ERROR("Error copying bias memory to device");
-#endif
+  // Copying gradients to the output end of the NN
+  _layers[lastLayer]->setOutputGradients(floatDiffs.data());
 
   // Backward propagating neural network
   for (ssize_t i = lastLayer; i >= 0; i--)
@@ -293,52 +280,20 @@ void NeuralNetwork::backward(const std::vector<std::vector<float>> &gradients)
       _layers[i]->backwardWeightsAndBias();
     }
   }
-
-// Wait for oneDNN computation to finalize.
-#ifdef _KORALI_USE_ONEDNN
-  _stream.wait();
-#endif
 }
 
 std::vector<float> NeuralNetwork::getHyperparameters()
 {
-  // Creating single precision floating-point version of the hyperparameters
   auto params = std::vector<float>(_hyperparameterCount);
 
   size_t layerCount = _layers.size();
   size_t currPos = 0;
   for (size_t i = 0; i < layerCount; i++)
   {
-    size_t OC = _layers[i]->_nodeCount;
-
-    // Setting weight data to the layer's weight memory
-    if (i > 0)
-    {
-      size_t IC = _layers[i - 1]->_nodeCount;
-
-#ifdef _KORALI_USE_ONEDNN
-      read_from_dnnl_memory(&params[currPos], _layers[i]->_weightsMem);
-#endif
-
-#ifdef _KORALI_USE_CUDNN
-      if (cudaMemcpy(&params[currPos], _layers[i]->_weightsFilter, IC * OC * sizeof(float), cudaMemcpyDeviceToHost) != cudaSuccess) KORALI_LOG_ERROR("Error copying memory");
-#endif
-
-      currPos += IC * OC;
-
-      // Setting weight data to the layer's weight memory
-#ifdef _KORALI_USE_ONEDNN
-        read_from_dnnl_memory(&params[currPos], _layers[i]->_biasMem);
-#endif
-
-#ifdef _KORALI_USE_CUDNN
-        if (cudaMemcpy(&params[currPos], _layers[i]->_biasTensor, OC * sizeof(float), cudaMemcpyDeviceToHost) != cudaSuccess) KORALI_LOG_ERROR("Error copying memory");
-#endif
-        currPos += OC;
-    }
+    _layers[i]->getHyperparameters(&params[currPos]);
+    currPos += _layers[i]->_hyperparameterCount;
   }
 
-  // Returning the hyperparameters converted to float-precision
   return params;
 }
 
@@ -347,101 +302,38 @@ void NeuralNetwork::setHyperparameters(const std::vector<float> &hyperparameters
   if (hyperparameters.size() != _hyperparameterCount)
     KORALI_LOG_ERROR("Wrong number of hyperparameters passed to the neural network. Expected: %lu, provided: %lu.\n", _hyperparameterCount, hyperparameters.size());
 
-  // Creating single precision floating-point version of the hyperparameters
   auto params = std::vector<float>(hyperparameters.begin(), hyperparameters.end());
 
   size_t layerCount = _layers.size();
   size_t currPos = 0;
   for (size_t i = 0; i < layerCount; i++)
   {
-    size_t OC = _layers[i]->_nodeCount;
-
-    if (i > 0)
-    {
-      size_t IC = _layers[i - 1]->_nodeCount;
-
-// Setting weight data to the layer's weight memory
-#ifdef _KORALI_USE_ONEDNN
-      write_to_dnnl_memory(&params[currPos], _layers[i]->_weightsMem);
-#endif
-
-#ifdef _KORALI_USE_CUDNN
-      if (cudaMemcpy(_layers[i]->_weightsFilter, &params[currPos], IC * OC * sizeof(float), cudaMemcpyHostToDevice) != cudaSuccess) KORALI_LOG_ERROR("Error copying weights memory to device");
-#endif
-
-      currPos += IC * OC;
-
-      // Setting weight data to the layer's weight memory
-#ifdef _KORALI_USE_ONEDNN
-        write_to_dnnl_memory(&params[currPos], _layers[i]->_biasMem);
-#endif
-
-#ifdef _KORALI_USE_CUDNN
-        if (cudaMemcpy(_layers[i]->_biasTensor, &params[currPos], OC * sizeof(float), cudaMemcpyHostToDevice) != cudaSuccess) KORALI_LOG_ERROR("Error copying bias memory to device");
-#endif
-
-        currPos += OC;
-    }
+   _layers[i]->setHyperparameters(&params[currPos]);
+   currPos += _layers[i]->_hyperparameterCount;
   }
 }
 
 std::vector<float> NeuralNetwork::getHyperparameterGradients()
 {
-  // Copying back the gradients and biases back
-  std::vector<float> gradientVector(_hyperparameterCount);
+ auto gradients = std::vector<float>(_hyperparameterCount);
 
-  // Retrieving hyperparameter gradients
-  size_t currPos = 0;
-  size_t layerCount = _layers.size();
+ size_t layerCount = _layers.size();
+ size_t currPos = 0;
+ for (size_t i = 0; i < layerCount; i++)
+ {
+   _layers[i]->getHyperparameterGradients(&gradients[currPos]);
+   currPos += _layers[i]->_hyperparameterCount;
+ }
 
-  for (size_t i = 0; i < layerCount; i++)
-  {
-    size_t OC = _layers[i]->_nodeCount;
-
-    if (i > 0)
-    {
-      size_t IC = _layers[i - 1]->_nodeCount;
-
-      // Reading weight gradients
-
-#ifdef _KORALI_USE_ONEDNN
-      read_from_dnnl_memory(&gradientVector[currPos], _layers[i]->_weightsDiffMem);
-#endif
-
-#ifdef _KORALI_USE_CUDNN
-      if (cudaMemcpy(&gradientVector[currPos], _layers[i]->_weightsDiffFilter, IC * OC * sizeof(float), cudaMemcpyDeviceToHost) != cudaSuccess) KORALI_LOG_ERROR("Error copying memory");
-#endif
-      currPos += OC * IC;
-
-      // If not using layer normalization, we get the bias gradients
-#ifdef _KORALI_USE_ONEDNN
-        read_from_dnnl_memory(&gradientVector[currPos], _layers[i]->_biasDiffMem);
-#endif
-
-#ifdef _KORALI_USE_CUDNN
-        if (cudaMemcpy(&gradientVector[currPos], _layers[i]->_biasDiffTensor, OC * sizeof(float), cudaMemcpyDeviceToHost) != cudaSuccess) KORALI_LOG_ERROR("Error copying memory");
-#endif
-        currPos += OC;
-    }
-  }
-
-  return gradientVector;
+ return gradients;
 }
 
 std::vector<float> NeuralNetwork::getDataGradients()
 {
-  // Retreiving gradient of the input
   size_t inputSize = _layers[0]->_nodeCount;
   std::vector<float> dataDiff(_batchSize * inputSize);
 
-#ifdef _KORALI_USE_ONEDNN
-    read_from_dnnl_memory(dataDiff.data(), _layers[0]->_nodeDiffMem);
-#endif
-
-#ifdef _KORALI_USE_CUDNN
-    size_t OC = _layers[0]->_nodeCount;
-    if (cudaMemcpy(dataDiff.data(), _layers[0]->_nodeDiffTensor, OC * sizeof(float), cudaMemcpyDeviceToHost) != cudaSuccess) KORALI_LOG_ERROR("Error copying memory");
-#endif
+  _layers[0]->getInputGradients(dataDiff.data());
 
   return dataDiff;
 }

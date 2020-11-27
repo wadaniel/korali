@@ -151,109 +151,18 @@ void NeuralNetwork::forward()
   // forward propagating neural network
   for (size_t i = 0; i < layerCount; i++)
   {
-    // Applying convolution filter (weights)
-    if (i > 0)
-    {
-#ifdef _KORALI_USE_ONEDNN
-      _layers[i]->_forwardInnerProductPrimitive.execute(_stream, _layers[i]->_forwardInnerProductArgs);
-#endif
-
-#ifdef _KORALI_USE_CUDNN
-
-      float alpha1 = 1.0f;
-      float alpha2 = 0.0f;
-      if (cudnnConvolutionForward(
-            _cuDNNHandle,
-            &alpha1,
-            _layers[i - 1]->_nodeTensorDesc,
-            _layers[i - 1]->_activationTensor,
-            _layers[i]->_weightsFilterDesc,
-            _layers[i]->_weightsFilter,
-            _layers[i]->_convolutionDesc,
-            CUDNN_CONVOLUTION_FWD_ALGO_IMPLICIT_GEMM,
-            _layers[i]->_convolutionWorkspace,
-            _layers[i]->_convolutionWorkspaceSize,
-            &alpha2,
-            _layers[i]->_nodeTensorDesc,
-            _layers[i]->_nodeTensor) != CUDNN_STATUS_SUCCESS) KORALI_LOG_ERROR("Error running convolution operation");
-
-      float alpha = 1.0f;
-      float beta = 1.0f;
-      cudnnAddTensor(_cuDNNHandle, &alpha, _layers[i]->_biasTensorDesc, _layers[i]->_biasTensor, &beta, _layers[i]->_nodeTensorDesc, _layers[i]->_nodeTensor);
-
-#endif
-    }
+    // Applying forward Wx+b operation
+    if (i > 0) _layers[i]->forwardWeightsAndBias();
 
     // Applying activation function
-
-#ifdef _KORALI_USE_ONEDNN
-    _layers[i]->_forwardActivationPrimitive.execute(_stream, _layers[i]->_forwardActivationArgs);
-#endif
-
-#ifdef _KORALI_USE_CUDNN
-
-    if (_layers[i]->_activationFunctionType == "Elementwise/Linear")
-    {
-      if (cudaMemcpy(
-            _layers[i]->_activationTensor,
-            _layers[i]->_batchNormalizationEnabled ? _layers[i]->_batchNormalizationTensor : _layers[i]->_nodeTensor,
-            _batchSize * _layers[i]->_nodeCount * sizeof(float),
-            cudaMemcpyDeviceToDevice) != cudaSuccess) KORALI_LOG_ERROR("Error copying memory (activation = linear)");
-    }
-    else if (_layers[i]->_activationFunctionType == "Softmax")
-    {
-      float alpha = 1.0f;
-      float beta = 0.0f;
-      if (cudnnSoftmaxForward(
-            _cuDNNHandle,
-            CUDNN_SOFTMAX_LOG,
-            CUDNN_SOFTMAX_MODE_CHANNEL,
-            &alpha,
-            _layers[i]->_nodeTensorDesc,
-            _layers[i]->_nodeTensor,
-            &beta,
-            _layers[i]->_nodeTensorDesc,
-            _layers[i]->_activationTensor) != CUDNN_STATUS_SUCCESS) KORALI_LOG_ERROR("Error running softmax forward propagation\n");
-    }
-    else
-    {
-      float alpha = 1.0f;
-      float beta = 0.0f;
-      if (cudnnActivationForward(
-            _cuDNNHandle,
-            _layers[i]->_activationDesc,
-            &alpha,
-            _layers[i]->_nodeTensorDesc,
-            _layers[i]->_nodeTensor,
-            &beta,
-            _layers[i]->_nodeTensorDesc,
-            _layers[i]->_activationTensor) != CUDNN_STATUS_SUCCESS) KORALI_LOG_ERROR("Error running activation function\n");
-    }
-
-#endif
+    _layers[i]->forwardActivationFunction();
   }
-
-// Waiting for oneDNN computation to finalize.
-#ifdef _KORALI_USE_ONEDNN
-  _stream.wait();
-#endif
-
-#ifdef _KORALI_USE_CUDNN
-  cudaDeviceSynchronize();
-#endif
 
   // Restoring the output later node values
   size_t lastLayer = layerCount - 1;
   size_t nodeCount = _layers[lastLayer]->_nodeCount;
   std::vector<float> resultData(_batchSize * nodeCount);
-
-#ifdef _KORALI_USE_ONEDNN
-  read_from_dnnl_memory(resultData.data(), _layers[lastLayer]->_activationMem);
-#endif
-
-#ifdef _KORALI_USE_CUDNN
-  if (cudaMemcpy(resultData.data(), _layers[lastLayer]->_activationTensor, resultData.size() * sizeof(float), cudaMemcpyDeviceToHost) != cudaSuccess) KORALI_LOG_ERROR("Error copying bias memory to device");
-#endif
+  _layers[lastLayer]->getOutput(resultData.data());
 
   // Copying NN output to class output
   _outputValues.resize(_batchSize);
@@ -373,127 +282,15 @@ void NeuralNetwork::backward(const std::vector<std::vector<float>> &gradients)
   // Backward propagating neural network
   for (ssize_t i = lastLayer; i >= 0; i--)
   {
-#ifdef _KORALI_USE_ONEDNN
-
-    _layers[i]->_backwardActivationPrimitive.execute(_stream, _layers[i]->_backwardActivationArgs);
-
-#endif
-
-#ifdef _KORALI_USE_CUDNN
-
-    if (_layers[i]->_activationFunctionType == "Elementwise/Linear")
-    {
-      if (
-        cudaMemcpy(
-          _layers[i]->_nodeDiffTensor,
-          _layers[i]->_activationDiffTensor,
-          _batchSize * _layers[i]->_nodeCount * sizeof(float),
-          cudaMemcpyDeviceToDevice) != cudaSuccess) KORALI_LOG_ERROR("Error copying memory (backprop activation)");
-    }
-    else if (_layers[i]->_activationFunctionType == "Softmax")
-    {
-      float alpha = 1.0f;
-      float beta = 0.0f;
-      if (cudnnSoftmaxBackward(
-            _cuDNNHandle,
-            CUDNN_SOFTMAX_LOG,
-            CUDNN_SOFTMAX_MODE_CHANNEL,
-            &alpha,
-            _layers[i]->_nodeTensorDesc,
-            _layers[i]->_activationTensor,
-            _layers[i]->_nodeTensorDesc,
-            _layers[i]->_activationDiffTensor,
-            &beta,
-            _layers[i]->_nodeTensorDesc,
-            _layers[i]->_nodeDiffTensor) != CUDNN_STATUS_SUCCESS) KORALI_LOG_ERROR("Error running softmax backward data propagation\n");
-    }
-    else
-    {
-      float alpha = 1.0f;
-      float beta = 0.0f;
-      if (cudnnActivationBackward(
-            _cuDNNHandle,
-            _layers[i]->_activationDesc,
-            &alpha,
-            _layers[i]->_nodeTensorDesc,
-            _layers[i]->_activationTensor,
-            _layers[i]->_nodeTensorDesc,
-            _layers[i]->_activationDiffTensor,
-            _layers[i]->_nodeTensorDesc,
-            _layers[i]->_nodeTensor,
-            &beta,
-            _layers[i]->_nodeTensorDesc,
-            _layers[i]->_nodeDiffTensor) != CUDNN_STATUS_SUCCESS) KORALI_LOG_ERROR("Error running activation backward data propagation\n");
-    }
-
-#endif
+    _layers[i]->backwardActivationFunction();
 
     if (i > 0)
     {
       // Running backward data propagation
-
-#ifdef _KORALI_USE_ONEDNN
-
-      _layers[i]->_backwardDataPrimitive.execute(_stream, _layers[i]->_backwardDataArgs);
-
-#endif
-
-#ifdef _KORALI_USE_CUDNN
-
-      float alpha = 1.0f;
-      float beta = 0.0f;
-      if (cudnnConvolutionBackwardData(
-            _cuDNNHandle,
-            &alpha,
-            _layers[i]->_weightsFilterDesc,
-            _layers[i]->_weightsFilter,
-            _layers[i]->_nodeTensorDesc,
-            _layers[i]->_nodeDiffTensor,
-            _layers[i]->_convolutionDesc,
-            CUDNN_CONVOLUTION_BWD_DATA_ALGO_0,
-            _layers[i]->_convolutionWorkspace,
-            _layers[i]->_convolutionWorkspaceSize,
-            &beta,
-            _layers[i - 1]->_nodeTensorDesc,
-            _layers[i - 1]->_activationDiffTensor) != CUDNN_STATUS_SUCCESS) KORALI_LOG_ERROR("Error running filter backward data propagation\n");
-
-#endif
+      _layers[i]->backwardDataPropagation();
 
         // Running backward weight+bias propagation
-
-#ifdef _KORALI_USE_ONEDNN
-
-      _layers[i]->_backwardWeightsPrimitive.execute(_stream, _layers[i]->_backwardWeightsArgs);
-
-#endif
-
-#ifdef _KORALI_USE_CUDNN
-
-      if (cudnnConvolutionBackwardBias(
-            _cuDNNHandle,
-            &alpha,
-            _layers[i]->_nodeTensorDesc,
-            _layers[i]->_nodeDiffTensor,
-            &beta,
-            _layers[i]->_biasTensorDesc,
-            _layers[i]->_biasDiffTensor) != CUDNN_STATUS_SUCCESS) KORALI_LOG_ERROR("Error running filter backward bias propagation\n");
-
-      if (cudnnConvolutionBackwardFilter(
-            _cuDNNHandle,
-            &alpha,
-            _layers[i - 1]->_nodeTensorDesc,
-            _layers[i - 1]->_activationTensor,
-            _layers[i]->_nodeTensorDesc,
-            _layers[i]->_nodeDiffTensor,
-            _layers[i]->_convolutionDesc,
-            CUDNN_CONVOLUTION_BWD_FILTER_ALGO_0,
-            _layers[i]->_convolutionWorkspace,
-            _layers[i]->_convolutionWorkspaceSize,
-            &beta,
-            _layers[i]->_weightsFilterDesc,
-            _layers[i]->_weightsDiffFilter) != CUDNN_STATUS_SUCCESS) KORALI_LOG_ERROR("Error running filter backward filter propagation\n");
-
-#endif
+      _layers[i]->backwardWeightsAndBias();
     }
   }
 

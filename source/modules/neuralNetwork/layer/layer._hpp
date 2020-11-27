@@ -53,12 +53,7 @@ class Layer : public Module
   /**
    * @brief Number of NN hyperparameters (weights/bias)
    */
-  size_t _weightParameterCount;
-
-  /**
-   * @brief Number of normalization parameters (mean/variance)
-   */
-  size_t _normalizationParameterCount;
+  size_t _hyperparameterCount;
 
   /********************************************************
   * oneDNN Layers's Memory Structures for Forward Propagation

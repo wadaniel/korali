@@ -194,7 +194,7 @@ if [ $USE_LIBGP == "YES" ]; then
 fi
 
 ## Installing oneDNN
-if [ $NN_LIBRARY == "OneDNN" ]; then
+if [ $USE_ONEDNN == "YES" ]; then
  CXX=$USE_CXX ./external/install_oneDNN.sh --jobs=$NJOBS
  if [ ! $? == 0 ]; then
   logEcho "[Korali] oneDNN could not be installed/found."
@@ -203,17 +203,16 @@ if [ $NN_LIBRARY == "OneDNN" ]; then
 fi
 
 ## Checking for cuDNN
-if [ $NN_LIBRARY == "cuDNN" ]; then
+if [ $USE_CUDNN == "YES" ]; then
  if [ -z $CUDA_ROOT ]; then
-  logEcho "[Korali] The \$CUDA_ROOT environment variable needs to be defined.."
+  logEcho "[Korali] The \$CUDA_ROOT environment variable needs to be defined for CUDNN support."
   exitWithError
  fi
  
  if [ -z $CUDNN_ROOT ]; then
-  logEcho "[Korali] The \$CUDNN_ROOT environment variable needs to be defined.."
+  logEcho "[Korali] The \$CUDNN_ROOT environment variable needs to be defined for CUDNN support."
   exitWithError
  fi
- 
 fi
 
 ######## Checking support for MPI ########
@@ -277,22 +276,17 @@ fi
 
 ######## Determining Library Flags ########
 
-echo "[Korali] Creating configuration files..."
-
-if [ $NN_LIBRARY == "OneDNN" ]; then
+if [ $USE_ONEDNN == "YES" ]; then
  DNNLROOT=`readlink external/oneDNNlink`; check
- NNCFLAGS="-D_KORALI_USE_ONEDNN -I${DNNLROOT}/include"
- NNLIBS="-Wl,-rpath -Wl,${DNNLROOT}/lib64/ -L${DNNLROOT}/lib64/ -Wl,-rpath -Wl,${DNNLROOT}/lib/ -L${DNNLROOT}/lib -ldnnl"
+ ONEDNNCFLAGS="-D_KORALI_USE_ONEDNN -I${DNNLROOT}/include"
+ ONEDNNLIBS="-Wl,-rpath -Wl,${DNNLROOT}/lib64/ -L${DNNLROOT}/lib64/ -Wl,-rpath -Wl,${DNNLROOT}/lib/ -L${DNNLROOT}/lib -ldnnl"
 fi
 
-if [ $NN_LIBRARY == "cuDNN" ]; then
-  NNCFLAGS+=" -D_KORALI_USE_CUDNN -I${CUDA_ROOT}/include -I${CUDNN_ROOT}/include"
-  NNLIBS+=" -lcudart -lcudnn -lcudnn_ops_infer -lcudnn_ops_train -lcudnn_cnn_infer -lcudnn_cnn_train -Wl,-rpath -Wl,${CUDA_ROOT}/lib64/ -L${CUDA_ROOT}/lib64/ -Wl,-rpath -Wl,${CUDA_ROOT}/lib -L${CUDA_ROOT}/lib -Wl,-rpath -Wl,${CUDNN_ROOT}/lib64/ -L${CUDNN_ROOT}/lib64/ -Wl,-rpath -Wl,${CUDNN_ROOT}/lib -L${CUDNN_ROOT}/lib"
-fi
-
-if [ $NN_LIBRARY == "NONE" ]; then 
-  NNCFLAGS="-D_KORALI_USE_NO_NN"
-  NLIBS=""
+if [ $USE_CUDNN == "YES" ]; then
+  CUDNNCFLAGS+=" -D_KORALI_USE_CUDNN -I${CUDA_ROOT}/include -I${CUDNN_ROOT}/include"
+  CUDNNLIBS+=" -lcudart -lcudnn -lcudnn_ops_infer -lcudnn_ops_train -lcudnn_cnn_infer -lcudnn_cnn_train -Wl,-rpath -Wl,${CUDA_ROOT}/lib64/ -L${CUDA_ROOT}/lib64/ -Wl,-rpath -Wl,${CUDA_ROOT}/lib -L${CUDA_ROOT}/lib -Wl,-rpath -Wl,${CUDNN_ROOT}/lib64/ -L${CUDNN_ROOT}/lib64/ -Wl,-rpath -Wl,${CUDNN_ROOT}/lib -L${CUDNN_ROOT}/lib"
+  logEcho "[Korali] Using CUDA Libraries located at ${CUDA_ROOT}."
+  logEcho "[Korali] Using CUDNN Libraries located at ${CUDNN_ROOT}."
 fi
 
 if [ $USE_LIBGP == "YES" ]; then
@@ -369,8 +363,11 @@ echo SHAREDLIB_FLAG=$SHAREDLIB_FLAG >> source/Makefile.conf
 echo MPIFLAGS=$MPIFLAGS >> source/Makefile.conf
 echo BLASLIBS=$BLASLIBS >> source/Makefile.conf
 
-echo NNCFLAGS=$NNCFLAGS >> source/Makefile.conf
-echo NNLIBS=$NNLIBS >> source/Makefile.conf
+echo CUDNNCFLAGS=$CUDNNCFLAGS >> source/Makefile.conf
+echo CUDNNLIBS=$CUDNNLIBS >> source/Makefile.conf
+
+echo ONEDNNCFLAGS=$ONEDNNCFLAGS >> source/Makefile.conf
+echo ONEDNNLIBS=$ONEDNNLIBS >> source/Makefile.conf
 
 echo LIBGPCFLAGS=$LIBGPCFLAGS >> source/Makefile.conf
 echo LIBGPLIBS=$LIBGPLIBS >> source/Makefile.conf

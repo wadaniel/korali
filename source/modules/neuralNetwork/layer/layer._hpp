@@ -46,20 +46,36 @@ class Layer : public Module
    */
   Layer *_nextLayer;
 
+  /**
+  * @brief Number of NN hyperparameters (weights/bias)
+  */
+ size_t _hyperparameterCount;
+
   /********************************************************
-   * Hyperparameter counts
+   * Engine specific members
    *******************************************************/
 
-  /**
-   * @brief Number of NN hyperparameters (weights/bias)
-   */
-  size_t _hyperparameterCount;
+#ifdef _KORALI_USE_EIGEN
+
+ float* _inputValues;
+ float* _inputDiff;
+
+ float* _outputValues;
+ float* _outputDiff;
+
+ float* _weightValues;
+ float* _weightDiff;
+
+ float* _biasValues;
+ float* _biasDiff;
+
+#endif
+
+#ifdef _KORALI_USE_ONEDNN
 
   /********************************************************
   * oneDNN Layers's Memory Structures for Forward Propagation
   *******************************************************/
-
-#ifdef _KORALI_USE_ONEDNN
 
   /**
    * @brief oneDNN Memory object descriptor to contain the result value of inner product (Wx+b) operation

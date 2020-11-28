@@ -85,7 +85,24 @@ const double Eps = std::numeric_limits<double>::epsilon();
 * @param logValues vector of log(x_i) values
 * @return The LSE function of the input.
 */
-double logSumExp(const std::vector<double> &logValues);
+template <typename T>
+T logSumExp(const std::vector<T> &logValues)
+{
+  T maxLogValues = *std::max_element(std::begin(logValues), std::end(logValues));
+
+  if (std::isinf(maxLogValues) == true)
+  {
+    if (maxLogValues < 0)
+      return -Inf;
+    else
+      return Inf;
+  }
+
+  T sumExpValues = 0.0;
+  for (size_t i = 0; i < logValues.size(); i++) sumExpValues += exp(logValues[i] - maxLogValues);
+
+  return maxLogValues + log(sumExpValues);
+}
 
 /**
 * @brief Computes the L2 norm of a vector.

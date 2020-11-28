@@ -1,16 +1,6 @@
 #include "modules/experiment/experiment.hpp"
 #include "modules/neuralNetwork/neuralNetwork.hpp"
 
-#ifdef _KORALI_USE_ONEDNN
-  #include "auxiliar/dnnUtils.hpp"
-using namespace dnnl;
-#endif
-
-#ifdef _KORALI_USE_CUDNN
-  #include <cuda.h>
-  #include <cudnn.h>
-#endif
-
 namespace korali
 {
 NeuralNetwork::NeuralNetwork()
@@ -28,17 +18,42 @@ void NeuralNetwork::initialize()
 
   if (_isInitialized)  KORALI_LOG_ERROR("Neural Network has already been initialized!.\n");
 
-#ifdef _KORALI_USE_ONEDNN
+  if (_engine == "Korali")
+  {
+   #ifdef _KORALI_USE_EIGEN
 
-  _stream = stream(_engine);
+   #else
 
-#endif
+     KORALI_LOG_ERROR("Neural Network's engine set to Korali, but Korali was installed without support for Eigen3.\n");
 
-#ifdef _KORALI_USE_CUDNN
+   #endif
+  }
 
-  if (cudnnCreate(&_cuDNNHandle) != CUDNN_STATUS_SUCCESS) KORALI_LOG_ERROR("Error initializing CUDNN Handle\n");
+  if (_engine == "OneDNN")
+  {
+   #ifdef _KORALI_USE_ONEDNN
 
-#endif
+     _stream = dnnl::stream(korali::_engine);
+
+   #else
+
+     KORALI_LOG_ERROR("Neural Network's engine set to OneDNN, but Korali was installed without support for OneDNN.\n");
+
+   #endif
+  }
+
+  if (_engine == "CUDNN")
+  {
+   #ifdef _KORALI_USE_ONEDNN
+
+   if (cudnnCreate(&_cuDNNHandle) != CUDNN_STATUS_SUCCESS) KORALI_LOG_ERROR("Error initializing CUDNN Handle\n");
+
+   #else
+
+     KORALI_LOG_ERROR("Neural Network's engine set to CUDNN, but Korali was installed without support for CUDNN.\n");
+
+   #endif
+  }
 
   // Assigning relevant metadata to all the layers
   size_t layerCount = _layers.size();

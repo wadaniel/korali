@@ -347,9 +347,9 @@ void Layer::forwardWeightsAndBias()
     matC = matA.transpose() * matB;
 
     // Adding Bias
-    Map<VectorXf> biasValues(_biasValues, OC);
-    for (int i = 0; i < N; i++)
-     matC.row(i) += biasValues;
+    for (size_t i = 0; i < N; i++)
+     for (size_t j = 0; j < OC; j++)
+      _inputValues[i*OC + j] += _biasValues[j];
   }
   #endif
 
@@ -656,13 +656,9 @@ void Layer::backwardWeightsAndBias()
    matC = matA * matB.transpose();
 
    // Setting the bias values to all minibatch inputs
-
-   Map<VectorXf> biasDiff(_biasDiff, OC);
-   Map<MatrixXf> inputDiff(_inputDiff, N, OC);
-   biasDiff = inputDiff.row(0);
-
-   for (int i = 1; i < N; i++)
-    biasDiff += inputDiff.row(i);
+   for (size_t j = 0; j < OC; j++) _biasDiff[j] = _inputDiff[0*OC + j];
+   for (size_t i = 1; i < N; i++)
+    for (size_t j = 0; j < OC; j++) _biasDiff[j] += _inputDiff[i*OC + j];
   }
   #endif
 

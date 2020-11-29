@@ -153,7 +153,6 @@ void GFPT::initializeAgent()
   auto batchOptimizationNetworkConfig = _criticNeuralNetwork;
   batchOptimizationNetworkConfig["Layers"][0]["Node Count"] = _problem->_stateVectorSize + _problem->_actionVectorSize;
   batchOptimizationNetworkConfig["Layers"][batchOptimizationNetworkConfig["Layers"].size() - 1]["Node Count"] = 1;
-  batchOptimizationNetworkConfig["Use Preloaded Normalization Data"] = true;
 
   _batchOptimizationNetworks.resize(_maxThreads);
   for (size_t threadIdx = 0; threadIdx < _maxThreads; threadIdx++)
@@ -369,18 +368,10 @@ void GFPT::trainAgent()
   _averageQStar = _cumulativeQStar / (float)_criticMiniBatchSize;
 
   /****************************************************************************
-  * Critic Normalization
+  * Updating parameters for batch optimization
   ******************************************************************************/
 
-  normalizeStateActionNeuralNetwork(_aLearner->_trainingNeuralNetwork, _criticMiniBatchSize, _criticNormalizationSteps);
-  normalizeStateNeuralNetwork(_vLearner->_trainingNeuralNetwork, _criticMiniBatchSize, _criticNormalizationSteps);
-
-  // Updating critic inference hyperparameters
   auto aHyperparameters = _aLearner->getHyperparameters();
-  _aLearner->setHyperparameters(aHyperparameters);
-
-  auto vHyperparameters = _vLearner->getHyperparameters();
-  _vLearner->setHyperparameters(vHyperparameters);
 
   // Updating thread-local configuration
   for (size_t threadIdx = 0; threadIdx < _maxThreads; threadIdx++)
@@ -511,12 +502,6 @@ void GFPT::trainAgent()
   _policyLearner->initialize();
   _policyLearner->runGeneration();
   _policyLearner->finalize();
-
-  /****************************************************************************
-  * Policy Normalization
-  ******************************************************************************/
-
-  normalizeStateNeuralNetwork(_policyLearner->_trainingNeuralNetwork, _criticMiniBatchSize, _policyNormalizationSteps);
 
   /*******************************************************************
    * Soft adoption of new hyperparameters wrt to adoption rate

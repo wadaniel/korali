@@ -164,12 +164,6 @@ void DDPG::trainAgent()
   _criticLearner->runGeneration();
   _criticLearner->finalize();
 
-  // Normalizing Critic Network
-  normalizeStateActionNeuralNetwork(_criticLearner->_trainingNeuralNetwork, _criticMiniBatchSize, _criticNormalizationSteps);
-
-  // Updating Policy and critic inference hyperparameters
-  auto criticHyperparameters = _criticLearner->getHyperparameters();
-  _criticLearner->setHyperparameters(criticHyperparameters);
 
   // Keeping critic statistics
   _averageQStar = (float)_cumulativeQStar / (float)(_criticMiniBatchSize);
@@ -213,9 +207,6 @@ void DDPG::trainAgent()
   _policyLearner->initialize();
   _policyLearner->runGeneration();
   _policyLearner->finalize();
-
-  // Normalizing Policy Network
-  normalizeStateNeuralNetwork(_policyLearner->_trainingNeuralNetwork, _policyMiniBatchSize, _policyNormalizationSteps);
 
   // Softly adopting the new critic parameters, using the adoption rate
   auto newPolicyHyperparameters = _policyLearner->getHyperparameters();

@@ -35,25 +35,23 @@ e["Solver"]["Learning Rate"] = 0.05
 
 ### Defining the shape of the neural network
 
+e["Solver"]["Neural Network"]["Engine"] = "Korali"
+
 e["Solver"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
 e["Solver"]["Neural Network"]["Layers"][0]["Node Count"] = 1
 e["Solver"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear"
-e["Solver"]["Neural Network"]["Layers"][0]["Batch Normalization"]["Enabled"] = True
 
 e["Solver"]["Neural Network"]["Layers"][1]["Type"] = "Layer/Dense"
 e["Solver"]["Neural Network"]["Layers"][1]["Node Count"] = 32
 e["Solver"]["Neural Network"]["Layers"][1]["Activation Function"]["Type"] = "Elementwise/Tanh"
-e["Solver"]["Neural Network"]["Layers"][1]["Batch Normalization"]["Enabled"] = True
 
 e["Solver"]["Neural Network"]["Layers"][2]["Type"] = "Layer/Dense"
 e["Solver"]["Neural Network"]["Layers"][2]["Node Count"] = 32
 e["Solver"]["Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Elementwise/Tanh"
-e["Solver"]["Neural Network"]["Layers"][2]["Batch Normalization"]["Enabled"] = True
 
 e["Solver"]["Neural Network"]["Layers"][3]["Type"] = "Layer/Dense"
 e["Solver"]["Neural Network"]["Layers"][3]["Node Count"] = 1
 e["Solver"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Elementwise/Linear"
-e["Solver"]["Neural Network"]["Layers"][3]["Batch Normalization"]["Enabled"] = True
 
 e["Console Output"]["Frequency"] = 1
 e["File Output"]["Enabled"] = False
@@ -81,7 +79,7 @@ print("MSE on test set: {}".format(mse))
 
 ### Plotting Results
 
-plt.plot(testInputSet, testOutputSet, "o")
-plt.plot(testInputSet, testInferredSet, "x")
+#plt.plot(testInputSet, testOutputSet, "o")
+#plt.plot(testInputSet, testInferredSet, "x")
 #plt.plot(testInferredSet, testGradientSet, "*")
-plt.show()
+#plt.show()

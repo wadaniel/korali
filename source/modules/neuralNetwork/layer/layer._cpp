@@ -280,43 +280,42 @@ void Layer::createBackwardPipeline()
     _backwardActivationArgs[DNNL_ARG_DST] = _activationMem; // Input
   }
 
- }
+  // Primitive arguments.
+  _backwardActivationArgs[DNNL_ARG_DIFF_DST] = _activationDiffMem; // Input
+  _backwardActivationArgs[DNNL_ARG_SRC] = _nodeMem;          // Input
+  _backwardActivationArgs[DNNL_ARG_DIFF_SRC] = _nodeDiffMem; // Output
 
- // Primitive arguments.
- _backwardActivationArgs[DNNL_ARG_DIFF_DST] = _activationDiffMem; // Input
- _backwardActivationArgs[DNNL_ARG_SRC] = _nodeMem;          // Input
- _backwardActivationArgs[DNNL_ARG_DIFF_SRC] = _nodeDiffMem; // Output
+  // We do not define the following primitives for the input layer
+  if (_prevLayer != NULL)
+  {
+    auto backwardDataDesc = inner_product_backward_data::desc(
+      _prevLayer->_nodeMem.get_desc(),
+      _weightsMem.get_desc(),
+      _nodeMem.get_desc());
 
- // We do not define the following primitives for the input layer
- if (_prevLayer != NULL)
- {
-   auto backwardDataDesc = inner_product_backward_data::desc(
-     _prevLayer->_nodeMem.get_desc(),
-     _weightsMem.get_desc(),
-     _nodeMem.get_desc());
+    // Create the primitive.
+    auto backwardDataPrimitiveDesc = inner_product_backward_data::primitive_desc(backwardDataDesc, _engine, _forwardInnerProductPrimitiveDesc);
+    _backwardDataPrimitive = inner_product_backward_data(backwardDataPrimitiveDesc);
 
-   // Create the primitive.
-   auto backwardDataPrimitiveDesc = inner_product_backward_data::primitive_desc(backwardDataDesc, _engine, _forwardInnerProductPrimitiveDesc);
-   _backwardDataPrimitive = inner_product_backward_data(backwardDataPrimitiveDesc);
+    _backwardDataArgs[DNNL_ARG_DIFF_DST] = _nodeDiffMem;                   // Input
+    _backwardDataArgs[DNNL_ARG_WEIGHTS] = _weightsMem;                     // Input
+    _backwardDataArgs[DNNL_ARG_DIFF_SRC] = _prevLayer->_activationDiffMem; // Output
 
-   _backwardDataArgs[DNNL_ARG_DIFF_DST] = _nodeDiffMem;                   // Input
-   _backwardDataArgs[DNNL_ARG_WEIGHTS] = _weightsMem;                     // Input
-   _backwardDataArgs[DNNL_ARG_DIFF_SRC] = _prevLayer->_activationDiffMem; // Output
+    auto backwardWeightsDesc = inner_product_backward_weights::desc(
+      _prevLayer->_nodeMem.get_desc(),
+      _weightsMem.get_desc(),
+      _biasMem.get_desc(),
+      _nodeDiffMem.get_desc());
 
-   auto backwardWeightsDesc = inner_product_backward_weights::desc(
-     _prevLayer->_nodeMem.get_desc(),
-     _weightsMem.get_desc(),
-     _biasMem.get_desc(),
-     _nodeDiffMem.get_desc());
+    // Create the primitive.
+    auto backwardWeightsPrimitiveDesc = inner_product_backward_weights::primitive_desc(backwardWeightsDesc, _engine, _forwardInnerProductPrimitiveDesc);
+    _backwardWeightsPrimitive = inner_product_backward_weights(backwardWeightsPrimitiveDesc);
 
-   // Create the primitive.
-   auto backwardWeightsPrimitiveDesc = inner_product_backward_weights::primitive_desc(backwardWeightsDesc, _engine, _forwardInnerProductPrimitiveDesc);
-   _backwardWeightsPrimitive = inner_product_backward_weights(backwardWeightsPrimitiveDesc);
-
-   _backwardWeightsArgs[DNNL_ARG_SRC] = _prevLayer->_activationMem; // Input
-   _backwardWeightsArgs[DNNL_ARG_DIFF_DST] = _nodeDiffMem;          // Input
-   _backwardWeightsArgs[DNNL_ARG_DIFF_WEIGHTS] = _weightsDiffMem;   // Output
-   _backwardWeightsArgs[DNNL_ARG_DIFF_BIAS] = _biasDiffMem;         // Output
+    _backwardWeightsArgs[DNNL_ARG_SRC] = _prevLayer->_activationMem; // Input
+    _backwardWeightsArgs[DNNL_ARG_DIFF_DST] = _nodeDiffMem;          // Input
+    _backwardWeightsArgs[DNNL_ARG_DIFF_WEIGHTS] = _weightsDiffMem;   // Output
+    _backwardWeightsArgs[DNNL_ARG_DIFF_BIAS] = _biasDiffMem;         // Output
+  }
  }
  #endif
 
@@ -609,9 +608,7 @@ void Layer::backwardDataPropagation()
  #ifdef _KORALI_USE_ONEDNN
  if (_nn->_engine == "OneDNN")
  {
-
-      _backwardDataPrimitive.execute(_nn->_stream, _backwardDataArgs);
-
+    _backwardDataPrimitive.execute(_nn->_stream, _backwardDataArgs);
  }
  #endif
 
@@ -672,9 +669,7 @@ void Layer::backwardWeightsAndBias()
   #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
   {
-
-       _backwardWeightsPrimitive.execute(_nn->_stream, _backwardWeightsArgs);
-
+     _backwardWeightsPrimitive.execute(_nn->_stream, _backwardWeightsArgs);
   }
   #endif
 
@@ -725,11 +720,11 @@ void Layer::setOutputGradients(float* gradient)
  }
  #endif
 
-   #ifdef _KORALI_USE_ONEDNN
+ #ifdef _KORALI_USE_ONEDNN
  if (_nn->_engine == "OneDNN")
  {
     write_to_dnnl_memory(gradient, _activationDiffMem);
-   }
+ }
  #endif
 
  #ifdef _KORALI_USE_CUDNN

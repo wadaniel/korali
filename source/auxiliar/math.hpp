@@ -83,25 +83,41 @@ const double Eps = std::numeric_limits<double>::epsilon();
 /**
 * @brief Computes: log sum_{i=1}^N x_i using the log-sum-exp trick: https://en.wikipedia.org/wiki/LogSumExp#log-sum-exp_trick_for_log-domain_calculations
 * @param logValues vector of log(x_i) values
+* @param n size of the vector
 * @return The LSE function of the input.
 */
 template <typename T>
-T logSumExp(const std::vector<T> &logValues)
+T logSumExp(const T* logValues, const size_t& n)
 {
-  T maxLogValues = *std::max_element(std::begin(logValues), std::end(logValues));
+  T maxLogValue = -Inf;
+  for (size_t i = 0; i < n; i++)
+   if (logValues[i] > maxLogValue)
+    maxLogValue = logValues[i];
 
-  if (std::isinf(maxLogValues) == true)
+  if (std::isinf(maxLogValue) == true)
   {
-    if (maxLogValues < 0)
+    if (maxLogValue < 0)
       return -Inf;
     else
       return Inf;
   }
 
   T sumExpValues = 0.0;
-  for (size_t i = 0; i < logValues.size(); i++) sumExpValues += exp(logValues[i] - maxLogValues);
+  for (size_t i = 0; i < n; i++)
+   sumExpValues += exp(logValues[i] - maxLogValue);
 
-  return maxLogValues + log(sumExpValues);
+  return maxLogValue + log(sumExpValues);
+}
+
+/**
+* @brief Computes: log sum_{i=1}^N x_i using the log-sum-exp trick: https://en.wikipedia.org/wiki/LogSumExp#log-sum-exp_trick_for_log-domain_calculations
+* @param logValues vector of log(x_i) values
+* @return The LSE function of the input.
+*/
+template <typename T>
+T logSumExp(const std::vector<T>& logValues)
+{
+ return logSumExp(logValues.data(), logValues.size());
 }
 
 /**

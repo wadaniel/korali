@@ -35,8 +35,6 @@ e["Solver"]["Learning Rate"] = 0.05
 
 ### Defining the shape of the neural network
 
-e["Solver"]["Neural Network"]["Engine"] = "CUDNN"
-
 e["Solver"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
 e["Solver"]["Neural Network"]["Layers"][0]["Node Count"] = 1
 e["Solver"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear"
@@ -70,7 +68,6 @@ testInputSet = [[x] for x in testInputSet.tolist()]
 testInferredSet = [ e.getEvaluation(x) for x in testInputSet ]
 testGradientSet = [ e.getGradients(x) for x in testInferredSet ]
 testOutputSet = np.tanh(np.exp(np.sin(testInputSet))) * scaling 
-
 
 ### Calc MSE on test set
 

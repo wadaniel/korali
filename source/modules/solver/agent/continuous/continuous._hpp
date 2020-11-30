@@ -47,8 +47,22 @@ class Continuous : public Agent
   */
   virtual knlohmann::json runPolicy(const std::vector<float> &state) = 0;
 
+  /**
+  * @brief Function to generate randomized actions from neural network output.
+  * @param curMeans parameter vector for policy distribution
+  * @param curSigmas parameter vector for policy distribution
+  * @return An action vector
+  */
   std::vector<float> generateTrainingAction(const std::vector<float> &curMeans, const std::vector<float> &curSigmas);
+
+  /**
+  * @brief Function to generate deterministic actions from neural network output required for policy evaluation, respectively testing.
+  * @param curMeans parameter vector for policy distribution
+  * @param curSigmas parameter vector for policy distribution
+  * @return An action vector
+  */
   std::vector<float> generateTestingAction(const std::vector<float> &curMeans, const std::vector<float> &curSigmas);
+
   virtual void getAction(korali::Sample &sample) override;
   virtual void initializeAgent();
 };

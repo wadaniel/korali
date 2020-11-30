@@ -88,12 +88,10 @@ std::vector<float> Continuous::generateTrainingAction(const std::vector<float> &
   }
   else /* _policyDistribution == "Beta" */
   {
-    // ParamsOne are the Alphas, ParamsTwo are the Betas
+    // ParamsOne are the Means, ParamsTwo are the Variance Coefficients
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-      action[i] = _actionLowerBounds[i] + _actionScalings[i] * gsl_ran_beta(_normalGenerator->_range, paramsOne[i], paramsTwo[i]);
+      action[i] = ranBetaAlt(_normalGenerator->_range, paramsOne[i], paramsTwo[i], _actionLowerBounds[i], _actionUpperBounds[i]);
   }
-
-  //printf("a %f, b %f\n", paramsOne[0], paramsTwo[0]);
 
   return action;
 }
@@ -109,22 +107,21 @@ std::vector<float> Continuous::generateTestingAction(const std::vector<float> &p
   }
   else /* _policyDistribution == "Beta" */
   {
-    // ParamsOne are the Alphas, ParamsTwo are the Betas
+    // ParamsOne are the Means, ParamsTwo are the Variance Coefficients
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
     {
-      float act = 0.0;
+      float alpha;
+      float beta;
+      std::tie(alpha, beta) = betaParamTransformAlt(paramsOne[i], paramsTwo[i], _actionLowerBounds[i], _actionUpperBounds[i]);
 
-      if (paramsOne[i] > 1. && paramsTwo[i] > 1.)
-        act = (paramsOne[i] - 1.) / (paramsOne[i] + paramsTwo[i] - 2);
-      else if (paramsOne[i] <= 1. && paramsTwo[i] > 1.)
-        act = 0.0;
-      else if (paramsOne[i] > 1. && paramsTwo[i] <= 1.)
-        act = 1.0;
+      if (alpha > 1. && beta > 1.)
+        action[i] = _actionLowerBounds[i] + (_actionUpperBounds[i] - _actionLowerBounds[i]) * (alpha - 1) / (alpha + beta - 2);
+      else if (alpha <= 1. && beta > 1.)
+        action[i] = _actionLowerBounds[i];
+      else if (alpha > 1. && beta <= 1.)
+        action[i] = _actionUpperBounds[i];
       else
-        KORALI_LOG_ERROR("Case (a<=1 and b<=1) not yet treated (a = %f, b = %f).", paramsOne[i], paramsTwo[i]);
-
-      // Adjust actions to domain
-      action[i] = _actionLowerBounds[i] + _actionScalings[i] * act;
+        KORALI_LOG_ERROR("Case (a,b <=1) not yet treated (a,b = %f,%f)", alpha, beta);
     }
   }
 
@@ -139,6 +136,7 @@ float Continuous::calculateImportanceWeight(const std::vector<float> &action, co
   // Getting probability densities for current and past action given current policy
   if (_policyDistribution == "Normal")
   {
+    // ParamsOne are the Means, ParamsTwo are the Sigmas
     for (size_t i = 0; i < action.size(); i++)
     {
       logpOldPolicy += normalLogDensity(action[i], oldParamsOne[i], oldParamsTwo[i]);
@@ -147,11 +145,11 @@ float Continuous::calculateImportanceWeight(const std::vector<float> &action, co
   }
   else /* _policyDistribution == "Beta" */
   {
+    // ParamsOne are the Means, ParamsTwo are the Variance Coefficients
     for (size_t i = 0; i < action.size(); i++)
     {
-      float x = (action[i] - _actionLowerBounds[i]) / _actionScalings[i];
-      logpOldPolicy += betaLogDensity(x, oldParamsOne[i], oldParamsTwo[i]);
-      logpCurPolicy += betaLogDensity(x, curParamsOne[i], curParamsTwo[i]);
+      logpOldPolicy += betaLogDensityAlt(action[i], oldParamsOne[i], oldParamsTwo[i], _actionLowerBounds[i], _actionUpperBounds[i]);
+      logpCurPolicy += betaLogDensityAlt(action[i], curParamsOne[i], curParamsTwo[i], _actionLowerBounds[i], _actionUpperBounds[i]);
     }
   }
 
@@ -164,7 +162,6 @@ float Continuous::calculateImportanceWeight(const std::vector<float> &action, co
 
   // Calculating actual importance weight by exp
   float importanceWeight = std::exp(logImportanceWeight);
-  //printf("iw %f\n", importanceWeight);
   return importanceWeight;
 }
 
@@ -198,21 +195,43 @@ std::vector<float> Continuous::calculateKLDivergenceGradient(const std::vector<f
   }
   else /* _policyDistribution == "Beta" */
   {
-    // ParamsOne are the Alphas, ParamsTwo are the Betas
+    // ParamsOne are the Means, ParamsTwo are the Variance Coefficients
     for (size_t i = 0; i < _problem->_actionVectorSize; ++i)
     {
-      float psiAbOld = gsl_sf_psi(oldParamsOne[i] + oldParamsTwo[i]);
-      float psiAbCur = gsl_sf_psi(curParamsOne[i] + curParamsTwo[i]);
+      // Variable preparation
+      const float muCur = curParamsOne[i];
+      const float varcoefCur = curParamsTwo[i];
 
-      // KL-Gradient with respect to Alpha
-      klGrad[i] = (gsl_sf_psi(curParamsOne[i]) - psiAbCur - gsl_sf_psi(oldParamsOne[i]) - psiAbOld) / _actionScalings[i];
+      float alphaCur;
+      float betaCur;
+      std::tie(alphaCur, betaCur) = betaParamTransformAlt(muCur, varcoefCur, _actionLowerBounds[i], _actionUpperBounds[i]);
 
-      // KL-Gradient with respect to Beta
-      klGrad[_problem->_actionVectorSize + i] = (gsl_sf_psi(curParamsTwo[i]) - psiAbCur - gsl_sf_psi(oldParamsTwo[i]) - psiAbOld) / _actionScalings[i];
+      const float muOld = oldParamsOne[i];
+      const float varcoefOld = oldParamsTwo[i];
+
+      float alphaOld;
+      float betaOld;
+      std::tie(alphaOld, betaOld) = betaParamTransformAlt(muOld, varcoefOld, _actionLowerBounds[i], _actionUpperBounds[i]);
+
+      const float psiAbCur = gsl_sf_psi(alphaCur + betaCur);
+      const float psiAbOld = gsl_sf_psi(alphaOld + betaOld);
+
+      // KL Grad wrt alpha
+      const float dklda = (gsl_sf_psi(alphaCur) - psiAbCur - gsl_sf_psi(alphaOld) - psiAbOld) / _actionScalings[i];
+
+      // KL Grad wrt beta
+      const float dkldb = (gsl_sf_psi(betaCur) - psiAbCur - gsl_sf_psi(betaOld) - psiAbOld) / _actionScalings[i];
+
+      // Derivatives of alpha and beta wrt mu and varc
+      float dadmu, dadvarc, dbdmu, dbdvarc;
+      std::tie(dadmu, dadvarc, dbdmu, dbdvarc) = derivativesBetaParamTransformAlt(muCur, varcoefCur, _actionLowerBounds[i], _actionUpperBounds[i]);
+
+      // KL Grad wrt mu and varc
+      klGrad[i] = dklda * dadmu + dkldb * dbdmu;
+      klGrad[_problem->_actionVectorSize + i] = dklda * dadvarc + dkldb * dbdvarc;
     }
   }
 
-  //printf("grad %f %f\n", klGrad[0], klGrad[1]);
   return klGrad;
 }
 

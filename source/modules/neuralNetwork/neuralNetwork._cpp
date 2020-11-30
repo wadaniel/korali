@@ -101,6 +101,13 @@ void NeuralNetwork::initialize()
       KORALI_LOG_ERROR("Wrong size of output SoftPlus mask passed to the neural network. Expected: %lu, provided: %lu.\n", outputSize, _outputSoftplusMask.size());
   }
 
+  // Check output SoftPlus mask configuration
+  if (_outputSigmoidMask.empty() == false)
+  {
+    if (_outputSigmoidMask.size() != outputSize)
+      KORALI_LOG_ERROR("Wrong size of output Sigmoid mask passed to the neural network. Expected: %lu, provided: %lu.\n", outputSize, _outputSigmoidMask.size());
+  }
+
   // Making sure we do not re-initialize
   _isInitialized = true;
 }
@@ -189,6 +196,11 @@ void NeuralNetwork::forward()
       auto x = resultData[i * nodeCount + j];
 
       // If we use a softplus mask, then apply the mask now
+      if (_outputSigmoidMask.size() > 0)
+        if (_outputSigmoidMask[j] == true)
+          x = 1. / (1. + std::exp(-x));
+
+      // If we use a softplus mask, then apply the mask now
       if (_outputSoftplusMask.size() > 0)
         if (_outputSoftplusMask[j] == true)
           x = 0.5 * (x + std::sqrt(1. + x * x));
@@ -270,9 +282,15 @@ void NeuralNetwork::backward(const std::vector<std::vector<float>> &gradients)
       if (_outputSoftplusMask.size() > 0)
         if (_outputSoftplusMask[j] == true)
         {
-          //float nnx = resultData[i * nodeCount + j];
-          float nnx = x - 0.25 / x; // Approximation
+          float nnx = x - 0.25 / x; // Approximation NN output
           g = g * 0.5 * (nnx / std::sqrt(nnx * nnx + 1) + 1);
+        }
+
+      // If we use a sigmoid mask, then apply its derivative
+      if (_outputSigmoidMask.size() > 0)
+        if (_outputSigmoidMask[j] == true)
+        {
+          g = g * x * (1. - x); // x is still sigmoid(x)
         }
 
       floatDiffs[i * outputSize + j] = g;

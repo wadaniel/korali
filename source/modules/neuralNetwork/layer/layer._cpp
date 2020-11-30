@@ -100,8 +100,12 @@ void Layer::createHyperparameterMemory()
 
 void Layer::createForwardPipeline()
 {
+ // Obtaining batch size
+ ssize_t N = _nn->_batchSize;
+
  // Checking Layer sizes
  if (_nodeCount == 0) KORALI_LOG_ERROR("Node count for layer (%lu) should be larger than zero.\n", _index);
+ ssize_t OC = _nodeCount;
 
  #ifdef _KORALI_USE_EIGEN
  if (_nn->_engine == "Korali")
@@ -115,8 +119,6 @@ void Layer::createForwardPipeline()
  if (_nn->_engine == "OneDNN")
  {
   // Creating layer's data memory storage and activation function
-  ssize_t N = _nn->_batchSize;
-  ssize_t OC = _nodeCount;
   const memory::dims layerDims = {N, OC};
   auto dataMemDesc = memory::desc(layerDims, memory::data_type::f32, memory::format_tag::nc);
 
@@ -226,10 +228,10 @@ void Layer::createBackwardPipeline()
   /*********************************************************************************
   *  Initializing memory objects and primitives for BACKWARD propagation
   *********************************************************************************/
- #ifdef _KORALI_USE_EIGEN
  size_t N = _nn->_batchSize;
  size_t OC = _nodeCount;
 
+ #ifdef _KORALI_USE_EIGEN
  if (_nn->_engine == "Korali")
  {
   _inputDiff = (float*) malloc (N * OC * sizeof(float));
@@ -330,12 +332,11 @@ void Layer::forwardWeightsAndBias()
 {
  if (_prevLayer != NULL)
  {
-  #ifdef _KORALI_USE_EIGEN
-
   int N  = _nn->_batchSize;
   int IC = _prevLayer->_nodeCount;
   int OC = _nodeCount;
 
+  #ifdef _KORALI_USE_EIGEN
   if (_nn->_engine == "Korali")
   {
     // Performing Wx computation
@@ -390,11 +391,10 @@ void Layer::forwardWeightsAndBias()
 
 void Layer::forwardActivationFunction()
 {
- #ifdef _KORALI_USE_EIGEN
-
  size_t N = _nn->_batchSize;
  size_t OC = _nodeCount;
 
+ #ifdef _KORALI_USE_EIGEN
  if (_nn->_engine == "Korali")
  {
   if (_activationFunctionType == "Identity")
@@ -443,9 +443,6 @@ void Layer::forwardActivationFunction()
  #endif
 
  #ifdef _KORALI_USE_CUDNN
- size_t N = _nn->_batchSize;
- size_t OC = _nodeCount;
-
  if (_nn->_engine == "CUDNN")
  {
 
@@ -493,10 +490,10 @@ void Layer::forwardActivationFunction()
 
 void Layer::backwardActivationFunction()
 {
- #ifdef _KORALI_USE_EIGEN
  size_t N = _nn->_batchSize;
  size_t OC = _nodeCount;
 
+ #ifdef _KORALI_USE_EIGEN
  if (_nn->_engine == "Korali")
  {
   if (_activationFunctionType == "Identity")
@@ -539,9 +536,6 @@ void Layer::backwardActivationFunction()
  #endif
 
  #ifdef _KORALI_USE_CUDNN
- size_t N = _nn->_batchSize;
- size_t OC = _nodeCount;
-
  if (_nn->_engine == "CUDNN")
  {
 
@@ -595,11 +589,11 @@ void Layer::backwardActivationFunction()
 
 void Layer::backwardDataPropagation()
 {
- #ifdef _KORALI_USE_EIGEN
  int N  = _nn->_batchSize;
  int IC = _prevLayer->_nodeCount;
  int OC = _nodeCount;
 
+ #ifdef _KORALI_USE_EIGEN
  if (_nn->_engine == "Korali")
  {
   // Backward propagating Wx+b operation
@@ -647,11 +641,11 @@ void Layer::backwardWeightsAndBias()
 {
  if (_prevLayer != NULL)
  {
-  #ifdef _KORALI_USE_EIGEN
   int N  = _nn->_batchSize;
   int IC = _prevLayer->_nodeCount;
   int OC = _nodeCount;
 
+  #ifdef _KORALI_USE_EIGEN
   if (_nn->_engine == "Korali")
   {
    // Performing Weight gradient calculation
@@ -712,10 +706,10 @@ void Layer::backwardWeightsAndBias()
 
 void Layer::setOutputGradients(float* gradient)
 {
- #ifdef _KORALI_USE_EIGEN
  int N  = _nn->_batchSize;
  int OC = _nodeCount;
- 
+
+ #ifdef _KORALI_USE_EIGEN
  if (_nn->_engine == "Korali")
  {
   memcpy(_outputDiff, gradient, N * OC * sizeof(float));
@@ -730,9 +724,6 @@ void Layer::setOutputGradients(float* gradient)
  #endif
 
  #ifdef _KORALI_USE_CUDNN
- int N  = _nn->_batchSize;
- int OC = _nodeCount;
- 
  if (_nn->_engine == "CUDNN")
  {
     if (cudaMemcpy(_activationDiffTensor, gradient, N * OC * sizeof(float), cudaMemcpyHostToDevice) != cudaSuccess) KORALI_LOG_ERROR("Error copying bias memory to device");
@@ -744,10 +735,10 @@ void Layer::setHyperparameters(float* hyperparameters)
 {
  if (_prevLayer != NULL)
  {
-  #ifdef _KORALI_USE_EIGEN
   size_t IC = _prevLayer->_nodeCount;
   size_t OC = _nodeCount;
- 
+
+  #ifdef _KORALI_USE_EIGEN
   if (_nn->_engine == "Korali")
   {
    memcpy(_weightValues, &hyperparameters[0], IC * OC * sizeof(float));
@@ -764,9 +755,6 @@ void Layer::setHyperparameters(float* hyperparameters)
   #endif
 
   #ifdef _KORALI_USE_CUDNN
-  size_t IC = _prevLayer->_nodeCount;
-  size_t OC = _nodeCount;
- 
   if (_nn->_engine == "CUDNN")
   {
     if (cudaMemcpy(_weightsFilter, &hyperparameters[0], IC * OC * sizeof(float), cudaMemcpyHostToDevice) != cudaSuccess) KORALI_LOG_ERROR("Error copying weights memory to device");
@@ -780,10 +768,10 @@ void Layer::getHyperparameters(float* hyperparameters)
 {
  if (_prevLayer != NULL)
  {
-  #ifdef _KORALI_USE_EIGEN
   size_t IC = _prevLayer->_nodeCount;
   size_t OC = _nodeCount;
 
+  #ifdef _KORALI_USE_EIGEN
   if (_nn->_engine == "Korali")
   {
    memcpy(&hyperparameters[0], _weightValues, IC * OC * sizeof(float));
@@ -800,9 +788,6 @@ void Layer::getHyperparameters(float* hyperparameters)
   #endif
 
   #ifdef _KORALI_USE_CUDNN
-  size_t IC = _prevLayer->_nodeCount;
-  size_t OC = _nodeCount;
-
   if (_nn->_engine == "CUDNN")
   {
        if (cudaMemcpy(&hyperparameters[0], _weightsFilter, IC * OC * sizeof(float), cudaMemcpyDeviceToHost) != cudaSuccess) KORALI_LOG_ERROR("Error copying memory");
@@ -816,11 +801,10 @@ void Layer::getHyperparameterGradients(float* gradient)
 {
   if (_prevLayer != NULL)
   {
-   #ifdef _KORALI_USE_EIGEN
    size_t IC = _prevLayer->_nodeCount;
    size_t OC = _nodeCount;
 
-
+   #ifdef _KORALI_USE_EIGEN
    if (_nn->_engine == "Korali")
    {
     memcpy(&gradient[0], _weightDiff, IC * OC * sizeof(float));
@@ -837,11 +821,8 @@ void Layer::getHyperparameterGradients(float* gradient)
   #endif
 
    #ifdef _KORALI_USE_CUDNN
-   size_t IC = _prevLayer->_nodeCount;
-   size_t OC = _nodeCount;
-
-   if (_nn->_engine == "CUDNN")
-   {
+  if (_nn->_engine == "CUDNN")
+  {
         if (cudaMemcpy(&gradient[0], _weightsDiffFilter, IC * OC * sizeof(float), cudaMemcpyDeviceToHost) != cudaSuccess) KORALI_LOG_ERROR("Error copying memory");
         if (cudaMemcpy(&gradient[IC*OC], _biasDiffTensor, OC * sizeof(float), cudaMemcpyDeviceToHost) != cudaSuccess) KORALI_LOG_ERROR("Error copying memory");
    }
@@ -851,10 +832,10 @@ void Layer::getHyperparameterGradients(float* gradient)
 
 void Layer::getOutputValues(float* output)
 {
- #ifdef _KORALI_USE_EIGEN
  size_t N = _nn->_batchSize;
  size_t OC = _nodeCount;
 
+ #ifdef _KORALI_USE_EIGEN
  if (_nn->_engine == "Korali")
  {
    memcpy(output, _outputValues, N * OC * sizeof(float));
@@ -869,10 +850,7 @@ void Layer::getOutputValues(float* output)
   }
  #endif
 
- #ifdef _KORALI_USE_CUDNN
- size_t N = _nn->_batchSize;
- size_t OC = _nodeCount;
-
+  #ifdef _KORALI_USE_CUDNN
  if (_nn->_engine == "CUDNN")
  {
    cudaDeviceSynchronize();
@@ -884,11 +862,10 @@ void Layer::getOutputValues(float* output)
 
 void Layer::getInputGradients(float* gradient)
 {
- #ifdef _KORALI_USE_EIGEN
  size_t N = _nn->_batchSize;
  size_t OC = _nodeCount;
 
-
+ #ifdef _KORALI_USE_EIGEN
  if (_nn->_engine == "Korali")
  {
    memcpy(gradient, _inputDiff, N * OC * sizeof(float));
@@ -903,10 +880,6 @@ void Layer::getInputGradients(float* gradient)
  #endif
 
  #ifdef _KORALI_USE_CUDNN
- size_t N = _nn->_batchSize;
- size_t OC = _nodeCount;
-
-
  if (_nn->_engine == "CUDNN")
  {
     if (cudaMemcpy(gradient, _nodeDiffTensor, N * OC * sizeof(float), cudaMemcpyDeviceToHost) != cudaSuccess) KORALI_LOG_ERROR("Error copying memory");
@@ -916,10 +889,10 @@ void Layer::getInputGradients(float* gradient)
 
 void Layer::setInputValues(float* input)
 {
- #ifdef _KORALI_USE_EIGEN
  size_t N = _nn->_batchSize;
  size_t OC = _nodeCount;
 
+ #ifdef _KORALI_USE_EIGEN
  if (_nn->_engine == "Korali")
  {
   memcpy( _inputValues, input, N * OC * sizeof(float));
@@ -934,9 +907,6 @@ void Layer::setInputValues(float* input)
  #endif
 
  #ifdef _KORALI_USE_CUDNN
- size_t N = _nn->_batchSize;
- size_t OC = _nodeCount;
-
  if (_nn->_engine == "CUDNN")
  {
   if (cudaMemcpy(_nodeTensor, input, N * OC * sizeof(float), cudaMemcpyHostToDevice) != cudaSuccess) KORALI_LOG_ERROR("Error copying bias memory to device");

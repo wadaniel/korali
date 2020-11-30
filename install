@@ -444,13 +444,13 @@ if [ $? -ne 0 ]; then
   exitWithError
 fi
 
-cp source -r .setup/source >> $logFile 2>&1
+cp -r source .setup/source >> $logFile 2>&1
 if [ $? -ne 0 ]; then
   logEcho "[Korali] Error copying source files to install folder"
   exitWithError
 fi
 
-cp tools -r .setup/tools >> $logFile 2>&1
+cp -r tools .setup/tools >> $logFile 2>&1
 if [ $? -ne 0 ]; then
   logEcho "[Korali] Error copying tool files to install folder"
   exitWithError

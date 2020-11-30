@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 #!/usr/bin/env python3
 import korali
 import numpy as np
-
+from scipy.stats import t
 
 def lStandardNormalGaussian(s):
   v = s["Parameters"][0]
@@ -19,20 +19,26 @@ def standardNormalGaussianDensity(x):
 
 dim = 1
 
-
-numSamples = 10000
-numExperiments = 1000
+numSamples = 5000
+numExperiments = 4
 samples = np.zeros(shape=(numExperiments, numSamples))
 for experiment in range(numExperiments):
-    e = korali.Experiment()
     # Set Random Seed
+    e = korali.Experiment()
     e["Random Seed"] = 0xC0FFEE + experiment
+
+    #######################################################################################
+    ############################# File/Console output settings ############################
+    #######################################################################################
+    e["File Output"]["Frequency"] = 1000
+    e["Console Output"]["Frequency"] = 1000
+    # e["Console Output"]["Verbosity"] = "Detailed"
 
     #######################################################################################
     ################################ Variable Initilization ###############################
     #######################################################################################
     e["Variables"][0]["Name"] = "X"
-    e["Variables"][0]["Initial Mean"] = 0.0
+    e["Variables"][0]["Initial Mean"] = np.random.rand()
     e["Variables"][0]["Initial Standard Deviation"] = 1.0
 
     #######################################################################################
@@ -73,30 +79,22 @@ for experiment in range(numExperiments):
     e["Solver"]["Max Depth"] = 10 #for Use NUTS = True
     # Implicit leapfrog settings
     e["Solver"]["Max Integration Steps"] = 100 #for Version = Riemannian
-
-    #######################################################################################
-    ############################# File/Console output settings ############################
-    #######################################################################################
-    e["File Output"]["Frequency"] = 1000
-    e["Console Output"]["Frequency"] = 1000
-    # e["Console Output"]["Verbosity"] = "Detailed"
-
+    
     #######################################################################################
     ################################### Run Experiment ####################################
     #######################################################################################
     k = korali.Engine()
     k.run(e)
-
-    #######################################################################################
-    ###################################### Plotting #######################################
-    #######################################################################################
     experimentSamples = e["Results"]["Sample Database"]
     experimentSamples = np.reshape(experimentSamples, (-1, dim)).flatten()
     samples[experiment, :] = experimentSamples
 
-print("Median:")
-print(np.median(samples, axis=1))
 
+#######################################################################################
+###################################### Plotting #######################################
+#######################################################################################
+
+# Plot a single histogram #############################################################
 x_range = 5.0
 plt.grid(linestyle=":")
 plt.xlim(-x_range, x_range)
@@ -116,25 +114,58 @@ plt.savefig("samples.png", dpi=200)
 
 plt.clf()
 
-cumSumSamples = np.cumsum(samples, axis=0)
+# Plot Convergence ####################################################################
+cumSumSamples = np.cumsum(samples, axis=1)
+print("cumSumSamples = ", cumSumSamples)
 anaExpectation = 0.0
-numSamplesRange = np.arange(1, numSamples + 1)
+numSamplesRange = np.arange(1, numSamples+1)
 empiricalExpectation = np.zeros(shape=(numExperiments, numSamples))
 for experiment in range(numExperiments):
     empiricalExpectation[experiment, :] = cumSumSamples[experiment, :] / numSamplesRange
+print("empiricalExpectation = ", empiricalExpectation)
 
 errorExpectation = np.abs(anaExpectation - empiricalExpectation)
-print(errorExpectation)
+averageErrorExpectation = np.mean(errorExpectation, axis=0)
+print("errorExpectation = ", errorExpectation)
 errorIdeal = np.array([1.0/np.sqrt(n) for n in numSamplesRange])
 
+# Least Squares fit
+A = np.zeros(shape=(numExperiments*numSamples, 2))
+y = np.zeros(shape=(numExperiments*numSamples, 1))
+for i in range(numExperiments):
+    A[i*numSamples, 0] = 1.0
+    for j in range(numSamples):
+        A[i*numSamples + j, 1] = np.log(j+1)
+        y[i*numSamples + j] = np.log(errorExpectation[i, j])
+
+M = np.matmul(np.transpose(A), A)
+ATy = np.matmul(np.transpose(A), y)
+print("A = ", A)
+print("y = ", y)
+print("M = ", M)
+print("ATy =", ATy)
+x = np.linalg.solve(M, ATy)
+print("x = ", x)
+
+LSQFit = np.array([(np.exp(x[0]) * n**x[1]) for n in numSamplesRange])
+
+# Calculate confidence interval
+alpha = 0.05
+confidenceValue = 1.0 - alpha / 2.0
+studentTCoeff = t.ppf(confidenceValue, df=numExperiments-1)
+ci = studentTCoeff * np.std(errorExpectation, axis=0) / np.sqrt(numExperiments)
+
+# # for experiment in range(numExperiments):
+# #     plt.loglog(numSamplesRange, errorExpectation[experiment, :])
+# plt.loglog(numSamplesRange, averageErrorExpectation)
+
+fig, ax = plt.subplots()
+ax.loglog(numSamplesRange, errorIdeal, 'g--')
+ax.loglog(numSamplesRange, LSQFit, 'r--')
+ax.loglog(numSamplesRange, averageErrorExpectation)
+ax.fill_between(numSamplesRange, (averageErrorExpectation-ci), (averageErrorExpectation+ci), color='b', alpha=.1)
 plt.grid(linestyle=":")
 plt.xlabel("Number of Samples $N$")
 plt.ylabel("Error $|\\mathbb{E}[Q]-\hat{E}[Q]|$")
-plt.loglog(numSamplesRange, errorIdeal, 'g--')
-
-averageErrorExpectation = np.average(errorExpectation, axis=0)
-print(averageErrorExpectation)
-# for experiment in range(numExperiments):
-plt.loglog(numSamplesRange, averageErrorExpectation)
-
+plt.legend(["i.i.d. conv. $\propto \\frac{1}{\sqrt{N}}$", "LSQ Fit", "$\hat{E}[Error]$", str((100 * (1.0 - alpha))) + "% CI"])
 plt.savefig("gaussian_convergence.png", dpi=200)

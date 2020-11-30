@@ -341,9 +341,6 @@ OMPFLAGS="-fopenmp"
 if [[ "$USE_CXX" == "icpc" || "$USE_CXX" == "icc" ]]; then
  OMPFLAGS="-qopenmp"
 fi
-if [[ "$USE_CXX" == "clang++" ]]; then
- OMPFLAGS="-fopenmp=libomp"
-fi
 
 ######## Checking selected compiler #######
 

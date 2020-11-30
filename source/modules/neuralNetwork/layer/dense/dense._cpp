@@ -25,12 +25,12 @@ std::vector<float> Dense::generateInitialHyperparameters()
   if (_prevLayer != NULL)
   {
     // Setting value for this layer's xavier constant
-    float xavierConstant = sqrtf(6.0f) / sqrt(_nodeCount + _prevLayer->_nodeCount);
+    float xavierConstant = (_weightScaling * sqrtf(6.0f)) / sqrt(_nodeCount + _prevLayer->_nodeCount);
 
     // Adding layer's weights hyperparameter values
     for (size_t i = 0; i < _nodeCount; i++)
       for (size_t j = 0; j < _prevLayer->_nodeCount; j++)
-        hyperparameters.push_back(xavierConstant * _nn->_xavierGenerator->getRandomNumber());
+        hyperparameters.push_back(xavierConstant * _nn->_uniformGenerator->getRandomNumber());
 
     // Adding layer's bias hyperparameter values, if not using batch initialization
     for (size_t i = 0; i < _nodeCount; i++)

@@ -65,6 +65,10 @@ void cACER::initializeAgent()
     _aExperiment["Problem"]["Solution"][p][0] = 0.0; // A(s,a)
   }
 
+  size_t criticOutputLayerId = _criticNeuralNetwork["Layers"].size() - 1;
+  if (_criticNeuralNetwork["Layers"][criticOutputLayerId]["Activation Function"]["Type"] != "Elementwise/Linear")
+    KORALI_LOG_ERROR("Critic Network Output Layers' (%zu) Activation Function must be of type 'Elementwise/Linear'", criticOutputLayerId);
+
   // Running initialization to verify that the configuration is correct
   engine.initialize(_aExperiment);
 
@@ -95,6 +99,10 @@ void cACER::initializeAgent()
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
       _policyExperiment["Problem"]["Solution"][p][i] = 0.0; // Gaussian Mean
   }
+
+  size_t policyOutputLayerId = _policyNeuralNetwork["Layers"].size() - 1;
+  if (_policyNeuralNetwork["Layers"][policyOutputLayerId]["Activation Function"]["Type"] != "Elementwise/Tanh")
+    KORALI_LOG_ERROR("Policy Network Output Layers' (%zu) Activation Function must be of type 'Elementwise/Tanh'", policyOutputLayerId);
 
   // Running initialization to verify that the configuration is correct
   engine.initialize(_policyExperiment);
@@ -136,6 +144,9 @@ float cACER::averageActionAdvantageFunction(const std::vector<float> &curMeans, 
   // Creating storage for average action minibatch
   std::vector<float> aResults(_criticAdvantageFunctionPopulation);
 
+  // Initializing average A(s,a) counter
+  float avgA = 0.0;
+
   // Filling minibatch to calculate average action Q
   for (size_t i = 0; i < _criticAdvantageFunctionPopulation; i++)
   {
@@ -145,9 +156,6 @@ float cACER::averageActionAdvantageFunction(const std::vector<float> &curMeans, 
     // Running evaluation of the entire minibatch
     aResults[i] = currentActionAdvantageFunction(state, newAction);
   }
-
-  // Initializing average A(s,a) counter
-  float avgA = 0.0;
 
   // Summing A(s_i+1, a') for many a'
   for (size_t i = 0; i < _criticAdvantageFunctionPopulation; i++)
@@ -166,9 +174,9 @@ std::tuple<float, float> cACER::retraceFunction(size_t expId)
   ssize_t endId = startId;
   while (_experienceReplay[endId].termination == e_nonTerminal) endId++;
 
-  // Initializing qRet and qOpc to zero
-  float qRet = 0.0;
-  float qOpc = 0.0;
+  // Initializing qRet and qOpc to terminal reward
+  float qOpc = 0.0f;
+  float qRet = 0.0f;
 
   // Initializing values coming from the next experience (for latest experience, just reward)
   float qRetNext = _experienceReplay[endId].reward;
@@ -282,13 +290,8 @@ void cACER::trainAgent()
   _cumulativeQStar = 0.;
   _cumulativeQStarSquared = 0.;
 
-  // Resetting critic statistics
-  _cumulativeQStar = 0.0;        // Cumulative Q Retrace
-  _cumulativeQStarSquared = 0.0; // Stdev Q Retrace
-
-  // Clearing inputs for advantage problem
-  _aProblem->_inputs.clear();
-  _aProblem->_solution.clear();
+  // Init input count for average problem
+  size_t aInputCount = 0;
 
   // Creating minibatch for the critic update
   auto miniBatchIndexes = generateMiniBatch(_criticMiniBatchSize);
@@ -419,6 +422,9 @@ void cACER::trainAgent()
 
       // Adjusting gradients to trust region
       for (size_t i = 0; i < gPolicy.size(); i++) gPolicy[i] = gPolicy[i] - adjustmentMagnitude * k[i];
+
+      // Getting policy distribution parameters given the average policy
+      _policyLearner->setHyperparameters(_policyCurrentHyperparameters);
     }
 
     ///////////////// Storing Gradients /////////////////////
@@ -431,7 +437,7 @@ void cACER::trainAgent()
      *****************************************/
 
     // Calculating simple truncated importance
-    float tImportance = (1.0f + std::min(1.0f, oldImportanceWeight));
+    float tImportance = std::min(1.0f, oldImportanceWeight);
 
     // Calculating error between Qret and Q(s,a)
     float qErr = qRet - qExpStateExpAction;
@@ -440,7 +446,7 @@ void cACER::trainAgent()
 
     // Updating inputs to training learner
     _vProblem->_inputs[expPos] = expState;
-    _vProblem->_solution[expPos] = {qErr * tImportance};
+    _vProblem->_solution[expPos] = {qErr * tImportance + vExpState};
 
     ///////////////// Gradients for the Advantage Function A(s) /////////////////
 
@@ -448,8 +454,8 @@ void cACER::trainAgent()
     for (size_t i = 0; i < _problem->_actionVectorSize; i++) stateActionVector[_problem->_stateVectorSize + i] = expAction[i];
 
     // Updating inputs to training learner
-    _aProblem->_inputs.push_back(stateActionVector);
-    _aProblem->_solution.push_back({qErr});
+    _aProblem->_inputs[aInputCount] = stateActionVector;
+    _aProblem->_solution[aInputCount++] = {qErr};
 
     // Now adding all additional action samples
     for (size_t sampleIdx = 0; sampleIdx < _criticAdvantageFunctionPopulation; sampleIdx++)
@@ -474,6 +480,9 @@ void cACER::trainAgent()
   _vLearner->runGeneration();
   _vLearner->finalize();
 
+  // Getting new policy hyperparameters
+  _policyCurrentHyperparameters = _policyLearner->getHyperparameters();
+
   // Running one generation of the optimization method with the given mini-batch
   _policyLearner->initialize();
   _policyLearner->runGeneration();
@@ -489,10 +498,10 @@ void cACER::trainAgent()
   // If using a trust region, softly adopting the new parameters of the average policy, using an adoption rate
   if (_policyTrustRegionEnabled)
     for (size_t i = 0; i < _policyCurrentHyperparameters.size(); i++)
-      _policyAverageHyperparameters[i] = _policyTrustRegionAdoptionRate * _policyAverageHyperparameters[i] + (1 - _policyTrustRegionAdoptionRate) * _policyCurrentHyperparameters[i];
+      _policyAverageHyperparameters[i] = _policyTrustRegionAverageNetworkAdoptionRate * _policyAverageHyperparameters[i] + (1 - _policyTrustRegionAverageNetworkAdoptionRate) * _policyCurrentHyperparameters[i];
 
   // Updating policy with new averaged parameters
-  _policyLearner->setHyperparameters(_policyCurrentHyperparameters);
+  //_policyLearner->setHyperparameters(_policyCurrentHyperparameters);
 
   // Storing average policy hyperparameters
   _hyperparameters["Policy"] = _policyCurrentHyperparameters;

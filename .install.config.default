@@ -26,10 +26,10 @@ CMAKE=cmake
 USE_EIGEN=YES
 
 ### Specify whether to use the LIBGP library. Some Korali modules will be disabled if not used.
-USE_LIBGP=NO
+USE_LIBGP=YES
 
 ### Specify whether to use the rtnorm library. Some Korali modules will be disabled if not used.
-USE_RTNORM=NO
+USE_RTNORM=YES
 
 ### Specify whether to use OneDNN. Some Korali modules will be disabled if not used.
 USE_ONEDNN=NO

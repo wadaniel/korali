@@ -17,11 +17,6 @@ class cACER : public Continuous
 {
   public:
   /**
-   * @brief A neural network for the inference of the averaged advantage function
-   */
-  NeuralNetwork *_actionAverageEvaluationNetwork;
-
-  /**
    * @brief Pointer to training experiment's V(s) problem
    */
   problem::SupervisedLearning *_vProblem;
@@ -100,6 +95,8 @@ class cACER : public Continuous
 
   /**
    * @brief Returns the average advantage value of all actions given the state
+   * @param curMeans Means of the current policy
+   * @param curSigmas Standard deviations of the current policy
    * @param state State to evaluate
    * @return The average advantage value
    */

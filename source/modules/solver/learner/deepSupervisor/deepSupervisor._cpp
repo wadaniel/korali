@@ -39,17 +39,15 @@ void DeepSupervisor::initialize()
     size_t outputLayerId = _neuralNetwork["Layers"].size() - 1;
     _neuralNetwork["Layers"][outputLayerId]["Node Count"] = _problem->_solutionVectorSize;
 
-    // Creating training neural network, setting its batch size as the number of inputs to the problem
+    // Creating training neural network
     auto neuralNetworkConfig = _neuralNetwork;
     _trainingNeuralNetwork = dynamic_cast<NeuralNetwork *>(getModule(neuralNetworkConfig, _k));
 
-    // Creating inference neural network, setting its batch size as one (evaluation per call) and following the global (mean/variance) stats of the trained NN
-    neuralNetworkConfig = _neuralNetwork;
-
+    // Creating inference neural network
     for (size_t i = 0; i < _maxThreads; i++)
     {
-      auto nnConfig = neuralNetworkConfig;
-      _evaluationNeuralNetworks[i] = dynamic_cast<NeuralNetwork *>(getModule(nnConfig, _k));
+      auto neuralNetworkConfig = _neuralNetwork;
+      _evaluationNeuralNetworks[i] = dynamic_cast<NeuralNetwork *>(getModule(neuralNetworkConfig, _k));
     }
 
     /*****************************************************************

@@ -316,6 +316,9 @@ class fCMAES
 */
   float _maxStandardDeviation;
 
+  /**
+* @brief [Termination Criteria] Specifies the mininum update to the variable means before triggering termination.
+*/
   std::vector<float> _minMeanUpdates;
 
   /**

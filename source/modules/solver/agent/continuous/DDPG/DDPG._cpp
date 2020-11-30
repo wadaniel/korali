@@ -164,7 +164,6 @@ void DDPG::trainAgent()
   _criticLearner->runGeneration();
   _criticLearner->finalize();
 
-
   // Keeping critic statistics
   _averageQStar = (float)_cumulativeQStar / (float)(_criticMiniBatchSize);
 

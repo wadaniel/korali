@@ -5,7 +5,11 @@
 #ifndef _KORALI_AUXILIARS_KORALIMATH_HPP_
 #define _KORALI_AUXILIARS_KORALIMATH_HPP_
 
+/**
+* @brief This definition enables the use of M_PI
+*/
 #define _USE_MATH_DEFINES
+
 #include <cmath>
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_sf_gamma.h>
@@ -88,12 +92,12 @@ const double Eps = std::numeric_limits<double>::epsilon();
 * @return The LSE function of the input.
 */
 template <typename T>
-T logSumExp(const T* logValues, const size_t& n)
+T logSumExp(const T *logValues, const size_t &n)
 {
   T maxLogValue = -Inf;
   for (size_t i = 0; i < n; i++)
-   if (logValues[i] > maxLogValue)
-    maxLogValue = logValues[i];
+    if (logValues[i] > maxLogValue)
+      maxLogValue = logValues[i];
 
   if (std::isinf(maxLogValue) == true)
   {
@@ -105,7 +109,7 @@ T logSumExp(const T* logValues, const size_t& n)
 
   T sumExpValues = 0.0;
   for (size_t i = 0; i < n; i++)
-   sumExpValues += exp(logValues[i] - maxLogValue);
+    sumExpValues += exp(logValues[i] - maxLogValue);
 
   return maxLogValue + log(sumExpValues);
 }
@@ -116,9 +120,9 @@ T logSumExp(const T* logValues, const size_t& n)
 * @return The LSE function of the input.
 */
 template <typename T>
-T logSumExp(const std::vector<T>& logValues)
+T logSumExp(const std::vector<T> &logValues)
 {
- return logSumExp(logValues.data(), logValues.size());
+  return logSumExp(logValues.data(), logValues.size());
 }
 
 /**

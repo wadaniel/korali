@@ -3,7 +3,7 @@
 
 #include "modules/experiment/experiment.hpp"
 #include "modules/module.hpp"
-#include "modules/neuralNetwork/layer/layer.hpp"
+#include "modules/neuralNetwork/layer/dense/dense.hpp"
 #include "modules/solver/solver.hpp"
 
 #ifdef _KORALI_USE_ONEDNN

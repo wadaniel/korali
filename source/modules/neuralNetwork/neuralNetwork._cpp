@@ -6,6 +6,7 @@ namespace korali
 NeuralNetwork::NeuralNetwork()
 {
   _isInitialized = false;
+  _batchSize = 0;
 }
 
 void NeuralNetwork::initialize()
@@ -16,43 +17,43 @@ void NeuralNetwork::initialize()
 
 #endif
 
-  if (_isInitialized)  KORALI_LOG_ERROR("Neural Network has already been initialized!.\n");
+  if (_isInitialized) KORALI_LOG_ERROR("Neural Network has already been initialized!.\n");
 
   if (_engine == "Korali")
   {
-   #ifdef _KORALI_USE_EIGEN
+#ifdef _KORALI_USE_EIGEN
 
-   #else
+#else
 
-     KORALI_LOG_ERROR("Neural Network's engine set to Korali, but Korali was installed without support for Eigen3.\n");
+    KORALI_LOG_ERROR("Neural Network's engine set to Korali, but Korali was installed without support for Eigen3.\n");
 
-   #endif
+#endif
   }
 
   if (_engine == "OneDNN")
   {
-   #ifdef _KORALI_USE_ONEDNN
+#ifdef _KORALI_USE_ONEDNN
 
-     _stream = dnnl::stream(korali::_engine);
+    _stream = dnnl::stream(korali::_engine);
 
-   #else
+#else
 
-     KORALI_LOG_ERROR("Neural Network's engine set to OneDNN, but Korali was installed without support for OneDNN.\n");
+    KORALI_LOG_ERROR("Neural Network's engine set to OneDNN, but Korali was installed without support for OneDNN.\n");
 
-   #endif
+#endif
   }
 
   if (_engine == "CUDNN")
   {
-   #ifdef _KORALI_USE_ONEDNN
+#ifdef _KORALI_USE_ONEDNN
 
-   if (cudnnCreate(&_cuDNNHandle) != CUDNN_STATUS_SUCCESS) KORALI_LOG_ERROR("Error initializing CUDNN Handle\n");
+    if (cudnnCreate(&_cuDNNHandle) != CUDNN_STATUS_SUCCESS) KORALI_LOG_ERROR("Error initializing CUDNN Handle\n");
 
-   #else
+#else
 
-     KORALI_LOG_ERROR("Neural Network's engine set to CUDNN, but Korali was installed without support for CUDNN.\n");
+    KORALI_LOG_ERROR("Neural Network's engine set to CUDNN, but Korali was installed without support for CUDNN.\n");
 
-   #endif
+#endif
   }
 
   // Assigning relevant metadata to all the layers
@@ -155,8 +156,8 @@ void NeuralNetwork::setInput(const std::vector<std::vector<float>> &input)
     for (size_t j = 0; j < inputSize; j++)
       batchInput[i * inputSize + j] = input[i][j];
 
- // Writing input to the NN
- _layers[0]->setInputValues(batchInput.data());
+  // Writing input to the NN
+  _layers[0]->setInputValues(batchInput.data());
 }
 
 void NeuralNetwork::forward()
@@ -309,7 +310,7 @@ void NeuralNetwork::backward(const std::vector<std::vector<float>> &gradients)
       // Running backward data propagation
       _layers[i]->backwardDataPropagation();
 
-        // Running backward weight+bias propagation
+      // Running backward weight+bias propagation
       _layers[i]->backwardWeightsAndBias();
     }
   }
@@ -341,24 +342,24 @@ void NeuralNetwork::setHyperparameters(const std::vector<float> &hyperparameters
   size_t currPos = 0;
   for (size_t i = 0; i < layerCount; i++)
   {
-   _layers[i]->setHyperparameters(&params[currPos]);
-   currPos += _layers[i]->_hyperparameterCount;
+    _layers[i]->setHyperparameters(&params[currPos]);
+    currPos += _layers[i]->_hyperparameterCount;
   }
 }
 
 std::vector<float> NeuralNetwork::getHyperparameterGradients()
 {
- auto gradients = std::vector<float>(_hyperparameterCount);
+  auto gradients = std::vector<float>(_hyperparameterCount);
 
- size_t layerCount = _layers.size();
- size_t currPos = 0;
- for (size_t i = 0; i < layerCount; i++)
- {
-   _layers[i]->getHyperparameterGradients(&gradients[currPos]);
-   currPos += _layers[i]->_hyperparameterCount;
- }
+  size_t layerCount = _layers.size();
+  size_t currPos = 0;
+  for (size_t i = 0; i < layerCount; i++)
+  {
+    _layers[i]->getHyperparameterGradients(&gradients[currPos]);
+    currPos += _layers[i]->_hyperparameterCount;
+  }
 
- return gradients;
+  return gradients;
 }
 
 std::vector<float> NeuralNetwork::getDataGradients()

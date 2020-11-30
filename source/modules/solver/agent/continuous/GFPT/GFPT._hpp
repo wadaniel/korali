@@ -21,8 +21,6 @@ class GFPT : public Continuous
    */
   std::vector<NeuralNetwork *> _batchOptimizationNetworks;
 
-  float _stateValue;
-
   /**
    * @brief Pointer to training experiment's V(s) problem
    */
@@ -73,7 +71,14 @@ class GFPT : public Continuous
    */
   problem::SupervisedLearning *_policyProblem;
 
+  /**
+  * @brief [Profiling] Measures the amount of time taken by critic updates
+  */
   double _criticUpdateTime;
+
+  /**
+   * @brief [Profiling] Measures the amount of time taken by policy updates
+   */
   double _policyUpdateTime;
 
   /**
@@ -93,6 +98,8 @@ class GFPT : public Continuous
 
   /**
    * @brief Returns the average advantage value of all actions given the state
+   * @param curMeans Means of the current policy
+   * @param curSigmas Standard deviations of the current policy
    * @param state State to evaluate
    * @return The average advantage value
    */

@@ -43,6 +43,9 @@ void Agent::initialize()
     _bestTrainingReward = -korali::Inf;
     _bestTrainingEpisode = 0;
     _bestAverageTestingReward = -korali::Inf;
+
+    // Initialize best hyperparameters
+    _bestHyperparameters = _hyperparameters;
   }
 
   // Initializing profiling timers

@@ -63,8 +63,8 @@ void Discrete::getAction(korali::Sample &sample)
     }
 
     // Storing action metadata
-    sample["Metadata"]["Action Index"] = actionIdx;
-    sample["Metadata"]["Action Probabilities"] = pActions;
+    sample["Policy"]["Action Index"] = actionIdx;
+    sample["Policy"]["Action Probabilities"] = pActions;
   }
 
   /*****************************************************************************

@@ -24,7 +24,7 @@ rm -rf __test-*; check_result
 
 for file in *.py
 do
- sed -e 's%Defining Termination Criteria%Defining Termination Criteria\ne["Solver"]["Termination Criteria"]["Max Generations"] = 40\n%g' \
+ sed -e 's%Defining Termination Criteria%Defining Termination Criteria\ne["Solver"]["Termination Criteria"]["Max Generations"] = 30\n%g' \
         ${file} > __test-${file}; check_result
 done
 
@@ -32,6 +32,7 @@ done
 
 for file in __test-*.py
 do
+ echo "Running ${file} ..."
  OMP_NUM_THREADS=4 python3 ${file}; check_result
 done
 

@@ -21,7 +21,7 @@ for dirpath, subdirs, files in os.walk(sourceDir):
 setup(
     name='Korali',
     version=koraliVer,
-    author='G. Arampatzis, S. Martin, D. Waelchli',
+    author='S. Martin, D. Waelchli, G. Arampatzis, P. Weber',
     author_email='martiser@ethz.ch',
     description='High Performance Framework for Uncertainty Quantification and Optimization',
     url='Webpage: https://www.cse-lab.ethz.ch/korali/',

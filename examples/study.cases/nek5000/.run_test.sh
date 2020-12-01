@@ -2,22 +2,18 @@
 
 ###### Auxiliar Functions and Variables #########
 
-function check_result()
-{
- if [ ! $? -eq 0 ]
- then 
-  echo "[Korali] Error detected."
-  exit -1
- fi 
-}
+source ../../../tests/functions.sh
 
 ##### Deleting Previous Results
 
-echo "  + Deleting previous results..."
-rm -rf _results_*; check_result
- 
+echo "  + Deleting previous results..." 
+rm -rf _korali_result*; check_result
+
+##### Recompiling C++
+
+make clean; check_result
+make -j4 TEST=true; check_result
+
 ##### Running Tests
 
-echo "  + Running test files..."
-
-  
+./run-korali; check_result

@@ -7,7 +7,9 @@ int main(int argc, char *argv[])
   //MPI_Init(&argc, &argv);
 
   // Initializing environment
+  #ifdef CUBISM
   initializeEnvironment(argc, argv);
+  #endif
 
   auto e = korali::Experiment();
 
@@ -40,20 +42,20 @@ int main(int argc, char *argv[])
   //// Defining Agent Configuration
 
   e["Solver"]["Type"] = "Agent / Continuous / GFPT";
-  e["Solver"]["Experiences Between Agent Trainings"] = 1;
-  e["Solver"]["Experiences Between Target Network Updates"] = 1;
   e["Solver"]["Optimization Steps Per Update"] = 1;
+  e["Solver"]["Experiences Between Agent Trainings"] = 1;
+  e["Solver"]["Cache Persistence"] = 10;
 
-  e["Solver"]["Random Action Probability"]["Initial Value"] = 0.5;
-  e["Solver"]["Random Action Probability"]["Target Value"] = 0.05;
-  e["Solver"]["Random Action Probability"]["Decrease Rate"] = 0.05;
+  e["Solver"]["Random Action Probability"]["Initial Value"] = 0.1;
+  e["Solver"]["Random Action Probability"]["Target Value"] = 0.01;
+  e["Solver"]["Random Action Probability"]["Decrease Rate"] = 0.00;
 
   e["Solver"]["Experience Replay"]["Start Size"] = 1000;
   e["Solver"]["Experience Replay"]["Maximum Size"] = 100000;
 
   //// Defining Critic Configuration
 
-  e["Solver"]["Critic"]["Learning Rate"] = 0.01;
+  e["Solver"]["Critic"]["Learning Rate"] = 0.0001;
   e["Solver"]["Critic"]["Discount Factor"] = 0.99;
   e["Solver"]["Critic"]["Mini Batch Size"] = 64;
 
@@ -61,46 +63,47 @@ int main(int argc, char *argv[])
   e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear";
 
   e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Type"] = "Layer/Dense";
-  e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Node Count"] = 32;
+  e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Node Count"] = 64;
   e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Activation Function"]["Type"] = "Elementwise/Tanh";
-  e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Batch Normalization"]["Enabled"] = true;
 
   e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Type"] = "Layer/Dense";
-  e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Node Count"] = 32;
+  e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Node Count"] = 64;
   e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Elementwise/Tanh";
-  e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Batch Normalization"]["Enabled"] = true;
 
   e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Type"] = "Layer/Dense";
   e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Elementwise/Linear";
-  e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Batch Normalization"]["Enabled"] = true;
 
   //// Defining Policy Configuration
 
-  e["Solver"]["Policy"]["Learning Rate"] = 0.0001;
-  e["Solver"]["Policy"]["Mini Batch Size"] = 16;
-  e["Solver"]["Policy"]["Adoption Rate"] = 0.80;
+  e["Solver"]["Policy"]["Learning Rate"] = 0.000001;
+  e["Solver"]["Policy"]["Mini Batch Size"] = 64;
+  e["Solver"]["Policy"]["Target Accuracy"] = 0.0001;
 
   e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense";
   e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear";
 
   e["Solver"]["Policy"]["Neural Network"]["Layers"][1]["Type"] = "Layer/Dense";
-  e["Solver"]["Policy"]["Neural Network"]["Layers"][1]["Node Count"] = 32;
+  e["Solver"]["Policy"]["Neural Network"]["Layers"][1]["Node Count"] = 64;
   e["Solver"]["Policy"]["Neural Network"]["Layers"][1]["Activation Function"]["Type"] = "Elementwise/Tanh";
 
   e["Solver"]["Policy"]["Neural Network"]["Layers"][2]["Type"] = "Layer/Dense";
-  e["Solver"]["Policy"]["Neural Network"]["Layers"][2]["Node Count"] = 32;
+  e["Solver"]["Policy"]["Neural Network"]["Layers"][2]["Node Count"] = 64;
   e["Solver"]["Policy"]["Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Elementwise/Tanh";
 
   e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Type"] = "Layer/Dense";
-  e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Elementwise/Logistic";
-
-  e["Solver"]["Policy"]["Neural Network"]["Output Scaling"] = {1.0, 0.25};
+  e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Elementwise/Tanh";
 
   ////// Defining Termination Criteria
 
   e["Solver"]["Training Reward Threshold"] = -1.0;
   e["Solver"]["Policy Testing Episodes"] = 20;
   e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = -1.0;
+
+  ////// If using syntax test, run for a couple generations only
+
+  #ifdef TEST
+  e["Solver"]["Termination Criteria"]["Max Generations"] = 20;
+  #endif
 
   ////// Setting file output configuration
 

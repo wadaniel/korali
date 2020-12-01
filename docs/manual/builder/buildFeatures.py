@@ -7,7 +7,7 @@ import shutil
 import copy
 import glob
 
-featureSrcDir = '../../../features'
+featureSrcDir = '../../../examples/features'
 
 ################################################
 # Process Feature Function
@@ -46,9 +46,9 @@ def processFeature(featureRelPath, featureName):
   # If its leaf, link to source code
   if (isParentFeature == False):
     featureReadmeString += '.. hint::\n\n'
-    featureReadmeString += '   Example code: `https://github.com/cselab/korali/tree/master/features/' + featureRelPath.replace(
+    featureReadmeString += '   Example code: `https://github.com/cselab/korali/tree/master/examples/features/' + featureRelPath.replace(
         './', ''
-    ) + '/ <https://github.com/cselab/korali/tree/master/features/' + featureRelPath.replace(
+    ) + '/ <https://github.com/cselab/korali/tree/master/examples/features/' + featureRelPath.replace(
         './', '') + '/>`_\n\n'
 
   # Copying any images in the source folder

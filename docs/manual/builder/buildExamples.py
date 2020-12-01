@@ -93,5 +93,5 @@ for f in list_dir:
   fullPath = os.path.join(exampleSrcDir, f)
   if not os.path.isfile(fullPath):
     if (not '.o/' in fullPath and not '.d/' in fullPath and
-        not '/_' in fullPath):
+        not '/_' in fullPath and not 'features' in fullPath):
       processExample(f, f)

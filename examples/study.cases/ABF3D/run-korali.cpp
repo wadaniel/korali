@@ -132,7 +132,7 @@ int main(int argc, char *argv[])
   ////// If using configuration test, run for a couple generations only
 
   #ifdef TEST
-  e["Solver"]["Termination Criteria"]["Max Generations"] = 20;
+  e["Solver"]["Termination Criteria"]["Max Generations"] = 5;
   #endif
 
   ////// Setting file output configuration

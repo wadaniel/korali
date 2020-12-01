@@ -1,15 +1,15 @@
 #!/bin/bash
 
 ###### Check if necessary python modules are installed ######
-python3 -m pip show gym
+python3 -m pip show scipy
 if [ $? -ne 0 ]; then
- echo "[Korali] openAI gym not found, aborting test"
+ echo "[Korali] Scipy not found, aborting test"
  exit 0
 fi
 
 ###### Auxiliar Functions and Variables #########
 
-source ../../../tests/functions.sh
+source ../../../../tests/functions.sh
 
 ##### Deleting Previous Results 
 
@@ -25,7 +25,6 @@ rm -rf __test-*; check_result
 for file in *.py
 do
  sed -e 's%Defining Termination Criteria%Defining Termination Criteria\ne["Solver"]["Termination Criteria"]["Max Generations"] = 30\n%g' \
-     -e 's%k.run(e)%k.run(e); exit(0);\n%g' \
         ${file} > __test-${file}; check_result
 done
 

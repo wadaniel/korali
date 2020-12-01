@@ -9,11 +9,10 @@ source ../../../tests/functions.sh
 echo "  + Deleting previous results..." 
 rm -rf _korali_result*; check_result
 
-##### Recompiling C++
-
-make clean; check_result
-make -j4 TEST=true; check_result
-
 ##### Running Tests
 
-./run-korali; check_result
+python3 ./run.py 1; check_result
+python3 ./run.py 2; check_result
+python3 ./run.py 4; check_result
+python3 ./run.py 8; check_result
+

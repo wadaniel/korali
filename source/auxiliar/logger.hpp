@@ -13,6 +13,12 @@
 #define KORALI_LOG_ERROR(...) \
   Logger::logError(__FILE__, __LINE__, __VA_ARGS__)
 
+/**
+ * @brief Printing a warning message
+ */
+#define KORALI_LOG_WARNING(...) \
+  Logger::logWarning(__FILE__, __LINE__, __VA_ARGS__)
+
 namespace korali
 {
 /**

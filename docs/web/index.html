@@ -2,29 +2,22 @@
 <html>
     
     <head>
-	<!-- Primary Meta Tags -->
-<title>Korali - High-Performance Uncertainty Quantification and Optimization</title>
-<meta name="title" content="Korali - High-Performance Uncertainty Quantification and Optimization">
-<meta name="description" content="Korali is a high-performance framework for uncertainty quantification of computational models. Korali provides a scalable engine enables sampling and optimization on large-scale HPC systems, and a multi-language interface allows the execution of multiple computational models, either sequential or distributed (MPI), C++ or Python, and pre-compiled/legacy applications.
-
-">
+ <!-- Primary Meta Tags -->
+<title>Korali - High-Performance Uncertainty Quantification, Optimization, and Reinforcement Learning</title>
+<meta name="title" content="Korali - High-Performance Uncertainty Quantification, Optimization, and Reinforcement Learning">
+<meta name="description" content="Korali is a high-performance framework for uncertainty quantification, optimization, and reinforcement learning. Korali provides a scalable engine for large-scale HPC systems and a multi-language interface compatible with sequential/parallel C++/Python models.">
 
 <!-- Open Graph / Facebook -->
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://www.cse-lab.ethz.ch/korali/">
-<meta property="og:title" content="Korali - High-Performance Uncertainty Quantification and Optimization">
-<meta property="og:description" content="Korali is a high-performance framework for uncertainty quantification of computational models. Korali provides a scalable engine enables sampling and optimization on large-scale HPC systems, and a multi-language interface allows the execution of multiple computational models, either sequential or distributed (MPI), C++ or Python, and pre-compiled/legacy applications.
-
-">
+<meta property="og:title" content="Korali is a high-performance framework for uncertainty quantification, optimization, and reinforcement learning. Korali provides a scalable engine for large-scale HPC systems and a multi-language interface compatible with sequential/parallel C++/Python models.">
 <meta property="og:image" content="https://www.cse-lab.ethz.ch/korali/images/koraliLogo.png">
 
 <!-- Twitter -->
 <meta property="twitter:card" content="summary_large_image">
 <meta property="twitter:url" content="https://www.cse-lab.ethz.ch/korali/">
-<meta property="twitter:title" content="Korali - High-Performance Uncertainty Quantification and Optimization">
-<meta property="twitter:description" content="Korali is a high-performance framework for uncertainty quantification of computational models. Korali provides a scalable engine enables sampling and optimization on large-scale HPC systems, and a multi-language interface allows the execution of multiple computational models, either sequential or distributed (MPI), C++ or Python, and pre-compiled/legacy applications.
+<meta property="twitter:title" content="Korali is a high-performance framework for uncertainty quantification, optimization, and reinforcement learning. Korali provides a scalable engine for large-scale HPC systems and a multi-language interface compatible with sequential/parallel C++/Python models.">
 
-">
 <meta property="twitter:image" content="https://www.cse-lab.ethz.ch/korali/images/koraliLogo.png">
 
         <meta charset="utf-8">
@@ -81,12 +74,13 @@ function toggleBIBTex(input) {
         <div style="text-align:center">
             <img src="images/koraliLogo.png" style="width: 120px" />
             <h1>Korali</h1>
-            <h3>High-Performance Uncertainty Quantification and Optimization</h3>
+            <h3>High-Performance Uncertainty Quantification, Optimization, and RL</h3>
         </div>
 
         <p>
-            Korali is a high-performance framework for uncertainty quantification of computational models. Korali provides a scalable engine enables sampling and optimization on large-scale HPC systems, and a multi-language interface allows the execution of multiple computational models, either sequential or distributed (MPI), C++ or Python, and pre-compiled/legacy applications. 
-        <div style="text-align: right; margin-top: -20px">
+            Korali is a high-performance framework for uncertainty quantification, optimization, and reinforcement learning. Its engine provides support for large-scale HPC systems and a multi-language interface compatible with distributed computational models.
+        </p>
+        <div style="text-align: right; margin-top: -10px">
             <a href="https://github.com/cselab/korali"><img src="images/githublogo.png" style="width: 32px" /></a>
             <a href="https://twitter.com/EthKorali"><img src="images/twitterlogo.png" style="width: 32px" /></a>    
             <a href="https://circleci.com/gh/cselab/korali/tree/latest"><img src="images/circlecilogo.png" style="width: 32px"/></a>
@@ -106,35 +100,35 @@ function toggleBIBTex(input) {
         
         <h3>Optimization</h3>
     
-	Korali offers randomized and gradient-free optimization algorithms with almost perfect scaling on large computing architectures and hence they are perfectly suited for large scale engineering applications. Additionally, Korali implements a selection of well-known gradient based optimization algorithms. <a href="docs/examples/optimization.html"> [ Examples ]</a>
+        Gradient-free optimization algorithms that enable parallel sampling in HPC systems. Additionally, Korali implements many well-known gradient based optimization algorithms. <a href="docs/examples/optimization.html"> [ Examples ]</a>
         
         <br />
         
-        <h3>Uncertainty Quantification</h3>
+        <h3>Bayesian Uncertainty Quantification</h3>
        
-	Bayesian Uncertainty Quantification for the inference of parameters of computational models is one of the main pillars of Korali. Korali is designed to accommodate computationally demanding models by utilizing sampling algorithms that take advantage of parallel architectures. A large variety of likelihood models and prior distributions is offered that cover a wide spectrum of modeling needs. <a href="docs/examples/bayesian.inference.html"> [ Examples ]</a>
+        Bayesian inference methods for the inference computational models parameters and their associated uncertainty, based on experimental data. Additionally, it provides multiple likelihood models and prior distributions. <a href="docs/examples/bayesian.inference.html"> [ Examples ]</a>
 
         <br />
          
-        <h3>Machine Learning</h3>
+        <h3>Reinforcement Learning</h3>
 
-	Deep Neural Networks and Gaussian Processes allow to accurately approximate unknown or intractable functions. With Reinforcement Learning sequential decision making problems with complex or chaotic dynamics can be solved. Together, Korali offers supervised and semi-supervised learning capabilities, utilising its strengths in parallel tasking, optimisation and statistical modelling. <a href="docs/examples/learning.html"> [ Examples ]</a>
+        Algorithms for reinforcement learning on both discrete and continuous actions spaces. Multiple agents can run in parallel, distributed across different nodes. <a href="docs/examples/learning.html"> [ Examples ]</a>
        
-	<br /><hr />
+ <br /><hr />
 
-	<h2 id="principles">Design Principles</h2>
+ <h2 id="principles">Design Principles</h2>
     
         <h3>High-Performance</h3>
-         The Korali work distribution engine has been optimized to fully harness computational resources of large-scale supercomputers, maximizing throughput and minimizing workload imbalance. Furthermore, Korali supports the execution of parallel (OpenMP, Pthreads), distributed (MPI, UPC++), and GPU-based (CUDA) models.
+         The work distribution engine is optimized to fully harness computational resources of large-scale supercomputers, maximizing throughput and minimizing workload imbalance. Furthermore, Korali supports the execution of parallel (OpenMP, Pthreads), distributed (MPI, UPC++), and GPU-based (CUDA) models.
     
         <h3>Fault Tolerance</h3>
-         Korali offers a checkpoint/resume fault-tolerance mechanism in which the entire state of an experiment is stored regularly and can be resumed later in case of work-load split or errors, guaranteeing that the result of a resumed experiment will be exactly the same as if the original launch would had ran to completion.
+         Experiments store their internal state regularly, allowing them to be resumed later in case of errors. The result of a resumed experiment is guaranteed to be exactly the same as one in a single run.
          
         <h3>Extensible Engine</h3>
-         Korali is designed as a completely modular and extensible software. Researchers can easily integrate and test their algorithms for optimization and sampling into Korali. Likewise, new problems types can be easily added into Korali. All newly developed modules automatically benefit from Korali's scalability and fault-tolerance features without additional efforts.
+         The framework is open-source, modular and extensible. Developers can integrate and test new modules which will automatically benefit from its parallel engine and fault-tolerance without additional effort.
     
         <h3>Multi-Language Support</h3>
-         Korali applications can be programmed in either C++ or Python. Additionally, Korali can sample from C++/Fortran/Python and pre-compiled computational models.
+         The API is compatible with C/C++/Fortran and Python models. Additionally, the engine can sample from pre-compiled computational models.
     
         <br /><br /><hr />
     
@@ -201,28 +195,28 @@ year = {2019}
 <h3>Publications that used Korali</h3>
  <ul>
    <li>P. Karnakov, G. Arampatzis, I. Ki&#269;i &#263;, F. Wermelinger, D. W&auml;lchli, C. Papadimitriou, P. Koumoutsakos <b>"Data-driven inference of the reproduction number for COVID-19 before and after interventions for 51 European countries".</b> Swiss Medical Weekly. Z&uuml;rich, Switzerland, July 2020.<b><button style="font-size: 14px;" onclick="toggleBIBTex('paperR0')">[BibTeX]</button></b><div id="paperR0" style="display: none"><textarea style=" font-size: 12px; overflow-x: hidden; overflow-y: hidden; resize: none; background-color: rgb(240, 245, 255" wrap="hard" readonly cols="110" rows="11" >@article {Karnakov2020.20313,
-	author = {Karnakov, Petr and Arampatzis, Georgios and Ki{\v c}i{\'c}, Ivica and Wermelinger, Fabian and W{\"a}lchli, Daniel and Papadimitriou, Costas and Koumoutsakos, Petros},
-	title = {Data-driven inference of the reproduction number for COVID-19 before and after interventions for 51 European countries},
-	year = {2020},
-	doi = {10.4414/smw.2020.20313},
-	publisher = {Swiss Medical Weekly},
-	URL = {https://smw.ch/article/doi/smw.2020.20313},
-	journal = {Swiss Medical Weekly}}
+ author = {Karnakov, Petr and Arampatzis, Georgios and Ki{\v c}i{\'c}, Ivica and Wermelinger, Fabian and W{\"a}lchli, Daniel and Papadimitriou, Costas and Koumoutsakos, Petros},
+ title = {Data-driven inference of the reproduction number for COVID-19 before and after interventions for 51 European countries},
+ year = {2020},
+ doi = {10.4414/smw.2020.20313},
+ publisher = {Swiss Medical Weekly},
+ URL = {https://smw.ch/article/doi/smw.2020.20313},
+ journal = {Swiss Medical Weekly}}
 }
               </textarea>
    </div><a href="https://smw.ch/article/doi/smw.2020.20313">[PDF]</a>
    </li>
    <br />
    <li>M. Chatzimanolakis, P. Weber, G. Arampatzis, D. W&auml;lchli, P. Karnakov, I. Ki&#269;i &#263;, C. Papadimitriou, P. Koumoutsakos <b>"Optimal Testing Strategy for the Identification of COVID-19 Infections".</b> medRxiv 2020.07.20.20157818v2. Z&uuml;rich, Switzerland, July 2020.<b><button style="font-size: 14px;" onclick="toggleBIBTex('paperR1')">[BibTeX]</button></b><div id="paperR1" style="display: none"><textarea style=" font-size: 12px; overflow-x: hidden; overflow-y: hidden; resize: none; background-color: rgb(240, 245, 255" wrap="hard" readonly cols="110" rows="12" >@article {Chatzimanolakis2020.07.20.20157818,
-	author = {Chatzimanolakis, Michail and Weber, Pascal and Arampatzis, Georgios and W{\"a}lchli, Daniel and Karnakov, Petr and Ki{\v c}i{\'c}, Ivica and Papadimitriou, Costas and Koumoutsakos, Petros},
-	title = {Optimal Testing Strategy for the Identification of COVID-19 Infections},
-	elocation-id = {2020.07.20.20157818},
-	year = {2020},
-	doi = {10.1101/2020.07.20.20157818},
-	publisher = {Cold Spring Harbor Laboratory Press},
-	URL = {https://www.medrxiv.org/content/early/2020/07/27/2020.07.20.20157818},
-	eprint = {https://www.medrxiv.org/content/early/2020/07/27/2020.07.20.20157818.full.pdf},
-	journal = {medRxiv}
+ author = {Chatzimanolakis, Michail and Weber, Pascal and Arampatzis, Georgios and W{\"a}lchli, Daniel and Karnakov, Petr and Ki{\v c}i{\'c}, Ivica and Papadimitriou, Costas and Koumoutsakos, Petros},
+ title = {Optimal Testing Strategy for the Identification of COVID-19 Infections},
+ elocation-id = {2020.07.20.20157818},
+ year = {2020},
+ doi = {10.1101/2020.07.20.20157818},
+ publisher = {Cold Spring Harbor Laboratory Press},
+ URL = {https://www.medrxiv.org/content/early/2020/07/27/2020.07.20.20157818},
+ eprint = {https://www.medrxiv.org/content/early/2020/07/27/2020.07.20.20157818.full.pdf},
+ journal = {medRxiv}
   }
     </textarea>
    </div><a href="https://www.medrxiv.org/content/10.1101/2020.07.20.20157818v2">[PDF]</a>
@@ -233,7 +227,7 @@ year = {2019}
        <h3>Talks, Posters and Lectures</h3>
          <ul>
              <li>
-                S. Martin, <b>Korali Tutorials</b>, Computational Science Z&uuml;richâ€™s Course on Uncertainty Quantiï¬�cation & Data Analysis in Applied Sciences. (Lecture) Z&uuml;rich, Switzerland, May 2020.  <a href="https://www.cse-lab.ethz.ch/wp-content/uploads/2020/05/2020-05-04-CSZ-Block-Course-CS4-Korali-Tutorial-I.mp4">[Part I]</a> <a href="https://www.cse-lab.ethz.ch/wp-content/uploads/2020/05/2020-05-05-CSZ-Block-Course-CS8-Korali-Tutorial-II.mp4">[Part II]</a>
+                S. Martin, <b>Korali Tutorials</b>, Computational Science Z&uuml;rich's Course on Uncertainty Quantification & Data Analysis in Applied Sciences. (Lecture) Z&uuml;rich, Switzerland, May 2020.  <a href="https://www.cse-lab.ethz.ch/wp-content/uploads/2020/05/2020-05-04-CSZ-Block-Course-CS4-Korali-Tutorial-I.mp4">[Part I]</a> <a href="https://www.cse-lab.ethz.ch/wp-content/uploads/2020/05/2020-05-05-CSZ-Block-Course-CS8-Korali-Tutorial-II.mp4">[Part II]</a>
              </li><br />
             <li>
                 S. Martin, <b>Korali, High-performance Framework for Bayesian Uncertainty Quantification and Optimization</b>. (Technical Talk) CSCS Lugano, December 2019. <a href="https://www.cse-lab.ethz.ch/wp-content/uploads/2019/12/Korali-Talk-CSCS-Lugano-13-12-2019.pdf">[PDF]</a>
@@ -262,7 +256,7 @@ year = {2019}
     
         <h3>Collaborators</h3>
         <ul>
-            <li> Ivica Ki&#269;i &#263; (ETH Z&uuml;rich) </li>
+            <li> Ivica Ki&#269;i&#263; (ETH Z&uuml;rich) </li>
             <li> Lucas Amoudruz (ETH Z&uuml;rich) </li>
             <li> Susanne Keller (ETH Z&uuml;rich)</li>
             <li> Mark Martori (ETH Z&uuml;rich)</li>

@@ -19,7 +19,7 @@ void NeuralNetwork::initialize()
 
 #else
 
-    KORALI_LOG_WARNING("Neural Network's engine set to OneDNN, but Korali was installed without support for OneDNN. Using Korali's default NN Engine\n");
+    _k->_logger->logWarning("Normal", "Neural Network's engine set to OneDNN, but Korali was installed without support for OneDNN. Using Korali's default NN Engine\n");
     _engine = "Korali";
 
 #endif
@@ -33,7 +33,7 @@ void NeuralNetwork::initialize()
 
 #else
 
-    KORALI_LOG_WARNING("Neural Network's engine set to CUDNN, but Korali was installed without support for CUDNN. Using Korali's default NN Engine\n");
+    _k->_logger->logWarning("Normal", "Neural Network's engine set to CUDNN, but Korali was installed without support for CUDNN. Using Korali's default NN Engine\n");
     _engine = "Korali";
 #endif
   }

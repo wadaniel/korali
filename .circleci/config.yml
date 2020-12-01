@@ -32,7 +32,7 @@ jobs:
 
       - run:
           name: Build Config File
-          command: cat .install.config.default | sed -e 's/=NO/=YES/g' -e 's/NJOBS=/NJOBS=8 \#/g' > install.config
+          command: cat .install.config.default | sed -e 's/NJOBS=/NJOBS=8 \#/g' > install.config
           
       - restore_cache:
           keys:
@@ -50,10 +50,6 @@ jobs:
           keys:
             - cache-linux-gsl-v13
             
-      - restore_cache:
-          keys:
-            - cache-linux-oneDNN-v13
-      
       - restore_cache:
           keys:
             - cache-linux-libGP-v13
@@ -98,15 +94,6 @@ jobs:
           paths:
             - "~/korali/external/GSL/install"
       
-      - run:
-          name: Install oneDNN
-          command: ./external/install_oneDNN.sh
-          
-      - save_cache:
-          key: cache-linux-oneDNN-v13
-          paths:
-            - "~/korali/external/oneDNN/install"
-                                  
       - run:
           name: Install LibGP
           command: ./external/install_libGP.sh
@@ -158,10 +145,11 @@ jobs:
                    HOMEBREW_NO_AUTO_UPDATE=1 brew install coreutils;
                    HOMEBREW_NO_AUTO_UPDATE=1 brew install cmake;
                    HOMEBREW_NO_AUTO_UPDATE=1 brew install gsl;
+                   HOMEBREW_NO_AUTO_UPDATE=1 brew install libomp;
    
       - run:
           name: Build Config File
-          command: cat .install.config.default | sed -e 's/NN_LIBRARY=NONE/NN_LIBRARY=OneDNN/g' -e 's/=NO/=YES/g' -e 's/NJOBS=/NJOBS=4 \#/g' > install.config
+          command: cat .install.config.default | sed -e 's/NJOBS=/NJOBS=4 \#/g' > install.config
    
    
       - restore_cache:
@@ -179,10 +167,6 @@ jobs:
       - restore_cache:
           keys:
             - cache-macos-gsl-v13
-            
-      - restore_cache:
-          keys:
-            - cache-macos-oneDNN-v13
             
       - restore_cache:
           keys:
@@ -228,15 +212,6 @@ jobs:
           paths:
             - "~/korali/external/GSL/install"
       
-      - run:
-          name: Install oneDNN
-          command: ./external/install_oneDNN.sh
-          
-      - save_cache:
-          key: cache-macos-oneDNN-v13
-          paths:
-            - "~/korali/external/oneDNN/install"
-                            
       - run:
           name: Install LibGP
           command: ./external/install_libGP.sh

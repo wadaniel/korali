@@ -2,6 +2,7 @@
 #define _KORALI_AGENT_HPP_
 
 #include "auxiliar/cbuffer.hpp"
+#include "auxiliar/kcache.hpp"
 #include "modules/problem/reinforcementLearning/reinforcementLearning.hpp"
 #include "modules/problem/supervisedLearning/supervisedLearning.hpp"
 #include "modules/solver/learner/deepSupervisor/deepSupervisor.hpp"
@@ -12,42 +13,91 @@ namespace korali
 {
 namespace solver
 {
+/**
+* @brief This enumerator details all possible termination statuses for a given episode's experience
+*/
+enum termination_t
+{
+  /**
+  * @brief The experience is non-terminal
+  */
+  e_nonTerminal = 0,
+
+  /**
+   * @brief This is the terminal experience in a normally executed episode
+   */
+  e_terminal = 1,
+
+  /**
+   * @brief This is the terminal experience in a truncated episode
+   *        (i.e., should have continued, but it was artificially truncated to limit running time)
+   */
+  e_truncated = 2
+};
+
+/**
+* @brief Structure to store all relevant information about an agent's experience within a given episode
+*/
+struct experience_t
+{
+  /**
+  * @brief Stores the state of the experience
+  */
+  std::vector<float> state;
+
+  /**
+   * @brief Stores the actiont aken by the agent at the given state
+   */
+  std::vector<float> action;
+
+  /**
+   * @brief Contains the reward of the state/action pair
+   */
+  float reward;
+
+  /**
+   * @brief Contains priority of the experience (for minibatch selection)
+   */
+  float priority;
+
+  /**
+   * @brief Contains probability of selecting the experience (for minibatch selection)
+   */
+  float probability;
+
+  /**
+   * @brief Specifies whether the experience is terminal (truncated or normal) or not.
+   */
+  termination_t termination;
+
+  /**
+   * @brief If this is a truncated terminal experience, the truncated state is also saved here
+   */
+  std::vector<float> truncatedState;
+
+  /**
+   * @brief Contains information about the policy used to generate the action
+   */
+  knlohmann::json policy;
+
+  /**
+   * @brief Contains any additional necessary information about the experience
+   */
+  knlohmann::json metadata;
+
+  /**
+   * @brief Provides a cached repository for pre-calculated values. Allows for expiration threshold.
+   */
+  kCache<std::string, float, size_t> cache;
+};
+
 class Agent : public Solver
 {
   public:
   /**
   * @brief Stores experience replay states.
   */
-  cBuffer<std::vector<float>> _experienceReplayStates;
-  /**
-  * @brief Stores experience replay actions.
-  */
-  cBuffer<std::vector<float>> _experienceReplayActions;
-
-  /**
-  * @brief Stores experience replay rewards.
-  */
-  cBuffer<float> _experienceReplayRewards;
-
-  /**
-  * @brief Stores whether the experience is terminal .
-  */
-  cBuffer<int> _experienceReplayTerminal;
-
-  /**
-  * @brief Stores the priority of the experience.
-  */
-  cBuffer<float> _experienceReplayPriorities;
-
-  /**
-  * @brief Stores the priority of the experience.
-  */
-  cBuffer<float> _experienceReplayProbabilities;
-
-  /**
-  * @brief Stores the priority of the experience.
-  */
-  float _experienceReplayMaxPriority;
+  cBuffer<experience_t> _experienceReplay;
 
   /**
   * @brief Stores the priority annealing rate.
@@ -80,19 +130,14 @@ class Agent : public Solver
   float _randomActionProbabilityEffectiveValue;
 
   /**
-  * @brief Storage for the cache for the qRet value of the next experience
+  * @brief [Profiling] Measures the amount of time taken by agent startup
   */
-  std::vector<float> _qRetNextCache;
+  double _agentStartTime;
 
   /**
-   * @brief Storage for the cache for the qOpc value of the next experience
-   */
-  std::vector<float> _qOpcNextCache;
-
-  /**
-   * @brief Storage for the age of each element of the retrace cache
-   */
-  std::vector<ssize_t> _qCacheAge;
+  * @brief [Profiling] Measures the amount of time taken by agent waiting
+  */
+  double _agentWaitTime;
 
   /**
   * @brief Trains the Agent's critic/policy, based on the new experiences
@@ -146,7 +191,7 @@ class Agent : public Solver
   * @brief Handles the addition of experience information to the replay memory and other management operations
   * @param experience The experience to process
   */
-  virtual void processExperience(knlohmann::json &experience);
+  void processExperience(knlohmann::json &experience);
 
   /**
   * @brief Updates priority of experience.
@@ -181,6 +226,7 @@ class Agent : public Solver
 
   void printGenerationAfter() override;
   void initialize() override;
+  void finalize() override;
 };
 
 } // namespace solver

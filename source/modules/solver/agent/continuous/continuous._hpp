@@ -1,6 +1,7 @@
 #ifndef _KORALI_AGENT_CONTINUOUS_HPP_
 #define _KORALI_AGENT_CONTINUOUS_HPP_
 
+#include "modules/distribution/univariate/beta/beta.hpp"
 #include "modules/problem/reinforcementLearning/continuous/continuous.hpp"
 #include "modules/solver/agent/agent.hpp"
 
@@ -13,30 +14,6 @@ namespace agent
 class Continuous : public Agent
 {
   public:
-  /**
- * @brief Stores experience replay action probability gaussian means.
- */
-  cBuffer<std::vector<float>> _experienceReplayActionMeans;
-  /**
- * @brief Stores experience replay action probability gaussian standard deviations.
- */
-  cBuffer<std::vector<float>> _experienceReplayActionSigmas;
-
-  /**
-  * @brief Vector with inverse variance for the action variables
-  */
-  std::vector<float> _inverseVariances;
-
-  /**
-  * @brief Vector with means for the action variables
-  */
-  std::vector<float> _actionMeans;
-
-  /**
-  * @brief Vector with exploration standard deviation for the action variables
-  */
-  std::vector<float> _actionSigmas;
-
   /**
  * @brief Storage for the pointer to the (continuous) learning problem
  */
@@ -54,13 +31,39 @@ class Continuous : public Agent
   float calculateImportanceWeight(const std::vector<float> &action, const std::vector<float> &curMeans, const std::vector<float> &curSigmas, const std::vector<float> &oldMeans, const std::vector<float> &oldSigmas);
 
   /**
-  * @brief Function to pass state through the NN and prepares the Gaussian means and sigmas of the actions (updates members _actionMeans and _actionSigmas)
+   * @brief Calculates the gradient of KL(p_old, p_cur) wrt to the parameter of the 2nd (current) distribution.
+   * @param oldParamsOne old means for Normal distribution, alpha for Beta distribution
+   * @param oldParamsTwo old sigmas for Normal distribution, beta for Beta distribution
+   * @param curParamsOne cur means for Normal distribution, alpha for Beta distribution
+   * @param curParamsTwo cur sigmas for Normal distribution, beta for Beta distribution
+   * @return gradient of KL wrt curParamsOne and curParamsTwo
+   */
+  std::vector<float> calculateKLDivergenceGradient(const std::vector<float> &oldParamsOne, const std::vector<float> &oldParamsTwo, const std::vector<float> &curParamsOne, const std::vector<float> &curParamsTwo);
+
+  /**
+  * @brief Function to pass state through the NN and prepares the Gaussian means and sigmas of the actions, along with any additional information
   * @param state The current state
+  * @return A JSON object containing the information produced by the policy given the current state
   */
-  virtual void forwardPolicy(const std::vector<float> &state) = 0;
+  virtual knlohmann::json runPolicy(const std::vector<float> &state) = 0;
+
+  /**
+  * @brief Function to generate randomized actions from neural network output.
+  * @param curMeans parameter vector for policy distribution
+  * @param curSigmas parameter vector for policy distribution
+  * @return An action vector
+  */
+  std::vector<float> generateTrainingAction(const std::vector<float> &curMeans, const std::vector<float> &curSigmas);
+
+  /**
+  * @brief Function to generate deterministic actions from neural network output required for policy evaluation, respectively testing.
+  * @param curMeans parameter vector for policy distribution
+  * @param curSigmas parameter vector for policy distribution
+  * @return An action vector
+  */
+  std::vector<float> generateTestingAction(const std::vector<float> &curMeans, const std::vector<float> &curSigmas);
 
   virtual void getAction(korali::Sample &sample) override;
-  virtual void processExperience(knlohmann::json &experience) override;
   virtual void initializeAgent();
 };
 

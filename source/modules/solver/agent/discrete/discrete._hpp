@@ -14,15 +14,6 @@ class Discrete : public Agent
 {
   public:
   /**
- * @brief Stores experience replay action indexes.
- */
-  cBuffer<size_t> _experienceReplayActionIndexes;
-  /**
- * @brief Stores experience replay action probability densities.
- */
-  cBuffer<std::vector<float>> _experienceReplayActionProbabilities;
-
-  /**
  * @brief Storage for the pointer to the (discrete) learning problem
  */
   problem::reinforcementLearning::Discrete *_problem;
@@ -44,7 +35,6 @@ class Discrete : public Agent
   float calculateImportanceWeight(const size_t actionIdx, const std::vector<float> &curProbabilities, const std::vector<float> &oldProbabilities);
 
   void getAction(korali::Sample &sample) override;
-  void processExperience(knlohmann::json &experience) override;
   virtual void initializeAgent();
 };
 

@@ -46,7 +46,8 @@ void __environmentWrapper()
 
   sample->run(__envFunctionId);
 
-  (*sample)["Is Terminal"] = true;
+  if ((*sample)["Termination"] == "Non Terminal")
+    KORALI_LOG_ERROR("Environment function terminated, but sample termination status (success or truncated) was not set.\n");
 
   co_switch(sample->_workerThread);
 
@@ -55,8 +56,12 @@ void __environmentWrapper()
 
 void ReinforcementLearning::runEpisode(Sample &sample)
 {
+  /***************************************************************
+   * Environment Configuration section
+   ***************************************************************/
+
   // Getting RL-compatible solver
-  _agent = dynamic_cast<solver::Agent *>(_k->_solver);
+  auto _agent = dynamic_cast<solver::Agent *>(_k->_solver);
 
   // First, we update the initial policy's hyperparameters
   _agent->updateAgentPolicy(sample.globals()["Hyperparameters"]);
@@ -66,9 +71,6 @@ void ReinforcementLearning::runEpisode(Sample &sample)
   __envFunctionId = _environmentFunction;
   sample._workerThread = co_active();
   auto envThread = co_create(1 << 28, __environmentWrapper);
-
-  // Getting first state
-  co_switch(envThread);
 
   // Action Repeat Counter
   size_t actionLastUpdated = 0;
@@ -83,15 +85,23 @@ void ReinforcementLearning::runEpisode(Sample &sample)
   knlohmann::json experience;
   experience["Sample Id"] = sample["Sample Id"];
 
-  // Clearing sample metadata in case we need it
-  sample["Metadata"] = knlohmann::json();
-
   // Storage to keep track of cumulative reward
   float cumulativeReward = 0.0;
 
+  /***************************************************************
+  * Environment Execution section
+  ***************************************************************/
+
+  // Setting termination status of initial state (and the following ones) to non terminal.
+  // The environment will change this at the last state, indicating whether the episode was
+  // "Success" or "Truncated".
+  sample["Termination"] = "Non Terminal";
+
+  // Getting first state
+  co_switch(envThread);
+
   // Saving experiences
-  sample["Is Terminal"] = false;
-  while (sample["Is Terminal"] == false)
+  while (sample["Termination"] == "Non Terminal")
   {
     // Requesting new action, if enough steps have passed, given by the action repeat parameter
     if (actionLastUpdated == 0)
@@ -111,11 +121,8 @@ void ReinforcementLearning::runEpisode(Sample &sample)
     // Storing the current action
     experience["Action"] = sample["Action"];
 
-    // Storing any necesary metadata
-    experience["Metadata"] = sample["Metadata"];
-
-    // Storing whether this experience was terminal or not
-    experience["Is Terminal"] = false;
+    // Storing the experience's policy
+    experience["Policy"] = sample["Policy"];
 
     // Jumping back into the _agent's environment
     co_switch(envThread);
@@ -123,8 +130,11 @@ void ReinforcementLearning::runEpisode(Sample &sample)
     // Storing experience's reward
     experience["Reward"] = sample["Reward"];
 
-    // Storing whether the experience is terminal
-    experience["Is Terminal"] = sample["Is Terminal"];
+    // Storing termination status
+    experience["Termination"] = sample["Termination"];
+
+    // If the episode was truncated, then save the terminal state
+    if (sample["Termination"] == "Truncated") experience["Truncated State"] = sample["State"];
 
     // Adding to cumulative reward
     cumulativeReward += sample["Reward"].get<float>();

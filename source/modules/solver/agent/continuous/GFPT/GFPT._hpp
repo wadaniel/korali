@@ -17,14 +17,9 @@ class GFPT : public Continuous
 {
   public:
   /**
-   * @brief A neural network for the inference of the averaged advantage function
+   * @brief A neural network for the simultaneous evaluation of CMAES candidates (one per thread)
    */
-  NeuralNetwork *_actionAverageEvaluationNetwork;
-
-  /**
-   * @brief A neural network for the simultaneous evaluation of CMAES candidates
-   */
-  NeuralNetwork *_batchOptimizationNetwork;
+  std::vector<NeuralNetwork *> _batchOptimizationNetworks;
 
   /**
    * @brief Pointer to training experiment's V(s) problem
@@ -57,9 +52,9 @@ class GFPT : public Continuous
   korali::Experiment _aExperiment;
 
   /**
-   * @brief Korali optimizer for finding the optimal action as per the critic
+   * @brief Korali optimizer for finding the optimal action as per the critic. One instance per parallel thread.
    */
-  korali::fCMAES *_actionOptimizer;
+  std::vector<korali::fCMAES *> _actionOptimizers;
 
   /**
   * @brief Korali experiment for argmax_action(Q) based on a trained Q-Network
@@ -75,6 +70,16 @@ class GFPT : public Continuous
    * @brief Pointer to actor's experiment problem
    */
   problem::SupervisedLearning *_policyProblem;
+
+  /**
+  * @brief [Profiling] Measures the amount of time taken by critic updates
+  */
+  double _criticUpdateTime;
+
+  /**
+   * @brief [Profiling] Measures the amount of time taken by policy updates
+   */
+  double _policyUpdateTime;
 
   /**
    * @brief Calculates the state value function V(s,a)
@@ -93,10 +98,12 @@ class GFPT : public Continuous
 
   /**
    * @brief Returns the average advantage value of all actions given the state
+   * @param curMeans Means of the current policy
+   * @param curSigmas Standard deviations of the current policy
    * @param state State to evaluate
    * @return The average advantage value
    */
-  float averageActionAdvantageFunction(const std::vector<float> &state);
+  float averageActionAdvantageFunction(const std::vector<float> &curMeans, const std::vector<float> &curSigmas, const std::vector<float> &state);
 
   /**
    * @brief Returns the best action: that with highest advantage for the given state
@@ -112,7 +119,8 @@ class GFPT : public Continuous
    */
   float retraceFunction(size_t expId);
 
-  void forwardPolicy(const std::vector<float> &state) override;
+  knlohmann::json runPolicy(const std::vector<float> &state) override;
+
   void updateAgentPolicy(const knlohmann::json &hyperparameters) override;
   void trainAgent() override;
   void printAgentInformation() override;

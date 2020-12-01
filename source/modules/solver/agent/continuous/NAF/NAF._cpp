@@ -119,9 +119,9 @@ void NAF::trainAgent()
     size_t expId = miniBatchIndexes[i];
 
     // Access experiences
-    auto curState = _experienceReplayStates[expId];
-    auto curAction = _experienceReplayActions[expId];
-    float yHat = _experienceReplayRewards[expId];
+    auto curState = _experienceReplay[expId].state;
+    auto curAction = _experienceReplay[expId].action;
+    float yHat = _experienceReplay[expId].reward;
 
     // Evaluate Q
     auto qEvaluation = _qLearner->getEvaluation(curState);
@@ -138,10 +138,10 @@ void NAF::trainAgent()
     // yHat* = r + gamma*V(s) -- If not terminal state
 
     // If state is not terminal (next state is filled) then add Qnew to the Q value.
-    if (_experienceReplayTerminal[expId] == false)
+    if (_experienceReplay[expId].termination == e_nonTerminal)
     {
       // Getting experience's next state
-      auto nextState = _experienceReplayStates[expId + 1];
+      auto nextState = _experienceReplay[expId + 1].state;
 
       // Calculate target y
       float vHat = _criticLearner->getEvaluation(nextState)[0];
@@ -221,17 +221,25 @@ void NAF::updateAgentPolicy(const knlohmann::json &hyperparameters)
   _qLearner->setHyperparameters(hyperparameters["Critic"].get<std::vector<float>>());
 }
 
-void NAF::forwardPolicy(const std::vector<float> &state)
+knlohmann::json NAF::runPolicy(const std::vector<float> &state)
 {
   auto qNNoutput = _qLearner->getEvaluation(state);
 
   // Transforming NN output to receive mu and diagonal of P
-  for (size_t i = 0; i < _actionMeans.size(); ++i)
+  std::vector<float> actionMeans(_problem->_actionVectorSize);
+  std::vector<float> actionSigmas(_problem->_actionVectorSize);
+
+  for (size_t i = 0; i < _problem->_actionVectorSize; ++i)
   {
     // mapping mean to [lowerbound, upperbound]
-    _actionMeans[i] = 0.5 * _actionScalings[i] * (std::tanh(qNNoutput[1 + i]) + 1.0) + _actionLowerBounds[i];
-    _actionSigmas[i] = std::sqrt(_covarianceScaling * _actionScalings[i]) * std::exp(-1.0 * std::tanh(qNNoutput[i + 1 + _actionMeans.size()]));
+    actionMeans[i] = 0.5 * _actionScalings[i] * (std::tanh(qNNoutput[1 + i]) + 1.0) + _actionLowerBounds[i];
+    actionSigmas[i] = std::sqrt(_covarianceScaling * _actionScalings[i]) * std::exp(-1.0 * std::tanh(qNNoutput[i + 1 + _problem->_actionVectorSize]));
   }
+
+  knlohmann::json policy;
+  policy["Action Means"] = actionMeans;
+  policy["Action Sigmas"] = actionSigmas;
+  return policy;
 }
 
 float NAF::quadraticAdvantageFunction(const std::vector<float> &action, const std::vector<float> &qEvaluation)

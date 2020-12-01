@@ -101,10 +101,6 @@ float DDPG::stateActionValueFunction(const std::vector<float> &state, const std:
 
 void DDPG::trainAgent()
 {
-  // Creating storage for state history indexes to choose from
-  std::vector<size_t> experienceReplayIndexes(_experienceReplayStates.size());
-  for (size_t i = 0; i < _experienceReplayStates.size() - 1; i++) experienceReplayIndexes[i] = i;
-
   /***************************************************************************************
   * Updating Critic Network
   ***************************************************************************************/
@@ -121,23 +117,28 @@ void DDPG::trainAgent()
     size_t expId = miniBatchIndexes[i];
 
     // Check if it is a terminal state
-    bool isTerminal = _experienceReplayTerminal[expId];
+    bool isTerminal = _experienceReplay[expId].termination != e_nonTerminal;
 
     // Getting experience's current state and action
-    std::vector<float> curState = _experienceReplayStates[expId];
-    std::vector<float> curAction = _experienceReplayActions[expId];
-    std::vector<float> nextState = isTerminal ? std::vector<float>() : _experienceReplayStates[expId + 1];
+    std::vector<float> curState = _experienceReplay[expId].state;
+    std::vector<float> curAction = _experienceReplay[expId].action;
+    std::vector<float> nextState = isTerminal ? std::vector<float>() : _experienceReplay[expId + 1].state;
     std::vector<float> bestAction;
+
     if (isTerminal)
       bestAction = std::vector<float>();
     else
     {
-      forwardPolicy(nextState);
-      bestAction = _actionMeans;
+      // Updating action distributions for the current state
+      auto policy = runPolicy(curState);
+      auto curMeans = policy["Action Means"].get<std::vector<float>>();
+      auto curSigmas = policy["Action Sigmas"].get<std::vector<float>>();
+
+      bestAction = curMeans;
     }
 
     // Getting current reward
-    float curReward = _experienceReplayRewards[expId];
+    float curReward = _experienceReplay[expId].reward;
 
     /*****************************************
     * Critic Section
@@ -163,13 +164,6 @@ void DDPG::trainAgent()
   _criticLearner->runGeneration();
   _criticLearner->finalize();
 
-  // Normalizing Critic Network
-  normalizeStateActionNeuralNetwork(_criticLearner->_trainingNeuralNetwork, _criticMiniBatchSize, _criticNormalizationSteps);
-
-  // Updating Policy and critic inference hyperparameters
-  auto criticHyperparameters = _criticLearner->getHyperparameters();
-  _criticLearner->setHyperparameters(criticHyperparameters);
-
   // Keeping critic statistics
   _averageQStar = (float)_cumulativeQStar / (float)(_criticMiniBatchSize);
 
@@ -186,8 +180,8 @@ void DDPG::trainAgent()
     size_t expId = miniBatchIndexes[i];
 
     // Getting experience's current state and action
-    std::vector<float> curState = _experienceReplayStates[expId];
-    std::vector<float> curAction = _experienceReplayActions[expId];
+    std::vector<float> curState = _experienceReplay[expId].state;
+    std::vector<float> curAction = _experienceReplay[expId].action;
 
     // Storage to put together state and action
     std::vector<float> stateActionInput = curState;
@@ -213,9 +207,6 @@ void DDPG::trainAgent()
   _policyLearner->runGeneration();
   _policyLearner->finalize();
 
-  // Normalizing Policy Network
-  normalizeStateNeuralNetwork(_policyLearner->_trainingNeuralNetwork, _policyMiniBatchSize, _policyNormalizationSteps);
-
   // Softly adopting the new critic parameters, using the adoption rate
   auto newPolicyHyperparameters = _policyLearner->getHyperparameters();
   for (size_t i = 0; i < newPolicyHyperparameters.size(); i++)
@@ -226,9 +217,26 @@ void DDPG::trainAgent()
   _hyperparameters["Policy"] = newPolicyHyperparameters;
 }
 
-void DDPG::forwardPolicy(const std::vector<float> &state)
+knlohmann::json DDPG::runPolicy(const std::vector<float> &state)
 {
-  _actionMeans = _policyLearner->getEvaluation({state});
+  auto eval = _policyLearner->getEvaluation({state});
+
+  std::vector<float> actionMeans(_problem->_actionVectorSize);
+  std::vector<float> actionSigmas(_problem->_actionVectorSize);
+
+  for (size_t i = 0; i < _problem->_actionVectorSize; ++i)
+  {
+    auto varIdx = _problem->_actionVectorIndexes[i];
+    float sigma = _k->_variables[varIdx]->_explorationSigma;
+
+    actionMeans[i] = eval[i];
+    actionSigmas[i] = sigma;
+  }
+
+  knlohmann::json policy;
+  policy["Action Means"] = actionMeans;
+  policy["Action Sigmas"] = actionSigmas;
+  return policy;
 }
 
 void DDPG::updateAgentPolicy(const knlohmann::json &hyperparameters)

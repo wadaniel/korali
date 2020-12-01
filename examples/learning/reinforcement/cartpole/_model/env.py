@@ -20,8 +20,8 @@ def env(s):
   s.update()
   
   # Performing the action
-  #print(s["Action"]) 
   done = cart.advance(s["Action"])
+  #print(s["Action"]) 
   
   # Getting Reward
   s["Reward"] = cart.getReward()
@@ -31,3 +31,9 @@ def env(s):
   
   # Advancing step counter
   step = step + 1
+
+ # Setting finalization status
+ if (cart.isOver()):
+  s["Termination"] = "Terminal"
+ else:
+  s["Termination"] = "Truncated"

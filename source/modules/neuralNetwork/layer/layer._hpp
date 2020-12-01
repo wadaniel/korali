@@ -1,6 +1,9 @@
 #ifndef _KORALI_LAYER_HPP_
 #define _KORALI_LAYER_HPP_
 
+#include "modules/distribution/univariate/uniform/uniform.hpp"
+#include "modules/module.hpp"
+
 #ifdef _KORALI_USE_ONEDNN
   #include "dnnl.hpp"
 #endif
@@ -9,9 +12,6 @@
   #include <cuda.h>
   #include <cudnn.h>
 #endif
-
-#include "modules/distribution/univariate/uniform/uniform.hpp"
-#include "modules/module.hpp"
 
 namespace korali
 {
@@ -26,10 +26,6 @@ class Layer : public Module
    * @brief Index of the current layer within the NN
   */
   size_t _index;
-
-  /********************************************************
-  * Relevant pointers declaration
-  *******************************************************/
 
   /**
    * @brief Pointer to the parent neural network
@@ -46,372 +42,359 @@ class Layer : public Module
    */
   Layer *_nextLayer;
 
-  /********************************************************
-   * Hyperparameter counts
-   *******************************************************/
-
   /**
-   * @brief Number of NN hyperparameters (weights/bias)
-   */
-  size_t _weightParameterCount;
-
-  /**
-   * @brief Number of normalization parameters (mean/variance)
-   */
-  size_t _normalizationParameterCount;
+  * @brief Number of NN hyperparameters (weights/bias)
+  */
+  size_t _hyperparameterCount;
 
   /********************************************************
-  * oneDNN Layers's Memory Structures for Forward Propagation
+  * Engine specific members
   *******************************************************/
+
+#ifdef _KORALI_USE_EIGEN
+
+  /**
+ * @brief Contains the input values to the layer
+ */
+  float *_inputValues;
+
+  /**
+ * @brief Contains the gradients of the inputs to the layer
+ */
+  float *_inputDiff;
+
+  /**
+ * @brief Contains the output values of the layer
+ */
+  float *_outputValues;
+
+  /**
+ * @brief Contains the gradients of the outputs of the layer
+ */
+  float *_outputDiff;
+
+  /**
+ * @brief Contains the values of the weights
+ */
+  float *_weightValues;
+
+  /**
+* @brief Contains the gradients of the weights
+*/
+  float *_weightDiff;
+
+  /**
+ * @brief Contains the values of the bias
+ */
+  float *_biasValues;
+
+  /**
+ * @brief Contains the gradients of the bias
+ */
+  float *_biasDiff;
+
+#endif
 
 #ifdef _KORALI_USE_ONEDNN
 
+  /********************************************************
+ * oneDNN Layers's Memory Structures for Forward Propagation
+ *******************************************************/
+
   /**
-   * @brief oneDNN Memory object descriptor to contain the result value of inner product (Wx+b) operation
-   */
+  * @brief oneDNN Memory object descriptor to contain the result value of inner product (Wx+b) operation
+  */
   dnnl::memory _nodeMem;
 
   /**
-   * @brief oneDNN Memory object descriptor to contain the result value of applying the activation function on incoming data
-   */
+  * @brief oneDNN Memory object descriptor to contain the result value of applying the activation function on incoming data
+  */
   dnnl::memory _activationMem;
 
   /**
-   * @brief oneDNN Memory object descriptor to contain the result value of inner product (Wx+b) operation
-   */
-  dnnl::memory _batchNormalizationWorkMem;
-
-  /**
-   * @brief oneDNN Memory object descriptor to contain the result value of inner product (Wx+b) operation
-   */
-  dnnl::memory _batchNormalizationMem;
-
-  /**
-   * @brief oneDNN Memory object descriptor to contain the weights of inner product with incoming channels
-   */
+  * @brief oneDNN Memory object descriptor to contain the weights of inner product with incoming channels
+  */
   dnnl::memory _weightsMem;
 
   /**
-   * @brief oneDNN Memory object descriptor to contain the bias to add to incoming channels
-   */
+  * @brief oneDNN Memory object descriptor to contain the bias to add to incoming channels
+  */
   dnnl::memory _biasMem;
 
   /********************************************************
-  * Declaring Layers's Memory Structures for Gradients
-  *******************************************************/
+ * Declaring Layers's Memory Structures for Gradients
+ *******************************************************/
 
   /**
-   * @brief oneDNN Memory object descriptor to contain the gradient of the weights
-   */
+  * @brief oneDNN Memory object descriptor to contain the gradient of the weights
+  */
   dnnl::memory _weightsDiffMem;
 
   /**
-   * @brief oneDNN Memory object descriptor to contain the gradient of the biases
-   */
+  * @brief oneDNN Memory object descriptor to contain the gradient of the biases
+  */
   dnnl::memory _biasDiffMem;
 
   /**
-   * @brief oneDNN Gradient of the data at the inner product (Wx+b) stage
-   */
+  * @brief oneDNN Gradient of the data at the inner product (Wx+b) stage
+  */
   dnnl::memory _nodeDiffMem;
 
   /*
-  * @brief oneDNN Gradient of the data at the normalization stage
-  */
-  dnnl::memory _batchNormalizationDiffMem;
-
-  /*
-  * @brief oneDNN Gradients of the operation wrt to activation function
-  */
+ * @brief oneDNN Gradients of the operation wrt to activation function
+ */
   dnnl::memory _activationDiffMem;
 
-  /*
-   * @brief oneDNN Gradients of the operation wrt to the layer normalization function
-   */
-  dnnl::memory _batchNormalizationScaleShiftDiffMem;
-
   /*****************************************************************
-   * Declaring Layers's Forward Propagation Normalization
-   ******************************************************************/
-
-  /*
-   * @brief oneDNN Stores the mean of the normalized batch on this node
-   */
-  dnnl::memory _batchNormalizationMeanMem;
-
-  /*
-   * @brief oneDNN Stores the variance of the normalized batch on this node
-   */
-  dnnl::memory _batchNormalizationVarianceMem;
-
-  /*
-   * @brief oneDNN Provides the scale/shift values for each channel in the layer
-   */
-  dnnl::memory _batchNormalizationScaleShiftMem;
+ * Declaring Layers's Forward Activation Function Primitive Configuration
+ ******************************************************************/
 
   /**
-   * @brief oneDNN Arguments to the layer normalization operation
-   */
-  std::unordered_map<int, dnnl::memory> _forwardNormalizationArgs;
-
-  /**
-   * @brief oneDNN primitive attributes that describe the forward normalization operation
-   */
-  dnnl::batch_normalization_forward::primitive_desc _forwardNormalizationPrimitiveDesc;
-
-  /**
-  * @brief oneDNN primitive to perform forward layer normalization
+  * @brief oneDNN Algorithm chosen for activation function
   */
-  dnnl::primitive _forwardNormalizationPrimitive;
-
-  /*****************************************************************
-  * Declaring Layers's Forward Activation Function Primitive Configuration
-  ******************************************************************/
-
-  /**
-   * @brief oneDNN Algorithm chosen for activation function
-   */
   dnnl::algorithm _activationAlgorithm;
 
   /**
-   * @brief oneDNN Arguments to the activation function
-   */
+  * @brief oneDNN Arguments to the activation function
+  */
   std::unordered_map<int, dnnl::memory> _forwardActivationArgs;
 
   /**
-   * @brief oneDNN primitive attributes that describe a softmax activation function
-   */
+  * @brief oneDNN primitive attributes that describe a softmax activation function
+  */
   dnnl::softmax_forward::primitive_desc _forwardSoftmaxActivationPrimitiveDesc;
 
   /**
-   * @brief oneDNN primitive attributes that describe an element-wise activation function
-   */
+  * @brief oneDNN primitive attributes that describe an element-wise activation function
+  */
   dnnl::eltwise_forward::primitive_desc _forwardEltwiseActivationPrimitiveDesc;
 
   /**
-   * @brief oneDNN primitive to run the activation function operation
-   */
+  * @brief oneDNN primitive to run the activation function operation
+  */
   dnnl::primitive _forwardActivationPrimitive;
 
   /*****************************************************************
-   * Declaring Layers's Forward Inner Product Primitive Configuration
-   ******************************************************************/
+  * Declaring Layers's Forward Inner Product Primitive Configuration
+  ******************************************************************/
 
   /**
-   * @brief oneDNN Arguments to the inner product operation
-   */
+  * @brief oneDNN Arguments to the inner product operation
+  */
   std::unordered_map<int, dnnl::memory> _forwardInnerProductArgs;
 
   /**
-   * @brief oneDNN primitive attributes that describe the full forward propagation primitive
-   */
+  * @brief oneDNN primitive attributes that describe the full forward propagation primitive
+  */
   dnnl::inner_product_forward::primitive_desc _forwardInnerProductPrimitiveDesc;
 
   /**
-   * @brief oneDNN primitive to run the inner product + bias addition operation
-   */
+  * @brief oneDNN primitive to run the inner product + bias addition operation
+  */
   dnnl::primitive _forwardInnerProductPrimitive;
 
   /*****************************************************************
-   * Declaring Layers's Backward Propagation Configuration
-   ******************************************************************/
+  * Declaring Layers's Backward Propagation Configuration
+  ******************************************************************/
 
   /**
-   * @brief oneDNN Arguments for the backward propagation of the gradient wrt activation functions
-   */
+  * @brief oneDNN Arguments for the backward propagation of the gradient wrt activation functions
+  */
   std::unordered_map<int, dnnl::memory> _backwardActivationArgs;
 
   /**
-   * @brief oneDNN primitive for the backward propagation of the gradient wrt activation functions
-   */
+  * @brief oneDNN primitive for the backward propagation of the gradient wrt activation functions
+  */
   dnnl::primitive _backwardActivationPrimitive;
 
   /**
-   * @brief oneDNN Arguments for the backward propagation of the gradient wrt Data
-   */
+  * @brief oneDNN Arguments for the backward propagation of the gradient wrt Data
+  */
   std::unordered_map<int, dnnl::memory> _backwardDataArgs;
 
   /**
-   * @brief oneDNN primitive for the backward propagation of the gradient wrt Data
-   */
+  * @brief oneDNN primitive for the backward propagation of the gradient wrt Data
+  */
   dnnl::primitive _backwardDataPrimitive;
 
   /**
-   * @brief oneDNN Arguments for the backward propagation of the gradient wrt Weights and Biases
-   */
+  * @brief oneDNN Arguments for the backward propagation of the gradient wrt Weights and Biases
+  */
   std::unordered_map<int, dnnl::memory> _backwardWeightsArgs;
 
   /**
-   * @brief oneDNN primitive for the backward propagation of the gradient wrt Weights and Biases
-   */
+  * @brief oneDNN primitive for the backward propagation of the gradient wrt Weights and Biases
+  */
   dnnl::primitive _backwardWeightsPrimitive;
-
-  /**
-   * @brief oneDNN Arguments for the backward propagation of the gradient wrt normalization
-   */
-  std::unordered_map<int, dnnl::memory> _backwardNormalizationArgs;
-
-  /**
-   * @brief oneDNN primitive for the backward propagation of the gradient wrt normalization
-   */
-  dnnl::primitive _backwardNormalizationPrimitive;
 
 #endif
 
 #ifdef _KORALI_USE_CUDNN
 
   /**
-   * @brief cuDNN Descriptor for the node (layer) tensor memory
-   */
+  * @brief cuDNN Descriptor for the node (layer) tensor memory
+  */
   cudnnTensorDescriptor_t _nodeTensorDesc;
 
   /**
-   * @brief cuDNN Device memory pointer for the node tensor
-   */
+  * @brief cuDNN Device memory pointer for the node tensor
+  */
   void *_nodeTensor;
 
   /**
-   * @brief cuDNN Device memory pointer for the node gradients tensor
-   */
+  * @brief cuDNN Device memory pointer for the node gradients tensor
+  */
   void *_nodeDiffTensor;
 
   /**
-   * @brief cuDNN Descriptor for the filter weights
-   */
+  * @brief cuDNN Descriptor for the filter weights
+  */
   cudnnFilterDescriptor_t _weightsFilterDesc;
 
   /**
-   * @brief cuDNN Device memory pointer for the filter weights
-   */
+  * @brief cuDNN Device memory pointer for the filter weights
+  */
   void *_weightsFilter;
 
   /**
-   * @brief cuDNN Device memory pointer for the filter weights gradients
-   */
+  * @brief cuDNN Device memory pointer for the filter weights gradients
+  */
   void *_weightsDiffFilter;
 
   /**
-   * @brief cuDNN Descriptor for the bias memory
-   */
+  * @brief cuDNN Descriptor for the bias memory
+  */
   cudnnTensorDescriptor_t _biasTensorDesc;
 
   /**
-   * @brief cuDNN Device memory pointer for the bias tensor
-   */
+  * @brief cuDNN Device memory pointer for the bias tensor
+  */
   void *_biasTensor;
 
   /**
-   * @brief cuDNN Device memory pointer for the bias gradients
-   */
+  * @brief cuDNN Device memory pointer for the bias gradients
+  */
   void *_biasDiffTensor;
 
   /**
-   * @brief cuDNN Descriptor for the convolution operation
-   */
+  * @brief cuDNN Descriptor for the convolution operation
+  */
   cudnnConvolutionDescriptor_t _convolutionDesc;
 
   /**
-   * @brief cuDNN Placeholder for the convolution workspace size (bytes)
-   */
+  * @brief cuDNN Placeholder for the convolution workspace size (bytes)
+  */
   size_t _convolutionWorkspaceSize;
 
   /**
-   * @brief cuDNN Device memory pointer for the convolution workspace
-   */
+  * @brief cuDNN Device memory pointer for the convolution workspace
+  */
   void *_convolutionWorkspace;
 
   /**
-   * @brief cuDNN Descriptor for the activation function
-   */
+  * @brief cuDNN Descriptor for the activation function
+  */
   cudnnActivationDescriptor_t _activationDesc;
 
   /**
-   * @brief cuDNN Device memory pointer for the activation result tensor
-   */
+  * @brief cuDNN Device memory pointer for the activation result tensor
+  */
   void *_activationTensor;
 
   /**
-   * @brief cuDNN Device memory pointer for the activation gradients tensor
-   */
-  void *_activationDiffTensor;
-
-  /**
-   * @brief cuDNN Descriptor for the derived batch normalization memory
-   */
-  cudnnTensorDescriptor_t _batchNormalizationDerivedTensorDesc;
-
-  /**
-   * @brief cuDNN Device memory pointer for the batch normalization result tensor
-   */
-  void *_batchNormalizationTensor;
-
-  /**
-   * @brief cuDNN Device memory pointer for the batch normalization gradient tensor
-   */
-  void *_batchNormalizationDiffTensor;
-
-  /**
-   * @brief cuDNN Device memory pointer for the batch normalization means tensor
-   */
-  void *_batchNormalizationMeanTensor;
-
-  /**
-   * @brief cuDNN Device memory pointer for the batch normalization variance tensor
-   */
-  void *_batchNormalizationVarianceTensor;
-
-  /**
-   * @brief cuDNN Optional internal cache for the batch normalization mean tensor
-   */
-  void *_batchNormalizationMeanTensorCache;
-
-  /**
-   * @brief cuDNN Optional internal cache for the batch normalization variance tensor
-   */
-  void *_batchNormalizationVarianceTensorCache;
-
-  /**
-   * @brief cuDNN Device memory pointer for the batch normalization shift tensor
-   */
-  void *_batchNormalizationShiftTensor;
-
-  /**
-  * @brief cuDNN Device memory pointer for the batch normalization scale tensor
+  * @brief cuDNN Device memory pointer for the activation gradients tensor
   */
-  void *_batchNormalizationScaleTensor;
-
-  /**
-   * @brief cuDNN Device memory pointer for the batch normalization shift gradient tensor
-   */
-  void *_batchNormalizationShiftDiffTensor;
-
-  /**
-   * @brief cuDNN Device memory pointer for the batch normalization scale gradient tensor
-   */
-  void *_batchNormalizationScaleDiffTensor;
+  void *_activationDiffTensor;
 
 #endif
 
   /**
-   * @brief Generates the initial weight/bias/normalization hyperparameters for the layer
+   * @brief Generates the initial weight/bias hyperparameters for the layer
    * @return The initial hyperparameters
    */
-  std::vector<float> generateInitialHyperparameters();
+  virtual std::vector<float> generateInitialHyperparameters() = 0;
 
   /**
   * @brief  Initializes the layer's internal memory structures for hyperparameter storage
   */
-  void createHyperparameterMemory();
+  virtual void createHyperparameterMemory() = 0;
 
   /**
    * @brief Initializes the layer's internal memory structures for the forward pipeline
    */
-  void createForwardPipeline();
+  virtual void createForwardPipeline() = 0;
 
   /**
   * @brief Initializes the internal memory structures for the backward pipeline
   */
-  void createBackwardPipeline();
+  virtual void createBackwardPipeline() = 0;
+
+  /**
+  * @brief Performs the forward propagation of the Wx+b operations
+  */
+  virtual void forwardWeightsAndBias() = 0;
+
+  /**
+   * @brief Performs the forward propagation of the activation function
+   */
+  virtual void forwardActivationFunction() = 0;
+
+  /**
+   * @brief Sets the gradients at the output nodes of the layer
+   * @param gradient (Input) pointer containing the gradients to set.
+   */
+  virtual void setOutputGradients(float *gradient) = 0;
+
+  /**
+   * @brief Gets the values at the output nodes of the layer
+   * @param output (Output) Pointer to write the output values to.
+   */
+  virtual void getOutputValues(float *output) = 0;
+
+  /**
+   * @brief Sets the values at the input nodes of the layer
+   * @param input (Input) pointer containing the values to set.
+   */
+  virtual void setInputValues(float *input) = 0;
+
+  /**
+   * @brief Gets the gradients at the input nodes of the layer
+   * @param gradient (Output) Pointer to write the input gradients to.
+   */
+  virtual void getInputGradients(float *gradient) = 0;
+
+  /**
+   * @brief Updates layer's hyperparameters (e.g., weights and biases)
+   * @param hyperparameters (Input) Pointer to read the hyperparameters from.
+   */
+  virtual void setHyperparameters(float *hyperparameters) = 0;
+
+  /**
+   * @brief Gets layer's hyperparameters (e.g., weights and biases)
+   * @param hyperparameters (Output) Pointer to write the hyperparameters to.
+   */
+  virtual void getHyperparameters(float *hyperparameters) = 0;
+
+  /**
+   * @brief Gets the gradients of the layer's output wrt to is hyperparameters (e.g., weights and biases)
+   * @param gradient (Output) Pointer to write the hyperparameter gradients to.
+   */
+  virtual void getHyperparameterGradients(float *gradient) = 0;
+
+  /**
+   * @brief Performs the backward propagation of the activation function
+   */
+  virtual void backwardActivationFunction() = 0;
+
+  /**
+   * @brief Performs the backward propagation of the data
+   */
+  virtual void backwardDataPropagation() = 0;
+
+  /**
+  * @brief Calculates the gradients of data wrt weights and biases
+  */
+  virtual void backwardWeightsAndBias() = 0;
 };
 
 } // namespace neuralNetwork

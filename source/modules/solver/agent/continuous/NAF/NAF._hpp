@@ -54,12 +54,11 @@ class NAF : public Continuous
   */
   float quadraticAdvantageFunction(const std::vector<float> &action, const std::vector<float> &qEvaluation);
 
+  knlohmann::json runPolicy(const std::vector<float> &state) override;
   void updateAgentPolicy(const knlohmann::json &hyperparameters) override;
   void trainAgent() override;
   void printAgentInformation() override;
   void initializeAgent() override;
-
-  void forwardPolicy(const std::vector<float> &state) override;
 };
 
 } // namespace continuous

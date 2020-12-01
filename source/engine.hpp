@@ -13,6 +13,10 @@
 #include <stack>
 #include <vector>
 
+#ifdef _KORALI_USE_ONEDNN
+  #include "dnnl.hpp"
+#endif
+
 namespace korali
 {
 class Sample;
@@ -183,6 +187,11 @@ extern bool isPythonActive;
 * @brief Stack storing pointers to different Engine execution levels
 */
 extern std::stack<Engine *> _engineStack;
+
+/**
+ * @brief Stores the maximum number of threads that Korali modules can use
+ */
+extern size_t _maxThreads;
 
 } // namespace korali
 

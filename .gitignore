@@ -5,6 +5,7 @@ _result_*
 build
 .exrc
 setup.py
+.setup
 __pycache__
 *.conf
 *.tar.gz

@@ -8,7 +8,7 @@
 ### Specifies the distribution type ("production" or "debug")
 DISTRIBUTION=production
 
-### Specifies the number of parallel jobs to use during compilation (default = 4)
+### Specifies the number of parallel jobs to use during compilation
 NJOBS=8
 
 ### Path to C++ compiler (using $CXX as default)
@@ -23,15 +23,17 @@ CMAKE=cmake
 ############# External Library Configuration ###############
 
 ### Specify whether to use the Eigen library. Some Korali modules will be disabled if not used.
-USE_EIGEN=NO
+USE_EIGEN=YES
 
 ### Specify whether to use the LIBGP library. Some Korali modules will be disabled if not used.
-USE_LIBGP=NO
+USE_LIBGP=YES
 
 ### Specify whether to use the rtnorm library. Some Korali modules will be disabled if not used.
-USE_RTNORM=NO
+USE_RTNORM=YES
 
-### Specify which library to use for Neural Network support.
-NN_LIBRARY=NONE # Options: NONE, OneDNN, cuDNN
+### Specify whether to use OneDNN. Some Korali modules will be disabled if not used.
+USE_ONEDNN=NO
 
+### Specify whether to use CUDNN. Some Korali modules will be disabled if not used.
+USE_CUDNN=NO
 

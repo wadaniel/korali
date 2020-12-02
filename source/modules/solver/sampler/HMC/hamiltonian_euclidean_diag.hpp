@@ -162,7 +162,7 @@ class HamiltonianEuclideanDiag : public HamiltonianEuclidean
   */
   int updateMetricMatricesEuclidean(const std::vector<std::vector<double>> &samples) override
   {
-    double mean, cov, sum;
+    double cov, sum;
     double sumOfSquares;
     double numSamples = samples.size();
 
@@ -176,8 +176,7 @@ class HamiltonianEuclideanDiag : public HamiltonianEuclidean
         sum += samples[j][i];
         sumOfSquares += samples[j][i]*samples[j][i];
       }
-      mean = sum/(numSamples);
-      cov = sumOfSquares/(numSamples) - mean*mean;
+      cov = (sumOfSquares-(sum*sum)/numSamples)/(numSamples-1.);
       _inverseMetric[i] = cov;
       _metric[i] = 1.0/cov;
     }

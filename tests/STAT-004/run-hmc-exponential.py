@@ -37,7 +37,7 @@ e["Solver"]["Version"] = 'Euclidean'
 e["Solver"]["Use Diagonal Metric"] = True
 e["Solver"]["Use Adaptive Step Size"] = True
 e["Solver"]["Max Integration Steps"] = 1000
-e["Solver"]["Use NUTS"] = False
+e["Solver"]["Use NUTS"] = True
 
 # Running Korali
 e["Random Seed"] = 1337

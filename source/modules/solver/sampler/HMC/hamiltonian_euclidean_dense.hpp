@@ -194,7 +194,7 @@ class HamiltonianEuclideanDense : public HamiltonianEuclidean
   int updateMetricMatricesEuclidean(const std::vector<std::vector<double>> &samples) override
   {
     double sumk, sumi, sumOfSquares;
-    double meank, meani, cov;
+    double cov;
     double numSamples = samples.size();
 
     // calculate sample covariance
@@ -211,9 +211,7 @@ class HamiltonianEuclideanDense : public HamiltonianEuclidean
           sumk += samples[j][k];
           sumOfSquares += samples[j][i]*samples[j][k];
         }
-        meank = sumk/numSamples;
-        meani = sumi/numSamples;
-        cov = sumOfSquares/numSamples - meani*meank;
+        cov = (sumOfSquares-(sumk*sumi)/numSamples)/(numSamples-1.);
         _inverseMetric[i * _stateSpaceDim + k] = cov;
         _inverseMetric[k * _stateSpaceDim + i] = cov;
       }
@@ -223,13 +221,17 @@ class HamiltonianEuclideanDense : public HamiltonianEuclidean
     int err = __invertMatrix(_inverseMetric, _metric);
     if (err > 0) return err;
 
-    _multivariateGenerator->_sigma = _metric;
+    std::vector<double> sig = _metric;
+    gsl_matrix_view sigView = gsl_matrix_view_array(&sig[0], _stateSpaceDim, _stateSpaceDim);
 
     // Cholesky Decomp
-    gsl_matrix_view sigma = gsl_matrix_view_array(&_multivariateGenerator->_sigma[0], _stateSpaceDim, _stateSpaceDim);
+    err = gsl_linalg_cholesky_decomp(&sigView.matrix);
+    if (err == 0) 
+    {
+        _multivariateGenerator->_sigma = sig;
+        _multivariateGenerator->updateDistribution();
+    }
 
-    err = gsl_linalg_cholesky_decomp(&sigma.matrix);
-    if (err == 0) _multivariateGenerator->updateDistribution();
 
     return err;
   }

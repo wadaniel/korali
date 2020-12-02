@@ -17,7 +17,7 @@
 #include <random> // std::default_random_engine
 
 #define L2DIST
-#define RNDAX
+//#define RNDAX
 
 namespace korali
 {

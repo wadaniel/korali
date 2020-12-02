@@ -142,11 +142,11 @@ void ReinforcementLearning::runEpisode(Sample &sample)
     // If training, updating engine with the current experience
     if (sample["Mode"] == "Training")
     {
-      // Checking if we requested the given number of actions in between policy updates
-      bool requestNewPolicy = actionCount % _actionsBetweenPolicyUpdates == 0;
+      // Checking if we requested the given number of actions in between policy updates and it is not a terminal state
+      bool requestNewPolicy = (sample["Termination"] == "Non Terminal") &&
+                              (actionCount % _actionsBetweenPolicyUpdates == 0);
 
-      experience["Request New Policy"] = false;
-      if (requestNewPolicy) experience["Request New Policy"] = true;
+      experience["Request New Policy"] = requestNewPolicy;
 
       // Sending experience to engine
       KORALI_SEND_MSG_TO_ENGINE(experience);

@@ -23,7 +23,8 @@ void runEnvironment(korali::Sample &s)
   setInitialConditions(_agent, _object);
 
   // Setting initial state
-  s["State"] = _agent->state(_object);
+  auto state = _agent->state(_object);
+  s["State"] = state;
 
   // Setting initial time and step conditions
   double t = 0;        // Current time
@@ -40,11 +41,6 @@ void runEnvironment(korali::Sample &s)
     // Reading new action
     std::vector<double> action = s["Action"];
 
-    // Printing Action:
-    printf("Action: [ %f", action[0]);
-    for (size_t i = 1; i < action.size(); i++) printf(", %f", action[i]);
-    printf("]\n");
-
     // Setting action
     _agent->act(t, action);
 
@@ -58,26 +54,31 @@ void runEnvironment(korali::Sample &s)
       // Advance simulation and check whether it is correct
       if (_environment->advance(dt))
       {
-        printf("Error during environment\n");
+        fprintf(stderr, "Error during environment\n");
         exit(-1);
       }
 
       // Check if simulation is done.
-      if (isTerminal(_agent, _object))
-      {
-        done = true;
-        break;
-      }
+      done = isTerminal(_agent, _object);
     }
-
-    // Checking if it's terminal state
-    done = isTerminal(_agent, _object);
 
     // Reward is -10 if state is terminal; otherwise obtain it from the agent's efficiency
     double reward = done ? -10.0 : _agent->EffPDefBnd;
 
+    // Printing Information:
+//    printf("[Korali] -------------------------------------------------------\n");
+//    printf("[Korali] Step: %lu/%lu\n", curStep, _maxSteps);
+//    printf("[Korali] State: [ %.3f", state[0]);
+//    for (size_t i = 1; i < state.size(); i++) printf(", %.3f", state[i]);
+//    printf("]\n");
+    printf("[Korali] Step: %lu/%lu, Action: [ %.3f", curStep, _maxSteps, action[0]);
+    for (size_t i = 1; i < action.size(); i++) printf(", %.3f", action[i]);
+    printf("]\n");
+////    printf("[Korali] Terminal: %d\n", done);
+////    printf("[Korali] -------------------------------------------------------\n");
+
     // Obtaining new agent state
-    std::vector<double> state = _agent->state(_object);
+    state = _agent->state(_object);
 
     // Storing reward
     s["Reward"] = reward;
@@ -88,6 +89,12 @@ void runEnvironment(korali::Sample &s)
     // Advancing to next step
     curStep++;
   }
+
+  // Setting finalization status
+  if (done == true)
+    s["Termination"] = "Normal";
+  else
+    s["Termination"] = "Truncated";
 }
 
 void initializeEnvironment(int argc, char *argv[])
@@ -101,7 +108,7 @@ void initializeEnvironment(int argc, char *argv[])
   _agent = dynamic_cast<StefanFish *>(_environment->getShapes()[1]);
   if (_agent == nullptr)
   {
-    printf("Agent was not a StefanFish!\n");
+    fprintf(stderr, "[Error] Agent was not a StefanFish!\n");
     exit(-1);
   }
 }

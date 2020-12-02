@@ -23,8 +23,6 @@ void ReinforcementLearning::initialize()
 
   if (_actionVectorSize == 0) KORALI_LOG_ERROR("No action variables have been defined.\n");
   if (_stateVectorSize == 0) KORALI_LOG_ERROR("No state variables have been defined.\n");
-
-  if (_actionRepeat == 0) KORALI_LOG_ERROR("Action repeat cannot be zero.\n");
 }
 
 /**
@@ -64,7 +62,7 @@ void ReinforcementLearning::runEpisode(Sample &sample)
   auto _agent = dynamic_cast<solver::Agent *>(_k->_solver);
 
   // First, we update the initial policy's hyperparameters
-  _agent->updateAgentPolicy(sample.globals()["Hyperparameters"]);
+  _agent->updateAgentPolicy(sample["Hyperparameters"]);
 
   // Creating sample coroutine
   __currentSample = &sample;
@@ -72,14 +70,8 @@ void ReinforcementLearning::runEpisode(Sample &sample)
   sample._workerThread = co_active();
   auto envThread = co_create(1 << 28, __environmentWrapper);
 
-  // Action Repeat Counter
-  size_t actionLastUpdated = 0;
-
   // Counter for the total number of actions taken
   size_t actionCount = 0;
-
-  // Storage for the action
-  std::vector<float> action(_actionVectorSize);
 
   // Reserving storage for sending back experiences
   knlohmann::json experience;
@@ -103,17 +95,9 @@ void ReinforcementLearning::runEpisode(Sample &sample)
   // Saving experiences
   while (sample["Termination"] == "Non Terminal")
   {
-    // Requesting new action, if enough steps have passed, given by the action repeat parameter
-    if (actionLastUpdated == 0)
-    {
-      // Getting new action
-      _agent->getAction(sample);
-
-      // Resetting action repeat counter
-      actionLastUpdated = _actionRepeat;
-      actionCount++;
-    }
-    actionLastUpdated--;
+    // Generating new action from policy
+    _agent->getAction(sample);
+    actionCount++;
 
     // Storing the current state
     experience["State"] = sample["State"];

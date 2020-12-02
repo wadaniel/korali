@@ -235,6 +235,30 @@ knlohmann::json Distributed::recvMessageFromSample(Sample &sample)
   return message;
 }
 
+std::vector<knlohmann::json> Distributed::gatherMessagesFromSamples()
+{
+ std::vector<knlohmann::json> messages;
+
+ int flag = 1;
+ while (flag != 0)
+ {
+   MPI_Status status;
+   MPI_Iprobe(MPI_ANY_SOURCE, MPI_MESSAGE_JSON, _mpiCommunicator, &flag, &status);
+   if (flag)
+   {
+     int messageSize = 0;
+     MPI_Get_count(&status, MPI_CHAR, &messageSize);
+     char messageStringChar[messageSize + 1];
+     MPI_Recv(messageStringChar, messageSize, MPI_CHAR, status.MPI_SOURCE, MPI_MESSAGE_JSON, _mpiCommunicator, MPI_STATUS_IGNORE);
+     messageStringChar[messageSize] = '\0';
+     auto message = knlohmann::json::parse(messageStringChar);
+     messages.push_back(message);
+   }
+ }
+
+ return messages;
+}
+
 void Distributed::sendMessageToSample(Sample &sample, knlohmann::json &message)
 {
 #ifdef _KORALI_USE_MPI

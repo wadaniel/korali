@@ -140,6 +140,12 @@ class Conduit : public Module
   * @param message Message to send to the sample.
   */
   virtual void sendMessageToSample(Sample &sample, knlohmann::json &message) = 0;
+
+  /**
+  * @brief Non-blocking call to gather all incoming messages from a set of samples
+  * @return Message array
+  */
+  virtual std::vector<knlohmann::json> gatherMessagesFromSamples() { KORALI_LOG_ERROR("Not yet implemented\n"); };
 };
 
 } // namespace korali

@@ -89,31 +89,34 @@ void Agent::runGeneration()
   {
     // Listening for incoming experiences
     auto beginTime = std::chrono::steady_clock::now(); // Profiling
-    experience = KORALI_RECV_MSG_FROM_SAMPLE(agent);
+    auto experiences = _k->_engine->_conduit->gatherMessagesFromSamples();
     auto endTime = std::chrono::steady_clock::now();                                                     // Profiling
     _agentWaitTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
 
-    // Storing experience in the episode
-    episode.push_back(experience);
+    for (size_t expId = 0; expId < experiences.size(); expId++)
+    {
+      // Storing experience in the episode
+      episode.push_back(experiences[expId]);
 
-    // Increasing total experience counter
-    _experienceCount++;
+      // Increasing total experience counter
+      _experienceCount++;
 
-    // Check if experience is terminal
-    isTerminal = experience["Termination"] != "Non Terminal";
+      // Check if experience is terminal
+      isTerminal = experiences[expId]["Termination"] != "Non Terminal";
 
-    // Running Agent training if the following conditions are met
-    if (_experienceCount % _experiencesBetweenAgentTrainings == 0) // If we accumulated enough experiences between updates, update now
-      if (_experienceReplay.size() >= _experienceReplayStartSize)  // Perform optimization steps on the critic/policy, if reached the minimum replay memory size
-        for (size_t i = 0; i < _optimizationStepsPerUpdate; i++)
-        {
-          trainAgent();
-          _optimizationStepCount++;
-        }
+      // Running Agent training if the following conditions are met
+      if (_experienceCount % _experiencesBetweenAgentTrainings == 0) // If we accumulated enough experiences between updates, update now
+        if (_experienceReplay.size() >= _experienceReplayStartSize)  // Perform optimization steps on the critic/policy, if reached the minimum replay memory size
+          for (size_t i = 0; i < _optimizationStepsPerUpdate; i++)
+          {
+            trainAgent();
+            _optimizationStepCount++;
+          }
 
-    // If agent requested new policy, send the new hyperparameters
-    if (experience["Request New Policy"] == true)
-      KORALI_SEND_MSG_TO_SAMPLE(agent, _hyperparameters);
+      // If agent requested new policy, send the new hyperparameters
+      if (experiences[expId]["Request New Policy"] == true)
+        KORALI_SEND_MSG_TO_SAMPLE(agent, _hyperparameters);
+    }
   }
 
   // Now that we have the entire episode, process its experiences (add them to replay memory)

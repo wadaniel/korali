@@ -97,6 +97,7 @@ void Conduit::workerStackEngine(const knlohmann::json &js)
   }
 
   k->initialize();
+  k->_conduit = this;
 
   _engineStack.push(k);
 }

@@ -14,7 +14,6 @@ e = korali.Experiment()
 
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = env
-e["Problem"]["Action Repeat"] = 1
 e["Problem"]["Actions Between Policy Updates"] = 1
 
 ### Defining state variables
@@ -48,15 +47,14 @@ e["Solver"]["Random Action Probability"]["Decrease Rate"] = 0.05
 ### Defining the configuration of replay memory
 
 e["Solver"]["Mini Batch Strategy"] = "Uniform"
-e["Solver"]["Experience Replay"]["Start Size"] =   1000
+e["Solver"]["Experience Replay"]["Start Size"] =   2000
 e["Solver"]["Experience Replay"]["Maximum Size"] = 100000
 
 ## Defining Critic Configuration
 
 e["Solver"]["Critic"]["Discount Factor"] = 0.99
-e["Solver"]["Critic"]["Learning Rate"] = 0.01
-e["Solver"]["Critic"]["Mini Batch Size"] = 32
-e["Solver"]["Critic"]["Normalization Steps"] = 8 
+e["Solver"]["Critic"]["Learning Rate"] = 0.001
+e["Solver"]["Critic"]["Mini Batch Size"] = 32 
   
 e["Solver"]["Critic"]["Neural Network"]["Engine"] = "OneDNN"
 
@@ -64,11 +62,11 @@ e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear"
 
 e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Type"] = "Layer/Dense"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Node Count"] = 32
+e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Node Count"] = 128
 e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Activation Function"]["Type"] = "Elementwise/Tanh"
 
 e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Type"] = "Layer/Dense"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Node Count"] = 32
+e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Node Count"] = 128
 e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Elementwise/Tanh"
 
 e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Type"] = "Layer/Dense"
@@ -76,10 +74,9 @@ e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Activation Function"]["Typ
 
 ## Defining Policy Configuration
 
-e["Solver"]["Policy"]["Learning Rate"] = 0.01
+e["Solver"]["Policy"]["Learning Rate"] = 0.001
 e["Solver"]["Policy"]["Mini Batch Size"] = 32
-e["Solver"]["Policy"]["Target Accuracy"] = 0.01
-e["Solver"]["Policy"]["Normalization Steps"] = 8
+e["Solver"]["Policy"]["Target Accuracy"] = 0.0001
 
 e["Solver"]["Policy"]["Neural Network"]["Engine"] = "OneDNN"
 
@@ -87,11 +84,11 @@ e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
 e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear"
 
 e["Solver"]["Policy"]["Neural Network"]["Layers"][1]["Type"] = "Layer/Dense"
-e["Solver"]["Policy"]["Neural Network"]["Layers"][1]["Node Count"] = 32
+e["Solver"]["Policy"]["Neural Network"]["Layers"][1]["Node Count"] = 128
 e["Solver"]["Policy"]["Neural Network"]["Layers"][1]["Activation Function"]["Type"] = "Elementwise/Tanh"
 
 e["Solver"]["Policy"]["Neural Network"]["Layers"][2]["Type"] = "Layer/Dense"
-e["Solver"]["Policy"]["Neural Network"]["Layers"][2]["Node Count"] = 32
+e["Solver"]["Policy"]["Neural Network"]["Layers"][2]["Node Count"] = 128
 e["Solver"]["Policy"]["Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Elementwise/Tanh"
 
 e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Type"] = "Layer/Dense"

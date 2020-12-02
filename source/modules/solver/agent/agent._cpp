@@ -57,14 +57,12 @@ void Agent::initialize()
 
 void Agent::runGeneration()
 {
-  // Broadcasting initial hyperparameters for all workers to use
-  if (_k->_currentGeneration == 1) KORALI_UPDATE_GLOBALS("Hyperparameters", _hyperparameters);
-
   // Configuring current agent
   Sample agent;
   agent["Sample Id"] = _currentSampleID++;
   agent["Module"] = "Problem";
   agent["Operation"] = "Run Episode";
+  agent["Hyperparameters"] = _hyperparameters;
   agent["Mode"] = "Training";
   agent["Random Action Probability"] = _randomActionProbabilityEffectiveValue;
 
@@ -153,7 +151,7 @@ void Agent::runGeneration()
       // Configuring Agent
       agents[i]["Sample Id"] = _currentSampleID++;
       agents[i]["Module"] = "Problem";
-      agents[i]["Action Source"] = "Policy";
+      agents[i]["Hyperparameters"] = _hyperparameters;
       agents[i]["Operation"] = "Run Episode";
       agents[i]["Mode"] = "Testing";
       agents[i]["Random Action Probability"] = 0.0;

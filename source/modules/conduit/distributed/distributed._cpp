@@ -12,7 +12,7 @@ namespace korali
 #ifdef _KORALI_USE_MPI
 
   #define MPI_MESSAGE_JSON_SIZE 1
-  #define MPI_MESSAGE_JSON_CONTENT 2
+  #define MPI_MESSAGE_JSON 2
 
 MPI_Comm __KoraliTeamComm;
 MPI_Comm getKoraliMPIComm() { return __KoraliTeamComm; }
@@ -119,10 +119,7 @@ void Distributed::finalize()
   {
     for (size_t i = 0; i < _teamCount; i++)
       for (size_t j = 0; j < _workersPerTeam; j++)
-      {
-        MPI_Send(&terminationStringSize, 1, MPI_UNSIGNED_LONG, _workerProcesses[i][j], MPI_MESSAGE_JSON_SIZE, _mpiCommunicator);
-        MPI_Send(terminationString.c_str(), terminationStringSize, MPI_CHAR, _workerProcesses[i][j], MPI_MESSAGE_JSON_CONTENT, _mpiCommunicator);
-      }
+        MPI_Send(terminationString.c_str(), terminationStringSize, MPI_CHAR, _workerProcesses[i][j], MPI_MESSAGE_JSON, _mpiCommunicator);
   }
 
   MPI_Barrier(_mpiCommunicator);
@@ -142,10 +139,7 @@ void Distributed::broadcastMessageToWorkers(knlohmann::json &message)
 
   for (size_t i = 0; i < _teamCount; i++)
     for (size_t j = 0; j < _workersPerTeam; j++)
-    {
-      MPI_Send(&messageStringSize, 1, MPI_UNSIGNED_LONG, _workerProcesses[i][j], MPI_MESSAGE_JSON_SIZE, _mpiCommunicator);
-      MPI_Send(messageString.c_str(), messageStringSize, MPI_CHAR, _workerProcesses[i][j], MPI_MESSAGE_JSON_CONTENT, _mpiCommunicator);
-    }
+      MPI_Send(messageString.c_str(), messageStringSize, MPI_CHAR, _workerProcesses[i][j], MPI_MESSAGE_JSON, _mpiCommunicator);
 #endif
 }
 
@@ -181,8 +175,7 @@ void Distributed::sendMessageToEngine(knlohmann::json &message)
   {
     string messageString = message.dump();
     size_t messageStringSize = messageString.size();
-    MPI_Send(&messageStringSize, 1, MPI_UNSIGNED_LONG, getRootRank(), MPI_MESSAGE_JSON_SIZE, _mpiCommunicator);
-    MPI_Send(messageString.c_str(), messageStringSize, MPI_CHAR, getRootRank(), MPI_MESSAGE_JSON_CONTENT, _mpiCommunicator);
+    MPI_Send(messageString.c_str(), messageStringSize, MPI_CHAR, getRootRank(), MPI_MESSAGE_JSON, _mpiCommunicator);
   }
 #endif
 }
@@ -194,13 +187,15 @@ knlohmann::json Distributed::recvMessageFromEngine()
 #ifdef _KORALI_USE_MPI
   MPI_Barrier(__KoraliTeamComm);
 
-  size_t jsonStringSize;
-  MPI_Recv(&jsonStringSize, 1, MPI_UNSIGNED_LONG, getRootRank(), MPI_MESSAGE_JSON_SIZE, _mpiCommunicator, MPI_STATUS_IGNORE);
+  MPI_Status status;
+  MPI_Probe(getRootRank(), MPI_MESSAGE_JSON, _mpiCommunicator, &status);
+  int messageSize = 0;
+  MPI_Get_count(&status, MPI_CHAR, &messageSize);
 
-  char jsonStringChar[jsonStringSize + 1];
-  MPI_Recv(jsonStringChar, jsonStringSize, MPI_CHAR, getRootRank(), MPI_MESSAGE_JSON_CONTENT, _mpiCommunicator, MPI_STATUS_IGNORE);
+  char jsonStringChar[messageSize + 1];
+  MPI_Recv(jsonStringChar, messageSize, MPI_CHAR, getRootRank(), MPI_MESSAGE_JSON, _mpiCommunicator, MPI_STATUS_IGNORE);
 
-  jsonStringChar[jsonStringSize] = '\0';
+  jsonStringChar[messageSize] = '\0';
   message = knlohmann::json::parse(jsonStringChar);
 #endif
 
@@ -214,18 +209,18 @@ knlohmann::json Distributed::recvMessageFromSample(Sample &sample)
 #ifdef _KORALI_USE_MPI
 
   Engine *engine = _engineStack.top();
-  size_t messageSize;
-  MPI_Request messageRequest;
-  MPI_Irecv(&messageSize, 1, MPI_UNSIGNED_LONG, _workerProcesses[sample._workerId][0], MPI_MESSAGE_JSON_SIZE, _mpiCommunicator, &messageRequest);
+  MPI_Status status;
 
   int flag = 0;
   while (flag == 0)
   {
-    MPI_Test(&messageRequest, &flag, MPI_STATUS_IGNORE);
+    MPI_Iprobe(_workerProcesses[sample._workerId][0], MPI_MESSAGE_JSON, _mpiCommunicator, &flag, &status);
     if (flag)
     {
+      int messageSize = 0;
+      MPI_Get_count(&status, MPI_CHAR, &messageSize);
       char messageStringChar[messageSize + 1];
-      MPI_Recv(messageStringChar, messageSize, MPI_CHAR, _workerProcesses[sample._workerId][0], MPI_MESSAGE_JSON_CONTENT, _mpiCommunicator, MPI_STATUS_IGNORE);
+      MPI_Recv(messageStringChar, messageSize, MPI_CHAR, _workerProcesses[sample._workerId][0], MPI_MESSAGE_JSON, _mpiCommunicator, MPI_STATUS_IGNORE);
       messageStringChar[messageSize] = '\0';
       message = knlohmann::json::parse(messageStringChar);
     }
@@ -249,8 +244,7 @@ void Distributed::sendMessageToSample(Sample &sample, knlohmann::json &message)
   for (size_t i = 0; i < _workersPerTeam; i++)
   {
     int workerId = _workerProcesses[sample._workerId][i];
-    MPI_Send(&messageStringSize, 1, MPI_UNSIGNED_LONG, workerId, MPI_MESSAGE_JSON_SIZE, _mpiCommunicator);
-    MPI_Send(messageString.c_str(), messageStringSize, MPI_CHAR, workerId, MPI_MESSAGE_JSON_CONTENT, _mpiCommunicator);
+    MPI_Send(messageString.c_str(), messageStringSize, MPI_CHAR, workerId, MPI_MESSAGE_JSON, _mpiCommunicator);
   }
 #endif
 }

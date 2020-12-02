@@ -103,7 +103,8 @@ e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 450
 ### Setting file output configuration
 
 e["File Output"]["Enabled"] = False
-
+ 
 ### Running Experiment
 
+k["Conduit"]["Type"] = "Distributed"
 k.run(e)

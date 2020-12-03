@@ -26,8 +26,11 @@ void Conduit::coroutineWrapper()
     sample->_state = SampleState::waiting;
     co_switch(engine->_currentExperiment->_thread);
   }
-  sample->_workerId = engine->_conduit->_workerQueue.front();
+
+  auto workerId = engine->_conduit->_workerQueue.front();
   engine->_conduit->_workerQueue.pop();
+  sample->_workerId = workerId;
+  engine->_conduit->_workerToSampleMap[workerId] = sample;
 
   auto timelineJs = knlohmann::json();
   timelineJs["Start Time"] = chrono::duration<double>(chrono::high_resolution_clock::now() - _startTime).count() + _cumulativeTime;

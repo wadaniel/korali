@@ -64,6 +64,7 @@ void ReinforcementLearning::runEpisode(Sample &agent)
   /***************************************************************
    * Environment Configuration section
    ***************************************************************/
+//  printf("Running Episode\n");
 
   // Getting RL-compatible solver
   auto _agent = dynamic_cast<solver::Agent *>(_k->_solver);
@@ -143,13 +144,16 @@ void ReinforcementLearning::runEpisode(Sample &agent)
       experience["Request New Policy"] = requestNewPolicy;
 
       // Sending experience to engine
+//      printf("Sending message to engine\n");
       KORALI_SEND_MSG_TO_ENGINE(experience);
 
       // If requested new policy, wait for incoming message containing new hyperparameters
       if (requestNewPolicy)
       {
+//       printf("Requesting message from engine\n");
         agent["Hyperparameters"] = KORALI_RECV_MSG_FROM_ENGINE();
         _agent->updateAgentPolicy(agent["Hyperparameters"]);
+//        printf("done\n");
       }
     }
   }

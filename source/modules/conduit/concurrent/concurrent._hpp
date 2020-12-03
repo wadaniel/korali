@@ -46,7 +46,8 @@ class Concurrent : public Conduit
   void stackEngine(Engine *engine) override;
   void popEngine() override;
 
-  std::vector<knlohmann::json> gatherMessagesFromSamples() override;
+  void listen() override;
+  void listenAsync() override;
   void broadcastMessageToWorkers(knlohmann::json &message) override;
   void sendMessageToEngine(knlohmann::json &message) override;
   knlohmann::json recvMessageFromEngine() override;

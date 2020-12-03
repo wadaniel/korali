@@ -65,6 +65,11 @@ class Sample
   Sample *_self;
 
   /**
+  * @brief Queue of messages sent from the sample to the engine
+  */
+  std::queue<knlohmann::json> _messageQueue;
+
+  /**
   * @brief Pointer to global parameters
   */
   knlohmann::json *_globals;
@@ -161,6 +166,9 @@ class Sample
   * @param key Key (pybind11 object) to look for.
   */
   void setItem(const pybind11::object key, const pybind11::object val);
+
+
+  bool retrievePendingMessage(knlohmann::json& message);
 
   /**
    * @brief Retrieves an element from the sample information

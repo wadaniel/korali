@@ -22,6 +22,8 @@ class Conduit : public Module
   */
   std::queue<size_t> _workerQueue;
 
+  std::map<size_t, Sample*> _workerToSampleMap;
+
   /**
  * @brief Determines whether the caller rank/thread/process is root.
  * @return True, if it is root; false, otherwise.
@@ -142,10 +144,14 @@ class Conduit : public Module
   virtual void sendMessageToSample(Sample &sample, knlohmann::json &message) = 0;
 
   /**
-  * @brief Non-blocking call to gather all incoming messages from a set of samples
-  * @return Message array
+  * @brief (Blocking) Receives all pending incoming messages (at least one) and stores them into the corresponding sample's message queue.
   */
-  virtual std::vector<knlohmann::json> gatherMessagesFromSamples() = 0;
+  virtual void listen() {printf("Not implemented\n"); exit(0);} ;
+
+  /**
+  * @brief (Non-Blocking) Receives all pending incoming messages and stores them into the corresponding sample's message queue.
+  */
+  virtual void listenAsync() {printf("Not implemented\n"); exit(0);} ;
 };
 
 } // namespace korali

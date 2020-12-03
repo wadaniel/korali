@@ -21,14 +21,9 @@ class Sequential : public Conduit
   cothread_t _workerThread;
 
   /**
-  * @brief Queue to keep outgoing messages for the (only) worker
+  * @brief Queue of messages sent from the engine to the worker
   */
-  std::queue<knlohmann::json> _outputMessageQueue;
-
-  /**
-  * @brief Queue to keep incoming messages for the (only) worker
-  */
-  std::queue<knlohmann::json> _inputMessageQueue;
+  std::queue<knlohmann::json> _workerMessageQueue;
 
   bool isRoot() override;
   void initServer() override;
@@ -38,7 +33,8 @@ class Sequential : public Conduit
   void stackEngine(Engine *engine) override;
   void popEngine() override;
 
-  std::vector<knlohmann::json> gatherMessagesFromSamples() override;
+  void listen() override;
+  void listenAsync() override;
   void broadcastMessageToWorkers(knlohmann::json &message) override;
   void sendMessageToEngine(knlohmann::json &message) override;
   knlohmann::json recvMessageFromEngine() override;

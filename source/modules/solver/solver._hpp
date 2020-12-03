@@ -38,14 +38,25 @@ namespace korali
 #define KORALI_UPDATE_GLOBALS(KEY, JSON) _k->_engine->_conduit->updateGlobals(KEY, JSON);
 
 /**
- * @brief Macro to wait for any of the given samples.
+ * @brief Macro to send a message to a sample
  */
 #define KORALI_SEND_MSG_TO_SAMPLE(SAMPLE, MSG) _k->_engine->_conduit->sendMessageToSample(SAMPLE, MSG);
 
 /**
- * @brief Macro to wait for any of the given samples.
+ * @brief Macro to receive a message from a sample (blocking)
  */
 #define KORALI_RECV_MSG_FROM_SAMPLE(SAMPLE) _k->_engine->_conduit->recvMessageFromSample(SAMPLE);
+
+/**
+ * @brief (Blocking) Receives all pending incoming messages (at least one) and stores them into the corresponding sample's message queue.
+ */
+#define KORALI_LISTEN() _k->_engine->_conduit->listen();
+
+/**
+ * @brief (Non-Blocking) Receives all pending incoming messages and stores them into the corresponding sample's message queue.
+ */
+#define KORALI_LISTEN_ASYNC() _k->_engine->_conduit->listenAsync();
+
 
 class Solver : public Module
 {

@@ -45,7 +45,14 @@ void __environmentWrapper()
   agent->run(__envFunctionId);
 
   if ((*agent)["Termination"] == "Non Terminal")
-    KORALI_LOG_ERROR("Environment function terminated, but agent termination status (success or truncated) was not set.\n");
+      KORALI_LOG_ERROR("Environment function terminated, but agent termination status (success or truncated) was not set.\n");
+
+  bool terminationRecognized = false;
+  if ((*agent)["Termination"] == "Terminal") terminationRecognized = true;
+  if ((*agent)["Termination"] == "Truncated") terminationRecognized = true;
+
+  if (terminationRecognized == false)
+   KORALI_LOG_ERROR("Environment function terminated, but agent termination status (%s) is neither 'Terminal' nor 'Truncated'.\n", (*agent)["Termination"].get<std::string>().c_str());
 
   co_switch(agent->_workerThread);
 

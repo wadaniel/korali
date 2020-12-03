@@ -36,6 +36,16 @@ void Sample::update()
   co_switch(_self->_workerThread);
 }
 
+bool Sample::retrievePendingMessage(knlohmann::json& message)
+{
+ if (_messageQueue.empty()) return false;
+
+  message = _messageQueue.front();
+  _messageQueue.pop();
+
+ return true;
+}
+
 void Sample::sampleLauncher()
 {
   Engine *engine = _engineStack.top();

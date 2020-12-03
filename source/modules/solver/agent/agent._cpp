@@ -57,106 +57,123 @@ void Agent::initialize()
 
 void Agent::runGeneration()
 {
-  // Configuring current agent
-  Sample agent;
-  agent["Sample Id"] = _currentSampleID++;
-  agent["Module"] = "Problem";
-  agent["Operation"] = "Run Episode";
-  agent["Hyperparameters"] = _hyperparameters;
-  agent["Random Action Probability"] = _randomActionProbabilityEffectiveValue;
+  // Storage for agents
+  std::vector<Sample> agents(_episodesPerGeneration);
 
   // Storage to keep experience information
   knlohmann::json experience;
 
-  // Storage to determine terminal state
-  bool isTerminal = false;
+  // Storage to keep track of finished agents
+  std::vector<bool> agentHasFinished(_episodesPerGeneration, false);
 
-  // Launching agent
-  auto beginTime = std::chrono::steady_clock::now(); // Profiling
-  KORALI_START(agent);
-  auto endTime = std::chrono::steady_clock::now();                                                      // Profiling
-  _agentStartTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
+  // Storage for the entire episodes before adding it to the replay memory
+  std::vector<std::vector<knlohmann::json>> episodes(_episodesPerGeneration);
 
-  // Creating storage for the entire episode before adding it to the replay memory
-  std::vector<knlohmann::json> episode;
-
-  // Keep listening to incoming experiences until we reached a terminal state
-  while (isTerminal == false)
+  // Configuring and launching agents
+  for (size_t agentId = 0; agentId < _episodesPerGeneration; agentId++)
   {
-    // Listening for incoming experiences
-    auto beginTime = std::chrono::steady_clock::now(); // Profiling
-    auto experiences = _k->_engine->_conduit->gatherMessagesFromSamples();
-    auto endTime = std::chrono::steady_clock::now();                                                     // Profiling
-    _agentWaitTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
+   agents[agentId]["Sample Id"] = _currentSampleID++;
+   agents[agentId]["Module"] = "Problem";
+   agents[agentId]["Operation"] = "Run Episode";
+   agents[agentId]["Hyperparameters"] = _hyperparameters;
+   agents[agentId]["Random Action Probability"] = _randomActionProbabilityEffectiveValue;
 
-    for (size_t expId = 0; expId < experiences.size(); expId++)
+   KORALI_START(agents[agentId]);
+  }
+
+  // Running until all agents have finished
+  size_t finishedAgents = 0;
+  while (finishedAgents < _episodesPerGeneration)
+  {
+   // Listening to incoming experiences
+   KORALI_LISTEN_ASYNC();
+
+   for (size_t agentId = 0; agentId < _episodesPerGeneration; agentId++)
+    if (agentHasFinished[agentId] == false)
+    if (agents[agentId].retrievePendingMessage(experience))
     {
+      // Storage to determine terminal state
+      bool isTerminal = false;
+
       // Storing experience in the episode
-      episode.push_back(experiences[expId]);
+      episodes[agentId].push_back(experience);
 
       // Increasing total experience counter
       _experienceCount++;
 
-      // Check if experience is terminal
-      isTerminal = experiences[expId]["Termination"] != "Non Terminal";
+//      printf("Got experience\n");
 
-      // Running Agent training if the following conditions are met
-      if (_experienceCount % _experiencesBetweenAgentTrainings == 0) // If we accumulated enough experiences between updates, update now
-        if (_experienceReplay.size() >= _experienceReplayStartSize)  // Perform optimization steps on the critic/policy, if reached the minimum replay memory size
-          for (size_t i = 0; i < _optimizationStepsPerUpdate; i++)
-          {
-            trainAgent();
-            _optimizationStepCount++;
-          }
+      // Check if experience is terminal
+      isTerminal = experience["Termination"] != "Non Terminal";
 
       // If agent requested new policy, send the new hyperparameters
-      if (experiences[expId]["Request New Policy"] == true)
-        KORALI_SEND_MSG_TO_SAMPLE(agent, _hyperparameters);
+      if (experience["Request New Policy"] == true)
+        KORALI_SEND_MSG_TO_SAMPLE(agents[agentId], _hyperparameters);
+
+      if (isTerminal)
+      {
+       // Now that we have the entire episode, process its experiences (add them to replay memory)
+       for (size_t i = 0; i < episodes[agentId].size(); i++)
+        processExperience(episodes[agentId][i]);
+
+       // Set agent as finished
+       agentHasFinished[agentId] = true;
+
+       // Increase finished agent count
+       finishedAgents++;
+
+       // Increasing number of episodes
+       _currentEpisode++;
+
+       // Updating experience probabilities
+       if (_miniBatchStrategy == "Prioritized") updateExperienceReplayProbabilities();
+      }
     }
+
+   // Running policy training if the following conditions are met
+   if (_experienceCount % _experiencesBetweenAgentTrainings == 0) // If we accumulated enough experiences between updates, update now
+     if (_experienceReplay.size() >= _experienceReplayStartSize)  // Perform optimization steps on the critic/policy, if reached the minimum replay memory size
+       for (size_t i = 0; i < _optimizationStepsPerUpdate; i++)
+       {
+         trainAgent();
+         _optimizationStepCount++;
+       }
   }
 
-  // Now that we have the entire episode, process its experiences (add them to replay memory)
-  for (size_t i = 0; i < episode.size(); i++) processExperience(episode[i]);
+  // Waiting for all samples to finish
+  KORALI_WAITALL(agents);
 
-  // Waiting for agent to finish and increasing number of episodes
-  KORALI_WAIT(agent);
-  _currentEpisode++;
-
-  // Getting the training reward of the latest episode
-  _lastTrainingReward = agent["Training Reward"].get<float>();
-
-  // Keeping training statistics. Updating if exceeded best training policy so far.
-  if (_lastTrainingReward > _bestTrainingReward)
+  // Processing Agent results
+  for (size_t agentId = 0; agentId < _episodesPerGeneration; agentId++)
   {
-    _bestTrainingReward = _lastTrainingReward;
-    _bestTrainingEpisode = _currentEpisode;
-  }
+   // Getting the training reward of the latest episode
+   _lastTrainingReward = agents[agentId]["Training Reward"].get<float>();
 
-  // If the policy has exceeded the threshold during training, we gather its statistics
-  if (agent["Tested Policy"] == true)
-  {
-   _candidatePoliciesTested++;
-
-   _averageTestingReward = agent["Average Testing Reward"].get<float>();
-   _bestTestingReward = agent["Best Testing Reward"].get<float>();
-   _worstTestingReward = agent["Worst Testing Reward"].get<float>();
-
-   // If the average testing reward is better than the previous best, replace it
-   // and store hyperparameters as best so far.
-   if (_averageTestingReward > _bestAverageTestingReward)
+   // Keeping training statistics. Updating if exceeded best training policy so far.
+   if (_lastTrainingReward > _bestTrainingReward)
    {
-     _bestAverageTestingReward = _averageTestingReward;
-     _bestHyperparameters = agent["Hyperparameters"];
+     _bestTrainingReward = _lastTrainingReward;
+     _bestTrainingEpisode = _currentEpisode;
+   }
+
+   // If the policy has exceeded the threshold during training, we gather its statistics
+   if (agents[agentId]["Tested Policy"] == true)
+   {
+    _candidatePoliciesTested++;
+
+    _averageTestingReward = agents[agentId]["Average Testing Reward"].get<float>();
+    _bestTestingReward = agents[agentId]["Best Testing Reward"].get<float>();
+    _worstTestingReward = agents[agentId]["Worst Testing Reward"].get<float>();
+
+    // If the average testing reward is better than the previous best, replace it
+    // and store hyperparameters as best so far.
+    if (_averageTestingReward > _bestAverageTestingReward)
+    {
+      _bestAverageTestingReward = _averageTestingReward;
+      _bestHyperparameters = agents[agentId]["Hyperparameters"];
+    }
    }
   }
-
-  /////////////// Updating experience probabilities
-
-  if (_miniBatchStrategy == "Prioritized") updateExperienceReplayProbabilities();
-
-  /////////////// Updating the probability of a random action (epsilon)
-
-  updateRandomActionProbability();
 }
 
 void Agent::processExperience(knlohmann::json &experience)

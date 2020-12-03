@@ -44,15 +44,18 @@ void Sequential::initServer()
 void Sequential::broadcastMessageToWorkers(knlohmann::json &message)
 {
   // Queueing outgoing message directly
-  _inputMessageQueue.push(message);
+  _workerMessageQueue.push(message);
 
   co_switch(_workerThread);
 }
 
 void Sequential::sendMessageToEngine(knlohmann::json &message)
 {
+  // Identifying sender sample
+  auto sample = _workerToSampleMap[0];
+
   // Queueing outgoing message directly
-  _outputMessageQueue.push(message);
+  sample->_messageQueue.push(message);
 }
 
 knlohmann::json Sequential::recvMessageFromEngine()
@@ -60,11 +63,11 @@ knlohmann::json Sequential::recvMessageFromEngine()
   Engine *engine = _engineStack.top();
 
   // While there's no message, keep executing sample until there is
-  while (_inputMessageQueue.empty()) co_switch(engine->_currentExperiment->_thread);
+  while (_workerMessageQueue.empty()) co_switch(engine->_currentExperiment->_thread);
 
   // Pulling message from incoming message queue
-  auto message = _inputMessageQueue.front();
-  _inputMessageQueue.pop();
+  auto message = _workerMessageQueue.front();
+  _workerMessageQueue.pop();
 
   return message;
 }
@@ -72,32 +75,36 @@ knlohmann::json Sequential::recvMessageFromEngine()
 knlohmann::json Sequential::recvMessageFromSample(Sample &sample)
 {
   // While there's no message, keep executing sample until there is
-  while (_outputMessageQueue.empty()) co_switch(_workerThread);
+  while (sample._messageQueue.empty()) co_switch(_workerThread);
 
   // Pulling message from outgoing message queue
-  auto message = _outputMessageQueue.front();
-  _outputMessageQueue.pop();
+  auto message = sample._messageQueue.front();
+  sample._messageQueue.pop();
 
   return message;
 }
 
 void Sequential::sendMessageToSample(Sample &sample, knlohmann::json &message)
 {
-  // Queueing incomping message directly
-  _inputMessageQueue.push(message);
+  // Queueing message directly
+ _workerMessageQueue.push(message);
 
   co_switch(_workerThread);
 }
 
-std::vector<knlohmann::json> Sequential::gatherMessagesFromSamples()
+void Sequential::listen()
 {
+ // Identifying current sample
+ auto sample = _workerToSampleMap[0];
+
  // While there's no message, keep executing sample until there is
- while (_outputMessageQueue.empty()) co_switch(_workerThread);
+ while (sample->_messageQueue.empty()) co_switch(_workerThread);
+}
 
- auto message = _outputMessageQueue.front();
- _outputMessageQueue.pop();
-
- return { message };
+void Sequential::listenAsync()
+{
+ // Just switch back to worker to see if a new message appears
+ co_switch(_workerThread);
 }
 
 void Sequential::stackEngine(Engine *engine)

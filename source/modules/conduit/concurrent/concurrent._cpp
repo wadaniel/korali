@@ -198,10 +198,10 @@ knlohmann::json Concurrent::recvMessageFromSample(Sample &sample)
   return message;
 }
 
-std::vector<knlohmann::json> Concurrent::gatherMessagesFromSamples()
+void Concurrent::listen()
 {
+ // Getting current engine
  Engine *engine = _engineStack.top();
- std::vector<knlohmann::json> messages;
 
  // Check for child defunction
  for (size_t i = 0; i < _workerPids.size(); i++)
@@ -212,14 +212,15 @@ std::vector<knlohmann::json> Concurrent::gatherMessagesFromSamples()
  }
 
  // Scanning all incoming messages
- bool foundMessage = true;
- while (foundMessage == true)
+ bool foundMessage = false;
+ while (foundMessage == false)
  {
-   foundMessage = false;
-
-   // Reading pending messages
+   // Reading pending messages from all workers
    for (size_t i = 0; i < _workerPids.size(); i++)
    {
+    // Identifying current sample
+    auto sample = _workerToSampleMap[i];
+
     size_t resultStringSize;
     int readBytes = read(_resultSizePipe[i][0], &resultStringSize, sizeof(size_t));
 
@@ -238,14 +239,105 @@ std::vector<knlohmann::json> Concurrent::gatherMessagesFromSamples()
       resultString[resultStringSize] = '\0';
 
       auto message = knlohmann::json::parse(resultString);
-      messages.push_back(message);
+      sample->_messageQueue.push(message);
       foundMessage = true;
     }
    }
+
+   // If no messages found, yield execution for other experiments
+   if (foundMessage == false) co_switch(engine->_currentExperiment->_thread);
+ }
+}
+
+void Concurrent::listenAsync()
+{
+ // Getting current engine
+ Engine *engine = _engineStack.top();
+
+ // Check for child defunction
+ for (size_t i = 0; i < _workerPids.size(); i++)
+ {
+   int status;
+   pid_t result = waitpid(_workerPids[i], &status, WNOHANG);
+   if (result != 0) KORALI_LOG_ERROR("Worker %i (Pid: %d) exited unexpectedly.\n", i, _workerPids[i]);
  }
 
- return messages;
+ // Reading pending messages from all workers
+ for (size_t i = 0; i < _workerPids.size(); i++)
+ {
+  // Identifying current sample
+  auto sample = _workerToSampleMap[i];
+
+  size_t resultStringSize;
+  int readBytes = read(_resultSizePipe[i][0], &resultStringSize, sizeof(size_t));
+
+  if (readBytes > 0)
+  {
+    char resultString[resultStringSize + BUFFERSIZE];
+
+    size_t curPos = 0;
+    while (curPos < resultStringSize)
+    {
+      size_t bufSize = BUFFERSIZE;
+      if (curPos + bufSize > resultStringSize) bufSize = resultStringSize - curPos;
+      read(_resultContentPipe[i][0], resultString + curPos, bufSize * sizeof(char));
+      curPos += bufSize;
+    }
+    resultString[resultStringSize] = '\0';
+
+    auto message = knlohmann::json::parse(resultString);
+    sample->_messageQueue.push(message);
+  }
+ }
 }
+
+//std::vector<knlohmann::json> Concurrent::gatherMessagesFromSamples()
+//{
+// std::vector<knlohmann::json> messages;
+//
+// // Check for child defunction
+// for (size_t i = 0; i < _workerPids.size(); i++)
+// {
+//   int status;
+//   pid_t result = waitpid(_workerPids[i], &status, WNOHANG);
+//   if (result != 0) KORALI_LOG_ERROR("Worker %i (Pid: %d) exited unexpectedly.\n", i, _workerPids[i]);
+// }
+//
+// // Scanning all incoming messages
+// bool foundMessage = true;
+// while (foundMessage == true)
+// {
+//   foundMessage = false;
+//
+//   // Reading pending messages
+//   for (size_t i = 0; i < _workerPids.size(); i++)
+//   {
+//    size_t resultStringSize;
+//    int readBytes = read(_resultSizePipe[i][0], &resultStringSize, sizeof(size_t));
+//
+//    if (readBytes > 0)
+//    {
+//      char resultString[resultStringSize + BUFFERSIZE];
+//
+//      size_t curPos = 0;
+//      while (curPos < resultStringSize)
+//      {
+//        size_t bufSize = BUFFERSIZE;
+//        if (curPos + bufSize > resultStringSize) bufSize = resultStringSize - curPos;
+//        read(_resultContentPipe[i][0], resultString + curPos, bufSize * sizeof(char));
+//        curPos += bufSize;
+//      }
+//      resultString[resultStringSize] = '\0';
+//
+//      auto message = knlohmann::json::parse(resultString);
+//      messages.push_back(message);
+//      foundMessage = true;
+//    }
+//   }
+// }
+//
+// return messages;
+//}
 
 void Concurrent::stackEngine(Engine *engine)
 {

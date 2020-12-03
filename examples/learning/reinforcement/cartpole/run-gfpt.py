@@ -107,6 +107,6 @@ e["File Output"]["Enabled"] = False
 ### Running Experiment
 
 #k["Conduit"]["Type"] = "Distributed"
-#k["Conduit"]["Type"] = "Concurrent"
-#k["Conduit"]["Concurrent Jobs"] = 1
+k["Conduit"]["Type"] = "Concurrent"
+k["Conduit"]["Concurrent Jobs"] = 1
 k.run(e)

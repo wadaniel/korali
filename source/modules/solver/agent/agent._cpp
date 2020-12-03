@@ -63,11 +63,7 @@ void Agent::runGeneration()
   agent["Module"] = "Problem";
   agent["Operation"] = "Run Episode";
   agent["Hyperparameters"] = _hyperparameters;
-  agent["Mode"] = "Training";
   agent["Random Action Probability"] = _randomActionProbabilityEffectiveValue;
-
-  // Initializing statistical information
-  _currentReward = 0.0;
 
   // Storage to keep experience information
   knlohmann::json experience;
@@ -122,69 +118,36 @@ void Agent::runGeneration()
   // Now that we have the entire episode, process its experiences (add them to replay memory)
   for (size_t i = 0; i < episode.size(); i++) processExperience(episode[i]);
 
-  // Waiting for agent to finish
+  // Waiting for agent to finish and increasing number of episodes
   KORALI_WAIT(agent);
-
-  // Adding to the number of episodes
   _currentEpisode++;
 
-  // Updating if exceeded best training policy so far.
-  if (_currentReward > _bestTrainingReward)
+  // Getting the training reward of the latest episode
+  _lastTrainingReward = agent["Training Reward"].get<float>();
+
+  // Keeping training statistics. Updating if exceeded best training policy so far.
+  if (_lastTrainingReward > _bestTrainingReward)
   {
-    _bestTrainingReward = _currentReward;
+    _bestTrainingReward = _lastTrainingReward;
     _bestTrainingEpisode = _currentEpisode;
   }
 
-  // If the policy has exceeded the threshold during training, it is time to test it properly (without noise)
-  // Otherwise, let current testing reward remain as -inf.
-  if (_currentReward >= _trainingRewardThreshold)
+  // If the policy has exceeded the threshold during training, we gather its statistics
+  if (agent["Tested Policy"] == true)
   {
-    // Broadcasting hyperparameters testing
-    KORALI_UPDATE_GLOBALS("Hyperparameters", _hyperparameters);
+   _candidatePoliciesTested++;
 
-    // Increasing tested policy counter
-    _candidatePoliciesTested++;
+   _averageTestingReward = agent["Average Testing Reward"].get<float>();
+   _bestTestingReward = agent["Best Testing Reward"].get<float>();
+   _worstTestingReward = agent["Worst Testing Reward"].get<float>();
 
-    // Creating storage for agents
-    std::vector<Sample> agents(_policyTestingEpisodes);
-
-    // Initializing the agents and their environments
-    for (size_t i = 0; i < _policyTestingEpisodes; i++)
-    {
-      // Configuring Agent
-      agents[i]["Sample Id"] = _currentSampleID++;
-      agents[i]["Module"] = "Problem";
-      agents[i]["Hyperparameters"] = _hyperparameters;
-      agents[i]["Operation"] = "Run Episode";
-      agents[i]["Mode"] = "Testing";
-      agents[i]["Random Action Probability"] = 0.0;
-
-      // Launching agent initialization
-      KORALI_START(agents[i]);
-    }
-
-    KORALI_WAITALL(agents);
-
-    // Calculating average testing reward
-    _averageTestingReward = 0.0;
-    _bestTestingReward = -korali::Inf;
-    _worstTestingReward = +korali::Inf;
-    for (size_t i = 0; i < _policyTestingEpisodes; i++)
-    {
-      float reward = agents[i]["Cumulative Reward"].get<float>();
-      _averageTestingReward += reward;
-      if (reward > _bestTestingReward) _bestTestingReward = reward;
-      if (reward < _worstTestingReward) _worstTestingReward = reward;
-    }
-    _averageTestingReward = _averageTestingReward / _policyTestingEpisodes;
-
-    // If the average testing reward is better than the previous best, replace it
-    // and store hyperparameters as best so far.
-    if (_averageTestingReward > _bestAverageTestingReward)
-    {
-      _bestAverageTestingReward = _averageTestingReward;
-      _bestHyperparameters = _hyperparameters;
-    }
+   // If the average testing reward is better than the previous best, replace it
+   // and store hyperparameters as best so far.
+   if (_averageTestingReward > _bestAverageTestingReward)
+   {
+     _bestAverageTestingReward = _averageTestingReward;
+     _bestHyperparameters = agent["Hyperparameters"];
+   }
   }
 
   /////////////// Updating experience probabilities
@@ -220,9 +183,6 @@ void Agent::processExperience(knlohmann::json &experience)
   e.probability = 0.0;
   e.policy = experience["Policy"];
   _experienceReplay.add(e);
-
-  // Adding experience's reward to episode's reward
-  _currentReward += e.reward;
 }
 
 void Agent::updateExperienceReplayProbabilities()
@@ -360,7 +320,7 @@ void Agent::printGenerationAfter()
   else
     _k->_logger->logInfo("Normal", " + Optimization Step Count:         %lu\n", _optimizationStepCount);
 
-  _k->_logger->logInfo("Normal", " + Current Reward:              %f/%f\n", _currentReward, _trainingRewardThreshold);
+  _k->_logger->logInfo("Normal", " + Latest Reward:              %f/%f\n", _lastTrainingReward, _problem->_trainingRewardThreshold);
   _k->_logger->logInfo("Normal", " + Best Reward:                 %f (%lu)\n", _bestTrainingReward, _bestTrainingEpisode);
   _k->_logger->logInfo("Normal", " + Current p(Random Action):       %f\n", _randomActionProbabilityEffectiveValue);
 

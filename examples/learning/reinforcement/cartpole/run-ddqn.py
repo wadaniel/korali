@@ -13,8 +13,9 @@ e = korali.Experiment()
 e["Problem"]["Type"] = "Reinforcement Learning / Discrete"
 e["Problem"]["Possible Actions"] = [ [ -10.0 ], [  10.0 ] ]
 e["Problem"]["Environment Function"] = env
-e["Problem"]["Action Repeat"] = 1
 e["Problem"]["Actions Between Policy Updates"] = 1
+e["Problem"]["Training Reward Threshold"] = 400
+e["Problem"]["Policy Testing Episodes"] = 20
 
 e["Variables"][0]["Name"] = "Cart Position"
 e["Variables"][0]["Type"] = "State"
@@ -51,11 +52,13 @@ e["Solver"]["Random Action Probability"]["Decrease Rate"] = 0.10
 ## Defining Q-Critic and Action-selection (policy) optimizers
 
 e["Solver"]["Critic"]["Mini Batch Size"] = 32
-e["Solver"]["Critic"]["Learning Rate"] = 0.01
+e["Solver"]["Critic"]["Learning Rate"] = 0.0001
 e["Solver"]["Critic"]["Discount Factor"] = 0.99
-e["Solver"]["Critic"]["Target Update Delay"] = 200
+e["Solver"]["Critic"]["Target Update Delay"] = 20
 
 ### Defining the shape of the neural network
+
+e["Solver"]["Critic"]["Neural Network"]["Engine"] = "OneDNN"
 
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear"
@@ -73,13 +76,11 @@ e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Activation Function"]["Typ
 
 ### Defining Termination Criteria
 
-e["Solver"]["Training Reward Threshold"] = 400
-e["Solver"]["Policy Testing Episodes"] = 20
 e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 450
 
 ### Setting file output configuration
 
-e["File Output"]["Frequency"] = 100
+e["File Output"]["Enabled"] = False
 
 ### Running Experiment
 

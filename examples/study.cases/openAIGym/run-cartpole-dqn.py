@@ -16,7 +16,8 @@ e = korali.Experiment()
 e["Problem"]["Type"] = "Reinforcement Learning / Discrete"
 e["Problem"]["Possible Actions"] = [ [ 0.0 ], [ 1.0 ] ]
 e["Problem"]["Environment Function"] = env
-e["Problem"]["Action Repeat"] = 1
+e["Problem"]["Training Reward Threshold"] = 800
+e["Problem"]["Policy Testing Episodes"] = 20
 e["Problem"]["Actions Between Policy Updates"] = 1
 
 e["Variables"][0]["Name"] = "Cart Position"
@@ -38,13 +39,12 @@ e["Variables"][4]["Type"] = "Action"
 
 e["Solver"]["Type"] = "Agent / Discrete / DQN"
 e["Solver"]["Optimization Steps Per Update"] = 100
-e["Solver"]["Experiences Between Agent Trainings"] = 100
-e["Solver"]["Mini Batch Strategy"] = "Uniform"
+e["Solver"]["Experiences Between Agent Trainings"] = 10
 
 ### Defining Experience Replay configuration
 
 e["Solver"]["Experience Replay"]["Start Size"] = 1000
-e["Solver"]["Experience Replay"]["Maximum Size"] = 50000
+e["Solver"]["Experience Replay"]["Maximum Size"] = 10000
 
 ### Defining probability of taking a random action (epsilon)
 
@@ -54,10 +54,10 @@ e["Solver"]["Random Action Probability"]["Decrease Rate"] = 0.10
 
 ## Defining Q-Critic and Action-selection (policy) optimizers
 
-e["Solver"]["Critic"]["Mini Batch Size"] = 64
+e["Solver"]["Critic"]["Mini Batch Size"] = 32
 e["Solver"]["Critic"]["Learning Rate"] = 0.001
 e["Solver"]["Critic"]["Discount Factor"] = 0.99
-e["Solver"]["Critic"]["Target Update Delay"] = 50
+e["Solver"]["Critic"]["Target Update Delay"] = 500
 
 ### Defining the shape of the neural network
 
@@ -77,9 +77,7 @@ e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Activation Function"]["Typ
 
 ### Defining Termination Criteria
 
-e["Solver"]["Training Reward Threshold"] = 800
-e["Solver"]["Policy Testing Episodes"] = 20
-e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 950
+e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 450
 
 ### Setting file output configuration
 

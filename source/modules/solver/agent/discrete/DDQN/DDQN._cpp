@@ -75,10 +75,10 @@ void DDQN::initializeAgent()
   *********************************************************************/
 
   // Storage for  A(s,a_i) for all actions
-  aValAction.resize(_problem->_possibleActions.size());
+  _aValAction.resize(_problem->_possibleActions.size());
 
   // Storage for  Q(s,a_i) for all actions
-  qValStateAction.resize(_problem->_possibleActions.size());
+  _qValStateAction.resize(_problem->_possibleActions.size());
 
   /*********************************************************************
   * Loading/Setting Hyperparameters
@@ -145,7 +145,7 @@ void DDQN::trainAgent()
       auto bestAction = _problem->_possibleActions[bestActionIdx];
 
       // Evaluating Q = V(s) + A(s, a_best) - 1/n * A(s, a')
-      auto qNextExp = vValState + qValStateAction[bestActionIdx] - aValAverage;
+      auto qNextExp = _vValState + _qValStateAction[bestActionIdx] - _aValAverage;
 
       // Calculating Q*
       qStar += _criticDiscountFactor * qNextExp;
@@ -155,8 +155,8 @@ void DDQN::trainAgent()
     auto pActions = getActionProbabilities(curState);
 
     // Now calculating targets for V(s) and A(s,a)
-    float vTarget = qStar - qValStateAction[curActionIdx] + aValAverage;
-    float aTarget = qStar - vValState + aValAverage;
+    float vTarget = qStar - _qValStateAction[curActionIdx] + _aValAverage;
+    float aTarget = qStar - _vValState + _aValAverage;
 
     // Updating inputs to training learners
     for (size_t j = 0; j < curState.size(); j++) _aProblem->_inputs[i][j] = curState[j];
@@ -209,13 +209,13 @@ std::vector<float> DDQN::getActionProbabilities(const std::vector<float> &state)
   std::vector<float> stateActionInput(_problem->_stateVectorSize + _problem->_actionVectorSize);
 
   // Computing V(s)
-  vValState = _vLearner->getEvaluation(state)[0];
+  _vValState = _vLearner->getEvaluation(state)[0];
 
   // Storing state into the critic input (will not change)
   for (size_t i = 0; i < state.size(); i++) stateActionInput[i] = state[i];
 
   // Initializing calculation of average A(s,a')
-  aValAverage = 0.0;
+  _aValAverage = 0.0;
 
   // Iterating over all possible actions, calculating their A(s,a)
   for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
@@ -225,43 +225,35 @@ std::vector<float> DDQN::getActionProbabilities(const std::vector<float> &state)
       stateActionInput[_problem->_stateVectorSize + j] = _problem->_possibleActions[i][j];
 
     // Computing A(s,a)
-    aValAction[i] = _aLearner->getEvaluation(stateActionInput)[0];
+    _aValAction[i] = _aLearner->getEvaluation(stateActionInput)[0];
 
     // Adding to sum counter
-    aValAverage += aValAction[i];
+    _aValAverage += _aValAction[i];
   }
 
-  // Calculating average A(s,a')
-  aValAverage = aValAverage / (float)_problem->_possibleActions.size();
-
-  // Storage for action probabilities
+  // Storage for exp values
   std::vector<float> pActions(_problem->_possibleActions.size());
 
-  // Storage for the cumulative e^Q(s,a_i) for softmax calculation
-  float sumExpQVal = 0.0;
+  // Looking for max element from advantage values
+  auto maxAdvantage { *std::max_element(_aValAction.begin(), _aValAction.end()) };
 
-  // Iterating over all possible actions, checking their Q(s,a)
+  // Storage for exp(A) and sum
+  std::vector<double> expA(_problem->_possibleActions.size());
+  double expASum = 0.0;
+
+  // Calculating exp(A) and sum
   for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
   {
-    // Computing Q(s,a_i) = V(s) + A(s,a) - 1/n A(s,a')
-    float curQVal = vValState + aValAction[i] - aValAverage;
-
-    // Computing e^Q(s,a_i)
-    float expCurQVal = std::exp(curQVal);
-
-    // Computing Sum_i(e^Q(s,a_i))
-    sumExpQVal += expCurQVal;
-
-    // Storing partial value of the probability of the action
-    pActions[i] = expCurQVal;
+   expA[i] = std::exp(_aValAction[i] - maxAdvantage);
+   expASum += expA[i];
   }
 
-  // Calculating inverse of Sum_i(e^Q(s,a_i))
-  float invSumExpQVal = 1.0f / sumExpQVal;
-
-  // Normalizing action probabilities
+  // Computing probabilities
   for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
-    pActions[i] *= invSumExpQVal;
+  {
+    double pAction = expA[i] / expASum;
+    pActions[i] = pAction;
+  }
 
   // Returning the best found
   return pActions;

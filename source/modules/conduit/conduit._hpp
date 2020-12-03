@@ -145,7 +145,7 @@ class Conduit : public Module
   * @brief Non-blocking call to gather all incoming messages from a set of samples
   * @return Message array
   */
-  virtual std::vector<knlohmann::json> gatherMessagesFromSamples() { KORALI_LOG_ERROR("Not yet implemented\n"); };
+  virtual std::vector<knlohmann::json> gatherMessagesFromSamples() = 0;
 };
 
 } // namespace korali

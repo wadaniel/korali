@@ -20,7 +20,6 @@ setResultsDir(args.dir)
 
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = env
-e["Problem"]["Action Repeat"] = 1
 e["Problem"]["Actions Between Policy Updates"] = 1
 
 ### Defining state variables
@@ -75,6 +74,8 @@ e["Solver"]["Critic"]["Discount Factor"] = 0.99
 e["Solver"]["Critic"]["Learning Rate"] = 0.0001
 e["Solver"]["Critic"]["Mini Batch Size"] = 128
   
+e["Solver"]["Critic"]["Neural Network"]["Engine"] = "OneDNN"
+
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear"
 
@@ -94,6 +95,8 @@ e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Activation Function"]["Typ
 e["Solver"]["Policy"]["Learning Rate"] = 0.000001
 e["Solver"]["Policy"]["Mini Batch Size"] = 128
 e["Solver"]["Policy"]["Target Accuracy"] = 0.0001
+
+e["Solver"]["Policy"]["Neural Network"]["Engine"] = "OneDNN"
 
 e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
 e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear"
@@ -121,4 +124,5 @@ e["File Output"]["Enabled"] = False
 
 ### Running Experiment
 
+k["Conduit"]["Type"] = "Distributed"
 k.run(e)

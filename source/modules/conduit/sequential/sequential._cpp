@@ -45,6 +45,7 @@ void Sequential::broadcastMessageToWorkers(knlohmann::json &message)
 {
   // Queueing outgoing message directly
   _inputMessageQueue.push(message);
+
   co_switch(_workerThread);
 }
 
@@ -59,8 +60,7 @@ knlohmann::json Sequential::recvMessageFromEngine()
   Engine *engine = _engineStack.top();
 
   // While there's no message, keep executing sample until there is
-  while (_inputMessageQueue.empty())
-    co_switch(engine->_currentExperiment->_thread);
+  while (_inputMessageQueue.empty()) co_switch(engine->_currentExperiment->_thread);
 
   // Pulling message from incoming message queue
   auto message = _inputMessageQueue.front();
@@ -72,8 +72,7 @@ knlohmann::json Sequential::recvMessageFromEngine()
 knlohmann::json Sequential::recvMessageFromSample(Sample &sample)
 {
   // While there's no message, keep executing sample until there is
-  while (_outputMessageQueue.empty())
-    co_switch(_workerThread);
+  while (_outputMessageQueue.empty()) co_switch(_workerThread);
 
   // Pulling message from outgoing message queue
   auto message = _outputMessageQueue.front();
@@ -88,6 +87,17 @@ void Sequential::sendMessageToSample(Sample &sample, knlohmann::json &message)
   _inputMessageQueue.push(message);
 
   co_switch(_workerThread);
+}
+
+std::vector<knlohmann::json> Sequential::gatherMessagesFromSamples()
+{
+ // While there's no message, keep executing sample until there is
+ while (_outputMessageQueue.empty()) co_switch(_workerThread);
+
+ auto message = _outputMessageQueue.front();
+ _outputMessageQueue.pop();
+
+ return { message };
 }
 
 void Sequential::stackEngine(Engine *engine)

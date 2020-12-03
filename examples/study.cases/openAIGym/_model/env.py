@@ -42,6 +42,6 @@ def env(s):
 
  # Setting termination status
  if (done):
-  s["Termination"] = "Normal"
+  s["Termination"] = "Terminal"
  else:
   s["Termination"] = "Truncated"

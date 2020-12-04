@@ -64,7 +64,6 @@ void ReinforcementLearning::runEpisode(Sample &agent)
   /***************************************************************
    * Environment Configuration section
    ***************************************************************/
-//  printf("Running Episode\n");
 
   // Getting RL-compatible solver
   auto _agent = dynamic_cast<solver::Agent *>(_k->_solver);
@@ -131,7 +130,7 @@ void ReinforcementLearning::runEpisode(Sample &agent)
     // If the episode was truncated, then save the terminal state
     if (agent["Termination"] == "Truncated") experience["Truncated State"] = agent["State"];
 
-    // Adding to cumulative trainingreward
+    // Adding to cumulative training reward
     trainingReward += agent["Reward"].get<float>();
 
     // If training, updating engine with the current experience
@@ -143,17 +142,14 @@ void ReinforcementLearning::runEpisode(Sample &agent)
 
       experience["Request New Policy"] = requestNewPolicy;
 
-      // Sending experience to engine
-//      printf("Sending message to engine\n");
-      KORALI_SEND_MSG_TO_ENGINE(experience);
+      // Sending experience to engine if it's non terminal. If it's terminal we send it last (see below)
+      if (agent["Termination"] == "Non Terminal") KORALI_SEND_MSG_TO_ENGINE(experience);
 
       // If requested new policy, wait for incoming message containing new hyperparameters
       if (requestNewPolicy)
       {
-//       printf("Requesting message from engine\n");
         agent["Hyperparameters"] = KORALI_RECV_MSG_FROM_ENGINE();
         _agent->updateAgentPolicy(agent["Hyperparameters"]);
-//        printf("done\n");
       }
     }
   }
@@ -217,6 +213,8 @@ void ReinforcementLearning::runEpisode(Sample &agent)
     agent["Worst Testing Reward"] = worstTestingReward;
   }
 
+  // Sending last experience last (after testing), to prevent unnecessary waiting in the engine
+  KORALI_SEND_MSG_TO_ENGINE(experience);
 }
 
 } // namespace problem

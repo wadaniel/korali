@@ -43,11 +43,11 @@ class Engine;
 */
 enum class SampleState
 {
-  uninitialized,
-  initialized,
-  running,
-  waiting,
-  finished
+  uninitialized = 1,
+  initialized = 2,
+  running = 3,
+  waiting  = 4,
+  finished = 5
 };
 
 /**

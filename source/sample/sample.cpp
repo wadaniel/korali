@@ -64,6 +64,8 @@ void Sample::sampleLauncher()
 
   if ((*_self)["Module"] == "Solver")
     experiment->_solver->runOperation(operation, *_self);
+
+  (*_self)["Has Finished"] = true;
 }
 
 knlohmann::json &Sample::globals()

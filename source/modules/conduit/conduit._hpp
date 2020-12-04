@@ -112,46 +112,40 @@ class Conduit : public Module
   virtual void initServer() = 0;
 
   /**
-  * @brief Broadcasts a message to all workers
+  * @brief (Engine -> Worker) Broadcasts a message to all workers
   * @param message JSON object with information to broadcast
   */
   virtual void broadcastMessageToWorkers(knlohmann::json &message) = 0;
 
   /**
-  * @brief Sends an update to the engine to provide partial information while the sample is still active
+   * @brief (Engine <- Worker) Receives all pending incoming messages and stores them into the corresponding sample's message queue.
+   */
+  virtual void listenWorkers() = 0;
+
+  /**
+   * @brief Start pending samples and retrieve any pending messages for them
+   * @param samples The set of samples
+   */
+  void listen(std::vector<Sample> &samples);
+
+  /**
+  * @brief (Sample -> Engine) Sends an update to the engine to provide partial information while the sample is still active
   * @param message Message to send to engine
   */
   virtual void sendMessageToEngine(knlohmann::json &message) = 0;
 
   /**
-  * @brief Blocking call that waits until any message incoming from the engine.
+  * @brief (Sample <- Engine) Blocking call that waits until any message incoming from the engine.
   * @return message from the engine.
   */
   virtual knlohmann::json recvMessageFromEngine() = 0;
 
   /**
-  * @brief Blocking call that waits until any message is received from any sample.
-  * @param sample The sample from which to receive an update
-  * @return Message from the sample.
-  */
-  virtual knlohmann::json recvMessageFromSample(Sample &sample) = 0;
-
-  /**
-  * @brief Sends an update to a still active sample
+  * @brief (Engine -> Sample) Sends an update to a still active sample
   * @param sample The sample from which to receive an update
   * @param message Message to send to the sample.
   */
   virtual void sendMessageToSample(Sample &sample, knlohmann::json &message) = 0;
-
-  /**
-  * @brief (Blocking) Receives all pending incoming messages (at least one) and stores them into the corresponding sample's message queue.
-  */
-  virtual void listen() = 0;
-
-  /**
-  * @brief (Non-Blocking) Receives all pending incoming messages and stores them into the corresponding sample's message queue.
-  */
-  virtual void listenAsync() = 0;
 };
 
 } // namespace korali

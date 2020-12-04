@@ -23,9 +23,9 @@ namespace conduit
 {
 void Distributed::initialize()
 {
-#ifdef _KORALI_USE_MPI
-  _rankCount = 1;
-  _rankId = 0;
+ #ifndef _KORALI_USE_MPI
+   KORALI_LOG_ERROR("Running an Distributed-based Korali application, but Korali was installed without support for Distributed.\n");
+ #else
 
   int isInitialized = 0;
   MPI_Initialized(&isInitialized);
@@ -41,60 +41,69 @@ void Distributed::initialize()
     _mpiCommunicator = (MPI_Comm)_communicator;
   #endif
 
-  int mpiRankCount;
-  int mpiRankId;
-  MPI_Comm_size(_mpiCommunicator, &mpiRankCount);
-  MPI_Comm_rank(_mpiCommunicator, &mpiRankId);
-  _rankCount = mpiRankCount;
-  _rankId = mpiRankId;
-#endif
+  MPI_Comm_size(_mpiCommunicator, &_rankCount);
+  MPI_Comm_rank(_mpiCommunicator, &_rankId);
 
-#ifndef _KORALI_USE_MPI
-  KORALI_LOG_ERROR("Running an Distributed-based Korali application, but Korali was installed without support for Distributed.\n");
-#endif
-
-#ifdef _KORALI_USE_MPI
   MPI_Barrier(_mpiCommunicator);
   _continueEvaluations = true;
 
   if (_rankCount == 1) KORALI_LOG_ERROR("Korali Distributed applications require at least 2 Distributed ranks to run.\n");
 
-  size_t teamId = 0;
-  _teamCount = (_rankCount - 1) / _workersPerTeam;
+  int curWorker = 0;
+  _workerCount = (_rankCount - 1) / _ranksPerWorker;
   _localRankId = 0;
 
-  _teamIdSet = false;
-  size_t currentRank = 0;
-  _workerProcesses.clear();
+  _workerIdSet = false;
+
+  // Storage to map MPI ranks to their corresponding worker
+  _workerTeams.resize(_workerCount);
+  for (size_t i = 0; i < _workerCount; i++)
+   _workerTeams[i].resize(_ranksPerWorker);
+
+  // Storage to map workers to MPI ranks
+  _rankToWorkerMap.resize(_rankCount);
+
+  // Initializing available worker queue
   _workerQueue = queue<size_t>();
   while (!_workerQueue.empty()) _workerQueue.pop();
-  for (size_t i = 0; i < _teamCount; i++)
-  {
-    _workerQueue.push(i);
-    for (size_t j = 0; j < _workersPerTeam; j++)
+
+  // Putting workers in the queue
+  for (size_t i = 0; i < _workerCount; i++)
+   _workerQueue.push(i);
+
+  // Now assigning ranks to workers and viceversa
+  int currentRank = 0;
+  for (int i = 0; i < _workerCount; i++)
+    for (int j = 0; j < _ranksPerWorker; j++)
     {
       if (currentRank == _rankId)
       {
-        teamId = i;
+        curWorker = i;
         _localRankId = j;
-        _teamIdSet = true;
+        _workerIdSet = true;
       }
-      _workerProcesses[i].push_back(currentRank++);
-    }
-  }
 
+      _workerTeams[i][j] = currentRank;
+      _rankToWorkerMap[currentRank] = i;
+      currentRank++;
+    }
+
+  // If this is the root rank, check whether the number of ranks is correct
   if (isRoot())
   {
     int mpiSize;
     MPI_Comm_size(_mpiCommunicator, &mpiSize);
 
-    if (_rankCount < _workersPerTeam + 1)
-      KORALI_LOG_ERROR("You are running Korali with %d ranks. However, you need at least %d ranks to have at least one worker team. \n", _rankCount, _workersPerTeam + 1);
+    if (_rankCount < _ranksPerWorker + 1)
+      KORALI_LOG_ERROR("You are running Korali with %d ranks. However, you need at least %d ranks to have at least one worker team. \n", _rankCount, _ranksPerWorker + 1);
 
-    teamId = _teamCount + 1;
+    curWorker = _workerCount + 1;
   }
 
-  MPI_Comm_split(_mpiCommunicator, teamId, _rankId, &__KoraliTeamComm);
+  // Creating communicator
+  MPI_Comm_split(_mpiCommunicator, curWorker, _rankId, &__KoraliTeamComm);
+
+  // Waiting for all ranks to reach this point
   MPI_Barrier(_mpiCommunicator);
 #endif
 }
@@ -102,7 +111,7 @@ void Distributed::initialize()
 void Distributed::initServer()
 {
 #ifdef _KORALI_USE_MPI
-  if (isRoot() == false && _teamIdSet == true) worker();
+  if (isRoot() == false && _workerIdSet == true) worker();
 #endif
 }
 
@@ -117,9 +126,9 @@ void Distributed::finalize()
 
   if (isRoot())
   {
-    for (size_t i = 0; i < _teamCount; i++)
-      for (size_t j = 0; j < _workersPerTeam; j++)
-        MPI_Send(terminationString.c_str(), terminationStringSize, MPI_CHAR, _workerProcesses[i][j], MPI_MESSAGE_JSON, _mpiCommunicator);
+    for (size_t i = 0; i < _workerCount; i++)
+      for (size_t j = 0; j < _ranksPerWorker; j++)
+        MPI_Send(terminationString.c_str(), terminationStringSize, MPI_CHAR, _workerTeams[i][j], MPI_MESSAGE_JSON, _mpiCommunicator);
   }
 
   MPI_Barrier(_mpiCommunicator);
@@ -137,13 +146,13 @@ void Distributed::broadcastMessageToWorkers(knlohmann::json &message)
   string messageString = message.dump();
   size_t messageStringSize = messageString.size();
 
-  for (size_t i = 0; i < _teamCount; i++)
-    for (size_t j = 0; j < _workersPerTeam; j++)
-      MPI_Send(messageString.c_str(), messageStringSize, MPI_CHAR, _workerProcesses[i][j], MPI_MESSAGE_JSON, _mpiCommunicator);
+  for (size_t i = 0; i < _workerCount; i++)
+    for (size_t j = 0; j < _ranksPerWorker; j++)
+      MPI_Send(messageString.c_str(), messageStringSize, MPI_CHAR, _workerTeams[i][j], MPI_MESSAGE_JSON, _mpiCommunicator);
 #endif
 }
 
-size_t Distributed::getRootRank()
+int Distributed::getRootRank()
 {
 #ifdef _KORALI_USE_MPI
   return _rankCount - 1;
@@ -205,6 +214,8 @@ knlohmann::json Distributed::recvMessageFromEngine()
 knlohmann::json Distributed::recvMessageFromSample(Sample &sample)
 {
   knlohmann::json message;
+  int worker = sample._workerId;
+  int source = _workerTeams[worker][0];
 
 #ifdef _KORALI_USE_MPI
 
@@ -214,13 +225,14 @@ knlohmann::json Distributed::recvMessageFromSample(Sample &sample)
   int flag = 0;
   while (flag == 0)
   {
-    MPI_Iprobe(_workerProcesses[sample._workerId][0], MPI_MESSAGE_JSON, _mpiCommunicator, &flag, &status);
+    MPI_Iprobe(source, MPI_MESSAGE_JSON, _mpiCommunicator, &flag, &status);
     if (flag)
     {
+      // Receiving message from the worker
       int messageSize = 0;
       MPI_Get_count(&status, MPI_CHAR, &messageSize);
       char messageStringChar[messageSize + 1];
-      MPI_Recv(messageStringChar, messageSize, MPI_CHAR, _workerProcesses[sample._workerId][0], MPI_MESSAGE_JSON, _mpiCommunicator, MPI_STATUS_IGNORE);
+      MPI_Recv(messageStringChar, messageSize, MPI_CHAR, source, MPI_MESSAGE_JSON, _mpiCommunicator, MPI_STATUS_IGNORE);
       messageStringChar[messageSize] = '\0';
       message = knlohmann::json::parse(messageStringChar);
     }
@@ -235,29 +247,73 @@ knlohmann::json Distributed::recvMessageFromSample(Sample &sample)
   return message;
 }
 
-//std::vector<knlohmann::json> Distributed::gatherMessagesFromSamples()
-//{
-// std::vector<knlohmann::json> messages;
-//
-// int flag = 1;
-// while (flag != 0)
-// {
-//   MPI_Status status;
-//   MPI_Iprobe(MPI_ANY_SOURCE, MPI_MESSAGE_JSON, _mpiCommunicator, &flag, &status);
-//   if (flag)
-//   {
-//     int messageSize = 0;
-//     MPI_Get_count(&status, MPI_CHAR, &messageSize);
-//     char messageStringChar[messageSize + 1];
-//     MPI_Recv(messageStringChar, messageSize, MPI_CHAR, status.MPI_SOURCE, MPI_MESSAGE_JSON, _mpiCommunicator, MPI_STATUS_IGNORE);
-//     messageStringChar[messageSize] = '\0';
-//     auto message = knlohmann::json::parse(messageStringChar);
-//     messages.push_back(message);
-//   }
-// }
-//
-// return messages;
-//}
+void Distributed::listen()
+{
+ // Getting current engine
+ Engine *engine = _engineStack.top();
+
+ // Scanning all incoming messages
+ int foundMessage = 0;
+ while (foundMessage == 0)
+ {
+   // Reading pending messages from any worker
+   MPI_Status status;
+   MPI_Iprobe(MPI_ANY_SOURCE, MPI_MESSAGE_JSON, _mpiCommunicator, &foundMessage, &status);
+
+   // If message found, receive it and storing in the corresponding sample's queue
+   if (foundMessage == 1)
+   {
+    // Obtaining source rank, worker ID, and destination sample from the message
+    int source = status.MPI_SOURCE;
+    int worker = _rankToWorkerMap[source];
+    auto sample = _workerToSampleMap[worker];
+
+    // Receiving message from the worker
+    int messageSize = 0;
+    MPI_Get_count(&status, MPI_CHAR, &messageSize);
+    char messageStringChar[messageSize + 1];
+    MPI_Recv(messageStringChar, messageSize, MPI_CHAR, source, MPI_MESSAGE_JSON, _mpiCommunicator, MPI_STATUS_IGNORE);
+    messageStringChar[messageSize] = '\0';
+    auto message = knlohmann::json::parse(messageStringChar);
+
+    // Storing message in the sample message queue
+    sample->_messageQueue.push(message);
+   }
+
+   // If no messages found, yield execution for other experiments
+   if (foundMessage == 0) co_switch(engine->_currentExperiment->_thread);
+ }
+}
+
+void Distributed::listenAsync()
+{
+ // Scanning all incoming messages
+ int foundMessage = 0;
+
+ // Reading pending messages from any worker
+ MPI_Status status;
+ MPI_Iprobe(MPI_ANY_SOURCE, MPI_MESSAGE_JSON, _mpiCommunicator, &foundMessage, &status);
+
+ // If message found, receive it and storing in the corresponding sample's queue
+ if (foundMessage == 1)
+ {
+  // Obtaining source rank, worker ID, and destination sample from the message
+  int source = status.MPI_SOURCE;
+  int worker = _rankToWorkerMap[source];
+  auto sample = _workerToSampleMap[worker];
+
+  // Receiving message from the worker
+  int messageSize = 0;
+  MPI_Get_count(&status, MPI_CHAR, &messageSize);
+  char messageStringChar[messageSize + 1];
+  MPI_Recv(messageStringChar, messageSize, MPI_CHAR, source, MPI_MESSAGE_JSON, _mpiCommunicator, MPI_STATUS_IGNORE);
+  messageStringChar[messageSize] = '\0';
+  auto message = knlohmann::json::parse(messageStringChar);
+
+  // Storing message in the sample message queue
+  sample->_messageQueue.push(message);
+ }
+}
 
 void Distributed::sendMessageToSample(Sample &sample, knlohmann::json &message)
 {
@@ -265,10 +321,10 @@ void Distributed::sendMessageToSample(Sample &sample, knlohmann::json &message)
   string messageString = message.dump();
   size_t messageStringSize = messageString.size();
 
-  for (size_t i = 0; i < _workersPerTeam; i++)
+  for (int i = 0; i < _ranksPerWorker; i++)
   {
-    int workerId = _workerProcesses[sample._workerId][i];
-    MPI_Send(messageString.c_str(), messageStringSize, MPI_CHAR, workerId, MPI_MESSAGE_JSON, _mpiCommunicator);
+    int rankId = _workerTeams[sample._workerId][i];
+    MPI_Send(messageString.c_str(), messageStringSize, MPI_CHAR, rankId, MPI_MESSAGE_JSON, _mpiCommunicator);
   }
 #endif
 }

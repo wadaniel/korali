@@ -146,12 +146,12 @@ class Conduit : public Module
   /**
   * @brief (Blocking) Receives all pending incoming messages (at least one) and stores them into the corresponding sample's message queue.
   */
-  virtual void listen() {printf("Not implemented\n"); exit(0);} ;
+  virtual void listen() = 0;
 
   /**
   * @brief (Non-Blocking) Receives all pending incoming messages and stores them into the corresponding sample's message queue.
   */
-  virtual void listenAsync() {printf("Not implemented\n"); exit(0);} ;
+  virtual void listenAsync() = 0;
 };
 
 } // namespace korali

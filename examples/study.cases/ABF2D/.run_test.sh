@@ -1,9 +1,9 @@
 #!/bin/bash
 
 ###### Check if necessary python modules are installed ######
-python3 -m pip show gym
+python3 -m pip show scipy
 if [ $? -ne 0 ]; then
- echo "[Korali] openAI gym not found, aborting test"
+ echo "[Korali] Scipy not found, aborting test"
  exit 0
 fi
 
@@ -25,9 +25,15 @@ rm -rf __test-*; check_result
 for file in *.py
 do
  sed -e 's%Defining Termination Criteria%Defining Termination Criteria\ne["Solver"]["Termination Criteria"]["Max Generations"] = 30\n%g' \
-     -e 's%k.run(e)%k.run(e); exit(0);\n%g' \
         ${file} > __test-${file}; check_result
 done
+
+###### If this is macOS, C++ linking may not be automatic: do not run test
+arch="$(uname -s)"
+if [ "$arch" == "Darwin" ]; then
+ log "[Korali] MacOS (Darwin) System Detected, aborting test."
+ exit 0
+fi
 
 ##### Running Test
 

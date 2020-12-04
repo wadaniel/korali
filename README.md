@@ -30,7 +30,7 @@ See: https://github.com/cselab/korali-apps
 
 The Korali Project is developed and maintained by
 
-* [**Sergio Miguel Martin**](https://www.cse-lab.ethz.ch/member/sergio-martin/), martiser at ethz.ch (Lead)
+* [**Sergio Miguel Martin**](https://www.cse-lab.ethz.ch/member/sergio-martin/), martiser at ethz.ch
 * [**Daniel W&auml;lchli**](https://www.cse-lab.ethz.ch/member/daniel-walchli/), wadaniel at ethz.ch
 * [**Georgios Arampatzis**](https://www.cse-lab.ethz.ch/member/georgios-arampatzis/), garampat at ethz.ch
 * [**Pascal Weber**](https://www.cse-lab.ethz.ch/member/pascal-weber/), webepasc at ethz.ch

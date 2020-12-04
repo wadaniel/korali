@@ -284,7 +284,7 @@ float cACER::stateValueFunction(const std::vector<float> &state)
   return V[0];
 }
 
-void cACER::trainAgent()
+void cACER::trainPolicy()
 {
   // Resetting cumulative Q*, for statistical purposes
   _cumulativeQStar = 0.;

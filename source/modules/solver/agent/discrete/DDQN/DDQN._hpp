@@ -68,7 +68,7 @@ class DDQN : public Discrete
 
   std::vector<float> getActionProbabilities(const std::vector<float> &state) override;
   void updateAgentPolicy(const knlohmann::json &hyperparameters) override;
-  void trainAgent() override;
+  void trainPolicy() override;
   void printAgentInformation() override;
   void initializeAgent() override;
 };

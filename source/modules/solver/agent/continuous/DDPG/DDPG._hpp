@@ -60,7 +60,7 @@ class DDPG : public Continuous
 
   knlohmann::json runPolicy(const std::vector<float> &state) override;
   void updateAgentPolicy(const knlohmann::json &hyperparameters) override;
-  void trainAgent() override;
+  void trainPolicy() override;
   void printAgentInformation() override;
   void initializeAgent() override;
 };

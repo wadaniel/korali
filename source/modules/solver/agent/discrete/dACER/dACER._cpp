@@ -95,7 +95,7 @@ void dACER::initializeAgent()
   _hyperparameters["Policy"] = _policyCurrentHyperparameters;
 }
 
-void dACER::trainAgent()
+void dACER::trainPolicy()
 {
   // Resetting critic statistics
   _cumulativeQStar = 0.0;        // Cumulative Q Retrace

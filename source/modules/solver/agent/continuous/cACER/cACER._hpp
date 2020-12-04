@@ -110,7 +110,7 @@ class cACER : public Continuous
   std::tuple<float, float> retraceFunction(size_t expId);
 
   knlohmann::json runPolicy(const std::vector<float> &state) override;
-  void trainAgent() override;
+  void trainPolicy() override;
   void updateAgentPolicy(const knlohmann::json &hyperparameters) override;
   void printAgentInformation() override;
   void initializeAgent() override;

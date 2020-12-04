@@ -30,7 +30,7 @@ void Agent::initialize()
   {
     _randomActionProbabilityCurrentValue = _randomActionProbabilityInitialValue;
     _currentEpisode = 0;
-    _optimizationStepCount = 0;
+    _policyUpdateCount = 0;
     _candidatePoliciesTested = 0;
     _currentSampleID = 0;
     _cumulativeQStar = 0;
@@ -101,8 +101,6 @@ void Agent::runGeneration()
       // Increasing total experience counter
       _experienceCount++;
 
-//      printf("Got experience\n");
-
       // Check if experience is terminal
       isTerminal = experience["Termination"] != "Non Terminal";
 
@@ -130,14 +128,15 @@ void Agent::runGeneration()
       }
     }
 
-   // Running policy training if the following conditions are met
-   if (_experienceCount % _experiencesBetweenAgentTrainings == 0) // If we accumulated enough experiences between updates, update now
-     if (_experienceReplay.size() >= _experienceReplayStartSize)  // Perform optimization steps on the critic/policy, if reached the minimum replay memory size
-       for (size_t i = 0; i < _optimizationStepsPerUpdate; i++)
-       {
-         trainAgent();
-         _optimizationStepCount++;
-       }
+   // Perform optimization steps on the critic/policy, if reached the minimum replay memory size
+   if (_experienceReplay.size() >= _experienceReplayStartSize)
+   {
+    // Defining new experience count threshold
+    size_t curThreshold = _experiencesBetweenPolicyUpdates*_policyUpdateCount  + _experienceReplayStartSize;
+
+    // If we accumulated enough experiences between updates, update now
+    if (_experienceCount > curThreshold) { trainPolicy();  _policyUpdateCount++; }
+   }
   }
 
   // Waiting for all samples to finish
@@ -181,7 +180,7 @@ void Agent::processExperience(knlohmann::json &experience)
   experience_t e;
 
   e.cache.setMaxAge(_cachePersistence);
-  e.cache.setTimer(&_optimizationStepCount);
+  e.cache.setTimer(&_policyUpdateCount);
 
   // Getting state, action, reward, and whether it's terminal
   e.state = experience["State"].get<std::vector<float>>();
@@ -332,10 +331,10 @@ void Agent::printGenerationAfter()
 
   _k->_logger->logInfo("Normal", "Training Statistics:\n");
 
-  if (_maxOptimizationSteps > 0)
-    _k->_logger->logInfo("Normal", " + Optimization Step Count:         %lu/%lu\n", _optimizationStepCount, _maxOptimizationSteps);
+  if (_maxPolicyUpdates > 0)
+    _k->_logger->logInfo("Normal", " + Policy Update Count:         %lu/%lu\n", _policyUpdateCount, _maxPolicyUpdates);
   else
-    _k->_logger->logInfo("Normal", " + Optimization Step Count:         %lu\n", _optimizationStepCount);
+    _k->_logger->logInfo("Normal", " + Policy Update Count:         %lu\n", _policyUpdateCount);
 
   _k->_logger->logInfo("Normal", " + Latest Reward:              %f/%f\n", _lastTrainingReward, _problem->_trainingRewardThreshold);
   _k->_logger->logInfo("Normal", " + Best Reward:                 %f (%lu)\n", _bestTrainingReward, _bestTrainingEpisode);

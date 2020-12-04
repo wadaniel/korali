@@ -140,9 +140,9 @@ class Agent : public Solver
   double _agentWaitTime;
 
   /**
-  * @brief Trains the Agent's critic/policy, based on the new experiences
+  * @brief Trains the Agent's policy, based on the new experiences
   */
-  virtual void trainAgent() = 0;
+  virtual void trainPolicy() = 0;
 
   /**
   * @brief Updates the agent's hyperparameters

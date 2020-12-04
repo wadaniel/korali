@@ -95,7 +95,7 @@ void NAF::initializeAgent()
   _criticLearner->setHyperparameters(_qLearner->getHyperparameters());
 }
 
-void NAF::trainAgent()
+void NAF::trainPolicy()
 {
   /***********************************************************************************
    * Training Phase

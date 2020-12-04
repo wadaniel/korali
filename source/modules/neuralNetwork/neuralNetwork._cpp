@@ -45,7 +45,7 @@ void NeuralNetwork::initialize()
 
   if (_engine == "CUDNN")
   {
-#ifdef _KORALI_USE_ONEDNN
+#ifdef _KORALI_USE_CUDNN
 
     if (cudnnCreate(&_cuDNNHandle) != CUDNN_STATUS_SUCCESS) KORALI_LOG_ERROR("Error initializing CUDNN Handle\n");
 
@@ -92,8 +92,10 @@ void NeuralNetwork::initialize()
 
   // Check output tanh mask configuration
   if (_outputTanhMask.empty() == false)
+  {
     if (_outputTanhMask.size() != outputSize)
       KORALI_LOG_ERROR("Wrong size of output Tanh mask passed to the neural network. Expected: %lu, provided: %lu.\n", outputSize, _outputTanhMask.size());
+  }
 
   // Check output SoftPlus mask configuration
   if (_outputSoftplusMask.empty() == false)
@@ -121,10 +123,6 @@ std::vector<float> NeuralNetwork::generateInitialHyperparameters()
   for (size_t i = 0; i < _layers.size(); i++)
   {
     auto layerParameters = _layers[i]->generateInitialHyperparameters();
-    // tmp fix (DW)
-    if (i == _layers.size() - 1)
-      for (size_t j = 0; j < layerParameters.size(); ++j)
-        layerParameters[j] *= 0.1;
     initialHyperparameters.insert(initialHyperparameters.end(), layerParameters.begin(), layerParameters.end());
   }
 

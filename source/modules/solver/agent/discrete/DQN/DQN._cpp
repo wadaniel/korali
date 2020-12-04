@@ -21,6 +21,9 @@ void DQN::initializeAgent()
 
   korali::Engine engine; // Engine to initialize experiments with
 
+  size_t outputLayer = _criticExperiment["Solver"]["Neural Network"]["Layers"].size() - 1;
+  _criticExperiment["Solver"]["Neural Network"]["Layers"][outputLayer]["Weight Scaling"] = 0.1;
+
   _criticExperiment["Problem"]["Type"] = "Supervised Learning";
   _criticExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
   _criticExperiment["Solver"]["Optimizer"] = _criticOptimizer;
@@ -37,9 +40,6 @@ void DQN::initializeAgent()
     for (size_t j = 0; j < _k->_variables.size(); j++)
       _criticExperiment["Problem"]["Inputs"][i][j] = 0.0;
   }
-
-  size_t outputLayer = _criticExperiment["Solver"]["Neural Network"]["Layers"].size() - 1;
-  _criticExperiment["Solver"]["Neural Network"]["Layers"][outputLayer]["Weight Scaling"] = 0.1;
 
   // Running initialization to verify that the configuration is correct
   engine.initialize(_criticExperiment);

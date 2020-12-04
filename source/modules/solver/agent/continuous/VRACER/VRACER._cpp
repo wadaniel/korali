@@ -103,6 +103,9 @@ void VRACER::initializeAgent()
     }
   }
 
+  size_t outputLayer = _criticPolicyExperiment["Solver"]["Neural Network"]["Layers"].size() - 1;
+  _criticPolicyExperiment["Solver"]["Neural Network"]["Layers"][outputLayer]["Weight Scaling"] = 0.1;
+
   // Running initialization to verify that the configuration is correct
   korali::Engine engine;
   engine.initialize(_criticPolicyExperiment);

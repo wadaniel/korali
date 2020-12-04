@@ -37,6 +37,7 @@ void Continuous::initializeAgent()
     _actionLowerBounds[i] = lowerBound;
     _actionUpperBounds[i] = upperBound;
     _actionScalings[i] = upperBound - lowerBound;
+    printf("%f\n", _actionScalings[i]);
   }
 }
 

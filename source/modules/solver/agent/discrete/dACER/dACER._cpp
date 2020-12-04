@@ -15,11 +15,14 @@ void dACER::initializeAgent()
   // Initializing common discrete agent configuration
   Discrete::initializeAgent();
 
+  korali::Engine engine; // Engine to initialize experiments with
+
   /*********************************************************************
  * Initializing Critic-Related Structures
  *********************************************************************/
 
-  korali::Engine engine; // Engine to initialize experiments with
+  size_t criticOutputLayer = _policyNeuralNetwork["Layers"].size() - 1;
+  _criticNeuralNetwork["Solver"]["Neural Network"]["Layers"][criticOutputLayer]["Weight Scaling"] = 0.1;
 
   _criticExperiment["Problem"]["Type"] = "Supervised Learning";
   _criticExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
@@ -49,8 +52,12 @@ void dACER::initializeAgent()
   * Initializing Policy-Related Structures
   *********************************************************************/
 
-  // Creating and running Actor Learning Experiments
+  size_t policyOutputLayer = _policyNeuralNetwork["Layers"].size() - 1;
+  _policyNeuralNetwork["Solver"]["Neural Network"]["Layers"][policyOutputLayer]["Weight Scaling"] = 0.1;
+  if (_policyNeuralNetwork["Layers"][policyOutputLayer]["Activation Function"]["Type"] != "Linear")
+    KORALI_LOG_ERROR("Policy Network Output Layers' (%zu) Activation Function must be of type 'Softmax'", policyOutputLayer);
 
+  // Creating and running Actor Learning Experiments
   _policyExperiment["Problem"]["Type"] = "Supervised Learning";
   _policyExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
   _policyExperiment["Solver"]["Loss Function"] = "Direct Gradient";
@@ -68,12 +75,6 @@ void dACER::initializeAgent()
     for (size_t j = 0; j < _problem->_possibleActions.size(); j++)
       _policyExperiment["Problem"]["Solution"][i][j] = 0.0;
   }
-
-  size_t outputLayer = _policyNeuralNetwork["Layers"].size() - 1;
-  if (_policyNeuralNetwork["Layers"][outputLayer]["Activation Function"]["Type"] != "Linear")
-    KORALI_LOG_ERROR("Policy Network Output Layers' (%zu) Activation Function must be of type 'Softmax'", outputLayer);
-
-  _policyNeuralNetwork["Solver"]["Neural Network"]["Layers"][outputLayer]["Weight Scaling"] = 0.1;
 
   // Running initialization to verify that the configuration is correct
   engine.initialize(_policyExperiment);

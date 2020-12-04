@@ -14,18 +14,18 @@ namespace korali
 {
 #ifdef _KORALI_USE_MPI
 /**
- * @brief Communicator storage for the current Korali Team
+ * @brief Communicator storage for the current Korali Worker
  */
 extern MPI_Comm __KoraliTeamComm;
 
 /**
-  * @brief Returns Communicator for the current Korali Team
+  * @brief Returns Communicator for the current Korali Worker
   * @return An MPI Communicator
   */
 extern MPI_Comm getKoraliMPIComm();
 
 /**
-  * @brief Returns Communicator for the current Korali Team
+  * @brief Returns Communicator for the current Korali Worker
   * @return An MPI Communicator (in the form of a long integer, for Python compatibility)
   */
 extern long int getKoraliMPICommPointer();
@@ -46,32 +46,37 @@ class Distributed : public Conduit
   /**
   * @brief ID of the current rank.
   */
-  size_t _rankId;
+  int _rankId;
 
   /**
    * @brief Total number of ranks in execution
    */
-  size_t _rankCount;
+  int _rankCount;
 
   /**
   * @brief Number of Korali Teams in execution
   */
-  size_t _teamCount;
+  int _workerCount;
 
   /**
   * @brief Signals whether the worker has been assigned a team
   */
-  size_t _teamIdSet;
+  int _workerIdSet;
 
   /**
- * @brief Local ID the rank within its Korali Team
+ * @brief Local ID the rank within its Korali Worker
  */
-  size_t _localRankId;
+  int _localRankId;
 
   /**
-  * @brief Map between worker ID and its processes
+  * @brief Storage that contains the rank teams for each worker
   */
-  std::map<int, std::vector<size_t>> _workerProcesses;
+  std::vector<std::vector<int>> _workerTeams;
+
+  /**
+  * @brief Map that indicates to which worker does the current rank correspond to
+  */
+  std::vector<int> _rankToWorkerMap;
 
   /**
   * @brief Flag to mark termination for Korali teams.
@@ -85,17 +90,19 @@ class Distributed : public Conduit
 
   void stackEngine(Engine *engine) override;
   void popEngine() override;
-
+  void listen() override;
+  void listenAsync() override;
   void broadcastMessageToWorkers(knlohmann::json &message) override;
   void sendMessageToEngine(knlohmann::json &message) override;
   knlohmann::json recvMessageFromEngine() override;
   knlohmann::json recvMessageFromSample(Sample &sample) override;
   void sendMessageToSample(Sample &sample, knlohmann::json &message) override;
+
   /**
   * @brief Determines which rank is the root.
   * @return The rank id of the root rank.
   */
-  size_t getRootRank();
+  int getRootRank();
   bool isRoot() override;
   void abort() override;
 };

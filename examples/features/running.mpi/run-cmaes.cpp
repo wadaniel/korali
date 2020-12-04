@@ -103,7 +103,7 @@ int main(int argc, char *argv[])
   auto k = korali::Engine();
 
   k["Conduit"]["Type"] = "Distributed";
-  k["Conduit"]["Workers Per Team"] = workersPerTeam;
+  k["Conduit"]["Ranks Per Worker"] = workersPerTeam;
   k["Conduit"]["Communicator"] = MPI_COMM_WORLD;
   k["Profiling"]["Detail"] = "Full";
   k["Profiling"]["Frequency"] = 0.5;

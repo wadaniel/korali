@@ -213,6 +213,8 @@ knlohmann::json Distributed::recvMessageFromEngine()
 
 void Distributed::listenWorkers()
 {
+#ifdef _KORALI_USE_MPI
+
   // Scanning all incoming messages
   int foundMessage = 0;
 
@@ -239,6 +241,8 @@ void Distributed::listenWorkers()
     // Storing message in the sample message queue
     sample->_messageQueue.push(message);
   }
+
+#endif
 }
 
 void Distributed::sendMessageToSample(Sample &sample, knlohmann::json &message)

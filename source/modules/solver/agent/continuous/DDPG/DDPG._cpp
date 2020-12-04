@@ -15,14 +15,13 @@ void DDPG::initializeAgent()
   // Initializing common discrete agent configuration
   Continuous::initializeAgent();
 
+  korali::Engine engine; // Engine to initialize experiments with
+
   /*********************************************************************
  * Initializing Critic-Related Structures
  *********************************************************************/
 
-  korali::Engine engine; // Engine to initialize experiments with
-
   _criticExperiment["Problem"]["Type"] = "Supervised Learning";
-
   _criticExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
   _criticExperiment["Solver"]["Optimizer"] = _criticOptimizer;
   _criticExperiment["Solver"]["Learning Rate"] = _criticLearningRate;
@@ -39,6 +38,9 @@ void DDPG::initializeAgent()
       _criticExperiment["Problem"]["Inputs"][i][j] = 0.0;
   }
 
+  size_t criticOutputLayerId = _criticNeuralNetwork["Layers"].size() - 1;
+  _criticNeuralNetwork["Solver"]["Neural Network"]["Layers"][criticOutputLayerId]["Weight Scaling"] = 0.1;
+
   // Running initialization to verify that the configuration is correct
   engine.initialize(_criticExperiment);
 
@@ -53,7 +55,6 @@ void DDPG::initializeAgent()
   // Creating and running Actor Learning Experiments
 
   _policyExperiment["Problem"]["Type"] = "Supervised Learning";
-
   _policyExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
   _policyExperiment["Solver"]["Loss Function"] = "Direct Gradient";
   _policyExperiment["Solver"]["Optimizer"] = _policyOptimizer;
@@ -70,6 +71,9 @@ void DDPG::initializeAgent()
     for (size_t j = 0; j < _problem->_actionVectorSize; j++)
       _policyExperiment["Problem"]["Solution"][i][j] = 0.0;
   }
+
+  size_t policyOutputLayerId = _policyNeuralNetwork["Layers"].size() - 1;
+  _policyNeuralNetwork["Solver"]["Neural Network"]["Layers"][policyOutputLayerId]["Weight Scaling"] = 0.1;
 
   // Running initialization to verify that the configuration is correct
   engine.initialize(_policyExperiment);

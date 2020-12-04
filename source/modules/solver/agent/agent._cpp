@@ -85,8 +85,8 @@ void Agent::runGeneration()
   size_t finishedAgents = 0;
   while (finishedAgents < _episodesPerGeneration)
   {
-   // Listening to incoming experiences
-   KORALI_LISTEN_ASYNC();
+   // Listening to agents for incoming experiences
+   KORALI_LISTEN(agents);
 
    for (size_t agentId = 0; agentId < _episodesPerGeneration; agentId++)
     if (agentHasFinished[agentId] == false)
@@ -111,8 +111,38 @@ void Agent::runGeneration()
       if (isTerminal)
       {
        // Now that we have the entire episode, process its experiences (add them to replay memory)
-       for (size_t i = 0; i < episodes[agentId].size(); i++)
-        processExperience(episodes[agentId][i]);
+       for (size_t i = 0; i < episodes[agentId].size(); i++) processExperience(episodes[agentId][i]);
+
+       // Waiting for the agent to come back with all the information
+       KORALI_WAIT(agents[agentId]);
+
+       // Getting the training reward of the latest episode
+       _lastTrainingReward = agents[agentId]["Training Reward"].get<float>();
+
+       // Keeping training statistics. Updating if exceeded best training policy so far.
+       if (_lastTrainingReward > _bestTrainingReward)
+       {
+         _bestTrainingReward = _lastTrainingReward;
+         _bestTrainingEpisode = _currentEpisode;
+       }
+
+       // If the policy has exceeded the threshold during training, we gather its statistics
+       if (agents[agentId]["Tested Policy"] == true)
+       {
+        _candidatePoliciesTested++;
+
+        _averageTestingReward = agents[agentId]["Average Testing Reward"].get<float>();
+        _bestTestingReward = agents[agentId]["Best Testing Reward"].get<float>();
+        _worstTestingReward = agents[agentId]["Worst Testing Reward"].get<float>();
+
+        // If the average testing reward is better than the previous best, replace it
+        // and store hyperparameters as best so far.
+        if (_averageTestingReward > _bestAverageTestingReward)
+        {
+          _bestAverageTestingReward = _averageTestingReward;
+          _bestHyperparameters = agents[agentId]["Hyperparameters"];
+        }
+       }
 
        // Set agent as finished
        agentHasFinished[agentId] = true;
@@ -136,41 +166,6 @@ void Agent::runGeneration()
 
     // If we accumulated enough experiences between updates, update now
     if (_experienceCount > curThreshold) { trainPolicy();  _policyUpdateCount++; }
-   }
-  }
-
-  // Waiting for all samples to finish
-  KORALI_WAITALL(agents);
-
-  // Processing Agent results
-  for (size_t agentId = 0; agentId < _episodesPerGeneration; agentId++)
-  {
-   // Getting the training reward of the latest episode
-   _lastTrainingReward = agents[agentId]["Training Reward"].get<float>();
-
-   // Keeping training statistics. Updating if exceeded best training policy so far.
-   if (_lastTrainingReward > _bestTrainingReward)
-   {
-     _bestTrainingReward = _lastTrainingReward;
-     _bestTrainingEpisode = _currentEpisode;
-   }
-
-   // If the policy has exceeded the threshold during training, we gather its statistics
-   if (agents[agentId]["Tested Policy"] == true)
-   {
-    _candidatePoliciesTested++;
-
-    _averageTestingReward = agents[agentId]["Average Testing Reward"].get<float>();
-    _bestTestingReward = agents[agentId]["Best Testing Reward"].get<float>();
-    _worstTestingReward = agents[agentId]["Worst Testing Reward"].get<float>();
-
-    // If the average testing reward is better than the previous best, replace it
-    // and store hyperparameters as best so far.
-    if (_averageTestingReward > _bestAverageTestingReward)
-    {
-      _bestAverageTestingReward = _averageTestingReward;
-      _bestHyperparameters = agents[agentId]["Hyperparameters"];
-    }
    }
   }
 }

@@ -25,12 +25,12 @@ namespace korali
 /**
  * @brief Macro to wait for any of the given samples.
  */
-#define KORALI_WAITANY(SAMPLE) _k->_engine->_conduit->waitAny(SAMPLE);
+#define KORALI_WAITANY(SAMPLES) _k->_engine->_conduit->waitAny(SAMPLES);
 
 /**
  * @brief Macro to wait for all of the given samples.
  */
-#define KORALI_WAITALL(SAMPLE) _k->_engine->_conduit->waitAll(SAMPLE);
+#define KORALI_WAITALL(SAMPLES) _k->_engine->_conduit->waitAll(SAMPLES);
 
 /**
  * @brief Macro to broadcast global information to all the workers.
@@ -50,13 +50,7 @@ namespace korali
 /**
  * @brief (Blocking) Receives all pending incoming messages (at least one) and stores them into the corresponding sample's message queue.
  */
-#define KORALI_LISTEN() _k->_engine->_conduit->listen();
-
-/**
- * @brief (Non-Blocking) Receives all pending incoming messages and stores them into the corresponding sample's message queue.
- */
-#define KORALI_LISTEN_ASYNC() _k->_engine->_conduit->listenAsync();
-
+#define KORALI_LISTEN(SAMPLES) _k->_engine->_conduit->listen(SAMPLES);
 
 class Solver : public Module
 {

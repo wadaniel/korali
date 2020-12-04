@@ -51,13 +51,7 @@ void GFPT::initializeAgent()
   * Advantage Function learner
   *********************************************************************/
 
-  _aExperiment["Problem"]["Type"] = "Supervised Learning";
-  _aExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
-  _aExperiment["Solver"]["Optimizer"] = _criticOptimizer;
-  _aExperiment["Solver"]["Learning Rate"] = _criticLearningRate;
-  _aExperiment["Solver"]["Loss Function"] = "Mean Squared Error";
-  _aExperiment["Solver"]["Steps Per Generation"] = 1;
-  _aExperiment["Solver"]["Neural Network"] = _criticNeuralNetwork;
+  _aExperiment._js = _vExperiment._js;
 
   // Initializing experiment with an initial zero set
   for (size_t i = 0; i < _criticMiniBatchSize; i++)

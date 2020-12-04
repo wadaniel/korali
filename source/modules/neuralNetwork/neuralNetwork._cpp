@@ -27,7 +27,7 @@ void NeuralNetwork::initialize()
 
   if (_engine == "CUDNN")
   {
-#ifdef _KORALI_USE_ONEDNN
+#ifdef _KORALI_USE_CUDNN
 
     if (cudnnCreate(&_cuDNNHandle) != CUDNN_STATUS_SUCCESS) KORALI_LOG_ERROR("Error initializing CUDNN Handle\n");
 

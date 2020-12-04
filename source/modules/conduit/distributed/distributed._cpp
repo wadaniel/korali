@@ -57,7 +57,7 @@ void Distributed::initialize()
 
   // Storage to map MPI ranks to their corresponding worker
   _workerTeams.resize(_workerCount);
-  for (size_t i = 0; i < _workerCount; i++)
+  for (int i = 0; i < _workerCount; i++)
    _workerTeams[i].resize(_ranksPerWorker);
 
   // Storage to map workers to MPI ranks
@@ -68,7 +68,7 @@ void Distributed::initialize()
   while (!_workerQueue.empty()) _workerQueue.pop();
 
   // Putting workers in the queue
-  for (size_t i = 0; i < _workerCount; i++)
+  for (int i = 0; i < _workerCount; i++)
    _workerQueue.push(i);
 
   // Now assigning ranks to workers and viceversa
@@ -126,8 +126,8 @@ void Distributed::finalize()
 
   if (isRoot())
   {
-    for (size_t i = 0; i < _workerCount; i++)
-      for (size_t j = 0; j < _ranksPerWorker; j++)
+    for (int i = 0; i < _workerCount; i++)
+      for (int j = 0; j < _ranksPerWorker; j++)
         MPI_Send(terminationString.c_str(), terminationStringSize, MPI_CHAR, _workerTeams[i][j], MPI_MESSAGE_JSON, _mpiCommunicator);
   }
 
@@ -146,8 +146,8 @@ void Distributed::broadcastMessageToWorkers(knlohmann::json &message)
   string messageString = message.dump();
   size_t messageStringSize = messageString.size();
 
-  for (size_t i = 0; i < _workerCount; i++)
-    for (size_t j = 0; j < _ranksPerWorker; j++)
+  for (int i = 0; i < _workerCount; i++)
+    for (int j = 0; j < _ranksPerWorker; j++)
       MPI_Send(messageString.c_str(), messageStringSize, MPI_CHAR, _workerTeams[i][j], MPI_MESSAGE_JSON, _mpiCommunicator);
 #endif
 }
@@ -211,81 +211,7 @@ knlohmann::json Distributed::recvMessageFromEngine()
   return message;
 }
 
-knlohmann::json Distributed::recvMessageFromSample(Sample &sample)
-{
-  knlohmann::json message;
-  int worker = sample._workerId;
-  int source = _workerTeams[worker][0];
-
-#ifdef _KORALI_USE_MPI
-
-  Engine *engine = _engineStack.top();
-  MPI_Status status;
-
-  int flag = 0;
-  while (flag == 0)
-  {
-    MPI_Iprobe(source, MPI_MESSAGE_JSON, _mpiCommunicator, &flag, &status);
-    if (flag)
-    {
-      // Receiving message from the worker
-      int messageSize = 0;
-      MPI_Get_count(&status, MPI_CHAR, &messageSize);
-      char messageStringChar[messageSize + 1];
-      MPI_Recv(messageStringChar, messageSize, MPI_CHAR, source, MPI_MESSAGE_JSON, _mpiCommunicator, MPI_STATUS_IGNORE);
-      messageStringChar[messageSize] = '\0';
-      message = knlohmann::json::parse(messageStringChar);
-    }
-    else
-    {
-      co_switch(engine->_currentExperiment->_thread);
-    }
-  }
-
-#endif
-
-  return message;
-}
-
-void Distributed::listen()
-{
- // Getting current engine
- Engine *engine = _engineStack.top();
-
- // Scanning all incoming messages
- int foundMessage = 0;
- while (foundMessage == 0)
- {
-   // Reading pending messages from any worker
-   MPI_Status status;
-   MPI_Iprobe(MPI_ANY_SOURCE, MPI_MESSAGE_JSON, _mpiCommunicator, &foundMessage, &status);
-
-   // If message found, receive it and storing in the corresponding sample's queue
-   if (foundMessage == 1)
-   {
-    // Obtaining source rank, worker ID, and destination sample from the message
-    int source = status.MPI_SOURCE;
-    int worker = _rankToWorkerMap[source];
-    auto sample = _workerToSampleMap[worker];
-
-    // Receiving message from the worker
-    int messageSize = 0;
-    MPI_Get_count(&status, MPI_CHAR, &messageSize);
-    char messageStringChar[messageSize + 1];
-    MPI_Recv(messageStringChar, messageSize, MPI_CHAR, source, MPI_MESSAGE_JSON, _mpiCommunicator, MPI_STATUS_IGNORE);
-    messageStringChar[messageSize] = '\0';
-    auto message = knlohmann::json::parse(messageStringChar);
-
-    // Storing message in the sample message queue
-    sample->_messageQueue.push(message);
-   }
-
-   // If no messages found, yield execution for other experiments
-   if (foundMessage == 0) co_switch(engine->_currentExperiment->_thread);
- }
-}
-
-void Distributed::listenAsync()
+void Distributed::listenWorkers()
 {
  // Scanning all incoming messages
  int foundMessage = 0;

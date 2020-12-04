@@ -5,6 +5,8 @@
 #include "stdio.h"
 #include "unistd.h"
 
+#ifndef TEST
+
 korali::Sample *sample;
 double _reward;
 double _state[STATE_SIZE];
@@ -34,3 +36,5 @@ void updateAgent()
   printf("[Korali] Action: %f\n", _action[0]);
   printf("[Korali] ----------------------------------------------------\n");
 }
+
+#endif

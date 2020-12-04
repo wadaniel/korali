@@ -9,7 +9,8 @@ int main(int argc, char *argv[])
 
   e["Problem"]["Type"] = "Reinforcement Learning / Continuous";
   e["Problem"]["Environment Function"] = &runEnvironment;
-  e["Problem"]["Action Repeat"] = 1;
+  e["Problem"]["Training Reward Threshold"] = 1.0;
+  e["Problem"]["Policy Testing Episodes"] = 20;
   e["Problem"]["Actions Between Policy Updates"] = 1;
 
   e["Variables"][0]["Name"] = "Mean u at wall";
@@ -39,8 +40,7 @@ int main(int argc, char *argv[])
   //// Defining Agent Configuration
 
   e["Solver"]["Type"] = "Agent / Continuous / GFPT";
-  e["Solver"]["Experiences Between Agent Trainings"] = 1;
-  e["Solver"]["Optimization Steps Per Update"] = 1;
+  e["Solver"]["Experiences Between Policy Updates"] = 1;
   e["Solver"]["Cache Persistence"] = 10;
 
   e["Solver"]["Random Action Probability"]["Initial Value"] = 0.01;
@@ -97,8 +97,6 @@ int main(int argc, char *argv[])
 
   ////// Defining Termination Criteria
 
-  e["Solver"]["Training Reward Threshold"] = 1.0;
-  e["Solver"]["Policy Testing Episodes"] = 20;
   e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 1.3;
 
   ////// If using configuration test, run for a couple generations only

@@ -30,3 +30,10 @@ def env(s):
   
   # Advancing step counter
   step = step + 1
+
+ # Setting finalization status
+ if (done):
+  s["Termination"] = "Terminal"
+ else:
+  s["Termination"] = "Truncated"
+  

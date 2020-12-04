@@ -58,6 +58,9 @@ void runEnvironment(korali::Sample &s)
   // Closing agent dynamic library
   dlclose(agent);
   chdir("..");
+
+  // Setting termination status
+  s["Termination"] = "Terminal";
 }
 
 #else
@@ -73,7 +76,7 @@ void runEnvironment(korali::Sample &s)
     s.update();
     s["Reward"] = -10.0;
   }
-  s["Termination"] = "Normal";
+  s["Termination"] = "Terminal";
 }
 
 #endif

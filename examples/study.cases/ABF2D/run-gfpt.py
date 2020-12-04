@@ -20,6 +20,8 @@ setResultsDir(args.dir)
 
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = env
+e["Problem"]["Training Reward Threshold"] = 60.0
+e["Problem"]["Policy Testing Episodes"] = 20
 e["Problem"]["Actions Between Policy Updates"] = 1
 
 ### Defining state variables
@@ -52,8 +54,7 @@ e["Variables"][6]["Exploration Sigma"] = 0.5
 ### Defining Agent Configuration 
 
 e["Solver"]["Type"] = "Agent / Continuous / GFPT"
-e["Solver"]["Optimization Steps Per Update"] = 10
-e["Solver"]["Experiences Between Agent Trainings"] = 200
+e["Solver"]["Experiences Between Policy Updates"] = 200
 e["Solver"]["Cache Persistence"] = 10
 
 ### Defining probability of taking a random action (epsilon)
@@ -114,8 +115,6 @@ e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Activation Function"]["Typ
 
 ### Defining Termination Criteria
 
-e["Solver"]["Training Reward Threshold"] = 60.0
-e["Solver"]["Policy Testing Episodes"] = 20
 e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 60.0
 
 ### Setting file output configuration
@@ -124,5 +123,4 @@ e["File Output"]["Enabled"] = False
 
 ### Running Experiment
 
-k["Conduit"]["Type"] = "Distributed"
 k.run(e)

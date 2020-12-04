@@ -14,7 +14,8 @@ e = korali.Experiment()
 
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = env
-e["Problem"]["Action Repeat"] = 1
+e["Problem"]["Training Reward Threshold"] = 750
+e["Problem"]["Policy Testing Episodes"] = 20
 e["Problem"]["Actions Between Policy Updates"] = 1
 
 e["Variables"][0]["Name"] = "Cart Position"
@@ -59,8 +60,7 @@ e["Variables"][11]["Upper Bound"] = +1.0
 
 e["Solver"]["Type"] = "Agent / Continuous / NAF"
 e["Solver"]["Target Learning Rate"] = 0.0001
-e["Solver"]["Optimization Steps Per Update"] = 100
-e["Solver"]["Experiences Between Agent Trainings"] = 5
+e["Solver"]["Experiences Between Policy Updates"] = 5
 e["Solver"]["Mini Batch Strategy"] = "Prioritized"
 
 e["Solver"]["Random Action Probability"]["Initial Value"] = 0.3
@@ -98,8 +98,6 @@ e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Batch Normalization"]["Ena
 
 ### Defining Termination Criteria
 
-e["Solver"]["Training Reward Threshold"] = 750
-e["Solver"]["Policy Testing Episodes"] = 20
 e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 900
 
 ### Setting file output configuration

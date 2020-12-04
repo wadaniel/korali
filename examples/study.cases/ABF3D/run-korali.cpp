@@ -3,9 +3,9 @@
 
 int main(int argc, char *argv[])
 {
-  #ifndef TEST
+#ifndef TEST
   initializeEnvironment("_deps/msode/launch_scripts/rl/config/helix_2d_eu_const.json");
-  #endif
+#endif
 
   auto e = korali::Experiment();
 
@@ -33,12 +33,12 @@ int main(int argc, char *argv[])
 
   //// Setting action variables
 
-  #ifndef TEST
+#ifndef TEST
   auto [lowerBounds, upperBounds] = _environment->getActionBounds();
-  #else
+#else
   std::vector<float> lowerBounds = {0.0, 0.0, 0.0, 0.0};
   std::vector<float> upperBounds = {1.0, 1.0, 1.0, 1.0};
-  #endif
+#endif
 
   e["Variables"][14]["Name"] = "Frequency (w)";
   e["Variables"][14]["Type"] = "Action";
@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
   e["Solver"]["Random Action Probability"]["Target Value"] = 0.01;
   e["Solver"]["Random Action Probability"]["Decrease Rate"] = 0.00;
 
-  e["Solver"]["Experience Replay"]["Start Size"] =   20000;
+  e["Solver"]["Experience Replay"]["Start Size"] = 20000;
   e["Solver"]["Experience Replay"]["Maximum Size"] = 100000;
   e["Solver"]["Mini Batch Strategy"] = "Uniform";
 
@@ -131,9 +131,9 @@ int main(int argc, char *argv[])
 
   ////// If using configuration test, run for a couple generations only
 
-  #ifdef TEST
+#ifdef TEST
   e["Solver"]["Termination Criteria"]["Max Generations"] = 5;
-  #endif
+#endif
 
   ////// Setting file output configuration
 

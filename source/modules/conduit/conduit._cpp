@@ -27,11 +27,11 @@ void Conduit::coroutineWrapper()
   // Check whether there are available workers to compute this sample.
   while (engine->_conduit->_workerQueue.empty())
   {
-   //  If none are available, set sample's state back to initialized
-   sample->_state = SampleState::initialized;
+    //  If none are available, set sample's state back to initialized
+    sample->_state = SampleState::initialized;
 
-   // And come back to the experiment's thread
-   co_switch(engine->_currentExperiment->_thread);
+    // And come back to the experiment's thread
+    co_switch(engine->_currentExperiment->_thread);
   }
 
   // Selecting the next available worker
@@ -59,21 +59,21 @@ void Conduit::coroutineWrapper()
 
   // Waiting for ending message from sample
   knlohmann::json endMessage;
-  while(sample->retrievePendingMessage(endMessage) == false)
+  while (sample->retrievePendingMessage(endMessage) == false)
   {
-   // If the sample ending message hasn't arrived, set sample's state back to waiting
-   sample->_state = SampleState::waiting;
+    // If the sample ending message hasn't arrived, set sample's state back to waiting
+    sample->_state = SampleState::waiting;
 
-   // And come back to the experiment's thread
-   co_switch(engine->_currentExperiment->_thread);
+    // And come back to the experiment's thread
+    co_switch(engine->_currentExperiment->_thread);
   }
 
   // Making sure the received message corresponds to the sample's ending message
   if (!isDefined(endMessage, "Has Finished"))
-   KORALI_LOG_ERROR("Trying to receive ending message from sample, but 'Has Finished' field is not defined!\n");
+    KORALI_LOG_ERROR("Trying to receive ending message from sample, but 'Has Finished' field is not defined!\n");
 
   if (endMessage["Has Finished"] == false)
-   KORALI_LOG_ERROR("Sample's ending message has arrived but it is marked as 'Has Finished' == false!\n");
+    KORALI_LOG_ERROR("Sample's ending message has arrived but it is marked as 'Has Finished' == false!\n");
 
   // Now replacing sample's information by that of the end message
   sample->_js.getJson() = endMessage;
@@ -93,7 +93,7 @@ void Conduit::coroutineWrapper()
 
   // Safety check to make sure we do not continue a sample that has ended
   if (sample->_state != SampleState::uninitialized)
-   KORALI_LOG_ERROR("Resuming a finished sample\n");
+    KORALI_LOG_ERROR("Resuming a finished sample\n");
 }
 
 void Conduit::worker()
@@ -303,24 +303,24 @@ void Conduit::waitAll(vector<Sample> &samples)
 
 void Conduit::listen(std::vector<Sample> &samples)
 {
- Engine *engine = _engineStack.top();
+  Engine *engine = _engineStack.top();
 
- // Listen for any pending messages
- listenWorkers();
+  // Listen for any pending messages
+  listenWorkers();
 
- // Check for error signals from python
- if (isPythonActive && PyErr_CheckSignals() != 0) throw pybind11::error_already_set();
+  // Check for error signals from python
+  if (isPythonActive && PyErr_CheckSignals() != 0) throw pybind11::error_already_set();
 
- // Give other experiments the chance to execute
- co_switch(engine->_thread);
+  // Give other experiments the chance to execute
+  co_switch(engine->_thread);
 
- // Doing a pass on samples in case they are waiting to execute
- for (size_t currentSample = 0; currentSample < samples.size(); currentSample++)
-  if (samples[currentSample]._state == SampleState::initialized)
-  {
-    samples[currentSample]._state = SampleState::running;
-    co_switch(samples[currentSample]._sampleThread);
-  }
+  // Doing a pass on samples in case they are waiting to execute
+  for (size_t currentSample = 0; currentSample < samples.size(); currentSample++)
+    if (samples[currentSample]._state == SampleState::initialized)
+    {
+      samples[currentSample]._state = SampleState::running;
+      co_switch(samples[currentSample]._sampleThread);
+    }
 }
 
 } // namespace korali

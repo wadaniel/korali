@@ -22,7 +22,10 @@ class Conduit : public Module
   */
   std::queue<size_t> _workerQueue;
 
-  std::map<size_t, Sample*> _workerToSampleMap;
+  /**
+  * @brief Map that links workers to their currently-executing sample
+  */
+  std::map<size_t, Sample *> _workerToSampleMap;
 
   /**
  * @brief Determines whether the caller rank/thread/process is root.

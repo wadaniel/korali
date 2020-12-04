@@ -68,8 +68,10 @@ knlohmann::json Sequential::recvMessageFromEngine()
   // While there's no message, keep executing sample until there is
   while (_workerMessageQueue.empty())
   {
-   sample->_state = SampleState::waiting;
-   co_switch(engine->_currentExperiment->_thread);
+    if (sample->_state == SampleState::running)
+      sample->_state = SampleState::waiting;
+
+    co_switch(engine->_currentExperiment->_thread);
   }
 
   // Pulling message from incoming message queue
@@ -82,15 +84,15 @@ knlohmann::json Sequential::recvMessageFromEngine()
 void Sequential::sendMessageToSample(Sample &sample, knlohmann::json &message)
 {
   // Queueing message directly
- _workerMessageQueue.push(message);
+  _workerMessageQueue.push(message);
 
   co_switch(_workerThread);
 }
 
 void Sequential::listenWorkers()
 {
- // Just switch back to worker to see if a new message appears
- co_switch(_workerThread);
+  // Just switch back to worker to see if a new message appears
+  co_switch(_workerThread);
 }
 
 void Sequential::stackEngine(Engine *engine)

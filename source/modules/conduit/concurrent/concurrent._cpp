@@ -155,41 +155,41 @@ knlohmann::json Concurrent::recvMessageFromEngine()
 
 void Concurrent::listenWorkers()
 {
- // Check for child defunction
- for (size_t i = 0; i < _workerPids.size(); i++)
- {
-   int status;
-   pid_t result = waitpid(_workerPids[i], &status, WNOHANG);
-   if (result != 0) KORALI_LOG_ERROR("Worker %i (Pid: %d) exited unexpectedly.\n", i, _workerPids[i]);
- }
-
- // Reading pending messages from all workers
- for (size_t i = 0; i < _workerPids.size(); i++)
- {
-  // Identifying current sample
-  auto sample = _workerToSampleMap[i];
-
-  size_t resultStringSize;
-  int readBytes = read(_resultSizePipe[i][0], &resultStringSize, sizeof(size_t));
-
-  if (readBytes > 0)
+  // Check for child defunction
+  for (size_t i = 0; i < _workerPids.size(); i++)
   {
-    char resultString[resultStringSize + BUFFERSIZE];
-
-    size_t curPos = 0;
-    while (curPos < resultStringSize)
-    {
-      size_t bufSize = BUFFERSIZE;
-      if (curPos + bufSize > resultStringSize) bufSize = resultStringSize - curPos;
-      read(_resultContentPipe[i][0], resultString + curPos, bufSize * sizeof(char));
-      curPos += bufSize;
-    }
-    resultString[resultStringSize] = '\0';
-
-    auto message = knlohmann::json::parse(resultString);
-    sample->_messageQueue.push(message);
+    int status;
+    pid_t result = waitpid(_workerPids[i], &status, WNOHANG);
+    if (result != 0) KORALI_LOG_ERROR("Worker %i (Pid: %d) exited unexpectedly.\n", i, _workerPids[i]);
   }
- }
+
+  // Reading pending messages from all workers
+  for (size_t i = 0; i < _workerPids.size(); i++)
+  {
+    // Identifying current sample
+    auto sample = _workerToSampleMap[i];
+
+    size_t resultStringSize;
+    int readBytes = read(_resultSizePipe[i][0], &resultStringSize, sizeof(size_t));
+
+    if (readBytes > 0)
+    {
+      char resultString[resultStringSize + BUFFERSIZE];
+
+      size_t curPos = 0;
+      while (curPos < resultStringSize)
+      {
+        size_t bufSize = BUFFERSIZE;
+        if (curPos + bufSize > resultStringSize) bufSize = resultStringSize - curPos;
+        read(_resultContentPipe[i][0], resultString + curPos, bufSize * sizeof(char));
+        curPos += bufSize;
+      }
+      resultString[resultStringSize] = '\0';
+
+      auto message = knlohmann::json::parse(resultString);
+      sample->_messageQueue.push(message);
+    }
+  }
 }
 
 void Concurrent::stackEngine(Engine *engine)

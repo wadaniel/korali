@@ -66,16 +66,16 @@ void runEnvironment(korali::Sample &s)
     double reward = done ? -10.0 : _agent->EffPDefBnd;
 
     // Printing Information:
-//    printf("[Korali] -------------------------------------------------------\n");
-//    printf("[Korali] Step: %lu/%lu\n", curStep, _maxSteps);
-//    printf("[Korali] State: [ %.3f", state[0]);
-//    for (size_t i = 1; i < state.size(); i++) printf(", %.3f", state[i]);
-//    printf("]\n");
+    //    printf("[Korali] -------------------------------------------------------\n");
+    //    printf("[Korali] Step: %lu/%lu\n", curStep, _maxSteps);
+    //    printf("[Korali] State: [ %.3f", state[0]);
+    //    for (size_t i = 1; i < state.size(); i++) printf(", %.3f", state[i]);
+    //    printf("]\n");
     printf("[Korali] Step: %lu/%lu, Action: [ %.3f", curStep, _maxSteps, action[0]);
     for (size_t i = 1; i < action.size(); i++) printf(", %.3f", action[i]);
     printf("]\n");
-////    printf("[Korali] Terminal: %d\n", done);
-////    printf("[Korali] -------------------------------------------------------\n");
+    ////    printf("[Korali] Terminal: %d\n", done);
+    ////    printf("[Korali] -------------------------------------------------------\n");
 
     // Obtaining new agent state
     state = _agent->state(_object);

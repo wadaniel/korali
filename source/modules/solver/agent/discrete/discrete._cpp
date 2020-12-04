@@ -52,14 +52,14 @@ void Discrete::getAction(korali::Sample &sample)
     {
       // Categorical action sampled from action probabilites (from ACER paper [Wang2017])
       float curSum = 0.0;
-//      printf("pActions: ");
+      //      printf("pActions: ");
       for (actionIdx = 0; actionIdx < pActions.size(); actionIdx++)
       {
-//       printf("%f ", pActions[actionIdx]);
+        //       printf("%f ", pActions[actionIdx]);
         curSum += pActions[actionIdx];
         if (x < curSum) break;
       }
-//      printf("\n");
+      //      printf("\n");
       // NOTE: In original DQN paper [Minh2015] we choose max (D.W.)
       // actionIdx = std::distance(pActions.begin(), std::max_element(pActions.begin(), pActions.end()));
     }
@@ -83,7 +83,7 @@ void Discrete::getAction(korali::Sample &sample)
  ****************************************************************************/
 
   if (actionIdx >= _problem->_possibleActions.size())
-   KORALI_LOG_ERROR("Action index (%lu) exceeds action vector size (%lu). This points to a bug in probability calculation.\n", actionIdx, _problem->_possibleActions.size());
+    KORALI_LOG_ERROR("Action index (%lu) exceeds action vector size (%lu). This points to a bug in probability calculation.\n", actionIdx, _problem->_possibleActions.size());
 
   sample["Action"] = _problem->_possibleActions[actionIdx];
 }

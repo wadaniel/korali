@@ -235,7 +235,7 @@ std::vector<float> DDQN::getActionProbabilities(const std::vector<float> &state)
   std::vector<float> pActions(_problem->_possibleActions.size());
 
   // Looking for max element from advantage values
-  auto maxAdvantage { *std::max_element(_aValAction.begin(), _aValAction.end()) };
+  auto maxAdvantage{*std::max_element(_aValAction.begin(), _aValAction.end())};
 
   // Storage for exp(A) and sum
   std::vector<double> expA(_problem->_possibleActions.size());
@@ -244,8 +244,8 @@ std::vector<float> DDQN::getActionProbabilities(const std::vector<float> &state)
   // Calculating exp(A) and sum
   for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
   {
-   expA[i] = std::exp(_aValAction[i] - maxAdvantage);
-   expASum += expA[i];
+    expA[i] = std::exp(_aValAction[i] - maxAdvantage);
+    expASum += expA[i];
   }
 
   // Computing probabilities

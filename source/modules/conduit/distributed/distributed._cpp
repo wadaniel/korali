@@ -23,9 +23,9 @@ namespace conduit
 {
 void Distributed::initialize()
 {
- #ifndef _KORALI_USE_MPI
-   KORALI_LOG_ERROR("Running an Distributed-based Korali application, but Korali was installed without support for Distributed.\n");
- #else
+#ifndef _KORALI_USE_MPI
+  KORALI_LOG_ERROR("Running an Distributed-based Korali application, but Korali was installed without support for Distributed.\n");
+#else
 
   int isInitialized = 0;
   MPI_Initialized(&isInitialized);
@@ -58,7 +58,7 @@ void Distributed::initialize()
   // Storage to map MPI ranks to their corresponding worker
   _workerTeams.resize(_workerCount);
   for (int i = 0; i < _workerCount; i++)
-   _workerTeams[i].resize(_ranksPerWorker);
+    _workerTeams[i].resize(_ranksPerWorker);
 
   // Storage to map workers to MPI ranks
   _rankToWorkerMap.resize(_rankCount);
@@ -69,7 +69,7 @@ void Distributed::initialize()
 
   // Putting workers in the queue
   for (int i = 0; i < _workerCount; i++)
-   _workerQueue.push(i);
+    _workerQueue.push(i);
 
   // Now assigning ranks to workers and viceversa
   int currentRank = 0;
@@ -213,32 +213,32 @@ knlohmann::json Distributed::recvMessageFromEngine()
 
 void Distributed::listenWorkers()
 {
- // Scanning all incoming messages
- int foundMessage = 0;
+  // Scanning all incoming messages
+  int foundMessage = 0;
 
- // Reading pending messages from any worker
- MPI_Status status;
- MPI_Iprobe(MPI_ANY_SOURCE, MPI_MESSAGE_JSON, _mpiCommunicator, &foundMessage, &status);
+  // Reading pending messages from any worker
+  MPI_Status status;
+  MPI_Iprobe(MPI_ANY_SOURCE, MPI_MESSAGE_JSON, _mpiCommunicator, &foundMessage, &status);
 
- // If message found, receive it and storing in the corresponding sample's queue
- if (foundMessage == 1)
- {
-  // Obtaining source rank, worker ID, and destination sample from the message
-  int source = status.MPI_SOURCE;
-  int worker = _rankToWorkerMap[source];
-  auto sample = _workerToSampleMap[worker];
+  // If message found, receive it and storing in the corresponding sample's queue
+  if (foundMessage == 1)
+  {
+    // Obtaining source rank, worker ID, and destination sample from the message
+    int source = status.MPI_SOURCE;
+    int worker = _rankToWorkerMap[source];
+    auto sample = _workerToSampleMap[worker];
 
-  // Receiving message from the worker
-  int messageSize = 0;
-  MPI_Get_count(&status, MPI_CHAR, &messageSize);
-  char messageStringChar[messageSize + 1];
-  MPI_Recv(messageStringChar, messageSize, MPI_CHAR, source, MPI_MESSAGE_JSON, _mpiCommunicator, MPI_STATUS_IGNORE);
-  messageStringChar[messageSize] = '\0';
-  auto message = knlohmann::json::parse(messageStringChar);
+    // Receiving message from the worker
+    int messageSize = 0;
+    MPI_Get_count(&status, MPI_CHAR, &messageSize);
+    char messageStringChar[messageSize + 1];
+    MPI_Recv(messageStringChar, messageSize, MPI_CHAR, source, MPI_MESSAGE_JSON, _mpiCommunicator, MPI_STATUS_IGNORE);
+    messageStringChar[messageSize] = '\0';
+    auto message = knlohmann::json::parse(messageStringChar);
 
-  // Storing message in the sample message queue
-  sample->_messageQueue.push(message);
- }
+    // Storing message in the sample message queue
+    sample->_messageQueue.push(message);
+  }
 }
 
 void Distributed::sendMessageToSample(Sample &sample, knlohmann::json &message)

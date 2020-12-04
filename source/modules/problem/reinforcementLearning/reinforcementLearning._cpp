@@ -45,14 +45,14 @@ void __environmentWrapper()
   agent->run(__envFunctionId);
 
   if ((*agent)["Termination"] == "Non Terminal")
-      KORALI_LOG_ERROR("Environment function terminated, but agent termination status (success or truncated) was not set.\n");
+    KORALI_LOG_ERROR("Environment function terminated, but agent termination status (success or truncated) was not set.\n");
 
   bool terminationRecognized = false;
   if ((*agent)["Termination"] == "Terminal") terminationRecognized = true;
   if ((*agent)["Termination"] == "Truncated") terminationRecognized = true;
 
   if (terminationRecognized == false)
-   KORALI_LOG_ERROR("Environment function terminated, but agent termination status (%s) is neither 'Terminal' nor 'Truncated'.\n", (*agent)["Termination"].get<std::string>().c_str());
+    KORALI_LOG_ERROR("Environment function terminated, but agent termination status (%s) is neither 'Terminal' nor 'Truncated'.\n", (*agent)["Termination"].get<std::string>().c_str());
 
   co_switch(agent->_workerThread);
 
@@ -172,35 +172,35 @@ void ReinforcementLearning::runEpisode(Sample &agent)
 
     for (size_t i = 0; i < _policyTestingEpisodes; i++)
     {
-     float currentTestingReward = 0.0;
+      float currentTestingReward = 0.0;
 
-     // Re-create environment
-     envThread = co_create(1 << 28, __environmentWrapper);
+      // Re-create environment
+      envThread = co_create(1 << 28, __environmentWrapper);
 
-     // Using testing mode, where no noise is given to the action
-     agent["Mode"] = "Testing";
+      // Using testing mode, where no noise is given to the action
+      agent["Mode"] = "Testing";
 
-     // Setting initial non terminal state
-     agent["Termination"] = "Non Terminal";
+      // Setting initial non terminal state
+      agent["Termination"] = "Non Terminal";
 
-     // Getting first state
-     co_switch(envThread);
-
-     // Running environment using the last policy only
-     while (agent["Termination"] == "Non Terminal")
-     {
-      _agent->getAction(agent);
+      // Getting first state
       co_switch(envThread);
-      currentTestingReward += agent["Reward"].get<float>();
-     }
 
-     // Adding current testing reward to the average and keeping statistics
-     averageTestingReward += currentTestingReward;
-     if (currentTestingReward > bestTestingReward) bestTestingReward = currentTestingReward;
-     if (currentTestingReward < worstTestingReward) worstTestingReward = currentTestingReward;
+      // Running environment using the last policy only
+      while (agent["Termination"] == "Non Terminal")
+      {
+        _agent->getAction(agent);
+        co_switch(envThread);
+        currentTestingReward += agent["Reward"].get<float>();
+      }
 
-     // Freeing training co-routine memory
-     co_delete(envThread);
+      // Adding current testing reward to the average and keeping statistics
+      averageTestingReward += currentTestingReward;
+      if (currentTestingReward > bestTestingReward) bestTestingReward = currentTestingReward;
+      if (currentTestingReward < worstTestingReward) worstTestingReward = currentTestingReward;
+
+      // Freeing training co-routine memory
+      co_delete(envThread);
     }
 
     // Calculating average

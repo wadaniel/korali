@@ -46,7 +46,7 @@ enum class SampleState
   uninitialized = 1,
   initialized = 2,
   running = 3,
-  waiting  = 4,
+  waiting = 4,
   finished = 5
 };
 
@@ -167,8 +167,12 @@ class Sample
   */
   void setItem(const pybind11::object key, const pybind11::object val);
 
-
-  bool retrievePendingMessage(knlohmann::json& message);
+  /**
+  * @brief Gets and dequeues a pending message, if exists.
+  * @param message The message (json object) to overwrite, if a message exists.
+  * @return True, if message found; false, if no message was found.
+  */
+  bool retrievePendingMessage(knlohmann::json &message);
 
   /**
    * @brief Retrieves an element from the sample information

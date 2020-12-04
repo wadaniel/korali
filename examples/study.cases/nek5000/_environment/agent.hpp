@@ -6,10 +6,10 @@
 
 #ifndef TEST
 
-#define STATE_SIZE 6
-#define ACTION_SIZE 1
+  #define STATE_SIZE 6
+  #define ACTION_SIZE 1
 
-#include "korali.hpp"
+  #include "korali.hpp"
 
 extern void updateAgent();
 

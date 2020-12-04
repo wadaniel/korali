@@ -92,7 +92,7 @@ void runEnvironment(korali::Sample &s)
 
   // Setting finalization status
   if (done == true)
-    s["Termination"] = "Normal";
+    s["Termination"] = "Terminal";
   else
     s["Termination"] = "Truncated";
 }
@@ -151,11 +151,11 @@ void runEnvironment(korali::Sample &s)
 
   for (size_t i = 0; i < 10; i++)
   {
-    s["State"] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+    s["State"] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
     s.update();
     s["Reward"] = -10.0;
   }
-  s["Termination"] = "Normal";
+  s["Termination"] = "Terminal";
 }
 
 #endif

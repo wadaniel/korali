@@ -15,7 +15,8 @@ e = korali.Experiment()
 e["Problem"]["Type"] = "Reinforcement Learning / Discrete"
 e["Problem"]["Possible Actions"] = [[ -10.0 ], [ 10.0] ]
 e["Problem"]["Environment Function"] = env
-e["Problem"]["Action Repeat"] = 1
+e["Problem"]["Training Reward Threshold"] = 400
+e["Problem"]["Policy Testing Episodes"] = 20
 e["Problem"]["Actions Between Policy Updates"] = 1
 
 e["Variables"][0]["Name"] = "Cart Position"
@@ -36,8 +37,7 @@ e["Variables"][4]["Type"] = "Action"
 ### Configuring ACER hyperparameters
 
 e["Solver"]["Type"] = "Agent / Discrete / DACER"
-e["Solver"]["Optimization Steps Per Update"] = 10
-e["Solver"]["Experiences Between Agent Trainings"] = 25
+e["Solver"]["Experiences Between Policy Updates"] = 25
 e["Solver"]["Cache Persistence"] = 10
 
 ### Defining the configuration of replay memory
@@ -113,8 +113,6 @@ e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Activation Function"]["Typ
 
 ### Defining Termination Criteria
 
-e["Solver"]["Training Reward Threshold"] = 400
-e["Solver"]["Policy Testing Episodes"] = 20
 e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 450
 
 ### Setting file output configuration

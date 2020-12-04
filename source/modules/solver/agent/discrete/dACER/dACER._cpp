@@ -70,11 +70,11 @@ void dACER::initializeAgent()
   }
 
   size_t outputLayer = _policyNeuralNetwork["Layers"].size() - 1;
-  if (_policyNeuralNetwork["Layers"][outputLayer]["Activation Function"]["Type"] != "Softmax") // TODO replace with mask (D.W.)
+  if (_policyNeuralNetwork["Layers"][outputLayer]["Activation Function"]["Type"] != "Linear")
     KORALI_LOG_ERROR("Policy Network Output Layers' (%zu) Activation Function must be of type 'Softmax'", outputLayer);
 
   _policyNeuralNetwork["Solver"]["Neural Network"]["Layers"][outputLayer]["Weight Scaling"] = 0.1;
-  
+
   // Running initialization to verify that the configuration is correct
   engine.initialize(_policyExperiment);
 

@@ -274,7 +274,7 @@ float GFPT::averageActionAdvantageFunction(const std::vector<float> &curMeans, c
   return avgA;
 }
 
-void GFPT::trainAgent()
+void GFPT::trainPolicy()
 {
   /****************************************************************************
    * Adjusting REFER off-policiness and learning rate parameters
@@ -284,10 +284,10 @@ void GFPT::trainAgent()
   if (_experienceReplay.size() > _referStartSize)
   {
     // Updating cutoff
-    _referCutoff = 1.0f + _referCutoffScale / (1.0f + _referAnnealingRate * (float)_optimizationStepCount);
+    _referCutoff = 1.0f + _referCutoffScale / (1.0f + _referAnnealingRate * (float)_policyUpdateCount);
 
     // Update learning rate
-    _policyLearner->_learningRate = _referInitialLearningRate / (1.0f + _referAnnealingRate * _optimizationStepCount);
+    _policyLearner->_learningRate = _referInitialLearningRate / (1.0f + _referAnnealingRate * _policyUpdateCount);
 
     // Updating beta parameter
     //  if(offPolicyFraction > _referTargetOffPolicyFraction)

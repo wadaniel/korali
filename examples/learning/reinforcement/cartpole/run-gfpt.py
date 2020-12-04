@@ -36,8 +36,8 @@ e["Variables"][4]["Exploration Sigma"] = 0.35
 ### Defining Agent Configuration 
 
 e["Solver"]["Type"] = "Agent / Continuous / GFPT"
-e["Solver"]["Optimization Steps Per Update"] = 1
-e["Solver"]["Experiences Between Agent Trainings"] = 1
+e["Solver"]["Episodes Per Generation"] = 1
+e["Solver"]["Experiences Between Policy Updates"] = 1
 e["Solver"]["Cache Persistence"] = 10
 
 ### Defining probability of taking a random action (epsilon)
@@ -106,7 +106,7 @@ e["File Output"]["Enabled"] = False
  
 ### Running Experiment
 
-k["Conduit"]["Type"] = "Distributed"
+#k["Conduit"]["Type"] = "Distributed"
 #k["Conduit"]["Type"] = "Concurrent"
 #k["Conduit"]["Concurrent Jobs"] = 1
 k.run(e)

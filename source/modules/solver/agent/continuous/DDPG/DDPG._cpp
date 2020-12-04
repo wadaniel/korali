@@ -99,7 +99,7 @@ float DDPG::stateActionValueFunction(const std::vector<float> &state, const std:
   return evaluation[0];
 }
 
-void DDPG::trainAgent()
+void DDPG::trainPolicy()
 {
   /***************************************************************************************
   * Updating Critic Network

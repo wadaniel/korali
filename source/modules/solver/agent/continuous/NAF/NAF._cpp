@@ -23,9 +23,6 @@ void NAF::initializeAgent()
 
   korali::Engine engine; // Engine to initialize experiments with
 
-  size_t outputLayer = _qExperiment["Solver"]["Neural Network"]["Layers"].size() - 1;
-  _qExperiment["Solver"]["Neural Network"]["Layers"][outputLayer]["Weight Scaling"] = 0.1;
-
   /*********************************************************************
  * Initializing Q(a,s) = A(a,s) + V(s)
  *********************************************************************/
@@ -96,6 +93,9 @@ void NAF::initializeAgent()
       _qExperiment["Solver"]["Neural Network"]["Output"]["Softplus Mask"][dimAction + i + 1] = false;
     }
   }
+
+  size_t outputLayer = _qExperiment["Solver"]["Neural Network"]["Layers"].size() - 1;
+  _qExperiment["Solver"]["Neural Network"]["Layers"][outputLayer]["Weight Scaling"] = 0.1;
 
   // Running initialization to verify that the configuration is correct
   engine.initialize(_qExperiment);

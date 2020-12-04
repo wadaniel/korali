@@ -23,9 +23,6 @@ void GFPT::initializeAgent()
   * State Value Function Learner
   *********************************************************************/
 
-  size_t criticOutputLayer = _criticNeuralNetwork["Layers"].size() - 1;
-  _criticNeuralNetwork["Solver"]["Neural Network"]["Layers"][criticOutputLayer]["Weight Scaling"] = 0.1;
-
   _vExperiment["Problem"]["Type"] = "Supervised Learning";
   _vExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
   _vExperiment["Solver"]["Optimizer"] = _criticOptimizer;
@@ -42,6 +39,9 @@ void GFPT::initializeAgent()
     for (size_t j = 0; j < _problem->_stateVectorSize; j++)
       _vExperiment["Problem"]["Inputs"][i][j] = 0.0;
   }
+
+  size_t criticOutputLayer = _criticNeuralNetwork["Layers"].size() - 1;
+  _criticNeuralNetwork["Solver"]["Neural Network"]["Layers"][criticOutputLayer]["Weight Scaling"] = 0.1;
 
   // Running initialization to verify that the configuration is correct
   engine.initialize(_vExperiment);

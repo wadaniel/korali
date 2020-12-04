@@ -16,12 +16,12 @@ Distributed Conduit
 ---------------------------
 
 Run with the `Distributed` conduit to benefit from parallelized model evaluations.
-Note that we set `Workers Per Team` to assign a team of MPI processes to the model.
+Note that we set `Ranks Per Worker` to assign a team of MPI processes to the model.
 
 .. code-block:: python
 
     k["Conduit"]["Type"] = "Distributed";
-    k["Conduit"]["Workers Per Team"] = workersPerTeam;
+    k["Conduit"]["Ranks Per Worker"] = workersPerTeam;
     k["Profiling"]["Detail"] = "Full";
     k["Profiling"]["Frequency"] = 0.5;
 
@@ -29,7 +29,7 @@ Run
 ---------------------------
 
 Compile the script with the `Makefile`.
-Run the script with an input argument (Workers Per Team):
+Run the script with an input argument (Ranks Per Worker):
 
 .. code-block:: bash
 

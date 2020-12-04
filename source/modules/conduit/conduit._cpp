@@ -51,22 +51,17 @@ void Conduit::coroutineWrapper()
   sampleJs["Conduit Action"] = "Process Sample";
   engine->_conduit->sendMessageToSample(*sample, sampleJs);
 
-  // Now we sent the same to the worker, coming back to the experiments' thread
-  sample->_state = SampleState::waiting;
-  co_switch(engine->_currentExperiment->_thread);
-
-  ////////// Now waiting for sample to end
-
   // Waiting for ending message from sample
   knlohmann::json endMessage;
-  while (sample->retrievePendingMessage(endMessage) == false)
+  do
   {
     // If the sample ending message hasn't arrived, set sample's state back to waiting
     sample->_state = SampleState::waiting;
 
     // And come back to the experiment's thread
     co_switch(engine->_currentExperiment->_thread);
-  }
+
+  } while (sample->retrievePendingMessage(endMessage) == false);
 
   // Making sure the received message corresponds to the sample's ending message
   if (!isDefined(endMessage, "Has Finished"))

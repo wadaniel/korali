@@ -149,6 +149,12 @@ class Conduit : public Module
   * @param message Message to send to the sample.
   */
   virtual void sendMessageToSample(Sample &sample, knlohmann::json &message) = 0;
+
+  /**
+   * @brief Returns the identifier corresponding to the executing process (to differentiate their random seeds)
+   * @return The executing process id
+   */
+  virtual size_t getProcessId() = 0;
 };
 
 } // namespace korali

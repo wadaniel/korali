@@ -132,8 +132,13 @@ void Conduit::workerStackEngine(const knlohmann::json &js)
   {
     auto e = new Experiment;
     e->_js.getJson() = js["Engine"]["Experiment Vector"][i];
+
+    // Random seed needs to be changed to give workers independent distributions.
+    e->_js["Random Seed"] = e->_js["Random Seed"].get<size_t>() + 1337 * getProcessId();
+
     k->_experimentVector.push_back(e);
   }
+
 
   k->initialize();
   k->_conduit = this;

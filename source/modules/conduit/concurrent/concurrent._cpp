@@ -228,6 +228,11 @@ bool Concurrent::isRoot()
   return _workerId == -1;
 }
 
+size_t Concurrent::getProcessId()
+{
+ return _workerId;
+}
+
 } // namespace conduit
 
 } // namespace korali

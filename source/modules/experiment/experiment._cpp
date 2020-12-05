@@ -280,6 +280,8 @@ void Experiment::setSeed(knlohmann::json &js)
       KORALI_LOG_ERROR(" + Object: [ Experiment ] \n + Key:    ['Random Seed']\n%s", e.what());
     }
   }
+
+  printf("My Seed: %d\n", js["Random Seed"].get<size_t>());
 }
 
 } // namespace korali

@@ -38,6 +38,7 @@ class Sequential : public Conduit
   void sendMessageToEngine(knlohmann::json &message) override;
   knlohmann::json recvMessageFromEngine() override;
   void sendMessageToSample(Sample &sample, knlohmann::json &message) override;
+  size_t getProcessId() override;
 };
 
 } // namespace conduit

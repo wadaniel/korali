@@ -12,11 +12,12 @@ void runEnvironment(korali::Sample &s);
   #include "Obstacles/StefanFish.h"
   #include "Simulation.h"
 
-void initializeEnvironment(int argc, char *argv[]);
+void initializeEnvironment();
 void setInitialConditions(StefanFish *a, Shape *p);
 bool isTerminal(StefanFish *a, Shape *p);
 
 // Global variables for the simulation (ideal if this would be a class instead)
+extern bool _initialized;
 extern Simulation *_environment;
 extern bool _isTraining;
 extern std::mt19937 _randomGenerator;

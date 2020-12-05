@@ -112,6 +112,11 @@ bool Sequential::isRoot()
   return true;
 }
 
+size_t Sequential::getProcessId()
+{
+ return 0;
+}
+
 } // namespace conduit
 
 } // namespace korali

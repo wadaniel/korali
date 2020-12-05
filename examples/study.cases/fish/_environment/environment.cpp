@@ -7,6 +7,7 @@
 
 Simulation *_environment;
 bool _isTraining;
+bool _initialized;
 std::mt19937 _randomGenerator;
 size_t _maxSteps;
 Shape *_object;
@@ -17,6 +18,9 @@ void runEnvironment(korali::Sample &s)
   // Setting seed
   size_t seed = s["Sample Id"];
   _randomGenerator.seed(seed);
+
+  // Initializing environment
+  if (_initialized == false) initializeEnvironment();
 
   // Reseting environment and setting initial conditions
   _environment->reset();
@@ -97,11 +101,10 @@ void runEnvironment(korali::Sample &s)
     s["Termination"] = "Truncated";
 }
 
-void initializeEnvironment(int argc, char *argv[])
+void initializeEnvironment()
 {
   _maxSteps = 200;
-
-  _environment = new Simulation(argc, argv);
+  _initialized = true;
   _environment->init();
 
   _object = _environment->getShapes()[0];

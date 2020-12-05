@@ -6,10 +6,11 @@ int main(int argc, char *argv[])
  // Gathering actual arguments from MPI
  MPI_Init(&argc, &argv);
 
-// Initializing environment
-#ifdef CUBISM
-  initializeEnvironment(argc, argv);
-#endif
+  // Creating environment (initalizing it later)
+  #ifdef CUBISM
+   _environment = new Simulation(argc, argv);
+   _initialized = false;
+  #endif
 
   auto e = korali::Experiment();
 

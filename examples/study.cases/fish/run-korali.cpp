@@ -3,8 +3,8 @@
 
 int main(int argc, char *argv[])
 {
-// Gathering actual arguments from MPI
-//MPI_Init(&argc, &argv);
+ // Gathering actual arguments from MPI
+ MPI_Init(&argc, &argv);
 
 // Initializing environment
 #ifdef CUBISM
@@ -44,6 +44,7 @@ int main(int argc, char *argv[])
 
   e["Solver"]["Type"] = "Agent / Continuous / GFPT";
   e["Solver"]["Experiences Between Policy Updates"] = 1;
+  e["Solver"]["Episodes Per Generation"] = 32;
   e["Solver"]["Cache Persistence"] = 10;
 
   e["Solver"]["Random Action Probability"]["Initial Value"] = 0.01;
@@ -110,5 +111,6 @@ int main(int argc, char *argv[])
   ////// Running Experiment
 
   auto k = korali::Engine();
+  k["Conduit"]["Type"] = "Distributed";
   k.run(e);
 }

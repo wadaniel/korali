@@ -6,13 +6,9 @@
 
 #ifndef TEST
 
-Simulation *_environment;
-bool _isTraining;
-bool _initialized;
 std::mt19937 _randomGenerator;
-size_t _maxSteps;
-Shape *_object;
-StefanFish *_agent;
+int _argc;
+char** _argv;
 
 void runEnvironment(korali::Sample &s)
 {
@@ -21,14 +17,19 @@ void runEnvironment(korali::Sample &s)
   _randomGenerator.seed(sampleId);
 
   // Initializing environment
-  if (_initialized == false) initializeEnvironment();
+  Simulation environment(_argc, _argv);
+  environment.init();
 
+  // Obtaining environment objects and agent
+  Shape *object = environment.getShapes()[0];
+  StefanFish *agent = dynamic_cast<StefanFish *>(environment.getShapes()[1]);
+  
   // Reseting environment and setting initial conditions
-  _environment->reset();
-  setInitialConditions(_agent, _object);
+  environment.reset();
+  setInitialConditions(agent, object);
 
   // Setting initial state
-  auto state = _agent->state(_object);
+  auto state = agent->state(object);
   s["State"] = state;
 
   // Setting initial time and step conditions
@@ -36,9 +37,12 @@ void runEnvironment(korali::Sample &s)
   double tNextAct = 0; // Time until next action
   size_t curStep = 0;  // current Step
 
+  // Setting maximum number of steps before truncation
+  size_t maxSteps = 200;
+
   // Starting main environment loop
   bool done = false;
-  while (done == false && curStep < _maxSteps)
+  while (done == false && curStep < maxSteps)
   {
     // Getting initial time
     auto beginTime = std::chrono::steady_clock::now(); // Profiling
@@ -50,47 +54,46 @@ void runEnvironment(korali::Sample &s)
     std::vector<double> action = s["Action"];
 
     // Setting action
-    _agent->act(t, action);
+    agent->act(t, action);
 
     // Run the simulation until next action is required
-    tNextAct += _agent->getLearnTPeriod() * 0.5;
+    tNextAct += agent->getLearnTPeriod() * 0.5;
     while (t < tNextAct)
     {
-      const double dt = _environment->calcMaxTimestep();
+      const double dt = environment.calcMaxTimestep();
       t += dt;
 
       // Advance simulation and check whether it is correct
-      if (_environment->advance(dt))
+      if (environment.advance(dt))
       {
         fprintf(stderr, "Error during environment\n");
         exit(-1);
       }
 
       // Check if simulation is done.
-      done = isTerminal(_agent, _object);
+      done = isTerminal(agent, object);
     }
 
     // Reward is -10 if state is terminal; otherwise obtain it from the agent's efficiency
-    double reward = done ? -10.0 : _agent->EffPDefBnd;
+    double reward = done ? -10.0 : agent->EffPDefBnd;
 
     // Getting ending time
     auto endTime = std::chrono::steady_clock::now(); // Profiling
 
     // Printing Information:
     //    printf("[Korali] -------------------------------------------------------\n");
-    //    printf("[Korali] Step: %lu/%lu\n", curStep, _maxSteps);
     //    printf("[Korali] State: [ %.3f", state[0]);
     //    for (size_t i = 1; i < state.size(); i++) printf(", %.3f", state[i]);
     //    printf("]\n");
 
     double actionTime = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count() / 1.0e+9; 
-    printf("[Korali] Sample %lu - Step: %lu/%lu, Action: [ %.3f, %.3f ], Reward: %.3f, Time: %.3fs\n", sampleId, curStep, _maxSteps, action[0], action[1], reward, actionTime);
+    printf("[Korali] Sample %lu - Step: %lu/%lu, Action: [ %.3f, %.3f ], Reward: %.3f, Time: %.3fs\n", sampleId, curStep, maxSteps, action[0], action[1], reward, actionTime);
     fflush(stdout);
     ////    printf("[Korali] Terminal: %d\n", done);
     ////    printf("[Korali] -------------------------------------------------------\n");
 
     // Obtaining new agent state
-    state = _agent->state(_object);
+    state = agent->state(object);
 
     // Storing reward
     s["Reward"] = reward;
@@ -109,29 +112,14 @@ void runEnvironment(korali::Sample &s)
     s["Termination"] = "Truncated";
 }
 
-void initializeEnvironment()
-{
-  _maxSteps = 200;
-  _initialized = true;
-  _environment->init();
-
-  _object = _environment->getShapes()[0];
-  _agent = dynamic_cast<StefanFish *>(_environment->getShapes()[1]);
-  if (_agent == nullptr)
-  {
-    fprintf(stderr, "[Error] Agent was not a StefanFish!\n");
-    exit(-1);
-  }
-}
-
 void setInitialConditions(StefanFish *a, Shape *p)
 {
   std::uniform_real_distribution<double> disA(-20. / 180. * M_PI, 20. / 180. * M_PI);
-  std::uniform_real_distribution<double> disX(0, 0.5), disY(-0.25, 0.25);
+  std::uniform_real_distribution<double> disX(0.0, 0.5), disY(-0.25, 0.25);
 
-  const double SX = _isTraining ? disX(_randomGenerator) : 0.35;
-  const double SY = _isTraining ? disY(_randomGenerator) : 0.00;
-  const double SA = _isTraining ? disA(_randomGenerator) : 0.00;
+  const double SX = disX(_randomGenerator);
+  const double SY = disY(_randomGenerator);
+  const double SA = disA(_randomGenerator);
 
   double C[2] = {p->center[0] + (1 + SX) * a->length, p->center[1] + SY * a->length};
   p->centerOfMass[1] = p->center[1] - (C[1] - p->center[1]);

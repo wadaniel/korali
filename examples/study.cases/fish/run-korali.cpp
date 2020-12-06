@@ -4,9 +4,11 @@
 int main(int argc, char *argv[])
 {
  // Gathering actual arguments from MPI
+#ifndef TEST
   int provided;
   MPI_Init_thread(&argc, &argv, MPI_THREAD_FUNNELED, &provided );
   if (provided != MPI_THREAD_FUNNELED) { printf("Error initializing MPI\n"); exit(-1); }
+#endif
 
   // Storing parameters
   _argc = argc;
@@ -14,8 +16,10 @@ int main(int argc, char *argv[])
 
   // Getting number of workers
   int N = 1;
+#ifndef TEST
   MPI_Comm_size(MPI_COMM_WORLD, &N);
   N = N - 1; // Minus one for Korali's engine
+#endif
 
   auto e = korali::Experiment();
 
@@ -117,8 +121,9 @@ int main(int argc, char *argv[])
   ////// Running Experiment
 
   auto k = korali::Engine();
+#ifndef TEST
   k["Conduit"]["Type"] = "Distributed";
   k["Conduit"]["Communicator"] = MPI_COMM_WORLD;
-  //k["Conduit"]["Type"] = "Concurrent";
+#endif
   k.run(e);
 }

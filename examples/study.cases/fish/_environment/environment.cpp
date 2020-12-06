@@ -2,6 +2,7 @@
 //  Copyright (c) 2020 CSE-Lab, ETH Zurich, Switzerland.
 
 #include "environment.hpp"
+#include <filesystem>
 #include <chrono>
 
 #ifndef TEST
@@ -15,6 +16,23 @@ void runEnvironment(korali::Sample &s)
   // Setting seed
   size_t sampleId  = s["Sample Id"];
   _randomGenerator.seed(sampleId);
+
+  // Creating results directory
+  char resDir[64];
+  sprintf(resDir, "_results/sample%06lu", sampleId);
+  if (std::filesystem::create_directories(resDir) == false)
+   { printf("Error creating results directory: %s.\n", resDir); exit(-1); }
+
+  // Redirecting all output to the log file
+  char logFilePath[128];
+  sprintf(logFilePath, "%s/log.txt", resDir);
+  auto logFile = freopen(logFilePath, "a", stdout);
+  if (logFile == NULL) 
+   { printf("Error creating log file: %s.\n", logFilePath); exit(-1); }
+
+  // Switching to results directory
+  auto curPath = std::filesystem::current_path();
+  std::filesystem::current_path(resDir);
 
   // Initializing environment
   Simulation environment(_argc, _argv);
@@ -79,18 +97,19 @@ void runEnvironment(korali::Sample &s)
 
     // Getting ending time
     auto endTime = std::chrono::steady_clock::now(); // Profiling
+    double actionTime = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count() / 1.0e+9; 
 
     // Printing Information:
-    //    printf("[Korali] -------------------------------------------------------\n");
-    //    printf("[Korali] State: [ %.3f", state[0]);
-    //    for (size_t i = 1; i < state.size(); i++) printf(", %.3f", state[i]);
-    //    printf("]\n");
-
-    double actionTime = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count() / 1.0e+9; 
-    printf("[Korali] Sample %lu - Step: %lu/%lu, Action: [ %.3f, %.3f ], Reward: %.3f, Time: %.3fs\n", sampleId, curStep, maxSteps, action[0], action[1], reward, actionTime);
+    printf("[Korali] Sample %lu - Step: %lu/%lu\n", sampleId, curStep, maxSteps);
+    printf("[Korali] State: [ %.3f", state[0]); 
+    for (size_t i = 1; i < state.size(); i++) printf(", %.3f", state[i]);
+    printf("]\n");
+    printf("[Korali] Action: [ %.3f, %.3f ]\n", action[0], action[1]);
+    printf("[Korali] Reward: %.3f\n",reward);
+    printf("[Korali] Terminal?: %d\n", done);
+    printf("[Korali] Time: %.3fs\n", actionTime);
+    printf("[Korali] -------------------------------------------------------\n");
     fflush(stdout);
-    ////    printf("[Korali] Terminal: %d\n", done);
-    ////    printf("[Korali] -------------------------------------------------------\n");
 
     // Obtaining new agent state
     state = agent->state(object);
@@ -110,6 +129,12 @@ void runEnvironment(korali::Sample &s)
     s["Termination"] = "Terminal";
   else
     s["Termination"] = "Truncated";
+
+  // Switching back to experiment directory
+  std::filesystem::current_path(curPath);
+
+  // Closing log file
+  fclose(logFile);
 }
 
 void setInitialConditions(StefanFish *a, Shape *p)

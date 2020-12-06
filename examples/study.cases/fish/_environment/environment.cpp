@@ -58,7 +58,7 @@ void runEnvironment(korali::Sample &s)
 
     // Run the simulation until next action is required
     tNextAct += agent->getLearnTPeriod() * 0.5;
-    while (t < tNextAct)
+    while (done == false && t < tNextAct)
     {
       const double dt = environment.calcMaxTimestep();
       t += dt;

@@ -96,7 +96,7 @@ void runEnvironment(korali::Sample &s)
 
   // Setting finalization status
   if (done == true)
-    s["Termination"] = "Normal";
+    s["Termination"] = "Terminal";
   else
     s["Termination"] = "Truncated";
 }

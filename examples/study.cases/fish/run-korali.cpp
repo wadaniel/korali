@@ -3,8 +3,8 @@
 
 int main(int argc, char *argv[])
 {
- // Gathering actual arguments from MPI
- MPI_Init(&argc, &argv);
+  // Gathering actual arguments from MPI
+  MPI_Init(&argc, &argv);
 
   // Creating environment (initalizing it later)
   #ifdef CUBISM
@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
 
   e["Solver"]["Type"] = "Agent / Continuous / GFPT";
   e["Solver"]["Experiences Between Policy Updates"] = 1;
-  e["Solver"]["Episodes Per Generation"] = 32;
+  e["Solver"]["Episodes Per Generation"] = 24;
   e["Solver"]["Cache Persistence"] = 10;
 
   e["Solver"]["Random Action Probability"]["Initial Value"] = 0.01;

@@ -2,6 +2,7 @@
 //  Copyright (c) 2020 CSE-Lab, ETH Zurich, Switzerland.
 
 #include "environment.hpp"
+#include <chrono>
 
 #ifndef TEST
 
@@ -16,8 +17,8 @@ StefanFish *_agent;
 void runEnvironment(korali::Sample &s)
 {
   // Setting seed
-  size_t seed = s["Sample Id"];
-  _randomGenerator.seed(seed);
+  size_t sampleId  = s["Sample Id"];
+  _randomGenerator.seed(sampleId);
 
   // Initializing environment
   if (_initialized == false) initializeEnvironment();
@@ -39,6 +40,9 @@ void runEnvironment(korali::Sample &s)
   bool done = false;
   while (done == false && curStep < _maxSteps)
   {
+    // Getting initial time
+    auto beginTime = std::chrono::steady_clock::now(); // Profiling
+
     // Getting new action
     s.update();
 
@@ -69,15 +73,19 @@ void runEnvironment(korali::Sample &s)
     // Reward is -10 if state is terminal; otherwise obtain it from the agent's efficiency
     double reward = done ? -10.0 : _agent->EffPDefBnd;
 
+    // Getting ending time
+    auto endTime = std::chrono::steady_clock::now(); // Profiling
+
     // Printing Information:
     //    printf("[Korali] -------------------------------------------------------\n");
     //    printf("[Korali] Step: %lu/%lu\n", curStep, _maxSteps);
     //    printf("[Korali] State: [ %.3f", state[0]);
     //    for (size_t i = 1; i < state.size(); i++) printf(", %.3f", state[i]);
     //    printf("]\n");
-    printf("[Korali] Step: %lu/%lu, Action: [ %.3f", curStep, _maxSteps, action[0]);
-    for (size_t i = 1; i < action.size(); i++) printf(", %.3f", action[i]);
-    printf("]\n");
+
+    double actionTime = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count() / 1.0e+9; 
+    printf("[Korali] Sample %lu - Step: %lu/%lu, Action: [ %.3f, %.3f ], Reward: %.3f, Time: %.3fs\n", sampleId, curStep, _maxSteps, action[0], action[1], reward, actionTime);
+    fflush(stdout);
     ////    printf("[Korali] Terminal: %d\n", done);
     ////    printf("[Korali] -------------------------------------------------------\n");
 
@@ -96,7 +104,7 @@ void runEnvironment(korali::Sample &s)
 
   // Setting finalization status
   if (done == true)
-    s["Termination"] = "Normal";
+    s["Termination"] = "Terminal";
   else
     s["Termination"] = "Truncated";
 }

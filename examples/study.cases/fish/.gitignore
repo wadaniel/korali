@@ -1,4 +1,5 @@
 run*
+_results
 *.txt
 *.h5
 *.xmf

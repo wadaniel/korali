@@ -8,16 +8,14 @@ int main(int argc, char *argv[])
   MPI_Init_thread(&argc, &argv, MPI_THREAD_FUNNELED, &provided );
   if (provided != MPI_THREAD_FUNNELED) { printf("Error initializing MPI\n"); exit(-1); }
 
+  // Storing parameters
+  _argc = argc;
+  _argv = argv;
+
   // Getting number of workers
   int N = 1;
   MPI_Comm_size(MPI_COMM_WORLD, &N);
   N = N - 1; // Minus one for Korali's engine
-
-  // Creating environment (initalizing it later)
-  #ifdef CUBISM
-   _environment = new Simulation(argc, argv);
-   _initialized = false;
-  #endif
 
   auto e = korali::Experiment();
 
@@ -52,7 +50,7 @@ int main(int argc, char *argv[])
 
   e["Solver"]["Type"] = "Agent / Continuous / GFPT";
   e["Solver"]["Experiences Between Policy Updates"] = 1;
-  e["Solver"]["Episodes Per Generation"] = N * 1;
+  e["Solver"]["Episodes Per Generation"] = N * 4;
   e["Solver"]["Cache Persistence"] = 10;
 
   e["Solver"]["Random Action Probability"]["Initial Value"] = 0.01;

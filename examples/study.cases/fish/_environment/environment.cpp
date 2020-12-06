@@ -5,11 +5,12 @@
 #include <filesystem>
 #include <chrono>
 
+int _argc;
+char** _argv;
+
 #ifndef TEST
 
 std::mt19937 _randomGenerator;
-int _argc;
-char** _argv;
 
 void runEnvironment(korali::Sample &s)
 {
@@ -179,11 +180,11 @@ void runEnvironment(korali::Sample &s)
 
   for (size_t i = 0; i < 10; i++)
   {
-    s["State"] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+    s["State"] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
     s.update();
     s["Reward"] = -10.0;
   }
-  s["Termination"] = "Normal";
+  s["Termination"] = "Terminal";
 }
 
 #endif

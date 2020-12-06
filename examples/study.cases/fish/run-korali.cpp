@@ -4,7 +4,9 @@
 int main(int argc, char *argv[])
 {
  // Gathering actual arguments from MPI
- MPI_Init(&argc, &argv);
+  int provided;
+  MPI_Init_thread(&argc, &argv, MPI_THREAD_FUNNELED, &provided );
+  if (provided != MPI_THREAD_FUNNELED) { printf("Error initializing MPI\n"); exit(-1); }
 
   // Creating environment (initalizing it later)
   #ifdef CUBISM
@@ -17,7 +19,7 @@ int main(int argc, char *argv[])
   e["Problem"]["Type"] = "Reinforcement Learning / Continuous";
   e["Problem"]["Environment Function"] = &runEnvironment;
   e["Problem"]["Training Reward Threshold"] = 100.0;
-  e["Problem"]["Policy Testing Episodes"] = 20;
+  e["Problem"]["Policy Testing Episodes"] = 2;
   e["Problem"]["Actions Between Policy Updates"] = 1;
 
   // Setting up the 16 state variables
@@ -113,5 +115,7 @@ int main(int argc, char *argv[])
 
   auto k = korali::Engine();
   k["Conduit"]["Type"] = "Distributed";
+  k["Conduit"]["Communicator"] = MPI_COMM_WORLD;
+  //k["Conduit"]["Type"] = "Concurrent";
   k.run(e);
 }

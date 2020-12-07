@@ -31,7 +31,7 @@ if [ -z $CUBISM_NTHREADS ]; then
 fi
 
 rm -rf _deps
-git clone https://github.com/cselab/CubismUP2D.git _deps/cubism
+git clone --branch AMRKorali --recursive git@gitlab.ethz.ch:mavt-cse/CubismUP_2D.git _deps/cubism
 pushd _deps/cubism/makefiles
 cat Makefile | sed -e 's/bs ?= /bs ?= '$CUBISM_BLOCK_SIZE'#/g' \
                    -e 's/nthreads ?=/nthreads ?= '$CUBISM_NTHREADS'#/g' > Makefile.new

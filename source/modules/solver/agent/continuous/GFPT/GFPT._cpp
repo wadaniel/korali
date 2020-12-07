@@ -40,7 +40,7 @@ void GFPT::initializeAgent()
       _vExperiment["Problem"]["Inputs"][i][j] = 0.0;
   }
 
-  size_t criticOutputLayer = _criticNeuralNetwork["Layers"].size() - 1;
+  size_t criticOutputLayer = _vExperiment["Solver"]["Neural Network"]["Layers"].size() - 1;
   _criticNeuralNetwork["Solver"]["Neural Network"]["Layers"][criticOutputLayer]["Weight Scaling"] = 0.1;
 
   // Running initialization to verify that the configuration is correct

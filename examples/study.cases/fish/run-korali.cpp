@@ -1,4 +1,5 @@
 #include "_environment/environment.hpp"
+#include "_deps/backward-cpp/backward.hpp"
 #include "korali.hpp"
 
 int main(int argc, char *argv[])
@@ -9,6 +10,9 @@ int main(int argc, char *argv[])
   MPI_Init_thread(&argc, &argv, MPI_THREAD_FUNNELED, &provided );
   if (provided != MPI_THREAD_FUNNELED) { printf("Error initializing MPI\n"); exit(-1); }
 #endif
+
+  // Initializing stack trace printer (for debugging)
+  backward::SignalHandling sh;
 
   // Storing parameters
   _argc = argc;

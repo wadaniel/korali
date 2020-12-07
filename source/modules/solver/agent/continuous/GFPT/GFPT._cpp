@@ -104,11 +104,7 @@ void GFPT::initializeAgent()
    * Initializing Policy-Related Structures
    *********************************************************************/
 
-  size_t policyOutputLayer = _policyNeuralNetwork["Layers"].size() - 1;
-  _policyNeuralNetwork["Solver"]["Neural Network"]["Layers"][policyOutputLayer]["Weight Scaling"] = 0.1;
-
   // Creating and running Actor Learning Experiments
-
   _policyExperiment["Problem"]["Type"] = "Supervised Learning";
   _policyExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
   _policyExperiment["Solver"]["Loss Function"] = "Direct Gradient";
@@ -138,6 +134,10 @@ void GFPT::initializeAgent()
     for (size_t j = 0; j < _problem->_actionVectorSize; j++)
       _policyExperiment["Problem"]["Solution"][i][j] = 0.0;
   }
+ 
+  size_t policyOutputLayer = _policyExperiment["Solver"]["Neural Network"]["Layers"].size() - 1;
+  _policyNeuralNetwork["Solver"]["Neural Network"]["Layers"][policyOutputLayer]["Weight Scaling"] = 0.1;
+
 
   // Running initialization to verify that the configuration is correct
   engine.initialize(_policyExperiment);

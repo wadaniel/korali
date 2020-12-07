@@ -71,7 +71,7 @@ void cACER::initializeAgent()
     _aExperiment["Problem"]["Solution"][p][0] = 0.0; // A(s,a)
   }
  
-  size_t aOutputLayerId = _vExperiment["Solver"]["Neural Network"]["Layers"].size() - 1;
+  size_t aOutputLayerId = _aExperiment["Solver"]["Neural Network"]["Layers"].size() - 1;
   _aExperiment["Solver"]["Neural Network"]["Layers"][aOutputLayerId]["Weight Scaling"] = 0.1;
 
   // Running initialization to verify that the configuration is correct

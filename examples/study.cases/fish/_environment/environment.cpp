@@ -25,11 +25,11 @@ void runEnvironment(korali::Sample &s)
    { printf("Error creating results directory: %s.\n", resDir); exit(-1); }
 
   // Redirecting all output to the log file
-  char logFilePath[128];
-  sprintf(logFilePath, "%s/log.txt", resDir);
-  auto logFile = freopen(logFilePath, "a", stdout);
-  if (logFile == NULL) 
-   { printf("Error creating log file: %s.\n", logFilePath); exit(-1); }
+  //char logFilePath[128];
+  //sprintf(logFilePath, "%s/log.txt", resDir);
+  //auto logFile = freopen(logFilePath, "a", stdout);
+  //if (logFile == NULL) 
+  // { printf("Error creating log file: %s.\n", logFilePath); exit(-1); }
 
   // Switching to results directory
   auto curPath = std::filesystem::current_path();
@@ -139,7 +139,7 @@ void runEnvironment(korali::Sample &s)
   std::filesystem::current_path(curPath);
 
   // Closing log file
-  fclose(logFile);
+  //fclose(logFile);
 }
 
 void setInitialConditions(StefanFish *a, Shape *p)
@@ -164,7 +164,14 @@ bool isTerminal(StefanFish *a, Shape *p)
   const double Y = (a->center[1] - p->center[1]) / a->length;
   assert(X > 0);
   // cylFollow
-  return std::fabs(Y) > 1 || X < 0.5 || X > 3;
+  
+  bool terminal = false;
+  if (X < +0.5) terminal = true;
+  if (X > +2.0) terminal = true;
+  if (Y < -1.0) terminal = true;
+  if (Y > +1.0) terminal = true;
+
+  return terminal;
   // extended follow
   // return std::fabs(Y)>1 || X<1 || X>3;
   // restricted follow

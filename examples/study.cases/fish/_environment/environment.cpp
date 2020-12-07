@@ -11,6 +11,7 @@ char** _argv;
 #ifndef TEST
 
 std::mt19937 _randomGenerator;
+Simulation* _environment;
 
 void runEnvironment(korali::Sample &s)
 {
@@ -35,16 +36,12 @@ void runEnvironment(korali::Sample &s)
   auto curPath = std::filesystem::current_path();
   std::filesystem::current_path(resDir);
 
-  // Initializing environment
-  Simulation environment(_argc, _argv);
-  environment.init();
-
   // Obtaining environment objects and agent
-  Shape *object = environment.getShapes()[0];
-  StefanFish *agent = dynamic_cast<StefanFish *>(environment.getShapes()[1]);
+  Shape *object = _environment->getShapes()[0];
+  StefanFish *agent = dynamic_cast<StefanFish *>(_environment->getShapes()[1]);
   
   // Reseting environment and setting initial conditions
-  environment.reset();
+  _environment->reset();
   setInitialConditions(agent, object);
 
   // Setting initial state
@@ -83,11 +80,11 @@ void runEnvironment(korali::Sample &s)
     while (done == false && t < tNextAct)
     {
       // Advance simulation
-      const double dt = environment.calcMaxTimestep();
+      const double dt = _environment->calcMaxTimestep();
       t += dt;
 
       // Advance simulation and check whether it is correct
-      if (environment.advance(dt))
+      if (_environment->advance(dt))
       {
         fprintf(stderr, "Error during environment\n");
         exit(-1);

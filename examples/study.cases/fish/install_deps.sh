@@ -28,8 +28,6 @@ CUBISM_NTHREADS=0
 
 rm -rf _deps
 
-git clone https://github.com/bombela/backward-cpp.git _deps/backward-cpp
-
 git clone --branch AMRKorali --recursive git@gitlab.ethz.ch:mavt-cse/CubismUP_2D.git _deps/cubism
 pushd _deps/cubism/makefiles
 cat Makefile | sed -e 's/bs ?= /bs ?= '$CUBISM_BLOCK_SIZE'#/g' \

@@ -1,5 +1,4 @@
 #include "_environment/environment.hpp"
-#include "_deps/backward-cpp/backward.hpp"
 #include "korali.hpp"
 
 int main(int argc, char *argv[])
@@ -11,9 +10,6 @@ int main(int argc, char *argv[])
   if (provided != MPI_THREAD_FUNNELED) { printf("Error initializing MPI\n"); exit(-1); }
 #endif
 
-  // Initializing stack trace printer (for debugging)
-  backward::SignalHandling sh;
-
   // Storing parameters
   _argc = argc;
   _argv = argv;
@@ -24,6 +20,9 @@ int main(int argc, char *argv[])
   MPI_Comm_size(MPI_COMM_WORLD, &N);
   N = N - 1; // Minus one for Korali's engine
 #endif
+
+  _environment = new Simulation(_argc, _argv);
+  _environment->init();
 
   auto e = korali::Experiment();
 

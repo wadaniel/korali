@@ -11,11 +11,32 @@ NeuralNetwork::NeuralNetwork()
 
 void NeuralNetwork::initialize()
 {
-#ifdef _KORALI_USE_NO_NN
+  if (_engine == "OneDNN")
+  {
+#ifdef _KORALI_USE_ONEDNN
 
-  KORALI_LOG_ERROR("Korali was installed without support NN operations. Change installation configuration to select a NN framework and re-build Korali.\n");
+    _stream = dnnl::stream(korali::_engine);
+
+#else
+
+    fprintf(stderr, "[Korali] Warning: Neural Network's engine set to OneDNN, but Korali was installed without support for OneDNN. Using Korali's default NN Engine\n");
+    _engine = "Korali";
 
 #endif
+  }
+
+  if (_engine == "CUDNN")
+  {
+#ifdef _KORALI_USE_ONEDNN
+
+    if (cudnnCreate(&_cuDNNHandle) != CUDNN_STATUS_SUCCESS) KORALI_LOG_ERROR("Error initializing CUDNN Handle\n");
+
+#else
+
+    fprintf(stderr, "[Korali] Warning: Neural Network's engine set to OneDNN, but Korali was installed without support for OneDNN. Using Korali's default NN Engine\n");
+    _engine = "Korali";
+#endif
+  }
 
   if (_isInitialized) KORALI_LOG_ERROR("Neural Network has already been initialized!.\n");
 
@@ -26,32 +47,6 @@ void NeuralNetwork::initialize()
 #else
 
     KORALI_LOG_ERROR("Neural Network's engine set to Korali, but Korali was installed without support for Eigen3.\n");
-
-#endif
-  }
-
-  if (_engine == "OneDNN")
-  {
-#ifdef _KORALI_USE_ONEDNN
-
-    _stream = dnnl::stream(korali::_engine);
-
-#else
-
-    KORALI_LOG_ERROR("Neural Network's engine set to OneDNN, but Korali was installed without support for OneDNN.\n");
-
-#endif
-  }
-
-  if (_engine == "CUDNN")
-  {
-#ifdef _KORALI_USE_CUDNN
-
-    if (cudnnCreate(&_cuDNNHandle) != CUDNN_STATUS_SUCCESS) KORALI_LOG_ERROR("Error initializing CUDNN Handle\n");
-
-#else
-
-    KORALI_LOG_ERROR("Neural Network's engine set to CUDNN, but Korali was installed without support for CUDNN.\n");
 
 #endif
   }

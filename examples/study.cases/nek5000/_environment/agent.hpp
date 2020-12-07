@@ -4,6 +4,8 @@
 #ifndef _NEK5000_AGENT_HPP
 #define _NEK5000_AGENT_HPP
 
+#ifndef TEST
+
 #define STATE_SIZE 6
 #define ACTION_SIZE 1
 
@@ -35,4 +37,6 @@ void getaction_(double action[ACTION_SIZE])
 }
 void updateagent_() { updateAgent(); }
 
-#endif
+#endif // TEST
+
+#endif // _NEK5000_AGENT_HPP

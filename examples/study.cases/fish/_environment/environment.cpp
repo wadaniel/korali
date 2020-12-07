@@ -3,6 +3,8 @@
 
 #include "environment.hpp"
 
+#ifndef TEST
+
 Simulation *_environment;
 bool _isTraining;
 std::mt19937 _randomGenerator;
@@ -125,13 +127,28 @@ bool isTerminal(StefanFish *a, Shape *p)
   const double X = (a->center[0] - p->center[0]) / a->length;
   const double Y = (a->center[1] - p->center[1]) / a->length;
   assert(X > 0);
-#if 1
   // cylFollow
   return std::fabs(Y) > 1 || X < 0.5 || X > 3;
-#else
   // extended follow
   // return std::fabs(Y)>1 || X<1 || X>3;
   // restricted follow
-  return std::fabs(Y) > 0.75 || X < 1 || X > 2;
-#endif
+  //return std::fabs(Y) > 0.75 || X < 1 || X > 2;
 }
+
+#else
+
+// Environment for configuration test only
+void runEnvironment(korali::Sample &s)
+{
+  fprintf(stderr, "[Warning] Using test-only setup. If you want to run the actual experiment, run ./install_deps.sh first and re-compile.\n");
+
+  for (size_t i = 0; i < 10; i++)
+  {
+    s["State"] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+    s.update();
+    s["Reward"] = -10.0;
+  }
+  s["Termination"] = "Normal";
+}
+
+#endif

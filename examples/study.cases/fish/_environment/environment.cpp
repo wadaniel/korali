@@ -152,8 +152,6 @@ void setInitialConditions(StefanFish *a, Shape *p)
   const double SA = disA(_randomGenerator);
 
   double C[2] = {p->center[0] + SX, p->center[1] + SY};
-  p->centerOfMass[1] = p->center[1] - (C[1] - p->center[1]);
-  p->center[1] = p->center[1] - (C[1] - p->center[1]);
   a->setCenterOfMass(C);
   a->setOrientation(SA);
 }

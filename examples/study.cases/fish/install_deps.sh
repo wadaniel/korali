@@ -32,7 +32,7 @@ pushd _deps/cubism/makefiles
 cat Makefile | sed -e 's/bs ?= /bs ?= '$CUBISM_BLOCK_SIZE'#/g' \
                    -e 's/nthreads ?=/nthreads ?= '$CUBISM_NTHREADS'#/g' > Makefile.new
 mv Makefile.new Makefile
-make -j6
+make -j6 gpu=false
 cp libcubism.a cubism.cflags.txt cubism.libs.txt ../../..
 popd
 

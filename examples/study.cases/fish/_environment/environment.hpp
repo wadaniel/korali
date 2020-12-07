@@ -20,5 +20,6 @@ bool isTerminal(StefanFish *a, Shape *p);
 
 // Global variables for the simulation (ideal if this would be a class instead)
 extern std::mt19937 _randomGenerator;
+extern Simulation* _environment;
 
 #endif

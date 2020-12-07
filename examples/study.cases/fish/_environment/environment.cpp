@@ -145,13 +145,13 @@ void runEnvironment(korali::Sample &s)
 void setInitialConditions(StefanFish *a, Shape *p)
 {
   std::uniform_real_distribution<double> disA(-20. / 180. * M_PI, 20. / 180. * M_PI);
-  std::uniform_real_distribution<double> disX(0.0, 0.5), disY(-0.25, 0.25);
+  std::uniform_real_distribution<double> disX(0.25, 0.35), disY(-0.05, 0.05);
 
   const double SX = disX(_randomGenerator);
   const double SY = disY(_randomGenerator);
   const double SA = disA(_randomGenerator);
 
-  double C[2] = {p->center[0] + (1 + SX) * a->length, p->center[1] + SY * a->length};
+  double C[2] = {p->center[0] + SX, p->center[1] + SY};
   p->centerOfMass[1] = p->center[1] - (C[1] - p->center[1]);
   p->center[1] = p->center[1] - (C[1] - p->center[1]);
   a->setCenterOfMass(C);
@@ -160,22 +160,16 @@ void setInitialConditions(StefanFish *a, Shape *p)
 
 bool isTerminal(StefanFish *a, Shape *p)
 {
-  const double X = (a->center[0] - p->center[0]) / a->length;
-  const double Y = (a->center[1] - p->center[1]) / a->length;
-  assert(X > 0);
-  // cylFollow
+  const double X = (a->center[0] - p->center[0]);
+  const double Y = (a->center[1] - p->center[1]);
   
   bool terminal = false;
-  if (X < +0.5) terminal = true;
-  if (X > +2.0) terminal = true;
-  if (Y < -1.0) terminal = true;
-  if (Y > +1.0) terminal = true;
+  if (X < +0.15) terminal = true;
+  if (X > +0.55) terminal = true;
+  if (Y < -0.1) terminal = true;
+  if (Y > +0.1) terminal = true;
 
   return terminal;
-  // extended follow
-  // return std::fabs(Y)>1 || X<1 || X>3;
-  // restricted follow
-  //return std::fabs(Y) > 0.75 || X < 1 || X > 2;
 }
 
 #else

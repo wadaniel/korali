@@ -3,21 +3,30 @@
 
 int main(int argc, char *argv[])
 {
-  // Gathering actual arguments from MPI
-  MPI_Init(&argc, &argv);
+ // Gathering actual arguments from MPI
+#ifndef TEST
+  int provided;
+  MPI_Init_thread(&argc, &argv, MPI_THREAD_FUNNELED, &provided );
+  if (provided != MPI_THREAD_FUNNELED) { printf("Error initializing MPI\n"); exit(-1); }
+#endif
 
-  // Creating environment (initalizing it later)
-  #ifdef CUBISM
-   _environment = new Simulation(argc, argv);
-   _initialized = false;
-  #endif
+  // Storing parameters
+  _argc = argc;
+  _argv = argv;
+
+  // Getting number of workers
+  int N = 1;
+#ifndef TEST
+  MPI_Comm_size(MPI_COMM_WORLD, &N);
+  N = N - 1; // Minus one for Korali's engine
+#endif
 
   auto e = korali::Experiment();
 
   e["Problem"]["Type"] = "Reinforcement Learning / Continuous";
   e["Problem"]["Environment Function"] = &runEnvironment;
   e["Problem"]["Training Reward Threshold"] = 100.0;
-  e["Problem"]["Policy Testing Episodes"] = 20;
+  e["Problem"]["Policy Testing Episodes"] = 5;
   e["Problem"]["Actions Between Policy Updates"] = 1;
 
   // Setting up the 16 state variables
@@ -45,7 +54,7 @@ int main(int argc, char *argv[])
 
   e["Solver"]["Type"] = "Agent / Continuous / GFPT";
   e["Solver"]["Experiences Between Policy Updates"] = 1;
-  e["Solver"]["Episodes Per Generation"] = 24;
+  e["Solver"]["Episodes Per Generation"] = N * 4;
   e["Solver"]["Cache Persistence"] = 10;
 
   e["Solver"]["Random Action Probability"]["Initial Value"] = 0.01;
@@ -97,7 +106,7 @@ int main(int argc, char *argv[])
 
   ////// Defining Termination Criteria
 
-  e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 100.0;
+  e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 1000.0;
 
   ////// If using syntax test, run for a couple generations only
 
@@ -112,6 +121,9 @@ int main(int argc, char *argv[])
   ////// Running Experiment
 
   auto k = korali::Engine();
+#ifndef TEST
   k["Conduit"]["Type"] = "Distributed";
+  k["Conduit"]["Communicator"] = MPI_COMM_WORLD;
+#endif
   k.run(e);
 }

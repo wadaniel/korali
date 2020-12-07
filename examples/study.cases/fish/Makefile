@@ -7,7 +7,7 @@ ifeq ($(TEST), true)
  CUBISMCFLAGS=-DTEST
  else
  CUBISMCFLAGS=$(shell cat cubism.cflags.txt) -I_deps/cubism/source -I_deps/cubism/Cubism/include -DCUBISM
- CUBISMLIBS= libcubism.a $(shell cat cubism.libs.txt)
+ CUBISMLIBS= libcubism.a $(shell cat cubism.libs.txt) -lstdc++fs
 endif
 
 .SECONDARY:

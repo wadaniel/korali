@@ -38,8 +38,9 @@ void cACER::initializeAgent()
     _vExperiment["Problem"]["Solution"][p][0] = 0.0; // V(s)
   }
 
-  size_t criticOutputLayerId = _criticNeuralNetwork["Layers"].size() - 1;
-  _criticNeuralNetwork["Solver"]["Neural Network"]["Layers"][criticOutputLayerId]["Weight Scaling"] = 0.1;
+  size_t criticOutputLayerId = _vExperiment["Solver"]["Neural Network"]["Layers"].size() - 1;
+  _vExperiment["Solver"]["Neural Network"]["Layers"][criticOutputLayerId]["Weight Scaling"] = 0.1;
+
   if (_criticNeuralNetwork["Layers"][criticOutputLayerId]["Activation Function"]["Type"] != "Elementwise/Linear")
     KORALI_LOG_ERROR("Critic Network Output Layers' (%zu) Activation Function must be of type 'Elementwise/Linear'", criticOutputLayerId);
 

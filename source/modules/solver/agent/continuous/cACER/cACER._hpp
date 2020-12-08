@@ -109,7 +109,7 @@ class cACER : public Continuous
    */
   std::tuple<float, float> retraceFunction(size_t expId);
 
-  void setTrainingHyperparameters(const knlohmann::json& hyperparameters) override;
+  void setTrainingHyperparameters(const knlohmann::json &hyperparameters) override;
   knlohmann::json getTrainingHyperparameters() override;
   knlohmann::json runPolicy(const std::vector<float> &state) override;
   void trainPolicy() override;

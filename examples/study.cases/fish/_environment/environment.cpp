@@ -2,35 +2,41 @@
 //  Copyright (c) 2020 CSE-Lab, ETH Zurich, Switzerland.
 
 #include "environment.hpp"
-#include <filesystem>
 #include <chrono>
+#include <filesystem>
 
 int _argc;
-char** _argv;
+char **_argv;
 
 #ifndef TEST
 
 std::mt19937 _randomGenerator;
-Simulation* _environment;
+Simulation *_environment;
 
 void runEnvironment(korali::Sample &s)
 {
   // Setting seed
-  size_t sampleId  = s["Sample Id"];
+  size_t sampleId = s["Sample Id"];
   _randomGenerator.seed(sampleId);
 
   // Creating results directory
   char resDir[64];
   sprintf(resDir, "_results/sample%08lu", sampleId);
   if (std::filesystem::create_directories(resDir) == false)
-   { printf("Error creating results directory: %s.\n", resDir); exit(-1); }
+  {
+    printf("Error creating results directory: %s.\n", resDir);
+    exit(-1);
+  }
 
   // Redirecting all output to the log file
   char logFilePath[128];
   sprintf(logFilePath, "%s/log.txt", resDir);
   auto logFile = freopen(logFilePath, "a", stdout);
   if (logFile == NULL)
-   { printf("Error creating log file: %s.\n", logFilePath); exit(-1); }
+  {
+    printf("Error creating log file: %s.\n", logFilePath);
+    exit(-1);
+  }
 
   // Switching to results directory
   auto curPath = std::filesystem::current_path();
@@ -39,7 +45,7 @@ void runEnvironment(korali::Sample &s)
   // Obtaining environment objects and agent
   Shape *object = _environment->getShapes()[0];
   StefanFish *agent = dynamic_cast<StefanFish *>(_environment->getShapes()[1]);
-  
+
   // Reseting environment and setting initial conditions
   _environment->reset();
   setInitialConditions(agent, object);
@@ -99,15 +105,15 @@ void runEnvironment(korali::Sample &s)
 
     // Getting ending time
     auto endTime = std::chrono::steady_clock::now(); // Profiling
-    double actionTime = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count() / 1.0e+9; 
+    double actionTime = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count() / 1.0e+9;
 
     // Printing Information:
     printf("[Korali] Sample %lu - Step: %lu/%lu\n", sampleId, curStep, maxSteps);
-    printf("[Korali] State: [ %.3f", state[0]); 
+    printf("[Korali] State: [ %.3f", state[0]);
     for (size_t i = 1; i < state.size(); i++) printf(", %.3f", state[i]);
     printf("]\n");
     printf("[Korali] Action: [ %.3f, %.3f ]\n", action[0], action[1]);
-    printf("[Korali] Reward: %.3f\n",reward);
+    printf("[Korali] Reward: %.3f\n", reward);
     printf("[Korali] Terminal?: %d\n", done);
     printf("[Korali] Time: %.3fs\n", actionTime);
     printf("[Korali] -------------------------------------------------------\n");
@@ -157,7 +163,7 @@ bool isTerminal(StefanFish *a, Shape *p)
 {
   const double X = (a->center[0] - p->center[0]);
   const double Y = (a->center[1] - p->center[1]);
-  
+
   bool terminal = false;
   if (X < +0.15) terminal = true;
   if (X > +0.55) terminal = true;

@@ -38,6 +38,12 @@ void cACER::initializeAgent()
     _vExperiment["Problem"]["Solution"][p][0] = 0.0; // V(s)
   }
 
+  size_t vOutputLayerId = _vExperiment["Solver"]["Neural Network"]["Layers"].size() - 1;
+  _vExperiment["Solver"]["Neural Network"]["Layers"][vOutputLayerId]["Weight Scaling"] = 0.1;
+
+  if (_criticNeuralNetwork["Layers"][vOutputLayerId]["Activation Function"]["Type"] != "Elementwise/Linear")
+    KORALI_LOG_ERROR("Critic Network Output Layers' (%zu) Activation Function must be of type 'Elementwise/Linear'", vOutputLayerId);
+
   // Running initialization to verify that the configuration is correct
   engine.initialize(_vExperiment);
 
@@ -65,9 +71,8 @@ void cACER::initializeAgent()
     _aExperiment["Problem"]["Solution"][p][0] = 0.0; // A(s,a)
   }
 
-  size_t criticOutputLayerId = _criticNeuralNetwork["Layers"].size() - 1;
-  if (_criticNeuralNetwork["Layers"][criticOutputLayerId]["Activation Function"]["Type"] != "Elementwise/Linear")
-    KORALI_LOG_ERROR("Critic Network Output Layers' (%zu) Activation Function must be of type 'Elementwise/Linear'", criticOutputLayerId);
+  size_t aOutputLayerId = _aExperiment["Solver"]["Neural Network"]["Layers"].size() - 1;
+  _aExperiment["Solver"]["Neural Network"]["Layers"][aOutputLayerId]["Weight Scaling"] = 0.1;
 
   // Running initialization to verify that the configuration is correct
   engine.initialize(_aExperiment);
@@ -101,6 +106,7 @@ void cACER::initializeAgent()
   }
 
   size_t policyOutputLayerId = _policyNeuralNetwork["Layers"].size() - 1;
+  _policyNeuralNetwork["Solver"]["Neural Network"]["Layers"][policyOutputLayerId]["Weight Scaling"] = 0.1;
   if (_policyNeuralNetwork["Layers"][policyOutputLayerId]["Activation Function"]["Type"] != "Elementwise/Tanh")
     KORALI_LOG_ERROR("Policy Network Output Layers' (%zu) Activation Function must be of type 'Elementwise/Tanh'", policyOutputLayerId);
 

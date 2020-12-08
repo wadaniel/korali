@@ -13,11 +13,11 @@ void initializeEnvironment(const std::string confFileName);
 extern bool _isTraining;
 extern std::mt19937 _randomGenerator;
 
-#include "msode/core/factory.h"
-#include "msode/core/file_parser.h"
-#include "msode/core/log.h"
-#include "msode/rl/environment.h"
-#include "msode/rl/factory.h"
+  #include "msode/core/factory.h"
+  #include "msode/core/file_parser.h"
+  #include "msode/core/log.h"
+  #include "msode/rl/environment.h"
+  #include "msode/rl/factory.h"
 
 using namespace msode;
 using namespace msode::rl;

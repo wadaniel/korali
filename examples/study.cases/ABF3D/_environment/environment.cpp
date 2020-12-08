@@ -69,12 +69,12 @@ void initializeEnvironment(const std::string confFileName)
 
   if (!confFile.is_open())
   {
-   fprintf(stderr, "Could not open the config file '%s'", confFileName.c_str());
-   exit(-1);
+    fprintf(stderr, "Could not open the config file '%s'", confFileName.c_str());
+    exit(-1);
   }
 
   const Config config = json::parse(confFile);
- _environment = rl::factory::createEnvironment(config, ConfPointer(""));
+  _environment = rl::factory::createEnvironment(config, ConfPointer(""));
 }
 
 #else
@@ -94,4 +94,3 @@ void runEnvironment(korali::Sample &s)
 }
 
 #endif
-

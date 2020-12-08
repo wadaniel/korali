@@ -32,7 +32,7 @@ std::vector<float> Dense::generateInitialHyperparameters()
       for (size_t j = 0; j < _prevLayer->_nodeCount; j++)
         hyperparameters.push_back(xavierConstant * _nn->_uniformGenerator->getRandomNumber());
 
-    // Adding layer's bias hyperparameter values, if not using batch initialization
+    // Adding layer's bias hyperparameter values
     for (size_t i = 0; i < _nodeCount; i++)
       hyperparameters.push_back(0.0f);
   }
@@ -333,9 +333,9 @@ void Dense::forwardWeightsAndBias()
 {
   if (_prevLayer != NULL)
   {
-    int N = _nn->_batchSize;
-    int IC = _prevLayer->_nodeCount;
-    int OC = _nodeCount;
+    size_t N = _nn->_batchSize;
+    size_t IC = _prevLayer->_nodeCount;
+    size_t OC = _nodeCount;
 
 #ifdef _KORALI_USE_EIGEN
     if (_nn->_engine == "Korali")

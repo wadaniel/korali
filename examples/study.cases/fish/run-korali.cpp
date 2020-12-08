@@ -3,13 +3,13 @@
 
 int main(int argc, char *argv[])
 {
-  // Gathering actual arguments from MPI
-  //MPI_Init(&argc, &argv);
+// Gathering actual arguments from MPI
+//MPI_Init(&argc, &argv);
 
-  // Initializing environment
-  #ifdef CUBISM
+// Initializing environment
+#ifdef CUBISM
   initializeEnvironment(argc, argv);
-  #endif
+#endif
 
   auto e = korali::Experiment();
 
@@ -101,9 +101,9 @@ int main(int argc, char *argv[])
 
   ////// If using syntax test, run for a couple generations only
 
-  #ifdef TEST
+#ifdef TEST
   e["Solver"]["Termination Criteria"]["Max Generations"] = 20;
-  #endif
+#endif
 
   ////// Setting file output configuration
 

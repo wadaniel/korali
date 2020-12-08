@@ -9,8 +9,8 @@ void runEnvironment(korali::Sample &s);
 
 #ifndef TEST
 
-#include "Obstacles/StefanFish.h"
-#include "Simulation.h"
+  #include "Obstacles/StefanFish.h"
+  #include "Simulation.h"
 
 void initializeEnvironment(int argc, char *argv[]);
 void setInitialConditions(StefanFish *a, Shape *p);

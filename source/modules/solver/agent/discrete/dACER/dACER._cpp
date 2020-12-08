@@ -85,7 +85,7 @@ void dACER::initializeAgent()
   *********************************************************************/
 
   // Getting current hyperparameters
-  _policyCurrentHyperparameters = _policyLearner->getHyperparameters();
+  _policyCurrentHyperparameters = _policyLearner->getTrainingHyperparameters();
 
   // Storing initial average policy parameters
   if (_k->_currentGeneration == 0)
@@ -179,7 +179,7 @@ void dACER::trainPolicy()
     if (_policyTrustRegionEnabled)
     {
       // Getting probability densities for current action given average policy
-      _policyLearner->setHyperparameters(_policyAverageHyperparameters);
+      _policyLearner->setInferenceHyperparameters(_policyAverageHyperparameters);
       auto pAvgPolicy = getActionProbabilities(curState);
 
       // Obtaining KL Divergence gradients for the current state. //PW: check this
@@ -239,15 +239,15 @@ void dACER::trainPolicy()
   _policyLearner->finalize();
 
   // Storing new inference parameters
-  auto criticHyperparameters = _criticLearner->getHyperparameters();
-  _criticLearner->setHyperparameters(criticHyperparameters);
+  auto criticHyperparameters = _criticLearner->getTrainingHyperparameters();
+  _criticLearner->setInferenceHyperparameters(criticHyperparameters);
 
   /****************************************************************************
  * Updating Policy
  ******************************************************************************/
 
   // Getting new policy hyperparameters
-  _policyCurrentHyperparameters = _policyLearner->getHyperparameters();
+  _policyCurrentHyperparameters = _policyLearner->getTrainingHyperparameters();
 
   // If using a trust region, softly adopting the new parameters of the average policy, using an adoption rate
   if (_policyTrustRegionEnabled)
@@ -255,7 +255,7 @@ void dACER::trainPolicy()
       _policyAverageHyperparameters[i] = _policyTrustRegionAdoptionRate * _policyAverageHyperparameters[i] + (1 - _policyTrustRegionAdoptionRate) * _policyCurrentHyperparameters[i];
 
   // Updating policy with new averaged parameters
-  _policyLearner->setHyperparameters(_policyCurrentHyperparameters);
+  _policyLearner->setInferenceHyperparameters(_policyCurrentHyperparameters);
 
   // Storing average policy hyperparameters
   _hyperparameters["Policy"] = _policyCurrentHyperparameters;
@@ -374,7 +374,21 @@ float dACER::stateValueFunction(const std::vector<float> &state)
 void dACER::updateAgentPolicy(const knlohmann::json &hyperparameters)
 {
   auto policyHyperparameters = hyperparameters["Policy"].get<std::vector<float>>();
-  _policyLearner->setHyperparameters(policyHyperparameters);
+  _policyLearner->setInferenceHyperparameters(policyHyperparameters);
+}
+
+void dACER::setTrainingHyperparameters(const knlohmann::json& hyperparameters)
+{
+ _criticLearner->setTrainingHyperparameters(hyperparameters["Critic"]);
+ _policyLearner->setTrainingHyperparameters(hyperparameters["Policy"]);
+}
+
+knlohmann::json dACER::getTrainingHyperparameters()
+{
+ knlohmann::json hyperparameters;
+ hyperparameters["Critic"] = _criticLearner->getTrainingHyperparameters();
+ hyperparameters["Policy"] = _policyLearner->getTrainingHyperparameters();
+ return hyperparameters;
 }
 
 void dACER::printAgentInformation()

@@ -31,6 +31,8 @@ class DQN : public Discrete
    */
   problem::SupervisedLearning *_criticProblem;
 
+  void setTrainingHyperparameters(const knlohmann::json& hyperparameters) override;
+  knlohmann::json getTrainingHyperparameters() override;
   std::vector<float> getActionProbabilities(const std::vector<float> &state) override;
   void updateAgentPolicy(const knlohmann::json &hyperparameters) override;
   void trainPolicy() override;

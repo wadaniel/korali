@@ -121,12 +121,12 @@ void VRACER::initializeAgent()
   *********************************************************************/
 
   // Get the initial set of policy NN hyperparameters
-  _hyperparameters["Policy"] = _criticPolicyLearner->getHyperparameters();
+  _hyperparameters["Policy"] = _criticPolicyLearner->getTrainingHyperparameters();
 }
 
 void VRACER::updateAgentPolicy(const knlohmann::json &hyperparameters)
 {
-  _criticPolicyLearner->setHyperparameters(hyperparameters["Policy"].get<std::vector<float>>());
+  _criticPolicyLearner->setInferenceHyperparameters(hyperparameters["Policy"].get<std::vector<float>>());
 }
 
 void VRACER::trainPolicy()
@@ -311,7 +311,7 @@ void VRACER::trainPolicy()
   _criticPolicyLearner->finalize();
 
   // Storing average policy hyperparameters
-  _hyperparameters["Policy"] = _criticPolicyLearner->getHyperparameters();
+  _hyperparameters["Policy"] = _criticPolicyLearner->getTrainingHyperparameters();
 }
 
 float VRACER::computeVtbc(size_t expId)
@@ -476,6 +476,18 @@ knlohmann::json VRACER::runPolicy(const std::vector<float> &state)
   policy["State Value"] = stateValue;
   policy["Importance Weight"] = 1.0f;
   return policy;
+}
+
+void VRACER::setTrainingHyperparameters(const knlohmann::json& hyperparameters)
+{
+ _criticPolicyLearner->setTrainingHyperparameters(hyperparameters["Critic/Policy"]);
+}
+
+knlohmann::json VRACER::getTrainingHyperparameters()
+{
+ knlohmann::json hyperparameters;
+ hyperparameters["Critic/Policy"] = _criticPolicyLearner->getTrainingHyperparameters();
+ return hyperparameters;
 }
 
 void VRACER::printAgentInformation()

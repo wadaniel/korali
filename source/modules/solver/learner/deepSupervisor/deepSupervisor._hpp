@@ -58,8 +58,11 @@ class DeepSupervisor : public Learner
   std::vector<float> getGradients(const std::vector<float> &outputDiffs) override;
   std::vector<float> getEvaluation(const std::vector<float> &inputBatch) override;
 
-  std::vector<float> getHyperparameters() override;
-  void setHyperparameters(const std::vector<float> &hyperparameters) override;
+  std::vector<float> getTrainingHyperparameters() override;
+  void setTrainingHyperparameters(const std::vector<float> &hyperparameters) override;
+  std::vector<float> getInferenceHyperparameters() override;
+  void setInferenceHyperparameters(const std::vector<float> &hyperparameters) override;
+
   void finalize() override;
   void initialize() override;
   void runGeneration() override;

@@ -90,9 +90,9 @@ void NAF::initializeAgent()
   *********************************************************************/
 
   // Setting Initial Hyperparameters
-  _hyperparameters["Critic"] = _qLearner->getHyperparameters();
-  _qHatHyperparameter = _qLearner->getHyperparameters();
-  _criticLearner->setHyperparameters(_qLearner->getHyperparameters());
+  _hyperparameters["Critic"] = _qLearner->getTrainingHyperparameters();
+  _qHatHyperparameter = _qLearner->getTrainingHyperparameters();
+  _criticLearner->setInferenceHyperparameters(_qLearner->getTrainingHyperparameters());
 }
 
 void NAF::trainPolicy()
@@ -203,14 +203,14 @@ void NAF::trainPolicy()
    * Updating hyperparameters and broadcasting them to the workers
    *********************************************************************/
 
-  auto qHyperparam = _qLearner->getHyperparameters();
+  auto qHyperparam = _qLearner->getTrainingHyperparameters();
 
   // Update the target network
   for (size_t i = 0; i < qHyperparam.size(); ++i)
   {
     _qHatHyperparameter[i] = _targetLearningRate * qHyperparam[i] + (1. - _targetLearningRate) * _qHatHyperparameter[i];
   }
-  _criticLearner->setHyperparameters(_qHatHyperparameter);
+  _criticLearner->setInferenceHyperparameters(_qHatHyperparameter);
 
   // Storing new Critics' hyperparameters
   _hyperparameters["Critic"] = qHyperparam;
@@ -218,7 +218,7 @@ void NAF::trainPolicy()
 
 void NAF::updateAgentPolicy(const knlohmann::json &hyperparameters)
 {
-  _qLearner->setHyperparameters(hyperparameters["Critic"].get<std::vector<float>>());
+  _qLearner->setInferenceHyperparameters(hyperparameters["Critic"].get<std::vector<float>>());
 }
 
 knlohmann::json NAF::runPolicy(const std::vector<float> &state)
@@ -252,6 +252,20 @@ float NAF::quadraticAdvantageFunction(const std::vector<float> &action, const st
     qval += dmu * diagP * dmu;
   }
   return -0.5 * qval;
+}
+
+void NAF::setTrainingHyperparameters(const knlohmann::json& hyperparameters)
+{
+ _qLearner->setTrainingHyperparameters(hyperparameters["Q"]);
+ _criticLearner->setTrainingHyperparameters(hyperparameters["Critic"]);
+}
+
+knlohmann::json NAF::getTrainingHyperparameters()
+{
+ knlohmann::json hyperparameters;
+ hyperparameters["Q"] = _qLearner->getTrainingHyperparameters();
+ hyperparameters["Critic"] = _criticLearner->getTrainingHyperparameters();
+ return hyperparameters;
 }
 
 void NAF::printAgentInformation()

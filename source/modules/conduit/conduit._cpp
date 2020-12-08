@@ -303,16 +303,11 @@ void Conduit::waitAll(vector<Sample> &samples)
 
 void Conduit::listen(std::vector<Sample> &samples)
 {
-  Engine *engine = _engineStack.top();
-
   // Listen for any pending messages
   listenWorkers();
 
   // Check for error signals from python
   if (isPythonActive && PyErr_CheckSignals() != 0) throw pybind11::error_already_set();
-
-  // Give other experiments the chance to execute
-  co_switch(engine->_thread);
 
   // Doing a pass on samples in case they are waiting to execute
   for (size_t currentSample = 0; currentSample < samples.size(); currentSample++)

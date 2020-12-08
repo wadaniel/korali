@@ -51,6 +51,7 @@ void GFPT::initializeAgent()
   * Advantage Function learner
   *********************************************************************/
 
+  // The configuration for the advantage experiment is the same as the value function (v) experiment
   _aExperiment._js = _vExperiment._js;
 
   // Initializing experiment with an initial zero set
@@ -159,7 +160,7 @@ void GFPT::initializeAgent()
   * Loading/Setting Hyperparameters
   *********************************************************************/
 
-  _hyperparameters["Policy"] = _policyLearner->getHyperparameters();
+  _hyperparameters["Policy"] = _policyLearner->getTrainingHyperparameters();
 
   // Profiling
   _criticUpdateTime = 0.0;
@@ -361,11 +362,19 @@ void GFPT::trainPolicy()
   // Keeping critic/policy statistics
   _averageQStar = _cumulativeQStar / (float)_criticMiniBatchSize;
 
-  /****************************************************************************
-  * Updating parameters for batch optimization
-  ******************************************************************************/
+  auto endTime = std::chrono::steady_clock::now();                                                        // Profiling
+  _criticUpdateTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
 
-  auto aHyperparameters = _aLearner->getHyperparameters();
+
+  /*******************************************************************
+  * Now computing new policy gradients with a stochastic method (CMAES)
+  ******************************************************************/
+
+  beginTime = std::chrono::steady_clock::now(); // Profiling
+
+  // Updating parameters for batch optimization
+
+  auto aHyperparameters = _aLearner->getTrainingHyperparameters();
 
   // Updating thread-local configuration
   for (size_t threadIdx = 0; threadIdx < _maxThreads; threadIdx++)
@@ -373,15 +382,6 @@ void GFPT::trainPolicy()
     // Updating batch evaluation network for the advantage function for CMAES steps
     _batchOptimizationNetworks[threadIdx]->setHyperparameters(aHyperparameters);
   }
-
-  auto endTime = std::chrono::steady_clock::now();                                                        // Profiling
-  _criticUpdateTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
-
-  /*******************************************************************
-  * Now computing new policy gradients with a stochastic method (CMAES)
-  ******************************************************************/
-
-  beginTime = std::chrono::steady_clock::now(); // Profiling
 
   size_t onPolicySamples = 0;
 
@@ -502,10 +502,10 @@ void GFPT::trainPolicy()
    ******************************************************************/
 
   // Getting new hyperparameters
-  auto newPolicyHyperparameters = _policyLearner->getHyperparameters();
+  auto newPolicyHyperparameters = _policyLearner->getTrainingHyperparameters();
 
   // Updating hyperparameters
-  _policyLearner->setHyperparameters(newPolicyHyperparameters);
+  _policyLearner->setInferenceHyperparameters(newPolicyHyperparameters);
 
   // Storing average policy hyperparameters for workers to use
   _hyperparameters["Policy"] = newPolicyHyperparameters;
@@ -539,7 +539,23 @@ knlohmann::json GFPT::runPolicy(const std::vector<float> &state)
 void GFPT::updateAgentPolicy(const knlohmann::json &hyperparameters)
 {
   auto policyHyperparameters = hyperparameters["Policy"].get<std::vector<float>>();
-  _policyLearner->setHyperparameters(policyHyperparameters);
+  _policyLearner->setInferenceHyperparameters(policyHyperparameters);
+}
+
+void GFPT::setTrainingHyperparameters(const knlohmann::json& hyperparameters)
+{
+ _aLearner->setTrainingHyperparameters(hyperparameters["A"]);
+ _vLearner->setTrainingHyperparameters(hyperparameters["V"]);
+ _policyLearner->setTrainingHyperparameters(hyperparameters["Policy"]);
+}
+
+knlohmann::json GFPT::getTrainingHyperparameters()
+{
+ knlohmann::json hyperparameters;
+ hyperparameters["A"] = _aLearner->getTrainingHyperparameters();
+ hyperparameters["V"] = _vLearner->getTrainingHyperparameters();
+ hyperparameters["Policy"] = _policyLearner->getTrainingHyperparameters();
+ return hyperparameters;
 }
 
 void GFPT::printAgentInformation()

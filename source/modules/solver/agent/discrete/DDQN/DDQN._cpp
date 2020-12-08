@@ -85,10 +85,10 @@ void DDQN::initializeAgent()
   *********************************************************************/
 
   // Setting Initial Hyperparameters
-  _aHatHyperparameters = _aLearner->getHyperparameters();
+  _aHatHyperparameters = _aLearner->getTrainingHyperparameters();
   _hyperparameters["Critic (A)"] = _aHatHyperparameters;
 
-  _vHatHyperparameters = _vLearner->getHyperparameters();
+  _vHatHyperparameters = _vLearner->getTrainingHyperparameters();
   _hyperparameters["Critic (V)"] = _vHatHyperparameters;
 }
 
@@ -101,8 +101,8 @@ void DDQN::trainPolicy()
   // Delay using latest critic taget for training until reaching a number of experiences
   if (_policyUpdateCount % _criticTargetUpdateDelay == 0)
   {
-    _aLearner->setHyperparameters(_aHatHyperparameters);
-    _vLearner->setHyperparameters(_vHatHyperparameters);
+    _aLearner->setInferenceHyperparameters(_aHatHyperparameters);
+    _vLearner->setInferenceHyperparameters(_vHatHyperparameters);
   }
 
   // Calculating cumulative Q*, for statistical purposes
@@ -187,8 +187,8 @@ void DDQN::trainPolicy()
    *********************************************************************/
 
   // Storing new Critics' hyperparameters
-  _vHatHyperparameters = _vLearner->getHyperparameters();
-  _aHatHyperparameters = _aLearner->getHyperparameters();
+  _vHatHyperparameters = _vLearner->getTrainingHyperparameters();
+  _aHatHyperparameters = _aLearner->getTrainingHyperparameters();
 
   _hyperparameters["Critic (V)"] = _vHatHyperparameters;
   _hyperparameters["Critic (A)"] = _aHatHyperparameters;
@@ -197,10 +197,10 @@ void DDQN::trainPolicy()
 void DDQN::updateAgentPolicy(const knlohmann::json &hyperparameters)
 {
   auto vHyperparameters = hyperparameters["Critic (V)"].get<std::vector<float>>();
-  _vLearner->setHyperparameters(vHyperparameters);
+  _vLearner->setInferenceHyperparameters(vHyperparameters);
 
   auto aHyperparameters = hyperparameters["Critic (A)"].get<std::vector<float>>();
-  _aLearner->setHyperparameters(aHyperparameters);
+  _aLearner->setInferenceHyperparameters(aHyperparameters);
 }
 
 std::vector<float> DDQN::getActionProbabilities(const std::vector<float> &state)
@@ -257,6 +257,20 @@ std::vector<float> DDQN::getActionProbabilities(const std::vector<float> &state)
 
   // Returning the best found
   return pActions;
+}
+
+void DDQN::setTrainingHyperparameters(const knlohmann::json& hyperparameters)
+{
+ _vLearner->setTrainingHyperparameters(hyperparameters["V"]);
+ _aLearner->setTrainingHyperparameters(hyperparameters["A"]);
+}
+
+knlohmann::json DDQN::getTrainingHyperparameters()
+{
+ knlohmann::json hyperparameters;
+ hyperparameters["V"] = _vLearner->getTrainingHyperparameters();
+ hyperparameters["A"] = _aLearner->getTrainingHyperparameters();
+ return hyperparameters;
 }
 
 void DDQN::printAgentInformation()

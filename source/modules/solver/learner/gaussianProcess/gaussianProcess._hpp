@@ -51,8 +51,10 @@ class GaussianProcess : public Learner
 #endif
 
   std::vector<float> getEvaluation(const std::vector<float> &input) override;
-  std::vector<float> getHyperparameters() override;
-  void setHyperparameters(const std::vector<float> &hyperparameters) override;
+  std::vector<float> getTrainingHyperparameters() override;
+  void setTrainingHyperparameters(const std::vector<float> &hyperparameters) override;
+  std::vector<float> getInferenceHyperparameters() override;
+  void setInferenceHyperparameters(const std::vector<float> &hyperparameters) override;
   void initialize() override;
   void runGeneration() override;
   void printGenerationAfter() override;

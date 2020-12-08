@@ -48,9 +48,15 @@ void Agent::initialize()
 
     // Initialize best hyperparameters
     _bestHyperparameters = _hyperparameters;
+
+    // Initializing training hyperparameters
+    _trainingHyperparameters = getTrainingHyperparameters();
   }
 
-  // Deserialize input experience replay
+  // Setting initial or loaded hyperparameters from a previous run (or save file)
+  setTrainingHyperparameters(_trainingHyperparameters);
+
+  // If this continues a previous run, deserialize previous input experience replay
   deserializeExperienceReplay();
 
   // Initializing profiling timers
@@ -100,7 +106,13 @@ void Agent::runGeneration()
       // If we accumulated enough experiences between updates, update now
       if (_experienceCount > curThreshold)
       {
+        // Calling the algorithm specific policy training algorithm
         trainPolicy();
+
+        // Gathering their training hyperparameters (for checkpoint/resume purposes)
+        _trainingHyperparameters = getTrainingHyperparameters();
+
+        // Increasing policy update counter
         _policyUpdateCount++;
       }
     }

@@ -6,6 +6,7 @@
 #include "modules/problem/reinforcementLearning/reinforcementLearning.hpp"
 #include "modules/problem/supervisedLearning/supervisedLearning.hpp"
 #include "modules/solver/learner/deepSupervisor/deepSupervisor.hpp"
+#include "sample/sample.hpp"
 #include <algorithm> // std::shuffle
 #include <random>
 
@@ -94,6 +95,22 @@ struct experience_t
 class Agent : public Solver
 {
   public:
+
+ /**
+  * @brief Array of agents collecting new experiences
+  */
+  std::vector<Sample> _agents;
+
+  /**
+   * @brief Keeps track of the age
+   */
+  std::vector<bool> _isAgentRunning;
+
+  /**
+   * @brief Storage for the entire episodes before adding it to the replay memory
+   */
+  std::vector<std::vector<knlohmann::json>> _episodes;
+
   /**
   * @brief Stores experience replay states.
   */
@@ -223,6 +240,12 @@ class Agent : public Solver
   * @return A vector with the importance weights corresponding to the experience indices.
   */
   std::vector<float> calculateImportanceWeights(std::vector<size_t> miniBatch);
+
+  /**
+   * @brief Listens to incoming experience from the given agent, sends back policy or terminates the episode depending on what's needed
+   * @param agentId The Agent's ID
+   */
+  void attendAgent(size_t agentId);
 
   void printGenerationAfter() override;
   void initialize() override;

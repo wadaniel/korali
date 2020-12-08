@@ -15,11 +15,11 @@ void dACER::initializeAgent()
   // Initializing common discrete agent configuration
   Discrete::initializeAgent();
 
+  korali::Engine engine; // Engine to initialize experiments with
+
   /*********************************************************************
  * Initializing Critic-Related Structures
  *********************************************************************/
-
-  korali::Engine engine; // Engine to initialize experiments with
 
   _criticExperiment["Problem"]["Type"] = "Supervised Learning";
   _criticExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
@@ -50,7 +50,6 @@ void dACER::initializeAgent()
   *********************************************************************/
 
   // Creating and running Actor Learning Experiments
-
   _policyExperiment["Problem"]["Type"] = "Supervised Learning";
   _policyExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
   _policyExperiment["Solver"]["Loss Function"] = "Direct Gradient";
@@ -69,9 +68,9 @@ void dACER::initializeAgent()
       _policyExperiment["Problem"]["Solution"][i][j] = 0.0;
   }
 
-  size_t outputLayerId = _policyNeuralNetwork["Layers"].size() - 1;
-  if (_policyNeuralNetwork["Layers"][outputLayerId]["Activation Function"]["Type"] != "Softmax")
-    KORALI_LOG_ERROR("Policy Network Output Layers' (%zu) Activation Function must be of type 'Softmax'", outputLayerId);
+  size_t policyOutputLayer = _policyNeuralNetwork["Layers"].size() - 1;
+  if (_policyNeuralNetwork["Layers"][policyOutputLayer]["Activation Function"]["Type"] != "SoftMax")
+    KORALI_LOG_ERROR("Policy Network Output Layers' (%zu) Activation Function must be of type 'SoftMax'", policyOutputLayer);
 
   // Running initialization to verify that the configuration is correct
   engine.initialize(_policyExperiment);

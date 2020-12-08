@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
   e["Solver"]["Random Action Probability"]["Target Value"] = 0.01;
   e["Solver"]["Random Action Probability"]["Decrease Rate"] = 0.00;
 
-  e["Solver"]["Experience Replay"]["Start Size"] =   1000;
+  e["Solver"]["Experience Replay"]["Start Size"] = 1000;
   e["Solver"]["Experience Replay"]["Maximum Size"] = 10000;
   e["Solver"]["Mini Batch Strategy"] = "Uniform";
 
@@ -103,9 +103,9 @@ int main(int argc, char *argv[])
 
   ////// If using configuration test, run for a couple generations only
 
-  #ifdef TEST
+#ifdef TEST
   e["Solver"]["Termination Criteria"]["Max Generations"] = 20;
-  #endif
+#endif
 
   ////// Setting file output configuration
 

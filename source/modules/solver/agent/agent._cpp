@@ -386,7 +386,7 @@ void Agent::deserializeExperienceReplay()
 {
  for (size_t i = 0; i < _experienceReplayDatabase.size(); i++)
  {
-   experience_t e;
+  experience_t e;
   e.state = _experienceReplayDatabase[i]["State"].get<std::vector<float>>();
   e.action = _experienceReplayDatabase[i]["Action"].get<std::vector<float>>();
   e.reward = _experienceReplayDatabase[i]["Reward"].get<float>();
@@ -394,7 +394,7 @@ void Agent::deserializeExperienceReplay()
   e.probability = _experienceReplayDatabase[i]["Probability"].get<float>();
   e.termination = _experienceReplayDatabase[i]["Termination"].get<termination_t>();
   e.truncatedState = _experienceReplayDatabase[i]["Truncated State"].get<std::vector<float>>();
-  e.policy = _experienceReplayDatabase[i]["Policy"].get<std::vector<float>>();
+  e.policy = _experienceReplayDatabase[i]["Policy"];
   e.metadata = _experienceReplayDatabase[i]["Metadata"];
   _experienceReplay.add(e);
  }

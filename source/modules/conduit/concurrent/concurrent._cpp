@@ -135,14 +135,14 @@ knlohmann::json Concurrent::recvMessageFromEngine()
   size_t inputStringSize;
   read(_inputsPipe[_workerId][0], &inputStringSize, sizeof(size_t));
 
-  char inputString[inputStringSize + BUFFERSIZE];
+  std::vector<char> inputString(inputStringSize + BUFFERSIZE);
 
   size_t curPos = 0;
   while (curPos < inputStringSize)
   {
     size_t bufSize = BUFFERSIZE;
     if (curPos + bufSize > inputStringSize) bufSize = inputStringSize - curPos;
-    read(_inputsPipe[_workerId][0], inputString + curPos, bufSize * sizeof(char));
+    read(_inputsPipe[_workerId][0], &inputString[curPos], bufSize * sizeof(char));
     curPos += bufSize;
     sched_yield(); // Guarantees MacOs finishes the pipe reading
   }

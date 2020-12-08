@@ -249,18 +249,24 @@ void DDPG::updateAgentPolicy(const knlohmann::json &hyperparameters)
   _policyLearner->setInferenceHyperparameters(policyHyperparameters);
 }
 
-void DDPG::setTrainingHyperparameters(const knlohmann::json &hyperparameters)
+void DDPG::setTrainingState(const knlohmann::json &state)
 {
-  _criticLearner->setTrainingHyperparameters(hyperparameters["Critic"]);
-  _policyLearner->setTrainingHyperparameters(hyperparameters["Policy"]);
+  _criticLearner->setTrainingHyperparameters(state["Critic"]["Training"]);
+  _criticLearner->setInferenceHyperparameters(state["Critic"]["Inference"]);
+
+  _policyLearner->setTrainingHyperparameters(state["Policy"]["Training"]);
+  _policyLearner->setInferenceHyperparameters(state["Policy"]["Inference"]);
 }
 
-knlohmann::json DDPG::getTrainingHyperparameters()
+knlohmann::json DDPG::getTrainingState()
 {
-  knlohmann::json hyperparameters;
-  hyperparameters["Critic"] = _criticLearner->getTrainingHyperparameters();
-  hyperparameters["Policy"] = _policyLearner->getTrainingHyperparameters();
-  return hyperparameters;
+  knlohmann::json state;
+  state["Critic"]["Training"] = _criticLearner->getTrainingHyperparameters();
+  state["Critic"]["Inference"] = _criticLearner->getInferenceHyperparameters();
+
+  state["Policy"]["Training"] = _policyLearner->getTrainingHyperparameters();
+  state["Policy"]["Inference"] = _policyLearner->getInferenceHyperparameters();
+  return state;
 }
 
 void DDPG::printAgentInformation()

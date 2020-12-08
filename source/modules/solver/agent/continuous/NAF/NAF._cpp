@@ -278,18 +278,24 @@ float NAF::quadraticAdvantageFunction(const std::vector<float> &action, const st
   return -0.5 * qval;
 }
 
-void NAF::setTrainingHyperparameters(const knlohmann::json &hyperparameters)
+void NAF::setTrainingState(const knlohmann::json &state)
 {
-  _qLearner->setTrainingHyperparameters(hyperparameters["Q"]);
-  _criticLearner->setTrainingHyperparameters(hyperparameters["Critic"]);
+  _qLearner->setTrainingHyperparameters(state["Q"]["Training"]);
+  _qLearner->setInferenceHyperparameters(state["Q"]["Inference"]);
+
+  _criticLearner->setTrainingHyperparameters(state["Critic"]["Training"]);
+  _criticLearner->setInferenceHyperparameters(state["Critic"]["Inference"]);
 }
 
-knlohmann::json NAF::getTrainingHyperparameters()
+knlohmann::json NAF::getTrainingState()
 {
-  knlohmann::json hyperparameters;
-  hyperparameters["Q"] = _qLearner->getTrainingHyperparameters();
-  hyperparameters["Critic"] = _criticLearner->getTrainingHyperparameters();
-  return hyperparameters;
+  knlohmann::json state;
+  state["Q"]["Training"] = _qLearner->getTrainingHyperparameters();
+  state["Q"]["Inference"] = _qLearner->getInferenceHyperparameters();
+
+  state["Critic"]["Training"] = _criticLearner->getTrainingHyperparameters();
+  state["Critic"]["Inference"] = _criticLearner->getInferenceHyperparameters();
+  return state;
 }
 
 void NAF::printAgentInformation()

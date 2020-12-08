@@ -89,7 +89,6 @@ e["Solver"]["Policy"]["Neural Network"]["Layers"][2]["Activation Function"]["Typ
 e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Type"] = "Layer/Dense"
 e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Softmax" 
 
-
 ### Defining Termination Criteria
 
 e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 900

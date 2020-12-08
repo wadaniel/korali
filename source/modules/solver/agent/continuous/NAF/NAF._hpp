@@ -54,8 +54,8 @@ class NAF : public Continuous
   */
   float quadraticAdvantageFunction(const std::vector<float> &action, const std::vector<float> &qEvaluation);
 
-  void setTrainingHyperparameters(const knlohmann::json &hyperparameters) override;
-  knlohmann::json getTrainingHyperparameters() override;
+  void setTrainingState(const knlohmann::json &state) override;
+  knlohmann::json getTrainingState() override;
   knlohmann::json runPolicy(const std::vector<float> &state) override;
   void updateAgentPolicy(const knlohmann::json &hyperparameters) override;
   void trainPolicy() override;

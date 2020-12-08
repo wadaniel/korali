@@ -167,16 +167,16 @@ class Agent : public Solver
   virtual void updateAgentPolicy(const knlohmann::json &hyperparameters) = 0;
 
   /**
-   * @brief Sets training hyperparameters to continue learning from a previous run or state file
-   * @param hyperparameters The hyperparameters to update the training NNs.
+   * @brief Sets training state to continue learning from a previous run or state file
+   * @param state The state to update the training NNs.
    */
-  virtual void setTrainingHyperparameters(const knlohmann::json &hyperparameters) = 0;
+  virtual void setTrainingState(const knlohmann::json &state) = 0;
 
   /**
-   * @brief Obtains the current training hyperparameters to store to a file and continue learning later
-   * @return hyperparameters The hyperparameters to store
+   * @brief Obtains the current training state to store to a file and continue learning later
+   * @return The state to store
    */
-  virtual knlohmann::json getTrainingHyperparameters() = 0;
+  virtual knlohmann::json getTrainingState() = 0;
 
   /**
     * @brief Initializes the internal state of the policy

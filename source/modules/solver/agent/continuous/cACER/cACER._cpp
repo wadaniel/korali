@@ -519,20 +519,30 @@ void cACER::updateAgentPolicy(const knlohmann::json &hyperparameters)
   _policyLearner->setInferenceHyperparameters(policyHyperparameters);
 }
 
-void cACER::setTrainingHyperparameters(const knlohmann::json &hyperparameters)
+void cACER::setTrainingState(const knlohmann::json &state)
 {
-  _aLearner->setTrainingHyperparameters(hyperparameters["A"]);
-  _vLearner->setTrainingHyperparameters(hyperparameters["V"]);
-  _policyLearner->setTrainingHyperparameters(hyperparameters["Policy"]);
+  _aLearner->setTrainingHyperparameters(state["A"]["Training"]);
+  _aLearner->setInferenceHyperparameters(state["A"]["Inference"]);
+
+  _vLearner->setTrainingHyperparameters(state["V"]["Training"]);
+  _vLearner->setInferenceHyperparameters(state["V"]["Inference"]);
+
+  _policyLearner->setTrainingHyperparameters(state["Policy"]["Training"]);
+  _policyLearner->setInferenceHyperparameters(state["Policy"]["Inference"]);
 }
 
-knlohmann::json cACER::getTrainingHyperparameters()
+knlohmann::json cACER::getTrainingState()
 {
-  knlohmann::json hyperparameters;
-  hyperparameters["A"] = _aLearner->getTrainingHyperparameters();
-  hyperparameters["V"] = _vLearner->getTrainingHyperparameters();
-  hyperparameters["Policy"] = _policyLearner->getTrainingHyperparameters();
-  return hyperparameters;
+  knlohmann::json state;
+  state["A"]["Training"] = _aLearner->getTrainingHyperparameters();
+  state["A"]["Inference"] = _aLearner->getInferenceHyperparameters();
+
+  state["V"]["Training"] = _vLearner->getTrainingHyperparameters();
+  state["V"]["Inference"] = _vLearner->getInferenceHyperparameters();
+
+  state["Policy"]["Training"] = _policyLearner->getTrainingHyperparameters();
+  state["Policy"]["Inference"] = _policyLearner->getInferenceHyperparameters();
+  return state;
 }
 
 void cACER::printAgentInformation()

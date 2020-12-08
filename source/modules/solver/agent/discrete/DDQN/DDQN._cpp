@@ -260,18 +260,22 @@ std::vector<float> DDQN::getActionProbabilities(const std::vector<float> &state)
   return pActions;
 }
 
-void DDQN::setTrainingHyperparameters(const knlohmann::json &hyperparameters)
+void DDQN::setTrainingState(const knlohmann::json &state)
 {
-  _vLearner->setTrainingHyperparameters(hyperparameters["V"]);
-  _aLearner->setTrainingHyperparameters(hyperparameters["A"]);
+  _vLearner->setTrainingHyperparameters(state["V"]["Training"]);
+  _aLearner->setTrainingHyperparameters(state["A"]["Training"]);
+  _vLearner->setInferenceHyperparameters(state["V"]["Inference"]);
+  _aLearner->setInferenceHyperparameters(state["A"]["Inference"]);
 }
 
-knlohmann::json DDQN::getTrainingHyperparameters()
+knlohmann::json DDQN::getTrainingState()
 {
-  knlohmann::json hyperparameters;
-  hyperparameters["V"] = _vLearner->getTrainingHyperparameters();
-  hyperparameters["A"] = _aLearner->getTrainingHyperparameters();
-  return hyperparameters;
+  knlohmann::json state;
+  state["V"]["Training"] = _vLearner->getTrainingHyperparameters();
+  state["A"]["Training"] = _aLearner->getTrainingHyperparameters();
+  state["V"]["Inference"] = _vLearner->getInferenceHyperparameters();
+  state["A"]["Inference"] = _aLearner->getInferenceHyperparameters();
+  return state;
 }
 
 void DDQN::printAgentInformation()

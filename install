@@ -392,7 +392,7 @@ if [ $DISTRIBUTION == "production" ]; then
   WARNINGFLAGS=""
 elif [ $DISTRIBUTION == "debug" ]; then
   OPTFLAGS="-O0 -g"
-  WARNINGFLAGS="-Wall -Werror"
+  WARNINGFLAGS="-Wall"
 else
   echo "[Korali] Distribution ($DISTRIBUTION) not recognized."
   echo "[Korali] Exit.."

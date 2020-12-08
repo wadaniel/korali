@@ -29,7 +29,8 @@ e["Variables"][0]["Upper Bound"] = +10.0
 # Setting computational model
 e["Problem"]["Objective Function"] = model
 
-found = e.loadState('_korali_result/latest')
+e["File Output"]["Path"] = "_result_cmaes"
+found = e.loadState('_result_cmaes/latest')
 
 # If not found, we run first 5 generations.
 if (found == False):

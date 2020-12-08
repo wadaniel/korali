@@ -56,8 +56,8 @@ int main(int argc, char *argv[])
   //// Defining Agent Configuration
 
   e["Solver"]["Type"] = "Agent / Continuous / GFPT";
-  e["Solver"]["Agent Count"] = 4;
-  e["Solver"]["Experiences Per Generation"] = 10;
+  e["Solver"]["Agent Count"] = N;
+  e["Solver"]["Experiences Per Generation"] = N * 4;
   e["Solver"]["Experiences Between Policy Updates"] = 1;
   e["Solver"]["Cache Persistence"] = 10;
 
@@ -67,6 +67,7 @@ int main(int argc, char *argv[])
 
   e["Solver"]["Experience Replay"]["Start Size"] = 1000;
   e["Solver"]["Experience Replay"]["Maximum Size"] = 100000;
+  e["Solver"]["Experience Replay"]["Serialization Frequency"] = 10;
 
   //// Defining Critic Configuration
 

@@ -21,7 +21,7 @@ void runEnvironment(korali::Sample &s)
 
   // Creating results directory
   char resDir[64];
-  sprintf(resDir, "_results/sample%06lu", sampleId);
+  sprintf(resDir, "_results/sample%08lu", sampleId);
   if (std::filesystem::create_directories(resDir) == false)
    { printf("Error creating results directory: %s.\n", resDir); exit(-1); }
 

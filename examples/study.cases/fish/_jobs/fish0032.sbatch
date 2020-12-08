@@ -1,7 +1,7 @@
 #!/bin/bash -l
 #SBATCH --job-name="fish0032"
 #SBATCH --output=fish0032_%j.out
-#SBATCH --time=1-00:00:00
+#SBATCH --time=02:00:00
 #SBATCH --nodes=33
 #SBATCH --ntasks-per-core=1
 #SBATCH --ntasks-per-node=1
@@ -10,6 +10,10 @@
 #SBATCH --partition=normal
 #SBATCH --constraint=gpu
 
+date 
+
 cd ..
 cat run-korali.cpp
 ./run_test.sh
+
+date

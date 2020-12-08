@@ -42,6 +42,7 @@ class Distributed : public Conduit
   * @brief Actual MPI communicator for internal use.
   */
   MPI_Comm _mpiCommunicator;
+#endif
 
   /**
   * @brief ID of the current rank.
@@ -82,7 +83,6 @@ class Distributed : public Conduit
   * @brief Flag to mark termination for Korali teams.
   */
   bool _continueEvaluations;
-#endif
 
   void initServer() override;
   void initialize() override;

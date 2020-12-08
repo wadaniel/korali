@@ -72,6 +72,8 @@ void Agent::initialize()
 
 void Agent::runGeneration()
 {
+  auto beginTime = std::chrono::steady_clock::now();
+
   // Running until all _agents have finished
   while (_experienceCount < _experiencesPerGeneration * _k->_currentGeneration)
   {
@@ -117,6 +119,10 @@ void Agent::runGeneration()
       }
     }
   }
+
+  // Measuring generation time
+  auto endTime = std::chrono::steady_clock::now();
+  _generationTime = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();
 
   // Updating experience probabilities
   if (_miniBatchStrategy == "Prioritized") updateExperienceReplayProbabilities();
@@ -441,8 +447,9 @@ void Agent::printGenerationAfter()
   printAgentInformation();
 
   _k->_logger->logInfo("Normal", "Profiling Information:\n");
-  _k->_logger->logInfo("Normal", " + Experience Replay Serialization Time:   %fs\n", _serializationTime / 1.0e+9f);
-  _k->_logger->logInfo("Normal", " + Result File Saving I/O Time:            %fs\n", _k->_resultSavingTime / 1.0e+9f);
+  _k->_logger->logInfo("Normal", " + Generation Running Time:   %fs\n", _generationTime / 1.0e+9f);
+  _k->_logger->logInfo("Normal", " + Cumulative Experience Replay Serialization Time:   %fs\n", _serializationTime / 1.0e+9f);
+  _k->_logger->logInfo("Normal", " + Cumulative Result File Saving I/O Time:            %fs\n", _k->_resultSavingTime / 1.0e+9f);
 }
 
 } // namespace solver

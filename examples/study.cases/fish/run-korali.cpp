@@ -121,7 +121,9 @@ int main(int argc, char *argv[])
 
   ////// Setting file output configuration
 
-  e["File Output"]["Enabled"] = false;
+  e["File Output"]["Enabled"] = true;
+  e["File Output"]["Frequency"] = 10;
+  e["File Output"]["Path"] = "_results";
 
   ////// Running Experiment
 

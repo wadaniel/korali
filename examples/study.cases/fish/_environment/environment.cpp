@@ -26,11 +26,11 @@ void runEnvironment(korali::Sample &s)
    { printf("Error creating results directory: %s.\n", resDir); exit(-1); }
 
   // Redirecting all output to the log file
-  //char logFilePath[128];
-  //sprintf(logFilePath, "%s/log.txt", resDir);
-  //auto logFile = freopen(logFilePath, "a", stdout);
-  //if (logFile == NULL) 
-  // { printf("Error creating log file: %s.\n", logFilePath); exit(-1); }
+  char logFilePath[128];
+  sprintf(logFilePath, "%s/log.txt", resDir);
+  auto logFile = freopen(logFilePath, "a", stdout);
+  if (logFile == NULL)
+   { printf("Error creating log file: %s.\n", logFilePath); exit(-1); }
 
   // Switching to results directory
   auto curPath = std::filesystem::current_path();
@@ -136,7 +136,7 @@ void runEnvironment(korali::Sample &s)
   std::filesystem::current_path(curPath);
 
   // Closing log file
-  //fclose(logFile);
+  fclose(logFile);
 }
 
 void setInitialConditions(StefanFish *a, Shape *p)

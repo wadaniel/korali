@@ -147,6 +147,11 @@ class Agent : public Solver
   float _randomActionProbabilityEffectiveValue;
 
   /**
+  * @brief [Profiling] Measures the amount of time taken by the generation
+  */
+  double _generationTime;
+
+  /**
   * @brief [Profiling] Measures the amount of time taken by ER serialization
   */
   double _serializationTime;

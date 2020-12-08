@@ -15,7 +15,7 @@ e = korali.Experiment()
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = env
 e["Problem"]["Actions Between Policy Updates"] = 1
-e["Problem"]["Training Reward Threshold"] = 50
+e["Problem"]["Training Reward Threshold"] = 450
 e["Problem"]["Policy Testing Episodes"] = 10
 
 ### Defining state variables
@@ -52,6 +52,7 @@ e["Solver"]["Random Action Probability"]["Decrease Rate"] = 0.00
 e["Solver"]["Mini Batch Strategy"] = "Uniform"
 e["Solver"]["Experience Replay"]["Start Size"] =   2000
 e["Solver"]["Experience Replay"]["Maximum Size"] = 100000
+e["Solver"]["Experience Replay"]["Serialization Frequency"] = 10
 
 ## Defining Critic Configuration
 
@@ -99,11 +100,12 @@ e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Activation Function"]["Typ
 
 ### Defining Termination Criteria
 
-e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 50
+e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 450
 
 ### Setting file output configuration
 
-e["File Output"]["Enabled"] = False
+e["File Output"]["Enabled"] = True
+e["File Output"]["Frequency"] = 10
  
 ### Running Experiment
 

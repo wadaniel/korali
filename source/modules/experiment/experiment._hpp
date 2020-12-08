@@ -59,6 +59,11 @@ class Experiment : public Module
   bool _isInitialized;
 
   /**
+  * @brief [Profiling] Measures the amount of time taken by saving results
+  */
+  double _resultSavingTime;
+
+  /**
   * @brief Gets an item from the JSON object at the current pointer position.
   * @param key A pybind11 object acting as JSON key (number or string).
   * @return A pybind11 object

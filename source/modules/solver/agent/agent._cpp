@@ -311,6 +311,8 @@ void Agent::updateRandomActionProbability()
 
 void Agent::finalize()
 {
+  _k->_logger->logInfo("Normal", "Waiting for pending agents to finish...\n");
+
   // Waiting for pending agents to finish
   bool agentsRemain = true;
   while (agentsRemain == true)

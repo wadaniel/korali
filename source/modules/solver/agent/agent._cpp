@@ -50,9 +50,11 @@ void Agent::initialize()
     _bestHyperparameters = _hyperparameters;
   }
 
+  // Deserialize input experience replay
+  deserializeExperienceReplay();
+
   // Initializing profiling timers
-  _agentStartTime = 0.0;
-  _agentWaitTime = 0.0;
+  _serializationTime = 0.0;
 
   // Creating storate for _agents and their status
   _agents.resize(_agentCount);
@@ -106,6 +108,17 @@ void Agent::runGeneration()
 
   // Updating experience probabilities
   if (_miniBatchStrategy == "Prioritized") updateExperienceReplayProbabilities();
+
+  // Now serializing experience replay database
+  if (_experienceReplaySerializationFrequency > 0)
+  if (_k->_currentGeneration % _experienceReplaySerializationFrequency == 0)
+  {
+   _k->_logger->logInfo("Normal", "Serializing Experience Replay database...\n");
+   auto beginTime = std::chrono::steady_clock::now();
+   serializeExperienceReplay();
+   auto endTime = std::chrono::steady_clock::now();
+   _serializationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();
+  }
 }
 
 void Agent::attendAgent(size_t agentId)
@@ -311,6 +324,12 @@ void Agent::updateRandomActionProbability()
 
 void Agent::finalize()
 {
+  if (_experienceReplaySerializationFrequency > 0)
+  {
+   _k->_logger->logInfo("Normal", "Serializing Experience Replay database...\n");
+   serializeExperienceReplay();
+  }
+
   _k->_logger->logInfo("Normal", "Waiting for pending agents to finish...\n");
 
   // Waiting for pending agents to finish
@@ -331,6 +350,42 @@ void Agent::finalize()
 
   // Updating policy with the best parameters produced during training
   updateAgentPolicy(_bestHyperparameters);
+}
+
+void Agent::serializeExperienceReplay()
+{
+ _experienceReplayDatabase.resize(_experienceReplay.size());
+
+ for (size_t i = 0; i < _experienceReplay.size(); i++)
+ {
+  _experienceReplayDatabase[i]["State"] = _experienceReplay[i].state;
+  _experienceReplayDatabase[i]["Action"] = _experienceReplay[i].action;
+  _experienceReplayDatabase[i]["Reward"] = _experienceReplay[i].reward;
+  _experienceReplayDatabase[i]["Priority"] = _experienceReplay[i].priority;
+  _experienceReplayDatabase[i]["Probability"] = _experienceReplay[i].probability;
+  _experienceReplayDatabase[i]["Termination"] = _experienceReplay[i].termination;
+  _experienceReplayDatabase[i]["Truncated State"] = _experienceReplay[i].truncatedState;
+  _experienceReplayDatabase[i]["Policy"] = _experienceReplay[i].policy;
+  _experienceReplayDatabase[i]["Metadata"] = _experienceReplay[i].metadata;
+ }
+}
+
+void Agent::deserializeExperienceReplay()
+{
+ for (size_t i = 0; i < _experienceReplayDatabase.size(); i++)
+ {
+   experience_t e;
+  e.state = _experienceReplayDatabase[i]["State"].get<std::vector<float>>();
+  e.action = _experienceReplayDatabase[i]["Action"].get<std::vector<float>>();
+  e.reward = _experienceReplayDatabase[i]["Reward"].get<float>();
+  e.priority = _experienceReplayDatabase[i]["Priority"].get<float>();
+  e.probability = _experienceReplayDatabase[i]["Probability"].get<float>();
+  e.termination = _experienceReplayDatabase[i]["Termination"].get<termination_t>();
+  e.truncatedState = _experienceReplayDatabase[i]["Truncated State"].get<std::vector<float>>();
+  e.policy = _experienceReplayDatabase[i]["Policy"].get<std::vector<float>>();
+  e.metadata = _experienceReplayDatabase[i]["Metadata"];
+  _experienceReplay.add(e);
+ }
 }
 
 void Agent::printGenerationAfter()
@@ -374,8 +429,8 @@ void Agent::printGenerationAfter()
   printAgentInformation();
 
   _k->_logger->logInfo("Normal", "Profiling Information:\n");
-  _k->_logger->logInfo("Normal", " + Agent Start Time:            %fs\n", _agentStartTime / 1.0e+9f);
-  _k->_logger->logInfo("Normal", " + Agent Wait Time:             %fs\n", _agentWaitTime / 1.0e+9f);
+  _k->_logger->logInfo("Normal", " + Experience Replay Serialization Time:   %fs\n", _serializationTime / 1.0e+9f);
+  _k->_logger->logInfo("Normal", " + Result File Saving I/O Time:            %fs\n", _k->_resultSavingTime / 1.0e+9f);
 }
 
 } // namespace solver

@@ -23,10 +23,11 @@ int main(int argc, char *argv[])
 #ifndef TEST
   MPI_Comm_size(MPI_COMM_WORLD, &N);
   N = N - 1; // Minus one for Korali's engine
-#endif
 
+  // Initializing Cubism
   _environment = new Simulation(_argc, _argv);
   _environment->init();
+#endif
 
   auto e = korali::Experiment();
 

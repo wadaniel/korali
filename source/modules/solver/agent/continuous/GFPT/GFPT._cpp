@@ -40,6 +40,9 @@ void GFPT::initializeAgent()
       _vExperiment["Problem"]["Inputs"][i][j] = 0.0;
   }
 
+  size_t criticOutputLayer = _vExperiment["Solver"]["Neural Network"]["Layers"].size() - 1;
+  _vExperiment["Solver"]["Neural Network"]["Layers"][criticOutputLayer]["Weight Scaling"] = 0.1;
+
   // Running initialization to verify that the configuration is correct
   engine.initialize(_vExperiment);
 
@@ -51,8 +54,14 @@ void GFPT::initializeAgent()
   * Advantage Function learner
   *********************************************************************/
 
-  // The configuration for the advantage experiment is the same as the value function (v) experiment
-  _aExperiment._js = _vExperiment._js;
+  _aExperiment["Problem"]["Type"] = "Supervised Learning";
+  _aExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
+  _aExperiment["Solver"]["Optimizer"] = _criticOptimizer;
+  _aExperiment["Solver"]["Learning Rate"] = _criticLearningRate;
+  _aExperiment["Solver"]["Loss Function"] = "Mean Squared Error";
+  _aExperiment["Solver"]["Steps Per Generation"] = 1;
+  _aExperiment["Solver"]["Neural Network"] = _criticNeuralNetwork;
+  _aExperiment["Solver"]["Neural Network"]["Layers"][criticOutputLayer]["Weight Scaling"] = 0.1;
 
   // Initializing experiment with an initial zero set
   for (size_t i = 0; i < _criticMiniBatchSize; i++)
@@ -97,7 +106,6 @@ void GFPT::initializeAgent()
    *********************************************************************/
 
   // Creating and running Actor Learning Experiments
-
   _policyExperiment["Problem"]["Type"] = "Supervised Learning";
   _policyExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
   _policyExperiment["Solver"]["Loss Function"] = "Direct Gradient";
@@ -127,6 +135,9 @@ void GFPT::initializeAgent()
     for (size_t j = 0; j < _problem->_actionVectorSize; j++)
       _policyExperiment["Problem"]["Solution"][i][j] = 0.0;
   }
+
+  size_t policyOutputLayer = _policyExperiment["Solver"]["Neural Network"]["Layers"].size() - 1;
+  _policyExperiment["Solver"]["Neural Network"]["Layers"][policyOutputLayer]["Weight Scaling"] = 0.1;
 
   // Running initialization to verify that the configuration is correct
   engine.initialize(_policyExperiment);

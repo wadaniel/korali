@@ -112,6 +112,7 @@ void DDQN::trainPolicy()
   // Creating minibatch for the critic update
   auto miniBatchIndexes = generateMiniBatch(_criticMiniBatchSize);
 
+#pragma omp parallel for schedule(dynamic, 1)
   for (size_t i = 0; i < _criticMiniBatchSize; i++)
   {
     // Selecting a uniformly random selected, yet not repeated experience

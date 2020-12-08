@@ -254,18 +254,18 @@ float NAF::quadraticAdvantageFunction(const std::vector<float> &action, const st
   return -0.5 * qval;
 }
 
-void NAF::setTrainingHyperparameters(const knlohmann::json& hyperparameters)
+void NAF::setTrainingHyperparameters(const knlohmann::json &hyperparameters)
 {
- _qLearner->setTrainingHyperparameters(hyperparameters["Q"]);
- _criticLearner->setTrainingHyperparameters(hyperparameters["Critic"]);
+  _qLearner->setTrainingHyperparameters(hyperparameters["Q"]);
+  _criticLearner->setTrainingHyperparameters(hyperparameters["Critic"]);
 }
 
 knlohmann::json NAF::getTrainingHyperparameters()
 {
- knlohmann::json hyperparameters;
- hyperparameters["Q"] = _qLearner->getTrainingHyperparameters();
- hyperparameters["Critic"] = _criticLearner->getTrainingHyperparameters();
- return hyperparameters;
+  knlohmann::json hyperparameters;
+  hyperparameters["Q"] = _qLearner->getTrainingHyperparameters();
+  hyperparameters["Critic"] = _criticLearner->getTrainingHyperparameters();
+  return hyperparameters;
 }
 
 void NAF::printAgentInformation()

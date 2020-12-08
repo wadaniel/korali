@@ -287,7 +287,7 @@ void Distributed::popEngine()
 
 size_t Distributed::getProcessId()
 {
- return _rankId;
+  return _rankId;
 }
 
 } // namespace conduit

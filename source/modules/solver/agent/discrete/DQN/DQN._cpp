@@ -38,9 +38,6 @@ void DQN::initializeAgent()
       _criticExperiment["Problem"]["Inputs"][i][j] = 0.0;
   }
 
-  size_t outputLayer = _criticExperiment["Solver"]["Neural Network"]["Layers"].size() - 1;
-  _criticExperiment["Solver"]["Neural Network"]["Layers"][outputLayer]["Weight Scaling"] = 0.1;
-
   // Running initialization to verify that the configuration is correct
   engine.initialize(_criticExperiment);
 

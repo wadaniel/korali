@@ -39,9 +39,6 @@ void DDQN::initializeAgent()
       _vExperiment["Problem"]["Inputs"][i][j] = 0.0;
   }
 
-  size_t outputLayer = _vExperiment["Solver"]["Neural Network"]["Layers"].size() - 1;
-  _vExperiment["Solver"]["Neural Network"]["Layers"][outputLayer]["Weight Scaling"] = 0.1;
-
   // Running initialization to verify that the configuration is correct
   engine.initialize(_vExperiment);
 

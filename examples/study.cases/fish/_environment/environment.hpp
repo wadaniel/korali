@@ -7,7 +7,7 @@
 
 void runEnvironment(korali::Sample &s);
 extern int _argc;
-extern char** _argv;
+extern char **_argv;
 
 #ifndef TEST
 
@@ -20,6 +20,6 @@ bool isTerminal(StefanFish *a, Shape *p);
 
 // Global variables for the simulation (ideal if this would be a class instead)
 extern std::mt19937 _randomGenerator;
-extern Simulation* _environment;
+extern Simulation *_environment;
 
 #endif

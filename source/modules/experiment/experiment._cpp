@@ -117,7 +117,7 @@ void Experiment::run()
 
 void Experiment::saveState()
 {
- auto beginTime = std::chrono::steady_clock::now();
+  auto beginTime = std::chrono::steady_clock::now();
 
   if (_storeSampleInformation == true) _js["Samples"] = _sampleInfo["Samples"];
 

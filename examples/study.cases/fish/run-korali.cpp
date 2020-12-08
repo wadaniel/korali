@@ -3,11 +3,15 @@
 
 int main(int argc, char *argv[])
 {
- // Gathering actual arguments from MPI
+  // Gathering actual arguments from MPI
 #ifndef TEST
   int provided;
-  MPI_Init_thread(&argc, &argv, MPI_THREAD_FUNNELED, &provided );
-  if (provided != MPI_THREAD_FUNNELED) { printf("Error initializing MPI\n"); exit(-1); }
+  MPI_Init_thread(&argc, &argv, MPI_THREAD_FUNNELED, &provided);
+  if (provided != MPI_THREAD_FUNNELED)
+  {
+    printf("Error initializing MPI\n");
+    exit(-1);
+  }
 #endif
 
   // Storing parameters

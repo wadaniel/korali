@@ -203,16 +203,16 @@ std::vector<float> DQN::getActionProbabilities(const std::vector<float> &state)
   return pActions;
 }
 
-void DQN::setTrainingHyperparameters(const knlohmann::json& hyperparameters)
+void DQN::setTrainingHyperparameters(const knlohmann::json &hyperparameters)
 {
- _criticLearner->setTrainingHyperparameters(hyperparameters["Critic"]);
+  _criticLearner->setTrainingHyperparameters(hyperparameters["Critic"]);
 }
 
 knlohmann::json DQN::getTrainingHyperparameters()
 {
- knlohmann::json hyperparameters;
- hyperparameters["Critic"] = _criticLearner->getTrainingHyperparameters();
- return hyperparameters;
+  knlohmann::json hyperparameters;
+  hyperparameters["Critic"] = _criticLearner->getTrainingHyperparameters();
+  return hyperparameters;
 }
 
 void DQN::printAgentInformation()

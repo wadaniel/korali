@@ -69,8 +69,7 @@ void dACER::initializeAgent()
   }
 
   size_t policyOutputLayer = _policyNeuralNetwork["Layers"].size() - 1;
-  if (_policyNeuralNetwork["Layers"][policyOutputLayer]["Activation Function"]["Type"] != "SoftMax")
-    KORALI_LOG_ERROR("Policy Network Output Layers' (%zu) Activation Function must be of type 'SoftMax'", policyOutputLayer);
+  _policyExperiment["Solver"]["Neural Network"]["Layers"][policyOutputLayer]["Activation Function"]["Type"] = "Softmax";
 
   // Running initialization to verify that the configuration is correct
   engine.initialize(_policyExperiment);
@@ -376,18 +375,22 @@ void dACER::updateAgentPolicy(const knlohmann::json &hyperparameters)
   _policyLearner->setInferenceHyperparameters(policyHyperparameters);
 }
 
-void dACER::setTrainingHyperparameters(const knlohmann::json &hyperparameters)
+void dACER::setTrainingState(const knlohmann::json &state)
 {
-  _criticLearner->setTrainingHyperparameters(hyperparameters["Critic"]);
-  _policyLearner->setTrainingHyperparameters(hyperparameters["Policy"]);
+  _criticLearner->setTrainingHyperparameters(state["Critic"]["Training"]);
+  _policyLearner->setTrainingHyperparameters(state["Policy"]["Training"]);
+  _criticLearner->setInferenceHyperparameters(state["Critic"]["Inference"]);
+  _policyLearner->setInferenceHyperparameters(state["Policy"]["Inference"]);
 }
 
-knlohmann::json dACER::getTrainingHyperparameters()
+knlohmann::json dACER::getTrainingState()
 {
-  knlohmann::json hyperparameters;
-  hyperparameters["Critic"] = _criticLearner->getTrainingHyperparameters();
-  hyperparameters["Policy"] = _policyLearner->getTrainingHyperparameters();
-  return hyperparameters;
+  knlohmann::json state;
+  state["Critic"]["Training"] = _criticLearner->getTrainingHyperparameters();
+  state["Policy"]["Training"] = _policyLearner->getTrainingHyperparameters();
+  state["Critic"]["Inference"] = _criticLearner->getInferenceHyperparameters();
+  state["Policy"]["Inference"] = _policyLearner->getInferenceHyperparameters();
+  return state;
 }
 
 void dACER::printAgentInformation()

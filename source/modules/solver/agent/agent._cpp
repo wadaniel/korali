@@ -50,11 +50,11 @@ void Agent::initialize()
     _bestHyperparameters = _hyperparameters;
 
     // Initializing training hyperparameters
-    _trainingHyperparameters = getTrainingHyperparameters();
+    _trainingState = getTrainingState();
   }
 
   // Setting initial or loaded hyperparameters from a previous run (or save file)
-  setTrainingHyperparameters(_trainingHyperparameters);
+  setTrainingState(_trainingState);
 
   // If this continues a previous run, deserialize previous input experience replay
   deserializeExperienceReplay();
@@ -112,7 +112,7 @@ void Agent::runGeneration()
         trainPolicy();
 
         // Gathering their training hyperparameters (for checkpoint/resume purposes)
-        _trainingHyperparameters = getTrainingHyperparameters();
+        _trainingState = getTrainingState();
 
         // Increasing policy update counter
         _policyUpdateCount++;

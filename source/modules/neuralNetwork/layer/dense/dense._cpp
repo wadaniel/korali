@@ -333,9 +333,9 @@ void Dense::forwardWeightsAndBias()
 {
   if (_prevLayer != NULL)
   {
-    int N = _nn->_batchSize;
-    int IC = _prevLayer->_nodeCount;
-    int OC = _nodeCount;
+    size_t N = _nn->_batchSize;
+    size_t IC = _prevLayer->_nodeCount;
+    size_t OC = _nodeCount;
 
 #ifdef _KORALI_USE_EIGEN
     if (_nn->_engine == "Korali")

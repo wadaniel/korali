@@ -34,7 +34,7 @@ gsl_rng *Distribution::setRange(const std::string rangeString)
   gsl_rng *rng = gsl_rng_alloc(gsl_rng_default);
 
   if (_randomSeed == 0 || _k->_preserveRandomNumberGeneratorStates == false)
-   _randomSeed = _k->_randomSeed++;
+    _randomSeed = _k->_randomSeed++;
 
   gsl_rng_set(rng, _randomSeed);
 

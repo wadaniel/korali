@@ -377,18 +377,18 @@ void dACER::updateAgentPolicy(const knlohmann::json &hyperparameters)
   _policyLearner->setInferenceHyperparameters(policyHyperparameters);
 }
 
-void dACER::setTrainingHyperparameters(const knlohmann::json& hyperparameters)
+void dACER::setTrainingHyperparameters(const knlohmann::json &hyperparameters)
 {
- _criticLearner->setTrainingHyperparameters(hyperparameters["Critic"]);
- _policyLearner->setTrainingHyperparameters(hyperparameters["Policy"]);
+  _criticLearner->setTrainingHyperparameters(hyperparameters["Critic"]);
+  _policyLearner->setTrainingHyperparameters(hyperparameters["Policy"]);
 }
 
 knlohmann::json dACER::getTrainingHyperparameters()
 {
- knlohmann::json hyperparameters;
- hyperparameters["Critic"] = _criticLearner->getTrainingHyperparameters();
- hyperparameters["Policy"] = _policyLearner->getTrainingHyperparameters();
- return hyperparameters;
+  knlohmann::json hyperparameters;
+  hyperparameters["Critic"] = _criticLearner->getTrainingHyperparameters();
+  hyperparameters["Policy"] = _policyLearner->getTrainingHyperparameters();
+  return hyperparameters;
 }
 
 void dACER::printAgentInformation()

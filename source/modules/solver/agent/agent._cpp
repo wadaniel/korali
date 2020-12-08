@@ -79,25 +79,25 @@ void Agent::runGeneration()
   {
     // Launching (or re-launching) agents
     for (size_t agentId = 0; agentId < _agentCount; agentId++)
-     if (_isAgentRunning[agentId] == false)
-     {
-       _agents[agentId]["Sample Id"] = _currentSampleID++;
-       _agents[agentId]["Module"] = "Problem";
-       _agents[agentId]["Operation"] = "Run Episode";
-       _agents[agentId]["Hyperparameters"] = _hyperparameters;
-       _agents[agentId]["Random Action Probability"] = _randomActionProbabilityEffectiveValue;
+      if (_isAgentRunning[agentId] == false)
+      {
+        _agents[agentId]["Sample Id"] = _currentSampleID++;
+        _agents[agentId]["Module"] = "Problem";
+        _agents[agentId]["Operation"] = "Run Episode";
+        _agents[agentId]["Hyperparameters"] = _hyperparameters;
+        _agents[agentId]["Random Action Probability"] = _randomActionProbabilityEffectiveValue;
 
-       KORALI_START(_agents[agentId]);
-       _isAgentRunning[agentId] = true;
-     }
+        KORALI_START(_agents[agentId]);
+        _isAgentRunning[agentId] = true;
+      }
 
     // Listening to _agents for incoming experiences
     KORALI_LISTEN(_agents);
 
     // Attending to running agents, checking if any experience has been received
     for (size_t agentId = 0; agentId < _agentCount; agentId++)
-     if (_isAgentRunning[agentId] == true)
-      attendAgent(agentId);
+      if (_isAgentRunning[agentId] == true)
+        attendAgent(agentId);
 
     // Perform optimization steps on the critic/policy, if reached the minimum replay memory size
     if (_experienceReplay.size() >= _experienceReplayStartSize)
@@ -129,83 +129,83 @@ void Agent::runGeneration()
 
   // Now serializing experience replay database
   if (_experienceReplaySerializationFrequency > 0)
-  if (_k->_currentGeneration % _experienceReplaySerializationFrequency == 0)
-  {
-   _k->_logger->logInfo("Normal", "Serializing Experience Replay database...\n");
-   auto beginTime = std::chrono::steady_clock::now();
-   serializeExperienceReplay();
-   auto endTime = std::chrono::steady_clock::now();
-   _serializationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();
-  }
+    if (_k->_currentGeneration % _experienceReplaySerializationFrequency == 0)
+    {
+      _k->_logger->logInfo("Normal", "Serializing Experience Replay database...\n");
+      auto beginTime = std::chrono::steady_clock::now();
+      serializeExperienceReplay();
+      auto endTime = std::chrono::steady_clock::now();
+      _serializationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();
+    }
 }
 
 void Agent::attendAgent(size_t agentId)
 {
- // Storage for the incoming experience
- knlohmann::json experience;
+  // Storage for the incoming experience
+  knlohmann::json experience;
 
- // Retrieving the experience, if any has arrived for the current agent.
- if (_agents[agentId].retrievePendingMessage(experience))
- {
-   // Storage to determine terminal state
-   bool isTerminal = false;
+  // Retrieving the experience, if any has arrived for the current agent.
+  if (_agents[agentId].retrievePendingMessage(experience))
+  {
+    // Storage to determine terminal state
+    bool isTerminal = false;
 
-   // Storing experience in the episode
-   _episodes[agentId].push_back(experience);
+    // Storing experience in the episode
+    _episodes[agentId].push_back(experience);
 
-   // Increasing total experience counter
-   _experienceCount++;
+    // Increasing total experience counter
+    _experienceCount++;
 
-   // Check if experience is terminal
-   isTerminal = experience["Termination"] != "Non Terminal";
+    // Check if experience is terminal
+    isTerminal = experience["Termination"] != "Non Terminal";
 
-   // If agent requested new policy, send the new hyperparameters
-   if (experience["Request New Policy"] == true)
-     KORALI_SEND_MSG_TO_SAMPLE(_agents[agentId], _hyperparameters);
+    // If agent requested new policy, send the new hyperparameters
+    if (experience["Request New Policy"] == true)
+      KORALI_SEND_MSG_TO_SAMPLE(_agents[agentId], _hyperparameters);
 
-   if (isTerminal)
-   {
-     // Now that we have the entire episode, process its experiences (add them to replay memory)
-     for (size_t i = 0; i < _episodes[agentId].size(); i++) processExperience(_episodes[agentId][i]);
+    if (isTerminal)
+    {
+      // Now that we have the entire episode, process its experiences (add them to replay memory)
+      for (size_t i = 0; i < _episodes[agentId].size(); i++) processExperience(_episodes[agentId][i]);
 
-     // Waiting for the agent to come back with all the information
-     KORALI_WAIT(_agents[agentId]);
+      // Waiting for the agent to come back with all the information
+      KORALI_WAIT(_agents[agentId]);
 
-     // Getting the training reward of the latest episode
-     _lastTrainingReward = _agents[agentId]["Training Reward"].get<float>();
+      // Getting the training reward of the latest episode
+      _lastTrainingReward = _agents[agentId]["Training Reward"].get<float>();
 
-     // Keeping training statistics. Updating if exceeded best training policy so far.
-     if (_lastTrainingReward > _bestTrainingReward)
-     {
-       _bestTrainingReward = _lastTrainingReward;
-       _bestTrainingEpisode = _currentEpisode;
-     }
+      // Keeping training statistics. Updating if exceeded best training policy so far.
+      if (_lastTrainingReward > _bestTrainingReward)
+      {
+        _bestTrainingReward = _lastTrainingReward;
+        _bestTrainingEpisode = _currentEpisode;
+      }
 
-     // If the policy has exceeded the threshold during training, we gather its statistics
-     if (_agents[agentId]["Tested Policy"] == true)
-     {
-       _candidatePoliciesTested++;
+      // If the policy has exceeded the threshold during training, we gather its statistics
+      if (_agents[agentId]["Tested Policy"] == true)
+      {
+        _candidatePoliciesTested++;
 
-       _averageTestingReward = _agents[agentId]["Average Testing Reward"].get<float>();
-       _bestTestingReward = _agents[agentId]["Best Testing Reward"].get<float>();
-       _worstTestingReward = _agents[agentId]["Worst Testing Reward"].get<float>();
+        _averageTestingReward = _agents[agentId]["Average Testing Reward"].get<float>();
+        _bestTestingReward = _agents[agentId]["Best Testing Reward"].get<float>();
+        _worstTestingReward = _agents[agentId]["Worst Testing Reward"].get<float>();
 
-       // If the average testing reward is better than the previous best, replace it
-       // and store hyperparameters as best so far.
-       if (_averageTestingReward > _bestAverageTestingReward)
-       {
-         _bestAverageTestingReward = _averageTestingReward;
-         _bestHyperparameters = _agents[agentId]["Hyperparameters"];
-       }
-     }
+        // If the average testing reward is better than the previous best, replace it
+        // and store hyperparameters as best so far.
+        if (_averageTestingReward > _bestAverageTestingReward)
+        {
+          _bestAverageTestingReward = _averageTestingReward;
+          _bestHyperparameters = _agents[agentId]["Hyperparameters"];
+        }
+      }
 
-     // Set agent as finished
-     _isAgentRunning[agentId] = false;
+      // Set agent as finished
+      _isAgentRunning[agentId] = false;
 
-     // Increasing number of episodes
-     _currentEpisode++;
-   }
- }
+      // Increasing number of episodes
+      _currentEpisode++;
+    }
+  }
 }
 
 void Agent::processExperience(knlohmann::json &experience)
@@ -344,8 +344,8 @@ void Agent::finalize()
 {
   if (_experienceReplaySerializationFrequency > 0)
   {
-   _k->_logger->logInfo("Normal", "Serializing Experience Replay database...\n");
-   serializeExperienceReplay();
+    _k->_logger->logInfo("Normal", "Serializing Experience Replay database...\n");
+    serializeExperienceReplay();
   }
 
   _k->_logger->logInfo("Normal", "Waiting for pending agents to finish...\n");
@@ -354,16 +354,16 @@ void Agent::finalize()
   bool agentsRemain = true;
   while (agentsRemain == true)
   {
-   // Listening to _agents for incoming experiences
-   KORALI_LISTEN(_agents);
+    // Listening to _agents for incoming experiences
+    KORALI_LISTEN(_agents);
 
-   agentsRemain = false;
-   for (size_t agentId = 0; agentId < _agentCount; agentId++)
-    if (_isAgentRunning[agentId] == true)
-    {
-     attendAgent(agentId);
-     agentsRemain = true;
-    }
+    agentsRemain = false;
+    for (size_t agentId = 0; agentId < _agentCount; agentId++)
+      if (_isAgentRunning[agentId] == true)
+      {
+        attendAgent(agentId);
+        agentsRemain = true;
+      }
   }
 
   // Updating policy with the best parameters produced during training
@@ -372,38 +372,38 @@ void Agent::finalize()
 
 void Agent::serializeExperienceReplay()
 {
- _experienceReplayDatabase.resize(_experienceReplay.size());
+  _experienceReplayDatabase.resize(_experienceReplay.size());
 
- for (size_t i = 0; i < _experienceReplay.size(); i++)
- {
-  _experienceReplayDatabase[i]["State"] = _experienceReplay[i].state;
-  _experienceReplayDatabase[i]["Action"] = _experienceReplay[i].action;
-  _experienceReplayDatabase[i]["Reward"] = _experienceReplay[i].reward;
-  _experienceReplayDatabase[i]["Priority"] = _experienceReplay[i].priority;
-  _experienceReplayDatabase[i]["Probability"] = _experienceReplay[i].probability;
-  _experienceReplayDatabase[i]["Termination"] = _experienceReplay[i].termination;
-  _experienceReplayDatabase[i]["Truncated State"] = _experienceReplay[i].truncatedState;
-  _experienceReplayDatabase[i]["Policy"] = _experienceReplay[i].policy;
-  _experienceReplayDatabase[i]["Metadata"] = _experienceReplay[i].metadata;
- }
+  for (size_t i = 0; i < _experienceReplay.size(); i++)
+  {
+    _experienceReplayDatabase[i]["State"] = _experienceReplay[i].state;
+    _experienceReplayDatabase[i]["Action"] = _experienceReplay[i].action;
+    _experienceReplayDatabase[i]["Reward"] = _experienceReplay[i].reward;
+    _experienceReplayDatabase[i]["Priority"] = _experienceReplay[i].priority;
+    _experienceReplayDatabase[i]["Probability"] = _experienceReplay[i].probability;
+    _experienceReplayDatabase[i]["Termination"] = _experienceReplay[i].termination;
+    _experienceReplayDatabase[i]["Truncated State"] = _experienceReplay[i].truncatedState;
+    _experienceReplayDatabase[i]["Policy"] = _experienceReplay[i].policy;
+    _experienceReplayDatabase[i]["Metadata"] = _experienceReplay[i].metadata;
+  }
 }
 
 void Agent::deserializeExperienceReplay()
 {
- for (size_t i = 0; i < _experienceReplayDatabase.size(); i++)
- {
-  experience_t e;
-  e.state = _experienceReplayDatabase[i]["State"].get<std::vector<float>>();
-  e.action = _experienceReplayDatabase[i]["Action"].get<std::vector<float>>();
-  e.reward = _experienceReplayDatabase[i]["Reward"].get<float>();
-  e.priority = _experienceReplayDatabase[i]["Priority"].get<float>();
-  e.probability = _experienceReplayDatabase[i]["Probability"].get<float>();
-  e.termination = _experienceReplayDatabase[i]["Termination"].get<termination_t>();
-  e.truncatedState = _experienceReplayDatabase[i]["Truncated State"].get<std::vector<float>>();
-  e.policy = _experienceReplayDatabase[i]["Policy"];
-  e.metadata = _experienceReplayDatabase[i]["Metadata"];
-  _experienceReplay.add(e);
- }
+  for (size_t i = 0; i < _experienceReplayDatabase.size(); i++)
+  {
+    experience_t e;
+    e.state = _experienceReplayDatabase[i]["State"].get<std::vector<float>>();
+    e.action = _experienceReplayDatabase[i]["Action"].get<std::vector<float>>();
+    e.reward = _experienceReplayDatabase[i]["Reward"].get<float>();
+    e.priority = _experienceReplayDatabase[i]["Priority"].get<float>();
+    e.probability = _experienceReplayDatabase[i]["Probability"].get<float>();
+    e.termination = _experienceReplayDatabase[i]["Termination"].get<termination_t>();
+    e.truncatedState = _experienceReplayDatabase[i]["Truncated State"].get<std::vector<float>>();
+    e.policy = _experienceReplayDatabase[i]["Policy"];
+    e.metadata = _experienceReplayDatabase[i]["Metadata"];
+    _experienceReplay.add(e);
+  }
 }
 
 void Agent::printGenerationAfter()

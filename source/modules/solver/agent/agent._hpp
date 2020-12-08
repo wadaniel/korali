@@ -95,8 +95,7 @@ struct experience_t
 class Agent : public Solver
 {
   public:
-
- /**
+  /**
   * @brief Array of agents collecting new experiences
   */
   std::vector<Sample> _agents;
@@ -171,7 +170,7 @@ class Agent : public Solver
    * @brief Sets training hyperparameters to continue learning from a previous run or state file
    * @param hyperparameters The hyperparameters to update the training NNs.
    */
-  virtual void setTrainingHyperparameters(const knlohmann::json& hyperparameters) = 0;
+  virtual void setTrainingHyperparameters(const knlohmann::json &hyperparameters) = 0;
 
   /**
    * @brief Obtains the current training hyperparameters to store to a file and continue learning later

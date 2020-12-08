@@ -365,7 +365,6 @@ void GFPT::trainPolicy()
   auto endTime = std::chrono::steady_clock::now();                                                        // Profiling
   _criticUpdateTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
 
-
   /*******************************************************************
   * Now computing new policy gradients with a stochastic method (CMAES)
   ******************************************************************/
@@ -542,20 +541,20 @@ void GFPT::updateAgentPolicy(const knlohmann::json &hyperparameters)
   _policyLearner->setInferenceHyperparameters(policyHyperparameters);
 }
 
-void GFPT::setTrainingHyperparameters(const knlohmann::json& hyperparameters)
+void GFPT::setTrainingHyperparameters(const knlohmann::json &hyperparameters)
 {
- _aLearner->setTrainingHyperparameters(hyperparameters["A"]);
- _vLearner->setTrainingHyperparameters(hyperparameters["V"]);
- _policyLearner->setTrainingHyperparameters(hyperparameters["Policy"]);
+  _aLearner->setTrainingHyperparameters(hyperparameters["A"]);
+  _vLearner->setTrainingHyperparameters(hyperparameters["V"]);
+  _policyLearner->setTrainingHyperparameters(hyperparameters["Policy"]);
 }
 
 knlohmann::json GFPT::getTrainingHyperparameters()
 {
- knlohmann::json hyperparameters;
- hyperparameters["A"] = _aLearner->getTrainingHyperparameters();
- hyperparameters["V"] = _vLearner->getTrainingHyperparameters();
- hyperparameters["Policy"] = _policyLearner->getTrainingHyperparameters();
- return hyperparameters;
+  knlohmann::json hyperparameters;
+  hyperparameters["A"] = _aLearner->getTrainingHyperparameters();
+  hyperparameters["V"] = _vLearner->getTrainingHyperparameters();
+  hyperparameters["Policy"] = _policyLearner->getTrainingHyperparameters();
+  return hyperparameters;
 }
 
 void GFPT::printAgentInformation()

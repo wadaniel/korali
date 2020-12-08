@@ -66,6 +66,8 @@ class DDQN : public Discrete
    */
   float _vValState;
 
+  void setTrainingHyperparameters(const knlohmann::json& hyperparameters) override;
+  knlohmann::json getTrainingHyperparameters() override;
   std::vector<float> getActionProbabilities(const std::vector<float> &state) override;
   void updateAgentPolicy(const knlohmann::json &hyperparameters) override;
   void trainPolicy() override;

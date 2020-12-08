@@ -50,7 +50,7 @@ void DQN::initializeAgent()
   *********************************************************************/
 
   // Setting Initial Hyperparameters
-  _hyperparameters["Critic"] = _criticLearner->getHyperparameters();
+  _hyperparameters["Critic"] = _criticLearner->getTrainingHyperparameters();
 }
 
 void DQN::trainPolicy()
@@ -63,7 +63,7 @@ void DQN::trainPolicy()
   if (_policyUpdateCount % _criticTargetUpdateDelay == 0)
   {
     auto criticHyperparameters = _hyperparameters["Critic"].get<std::vector<float>>();
-    _criticLearner->setHyperparameters(criticHyperparameters);
+    _criticLearner->setInferenceHyperparameters(criticHyperparameters);
   }
 
   // Calculating cumulative Q*, for statistical purposes
@@ -141,13 +141,13 @@ void DQN::trainPolicy()
    *********************************************************************/
 
   // Storing new Critics' hyperparameters
-  _hyperparameters["Critic"] = _criticLearner->getHyperparameters();
+  _hyperparameters["Critic"] = _criticLearner->getTrainingHyperparameters();
 }
 
 void DQN::updateAgentPolicy(const knlohmann::json &hyperparameters)
 {
   auto criticHyperparameters = hyperparameters["Critic"].get<std::vector<float>>();
-  _criticLearner->setHyperparameters(criticHyperparameters);
+  _criticLearner->setInferenceHyperparameters(criticHyperparameters);
 }
 
 std::vector<float> DQN::getActionProbabilities(const std::vector<float> &state)
@@ -201,6 +201,18 @@ std::vector<float> DQN::getActionProbabilities(const std::vector<float> &state)
 
   // Returning the best found
   return pActions;
+}
+
+void DQN::setTrainingHyperparameters(const knlohmann::json& hyperparameters)
+{
+ _criticLearner->setTrainingHyperparameters(hyperparameters["Critic"]);
+}
+
+knlohmann::json DQN::getTrainingHyperparameters()
+{
+ knlohmann::json hyperparameters;
+ hyperparameters["Critic"] = _criticLearner->getTrainingHyperparameters();
+ return hyperparameters;
 }
 
 void DQN::printAgentInformation()

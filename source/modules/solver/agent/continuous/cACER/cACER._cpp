@@ -116,7 +116,7 @@ void cACER::initializeAgent()
   *********************************************************************/
 
   // Getting current hyperparameters
-  _policyCurrentHyperparameters = _policyLearner->getHyperparameters();
+  _policyCurrentHyperparameters = _policyLearner->getTrainingHyperparameters();
 
   // Storing initial average policy parameters
   if (_k->_currentGeneration == 0)
@@ -402,7 +402,7 @@ void cACER::trainPolicy()
     if (_policyTrustRegionEnabled)
     {
       // Getting policy distribution parameters given the average policy
-      _policyLearner->setHyperparameters(_policyAverageHyperparameters);
+      _policyLearner->setInferenceHyperparameters(_policyAverageHyperparameters);
 
       // Getting policy distribution parameters from the average policy NN
       auto avgMeans = _policyLearner->getEvaluation(expState);
@@ -424,7 +424,7 @@ void cACER::trainPolicy()
       for (size_t i = 0; i < gPolicy.size(); i++) gPolicy[i] = gPolicy[i] - adjustmentMagnitude * k[i];
 
       // Getting policy distribution parameters given the average policy
-      _policyLearner->setHyperparameters(_policyCurrentHyperparameters);
+      _policyLearner->setInferenceHyperparameters(_policyCurrentHyperparameters);
     }
 
     ///////////////// Storing Gradients /////////////////////
@@ -481,7 +481,7 @@ void cACER::trainPolicy()
   _vLearner->finalize();
 
   // Getting new policy hyperparameters
-  _policyCurrentHyperparameters = _policyLearner->getHyperparameters();
+  _policyCurrentHyperparameters = _policyLearner->getTrainingHyperparameters();
 
   // Running one generation of the optimization method with the given mini-batch
   _policyLearner->initialize();
@@ -493,7 +493,7 @@ void cACER::trainPolicy()
   ******************************************************************************/
 
   // Getting new policy hyperparameters
-  _policyCurrentHyperparameters = _policyLearner->getHyperparameters();
+  _policyCurrentHyperparameters = _policyLearner->getTrainingHyperparameters();
 
   // If using a trust region, softly adopting the new parameters of the average policy, using an adoption rate
   if (_policyTrustRegionEnabled)
@@ -501,7 +501,7 @@ void cACER::trainPolicy()
       _policyAverageHyperparameters[i] = _policyTrustRegionAverageNetworkAdoptionRate * _policyAverageHyperparameters[i] + (1 - _policyTrustRegionAverageNetworkAdoptionRate) * _policyCurrentHyperparameters[i];
 
   // Updating policy with new averaged parameters
-  //_policyLearner->setHyperparameters(_policyCurrentHyperparameters);
+  //_policyLearner->setInferenceHyperparameters(_policyCurrentHyperparameters);
 
   // Storing average policy hyperparameters
   _hyperparameters["Policy"] = _policyCurrentHyperparameters;
@@ -510,7 +510,23 @@ void cACER::trainPolicy()
 void cACER::updateAgentPolicy(const knlohmann::json &hyperparameters)
 {
   auto policyHyperparameters = hyperparameters["Policy"].get<std::vector<float>>();
-  _policyLearner->setHyperparameters(policyHyperparameters);
+  _policyLearner->setInferenceHyperparameters(policyHyperparameters);
+}
+
+void cACER::setTrainingHyperparameters(const knlohmann::json& hyperparameters)
+{
+ _aLearner->setTrainingHyperparameters(hyperparameters["A"]);
+ _vLearner->setTrainingHyperparameters(hyperparameters["V"]);
+ _policyLearner->setTrainingHyperparameters(hyperparameters["Policy"]);
+}
+
+knlohmann::json cACER::getTrainingHyperparameters()
+{
+ knlohmann::json hyperparameters;
+ hyperparameters["A"] = _aLearner->getTrainingHyperparameters();
+ hyperparameters["V"] = _vLearner->getTrainingHyperparameters();
+ hyperparameters["Policy"] = _policyLearner->getTrainingHyperparameters();
+ return hyperparameters;
 }
 
 void cACER::printAgentInformation()

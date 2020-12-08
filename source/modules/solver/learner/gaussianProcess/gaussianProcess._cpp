@@ -150,12 +150,22 @@ std::vector<float> GaussianProcess::getEvaluation(const std::vector<float> &inpu
   return output;
 }
 
-std::vector<float> GaussianProcess::getHyperparameters()
+std::vector<float> GaussianProcess::getInferenceHyperparameters()
 {
   return _gpHyperparameters;
 }
 
-void GaussianProcess::setHyperparameters(const std::vector<float> &hyperparameters)
+void GaussianProcess::setInferenceHyperparameters(const std::vector<float> &hyperparameters)
+{
+  _gpHyperparameters = hyperparameters;
+}
+
+std::vector<float> GaussianProcess::getTrainingHyperparameters()
+{
+  return _gpHyperparameters;
+}
+
+void GaussianProcess::setTrainingHyperparameters(const std::vector<float> &hyperparameters)
 {
   _gpHyperparameters = hyperparameters;
 }

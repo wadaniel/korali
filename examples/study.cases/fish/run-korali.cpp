@@ -1,9 +1,12 @@
 #include "_environment/environment.hpp"
 #include "korali.hpp"
 
+std::string _resultsPath;
+
 int main(int argc, char *argv[])
 {
   // Gathering actual arguments from MPI
+
 #ifndef TEST
   int provided;
   MPI_Init_thread(&argc, &argv, MPI_THREAD_FUNNELED, &provided);
@@ -29,6 +32,12 @@ int main(int argc, char *argv[])
   _environment->init();
 #endif
 
+  // Setting results path
+  _resultsPath = "_results";
+  char* slurmJobId = getenv("SLURM_JOBID");
+  if (slurmJobId != NULL) _resultsPath += std::string(slurmJobId);
+
+  // Configuring Experiment
   auto e = korali::Experiment();
 
   e["Problem"]["Type"] = "Reinforcement Learning / Continuous";
@@ -124,7 +133,12 @@ int main(int argc, char *argv[])
 
   e["File Output"]["Enabled"] = true;
   e["File Output"]["Frequency"] = 10;
-  e["File Output"]["Path"] = "_results";
+  e["File Output"]["Path"] = _resultsPath;
+
+  ////// Checking if existing results are there and continuing them
+
+  auto found = e.loadState(_resultsPath + std::string("/latest"));
+  if (found == true) printf("Continuing execution from previous run...\n");
 
   ////// Running Experiment
 
@@ -133,7 +147,7 @@ int main(int argc, char *argv[])
   // Configuring profiler output
 
   k["Profiling"]["Detail"] = "Full";
-  k["Profiling"]["Path"] = "_results/profiling.json";
+  k["Profiling"]["Path"] = _resultsPath + std::string("/profiling.json");
   k["Profiling"]["Frequency"] = 60;
 
 #ifndef TEST
@@ -141,5 +155,5 @@ int main(int argc, char *argv[])
   k["Conduit"]["Communicator"] = MPI_COMM_WORLD;
 #endif
 
-  k.run(e);
+  k.resume(e);
 }

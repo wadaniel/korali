@@ -141,11 +141,6 @@ class Agent : public Solver
   std::mt19937 *mt;
 
   /**
-  * @brief The value to use for probability of random actions.
-  */
-  float _randomActionProbabilityEffectiveValue;
-
-  /**
   * @brief [Profiling] Measures the amount of time taken by the generation
   */
   double _generationTime;
@@ -232,11 +227,6 @@ class Agent : public Solver
   * @brief Updates probabilities of experiences stored based on their priority.
   */
   void updateExperienceReplayProbabilities();
-
-  /**
-  * @brief Update random action probability.
-  */
-  void updateRandomActionProbability();
 
   /**
   * @brief Generates an experience mini batch from the replay memory

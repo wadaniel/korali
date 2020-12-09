@@ -50,12 +50,6 @@ e["Variables"][7]["Exploration Sigma"] = 1.00
 e["Solver"]["Type"] = "Agent / Continuous / GFPT"
 e["Solver"]["Experiences Between Policy Updates"] = 1
 
-### Defining probability of taking a random action (epsilon)
-
-e["Solver"]["Random Action Probability"]["Initial Value"] = 0.5
-e["Solver"]["Random Action Probability"]["Target Value"] = 0.05
-e["Solver"]["Random Action Probability"]["Decrease Rate"] = 0.05
-
 ### Defining the configuration of replay memory
 
 e["Solver"]["Experience Replay"]["Start Size"] =   1000

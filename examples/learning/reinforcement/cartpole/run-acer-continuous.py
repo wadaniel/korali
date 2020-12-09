@@ -42,10 +42,6 @@ e["Solver"]["Type"] = "Agent / Continuous / CACER"
 e["Solver"]["Experiences Between Policy Updates"] = 25
 e["Solver"]["Cache Persistence"] = 10
 
-e["Solver"]["Random Action Probability"]["Initial Value"] = 0.3
-e["Solver"]["Random Action Probability"]["Target Value"] = 0.00
-e["Solver"]["Random Action Probability"]["Decrease Rate"] = 0.03
-
 ### Defining Experience Replay configuration
 
 e["Solver"]["Experience Replay"]["Start Size"] =   2000

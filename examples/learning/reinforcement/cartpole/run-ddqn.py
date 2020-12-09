@@ -44,9 +44,7 @@ e["Solver"]["Experience Replay"]["Maximum Size"] = 10000
 
 ### Defining probability of taking a random action (epsilon)
 
-e["Solver"]["Random Action Probability"]["Initial Value"] = 1.0
-e["Solver"]["Random Action Probability"]["Target Value"] = 0.01
-e["Solver"]["Random Action Probability"]["Decrease Rate"] = 0.10
+e["Solver"]["Random Action Probability"] = 0.05
 
 ## Defining Q-Critic and Action-selection (policy) optimizers
 

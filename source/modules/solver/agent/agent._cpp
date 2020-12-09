@@ -51,6 +51,9 @@ void Agent::initialize()
     _trainingState = getTrainingState();
   }
 
+  // On restart, the number of experineces is equal to that of the experience replay
+  _experienceCount = _experienceReplay.size();
+
   // Setting initial or loaded hyperparameters from a previous run (or save file)
   setTrainingState(_trainingState);
 

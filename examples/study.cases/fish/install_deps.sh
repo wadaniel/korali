@@ -21,22 +21,19 @@ fi
 #fi
 
 if [ -z $CUBISM_BLOCK_SIZE ]; then
-  echo "[Warning] The environment \$CUBISM_BLOCK_SIZE not defined. Using default: 32"
-  CUBISM_BLOCK_SIZE=32
+  echo "[Warning] The environment \$CUBISM_BLOCK_SIZE not defined. Using default: 8"
+  CUBISM_BLOCK_SIZE=8
 fi
-
-if [ -z $CUBISM_NTHREADS ]; then
-  echo "[Warning] The environment \$CUBISM_NTHREADS not defined. Using default: 6"
-  CUBISM_NTHREADS=6
-fi
+CUBISM_NTHREADS=0
 
 rm -rf _deps
-git clone https://github.com/cselab/CubismUP2D.git _deps/cubism
+
+git clone --branch AMRKorali --recursive git@gitlab.ethz.ch:mavt-cse/CubismUP_2D.git _deps/cubism
 pushd _deps/cubism/makefiles
 cat Makefile | sed -e 's/bs ?= /bs ?= '$CUBISM_BLOCK_SIZE'#/g' \
                    -e 's/nthreads ?=/nthreads ?= '$CUBISM_NTHREADS'#/g' > Makefile.new
 mv Makefile.new Makefile
-make -j6
+make -j6 gpu=false
 cp libcubism.a cubism.cflags.txt cubism.libs.txt ../../..
 popd
 

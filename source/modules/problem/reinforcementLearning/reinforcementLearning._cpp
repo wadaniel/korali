@@ -23,12 +23,10 @@ void ReinforcementLearning::initialize()
 
   if (_actionVectorSize == 0) KORALI_LOG_ERROR("No action variables have been defined.\n");
   if (_stateVectorSize == 0) KORALI_LOG_ERROR("No state variables have been defined.\n");
-
-  if (_actionRepeat == 0) KORALI_LOG_ERROR("Action repeat cannot be zero.\n");
 }
 
 /**
- * @brief Pointer to the current sample, it is immediately copied as to avoid concurrency problems
+ * @brief Pointer to the current agent, it is immediately copied as to avoid concurrency problems
  */
 Sample *__currentSample;
 
@@ -42,19 +40,26 @@ size_t __envFunctionId;
  */
 void __environmentWrapper()
 {
-  Sample *sample = __currentSample;
+  Sample *agent = __currentSample;
 
-  sample->run(__envFunctionId);
+  agent->run(__envFunctionId);
 
-  if ((*sample)["Termination"] == "Non Terminal")
-    KORALI_LOG_ERROR("Environment function terminated, but sample termination status (success or truncated) was not set.\n");
+  if ((*agent)["Termination"] == "Non Terminal")
+    KORALI_LOG_ERROR("Environment function terminated, but agent termination status (success or truncated) was not set.\n");
 
-  co_switch(sample->_workerThread);
+  bool terminationRecognized = false;
+  if ((*agent)["Termination"] == "Terminal") terminationRecognized = true;
+  if ((*agent)["Termination"] == "Truncated") terminationRecognized = true;
 
-  KORALI_LOG_ERROR("Resuming a finished sample\n");
+  if (terminationRecognized == false)
+    KORALI_LOG_ERROR("Environment function terminated, but agent termination status (%s) is neither 'Terminal' nor 'Truncated'.\n", (*agent)["Termination"].get<std::string>().c_str());
+
+  co_switch(agent->_workerThread);
+
+  KORALI_LOG_ERROR("Resuming a finished agent\n");
 }
 
-void ReinforcementLearning::runEpisode(Sample &sample)
+void ReinforcementLearning::runEpisode(Sample &agent)
 {
   /***************************************************************
    * Environment Configuration section
@@ -64,29 +69,23 @@ void ReinforcementLearning::runEpisode(Sample &sample)
   auto _agent = dynamic_cast<solver::Agent *>(_k->_solver);
 
   // First, we update the initial policy's hyperparameters
-  _agent->updateAgentPolicy(sample.globals()["Hyperparameters"]);
+  _agent->updateAgentPolicy(agent["Hyperparameters"]);
 
-  // Creating sample coroutine
-  __currentSample = &sample;
+  // Creating agent coroutine
+  __currentSample = &agent;
   __envFunctionId = _environmentFunction;
-  sample._workerThread = co_active();
+  agent._workerThread = co_active();
   auto envThread = co_create(1 << 28, __environmentWrapper);
-
-  // Action Repeat Counter
-  size_t actionLastUpdated = 0;
 
   // Counter for the total number of actions taken
   size_t actionCount = 0;
 
-  // Storage for the action
-  std::vector<float> action(_actionVectorSize);
-
   // Reserving storage for sending back experiences
   knlohmann::json experience;
-  experience["Sample Id"] = sample["Sample Id"];
+  experience["Sample Id"] = agent["Sample Id"];
 
   // Storage to keep track of cumulative reward
-  float cumulativeReward = 0.0;
+  float trainingReward = 0.0;
 
   /***************************************************************
   * Environment Execution section
@@ -95,76 +94,127 @@ void ReinforcementLearning::runEpisode(Sample &sample)
   // Setting termination status of initial state (and the following ones) to non terminal.
   // The environment will change this at the last state, indicating whether the episode was
   // "Success" or "Truncated".
-  sample["Termination"] = "Non Terminal";
+  agent["Termination"] = "Non Terminal";
+
+  // Using testing mode, where noise is added for exploration
+  agent["Mode"] = "Training";
 
   // Getting first state
   co_switch(envThread);
 
   // Saving experiences
-  while (sample["Termination"] == "Non Terminal")
+  while (agent["Termination"] == "Non Terminal")
   {
-    // Requesting new action, if enough steps have passed, given by the action repeat parameter
-    if (actionLastUpdated == 0)
-    {
-      // Getting new action
-      _agent->getAction(sample);
-
-      // Resetting action repeat counter
-      actionLastUpdated = _actionRepeat;
-      actionCount++;
-    }
-    actionLastUpdated--;
+    // Generating new action from policy
+    _agent->getAction(agent);
+    actionCount++;
 
     // Storing the current state
-    experience["State"] = sample["State"];
+    experience["State"] = agent["State"];
 
     // Storing the current action
-    experience["Action"] = sample["Action"];
+    experience["Action"] = agent["Action"];
 
     // Storing the experience's policy
-    experience["Policy"] = sample["Policy"];
+    experience["Policy"] = agent["Policy"];
 
     // Jumping back into the _agent's environment
     co_switch(envThread);
 
     // Storing experience's reward
-    experience["Reward"] = sample["Reward"];
+    experience["Reward"] = agent["Reward"];
 
     // Storing termination status
-    experience["Termination"] = sample["Termination"];
+    experience["Termination"] = agent["Termination"];
 
     // If the episode was truncated, then save the terminal state
-    if (sample["Termination"] == "Truncated") experience["Truncated State"] = sample["State"];
+    if (agent["Termination"] == "Truncated") experience["Truncated State"] = agent["State"];
 
-    // Adding to cumulative reward
-    cumulativeReward += sample["Reward"].get<float>();
+    // Adding to cumulative training reward
+    trainingReward += agent["Reward"].get<float>();
 
     // If training, updating engine with the current experience
-    if (sample["Mode"] == "Training")
+    if (agent["Mode"] == "Training")
     {
-      // Checking if we requested the given number of actions in between policy updates
-      bool requestNewPolicy = actionCount % _actionsBetweenPolicyUpdates == 0;
+      // Checking if we requested the given number of actions in between policy updates and it is not a terminal state
+      bool requestNewPolicy = (agent["Termination"] == "Non Terminal") &&
+                              (actionCount % _actionsBetweenPolicyUpdates == 0);
 
-      experience["Request New Policy"] = false;
-      if (requestNewPolicy) experience["Request New Policy"] = true;
+      experience["Request New Policy"] = requestNewPolicy;
 
-      // Sending experience to engine
-      KORALI_SEND_MSG_TO_ENGINE(experience);
+      // Sending experience to engine if it's non terminal. If it's terminal we send it last (see below)
+      if (agent["Termination"] == "Non Terminal") KORALI_SEND_MSG_TO_ENGINE(experience);
 
       // If requested new policy, wait for incoming message containing new hyperparameters
       if (requestNewPolicy)
       {
-        auto hyperparameters = KORALI_RECV_MSG_FROM_ENGINE();
-        _agent->updateAgentPolicy(hyperparameters);
+        agent["Hyperparameters"] = KORALI_RECV_MSG_FROM_ENGINE();
+        _agent->updateAgentPolicy(agent["Hyperparameters"]);
       }
     }
   }
 
-  // Setting cumulative reward
-  sample["Cumulative Reward"] = cumulativeReward;
-
-  // Freeing co-routine memory
+  // Freeing training co-routine memory
   co_delete(envThread);
+
+  // Setting cumulative reward
+  agent["Training Reward"] = trainingReward;
+
+  // Specifying whether the agent performed policy testing
+  agent["Tested Policy"] = false;
+
+  // If the training reward exceeded the threshold, then test the last policy
+  if (trainingReward > _trainingRewardThreshold)
+  {
+    float averageTestingReward = 0.0;
+    float bestTestingReward = -Inf;
+    float worstTestingReward = +Inf;
+
+    for (size_t i = 0; i < _policyTestingEpisodes; i++)
+    {
+      float currentTestingReward = 0.0;
+
+      // Re-create environment
+      envThread = co_create(1 << 28, __environmentWrapper);
+
+      // Using testing mode, where no noise is given to the action
+      agent["Mode"] = "Testing";
+
+      // Setting initial non terminal state
+      agent["Termination"] = "Non Terminal";
+
+      // Getting first state
+      co_switch(envThread);
+
+      // Running environment using the last policy only
+      while (agent["Termination"] == "Non Terminal")
+      {
+        _agent->getAction(agent);
+        co_switch(envThread);
+        currentTestingReward += agent["Reward"].get<float>();
+      }
+
+      // Adding current testing reward to the average and keeping statistics
+      averageTestingReward += currentTestingReward;
+      if (currentTestingReward > bestTestingReward) bestTestingReward = currentTestingReward;
+      if (currentTestingReward < worstTestingReward) worstTestingReward = currentTestingReward;
+
+      // Freeing training co-routine memory
+      co_delete(envThread);
+    }
+
+    // Calculating average
+    averageTestingReward = averageTestingReward / (float)_policyTestingEpisodes;
+
+    // Storing testing information
+    agent["Tested Policy"] = true;
+    agent["Average Testing Reward"] = averageTestingReward;
+    agent["Best Testing Reward"] = bestTestingReward;
+    agent["Worst Testing Reward"] = worstTestingReward;
+  }
+
+  // Sending last experience last (after testing), to prevent unnecessary waiting in the engine
+  KORALI_SEND_MSG_TO_ENGINE(experience);
 }
 
 } // namespace problem

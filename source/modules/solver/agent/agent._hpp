@@ -6,6 +6,7 @@
 #include "modules/problem/reinforcementLearning/reinforcementLearning.hpp"
 #include "modules/problem/supervisedLearning/supervisedLearning.hpp"
 #include "modules/solver/learner/deepSupervisor/deepSupervisor.hpp"
+#include "sample/sample.hpp"
 #include <algorithm> // std::shuffle
 #include <random>
 
@@ -95,6 +96,21 @@ class Agent : public Solver
 {
   public:
   /**
+  * @brief Array of agents collecting new experiences
+  */
+  std::vector<Sample> _agents;
+
+  /**
+   * @brief Keeps track of the age
+   */
+  std::vector<bool> _isAgentRunning;
+
+  /**
+   * @brief Storage for the entire episodes before adding it to the replay memory
+   */
+  std::vector<std::vector<knlohmann::json>> _episodes;
+
+  /**
   * @brief Stores experience replay states.
   */
   cBuffer<experience_t> _experienceReplay;
@@ -125,30 +141,37 @@ class Agent : public Solver
   std::mt19937 *mt;
 
   /**
-  * @brief The value to use for probability of random actions.
+  * @brief [Profiling] Measures the amount of time taken by the generation
   */
-  float _randomActionProbabilityEffectiveValue;
+  double _generationTime;
 
   /**
-  * @brief [Profiling] Measures the amount of time taken by agent startup
+  * @brief [Profiling] Measures the amount of time taken by ER serialization
   */
-  double _agentStartTime;
+  double _serializationTime;
 
   /**
-  * @brief [Profiling] Measures the amount of time taken by agent waiting
+  * @brief Trains the Agent's policy, based on the new experiences
   */
-  double _agentWaitTime;
-
-  /**
-  * @brief Trains the Agent's critic/policy, based on the new experiences
-  */
-  virtual void trainAgent() = 0;
+  virtual void trainPolicy() = 0;
 
   /**
   * @brief Updates the agent's hyperparameters
   * @param hyperparameters The hyperparameters to update the agent.
   */
   virtual void updateAgentPolicy(const knlohmann::json &hyperparameters) = 0;
+
+  /**
+   * @brief Sets training state to continue learning from a previous run or state file
+   * @param state The state to update the training NNs.
+   */
+  virtual void setTrainingState(const knlohmann::json &state) = 0;
+
+  /**
+   * @brief Obtains the current training state to store to a file and continue learning later
+   * @return The state to store
+   */
+  virtual knlohmann::json getTrainingState() = 0;
 
   /**
     * @brief Initializes the internal state of the policy
@@ -206,11 +229,6 @@ class Agent : public Solver
   void updateExperienceReplayProbabilities();
 
   /**
-  * @brief Update random action probability.
-  */
-  void updateRandomActionProbability();
-
-  /**
   * @brief Generates an experience mini batch from the replay memory
   * @param size Size of the mini batch to create
   * @return A vector with the indexes to the experiences in the mini batch
@@ -223,6 +241,22 @@ class Agent : public Solver
   * @return A vector with the importance weights corresponding to the experience indices.
   */
   std::vector<float> calculateImportanceWeights(std::vector<size_t> miniBatch);
+
+  /**
+   * @brief Listens to incoming experience from the given agent, sends back policy or terminates the episode depending on what's needed
+   * @param agentId The Agent's ID
+   */
+  void attendAgent(size_t agentId);
+
+  /**
+   * @brief Serializes the experience replay into a JSON compatible format
+   */
+  void serializeExperienceReplay();
+
+  /**
+   * @brief Deserializes a JSON object into the experience replay
+   */
+  void deserializeExperienceReplay();
 
   void printGenerationAfter() override;
   void initialize() override;

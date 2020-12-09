@@ -69,8 +69,7 @@ void dACER::initializeAgent()
   }
 
   size_t policyOutputLayer = _policyNeuralNetwork["Layers"].size() - 1;
-  if (_policyNeuralNetwork["Layers"][policyOutputLayer]["Activation Function"]["Type"] != "SoftMax")
-    KORALI_LOG_ERROR("Policy Network Output Layers' (%zu) Activation Function must be of type 'SoftMax'", policyOutputLayer);
+  _policyExperiment["Solver"]["Neural Network"]["Layers"][policyOutputLayer]["Activation Function"]["Type"] = "Softmax";
 
   // Running initialization to verify that the configuration is correct
   engine.initialize(_policyExperiment);
@@ -84,7 +83,7 @@ void dACER::initializeAgent()
   *********************************************************************/
 
   // Getting current hyperparameters
-  _policyCurrentHyperparameters = _policyLearner->getHyperparameters();
+  _policyCurrentHyperparameters = _policyLearner->getTrainingHyperparameters();
 
   // Storing initial average policy parameters
   if (_k->_currentGeneration == 0)
@@ -94,7 +93,7 @@ void dACER::initializeAgent()
   _hyperparameters["Policy"] = _policyCurrentHyperparameters;
 }
 
-void dACER::trainAgent()
+void dACER::trainPolicy()
 {
   // Resetting critic statistics
   _cumulativeQStar = 0.0;        // Cumulative Q Retrace
@@ -178,7 +177,7 @@ void dACER::trainAgent()
     if (_policyTrustRegionEnabled)
     {
       // Getting probability densities for current action given average policy
-      _policyLearner->setHyperparameters(_policyAverageHyperparameters);
+      _policyLearner->setInferenceHyperparameters(_policyAverageHyperparameters);
       auto pAvgPolicy = getActionProbabilities(curState);
 
       // Obtaining KL Divergence gradients for the current state. //PW: check this
@@ -238,15 +237,15 @@ void dACER::trainAgent()
   _policyLearner->finalize();
 
   // Storing new inference parameters
-  auto criticHyperparameters = _criticLearner->getHyperparameters();
-  _criticLearner->setHyperparameters(criticHyperparameters);
+  auto criticHyperparameters = _criticLearner->getTrainingHyperparameters();
+  _criticLearner->setInferenceHyperparameters(criticHyperparameters);
 
   /****************************************************************************
  * Updating Policy
  ******************************************************************************/
 
   // Getting new policy hyperparameters
-  _policyCurrentHyperparameters = _policyLearner->getHyperparameters();
+  _policyCurrentHyperparameters = _policyLearner->getTrainingHyperparameters();
 
   // If using a trust region, softly adopting the new parameters of the average policy, using an adoption rate
   if (_policyTrustRegionEnabled)
@@ -254,7 +253,7 @@ void dACER::trainAgent()
       _policyAverageHyperparameters[i] = _policyTrustRegionAdoptionRate * _policyAverageHyperparameters[i] + (1 - _policyTrustRegionAdoptionRate) * _policyCurrentHyperparameters[i];
 
   // Updating policy with new averaged parameters
-  _policyLearner->setHyperparameters(_policyCurrentHyperparameters);
+  _policyLearner->setInferenceHyperparameters(_policyCurrentHyperparameters);
 
   // Storing average policy hyperparameters
   _hyperparameters["Policy"] = _policyCurrentHyperparameters;
@@ -373,7 +372,25 @@ float dACER::stateValueFunction(const std::vector<float> &state)
 void dACER::updateAgentPolicy(const knlohmann::json &hyperparameters)
 {
   auto policyHyperparameters = hyperparameters["Policy"].get<std::vector<float>>();
-  _policyLearner->setHyperparameters(policyHyperparameters);
+  _policyLearner->setInferenceHyperparameters(policyHyperparameters);
+}
+
+void dACER::setTrainingState(const knlohmann::json &state)
+{
+  _criticLearner->setTrainingHyperparameters(state["Critic"]["Training"]);
+  _policyLearner->setTrainingHyperparameters(state["Policy"]["Training"]);
+  _criticLearner->setInferenceHyperparameters(state["Critic"]["Inference"]);
+  _policyLearner->setInferenceHyperparameters(state["Policy"]["Inference"]);
+}
+
+knlohmann::json dACER::getTrainingState()
+{
+  knlohmann::json state;
+  state["Critic"]["Training"] = _criticLearner->getTrainingHyperparameters();
+  state["Policy"]["Training"] = _policyLearner->getTrainingHyperparameters();
+  state["Critic"]["Inference"] = _criticLearner->getInferenceHyperparameters();
+  state["Policy"]["Inference"] = _policyLearner->getInferenceHyperparameters();
+  return state;
 }
 
 void dACER::printAgentInformation()

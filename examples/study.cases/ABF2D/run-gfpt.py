@@ -20,7 +20,8 @@ setResultsDir(args.dir)
 
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = env
-e["Problem"]["Action Repeat"] = 1
+e["Problem"]["Training Reward Threshold"] = 60.0
+e["Problem"]["Policy Testing Episodes"] = 20
 e["Problem"]["Actions Between Policy Updates"] = 1
 
 ### Defining state variables
@@ -53,15 +54,8 @@ e["Variables"][6]["Exploration Sigma"] = 0.5
 ### Defining Agent Configuration 
 
 e["Solver"]["Type"] = "Agent / Continuous / GFPT"
-e["Solver"]["Optimization Steps Per Update"] = 10
-e["Solver"]["Experiences Between Agent Trainings"] = 200
+e["Solver"]["Experiences Between Policy Updates"] = 200
 e["Solver"]["Cache Persistence"] = 10
-
-### Defining probability of taking a random action (epsilon)
-
-e["Solver"]["Random Action Probability"]["Initial Value"] = 0.01
-e["Solver"]["Random Action Probability"]["Target Value"] = 0.01
-e["Solver"]["Random Action Probability"]["Decrease Rate"] = 0.00
 
 ### Defining the configuration of replay memory
 
@@ -75,6 +69,8 @@ e["Solver"]["Critic"]["Discount Factor"] = 0.99
 e["Solver"]["Critic"]["Learning Rate"] = 0.0001
 e["Solver"]["Critic"]["Mini Batch Size"] = 128
   
+e["Solver"]["Critic"]["Neural Network"]["Engine"] = "OneDNN"
+
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear"
 
@@ -95,6 +91,8 @@ e["Solver"]["Policy"]["Learning Rate"] = 0.000001
 e["Solver"]["Policy"]["Mini Batch Size"] = 128
 e["Solver"]["Policy"]["Target Accuracy"] = 0.0001
 
+e["Solver"]["Policy"]["Neural Network"]["Engine"] = "OneDNN"
+
 e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
 e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear"
 
@@ -111,8 +109,6 @@ e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Activation Function"]["Typ
 
 ### Defining Termination Criteria
 
-e["Solver"]["Training Reward Threshold"] = 60.0
-e["Solver"]["Policy Testing Episodes"] = 20
 e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 60.0
 
 ### Setting file output configuration

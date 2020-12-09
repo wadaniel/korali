@@ -15,20 +15,34 @@ Sample *_currentSample;
 
 void Conduit::coroutineWrapper()
 {
+  // Getting pointers for sample and engine
   Engine *engine = _engineStack.top();
   Sample *sample = _currentSample;
 
+  // Setting sample information
   (*sample)["Experiment Id"] = engine->_currentExperiment->_experimentId;
   (*sample)["Current Generation"] = engine->_currentExperiment->_currentGeneration;
+  (*sample)["Has Finished"] = false;
 
+  // Check whether there are available workers to compute this sample.
   while (engine->_conduit->_workerQueue.empty())
   {
-    sample->_state = SampleState::waiting;
+    //  If none are available, set sample's state back to initialized
+    sample->_state = SampleState::initialized;
+
+    // And come back to the experiment's thread
     co_switch(engine->_currentExperiment->_thread);
   }
-  sample->_workerId = engine->_conduit->_workerQueue.front();
+
+  // Selecting the next available worker
+  auto workerId = engine->_conduit->_workerQueue.front();
   engine->_conduit->_workerQueue.pop();
 
+  // Assigning worker to sample ids and vice-versa for bookkeeping
+  sample->_workerId = workerId;
+  engine->_conduit->_workerToSampleMap[workerId] = sample;
+
+  // Storing profiling information
   auto timelineJs = knlohmann::json();
   timelineJs["Start Time"] = chrono::duration<double>(chrono::high_resolution_clock::now() - _startTime).count() + _cumulativeTime;
 
@@ -37,19 +51,44 @@ void Conduit::coroutineWrapper()
   sampleJs["Conduit Action"] = "Process Sample";
   engine->_conduit->sendMessageToSample(*sample, sampleJs);
 
-  // Receiving sample information from worker
-  sample->_js.getJson() = engine->_conduit->recvMessageFromSample(*sample);
+  // Waiting for ending message from sample
+  knlohmann::json endMessage;
+  do
+  {
+    // If the sample ending message hasn't arrived, set sample's state back to waiting
+    sample->_state = SampleState::waiting;
+
+    // And come back to the experiment's thread
+    co_switch(engine->_currentExperiment->_thread);
+
+  } while (sample->retrievePendingMessage(endMessage) == false);
+
+  // Making sure the received message corresponds to the sample's ending message
+  if (!isDefined(endMessage, "Has Finished"))
+    KORALI_LOG_ERROR("Trying to receive ending message from sample, but 'Has Finished' field is not defined!\n");
+
+  if (endMessage["Has Finished"] == false)
+    KORALI_LOG_ERROR("Sample's ending message has arrived but it is marked as 'Has Finished' == false!\n");
+
+  // Now replacing sample's information by that of the end message
+  sample->_js.getJson() = endMessage;
+
+  // Putting worker back to the available worker queue
   engine->_conduit->_workerQueue.push(sample->_workerId);
 
+  // Storing profiling information
   timelineJs["End Time"] = chrono::duration<double>(chrono::high_resolution_clock::now() - _startTime).count() + _cumulativeTime;
   timelineJs["Solver Id"] = engine->_currentExperiment->_experimentId;
   timelineJs["Current Generation"] = engine->_currentExperiment->_currentGeneration;
   __profiler["Timelines"]["Worker " + to_string(sample->_workerId)] += timelineJs;
 
+  // Now that the sample is finished, set its state to finished and come back to the experiment thread
   sample->_state = SampleState::finished;
   co_switch(engine->_currentExperiment->_thread);
 
-  if (sample->_state != SampleState::uninitialized) KORALI_LOG_ERROR("Resuming a finished sample\n");
+  // Safety check to make sure we do not continue a sample that has ended
+  if (sample->_state != SampleState::uninitialized)
+    KORALI_LOG_ERROR("Resuming a finished sample\n");
 }
 
 void Conduit::worker()
@@ -93,10 +132,15 @@ void Conduit::workerStackEngine(const knlohmann::json &js)
   {
     auto e = new Experiment;
     e->_js.getJson() = js["Engine"]["Experiment Vector"][i];
+
+    // Random seed needs to be changed to give workers independent distributions.
+    e->_js["Random Seed"] = e->_js["Random Seed"].get<size_t>() + 1337 * getProcessId();
+
     k->_experimentVector.push_back(e);
   }
 
   k->initialize();
+  k->_conduit = this;
 
   _engineStack.push(k);
 }
@@ -134,9 +178,9 @@ void Conduit::start(Sample &sample)
   else
     KORALI_LOG_ERROR("Sample thread is already allocated; has it executed before being re-started?\n");
 
-  sample._state = SampleState::initialized;
   _currentSample = &sample;
 
+  sample._state = SampleState::initialized;
   co_switch(sample._sampleThread);
 }
 
@@ -146,13 +190,14 @@ void Conduit::wait(Sample &sample)
 
   while (sample._state == SampleState::waiting || sample._state == SampleState::initialized)
   {
+    // Listen for any pending messages
+    listenWorkers();
+
     // Check for error signals from python
     if (isPythonActive && PyErr_CheckSignals() != 0) KORALI_LOG_ERROR("User requested break.\n");
 
     sample._state = SampleState::running;
     co_switch(sample._sampleThread);
-
-    if (sample._state != SampleState::finished) sample._state = SampleState::waiting;
 
     if (sample._state == SampleState::waiting || sample._state == SampleState::initialized) co_switch(engine->_thread);
   }
@@ -177,6 +222,9 @@ size_t Conduit::waitAny(vector<Sample> &samples)
 
   while (isFinished == false)
   {
+    // Listen for any pending messages
+    listenWorkers();
+
     // Check for error signals from python
     if (isPythonActive && PyErr_CheckSignals() != 0) throw pybind11::error_already_set();
 
@@ -186,7 +234,6 @@ size_t Conduit::waitAny(vector<Sample> &samples)
       {
         samples[currentSample]._state = SampleState::running;
         co_switch(samples[currentSample]._sampleThread);
-        if (samples[currentSample]._state != SampleState::finished) samples[currentSample]._state = SampleState::waiting;
       }
 
       if (samples[currentSample]._state == SampleState::finished)
@@ -219,6 +266,9 @@ void Conduit::waitAll(vector<Sample> &samples)
 
   while (isFinished == false)
   {
+    // Listen for any pending messages
+    listenWorkers();
+
     // Check for error signals from python
     if (isPythonActive && PyErr_CheckSignals() != 0) KORALI_LOG_ERROR("User requested break.\n");
 
@@ -230,8 +280,6 @@ void Conduit::waitAll(vector<Sample> &samples)
         isFinished = false;
         samples[i]._state = SampleState::running;
         co_switch(samples[i]._sampleThread);
-
-        if (samples[i]._state != SampleState::finished) samples[i]._state = SampleState::waiting;
       }
 
     if (isFinished == false) co_switch(engine->_thread);
@@ -250,6 +298,23 @@ void Conduit::waitAll(vector<Sample> &samples)
     samples[i]._state = SampleState::uninitialized;
     co_delete(samples[i]._sampleThread);
   }
+}
+
+void Conduit::listen(std::vector<Sample> &samples)
+{
+  // Listen for any pending messages
+  listenWorkers();
+
+  // Check for error signals from python
+  if (isPythonActive && PyErr_CheckSignals() != 0) throw pybind11::error_already_set();
+
+  // Doing a pass on samples in case they are waiting to execute
+  for (size_t currentSample = 0; currentSample < samples.size(); currentSample++)
+    if (samples[currentSample]._state == SampleState::initialized)
+    {
+      samples[currentSample]._state = SampleState::running;
+      co_switch(samples[currentSample]._sampleThread);
+    }
 }
 
 } // namespace korali

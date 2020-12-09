@@ -43,11 +43,11 @@ class Engine;
 */
 enum class SampleState
 {
-  uninitialized,
-  initialized,
-  running,
-  waiting,
-  finished
+  uninitialized = 1,
+  initialized = 2,
+  running = 3,
+  waiting = 4,
+  finished = 5
 };
 
 /**
@@ -63,6 +63,11 @@ class Sample
  * access the original pointer when working on the C++ side. Therefore, we need to store the pointer as a variable.
  */
   Sample *_self;
+
+  /**
+  * @brief Queue of messages sent from the sample to the engine
+  */
+  std::queue<knlohmann::json> _messageQueue;
 
   /**
   * @brief Pointer to global parameters
@@ -161,6 +166,13 @@ class Sample
   * @param key Key (pybind11 object) to look for.
   */
   void setItem(const pybind11::object key, const pybind11::object val);
+
+  /**
+  * @brief Gets and dequeues a pending message, if exists.
+  * @param message The message (json object) to overwrite, if a message exists.
+  * @return True, if message found; false, if no message was found.
+  */
+  bool retrievePendingMessage(knlohmann::json &message);
 
   /**
    * @brief Retrieves an element from the sample information

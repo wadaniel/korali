@@ -55,7 +55,7 @@ e["Store Sample Information"] = True
 
 # Configuring Distributed Conduit
 k["Conduit"]["Type"] = "Distributed"
-k["Conduit"]["Workers Per Team"] = 1
+k["Conduit"]["Ranks Per Worker"] = 1
 k["Profiling"]["Detail"] = "Full"
 k["Profiling"]["Path"] =  "_result_rbc_tmcmc_" + str(popSize).zfill(4) + "_nodes/profiling.json"
 k["Profiling"]["Frequency"] = 60

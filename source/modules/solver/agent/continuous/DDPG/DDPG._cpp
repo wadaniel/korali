@@ -86,7 +86,7 @@ void DDPG::initializeAgent()
   * Loading/Setting Hyperparameters
   *********************************************************************/
 
-  _hyperparameters["Policy"] = _policyLearner->getHyperparameters();
+  _hyperparameters["Policy"] = _policyLearner->getTrainingHyperparameters();
 }
 
 float DDPG::stateActionValueFunction(const std::vector<float> &state, const std::vector<float> &action)
@@ -103,7 +103,7 @@ float DDPG::stateActionValueFunction(const std::vector<float> &state, const std:
   return evaluation[0];
 }
 
-void DDPG::trainAgent()
+void DDPG::trainPolicy()
 {
   /***************************************************************************************
   * Updating Critic Network
@@ -204,7 +204,7 @@ void DDPG::trainAgent()
   }
 
   // Getting current hyperparameters for soft adoption later
-  auto curPolicyHyperparameters = _policyLearner->getHyperparameters();
+  auto curPolicyHyperparameters = _policyLearner->getTrainingHyperparameters();
 
   // Running one generation of the optimization method with the given mini-batch
   _policyLearner->initialize();
@@ -212,10 +212,10 @@ void DDPG::trainAgent()
   _policyLearner->finalize();
 
   // Softly adopting the new critic parameters, using the adoption rate
-  auto newPolicyHyperparameters = _policyLearner->getHyperparameters();
+  auto newPolicyHyperparameters = _policyLearner->getTrainingHyperparameters();
   for (size_t i = 0; i < newPolicyHyperparameters.size(); i++)
     newPolicyHyperparameters[i] = _policyAdoptionRate * curPolicyHyperparameters[i] + (1.0f - _policyAdoptionRate) * newPolicyHyperparameters[i];
-  _policyLearner->setHyperparameters(newPolicyHyperparameters);
+  _policyLearner->setInferenceHyperparameters(newPolicyHyperparameters);
 
   // Storing average policy hyperparameters for workers to use
   _hyperparameters["Policy"] = newPolicyHyperparameters;
@@ -246,7 +246,27 @@ knlohmann::json DDPG::runPolicy(const std::vector<float> &state)
 void DDPG::updateAgentPolicy(const knlohmann::json &hyperparameters)
 {
   auto policyHyperparameters = hyperparameters["Policy"].get<std::vector<float>>();
-  _policyLearner->setHyperparameters(policyHyperparameters);
+  _policyLearner->setInferenceHyperparameters(policyHyperparameters);
+}
+
+void DDPG::setTrainingState(const knlohmann::json &state)
+{
+  _criticLearner->setTrainingHyperparameters(state["Critic"]["Training"]);
+  _criticLearner->setInferenceHyperparameters(state["Critic"]["Inference"]);
+
+  _policyLearner->setTrainingHyperparameters(state["Policy"]["Training"]);
+  _policyLearner->setInferenceHyperparameters(state["Policy"]["Inference"]);
+}
+
+knlohmann::json DDPG::getTrainingState()
+{
+  knlohmann::json state;
+  state["Critic"]["Training"] = _criticLearner->getTrainingHyperparameters();
+  state["Critic"]["Inference"] = _criticLearner->getInferenceHyperparameters();
+
+  state["Policy"]["Training"] = _policyLearner->getTrainingHyperparameters();
+  state["Policy"]["Inference"] = _policyLearner->getInferenceHyperparameters();
+  return state;
 }
 
 void DDPG::printAgentInformation()

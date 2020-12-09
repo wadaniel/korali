@@ -14,7 +14,8 @@ e = korali.Experiment()
 
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = env
-e["Problem"]["Action Repeat"] = 1
+e["Problem"]["Training Reward Threshold"] = 750
+e["Problem"]["Policy Testing Episodes"] = 20
 e["Problem"]["Actions Between Policy Updates"] = 1
 
 e["Variables"][0]["Name"] = "Cart Position"
@@ -42,18 +43,12 @@ e["Variables"][7]["Name"] = "Force"
 e["Variables"][7]["Type"] = "Action"
 e["Variables"][7]["Lower Bound"] = -20.0
 e["Variables"][7]["Upper Bound"] = +20.0
-e["Variables"][7]["Exploration Sigma"] = 5.0
 
 ### Configuring NAF hyperparameters
 
 e["Solver"]["Type"] = "Agent / Continuous / NAF"
 e["Solver"]["Target Learning Rate"] = 0.8
-e["Solver"]["Optimization Steps Per Update"] = 1
-e["Solver"]["Experiences Between Agent Trainings"] = 1
-
-e["Solver"]["Random Action Probability"]["Initial Value"] = 0.5
-e["Solver"]["Random Action Probability"]["Target Value"] = 0.01
-e["Solver"]["Random Action Probability"]["Decrease Rate"] = 0.03
+e["Solver"]["Experiences Between Policy Updates"] = 1
 
 ### Defining Experience Replay configuration
 
@@ -65,30 +60,23 @@ e["Solver"]["Experience Replay"]["Maximum Size"] = 100000
 e["Solver"]["Critic"]["Discount Factor"] = 1.0
 e["Solver"]["Critic"]["Learning Rate"] = 0.000001
 e["Solver"]["Critic"]["Mini Batch Size"] = 32
-e["Solver"]["Critic"]["Normalization Steps"] = 32
 
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Batch Normalization"]["Enabled"] = False
 
 e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Type"] = "Layer/Dense"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Node Count"] = 32
 e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Activation Function"]["Type"] = "Elementwise/Tanh"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Batch Normalization"]["Enabled"] = False
 
 e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Type"] = "Layer/Dense"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Node Count"] = 32
 e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Elementwise/Tanh"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Batch Normalization"]["Enabled"] = False
 
 e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Type"] = "Layer/Dense"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Elementwise/Linear"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Batch Normalization"]["Enabled"] = False
 
 ### Defining Termination Criteria
 
-e["Solver"]["Training Reward Threshold"] = 750
-e["Solver"]["Policy Testing Episodes"] = 20
 e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 900
 e["Solver"]["Termination Criteria"]["Max Generations"] = 30
 

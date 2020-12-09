@@ -135,14 +135,14 @@ knlohmann::json Concurrent::recvMessageFromEngine()
   size_t inputStringSize;
   read(_inputsPipe[_workerId][0], &inputStringSize, sizeof(size_t));
 
-  char inputString[inputStringSize + BUFFERSIZE];
+  std::vector<char> inputString(inputStringSize + BUFFERSIZE);
 
   size_t curPos = 0;
   while (curPos < inputStringSize)
   {
     size_t bufSize = BUFFERSIZE;
     if (curPos + bufSize > inputStringSize) bufSize = inputStringSize - curPos;
-    read(_inputsPipe[_workerId][0], inputString + curPos, bufSize * sizeof(char));
+    read(_inputsPipe[_workerId][0], &inputString[curPos], bufSize * sizeof(char));
     curPos += bufSize;
     sched_yield(); // Guarantees MacOs finishes the pipe reading
   }
@@ -153,24 +153,24 @@ knlohmann::json Concurrent::recvMessageFromEngine()
   return message;
 }
 
-knlohmann::json Concurrent::recvMessageFromSample(Sample &sample)
+void Concurrent::listenWorkers()
 {
-  Engine *engine = _engineStack.top();
-  knlohmann::json message;
-
-  int readBytes = -1;
-  while (readBytes < 0)
+  // Check for child defunction
+  for (size_t i = 0; i < _workerPids.size(); i++)
   {
-    // Check for child defunction
-    for (size_t i = 0; i < _workerPids.size(); i++)
-    {
-      int status;
-      pid_t result = waitpid(_workerPids[i], &status, WNOHANG);
-      if (result != 0) KORALI_LOG_ERROR("Worker %i (Pid: %d) exited unexpectedly.\n", i, _workerPids[i]);
-    }
+    int status;
+    pid_t result = waitpid(_workerPids[i], &status, WNOHANG);
+    if (result != 0) KORALI_LOG_ERROR("Worker %i (Pid: %d) exited unexpectedly.\n", i, _workerPids[i]);
+  }
+
+  // Reading pending messages from all workers
+  for (size_t i = 0; i < _workerPids.size(); i++)
+  {
+    // Identifying current sample
+    auto sample = _workerToSampleMap[i];
 
     size_t resultStringSize;
-    readBytes = read(_resultSizePipe[sample._workerId][0], &resultStringSize, sizeof(size_t));
+    int readBytes = read(_resultSizePipe[i][0], &resultStringSize, sizeof(size_t));
 
     if (readBytes > 0)
     {
@@ -181,21 +181,15 @@ knlohmann::json Concurrent::recvMessageFromSample(Sample &sample)
       {
         size_t bufSize = BUFFERSIZE;
         if (curPos + bufSize > resultStringSize) bufSize = resultStringSize - curPos;
-        read(_resultContentPipe[sample._workerId][0], resultString + curPos, bufSize * sizeof(char));
+        read(_resultContentPipe[i][0], resultString + curPos, bufSize * sizeof(char));
         curPos += bufSize;
-        //sched_yield(); // Guarantees MacOs finishes the pipe reading
       }
       resultString[resultStringSize] = '\0';
 
-      message = knlohmann::json::parse(resultString);
-    }
-    else
-    {
-      co_switch(engine->_currentExperiment->_thread);
+      auto message = knlohmann::json::parse(resultString);
+      sample->_messageQueue.push(message);
     }
   }
-
-  return message;
 }
 
 void Concurrent::stackEngine(Engine *engine)
@@ -232,6 +226,11 @@ void Concurrent::sendMessageToSample(Sample &sample, knlohmann::json &message)
 bool Concurrent::isRoot()
 {
   return _workerId == -1;
+}
+
+size_t Concurrent::getProcessId()
+{
+  return _workerId;
 }
 
 } // namespace conduit

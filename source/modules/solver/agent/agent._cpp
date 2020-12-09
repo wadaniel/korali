@@ -165,6 +165,9 @@ void Agent::attendAgent(size_t agentId)
       // Now that we have the entire episode, process its experiences (add them to replay memory)
       for (size_t i = 0; i < _episodes[agentId].size(); i++) processExperience(_episodes[agentId][i]);
 
+      // Now clear the episode of all its current experiences
+      _episodes[agentId].clear();
+
       // Waiting for the agent to come back with all the information
       KORALI_WAIT(_agents[agentId]);
 

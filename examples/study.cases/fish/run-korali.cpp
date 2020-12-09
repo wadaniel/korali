@@ -77,7 +77,7 @@ int main(int argc, char *argv[])
 
   e["Solver"]["Experience Replay"]["Start Size"] = 1000;
   e["Solver"]["Experience Replay"]["Maximum Size"] = 100000;
-  e["Solver"]["Experience Replay"]["Serialization Frequency"] = 10;
+  e["Solver"]["Experience Replay"]["Serialization Frequency"] = 1;
 
   //// Defining Critic Configuration
 
@@ -132,7 +132,7 @@ int main(int argc, char *argv[])
   ////// Setting results output configuration
 
   e["File Output"]["Enabled"] = true;
-  e["File Output"]["Frequency"] = 10;
+  e["File Output"]["Frequency"] = 1;
   e["File Output"]["Path"] = _resultsPath;
 
   ////// Checking if existing results are there and continuing them

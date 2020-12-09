@@ -24,7 +24,7 @@ rm -rf __test-*; check_result
 
 for file in *.py
 do
- sed -e 's%Defining Termination Criteria%Defining Termination Criteria\ne["Solver"]["Termination Criteria"]["Max Generations"] = 30\n%g' \
+ sed -e 's%Defining Termination Criteria%Defining Termination Criteria\ne["Solver"]["Termination Criteria"]["Max Generations"] = 20\n%g' \
         ${file} > __test-${file}; check_result
 done
 

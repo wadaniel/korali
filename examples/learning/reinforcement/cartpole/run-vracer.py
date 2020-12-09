@@ -40,7 +40,7 @@ e["Variables"][4]["Upper Bound"] = +10.0
 e["Solver"]["Type"] = "Agent / Continuous / VRACER"
 e["Solver"]["Experiences Between Policy Updates"] = 5
 e["Solver"]["Cache Persistence"] = 0
-e["Solver"]["Policy Distribution"] = "Beta"
+e["Solver"]["Policy Distribution"] = "Normal"
 
 e["Solver"]["Refer"]["Target Off Policy Fraction"] = 0.10
 e["Solver"]["Refer"]["Cutoff Scale"] = 4.0

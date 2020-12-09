@@ -34,9 +34,6 @@ void Discrete::getAction(korali::Sample &sample)
 
   if (sample["Mode"] == "Training")
   {
-    // Getting current probability of random action for the agent
-    float pRandom = sample["Random Action Probability"];
-
     // Getting pGreedy = U[0,1] for the epsilon-greedy strategy
     float pEpsilon = _uniformGenerator->getRandomNumber();
 
@@ -44,7 +41,7 @@ void Discrete::getAction(korali::Sample &sample)
     float x = _uniformGenerator->getRandomNumber();
 
     // If p < e, then we choose the action randomly, with a uniform probability, among all possible actions.
-    if (pEpsilon < pRandom)
+    if (pEpsilon < _randomActionProbability)
     {
       actionIdx = floor(x * _problem->_possibleActions.size());
     }

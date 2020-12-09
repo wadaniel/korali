@@ -66,10 +66,6 @@ int main(int argc, char *argv[])
   e["Solver"]["Experiences Between Policy Updates"] = 1;
   e["Solver"]["Cache Persistence"] = 10;
 
-  e["Solver"]["Random Action Probability"]["Initial Value"] = 0.01;
-  e["Solver"]["Random Action Probability"]["Target Value"] = 0.01;
-  e["Solver"]["Random Action Probability"]["Decrease Rate"] = 0.00;
-
   e["Solver"]["Experience Replay"]["Start Size"] = 1000;
   e["Solver"]["Experience Replay"]["Maximum Size"] = 100000;
   e["Solver"]["Experience Replay"]["Serialization Frequency"] = 10;
@@ -124,7 +120,7 @@ int main(int argc, char *argv[])
   e["Solver"]["Termination Criteria"]["Max Generations"] = 20;
 #endif
 
-  ////// Setting file output configuration
+  ////// Setting results output configuration
 
   e["File Output"]["Enabled"] = true;
   e["File Output"]["Frequency"] = 10;
@@ -133,9 +129,17 @@ int main(int argc, char *argv[])
   ////// Running Experiment
 
   auto k = korali::Engine();
+
+  // Configuring profiler output
+
+  k["Profiling"]["Detail"] = "Full";
+  k["Profiling"]["Path"] = "_results/profiling.json";
+  k["Profiling"]["Frequency"] = 60;
+
 #ifndef TEST
   k["Conduit"]["Type"] = "Distributed";
   k["Conduit"]["Communicator"] = MPI_COMM_WORLD;
 #endif
+
   k.run(e);
 }

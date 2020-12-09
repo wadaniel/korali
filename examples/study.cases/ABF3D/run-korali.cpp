@@ -71,10 +71,6 @@ int main(int argc, char *argv[])
   e["Solver"]["Experiences Between Policy Updates"] = 243;
   e["Solver"]["Cache Persistence"] = 10;
 
-  e["Solver"]["Random Action Probability"]["Initial Value"] = 0.01;
-  e["Solver"]["Random Action Probability"]["Target Value"] = 0.01;
-  e["Solver"]["Random Action Probability"]["Decrease Rate"] = 0.00;
-
   e["Solver"]["Experience Replay"]["Start Size"] = 20000;
   e["Solver"]["Experience Replay"]["Maximum Size"] = 100000;
   e["Solver"]["Mini Batch Strategy"] = "Uniform";

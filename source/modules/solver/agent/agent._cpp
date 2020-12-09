@@ -28,7 +28,6 @@ void Agent::initialize()
 
   if (_k->_currentGeneration == 0)
   {
-    _randomActionProbabilityCurrentValue = _randomActionProbabilityInitialValue;
     _currentEpisode = 0;
     _policyUpdateCount = 0;
     _candidatePoliciesTested = 0;
@@ -36,7 +35,6 @@ void Agent::initialize()
     _cumulativeQStar = 0;
     _experienceCount = 0;
     _experienceReplayMaxPriority = 0.0;
-    _randomActionProbabilityEffectiveValue = 1.0;
 
     // Initialize best rewards
     _averageTestingReward = -korali::Inf;
@@ -85,7 +83,6 @@ void Agent::runGeneration()
         _agents[agentId]["Module"] = "Problem";
         _agents[agentId]["Operation"] = "Run Episode";
         _agents[agentId]["Hyperparameters"] = _hyperparameters;
-        _agents[agentId]["Random Action Probability"] = _randomActionProbabilityEffectiveValue;
 
         KORALI_START(_agents[agentId]);
         _isAgentRunning[agentId] = true;
@@ -324,22 +321,6 @@ std::vector<size_t> Agent::generateMiniBatch(size_t size)
   return miniBatch;
 }
 
-void Agent::updateRandomActionProbability()
-{
-  // If we reached the starting size
-  if (_experienceReplay.size() > _experienceReplayStartSize)
-  {
-    // Decreasing the value of epsilon
-    _randomActionProbabilityCurrentValue = _randomActionProbabilityCurrentValue - _randomActionProbabilityDecreaseRate;
-
-    // Without exceeding the lower bound
-    if (_randomActionProbabilityCurrentValue < _randomActionProbabilityTargetValue) _randomActionProbabilityCurrentValue = _randomActionProbabilityTargetValue;
-  }
-
-  // Calculating effective value for random action probability
-  _randomActionProbabilityEffectiveValue = _experienceReplay.size() > _experienceReplayStartSize ? _randomActionProbabilityCurrentValue : 1.0;
-}
-
 void Agent::finalize()
 {
   if (_experienceReplaySerializationFrequency > 0)
@@ -431,7 +412,6 @@ void Agent::printGenerationAfter()
 
   _k->_logger->logInfo("Normal", " + Latest Reward:              %f/%f\n", _lastTrainingReward, _problem->_trainingRewardThreshold);
   _k->_logger->logInfo("Normal", " + Best Reward:                 %f (%lu)\n", _bestTrainingReward, _bestTrainingEpisode);
-  _k->_logger->logInfo("Normal", " + Current p(Random Action):       %f\n", _randomActionProbabilityEffectiveValue);
 
   _k->_logger->logInfo("Normal", "Testing Statistics:\n");
 

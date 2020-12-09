@@ -43,10 +43,6 @@ e["Solver"]["Experiences Between Policy Updates"] = 5
 e["Solver"]["Covariance Scaling"] = 0.01
 e["Solver"]["Mini Batch Strategy"] = "Prioritized"
 
-e["Solver"]["Random Action Probability"]["Initial Value"] = 0.0
-e["Solver"]["Random Action Probability"]["Target Value"] = 0.00
-e["Solver"]["Random Action Probability"]["Decrease Rate"] = 0.03
-
 ### Defining Experience Replay configuration
 
 e["Solver"]["Experience Replay"]["Start Size"] =   1000

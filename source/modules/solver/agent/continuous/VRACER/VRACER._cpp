@@ -124,15 +124,15 @@ void VRACER::initializeAgent()
   *********************************************************************/
 
   // Get the initial set of policy NN hyperparameters
-  _hyperparameters["Policy"] = _criticPolicyLearner->getHyperparameters();
+  _hyperparameters["Policy"] = _criticPolicyLearner->getTrainingHyperparameters();
 }
 
 void VRACER::updateAgentPolicy(const knlohmann::json &hyperparameters)
 {
-  _criticPolicyLearner->setHyperparameters(hyperparameters["Policy"].get<std::vector<float>>());
+  _criticPolicyLearner->setInferenceHyperparameters(hyperparameters["Policy"].get<std::vector<float>>());
 }
 
-void VRACER::trainAgent()
+void VRACER::trainPolicy()
 {
   // Resetting statistics
   _cumulativeQStar = 0.0;
@@ -153,10 +153,10 @@ void VRACER::trainAgent()
   if (_experienceReplay.size() > _referStartSize)
   {
     // Updating cutoff
-    _referCutoff = 1.0f + _referCutoffScale / (1.0f + _referAnnealingRate * (float)_optimizationStepCount);
+    _referCutoff = 1.0f + _referCutoffScale / (1.0f + _referAnnealingRate * (float)_policyUpdateCount);
 
     // Update learning rate
-    _criticPolicyLearner->_learningRate = _referInitialLearningRate / (1.0f + _referAnnealingRate * _optimizationStepCount);
+    _criticPolicyLearner->_learningRate = _referInitialLearningRate / (1.0f + _referAnnealingRate * _policyUpdateCount);
 
     // Updating beta parameter
     if (_referOffPolicyFraction > _referTargetOffPolicyFraction)
@@ -314,7 +314,7 @@ void VRACER::trainAgent()
   _criticPolicyLearner->finalize();
 
   // Storing average policy hyperparameters
-  _hyperparameters["Policy"] = _criticPolicyLearner->getHyperparameters();
+  _hyperparameters["Policy"] = _criticPolicyLearner->getTrainingHyperparameters();
 }
 
 float VRACER::computeVtbc(size_t expId)
@@ -479,6 +479,20 @@ knlohmann::json VRACER::runPolicy(const std::vector<float> &state)
   policy["State Value"] = stateValue;
   policy["Importance Weight"] = 1.0f;
   return policy;
+}
+
+void VRACER::setTrainingState(const knlohmann::json &state)
+{
+  _criticPolicyLearner->setTrainingHyperparameters(state["Critic/Policy"]["Training"]);
+  _criticPolicyLearner->setInferenceHyperparameters(state["Critic/Policy"]["Inference"]);
+}
+
+knlohmann::json VRACER::getTrainingState()
+{
+  knlohmann::json state;
+  state["Critic/Policy"]["Training"] = _criticPolicyLearner->getTrainingHyperparameters();
+  state["Critic/Policy"]["Inference"] = _criticPolicyLearner->getInferenceHyperparameters();
+  return state;
 }
 
 void VRACER::printAgentInformation()

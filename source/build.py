@@ -133,8 +133,8 @@ def consumeValue(base, moduleName, path, varName, varType, isMandatory, options)
     cString += ' bool ' + validVarName + ' = false; \n'
     for v in options:
       cString += ' if (' + varName + ' == "' + v + '") ' + validVarName + ' = true; \n'
-    cString += ' if (' + validVarName + ' == false) KORALI_LOG_ERROR(" + Unrecognized value provided for mandatory setting: ' + path.replace(
-        '"', "'") + ' required by ' + moduleName + '.\\n"); \n'
+    cString += ' if (' + validVarName + ' == false) KORALI_LOG_ERROR(" + Unrecognized value (%s) provided for mandatory setting: ' + path.replace(
+        '"', "'") + ' required by ' + moduleName + '.\\n", ' + varName + '.c_str()); \n'
     cString += '}\n'
 
   cString += '\n'

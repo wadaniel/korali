@@ -57,7 +57,11 @@ jobs:
       - restore_cache:
           keys:
             - cache-linux-rtnorm-v13
-            
+       
+      - run:
+          name: Install Scipy
+          command: sudo apt-get install python-numpy python-scipy
+                
       - run:
           name: Install Doxygen
           command: ./external/install_doxygen.sh

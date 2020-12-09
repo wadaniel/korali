@@ -49,8 +49,10 @@ class VRACER : public Continuous
    */
   std::vector<float> calculateImportanceWeightGradient(const std::vector<float> &oldAction, const std::vector<float> &curParamsOne, const std::vector<float> &curParamsTwo, const std::vector<float> &oldParamsOne, const std::vector<float> &oldParamsTwo);
 
+  void setTrainingState(const knlohmann::json &state) override;
+  knlohmann::json getTrainingState() override;
   knlohmann::json runPolicy(const std::vector<float> &state) override;
-  void trainAgent() override;
+  void trainPolicy() override;
   void updateAgentPolicy(const knlohmann::json &hyperparameters) override;
   void printAgentInformation() override;
   void initializeAgent() override;

@@ -34,9 +34,6 @@ void Discrete::getAction(korali::Sample &sample)
 
   if (sample["Mode"] == "Training")
   {
-    // Getting current probability of random action for the agent
-    float pRandom = sample["Random Action Probability"];
-
     // Getting pGreedy = U[0,1] for the epsilon-greedy strategy
     float pEpsilon = _uniformGenerator->getRandomNumber();
 
@@ -44,21 +41,23 @@ void Discrete::getAction(korali::Sample &sample)
     float x = _uniformGenerator->getRandomNumber();
 
     // If p < e, then we choose the action randomly, with a uniform probability, among all possible actions.
-    if (pEpsilon < pRandom)
+    if (pEpsilon < _randomActionProbability)
     {
       actionIdx = floor(x * _problem->_possibleActions.size());
     }
     else // else we select guided by the policy's probability distribution
     {
-      // Categroial action sampled from action probabilites (from ACER paper [Wang2017])
+      // Categorical action sampled from action probabilites (from ACER paper [Wang2017])
       float curSum = 0.0;
+      //      printf("pActions: ");
       for (actionIdx = 0; actionIdx < pActions.size(); actionIdx++)
       {
+        //       printf("%f ", pActions[actionIdx]);
         curSum += pActions[actionIdx];
         if (x < curSum) break;
       }
-
-      // NOTE: In origianl DQN paper [Minh2015] we choose max (D.W.)
+      //      printf("\n");
+      // NOTE: In original DQN paper [Minh2015] we choose max (D.W.)
       // actionIdx = std::distance(pActions.begin(), std::max_element(pActions.begin(), pActions.end()));
     }
 
@@ -79,6 +78,9 @@ void Discrete::getAction(korali::Sample &sample)
   /*****************************************************************************
   * Storing the action itself
  ****************************************************************************/
+
+  if (actionIdx >= _problem->_possibleActions.size())
+    KORALI_LOG_ERROR("Action index (%lu) exceeds action vector size (%lu). This points to a bug in probability calculation.\n", actionIdx, _problem->_possibleActions.size());
 
   sample["Action"] = _problem->_possibleActions[actionIdx];
 }

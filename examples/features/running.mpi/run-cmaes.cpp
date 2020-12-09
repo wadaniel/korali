@@ -11,7 +11,7 @@ int main(int argc, char *argv[])
     workersPerTeam = atoi(argv[1]);
     if (64 % workersPerTeam != 0)
     {
-      fprintf(stderr, "Command Line Argument (Workers Per Team) must be divisor of 64! exit..)\n");
+      fprintf(stderr, "Command Line Argument (Ranks Per Worker) must be divisor of 64! exit..)\n");
       exit(-1);
     }
   }
@@ -103,7 +103,7 @@ int main(int argc, char *argv[])
   auto k = korali::Engine();
 
   k["Conduit"]["Type"] = "Distributed";
-  k["Conduit"]["Workers Per Team"] = workersPerTeam;
+  k["Conduit"]["Ranks Per Worker"] = workersPerTeam;
   k["Conduit"]["Communicator"] = MPI_COMM_WORLD;
   k["Profiling"]["Detail"] = "Full";
   k["Profiling"]["Frequency"] = 0.5;

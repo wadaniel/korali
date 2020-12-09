@@ -14,6 +14,12 @@ date
 
 cd ..
 cat run-korali.cpp
-./run_test.sh
+
+RET=1
+until [ ${RET} -eq 0 ]; do
+    ./run_test.sh
+    RET=$?
+done
+
 
 date

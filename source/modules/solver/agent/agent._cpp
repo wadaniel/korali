@@ -45,7 +45,8 @@ void Agent::initialize()
     _bestAverageTestingReward = -korali::Inf;
 
     // Initialize best hyperparameters
-    _bestHyperparameters = _hyperparameters;
+    _bestTestingHyperparameters = _hyperparameters;
+    _bestTrainingHyperparameters = _hyperparameters;
 
     // Initializing training hyperparameters
     _trainingState = getTrainingState();
@@ -179,6 +180,7 @@ void Agent::attendAgent(size_t agentId)
       {
         _bestTrainingReward = _lastTrainingReward;
         _bestTrainingEpisode = _currentEpisode;
+        _bestTrainingHyperparameters = _agents[agentId]["Hyperparameters"];
       }
 
       // If the policy has exceeded the threshold during training, we gather its statistics
@@ -195,7 +197,7 @@ void Agent::attendAgent(size_t agentId)
         if (_averageTestingReward > _bestAverageTestingReward)
         {
           _bestAverageTestingReward = _averageTestingReward;
-          _bestHyperparameters = _agents[agentId]["Hyperparameters"];
+          _bestTestingHyperparameters = _agents[agentId]["Hyperparameters"];
         }
       }
 
@@ -351,7 +353,7 @@ void Agent::finalize()
   }
 
   // Updating policy with the best parameters produced during training
-  updateAgentPolicy(_bestHyperparameters);
+  updateAgentPolicy(_bestTestingHyperparameters);
 }
 
 void Agent::serializeExperienceReplay()

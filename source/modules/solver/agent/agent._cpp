@@ -51,9 +51,6 @@ void Agent::initialize()
     _trainingState = getTrainingState();
   }
 
-  // On restart, the number of experineces is equal to that of the experience replay
-  _experienceCount = _experienceReplay.size();
-
   // Setting initial or loaded hyperparameters from a previous run (or save file)
   setTrainingState(_trainingState);
 
@@ -153,9 +150,6 @@ void Agent::attendAgent(size_t agentId)
     // Storing experience in the episode
     _episodes[agentId].push_back(experience);
 
-    // Increasing total experience counter
-    _experienceCount++;
-
     // Check if experience is terminal
     isTerminal = experience["Termination"] != "Non Terminal";
 
@@ -167,6 +161,9 @@ void Agent::attendAgent(size_t agentId)
     {
       // Now that we have the entire episode, process its experiences (add them to replay memory)
       for (size_t i = 0; i < _episodes[agentId].size(); i++) processExperience(_episodes[agentId][i]);
+
+      // Increasing total experience counter
+      _experienceCount += _episodes[agentId].size();
 
       // Now clear the episode of all its current experiences
       _episodes[agentId].clear();

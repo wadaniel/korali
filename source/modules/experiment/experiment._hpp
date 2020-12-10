@@ -54,11 +54,6 @@ class Experiment : public Module
   cothread_t _thread;
 
   /**
-  * @brief Flag to indicate that the experiment has been initialized to prevent it from re-initializing upon resuming
-  */
-  bool _isInitialized;
-
-  /**
   * @brief [Profiling] Measures the amount of time taken by saving results
   */
   double _resultSavingTime;

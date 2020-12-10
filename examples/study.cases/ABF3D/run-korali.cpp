@@ -68,11 +68,14 @@ int main(int argc, char *argv[])
   //// Defining Agent Configuration
 
   e["Solver"]["Type"] = "Agent / Continuous / GFPT";
-  e["Solver"]["Experiences Between Policy Updates"] = 243;
+  e["Solver"]["Agent Count"] = 1;
+  e["Solver"]["Experiences Per Generation"] = 972;
+  e["Solver"]["Experiences Between Policy Updates"] = 10;
   e["Solver"]["Cache Persistence"] = 10;
 
-  e["Solver"]["Experience Replay"]["Start Size"] = 20000;
-  e["Solver"]["Experience Replay"]["Maximum Size"] = 100000;
+  e["Solver"]["Experience Replay"]["Start Size"] = 5000;
+  e["Solver"]["Experience Replay"]["Maximum Size"] = 500000;
+  e["Solver"]["Experience Replay"]["Serialization Frequency"] = 20;
   e["Solver"]["Mini Batch Strategy"] = "Uniform";
 
   //// Defining Critic Configuration
@@ -131,7 +134,14 @@ int main(int argc, char *argv[])
 
   ////// Setting file output configuration
 
-  e["File Output"]["Enabled"] = false;
+  e["File Output"]["Enabled"] = true;
+  e["File Output"]["Frequency"] = 20;
+  e["File Output"]["Path"] = "_results";
+
+  ////// Checking if existing results are there and continuing them
+
+  auto found = e.loadState("_results/latest");
+  if (found == true) printf("Continuing execution from previous run...\n");
 
   ////// Running Experiment
 

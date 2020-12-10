@@ -15,9 +15,6 @@ void cACER::initializeAgent()
   // Initializing common discrete agent configuration
   Continuous::initializeAgent();
 
-  // Engine to initialize experiments with
-  korali::Engine engine;
-
   /*********************************************************************
  * Initializing V(s)
  *********************************************************************/
@@ -45,7 +42,7 @@ void cACER::initializeAgent()
     KORALI_LOG_ERROR("Critic Network Output Layers' (%zu) Activation Function must be of type 'Elementwise/Linear'", vOutputLayerId);
 
   // Running initialization to verify that the configuration is correct
-  engine.initialize(_vExperiment);
+  _vExperiment.initialize();
 
   // Getting learner pointers
   _vProblem = dynamic_cast<problem::SupervisedLearning *>(_vExperiment._problem);
@@ -75,7 +72,7 @@ void cACER::initializeAgent()
   _aExperiment["Solver"]["Neural Network"]["Layers"][aOutputLayerId]["Weight Scaling"] = 0.1;
 
   // Running initialization to verify that the configuration is correct
-  engine.initialize(_aExperiment);
+  _aExperiment.initialize();
 
   // Getting learner pointers
   _aProblem = dynamic_cast<problem::SupervisedLearning *>(_aExperiment._problem);
@@ -111,7 +108,7 @@ void cACER::initializeAgent()
     KORALI_LOG_ERROR("Policy Network Output Layers' (%zu) Activation Function must be of type 'Elementwise/Tanh'", policyOutputLayerId);
 
   // Running initialization to verify that the configuration is correct
-  engine.initialize(_policyExperiment);
+  _policyExperiment.initialize();
 
   // Getting learner pointers
   _policyProblem = dynamic_cast<problem::SupervisedLearning *>(_policyExperiment._problem);
@@ -127,9 +124,6 @@ void cACER::initializeAgent()
   // Storing initial average policy parameters
   if (_k->_currentGeneration == 0)
     _policyAverageHyperparameters = _policyCurrentHyperparameters;
-
-  // Get the initial set of policy NN hyperparameters
-  _hyperparameters["Policy"] = _policyCurrentHyperparameters;
 }
 
 float cACER::currentActionAdvantageFunction(const std::vector<float> &state, const std::vector<float> &action)
@@ -508,12 +502,16 @@ void cACER::trainPolicy()
 
   // Updating policy with new averaged parameters
   //_policyLearner->setInferenceHyperparameters(_policyCurrentHyperparameters);
-
-  // Storing average policy hyperparameters
-  _hyperparameters["Policy"] = _policyCurrentHyperparameters;
 }
 
-void cACER::updateAgentPolicy(const knlohmann::json &hyperparameters)
+knlohmann::json cACER::getAgentPolicy()
+{
+  knlohmann::json hyperparameters;
+  hyperparameters["Policy"] = _policyLearner->getInferenceHyperparameters();
+  return hyperparameters;
+}
+
+void cACER::setAgentPolicy(const knlohmann::json &hyperparameters)
 {
   auto policyHyperparameters = hyperparameters["Policy"].get<std::vector<float>>();
   _policyLearner->setInferenceHyperparameters(policyHyperparameters);

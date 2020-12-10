@@ -50,10 +50,10 @@ void Agent::initialize()
 
     // Initializing training hyperparameters
     _trainingState = getTrainingState();
-  }
 
-  // Setting initial or loaded hyperparameters from a previous run (or save file)
-  setTrainingState(_trainingState);
+    // Getting initial policy hyperparameters (for agents to generate actions)
+    _hyperparameters = getAgentPolicy();
+  }
 
   // If this continues a previous run, deserialize previous input experience replay
   deserializeExperienceReplay();
@@ -72,6 +72,8 @@ void Agent::initialize()
 void Agent::runGeneration()
 {
   auto beginTime = std::chrono::steady_clock::now();
+
+  if (_k->_currentGeneration > 0) setTrainingState(_trainingState);
 
   // Running until all _agents have finished
   while (_experienceCount < _experiencesPerGeneration * _k->_currentGeneration)
@@ -109,8 +111,8 @@ void Agent::runGeneration()
         // Calling the algorithm specific policy training algorithm
         trainPolicy();
 
-        // Gathering their training hyperparameters (for checkpoint/resume purposes)
-        _trainingState = getTrainingState();
+        // Getting new policy hyperparameters (for agents to generate actions)
+        _hyperparameters = getAgentPolicy();
 
         // Increasing policy update counter
         _policyUpdateCount++;
@@ -118,9 +120,8 @@ void Agent::runGeneration()
     }
   }
 
-  // Measuring generation time
-  auto endTime = std::chrono::steady_clock::now();
-  _generationTime = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();
+  // Gathering their training hyperparameters (for checkpoint/resume purposes)
+  _trainingState = getTrainingState();
 
   // Updating experience probabilities
   if (_miniBatchStrategy == "Prioritized") updateExperienceReplayProbabilities();
@@ -135,6 +136,10 @@ void Agent::runGeneration()
       auto endTime = std::chrono::steady_clock::now();
       _serializationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();
     }
+
+  // Measuring generation time
+  auto endTime = std::chrono::steady_clock::now();
+  _generationTime = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();
 }
 
 void Agent::attendAgent(size_t agentId)
@@ -353,7 +358,7 @@ void Agent::finalize()
   }
 
   // Updating policy with the best parameters produced during training
-  updateAgentPolicy(_bestTestingHyperparameters);
+  setAgentPolicy(_bestTestingHyperparameters);
 }
 
 void Agent::serializeExperienceReplay()

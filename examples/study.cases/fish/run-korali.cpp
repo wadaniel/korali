@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
 
   // Setting results path
   _resultsPath = "_results";
-  char* slurmJobId = getenv("SLURM_JOBID");
+  char *slurmJobId = getenv("SLURM_JOBID");
   if (slurmJobId != NULL) _resultsPath += std::string(slurmJobId);
 
   // Configuring Experiment
@@ -155,5 +155,5 @@ int main(int argc, char *argv[])
   k["Conduit"]["Communicator"] = MPI_COMM_WORLD;
 #endif
 
-  k.resume(e);
+  k.run(e);
 }

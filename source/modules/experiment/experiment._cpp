@@ -175,20 +175,16 @@ void Experiment::saveState()
 
 bool Experiment::loadState(const std::string &path)
 {
-  if (loadJsonFromFile(_js.getJson(), path.c_str()))
-  {
-    initialize();
-    return true;
-  }
-  return false;
+  return loadJsonFromFile(_js.getJson(), path.c_str());
 }
 
 Experiment::Experiment()
 {
   _runID = getTimehash();
   _k = this;
-  _isInitialized = false;
   _logger = NULL;
+  _engine = NULL;
+  _currentGeneration = 0;
 }
 
 void Experiment::initialize()
@@ -201,36 +197,43 @@ void Experiment::initialize()
   __returnThread = co_active();
   co_switch(_thread);
 
-  if (_isInitialized == false)
+  // Clearning sample and previous result information
+  _js["Results"] = knlohmann::json();
+  _js["Samples"] = knlohmann::json();
+
+  // Initializing Variables
+  if (isDefined(_js.getJson(), "Variables"))
   {
-    // Clearning sample and previous result information
-    _js["Results"] = knlohmann::json();
-    _js["Samples"] = knlohmann::json();
-
-    // Initializing Variables
-    if (isDefined(_js.getJson(), "Variables"))
-    {
-      _variables.resize(_js["Variables"].size());
-      for (size_t i = 0; i < _js["Variables"].size(); i++) _variables[i] = new Variable;
-    }
-
-    applyModuleDefaults(_js.getJson());
-    setSeed(_js.getJson());
-    setConfiguration(_js.getJson());
-    getConfiguration(_js.getJson());
-
-    // Creating logger if not created before
-    _logger = new Logger(_consoleOutputVerbosity, stdout);
-
-    _isInitialized = true;
+    _variables.resize(_js["Variables"].size());
+    for (size_t i = 0; i < _variables.size(); i++) _variables[i] = new Variable;
   }
 
-  if (isDefined(_js.getJson(), "Solver", "Termination Criteria", "Max Generations"))
-    _solver->_maxGenerations = _js["Solver"]["Termination Criteria"]["Max Generations"].get<size_t>();
+  // If this is the initial run, apply defaults
+  if (_currentGeneration == 0)
+  {
+    applyModuleDefaults(_js.getJson());
+    setSeed(_js.getJson());
+  }
+
+  // Setting configuration
+  setConfiguration(_js.getJson());
+
+  // Getting configuration back into the JSON storage
+  getConfiguration(_js.getJson());
+
+  // Initializing problem and solver modules
+  _problem->initialize();
+  _solver->initialize();
+
+  // Updating verbosity level
+  _logger = new Logger(_consoleOutputVerbosity, stdout);
 }
 
 void Experiment::finalize()
 {
+  for (size_t i = 0; i < _variables.size(); i++) delete _variables[i];
+  _variables.clear();
+  delete _logger;
   co_delete(_thread);
 }
 

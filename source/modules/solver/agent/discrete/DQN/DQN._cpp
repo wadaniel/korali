@@ -15,8 +15,6 @@ void DQN::initializeAgent()
   // Initializing common discrete agent configuration
   Discrete::initializeAgent();
 
-  korali::Engine engine; // Engine to initialize experiments with
-
   /*********************************************************************
  * Initializing Critic-Related Structures
  *********************************************************************/
@@ -39,7 +37,7 @@ void DQN::initializeAgent()
   }
 
   // Running initialization to verify that the configuration is correct
-  engine.initialize(_criticExperiment);
+  _criticExperiment.initialize();
 
   // Getting learner pointers
   _criticProblem = dynamic_cast<problem::SupervisedLearning *>(_criticExperiment._problem);
@@ -145,7 +143,14 @@ void DQN::trainPolicy()
   _hyperparameters["Critic"] = _criticLearner->getTrainingHyperparameters();
 }
 
-void DQN::updateAgentPolicy(const knlohmann::json &hyperparameters)
+knlohmann::json DQN::getAgentPolicy()
+{
+  knlohmann::json hyperparameters;
+  hyperparameters["Critic"] = _criticLearner->getInferenceHyperparameters();
+  return hyperparameters;
+}
+
+void DQN::setAgentPolicy(const knlohmann::json &hyperparameters)
 {
   auto criticHyperparameters = hyperparameters["Critic"].get<std::vector<float>>();
   _criticLearner->setInferenceHyperparameters(criticHyperparameters);

@@ -357,21 +357,25 @@ if [[ "$USE_CXX" == "clang++" ]]; then
   logEcho "         Solution: Run the commands:"
   logEcho "           brew install llvm libomp"
   logEcho "           echo 'export LIBRARY_PATH=\"\$LIBRARY_PATH:\`brew --prefix llvm\`/lib\" ' >> $HOME/.bash_profile "
-  logEcho "           source \$HOME/.bash_profile "
+  logEcho "           source \$HOME/.bash_profile"
   exitWithError
  fi
 
- if [[ "$LIBRARY_PATH" != *"llvm"* ]]; then
-  logEcho "[Korali] Error: LLVM library path not found in \$LIBRARY_PATH."
-  echo `brew --prefix llvm`
-  echo "$LIBRARY_PATH"
-  logEcho "         Solution: Run the commands:"
-  logEcho "           echo 'export LIBRARY_PATH=\"\$LIBRARY_PATH:\`brew --prefix llvm\`/lib\" ' >> $HOME/.bash_profile "
-  logEcho "           source \$HOME/.bash_profile "
-  exitWithError
- fi
+ llvm-config --version > /dev/null 2>&1
+ if [ $? == 0 ]; then # brew version of clang, 
+  
+   if [[ "$LIBRARY_PATH" != *"llvm"* ]]; then
+   logEcho "[Korali] Error: LLVM library path not found in \$LIBRARY_PATH."
+   logEcho "         Solution: Run the commands:"
+   logEcho "           echo 'export LIBRARY_PATH=\"\$LIBRARY_PATH:\`brew --prefix llvm\`/lib\" ' >> $HOME/.bash_profile "
+   logEcho "           source \$HOME/.bash_profile"
+   exitWithError
+  fi
+  OMPFLAGS="-fopenmp"
 
- OMPFLAGS="-fopenmp"
+ else # macos native clang
+  OMPFLAGS="-lomp"
+ fi
 
 fi
 

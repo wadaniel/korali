@@ -50,7 +50,7 @@ To do this, we simply define an initial set of termination criteria, and run the
     e["Solver"]["Termination Criteria"]["Max Generation"] = 100
     
     # Running again, starting from generation 4.
-    k.resume(e)
+    k.run(e)
 
 
 Resuming an experiment from a save-state file
@@ -87,11 +87,8 @@ To do this, we simply define an initial set of termination criteria, and run the
    # Important: Re-specify model functions, because they are not stored in checkpoints
    e["Problem"]["Objective Function"] = myModel
 
-   # If found, we continue execution 
+   # We continue execution 
    if (found == True):
-     k.resume(e)
-   # Else, then we start from the beginning
-   else:
      k.run(e)
 
 Resuming multiple experiments simultaneously
@@ -130,6 +127,6 @@ In this case, we use the :code:`e.loadState()` function for all experiments.
    e0["Problem"]["Objective Function"] = myModel0
    e1["Problem"]["Objective Function"] = myModel1
 
-   # If found, we continue execution 
-   k.resume([e0, e1])
+   # We continue execution 
+   k.run([e0, e1])
 

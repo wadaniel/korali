@@ -185,6 +185,7 @@ Experiment::Experiment()
   _logger = NULL;
   _engine = NULL;
   _currentGeneration = 0;
+  _isInitialized = false;
 }
 
 void Experiment::initialize()
@@ -227,6 +228,8 @@ void Experiment::initialize()
 
   // Updating verbosity level
   _logger = new Logger(_consoleOutputVerbosity, stdout);
+
+  _isInitialized = true;
 }
 
 void Experiment::finalize()
@@ -239,6 +242,9 @@ void Experiment::finalize()
 
 std::vector<float> Experiment::getAction(const std::vector<float> &state)
 {
+  // First check that the experiment has been initialized.
+  if (_isInitialized == false) initialize();
+
   auto agent = dynamic_cast<solver::Agent *>(_k->_solver);
   if (agent != NULL)
   {
@@ -254,6 +260,9 @@ std::vector<float> Experiment::getAction(const std::vector<float> &state)
 
 std::vector<float> Experiment::getEvaluation(const std::vector<float> &inputBatch)
 {
+  // First check that the experiment has been initialized.
+  if (_isInitialized == false) initialize();
+
   auto learner = dynamic_cast<solver::Learner *>(_k->_solver);
   if (learner != NULL)
     return learner->getEvaluation(inputBatch);
@@ -263,6 +272,9 @@ std::vector<float> Experiment::getEvaluation(const std::vector<float> &inputBatc
 
 std::vector<float> Experiment::getGradients(const std::vector<float> &outputDiffs)
 {
+  // First check that the experiment has been initialized.
+  if (_isInitialized == false) initialize();
+
   auto learner = dynamic_cast<solver::Learner *>(_k->_solver);
   if (learner != NULL)
     return learner->getGradients(outputDiffs);

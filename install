@@ -363,6 +363,8 @@ if [[ "$USE_CXX" == "clang++" ]]; then
 
  if [[ "$LIBRARY_PATH" != *"llvm"* ]]; then
   logEcho "[Korali] Error: LLVM library path not found in \$LIBRARY_PATH."
+  echo `brew --prefix llvm`
+  echo "$LIBRARY_PATH"
   logEcho "         Solution: Run the commands:"
   logEcho "           echo 'export LIBRARY_PATH=\"\$LIBRARY_PATH:\`brew --prefix llvm\`/lib\" ' >> $HOME/.bash_profile "
   logEcho "           source \$HOME/.bash_profile "

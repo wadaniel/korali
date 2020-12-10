@@ -127,8 +127,8 @@ compiler_list=( clang++ CC icc icpc g++ c++)
 
 for compiler in "${compiler_list[@]}"; do
   if [[ "$CXX" == *"$compiler"* ]]; then
-    echo $compiler
-    USE_CXX=$CXX
+    USE_CXX=$compiler
+    break
   fi
 done
 
@@ -149,6 +149,8 @@ if [[ "$USE_CXX" == "" ]]; then
 else
   logEcho "[Korali] Using compiler $USE_CXX."
 fi
+
+
 
 ######## Installing Mandatory External Libraries
 

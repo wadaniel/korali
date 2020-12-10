@@ -120,32 +120,35 @@ fi
 ######## Checking Compiler ########
 
 logEcho "[Korali] Checking Pre-requisites..."
-
 log "[Korali] Checking for C++ Compiler..."
 
-$CXX --version > /dev/null 2>&1
-DETECTED_CXX=$?
-c++ --version > /dev/null 2>&1
-DETECTED_CPLUSPLUS=$?
-g++ --version > /dev/null 2>&1
-DETECTED_GXX=$?
-clang++ --version > /dev/null 2>&1
-DETECTED_CLANG=$?
-icc --version > /dev/null 2>&1
-DETECTED_ICC=$?
-icpc --version > /dev/null 2>&1
-DETECTED_ICPC=$?
-CC --help > /dev/null 2>&1
-DETECTED_CRAY=$?
-
 USE_CXX=""
-if [ $DETECTED_CPLUSPLUS -eq 0 ]; then USE_CXX=c++;     fi;
-if [ $DETECTED_GXX       -eq 0 ]; then USE_CXX=g++;     fi;
-if [ $DETECTED_ICPC      -eq 0 ]; then USE_CXX=icpc;    fi;
-if [ $DETECTED_ICC       -eq 0 ]; then USE_CXX=icc;     fi;
-if [ $DETECTED_CRAY      -eq 0 ]; then USE_CXX=CC;      fi;
-if [ $DETECTED_CLANG     -eq 0 ]; then USE_CXX=clang++; fi;
-if [ $DETECTED_CXX       -eq 0 ]; then USE_CXX=$CXX;    fi;
+compiler_list=( clang++ CC icc icpc g++ c++)
+
+for compiler in "${compiler_list[@]}"; do
+  if [[ "$CXX" == *"$compiler"* ]]; then
+    echo $compiler
+    USE_CXX=$CXX
+  fi
+done
+
+if [[ "$USE_CXX" == "" ]]; then
+  for compiler in "${compiler_list[@]}"; do
+    $compiler --version > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+      USE_CXX=$compiler
+      break
+    fi
+  done
+fi
+
+if [[ "$USE_CXX" == "" ]]; then
+  logEcho "[Korali] Error:  Did not found any valid C++ compiler."
+  logEcho "[Korali] Solution: Please define a valid C++ compiler in \$CXX."
+  exitWithError
+else
+  logEcho "[Korali] Using compiler $USE_CXX."
+fi
 
 ######## Installing Mandatory External Libraries
 
@@ -379,15 +382,6 @@ if [[ "$USE_CXX" == "clang++" && "$arch" == "Darwin" ]]; then
 fi
 
 
-
-######## Checking selected compiler #######
-
-if [[ "$USE_CXX" == "" ]]
-then
-  logEcho "[Korali] Error:  Did not found any valid C++ or MPI C++ compiler."
-  logEcho "[Korali] Solution: Please define a valid C++ compiler in \$CXX or \$MPICXX."
-  exitWithError
-fi
 
 ######## Creating Compilation Config File ########
 

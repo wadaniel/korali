@@ -143,7 +143,6 @@ int main(int argc, char *argv[])
   e["File Output"]["Frequency"] = 20;
   e["File Output"]["Path"] = "_results";
 
-
   auto k = korali::Engine();
   k.run(e);
 }

@@ -499,9 +499,6 @@ void cACER::trainPolicy()
   if (_policyTrustRegionEnabled)
     for (size_t i = 0; i < _policyCurrentHyperparameters.size(); i++)
       _policyAverageHyperparameters[i] = _policyTrustRegionAverageNetworkAdoptionRate * _policyAverageHyperparameters[i] + (1 - _policyTrustRegionAverageNetworkAdoptionRate) * _policyCurrentHyperparameters[i];
-
-  // Updating policy with new averaged parameters
-  //_policyLearner->setInferenceHyperparameters(_policyCurrentHyperparameters);
 }
 
 knlohmann::json cACER::getAgentPolicy()

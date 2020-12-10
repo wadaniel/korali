@@ -315,7 +315,7 @@ std::vector<float> dVRACER::calculateImportanceWeightGradient(size_t actionIdx, 
   for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
   {
     if (i == actionIdx)
-      grad[i] = importanceWeight * (1. - importanceWeight);
+      grad[i] = importanceWeight * (1. - curPvals[i]);
     else
       grad[i] = -importanceWeight * curPvals[i];
   }

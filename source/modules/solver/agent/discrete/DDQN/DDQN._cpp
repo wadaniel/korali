@@ -206,7 +206,6 @@ void DDQN::updateAgentPolicy(const knlohmann::json &hyperparameters)
   _aLearner->setInferenceHyperparameters(aHyperparameters);
 }
 
-
 knlohmann::json DDQN::runPolicy(const std::vector<float> &state)
 {
   // Creating state/action input
@@ -258,7 +257,7 @@ knlohmann::json DDQN::runPolicy(const std::vector<float> &state)
     double pAction = expA[i] / expASum;
     pActions[i] = pAction;
   }
- 
+
   knlohmann::json policy;
   policy["Action Probabilities"] = pActions;
 

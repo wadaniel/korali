@@ -24,13 +24,26 @@ defaultVariableName = '\vartheta';
 checkVariableName   = @(x) ischar(x);
 addOptional(p,'VariableName',defaultVariableName,checkVariableName);
 
+defaultVariableNames = [];
+addOptional(p,'VariableNames',defaultVariableNames);
+
 parse(p,theta,varargin{:})
 % End of parser
 
 plotFunction  = p.Results.PlotFunction;
 scatterSymbol = p.Results.ScatterSymbol;
 variableName  = p.Results.VariableName;
+variableNames = p.Results.VariableNames;
 Evaluation    = p.Results.Evaluation;
+
+% check variable names
+if isempty(variableNames)==false
+  if length(variableNames)~=size(theta,2)
+    error('The dimensions of ''VariablesNames'' and ''theta'' are not equal.')
+  end
+end
+
+
 
 N = size(theta,2);
 
@@ -170,7 +183,7 @@ for i=1:N
   set(ax(i,:),'ylim',[ylimmin(i,1)-dy ylimmax(i,1)+dy])
 end
 dx = zeros(1,N);
-for j=1:N,
+for j=1:N
   set(ax(1,j),'xlim',[xlimmin(1,j) xlimmax(1,j)])
   dx(j) = diff(get(ax(1,j),'xlim'))*inset;
   set(ax(:,j),'xlim',[xlimmin(1,j)-dx(j) xlimmax(1,j)+dx(j)])
@@ -222,7 +235,12 @@ end
 
 
 for i=1:N
-  varNameStr = [ '$' variableName '_{' num2str(i) '} $'];
+  if isempty(variableNames)
+    varNameStr = [ '$' variableName '_{' num2str(i) '} $'];
+  else
+    varNameStr = [ '$' variableNames{i} '$'];
+  end
+  
   ax(i,1).YLabel.String= varNameStr; 
   ax(i,1).YLabel.FontSize = 20; 
   ax(i,1).YLabel.Interpreter='Latex';

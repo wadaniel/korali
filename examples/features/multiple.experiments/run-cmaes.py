@@ -79,4 +79,4 @@ k.run(eList)
 # Running next 100 generations
 for e in eList:
   e["Solver"]["Termination Criteria"]["Max Generations"] = 150
-k.resume(eList)
+k.run(eList)

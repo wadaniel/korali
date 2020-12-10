@@ -44,15 +44,15 @@ void Agent::initialize()
     _bestTrainingEpisode = 0;
     _bestAverageTestingReward = -korali::Inf;
 
-    // Initialize best hyperparameters
-    _bestTestingHyperparameters = _hyperparameters;
-    _bestTrainingHyperparameters = _hyperparameters;
-
     // Initializing training hyperparameters
     _trainingState = getTrainingState();
 
     // Getting initial policy hyperparameters (for agents to generate actions)
     _hyperparameters = getAgentPolicy();
+
+    // Initialize best hyperparameters
+    _bestTestingHyperparameters = _hyperparameters;
+    _bestTrainingHyperparameters = _hyperparameters;
   }
 
   // If this continues a previous run, deserialize previous input experience replay

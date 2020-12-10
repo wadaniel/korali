@@ -341,8 +341,12 @@ OMPFLAGS="-fopenmp"
 if [[ "$USE_CXX" == "icpc" || "$USE_CXX" == "icc" ]]; then
  OMPFLAGS="-qopenmp"
 fi
-
 if [[ "$USE_CXX" == "clang++" ]]; then
+ OMPFLAGS="-lomp"
+fi
+
+# if clang and macos: check if openmp has been installed 
+if [[ "$USE_CXX" == "clang++" && "$arch" == "Darwin" ]]; then
  
  brew --version > /dev/null 2>&1
  if [ ! $? == 0 ]; then
@@ -355,7 +359,7 @@ if [[ "$USE_CXX" == "clang++" ]]; then
  if [ ! $? == 0 ]; then
   logEcho "[Korali] Error: OpenMP not found."
   logEcho "         Solution: Run the commands:"
-  logEcho "           brew install llvm libomp"
+  logEcho "           brew install libomp"
   logEcho "           echo 'export LIBRARY_PATH=\"\$LIBRARY_PATH:\`brew --prefix llvm\`/lib\" ' >> $HOME/.bash_profile "
   logEcho "           source \$HOME/.bash_profile"
   exitWithError
@@ -363,21 +367,17 @@ if [[ "$USE_CXX" == "clang++" ]]; then
 
  llvm-config --version > /dev/null 2>&1
  if [ $? == 0 ]; then # brew version of clang, 
-  
-   if [[ "$LIBRARY_PATH" != *"llvm"* ]]; then
+  if [[ "$LIBRARY_PATH" != *"llvm"* ]]; then
    logEcho "[Korali] Error: LLVM library path not found in \$LIBRARY_PATH."
    logEcho "         Solution: Run the commands:"
    logEcho "           echo 'export LIBRARY_PATH=\"\$LIBRARY_PATH:\`brew --prefix llvm\`/lib\" ' >> $HOME/.bash_profile "
    logEcho "           source \$HOME/.bash_profile"
    exitWithError
   fi
-  OMPFLAGS="-fopenmp"
-
- else # macos native clang
-  OMPFLAGS="-lomp"
  fi
 
 fi
+
 
 
 ######## Checking selected compiler #######

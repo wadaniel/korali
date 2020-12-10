@@ -40,8 +40,8 @@ e["Solver"]["Type"] = "Agent / Discrete / DVRACER"
 e["Solver"]["Experiences Between Policy Updates"] = 1
 e["Solver"]["Cache Persistence"] = 0
 
-e["Solver"]["Refer"]["Target Off Policy Fraction"] = 0.02
-e["Solver"]["Refer"]["Cutoff Scale"] = 0.3
+e["Solver"]["Refer"]["Target Off Policy Fraction"] = 0.1
+e["Solver"]["Refer"]["Cutoff Scale"] = 1.0
 e["Solver"]["Refer"]["Start Size"] = 1000
 
 ### Defining Experience Replay configuration

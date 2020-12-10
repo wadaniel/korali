@@ -27,6 +27,7 @@ void VRACER::initializeAgent()
     jsNormal["Standard Deviation"] = 1.0;
 
     auto d = dynamic_cast<distribution::univariate::Normal *>(getModule(jsNormal, _k));
+    d->initialize();
     _policyDistributions.push_back(d);
   }
 
@@ -107,8 +108,7 @@ void VRACER::initializeAgent()
   _criticPolicyExperiment["Solver"]["Neural Network"]["Layers"][outputLayer]["Weight Scaling"] = 0.1;
 
   // Running initialization to verify that the configuration is correct
-  korali::Engine engine;
-  engine.initialize(_criticPolicyExperiment);
+  _criticPolicyExperiment.initialize();
 
   // Getting learner and problem pointers
   _criticPolicyProblem = dynamic_cast<problem::SupervisedLearning *>(_criticPolicyExperiment._problem);
@@ -118,16 +118,16 @@ void VRACER::initializeAgent()
   _referInitialLearningRate = _criticPolicyLearner->_learningRate;
   _referCutoff = _referCutoffScale + 1.0f;
   _referOffPolicyFraction = 0.0f;
-
-  /*********************************************************************
-  * Loading/Setting Hyperparameters
-  *********************************************************************/
-
-  // Get the initial set of policy NN hyperparameters
-  _hyperparameters["Policy"] = _criticPolicyLearner->getTrainingHyperparameters();
 }
 
-void VRACER::updateAgentPolicy(const knlohmann::json &hyperparameters)
+knlohmann::json VRACER::getAgentPolicy()
+{
+  knlohmann::json hyperparameters;
+  hyperparameters["Policy"] = _criticPolicyLearner->getInferenceHyperparameters();
+  return hyperparameters;
+}
+
+void VRACER::setAgentPolicy(const knlohmann::json &hyperparameters)
 {
   _criticPolicyLearner->setInferenceHyperparameters(hyperparameters["Policy"].get<std::vector<float>>());
 }
@@ -312,9 +312,6 @@ void VRACER::trainPolicy()
   _criticPolicyLearner->initialize();
   _criticPolicyLearner->runGeneration();
   _criticPolicyLearner->finalize();
-
-  // Storing average policy hyperparameters
-  _hyperparameters["Policy"] = _criticPolicyLearner->getTrainingHyperparameters();
 }
 
 float VRACER::computeVtbc(size_t expId)

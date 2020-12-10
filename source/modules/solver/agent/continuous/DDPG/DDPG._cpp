@@ -15,8 +15,6 @@ void DDPG::initializeAgent()
   // Initializing common discrete agent configuration
   Continuous::initializeAgent();
 
-  korali::Engine engine; // Engine to initialize experiments with
-
   /*********************************************************************
  * Initializing Critic-Related Structures
  *********************************************************************/
@@ -42,7 +40,7 @@ void DDPG::initializeAgent()
   _criticNeuralNetwork["Solver"]["Neural Network"]["Layers"][criticOutputLayerId]["Weight Scaling"] = 0.1;
 
   // Running initialization to verify that the configuration is correct
-  engine.initialize(_criticExperiment);
+  _criticExperiment.initialize();
 
   // Getting learner pointers
   _criticProblem = dynamic_cast<problem::SupervisedLearning *>(_criticExperiment._problem);
@@ -76,17 +74,11 @@ void DDPG::initializeAgent()
   _policyNeuralNetwork["Solver"]["Neural Network"]["Layers"][policyOutputLayerId]["Weight Scaling"] = 0.1;
 
   // Running initialization to verify that the configuration is correct
-  engine.initialize(_policyExperiment);
+  _policyExperiment.initialize();
 
   // Getting learner pointers
   _policyProblem = dynamic_cast<problem::SupervisedLearning *>(_policyExperiment._problem);
   _policyLearner = dynamic_cast<solver::learner::DeepSupervisor *>(_policyExperiment._solver);
-
-  /*********************************************************************
-  * Loading/Setting Hyperparameters
-  *********************************************************************/
-
-  _hyperparameters["Policy"] = _policyLearner->getTrainingHyperparameters();
 }
 
 float DDPG::stateActionValueFunction(const std::vector<float> &state, const std::vector<float> &action)
@@ -216,9 +208,6 @@ void DDPG::trainPolicy()
   for (size_t i = 0; i < newPolicyHyperparameters.size(); i++)
     newPolicyHyperparameters[i] = _policyAdoptionRate * curPolicyHyperparameters[i] + (1.0f - _policyAdoptionRate) * newPolicyHyperparameters[i];
   _policyLearner->setInferenceHyperparameters(newPolicyHyperparameters);
-
-  // Storing average policy hyperparameters for workers to use
-  _hyperparameters["Policy"] = newPolicyHyperparameters;
 }
 
 knlohmann::json DDPG::runPolicy(const std::vector<float> &state)
@@ -243,7 +232,14 @@ knlohmann::json DDPG::runPolicy(const std::vector<float> &state)
   return policy;
 }
 
-void DDPG::updateAgentPolicy(const knlohmann::json &hyperparameters)
+knlohmann::json DDPG::getAgentPolicy()
+{
+  knlohmann::json hyperparameters;
+  hyperparameters["Policy"] = _policyLearner->getInferenceHyperparameters();
+  return hyperparameters;
+}
+
+void DDPG::setAgentPolicy(const knlohmann::json &hyperparameters)
 {
   auto policyHyperparameters = hyperparameters["Policy"].get<std::vector<float>>();
   _policyLearner->setInferenceHyperparameters(policyHyperparameters);

@@ -3,6 +3,7 @@
 
 #include "korali.hpp"
 #include <fstream>
+#include <random>
 #include <type_traits>
 
 void runEnvironment(korali::Sample &s);

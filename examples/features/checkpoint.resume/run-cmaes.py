@@ -44,5 +44,5 @@ if (found == True):
   print('Running last 10 generations...')
   print('------------------------------------------------------')
   e["Solver"]["Termination Criteria"]["Max Generations"] = 10
-
-k.resume(e)
+ 
+k.run(e)

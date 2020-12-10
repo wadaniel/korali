@@ -15,9 +15,6 @@ void DDQN::initializeAgent()
   // Initializing common discrete agent configuration
   Discrete::initializeAgent();
 
-  // Engine to initialize experiments with
-  korali::Engine engine;
-
   /*********************************************************************
   * Initializing Critic-Related Structures
   *********************************************************************/
@@ -40,7 +37,7 @@ void DDQN::initializeAgent()
   }
 
   // Running initialization to verify that the configuration is correct
-  engine.initialize(_vExperiment);
+  _vExperiment.initialize();
 
   // Getting learner pointers
   _vProblem = dynamic_cast<problem::SupervisedLearning *>(_vExperiment._problem);
@@ -64,7 +61,7 @@ void DDQN::initializeAgent()
   }
 
   // Running initialization to verify that the configuration is correct
-  engine.initialize(_aExperiment);
+  _aExperiment.initialize();
 
   // Getting learner pointers
   _aProblem = dynamic_cast<problem::SupervisedLearning *>(_aExperiment._problem);
@@ -79,17 +76,8 @@ void DDQN::initializeAgent()
 
   // Storage for  Q(s,a_i) for all actions
   _qValStateAction.resize(_problem->_possibleActions.size());
-
-  /*********************************************************************
-  * Loading/Setting Hyperparameters
-  *********************************************************************/
-
-  // Setting Initial Hyperparameters
   _aHatHyperparameters = _aLearner->getTrainingHyperparameters();
-  _hyperparameters["Critic (A)"] = _aHatHyperparameters;
-
   _vHatHyperparameters = _vLearner->getTrainingHyperparameters();
-  _hyperparameters["Critic (V)"] = _vHatHyperparameters;
 }
 
 void DDQN::trainPolicy()
@@ -190,18 +178,6 @@ void DDQN::trainPolicy()
   // Storing new Critics' hyperparameters
   _vHatHyperparameters = _vLearner->getTrainingHyperparameters();
   _aHatHyperparameters = _aLearner->getTrainingHyperparameters();
-
-  _hyperparameters["Critic (V)"] = _vHatHyperparameters;
-  _hyperparameters["Critic (A)"] = _aHatHyperparameters;
-}
-
-void DDQN::updateAgentPolicy(const knlohmann::json &hyperparameters)
-{
-  auto vHyperparameters = hyperparameters["Critic (V)"].get<std::vector<float>>();
-  _vLearner->setInferenceHyperparameters(vHyperparameters);
-
-  auto aHyperparameters = hyperparameters["Critic (A)"].get<std::vector<float>>();
-  _aLearner->setInferenceHyperparameters(aHyperparameters);
 }
 
 std::vector<float> DDQN::getActionProbabilities(const std::vector<float> &state)
@@ -258,6 +234,23 @@ std::vector<float> DDQN::getActionProbabilities(const std::vector<float> &state)
 
   // Returning the best found
   return pActions;
+}
+
+knlohmann::json DDQN::getAgentPolicy()
+{
+  knlohmann::json hyperparameters;
+  hyperparameters["Critic (V)"] = _vLearner->getInferenceHyperparameters();
+  hyperparameters["Critic (A)"] = _aLearner->getInferenceHyperparameters();
+  return hyperparameters;
+}
+
+void DDQN::setAgentPolicy(const knlohmann::json &hyperparameters)
+{
+  auto vHyperparameters = hyperparameters["Critic (V)"].get<std::vector<float>>();
+  _vLearner->setInferenceHyperparameters(vHyperparameters);
+
+  auto aHyperparameters = hyperparameters["Critic (A)"].get<std::vector<float>>();
+  _aLearner->setInferenceHyperparameters(aHyperparameters);
 }
 
 void DDQN::setTrainingState(const knlohmann::json &state)

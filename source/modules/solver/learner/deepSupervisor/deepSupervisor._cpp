@@ -44,26 +44,29 @@ void DeepSupervisor::initialize()
 
     auto neuralNetworkConfig = _neuralNetwork;
     _trainingNeuralNetwork = dynamic_cast<NeuralNetwork *>(getModule(neuralNetworkConfig, _k));
+    _trainingNeuralNetwork->initialize();
 
     // Creating inference neural network
     for (size_t i = 0; i < _maxThreads; i++)
     {
       auto neuralNetworkConfig = _neuralNetwork;
       _evaluationNeuralNetworks[i] = dynamic_cast<NeuralNetwork *>(getModule(neuralNetworkConfig, _k));
+      _evaluationNeuralNetworks[i]->initialize();
     }
 
     /*****************************************************************
    * Initializing NN hyperparameters
    *****************************************************************/
 
-    auto hyperparameters = _trainingNeuralNetwork->generateInitialHyperparameters();
+    // If the hyperparameters have not been specified, produce new initial hyperparameters
+    if (_hyperparameters.size() == 0) _hyperparameters = _trainingNeuralNetwork->generateInitialHyperparameters();
 
     // Creating and setting hyperparameter structures
-    _trainingNeuralNetwork->setHyperparameters(hyperparameters);
+    _trainingNeuralNetwork->setHyperparameters(_hyperparameters);
 
     // Copying hyperparameters and normalization parameters from training to evaluation
     for (size_t i = 0; i < _maxThreads; i++)
-      _evaluationNeuralNetworks[i]->setHyperparameters(hyperparameters);
+      _evaluationNeuralNetworks[i]->setHyperparameters(_hyperparameters);
 
     /*****************************************************************
    * Setting up weight and bias optimization experiment
@@ -171,6 +174,13 @@ void DeepSupervisor::setTrainingHyperparameters(const std::vector<float> &hyperp
 {
   // Update evaluation network
   _trainingNeuralNetwork->setHyperparameters(hyperparameters);
+
+  // Need to update Adam to continue from there
+  for (size_t i = 0; i < hyperparameters.size(); i++)
+    _adamSolver->_initialValues[i] = hyperparameters[i];
+
+  // Resetting
+  _adamSolver->reset();
 }
 
 std::vector<float> DeepSupervisor::getInferenceHyperparameters()

@@ -35,14 +35,21 @@ int main(int argc, char *argv[])
   // Setting results path
   _resultsPath = "_results";
 
-  // Configuring Experiment
+  // Creating Experiment
   auto e = korali::Experiment();
+
+  // Configuring Experiment
 
   e["Problem"]["Type"] = "Reinforcement Learning / Continuous";
   e["Problem"]["Environment Function"] = &runEnvironment;
   e["Problem"]["Training Reward Threshold"] = 100.0;
   e["Problem"]["Policy Testing Episodes"] = 5;
   e["Problem"]["Actions Between Policy Updates"] = 1;
+
+  ////// Checking if existing results are there and continuing them
+
+  auto found = e.loadState(_resultsPath + std::string("/latest"));
+  if (found == true) printf("Continuing execution from previous run...\n");
 
   // Setting up the 16 state variables
   size_t curVariable = 0;
@@ -132,11 +139,6 @@ int main(int argc, char *argv[])
   e["File Output"]["Enabled"] = true;
   e["File Output"]["Frequency"] = 1;
   e["File Output"]["Path"] = _resultsPath;
-
-  ////// Checking if existing results are there and continuing them
-
-  auto found = e.loadState(_resultsPath + std::string("/latest"));
-  if (found == true) printf("Continuing execution from previous run...\n");
 
   ////// Running Experiment
 

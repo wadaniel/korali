@@ -10,6 +10,24 @@ import korali
 k = korali.Engine()
 e = korali.Experiment()
 
+### Loading previous run (if exist)
+
+found = e.loadState('_result_gfpt/latest')
+
+# If not found, we run first 10 generations.
+if (found == False):
+  e["Solver"]["Termination Criteria"]["Max Generations"] = 10
+  print('------------------------------------------------------')
+  print('Running first 10 generations...')
+  print('------------------------------------------------------')
+
+# If found, we continue 
+if (found == True):
+  print('------------------------------------------------------')
+  print('Running 10 more generations...')
+  print('------------------------------------------------------')
+  e["Solver"]["Termination Criteria"]["Max Generations"] = 20
+  
 ### Defining the Cartpole problem's configuration
 
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
@@ -102,11 +120,5 @@ e["File Output"]["Path"] = "_result_gfpt"
 e["File Output"]["Enabled"] = True
 e["File Output"]["Frequency"] = 1
  
-### Running or Loading Experiment
-
-found = e.loadState('_result_gfpt/latest')
-
-e["Solver"]["Termination Criteria"]["Max Generations"] = 500000
-  
 # Configuring Korali's Engine
 k.run(e)

@@ -7,7 +7,7 @@ source ../../../tests/functions.sh
 ##### Deleting Previous Results
 
 echo "  + Deleting previous results..." 
-rm -rf _korali_result*; check_result
+rm -rf _result*; check_result
 
 ##### Recompiling C++
 

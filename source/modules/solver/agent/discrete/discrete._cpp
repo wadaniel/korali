@@ -20,7 +20,8 @@ void Discrete::getAction(korali::Sample &sample)
   auto state = sample["State"].get<std::vector<float>>();
 
   // Getting the probability of the actions given by the agent's policy
-  auto pActions = getActionProbabilities(state);
+  auto policy = runPolicy(state);
+  auto pActions = policy["Action Probabilities"].get<std::vector<float>>();
 
   // Storage for the action index to use
   size_t actionIdx = 0;
@@ -60,8 +61,8 @@ void Discrete::getAction(korali::Sample &sample)
     }
 
     // Storing action metadata
+    sample["Policy"] = policy;
     sample["Policy"]["Action Index"] = actionIdx;
-    sample["Policy"]["Action Probabilities"] = pActions;
   }
 
   /*****************************************************************************

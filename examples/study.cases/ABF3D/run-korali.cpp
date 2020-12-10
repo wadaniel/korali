@@ -15,6 +15,11 @@ int main(int argc, char *argv[])
   e["Problem"]["Policy Testing Episodes"] = 20;
   e["Problem"]["Actions Between Policy Updates"] = 1;
 
+  ////// Checking if existing results are there and continuing them
+
+  auto found = e.loadState("_results/latest");
+  if (found == true) printf("Continuing execution from previous run...\n");
+
   //// Setting state variables
 
   e["Variables"][0]["Name"] = "Swimmer 1 - Pos X";
@@ -138,12 +143,6 @@ int main(int argc, char *argv[])
   e["File Output"]["Frequency"] = 20;
   e["File Output"]["Path"] = "_results";
 
-  ////// Checking if existing results are there and continuing them
-
-  auto found = e.loadState("_results/latest");
-  if (found == true) printf("Continuing execution from previous run...\n");
-
-  ////// Running Experiment
 
   auto k = korali::Engine();
   k.run(e);

@@ -20,8 +20,28 @@ trainingSolutionSet = [ [ i ] for i in trainingSolutionSet.tolist() ]
 ### Defining a learning problem to infer values of sin(x)
 
 e = korali.Experiment()
-e["Problem"]["Type"] = "Supervised Learning"
 
+### Loading previous run (if exist)
+
+found = e.loadState('_result_sin/latest')
+
+# If not found, we run first 5 generations.
+if (found == False):
+  print('------------------------------------------------------')
+  print('Running first 5 generations...')
+  print('------------------------------------------------------')
+  e["Solver"]["Termination Criteria"]["Max Generations"] = 5
+
+# If found, we continue with the next 5 generations.
+if (found == True):
+  print('------------------------------------------------------')
+  print('Running last 10 generations...')
+  print('------------------------------------------------------')
+  e["Solver"]["Termination Criteria"]["Max Generations"] = 10
+
+### Configuring problem
+ 
+e["Problem"]["Type"] = "Supervised Learning"
 e["Problem"]["Inputs"] = trainingInputSet
 e["Problem"]["Solution"] = trainingSolutionSet
 
@@ -59,23 +79,5 @@ e["Random Seed"] = 0xC0FFEE
 e["File Output"]["Path"] = "_result_sin"
 e["File Output"]["Enabled"] = True
 e["File Output"]["Frequency"] = 1
- 
-### Running or Loading Experiment
-
-found = e.loadState('_result_sin/latest')
-
-# If not found, we run first 5 generations.
-if (found == False):
-  print('------------------------------------------------------')
-  print('Running first 5 generations...')
-  print('------------------------------------------------------')
-  e["Solver"]["Termination Criteria"]["Max Generations"] = 5
-
-# If found, we continue with the next 5 generations.
-if (found == True):
-  print('------------------------------------------------------')
-  print('Running last 10 generations...')
-  print('------------------------------------------------------')
-  e["Solver"]["Termination Criteria"]["Max Generations"] = 10
  
 k.run(e)

@@ -17,13 +17,13 @@ class Discrete : public Agent
  * @brief Storage for the pointer to the (discrete) learning problem
  */
   problem::reinforcementLearning::Discrete *_problem;
-
+ 
   /**
-  * @brief Function to obtain the categorical probability distribution for each possible action
+  * @brief Function to pass state through the NN and calculates the action probabilities, along with any additional information
   * @param state The current state
-  * @return A vector containing all action probabilities, corresponding to the state and the current policy
+  * @return A JSON object containing the information produced by the policy given the current state
   */
-  virtual std::vector<float> getActionProbabilities(const std::vector<float> &state) = 0;
+  virtual knlohmann::json runPolicy(const std::vector<float> &state) = 0;
 
   /**
    * @brief Calculates importance weight of current action from old and current policies

@@ -48,6 +48,7 @@
 #include "solver/agent/discrete/DDQN/DDQN.hpp"
 #include "solver/agent/discrete/DQN/DQN.hpp"
 #include "solver/agent/discrete/dACER/dACER.hpp"
+#include "solver/agent/discrete/dVRACER/dVRACER.hpp"
 #include "solver/agent/discrete/discrete.hpp"
 #include "solver/executor/executor.hpp"
 #include "solver/integrator/integrator.hpp"
@@ -139,6 +140,7 @@ Module *Module::getModule(knlohmann::json &js, Experiment *e)
   if (moduleType == "Agent/Discrete/DACER") module = new korali::solver::agent::discrete::dACER();
   if (moduleType == "Agent/Discrete/DQN") module = new korali::solver::agent::discrete::DQN();
   if (moduleType == "Agent/Discrete/DDQN") module = new korali::solver::agent::discrete::DDQN();
+  if (moduleType == "Agent/Discrete/DVRACER") module = new korali::solver::agent::discrete::dVRACER();
   if (moduleType == "Agent/Continuous/CACER") module = new korali::solver::agent::continuous::cACER();
   if (moduleType == "Agent/Continuous/DDPG") module = new korali::solver::agent::continuous::DDPG();
   if (moduleType == "Agent/Continuous/GFPT") module = new korali::solver::agent::continuous::GFPT();

@@ -137,7 +137,8 @@ void DDQN::trainPolicy()
       auto nextState = _experienceReplay[expId + 1].state;
 
       // Getting action probabilities for next state, as per the critic
-      auto pActions = getActionProbabilities(nextState);
+      auto policy = runPolicy(nextState);
+      auto pActions = policy["Action Probabilities"].get<std::vector<float>>();
 
       // Finding the best action index from the probabilities
       size_t bestActionIdx = std::distance(pActions.begin(), std::max_element(pActions.begin(), pActions.end()));
@@ -153,7 +154,8 @@ void DDQN::trainPolicy()
     }
 
     // Getting information about the current state
-    auto pActions = getActionProbabilities(curState);
+    auto policy = runPolicy(curState);
+    auto pActions = policy["Action Probabilities"].get<std::vector<float>>();
 
     // Now calculating targets for V(s) and A(s,a)
     float vTarget = qStar - _qValStateAction[curActionIdx] + _aValAverage;
@@ -204,7 +206,8 @@ void DDQN::updateAgentPolicy(const knlohmann::json &hyperparameters)
   _aLearner->setInferenceHyperparameters(aHyperparameters);
 }
 
-std::vector<float> DDQN::getActionProbabilities(const std::vector<float> &state)
+
+knlohmann::json DDQN::runPolicy(const std::vector<float> &state)
 {
   // Creating state/action input
   std::vector<float> stateActionInput(_problem->_stateVectorSize + _problem->_actionVectorSize);
@@ -255,9 +258,11 @@ std::vector<float> DDQN::getActionProbabilities(const std::vector<float> &state)
     double pAction = expA[i] / expASum;
     pActions[i] = pAction;
   }
+ 
+  knlohmann::json policy;
+  policy["Action Probabilities"] = pActions;
 
-  // Returning the best found
-  return pActions;
+  return policy;
 }
 
 void DDQN::setTrainingState(const knlohmann::json &state)

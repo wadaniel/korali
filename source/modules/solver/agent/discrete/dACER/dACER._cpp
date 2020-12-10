@@ -367,7 +367,6 @@ float dACER::stateValueFunction(const std::vector<float> &state)
   auto policy = runPolicy(state);
   auto pEval = policy["Action Probabilities"].get<std::vector<float>>();
 
-
   // Calculating the sum of p(s,a)*q(s,a) for all a
   float qSum = 0.0;
   for (size_t i = 0; i < qEval.size(); i++)

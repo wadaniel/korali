@@ -52,12 +52,10 @@ void Discrete::getAction(korali::Sample &sample)
       //      printf("pActions: ");
       for (actionIdx = 0; actionIdx < pActions.size(); actionIdx++)
       {
-        //       printf("%f ", pActions[actionIdx]);
         curSum += pActions[actionIdx];
         if (x < curSum) break;
       }
-      //      printf("\n");
-      // NOTE: In original DQN paper [Minh2015] we choose max (D.W.)
+      // NOTE: In original DQN paper [Minh2015] we choose max
       // actionIdx = std::distance(pActions.begin(), std::max_element(pActions.begin(), pActions.end()));
     }
 
@@ -73,7 +71,9 @@ void Discrete::getAction(korali::Sample &sample)
 
   // Finding the best action index from the probabilities
   if (sample["Mode"] == "Testing")
+  {
     actionIdx = std::distance(pActions.begin(), std::max_element(pActions.begin(), pActions.end()));
+  }
 
   /*****************************************************************************
   * Storing the action itself

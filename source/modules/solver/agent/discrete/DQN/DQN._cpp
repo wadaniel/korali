@@ -200,7 +200,7 @@ std::vector<float> DQN::getActionProbabilities(const std::vector<float> &state)
   for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
     pActions[i] *= invSumExpQVal;
 
-  // Returning the best found
+  // Returning action probabilities
   return pActions;
 }
 

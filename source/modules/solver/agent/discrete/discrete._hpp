@@ -19,13 +19,6 @@ class Discrete : public Agent
   problem::reinforcementLearning::Discrete *_problem;
 
   /**
-  * @brief Function to pass state through the NN and calculates the action probabilities, along with any additional information
-  * @param state The current state
-  * @return A JSON object containing the information produced by the policy given the current state
-  */
-  virtual knlohmann::json runPolicy(const std::vector<float> &state) = 0;
-
-  /**
    * @brief Calculates importance weight of current action from old and current policies
    * @param actionIdx Index of the action taken
    * @param curProbabilities Probability distributions of current policy

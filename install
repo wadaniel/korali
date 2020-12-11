@@ -151,7 +151,6 @@ else
 fi
 
 
-
 ######## Installing Mandatory External Libraries
 
 ## Getting libco
@@ -218,6 +217,41 @@ if [ "$USE_CUDNN" == "YES" ]; then
   logEcho "[Korali] The \$CUDNN_ROOT environment variable needs to be defined for CUDNN support."
   exitWithError
  fi
+fi
+
+######## Checking support for OpenMP ########
+
+# if clang and macos: check if openmp has been installed 
+if [[ "$USE_CXX" == "clang++" && "$arch" == "Darwin" ]]; then
+ 
+ brew --version > /dev/null 2>&1
+ if [ ! $? == 0 ]; then
+  logEcho "[Korali] Error: brew not found."
+  logEcho "         Solution: install brew from https://brew.sh"
+  exitWithError
+ fi
+ 
+ brew list libomp > /dev/null 2>&1
+ if [ ! $? == 0 ]; then
+  logEcho "[Korali] Error: OpenMP not found."
+  logEcho "         Solution: Run the commands:"
+  logEcho "           brew install libomp"
+  logEcho "           echo 'export LIBRARY_PATH=\"\$LIBRARY_PATH:\`brew --prefix llvm\`/lib\" ' >> $HOME/.bash_profile "
+  logEcho "           source \$HOME/.bash_profile"
+  exitWithError
+ fi
+
+ llvm-config --version > /dev/null 2>&1
+ if [ $? == 0 ]; then # brew version of clang, 
+  if [[ "$LIBRARY_PATH" != *"llvm"* ]]; then
+   logEcho "[Korali] Error: LLVM library path not found in \$LIBRARY_PATH."
+   logEcho "         Solution: Run the commands:"
+   logEcho "           echo 'export LIBRARY_PATH=\"\$LIBRARY_PATH:\`brew --prefix llvm\`/lib\" ' >> $HOME/.bash_profile "
+   logEcho "           source \$HOME/.bash_profile"
+   exitWithError
+  fi
+ fi
+
 fi
 
 ######## Checking support for MPI ########
@@ -349,40 +383,6 @@ fi
 if [[ "$USE_CXX" == "clang++" ]]; then
  OMPFLAGS="-lomp"
 fi
-
-# if clang and macos: check if openmp has been installed 
-if [[ "$USE_CXX" == "clang++" && "$arch" == "Darwin" ]]; then
- 
- brew --version > /dev/null 2>&1
- if [ ! $? == 0 ]; then
-  logEcho "[Korali] Error: brew not found."
-  logEcho "         Solution: install brew from https://brew.sh"
-  exitWithError
- fi
- 
- brew list libomp > /dev/null 2>&1
- if [ ! $? == 0 ]; then
-  logEcho "[Korali] Error: OpenMP not found."
-  logEcho "         Solution: Run the commands:"
-  logEcho "           brew install libomp"
-  logEcho "           echo 'export LIBRARY_PATH=\"\$LIBRARY_PATH:\`brew --prefix llvm\`/lib\" ' >> $HOME/.bash_profile "
-  logEcho "           source \$HOME/.bash_profile"
-  exitWithError
- fi
-
- llvm-config --version > /dev/null 2>&1
- if [ $? == 0 ]; then # brew version of clang, 
-  if [[ "$LIBRARY_PATH" != *"llvm"* ]]; then
-   logEcho "[Korali] Error: LLVM library path not found in \$LIBRARY_PATH."
-   logEcho "         Solution: Run the commands:"
-   logEcho "           echo 'export LIBRARY_PATH=\"\$LIBRARY_PATH:\`brew --prefix llvm\`/lib\" ' >> $HOME/.bash_profile "
-   logEcho "           source \$HOME/.bash_profile"
-   exitWithError
-  fi
- fi
-
-fi
-
 
 
 ######## Creating Compilation Config File ########

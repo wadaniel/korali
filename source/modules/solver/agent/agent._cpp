@@ -60,6 +60,18 @@ void Agent::initialize()
 
   // Initializing profiling timers
   _serializationTime = 0.0;
+  _agentComputationTime = 0.0;
+  _agentCommunicationTime = 0.0;
+  _agentPolicyEvaluationTime = 0.0;
+
+  // Initializing session-specific counters
+  _sessionExperienceCount = 0;
+  _sessionEpisodeCount = 0;
+  _sessionGenerationCount = 0;
+  _sessionPolicyUpdateCount = 0;
+
+  // Calculating how many more experiences do we need in this session to reach the starting size
+  _sessionExperiencesUntilStartSize = _experienceReplay.size() > _experienceReplayStartSize ? 0 : _experienceReplayStartSize - _experienceReplay.size();
 
   // Creating storate for _agents and their status
   _agents.resize(_agentCount);
@@ -76,13 +88,13 @@ void Agent::runGeneration()
   if (_k->_currentGeneration > 0) setTrainingState(_trainingState);
 
   // Running until all _agents have finished
-  while (_experienceCount < _experiencesPerGeneration * _k->_currentGeneration)
+  while (_sessionExperienceCount < _experiencesPerGeneration * _sessionGenerationCount)
   {
     // Launching (or re-launching) agents
     for (size_t agentId = 0; agentId < _agentCount; agentId++)
       if (_isAgentRunning[agentId] == false)
       {
-        _agents[agentId]["Sample Id"] = _currentSampleID++;
+        _agents[agentId]["Sample Id"] = _currentEpisode++;
         _agents[agentId]["Module"] = "Problem";
         _agents[agentId]["Operation"] = "Run Episode";
         _agents[agentId]["Hyperparameters"] = _hyperparameters;
@@ -100,13 +112,13 @@ void Agent::runGeneration()
         attendAgent(agentId);
 
     // Perform optimization steps on the critic/policy, if reached the minimum replay memory size
-    if (_experienceReplay.size() >= _experienceReplayStartSize)
+    if (_sessionExperienceCount > _sessionExperiencesUntilStartSize)
     {
       // Defining new experience count threshold
-      size_t curThreshold = _experiencesBetweenPolicyUpdates * _policyUpdateCount + _experienceReplayStartSize;
+      size_t curThreshold = _experiencesBetweenPolicyUpdates * _sessionPolicyUpdateCount + _sessionExperiencesUntilStartSize;
 
       // If we accumulated enough experiences between updates, update now
-      if (_experienceCount > curThreshold)
+      if (_sessionExperienceCount > curThreshold)
       {
         // Calling the algorithm specific policy training algorithm
         trainPolicy();
@@ -114,8 +126,9 @@ void Agent::runGeneration()
         // Getting new policy hyperparameters (for agents to generate actions)
         _hyperparameters = getAgentPolicy();
 
-        // Increasing policy update counter
+        // Increasing policy update counters
         _policyUpdateCount++;
+        _sessionPolicyUpdateCount++;
       }
     }
   }
@@ -140,6 +153,9 @@ void Agent::runGeneration()
   // Measuring generation time
   auto endTime = std::chrono::steady_clock::now();
   _generationTime = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();
+
+  // Increasing session's generation count
+  _sessionGenerationCount++;
 }
 
 void Agent::attendAgent(size_t agentId)
@@ -168,8 +184,9 @@ void Agent::attendAgent(size_t agentId)
       // Now that we have the entire episode, process its experiences (add them to replay memory)
       for (size_t i = 0; i < _episodes[agentId].size(); i++) processExperience(_episodes[agentId][i]);
 
-      // Increasing total experience counter
+      // Increasing total experience counters
       _experienceCount += _episodes[agentId].size();
+      _sessionExperienceCount += _episodes[agentId].size();
 
       // Now clear the episode of all its current experiences
       _episodes[agentId].clear();
@@ -206,11 +223,16 @@ void Agent::attendAgent(size_t agentId)
         }
       }
 
+      // Obtaining profiling information
+      _agentComputationTime += _agents[agentId]["Computation Time"].get<double>();
+      _agentCommunicationTime += _agents[agentId]["Communication Time"].get<double>();
+      _agentPolicyEvaluationTime += _agents[agentId]["Policy Evaluation Time"].get<double>();
+
       // Set agent as finished
       _isAgentRunning[agentId] = false;
 
-      // Increasing number of episodes
-      _currentEpisode++;
+      // Increasing session episode count
+      _sessionEpisodeCount++;
     }
   }
 }
@@ -437,9 +459,12 @@ void Agent::printGenerationAfter()
   printAgentInformation();
 
   _k->_logger->logInfo("Normal", "Profiling Information:\n");
-  _k->_logger->logInfo("Normal", " + Generation Running Time:   %fs\n", _generationTime / 1.0e+9f);
-  _k->_logger->logInfo("Normal", " + Cumulative Experience Replay Serialization Time:   %fs\n", _serializationTime / 1.0e+9f);
-  _k->_logger->logInfo("Normal", " + Cumulative Result File Saving I/O Time:            %fs\n", _k->_resultSavingTime / 1.0e+9f);
+  _k->_logger->logInfo("Normal", " + Average Agent Computation Time:                    %fs\n", _sessionEpisodeCount > 0 ? (_agentComputationTime / _sessionEpisodeCount) / 1.0e+9 : 0.0);
+  _k->_logger->logInfo("Normal", " + Average Agent Communication/Wait Time:             %fs\n", _sessionEpisodeCount > 0 ? (_agentCommunicationTime / _sessionEpisodeCount) / 1.0e+9 : 0.0);
+  _k->_logger->logInfo("Normal", " + Average Agent Policy Evaluation Time:              %fs\n", _sessionEpisodeCount > 0 ? (_agentPolicyEvaluationTime / _sessionEpisodeCount) / 1.0e+9 : 0.0);
+  _k->_logger->logInfo("Normal", " + Generation Running Time:                           %fs\n", _generationTime / 1.0e+9);
+  _k->_logger->logInfo("Normal", " + Cumulative Experience Replay Serialization Time:   %fs\n", _serializationTime / 1.0e+9);
+  _k->_logger->logInfo("Normal", " + Cumulative Result File Saving I/O Time:            %fs\n", _k->_resultSavingTime / 1.0e+9);
 }
 
 } // namespace solver

@@ -39,7 +39,7 @@ class dVRACER : public Discrete
 
   /**
    * @brief Calculates the gradient of importance weight wrt to NN output
-   * @param oldActionIdx Action from memory
+   * @param actionIdx Action from memory
    * @param curPvalues todo
    * @param oldPvalues todo 
    * @return gradient of importance weight wrt NN output
@@ -48,9 +48,8 @@ class dVRACER : public Discrete
 
   /**
    * @brief Calculates the gradient of KL(p_old, p_cur) wrt to the parameter of the 2nd (current) distribution.
-   * @param actionIdx Action from memory
-   * @param curPvalues todo
    * @param oldPvalues todo 
+   * @param curPvalues todo
    * @return gradient of KL wrt curParamsOne and curParamsTwo
    */
   std::vector<float> calculateKLDivergenceGradient(const std::vector<float> &oldPvalues, const std::vector<float> &curPvalues);

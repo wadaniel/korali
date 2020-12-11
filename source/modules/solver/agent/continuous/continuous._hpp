@@ -41,13 +41,6 @@ class Continuous : public Agent
   std::vector<float> calculateKLDivergenceGradient(const std::vector<float> &oldParamsOne, const std::vector<float> &oldParamsTwo, const std::vector<float> &curParamsOne, const std::vector<float> &curParamsTwo);
 
   /**
-  * @brief Function to pass state through the NN and prepares the Gaussian means and sigmas of the actions, along with any additional information
-  * @param state The current state
-  * @return A JSON object containing the information produced by the policy given the current state
-  */
-  virtual knlohmann::json runPolicy(const std::vector<float> &state) = 0;
-
-  /**
   * @brief Function to generate randomized actions from neural network output.
   * @param curMeans parameter vector for policy distribution
   * @param curSigmas parameter vector for policy distribution

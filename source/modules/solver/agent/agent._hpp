@@ -110,6 +110,31 @@ class Agent : public Solver
    */
   std::vector<std::vector<knlohmann::json>> _episodes;
 
+   /**
+   * @brief Session-specific experience count. This is useful in case of restart: counters from the old session won't count
+   */
+  size_t _sessionExperienceCount;
+
+  /**
+   * @brief Session-specific episode count. This is useful in case of restart: counters from the old session won't count
+   */
+  size_t _sessionEpisodeCount;
+
+  /**
+   * @brief Session-specific generation count. This is useful in case of restart: counters from the old session won't count
+   */
+  size_t _sessionGenerationCount;
+
+  /**
+   * @brief Session-specific policy update count. This is useful in case of restart: counters from the old session won't count
+   */
+  size_t _sessionPolicyUpdateCount;
+
+  /**
+   * @brief Session-specific counter that keeps track of how many experiences need to be obtained this session to reach the start training threshold.
+   */
+  size_t _sessionExperiencesUntilStartSize;
+
   /**
   * @brief Stores experience replay states.
   */
@@ -149,6 +174,21 @@ class Agent : public Solver
   * @brief [Profiling] Measures the amount of time taken by ER serialization
   */
   double _serializationTime;
+
+  /**
+   * @brief [Profiling] Stores the computation time per episode taken by Agents
+   */
+  double _agentComputationTime;
+
+  /**
+   * @brief [Profiling] Measures the average communication time per episode taken by Agents
+   */
+  double _agentCommunicationTime;
+
+  /**
+   * @brief [Profiling] Measures the average policy evaluation time per episode taken by Agents.
+   */
+  double _agentPolicyEvaluationTime;
 
   /**
   * @brief Trains the Agent's policy, based on the new experiences

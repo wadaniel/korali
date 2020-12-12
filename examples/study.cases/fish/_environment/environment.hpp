@@ -16,8 +16,8 @@ extern char **_argv;
   #include "Simulation.h"
 
 void initializeEnvironment();
-void setInitialConditions(StefanFish *a, Shape *p);
-bool isTerminal(StefanFish *a, Shape *p);
+void setInitialConditions(StefanFish *agent, Shape *object, const bool isTraining);
+bool isTerminal(StefanFish *agent, Shape *object);
 
 // Global variables for the simulation (ideal if this would be a class instead)
 extern std::mt19937 _randomGenerator;

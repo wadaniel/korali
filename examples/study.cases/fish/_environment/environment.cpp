@@ -21,12 +21,7 @@ void runEnvironment(korali::Sample &s)
 
   // Creating results directory
   char resDir[64];
-
-  if (s["Mode"] == "Training")
-   sprintf(resDir, "%s/sample%08lu", _resultsPath.c_str(), sampleId);
-  else
-   sprintf(resDir, "%s", s["Custom Settings"]["Dump Path"].get<std::string>().c_str());
-
+  sprintf(resDir, "%s/sample%08lu", s["Custom Settings"]["Dump Path"].get<std::string>().c_str(), sampleId);
   std::filesystem::create_directories(resDir);
 
   // Redirecting all output to the log file
@@ -185,7 +180,7 @@ bool isTerminal(StefanFish *agent, Shape *object)
   const double Y = (agent->center[1] - object->center[1]);
 
   bool terminal = false;
-  if (X < +0.10) terminal = true;
+  if (X < +0.15) terminal = true;
   if (X > +0.55) terminal = true;
   if (Y < -0.1) terminal = true;
   if (Y > +0.1) terminal = true;

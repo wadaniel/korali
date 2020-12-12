@@ -6,7 +6,6 @@ std::string _resultsPath;
 int main(int argc, char *argv[])
 {
   // Gathering actual arguments from MPI
-
 #ifndef TEST
   int provided;
   MPI_Init_thread(&argc, &argv, MPI_THREAD_FUNNELED, &provided);
@@ -33,7 +32,8 @@ int main(int argc, char *argv[])
 #endif
 
   // Setting results path
-  _resultsPath = "_results";
+  std::string trainingResultsPath = "_trainingResults";
+  std::string testingResultsPath = "_testingResults";
 
   // Creating Experiment
   auto e = korali::Experiment();
@@ -42,16 +42,17 @@ int main(int argc, char *argv[])
 
   e["Problem"]["Type"] = "Reinforcement Learning / Continuous";
   e["Problem"]["Environment Function"] = &runEnvironment;
-  e["Problem"]["Training Reward Threshold"] = 2.0;
+  e["Problem"]["Training Reward Threshold"] = 3.0;
   e["Problem"]["Policy Testing Episodes"] = 1;
   e["Problem"]["Actions Between Policy Updates"] = 1;
 
   // Adding custom setting to run the environment without dumping the state files during training
   e["Problem"]["Custom Settings"]["Dump Frequency"] = 0.0;
+  e["Problem"]["Custom Settings"]["Dump Path"] = trainingResultsPath;
 
   ////// Checking if existing results are there and continuing them
 
-  auto found = e.loadState(_resultsPath + std::string("/latest"));
+  auto found = e.loadState(trainingResultsPath + std::string("/latest"));
   if (found == true) printf("Continuing execution from previous run...\n");
 
   // Setting up the 16 state variables
@@ -130,7 +131,7 @@ int main(int argc, char *argv[])
 
   ////// Defining Termination Criteria
 
-  e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 6.0;
+  e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 8.0;
 
   ////// If using syntax test, run for a couple generations only
 
@@ -138,11 +139,11 @@ int main(int argc, char *argv[])
   e["Solver"]["Termination Criteria"]["Max Generations"] = 20;
 #endif
 
-  ////// Setting results output configuration
+  ////// Setting Korali output configuration
 
   e["File Output"]["Enabled"] = true;
   e["File Output"]["Frequency"] = 1;
-  e["File Output"]["Path"] = _resultsPath;
+  e["File Output"]["Path"] = trainingResultsPath;
 
   ////// Running Experiment
 
@@ -151,7 +152,7 @@ int main(int argc, char *argv[])
   // Configuring profiler output
 
   k["Profiling"]["Detail"] = "Full";
-  k["Profiling"]["Path"] = _resultsPath + std::string("/profiling.json");
+  k["Profiling"]["Path"] = trainingResultsPath + std::string("/profiling.json");
   k["Profiling"]["Frequency"] = 60;
 
 #ifndef TEST
@@ -168,16 +169,17 @@ int main(int argc, char *argv[])
   printf("[Korali] Done with training. Now running learned policy to dump the trajectory.\n");
 
   // Adding custom setting to run the environment dumping the state files during testing
-  std::string dumpPath = "_dump";
-  e["Problem"]["Custom Settings"]["Dump Frequency"] = 0.0;
-  e["Problem"]["Custom Settings"]["Dump Path"] = dumpPath;
+  e["Problem"]["Custom Settings"]["Dump Frequency"] = 0.1;
+  e["Problem"]["Custom Settings"]["Dump Path"] = testingResultsPath;
 
+  e["File Output"]["Path"] = testingResultsPath;
+  k["Profiling"]["Path"] = testingResultsPath + std::string("/profiling.json");
   e["Solver"]["Mode"] = "Testing";
   e["Solver"]["Testing"]["Sample Ids"] = { 0 };
 
   k.run(e);
 
-  printf("[Korali] Finished. Dump files stored in %s\n", dumpPath.c_str());
+  printf("[Korali] Finished. Testing dump files stored in %s\n", testingResultsPath.c_str());
 
 #endif
 }

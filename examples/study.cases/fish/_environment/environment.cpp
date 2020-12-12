@@ -44,7 +44,7 @@ void runEnvironment(korali::Sample &s)
 
   // Reseting environment and setting initial conditions
   _environment->reset();
-  setInitialConditions(agent, object);
+  setInitialConditions(agent, object, s["Mode"] == "Training");
 
   // Setting initial state
   auto state = agent->state(object);
@@ -141,30 +141,46 @@ void runEnvironment(korali::Sample &s)
   fclose(logFile);
 }
 
-void setInitialConditions(StefanFish *a, Shape *p)
+void setInitialConditions(StefanFish *agent, Shape *object, const bool isTraining)
 {
+ // Initial fixed conditions for testing
+ double SA = 0.0;
+ double SX = 1.5;
+ double SY = 0.0;
+
+ // If training, add noise to them
+ if (isTraining)
+ {
   std::uniform_real_distribution<double> disA(-20. / 180. * M_PI, 20. / 180. * M_PI);
-  std::uniform_real_distribution<double> disX(0.25, 0.35), disY(-0.05, 0.05);
+  std::uniform_real_distribution<double> disX(1.00, 2.00);
+  std::uniform_real_distribution<double> disY(-0.50, +0.50);
 
-  const double SX = disX(_randomGenerator);
-  const double SY = disY(_randomGenerator);
-  const double SA = disA(_randomGenerator);
+  SA = disA(_randomGenerator);
+  SX = disX(_randomGenerator);
+  SY = disY(_randomGenerator);
+ }
 
-  double C[2] = {p->center[0] + SX, p->center[1] + SY};
-  a->setCenterOfMass(C);
-  a->setOrientation(SA);
+ printf("[Korali] Initial Conditions:\n");
+ printf("[Korali] SA: %f\n", SA);
+ printf("[Korali] SX: %f\n", SX);
+ printf("[Korali] SY: %f\n", SY);
+
+ // Setting initial position and orientation for the fish
+ double C[2] = {object->center[0] + SX, object->center[1] + SY};
+ agent->setCenterOfMass(C);
+ agent->setOrientation(SA);
 }
 
-bool isTerminal(StefanFish *a, Shape *p)
+bool isTerminal(StefanFish *agent, Shape *object)
 {
-  const double X = (a->center[0] - p->center[0]);
-  const double Y = (a->center[1] - p->center[1]);
+  const double X = (agent->center[0] - object->center[0]);
+  const double Y = (agent->center[1] - object->center[1]);
 
   bool terminal = false;
-  if (X < +0.15) terminal = true;
-  if (X > +0.55) terminal = true;
-  if (Y < -0.1) terminal = true;
-  if (Y > +0.1) terminal = true;
+  if (X < +0.75) terminal = true;
+  if (X > +4.0) terminal = true;
+  if (Y < -1.5) terminal = true;
+  if (Y > +1.5) terminal = true;
 
   return terminal;
 }

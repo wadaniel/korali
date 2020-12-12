@@ -42,9 +42,12 @@ int main(int argc, char *argv[])
 
   e["Problem"]["Type"] = "Reinforcement Learning / Continuous";
   e["Problem"]["Environment Function"] = &runEnvironment;
-  e["Problem"]["Training Reward Threshold"] = 100.0;
-  e["Problem"]["Policy Testing Episodes"] = 5;
+  e["Problem"]["Training Reward Threshold"] = 2.0;
+  e["Problem"]["Policy Testing Episodes"] = 1;
   e["Problem"]["Actions Between Policy Updates"] = 1;
+
+  // Adding custom setting to run the environment without dumping the state files during training
+  e["Problem"]["Custom Settings"]["Dump Frequency"] = 0.0;
 
   ////// Checking if existing results are there and continuing them
 
@@ -127,7 +130,7 @@ int main(int argc, char *argv[])
 
   ////// Defining Termination Criteria
 
-  e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 1000.0;
+  e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 6.0;
 
   ////// If using syntax test, run for a couple generations only
 
@@ -157,4 +160,24 @@ int main(int argc, char *argv[])
 #endif
 
   k.run(e);
+
+  ////// Now testing policy, dumping trajectory results
+
+#ifndef TEST
+
+  printf("[Korali] Done with training. Now running learned policy to dump the trajectory.\n");
+
+  // Adding custom setting to run the environment dumping the state files during testing
+  std::string dumpPath = "_dump";
+  e["Problem"]["Custom Settings"]["Dump Frequency"] = 0.0;
+  e["Problem"]["Custom Settings"]["Path"] = dumpPath;
+
+  e["Solver"]["Mode"] = "Testing";
+  e["Solver"]["Testing"]["Sample Ids"] = { 0 };
+
+  k.run(e);
+
+  printf("[Korali] Finished. Dump files stored in %s\n", dumpPath.c_str());
+
+#endif
 }

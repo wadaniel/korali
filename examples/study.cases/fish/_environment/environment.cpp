@@ -153,15 +153,15 @@ void setInitialConditions(StefanFish *agent, Shape *object, const bool isTrainin
 {
  // Initial fixed conditions for testing
  double SA = 0.0;
- double SX = 1.5;
+ double SX = 0.3;
  double SY = 0.0;
 
  // If training, add noise to them
  if (isTraining)
  {
   std::uniform_real_distribution<double> disA(-20. / 180. * M_PI, 20. / 180. * M_PI);
-  std::uniform_real_distribution<double> disX(1.00, 2.00);
-  std::uniform_real_distribution<double> disY(-0.50, +0.50);
+  std::uniform_real_distribution<double> disX(0.25, 0.35);
+  std::uniform_real_distribution<double> disY(-0.05, 0.05);
 
   SA = disA(_randomGenerator);
   SX = disX(_randomGenerator);
@@ -185,10 +185,10 @@ bool isTerminal(StefanFish *agent, Shape *object)
   const double Y = (agent->center[1] - object->center[1]);
 
   bool terminal = false;
-  if (X < +0.75) terminal = true;
-  if (X > +4.0) terminal = true;
-  if (Y < -1.5) terminal = true;
-  if (Y > +1.5) terminal = true;
+  if (X < +0.10) terminal = true;
+  if (X > +0.55) terminal = true;
+  if (Y < -0.1) terminal = true;
+  if (Y > +0.1) terminal = true;
 
   return terminal;
 }

@@ -42,6 +42,9 @@ void runEnvironment(korali::Sample &s)
   Shape *object = _environment->getShapes()[0];
   StefanFish *agent = dynamic_cast<StefanFish *>(_environment->getShapes()[1]);
 
+  // Establishing environment's dump frequency
+  _environment->sim.dumpTime = s["Custom Settings"]["Dump Frequency"].get<double>();
+
   // Reseting environment and setting initial conditions
   _environment->reset();
   setInitialConditions(agent, object, s["Mode"] == "Training");

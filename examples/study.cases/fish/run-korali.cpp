@@ -170,7 +170,7 @@ int main(int argc, char *argv[])
   // Adding custom setting to run the environment dumping the state files during testing
   std::string dumpPath = "_dump";
   e["Problem"]["Custom Settings"]["Dump Frequency"] = 0.0;
-  e["Problem"]["Custom Settings"]["Path"] = dumpPath;
+  e["Problem"]["Custom Settings"]["Dump Path"] = dumpPath;
 
   e["Solver"]["Mode"] = "Testing";
   e["Solver"]["Testing"]["Sample Ids"] = { 0 };

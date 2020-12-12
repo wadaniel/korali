@@ -47,6 +47,7 @@ e["Variables"][7]["Upper Bound"] = +20.0
 ### Configuring NAF hyperparameters
 
 e["Solver"]["Type"] = "Agent / Continuous / NAF"
+e["Solver"]["Mode"] = "Training"
 e["Solver"]["Target Learning Rate"] = 0.8
 e["Solver"]["Experiences Between Policy Updates"] = 1
 

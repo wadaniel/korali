@@ -39,6 +39,7 @@ e["Variables"][4]["Exploration Sigma"] = 0.1
 ### Configuring ACER hyperparameters
 
 e["Solver"]["Type"] = "Agent / Continuous / CACER"
+e["Solver"]["Mode"] = "Training"
 e["Solver"]["Experiences Between Policy Updates"] = 25
 e["Solver"]["Cache Persistence"] = 10
 

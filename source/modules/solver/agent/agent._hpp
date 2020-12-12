@@ -110,7 +110,7 @@ class Agent : public Solver
    */
   std::vector<std::vector<knlohmann::json>> _episodes;
 
-   /**
+  /**
    * @brief Session-specific experience count. This is useful in case of restart: counters from the old session won't count
    */
   size_t _sessionExperienceCount;
@@ -303,6 +303,16 @@ class Agent : public Solver
    * @brief Deserializes a JSON object into the experience replay
    */
   void deserializeExperienceReplay();
+
+  /**
+   * @brief Runs a generation when running in training mode
+   */
+  void trainingGeneration();
+
+  /**
+   * @brief Runs a generation when running in testing mode
+   */
+  void testingGeneration();
 
   void printGenerationAfter() override;
   void initialize() override;

@@ -75,6 +75,7 @@ int main(int argc, char *argv[])
   //// Defining Agent Configuration
 
   e["Solver"]["Type"] = "Agent / Continuous / GFPT";
+  e["Solver"]["Mode"] = "Training";
   e["Solver"]["Agent Count"] = N;
   e["Solver"]["Experiences Per Generation"] = N * 4;
   e["Solver"]["Experiences Between Policy Updates"] = 1;

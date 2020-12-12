@@ -39,6 +39,7 @@ e["Variables"][4]["Exploration Sigma"] = 0.35
 ### Defining Agent Configuration 
 
 e["Solver"]["Type"] = "Agent / Continuous / DDPG"
+e["Solver"]["Mode"] = "Training"
 e["Solver"]["Experiences Between Policy Updates"] = 1
 
 ### Defining the configuration of replay memory

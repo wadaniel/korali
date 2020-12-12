@@ -240,24 +240,6 @@ void Experiment::finalize()
   co_delete(_thread);
 }
 
-std::vector<float> Experiment::getAction(const std::vector<float> &state)
-{
-  // First check that the experiment has been initialized.
-  if (_isInitialized == false) initialize();
-
-  auto agent = dynamic_cast<solver::Agent *>(_k->_solver);
-  if (agent != NULL)
-  {
-    korali::Sample sample;
-    sample["State"] = state;
-    sample["Mode"] = "Testing";
-    agent->getAction(sample);
-    return sample["Action"].get<std::vector<float>>();
-  }
-  else
-    KORALI_LOG_ERROR("This solver does not support getAction.\n");
-}
-
 std::vector<float> Experiment::getEvaluation(const std::vector<float> &inputBatch)
 {
   // First check that the experiment has been initialized.

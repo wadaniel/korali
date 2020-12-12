@@ -42,13 +42,6 @@ void DQN::initializeAgent()
   // Getting learner pointers
   _criticProblem = dynamic_cast<problem::SupervisedLearning *>(_criticExperiment._problem);
   _criticLearner = dynamic_cast<solver::learner::DeepSupervisor *>(_criticExperiment._solver);
-
-  /*********************************************************************
-  * Loading/Setting Hyperparameters
-  *********************************************************************/
-
-  // Setting Initial Hyperparameters
-  _hyperparameters["Critic"] = _criticLearner->getTrainingHyperparameters();
 }
 
 void DQN::trainPolicy()
@@ -130,23 +123,17 @@ void DQN::trainPolicy()
   // Running one generation of the optimization method with the given mini-batch
   _criticLearner->initialize();
   _criticLearner->runGeneration();
+  _criticLearner->finalize();
 
   // Keeping statistics
   _averageQStar = (float)_cumulativeQStar / (float)_criticMiniBatchSize;
   _stdevQStar = sqrt(_cumulativeQStarSquared / (float)_criticMiniBatchSize - _averageQStar * _averageQStar);
-
-  /*********************************************************************
-   * Updating hyperparameters and broadcasting them to the workers
-   *********************************************************************/
-
-  // Storing new Critics' hyperparameters
-  _hyperparameters["Critic"] = _criticLearner->getTrainingHyperparameters();
 }
 
 knlohmann::json DQN::getAgentPolicy()
 {
   knlohmann::json hyperparameters;
-  hyperparameters["Critic"] = _criticLearner->getInferenceHyperparameters();
+  hyperparameters["Critic"] = _criticLearner->getTrainingHyperparameters();
   return hyperparameters;
 }
 
@@ -237,4 +224,3 @@ void DQN::printAgentInformation()
 } // namespace agent
 } // namespace solver
 } // namespace korali
-// Updating qRet (equation 5 in ACER paper)

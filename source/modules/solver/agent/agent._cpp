@@ -74,14 +74,29 @@ void Agent::initialize()
   _sessionExperiencesUntilStartSize = _experienceReplay.size() > _experienceReplayStartSize ? 0 : _experienceReplayStartSize - _experienceReplay.size();
 
   // Creating storate for _agents and their status
-  _agents.resize(_agentCount);
+  if (_mode == "Training") _agents.resize(_agentCount);
+  if (_mode == "Testing") _agents.resize(_testingSampleIds.size());
   _isAgentRunning.resize(_agentCount, false);
+
+  // Fixing termination criteria for testing mode
+  if (_mode == "Testing") _maxGenerations = _k->_currentGeneration + 1;
+
+  // Checking if there's testing samples defined
+  if (_mode == "Testing")
+   if (_testingSampleIds.size() == 0)
+    KORALI_LOG_ERROR("For testing, you need to indicate the sample ids to run in the ['Testing']['Sample Ids'] field.\n");
 
   // Storage for the entire episodes before adding it to the replay memory
   _episodes.resize(_agentCount);
 }
 
 void Agent::runGeneration()
+{
+  if (_mode == "Training") trainingGeneration();
+  if (_mode == "Testing") testingGeneration();
+}
+
+void Agent::trainingGeneration()
 {
   auto beginTime = std::chrono::steady_clock::now();
 
@@ -96,7 +111,7 @@ void Agent::runGeneration()
       {
         _agents[agentId]["Sample Id"] = _currentEpisode++;
         _agents[agentId]["Module"] = "Problem";
-        _agents[agentId]["Operation"] = "Run Episode";
+        _agents[agentId]["Operation"] = "Run Training Episode";
         _agents[agentId]["Hyperparameters"] = _hyperparameters;
 
         KORALI_START(_agents[agentId]);
@@ -156,6 +171,22 @@ void Agent::runGeneration()
 
   // Increasing session's generation count
   _sessionGenerationCount++;
+}
+
+void Agent::testingGeneration()
+{
+  // Launching  agents
+  for (size_t agentId = 0; agentId < _testingSampleIds.size(); agentId++)
+  {
+    _agents[agentId]["Sample Id"] = _testingSampleIds[agentId];
+    _agents[agentId]["Module"] = "Problem";
+    _agents[agentId]["Operation"] = "Run Testing Episode";
+    _agents[agentId]["Hyperparameters"] = _testingPolicy;
+
+    KORALI_START(_agents[agentId]);
+  }
+
+  KORALI_WAITALL(_agents);
 }
 
 void Agent::attendAgent(size_t agentId)
@@ -380,7 +411,7 @@ void Agent::finalize()
   }
 
   // Updating policy with the best parameters produced during training
-  setAgentPolicy(_bestTestingHyperparameters);
+  _testingPolicy = _bestTestingHyperparameters;
 }
 
 void Agent::serializeExperienceReplay()
@@ -421,50 +452,63 @@ void Agent::deserializeExperienceReplay()
 
 void Agent::printGenerationAfter()
 {
-  _k->_logger->logInfo("Normal", "Replay Experience Statistics:\n");
+  if (_mode == "Training")
+  {
+    _k->_logger->logInfo("Normal", "Replay Experience Statistics:\n");
 
-  _k->_logger->logInfo("Normal", " + Experience Memory Size:      %lu/%lu\n", _experienceReplay.size(), _experienceReplayMaximumSize);
+    _k->_logger->logInfo("Normal", " + Experience Memory Size:      %lu/%lu\n", _experienceReplay.size(), _experienceReplayMaximumSize);
 
-  if (_maxEpisodes > 0)
-    _k->_logger->logInfo("Normal", " + Total Episodes Count:        %lu/%lu\n", _currentEpisode, _maxEpisodes);
-  else
-    _k->_logger->logInfo("Normal", " + Total Episodes Count:        %lu\n", _currentEpisode);
+    if (_maxEpisodes > 0)
+      _k->_logger->logInfo("Normal", " + Total Episodes Count:        %lu/%lu\n", _currentEpisode, _maxEpisodes);
+    else
+      _k->_logger->logInfo("Normal", " + Total Episodes Count:        %lu\n", _currentEpisode);
 
-  if (_maxExperiences > 0)
-    _k->_logger->logInfo("Normal", " + Total Experience Count:      %lu/%lu\n", _experienceCount, _maxExperiences);
-  else
-    _k->_logger->logInfo("Normal", " + Total Experience Count:      %lu\n", _experienceCount);
+    if (_maxExperiences > 0)
+      _k->_logger->logInfo("Normal", " + Total Experience Count:      %lu/%lu\n", _experienceCount, _maxExperiences);
+    else
+      _k->_logger->logInfo("Normal", " + Total Experience Count:      %lu\n", _experienceCount);
 
-  _k->_logger->logInfo("Normal", "Training Statistics:\n");
+    _k->_logger->logInfo("Normal", "Training Statistics:\n");
 
-  if (_maxPolicyUpdates > 0)
-    _k->_logger->logInfo("Normal", " + Policy Update Count:         %lu/%lu\n", _policyUpdateCount, _maxPolicyUpdates);
-  else
-    _k->_logger->logInfo("Normal", " + Policy Update Count:         %lu\n", _policyUpdateCount);
+    if (_maxPolicyUpdates > 0)
+      _k->_logger->logInfo("Normal", " + Policy Update Count:         %lu/%lu\n", _policyUpdateCount, _maxPolicyUpdates);
+    else
+      _k->_logger->logInfo("Normal", " + Policy Update Count:         %lu\n", _policyUpdateCount);
 
-  _k->_logger->logInfo("Normal", " + Latest Reward:              %f/%f\n", _lastTrainingReward, _problem->_trainingRewardThreshold);
-  _k->_logger->logInfo("Normal", " + Best Reward:                 %f (%lu)\n", _bestTrainingReward, _bestTrainingEpisode);
+    _k->_logger->logInfo("Normal", " + Latest Reward:              %f/%f\n", _lastTrainingReward, _problem->_trainingRewardThreshold);
+    _k->_logger->logInfo("Normal", " + Best Reward:                 %f (%lu)\n", _bestTrainingReward, _bestTrainingEpisode);
 
-  _k->_logger->logInfo("Normal", "Testing Statistics:\n");
+    _k->_logger->logInfo("Normal", "Testing Statistics:\n");
 
-  _k->_logger->logInfo("Normal", " + Candidate Policies:          %lu\n", _candidatePoliciesTested);
+    _k->_logger->logInfo("Normal", " + Candidate Policies:          %lu\n", _candidatePoliciesTested);
 
-  _k->_logger->logInfo("Normal", " + Latest Average (Worst / Best) Reward: %f (%f / %f)\n", _averageTestingReward, _worstTestingReward, _bestTestingReward);
+    _k->_logger->logInfo("Normal", " + Latest Average (Worst / Best) Reward: %f (%f / %f)\n", _averageTestingReward, _worstTestingReward, _bestTestingReward);
 
-  if (_targetAverageTestingReward > -korali::Inf)
-    _k->_logger->logInfo("Normal", " + Best Average Reward: %f/%f\n", _bestAverageTestingReward, _targetAverageTestingReward);
-  else
-    _k->_logger->logInfo("Normal", " + Best Average Reward: %f\n", _bestAverageTestingReward);
+    if (_targetAverageTestingReward > -korali::Inf)
+      _k->_logger->logInfo("Normal", " + Best Average Reward: %f/%f\n", _bestAverageTestingReward, _targetAverageTestingReward);
+    else
+      _k->_logger->logInfo("Normal", " + Best Average Reward: %f\n", _bestAverageTestingReward);
 
-  printAgentInformation();
+    printAgentInformation();
 
-  _k->_logger->logInfo("Normal", "Profiling Information:\n");
-  _k->_logger->logInfo("Normal", " + Average Agent Computation Time:                    %fs\n", _sessionEpisodeCount > 0 ? (_agentComputationTime / _sessionEpisodeCount) / 1.0e+9 : 0.0);
-  _k->_logger->logInfo("Normal", " + Average Agent Communication/Wait Time:             %fs\n", _sessionEpisodeCount > 0 ? (_agentCommunicationTime / _sessionEpisodeCount) / 1.0e+9 : 0.0);
-  _k->_logger->logInfo("Normal", " + Average Agent Policy Evaluation Time:              %fs\n", _sessionEpisodeCount > 0 ? (_agentPolicyEvaluationTime / _sessionEpisodeCount) / 1.0e+9 : 0.0);
-  _k->_logger->logInfo("Normal", " + Generation Running Time:                           %fs\n", _generationTime / 1.0e+9);
-  _k->_logger->logInfo("Normal", " + Cumulative Experience Replay Serialization Time:   %fs\n", _serializationTime / 1.0e+9);
-  _k->_logger->logInfo("Normal", " + Cumulative Result File Saving I/O Time:            %fs\n", _k->_resultSavingTime / 1.0e+9);
+    _k->_logger->logInfo("Normal", "Profiling Information:\n");
+    _k->_logger->logInfo("Normal", " + Average Agent Computation Time:                    %fs\n", _sessionEpisodeCount > 0 ? (_agentComputationTime / _sessionEpisodeCount) / 1.0e+9 : 0.0);
+    _k->_logger->logInfo("Normal", " + Average Agent Communication/Wait Time:             %fs\n", _sessionEpisodeCount > 0 ? (_agentCommunicationTime / _sessionEpisodeCount) / 1.0e+9 : 0.0);
+    _k->_logger->logInfo("Normal", " + Average Agent Policy Evaluation Time:              %fs\n", _sessionEpisodeCount > 0 ? (_agentPolicyEvaluationTime / _sessionEpisodeCount) / 1.0e+9 : 0.0);
+    _k->_logger->logInfo("Normal", " + Generation Running Time:                           %fs\n", _generationTime / 1.0e+9);
+    _k->_logger->logInfo("Normal", " + Cumulative Experience Replay Serialization Time:   %fs\n", _serializationTime / 1.0e+9);
+    _k->_logger->logInfo("Normal", " + Cumulative Result File Saving I/O Time:            %fs\n", _k->_resultSavingTime / 1.0e+9);
+  }
+
+  if (_mode == "Testing")
+  {
+    _k->_logger->logInfo("Normal", "Testing Results:\n");
+    for (size_t agentId = 0; agentId < _testingSampleIds.size(); agentId++)
+    {
+      _k->_logger->logInfo("Normal", " + Sample %lu:\n", _testingSampleIds[agentId]);
+      _k->_logger->logInfo("Normal", "   + Cumulative Reward               %f\n", _agents[agentId]["Testing Reward"].get<float>());
+    }
+  }
 }
 
 } // namespace solver

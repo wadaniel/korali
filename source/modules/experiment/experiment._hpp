@@ -109,13 +109,6 @@ class Experiment : public Module
   knlohmann::json &operator[](const unsigned long int &key);
 
   /**
-    * @brief For agent modules, this returns an optimal action, given the state
-    * @param state The input state
-    * @return The optimal action
-   */
-  std::vector<float> getAction(const std::vector<float> &state);
-
-  /**
     * @brief For learner modules which have been trained, test returns an inferred output batch, from a batch of inputs to process.
     * @param inputBatch The inputs from which to infer outputs.
     * @return The inferred outputs

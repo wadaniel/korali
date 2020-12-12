@@ -38,6 +38,7 @@ e["Variables"][4]["Upper Bound"] = +10.0
 ### Defining Agent Configuration 
 
 e["Solver"]["Type"] = "Agent / Continuous / VRACER"
+e["Solver"]["Mode"] = "Training"
 e["Solver"]["Experiences Between Policy Updates"] = 5
 e["Solver"]["Cache Persistence"] = 0
 e["Solver"]["Policy Distribution"] = "Normal"

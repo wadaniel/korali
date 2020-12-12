@@ -54,6 +54,7 @@ e["Variables"][4]["Exploration Sigma"] = 0.35
 ### Defining Agent Configuration 
 
 e["Solver"]["Type"] = "Agent / Continuous / GFPT"
+e["Solver"]["Mode"] = "Training"
 e["Solver"]["Agent Count"] = 5
 e["Solver"]["Experiences Per Generation"] = 500
 e["Solver"]["Experiences Between Policy Updates"] = 1

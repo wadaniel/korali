@@ -20,6 +20,11 @@ e["Problem"]["Training Reward Threshold"] = 800
 e["Problem"]["Policy Testing Episodes"] = 20
 e["Problem"]["Actions Between Policy Updates"] = 1
 
+### Adding custom setting to run the environment without saving a movie during training
+e["Problem"]["Custom Settings"]["Save Movie"] = "Disabled"
+
+### Defining variables
+
 e["Variables"][0]["Name"] = "Cart Position"
 e["Variables"][0]["Type"] = "State"
 
@@ -38,6 +43,7 @@ e["Variables"][4]["Type"] = "Action"
 ### Configuring DQN hyperparameters
 
 e["Solver"]["Type"] = "Agent / Discrete / DQN"
+e["Solver"]["Mode"] = "Training"
 e["Solver"]["Experiences Between Policy Updates"] = 1
 
 ### Defining Experience Replay configuration
@@ -74,7 +80,7 @@ e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Activation Function"]["Typ
 
 ### Defining Termination Criteria
 
-e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 450
+e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 800
 
 ### Setting file output configuration
 
@@ -86,20 +92,13 @@ k.run(e)
 
 ### Now generating movie with the learned policy
 
-movieFile = './movie'
-cart = gym.wrappers.Monitor(cart, movieFile, force=True)
-maxSteps = 1000
+print('[Korali] Done with training. Now running learned policy to produce the movie.')
 
-print('[Korali] Done training. Now running learned policy to produce the movie.')
+moviePath = './_movie'
+e["Problem"]["Custom Settings"]["Save Movie"] = "Enabled"
+e["Problem"]["Custom Settings"]["Movie Path"] = moviePath
+e["Solver"]["Mode"] = "Testing"
+e["Solver"]["Testing"]["Sample Ids"] = [ 0 ]
+k.run(e)
 
-state = cart.reset().tolist()
-done = False
-step = 0
-while not done and step < 100:
- action = int(e.getAction(state)[0])
- print('[Korali] Step ' + str(step) + ' - State: ' + str(state) + ' - Action: ' + str(action), end = '')
- state, reward, done, info = cart.step(action)
- print('- Reward: ' + str(reward))
- step = step + 1
-
-print('[Korali] Finished. Movie stored in the folder: ' + movieFile)
+print('[Korali] Finished. Movie stored in the folder : ' + movieFile)

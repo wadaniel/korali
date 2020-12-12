@@ -35,6 +35,7 @@ e["Variables"][4]["Type"] = "Action"
 ### Configuring DDQN hyperparameters
 
 e["Solver"]["Type"] = "Agent / Discrete / DDQN"
+e["Solver"]["Mode"] = "Training"
 e["Solver"]["Experiences Between Policy Updates"] = 10
 
 ### Defining Experience Replay configuration

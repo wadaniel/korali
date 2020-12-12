@@ -45,7 +45,8 @@ e["Variables"][7]["Type"] = "Action"
 
 ### Configuring DQN hyperparameters
 
-e["Solver"]["Type"] = "Agent / Discrete / DACER "
+e["Solver"]["Type"] = "Agent / Discrete / DACER"
+e["Solver"]["Mode"] = "Training"
 e["Solver"]["Importance Weight Truncation"] = 2.0
 e["Solver"]["Experiences Between Policy Updates"] = 1
 

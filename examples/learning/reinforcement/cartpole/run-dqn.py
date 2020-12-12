@@ -37,12 +37,14 @@ e["Variables"][4]["Type"] = "Action"
 ### Configuring DQN hyperparameters
 
 e["Solver"]["Type"] = "Agent / Discrete / DQN"
+e["Solver"]["Mode"] = "Training"
 e["Solver"]["Experiences Between Policy Updates"] = 10
+e["Solver"]["Experiences Per Generation"] = 10
 
 ### Defining Experience Replay configuration
 
 e["Solver"]["Experience Replay"]["Start Size"] = 1000
-e["Solver"]["Experience Replay"]["Maximum Size"] = 10000
+e["Solver"]["Experience Replay"]["Maximum Size"] = 50000
 
 ### Defining probability of taking a random action (epsilon)
 
@@ -53,7 +55,7 @@ e["Solver"]["Random Action Probability"] = 0.05
 e["Solver"]["Critic"]["Mini Batch Size"] = 32
 e["Solver"]["Critic"]["Learning Rate"] = 0.001
 e["Solver"]["Critic"]["Discount Factor"] = 0.99
-e["Solver"]["Critic"]["Target Update Delay"] = 500
+e["Solver"]["Critic"]["Target Update Delay"] = 100
 
 ### Defining the shape of the neural network
 

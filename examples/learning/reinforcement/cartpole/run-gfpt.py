@@ -36,6 +36,7 @@ e["Variables"][4]["Exploration Sigma"] = 0.35
 ### Defining Agent Configuration 
 
 e["Solver"]["Type"] = "Agent / Continuous / GFPT"
+e["Solver"]["Mode"] = "Training"
 e["Solver"]["Agent Count"] = 5
 e["Solver"]["Experiences Per Generation"] = 500
 e["Solver"]["Experiences Between Policy Updates"] = 1
@@ -101,9 +102,16 @@ e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 450
 e["File Output"]["Enabled"] = True
 e["File Output"]["Frequency"] = 10
  
-### Running Experiment
+### Running Training Experiment
 
 #k["Conduit"]["Type"] = "Distributed"
 k["Conduit"]["Type"] = "Concurrent"
 k["Conduit"]["Concurrent Jobs"] = 5
+k.run(e)
+
+### Running Testing Experiment
+
+e["Solver"]["Mode"] = "Testing"
+e["Solver"]["Testing"]["Sample Ids"] = [ 0, 1, 2 ]
+
 k.run(e)

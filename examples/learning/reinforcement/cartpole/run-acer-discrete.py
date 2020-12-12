@@ -37,6 +37,7 @@ e["Variables"][4]["Type"] = "Action"
 ### Configuring ACER hyperparameters
 
 e["Solver"]["Type"] = "Agent / Discrete / DACER"
+e["Solver"]["Mode"] = "Training"
 e["Solver"]["Experiences Between Policy Updates"] = 25
 e["Solver"]["Cache Persistence"] = 10
 

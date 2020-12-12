@@ -163,9 +163,11 @@ void DDQN::trainPolicy()
   // Running one generation of the optimization method with the given mini-batch
   _aLearner->initialize();
   _aLearner->runGeneration();
+  _aLearner->finalize();
 
   _vLearner->initialize();
   _vLearner->runGeneration();
+  _vLearner->finalize();
 
   // Keeping statistics
   _averageQStar = (float)_cumulativeQStar / (float)_criticMiniBatchSize;
@@ -239,8 +241,8 @@ std::vector<float> DDQN::getActionProbabilities(const std::vector<float> &state)
 knlohmann::json DDQN::getAgentPolicy()
 {
   knlohmann::json hyperparameters;
-  hyperparameters["Critic (V)"] = _vLearner->getInferenceHyperparameters();
-  hyperparameters["Critic (A)"] = _aLearner->getInferenceHyperparameters();
+  hyperparameters["Critic (V)"] = _vLearner->getTrainingHyperparameters();
+  hyperparameters["Critic (A)"] = _aLearner->getTrainingHyperparameters();
   return hyperparameters;
 }
 

@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
 
   e["Problem"]["Type"] = "Reinforcement Learning / Continuous";
   e["Problem"]["Environment Function"] = &runEnvironment;
-  e["Problem"]["Training Reward Threshold"] = 3.0;
+  e["Problem"]["Training Reward Threshold"] = -12.0;
   e["Problem"]["Policy Testing Episodes"] = 1;
   e["Problem"]["Actions Between Policy Updates"] = 1;
 

@@ -43,6 +43,7 @@ void Agent::initialize()
     _bestTrainingReward = -korali::Inf;
     _bestTrainingEpisode = 0;
     _bestAverageTestingReward = -korali::Inf;
+    _bestTestingEpisode = 0;
 
     // Initializing training hyperparameters
     _trainingState = getTrainingState();
@@ -232,7 +233,7 @@ void Agent::attendAgent(size_t agentId)
       if (_lastTrainingReward > _bestTrainingReward)
       {
         _bestTrainingReward = _lastTrainingReward;
-        _bestTrainingEpisode = _currentEpisode;
+        _bestTrainingEpisode = _agents[agentId]["Sample Id"];
         _bestTrainingHyperparameters = _agents[agentId]["Hyperparameters"];
       }
 
@@ -250,6 +251,7 @@ void Agent::attendAgent(size_t agentId)
         if (_averageTestingReward > _bestAverageTestingReward)
         {
           _bestAverageTestingReward = _averageTestingReward;
+          _bestTestingEpisode = _agents[agentId]["Sample Id"];
           _bestTestingHyperparameters = _agents[agentId]["Hyperparameters"];
         }
       }
@@ -485,9 +487,9 @@ void Agent::printGenerationAfter()
     _k->_logger->logInfo("Normal", " + Latest Average (Worst / Best) Reward: %f (%f / %f)\n", _averageTestingReward, _worstTestingReward, _bestTestingReward);
 
     if (_targetAverageTestingReward > -korali::Inf)
-      _k->_logger->logInfo("Normal", " + Best Average Reward: %f/%f\n", _bestAverageTestingReward, _targetAverageTestingReward);
+      _k->_logger->logInfo("Normal", " + Best Average Reward: %f/%f (%lu)\n", _bestAverageTestingReward, _targetAverageTestingReward, _bestTestingEpisode);
     else
-      _k->_logger->logInfo("Normal", " + Best Average Reward: %f\n", _bestAverageTestingReward);
+      _k->_logger->logInfo("Normal", " + Best Average Reward: %f (%lu)\n", _bestAverageTestingReward, _bestTestingEpisode);
 
     printAgentInformation();
 

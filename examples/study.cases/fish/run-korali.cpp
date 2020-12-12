@@ -37,10 +37,14 @@ int main(int argc, char *argv[])
 
   // Creating Experiment
   auto e = korali::Experiment();
+  e["Problem"]["Type"] = "Reinforcement Learning / Continuous";
+
+  ////// Checking if existing results are there and continuing them
+
+  auto found = e.loadState(trainingResultsPath + std::string("/latest"));
+  if (found == true) printf("Continuing execution from previous run...\n");
 
   // Configuring Experiment
-
-  e["Problem"]["Type"] = "Reinforcement Learning / Continuous";
   e["Problem"]["Environment Function"] = &runEnvironment;
   e["Problem"]["Training Reward Threshold"] = -12.0;
   e["Problem"]["Policy Testing Episodes"] = 1;
@@ -49,11 +53,6 @@ int main(int argc, char *argv[])
   // Adding custom setting to run the environment without dumping the state files during training
   e["Problem"]["Custom Settings"]["Dump Frequency"] = 0.0;
   e["Problem"]["Custom Settings"]["Dump Path"] = trainingResultsPath;
-
-  ////// Checking if existing results are there and continuing them
-
-  auto found = e.loadState(trainingResultsPath + std::string("/latest"));
-  if (found == true) printf("Continuing execution from previous run...\n");
 
   // Setting up the 16 state variables
   size_t curVariable = 0;

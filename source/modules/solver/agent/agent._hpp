@@ -123,7 +123,7 @@ class Agent : public Solver
   /**
    * @brief Session-specific generation count. This is useful in case of restart: counters from the old session won't count
    */
-  size_t _sessionGenerationCount;
+  size_t _sessionGeneration;
 
   /**
    * @brief Session-specific policy update count. This is useful in case of restart: counters from the old session won't count

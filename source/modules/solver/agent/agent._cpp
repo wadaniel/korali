@@ -67,7 +67,7 @@ void Agent::initialize()
   // Initializing session-specific counters
   _sessionExperienceCount = 0;
   _sessionEpisodeCount = 0;
-  _sessionGenerationCount = 0;
+  _sessionGeneration = 1;
   _sessionPolicyUpdateCount = 0;
 
   // Calculating how many more experiences do we need in this session to reach the starting size
@@ -103,7 +103,7 @@ void Agent::trainingGeneration()
   if (_k->_currentGeneration > 0) setTrainingState(_trainingState);
 
   // Running until all _agents have finished
-  while (_sessionExperienceCount < _experiencesPerGeneration * _sessionGenerationCount)
+  while (_sessionExperienceCount < _experiencesPerGeneration * _sessionGeneration)
   {
     // Launching (or re-launching) agents
     for (size_t agentId = 0; agentId < _agentCount; agentId++)
@@ -170,7 +170,7 @@ void Agent::trainingGeneration()
   _generationTime = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();
 
   // Increasing session's generation count
-  _sessionGenerationCount++;
+  _sessionGeneration++;
 }
 
 void Agent::testingGeneration()

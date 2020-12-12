@@ -21,7 +21,12 @@ void runEnvironment(korali::Sample &s)
 
   // Creating results directory
   char resDir[64];
-  sprintf(resDir, "%s/sample%08lu", _resultsPath.c_str(), sampleId);
+
+  if (s["Mode"] == "Training")
+   sprintf(resDir, "%s/sample%08lu", _resultsPath.c_str(), sampleId);
+  else
+   sprintf(resDir, "%s", s["Custom Settings"]["Dump Path"].get<std::string>().c_str());
+
   std::filesystem::create_directories(resDir);
 
   // Redirecting all output to the log file

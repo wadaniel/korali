@@ -19,7 +19,8 @@
 #include "distribution/univariate/uniform/uniform.hpp"
 #include "distribution/univariate/weibull/weibull.hpp"
 #include "experiment/experiment.hpp"
-#include "neuralNetwork/layer/dense/dense.hpp"
+#include "neuralNetwork/layer/feedforward/feedforward.hpp"
+#include "neuralNetwork/layer/recurrent/recurrent.hpp"
 #include "neuralNetwork/layer/layer.hpp"
 #include "neuralNetwork/neuralNetwork.hpp"
 #include "problem/bayesian/approximate/approximate.hpp"
@@ -154,7 +155,8 @@ Module *Module::getModule(knlohmann::json &js, Experiment *e)
   if (moduleType == "Sampler/MCMC") module = new korali::solver::sampler::MCMC();
   if (moduleType == "Sampler/TMCMC") module = new korali::solver::sampler::TMCMC();
   if (moduleType == "NeuralNetwork") module = new korali::NeuralNetwork();
-  if (moduleType == "Layer/Dense") module = new korali::neuralNetwork::layer::Dense();
+  if (moduleType == "Layer/FeedForward") module = new korali::neuralNetwork::layer::FeedForward();
+  if (moduleType == "Layer/Recurrent") module = new korali::neuralNetwork::layer::Recurrent();
 
   if (module == nullptr) KORALI_LOG_ERROR(" + Unrecognized module: %s.\n", moduleType.c_str());
 

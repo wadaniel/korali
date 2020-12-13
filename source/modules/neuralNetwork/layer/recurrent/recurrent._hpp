@@ -1,5 +1,5 @@
-#ifndef _KORALI_LAYER_DENSE_HPP_
-#define _KORALI_LAYER_DENSE_HPP_
+#ifndef _KORALI_LAYER_RECURRENT_HPP_
+#define _KORALI_LAYER_RECURRENT_HPP_
 
 #include "modules/neuralNetwork/layer/layer.hpp"
 
@@ -9,15 +9,14 @@ namespace neuralNetwork
 {
 namespace layer
 {
-class Dense : public Layer
+class Recurrent : public Layer
 {
   public:
   std::vector<float> generateInitialHyperparameters() override;
   void createHyperparameterMemory() override;
   void createForwardPipeline() override;
   void createBackwardPipeline() override;
-  void forwardWeightsAndBias() override;
-  void forwardActivationFunction() override;
+  void forwardData() override;
   void setOutputGradients(float *gradient) override;
   void getOutputValues(float *output) override;
   void setInputValues(float *input) override;
@@ -25,9 +24,8 @@ class Dense : public Layer
   void setHyperparameters(float *hyperparameters) override;
   void getHyperparameters(float *hyperparameters) override;
   void getHyperparameterGradients(float *gradient) override;
-  void backwardActivationFunction() override;
-  void backwardDataPropagation() override;
-  void backwardWeightsAndBias() override;
+  void backwardData() override;
+  void backwardHyperparameters() override;
 };
 
 } // namespace layer
@@ -36,4 +34,4 @@ class Dense : public Layer
 
 } // namespace korali
 
-#endif // _KORALI_LAYER_DENSE_HPP_
+#endif // _KORALI_LAYER_RECURRENT_HPP_

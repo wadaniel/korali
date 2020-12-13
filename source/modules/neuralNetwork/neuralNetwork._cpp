@@ -158,14 +158,7 @@ void NeuralNetwork::forward()
   size_t layerCount = _layers.size();
 
   // forward propagating neural network
-  for (size_t i = 0; i < layerCount; i++)
-  {
-    // Applying forward Wx+b operation
-    if (i > 0) _layers[i]->forwardWeightsAndBias();
-
-    // Applying activation function
-    _layers[i]->forwardActivationFunction();
-  }
+  for (size_t i = 0; i < layerCount; i++)  _layers[i]->forwardData();
 
   // Restoring the output later node values
   size_t lastLayer = layerCount - 1;
@@ -296,16 +289,11 @@ void NeuralNetwork::backward(const std::vector<std::vector<float>> &gradients)
   // Backward propagating neural network
   for (ssize_t i = lastLayer; i >= 0; i--)
   {
-    _layers[i]->backwardActivationFunction();
+   // Running backward data propagation
+   _layers[i]->backwardData();
 
-    if (i > 0)
-    {
-      // Running backward data propagation
-      _layers[i]->backwardDataPropagation();
-
-      // Running backward weight+bias propagation
-      _layers[i]->backwardWeightsAndBias();
-    }
+   // Calculating hyperparamter gradients
+   _layers[i]->backwardHyperparameters();
   }
 }
 

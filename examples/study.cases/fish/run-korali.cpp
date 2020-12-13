@@ -66,14 +66,14 @@ int main(int argc, char *argv[])
   e["Variables"][curVariable]["Type"] = "Action";
   e["Variables"][curVariable]["Lower Bound"] = -1.0;
   e["Variables"][curVariable]["Upper Bound"] = +1.0;
-  e["Variables"][curVariable]["Exploration Sigma"] = 0.05;
+  e["Variables"][curVariable]["Exploration Sigma"] = 0.1;
 
   curVariable++;
   e["Variables"][curVariable]["Name"] = "Force";
   e["Variables"][curVariable]["Type"] = "Action";
   e["Variables"][curVariable]["Lower Bound"] = -0.25;
   e["Variables"][curVariable]["Upper Bound"] = +0.25;
-  e["Variables"][curVariable]["Exploration Sigma"] = 0.001;
+  e["Variables"][curVariable]["Exploration Sigma"] = 0.05;
 
   //// Defining Agent Configuration
 
@@ -90,43 +90,45 @@ int main(int argc, char *argv[])
 
   //// Defining Critic Configuration
 
-  e["Solver"]["Critic"]["Learning Rate"] = 0.001;
+  e["Solver"]["Critic"]["Learning Rate"] = 0.0001;
   e["Solver"]["Critic"]["Discount Factor"] = 0.99;
-  e["Solver"]["Critic"]["Mini Batch Size"] = 256;
+  e["Solver"]["Critic"]["Mini Batch Size"] = 128;
 
   e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense";
   e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear";
 
   e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Type"] = "Layer/Dense";
-  e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Node Count"] = 256;
+  e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Node Count"] = 32;
   e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Activation Function"]["Type"] = "Elementwise/Tanh";
 
   e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Type"] = "Layer/Dense";
-  e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Node Count"] = 256;
+  e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Node Count"] = 32;
   e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Elementwise/Tanh";
 
   e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Type"] = "Layer/Dense";
   e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Elementwise/Linear";
+  e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Weight Scaling"] = 0.01;
 
   //// Defining Policy Configuration
 
-  e["Solver"]["Policy"]["Learning Rate"] = 0.00001;
-  e["Solver"]["Policy"]["Mini Batch Size"] = 256;
+  e["Solver"]["Policy"]["Learning Rate"] = 0.000001;
+  e["Solver"]["Policy"]["Mini Batch Size"] = 128;
   e["Solver"]["Policy"]["Target Accuracy"] = 0.0001;
 
   e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense";
   e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear";
 
   e["Solver"]["Policy"]["Neural Network"]["Layers"][1]["Type"] = "Layer/Dense";
-  e["Solver"]["Policy"]["Neural Network"]["Layers"][1]["Node Count"] = 256;
+  e["Solver"]["Policy"]["Neural Network"]["Layers"][1]["Node Count"] = 32;
   e["Solver"]["Policy"]["Neural Network"]["Layers"][1]["Activation Function"]["Type"] = "Elementwise/Tanh";
 
   e["Solver"]["Policy"]["Neural Network"]["Layers"][2]["Type"] = "Layer/Dense";
-  e["Solver"]["Policy"]["Neural Network"]["Layers"][2]["Node Count"] = 256;
+  e["Solver"]["Policy"]["Neural Network"]["Layers"][2]["Node Count"] = 32;
   e["Solver"]["Policy"]["Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Elementwise/Tanh";
 
   e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Type"] = "Layer/Dense";
   e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Elementwise/Tanh";
+  e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Weight Scaling"] = 0.01;
 
   ////// Defining Termination Criteria
 
@@ -159,7 +161,7 @@ int main(int argc, char *argv[])
   k["Conduit"]["Communicator"] = MPI_COMM_WORLD;
 #endif
 
-  //k.run(e);
+  k.run(e);
 
   ////// Now testing policy, dumping trajectory results
 
@@ -175,7 +177,7 @@ int main(int argc, char *argv[])
   k["Profiling"]["Path"] = testingResultsPath + std::string("/profiling.json");
   e["Solver"]["Testing"]["Policy"] = e["Solver"]["Best Training Hyperparamters"];
   e["Solver"]["Mode"] = "Testing";
-  e["Solver"]["Testing"]["Sample Ids"] = { 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31 };
+  for (int i = 0; i < N; i++) e["Solver"]["Testing"]["Sample Ids"][i] = i;
 
   k.run(e);
 

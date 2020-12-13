@@ -79,8 +79,8 @@ int main(int argc, char *argv[])
   e["Solver"]["Experiences Between Policy Updates"] = 10;
   e["Solver"]["Cache Persistence"] = 10;
 
-  e["Solver"]["Experience Replay"]["Start Size"] = 5000;
-  e["Solver"]["Experience Replay"]["Maximum Size"] = 500000;
+  e["Solver"]["Experience Replay"]["Start Size"] = 131072;
+  e["Solver"]["Experience Replay"]["Maximum Size"] = 262144;
   e["Solver"]["Experience Replay"]["Serialization Frequency"] = 20;
   e["Solver"]["Mini Batch Strategy"] = "Uniform";
 
@@ -105,6 +105,7 @@ int main(int argc, char *argv[])
 
   e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Type"] = "Layer/Dense";
   e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Elementwise/Linear";
+  e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Weight Scaling"] = 0.01;
 
   //// Defining Policy Configuration
 
@@ -127,6 +128,7 @@ int main(int argc, char *argv[])
 
   e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Type"] = "Layer/Dense";
   e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Elementwise/Tanh";
+  e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Weight Scaling"] = 0.01;
 
   ////// Defining Termination Criteria
 

@@ -1,0 +1,99 @@
+#include "modules/neuralNetwork/layer/recurrent/recurrent.hpp"
+#include "modules/neuralNetwork/neuralNetwork.hpp"
+
+#ifdef _KORALI_USE_ONEDNN
+  #include "auxiliar/dnnUtils.hpp"
+using namespace dnnl;
+#endif
+
+#ifdef _KORALI_USE_EIGEN
+  #include <Eigen/Dense>
+using namespace Eigen;
+#endif
+
+namespace korali
+{
+namespace neuralNetwork
+{
+namespace layer
+{
+std::vector<float> Recurrent::generateInitialHyperparameters()
+{
+  std::vector<float> hyperparameters;
+
+  // If this is not the initial layer, calculate hyperparameters for weight and bias operation
+  if (_prevLayer != NULL)
+  {
+    // Setting value for this layer's xavier constant
+    float xavierConstant = (_weightScaling * sqrtf(6.0f)) / sqrt(_nodeCount + _prevLayer->_nodeCount);
+
+    // Adding layer's weights hyperparameter values
+    for (size_t i = 0; i < _nodeCount; i++)
+      for (size_t j = 0; j < _prevLayer->_nodeCount; j++)
+        hyperparameters.push_back(xavierConstant * _nn->_uniformGenerator->getRandomNumber());
+
+    // Adding layer's bias hyperparameter values
+    for (size_t i = 0; i < _nodeCount; i++)
+      hyperparameters.push_back(0.0f);
+  }
+
+  return hyperparameters;
+}
+
+void Recurrent::forwardData()
+{
+}
+
+void Recurrent::createHyperparameterMemory()
+{
+}
+
+void Recurrent::createForwardPipeline()
+{
+}
+
+void Recurrent::createBackwardPipeline()
+{
+}
+
+void Recurrent::backwardData()
+{
+}
+
+void Recurrent::backwardHyperparameters()
+{
+}
+
+void Recurrent::setOutputGradients(float *gradient)
+{
+}
+
+void Recurrent::setHyperparameters(float *hyperparameters)
+{
+}
+
+void Recurrent::getHyperparameters(float *hyperparameters)
+{
+}
+
+void Recurrent::getHyperparameterGradients(float *gradient)
+{
+}
+
+void Recurrent::getOutputValues(float *output)
+{
+}
+
+void Recurrent::getInputGradients(float *gradient)
+{
+}
+
+void Recurrent::setInputValues(float *input)
+{
+}
+
+} // namespace layer
+
+} // namespace neuralNetwork
+
+} // namespace korali

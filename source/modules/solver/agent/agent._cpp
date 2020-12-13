@@ -82,6 +82,9 @@ void Agent::initialize()
   // Fixing termination criteria for testing mode
   if (_mode == "Testing") _maxGenerations = _k->_currentGeneration + 1;
 
+  // Setting testing policy to best testing hyperparameters if not custom-set by the user
+  if (_mode == "Testing") if (_testingPolicy.empty()) _testingPolicy = _bestTestingHyperparameters;
+
   // Checking if there's testing samples defined
   if (_mode == "Testing")
    if (_testingSampleIds.size() == 0)
@@ -411,9 +414,6 @@ void Agent::finalize()
         agentsRemain = true;
       }
   }
-
-  // Updating policy with the best parameters produced during training
-  _testingPolicy = _bestTestingHyperparameters;
 }
 
 void Agent::serializeExperienceReplay()

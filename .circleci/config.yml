@@ -179,7 +179,11 @@ jobs:
       - restore_cache:
           keys:
             - cache-macos-rtnorm-v13
-      
+     
+      - run:
+          name: Install scipy/numpy
+          command: python3 -m pip install scipy numpy
+
       - run:
           name: Install Doxygen
           command: ./external/install_doxygen.sh

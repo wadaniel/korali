@@ -30,13 +30,19 @@ class VRACER : public Continuous
    * @brief Pointer to actor's experiment problem
    */
   problem::SupervisedLearning *_criticPolicyProblem;
+ 
+  /**
+   * @brief Calculates the state value function V(s,a)
+   * @param state state to evaluate
+   * @return The value of V(s)
+   */
+  float stateValueFunction(const std::vector<float> &state);
 
   /**
-   * @brief Calculates the V-target
-   * @param expId Experience Id
-   * @return vTbc
+   * @brief Update the V-target or current and previous experiences
+   * @param expId Current Experience Id
    */
-  float computeVtbc(size_t expId);
+  void updateVtbc(size_t expId);
 
   /**
    * @brief Calculates the gradient of policy wrt to the parameter of the 2nd (current) distribution evaluated at old action.

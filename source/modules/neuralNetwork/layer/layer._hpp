@@ -140,12 +140,12 @@ class Layer : public Module
   /**
    * @brief Initializes the layer's internal memory structures for the forward pipeline
    */
-  virtual void createForwardPipeline() = 0;
+  virtual void createForwardPipeline();
 
   /**
   * @brief Initializes the internal memory structures for the backward pipeline
   */
-  virtual void createBackwardPipeline() = 0;
+  virtual void createBackwardPipeline();
 
   /**
   * @brief Performs the forward propagation of the Wx+b operations
@@ -156,25 +156,25 @@ class Layer : public Module
    * @brief Sets the gradients at the output nodes of the layer
    * @param gradient (Input) pointer containing the gradients to set.
    */
-  virtual void setOutputGradients(float *gradient) = 0;
+  void setOutputGradients(float *gradient);
 
   /**
    * @brief Gets the values at the output nodes of the layer
    * @param output (Output) Pointer to write the output values to.
    */
-  virtual void getOutputValues(float *output) = 0;
+  void getOutputValues(float *output);
 
   /**
    * @brief Sets the values at the input nodes of the layer
    * @param input (Input) pointer containing the values to set.
    */
-  virtual void setInputValues(float *input) = 0;
+  void setInputValues(float *input);
 
   /**
    * @brief Gets the gradients at the input nodes of the layer
    * @param gradient (Output) Pointer to write the input gradients to.
    */
-  virtual void getInputGradients(float *gradient) = 0;
+  void getInputGradients(float *gradient);
 
   /**
    * @brief Updates layer's hyperparameters (e.g., weights and biases)

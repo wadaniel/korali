@@ -218,10 +218,6 @@ class FeedForward : public Layer
   void createBackwardPipeline() override;
   void forwardData() override;
 
-  void setOutputGradients(float *gradient) override;
-  void getOutputValues(float *output) override;
-  void setInputValues(float *input) override;
-  void getInputGradients(float *gradient) override;
   void setHyperparameters(float *hyperparameters) override;
   void getHyperparameters(float *hyperparameters) override;
   void getHyperparameterGradients(float *gradient) override;

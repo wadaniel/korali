@@ -12,15 +12,86 @@ namespace layer
 class Recurrent : public Layer
 {
   public:
+
+  /**
+   * @brief cuDNN Counts the size of all linear layer weights
+   */
+  std::vector<size_t> _linearLayerWeightSizes;
+
+  /**
+   * @brief cuDNN Counts the size of all linear layer biases
+   */
+  std::vector<size_t> _linearLayerBiasSizes;
+
+  #ifdef _KORALI_USE_CUDNN
+
+  /**
+  * @brief cuDNN Device memory pointers for each internal layer's hidden state
+  */
+  void **_hStateTensor;
+
+  /**
+  * @brief cuDNN Device memory pointers for each internal layer's candidate (LSTM) state
+  */
+  void **_cStateTensor;
+
+  /**
+  * @brief cuDNN Device memory pointers for each internal layer's hidden state gradients
+  */
+  void *_hStateGradientTensor;
+
+  /**
+  * @brief cuDNN Device memory pointers for each internal layer's candidate (LSTM) state gradients
+  */
+  void *_cStateGradientTensor;
+
+  /**
+  * @brief cuDNN descriptor for the dropout operator
+  */
+  cudnnDropoutDescriptor_t _dropoutDesc;
+
+  /**
+   * @brief cuDNN descriptor for the RNN operator
+   */
+  cudnnRNNDescriptor_t _rnnDesc;
+
+  /**
+   * @brief cuDNN Selector for the RNN mode
+   */
+  cudnnRNNMode_t _rnnMode;
+
+  /**
+   * @brief cuDNN Remembers the number of internal linear layers
+   */
+  size_t _linearLayerCount;
+
+  /**
+  * @brief cuDNN Device memory pointers for layer's weights
+  */
+  void *_weightsTensor;
+
+  /**
+  * @brief cuDNN Device memory pointers for layer's weight gradients
+  */
+  void *_weightsGradientTensor;
+
+  /**
+  * @brief cuDNN Device memory pointer to of all linear layer weights
+  */
+  std::vector<void*> _linearLayerWeightTensors;
+
+  /**
+   * @brief cuDNN Device memory pointer to of all linear layer biases
+   */
+  std::vector<void*> _linearLayerBiasTensors;
+
+  #endif
+
   std::vector<float> generateInitialHyperparameters() override;
   void createHyperparameterMemory() override;
   void createForwardPipeline() override;
   void createBackwardPipeline() override;
   void forwardData() override;
-  void setOutputGradients(float *gradient) override;
-  void getOutputValues(float *output) override;
-  void setInputValues(float *input) override;
-  void getInputGradients(float *gradient) override;
   void setHyperparameters(float *hyperparameters) override;
   void getHyperparameters(float *hyperparameters) override;
   void getHyperparameterGradients(float *gradient) override;

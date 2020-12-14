@@ -1,6 +1,10 @@
 #include "modules/neuralNetwork/layer/feedforward/feedforward.hpp"
 #include "modules/neuralNetwork/neuralNetwork.hpp"
 
+#ifdef _KORALI_USE_CUDNN
+  #include "auxiliar/cudaUtils.hpp"
+#endif
+
 #ifdef _KORALI_USE_ONEDNN
   #include "auxiliar/dnnUtils.hpp"
 using namespace dnnl;
@@ -83,17 +87,17 @@ void FeedForward::createHyperparameterMemory()
 #ifdef _KORALI_USE_CUDNN
     if (_nn->_engine == "CUDNN")
     {
-      if (cudnnCreateFilterDescriptor(&_weightsFilterDesc) != CUDNN_STATUS_SUCCESS) KORALI_LOG_ERROR("Error creating weights filter descriptor\n");
-      if (cudnnSetFilter4dDescriptor(_weightsFilterDesc, CUDNN_DATA_FLOAT, CUDNN_TENSOR_NCHW, OC, IC, 1, 1) != CUDNN_STATUS_SUCCESS) KORALI_LOG_ERROR("Error setting weight filter descriptor\n");
+      cudnnErrCheck(cudnnCreateFilterDescriptor(&_weightsFilterDesc));
+      cudnnErrCheck(cudnnSetFilter4dDescriptor(_weightsFilterDesc, CUDNN_DATA_FLOAT, CUDNN_TENSOR_NCHW, OC, IC, 1, 1));
 
-      if (cudaMalloc((void **)&_weightsFilter, IC * OC * sizeof(float)) != cudaSuccess) KORALI_LOG_ERROR("Error creating memory for Weights filter");
-      if (cudaMalloc((void **)&_weightsGradientFilter, IC * OC * sizeof(float)) != cudaSuccess) KORALI_LOG_ERROR("Error creating memory for Weights filter");
+      cudaErrCheck(cudaMalloc((void **)&_weightsFilter, IC * OC * sizeof(float)));
+      cudaErrCheck(cudaMalloc((void **)&_weightsGradientFilter, IC * OC * sizeof(float)));
 
-      if (cudnnCreateTensorDescriptor(&_biasTensorDesc) != CUDNN_STATUS_SUCCESS) KORALI_LOG_ERROR("Error creating weights filter descriptor\n");
-      if (cudnnSetTensor4dDescriptor(_biasTensorDesc, CUDNN_TENSOR_NCHW, CUDNN_DATA_FLOAT, 1, OC, 1, 1) != CUDNN_STATUS_SUCCESS) KORALI_LOG_ERROR("Error setting weight filter descriptor\n");
+      cudnnErrCheck(cudnnCreateTensorDescriptor(&_biasTensorDesc));
+      cudnnErrCheck(cudnnSetTensor4dDescriptor(_biasTensorDesc, CUDNN_TENSOR_NCHW, CUDNN_DATA_FLOAT, 1, OC, 1, 1));
 
-      if (cudaMalloc((void **)&_biasTensor, OC * sizeof(float)) != cudaSuccess) KORALI_LOG_ERROR("Error creating memory for Weights filter");
-      if (cudaMalloc((void **)&_biasGradientTensor, OC * sizeof(float)) != cudaSuccess) KORALI_LOG_ERROR("Error creating memory for Weights filter");
+      cudaErrCheck(cudaMalloc((void **)&_biasTensor, OC * sizeof(float)));
+      cudaErrCheck(cudaMalloc((void **)&_biasGradientTensor, OC * sizeof(float)));
     }
 #endif
   }
@@ -101,6 +105,9 @@ void FeedForward::createHyperparameterMemory()
 
 void FeedForward::createForwardPipeline()
 {
+  // Calling base layer function
+  Layer::createForwardPipeline();
+
   // Obtaining batch size
   ssize_t N = _nn->_batchSize;
 
@@ -111,24 +118,13 @@ void FeedForward::createForwardPipeline()
 #ifdef _KORALI_USE_EIGEN
   if (_nn->_engine == "Korali")
   {
-    _inputValues = (float *)malloc(N * OC * sizeof(float));
-    _outputValues = (float *)malloc(N * OC * sizeof(float));
+   // Not much more to do here
   }
 #endif
 
 #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
   {
-    // Creating layer's data memory storage and activation function
-    const memory::dims layerDims = {N, OC};
-    auto dataMemDesc = memory::desc(layerDims, memory::data_type::f32, memory::format_tag::nc);
-
-    // Creating input (node) layer memory
-    _inputMem = memory(dataMemDesc, _engine);
-
-    // Creating activation layer memory
-    _outputMem = memory(dataMemDesc, _engine);
-
     // If it is an element-wise operation, create an element-wise primitive
     if (_activationFunctionType.rfind("Elementwise", 0) == 0)
     {
@@ -195,12 +191,7 @@ void FeedForward::createForwardPipeline()
 #ifdef _KORALI_USE_CUDNN
   if (_nn->_engine == "CUDNN")
   {
-    if (cudnnCreateTensorDescriptor(&_layerTensorDesc) != CUDNN_STATUS_SUCCESS) KORALI_LOG_ERROR("Error creating node tensor descriptor\n");
-    if (cudnnSetTensor4dDescriptor(_layerTensorDesc, CUDNN_TENSOR_NCHW, CUDNN_DATA_FLOAT, N, OC, 1, 1) != CUDNN_STATUS_SUCCESS) KORALI_LOG_ERROR("Error setting node tensor descriptor\n");
-    if (cudaMalloc((void **)&_inputTensor, N * OC * sizeof(float)) != cudaSuccess) KORALI_LOG_ERROR("Error creating memory for node tensor ");
-    if (cudaMalloc((void **)&_outputTensor, N * OC * sizeof(float)) != cudaSuccess) KORALI_LOG_ERROR("Error creating activation tensor memory");
-
-    if (cudnnCreateActivationDescriptor(&_activationDesc) != CUDNN_STATUS_SUCCESS) KORALI_LOG_ERROR("Error creating activation algorithm\n");
+    cudnnErrCheck(cudnnCreateActivationDescriptor(&_activationDesc));
     cudnnActivationMode_t activationMode;
 
     if (_activationFunctionType == "Elementwise/Clip") activationMode = CUDNN_ACTIVATION_CLIPPED_RELU;
@@ -215,10 +206,10 @@ void FeedForward::createForwardPipeline()
 
     if (_prevLayer != NULL)
     {
-      if (cudnnCreateConvolutionDescriptor(&_convolutionDesc) != CUDNN_STATUS_SUCCESS) KORALI_LOG_ERROR("Error creating convolution descriptor\n");
-      if (cudnnSetConvolution2dDescriptor(_convolutionDesc, 0, 0, 1, 1, 1, 1, CUDNN_CONVOLUTION, CUDNN_DATA_FLOAT) != CUDNN_STATUS_SUCCESS) KORALI_LOG_ERROR("Error initializing convolution descriptor\n");
-      if (cudnnGetConvolutionForwardWorkspaceSize(_nn->_cuDNNHandle, _prevLayer->_layerTensorDesc, _weightsFilterDesc, _convolutionDesc, _layerTensorDesc, CUDNN_CONVOLUTION_FWD_ALGO_IMPLICIT_GEMM, &_convolutionWorkspaceSize) != CUDNN_STATUS_SUCCESS) KORALI_LOG_ERROR("Error obtaining convolution workspace size\n");
-      if (cudaMalloc((void **)&_convolutionWorkspace, _convolutionWorkspaceSize * sizeof(float)) != cudaSuccess) KORALI_LOG_ERROR("Error creating convolution memory");
+      cudnnErrCheck(cudnnCreateConvolutionDescriptor(&_convolutionDesc));
+      cudnnErrCheck(cudnnSetConvolution2dDescriptor(_convolutionDesc, 0, 0, 1, 1, 1, 1, CUDNN_CONVOLUTION, CUDNN_DATA_FLOAT));
+      cudnnErrCheck(cudnnGetConvolutionForwardWorkspaceSize(_nn->_cuDNNHandle, _prevLayer->_layerTensorDesc, _weightsFilterDesc, _convolutionDesc, _layerTensorDesc, CUDNN_CONVOLUTION_FWD_ALGO_IMPLICIT_GEMM, &_convolutionWorkspaceSize));
+      cudaErrCheck(cudaMalloc((void **)&_convolutionWorkspace, _convolutionWorkspaceSize * sizeof(float)));
     }
   }
 #endif
@@ -229,14 +220,17 @@ void FeedForward::createBackwardPipeline()
   /*********************************************************************************
   *  Initializing memory objects and primitives for BACKWARD propagation
   *********************************************************************************/
+
+ // Calling base layer function
+ Layer::createBackwardPipeline();
+
   size_t N = _nn->_batchSize;
   size_t OC = _nodeCount;
 
 #ifdef _KORALI_USE_EIGEN
   if (_nn->_engine == "Korali")
   {
-    _inputGradient = (float *)malloc(N * OC * sizeof(float));
-    _outputGradient = (float *)malloc(N * OC * sizeof(float));
+    // Not much more to do here
   }
 #endif
 
@@ -244,10 +238,6 @@ void FeedForward::createBackwardPipeline()
 #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
   {
-    // Creating data-related gradient memory
-    _intputGradientMem = memory(_inputMem.get_desc(), _engine);
-    _outputGradientMem = memory(_inputMem.get_desc(), _engine);
-
     float alpha = _activationFunctionAlpha;
     float beta = _activationFunctionBeta;
 
@@ -323,8 +313,7 @@ void FeedForward::createBackwardPipeline()
 #ifdef _KORALI_USE_CUDNN
   if (_nn->_engine == "CUDNN")
   {
-    if (cudaMalloc((void **)&_inputGradientTensor, N * OC * sizeof(float)) != cudaSuccess) KORALI_LOG_ERROR("Error creating memory for node tensor ");
-    if (cudaMalloc((void **)&_outputGradientTensor, N * OC * sizeof(float)) != cudaSuccess) KORALI_LOG_ERROR("Error creating activation tensor memory");
+   // Not much more to do here
   }
 #endif
 }
@@ -366,7 +355,7 @@ void FeedForward::forwardData()
     {
       float alpha1 = 1.0f;
       float alpha2 = 0.0f;
-      if (cudnnConvolutionForward(
+      cudnnErrCheck(cudnnConvolutionForward(
             _nn->_cuDNNHandle,
             &alpha1,
             _prevLayer->_layerTensorDesc,
@@ -379,7 +368,7 @@ void FeedForward::forwardData()
             _convolutionWorkspaceSize,
             &alpha2,
             _layerTensorDesc,
-            _inputTensor) != CUDNN_STATUS_SUCCESS) KORALI_LOG_ERROR("Error running convolution operation");
+            _inputTensor));
 
       float alpha = 1.0f;
       float beta = 1.0f;
@@ -450,17 +439,17 @@ void FeedForward::forwardActivationFunction()
   {
     if (_activationFunctionType == "Elementwise/Linear")
     {
-      if (cudaMemcpy(
+     cudaErrCheck(cudaMemcpy(
             _outputTensor,
             _inputTensor,
             N * OC * sizeof(float),
-            cudaMemcpyDeviceToDevice) != cudaSuccess) KORALI_LOG_ERROR("Error copying memory (activation = linear)");
+            cudaMemcpyDeviceToDevice));
     }
     else if (_activationFunctionType == "Softmax")
     {
       float alpha = 1.0f;
       float beta = 0.0f;
-      if (cudnnSoftmaxForward(
+      cudnnErrCheck(cudnnSoftmaxForward(
             _nn->_cuDNNHandle,
             CUDNN_SOFTMAX_LOG,
             CUDNN_SOFTMAX_MODE_CHANNEL,
@@ -469,13 +458,13 @@ void FeedForward::forwardActivationFunction()
             _inputTensor,
             &beta,
             _layerTensorDesc,
-            _outputTensor) != CUDNN_STATUS_SUCCESS) KORALI_LOG_ERROR("Error running softmax forward propagation\n");
+            _outputTensor));
     }
     else
     {
       float alpha = 1.0f;
       float beta = 0.0f;
-      if (cudnnActivationForward(
+      cudnnErrCheck(cudnnActivationForward(
             _nn->_cuDNNHandle,
             _activationDesc,
             &alpha,
@@ -483,7 +472,7 @@ void FeedForward::forwardActivationFunction()
             _inputTensor,
             &beta,
             _layerTensorDesc,
-            _outputTensor) != CUDNN_STATUS_SUCCESS) KORALI_LOG_ERROR("Error running activation function\n");
+            _outputTensor));
     }
   }
 #endif
@@ -541,17 +530,17 @@ void FeedForward::backwardActivationFunction()
   {
     if (_activationFunctionType == "Elementwise/Linear")
     {
-      if (cudaMemcpy(
+     cudaErrCheck(cudaMemcpy(
             _inputGradientTensor,
             _outputGradientTensor,
             N * OC * sizeof(float),
-            cudaMemcpyDeviceToDevice) != cudaSuccess) KORALI_LOG_ERROR("Error copying memory (backprop activation)");
+            cudaMemcpyDeviceToDevice));
     }
     else if (_activationFunctionType == "Softmax")
     {
       float alpha = 1.0f;
       float beta = 0.0f;
-      if (cudnnSoftmaxBackward(
+      cudnnErrCheck(cudnnSoftmaxBackward(
             _nn->_cuDNNHandle,
             CUDNN_SOFTMAX_LOG,
             CUDNN_SOFTMAX_MODE_CHANNEL,
@@ -562,13 +551,13 @@ void FeedForward::backwardActivationFunction()
             _outputGradientTensor,
             &beta,
             _layerTensorDesc,
-            _inputGradientTensor) != CUDNN_STATUS_SUCCESS) KORALI_LOG_ERROR("Error running softmax backward data propagation\n");
+            _inputGradientTensor));
     }
     else
     {
       float alpha = 1.0f;
       float beta = 0.0f;
-      if (cudnnActivationBackward(
+      cudnnErrCheck(cudnnActivationBackward(
             _nn->_cuDNNHandle,
             _activationDesc,
             &alpha,
@@ -580,7 +569,7 @@ void FeedForward::backwardActivationFunction()
             _inputTensor,
             &beta,
             _layerTensorDesc,
-            _inputGradientTensor) != CUDNN_STATUS_SUCCESS) KORALI_LOG_ERROR("Error running activation backward data propagation\n");
+            _inputGradientTensor));
     }
   }
 #endif
@@ -621,7 +610,7 @@ void FeedForward::backwardData()
     {
       float alpha = 1.0f;
       float beta = 0.0f;
-      if (cudnnConvolutionBackwardData(
+      cudnnErrCheck(cudnnConvolutionBackwardData(
             _nn->_cuDNNHandle,
             &alpha,
             _weightsFilterDesc,
@@ -634,7 +623,7 @@ void FeedForward::backwardData()
             _convolutionWorkspaceSize,
             &beta,
             _prevLayer->_layerTensorDesc,
-            _prevLayer->_outputGradientTensor) != CUDNN_STATUS_SUCCESS) KORALI_LOG_ERROR("Error running filter backward data propagation\n");
+            _prevLayer->_outputGradientTensor));
     }
   #endif
  }
@@ -678,16 +667,16 @@ void FeedForward::backwardHyperparameters()
       float alpha = 1.0f;
       float beta = 0.0f;
 
-      if (cudnnConvolutionBackwardBias(
+      cudnnErrCheck(cudnnConvolutionBackwardBias(
             _nn->_cuDNNHandle,
             &alpha,
             _layerTensorDesc,
             _inputGradientTensor,
             &beta,
             _biasTensorDesc,
-            _biasGradientTensor) != CUDNN_STATUS_SUCCESS) KORALI_LOG_ERROR("Error running filter backward bias propagation\n");
+            _biasGradientTensor));
 
-      if (cudnnConvolutionBackwardFilter(
+      cudnnErrCheck(cudnnConvolutionBackwardFilter(
             _nn->_cuDNNHandle,
             &alpha,
             _prevLayer->_layerTensorDesc,
@@ -700,37 +689,10 @@ void FeedForward::backwardHyperparameters()
             _convolutionWorkspaceSize,
             &beta,
             _weightsFilterDesc,
-            _weightsGradientFilter) != CUDNN_STATUS_SUCCESS) KORALI_LOG_ERROR("Error running filter backward filter propagation\n");
+            _weightsGradientFilter));
     }
 #endif
   }
-}
-
-void FeedForward::setOutputGradients(float *gradient)
-{
-  int N = _nn->_batchSize;
-  int OC = _nodeCount;
-
-#ifdef _KORALI_USE_EIGEN
-  if (_nn->_engine == "Korali")
-  {
-    memcpy(_outputGradient, gradient, N * OC * sizeof(float));
-  }
-#endif
-
-#ifdef _KORALI_USE_ONEDNN
-  if (_nn->_engine == "OneDNN")
-  {
-    write_to_dnnl_memory(gradient, _outputGradientMem);
-  }
-#endif
-
-#ifdef _KORALI_USE_CUDNN
-  if (_nn->_engine == "CUDNN")
-  {
-    if (cudaMemcpy(_outputGradientTensor, gradient, N * OC * sizeof(float), cudaMemcpyHostToDevice) != cudaSuccess) KORALI_LOG_ERROR("Error copying bias memory to device");
-  }
-#endif
 }
 
 void FeedForward::setHyperparameters(float *hyperparameters)
@@ -759,8 +721,8 @@ void FeedForward::setHyperparameters(float *hyperparameters)
 #ifdef _KORALI_USE_CUDNN
     if (_nn->_engine == "CUDNN")
     {
-      if (cudaMemcpy(_weightsFilter, &hyperparameters[0], IC * OC * sizeof(float), cudaMemcpyHostToDevice) != cudaSuccess) KORALI_LOG_ERROR("Error copying weights memory to device");
-      if (cudaMemcpy(_biasTensor, &hyperparameters[IC * OC], OC * sizeof(float), cudaMemcpyHostToDevice) != cudaSuccess) KORALI_LOG_ERROR("Error copying bias memory to device");
+      cudaErrCheck(cudaMemcpy(_weightsFilter, &hyperparameters[0], IC * OC * sizeof(float), cudaMemcpyHostToDevice));
+      cudaErrCheck(cudaMemcpy(_biasTensor, &hyperparameters[IC * OC], OC * sizeof(float), cudaMemcpyHostToDevice));
     }
 #endif
   }
@@ -792,8 +754,8 @@ void FeedForward::getHyperparameters(float *hyperparameters)
 #ifdef _KORALI_USE_CUDNN
     if (_nn->_engine == "CUDNN")
     {
-      if (cudaMemcpy(&hyperparameters[0], _weightsFilter, IC * OC * sizeof(float), cudaMemcpyDeviceToHost) != cudaSuccess) KORALI_LOG_ERROR("Error copying memory");
-      if (cudaMemcpy(&hyperparameters[IC * OC], _biasTensor, OC * sizeof(float), cudaMemcpyDeviceToHost) != cudaSuccess) KORALI_LOG_ERROR("Error copying memory");
+      cudaErrCheck(cudaMemcpy(&hyperparameters[0], _weightsFilter, IC * OC * sizeof(float), cudaMemcpyDeviceToHost));
+      cudaErrCheck(cudaMemcpy(&hyperparameters[IC * OC], _biasTensor, OC * sizeof(float), cudaMemcpyDeviceToHost));
     }
 #endif
   }
@@ -825,94 +787,11 @@ void FeedForward::getHyperparameterGradients(float *gradient)
 #ifdef _KORALI_USE_CUDNN
     if (_nn->_engine == "CUDNN")
     {
-      if (cudaMemcpy(&gradient[0], _weightsGradientFilter, IC * OC * sizeof(float), cudaMemcpyDeviceToHost) != cudaSuccess) KORALI_LOG_ERROR("Error copying memory");
-      if (cudaMemcpy(&gradient[IC * OC], _biasGradientTensor, OC * sizeof(float), cudaMemcpyDeviceToHost) != cudaSuccess) KORALI_LOG_ERROR("Error copying memory");
+      cudaErrCheck(cudaMemcpy(&gradient[0], _weightsGradientFilter, IC * OC * sizeof(float), cudaMemcpyDeviceToHost));
+      cudaErrCheck(cudaMemcpy(&gradient[IC * OC], _biasGradientTensor, OC * sizeof(float), cudaMemcpyDeviceToHost));
     }
 #endif
   }
-}
-
-void FeedForward::getOutputValues(float *output)
-{
-  size_t N = _nn->_batchSize;
-  size_t OC = _nodeCount;
-
-#ifdef _KORALI_USE_EIGEN
-  if (_nn->_engine == "Korali")
-  {
-    memcpy(output, _outputValues, N * OC * sizeof(float));
-  }
-#endif
-
-#ifdef _KORALI_USE_ONEDNN
-  if (_nn->_engine == "OneDNN")
-  {
-    _nn->_stream.wait();
-    read_from_dnnl_memory(output, _outputMem);
-  }
-#endif
-
-#ifdef _KORALI_USE_CUDNN
-  if (_nn->_engine == "CUDNN")
-  {
-    cudaDeviceSynchronize();
-    if (cudaMemcpy(output, _outputTensor, N * OC * sizeof(float), cudaMemcpyDeviceToHost) != cudaSuccess) KORALI_LOG_ERROR("Error copying bias memory to device");
-  }
-#endif
-}
-
-void FeedForward::getInputGradients(float *gradient)
-{
-  size_t N = _nn->_batchSize;
-  size_t OC = _nodeCount;
-
-#ifdef _KORALI_USE_EIGEN
-  if (_nn->_engine == "Korali")
-  {
-    memcpy(gradient, _inputGradient, N * OC * sizeof(float));
-  }
-#endif
-
-#ifdef _KORALI_USE_ONEDNN
-  if (_nn->_engine == "OneDNN")
-  {
-    read_from_dnnl_memory(gradient, _intputGradientMem);
-  }
-#endif
-
-#ifdef _KORALI_USE_CUDNN
-  if (_nn->_engine == "CUDNN")
-  {
-    if (cudaMemcpy(gradient, _inputGradientTensor, N * OC * sizeof(float), cudaMemcpyDeviceToHost) != cudaSuccess) KORALI_LOG_ERROR("Error copying memory");
-  }
-#endif
-}
-
-void FeedForward::setInputValues(float *input)
-{
-  size_t N = _nn->_batchSize;
-  size_t OC = _nodeCount;
-
-#ifdef _KORALI_USE_EIGEN
-  if (_nn->_engine == "Korali")
-  {
-    memcpy(_inputValues, input, N * OC * sizeof(float));
-  }
-#endif
-
-#ifdef _KORALI_USE_ONEDNN
-  if (_nn->_engine == "OneDNN")
-  {
-    write_to_dnnl_memory(input, _inputMem);
-  }
-#endif
-
-#ifdef _KORALI_USE_CUDNN
-  if (_nn->_engine == "CUDNN")
-  {
-    if (cudaMemcpy(_inputTensor, input, N * OC * sizeof(float), cudaMemcpyHostToDevice) != cudaSuccess) KORALI_LOG_ERROR("Error copying bias memory to device");
-  }
-#endif
 }
 
 } // namespace layer

@@ -54,7 +54,7 @@ e["Solver"]["Experience Replay"]["Maximum Size"] = 10000
 ## Defining Neural Network Configuration for Policy and Critic into Critic Container
 
 e["Solver"]["Critic"]["Discount Factor"] = 0.99
-e["Solver"]["Critic"]["Learning Rate"] = 0.001 
+e["Solver"]["Critic"]["Learning Rate"] = 1e-5
 e["Solver"]["Critic"]["Mini Batch Size"] = 32
 
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"

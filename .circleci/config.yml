@@ -60,7 +60,7 @@ jobs:
        
       - run:
           name: Install Scipy
-          command: sudo apt-get install python-numpy python-scipy
+          command: sudo apt-get install python3-numpy python3-scipy
                 
       - run:
           name: Install Doxygen

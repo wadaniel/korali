@@ -163,10 +163,12 @@ void Agent::attendAgent(size_t agentId)
     if (isTerminal)
     {
       // Update Vtbc
-      for (size_t i = _episodes[agendId].size(); i >= 0; i--) 
+      float sumRewards = 0;
+      for (ssize_t i = _episodes[agentId].size()-1; i >= 0; i--) 
       {
-        // calculate vtbc   
-          
+        // approximate vtbc   
+        sumRewards = _criticDiscountFactor*sumRewards + _episodes[agentId][i]["Reward"].get<float>();
+        _episodes[agentId][i]["Vtbc"] = sumRewards;
       }
 
       // Now that we have the entire episode, process its experiences (add them to replay memory)
@@ -238,6 +240,7 @@ void Agent::processExperience(knlohmann::json &experience)
   e.priority = _experienceReplayMaxPriority;
   e.probability = 0.0;
   e.policy = experience["Policy"];
+  e.policy["Vtbc"] = experience["Vtbc"].get<float>();
   _experienceReplay.add(e);
 }
 

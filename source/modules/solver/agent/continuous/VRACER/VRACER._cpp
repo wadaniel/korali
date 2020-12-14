@@ -196,14 +196,14 @@ void VRACER::trainPolicy()
     // Update State Value in Metadata
     _experienceReplay[curId].policy["State Value"] = V;
     // Update Importance Weight in Metadata
-    _experienceReplay[curId].policy["Truncated Importance Weight"] = importanceWeight;
+    _experienceReplay[curId].policy["Importance Weight"] = importanceWeight;
 
     // Update off-policy fraction
     size_t expCount = _experienceReplay.size();
     size_t offPolicyCount = 0;
-    for (size_t expId = 0; expId < expCount; expId++)
+    for (size_t expId = 0; expId < expCount-1; expId++)
     {
-      float expImportanceWeight = _experienceReplay[expId].policy["Truncated Importance Weight"];
+      float expImportanceWeight = _experienceReplay[expId].policy["Importance Weight"];
       if (expImportanceWeight > _referCutoff || expImportanceWeight < (1.0f / _referCutoff))
         offPolicyCount++;
     }
@@ -217,8 +217,8 @@ void VRACER::trainPolicy()
     // Storage for the update gradient
     std::vector<float> gradientLoss(2 * _problem->_actionVectorSize);
 
-    // Get oldd Vtbc
-    float expVtbc = _experienceReplay[expId].cache.get("Vtbc");
+    // Get old Vtbc
+    float expVtbc = _experienceReplay[curId].policy["Vtbc"].get<float>();
 
     // update critic statistics
     _cumulativeQStar += expVtbc;
@@ -242,7 +242,7 @@ void VRACER::trainPolicy()
       // In this case add Vtbc
       if (isNormal == true)
       { 
-        float nextExpVtbc = _experienceReplay.[curId+1].cache.get("Vtbc"); /// TODO: check idx
+        float nextExpVtbc = _experienceReplay[curId+1].policy["Vtbc"].get<float>(); /// TODO: check idx
         Qret += _criticDiscountFactor * nextExpVtbc;
       }
 
@@ -294,6 +294,8 @@ void VRACER::trainPolicy()
 
     // Set Gradient of Loss as Solution
     _criticPolicyProblem->_solution[step] = gradientLoss;
+
+    updateVtbc(curId);
   }
 
   // Compute average and std of Value target
@@ -318,46 +320,50 @@ void VRACER::trainPolicy()
 void VRACER::updateVtbc(size_t expId)
 {
   // Finding last experience in the episode that corresponds to expId
-  ssize_t zeroId = curId;
+  ssize_t zeroId = expId;
 
-  if(zeroId != 0)
-  while (_experienceReplay[zeroId-1].termination == e_terminal) {
-    if(zeroId-1 == 0) break;
+  while (zeroId > 0 && _experienceReplay[zeroId].termination == e_nonTerminal) {
     zeroId--;
   }
 
   // access experiences
   float reward = _experienceReplay[expId].reward;
   float value = _experienceReplay[expId].policy["State Value"].get<float>();
-  float importanceWeight = _experienceReplay[expId].policy["Truncated Importance Weight"].get<float>();
-
+  float importanceWeight = _experienceReplay[expId].policy["Importance Weight"].get<float>();
+  
+  float truncatedImportanceWeight = std::min(1.0f, importanceWeight);
+  
   // Initializing vTbc to weighted reward of the last
   float vTbc = value + truncatedImportanceWeight * (reward - value);
- 
-  // if VTbc found in cache
-  bool nonterminal = (_experienceReplay[endId].termination == e_nonTerminal);
-  if (nonterminal) vTbc += truncatedImportanceWeight * _criticDiscountFactor * _experienceReplay[expId+1].cache.get("Vtbc");
 
-  // If the episode was truncated add contribution
-  if (_experienceReplay[expId].termination == e_truncated)
+  if (_experienceReplay[expId].termination == e_nonTerminal)
+  {
+    vTbc += truncatedImportanceWeight * _criticDiscountFactor * _experienceReplay[expId+1].policy["Vtbc"].get<float>();
+  }
+  else if (_experienceReplay[expId].termination == e_truncated) // If the episode was truncated add contribution
   {
     // get truncated state
-    auto truncatedState = _experienceReplay[endId].truncatedState;
+    auto truncatedState = _experienceReplay[expId].truncatedState;
     float truncatedValue = stateValueFunction(truncatedState);
     vTbc += truncatedImportanceWeight * _criticDiscountFactor * truncatedValue;
   }
 
-  // Now iterating backwards to calculate the rest of vTbc
-  for (ssize_t curId = expId - 1; curId >= startId; curId--)
+  // update current target
+  _experienceReplay[expId].policy["Vtbc"] = vTbc;
+
+  // Now iterating backwards to update the rest of vTbc
+  for (ssize_t curId = expId - 1; curId >= zeroId; curId--)
   {
     // access experiences
     float reward = _experienceReplay[curId].reward;
     float value = _experienceReplay[curId].policy["State Value"].get<float>();
-    float importanceWeight = _experienceReplay[curId].policy["Truncated Importance Weight"].get<float>();
+    float importanceWeight = _experienceReplay[curId].policy["Importance Weight"].get<float>();
+
+    float truncatedImportanceWeight = std::min(1.0f, importanceWeight);
 
     // Calculating vTbc
-    vTbc = curV + truncatedImportanceWeight * (curReward + _criticDiscountFactor * vTbc - curV);
-    _experienceReplay[curId].cache.set("Vtbc", vTbc);
+    vTbc = value + truncatedImportanceWeight * (reward + _criticDiscountFactor * vTbc - value);
+    _experienceReplay[curId].policy["Vtbc"] = vTbc;
   }
 
 }
@@ -455,7 +461,7 @@ std::vector<float> VRACER::calculateImportanceWeightGradient(const std::vector<f
 float VRACER::stateValueFunction(const std::vector<float> &state)
 {
   // Calculating V(s_i)
-  float v = _vLearner->getEvaluation(state)[0];
+  float v = _criticPolicyLearner->getEvaluation(state)[0];
   return v;
 }
 

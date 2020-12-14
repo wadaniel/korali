@@ -319,7 +319,7 @@ void VRACER::updateVtbc(size_t expId)
   // Finding last experience in the episode that corresponds to expId
   ssize_t episodeStartId = expId;
 
-  while (episodeStartId > 0 && _experienceReplay[episodeStartId].termination == e_nonTerminal) episodeStartId--;
+  while (_experienceReplay[episodeStartId].termination == e_nonTerminal && episodeStartId > 0) episodeStartId--;
 
   // access experiences
   float reward = _experienceReplay[expId].reward;
@@ -331,14 +331,12 @@ void VRACER::updateVtbc(size_t expId)
   // Initializing vTbc to weighted reward of the last
   float vTbc = value + truncatedImportanceWeight * (reward - value);
 
-  if (_experienceReplay[expId].termination == e_nonTerminal)
+  if (_experienceReplay[expId].termination == e_nonTerminal) // If expId is somewhere in the middle of an episode
   {
     vTbc += truncatedImportanceWeight * _criticDiscountFactor * _experienceReplay[expId+1].policy["Vtbc"].get<float>();
   }
   else if (_experienceReplay[expId].termination == e_truncated) // If the episode was truncated add contribution
   {
-    // get truncated state
-    printf("ONLY AT THE END\n");
     auto truncatedState = _experienceReplay[expId].truncatedState;
     float truncatedValue = stateValueFunction(truncatedState);
     vTbc += truncatedImportanceWeight * _criticDiscountFactor * truncatedValue;

@@ -162,6 +162,13 @@ void Agent::attendAgent(size_t agentId)
 
     if (isTerminal)
     {
+      // Update Vtbc
+      for (size_t i = _episodes[agendId].size(); i >= 0; i--) 
+      {
+        // calculate vtbc   
+          
+      }
+
       // Now that we have the entire episode, process its experiences (add them to replay memory)
       for (size_t i = 0; i < _episodes[agentId].size(); i++) processExperience(_episodes[agentId][i]);
 

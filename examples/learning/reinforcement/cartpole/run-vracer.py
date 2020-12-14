@@ -40,7 +40,7 @@ e["Variables"][4]["Upper Bound"] = +10.0
 e["Solver"]["Type"] = "Agent / Continuous / VRACER"
 e["Solver"]["Experiences Between Policy Updates"] = 1
 e["Solver"]["Cache Persistence"] = 0
-e["Solver"]["Policy Distribution"] = "Gaussian"
+e["Solver"]["Policy Distribution"] = "Normal"
 
 e["Solver"]["Refer"]["Target Off Policy Fraction"] = 0.10
 e["Solver"]["Refer"]["Cutoff Scale"] = 4.0
@@ -55,17 +55,17 @@ e["Solver"]["Experience Replay"]["Maximum Size"] = 10000
 
 e["Solver"]["Critic"]["Discount Factor"] = 0.99
 e["Solver"]["Critic"]["Learning Rate"] = 1e-4
-e["Solver"]["Critic"]["Mini Batch Size"] = 32
+e["Solver"]["Critic"]["Mini Batch Size"] = 64
 
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear"
 
 e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Type"] = "Layer/Dense"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Node Count"] = 32
+e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Node Count"] = 128
 e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Activation Function"]["Type"] = "Elementwise/Tanh"
 
 e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Type"] = "Layer/Dense"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Node Count"] = 32
+e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Node Count"] = 128
 e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Elementwise/Tanh"
 
 e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Type"] = "Layer/Dense"

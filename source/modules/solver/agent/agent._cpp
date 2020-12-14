@@ -106,6 +106,8 @@ void Agent::runGeneration()
       if (_experienceCount > curThreshold)
       {
         // Calling the algorithm specific policy training algorithm
+        //size_t numTrain = 1;
+        //while(numTrain-->0) trainPolicy();
         trainPolicy();
 
         // Gathering their training hyperparameters (for checkpoint/resume purposes)

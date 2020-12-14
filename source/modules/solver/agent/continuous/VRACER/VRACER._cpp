@@ -148,22 +148,30 @@ void VRACER::trainPolicy()
   /***************************************************************************
    * Adjusting REFER off-policiness and learning rate parameters
    **************************************************************************/
-
-  // Update REFER parameters only after reaching this number of experiences in memory
-  if (_experienceReplay.size() > _referStartSize)
+ 
+  // Update off-policy fraction
+  size_t expCount = _experienceReplay.size();
+  size_t offPolicyCount = 0;
+  for (size_t expId = 0; expId < expCount-1; expId++)
   {
-    // Updating cutoff
-    _referCutoff = 1.0f + _referCutoffScale / (1.0f + _referAnnealingRate * (float)_policyUpdateCount);
-
-    // Update learning rate
-    _criticPolicyLearner->_learningRate = _referInitialLearningRate / (1.0f + _referAnnealingRate * _policyUpdateCount);
-
-    // Updating beta parameter
-    if (_referOffPolicyFraction > _referTargetOffPolicyFraction)
-      _referBeta = (1.0f - _criticPolicyLearner->_learningRate) * _referBeta;
-    else
-      _referBeta = (1.0f - _criticPolicyLearner->_learningRate) * _referBeta + _criticPolicyLearner->_learningRate;
+    float expImportanceWeight = _experienceReplay[expId].policy["Importance Weight"];
+    if (expImportanceWeight > _referCutoff || expImportanceWeight < (1.0f / _referCutoff))
+        offPolicyCount++;
   }
+
+  _referOffPolicyFraction = (float)offPolicyCount / (float)expCount;
+
+  // Updating cutoff
+  _referCutoff = 1.0f + _referCutoffScale / (1.0f + _referAnnealingRate * (float)_policyUpdateCount);
+
+  // Update learning rate
+  _criticPolicyLearner->_learningRate = _referInitialLearningRate / (1.0f + _referAnnealingRate * _policyUpdateCount);
+
+  // Updating beta parameter
+  if (_referOffPolicyFraction > _referTargetOffPolicyFraction)
+    _referBeta = (1.0f - _criticPolicyLearner->_learningRate) * _referBeta;
+  else
+    _referBeta = (1.0f - _criticPolicyLearner->_learningRate) * _referBeta + _criticPolicyLearner->_learningRate;
 
   /****************************************************************************
   * Training the critic/learner network with a mini-batch
@@ -173,6 +181,7 @@ void VRACER::trainPolicy()
   auto miniBatchIndexes = generateMiniBatch(_criticMiniBatchSize);
 
   // Fill Minibatch
+#pragma omp parallel for schedule(dynamic, 1)
   for (size_t step = 0; step < _criticMiniBatchSize; step++)
   {
     // Getting index of current experiment
@@ -186,9 +195,9 @@ void VRACER::trainPolicy()
 
     // Forward the neural network for this state to get current means and sigmas and Value
     auto policy = runPolicy(expState);
+    auto V = policy["State Value"].get<float>();
     auto curMeans = policy["Action Means"].get<std::vector<float>>();
     auto curSigmas = policy["Action Sigmas"].get<std::vector<float>>();
-    auto V = policy["State Value"].get<float>();
 
     // Compute importance weight
     float importanceWeight = calculateImportanceWeight(expAction, curMeans, curSigmas, expMeans, expSigmas);
@@ -198,24 +207,12 @@ void VRACER::trainPolicy()
     // Update Importance Weight in Metadata
     _experienceReplay[curId].policy["Importance Weight"] = importanceWeight;
 
-    // Update off-policy fraction
-    size_t expCount = _experienceReplay.size();
-    size_t offPolicyCount = 0;
-    for (size_t expId = 0; expId < expCount-1; expId++)
-    {
-      float expImportanceWeight = _experienceReplay[expId].policy["Importance Weight"];
-      if (expImportanceWeight > _referCutoff || expImportanceWeight < (1.0f / _referCutoff))
-        offPolicyCount++;
-    }
-
-    _referOffPolicyFraction = (float)offPolicyCount / (float)expCount;
-
     /******************************************************
     * Gradient calculation
     *******************************************************/
 
     // Storage for the update gradient
-    std::vector<float> gradientLoss(2 * _problem->_actionVectorSize);
+    std::vector<float> gradientLoss(2 * _problem->_actionVectorSize + 1);
 
     // Get old Vtbc
     float expVtbc = _experienceReplay[curId].policy["Vtbc"].get<float>();
@@ -227,11 +224,11 @@ void VRACER::trainPolicy()
     // Gradient of Value Function V(s) (eq. (9); *-1 because the optimizer is maximizing)
     gradientLoss[0] = -(V - expVtbc);
 
-    cumulativeTdError -= (V - expVtbc);
+    cumulativeTdError -= gradientLoss[0];
     cumulativeTdErrorSquared += gradientLoss[0] * gradientLoss[0];
 
     // Compute policy gradient only if inside trust region
-    if (importanceWeight < _referCutoff || importanceWeight > (1.0f / _referCutoff))
+    if (importanceWeight < _referCutoff && importanceWeight > (1.0f / _referCutoff))
     {
       // Qret for terminal state is just reward
       float Qret = _experienceReplay[curId].reward;
@@ -320,11 +317,9 @@ void VRACER::trainPolicy()
 void VRACER::updateVtbc(size_t expId)
 {
   // Finding last experience in the episode that corresponds to expId
-  ssize_t zeroId = expId;
+  ssize_t episodeStartId = expId;
 
-  while (zeroId > 0 && _experienceReplay[zeroId].termination == e_nonTerminal) {
-    zeroId--;
-  }
+  while (episodeStartId > 0 && _experienceReplay[episodeStartId].termination == e_nonTerminal) episodeStartId--;
 
   // access experiences
   float reward = _experienceReplay[expId].reward;
@@ -343,16 +338,18 @@ void VRACER::updateVtbc(size_t expId)
   else if (_experienceReplay[expId].termination == e_truncated) // If the episode was truncated add contribution
   {
     // get truncated state
+    printf("ONLY AT THE END\n");
     auto truncatedState = _experienceReplay[expId].truncatedState;
     float truncatedValue = stateValueFunction(truncatedState);
     vTbc += truncatedImportanceWeight * _criticDiscountFactor * truncatedValue;
   }
 
   // update current target
+#pragma omp critical
   _experienceReplay[expId].policy["Vtbc"] = vTbc;
 
   // Now iterating backwards to update the rest of vTbc
-  for (ssize_t curId = expId - 1; curId >= zeroId; curId--)
+  for (ssize_t curId = expId - 1; curId >= episodeStartId; curId--)
   {
     // access experiences
     float reward = _experienceReplay[curId].reward;
@@ -363,6 +360,7 @@ void VRACER::updateVtbc(size_t expId)
 
     // Calculating vTbc
     vTbc = value + truncatedImportanceWeight * (reward + _criticDiscountFactor * vTbc - value);
+#pragma omp critical
     _experienceReplay[curId].policy["Vtbc"] = vTbc;
   }
 

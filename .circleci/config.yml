@@ -20,12 +20,12 @@ jobs:
           name: Get Submodules
           command: git submodule init;
                    git submodule update --remote
-                   
+
       - run:
           name: install MPI
           command: sudo apt-get install mpich;
                    echo 'export MPICXX=mpicxx' >> $BASH_ENV
-                   
+
       - run:
           name: install CMAKE
           command: sudo apt-get install cmake;
@@ -33,92 +33,92 @@ jobs:
       - run:
           name: Build Config File
           command: cat .install.config.default | sed -e 's/NJOBS=/NJOBS=8 \#/g' > install.config
-          
+
       - restore_cache:
           keys:
             - cache-linux-doxygen-v13
-            
+
       - restore_cache:
           keys:
             - cache-linux-llvm-v13
-            
+
       - restore_cache:
           keys:
             - cache-linux-eigen-v13
-                  
+
       - restore_cache:
           keys:
             - cache-linux-gsl-v13
-            
+
       - restore_cache:
           keys:
             - cache-linux-libGP-v13
-            
+
       - restore_cache:
           keys:
             - cache-linux-rtnorm-v13
-       
+
       - run:
-          name: Install Scipy
-          command: sudo apt-get install python3-numpy python3-scipy
-                
+          name: Install scipy/numpy
+          command: python3 -m pip install scipy numpy
+
       - run:
           name: Install Doxygen
           command: ./external/install_doxygen.sh
-          
+
       - save_cache:
           key: cache-linux-doxygen-v13
           paths:
             - "~/korali/external/_doxygen/install"
-                  
+
       - run:
           name: Install LLVM (clang-format)
           command: ./external/install_clang.sh
-          
+
       - save_cache:
           key: cache-linux-llvm-v13
           paths:
             - "~/korali/external/_llvm/install"
-            
+
       - run:
           name: Install Eigen
           command: ./external/install_eigen.sh
-          
+
       - save_cache:
           key: cache-linux-eigen-v13
           paths:
             - "~/korali/external/eigen/install"
-            
+
       - run:
           name: Install GSL
           command: ./external/install_gsl.sh
-          
+
       - save_cache:
           key: cache-linux-gsl-v13
           paths:
             - "~/korali/external/GSL/install"
-      
+
       - run:
           name: Install LibGP
           command: ./external/install_libGP.sh
-          
+
       - save_cache:
           key: cache-linux-libGP-v13
           paths:
             - "~/korali/external/libGP/install"
-            
+
       - run:
           name: Install rtnorm
           command: ./external/install_rtnorm.sh
-                    
+
       - save_cache:
           key: cache-linux-rtnorm-v13
           paths:
             - "~/korali/external/rtnorm/install"
-            
+
       - run:
           name: build Korali
-          command: ./install 
+          command: ./install
 
       - run:
           name: run tests
@@ -137,12 +137,12 @@ jobs:
     steps:
 
       - checkout
-      
+
       - run:
           name: Get Submodules
           command: git submodule init;
                    git submodule update --remote
-                   
+
       - run:
           name: Install MacOS dependencies
           command: HOMEBREW_NO_AUTO_UPDATE=1 brew install wget;
@@ -150,36 +150,36 @@ jobs:
                    HOMEBREW_NO_AUTO_UPDATE=1 brew install cmake;
                    HOMEBREW_NO_AUTO_UPDATE=1 brew install gsl;
                    HOMEBREW_NO_AUTO_UPDATE=1 brew install libomp;
-   
+
       - run:
           name: Build Config File
           command: cat .install.config.default | sed -e 's/NJOBS=/NJOBS=4 \#/g' > install.config
-   
-   
+
+
       - restore_cache:
           keys:
             - cache-macos-doxygen-v13
-            
+
       - restore_cache:
           keys:
             - cache-macos-llvm-v13
-            
+
       - restore_cache:
           keys:
             - cache-macos-eigen-v13
-            
+
       - restore_cache:
           keys:
             - cache-macos-gsl-v13
-            
+
       - restore_cache:
           keys:
             - cache-macos-libGP-v13
-            
+
       - restore_cache:
           keys:
             - cache-macos-rtnorm-v13
-     
+
       - run:
           name: Install scipy/numpy
           command: python3 -m pip install scipy numpy
@@ -187,39 +187,39 @@ jobs:
       - run:
           name: Install Doxygen
           command: ./external/install_doxygen.sh
-          
+
       - save_cache:
           key: cache-macos-doxygen-v13
           paths:
             - "~/korali/external/_doxygen/install"
-                  
+
       - run:
           name: Install LLVM (clang-format)
           command: ./external/install_clang.sh
-          
+
       - save_cache:
           key: cache-macos-llvm-v13
           paths:
             - "~/korali/external/_llvm/install"
-            
+
       - run:
           name: Install Eigen
           command: ./external/install_eigen.sh
-          
+
       - save_cache:
           key: cache-macos-eigen-v13
           paths:
             - "~/korali/external/eigen/install"
-              
+
       - run:
           name: Install GSL
           command: ./external/install_gsl.sh
-          
+
       - save_cache:
           key: cache-macos-gsl-v13
           paths:
             - "~/korali/external/GSL/install"
-      
+
       - run:
           name: Install LibGP
           command: ./external/install_libGP.sh
@@ -228,16 +228,16 @@ jobs:
           key: cache-macos-libGP-v13
           paths:
             - "~/korali/external/libgp/install"
-            
+
       - run:
           name: Install rtnorm
           command: ./external/install_rtnorm.sh
-                    
+
       - save_cache:
           key: cache-macos-rtnorm-v13
           paths:
             - "~/korali/external/rtnorm/install"
-                  
+
       - run:
           name: build Korali
           command: ./install

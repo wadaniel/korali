@@ -1,9 +1,13 @@
 #include "modules/neuralNetwork/layer/recurrent/recurrent.hpp"
 #include "modules/neuralNetwork/neuralNetwork.hpp"
 
+#ifdef _KORALI_USE_CUDNN
+  #include "auxiliar/cudaUtils.hpp"
+#endif
+
 #ifdef _KORALI_USE_ONEDNN
   #include "auxiliar/dnnUtils.hpp"
-using namespace dnnl;
+  using namespace dnnl;
 #endif
 
 #ifdef _KORALI_USE_EIGEN
@@ -21,50 +25,198 @@ std::vector<float> Recurrent::generateInitialHyperparameters()
 {
   std::vector<float> hyperparameters;
 
-  // If this is not the initial layer, calculate hyperparameters for weight and bias operation
+  // If this is not the initial layer, calculate hyperparameters for weight and bias of all linear layers
   if (_prevLayer != NULL)
   {
     // Setting value for this layer's xavier constant
     float xavierConstant = (_weightScaling * sqrtf(6.0f)) / sqrt(_nodeCount + _prevLayer->_nodeCount);
 
-    // Adding layer's weights hyperparameter values
-    for (size_t i = 0; i < _nodeCount; i++)
-      for (size_t j = 0; j < _prevLayer->_nodeCount; j++)
-        hyperparameters.push_back(xavierConstant * _nn->_uniformGenerator->getRandomNumber());
+    for (int linLayerID = 0; linLayerID < _linearLayerCount; linLayerID++)
+    {
+     // Adding layer's weights hyperparameter values
+     for (size_t i = 0; i < _linearLayerWeightSizes[linLayerID]; i++)
+       hyperparameters.push_back(xavierConstant * _nn->_uniformGenerator->getRandomNumber());
 
-    // Adding layer's bias hyperparameter values
-    for (size_t i = 0; i < _nodeCount; i++)
-      hyperparameters.push_back(0.0f);
+     // Adding layer's bias hyperparameter values
+     for (size_t i = 0; i < _linearLayerBiasSizes[linLayerID]; i++)
+       hyperparameters.push_back(0.0f);
+    }
   }
+
+
+  printf("Created hyperparameters. Size: %lu\n", hyperparameters.size());
+  exit(0);
 
   return hyperparameters;
 }
 
-void Recurrent::forwardData()
-{
-}
-
 void Recurrent::createHyperparameterMemory()
 {
+ #ifdef _KORALI_USE_CUDNN
+ if (_nn->_engine == "CUDNN")
+ {
+  // Setting RNN mode and calculating the number of internal linear layer
+  if (_mode == "GRU")
+  {
+   _linearLayerCount = 6;
+   _rnnMode = CUDNN_GRU;
+  }
+
+  if (_mode == "LSTM")
+  {
+   _linearLayerCount = 8;
+   _rnnMode = CUDNN_LSTM;
+  }
+
+  // Creating dropout operator and its memory
+  size_t seed = _nn->_k->_randomSeed++; // Pick a seed.
+  cudnnErrCheck(cudnnCreateDropoutDescriptor(&_dropoutDesc));
+  cudnnErrCheck(cudnnSetDropoutDescriptor(_dropoutDesc,
+                              _nn->_cuDNNHandle,
+                              _dropoutProbability,
+                              NULL,
+                              0,
+                              seed));
+
+  // Creating RNN operator
+  cudnnErrCheck(cudnnCreateRNNDescriptor(&_rnnDesc));
+  cudnnErrCheck(cudnnSetRNNDescriptor_v8(_rnnDesc,
+                                       CUDNN_RNN_ALGO_STANDARD,
+                                       _rnnMode,
+                                       CUDNN_RNN_DOUBLE_BIAS,
+                                       CUDNN_UNIDIRECTIONAL,
+                                       CUDNN_LINEAR_INPUT,
+                                       CUDNN_DATA_FLOAT,
+                                       CUDNN_DATA_FLOAT,
+                                       CUDNN_DEFAULT_MATH,
+                                       _prevLayer->_nodeCount,
+                                       _nodeCount,
+                                       _nodeCount,
+                                       1, // Pseudo Layer Count
+                                       _dropoutDesc,
+                                       0
+                                       ));
+
+  // Allocating memory for hyperparameters
+  size_t weightSpaceSize;
+  cudnnErrCheck(cudnnGetRNNWeightSpaceSize(_nn->_cuDNNHandle, _rnnDesc, &weightSpaceSize));
+
+  // The number of hyperparameters is then the workspace size divided by the size of a float
+  _hyperparameterCount = weightSpaceSize / sizeof(float);
+
+  // Creating memory for hyperparameters and their gradients
+  cudaErrCheck(cudaMalloc((void**)&_weightsTensor,  weightSpaceSize));
+  cudaErrCheck(cudaMalloc((void**)&_weightsGradientTensor, weightSpaceSize));
+
+  // Allocating space to store pointers to hyperparameters and their sizes
+  _linearLayerWeightTensors.resize(_linearLayerCount);
+  _linearLayerWeightSizes.resize(_linearLayerCount);
+  _linearLayerBiasTensors.resize(_linearLayerCount);
+  _linearLayerBiasSizes.resize(_linearLayerCount);
+
+  // Getting pointers and length of all of the RNN hyperparameters
+  for (int linLayerID = 0; linLayerID < _linearLayerCount; linLayerID++)
+  {
+     cudnnDataType_t dataType;
+     cudnnTensorDescriptor_t  linLayerWeightDesc;
+     cudnnTensorDescriptor_t  linLayerBiasDesc;
+     cudnnErrCheck(cudnnCreateTensorDescriptor(&linLayerWeightDesc));
+     cudnnErrCheck(cudnnCreateTensorDescriptor(&linLayerBiasDesc));
+
+     cudnnErrCheck(cudnnGetRNNWeightParams(_nn->_cuDNNHandle,
+                                             _rnnDesc,
+                                             0,
+                                             weightSpaceSize,
+                                             _weightsTensor,
+                                             linLayerID,
+                                             linLayerWeightDesc,
+                                             &_linearLayerWeightTensors[linLayerID],
+                                             linLayerBiasDesc,
+                                             &_linearLayerBiasTensors[linLayerID]));
+
+     int weightsDims;
+     int weightsDimA[3] = { 0, 0 ,0 };
+     int weightsStrideA[3] = { 0, 0 ,0 };
+     cudnnErrCheck(cudnnGetTensorNdDescriptor(linLayerWeightDesc,
+                                              3,
+                                              &dataType,
+                                              &weightsDims,
+                                              weightsDimA,
+                                              weightsStrideA));
+     _linearLayerWeightSizes[linLayerID] = weightsDimA[0] * weightsDimA[1] * weightsDimA[2];
+
+     int biasDims;
+     int biasDimA[3] = { 0, 0 ,0 };
+     int biasStrideA[3] = { 0, 0 ,0 };
+     cudnnErrCheck(cudnnGetTensorNdDescriptor(linLayerBiasDesc,
+                                              3,
+                                              &dataType,
+                                              &biasDims,
+                                              biasDimA,
+                                              biasStrideA));
+
+     _linearLayerBiasSizes[linLayerID] = biasDimA[0] * biasDimA[1] * biasDimA[2];
+
+     cudnnErrCheck(cudnnDestroyTensorDescriptor(linLayerWeightDesc));
+     cudnnErrCheck(cudnnDestroyTensorDescriptor(linLayerBiasDesc));
+  }
+ }
+ #endif
 }
 
 void Recurrent::createForwardPipeline()
 {
+ // Calling base layer function
+ Layer::createForwardPipeline();
+
+ // Obtaining batch size
+ ssize_t N = _nn->_batchSize;
+
+ // Checking Layer sizes
+ if (_nodeCount == 0) KORALI_LOG_ERROR("Node count for layer (%lu) should be larger than zero.\n", _index);
+ ssize_t OC = _nodeCount;
+
+#ifdef _KORALI_USE_CUDNN
+  if (_nn->_engine == "CUDNN")
+  {
+   // Allocating hidden and candidate memory tensors
+    cudaErrCheck(cudaMalloc((void **)&_hStateTensor, N * OC * sizeof(float)));
+    cudaErrCheck(cudaMalloc((void **)&_cStateTensor, N * OC * sizeof(float)));
+  }
+#endif
 }
 
 void Recurrent::createBackwardPipeline()
 {
+ // Calling base layer function
+ Layer::createBackwardPipeline();
+
+ // Obtaining batch size
+ ssize_t N = _nn->_batchSize;
+
+ // Checking Layer sizes
+ if (_nodeCount == 0) KORALI_LOG_ERROR("Node count for layer (%lu) should be larger than zero.\n", _index);
+ ssize_t OC = _nodeCount;
+
+#ifdef _KORALI_USE_CUDNN
+  if (_nn->_engine == "CUDNN")
+  {
+   cudaErrCheck(cudaMalloc((void **)&_hStateGradientTensor, N * OC * sizeof(float)));
+   cudaErrCheck(cudaMalloc((void **)&_cStateGradientTensor, N * OC * sizeof(float)));
+  }
+#endif
 }
 
 void Recurrent::backwardData()
 {
 }
 
-void Recurrent::backwardHyperparameters()
+void Recurrent::forwardData()
 {
+
 }
 
-void Recurrent::setOutputGradients(float *gradient)
+void Recurrent::backwardHyperparameters()
 {
 }
 
@@ -77,18 +229,6 @@ void Recurrent::getHyperparameters(float *hyperparameters)
 }
 
 void Recurrent::getHyperparameterGradients(float *gradient)
-{
-}
-
-void Recurrent::getOutputValues(float *output)
-{
-}
-
-void Recurrent::getInputGradients(float *gradient)
-{
-}
-
-void Recurrent::setInputValues(float *input)
 {
 }
 

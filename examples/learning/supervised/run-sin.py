@@ -35,6 +35,8 @@ e["Solver"]["Learning Rate"] = 0.05
 
 ### Defining the shape of the neural network
 
+e["Solver"]["Neural Network"]["Engine"] = "CUDNN"
+
 e["Solver"]["Neural Network"]["Layers"][0]["Type"] = "Layer/FeedForward"
 e["Solver"]["Neural Network"]["Layers"][0]["Node Count"] = 1
 e["Solver"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear"

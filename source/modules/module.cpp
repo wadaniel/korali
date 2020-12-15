@@ -21,6 +21,8 @@
 #include "experiment/experiment.hpp"
 #include "neuralNetwork/layer/feedforward/feedforward.hpp"
 #include "neuralNetwork/layer/recurrent/recurrent.hpp"
+#include "neuralNetwork/layer/input/input.hpp"
+#include "neuralNetwork/layer/output/output.hpp"
 #include "neuralNetwork/layer/layer.hpp"
 #include "neuralNetwork/neuralNetwork.hpp"
 #include "problem/bayesian/approximate/approximate.hpp"
@@ -157,6 +159,8 @@ Module *Module::getModule(knlohmann::json &js, Experiment *e)
   if (moduleType == "NeuralNetwork") module = new korali::NeuralNetwork();
   if (moduleType == "Layer/FeedForward") module = new korali::neuralNetwork::layer::FeedForward();
   if (moduleType == "Layer/Recurrent") module = new korali::neuralNetwork::layer::Recurrent();
+  if (moduleType == "Layer/Input") module = new korali::neuralNetwork::layer::Input();
+  if (moduleType == "Layer/Output") module = new korali::neuralNetwork::layer::Output();
 
   if (module == nullptr) KORALI_LOG_ERROR(" + Unrecognized module: %s.\n", moduleType.c_str());
 

@@ -46,61 +46,59 @@ std::vector<float> FeedForward::generateInitialHyperparameters()
 
 void FeedForward::createHyperparameterMemory()
 {
+  if (_index == 0) KORALI_LOG_ERROR("Feed forward layers cannot be placed at the 0 position\n");
+
   // Checking Layer sizes
   if (_nodeCount == 0) KORALI_LOG_ERROR("Node count for layer (%lu) should be larger than zero.\n", _index);
   ssize_t OC = _nodeCount;
 
-  // If this is not the input layer, we create the inner product (Wx + b) operation
-  if (_prevLayer != NULL)
-  {
-    // Starting to count hyperparameters
-    ssize_t IC = _prevLayer->_nodeCount;
-    _hyperparameterCount = IC * OC + OC;
+  // Starting to count hyperparameters
+  ssize_t IC = _prevLayer->_nodeCount;
+  _hyperparameterCount = IC * OC + OC;
 
 #ifdef _KORALI_USE_EIGEN
-    if (_nn->_engine == "Korali")
-    {
-      _weightValues = (float *)malloc(IC * OC * sizeof(float));
-      _weightGradient = (float *)malloc(IC * OC * sizeof(float));
+  if (_nn->_engine == "Korali")
+  {
+    _weightValues = (float *)malloc(IC * OC * sizeof(float));
+    _weightGradient = (float *)malloc(IC * OC * sizeof(float));
 
-      _biasValues = (float *)malloc(OC * sizeof(float));
-      _biasGradient = (float *)malloc(OC * sizeof(float));
-    }
+    _biasValues = (float *)malloc(OC * sizeof(float));
+    _biasGradient = (float *)malloc(OC * sizeof(float));
+  }
 #endif
 
 #ifdef _KORALI_USE_ONEDNN
-    if (_nn->_engine == "OneDNN")
-    {
-      memory::dims weightDims = {OC, IC};
-      auto weightMemDesc = memory::desc(weightDims, memory::data_type::f32, memory::format_tag::ab);
+  if (_nn->_engine == "OneDNN")
+  {
+    memory::dims weightDims = {OC, IC};
+    auto weightMemDesc = memory::desc(weightDims, memory::data_type::f32, memory::format_tag::ab);
 
-      _weightsMem = memory(weightMemDesc, _engine);
-      _weightsGradientMem = memory(_weightsMem.get_desc(), _engine);
+    _weightsMem = memory(weightMemDesc, _engine);
+    _weightsGradientMem = memory(_weightsMem.get_desc(), _engine);
 
-      auto biasMemDesc = memory::desc({OC}, memory::data_type::f32, memory::format_tag::a);
+    auto biasMemDesc = memory::desc({OC}, memory::data_type::f32, memory::format_tag::a);
 
-      _biasMem = memory(biasMemDesc, _engine);
-      _biasGradientMem = memory(_biasMem.get_desc(), _engine);
-    }
+    _biasMem = memory(biasMemDesc, _engine);
+    _biasGradientMem = memory(_biasMem.get_desc(), _engine);
+  }
 #endif
 
 #ifdef _KORALI_USE_CUDNN
-    if (_nn->_engine == "CUDNN")
-    {
-      cudnnErrCheck(cudnnCreateFilterDescriptor(&_weightsFilterDesc));
-      cudnnErrCheck(cudnnSetFilter4dDescriptor(_weightsFilterDesc, CUDNN_DATA_FLOAT, CUDNN_TENSOR_NCHW, OC, IC, 1, 1));
+  if (_nn->_engine == "CUDNN")
+  {
+    cudnnErrCheck(cudnnCreateFilterDescriptor(&_weightsFilterDesc));
+    cudnnErrCheck(cudnnSetFilter4dDescriptor(_weightsFilterDesc, CUDNN_DATA_FLOAT, CUDNN_TENSOR_NCHW, OC, IC, 1, 1));
 
-      cudaErrCheck(cudaMalloc((void **)&_weightsFilter, IC * OC * sizeof(float)));
-      cudaErrCheck(cudaMalloc((void **)&_weightsGradientFilter, IC * OC * sizeof(float)));
+    cudaErrCheck(cudaMalloc((void **)&_weightsFilter, IC * OC * sizeof(float)));
+    cudaErrCheck(cudaMalloc((void **)&_weightsGradientFilter, IC * OC * sizeof(float)));
 
-      cudnnErrCheck(cudnnCreateTensorDescriptor(&_biasTensorDesc));
-      cudnnErrCheck(cudnnSetTensor4dDescriptor(_biasTensorDesc, CUDNN_TENSOR_NCHW, CUDNN_DATA_FLOAT, 1, OC, 1, 1));
+    cudnnErrCheck(cudnnCreateTensorDescriptor(&_biasTensorDesc));
+    cudnnErrCheck(cudnnSetTensor4dDescriptor(_biasTensorDesc, CUDNN_TENSOR_NCHW, CUDNN_DATA_FLOAT, 1, OC, 1, 1));
 
-      cudaErrCheck(cudaMalloc((void **)&_biasTensor, OC * sizeof(float)));
-      cudaErrCheck(cudaMalloc((void **)&_biasGradientTensor, OC * sizeof(float)));
-    }
-#endif
+    cudaErrCheck(cudaMalloc((void **)&_biasTensor, OC * sizeof(float)));
+    cudaErrCheck(cudaMalloc((void **)&_biasGradientTensor, OC * sizeof(float)));
   }
+#endif
 }
 
 void FeedForward::createForwardPipeline()
@@ -118,13 +116,21 @@ void FeedForward::createForwardPipeline()
 #ifdef _KORALI_USE_EIGEN
   if (_nn->_engine == "Korali")
   {
-   // Not much more to do here
+   // Allocating memory for weight operation output
+   _weightsOutputValues = (float *)malloc(N * OC * sizeof(float));
   }
 #endif
 
 #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
   {
+    // Creating layer's data memory storage and activation function
+    const memory::dims layerDims = {N, OC};
+    auto dataMemDesc = memory::desc(layerDims, memory::data_type::f32, memory::format_tag::nc);
+
+    // Creating input (node) layer memory
+    _weightsOutputMem = memory(dataMemDesc, _engine);
+
     // If it is an element-wise operation, create an element-wise primitive
     if (_activationFunctionType.rfind("Elementwise", 0) == 0)
     {
@@ -139,7 +145,7 @@ void FeedForward::createForwardPipeline()
       float beta = _activationFunctionBeta;
 
       // Creating descriptor
-      auto activationDesc = eltwise_forward::desc(prop_kind::forward_training, _activationAlgorithm, _inputMem.get_desc(), alpha, beta);
+      auto activationDesc = eltwise_forward::desc(prop_kind::forward_training, _activationAlgorithm, _weightsOutputMem.get_desc(), alpha, beta);
 
       // Create primitive descriptor.
       _forwardEltwiseActivationPrimitiveDesc = eltwise_forward::primitive_desc(activationDesc, _engine);
@@ -153,7 +159,7 @@ void FeedForward::createForwardPipeline()
     {
       // Creating descriptor
       const int axis = 1;
-      auto activationDesc = softmax_forward::desc(prop_kind::forward_training, _inputMem.get_desc(), axis);
+      auto activationDesc = softmax_forward::desc(prop_kind::forward_training, _weightsOutputMem.get_desc(), axis);
 
       // Create primitive descriptor.
       _forwardSoftmaxActivationPrimitiveDesc = softmax_forward::primitive_desc(activationDesc, _engine);
@@ -163,34 +169,33 @@ void FeedForward::createForwardPipeline()
     }
 
     // Primitive arguments.
-    _forwardActivationArgs[DNNL_ARG_SRC] = _inputMem;
+    _forwardActivationArgs[DNNL_ARG_SRC] = _weightsOutputMem;
     _forwardActivationArgs[DNNL_ARG_DST] = _outputMem;
 
-    // If this is not the input layer, we create the inner product (Wx + b) operation
-    if (_prevLayer != NULL)
-    {
-      // Create operation descriptor.
-      auto inner_product_d = inner_product_forward::desc(prop_kind::forward_training, _prevLayer->_outputMem.get_desc(), _weightsMem.get_desc(), _biasMem.get_desc(), _inputMem.get_desc());
+    // We create the inner product (Wx + b) operation
+    auto inner_product_d = inner_product_forward::desc(prop_kind::forward_training, _prevLayer->_outputMem.get_desc(), _weightsMem.get_desc(), _biasMem.get_desc(), _weightsOutputMem.get_desc());
 
-      // Create inner product primitive descriptor.
-      dnnl::primitive_attr forwardPrimitiveAttributes;
-      _forwardInnerProductPrimitiveDesc = inner_product_forward::primitive_desc(inner_product_d, forwardPrimitiveAttributes, _engine);
+    // Create inner product primitive descriptor.
+    dnnl::primitive_attr forwardPrimitiveAttributes;
+    _forwardInnerProductPrimitiveDesc = inner_product_forward::primitive_desc(inner_product_d, forwardPrimitiveAttributes, _engine);
 
-      // Create the weights+bias primitive.
-      _forwardInnerProductPrimitive = inner_product_forward(_forwardInnerProductPrimitiveDesc);
+    // Create the weights+bias primitive.
+    _forwardInnerProductPrimitive = inner_product_forward(_forwardInnerProductPrimitiveDesc);
 
-      // Configuring inner product arguments
-      _forwardInnerProductArgs[DNNL_ARG_SRC] = _prevLayer->_outputMem;
-      _forwardInnerProductArgs[DNNL_ARG_WEIGHTS] = _weightsMem;
-      _forwardInnerProductArgs[DNNL_ARG_BIAS] = _biasMem;
-      _forwardInnerProductArgs[DNNL_ARG_DST] = _inputMem;
-    }
+    // Configuring inner product arguments
+    _forwardInnerProductArgs[DNNL_ARG_SRC] = _prevLayer->_outputMem;
+    _forwardInnerProductArgs[DNNL_ARG_WEIGHTS] = _weightsMem;
+    _forwardInnerProductArgs[DNNL_ARG_BIAS] = _biasMem;
+    _forwardInnerProductArgs[DNNL_ARG_DST] = _weightsOutputMem;
   }
 #endif
 
 #ifdef _KORALI_USE_CUDNN
   if (_nn->_engine == "CUDNN")
   {
+    // Allocating memory for weight operation's output
+    cudaErrCheck(cudaMalloc((void **)&_weightsOutputTensor, N * OC * sizeof(float)));
+
     cudnnErrCheck(cudnnCreateActivationDescriptor(&_activationDesc));
     cudnnActivationMode_t activationMode;
 
@@ -204,13 +209,10 @@ void FeedForward::createForwardPipeline()
 
     if (cudnnSetActivationDescriptor(_activationDesc, activationMode, CUDNN_PROPAGATE_NAN, _activationFunctionAlpha) != CUDNN_STATUS_SUCCESS) KORALI_LOG_ERROR("Error creating activation algorithm\n");
 
-    if (_prevLayer != NULL)
-    {
-      cudnnErrCheck(cudnnCreateConvolutionDescriptor(&_convolutionDesc));
-      cudnnErrCheck(cudnnSetConvolution2dDescriptor(_convolutionDesc, 0, 0, 1, 1, 1, 1, CUDNN_CONVOLUTION, CUDNN_DATA_FLOAT));
-      cudnnErrCheck(cudnnGetConvolutionForwardWorkspaceSize(_nn->_cuDNNHandle, _prevLayer->_layerTensorDesc, _weightsFilterDesc, _convolutionDesc, _layerTensorDesc, CUDNN_CONVOLUTION_FWD_ALGO_IMPLICIT_GEMM, &_convolutionWorkspaceSize));
-      cudaErrCheck(cudaMalloc((void **)&_convolutionWorkspace, _convolutionWorkspaceSize * sizeof(float)));
-    }
+    cudnnErrCheck(cudnnCreateConvolutionDescriptor(&_convolutionDesc));
+    cudnnErrCheck(cudnnSetConvolution2dDescriptor(_convolutionDesc, 0, 0, 1, 1, 1, 1, CUDNN_CONVOLUTION, CUDNN_DATA_FLOAT));
+    cudnnErrCheck(cudnnGetConvolutionForwardWorkspaceSize(_nn->_cuDNNHandle, _prevLayer->_outputTensorDesc, _weightsFilterDesc, _convolutionDesc, _outputTensorDesc, CUDNN_CONVOLUTION_FWD_ALGO_IMPLICIT_GEMM, &_convolutionWorkspaceSize));
+    cudaErrCheck(cudaMalloc((void **)&_convolutionWorkspace, _convolutionWorkspaceSize * sizeof(float)));
   }
 #endif
 }
@@ -230,7 +232,7 @@ void FeedForward::createBackwardPipeline()
 #ifdef _KORALI_USE_EIGEN
   if (_nn->_engine == "Korali")
   {
-    // Not much more to do here
+   _weightsOutputGradient = (float *)malloc(N * OC * sizeof(float));
   }
 #endif
 
@@ -238,6 +240,9 @@ void FeedForward::createBackwardPipeline()
 #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
   {
+   // Creating memory for weight operation output
+   _weightsOutputGradientMem = memory(_weightsOutputMem.get_desc(), _engine);
+
     float alpha = _activationFunctionAlpha;
     float beta = _activationFunctionBeta;
 
@@ -245,7 +250,7 @@ void FeedForward::createBackwardPipeline()
     if (_activationFunctionType.rfind("Elementwise", 0) == 0)
     {
       // Creating descriptor
-      auto activationDesc = eltwise_backward::desc(_activationAlgorithm, _inputMem.get_desc(), _outputMem.get_desc(), alpha, beta);
+      auto activationDesc = eltwise_backward::desc(_activationAlgorithm, _weightsOutputMem.get_desc(), _outputMem.get_desc(), alpha, beta);
 
       // Create primitive descriptor.
       auto backwardActivationPrimitiveDesc = eltwise_backward::primitive_desc(activationDesc, _engine, _forwardEltwiseActivationPrimitiveDesc);
@@ -259,7 +264,7 @@ void FeedForward::createBackwardPipeline()
     {
       // Creating descriptor
       const int axis = 1;
-      auto activationDesc = softmax_backward::desc(_inputMem.get_desc(), _outputMem.get_desc(), axis);
+      auto activationDesc = softmax_backward::desc(_weightsOutputMem.get_desc(), _outputMem.get_desc(), axis);
 
       // Create primitive descriptor.
       auto backwardActivationPrimitiveDesc = softmax_backward::primitive_desc(activationDesc, _engine, _forwardSoftmaxActivationPrimitiveDesc);
@@ -273,109 +278,104 @@ void FeedForward::createBackwardPipeline()
 
     // Primitive arguments.
     _backwardActivationArgs[DNNL_ARG_DIFF_DST] = _outputGradientMem; // Input
-    _backwardActivationArgs[DNNL_ARG_SRC] = _inputMem;                // Input
-    _backwardActivationArgs[DNNL_ARG_DIFF_SRC] = _intputGradientMem;       // Output
+    _backwardActivationArgs[DNNL_ARG_SRC] = _weightsOutputMem;                // Input
+    _backwardActivationArgs[DNNL_ARG_DIFF_SRC] = _weightsOutputGradientMem;       // Output
 
     // We do not define the following primitives for the input layer
-    if (_prevLayer != NULL)
-    {
-      auto backwardDataDesc = inner_product_backward_data::desc(
-        _prevLayer->_inputMem.get_desc(),
-        _weightsMem.get_desc(),
-        _inputMem.get_desc());
+    auto backwardDataDesc = inner_product_backward_data::desc(
+      _prevLayer->_outputMem.get_desc(),
+      _weightsMem.get_desc(),
+      _weightsOutputMem.get_desc());
 
-      // Create the primitive.
-      auto backwardDataPrimitiveDesc = inner_product_backward_data::primitive_desc(backwardDataDesc, _engine, _forwardInnerProductPrimitiveDesc);
-      _backwardDataPrimitive = inner_product_backward_data(backwardDataPrimitiveDesc);
+    // Create the primitive.
+    auto backwardDataPrimitiveDesc = inner_product_backward_data::primitive_desc(backwardDataDesc, _engine, _forwardInnerProductPrimitiveDesc);
+    _backwardDataPrimitive = inner_product_backward_data(backwardDataPrimitiveDesc);
 
-      _backwardDataArgs[DNNL_ARG_DIFF_DST] = _intputGradientMem;                   // Input
-      _backwardDataArgs[DNNL_ARG_WEIGHTS] = _weightsMem;                     // Input
-      _backwardDataArgs[DNNL_ARG_DIFF_SRC] = _prevLayer->_outputGradientMem; // Output
+    _backwardDataArgs[DNNL_ARG_DIFF_DST] = _weightsOutputGradientMem;         // Input
+    _backwardDataArgs[DNNL_ARG_WEIGHTS] = _weightsMem;                     // Input
+    _backwardDataArgs[DNNL_ARG_DIFF_SRC] = _prevLayer->_outputGradientMem; // Output
 
-      auto backwardWeightsDesc = inner_product_backward_weights::desc(
-        _prevLayer->_inputMem.get_desc(),
-        _weightsMem.get_desc(),
-        _biasMem.get_desc(),
-        _intputGradientMem.get_desc());
+    auto backwardWeightsDesc = inner_product_backward_weights::desc(
+      _prevLayer->_outputMem.get_desc(),
+      _weightsMem.get_desc(),
+      _biasMem.get_desc(),
+      _weightsOutputGradientMem.get_desc());
 
-      // Create the primitive.
-      auto backwardWeightsPrimitiveDesc = inner_product_backward_weights::primitive_desc(backwardWeightsDesc, _engine, _forwardInnerProductPrimitiveDesc);
-      _backwardWeightsPrimitive = inner_product_backward_weights(backwardWeightsPrimitiveDesc);
+    // Create the primitive.
+    auto backwardWeightsPrimitiveDesc = inner_product_backward_weights::primitive_desc(backwardWeightsDesc, _engine, _forwardInnerProductPrimitiveDesc);
+    _backwardWeightsPrimitive = inner_product_backward_weights(backwardWeightsPrimitiveDesc);
 
-      _backwardWeightsArgs[DNNL_ARG_SRC] = _prevLayer->_outputMem; // Input
-      _backwardWeightsArgs[DNNL_ARG_DIFF_DST] = _intputGradientMem;          // Input
-      _backwardWeightsArgs[DNNL_ARG_DIFF_WEIGHTS] = _weightsGradientMem;   // Output
-      _backwardWeightsArgs[DNNL_ARG_DIFF_BIAS] = _biasGradientMem;         // Output
-    }
+    _backwardWeightsArgs[DNNL_ARG_SRC] = _prevLayer->_outputMem; // Input
+    _backwardWeightsArgs[DNNL_ARG_DIFF_DST] = _weightsOutputGradientMem;          // Input
+    _backwardWeightsArgs[DNNL_ARG_DIFF_WEIGHTS] = _weightsGradientMem;   // Output
+    _backwardWeightsArgs[DNNL_ARG_DIFF_BIAS] = _biasGradientMem;         // Output
   }
 #endif
 
 #ifdef _KORALI_USE_CUDNN
   if (_nn->_engine == "CUDNN")
   {
-   // Not much more to do here
+   // Allocating gradient space for weight operation
+   cudaErrCheck(cudaMalloc((void **)&_weightsOutputGradientTensor, N * OC * sizeof(float)));
   }
 #endif
 }
 
 void FeedForward::forwardData()
 {
-  if (_prevLayer != NULL)
-  {
-    size_t N = _nn->_batchSize;
-    size_t IC = _prevLayer->_nodeCount;
-    size_t OC = _nodeCount;
+   size_t N = _nn->_batchSize;
+   size_t IC = _prevLayer->_nodeCount;
+   size_t OC = _nodeCount;
 
 #ifdef _KORALI_USE_EIGEN
-    if (_nn->_engine == "Korali")
-    {
-      // Performing Wx computation
-      Map<MatrixXf> matA(_weightValues, IC, OC);
-      Map<MatrixXf> matB(_prevLayer->_outputValues, IC, N);
-      Map<MatrixXf> matC(_inputValues, N, OC);
+   if (_nn->_engine == "Korali")
+   {
+     // Performing Wx computation
+     Map<MatrixXf> matA(_weightValues, IC, OC);
+     Map<MatrixXf> matB(_prevLayer->_outputValues, IC, N);
+     Map<MatrixXf> matC(_weightsOutputValues, N, OC);
 
-      matC = matA.transpose() * matB;
+     matC = matA.transpose() * matB;
 
-      // Adding Bias
-      for (size_t i = 0; i < N; i++)
-        for (size_t j = 0; j < OC; j++)
-          _inputValues[i * OC + j] += _biasValues[j];
-    }
+     // Adding Bias
+     for (size_t i = 0; i < N; i++)
+       for (size_t j = 0; j < OC; j++)
+         _weightsOutputValues[i * OC + j] += _biasValues[j];
+   }
 #endif
 
 #ifdef _KORALI_USE_ONEDNN
-    if (_nn->_engine == "OneDNN")
-    {
-      _forwardInnerProductPrimitive.execute(_nn->_stream, _forwardInnerProductArgs);
-    }
+   if (_nn->_engine == "OneDNN")
+   {
+     _forwardInnerProductPrimitive.execute(_nn->_stream, _forwardInnerProductArgs);
+   }
 #endif
 
 #ifdef _KORALI_USE_CUDNN
-    if (_nn->_engine == "CUDNN")
-    {
-      float alpha1 = 1.0f;
-      float alpha2 = 0.0f;
-      cudnnErrCheck(cudnnConvolutionForward(
-            _nn->_cuDNNHandle,
-            &alpha1,
-            _prevLayer->_layerTensorDesc,
-            _prevLayer->_outputTensor,
-            _weightsFilterDesc,
-            _weightsFilter,
-            _convolutionDesc,
-            CUDNN_CONVOLUTION_FWD_ALGO_IMPLICIT_GEMM,
-            _convolutionWorkspace,
-            _convolutionWorkspaceSize,
-            &alpha2,
-            _layerTensorDesc,
-            _inputTensor));
+   if (_nn->_engine == "CUDNN")
+   {
+     float alpha1 = 1.0f;
+     float alpha2 = 0.0f;
+     cudnnErrCheck(cudnnConvolutionForward(
+           _nn->_cuDNNHandle,
+           &alpha1,
+           _prevLayer->_outputTensorDesc,
+           _prevLayer->_outputTensor,
+           _weightsFilterDesc,
+           _weightsFilter,
+           _convolutionDesc,
+           CUDNN_CONVOLUTION_FWD_ALGO_IMPLICIT_GEMM,
+           _convolutionWorkspace,
+           _convolutionWorkspaceSize,
+           &alpha2,
+           _outputTensorDesc,
+           _weightsOutputTensor));
 
-      float alpha = 1.0f;
-      float beta = 1.0f;
-      cudnnAddTensor(_nn->_cuDNNHandle, &alpha, _biasTensorDesc, _biasTensor, &beta, _layerTensorDesc, _inputTensor);
-    }
+     float alpha = 1.0f;
+     float beta = 1.0f;
+     cudnnAddTensor(_nn->_cuDNNHandle, &alpha, _biasTensorDesc, _biasTensor, &beta, _outputTensorDesc, _weightsOutputTensor);
+   }
 #endif
-  }
 
   // Finally, forward the activation function
   forwardActivationFunction();
@@ -390,38 +390,38 @@ void FeedForward::forwardActivationFunction()
   if (_nn->_engine == "Korali")
   {
     if (_activationFunctionType == "Identity")
-      memcpy(_inputValues, _outputValues, N * OC * sizeof(float));
+      memcpy(_weightsOutputValues, _outputValues, N * OC * sizeof(float));
 
     if (_activationFunctionType == "Elementwise/Linear")
       for (size_t i = 0; i < N * OC; i++)
-        _outputValues[i] = _inputValues[i] * _activationFunctionAlpha;
+        _outputValues[i] = _weightsOutputValues[i] * _activationFunctionAlpha;
 
     if (_activationFunctionType == "Elementwise/Log")
       for (size_t i = 0; i < N * OC; i++)
-        _outputValues[i] = std::log(_inputValues[i]);
+        _outputValues[i] = std::log(_weightsOutputValues[i]);
 
     if (_activationFunctionType == "Elementwise/ReLU")
       for (size_t i = 0; i < N * OC; i++)
-        if (_inputValues[i] > 0.0f)
-          _outputValues[i] = _inputValues[i];
+        if (_weightsOutputValues[i] > 0.0f)
+          _outputValues[i] = _weightsOutputValues[i];
         else
-          _outputValues[i] = _inputValues[i] * _activationFunctionAlpha;
+          _outputValues[i] = _weightsOutputValues[i] * _activationFunctionAlpha;
 
     if (_activationFunctionType == "Elementwise/Tanh")
       for (size_t i = 0; i < N * OC; i++)
-        _outputValues[i] = std::tanh(_inputValues[i]);
+        _outputValues[i] = std::tanh(_weightsOutputValues[i]);
 
     if (_activationFunctionType == "Elementwise/Logistic")
       for (size_t i = 0; i < N * OC; i++)
-        _outputValues[i] = 1.0f / (1.0f + std::exp(-_inputValues[i]));
+        _outputValues[i] = 1.0f / (1.0f + std::exp(-_weightsOutputValues[i]));
 
     if (_activationFunctionType == "Softmax")
     {
       for (size_t i = 0; i < N; i++)
       {
-        float LSE = logSumExp(&_inputValues[i * OC], OC);
+        float LSE = logSumExp(&_weightsOutputValues[i * OC], OC);
         for (size_t j = 0; j < OC; j++)
-          _outputValues[i * OC + j] = std::exp(_inputValues[i * OC + j] - LSE);
+          _outputValues[i * OC + j] = std::exp(_weightsOutputValues[i * OC + j] - LSE);
       }
     }
   }
@@ -441,7 +441,7 @@ void FeedForward::forwardActivationFunction()
     {
      cudaErrCheck(cudaMemcpy(
             _outputTensor,
-            _inputTensor,
+            _weightsOutputTensor,
             N * OC * sizeof(float),
             cudaMemcpyDeviceToDevice));
     }
@@ -454,10 +454,10 @@ void FeedForward::forwardActivationFunction()
             CUDNN_SOFTMAX_LOG,
             CUDNN_SOFTMAX_MODE_CHANNEL,
             &alpha,
-            _layerTensorDesc,
-            _inputTensor,
+            _outputTensorDesc,
+            _weightsOutputTensor,
             &beta,
-            _layerTensorDesc,
+            _outputTensorDesc,
             _outputTensor));
     }
     else
@@ -468,10 +468,10 @@ void FeedForward::forwardActivationFunction()
             _nn->_cuDNNHandle,
             _activationDesc,
             &alpha,
-            _layerTensorDesc,
-            _inputTensor,
+            _outputTensorDesc,
+            _weightsOutputTensor,
             &beta,
-            _layerTensorDesc,
+            _outputTensorDesc,
             _outputTensor));
     }
   }
@@ -487,34 +487,34 @@ void FeedForward::backwardActivationFunction()
   if (_nn->_engine == "Korali")
   {
     if (_activationFunctionType == "Identity")
-      memcpy(_inputGradient, _outputGradient, N * OC * sizeof(float));
+      memcpy(_weightsOutputGradient, _outputGradient, N * OC * sizeof(float));
 
     if (_activationFunctionType == "Elementwise/Linear")
       for (size_t i = 0; i < N * OC; i++)
-        _inputGradient[i] = _outputGradient[i] * _activationFunctionAlpha;
+        _weightsOutputGradient[i] = _outputGradient[i] * _activationFunctionAlpha;
 
     if (_activationFunctionType == "Elementwise/Log")
       for (size_t i = 0; i < N * OC; i++)
-        _inputGradient[i] = _outputGradient[i] / _inputValues[i];
+        _weightsOutputGradient[i] = _outputGradient[i] / _weightsOutputValues[i];
 
     if (_activationFunctionType == "Elementwise/ReLU")
       for (size_t i = 0; i < N * OC; i++)
-        if (_inputValues[i] > 0.0f)
-          _inputGradient[i] = _outputGradient[i];
+        if (_weightsOutputValues[i] > 0.0f)
+          _weightsOutputGradient[i] = _outputGradient[i];
         else
-          _inputGradient[i] = _outputGradient[i] * _activationFunctionAlpha;
+          _weightsOutputGradient[i] = _outputGradient[i] * _activationFunctionAlpha;
 
     if (_activationFunctionType == "Elementwise/Tanh")
       for (size_t i = 0; i < N * OC; i++)
-        _inputGradient[i] = _outputGradient[i] * (1.0f - _outputValues[i] * _outputValues[i]);
+        _weightsOutputGradient[i] = _outputGradient[i] * (1.0f - _outputValues[i] * _outputValues[i]);
 
     if (_activationFunctionType == "Elementwise/Logistic")
       for (size_t i = 0; i < N * OC; i++)
-        _inputGradient[i] = _outputGradient[i] * _outputValues[i] * (1.0f - _outputValues[i]);
+        _weightsOutputGradient[i] = _outputGradient[i] * _outputValues[i] * (1.0f - _outputValues[i]);
 
     if (_activationFunctionType == "Softmax")
       for (size_t i = 0; i < N * OC; i++)
-        _inputGradient[i] = _outputGradient[i] * _outputValues[i] * (1.0f - _outputValues[i]);
+        _weightsOutputGradient[i] = _outputGradient[i] * _outputValues[i] * (1.0f - _outputValues[i]);
   }
 #endif
 
@@ -531,7 +531,7 @@ void FeedForward::backwardActivationFunction()
     if (_activationFunctionType == "Elementwise/Linear")
     {
      cudaErrCheck(cudaMemcpy(
-            _inputGradientTensor,
+            _weightsOutputGradientTensor,
             _outputGradientTensor,
             N * OC * sizeof(float),
             cudaMemcpyDeviceToDevice));
@@ -545,13 +545,13 @@ void FeedForward::backwardActivationFunction()
             CUDNN_SOFTMAX_LOG,
             CUDNN_SOFTMAX_MODE_CHANNEL,
             &alpha,
-            _layerTensorDesc,
+            _outputTensorDesc,
             _outputTensor,
-            _layerTensorDesc,
+            _outputTensorDesc,
             _outputGradientTensor,
             &beta,
-            _layerTensorDesc,
-            _inputGradientTensor));
+            _outputTensorDesc,
+            _weightsOutputGradientTensor));
     }
     else
     {
@@ -561,15 +561,15 @@ void FeedForward::backwardActivationFunction()
             _nn->_cuDNNHandle,
             _activationDesc,
             &alpha,
-            _layerTensorDesc,
+            _outputTensorDesc,
             _outputTensor,
-            _layerTensorDesc,
+            _outputTensorDesc,
             _outputGradientTensor,
-            _layerTensorDesc,
-            _inputTensor,
+            _outputTensorDesc,
+            _weightsOutputTensor,
             &beta,
-            _layerTensorDesc,
-            _inputGradientTensor));
+            _outputTensorDesc,
+            _weightsOutputGradientTensor));
     }
   }
 #endif
@@ -577,221 +577,206 @@ void FeedForward::backwardActivationFunction()
 
 void FeedForward::backwardData()
 {
- if (_prevLayer != NULL)
- {
-   int N = _nn->_batchSize;
-   int IC = _prevLayer->_nodeCount;
-   int OC = _nodeCount;
+  int N = _nn->_batchSize;
+  int IC = _prevLayer->_nodeCount;
+  int OC = _nodeCount;
 
-   // First, backward the activation function
-   backwardActivationFunction();
+  // First, backward the activation function
+  backwardActivationFunction();
 
-  #ifdef _KORALI_USE_EIGEN
-    if (_nn->_engine == "Korali")
-    {
-      // Backward propagating Wx+b operation
-      Map<MatrixXf> matA(_weightValues, IC, OC);
-      Map<MatrixXf> matB(_inputGradient, OC, N);
-      Map<MatrixXf> matC(_prevLayer->_outputGradient, N, IC);
+ #ifdef _KORALI_USE_EIGEN
+   if (_nn->_engine == "Korali")
+   {
+     // Backward propagating Wx+b operation
+     Map<MatrixXf> matA(_weightValues, IC, OC);
+     Map<MatrixXf> matB(_weightsOutputGradient, OC, N);
+     Map<MatrixXf> matC(_prevLayer->_outputGradient, N, IC);
 
-      matC = matA * matB;
-    }
-  #endif
+     matC = matA * matB;
+   }
+ #endif
 
-  #ifdef _KORALI_USE_ONEDNN
-    if (_nn->_engine == "OneDNN")
-    {
-      _backwardDataPrimitive.execute(_nn->_stream, _backwardDataArgs);
-    }
-  #endif
+ #ifdef _KORALI_USE_ONEDNN
+   if (_nn->_engine == "OneDNN")
+   {
+     _backwardDataPrimitive.execute(_nn->_stream, _backwardDataArgs);
+   }
+ #endif
 
-  #ifdef _KORALI_USE_CUDNN
-    if (_nn->_engine == "CUDNN")
-    {
-      float alpha = 1.0f;
-      float beta = 0.0f;
-      cudnnErrCheck(cudnnConvolutionBackwardData(
-            _nn->_cuDNNHandle,
-            &alpha,
-            _weightsFilterDesc,
-            _weightsFilter,
-            _layerTensorDesc,
-            _inputGradientTensor,
-            _convolutionDesc,
-            CUDNN_CONVOLUTION_BWD_DATA_ALGO_0,
-            _convolutionWorkspace,
-            _convolutionWorkspaceSize,
-            &beta,
-            _prevLayer->_layerTensorDesc,
-            _prevLayer->_outputGradientTensor));
-    }
-  #endif
- }
+ #ifdef _KORALI_USE_CUDNN
+   if (_nn->_engine == "CUDNN")
+   {
+     float alpha = 1.0f;
+     float beta = 0.0f;
+     cudnnErrCheck(cudnnConvolutionBackwardData(
+           _nn->_cuDNNHandle,
+           &alpha,
+           _weightsFilterDesc,
+           _weightsFilter,
+           _outputTensorDesc,
+           _weightsOutputGradientTensor,
+           _convolutionDesc,
+           CUDNN_CONVOLUTION_BWD_DATA_ALGO_0,
+           _convolutionWorkspace,
+           _convolutionWorkspaceSize,
+           &beta,
+           _prevLayer->_outputTensorDesc,
+           _prevLayer->_outputGradientTensor));
+   }
+ #endif
 }
 
 void FeedForward::backwardHyperparameters()
 {
-  if (_prevLayer != NULL)
-  {
-    int N = _nn->_batchSize;
-    int IC = _prevLayer->_nodeCount;
-    int OC = _nodeCount;
+   int N = _nn->_batchSize;
+   int IC = _prevLayer->_nodeCount;
+   int OC = _nodeCount;
 
 #ifdef _KORALI_USE_EIGEN
-    if (_nn->_engine == "Korali")
-    {
-      // Performing Weight gradient calculation
-      Map<MatrixXf> matA(_prevLayer->_outputValues, IC, N);
-      Map<MatrixXf> matB(_inputGradient, OC, N);
-      Map<MatrixXf> matC(_weightGradient, OC, IC);
+   if (_nn->_engine == "Korali")
+   {
+     // Performing Weight gradient calculation
+     Map<MatrixXf> matA(_prevLayer->_outputValues, IC, N);
+     Map<MatrixXf> matB(_weightsOutputGradient, OC, N);
+     Map<MatrixXf> matC(_weightGradient, OC, IC);
 
-      matC = matA * matB.transpose();
+     matC = matA * matB.transpose();
 
-      // Setting the bias values to all minibatch inputs
-      for (size_t j = 0; j < OC; j++) _biasGradient[j] = _inputGradient[0 * OC + j];
-      for (size_t i = 1; i < N; i++)
-        for (size_t j = 0; j < OC; j++) _biasGradient[j] += _inputGradient[i * OC + j];
-    }
+     // Setting the bias values to all minibatch inputs
+     for (size_t j = 0; j < OC; j++) _biasGradient[j] = _weightsOutputGradient[0 * OC + j];
+     for (size_t i = 1; i < N; i++)
+       for (size_t j = 0; j < OC; j++) _biasGradient[j] += _weightsOutputGradient[i * OC + j];
+   }
 #endif
 
 #ifdef _KORALI_USE_ONEDNN
-    if (_nn->_engine == "OneDNN")
-    {
-      _backwardWeightsPrimitive.execute(_nn->_stream, _backwardWeightsArgs);
-    }
+   if (_nn->_engine == "OneDNN")
+   {
+     _backwardWeightsPrimitive.execute(_nn->_stream, _backwardWeightsArgs);
+   }
 #endif
 
 #ifdef _KORALI_USE_CUDNN
-    if (_nn->_engine == "CUDNN")
-    {
-      float alpha = 1.0f;
-      float beta = 0.0f;
+   if (_nn->_engine == "CUDNN")
+   {
+     float alpha = 1.0f;
+     float beta = 0.0f;
 
-      cudnnErrCheck(cudnnConvolutionBackwardBias(
-            _nn->_cuDNNHandle,
-            &alpha,
-            _layerTensorDesc,
-            _inputGradientTensor,
-            &beta,
-            _biasTensorDesc,
-            _biasGradientTensor));
+     cudnnErrCheck(cudnnConvolutionBackwardBias(
+           _nn->_cuDNNHandle,
+           &alpha,
+           _outputTensorDesc,
+           _weightsOutputGradientTensor,
+           &beta,
+           _biasTensorDesc,
+           _biasGradientTensor));
 
-      cudnnErrCheck(cudnnConvolutionBackwardFilter(
-            _nn->_cuDNNHandle,
-            &alpha,
-            _prevLayer->_layerTensorDesc,
-            _prevLayer->_outputTensor,
-            _layerTensorDesc,
-            _inputGradientTensor,
-            _convolutionDesc,
-            CUDNN_CONVOLUTION_BWD_FILTER_ALGO_0,
-            _convolutionWorkspace,
-            _convolutionWorkspaceSize,
-            &beta,
-            _weightsFilterDesc,
-            _weightsGradientFilter));
-    }
+     cudnnErrCheck(cudnnConvolutionBackwardFilter(
+           _nn->_cuDNNHandle,
+           &alpha,
+           _prevLayer->_outputTensorDesc,
+           _prevLayer->_outputTensor,
+           _outputTensorDesc,
+           _weightsOutputGradientTensor,
+           _convolutionDesc,
+           CUDNN_CONVOLUTION_BWD_FILTER_ALGO_0,
+           _convolutionWorkspace,
+           _convolutionWorkspaceSize,
+           &beta,
+           _weightsFilterDesc,
+           _weightsGradientFilter));
+   }
 #endif
-  }
 }
 
 void FeedForward::setHyperparameters(float *hyperparameters)
 {
-  if (_prevLayer != NULL)
-  {
-    size_t IC = _prevLayer->_nodeCount;
-    size_t OC = _nodeCount;
+  size_t IC = _prevLayer->_nodeCount;
+  size_t OC = _nodeCount;
 
 #ifdef _KORALI_USE_EIGEN
-    if (_nn->_engine == "Korali")
-    {
-      memcpy(_weightValues, &hyperparameters[0], IC * OC * sizeof(float));
-      memcpy(_biasValues, &hyperparameters[IC * OC], OC * sizeof(float));
-    }
+  if (_nn->_engine == "Korali")
+  {
+    memcpy(_weightValues, &hyperparameters[0], IC * OC * sizeof(float));
+    memcpy(_biasValues, &hyperparameters[IC * OC], OC * sizeof(float));
+  }
 #endif
 
 #ifdef _KORALI_USE_ONEDNN
-    if (_nn->_engine == "OneDNN")
-    {
-      write_to_dnnl_memory(&hyperparameters[0], _weightsMem);
-      write_to_dnnl_memory(&hyperparameters[IC * OC], _biasMem);
-    }
+  if (_nn->_engine == "OneDNN")
+  {
+    write_to_dnnl_memory(&hyperparameters[0], _weightsMem);
+    write_to_dnnl_memory(&hyperparameters[IC * OC], _biasMem);
+  }
 #endif
 
 #ifdef _KORALI_USE_CUDNN
-    if (_nn->_engine == "CUDNN")
-    {
-      cudaErrCheck(cudaMemcpy(_weightsFilter, &hyperparameters[0], IC * OC * sizeof(float), cudaMemcpyHostToDevice));
-      cudaErrCheck(cudaMemcpy(_biasTensor, &hyperparameters[IC * OC], OC * sizeof(float), cudaMemcpyHostToDevice));
-    }
-#endif
+  if (_nn->_engine == "CUDNN")
+  {
+    cudaErrCheck(cudaMemcpy(_weightsFilter, &hyperparameters[0], IC * OC * sizeof(float), cudaMemcpyHostToDevice));
+    cudaErrCheck(cudaMemcpy(_biasTensor, &hyperparameters[IC * OC], OC * sizeof(float), cudaMemcpyHostToDevice));
   }
+#endif
 }
 
 void FeedForward::getHyperparameters(float *hyperparameters)
 {
-  if (_prevLayer != NULL)
-  {
-    size_t IC = _prevLayer->_nodeCount;
-    size_t OC = _nodeCount;
+  size_t IC = _prevLayer->_nodeCount;
+  size_t OC = _nodeCount;
 
 #ifdef _KORALI_USE_EIGEN
-    if (_nn->_engine == "Korali")
-    {
-      memcpy(&hyperparameters[0], _weightValues, IC * OC * sizeof(float));
-      memcpy(&hyperparameters[IC * OC], _biasValues, OC * sizeof(float));
-    }
+  if (_nn->_engine == "Korali")
+  {
+    memcpy(&hyperparameters[0], _weightValues, IC * OC * sizeof(float));
+    memcpy(&hyperparameters[IC * OC], _biasValues, OC * sizeof(float));
+  }
 #endif
 
 #ifdef _KORALI_USE_ONEDNN
-    if (_nn->_engine == "OneDNN")
-    {
-      read_from_dnnl_memory(&hyperparameters[0], _weightsMem);
-      read_from_dnnl_memory(&hyperparameters[IC * OC], _biasMem);
-    }
+  if (_nn->_engine == "OneDNN")
+  {
+    read_from_dnnl_memory(&hyperparameters[0], _weightsMem);
+    read_from_dnnl_memory(&hyperparameters[IC * OC], _biasMem);
+  }
 #endif
 
 #ifdef _KORALI_USE_CUDNN
-    if (_nn->_engine == "CUDNN")
-    {
-      cudaErrCheck(cudaMemcpy(&hyperparameters[0], _weightsFilter, IC * OC * sizeof(float), cudaMemcpyDeviceToHost));
-      cudaErrCheck(cudaMemcpy(&hyperparameters[IC * OC], _biasTensor, OC * sizeof(float), cudaMemcpyDeviceToHost));
-    }
-#endif
+  if (_nn->_engine == "CUDNN")
+  {
+    cudaErrCheck(cudaMemcpy(&hyperparameters[0], _weightsFilter, IC * OC * sizeof(float), cudaMemcpyDeviceToHost));
+    cudaErrCheck(cudaMemcpy(&hyperparameters[IC * OC], _biasTensor, OC * sizeof(float), cudaMemcpyDeviceToHost));
   }
+#endif
 }
 
 void FeedForward::getHyperparameterGradients(float *gradient)
 {
-  if (_prevLayer != NULL)
-  {
-    size_t IC = _prevLayer->_nodeCount;
-    size_t OC = _nodeCount;
+  size_t IC = _prevLayer->_nodeCount;
+  size_t OC = _nodeCount;
 
 #ifdef _KORALI_USE_EIGEN
-    if (_nn->_engine == "Korali")
-    {
-      memcpy(&gradient[0], _weightGradient, IC * OC * sizeof(float));
-      memcpy(&gradient[IC * OC], _biasGradient, OC * sizeof(float));
-    }
+  if (_nn->_engine == "Korali")
+  {
+    memcpy(&gradient[0], _weightGradient, IC * OC * sizeof(float));
+    memcpy(&gradient[IC * OC], _biasGradient, OC * sizeof(float));
+  }
 #endif
 
 #ifdef _KORALI_USE_ONEDNN
-    if (_nn->_engine == "OneDNN")
-    {
-      read_from_dnnl_memory(&gradient[0], _weightsGradientMem);
-      read_from_dnnl_memory(&gradient[IC * OC], _biasGradientMem);
-    }
+  if (_nn->_engine == "OneDNN")
+  {
+    read_from_dnnl_memory(&gradient[0], _weightsGradientMem);
+    read_from_dnnl_memory(&gradient[IC * OC], _biasGradientMem);
+  }
 #endif
 
 #ifdef _KORALI_USE_CUDNN
-    if (_nn->_engine == "CUDNN")
-    {
-      cudaErrCheck(cudaMemcpy(&gradient[0], _weightsGradientFilter, IC * OC * sizeof(float), cudaMemcpyDeviceToHost));
-      cudaErrCheck(cudaMemcpy(&gradient[IC * OC], _biasGradientTensor, OC * sizeof(float), cudaMemcpyDeviceToHost));
-    }
-#endif
+  if (_nn->_engine == "CUDNN")
+  {
+    cudaErrCheck(cudaMemcpy(&gradient[0], _weightsGradientFilter, IC * OC * sizeof(float), cudaMemcpyDeviceToHost));
+    cudaErrCheck(cudaMemcpy(&gradient[IC * OC], _biasGradientTensor, OC * sizeof(float), cudaMemcpyDeviceToHost));
   }
+#endif
 }
 
 } // namespace layer

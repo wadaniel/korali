@@ -20,6 +20,16 @@ class FeedForward : public Layer
 #ifdef _KORALI_USE_EIGEN
 
  /**
+* @brief Contains the output of the inner product (Wx+b) operation
+*/
+ float *_weightsOutputValues;
+
+ /**
+* @brief Contains the gradients of the output of the inner product (Wx+b) operation
+*/
+ float *_weightsOutputGradient;
+
+ /**
 * @brief Contains the values of the weights
 */
  float *_weightValues;
@@ -46,6 +56,16 @@ class FeedForward : public Layer
  /********************************************************
 * oneDNN Layers's Memory Structures for Forward Propagation
 *******************************************************/
+
+ /**
+ * @brief oneDNN Memory object descriptor to contain the output of the inner product (Wx+b) operation
+ */
+ dnnl::memory _weightsOutputMem;
+
+ /**
+ * @brief oneDNN Gradients of the output of the inner product (Wx+b) operation
+ */
+ dnnl::memory _weightsOutputGradientMem;
 
  /**
  * @brief oneDNN Memory object descriptor to contain the weights of inner product with incoming channels
@@ -156,6 +176,16 @@ class FeedForward : public Layer
 #endif
 
 #ifdef _KORALI_USE_CUDNN
+
+ /**
+ * @brief cuDNN Device memory pointer for the output of the inner product (Wx+b) operation
+ */
+ void *_weightsOutputTensor;
+
+ /**
+ * @brief cuDNN Device memory pointer for the gradients of the output of the inner product (Wx+b) operation
+ */
+ void *_weightsOutputGradientTensor;
 
  /**
  * @brief cuDNN Descriptor for the filter weights

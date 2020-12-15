@@ -28,12 +28,12 @@ class Recurrent : public Layer
   /**
   * @brief cuDNN Device memory pointers for each internal layer's hidden state
   */
-  void **_hStateTensor;
+  void *_hStateTensor;
 
   /**
   * @brief cuDNN Device memory pointers for each internal layer's candidate (LSTM) state
   */
-  void **_cStateTensor;
+  void *_cStateTensor;
 
   /**
   * @brief cuDNN Device memory pointers for each internal layer's hidden state gradients
@@ -76,6 +76,16 @@ class Recurrent : public Layer
   void *_weightsGradientTensor;
 
   /**
+  * @brief cuDNN Device RNN data descriptor for the input
+  */
+  cudnnRNNDataDescriptor_t _inputRNNDataDesc;
+
+  /**
+  * @brief cuDNN Device RNN data descriptor for the output
+  */
+  cudnnRNNDataDescriptor_t _outputRNNDataDesc;
+
+  /**
   * @brief cuDNN Device memory pointer to of all linear layer weights
   */
   std::vector<void*> _linearLayerWeightTensors;
@@ -84,6 +94,36 @@ class Recurrent : public Layer
    * @brief cuDNN Device memory pointer to of all linear layer biases
    */
   std::vector<void*> _linearLayerBiasTensors;
+
+  /**
+   * @brief cuDNN Weights size
+   */
+  size_t _weightsSize;
+
+  /**
+   * @brief cuDNN Workspace size
+   */
+  size_t _workSpaceSize;
+
+  /**
+   * @brief cuDNN reserve space size
+   */
+  size_t _reserveSpaceSize;
+
+  /**
+  * @brief cuDNN Device memory pointers for workspace tensor
+  */
+  void *_workSpaceTensor;
+
+  /**
+   * @brief cuDNN Device memory pointers for reserve space tensor
+   */
+  void *_reserveSpaceTensor;
+
+  /**
+   * @brief cuDNN Device memory for sequence lenght array
+   */
+  int *_devSequenceLengths;
 
   #endif
 

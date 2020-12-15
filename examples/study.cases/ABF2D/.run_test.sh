@@ -1,23 +1,16 @@
 #!/bin/bash
 
-###### Check if necessary python modules are installed ######
-python3 -m pip show scipy
-if [ $? -ne 0 ]; then
- echo "[Korali] Scipy not found, aborting test"
- exit 0
-fi
-
 ###### Auxiliar Functions and Variables #########
 
 source ../../../tests/functions.sh
 
-##### Deleting Previous Results 
+##### Deleting Previous Results
 
 echo "  + Deleting previous results..."
 rm -rf _korali_result*; check_result
 
 ##### Creating test files
- 
+
 echo "  + Creating test files..."
 
 rm -rf __test-*; check_result
@@ -46,5 +39,3 @@ done
 ##### Deleting Tests
 
 rm -rf __test-*; check_result
-  
-  

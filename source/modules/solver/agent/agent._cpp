@@ -221,7 +221,7 @@ void Agent::processExperience(knlohmann::json &experience)
 {
   experience_t e;
 
-  e.cache.setMaxAge(_cachePersistence); // why is this set here? (DW.)
+  e.cache.setMaxAge(_cachePersistence);
   e.cache.setTimer(&_policyUpdateCount);
 
   // Getting state, action, reward, and whether it's terminal

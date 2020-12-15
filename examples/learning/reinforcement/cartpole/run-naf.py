@@ -42,7 +42,6 @@ e["Solver"]["Target Learning Rate"] = 0.01
 e["Solver"]["Experiences Between Policy Updates"] = 5
 e["Solver"]["Covariance Scaling"] = 0.01
 e["Solver"]["Mini Batch Strategy"] = "Prioritized"
-e["Solver"]["Policy Distribution"] = "Beta"
 
 ### Defining Experience Replay configuration
 

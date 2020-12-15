@@ -194,11 +194,6 @@ std::tuple<T, T> betaParamTransformAlt(const T &mean, const T &varcof, const T &
   const T v = (lb * ub - lb * mean - ub * mean + mean * mean + var) / (var * scale);
   const T alpha = (lb - mean) * v;
   const T beta = (mean - ub) * v;
-  if (alpha != alpha) printf("invalid alpha %f %f %f\n", alpha, mean, varcof);
-  if (beta != beta) printf("invalid beta %f %f %f\n", beta, mean, varcof);
-  if (alpha <= 0.0) printf("invalid alpha %f %f %f\n", alpha, mean, varcof);
-  if (beta <= 0.0) printf("invalid beta %f %f %f\n", beta, mean, varcof);
-  //printf("a %f b %f\n", alpha, beta);
   return std::tuple<T, T>{alpha, beta};
 }
 

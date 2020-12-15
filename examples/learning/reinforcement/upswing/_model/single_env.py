@@ -26,7 +26,11 @@ def env(s):
   
   # Getting Reward
   s["Reward"] = upswing.getReward()
-   
+  r = s["Reward"]
+
+  if (s["Reward"] > 1.80):
+      print("UPRIGHT {0} : {1}".format(step, r))
+
   # Storing New State
   state = upswing.getState().tolist()
   s["State"] = state

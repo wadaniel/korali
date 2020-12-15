@@ -9,20 +9,6 @@ import importlib
 
 curdir = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
 
-
-# Check if env variable set
-def validateEnv(test, output):
-  print(os.environ.get('DISPLAY', ""))
-  if (os.environ.get('DISPLAY', "") == ""):
-    if (test == True) or output:
-      return
-    else:
-      print(
-          "[Korali] Error: Environment variable '$DISPLAY' not set, try running with --output OUTPUT"
-      )
-      sys.exit(0)
-
-
 # Check if name has .png ending
 def validateOutput(output):
   if not output.endswith(".png"):
@@ -37,8 +23,6 @@ def main(path, check, test, output, args):
   if (check == True):
     print("[Korali] Plotter correctly installed.")
     exit(0)
-
-  validateEnv(test, output)
 
   if test or output:
     matplotlib.use('Agg')
@@ -100,7 +84,7 @@ def main(path, check, test, output, args):
     exit(0)
   else:
     plt.savefig(output)
-    exit(-1)
+    exit(0)
 
   if solverName.replace(' ', '') == 'Executor':
     # TODO

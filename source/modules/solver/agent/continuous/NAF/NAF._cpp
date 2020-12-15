@@ -75,23 +75,14 @@ void NAF::initializeAgent()
     _qExperiment["Solver"]["Neural Network"]["Output"]["Softplus Mask"][i + 1] = false;
     _qExperiment["Solver"]["Neural Network"]["Output"]["Sigmoid Mask"][i + 1] = false;
 
+    // Softplus mask for P
     _qExperiment["Solver"]["Neural Network"]["Output"]["Scale"][dimAction + i + 1] = 1.0;
     _qExperiment["Solver"]["Neural Network"]["Output"]["Shift"][dimAction + i + 1] = 0.0;
     _qExperiment["Solver"]["Neural Network"]["Output"]["Absolute Mask"][dimAction + i + 1] = false;
+    _qExperiment["Solver"]["Neural Network"]["Output"]["Tanh Mask"][dimAction + i + 1] = false;
+    _qExperiment["Solver"]["Neural Network"]["Output"]["Tanh Mask"][dimAction + i + 1] = false;
+    _qExperiment["Solver"]["Neural Network"]["Output"]["Softplus Mask"][dimAction + i + 1] = true;
     _qExperiment["Solver"]["Neural Network"]["Output"]["Sigmoid Mask"][dimAction + i + 1] = false;
-
-    if (_policyDistribution == "Normal")
-    {
-      // Softplus mask for P
-      _qExperiment["Solver"]["Neural Network"]["Output"]["Tanh Mask"][dimAction + i + 1] = false;
-      _qExperiment["Solver"]["Neural Network"]["Output"]["Softplus Mask"][dimAction + i + 1] = true;
-    }
-    else /* _policyDistribution == "Beta" */
-    {
-      // Tanh mask for Variance Coefficients
-      _qExperiment["Solver"]["Neural Network"]["Output"]["Tanh Mask"][dimAction + i + 1] = false;
-      _qExperiment["Solver"]["Neural Network"]["Output"]["Softplus Mask"][dimAction + i + 1] = false;
-    }
   }
 
   size_t outputLayer = _qExperiment["Solver"]["Neural Network"]["Layers"].size() - 1;
@@ -258,6 +249,18 @@ knlohmann::json NAF::runPolicy(const std::vector<float> &state)
   {
     actionMeans[i] = qNNoutput[1 + i];
     actionSigmas[i] = std::sqrt(_covarianceScaling) * _actionScalings[i] / qNNoutput[1 + _problem->_actionVectorSize + i];
+  }
+
+  if(_policyDistribution == "Beta")
+  {
+    // Transform to variance coefficient
+    for (size_t i = 0; i < _problem->_actionVectorSize; ++i)
+    {
+        float mux  = (actionMeans[i] - _actionLowerBounds[i])/_actionScalings[i];
+        float sigx  = actionSigmas[i]/_actionScalings[i];
+        actionSigmas[i] = mux * (1.0 - mux ) / sigx;
+        if (actionSigmas[i] > 1.0) actionSigmas[i] = 1.0;
+    }
   }
 
   knlohmann::json policy;

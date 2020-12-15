@@ -221,7 +221,7 @@ void Agent::processExperience(knlohmann::json &experience)
 {
   experience_t e;
 
-  e.cache.setMaxAge(_cachePersistence);
+  e.cache.setMaxAge(_cachePersistence); // why is this set here? (DW.)
   e.cache.setTimer(&_policyUpdateCount);
 
   // Getting state, action, reward, and whether it's terminal
@@ -241,6 +241,7 @@ void Agent::processExperience(knlohmann::json &experience)
   e.probability = 0.0;
   e.policy = experience["Policy"];
   e.policy["Vtbc"] = experience["Vtbc"].get<float>();
+  e.cache.set("Importance Weight", 1.0);
   _experienceReplay.add(e);
 }
 

@@ -164,10 +164,10 @@ void Agent::attendAgent(size_t agentId)
     {
       // Update Vtbc
       float sumRewards = 0;
-      for (ssize_t i = _episodes[agentId].size()-1; i >= 0; i--) 
+      for (ssize_t i = _episodes[agentId].size() - 1; i >= 0; i--)
       {
-        // approximate vtbc   
-        sumRewards = _criticDiscountFactor*sumRewards + _episodes[agentId][i]["Reward"].get<float>();
+        // approximate vtbc
+        sumRewards = _criticDiscountFactor * sumRewards + _episodes[agentId][i]["Reward"].get<float>();
         _episodes[agentId][i]["Vtbc"] = sumRewards;
       }
 

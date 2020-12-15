@@ -251,15 +251,15 @@ knlohmann::json NAF::runPolicy(const std::vector<float> &state)
     actionSigmas[i] = std::sqrt(_covarianceScaling) * _actionScalings[i] / qNNoutput[1 + _problem->_actionVectorSize + i];
   }
 
-  if(_policyDistribution == "Beta")
+  if (_policyDistribution == "Beta")
   {
     // Transform to variance coefficient
     for (size_t i = 0; i < _problem->_actionVectorSize; ++i)
     {
-        float mux  = (actionMeans[i] - _actionLowerBounds[i])/_actionScalings[i];
-        float sigx  = actionSigmas[i]/_actionScalings[i];
-        actionSigmas[i] = mux * (1.0 - mux ) / sigx;
-        if (actionSigmas[i] > 1.0) actionSigmas[i] = 1.0;
+      float mux = (actionMeans[i] - _actionLowerBounds[i]) / _actionScalings[i];
+      float sigx = actionSigmas[i] / _actionScalings[i];
+      actionSigmas[i] = mux * (1.0 - mux) / sigx;
+      if (actionSigmas[i] > 1.0) actionSigmas[i] = 1.0;
     }
   }
 

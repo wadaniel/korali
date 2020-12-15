@@ -30,7 +30,7 @@ class VRACER : public Continuous
    * @brief Pointer to actor's experiment problem
    */
   problem::SupervisedLearning *_criticPolicyProblem;
- 
+
   /**
    * @brief Calculates the state value function V(s,a)
    * @param state state to evaluate

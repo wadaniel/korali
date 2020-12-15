@@ -93,7 +93,7 @@ void VRACER::initializeAgent()
     }
     else /* _policyDistribution == "Beta" */
     {
-      // Tanh mask for Variance Coefficients
+      // Sigmoid in mask for Variance Coefficients in (0,1)
       _criticPolicyExperiment["Solver"]["Neural Network"]["Output"]["Scale"][dimAction + i + 1] = 1.0;
       _criticPolicyExperiment["Solver"]["Neural Network"]["Output"]["Shift"][dimAction + i + 1] = 0.0;
       _criticPolicyExperiment["Solver"]["Neural Network"]["Output"]["Absolute Mask"][dimAction + i + 1] = false;
@@ -198,9 +198,11 @@ void VRACER::trainPolicy()
     float V = policy["State Value"].get<float>();
     auto curMeans = policy["Action Means"].get<std::vector<float>>();
     auto curSigmas = policy["Action Sigmas"].get<std::vector<float>>();
-
+    //printf("cs %f\n", curSigmas[0]);
+    
     // Compute importance weight
     float importanceWeight = calculateImportanceWeight(expAction, curMeans, curSigmas, expMeans, expSigmas);
+    //printf("iw %f\n", importanceWeight);
  
     // Update State Value in Metadata
     //_experienceReplay[curId].policy["State Value"] = V;
@@ -242,7 +244,7 @@ void VRACER::trainPolicy()
       // In this case add Vtbc
       if (isNormal == true)
       { 
-        float nextExpVtbc = _experienceReplay[curId+1].policy["Vtbc"].get<float>(); /// TODO: check idx
+        float nextExpVtbc = _experienceReplay[curId+1].policy["Vtbc"].get<float>();
         Qret += _criticDiscountFactor * nextExpVtbc;
       }
 
@@ -277,6 +279,7 @@ void VRACER::trainPolicy()
       {
         // '-' because the optimizer is maximizing
         gradientLoss[1 + i] = -_referBeta * lossOffPolicy * polGrad[i];
+        //printf("pg %zu %f\n", i, gradientLoss[1+i]);
       }
     }
 
@@ -287,6 +290,7 @@ void VRACER::trainPolicy()
     {
       // Step towards old policy (gradient pointing to larger difference between old and current policy)
       gradientLoss[1 + i] -= (1.0f - _referBeta) * klGrad[i];
+      //printf("kg %zu %f\n", i, gradientLoss[1+i]);
     }
 
     // Set status as learning problem input

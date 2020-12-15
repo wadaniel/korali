@@ -89,7 +89,6 @@ std::vector<float> Continuous::generateTrainingAction(const std::vector<float> &
     // ParamsOne are the Means, ParamsTwo are the Variance Coefficients
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
       action[i] = ranBetaAlt(_normalGenerator->_range, paramsOne[i], paramsTwo[i], _actionLowerBounds[i], _actionUpperBounds[i]);
-    //printf("a %f mu %f cv %f\n", action[0], paramsOne[0], paramsTwo[0]);
   }
 
   return action;

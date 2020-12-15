@@ -136,7 +136,7 @@ void Dense::createForwardPipeline()
       if (_activationFunctionType == "Elementwise/Linear") _activationAlgorithm = algorithm::eltwise_linear;
       if (_activationFunctionType == "Elementwise/Log") _activationAlgorithm = algorithm::eltwise_log;
       if (_activationFunctionType == "Elementwise/ReLU") _activationAlgorithm = algorithm::eltwise_relu;
-      if (_activationFunctionType == "Elementwise/Tanh") _activationAlgorithm = algorithm::eltwise_tanh_use_dst_for_bwd;
+      if (_activationFunctionType == "Elementwise/Tanh") _activationAlgorithm = algorithm::eltwise_tanh;
       if (_activationFunctionType == "Elementwise/Logistic") _activationAlgorithm = algorithm::eltwise_logistic;
 
       float alpha = _activationFunctionAlpha;

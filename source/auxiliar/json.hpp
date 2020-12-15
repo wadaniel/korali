@@ -501,11 +501,11 @@ class other_error : public exception
 #endif
 
 // allow to disable exceptions
-  #include <cstdlib>
-  #define JSON_THROW(exception) std::abort()
-  #define JSON_TRY if (true)
-  #define JSON_CATCH(exception) if (false)
-  #define JSON_INTERNAL_CATCH(exception) if (false)
+#include <cstdlib>
+#define JSON_THROW(exception) std::abort()
+#define JSON_TRY if (true)
+#define JSON_CATCH(exception) if (false)
+#define JSON_INTERNAL_CATCH(exception) if (false)
 
 // override exception macros
 #if defined(JSON_THROW_USER)

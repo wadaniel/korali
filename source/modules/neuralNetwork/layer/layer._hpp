@@ -52,16 +52,6 @@ class Layer : public Module
   #ifdef _KORALI_USE_EIGEN
 
   /**
- * @brief Contains the input values to the layer
- */
-  float *_inputValues;
-
-  /**
- * @brief Contains the gradients of the inputs to the layer
- */
-  float *_inputGradient;
-
-  /**
  * @brief Contains the output values of the layer
  */
   float *_outputValues;
@@ -76,19 +66,9 @@ class Layer : public Module
   #ifdef _KORALI_USE_ONEDNN
 
   /**
-  * @brief oneDNN Memory object descriptor to contain the input values to the layer
-  */
-  dnnl::memory _inputMem;
-
-  /**
   * @brief oneDNN Memory object descriptor to contain the output result of the layer
   */
   dnnl::memory _outputMem;
-
-  /**
-  * @brief oneDNN Gradient of the data at the inner product (Wx+b) stage
-  */
-  dnnl::memory _intputGradientMem;
 
   /*
  * @brief oneDNN Gradients of the operation wrt to activation function
@@ -100,19 +80,9 @@ class Layer : public Module
   #ifdef _KORALI_USE_CUDNN
 
   /**
-  * @brief cuDNN Descriptor for the node (layer) tensor memory
+  * @brief cuDNN Descriptor for the output tensor memory
   */
-  cudnnTensorDescriptor_t _layerTensorDesc;
-
-  /**
-  * @brief cuDNN Device memory pointer for the input data tensor
-  */
-  void *_inputTensor;
-
-  /**
-  * @brief cuDNN Device memory pointer for the input data gradients tensor
-  */
-  void *_inputGradientTensor;
+  cudnnTensorDescriptor_t _outputTensorDesc;
 
   /**
   * @brief cuDNN Device memory pointer for the output tensor
@@ -130,7 +100,7 @@ class Layer : public Module
    * @brief Generates the initial weight/bias hyperparameters for the layer
    * @return The initial hyperparameters
    */
-  virtual std::vector<float> generateInitialHyperparameters() = 0;
+  virtual std::vector<float> generateInitialHyperparameters();
 
   /**
   * @brief  Initializes the layer's internal memory structures for hyperparameter storage
@@ -153,46 +123,22 @@ class Layer : public Module
   virtual void forwardData() = 0;
 
   /**
-   * @brief Sets the gradients at the output nodes of the layer
-   * @param gradient (Input) pointer containing the gradients to set.
-   */
-  void setOutputGradients(float *gradient);
-
-  /**
-   * @brief Gets the values at the output nodes of the layer
-   * @param output (Output) Pointer to write the output values to.
-   */
-  void getOutputValues(float *output);
-
-  /**
-   * @brief Sets the values at the input nodes of the layer
-   * @param input (Input) pointer containing the values to set.
-   */
-  void setInputValues(float *input);
-
-  /**
-   * @brief Gets the gradients at the input nodes of the layer
-   * @param gradient (Output) Pointer to write the input gradients to.
-   */
-  void getInputGradients(float *gradient);
-
-  /**
    * @brief Updates layer's hyperparameters (e.g., weights and biases)
    * @param hyperparameters (Input) Pointer to read the hyperparameters from.
    */
-  virtual void setHyperparameters(float *hyperparameters) = 0;
+  virtual void setHyperparameters(float *hyperparameters) {};
 
   /**
    * @brief Gets layer's hyperparameters (e.g., weights and biases)
    * @param hyperparameters (Output) Pointer to write the hyperparameters to.
    */
-  virtual void getHyperparameters(float *hyperparameters) = 0;
+  virtual void getHyperparameters(float *hyperparameters) {};
 
   /**
    * @brief Gets the gradients of the layer's output wrt to is hyperparameters (e.g., weights and biases)
    * @param gradient (Output) Pointer to write the hyperparameter gradients to.
    */
-  virtual void getHyperparameterGradients(float *gradient) = 0;
+  virtual void getHyperparameterGradients(float *gradient) {};
 
   /**
    * @brief Performs the backward propagation of the data
@@ -202,7 +148,7 @@ class Layer : public Module
   /**
   * @brief Calculates the gradients of layer hyperparameters
   */
-  virtual void backwardHyperparameters() = 0;
+  virtual void backwardHyperparameters() {};
 };
 
 } // namespace neuralNetwork

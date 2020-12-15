@@ -49,6 +49,26 @@ class NeuralNetwork : public Module
    */
   size_t _hyperparameterCount;
 
+  /**
+   * @brief Raw data for the NN input batch
+   */
+  std::vector<float> _batchInputData;
+
+  /**
+   * @brief Raw data for the NN input batch gradients
+   */
+  std::vector<float> _batchInputGradients;
+
+  /**
+   * @brief Raw data for the NN output batch
+   */
+  std::vector<float> _batchOutputData;
+
+  /**
+   * @brief Raw data for the NN output batch gradients
+   */
+  std::vector<float> _batchOutputGradients;
+
   void initialize() override;
 
   /**

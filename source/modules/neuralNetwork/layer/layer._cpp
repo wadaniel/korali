@@ -32,7 +32,6 @@ void Layer::createForwardPipeline()
 #ifdef _KORALI_USE_EIGEN
   if (_nn->_engine == "Korali")
   {
-    _inputValues = (float *)malloc(N * OC * sizeof(float));
     _outputValues = (float *)malloc(N * OC * sizeof(float));
   }
 #endif
@@ -44,9 +43,6 @@ void Layer::createForwardPipeline()
     const memory::dims layerDims = {N, OC};
     auto dataMemDesc = memory::desc(layerDims, memory::data_type::f32, memory::format_tag::nc);
 
-    // Creating input (node) layer memory
-    _inputMem = memory(dataMemDesc, _engine);
-
     // Creating activation layer memory
     _outputMem = memory(dataMemDesc, _engine);
   }
@@ -55,9 +51,8 @@ void Layer::createForwardPipeline()
 #ifdef _KORALI_USE_CUDNN
   if (_nn->_engine == "CUDNN")
   {
-   cudnnErrCheck(cudnnCreateTensorDescriptor(&_layerTensorDesc));
-   cudnnErrCheck(cudnnSetTensor4dDescriptor(_layerTensorDesc, CUDNN_TENSOR_NCHW, CUDNN_DATA_FLOAT, N, OC, 1, 1));
-   cudaErrCheck(cudaMalloc((void **)&_inputTensor, N * OC * sizeof(float)));
+   cudnnErrCheck(cudnnCreateTensorDescriptor(&_outputTensorDesc));
+   cudnnErrCheck(cudnnSetTensor4dDescriptor(_outputTensorDesc, CUDNN_TENSOR_NCHW, CUDNN_DATA_FLOAT, N, OC, 1, 1));
    cudaErrCheck(cudaMalloc((void **)&_outputTensor, N * OC * sizeof(float)));
   }
 #endif
@@ -75,7 +70,6 @@ void Layer::createBackwardPipeline()
 #ifdef _KORALI_USE_EIGEN
   if (_nn->_engine == "Korali")
   {
-    _inputGradient = (float *)malloc(N * OC * sizeof(float));
     _outputGradient = (float *)malloc(N * OC * sizeof(float));
   }
 #endif
@@ -85,128 +79,22 @@ void Layer::createBackwardPipeline()
   if (_nn->_engine == "OneDNN")
   {
     // Creating data-related gradient memory
-    _intputGradientMem = memory(_inputMem.get_desc(), _engine);
-    _outputGradientMem = memory(_inputMem.get_desc(), _engine);
+    _outputGradientMem = memory(_outputMem.get_desc(), _engine);
   }
 #endif
 
 #ifdef _KORALI_USE_CUDNN
   if (_nn->_engine == "CUDNN")
   {
-   cudaErrCheck(cudaMalloc((void **)&_inputGradientTensor, N * OC * sizeof(float)));
    cudaErrCheck(cudaMalloc((void **)&_outputGradientTensor, N * OC * sizeof(float)));
   }
 #endif
 }
 
-void Layer::setInputValues(float *input)
+std::vector<float> Layer::generateInitialHyperparameters()
 {
-  size_t N = _nn->_batchSize;
-  size_t OC = _nodeCount;
-
-#ifdef _KORALI_USE_EIGEN
-  if (_nn->_engine == "Korali")
-  {
-    memcpy(_inputValues, input, N * OC * sizeof(float));
-  }
-#endif
-
-#ifdef _KORALI_USE_ONEDNN
-  if (_nn->_engine == "OneDNN")
-  {
-    write_to_dnnl_memory(input, _inputMem);
-  }
-#endif
-
-#ifdef _KORALI_USE_CUDNN
-  if (_nn->_engine == "CUDNN")
-  {
-   cudaErrCheck(cudaMemcpy(_inputTensor, input, N * OC * sizeof(float), cudaMemcpyHostToDevice));
-  }
-#endif
-}
-
-void Layer::getOutputValues(float *output)
-{
-  size_t N = _nn->_batchSize;
-  size_t OC = _nodeCount;
-
-#ifdef _KORALI_USE_EIGEN
-  if (_nn->_engine == "Korali")
-  {
-    memcpy(output, _outputValues, N * OC * sizeof(float));
-  }
-#endif
-
-#ifdef _KORALI_USE_ONEDNN
-  if (_nn->_engine == "OneDNN")
-  {
-    _nn->_stream.wait();
-    read_from_dnnl_memory(output, _outputMem);
-  }
-#endif
-
-#ifdef _KORALI_USE_CUDNN
-  if (_nn->_engine == "CUDNN")
-  {
-    cudaDeviceSynchronize();
-    cudaErrCheck(cudaMemcpy(output, _outputTensor, N * OC * sizeof(float), cudaMemcpyDeviceToHost));
-  }
-#endif
-}
-
-void Layer::getInputGradients(float *gradient)
-{
-  size_t N = _nn->_batchSize;
-  size_t OC = _nodeCount;
-
-#ifdef _KORALI_USE_EIGEN
-  if (_nn->_engine == "Korali")
-  {
-    memcpy(gradient, _inputGradient, N * OC * sizeof(float));
-  }
-#endif
-
-#ifdef _KORALI_USE_ONEDNN
-  if (_nn->_engine == "OneDNN")
-  {
-    read_from_dnnl_memory(gradient, _intputGradientMem);
-  }
-#endif
-
-#ifdef _KORALI_USE_CUDNN
-  if (_nn->_engine == "CUDNN")
-  {
-   cudaErrCheck(cudaMemcpy(gradient, _inputGradientTensor, N * OC * sizeof(float), cudaMemcpyDeviceToHost));
-  }
-#endif
-}
-
-void Layer::setOutputGradients(float *gradient)
-{
-  int N = _nn->_batchSize;
-  int OC = _nodeCount;
-
-#ifdef _KORALI_USE_EIGEN
-  if (_nn->_engine == "Korali")
-  {
-    memcpy(_outputGradient, gradient, N * OC * sizeof(float));
-  }
-#endif
-
-#ifdef _KORALI_USE_ONEDNN
-  if (_nn->_engine == "OneDNN")
-  {
-    write_to_dnnl_memory(gradient, _outputGradientMem);
-  }
-#endif
-
-#ifdef _KORALI_USE_CUDNN
-  if (_nn->_engine == "CUDNN")
-  {
-   cudaErrCheck(cudaMemcpy(_outputGradientTensor, gradient, N * OC * sizeof(float), cudaMemcpyHostToDevice));
-  }
-#endif
+  std::vector<float> hyperparameters;
+  return hyperparameters;
 }
 
 } // namespace neuralNetwork

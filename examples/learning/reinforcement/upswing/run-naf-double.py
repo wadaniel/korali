@@ -78,7 +78,7 @@ e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Activation Function"]["Typ
 ### Defining Termination Criteria
 
 e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 900
-e["Solver"]["Termination Criteria"]["Max Generations"] = 30
+#e["Solver"]["Termination Criteria"]["Max Generations"] = 30
 
 
 ### Setting file output configuration

@@ -19,13 +19,6 @@ class Discrete : public Agent
   problem::reinforcementLearning::Discrete *_problem;
 
   /**
-  * @brief Function to obtain the categorical probability distribution for each possible action
-  * @param state The current state
-  * @return A vector containing all action probabilities, corresponding to the state and the current policy
-  */
-  virtual std::vector<float> getActionProbabilities(const std::vector<float> &state) = 0;
-
-  /**
    * @brief Calculates importance weight of current action from old and current policies
    * @param actionIdx Index of the action taken
    * @param curProbabilities Probability distributions of current policy

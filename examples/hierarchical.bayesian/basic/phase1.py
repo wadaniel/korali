@@ -11,9 +11,14 @@ eList = []
 for i in range(5):
   e = korali.Experiment()
 
-  e["Problem"]["Type"] = "Bayesian/Approximate"
+  data = getReferenceData("_setup/data/", i)
+  N = len(data)
+
+  e["Problem"]["Type"] = "Bayesian/Reference"
   e["Problem"]["Likelihood Model"] = "Normal"
-  e["Problem"]["Reference Data"] = getReferenceData("_setup/data/", i)
+  e["Problem"]["Reference Data"] = data
+  e["Problem"]["Computational Model"] = lambda d: normal(N,d)
+
 
   # Configuring the problem's random distributions
   e["Distributions"][0]["Name"] = "Uniform 0"

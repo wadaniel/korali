@@ -36,6 +36,7 @@ How to run the example
 ----------------------
 
 In a shell from this directory (inside :code:`11.latent.variables`), type
+
 .. code-block::
 
     $ python3 run-saem.py
@@ -45,7 +46,6 @@ to run the simple example. Or:
 .. code-block::
 
     $ python3 run-saem-gaussian-mixture.py
-
 
 for the clustering example.
 

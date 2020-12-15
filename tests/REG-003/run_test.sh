@@ -6,7 +6,7 @@ pushd ../../examples/; check_result
 
 echo "[Korali] Beginning plotting tests"
 
-resDirs=`find . -name "*_result*"`
+resDirs=`find . -name "_korali_result*"`
 
 for dir in $resDirs
 do

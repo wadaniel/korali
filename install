@@ -8,19 +8,11 @@ function print_help ()
 {
  echo ""
  echo "Syntax: ./install"
- echo "        [--prereqs]"
  echo "        [--rebuild]"
- echo "        [--debug]"
- echo "        [--werror]"
- echo "        [--jobs=N]"
  echo "        [--help]"
  echo ""
  echo "Where:"
- echo " --prereqs Allows Korali to install any missing prerequisites."
  echo " --rebuild Cleans and rebuilds/installs Korali for development purposes."
- echo " --debug builds a non-optimized Korali for debugging purposes."
- echo " --werror For testing purposes, it treats warnings as errors during compilation."
- echo " --jobs=N Specifies N jobs to use when building Korali."
  echo " --help Displays this help message."
 }
 
@@ -52,32 +44,9 @@ function check()
  fi 
 }
 
-INSTALLREQS=0
-NJOBS=4
-WARNINGFLAGS=
-OPTFLAGS="-O3 -DNDEBUG"
-DEBUG=0
-
 for i in "$@"
 do
 case $i in
-    --prereqs)
-    INSTALLREQS=1
-    shift 
-    ;;
-    --werror)
-    WARNINGFLAGS="-Werror"
-    shift 
-    ;;
-    --debug)
-    OPTFLAGS="-O0"
-    DEBUG=1
-    shift 
-    ;;
-    --jobs=*)
-    NJOBS="${i#*=}"
-    shift
-    ;;
     --rebuild)
     logEcho "[Korali] Cleaning Korali for new build..."
     python3 -m pip uninstall -y korali >> $logFile 2>&1
@@ -101,6 +70,19 @@ done
 
 ######### Environment Configuration ########
 
+# Loading Intsall Configuration
+
+if [ ! -f install.config ]; then
+ cp .install.config.default install.config
+fi
+source install.config
+if [ ! $? == 0 ]; then
+ logEcho "[Korali] Error loading configuration from install.config."
+ exitWithError
+fi
+
+# Detecting Korali Base Directory
+ 
 baseKoraliDir=$PWD
 foundbinVersionFile=0
 
@@ -138,102 +120,138 @@ fi
 ######## Checking Compiler ########
 
 logEcho "[Korali] Checking Pre-requisites..."
-
 log "[Korali] Checking for C++ Compiler..."
 
-$CXX --version > /dev/null 2>&1
-DETECTED_CXX=$?
-c++ --version > /dev/null 2>&1
-DETECTED_CPLUSPLUS=$?
-g++ --version > /dev/null 2>&1
-DETECTED_GXX=$?
-clang++ --version > /dev/null 2>&1
-DETECTED_CLANG=$?
-icpc --version > /dev/null 2>&1
-DETECTED_ICPC=$?
-CC --help > /dev/null 2>&1
-DETECTED_CRAY=$?
-
 USE_CXX=""
-if [ $DETECTED_CPLUSPLUS -eq 0 ]; then USE_CXX=c++;     fi;
-if [ $DETECTED_GXX       -eq 0 ]; then USE_CXX=g++;     fi;
-if [ $DETECTED_ICPC      -eq 0 ]; then USE_CXX=icpc;    fi;
-if [ $DETECTED_CRAY      -eq 0 ]; then USE_CXX=CC;      fi;
-if [ $DETECTED_CLANG     -eq 0 ]; then USE_CXX=clang++; fi;
-if [ $DETECTED_CXX       -eq 0 ]; then USE_CXX=$CXX;    fi;
+compiler_list=( clang++ CC icc icpc g++ c++)
 
-######## Updating submodules ##########
+for compiler in "${compiler_list[@]}"; do
+  if [[ "$CXX" == *"$compiler"* ]]; then
+    USE_CXX=$compiler
+    break
+  fi
+done
 
-logEcho "[Korali] Updating submodules..."
-git submodule init >> $logFile 2>&1; check
-git submodule update --remote --force --recursive >> $logFile 2>&1; check
+if [[ "$USE_CXX" == "" ]]; then
+  for compiler in "${compiler_list[@]}"; do
+    $compiler --version > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+      USE_CXX=$compiler
+      break
+    fi
+  done
+fi
 
-######## Checking for Prerequisites ########
-
-installFlag=
-if [ $INSTALLREQS -eq 0 ]; then
- installFlag='--no-install'
+if [[ "$USE_CXX" == "" ]]; then
+  logEcho "[Korali] Error:  Did not found any valid C++ compiler."
+  logEcho "[Korali] Solution: Please define a valid C++ compiler in \$CXX."
+  exitWithError
+else
+  logEcho "[Korali] Using compiler $USE_CXX."
 fi
 
 
-## Looking for CMake
+######## Installing Mandatory External Libraries
 
-./external/install_CMake.sh $installFlag --jobs=$NJOBS
+## Getting libco
+CXX=$USE_CXX ./external/install_libco.sh --jobs=$NJOBS
 if [ ! $? == 0 ]; then
- logEcho "[Korali] Error: CMake not found or older version than 3.0. Solutions:"
- logEcho "         . Have 'cmake' version >3.0 correctly installed and in your PATH environment variable"
- logEcho "         . Run './install --prereqs' to allow Korali install missing prerequisites automatically."
- exitWithError
-fi
-
-## Looking for libco
-CXX=$USE_CXX ./external/install_libco.sh $installFlag --jobs=$NJOBS
-if [ ! $? == 0 ]; then
- logEcho "[Korali] Error: Libco not found. Solutions"
- logEcho "         . Run './install --prereqs' to allow Korali install missing prerequisites automatically."
- exitWithError
-fi
-
-## Looking for rtnorm
-CXX=$USE_CXX ./external/install_rtnorm.sh $installFlag --jobs=$NJOBS
-if [ ! $? == 0 ]; then
- logEcho "[Korali] Error: rtnorm not found. Solutions"
- logEcho "         . Run './install --prereqs' to allow Korali install missing prerequisites automatically."
- exitWithError
-fi
-
-## Looking for Eigen
-CXX=$USE_CXX ./external/install_eigen.sh $installFlag --jobs=$NJOBS
-if [ ! $? == 0 ]; then
- logEcho "[Korali] Error: Eigen not found. Solutions"
- logEcho "         . Run './install --prereqs' to allow Korali install missing prerequisites automatically."
+ logEcho "[Korali] Error: Libco could not be installed."
  exitWithError
 fi
 
 ## Looking for GSL
-CXX=$USE_CXX ./external/install_gsl.sh $installFlag --jobs=$NJOBS
+CXX=$USE_CXX ./external/install_gsl.sh --jobs=$NJOBS
 if [ ! $? == 0 ]; then
- logEcho "[Korali] Error: GSL not found or older version than 2.5. Solutions"
- logEcho "         . Have 'gsl-config' version >2.5 correctly installed and in your PATH environment variable"
- logEcho "         . Run './install --prereqs' to allow Korali install missing prerequisites automatically."
+ logEcho "[Korali] Error: GSL could not be found/installed or older version than 2.5 found."
+ logEcho "         Solution: Have 'gsl-config' version >2.5 correctly installed and in your PATH environment variable"
  exitWithError
 fi
 
-## Looking for libGP
-CXX=$USE_CXX ./external/install_libGP.sh $installFlag
-if [ ! $? == 0 ]; then
- logEcho "[Korali] libGP not found. Try either of these solutions:"
- logEcho "         . Run './install --prereqs' to allow Korali install missing prerequisites automatically."
- exitWithError
+######## Installing Optional External Libraries
+
+## Installing rtnorm
+if [ $USE_RTNORM == "YES" ]; then
+ CXX=$USE_CXX ./external/install_rtnorm.sh --jobs=$NJOBS
+ if [ ! $? == 0 ]; then
+  logEcho "[Korali] Error: rtnorm could not be installed/found."
+  exitWithError
+ fi
 fi
 
-## Looking for oneDNN
-CXX=$USE_CXX ./external/install_oneDNN.sh $installFlag --jobs=$NJOBS
-if [ ! $? == 0 ]; then
- logEcho "[Korali] oneDNN not found. Try either of these solutions:"
- logEcho "         1. Define the \$DNNLROOT environment variable to indicate the installation folder of oneDNN."
- logEcho "         2. Run './install --prereqs' to allow Korali install missing prerequisites automatically."
- exitWithError
+## Installing Eigen
+if [ $USE_EIGEN == "YES" ]; then
+ CXX=$USE_CXX ./external/install_eigen.sh --jobs=$NJOBS
+ if [ ! $? == 0 ]; then
+  logEcho "[Korali] Error: Eigen could not be installed/found."
+  exitWithError
+ fi
+fi
+
+## Installing libGP
+if [ $USE_LIBGP == "YES" ]; then
+ CXX=$USE_CXX ./external/install_libGP.sh --jobs=$NJOBS
+ if [ ! $? == 0 ]; then
+  logEcho "[Korali] libGP could not be installed/found."
+  exitWithError
+ fi
+fi
+
+## Installing oneDNN
+if [ "$USE_ONEDNN" == "YES" ]; then
+ CXX=$USE_CXX ./external/install_oneDNN.sh --jobs=$NJOBS
+ if [ ! "$?" == 0 ]; then
+  logEcho "[Korali] oneDNN could not be installed/found."
+  exitWithError
+ fi
+fi
+
+## Checking for cuDNN
+if [ "$USE_CUDNN" == "YES" ]; then
+ if [ -z "$CUDA_ROOT" ]; then
+  logEcho "[Korali] The \$CUDA_ROOT environment variable needs to be defined for CUDNN support."
+  exitWithError
+ fi
+ 
+ if [ -z "$CUDNN_ROOT" ]; then
+  logEcho "[Korali] The \$CUDNN_ROOT environment variable needs to be defined for CUDNN support."
+  exitWithError
+ fi
+fi
+
+######## Checking support for OpenMP ########
+
+# if clang and macos: check if openmp has been installed 
+if [[ "$USE_CXX" == "clang++" && "$arch" == "Darwin" ]]; then
+ 
+ brew --version > /dev/null 2>&1
+ if [ ! $? == 0 ]; then
+  logEcho "[Korali] Error: brew not found."
+  logEcho "         Solution: install brew from https://brew.sh"
+  exitWithError
+ fi
+ 
+ brew list libomp > /dev/null 2>&1
+ if [ ! $? == 0 ]; then
+  logEcho "[Korali] Error: OpenMP not found."
+  logEcho "         Solution: Run the commands:"
+  logEcho "           brew install libomp"
+  logEcho "           echo 'export LIBRARY_PATH=\"\$LIBRARY_PATH:\`brew --prefix llvm\`/lib\" ' >> $HOME/.bash_profile "
+  logEcho "           source \$HOME/.bash_profile"
+  exitWithError
+ fi
+
+ llvm-config --version > /dev/null 2>&1
+ if [ $? == 0 ]; then # brew version of clang, 
+  if [[ "$LIBRARY_PATH" != *"llvm"* ]]; then
+   logEcho "[Korali] Error: LLVM library path not found in \$LIBRARY_PATH."
+   logEcho "         Solution: Run the commands:"
+   logEcho "           echo 'export LIBRARY_PATH=\"\$LIBRARY_PATH:\`brew --prefix llvm\`/lib\" ' >> $HOME/.bash_profile "
+   logEcho "           source \$HOME/.bash_profile"
+   exitWithError
+  fi
+ fi
+
 fi
 
 ######## Checking support for MPI ########
@@ -291,55 +309,45 @@ PIP_USER=$(python3 -c "import sys; hasattr(sys, 'real_prefix') or print('--user'
 log "[Korali] Checking for Pybind11 support using \"python3 -m pybind11 -h\"..."
 python3 -m pybind11 -h >> $logFile 2>&1
 if [ $? -ne 0 ]; then
-
-  if [ $INSTALLREQS -eq 0 ]; then
-   logEcho "[Korali] Error: pybind11 not found, trying to install it automatically."
-   logEcho "[Korali] Solution: Try running \"python3 -m pip install pybind11 --user\"."
-   exitWithError
-  fi
-  
   logEcho "[Korali] pybind11 not found, trying to install it automatically."
   python3 -m pip install $PIP_USER pybind11 >> $logFile 2>&1; check
 fi
 
-######## Checking support for openAI Gym ########
-
-log "[Korali] Checking for openAI Gym using \"python3 -c \"import gym\"\"..."
-python3 -c "import gym" >> $logFile 2>&1
-if [ $? -ne 0 ]; then
-
-  if [ $INSTALLREQS -eq 0 ]; then
-   logEcho "[Korali] Error: openAI Gym not found, trying to install it automatically."
-   logEcho "[Korali] Solution: Try running \"python3 -m pip install gym --user\"."
-   exitWithError
-  fi
-  
-  logEcho "[Korali] openAI Gym not found, trying to install it automatically."
-  python3 -m pip install $PIP_USER gym >> $logFile 2>&1; check
-fi
-
 ######## Determining Library Flags ########
 
-echo "[Korali] Creating configuration files..."
+if [ "$USE_ONEDNN" == "YES" ]; then
+ DNNLROOT=`readlink external/oneDNNlink`; check
+ ONEDNNCFLAGS="-D_KORALI_USE_ONEDNN -I${DNNLROOT}/include"
+ ONEDNNLIBS="-Wl,-rpath -Wl,${DNNLROOT}/lib64/ -L${DNNLROOT}/lib64/ -Wl,-rpath -Wl,${DNNLROOT}/lib/ -L${DNNLROOT}/lib -ldnnl"
+fi
 
-DNNLROOT=`readlink external/oneDNNlink`; check
-ONEDNNCFLAGS="-D_KORALI_USE_ONEDNN -I${DNNLROOT}/include"
-ONEDNNLIBS="-Wl,-rpath -Wl,${DNNLROOT}/lib64/ -L${DNNLROOT}/lib64/ -Wl,-rpath -Wl,${DNNLROOT}/lib/ -L${DNNLROOT}/lib -ldnnl"
+if [ "$USE_CUDNN" == "YES" ]; then
+  CUDNNCFLAGS+=" -D_KORALI_USE_CUDNN -I${CUDA_ROOT}/include -I${CUDNN_ROOT}/include"
+  CUDNNLIBS+=" -lcudart -lcudnn -lcudnn_ops_infer -lcudnn_ops_train -lcudnn_cnn_infer -lcudnn_cnn_train -Wl,-rpath -Wl,${CUDA_ROOT}/lib64/ -L${CUDA_ROOT}/lib64/ -Wl,-rpath -Wl,${CUDA_ROOT}/lib -L${CUDA_ROOT}/lib -Wl,-rpath -Wl,${CUDNN_ROOT}/lib64/ -L${CUDNN_ROOT}/lib64/ -Wl,-rpath -Wl,${CUDNN_ROOT}/lib -L${CUDNN_ROOT}/lib"
+  logEcho "[Korali] Using CUDA Libraries located at ${CUDA_ROOT}."
+  logEcho "[Korali] Using CUDNN Libraries located at ${CUDNN_ROOT}."
+fi
 
-LIBGPROOT=`readlink external/libGPlink`; check
-LIBGPCFLAGS="-I${LIBGPROOT}/include"
-LIBGPLIBS="-Wl,-rpath -Wl,${LIBGPROOT}/lib64/ -L${LIBGPROOT}/lib64/ -Wl,-rpath -Wl,${LIBGPROOT}/lib -L${LIBGPROOT}/lib -lgp"
+if [ "$USE_LIBGP" == "YES" ]; then
+ LIBGPROOT=`readlink external/libGPlink`; check
+ LIBGPCFLAGS="-D_KORALI_USE_LIBGP -I${LIBGPROOT}/include"
+ LIBGPLIBS="-Wl,-rpath -Wl,${LIBGPROOT}/lib64/ -L${LIBGPROOT}/lib64/ -Wl,-rpath -Wl,${LIBGPROOT}/lib -L${LIBGPROOT}/lib -lgp"
+fi
 
 LIBCOROOT=`readlink external/libcolink`; check
 LIBCOCFLAGS="-I${LIBCOROOT}"
 LIBCOLIBS="${LIBCOROOT}/libco.o"
 
-EIGENROOT=`readlink external/eigenlink`; check
-EIGENCFLAGS="-I${EIGENROOT}/include/eigen3"
- 
-RTNORMROOT=`readlink external/rtnormlink`; check
-RTNORMCFLAGS="-I${RTNORMROOT}"
-RTNORMLIBS="${RTNORMROOT}/rtnorm.o"
+if [ "$USE_EIGEN" == "YES" ]; then
+ EIGENROOT=`readlink external/eigenlink`; check
+ EIGENCFLAGS="-D_KORALI_USE_EIGEN -I${EIGENROOT}/include/eigen3"
+fi
+
+if [ "$USE_RTNORM" == "YES" ]; then
+ RTNORMROOT=`readlink external/rtnormlink`; check
+ RTNORMCFLAGS="-D_KORALI_USE_RTNORM -I${RTNORMROOT}"
+ RTNORMLIBS="${RTNORMROOT}/rtnorm.o"
+fi
 
 GSLPREFIX=`./external/gsl-config --prefix`; check
 GSLCFLAGS=`./external/gsl-config --cflags`; check
@@ -366,14 +374,16 @@ if [ $? -eq 0 ]; then
   fi
 fi
 
-######## Checking selected compiler #######
-
-if [[ "$USE_CXX" == "" ]]
-then
-  logEcho "[Korali] Error:  Did not found any valid C++ or MPI C++ compiler."
-  logEcho "[Korali] Solution: Please define a valid C++ compiler in \$CXX or \$MPICXX."
-  exitWithError
+BLASLIBS="-lblas"
+PTHREADFLAGS="-pthread"
+OMPFLAGS="-fopenmp"
+if [[ "$USE_CXX" == "icpc" || "$USE_CXX" == "icc" ]]; then
+ OMPFLAGS="-qopenmp"
 fi
+if [[ "$USE_CXX" == "clang++" ]]; then
+ OMPFLAGS="-lomp"
+fi
+
 
 ######## Creating Compilation Config File ########
 
@@ -381,15 +391,21 @@ log "[Korali] Creating Compilation Config File..."
 
 echo CXX=$USE_CXX > source/Makefile.conf
 echo CXXARCH=$CXXARCH >> source/Makefile.conf
+echo PTHREADFLAGS=$PTHREADFLAGS >> source/Makefile.conf
+echo OMPFLAGS=$OMPFLAGS >> source/Makefile.conf
 echo SHAREDLIB_FLAG=$SHAREDLIB_FLAG >> source/Makefile.conf
 echo MPIFLAGS=$MPIFLAGS >> source/Makefile.conf
+echo BLASLIBS=$BLASLIBS >> source/Makefile.conf
+
+echo CUDNNCFLAGS=$CUDNNCFLAGS >> source/Makefile.conf
+echo CUDNNLIBS=$CUDNNLIBS >> source/Makefile.conf
 
 echo ONEDNNCFLAGS=$ONEDNNCFLAGS >> source/Makefile.conf
 echo ONEDNNLIBS=$ONEDNNLIBS >> source/Makefile.conf
 
 echo LIBGPCFLAGS=$LIBGPCFLAGS >> source/Makefile.conf
 echo LIBGPLIBS=$LIBGPLIBS >> source/Makefile.conf
-
+ 
 echo LIBCOCFLAGS=$LIBCOCFLAGS >> source/Makefile.conf
 echo LIBCOLIBS=$LIBCOLIBS >> source/Makefile.conf
 
@@ -397,13 +413,26 @@ echo RTNORMCFLAGS=$RTNORMCFLAGS >> source/Makefile.conf
 echo RTNORMLIBS=$RTNORMLIBS >> source/Makefile.conf
 
 echo EIGENCFLAGS=$EIGENCFLAGS >> source/Makefile.conf
-echo OPTFLAGS=$OPTFLAGS >> source/Makefile.conf
-echo WARNINGFLAGS=$WARNINGFLAGS >> source/Makefile.conf
-echo MACHINEARCH=$arch >> source/Makefile.conf
 
 echo GSLPREFIX=$GSLPREFIX >> source/Makefile.conf
 echo GSLCFLAGS=$GSLCFLAGS >> source/Makefile.conf
 echo GSLLIBS=$GSLLIBS  >> source/Makefile.conf
+
+if [ $DISTRIBUTION == "production" ]; then
+  OPTFLAGS="-O3 -DNDEBUG"
+  WARNINGFLAGS=""
+elif [ $DISTRIBUTION == "debug" ]; then
+  OPTFLAGS="-O0 -g"
+  WARNINGFLAGS="-Wall"
+else
+  echo "[Korali] Distribution ($DISTRIBUTION) not recognized."
+  echo "[Korali] Exit.."
+  exit
+fi
+
+echo OPTFLAGS=$OPTFLAGS >> source/Makefile.conf
+echo WARNINGFLAGS=$WARNINGFLAGS >> source/Makefile.conf
+echo MACHINEARCH=$arch >> source/Makefile.conf
 
 echo PYBIND11INCLUDES=$PYBIND11INCLUDES >> source/Makefile.conf 
 echo PYTHONLIBS=$PYTHONLIBS >> source/Makefile.conf
@@ -437,24 +466,40 @@ fi
 
 logEcho "[Korali] Installing Korali..."
 
-cp source/libkorali.so . >> $logFile 2>&1
+rm -rf .setup >> $logFile 2>&1
+mkdir -p .setup >> $logFile 2>&1
+
+cp docs/VERSION .setup >> $logFile 2>&1
 if [ $? -ne 0 ]; then
-  logEcho "[Korali] Error obtaining libkorali.so"
+  logEcho "[Korali] Error copying version file to install folder"
   exitWithError
 fi
-if [ $DEBUG -eq 0 ]; then
-    # strip symbols is not debug build
-    strip libkorali.so
+
+cp -r source .setup/source >> $logFile 2>&1
+if [ $? -ne 0 ]; then
+  logEcho "[Korali] Error copying source files to install folder"
+  exitWithError
 fi
 
+cp -r tools .setup/tools >> $logFile 2>&1
+if [ $? -ne 0 ]; then
+  logEcho "[Korali] Error copying tool files to install folder"
+  exitWithError
+fi
 
-python3 -m pip install . $PIP_USER --upgrade >> $logFile 2>&1
+# strip symbols is not debug build
+if [ $DISTRIBUTION == "debug" ]; then
+    strip .setup/libkorali.so >> $logFile 2>&1
+fi
+
+cp source/setup.py .setup
+python3 -m pip install .setup $PIP_USER --upgrade >> $logFile 2>&1
 if [ $? -ne 0 ]; then
   logEcho "[Korali] Error installing Korali's Python module."
   exitWithError
 fi
 
-rm -f libkorali.so >> $logFile 2>&1 
+rm -rf .setup >> $logFile 2>&1
 
 echo "------------------------------------------------------------------"
 echo "[Korali] Finished installation successfully."

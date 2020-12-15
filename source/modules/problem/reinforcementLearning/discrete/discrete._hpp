@@ -1,0 +1,22 @@
+#ifndef _KORALI_PROBLEM_REINFORCEMENT_LEARNING_DISCRETE_HPP_
+#define _KORALI_PROBLEM_REINFORCEMENT_LEARNING_DISCRETE_HPP_
+
+#include "modules/problem/reinforcementLearning/reinforcementLearning.hpp"
+
+namespace korali
+{
+namespace problem
+{
+namespace reinforcementLearning
+{
+class Discrete : public korali::problem::ReinforcementLearning
+{
+  public:
+  void initialize() override;
+};
+
+} // namespace reinforcementLearning
+} // namespace problem
+} // namespace korali
+
+#endif // _KORALI_PROBLEM_REINFORCEMENT_LEARNING_DISCRETE_HPP_

@@ -9,8 +9,13 @@
 #include "modules/conduit/distributed/distributed.hpp"
 #include "modules/experiment/experiment.hpp"
 #include <chrono>
+#include <map>
 #include <stack>
 #include <vector>
+
+#ifdef _KORALI_USE_ONEDNN
+  #include "dnnl.hpp"
+#endif
 
 namespace korali
 {
@@ -154,11 +159,6 @@ class Engine : public Module
   Experiment *_currentExperiment;
 
   /**
-  * @brief (Engine) Stores a pointer to the current sample to process
-  */
-  Sample *_engineSample;
-
-  /**
    * @brief Returns the worker teams MPI communication pointer (Distributed Conduit only).
    * @return Numerical pointer to the MPI communicator
    */
@@ -187,6 +187,11 @@ extern bool isPythonActive;
 * @brief Stack storing pointers to different Engine execution levels
 */
 extern std::stack<Engine *> _engineStack;
+
+/**
+ * @brief Stores the maximum number of threads that Korali modules can use
+ */
+extern size_t _maxThreads;
 
 } // namespace korali
 

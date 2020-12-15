@@ -1,0 +1,303 @@
+#include "engine.hpp"
+#include "modules/solver/agent/discrete/DDQN/DDQN.hpp"
+#include "sample/sample.hpp"
+
+namespace korali
+{
+namespace solver
+{
+namespace agent
+{
+namespace discrete
+{
+void DDQN::initializeAgent()
+{
+  // Initializing common discrete agent configuration
+  Discrete::initializeAgent();
+
+  // Engine to initialize experiments with
+  korali::Engine engine;
+
+  /*********************************************************************
+  * Initializing Critic-Related Structures
+  *********************************************************************/
+
+  _vExperiment["Problem"]["Type"] = "Supervised Learning";
+  _vExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
+  _vExperiment["Solver"]["Optimizer"] = _criticOptimizer;
+  _vExperiment["Solver"]["Learning Rate"] = _criticLearningRate;
+  _vExperiment["Solver"]["Loss Function"] = "Mean Squared Error";
+  _vExperiment["Solver"]["Steps Per Generation"] = 1;
+  _vExperiment["Solver"]["Neural Network"] = _criticNeuralNetwork;
+
+  // Initializing experiment with an initial zero set
+  for (size_t i = 0; i < _criticMiniBatchSize; i++)
+  {
+    _vExperiment["Problem"]["Solution"][i][0] = 0.0;
+
+    for (size_t j = 0; j < _problem->_stateVectorSize; j++)
+      _vExperiment["Problem"]["Inputs"][i][j] = 0.0;
+  }
+
+  // Running initialization to verify that the configuration is correct
+  engine.initialize(_vExperiment);
+
+  // Getting learner pointers
+  _vProblem = dynamic_cast<problem::SupervisedLearning *>(_vExperiment._problem);
+  _vLearner = dynamic_cast<solver::learner::DeepSupervisor *>(_vExperiment._solver);
+
+  _aExperiment["Problem"]["Type"] = "Supervised Learning";
+  _aExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
+  _aExperiment["Solver"]["Optimizer"] = _criticOptimizer;
+  _aExperiment["Solver"]["Learning Rate"] = _criticLearningRate;
+  _aExperiment["Solver"]["Loss Function"] = "Mean Squared Error";
+  _aExperiment["Solver"]["Steps Per Generation"] = 1;
+  _aExperiment["Solver"]["Neural Network"] = _criticNeuralNetwork;
+
+  // Initializing experiment with an initial zero set
+  for (size_t i = 0; i < _criticMiniBatchSize; i++)
+  {
+    _aExperiment["Problem"]["Solution"][i][0] = 0.0;
+
+    for (size_t j = 0; j < _problem->_stateVectorSize + _problem->_actionVectorSize; j++)
+      _aExperiment["Problem"]["Inputs"][i][j] = 0.0;
+  }
+
+  // Running initialization to verify that the configuration is correct
+  engine.initialize(_aExperiment);
+
+  // Getting learner pointers
+  _aProblem = dynamic_cast<problem::SupervisedLearning *>(_aExperiment._problem);
+  _aLearner = dynamic_cast<solver::learner::DeepSupervisor *>(_aExperiment._solver);
+
+  /*********************************************************************
+  * Initializing critic evaluation storage
+  *********************************************************************/
+
+  // Storage for  A(s,a_i) for all actions
+  _aValAction.resize(_problem->_possibleActions.size());
+
+  // Storage for  Q(s,a_i) for all actions
+  _qValStateAction.resize(_problem->_possibleActions.size());
+
+  /*********************************************************************
+  * Loading/Setting Hyperparameters
+  *********************************************************************/
+
+  // Setting Initial Hyperparameters
+  _aHatHyperparameters = _aLearner->getTrainingHyperparameters();
+  _hyperparameters["Critic (A)"] = _aHatHyperparameters;
+
+  _vHatHyperparameters = _vLearner->getTrainingHyperparameters();
+  _hyperparameters["Critic (V)"] = _vHatHyperparameters;
+}
+
+void DDQN::trainPolicy()
+{
+  /***********************************************************************************
+   * Training Phase
+   **********************************************************************************/
+
+  // Delay using latest critic taget for training until reaching a number of experiences
+  if (_policyUpdateCount % _criticTargetUpdateDelay == 0)
+  {
+    _aLearner->setInferenceHyperparameters(_aHatHyperparameters);
+    _vLearner->setInferenceHyperparameters(_vHatHyperparameters);
+  }
+
+  // Calculating cumulative Q*, for statistical purposes
+  _cumulativeQStar = 0.0;
+  _cumulativeQStarSquared = 0.0;
+
+  // Creating minibatch for the critic update
+  auto miniBatchIndexes = generateMiniBatch(_criticMiniBatchSize);
+
+#pragma omp parallel for schedule(dynamic, 1)
+  for (size_t i = 0; i < _criticMiniBatchSize; i++)
+  {
+    // Selecting a uniformly random selected, yet not repeated experience
+    size_t expId = miniBatchIndexes[i];
+
+    // Qhat = max_a(qhat) with s' fixed
+    // Q* = r + y*Qhat -- If not terminal state
+    // Q* = r -- If terminal state
+
+    // Calculating target Q value (solution) for Qnew on selected batch
+    float qStar = _experienceReplay[expId].reward;
+
+    // Getting experience's current state and action
+    auto curState = _experienceReplay[expId].state;
+    auto curAction = _experienceReplay[expId].action;
+    auto curActionIdx = _experienceReplay[expId].policy["Action Index"].get<size_t>();
+
+    // If state is not terminal (next state is filled) then add Qnew to the Q value.
+    if (_experienceReplay[expId].termination == e_nonTerminal)
+    {
+      // Getting experience's next state
+      auto nextState = _experienceReplay[expId + 1].state;
+
+      // Getting action probabilities for next state, as per the critic
+      auto pActions = getActionProbabilities(nextState);
+
+      // Finding the best action index from the probabilities
+      size_t bestActionIdx = std::distance(pActions.begin(), std::max_element(pActions.begin(), pActions.end()));
+
+      // Getting the best action
+      auto bestAction = _problem->_possibleActions[bestActionIdx];
+
+      // Evaluating Q = V(s) + A(s, a_best) - 1/n * A(s, a')
+      auto qNextExp = _vValState + _qValStateAction[bestActionIdx] - _aValAverage;
+
+      // Calculating Q*
+      qStar += _criticDiscountFactor * qNextExp;
+    }
+
+    // Getting information about the current state
+    auto pActions = getActionProbabilities(curState);
+
+    // Now calculating targets for V(s) and A(s,a)
+    float vTarget = qStar - _qValStateAction[curActionIdx] + _aValAverage;
+    float aTarget = qStar - _vValState + _aValAverage;
+
+    // Updating inputs to training learners
+    for (size_t j = 0; j < curState.size(); j++) _aProblem->_inputs[i][j] = curState[j];
+    for (size_t j = 0; j < curAction.size(); j++) _aProblem->_inputs[i][j + curState.size()] = curAction[j];
+    _aProblem->_solution[i][0] = aTarget;
+
+    _vProblem->_inputs[i] = curState;
+    _vProblem->_solution[i][0] = vTarget;
+
+    // Keeping statistics
+    _cumulativeQStar += qStar;
+    _cumulativeQStarSquared += qStar * qStar;
+  }
+
+  // Running one generation of the optimization method with the given mini-batch
+  _aLearner->initialize();
+  _aLearner->runGeneration();
+
+  _vLearner->initialize();
+  _vLearner->runGeneration();
+
+  // Keeping statistics
+  _averageQStar = (float)_cumulativeQStar / (float)_criticMiniBatchSize;
+  _stdevQStar = sqrt(_cumulativeQStarSquared / (float)_criticMiniBatchSize - _cumulativeQStar * _cumulativeQStar / (float)(_criticMiniBatchSize * _criticMiniBatchSize));
+
+  /*********************************************************************
+   * Updating hyperparameters and broadcasting them to the workers
+   *********************************************************************/
+
+  // Storing new Critics' hyperparameters
+  _vHatHyperparameters = _vLearner->getTrainingHyperparameters();
+  _aHatHyperparameters = _aLearner->getTrainingHyperparameters();
+
+  _hyperparameters["Critic (V)"] = _vHatHyperparameters;
+  _hyperparameters["Critic (A)"] = _aHatHyperparameters;
+}
+
+void DDQN::updateAgentPolicy(const knlohmann::json &hyperparameters)
+{
+  auto vHyperparameters = hyperparameters["Critic (V)"].get<std::vector<float>>();
+  _vLearner->setInferenceHyperparameters(vHyperparameters);
+
+  auto aHyperparameters = hyperparameters["Critic (A)"].get<std::vector<float>>();
+  _aLearner->setInferenceHyperparameters(aHyperparameters);
+}
+
+std::vector<float> DDQN::getActionProbabilities(const std::vector<float> &state)
+{
+  // Creating state/action input
+  std::vector<float> stateActionInput(_problem->_stateVectorSize + _problem->_actionVectorSize);
+
+  // Computing V(s)
+  _vValState = _vLearner->getEvaluation(state)[0];
+
+  // Storing state into the critic input (will not change)
+  for (size_t i = 0; i < state.size(); i++) stateActionInput[i] = state[i];
+
+  // Initializing calculation of average A(s,a')
+  _aValAverage = 0.0;
+
+  // Iterating over all possible actions, calculating their A(s,a)
+  for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
+  {
+    // Copying the values of the possible action onto the state/action vector
+    for (size_t j = 0; j < _problem->_actionVectorSize; j++)
+      stateActionInput[_problem->_stateVectorSize + j] = _problem->_possibleActions[i][j];
+
+    // Computing A(s,a)
+    _aValAction[i] = _aLearner->getEvaluation(stateActionInput)[0];
+
+    // Adding to sum counter
+    _aValAverage += _aValAction[i];
+  }
+
+  // Storage for exp values
+  std::vector<float> pActions(_problem->_possibleActions.size());
+
+  // Looking for max element from advantage values
+  auto maxAdvantage{*std::max_element(_aValAction.begin(), _aValAction.end())};
+
+  // Storage for exp(A) and sum
+  std::vector<double> expA(_problem->_possibleActions.size());
+  double expASum = 0.0;
+
+  // Calculating exp(A) and sum
+  for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
+  {
+    expA[i] = std::exp(_aValAction[i] - maxAdvantage);
+    expASum += expA[i];
+  }
+
+  // Computing probabilities
+  for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
+  {
+    double pAction = expA[i] / expASum;
+    pActions[i] = pAction;
+  }
+
+  // Returning the best found
+  return pActions;
+}
+
+void DDQN::setTrainingState(const knlohmann::json &state)
+{
+  _vLearner->setTrainingHyperparameters(state["V"]["Training"]);
+  _aLearner->setTrainingHyperparameters(state["A"]["Training"]);
+  _vLearner->setInferenceHyperparameters(state["V"]["Inference"]);
+  _aLearner->setInferenceHyperparameters(state["A"]["Inference"]);
+}
+
+knlohmann::json DDQN::getTrainingState()
+{
+  knlohmann::json state;
+  state["V"]["Training"] = _vLearner->getTrainingHyperparameters();
+  state["A"]["Training"] = _aLearner->getTrainingHyperparameters();
+  state["V"]["Inference"] = _vLearner->getInferenceHyperparameters();
+  state["A"]["Inference"] = _aLearner->getInferenceHyperparameters();
+  return state;
+}
+
+void DDQN::printAgentInformation()
+{
+  _k->_logger->logInfo("Normal", "Critic Information:\n");
+
+  _k->_logger->logInfo("Normal", " + Average (Std) Q-Value in Mini-Batch:  %f (%f)\n", _averageQStar, _stdevQStar);
+
+  _k->_logger->logInfo("Normal", "A Function Information:\n");
+
+  _aExperiment._logger->_verbosityLevel = _k->_logger->_verbosityLevel;
+  _aExperiment._solver->printGenerationAfter();
+  _aExperiment._logger->setVerbosityLevel("Silent");
+
+  _k->_logger->logInfo("Normal", "V Function Information:\n");
+
+  _vExperiment._logger->_verbosityLevel = _k->_logger->_verbosityLevel;
+  _vExperiment._solver->printGenerationAfter();
+  _vExperiment._logger->setVerbosityLevel("Silent");
+}
+
+} // namespace discrete
+} // namespace agent
+} // namespace solver
+} // namespace korali

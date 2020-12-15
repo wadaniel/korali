@@ -1,0 +1,126 @@
+#ifndef _KORALI_AGENT_ACER_CONTINUOUS_HPP_
+#define _KORALI_AGENT_ACER_CONTINUOUS_HPP_
+
+#include "modules/distribution/univariate/normal/normal.hpp"
+#include "modules/problem/reinforcementLearning/continuous/continuous.hpp"
+#include "modules/solver/agent/continuous/continuous.hpp"
+
+namespace korali
+{
+namespace solver
+{
+namespace agent
+{
+namespace continuous
+{
+class cACER : public Continuous
+{
+  public:
+  /**
+   * @brief Pointer to training experiment's V(s) problem
+   */
+  problem::SupervisedLearning *_vProblem;
+
+  /**
+  * @brief Pointer to training experiment's V(s) critic learner
+  */
+  learner::DeepSupervisor *_vLearner;
+
+  /**
+   * @brief Korali experiment for the training of V(s)
+   */
+  korali::Experiment _vExperiment;
+
+  /**
+  * @brief Pointer to training experiment's A(s,x) problem
+  */
+  problem::SupervisedLearning *_aProblem;
+
+  /**
+  * @brief Pointer to training experiment's A(s,x) learner
+  */
+  learner::DeepSupervisor *_aLearner;
+
+  /**
+   * @brief Korali experiment for the training of A(s,x)
+   */
+  korali::Experiment _aExperiment;
+
+  /**
+   * @brief Pointer to training the actor network
+   */
+  learner::DeepSupervisor *_policyLearner;
+
+  /**
+  * @brief Korali experiment for obtaining the agent's action
+  */
+  korali::Experiment _policyExperiment;
+
+  /**
+   * @brief Pointer to actor's experiment problem
+   */
+  problem::SupervisedLearning *_policyProblem;
+
+  /**
+   * @brief Variable to calculate the total number of actions in the action space
+   */
+  size_t _actionCount;
+
+  /**
+   * @brief Calculates the state value function V(s) = Expectation_a [ Q(s,a) | s ] of a given experience using the latest critic
+   * @param state state to evaluate
+   * @return The value of the V(s)
+   */
+  float stateValueFunction(const std::vector<float> &state);
+
+  /**
+   * @brief Updated policy action-generating independent normal distributions given hyperparameters (mean + sigma) for all of them
+   * @param parameters The parameters that define the normal distributions (mean+sigma)
+   */
+  void updatePolicyDistributions(const std::vector<float> &parameters);
+
+  /**
+   * @brief Processes a selected trajectory to learn from it, depending on whether it uses a discrete or continuous action space
+   * @param startId ID to the first experience of the trajectory
+   */
+  void processTrajectory(size_t startId);
+
+  /**
+   * @brief Returns the advantage value of the given state/action
+   * @param state State to evaluate
+   * @param action Action to evaluate
+   * @return The advantage value
+   */
+  float currentActionAdvantageFunction(const std::vector<float> &state, const std::vector<float> &action);
+
+  /**
+   * @brief Returns the average advantage value of all actions given the state
+   * @param curMeans Means of the current policy
+   * @param curSigmas Standard deviations of the current policy
+   * @param state State to evaluate
+   * @return The average advantage value
+   */
+  float averageActionAdvantageFunction(const std::vector<float> &curMeans, const std::vector<float> &curSigmas, const std::vector<float> &state);
+
+  /**
+   * @brief Returns the retrace value for the given experience
+   * @param expId The id (position within the replay memory) of the experience
+   * @return The qRet and qOpc values of the experience
+   */
+  std::tuple<float, float> retraceFunction(size_t expId);
+
+  void setTrainingState(const knlohmann::json &state) override;
+  knlohmann::json getTrainingState() override;
+  knlohmann::json runPolicy(const std::vector<float> &state) override;
+  void trainPolicy() override;
+  void updateAgentPolicy(const knlohmann::json &hyperparameters) override;
+  void printAgentInformation() override;
+  void initializeAgent() override;
+};
+
+} // namespace continuous
+} // namespace agent
+} // namespace solver
+} // namespace korali
+
+#endif // _KORALI_AGENT_ACER_CONTINUOUS_HPP_

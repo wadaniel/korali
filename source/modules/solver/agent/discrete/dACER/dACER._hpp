@@ -1,0 +1,84 @@
+#ifndef _KORALI_AGENT_DISCRETE_ACER_HPP_
+#define _KORALI_AGENT_DISCRETE_ACER_HPP_
+
+#include "modules/problem/reinforcementLearning/discrete/discrete.hpp"
+#include "modules/solver/agent/discrete/discrete.hpp"
+
+namespace korali
+{
+namespace solver
+{
+namespace agent
+{
+namespace discrete
+{
+class dACER : public Discrete
+{
+  public:
+  /**
+   * @brief Pointer to training experiment's problem
+   */
+  problem::SupervisedLearning *_criticProblem;
+
+  /**
+  * @brief Pointer to training experiment's learner
+  */
+  learner::DeepSupervisor *_criticLearner;
+
+  /**
+   * @brief Korali experiment for the training of the Q(s,a)
+   */
+  korali::Experiment _criticExperiment;
+
+  /**
+  * @brief Korali experiment for P(a | s) for all actions
+  */
+  korali::Experiment _policyExperiment;
+
+  /**
+   * @brief Pointer to training the actor network
+   */
+  learner::DeepSupervisor *_policyLearner;
+
+  /**
+   * @brief Pointer to actor's experiment problem
+   */
+  problem::SupervisedLearning *_policyProblem;
+
+  /**
+   * @brief Calculates the state value function V(s) = Expectation_a [ Q(s,a) | s ] of a given experience using the latest critic
+   * @param state state to evaluate
+   * @return The value of the V(s)
+   */
+  float stateValueFunction(const std::vector<float> &state);
+
+  /**
+   * @brief Calculates the state+action value function Q(s,a) = Expectation_s,a [ R | s,a ] of a given experience using the latest critic
+   * @param state state to evaluate
+   * @param actionIdx action to evaluate
+   * @return The value of Q(s,a)
+   */
+  float stateActionValueFunction(const std::vector<float> &state, const size_t &actionIdx);
+
+  /**
+   * @brief Returns the retrace value for the given experience
+   * @param expId The id (position within the replay memory) of the experience
+   * @return The qRet value of the experience
+   */
+  float retraceFunction(size_t expId);
+
+  void setTrainingState(const knlohmann::json &state) override;
+  knlohmann::json getTrainingState() override;
+  std::vector<float> getActionProbabilities(const std::vector<float> &state) override;
+  void updateAgentPolicy(const knlohmann::json &hyperparameters) override;
+  void trainPolicy() override;
+  void printAgentInformation() override;
+  void initializeAgent() override;
+};
+
+} // namespace discrete
+} // namespace agent
+} // namespace solver
+} // namespace korali
+
+#endif // _KORALI_AGENT_DISCRETE_ACER_HPP_

@@ -1,0 +1,71 @@
+#ifndef _KORALI_AGENT_CONTINUOUS_NAF_HPP_
+
+#define _KORALI_AGENT_CONTINUOUS_NAF_HPP_
+
+#include "modules/problem/reinforcementLearning/continuous/continuous.hpp"
+#include "modules/solver/agent/continuous/continuous.hpp"
+
+namespace korali
+{
+namespace solver
+{
+namespace agent
+{
+namespace continuous
+{
+class NAF : public Continuous
+{
+  public:
+  /**
+   * @brief Pointer to training experiment's Q(a,s) = A(a,s) + V(s)  problem
+   */
+  problem::SupervisedLearning *_qProblem;
+
+  /**
+  * @brief Pointer to training experiment's Q(a,s) critic learner
+  */
+  learner::DeepSupervisor *_qLearner;
+
+  /**
+   * @brief Korali experiment for the training of Q(a,s)
+   */
+  korali::Experiment _qExperiment;
+
+  /**
+   * @brief Pointer to target problem
+   */
+  problem::SupervisedLearning *_criticProblem;
+
+  /**
+  * @brief Pointer to target learner
+  */
+  learner::DeepSupervisor *_criticLearner;
+
+  /**
+   * @brief Korali experiment for target
+   */
+  korali::Experiment _criticExperiment;
+
+  /**
+  * @brief Function to calculate the advantage A(s,a).
+  * @param action The current action a
+  * @param qEvaluation Output of the NN evaluated for state s
+  * @return value of Q(s,a)
+  */
+  float quadraticAdvantageFunction(const std::vector<float> &action, const std::vector<float> &qEvaluation);
+
+  void setTrainingState(const knlohmann::json &state) override;
+  knlohmann::json getTrainingState() override;
+  knlohmann::json runPolicy(const std::vector<float> &state) override;
+  void updateAgentPolicy(const knlohmann::json &hyperparameters) override;
+  void trainPolicy() override;
+  void printAgentInformation() override;
+  void initializeAgent() override;
+};
+
+} // namespace continuous
+} // namespace agent
+} // namespace solver
+} // namespace korali
+
+#endif // _KORALI_AGENT_DISCRETE_NAF_HPP_

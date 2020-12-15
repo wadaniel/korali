@@ -2,7 +2,10 @@
 #include "modules/experiment/experiment.hpp"
 #include "modules/solver/learner/gaussianProcess/gaussianProcess.hpp"
 #include "sample/sample.hpp"
-#include <Eigen/Dense>
+
+#ifdef _KORALI_USE_EIGEN
+  #include <Eigen/Dense>
+#endif
 
 namespace korali
 {
@@ -10,23 +13,29 @@ namespace solver
 {
 namespace learner
 {
+#ifdef _KORALI_USE_EIGEN
 /**
-  * @brief Converts a vector of doubles to Eigen format
+  * @brief Converts a vector of floats to Eigen format
   * @param v the vector to convert
   * @return An Eigen vector type
  */
-static Eigen::VectorXd toEigen(const std::vector<double> &v)
+static Eigen::VectorXd toEigen(const std::vector<float> &v)
 {
   Eigen::VectorXd ev(v.size());
   for (size_t i = 0; i < v.size(); ++i)
     ev[i] = v[i];
   return ev;
 }
+#endif
 
 GaussianProcess::~GaussianProcess() = default;
 
 void GaussianProcess::initialize()
 {
+#ifdef _KORALI_USE_LIBGP
+
+  #ifdef _KORALI_USE_EIGEN
+
   _problem = dynamic_cast<problem::SupervisedLearning *>(_k->_problem);
 
   if (_problem == nullptr) KORALI_LOG_ERROR("wrong problem type assigned to gaussian process solver.");
@@ -63,13 +72,13 @@ void GaussianProcess::initialize()
   _koraliExperiment["Console Output"]["Verbosity"] = "Silent";
   _koraliExperiment["Random Seed"] = _k->_randomSeed++;
 
-  // Running initialization to verify that the configuration is correct
-  korali::Engine engine;
-  engine.initialize(_koraliExperiment);
-
   // Pass the training data from korali to the GP library
   double inData[_gpInputDimension];
   double outData;
+
+  // Running initialization to verify that the configuration is correct
+  korali::Engine engine;
+  engine.initialize(_koraliExperiment);
 
   for (size_t i = 0; i < _problem->_batchSize; ++i)
   {
@@ -79,12 +88,23 @@ void GaussianProcess::initialize()
     outData = _problem->_solution[i][0];
     _gp->add_pattern(inData, outData);
   }
+
+  #else
+  KORALI_LOG_ERROR("Korali requires the Eigen library to be installed to use the Gaussian Process learner.\n");
+  #endif
+
+#else
+  KORALI_LOG_ERROR("Korali requires the LibGP library to be installed to use the Gaussian Process learner.\n");
+#endif
 }
 
+#ifdef _KORALI_USE_LIBGP
 void GaussianProcess::runSample(Sample &sample, libgp::GaussianProcess *gp)
 {
+  #ifdef _KORALI_USE_EIGEN
+
   size_t gpParameterDimension = gp->covf().get_param_dim();
-  const Eigen::VectorXd p = toEigen(sample["Parameters"].get<std::vector<double>>());
+  const Eigen::VectorXd p = toEigen(sample["Parameters"].get<std::vector<float>>());
 
   gp->covf().set_loghyper(p);
 
@@ -94,14 +114,17 @@ void GaussianProcess::runSample(Sample &sample, libgp::GaussianProcess *gp)
   Eigen::VectorXd eigenGrad = gp->log_likelihood_gradient();
   for (size_t i = 0; i < gpParameterDimension; i++)
     sample["Gradient"][i] = eigenGrad[i];
+
+  #endif
 }
+#endif
 
 void GaussianProcess::runGeneration()
 {
   _koraliExperiment["Solver"]["Termination Criteria"]["Max Generations"] = _koraliExperiment._currentGeneration + 1;
   korali::Engine engine;
   engine.resume(_koraliExperiment);
-  _gpHyperparameters = _koraliExperiment["Results"]["Best Sample"]["Parameters"].get<std::vector<double>>();
+  _gpHyperparameters = _koraliExperiment["Results"]["Best Sample"]["Parameters"].get<std::vector<float>>();
 }
 
 void GaussianProcess::printGenerationAfter()
@@ -109,24 +132,40 @@ void GaussianProcess::printGenerationAfter()
   return;
 }
 
-std::vector<double> GaussianProcess::getEvaluation(const std::vector<double> &input)
+std::vector<float> GaussianProcess::getEvaluation(const std::vector<float> &input)
 {
-  std::vector<double> output(2);
+  std::vector<float> output(2);
+
+#ifdef _KORALI_USE_LIBGP
 
   _gp->covf().set_loghyper(toEigen(_gpHyperparameters));
 
-  output[0] = _gp->f(input.data());
-  output[1] = _gp->var(input.data());
+  std::vector<double> inputData(input.begin(), input.end());
+
+  output[0] = _gp->f(inputData.data());
+  output[1] = _gp->var(inputData.data());
+
+#endif
 
   return output;
 }
 
-std::vector<double> GaussianProcess::getHyperparameters()
+std::vector<float> GaussianProcess::getInferenceHyperparameters()
 {
   return _gpHyperparameters;
 }
 
-void GaussianProcess::setHyperparameters(const std::vector<double> &hyperparameters)
+void GaussianProcess::setInferenceHyperparameters(const std::vector<float> &hyperparameters)
+{
+  _gpHyperparameters = hyperparameters;
+}
+
+std::vector<float> GaussianProcess::getTrainingHyperparameters()
+{
+  return _gpHyperparameters;
+}
+
+void GaussianProcess::setTrainingHyperparameters(const std::vector<float> &hyperparameters)
 {
   _gpHyperparameters = hyperparameters;
 }

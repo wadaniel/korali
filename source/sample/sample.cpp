@@ -1,5 +1,5 @@
-#include "auxiliar/py2json.hpp"
 #include "sample/sample.hpp"
+#include "auxiliar/py2json.hpp"
 #include "engine.hpp"
 #include "modules/conduit/conduit.hpp"
 #include "modules/experiment/experiment.hpp"
@@ -9,7 +9,6 @@
 
 namespace korali
 {
-
 /**
  * @brief Stores all functions inserted as parameters to experiment's configuration
  */
@@ -37,6 +36,16 @@ void Sample::update()
   co_switch(_self->_workerThread);
 }
 
+bool Sample::retrievePendingMessage(knlohmann::json &message)
+{
+  if (_messageQueue.empty()) return false;
+
+  message = _messageQueue.front();
+  _messageQueue.pop();
+
+  return true;
+}
+
 void Sample::sampleLauncher()
 {
   Engine *engine = _engineStack.top();
@@ -55,6 +64,8 @@ void Sample::sampleLauncher()
 
   if ((*_self)["Module"] == "Solver")
     experiment->_solver->runOperation(operation, *_self);
+
+  (*_self)["Has Finished"] = true;
 }
 
 knlohmann::json &Sample::globals()

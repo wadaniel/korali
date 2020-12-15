@@ -1,0 +1,74 @@
+#ifndef _KORALI_AGENT_CONTINUOUS_HPP_
+#define _KORALI_AGENT_CONTINUOUS_HPP_
+
+#include "modules/distribution/univariate/beta/beta.hpp"
+#include "modules/problem/reinforcementLearning/continuous/continuous.hpp"
+#include "modules/solver/agent/agent.hpp"
+
+namespace korali
+{
+namespace solver
+{
+namespace agent
+{
+class Continuous : public Agent
+{
+  public:
+  /**
+ * @brief Storage for the pointer to the (continuous) learning problem
+ */
+  problem::reinforcementLearning::Continuous *_problem;
+
+  /**
+   * @brief Calculates importance weight of current action from old and new policies
+   * @param action The action taken
+   * @param curMeans Gaussian means of current policy
+   * @param curSigmas Gaussian sigmas of current policy
+   * @param oldMeans Gaussian means of old policy
+   * @param oldSigmas Gaussian sigmas of old policy
+   * @return The importance weight
+   */
+  float calculateImportanceWeight(const std::vector<float> &action, const std::vector<float> &curMeans, const std::vector<float> &curSigmas, const std::vector<float> &oldMeans, const std::vector<float> &oldSigmas);
+
+  /**
+   * @brief Calculates the gradient of KL(p_old, p_cur) wrt to the parameter of the 2nd (current) distribution.
+   * @param oldParamsOne old means for Normal distribution, alpha for Beta distribution
+   * @param oldParamsTwo old sigmas for Normal distribution, beta for Beta distribution
+   * @param curParamsOne cur means for Normal distribution, alpha for Beta distribution
+   * @param curParamsTwo cur sigmas for Normal distribution, beta for Beta distribution
+   * @return gradient of KL wrt curParamsOne and curParamsTwo
+   */
+  std::vector<float> calculateKLDivergenceGradient(const std::vector<float> &oldParamsOne, const std::vector<float> &oldParamsTwo, const std::vector<float> &curParamsOne, const std::vector<float> &curParamsTwo);
+
+  /**
+  * @brief Function to pass state through the NN and prepares the Gaussian means and sigmas of the actions, along with any additional information
+  * @param state The current state
+  * @return A JSON object containing the information produced by the policy given the current state
+  */
+  virtual knlohmann::json runPolicy(const std::vector<float> &state) = 0;
+
+  /**
+  * @brief Function to generate randomized actions from neural network output.
+  * @param curMeans parameter vector for policy distribution
+  * @param curSigmas parameter vector for policy distribution
+  * @return An action vector
+  */
+  std::vector<float> generateTrainingAction(const std::vector<float> &curMeans, const std::vector<float> &curSigmas);
+
+  /**
+  * @brief Function to generate deterministic actions from neural network output required for policy evaluation, respectively testing.
+  * @param curMeans parameter vector for policy distribution
+  * @param curSigmas parameter vector for policy distribution
+  * @return An action vector
+  */
+  std::vector<float> generateTestingAction(const std::vector<float> &curMeans, const std::vector<float> &curSigmas);
+
+  virtual void getAction(korali::Sample &sample) override;
+  virtual void initializeAgent();
+};
+
+} // namespace agent
+} // namespace solver
+} // namespace korali
+
+#endif // _KORALI_AGENT_CONTINUOUS_HPP_

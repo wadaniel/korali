@@ -2,7 +2,7 @@
 import sys
 import os
 import numpy as np
-
+from scipy.stats import norm
 
 def normal_rnds(s, Ns):
   th1 = s["Parameters"][0]
@@ -20,6 +20,14 @@ def getReferenceData(path, i):
   fileName = path + "/data_set_" + str(i).zfill(3) + ".dat"
   y = readColumnFromFile(fileName, 0)
   return y
+
+
+def normal(N,s):
+  mean = s["Parameters"][0]
+  sigma = s["Parameters"][1]
+
+  s["Reference Evaluations"] = [ mean for _ in range(N) ]
+  s["Standard Deviation"] = [ sigma for _ in range(N) ]
 
 
 def readColumnFromFile(FileName, Column):

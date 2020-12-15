@@ -7,6 +7,7 @@
 #include "modules/problem/problem.hpp"
 #include "modules/solver/solver.hpp"
 #include "sample/sample.hpp"
+#include <omp.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 
@@ -14,11 +15,24 @@ namespace korali
 {
 std::stack<Engine *> _engineStack;
 bool isPythonActive = 0;
+size_t _maxThreads;
+
+#ifdef _KORALI_USE_ONEDNN
+dnnl::engine _engine;
+#endif
 
 Engine::Engine()
 {
   _cumulativeTime = 0.0;
   _thread = co_active();
+  _conduit = NULL;
+
+  // Detecting maximum number of threads that modules can run
+  _maxThreads = omp_get_max_threads();
+
+#ifdef _KORALI_USE_ONEDNN
+  _engine = dnnl::engine(dnnl::engine::kind::cpu, 0);
+#endif
 
   // Turn Off GSL Error Handler
   gsl_set_error_handler_off();
@@ -86,10 +100,7 @@ void Engine::run()
 
   if (_conduit->isRoot())
   {
-    // (Engine-Side) Adding engine to the stack to support Korali-in-Korali execution
-    _engineStack.push(this);
-
-    // (Workers-Side) Adding engine to the stack to support Korali-in-Korali execution
+    // Adding engine to the stack to support Korali-in-Korali execution
     _conduit->stackEngine(this);
 
     // Setting base time for profiling.
@@ -118,9 +129,6 @@ void Engine::run()
 
     // Finalizing experiments
     for (size_t i = 0; i < _experimentVector.size(); i++) _experimentVector[i]->finalize();
-
-    // (Engine-Side) Removing the current engine to the conduit's engine stack
-    _engineStack.pop();
 
     // (Workers-Side) Removing the current engine to the conduit's engine stack
     _conduit->popEngine();
@@ -194,22 +202,6 @@ void Engine::serialize(knlohmann::json &js)
     _experimentVector[i]->getConfiguration(_experimentVector[i]->_js.getJson());
     js["Experiment Vector"][i] = _experimentVector[i]->_js.getJson();
   }
-}
-
-Engine *Engine::deserialize(const knlohmann::json &js)
-{
-  auto k = new Engine;
-
-  for (size_t i = 0; i < js["Experiment Vector"].size(); i++)
-  {
-    auto e = new Experiment;
-    e->_js.getJson() = js["Experiment Vector"][i];
-    k->_experimentVector.push_back(e);
-  }
-
-  k->initialize();
-
-  return k;
 }
 
 #ifdef _KORALI_USE_MPI

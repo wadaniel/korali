@@ -44,22 +44,30 @@ e["Variables"][7]["Type"] = "Action"
 e["Variables"][7]["Lower Bound"] = -20.0
 e["Variables"][7]["Upper Bound"] = +20.0
 
-### Configuring NAF hyperparameters
+### Defining Termination Criteria
 
-e["Solver"]["Type"] = "Agent / Continuous / NAF"
-e["Solver"]["Target Learning Rate"] = 0.8
+e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 900
+
+### Defining Agent Configuration 
+
+e["Solver"]["Type"] = "Agent / Continuous / VRACER"
 e["Solver"]["Experiences Between Policy Updates"] = 1
+e["Solver"]["Cache Persistence"] = 500
+e["Solver"]["Policy Distribution"] = "Normal"
 
-### Defining Experience Replay configuration
+e["Solver"]["Refer"]["Target Off Policy Fraction"] = 0.30
+e["Solver"]["Refer"]["Cutoff Scale"] = 4.0
 
-e["Solver"]["Experience Replay"]["Start Size"] =   1000
-e["Solver"]["Experience Replay"]["Maximum Size"] = 100000
+### Defining the configuration of replay memory
 
-## Defining Q-Network
+e["Solver"]["Experience Replay"]["Start Size"] = 131072
+e["Solver"]["Experience Replay"]["Maximum Size"] = 262144
 
-e["Solver"]["Critic"]["Discount Factor"] = 1.0
-e["Solver"]["Critic"]["Learning Rate"] = 0.000001
-e["Solver"]["Critic"]["Mini Batch Size"] = 32
+## Defining Neural Network Configuration for Policy and Critic into Critic Container
+
+e["Solver"]["Critic"]["Discount Factor"] = 0.99
+e["Solver"]["Critic"]["Learning Rate"] = 1e-4
+e["Solver"]["Critic"]["Mini Batch Size"] = 256
 
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear"
@@ -74,12 +82,6 @@ e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Activation Function"]["Typ
 
 e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Type"] = "Layer/Dense"
 e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Elementwise/Linear"
-
-### Defining Termination Criteria
-
-e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 900
-#e["Solver"]["Termination Criteria"]["Max Generations"] = 30
-
 
 ### Setting file output configuration
 

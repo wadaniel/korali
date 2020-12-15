@@ -83,7 +83,7 @@ e["Solver"]["Termination Criteria"]["Max Generations"] = 30
 
 ### Setting file output configuration
 
-e["File Output"]["Frequency"] = 1000
+e["File Output"]["Enabled"] = False
 
 ### Running Experiment
 

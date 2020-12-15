@@ -61,6 +61,9 @@ void NeuralNetwork::initialize()
     _layers[i]->_nn = this;
   }
 
+  // Initialize layers
+  for (size_t i = 0; i < layerCount; i++) _layers[i]->initialize();
+
   // Creating forward and backward-propagation pipeline
   for (size_t i = 0; i < layerCount; i++) _layers[i]->createHyperparameterMemory();
 

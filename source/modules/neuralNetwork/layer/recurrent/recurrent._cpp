@@ -57,7 +57,7 @@ std::vector<float> Recurrent::generateInitialHyperparameters()
 void Recurrent::createHyperparameterMemory()
 {
  #ifdef _KORALI_USE_CUDNN
- if (_nn->_engine == "CUDNN")
+ if (_nn->_engine == "CuDNN")
  {
   // Setting RNN mode and calculating the number of internal linear layer
   if (_mode == "GRU")
@@ -182,7 +182,7 @@ void Recurrent::createForwardPipeline()
 ssize_t IC = _prevLayer->_nodeCount;
 
 #ifdef _KORALI_USE_CUDNN
-if (_nn->_engine == "CUDNN")
+if (_nn->_engine == "CuDNN")
 {
  // Allocating hidden and candidate memory tensors
   cudaErrCheck(cudaMalloc((void **)&_hStateTensor, N * OC * sizeof(float)));
@@ -247,7 +247,7 @@ void Recurrent::createBackwardPipeline()
  ssize_t OC = _nodeCount;
 
 #ifdef _KORALI_USE_CUDNN
-  if (_nn->_engine == "CUDNN")
+  if (_nn->_engine == "CuDNN")
   {
    cudaErrCheck(cudaMalloc((void **)&_hStateGradientTensor, N * OC * sizeof(float)));
    cudaErrCheck(cudaMalloc((void **)&_cStateGradientTensor, N * OC * sizeof(float)));
@@ -261,7 +261,7 @@ void Recurrent::forwardData()
   size_t OC = _nodeCount;
 
   #ifdef _KORALI_USE_CUDNN
-  if (_nn->_engine == "CUDNN")
+  if (_nn->_engine == "CuDNN")
   {
    std::vector<int> seqLengthArray(N, 1);
    cudnnErrCheck(cudnnRNNForward(
@@ -314,14 +314,14 @@ void Recurrent::setHyperparameters(float *hyperparameters)
  {
    // Setting layer's weights hyperparameter values
    #ifdef _KORALI_USE_CUDNN
-   if (_nn->_engine == "CUDNN") cudaErrCheck(cudaMemcpy(_linearLayerWeightTensors[linLayerID], &hyperparameters[curPos], _linearLayerWeightSizes[linLayerID] * sizeof(float), cudaMemcpyHostToDevice));
+   if (_nn->_engine == "CuDNN") cudaErrCheck(cudaMemcpy(_linearLayerWeightTensors[linLayerID], &hyperparameters[curPos], _linearLayerWeightSizes[linLayerID] * sizeof(float), cudaMemcpyHostToDevice));
    #endif
 
    curPos += _linearLayerWeightSizes[linLayerID];
 
    // Setting layer's bias hyperparameter values
    #ifdef _KORALI_USE_CUDNN
-   if (_nn->_engine == "CUDNN") cudaErrCheck(cudaMemcpy(_linearLayerBiasTensors[linLayerID], &hyperparameters[curPos], _linearLayerBiasSizes[linLayerID] * sizeof(float), cudaMemcpyHostToDevice));
+   if (_nn->_engine == "CuDNN") cudaErrCheck(cudaMemcpy(_linearLayerBiasTensors[linLayerID], &hyperparameters[curPos], _linearLayerBiasSizes[linLayerID] * sizeof(float), cudaMemcpyHostToDevice));
    #endif
 
    curPos += _linearLayerBiasSizes[linLayerID];
@@ -345,14 +345,14 @@ void Recurrent::getHyperparameters(float *hyperparameters)
  {
    // Setting layer's weights hyperparameter values
    #ifdef _KORALI_USE_CUDNN
-   if (_nn->_engine == "CUDNN") cudaErrCheck(cudaMemcpy(&hyperparameters[curPos], _linearLayerWeightTensors[linLayerID], _linearLayerWeightSizes[linLayerID] * sizeof(float), cudaMemcpyDeviceToHost));
+   if (_nn->_engine == "CuDNN") cudaErrCheck(cudaMemcpy(&hyperparameters[curPos], _linearLayerWeightTensors[linLayerID], _linearLayerWeightSizes[linLayerID] * sizeof(float), cudaMemcpyDeviceToHost));
    #endif
 
    curPos += _linearLayerWeightSizes[linLayerID];
 
    // Setting layer's bias hyperparameter values
    #ifdef _KORALI_USE_CUDNN
-   if (_nn->_engine == "CUDNN") cudaErrCheck(cudaMemcpy(&hyperparameters[curPos], _linearLayerBiasTensors[linLayerID], _linearLayerBiasSizes[linLayerID] * sizeof(float), cudaMemcpyDeviceToHost));
+   if (_nn->_engine == "CuDNN") cudaErrCheck(cudaMemcpy(&hyperparameters[curPos], _linearLayerBiasTensors[linLayerID], _linearLayerBiasSizes[linLayerID] * sizeof(float), cudaMemcpyDeviceToHost));
    #endif
 
    curPos += _linearLayerBiasSizes[linLayerID];

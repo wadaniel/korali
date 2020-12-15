@@ -82,7 +82,7 @@ print("MSE on test set: {}".format(mse))
 
 ### Plotting Results
 
-plt.plot(testInputSet, testOutputSet, "o")
-plt.plot(testInputSet, testInferredSet, "x")
+#plt.plot(testInputSet, testOutputSet, "o")
+#plt.plot(testInputSet, testInferredSet, "x")
 #plt.plot(testInferredSet, testGradientSet, "*")
-plt.show()
+#plt.show()

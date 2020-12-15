@@ -49,7 +49,7 @@ void Layer::createForwardPipeline()
 #endif
 
 #ifdef _KORALI_USE_CUDNN
-  if (_nn->_engine == "CUDNN")
+  if (_nn->_engine == "CuDNN")
   {
    cudnnErrCheck(cudnnCreateTensorDescriptor(&_outputTensorDesc));
    cudnnErrCheck(cudnnSetTensor4dDescriptor(_outputTensorDesc, CUDNN_TENSOR_NCHW, CUDNN_DATA_FLOAT, N, OC, 1, 1));
@@ -84,7 +84,7 @@ void Layer::createBackwardPipeline()
 #endif
 
 #ifdef _KORALI_USE_CUDNN
-  if (_nn->_engine == "CUDNN")
+  if (_nn->_engine == "CuDNN")
   {
    cudaErrCheck(cudaMalloc((void **)&_outputGradientTensor, N * OC * sizeof(float)));
   }

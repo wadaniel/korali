@@ -92,7 +92,7 @@ void FeedForward::createHyperparameterMemory()
 #endif
 
 #ifdef _KORALI_USE_CUDNN
-  if (_nn->_engine == "CUDNN")
+  if (_nn->_engine == "CuDNN")
   {
     cudnnErrCheck(cudnnCreateFilterDescriptor(&_weightsFilterDesc));
     cudnnErrCheck(cudnnSetFilter4dDescriptor(_weightsFilterDesc, CUDNN_DATA_FLOAT, CUDNN_TENSOR_NCHW, OC, IC, 1, 1));
@@ -140,7 +140,7 @@ void FeedForward::createForwardPipeline()
 #endif
 
 #ifdef _KORALI_USE_CUDNN
-  if (_nn->_engine == "CUDNN")
+  if (_nn->_engine == "CuDNN")
   {
     // Allocating memory for weight operation's output
     cudaErrCheck(cudaMalloc((void **)&_outputTensor, N * OC * sizeof(float)));
@@ -163,17 +163,14 @@ void FeedForward::createBackwardPipeline()
  // Calling base layer function
  Layer::createBackwardPipeline();
 
-  size_t N = _nn->_batchSize;
-  size_t OC = _nodeCount;
-
 // Creating backward propagation primitives
 #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
   {
     auto backwardDataDesc = inner_product_backward_data::desc(
-      _prevLayer->_outputMem.get_desc(),
+      _prevLayer->_outputGradientMem.get_desc(),
       _weightsMem.get_desc(),
-      _outputMem.get_desc());
+      _outputGradientMem.get_desc());
 
     // Create the primitive.
     auto backwardDataPrimitiveDesc = inner_product_backward_data::primitive_desc(backwardDataDesc, _engine, _forwardInnerProductPrimitiveDesc);
@@ -201,8 +198,11 @@ void FeedForward::createBackwardPipeline()
 #endif
 
 #ifdef _KORALI_USE_CUDNN
-  if (_nn->_engine == "CUDNN")
+  if (_nn->_engine == "CuDNN")
   {
+   size_t N = _nn->_batchSize;
+   size_t OC = _nodeCount;
+
    // Allocating gradient space for weight operation
    cudaErrCheck(cudaMalloc((void **)&_outputGradientTensor, N * OC * sizeof(float)));
   }
@@ -240,7 +240,7 @@ void FeedForward::forwardData()
 #endif
 
 #ifdef _KORALI_USE_CUDNN
-   if (_nn->_engine == "CUDNN")
+   if (_nn->_engine == "CuDNN")
    {
      float alpha1 = 1.0f;
      float alpha2 = 0.0f;
@@ -292,7 +292,7 @@ void FeedForward::backwardData()
  #endif
 
  #ifdef _KORALI_USE_CUDNN
-   if (_nn->_engine == "CUDNN")
+   if (_nn->_engine == "CuDNN")
    {
      float alpha = 1.0f;
      float beta = 0.0f;
@@ -345,7 +345,7 @@ void FeedForward::backwardHyperparameters()
 #endif
 
 #ifdef _KORALI_USE_CUDNN
-   if (_nn->_engine == "CUDNN")
+   if (_nn->_engine == "CuDNN")
    {
      float alpha = 1.0f;
      float beta = 0.0f;
@@ -399,7 +399,7 @@ void FeedForward::setHyperparameters(float *hyperparameters)
 #endif
 
 #ifdef _KORALI_USE_CUDNN
-  if (_nn->_engine == "CUDNN")
+  if (_nn->_engine == "CuDNN")
   {
     cudaErrCheck(cudaMemcpy(_weightsFilter, &hyperparameters[0], IC * OC * sizeof(float), cudaMemcpyHostToDevice));
     cudaErrCheck(cudaMemcpy(_biasTensor, &hyperparameters[IC * OC], OC * sizeof(float), cudaMemcpyHostToDevice));
@@ -429,7 +429,7 @@ void FeedForward::getHyperparameters(float *hyperparameters)
 #endif
 
 #ifdef _KORALI_USE_CUDNN
-  if (_nn->_engine == "CUDNN")
+  if (_nn->_engine == "CuDNN")
   {
     cudaErrCheck(cudaMemcpy(&hyperparameters[0], _weightsFilter, IC * OC * sizeof(float), cudaMemcpyDeviceToHost));
     cudaErrCheck(cudaMemcpy(&hyperparameters[IC * OC], _biasTensor, OC * sizeof(float), cudaMemcpyDeviceToHost));
@@ -459,7 +459,7 @@ void FeedForward::getHyperparameterGradients(float *gradient)
 #endif
 
 #ifdef _KORALI_USE_CUDNN
-  if (_nn->_engine == "CUDNN")
+  if (_nn->_engine == "CuDNN")
   {
     cudaErrCheck(cudaMemcpy(&gradient[0], _weightsGradientFilter, IC * OC * sizeof(float), cudaMemcpyDeviceToHost));
     cudaErrCheck(cudaMemcpy(&gradient[IC * OC], _biasGradientTensor, OC * sizeof(float), cudaMemcpyDeviceToHost));

@@ -25,7 +25,7 @@ void NeuralNetwork::initialize()
 #endif
   }
 
-  if (_engine == "CUDNN")
+  if (_engine == "CuDNN")
   {
 #ifdef _KORALI_USE_CUDNN
 

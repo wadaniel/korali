@@ -28,7 +28,6 @@ e["Problem"]["Actions Between Policy Updates"] = 1
 
 e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 60.0
 
-
 ### Defining state variables
 
 e["Variables"][0]["Name"] = "Swimmer 1 - Pos X"

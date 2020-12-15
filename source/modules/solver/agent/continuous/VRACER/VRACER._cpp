@@ -215,7 +215,7 @@ void VRACER::trainPolicy()
     *******************************************************/
 
     // Storage for the update gradient
-    std::vector<float> gradientLoss(2 * _problem->_actionVectorSize + 1);
+    std::vector<float> gradientLoss(1 + 2 * _problem->_actionVectorSize);
 
     // Get old Vtbc
     float expVtbc = _experienceReplay[curId].policy["Vtbc"].get<float>();

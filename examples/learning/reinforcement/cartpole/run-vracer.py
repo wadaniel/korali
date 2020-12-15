@@ -39,16 +39,16 @@ e["Variables"][4]["Upper Bound"] = +10.0
 
 e["Solver"]["Type"] = "Agent / Continuous / VRACER"
 e["Solver"]["Experiences Between Policy Updates"] = 10
-e["Solver"]["Cache Persistence"] = 1000
+e["Solver"]["Cache Persistence"] = 500
 e["Solver"]["Policy Distribution"] = "Normal"
 
-e["Solver"]["Refer"]["Target Off Policy Fraction"] = 0.20
+e["Solver"]["Refer"]["Target Off Policy Fraction"] = 0.1
 e["Solver"]["Refer"]["Cutoff Scale"] = 4.0
 
 ### Defining the configuration of replay memory
 
-e["Solver"]["Experience Replay"]["Start Size"] = 131072
-e["Solver"]["Experience Replay"]["Maximum Size"] = 262144
+e["Solver"]["Experience Replay"]["Start Size"] = 1000
+e["Solver"]["Experience Replay"]["Maximum Size"] = 10000
 
 ## Defining Neural Network Configuration for Policy and Critic into Critic Container
 

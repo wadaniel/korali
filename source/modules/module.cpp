@@ -22,7 +22,6 @@
 #include "neuralNetwork/layer/dense/dense.hpp"
 #include "neuralNetwork/layer/layer.hpp"
 #include "neuralNetwork/neuralNetwork.hpp"
-#include "problem/bayesian/approximate/approximate.hpp"
 #include "problem/bayesian/custom/custom.hpp"
 #include "problem/bayesian/latent/exponentialLatent/exponentialLatent.hpp"
 #include "problem/bayesian/latent/latent.hpp"
@@ -117,7 +116,6 @@ Module *Module::getModule(knlohmann::json &js, Experiment *e)
   if (moduleType == "Univariate/Uniform") module = new korali::distribution::univariate::Uniform();
   if (moduleType == "Univariate/Weibull") module = new korali::distribution::univariate::Weibull();
   if (moduleType == "Experiment") module = new korali::Experiment();
-  if (moduleType == "Bayesian/Approximate") module = new korali::problem::bayesian::Approximate();
   if (moduleType == "Bayesian/Custom") module = new korali::problem::bayesian::Custom();
   if (moduleType == "Bayesian/Latent") module = new korali::problem::bayesian::Latent();
   if (moduleType == "Bayesian/Latent/ExponentialLatent") module = new korali::problem::bayesian::latent::ExponentialLatent();

@@ -31,29 +31,31 @@ e["Solver"]["Type"] = "Learner/DeepSupervisor"
 e["Solver"]["Loss Function"] = "Mean Squared Error"
 e["Solver"]["Steps Per Generation"] = 200
 e["Solver"]["Optimizer"] = "AdaBelief"
-e["Solver"]["Learning Rate"] = 0.05
+e["Solver"]["Learning Rate"] = 0.005
 
 ### Defining the shape of the neural network
 
-e["Solver"]["Neural Network"]["Engine"] = "CUDNN"
+e["Solver"]["Neural Network"]["Engine"] = "OneDNN"
 
 e["Solver"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Input"
 e["Solver"]["Neural Network"]["Layers"][0]["Node Count"] = 1
 
 e["Solver"]["Neural Network"]["Layers"][1]["Type"] = "Layer/FeedForward"
 e["Solver"]["Neural Network"]["Layers"][1]["Node Count"] = 32
-e["Solver"]["Neural Network"]["Layers"][1]["Activation Function"]["Type"] = "Elementwise/Tanh"
 
-e["Solver"]["Neural Network"]["Layers"][2]["Type"] = "Layer/FeedForward"
-e["Solver"]["Neural Network"]["Layers"][2]["Node Count"] = 32
-e["Solver"]["Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Elementwise/Tanh"
+e["Solver"]["Neural Network"]["Layers"][2]["Type"] = "Layer/Activation"
+e["Solver"]["Neural Network"]["Layers"][2]["Function"] = "Elementwise/Tanh"
 
 e["Solver"]["Neural Network"]["Layers"][3]["Type"] = "Layer/FeedForward"
-e["Solver"]["Neural Network"]["Layers"][3]["Node Count"] = 1
-e["Solver"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Elementwise/Linear"
+e["Solver"]["Neural Network"]["Layers"][3]["Node Count"] = 32
 
-e["Solver"]["Neural Network"]["Layers"][4]["Type"] = "Layer/Output"
-e["Solver"]["Neural Network"]["Layers"][4]["Node Count"] = 1
+e["Solver"]["Neural Network"]["Layers"][4]["Type"] = "Layer/Activation"
+e["Solver"]["Neural Network"]["Layers"][4]["Function"] = "Elementwise/Tanh"
+
+e["Solver"]["Neural Network"]["Layers"][5]["Type"] = "Layer/FeedForward"
+e["Solver"]["Neural Network"]["Layers"][5]["Node Count"] = 1
+
+e["Solver"]["Neural Network"]["Layers"][6]["Type"] = "Layer/Output"
 
 e["Console Output"]["Frequency"] = 1
 e["File Output"]["Enabled"] = False
@@ -80,7 +82,7 @@ print("MSE on test set: {}".format(mse))
 
 ### Plotting Results
 
-#plt.plot(testInputSet, testOutputSet, "o")
-#plt.plot(testInputSet, testInferredSet, "x")
+plt.plot(testInputSet, testOutputSet, "o")
+plt.plot(testInputSet, testInferredSet, "x")
 #plt.plot(testInferredSet, testGradientSet, "*")
-#plt.show()
+plt.show()

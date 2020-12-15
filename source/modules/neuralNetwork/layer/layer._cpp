@@ -97,6 +97,11 @@ std::vector<float> Layer::generateInitialHyperparameters()
   return hyperparameters;
 }
 
+void Layer::createHyperparameterMemory()
+{
+ _hyperparameterCount = 0;
+}
+
 } // namespace neuralNetwork
 
 } // namespace korali

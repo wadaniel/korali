@@ -21,6 +21,17 @@ namespace neuralNetwork
 {
 namespace layer
 {
+
+void Recurrent::initialize()
+{
+ // Checking Layer size
+ if (_nodeCount == 0) KORALI_LOG_ERROR("Node count for layer (%lu) should be larger than zero.\n", _index);
+
+ // Checking position
+ if (_index == 0) KORALI_LOG_ERROR("Recurrent layers cannot be the starting layer of the NN\n");
+ if (_index == _nn->_layers.size()-1) KORALI_LOG_ERROR("Recurrent layers cannot be the last layer of the NN\n");
+}
+
 std::vector<float> Recurrent::generateInitialHyperparameters()
 {
   std::vector<float> hyperparameters;
@@ -45,8 +56,6 @@ std::vector<float> Recurrent::generateInitialHyperparameters()
 
 void Recurrent::createHyperparameterMemory()
 {
- if (_index == 0) KORALI_LOG_ERROR("Recurrent layers cannot be placed at the 0 position\n");
-
  #ifdef _KORALI_USE_CUDNN
  if (_nn->_engine == "CUDNN")
  {

@@ -105,7 +105,7 @@ class Layer : public Module
   /**
   * @brief  Initializes the layer's internal memory structures for hyperparameter storage
   */
-  virtual void createHyperparameterMemory() = 0;
+  virtual void createHyperparameterMemory();
 
   /**
    * @brief Initializes the layer's internal memory structures for the forward pipeline

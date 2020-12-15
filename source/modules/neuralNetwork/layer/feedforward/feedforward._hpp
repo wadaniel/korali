@@ -20,16 +20,6 @@ class FeedForward : public Layer
 #ifdef _KORALI_USE_EIGEN
 
  /**
-* @brief Contains the output of the inner product (Wx+b) operation
-*/
- float *_weightsOutputValues;
-
- /**
-* @brief Contains the gradients of the output of the inner product (Wx+b) operation
-*/
- float *_weightsOutputGradient;
-
- /**
 * @brief Contains the values of the weights
 */
  float *_weightValues;
@@ -53,20 +43,6 @@ class FeedForward : public Layer
 
 #ifdef _KORALI_USE_ONEDNN
 
- /********************************************************
-* oneDNN Layers's Memory Structures for Forward Propagation
-*******************************************************/
-
- /**
- * @brief oneDNN Memory object descriptor to contain the output of the inner product (Wx+b) operation
- */
- dnnl::memory _weightsOutputMem;
-
- /**
- * @brief oneDNN Gradients of the output of the inner product (Wx+b) operation
- */
- dnnl::memory _weightsOutputGradientMem;
-
  /**
  * @brief oneDNN Memory object descriptor to contain the weights of inner product with incoming channels
  */
@@ -77,10 +53,6 @@ class FeedForward : public Layer
  */
  dnnl::memory _biasMem;
 
- /********************************************************
-* Declaring Layers's Memory Structures for Gradients
-*******************************************************/
-
  /**
  * @brief oneDNN Memory object descriptor to contain the gradient of the weights
  */
@@ -90,39 +62,6 @@ class FeedForward : public Layer
  * @brief oneDNN Memory object descriptor to contain the gradient of the biases
  */
  dnnl::memory _biasGradientMem;
-
- /*****************************************************************
-* Declaring Layers's Forward Activation Function Primitive Configuration
-******************************************************************/
-
- /**
- * @brief oneDNN Algorithm chosen for activation function
- */
- dnnl::algorithm _activationAlgorithm;
-
- /**
- * @brief oneDNN Arguments to the activation function
- */
- std::unordered_map<int, dnnl::memory> _forwardActivationArgs;
-
- /**
- * @brief oneDNN primitive attributes that describe a softmax activation function
- */
- dnnl::softmax_forward::primitive_desc _forwardSoftmaxActivationPrimitiveDesc;
-
- /**
- * @brief oneDNN primitive attributes that describe an element-wise activation function
- */
- dnnl::eltwise_forward::primitive_desc _forwardEltwiseActivationPrimitiveDesc;
-
- /**
- * @brief oneDNN primitive to run the activation function operation
- */
- dnnl::primitive _forwardActivationPrimitive;
-
- /*****************************************************************
- * Declaring Layers's Forward Inner Product Primitive Configuration
- ******************************************************************/
 
  /**
  * @brief oneDNN Arguments to the inner product operation
@@ -138,20 +77,6 @@ class FeedForward : public Layer
  * @brief oneDNN primitive to run the inner product + bias addition operation
  */
  dnnl::primitive _forwardInnerProductPrimitive;
-
- /*****************************************************************
- * Declaring Layers's Backward Propagation Configuration
- ******************************************************************/
-
- /**
- * @brief oneDNN Arguments for the backward propagation of the gradient wrt activation functions
- */
- std::unordered_map<int, dnnl::memory> _backwardActivationArgs;
-
- /**
- * @brief oneDNN primitive for the backward propagation of the gradient wrt activation functions
- */
- dnnl::primitive _backwardActivationPrimitive;
 
  /**
  * @brief oneDNN Arguments for the backward propagation of the gradient wrt Data
@@ -176,16 +101,6 @@ class FeedForward : public Layer
 #endif
 
 #ifdef _KORALI_USE_CUDNN
-
- /**
- * @brief cuDNN Device memory pointer for the output of the inner product (Wx+b) operation
- */
- void *_weightsOutputTensor;
-
- /**
- * @brief cuDNN Device memory pointer for the gradients of the output of the inner product (Wx+b) operation
- */
- void *_weightsOutputGradientTensor;
 
  /**
  * @brief cuDNN Descriptor for the filter weights
@@ -232,16 +147,9 @@ class FeedForward : public Layer
  */
  void *_convolutionWorkspace;
 
- /**
- * @brief cuDNN Descriptor for the activation function
- */
- cudnnActivationDescriptor_t _activationDesc;
-
 #endif
 
-  void forwardActivationFunction();
-  void backwardActivationFunction();
-
+  void initialize() override;
   std::vector<float> generateInitialHyperparameters() override;
   void createHyperparameterMemory() override;
   void createForwardPipeline() override;

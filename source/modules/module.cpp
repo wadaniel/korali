@@ -20,6 +20,7 @@
 #include "distribution/univariate/weibull/weibull.hpp"
 #include "experiment/experiment.hpp"
 #include "neuralNetwork/layer/feedforward/feedforward.hpp"
+#include "neuralNetwork/layer/activation/activation.hpp"
 #include "neuralNetwork/layer/recurrent/recurrent.hpp"
 #include "neuralNetwork/layer/input/input.hpp"
 #include "neuralNetwork/layer/output/output.hpp"
@@ -161,6 +162,7 @@ Module *Module::getModule(knlohmann::json &js, Experiment *e)
   if (moduleType == "Layer/Recurrent") module = new korali::neuralNetwork::layer::Recurrent();
   if (moduleType == "Layer/Input") module = new korali::neuralNetwork::layer::Input();
   if (moduleType == "Layer/Output") module = new korali::neuralNetwork::layer::Output();
+  if (moduleType == "Layer/Activation") module = new korali::neuralNetwork::layer::Activation();
 
   if (module == nullptr) KORALI_LOG_ERROR(" + Unrecognized module: %s.\n", moduleType.c_str());
 

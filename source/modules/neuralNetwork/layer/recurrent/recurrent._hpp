@@ -127,6 +127,7 @@ class Recurrent : public Layer
 
   #endif
 
+  void initialize() override;
   std::vector<float> generateInitialHyperparameters() override;
   void createHyperparameterMemory() override;
   void createForwardPipeline() override;

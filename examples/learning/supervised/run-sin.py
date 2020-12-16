@@ -14,8 +14,8 @@ np.random.seed(0xC0FFEE)
 trainingInputSet = np.random.uniform(0, 2 * np.pi, 500)
 trainingSolutionSet = np.tanh(np.exp(np.sin(trainingInputSet))) * scaling 
 
-trainingInputSet = [ [ i ] for i in trainingInputSet.tolist() ]
-trainingSolutionSet = [ [ i ] for i in trainingSolutionSet.tolist() ]
+trainingInputSet = [ [ [ i ] for i in trainingInputSet.tolist() ] ]
+trainingSolutionSet = [ [ [ i ] for i in trainingSolutionSet.tolist() ] ]
 
 ### Defining a learning problem to infer values of sin(x)
 

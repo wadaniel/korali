@@ -7,6 +7,7 @@ NeuralNetwork::NeuralNetwork()
 {
   _isInitialized = false;
   _batchSize = 0;
+  _forwardSteps = 0;
 }
 
 void NeuralNetwork::initialize()
@@ -97,6 +98,9 @@ void NeuralNetwork::setInput(const std::vector<std::vector<float>> &input)
   size_t IC = _layers[0]->_nodeCount;
   size_t OC = _layers[layerCount-1]->_nodeCount;
 
+  _forwardSteps = 0;
+  _backwardSteps = 0;
+
   // If batchsize is different than existing one, re-create pipelines
   if (_batchSize != N)
   {
@@ -139,6 +143,9 @@ void NeuralNetwork::forward()
   for (size_t i = 0; i < _batchSize; i++)
     for (size_t j = 0; j < nodeCount; j++)
       _outputValues[i][j] = _batchOutputData[i * nodeCount + j];
+
+ // Increasing the number of forward step counter
+  _forwardSteps++;
 }
 
 void NeuralNetwork::backward(const std::vector<std::vector<float>> &gradients)
@@ -168,6 +175,8 @@ void NeuralNetwork::backward(const std::vector<std::vector<float>> &gradients)
    // Calculating hyperparamter gradients
    _layers[i]->backwardHyperparameters();
   }
+
+  _backwardSteps++;
 }
 
 std::vector<float> NeuralNetwork::getHyperparameters()

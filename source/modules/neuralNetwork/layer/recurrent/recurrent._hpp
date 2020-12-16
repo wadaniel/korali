@@ -31,29 +31,49 @@ class Recurrent : public Layer
   cudnnTensorDescriptor_t _hTensorDesc;
 
   /**
-  * @brief cuDNN Device memory pointers for each internal layer's hidden state
-  */
-  void *_hStateTensor;
-
-  /**
-  * @brief cuDNN Device memory pointers for each internal layer's hidden state gradients
-  */
-  void *_hStateGradientTensor;
-
-  /**
   * @brief cuDNN Descriptor for the candidate state tensor memory
   */
   cudnnTensorDescriptor_t _cTensorDesc;
 
   /**
-  * @brief cuDNN Device memory pointers for each internal layer's candidate (LSTM) state
+  * @brief cuDNN Device memory pointers for the internal layer's candidate (LSTM) state input
   */
-  void *_cStateTensor;
+  void *_cInputStateTensor;
 
   /**
-  * @brief cuDNN Device memory pointers for each internal layer's candidate (LSTM) state gradients
+   * @brief cuDNN Device memory pointers for the internal layer's candidate (LSTM) state input gradients
+   */
+   void *_cInputGradientTensor;
+
+  /**
+   * @brief cuDNN Device memory pointers for the internal layer's candidate (LSTM) state output
+   */
+   void *_cOutputStateTensor;
+
+  /**
+  * @brief cuDNN Device memory pointers for the internal layer's candidate (LSTM) state output gradients
   */
-  void *_cStateGradientTensor;
+  void *_cOutputGradientTensor;
+
+  /**
+  * @brief cuDNN Device memory pointers for the internal layer's hidden state input
+  */
+  void *_hInputStateTensor;
+
+  /**
+   * @brief cuDNN Device memory pointers for the internal layer's hidden state input gradients
+   */
+   void *_hInputGradientTensor;
+
+  /**
+   * @brief cuDNN Device memory pointers for the internal layer's hidden state output
+   */
+   void *_hOutputStateTensor;
+
+  /**
+  * @brief cuDNN Device memory pointers for the internal layer's hidden state output gradients
+  */
+  void *_hOutputGradientTensor;
 
   /**
   * @brief cuDNN descriptor for the dropout operator

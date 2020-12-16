@@ -148,12 +148,12 @@ void DDQN::trainPolicy()
     float aTarget = qStar - _vValState + _aValAverage;
 
     // Updating inputs to training learners
-    for (size_t j = 0; j < curState.size(); j++) _aProblem->_inputs[i][j] = curState[j];
-    for (size_t j = 0; j < curAction.size(); j++) _aProblem->_inputs[i][j + curState.size()] = curAction[j];
-    _aProblem->_solution[i][0] = aTarget;
+    for (size_t j = 0; j < curState.size(); j++) _aProblem->_inputs[0][i][j] = curState[j];
+    for (size_t j = 0; j < curAction.size(); j++) _aProblem->_inputs[0][i][j + curState.size()] = curAction[j];
+    _aProblem->_solution[0][i][0] = aTarget;
 
-    _vProblem->_inputs[i] = curState;
-    _vProblem->_solution[i][0] = vTarget;
+    _vProblem->_inputs[0][i] = curState;
+    _vProblem->_solution[0][i][0] = vTarget;
 
     // Keeping statistics
     _cumulativeQStar += qStar;

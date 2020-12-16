@@ -201,8 +201,10 @@ void Recurrent::createForwardPipeline()
  cudnnErrCheck(cudnnSetTensorNdDescriptor(_cTensorDesc, CUDNN_DATA_FLOAT, 3, dimA, strideA));
 
  // Allocating hidden and candidate memory tensors
-  cudaErrCheck(cudaMalloc((void **)&_hStateTensor, N * OC * sizeof(float)));
-  cudaErrCheck(cudaMalloc((void **)&_cStateTensor, N * OC * sizeof(float)));
+  cudaErrCheck(cudaMalloc((void **)&_hInputStateTensor, N * OC * sizeof(float)));
+  cudaErrCheck(cudaMalloc((void **)&_hOutputStateTensor, N * OC * sizeof(float)));
+  cudaErrCheck(cudaMalloc((void **)&_cInputStateTensor, N * OC * sizeof(float)));
+  cudaErrCheck(cudaMalloc((void **)&_cOutputStateTensor, N * OC * sizeof(float)));
 
   // Creating RNN data descriptors for input and output
   cudnnErrCheck(cudnnCreateRNNDataDescriptor(&_inputRNNDataDesc));
@@ -264,8 +266,10 @@ void Recurrent::createBackwardPipeline()
 #ifdef _KORALI_USE_CUDNN
   if (_nn->_engine == "CuDNN")
   {
-   cudaErrCheck(cudaMalloc((void **)&_hStateGradientTensor, N * OC * sizeof(float)));
-   cudaErrCheck(cudaMalloc((void **)&_cStateGradientTensor, N * OC * sizeof(float)));
+   cudaErrCheck(cudaMalloc((void **)&_hInputGradientTensor, N * OC * sizeof(float)));
+   cudaErrCheck(cudaMalloc((void **)&_hOutputGradientTensor, N * OC * sizeof(float)));
+   cudaErrCheck(cudaMalloc((void **)&_cInputGradientTensor, N * OC * sizeof(float)));
+   cudaErrCheck(cudaMalloc((void **)&_cOutputGradientTensor, N * OC * sizeof(float)));
   }
 #endif
 }
@@ -289,11 +293,11 @@ void Recurrent::forwardData()
                   _outputRNNDataDesc, // yDesc
                   _outputTensor, // y
                   _hTensorDesc, // hDesc
-                  NULL, // hx
-                  _hStateTensor, // hy
+                  _nn->_forwardSteps == 0 ? NULL : _hInputStateTensor, // hx
+                  _hOutputStateTensor, // hy
                   _cTensorDesc, // cDesc
-                  NULL, // cx
-                  _cStateTensor, // cy
+                  _nn->_forwardSteps == 0 ? NULL : _cInputStateTensor, // cx
+                  _cOutputStateTensor, // cy
                   _weightsSize,
                   _weightsTensor,
                   _workSpaceSize,
@@ -302,6 +306,10 @@ void Recurrent::forwardData()
                   _reserveSpaceTensor));
   }
   #endif
+
+  // Copying output states to input states
+   cudaErrCheck(cudaMemcpy(_hInputStateTensor, _hOutputStateTensor, OC * N * sizeof(float), cudaMemcpyHostToHost));
+   cudaErrCheck(cudaMemcpy(_cInputStateTensor, _cOutputStateTensor, OC * N * sizeof(float), cudaMemcpyHostToHost));
 }
 
 
@@ -323,13 +331,13 @@ void Recurrent::backwardData()
        _inputRNNDataDesc, // xDesc
        _prevLayer->_outputGradientTensor, // dx
        _hTensorDesc, // hDesc
-       NULL, // hx
-       NULL, // dhy
-       NULL, // dhx
+       _hInputStateTensor, // hx
+       _nn->_backwardSteps == 0 ? NULL : _hOutputGradientTensor, // dhy
+       _hInputGradientTensor, // dhx
        _cTensorDesc, // cDesc
-       NULL, // cx
-       NULL, // cy
-       NULL, //dcx
+       _cInputStateTensor, // cx
+       _nn->_backwardSteps == 0 ? NULL : _cOutputGradientTensor, // dcy
+       _cInputGradientTensor, //dcx
        _weightsSize,
        _weightsTensor,
        _workSpaceSize,
@@ -338,6 +346,10 @@ void Recurrent::backwardData()
        _reserveSpaceTensor));
  }
  #endif
+
+ // Copying input gradients to output gradients
+ cudaErrCheck(cudaMemcpy(_hOutputGradientTensor, _hInputGradientTensor, OC * N * sizeof(float), cudaMemcpyHostToHost));
+ cudaErrCheck(cudaMemcpy(_cOutputGradientTensor, _cInputGradientTensor, OC * N * sizeof(float), cudaMemcpyHostToHost));
 }
 
 void Recurrent::backwardHyperparameters()
@@ -350,7 +362,7 @@ void Recurrent::backwardHyperparameters()
      _inputRNNDataDesc, // xDesc
      _prevLayer->_outputTensor, // x
      _hTensorDesc, // hDesc
-     NULL, // hx
+     _hInputStateTensor, // hx
      _outputRNNDataDesc, // yDesc
      _outputTensor, // y
      _weightsSize,

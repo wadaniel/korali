@@ -69,6 +69,16 @@ class NeuralNetwork : public Module
    */
   std::vector<float> _batchOutputGradients;
 
+  /**
+   * @brief Keeps track of the forward steps taken since the last reset
+   */
+   size_t _forwardSteps;
+
+  /**
+   * @brief Keeps track of the backward steps taken since the last reset
+   */
+   size_t _backwardSteps;
+
   void initialize() override;
 
   /**

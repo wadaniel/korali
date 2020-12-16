@@ -26,19 +26,29 @@ class Recurrent : public Layer
   #ifdef _KORALI_USE_CUDNN
 
   /**
+  * @brief cuDNN Descriptor for the hidden state tensor memory
+  */
+  cudnnTensorDescriptor_t _hTensorDesc;
+
+  /**
   * @brief cuDNN Device memory pointers for each internal layer's hidden state
   */
   void *_hStateTensor;
 
   /**
-  * @brief cuDNN Device memory pointers for each internal layer's candidate (LSTM) state
-  */
-  void *_cStateTensor;
-
-  /**
   * @brief cuDNN Device memory pointers for each internal layer's hidden state gradients
   */
   void *_hStateGradientTensor;
+
+  /**
+  * @brief cuDNN Descriptor for the candidate state tensor memory
+  */
+  cudnnTensorDescriptor_t _cTensorDesc;
+
+  /**
+  * @brief cuDNN Device memory pointers for each internal layer's candidate (LSTM) state
+  */
+  void *_cStateTensor;
 
   /**
   * @brief cuDNN Device memory pointers for each internal layer's candidate (LSTM) state gradients

@@ -152,7 +152,8 @@ void VRACER::trainPolicy()
   // Update off-policy fraction
   size_t expCount = _experienceReplay.size();
   size_t offPolicyCount = 0;
-#pragma omp parallel for reduction(+: offPolicyCount)
+#pragma omp parallel for reduction(+ \
+                                   : offPolicyCount)
   for (size_t expId = 0; expId < expCount - 1; expId++)
   {
     float expImportanceWeight = _experienceReplay[expId].cache.get("Importance Weight");
@@ -502,7 +503,7 @@ knlohmann::json VRACER::runPolicy(const std::vector<float> &state)
   return policy;
 }
 
-void VRACER::processEpisode(std::vector<knlohmann::json> & episode)
+void VRACER::processEpisode(std::vector<knlohmann::json> &episode)
 {
   // Approximate Vtbc by backward iteration after first episode roll out
   float sumRewards = 0.0;

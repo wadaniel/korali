@@ -162,10 +162,9 @@ void Agent::attendAgent(size_t agentId)
 
     if (isTerminal)
     {
-      
       // Posprocess episode after first roll-out
       processEpisode(_episodes[agentId]);
-        
+
       // Now that we have the entire episode, process its experiences (add them to replay memory)
       for (size_t i = 0; i < _episodes[agentId].size(); i++) processExperience(_episodes[agentId][i]);
 
@@ -211,7 +210,6 @@ void Agent::attendAgent(size_t agentId)
     }
   }
 }
-
 
 void Agent::processExperience(knlohmann::json &experience)
 {

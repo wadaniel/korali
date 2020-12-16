@@ -29,7 +29,7 @@ class dVRACER : public Discrete
    * @brief Pointer to actor's experiment problem
    */
   problem::SupervisedLearning *_criticPolicyProblem;
- 
+
   /**
    * @brief Calculates the state value function V(s,a)
    * @param state state to evaluate
@@ -65,7 +65,7 @@ class dVRACER : public Discrete
   knlohmann::json runPolicy(const std::vector<float> &state) override;
   void trainPolicy() override;
   void updateAgentPolicy(const knlohmann::json &hyperparameters) override;
-  void processEpisode(std::vector<knlohmann::json> & episode) override;
+  void processEpisode(std::vector<knlohmann::json> &episode) override;
   void printAgentInformation() override;
   void initializeAgent() override;
 };

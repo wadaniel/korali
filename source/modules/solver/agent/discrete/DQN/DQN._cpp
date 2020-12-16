@@ -111,9 +111,9 @@ void DQN::trainPolicy()
     }
 
     // Updating inputs to training learner
-    for (size_t j = 0; j < curState.size(); j++) _criticProblem->_inputs[i][j] = curState[j];
-    for (size_t j = 0; j < curAction.size(); j++) _criticProblem->_inputs[i][j + curState.size()] = curAction[j];
-    _criticProblem->_solution[i][0] = qStar;
+    for (size_t j = 0; j < curState.size(); j++) _criticProblem->_inputs[0][i][j] = curState[j];
+    for (size_t j = 0; j < curAction.size(); j++) _criticProblem->_inputs[0][i][j + curState.size()] = curAction[j];
+    _criticProblem->_solution[0][i][0] = qStar;
 
     // Keeping statistics
     _cumulativeQStar += qStar;

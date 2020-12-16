@@ -14,8 +14,8 @@ np.random.seed(0xC0FFEE)
 trainingInputSet = np.random.uniform(0, 2 * np.pi, 500)
 trainingSolutionSet = np.tanh(np.exp(np.sin(trainingInputSet))) * scaling 
 
-trainingInputSet = [ [ i ] for i in trainingInputSet.tolist() ]
-trainingSolutionSet = [ [ i ] for i in trainingSolutionSet.tolist() ]
+trainingInputSet = [ [ [ i ] for i in trainingInputSet.tolist() ] ]
+trainingSolutionSet = [ [ [ i ] for i in trainingSolutionSet.tolist() ] ]
 
 ### Defining a learning problem to infer values of sin(x)
 
@@ -29,9 +29,9 @@ e["Problem"]["Solution"] = trainingSolutionSet
 
 e["Solver"]["Type"] = "Learner/DeepSupervisor"
 e["Solver"]["Loss Function"] = "Mean Squared Error"
-e["Solver"]["Steps Per Generation"] = 20
+e["Solver"]["Steps Per Generation"] = 200
 e["Solver"]["Optimizer"] = "AdaBelief"
-e["Solver"]["Learning Rate"] = 0.05
+e["Solver"]["Learning Rate"] = 0.005
 
 ### Defining the shape of the neural network
 
@@ -41,10 +41,10 @@ e["Solver"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Input"
 e["Solver"]["Neural Network"]["Layers"][0]["Node Count"] = 1
 
 e["Solver"]["Neural Network"]["Layers"][1]["Type"] = "Layer/FeedForward"
-e["Solver"]["Neural Network"]["Layers"][1]["Node Count"] = 32
+e["Solver"]["Neural Network"]["Layers"][1]["Node Count"] = 64
 
 e["Solver"]["Neural Network"]["Layers"][2]["Type"] = "Layer/Recurrent"
-e["Solver"]["Neural Network"]["Layers"][2]["Node Count"] = 32
+e["Solver"]["Neural Network"]["Layers"][2]["Node Count"] = 64
 e["Solver"]["Neural Network"]["Layers"][2]["Mode"] = "LSTM"
 
 e["Solver"]["Neural Network"]["Layers"][3]["Type"] = "Layer/FeedForward"
@@ -77,7 +77,7 @@ print("MSE on test set: {}".format(mse))
 
 ### Plotting Results
 
-#plt.plot(testInputSet, testOutputSet, "o")
-#plt.plot(testInputSet, testInferredSet, "x")
+plt.plot(testInputSet, testOutputSet, "o")
+plt.plot(testInputSet, testInferredSet, "x")
 #plt.plot(testInferredSet, testGradientSet, "*")
-#plt.show()
+plt.show()

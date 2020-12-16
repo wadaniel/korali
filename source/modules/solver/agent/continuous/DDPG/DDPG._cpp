@@ -147,9 +147,9 @@ void DDPG::trainPolicy()
     if (isTerminal == false) qStar += _criticDiscountFactor * stateActionValueFunction(nextState, bestAction);
 
     // Updating inputs to training learner
-    _criticProblem->_inputs[i] = curState;
-    _criticProblem->_inputs[i].insert(_criticProblem->_inputs[i].end(), curAction.begin(), curAction.end());
-    _criticProblem->_solution[i][0] = qStar;
+    _criticProblem->_inputs[0][i] = curState;
+    _criticProblem->_inputs[0][i].insert(_criticProblem->_inputs[0][i].end(), curAction.begin(), curAction.end());
+    _criticProblem->_solution[0][i][0] = qStar;
 
     // Keeping statistics
     _cumulativeQStar += qStar;
@@ -191,8 +191,8 @@ void DDPG::trainPolicy()
     std::vector<float> aGradients = std::vector<float>(qGradients.begin() + _problem->_stateVectorSize, qGradients.end());
 
     // Setting input and gradient for policy update
-    _policyProblem->_inputs[i] = curState;
-    _policyProblem->_solution[i] = aGradients;
+    _policyProblem->_inputs[0][i] = curState;
+    _policyProblem->_solution[0][i] = aGradients;
   }
 
   // Getting current hyperparameters for soft adoption later

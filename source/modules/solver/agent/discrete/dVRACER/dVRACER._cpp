@@ -89,11 +89,12 @@ void dVRACER::trainPolicy()
   // Update off-policy fraction
   size_t expCount = _experienceReplay.size();
   size_t offPolicyCount = 0;
-#pragma omp parallel for reduction(+: offPolicyCount)
+#pragma omp parallel for reduction(+ \
+                                   : offPolicyCount)
   for (size_t id = 0; id < expCount; id++)
   {
     float expImportanceWeight = _experienceReplay[id].cache.get("Importance Weight");
-    if (expImportanceWeight > _referCutoff || expImportanceWeight < 1./_referCutoff)
+    if (expImportanceWeight > _referCutoff || expImportanceWeight < 1. / _referCutoff)
       offPolicyCount++;
   }
 
@@ -137,7 +138,7 @@ void dVRACER::trainPolicy()
 
     // Compute importance weight
     float importanceWeight = calculateImportanceWeight(expActionIdx, curPvals, expPvals);
-    
+
     // Update value and weight in cache
     _experienceReplay[expId].cache.set("State Value", V);
     _experienceReplay[expId].cache.set("Importance Weight", importanceWeight);
@@ -145,7 +146,7 @@ void dVRACER::trainPolicy()
     /******************************************************
     * Gradient calculation
     *******************************************************/
- 
+
     // Get Vtbc before update
     float expVtbc = _experienceReplay[expId].policy["Vtbc"].get<float>();
 
@@ -163,7 +164,7 @@ void dVRACER::trainPolicy()
     cumulativeTdErrorSquared += gradientLoss[0] * gradientLoss[0];
 
     // Compute policy gradient only if inside trust region
-    if (importanceWeight < _referCutoff && importanceWeight > 1./_referCutoff)
+    if (importanceWeight < _referCutoff && importanceWeight > 1. / _referCutoff)
     {
       // Qret for terminal state is just reward
       float Qret = _experienceReplay[expId].reward;
@@ -227,7 +228,7 @@ void dVRACER::trainPolicy()
 
     // Set Gradient of Loss as Solution
     _criticPolicyProblem->_solution[step] = gradientLoss;
-  
+
     updateVtbc(expId);
   }
 
@@ -255,7 +256,7 @@ void dVRACER::updateVtbc(size_t expId)
   // Finding first experience in the episode that corresponds to expId
   ssize_t episodeStartId = expId;
   while (_experienceReplay[episodeStartId].termination == e_nonTerminal && episodeStartId > 0) episodeStartId--;
-  
+
   // access experiences
   float reward = _experienceReplay[expId].reward;
   float value = _experienceReplay[expId].cache.get("State Value");                  // calculated before
@@ -263,7 +264,7 @@ void dVRACER::updateVtbc(size_t expId)
 
   // truncate importance weight
   float truncatedImportanceWeight = std::min(1.0f, importanceWeight);
- 
+
   // Initializing vTbc to weighted reward of the last
   float vTbc = value + truncatedImportanceWeight * (reward - value);
 
@@ -277,7 +278,7 @@ void dVRACER::updateVtbc(size_t expId)
     float truncatedValue = stateValueFunction(truncatedState);
     vTbc += truncatedImportanceWeight * _criticDiscountFactor * truncatedValue;
   }
- 
+
   // update current target
   _experienceReplay[expId].policy["Vtbc"] = vTbc;
 
@@ -304,10 +305,10 @@ void dVRACER::updateVtbc(size_t expId)
       auto policy = runPolicy(expState);
       value = policy["State Value"].get<float>();
       auto curPvals = policy["Action Probabilities"].get<std::vector<float>>();
- 
+
       // Compute importance weight
       importanceWeight = calculateImportanceWeight(expActionIdx, curPvals, expPvals);
- 
+
       _experienceReplay[curId].cache.set("State Value", value);
       _experienceReplay[curId].cache.set("Importance Weight", importanceWeight);
     }
@@ -420,7 +421,7 @@ knlohmann::json dVRACER::runPolicy(const std::vector<float> &state)
   return policy;
 }
 
-void dVRACER::processEpisode(std::vector<knlohmann::json> & episode)
+void dVRACER::processEpisode(std::vector<knlohmann::json> &episode)
 {
   // Approximate Vtbc by backward iteration after first episode roll out
   float sumRewards = 0.0;

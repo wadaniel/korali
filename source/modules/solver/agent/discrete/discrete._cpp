@@ -83,7 +83,7 @@ void Discrete::getAction(korali::Sample &sample)
   if (actionIdx >= _problem->_possibleActions.size())
   {
     float cump = 0.0;
-    for(float p : pActions) cump += p;
+    for (float p : pActions) cump += p;
     KORALI_LOG_ERROR("Action index (%lu) exceeds action vector size (%lu). This points to a bug in probability calculation (cumulative p = %f).\n", actionIdx, _problem->_possibleActions.size(), cump);
   }
 

@@ -35,19 +35,22 @@ e["Solver"]["Learning Rate"] = 0.05
 
 ### Defining the shape of the neural network
 
-e["Solver"]["Neural Network"]["Engine"] = "CUDNN"
+e["Solver"]["Neural Network"]["Engine"] = "CuDNN"
 
-e["Solver"]["Neural Network"]["Layers"][0]["Type"] = "Layer/FeedForward"
+e["Solver"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Input"
 e["Solver"]["Neural Network"]["Layers"][0]["Node Count"] = 1
-e["Solver"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear"
 
-e["Solver"]["Neural Network"]["Layers"][1]["Type"] = "Layer/Recurrent"
+e["Solver"]["Neural Network"]["Layers"][1]["Type"] = "Layer/FeedForward"
 e["Solver"]["Neural Network"]["Layers"][1]["Node Count"] = 32
-e["Solver"]["Neural Network"]["Layers"][1]["Mode"] = "LSTM"
 
-e["Solver"]["Neural Network"]["Layers"][2]["Type"] = "Layer/FeedForward"
-e["Solver"]["Neural Network"]["Layers"][2]["Node Count"] = 1
-e["Solver"]["Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Elementwise/Linear"
+e["Solver"]["Neural Network"]["Layers"][2]["Type"] = "Layer/Recurrent"
+e["Solver"]["Neural Network"]["Layers"][2]["Node Count"] = 32
+e["Solver"]["Neural Network"]["Layers"][2]["Mode"] = "LSTM"
+
+e["Solver"]["Neural Network"]["Layers"][3]["Type"] = "Layer/FeedForward"
+e["Solver"]["Neural Network"]["Layers"][3]["Node Count"] = 1
+
+e["Solver"]["Neural Network"]["Layers"][4]["Type"] = "Layer/Output"
 
 e["Console Output"]["Frequency"] = 1
 e["File Output"]["Enabled"] = False

@@ -152,6 +152,7 @@ void VRACER::trainPolicy()
   // Update off-policy fraction
   size_t expCount = _experienceReplay.size();
   size_t offPolicyCount = 0;
+#pragma omp parallel for reduction(+: offPolicyCount)
   for (size_t expId = 0; expId < expCount - 1; expId++)
   {
     float expImportanceWeight = _experienceReplay[expId].cache.get("Importance Weight");
@@ -202,11 +203,7 @@ void VRACER::trainPolicy()
     // Compute importance weight
     float importanceWeight = calculateImportanceWeight(expAction, curMeans, curSigmas, expMeans, expSigmas);
 
-    // Update State Value in Metadata
-    //_experienceReplay[curId].policy["State Value"] = V;
-    // Update Importance Weight in Metadata
-    //_experienceReplay[curId].policy["Importance Weight"] = importanceWeight;
-
+    // Update value and weight in cache
     _experienceReplay[curId].cache.set("State Value", V);
     _experienceReplay[curId].cache.set("Importance Weight", importanceWeight);
 
@@ -217,7 +214,7 @@ void VRACER::trainPolicy()
     // Storage for the update gradient
     std::vector<float> gradientLoss(1 + 2 * _problem->_actionVectorSize);
 
-    // Get old Vtbc
+    // Get Vtbc before update
     float expVtbc = _experienceReplay[curId].policy["Vtbc"].get<float>();
 
     // update critic statistics
@@ -321,14 +318,10 @@ void VRACER::updateVtbc(size_t expId)
 {
   // Finding last experience in the episode that corresponds to expId
   ssize_t episodeStartId = expId;
-
   while (_experienceReplay[episodeStartId].termination == e_nonTerminal && episodeStartId > 0) episodeStartId--;
 
   // access experiences
   float reward = _experienceReplay[expId].reward;
-  //float value = _experienceReplay[expId].policy["State Value"].get<float>();
-  //float importanceWeight = _experienceReplay[expId].policy["Importance Weight"].get<float>();
-
   float value = _experienceReplay[expId].cache.get("State Value");                  // calculated before
   float importanceWeight = _experienceReplay[expId].cache.get("Importance Weight"); // calculated before
 
@@ -356,9 +349,6 @@ void VRACER::updateVtbc(size_t expId)
   {
     // access experiences
     float reward = _experienceReplay[curId].reward;
-
-    //float value = _experienceReplay[curId].policy["State Value"].get<float>();
-    //float importanceWeight = _experienceReplay[curId].policy["Importance Weight"].get<float>();
 
     float value, importanceWeight;
     if (_experienceReplay[curId].cache.contains("State Value"))

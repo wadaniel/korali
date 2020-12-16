@@ -170,7 +170,9 @@ void korali::solver::LatentVariableFIM::estimateFIM()
   hyperparameterJson["Covariance Powers"] = covariancePowers();
   hyperparameterJson["Mean"] = _hyperparametersMean;
 
-  KORALI_BROADCAST("Hyperparameters", hyperparameterJson);
+  // KORALI_BROADCAST("Hyperparameters", hyperparameterJson);
+  // _experiment._globals["Current S"] = _currentS;
+
   size_t counter = 0; // Debugging
   // _conduit->broadcastGlobals("Covariance Powers", knlohmann::json &globalsJs);
   for (size_t c_idx = 0; c_idx < _numberChains; c_idx++)

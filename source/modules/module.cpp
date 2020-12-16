@@ -23,8 +23,8 @@
 #include "neuralNetwork/layer/layer.hpp"
 #include "neuralNetwork/neuralNetwork.hpp"
 #include "problem/bayesian/custom/custom.hpp"
-#include "problem/bayesian/latent/exponentialLatent/exponentialLatent.hpp"
 #include "problem/bayesian/latent/latent.hpp"
+#include "problem/bayesian/latent/exponential/exponential.hpp"
 #include "problem/bayesian/reference/reference.hpp"
 #include "problem/hierarchical/psi/psi.hpp"
 #include "problem/hierarchical/theta/theta.hpp"
@@ -117,7 +117,7 @@ Module *Module::getModule(knlohmann::json &js, Experiment *e)
   if (moduleType == "Experiment") module = new korali::Experiment();
   if (moduleType == "Bayesian/Custom") module = new korali::problem::bayesian::Custom();
   if (moduleType == "Bayesian/Latent") module = new korali::problem::bayesian::Latent();
-  if (moduleType == "Bayesian/Latent/ExponentialLatent") module = new korali::problem::bayesian::latent::ExponentialLatent();
+  if (moduleType == "Bayesian/Latent/Exponential") module = new korali::problem::bayesian::latent::Exponential();
   if (moduleType == "Bayesian/Reference") module = new korali::problem::bayesian::Reference();
   if (moduleType == "Hierarchical/Psi") module = new korali::problem::hierarchical::Psi();
   if (moduleType == "Hierarchical/Theta") module = new korali::problem::hierarchical::Theta();

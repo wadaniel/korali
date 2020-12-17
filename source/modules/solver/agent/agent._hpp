@@ -221,7 +221,7 @@ class Agent : public Solver
   * @brief Additional post-processing of episode after episode terminated.
   * @param episode A vector of experiences.
   */
-  virtual void processEpisode(std::vector<knlohmann::json> &episode){};
+  void processEpisode(std::vector<knlohmann::json> &episode);
 
   /**
   * @brief Handles the addition of experience information to the replay memory and other management operations

@@ -421,17 +421,6 @@ knlohmann::json dVRACER::runPolicy(const std::vector<float> &state)
   return policy;
 }
 
-void dVRACER::processEpisode(std::vector<knlohmann::json> &episode)
-{
-  // Approximate Vtbc by backward iteration after first episode roll out
-  float sumRewards = 0.0;
-  for (ssize_t expId = episode.size() - 1; expId >= 0; expId--)
-  {
-    sumRewards = _criticDiscountFactor * sumRewards + episode[expId]["Reward"].get<float>();
-    episode[expId]["Policy"]["Vtbc"] = sumRewards;
-  }
-}
-
 void dVRACER::setTrainingState(const knlohmann::json &state)
 {
   _criticPolicyLearner->setTrainingHyperparameters(state["Critic/Policy"]["Training"]);

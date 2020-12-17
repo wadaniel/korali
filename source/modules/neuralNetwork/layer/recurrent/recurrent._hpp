@@ -31,49 +31,29 @@ class Recurrent : public Layer
   cudnnTensorDescriptor_t _hTensorDesc;
 
   /**
-  * @brief cuDNN Descriptor for the candidate state tensor memory
+  * @brief cuDNN Descriptor for the cell state tensor memory
   */
   cudnnTensorDescriptor_t _cTensorDesc;
 
   /**
-  * @brief cuDNN Device memory pointers for the internal layer's candidate (LSTM) state input
+  * @brief cuDNN Device memory pointers for the internal layer's cell (LSTM) state input
   */
-  void *_cInputStateTensor;
+  std::vector<void *> _cStateTensor;
 
   /**
-   * @brief cuDNN Device memory pointers for the internal layer's candidate (LSTM) state input gradients
+   * @brief cuDNN Device memory pointers for the internal layer's cell (LSTM) state input gradients
    */
-   void *_cInputGradientTensor;
-
-  /**
-   * @brief cuDNN Device memory pointers for the internal layer's candidate (LSTM) state output
-   */
-   void *_cOutputStateTensor;
-
-  /**
-  * @brief cuDNN Device memory pointers for the internal layer's candidate (LSTM) state output gradients
-  */
-  void *_cOutputGradientTensor;
+   std::vector<void *> _cGradientTensor;
 
   /**
   * @brief cuDNN Device memory pointers for the internal layer's hidden state input
   */
-  void *_hInputStateTensor;
+   std::vector<void *> _hStateTensor;
 
   /**
    * @brief cuDNN Device memory pointers for the internal layer's hidden state input gradients
    */
-   void *_hInputGradientTensor;
-
-  /**
-   * @brief cuDNN Device memory pointers for the internal layer's hidden state output
-   */
-   void *_hOutputStateTensor;
-
-  /**
-  * @brief cuDNN Device memory pointers for the internal layer's hidden state output gradients
-  */
-  void *_hOutputGradientTensor;
+   std::vector<void *> _hGradientTensor;
 
   /**
   * @brief cuDNN descriptor for the dropout operator
@@ -143,12 +123,12 @@ class Recurrent : public Layer
   /**
   * @brief cuDNN Device memory pointers for workspace tensor
   */
-  void *_workSpaceTensor;
+  std::vector<void *> _workSpaceTensor;
 
   /**
    * @brief cuDNN Device memory pointers for reserve space tensor
    */
-  void *_reserveSpaceTensor;
+  std::vector<void *> _reserveSpaceTensor;
 
   /**
    * @brief cuDNN Device memory for sequence lenght array

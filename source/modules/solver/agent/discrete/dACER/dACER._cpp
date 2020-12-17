@@ -330,7 +330,7 @@ float dACER::retraceFunction(size_t expId)
 std::vector<float> dACER::getActionProbabilities(const std::vector<float> &state)
 {
   // Forward policy
-  auto pValues = _policyLearner->getEvaluation(state);
+  auto pValues = _policyLearner->getEvaluation({{state}})[0][0];
 
   return pValues;
 }
@@ -338,7 +338,7 @@ std::vector<float> dACER::getActionProbabilities(const std::vector<float> &state
 float dACER::stateActionValueFunction(const std::vector<float> &state, const size_t &actionIdx)
 {
   // Forward propagating state through the critic to get Q(s,a) for all A
-  auto evaluation = _criticLearner->getEvaluation(state);
+  auto evaluation = _criticLearner->getEvaluation({{state}})[0][0];
 
   return evaluation[actionIdx];
 }
@@ -346,7 +346,7 @@ float dACER::stateActionValueFunction(const std::vector<float> &state, const siz
 float dACER::stateValueFunction(const std::vector<float> &state)
 {
   // Forward propagating state through the critic to get Q(s,a) for all a
-  auto qEval = _criticLearner->getEvaluation(state);
+  auto qEval = _criticLearner->getEvaluation({{state}})[0][0];
 
   // Forward propagating state through the policy to get P(s,a) for all a
   auto pEval = getActionProbabilities(state);

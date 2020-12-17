@@ -131,22 +131,25 @@ void GaussianProcess::printGenerationAfter()
   return;
 }
 
-std::vector<float> GaussianProcess::getEvaluation(const std::vector<float> &input)
+std::vector<std::vector<std::vector<float>>> GaussianProcess::getEvaluation(const std::vector<std::vector<std::vector<float>>> &input)
 {
   std::vector<float> output(2);
+
+  if (input.size() > 1) KORALI_LOG_ERROR("Gaussian Process does not support multi-timestep evaluation.\n");
+  if (input[0].size() > 1) KORALI_LOG_ERROR("Gaussian Process does not support minibatch evaluation.\n");
 
 #ifdef _KORALI_USE_LIBGP
 
   _gp->covf().set_loghyper(toEigen(_gpHyperparameters));
 
-  std::vector<double> inputData(input.begin(), input.end());
+  std::vector<double> inputData(input[0][0].begin(), input[0][0].end());
 
   output[0] = _gp->f(inputData.data());
   output[1] = _gp->var(inputData.data());
 
 #endif
 
-  return output;
+  return {{output}};
 }
 
 std::vector<float> GaussianProcess::getInferenceHyperparameters()

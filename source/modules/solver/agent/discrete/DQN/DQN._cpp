@@ -105,7 +105,7 @@ void DQN::trainPolicy()
       for (size_t j = 0; j < nextState.size(); j++) stateActionInput[j] = nextState[j];
       for (size_t j = 0; j < bestAction.size(); j++) stateActionInput[j + nextState.size()] = bestAction[j];
 
-      auto qNextExp = _criticLearner->getEvaluation(stateActionInput)[0];
+      auto qNextExp = _criticLearner->getEvaluation({{stateActionInput}})[0][0][0];
 
       qStar += _criticDiscountFactor * qNextExp;
     }
@@ -164,7 +164,7 @@ std::vector<float> DQN::getActionProbabilities(const std::vector<float> &state)
       stateActionInput[_problem->_stateVectorSize + j] = _problem->_possibleActions[i][j];
 
     // Computing Q(s,a_i)
-    qval[i] = _criticLearner->getEvaluation(stateActionInput)[0];
+    qval[i] = _criticLearner->getEvaluation({{stateActionInput}})[0][0][0];
 
     // Extracting max Q(s,a_i)
     if (qval[i] > maxq) maxq = qval[i];

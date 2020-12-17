@@ -50,7 +50,7 @@ class GaussianProcess : public Learner
   static void runSample(Sample &sample, libgp::GaussianProcess *gp);
 #endif
 
-  std::vector<float> getEvaluation(const std::vector<float> &input) override;
+  std::vector<std::vector<std::vector<float>>> getEvaluation(const std::vector<std::vector<std::vector<float>>> &input) override;
   std::vector<float> getTrainingHyperparameters() override;
   void setTrainingHyperparameters(const std::vector<float> &hyperparameters) override;
   std::vector<float> getInferenceHyperparameters() override;
@@ -64,3 +64,4 @@ class GaussianProcess : public Learner
 } // namespace korali
 
 #endif // _KORALI_SOLVER_GAUSSIAN_PROCESS_HPP_
+

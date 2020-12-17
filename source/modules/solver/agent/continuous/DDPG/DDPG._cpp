@@ -89,10 +89,10 @@ float DDPG::stateActionValueFunction(const std::vector<float> &state, const std:
   // Forward propagating state/action through the critic
   for (size_t j = 0; j < state.size(); j++) stateActionInput[j] = state[j];
   for (size_t j = 0; j < action.size(); j++) stateActionInput[j + state.size()] = action[j];
-  auto evaluation = _criticLearner->getEvaluation(stateActionInput);
+  auto evaluation = _criticLearner->getEvaluation({{stateActionInput}})[0][0][0];
 
   // Getting the value of V(Xt), i.e., Q(xt, best action)
-  return evaluation[0];
+  return evaluation;
 }
 
 void DDPG::trainPolicy()
@@ -184,10 +184,10 @@ void DDPG::trainPolicy()
     stateActionInput.insert(stateActionInput.end(), curAction.begin(), curAction.end());
 
     // Now calculating Gradient of q with respect to state+action for the critic NN
-    _criticLearner->getEvaluation(stateActionInput);
+    _criticLearner->getEvaluation({{stateActionInput}});
 
     // Passing 1.0 (identity), to estimate the exact gradient dQ/dAS. The minus sign is to ensure that we maximize Q in this case, do not remove.
-    auto qGradients = _criticLearner->getGradients({{-1.0f}});
+    auto qGradients = _criticLearner->getGradients({{{-1.0f}}})[0][0];
     std::vector<float> aGradients = std::vector<float>(qGradients.begin() + _problem->_stateVectorSize, qGradients.end());
 
     // Setting input and gradient for policy update
@@ -212,7 +212,7 @@ void DDPG::trainPolicy()
 
 knlohmann::json DDPG::runPolicy(const std::vector<float> &state)
 {
-  auto eval = _policyLearner->getEvaluation({state});
+  auto eval = _policyLearner->getEvaluation({{state}})[0][0];
 
   std::vector<float> actionMeans(_problem->_actionVectorSize);
   std::vector<float> actionSigmas(_problem->_actionVectorSize);

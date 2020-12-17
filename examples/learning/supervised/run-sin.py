@@ -35,7 +35,7 @@ e["Solver"]["Learning Rate"] = 0.005
 
 ### Defining the shape of the neural network
 
-e["Solver"]["Neural Network"]["Engine"] = "OneDNN"
+e["Solver"]["Neural Network"]["Engine"] = "CuDNN"
 
 e["Solver"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Input"
 e["Solver"]["Neural Network"]["Layers"][0]["Node Count"] = 1

@@ -25,11 +25,14 @@ namespace layer
 void Recurrent::initialize()
 {
  // Checking Layer size
- if (_nodeCount == 0) KORALI_LOG_ERROR("Node count for layer (%lu) should be larger than zero.\n", _index);
+ if (_nodeCount == 0) KORALI_LOG_ERROR("Node count for layer %lu should be larger than zero.\n", _index);
 
  // Checking position
  if (_index == 0) KORALI_LOG_ERROR("Recurrent layers cannot be the starting layer of the NN\n");
  if (_index == _nn->_layers.size()-1) KORALI_LOG_ERROR("Recurrent layers cannot be the last layer of the NN\n");
+
+ // Checking Layer size
+ if (_prevLayer->_nodeCount != _nodeCount) KORALI_LOG_ERROR("Node count for layer %lu should be the same as that of the previous layer.\n", _index);
 }
 
 std::vector<float> Recurrent::generateInitialHyperparameters()
@@ -93,7 +96,7 @@ void Recurrent::createHyperparameterMemory()
                                        CUDNN_DATA_FLOAT,
                                        CUDNN_DATA_FLOAT,
                                        CUDNN_DEFAULT_MATH,
-                                       _prevLayer->_nodeCount,
+                                       _nodeCount,
                                        _nodeCount,
                                        _nodeCount,
                                        1, // Pseudo Layer Count
@@ -183,28 +186,36 @@ void Recurrent::createForwardPipeline()
  #ifdef _KORALI_USE_CUDNN
  if (_nn->_engine == "CuDNN")
  {
- int dimA[3];
- int strideA[3];
+  int dimA[3];
+  int strideA[3];
 
- dimA[0] = 1; // Hidden Layer count
- dimA[1] = N; // Minibatch size
- dimA[2] = OC; // Hidden Size
+  dimA[0] = 1; // Hidden Layer count
+  dimA[1] = N; // Minibatch size
+  dimA[2] = OC; // Hidden Size
 
- strideA[0] = dimA[2] * dimA[1];
- strideA[1] = dimA[2];
- strideA[2] = 1;
+  strideA[0] = dimA[2] * dimA[1];
+  strideA[1] = dimA[2];
+  strideA[2] = 1;
 
- cudnnErrCheck(cudnnCreateTensorDescriptor(&_hTensorDesc));
- cudnnErrCheck(cudnnSetTensorNdDescriptor(_hTensorDesc, CUDNN_DATA_FLOAT, 3, dimA, strideA));
+  // Allocating hidden state descriptor
+  cudnnErrCheck(cudnnCreateTensorDescriptor(&_hTensorDesc));
+  cudnnErrCheck(cudnnSetTensorNdDescriptor(_hTensorDesc, CUDNN_DATA_FLOAT, 3, dimA, strideA));
 
- cudnnErrCheck(cudnnCreateTensorDescriptor(&_cTensorDesc));
- cudnnErrCheck(cudnnSetTensorNdDescriptor(_cTensorDesc, CUDNN_DATA_FLOAT, 3, dimA, strideA));
+  // Allocating cell state descriptor (only for LSTM)
+  _cTensorDesc = NULL;
+  if (_mode == "LSTM")
+  {
+   cudnnErrCheck(cudnnCreateTensorDescriptor(&_cTensorDesc));
+   cudnnErrCheck(cudnnSetTensorNdDescriptor(_cTensorDesc, CUDNN_DATA_FLOAT, 3, dimA, strideA));
+  }
 
- // Allocating hidden and candidate memory tensors
-  cudaErrCheck(cudaMalloc((void **)&_hInputStateTensor, N * OC * sizeof(float)));
-  cudaErrCheck(cudaMalloc((void **)&_hOutputStateTensor, N * OC * sizeof(float)));
-  cudaErrCheck(cudaMalloc((void **)&_cInputStateTensor, N * OC * sizeof(float)));
-  cudaErrCheck(cudaMalloc((void **)&_cOutputStateTensor, N * OC * sizeof(float)));
+  // Allocating hidden state tensors
+  _hStateTensor.resize(_nn->_timestepCount);
+  for (size_t i = 0; i < _nn->_timestepCount; i++) cudaErrCheck(cudaMalloc((void **)&_hStateTensor[i], N * OC * sizeof(float)));
+
+  // Candidate cell state storage is only necessary when using LSTM
+  _cStateTensor.resize(_nn->_timestepCount);
+  if (_mode == "LSTM") for (size_t i = 0; i < _nn->_timestepCount; i++) cudaErrCheck(cudaMalloc((void **)&_cStateTensor[i], N * OC * sizeof(float)));
 
   // Creating RNN data descriptors for input and output
   cudnnErrCheck(cudnnCreateRNNDataDescriptor(&_inputRNNDataDesc));
@@ -245,10 +256,13 @@ void Recurrent::createForwardPipeline()
         &_workSpaceSize,
         &_reserveSpaceSize));
 
-  cudaErrCheck(cudaMalloc((void **)&_workSpaceTensor, _workSpaceSize));
-  cudaErrCheck(cudaMalloc((void **)&_reserveSpaceTensor, _reserveSpaceSize));
-  }
-  #endif
+  _workSpaceTensor.resize(_nn->_timestepCount);
+  for (size_t t = 0; t < _nn->_timestepCount; t++) cudaErrCheck(cudaMalloc((void **)&_workSpaceTensor[t], _workSpaceSize));
+
+  _reserveSpaceTensor.resize(_nn->_timestepCount);
+  for (size_t t = 0; t < _nn->_timestepCount; t++) cudaErrCheck(cudaMalloc((void **)&_reserveSpaceTensor[t], _reserveSpaceSize));
+ }
+ #endif
 }
 
 void Recurrent::createBackwardPipeline()
@@ -266,10 +280,13 @@ void Recurrent::createBackwardPipeline()
 #ifdef _KORALI_USE_CUDNN
   if (_nn->_engine == "CuDNN")
   {
-   cudaErrCheck(cudaMalloc((void **)&_hInputGradientTensor, N * OC * sizeof(float)));
-   cudaErrCheck(cudaMalloc((void **)&_hOutputGradientTensor, N * OC * sizeof(float)));
-   cudaErrCheck(cudaMalloc((void **)&_cInputGradientTensor, N * OC * sizeof(float)));
-   cudaErrCheck(cudaMalloc((void **)&_cOutputGradientTensor, N * OC * sizeof(float)));
+   // Allocating hidden state tensors
+   _hGradientTensor.resize(_nn->_timestepCount);
+   for (size_t i = 0; i < _nn->_timestepCount; i++) cudaErrCheck(cudaMalloc((void **)&_hGradientTensor[i], N * OC * sizeof(float)));
+
+   // Candidate cell state storage is only necessary when using LSTM
+   _cGradientTensor.resize(_nn->_timestepCount);
+   if (_mode == "LSTM") for (size_t i = 0; i < _nn->_timestepCount; i++) cudaErrCheck(cudaMalloc((void **)&_cGradientTensor[i], N * OC * sizeof(float)));
   }
 #endif
 }
@@ -278,6 +295,7 @@ void Recurrent::forwardData()
 {
   size_t N = _nn->_batchSize;
   size_t OC = _nodeCount;
+  size_t t = _nn->_currentTimestep;
 
   #ifdef _KORALI_USE_CUDNN
   if (_nn->_engine == "CuDNN")
@@ -289,27 +307,23 @@ void Recurrent::forwardData()
                   CUDNN_FWD_MODE_TRAINING,
                   _devSequenceLengths, // devSeqLengths
                   _inputRNNDataDesc, // xDesc
-                  _prevLayer->_outputTensor, // x
+                  _prevLayer->_outputTensor[t], // x
                   _outputRNNDataDesc, // yDesc
-                  _outputTensor, // y
+                  _outputTensor[t], // y
                   _hTensorDesc, // hDesc
-                  _nn->_forwardSteps == 0 ? NULL : _hInputStateTensor, // hx
-                  _hOutputStateTensor, // hy
+                  t == 0 ? NULL : _hStateTensor[t-1], // hx
+                  _hStateTensor[t], // hy
                   _cTensorDesc, // cDesc
-                  _nn->_forwardSteps == 0 ? NULL : _cInputStateTensor, // cx
-                  _cOutputStateTensor, // cy
+                  t == 0 ? NULL : _cStateTensor[t-1], // cx
+                  _cStateTensor[t], // cy
                   _weightsSize,
                   _weightsTensor,
                   _workSpaceSize,
-                  _workSpaceTensor,
+                  _workSpaceTensor[t],
                   _reserveSpaceSize,
-                  _reserveSpaceTensor));
+                  _reserveSpaceTensor[t]));
   }
   #endif
-
-  // Copying output states to input states
-   cudaErrCheck(cudaMemcpy(_hInputStateTensor, _hOutputStateTensor, OC * N * sizeof(float), cudaMemcpyHostToHost));
-   cudaErrCheck(cudaMemcpy(_cInputStateTensor, _cOutputStateTensor, OC * N * sizeof(float), cudaMemcpyHostToHost));
 }
 
 
@@ -317,6 +331,7 @@ void Recurrent::backwardData()
 {
  size_t N = _nn->_batchSize;
  size_t OC = _nodeCount;
+ size_t t = _nn->_currentTimestep;
 
  #ifdef _KORALI_USE_CUDNN
  if (_nn->_engine == "CuDNN")
@@ -326,51 +341,52 @@ void Recurrent::backwardData()
        _rnnDesc, // rnnDesc
        _devSequenceLengths, // devSeqLengths
        _outputRNNDataDesc, // yDesc
-       _outputTensor, // y
-       _outputGradientTensor, // dy
+       _outputTensor[t], // y
+       _outputGradientTensor[t], // dy
        _inputRNNDataDesc, // xDesc
-       _prevLayer->_outputGradientTensor, // dx
+       _prevLayer->_outputGradientTensor[t], // dx
        _hTensorDesc, // hDesc
-       _hInputStateTensor, // hx
-       _nn->_backwardSteps == 0 ? NULL : _hOutputGradientTensor, // dhy
-       _hInputGradientTensor, // dhx
+       t == 0 ? NULL : _hStateTensor[t-1], // hx
+       t == _nn->_timestepCount - 1 ? NULL : _hGradientTensor[t], // dhy
+       t == 0 ? NULL : _hGradientTensor[t-1], // dhx
        _cTensorDesc, // cDesc
-       _cInputStateTensor, // cx
-       _nn->_backwardSteps == 0 ? NULL : _cOutputGradientTensor, // dcy
-       _cInputGradientTensor, //dcx
+       t == 0 ? NULL : _cStateTensor[t-1], // cx
+       t == _nn->_timestepCount - 1 ? NULL : _cGradientTensor[t], // dcy
+       t == 0 ? NULL : _cGradientTensor[t-1], //dcx
        _weightsSize,
        _weightsTensor,
        _workSpaceSize,
-       _workSpaceTensor,
+       _workSpaceTensor[t],
        _reserveSpaceSize,
-       _reserveSpaceTensor));
+       _reserveSpaceTensor[t]));
  }
  #endif
-
- // Copying input gradients to output gradients
- cudaErrCheck(cudaMemcpy(_hOutputGradientTensor, _hInputGradientTensor, OC * N * sizeof(float), cudaMemcpyHostToHost));
- cudaErrCheck(cudaMemcpy(_cOutputGradientTensor, _cInputGradientTensor, OC * N * sizeof(float), cudaMemcpyHostToHost));
 }
 
 void Recurrent::backwardHyperparameters()
 {
+ size_t t = _nn->_currentTimestep;
+
+ // We need to clear the gradients because they are additive in CUDNN
+ cudaErrCheck(cudaMemset(_weightsGradientTensor, 0, _hyperparameterCount));
+
  cudnnErrCheck(cudnnRNNBackwardWeights_v8(
      _nn->_cuDNNHandle, // handle
      _rnnDesc, // rnnDesc
      CUDNN_WGRAD_MODE_ADD, // addGrad
      _devSequenceLengths, // devSeqLengths
      _inputRNNDataDesc, // xDesc
-     _prevLayer->_outputTensor, // x
+     _prevLayer->_outputTensor[t], // x
      _hTensorDesc, // hDesc
-     _hInputStateTensor, // hx
+     t == 0 ? NULL : _hStateTensor[t-1], // hx
      _outputRNNDataDesc, // yDesc
-     _outputTensor, // y
+     _outputTensor[t], // y
      _weightsSize,
      _weightsGradientTensor,
      _workSpaceSize,
-     _workSpaceTensor,
+     _workSpaceTensor[t],
      _reserveSpaceSize,
-     _reserveSpaceTensor));
+     _reserveSpaceTensor[t]));
 }
 
 void Recurrent::setHyperparameters(float *hyperparameters)

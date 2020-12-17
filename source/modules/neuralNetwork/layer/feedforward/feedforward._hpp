@@ -145,7 +145,7 @@ class FeedForward : public Layer
  /**
  * @brief cuDNN Device memory pointer for the convolution workspace
  */
- void *_convolutionWorkspace;
+ std::vector<void *> _convolutionWorkspace;
 
 #endif
 

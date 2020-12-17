@@ -70,14 +70,34 @@ class NeuralNetwork : public Module
   std::vector<float> _batchOutputGradients;
 
   /**
-   * @brief Keeps track of the forward steps taken since the last reset
+   * @brief Raw data for the NN hyperparameter gradients
    */
-   size_t _forwardSteps;
+  std::vector<float> _batchHyperparameterGradients;
 
   /**
-   * @brief Keeps track of the backward steps taken since the last reset
+   * @brief Keeps track of the current timestep
    */
-   size_t _backwardSteps;
+   ssize_t _currentTimestep;
+
+   /**
+   * @brief Stores the values of the NN input batch. Format: TxNxIC (T: Time steps, N: Mini-batch, IC: Input channels).
+   */
+    std::vector<std::vector<std::vector<float>>> _inputValues;
+
+   /**
+   * @brief Stores the values of the NN output batch. Format: TxNxIC (T: Time steps, N: Mini-batch, IC: Input channels).
+   */
+    std::vector<std::vector<std::vector<float>>> _outputValues;
+
+   /**
+   * @brief Stores the gradient of the values of the NN input batch. Format: TxNxIC (T: Time steps, N: Mini-batch, IC: Input channels).
+   */
+    std::vector<std::vector<std::vector<float>>> _inputGradients;
+
+   /**
+   * @brief Stores the average gradient of the NN hyperparameters across all timesteps.
+   */
+   std::vector<float> _hyperparameterGradients;
 
   void initialize() override;
 
@@ -91,7 +111,7 @@ class NeuralNetwork : public Module
    * @brief Updates the internal values of the NN inputs
    * @param input The input batch
    */
-  void setInput(const std::vector<std::vector<float>> &input);
+  void setInput(const std::vector<std::vector<std::vector<float>>> &input);
 
   /**
    * @brief Updates the values of weights, biases configuration to the NN
@@ -114,19 +134,7 @@ class NeuralNetwork : public Module
    * @brief Backward-propagates the gradients data through the network.
    * @param gradients Output differentials
   */
-  void backward(const std::vector<std::vector<float>> &gradients);
-
-  /**
-  * @brief Runs the backward propagation procedure and returns the gradients of the weights and biases with respect to the output
-  * @return The calculated gradients
-  */
-  std::vector<float> getHyperparameterGradients();
-
-  /**
-   * @brief Backward-propagates to find out the gradients of the input data.
-   * @return The gradients of the input data wrt to the output data
-  */
-  std::vector<float> getDataGradients();
+  void backward(const std::vector<std::vector<std::vector<float>>> &gradients);
 
   /**
    * @brief Creator that sets initialized flag to false

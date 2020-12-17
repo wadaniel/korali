@@ -847,10 +847,10 @@ void CMAES::updateEigensystem(std::vector<double> &M)
         return;
       }
   }
- 
+
   _minimumCovarianceEigenvalue = minCovEV;
   _maximumCovarianceEigenvalue = maxCovEV;
- 
+
   /* write back */
   for (size_t d = 0; d < _k->_variables.size(); ++d) _axisLengths[d] = _auxiliarAxisLengths[d];
   _covarianceEigenvectorMatrix.assign(std::begin(_auxiliarCovarianceEigenvectorMatrix), std::end(_auxiliarCovarianceEigenvectorMatrix));

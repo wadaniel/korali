@@ -211,6 +211,17 @@ void Agent::attendAgent(size_t agentId)
   }
 }
 
+void Agent::processEpisode(std::vector<knlohmann::json> &episode)
+{
+  // Approximate Vtbc by backward iteration after initial episode roll out
+  float sumRewards = 0.0;
+  for (ssize_t expId = episode.size() - 1; expId >= 0; expId--)
+  {
+    sumRewards = _criticDiscountFactor * sumRewards + episode[expId]["Reward"].get<float>();
+    episode[expId]["Policy"]["Vtbc"] = sumRewards;
+  }
+}
+
 void Agent::processExperience(knlohmann::json &experience)
 {
   experience_t e;

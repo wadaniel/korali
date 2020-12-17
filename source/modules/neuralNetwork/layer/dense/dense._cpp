@@ -37,6 +37,13 @@ std::vector<float> Dense::generateInitialHyperparameters()
       hyperparameters.push_back(0.0f);
   }
 
+  if (_activationFunctionType == "Elementwise/SoftSign")
+#ifdef _KORALI_USE_ONEDNN
+    KORALI_LOG_ERROR("ONEDNN does not support activation functions of type 'Elementwise/SoftSign'.");
+#elif _KORALI_USE_CUDNN
+    KORALI_LOG_ERROR("CUDNN does not support activation functions of type 'Elementwise/SoftSign'.");
+#endif
+
   return hyperparameters;
 }
 

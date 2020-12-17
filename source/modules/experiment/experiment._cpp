@@ -240,7 +240,7 @@ void Experiment::finalize()
   co_delete(_thread);
 }
 
-std::vector<float> Experiment::getEvaluation(const std::vector<float> &inputBatch)
+std::vector<std::vector<std::vector<float>>> Experiment::getEvaluation(const std::vector<std::vector<std::vector<float>>> &inputBatch)
 {
   // First check that the experiment has been initialized.
   if (_isInitialized == false) initialize();
@@ -252,7 +252,7 @@ std::vector<float> Experiment::getEvaluation(const std::vector<float> &inputBatc
     KORALI_LOG_ERROR("This solver does not support evaluation operations.\n");
 }
 
-std::vector<float> Experiment::getGradients(const std::vector<float> &outputDiffs)
+std::vector<std::vector<std::vector<float>>> Experiment::getGradients(const std::vector<std::vector<std::vector<float>>> &outputDiffs)
 {
   // First check that the experiment has been initialized.
   if (_isInitialized == false) initialize();

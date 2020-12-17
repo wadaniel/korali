@@ -87,12 +87,12 @@ class Layer : public Module
   /**
   * @brief cuDNN Device memory pointer for the output tensor
   */
-  void *_outputTensor;
+  std::vector<void *> _outputTensor;
 
   /**
   * @brief cuDNN Device memory pointer for the output gradients tensor
   */
-  void *_outputGradientTensor;
+  std::vector<void *> _outputGradientTensor;
 
   #endif
 

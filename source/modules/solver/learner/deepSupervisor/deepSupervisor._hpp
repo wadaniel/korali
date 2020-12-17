@@ -48,15 +48,8 @@ class DeepSupervisor : public Learner
    */
   bool _isLearnerInitialized;
 
-  /**
-   * @brief Get the forward evaluation of a full batch
-   * @param inputBatch The input batch
-   * @return The vector of evaluations
-   */
-  std::vector<std::vector<float>> getEvaluation(const std::vector<std::vector<float>> &inputBatch);
-
-  std::vector<float> getGradients(const std::vector<float> &outputDiffs) override;
-  std::vector<float> getEvaluation(const std::vector<float> &inputBatch) override;
+  std::vector<std::vector<std::vector<float>>> getEvaluation(const std::vector<std::vector<std::vector<float>>> &input) override;
+  std::vector<std::vector<std::vector<float>>> getGradients(const std::vector<std::vector<std::vector<float>>> &outputDiffs) override;
 
   std::vector<float> getTrainingHyperparameters() override;
   void setTrainingHyperparameters(const std::vector<float> &hyperparameters) override;

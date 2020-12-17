@@ -459,7 +459,7 @@ std::vector<float> VRACER::calculateImportanceWeightGradient(const std::vector<f
 knlohmann::json VRACER::runPolicy(const std::vector<float> &state)
 {
   // Forward the neural network for this state
-  std::vector<float> evaluation = _criticPolicyLearner->getEvaluation(state);
+  std::vector<float> evaluation = _criticPolicyLearner->getEvaluation({{state}})[0][0];
   auto stateValue = evaluation[0];
 
   std::vector<float> actionMeans(_problem->_actionVectorSize);

@@ -1,0 +1,27 @@
+#ifndef _KORALI_LAYER_INPUT_HPP_
+#define _KORALI_LAYER_INPUT_HPP_
+
+#include "modules/neuralNetwork/layer/layer.hpp"
+
+namespace korali
+{
+namespace neuralNetwork
+{
+namespace layer
+{
+class Input : public Layer
+{
+  public:
+
+  void initialize() override;
+  void forwardData() override;
+  void backwardData() override;
+};
+
+} // namespace layer
+
+} // namespace neuralNetwork
+
+} // namespace korali
+
+#endif // _KORALI_LAYER_INPUT_HPP_

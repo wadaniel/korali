@@ -5,7 +5,11 @@ sys.path.append('../_model')
 from env import *
 
 target = 0.0
+<<<<<<< HEAD
 outfile = "observations2-vracer.csv"
+=======
+outfile = "observations-vracer.csv"
+>>>>>>> caching
 
 ####### Defining Korali Problem
 
@@ -51,8 +55,13 @@ e["Solver"]["Refer"]["Cutoff Scale"] = 4.0
 
 ### Defining the configuration of replay memory
 
+<<<<<<< HEAD
 e["Solver"]["Experience Replay"]["Start Size"] = 65536
 e["Solver"]["Experience Replay"]["Maximum Size"] = 131072
+=======
+e["Solver"]["Experience Replay"]["Start Size"] = 1000
+e["Solver"]["Experience Replay"]["Maximum Size"] = 10000
+>>>>>>> caching
 
 ## Defining Neural Network Configuration for Policy and Critic into Critic Container
 
@@ -76,7 +85,12 @@ e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Activation Function"]["Typ
 
 ### Defining Termination Criteria
 
+<<<<<<< HEAD
 e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 499
+=======
+e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 490
+e["Solver"]["Termination Criteria"]["Max Generations"] = 2500
+>>>>>>> caching
 
 ### Setting file output configuration
 
@@ -86,9 +100,15 @@ e["File Output"]["Enabled"] = False
 
 k.run(e)
 
+<<<<<<< HEAD
 ### Recording Observations (5 restarts a 100 steps)
 
 print('[Korali] Done training. Now running learned policy to produce observations..')
+=======
+### Recording Observations
+
+print('[Korali] Done training. Now running learned policy to produce observations.')
+>>>>>>> caching
 
 states = []
 actions = []
@@ -97,6 +117,7 @@ cart = CartPole(0.0)
 
 state = cart.getState().tolist()
 done = False
+<<<<<<< HEAD
 
 restarts = 0
 while restarts < 5:
@@ -119,6 +140,22 @@ while restarts < 5:
     if done:
         print('[Korali] Policy failed during episode roll out no {0} at step {1}!!!'.format(restarts+1, step+1))
         sys.exit(-1)
+=======
+step = 0
+while not done and step < 100:
+ 
+ action = e.getAction(state)
+ 
+ states.append(state)
+ actions.append(action)
+ 
+ cart.advance(action)
+
+ reward = cart.getReward()
+ step = step + 1
+
+ state = cart.getState().tolist()
+>>>>>>> caching
 
 ### Creating Output
 

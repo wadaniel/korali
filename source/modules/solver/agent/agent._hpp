@@ -218,6 +218,12 @@ class Agent : public Solver
   void normalizeStateNeuralNetwork(NeuralNetwork *neuralNetwork, size_t miniBatchSize, size_t normalizationSteps);
 
   /**
+  * @brief Additional post-processing of episode after episode terminated.
+  * @param episode A vector of experiences.
+  */
+  void processEpisode(std::vector<knlohmann::json> &episode);
+
+  /**
   * @brief Handles the addition of experience information to the replay memory and other management operations
   * @param experience The experience to process
   */

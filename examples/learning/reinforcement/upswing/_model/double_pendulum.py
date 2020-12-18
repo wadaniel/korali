@@ -30,13 +30,13 @@ class DoublePendulum:
     self.t = 0
 
   def isFailed(self):
-    return (abs(self.u[0])>3.0)
+    return (abs(self.u[0])>7.0)
 
   def isOver(self): # is episode over
     return self.isFailed()
 
   def isTruncated(self):  # check that cause for termination is time limits
-    return (abs(self.u[0])<=3.0)
+    return (abs(self.u[0])<=7.0)
 
   """Based on 'Control Design and Analysis for 
   Underactuated Tobotic Systems [Xin, Liu] (Chapter14)"""

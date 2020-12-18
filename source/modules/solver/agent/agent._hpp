@@ -196,12 +196,10 @@ class Agent : public Solver
   virtual void trainPolicy() = 0;
 
   /**
-    *@brief Function to pass state through the NN and calculates the action probabilities, along with any additional information
-                                                                                           
-   *@param state The current state
-                                                                                             
-   *@ return A JSON object containing the information produced by the policy given the current state */
-
+   * @brief Function to pass state through the NN and calculates the action probabilities, along with any additional information
+   * @param state The current state
+   * @return A JSON object containing the information produced by the policy given the current state 
+   */
   virtual knlohmann::json runPolicy(const std::vector<float> &state) = 0;
 
   /**

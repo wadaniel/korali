@@ -5,10 +5,10 @@ from cartpole import *
 
 maxSteps = 500
 
-def env(s, th):
+def env(s):
 
  # Initializing environment
- cart = CartPole(th)
+ cart = CartPole()
  
  s["State"] = cart.getState().tolist()
  step = 0

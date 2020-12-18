@@ -10,8 +10,7 @@ import numpy as np, sys
 from scipy.integrate import ode
 
 class CartPole:
-  def __init__(self, targetAngle):
-    self.targetAngle = targetAngle
+  def __init__(self):
     self.dt = 0.1
     self.step=0
     self.u = np.random.uniform(-0.5, 0.5, 4)
@@ -69,4 +68,4 @@ class CartPole:
     return state
 
   def getReward(self):
-    return np.cos(self.u[2]-self.targetAngle)
+    return np.cos(self.u[2])

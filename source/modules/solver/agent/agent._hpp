@@ -196,10 +196,18 @@ class Agent : public Solver
   virtual void trainPolicy() = 0;
 
   /**
+<<<<<<< HEAD
    * @brief Obtains the policy hyperaparamters from the learner for the agent to generate new actions
    * @return The current policy hyperparameters
    */
   virtual knlohmann::json getAgentPolicy() = 0;
+=======
+  * @brief Function to pass state through the NN and calculates the action probabilities, along with any additional information
+  * @param state The current state
+  * @return A JSON object containing the information produced by the policy given the current state
+  */
+  virtual knlohmann::json runPolicy(const std::vector<float> &state) = 0;
+>>>>>>> master
 
   /**
   * @brief Updates the agent's hyperparameters

@@ -201,7 +201,7 @@ class Agent : public Solver
    *@param state The current state
                                                                                              
    *@ return A JSON object containing the information produced by the policy given the current state */
-                                                                                         
+
   virtual knlohmann::json runPolicy(const std::vector<float> &state) = 0;
 
   /**

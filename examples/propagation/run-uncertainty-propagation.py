@@ -22,7 +22,9 @@ e = korali.Experiment()
 e['Problem']['Type'] = 'Bayesian/Reference'
 e['Problem']['Likelihood Model'] = 'Normal'
 e['Problem']['Reference Data'] = data['Y']
-e['Problem']['Computational Model'] = lambda sampleData: model(sampleData, data['X'])
+
+computational_model = lambda sampleData: model(sampleData, data['X'])
+e['Problem']['Computational Model'] = computational_model
 
 # Configuring TMCMC parameters
 e['Solver']['Type'] = 'Sampler/TMCMC'
@@ -66,24 +68,30 @@ e['Console Output']['Verbosity'] = 'Detailed'
 k = korali.Engine()
 k.run(e)
 
-
 # Evaluate the model for all the parameters from the previous step
 e = korali.Experiment()
 
-x = np.linspace(0,7,100)
+x = np.linspace(0, 7, 100)
 
 e['Problem']['Type'] = 'Propagation'
-e['Problem']['Execution Model'] = lambda modelData: model_propagation(modelData, x)
+computational_model = lambda modelData: model_propagation(modelData, x)
+e['Problem']['Execution Model'] = computational_model
 
 # load the data from the sampling
-with open('_korali_result_samples/latest') as f: d=json.load(f)
+with open('_korali_result_samples/latest') as f:
+    d = json.load(f)
 
 e['Variables'][0]['Name'] = 'a'
-e['Variables'][0]['Precomputed Values'] = [ x[0] for x in d['Results']['Sample Database'] ]
+v = [p[0] for p in d['Results']['Sample Database']]
+e['Variables'][0]['Precomputed Values'] = v
+
 e['Variables'][1]['Name'] = 'b'
-e['Variables'][1]['Precomputed Values'] = [ x[1] for x in d['Results']['Sample Database'] ]
+v = [p[1] for p in d['Results']['Sample Database']]
+e['Variables'][1]['Precomputed Values'] = v
+
 e['Variables'][2]['Name'] = 'sigma'
-e['Variables'][2]['Precomputed Values'] = [ x[2] for x in d['Results']['Sample Database'] ]
+v = [p[2] for p in d['Results']['Sample Database']]
+e['Variables'][2]['Precomputed Values'] = v
 
 e['Solver']['Type'] = 'Executor'
 e['Solver']['Executions Per Generation'] = 100
@@ -94,7 +102,6 @@ e['Store Sample Information'] = True
 
 k = korali.Engine()
 k.run(e)
-
 
 # Uncomment the next two lines to plot the credible intervals
 # from plots import *

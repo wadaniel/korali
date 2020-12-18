@@ -103,7 +103,7 @@ Next, we load the json file with the results from the sampling
 
 .. code-block:: python
 
-  with open('_korali_result_samples/latest') as f: d=json.load(f)
+  with open('_korali_result_samples/latest') as f: d = json.load(f)
 
 Then we copy the samples to the Korali variables
 
@@ -117,8 +117,15 @@ Then we copy the samples to the Korali variables
   e['Variables'][2]['Precomputed Values'] = [ x[2] for x in d['Results']['Sample Database'] ]
 
 Note that the samples are saved under :code:`d['Results']['Sample Database']`.
+Finally we run the experiment.
 
-Finally, we can compute the credible intervals and plot the results.
+Optionally, we can compute the credible intervals and plot the results. You have
+to uncomment the last two lines of the script.
+
+.. code-block:: python
+
+ from plots import *
+  plot_credible_intervals('./_korali_result_propagation/latest', data)
 
 .. image:: credible_intervals.png
 

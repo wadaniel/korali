@@ -1,0 +1,3 @@
+. ap.setenv
+make
+

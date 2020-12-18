@@ -2,7 +2,7 @@
 import os
 import sys
 sys.path.append('./_model')
-from env import *
+from single_env import *
 
 ####### Defining Korali Problem
 
@@ -10,30 +10,33 @@ import korali
 k = korali.Engine()
 e = korali.Experiment()
 
-### Defining the Cartpole problem's configuration
+### Defining the upswing problem's configuration
 
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = env
-e["Problem"]["Training Reward Threshold"] = 400
+e["Problem"]["Training Reward Threshold"] = 750
 e["Problem"]["Policy Testing Episodes"] = 20
-e["Problem"]["Actions Between Policy Updates"] = 1
+e["Problem"]["Actions Between Policy Updates"] = 5
 
 e["Variables"][0]["Name"] = "Cart Position"
 e["Variables"][0]["Type"] = "State"
 
-e["Variables"][1]["Name"] = "Cart Velocity"
+e["Variables"][1]["Name"] = "Angle 1"
 e["Variables"][1]["Type"] = "State"
 
-e["Variables"][2]["Name"] = "Pole Angle"
+e["Variables"][2]["Name"] = "Car Velocity"
 e["Variables"][2]["Type"] = "State"
 
-e["Variables"][3]["Name"] = "Pole Angular Velocity"
+e["Variables"][3]["Name"] = "Angular Velocity 1"
 e["Variables"][3]["Type"] = "State"
 
-e["Variables"][4]["Name"] = "Force"
-e["Variables"][4]["Type"] = "Action"
-e["Variables"][4]["Lower Bound"] = -10.0
-e["Variables"][4]["Upper Bound"] = +10.0
+e["Variables"][4]["Name"] = "Height Proxy"
+e["Variables"][4]["Type"] = "State"
+
+e["Variables"][5]["Name"] = "Force"
+e["Variables"][5]["Type"] = "Action"
+e["Variables"][5]["Lower Bound"] = -20.0
+e["Variables"][5]["Upper Bound"] = +20.0
 
 ### Defining Agent Configuration 
 
@@ -54,7 +57,7 @@ e["Solver"]["Experience Replay"]["Maximum Size"] = 10000
 ## Defining Neural Network Configuration for Policy and Critic into Critic Container
 
 e["Solver"]["Critic"]["Discount Factor"] = 0.99
-e["Solver"]["Critic"]["Learning Rate"] = 0.0001 
+e["Solver"]["Critic"]["Learning Rate"] = 1e-5
 e["Solver"]["Critic"]["Mini Batch Size"] = 32
 
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
@@ -73,7 +76,7 @@ e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Activation Function"]["Typ
 
 ### Defining Termination Criteria
 
-e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 450
+e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 900
 
 ### Setting file output configuration
 

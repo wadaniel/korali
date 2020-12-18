@@ -110,7 +110,6 @@ class model():
             m2[k] = 0
 
             S[i] = np.concatenate((e,y1,y2,e,e))
-        print(S.flatten().shape)
 
         sample['S'] = S.flatten().tolist()
 
@@ -139,7 +138,10 @@ class model():
 
         phi = np.matlib.repmat(phi,self.N,1)
 
-        sample['phi'] = phi.flatten().tolist
+        sample['phi'] = phi.flatten().tolist()
+
+    def A(self,sample):
+        sample['A'] = self.c0
 
     def check(self,cluster):
         sample={}
@@ -161,20 +163,20 @@ class model():
 
         self.S(sample)
         self.phi(sample)
+        print( self.data_conditional_logpdf(sample) )
 
 
-#     def A(self,sample):
-#         sample['A'] = self.c0
-#
+
 #     def latent_data_logpdf(self,sample):
 #         self.A(sample)
 #         return data_conditional_logpdf(self,sample) + sample['A']
-#
-#     def data_conditional_logpdf(self,sample):
-#         self.zeta(sample)
-#         self.S(sample)
-#         self.phi(sample)
-#         return - sample['zeta'] + sample['S'][0]*sample['phi'][0]
+
+    def data_conditional_logpdf(self,sample):
+        self.zeta(sample)
+        self.S(sample)
+        self.phi(sample)
+        
+        return - sample['zeta'] + numpy.dot( sample['S'], sample['phi'] )
 #
 #     def latent_conditional_logpdf(self, sample, hyperparameters):
 #         sample['Latent Variables'] = sample['Parameters']

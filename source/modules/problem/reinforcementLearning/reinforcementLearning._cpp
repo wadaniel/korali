@@ -114,7 +114,7 @@ void ReinforcementLearning::runEpisode(Sample &agent)
     auto beginTime0 = std::chrono::steady_clock::now(); // Profiling
     _agent->getAction(agent);
     actionCount++;
-    auto endTime0 = std::chrono::steady_clock::now(); // Profiling
+    auto endTime0 = std::chrono::steady_clock::now();                                                                 // Profiling
     agentPolicyEvaluationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime0 - beginTime0).count(); // Profiling
 
     // Storing the current state
@@ -129,7 +129,7 @@ void ReinforcementLearning::runEpisode(Sample &agent)
     // Jumping back into the _agent's environment
     auto beginTime1 = std::chrono::steady_clock::now(); // Profiling
     co_switch(envThread);
-    auto endTime1 = std::chrono::steady_clock::now(); // Profiling
+    auto endTime1 = std::chrono::steady_clock::now();                                                            // Profiling
     agentComputationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime1 - beginTime1).count(); // Profiling
 
     // Storing experience's reward
@@ -165,7 +165,7 @@ void ReinforcementLearning::runEpisode(Sample &agent)
         _agent->setAgentPolicy(agent["Hyperparameters"]);
       }
 
-      auto endTime2 = std::chrono::steady_clock::now(); // Profiling
+      auto endTime2 = std::chrono::steady_clock::now();                                                              // Profiling
       agentCommunicationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime2 - beginTime2).count(); // Profiling
     }
   }

@@ -110,7 +110,7 @@ class Agent : public Solver
    */
   std::vector<std::vector<knlohmann::json>> _episodes;
 
-   /**
+  /**
    * @brief Session-specific experience count. This is useful in case of restart: counters from the old session won't count
    */
   size_t _sessionExperienceCount;
@@ -202,11 +202,11 @@ class Agent : public Solver
    */
   virtual knlohmann::json getAgentPolicy() = 0;
 =======
-  * @brief Function to pass state through the NN and calculates the action probabilities, along with any additional information
-  * @param state The current state
-  * @return A JSON object containing the information produced by the policy given the current state
-  */
-  virtual knlohmann::json runPolicy(const std::vector<float> &state) = 0;
+*@brief Function to pass state through the NN and calculates the action probabilities, along with any additional information
+                                                                                           *@param state The current state
+                                                                                             *@ return A JSON object containing the information produced by the policy given the current state *
+                                                                                         /
+                                                                                         virtual knlohmann::json runPolicy(const std::vector<float> &state) = 0;
 >>>>>>> master
 
   /**

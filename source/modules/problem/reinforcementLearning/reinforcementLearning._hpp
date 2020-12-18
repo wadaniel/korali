@@ -12,7 +12,6 @@ namespace problem
 class ReinforcementLearning : public korali::Problem
 {
   public:
-
   void initialize() override;
 
   /**

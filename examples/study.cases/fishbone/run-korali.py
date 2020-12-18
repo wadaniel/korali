@@ -21,13 +21,13 @@ args = parser.parse_args()
 
 # Loading previous results if they exist
 
-resultsFolder = args.resultFolder
+resultFolder = args.resultFolder
 e["File Output"]["Path"] = resultFolder
 found = e.loadState(resultFolder + '/latest')
   
 # Setting up the reference likelihood for the Bayesian Problem
 e["Problem"]["Type"] = "Optimization"
-e["Problem"]["Objective Function"] = model
+e["Problem"]["Objective Function"] = lambda x: model(x, resultFolder)
 
 e["Variables"][0]["Name"] = "Angle"
 e["Variables"][0]["Lower Bound"] = 30.0

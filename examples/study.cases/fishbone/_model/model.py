@@ -4,12 +4,10 @@ import sys
 import subprocess
 import shutil
 
-global resultFolder
-
-def model(x):
+def model(x, resultFolder):
  
  SourceFolderName = "_config"
- DestinationFolderName = resultFolder + '/sample' + str(x["Sample Id"])
+ DestinationFolderName = resultFolder + '/sample' + str(x["Sample Id"]).zfill(6) 
  
  # Copy the 'model' folder into a temporary directory
  if os.path.exists( DestinationFolderName ):
@@ -33,10 +31,9 @@ def model(x):
   f.write('bone_factor = %.10f\n' % x["Parameters"][1] )
   
  # Run Aphros for this sample
- subprocess.call("make")
-
- # Read the Loglikelihood value
- Y = readColumnFromFile(ResultsFile, 0)
+ sampleOutFile = open('sample.out', 'w')
+ sampleErrFile = open('sample.err', 'w')
+ subprocess.call(['bash', 'run.sh'], stdout=sampleOutFile, stderr=sampleErrFile)
 
  x["F(x)"] = 0
 

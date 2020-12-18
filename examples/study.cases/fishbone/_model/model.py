@@ -4,13 +4,12 @@ import sys
 import subprocess
 import shutil
 
+global resultFolder
+
 def model(x):
  
- jobId = 0
- if 'SLURM_JOBID' in os.environ: jobId = os.environ['SLURM_JOBID']
-
  SourceFolderName = "_config"
- DestinationFolderName = '_results/job' + str(jobId) + '/' + 'sample' + str(x["Sample Id"])
+ DestinationFolderName = resultFolder + '/sample' + str(x["Sample Id"])
  
  # Copy the 'model' folder into a temporary directory
  if os.path.exists( DestinationFolderName ):

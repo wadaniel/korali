@@ -1,5 +1,4 @@
 run-cmaes
-_*
 run-cmaes-direct
 run-lmcma
 run-lmcma-direct
@@ -12,3 +11,5 @@ _korali_results
 _executor_output
 _execution_output
 __pycache__
+_result*/
+_deb*/

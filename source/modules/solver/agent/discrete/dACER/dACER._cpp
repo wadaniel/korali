@@ -367,19 +367,6 @@ float dACER::stateValueFunction(const std::vector<float> &state)
   return qSum;
 }
 
-knlohmann::json dACER::getAgentPolicy()
-{
-  knlohmann::json hyperparameters;
-  hyperparameters["Policy"] = _policyLearner->getInferenceHyperparameters();
-  return hyperparameters;
-}
-
-void dACER::setAgentPolicy(const knlohmann::json &hyperparameters)
-{
-  auto policyHyperparameters = hyperparameters["Policy"].get<std::vector<float>>();
-  _policyLearner->setInferenceHyperparameters(policyHyperparameters);
-}
-
 void dACER::setTrainingState(const knlohmann::json &state)
 {
   _criticLearner->setTrainingHyperparameters(state["Critic"]["Training"]);

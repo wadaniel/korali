@@ -144,19 +144,6 @@ void DQN::trainPolicy()
   _hyperparameters["Critic"] = _criticLearner->getTrainingHyperparameters();
 }
 
-knlohmann::json DQN::getAgentPolicy()
-{
-  knlohmann::json hyperparameters;
-  hyperparameters["Critic"] = _criticLearner->getInferenceHyperparameters();
-  return hyperparameters;
-}
-
-void DQN::setAgentPolicy(const knlohmann::json &hyperparameters)
-{
-  auto criticHyperparameters = hyperparameters["Critic"].get<std::vector<float>>();
-  _criticLearner->setInferenceHyperparameters(criticHyperparameters);
-}
-
 knlohmann::json DQN::runPolicy(const std::vector<float> &state)
 {
   // Creating state/action input

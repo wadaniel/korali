@@ -47,9 +47,6 @@ void Agent::initialize()
     // Initializing training hyperparameters
     _trainingState = getTrainingState();
 
-    // Getting initial policy hyperparameters (for agents to generate actions)
-    _hyperparameters = getAgentPolicy();
-
     // Initialize best hyperparameters
     _bestTestingHyperparameters = _hyperparameters;
     _bestTrainingHyperparameters = _hyperparameters;
@@ -122,9 +119,6 @@ void Agent::runGeneration()
       {
         // Calling the algorithm specific policy training algorithm
         trainPolicy();
-
-        // Getting new policy hyperparameters (for agents to generate actions)
-        _hyperparameters = getAgentPolicy();
 
         // Increasing policy update counters
         _policyUpdateCount++;
@@ -378,9 +372,6 @@ void Agent::finalize()
         agentsRemain = true;
       }
   }
-
-  // Updating policy with the best parameters produced during training
-  setAgentPolicy(_bestTestingHyperparameters);
 }
 
 void Agent::serializeExperienceReplay()

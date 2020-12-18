@@ -240,23 +240,6 @@ knlohmann::json DDQN::runPolicy(const std::vector<float> &state)
   return policy;
 }
 
-knlohmann::json DDQN::getAgentPolicy()
-{
-  knlohmann::json hyperparameters;
-  hyperparameters["Critic (V)"] = _vLearner->getInferenceHyperparameters();
-  hyperparameters["Critic (A)"] = _aLearner->getInferenceHyperparameters();
-  return hyperparameters;
-}
-
-void DDQN::setAgentPolicy(const knlohmann::json &hyperparameters)
-{
-  auto vHyperparameters = hyperparameters["Critic (V)"].get<std::vector<float>>();
-  _vLearner->setInferenceHyperparameters(vHyperparameters);
-
-  auto aHyperparameters = hyperparameters["Critic (A)"].get<std::vector<float>>();
-  _aLearner->setInferenceHyperparameters(aHyperparameters);
-}
-
 void DDQN::setTrainingState(const knlohmann::json &state)
 {
   _vLearner->setTrainingHyperparameters(state["V"]["Training"]);

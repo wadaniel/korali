@@ -232,19 +232,6 @@ knlohmann::json DDPG::runPolicy(const std::vector<float> &state)
   return policy;
 }
 
-knlohmann::json DDPG::getAgentPolicy()
-{
-  knlohmann::json hyperparameters;
-  hyperparameters["Policy"] = _policyLearner->getInferenceHyperparameters();
-  return hyperparameters;
-}
-
-void DDPG::setAgentPolicy(const knlohmann::json &hyperparameters)
-{
-  auto policyHyperparameters = hyperparameters["Policy"].get<std::vector<float>>();
-  _policyLearner->setInferenceHyperparameters(policyHyperparameters);
-}
-
 void DDPG::setTrainingState(const knlohmann::json &state)
 {
   _criticLearner->setTrainingHyperparameters(state["Critic"]["Training"]);

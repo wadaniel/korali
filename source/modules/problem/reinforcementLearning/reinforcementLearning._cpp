@@ -73,9 +73,6 @@ void ReinforcementLearning::runEpisode(Sample &agent)
   // Getting RL-compatible solver
   auto _agent = dynamic_cast<solver::Agent *>(_k->_solver);
 
-  // First, we update the initial policy's hyperparameters
-  _agent->setAgentPolicy(agent["Hyperparameters"]);
-
   // Creating agent coroutine
   __currentSample = &agent;
   __envFunctionId = _environmentFunction;
@@ -162,7 +159,6 @@ void ReinforcementLearning::runEpisode(Sample &agent)
       if (requestNewPolicy)
       {
         agent["Hyperparameters"] = KORALI_RECV_MSG_FROM_ENGINE();
-        _agent->setAgentPolicy(agent["Hyperparameters"]);
       }
 
       auto endTime2 = std::chrono::steady_clock::now();                                                              // Profiling

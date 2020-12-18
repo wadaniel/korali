@@ -123,8 +123,6 @@ class GFPT : public Continuous
 
   void setTrainingState(const knlohmann::json &state) override;
   knlohmann::json getTrainingState() override;
-  knlohmann::json getAgentPolicy() override;
-  void setAgentPolicy(const knlohmann::json &hyperparameters) override;
   void trainPolicy() override;
   void printAgentInformation() override;
   void initializeAgent() override;

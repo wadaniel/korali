@@ -501,19 +501,6 @@ void cACER::trainPolicy()
       _policyAverageHyperparameters[i] = _policyTrustRegionAverageNetworkAdoptionRate * _policyAverageHyperparameters[i] + (1 - _policyTrustRegionAverageNetworkAdoptionRate) * _policyCurrentHyperparameters[i];
 }
 
-knlohmann::json cACER::getAgentPolicy()
-{
-  knlohmann::json hyperparameters;
-  hyperparameters["Policy"] = _policyLearner->getInferenceHyperparameters();
-  return hyperparameters;
-}
-
-void cACER::setAgentPolicy(const knlohmann::json &hyperparameters)
-{
-  auto policyHyperparameters = hyperparameters["Policy"].get<std::vector<float>>();
-  _policyLearner->setInferenceHyperparameters(policyHyperparameters);
-}
-
 void cACER::setTrainingState(const knlohmann::json &state)
 {
   _aLearner->setTrainingHyperparameters(state["A"]["Training"]);

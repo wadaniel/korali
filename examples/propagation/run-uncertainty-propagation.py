@@ -97,5 +97,5 @@ k.run(e)
 
 
 # Uncomment the next two lines to plot the credible intervals
-from plots import *
-plot_credible_intervals('./_korali_result_propagation/latest', data)
+# from plots import *
+# plot_credible_intervals('./_korali_result_propagation/latest', data)

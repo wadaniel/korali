@@ -21,6 +21,7 @@ popd
 pushd _deps/aphros_src/src
 . ap.setenv
 make -j6
+make install
 popd
 
 # Obtaining base simulation config

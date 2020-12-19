@@ -1,20 +1,18 @@
 #!/usr/bin/env python3
-from single_pendulum import *
+from cartpole import *
 
 ######## Defining Environment Storage
 
-upswing = SinglePendulum()
 maxSteps = 500
 
-def env(s):
+def env(s, th):
 
  # Initializing environment
- upswing.reset()
- s["State"] = upswing.getState().tolist()
+ cart = CartPole(th)
+ 
+ s["State"] = cart.getState().tolist()
  step = 0
  done = False
-
- maxs = np.ones(len(upswing.getState().tolist()))
 
  while not done and step < maxSteps:
 
@@ -22,23 +20,19 @@ def env(s):
   s.update()
   
   # Performing the action
-  done = upswing.advance(s["Action"])
+  done = cart.advance(s["Action"])
   
   # Getting Reward
-  s["Reward"] = upswing.getReward()
- 
- # Storing New State
-  state = upswing.getState().tolist()
-  s["State"] = state
-
-  maxs = np.maximum(maxs, state)
- 
+  s["Reward"] = cart.getReward()
+   
+  # Storing New State
+  s["State"] = cart.getState().tolist()
+  
   # Advancing step counter
   step = step + 1
 
  # Setting finalization status
- if (done):
+ if (cart.isOver()):
   s["Termination"] = "Terminal"
  else:
   s["Termination"] = "Truncated"
-  

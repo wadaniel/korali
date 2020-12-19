@@ -33,9 +33,8 @@ class DQN : public Discrete
 
   void setTrainingState(const knlohmann::json &hyperparameters) override;
   knlohmann::json getTrainingState() override;
-  std::vector<float> getActionProbabilities(const std::vector<float> &state) override;
-  knlohmann::json getAgentPolicy() override;
-  void setAgentPolicy(const knlohmann::json &hyperparameters) override;
+  knlohmann::json runPolicy(const std::vector<float> &state) override;
+  void updateAgentPolicy(const knlohmann::json &hyperparameters) override;
   void trainPolicy() override;
   void printAgentInformation() override;
   void initializeAgent() override;

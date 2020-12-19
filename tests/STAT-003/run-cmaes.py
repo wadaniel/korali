@@ -26,7 +26,7 @@ e["Solver"]["Population Size"] = 8
 e["Solver"]["Termination Criteria"]["Max Generations"] = 100
 
 e["Console Output"]["Frequency"] = 1000
-e["File Output"]["Path"] = "_results_cmaes"
+e["File Output"]["Enabled"] = False
 e["Random Seed"] = 1337
 
 k = korali.Engine()

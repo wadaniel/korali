@@ -91,7 +91,8 @@ void DQN::trainPolicy()
       auto nextState = _experienceReplay[expId + 1].state;
 
       // Getting action probabilities for next state, as per the critic
-      auto pActions = getActionProbabilities(nextState);
+      auto policy = runPolicy(nextState);
+      auto pActions = policy["Action Probabilities"].get<std::vector<float>>();
 
       // Finding the best action index from the probabilities
       size_t bestActionIdx = std::distance(pActions.begin(), std::max_element(pActions.begin(), pActions.end()));
@@ -143,7 +144,7 @@ void DQN::setAgentPolicy(const knlohmann::json &hyperparameters)
   _criticLearner->setInferenceHyperparameters(criticHyperparameters);
 }
 
-std::vector<float> DQN::getActionProbabilities(const std::vector<float> &state)
+knlohmann::json DQN::runPolicy(const std::vector<float> &state)
 {
   // Creating state/action input
   std::vector<float> stateActionInput(_problem->_stateVectorSize + _problem->_actionVectorSize);
@@ -192,8 +193,10 @@ std::vector<float> DQN::getActionProbabilities(const std::vector<float> &state)
   for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
     pActions[i] *= invSumExpQVal;
 
-  // Returning the best found
-  return pActions;
+  // Returning action probabilities
+  knlohmann::json policy;
+  policy["Action Probabilities"] = pActions;
+  return policy;
 }
 
 void DQN::setTrainingState(const knlohmann::json &state)

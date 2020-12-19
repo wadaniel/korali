@@ -1,0 +1,186 @@
+#include "engine.hpp"
+#include "modules/solver/optimizer/MOCMAES/MOCMAES.hpp"
+#include "sample/sample.hpp"
+
+#include <algorithm> // std::sort
+#include <chrono>
+#include <numeric> // std::iota
+#include <stdio.h>
+#include <unistd.h>
+
+namespace korali
+{
+namespace solver
+{
+namespace optimizer
+{
+void MOCMAES::setInitialConfiguration()
+{
+  knlohmann::json problemConfig = (*_k)["Problem"];
+
+  // Establishing optimization goal
+  for(size_t i = 0; i < _numObjectives; ++i)
+  {
+    _bestEverValues[i] = -std::numeric_limits<double>::infinity();
+    _previousBestValues[i] = _bestEverValues[i];
+    _currentBestValues[i] = _bestEverValues[i];
+
+  if (_populationSize == 0) _populationSize = ceil(4.0 + floor(3 * log((double)_variableCount);
+  if (_muValue == 0) _muValue = _populationSize / 2;
+
+  // Allocating Memory
+  _samplePopulation.resize(_populationSize);
+  for (size_t i = 0; i < _populationSize; i++) _samplePopulation[i].resize(_variableCount);
+
+  _evolutionPaths.resize(_numObjectives);
+  _bestEverVariables.resize(_numObjectives);
+  _currentBestVariables.resize(_numObjectives);
+
+  _sortingIndex.resize(_populationSize);
+  _valueVector.resize(_populationSize);
+
+  _covarianceMatrix.resize(_numObjectives);
+  _auxiliarCovarianceMatrix.resize(_variableCount*_variableCount);
+
+  // Initializing variable defaults
+  for (size_t i = 0; i < _variableCount; i++)
+  {
+    if (std::isfinite(_k->_variables[i]->_initialValue) == false)
+    {
+      if (std::isfinite(_k->_variables[i]->_lowerBound) == false) KORALI_LOG_ERROR("Initial (Mean) Value of variable \'%s\' not defined, and cannot be inferred because variable lower bound is not finite.\n", _k->_variables[i]->_name.c_str());
+      if (std::isfinite(_k->_variables[i]->_upperBound) == false) KORALI_LOG_ERROR("Initial (Mean) Value of variable \'%s\' not defined, and cannot be inferred because variable upper bound is not finite.\n", _k->_variables[i]->_name.c_str());
+      _k->_variables[i]->_initialValue = (_k->_variables[i]->_upperBound + _k->_variables[i]->_lowerBound) * 0.5;
+    }
+
+    if (std::isfinite(_k->_variables[i]->_initialStandardDeviation) == false)
+    {
+      if (std::isfinite(_k->_variables[i]->_lowerBound) == false) KORALI_LOG_ERROR("Initial (Mean) Value of variable \'%s\' not defined, and cannot be inferred because variable lower bound is not finite.\n", _k->_variables[i]->_name.c_str());
+      if (std::isfinite(_k->_variables[i]->_upperBound) == false) KORALI_LOG_ERROR("Initial Standard Deviation \'%s\' not defined, and cannot be inferred because variable upper bound is not finite.\n", _k->_variables[i]->_name.c_str());
+      _k->_variables[i]->_initialStandardDeviation = (_k->_variables[i]->_upperBound - _k->_variables[i]->_lowerBound) * 0.3;
+    }
+  }
+
+  // MOCMAES variables
+    if ((_successLearningRate <= 0.0) || (_successLearningRate > 1.0))
+      KORALI_LOG_ERROR("Invalid Global Success Learning Rate (%f), must be greater than 0.0 and less than 1.0\n", _successLearningRate);
+    if ((_targetSuccessRate <= 0.0) || (_targetSuccessRate > 1.0))
+      KORALI_LOG_ERROR("Invalid Target Success Rate (%f), must be greater than 0.0 and less than 1.0\n", _targetSuccessRate);
+    if (_covarianceLearningRate <= 0.0)
+      KORALI_LOG_ERROR("Invalid Covariance Learning Rate (%f), must be greater than 0.0\n", _covarianceLearningRate);
+
+  _infeasibleSampleCount = 0;
+
+  for(size_t i = 0; i < _numObjectives; ++i)
+  {
+    _currentMinMaxStandardDeviations = -std::numeric_limits<double>::infinity();
+    _currentMaxMinStandardDeviations = +std::numeric_limits<double>::infinity();
+  }
+}
+
+void MOCMAES::runGeneration()
+{
+  if (_k->_currentGeneration == 1) setInitialConfiguration();
+
+  prepareGeneration();
+
+  // Initializing Sample Evaluation
+  std::vector<Sample> samples(_currentPopulationSize);
+  for (size_t i = 0; i < _currentPopulationSize; i++)
+  {
+    samples[i]["Module"] = "Problem";
+    samples[i]["Operation"] = "Evaluate";
+    samples[i]["Parameters"] = _samplePopulation[i];
+    samples[i]["Sample Id"] = i;
+    _modelEvaluationCount++;
+
+    KORALI_START(samples[i]);
+  }
+
+  // Waiting for samples to finish
+  KORALI_WAITALL(samples);
+
+  // Gathering evaluations
+  std::vector<double> evaluations(_currentPopulationSize);
+  for (size_t i = 0; i < _currentPopulationSize; i++)
+    evaluations[i] = KORALI_GET(double, samples[i], "F(x)");
+
+  updateDistribution(evaluations);
+}
+
+
+void MOCMAES::prepareGeneration()
+{
+}
+
+void MOCMAES::sampleSingle(size_t sampleIdx)
+{
+}
+
+void MOCMAES::updateDistribution(const std::vector<double> &evaluations)
+{
+}
+
+void MOCMAES::adaptC(int hsig)
+{
+}
+
+void MOCMAES::updateSigma()
+{
+}
+
+void MOCMAES::printGenerationBefore() { return; }
+
+void MOCMAES::printGenerationAfter()
+{
+    /*
+  _k->_logger->logInfo("Normal", "Sigma:                        %+6.3e\n", _sigma);
+  _k->_logger->logInfo("Normal", "Current Function Value: Max = %+6.3e - Best = %+6.3e\n", _currentBestValue, _bestEverValue);
+  _k->_logger->logInfo("Normal", "Diagonal Covariance:    Min = %+6.3e -  Max = %+6.3e\n", _minimumDiagonalCovarianceMatrixElement, _maximumDiagonalCovarianceMatrixElement);
+  _k->_logger->logInfo("Normal", "Covariance Eigenvalues: Min = %+6.3e -  Max = %+6.3e\n", _minimumCovarianceEigenvalue, _maximumCovarianceEigenvalue);
+
+  _k->_logger->logInfo("Detailed", "Variable = (MeanX, BestX):\n");
+  for (size_t d = 0; d < _k->_variables.size(); d++) _k->_logger->logData("Detailed", "         %s = (%+6.3e, %+6.3e)\n", _k->_variables[d]->_name.c_str(), _currentMean[d], _bestEverVariables[d]);
+
+  _k->_logger->logInfo("Detailed", "Constraint Evaluation at Current Function Value:\n");
+  if (_areConstraintsDefined)
+  {
+    if (_bestValidSample >= 0)
+      for (size_t c = 0; c < _constraintEvaluations.size(); c++) _k->_logger->logData("Detailed", "         ( %+6.3e )\n", _constraintEvaluations[c][_bestValidSample]);
+    else
+      for (size_t c = 0; c < _constraintEvaluations.size(); c++) _k->_logger->logData("Detailed", "         ( %+6.3e )\n", _constraintEvaluations[c][0]);
+  }
+
+  _k->_logger->logInfo("Detailed", "Covariance Matrix:\n");
+  for (size_t d = 0; d < _k->_variables.size(); d++)
+  {
+    for (size_t e = 0; e <= d; e++) _k->_logger->logData("Detailed", "   %+6.3e  ", _covarianceMatrix[d * _k->_variables.size() + e]);
+    _k->_logger->logInfo("Detailed", "\n");
+  }
+
+  _k->_logger->logInfo("Detailed", "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
+  if (_areConstraintsDefined)
+  {
+    _k->_logger->logInfo("Detailed", "Number of Constraint Evaluations: %zu\n", _constraintEvaluationCount);
+    _k->_logger->logInfo("Detailed", "Number of Matrix Corrections: %zu\n", _covarianceMatrixAdaptationCount);
+  }*/
+}
+
+void MOCMAES::finalize()
+{
+  /*
+  // Updating Results
+  (*_k)["Results"]["Best Sample"]["F(x)"] = _bestEverValue;
+  (*_k)["Results"]["Best Sample"]["Parameters"] = _bestEverVariables;
+
+  _k->_logger->logInfo("Minimal", "Optimum found: %e\n", _bestEverValue);
+  _k->_logger->logInfo("Minimal", "Optimum found at:\n");
+  for (size_t d = 0; d < _k->_variables.size(); ++d) _k->_logger->logData("Minimal", "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _bestEverVariables[d]);
+  _k->_logger->logInfo("Minimal", "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
+  */
+}
+
+} // namespace optimizer
+
+} // namespace solver
+
+} // namespace korali

@@ -55,6 +55,7 @@
 #include "solver/learner/gaussianProcess/gaussianProcess.hpp"
 #include "solver/optimizer/Adam/Adam.hpp"
 #include "solver/optimizer/CMAES/CMAES.hpp"
+#include "solver/optimizer/MOCMAES/MOCMAES.hpp"
 #include "solver/optimizer/DEA/DEA.hpp"
 #include "solver/optimizer/LMCMAES/LMCMAES.hpp"
 #include "solver/optimizer/Rprop/Rprop.hpp"

@@ -102,8 +102,8 @@ e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 900
 
 ### Setting file output configuration
 
-e["File Output"]["Frequency"] = 10000
 #e["Console Output"]["Verbosity"] = "Silent"
+e["File Output"]["Enabled"] = False
 
 ### Running Experiment
 

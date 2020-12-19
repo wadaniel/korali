@@ -19,28 +19,32 @@ void MOCMAES::setInitialConfiguration()
   knlohmann::json problemConfig = (*_k)["Problem"];
 
   // Establishing optimization goal
-  for(size_t i = 0; i < _numObjectives; ++i)
+  _bestEverValues.resize(_numObjectives);
+  _previousBestValues.resize(_numObjectives);
+  _currentBestValue.resie(_numObjectives);
+  _currentBestVariables.resize(_numObjectives);
+  for (size_t i = 0; i < _numObjectives; ++i)
   {
     _bestEverValues[i] = -std::numeric_limits<double>::infinity();
     _previousBestValues[i] = _bestEverValues[i];
     _currentBestValues[i] = _bestEverValues[i];
+    _currentBestVariables.resize(_variableCount);
+  }
 
-  if (_populationSize == 0) _populationSize = ceil(4.0 + floor(3 * log((double)_variableCount);
-  if (_muValue == 0) _muValue = _populationSize / 2;
+  if (_populationSize == 0) _populationSize = std::ceil(4.0 + floor(3 * log((double)_variableCount)));
+  if (_muValue == 0) _muValue = _populationSize / 2.0;
 
   // Allocating Memory
   _samplePopulation.resize(_populationSize);
   for (size_t i = 0; i < _populationSize; i++) _samplePopulation[i].resize(_variableCount);
 
-  _evolutionPaths.resize(_numObjectives);
-  _bestEverVariables.resize(_numObjectives);
-  _currentBestVariables.resize(_numObjectives);
-
   _sortingIndex.resize(_populationSize);
   _valueVector.resize(_populationSize);
 
-  _covarianceMatrix.resize(_numObjectives);
-  _auxiliarCovarianceMatrix.resize(_variableCount*_variableCount);
+  // Initializing proposal
+  _sampleCollection.resize(0);
+  _evolutionPaths.resize(_populationSize);
+  _covarianceMatrix.resize(_populationSize);
 
   // Initializing variable defaults
   for (size_t i = 0; i < _variableCount; i++)
@@ -61,19 +65,20 @@ void MOCMAES::setInitialConfiguration()
   }
 
   // MOCMAES variables
-    if ((_successLearningRate <= 0.0) || (_successLearningRate > 1.0))
-      KORALI_LOG_ERROR("Invalid Global Success Learning Rate (%f), must be greater than 0.0 and less than 1.0\n", _successLearningRate);
-    if ((_targetSuccessRate <= 0.0) || (_targetSuccessRate > 1.0))
-      KORALI_LOG_ERROR("Invalid Target Success Rate (%f), must be greater than 0.0 and less than 1.0\n", _targetSuccessRate);
-    if (_covarianceLearningRate <= 0.0)
-      KORALI_LOG_ERROR("Invalid Covariance Learning Rate (%f), must be greater than 0.0\n", _covarianceLearningRate);
+  if ((_successLearningRate <= 0.0) || (_successLearningRate > 1.0))
+    KORALI_LOG_ERROR("Invalid Global Success Learning Rate (%f), must be greater than 0.0 and less than 1.0\n", _successLearningRate);
+  if ((_targetSuccessRate <= 0.0) || (_targetSuccessRate > 1.0))
+    KORALI_LOG_ERROR("Invalid Target Success Rate (%f), must be greater than 0.0 and less than 1.0\n", _targetSuccessRate);
+  if (_covarianceLearningRate <= 0.0)
+    KORALI_LOG_ERROR("Invalid Covariance Learning Rate (%f), must be greater than 0.0\n", _covarianceLearningRate);
 
   _infeasibleSampleCount = 0;
 
-  for(size_t i = 0; i < _numObjectives; ++i)
+  // Termination criteria
+  for (size_t i = 0; i < _numObjectives; ++i)
   {
-    _currentMinMaxStandardDeviations = -std::numeric_limits<double>::infinity();
-    _currentMaxMinStandardDeviations = +std::numeric_limits<double>::infinity();
+    _currentMinMaxStandardDeviations[i] = -std::numeric_limits<double>::infinity();
+    _currentMaxMinStandardDeviations[i] = +std::numeric_limits<double>::infinity();
   }
 }
 
@@ -84,8 +89,8 @@ void MOCMAES::runGeneration()
   prepareGeneration();
 
   // Initializing Sample Evaluation
-  std::vector<Sample> samples(_currentPopulationSize);
-  for (size_t i = 0; i < _currentPopulationSize; i++)
+  std::vector<Sample> samples(_populationSize);
+  for (size_t i = 0; i < _populationSize; i++)
   {
     samples[i]["Module"] = "Problem";
     samples[i]["Operation"] = "Evaluate";
@@ -100,13 +105,12 @@ void MOCMAES::runGeneration()
   KORALI_WAITALL(samples);
 
   // Gathering evaluations
-  std::vector<double> evaluations(_currentPopulationSize);
-  for (size_t i = 0; i < _currentPopulationSize; i++)
+  std::vector<double> evaluations(_populationSize);
+  for (size_t i = 0; i < _populationSize; i++)
     evaluations[i] = KORALI_GET(double, samples[i], "F(x)");
 
   updateDistribution(evaluations);
 }
-
 
 void MOCMAES::prepareGeneration()
 {
@@ -120,10 +124,6 @@ void MOCMAES::updateDistribution(const std::vector<double> &evaluations)
 {
 }
 
-void MOCMAES::adaptC(int hsig)
-{
-}
-
 void MOCMAES::updateSigma()
 {
 }
@@ -132,7 +132,7 @@ void MOCMAES::printGenerationBefore() { return; }
 
 void MOCMAES::printGenerationAfter()
 {
-    /*
+  /*
   _k->_logger->logInfo("Normal", "Sigma:                        %+6.3e\n", _sigma);
   _k->_logger->logInfo("Normal", "Current Function Value: Max = %+6.3e - Best = %+6.3e\n", _currentBestValue, _bestEverValue);
   _k->_logger->logInfo("Normal", "Diagonal Covariance:    Min = %+6.3e -  Max = %+6.3e\n", _minimumDiagonalCovarianceMatrixElement, _maximumDiagonalCovarianceMatrixElement);

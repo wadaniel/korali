@@ -27,14 +27,8 @@ class MOCMAES : public Optimizer
   void sampleSingle(size_t sampleIdx);
 
   /**
-   * @brief Adapts the covariance matrix.
-   * @param hsig Sign
-  */
-  void adaptC(int hsig);
-
-  /**
     * @brief Updates scaling factor of covariance matrix.
- */
+  */
   void updateSigma(); /* update Sigma */
 
   /**

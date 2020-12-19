@@ -77,7 +77,7 @@ class NeuralNetwork : public Module
   /**
    * @brief Keeps track of the current timestep
    */
-   ssize_t _currentTimestep;
+   size_t _currentTimestep;
 
    /**
    * @brief Stores the values of the NN input batch. Format: TxNxIC (T: Time steps, N: Mini-batch, IC: Input channels).

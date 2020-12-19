@@ -194,8 +194,8 @@ void dACER::trainPolicy()
 
     ///////////////// Storing Gradients /////////////////////
 
-    _policyProblem->_inputs[0][i] = curState;
-    _policyProblem->_solution[0][i] = gPolicy;
+    _policyProblem->_inputData[0][i] = curState;
+    _policyProblem->_solutionData[0][i] = gPolicy;
 
     /*****************************************
     * Critic Section
@@ -208,8 +208,8 @@ void dACER::trainPolicy()
     gCritic[curActionIdx] = qRet;
 
     // Updating inputs to training learner
-    _criticProblem->_inputs[0][i] = curState;
-    _criticProblem->_solution[0][i] = gCritic;
+    _criticProblem->_inputData[0][i] = curState;
+    _criticProblem->_solutionData[0][i] = gCritic;
 
     /*****************************************
      * Updating the value of qRet

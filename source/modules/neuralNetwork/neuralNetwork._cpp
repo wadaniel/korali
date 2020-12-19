@@ -158,14 +158,14 @@ void NeuralNetwork::forward()
 void NeuralNetwork::backward(const std::vector<std::vector<std::vector<float>>> &gradients)
 {
   // Getting batch dimensions
-  size_t timestepCount = gradients.size();
+  size_t gradientTimesteps = gradients.size();
   size_t batchSize = gradients[0].size();
   size_t layerCount = _layers.size();
   size_t lastLayer = layerCount - 1;
   size_t outputSize = _layers[lastLayer]->_nodeCount;
 
   // If timesteps count provided is different than forwarding timesteps, fail with error
-  if (timestepCount != _timestepCount) KORALI_LOG_ERROR("Wrong timesteps passed for backward propagation. Expected: %lu, provided: %lu.\n", _timestepCount, timestepCount);
+  if (gradientTimesteps > _timestepCount) KORALI_LOG_ERROR("More timesteps (%lu) passed for backward propagation than forward timesteps (%lu)\n", gradientTimesteps, _timestepCount);
 
   // If gradients batch size is different than forwarding batch size, fail with error
   if (batchSize != _batchSize) KORALI_LOG_ERROR("Wrong batch size passed for backward propagation. Expected: %lu, provided: %lu.\n", _batchSize, batchSize);
@@ -175,20 +175,32 @@ void NeuralNetwork::backward(const std::vector<std::vector<std::vector<float>>> 
   for (size_t i = 0; i < _hyperparameterCount; i++) _hyperparameterGradients[i] = 0.0f;
 
   // Backward propagating in time, process the corresponding mini-batch
-  for (_currentTimestep = _timestepCount-1; _currentTimestep >= 0; _currentTimestep--)
+  for (size_t t = 0; t < _timestepCount; t++)
   {
+   // Starting from the last timestep, and going backwards
+   _currentTimestep = _timestepCount - t - 1;
+
+   // Setting batch output gradients on timesteps for which gradients have been provided, otherwise using zeros
+   if (t < gradientTimesteps)
     for (size_t i = 0; i < _batchSize; i++)
-      for (size_t j = 0; j < outputSize; j++)
-       _batchOutputGradients[i*outputSize + j] = gradients[_currentTimestep][i][j];
+     for (size_t j = 0; j < outputSize; j++)
+      _batchOutputGradients[i*outputSize + j] = gradients[gradientTimesteps - t - 1][i][j];
+   else
+    for (size_t i = 0; i < _batchSize; i++)
+     for (size_t j = 0; j < outputSize; j++)
+     _batchOutputGradients[i*outputSize + j] = 0.0f;
 
     // Backward propagating in layer space
-    for (ssize_t i = lastLayer; i >= 0; i--)
+    for (size_t i = 0; i < layerCount; i++)
     {
+     // Starting from the last layer, and going backwards
+     size_t curLayer = lastLayer - i;
+
      // Running backward data propagation
-     _layers[i]->backwardData();
+     _layers[curLayer]->backwardData();
 
      // Calculating hyperparamter gradients
-     _layers[i]->backwardHyperparameters();
+     _layers[curLayer]->backwardHyperparameters();
     }
 
     // Getting hyperparameter gradients for the current timestep

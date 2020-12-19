@@ -196,8 +196,8 @@ void NAF::trainPolicy()
       policyGradient[1 + curAction.size() + j] = -weight * 0.5 * diff * dmu * dmu / (_actionScalings[j] * _actionScalings[j]);
     }
 
-    _qProblem->_inputs[0][i] = curState;
-    _qProblem->_solution[0][i] = policyGradient;
+    _qProblem->_inputData[0][i] = curState;
+    _qProblem->_solutionData[0][i] = policyGradient;
 
     // Keeping statistics
     _cumulativeQStar += yHat;

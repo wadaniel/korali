@@ -342,12 +342,12 @@ void GFPT::trainPolicy()
     float aTarget = Vtbc - curV + avgA;
 
     // Updating inputs to training learners
-    for (size_t j = 0; j < curState.size(); j++) _aProblem->_inputs[0][i][j] = curState[j];
-    for (size_t j = 0; j < curAction.size(); j++) _aProblem->_inputs[0][i][j + curState.size()] = curAction[j];
-    _aProblem->_solution[0][i][0] = aTarget;
+    for (size_t j = 0; j < curState.size(); j++) _aProblem->_inputData[0][i][j] = curState[j];
+    for (size_t j = 0; j < curAction.size(); j++) _aProblem->_inputData[0][i][j + curState.size()] = curAction[j];
+    _aProblem->_solutionData[0][i][0] = aTarget;
 
-    _vProblem->_inputs[0][i] = curState;
-    _vProblem->_solution[0][i][0] = vTarget;
+    _vProblem->_inputData[0][i] = curState;
+    _vProblem->_solutionData[0][i][0] = vTarget;
 
     // Keeping statistics
     _cumulativeQStar += Vtbc;
@@ -487,8 +487,8 @@ void GFPT::trainPolicy()
     //  meanGradients[i] += ( 1.0f - _referBeta ) * (oldMean[i] - curMean[i]) * curInvVariance[i];
 
     // Adding means to the policy update
-    _policyProblem->_inputs[0][idx] = curState;
-    _policyProblem->_solution[0][idx] = meanGradients;
+    _policyProblem->_inputData[0][idx] = curState;
+    _policyProblem->_solutionData[0][idx] = meanGradients;
   }
 
   size_t offPolicySamples = _criticMiniBatchSize - onPolicySamples;

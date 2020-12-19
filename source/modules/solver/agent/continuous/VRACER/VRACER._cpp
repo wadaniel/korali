@@ -292,10 +292,10 @@ void VRACER::trainPolicy()
     }
 
     // Set status as learning problem input
-    _criticPolicyProblem->_inputs[0][step] = expState;
+    _criticPolicyProblem->_inputData[0][step] = expState;
 
     // Set Gradient of Loss as Solution
-    _criticPolicyProblem->_solution[0][step] = gradientLoss;
+    _criticPolicyProblem->_solutionData[0][step] = gradientLoss;
   }
 
   // Compute average and std of Value target

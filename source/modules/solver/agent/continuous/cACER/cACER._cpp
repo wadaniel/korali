@@ -429,8 +429,8 @@ void cACER::trainPolicy()
 
     ///////////////// Storing Gradients /////////////////////
 
-    _policyProblem->_inputs[0][expPos] = expState;
-    _policyProblem->_solution[0][expPos] = gPolicy;
+    _policyProblem->_inputData[0][expPos] = expState;
+    _policyProblem->_solutionData[0][expPos] = gPolicy;
 
     /*****************************************
      * Update Networks for Q (A and V) estimation
@@ -445,8 +445,8 @@ void cACER::trainPolicy()
     ///////////////// Gradients for the State Function V(s) /////////////////
 
     // Updating inputs to training learner
-    _vProblem->_inputs[0][expPos] = expState;
-    _vProblem->_solution[0][expPos] = {qErr * tImportance + vExpState};
+    _vProblem->_inputData[0][expPos] = expState;
+    _vProblem->_solutionData[0][expPos] = {qErr * tImportance + vExpState};
 
     ///////////////// Gradients for the Advantage Function A(s) /////////////////
 
@@ -454,16 +454,16 @@ void cACER::trainPolicy()
     for (size_t i = 0; i < _problem->_actionVectorSize; i++) stateActionVector[_problem->_stateVectorSize + i] = expAction[i];
 
     // Updating inputs to training learner
-    _aProblem->_inputs[0][aInputCount] = stateActionVector;
-    _aProblem->_solution[0][aInputCount++] = {qErr};
+    _aProblem->_inputData[0][aInputCount] = stateActionVector;
+    _aProblem->_solutionData[0][aInputCount++] = {qErr};
 
     // Now adding all additional action samples
     for (size_t sampleIdx = 0; sampleIdx < _criticAdvantageFunctionPopulation; sampleIdx++)
     {
       for (size_t i = 0; i < _problem->_actionVectorSize; i++)
         stateActionVector[_problem->_stateVectorSize + i] = actionSamples[sampleIdx][i];
-      _aProblem->_inputs[0].push_back(stateActionVector);
-      _aProblem->_solution[0].push_back({-qErr / (float)_criticAdvantageFunctionPopulation});
+      _aProblem->_inputData[0].push_back(stateActionVector);
+      _aProblem->_solutionData[0].push_back({-qErr / (float)_criticAdvantageFunctionPopulation});
     }
   }
 
@@ -543,8 +543,8 @@ knlohmann::json cACER::getTrainingState()
 void cACER::printAgentInformation()
 {
   // Updating average Q*, for statistical purposes
-  _averageQStar = _cumulativeQStar / _aProblem->_solution.size();
-  _stdevQStar = sqrt(_cumulativeQStarSquared / _aProblem->_solution.size() - _averageQStar * _averageQStar);
+  _averageQStar = _cumulativeQStar / _aProblem->_solutionData.size();
+  _stdevQStar = sqrt(_cumulativeQStarSquared / _aProblem->_solutionData.size() - _averageQStar * _averageQStar);
 
   _k->_logger->logInfo("Normal", "Critic Information:\n");
   _k->_logger->logInfo("Normal", " + Average (Std) Q-Value:  %f (%f)\n", _averageQStar, _stdevQStar);

@@ -6,34 +6,47 @@ namespace problem
 {
 void SupervisedLearning::initialize()
 {
-  // Checking training/validation inputs
-  _timesteps = _inputs.size();
-  if (_timesteps == 0) KORALI_LOG_ERROR("No timesteps provided.\n");
-  _batchSize = _inputs[0].size();
+  // Checking batch size
+  _batchSize = _inputData[0].size();
   if (_batchSize == 0) KORALI_LOG_ERROR("Empty input batch provided.\n");
-  _inputVectorSize = _inputs[0][0].size();
+
+  // Checking training input data
+  _inputTimestepCount = _inputData.size();
+  if (_inputTimestepCount == 0) KORALI_LOG_ERROR("No solution timesteps provided.\n");
+
+  _inputVectorSize = _inputData[0][0].size();
   if (_inputVectorSize == 0) KORALI_LOG_ERROR("Empty input vector size provided.\n");
-  _solutionVectorSize = _solution[0][0].size();
+
+  // Checking that all timestep entries have the correct size
+  for (size_t i = 0; i < _inputTimestepCount; i++)
+  {
+   // Checking that all batch entries have the correct size
+   if (_batchSize != _inputData[i].size())
+     KORALI_LOG_ERROR("Batch size of timestep %lu input data (%lu) is different than that of input data (%lu).\n", i, _inputData[i].size(), _batchSize);
+
+   // Checking that all batch entries have the correct size
+   for (size_t j = 0; j < _inputData[i].size(); j++)
+     if (_inputData[i][j].size() != _inputVectorSize)
+       KORALI_LOG_ERROR("Vector size of timestep %lu input data %lu is inconsistent. Size: %lu - Expected: %lu.\n", i, j, _inputData[i][j].size(), _inputVectorSize);
+  }
+
+  // Checking training solutions
+  _solutionTimestepCount = _solutionData.size();
+  if (_solutionTimestepCount == 0) KORALI_LOG_ERROR("No solution timesteps provided.\n");
+  if (_solutionTimestepCount > _inputTimestepCount) KORALI_LOG_ERROR("More solution timesteps (%lu) than input timesteps (%lu) provided.\n", _solutionTimestepCount, _inputTimestepCount);
+
+  _solutionVectorSize = _solutionData[0][0].size();
   if (_solutionVectorSize == 0) KORALI_LOG_ERROR("Empty solution vector size provided.\n");
 
   // Checking that all timestep entries have the correct size
-  for (size_t i = 0; i < _inputs.size(); i++)
+  for (size_t i = 0; i < _solutionTimestepCount; i++)
   {
-   // Checking that all batch entries have the correct size
-   if (_batchSize != _inputs[i].size())
-     KORALI_LOG_ERROR("Batch size of timestep %lu input data (%lu) is different than that of input data (%lu).\n", i, _inputs[i].size(), _batchSize);
+   if (_batchSize != _solutionData[i].size())
+     KORALI_LOG_ERROR("Batch size of timestep %lu solution data (%lu) is different than that of input data (%lu).\n", i, _solutionData[i].size(), _batchSize);
 
-   // Checking that all batch entries have the correct size
-   for (size_t j = 0; j < _inputs[i].size(); j++)
-     if (_inputs[i][j].size() != _inputVectorSize)
-       KORALI_LOG_ERROR("Vector size of timestep %lu input data %lu is inconsistent. Size: %lu - Expected: %lu.\n", i, j, _inputs[i][j].size(), _inputVectorSize);
-
-   if (_batchSize != _solution[i].size())
-     KORALI_LOG_ERROR("Batch size of timestep %lu solution data (%lu) is different than that of input data (%lu).\n", i, _solution[i].size(), _batchSize);
-
-   for (size_t j = 0; j < _solution[i].size(); j++)
-     if (_solution[i][j].size() != _solutionVectorSize)
-       KORALI_LOG_ERROR("Vector size of timestep %lu training solution %lu is inconsistent. Size: %lu - Expected: %lu.\n", i, j, _solution[i][j].size(), _solutionVectorSize);
+   for (size_t j = 0; j < _solutionData[i].size(); j++)
+     if (_solutionData[i][j].size() != _solutionVectorSize)
+       KORALI_LOG_ERROR("Vector size of timestep %lu training solution %lu is inconsistent. Size: %lu - Expected: %lu.\n", i, j, _solutionData[i][j].size(), _solutionVectorSize);
   }
 }
 

@@ -15,7 +15,7 @@ np.random.seed(0xC0FFEE)
 Arch = "FNN"
 #Arch = "RNN"
 tf = 2.0 # Total Time
-dt = 0.5 # Time Differential
+dt = 0.4 # Time Differential
 B = 100 # Batch Size
 s = 1.0  # Parameter for peak separation
 w = np.pi # Parameter for wave speed
@@ -31,26 +31,26 @@ trainingInputSet = [ ]
 for i, t in enumerate(T):
  trainingInputSet.append([ ])
  for j, x in enumerate(X):
-  trainingInputSet[i].append([x,t])
+  trainingInputSet[i].append([x])
    
 trainingSolutionSet = [ ] 
 for i, t in enumerate(T):
  trainingSolutionSet.append([ ])
  for j, x in enumerate(X):
-  trainingSolutionSet[i].append([y(x, t)])
+  trainingSolutionSet[i].append([y(x,t)])
 
 ### Defining a learning problem to infer values of sin(x)
 
 e = korali.Experiment()
 e["Problem"]["Type"] = "Supervised Learning"
-e["Problem"]["Inputs"] = trainingInputSet
-e["Problem"]["Solution"] = trainingSolutionSet
-
+e["Problem"]["Input"]["Data"] = trainingInputSet
+e["Problem"]["Solution"]["Data"] = trainingSolutionSet
+ 
 ### Using a neural network solver (deep learning) for inference
 
 e["Solver"]["Type"] = "Learner/DeepSupervisor"
 e["Solver"]["Loss Function"] = "Mean Squared Error"
-e["Solver"]["Steps Per Generation"] = 10
+e["Solver"]["Steps Per Generation"] = 20
 e["Solver"]["Optimizer"] = "AdaBelief"
 e["Solver"]["Learning Rate"] = 0.0001
 
@@ -58,44 +58,20 @@ e["Solver"]["Learning Rate"] = 0.0001
 
 e["Solver"]["Neural Network"]["Engine"] = "CuDNN"
 
-if (Arch == "FNN"):
+e["Solver"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Input"
+e["Solver"]["Neural Network"]["Layers"][0]["Node Count"] = 1
 
- e["Solver"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Input"
- e["Solver"]["Neural Network"]["Layers"][0]["Node Count"] = 2
- 
- e["Solver"]["Neural Network"]["Layers"][1]["Type"] = "Layer/FeedForward"
- e["Solver"]["Neural Network"]["Layers"][1]["Node Count"] = 64
- 
- e["Solver"]["Neural Network"]["Layers"][2]["Type"] = "Layer/Activation"
- e["Solver"]["Neural Network"]["Layers"][2]["Function"] = "Elementwise/Tanh"
- 
- e["Solver"]["Neural Network"]["Layers"][3]["Type"] = "Layer/FeedForward"
- e["Solver"]["Neural Network"]["Layers"][3]["Node Count"] = 64
- 
- e["Solver"]["Neural Network"]["Layers"][4]["Type"] = "Layer/Activation"
- e["Solver"]["Neural Network"]["Layers"][4]["Function"] = "Elementwise/Tanh"
- 
- e["Solver"]["Neural Network"]["Layers"][5]["Type"] = "Layer/FeedForward"
- e["Solver"]["Neural Network"]["Layers"][5]["Node Count"] = 1
- 
- e["Solver"]["Neural Network"]["Layers"][6]["Type"] = "Layer/Output"
- 
-else:
+e["Solver"]["Neural Network"]["Layers"][1]["Type"] = "Layer/FeedForward"
+e["Solver"]["Neural Network"]["Layers"][1]["Node Count"] = 64
 
- e["Solver"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Input"
- e["Solver"]["Neural Network"]["Layers"][0]["Node Count"] = 2
- 
- e["Solver"]["Neural Network"]["Layers"][1]["Type"] = "Layer/FeedForward"
- e["Solver"]["Neural Network"]["Layers"][1]["Node Count"] = 64
- 
- e["Solver"]["Neural Network"]["Layers"][2]["Type"] = "Layer/Recurrent"
- e["Solver"]["Neural Network"]["Layers"][2]["Node Count"] = 64
- e["Solver"]["Neural Network"]["Layers"][2]["Mode"] = "GRU"
- 
- e["Solver"]["Neural Network"]["Layers"][3]["Type"] = "Layer/FeedForward"
- e["Solver"]["Neural Network"]["Layers"][3]["Node Count"] = 1
- 
- e["Solver"]["Neural Network"]["Layers"][4]["Type"] = "Layer/Output"
+e["Solver"]["Neural Network"]["Layers"][2]["Type"] = "Layer/Recurrent"
+e["Solver"]["Neural Network"]["Layers"][2]["Node Count"] = 64
+e["Solver"]["Neural Network"]["Layers"][2]["Mode"] = "GRU"
+
+e["Solver"]["Neural Network"]["Layers"][3]["Type"] = "Layer/FeedForward"
+e["Solver"]["Neural Network"]["Layers"][3]["Node Count"] = 1
+
+e["Solver"]["Neural Network"]["Layers"][4]["Type"] = "Layer/Output"
 
 e["Console Output"]["Frequency"] = 1
 e["File Output"]["Enabled"] = False
@@ -103,7 +79,7 @@ e["Random Seed"] = 0xC0FFEE
 
 ### Training the neural network
 
-e["Solver"]["Termination Criteria"]["Max Generations"] = 100
+e["Solver"]["Termination Criteria"]["Max Generations"] = 50
 k.run(e)
 
 ### Obtaining inferred results from the NN and comparing them to the actual solution
@@ -112,7 +88,7 @@ testInputSet = [ ]
 for i, t in enumerate(T):
  testInputSet.append([ ])
  for j, x in enumerate(X):
-  testInputSet[i].append([x,t])
+  testInputSet[i].append([x])
    
 testSolutionSet = [ ] 
 for i, t in enumerate(T):
@@ -126,8 +102,11 @@ cmap = cm.get_cmap(name='Set1')
 
 for i, t in enumerate(T):
  xAxis = [ x[0] for x in testInputSet[i] ]
- plt.plot(xAxis, testSolutionSet[i], "o", color=cmap(i))
- plt.plot(xAxis, testInferredSet[i], "x", color=cmap(i))
+ #plt.plot(xAxis, testSolutionSet[i], "o", color=cmap(i))
+ #plt.plot(xAxis, testInferredSet[i], "x", color=cmap(i))
+
+plt.plot(xAxis, testSolutionSet[-1], "o", color=cmap(i))
+plt.plot(xAxis, testInferredSet[-1], "x", color=cmap(i))
 
 ### Calc MSE on test set
 

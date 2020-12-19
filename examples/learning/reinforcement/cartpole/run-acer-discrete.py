@@ -38,8 +38,8 @@ e["Variables"][4]["Type"] = "Action"
 
 e["Solver"]["Type"] = "Agent / Discrete / DACER"
 e["Solver"]["Mode"] = "Training"
-e["Solver"]["Experiences Between Policy Updates"] = 25
-e["Solver"]["Cache Persistence"] = 10
+e["Solver"]["Experiences Between Policy Updates"] = 5
+#e["Solver"]["Cache Persistence"] = 10
 
 ### Defining the configuration of replay memory
 
@@ -49,7 +49,7 @@ e["Solver"]["Experience Replay"]["Maximum Size"] = 10000
 ## Defining Q-Critic and Action-selection (policy) optimizers
 
 e["Solver"]["Critic"]["Discount Factor"] = 0.99
-e["Solver"]["Critic"]["Learning Rate"] = 0.001
+e["Solver"]["Critic"]["Learning Rate"] = 1e-4
 e["Solver"]["Critic"]["Mini Batch Size"] = 32
 
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"

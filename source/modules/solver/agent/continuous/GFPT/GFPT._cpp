@@ -225,7 +225,7 @@ float GFPT::retraceFunction(size_t expId)
 
 float GFPT::stateValueFunction(const std::vector<float> &state)
 {
-  // Calculating V(s_i+1)
+  // Calculating V(s_i)
   float v = _vLearner->getEvaluation({{state}})[0][0][0];
 
   return v;

@@ -29,13 +29,13 @@ class SinglePendulum:
     self.t = 0
 
   def isFailed(self):
-    return (abs(self.u[0])>3.0)
+    return (abs(self.u[0])>7.0)
 
   def isOver(self): # is episode over
     return self.isFailed()
 
   def isTruncated(self):  # check that cause for termination is time limits
-    return (abs(self.u[0])<=3.0)
+    return (abs(self.u[0])<=7.0)
 
   """Based on 'Swing-up Control of a Single Inverted Pendulum
   on a Cart With Input and Output Constraints' [Meta Tum, et. al.]"""

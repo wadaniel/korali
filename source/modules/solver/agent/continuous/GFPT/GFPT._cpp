@@ -31,10 +31,10 @@ void GFPT::initializeAgent()
   // Initializing experiment with an initial zero set
   for (size_t i = 0; i < _criticMiniBatchSize; i++)
   {
-    _vExperiment["Problem"]["Solution"][i][0] = 0.0;
+    _vExperiment["Problem"]["Solution"]["Data"][0][i][0] = 0.0;
 
     for (size_t j = 0; j < _problem->_stateVectorSize; j++)
-      _vExperiment["Problem"]["Inputs"][i][j] = 0.0;
+      _vExperiment["Problem"]["Input"]["Data"][0][i][j] = 0.0;
   }
 
   size_t criticOutputLayer = _vExperiment["Solver"]["Neural Network"]["Layers"].size() - 1;
@@ -63,10 +63,10 @@ void GFPT::initializeAgent()
   // Initializing experiment with an initial zero set
   for (size_t i = 0; i < _criticMiniBatchSize; i++)
   {
-    _aExperiment["Problem"]["Solution"][i][0] = 0.0;
+    _aExperiment["Problem"]["Solution"]["Data"][0][i][0] = 0.0;
 
     for (size_t j = 0; j < _problem->_stateVectorSize + _problem->_actionVectorSize; j++)
-      _aExperiment["Problem"]["Inputs"][i][j] = 0.0;
+      _aExperiment["Problem"]["Input"]["Data"][0][i][j] = 0.0;
   }
 
   // Running initialization to verify that the configuration is correct
@@ -127,10 +127,10 @@ void GFPT::initializeAgent()
   for (size_t i = 0; i < _criticMiniBatchSize; i++)
   {
     for (size_t j = 0; j < _problem->_stateVectorSize; j++)
-      _policyExperiment["Problem"]["Inputs"][i][j] = 0.0;
+      _policyExperiment["Problem"]["Input"]["Data"][0][i][j] = 0.0;
 
     for (size_t j = 0; j < _problem->_actionVectorSize; j++)
-      _policyExperiment["Problem"]["Solution"][i][j] = 0.0;
+      _policyExperiment["Problem"]["Solution"]["Data"][0][i][j] = 0.0;
   }
 
   size_t policyOutputLayer = _policyExperiment["Solver"]["Neural Network"]["Layers"].size() - 1;

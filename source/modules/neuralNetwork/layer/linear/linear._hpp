@@ -1,5 +1,5 @@
-#ifndef _KORALI_LAYER_FEED_FORWARD_HPP_
-#define _KORALI_LAYER_FEED_FORWARD_HPP_
+#ifndef _KORALI_LAYER_LINEAR_HPP_
+#define _KORALI_LAYER_LINEAR_HPP_
 
 #include "modules/neuralNetwork/layer/layer.hpp"
 
@@ -9,7 +9,7 @@ namespace neuralNetwork
 {
 namespace layer
 {
-class FeedForward : public Layer
+class Linear : public Layer
 {
   public:
 
@@ -169,4 +169,4 @@ class FeedForward : public Layer
 
 } // namespace korali
 
-#endif // _KORALI_LAYER_FEED_FORWARD_HPP_
+#endif // _KORALI_LAYER_LINEAR_HPP_

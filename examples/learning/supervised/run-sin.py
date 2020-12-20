@@ -22,8 +22,8 @@ trainingSolutionSet = [ [ [ i ] for i in trainingSolutionSet.tolist() ] ]
 e = korali.Experiment()
 e["Problem"]["Type"] = "Supervised Learning"
 
-e["Problem"]["Inputs"] = trainingInputSet
-e["Problem"]["Solution"] = trainingSolutionSet
+e["Problem"]["Input"]["Data"] = trainingInputSet
+e["Problem"]["Solution"]["Data"] = trainingSolutionSet
 
 ### Using a neural network solver (deep learning) for inference
 
@@ -35,24 +35,24 @@ e["Solver"]["Learning Rate"] = 0.005
 
 ### Defining the shape of the neural network
 
-e["Solver"]["Neural Network"]["Engine"] = "CuDNN"
+e["Solver"]["Neural Network"]["Engine"] = "OneDNN"
 
 e["Solver"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Input"
 e["Solver"]["Neural Network"]["Layers"][0]["Node Count"] = 1
 
-e["Solver"]["Neural Network"]["Layers"][1]["Type"] = "Layer/FeedForward"
+e["Solver"]["Neural Network"]["Layers"][1]["Type"] = "Layer/Linear"
 e["Solver"]["Neural Network"]["Layers"][1]["Node Count"] = 32
 
 e["Solver"]["Neural Network"]["Layers"][2]["Type"] = "Layer/Activation"
 e["Solver"]["Neural Network"]["Layers"][2]["Function"] = "Elementwise/Tanh"
 
-e["Solver"]["Neural Network"]["Layers"][3]["Type"] = "Layer/FeedForward"
+e["Solver"]["Neural Network"]["Layers"][3]["Type"] = "Layer/Linear"
 e["Solver"]["Neural Network"]["Layers"][3]["Node Count"] = 32
 
 e["Solver"]["Neural Network"]["Layers"][4]["Type"] = "Layer/Activation"
 e["Solver"]["Neural Network"]["Layers"][4]["Function"] = "Elementwise/Tanh"
 
-e["Solver"]["Neural Network"]["Layers"][5]["Type"] = "Layer/FeedForward"
+e["Solver"]["Neural Network"]["Layers"][5]["Type"] = "Layer/Linear"
 e["Solver"]["Neural Network"]["Layers"][5]["Node Count"] = 1
 
 e["Solver"]["Neural Network"]["Layers"][6]["Type"] = "Layer/Output"
@@ -69,10 +69,10 @@ k.run(e)
 ### Obtaining inferred results from the NN and comparing them to the actual solution
 
 testInputSet = np.random.uniform(0, 2 * np.pi, 100)
-testInputSet = [[x] for x in testInputSet.tolist()]
+testInputSet = [[[x] for x in testInputSet.tolist()]]
 
-testInferredSet = [ e.getEvaluation(x) for x in testInputSet ]
-testGradientSet = [ e.getGradients(x) for x in testInferredSet ]
+testInferredSet = e.getEvaluation(testInputSet)
+testGradientSet = e.getGradients(testInferredSet)
 testOutputSet = np.tanh(np.exp(np.sin(testInputSet))) * scaling 
 
 ### Calc MSE on test set

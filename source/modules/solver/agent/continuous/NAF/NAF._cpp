@@ -33,15 +33,15 @@ void NAF::initializeAgent()
   size_t dimAction = _problem->_actionVectorSize;
   for (size_t i = 0; i < _criticMiniBatchSize; i++)
   {
-    for (size_t j = 0; j < _problem->_stateVectorSize; j++) _qExperiment["Problem"]["Inputs"][i][j] = 0.0;
-    for (size_t j = 0; j < 1 + 2 * _problem->_actionVectorSize; j++) _qExperiment["Problem"]["Solution"][i][j] = 0.0;
+    for (size_t j = 0; j < _problem->_stateVectorSize; j++) _qExperiment["Problem"]["Input"]["Data"][0][i][j] = 0.0;
+    for (size_t j = 0; j < 1 + 2 * _problem->_actionVectorSize; j++) _qExperiment["Problem"]["Solution"]["Data"][0][i][j] = 0.0;
 
     // V(s), mean(s) and P(s)
-    _qExperiment["Problem"]["Solution"][i][0] = 0.0; // V
+    _qExperiment["Problem"]["Solution"]["Data"][0][i][0] = 0.0; // V
     for (size_t j = 0; j < dimAction; j++)
     {
-      _qExperiment["Problem"]["Solution"][i][1 + j] = 0.0;             // Mean(i)
-      _qExperiment["Problem"]["Solution"][i][dimAction + 1 + j] = 0.0; // P(i)
+      _qExperiment["Problem"]["Solution"]["Data"][0][i][1 + j] = 0.0;             // Mean(i)
+      _qExperiment["Problem"]["Solution"]["Data"][0][i][dimAction + 1 + j] = 0.0; // P(i)
     }
   }
 

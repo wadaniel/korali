@@ -19,7 +19,7 @@
 #include "distribution/univariate/uniform/uniform.hpp"
 #include "distribution/univariate/weibull/weibull.hpp"
 #include "experiment/experiment.hpp"
-#include "neuralNetwork/layer/feedforward/feedforward.hpp"
+#include "neuralNetwork/layer/linear/linear.hpp"
 #include "neuralNetwork/layer/activation/activation.hpp"
 #include "neuralNetwork/layer/recurrent/recurrent.hpp"
 #include "neuralNetwork/layer/input/input.hpp"
@@ -158,7 +158,7 @@ Module *Module::getModule(knlohmann::json &js, Experiment *e)
   if (moduleType == "Sampler/MCMC") module = new korali::solver::sampler::MCMC();
   if (moduleType == "Sampler/TMCMC") module = new korali::solver::sampler::TMCMC();
   if (moduleType == "NeuralNetwork") module = new korali::NeuralNetwork();
-  if (moduleType == "Layer/FeedForward") module = new korali::neuralNetwork::layer::FeedForward();
+  if (moduleType == "Layer/Linear") module = new korali::neuralNetwork::layer::Linear();
   if (moduleType == "Layer/Recurrent") module = new korali::neuralNetwork::layer::Recurrent();
   if (moduleType == "Layer/Input") module = new korali::neuralNetwork::layer::Input();
   if (moduleType == "Layer/Output") module = new korali::neuralNetwork::layer::Output();

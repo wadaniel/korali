@@ -31,8 +31,8 @@ void cACER::initializeAgent()
   for (size_t p = 0; p < _criticMiniBatchSize; p++)
   {
     for (size_t i = 0; i < _problem->_stateVectorSize; i++)
-      _vExperiment["Problem"]["Inputs"][p][i] = 0.0;
-    _vExperiment["Problem"]["Solution"][p][0] = 0.0; // V(s)
+      _vExperiment["Problem"]["Input"]["Data"][0][p][i] = 0.0;
+    _vExperiment["Problem"]["Solution"]["Data"][0][p][0] = 0.0; // V(s)
   }
 
   size_t vOutputLayerId = _vExperiment["Solver"]["Neural Network"]["Layers"].size() - 1;
@@ -64,8 +64,8 @@ void cACER::initializeAgent()
   for (size_t p = 0; p < _criticMiniBatchSize + _criticMiniBatchSize * _criticAdvantageFunctionPopulation; p++)
   {
     for (size_t i = 0; i < _problem->_stateVectorSize + _problem->_actionVectorSize; i++)
-      _aExperiment["Problem"]["Inputs"][p][i] = 0.0;
-    _aExperiment["Problem"]["Solution"][p][0] = 0.0; // A(s,a)
+      _aExperiment["Problem"]["Input"]["Data"][0][p][i] = 0.0;
+    _aExperiment["Problem"]["Solution"]["Data"][0][p][0] = 0.0; // A(s,a)
   }
 
   size_t aOutputLayerId = _aExperiment["Solver"]["Neural Network"]["Layers"].size() - 1;
@@ -96,10 +96,10 @@ void cACER::initializeAgent()
   for (size_t p = 0; p < _criticMiniBatchSize; p++)
   {
     for (size_t i = 0; i < _problem->_stateVectorSize; i++)
-      _policyExperiment["Problem"]["Inputs"][p][i] = 0.0;
+      _policyExperiment["Problem"]["Input"]["Data"][0][p][i] = 0.0;
 
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-      _policyExperiment["Problem"]["Solution"][p][i] = 0.0; // Gaussian Mean
+      _policyExperiment["Problem"]["Solution"]["Data"][0][p][i] = 0.0; // Gaussian Mean
   }
 
   size_t policyOutputLayerId = _policyNeuralNetwork["Layers"].size() - 1;

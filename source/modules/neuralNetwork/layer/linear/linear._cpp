@@ -1,4 +1,4 @@
-#include "modules/neuralNetwork/layer/feedforward/feedforward.hpp"
+#include "modules/neuralNetwork/layer/linear/linear.hpp"
 #include "modules/neuralNetwork/neuralNetwork.hpp"
 
 #ifdef _KORALI_USE_CUDNN
@@ -22,7 +22,7 @@ namespace neuralNetwork
 namespace layer
 {
 
-void FeedForward::initialize()
+void Linear::initialize()
 {
  // Checking Layer size
  if (_nodeCount == 0) KORALI_LOG_ERROR("Node count for layer (%lu) should be larger than zero.\n", _index);
@@ -32,7 +32,7 @@ void FeedForward::initialize()
  if (_index == _nn->_layers.size()-1) KORALI_LOG_ERROR("Feed Forward layers cannot be the last layer of the NN\n");
 }
 
-std::vector<float> FeedForward::generateInitialHyperparameters()
+std::vector<float> Linear::generateInitialHyperparameters()
 {
   std::vector<float> hyperparameters;
 
@@ -55,7 +55,7 @@ std::vector<float> FeedForward::generateInitialHyperparameters()
   return hyperparameters;
 }
 
-void FeedForward::createHyperparameterMemory()
+void Linear::createHyperparameterMemory()
 {
   // Checking Layer sizes
   ssize_t OC = _nodeCount;
@@ -109,7 +109,7 @@ void FeedForward::createHyperparameterMemory()
 #endif
 }
 
-void FeedForward::createForwardPipeline()
+void Linear::createForwardPipeline()
 {
   // Calling base layer function
   Layer::createForwardPipeline();
@@ -148,7 +148,7 @@ void FeedForward::createForwardPipeline()
 #endif
 }
 
-void FeedForward::createBackwardPipeline()
+void Linear::createBackwardPipeline()
 {
   /*********************************************************************************
   *  Initializing memory objects and primitives for BACKWARD propagation
@@ -183,7 +183,7 @@ void FeedForward::createBackwardPipeline()
 #endif
 }
 
-void FeedForward::forwardData()
+void Linear::forwardData()
 {
    size_t N = _nn->_batchSize;
    size_t IC = _prevLayer->_nodeCount;
@@ -247,7 +247,7 @@ void FeedForward::forwardData()
 #endif
 }
 
-void FeedForward::backwardData()
+void Linear::backwardData()
 {
   int N = _nn->_batchSize;
   int IC = _prevLayer->_nodeCount;
@@ -301,7 +301,7 @@ void FeedForward::backwardData()
  #endif
 }
 
-void FeedForward::backwardHyperparameters()
+void Linear::backwardHyperparameters()
 {
    int N = _nn->_batchSize;
    int IC = _prevLayer->_nodeCount;
@@ -370,7 +370,7 @@ void FeedForward::backwardHyperparameters()
 #endif
 }
 
-void FeedForward::setHyperparameters(float *hyperparameters)
+void Linear::setHyperparameters(float *hyperparameters)
 {
   size_t IC = _prevLayer->_nodeCount;
   size_t OC = _nodeCount;
@@ -400,7 +400,7 @@ void FeedForward::setHyperparameters(float *hyperparameters)
 #endif
 }
 
-void FeedForward::getHyperparameters(float *hyperparameters)
+void Linear::getHyperparameters(float *hyperparameters)
 {
   size_t IC = _prevLayer->_nodeCount;
   size_t OC = _nodeCount;
@@ -430,7 +430,7 @@ void FeedForward::getHyperparameters(float *hyperparameters)
 #endif
 }
 
-void FeedForward::getHyperparameterGradients(float *gradient)
+void Linear::getHyperparameterGradients(float *gradient)
 {
   size_t IC = _prevLayer->_nodeCount;
   size_t OC = _nodeCount;

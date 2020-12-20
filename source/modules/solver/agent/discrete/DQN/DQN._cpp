@@ -30,10 +30,10 @@ void DQN::initializeAgent()
   // Initializing experiment with an initial zero set
   for (size_t i = 0; i < _criticMiniBatchSize; i++)
   {
-    _criticExperiment["Problem"]["Solution"][i][0] = 0.0;
+    _criticExperiment["Problem"]["Solution"]["Data"][0][i][0] = 0.0;
 
     for (size_t j = 0; j < _k->_variables.size(); j++)
-      _criticExperiment["Problem"]["Inputs"][i][j] = 0.0;
+      _criticExperiment["Problem"]["Input"]["Data"][0][i][j] = 0.0;
   }
 
   // Running initialization to verify that the configuration is correct

@@ -62,7 +62,7 @@ void Activation::createForwardPipeline()
       auto activationDesc = eltwise_forward::desc(prop_kind::forward_training, _activationAlgorithm, _prevLayer->_outputMem.get_desc(), _alpha, _beta);
 
       // Create primitive descriptor.
-      _forwardEltwiseActivationPrimitiveDesc = eltwise_forward::primitive_desc(activationDesc, _engine);
+      _forwardEltwiseActivationPrimitiveDesc = eltwise_forward::primitive_desc(activationDesc, _dnnlEngine);
 
       // Create the primitive.
       _forwardActivationPrimitive = eltwise_forward(_forwardEltwiseActivationPrimitiveDesc);
@@ -76,7 +76,7 @@ void Activation::createForwardPipeline()
       auto activationDesc = softmax_forward::desc(prop_kind::forward_training, _prevLayer->_outputMem.get_desc(), axis);
 
       // Create primitive descriptor.
-      _forwardSoftmaxActivationPrimitiveDesc = softmax_forward::primitive_desc(activationDesc, _engine);
+      _forwardSoftmaxActivationPrimitiveDesc = softmax_forward::primitive_desc(activationDesc, _dnnlEngine);
 
       // Create the primitive.
       _forwardActivationPrimitive = softmax_forward(_forwardSoftmaxActivationPrimitiveDesc);
@@ -127,7 +127,7 @@ void Activation::createBackwardPipeline()
       auto activationDesc = eltwise_backward::desc(_activationAlgorithm, _prevLayer->_outputMem.get_desc(), _outputMem.get_desc(), _alpha, _beta);
 
       // Create primitive descriptor.
-      auto backwardActivationPrimitiveDesc = eltwise_backward::primitive_desc(activationDesc, _engine, _forwardEltwiseActivationPrimitiveDesc);
+      auto backwardActivationPrimitiveDesc = eltwise_backward::primitive_desc(activationDesc, _dnnlEngine, _forwardEltwiseActivationPrimitiveDesc);
 
       // Create the primitive.
       _backwardActivationPrimitive = eltwise_backward(backwardActivationPrimitiveDesc);
@@ -141,7 +141,7 @@ void Activation::createBackwardPipeline()
       auto activationDesc = softmax_backward::desc(_prevLayer->_outputMem.get_desc(), _outputMem.get_desc(), axis);
 
       // Create primitive descriptor.
-      auto backwardActivationPrimitiveDesc = softmax_backward::primitive_desc(activationDesc, _engine, _forwardSoftmaxActivationPrimitiveDesc);
+      auto backwardActivationPrimitiveDesc = softmax_backward::primitive_desc(activationDesc, _dnnlEngine, _forwardSoftmaxActivationPrimitiveDesc);
 
       // Create the primitive.
       _backwardActivationPrimitive = softmax_backward(backwardActivationPrimitiveDesc);

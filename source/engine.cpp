@@ -18,7 +18,7 @@ bool isPythonActive = 0;
 size_t _maxThreads;
 
 #ifdef _KORALI_USE_ONEDNN
-dnnl::engine _engine;
+dnnl::engine _dnnlEngine;
 #endif
 
 Engine::Engine()
@@ -31,7 +31,7 @@ Engine::Engine()
   _maxThreads = omp_get_max_threads();
 
 #ifdef _KORALI_USE_ONEDNN
-  _engine = dnnl::engine(dnnl::engine::kind::cpu, 0);
+  _dnnlEngine = dnnl::engine(dnnl::engine::kind::cpu, 0);
 #endif
 
   // Turn Off GSL Error Handler

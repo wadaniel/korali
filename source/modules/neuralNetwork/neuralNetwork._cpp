@@ -16,7 +16,7 @@ void NeuralNetwork::initialize()
   {
 #ifdef _KORALI_USE_ONEDNN
 
-    _stream = dnnl::stream(korali::_engine);
+    _stream = dnnl::stream(korali::_dnnlEngine);
 
 #else
 

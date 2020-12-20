@@ -16,56 +16,72 @@ void DDQN::initializeAgent()
   Discrete::initializeAgent();
 
   /*********************************************************************
-  * Initializing Critic-Related Structures
+  * State Value Function Learner
   *********************************************************************/
 
   _vExperiment["Problem"]["Type"] = "Supervised Learning";
   _vExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
-  _vExperiment["Solver"]["Optimizer"] = _criticOptimizer;
+  _vExperiment["Solver"]["Optimizer"] = _neuralNetworkOptimizer;
   _vExperiment["Solver"]["Learning Rate"] = _criticLearningRate;
   _vExperiment["Solver"]["Loss Function"] = "Mean Squared Error";
   _vExperiment["Solver"]["Steps Per Generation"] = 1;
-  _vExperiment["Solver"]["Neural Network"] = _criticNeuralNetwork;
+  _vExperiment["Solver"]["Mini Batch Size"] = _miniBatchSize;
+  _vExperiment["Solver"]["Time Sequence Length"] = _timeSequenceLength;
 
-  // Initializing experiment with an initial zero set
-  for (size_t i = 0; i < _criticMiniBatchSize; i++)
-  {
-    _vExperiment["Problem"]["Solution"]["Data"][0][i][0] = 0.0;
+  // Configuring neural network
+  _vExperiment["Solver"]["Neural Network"]["Engine"] = _neuralNetworkEngine;
+  _vExperiment["Solver"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Input";
+  _vExperiment["Solver"]["Neural Network"]["Layers"][0]["Node Count"] = _problem->_stateVectorSize;
 
-    for (size_t j = 0; j < _problem->_stateVectorSize; j++)
-      _vExperiment["Problem"]["Input"]["Data"][0][i][j] = 0.0;
-  }
+  // Adding user-defined hidden layers
+  for (size_t i = 0; i < _neuralNetworkHiddenLayers.size(); i++) _vExperiment["Solver"]["Neural Network"]["Layers"][i+1] = _neuralNetworkHiddenLayers[i];
+
+  // Adding a linear transformation to bring the node count to the desired count
+  _vExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+1]["Type"] = "Layer/Linear";
+  _vExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+1]["Node Count"] = 1;
+  _vExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+1]["Weight Scaling"] = 0.1;
+
+  // Finally adding the output layer (no masks)
+  _vExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+2]["Type"] = "Layer/Output";
 
   // Running initialization to verify that the configuration is correct
   _vExperiment.initialize();
-
-  // Getting learner pointers
   _vProblem = dynamic_cast<problem::SupervisedLearning *>(_vExperiment._problem);
   _vLearner = dynamic_cast<solver::learner::DeepSupervisor *>(_vExperiment._solver);
 
+  /*********************************************************************
+  * Advantage Function learner
+  *********************************************************************/
+
   _aExperiment["Problem"]["Type"] = "Supervised Learning";
   _aExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
-  _aExperiment["Solver"]["Optimizer"] = _criticOptimizer;
+  _aExperiment["Solver"]["Optimizer"] = _neuralNetworkOptimizer;
   _aExperiment["Solver"]["Learning Rate"] = _criticLearningRate;
   _aExperiment["Solver"]["Loss Function"] = "Mean Squared Error";
   _aExperiment["Solver"]["Steps Per Generation"] = 1;
-  _aExperiment["Solver"]["Neural Network"] = _criticNeuralNetwork;
+  _aExperiment["Solver"]["Mini Batch Size"] = _miniBatchSize;
+  _aExperiment["Solver"]["Time Sequence Length"] = _timeSequenceLength;
 
-  // Initializing experiment with an initial zero set
-  for (size_t i = 0; i < _criticMiniBatchSize; i++)
-  {
-    _aExperiment["Problem"]["Solution"]["Data"][0][i][0] = 0.0;
+  // Configuring neural network
+  _aExperiment["Solver"]["Neural Network"]["Engine"] = _neuralNetworkEngine;
+  _aExperiment["Solver"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Input";
+  _aExperiment["Solver"]["Neural Network"]["Layers"][0]["Node Count"] = _problem->_stateVectorSize + _problem->_actionVectorSize;
 
-    for (size_t j = 0; j < _problem->_stateVectorSize + _problem->_actionVectorSize; j++)
-      _aExperiment["Problem"]["Input"]["Data"][0][i][j] = 0.0;
-  }
+  // Adding user-defined hidden layers
+  for (size_t i = 0; i < _neuralNetworkHiddenLayers.size(); i++) _aExperiment["Solver"]["Neural Network"]["Layers"][i+1] = _neuralNetworkHiddenLayers[i];
+
+  // Adding a linear transformation to bring the node count to the desired count
+  _aExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+1]["Type"] = "Layer/Linear";
+  _aExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+1]["Node Count"] = 1;
+  _aExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+1]["Weight Scaling"] = 0.1;
+
+  // Finally adding the output layer (no masks)
+  _aExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+2]["Type"] = "Layer/Output";
 
   // Running initialization to verify that the configuration is correct
   _aExperiment.initialize();
-
-  // Getting learner pointers
-  _aProblem = dynamic_cast<problem::SupervisedLearning *>(_aExperiment._problem);
-  _aLearner = dynamic_cast<solver::learner::DeepSupervisor *>(_aExperiment._solver);
+  _aProblem = dynamic_cast<problem::SupervisedLearning *>(_vExperiment._problem);
+  _aLearner = dynamic_cast<solver::learner::DeepSupervisor *>(_vExperiment._solver);
 
   /*********************************************************************
   * Initializing critic evaluation storage
@@ -87,7 +103,7 @@ void DDQN::trainPolicy()
    **********************************************************************************/
 
   // Delay using latest critic taget for training until reaching a number of experiences
-  if (_policyUpdateCount % _criticTargetUpdateDelay == 0)
+  if (_policyUpdateCount % _targetUpdateDelay == 0)
   {
     _aLearner->setInferenceHyperparameters(_aHatHyperparameters);
     _vLearner->setInferenceHyperparameters(_vHatHyperparameters);
@@ -98,10 +114,10 @@ void DDQN::trainPolicy()
   _cumulativeQStarSquared = 0.0;
 
   // Creating minibatch for the critic update
-  auto miniBatchIndexes = generateMiniBatch(_criticMiniBatchSize);
+  auto miniBatchIndexes = generateMiniBatch(_miniBatchSize);
 
 #pragma omp parallel for schedule(dynamic, 1)
-  for (size_t i = 0; i < _criticMiniBatchSize; i++)
+  for (size_t i = 0; i < _miniBatchSize; i++)
   {
     // Selecting a uniformly random selected, yet not repeated experience
     size_t expId = miniBatchIndexes[i];
@@ -138,7 +154,7 @@ void DDQN::trainPolicy()
       auto qNextExp = _vValState + _qValStateAction[bestActionIdx] - _aValAverage;
 
       // Calculating Q*
-      qStar += _criticDiscountFactor * qNextExp;
+      qStar += _discountFactor * qNextExp;
     }
 
     // Getting information about the current state
@@ -172,8 +188,8 @@ void DDQN::trainPolicy()
   _vLearner->finalize();
 
   // Keeping statistics
-  _averageQStar = (float)_cumulativeQStar / (float)_criticMiniBatchSize;
-  _stdevQStar = sqrt(_cumulativeQStarSquared / (float)_criticMiniBatchSize - _cumulativeQStar * _cumulativeQStar / (float)(_criticMiniBatchSize * _criticMiniBatchSize));
+  _averageQStar = (float)_cumulativeQStar / (float)_miniBatchSize;
+  _stdevQStar = sqrt(_cumulativeQStarSquared / (float)_miniBatchSize - _cumulativeQStar * _cumulativeQStar / (float)(_miniBatchSize * _miniBatchSize));
 
   /*********************************************************************
    * Updating hyperparameters and broadcasting them to the workers

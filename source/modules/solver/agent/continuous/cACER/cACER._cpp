@@ -21,30 +21,31 @@ void cACER::initializeAgent()
 
   _vExperiment["Problem"]["Type"] = "Supervised Learning";
   _vExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
-  _vExperiment["Solver"]["Optimizer"] = _criticOptimizer;
+  _vExperiment["Solver"]["Optimizer"] = _neuralNetworkOptimizer;
   _vExperiment["Solver"]["Learning Rate"] = _criticLearningRate;
   _vExperiment["Solver"]["Loss Function"] = "Mean Squared Error";
   _vExperiment["Solver"]["Steps Per Generation"] = 1;
-  _vExperiment["Solver"]["Neural Network"] = _criticNeuralNetwork;
+  _vExperiment["Solver"]["Mini Batch Size"] = _miniBatchSize;
+  _vExperiment["Solver"]["Time Sequence Length"] = _timeSequenceLength;
 
-  // Initializing experiment with an initial zero set
-  for (size_t p = 0; p < _criticMiniBatchSize; p++)
-  {
-    for (size_t i = 0; i < _problem->_stateVectorSize; i++)
-      _vExperiment["Problem"]["Input"]["Data"][0][p][i] = 0.0;
-    _vExperiment["Problem"]["Solution"]["Data"][0][p][0] = 0.0; // V(s)
-  }
+  // Configuring neural network
+  _vExperiment["Solver"]["Neural Network"]["Engine"] = _neuralNetworkEngine;
+  _vExperiment["Solver"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Input";
+  _vExperiment["Solver"]["Neural Network"]["Layers"][0]["Node Count"] = _problem->_stateVectorSize;
 
-  size_t vOutputLayerId = _vExperiment["Solver"]["Neural Network"]["Layers"].size() - 1;
-  _vExperiment["Solver"]["Neural Network"]["Layers"][vOutputLayerId]["Weight Scaling"] = 0.1;
+  // Adding user-defined hidden layers
+  for (size_t i = 0; i < _neuralNetworkHiddenLayers.size(); i++) _vExperiment["Solver"]["Neural Network"]["Layers"][i+1] = _neuralNetworkHiddenLayers[i];
 
-  if (_criticNeuralNetwork["Layers"][vOutputLayerId]["Activation Function"]["Type"] != "Elementwise/Linear")
-    KORALI_LOG_ERROR("Critic Network Output Layers' (%zu) Activation Function must be of type 'Elementwise/Linear'", vOutputLayerId);
+  // Adding a linear transformation to bring the node count to the desired count
+  _vExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+1]["Type"] = "Layer/Linear";
+  _vExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+1]["Node Count"] = 1;
+  _vExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+1]["Weight Scaling"] = 0.1;
+
+  // Finally adding the output layer (no masks)
+  _vExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+2]["Type"] = "Layer/Output";
 
   // Running initialization to verify that the configuration is correct
   _vExperiment.initialize();
-
-  // Getting learner pointers
   _vProblem = dynamic_cast<problem::SupervisedLearning *>(_vExperiment._problem);
   _vLearner = dynamic_cast<solver::learner::DeepSupervisor *>(_vExperiment._solver);
 
@@ -54,63 +55,76 @@ void cACER::initializeAgent()
 
   _aExperiment["Problem"]["Type"] = "Supervised Learning";
   _aExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
-  _aExperiment["Solver"]["Optimizer"] = _criticOptimizer;
+  _aExperiment["Solver"]["Optimizer"] = _neuralNetworkOptimizer;
   _aExperiment["Solver"]["Learning Rate"] = _criticLearningRate;
   _aExperiment["Solver"]["Loss Function"] = "Mean Squared Error";
   _aExperiment["Solver"]["Steps Per Generation"] = 1;
-  _aExperiment["Solver"]["Neural Network"] = _criticNeuralNetwork;
+  _aExperiment["Solver"]["Mini Batch Size"] = _miniBatchSize + _miniBatchSize * _advantageFunctionPopulation;
+  _aExperiment["Solver"]["Time Sequence Length"] = _timeSequenceLength;
 
-  // Initializing experiment with an initial zero set
-  for (size_t p = 0; p < _criticMiniBatchSize + _criticMiniBatchSize * _criticAdvantageFunctionPopulation; p++)
-  {
-    for (size_t i = 0; i < _problem->_stateVectorSize + _problem->_actionVectorSize; i++)
-      _aExperiment["Problem"]["Input"]["Data"][0][p][i] = 0.0;
-    _aExperiment["Problem"]["Solution"]["Data"][0][p][0] = 0.0; // A(s,a)
-  }
+  // Configuring neural network
+  _aExperiment["Solver"]["Neural Network"]["Engine"] = _neuralNetworkEngine;
+  _aExperiment["Solver"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Input";
+  _aExperiment["Solver"]["Neural Network"]["Layers"][0]["Node Count"] = _problem->_stateVectorSize + _problem->_actionVectorSize;
 
-  size_t aOutputLayerId = _aExperiment["Solver"]["Neural Network"]["Layers"].size() - 1;
-  _aExperiment["Solver"]["Neural Network"]["Layers"][aOutputLayerId]["Weight Scaling"] = 0.1;
+  // Adding user-defined hidden layers
+  for (size_t i = 0; i < _neuralNetworkHiddenLayers.size(); i++) _vExperiment["Solver"]["Neural Network"]["Layers"][i+1] = _neuralNetworkHiddenLayers[i];
+
+  // Adding a linear transformation to bring the node count to the desired count
+  _aExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+1]["Type"] = "Layer/Linear";
+  _aExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+1]["Node Count"] = 1;
+  _aExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+1]["Weight Scaling"] = 0.1;
+
+  // Finally adding the output layer (no masks)
+  _aExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+2]["Type"] = "Layer/Output";
 
   // Running initialization to verify that the configuration is correct
   _aExperiment.initialize();
-
-  // Getting learner pointers
   _aProblem = dynamic_cast<problem::SupervisedLearning *>(_aExperiment._problem);
   _aLearner = dynamic_cast<solver::learner::DeepSupervisor *>(_aExperiment._solver);
 
   /*********************************************************************
-  * Initializing Policy-Related Structures
+  * Initializing Policy Experiment
   *********************************************************************/
-
-  // Creating and running Actor Learning Experiments
 
   _policyExperiment["Problem"]["Type"] = "Supervised Learning";
   _policyExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
   _policyExperiment["Solver"]["Loss Function"] = "Direct Gradient";
-  _policyExperiment["Solver"]["Optimizer"] = _policyOptimizer;
+  _policyExperiment["Solver"]["Optimizer"] = _neuralNetworkOptimizer;
   _policyExperiment["Solver"]["Learning Rate"] = _policyLearningRate;
   _policyExperiment["Solver"]["Steps Per Generation"] = 1;
-  _policyExperiment["Solver"]["Neural Network"] = _policyNeuralNetwork;
+  _policyExperiment["Solver"]["Mini Batch Size"] = _miniBatchSize;
+  _policyExperiment["Solver"]["Time Sequence Length"] = _timeSequenceLength;
 
-  // Initializing experiment with an initial zero set
-  for (size_t p = 0; p < _criticMiniBatchSize; p++)
+  // Configuring neural network
+  _policyExperiment["Solver"]["Neural Network"]["Engine"] = _neuralNetworkEngine;
+  _policyExperiment["Solver"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Input";
+  _policyExperiment["Solver"]["Neural Network"]["Layers"][0]["Node Count"] = _problem->_stateVectorSize;
+
+  // Adding user-defined hidden layers
+  for (size_t i = 0; i < _neuralNetworkHiddenLayers.size(); i++) _policyExperiment["Solver"]["Neural Network"]["Layers"][i+1] = _neuralNetworkHiddenLayers[i];
+
+  // Adding a linear transformation to bring the node count to the desired count
+  _policyExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+1]["Type"] = "Layer/Linear";
+  _policyExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+1]["Node Count"] = _problem->_actionVectorSize;
+  _policyExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+1]["Weight Scaling"] = 0.1;
+
+  // Finally adding the output layer, with masks to normalize and rescale the output to fit the action's [lower, upper] bounds
+  _policyExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+2]["Type"] = "Layer/Output";
+  for (size_t i = 0; i < _problem->_actionVectorSize; i++)
   {
-    for (size_t i = 0; i < _problem->_stateVectorSize; i++)
-      _policyExperiment["Problem"]["Input"]["Data"][0][p][i] = 0.0;
-
-    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-      _policyExperiment["Problem"]["Solution"]["Data"][0][p][i] = 0.0; // Gaussian Mean
+    size_t varIdx = _problem->_actionVectorIndexes[i];
+    auto lowerBound = _k->_variables[varIdx]->_lowerBound;
+    auto upperBound = _k->_variables[varIdx]->_upperBound;
+    float scale = (upperBound - lowerBound) * 0.5;
+    float shift = (upperBound + lowerBound) * 0.5;
+    _policyExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+2]["Tanh Mask"][i] = true; // Step 1) Regularize to [-1, +1]
+    _policyExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+2]["Scale"][i] = scale; // Step 2) Rescale to real spread
+    _policyExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+2]["Shift"][i] = shift; // Step 3) Shift to fit
   }
-
-  size_t policyOutputLayerId = _policyNeuralNetwork["Layers"].size() - 1;
-  _policyNeuralNetwork["Solver"]["Neural Network"]["Layers"][policyOutputLayerId]["Weight Scaling"] = 0.1;
-  if (_policyNeuralNetwork["Layers"][policyOutputLayerId]["Activation Function"]["Type"] != "Elementwise/Tanh")
-    KORALI_LOG_ERROR("Policy Network Output Layers' (%zu) Activation Function must be of type 'Elementwise/Tanh'", policyOutputLayerId);
 
   // Running initialization to verify that the configuration is correct
   _policyExperiment.initialize();
-
-  // Getting learner pointers
   _policyProblem = dynamic_cast<problem::SupervisedLearning *>(_policyExperiment._problem);
   _policyLearner = dynamic_cast<solver::learner::DeepSupervisor *>(_policyExperiment._solver);
 
@@ -142,13 +156,13 @@ float cACER::currentActionAdvantageFunction(const std::vector<float> &state, con
 float cACER::averageActionAdvantageFunction(const std::vector<float> &curMeans, const std::vector<float> &curSigmas, const std::vector<float> &state)
 {
   // Creating storage for average action minibatch
-  std::vector<float> aResults(_criticAdvantageFunctionPopulation);
+  std::vector<float> aResults(_advantageFunctionPopulation);
 
   // Initializing average A(s,a) counter
   float avgA = 0.0;
 
   // Filling minibatch to calculate average action Q
-  for (size_t i = 0; i < _criticAdvantageFunctionPopulation; i++)
+  for (size_t i = 0; i < _advantageFunctionPopulation; i++)
   {
     // Generating random a'
     auto newAction = generateTrainingAction(curMeans, curSigmas);
@@ -158,11 +172,11 @@ float cACER::averageActionAdvantageFunction(const std::vector<float> &curMeans, 
   }
 
   // Summing A(s_i+1, a') for many a'
-  for (size_t i = 0; i < _criticAdvantageFunctionPopulation; i++)
+  for (size_t i = 0; i < _advantageFunctionPopulation; i++)
     avgA += aResults[i];
 
   // Normalizing Average
-  avgA /= (float)_criticAdvantageFunctionPopulation;
+  avgA /= (float)_advantageFunctionPopulation;
 
   return avgA;
 }
@@ -205,8 +219,8 @@ std::tuple<float, float> cACER::retraceFunction(size_t expId)
     float curReward = _experienceReplay[curId].reward;
 
     // Re-calculating qRet and qOpc
-    qRet = curReward + _criticDiscountFactor * qRetNext;
-    qOpc = curReward + _criticDiscountFactor * qOpcNext;
+    qRet = curReward + _discountFactor * qRetNext;
+    qOpc = curReward + _discountFactor * qOpcNext;
 
     // If this is the starting experience, return the current value
     if (curId == startId) break;
@@ -294,9 +308,9 @@ void cACER::trainPolicy()
   size_t aInputCount = 0;
 
   // Creating minibatch for the critic update
-  auto miniBatchIndexes = generateMiniBatch(_criticMiniBatchSize);
+  auto miniBatchIndexes = generateMiniBatch(_miniBatchSize);
 
-  for (size_t expPos = 0; expPos < _criticMiniBatchSize; expPos++)
+  for (size_t expPos = 0; expPos < _miniBatchSize; expPos++)
   {
     // Selecting a uniformly random selected, yet not repeated experience
     size_t expId = miniBatchIndexes[expPos];
@@ -343,18 +357,18 @@ void cACER::trainPolicy()
     auto aExpStateNewAction = _aLearner->getEvaluation({{stateActionVector}})[0][0][0];
 
     // Getting n action samples from the policy
-    std::vector<std::vector<float>> actionSamples(_criticAdvantageFunctionPopulation);
-    for (size_t i = 0; i < _criticAdvantageFunctionPopulation; i++) actionSamples[i] = generateTrainingAction(curMeans, curSigmas);
+    std::vector<std::vector<float>> actionSamples(_advantageFunctionPopulation);
+    for (size_t i = 0; i < _advantageFunctionPopulation; i++) actionSamples[i] = generateTrainingAction(curMeans, curSigmas);
 
     // Getting sum_n(A(x,u)) with u ~ policy(x)
     float aSamplesMean = 0.0;
-    for (size_t sampleIdx = 0; sampleIdx < _criticAdvantageFunctionPopulation; sampleIdx++)
+    for (size_t sampleIdx = 0; sampleIdx < _advantageFunctionPopulation; sampleIdx++)
     {
       for (size_t i = 0; i < _problem->_actionVectorSize; i++)
         stateActionVector[_problem->_stateVectorSize + i] = actionSamples[sampleIdx][i];
       aSamplesMean += _aLearner->getEvaluation({{stateActionVector}})[0][0][0];
     }
-    aSamplesMean = aSamplesMean / (float)_criticAdvantageFunctionPopulation;
+    aSamplesMean = aSamplesMean / (float)_advantageFunctionPopulation;
 
     // Getting Q(s, a) for the experience action
     float qExpStateExpAction = vExpState + aExpStateExpAction - aSamplesMean;
@@ -458,12 +472,12 @@ void cACER::trainPolicy()
     _aProblem->_solutionData[0][aInputCount++] = {qErr};
 
     // Now adding all additional action samples
-    for (size_t sampleIdx = 0; sampleIdx < _criticAdvantageFunctionPopulation; sampleIdx++)
+    for (size_t sampleIdx = 0; sampleIdx < _advantageFunctionPopulation; sampleIdx++)
     {
       for (size_t i = 0; i < _problem->_actionVectorSize; i++)
         stateActionVector[_problem->_stateVectorSize + i] = actionSamples[sampleIdx][i];
       _aProblem->_inputData[0].push_back(stateActionVector);
-      _aProblem->_solutionData[0].push_back({-qErr / (float)_criticAdvantageFunctionPopulation});
+      _aProblem->_solutionData[0].push_back({-qErr / (float)_advantageFunctionPopulation});
     }
   }
 

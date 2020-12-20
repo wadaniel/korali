@@ -23,31 +23,31 @@ void dVRACER::initializeAgent()
 
   _criticPolicyExperiment["Problem"]["Type"] = "Supervised Learning";
   _criticPolicyExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
-  _criticPolicyExperiment["Solver"]["Optimizer"] = _criticOptimizer;
-  _criticPolicyExperiment["Solver"]["Learning Rate"] = _criticLearningRate;
-  _criticPolicyExperiment["Solver"]["Loss Function"] = "Direct Gradient";
+  _criticPolicyExperiment["Solver"]["Optimizer"] = _neuralNetworkOptimizer;
+  _criticPolicyExperiment["Solver"]["Learning Rate"] = _learningRate;
+  _criticPolicyExperiment["Solver"]["Loss Function"] = "Mean Squared Error";
   _criticPolicyExperiment["Solver"]["Steps Per Generation"] = 1;
-  _criticPolicyExperiment["Solver"]["Neural Network"] = _criticNeuralNetwork;
+  _criticPolicyExperiment["Solver"]["Mini Batch Size"] = _miniBatchSize;
+  _criticPolicyExperiment["Solver"]["Time Sequence Length"] = _timeSequenceLength;
 
-  // Initializing experiment with an initial zero set
-  size_t numAction = _problem->_possibleActions.size();
-  for (size_t i = 0; i < _criticMiniBatchSize; i++)
-  {
-    for (size_t j = 0; j < _problem->_stateVectorSize; j++)
-      _criticPolicyExperiment["Problem"]["Input"]["Data"][0][i][j] = 0.0;
+  // Configuring neural network
+  _criticPolicyExperiment["Solver"]["Neural Network"]["Engine"] = _neuralNetworkEngine;
+  _criticPolicyExperiment["Solver"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Input";
+  _criticPolicyExperiment["Solver"]["Neural Network"]["Layers"][0]["Node Count"] = _problem->_stateVectorSize;
 
-    // V(s) and p(a|s)
-    _criticPolicyExperiment["Problem"]["Solution"]["Data"][0][i][0] = 0.0; // V
-    for (size_t j = 0; j < numAction; j++)
-    {
-      _criticPolicyExperiment["Problem"]["Solution"]["Data"][0][i][1 + j] = 0.0; // p
-    }
-  }
+  // Adding user-defined hidden layers
+  for (size_t i = 0; i < _neuralNetworkHiddenLayers.size(); i++) _criticPolicyExperiment["Solver"]["Neural Network"]["Layers"][i+1] = _neuralNetworkHiddenLayers[i];
+
+  // Adding a linear transformation to bring the node count to the desired count
+  _criticPolicyExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+1]["Type"] = "Layer/Linear";
+  _criticPolicyExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+1]["Node Count"] = 1 + _problem->_possibleActions.size();
+  _criticPolicyExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+1]["Weight Scaling"] = 0.1;
+
+  // Finally adding the output layer
+  _criticPolicyExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+2]["Type"] = "Layer/Output";
 
   // Running initialization to verify that the configuration is correct
   _criticPolicyExperiment.initialize();
-
-  // Getting learner and problem pointers
   _criticPolicyProblem = dynamic_cast<problem::SupervisedLearning *>(_criticPolicyExperiment._problem);
   _criticPolicyLearner = dynamic_cast<solver::learner::DeepSupervisor *>(_criticPolicyExperiment._solver);
 
@@ -84,8 +84,7 @@ void dVRACER::trainPolicy()
   // Update off-policy fraction
   size_t expCount = _experienceReplay.size();
   size_t offPolicyCount = 0;
-#pragma omp parallel for reduction(+ \
-                                   : offPolicyCount)
+#pragma omp parallel for reduction(+ : offPolicyCount)
   for (size_t id = 0; id < expCount; id++)
   {
     float expImportanceWeight = _experienceReplay[id].cache.get("Importance Weight");
@@ -112,11 +111,11 @@ void dVRACER::trainPolicy()
   ***************************************************************************/
 
   // Creating a minibatch of starting experiences for the trajectories update
-  auto miniBatchIndexes = generateMiniBatch(_criticMiniBatchSize);
+  auto miniBatchIndexes = generateMiniBatch(_miniBatchSize);
 
   // Fill Minibatch
 #pragma omp parallel for schedule(dynamic, 1)
-  for (size_t step = 0; step < _criticMiniBatchSize; step++)
+  for (size_t step = 0; step < _miniBatchSize; step++)
   {
     // Getting index of current experiment
     size_t expId = miniBatchIndexes[step];
@@ -171,7 +170,7 @@ void dVRACER::trainPolicy()
       if (isNormal == true)
       {
         float nextExpVtbc = _experienceReplay[expId + 1].policy["Vtbc"].get<float>();
-        Qret += _criticDiscountFactor * nextExpVtbc;
+        Qret += _discountFactor * nextExpVtbc;
       }
 
       // Check whether experience is truncated
@@ -188,7 +187,7 @@ void dVRACER::trainPolicy()
         auto nextExpVtbc = policy["State Value"].get<float>();
 
         // add value to Qret
-        Qret += _criticDiscountFactor * nextExpVtbc;
+        Qret += _discountFactor * nextExpVtbc;
       }
 
       // Compute Off-Policy Objective (eq. 5)
@@ -228,11 +227,11 @@ void dVRACER::trainPolicy()
   }
 
   // Compute average and std of Value target
-  _averageQStar = _cumulativeQStar / (float)_criticMiniBatchSize;
-  _stdevQStar = sqrt(_cumulativeQStarSquared / (float)_criticMiniBatchSize - _averageQStar * _averageQStar);
+  _averageQStar = _cumulativeQStar / (float)_miniBatchSize;
+  _stdevQStar = sqrt(_cumulativeQStarSquared / (float)_miniBatchSize - _averageQStar * _averageQStar);
   // Compute average and std of Value Loss
-  _averageTDError = cumulativeTdError / (float)_criticMiniBatchSize;
-  _stdevTDError = std::sqrt(cumulativeTdErrorSquared / (float)_criticMiniBatchSize - _averageTDError * _averageTDError);
+  _averageTDError = cumulativeTdError / (float)_miniBatchSize;
+  _stdevTDError = std::sqrt(cumulativeTdErrorSquared / (float)_miniBatchSize - _averageTDError * _averageTDError);
   // Compute average and std of Off-Policy Gradient Objective
   _averagePolicyError = cumulativePolicyError / (float)policyErrorCounter;
   _stdevPolicyError = std::sqrt(cumulativePolicyErrorSquared / (float)policyErrorCounter - _averagePolicyError * _averagePolicyError);
@@ -265,13 +264,13 @@ void dVRACER::updateVtbc(size_t expId)
 
   if (_experienceReplay[expId].termination == e_nonTerminal) // If expId is somewhere in the middle of an episode
   {
-    vTbc += truncatedImportanceWeight * _criticDiscountFactor * _experienceReplay[expId + 1].policy["Vtbc"].get<float>();
+    vTbc += truncatedImportanceWeight * _discountFactor * _experienceReplay[expId + 1].policy["Vtbc"].get<float>();
   }
   else if (_experienceReplay[expId].termination == e_truncated) // If the episode was truncated add contribution
   {
     auto truncatedState = _experienceReplay[expId].truncatedState;
     float truncatedValue = stateValueFunction(truncatedState);
-    vTbc += truncatedImportanceWeight * _criticDiscountFactor * truncatedValue;
+    vTbc += truncatedImportanceWeight * _discountFactor * truncatedValue;
   }
 
   // update current target
@@ -311,7 +310,7 @@ void dVRACER::updateVtbc(size_t expId)
     float truncatedImportanceWeight = std::min(1.0f, importanceWeight);
 
     // Calculating vTbc
-    vTbc = value + truncatedImportanceWeight * (reward + _criticDiscountFactor * vTbc - value);
+    vTbc = value + truncatedImportanceWeight * (reward + _discountFactor * vTbc - value);
     _experienceReplay[curId].policy["Vtbc"] = vTbc;
   }
 }

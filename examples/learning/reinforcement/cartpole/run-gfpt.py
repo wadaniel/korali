@@ -55,47 +55,27 @@ e["Solver"]["Critic"]["Discount Factor"] = 0.99
 e["Solver"]["Critic"]["Learning Rate"] = 0.01
 e["Solver"]["Critic"]["Mini Batch Size"] = 32 
   
-e["Solver"]["Critic"]["Neural Network"]["Engine"] = "OneDNN"
-
-e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Input"
-
-e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Type"] = "Layer/Linear"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Node Count"] = 32
-
-e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Type"] = "Layer/Activation"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Function"] = "Elementwise/Tanh"
-
-e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Type"] = "Layer/Linear"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Node Count"] = 32
-
-e["Solver"]["Critic"]["Neural Network"]["Layers"][4]["Type"] = "Layer/Activation"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][4]["Function"] = "Elementwise/Tanh"
-
-e["Solver"]["Critic"]["Neural Network"]["Layers"][5]["Type"] = "Layer/Output"
-
 ## Defining Policy Configuration
 
 e["Solver"]["Policy"]["Learning Rate"] = 0.01
 e["Solver"]["Policy"]["Mini Batch Size"] = 32
 e["Solver"]["Policy"]["Target Accuracy"] = 0.00001
 
-e["Solver"]["Policy"]["Neural Network"]["Engine"] = "OneDNN"
+### Configuring the neural network's hidden layers
 
-e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Input"
+e["Solver"]["Engine"] = "OneDNN"
 
-e["Solver"]["Policy"]["Neural Network"]["Layers"][1]["Type"] = "Layer/Linear"
-e["Solver"]["Policy"]["Neural Network"]["Layers"][1]["Node Count"] = 32
+e["Solver"]["Hidden Layers][0]["Type"] = "Layer/Linear"
+e["Solver"]["Hidden Layers][0]["Node Count"] = 32
 
-e["Solver"]["Policy"]["Neural Network"]["Layers"][2]["Type"] = "Layer/Activation"
-e["Solver"]["Policy"]["Neural Network"]["Layers"][2]["Function"] = "Elementwise/Tanh"
+e["Solver"]["Hidden Layers][1]["Type"] = "Layer/Activation"
+e["Solver"]["Hidden Layers][1]["Function"] = "Elementwise/Tanh"
 
-e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Type"] = "Layer/Linear"
-e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Node Count"] = 32
+e["Solver"]["Hidden Layers][2]["Type"] = "Layer/Linear"
+e["Solver"]["Hidden Layers][2]["Node Count"] = 32
 
-e["Solver"]["Policy"]["Neural Network"]["Layers"][4]["Type"] = "Layer/Activation"
-e["Solver"]["Policy"]["Neural Network"]["Layers"][4]["Function"] = "Elementwise/Tanh"
-
-e["Solver"]["Policy"]["Neural Network"]["Layers"][5]["Type"] = "Layer/Output"
+e["Solver"]["Hidden Layers][3]["Type"] = "Layer/Activation"
+e["Solver"]["Hidden Layers][3]["Function"] = "Elementwise/Tanh"
 
 ### Defining Termination Criteria
 

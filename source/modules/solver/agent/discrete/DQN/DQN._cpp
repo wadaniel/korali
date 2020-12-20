@@ -16,30 +16,36 @@ void DQN::initializeAgent()
   Discrete::initializeAgent();
 
   /*********************************************************************
- * Initializing Critic-Related Structures
+ * Initializing Critic Experiment
  *********************************************************************/
 
   _criticExperiment["Problem"]["Type"] = "Supervised Learning";
   _criticExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
-  _criticExperiment["Solver"]["Optimizer"] = _criticOptimizer;
+  _criticExperiment["Solver"]["Optimizer"] = _neuralNetworkOptimizer;
   _criticExperiment["Solver"]["Learning Rate"] = _criticLearningRate;
   _criticExperiment["Solver"]["Loss Function"] = "Mean Squared Error";
   _criticExperiment["Solver"]["Steps Per Generation"] = 1;
-  _criticExperiment["Solver"]["Neural Network"] = _criticNeuralNetwork;
+  _criticExperiment["Solver"]["Mini Batch Size"] = _miniBatchSize;
+  _criticExperiment["Solver"]["Time Sequence Length"] = _timeSequenceLength;
 
-  // Initializing experiment with an initial zero set
-  for (size_t i = 0; i < _criticMiniBatchSize; i++)
-  {
-    _criticExperiment["Problem"]["Solution"]["Data"][0][i][0] = 0.0;
+  // Configuring neural network
+  _criticExperiment["Solver"]["Neural Network"]["Engine"] = _neuralNetworkEngine;
+  _criticExperiment["Solver"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Input";
+  _criticExperiment["Solver"]["Neural Network"]["Layers"][0]["Node Count"] = _problem->_stateVectorSize + _problem->_actionVectorSize;
 
-    for (size_t j = 0; j < _k->_variables.size(); j++)
-      _criticExperiment["Problem"]["Input"]["Data"][0][i][j] = 0.0;
-  }
+  // Adding user-defined hidden layers
+  for (size_t i = 0; i < _neuralNetworkHiddenLayers.size(); i++) _criticExperiment["Solver"]["Neural Network"]["Layers"][i+1] = _neuralNetworkHiddenLayers[i];
+
+  // Adding a linear transformation to bring the node count to the desired count
+  _criticExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+1]["Type"] = "Layer/Linear";
+  _criticExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+1]["Node Count"] = 1;
+  _criticExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+1]["Weight Scaling"] = 0.1;
+
+  // Finally adding the output layer (no masks)
+  _criticExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+2]["Type"] = "Layer/Output";
 
   // Running initialization to verify that the configuration is correct
   _criticExperiment.initialize();
-
-  // Getting learner pointers
   _criticProblem = dynamic_cast<problem::SupervisedLearning *>(_criticExperiment._problem);
   _criticLearner = dynamic_cast<solver::learner::DeepSupervisor *>(_criticExperiment._solver);
 }
@@ -51,7 +57,7 @@ void DQN::trainPolicy()
    **********************************************************************************/
 
   // Delay using latest critic taget for training until reaching a number of experiences
-  if (_policyUpdateCount % _criticTargetUpdateDelay == 0)
+  if (_policyUpdateCount % _targetUpdateDelay == 0)
   {
     auto criticHyperparameters = _hyperparameters["Critic"].get<std::vector<float>>();
     _criticLearner->setInferenceHyperparameters(criticHyperparameters);
@@ -62,10 +68,10 @@ void DQN::trainPolicy()
   _cumulativeQStarSquared = 0.0;
 
   // Creating minibatch for the critic update
-  auto miniBatchIndexes = generateMiniBatch(_criticMiniBatchSize);
+  auto miniBatchIndexes = generateMiniBatch(_miniBatchSize);
 
 #pragma omp parallel for schedule(dynamic, 1)
-  for (size_t i = 0; i < _criticMiniBatchSize; i++)
+  for (size_t i = 0; i < _miniBatchSize; i++)
   {
     // Selecting a uniformly random selected, yet not repeated experience
     size_t expId = miniBatchIndexes[i];
@@ -108,7 +114,7 @@ void DQN::trainPolicy()
 
       auto qNextExp = _criticLearner->getEvaluation({{stateActionInput}})[0][0][0];
 
-      qStar += _criticDiscountFactor * qNextExp;
+      qStar += _discountFactor * qNextExp;
     }
 
     // Updating inputs to training learner
@@ -127,8 +133,8 @@ void DQN::trainPolicy()
   _criticLearner->finalize();
 
   // Keeping statistics
-  _averageQStar = (float)_cumulativeQStar / (float)_criticMiniBatchSize;
-  _stdevQStar = sqrt(_cumulativeQStarSquared / (float)_criticMiniBatchSize - _averageQStar * _averageQStar);
+  _averageQStar = (float)_cumulativeQStar / (float)_miniBatchSize;
+  _stdevQStar = sqrt(_cumulativeQStarSquared / (float)_miniBatchSize - _averageQStar * _averageQStar);
 }
 
 knlohmann::json DQN::getAgentPolicy()

@@ -81,13 +81,13 @@ void Linear::createHyperparameterMemory()
     memory::dims weightDims = {OC, IC};
     auto weightMemDesc = memory::desc(weightDims, memory::data_type::f32, memory::format_tag::ab);
 
-    _weightsMem = memory(weightMemDesc, _engine);
-    _weightsGradientMem = memory(_weightsMem.get_desc(), _engine);
+    _weightsMem = memory(weightMemDesc, _dnnlEngine);
+    _weightsGradientMem = memory(_weightsMem.get_desc(), _dnnlEngine);
 
     auto biasMemDesc = memory::desc({OC}, memory::data_type::f32, memory::format_tag::a);
 
-    _biasMem = memory(biasMemDesc, _engine);
-    _biasGradientMem = memory(_biasMem.get_desc(), _engine);
+    _biasMem = memory(biasMemDesc, _dnnlEngine);
+    _biasGradientMem = memory(_biasMem.get_desc(), _dnnlEngine);
   }
 #endif
 
@@ -126,7 +126,7 @@ void Linear::createForwardPipeline()
 
     // Create inner product primitive descriptor.
     dnnl::primitive_attr forwardPrimitiveAttributes;
-    _forwardInnerProductPrimitiveDesc = inner_product_forward::primitive_desc(inner_product_d, forwardPrimitiveAttributes, _engine);
+    _forwardInnerProductPrimitiveDesc = inner_product_forward::primitive_desc(inner_product_d, forwardPrimitiveAttributes, _dnnlEngine);
 
     // Create the weights+bias primitive.
     _forwardInnerProductPrimitive = inner_product_forward(_forwardInnerProductPrimitiveDesc);
@@ -167,7 +167,7 @@ void Linear::createBackwardPipeline()
       _outputGradientMem.get_desc());
 
     // Create the primitive.
-    auto backwardDataPrimitiveDesc = inner_product_backward_data::primitive_desc(backwardDataDesc, _engine, _forwardInnerProductPrimitiveDesc);
+    auto backwardDataPrimitiveDesc = inner_product_backward_data::primitive_desc(backwardDataDesc, _dnnlEngine, _forwardInnerProductPrimitiveDesc);
     _backwardDataPrimitive = inner_product_backward_data(backwardDataPrimitiveDesc);
 
     auto backwardWeightsDesc = inner_product_backward_weights::desc(
@@ -177,7 +177,7 @@ void Linear::createBackwardPipeline()
       _outputGradientMem.get_desc());
 
     // Create the primitive.
-    auto backwardWeightsPrimitiveDesc = inner_product_backward_weights::primitive_desc(backwardWeightsDesc, _engine, _forwardInnerProductPrimitiveDesc);
+    auto backwardWeightsPrimitiveDesc = inner_product_backward_weights::primitive_desc(backwardWeightsDesc, _dnnlEngine, _forwardInnerProductPrimitiveDesc);
     _backwardWeightsPrimitive = inner_product_backward_weights(backwardWeightsPrimitiveDesc);
   }
 #endif

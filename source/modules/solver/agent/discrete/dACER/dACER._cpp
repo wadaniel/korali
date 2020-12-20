@@ -16,63 +16,72 @@ void dACER::initializeAgent()
   Discrete::initializeAgent();
 
   /*********************************************************************
- * Initializing Critic-Related Structures
+ * Initializing Critic Experiment
  *********************************************************************/
 
   _criticExperiment["Problem"]["Type"] = "Supervised Learning";
   _criticExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
-  _criticExperiment["Solver"]["Optimizer"] = _criticOptimizer;
+  _criticExperiment["Solver"]["Optimizer"] = _neuralNetworkOptimizer;
   _criticExperiment["Solver"]["Learning Rate"] = _criticLearningRate;
   _criticExperiment["Solver"]["Loss Function"] = "Mean Squared Error";
   _criticExperiment["Solver"]["Steps Per Generation"] = 1;
-  _criticExperiment["Solver"]["Neural Network"] = _criticNeuralNetwork;
+  _criticExperiment["Solver"]["Mini Batch Size"] = _miniBatchSize;
+  _criticExperiment["Solver"]["Time Sequence Length"] = _timeSequenceLength;
 
-  for (size_t i = 0; i < _criticMiniBatchSize; i++)
-  {
-    for (size_t j = 0; j < _problem->_stateVectorSize; j++)
-      _criticExperiment["Problem"]["Input"]["Data"][0][i][j] = 0.0;
+  // Configuring neural network
+  _criticExperiment["Solver"]["Neural Network"]["Engine"] = _neuralNetworkEngine;
+  _criticExperiment["Solver"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Input";
+  _criticExperiment["Solver"]["Neural Network"]["Layers"][0]["Node Count"] = _problem->_stateVectorSize;
 
-    for (size_t j = 0; j < _problem->_possibleActions.size(); j++)
-      _criticExperiment["Problem"]["Solution"]["Data"][0][i][j] = 0.0;
-  }
+  // Adding user-defined hidden layers
+  for (size_t i = 0; i < _neuralNetworkHiddenLayers.size(); i++) _criticExperiment["Solver"]["Neural Network"]["Layers"][i+1] = _neuralNetworkHiddenLayers[i];
+
+  // Adding a linear transformation to bring the node count to the desired count
+  _criticExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+1]["Type"] = "Layer/Linear";
+  _criticExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+1]["Node Count"] = _problem->_actionVectorSize;
+  _criticExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+1]["Weight Scaling"] = 0.1;
+
+  // Finally adding the output layer (no masks)
+  _criticExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+2]["Type"] = "Layer/Output";
 
   // Running initialization to verify that the configuration is correct
   _criticExperiment.initialize();
-
-  // Getting learner pointers
   _criticProblem = dynamic_cast<problem::SupervisedLearning *>(_criticExperiment._problem);
   _criticLearner = dynamic_cast<solver::learner::DeepSupervisor *>(_criticExperiment._solver);
 
   /*********************************************************************
-  * Initializing Policy-Related Structures
+  * Initializing Policy Experiment
   *********************************************************************/
 
-  // Creating and running Actor Learning Experiments
   _policyExperiment["Problem"]["Type"] = "Supervised Learning";
   _policyExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
   _policyExperiment["Solver"]["Loss Function"] = "Direct Gradient";
-  _policyExperiment["Solver"]["Optimizer"] = _policyOptimizer;
+  _policyExperiment["Solver"]["Optimizer"] = _neuralNetworkOptimizer;
   _policyExperiment["Solver"]["Learning Rate"] = _policyLearningRate;
   _policyExperiment["Solver"]["Steps Per Generation"] = 1;
-  _policyExperiment["Solver"]["Neural Network"] = _policyNeuralNetwork;
+  _policyExperiment["Solver"]["Mini Batch Size"] = _miniBatchSize;
+  _policyExperiment["Solver"]["Time Sequence Length"] = _timeSequenceLength;
 
-  for (size_t i = 0; i < _criticMiniBatchSize; i++)
-  {
-    // Initializing experiment with an initial zero set
-    for (size_t j = 0; j < _problem->_stateVectorSize; j++)
-      _policyExperiment["Problem"]["Input"]["Data"][0][i][j] = 0.0;
+  // Configuring neural network
+  _policyExperiment["Solver"]["Neural Network"]["Engine"] = _neuralNetworkEngine;
+  _policyExperiment["Solver"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Input";
+  _policyExperiment["Solver"]["Neural Network"]["Layers"][0]["Node Count"] = _problem->_stateVectorSize;
+  for (size_t i = 0; i < _neuralNetworkHiddenLayers.size(); i++)  _policyExperiment["Solver"]["Neural Network"]["Layers"][i+1] = _neuralNetworkHiddenLayers[i];
 
-    for (size_t j = 0; j < _problem->_possibleActions.size(); j++)
-      _policyExperiment["Problem"]["Solution"]["Data"][0][i][j] = 0.0;
-  }
+  // Adding a linear linear transformation to bring the node count to the desired count
+  _policyExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+1]["Type"] = "Layer/Linear";
+  _policyExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+1]["Node Count"] = _problem->_actionVectorSize;
+  _policyExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+1]["Weight Scaling"] = 0.1;
 
-  size_t policyOutputLayer = _policyNeuralNetwork["Layers"].size() - 1;
-  _policyExperiment["Solver"]["Neural Network"]["Layers"][policyOutputLayer]["Activation Function"]["Type"] = "Softmax";
+  // Adding a softmax activation function to convert the output to a categorical probability distribution
+  _policyExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+2]["Type"] = "Layer/Activation";
+  _policyExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+2]["Function"] = "Softmax";
+
+  // Finally adding the output layer (no masks)
+  _policyExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+3]["Type"] = "Layer/Output";
 
   // Running initialization to verify that the configuration is correct
   _policyExperiment.initialize();
-
-  // Getting learner pointers
   _policyProblem = dynamic_cast<problem::SupervisedLearning *>(_policyExperiment._problem);
   _policyLearner = dynamic_cast<solver::learner::DeepSupervisor *>(_policyExperiment._solver);
 
@@ -94,9 +103,9 @@ void dACER::trainPolicy()
   _cumulativeQStarSquared = 0.0; // Stdev Q Retrace
 
   // Creating minibatch for the critic update
-  auto miniBatchIndexes = generateMiniBatch(_criticMiniBatchSize);
+  auto miniBatchIndexes = generateMiniBatch(_miniBatchSize);
 
-  for (size_t i = 0; i < _criticMiniBatchSize; i++)
+  for (size_t i = 0; i < _miniBatchSize; i++)
   {
     // Selecting a uniformly random selected, yet not repeated experience
     size_t expId = miniBatchIndexes[i];
@@ -252,8 +261,8 @@ void dACER::trainPolicy()
   _policyLearner->setInferenceHyperparameters(_policyCurrentHyperparameters);
 
   // Updating Statistics
-  _averageQStar = _cumulativeQStar / (float)_criticMiniBatchSize;                                            // Average Q Retrace
-  _stdevQStar = sqrt(_cumulativeQStarSquared / (float)_criticMiniBatchSize - _averageQStar * _averageQStar); // Sdev Q Retrace
+  _averageQStar = _cumulativeQStar / (float)_miniBatchSize;                                            // Average Q Retrace
+  _stdevQStar = sqrt(_cumulativeQStarSquared / (float)_miniBatchSize - _averageQStar * _averageQStar); // Sdev Q Retrace
 }
 
 float dACER::retraceFunction(size_t expId)
@@ -291,7 +300,7 @@ float dACER::retraceFunction(size_t expId)
     float curReward = _experienceReplay[curId].reward;
 
     // Re-calculating qRet
-    qRet = curReward + _criticDiscountFactor * qRetNext;
+    qRet = curReward + _discountFactor * qRetNext;
 
     // If this is the starting experience, return the current value
     if (curId == startId) break;

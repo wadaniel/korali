@@ -282,7 +282,7 @@ void Agent::processEpisode(std::vector<knlohmann::json> &episode)
   float sumRewards = 0.0;
   for (ssize_t expId = episode.size() - 1; expId >= 0; expId--)
   {
-    sumRewards = _criticDiscountFactor * sumRewards + episode[expId]["Reward"].get<float>();
+    sumRewards = _discountFactor * sumRewards + episode[expId]["Reward"].get<float>();
     episode[expId]["Policy"]["Vtbc"] = sumRewards;
   }
 }

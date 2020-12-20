@@ -18,7 +18,7 @@
 namespace korali
 {
 #ifdef _KORALI_USE_ONEDNN
-extern dnnl::engine _engine;
+extern dnnl::engine _dnnlEngine;
 #endif
 
 class NeuralNetwork : public Module

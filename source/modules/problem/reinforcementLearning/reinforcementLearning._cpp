@@ -61,15 +61,17 @@ void __environmentWrapper()
 
 void ReinforcementLearning::runEpisode(Sample &agent)
 {
+  // Profiling information - Computation and communication time taken by the agent
+  double agentPolicyEvaluationTime = 0.0;
+  double agentComputationTime = 0.0;
+  double agentCommunicationTime = 0.0;
+
   /***************************************************************
    * Environment Configuration section
    ***************************************************************/
 
   // Getting RL-compatible solver
   auto _agent = dynamic_cast<solver::Agent *>(_k->_solver);
-
-  // First, we update the initial policy's hyperparameters
-  _agent->updateAgentPolicy(agent["Hyperparameters"]);
 
   // Creating agent coroutine
   __currentSample = &agent;
@@ -106,8 +108,11 @@ void ReinforcementLearning::runEpisode(Sample &agent)
   while (agent["Termination"] == "Non Terminal")
   {
     // Generating new action from policy
+    auto beginTime0 = std::chrono::steady_clock::now(); // Profiling
     _agent->getAction(agent);
     actionCount++;
+    auto endTime0 = std::chrono::steady_clock::now();                                                                 // Profiling
+    agentPolicyEvaluationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime0 - beginTime0).count(); // Profiling
 
     // Storing the current state
     experience["State"] = agent["State"];
@@ -119,7 +124,10 @@ void ReinforcementLearning::runEpisode(Sample &agent)
     experience["Policy"] = agent["Policy"];
 
     // Jumping back into the _agent's environment
+    auto beginTime1 = std::chrono::steady_clock::now(); // Profiling
     co_switch(envThread);
+    auto endTime1 = std::chrono::steady_clock::now();                                                            // Profiling
+    agentComputationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime1 - beginTime1).count(); // Profiling
 
     // Storing experience's reward
     experience["Reward"] = agent["Reward"];
@@ -136,6 +144,8 @@ void ReinforcementLearning::runEpisode(Sample &agent)
     // If training, updating engine with the current experience
     if (agent["Mode"] == "Training")
     {
+      auto beginTime2 = std::chrono::steady_clock::now(); // Profiling
+
       // Checking if we requested the given number of actions in between policy updates and it is not a terminal state
       bool requestNewPolicy = (agent["Termination"] == "Non Terminal") &&
                               (actionCount % _actionsBetweenPolicyUpdates == 0);
@@ -149,8 +159,10 @@ void ReinforcementLearning::runEpisode(Sample &agent)
       if (requestNewPolicy)
       {
         agent["Hyperparameters"] = KORALI_RECV_MSG_FROM_ENGINE();
-        _agent->updateAgentPolicy(agent["Hyperparameters"]);
       }
+
+      auto endTime2 = std::chrono::steady_clock::now();                                                              // Profiling
+      agentCommunicationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime2 - beginTime2).count(); // Profiling
     }
   }
 
@@ -215,6 +227,11 @@ void ReinforcementLearning::runEpisode(Sample &agent)
 
   // Sending last experience last (after testing), to prevent unnecessary waiting in the engine
   KORALI_SEND_MSG_TO_ENGINE(experience);
+
+  // Adding profiling information to agent
+  agent["Computation Time"] = agentComputationTime;
+  agent["Communication Time"] = agentCommunicationTime;
+  agent["Policy Evaluation Time"] = agentPolicyEvaluationTime;
 }
 
 } // namespace problem

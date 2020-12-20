@@ -14,6 +14,16 @@ class Theta : public korali::problem::Hierarchical
 {
   private:
   /**
+  * @brief Stores the actual Korali object for the psi experiment
+  */
+  korali::Experiment _psiExperimentObject;
+
+  /**
+  * @brief Stores the actual Korali object for the theta experiment
+  */
+  korali::Experiment _thetaExperimentObject;
+
+  /**
   * @brief Stores the number of variables defined in the Psi problem
   */
   size_t _psiVariableCount;

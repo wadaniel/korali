@@ -18,13 +18,19 @@ void MOCMAES::setInitialConfiguration()
 {
   knlohmann::json problemConfig = (*_k)["Problem"];
 
+  _currentValues.resize(_populationSize);
+  _previousValues.resize(_populationSize);
+  _sortingIndex.resize(_populationSize);
+
   // Establishing optimization goal
   _bestEverValues.resize(_numObjectives);
   _previousBestValues.resize(_numObjectives);
-  _currentBestValue.resie(_numObjectives);
+  _currentBestValues.resize(_numObjectives);
   _currentBestVariables.resize(_numObjectives);
   for (size_t i = 0; i < _numObjectives; ++i)
   {
+    _previousValues[i].resize(_numObjectives);
+    _currentValues[i].resize(_numObjectives);
     _bestEverValues[i] = -std::numeric_limits<double>::infinity();
     _previousBestValues[i] = _bestEverValues[i];
     _currentBestValues[i] = _bestEverValues[i];
@@ -35,18 +41,19 @@ void MOCMAES::setInitialConfiguration()
   if (_muValue == 0) _muValue = _populationSize / 2.0;
 
   // Allocating Memory
-  _samplePopulation.resize(_populationSize);
-  for (size_t i = 0; i < _populationSize; i++) _samplePopulation[i].resize(_variableCount);
-
-  _sortingIndex.resize(_populationSize);
-  _valueVector.resize(_populationSize);
-
-  // Initializing proposal
   _sampleCollection.resize(0);
-  _evolutionPaths.resize(_populationSize);
-  _covarianceMatrix.resize(_populationSize);
+  _samplePopulation.resize(_populationSize);
+  _sampleValueCollection.resize(_populationSize);
+  for (size_t i = 0; i < _populationSize; i++)
+  {
+    _samplePopulation[i].resize(_variableCount);
+    _sampleValueCollection[i].resize(_numObjectives);
+  }
 
   // Initializing variable defaults
+  double trace = 0.0;
+  double minSdev = std::numeric_limits<double>::infinity();
+  double maxSdev = -std::numeric_limits<double>::infinity();
   for (size_t i = 0; i < _variableCount; i++)
   {
     if (std::isfinite(_k->_variables[i]->_initialValue) == false)
@@ -62,6 +69,24 @@ void MOCMAES::setInitialConfiguration()
       if (std::isfinite(_k->_variables[i]->_upperBound) == false) KORALI_LOG_ERROR("Initial Standard Deviation \'%s\' not defined, and cannot be inferred because variable upper bound is not finite.\n", _k->_variables[i]->_name.c_str());
       _k->_variables[i]->_initialStandardDeviation = (_k->_variables[i]->_upperBound - _k->_variables[i]->_lowerBound) * 0.3;
     }
+    trace += _k->_variables[i]->_initialStandardDeviation * _k->_variables[i]->_initialStandardDeviation;
+    if (_k->_variables[i]->_initialStandardDeviation < minSdev) minSdev = _k->_variables[i]->_initialStandardDeviation;
+    if (_k->_variables[i]->_initialStandardDeviation > maxSdev) maxSdev = _k->_variables[i]->_initialStandardDeviation;
+  }
+
+  // Initializing proposal
+  _sigma.resize(_populationSize);
+  _evolutionPaths.resize(_populationSize);
+  _covarianceMatrix.resize(_populationSize);
+
+  // Init covariance and sigma
+  for (size_t i = 0; i < _populationSize; ++i)
+  {
+    _sigma[i] = sqrt(trace / _k->_variables.size());
+    _evolutionPaths[i].resize(_variableCount);
+    _covarianceMatrix[i].resize(_variableCount * _variableCount);
+    for (size_t d = 0; d < _variableCount; ++d)
+      _covarianceMatrix[i][d * _k->_variables.size() + d] = _k->_variables[d]->_initialStandardDeviation * _k->_variables[d]->_initialStandardDeviation / (_sigma[i] * _sigma[i]);
   }
 
   // MOCMAES variables
@@ -72,13 +97,15 @@ void MOCMAES::setInitialConfiguration()
   if (_covarianceLearningRate <= 0.0)
     KORALI_LOG_ERROR("Invalid Covariance Learning Rate (%f), must be greater than 0.0\n", _covarianceLearningRate);
 
-  _infeasibleSampleCount = 0;
-
   // Termination criteria
-  for (size_t i = 0; i < _numObjectives; ++i)
+  _infeasibleSampleCount = 0;
+  _currentMinMaxStandardDeviations.resize(_populationSize);
+  _currentMaxMinStandardDeviations.resize(_populationSize);
+  for (size_t i = 0; i < _populationSize; ++i)
   {
-    _currentMinMaxStandardDeviations[i] = -std::numeric_limits<double>::infinity();
-    _currentMaxMinStandardDeviations[i] = +std::numeric_limits<double>::infinity();
+    _currentMinMaxStandardDeviations[i] = maxSdev;
+    _currentMaxMinStandardDeviations[i] = minSdev;
+    _currentMinValueDifferences[i] = std::numeric_limits<double>::infinity();
   }
 }
 

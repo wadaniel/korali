@@ -25,14 +25,14 @@ namespace layer
 void Recurrent::initialize()
 {
  // Checking Layer size
- if (_nodeCount == 0) KORALI_LOG_ERROR("Node count for layer %lu should be larger than zero.\n", _index);
+ if (_outputChannels == 0) KORALI_LOG_ERROR("Node count for layer %lu should be larger than zero.\n", _index);
 
  // Checking position
  if (_index == 0) KORALI_LOG_ERROR("Recurrent layers cannot be the starting layer of the NN\n");
  if (_index == _nn->_layers.size()-1) KORALI_LOG_ERROR("Recurrent layers cannot be the last layer of the NN\n");
 
  // Checking Layer size
- if (_prevLayer->_nodeCount != _nodeCount) KORALI_LOG_ERROR("Node count for layer %lu should be the same as that of the previous layer.\n", _index);
+ if (_prevLayer->_outputChannels != _outputChannels) KORALI_LOG_ERROR("Node count for layer %lu should be the same as that of the previous layer.\n", _index);
 }
 
 std::vector<float> Recurrent::generateInitialHyperparameters()
@@ -41,7 +41,7 @@ std::vector<float> Recurrent::generateInitialHyperparameters()
 
   // Calculate hyperparameters for weight and bias of all linear layers
   // Setting value for this layer's xavier constant
-  float xavierConstant = (_weightScaling * sqrtf(6.0f)) / sqrt(_nodeCount + _prevLayer->_nodeCount);
+  float xavierConstant = (_weightScaling * sqrtf(6.0f)) / sqrt(_outputChannels + _prevLayer->_outputChannels);
 
   for (int linLayerID = 0; linLayerID < _linearLayerCount; linLayerID++)
   {
@@ -96,9 +96,9 @@ void Recurrent::createHyperparameterMemory()
                                        CUDNN_DATA_FLOAT,
                                        CUDNN_DATA_FLOAT,
                                        CUDNN_DEFAULT_MATH,
-                                       _nodeCount,
-                                       _nodeCount,
-                                       _nodeCount,
+                                       _outputChannels,
+                                       _outputChannels,
+                                       _outputChannels,
                                        1, // Pseudo Layer Count
                                        _dropoutDesc,
                                        CUDNN_RNN_PADDED_IO_DISABLED
@@ -179,9 +179,9 @@ void Recurrent::createForwardPipeline()
  ssize_t N = _nn->_batchSize;
 
  // Checking Layer sizes
- if (_nodeCount == 0) KORALI_LOG_ERROR("Node count for layer (%lu) should be larger than zero.\n", _index);
- ssize_t OC = _nodeCount;
- ssize_t IC = _prevLayer->_nodeCount;
+ if (_outputChannels == 0) KORALI_LOG_ERROR("Node count for layer (%lu) should be larger than zero.\n", _index);
+ ssize_t OC = _outputChannels;
+ ssize_t IC = _prevLayer->_outputChannels;
 
  #ifdef _KORALI_USE_CUDNN
  if (_nn->_engine == "CuDNN")
@@ -274,8 +274,8 @@ void Recurrent::createBackwardPipeline()
  ssize_t N = _nn->_batchSize;
 
  // Checking Layer sizes
- if (_nodeCount == 0) KORALI_LOG_ERROR("Node count for layer (%lu) should be larger than zero.\n", _index);
- ssize_t OC = _nodeCount;
+ if (_outputChannels == 0) KORALI_LOG_ERROR("Node count for layer (%lu) should be larger than zero.\n", _index);
+ ssize_t OC = _outputChannels;
 
 #ifdef _KORALI_USE_CUDNN
   if (_nn->_engine == "CuDNN")
@@ -294,7 +294,7 @@ void Recurrent::createBackwardPipeline()
 void Recurrent::forwardData()
 {
   size_t N = _nn->_batchSize;
-  size_t OC = _nodeCount;
+  size_t OC = _outputChannels;
   size_t t = _nn->_currentTimestep;
 
   #ifdef _KORALI_USE_CUDNN
@@ -330,7 +330,7 @@ void Recurrent::forwardData()
 void Recurrent::backwardData()
 {
  size_t N = _nn->_batchSize;
- size_t OC = _nodeCount;
+ size_t OC = _outputChannels;
  size_t t = _nn->_currentTimestep;
 
  #ifdef _KORALI_USE_CUDNN

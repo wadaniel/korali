@@ -11,6 +11,7 @@ class SupervisedLearning : public korali::Problem
 {
   public:
   void initialize() override;
+  void verifyData();
 };
 
 } // namespace problem

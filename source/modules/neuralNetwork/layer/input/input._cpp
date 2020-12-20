@@ -25,7 +25,7 @@ namespace layer
 void Input::initialize()
 {
  // Checking Layer size
- if (_nodeCount == 0) KORALI_LOG_ERROR("Node count for layer (%lu) should be larger than zero.\n", _index);
+ if (_outputChannels == 0) KORALI_LOG_ERROR("Output Channels for layer (%lu) should be larger than zero.\n", _index);
 
  // Checking position
  if (_index != 0) KORALI_LOG_ERROR("Input layers can only be placed at the start of the NN\n");
@@ -34,7 +34,7 @@ void Input::initialize()
 void Input::forwardData()
 {
  size_t N = _nn->_batchSize;
- size_t OC = _nodeCount;
+ size_t OC = _outputChannels;
  int t = _nn->_currentTimestep;
 
  if (_nn->_batchInputData.size() != N * OC)
@@ -65,7 +65,7 @@ void Input::forwardData()
 void Input::backwardData()
 {
   int N = _nn->_batchSize;
-  int OC = _nodeCount;
+  int OC = _outputChannels;
   int t = _nn->_currentTimestep;
 
   if (_nn->_batchInputGradients.size() != N * OC)

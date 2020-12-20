@@ -28,17 +28,17 @@ void Output::initialize()
   KORALI_LOG_ERROR("Output layers can only be placed at the last position in the NN\n");
 
  // The node count for this layer should be the same as the previous layer
- _nodeCount = _prevLayer->_nodeCount;
+ _outputChannels = _prevLayer->_outputChannels;
 
  // Checking Layer size
- if (_nodeCount == 0) KORALI_LOG_ERROR("Node count for layer (%lu) should be larger than zero.\n", _index);
+ if (_outputChannels == 0) KORALI_LOG_ERROR("Node count for layer (%lu) should be larger than zero.\n", _index);
 }
 
 void Output::createForwardPipeline()
 {
   size_t N = _nn->_batchSize;
-  size_t IC = _prevLayer->_nodeCount;
-  size_t OC = _nodeCount;
+  size_t IC = _prevLayer->_outputChannels;
+  size_t OC = _outputChannels;
 
   if (IC != OC) KORALI_LOG_ERROR("Output layers node count (%lu) is different than its previous layer's (%lu)\n", OC, IC);
 
@@ -88,8 +88,8 @@ void Output::createForwardPipeline()
 void Output::createBackwardPipeline()
 {
   size_t N = _nn->_batchSize;
-  size_t IC = _prevLayer->_nodeCount;
-  size_t OC = _nodeCount;
+  size_t IC = _prevLayer->_outputChannels;
+  size_t OC = _outputChannels;
 
   if (IC != OC) KORALI_LOG_ERROR("Output layers node count (%lu) is different than its previous layer's (%lu)\n", OC, IC);
 
@@ -103,7 +103,7 @@ void Output::createBackwardPipeline()
 void Output::forwardData()
 {
  size_t N = _nn->_batchSize;
- size_t OC = _nodeCount;
+ size_t OC = _outputChannels;
  int t = _nn->_currentTimestep;
 
  // Checking correct output allocation
@@ -172,7 +172,7 @@ void Output::forwardData()
 void Output::backwardData()
 {
   int N = _nn->_batchSize;
-  int OC = _nodeCount;
+  int OC = _outputChannels;
   int t = _nn->_currentTimestep;
 
   // Checking correct output allocation

@@ -22,11 +22,11 @@ void GFPT::initializeAgent()
 
   _vExperiment["Problem"]["Type"] = "Supervised Learning";
   _vExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
-  _vExperiment["Solver"]["Optimizer"] = _neuralNetworkOptimizer;
+  _vExperiment["Solver"]["Optimizer"] = _optimizer;
   _vExperiment["Solver"]["Learning Rate"] = _criticLearningRate;
   _vExperiment["Solver"]["Loss Function"] = "Mean Squared Error";
   _vExperiment["Solver"]["Steps Per Generation"] = 1;
-  _vExperiment["Solver"]["Mini Batch Size"] = _criticMiniBatchSize;
+  _vExperiment["Solver"]["Batch Size"] = _criticMiniBatchSize;
   _vExperiment["Solver"]["Time Sequence Length"] = _timeSequenceLength;
 
   // Configuring neural network
@@ -56,11 +56,11 @@ void GFPT::initializeAgent()
 
   _aExperiment["Problem"]["Type"] = "Supervised Learning";
   _aExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
-  _aExperiment["Solver"]["Optimizer"] = _neuralNetworkOptimizer;
+  _aExperiment["Solver"]["Optimizer"] = _optimizer;
   _aExperiment["Solver"]["Learning Rate"] = _criticLearningRate;
   _aExperiment["Solver"]["Loss Function"] = "Mean Squared Error";
   _aExperiment["Solver"]["Steps Per Generation"] = 1;
-  _aExperiment["Solver"]["Mini Batch Size"] = _criticMiniBatchSize;
+  _aExperiment["Solver"]["Batch Size"] = _criticMiniBatchSize;
   _aExperiment["Solver"]["Time Sequence Length"] = _timeSequenceLength;
 
   // Configuring neural network
@@ -113,10 +113,10 @@ void GFPT::initializeAgent()
   _policyExperiment["Problem"]["Type"] = "Supervised Learning";
   _policyExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
   _policyExperiment["Solver"]["Loss Function"] = "Direct Gradient";
-  _policyExperiment["Solver"]["Optimizer"] = _neuralNetworkOptimizer;
+  _policyExperiment["Solver"]["Optimizer"] = _optimizer;
   _policyExperiment["Solver"]["Learning Rate"] = _policyLearningRate;
   _policyExperiment["Solver"]["Steps Per Generation"] = 1;
-  _policyExperiment["Solver"]["Mini Batch Size"] = _policyMiniBatchSize;
+  _policyExperiment["Solver"]["Batch Size"] = _policyMiniBatchSize;
   _policyExperiment["Solver"]["Time Sequence Length"] = _timeSequenceLength;
 
   // Configuring neural network
@@ -367,11 +367,9 @@ void GFPT::trainPolicy()
   }
 
   // Running one generation of the optimization method with the given mini-batch
-  _aLearner->initialize();
   _aLearner->runGeneration();
   _aLearner->finalize();
 
-  _vLearner->initialize();
   _vLearner->runGeneration();
   _vLearner->finalize();
 
@@ -473,8 +471,7 @@ void GFPT::trainPolicy()
             candidateMiniBatch[i][j + _problem->_stateVectorSize] = actionOptimizer->_samplePopulation[i][j];
 
         // Running evaluation of the entire set of candidates
-        batchOptimizationNetwork->setInput({candidateMiniBatch});
-        batchOptimizationNetwork->forward();
+        batchOptimizationNetwork->forward({candidateMiniBatch});
         auto criticEvaluations = batchOptimizationNetwork->_outputValues;
 
         // Getting the advantage function for all candidates
@@ -508,7 +505,6 @@ void GFPT::trainPolicy()
   _referOffPolicyFraction = (float)offPolicySamples / (float)_criticMiniBatchSize;
 
   // Running one generation of the optimization method with the given mini-batch
-  _policyLearner->initialize();
   _policyLearner->runGeneration();
   _policyLearner->finalize();
 

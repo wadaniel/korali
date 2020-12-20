@@ -18,14 +18,14 @@ e["Problem"]["Actions Between Policy Updates"] = 1
 e["Problem"]["Training Reward Threshold"] = 450
 e["Problem"]["Policy Testing Episodes"] = 10
 
-### Defining state variables
+### Defining State variables
 
 e["Variables"][0]["Name"] = "Cart Position"
 e["Variables"][1]["Name"] = "Cart Velocity"
 e["Variables"][2]["Name"] = "Pole Angle"
 e["Variables"][3]["Name"] = "Pole Angular Velocity"
 
-### Defining action variables 
+### Defining Action variables 
 
 e["Variables"][4]["Name"] = "Force"
 e["Variables"][4]["Type"] = "Action"
@@ -41,6 +41,7 @@ e["Solver"]["Agent Count"] = 5
 e["Solver"]["Experiences Per Generation"] = 500
 e["Solver"]["Experiences Between Policy Updates"] = 1
 e["Solver"]["Cache Persistence"] = 10
+e["Solver"]["Discount Factor"] = 0.99
 
 ### Defining the configuration of replay memory
 
@@ -49,33 +50,30 @@ e["Solver"]["Experience Replay"]["Start Size"] =   2000
 e["Solver"]["Experience Replay"]["Maximum Size"] = 100000
 e["Solver"]["Experience Replay"]["Serialization Frequency"] = 10
 
-## Defining Critic Configuration
+## Defining Critic and Policy Configuration
 
-e["Solver"]["Critic"]["Discount Factor"] = 0.99
 e["Solver"]["Critic"]["Learning Rate"] = 0.01
 e["Solver"]["Critic"]["Mini Batch Size"] = 32 
-  
-## Defining Policy Configuration
 
 e["Solver"]["Policy"]["Learning Rate"] = 0.01
 e["Solver"]["Policy"]["Mini Batch Size"] = 32
 e["Solver"]["Policy"]["Target Accuracy"] = 0.00001
 
-### Configuring the neural network's hidden layers
+### Configuring the neural network and its hidden layers
 
-e["Solver"]["Engine"] = "OneDNN"
+e["Solver"]["Neural Network"]["Engine"] = "OneDNN"
 
-e["Solver"]["Hidden Layers][0]["Type"] = "Layer/Linear"
-e["Solver"]["Hidden Layers][0]["Node Count"] = 32
+e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear"
+e["Solver"]["Neural Network"]["Hidden Layers"][0]["Node Count"] = 32
 
-e["Solver"]["Hidden Layers][1]["Type"] = "Layer/Activation"
-e["Solver"]["Hidden Layers][1]["Function"] = "Elementwise/Tanh"
+e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Activation"
+e["Solver"]["Neural Network"]["Hidden Layers"][1]["Function"] = "Elementwise/Tanh"
 
-e["Solver"]["Hidden Layers][2]["Type"] = "Layer/Linear"
-e["Solver"]["Hidden Layers][2]["Node Count"] = 32
+e["Solver"]["Neural Network"]["Hidden Layers"][2]["Type"] = "Layer/Linear"
+e["Solver"]["Neural Network"]["Hidden Layers"][2]["Node Count"] = 32
 
-e["Solver"]["Hidden Layers][3]["Type"] = "Layer/Activation"
-e["Solver"]["Hidden Layers][3]["Function"] = "Elementwise/Tanh"
+e["Solver"]["Neural Network"]["Hidden Layers"][3]["Type"] = "Layer/Activation"
+e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tanh"
 
 ### Defining Termination Criteria
 

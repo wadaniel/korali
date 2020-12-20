@@ -26,8 +26,8 @@ void Layer::createForwardPipeline()
   ssize_t N = _nn->_batchSize;
 
   // Checking Layer sizes
-  if (_nodeCount == 0) KORALI_LOG_ERROR("Node count for layer (%lu) should be larger than zero.\n", _index);
-  ssize_t OC = _nodeCount;
+  if (_outputChannels == 0) KORALI_LOG_ERROR("Node count for layer (%lu) should be larger than zero.\n", _index);
+  ssize_t OC = _outputChannels;
 
 #ifdef _KORALI_USE_EIGEN
   if (_nn->_engine == "Korali")
@@ -68,7 +68,7 @@ void Layer::createBackwardPipeline()
   *********************************************************************************/
 
   size_t N = _nn->_batchSize;
-  size_t OC = _nodeCount;
+  size_t OC = _outputChannels;
 
 #ifdef _KORALI_USE_EIGEN
   if (_nn->_engine == "Korali")

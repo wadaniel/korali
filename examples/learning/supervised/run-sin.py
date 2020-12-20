@@ -7,11 +7,13 @@ import time
 import korali
 k = korali.Engine()
 
+trainingBatchSize = 500
+inferenceBatchSize = 100
 scaling = 5.0
 np.random.seed(0xC0FFEE)
 
 # The input set has scaling and a linear element to break symmetry
-trainingInputSet = np.random.uniform(0, 2 * np.pi, 500)
+trainingInputSet = np.random.uniform(0, 2 * np.pi, trainingBatchSize)
 trainingSolutionSet = np.tanh(np.exp(np.sin(trainingInputSet))) * scaling 
 
 trainingInputSet = [ [ [ i ] for i in trainingInputSet.tolist() ] ]
@@ -21,9 +23,14 @@ trainingSolutionSet = [ [ [ i ] for i in trainingSolutionSet.tolist() ] ]
 
 e = korali.Experiment()
 e["Problem"]["Type"] = "Supervised Learning"
+e["Problem"]["Max Timesteps"] = 1
+e["Problem"]["Training Batch Size"] = trainingBatchSize
+e["Problem"]["Inference Batch Size"] = inferenceBatchSize
 
 e["Problem"]["Input"]["Data"] = trainingInputSet
+e["Problem"]["Input"]["Size"] = 1
 e["Problem"]["Solution"]["Data"] = trainingSolutionSet
+e["Problem"]["Solution"]["Size"] = 1
 
 ### Using a neural network solver (deep learning) for inference
 
@@ -37,25 +44,19 @@ e["Solver"]["Learning Rate"] = 0.005
 
 e["Solver"]["Neural Network"]["Engine"] = "OneDNN"
 
-e["Solver"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Input"
-e["Solver"]["Neural Network"]["Layers"][0]["Node Count"] = 1
+e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear"
+e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 32
 
-e["Solver"]["Neural Network"]["Layers"][1]["Type"] = "Layer/Linear"
-e["Solver"]["Neural Network"]["Layers"][1]["Node Count"] = 32
+e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Activation"
+e["Solver"]["Neural Network"]["Hidden Layers"][1]["Function"] = "Elementwise/Tanh"
 
-e["Solver"]["Neural Network"]["Layers"][2]["Type"] = "Layer/Activation"
-e["Solver"]["Neural Network"]["Layers"][2]["Function"] = "Elementwise/Tanh"
+e["Solver"]["Neural Network"]["Hidden Layers"][2]["Type"] = "Layer/Linear"
+e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 32
 
-e["Solver"]["Neural Network"]["Layers"][3]["Type"] = "Layer/Linear"
-e["Solver"]["Neural Network"]["Layers"][3]["Node Count"] = 32
+e["Solver"]["Neural Network"]["Hidden Layers"][3]["Type"] = "Layer/Activation"
+e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tanh"
 
-e["Solver"]["Neural Network"]["Layers"][4]["Type"] = "Layer/Activation"
-e["Solver"]["Neural Network"]["Layers"][4]["Function"] = "Elementwise/Tanh"
-
-e["Solver"]["Neural Network"]["Layers"][5]["Type"] = "Layer/Linear"
-e["Solver"]["Neural Network"]["Layers"][5]["Node Count"] = 1
-
-e["Solver"]["Neural Network"]["Layers"][6]["Type"] = "Layer/Output"
+### Configuring output
 
 e["Console Output"]["Frequency"] = 1
 e["File Output"]["Enabled"] = False
@@ -68,7 +69,7 @@ k.run(e)
 
 ### Obtaining inferred results from the NN and comparing them to the actual solution
 
-testInputSet = np.random.uniform(0, 2 * np.pi, 100)
+testInputSet = np.random.uniform(0, 2 * np.pi, inferenceBatchSize)
 testInputSet = [[[x] for x in testInputSet.tolist()]]
 
 testInferredSet = e.getEvaluation(testInputSet)

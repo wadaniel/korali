@@ -23,11 +23,11 @@ void NAF::initializeAgent()
 
   _qExperiment["Problem"]["Type"] = "Supervised Learning";
   _qExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
-  _qExperiment["Solver"]["Optimizer"] = _neuralNetworkOptimizer;
+  _qExperiment["Solver"]["Optimizer"] = _optimizer;
   _qExperiment["Solver"]["Learning Rate"] = _learningRate;
   _qExperiment["Solver"]["Loss Function"] = "Mean Squared Error";
   _qExperiment["Solver"]["Steps Per Generation"] = 1;
-  _qExperiment["Solver"]["Mini Batch Size"] = _miniBatchSize;
+  _qExperiment["Solver"]["Batch Size"] = _miniBatchSize;
   _qExperiment["Solver"]["Time Sequence Length"] = _timeSequenceLength;
 
   // Configuring neural network

@@ -21,11 +21,11 @@ void DDQN::initializeAgent()
 
   _vExperiment["Problem"]["Type"] = "Supervised Learning";
   _vExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
-  _vExperiment["Solver"]["Optimizer"] = _neuralNetworkOptimizer;
+  _vExperiment["Solver"]["Optimizer"] = _optimizer;
   _vExperiment["Solver"]["Learning Rate"] = _criticLearningRate;
   _vExperiment["Solver"]["Loss Function"] = "Mean Squared Error";
   _vExperiment["Solver"]["Steps Per Generation"] = 1;
-  _vExperiment["Solver"]["Mini Batch Size"] = _miniBatchSize;
+  _vExperiment["Solver"]["Batch Size"] = _miniBatchSize;
   _vExperiment["Solver"]["Time Sequence Length"] = _timeSequenceLength;
 
   // Configuring neural network
@@ -55,11 +55,11 @@ void DDQN::initializeAgent()
 
   _aExperiment["Problem"]["Type"] = "Supervised Learning";
   _aExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
-  _aExperiment["Solver"]["Optimizer"] = _neuralNetworkOptimizer;
+  _aExperiment["Solver"]["Optimizer"] = _optimizer;
   _aExperiment["Solver"]["Learning Rate"] = _criticLearningRate;
   _aExperiment["Solver"]["Loss Function"] = "Mean Squared Error";
   _aExperiment["Solver"]["Steps Per Generation"] = 1;
-  _aExperiment["Solver"]["Mini Batch Size"] = _miniBatchSize;
+  _aExperiment["Solver"]["Batch Size"] = _miniBatchSize;
   _aExperiment["Solver"]["Time Sequence Length"] = _timeSequenceLength;
 
   // Configuring neural network

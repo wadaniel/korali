@@ -80,11 +80,6 @@ class NeuralNetwork : public Module
    size_t _currentTimestep;
 
    /**
-   * @brief Stores the values of the NN input batch. Format: TxNxIC (T: Time steps, N: Mini-batch, IC: Input channels).
-   */
-    std::vector<std::vector<std::vector<float>>> _inputValues;
-
-   /**
    * @brief Stores the values of the NN output batch. Format: TxNxIC (T: Time steps, N: Mini-batch, IC: Input channels).
    */
     std::vector<std::vector<std::vector<float>>> _outputValues;
@@ -108,12 +103,6 @@ class NeuralNetwork : public Module
   std::vector<float> generateInitialHyperparameters();
 
   /**
-   * @brief Updates the internal values of the NN inputs
-   * @param input The input batch
-   */
-  void setInput(const std::vector<std::vector<std::vector<float>>> &input);
-
-  /**
    * @brief Updates the values of weights, biases configuration to the NN
    * @param hyperparameters The input hyperparameters
    */
@@ -127,8 +116,9 @@ class NeuralNetwork : public Module
 
   /**
    * @brief Forward-propagates the input batch data through the network.
+   * @param input The input batch
   */
-  void forward();
+  void forward(const std::vector<std::vector<std::vector<float>>> &input);
 
   /**
    * @brief Backward-propagates the gradients data through the network.

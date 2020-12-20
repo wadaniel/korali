@@ -25,10 +25,10 @@ namespace layer
 void Activation::initialize()
 {
  // The node count for this layer should be the same as the previous layer
- _nodeCount = _prevLayer->_nodeCount;
+ _outputChannels = _prevLayer->_outputChannels;
 
  // Checking Layer size
- if (_nodeCount == 0) KORALI_LOG_ERROR("Node count for layer (%lu) should be larger than zero.\n", _index);
+ if (_outputChannels == 0) KORALI_LOG_ERROR("Node count for layer (%lu) should be larger than zero.\n", _index);
 
  // Checking position
  if (_index == 0) KORALI_LOG_ERROR("Activation layers cannot be the starting layer of the NN\n");
@@ -42,7 +42,7 @@ void Activation::createForwardPipeline()
 
   // Obtaining sizes
   ssize_t N = _nn->_batchSize;
-  ssize_t OC = _nodeCount;
+  ssize_t OC = _outputChannels;
 
 #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
@@ -114,7 +114,7 @@ void Activation::createBackwardPipeline()
  Layer::createBackwardPipeline();
 
   size_t N = _nn->_batchSize;
-  size_t OC = _nodeCount;
+  size_t OC = _outputChannels;
 
 // Creating backward propagation primitives for activation functions
 #ifdef _KORALI_USE_ONEDNN
@@ -154,15 +154,12 @@ void Activation::createBackwardPipeline()
 void Activation::forwardData()
 {
   size_t N = _nn->_batchSize;
-  size_t OC = _nodeCount;
+  size_t OC = _outputChannels;
   int t = _nn->_currentTimestep;
 
 #ifdef _KORALI_USE_EIGEN
   if (_nn->_engine == "Korali")
   {
-    if (_function == "Identity")
-      memcpy(_prevLayer->_outputValues, _outputValues, N * OC * sizeof(float));
-
     if (_function == "Elementwise/Linear")
       for (size_t i = 0; i < N * OC; i++)
         _outputValues[i] = _prevLayer->_outputValues[i] * _alpha;
@@ -256,15 +253,12 @@ void Activation::forwardData()
 void Activation::backwardData()
 {
   size_t N = _nn->_batchSize;
-  size_t OC = _nodeCount;
+  size_t OC = _outputChannels;
   int t = _nn->_currentTimestep;
 
 #ifdef _KORALI_USE_EIGEN
   if (_nn->_engine == "Korali")
   {
-    if (_function == "Identity")
-      memcpy(_prevLayer->_outputGradient, _outputGradient, N * OC * sizeof(float));
-
     if (_function == "Elementwise/Linear")
       for (size_t i = 0; i < N * OC; i++)
         _prevLayer->_outputGradient[i] = _outputGradient[i] * _alpha;

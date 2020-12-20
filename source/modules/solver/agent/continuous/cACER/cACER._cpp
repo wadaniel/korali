@@ -16,17 +16,22 @@ void cACER::initializeAgent()
   Continuous::initializeAgent();
 
   /*********************************************************************
- * Initializing V(s)
- *********************************************************************/
+  * Initializing V(s)
+  *********************************************************************/
 
+  // Defining supervised problem dimensions
   _vExperiment["Problem"]["Type"] = "Supervised Learning";
+  _vExperiment["Problem"]["Time Sequence Length"] = _timeSequenceLength;
+  _vExperiment["Problem"]["Batch Size"] = _miniBatchSize;
+  _vExperiment["Problem"]["Input Size"] = _problem->_stateVectorSize;
+  _vExperiment["Problem"]["Output Size"] = _problem->_stateVectorSize;
+
+  // Configuring solver
   _vExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
-  _vExperiment["Solver"]["Optimizer"] = _neuralNetworkOptimizer;
+  _vExperiment["Solver"]["Optimizer"] = _optimizer;
   _vExperiment["Solver"]["Learning Rate"] = _criticLearningRate;
   _vExperiment["Solver"]["Loss Function"] = "Mean Squared Error";
   _vExperiment["Solver"]["Steps Per Generation"] = 1;
-  _vExperiment["Solver"]["Mini Batch Size"] = _miniBatchSize;
-  _vExperiment["Solver"]["Time Sequence Length"] = _timeSequenceLength;
 
   // Configuring neural network
   _vExperiment["Solver"]["Neural Network"]["Engine"] = _neuralNetworkEngine;
@@ -53,19 +58,22 @@ void cACER::initializeAgent()
  * Initializing A(s,a)
  *********************************************************************/
 
+  // Defining supervised problem dimensions
   _aExperiment["Problem"]["Type"] = "Supervised Learning";
+  _aExperiment["Problem"]["Time Sequence Length"] = _timeSequenceLength;
+  _aExperiment["Problem"]["Batch Size"] = _miniBatchSize + _miniBatchSize * _advantageFunctionPopulation;
+  _aExperiment["Problem"]["Input Size"] = _problem->_stateVectorSize + _problem->_actionVectorSize;
+
+  // Configuring solver
   _aExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
-  _aExperiment["Solver"]["Optimizer"] = _neuralNetworkOptimizer;
+  _aExperiment["Solver"]["Optimizer"] = _optimizer;
   _aExperiment["Solver"]["Learning Rate"] = _criticLearningRate;
   _aExperiment["Solver"]["Loss Function"] = "Mean Squared Error";
   _aExperiment["Solver"]["Steps Per Generation"] = 1;
-  _aExperiment["Solver"]["Mini Batch Size"] = _miniBatchSize + _miniBatchSize * _advantageFunctionPopulation;
-  _aExperiment["Solver"]["Time Sequence Length"] = _timeSequenceLength;
 
   // Configuring neural network
   _aExperiment["Solver"]["Neural Network"]["Engine"] = _neuralNetworkEngine;
   _aExperiment["Solver"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Input";
-  _aExperiment["Solver"]["Neural Network"]["Layers"][0]["Node Count"] = _problem->_stateVectorSize + _problem->_actionVectorSize;
 
   // Adding user-defined hidden layers
   for (size_t i = 0; i < _neuralNetworkHiddenLayers.size(); i++) _vExperiment["Solver"]["Neural Network"]["Layers"][i+1] = _neuralNetworkHiddenLayers[i];
@@ -90,10 +98,10 @@ void cACER::initializeAgent()
   _policyExperiment["Problem"]["Type"] = "Supervised Learning";
   _policyExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
   _policyExperiment["Solver"]["Loss Function"] = "Direct Gradient";
-  _policyExperiment["Solver"]["Optimizer"] = _neuralNetworkOptimizer;
+  _policyExperiment["Solver"]["Optimizer"] = _optimizer;
   _policyExperiment["Solver"]["Learning Rate"] = _policyLearningRate;
   _policyExperiment["Solver"]["Steps Per Generation"] = 1;
-  _policyExperiment["Solver"]["Mini Batch Size"] = _miniBatchSize;
+  _policyExperiment["Solver"]["Batch Size"] = _miniBatchSize;
   _policyExperiment["Solver"]["Time Sequence Length"] = _timeSequenceLength;
 
   // Configuring neural network

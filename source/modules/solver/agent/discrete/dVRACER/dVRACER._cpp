@@ -23,11 +23,11 @@ void dVRACER::initializeAgent()
 
   _criticPolicyExperiment["Problem"]["Type"] = "Supervised Learning";
   _criticPolicyExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
-  _criticPolicyExperiment["Solver"]["Optimizer"] = _neuralNetworkOptimizer;
+  _criticPolicyExperiment["Solver"]["Optimizer"] = _optimizer;
   _criticPolicyExperiment["Solver"]["Learning Rate"] = _learningRate;
   _criticPolicyExperiment["Solver"]["Loss Function"] = "Mean Squared Error";
   _criticPolicyExperiment["Solver"]["Steps Per Generation"] = 1;
-  _criticPolicyExperiment["Solver"]["Mini Batch Size"] = _miniBatchSize;
+  _criticPolicyExperiment["Solver"]["Batch Size"] = _miniBatchSize;
   _criticPolicyExperiment["Solver"]["Time Sequence Length"] = _timeSequenceLength;
 
   // Configuring neural network

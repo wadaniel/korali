@@ -21,11 +21,11 @@ void DDPG::initializeAgent()
 
   _criticExperiment["Problem"]["Type"] = "Supervised Learning";
   _criticExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
-  _criticExperiment["Solver"]["Optimizer"] = _neuralNetworkOptimizer;
+  _criticExperiment["Solver"]["Optimizer"] = _optimizer;
   _criticExperiment["Solver"]["Learning Rate"] = _criticLearningRate;
   _criticExperiment["Solver"]["Loss Function"] = "Mean Squared Error";
   _criticExperiment["Solver"]["Steps Per Generation"] = 1;
-  _criticExperiment["Solver"]["Mini Batch Size"] = _criticMiniBatchSize;
+  _criticExperiment["Solver"]["Batch Size"] = _criticMiniBatchSize;
   _criticExperiment["Solver"]["Time Sequence Length"] = _timeSequenceLength;
 
   // Configuring neural network
@@ -56,10 +56,10 @@ void DDPG::initializeAgent()
   _policyExperiment["Problem"]["Type"] = "Supervised Learning";
   _policyExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
   _policyExperiment["Solver"]["Loss Function"] = "Direct Gradient";
-  _policyExperiment["Solver"]["Optimizer"] = _neuralNetworkOptimizer;
+  _policyExperiment["Solver"]["Optimizer"] = _optimizer;
   _policyExperiment["Solver"]["Learning Rate"] = _policyLearningRate;
   _policyExperiment["Solver"]["Steps Per Generation"] = 1;
-  _policyExperiment["Solver"]["Mini Batch Size"] = _policyMiniBatchSize;
+  _policyExperiment["Solver"]["Batch Size"] = _policyMiniBatchSize;
   _policyExperiment["Solver"]["Time Sequence Length"] = _timeSequenceLength;
 
   // Configuring neural network

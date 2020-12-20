@@ -42,19 +42,19 @@ e["Variables"][5]["Upper Bound"] = +20.0
 
 e["Solver"]["Type"] = "Agent / Continuous / NAF"
 e["Solver"]["Target Learning Rate"] = 0.001
-e["Solver"]["Experiences Between Policy Updates"] = 1
+e["Solver"]["Experiences Between Policy Updates"] = 10
 e["Solver"]["Covariance Scaling"] = 0.01
 e["Solver"]["Mini Batch Strategy"] = "Prioritized"
 
 ### Defining Experience Replay configuration
 
-e["Solver"]["Experience Replay"]["Start Size"] =   1000
-e["Solver"]["Experience Replay"]["Maximum Size"] = 10000
+e["Solver"]["Experience Replay"]["Start Size"] =   131072
+e["Solver"]["Experience Replay"]["Maximum Size"] = 262144
 
 ## Defining Q-Network
 
 e["Solver"]["Critic"]["Discount Factor"] = 0.99
-e["Solver"]["Critic"]["Learning Rate"] = 1e-6
+e["Solver"]["Critic"]["Learning Rate"] = 1e-4
 e["Solver"]["Critic"]["Mini Batch Size"] = 32
 
 e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
@@ -77,7 +77,7 @@ e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 900
 
 ### Setting file output configuration
 
-e["File Output"]["Frequency"] = 1000
+e["File Output"]["Enabled"] = False
 
 ### Running Experiment
 

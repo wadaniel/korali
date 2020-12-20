@@ -93,4 +93,4 @@ k["Profiling"]["Detail"] = "Full"
 k["Profiling"]["Path"] = profFile
 k["Profiling"]["Frequency"] = 60
 
-k.resume(eList)
+k.run(eList)

@@ -47,4 +47,4 @@ print('------------------------------------------------------')
 
 for e in eList:
   e["Solver"]["Termination Criteria"]["Max Generations"] = 50
-k.resume(eList)
+k.run(eList)

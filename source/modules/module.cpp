@@ -171,9 +171,6 @@ Module *Module::getModule(knlohmann::json &js, Experiment *e)
     module->setConfiguration(js);
   }
 
-  // Initializing module
-  module->initialize();
-
   return module;
 }
 

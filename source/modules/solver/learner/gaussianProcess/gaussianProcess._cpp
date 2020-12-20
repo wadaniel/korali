@@ -77,8 +77,7 @@ void GaussianProcess::initialize()
   double outData;
 
   // Running initialization to verify that the configuration is correct
-  korali::Engine engine;
-  engine.initialize(_koraliExperiment);
+  _koraliExperiment.initialize();
 
   for (size_t i = 0; i < _problem->_batchSize; ++i)
   {
@@ -123,7 +122,7 @@ void GaussianProcess::runGeneration()
 {
   _koraliExperiment["Solver"]["Termination Criteria"]["Max Generations"] = _koraliExperiment._currentGeneration + 1;
   korali::Engine engine;
-  engine.resume(_koraliExperiment);
+  engine.run(_koraliExperiment);
   _gpHyperparameters = _koraliExperiment["Results"]["Best Sample"]["Parameters"].get<std::vector<float>>();
 }
 

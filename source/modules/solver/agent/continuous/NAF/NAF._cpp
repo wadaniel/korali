@@ -18,12 +18,6 @@ void NAF::initializeAgent()
   if (_covarianceScaling <= 0.0) KORALI_LOG_ERROR("Covariance scaling must be larger 0.0 (is %f).\n", _covarianceScaling);
 
   /*********************************************************************
-  * Initializing Normal Distributions for the Policy
-  *********************************************************************/
-
-  korali::Engine engine; // Engine to initialize experiments with
-
-  /*********************************************************************
  * Initializing Q(a,s) = A(a,s) + V(s)
  *********************************************************************/
 
@@ -89,7 +83,7 @@ void NAF::initializeAgent()
   _qExperiment["Solver"]["Neural Network"]["Layers"][outputLayer]["Weight Scaling"] = 0.1;
 
   // Running initialization to verify that the configuration is correct
-  engine.initialize(_qExperiment);
+  _qExperiment.initialize();
 
   // Getting learner pointers
   _qProblem = dynamic_cast<problem::SupervisedLearning *>(_qExperiment._problem);
@@ -103,7 +97,7 @@ void NAF::initializeAgent()
   _criticExperiment._js = _qExperiment._js;
 
   // Running initialization to verify that the configuration is correct
-  engine.initialize(_criticExperiment);
+  _criticExperiment.initialize();
 
   // Getting learner pointers
   _criticProblem = dynamic_cast<problem::SupervisedLearning *>(_criticExperiment._problem);
@@ -115,7 +109,6 @@ void NAF::initializeAgent()
 
   // Setting Initial Hyperparameters
   auto qHyperparameters = _qLearner->getTrainingHyperparameters();
-  _hyperparameters["Critic"] = qHyperparameters;
   _qHatHyperparameter = qHyperparameters;
   _criticLearner->setInferenceHyperparameters(qHyperparameters);
 
@@ -227,14 +220,6 @@ void NAF::trainPolicy()
     _qHatHyperparameter[i] = _targetLearningRate * qHyperparam[i] + (1. - _targetLearningRate) * _qHatHyperparameter[i];
   }
   _criticLearner->setInferenceHyperparameters(_qHatHyperparameter);
-
-  // Storing new Critics' hyperparameters
-  _hyperparameters["Critic"] = qHyperparam;
-}
-
-void NAF::updateAgentPolicy(const knlohmann::json &hyperparameters)
-{
-  _qLearner->setInferenceHyperparameters(hyperparameters["Critic"].get<std::vector<float>>());
 }
 
 knlohmann::json NAF::runPolicy(const std::vector<float> &state)

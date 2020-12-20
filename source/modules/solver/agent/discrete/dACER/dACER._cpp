@@ -15,8 +15,6 @@ void dACER::initializeAgent()
   // Initializing common discrete agent configuration
   Discrete::initializeAgent();
 
-  korali::Engine engine; // Engine to initialize experiments with
-
   /*********************************************************************
  * Initializing Critic-Related Structures
  *********************************************************************/
@@ -39,7 +37,7 @@ void dACER::initializeAgent()
   }
 
   // Running initialization to verify that the configuration is correct
-  engine.initialize(_criticExperiment);
+  _criticExperiment.initialize();
 
   // Getting learner pointers
   _criticProblem = dynamic_cast<problem::SupervisedLearning *>(_criticExperiment._problem);
@@ -72,7 +70,7 @@ void dACER::initializeAgent()
   _policyExperiment["Solver"]["Neural Network"]["Layers"][policyOutputLayer]["Activation Function"]["Type"] = "Softmax";
 
   // Running initialization to verify that the configuration is correct
-  engine.initialize(_policyExperiment);
+  _policyExperiment.initialize();
 
   // Getting learner pointers
   _policyProblem = dynamic_cast<problem::SupervisedLearning *>(_policyExperiment._problem);
@@ -86,11 +84,7 @@ void dACER::initializeAgent()
   _policyCurrentHyperparameters = _policyLearner->getTrainingHyperparameters();
 
   // Storing initial average policy parameters
-  if (_k->_currentGeneration == 0)
-    _policyAverageHyperparameters = _policyCurrentHyperparameters;
-
-  // Get the initial set of policy NN hyperparameters
-  _hyperparameters["Policy"] = _policyCurrentHyperparameters;
+  if (_k->_currentGeneration == 0) _policyAverageHyperparameters = _policyCurrentHyperparameters;
 }
 
 void dACER::trainPolicy()
@@ -257,9 +251,6 @@ void dACER::trainPolicy()
   // Updating policy with new averaged parameters
   _policyLearner->setInferenceHyperparameters(_policyCurrentHyperparameters);
 
-  // Storing average policy hyperparameters
-  _hyperparameters["Policy"] = _policyCurrentHyperparameters;
-
   // Updating Statistics
   _averageQStar = _cumulativeQStar / (float)_criticMiniBatchSize;                                            // Average Q Retrace
   _stdevQStar = sqrt(_cumulativeQStarSquared / (float)_criticMiniBatchSize - _averageQStar * _averageQStar); // Sdev Q Retrace
@@ -374,12 +365,6 @@ float dACER::stateValueFunction(const std::vector<float> &state)
 
   // Returning the sum
   return qSum;
-}
-
-void dACER::updateAgentPolicy(const knlohmann::json &hyperparameters)
-{
-  auto policyHyperparameters = hyperparameters["Policy"].get<std::vector<float>>();
-  _policyLearner->setInferenceHyperparameters(policyHyperparameters);
 }
 
 void dACER::setTrainingState(const knlohmann::json &state)

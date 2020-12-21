@@ -1,0 +1,35 @@
+#include "modules/problem/multiobjectiveoptimization/multiobjectiveoptimization.hpp"
+#include "sample/sample.hpp"
+
+namespace korali
+{
+namespace problem
+{
+void MultiobjectiveOptimization::initialize()
+{
+  if (_k->_variables.size() == 0) KORALI_LOG_ERROR("Multiobjective Optimization problems require at least one variable.\n");
+
+  if(_numObjectives < 1) KORALI_LOG_ERROR("Multiobjective Optimization problems require at least one objective.\n");
+
+}
+
+void MultiobjectiveOptimization::evaluate(Sample &sample)
+{
+  sample.run(_objectiveFunction);
+
+  auto evaluation = KORALI_GET(std::vector<double>, sample, "F(x)");
+
+  if(evaluation.size() != _numObjectives)
+    KORALI_LOG_ERROR("Objective function 'F(x)' must contain %zu values, prided %zu.\n", _numObjectives, evaluation.size());
+  
+  // If result is not a finite number, objective function evaluates to -Infinity
+  for(size_t k = 0; k < _numObjectives; ++k)
+  if (std::isnan(evaluation[k]))
+    sample["F(x)"][k] = -Inf;
+  else
+    sample["F(x)"][k] = evaluation[k];
+}
+
+} // namespace problem
+
+} // namespace korali

@@ -1,7 +1,7 @@
 #ifndef _KORALI_SOLVER_MOCMAES_HPP_
 #define _KORALI_SOLVER_MOCMAES_HPP_
 
-#include "modules/distribution/univariate/normal/normal.hpp"
+#include "modules/distribution/multivariate/normal/normal.hpp"
 #include "modules/distribution/univariate/uniform/uniform.hpp"
 #include "modules/solver/optimizer/optimizer.hpp"
 #include <vector>
@@ -25,25 +25,17 @@ class MOCMAES : public Optimizer
   * @param sampleIdx Index of the sample to evaluate
  */
   void sampleSingle(size_t sampleIdx);
-
+ 
   /**
-    * @brief Updates scaling factor of covariance matrix.
-  */
-  void updateSigma(); /* update Sigma */
+ * @brief Sort sample indeces based on non-dominance (primary) and contribution and contributing hypervolume (secondary).
+ */
+  void sortSampleIndices();
 
   /**
  * @brief Updates mean and covariance of Gaussian proposal distribution.
  * @param evaluations Model evaluations for proposed samples
  */
-  void updateDistribution(const std::vector<double> &evaluations);
-
-  /**
-  * @brief Descending sort of vector elements, stores ordering in _sortingIndex.
-  * @param _sortingIndex Ordering of elements in vector
-  * @param vec Vector to sort
-  * @param N Number of current samples.
- */
-  void sort_index(const std::vector<double> &vec, std::vector<size_t> &_sortingIndex, size_t N) const;
+  void updateDistribution();
 
   /**
  * @brief Configures CMA-ES.

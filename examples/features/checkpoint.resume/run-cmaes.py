@@ -26,6 +26,10 @@ e["Variables"][0]["Name"] = "X"
 e["Variables"][0]["Lower Bound"] = -10.0
 e["Variables"][0]["Upper Bound"] = +10.0
 
+# Reproducibility options
+e["Random Seed"] = 0xC0FFEE
+e["Preserve Random Number Generator States"] = True
+
 # Setting computational model
 e["Problem"]["Objective Function"] = model
 
@@ -41,8 +45,8 @@ if (found == False):
 # If found, we continue with the next 5 generations.
 if (found == True):
   print('------------------------------------------------------')
-  print('Running last 10 generations...')
+  print('Running next 5 generations...')
   print('------------------------------------------------------')
-  e["Solver"]["Termination Criteria"]["Max Generations"] = 10
+  e["Solver"]["Termination Criteria"]["Max Generations"] = e["Current Generation"] + 5
 
 k.resume(e)

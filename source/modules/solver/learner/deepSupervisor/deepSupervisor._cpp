@@ -21,13 +21,8 @@ void DeepSupervisor::initialize()
    _problem = dynamic_cast<problem::SupervisedLearning *>(_k->_problem);
 
    /*****************************************************************
-   * Obtaining parallel configuration
+   * Setting up Neural Networks
    *****************************************************************/
-   _inferenceNeuralNetworks.resize(_maxThreads);
-
-   /*****************************************************************
-  * Setting up Neural Networks
-  *****************************************************************/
 
    // Configuring neural network's inputs
     knlohmann::json neuralNetworkConfig;
@@ -70,6 +65,7 @@ void DeepSupervisor::initialize()
    _trainingNeuralNetwork->initialize();
 
    // Creating inference neural networks (one per thread)
+   _inferenceNeuralNetworks.resize(_maxThreads);
    for (size_t i = 0; i < _maxThreads; i++)
    {
      auto inferenceNeuralNetworkConfig = neuralNetworkConfig;
@@ -121,6 +117,10 @@ void DeepSupervisor::initialize()
 
 void DeepSupervisor::runGeneration()
 {
+  // Grabbing constants
+  size_t N = _problem->_trainingBatchSize;
+  size_t IC = _problem->_inputSize;
+
   // Checking that incoming data has a correct format
   _problem->verifyData();
 
@@ -130,34 +130,35 @@ void DeepSupervisor::runGeneration()
     _trainingNeuralNetwork->forward(_problem->_inputData);
 
     // Saving values for the loss function and its gradient
+    size_t gradientAdditions = 0;
     _currentLoss = 0.0;
 
-    // Allocating space for the loss calculation
-    std::vector<std::vector<std::vector<float>>> lossDiff(_problem->_maxTimesteps);
-    for (size_t t = 0; t < _problem->_maxTimesteps; t++)
-    {
-     lossDiff[t].resize(_problem->_trainingBatchSize);
-     for (size_t i = 0; i < _problem->_trainingBatchSize; i++)
-      lossDiff[t][i].resize(_problem->_solutionSize);
-    }
+    // Creating gradient vector
+    auto gradientVector = _problem->_solutionData;
 
     // Assigning values to evaluation and gradients, depending on the loss function selected
-    for (size_t t = 0; t < _problem->_maxTimesteps; t++)
-     for (size_t i = 0; i < _problem->_trainingBatchSize; i++)
-      for (size_t j = 0; j < _problem->_solutionSize; j++)
+    for (size_t b = 0; b < _problem->_trainingBatchSize; b++)
+     for (size_t t = 0; t < gradientVector[b].size(); t++)
+      for (size_t i = 0; i < _problem->_solutionSize; i++)
       {
+        // Going backwards, starting from the last timestep specified in the input
+        size_t inputTimesteps = _problem->_inputData[b].size();
+        size_t nnTPos =  inputTimesteps - t - 1;
+        size_t grTpos =  _problem->_solutionData[b].size() - t - 1;
+
         float diff = 0.0;
-        if (_lossFunction == "Direct Gradient") diff = _problem->_solutionData[t][i][j];
-        if (_lossFunction == "Mean Squared Error") diff = _problem->_solutionData[t][i][j] - _trainingNeuralNetwork->_outputValues[t][i][j];
-        lossDiff[t][i][j] = diff;
+        if (_lossFunction == "Direct Gradient") diff = gradientVector[b][grTpos][i];
+        if (_lossFunction == "Mean Squared Error") diff = gradientVector[b][grTpos][i] - _trainingNeuralNetwork->_outputValues[b][nnTPos][i];
+        gradientVector[b][grTpos][i] = diff;
         _currentLoss += diff * diff;
+        gradientAdditions++;
       }
 
     // Averaging the loss across the batch size
-    _currentLoss = _currentLoss / ((float)_problem->_maxTimesteps * (float)_problem->_trainingBatchSize * 2.0f);
+    _currentLoss = _currentLoss / ((float)gradientAdditions * 2.0f);
 
     // Backward propagating the gradients through the training neural network
-    _trainingNeuralNetwork->backward(lossDiff);
+    _trainingNeuralNetwork->backward(gradientVector);
 
     // Passing hyperparameter gradients through an ADAM update
     _adamSolver->processResult(_currentLoss, _trainingNeuralNetwork->_hyperparameterGradients);
@@ -214,8 +215,20 @@ void DeepSupervisor::setInferenceHyperparameters(const std::vector<float> &hyper
 
 std::vector<std::vector<std::vector<float>>> DeepSupervisor::getEvaluation(const std::vector<std::vector<std::vector<float>>> &input)
 {
+  // Grabbing constants
+  size_t N = _problem->_inferenceBatchSize;
+  size_t IC = _problem->_inputSize;
+
   // Getting current thread ID
   size_t curThread = omp_get_thread_num();
+
+  // Check whether the input has the correct shape
+  if (input.size() != _problem->_inferenceBatchSize)
+    KORALI_LOG_ERROR("A different batch size (%lu) passed than the one in the configuration.\n", input.size(), _problem->_inferenceBatchSize);
+
+  for (size_t b = 0; b < input.size(); b++)
+   if (input[b].size() > _problem->_maxTimesteps)
+    KORALI_LOG_ERROR("More timesteps (%lu) passed for batch %lu for inference than maximum (%lu).\n", input[b].size(), b, _problem->_maxTimesteps);
 
   // Running the input values through the neural network
   _inferenceNeuralNetworks[curThread]->forward(input);
@@ -223,13 +236,21 @@ std::vector<std::vector<std::vector<float>>> DeepSupervisor::getEvaluation(const
   return _inferenceNeuralNetworks[curThread]->_outputValues;
 }
 
-std::vector<std::vector<std::vector<float>>> DeepSupervisor::getGradients(const std::vector<std::vector<std::vector<float>>> &outputDiffs)
+std::vector<std::vector<std::vector<float>>> DeepSupervisor::getGradients(const std::vector<std::vector<std::vector<float>>> &gradients)
 {
   // Getting current thread ID
   size_t curThread = omp_get_thread_num();
 
+  // Check whether the input has the correct shape
+  if (gradients.size() != _problem->_inferenceBatchSize)
+    KORALI_LOG_ERROR("A different batch size (%lu) passed than the one in the configuration.\n", gradients.size(), _problem->_inferenceBatchSize);
+
+  for (size_t b = 0; b < gradients.size(); b++)
+   if (gradients[b].size() > _problem->_maxTimesteps)
+    KORALI_LOG_ERROR("More timesteps (%lu) passed for batch %lu for inference than maximum (%lu).\n", gradients[b].size(), b, _problem->_maxTimesteps);
+
   // Backward propagating the gradients through the training neural network
-  _inferenceNeuralNetworks[curThread]->backward(outputDiffs);
+  _inferenceNeuralNetworks[curThread]->backward(gradients);
 
   // Running backward propagation wrt data
   return _inferenceNeuralNetworks[curThread]->_inputGradients;

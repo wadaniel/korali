@@ -106,10 +106,6 @@ void Output::forwardData()
  size_t OC = _outputChannels;
  int t = _nn->_currentTimestep;
 
- // Checking correct output allocation
- if (_nn->_batchOutputData.size() != N * OC)
-  KORALI_LOG_ERROR("Wrong size of batch output NN parameters: %lu. Expected: %lu\n", _nn->_batchOutputData.size(), N * OC);
-
  // Copying previous layer's output to this layer's output
  #ifdef _KORALI_USE_EIGEN
    if (_nn->_engine == "Korali")
@@ -165,7 +161,8 @@ void Output::forwardData()
      if (_shift.size() > 0) x += _shift[j];
 
      // Saving result to NN's output directly
-     _nn->_batchOutputData[i * OC + j] = x;
+     size_t pos = (t * N * OC) + (i * OC) + j;
+     _nn->_rawOutputValues[pos] = x;
    }
 }
 
@@ -175,17 +172,14 @@ void Output::backwardData()
   int OC = _outputChannels;
   int t = _nn->_currentTimestep;
 
-  // Checking correct output allocation
-  if (_nn->_batchOutputGradients.size() != N * OC)
-   KORALI_LOG_ERROR("Wrong size of NN's batch output gradients: %lu. Expected: %lu\n", _nn->_batchOutputGradients.size(), N * OC);
-
   // Performing gradient pre-processing
   for (size_t i = 0; i < N; i++)
     for (size_t j = 0; j < OC; j++)
     {
       // Getting forward propagation output and passed gradients
-      float x = _nn->_batchOutputData[i * OC + j];
-      float g = _nn->_batchOutputGradients[i * OC + j];
+      size_t pos = (t * N * OC) + (i * OC) + j;
+      float x = _nn->_rawOutputValues[pos];
+      float g = _nn->_rawOutputGradients[pos];
 
       // If we use shift, then apply the inverse shift to the forward output
       if (_shift.size() > 0)

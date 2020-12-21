@@ -93,27 +93,9 @@ class Engine : public Module
   void run(Experiment &experiment);
 
   /**
-   * @brief Resumes a set experiments from the point they have previously finished.
-   * @param experiments Set of experiments.
-   */
-  void resume(std::vector<Experiment> &experiments);
-
-  /**
-   * @brief Resumes a single experiment from the point it has previously finished.
-   * @param experiment The experiment to run.
-   */
-  void resume(Experiment &experiment);
-
-  /**
-   * @brief Initializes (does not run) a single experiment.
-   * @param experiment The experiment to initialize.
-   */
-  void initialize(Experiment &experiment);
-
-  /**
    * @brief Runs the stored list of experiments.
    */
-  void run();
+  void start();
 
   /**
    * @brief C++ wrapper for the getItem operator.

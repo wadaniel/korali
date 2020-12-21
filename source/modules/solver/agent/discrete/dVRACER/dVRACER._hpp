@@ -31,11 +31,17 @@ class dVRACER : public Discrete
   problem::SupervisedLearning *_criticPolicyProblem;
 
   /**
-   * @brief Calculates the V-target
-   * @param expId Experience Id
-   * @return vTbc
+   * @brief Calculates the state value function V(s,a)
+   * @param state state to evaluate
+   * @return The value of V(s)
    */
-  float computeVtbc(size_t expId);
+  float stateValueFunction(const std::vector<float> &state);
+
+  /**
+   * @brief Update the V-target or current and previous experiences in the episode
+   * @param expId Current Experience Id
+   */
+  void updateVtbc(size_t expId);
 
   /**
    * @brief Calculates the gradient of importance weight wrt to NN output
@@ -58,7 +64,6 @@ class dVRACER : public Discrete
   knlohmann::json getTrainingState() override;
   knlohmann::json runPolicy(const std::vector<float> &state) override;
   void trainPolicy() override;
-  void updateAgentPolicy(const knlohmann::json &hyperparameters) override;
   void printAgentInformation() override;
   void initializeAgent() override;
 };

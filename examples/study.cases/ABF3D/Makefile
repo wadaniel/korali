@@ -6,7 +6,7 @@ KORALILIBS=`python3 -m korali.cxx --libs`
 ifeq ($(TEST), true)
  MSODECFLAGS=-DTEST
 else
-	MSODECFLAGS=-I_deps/msode/src -I../_deps/msode/src -I_deps/msode/extern/json/include/ -I. -DNDEBUG -O3
+	MSODECFLAGS=-I_deps/msode/src -I../_deps/msode/src -I_deps/msode/extern/json/include/ -I. -DNDEBUG -O3 -DMSODE
 	MSODELIBS=_deps/msode/build/lib/libgtest.a \
           _deps/msode/build/src/msode/rl/librl.a\
           -lpthread \

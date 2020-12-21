@@ -111,6 +111,31 @@ class Agent : public Solver
   std::vector<std::vector<knlohmann::json>> _episodes;
 
   /**
+   * @brief Session-specific experience count. This is useful in case of restart: counters from the old session won't count
+   */
+  size_t _sessionExperienceCount;
+
+  /**
+   * @brief Session-specific episode count. This is useful in case of restart: counters from the old session won't count
+   */
+  size_t _sessionEpisodeCount;
+
+  /**
+   * @brief Session-specific generation count. This is useful in case of restart: counters from the old session won't count
+   */
+  size_t _sessionGenerationCount;
+
+  /**
+   * @brief Session-specific policy update count. This is useful in case of restart: counters from the old session won't count
+   */
+  size_t _sessionPolicyUpdateCount;
+
+  /**
+   * @brief Session-specific counter that keeps track of how many experiences need to be obtained this session to reach the start training threshold.
+   */
+  size_t _sessionExperiencesUntilStartSize;
+
+  /**
   * @brief Stores experience replay states.
   */
   cBuffer<experience_t> _experienceReplay;
@@ -151,22 +176,31 @@ class Agent : public Solver
   double _serializationTime;
 
   /**
+   * @brief [Profiling] Stores the computation time per episode taken by Agents
+   */
+  double _agentComputationTime;
+
+  /**
+   * @brief [Profiling] Measures the average communication time per episode taken by Agents
+   */
+  double _agentCommunicationTime;
+
+  /**
+   * @brief [Profiling] Measures the average policy evaluation time per episode taken by Agents.
+   */
+  double _agentPolicyEvaluationTime;
+
+  /**
   * @brief Trains the Agent's policy, based on the new experiences
   */
   virtual void trainPolicy() = 0;
 
   /**
-  * @brief Function to pass state through the NN and calculates the action probabilities, along with any additional information
-  * @param state The current state
-  * @return A JSON object containing the information produced by the policy given the current state
-  */
+   * @brief Function to pass state through the NN and calculates the action probabilities, along with any additional information
+   * @param state The current state
+   * @return A JSON object containing the information produced by the policy given the current state 
+   */
   virtual knlohmann::json runPolicy(const std::vector<float> &state) = 0;
-
-  /**
-  * @brief Updates the agent's hyperparameters
-  * @param hyperparameters The hyperparameters to update the agent.
-  */
-  virtual void updateAgentPolicy(const knlohmann::json &hyperparameters) = 0;
 
   /**
    * @brief Sets training state to continue learning from a previous run or state file
@@ -216,6 +250,12 @@ class Agent : public Solver
    * @param normalizationSteps How many normalization steps to perform (and grab the average)
    */
   void normalizeStateNeuralNetwork(NeuralNetwork *neuralNetwork, size_t miniBatchSize, size_t normalizationSteps);
+
+  /**
+  * @brief Additional post-processing of episode after episode terminated.
+  * @param episode A vector of experiences.
+  */
+  void processEpisode(std::vector<knlohmann::json> &episode);
 
   /**
   * @brief Handles the addition of experience information to the replay memory and other management operations

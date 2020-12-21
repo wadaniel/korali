@@ -26,11 +26,11 @@ def env(s):
   
   # Getting Reward
   s["Reward"] = upswing.getReward()
-   
-  # Storing New State
+ 
+ # Storing New State
   state = upswing.getState().tolist()
   s["State"] = state
- 
+
   maxs = np.maximum(maxs, state)
  
   # Advancing step counter

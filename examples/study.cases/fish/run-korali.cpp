@@ -1,9 +1,12 @@
 #include "_environment/environment.hpp"
 #include "korali.hpp"
 
+std::string _resultsPath;
+
 int main(int argc, char *argv[])
 {
   // Gathering actual arguments from MPI
+
 #ifndef TEST
   int provided;
   MPI_Init_thread(&argc, &argv, MPI_THREAD_FUNNELED, &provided);
@@ -29,13 +32,24 @@ int main(int argc, char *argv[])
   _environment->init();
 #endif
 
+  // Setting results path
+  _resultsPath = "_results";
+
+  // Creating Experiment
   auto e = korali::Experiment();
+
+  // Configuring Experiment
 
   e["Problem"]["Type"] = "Reinforcement Learning / Continuous";
   e["Problem"]["Environment Function"] = &runEnvironment;
   e["Problem"]["Training Reward Threshold"] = 100.0;
   e["Problem"]["Policy Testing Episodes"] = 5;
   e["Problem"]["Actions Between Policy Updates"] = 1;
+
+  ////// Checking if existing results are there and continuing them
+
+  auto found = e.loadState(_resultsPath + std::string("/latest"));
+  if (found == true) printf("Continuing execution from previous run...\n");
 
   // Setting up the 16 state variables
   size_t curVariable = 0;
@@ -68,7 +82,7 @@ int main(int argc, char *argv[])
 
   e["Solver"]["Experience Replay"]["Start Size"] = 1000;
   e["Solver"]["Experience Replay"]["Maximum Size"] = 100000;
-  e["Solver"]["Experience Replay"]["Serialization Frequency"] = 10;
+  e["Solver"]["Experience Replay"]["Serialization Frequency"] = 1;
 
   //// Defining Critic Configuration
 
@@ -123,8 +137,8 @@ int main(int argc, char *argv[])
   ////// Setting results output configuration
 
   e["File Output"]["Enabled"] = true;
-  e["File Output"]["Frequency"] = 10;
-  e["File Output"]["Path"] = "_results";
+  e["File Output"]["Frequency"] = 1;
+  e["File Output"]["Path"] = _resultsPath;
 
   ////// Running Experiment
 
@@ -133,7 +147,7 @@ int main(int argc, char *argv[])
   // Configuring profiler output
 
   k["Profiling"]["Detail"] = "Full";
-  k["Profiling"]["Path"] = "_results/profiling.json";
+  k["Profiling"]["Path"] = _resultsPath + std::string("/profiling.json");
   k["Profiling"]["Frequency"] = 60;
 
 #ifndef TEST

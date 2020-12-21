@@ -16,8 +16,8 @@ np.random.seed(0xC0FFEE)
 trainingInputSet = np.random.uniform(0, 2 * np.pi, trainingBatchSize)
 trainingSolutionSet = np.tanh(np.exp(np.sin(trainingInputSet))) * scaling 
 
-trainingInputSet = [ [ [ i ] for i in trainingInputSet.tolist() ] ]
-trainingSolutionSet = [ [ [ i ] for i in trainingSolutionSet.tolist() ] ]
+trainingInputSet = [ [ [ i ] ] for i in trainingInputSet.tolist() ]
+trainingSolutionSet = [ [ [ i ] ] for i in trainingSolutionSet.tolist() ]
 
 ### Defining a learning problem to infer values of sin(x)
 
@@ -70,7 +70,7 @@ k.run(e)
 ### Obtaining inferred results from the NN and comparing them to the actual solution
 
 testInputSet = np.random.uniform(0, 2 * np.pi, inferenceBatchSize)
-testInputSet = [[[x] for x in testInputSet.tolist()]]
+testInputSet = [ [ [ x ] ] for x in testInputSet.tolist() ]
 
 testInferredSet = e.getEvaluation(testInputSet)
 testGradientSet = e.getGradients(testInferredSet)

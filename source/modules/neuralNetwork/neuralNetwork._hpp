@@ -50,49 +50,49 @@ class NeuralNetwork : public Module
   size_t _hyperparameterCount;
 
   /**
-   * @brief Raw data for the NN input batch
+   * @brief Raw data for the NN input values. Format: TxNxIC (T: Time steps, N: Mini-batch size, IC: Input channels).
    */
-  std::vector<float> _batchInputData;
+  std::vector<float> _rawInputValues;
 
   /**
-   * @brief Raw data for the NN input batch gradients
+   * @brief Raw data for the NN input gradients. Format: TxNxIC (T: Time steps, N: Mini-batch size, IC: Input channels).
    */
-  std::vector<float> _batchInputGradients;
+  std::vector<float> _rawInputGradients;
 
   /**
-   * @brief Raw data for the NN output batch
+   * @brief Raw data for the NN output values. Format: TxNxOC (T: Time steps, N: Mini-batch size, OC: Output channels).
    */
-  std::vector<float> _batchOutputData;
+  std::vector<float> _rawOutputValues;
 
   /**
-   * @brief Raw data for the NN output batch gradients
+   * @brief Raw data for the NN output gradients. Format: TxNxOC (T: Time steps, N: Mini-batch size, OC: Output channels).
    */
-  std::vector<float> _batchOutputGradients;
+  std::vector<float> _rawOutputGradients;
 
   /**
-   * @brief Raw data for the NN hyperparameter gradients
+   * @brief F data for the NN hyperparameter gradients. Format: H (H: Hyperparameter count).
    */
-  std::vector<float> _batchHyperparameterGradients;
+  std::vector<float> _hyperparameterGradients;
+
+  /**
+   * @brief Formatted data for the NN input gradients. Format: NxT*OC (T: Time steps, N: Mini-batch size, OC: Output channels).
+   */
+  std::vector<std::vector<std::vector<float>>> _inputGradients;
+
+  /**
+   * @brief Formatted data for the NN output values. Format: NxT*OC (T: Time steps, N: Mini-batch size, OC: Output channels).
+   */
+  std::vector<std::vector<std::vector<float>>> _outputValues;
+
+  /**
+   * @brief Remembers the number of timesteps provided per batch
+   */
+  std::vector<size_t> _inputBatchTimesteps;
 
   /**
    * @brief Keeps track of the current timestep
    */
    size_t _currentTimestep;
-
-   /**
-   * @brief Stores the values of the NN output batch. Format: TxNxIC (T: Time steps, N: Mini-batch, IC: Input channels).
-   */
-    std::vector<std::vector<std::vector<float>>> _outputValues;
-
-   /**
-   * @brief Stores the gradient of the values of the NN input batch. Format: TxNxIC (T: Time steps, N: Mini-batch, IC: Input channels).
-   */
-    std::vector<std::vector<std::vector<float>>> _inputGradients;
-
-   /**
-   * @brief Stores the average gradient of the NN hyperparameters across all timesteps.
-   */
-   std::vector<float> _hyperparameterGradients;
 
   void initialize() override;
 
@@ -115,16 +115,16 @@ class NeuralNetwork : public Module
   std::vector<float> getHyperparameters();
 
   /**
-   * @brief Forward-propagates the input batch data through the network.
-   * @param input The input batch
+   * @brief Forward-propagates the input values through the network.
+   * @param inputValues The input values.  Format: TxNxIC (T: Time steps, N: Mini-batch, IC: Input channels).
   */
-  void forward(const std::vector<std::vector<std::vector<float>>> &input);
+  void forward(const std::vector<std::vector<std::vector<float>>>& inputValues);
 
   /**
-   * @brief Backward-propagates the gradients data through the network.
-   * @param gradients Output differentials
+   * @brief Backward-propagates the gradients through the network.
+   * @param outputGradients Output gradients. Format: TxNxOC (T: Time steps, N: Mini-batch size, OC: Output channels).
   */
-  void backward(const std::vector<std::vector<std::vector<float>>> &gradients);
+  void backward(const std::vector<std::vector<std::vector<float>>>& outputGradients);
 
   /**
    * @brief Creator that sets initialized flag to false

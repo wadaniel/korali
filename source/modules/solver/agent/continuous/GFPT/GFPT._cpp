@@ -21,29 +21,19 @@ void GFPT::initializeAgent()
   *********************************************************************/
 
   _vExperiment["Problem"]["Type"] = "Supervised Learning";
+  _vExperiment["Problem"]["Max Timesteps"] = _timeSequenceLength;
+  _vExperiment["Problem"]["Training Batch Size"] = _criticMiniBatchSize;
+  _vExperiment["Problem"]["Inference Batch Size"] = 1;
+  _vExperiment["Problem"]["Input"]["Size"] = _problem->_stateVectorSize;
+  _vExperiment["Problem"]["Solution"]["Size"] = 1;
+
   _vExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
   _vExperiment["Solver"]["Optimizer"] = _optimizer;
   _vExperiment["Solver"]["Learning Rate"] = _criticLearningRate;
   _vExperiment["Solver"]["Loss Function"] = "Mean Squared Error";
   _vExperiment["Solver"]["Steps Per Generation"] = 1;
-  _vExperiment["Solver"]["Batch Size"] = _criticMiniBatchSize;
-  _vExperiment["Solver"]["Time Sequence Length"] = _timeSequenceLength;
-
-  // Configuring neural network
   _vExperiment["Solver"]["Neural Network"]["Engine"] = _neuralNetworkEngine;
-  _vExperiment["Solver"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Input";
-  _vExperiment["Solver"]["Neural Network"]["Layers"][0]["Node Count"] = _problem->_stateVectorSize;
-
-  // Adding user-defined hidden layers
-  for (size_t i = 0; i < _neuralNetworkHiddenLayers.size(); i++) _vExperiment["Solver"]["Neural Network"]["Layers"][i+1] = _neuralNetworkHiddenLayers[i];
-
-  // Adding a linear transformation to bring the node count to the desired count
-  _vExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+1]["Type"] = "Layer/Linear";
-  _vExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+1]["Node Count"] = 1;
-  _vExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+1]["Weight Scaling"] = 0.1;
-
-  // Finally adding the output layer (no masks)
-  _vExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+2]["Type"] = "Layer/Output";
+  _vExperiment["Solver"]["Neural Network"]["Hidden Layers"] = _neuralNetworkHiddenLayers;
 
   // Running initialization to verify that the configuration is correct
   _vExperiment.initialize();
@@ -55,34 +45,61 @@ void GFPT::initializeAgent()
   *********************************************************************/
 
   _aExperiment["Problem"]["Type"] = "Supervised Learning";
+  _aExperiment["Problem"]["Max Timesteps"] = _timeSequenceLength;
+  _aExperiment["Problem"]["Training Batch Size"] = _criticMiniBatchSize;
+  _aExperiment["Problem"]["Inference Batch Size"] = 1;
+  _aExperiment["Problem"]["Input"]["Size"] = _problem->_stateVectorSize + _problem->_actionVectorSize;
+  _aExperiment["Problem"]["Solution"]["Size"] = 1;
+
   _aExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
   _aExperiment["Solver"]["Optimizer"] = _optimizer;
   _aExperiment["Solver"]["Learning Rate"] = _criticLearningRate;
   _aExperiment["Solver"]["Loss Function"] = "Mean Squared Error";
   _aExperiment["Solver"]["Steps Per Generation"] = 1;
-  _aExperiment["Solver"]["Batch Size"] = _criticMiniBatchSize;
-  _aExperiment["Solver"]["Time Sequence Length"] = _timeSequenceLength;
-
-  // Configuring neural network
   _aExperiment["Solver"]["Neural Network"]["Engine"] = _neuralNetworkEngine;
-  _aExperiment["Solver"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Input";
-  _aExperiment["Solver"]["Neural Network"]["Layers"][0]["Node Count"] = _problem->_stateVectorSize + _problem->_actionVectorSize;
-
-  // Adding user-defined hidden layers
-  for (size_t i = 0; i < _neuralNetworkHiddenLayers.size(); i++) _aExperiment["Solver"]["Neural Network"]["Layers"][i+1] = _neuralNetworkHiddenLayers[i];
-
-  // Adding a linear transformation to bring the node count to the desired count
-  _aExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+1]["Type"] = "Layer/Linear";
-  _aExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+1]["Node Count"] = 1;
-  _aExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+1]["Weight Scaling"] = 0.1;
-
-  // Finally adding the output layer (no masks)
-  _aExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+2]["Type"] = "Layer/Output";
+  _aExperiment["Solver"]["Neural Network"]["Hidden Layers"] = _neuralNetworkHiddenLayers;
 
   // Running initialization to verify that the configuration is correct
   _aExperiment.initialize();
   _aProblem = dynamic_cast<problem::SupervisedLearning *>(_vExperiment._problem);
   _aLearner = dynamic_cast<solver::learner::DeepSupervisor *>(_vExperiment._solver);
+
+  /*********************************************************************
+   * Initializing Policy Experiment
+   *********************************************************************/
+
+  _policyExperiment["Problem"]["Type"] = "Supervised Learning";
+  _policyExperiment["Problem"]["Max Timesteps"] = _timeSequenceLength;
+  _policyExperiment["Problem"]["Training Batch Size"] = _criticMiniBatchSize;
+  _policyExperiment["Problem"]["Inference Batch Size"] = 1;
+  _policyExperiment["Problem"]["Input"]["Size"] = _problem->_stateVectorSize;
+  _policyExperiment["Problem"]["Solution"]["Size"] = 1;
+
+  _policyExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
+  _policyExperiment["Solver"]["Optimizer"] = _optimizer;
+  _policyExperiment["Solver"]["Learning Rate"] = _policyLearningRate;
+  _policyExperiment["Solver"]["Loss Function"] = "Direct Gradient";
+  _policyExperiment["Solver"]["Steps Per Generation"] = 1;
+  _policyExperiment["Solver"]["Neural Network"]["Engine"] = _neuralNetworkEngine;
+  _policyExperiment["Solver"]["Neural Network"]["Hidden Layers"] = _neuralNetworkHiddenLayers;
+
+  // Finally adding the output layer, with masks to normalize and rescale the output to fit the action's [lower, upper] bounds
+  for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+  {
+    size_t varIdx = _problem->_actionVectorIndexes[i];
+    auto lowerBound = _k->_variables[varIdx]->_lowerBound;
+    auto upperBound = _k->_variables[varIdx]->_upperBound;
+    float scale = (upperBound - lowerBound) * 0.5;
+    float shift = (upperBound + lowerBound) * 0.5;
+    _policyExperiment["Solver"]["Neural Network"]["Output Layer"]["Tanh Mask"][i] = true; // Step 1) Regularize to [-1, +1]
+    _policyExperiment["Solver"]["Neural Network"]["Output Layer"]["Scale"][i] = scale; // Step 2) Rescale to real spread
+    _policyExperiment["Solver"]["Neural Network"]["Output Layer"]["Shift"][i] = shift; // Step 3) Shift to fit
+  }
+
+  // Running initialization to verify that the configuration is correct
+  _policyExperiment.initialize();
+  _policyProblem = dynamic_cast<problem::SupervisedLearning *>(_policyExperiment._problem);
+  _policyLearner = dynamic_cast<solver::learner::DeepSupervisor *>(_policyExperiment._solver);
 
   /*********************************************************************
   * Initializing Action Optimizers (one per thread)
@@ -107,68 +124,15 @@ void GFPT::initializeAgent()
   }
 
   /*********************************************************************
-   * Initializing Policy Experiment
-   *********************************************************************/
-
-  _policyExperiment["Problem"]["Type"] = "Supervised Learning";
-  _policyExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
-  _policyExperiment["Solver"]["Loss Function"] = "Direct Gradient";
-  _policyExperiment["Solver"]["Optimizer"] = _optimizer;
-  _policyExperiment["Solver"]["Learning Rate"] = _policyLearningRate;
-  _policyExperiment["Solver"]["Steps Per Generation"] = 1;
-  _policyExperiment["Solver"]["Batch Size"] = _policyMiniBatchSize;
-  _policyExperiment["Solver"]["Time Sequence Length"] = _timeSequenceLength;
-
-  // Configuring neural network
-  _policyExperiment["Solver"]["Neural Network"]["Engine"] = _neuralNetworkEngine;
-  _policyExperiment["Solver"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Input";
-  _policyExperiment["Solver"]["Neural Network"]["Layers"][0]["Node Count"] = _problem->_stateVectorSize;
-
-  // Adding user-defined hidden layers
-  for (size_t i = 0; i < _neuralNetworkHiddenLayers.size(); i++) _policyExperiment["Solver"]["Neural Network"]["Layers"][i+1] = _neuralNetworkHiddenLayers[i];
-
-  // Adding a linear transformation to bring the node count to the desired count
-  _policyExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+1]["Type"] = "Layer/Linear";
-  _policyExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+1]["Node Count"] = _problem->_actionVectorSize;
-  _policyExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+1]["Weight Scaling"] = 0.1;
-
-  // Finally adding the output layer, with masks to normalize and rescale the output to fit the action's [lower, upper] bounds
-  _policyExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+2]["Type"] = "Layer/Output";
-  for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-  {
-    size_t varIdx = _problem->_actionVectorIndexes[i];
-    auto lowerBound = _k->_variables[varIdx]->_lowerBound;
-    auto upperBound = _k->_variables[varIdx]->_upperBound;
-    float scale = (upperBound - lowerBound) * 0.5;
-    float shift = (upperBound + lowerBound) * 0.5;
-    _policyExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+2]["Tanh Mask"][i] = true; // Step 1) Regularize to [-1, +1]
-    _policyExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+2]["Scale"][i] = scale; // Step 2) Rescale to real spread
-    _policyExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+2]["Shift"][i] = shift; // Step 3) Shift to fit
-  }
-
-  // Running initialization to verify that the configuration is correct
-  _policyExperiment.initialize();
-  _policyProblem = dynamic_cast<problem::SupervisedLearning *>(_policyExperiment._problem);
-  _policyLearner = dynamic_cast<solver::learner::DeepSupervisor *>(_policyExperiment._solver);
-
-  /*********************************************************************
   * Creating special evaluation networks for cases with different mini batch sizes (one per thread)
   *********************************************************************/
-
-  // NN For calculating samples from CMAES
-  knlohmann::json batchOptimizationNetworkConfig;
-  batchOptimizationNetworkConfig["Engine"] = _neuralNetworkEngine;
-  batchOptimizationNetworkConfig["Layers"][0]["Type"] = "Layer/Input";
-  batchOptimizationNetworkConfig["Layers"][0]["Node Count"] = _problem->_stateVectorSize + _problem->_actionVectorSize;
-  for (size_t i = 0; i < _neuralNetworkHiddenLayers.size(); i++) batchOptimizationNetworkConfig["Layers"][i+1] = _neuralNetworkHiddenLayers[i];
-  batchOptimizationNetworkConfig["Layers"][_neuralNetworkHiddenLayers.size()+1]["Type"] = "Layer/Linear";
-  batchOptimizationNetworkConfig["Layers"][_neuralNetworkHiddenLayers.size()+1]["Node Count"] = 1;
-  batchOptimizationNetworkConfig["Layers"][_neuralNetworkHiddenLayers.size()+2]["Type"] = "Layer/Output";
 
   _batchOptimizationNetworks.resize(_maxThreads);
   for (size_t threadIdx = 0; threadIdx < _maxThreads; threadIdx++)
   {
-    auto nnConfig = batchOptimizationNetworkConfig;
+    knlohmann::json nnConfig;
+    _aLearner->_trainingNeuralNetwork->getConfiguration(nnConfig);
+    nnConfig["Batch Size"] = _actionOptimizers[threadIdx]->_populationSize;
     _batchOptimizationNetworks[threadIdx] = dynamic_cast<NeuralNetwork *>(getModule(nnConfig, _k));
     _batchOptimizationNetworks[threadIdx]->initialize();
   }

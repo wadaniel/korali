@@ -18,7 +18,7 @@ parser.add_argument('--numCores', '-nc', help='Number of cores per Aphros instan
 parser.add_argument('--reynoldsNumber', '-re', help='Reynolds number for the simulation.', default=500, required=False)
 parser.add_argument('--tmax', '-t', help='Maximum simulation time.', default=30, required=False)
 parser.add_argument('--objective', '-obj', help='Column name of stat.dat to optimize.', default='vol2', required=False)
-parser.add_argument('--ngens', '-ng', help='Number of generations to run per job.', default='3', required=False)
+parser.add_argument('--ngens', '-ng', help='Number of generations to run per job.', default=1, required=False)
 args = parser.parse_args()
 
 # Parsing inputs
@@ -31,11 +31,13 @@ resultFolder = args.resultFolder
 e["File Output"]["Path"] = resultFolder
 found = e.loadState(resultFolder + '/latest')
 
+print(found)
+print(e["Current Generation"])
 # If, found adding number of generations to the termination criteria
-if (found == True):
- e["Solver"]["Termination Criteria"]["Max Generations"] = e["Current Generation"] + ngens
-else:
- e["Solver"]["Termination Criteria"]["Max Generations"] = ngens
+#if (found == True):
+# e["Solver"]["Termination Criteria"]["Max Generations"] = e["Current Generation"] + ngens
+#else:
+# e["Solver"]["Termination Criteria"]["Max Generations"] = ngens
   
 # Setting up the reference likelihood for the Bayesian Problem
 e["Problem"]["Type"] = "Optimization"
@@ -57,7 +59,7 @@ e["File Output"]["Frequency"] = 1 # Saving every state
 
 # Selecting external conduit
 k["Conduit"]["Type"] = "Concurrent"
-k["Conduit"]["Concurrent Jobs"] = args.concurrency
+k["Conduit"]["Concurrent Jobs"] = int(args.concurrency)
 
 # Reproducibility Settings
 e["Random Seed"] = 0xC0FFEE
@@ -75,7 +77,7 @@ parameterString += 'Re = ' + str(args.reynoldsNumber) + '\n'
 print('--------------------------------------------------')
 print('Running Korali+Aphros Fishbone experiment.')
 print('Result Folder: ' + resultFolder)
-print('# Generations per job: ' + args.ngens)
+print('# Generations per job: ' + str(args.ngens))
 print('CMAES samples per generation: ' + str(args.samples))
 print('Concurrent Aphros instances: ' + str(args.concurrency))
 print('Objective: ' + objective)

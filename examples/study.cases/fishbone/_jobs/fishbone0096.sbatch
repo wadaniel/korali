@@ -11,6 +11,6 @@ date
 
 cd ..
 cat run-korali.py
-python3 run-korali.py -r _result -c 32
+python3 run-korali.py -c 32
 
 date

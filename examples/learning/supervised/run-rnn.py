@@ -28,16 +28,13 @@ X = np.random.uniform(0, np.pi*2, B)
 T = np.arange(0, tf, dt)
 
 trainingInputSet = [ ]
-for i, t in enumerate(T):
- trainingInputSet.append([ ])
- for j, x in enumerate(X):
-  trainingInputSet[i].append([x])
-   
 trainingSolutionSet = [ ] 
-for i, t in enumerate(T):
+for j, x in enumerate(X):
+ trainingInputSet.append([ ])
  trainingSolutionSet.append([ ])
- for j, x in enumerate(X):
-  trainingSolutionSet[i].append([y(x,t)])
+ for t in T:  
+  trainingInputSet[j].append([x])
+  trainingSolutionSet[j].append([y(x,t)]) 
 
 ### Defining a learning problem to infer values of sin(x,t)
 
@@ -88,24 +85,19 @@ k.run(e)
 ### Obtaining inferred results from the NN and comparing them to the actual solution
 
 testInputSet = [ ]
-for i, t in enumerate(T):
- testInputSet.append([ ])
- for j, x in enumerate(X):
-  testInputSet[i].append([x])
-   
 testSolutionSet = [ ] 
-for i, t in enumerate(T):
+for j, x in enumerate(X):
+ testInputSet.append([ ])
  testSolutionSet.append([ ])
- for j, x in enumerate(X):
-  testSolutionSet[i].append([y(x, t)])
-
+ for t in T:  
+  testInputSet[j].append([x])
+  testSolutionSet[j].append([y(x,t)])
+  
 testInferredSet = e.getEvaluation(testInputSet) 
 
-cmap = cm.get_cmap(name='Set1')
-
-xAxis = [ x[0] for x in testInputSet[0] ]
-plt.plot(xAxis, testSolutionSet[-1], "o", color=cmap(i))
-plt.plot(xAxis, testInferredSet[-1], "x", color=cmap(i))
+xAxis = [ x[-1][0] for x in testInputSet ]
+plt.plot(xAxis, [ x[-1][0] for x in testSolutionSet ], "o")
+plt.plot(xAxis, [ x[-1][0] for x in testInferredSet ], "x")
 
 ### Calc MSE on test set
 

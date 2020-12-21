@@ -4,7 +4,7 @@ import sys
 import subprocess
 import shutil
 
-def model(x, resultFolder):
+def model(x, resultFolder, objective):
  
  SourceFolderName = "_config"
  DestinationFolderName = resultFolder + '/sample' + str(x["Sample Id"]).zfill(6) 
@@ -34,6 +34,7 @@ def model(x, resultFolder):
  sampleOutFile = open('sample.out', 'w')
  sampleErrFile = open('sample.err', 'w')
  subprocess.call(['bash', 'run.sh'], stdout=sampleOutFile, stderr=sampleErrFile)
+
 
  x["F(x)"] = 0
 

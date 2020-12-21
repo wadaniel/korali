@@ -15,10 +15,10 @@ parser.add_argument('--samples', '-s', help='Number of CMAES samples per generat
 parser.add_argument('--concurrency', '-c', help='Number of concurrent Aphros instances.', default=1, required=False)
 parser.add_argument('--numCellsY', '-ny', help='Number of cells in the y-dimension.', default='64 * 6', required=False)
 parser.add_argument('--numCores', '-nc', help='Number of cores per Aphros instance.', default=108, required=False)
-parser.add_argument('--reynoldsNumber', '-re', help='Reynolds number for the simulation.', default=16000, required=False)
+parser.add_argument('--reynoldsNumber', '-re', help='Reynolds number for the simulation.', default=500, required=False)
 parser.add_argument('--tmax', '-t', help='Maximum simulation time.', default=30, required=False)
-parser.add_argument('--objective', '-obj', help='Column name of stat.dat to optimize.', default='ekin', required=False)
-parser.add_argument('--ngens', '-ng', help='Number of generations to run per job.', default='21', required=False)
+parser.add_argument('--objective', '-obj', help='Column name of stat.dat to optimize.', default='vol2', required=False)
+parser.add_argument('--ngens', '-ng', help='Number of generations to run per job.', default='3', required=False)
 args = parser.parse_args()
 
 # Parsing inputs

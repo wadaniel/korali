@@ -6,6 +6,7 @@
 #include <random>
 
 void runEnvironment(korali::Sample &s);
+extern std::string _resultsPath;
 extern int _argc;
 extern char **_argv;
 

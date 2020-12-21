@@ -40,7 +40,7 @@ e["Variables"][4]["Upper Bound"] = +10.0
 e["Solver"]["Type"] = "Agent / Continuous / NAF"
 e["Solver"]["Target Learning Rate"] = 0.01
 e["Solver"]["Experiences Between Policy Updates"] = 5
-e["Solver"]["Covariance Scaling"] = 0.01
+e["Solver"]["Covariance Scaling"] = 0.001
 e["Solver"]["Mini Batch Strategy"] = "Prioritized"
 
 ### Defining Experience Replay configuration
@@ -74,7 +74,7 @@ e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 450
 
 ### Setting file output configuration
 
-e["File Output"]["Frequency"] = 100000
+e["File Output"]["Enabled"] = False
 
 ### Running Experiment
 

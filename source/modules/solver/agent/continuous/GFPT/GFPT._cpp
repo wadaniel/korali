@@ -16,9 +16,6 @@ void GFPT::initializeAgent()
   // Initializing common discrete agent configuration
   Continuous::initializeAgent();
 
-  // Engine to initialize experiments with
-  korali::Engine engine;
-
   /*********************************************************************
   * State Value Function Learner
   *********************************************************************/
@@ -44,7 +41,7 @@ void GFPT::initializeAgent()
   _vExperiment["Solver"]["Neural Network"]["Layers"][criticOutputLayer]["Weight Scaling"] = 0.1;
 
   // Running initialization to verify that the configuration is correct
-  engine.initialize(_vExperiment);
+  _vExperiment.initialize();
 
   // Getting learner pointers
   _vProblem = dynamic_cast<problem::SupervisedLearning *>(_vExperiment._problem);
@@ -73,7 +70,7 @@ void GFPT::initializeAgent()
   }
 
   // Running initialization to verify that the configuration is correct
-  engine.initialize(_aExperiment);
+  _aExperiment.initialize();
 
   // Getting learner pointers
   _aProblem = dynamic_cast<problem::SupervisedLearning *>(_aExperiment._problem);
@@ -140,7 +137,7 @@ void GFPT::initializeAgent()
   _policyExperiment["Solver"]["Neural Network"]["Layers"][policyOutputLayer]["Weight Scaling"] = 0.1;
 
   // Running initialization to verify that the configuration is correct
-  engine.initialize(_policyExperiment);
+  _policyExperiment.initialize();
 
   // Getting learner pointers
   _policyProblem = dynamic_cast<problem::SupervisedLearning *>(_policyExperiment._problem);
@@ -165,13 +162,8 @@ void GFPT::initializeAgent()
   {
     auto nnConfig = batchOptimizationNetworkConfig;
     _batchOptimizationNetworks[threadIdx] = dynamic_cast<NeuralNetwork *>(getModule(nnConfig, _k));
+    _batchOptimizationNetworks[threadIdx]->initialize();
   }
-
-  /*********************************************************************
-  * Loading/Setting Hyperparameters
-  *********************************************************************/
-
-  _hyperparameters["Policy"] = _policyLearner->getTrainingHyperparameters();
 
   // Profiling
   _criticUpdateTime = 0.0;
@@ -233,7 +225,7 @@ float GFPT::retraceFunction(size_t expId)
 
 float GFPT::stateValueFunction(const std::vector<float> &state)
 {
-  // Calculating V(s_i+1)
+  // Calculating V(s_i)
   float v = _vLearner->getEvaluation(state)[0];
 
   return v;
@@ -517,9 +509,6 @@ void GFPT::trainPolicy()
   // Updating hyperparameters
   _policyLearner->setInferenceHyperparameters(newPolicyHyperparameters);
 
-  // Storing average policy hyperparameters for workers to use
-  _hyperparameters["Policy"] = newPolicyHyperparameters;
-
   endTime = std::chrono::steady_clock::now();                                                             // Profiling
   _policyUpdateTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
 }
@@ -544,12 +533,6 @@ knlohmann::json GFPT::runPolicy(const std::vector<float> &state)
   policy["Action Means"] = actionMeans;
   policy["Action Sigmas"] = actionSigmas;
   return policy;
-}
-
-void GFPT::updateAgentPolicy(const knlohmann::json &hyperparameters)
-{
-  auto policyHyperparameters = hyperparameters["Policy"].get<std::vector<float>>();
-  _policyLearner->setInferenceHyperparameters(policyHyperparameters);
 }
 
 void GFPT::setTrainingState(const knlohmann::json &state)

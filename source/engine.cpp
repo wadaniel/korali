@@ -81,13 +81,14 @@ void Engine::initialize()
   if (isEmpty(js) == false) KORALI_LOG_ERROR("Unrecognized settings for Korali's Engine: \n%s\n", js.dump(2).c_str());
 }
 
-void Engine::run()
+void Engine::start()
 {
   // Checking if its a dry run and return if it is
   if (_isDryRun) return;
 
   // Only initialize conduit if the Engine being ran is the first one in the process
   auto conduit = dynamic_cast<Conduit *>(getModule(_js["Conduit"], _k));
+  conduit->initialize();
 
   // Initializing conduit server
   conduit->initServer();
@@ -157,42 +158,23 @@ void Engine::saveProfilingInfo(const bool forceSave)
 
 void Engine::run(Experiment &experiment)
 {
-  experiment._js["Current Generation"] = 0;
-  experiment._currentGeneration = 0;
-  resume(experiment);
+  _experimentVector.clear();
+  experiment._k->_engine = this;
+  _experimentVector.push_back(experiment._k);
+  initialize();
+  start();
 }
 
 void Engine::run(std::vector<Experiment> &experiments)
 {
+  _experimentVector.clear();
   for (size_t i = 0; i < experiments.size(); i++)
   {
-    experiments[i]._js["Current Generation"] = 0;
-    experiments[i]._currentGeneration = 0;
+    experiments[i]._k->_engine = this;
+    _experimentVector.push_back(experiments[i]._k);
   }
-  resume(experiments);
-}
-
-void Engine::resume(Experiment &experiment)
-{
-  _experimentVector.clear();
-  _experimentVector.push_back(experiment._k);
   initialize();
-  run();
-}
-
-void Engine::resume(std::vector<Experiment> &experiments)
-{
-  _experimentVector.clear();
-  for (size_t i = 0; i < experiments.size(); i++) _experimentVector.push_back(experiments[i]._k);
-  initialize();
-  run();
-}
-
-void Engine::initialize(Experiment &experiment)
-{
-  _experimentVector.clear();
-  _experimentVector.push_back(experiment._k);
-  initialize();
+  start();
 }
 
 void Engine::serialize(knlohmann::json &js)
@@ -238,14 +220,6 @@ PYBIND11_MODULE(libkorali, m)
     .def("run", [](Engine &k, std::vector<Experiment> &e) {
       isPythonActive = true;
       k.run(e);
-    })
-    .def("resume", [](Engine &k, Experiment &e) {
-      isPythonActive = true;
-      k.resume(e);
-    })
-    .def("resume", [](Engine &k, std::vector<Experiment> &e) {
-      isPythonActive = true;
-      k.resume(e);
     })
     .def("__getitem__", pybind11::overload_cast<pybind11::object>(&Engine::getItem), pybind11::return_value_policy::reference)
     .def("__setitem__", pybind11::overload_cast<pybind11::object, pybind11::object>(&Engine::setItem), pybind11::return_value_policy::reference);

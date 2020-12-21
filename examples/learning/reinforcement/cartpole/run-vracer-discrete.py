@@ -15,9 +15,9 @@ e = korali.Experiment()
 e["Problem"]["Type"] = "Reinforcement Learning / Discrete"
 e["Problem"]["Possible Actions"] = [ [ -10.0 ], [  10.0 ] ]
 e["Problem"]["Environment Function"] = env
-e["Problem"]["Actions Between Policy Updates"] = 1
 e["Problem"]["Training Reward Threshold"] = 400
 e["Problem"]["Policy Testing Episodes"] = 20
+e["Problem"]["Actions Between Policy Updates"] = 5
 
 e["Variables"][0]["Name"] = "Cart Position"
 e["Variables"][0]["Type"] = "State"
@@ -37,12 +37,11 @@ e["Variables"][4]["Type"] = "Action"
 ### Configuring DQN hyperparameters
 
 e["Solver"]["Type"] = "Agent / Discrete / DVRACER"
-e["Solver"]["Experiences Between Policy Updates"] = 1
-e["Solver"]["Cache Persistence"] = 0
+e["Solver"]["Experiences Between Policy Updates"] = 10
+e["Solver"]["Cache Persistence"] = 500
 
 e["Solver"]["Refer"]["Target Off Policy Fraction"] = 0.1
 e["Solver"]["Refer"]["Cutoff Scale"] = 1.0
-e["Solver"]["Refer"]["Start Size"] = 1000
 
 ### Defining Experience Replay configuration
 
@@ -56,8 +55,8 @@ e["Solver"]["Random Action Probability"] = 0.05
 ## Defining Q-Critic and Action-selection (policy) optimizers
 
 e["Solver"]["Critic"]["Discount Factor"] = 0.99
+e["Solver"]["Critic"]["Learning Rate"] = 1e-4
 e["Solver"]["Critic"]["Mini Batch Size"] = 32
-e["Solver"]["Critic"]["Learning Rate"] = 0.001
 
 ### Defining the shape of the neural network
 

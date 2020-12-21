@@ -17,56 +17,65 @@ parser.add_argument('--numCellsY', '-ny', help='Number of cells in the y-dimensi
 parser.add_argument('--numCores', '-nc', help='Number of cores per Aphros instance.', default=108, required=False)
 parser.add_argument('--reynoldsNumber', '-re', help='Reynolds number for the simulation.', default=16000, required=False)
 parser.add_argument('--tmax', '-t', help='Maximum simulation time.', default=30, required=False)
-parser.add_argument('--objective', '-t', help='Column name of stat.dat to optimize.', required=True)
+parser.add_argument('--objective', '-obj', help='Column name of stat.dat to optimize.', default='ekin', required=False)
+parser.add_argument('--ngens', '-ng', help='Number of generations to run per job.', default='21', required=False)
 args = parser.parse_args()
 
-# Getting objective column name
+# Parsing inputs
+tmax = float(args.tmax)
 objective = str(args.objective)
+ngens = int(args.ngens)
 
 # Loading previous results if they exist
 resultFolder = args.resultFolder
 e["File Output"]["Path"] = resultFolder
 found = e.loadState(resultFolder + '/latest')
+
+# If, found adding number of generations to the termination criteria
+if (found == True):
+ e["Solver"]["Termination Criteria"]["Max Generations"] = e["Current Generation"] + ngens
+else:
+ e["Solver"]["Termination Criteria"]["Max Generations"] = ngens
   
 # Setting up the reference likelihood for the Bayesian Problem
 e["Problem"]["Type"] = "Optimization"
-e["Problem"]["Objective Function"] = lambda x: model(x, resultFolder, objective)
+e["Problem"]["Objective Function"] = lambda x: model(x, resultFolder, objective, tmax)
 
-e["Variables"][0]["Name"] = "Angle"
-e["Variables"][0]["Lower Bound"] = 30.0
-e["Variables"][0]["Upper Bound"] = 60.0
-e["Variables"][0]["Initial Standard Deviation"] = 10.0
-
-e["Variables"][1]["Name"] = "Bone Factor"
-e["Variables"][1]["Lower Bound"] = 0.0
-e["Variables"][1]["Upper Bound"] = 1.8
-e["Variables"][1]["Initial Standard Deviation"] = 0.9
+e["Variables"][0]["Name"] = "Bone Factor"
+e["Variables"][0]["Lower Bound"] = 0.0
+e["Variables"][0]["Upper Bound"] = 1.8
+e["Variables"][0]["Initial Standard Deviation"] = 0.9
 
 # Configuring CMA-ES parameters
 e["Solver"]["Type"] = "Optimizer/CMAES"
 e["Solver"]["Population Size"] = args.samples
 e["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-32
 
-# General Settings
+# Result Settings
 e["File Output"]["Path"] = resultFolder
-e["File Output"]["Frequency"] = 1
+e["File Output"]["Frequency"] = 1 # Saving every state
 
 # Selecting external conduit
 k["Conduit"]["Type"] = "Concurrent"
 k["Conduit"]["Concurrent Jobs"] = args.concurrency
 
+# Reproducibility Settings
+e["Random Seed"] = 0xC0FFEE
+e["Preserve Random Number Generator States"] = True
+
 # Configuring base parameter file
 parameterString = ''
 parameterString += 'np = ' + str(args.numCores) + '\n'
 parameterString += 'ny = ' + str(args.numCellsY) + '\n'
-parameterString += 'tmax = ' + str(args.tmax) + '\n'
-parameterString += 'Re = ' + str(args.reynoldsNumber) + '\n'
 parameterString += 'bubbles = True\n'
+parameterString += 'tmax = ' + str(tmax) + '\n'
+parameterString += 'Re = ' + str(args.reynoldsNumber) + '\n'
 
 # Logging configuration
 print('--------------------------------------------------')
 print('Running Korali+Aphros Fishbone experiment.')
 print('Result Folder: ' + resultFolder)
+print('# Generations per job: ' + args.ngens)
 print('CMAES samples per generation: ' + str(args.samples))
 print('Concurrent Aphros instances: ' + str(args.concurrency))
 print('Objective: ' + objective)

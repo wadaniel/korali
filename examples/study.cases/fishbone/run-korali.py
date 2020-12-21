@@ -31,14 +31,12 @@ resultFolder = args.resultFolder
 e["File Output"]["Path"] = resultFolder
 found = e.loadState(resultFolder + '/latest')
 
-print(found)
-print(e["Current Generation"])
 # If, found adding number of generations to the termination criteria
-#if (found == True):
-# e["Solver"]["Termination Criteria"]["Max Generations"] = e["Current Generation"] + ngens
-#else:
-# e["Solver"]["Termination Criteria"]["Max Generations"] = ngens
-  
+if (found == True):
+ e["Solver"]["Termination Criteria"]["Max Generations"] = e["Current Generation"] + ngens
+else:
+ e["Solver"]["Termination Criteria"]["Max Generations"] = ngens
+ 
 # Setting up the reference likelihood for the Bayesian Problem
 e["Problem"]["Type"] = "Optimization"
 e["Problem"]["Objective Function"] = lambda x: model(x, resultFolder, objective, tmax)
@@ -91,4 +89,4 @@ with open(configFile, 'w') as f:
   print('[Korali] Creating: ' + configFile + '...')
   f.write(parameterString)
   
-k.run(e)
+k.resume(e)

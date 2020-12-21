@@ -7,7 +7,7 @@ import shutil
 def model(x, resultFolder, objective, tmax):
  
  SourceFolderName = "_config"
- DestinationFolderName = resultFolder + '/sample' + str(x["Sample Id"]).zfill(6) 
+ DestinationFolderName = resultFolder + '/gen' + str(x["Current Generation"]).zfill(3) + '/sample' + str(x["Sample Id"]).zfill(6) 
  
  # Copy the 'model' folder into a temporary directory
  if os.path.exists( DestinationFolderName ):

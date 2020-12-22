@@ -14,7 +14,7 @@ parser.add_argument('--resultFolder', '-r', help='Path to the resuls folder', de
 parser.add_argument('--samples', '-s', help='Number of CMAES samples per generation.', default=32, required=False)
 parser.add_argument('--concurrency', '-c', help='Number of concurrent Aphros instances.', default=1, required=False)
 parser.add_argument('--objective', '-obj', help='Optimization objective', choices=['maxNumCoal', 'minNumCoal', 'maxMeanVel'],   required=True)
-parser.add_argument('--ngens', '-ng', help='Number of generations to run per job.', default=1, required=False)
+parser.add_argument('--ngens', '-ng', help='Number of generations to run per job.', default=200, required=False)
 args = parser.parse_args()
 
 # Parsing inputs

@@ -64,4 +64,3 @@ class GaussianProcess : public Learner
 } // namespace korali
 
 #endif // _KORALI_SOLVER_GAUSSIAN_PROCESS_HPP_
-

@@ -52,4 +52,3 @@ class Learner : public Solver
 } // namespace korali
 
 #endif // _KORALI_LEARNER_HPP_
-

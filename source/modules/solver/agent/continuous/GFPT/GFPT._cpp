@@ -22,7 +22,7 @@ void GFPT::initializeAgent()
 
   _vExperiment["Problem"]["Type"] = "Supervised Learning";
   _vExperiment["Problem"]["Max Timesteps"] = _timeSequenceLength;
-  _vExperiment["Problem"]["Training Batch Size"] = _criticMiniBatchSize;
+  _vExperiment["Problem"]["Training Batch Size"] = _miniBatchSize;
   _vExperiment["Problem"]["Inference Batch Size"] = 1;
   _vExperiment["Problem"]["Input"]["Size"] = _problem->_stateVectorSize;
   _vExperiment["Problem"]["Solution"]["Size"] = 1;
@@ -46,7 +46,7 @@ void GFPT::initializeAgent()
 
   _aExperiment["Problem"]["Type"] = "Supervised Learning";
   _aExperiment["Problem"]["Max Timesteps"] = _timeSequenceLength;
-  _aExperiment["Problem"]["Training Batch Size"] = _criticMiniBatchSize;
+  _aExperiment["Problem"]["Training Batch Size"] = _miniBatchSize;
   _aExperiment["Problem"]["Inference Batch Size"] = 1;
   _aExperiment["Problem"]["Input"]["Size"] = _problem->_stateVectorSize + _problem->_actionVectorSize;
   _aExperiment["Problem"]["Solution"]["Size"] = 1;
@@ -70,10 +70,10 @@ void GFPT::initializeAgent()
 
   _policyExperiment["Problem"]["Type"] = "Supervised Learning";
   _policyExperiment["Problem"]["Max Timesteps"] = _timeSequenceLength;
-  _policyExperiment["Problem"]["Training Batch Size"] = _criticMiniBatchSize;
+  _policyExperiment["Problem"]["Training Batch Size"] = _miniBatchSize;
   _policyExperiment["Problem"]["Inference Batch Size"] = 1;
   _policyExperiment["Problem"]["Input"]["Size"] = _problem->_stateVectorSize;
-  _policyExperiment["Problem"]["Solution"]["Size"] = 1;
+  _policyExperiment["Problem"]["Solution"]["Size"] = _problem->_actionVectorSize;
 
   _policyExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
   _policyExperiment["Solver"]["Optimizer"] = _optimizer;
@@ -92,8 +92,8 @@ void GFPT::initializeAgent()
     float scale = (upperBound - lowerBound) * 0.5;
     float shift = (upperBound + lowerBound) * 0.5;
     _policyExperiment["Solver"]["Neural Network"]["Output Layer"]["Tanh Mask"][i] = true; // Step 1) Regularize to [-1, +1]
-    _policyExperiment["Solver"]["Neural Network"]["Output Layer"]["Scale"][i] = scale; // Step 2) Rescale to real spread
-    _policyExperiment["Solver"]["Neural Network"]["Output Layer"]["Shift"][i] = shift; // Step 3) Shift to fit
+    _policyExperiment["Solver"]["Neural Network"]["Output Layer"]["Scale"][i] = scale;    // Step 2) Rescale to real spread
+    _policyExperiment["Solver"]["Neural Network"]["Output Layer"]["Shift"][i] = shift;    // Step 3) Shift to fit
   }
 
   // Running initialization to verify that the configuration is correct
@@ -108,7 +108,7 @@ void GFPT::initializeAgent()
   _actionOptimizers.resize(_maxThreads);
   for (size_t threadIdx = 0; threadIdx < _maxThreads; threadIdx++)
   {
-    _actionOptimizers[threadIdx] = new korali::fCMAES(_problem->_actionVectorSize);
+    _actionOptimizers[threadIdx] = new korali::fCMAES(_problem->_actionVectorSize, _policyOptimizationCandidates);
     _actionOptimizers[threadIdx]->setSeed(_k->_randomSeed++);
 
     // Initializing experiment with an initial zero set
@@ -132,7 +132,7 @@ void GFPT::initializeAgent()
   {
     knlohmann::json nnConfig;
     _aLearner->_trainingNeuralNetwork->getConfiguration(nnConfig);
-    nnConfig["Batch Size"] = _actionOptimizers[threadIdx]->_populationSize;
+    nnConfig["Batch Size"] = _policyOptimizationCandidates;
     _batchOptimizationNetworks[threadIdx] = dynamic_cast<NeuralNetwork *>(getModule(nnConfig, _k));
     _batchOptimizationNetworks[threadIdx]->initialize();
   }
@@ -285,10 +285,10 @@ void GFPT::trainPolicy()
   _cumulativeQStar = 0.0;
 
   // Creating minibatch for the critic update
-  auto miniBatchIndexes = generateMiniBatch(_criticMiniBatchSize);
+  auto miniBatchIndexes = generateMiniBatch(_miniBatchSize);
 
 #pragma omp parallel for schedule(dynamic, 1)
-  for (size_t b = 0; b < _criticMiniBatchSize; b++)
+  for (size_t b = 0; b < _miniBatchSize; b++)
   {
     // Selecting a uniformly random selected, yet not repeated experience
     size_t expId = miniBatchIndexes[b];
@@ -323,11 +323,11 @@ void GFPT::trainPolicy()
     for (size_t i = 0; i < _problem->_stateVectorSize; i++) aInput[i] = curState[i];
     for (size_t i = 0; i < _problem->_actionVectorSize; i++) aInput[_problem->_stateVectorSize + i] = curAction[i];
 
-    _aProblem->_inputData[b] = { aInput };
-    _aProblem->_solutionData[b] = { aTarget };
+    _aProblem->_inputData[b] = {aInput};
+    _aProblem->_solutionData[b] = {aTarget};
 
-    _vProblem->_inputData[b] = { curState };
-    _vProblem->_solutionData[b] = { vTarget };
+    _vProblem->_inputData[b] = {curState};
+    _vProblem->_solutionData[b] = {vTarget};
 
     // Keeping statistics
     _cumulativeQStar += Vtbc;
@@ -335,12 +335,10 @@ void GFPT::trainPolicy()
 
   // Running one generation of the optimization method with the given mini-batch
   _aLearner->runGeneration();
-  _aLearner->finalize();
-
   _vLearner->runGeneration();
-  _vLearner->finalize();
+
   // Keeping critic/policy statistics
-  _averageQStar = _cumulativeQStar / (float)_criticMiniBatchSize;
+  _averageQStar = _cumulativeQStar / (float)_miniBatchSize;
 
   auto endTime = std::chrono::steady_clock::now();                                                        // Profiling
   _criticUpdateTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
@@ -366,7 +364,7 @@ void GFPT::trainPolicy()
 
 // Accumulating states for evaluation in the policy
 #pragma omp parallel for schedule(dynamic, 1)
-  for (size_t idx = 0; idx < _criticMiniBatchSize; idx++)
+  for (size_t idx = 0; idx < _miniBatchSize; idx++)
   {
     // Getting current thread ID and corresponding optimizer and batch optimization NN
     size_t curThread = omp_get_thread_num();
@@ -382,10 +380,9 @@ void GFPT::trainPolicy()
     std::vector<float> curState = _experienceReplay[expId].state;
     std::vector<float> curAction = _experienceReplay[expId].action;
 
-    size_t candidateCount = actionOptimizer->_populationSize;
-    std::vector<float> candidateEvaluations(candidateCount);
-    std::vector<std::vector<std::vector<float>>> candidateMiniBatch(candidateCount);
-    for (size_t i = 0; i < candidateCount; i++)
+    std::vector<float> candidateEvaluations(_policyOptimizationCandidates);
+    std::vector<std::vector<std::vector<float>>> candidateMiniBatch(_policyOptimizationCandidates);
+    for (size_t i = 0; i < _policyOptimizationCandidates; i++)
     {
       candidateMiniBatch[i].resize(1);
       candidateMiniBatch[i][0].resize(_problem->_stateVectorSize + _problem->_actionVectorSize);
@@ -433,7 +430,7 @@ void GFPT::trainPolicy()
         actionOptimizer->prepareGeneration();
 
         // Gathering candidate states into a single minibatch
-        for (size_t i = 0; i < candidateCount; i++)
+        for (size_t i = 0; i < _policyOptimizationCandidates; i++)
           for (size_t j = 0; j < _problem->_actionVectorSize; j++)
             candidateMiniBatch[i][0][j + _problem->_stateVectorSize] = actionOptimizer->_samplePopulation[i][j];
 
@@ -442,7 +439,7 @@ void GFPT::trainPolicy()
         auto criticEvaluations = batchOptimizationNetwork->_outputValues;
 
         // Getting the advantage function for all candidates
-        for (size_t i = 0; i < candidateCount; i++)
+        for (size_t i = 0; i < _policyOptimizationCandidates; i++)
           candidateEvaluations[i] = criticEvaluations[i][0];
 
         // Running one more CMAES iteration
@@ -464,16 +461,15 @@ void GFPT::trainPolicy()
     //  meanGradients[i] += ( 1.0f - _referBeta ) * (oldMean[i] - curMean[i]) * curInvVariance[i];
 
     // Adding means to the policy update
-    _policyProblem->_inputData[idx] = { curState };
+    _policyProblem->_inputData[idx] = {curState};
     _policyProblem->_solutionData[idx] = meanGradients;
   }
 
-  size_t offPolicySamples = _criticMiniBatchSize - onPolicySamples;
-  _referOffPolicyFraction = (float)offPolicySamples / (float)_criticMiniBatchSize;
+  size_t offPolicySamples = _miniBatchSize - onPolicySamples;
+  _referOffPolicyFraction = (float)offPolicySamples / (float)_miniBatchSize;
 
   // Running one generation of the optimization method with the given mini-batch
   _policyLearner->runGeneration();
-  _policyLearner->finalize();
 
   /*******************************************************************
    * Soft adoption of new hyperparameters wrt to adoption rate

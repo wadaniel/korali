@@ -12,7 +12,6 @@ namespace layer
 class Input : public Layer
 {
   public:
-
   void initialize() override;
   void forwardData() override;
   void backwardData() override;

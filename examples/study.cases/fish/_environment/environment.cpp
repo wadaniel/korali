@@ -146,32 +146,32 @@ void runEnvironment(korali::Sample &s)
 
 void setInitialConditions(StefanFish *agent, Shape *object, const bool isTraining)
 {
- // Initial fixed conditions for testing
- double SA = 0.0;
- double SX = 0.3;
- double SY = 0.0;
+  // Initial fixed conditions for testing
+  double SA = 0.0;
+  double SX = 0.3;
+  double SY = 0.0;
 
- // If training, add noise to them
- //if (isTraining)
- //{
- // std::uniform_real_distribution<double> disA(-20. / 180. * M_PI, 20. / 180. * M_PI);
- // std::uniform_real_distribution<double> disX(0.25, 0.35);
- // std::uniform_real_distribution<double> disY(-0.05, 0.05);
+  // If training, add noise to them
+  //if (isTraining)
+  //{
+  // std::uniform_real_distribution<double> disA(-20. / 180. * M_PI, 20. / 180. * M_PI);
+  // std::uniform_real_distribution<double> disX(0.25, 0.35);
+  // std::uniform_real_distribution<double> disY(-0.05, 0.05);
 
- // SA = disA(_randomGenerator);
- // SX = disX(_randomGenerator);
- // SY = disY(_randomGenerator);
- //}
+  // SA = disA(_randomGenerator);
+  // SX = disX(_randomGenerator);
+  // SY = disY(_randomGenerator);
+  //}
 
- printf("[Korali] Initial Conditions:\n");
- printf("[Korali] SA: %f\n", SA);
- printf("[Korali] SX: %f\n", SX);
- printf("[Korali] SY: %f\n", SY);
+  printf("[Korali] Initial Conditions:\n");
+  printf("[Korali] SA: %f\n", SA);
+  printf("[Korali] SX: %f\n", SX);
+  printf("[Korali] SY: %f\n", SY);
 
- // Setting initial position and orientation for the fish
- double C[2] = {object->center[0] + SX, object->center[1] + SY};
- agent->setCenterOfMass(C);
- agent->setOrientation(SA);
+  // Setting initial position and orientation for the fish
+  double C[2] = {object->center[0] + SX, object->center[1] + SY};
+  agent->setCenterOfMass(C);
+  agent->setOrientation(SA);
 }
 
 bool isTerminal(StefanFish *agent, Shape *object)

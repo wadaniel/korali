@@ -22,37 +22,27 @@ void NAF::initializeAgent()
  *********************************************************************/
 
   _qExperiment["Problem"]["Type"] = "Supervised Learning";
+  _qExperiment["Problem"]["Max Timesteps"] = _timeSequenceLength;
+  _qExperiment["Problem"]["Training Batch Size"] = _miniBatchSize;
+  _qExperiment["Problem"]["Inference Batch Size"] = 1;
+  _qExperiment["Problem"]["Input"]["Size"] = _problem->_stateVectorSize;
+  _qExperiment["Problem"]["Solution"]["Size"] = 1 + 2 * _problem->_actionVectorSize;
+
   _qExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
   _qExperiment["Solver"]["Optimizer"] = _optimizer;
   _qExperiment["Solver"]["Learning Rate"] = _learningRate;
   _qExperiment["Solver"]["Loss Function"] = "Mean Squared Error";
   _qExperiment["Solver"]["Steps Per Generation"] = 1;
-  _qExperiment["Solver"]["Batch Size"] = _miniBatchSize;
-  _qExperiment["Solver"]["Time Sequence Length"] = _timeSequenceLength;
-
-  // Configuring neural network
   _qExperiment["Solver"]["Neural Network"]["Engine"] = _neuralNetworkEngine;
-  _qExperiment["Solver"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Input";
-  _qExperiment["Solver"]["Neural Network"]["Layers"][0]["Node Count"] = _problem->_stateVectorSize;
-
-  // Adding user-defined hidden layers
-  for (size_t i = 0; i < _neuralNetworkHiddenLayers.size(); i++) _qExperiment["Solver"]["Neural Network"]["Layers"][i+1] = _neuralNetworkHiddenLayers[i];
-
-  // Adding a linear transformation to bring the node count to the desired count
-  _qExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+1]["Type"] = "Layer/Linear";
-  _qExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+1]["Node Count"] = 1 + 2 * _problem->_actionVectorSize;
-  _qExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+1]["Weight Scaling"] = 0.1;
-
-  // Finally adding the output layer
-  _qExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+2]["Type"] = "Layer/Output";
-
-  // No mask for the state value
-  _qExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+2]["Scale"][0] = 1.0f;
-  _qExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+2]["Shift"][0] = 0.0f;
-  _qExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+2]["Tanh Mask"][0] = false;
-  _qExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+2]["Softplus Mask"][0] = false;
+  _qExperiment["Solver"]["Neural Network"]["Hidden Layers"] = _neuralNetworkHiddenLayers;
 
   // Masks to normalize and rescaling output to fit the action's [lower, upper] bounds (and sigmas/P)
+
+  _qExperiment["Solver"]["Neural Network"]["Output Layer"]["Scale"][0] = 1.0f;
+  _qExperiment["Solver"]["Neural Network"]["Output Layer"]["Shift"][0] = 0.0f;
+  _qExperiment["Solver"]["Neural Network"]["Output Layer"]["Tanh Mask"][0] = false;
+  _qExperiment["Solver"]["Neural Network"]["Output Layer"]["Softplus Mask"][0] = false;
+
   for (size_t i = 0; i < _problem->_actionVectorSize; i++)
   {
     size_t varIdx = _problem->_actionVectorIndexes[i];
@@ -62,16 +52,16 @@ void NAF::initializeAgent()
     float shift = (upperBound + lowerBound) * 0.5;
 
     // Tanh mask for Mean
-    _qExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+2]["Scale"][i + 1] = scale;
-    _qExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+2]["Shift"][i + 1] = shift;
-    _qExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+2]["Tanh Mask"][i + 1] = true;
-    _qExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+2]["Softplus Mask"][i + 1] = false;
+    _qExperiment["Solver"]["Neural Network"]["Output Layer"]["Scale"][i + 1] = scale;
+    _qExperiment["Solver"]["Neural Network"]["Output Layer"]["Shift"][i + 1] = shift;
+    _qExperiment["Solver"]["Neural Network"]["Output Layer"]["Tanh Mask"][i + 1] = true;
+    _qExperiment["Solver"]["Neural Network"]["Output Layer"]["Softplus Mask"][i + 1] = false;
 
     // Softplus mask for P
-    _qExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+2]["Scale"][_problem->_actionVectorSize + i + 1] = 1.0f;
-    _qExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+2]["Shift"][_problem->_actionVectorSize + i + 1] = 0.0f;
-    _qExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+2]["Tanh Mask"][_problem->_actionVectorSize + i + 1] = false;
-    _qExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+2]["Softplus Mask"][_problem->_actionVectorSize + i + 1] = true;
+    _qExperiment["Solver"]["Neural Network"]["Output Layer"]["Scale"][_problem->_actionVectorSize + i + 1] = 1.0f;
+    _qExperiment["Solver"]["Neural Network"]["Output Layer"]["Shift"][_problem->_actionVectorSize + i + 1] = 0.0f;
+    _qExperiment["Solver"]["Neural Network"]["Output Layer"]["Tanh Mask"][_problem->_actionVectorSize + i + 1] = false;
+    _qExperiment["Solver"]["Neural Network"]["Output Layer"]["Softplus Mask"][_problem->_actionVectorSize + i + 1] = true;
   }
 
   // Running initialization to verify that the configuration is correct
@@ -177,7 +167,7 @@ void NAF::trainPolicy()
       policyGradient[1 + curAction.size() + j] = -weight * 0.5 * diff * dmu * dmu / (_actionScalings[j] * _actionScalings[j]);
     }
 
-    _qProblem->_inputData[i] = { curState };
+    _qProblem->_inputData[i] = {curState};
     _qProblem->_solutionData[i] = policyGradient;
 
     // Keeping statistics
@@ -187,9 +177,7 @@ void NAF::trainPolicy()
   }
 
   // Running one generation of the optimization method with the given mini-batch
-  _qLearner->initialize();
   _qLearner->runGeneration();
-  _qLearner->finalize();
 
   // Keeping statistics
   _averageQStar = _cumulativeQStar / (float)_miniBatchSize;

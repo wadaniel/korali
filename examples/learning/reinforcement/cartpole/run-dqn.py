@@ -53,7 +53,7 @@ e["Solver"]["Random Action Probability"] = 0.05
 ## Defining Q-Critic and Action-selection (policy) optimizers
 
 e["Solver"]["Mini Batch Size"] = 32
-e["Solver"]["Learning Rate"] = 0.001
+e["Solver"]["Learning Rate"] = 0.0001
 e["Solver"]["Discount Factor"] = 0.99
 e["Solver"]["Target Update Delay"] = 50
 

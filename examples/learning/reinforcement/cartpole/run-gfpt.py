@@ -45,6 +45,7 @@ e["Solver"]["Discount Factor"] = 0.99
 
 ### Defining the configuration of replay memory
 
+e["Solver"]["Mini Batch Size"] = 32
 e["Solver"]["Mini Batch Strategy"] = "Uniform"
 e["Solver"]["Experience Replay"]["Start Size"] =   2000
 e["Solver"]["Experience Replay"]["Maximum Size"] = 100000
@@ -53,10 +54,8 @@ e["Solver"]["Experience Replay"]["Serialization Frequency"] = 10
 ## Defining Critic and Policy Configuration
 
 e["Solver"]["Critic"]["Learning Rate"] = 0.01
-e["Solver"]["Critic"]["Mini Batch Size"] = 32 
-
 e["Solver"]["Policy"]["Learning Rate"] = 0.01
-e["Solver"]["Policy"]["Mini Batch Size"] = 32
+e["Solver"]["Policy"]["Optimization Candidates"] = 32
 e["Solver"]["Policy"]["Target Accuracy"] = 0.00001
 
 ### Configuring the neural network and its hidden layers

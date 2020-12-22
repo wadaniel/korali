@@ -19,82 +19,59 @@ e["Problem"]["Policy Testing Episodes"] = 10
 e["Problem"]["Actions Between Policy Updates"] = 1
 
 e["Variables"][0]["Name"] = "Cart Position"
-e["Variables"][0]["Type"] = "State"
-
 e["Variables"][1]["Name"] = "Cart Velocity"
-e["Variables"][1]["Type"] = "State"
-
 e["Variables"][2]["Name"] = "Angle 1"
-e["Variables"][2]["Type"] = "State"
-
 e["Variables"][3]["Name"] = "Angular Velocity 1"
-e["Variables"][3]["Type"] = "State"
-
 e["Variables"][4]["Name"] = "Angle 2"
-e["Variables"][4]["Type"] = "State"
-
 e["Variables"][5]["Name"] = "Angular Velocity 2"
-e["Variables"][5]["Type"] = "State"
-
 e["Variables"][6]["Name"] = "Height Proxy"
-e["Variables"][6]["Type"] = "State"
 
 e["Variables"][7]["Name"] = "Force"
 e["Variables"][7]["Type"] = "Action"
 e["Variables"][7]["Lower Bound"] = -20.0
 e["Variables"][7]["Upper Bound"] = +20.0
-e["Variables"][7]["Exploration Sigma"] = 1.00
+e["Variables"][7]["Exploration Sigma"] = 1.0
 
 ### Defining Agent Configuration 
 
 e["Solver"]["Type"] = "Agent / Continuous / GFPT"
 e["Solver"]["Mode"] = "Training"
+e["Solver"]["Experiences Per Generation"] = 100
 e["Solver"]["Experiences Between Policy Updates"] = 1
+e["Solver"]["Cache Persistence"] = 10
+e["Solver"]["Discount Factor"] = 0.99
 
 ### Defining the configuration of replay memory
 
-e["Solver"]["Experience Replay"]["Start Size"] =   1000
+e["Solver"]["Mini Batch Size"] = 32
+e["Solver"]["Mini Batch Strategy"] = "Uniform"
+
+e["Solver"]["Experience Replay"]["Start Size"] =   2000
 e["Solver"]["Experience Replay"]["Maximum Size"] = 100000
+e["Solver"]["Experience Replay"]["Serialization Frequency"] = 10
 
-## Defining Critic Configuration
+## Defining Critic and Policy Configuration
 
-e["Solver"]["Critic"]["Discount Factor"] = 0.99
-e["Solver"]["Critic"]["Learning Rate"] = 0.001
-e["Solver"]["Critic"]["Mini Batch Size"] = 64
+e["Solver"]["Critic"]["Learning Rate"] = 0.01
+e["Solver"]["Policy"]["Learning Rate"] = 0.01
+e["Solver"]["Policy"]["Target Accuracy"] = 0.00001
+e["Solver"]["Policy"]["Optimization Candidates"] = 32
 
-e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear"
+### Configuring the neural network and its hidden layers
 
-e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Type"] = "Layer/Dense"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Node Count"] = 32
-e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Activation Function"]["Type"] = "Elementwise/Tanh"
+e["Solver"]["Neural Network"]["Engine"] = "OneDNN"
 
-e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Type"] = "Layer/Dense"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Node Count"] = 32
-e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Elementwise/Tanh"
+e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear"
+e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 32
 
-e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Type"] = "Layer/Dense"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Elementwise/Linear"
+e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Activation"
+e["Solver"]["Neural Network"]["Hidden Layers"][1]["Function"] = "Elementwise/Tanh"
 
-## Defining Policy Configuration
+e["Solver"]["Neural Network"]["Hidden Layers"][2]["Type"] = "Layer/Linear"
+e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 32
 
-e["Solver"]["Policy"]["Learning Rate"] = 0.001
-e["Solver"]["Policy"]["Mini Batch Size"] = 16
-e["Solver"]["Policy"]["Target Accuracy"] = 0.1
-
-e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
-e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear"
-
-e["Solver"]["Policy"]["Neural Network"]["Layers"][1]["Type"] = "Layer/Dense"
-e["Solver"]["Policy"]["Neural Network"]["Layers"][1]["Node Count"] = 32
-e["Solver"]["Policy"]["Neural Network"]["Layers"][1]["Activation Function"]["Type"] = "Elementwise/Tanh"
-
-e["Solver"]["Policy"]["Neural Network"]["Layers"][2]["Type"] = "Layer/Dense"
-e["Solver"]["Policy"]["Neural Network"]["Layers"][2]["Node Count"] = 32
-e["Solver"]["Policy"]["Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Elementwise/Tanh"
-
-e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Type"] = "Layer/Dense"
-e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Elementwise/Tanh"
+e["Solver"]["Neural Network"]["Hidden Layers"][3]["Type"] = "Layer/Activation"
+e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tanh"
 
 ### Defining Termination Criteria
 

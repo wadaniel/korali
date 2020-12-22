@@ -201,7 +201,7 @@ knlohmann::json Distributed::recvMessageFromEngine()
   int messageSize = 0;
   MPI_Get_count(&status, MPI_CHAR, &messageSize);
 
-  char* jsonStringChar = (char*) malloc(sizeof(char) * (messageSize + 1));
+  char *jsonStringChar = (char *)malloc(sizeof(char) * (messageSize + 1));
   MPI_Recv(jsonStringChar, messageSize, MPI_CHAR, getRootRank(), MPI_MESSAGE_JSON, _mpiCommunicator, MPI_STATUS_IGNORE);
 
   jsonStringChar[messageSize] = '\0';
@@ -234,7 +234,7 @@ void Distributed::listenWorkers()
     // Receiving message from the worker
     int messageSize = 0;
     MPI_Get_count(&status, MPI_CHAR, &messageSize);
-    char* messageStringChar = (char*) malloc(sizeof(char) * (messageSize + 1));
+    char *messageStringChar = (char *)malloc(sizeof(char) * (messageSize + 1));
     MPI_Recv(messageStringChar, messageSize, MPI_CHAR, source, MPI_MESSAGE_JSON, _mpiCommunicator, MPI_STATUS_IGNORE);
     messageStringChar[messageSize] = '\0';
     auto message = knlohmann::json::parse(messageStringChar);

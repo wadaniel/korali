@@ -12,72 +12,71 @@ namespace layer
 class Activation : public Layer
 {
   public:
-
 #ifdef _KORALI_USE_ONEDNN
 
- /**
+  /**
  * @brief oneDNN Algorithm chosen for activation function
  */
- dnnl::algorithm _activationAlgorithm;
+  dnnl::algorithm _activationAlgorithm;
 
- /**
+  /**
  * @brief oneDNN Arguments to the activation function
  */
- std::unordered_map<int, dnnl::memory> _forwardActivationArgs;
+  std::unordered_map<int, dnnl::memory> _forwardActivationArgs;
 
- /**
+  /**
  * @brief oneDNN primitive attributes that describe a softmax activation function
  */
- dnnl::softmax_forward::primitive_desc _forwardSoftmaxActivationPrimitiveDesc;
+  dnnl::softmax_forward::primitive_desc _forwardSoftmaxActivationPrimitiveDesc;
 
- /**
+  /**
  * @brief oneDNN primitive attributes that describe an element-wise activation function
  */
- dnnl::eltwise_forward::primitive_desc _forwardEltwiseActivationPrimitiveDesc;
+  dnnl::eltwise_forward::primitive_desc _forwardEltwiseActivationPrimitiveDesc;
 
- /**
+  /**
  * @brief oneDNN primitive to run the activation function operation
  */
- dnnl::primitive _forwardActivationPrimitive;
+  dnnl::primitive _forwardActivationPrimitive;
 
- /**
+  /**
  * @brief oneDNN Arguments for the backward propagation of the gradient wrt activation functions
  */
- std::unordered_map<int, dnnl::memory> _backwardActivationArgs;
+  std::unordered_map<int, dnnl::memory> _backwardActivationArgs;
 
- /**
+  /**
  * @brief oneDNN primitive for the backward propagation of the gradient wrt activation functions
  */
- dnnl::primitive _backwardActivationPrimitive;
+  dnnl::primitive _backwardActivationPrimitive;
 
- /**
+  /**
  * @brief oneDNN Arguments for the backward propagation of the gradient wrt Data
  */
- std::unordered_map<int, dnnl::memory> _backwardDataArgs;
+  std::unordered_map<int, dnnl::memory> _backwardDataArgs;
 
- /**
+  /**
  * @brief oneDNN primitive for the backward propagation of the gradient wrt Data
  */
- dnnl::primitive _backwardDataPrimitive;
+  dnnl::primitive _backwardDataPrimitive;
 
- /**
+  /**
  * @brief oneDNN Arguments for the backward propagation of the gradient wrt Weights and Biases
  */
- std::unordered_map<int, dnnl::memory> _backwardWeightsArgs;
+  std::unordered_map<int, dnnl::memory> _backwardWeightsArgs;
 
- /**
+  /**
  * @brief oneDNN primitive for the backward propagation of the gradient wrt Weights and Biases
  */
- dnnl::primitive _backwardWeightsPrimitive;
+  dnnl::primitive _backwardWeightsPrimitive;
 
 #endif
 
 #ifdef _KORALI_USE_CUDNN
 
- /**
+  /**
  * @brief cuDNN Descriptor for the activation function
  */
- cudnnActivationDescriptor_t _activationDesc;
+  cudnnActivationDescriptor_t _activationDesc;
 
 #endif
 

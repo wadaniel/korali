@@ -36,73 +36,63 @@ void VRACER::initializeAgent()
  *********************************************************************/
 
   _criticPolicyExperiment["Problem"]["Type"] = "Supervised Learning";
+  _criticPolicyExperiment["Problem"]["Max Timesteps"] = _timeSequenceLength;
+  _criticPolicyExperiment["Problem"]["Training Batch Size"] = _miniBatchSize;
+  _criticPolicyExperiment["Problem"]["Inference Batch Size"] = 1;
+  _criticPolicyExperiment["Problem"]["Input"]["Size"] = _problem->_stateVectorSize;
+  _criticPolicyExperiment["Problem"]["Solution"]["Size"] = 1 + 2 * _problem->_actionVectorSize;
+
   _criticPolicyExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
   _criticPolicyExperiment["Solver"]["Optimizer"] = _optimizer;
   _criticPolicyExperiment["Solver"]["Learning Rate"] = _learningRate;
   _criticPolicyExperiment["Solver"]["Loss Function"] = "Mean Squared Error";
   _criticPolicyExperiment["Solver"]["Steps Per Generation"] = 1;
-  _criticPolicyExperiment["Solver"]["Batch Size"] = _miniBatchSize;
-  _criticPolicyExperiment["Solver"]["Time Sequence Length"] = _timeSequenceLength;
-
-  // Configuring neural network
   _criticPolicyExperiment["Solver"]["Neural Network"]["Engine"] = _neuralNetworkEngine;
-  _criticPolicyExperiment["Solver"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Input";
-  _criticPolicyExperiment["Solver"]["Neural Network"]["Layers"][0]["Node Count"] = _problem->_stateVectorSize;
+  _criticPolicyExperiment["Solver"]["Neural Network"]["Hidden Layers"] = _neuralNetworkHiddenLayers;
 
-  // Adding user-defined hidden layers
-  for (size_t i = 0; i < _neuralNetworkHiddenLayers.size(); i++) _criticPolicyExperiment["Solver"]["Neural Network"]["Layers"][i+1] = _neuralNetworkHiddenLayers[i];
-
-  // Adding a linear transformation to bring the node count to the desired count
-  _criticPolicyExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+1]["Type"] = "Layer/Linear";
-  _criticPolicyExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+1]["Node Count"] = 1 + 2 * _problem->_actionVectorSize;
-  _criticPolicyExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+1]["Weight Scaling"] = 0.1;
-
-  // Finally adding the output layer
-  _criticPolicyExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+2]["Type"] = "Layer/Output";
-
-  // No output mask for value
-  _criticPolicyExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+2]["Scale"][0] = 1.0f;
-  _criticPolicyExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+2]["Shift"][0] = 0.0f;
-  _criticPolicyExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+2]["Tanh Mask"][0] = false;
-  _criticPolicyExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+2]["Softplus Mask"][0] = false;
-  _criticPolicyExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+2]["Sigmoid Mask"][0] = false;
+  // Masks to normalize and rescaling output to fit the action's [lower, upper] bounds (and sigmas/P)
+  _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Scale"][0] = 1.0f;
+  _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Shift"][0] = 0.0f;
+  _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Tanh Mask"][0] = false;
+  _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Softplus Mask"][0] = false;
+  _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Sigmoid Mask"][0] = false;
 
   // Normalizing and rescaling output to fit the action's [lower, upper] bounds
   for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-   {
-     size_t varIdx = _problem->_actionVectorIndexes[i];
-     auto lowerBound = _k->_variables[varIdx]->_lowerBound;
-     auto upperBound = _k->_variables[varIdx]->_upperBound;
-     float scale = (upperBound - lowerBound) * 0.5;
-     float shift = (upperBound + lowerBound) * 0.5;
+  {
+    size_t varIdx = _problem->_actionVectorIndexes[i];
+    auto lowerBound = _k->_variables[varIdx]->_lowerBound;
+    auto upperBound = _k->_variables[varIdx]->_upperBound;
+    float scale = (upperBound - lowerBound) * 0.5;
+    float shift = (upperBound + lowerBound) * 0.5;
 
-     // Tanh mask for Mean
-     _criticPolicyExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+2]["Scale"][i + 1] = scale;
-     _criticPolicyExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+2]["Shift"][i + 1] = shift;
-     _criticPolicyExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+2]["Tanh Mask"][i + 1] = true;
-     _criticPolicyExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+2]["Softplus Mask"][i + 1] = false;
-     _criticPolicyExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+2]["Sigmoid Mask"][i + 1] = false;
+    // Tanh mask for Mean
+    _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Scale"][i + 1] = scale;
+    _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Shift"][i + 1] = shift;
+    _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Tanh Mask"][i + 1] = true;
+    _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Softplus Mask"][i + 1] = false;
+    _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Sigmoid Mask"][i + 1] = false;
 
-     if (_policyDistribution == "Normal")
-     {
-       // Softplus mask for Sigma
-       _criticPolicyExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+2]["Scale"][_problem->_actionVectorSize + i + 1] = 1.0f;
-       _criticPolicyExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+2]["Shift"][_problem->_actionVectorSize + i + 1] = 0.0f;
-       _criticPolicyExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+2]["Tanh Mask"][_problem->_actionVectorSize + i + 1] = false;
-       _criticPolicyExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+2]["Softplus Mask"][_problem->_actionVectorSize + i + 1] = true;
-       _criticPolicyExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+2]["Sigmoid Mask"][_problem->_actionVectorSize + i + 1] = false;
-     }
+    if (_policyDistribution == "Normal")
+    {
+      // Softplus mask for Sigma
+      _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Scale"][_problem->_actionVectorSize + i + 1] = 1.0f;
+      _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Shift"][_problem->_actionVectorSize + i + 1] = 0.0f;
+      _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Tanh Mask"][_problem->_actionVectorSize + i + 1] = false;
+      _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Softplus Mask"][_problem->_actionVectorSize + i + 1] = true;
+      _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Sigmoid Mask"][_problem->_actionVectorSize + i + 1] = false;
+    }
 
-     if (_policyDistribution == "Beta")
-     {
-       // Sigmoid in mask for Variance Coefficients in (0,1)
-       _criticPolicyExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+2]["Scale"][_problem->_actionVectorSize + i + 1] = 1.0f;
-       _criticPolicyExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+2]["Shift"][_problem->_actionVectorSize + i + 1] = 0.0f;
-       _criticPolicyExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+2]["Tanh Mask"][_problem->_actionVectorSize + i + 1] = false;
-       _criticPolicyExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+2]["Softplus Mask"][_problem->_actionVectorSize + i + 1] = false;
-       _criticPolicyExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+2]["Sigmoid Mask"][_problem->_actionVectorSize + i + 1] = true;
-     }
-   }
+    if (_policyDistribution == "Beta")
+    {
+      // Sigmoid in mask for Variance Coefficients in (0,1)
+      _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Scale"][_problem->_actionVectorSize + i + 1] = 1.0f;
+      _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Shift"][_problem->_actionVectorSize + i + 1] = 0.0f;
+      _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Tanh Mask"][_problem->_actionVectorSize + i + 1] = false;
+      _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Softplus Mask"][_problem->_actionVectorSize + i + 1] = false;
+      _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Sigmoid Mask"][_problem->_actionVectorSize + i + 1] = true;
+    }
+  }
 
   // Running initialization to verify that the configuration is correct
   _criticPolicyExperiment.initialize();
@@ -147,7 +137,8 @@ void VRACER::trainPolicy()
   // Update off-policy fraction
   size_t expCount = _experienceReplay.size();
   size_t offPolicyCount = 0;
-#pragma omp parallel for reduction(+ : offPolicyCount)
+#pragma omp parallel for reduction(+ \
+                                   : offPolicyCount)
   for (size_t expId = 0; expId < expCount - 1; expId++)
   {
     float expImportanceWeight = _experienceReplay[expId].cache.get("Importance Weight");
@@ -282,10 +273,10 @@ void VRACER::trainPolicy()
     }
 
     // Set status as learning problem input
-    _criticPolicyProblem->_inputData[step] = { expState };
+    _criticPolicyProblem->_inputData[step] = {expState};
 
     // Set Gradient of Loss as Solution
-    _criticPolicyProblem->_solutionData[step] = { gradientLoss };
+    _criticPolicyProblem->_solutionData[step] = gradientLoss;
 
     updateVtbc(curId);
   }
@@ -293,17 +284,17 @@ void VRACER::trainPolicy()
   // Compute average and std of Value target
   _averageQStar = _cumulativeQStar / (float)_miniBatchSize;
   _stdevQStar = sqrt(_cumulativeQStarSquared / (float)_miniBatchSize - _averageQStar * _averageQStar);
+
   // Compute average and std of Value Loss
   _averageTDError = cumulativeTdError / (float)_miniBatchSize;
   _stdevTDError = std::sqrt(cumulativeTdErrorSquared / (float)_miniBatchSize - _averageTDError * _averageTDError);
+
   // Compute average and std of Off-Policy Gradient Objective
   _averagePolicyError = cumulativePolicyError / (float)policyErrorCounter;
   _stdevPolicyError = std::sqrt(cumulativePolicyErrorSquared / (float)policyErrorCounter - _averagePolicyError * _averagePolicyError);
 
   // Running one generation of the optimization method with the given mini-batch
-  _criticPolicyLearner->initialize();
   _criticPolicyLearner->runGeneration();
-  _criticPolicyLearner->finalize();
 }
 
 void VRACER::updateVtbc(size_t expId)

@@ -19,7 +19,6 @@ namespace korali
 {
 namespace neuralNetwork
 {
-
 void Layer::createForwardPipeline()
 {
   // Obtaining batch size
@@ -51,12 +50,12 @@ void Layer::createForwardPipeline()
 #ifdef _KORALI_USE_CUDNN
   if (_nn->_engine == "CuDNN")
   {
-   cudnnErrCheck(cudnnCreateTensorDescriptor(&_outputTensorDesc));
-   cudnnErrCheck(cudnnSetTensor4dDescriptor(_outputTensorDesc, CUDNN_TENSOR_NCHW, CUDNN_DATA_FLOAT, N, OC, 1, 1));
+    cudnnErrCheck(cudnnCreateTensorDescriptor(&_outputTensorDesc));
+    cudnnErrCheck(cudnnSetTensor4dDescriptor(_outputTensorDesc, CUDNN_TENSOR_NCHW, CUDNN_DATA_FLOAT, N, OC, 1, 1));
 
-   _outputTensor.resize(_nn->_timestepCount);
-   for (size_t t = 0; t < _nn->_timestepCount; t++)
-    cudaErrCheck(cudaMalloc((void **)&_outputTensor[t], N * OC * sizeof(float)));
+    _outputTensor.resize(_nn->_timestepCount);
+    for (size_t t = 0; t < _nn->_timestepCount; t++)
+      cudaErrCheck(cudaMalloc((void **)&_outputTensor[t], N * OC * sizeof(float)));
   }
 #endif
 }
@@ -89,9 +88,9 @@ void Layer::createBackwardPipeline()
 #ifdef _KORALI_USE_CUDNN
   if (_nn->_engine == "CuDNN")
   {
-   _outputGradientTensor.resize(_nn->_timestepCount);
-   for (size_t i = 0; i < _nn->_timestepCount; i++)
-    cudaErrCheck(cudaMalloc((void **)&_outputGradientTensor[i], N * OC * sizeof(float)));
+    _outputGradientTensor.resize(_nn->_timestepCount);
+    for (size_t i = 0; i < _nn->_timestepCount; i++)
+      cudaErrCheck(cudaMalloc((void **)&_outputGradientTensor[i], N * OC * sizeof(float)));
   }
 #endif
 }
@@ -104,7 +103,7 @@ std::vector<float> Layer::generateInitialHyperparameters()
 
 void Layer::createHyperparameterMemory()
 {
- _hyperparameterCount = 0;
+  _hyperparameterCount = 0;
 }
 
 } // namespace neuralNetwork

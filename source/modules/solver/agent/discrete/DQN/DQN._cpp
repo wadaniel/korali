@@ -98,7 +98,6 @@ void DQN::trainPolicy()
 
       // Storage to put together state and action
       std::vector<float> stateActionInput(_problem->_stateVectorSize + _problem->_actionVectorSize);
-
       for (size_t j = 0; j < nextState.size(); j++) stateActionInput[j] = nextState[j];
       for (size_t j = 0; j < bestAction.size(); j++) stateActionInput[j + nextState.size()] = bestAction[j];
 
@@ -112,7 +111,7 @@ void DQN::trainPolicy()
     _criticProblem->_inputData[i][0].resize(_problem->_stateVectorSize + _problem->_actionVectorSize);
     for (size_t j = 0; j < _problem->_stateVectorSize; j++) _criticProblem->_inputData[i][0][j] = curState[j];
     for (size_t j = 0; j < _problem->_actionVectorSize; j++) _criticProblem->_inputData[i][0][j + _problem->_stateVectorSize] = curAction[j];
-    _criticProblem->_solutionData[i] = { qStar };
+    _criticProblem->_solutionData[i] = {qStar};
 
     // Keeping statistics
     _cumulativeQStar += qStar;
@@ -121,7 +120,6 @@ void DQN::trainPolicy()
 
   // Running one generation of the optimization method with the given mini-batch
   _criticLearner->runGeneration();
-  _criticLearner->finalize();
 
   // Keeping statistics
   _averageQStar = (float)_cumulativeQStar / (float)_miniBatchSize;

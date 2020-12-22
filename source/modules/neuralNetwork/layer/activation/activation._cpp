@@ -21,18 +21,17 @@ namespace neuralNetwork
 {
 namespace layer
 {
-
 void Activation::initialize()
 {
- // The node count for this layer should be the same as the previous layer
- _outputChannels = _prevLayer->_outputChannels;
+  // The node count for this layer should be the same as the previous layer
+  _outputChannels = _prevLayer->_outputChannels;
 
- // Checking Layer size
- if (_outputChannels == 0) KORALI_LOG_ERROR("Node count for layer (%lu) should be larger than zero.\n", _index);
+  // Checking Layer size
+  if (_outputChannels == 0) KORALI_LOG_ERROR("Node count for layer (%lu) should be larger than zero.\n", _index);
 
- // Checking position
- if (_index == 0) KORALI_LOG_ERROR("Activation layers cannot be the starting layer of the NN\n");
- if (_index == _nn->_layers.size()-1) KORALI_LOG_ERROR("Activation layers cannot be the last layer of the NN\n");
+  // Checking position
+  if (_index == 0) KORALI_LOG_ERROR("Activation layers cannot be the starting layer of the NN\n");
+  if (_index == _nn->_layers.size() - 1) KORALI_LOG_ERROR("Activation layers cannot be the last layer of the NN\n");
 }
 
 void Activation::createForwardPipeline()
@@ -110,8 +109,8 @@ void Activation::createBackwardPipeline()
   *  Initializing memory objects and primitives for BACKWARD propagation
   *********************************************************************************/
 
- // Calling base layer function
- Layer::createBackwardPipeline();
+  // Calling base layer function
+  Layer::createBackwardPipeline();
 
   size_t N = _nn->_batchSize;
   size_t OC = _outputChannels;
@@ -148,7 +147,6 @@ void Activation::createBackwardPipeline()
     }
   }
 #endif
-
 }
 
 void Activation::forwardData()
@@ -202,9 +200,9 @@ void Activation::forwardData()
 #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
   {
-   // Primitive arguments.
-   _forwardActivationArgs[DNNL_ARG_SRC] = _prevLayer->_outputMem;
-   _forwardActivationArgs[DNNL_ARG_DST] = _outputMem;
+    // Primitive arguments.
+    _forwardActivationArgs[DNNL_ARG_SRC] = _prevLayer->_outputMem;
+    _forwardActivationArgs[DNNL_ARG_DST] = _outputMem;
 
     _forwardActivationPrimitive.execute(_nn->_stream, _forwardActivationArgs);
   }
@@ -215,36 +213,36 @@ void Activation::forwardData()
   {
     if (_function == "Elementwise/Linear")
     {
-     cudaErrCheck(cudaMemcpy(
-            _outputTensor[t],
-            _prevLayer->_outputTensor[t],
-            N * OC * sizeof(float),
-            cudaMemcpyDeviceToDevice));
+      cudaErrCheck(cudaMemcpy(
+        _outputTensor[t],
+        _prevLayer->_outputTensor[t],
+        N * OC * sizeof(float),
+        cudaMemcpyDeviceToDevice));
     }
     else if (_function == "Softmax")
     {
       cudnnErrCheck(cudnnSoftmaxForward(
-            _nn->_cuDNNHandle,
-            CUDNN_SOFTMAX_LOG,
-            CUDNN_SOFTMAX_MODE_CHANNEL,
-            &_alpha,
-            _prevLayer->_outputTensorDesc,
-            _prevLayer->_outputTensor[t],
-            &_beta,
-            _outputTensorDesc,
-            _outputTensor[t]));
+        _nn->_cuDNNHandle,
+        CUDNN_SOFTMAX_LOG,
+        CUDNN_SOFTMAX_MODE_CHANNEL,
+        &_alpha,
+        _prevLayer->_outputTensorDesc,
+        _prevLayer->_outputTensor[t],
+        &_beta,
+        _outputTensorDesc,
+        _outputTensor[t]));
     }
     else
     {
       cudnnErrCheck(cudnnActivationForward(
-            _nn->_cuDNNHandle,
-            _activationDesc,
-            &_alpha,
-            _prevLayer->_outputTensorDesc,
-            _prevLayer->_outputTensor[t],
-            &_beta,
-            _outputTensorDesc,
-            _outputTensor[t]));
+        _nn->_cuDNNHandle,
+        _activationDesc,
+        &_alpha,
+        _prevLayer->_outputTensorDesc,
+        _prevLayer->_outputTensor[t],
+        &_beta,
+        _outputTensorDesc,
+        _outputTensor[t]));
     }
   }
 #endif
@@ -284,7 +282,7 @@ void Activation::backwardData()
 
     if (_function == "Elementwise/SoftSign")
       for (size_t i = 0; i < N * OC; i++)
-       _prevLayer->_outputGradient[i] = _outputGradient[i] / ((1.0f + std::abs(_outputValues[i])) * (1.0f + std::abs(_outputValues[i])));
+        _prevLayer->_outputGradient[i] = _outputGradient[i] / ((1.0f + std::abs(_outputValues[i])) * (1.0f + std::abs(_outputValues[i])));
 
     if (_function == "Softmax")
       for (size_t i = 0; i < N * OC; i++)
@@ -295,11 +293,11 @@ void Activation::backwardData()
 #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
   {
-   // Primitive arguments.
-   _backwardActivationArgs[DNNL_ARG_DIFF_DST] = _outputGradientMem; // Input
-   _backwardActivationArgs[DNNL_ARG_SRC] = _prevLayer->_outputMem;                // Input
-   _backwardActivationArgs[DNNL_ARG_DIFF_SRC] = _prevLayer->_outputGradientMem;       // Output
-   if (_function == "Softmax") _backwardActivationArgs[DNNL_ARG_DST] = _outputMem;
+    // Primitive arguments.
+    _backwardActivationArgs[DNNL_ARG_DIFF_DST] = _outputGradientMem;             // Input
+    _backwardActivationArgs[DNNL_ARG_SRC] = _prevLayer->_outputMem;              // Input
+    _backwardActivationArgs[DNNL_ARG_DIFF_SRC] = _prevLayer->_outputGradientMem; // Output
+    if (_function == "Softmax") _backwardActivationArgs[DNNL_ARG_DST] = _outputMem;
 
     _backwardActivationPrimitive.execute(_nn->_stream, _backwardActivationArgs);
   }
@@ -310,42 +308,42 @@ void Activation::backwardData()
   {
     if (_function == "Elementwise/Linear")
     {
-     cudaErrCheck(cudaMemcpy(
-            _prevLayer->_outputGradientTensor[t],
-            _outputGradientTensor[t],
-            N * OC * sizeof(float),
-            cudaMemcpyDeviceToDevice));
+      cudaErrCheck(cudaMemcpy(
+        _prevLayer->_outputGradientTensor[t],
+        _outputGradientTensor[t],
+        N * OC * sizeof(float),
+        cudaMemcpyDeviceToDevice));
     }
     else if (_function == "Softmax")
     {
       cudnnErrCheck(cudnnSoftmaxBackward(
-            _nn->_cuDNNHandle,
-            CUDNN_SOFTMAX_LOG,
-            CUDNN_SOFTMAX_MODE_CHANNEL,
-            &_alpha,
-            _outputTensorDesc,
-            _outputTensor[t],
-            _outputTensorDesc,
-            _outputGradientTensor[t],
-            &_beta,
-            _prevLayer->_outputTensorDesc,
-            _prevLayer->_outputGradientTensor[t]));
+        _nn->_cuDNNHandle,
+        CUDNN_SOFTMAX_LOG,
+        CUDNN_SOFTMAX_MODE_CHANNEL,
+        &_alpha,
+        _outputTensorDesc,
+        _outputTensor[t],
+        _outputTensorDesc,
+        _outputGradientTensor[t],
+        &_beta,
+        _prevLayer->_outputTensorDesc,
+        _prevLayer->_outputGradientTensor[t]));
     }
     else
     {
       cudnnErrCheck(cudnnActivationBackward(
-            _nn->_cuDNNHandle,
-            _activationDesc,
-            &_alpha,
-            _outputTensorDesc,
-            _outputTensor[t],
-            _outputTensorDesc,
-            _outputGradientTensor[t],
-            _prevLayer->_outputTensorDesc,
-            _prevLayer->_outputTensor[t],
-            &_beta,
-            _prevLayer->_outputTensorDesc,
-            _prevLayer->_outputGradientTensor[t]));
+        _nn->_cuDNNHandle,
+        _activationDesc,
+        &_alpha,
+        _outputTensorDesc,
+        _outputTensor[t],
+        _outputTensorDesc,
+        _outputGradientTensor[t],
+        _prevLayer->_outputTensorDesc,
+        _prevLayer->_outputTensor[t],
+        &_beta,
+        _prevLayer->_outputTensorDesc,
+        _prevLayer->_outputGradientTensor[t]));
     }
   }
 #endif

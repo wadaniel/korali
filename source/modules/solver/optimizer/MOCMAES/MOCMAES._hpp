@@ -25,11 +25,13 @@ class MOCMAES : public Optimizer
   * @param sampleIdx Index of the sample to evaluate
  */
   void sampleSingle(size_t sampleIdx);
- 
+
   /**
  * @brief Sort sample indeces based on non-dominance (primary) and contribution and contributing hypervolume (secondary).
+ * @param values Values to sort
+ * @return sorted indices
  */
-  void sortSampleIndices();
+  std::vector<int> sortSampleIndices(const std::vector<std::vector<double>> &values) const;
 
   /**
  * @brief Updates mean and covariance of Gaussian proposal distribution.

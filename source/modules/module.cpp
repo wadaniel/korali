@@ -30,6 +30,7 @@
 #include "problem/hierarchical/theta/theta.hpp"
 #include "problem/hierarchical/thetaNew/thetaNew.hpp"
 #include "problem/integration/integration.hpp"
+#include "problem/multiobjectiveoptimization/multiobjectiveoptimization.hpp"
 #include "problem/optimization/optimization.hpp"
 #include "problem/problem.hpp"
 #include "problem/propagation/propagation.hpp"
@@ -126,6 +127,7 @@ Module *Module::getModule(knlohmann::json &js, Experiment *e)
   if (moduleType == "Hierarchical/ThetaNew") module = new korali::problem::hierarchical::ThetaNew();
   if (moduleType == "Integration") module = new korali::problem::Integration();
   if (moduleType == "Optimization") module = new korali::problem::Optimization();
+  if (moduleType == "Multiobjectiveoptimization") module = new korali::problem::Multiobjectiveoptimization();
   if (moduleType == "Propagation") module = new korali::problem::Propagation();
   if (moduleType == "Sampling") module = new korali::problem::Sampling();
   if (moduleType == "ReinforcementLearning/Continuous") module = new korali::problem::reinforcementLearning::Continuous();
@@ -146,6 +148,7 @@ Module *Module::getModule(knlohmann::json &js, Experiment *e)
   if (moduleType == "Agent/Continuous/NAF") module = new korali::solver::agent::continuous::NAF();
   if (moduleType == "Agent/Continuous/VRACER") module = new korali::solver::agent::continuous::VRACER();
   if (moduleType == "Optimizer/CMAES") module = new korali::solver::optimizer::CMAES();
+  if (moduleType == "Optimizer/MOCMAES") module = new korali::solver::optimizer::MOCMAES();
   if (moduleType == "Optimizer/DEA") module = new korali::solver::optimizer::DEA();
   if (moduleType == "Optimizer/Adam") module = new korali::solver::optimizer::Adam();
   if (moduleType == "Optimizer/Rprop") module = new korali::solver::optimizer::Rprop();

@@ -127,7 +127,7 @@ compiler_list=( clang++ CC icc icpc g++ c++)
 
 for compiler in "${compiler_list[@]}"; do
   if [[ "$CXX" == *"$compiler"* ]]; then
-    USE_CXX=$compiler
+    USE_CXX=$CXX
     break
   fi
 done

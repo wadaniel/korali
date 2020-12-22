@@ -3,7 +3,6 @@ import os
 import sys
 import subprocess
 import shutil
-import json
 
 def model(x, resultFolder, objective):
  
@@ -45,21 +44,20 @@ def model(x, resultFolder, objective):
   print("[Korali] Error: Could not load result file: " + resultFile)
   exit(1)
  
- # Parsing output into JSON compatible format
- resultContent = resultContent.replace("'", '"').replace("True", "true").replace("False", "false")
- resultJs = json.loads(resultContent)
+ # Parsing output into a python dict
+ resultDict = eval(resultContent)
 
  # Declaring objective value as -inf, for the case of an invalid evaluation
  objectiveValue = float('-inf')
 
  # If sample is valid, evaluating result based on objective
- if (resultJs['valid'] == True):
+ if (resultDict['valid'] == True):
   if (objective == 'minNumCoal'):
-   objectiveValue = -float(resultJs['num_coal'])
+   objectiveValue = -float(resultDict['num_coal'])
   if (objective == 'maxNumCoal'):
-   objectiveValue = float(resultJs['num_coal'])
+   objectiveValue = float(resultDict['num_coal'])
   if (objective == 'maxNumCoal'):
-   objectiveValue = float(resultJs['mean_velocity'])
+   objectiveValue = float(resultDict['mean_velocity'])
 
  # Assigning objective function value
  x["F(x)"] = objectiveValue

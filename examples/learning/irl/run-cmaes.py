@@ -53,4 +53,4 @@ else:
   print('Continue from previous run..')
 
 # Running Korali
-k.resume(e)
+k.run(e)

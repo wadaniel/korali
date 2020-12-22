@@ -1,6 +1,6 @@
 #!/bin/bash -l
-#SBATCH --job-name="fishbone0096"
-#SBATCH --output=fish0096_%j.out
+#SBATCH --job-name="bPipeMaxMeanVel0096"
+#SBATCH --output=bPipeMaxMeanVel0096_%j.out
 #SBATCH --time=5:00:00
 #SBATCH --nodes=96
 #SBATCH --account=eth2
@@ -11,7 +11,7 @@
 date 
 
 cd ..
-cat run-korali.py
-python3 run-korali.py -c 32 --ngens 1 --tmax 30.0
+
+python3 run-korali.py -c 32 --ngens 200 --objective maxMeanVel --resultFolder _resultMaxMeanVel
 
 date

@@ -12,6 +12,6 @@ date
 
 cd ..
 cat run-korali.py
-python3 run-korali.py -c 32 --ngens 3 --tmax 5.0
+python3 run-korali.py -c 32 --ngens 1 --tmax 30.0
 
 date

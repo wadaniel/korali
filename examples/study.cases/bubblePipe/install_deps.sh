@@ -27,5 +27,5 @@ popd
 # Obtaining base simulation config
 rm -rf _config
 mkdir _config
-cp -r _deps/aphros_src/sim/sim33_epflopt/case/korali/* _config
+cp -r _deps/aphros_src/sim/sim33_epflopt/case/pipe/* _config
 

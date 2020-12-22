@@ -9,7 +9,8 @@ class generative_model():
 
     def __init__(self):
         self.mean = np.array([[0,0]])
-        self.covariance = np.array( [ [[0.5,0.],[0.,0.5]] ] )
+        sigma2 = 2.
+        self.covariance = sigma2 * np.array([np.identity(2)])
         self.weights = np.array( [1] )
 
         self.rv = gm(self.mean, self.covariance, self.weights)
@@ -25,6 +26,8 @@ class model():
             data = np.expand_dims(data, axis=0)
 
         self.data = data
+        self.data_mean = np.mean(data,axis=0)
+
         self.mu_lower_bound = -20
         self.mu_upper_bound = 20
 
@@ -68,7 +71,19 @@ class model():
         sample['Hyperparameters'] = hyperparameters
         sample['P(x)'] = self.data_conditional_logpdf(sample)
 
-    def sampleLatent(self, sample, verbosity='Silent', fof=0, cof=0):
+    def sample_latent(self, sample):
+        hyperparameters = sample['Hyperparameters']
+        numberSamples = sample['Number Samples']
+
+        mean = self.data_mean
+        sigma2 = hyperparameters[0]
+        covariance = sigma2*np.identity(self.dim)
+
+        samples = np.random.multivariate_normal(mean, covariance, numberSamples)
+        samples = samples / np.sqrt(self.N)
+        sample['Samples'] = samples.tolist()
+
+    def sample_latent_mcmc(self, sample, verbosity='Silent', fof=0, cof=0):
         hyperparameters = sample['Hyperparameters']
         numberSamples = sample['Number Samples']
 
@@ -95,7 +110,6 @@ class model():
         k.run(e)
 
         samples = e['Solver']['Sample Database'][-numberSamples:]
-
         sample['Samples'] = samples
 
         self.latent_means = np.sum(np.array(samples),axis=0) / float(numberSamples)
@@ -115,7 +129,8 @@ class model():
         sample = {}
         sample['Hyperparameters'] = [1]
         sample['Number Samples'] = 5000
-        self.sampleLatent(sample,verbosity='Normal',fof=100,cof=100)
+        # self.sample_latent_mcmc(sample,verbosity='Normal',fof=100,cof=100)
+        self.sample_latent(sample)
 
 
 def main():

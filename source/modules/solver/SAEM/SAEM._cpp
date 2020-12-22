@@ -82,9 +82,13 @@ void SAEM::runGeneration(void)
 /** @brief Run once, before the first generation */
 void SAEM::setInitialConfiguration()
 {
-  _currentSamplesSVectors.resize(_numberSamplesPerStep);
-  _currentS.resize(_latentProblem->_sDimension);
-  _previousS.resize(_latentProblem->_sDimension);
+
+  size_t M = _numberSamplesPerStep;
+  size_t N = _latentProblem->_sDimension;
+
+  _currentSamplesSVectors.resize( M, std::vector<double>(N) );
+  _currentS.resize(N);
+  _previousS.resize(N);
   std::fill(_currentS.begin(), _currentS.end(), 0);
   std::fill(_previousS.begin(), _previousS.end(), -1); // Set to something != 0, to detect it if it is used anywhere
 
@@ -125,8 +129,10 @@ void SAEM::sampleLatent()
 
   _currentSamples = KORALI_GET(std::vector<std::vector<double>>, sample, "Samples");
 
-  if (_currentSamples.size() != _numberSamplesPerStep)
+  if (_currentSamples.size() != _numberSamplesPerStep){
+    _k->_logger->logInfo("Minimal", "User defined sampler did not return the correct number of samples ('Number Samples').\n");
     KORALI_LOG_ERROR("User defined sampler did not return the correct number of samples ('Number Samples').");
+  }
 
   // mean and variance:
   auto transposed = transpose(_currentSamples);
@@ -139,6 +145,7 @@ void SAEM::sampleLatent()
     _currentSampleMeans[i] = mean_and_sdev[0];
     _currentSampleStandardDeviations[i] = mean_and_sdev[1];
   }
+
 }
 
 /* Called after sampling.
@@ -173,10 +180,17 @@ void SAEM::calculateSampleSVectors()
   {
     auto v = KORALI_GET(std::vector<double>, k[i], "S");
 
-    _currentSamplesSVectors[i] = v;
+    _k->_logger->logInfo("Minimal", "========> %d \n", v.size());
+    _k->_logger->logInfo("Minimal", "========> %d \n", _latentProblem->_sDimension);
+    _k->_logger->logInfo("Minimal", "========> %d \n", _currentSamplesSVectors.size());
+    _k->_logger->logInfo("Minimal", "========> %d \n", _currentSamplesSVectors[0].size());
+
     if (v.size() != (size_t)_latentProblem->_sDimension)
       KORALI_LOG_ERROR("S vector had incorrect size, or incorrect size was given as 'S Dimension' when defining the problem");
+
+    _currentSamplesSVectors[i] = v;
   }
+
 }
 
 /*  Robbins-Monro-update our estimate of S.
@@ -203,7 +217,7 @@ void SAEM::updateS()
   else
     alpha = _alpha1;
 
-  // --> decay factor gamma
+  // Decay factor gamma
   double curGen = static_cast<double>(_k->_currentGeneration);
   _gamma = std::pow(curGen, -alpha);
 
@@ -298,7 +312,7 @@ std::vector<double> SAEM::meanAndSDev(std::vector<double> v)
   double mean = sum / double(v.size());
 
   std::vector<double> diff(v.size());
-  std::transform(v.begin(), v.end(), diff.begin(), [mean](double x) { return x - mean; });
+  std::transform( v.begin(), v.end(), diff.begin(), [mean](double x) { return x - mean; });
   double sq_sum = std::inner_product(diff.begin(), diff.end(), diff.begin(), 0.0);
   double stdev = std::sqrt(sq_sum / double(v.size()));
   std::vector<double> result = {mean, stdev};

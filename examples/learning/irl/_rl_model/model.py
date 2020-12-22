@@ -61,6 +61,7 @@ def rl_cartpole_vracer(p):
     ### Defining Agent Configuration 
 
     e["Solver"]["Type"] = "Agent / Continuous / VRACER"
+    e["Solver"]["Mode"] = "Training"
     e["Solver"]["Experiences Between Policy Updates"] = 5
     e["Solver"]["Cache Persistence"] = 500
 
@@ -74,23 +75,23 @@ def rl_cartpole_vracer(p):
 
     ## Defining Neural Network Configuration for Policy and Critic into Critic Container
 
-    e["Solver"]["Critic"]["Discount Factor"] = 0.99
-    e["Solver"]["Critic"]["Learning Rate"] = 1e-4
-    e["Solver"]["Critic"]["Mini Batch Size"] = 256
+    e["Solver"]["Discount Factor"] = 0.99
+    e["Solver"]["Learning Rate"] = 1e-4
+    e["Solver"]["Mini Batch Size"] = 256
 
-    e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
-    e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear"
-
-    e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Type"] = "Layer/Dense"
-    e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Node Count"] = 128
-    e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Activation Function"]["Type"] = "Elementwise/Tanh"
-
-    e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Type"] = "Layer/Dense"
-    e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Node Count"] = 128
-    e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Elementwise/Tanh"
-
-    e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Type"] = "Layer/Dense"
-    e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Elementwise/Linear"
+    e["Solver"]["Neural Network"]["Engine"] = "OneDNN"
+    
+    e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear"
+    e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 32
+    
+    e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Activation"
+    e["Solver"]["Neural Network"]["Hidden Layers"][1]["Function"] = "Elementwise/Tanh"
+    
+    e["Solver"]["Neural Network"]["Hidden Layers"][2]["Type"] = "Layer/Linear"
+    e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 32
+    
+    e["Solver"]["Neural Network"]["Hidden Layers"][3]["Type"] = "Layer/Activation"
+    e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tanh"
 
     ### Defining Termination Criteria
 

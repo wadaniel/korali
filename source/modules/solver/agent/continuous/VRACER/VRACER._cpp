@@ -473,6 +473,18 @@ knlohmann::json VRACER::runPolicy(const std::vector<float> &state)
   return policy;
 }
 
+knlohmann::json VRACER::getAgentPolicy()
+{
+  knlohmann::json hyperparameters;
+  hyperparameters["Policy"] = _criticPolicyLearner->getInferenceHyperparameters();
+  return hyperparameters;
+}
+
+void VRACER::setAgentPolicy(const knlohmann::json &hyperparameters)
+{
+  _criticPolicyLearner->setInferenceHyperparameters(hyperparameters["Policy"].get<std::vector<float>>());
+}
+
 void VRACER::setTrainingState(const knlohmann::json &state)
 {
   _criticPolicyLearner->setTrainingHyperparameters(state["Critic/Policy"]["Training"]);

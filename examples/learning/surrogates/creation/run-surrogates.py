@@ -12,7 +12,7 @@ from os.path import isfile, join
 train_data = np.loadtxt('_data/sincos1d_train.dat', usecols=range(2))
 test_data = np.loadtxt('_data/sincos1d_test.dat', usecols=range(2))
 
-trainInput    = [ [ i ] for i in train_data[:, 0].tolist() ]
+trainInput    = [ [ [ i ] for i in train_data[:, 0].tolist() ] ]
 trainSolution = [ [ i ] for i in train_data[:, 1].tolist() ]
 
 import korali
@@ -21,8 +21,12 @@ e = korali.Experiment()
 
 e['Problem']['Type'] = 'Supervised Learning'
 
-e["Problem"]["Inputs"] = trainInput
-e["Problem"]["Solution"] = trainSolution
+e["Problem"]["Training Batch Size"] = 1
+e["Problem"]["Inference Batch Size"] = 1
+e["Problem"]["Input"]["Data"] = trainInput
+e["Problem"]["Input"]["Size"] = 1
+e["Problem"]["Solution"]["Data"] = trainSolution
+e["Problem"]["Solution"]["Size"] = 1
 
 e['Solver']['Type'] = 'Learner/Gaussian Process'
 e['Solver']['Covariance Function'] = 'CovSum ( CovSEiso, CovNoise)'
@@ -39,8 +43,8 @@ e['Random Seed'] = 0xC0FFEE
 
 k.run(e)
 
-x = [ [ v ] for v in np.linspace(0, 14, 1000).tolist() ]
-y = [ e.getEvaluation(v) for v in x ]
+x = [ [ v ] for v in np.linspace(0, 14, 1000).tolist() ] 
+y = [ e.getEvaluation([[v]]) for v in x ]
 z = [ [ i ] + j for i, j in zip(x, y)]
 
 with open('_data/results.dat', 'w') as f:

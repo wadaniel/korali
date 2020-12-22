@@ -13,16 +13,16 @@ class Learner : public Solver
   /**
     * @brief For learner modules which have been trained, test returns an inferred output batch, from a batch of inputs to process.
     * @param input The inputs from which to infer outputs. Format: TxBxIC (T: Time steps, B: Batch Size, IC: Input channels)
-    * @return The inferred outputs. Format: TxBxOC (T: Time steps, B: Batch Size, OC: Output channels)
+    * @return The inferred batch outputs for the last given timestep. Format: BxOC (B: Batch Size, OC: Output channels)
    */
-  virtual std::vector<std::vector<std::vector<float>>> getEvaluation(const std::vector<std::vector<std::vector<float>>> &input);
+  virtual std::vector<std::vector<float>> getEvaluation(const std::vector<std::vector<std::vector<float>>> &input);
 
   /**
    * @brief For solver modules which have been trained, return the gradient of a differentiated output
-   * @param outputDiffs Differentials of the (loss) function. Format: TxBxOC (T: Time steps, B: Batch Size, OC: Output channels)
-   * @return The calculated gradients. Format: TxBxIC (T: Time steps, B: Batch Size, IC: Input channels)
+   * @param gradients Differentials of the (loss) function. Format: BxOC (B: Batch Size, OC: Output channels)
+   * @return The calculated gradients. Format: BxIC (B: Batch Size, IC: Input channels)
    */
-  virtual std::vector<std::vector<std::vector<float>>> getGradients(const std::vector<std::vector<std::vector<float>>> &outputDiffs);
+  virtual std::vector<std::vector<float>> getGradients(const std::vector<std::vector<float>> &gradients);
 
   /**
   * @brief Returns the hyperparameters required to produce new evaluations and gradients

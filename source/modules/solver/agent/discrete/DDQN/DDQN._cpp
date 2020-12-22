@@ -166,12 +166,12 @@ void DDQN::trainPolicy()
     float aTarget = qStar - _vValState + _aValAverage;
 
     // Updating inputs to training learners
-    for (size_t j = 0; j < curState.size(); j++) _aProblem->_inputData[0][i][j] = curState[j];
-    for (size_t j = 0; j < curAction.size(); j++) _aProblem->_inputData[0][i][j + curState.size()] = curAction[j];
-    _aProblem->_solutionData[0][i][0] = aTarget;
+    for (size_t j = 0; j < curState.size(); j++) _aProblem->_inputData[i][0][j] = curState[j];
+    for (size_t j = 0; j < curAction.size(); j++) _aProblem->_inputData[i][0][j + curState.size()] = curAction[j];
+    _aProblem->_solutionData[i] = { aTarget };
 
-    _vProblem->_inputData[0][i] = curState;
-    _vProblem->_solutionData[0][i][0] = vTarget;
+    _vProblem->_inputData[i] = { curState };
+    _vProblem->_solutionData[i] = { vTarget };
 
     // Keeping statistics
     _cumulativeQStar += qStar;
@@ -206,7 +206,7 @@ knlohmann::json DDQN::runPolicy(const std::vector<float> &state)
   std::vector<float> stateActionInput(_problem->_stateVectorSize + _problem->_actionVectorSize);
 
   // Computing V(s)
-  _vValState = _vLearner->getEvaluation({{state}})[0][0][0];
+  _vValState = _vLearner->getEvaluation({{state}})[0][0];
 
   // Storing state into the critic input (will not change)
   for (size_t i = 0; i < state.size(); i++) stateActionInput[i] = state[i];
@@ -222,7 +222,7 @@ knlohmann::json DDQN::runPolicy(const std::vector<float> &state)
       stateActionInput[_problem->_stateVectorSize + j] = _problem->_possibleActions[i][j];
 
     // Computing A(s,a)
-    _aValAction[i] = _aLearner->getEvaluation({{stateActionInput}})[0][0][0];
+    _aValAction[i] = _aLearner->getEvaluation({{stateActionInput}})[0][0];
 
     // Adding to sum counter
     _aValAverage += _aValAction[i];

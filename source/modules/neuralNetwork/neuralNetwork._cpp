@@ -89,7 +89,15 @@ void NeuralNetwork::initialize()
   _rawOutputValues.resize(T * N * OC);
   _rawOutputGradients.resize(T * N * OC);
   _hyperparameterGradients.resize(H);
-  _inputBatchTimesteps.resize(N);
+  _inputBatchLastStep.resize(N);
+
+  // Allocating storage for formatted output values
+  _outputValues.resize(N);
+  for (size_t b = 0; b < N; b++) _outputValues[b].resize(OC);
+
+  // Allocating storage for formatted input gradients
+  _inputGradients.resize(N);
+  for (size_t b = 0; b < N; b++) _inputGradients[b].resize(IC);
 
   // Making sure we do not re-initialize
   _isInitialized = true;
@@ -116,7 +124,6 @@ void NeuralNetwork::forward(const std::vector<std::vector<std::vector<float>>>& 
   size_t IC = _layers[0]->_outputChannels;
   size_t layerCount = _layers.size();
   size_t lastLayer = layerCount - 1;
-  size_t nodeCount = _layers[lastLayer]->_outputChannels;
   size_t OC = _layers[lastLayer]->_outputChannels;
 
   // Safety checks
@@ -135,11 +142,11 @@ void NeuralNetwork::forward(const std::vector<std::vector<std::vector<float>>>& 
   std::fill(_rawInputValues.begin(), _rawInputValues.end(), 0.0f);
 
   // Storing timestep count per batch input, for later use on backward propagation
-  for (size_t b = 0; b < N; b++) _inputBatchTimesteps[b] = inputValues[b].size();
+  for (size_t b = 0; b < N; b++) _inputBatchLastStep[b] = inputValues[b].size() - 1;
 
   // Now replacing values provided by the user in N*T*IC format
   for (size_t b = 0; b < N; b++)
-   for (size_t t = 0; t < _inputBatchTimesteps[b]; t++)
+   for (size_t t = 0; t < inputValues[b].size(); t++)
     for (size_t i = 0; i < IC; i++)
      _rawInputValues[t * N * IC + b * IC + i] = inputValues[b][t][i];
 
@@ -147,19 +154,13 @@ void NeuralNetwork::forward(const std::vector<std::vector<std::vector<float>>>& 
   for (_currentTimestep = 0; _currentTimestep < _timestepCount; _currentTimestep++)
    for (size_t i = 0; i < layerCount; i++)  _layers[i]->forwardData();
 
-  // Formatting output values
-  _outputValues.resize(N);
-  for (size_t b = 0; b < N; b++) _outputValues[b].resize(_inputBatchTimesteps[b]);
-  for (size_t b = 0; b < N; b++) for (size_t t = 0; t < _inputBatchTimesteps[b]; t++) _outputValues[b][t].resize(OC);
-
-  // Copying output values
+  // Copying output values -- only for the last timestep provided in the input
   for (size_t b = 0; b < N; b++)
-   for (size_t t = 0; t < _inputBatchTimesteps[b]; t++)
     for (size_t i = 0; i < OC; i++)
-     _outputValues[b][t][i] = _rawOutputValues[t * N * OC + b * OC + i];
+     _outputValues[b][i] = _rawOutputValues[_inputBatchLastStep[b] * N * OC + b * OC + i];
 }
 
-void NeuralNetwork::backward(const std::vector<std::vector<std::vector<float>>>& outputGradients)
+void NeuralNetwork::backward(const std::vector<std::vector<float>>& outputGradients)
 {
   // Getting batch dimensions
   size_t T = _timestepCount;
@@ -167,36 +168,21 @@ void NeuralNetwork::backward(const std::vector<std::vector<std::vector<float>>>&
   size_t layerCount = _layers.size();
   size_t lastLayer = layerCount - 1;
   size_t OC = _layers[lastLayer]->_outputChannels;
+  size_t IC = _layers[0]->_outputChannels;
 
   // Safety checks
   if (outputGradients.size() != N) KORALI_LOG_ERROR("Batch size of NN output gradients (%lu) is not the same as NN configuration (%lu).\n", outputGradients.size(), N);
   for (size_t b = 0; b < N; b++)
-  {
-   if (outputGradients[b].size() > _inputBatchTimesteps[b])
-    KORALI_LOG_ERROR("Timestep of output gradients batch (%lu) is larger (%lu) than input timesteps provided (%lu).\n", b, outputGradients[b].size(), _inputBatchTimesteps[b]);
-
-   for (size_t t = 0; t < outputGradients[b].size(); t++)
-    if (outputGradients[b][t].size() != OC)
-     KORALI_LOG_ERROR("Input size of output gradients batch (%lu), timestep (%lu) is different (%lu) than output channels configured (%lu).\n", b, t, outputGradients[b][t].size(), OC);
-  }
+   if (outputGradients[b].size() > OC)
+     KORALI_LOG_ERROR("Size (%lu) of output gradients batch %lu, is different than expected (%lu).\n", outputGradients[b].size(), b, OC);
 
   // First, re-setting all output gradients to zero
   std::fill(_rawOutputGradients.begin(), _rawOutputGradients.end(), 0.0f);
 
-  // Now replacing values provided by the user in N*T*IC format
+  // To store the gradients in the NN we place them on the last input timestep
   for (size_t b = 0; b < N; b++)
-   for (size_t t = 0; t < outputGradients[b].size(); t++)
     for (size_t i = 0; i < OC; i++)
-    {
-     // To store the gradients in the NN, we go backwards, starting from the last input timestep provided for the batch
-     size_t nnPos = _inputBatchTimesteps[b] - t - 1;
-
-     // We read gradients backwards, starting from the last
-     size_t grPos = outputGradients[b].size() - t - 1;
-
-     // Now doing the copying
-     _rawOutputGradients[nnPos * N * OC + b * OC + i] = outputGradients[b][grPos][i];
-    }
+     _rawOutputGradients[_inputBatchLastStep[b] * N * OC + b * OC + i] = outputGradients[b][i];
 
   // Resetting cumulative hyperparameter gradients
   for (size_t i = 0; i < _hyperparameterCount; i++) _hyperparameterGradients[i] = 0.0f;
@@ -233,6 +219,11 @@ void NeuralNetwork::backward(const std::vector<std::vector<std::vector<float>>>&
    for (size_t i = 0; i < _hyperparameterCount; i++)
     _hyperparameterGradients[i] += batchHyperparameterGradients[i];
   }
+
+  // Copying input gradients -- only for the last timestep provided in the input
+  for (size_t b = 0; b < N; b++)
+    for (size_t i = 0; i < IC; i++)
+     _inputGradients[b][i] = _rawInputGradients[_inputBatchLastStep[b] * N * IC + b * IC + i];
 }
 
 std::vector<float> NeuralNetwork::getHyperparameters()

@@ -4,12 +4,12 @@ namespace korali
 {
 namespace solver
 {
-std::vector<std::vector<std::vector<float>>> Learner::getEvaluation(const std::vector<std::vector<std::vector<float>>> &input)
+std::vector<std::vector<float>> Learner::getEvaluation(const std::vector<std::vector<std::vector<float>>> &input)
 {
   KORALI_LOG_ERROR("This solver does not provide an evaluate operation.\n");
 }
 
-std::vector<std::vector<std::vector<float>>> Learner::getGradients(const std::vector<std::vector<std::vector<float>>> &outputDiffs)
+std::vector<std::vector<float>> Learner::getGradients(const std::vector<std::vector<float>> &outputDiffs)
 {
   KORALI_LOG_ERROR("This solver does not provide a getGradients operation.\n");
 }

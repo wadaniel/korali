@@ -11,6 +11,10 @@ void SupervisedLearning::initialize()
   if (_maxTimesteps == 0) KORALI_LOG_ERROR("Incorrect max timesteps provided: %lu.\n", _maxTimesteps);
   if (_inputSize == 0) KORALI_LOG_ERROR("Empty input vector size provided.\n");
   if (_solutionSize == 0) KORALI_LOG_ERROR("Empty solution vector size provided.\n");
+
+  // Preallocating training batch inputs
+  _inputData.resize(_trainingBatchSize);
+  _solutionData.resize(_trainingBatchSize);
 }
 
 void SupervisedLearning::verifyData()
@@ -41,15 +45,8 @@ void SupervisedLearning::verifyData()
 
  // Checking that all solution batch entries have the correct size
  for (size_t b = 0; b < _solutionData.size(); b++)
- {
-  if (_solutionData[b].size() > _inputData[b].size())
-       KORALI_LOG_ERROR("More timesteps provided in the solution data (%lu) than in the input data (%lu) for batch %lu\n", _solutionData[b].size(), _inputData[b].size(), b);
-
-  for (size_t t = 0; t < _solutionData[b].size(); t++)
-    if (_solutionData[b][t].size() != _solutionSize)
-      KORALI_LOG_ERROR("Vector size of timestep %lu training solution %lu is inconsistent. Size: %lu - Expected: %lu.\n", b, t, _solutionData[b][t].size(), _solutionSize);
- }
-
+  if (_solutionData[b].size() != _solutionSize)
+   KORALI_LOG_ERROR("Solution vector size of batch %lu is inconsistent. Size: %lu - Expected: %lu.\n", b, _solutionData[b].size(), _solutionSize);
 }
 
 

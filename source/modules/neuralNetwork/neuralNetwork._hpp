@@ -60,34 +60,34 @@ class NeuralNetwork : public Module
   std::vector<float> _rawInputGradients;
 
   /**
-   * @brief Raw data for the NN output values. Format: TxNxOC (T: Time steps, N: Mini-batch size, OC: Output channels).
+   * @brief Formatted data for the NN input gradients. Format: NxIC (N: Mini-batch size, IC: Input channels).
+   */
+  std::vector<std::vector<float>> _inputGradients;
+
+  /**
+   * @brief Raw data for the NN output values. Format: NxOC (N: Mini-batch size, OC: Output channels).
    */
   std::vector<float> _rawOutputValues;
 
   /**
-   * @brief Raw data for the NN output gradients. Format: TxNxOC (T: Time steps, N: Mini-batch size, OC: Output channels).
+   * @brief Raw data for the NN output gradients. Format: NxOC (N: Mini-batch size, OC: Output channels).
    */
   std::vector<float> _rawOutputGradients;
 
   /**
+   * @brief Formatted data for the NN output values. Format: NxOC (N: Mini-batch size, OC: Output channels).
+   */
+  std::vector<std::vector<float>> _outputValues;
+
+  /**
    * @brief F data for the NN hyperparameter gradients. Format: H (H: Hyperparameter count).
    */
-  std::vector<float> _hyperparameterGradients;
+   std::vector<float> _hyperparameterGradients;
 
   /**
-   * @brief Formatted data for the NN input gradients. Format: NxT*OC (T: Time steps, N: Mini-batch size, OC: Output channels).
+   * @brief Remembers the position of the last timestep provided as input
    */
-  std::vector<std::vector<std::vector<float>>> _inputGradients;
-
-  /**
-   * @brief Formatted data for the NN output values. Format: NxT*OC (T: Time steps, N: Mini-batch size, OC: Output channels).
-   */
-  std::vector<std::vector<std::vector<float>>> _outputValues;
-
-  /**
-   * @brief Remembers the number of timesteps provided per batch
-   */
-  std::vector<size_t> _inputBatchTimesteps;
+  std::vector<size_t> _inputBatchLastStep;
 
   /**
    * @brief Keeps track of the current timestep
@@ -122,9 +122,9 @@ class NeuralNetwork : public Module
 
   /**
    * @brief Backward-propagates the gradients through the network.
-   * @param outputGradients Output gradients. Format: TxNxOC (T: Time steps, N: Mini-batch size, OC: Output channels).
+   * @param outputGradients Output gradients. Format: NxOC (N: Mini-batch size, OC: Output channels).
   */
-  void backward(const std::vector<std::vector<std::vector<float>>>& outputGradients);
+  void backward(const std::vector<std::vector<float>>& outputGradients);
 
   /**
    * @brief Creator that sets initialized flag to false

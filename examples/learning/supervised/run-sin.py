@@ -17,7 +17,7 @@ trainingInputSet = np.random.uniform(0, 2 * np.pi, trainingBatchSize)
 trainingSolutionSet = np.tanh(np.exp(np.sin(trainingInputSet))) * scaling 
 
 trainingInputSet = [ [ [ i ] ] for i in trainingInputSet.tolist() ]
-trainingSolutionSet = [ [ [ i ] ] for i in trainingSolutionSet.tolist() ]
+trainingSolutionSet = [ [ i ] for i in trainingSolutionSet.tolist() ]
 
 ### Defining a learning problem to infer values of sin(x)
 
@@ -70,20 +70,20 @@ k.run(e)
 ### Obtaining inferred results from the NN and comparing them to the actual solution
 
 testInputSet = np.random.uniform(0, 2 * np.pi, inferenceBatchSize)
-testInputSet = [ [ [ x ] ] for x in testInputSet.tolist() ]
-
-testInferredSet = e.getEvaluation(testInputSet)
+testOutputSet = np.tanh(np.exp(np.sin(testInputSet))) * scaling
+ 
+testInferredSet = e.getEvaluation([ [ [ x ] ] for x in testInputSet.tolist() ])
 testGradientSet = e.getGradients(testInferredSet)
-testOutputSet = np.tanh(np.exp(np.sin(testInputSet))) * scaling 
 
 ### Calc MSE on test set
 
+testInferredSet = [ x[0] for x in testInferredSet ]
 mse = np.mean((np.array(testInferredSet) - np.array(testOutputSet))**2)
 print("MSE on test set: {}".format(mse))
 
 ### Plotting Results
 
-#plt.plot(testInputSet, testOutputSet, "o")
-#plt.plot(testInputSet, testInferredSet, "x")
+plt.plot(testInputSet, testOutputSet, "o")
+plt.plot(testInputSet, testInferredSet, "x")
 #plt.plot(testInferredSet, testGradientSet, "*")
-#plt.show()
+plt.show()

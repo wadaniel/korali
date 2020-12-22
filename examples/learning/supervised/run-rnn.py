@@ -4,6 +4,7 @@ import sys
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
+from random import randrange
 import time
 import korali
 k = korali.Engine()
@@ -16,7 +17,7 @@ Arch = "FNN"
 #Arch = "RNN"
 tf = 2.0 # Total Time
 dt = 0.4 # Time Differential
-B = 100 # Training Batch Size
+B = 200 # Training Batch Size
 s = 1.0  # Parameter for peak separation
 w = np.pi # Parameter for wave speed
 a = 1.0 # Scaling
@@ -27,15 +28,21 @@ def y(x, t): return np.sin(x * s +  w * t)
 X = np.random.uniform(0, np.pi*2, B)
 T = np.arange(0, tf, dt)
 
-trainingInputSet = [ ]
+# Providing inputs batches with varying timesequence lengths
+trainingInputSetX = [ ]
+trainingInputSetT = [ ]
 for j, x in enumerate(X):
- trainingInputSet.append([ ])
- for t in T:
-  trainingInputSet[j].append([x])
+ trainingInputSetX.append([ ])
+ trainingInputSetT.append([ ])
+ for t in range(randrange(len(T)) + 1):
+  trainingInputSetX[j].append([x])
+  trainingInputSetT[j].append([T[t]])
 
+# Giving the solution for the last time step of each batch sequence
 trainingSolutionSet = [ ]
 for j, x in enumerate(X):
- trainingSolutionSet.append([ y(x,T[-1]) ]) 
+ t = trainingInputSetT[j][-1][0]
+ trainingSolutionSet.append([ y(x, t) ]) 
 
 ### Defining a learning problem to infer values of sin(x,t)
 
@@ -44,7 +51,7 @@ e["Problem"]["Type"] = "Supervised Learning"
 e["Problem"]["Max Timesteps"] = len(T)
 e["Problem"]["Training Batch Size"] = B
 e["Problem"]["Inference Batch Size"] = B
-e["Problem"]["Input"]["Data"] = trainingInputSet
+e["Problem"]["Input"]["Data"] = trainingInputSetX
 e["Problem"]["Input"]["Size"] = 1
 e["Problem"]["Solution"]["Data"] = trainingSolutionSet
 e["Problem"]["Solution"]["Size"] = 1
@@ -79,7 +86,7 @@ e["File Output"]["Enabled"] = False
 
 ### Training the neural network
 
-e["Solver"]["Termination Criteria"]["Max Generations"] = 50
+e["Solver"]["Termination Criteria"]["Max Generations"] = 100
 e["Random Seed"] = 0xC0FFEE
 k.run(e)
 
@@ -87,17 +94,22 @@ k.run(e)
 
 X = np.random.uniform(0, np.pi*2, B)
 
-testInputSet = [ ]
+# Providing inputs batches with varying timesequence lengths
+testInputSetX = [ ]
+testInputSetT = [ ]
 for j, x in enumerate(X):
- testInputSet.append([ ])
- for t in T:
-  testInputSet[j].append([x])
+ testInputSetX.append([ ])
+ testInputSetT.append([ ])
+ for t in range(randrange(len(T)) + 1):
+  testInputSetX[j].append([x])
+  testInputSetT[j].append([T[t]])
 
+# Giving the solution for the last time step of each batch sequence
 testSolutionSet = [ ]
 for j, x in enumerate(X):
- testSolutionSet.append([ y(x,T[-1]) ]) 
-  
-testInferredSet = e.getEvaluation(testInputSet) 
+ t = testInputSetT[j][-1][0]
+ testSolutionSet.append([ y(x, t) ]) 
+testInferredSet = e.getEvaluation(testInputSetX) 
 
 ### Calc MSE on test set
 
@@ -105,9 +117,13 @@ mse = np.mean((np.array(testInferredSet) - np.array(testSolutionSet))**2)
 print("MSE on test set: {}".format(mse))
 
 ### Plotting inferred result
-xAxis = [ x[-1][0] for x in testInputSet ]
-plt.plot(xAxis, [ x[0] for x in testSolutionSet ], "o")
-plt.plot(xAxis, [ x[0] for x in testInferredSet ], "x")
+cmap = cm.get_cmap(name='Set1')
+xAxis = [ x[-1][0] for x in testInputSetX ]
+
+for i, x in enumerate(testInputSetX):
+ t = len(x)  
+ plt.plot(xAxis[i], testSolutionSet[i], "o", color=cmap(t))
+ plt.plot(xAxis[i], testInferredSet[i], "x", color=cmap(t))
 
 ### Plotting Results
 

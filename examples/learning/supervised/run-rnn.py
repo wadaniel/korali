@@ -16,7 +16,7 @@ Arch = "FNN"
 #Arch = "RNN"
 tf = 2.0 # Total Time
 dt = 0.4 # Time Differential
-B = 100 # Batch Size
+B = 100 # Training Batch Size
 s = 1.0  # Parameter for peak separation
 w = np.pi # Parameter for wave speed
 a = 1.0 # Scaling
@@ -28,13 +28,14 @@ X = np.random.uniform(0, np.pi*2, B)
 T = np.arange(0, tf, dt)
 
 trainingInputSet = [ ]
-trainingSolutionSet = [ ] 
 for j, x in enumerate(X):
  trainingInputSet.append([ ])
- trainingSolutionSet.append([ ])
- for t in T:  
+ for t in T:
   trainingInputSet[j].append([x])
-  trainingSolutionSet[j].append([y(x,t)]) 
+
+trainingSolutionSet = [ ]
+for j, x in enumerate(X):
+ trainingSolutionSet.append([ y(x,T[-1]) ]) 
 
 ### Defining a learning problem to infer values of sin(x,t)
 
@@ -54,7 +55,7 @@ e["Solver"]["Type"] = "Learner/DeepSupervisor"
 e["Solver"]["Loss Function"] = "Mean Squared Error"
 e["Solver"]["Steps Per Generation"] = 20
 e["Solver"]["Optimizer"] = "AdaBelief"
-e["Solver"]["Learning Rate"] = 0.0001
+e["Solver"]["Learning Rate"] = 0.00001
 
 ### Defining the shape of the neural network
 
@@ -84,25 +85,29 @@ k.run(e)
 
 ### Obtaining inferred results from the NN and comparing them to the actual solution
 
+X = np.random.uniform(0, np.pi*2, B)
+
 testInputSet = [ ]
-testSolutionSet = [ ] 
 for j, x in enumerate(X):
  testInputSet.append([ ])
- testSolutionSet.append([ ])
- for t in T:  
+ for t in T:
   testInputSet[j].append([x])
-  testSolutionSet[j].append([y(x,t)])
+
+testSolutionSet = [ ]
+for j, x in enumerate(X):
+ testSolutionSet.append([ y(x,T[-1]) ]) 
   
 testInferredSet = e.getEvaluation(testInputSet) 
-
-xAxis = [ x[-1][0] for x in testInputSet ]
-plt.plot(xAxis, [ x[-1][0] for x in testSolutionSet ], "o")
-plt.plot(xAxis, [ x[-1][0] for x in testInferredSet ], "x")
 
 ### Calc MSE on test set
 
 mse = np.mean((np.array(testInferredSet) - np.array(testSolutionSet))**2)
 print("MSE on test set: {}".format(mse))
+
+### Plotting inferred result
+xAxis = [ x[-1][0] for x in testInputSet ]
+plt.plot(xAxis, [ x[0] for x in testSolutionSet ], "o")
+plt.plot(xAxis, [ x[0] for x in testInferredSet ], "x")
 
 ### Plotting Results
 

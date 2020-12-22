@@ -40,11 +40,15 @@ def model(x, resultFolder, objective):
  resultFile = 'objectives'
  try:
   with open(resultFile) as f:
-   resultJs = json.load(f) 
+   resultContent = f.read()
  except IOError:
   print("[Korali] Error: Could not load result file: " + resultFile)
   exit(1)
  
+ # Parsing output into JSON compatible format
+ resultContent = resultContent.replace("'", '"').replace("True", "true").replace("False", "false")
+ resultJs = json.loads(resultContent)
+
  # Declaring objective value as -inf, for the case of an invalid evaluation
  objectiveValue = float('-inf')
 

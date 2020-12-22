@@ -28,4 +28,7 @@ popd
 rm -rf _config
 mkdir _config
 cp -r _deps/aphros_src/sim/sim33_epflopt/case/pipe/* _config
+rm _config/vis/vis.py
+cp _model/run.sh _config
+cp  _deps/aphros_src/sim/sim33_epflopt/case/korali/vis/vis.py _config/vis/
 

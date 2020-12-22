@@ -112,15 +112,15 @@ void DQN::trainPolicy()
       for (size_t j = 0; j < nextState.size(); j++) stateActionInput[j] = nextState[j];
       for (size_t j = 0; j < bestAction.size(); j++) stateActionInput[j + nextState.size()] = bestAction[j];
 
-      auto qNextExp = _criticLearner->getEvaluation({{stateActionInput}})[0][0][0];
+      auto qNextExp = _criticLearner->getEvaluation({{stateActionInput}})[0][0];
 
       qStar += _discountFactor * qNextExp;
     }
 
     // Updating inputs to training learner
-    for (size_t j = 0; j < curState.size(); j++) _criticProblem->_inputData[0][i][j] = curState[j];
-    for (size_t j = 0; j < curAction.size(); j++) _criticProblem->_inputData[0][i][j + curState.size()] = curAction[j];
-    _criticProblem->_solutionData[0][i][0] = qStar;
+    for (size_t j = 0; j < curState.size(); j++) _criticProblem->_inputData[i][0][j] = curState[j];
+    for (size_t j = 0; j < curAction.size(); j++) _criticProblem->_inputData[i][0][j + curState.size()] = curAction[j];
+    _criticProblem->_solutionData[i] = { qStar };
 
     // Keeping statistics
     _cumulativeQStar += qStar;
@@ -171,7 +171,7 @@ knlohmann::json DQN::runPolicy(const std::vector<float> &state)
       stateActionInput[_problem->_stateVectorSize + j] = _problem->_possibleActions[i][j];
 
     // Computing Q(s,a_i)
-    qval[i] = _criticLearner->getEvaluation({{stateActionInput}})[0][0][0];
+    qval[i] = _criticLearner->getEvaluation({{stateActionInput}})[0][0];
 
     // Extracting max Q(s,a_i)
     if (qval[i] > maxq) maxq = qval[i];

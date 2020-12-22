@@ -240,7 +240,7 @@ void Experiment::finalize()
   co_delete(_thread);
 }
 
-std::vector<std::vector<std::vector<float>>> Experiment::getEvaluation(const std::vector<std::vector<std::vector<float>>> &inputBatch)
+std::vector<std::vector<float>> Experiment::getEvaluation(const std::vector<std::vector<std::vector<float>>> &inputBatch)
 {
   // First check that the experiment has been initialized.
   if (_isInitialized == false) initialize();
@@ -252,14 +252,14 @@ std::vector<std::vector<std::vector<float>>> Experiment::getEvaluation(const std
     KORALI_LOG_ERROR("This solver does not support evaluation operations.\n");
 }
 
-std::vector<std::vector<std::vector<float>>> Experiment::getGradients(const std::vector<std::vector<std::vector<float>>> &outputDiffs)
+std::vector<std::vector<float>> Experiment::getGradients(const std::vector<std::vector<float>> &gradients)
 {
   // First check that the experiment has been initialized.
   if (_isInitialized == false) initialize();
 
   auto learner = dynamic_cast<solver::Learner *>(_k->_solver);
   if (learner != NULL)
-    return learner->getGradients(outputDiffs);
+    return learner->getGradients(gradients);
   else
     KORALI_LOG_ERROR("This solver does not provide gradients.\n");
 }

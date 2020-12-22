@@ -103,7 +103,7 @@ float DDPG::stateActionValueFunction(const std::vector<float> &state, const std:
   // Forward propagating state/action through the critic
   for (size_t j = 0; j < state.size(); j++) stateActionInput[j] = state[j];
   for (size_t j = 0; j < action.size(); j++) stateActionInput[j + state.size()] = action[j];
-  auto evaluation = _criticLearner->getEvaluation({{stateActionInput}})[0][0][0];
+  auto evaluation = _criticLearner->getEvaluation({{stateActionInput}})[0][0];
 
   // Getting the value of V(Xt), i.e., Q(xt, best action)
   return evaluation;
@@ -161,9 +161,9 @@ void DDPG::trainPolicy()
     if (isTerminal == false) qStar += _discountFactor * stateActionValueFunction(nextState, bestAction);
 
     // Updating inputs to training learner
-    _criticProblem->_inputData[0][i] = curState;
-    _criticProblem->_inputData[0][i].insert(_criticProblem->_inputData[0][i].end(), curAction.begin(), curAction.end());
-    _criticProblem->_solutionData[0][i][0] = qStar;
+    _criticProblem->_inputData[i] = { curState };
+    _criticProblem->_inputData[i][0].insert(_criticProblem->_inputData[0][i].end(), curAction.begin(), curAction.end());
+    _criticProblem->_solutionData[i] = { qStar };
 
     // Keeping statistics
     _cumulativeQStar += qStar;
@@ -201,12 +201,12 @@ void DDPG::trainPolicy()
     _criticLearner->getEvaluation({{stateActionInput}});
 
     // Passing 1.0 (identity), to estimate the exact gradient dQ/dAS. The minus sign is to ensure that we maximize Q in this case, do not remove.
-    auto qGradients = _criticLearner->getGradients({{{-1.0f}}})[0][0];
+    auto qGradients = _criticLearner->getGradients({{{-1.0f}}})[0];
     std::vector<float> aGradients = std::vector<float>(qGradients.begin() + _problem->_stateVectorSize, qGradients.end());
 
     // Setting input and gradient for policy update
-    _policyProblem->_inputData[0][i] = curState;
-    _policyProblem->_solutionData[0][i] = aGradients;
+    _policyProblem->_inputData[i] = { curState };
+    _policyProblem->_solutionData[i] = aGradients;
   }
 
   // Getting current hyperparameters for soft adoption later
@@ -226,7 +226,7 @@ void DDPG::trainPolicy()
 
 knlohmann::json DDPG::runPolicy(const std::vector<float> &state)
 {
-  auto eval = _policyLearner->getEvaluation({{state}})[0][0];
+  auto eval = _policyLearner->getEvaluation({{state}})[0];
 
   std::vector<float> actionMeans(_problem->_actionVectorSize);
   std::vector<float> actionSigmas(_problem->_actionVectorSize);

@@ -82,9 +82,9 @@ void GaussianProcess::initialize()
   for (size_t i = 0; i < _problem->_trainingBatchSize; ++i)
   {
     for (size_t j = 0; j < _gpInputDimension; j++)
-      inData[j] = _problem->_inputData[0][i][j];
+      inData[j] = _problem->_inputData[i][0][j];
 
-    outData = _problem->_solutionData[0][i][0];
+    outData = _problem->_solutionData[i][0];
     _gp->add_pattern(inData, outData);
   }
 
@@ -131,7 +131,7 @@ void GaussianProcess::printGenerationAfter()
   return;
 }
 
-std::vector<std::vector<std::vector<float>>> GaussianProcess::getEvaluation(const std::vector<std::vector<std::vector<float>>> &input)
+std::vector<std::vector<float>> GaussianProcess::getEvaluation(const std::vector<std::vector<std::vector<float>>> &input)
 {
   std::vector<float> output(2);
 
@@ -149,7 +149,7 @@ std::vector<std::vector<std::vector<float>>> GaussianProcess::getEvaluation(cons
 
 #endif
 
-  return {{output}};
+  return {output};
 }
 
 std::vector<float> GaussianProcess::getInferenceHyperparameters()

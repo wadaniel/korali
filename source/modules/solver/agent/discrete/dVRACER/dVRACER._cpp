@@ -218,10 +218,10 @@ void dVRACER::trainPolicy()
     }
 
     // Set status as learning problem input
-    _criticPolicyProblem->_inputData[0][step] = expState;
+    _criticPolicyProblem->_inputData[step] = { { expState } };
 
     // Set Gradient of Loss as Solution
-    _criticPolicyProblem->_solutionData[0][step] = gradientLoss;
+    _criticPolicyProblem->_solutionData[step] = { gradientLoss };
 
     updateVtbc(expId);
   }
@@ -357,14 +357,14 @@ std::vector<float> dVRACER::calculateKLDivergenceGradient(const std::vector<floa
 float dVRACER::stateValueFunction(const std::vector<float> &state)
 {
   // Calculating V(s_i)
-  float v = _criticPolicyLearner->getEvaluation({{state}})[0][0][0];
+  float v = _criticPolicyLearner->getEvaluation({{state}})[0][0];
   return v;
 }
 
 knlohmann::json dVRACER::runPolicy(const std::vector<float> &state)
 {
   // Forward the neural network for this state
-  std::vector<float> evaluation = _criticPolicyLearner->getEvaluation({{state}})[0][0];
+  std::vector<float> evaluation = _criticPolicyLearner->getEvaluation({{state}})[0];
 
   // Get state value
   auto stateValue = evaluation[0];

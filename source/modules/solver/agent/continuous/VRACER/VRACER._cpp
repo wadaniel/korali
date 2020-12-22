@@ -105,18 +105,6 @@ void VRACER::initializeAgent()
   _referOffPolicyFraction = 0.0f;
 }
 
-knlohmann::json VRACER::getAgentPolicy()
-{
-  knlohmann::json hyperparameters;
-  hyperparameters["Policy"] = _criticPolicyLearner->getInferenceHyperparameters();
-  return hyperparameters;
-}
-
-void VRACER::setAgentPolicy(const knlohmann::json &hyperparameters)
-{
-  _criticPolicyLearner->setInferenceHyperparameters(hyperparameters["Policy"].get<std::vector<float>>());
-}
-
 void VRACER::trainPolicy()
 {
   // Resetting statistics

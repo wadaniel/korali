@@ -38,6 +38,11 @@ void dVRACER::initializeAgent()
 
   // Running initialization to verify that the configuration is correct
   _criticPolicyExperiment.initialize();
+<<<<<<< HEAD
+=======
+
+  // Getting learner and problem pointers
+>>>>>>> master
   _criticPolicyProblem = dynamic_cast<problem::SupervisedLearning *>(_criticPolicyExperiment._problem);
   _criticPolicyLearner = dynamic_cast<solver::learner::DeepSupervisor *>(_criticPolicyExperiment._solver);
 

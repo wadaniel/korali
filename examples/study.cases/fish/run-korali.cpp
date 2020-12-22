@@ -41,8 +41,10 @@ int main(int argc, char *argv[])
 
   ////// Checking if existing results are there and continuing them
 
+#ifndef TEST
   auto found = e.loadState(trainingResultsPath + std::string("/latest"));
   if (found == true) printf("Continuing execution from previous run...\n");
+#endif
 
   // Configuring Experiment
   e["Problem"]["Environment Function"] = &runEnvironment;
@@ -88,47 +90,30 @@ int main(int argc, char *argv[])
   e["Solver"]["Experience Replay"]["Maximum Size"] = 100000;
   e["Solver"]["Experience Replay"]["Serialization Frequency"] = 1;
 
-  //// Defining Critic Configuration
+  //// Defining Critic/Policy Configuration
 
+  e["Solver"]["Discount Factor"] = 0.99;
+  e["Solver"]["Mini Batch Size"] = 128;
   e["Solver"]["Critic"]["Learning Rate"] = 0.0001;
-  e["Solver"]["Critic"]["Discount Factor"] = 0.99;
-  e["Solver"]["Critic"]["Mini Batch Size"] = 128;
-
-  e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense";
-  e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear";
-
-  e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Type"] = "Layer/Dense";
-  e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Node Count"] = 32;
-  e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Activation Function"]["Type"] = "Elementwise/Tanh";
-
-  e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Type"] = "Layer/Dense";
-  e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Node Count"] = 32;
-  e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Elementwise/Tanh";
-
-  e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Type"] = "Layer/Dense";
-  e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Elementwise/Linear";
-  e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Weight Scaling"] = 0.01;
-
-  //// Defining Policy Configuration
-
   e["Solver"]["Policy"]["Learning Rate"] = 0.000001;
-  e["Solver"]["Policy"]["Mini Batch Size"] = 128;
   e["Solver"]["Policy"]["Target Accuracy"] = 0.0001;
+  e["Solver"]["Policy"]["Optimization Candidates"] = 8;
 
-  e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense";
-  e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear";
+  //// Defining Neural Network
 
-  e["Solver"]["Policy"]["Neural Network"]["Layers"][1]["Type"] = "Layer/Dense";
-  e["Solver"]["Policy"]["Neural Network"]["Layers"][1]["Node Count"] = 32;
-  e["Solver"]["Policy"]["Neural Network"]["Layers"][1]["Activation Function"]["Type"] = "Elementwise/Tanh";
+  e["Solver"]["Neural Network"]["Engine"] = "OneDNN";
 
-  e["Solver"]["Policy"]["Neural Network"]["Layers"][2]["Type"] = "Layer/Dense";
-  e["Solver"]["Policy"]["Neural Network"]["Layers"][2]["Node Count"] = 32;
-  e["Solver"]["Policy"]["Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Elementwise/Tanh";
+  e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear";
+  e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 32;
 
-  e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Type"] = "Layer/Dense";
-  e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Elementwise/Tanh";
-  e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Weight Scaling"] = 0.01;
+  e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Activation";
+  e["Solver"]["Neural Network"]["Hidden Layers"][1]["Function"] = "Elementwise/Tanh";
+
+  e["Solver"]["Neural Network"]["Hidden Layers"][2]["Type"] = "Layer/Linear";
+  e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 32;
+
+  e["Solver"]["Neural Network"]["Hidden Layers"][3]["Type"] = "Layer/Activation";
+  e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tanh";
 
   ////// Defining Termination Criteria
 

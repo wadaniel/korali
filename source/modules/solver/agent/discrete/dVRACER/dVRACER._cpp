@@ -18,33 +18,23 @@ void dVRACER::initializeAgent()
   korali::Engine engine;
 
   /*********************************************************************
- * Initializing Neural Network
+ * Initializing Critic/Policy Experiment
  *********************************************************************/
 
   _criticPolicyExperiment["Problem"]["Type"] = "Supervised Learning";
+  _criticPolicyExperiment["Problem"]["Max Timesteps"] = _timeSequenceLength;
+  _criticPolicyExperiment["Problem"]["Training Batch Size"] = _miniBatchSize;
+  _criticPolicyExperiment["Problem"]["Inference Batch Size"] = 1;
+  _criticPolicyExperiment["Problem"]["Input"]["Size"] = _problem->_stateVectorSize;
+  _criticPolicyExperiment["Problem"]["Solution"]["Size"] = 1 + _problem->_possibleActions.size();
+
   _criticPolicyExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
   _criticPolicyExperiment["Solver"]["Optimizer"] = _optimizer;
   _criticPolicyExperiment["Solver"]["Learning Rate"] = _learningRate;
   _criticPolicyExperiment["Solver"]["Loss Function"] = "Mean Squared Error";
   _criticPolicyExperiment["Solver"]["Steps Per Generation"] = 1;
-  _criticPolicyExperiment["Solver"]["Batch Size"] = _miniBatchSize;
-  _criticPolicyExperiment["Solver"]["Time Sequence Length"] = _timeSequenceLength;
-
-  // Configuring neural network
   _criticPolicyExperiment["Solver"]["Neural Network"]["Engine"] = _neuralNetworkEngine;
-  _criticPolicyExperiment["Solver"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Input";
-  _criticPolicyExperiment["Solver"]["Neural Network"]["Layers"][0]["Node Count"] = _problem->_stateVectorSize;
-
-  // Adding user-defined hidden layers
-  for (size_t i = 0; i < _neuralNetworkHiddenLayers.size(); i++) _criticPolicyExperiment["Solver"]["Neural Network"]["Layers"][i+1] = _neuralNetworkHiddenLayers[i];
-
-  // Adding a linear transformation to bring the node count to the desired count
-  _criticPolicyExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+1]["Type"] = "Layer/Linear";
-  _criticPolicyExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+1]["Node Count"] = 1 + _problem->_possibleActions.size();
-  _criticPolicyExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+1]["Weight Scaling"] = 0.1;
-
-  // Finally adding the output layer
-  _criticPolicyExperiment["Solver"]["Neural Network"]["Layers"][_neuralNetworkHiddenLayers.size()+2]["Type"] = "Layer/Output";
+  _criticPolicyExperiment["Solver"]["Neural Network"]["Hidden Layers"] = _neuralNetworkHiddenLayers;
 
   // Running initialization to verify that the configuration is correct
   _criticPolicyExperiment.initialize();
@@ -84,7 +74,8 @@ void dVRACER::trainPolicy()
   // Update off-policy fraction
   size_t expCount = _experienceReplay.size();
   size_t offPolicyCount = 0;
-#pragma omp parallel for reduction(+ : offPolicyCount)
+#pragma omp parallel for reduction(+ \
+                                   : offPolicyCount)
   for (size_t id = 0; id < expCount; id++)
   {
     float expImportanceWeight = _experienceReplay[id].cache.get("Importance Weight");
@@ -218,10 +209,10 @@ void dVRACER::trainPolicy()
     }
 
     // Set status as learning problem input
-    _criticPolicyProblem->_inputData[step] = { { expState } };
+    _criticPolicyProblem->_inputData[step] = {expState};
 
     // Set Gradient of Loss as Solution
-    _criticPolicyProblem->_solutionData[step] = { gradientLoss };
+    _criticPolicyProblem->_solutionData[step] = gradientLoss;
 
     updateVtbc(expId);
   }
@@ -237,9 +228,7 @@ void dVRACER::trainPolicy()
   _stdevPolicyError = std::sqrt(cumulativePolicyErrorSquared / (float)policyErrorCounter - _averagePolicyError * _averagePolicyError);
 
   // Running one generation of the optimization method with the given mini-batch
-  _criticPolicyLearner->initialize();
   _criticPolicyLearner->runGeneration();
-  _criticPolicyLearner->finalize();
 
   // Storing average policy hyperparameters
   _hyperparameters["Policy"] = _criticPolicyLearner->getTrainingHyperparameters();

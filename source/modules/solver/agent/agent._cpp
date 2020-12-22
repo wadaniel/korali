@@ -83,12 +83,13 @@ void Agent::initialize()
   if (_mode == "Testing") _maxGenerations = _k->_currentGeneration + 1;
 
   // Setting testing policy to best testing hyperparameters if not custom-set by the user
-  if (_mode == "Testing") if (_testingPolicy.empty()) _testingPolicy = _bestTestingHyperparameters;
+  if (_mode == "Testing")
+    if (_testingPolicy.empty()) _testingPolicy = _bestTestingHyperparameters;
 
   // Checking if there's testing samples defined
   if (_mode == "Testing")
-   if (_testingSampleIds.size() == 0)
-    KORALI_LOG_ERROR("For testing, you need to indicate the sample ids to run in the ['Testing']['Sample Ids'] field.\n");
+    if (_testingSampleIds.size() == 0)
+      KORALI_LOG_ERROR("For testing, you need to indicate the sample ids to run in the ['Testing']['Sample Ids'] field.\n");
 
   // Storage for the entire episodes before adding it to the replay memory
   _episodes.resize(_agentCount);

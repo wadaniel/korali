@@ -17,95 +17,95 @@ namespace learner
 {
 void DeepSupervisor::initialize()
 {
-   // Getting problem pointer
-   _problem = dynamic_cast<problem::SupervisedLearning *>(_k->_problem);
+  // Getting problem pointer
+  _problem = dynamic_cast<problem::SupervisedLearning *>(_k->_problem);
 
-   /*****************************************************************
+  /*****************************************************************
    * Setting up Neural Networks
    *****************************************************************/
 
-   // Configuring neural network's inputs
-    knlohmann::json neuralNetworkConfig;
-    neuralNetworkConfig["Type"] = "Neural Network";
-    neuralNetworkConfig["Engine"] = _neuralNetworkEngine;
-    neuralNetworkConfig["Timestep Count"] = _problem->_maxTimesteps;
+  // Configuring neural network's inputs
+  knlohmann::json neuralNetworkConfig;
+  neuralNetworkConfig["Type"] = "Neural Network";
+  neuralNetworkConfig["Engine"] = _neuralNetworkEngine;
+  neuralNetworkConfig["Timestep Count"] = _problem->_maxTimesteps;
 
-   // Iterator for the current layer id
-    size_t curLayer = 0;
+  // Iterator for the current layer id
+  size_t curLayer = 0;
 
-   // Setting the number of input layer nodes as number of input vector size
-   neuralNetworkConfig["Layers"][curLayer]["Type"] = "Layer/Input";
-   neuralNetworkConfig["Layers"][curLayer]["Output Channels"] = _problem->_inputSize;
-   curLayer++;
+  // Setting the number of input layer nodes as number of input vector size
+  neuralNetworkConfig["Layers"][curLayer]["Type"] = "Layer/Input";
+  neuralNetworkConfig["Layers"][curLayer]["Output Channels"] = _problem->_inputSize;
+  curLayer++;
 
-   // Adding user-defined hidden layers
-   for (size_t i = 0; i < _neuralNetworkHiddenLayers.size(); i++)  neuralNetworkConfig["Layers"][curLayer++] = _neuralNetworkHiddenLayers[i];
+  // Adding user-defined hidden layers
+  for (size_t i = 0; i < _neuralNetworkHiddenLayers.size(); i++) neuralNetworkConfig["Layers"][curLayer++] = _neuralNetworkHiddenLayers[i];
 
-   // Adding linear transformation layer to convert hidden state to match output channels
-   neuralNetworkConfig["Layers"][curLayer]["Type"] = "Layer/Linear";
-   neuralNetworkConfig["Layers"][curLayer]["Output Channels"] = _problem->_solutionSize;
-   curLayer++;
+  // Adding linear transformation layer to convert hidden state to match output channels
+  neuralNetworkConfig["Layers"][curLayer]["Type"] = "Layer/Linear";
+  neuralNetworkConfig["Layers"][curLayer]["Output Channels"] = _problem->_solutionSize;
+  curLayer++;
 
-   // Applying a user-defined pre-activation function
-   if (_neuralNetworkOutputActivation != "Identity")
-   {
+  // Applying a user-defined pre-activation function
+  if (_neuralNetworkOutputActivation != "Identity")
+  {
     neuralNetworkConfig["Layers"][curLayer]["Type"] = "Layer/Activation";
     neuralNetworkConfig["Layers"][curLayer]["Function"] = _neuralNetworkOutputActivation;
     curLayer++;
-   }
+  }
 
-   // Applying output layer configuration
-   neuralNetworkConfig["Layers"][curLayer] = _neuralNetworkOutputLayer;
-   neuralNetworkConfig["Layers"][curLayer]["Type"] = "Layer/Output";
+  // Applying output layer configuration
+  neuralNetworkConfig["Layers"][curLayer] = _neuralNetworkOutputLayer;
+  neuralNetworkConfig["Layers"][curLayer]["Type"] = "Layer/Output";
 
-   // Instancing training neural network
-   auto trainingNeuralNetworkConfig = neuralNetworkConfig;
-   trainingNeuralNetworkConfig["Batch Size"] = _problem->_trainingBatchSize;
-   _trainingNeuralNetwork = dynamic_cast<NeuralNetwork *>(getModule(trainingNeuralNetworkConfig, _k));
-   _trainingNeuralNetwork->initialize();
+  // Instancing training neural network
+  auto trainingNeuralNetworkConfig = neuralNetworkConfig;
+  trainingNeuralNetworkConfig["Batch Size"] = _problem->_trainingBatchSize;
+  _trainingNeuralNetwork = dynamic_cast<NeuralNetwork *>(getModule(trainingNeuralNetworkConfig, _k));
+  _trainingNeuralNetwork->initialize();
 
-   // Creating inference neural networks (one per thread)
-   _inferenceNeuralNetworks.resize(_maxThreads);
-   for (size_t i = 0; i < _maxThreads; i++)
-   {
-     auto inferenceNeuralNetworkConfig = neuralNetworkConfig;
-     inferenceNeuralNetworkConfig["Batch Size"] = _problem->_inferenceBatchSize;
-     _inferenceNeuralNetworks[i] = dynamic_cast<NeuralNetwork *>(getModule(inferenceNeuralNetworkConfig, _k));
-     _inferenceNeuralNetworks[i]->initialize();
-   }
+  // Creating inference neural networks (one per thread)
+  _inferenceNeuralNetworks.resize(_maxThreads);
+  for (size_t i = 0; i < _maxThreads; i++)
+  {
+    auto inferenceNeuralNetworkConfig = neuralNetworkConfig;
+    inferenceNeuralNetworkConfig["Batch Size"] = _problem->_inferenceBatchSize;
+    _inferenceNeuralNetworks[i] = dynamic_cast<NeuralNetwork *>(getModule(inferenceNeuralNetworkConfig, _k));
+    _inferenceNeuralNetworks[i]->initialize();
+  }
 
-   /*****************************************************************
+  /*****************************************************************
   * Initializing NN hyperparameters
   *****************************************************************/
 
-   // If the hyperparameters have not been specified, produce new initial ones
-   if (_hyperparameters.size() == 0) _hyperparameters = _trainingNeuralNetwork->generateInitialHyperparameters();
+  // If the hyperparameters have not been specified, produce new initial ones
+  if (_hyperparameters.size() == 0) _hyperparameters = _trainingNeuralNetwork->generateInitialHyperparameters();
 
-   // Creating and setting hyperparameter structures
-   _trainingNeuralNetwork->setHyperparameters(_hyperparameters);
+  // Creating and setting hyperparameter structures
+  _trainingNeuralNetwork->setHyperparameters(_hyperparameters);
 
-   // Copying hyperparameters and normalization parameters from training to evaluation
-   for (size_t i = 0; i < _maxThreads; i++)
-     _inferenceNeuralNetworks[i]->setHyperparameters(_hyperparameters);
+  // Copying hyperparameters and normalization parameters from training to evaluation
+  for (size_t i = 0; i < _maxThreads; i++)
+    _inferenceNeuralNetworks[i]->setHyperparameters(_hyperparameters);
 
-   /*****************************************************************
+  /*****************************************************************
   * Setting up weight and bias optimization experiment
   *****************************************************************/
 
-   auto weightAndBiasParameters = _trainingNeuralNetwork->getHyperparameters();
+  auto weightAndBiasParameters = _trainingNeuralNetwork->getHyperparameters();
 
-   if (_optimizer == "Adam") _adamSolver = new korali::fAdam(weightAndBiasParameters.size());
-   if (_optimizer == "AdaBelief") _adamSolver = new korali::fAdaBelief(weightAndBiasParameters.size());
+  if (_optimizer == "Adam") _adamSolver = new korali::fAdam(weightAndBiasParameters.size());
+  if (_optimizer == "AdaBelief") _adamSolver = new korali::fAdaBelief(weightAndBiasParameters.size());
 
-   // Setting learning rate
-   _adamSolver->_eta = _learningRate;
+  // Setting learning rate
+  _adamSolver->_eta = _learningRate;
 
-   // Setting initial guesses as the current weight and bias parameters
-   for (size_t i = 0; i < weightAndBiasParameters.size(); i++)
-     _adamSolver->_initialValues[i] = weightAndBiasParameters[i];
+  // Setting initial guesses as the current weight and bias parameters
+  for (size_t i = 0; i < weightAndBiasParameters.size(); i++)
+    _adamSolver->_initialValues[i] = weightAndBiasParameters[i];
 
-   // Resetting solver before using it
-   _adamSolver->reset();
+  // Resetting solver before using it
+  _adamSolver->reset();
 
   // Initialize statistics
   if (_k->_currentGeneration == 0)
@@ -134,15 +134,15 @@ void DeepSupervisor::runGeneration()
 
     // If we use an MSE loss function, we need to update the gradient vector with its difference with each of batch's last timestep of the NN output
     if (_lossFunction == "Mean Squared Error")
-     for (size_t b = 0; b < N; b++)
-      for (size_t i = 0; i < OC; i++)
-       gradientVector[b][i] = gradientVector[b][i] - _trainingNeuralNetwork->_outputValues[b][i];
+      for (size_t b = 0; b < N; b++)
+        for (size_t i = 0; i < OC; i++)
+          gradientVector[b][i] = gradientVector[b][i] - _trainingNeuralNetwork->_outputValues[b][i];
 
     // Calculating loss across the batch size
     _currentLoss = 0.0;
     for (size_t b = 0; b < N; b++)
-     for (size_t i = 0; i < OC; i++)
-      _currentLoss += gradientVector[b][i] * gradientVector[b][i];
+      for (size_t i = 0; i < OC; i++)
+        _currentLoss += gradientVector[b][i] * gradientVector[b][i];
     _currentLoss = _currentLoss / ((float)N * 2.0f);
 
     // Backward propagating the gradients through the training neural network
@@ -152,23 +152,20 @@ void DeepSupervisor::runGeneration()
     _adamSolver->processResult(_currentLoss, _trainingNeuralNetwork->_hyperparameterGradients);
 
     // Updating best loss if better, or increasing suboptimal generation count
-    if (_currentLoss < _minimumLoss) _minimumLoss = _currentLoss;
-    else _suboptimalGenerationCount++;
+    if (_currentLoss < _minimumLoss)
+      _minimumLoss = _currentLoss;
+    else
+      _suboptimalGenerationCount++;
 
     // Getting new set of hyperparameters from Adam
     _trainingNeuralNetwork->setHyperparameters(_adamSolver->_currentValue);
   }
-}
 
-void DeepSupervisor::finalize()
-{
   // Copying hyperparameters and normalization parameters from training to evaluation
   auto hyperparameters = _trainingNeuralNetwork->getHyperparameters();
-
   for (size_t i = 0; i < _maxThreads; i++)
     _inferenceNeuralNetworks[i]->setHyperparameters(hyperparameters);
-
-  _hyperparameters = hyperparameters;
+  _hyperparameters = _trainingNeuralNetwork->getHyperparameters();
 }
 
 std::vector<float> DeepSupervisor::getTrainingHyperparameters()
@@ -215,13 +212,13 @@ std::vector<std::vector<float>> DeepSupervisor::getEvaluation(const std::vector<
     KORALI_LOG_ERROR("A different batch size (%lu) passed than the one in the configuration.\n", input.size(), _problem->_inferenceBatchSize);
 
   for (size_t b = 0; b < N; b++)
-   if (input[b].size() > _problem->_maxTimesteps)
-    KORALI_LOG_ERROR("More timesteps (%lu) passed for batch %lu for inference than maximum (%lu).\n", input[b].size(), b, _problem->_maxTimesteps);
+    if (input[b].size() > _problem->_maxTimesteps)
+      KORALI_LOG_ERROR("More timesteps (%lu) passed for batch %lu for inference than maximum (%lu).\n", input[b].size(), b, _problem->_maxTimesteps);
 
   for (size_t b = 0; b < N; b++)
-   for (size_t t = 0; t < input[b].size(); t++)
-    if (input[b][t].size() > IC)
-     KORALI_LOG_ERROR("A different vector  size (%lu) passed for batch %lu, timestep %lu for inference than expected (%lu).\n", input[b][t].size(), b, t, IC);
+    for (size_t t = 0; t < input[b].size(); t++)
+      if (input[b][t].size() > IC)
+        KORALI_LOG_ERROR("A different vector  size (%lu) passed for batch %lu, timestep %lu for inference than expected (%lu).\n", input[b][t].size(), b, t, IC);
 
   // Running the input values through the neural network
   _inferenceNeuralNetworks[curThread]->forward(input);
@@ -244,8 +241,8 @@ std::vector<std::vector<float>> DeepSupervisor::getGradients(const std::vector<s
     KORALI_LOG_ERROR("A different batch size (%lu) passed than the one in the configuration.\n", gradients.size(), N);
 
   for (size_t b = 0; b < N; b++)
-   if (gradients[b].size() != OC)
-    KORALI_LOG_ERROR("A different vector size (%lu) passed as gradient for batch %lu for inference than expected (%lu).\n", gradients[b].size(), b, OC);
+    if (gradients[b].size() != OC)
+      KORALI_LOG_ERROR("A different vector size (%lu) passed as gradient for batch %lu for inference than expected (%lu).\n", gradients[b].size(), b, OC);
 
   // Backward propagating the gradients through the training neural network
   _inferenceNeuralNetworks[curThread]->backward(gradients);

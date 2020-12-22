@@ -12,7 +12,6 @@ namespace layer
 class Recurrent : public Layer
 {
   public:
-
   /**
    * @brief cuDNN Counts the size of all linear layer weights
    */
@@ -23,7 +22,7 @@ class Recurrent : public Layer
    */
   std::vector<size_t> _linearLayerBiasSizes;
 
-  #ifdef _KORALI_USE_CUDNN
+#ifdef _KORALI_USE_CUDNN
 
   /**
   * @brief cuDNN Descriptor for the hidden state tensor memory
@@ -43,17 +42,17 @@ class Recurrent : public Layer
   /**
    * @brief cuDNN Device memory pointers for the internal layer's cell (LSTM) state input gradients
    */
-   std::vector<void *> _cGradientTensor;
+  std::vector<void *> _cGradientTensor;
 
   /**
   * @brief cuDNN Device memory pointers for the internal layer's hidden state input
   */
-   std::vector<void *> _hStateTensor;
+  std::vector<void *> _hStateTensor;
 
   /**
    * @brief cuDNN Device memory pointers for the internal layer's hidden state input gradients
    */
-   std::vector<void *> _hGradientTensor;
+  std::vector<void *> _hGradientTensor;
 
   /**
   * @brief cuDNN descriptor for the dropout operator
@@ -98,12 +97,12 @@ class Recurrent : public Layer
   /**
   * @brief cuDNN Device memory pointer to of all linear layer weights
   */
-  std::vector<void*> _linearLayerWeightTensors;
+  std::vector<void *> _linearLayerWeightTensors;
 
   /**
    * @brief cuDNN Device memory pointer to of all linear layer biases
    */
-  std::vector<void*> _linearLayerBiasTensors;
+  std::vector<void *> _linearLayerBiasTensors;
 
   /**
    * @brief cuDNN Weights size
@@ -135,7 +134,7 @@ class Recurrent : public Layer
    */
   int *_devSequenceLengths;
 
-  #endif
+#endif
 
   void initialize() override;
   std::vector<float> generateInitialHyperparameters() override;

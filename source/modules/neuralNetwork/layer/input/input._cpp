@@ -21,42 +21,41 @@ namespace neuralNetwork
 {
 namespace layer
 {
-
 void Input::initialize()
 {
- // Checking Layer size
- if (_outputChannels == 0) KORALI_LOG_ERROR("Output Channels for layer (%lu) should be larger than zero.\n", _index);
+  // Checking Layer size
+  if (_outputChannels == 0) KORALI_LOG_ERROR("Output Channels for layer (%lu) should be larger than zero.\n", _index);
 
- // Checking position
- if (_index != 0) KORALI_LOG_ERROR("Input layers can only be placed at the start of the NN\n");
+  // Checking position
+  if (_index != 0) KORALI_LOG_ERROR("Input layers can only be placed at the start of the NN\n");
 }
 
 void Input::forwardData()
 {
- size_t N = _nn->_batchSize;
- size_t OC = _outputChannels;
- int t = _nn->_currentTimestep;
+  size_t N = _nn->_batchSize;
+  size_t OC = _outputChannels;
+  int t = _nn->_currentTimestep;
 
- #ifdef _KORALI_USE_EIGEN
-   if (_nn->_engine == "Korali")
-   {
-     memcpy(_outputValues, &_nn->_rawInputValues[t * N * OC], N * OC * sizeof(float));
-   }
- #endif
+#ifdef _KORALI_USE_EIGEN
+  if (_nn->_engine == "Korali")
+  {
+    memcpy(_outputValues, &_nn->_rawInputValues[t * N * OC], N * OC * sizeof(float));
+  }
+#endif
 
- #ifdef _KORALI_USE_ONEDNN
-   if (_nn->_engine == "OneDNN")
-   {
-     write_to_dnnl_memory(&_nn->_rawInputValues[t * N * OC], _outputMem);
-   }
- #endif
+#ifdef _KORALI_USE_ONEDNN
+  if (_nn->_engine == "OneDNN")
+  {
+    write_to_dnnl_memory(&_nn->_rawInputValues[t * N * OC], _outputMem);
+  }
+#endif
 
- #ifdef _KORALI_USE_CUDNN
-   if (_nn->_engine == "CuDNN")
-   {
-     cudaErrCheck(cudaMemcpy(_outputTensor[t], &_nn->_rawInputValues[t * N * OC], N * OC * sizeof(float), cudaMemcpyHostToDevice));
-   }
- #endif
+#ifdef _KORALI_USE_CUDNN
+  if (_nn->_engine == "CuDNN")
+  {
+    cudaErrCheck(cudaMemcpy(_outputTensor[t], &_nn->_rawInputValues[t * N * OC], N * OC * sizeof(float), cudaMemcpyHostToDevice));
+  }
+#endif
 }
 
 void Input::backwardData()
@@ -65,28 +64,27 @@ void Input::backwardData()
   int OC = _outputChannels;
   int t = _nn->_currentTimestep;
 
-  #ifdef _KORALI_USE_EIGEN
-    if (_nn->_engine == "Korali")
-    {
-      memcpy(&_nn->_rawInputGradients[t * N * OC], _outputGradient, N * OC * sizeof(float));
-    }
-  #endif
+#ifdef _KORALI_USE_EIGEN
+  if (_nn->_engine == "Korali")
+  {
+    memcpy(&_nn->_rawInputGradients[t * N * OC], _outputGradient, N * OC * sizeof(float));
+  }
+#endif
 
-  #ifdef _KORALI_USE_ONEDNN
-    if (_nn->_engine == "OneDNN")
-    {
-      read_from_dnnl_memory(&_nn->_rawInputGradients[t * N * OC], _outputGradientMem);
-    }
-  #endif
+#ifdef _KORALI_USE_ONEDNN
+  if (_nn->_engine == "OneDNN")
+  {
+    read_from_dnnl_memory(&_nn->_rawInputGradients[t * N * OC], _outputGradientMem);
+  }
+#endif
 
-  #ifdef _KORALI_USE_CUDNN
-    if (_nn->_engine == "CuDNN")
-    {
-      cudaErrCheck(cudaMemcpy(&_nn->_rawInputGradients[t * N * OC], _outputGradientTensor[t], N * OC * sizeof(float), cudaMemcpyDeviceToHost));
-    }
-  #endif
+#ifdef _KORALI_USE_CUDNN
+  if (_nn->_engine == "CuDNN")
+  {
+    cudaErrCheck(cudaMemcpy(&_nn->_rawInputGradients[t * N * OC], _outputGradientTensor[t], N * OC * sizeof(float), cudaMemcpyDeviceToHost));
+  }
+#endif
 }
-
 
 } // namespace layer
 

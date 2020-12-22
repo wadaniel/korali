@@ -82,7 +82,7 @@ class NeuralNetwork : public Module
   /**
    * @brief F data for the NN hyperparameter gradients. Format: H (H: Hyperparameter count).
    */
-   std::vector<float> _hyperparameterGradients;
+  std::vector<float> _hyperparameterGradients;
 
   /**
    * @brief Remembers the position of the last timestep provided as input
@@ -92,7 +92,7 @@ class NeuralNetwork : public Module
   /**
    * @brief Keeps track of the current timestep
    */
-   size_t _currentTimestep;
+  size_t _currentTimestep;
 
   void initialize() override;
 
@@ -118,13 +118,13 @@ class NeuralNetwork : public Module
    * @brief Forward-propagates the input values through the network.
    * @param inputValues The input values.  Format: TxNxIC (T: Time steps, N: Mini-batch, IC: Input channels).
   */
-  void forward(const std::vector<std::vector<std::vector<float>>>& inputValues);
+  void forward(const std::vector<std::vector<std::vector<float>>> &inputValues);
 
   /**
    * @brief Backward-propagates the gradients through the network.
    * @param outputGradients Output gradients. Format: NxOC (N: Mini-batch size, OC: Output channels).
   */
-  void backward(const std::vector<std::vector<float>>& outputGradients);
+  void backward(const std::vector<std::vector<float>> &outputGradients);
 
   /**
    * @brief Creator that sets initialized flag to false

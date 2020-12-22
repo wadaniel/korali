@@ -19,12 +19,12 @@
 #include "distribution/univariate/uniform/uniform.hpp"
 #include "distribution/univariate/weibull/weibull.hpp"
 #include "experiment/experiment.hpp"
-#include "neuralNetwork/layer/linear/linear.hpp"
 #include "neuralNetwork/layer/activation/activation.hpp"
-#include "neuralNetwork/layer/recurrent/recurrent.hpp"
 #include "neuralNetwork/layer/input/input.hpp"
-#include "neuralNetwork/layer/output/output.hpp"
 #include "neuralNetwork/layer/layer.hpp"
+#include "neuralNetwork/layer/linear/linear.hpp"
+#include "neuralNetwork/layer/output/output.hpp"
+#include "neuralNetwork/layer/recurrent/recurrent.hpp"
 #include "neuralNetwork/neuralNetwork.hpp"
 #include "problem/bayesian/custom/custom.hpp"
 #include "problem/bayesian/latent/exponentialLatent/exponentialLatent.hpp"
@@ -42,15 +42,11 @@
 #include "problem/sampling/sampling.hpp"
 #include "problem/supervisedLearning/supervisedLearning.hpp"
 #include "solver/SAEM/SAEM.hpp"
-#include "solver/agent/continuous/DDPG/DDPG.hpp"
 #include "solver/agent/continuous/GFPT/GFPT.hpp"
 #include "solver/agent/continuous/NAF/NAF.hpp"
 #include "solver/agent/continuous/VRACER/VRACER.hpp"
-#include "solver/agent/continuous/cACER/cACER.hpp"
 #include "solver/agent/continuous/continuous.hpp"
-#include "solver/agent/discrete/DDQN/DDQN.hpp"
 #include "solver/agent/discrete/DQN/DQN.hpp"
-#include "solver/agent/discrete/dACER/dACER.hpp"
 #include "solver/agent/discrete/dVRACER/dVRACER.hpp"
 #include "solver/agent/discrete/discrete.hpp"
 #include "solver/executor/executor.hpp"
@@ -139,12 +135,8 @@ Module *Module::getModule(knlohmann::json &js, Experiment *e)
   if (moduleType == "SAEM") module = new korali::solver::SAEM();
   if (moduleType == "Learner/GaussianProcess") module = new korali::solver::learner::GaussianProcess();
   if (moduleType == "Learner/DeepSupervisor") module = new korali::solver::learner::DeepSupervisor();
-  if (moduleType == "Agent/Discrete/DACER") module = new korali::solver::agent::discrete::dACER();
   if (moduleType == "Agent/Discrete/DQN") module = new korali::solver::agent::discrete::DQN();
-  if (moduleType == "Agent/Discrete/DDQN") module = new korali::solver::agent::discrete::DDQN();
   if (moduleType == "Agent/Discrete/DVRACER") module = new korali::solver::agent::discrete::dVRACER();
-  if (moduleType == "Agent/Continuous/CACER") module = new korali::solver::agent::continuous::cACER();
-  if (moduleType == "Agent/Continuous/DDPG") module = new korali::solver::agent::continuous::DDPG();
   if (moduleType == "Agent/Continuous/GFPT") module = new korali::solver::agent::continuous::GFPT();
   if (moduleType == "Agent/Continuous/NAF") module = new korali::solver::agent::continuous::NAF();
   if (moduleType == "Agent/Continuous/VRACER") module = new korali::solver::agent::continuous::VRACER();

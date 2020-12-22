@@ -12,16 +12,15 @@ namespace layer
 class Output : public Layer
 {
   public:
-
- /**
+  /**
  * @brief Contains the original output, before preprocessing
  */
- float *_srcOutputValues;
+  float *_srcOutputValues;
 
- /**
+  /**
  * @brief Contains the postprocessed gradients
  */
- float *_dstOutputGradients;
+  float *_dstOutputGradients;
 
   void initialize() override;
   void createForwardPipeline() override;

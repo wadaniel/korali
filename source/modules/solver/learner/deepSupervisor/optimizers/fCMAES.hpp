@@ -72,7 +72,7 @@ class fCMAES
   std::normal_distribution<float> _normalGenerator;
 
   /**
-* @brief Specifies the number of samples to evaluate per generation (preferably $4+3*log(N)$, where $N$ is the number of variables).
+* @brief Specifies the number of samples to evaluate per generation (default: $4+3*log(N)$, where $N$ is the number of variables).
 */
   size_t _populationSize;
   /**

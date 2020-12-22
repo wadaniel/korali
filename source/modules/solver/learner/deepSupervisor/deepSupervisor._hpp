@@ -51,7 +51,6 @@ class DeepSupervisor : public Learner
   std::vector<float> getInferenceHyperparameters() override;
   void setInferenceHyperparameters(const std::vector<float> &hyperparameters) override;
 
-  void finalize() override;
   void initialize() override;
   void runGeneration() override;
   void printGenerationAfter() override;

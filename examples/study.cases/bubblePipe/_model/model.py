@@ -56,7 +56,7 @@ def model(x, resultFolder, objective):
    objectiveValue = -float(resultDict['num_coal'])
   if (objective == 'maxNumCoal'):
    objectiveValue = float(resultDict['num_coal'])
-  if (objective == 'maxNumCoal'):
+  if (objective == 'maxMeanVel'):
    objectiveValue = float(resultDict['mean_velocity'])
 
  # Assigning objective function value

@@ -507,19 +507,6 @@ knlohmann::json GFPT::runPolicy(const std::vector<float> &state)
   return policy;
 }
 
-knlohmann::json GFPT::getAgentPolicy()
-{
-  knlohmann::json hyperparameters;
-  hyperparameters["Policy"] = _policyLearner->getInferenceHyperparameters();
-  return hyperparameters;
-}
-
-void GFPT::setAgentPolicy(const knlohmann::json &hyperparameters)
-{
-  auto policyHyperparameters = hyperparameters["Policy"].get<std::vector<float>>();
-  _policyLearner->setInferenceHyperparameters(policyHyperparameters);
-}
-
 void GFPT::setTrainingState(const knlohmann::json &state)
 {
   _aLearner->setTrainingHyperparameters(state["A"]["Training"]);

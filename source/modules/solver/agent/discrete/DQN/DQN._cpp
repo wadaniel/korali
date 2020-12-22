@@ -126,6 +126,7 @@ void DQN::trainPolicy()
   _stdevQStar = sqrt(_cumulativeQStarSquared / (float)_miniBatchSize - _averageQStar * _averageQStar);
 }
 
+<<<<<<< HEAD
 knlohmann::json DQN::getAgentPolicy()
 {
   knlohmann::json hyperparameters;
@@ -139,6 +140,8 @@ void DQN::setAgentPolicy(const knlohmann::json &hyperparameters)
   _criticLearner->setInferenceHyperparameters(criticHyperparameters);
 }
 
+=======
+>>>>>>> master
 knlohmann::json DQN::runPolicy(const std::vector<float> &state)
 {
   // Creating state/action input

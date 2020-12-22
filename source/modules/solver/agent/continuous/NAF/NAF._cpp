@@ -200,18 +200,6 @@ void NAF::trainPolicy()
   _criticLearner->setInferenceHyperparameters(_qHatHyperparameter);
 }
 
-knlohmann::json NAF::getAgentPolicy()
-{
-  knlohmann::json hyperparameters;
-  hyperparameters["Critic"] = _qLearner->getInferenceHyperparameters();
-  return hyperparameters;
-}
-
-void NAF::setAgentPolicy(const knlohmann::json &hyperparameters)
-{
-  _qLearner->setInferenceHyperparameters(hyperparameters["Critic"].get<std::vector<float>>());
-}
-
 knlohmann::json NAF::runPolicy(const std::vector<float> &state)
 {
   auto qNNoutput = _qLearner->getEvaluation({{state}})[0];

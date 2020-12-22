@@ -13,16 +13,11 @@ parser = argparse.ArgumentParser(description='Runs the Aphros Fishbone experimen
 parser.add_argument('--resultFolder', '-r', help='Path to the resuls folder', default='_result', required=False)
 parser.add_argument('--samples', '-s', help='Number of CMAES samples per generation.', default=32, required=False)
 parser.add_argument('--concurrency', '-c', help='Number of concurrent Aphros instances.', default=1, required=False)
-parser.add_argument('--numCellsY', '-ny', help='Number of cells in the y-dimension.', default='64 * 6', required=False)
-parser.add_argument('--numCores', '-nc', help='Number of cores per Aphros instance.', default=108, required=False)
-parser.add_argument('--reynoldsNumber', '-re', help='Reynolds number for the simulation.', default=500, required=False)
-parser.add_argument('--tmax', '-t', help='Maximum simulation time.', default=30, required=False)
-parser.add_argument('--objective', '-obj', help='Column name of stat.dat to optimize.', default='vol2', required=False)
+parser.add_argument('--objective', '-obj', help='Optimization objective', choices=['maxNumCoal', 'minNumCoal', 'maxMeanVel'],   required=True)
 parser.add_argument('--ngens', '-ng', help='Number of generations to run per job.', default=1, required=False)
 args = parser.parse_args()
 
 # Parsing inputs
-tmax = float(args.tmax)
 objective = str(args.objective)
 ngens = int(args.ngens)
 
@@ -39,12 +34,57 @@ else:
  
 # Setting up the reference likelihood for the Bayesian Problem
 e["Problem"]["Type"] = "Optimization"
-e["Problem"]["Objective Function"] = lambda x: model(x, resultFolder, objective, tmax)
+e["Problem"]["Objective Function"] = lambda x: model(x, resultFolder, objective)
 
-e["Variables"][0]["Name"] = "Bone Factor"
-e["Variables"][0]["Lower Bound"] = 0.0
-e["Variables"][0]["Upper Bound"] = 1.8
-e["Variables"][0]["Initial Standard Deviation"] = 0.9
+e["Variables"][0]["Name"] = "Arc Width 1"
+e["Variables"][0]["Lower Bound"] = 0.5
+e["Variables"][0]["Upper Bound"] = 1.5
+e["Variables"][0]["Initial Standard Deviation"] = 0.5
+
+e["Variables"][1]["Name"] = "Arc Width 1"
+e["Variables"][1]["Lower Bound"] = 0.5
+e["Variables"][1]["Upper Bound"] = 1.5
+e["Variables"][1]["Initial Standard Deviation"] = 0.5
+
+e["Variables"][2]["Name"] = "Arc Width 2"
+e["Variables"][2]["Lower Bound"] = 0.5
+e["Variables"][2]["Upper Bound"] = 1.5
+e["Variables"][2]["Initial Standard Deviation"] = 0.5
+
+e["Variables"][3]["Name"] = "Arc Width 3"
+e["Variables"][3]["Lower Bound"] = 0.5
+e["Variables"][3]["Upper Bound"] = 1.5
+e["Variables"][3]["Initial Standard Deviation"] = 0.5
+
+e["Variables"][4]["Name"] = "Arc Width 4"
+e["Variables"][4]["Lower Bound"] = 0.5
+e["Variables"][4]["Upper Bound"] = 1.5
+e["Variables"][4]["Initial Standard Deviation"] = 0.5
+
+e["Variables"][5]["Name"] = "Arc Offset 1"
+e["Variables"][5]["Lower Bound"] = -0.5
+e["Variables"][5]["Upper Bound"] = 0.5
+e["Variables"][5]["Initial Standard Deviation"] = 0.5
+
+e["Variables"][6]["Name"] = "Arc Offset 2"
+e["Variables"][6]["Lower Bound"] = -0.5
+e["Variables"][6]["Upper Bound"] = 0.5
+e["Variables"][6]["Initial Standard Deviation"] = 0.5
+
+e["Variables"][7]["Name"] = "Arc Offset 3"
+e["Variables"][7]["Lower Bound"] = -0.5
+e["Variables"][7]["Upper Bound"] = 0.5
+e["Variables"][7]["Initial Standard Deviation"] = 0.5
+
+e["Variables"][8]["Name"] = "Arc Offset 4"
+e["Variables"][8]["Lower Bound"] = -0.5
+e["Variables"][8]["Upper Bound"] = 0.5
+e["Variables"][8]["Initial Standard Deviation"] = 0.5
+
+e["Variables"][9]["Name"] = "Arc Offset 5"
+e["Variables"][9]["Lower Bound"] = -0.5
+e["Variables"][9]["Upper Bound"] = 0.5
+e["Variables"][9]["Initial Standard Deviation"] = 0.5
 
 # Configuring CMA-ES parameters
 e["Solver"]["Type"] = "Optimizer/CMAES"
@@ -65,17 +105,14 @@ e["Preserve Random Number Generator States"] = True
 
 # Configuring base parameter file
 parameterString = ''
-parameterString += 'np = ' + str(args.numCores) + '\n'
-parameterString += 'ny = ' + str(args.numCellsY) + '\n'
-parameterString += 'bubbles = True\n'
-parameterString += 'tmax = ' + str(tmax) + '\n'
-parameterString += 'Re = ' + str(args.reynoldsNumber) + '\n'
+parameterString += 'np = 3 * 36\n'
+parameterString += 'dumpless = True\n'
 
 # Logging configuration
 print('--------------------------------------------------')
-print('Running Korali+Aphros Fishbone experiment.')
+print('Running Korali+Aphros Pipe experiment.')
 print('Result Folder: ' + resultFolder)
-print('# Generations per job: ' + str(args.ngens))
+print('Generations per job: ' + str(args.ngens))
 print('CMAES samples per generation: ' + str(args.samples))
 print('Concurrent Aphros instances: ' + str(args.concurrency))
 print('Objective: ' + objective)

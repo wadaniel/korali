@@ -4,6 +4,7 @@ import sys
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
+import matplotlib.patches as mpatch
 from random import randrange
 import time
 import korali
@@ -17,7 +18,7 @@ Arch = "FNN"
 #Arch = "RNN"
 tf = 2.0 # Total Time
 dt = 0.4 # Time Differential
-B = 200 # Training Batch Size
+B = 500 # Training Batch Size
 s = 1.0  # Parameter for peak separation
 w = np.pi # Parameter for wave speed
 a = 1.0 # Scaling
@@ -62,7 +63,7 @@ e["Solver"]["Type"] = "Learner/DeepSupervisor"
 e["Solver"]["Loss Function"] = "Mean Squared Error"
 e["Solver"]["Steps Per Generation"] = 20
 e["Solver"]["Optimizer"] = "AdaBelief"
-e["Solver"]["Learning Rate"] = 0.00001
+e["Solver"]["Learning Rate"] = 0.0001
 
 ### Defining the shape of the neural network
 
@@ -121,9 +122,14 @@ cmap = cm.get_cmap(name='Set1')
 xAxis = [ x[-1][0] for x in testInputSetX ]
 
 for i, x in enumerate(testInputSetX):
- t = len(x)  
+ t = len(x)-1  
  plt.plot(xAxis[i], testSolutionSet[i], "o", color=cmap(t))
  plt.plot(xAxis[i], testInferredSet[i], "x", color=cmap(t))
+ 
+labelPatches = [ ] 
+for i, t in enumerate(T):
+ labelPatches.append(mpatch.Patch(color=cmap(i), label='Seq Length: ' + str(i+1)))
+plt.legend(handles=labelPatches, loc='lower right')
 
 ### Plotting Results
 

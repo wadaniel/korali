@@ -287,7 +287,7 @@ void GFPT::trainPolicy()
   // Creating minibatch for the critic update
   auto miniBatchIndexes = generateMiniBatch(_criticMiniBatchSize);
 
-//#pragma omp parallel for schedule(dynamic, 1)
+#pragma omp parallel for schedule(dynamic, 1)
   for (size_t b = 0; b < _criticMiniBatchSize; b++)
   {
     // Selecting a uniformly random selected, yet not repeated experience
@@ -365,7 +365,7 @@ void GFPT::trainPolicy()
   size_t onPolicySamples = 0;
 
 // Accumulating states for evaluation in the policy
-//#pragma omp parallel for schedule(dynamic, 1)
+#pragma omp parallel for schedule(dynamic, 1)
   for (size_t idx = 0; idx < _criticMiniBatchSize; idx++)
   {
     // Getting current thread ID and corresponding optimizer and batch optimization NN

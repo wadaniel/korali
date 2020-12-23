@@ -367,28 +367,28 @@ void Recurrent::backwardHyperparameters()
 #ifdef _KORALI_USE_CUDNN
   if (_nn->_engine == "CuDNN")
   {
-  size_t t = _nn->_currentTimestep;
+    size_t t = _nn->_currentTimestep;
 
-  // We need to clear the gradients because they are additive in CUDNN
-  cudaErrCheck(cudaMemset(_weightsGradientTensor, 0, _hyperparameterCount));
+    // We need to clear the gradients because they are additive in CUDNN
+    cudaErrCheck(cudaMemset(_weightsGradientTensor, 0, _hyperparameterCount));
 
-  cudnnErrCheck(cudnnRNNBackwardWeights_v8(
-    _nn->_cuDNNHandle,                    // handle
-    _rnnDesc,                             // rnnDesc
-    CUDNN_WGRAD_MODE_ADD,                 // addGrad
-    _devSequenceLengths,                  // devSeqLengths
-    _inputRNNDataDesc,                    // xDesc
-    _prevLayer->_outputTensor[t],         // x
-    _hTensorDesc,                         // hDesc
-    t == 0 ? NULL : _hStateTensor[t - 1], // hx
-    _outputRNNDataDesc,                   // yDesc
-    _outputTensor[t],                     // y
-    _weightsSize,
-    _weightsGradientTensor,
-    _workSpaceSize,
-    _workSpaceTensor[t],
-    _reserveSpaceSize,
-    _reserveSpaceTensor[t]));
+    cudnnErrCheck(cudnnRNNBackwardWeights_v8(
+      _nn->_cuDNNHandle,                    // handle
+      _rnnDesc,                             // rnnDesc
+      CUDNN_WGRAD_MODE_ADD,                 // addGrad
+      _devSequenceLengths,                  // devSeqLengths
+      _inputRNNDataDesc,                    // xDesc
+      _prevLayer->_outputTensor[t],         // x
+      _hTensorDesc,                         // hDesc
+      t == 0 ? NULL : _hStateTensor[t - 1], // hx
+      _outputRNNDataDesc,                   // yDesc
+      _outputTensor[t],                     // y
+      _weightsSize,
+      _weightsGradientTensor,
+      _workSpaceSize,
+      _workSpaceTensor[t],
+      _reserveSpaceSize,
+      _reserveSpaceTensor[t]));
   }
 #endif
 }

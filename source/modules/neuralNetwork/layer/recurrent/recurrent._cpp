@@ -364,6 +364,9 @@ void Recurrent::backwardData()
 
 void Recurrent::backwardHyperparameters()
 {
+#ifdef _KORALI_USE_CUDNN
+  if (_nn->_engine == "CuDNN")
+  {
   size_t t = _nn->_currentTimestep;
 
   // We need to clear the gradients because they are additive in CUDNN
@@ -386,6 +389,8 @@ void Recurrent::backwardHyperparameters()
     _workSpaceTensor[t],
     _reserveSpaceSize,
     _reserveSpaceTensor[t]));
+  }
+#endif
 }
 
 void Recurrent::setHyperparameters(float *hyperparameters)

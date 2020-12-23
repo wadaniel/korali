@@ -10,17 +10,19 @@ from models import *
 distr = "Laplace"
 mu = 0.0
 sigma = 1.0
-
+y_max = 1.0
 if distr == "Gaussian":
     model = lambda x: lGaussianModel(x, mu, sigma)
     pdf = lambda x: gaussianDensity(x, mu, sigma)  
+    y_max = 0.5 / sigma
 elif distr == "Laplace":
     model = lambda x: lLaplaceModel(x, mu, sigma)
     pdf = lambda x: laplaceDensity(x, mu, sigma)
+    y_max = 0.8 / sigma
 
 dim = 1
 numSamples = 5000
-numExperiments = 10
+numExperiments = 30
 samples = np.zeros(shape=(numExperiments, numSamples))
 for experiment in range(numExperiments):
     # Set Random Seed
@@ -99,7 +101,7 @@ suffixStr = distr+"_experiments_"+str(numExperiments)+"_samples_"+str(numSamples
 x_range = 5.0
 plt.grid(linestyle=":")
 plt.xlim(-x_range*sigma, x_range*sigma)
-plt.ylim(0.0, 0.5 * 1.0 / sigma)
+plt.ylim(0.0, y_max)
 plt.hist(samples[0, :], bins=50, density=True)
 
 numPoints = 1000
@@ -132,24 +134,24 @@ print("errorExpectation = ", errorExpectation)
 errorIdeal = np.array([1.0/np.sqrt(n) for n in numSamplesRange])
 
 # Least Squares fit
-A = np.zeros(shape=(numExperiments*numSamples, 2))
-y = np.zeros(shape=(numExperiments*numSamples, 1))
-for i in range(numExperiments):
-    A[i*numSamples, 0] = 1.0
-    for j in range(numSamples):
-        A[i*numSamples + j, 1] = np.log10(j+1)
-        y[i*numSamples + j] = np.log10(errorExpectation[i, j])
+# A = np.zeros(shape=(numExperiments*numSamples, 2))
+# y = np.zeros(shape=(numExperiments*numSamples, 1))
+# for i in range(numExperiments):
+#     A[i*numSamples, 0] = 1.0
+#     for j in range(numSamples):
+#         A[i*numSamples + j, 1] = np.log10(j+1)
+#         y[i*numSamples + j] = np.log10(errorExpectation[i, j])
 
-M = np.matmul(np.transpose(A), A)
-ATy = np.matmul(np.transpose(A), y)
-print("A = ", A)
-print("y = ", y)
-print("M = ", M)
-print("ATy =", ATy)
-x = np.linalg.solve(M, ATy)
-print("x = ", x)
+# M = np.matmul(np.transpose(A), A)
+# ATy = np.matmul(np.transpose(A), y)
+# print("A = ", A)
+# print("y = ", y)
+# print("M = ", M)
+# print("ATy =", ATy)
+# x = np.linalg.solve(M, ATy)
+# print("x = ", x)
 
-LSQFit = np.array([(10**x[0] * n**x[1]) for n in numSamplesRange])
+# LSQFit = np.array([(10**x[0] * n**x[1]) for n in numSamplesRange])
 
 # Calculate confidence interval
 alpha = 0.05
@@ -163,7 +165,8 @@ ci = studentTCoeff * np.std(errorExpectation, axis=0) / np.sqrt(numExperiments)
 
 fig, ax = plt.subplots()
 ax.loglog(numSamplesRange, errorIdeal, 'g--')
-ax.loglog(numSamplesRange, LSQFit, 'r--')
+# ax.loglog(numSamplesRange, LSQFit, 'r--')
+ax.loglog(numSamplesRange, errorExpectation[0, :], 'r-')
 ax.loglog(numSamplesRange, averageErrorExpectation)
 print("averageErrorExpectation = ", averageErrorExpectation)
 ax.fill_between(numSamplesRange, (averageErrorExpectation-ci), (averageErrorExpectation+ci), color='b', alpha=.1)
@@ -171,6 +174,6 @@ ax.tick_params(axis='both', labelsize=14)
 plt.grid(linestyle=":")
 plt.xlabel("Number of Samples $N$", fontsize=16)
 plt.ylabel("Error $|\\mathbb{E}[Q]-\hat{E}[Q]|$", fontsize=16)
-plt.legend(["$N^{-\\frac{1}{2}}$", "LSQ Fit", "$\hat{E}[Error]$", str((100 * (1.0 - alpha))) + "% CI"], loc="lower left", prop={"size": 14})
+plt.legend(["$N^{-\\frac{1}{2}}$", "Single Run", "$\hat{E}[Error]$", str((100 * (1.0 - alpha))) + "% CI"], loc="lower left", prop={"size": 14})
 plt.savefig("convergence_"+suffixStr+".svg", bbox_inches="tight")
 plt.savefig("convergence_"+suffixStr+".png", dpi=200, bbox_inches="tight")

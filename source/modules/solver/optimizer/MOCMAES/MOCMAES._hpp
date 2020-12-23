@@ -35,9 +35,13 @@ class MOCMAES : public Optimizer
 
   /**
  * @brief Updates mean and covariance of Gaussian proposal distribution.
- * @param evaluations Model evaluations for proposed samples
  */
   void updateDistribution();
+
+  /**
+ * @brief Update statistics mostly for analysis.
+ */
+  void updateStatistics();
 
   /**
  * @brief Configures CMA-ES.

@@ -13,14 +13,19 @@ class Recurrent : public Layer
 {
   public:
   /**
-   * @brief cuDNN Counts the size of all linear layer weights
+   * @brief Counts the size of all linear layer weights
    */
   std::vector<size_t> _linearLayerWeightSizes;
 
   /**
-   * @brief cuDNN Counts the size of all linear layer biases
+   * @brief Counts the size of all linear layer biases
    */
   std::vector<size_t> _linearLayerBiasSizes;
+
+  /**
+   * @brief Remembers the number of internal linear layers
+   */
+  size_t _linearLayerCount;
 
 #ifdef _KORALI_USE_CUDNN
 
@@ -68,11 +73,6 @@ class Recurrent : public Layer
    * @brief cuDNN Selector for the RNN mode
    */
   cudnnRNNMode_t _rnnMode;
-
-  /**
-   * @brief cuDNN Remembers the number of internal linear layers
-   */
-  size_t _linearLayerCount;
 
   /**
   * @brief cuDNN Device memory pointers for layer's weights

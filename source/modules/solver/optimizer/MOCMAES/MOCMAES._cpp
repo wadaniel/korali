@@ -414,7 +414,7 @@ void MOCMAES::updateStatistics()
             {
                 _currentBestValues[k] = _currentValues[i][k];
                 _currentBestVariables[k] = _currentSamplePopulation[i];
-                _currentBestValueDifferences[k] = _previousBestValues[k] - _currentBestValues[k];
+                _currentBestValueDifferences[k] = _currentBestValues[k] - _previousBestValues[k];
                 double l2norm2 = 0.;
                 for(size_t d = 0; d < _variableCount; ++d)
                 {

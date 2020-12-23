@@ -53,9 +53,9 @@ def model(x, resultFolder, objective):
  # If sample is valid, evaluating result based on objective
  if (resultDict['valid'] == True):
   if (objective == 'minNumCoal'):
-   objectiveValue = -float(resultDict['num_coal'])
+   objectiveValue = -float(resultDict['num_coal']) + 2.0 * float(resultDict['min_velocity'])
   if (objective == 'maxNumCoal'):
-   objectiveValue = float(resultDict['num_coal'])
+   objectiveValue = float(resultDict['num_coal']) + 2.0 * float(resultDict['min_velocity']) 
   if (objective == 'maxMeanVel'):
    objectiveValue = float(resultDict['mean_velocity'])
 

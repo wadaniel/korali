@@ -89,7 +89,6 @@ e["Variables"][9]["Initial Standard Deviation"] = 0.5
 # Configuring CMA-ES parameters
 e["Solver"]["Type"] = "Optimizer/CMAES"
 e["Solver"]["Population Size"] = args.samples
-e["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-32
 
 # Result Settings
 e["File Output"]["Path"] = resultFolder

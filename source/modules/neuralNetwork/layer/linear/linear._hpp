@@ -63,11 +63,6 @@ class Linear : public Layer
   dnnl::memory _biasGradientMem;
 
   /**
- * @brief oneDNN Arguments to the inner product operation
- */
-  std::unordered_map<int, dnnl::memory> _forwardInnerProductArgs;
-
-  /**
  * @brief oneDNN primitive attributes that describe the full forward propagation primitive
  */
   dnnl::inner_product_forward::primitive_desc _forwardInnerProductPrimitiveDesc;
@@ -86,11 +81,6 @@ class Linear : public Layer
  * @brief oneDNN primitive for the backward propagation of the gradient wrt Data
  */
   dnnl::primitive _backwardDataPrimitive;
-
-  /**
- * @brief oneDNN Arguments for the backward propagation of the gradient wrt Weights and Biases
- */
-  std::unordered_map<int, dnnl::memory> _backwardWeightsArgs;
 
   /**
  * @brief oneDNN primitive for the backward propagation of the gradient wrt Weights and Biases

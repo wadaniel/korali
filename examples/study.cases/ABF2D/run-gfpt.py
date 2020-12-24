@@ -72,7 +72,7 @@ e["Solver"]["Mini Batch Size"] = 128
 e["Solver"]["Critic"]["Learning Rate"] = 0.0001  
 e["Solver"]["Policy"]["Learning Rate"] = 0.000001
 e["Solver"]["Policy"]["Target Accuracy"] = 0.0001
-e["Solver"]["Policy"]["Optimization Candidates"] = 32
+e["Solver"]["Policy"]["Optimization Candidates"] = 24
 
 ### Configuring the neural network and its hidden layers
 

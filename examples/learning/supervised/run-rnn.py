@@ -67,18 +67,16 @@ e["Solver"]["Learning Rate"] = 0.0001
 
 ### Defining the shape of the neural network
 
-e["Solver"]["Neural Network"]["Engine"] = "CuDNN"
+e["Solver"]["Neural Network"]["Engine"] = "OneDNN"
 
 e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear"
 e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 32
 
-e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Recurrent"
+e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Recurrent/GRU"
 e["Solver"]["Neural Network"]["Hidden Layers"][1]["Output Channels"] = 32
-e["Solver"]["Neural Network"]["Hidden Layers"][1]["Mode"] = "GRU"
 
-e["Solver"]["Neural Network"]["Hidden Layers"][2]["Type"] = "Layer/Recurrent"
+e["Solver"]["Neural Network"]["Hidden Layers"][2]["Type"] = "Layer/Recurrent/GRU"
 e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 32
-e["Solver"]["Neural Network"]["Hidden Layers"][2]["Mode"] = "GRU"
 
 ### Configuring output 
 

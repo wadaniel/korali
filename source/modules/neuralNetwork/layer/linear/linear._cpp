@@ -86,7 +86,7 @@ void Linear::createHyperparameterMemory()
     auto biasMemDesc = memory::desc({OC}, memory::data_type::f32, memory::format_tag::a);
 
     _biasMem = memory(biasMemDesc, _dnnlEngine);
-    _biasGradientMem = memory(_biasMem.get_desc(), _dnnlEngine);
+    _biasGradientMem = memory(biasMemDesc, _dnnlEngine);
   }
 #endif
 
@@ -209,13 +209,14 @@ void Linear::forwardData()
 #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
   {
-    // Configuring inner product arguments
-    _forwardInnerProductArgs[DNNL_ARG_SRC] = _prevLayer->_outputMem;
-    _forwardInnerProductArgs[DNNL_ARG_WEIGHTS] = _weightsMem;
-    _forwardInnerProductArgs[DNNL_ARG_BIAS] = _biasMem;
-    _forwardInnerProductArgs[DNNL_ARG_DST] = _outputMem;
+    // Arguments to the inner product operation
+    std::unordered_map<int, dnnl::memory> forwardInnerProductArgs;
+    forwardInnerProductArgs[DNNL_ARG_SRC] = _prevLayer->_outputMem;
+    forwardInnerProductArgs[DNNL_ARG_WEIGHTS] = _weightsMem;
+    forwardInnerProductArgs[DNNL_ARG_BIAS] = _biasMem;
+    forwardInnerProductArgs[DNNL_ARG_DST] = _outputMem;
 
-    _forwardInnerProductPrimitive.execute(_nn->_stream, _forwardInnerProductArgs);
+    _forwardInnerProductPrimitive.execute(_nn->_stream, forwardInnerProductArgs);
   }
 #endif
 
@@ -326,12 +327,14 @@ void Linear::backwardHyperparameters()
 #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
   {
-    _backwardWeightsArgs[DNNL_ARG_SRC] = _prevLayer->_outputMem;       // Input
-    _backwardWeightsArgs[DNNL_ARG_DIFF_DST] = _outputGradientMem;      // Input
-    _backwardWeightsArgs[DNNL_ARG_DIFF_WEIGHTS] = _weightsGradientMem; // Output
-    _backwardWeightsArgs[DNNL_ARG_DIFF_BIAS] = _biasGradientMem;       // Output
+    //Arguments for the backward propagation of the gradient wrt Weights and Biases
+    std::unordered_map<int, dnnl::memory> backwardWeightsArgs;
+    backwardWeightsArgs[DNNL_ARG_SRC] = _prevLayer->_outputMem;       // Input
+    backwardWeightsArgs[DNNL_ARG_DIFF_DST] = _outputGradientMem;      // Input
+    backwardWeightsArgs[DNNL_ARG_DIFF_WEIGHTS] = _weightsGradientMem; // Output
+    backwardWeightsArgs[DNNL_ARG_DIFF_BIAS] = _biasGradientMem;       // Output
 
-    _backwardWeightsPrimitive.execute(_nn->_stream, _backwardWeightsArgs);
+    _backwardWeightsPrimitive.execute(_nn->_stream, backwardWeightsArgs);
   }
 #endif
 

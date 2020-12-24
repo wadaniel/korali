@@ -38,7 +38,7 @@ void Layer::createForwardPipeline()
 #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
   {
-    // Creating layer's data memory storage and activation function
+    // Creating layer's data memory storage
     const memory::dims layerDims = {N, OC};
     auto dataMemDesc = memory::desc(layerDims, memory::data_type::f32, memory::format_tag::nc);
 

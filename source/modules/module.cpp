@@ -24,7 +24,8 @@
 #include "neuralNetwork/layer/layer.hpp"
 #include "neuralNetwork/layer/linear/linear.hpp"
 #include "neuralNetwork/layer/output/output.hpp"
-#include "neuralNetwork/layer/recurrent/recurrent.hpp"
+#include "neuralNetwork/layer/recurrent/gru/gru.hpp"
+#include "neuralNetwork/layer/recurrent/lstm/lstm.hpp"
 #include "neuralNetwork/neuralNetwork.hpp"
 #include "problem/bayesian/custom/custom.hpp"
 #include "problem/bayesian/latent/exponentialLatent/exponentialLatent.hpp"
@@ -151,7 +152,8 @@ Module *Module::getModule(knlohmann::json &js, Experiment *e)
   if (moduleType == "Sampler/TMCMC") module = new korali::solver::sampler::TMCMC();
   if (moduleType == "NeuralNetwork") module = new korali::NeuralNetwork();
   if (moduleType == "Layer/Linear") module = new korali::neuralNetwork::layer::Linear();
-  if (moduleType == "Layer/Recurrent") module = new korali::neuralNetwork::layer::Recurrent();
+  if (moduleType == "Layer/Recurrent/GRU") module = new korali::neuralNetwork::layer::recurrent::GRU();
+  if (moduleType == "Layer/Recurrent/LSTM") module = new korali::neuralNetwork::layer::recurrent::LSTM();
   if (moduleType == "Layer/Input") module = new korali::neuralNetwork::layer::Input();
   if (moduleType == "Layer/Output") module = new korali::neuralNetwork::layer::Output();
   if (moduleType == "Layer/Activation") module = new korali::neuralNetwork::layer::Activation();

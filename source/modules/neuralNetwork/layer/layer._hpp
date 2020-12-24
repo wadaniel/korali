@@ -68,12 +68,12 @@ class Layer : public Module
   /**
   * @brief oneDNN Memory object descriptor to contain the output result of the layer
   */
-  dnnl::memory _outputMem;
+  std::vector<dnnl::memory> _outputMem;
 
   /*
  * @brief oneDNN Gradients of the operation wrt to activation function
  */
-  dnnl::memory _outputGradientMem;
+  std::vector<dnnl::memory> _outputGradientMem;
 
 #endif
 

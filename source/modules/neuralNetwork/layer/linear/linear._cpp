@@ -121,7 +121,7 @@ void Linear::createForwardPipeline()
   if (_nn->_engine == "OneDNN")
   {
     // We create the inner product (Wx + b) operation
-    auto inner_product_d = inner_product_forward::desc(prop_kind::forward_training, _prevLayer->_outputMem.get_desc(), _weightsMem.get_desc(), _biasMem.get_desc(), _outputMem.get_desc());
+    auto inner_product_d = inner_product_forward::desc(prop_kind::forward_training, _prevLayer->_outputMem[0].get_desc(), _weightsMem.get_desc(), _biasMem.get_desc(), _outputMem[0].get_desc());
 
     // Create inner product primitive descriptor.
     dnnl::primitive_attr forwardPrimitiveAttributes;
@@ -161,19 +161,19 @@ void Linear::createBackwardPipeline()
   if (_nn->_engine == "OneDNN")
   {
     auto backwardDataDesc = inner_product_backward_data::desc(
-      _prevLayer->_outputGradientMem.get_desc(),
+      _prevLayer->_outputGradientMem[0].get_desc(),
       _weightsMem.get_desc(),
-      _outputGradientMem.get_desc());
+      _outputGradientMem[0].get_desc());
 
     // Create the primitive.
     auto backwardDataPrimitiveDesc = inner_product_backward_data::primitive_desc(backwardDataDesc, _dnnlEngine, _forwardInnerProductPrimitiveDesc);
     _backwardDataPrimitive = inner_product_backward_data(backwardDataPrimitiveDesc);
 
     auto backwardWeightsDesc = inner_product_backward_weights::desc(
-      _prevLayer->_outputMem.get_desc(),
+      _prevLayer->_outputMem[0].get_desc(),
       _weightsMem.get_desc(),
       _biasMem.get_desc(),
-      _outputGradientMem.get_desc());
+      _outputGradientMem[0].get_desc());
 
     // Create the primitive.
     auto backwardWeightsPrimitiveDesc = inner_product_backward_weights::primitive_desc(backwardWeightsDesc, _dnnlEngine, _forwardInnerProductPrimitiveDesc);
@@ -211,10 +211,10 @@ void Linear::forwardData()
   {
     // Arguments to the inner product operation
     std::unordered_map<int, dnnl::memory> forwardInnerProductArgs;
-    forwardInnerProductArgs[DNNL_ARG_SRC] = _prevLayer->_outputMem;
+    forwardInnerProductArgs[DNNL_ARG_SRC] = _prevLayer->_outputMem[t];
     forwardInnerProductArgs[DNNL_ARG_WEIGHTS] = _weightsMem;
     forwardInnerProductArgs[DNNL_ARG_BIAS] = _biasMem;
-    forwardInnerProductArgs[DNNL_ARG_DST] = _outputMem;
+    forwardInnerProductArgs[DNNL_ARG_DST] = _outputMem[t];
 
     _forwardInnerProductPrimitive.execute(_nn->_stream, forwardInnerProductArgs);
   }
@@ -269,9 +269,9 @@ void Linear::backwardData()
 #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
   {
-    _backwardDataArgs[DNNL_ARG_DIFF_DST] = _outputGradientMem;             // Input
+    _backwardDataArgs[DNNL_ARG_DIFF_DST] = _outputGradientMem[t];             // Input
     _backwardDataArgs[DNNL_ARG_WEIGHTS] = _weightsMem;                     // Input
-    _backwardDataArgs[DNNL_ARG_DIFF_SRC] = _prevLayer->_outputGradientMem; // Output
+    _backwardDataArgs[DNNL_ARG_DIFF_SRC] = _prevLayer->_outputGradientMem[t]; // Output
 
     _backwardDataPrimitive.execute(_nn->_stream, _backwardDataArgs);
   }
@@ -329,8 +329,8 @@ void Linear::backwardHyperparameters()
   {
     //Arguments for the backward propagation of the gradient wrt Weights and Biases
     std::unordered_map<int, dnnl::memory> backwardWeightsArgs;
-    backwardWeightsArgs[DNNL_ARG_SRC] = _prevLayer->_outputMem;       // Input
-    backwardWeightsArgs[DNNL_ARG_DIFF_DST] = _outputGradientMem;      // Input
+    backwardWeightsArgs[DNNL_ARG_SRC] = _prevLayer->_outputMem[t];       // Input
+    backwardWeightsArgs[DNNL_ARG_DIFF_DST] = _outputGradientMem[t];      // Input
     backwardWeightsArgs[DNNL_ARG_DIFF_WEIGHTS] = _weightsGradientMem; // Output
     backwardWeightsArgs[DNNL_ARG_DIFF_BIAS] = _biasGradientMem;       // Output
 

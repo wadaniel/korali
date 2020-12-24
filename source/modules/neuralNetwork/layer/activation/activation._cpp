@@ -58,7 +58,7 @@ void Activation::createForwardPipeline()
       if (_function == "Elementwise/SoftSign") KORALI_LOG_ERROR("ONEDNN does not support activation functions of type 'Elementwise/SoftSign'.");
 
       // Creating descriptor
-      auto activationDesc = eltwise_forward::desc(prop_kind::forward_training, _activationAlgorithm, _prevLayer->_outputMem.get_desc(), _alpha, _beta);
+      auto activationDesc = eltwise_forward::desc(prop_kind::forward_training, _activationAlgorithm, _prevLayer->_outputMem[0].get_desc(), _alpha, _beta);
 
       // Create primitive descriptor.
       _forwardEltwiseActivationPrimitiveDesc = eltwise_forward::primitive_desc(activationDesc, _dnnlEngine);
@@ -72,7 +72,7 @@ void Activation::createForwardPipeline()
     {
       // Creating descriptor
       const int axis = 1;
-      auto activationDesc = softmax_forward::desc(prop_kind::forward_training, _prevLayer->_outputMem.get_desc(), axis);
+      auto activationDesc = softmax_forward::desc(prop_kind::forward_training, _prevLayer->_outputMem[0].get_desc(), axis);
 
       // Create primitive descriptor.
       _forwardSoftmaxActivationPrimitiveDesc = softmax_forward::primitive_desc(activationDesc, _dnnlEngine);
@@ -123,7 +123,7 @@ void Activation::createBackwardPipeline()
     if (_function.rfind("Elementwise", 0) == 0)
     {
       // Creating descriptor
-      auto activationDesc = eltwise_backward::desc(_activationAlgorithm, _prevLayer->_outputMem.get_desc(), _outputMem.get_desc(), _alpha, _beta);
+      auto activationDesc = eltwise_backward::desc(_activationAlgorithm, _prevLayer->_outputMem[0].get_desc(), _outputMem[0].get_desc(), _alpha, _beta);
 
       // Create primitive descriptor.
       auto backwardActivationPrimitiveDesc = eltwise_backward::primitive_desc(activationDesc, _dnnlEngine, _forwardEltwiseActivationPrimitiveDesc);
@@ -137,7 +137,7 @@ void Activation::createBackwardPipeline()
     {
       // Creating descriptor
       const int axis = 1;
-      auto activationDesc = softmax_backward::desc(_prevLayer->_outputMem.get_desc(), _outputMem.get_desc(), axis);
+      auto activationDesc = softmax_backward::desc(_prevLayer->_outputMem[0].get_desc(), _outputMem[0].get_desc(), axis);
 
       // Create primitive descriptor.
       auto backwardActivationPrimitiveDesc = softmax_backward::primitive_desc(activationDesc, _dnnlEngine, _forwardSoftmaxActivationPrimitiveDesc);
@@ -201,8 +201,8 @@ void Activation::forwardData()
   if (_nn->_engine == "OneDNN")
   {
     // Primitive arguments.
-    _forwardActivationArgs[DNNL_ARG_SRC] = _prevLayer->_outputMem;
-    _forwardActivationArgs[DNNL_ARG_DST] = _outputMem;
+    _forwardActivationArgs[DNNL_ARG_SRC] = _prevLayer->_outputMem[t];
+    _forwardActivationArgs[DNNL_ARG_DST] = _outputMem[t];
 
     _forwardActivationPrimitive.execute(_nn->_stream, _forwardActivationArgs);
   }
@@ -294,10 +294,10 @@ void Activation::backwardData()
   if (_nn->_engine == "OneDNN")
   {
     // Primitive arguments.
-    _backwardActivationArgs[DNNL_ARG_DIFF_DST] = _outputGradientMem;             // Input
-    _backwardActivationArgs[DNNL_ARG_SRC] = _prevLayer->_outputMem;              // Input
-    _backwardActivationArgs[DNNL_ARG_DIFF_SRC] = _prevLayer->_outputGradientMem; // Output
-    if (_function == "Softmax") _backwardActivationArgs[DNNL_ARG_DST] = _outputMem;
+    _backwardActivationArgs[DNNL_ARG_DIFF_DST] = _outputGradientMem[t];             // Input
+    _backwardActivationArgs[DNNL_ARG_SRC] = _prevLayer->_outputMem[t];              // Input
+    _backwardActivationArgs[DNNL_ARG_DIFF_SRC] = _prevLayer->_outputGradientMem[t]; // Output
+    if (_function == "Softmax") _backwardActivationArgs[DNNL_ARG_DST] = _outputMem[t];
 
     _backwardActivationPrimitive.execute(_nn->_stream, _backwardActivationArgs);
   }

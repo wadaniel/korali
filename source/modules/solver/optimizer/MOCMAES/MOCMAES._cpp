@@ -27,7 +27,7 @@ void MOCMAES::setInitialConfiguration()
   if (_muValue > _populationSize)
     KORALI_LOG_ERROR("Number of parents ('Mu Value' %zu) must be smaller or equal with population size (%zu).\n", _muValue, _populationSize);
 
-  _currentNonDominatedSampleCount = 0;
+  _currentNonDominatedSampleCount = 1;
 
   // Allocating Sample and Value Memory
   _sampleCollection.resize(0);
@@ -105,7 +105,7 @@ void MOCMAES::setInitialConfiguration()
   }
 
   // Init parent
-  _parentIndex.resize(_populationSize);
+  _parentIndex.resize(_populationSize, 0);
   _parentSuccessProbabilities.resize(_muValue, _targetSuccessRate);
   _parentSigma.resize(_muValue, std::sqrt(trace / _variableCount));
   _parentSamplePopulation.resize(_muValue);
@@ -190,7 +190,7 @@ void MOCMAES::sampleSingle(size_t sampleIdx)
   if (_muValue == _populationSize)
     parentIdx = sampleIdx;
   else
-    parentIdx = std::min(_muValue, _currentNonDominatedSampleCount) * _uniformGenerator->getRandomNumber();
+    parentIdx = std::floor(std::min(_muValue, _currentNonDominatedSampleCount) * _uniformGenerator->getRandomNumber());
 
   // Kepp track of parent
   _parentIndex[sampleIdx] = parentIdx;
@@ -379,7 +379,6 @@ void MOCMAES::updateDistribution()
         _parentCovarianceMatrix[pidx] = _currentCovarianceMatrix[i];
         _parentEvolutionPaths[pidx] = _currentEvolutionPaths[i];
         _parentSuccessProbabilities[pidx] = _currentSuccessProbabilities[i];
-        pidx++;
       }
       else
       {
@@ -389,8 +388,8 @@ void MOCMAES::updateDistribution()
         _parentCovarianceMatrix[pidx] = _previousCovarianceMatrix[j];
         _parentEvolutionPaths[pidx] = _previousEvolutionPaths[j];
         _parentSuccessProbabilities[pidx] = _previousSuccessProbabilities[j];
-        pidx++;
       }
+      pidx++;
     }
 }
 

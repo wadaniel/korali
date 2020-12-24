@@ -46,7 +46,7 @@ void Input::forwardData()
 #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
   {
-    write_to_dnnl_memory(&_nn->_rawInputValues[t * N * OC], _outputMem);
+    write_to_dnnl_memory(&_nn->_rawInputValues[t * N * OC], _outputMem[t]);
   }
 #endif
 
@@ -74,7 +74,7 @@ void Input::backwardData()
 #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
   {
-    read_from_dnnl_memory(&_nn->_rawInputGradients[t * N * OC], _outputGradientMem);
+    read_from_dnnl_memory(&_nn->_rawInputGradients[t * N * OC], _outputGradientMem[t]);
   }
 #endif
 

@@ -43,7 +43,9 @@ void Layer::createForwardPipeline()
     auto dataMemDesc = memory::desc(layerDims, memory::data_type::f32, memory::format_tag::nc);
 
     // Creating activation layer memory
-    _outputMem = memory(dataMemDesc, _dnnlEngine);
+    _outputMem.resize(_nn->_timestepCount);
+    for (size_t t = 0; t < _nn->_timestepCount; t++)
+     _outputMem[t] = memory(dataMemDesc, _dnnlEngine);
   }
 #endif
 
@@ -81,7 +83,9 @@ void Layer::createBackwardPipeline()
   if (_nn->_engine == "OneDNN")
   {
     // Creating data-related gradient memory
-    _outputGradientMem = memory(_outputMem.get_desc(), _dnnlEngine);
+    _outputGradientMem.resize(_nn->_timestepCount);
+    for (size_t t = 0; t < _nn->_timestepCount; t++)
+     _outputGradientMem[t] = memory(_outputMem[t].get_desc(), _dnnlEngine);
   }
 #endif
 

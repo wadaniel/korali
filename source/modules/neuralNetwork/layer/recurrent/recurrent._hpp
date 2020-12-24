@@ -38,12 +38,22 @@ class Recurrent : public Layer
   /**
   * @brief oneDNN Memory object descriptor to contain the weights of to apply to the input
   */
-  dnnl::memory _weightsMem;
+  dnnl::memory _weightsLayerMem;
 
   /**
   * @brief oneDNN Memory object descriptor to contain the gradients of the weights of to apply to the input
   */
-  dnnl::memory _weightsGradientMem;
+  dnnl::memory _weightsLayerGradientMem;
+
+  /**
+   * @brief oneDNN Memory object descriptor to contain the weights of to apply to the recurrent gate
+   */
+   dnnl::memory _weightsRecurrentMem;
+
+   /**
+   * @brief oneDNN Memory object descriptor to contain the gradients of the weights of to apply to the recurrent gate
+   */
+   dnnl::memory _weightsRecurrentGradientMem;
 
  /**
   * @brief oneDNN Memory object descriptor to contain the bias to apply to the input
@@ -58,7 +68,7 @@ class Recurrent : public Layer
   /**
   * @brief oneDNN Memory object descriptor to contain the workspace
   */
-  dnnl::memory _workspaceMem;
+  std::vector<dnnl::memory> _workspaceMem;
 
 #endif
 

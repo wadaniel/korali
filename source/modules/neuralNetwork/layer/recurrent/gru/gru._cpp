@@ -39,23 +39,24 @@ std::vector<float> GRU::generateInitialHyperparameters()
   // Setting value for this layer's xavier constant
   float xavierConstant = (_weightScaling * sqrtf(6.0f)) / sqrt(_outputChannels + _prevLayer->_outputChannels);
 
-  // Weights applied to the input layer
-  for (int layerId = 0; layerId < _depth; layerId++)
-  {
+  // Weights applied to the input layer(s)
+  for (int layerId = 0; layerId < L; layerId++)
    for (int gateId = 0; gateId < GRU_GATES; gateId++)
     for (size_t i = 0; i < OC*IC; i++)
      hyperparameters.push_back(xavierConstant * _nn->_uniformGenerator->getRandomNumber());
 
    // Weights applied to the recurrent layer
+  for (int layerId = 0; layerId < L; layerId++)
    for (int gateId = 0; gateId < GRU_GATES; gateId++)
     for (size_t i = 0; i < OC*OC; i++)
      hyperparameters.push_back(xavierConstant * _nn->_uniformGenerator->getRandomNumber());
 
    // Bias for the recurrent layer
+  for (int layerId = 0; layerId < L; layerId++)
    for (int gateId = 0; gateId < GRU_GATES; gateId++)
     for (size_t i = 0; i < OC; i++)
      hyperparameters.push_back(0.0f);
-  }
+
   return hyperparameters;
 }
 
@@ -63,7 +64,7 @@ std::vector<float> GRU::generateInitialHyperparameters()
 void GRU::createHyperparameterMemory()
 {
  // Getting dimensions
- const size_t L = 1; // Physical Layers
+ const size_t L = _depth; // Physical Layers
  const size_t D = 1; // Directions
  const size_t G = GRU_GATES; // Gates
  const size_t IC = _prevLayer->_outputChannels;
@@ -82,7 +83,7 @@ void GRU::createHyperparameterMemory()
     const memory::dim IC = _prevLayer->_outputChannels; // channels
     const memory::dim OC = _outputChannels; // channels
     const memory::dim G = GRU_GATES; // gates
-    const memory::dim L = 1; // layers
+    const memory::dim L = _depth; // layers
     const memory::dim D = 1; // directions
 
     memory::dims weightInputDims = {L, D, IC, G, OC};
@@ -132,7 +133,7 @@ void GRU::createHyperparameterMemory()
                                            _prevLayer->_outputChannels,
                                            _outputChannels,
                                            _outputChannels,
-                                           1, // Pseudo Layer Count
+                                           L, // Pseudo Layer Count
                                            _dropoutDesc,
                                            CUDNN_RNN_PADDED_IO_DISABLED));
 
@@ -195,7 +196,7 @@ void GRU::createForwardPipeline()
    const memory::dim N = _nn->_batchSize; // Batch size
    const memory::dim IC = _prevLayer->_outputChannels; // channels
    const memory::dim OC = _outputChannels; // channels
-   const memory::dim L = 1; // layers
+   const memory::dim L = _depth; // layers
    const memory::dim D = 1; // directions
 
    // Creating descriptor for layer memory
@@ -261,6 +262,7 @@ void GRU::createForwardPipeline()
   if (_nn->_engine == "CuDNN")
   {
    // Obtaining batch size
+   const size_t L = _depth;
    const size_t N = _nn->_batchSize;
    const size_t IC = _prevLayer->_outputChannels;
    const size_t OC = _outputChannels;
@@ -268,7 +270,7 @@ void GRU::createForwardPipeline()
     int dimA[3];
     int strideA[3];
 
-    dimA[0] = 1;  // Hidden Layer count
+    dimA[0] = L;  // Hidden Layer count
     dimA[1] = N;  // Minibatch size
     dimA[2] = OC; // Hidden Size
 
@@ -282,7 +284,7 @@ void GRU::createForwardPipeline()
 
     // Allocating hidden state tensors
     _hStateTensor.resize(_nn->_timestepCount);
-    for (size_t i = 0; i < _nn->_timestepCount; i++) cudaErrCheck(cudaMalloc((void **)&_hStateTensor[i], N * OC * sizeof(float)));
+    for (size_t i = 0; i < _nn->_timestepCount; i++) cudaErrCheck(cudaMalloc((void **)&_hStateTensor[i], L * N * OC * sizeof(float)));
 
     // Creating RNN data descriptors for input and output
     cudnnErrCheck(cudnnCreateRNNDataDescriptor(&_inputRNNDataDesc));
@@ -349,7 +351,7 @@ void GRU::createBackwardPipeline()
    const memory::dim N = _nn->_batchSize; // Batch size
    const memory::dim IC = _prevLayer->_outputChannels; // channels
    const memory::dim OC = _outputChannels; // channels
-   const memory::dim L = 1; // layers
+   const memory::dim L = _depth; // layers
    const memory::dim D = 1; // directions
 
    // Creating memory for the hidden state
@@ -408,12 +410,13 @@ void GRU::createBackwardPipeline()
   if (_nn->_engine == "CuDNN")
   {
    // Obtaining batch size
+   size_t L = _depth;
    size_t N = _nn->_batchSize;
    size_t C = _outputChannels;
 
     // Allocating hidden state tensors
     _hGradientTensor.resize(_nn->_timestepCount);
-    for (size_t i = 0; i < _nn->_timestepCount; i++) cudaErrCheck(cudaMalloc((void **)&_hGradientTensor[i], N * C * sizeof(float)));
+    for (size_t i = 0; i < _nn->_timestepCount; i++) cudaErrCheck(cudaMalloc((void **)&_hGradientTensor[i], L * N * C * sizeof(float)));
   }
 #endif
 }
@@ -483,13 +486,14 @@ void GRU::backwardData()
   if (_nn->_engine == "OneDNN")
   {
    // Cleaning current weight gradients
+   const memory::dim L = _depth;
    const memory::dim G = GRU_GATES; // Gates
    const memory::dim C = _outputChannels; // channels
-   std::vector<float> nullWeightGradients(G*C*C, 0.0f);
+   std::vector<float> nullWeightGradients(L*G*C*C, 0.0f);
    write_to_dnnl_memory(nullWeightGradients.data(), _weightsLayerGradientMem);
    write_to_dnnl_memory(nullWeightGradients.data(), _weightsRecurrentGradientMem);
 
-   std::vector<float> nullBiasGradients(G*C, 0.0f);
+   std::vector<float> nullBiasGradients(L*G*C, 0.0f);
    write_to_dnnl_memory(nullBiasGradients.data(), _biasGradientMem);
 
    _backwardGRUPrimitive.execute(_nn->_stream,
@@ -589,13 +593,14 @@ void GRU::setHyperparameters(float *hyperparameters)
   if (_nn->_engine == "OneDNN")
   {
    // Getting dimensions
+   const size_t L = _depth;
    const size_t G = GRU_GATES;
    const size_t IC = _prevLayer->_outputChannels;
    const size_t OC = _outputChannels;
 
    write_to_dnnl_memory(&hyperparameters[0], _weightsLayerMem);
-   write_to_dnnl_memory(&hyperparameters[G*OC*IC], _weightsRecurrentMem);
-   write_to_dnnl_memory(&hyperparameters[G*OC*OC + G*OC*IC], _biasMem);
+   write_to_dnnl_memory(&hyperparameters[L*G*OC*IC], _weightsRecurrentMem);
+   write_to_dnnl_memory(&hyperparameters[L*G*OC*OC + L*G*OC*IC], _biasMem);
   }
 #endif
 
@@ -611,13 +616,14 @@ void GRU::getHyperparameters(float *hyperparameters)
   if (_nn->_engine == "OneDNN")
   {
    // Getting dimensions
+   const size_t L = _depth;
    const size_t G = GRU_GATES;
    const size_t IC = _prevLayer->_outputChannels;
    const size_t OC = _outputChannels;
 
    read_from_dnnl_memory(&hyperparameters[0], _weightsLayerMem);
-   read_from_dnnl_memory(&hyperparameters[G*OC*IC], _weightsRecurrentMem);
-   read_from_dnnl_memory(&hyperparameters[G*OC*OC + G*OC*IC], _biasMem);
+   read_from_dnnl_memory(&hyperparameters[L*G*OC*IC], _weightsRecurrentMem);
+   read_from_dnnl_memory(&hyperparameters[L*G*OC*OC + L*G*OC*IC], _biasMem);
   }
 #endif
 
@@ -632,13 +638,14 @@ void GRU::getHyperparameterGradients(float *gradient)
   if (_nn->_engine == "OneDNN")
   {
    // Getting dimensions
+   const size_t L = _depth;
    const size_t G = GRU_GATES;
    const size_t IC = _prevLayer->_outputChannels;
    const size_t OC = _outputChannels;
 
    read_from_dnnl_memory(&gradient[0], _weightsLayerGradientMem);
-   read_from_dnnl_memory(&gradient[G*OC*IC], _weightsRecurrentGradientMem);
-   read_from_dnnl_memory(&gradient[G*OC*OC + G*OC*IC], _biasGradientMem);
+   read_from_dnnl_memory(&gradient[L*G*OC*IC], _weightsRecurrentGradientMem);
+   read_from_dnnl_memory(&gradient[L*G*OC*OC + L*G*OC*IC], _biasGradientMem);
   }
 #endif
 

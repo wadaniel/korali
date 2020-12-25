@@ -29,9 +29,6 @@ void Recurrent::initialize()
   // Checking position
   if (_index == 0) KORALI_LOG_ERROR("Recurrent layers cannot be the starting layer of the NN\n");
   if (_index == _nn->_layers.size() - 1) KORALI_LOG_ERROR("Recurrent layers cannot be the last layer of the NN\n");
-
-  // Checking Layer size
-  if (_prevLayer->_outputChannels != _outputChannels) KORALI_LOG_ERROR("Node count for layer %lu should be the same as that of the previous layer.\n", _index);
 }
 
 } // namespace layer

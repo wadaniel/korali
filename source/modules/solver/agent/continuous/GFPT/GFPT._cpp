@@ -323,10 +323,10 @@ void GFPT::trainPolicy()
     for (size_t i = 0; i < _problem->_stateVectorSize; i++) aInput[i] = curState[i];
     for (size_t i = 0; i < _problem->_actionVectorSize; i++) aInput[_problem->_stateVectorSize + i] = curAction[i];
 
-    _aProblem->_inputData[b] = {aInput};
+    _aProblem->_inputData[b] = getStateActionTimeSequence(expId);
     _aProblem->_solutionData[b] = {aTarget};
 
-    _vProblem->_inputData[b] = {curState};
+    _vProblem->_inputData[b] = getStateTimeSequence(expId);
     _vProblem->_solutionData[b] = {vTarget};
 
     // Keeping statistics

@@ -294,6 +294,9 @@ class Agent : public Solver
   */
   std::vector<size_t> generateMiniBatch(size_t size);
 
+  std::vector<std::vector<float>> getStateTimeSequence(size_t expId);
+  std::vector<std::vector<float>> getStateActionTimeSequence(size_t expId);
+
   /**
   * @brief Calculates importance weights of experiences.
   * @param miniBatch vector of experience indices.

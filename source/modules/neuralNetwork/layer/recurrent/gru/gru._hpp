@@ -1,0 +1,60 @@
+#ifndef _KORALI_LAYER_RECURRENT_GRU_HPP_
+#define _KORALI_LAYER_RECURRENT_GRU_HPP_
+
+#include "modules/neuralNetwork/layer/recurrent/recurrent.hpp"
+
+namespace korali
+{
+namespace neuralNetwork
+{
+namespace layer
+{
+namespace recurrent
+{
+
+class GRU : public Recurrent
+{
+  public:
+
+  #ifdef _KORALI_USE_ONEDNN
+
+  /**
+  * @brief oneDNN primitive attributes that describe the forward GRU primitive
+  */
+  dnnl::gru_forward::primitive_desc _forwardGRUPrimitiveDesc;
+
+  /**
+  * @brief oneDNN primitive to run the forward GRU operation
+  */
+  dnnl::primitive _forwardGRUPrimitive;
+
+  /**
+  * @brief oneDNN primitive attributes that describe the backward GRU primitive
+  */
+  dnnl::gru_backward::primitive_desc _backwardGRUPrimitiveDesc;
+
+  /**
+  * @brief oneDNN primitive to run the backward GRU operation
+  */
+  dnnl::primitive _backwardGRUPrimitive;
+
+  #endif
+
+  std::vector<float> generateInitialHyperparameters() override;
+  void createHyperparameterMemory() override;
+  void createForwardPipeline() override;
+  void createBackwardPipeline() override;
+  void forwardData() override;
+  void setHyperparameters(float *hyperparameters) override;
+  void getHyperparameters(float *hyperparameters) override;
+  void getHyperparameterGradients(float *gradient) override;
+  void backwardData() override;
+  void backwardHyperparameters() override;
+};
+
+} // namespace recurrent
+} // namespace layer
+} // namespace neuralNetwork
+} // namespace korali
+
+#endif // _KORALI_LAYER_RECURRENT_GRU_HPP_

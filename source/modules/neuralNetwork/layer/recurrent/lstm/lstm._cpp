@@ -1,0 +1,75 @@
+#include "modules/neuralNetwork/layer/recurrent/lstm/lstm.hpp"
+#include "modules/neuralNetwork/neuralNetwork.hpp"
+
+#ifdef _KORALI_USE_CUDNN
+  #include "auxiliar/cudaUtils.hpp"
+#endif
+
+#ifdef _KORALI_USE_ONEDNN
+  #include "auxiliar/dnnUtils.hpp"
+using namespace dnnl;
+#endif
+
+#ifdef _KORALI_USE_EIGEN
+  #include <Eigen/Dense>
+using namespace Eigen;
+#endif
+
+#define LSTM_LINEAR_LAYERS 8
+
+namespace korali
+{
+namespace neuralNetwork
+{
+namespace layer
+{
+namespace recurrent
+{
+
+std::vector<float> LSTM::generateInitialHyperparameters()
+{
+  std::vector<float> hyperparameters;
+
+  return hyperparameters;
+}
+
+void LSTM::createHyperparameterMemory()
+{
+}
+
+void LSTM::createForwardPipeline()
+{
+}
+
+void LSTM::createBackwardPipeline()
+{
+}
+
+void LSTM::forwardData()
+{
+}
+
+void LSTM::backwardData()
+{
+}
+
+void LSTM::backwardHyperparameters()
+{
+}
+
+void LSTM::setHyperparameters(float *hyperparameters)
+{
+}
+
+void LSTM::getHyperparameters(float *hyperparameters)
+{
+}
+
+void LSTM::getHyperparameterGradients(float *gradient)
+{
+}
+
+} // namespace recurrent
+} // namespace layer
+} // namespace neuralNetwork
+} // namespace korali

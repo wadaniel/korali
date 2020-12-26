@@ -7,6 +7,7 @@
 #include "modules/problem/problem.hpp"
 #include "modules/solver/solver.hpp"
 #include "sample/sample.hpp"
+#include <omp.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 
@@ -14,11 +15,24 @@ namespace korali
 {
 std::stack<Engine *> _engineStack;
 bool isPythonActive = 0;
+size_t _maxThreads;
+
+#ifdef _KORALI_USE_ONEDNN
+dnnl::engine _engine;
+#endif
 
 Engine::Engine()
 {
   _cumulativeTime = 0.0;
   _thread = co_active();
+  _conduit = NULL;
+
+  // Detecting maximum number of threads that modules can run
+  _maxThreads = omp_get_max_threads();
+
+#ifdef _KORALI_USE_ONEDNN
+  _engine = dnnl::engine(dnnl::engine::kind::cpu, 0);
+#endif
 
   // Turn Off GSL Error Handler
   gsl_set_error_handler_off();
@@ -67,13 +81,14 @@ void Engine::initialize()
   if (isEmpty(js) == false) KORALI_LOG_ERROR("Unrecognized settings for Korali's Engine: \n%s\n", js.dump(2).c_str());
 }
 
-void Engine::run()
+void Engine::start()
 {
   // Checking if its a dry run and return if it is
   if (_isDryRun) return;
 
   // Only initialize conduit if the Engine being ran is the first one in the process
   auto conduit = dynamic_cast<Conduit *>(getModule(_js["Conduit"], _k));
+  conduit->initialize();
 
   // Initializing conduit server
   conduit->initServer();
@@ -86,10 +101,7 @@ void Engine::run()
 
   if (_conduit->isRoot())
   {
-    // (Engine-Side) Adding engine to the stack to support Korali-in-Korali execution
-    _engineStack.push(this);
-
-    // (Workers-Side) Adding engine to the stack to support Korali-in-Korali execution
+    // Adding engine to the stack to support Korali-in-Korali execution
     _conduit->stackEngine(this);
 
     // Setting base time for profiling.
@@ -119,9 +131,6 @@ void Engine::run()
     // Finalizing experiments
     for (size_t i = 0; i < _experimentVector.size(); i++) _experimentVector[i]->finalize();
 
-    // (Engine-Side) Removing the current engine to the conduit's engine stack
-    _engineStack.pop();
-
     // (Workers-Side) Removing the current engine to the conduit's engine stack
     _conduit->popEngine();
   }
@@ -149,42 +158,23 @@ void Engine::saveProfilingInfo(const bool forceSave)
 
 void Engine::run(Experiment &experiment)
 {
-  experiment._js["Current Generation"] = 0;
-  experiment._currentGeneration = 0;
-  resume(experiment);
+  _experimentVector.clear();
+  experiment._k->_engine = this;
+  _experimentVector.push_back(experiment._k);
+  initialize();
+  start();
 }
 
 void Engine::run(std::vector<Experiment> &experiments)
 {
+  _experimentVector.clear();
   for (size_t i = 0; i < experiments.size(); i++)
   {
-    experiments[i]._js["Current Generation"] = 0;
-    experiments[i]._currentGeneration = 0;
+    experiments[i]._k->_engine = this;
+    _experimentVector.push_back(experiments[i]._k);
   }
-  resume(experiments);
-}
-
-void Engine::resume(Experiment &experiment)
-{
-  _experimentVector.clear();
-  _experimentVector.push_back(experiment._k);
   initialize();
-  run();
-}
-
-void Engine::resume(std::vector<Experiment> &experiments)
-{
-  _experimentVector.clear();
-  for (size_t i = 0; i < experiments.size(); i++) _experimentVector.push_back(experiments[i]._k);
-  initialize();
-  run();
-}
-
-void Engine::initialize(Experiment &experiment)
-{
-  _experimentVector.clear();
-  _experimentVector.push_back(experiment._k);
-  initialize();
+  start();
 }
 
 void Engine::serialize(knlohmann::json &js)
@@ -194,22 +184,6 @@ void Engine::serialize(knlohmann::json &js)
     _experimentVector[i]->getConfiguration(_experimentVector[i]->_js.getJson());
     js["Experiment Vector"][i] = _experimentVector[i]->_js.getJson();
   }
-}
-
-Engine *Engine::deserialize(const knlohmann::json &js)
-{
-  auto k = new Engine;
-
-  for (size_t i = 0; i < js["Experiment Vector"].size(); i++)
-  {
-    auto e = new Experiment;
-    e->_js.getJson() = js["Experiment Vector"][i];
-    k->_experimentVector.push_back(e);
-  }
-
-  k->initialize();
-
-  return k;
 }
 
 #ifdef _KORALI_USE_MPI
@@ -246,14 +220,6 @@ PYBIND11_MODULE(libkorali, m)
     .def("run", [](Engine &k, std::vector<Experiment> &e) {
       isPythonActive = true;
       k.run(e);
-    })
-    .def("resume", [](Engine &k, Experiment &e) {
-      isPythonActive = true;
-      k.resume(e);
-    })
-    .def("resume", [](Engine &k, std::vector<Experiment> &e) {
-      isPythonActive = true;
-      k.resume(e);
     })
     .def("__getitem__", pybind11::overload_cast<pybind11::object>(&Engine::getItem), pybind11::return_value_policy::reference)
     .def("__setitem__", pybind11::overload_cast<pybind11::object, pybind11::object>(&Engine::setItem), pybind11::return_value_policy::reference);

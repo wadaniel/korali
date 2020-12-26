@@ -32,7 +32,10 @@ std::string Distribution::getRange(gsl_rng *range) const
 gsl_rng *Distribution::setRange(const std::string rangeString)
 {
   gsl_rng *rng = gsl_rng_alloc(gsl_rng_default);
-  if (_randomSeed == 0) _randomSeed = _k->_randomSeed++;
+
+  if (_randomSeed == 0 || _k->_preserveRandomNumberGeneratorStates == false)
+    _randomSeed = _k->_randomSeed++;
+
   gsl_rng_set(rng, _randomSeed);
 
   void *state = gsl_rng_state(rng);
@@ -40,7 +43,7 @@ gsl_rng *Distribution::setRange(const std::string rangeString)
   size_t n = rangeString.size() >> 1;
   size_t m = gsl_rng_size(rng);
 
-  if (rangeString != "")
+  if (_k->_preserveRandomNumberGeneratorStates == true && rangeString != "")
   {
     if (m != n) KORALI_LOG_ERROR("Invalid GSL state size: %lu != %lu\n", m, n);
 

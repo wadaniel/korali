@@ -33,9 +33,10 @@ The Korali Project is developed and maintained by
 * [**Sergio Miguel Martin**](https://www.cse-lab.ethz.ch/member/sergio-martin/), martiser at ethz.ch
 * [**Daniel W&auml;lchli**](https://www.cse-lab.ethz.ch/member/daniel-walchli/), wadaniel at ethz.ch
 * [**Georgios Arampatzis**](https://www.cse-lab.ethz.ch/member/georgios-arampatzis/), garampat at ethz.ch
+* [**Pascal Weber**](https://www.cse-lab.ethz.ch/member/pascal-weber/), webepasc at ethz.ch
 
 PI:
 
 * [**Petros Koumoutsakos**](https://www.cse-lab.ethz.ch/member/petros-koumoutsakos/), petros at ethz.ch 
 
-Additional contributors: Lucas Amoudrouz, Ivica Kicic, Pascal Weber, Fabian Wermelinger, Susanne Keller, Mark Martori.
+Additional contributors: Lucas Amoudrouz, Ivica Kicic, Fabian Wermelinger, Susanne Keller, Mark Martori.

@@ -1,0 +1,76 @@
+#ifndef _KORALI_AGENT_DISCRETE_DVRACER_HPP_
+#define _KORALI_AGENT_DISCRETE_DVRACER_HPP_
+
+#include "modules/problem/reinforcementLearning/discrete/discrete.hpp"
+#include "modules/solver/agent/discrete/discrete.hpp"
+
+namespace korali
+{
+namespace solver
+{
+namespace agent
+{
+namespace discrete
+{
+class dVRACER : public Discrete
+{
+  public:
+  /**
+   * @brief Pointer to training the actor network
+   */
+  learner::DeepSupervisor *_criticPolicyLearner;
+
+  /**
+  * @brief Korali experiment for obtaining the agent's action
+  */
+  korali::Experiment _criticPolicyExperiment;
+
+  /**
+   * @brief Pointer to actor's experiment problem
+   */
+  problem::SupervisedLearning *_criticPolicyProblem;
+
+  /**
+   * @brief Calculates the state value function V(s,a)
+   * @param state state to evaluate
+   * @return The value of V(s)
+   */
+  float stateValueFunction(const std::vector<float> &state);
+
+  /**
+   * @brief Update the V-target or current and previous experiences in the episode
+   * @param expId Current Experience Id
+   */
+  void updateVtbc(size_t expId);
+
+  /**
+   * @brief Calculates the gradient of importance weight wrt to NN output
+   * @param actionIdx Action from memory
+   * @param curPvalues todo
+   * @param oldPvalues todo 
+   * @return gradient of importance weight wrt NN output
+   */
+  std::vector<float> calculateImportanceWeightGradient(size_t actionIdx, const std::vector<float> &curPvalues, const std::vector<float> &oldPvalues);
+
+  /**
+   * @brief Calculates the gradient of KL(p_old, p_cur) wrt to the parameter of the 2nd (current) distribution.
+   * @param oldPvalues todo 
+   * @param curPvalues todo
+   * @return gradient of KL wrt curParamsOne and curParamsTwo
+   */
+  std::vector<float> calculateKLDivergenceGradient(const std::vector<float> &oldPvalues, const std::vector<float> &curPvalues);
+
+  void setTrainingState(const knlohmann::json &state) override;
+  knlohmann::json getTrainingState() override;
+  knlohmann::json runPolicy(const std::vector<float> &state) override;
+  void trainPolicy() override;
+  void printAgentInformation() override;
+  void initializeAgent() override;
+};
+
+} // namespace discrete
+} // namespace agent
+} // namespace solver
+} // namespace korali
+
+#endif // _KORALI_AGENT_DISCRETE_DVRACER_HPP_

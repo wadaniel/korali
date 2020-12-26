@@ -105,7 +105,7 @@ def plotGen(genList, idx):
         names = [genList[firstKey]['Variables'][i]['Name'] for i in range(numdim)]
 
         # Upper Left Plot
-        ax[0, 0].set_title('Best Values')
+        ax[0, 0].set_title('Best Objective Values and Differences')
         ax[0, 0].set_yscale('log')
         ax[0, 0].plot(genIds, absfval)
         ax[0, 0].plot(genIds, dfval, 'x', color='#34495e')
@@ -113,7 +113,7 @@ def plotGen(genList, idx):
         # Upper Right Plot
         ax[0, 1].set_title('Best Objective Variables')
         ax[0, 1].plot(genIds, theta)
-        ax[0, 1].plot(genIds, dtheta, 'x', color='#34495e')
+        #ax[0, 1].plot(genIds, dtheta, 'x', color='#34495e')
 
         # Lower Left Plot
         ax[1, 0].set_title('Condition')
@@ -126,7 +126,6 @@ def plotGen(genList, idx):
         ax[1, 1].plot(genIds, minsdev)
     
 def plot(genList, args, addons):
-      print(addons)
       numgens = len(genList)
 
       plotAll = args.all

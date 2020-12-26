@@ -194,7 +194,7 @@ class HamiltonianEuclideanDense : public HamiltonianEuclidean
   int updateMetricMatricesEuclidean(const std::vector<std::vector<double>> &samples) override
   {
     double sumk, sumi, sumOfSquares;
-    double cov;
+    double meank, meani, cov;
     double numSamples = samples.size();
 
     // calculate sample covariance
@@ -209,9 +209,11 @@ class HamiltonianEuclideanDense : public HamiltonianEuclidean
         {
           sumi += samples[j][i];
           sumk += samples[j][k];
-          sumOfSquares += samples[j][i]*samples[j][k];
+          sumOfSquares += samples[j][i] * samples[j][k];
         }
-        cov = (sumOfSquares-(sumk*sumi)/numSamples)/(numSamples-1.);
+        meank = sumk / numSamples;
+        meani = sumi / numSamples;
+        cov = sumOfSquares / numSamples - meani * meank;
         _inverseMetric[i * _stateSpaceDim + k] = cov;
         _inverseMetric[k * _stateSpaceDim + i] = cov;
       }
@@ -262,7 +264,7 @@ class HamiltonianEuclideanDense : public HamiltonianEuclidean
 
     gsl_permutation *p = gsl_permutation_alloc(dim);
     int s;
-    
+
     gsl_matrix *luMat = gsl_matrix_alloc(dim, dim);
     gsl_matrix_memcpy(luMat, &matView.matrix);
     gsl_linalg_LU_decomp(luMat, p, &s);

@@ -71,6 +71,11 @@ class LMCMAES : public Optimizer
  */
   void sort_index(const std::vector<double> &vec, std::vector<size_t> &_sortingIndex) const;
 
+  /**
+  * @brief Flag if random number source is Normal or Uniform.
+ */
+  bool _normalRandomNumbers;
+
   public:
   /**
  * @brief Configures LMCMA-ES.

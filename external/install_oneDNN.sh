@@ -15,24 +15,11 @@ function check()
  fi 
 }
 
-# Help display function
-function print_help ()
-{
- echo ""
- echo "Syntax: ./install_${libName}.sh [--jobs=N] [--check]"
- echo ""
- echo "Where:"
- echo " --no-install If ${libName} is not found, do not download and install it."
- echo " --jobs=N Specifies N jobs to use when building ${libName}."
- echo " --help Displays this help message."
-}
-
 ######### Environment Configuration ########
 
-NJOBS=4
 baseKoraliDir=$PWD
 foundbinVersionFile=0
-install=1
+source ${baseKoraliDir}/install.config
 
 if [ -f $baseKoraliDir/docs/VERSION ]; then
  foundbinVersionFile=1
@@ -48,32 +35,20 @@ if [ $foundbinVersionFile == 0 ]; then
   exit 1
 fi
 
-######### Argument Parsing ########
+######### Looking for CMake ##########
 
-for i in "$@"
-do
-case $i in
-    --jobs=*)
-    NJOBS="${i#*=}"
-    shift
-    ;;
-    --no-install)
-    install=0
-    shift 
-    ;;
-    --help)
-    print_help
-    exit 0 
-    shift 
-    ;;
-    *)
-    print_help
-    echo ""
-    echo "[Korali] Error:  Unknown option $i."       
-    exit 1
-    ;;
-esac
-done
+cmakeMajorVersion=`$CMAKE --version | grep "cmake version" | cut -d' ' -f 3 | cut -d '.' -f 1`
+if [ ! $? == 0 ]; then
+ logEcho "[Korali] Error: Could not find a valid CMake (path: $CMAKE)"
+ logEcho "[Korali] Solution: Provide a path to a correct version in the 'install.config' file."
+ exitWithError
+fi
+
+if [ "$cmakeMajorVersion" -lt "3" ]; then
+ logEcho "[Korali] Error: CMake found is older than version than 3.0."
+ logEcho "[Korali] Solution: Provide a path to a correct version in the 'install.config' file."
+ exitWithError
+fi
 
 ######## Checking for existing software ########
 
@@ -98,23 +73,10 @@ if [ -f ${localFile} ]; then
  filePath=${localFile}
  oneDNNBaseDir=$installDir
 fi
- 
+
 ######## If not installed, download and install ########
 
 if [ ${fileFound} == 0 ]; then
-
- if [ ${install} == 0 ]; then
-   echo "[Korali] Could not find an installation of ${libName}."
-   exit 1
- fi
- 
- # Checking whether cmake is accessible
- $externalDir/install_CMake.sh 
- if [ $? != 0 ]; then
-  echo "[Korali] Error: CMake is required to install ${libName}, but was not found."
-  echo "[Korali] Solution: Run install_CMake.sh to install it."
-  exit 1
- fi
 
  echo "[Korali] Downloading ${libName}... "
  
@@ -136,10 +98,11 @@ if [ ${fileFound} == 0 ]; then
  mkdir -p build; check
  cd build; check
 
- CXXFLAGS=-O3 ${externalDir}/cmake .. \
+ CXXFLAGS=-O3 ${CMAKE} .. \
      -DDNNL_BUILD_EXAMPLES=OFF \
      -DDNNL_BUILD_TESTS=OFF \
      -DCMAKE_INSTALL_PREFIX=${installDir} \
+     -DDNNL_CPU_RUNTIME=SEQ \
      -DBUILD_SHARED_LIBS=true; check
 
  echo "[Korali] Building ${libName}... "

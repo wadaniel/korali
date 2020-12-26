@@ -1,0 +1,111 @@
+#include "engine.hpp"
+#include "modules/solver/agent/discrete/discrete.hpp"
+#include "sample/sample.hpp"
+
+namespace korali
+{
+namespace solver
+{
+namespace agent
+{
+void Discrete::initializeAgent()
+{
+  // Getting discrete problem pointer
+  _problem = dynamic_cast<problem::reinforcementLearning::Discrete *>(_k->_problem);
+}
+
+void Discrete::getAction(korali::Sample &sample)
+{
+  // Getting current state
+  auto state = sample["State"].get<std::vector<float>>();
+
+  // Getting the probability of the actions given by the agent's policy
+  auto policy = runPolicy(state);
+  auto pActions = policy["Action Probabilities"].get<std::vector<float>>();
+
+  // Storage for the action index to use
+  size_t actionIdx = 0;
+
+  /*****************************************************************************
+  * During training, we follow the Epsilon-greedy strategy. Choose, given a
+  * probability (pEpsilon), one from the following:
+  *  - Uniformly random action among all possible actions
+  *  - Sample action guided by the policy's probability distribution
+  ****************************************************************************/
+
+  if (sample["Mode"] == "Training")
+  {
+    // Getting pGreedy = U[0,1] for the epsilon-greedy strategy
+    float pEpsilon = _uniformGenerator->getRandomNumber();
+
+    // Producing random (uniform) number for the selection of the action
+    float x = _uniformGenerator->getRandomNumber();
+
+    // If p < e, then we choose the action randomly, with a uniform probability, among all possible actions.
+    if (pEpsilon < _randomActionProbability)
+    {
+      actionIdx = floor(x * _problem->_possibleActions.size());
+    }
+    else // else we select guided by the policy's probability distribution
+    {
+      // Categorical action sampled from action probabilites (from ACER paper [Wang2017])
+      float curSum = 0.0;
+      //      printf("pActions: ");
+      for (actionIdx = 0; actionIdx < pActions.size(); actionIdx++)
+      {
+        curSum += pActions[actionIdx];
+        if (x < curSum) break;
+      }
+      // NOTE: In original DQN paper [Minh2015] we choose max
+      // actionIdx = std::distance(pActions.begin(), std::max_element(pActions.begin(), pActions.end()));
+    }
+
+    // Storing action metadata
+    sample["Policy"] = policy;
+    sample["Policy"]["Action Index"] = actionIdx;
+  }
+
+  /*****************************************************************************
+  * During testing, we just select the action with the largest probability
+  * given by the policy.
+  ****************************************************************************/
+
+  // Finding the best action index from the probabilities
+  if (sample["Mode"] == "Testing")
+  {
+    actionIdx = std::distance(pActions.begin(), std::max_element(pActions.begin(), pActions.end()));
+  }
+
+  /*****************************************************************************
+  * Storing the action itself
+ ****************************************************************************/
+
+  if (actionIdx >= _problem->_possibleActions.size())
+  {
+    float cump = 0.0;
+    for (float p : pActions) cump += p;
+    KORALI_LOG_ERROR("Action index (%lu) exceeds action vector size (%lu). This points to a bug in probability calculation (cumulative p = %f).\n", actionIdx, _problem->_possibleActions.size(), cump);
+  }
+
+  sample["Action"] = _problem->_possibleActions[actionIdx];
+}
+
+float Discrete::calculateImportanceWeight(const size_t actionIdx, const std::vector<float> &curProbabilities, const std::vector<float> &oldProbabilities)
+{
+  // Getting probability density of action for current policy
+  float pCurPolicy = curProbabilities[actionIdx];
+
+  // Getting probability density of action for old policy
+  float pOldPolicy = oldProbabilities[actionIdx];
+
+  // Now calculating importance weight for the old s,a experience
+  float importanceWeight = pCurPolicy / pOldPolicy;
+
+  return importanceWeight;
+}
+
+} // namespace agent
+
+} // namespace solver
+
+} // namespace korali

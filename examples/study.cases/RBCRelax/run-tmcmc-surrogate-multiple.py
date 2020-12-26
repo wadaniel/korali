@@ -79,7 +79,7 @@ eList[4]["Problem"]["Computational Model"] = lambda sample: relaxModel_surrogate
 # Configuring Linked (Distributed) Conduit
 k = korali.Engine()
 #k["Conduit"]["Type"] = "Distributed"
-#k["Conduit"]["Workers Per Team"] = 2
+#k["Conduit"]["Ranks Per Worker"] = 2
 
 # No Profiling
 #k["Profiling"]["Detail"] = "Full"

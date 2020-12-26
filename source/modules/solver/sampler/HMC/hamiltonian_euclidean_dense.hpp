@@ -228,12 +228,11 @@ class HamiltonianEuclideanDense : public HamiltonianEuclidean
 
     // Cholesky Decomp
     err = gsl_linalg_cholesky_decomp(&sigView.matrix);
-    if (err == 0) 
+    if (err == 0)
     {
-        _multivariateGenerator->_sigma = sig;
-        _multivariateGenerator->updateDistribution();
+      _multivariateGenerator->_sigma = sig;
+      _multivariateGenerator->updateDistribution();
     }
-
 
     return err;
   }

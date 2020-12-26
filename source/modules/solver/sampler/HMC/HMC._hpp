@@ -108,15 +108,6 @@ class HMC : public Sampler
   double findReasonableStepSize(std::vector<double> q);
 
   /**
-  * @brief Checks if No U-Turn criterion is met.
-  * @param pLeft Left momentum.
-  * @param pRight Right momentum.
-  * @param rho Distance of position calculated by integrating momentum and multiplying with Inverse Metric.
-  * @return Boolean indicating if No U-Turn was found.
-  */
-  bool computeNoUTurnCriterion(const std::vector<double> &pLeft, const std::vector<double> &pRight, const std::vector<double> &rho) const;
-
-  /**
   * @brief Recursive binary tree building algorithm. Used if Use NUTS is set to True.
   * @param helper Helper struct for large argument list.
   * @param depth Current depth of binary tree.
@@ -150,28 +141,6 @@ class HMC : public Sampler
   * @param numLeaves Number of leaves visited in binary tree (do not necessarily fulfill detailed balance).
   */
   void buildTree(const std::vector<double> &q, const std::vector<double> &p, const double logUniSample, const int direction, const int depth, const double stepSize, const double rootH, std::vector<double> &qLeft, std::vector<double> &pLeft, std::vector<double> &qRight, std::vector<double> &pRight, std::vector<double> &qProposed, double &numValidLeaves, bool &buildCriterion, double &alpha, int &numLeaves);
-
-  /**
-  * @brief Recursive binary tree building algorithm. Used if Use NUTS is set to True.
-  * @param q Current Position.
-  * @param p Current Momentum.
-  * @param logUniSample Log of uniform sample from [0.0, 1.0).
-  * @param direction Direction in which Hamiltonian Dynamics are evolved (either 1 or -1).
-  * @param depth Depth of binary tree recursion.
-  * @param stepSize Step Size used for integration scheme (Leap Frog).
-  * @param rootH Original total energy from starting position (root of tree).
-  * @param qLeft Leftmost leaf of binary tree (position).
-  * @param pLeft Leftmost leaf of binary tree (momentum).
-  * @param qRight Rightmost leaf of binary tree (positon).
-  * @param pRight Rightmost leaf of binary tree (momentum).
-  * @param qProposed Newly visited position (and thus proposed) state.
-  * @param numValidLeaves Number of leaves visited in binary tree that have been visited and fulfill detailed balance condition.
-  * @param buildCriterion Indicates if binary tree should be built further, i.e. if it is false a U-Turn has been found or the error has grown to be too large.
-  * @param alpha Acceptance probability.
-  * @param numLeaves Number of leaves visited in binary tree (do not necessarily fulfill detailed balance).
-  * @param rho Distance of position calculated by integrating momentum and multiplying with Inverse Metric.
-  */
-  void buildTreeIntegrationCriterion(const std::vector<double> &q, const std::vector<double> &p, const double logUniSample, const int direction, const int depth, const double stepSize, const double rootH, std::vector<double> &qLeft, std::vector<double> &pLeft, std::vector<double> &qRight, std::vector<double> &pRight, std::vector<double> &qProposed, double &numValidLeaves, bool &buildCriterion, double &alpha, int &numLeaves, std::vector<double> &rho);
 
   /**
   * @brief Helper function to print std::vector.

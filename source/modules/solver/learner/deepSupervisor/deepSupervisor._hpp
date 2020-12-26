@@ -44,7 +44,6 @@ class DeepSupervisor : public Learner
   std::vector<NeuralNetwork *> _inferenceNeuralNetworks;
 
   std::vector<std::vector<float>> getEvaluation(const std::vector<std::vector<std::vector<float>>> &input) override;
-  std::vector<std::vector<float>> getGradients(const std::vector<std::vector<float>> &gradients) override;
 
   std::vector<float> getTrainingHyperparameters() override;
   void setTrainingHyperparameters(const std::vector<float> &hyperparameters) override;

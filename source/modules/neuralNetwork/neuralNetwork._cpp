@@ -79,25 +79,33 @@ void NeuralNetwork::initialize()
   size_t OC = _layers[layerCount - 1]->_outputChannels;
   size_t H = _hyperparameterCount;
 
-  // Create forward and backward pipelines
+  // Create forward and backward (only for training) pipelines
   for (size_t i = 0; i < layerCount; i++) _layers[i]->createForwardPipeline();
-  for (size_t i = 0; i < layerCount; i++) _layers[i]->createBackwardPipeline();
+  if (_mode == "Training") for (size_t i = 0; i < layerCount; i++) _layers[i]->createBackwardPipeline();
 
-  // Allocating NN storage
+  // Allocating NN Forward storage
   _rawInputValues.resize(T * N * IC);
-  _rawInputGradients.resize(T * N * IC);
   _rawOutputValues.resize(T * N * OC);
-  _rawOutputGradients.resize(T * N * OC);
-  _hyperparameterGradients.resize(H);
   _inputBatchLastStep.resize(N);
+
+  // Allocating NN Backward storage (only for training)
+  if (_mode == "Training")
+  {
+   _rawInputGradients.resize(T * N * IC);
+   _rawOutputGradients.resize(T * N * OC);
+   _hyperparameterGradients.resize(H);
+  }
 
   // Allocating storage for formatted output values
   _outputValues.resize(N);
   for (size_t b = 0; b < N; b++) _outputValues[b].resize(OC);
 
-  // Allocating storage for formatted input gradients
-  _inputGradients.resize(N);
-  for (size_t b = 0; b < N; b++) _inputGradients[b].resize(IC);
+  // Allocating storage for formatted input gradients (only for training)
+  if (_mode == "Training")
+  {
+   _inputGradients.resize(N);
+   for (size_t b = 0; b < N; b++) _inputGradients[b].resize(IC);
+  }
 
   // Making sure we do not re-initialize
   _isInitialized = true;
@@ -151,7 +159,7 @@ void NeuralNetwork::forward(const std::vector<std::vector<std::vector<float>>> &
         _rawInputValues[t * N * IC + b * IC + i] = inputValues[b][t][i];
 
   // Forward propagate layers, once per timestep
-  for (_currentTimestep = 0; _currentTimestep < _timestepCount; _currentTimestep++)
+  for (_currentTimestep = 0; _currentTimestep < T; _currentTimestep++)
     for (size_t i = 0; i < layerCount; i++) _layers[i]->forwardData();
 
   // Copying output values -- only for the last timestep provided in the input
@@ -169,6 +177,9 @@ void NeuralNetwork::backward(const std::vector<std::vector<float>> &outputGradie
   size_t lastLayer = layerCount - 1;
   size_t OC = _layers[lastLayer]->_outputChannels;
   size_t IC = _layers[0]->_outputChannels;
+
+  if (_mode == "Inference")
+   KORALI_LOG_ERROR("Requesting backward propagation but NN was configured for inference only.\n");
 
   // Safety checks
   if (outputGradients.size() != N) KORALI_LOG_ERROR("Batch size of NN output gradients (%lu) is not the same as NN configuration (%lu).\n", outputGradients.size(), N);
@@ -188,10 +199,10 @@ void NeuralNetwork::backward(const std::vector<std::vector<float>> &outputGradie
   for (size_t i = 0; i < _hyperparameterCount; i++) _hyperparameterGradients[i] = 0.0f;
 
   // Backward propagating in time, process the corresponding mini-batch
-  for (size_t t = 0; t < _timestepCount; t++)
+  for (size_t t = 0; t < T; t++)
   {
     // Starting from the last timestep, and going backwards
-    _currentTimestep = _timestepCount - t - 1;
+    _currentTimestep = T - t - 1;
 
     // Backward propagating in layer space
     for (size_t i = 0; i < layerCount; i++)

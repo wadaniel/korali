@@ -113,15 +113,11 @@ void Linear::createForwardPipeline()
   // Calling base layer function
   Layer::createForwardPipeline();
 
-  // Obtaining batch size
-  ssize_t N = _nn->_batchSize;
-  ssize_t OC = _outputChannels;
-
 #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
   {
     // We create the inner product (Wx + b) operation
-    auto inner_product_d = inner_product_forward::desc(prop_kind::forward_training, _prevLayer->_outputMem[0].get_desc(), _weightsMem.get_desc(), _biasMem.get_desc(), _outputMem[0].get_desc());
+    auto inner_product_d = inner_product_forward::desc(_propKind, _prevLayer->_outputMem[0].get_desc(), _weightsMem.get_desc(), _biasMem.get_desc(), _outputMem[0].get_desc());
 
     // Create inner product primitive descriptor.
     dnnl::primitive_attr forwardPrimitiveAttributes;
@@ -254,6 +250,9 @@ void Linear::backwardData()
   int OC = _outputChannels;
   int t = _nn->_currentTimestep;
 
+  if (_nn->_mode == "Inference")
+     KORALI_LOG_ERROR("Requesting Layer backward data propagation but NN was configured for inference only.\n");
+
 #ifdef _KORALI_USE_EIGEN
   if (_nn->_engine == "Korali")
   {
@@ -302,10 +301,13 @@ void Linear::backwardData()
 
 void Linear::backwardHyperparameters()
 {
-  int N = _nn->_batchSize;
-  int IC = _prevLayer->_outputChannels;
-  int OC = _outputChannels;
-  int t = _nn->_currentTimestep;
+  const size_t N = _nn->_batchSize;
+  const size_t IC = _prevLayer->_outputChannels;
+  const size_t OC = _outputChannels;
+  const size_t t = _nn->_currentTimestep;
+
+  if (_nn->_mode == "Inference")
+     KORALI_LOG_ERROR("Requesting Layer hyperparameter gradient propagation but NN was configured for inference only.\n");
 
 #ifdef _KORALI_USE_EIGEN
   if (_nn->_engine == "Korali")

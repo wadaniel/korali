@@ -15,8 +15,6 @@ using namespace dnnl;
 using namespace Eigen;
 #endif
 
-#define GRU_GATES 3
-
 namespace korali
 {
 namespace neuralNetwork
@@ -26,47 +24,20 @@ namespace layer
 namespace recurrent
 {
 
-std::vector<float> GRU::generateInitialHyperparameters()
+void GRU::initialize()
 {
-  std::vector<float> hyperparameters;
+ Recurrent::initialize();
 
-  // Getting dimensions
-  const size_t L = _depth;
-  const size_t IC = _prevLayer->_outputChannels;
-  const size_t OC = _outputChannels;
-
-  // Calculate hyperparameters for weight and bias of all linear layers
-  // Setting value for this layer's xavier constant
-  float xavierConstant = (_weightScaling * sqrtf(6.0f)) / sqrt(_outputChannels + _prevLayer->_outputChannels);
-
-  // Weights applied to the input layer(s)
-  for (int layerId = 0; layerId < L; layerId++)
-   for (int gateId = 0; gateId < GRU_GATES; gateId++)
-    for (size_t i = 0; i < OC*IC; i++)
-     hyperparameters.push_back(xavierConstant * _nn->_uniformGenerator->getRandomNumber());
-
-   // Weights applied to the recurrent layer
-  for (int layerId = 0; layerId < L; layerId++)
-   for (int gateId = 0; gateId < GRU_GATES; gateId++)
-    for (size_t i = 0; i < OC*OC; i++)
-     hyperparameters.push_back(xavierConstant * _nn->_uniformGenerator->getRandomNumber());
-
-   // Bias for the recurrent layer
-  for (int layerId = 0; layerId < L; layerId++)
-   for (int gateId = 0; gateId < GRU_GATES; gateId++)
-    for (size_t i = 0; i < OC; i++)
-     hyperparameters.push_back(0.0f);
-
-  return hyperparameters;
+ // Setting number of recurrent gates to 3 (GRU)
+ _gateCount = 3;
 }
-
 
 void GRU::createHyperparameterMemory()
 {
  // Getting dimensions
  const size_t L = _depth; // Physical Layers
  const size_t D = 1; // Directions
- const size_t G = GRU_GATES; // Gates
+ const size_t G = _gateCount; // Gates
  const size_t IC = _prevLayer->_outputChannels;
  const size_t OC = _outputChannels;
 
@@ -82,7 +53,7 @@ void GRU::createHyperparameterMemory()
     // Checking Layer sizes
     const memory::dim IC = _prevLayer->_outputChannels; // channels
     const memory::dim OC = _outputChannels; // channels
-    const memory::dim G = GRU_GATES; // gates
+    const memory::dim G = _gateCount; // gates
     const memory::dim L = _depth; // layers
     const memory::dim D = 1; // directions
 
@@ -149,13 +120,12 @@ void GRU::createHyperparameterMemory()
     cudaErrCheck(cudaMalloc((void **)&_weightsGradientTensor, _weightsSize));
 
     // Allocating space to store pointers to hyperparameters and their sizes
-    _gateWeightTensors.resize(GRU_GATES);
-    _gateBiasTensors.resize(GRU_GATES);
+    _gateWeightTensors.resize(_gateCount);
+    _gateBiasTensors.resize(_gateCount);
 
     // Getting pointers and length of all of the RNN hyperparameters
-    for (int gateId = 0; gateId < GRU_GATES; gateId++)
+    for (size_t gateId = 0; gateId < _gateCount; gateId++)
     {
-      cudnnDataType_t dataType;
       cudnnTensorDescriptor_t gateWeightDesc;
       cudnnTensorDescriptor_t gateBiasDesc;
       cudnnErrCheck(cudnnCreateTensorDescriptor(&gateWeightDesc));
@@ -192,7 +162,7 @@ void GRU::createForwardPipeline()
   {
    // Checking Layer sizes
    const memory::dim T = 1; // time steps
-   const memory::dim G = GRU_GATES; // Gates
+   const memory::dim G = _gateCount; // Gates
    const memory::dim N = _nn->_batchSize; // Batch size
    const memory::dim IC = _prevLayer->_outputChannels; // channels
    const memory::dim OC = _outputChannels; // channels
@@ -233,7 +203,7 @@ void GRU::createForwardPipeline()
 
    // Creating descriptor for the GRU operation
    auto forwardGRUDesc = gru_forward::desc(
-           prop_kind::forward_training, // aprop_kind
+           _propKind, // aprop_kind
            rnn_direction::unidirectional, // direction
            layerInputMemDesc, // src_layer_desc
            stateMemDesc, // src_iter_desc
@@ -320,7 +290,7 @@ void GRU::createForwardPipeline()
     cudnnErrCheck(cudnnGetRNNTempSpaceSizes(
       _nn->_cuDNNHandle,
       _rnnDesc,
-      CUDNN_FWD_MODE_TRAINING,
+      _forwardMode,
       _inputRNNDataDesc,
       &_workSpaceSize,
       &_reserveSpaceSize));
@@ -347,7 +317,7 @@ void GRU::createBackwardPipeline()
   {
    // Checking Layer sizes
    const memory::dim T = 1; // time steps
-   const memory::dim G = GRU_GATES; // layers
+   const memory::dim G = _gateCount; // layers
    const memory::dim N = _nn->_batchSize; // Batch size
    const memory::dim IC = _prevLayer->_outputChannels; // channels
    const memory::dim OC = _outputChannels; // channels
@@ -423,8 +393,6 @@ void GRU::createBackwardPipeline()
 
 void GRU::forwardData()
 {
- const size_t N = _nn->_batchSize;
- const size_t C = _outputChannels;
  const size_t t = _nn->_currentTimestep;
 
 #ifdef _KORALI_USE_ONEDNN
@@ -449,11 +417,15 @@ void GRU::forwardData()
 #ifdef _KORALI_USE_CUDNN
   if (_nn->_engine == "CuDNN")
   {
+    const size_t N = _nn->_batchSize;
+
+    // Creating array of sequence lengths necessary for CuDNN
     std::vector<int> seqLengthArray(N, 1);
+
     cudnnErrCheck(cudnnRNNForward(
       _nn->_cuDNNHandle, // handle
       _rnnDesc,          // rnnDesc
-      CUDNN_FWD_MODE_TRAINING,
+      _forwardMode,
       _devSequenceLengths,                  // devSeqLengths
       _inputRNNDataDesc,                    // xDesc
       _prevLayer->_outputTensor[t],         // x
@@ -479,15 +451,16 @@ void GRU::backwardData()
 {
   // Getting current timestep
  const size_t t = _nn->_currentTimestep;
- const size_t N = _nn->_batchSize;
-  const size_t C = _outputChannels;
+
+ if (_nn->_mode == "Inference")
+    KORALI_LOG_ERROR("Requesting Layer backward data propagation but NN was configured for inference only.\n");
 
 #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
   {
    // Cleaning current weight gradients
    const memory::dim L = _depth;
-   const memory::dim G = GRU_GATES; // Gates
+   const memory::dim G = _gateCount; // Gates
    const memory::dim C = _outputChannels; // channels
    std::vector<float> nullWeightGradients(L*G*C*C, 0.0f);
    write_to_dnnl_memory(nullWeightGradients.data(), _weightsLayerGradientMem);
@@ -549,6 +522,8 @@ void GRU::backwardData()
 
 void GRU::backwardHyperparameters()
 {
+ if (_nn->_mode == "Inference")
+    KORALI_LOG_ERROR("Requesting Layer hyperparameter gradient propagation but NN was configured for inference only.\n");
 
 #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
@@ -594,7 +569,7 @@ void GRU::setHyperparameters(float *hyperparameters)
   {
    // Getting dimensions
    const size_t L = _depth;
-   const size_t G = GRU_GATES;
+   const size_t G = _gateCount;
    const size_t IC = _prevLayer->_outputChannels;
    const size_t OC = _outputChannels;
 
@@ -617,7 +592,7 @@ void GRU::getHyperparameters(float *hyperparameters)
   {
    // Getting dimensions
    const size_t L = _depth;
-   const size_t G = GRU_GATES;
+   const size_t G = _gateCount;
    const size_t IC = _prevLayer->_outputChannels;
    const size_t OC = _outputChannels;
 
@@ -639,7 +614,7 @@ void GRU::getHyperparameterGradients(float *gradient)
   {
    // Getting dimensions
    const size_t L = _depth;
-   const size_t G = GRU_GATES;
+   const size_t G = _gateCount;
    const size_t IC = _prevLayer->_outputChannels;
    const size_t OC = _outputChannels;
 

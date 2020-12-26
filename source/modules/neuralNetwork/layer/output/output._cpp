@@ -167,9 +167,12 @@ void Output::forwardData()
 
 void Output::backwardData()
 {
-  int N = _nn->_batchSize;
-  int OC = _outputChannels;
-  int t = _nn->_currentTimestep;
+  const size_t N = _nn->_batchSize;
+  const size_t OC = _outputChannels;
+  const size_t t = _nn->_currentTimestep;
+
+  if (_nn->_mode == "Inference")
+     KORALI_LOG_ERROR("Requesting Layer backward data propagation but NN was configured for inference only.\n");
 
   // Performing gradient pre-processing
   for (size_t i = 0; i < N; i++)

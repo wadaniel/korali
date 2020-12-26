@@ -40,7 +40,7 @@ class GRU : public Recurrent
 
   #endif
 
-  std::vector<float> generateInitialHyperparameters() override;
+  void initialize() override;
   void createHyperparameterMemory() override;
   void createForwardPipeline() override;
   void createBackwardPipeline() override;

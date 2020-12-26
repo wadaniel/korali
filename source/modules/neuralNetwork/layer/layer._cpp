@@ -38,6 +38,9 @@ void Layer::createForwardPipeline()
 #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
   {
+    // Setting propagation kind
+   _propKind = _nn->_mode == "Training" ? prop_kind::forward_training : prop_kind::forward_inference;
+
     // Creating layer's data memory storage
     const memory::dims layerDims = {N, OC};
     auto dataMemDesc = memory::desc(layerDims, memory::data_type::f32, memory::format_tag::nc);
@@ -52,6 +55,9 @@ void Layer::createForwardPipeline()
 #ifdef _KORALI_USE_CUDNN
   if (_nn->_engine == "CuDNN")
   {
+    // Setting propagation mode
+    _forwardMode = _nn->_mode == "Training" ? CUDNN_FWD_MODE_TRAINING : CUDNN_FWD_MODE_INFERENCE;
+
     cudnnErrCheck(cudnnCreateTensorDescriptor(&_outputTensorDesc));
     cudnnErrCheck(cudnnSetTensor4dDescriptor(_outputTensorDesc, CUDNN_TENSOR_NCHW, CUDNN_DATA_FLOAT, N, OC, 1, 1));
 
@@ -64,6 +70,9 @@ void Layer::createForwardPipeline()
 
 void Layer::createBackwardPipeline()
 {
+ if (_nn->_mode == "Inference")
+    KORALI_LOG_ERROR("Requesting layer's backward pipeline creation but NN was configured for inference only.\n");
+
   /*********************************************************************************
   *  Initializing memory objects and primitives for BACKWARD propagation
   *********************************************************************************/

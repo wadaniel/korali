@@ -252,18 +252,6 @@ std::vector<std::vector<float>> Experiment::getEvaluation(const std::vector<std:
     KORALI_LOG_ERROR("This solver does not support evaluation operations.\n");
 }
 
-std::vector<std::vector<float>> Experiment::getGradients(const std::vector<std::vector<float>> &gradients)
-{
-  // First check that the experiment has been initialized.
-  if (_isInitialized == false) initialize();
-
-  auto learner = dynamic_cast<solver::Learner *>(_k->_solver);
-  if (learner != NULL)
-    return learner->getGradients(gradients);
-  else
-    KORALI_LOG_ERROR("This solver does not provide gradients.\n");
-}
-
 knlohmann::json &Experiment::operator[](const std::string &key) { return _js[key]; }
 knlohmann::json &Experiment::operator[](const unsigned long int &key) { return _js[key]; }
 pybind11::object Experiment::getItem(const pybind11::object key) { return _js.getItem(key); }

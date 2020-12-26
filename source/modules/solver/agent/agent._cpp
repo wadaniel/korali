@@ -405,10 +405,12 @@ std::vector<size_t> Agent::generateMiniBatch(size_t size)
   return miniBatch;
 }
 
-std::vector<std::vector<float>> Agent::getStateTimeSequence(size_t expId)
+size_t Agent::getTimeSequenceStartExpId(size_t expId)
 {
  size_t startId = expId;
- for (size_t t = 0; t < _timeSequenceLength; t++)
+
+ // Adding (tmax-1) time sequences to the given experience
+  for (size_t t = 0; t < _timeSequenceLength - 1; t++)
  {
   // If we reached the start of the ER, this is the starting episode in the sequence
   if (startId == 0) break;
@@ -419,6 +421,14 @@ std::vector<std::vector<float>> Agent::getStateTimeSequence(size_t expId)
   // If we reached the end of the previous episode, then add one (this covers the case where the provided experience is also terminal) and break.
   if (_experienceReplay[startId].termination != e_nonTerminal) { startId++; break; }
  }
+
+ return startId;
+}
+
+std::vector<std::vector<float>> Agent::getStateTimeSequence(size_t expId)
+{
+ // Getting starting expId
+ size_t startId = getTimeSequenceStartExpId(expId);
 
  // Creating storage for the time sequence
  std::vector<std::vector<float>> timeSequence;
@@ -426,22 +436,14 @@ std::vector<std::vector<float>> Agent::getStateTimeSequence(size_t expId)
  // Now adding states
  for (size_t e = startId; e <= expId; e++)
   timeSequence.push_back(_experienceReplay[e].state);
+
+ return timeSequence;
 }
 
 std::vector<std::vector<float>> Agent::getStateActionTimeSequence(size_t expId)
 {
- size_t startId = expId;
- for (size_t t = 0; t < _timeSequenceLength; t++)
- {
-  // If we reached the start of the ER, this is the starting episode in the sequence
-  if (startId == 0) break;
-
-  // Now going back one experience
-  startId--;
-
-  // If we reached the end of the previous episode, then add one (this covers the case where the provided experience is also terminal) and break.
-  if (_experienceReplay[startId].termination != e_nonTerminal) { startId++; break; }
- }
+ // Getting starting expId
+ size_t startId = getTimeSequenceStartExpId(expId);
 
  // Creating storage for the time sequence
  std::vector<std::vector<float>> timeSequence;
@@ -454,6 +456,8 @@ std::vector<std::vector<float>> Agent::getStateActionTimeSequence(size_t expId)
   for (size_t i = 0; i < _problem->_actionVectorSize; i++) stateAction[_problem->_stateVectorSize + i] = _experienceReplay[e].action[i];
   timeSequence.push_back(stateAction);
  }
+
+ return timeSequence;
 }
 
 void Agent::finalize()

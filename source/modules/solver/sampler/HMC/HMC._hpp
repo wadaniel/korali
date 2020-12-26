@@ -119,8 +119,9 @@ class HMC : public Sampler
   /**
   * @brief Recursive binary tree building algorithm. Used if Use NUTS is set to True.
   * @param helper Helper struct for large argument list.
+  * @param depth Current depth of binary tree.
   */
-  void buildTreeUtil(std::shared_ptr<TreeHelperEuclidean> helper);
+  void buildTreeUtil(std::shared_ptr<TreeHelperEuclidean> helper, int depth);
 
   /**
   * @brief Recursive binary tree building algorithm. Used if Use NUTS is set to True.

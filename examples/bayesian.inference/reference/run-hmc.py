@@ -23,8 +23,8 @@ e["Problem"]["Computational Model"] = lambda sampleData: modelWithGradients(samp
 e["Solver"]["Type"] = "Sampler/HMC"
 e["Solver"]["Version"] = "Euclidean"
 e["Solver"]["Inverse Regularization Parameter"] = 0.1
-e["Solver"]["Burn In"] = 900
-e["Solver"]["Use NUTS"] = False
+e["Solver"]["Burn In"] = 1000
+e["Solver"]["Use NUTS"] = True
 e["Solver"]["Use Diagonal Metric"] = True
 e["Solver"]["Max Depth"] = 10
 e["Solver"]["Num Integration Steps"] = 20
@@ -34,7 +34,7 @@ e["Solver"]["Use Adaptive Step Size"] = True
 e["Solver"]["Max Integration Steps"] = 1000
 #e["Solver"]["Adaptive Step Size Schedule Constant"] = 0.01
 #e["Solver"]["Target Acceptance Rate"] = 0.75
-e["Solver"]["Termination Criteria"]["Max Samples"] = 10000
+e["Solver"]["Termination Criteria"]["Max Samples"] = 5000
 
 # Configuring the problem's random distributions
 e["Distributions"][0]["Name"] = "Uniform 0"

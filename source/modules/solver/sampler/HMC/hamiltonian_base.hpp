@@ -235,7 +235,7 @@ class Hamiltonian
       std::cout << "return (dotProductLeft > 0) && (dotProductRight > 0) = " << __returnVal << std::endl;
     }
 
-    return (dotProductLeft > 0) && (dotProductRight > 0);
+    return (dotProductLeft >= 0) && (dotProductRight >= 0);
   }
 
   /**

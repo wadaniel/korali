@@ -71,9 +71,7 @@ k.run(e)
 
 testInputSet = np.random.uniform(0, 2 * np.pi, inferenceBatchSize)
 testOutputSet = np.tanh(np.exp(np.sin(testInputSet))) * scaling
- 
 testInferredSet = e.getEvaluation([ [ [ x ] ] for x in testInputSet.tolist() ])
-testGradientSet = e.getGradients(testInferredSet)
 
 ### Calc MSE on test set
 
@@ -85,5 +83,4 @@ print("MSE on test set: {}".format(mse))
 
 plt.plot(testInputSet, testOutputSet, "o")
 plt.plot(testInputSet, testInferredSet, "x")
-#plt.plot(testInferredSet, testGradientSet, "*")
 plt.show()

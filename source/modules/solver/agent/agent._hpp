@@ -294,6 +294,7 @@ class Agent : public Solver
   */
   std::vector<size_t> generateMiniBatch(size_t size);
 
+  size_t getTimeSequenceStartExpId(size_t expId);
   std::vector<std::vector<float>> getStateTimeSequence(size_t expId);
   std::vector<std::vector<float>> getStateActionTimeSequence(size_t expId);
 

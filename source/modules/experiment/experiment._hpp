@@ -115,13 +115,6 @@ class Experiment : public Module
    */
   std::vector<std::vector<float>> getEvaluation(const std::vector<std::vector<std::vector<float>>> &inputBatch);
 
-  /**
-   * @brief For solver modules which have been trained, return the gradient of a differentiated output
-   * @param gradients Differentials of the (loss) function. Format: BxOC (B: Batch Size, OC: Output channels)
-   * @return The calculated gradients. Format: BxOC (B: Batch Size, IC: Input channels)
-   */
-  std::vector<std::vector<float>> getGradients(const std::vector<std::vector<float>> &gradients);
-
   private:
   /**
    * @brief Initializes seed to a random value based on current time if not set by the user (i.e. Random Seed is 0).

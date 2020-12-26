@@ -34,6 +34,42 @@ void Recurrent::initialize()
   if (_depth != 1) if (_prevLayer->_outputChannels != _outputChannels) KORALI_LOG_ERROR("Node count for layer %lu should be the same as that of the previous layer, when depth > 1.\n", _index);
 }
 
+std::vector<float> Recurrent::generateInitialHyperparameters()
+{
+  std::vector<float> hyperparameters;
+
+  // Getting dimensions
+  const size_t L = _depth;
+  const size_t G = _gateCount;
+  const size_t IC = _prevLayer->_outputChannels;
+  const size_t OC = _outputChannels;
+
+  // Calculate hyperparameters for weight and bias of all linear layers
+  // Setting value for this layer's xavier constant
+  float xavierConstant = (_weightScaling * sqrtf(6.0f)) / sqrt(_outputChannels + _prevLayer->_outputChannels);
+
+  // Weights applied to the input layer(s)
+  for (size_t layerId = 0; layerId < L; layerId++)
+   for (size_t gateId = 0; gateId < G; gateId++)
+    for (size_t i = 0; i < OC*IC; i++)
+     hyperparameters.push_back(xavierConstant * _nn->_uniformGenerator->getRandomNumber());
+
+   // Weights applied to the recurrent layer
+  for (size_t layerId = 0; layerId < L; layerId++)
+   for (size_t gateId = 0; gateId < G; gateId++)
+    for (size_t i = 0; i < OC*OC; i++)
+     hyperparameters.push_back(xavierConstant * _nn->_uniformGenerator->getRandomNumber());
+
+   // Bias for the recurrent layer
+  for (size_t layerId = 0; layerId < L; layerId++)
+   for (size_t gateId = 0; gateId < G; gateId++)
+    for (size_t i = 0; i < OC; i++)
+     hyperparameters.push_back(0.0f);
+
+  return hyperparameters;
+}
+
+
 } // namespace layer
 
 } // namespace neuralNetwork

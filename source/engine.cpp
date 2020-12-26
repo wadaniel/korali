@@ -240,6 +240,5 @@ PYBIND11_MODULE(libkorali, m)
     .def("__getitem__", pybind11::overload_cast<pybind11::object>(&Experiment::getItem), pybind11::return_value_policy::reference)
     .def("__setitem__", pybind11::overload_cast<pybind11::object, pybind11::object>(&Experiment::setItem), pybind11::return_value_policy::reference)
     .def("loadState", &Experiment::loadState)
-    .def("getEvaluation", &Experiment::getEvaluation)
-    .def("getGradients", &Experiment::getGradients);
+    .def("getEvaluation", &Experiment::getEvaluation);
 }

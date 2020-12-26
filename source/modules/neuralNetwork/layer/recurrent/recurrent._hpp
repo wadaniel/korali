@@ -13,6 +13,11 @@ class Recurrent : public Layer
 {
   public:
 
+ /**
+  * @brief Indicates the number of recurrent gates (depends on the architecture)
+  */
+ size_t _gateCount;
+
 #ifdef _KORALI_USE_ONEDNN
 
   /**
@@ -162,6 +167,7 @@ class Recurrent : public Layer
 #endif
 
   void initialize() override;
+  std::vector<float> generateInitialHyperparameters() override;
 };
 
 } // namespace layer

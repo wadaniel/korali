@@ -18,13 +18,6 @@ class Learner : public Solver
   virtual std::vector<std::vector<float>> getEvaluation(const std::vector<std::vector<std::vector<float>>> &input);
 
   /**
-   * @brief For solver modules which have been trained, return the gradient of a differentiated output
-   * @param gradients Differentials of the (loss) function. Format: BxOC (B: Batch Size, OC: Output channels)
-   * @return The calculated gradients. Format: BxIC (B: Batch Size, IC: Input channels)
-   */
-  virtual std::vector<std::vector<float>> getGradients(const std::vector<std::vector<float>> &gradients);
-
-  /**
   * @brief Returns the hyperparameters required to produce new evaluations and gradients
   * @return The hyperparameters
   */

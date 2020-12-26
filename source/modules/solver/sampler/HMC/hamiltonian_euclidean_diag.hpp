@@ -174,12 +174,12 @@ class HamiltonianEuclideanDiag : public HamiltonianEuclidean
       for (size_t j = 0; j < numSamples; ++j)
       {
         sum += samples[j][i];
-        sumOfSquares += samples[j][i]*samples[j][i];
+        sumOfSquares += samples[j][i] * samples[j][i];
       }
-      mean = sum/(numSamples);
-      cov = sumOfSquares/(numSamples) - mean*mean;
+      mean = sum / (numSamples);
+      cov = sumOfSquares / (numSamples)-mean * mean;
       _inverseMetric[i] = cov;
-      _metric[i] = 1.0/cov;
+      _metric[i] = 1.0 / cov;
     }
 
     return 0;

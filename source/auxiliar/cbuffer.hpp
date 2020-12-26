@@ -113,6 +113,27 @@ class cBuffer
   }
 
   /**
+  * @brief Returns the elements of the buffer in a vector format
+  * @return The vector with the circular buffer elements
+  */
+  std::vector<T> getVector()
+  {
+    std::vector<T> vector(_size);
+    for (size_t i = 0; i < _size; i++) vector[i] = (*this)[i];
+    return vector;
+  }
+
+  /**
+  * @brief Eliminates all contents of the buffer
+  */
+  void clear()
+  {
+   _size = 0;
+   _start = 0;
+   _end = 0;
+  }
+
+  /**
   * @brief Accesses an element at the required position
   * @param pos The access position
   * @return The element corresponding to the position

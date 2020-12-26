@@ -80,13 +80,13 @@ void Linear::createHyperparameterMemory()
     memory::dims weightDims = {OC, IC};
     auto weightMemDesc = memory::desc(weightDims, memory::data_type::f32, memory::format_tag::ab);
 
-    _weightsMem = memory(weightMemDesc, _dnnlEngine);
-    _weightsGradientMem = memory(_weightsMem.get_desc(), _dnnlEngine);
+    _weightsMem = memory(weightMemDesc, _nn->_dnnlEngine);
+    _weightsGradientMem = memory(_weightsMem.get_desc(), _nn->_dnnlEngine);
 
     auto biasMemDesc = memory::desc({OC}, memory::data_type::f32, memory::format_tag::a);
 
-    _biasMem = memory(biasMemDesc, _dnnlEngine);
-    _biasGradientMem = memory(biasMemDesc, _dnnlEngine);
+    _biasMem = memory(biasMemDesc, _nn->_dnnlEngine);
+    _biasGradientMem = memory(biasMemDesc, _nn->_dnnlEngine);
   }
 #endif
 
@@ -121,7 +121,7 @@ void Linear::createForwardPipeline()
 
     // Create inner product primitive descriptor.
     dnnl::primitive_attr forwardPrimitiveAttributes;
-    _forwardInnerProductPrimitiveDesc = inner_product_forward::primitive_desc(inner_product_d, forwardPrimitiveAttributes, _dnnlEngine);
+    _forwardInnerProductPrimitiveDesc = inner_product_forward::primitive_desc(inner_product_d, forwardPrimitiveAttributes, _nn->_dnnlEngine);
 
     // Create the weights+bias primitive.
     _forwardInnerProductPrimitive = inner_product_forward(_forwardInnerProductPrimitiveDesc);
@@ -162,7 +162,7 @@ void Linear::createBackwardPipeline()
       _outputGradientMem[0].get_desc());
 
     // Create the primitive.
-    auto backwardDataPrimitiveDesc = inner_product_backward_data::primitive_desc(backwardDataDesc, _dnnlEngine, _forwardInnerProductPrimitiveDesc);
+    auto backwardDataPrimitiveDesc = inner_product_backward_data::primitive_desc(backwardDataDesc, _nn->_dnnlEngine, _forwardInnerProductPrimitiveDesc);
     _backwardDataPrimitive = inner_product_backward_data(backwardDataPrimitiveDesc);
 
     auto backwardWeightsDesc = inner_product_backward_weights::desc(
@@ -172,7 +172,7 @@ void Linear::createBackwardPipeline()
       _outputGradientMem[0].get_desc());
 
     // Create the primitive.
-    auto backwardWeightsPrimitiveDesc = inner_product_backward_weights::primitive_desc(backwardWeightsDesc, _dnnlEngine, _forwardInnerProductPrimitiveDesc);
+    auto backwardWeightsPrimitiveDesc = inner_product_backward_weights::primitive_desc(backwardWeightsDesc, _nn->_dnnlEngine, _forwardInnerProductPrimitiveDesc);
     _backwardWeightsPrimitive = inner_product_backward_weights(backwardWeightsPrimitiveDesc);
   }
 #endif
@@ -212,7 +212,7 @@ void Linear::forwardData()
     forwardInnerProductArgs[DNNL_ARG_BIAS] = _biasMem;
     forwardInnerProductArgs[DNNL_ARG_DST] = _outputMem[t];
 
-    _forwardInnerProductPrimitive.execute(_nn->_stream, forwardInnerProductArgs);
+    _forwardInnerProductPrimitive.execute(_nn->_dnnlStream, forwardInnerProductArgs);
   }
 #endif
 
@@ -272,7 +272,7 @@ void Linear::backwardData()
     _backwardDataArgs[DNNL_ARG_WEIGHTS] = _weightsMem;                     // Input
     _backwardDataArgs[DNNL_ARG_DIFF_SRC] = _prevLayer->_outputGradientMem[t]; // Output
 
-    _backwardDataPrimitive.execute(_nn->_stream, _backwardDataArgs);
+    _backwardDataPrimitive.execute(_nn->_dnnlStream, _backwardDataArgs);
   }
 #endif
 
@@ -336,7 +336,7 @@ void Linear::backwardHyperparameters()
     backwardWeightsArgs[DNNL_ARG_DIFF_WEIGHTS] = _weightsGradientMem; // Output
     backwardWeightsArgs[DNNL_ARG_DIFF_BIAS] = _biasGradientMem;       // Output
 
-    _backwardWeightsPrimitive.execute(_nn->_stream, backwardWeightsArgs);
+    _backwardWeightsPrimitive.execute(_nn->_dnnlStream, backwardWeightsArgs);
   }
 #endif
 

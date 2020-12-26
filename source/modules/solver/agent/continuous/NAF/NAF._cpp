@@ -120,12 +120,12 @@ void NAF::trainPolicy()
     size_t expId = miniBatchIndexes[i];
 
     // Access experiences
-    auto curState = _experienceReplay[expId].state;
+    auto curStateSequence = getStateTimeSequence(expId);
     auto curAction = _experienceReplay[expId].action;
     float yHat = _experienceReplay[expId].reward;
 
     // Evaluate Q
-    auto qEvaluation = _qLearner->getEvaluation({{curState}})[0];
+    auto qEvaluation = _qLearner->getEvaluation({curStateSequence})[0];
 
     // yHat* = r -- If terminal state
     // yHat* = r + gamma*V(s) -- If not terminal state
@@ -167,7 +167,7 @@ void NAF::trainPolicy()
       policyGradient[1 + curAction.size() + j] = -weight * 0.5 * diff * dmu * dmu / (_actionScalings[j] * _actionScalings[j]);
     }
 
-    _qProblem->_inputData[i] = {curState};
+    _qProblem->_inputData[i] = curStateSequence;
     _qProblem->_solutionData[i] = policyGradient;
 
     // Keeping statistics
@@ -200,9 +200,9 @@ void NAF::trainPolicy()
   _criticLearner->setInferenceHyperparameters(_qHatHyperparameter);
 }
 
-knlohmann::json NAF::runPolicy(const std::vector<float> &state)
+knlohmann::json NAF::runPolicy(const std::vector<std::vector<float>> &state)
 {
-  auto qNNoutput = _qLearner->getEvaluation({{state}})[0];
+  auto qNNoutput = _qLearner->getEvaluation({state})[0];
 
   // Transforming NN output to receive mu and diagonal of P
   std::vector<float> actionMeans(_problem->_actionVectorSize);

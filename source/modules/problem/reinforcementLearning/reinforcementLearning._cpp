@@ -247,6 +247,9 @@ void ReinforcementLearning::initializeEnvironment(Sample &agent)
   // First, we update the initial policy's hyperparameters
   _agent->setAgentPolicy(agent["Hyperparameters"]);
 
+  // Then, we reset the state sequence for time-dependent learners
+  _agent->resetTimeSequence();
+
   // Appending any user-defined settings
   agent["Custom Settings"] = _customSettings;
 

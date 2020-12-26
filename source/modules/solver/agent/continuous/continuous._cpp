@@ -45,11 +45,14 @@ void Continuous::getAction(korali::Sample &sample)
   // Getting current state
   auto state = sample["State"].get<std::vector<float>>();
 
+  // Adding state to the state time sequence
+  _stateTimeSequence.add(state);
+
   // Storage for the action to select
   std::vector<float> action(_problem->_actionVectorSize);
 
-  // Forward Policy to get the Gaussian means and sigmas from policy
-  auto policy = runPolicy(state);
+  // Forward state sequence to get the Gaussian means and sigmas from policy
+  auto policy = runPolicy(_stateTimeSequence.getVector());
   auto curMeans = policy["Action Means"].get<std::vector<float>>();
   auto curSigmas = policy["Action Sigmas"].get<std::vector<float>>();
 

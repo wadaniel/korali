@@ -50,33 +50,33 @@ void Recurrent::createHyperparameterMemory()
  _hyperparameterCount = weightsInputCount + weightsRecurrentCount + biasCount;
 
  #ifdef _KORALI_USE_ONEDNN
-   if (_nn->_engine == "OneDNN")
-   {
-    // Checking Layer sizes
-    const memory::dim IC = _prevLayer->_outputChannels; // channels
-    const memory::dim OC = _outputChannels; // channels
-    const memory::dim G = _gateCount; // gates
-    const memory::dim L = _depth; // layers
-    const memory::dim D = 1; // directions
+  if (_nn->_engine == "OneDNN")
+  {
+   // Checking Layer sizes
+   const memory::dim IC = _prevLayer->_outputChannels; // channels
+   const memory::dim OC = _outputChannels; // channels
+   const memory::dim G = _gateCount; // gates
+   const memory::dim L = _depth; // layers
+   const memory::dim D = 1; // directions
 
-    memory::dims weightInputDims = {L, D, IC, G, OC};
-    auto weightInputMemDesc = memory::desc(weightInputDims, memory::data_type::f32, memory::format_tag::ldigo);
+   memory::dims weightInputDims = {L, D, IC, G, OC};
+   auto weightInputMemDesc = memory::desc(weightInputDims, memory::data_type::f32, memory::format_tag::ldigo);
 
-    _weightsLayerMem = memory(weightInputMemDesc, _dnnlEngine);
-    _weightsLayerGradientMem = memory(weightInputMemDesc, _dnnlEngine);
+   _weightsLayerMem = memory(weightInputMemDesc, _nn->_dnnlEngine);
+   _weightsLayerGradientMem = memory(weightInputMemDesc, _nn->_dnnlEngine);
 
-    memory::dims weightRecurrentDims = {L, D, OC, G, OC};
-    auto weightRecurrentMemDesc = memory::desc(weightRecurrentDims, memory::data_type::f32, memory::format_tag::ldigo);
+   memory::dims weightRecurrentDims = {L, D, OC, G, OC};
+   auto weightRecurrentMemDesc = memory::desc(weightRecurrentDims, memory::data_type::f32, memory::format_tag::ldigo);
 
-    _weightsRecurrentMem = memory(weightRecurrentMemDesc, _dnnlEngine);
-    _weightsRecurrentGradientMem = memory(weightRecurrentMemDesc, _dnnlEngine);
+   _weightsRecurrentMem = memory(weightRecurrentMemDesc, _nn->_dnnlEngine);
+   _weightsRecurrentGradientMem = memory(weightRecurrentMemDesc, _nn->_dnnlEngine);
 
-    memory::dims bias_dims = {L, D, G, OC};
-    auto biasMemDesc = memory::desc(bias_dims, memory::data_type::f32, memory::format_tag::ldgo);
+   memory::dims bias_dims = {L, D, G, OC};
+   auto biasMemDesc = memory::desc(bias_dims, memory::data_type::f32, memory::format_tag::ldgo);
 
-    _biasMem = memory(biasMemDesc, _dnnlEngine);
-    _biasGradientMem = memory(biasMemDesc, _dnnlEngine);
-   }
+   _biasMem = memory(biasMemDesc, _nn->_dnnlEngine);
+   _biasGradientMem = memory(biasMemDesc, _nn->_dnnlEngine);
+  }
  #endif
 
 #ifdef _KORALI_USE_CUDNN

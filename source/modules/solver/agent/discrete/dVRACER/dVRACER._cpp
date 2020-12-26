@@ -114,12 +114,12 @@ void dVRACER::trainPolicy()
     size_t expId = miniBatchIndexes[step];
 
     // Get state, action, and action probabilities from experience
-    auto expState = _experienceReplay[expId].state;
+    auto expStateSequence = getStateTimeSequence(expId);
     auto expPvals = _experienceReplay[expId].policy["Action Probabilities"].get<std::vector<float>>();
     size_t expActionIdx = _experienceReplay[expId].policy["Action Index"].get<size_t>();
 
     // Forward the neural network for this state to get current action probabilities
-    auto policy = runPolicy(expState);
+    auto policy = runPolicy(expStateSequence);
     auto curPvals = policy["Action Probabilities"].get<std::vector<float>>();
     auto V = policy["State Value"].get<float>();
 
@@ -172,11 +172,13 @@ void dVRACER::trainPolicy()
       // For truncated state add value
       if (isTrucated == true)
       {
-        // get truncated state
-        auto truncatedState = _experienceReplay[expId].truncatedState;
+        // Get truncated state sequence, adding the truncated state to it and removing first time element
+        auto expTruncatedStateSequence = getStateTimeSequence(expId);
+        expTruncatedStateSequence.push_back(_experienceReplay[expId].truncatedState);
+        expTruncatedStateSequence.erase(expTruncatedStateSequence.begin());
 
         // for truncated state, Vtbc == V - forward network
-        auto policy = runPolicy(truncatedState);
+        auto policy = runPolicy(expTruncatedStateSequence);
         auto nextExpVtbc = policy["State Value"].get<float>();
 
         // add value to Qret
@@ -211,7 +213,7 @@ void dVRACER::trainPolicy()
     }
 
     // Set status as learning problem input
-    _criticPolicyProblem->_inputData[step] = {expState};
+    _criticPolicyProblem->_inputData[step] = expStateSequence;
 
     // Set Gradient of Loss as Solution
     _criticPolicyProblem->_solutionData[step] = gradientLoss;
@@ -282,12 +284,12 @@ void dVRACER::updateVtbc(size_t expId)
     else
     {
       // Get state, action, mean, Sigma and importance weight for this experience
-      auto expState = _experienceReplay[curId].state;
+      auto expStateSequence = getStateTimeSequence(expId);
       auto expPvals = _experienceReplay[expId].policy["Action Probabilities"].get<std::vector<float>>();
       size_t expActionIdx = _experienceReplay[expId].policy["Action Index"].get<size_t>();
 
       // Forward the neural network for this state to get current action probabilities
-      auto policy = runPolicy(expState);
+      auto policy = runPolicy(expStateSequence);
       value = policy["State Value"].get<float>();
       auto curPvals = policy["Action Probabilities"].get<std::vector<float>>();
 
@@ -352,10 +354,10 @@ float dVRACER::stateValueFunction(const std::vector<float> &state)
   return v;
 }
 
-knlohmann::json dVRACER::runPolicy(const std::vector<float> &state)
+knlohmann::json dVRACER::runPolicy(const std::vector<std::vector<float>> &state)
 {
   // Forward the neural network for this state
-  std::vector<float> evaluation = _criticPolicyLearner->getEvaluation({{state}})[0];
+  std::vector<float> evaluation = _criticPolicyLearner->getEvaluation({state})[0];
 
   // Get state value
   auto stateValue = evaluation[0];

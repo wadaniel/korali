@@ -163,13 +163,13 @@ void VRACER::trainPolicy()
     size_t curId = miniBatchIndexes[step];
 
     // Get state, action, mean, Sigma for this experience
-    auto expState = _experienceReplay[curId].state;
+    auto expStateSequence = getStateTimeSequence(curId);
     auto expAction = _experienceReplay[curId].action;
     auto expMeans = _experienceReplay[curId].policy["Action Means"].get<std::vector<float>>();
     auto expSigmas = _experienceReplay[curId].policy["Action Sigmas"].get<std::vector<float>>();
 
     // Forward the neural network for this state to get current means and sigmas and Value
-    auto policy = runPolicy(expState);
+    auto policy = runPolicy(expStateSequence);
     float V = policy["State Value"].get<float>();
     auto curMeans = policy["Action Means"].get<std::vector<float>>();
     auto curSigmas = policy["Action Sigmas"].get<std::vector<float>>();
@@ -261,7 +261,7 @@ void VRACER::trainPolicy()
     }
 
     // Set status as learning problem input
-    _criticPolicyProblem->_inputData[step] = {expState};
+    _criticPolicyProblem->_inputData[step] = expStateSequence;
 
     // Set Gradient of Loss as Solution
     _criticPolicyProblem->_solutionData[step] = gradientLoss;
@@ -330,12 +330,12 @@ void VRACER::updateVtbc(size_t expId)
     else
     {
       // Get state, action, mean, Sigma and importance weight for this experience
-      auto expState = _experienceReplay[curId].state;
+      auto expStateSequence = getStateTimeSequence(curId);
       auto expAction = _experienceReplay[curId].action;
       auto expMeans = _experienceReplay[curId].policy["Action Means"].get<std::vector<float>>();
       auto expSigmas = _experienceReplay[curId].policy["Action Sigmas"].get<std::vector<float>>();
 
-      auto policy = runPolicy(expState);
+      auto policy = runPolicy(expStateSequence);
       value = policy["State Value"].get<float>();
       auto curMeans = policy["Action Means"].get<std::vector<float>>();
       auto curSigmas = policy["Action Sigmas"].get<std::vector<float>>();
@@ -452,10 +452,10 @@ float VRACER::stateValueFunction(const std::vector<float> &state)
   return v;
 }
 
-knlohmann::json VRACER::runPolicy(const std::vector<float> &state)
+knlohmann::json VRACER::runPolicy(const std::vector<std::vector<float>> &state)
 {
   // Forward the neural network for this state
-  auto evaluation = _criticPolicyLearner->getEvaluation({{state}})[0];
+  auto evaluation = _criticPolicyLearner->getEvaluation({state})[0];
   auto stateValue = evaluation[0];
 
   std::vector<float> actionMeans(_problem->_actionVectorSize);

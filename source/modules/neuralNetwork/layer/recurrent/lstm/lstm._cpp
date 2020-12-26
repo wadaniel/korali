@@ -79,15 +79,15 @@ void LSTM::createForwardPipeline()
 
    // Creating memory for the hidden state
    _hiddenStateMem.resize(_nn->_timestepCount);
-   for (size_t i = 0; i < _nn->_timestepCount; i++) _hiddenStateMem[i] = memory(stateMemDesc, _dnnlEngine);
+   for (size_t i = 0; i < _nn->_timestepCount; i++) _hiddenStateMem[i] = memory(stateMemDesc, _nn->_dnnlEngine);
 
    // Creating memory for the cell state
    _cellStateMem.resize(_nn->_timestepCount);
-   for (size_t i = 0; i < _nn->_timestepCount; i++) _cellStateMem[i] = memory(stateMemDesc, _dnnlEngine);
+   for (size_t i = 0; i < _nn->_timestepCount; i++) _cellStateMem[i] = memory(stateMemDesc, _nn->_dnnlEngine);
 
    // Crating null hidden state mems for initial timestep
-   _nullStateInputMem = memory(stateMemDesc, _dnnlEngine);
-   _nullStateOutputMem = memory(stateMemDesc, _dnnlEngine);
+   _nullStateInputMem = memory(stateMemDesc, _nn->_dnnlEngine);
+   _nullStateOutputMem = memory(stateMemDesc, _nn->_dnnlEngine);
 
    // Setting them to zero
    std::vector<float> nullState(L*D*N*OC, 0.0f);
@@ -111,7 +111,7 @@ void LSTM::createForwardPipeline()
 
    // Create LSTM primitive descriptor.
    dnnl::primitive_attr lstmPrimitiveAttributes;
-   _forwardLSTMPrimitiveDesc = lstm_forward::primitive_desc(forwardLSTMDesc, lstmPrimitiveAttributes, _dnnlEngine);
+   _forwardLSTMPrimitiveDesc = lstm_forward::primitive_desc(forwardLSTMDesc, lstmPrimitiveAttributes, _nn->_dnnlEngine);
 
    // Create the primitive.
    _forwardLSTMPrimitive = lstm_forward(_forwardLSTMPrimitiveDesc);
@@ -119,7 +119,7 @@ void LSTM::createForwardPipeline()
    // Now allocating workspace
    _workspaceMem.resize(_nn->_timestepCount);
    for (size_t i = 0; i < _nn->_timestepCount; i++)
-    _workspaceMem[i] = memory(_forwardLSTMPrimitiveDesc.workspace_desc(), _dnnlEngine);
+    _workspaceMem[i] = memory(_forwardLSTMPrimitiveDesc.workspace_desc(), _nn->_dnnlEngine);
   }
 #endif
 
@@ -229,11 +229,11 @@ void LSTM::createBackwardPipeline()
 
    // Creating memory for the hidden state
    _hiddenStateGradientMem.resize(_nn->_timestepCount);
-   for (size_t i = 0; i < _nn->_timestepCount; i++) _hiddenStateGradientMem[i] = memory(_hiddenStateMem[i].get_desc(), _dnnlEngine);
+   for (size_t i = 0; i < _nn->_timestepCount; i++) _hiddenStateGradientMem[i] = memory(_hiddenStateMem[i].get_desc(), _nn->_dnnlEngine);
 
    // Creating memory for the hidden state
    _cellStateGradientMem.resize(_nn->_timestepCount);
-   for (size_t i = 0; i < _nn->_timestepCount; i++) _cellStateGradientMem[i] = memory(_cellStateMem[i].get_desc(), _dnnlEngine);
+   for (size_t i = 0; i < _nn->_timestepCount; i++) _cellStateGradientMem[i] = memory(_cellStateMem[i].get_desc(), _nn->_dnnlEngine);
 
    // Creating descriptor for layer memory
    const memory::dims layerInputDims = {T, N, IC};
@@ -280,7 +280,7 @@ void LSTM::createBackwardPipeline()
 
 
    // Create LSTM primitive descriptor.
-   _backwardLSTMPrimitiveDesc = lstm_backward::primitive_desc(backwardLSTMDesc, _dnnlEngine, _forwardLSTMPrimitiveDesc);
+   _backwardLSTMPrimitiveDesc = lstm_backward::primitive_desc(backwardLSTMDesc, _nn->_dnnlEngine, _forwardLSTMPrimitiveDesc);
 
    // Create the primitive.
    _backwardLSTMPrimitive = lstm_backward(_backwardLSTMPrimitiveDesc);
@@ -327,7 +327,7 @@ void LSTM::forwardData()
    forwardLSTMArgs.insert({DNNL_ARG_WORKSPACE, _workspaceMem[t]});
 
    // Primitive execution
-   _forwardLSTMPrimitive.execute(_nn->_stream, forwardLSTMArgs);
+   _forwardLSTMPrimitive.execute(_nn->_dnnlStream, forwardLSTMArgs);
   }
 #endif
 
@@ -386,7 +386,7 @@ void LSTM::backwardData()
    std::vector<float> nullBiasGradients(L*G*C, 0.0f);
    write_to_dnnl_memory(nullBiasGradients.data(), _biasGradientMem);
 
-   _backwardLSTMPrimitive.execute(_nn->_stream,
+   _backwardLSTMPrimitive.execute(_nn->_dnnlStream,
      {
      {DNNL_ARG_SRC_LAYER, _prevLayer->_outputMem[t]},
      {DNNL_ARG_SRC_ITER,   t == 0 ? _nullStateInputMem :_hiddenStateMem[t-1]},

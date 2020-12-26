@@ -22,6 +22,9 @@ void Agent::initialize()
   //  Pre-allocating space for the experience replay memory
   _experienceReplay.resize(_experienceReplayMaximumSize);
 
+  //  Pre-allocating space for state time sequence
+  _stateTimeSequence.resize(_timeSequenceLength);
+
   /*********************************************************************
    *   // If initial generation, set initial agent configuration
    *********************************************************************/
@@ -423,6 +426,11 @@ size_t Agent::getTimeSequenceStartExpId(size_t expId)
  }
 
  return startId;
+}
+
+void Agent::resetTimeSequence()
+{
+ _stateTimeSequence.clear();
 }
 
 std::vector<std::vector<float>> Agent::getStateTimeSequence(size_t expId)

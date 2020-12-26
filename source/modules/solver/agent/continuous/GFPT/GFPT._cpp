@@ -160,8 +160,12 @@ float GFPT::retraceFunction(size_t expId)
   // If it was a truncated episode, add the value function for the terminal state to Vtbc
   if (_experienceReplay[endId].termination == e_truncated)
   {
-    auto truncatedState = _experienceReplay[endId].truncatedState;
-    float terminalV = _experienceReplay[endId].cache.access("Terminal State Value", [this, truncatedState]() { return this->stateValueFunction(truncatedState); });
+    // Get truncated state sequence, adding the truncated state to it and removing first time element
+    auto expTruncatedStateSequence = getStateTimeSequence(endId);
+    expTruncatedStateSequence.push_back(_experienceReplay[endId].truncatedState);
+    expTruncatedStateSequence.erase(expTruncatedStateSequence.begin());
+
+    float terminalV = _experienceReplay[endId].cache.access("Terminal State Value", [this, expTruncatedStateSequence]() { return this->stateValueFunction(expTruncatedStateSequence); });
     Vtbc = terminalV;
   }
 
@@ -170,11 +174,11 @@ float GFPT::retraceFunction(size_t expId)
   {
     // Getting current reward, action, and state
     auto curReward = _experienceReplay[curId].reward;
-    auto curState = _experienceReplay[curId].state;
+    auto curStateSequence = getStateTimeSequence(curId);
     auto curAction = _experienceReplay[curId].action;
 
     // Calculating state value function
-    float curV = _experienceReplay[curId].cache.access("State Value", [this, curState]() { return this->stateValueFunction(curState); });
+    float curV = _experienceReplay[curId].cache.access("State Value", [this, curStateSequence]() { return this->stateValueFunction(curStateSequence); });
 
     //    // Updating action distributions for the current state to get its current means
     //    forwardPolicy(curState);
@@ -200,28 +204,32 @@ float GFPT::retraceFunction(size_t expId)
   return Vtbc;
 }
 
-float GFPT::stateValueFunction(const std::vector<float> &state)
+float GFPT::stateValueFunction(const std::vector<std::vector<float>> &stateSequence)
 {
   // Calculating V(s_i)
-  float v = _vLearner->getEvaluation({{state}})[0][0];
+  float v = _vLearner->getEvaluation({stateSequence})[0][0];
 
   return v;
 }
 
-float GFPT::currentActionAdvantageFunction(const std::vector<float> &state, const std::vector<float> &action)
+float GFPT::currentActionAdvantageFunction(const std::vector<std::vector<float>> &stateActionSequence, const std::vector<float> &action)
 {
-  // Storage to put together state and action
-  std::vector<float> stateActionInput(_problem->_stateVectorSize + _problem->_actionVectorSize);
+  // Creating a copy of the input state/action sequence
+  auto sequenceCopy = stateActionSequence;
 
-  // Calculating max_a A(s_i+1, a)
-  for (size_t j = 0; j < _problem->_stateVectorSize; j++) stateActionInput[j] = state[j];
-  for (size_t j = 0; j < _problem->_actionVectorSize; j++) stateActionInput[j + _problem->_stateVectorSize] = action[j];
-  float a = _aLearner->getEvaluation({{stateActionInput}})[0][0];
+  // Getting final timestep of the input
+  size_t t = sequenceCopy.size() - 1;
+
+  // Replacing last action with the one provided for evaluation
+  for (size_t i = 0; i < _problem->_actionVectorSize; i++) sequenceCopy[t][_problem->_stateVectorSize + i] = action[i];
+
+  // Getting evaluation
+  float a = _aLearner->getEvaluation({sequenceCopy})[0][0];
 
   return a;
 }
 
-float GFPT::averageActionAdvantageFunction(const std::vector<float> &curMeans, const std::vector<float> &curSigmas, const std::vector<float> &state)
+float GFPT::averageActionAdvantageFunction(const std::vector<float> &curMeans, const std::vector<float> &curSigmas, const std::vector<std::vector<float>> &stateActionSequence)
 {
   // Creating storage for average action minibatch
   std::vector<float> aResults(_criticAdvantageFunctionPopulation);
@@ -233,7 +241,7 @@ float GFPT::averageActionAdvantageFunction(const std::vector<float> &curMeans, c
     auto newAction = generateTrainingAction(curMeans, curSigmas);
 
     // Running evaluation of the entire minibatch
-    aResults[i] = currentActionAdvantageFunction(state, newAction);
+    aResults[i] = currentActionAdvantageFunction(stateActionSequence, newAction);
   }
 
   // Initializing average A(s,a) counter
@@ -300,33 +308,30 @@ void GFPT::trainPolicy()
     // We calculate qStar depending on whether we use retrace or not
     float Vtbc = retraceFunction(expId);
 
-    // Getting experience's current state, action
-    auto curState = _experienceReplay[expId].state;
+    // Getting experience's current state, state/action sequences
+    auto curStateSequence = getStateTimeSequence(expId);
+    auto curStateActionSequence = getStateActionTimeSequence(expId);
     auto curAction = _experienceReplay[expId].action;
 
     // Updating action distributions for the current state
-    auto policy = runPolicy(curState);
+    auto policy = runPolicy(curStateSequence);
     auto curMeans = policy["Action Means"].get<std::vector<float>>();
     auto curSigmas = policy["Action Sigmas"].get<std::vector<float>>();
 
     // Now calculating V, A, and avgA for current state/action
-    float curA = currentActionAdvantageFunction(curState, curAction);
-    float avgA = averageActionAdvantageFunction(curMeans, curSigmas, curState);
-    float curV = stateValueFunction(curState);
+    float curA = currentActionAdvantageFunction(curStateActionSequence, curAction);
+    float avgA = averageActionAdvantageFunction(curMeans, curSigmas, curStateActionSequence);
+    float curV = stateValueFunction(curStateSequence);
 
     // Now calculating targets for V(s) and A(s,a)
     float vTarget = Vtbc - curV + curA;
     float aTarget = Vtbc - curV + avgA;
 
     // Updating inputs to training learners
-    std::vector<float> aInput(_problem->_stateVectorSize + _problem->_actionVectorSize);
-    for (size_t i = 0; i < _problem->_stateVectorSize; i++) aInput[i] = curState[i];
-    for (size_t i = 0; i < _problem->_actionVectorSize; i++) aInput[_problem->_stateVectorSize + i] = curAction[i];
-
-    _aProblem->_inputData[b] = getStateActionTimeSequence(expId);
+    _aProblem->_inputData[b] = curStateActionSequence;
     _aProblem->_solutionData[b] = {aTarget};
 
-    _vProblem->_inputData[b] = getStateTimeSequence(expId);
+    _vProblem->_inputData[b] = curStateSequence;
     _vProblem->_solutionData[b] = {vTarget};
 
     // Keeping statistics
@@ -364,7 +369,7 @@ void GFPT::trainPolicy()
 
 // Accumulating states for evaluation in the policy
 #pragma omp parallel for schedule(dynamic, 1)
-  for (size_t idx = 0; idx < _miniBatchSize; idx++)
+  for (size_t b = 0; b < _miniBatchSize; b++)
   {
     // Getting current thread ID and corresponding optimizer and batch optimization NN
     size_t curThread = omp_get_thread_num();
@@ -374,23 +379,23 @@ void GFPT::trainPolicy()
     //printf("Thread %lu - Processing %lu\n", curThread, idx);
 
     // Getting experience id
-    size_t expId = miniBatchIndexes[idx];
+    size_t expId = miniBatchIndexes[b];
 
-    // Getting current state
-    std::vector<float> curState = _experienceReplay[expId].state;
-    std::vector<float> curAction = _experienceReplay[expId].action;
+    // Getting current state and state/action time sequence
+    auto curStateSequence = getStateTimeSequence(expId);
+    auto curStateActionSequence = getStateActionTimeSequence(expId);
 
-    std::vector<float> candidateEvaluations(_policyOptimizationCandidates);
+    // Creating storage for CMAES optimization candidates (input)
     std::vector<std::vector<std::vector<float>>> candidateMiniBatch(_policyOptimizationCandidates);
-    for (size_t i = 0; i < _policyOptimizationCandidates; i++)
-    {
-      candidateMiniBatch[i].resize(1);
-      candidateMiniBatch[i][0].resize(_problem->_stateVectorSize + _problem->_actionVectorSize);
-      for (size_t j = 0; j < _problem->_stateVectorSize; j++) candidateMiniBatch[i][0][j] = curState[j];
-    }
+
+    // Creating storage for CMAES optimization candidate evaluations (results)
+    std::vector<float> candidateEvaluations(_policyOptimizationCandidates);
+
+    // Creating minibatch of input state/action sequences
+    for (size_t c = 0; c < _policyOptimizationCandidates; c++)  candidateMiniBatch[c] = curStateActionSequence;
 
     // Updating action distributions for the current state to get its current means
-    auto policy = runPolicy(curState);
+    auto policy = runPolicy(curStateSequence);
     auto curMeans = policy["Action Means"].get<std::vector<float>>();
     auto curSigmas = policy["Action Sigmas"].get<std::vector<float>>();
 
@@ -429,10 +434,16 @@ void GFPT::trainPolicy()
         // Asking CMAES to generate candidates
         actionOptimizer->prepareGeneration();
 
-        // Gathering candidate states into a single minibatch
-        for (size_t i = 0; i < _policyOptimizationCandidates; i++)
-          for (size_t j = 0; j < _problem->_actionVectorSize; j++)
-            candidateMiniBatch[i][0][j + _problem->_stateVectorSize] = actionOptimizer->_samplePopulation[i][j];
+        // Gathering candidate states into a single minibatch -- replacing last action of each state/action sequence
+        for (size_t c = 0; c < _policyOptimizationCandidates; c++)
+        {
+         // Getting final timestep of the input
+         size_t t = candidateMiniBatch[c].size() - 1;
+
+         // Replacing the action of the last timestep
+          for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+            candidateMiniBatch[c][t][_problem->_stateVectorSize + i] = actionOptimizer->_samplePopulation[c][i];
+        }
 
         // Running evaluation of the entire set of candidates
         batchOptimizationNetwork->forward(candidateMiniBatch);
@@ -461,8 +472,8 @@ void GFPT::trainPolicy()
     //  meanGradients[i] += ( 1.0f - _referBeta ) * (oldMean[i] - curMean[i]) * curInvVariance[i];
 
     // Adding means to the policy update
-    _policyProblem->_inputData[idx] = {curState};
-    _policyProblem->_solutionData[idx] = meanGradients;
+    _policyProblem->_inputData[b] = curStateSequence;
+    _policyProblem->_solutionData[b] = meanGradients;
   }
 
   size_t offPolicySamples = _miniBatchSize - onPolicySamples;
@@ -485,9 +496,9 @@ void GFPT::trainPolicy()
   _policyUpdateTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
 }
 
-knlohmann::json GFPT::runPolicy(const std::vector<float> &state)
+knlohmann::json GFPT::runPolicy(const std::vector<std::vector<float>> &state)
 {
-  auto eval = _policyLearner->getEvaluation({{state}})[0];
+  auto eval = _policyLearner->getEvaluation({state})[0];
 
   std::vector<float> actionMeans(_problem->_actionVectorSize);
   std::vector<float> actionSigmas(_problem->_actionVectorSize);

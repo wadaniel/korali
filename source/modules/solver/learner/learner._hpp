@@ -12,7 +12,7 @@ class Learner : public Solver
   public:
   /**
     * @brief For learner modules which have been trained, test returns an inferred output batch, from a batch of inputs to process.
-    * @param input The inputs from which to infer outputs. Format: TxBxIC (T: Time steps, B: Batch Size, IC: Input channels)
+    * @param input The inputs from which to infer outputs. Format: BxTxIC (B: Batch Size, T: Time steps, IC: Input channels)
     * @return The inferred batch outputs for the last given timestep. Format: BxOC (B: Batch Size, OC: Output channels)
    */
   virtual std::vector<std::vector<float>> getEvaluation(const std::vector<std::vector<std::vector<float>>> &input);

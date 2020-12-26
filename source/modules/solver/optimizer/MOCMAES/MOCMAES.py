@@ -87,7 +87,7 @@ def plotGen(genList, idx):
         absfval = np.zeros((numgens, numObjectives))
         dfval = np.zeros((numgens, numObjectives))
         theta = np.zeros((numgens, numdim*numObjectives))
-        dtheta = np.zeros((numgens, numdim))
+        dtheta = np.zeros((numgens, numObjectives))
         cond = np.zeros((numgens, populationsize))
         minsdev = np.zeros((numgens, populationsize))
         genIds = np.zeros(numgens)

@@ -18,7 +18,7 @@ def validateOutput(output):
     sys.exit(-1)
 
 
-def main(path, check, test, output, args, addons):
+def main(path, check, test, output, args):
 
   if (check == True):
     print("[Korali] Plotter correctly installed.")
@@ -77,7 +77,7 @@ def main(path, check, test, output, args, addons):
   if os.path.isfile(solverFile):
     sys.path.append(solverDir)
     solverLib = importlib.import_module(solverName, package=None)
-    solverLib.plot(genList, args, addons)
+    solverLib.plot(genList, args)
 
   if not output:
     plt.show()
@@ -129,6 +129,6 @@ if __name__ == '__main__':
       '--output', help='save figure to file', type=str, default="")
   parser.add_argument(
       '--all', help='plot all generations', action='store_true', required=False)
-  args, addons = parser.parse_known_args()
+  args = parser.parse_args()
 
-  main(args.dir, args.check, args.test, args.output, args, set(addons))
+  main(args.dir, args.check, args.test, args.output, args)

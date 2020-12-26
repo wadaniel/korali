@@ -37,7 +37,7 @@ struct TreeHelper
   int depthIn;
 
   /**
-    * @brief Energy of root of binary tree (i.e. starting poisition) input.
+    * @brief Energy of root of binary tree (i.e. starting position) input.
     */
   double rootHIn;
   /**

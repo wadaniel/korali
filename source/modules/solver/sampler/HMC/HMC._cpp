@@ -378,7 +378,7 @@ void HMC::runGenerationNUTSUtil(std::shared_ptr<TreeHelperEuclidean> helper)
 
     buildCriterion = buildCriterionSubtree && helper->computeCriterion(*_hamiltonian);
 
-    ++depth;
+    depth++;
   }
 
   _acceptanceProbability /= (double)numLeavesSubtree;
@@ -479,7 +479,7 @@ void HMC::runGenerationNUTSUtilRiemannian(std::shared_ptr<TreeHelperRiemannian> 
 
     buildCriterion = buildCriterionSubtree && helper->computeCriterion(*_hamiltonian, pLeft, pRight, deltaRho);
 
-    ++depth;
+    depth++;
   }
 
   _acceptanceProbability /= (double)numLeavesSubtree;
@@ -750,29 +750,6 @@ double HMC::findReasonableStepSize(std::vector<double> q)
   return stepSize;
 }
 
-bool HMC::computeNoUTurnCriterion(const std::vector<double> &pLeft, const std::vector<double> &pRight, const std::vector<double> &rho) const
-{
-  std::vector<double> tmpVectorOne(_dimensions, 0.0);
-  std::vector<double> tmpVectorTwo(_dimensions, 0.0);
-
-  std::vector<double> pLeftAdjusted = pLeft;
-  std::vector<double> pRightAdjusted = pRight;
-
-  for (size_t i = 0; i < _dimensions; ++i)
-  {
-    pLeftAdjusted[i] *= _stepSize;
-    pRightAdjusted[i] *= _stepSize;
-  }
-
-  std::transform(std::cbegin(rho), std::cend(rho), std::cbegin(pLeftAdjusted), std::begin(tmpVectorOne), std::minus<double>());
-  std::transform(std::cbegin(rho), std::cend(rho), std::cbegin(pRightAdjusted), std::begin(tmpVectorTwo), std::minus<double>());
-
-  double dotProductLeft = std::inner_product(std::cbegin(rho), std::cend(rho), std::cbegin(pLeft), 0.0);
-  double dotProductRight = std::inner_product(std::cbegin(rho), std::cend(rho), std::cbegin(pRight), 0.0);
-
-  return dotProductLeft > 0 && dotProductRight > 0;
-}
-
 void HMC::buildTreeUtil(std::shared_ptr<TreeHelperEuclidean> helper, int depth)
 {
   helper->qLeftOut = helper->qIn;
@@ -1038,80 +1015,6 @@ void HMC::buildTree(const std::vector<double> &q, const std::vector<double> &p, 
   }
 }
 
-void HMC::buildTreeIntegrationCriterion(const std::vector<double> &q, const std::vector<double> &p, const double logUniSample, const int direction, const int depth, const double stepSize, const double rootH, std::vector<double> &qLeft, std::vector<double> &pLeft, std::vector<double> &qRight, std::vector<double> &pRight, std::vector<double> &qProposed, double &numValidLeaves, bool &buildCriterion, double &alpha, int &numLeaves, std::vector<double> &rho)
-{
-  qLeft = q;
-  pLeft = p;
-
-  if (depth == 0)
-  {
-    const double deltaMax = 100;
-    _integrator->step(qLeft, pLeft, _stepSize, *_hamiltonian, _k);
-
-    // std::transform(std::cbegin(rho), std::cend(rho), std::cbegin(pLeft), std::begin(rho), std::plus<double>());
-
-    // for (size_t i = 0; i <_dimensions; ++i)
-    // {
-    //   rho[i] += _stepSize * pLeft[i];
-    // }
-
-    const double leafK = _hamiltonian->K(pLeft);
-    const double leafU = _hamiltonian->U();
-    const double leafH = leafU + leafK;
-
-    numValidLeaves = (logUniSample <= rootH - leafH) ? 1.0 : 0.0;
-
-    buildCriterion = (rootH - leafH + deltaMax > logUniSample);
-    alpha = isNan(qLeft) ? 0.0 : std::min(1.0, std::exp(rootH - leafH));
-    numLeaves = 1;
-    qRight = qLeft;
-    qProposed = qLeft;
-    pRight = pLeft;
-  }
-  else
-  {
-    int numLeavesSubtree;
-    bool buildCriterionSubtree;
-    double numValidLeavesSubtree, alphaSubtree;
-
-    std::vector<double> nullPointOne(_dimensions);
-    std::vector<double> nullPointTwo(_dimensions);
-    std::vector<double> qProposedSubtree(_dimensions, 0.0);
-    std::vector<double> tmpVector(_dimensions, 0.0);
-    std::vector<double> rho1(_dimensions, 0.0);
-    std::vector<double> rho2(_dimensions, 0.0);
-
-    buildTreeIntegrationCriterion(q, p, logUniSample, direction, depth - 1, stepSize, rootH, qLeft, pLeft, qRight, pRight, qProposed, numValidLeaves, buildCriterion, alpha, numLeaves, rho1);
-
-    if (buildCriterion == true)
-    {
-      if (direction == -1)
-      {
-        buildTreeIntegrationCriterion(qLeft, pLeft, logUniSample, direction, depth - 1, stepSize, rootH, qLeft, pLeft, nullPointOne, nullPointTwo, qProposedSubtree, numValidLeavesSubtree, buildCriterionSubtree, alphaSubtree, numLeavesSubtree, rho2);
-      }
-      else
-      {
-        buildTreeIntegrationCriterion(qRight, pRight, logUniSample, direction, depth - 1, stepSize, rootH, nullPointOne, nullPointTwo, qRight, pRight, qProposedSubtree, numValidLeavesSubtree, buildCriterionSubtree, alphaSubtree, numLeavesSubtree, rho2);
-      }
-
-      // First check to avoid divising by zero
-      if (numValidLeavesSubtree != 0 && _uniformGenerator->getRandomNumber() < numValidLeavesSubtree / (numValidLeaves + numValidLeavesSubtree))
-      {
-        qProposed = qProposedSubtree;
-      }
-
-      numValidLeaves += numValidLeavesSubtree;
-      alpha += alphaSubtree;
-      numLeaves += numLeavesSubtree;
-
-      std::transform(std::cbegin(qRight), std::cend(qRight), std::cbegin(qLeft), std::begin(tmpVector), std::minus<double>());
-      double dotProductLeft = std::inner_product(std::cbegin(tmpVector), std::cend(tmpVector), std::cbegin(pLeft), 0.0);
-      double dotProductRight = std::inner_product(std::cbegin(tmpVector), std::cend(tmpVector), std::cbegin(pRight), 0.0);
-
-      buildCriterion = buildCriterionSubtree && (dotProductLeft > 0) && (dotProductRight > 0);
-    }
-  }
-}
 
 void HMC::__printVec(const std::vector<double> vec) const
 {

@@ -16,6 +16,7 @@ namespace sampler
 */
 class LeapfrogExplicit : public Leapfrog
 {
+  size_t numstep = 0;
   public:
   /**
   * @brief Explicit Leapfrog stepping scheme used for evolving Hamiltonian Dynamics.
@@ -27,6 +28,9 @@ class LeapfrogExplicit : public Leapfrog
   */
   void step(std::vector<double> &q, std::vector<double> &p, const double stepSize, Hamiltonian &hamiltonian, korali::Experiment *_k) override
   {
+    numstep++;
+    if(numstep%1000==0) printf(" leapfrog step no %zu\n", numstep);
+
     if (verbosity == true)
     {
       std::cout << "-------------START OF LeapfrogExplicit Step--------------" << std::endl;

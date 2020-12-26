@@ -239,7 +239,6 @@ void HMC::runGenerationHMC(const double logUniSample)
 
   const double logAlpha = std::min(0.0, -(newK - oldK + newU - oldU));
   _acceptanceProbability = std::exp(logAlpha);
-
   if (logUniSample <= logAlpha && isNan(_positionCandidate) == false)
   {
     ++_acceptanceCount;
@@ -301,6 +300,7 @@ void HMC::runGenerationNUTS(const double logUniSample)
       if (_uniformGenerator->getRandomNumber() < numValidLeavesSubtree / numValidLeaves)
       {
         _positionLeader = _positionCandidate;
+        _leaderEvaluation = -_hamiltonian->U();
       }
     }
 
@@ -393,6 +393,7 @@ void HMC::runGenerationNUTSUtil(std::shared_ptr<TreeHelperEuclidean> helper)
       if (_uniformGenerator->getRandomNumber() < numValidLeavesSubtree / numValidLeaves && isNan(_positionCandidate) == false)
       {
         _positionLeader = _positionCandidate;
+        _leaderEvaluation = -_hamiltonian->U();
       }
     }
 
@@ -581,6 +582,7 @@ void HMC::runGenerationNUTSUtilRiemannian(std::shared_ptr<TreeHelperRiemannian> 
       if (_uniformGenerator->getRandomNumber() < numValidLeavesSubtree / numValidLeaves && isNan(_positionCandidate) == false)
       {
         _positionLeader = _positionCandidate;
+        _leaderEvaluation = -_hamiltonian->U();
       }
     }
 

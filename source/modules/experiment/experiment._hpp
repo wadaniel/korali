@@ -59,6 +59,11 @@ class Experiment : public Module
   bool _isInitialized;
 
   /**
+  * @brief [Profiling] Measures the amount of time taken by saving results
+  */
+  double _resultSavingTime;
+
+  /**
   * @brief Gets an item from the JSON object at the current pointer position.
   * @param key A pybind11 object acting as JSON key (number or string).
   * @return A pybind11 object
@@ -108,21 +113,21 @@ class Experiment : public Module
     * @param state The input state
     * @return The optimal action
    */
-  std::vector<double> getAction(const std::vector<double> &state);
+  std::vector<float> getAction(const std::vector<float> &state);
 
   /**
     * @brief For learner modules which have been trained, test returns an inferred output batch, from a batch of inputs to process.
     * @param inputBatch The inputs from which to infer outputs.
     * @return The inferred outputs
    */
-  std::vector<double> getEvaluation(const std::vector<double> &inputBatch);
+  std::vector<float> getEvaluation(const std::vector<float> &inputBatch);
 
   /**
    * @brief For solver modules which have been trained, return the gradient of a differentiated output
    * @param outputDiffs Differentials of the (loss) function
    * @return The calculated gradients
    */
-  std::vector<double> getGradients(const std::vector<double> &outputDiffs);
+  std::vector<float> getGradients(const std::vector<float> &outputDiffs);
 
   private:
   /**

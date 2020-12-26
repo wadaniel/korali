@@ -8,6 +8,7 @@
 #include "modules/solver/agent/agent.hpp"
 #include "modules/solver/learner/learner.hpp"
 #include "modules/solver/solver.hpp"
+#include "sample/sample.hpp"
 #include <chrono>
 #include <cstdio>
 #include <map>
@@ -116,6 +117,8 @@ void Experiment::run()
 
 void Experiment::saveState()
 {
+  auto beginTime = std::chrono::steady_clock::now();
+
   if (_storeSampleInformation == true) _js["Samples"] = _sampleInfo["Samples"];
 
   char genFileName[256];
@@ -165,76 +168,101 @@ void Experiment::saveState()
 
   if (link(filePath.c_str(), linkPath.c_str()) != 0)
     KORALI_LOG_ERROR("Could not create hard link to latest result.\n + Target: %s\n + Link: %s\n", filePath.c_str(), linkPath.c_str());
+
+  auto endTime = std::chrono::steady_clock::now();
+  _resultSavingTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();
 }
 
 bool Experiment::loadState(const std::string &path)
 {
-  if (loadJsonFromFile(_js.getJson(), path.c_str()))
-  {
-    initialize();
-    return true;
-  }
-  return false;
+  return loadJsonFromFile(_js.getJson(), path.c_str());
 }
 
 Experiment::Experiment()
 {
   _runID = getTimehash();
   _k = this;
+  _logger = NULL;
+  _engine = NULL;
+  _currentGeneration = 0;
   _isInitialized = false;
 }
 
 void Experiment::initialize()
 {
+  // Initializing profiling timers
+  _resultSavingTime = 0.0;
+
   __expPointer = this;
   _thread = co_create(1 << 20, threadWrapper);
   __returnThread = co_active();
   co_switch(_thread);
 
-  if (_isInitialized == false)
+  // Clearning sample and previous result information
+  _js["Results"] = knlohmann::json();
+  _js["Samples"] = knlohmann::json();
+
+  // Initializing Variables
+  if (isDefined(_js.getJson(), "Variables"))
   {
-    // Clearning sample and previous result information
-    _js["Results"] = knlohmann::json();
-    _js["Samples"] = knlohmann::json();
-
-    // Initializing Variables
-    if (isDefined(_js.getJson(), "Variables"))
-    {
-      _variables.resize(_js["Variables"].size());
-      for (size_t i = 0; i < _js["Variables"].size(); i++) _variables[i] = new Variable;
-    }
-
-    applyModuleDefaults(_js.getJson());
-    setSeed(_js.getJson());
-    setConfiguration(_js.getJson());
-    getConfiguration(_js.getJson());
-
-    _logger = new Logger(_consoleOutputVerbosity, stdout);
-
-    _isInitialized = true;
+    _variables.resize(_js["Variables"].size());
+    for (size_t i = 0; i < _variables.size(); i++) _variables[i] = new Variable;
   }
 
-  if (isDefined(_js.getJson(), "Solver", "Termination Criteria", "Max Generations"))
-    _solver->_maxGenerations = _js["Solver"]["Termination Criteria"]["Max Generations"].get<size_t>();
+  // If this is the initial run, apply defaults
+  if (_currentGeneration == 0)
+  {
+    applyModuleDefaults(_js.getJson());
+    setSeed(_js.getJson());
+  }
+
+  // Setting configuration
+  setConfiguration(_js.getJson());
+
+  // Getting configuration back into the JSON storage
+  getConfiguration(_js.getJson());
+
+  // Initializing problem and solver modules
+  _problem->initialize();
+  _solver->initialize();
+
+  // Updating verbosity level
+  _logger = new Logger(_consoleOutputVerbosity, stdout);
+
+  _isInitialized = true;
 }
 
 void Experiment::finalize()
 {
-  //for (size_t i = 0; i < _variables.size(); i++) delete _variables[i];
+  for (size_t i = 0; i < _variables.size(); i++) delete _variables[i];
+  _variables.clear();
+  delete _logger;
   co_delete(_thread);
 }
 
-std::vector<double> Experiment::getAction(const std::vector<double> &state)
+std::vector<float> Experiment::getAction(const std::vector<float> &state)
 {
+  // First check that the experiment has been initialized.
+  if (_isInitialized == false) initialize();
+
   auto agent = dynamic_cast<solver::Agent *>(_k->_solver);
   if (agent != NULL)
-    return agent->getInferenceAction(state);
+  {
+    korali::Sample sample;
+    sample["State"] = state;
+    sample["Mode"] = "Testing";
+    agent->getAction(sample);
+    return sample["Action"].get<std::vector<float>>();
+  }
   else
-    KORALI_LOG_ERROR("This solver does not support getInferenceAction.\n");
+    KORALI_LOG_ERROR("This solver does not support getAction.\n");
 }
 
-std::vector<double> Experiment::getEvaluation(const std::vector<double> &inputBatch)
+std::vector<float> Experiment::getEvaluation(const std::vector<float> &inputBatch)
 {
+  // First check that the experiment has been initialized.
+  if (_isInitialized == false) initialize();
+
   auto learner = dynamic_cast<solver::Learner *>(_k->_solver);
   if (learner != NULL)
     return learner->getEvaluation(inputBatch);
@@ -242,8 +270,11 @@ std::vector<double> Experiment::getEvaluation(const std::vector<double> &inputBa
     KORALI_LOG_ERROR("This solver does not support evaluation operations.\n");
 }
 
-std::vector<double> Experiment::getGradients(const std::vector<double> &outputDiffs)
+std::vector<float> Experiment::getGradients(const std::vector<float> &outputDiffs)
 {
+  // First check that the experiment has been initialized.
+  if (_isInitialized == false) initialize();
+
   auto learner = dynamic_cast<solver::Learner *>(_k->_solver);
   if (learner != NULL)
     return learner->getGradients(outputDiffs);

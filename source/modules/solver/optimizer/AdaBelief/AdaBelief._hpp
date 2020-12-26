@@ -1,0 +1,33 @@
+#ifndef _KORALI_SOLVER_ADABELIEF_HPP_
+#define _KORALI_SOLVER_ADABELIEF_HPP_
+
+#include "modules/solver/optimizer/optimizer.hpp"
+
+namespace korali
+{
+namespace solver
+{
+namespace optimizer
+{
+class AdaBelief : public Optimizer
+{
+  public:
+  /**
+   * @brief Takes a sample evaluation and its gradient and calculates the next set of parameters
+   * @param evaluation The value of the objective function at the current set of parameters
+   * @param gradient The gradient of the objective function at the current set of parameters
+   */
+  void processResult(double evaluation, std::vector<double> &gradient);
+
+  void finalize() override;
+  void setInitialConfiguration() override;
+  void runGeneration() override;
+  void printGenerationBefore() override;
+  void printGenerationAfter() override;
+};
+
+} // namespace optimizer
+} // namespace solver
+} // namespace korali
+
+#endif // _KORALI_SOLVER_ADABELIEF_HPP_

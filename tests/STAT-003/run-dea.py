@@ -30,8 +30,7 @@ e["Solver"]["Parent Selection Rule"] = "Random"
 e["Solver"]["Accept Rule"] = "Greedy"
 
 e["Console Output"]["Verbosity"] = "Detailed"
-e["File Output"]["Frequency"] = 1000
-e["File Output"]["Path"] = "_results_dea"
+e["File Output"]["Enabled"] = False
 e["Random Seed"] = 1337
 
 k = korali.Engine()

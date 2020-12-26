@@ -9,6 +9,7 @@
 #include "auxiliar/logger.hpp"
 #include "auxiliar/py2json.hpp"
 #include "libco.h"
+#include <queue>
 #include <string>
 
 #undef _POSIX_C_SOURCE
@@ -26,15 +27,27 @@ class Engine;
   SAMPLE.get<TYPE>(__FILE__, __LINE__, __VA_ARGS__);
 
 /**
+ * @brief Macro to send message updates to the engine
+ */
+#define KORALI_SEND_MSG_TO_ENGINE(MESSAGE) \
+  _k->_engine->_conduit->sendMessageToEngine(MESSAGE);
+
+/**
+ * @brief Macro to recv message updates from the engine
+ */
+#define KORALI_RECV_MSG_FROM_ENGINE() \
+  _k->_engine->_conduit->recvMessageFromEngine();
+
+/**
 * @brief Execution states of a given sample.
 */
 enum class SampleState
 {
-  uninitialized,
-  initialized,
-  running,
-  waiting,
-  finished
+  uninitialized = 1,
+  initialized = 2,
+  running = 3,
+  waiting = 4,
+  finished = 5
 };
 
 /**
@@ -50,6 +63,11 @@ class Sample
  * access the original pointer when working on the C++ side. Therefore, we need to store the pointer as a variable.
  */
   Sample *_self;
+
+  /**
+  * @brief Queue of messages sent from the sample to the engine
+  */
+  std::queue<knlohmann::json> _messageQueue;
 
   /**
   * @brief Pointer to global parameters
@@ -70,6 +88,11 @@ class Sample
   * @brief User-Level thread (coroutine) containing the CPU execution state of the calling worker.
   */
   cothread_t _workerThread;
+
+  /**
+  * @brief Storage to keep the iD of the worker processing this sample.
+  */
+  size_t _workerId;
 
   /**
   * @brief Determines whether the thread memory has been allocated.
@@ -143,6 +166,13 @@ class Sample
   * @param key Key (pybind11 object) to look for.
   */
   void setItem(const pybind11::object key, const pybind11::object val);
+
+  /**
+  * @brief Gets and dequeues a pending message, if exists.
+  * @param message The message (json object) to overwrite, if a message exists.
+  * @return True, if message found; false, if no message was found.
+  */
+  bool retrievePendingMessage(knlohmann::json &message);
 
   /**
    * @brief Retrieves an element from the sample information

@@ -22,17 +22,27 @@ Installation Steps
      cd korali
      ./install
 
-  For a faster installation, you can build Korali with parallel jobs. E.g.,
+Advanced Configuration
+=========================
+     
+If you need to access the advanced installation configuration, just create a installation configuration file:
+
 
   .. code-block:: bash
    
-     ./install --jobs=8
+     cp .install.config.default install.config
+     
+Inside its file you can customize settings that enable/disable external libraries or set the number of parallel compilation job, among other options. To edit its contents run, for example:
 
-  If you are missing any prerequsites, you can ask Korali to install them automatically via:
-
-  .. code-block:: bash
+   .. code-block:: bash
    
-     ./install --prereqs
+    vi install.config
+    
+And now you can install Korali (add the --rebuild flag to override any previous installation):
+
+   .. code-block:: bash
+   
+     ./install --rebuild
 
 Troubleshooting
 ====================
@@ -69,7 +79,7 @@ To fix it, configure MPI compilers and reinstall `mpi4py` and Korali.
     # Reinstall mpi4py locally and reinstall korali.
     python3 -m pip install --user mpi4py --ignore-installed -v
     cd ~/path/to/korali
-    MPICXX=mpic++ ./install --rebuild --jobs=12
+    MPICXX=mpic++ ./install --rebuild
 
 System Requirements
 ====================
@@ -82,9 +92,6 @@ Mandatory Requirements
       **Hint:** Check the following `link <https://en.cppreference.com/w/cpp/compiler_support#C.2B.2B14_core_language_features>`_ to verify whether your compiler supports C++14.
       Korali's installer will check the **$CXX** environment variable to determine the default C++ compiler. You can change the value of this variable to define a custom C++ compiler.
   
-  - **CMake**
-      Korali requires that you have `CMake <https://cmake.org/>`_ version 3.0 or higher installed in your system.  If CMake is not found, you can ask Korali to install it automatically by using the ``--prereqs`` option.
-      
   - **wget**
       Korali requires access to the internet and the *wget* command to be available to automatically resolve some of its dependencies. If you wish to install Korali on a system without access to internet or no *wget* command, you check the `Installed by Korali <#automatically-installed-by-korali>`_ section of this document to manually define these requirements.
   
@@ -104,14 +111,17 @@ Mandatory Requirements
       Korali requires *pybind11* to enable Python/C++ interaction. If not found, it will try to install it automatically using *pip3*.
   
   - **GNU Scientific Library**
-      Korali requires that the `GSL-2.4 <http://www.gnu.org/software/gsl/>`_ or later must be installed on your system. If the command ``gsl-config`` is not found, you can ask Korali  to install GSL automatically by using the ``--prereqs`` option. 
-
-  - **oneDNN**
-      Korali requires that the `OneAPI Deep Neural Network Library <https://oneapi-src.github.io/oneDNN/>`_ or later must be installed on your system. If you have an installation of oneDNN already in your system, make sure the environment variable ``DNNLROOT`` pointing to its installation folder is correctly defined. If OneDNN is not found, you can ask Korali to install it automatically  by using the ``--prereqs`` option.
+      Korali requires that the `GSL-2.6 <http://www.gnu.org/software/gsl/>`_ or later must be installed on your system. If the command ``gsl-config`` is not found, Korali will try to install it automatically. 
 
 Optional Requirements
 ---------------------------------
 
-  - **MPI Library**
+ - **oneDNN**
+      Korali uses the `OneAPI Deep Neural Network Library <https://oneapi-src.github.io/oneDNN/>`_ for deep learning modules, and is disabled by default. You can enable it by modifying the installation configuration file. If you have an installation of oneDNN already in your system, make sure the environment variable ``DNNLROOT`` pointing to its installation folder is correctly defined. If OneDNN is not found, Korali will try to install it automatically.
+
+  - **CMake**
+      Korali requires that you have `CMake <https://cmake.org/>`_ version 3.0 or higher installed in your system if you need it to install certain external libraries automatically.
+      
+  - **MPI**
       One way to enable support distributed conduits and computational models is to configure Korali to compile with an MPI compiler. The installer will check the *$MPICXX* environment variable to determine a valid MPI C++ compiler.
 

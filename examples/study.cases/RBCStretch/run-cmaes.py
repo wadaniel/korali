@@ -60,5 +60,5 @@ e["File Output"]["Path"] = "_result_rbc_cmaes_" + str(cJobs).zfill(4) + "_nodes"
 
 # Configuring Distributed Conduit
 k["Conduit"]["Type"] = "Distributed"
-k["Conduit"]["Workers Per Team"] = 1
+k["Conduit"]["Ranks Per Worker"] = 1
 k.run(e)

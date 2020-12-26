@@ -21,21 +21,3 @@ check_result
 popd
 check_result
 
-echo "-------------------------------------"
-
-############# STEP 2 ##############
-
-dir=$PWD/../../features
-
-echo "[Korali] Beginning features test..."
-echo "-------------------------------------"
-
-pushd $dir; check_result
-
-./.run_test.sh
-check_result
-
-popd
-check_result
-
-echo "-------------------------------------"

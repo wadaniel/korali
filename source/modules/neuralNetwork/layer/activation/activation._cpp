@@ -62,7 +62,7 @@ void Activation::createForwardPipeline()
          _beta);
 
       // Create primitive descriptor.
-      _forwardEltwiseActivationPrimitiveDesc = eltwise_forward::primitive_desc(activationDesc, _dnnlEngine);
+      _forwardEltwiseActivationPrimitiveDesc = eltwise_forward::primitive_desc(activationDesc, _nn->_dnnlEngine);
 
       // Create the primitive.
       _forwardActivationPrimitive = eltwise_forward(_forwardEltwiseActivationPrimitiveDesc);
@@ -76,7 +76,7 @@ void Activation::createForwardPipeline()
       auto activationDesc = softmax_forward::desc(_propKind, _prevLayer->_outputMem[0].get_desc(), axis);
 
       // Create primitive descriptor.
-      _forwardSoftmaxActivationPrimitiveDesc = softmax_forward::primitive_desc(activationDesc, _dnnlEngine);
+      _forwardSoftmaxActivationPrimitiveDesc = softmax_forward::primitive_desc(activationDesc, _nn->_dnnlEngine);
 
       // Create the primitive.
       _forwardActivationPrimitive = softmax_forward(_forwardSoftmaxActivationPrimitiveDesc);
@@ -120,7 +120,7 @@ void Activation::createBackwardPipeline()
       auto activationDesc = eltwise_backward::desc(_activationAlgorithm, _prevLayer->_outputMem[0].get_desc(), _outputMem[0].get_desc(), _alpha, _beta);
 
       // Create primitive descriptor.
-      auto backwardActivationPrimitiveDesc = eltwise_backward::primitive_desc(activationDesc, _dnnlEngine, _forwardEltwiseActivationPrimitiveDesc);
+      auto backwardActivationPrimitiveDesc = eltwise_backward::primitive_desc(activationDesc, _nn->_dnnlEngine, _forwardEltwiseActivationPrimitiveDesc);
 
       // Create the primitive.
       _backwardActivationPrimitive = eltwise_backward(backwardActivationPrimitiveDesc);
@@ -134,7 +134,7 @@ void Activation::createBackwardPipeline()
       auto activationDesc = softmax_backward::desc(_prevLayer->_outputMem[0].get_desc(), _outputMem[0].get_desc(), axis);
 
       // Create primitive descriptor.
-      auto backwardActivationPrimitiveDesc = softmax_backward::primitive_desc(activationDesc, _dnnlEngine, _forwardSoftmaxActivationPrimitiveDesc);
+      auto backwardActivationPrimitiveDesc = softmax_backward::primitive_desc(activationDesc, _nn->_dnnlEngine, _forwardSoftmaxActivationPrimitiveDesc);
 
       // Create the primitive.
       _backwardActivationPrimitive = softmax_backward(backwardActivationPrimitiveDesc);
@@ -198,7 +198,7 @@ void Activation::forwardData()
     _forwardActivationArgs[DNNL_ARG_SRC] = _prevLayer->_outputMem[t];
     _forwardActivationArgs[DNNL_ARG_DST] = _outputMem[t];
 
-    _forwardActivationPrimitive.execute(_nn->_stream, _forwardActivationArgs);
+    _forwardActivationPrimitive.execute(_nn->_dnnlStream, _forwardActivationArgs);
   }
 #endif
 
@@ -296,7 +296,7 @@ void Activation::backwardData()
     _backwardActivationArgs[DNNL_ARG_DIFF_SRC] = _prevLayer->_outputGradientMem[t]; // Output
     if (_function == "Softmax") _backwardActivationArgs[DNNL_ARG_DST] = _outputMem[t];
 
-    _backwardActivationPrimitive.execute(_nn->_stream, _backwardActivationArgs);
+    _backwardActivationPrimitive.execute(_nn->_dnnlStream, _backwardActivationArgs);
   }
 #endif
 

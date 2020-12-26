@@ -19,8 +19,11 @@ void Discrete::getAction(korali::Sample &sample)
   // Getting current state
   auto state = sample["State"].get<std::vector<float>>();
 
+  // Adding state to the state time sequence
+  _stateTimeSequence.add(state);
+
   // Getting the probability of the actions given by the agent's policy
-  auto policy = runPolicy(state);
+  auto policy = runPolicy(_stateTimeSequence.getVector());
   auto pActions = policy["Action Probabilities"].get<std::vector<float>>();
 
   // Storage for the action index to use

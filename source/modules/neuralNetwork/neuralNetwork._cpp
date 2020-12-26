@@ -15,9 +15,8 @@ void NeuralNetwork::initialize()
   if (_engine == "OneDNN")
   {
 #ifdef _KORALI_USE_ONEDNN
-
-    _stream = dnnl::stream(korali::_dnnlEngine);
-
+    _dnnlEngine = dnnl::engine(dnnl::engine::kind::cpu, 0);
+    _dnnlStream = dnnl::stream(_dnnlEngine);
 #else
 
     fprintf(stderr, "[Korali] Warning: Neural Network's engine set to OneDNN, but Korali was installed without support for OneDNN. Using Korali's default NN Engine\n");

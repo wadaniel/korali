@@ -62,7 +62,7 @@ class dVRACER : public Discrete
 
   void setTrainingState(const knlohmann::json &state) override;
   knlohmann::json getTrainingState() override;
-  knlohmann::json runPolicy(const std::vector<float> &state) override;
+  knlohmann::json runPolicy(const std::vector<std::vector<float>> &stateSequence) override;
   void trainPolicy() override;
   knlohmann::json getAgentPolicy() override;
   void setAgentPolicy(const knlohmann::json &hyperparameters) override;

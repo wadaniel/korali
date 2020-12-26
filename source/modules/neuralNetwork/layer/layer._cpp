@@ -48,7 +48,7 @@ void Layer::createForwardPipeline()
     // Creating activation layer memory
     _outputMem.resize(_nn->_timestepCount);
     for (size_t t = 0; t < _nn->_timestepCount; t++)
-     _outputMem[t] = memory(dataMemDesc, _dnnlEngine);
+     _outputMem[t] = memory(dataMemDesc, _nn->_dnnlEngine);
   }
 #endif
 
@@ -94,7 +94,7 @@ void Layer::createBackwardPipeline()
     // Creating data-related gradient memory
     _outputGradientMem.resize(_nn->_timestepCount);
     for (size_t t = 0; t < _nn->_timestepCount; t++)
-     _outputGradientMem[t] = memory(_outputMem[t].get_desc(), _dnnlEngine);
+     _outputGradientMem[t] = memory(_outputMem[t].get_desc(), _nn->_dnnlEngine);
   }
 #endif
 

@@ -58,7 +58,7 @@ class NAF : public Continuous
   void setAgentPolicy(const knlohmann::json &hyperparameters) override;
   void setTrainingState(const knlohmann::json &state) override;
   knlohmann::json getTrainingState() override;
-  knlohmann::json runPolicy(const std::vector<float> &state) override;
+  knlohmann::json runPolicy(const std::vector<std::vector<float>> &stateSequence) override;
   void trainPolicy() override;
   void printAgentInformation() override;
   void initializeAgent() override;

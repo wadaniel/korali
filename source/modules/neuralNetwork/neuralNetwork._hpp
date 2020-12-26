@@ -17,10 +17,6 @@
 
 namespace korali
 {
-#ifdef _KORALI_USE_ONEDNN
-extern dnnl::engine _dnnlEngine;
-#endif
-
 class NeuralNetwork : public Module
 {
   public:
@@ -29,7 +25,9 @@ class NeuralNetwork : public Module
   /**
    * @brief oneDNN Stream to run operations
    */
-  dnnl::stream _stream;
+  dnnl::stream _dnnlStream;
+
+  dnnl::engine _dnnlEngine;
 
 #endif
 
@@ -90,7 +88,7 @@ class NeuralNetwork : public Module
   std::vector<size_t> _inputBatchLastStep;
 
   /**
-   * @brief Keeps track of the current timestep
+   * @brief Keeps track of t_he current timestep
    */
   size_t _currentTimestep;
 

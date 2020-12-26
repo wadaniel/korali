@@ -8,6 +8,7 @@
 #include "auxiliar/koraliJson.hpp"
 #include "auxiliar/logger.hpp"
 #include "auxiliar/math.hpp"
+#include "auxiliar/kstring.hpp"
 #include <chrono>
 
 /*! \namespace Korali

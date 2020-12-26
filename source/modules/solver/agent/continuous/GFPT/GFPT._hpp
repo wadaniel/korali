@@ -83,27 +83,27 @@ class GFPT : public Continuous
 
   /**
    * @brief Calculates the state value function V(s,a)
-   * @param state state to evaluate
+   * @param stateSequence State sequence to evaluate
    * @return The value of V(s)
    */
-  float stateValueFunction(const std::vector<float> &state);
+  float stateValueFunction(const std::vector<std::vector<float>> &stateSequence);
 
   /**
    * @brief Returns the advantage value of the given state/action
-   * @param state State to evaluate
-   * @param action Action to evaluate
+   * @param stateActionSequence State sequence to evaluate
+   * @param action Final action in the sequence to evaluate
    * @return The advantage value
    */
-  float currentActionAdvantageFunction(const std::vector<float> &state, const std::vector<float> &action);
+  float currentActionAdvantageFunction(const std::vector<std::vector<float>> &stateActionSequence, const std::vector<float> &action);
 
   /**
    * @brief Returns the average advantage value of all actions given the state
    * @param curMeans Means of the current policy
    * @param curSigmas Standard deviations of the current policy
-   * @param state State to evaluate
+   * @param stateActionSequence State/action sequence to evaluate
    * @return The average advantage value
    */
-  float averageActionAdvantageFunction(const std::vector<float> &curMeans, const std::vector<float> &curSigmas, const std::vector<float> &state);
+  float averageActionAdvantageFunction(const std::vector<float> &curMeans, const std::vector<float> &curSigmas, const std::vector<std::vector<float>> &stateActionSequence);
 
   /**
    * @brief Returns the best action: that with highest advantage for the given state
@@ -119,7 +119,7 @@ class GFPT : public Continuous
    */
   float retraceFunction(size_t expId);
 
-  knlohmann::json runPolicy(const std::vector<float> &state) override;
+  knlohmann::json runPolicy(const std::vector<std::vector<float>> &stateSequence) override;
 
   knlohmann::json getAgentPolicy() override;
   void setAgentPolicy(const knlohmann::json &hyperparameters) override;

@@ -106,10 +106,6 @@ void Activation::createForwardPipeline()
 
 void Activation::createBackwardPipeline()
 {
-  /*********************************************************************************
-  *  Initializing memory objects and primitives for BACKWARD propagation
-  *********************************************************************************/
-
   // Calling base layer function
   Layer::createBackwardPipeline();
 

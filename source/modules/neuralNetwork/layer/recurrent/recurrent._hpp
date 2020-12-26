@@ -80,6 +80,11 @@ class Recurrent : public Layer
 #ifdef _KORALI_USE_CUDNN
 
   /**
+   * @brief cuDNN Specifies what type of RNN operation to perform
+   */
+  cudnnRNNMode_t _rnnMode;
+
+  /**
   * @brief cuDNN Descriptor for the hidden state tensor memory
   */
   cudnnTensorDescriptor_t _hTensorDesc;
@@ -167,7 +172,12 @@ class Recurrent : public Layer
 #endif
 
   void initialize() override;
+  void createHyperparameterMemory() override;
+  void backwardHyperparameters() override;
   std::vector<float> generateInitialHyperparameters() override;
+  void setHyperparameters(float *hyperparameters) override;
+  void getHyperparameters(float *hyperparameters) override;
+  void getHyperparameterGradients(float *gradient) override;
 };
 
 } // namespace layer

@@ -41,15 +41,10 @@ class GRU : public Recurrent
   #endif
 
   void initialize() override;
-  void createHyperparameterMemory() override;
   void createForwardPipeline() override;
   void createBackwardPipeline() override;
   void forwardData() override;
-  void setHyperparameters(float *hyperparameters) override;
-  void getHyperparameters(float *hyperparameters) override;
-  void getHyperparameterGradients(float *gradient) override;
   void backwardData() override;
-  void backwardHyperparameters() override;
 };
 
 } // namespace recurrent

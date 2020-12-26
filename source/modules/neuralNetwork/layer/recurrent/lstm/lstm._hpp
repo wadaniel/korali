@@ -15,6 +15,40 @@ class LSTM : public Recurrent
 {
   public:
 
+#ifdef _KORALI_USE_ONEDNN
+
+  /**
+  * @brief oneDNN Memory object descriptor to contain the cell (LSTM) state of the recurrent layer -- vector, one per timestep
+  */
+  std::vector<dnnl::memory> _cellStateMem;
+
+  /**
+  * @brief oneDNN Memory object descriptor to contain the gradients of the cell (LSTM) state of the recurrent layer -- vector, one per timestep
+  */
+  std::vector<dnnl::memory> _cellStateGradientMem;
+
+  /**
+  * @brief oneDNN primitive attributes that describe the forward LSTM primitive
+  */
+  dnnl::lstm_forward::primitive_desc _forwardLSTMPrimitiveDesc;
+
+  /**
+  * @brief oneDNN primitive to run the forward LSTM operation
+  */
+  dnnl::primitive _forwardLSTMPrimitive;
+
+  /**
+  * @brief oneDNN primitive attributes that describe the backward LSTM primitive
+  */
+  dnnl::lstm_backward::primitive_desc _backwardLSTMPrimitiveDesc;
+
+  /**
+  * @brief oneDNN primitive to run the backward LSTM operation
+  */
+  dnnl::primitive _backwardLSTMPrimitive;
+
+  #endif
+
 #ifdef _KORALI_USE_CUDNN
 
   /**
@@ -34,16 +68,11 @@ class LSTM : public Recurrent
 
 #endif
 
-  std::vector<float> generateInitialHyperparameters() override;
-  void createHyperparameterMemory() override;
+  void initialize() override;
   void createForwardPipeline() override;
   void createBackwardPipeline() override;
   void forwardData() override;
-  void setHyperparameters(float *hyperparameters) override;
-  void getHyperparameters(float *hyperparameters) override;
-  void getHyperparameterGradients(float *gradient) override;
   void backwardData() override;
-  void backwardHyperparameters() override;
 };
 
 } // namespace recurrent

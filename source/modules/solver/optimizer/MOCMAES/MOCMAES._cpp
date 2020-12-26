@@ -214,7 +214,7 @@ void MOCMAES::sampleSingle(size_t sampleIdx)
   _currentCovarianceMatrix[sampleIdx] = _parentCovarianceMatrix[parentIdx];
 
   // Set Sigma
-  _currentSigma[sampleIdx] = _parentSigma[sampleIdx];
+  _currentSigma[sampleIdx] = _parentSigma[parentIdx];
 
   // Set success probability and evolution path
   _currentEvolutionPaths[sampleIdx] = _parentEvolutionPaths[parentIdx];

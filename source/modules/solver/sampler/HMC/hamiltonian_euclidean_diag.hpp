@@ -157,7 +157,6 @@ class HamiltonianEuclideanDiag : public HamiltonianEuclidean
   /**
   * @brief Updates diagonal Inverse Metric by using samples to approximate the Variance (diagonal of Fisher Information matrix).
   * @param samples Contains samples. One row is one sample.
-  * @param positionMean Mean of samples.
   * @return Error code not needed here to set to 0.
   */
   int updateMetricMatricesEuclidean(const std::vector<std::vector<double>> &samples) override

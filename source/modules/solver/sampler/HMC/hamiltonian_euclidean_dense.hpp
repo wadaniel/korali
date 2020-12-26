@@ -188,7 +188,6 @@ class HamiltonianEuclideanDense : public HamiltonianEuclidean
   /**
   * @brief Updates Inverse Metric by using samples to approximate the covariance matrix via the Fisher information.
   * @param samples Contains samples. One row is one sample.
-  * @param positionMean Mean of samples.
   * @return Error code of Cholesky decomposition used to invert matrix.
   */
   int updateMetricMatricesEuclidean(const std::vector<std::vector<double>> &samples) override
@@ -251,7 +250,7 @@ class HamiltonianEuclideanDense : public HamiltonianEuclidean
 
   /**
   * @brief Inverts s.p.d. matrix via Cholesky decomposition.
-  * @param mat Input matrix interpreted as square symmetric matrix.
+  * @param matrix Input matrix interpreted as square symmetric matrix.
   * @param inverseMat Result of inversion.
   * @return Error code of Cholesky decomposition used to invert matrix.
   */

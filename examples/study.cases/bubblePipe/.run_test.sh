@@ -9,10 +9,6 @@ source ../../../tests/functions.sh
 echo "  + Deleting previous results..." 
 rm -rf _result*; check_result
 
-##### Recompiling C++
-
-make clean; check_result
-make -j4 TEST=true; check_result
 
 ###### If this is macOS, C++ linking may not be automatic: do not run test
 arch="$(uname -s)"
@@ -23,4 +19,4 @@ fi
 
 ##### Running Tests
 
-./run-korali; check_result
+#./run-korali; check_result

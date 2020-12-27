@@ -49,8 +49,6 @@ typedef struct fparam_s
 
 void TMCMC::setInitialConfiguration()
 {
-  knlohmann::json problemConfig = (*_k)["Problem"];
-
   if (_maxChainLength == 0) KORALI_LOG_ERROR("Max Chain Length must be greater 0.");
   if (_covarianceScaling <= 0.0) KORALI_LOG_ERROR("Covariance Scaling must be larger 0.0 (is %lf).\n", _covarianceScaling);
 
@@ -75,13 +73,8 @@ void TMCMC::setInitialConfiguration()
 
   if (_version == "mTMCMC")
   {
-    bool valid = false;
-    if (isDefined(problemConfig, "Type"))
-    {
-      std::string problemType = problemConfig["Type"];
-      if (problemType == "Bayesian/Reference") valid = true;
-    }
-    if (valid == false) KORALI_LOG_ERROR("mTMCMC works only for problems of type 'Bayesian/Reference'\n");
+    if (iCompare((*_k)["Problem"]["Type"], "Bayesian/Reference"))
+      KORALI_LOG_ERROR("mTMCMC works only for problems of type 'Bayesian/Reference'\n");
 
     if (_maxChainLength != 1) KORALI_LOG_ERROR("Current version of 'mTMCMC' supports only 'Max Chain Length' of 1 (BASIS).");
     if (_stepSize < 0.0) KORALI_LOG_ERROR("Step Size lower than 0.0 (is %lf)\n", _stepSize);

@@ -224,7 +224,7 @@ void VRACER::trainPolicy()
       if (isTrucated == true)
       {
         // get truncated state
-        auto truncatedState = _experienceReplay[curId].truncatedState;
+        auto truncatedState = getTruncatedStateTimeSequence(curId);
 
         // for truncated state, Vtbc == V - forward network
         float nextExpVtbc = stateValueFunction(truncatedState);
@@ -307,7 +307,7 @@ void VRACER::updateVtbc(size_t expId)
   }
   else if (_experienceReplay[expId].termination == e_truncated) // If the episode was truncated add contribution
   {
-    auto truncatedState = _experienceReplay[expId].truncatedState;
+    auto truncatedState = getTruncatedStateTimeSequence(expId);
     float truncatedValue = stateValueFunction(truncatedState);
     vTbc += truncatedImportanceWeight * _discountFactor * truncatedValue;
   }
@@ -445,10 +445,10 @@ std::vector<float> VRACER::calculateImportanceWeightGradient(const std::vector<f
   return grad;
 }
 
-float VRACER::stateValueFunction(const std::vector<float> &state)
+float VRACER::stateValueFunction(const std::vector<std::vector<float>> &state)
 {
   // Calculating V(s_i)
-  float v = _criticPolicyLearner->getEvaluation({{state}})[0][0];
+  float v = _criticPolicyLearner->getEvaluation({state})[0][0];
   return v;
 }
 

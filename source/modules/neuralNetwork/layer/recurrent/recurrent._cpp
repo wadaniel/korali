@@ -31,53 +31,54 @@ void Recurrent::initialize()
   if (_index == _nn->_layers.size() - 1) KORALI_LOG_ERROR("Recurrent layers cannot be the last layer of the NN\n");
 
   // If using depth > 1, the input layer channels must be consistent
-  if (_depth != 1) if (_prevLayer->_outputChannels != _outputChannels) KORALI_LOG_ERROR("Node count for layer %lu should be the same as that of the previous layer, when depth > 1.\n", _index);
+  if (_depth != 1)
+    if (_prevLayer->_outputChannels != _outputChannels) KORALI_LOG_ERROR("Node count for layer %lu should be the same as that of the previous layer, when depth > 1.\n", _index);
 }
 
 void Recurrent::createHyperparameterMemory()
 {
- // Getting dimensions
- const size_t L = _depth; // Physical Layers
- const size_t D = 1; // Directions
- const size_t G = _gateCount; // Gates
- const size_t IC = _prevLayer->_outputChannels;
- const size_t OC = _outputChannels;
+  // Getting dimensions
+  const size_t L = _depth;     // Physical Layers
+  const size_t D = 1;          // Directions
+  const size_t G = _gateCount; // Gates
+  const size_t IC = _prevLayer->_outputChannels;
+  const size_t OC = _outputChannels;
 
- // Setting hyperparameter count
- const size_t weightsInputCount = L * D * G * OC * IC;
- const size_t weightsRecurrentCount = L * D * G * OC * OC;
- const size_t biasCount = L * D * G * OC;
- _hyperparameterCount = weightsInputCount + weightsRecurrentCount + biasCount;
+  // Setting hyperparameter count
+  const size_t weightsInputCount = L * D * G * OC * IC;
+  const size_t weightsRecurrentCount = L * D * G * OC * OC;
+  const size_t biasCount = L * D * G * OC;
+  _hyperparameterCount = weightsInputCount + weightsRecurrentCount + biasCount;
 
- #ifdef _KORALI_USE_ONEDNN
+#ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
   {
-   // Checking Layer sizes
-   const memory::dim IC = _prevLayer->_outputChannels; // channels
-   const memory::dim OC = _outputChannels; // channels
-   const memory::dim G = _gateCount; // gates
-   const memory::dim L = _depth; // layers
-   const memory::dim D = 1; // directions
+    // Checking Layer sizes
+    const memory::dim IC = _prevLayer->_outputChannels; // channels
+    const memory::dim OC = _outputChannels;             // channels
+    const memory::dim G = _gateCount;                   // gates
+    const memory::dim L = _depth;                       // layers
+    const memory::dim D = 1;                            // directions
 
-   memory::dims weightInputDims = {L, D, IC, G, OC};
-   auto weightInputMemDesc = memory::desc(weightInputDims, memory::data_type::f32, memory::format_tag::ldigo);
+    memory::dims weightInputDims = {L, D, IC, G, OC};
+    auto weightInputMemDesc = memory::desc(weightInputDims, memory::data_type::f32, memory::format_tag::ldigo);
 
-   _weightsLayerMem = memory(weightInputMemDesc, _nn->_dnnlEngine);
-   _weightsLayerGradientMem = memory(weightInputMemDesc, _nn->_dnnlEngine);
+    _weightsLayerMem = memory(weightInputMemDesc, _nn->_dnnlEngine);
+    _weightsLayerGradientMem = memory(weightInputMemDesc, _nn->_dnnlEngine);
 
-   memory::dims weightRecurrentDims = {L, D, OC, G, OC};
-   auto weightRecurrentMemDesc = memory::desc(weightRecurrentDims, memory::data_type::f32, memory::format_tag::ldigo);
+    memory::dims weightRecurrentDims = {L, D, OC, G, OC};
+    auto weightRecurrentMemDesc = memory::desc(weightRecurrentDims, memory::data_type::f32, memory::format_tag::ldigo);
 
-   _weightsRecurrentMem = memory(weightRecurrentMemDesc, _nn->_dnnlEngine);
-   _weightsRecurrentGradientMem = memory(weightRecurrentMemDesc, _nn->_dnnlEngine);
+    _weightsRecurrentMem = memory(weightRecurrentMemDesc, _nn->_dnnlEngine);
+    _weightsRecurrentGradientMem = memory(weightRecurrentMemDesc, _nn->_dnnlEngine);
 
-   memory::dims bias_dims = {L, D, G, OC};
-   auto biasMemDesc = memory::desc(bias_dims, memory::data_type::f32, memory::format_tag::ldgo);
+    memory::dims bias_dims = {L, D, G, OC};
+    auto biasMemDesc = memory::desc(bias_dims, memory::data_type::f32, memory::format_tag::ldgo);
 
-   _biasMem = memory(biasMemDesc, _nn->_dnnlEngine);
-   _biasGradientMem = memory(biasMemDesc, _nn->_dnnlEngine);
+    _biasMem = memory(biasMemDesc, _nn->_dnnlEngine);
+    _biasGradientMem = memory(biasMemDesc, _nn->_dnnlEngine);
   }
- #endif
+#endif
 
 #ifdef _KORALI_USE_CUDNN
   if (_nn->_engine == "CuDNN")
@@ -115,7 +116,7 @@ void Recurrent::createHyperparameterMemory()
 
     // The number of hyperparameters is then the workspace size divided by the size of a float
     if (_hyperparameterCount != _weightsSize / sizeof(float))
-     KORALI_LOG_ERROR("CuDNN - Non-consistent weights size with expected hyperparameters. Given: %lu, Expected: %lu\n", _hyperparameterCount,  _weightsSize / sizeof(float));
+      KORALI_LOG_ERROR("CuDNN - Non-consistent weights size with expected hyperparameters. Given: %lu, Expected: %lu\n", _hyperparameterCount, _weightsSize / sizeof(float));
 
     // Creating memory for hyperparameters and their gradients
     cudaErrCheck(cudaMalloc((void **)&_weightsTensor, _weightsSize));
@@ -167,41 +168,41 @@ std::vector<float> Recurrent::generateInitialHyperparameters()
 
   // Weights applied to the input layer(s)
   for (size_t layerId = 0; layerId < L; layerId++)
-   for (size_t gateId = 0; gateId < G; gateId++)
-    for (size_t i = 0; i < OC*IC; i++)
-     hyperparameters.push_back(xavierConstant * _nn->_uniformGenerator->getRandomNumber());
+    for (size_t gateId = 0; gateId < G; gateId++)
+      for (size_t i = 0; i < OC * IC; i++)
+        hyperparameters.push_back(xavierConstant * _nn->_uniformGenerator->getRandomNumber());
 
-   // Weights applied to the recurrent layer
+  // Weights applied to the recurrent layer
   for (size_t layerId = 0; layerId < L; layerId++)
-   for (size_t gateId = 0; gateId < G; gateId++)
-    for (size_t i = 0; i < OC*OC; i++)
-     hyperparameters.push_back(xavierConstant * _nn->_uniformGenerator->getRandomNumber());
+    for (size_t gateId = 0; gateId < G; gateId++)
+      for (size_t i = 0; i < OC * OC; i++)
+        hyperparameters.push_back(xavierConstant * _nn->_uniformGenerator->getRandomNumber());
 
-   // Bias for the recurrent layer
+  // Bias for the recurrent layer
   for (size_t layerId = 0; layerId < L; layerId++)
-   for (size_t gateId = 0; gateId < G; gateId++)
-    for (size_t i = 0; i < OC; i++)
-     hyperparameters.push_back(0.0f);
+    for (size_t gateId = 0; gateId < G; gateId++)
+      for (size_t i = 0; i < OC; i++)
+        hyperparameters.push_back(0.0f);
 
   return hyperparameters;
 }
 
 void Recurrent::backwardHyperparameters()
 {
- if (_nn->_mode == "Inference")
+  if (_nn->_mode == "Inference")
     KORALI_LOG_ERROR("Requesting Layer hyperparameter gradient propagation but NN was configured for inference only.\n");
 
 #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
   {
-   // Nothing to do here, weights and bias gradients have been generated already by backwardData.
+    // Nothing to do here, weights and bias gradients have been generated already by backwardData.
   }
 #endif
 
 #ifdef _KORALI_USE_CUDNN
   if (_nn->_engine == "CuDNN")
   {
-   const size_t t = _nn->_currentTimestep;
+    const size_t t = _nn->_currentTimestep;
 
     // We need to clear the gradients because they are additive in CUDNN
     cudaErrCheck(cudaMemset(_weightsGradientTensor, 0, _hyperparameterCount));
@@ -229,19 +230,18 @@ void Recurrent::backwardHyperparameters()
 
 void Recurrent::setHyperparameters(float *hyperparameters)
 {
-
 #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
   {
-   // Getting dimensions
-   const size_t L = _depth;
-   const size_t G = _gateCount;
-   const size_t IC = _prevLayer->_outputChannels;
-   const size_t OC = _outputChannels;
+    // Getting dimensions
+    const size_t L = _depth;
+    const size_t G = _gateCount;
+    const size_t IC = _prevLayer->_outputChannels;
+    const size_t OC = _outputChannels;
 
-   write_to_dnnl_memory(&hyperparameters[0], _weightsLayerMem);
-   write_to_dnnl_memory(&hyperparameters[L*G*OC*IC], _weightsRecurrentMem);
-   write_to_dnnl_memory(&hyperparameters[L*G*OC*OC + L*G*OC*IC], _biasMem);
+    write_to_dnnl_memory(&hyperparameters[0], _weightsLayerMem);
+    write_to_dnnl_memory(&hyperparameters[L * G * OC * IC], _weightsRecurrentMem);
+    write_to_dnnl_memory(&hyperparameters[L * G * OC * OC + L * G * OC * IC], _biasMem);
   }
 #endif
 
@@ -252,19 +252,18 @@ void Recurrent::setHyperparameters(float *hyperparameters)
 
 void Recurrent::getHyperparameters(float *hyperparameters)
 {
-
 #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
   {
-   // Getting dimensions
-   const size_t L = _depth;
-   const size_t G = _gateCount;
-   const size_t IC = _prevLayer->_outputChannels;
-   const size_t OC = _outputChannels;
+    // Getting dimensions
+    const size_t L = _depth;
+    const size_t G = _gateCount;
+    const size_t IC = _prevLayer->_outputChannels;
+    const size_t OC = _outputChannels;
 
-   read_from_dnnl_memory(&hyperparameters[0], _weightsLayerMem);
-   read_from_dnnl_memory(&hyperparameters[L*G*OC*IC], _weightsRecurrentMem);
-   read_from_dnnl_memory(&hyperparameters[L*G*OC*OC + L*G*OC*IC], _biasMem);
+    read_from_dnnl_memory(&hyperparameters[0], _weightsLayerMem);
+    read_from_dnnl_memory(&hyperparameters[L * G * OC * IC], _weightsRecurrentMem);
+    read_from_dnnl_memory(&hyperparameters[L * G * OC * OC + L * G * OC * IC], _biasMem);
   }
 #endif
 
@@ -278,15 +277,15 @@ void Recurrent::getHyperparameterGradients(float *gradient)
 #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
   {
-   // Getting dimensions
-   const size_t L = _depth;
-   const size_t G = _gateCount;
-   const size_t IC = _prevLayer->_outputChannels;
-   const size_t OC = _outputChannels;
+    // Getting dimensions
+    const size_t L = _depth;
+    const size_t G = _gateCount;
+    const size_t IC = _prevLayer->_outputChannels;
+    const size_t OC = _outputChannels;
 
-   read_from_dnnl_memory(&gradient[0], _weightsLayerGradientMem);
-   read_from_dnnl_memory(&gradient[L*G*OC*IC], _weightsRecurrentGradientMem);
-   read_from_dnnl_memory(&gradient[L*G*OC*OC + L*G*OC*IC], _biasGradientMem);
+    read_from_dnnl_memory(&gradient[0], _weightsLayerGradientMem);
+    read_from_dnnl_memory(&gradient[L * G * OC * IC], _weightsRecurrentGradientMem);
+    read_from_dnnl_memory(&gradient[L * G * OC * OC + L * G * OC * IC], _biasGradientMem);
   }
 #endif
 

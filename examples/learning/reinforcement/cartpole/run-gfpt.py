@@ -77,9 +77,6 @@ e["File Output"]["Frequency"] = 10
  
 ### Running Training Experiment
 
-#k["Conduit"]["Type"] = "Distributed"
-k["Conduit"]["Type"] = "Concurrent"
-k["Conduit"]["Concurrent Jobs"] = 5
 k.run(e)
 
 ### Running Testing Experiment

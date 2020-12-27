@@ -39,7 +39,7 @@ void Layer::createForwardPipeline()
   if (_nn->_engine == "OneDNN")
   {
     // Setting propagation kind
-   _propKind = _nn->_mode == "Training" ? prop_kind::forward_training : prop_kind::forward_inference;
+    _propKind = _nn->_mode == "Training" ? prop_kind::forward_training : prop_kind::forward_inference;
 
     // Creating layer's data memory storage
     const memory::dims layerDims = {N, OC};
@@ -48,7 +48,7 @@ void Layer::createForwardPipeline()
     // Creating activation layer memory
     _outputMem.resize(_nn->_timestepCount);
     for (size_t t = 0; t < _nn->_timestepCount; t++)
-     _outputMem[t] = memory(dataMemDesc, _nn->_dnnlEngine);
+      _outputMem[t] = memory(dataMemDesc, _nn->_dnnlEngine);
   }
 #endif
 
@@ -70,7 +70,7 @@ void Layer::createForwardPipeline()
 
 void Layer::createBackwardPipeline()
 {
- if (_nn->_mode == "Inference")
+  if (_nn->_mode == "Inference")
     KORALI_LOG_ERROR("Requesting layer's backward pipeline creation but NN was configured for inference only.\n");
 
   /*********************************************************************************
@@ -94,7 +94,7 @@ void Layer::createBackwardPipeline()
     // Creating data-related gradient memory
     _outputGradientMem.resize(_nn->_timestepCount);
     for (size_t t = 0; t < _nn->_timestepCount; t++)
-     _outputGradientMem[t] = memory(_outputMem[t].get_desc(), _nn->_dnnlEngine);
+      _outputGradientMem[t] = memory(_outputMem[t].get_desc(), _nn->_dnnlEngine);
   }
 #endif
 

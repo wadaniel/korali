@@ -80,7 +80,8 @@ void NeuralNetwork::initialize()
 
   // Create forward and backward (only for training) pipelines
   for (size_t i = 0; i < layerCount; i++) _layers[i]->createForwardPipeline();
-  if (_mode == "Training") for (size_t i = 0; i < layerCount; i++) _layers[i]->createBackwardPipeline();
+  if (_mode == "Training")
+    for (size_t i = 0; i < layerCount; i++) _layers[i]->createBackwardPipeline();
 
   // Allocating NN Forward storage
   _rawInputValues.resize(T * N * IC);
@@ -90,9 +91,9 @@ void NeuralNetwork::initialize()
   // Allocating NN Backward storage (only for training)
   if (_mode == "Training")
   {
-   _rawInputGradients.resize(T * N * IC);
-   _rawOutputGradients.resize(T * N * OC);
-   _hyperparameterGradients.resize(H);
+    _rawInputGradients.resize(T * N * IC);
+    _rawOutputGradients.resize(T * N * OC);
+    _hyperparameterGradients.resize(H);
   }
 
   // Allocating storage for formatted output values
@@ -102,8 +103,8 @@ void NeuralNetwork::initialize()
   // Allocating storage for formatted input gradients (only for training)
   if (_mode == "Training")
   {
-   _inputGradients.resize(N);
-   for (size_t b = 0; b < N; b++) _inputGradients[b].resize(IC);
+    _inputGradients.resize(N);
+    for (size_t b = 0; b < N; b++) _inputGradients[b].resize(IC);
   }
 
   // Making sure we do not re-initialize
@@ -178,7 +179,7 @@ void NeuralNetwork::backward(const std::vector<std::vector<float>> &outputGradie
   size_t IC = _layers[0]->_outputChannels;
 
   if (_mode == "Inference")
-   KORALI_LOG_ERROR("Requesting backward propagation but NN was configured for inference only.\n");
+    KORALI_LOG_ERROR("Requesting backward propagation but NN was configured for inference only.\n");
 
   // Safety checks
   if (outputGradients.size() != N) KORALI_LOG_ERROR("Batch size of NN output gradients (%lu) is not the same as NN configuration (%lu).\n", outputGradients.size(), N);

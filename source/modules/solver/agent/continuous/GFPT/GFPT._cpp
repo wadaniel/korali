@@ -161,10 +161,7 @@ float GFPT::retraceFunction(size_t expId)
   if (_experienceReplay[endId].termination == e_truncated)
   {
     // Get truncated state sequence, adding the truncated state to it and removing first time element
-    auto expTruncatedStateSequence = getStateTimeSequence(endId);
-    expTruncatedStateSequence.push_back(_experienceReplay[endId].truncatedState);
-    expTruncatedStateSequence.erase(expTruncatedStateSequence.begin());
-
+    auto expTruncatedStateSequence = getTruncatedStateTimeSequence(endId);
     float terminalV = _experienceReplay[endId].cache.access("Terminal State Value", [this, expTruncatedStateSequence]() { return this->stateValueFunction(expTruncatedStateSequence); });
     Vtbc = terminalV;
   }
@@ -392,7 +389,7 @@ void GFPT::trainPolicy()
     std::vector<float> candidateEvaluations(_policyOptimizationCandidates);
 
     // Creating minibatch of input state/action sequences
-    for (size_t c = 0; c < _policyOptimizationCandidates; c++)  candidateMiniBatch[c] = curStateActionSequence;
+    for (size_t c = 0; c < _policyOptimizationCandidates; c++) candidateMiniBatch[c] = curStateActionSequence;
 
     // Updating action distributions for the current state to get its current means
     auto policy = runPolicy(curStateSequence);
@@ -437,10 +434,10 @@ void GFPT::trainPolicy()
         // Gathering candidate states into a single minibatch -- replacing last action of each state/action sequence
         for (size_t c = 0; c < _policyOptimizationCandidates; c++)
         {
-         // Getting final timestep of the input
-         size_t t = candidateMiniBatch[c].size() - 1;
+          // Getting final timestep of the input
+          size_t t = candidateMiniBatch[c].size() - 1;
 
-         // Replacing the action of the last timestep
+          // Replacing the action of the last timestep
           for (size_t i = 0; i < _problem->_actionVectorSize; i++)
             candidateMiniBatch[c][t][_problem->_stateVectorSize + i] = actionOptimizer->_samplePopulation[c][i];
         }

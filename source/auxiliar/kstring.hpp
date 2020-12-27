@@ -9,20 +9,19 @@
 
 namespace korali
 {
-
 /**
 * @brief Generates lower case string of provided string
-* @param string Input string
+* @param input Input string
 * @return The lower case varient of the string
 */
-extern std::string toLower(const std::string& input);
+extern std::string toLower(const std::string &input);
 
 /**
 * @brief Generates upper case string of provided string
-* @param string Input string
+* @param input Input string
 * @return The upper case variant of the string
 */
-extern std::string toLower(const std::string& input);
+extern std::string toUpper(const std::string &input);
 
 /**
 * @brief Performs a case-insensitive comparison between strings
@@ -30,7 +29,7 @@ extern std::string toLower(const std::string& input);
 * @param b Second input string
 * @return True if they are a match, false otherwise.
 */
-extern bool iCompare(const std::string& a, const std::string& b);
+extern bool iCompare(const std::string &a, const std::string &b);
 
 } // namespace korali
 

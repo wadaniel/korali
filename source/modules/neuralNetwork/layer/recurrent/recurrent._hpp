@@ -12,11 +12,10 @@ namespace layer
 class Recurrent : public Layer
 {
   public:
-
- /**
+  /**
   * @brief Indicates the number of recurrent gates (depends on the architecture)
   */
- size_t _gateCount;
+  size_t _gateCount;
 
 #ifdef _KORALI_USE_ONEDNN
 
@@ -53,14 +52,14 @@ class Recurrent : public Layer
   /**
    * @brief oneDNN Memory object descriptor to contain the weights of to apply to the recurrent gate
    */
-   dnnl::memory _weightsRecurrentMem;
+  dnnl::memory _weightsRecurrentMem;
 
-   /**
+  /**
    * @brief oneDNN Memory object descriptor to contain the gradients of the weights of to apply to the recurrent gate
    */
-   dnnl::memory _weightsRecurrentGradientMem;
+  dnnl::memory _weightsRecurrentGradientMem;
 
- /**
+  /**
   * @brief oneDNN Memory object descriptor to contain the bias to apply to the input
   */
   dnnl::memory _biasMem;

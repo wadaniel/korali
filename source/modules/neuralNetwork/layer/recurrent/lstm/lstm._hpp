@@ -14,7 +14,6 @@ namespace recurrent
 class LSTM : public Recurrent
 {
   public:
-
 #ifdef _KORALI_USE_ONEDNN
 
   /**
@@ -47,7 +46,7 @@ class LSTM : public Recurrent
   */
   dnnl::primitive _backwardLSTMPrimitive;
 
-  #endif
+#endif
 
 #ifdef _KORALI_USE_CUDNN
 

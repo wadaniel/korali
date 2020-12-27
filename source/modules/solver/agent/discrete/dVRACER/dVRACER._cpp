@@ -173,9 +173,7 @@ void dVRACER::trainPolicy()
       if (isTrucated == true)
       {
         // Get truncated state sequence, adding the truncated state to it and removing first time element
-        auto expTruncatedStateSequence = getStateTimeSequence(expId);
-        expTruncatedStateSequence.push_back(_experienceReplay[expId].truncatedState);
-        expTruncatedStateSequence.erase(expTruncatedStateSequence.begin());
+        auto expTruncatedStateSequence = getTruncatedStateTimeSequence(expId);
 
         // for truncated state, Vtbc == V - forward network
         auto policy = runPolicy(expTruncatedStateSequence);

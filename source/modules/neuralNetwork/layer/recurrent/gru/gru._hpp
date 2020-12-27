@@ -11,12 +11,10 @@ namespace layer
 {
 namespace recurrent
 {
-
 class GRU : public Recurrent
 {
   public:
-
-  #ifdef _KORALI_USE_ONEDNN
+#ifdef _KORALI_USE_ONEDNN
 
   /**
   * @brief oneDNN primitive attributes that describe the forward GRU primitive
@@ -38,7 +36,7 @@ class GRU : public Recurrent
   */
   dnnl::primitive _backwardGRUPrimitive;
 
-  #endif
+#endif
 
   void initialize() override;
   void createForwardPipeline() override;

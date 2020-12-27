@@ -55,22 +55,25 @@ e["Variables"][6]["Exploration Sigma"] = 0.5
 
 e["Solver"]["Type"] = "Agent / Continuous / GFPT"
 e["Solver"]["Mode"] = "Training"
+e["Solver"]["Time Sequence Length"] = 4
 e["Solver"]["Experiences Per Generation"] = 600
 e["Solver"]["Experiences Between Policy Updates"] = 200
 e["Solver"]["Cache Persistence"] = 10
+
 
 ### Defining the configuration of replay memory
 
 e["Solver"]["Experience Replay"]["Start Size"] =   5000
 e["Solver"]["Experience Replay"]["Maximum Size"] = 100000
+e["Solver"]["Experience Replay"]["Serialization Frequency"] = 200
 e["Solver"]["Mini Batch Strategy"] = "Uniform"
 
 ## Defining Critic and PolicyConfiguration
 
 e["Solver"]["Discount Factor"] = 0.99
 e["Solver"]["Mini Batch Size"] = 128
-e["Solver"]["Critic"]["Learning Rate"] = 0.0001  
-e["Solver"]["Policy"]["Learning Rate"] = 0.000001
+e["Solver"]["Critic"]["Learning Rate"] = 0.001  
+e["Solver"]["Policy"]["Learning Rate"] = 0.00001
 e["Solver"]["Policy"]["Target Accuracy"] = 0.0001
 e["Solver"]["Policy"]["Optimization Candidates"] = 24
 
@@ -78,17 +81,8 @@ e["Solver"]["Policy"]["Optimization Candidates"] = 24
 
 e["Solver"]["Neural Network"]["Engine"] = "OneDNN"
 
-e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear"
+e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Recurrent/GRU"
 e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 128
-
-e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Activation"
-e["Solver"]["Neural Network"]["Hidden Layers"][1]["Function"] = "Elementwise/Tanh"
-
-e["Solver"]["Neural Network"]["Hidden Layers"][2]["Type"] = "Layer/Linear"
-e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 128
-
-e["Solver"]["Neural Network"]["Hidden Layers"][3]["Type"] = "Layer/Activation"
-e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tanh"
 
 ### Defining Termination Criteria
 
@@ -96,7 +90,9 @@ e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 60.0
 
 ### Setting file output configuration
 
-e["File Output"]["Enabled"] = False
+e["File Output"]["Enabled"] = True
+e["File Output"]["Frequency"] = 200
+e["File Output"]["Path"] = "_results"
 
 ### Running Experiment
 

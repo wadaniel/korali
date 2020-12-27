@@ -6,7 +6,8 @@
 #include "engine.hpp"
 #include "modules/experiment/experiment.hpp"
 #include "modules/problem/problem.hpp"
-#include "modules/solver/sampler/MCMC/MCMC.hpp"
+#include "modules/problem/sampling/sampling.hpp"
+#include "modules/problem/bayesian/reference/reference.hpp"
 #include "sample/sample.hpp"
 
 namespace korali
@@ -175,17 +176,22 @@ class Hamiltonian
     KORALI_WAIT(sample);
     _currentEvaluation = KORALI_GET(double, sample, "logP(x)");
 
-    sample["Operation"] = "Evaluate Gradient";
+    auto samplingProblemPtr = dynamic_cast<korali::problem::Sampling *>(_k->_problem);
+    auto referenceProblemPtr = dynamic_cast<korali::problem::bayesian::Reference *>(_k->_problem);
+    
+    if(samplingProblemPtr != nullptr)
+    {
+        samplingProblemPtr->evaluateGradient(sample);
+        _currentGradient = sample["grad(logP(x))"].get<std::vector<double>>();
+    }
+    else if(referenceProblemPtr != nullptr)
+    {
+        referenceProblemPtr->evaluateGradient(sample);
+        _currentGradient = sample["logLikelihood Gradient"].get<std::vector<double>>();
+    }
+    else 
+        KORALI_LOG_ERROR("Couldnt retrieve gradient.");
 
-    KORALI_START(sample);
-    KORALI_WAIT(sample);
-    _currentGradient = KORALI_GET(std::vector<double>, sample, "grad(logP(x))");
-
-    // if (verbosity == true)
-    // {
-    //   std::cout << "In Hamiltonian::updateHamiltonian " << std::endl;
-    //   printf("%s\n", sample->_js.getJson().dump(2).c_str());
-    // }
   }
 
   /**

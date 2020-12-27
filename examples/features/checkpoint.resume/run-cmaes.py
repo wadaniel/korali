@@ -16,8 +16,7 @@ import korali
 k = korali.Engine()
 e = korali.Experiment()
 
-### Loading previous run (if exist)
-
+# Loading previous run (if exist)
 e["File Output"]["Path"] = "_result_cmaes"
 found = e.loadState('_result_cmaes/latest')
 
@@ -30,15 +29,16 @@ if (found == False):
 # If found, we continue with the next 5 generations.
 if (found == True):
   print('------------------------------------------------------')
-  print('Running last 10 generations...')
+  print('Running next 5 generations...')
   print('------------------------------------------------------')
-  e["Solver"]["Termination Criteria"]["Max Generations"] = 10
+  e["Solver"]["Termination Criteria"]["Max Generations"] = e["Current Generation"] + 5
  
+# Defining experiment
+
 e["Problem"]["Type"] = "Optimization"
 
 e["Solver"]["Type"] = "Optimizer/CMAES"
 e["Solver"]["Population Size"] = 5
-e["Solver"]["Termination Criteria"]["Max Generations"] = 5
 
 e["Variables"][0]["Name"] = "X"
 e["Variables"][0]["Lower Bound"] = -10.0

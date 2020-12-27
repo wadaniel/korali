@@ -75,12 +75,6 @@ class HMC : public Sampler
   void runGenerationNUTSUtilRiemannian(std::shared_ptr<TreeHelperRiemannian> helper);
 
   /**
-  * @brief Runs generation for NUTS.
-  * @param logUniSample Log of uniform sample needed for Metropolis accepance / rejection step.
-  */
-  void runGenerationNUTS(const double logUniSample);
-
-  /**
   * @brief Saves sample.
   */
   void saveSample();
@@ -101,13 +95,6 @@ class HMC : public Sampler
   void printGenerationAfter() override;
 
   /**
-  * @brief Finds reasonable Step Size. Used if Use Adaptive Time Stepping is set to True.
-  * @param q Current position.
-  * @return The reasonable Step Size found by algorithm.
-  */
-  double findReasonableStepSize(std::vector<double> q);
-
-  /**
   * @brief Recursive binary tree building algorithm. Used if Use NUTS is set to True.
   * @param helper Helper struct for large argument list.
   * @param depth Current depth of binary tree.
@@ -120,27 +107,6 @@ class HMC : public Sampler
   * @param rho Sum of momenta encountered along momentum.
   */
   void buildTreeUtilIntegration(std::shared_ptr<TreeHelperRiemannian> helper, std::vector<double> &rho);
-
-  /**
-  * @brief Recursive binary tree building algorithm. Used if Use NUTS is set to True.
-  * @param q Current Position.
-  * @param p Current Momentum.
-  * @param logUniSample Log of uniform sample from [0.0, 1.0).
-  * @param direction Direction in which Hamiltonian Dynamics are evolved (either 1 or -1).
-  * @param depth Depth of binary tree recursion.
-  * @param stepSize Step Size used for integration scheme (Leap Frog).
-  * @param rootH Original total energy from starting position (root of tree).
-  * @param qLeft Leftmost leaf of binary tree (position).
-  * @param pLeft Leftmost leaf of binary tree (momentum).
-  * @param qRight Rightmost leaf of binary tree (positon).
-  * @param pRight Rightmost leaf of binary tree (momentum).
-  * @param qProposed Newly visited position (and thus proposed) state.
-  * @param numValidLeaves Number of leaves visited in binary tree that have been visited and fulfill detailed balance condition.
-  * @param buildCriterion Indicates if binary tree should be built further, i.e. if it is false a U-Turn has been found or the error has grown to be too large.
-  * @param alpha Acceptance probability.
-  * @param numLeaves Number of leaves visited in binary tree (do not necessarily fulfill detailed balance).
-  */
-  void buildTree(const std::vector<double> &q, const std::vector<double> &p, const double logUniSample, const int direction, const int depth, const double stepSize, const double rootH, std::vector<double> &qLeft, std::vector<double> &pLeft, std::vector<double> &qRight, std::vector<double> &pRight, std::vector<double> &qProposed, double &numValidLeaves, bool &buildCriterion, double &alpha, int &numLeaves);
 
   /**
   * @brief Helper function to print std::vector.

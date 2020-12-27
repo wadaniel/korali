@@ -16,17 +16,17 @@ found = e.loadState('_result_gfpt/latest')
 
 # If not found, we run first 10 generations.
 if (found == False):
-  e["Solver"]["Termination Criteria"]["Max Generations"] = 10
   print('------------------------------------------------------')
-  print('Running first 10 generations...')
+  print('Running first 5 generations...')
   print('------------------------------------------------------')
+  e["Solver"]["Termination Criteria"]["Max Generations"] = 5
 
 # If found, we continue 
 if (found == True):
   print('------------------------------------------------------')
-  print('Running 10 more generations...')
+  print('Running 5 more generations...')
   print('------------------------------------------------------')
-  e["Solver"]["Termination Criteria"]["Max Generations"] = 20
+  e["Solver"]["Termination Criteria"]["Max Generations"] = e["Current Generation"] + 5
   
 ### Defining the Cartpole problem's configuration
 

@@ -33,10 +33,10 @@ class VRACER : public Continuous
 
   /**
    * @brief Calculates the state value function V(s,a)
-   * @param state state to evaluate
+   * @param state Time sequence of states to evaluate
    * @return The value of V(s)
    */
-  float stateValueFunction(const std::vector<float> &state);
+  float stateValueFunction(const std::vector<std::vector<float>> &state);
 
   /**
    * @brief Update the V-target or current and previous experiences in the episode

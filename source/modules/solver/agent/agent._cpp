@@ -410,62 +410,84 @@ std::vector<size_t> Agent::generateMiniBatch(size_t size)
 
 size_t Agent::getTimeSequenceStartExpId(size_t expId)
 {
- size_t startId = expId;
+  size_t startId = expId;
 
- // Adding (tmax-1) time sequences to the given experience
+  // Adding (tmax-1) time sequences to the given experience
   for (size_t t = 0; t < _timeSequenceLength - 1; t++)
- {
-  // If we reached the start of the ER, this is the starting episode in the sequence
-  if (startId == 0) break;
+  {
+    // If we reached the start of the ER, this is the starting episode in the sequence
+    if (startId == 0) break;
 
-  // Now going back one experience
-  startId--;
+    // Now going back one experience
+    startId--;
 
-  // If we reached the end of the previous episode, then add one (this covers the case where the provided experience is also terminal) and break.
-  if (_experienceReplay[startId].termination != e_nonTerminal) { startId++; break; }
- }
+    // If we reached the end of the previous episode, then add one (this covers the case where the provided experience is also terminal) and break.
+    if (_experienceReplay[startId].termination != e_nonTerminal)
+    {
+      startId++;
+      break;
+    }
+  }
 
- return startId;
+  return startId;
 }
 
 void Agent::resetTimeSequence()
 {
- _stateTimeSequence.clear();
+  _stateTimeSequence.clear();
 }
 
 std::vector<std::vector<float>> Agent::getStateTimeSequence(size_t expId)
 {
- // Getting starting expId
- size_t startId = getTimeSequenceStartExpId(expId);
+  // Getting starting expId
+  size_t startId = getTimeSequenceStartExpId(expId);
 
- // Creating storage for the time sequence
- std::vector<std::vector<float>> timeSequence;
+  // Creating storage for the time sequence
+  std::vector<std::vector<float>> timeSequence;
 
- // Now adding states
- for (size_t e = startId; e <= expId; e++)
-  timeSequence.push_back(_experienceReplay[e].state);
+  // Now adding states
+  for (size_t e = startId; e <= expId; e++)
+    timeSequence.push_back(_experienceReplay[e].state);
 
- return timeSequence;
+  return timeSequence;
+}
+
+std::vector<std::vector<float>> Agent::getTruncatedStateTimeSequence(size_t expId)
+{
+  // Getting starting expId
+  size_t startId = getTimeSequenceStartExpId(expId);
+
+  // Creating storage for the time sequence
+  std::vector<std::vector<float>> timeSequence;
+
+  // Now adding states, except for the initial one
+  for (size_t e = startId + 1; e <= expId; e++)
+    timeSequence.push_back(_experienceReplay[e].state);
+
+  // Lastly, adding truncated state
+  timeSequence.push_back(_experienceReplay[expId].truncatedState);
+
+  return timeSequence;
 }
 
 std::vector<std::vector<float>> Agent::getStateActionTimeSequence(size_t expId)
 {
- // Getting starting expId
- size_t startId = getTimeSequenceStartExpId(expId);
+  // Getting starting expId
+  size_t startId = getTimeSequenceStartExpId(expId);
 
- // Creating storage for the time sequence
- std::vector<std::vector<float>> timeSequence;
+  // Creating storage for the time sequence
+  std::vector<std::vector<float>> timeSequence;
 
- // Now adding state/action vectors
- for (size_t e = startId; e <= expId; e++)
- {
-  std::vector<float> stateAction(_problem->_stateVectorSize + _problem->_actionVectorSize);
-  for (size_t i = 0; i < _problem->_stateVectorSize; i++) stateAction[i] = _experienceReplay[e].state[i];
-  for (size_t i = 0; i < _problem->_actionVectorSize; i++) stateAction[_problem->_stateVectorSize + i] = _experienceReplay[e].action[i];
-  timeSequence.push_back(stateAction);
- }
+  // Now adding state/action vectors
+  for (size_t e = startId; e <= expId; e++)
+  {
+    std::vector<float> stateAction(_problem->_stateVectorSize + _problem->_actionVectorSize);
+    for (size_t i = 0; i < _problem->_stateVectorSize; i++) stateAction[i] = _experienceReplay[e].state[i];
+    for (size_t i = 0; i < _problem->_actionVectorSize; i++) stateAction[_problem->_stateVectorSize + i] = _experienceReplay[e].action[i];
+    timeSequence.push_back(stateAction);
+  }
 
- return timeSequence;
+  return timeSequence;
 }
 
 void Agent::finalize()

@@ -25,6 +25,7 @@ if (found == False):
   print('------------------------------------------------------')
   print('Running first 5 generations...')
   print('------------------------------------------------------')
+  e["Solver"]["Termination Criteria"]["Max Generations"] = 5
 
 # If found, we continue with the next 5 generations.
 if (found == True):

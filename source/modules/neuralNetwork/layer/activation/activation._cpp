@@ -55,11 +55,11 @@ void Activation::createForwardPipeline()
 
       // Creating descriptor
       auto activationDesc = eltwise_forward::desc(
-         _propKind,
-         _activationAlgorithm,
-         _prevLayer->_outputMem[0].get_desc(),
-         _alpha,
-         _beta);
+        _propKind,
+        _activationAlgorithm,
+        _prevLayer->_outputMem[0].get_desc(),
+        _alpha,
+        _beta);
 
       // Create primitive descriptor.
       _forwardEltwiseActivationPrimitiveDesc = eltwise_forward::primitive_desc(activationDesc, _nn->_dnnlEngine);
@@ -249,7 +249,7 @@ void Activation::backwardData()
   int t = _nn->_currentTimestep;
 
   if (_nn->_mode == "Inference")
-   KORALI_LOG_ERROR("Requesting Layer backward data propagation but NN was configured for inference only.\n");
+    KORALI_LOG_ERROR("Requesting Layer backward data propagation but NN was configured for inference only.\n");
 
 #ifdef _KORALI_USE_EIGEN
   if (_nn->_engine == "Korali")

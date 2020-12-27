@@ -83,8 +83,8 @@ void DQN::trainPolicy()
     if (_experienceReplay[expId].termination == e_nonTerminal)
     {
       // Getting experience's next state's and state/action sequence
-      auto nextStateActionSequence = getStateTimeSequence(expId+1);
-      auto nextStateSequence = getStateTimeSequence(expId+1);
+      auto nextStateActionSequence = getStateActionTimeSequence(expId + 1);
+      auto nextStateSequence = getStateTimeSequence(expId + 1);
 
       // Getting action probabilities for next state, as per the critic
       auto policy = runPolicy(nextStateSequence);
@@ -141,8 +141,8 @@ knlohmann::json DQN::runPolicy(const std::vector<std::vector<float>> &state)
   std::vector<std::vector<float>> stateActionInput(state.size());
   for (size_t t = 0; t < state.size(); t++)
   {
-   stateActionInput[t].resize(_problem->_stateVectorSize + _problem->_actionVectorSize);
-   for (size_t i = 0; i < state.size(); i++) stateActionInput[t][i] = state[t][i];
+    stateActionInput[t].resize(_problem->_stateVectorSize + _problem->_actionVectorSize);
+    for (size_t i = 0; i < state.size(); i++) stateActionInput[t][i] = state[t][i];
   }
 
   // Storage for action probabilities
@@ -155,8 +155,8 @@ knlohmann::json DQN::runPolicy(const std::vector<std::vector<float>> &state)
   {
     // Copying the values of the possible action onto the state/action vector
     for (size_t t = 0; t < state.size(); t++)
-     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-      stateActionInput[t][_problem->_stateVectorSize + i] = _problem->_possibleActions[t][i];
+      for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+        stateActionInput[t][_problem->_stateVectorSize + i] = _problem->_possibleActions[t][i];
 
     // Computing Q(s,a_i)
     qval[i] = _criticLearner->getEvaluation({stateActionInput})[0][0];

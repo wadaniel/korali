@@ -6,9 +6,9 @@
 #define _KORALI_MODULE_HPP_
 
 #include "auxiliar/koraliJson.hpp"
+#include "auxiliar/kstring.hpp"
 #include "auxiliar/logger.hpp"
 #include "auxiliar/math.hpp"
-#include "auxiliar/kstring.hpp"
 #include <chrono>
 
 /*! \namespace Korali

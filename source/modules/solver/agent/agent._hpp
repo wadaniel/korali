@@ -140,6 +140,9 @@ class Agent : public Solver
   */
   cBuffer<experience_t> _experienceReplay;
 
+  /**
+  * @brief Stores the current sequence of states observed by the agent (limited to time sequence length defined by the user)
+  */
   cBuffer<std::vector<float>> _stateTimeSequence;
 
   /**
@@ -296,9 +299,37 @@ class Agent : public Solver
   */
   std::vector<size_t> generateMiniBatch(size_t size);
 
+  /**
+  * @brief Resets time sequence within the agent, to forget past actions from other episodes
+  */
   void resetTimeSequence();
+
+  /**
+  * @brief Calculates the starting experience index of the time sequence for the selected experience
+  * @param expId The index of the latest experience in the sequence
+  * @return The starting time sequence index
+  */
   size_t getTimeSequenceStartExpId(size_t expId);
+
+  /**
+   * @brief Gets a vector of states corresponding of time sequence corresponding to the provided last experience index
+   * @param expId The index of the latest experience in the sequence
+   * @return The time step vector of states
+   */
   std::vector<std::vector<float>> getStateTimeSequence(size_t expId);
+
+  /**
+   * @brief Gets a vector of states corresponding of time sequence corresponding to the provided second-to-last experience index for which a truncated state exists
+   * @param expId The index of the second-to-latest experience in the sequence
+   * @return The time step vector of states, including the truncated state
+   */
+  std::vector<std::vector<float>> getTruncatedStateTimeSequence(size_t expId);
+
+  /**
+  * @brief Gets a vector of state/actions corresponding of time sequence corresponding to the provided last experience index
+  * @param expId The index of the latest experience in the sequence
+  * @return The time step vector of state/actions
+  */
   std::vector<std::vector<float>> getStateActionTimeSequence(size_t expId);
 
   /**

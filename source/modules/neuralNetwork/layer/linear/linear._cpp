@@ -251,7 +251,7 @@ void Linear::backwardData()
   int t = _nn->_currentTimestep;
 
   if (_nn->_mode == "Inference")
-     KORALI_LOG_ERROR("Requesting Layer backward data propagation but NN was configured for inference only.\n");
+    KORALI_LOG_ERROR("Requesting Layer backward data propagation but NN was configured for inference only.\n");
 
 #ifdef _KORALI_USE_EIGEN
   if (_nn->_engine == "Korali")
@@ -269,7 +269,7 @@ void Linear::backwardData()
   if (_nn->_engine == "OneDNN")
   {
     _backwardDataArgs[DNNL_ARG_DIFF_DST] = _outputGradientMem[t];             // Input
-    _backwardDataArgs[DNNL_ARG_WEIGHTS] = _weightsMem;                     // Input
+    _backwardDataArgs[DNNL_ARG_WEIGHTS] = _weightsMem;                        // Input
     _backwardDataArgs[DNNL_ARG_DIFF_SRC] = _prevLayer->_outputGradientMem[t]; // Output
 
     _backwardDataPrimitive.execute(_nn->_dnnlStream, _backwardDataArgs);
@@ -307,7 +307,7 @@ void Linear::backwardHyperparameters()
   const size_t t = _nn->_currentTimestep;
 
   if (_nn->_mode == "Inference")
-     KORALI_LOG_ERROR("Requesting Layer hyperparameter gradient propagation but NN was configured for inference only.\n");
+    KORALI_LOG_ERROR("Requesting Layer hyperparameter gradient propagation but NN was configured for inference only.\n");
 
 #ifdef _KORALI_USE_EIGEN
   if (_nn->_engine == "Korali")
@@ -331,8 +331,8 @@ void Linear::backwardHyperparameters()
   {
     //Arguments for the backward propagation of the gradient wrt Weights and Biases
     std::unordered_map<int, dnnl::memory> backwardWeightsArgs;
-    backwardWeightsArgs[DNNL_ARG_SRC] = _prevLayer->_outputMem[t];       // Input
-    backwardWeightsArgs[DNNL_ARG_DIFF_DST] = _outputGradientMem[t];      // Input
+    backwardWeightsArgs[DNNL_ARG_SRC] = _prevLayer->_outputMem[t];    // Input
+    backwardWeightsArgs[DNNL_ARG_DIFF_DST] = _outputGradientMem[t];   // Input
     backwardWeightsArgs[DNNL_ARG_DIFF_WEIGHTS] = _weightsGradientMem; // Output
     backwardWeightsArgs[DNNL_ARG_DIFF_BIAS] = _biasGradientMem;       // Output
 

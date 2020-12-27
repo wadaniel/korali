@@ -172,7 +172,7 @@ void Output::backwardData()
   const size_t t = _nn->_currentTimestep;
 
   if (_nn->_mode == "Inference")
-     KORALI_LOG_ERROR("Requesting Layer backward data propagation but NN was configured for inference only.\n");
+    KORALI_LOG_ERROR("Requesting Layer backward data propagation but NN was configured for inference only.\n");
 
   // Performing gradient pre-processing
   for (size_t i = 0; i < N; i++)

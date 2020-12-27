@@ -73,7 +73,7 @@ void TMCMC::setInitialConfiguration()
 
   if (_version == "mTMCMC")
   {
-    if (iCompare((*_k)["Problem"]["Type"], "Bayesian/Reference"))
+    if (iCompare((*_k)["Problem"]["Type"], "Bayesian/Reference") == false)
       KORALI_LOG_ERROR("mTMCMC works only for problems of type 'Bayesian/Reference'\n");
 
     if (_maxChainLength != 1) KORALI_LOG_ERROR("Current version of 'mTMCMC' supports only 'Max Chain Length' of 1 (BASIS).");
@@ -101,7 +101,7 @@ void TMCMC::setInitialConfiguration()
 
     for (size_t d = 0; d < _k->_variables.size(); ++d)
     {
-      if (_k->_distributions[_k->_variables[d]->_distributionIndex]->_type != "Univariate/Uniform") KORALI_LOG_ERROR("Only 'Univariate/Uniform' priors allowed (is %s).\n", _k->_distributions[_k->_variables[d]->_distributionIndex]->_type.c_str());
+      if (iCompare(_k->_distributions[_k->_variables[d]->_distributionIndex]->_type, "Univariate/Uniform") == false) KORALI_LOG_ERROR("Only 'Univariate/Uniform' priors allowed (is %s).\n", _k->_distributions[_k->_variables[d]->_distributionIndex]->_type.c_str());
       double width = dynamic_cast<distribution::univariate::Uniform *>(_k->_distributions[_k->_variables[d]->_distributionIndex])->_maximum - dynamic_cast<distribution::univariate::Uniform *>(_k->_distributions[_k->_variables[d]->_distributionIndex])->_minimum;
       _upperExtendedBoundaries[d] = dynamic_cast<distribution::univariate::Uniform *>(_k->_distributions[_k->_variables[d]->_distributionIndex])->_maximum + width * _domainExtensionFactor;
       _lowerExtendedBoundaries[d] = dynamic_cast<distribution::univariate::Uniform *>(_k->_distributions[_k->_variables[d]->_distributionIndex])->_minimum - width * _domainExtensionFactor;

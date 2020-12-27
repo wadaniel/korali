@@ -178,16 +178,16 @@ float GFPT::retraceFunction(size_t expId)
     float curV = _experienceReplay[curId].cache.access("State Value", [this, curStateSequence]() { return this->stateValueFunction(curStateSequence); });
 
     //    // Updating action distributions for the current state to get its current means
-    //    forwardPolicy(curState);
+    //    auto policy = runPolicy(curStateSequence);
     //
     //    // Getting means and sigmas for current and old policy for the given state
-    //    auto oldMean = _experienceReplay[curId].policy["Action Means"].get<std::vector<float>>();
-    //    auto oldSigma = _experienceReplay[curId].policy["Action Sigmas"].get<std::vector<float>>();
-    //    auto curMean = _actionMeans;
-    //    auto curSigma = _actionSigmas;
+    //    auto oldMeans = _experienceReplay[curId].policy["Action Means"].get<std::vector<float>>();
+    //    auto oldSigmas = _experienceReplay[curId].policy["Action Sigmas"].get<std::vector<float>>();
+    //    auto curMeans = policy["Action Means"].get<std::vector<float>>();
+    //    auto curSigmas = policy["Action Sigmas"].get<std::vector<float>>();
     //
     //    // Calculate importance weight
-    //    float importanceWeight = calculateImportanceWeight(curAction, curMean, curSigma, oldMean, oldSigma);
+    //    float importanceWeight = calculateImportanceWeight(curAction, curMeans, curSigmas, oldMeans, oldSigmas);
     float importanceWeight = 1.0f;
 
     // Truncate importance weight

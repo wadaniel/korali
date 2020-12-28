@@ -42,6 +42,12 @@ class Bayesian : public korali::Problem
  * @param sample A Korali Sample
  */
   virtual void evaluateGradient(korali::Sample &sample);
+ 
+  /**
+ * @brief Evaluates the gradient of the logPrior w.r.t. to the variables, and stores it in sample["logPrior Gradient"]
+ * @param sample A Korali Sample
+ */
+ void evaluateLogPriorGradient(korali::Sample &sample);
 
   /**
  * @brief Evaluates the gradient of the logLikelikood w.r.t. to the variables, and stores it in sample["logLikelihood Gradient"]

@@ -15,10 +15,13 @@ double Uniform::getDensity(const double x) const
 
 double Uniform::getLogDensity(const double x) const
 {
-  if (_maximum - _minimum <= 0.0) return NaN;
-
   if (x >= _minimum && x <= _maximum) return _aux;
   return -Inf;
+}
+
+double Uniform::getLogDensityGradient(const double x) const
+{
+  return 0.0;
 }
 
 double Uniform::getRandomNumber()
@@ -33,7 +36,6 @@ void Uniform::updateDistribution()
 {
   if (_maximum - _minimum <= 0.0)
     _aux = NaN;
-  //KORALI_LOG_ERROR("Maximum (%f) bound must be higher than Minimum (%f) bound in a Uniform distribution.\n", _maximum, _minimum);
   else
     _aux = -gsl_sf_log(_maximum - _minimum);
 }

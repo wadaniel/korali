@@ -25,6 +25,13 @@ class Univariate : public korali::Distribution
  * @return Log of probability density.
  */
   virtual double getLogDensity(const double x) const = 0;
+ 
+  /**
+ * @brief Gets the Gradient of the log probability density of the distribution wrt. to x.
+ * @param x point to evaluate grad(log(P(x)))
+ * @return Gradient of log of probability density.
+ */
+  virtual double getLogDensityGradient(const double x) const { KORALI_LOG_ERROR("Gradient for prior not yet implemented\n"); };
 
   /**
   * @brief Draws and returns a random number from the distribution.

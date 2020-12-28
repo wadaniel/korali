@@ -71,10 +71,13 @@ void Continuous::getAction(korali::Sample &sample)
   if (sample["Mode"] == "Testing") action = generateTestingAction(curMeans, curSigmas);
 
   /*****************************************************************************
-  * Storing the action itself and associated metadata
+  * Storing the action and it's policy
   ****************************************************************************/
 
   sample["Policy"] = policy;
+  sample["Policy"]["Importance Weight"] = 1.0f;
+  sample["Policy"]["KL Divergence Gradient"] = std::vector<float>(_problem->_actionVectorSize, 0.0f);
+
   sample["Action"] = action;
 }
 
@@ -234,6 +237,32 @@ std::vector<float> Continuous::calculateKLDivergenceGradient(const std::vector<f
   }
 
   return klGrad;
+}
+
+void Continuous::updateExperienceImportanceWeight(size_t expId)
+{
+ // Getting the state sequence and action for the given experience
+ auto expStateSequence = getStateTimeSequence(expId);
+ auto expAction = _experienceReplay[expId].action;
+
+ // Get means and sigmas for the given experience
+ auto expMeans = _experienceReplay[expId].policy["Action Means"].get<std::vector<float>>();
+ auto expSigmas = _experienceReplay[expId].policy["Action Sigmas"].get<std::vector<float>>();
+
+ // Getting current policy and calculating its means and sigmas for the given experience
+ auto policy = runPolicy(expStateSequence);
+ auto curMeans = policy["Action Means"].get<std::vector<float>>();
+ auto curSigmas = policy["Action Sigmas"].get<std::vector<float>>();
+
+ // Now calculating importance weight
+ auto expImportanceWeight = calculateImportanceWeight(expAction, expMeans, expSigmas, curMeans, curSigmas);
+
+ // Now calculating KL divergence gradient
+ auto expKLDivergenceGradient = calculateKLDivergenceGradient(expMeans, expSigmas, curMeans, curSigmas);
+
+ // Updating values to the experience
+ _experienceReplay[expId].policy["Importance Weight"] = expImportanceWeight;
+ _experienceReplay[expId].policy["KL Divergence Gradient"] = expKLDivergenceGradient;
 }
 
 } // namespace agent

@@ -57,6 +57,9 @@ void Agent::initialize()
     // Initialize best hyperparameters
     _bestTestingHyperparameters = _hyperparameters;
     _bestTrainingHyperparameters = _hyperparameters;
+
+    // Set initial off-policy ratio to zero (all experiences are on-policy)
+    _experienceReplayOffPolicyCurrentRatio = 0.0f;
   }
 
   // If this continues a previous run, deserialize previous input experience replay
@@ -67,6 +70,7 @@ void Agent::initialize()
   _agentComputationTime = 0.0;
   _agentCommunicationTime = 0.0;
   _agentPolicyEvaluationTime = 0.0;
+  _experienceReplayOffPolicyUpdateTime = 0.0;
 
   // Initializing session-specific counters
   _sessionExperienceCount = 0;
@@ -152,6 +156,11 @@ void Agent::trainingGeneration()
         // Increasing policy update counters
         _policyUpdateCount++;
         _sessionPolicyUpdateCount++;
+
+        // Now re-calculating importance weight of the entire experience database
+        if (_experienceReplayImportanceWeightUpdateFrequency > 0)
+         if (_policyUpdateCount % _experienceReplayImportanceWeightUpdateFrequency == 0)
+          updateExperienceReplayImportanceWeights();
       }
     }
   }
@@ -295,6 +304,7 @@ void Agent::processExperience(knlohmann::json &experience)
 {
   experience_t e;
 
+  // Creating cache for the new experience
   e.cache.setMaxAge(_cachePersistence);
   e.cache.setTimer(&_policyUpdateCount);
 
@@ -311,18 +321,60 @@ void Agent::processExperience(knlohmann::json &experience)
     e.truncatedState = experience["Truncated State"].get<std::vector<float>>();
   }
 
-  e.priority = _experienceReplayMaxPriority;
-  e.probability = 0.0;
+  // Updating metadata for prioritized minibatch selection
+  e.metadata["Mini Batch"]["Priority"] = _experienceReplayMaxPriority;
+  e.metadata["Mini Batch"]["Probability"] = 0.0;
+
+  // Storing policy
   e.policy = experience["Policy"];
-  e.cache.set("Importance Weight", 1.0);
+
+  // Adding experience
   _experienceReplay.add(e);
+}
+
+bool Agent::isExperienceOnPolicy(size_t expId)
+{
+ float expImportanceWeight = _experienceReplay[expId].policy["Importance Weight"].get<float>();
+
+ if ((expImportanceWeight > (1.0f / _experienceReplayOffPolicyCutoffScale)) &&
+     (expImportanceWeight < _experienceReplayOffPolicyCutoffScale)) return true;
+
+ return false;
+}
+
+void Agent::updateExperienceReplayImportanceWeights()
+{
+ // Profiling
+ auto beginTime = std::chrono::steady_clock::now();
+
+ // Updating the importance weights for all the experiences in the ER
+ #pragma omp parallel for schedule(dynamic, 1)
+ for (size_t expId = 0; expId < _experienceReplay.size(); expId++)
+  updateExperienceImportanceWeight(expId);
+
+ // Counting number of off-policy experiences
+  size_t expCount = _experienceReplay.size();
+  size_t offPolicyCount = 0;
+
+  // Count off-policy experiences
+  for (size_t expId = 0; expId < expCount; expId++)
+   if (isExperienceOnPolicy(expId) == false)
+    offPolicyCount++;
+
+  // Updating off policy ratio
+  _experienceReplayOffPolicyCurrentRatio = (float)offPolicyCount / (float)expCount;
+
+  // Profiling
+  auto endTime = std::chrono::steady_clock::now();
+  _experienceReplayOffPolicyUpdateTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();
 }
 
 void Agent::updateExperienceReplayProbabilities()
 {
   // Rank priorities
   auto experienceRanking = std::vector<std::pair<float, size_t>>(_experienceReplay.size());
-  for (size_t i = 0; i < _experienceReplay.size(); ++i) experienceRanking[i] = std::make_pair(_experienceReplay[i].priority, i + 1);
+  for (size_t i = 0; i < _experienceReplay.size(); ++i)
+   experienceRanking[i] = std::make_pair(_experienceReplay[i].metadata["Mini Batch"]["Priority"].get<float>(), i + 1);
   sort(experienceRanking.begin(), experienceRanking.end());
 
   // Calculate rank based probabilities
@@ -332,14 +384,14 @@ void Agent::updateExperienceReplayProbabilities()
 
   // Update probabilities
   for (size_t i = 0; i < _experienceReplay.size(); ++i)
-    _experienceReplay[i].probability = std::pow((float)experienceRanking[i].second, _priorityAnnealingRate) / (prioritySum);
+    _experienceReplay[i].metadata["Mini Batch"]["Probability"] = std::pow((float)experienceRanking[i].second, _priorityAnnealingRate) / (prioritySum);
 }
 
 void Agent::updateExperienceReplayPriority(size_t expId, float priority)
 {
   // Insert priority calculated in learner
   if (priority > _experienceReplayMaxPriority) _experienceReplayMaxPriority = priority;
-  _experienceReplay[expId].priority = priority;
+  _experienceReplay[expId].metadata["Mini Batch"]["Priority"] = priority;
 }
 
 std::vector<float> Agent::calculateImportanceWeights(std::vector<size_t> miniBatch)
@@ -349,7 +401,7 @@ std::vector<float> Agent::calculateImportanceWeights(std::vector<size_t> miniBat
   if (_miniBatchStrategy == "Prioritized")
   {
     for (size_t i = 0; i < miniBatch.size(); ++i)
-      importanceWeights[i] = std::pow((float)_experienceReplay.size() * _experienceReplay[miniBatch[i]].probability, -_importanceWeightAnnealingRate);
+      importanceWeights[i] = std::pow((float)_experienceReplay.size() * _experienceReplay[miniBatch[i]].metadata["Mini Batch"]["Probability"].get<float>(), -_importanceWeightAnnealingRate);
   }
 
   return importanceWeights;
@@ -391,13 +443,13 @@ std::vector<size_t> Agent::generateMiniBatch(size_t size)
     float cumulativeProbability = 0;
 
     // Sampling from multinomial distribution using inverse transform
-    cumulativeProbability += _experienceReplay[0].probability;
+    cumulativeProbability += _experienceReplay[0].metadata["Mini Batch"]["Probability"].get<float>();
     while (batchIdx < size && expId < _experienceReplay.size())
     {
       if (cumulativeProbability > pvalues[batchIdx])
         miniBatch[batchIdx++] = expId;
       else
-        cumulativeProbability += _experienceReplay[++expId].probability;
+        cumulativeProbability += _experienceReplay[++expId].metadata["Mini Batch"]["Probability"].get<float>();
     }
 
     // Uniform fill if miniBatch not full due to numerical precision during probability accumulation (cumulative probability < 1)
@@ -526,8 +578,6 @@ void Agent::serializeExperienceReplay()
     _experienceReplayDatabase[i]["State"] = _experienceReplay[i].state;
     _experienceReplayDatabase[i]["Action"] = _experienceReplay[i].action;
     _experienceReplayDatabase[i]["Reward"] = _experienceReplay[i].reward;
-    _experienceReplayDatabase[i]["Priority"] = _experienceReplay[i].priority;
-    _experienceReplayDatabase[i]["Probability"] = _experienceReplay[i].probability;
     _experienceReplayDatabase[i]["Termination"] = _experienceReplay[i].termination;
     _experienceReplayDatabase[i]["Truncated State"] = _experienceReplay[i].truncatedState;
     _experienceReplayDatabase[i]["Policy"] = _experienceReplay[i].policy;
@@ -543,8 +593,6 @@ void Agent::deserializeExperienceReplay()
     e.state = _experienceReplayDatabase[i]["State"].get<std::vector<float>>();
     e.action = _experienceReplayDatabase[i]["Action"].get<std::vector<float>>();
     e.reward = _experienceReplayDatabase[i]["Reward"].get<float>();
-    e.priority = _experienceReplayDatabase[i]["Priority"].get<float>();
-    e.probability = _experienceReplayDatabase[i]["Probability"].get<float>();
     e.termination = _experienceReplayDatabase[i]["Termination"].get<termination_t>();
     e.truncatedState = _experienceReplayDatabase[i]["Truncated State"].get<std::vector<float>>();
     e.policy = _experienceReplayDatabase[i]["Policy"];
@@ -570,6 +618,9 @@ void Agent::printGenerationAfter()
       _k->_logger->logInfo("Normal", " + Total Experience Count:      %lu/%lu\n", _experienceCount, _maxExperiences);
     else
       _k->_logger->logInfo("Normal", " + Total Experience Count:      %lu\n", _experienceCount);
+
+    if (_experienceReplayImportanceWeightUpdateFrequency > 0)
+      _k->_logger->logInfo("Normal", " + Current Off-Policy Ratio:    %f (Target: %f)\n", _experienceReplayOffPolicyCurrentRatio, _experienceReplayOffPolicyTarget);
 
     _k->_logger->logInfo("Normal", "Training Statistics:\n");
 
@@ -598,9 +649,11 @@ void Agent::printGenerationAfter()
     _k->_logger->logInfo("Normal", " + Average Agent Computation Time:                    %fs\n", _sessionEpisodeCount > 0 ? (_agentComputationTime / _sessionEpisodeCount) / 1.0e+9 : 0.0);
     _k->_logger->logInfo("Normal", " + Average Agent Communication/Wait Time:             %fs\n", _sessionEpisodeCount > 0 ? (_agentCommunicationTime / _sessionEpisodeCount) / 1.0e+9 : 0.0);
     _k->_logger->logInfo("Normal", " + Average Agent Policy Evaluation Time:              %fs\n", _sessionEpisodeCount > 0 ? (_agentPolicyEvaluationTime / _sessionEpisodeCount) / 1.0e+9 : 0.0);
-    _k->_logger->logInfo("Normal", " + Generation Running Time:                           %fs\n", _generationTime / 1.0e+9);
+    if (_experienceReplayImportanceWeightUpdateFrequency > 0)
+     _k->_logger->logInfo("Normal", " + Cumulative Off-Policy Ratio Evaluation Time:       %fs\n", _experienceReplayOffPolicyUpdateTime / 1.0e+9);
     _k->_logger->logInfo("Normal", " + Cumulative Experience Replay Serialization Time:   %fs\n", _serializationTime / 1.0e+9);
     _k->_logger->logInfo("Normal", " + Cumulative Result File Saving I/O Time:            %fs\n", _k->_resultSavingTime / 1.0e+9);
+    _k->_logger->logInfo("Normal", " + Generation Running Time:                           %fs\n", _generationTime / 1.0e+9);
   }
 
   if (_mode == "Testing")

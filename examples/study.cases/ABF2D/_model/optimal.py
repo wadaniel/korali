@@ -56,7 +56,7 @@ if __name__ == '__main__':
         steps = 0
 
         for b, wc in zip(betas, wcs):
-            nsteps = abs(round(b / sim.dt))
+            nsteps = int((abs(round(b / sim.dt))))
             s = np.sign(b)
             action = [-s*n[0], -s*n[1], wc]
             steps += nsteps

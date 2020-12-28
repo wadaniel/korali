@@ -80,7 +80,7 @@ void dVRACER::trainPolicy()
                                    : offPolicyCount)
   for (size_t id = 0; id < expCount; id++)
   {
-    float expImportanceWeight = _experienceReplay[id].cache.get("Importance Weight");
+    float expImportanceWeight = _experienceReplay[id].metadata["Importance Weight"].get<float>();
     if (expImportanceWeight > _referCutoff || expImportanceWeight < 1. / _referCutoff)
       offPolicyCount++;
   }
@@ -128,7 +128,7 @@ void dVRACER::trainPolicy()
 
     // Update value and weight in cache
     _experienceReplay[expId].cache.set("State Value", V);
-    _experienceReplay[expId].cache.set("Importance Weight", importanceWeight);
+    _experienceReplay[expId].metadata["Importance Weight"] = importanceWeight;
 
     /******************************************************
     * Gradient calculation
@@ -245,7 +245,7 @@ void dVRACER::updateVtbc(size_t expId)
   // access experiences
   float reward = _experienceReplay[expId].reward;
   float value = _experienceReplay[expId].cache.get("State Value");                  // calculated before
-  float importanceWeight = _experienceReplay[expId].cache.get("Importance Weight"); // calculated before
+  float importanceWeight = _experienceReplay[expId].metadata["Importance Weight"].get<float>(); // calculated before
 
   // truncate importance weight
   float truncatedImportanceWeight = std::min(1.0f, importanceWeight);
@@ -277,7 +277,7 @@ void dVRACER::updateVtbc(size_t expId)
     if (_experienceReplay[curId].cache.contains("State Value"))
     {
       value = _experienceReplay[curId].cache.get("State Value");                  // calculated before
-      importanceWeight = _experienceReplay[curId].cache.get("Importance Weight"); // calculated before
+      importanceWeight = _experienceReplay[curId].metadata["Importance Weight"].get<float>(); // calculated before
     }
     else
     {
@@ -295,7 +295,7 @@ void dVRACER::updateVtbc(size_t expId)
       importanceWeight = calculateImportanceWeight(expActionIdx, curPvals, expPvals);
 
       _experienceReplay[curId].cache.set("State Value", value);
-      _experienceReplay[curId].cache.set("Importance Weight", importanceWeight);
+      _experienceReplay[curId].metadata["Importance Weight"] = importanceWeight;
     }
 
     float truncatedImportanceWeight = std::min(1.0f, importanceWeight);
@@ -401,7 +401,6 @@ knlohmann::json dVRACER::runPolicy(const std::vector<std::vector<float>> &state)
   knlohmann::json policy;
   policy["State Value"] = stateValue;
   policy["Action Probabilities"] = pActions;
-  policy["Importance Weight"] = 1.0f;
 
   return policy;
 }

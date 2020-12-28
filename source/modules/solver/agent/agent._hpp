@@ -57,16 +57,6 @@ struct experience_t
   float reward;
 
   /**
-   * @brief Contains priority of the experience (for minibatch selection)
-   */
-  float priority;
-
-  /**
-   * @brief Contains probability of selecting the experience (for minibatch selection)
-   */
-  float probability;
-
-  /**
    * @brief Specifies whether the experience is terminal (truncated or normal) or not.
    */
   termination_t termination;
@@ -196,61 +186,13 @@ class Agent : public Solver
   double _agentPolicyEvaluationTime;
 
   /**
-  * @brief Trains the Agent's policy, based on the new experiences
-  */
-  virtual void trainPolicy() = 0;
-
-  /**
-   * @brief Obtains the policy hyperaparamters from the learner for the agent to generate new actions
-   * @return The current policy hyperparameters
+   * @brief [Profiling] Measures the time taken to update the off-policy ratio.
    */
-  virtual knlohmann::json getAgentPolicy() = 0;
+  double _experienceReplayOffPolicyUpdateTime;
 
-  /**
-  * @brief Function to pass a state time series through the NN and calculates the action probabilities, along with any additional information
-  * @param stateSequence The state time series (Format: TxS, where T is the time series lenght, and S is the state size)
-  * @return A JSON object containing the information produced by the policy given the current state
-  */
-  virtual knlohmann::json runPolicy(const std::vector<std::vector<float>> &stateSequence) = 0;
-
-  /**
-  * @brief Updates the agent's hyperparameters
-  * @param hyperparameters The hyperparameters to update the agent.
-  */
-  virtual void setAgentPolicy(const knlohmann::json &hyperparameters) = 0;
-
-  /**
-   * @brief Sets training state to continue learning from a previous run or state file
-   * @param state The state to update the training NNs.
-   */
-  virtual void setTrainingState(const knlohmann::json &state) = 0;
-
-  /**
-   * @brief Obtains the current training state to store to a file and continue learning later
-   * @return The state to store
-   */
-  virtual knlohmann::json getTrainingState() = 0;
-
-  /**
-    * @brief Initializes the internal state of the policy
-    */
-  virtual void initializeAgent() = 0;
-
-  /**
- * @brief Runs a generation of the environment(s), running an action on each episode, and updating the policy.
- */
-  void runGeneration() override;
-
-  /**
-   * @brief Prints information about the training policy
-   */
-  virtual void printAgentInformation() = 0;
-
-  /**
-   * @brief Gathers the next action either from the policy or randomly
-   * @param sample Sample on which the action and metadata will be stored
-   */
-  virtual void getAction(korali::Sample &sample) = 0;
+  /****************************************************************************************************
+   * Common Agent functions
+   ***************************************************************************************************/
 
   /**
    * @brief Mini-batch based normalization routine for Neural Networks with state and action inputs (typically critics)
@@ -291,6 +233,11 @@ class Agent : public Solver
   * @brief Updates probabilities of experiences stored based on their priority.
   */
   void updateExperienceReplayProbabilities();
+
+  /**
+  * @brief Updates the importance weight of the stored experiences and re-calculates off-policy ratio
+  */
+  void updateExperienceReplayImportanceWeights();
 
   /**
   * @brief Generates an experience mini batch from the replay memory
@@ -340,6 +287,13 @@ class Agent : public Solver
   std::vector<float> calculateImportanceWeights(std::vector<size_t> miniBatch);
 
   /**
+   * @brief Indicates whether an experience is on policy
+   * @param expId The index of the experience within the Experience Replay memory
+   * @return True, if it's on policy. False, if it's off policy.
+   */
+  bool isExperienceOnPolicy(size_t expId);
+
+  /**
    * @brief Listens to incoming experience from the given agent, sends back policy or terminates the episode depending on what's needed
    * @param agentId The Agent's ID
    */
@@ -365,6 +319,70 @@ class Agent : public Solver
    */
   void testingGeneration();
 
+  /****************************************************************************************************
+   * Virtual functions (responsibilities) for learning algorithms to fulfill
+   ***************************************************************************************************/
+
+  /**
+  * @brief Trains the Agent's policy, based on the new experiences
+  */
+  virtual void trainPolicy() = 0;
+
+  /**
+   * @brief Obtains the policy hyperaparamters from the learner for the agent to generate new actions
+   * @return The current policy hyperparameters
+   */
+  virtual knlohmann::json getAgentPolicy() = 0;
+
+  /**
+  * @brief Function to pass a state time series through the NN and calculates the action probabilities, along with any additional information
+  * @param stateSequence The state time series (Format: TxS, where T is the time series lenght, and S is the state size)
+  * @return A JSON object containing the information produced by the policy given the current state
+  */
+  virtual knlohmann::json runPolicy(const std::vector<std::vector<float>> &stateSequence) = 0;
+
+  /**
+  * @brief Updates the agent's hyperparameters
+  * @param hyperparameters The hyperparameters to update the agent.
+  */
+  virtual void setAgentPolicy(const knlohmann::json &hyperparameters) = 0;
+
+  /**
+   * @brief Sets training state to continue learning from a previous run or state file
+   * @param state The state to update the training NNs.
+   */
+  virtual void setTrainingState(const knlohmann::json &state) = 0;
+
+  /**
+   * @brief Obtains the current training state to store to a file and continue learning later
+   * @return The state to store
+   */
+  virtual knlohmann::json getTrainingState() = 0;
+
+  /**
+  * @brief Returns the value of importance weight for a given experience
+  * @param expId Index of the experience in the ER to calculate the importance weight for
+  */
+  virtual void updateExperienceImportanceWeight(size_t expId) = 0;
+
+  /**
+    * @brief Initializes the internal state of the policy
+    */
+  virtual void initializeAgent() = 0;
+
+  /**
+   * @brief Prints information about the training policy
+   */
+  virtual void printAgentInformation() = 0;
+
+  /**
+   * @brief Gathers the next action either from the policy or randomly
+   * @param sample Sample on which the action and metadata will be stored
+   */
+  virtual void getAction(korali::Sample &sample) = 0;
+
+
+  void runGeneration() override;
   void printGenerationAfter() override;
   void initialize() override;
   void finalize() override;

@@ -66,12 +66,14 @@ e["Solver"]["Experience Replay"]["Start Size"] =   1024
 e["Solver"]["Experience Replay"]["Maximum Size"] = 32768
 e["Solver"]["Experience Replay"]["Serialization Frequency"] = 500
 e["Solver"]["Experience Replay"]["Importance Weight"]["Update Frequency"] = 5
+
+### Configuring Mini Batch
+
+e["Solver"]["Mini Batch Size"] = 128
 e["Solver"]["Mini Batch Strategy"] = "Uniform"
 
-## Defining Critic and PolicyConfiguration
+## Defining Critic and Policy Configuration
 
-e["Solver"]["Discount Factor"] = 0.99
-e["Solver"]["Mini Batch Size"] = 128
 e["Solver"]["Critic"]["Learning Rate"] = 0.001  
 e["Solver"]["Policy"]["Learning Rate"] = 0.0001
 e["Solver"]["Policy"]["Target Accuracy"] = 0.0001

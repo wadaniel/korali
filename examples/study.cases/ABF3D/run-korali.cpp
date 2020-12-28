@@ -70,44 +70,41 @@ int main(int argc, char *argv[])
   e["Variables"][17]["Upper Bound"] = upperBounds[3];
   e["Variables"][17]["Exploration Sigma"] = (upperBounds[3] - lowerBounds[3]) * 0.1;
 
-  //// Defining Agent Configuration
+  /// Defining Agent Configuration
 
   e["Solver"]["Type"] = "Agent / Continuous / GFPT";
   e["Solver"]["Mode"] = "Training";
-  e["Solver"]["Agent Count"] = 1;
+  e["Solver"]["Agent Count"] = 4;
+  e["Solver"]["Time Sequence Length"] = 8;
   e["Solver"]["Experiences Per Generation"] = 972;
-  e["Solver"]["Experiences Between Policy Updates"] = 10;
+  e["Solver"]["Experiences Between Policy Updates"] = 50;
   e["Solver"]["Cache Persistence"] = 10;
-  e["Solver"]["Discount Factor"] = 0.99;
-  e["Solver"]["Mini Batch Size"] = 256;
 
-  e["Solver"]["Experience Replay"]["Start Size"] = 1000;
-  e["Solver"]["Experience Replay"]["Maximum Size"] = 262144;
+  /// Defining the configuration of replay memory
+
+  e["Solver"]["Experience Replay"]["Start Size"] =   1024;
+  e["Solver"]["Experience Replay"]["Maximum Size"] = 32768;
   e["Solver"]["Experience Replay"]["Serialization Frequency"] = 20;
+  e["Solver"]["Experience Replay"]["Importance Weight"]["Update Frequency"] = 5;
+
+  /// Configuring Mini Batch
+
+  e["Solver"]["Mini Batch Size"] = 256;
   e["Solver"]["Mini Batch Strategy"] = "Uniform";
 
-  //// Defining Critic/Policy Configuration
+  /// Defining Critic and Policy Configuration
 
-  e["Solver"]["Critic"]["Learning Rate"] = 0.0001;
-  e["Solver"]["Policy"]["Learning Rate"] = 0.000001;
+  e["Solver"]["Critic"]["Learning Rate"] = 0.001;
+  e["Solver"]["Policy"]["Learning Rate"] = 0.0001;
   e["Solver"]["Policy"]["Target Accuracy"] = 0.0001;
-  e["Solver"]["Policy"]["Optimization Candidates"] = 8;
+  e["Solver"]["Policy"]["Optimization Candidates"] = 32;
 
-  //// Defining Neural Network
+  /// Configuring the neural network and its hidden layers
 
   e["Solver"]["Neural Network"]["Engine"] = "OneDNN";
 
-  e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear";
-  e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 128;
-
-  e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Activation";
-  e["Solver"]["Neural Network"]["Hidden Layers"][1]["Function"] = "Elementwise/Tanh";
-
-  e["Solver"]["Neural Network"]["Hidden Layers"][2]["Type"] = "Layer/Linear";
-  e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 128;
-
-  e["Solver"]["Neural Network"]["Hidden Layers"][3]["Type"] = "Layer/Activation";
-  e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tanh";
+  e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Recurrent/GRU";
+  e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 64;
 
   ////// Defining Termination Criteria
 
@@ -126,5 +123,7 @@ int main(int argc, char *argv[])
   e["File Output"]["Path"] = "_results";
 
   auto k = korali::Engine();
+  k["Conduit"]["Type"] = "Concurrent";
+  k["Conduit"]["Concurrent Jobs"] = 4;
   k.run(e);
 }

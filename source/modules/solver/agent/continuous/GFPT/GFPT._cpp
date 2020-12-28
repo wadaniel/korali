@@ -506,25 +506,25 @@ void GFPT::printAgentInformation()
 {
   _k->_logger->logInfo("Normal", "Critic Information:\n");
 
-  _k->_logger->logInfo("Normal", " + Average Q-Value in Mini-Batch:  %.4g\n", _averageQStar);
+  _k->_logger->logInfo("Normal", " + Average Q-Value in Mini-Batch:  %.4e\n", _averageQStar);
 
   _k->_logger->logInfo("Normal", "V Function Information:\n");
 
-  _k->_logger->logInfo("Normal", " + Learning Rate:                  %.4g (Max: %.4g)\n", _vLearner->_learningRate, _criticLearningRate);
+  _k->_logger->logInfo("Normal", " + Learning Rate:                  %.4e (Max: %.4e)\n", _vLearner->_learningRate, _criticLearningRate);
   _vExperiment._logger->_verbosityLevel = _k->_logger->_verbosityLevel;
   _vExperiment._solver->printGenerationAfter();
   _vExperiment._logger->setVerbosityLevel("Silent");
 
   _k->_logger->logInfo("Normal", "A Function Information:\n");
 
-  _k->_logger->logInfo("Normal", " + Learning Rate:                  %.4g (Max: %.4g)\n", _aLearner->_learningRate, _criticLearningRate);
+  _k->_logger->logInfo("Normal", " + Learning Rate:                  %.4e (Max: %.4e)\n", _aLearner->_learningRate, _criticLearningRate);
   _aExperiment._logger->_verbosityLevel = _k->_logger->_verbosityLevel;
   _aExperiment._solver->printGenerationAfter();
   _aExperiment._logger->setVerbosityLevel("Silent");
 
   _k->_logger->logInfo("Normal", "Policy Information:\n");
 
-  _k->_logger->logInfo("Normal", " + Learning Rate:                  %.4g (Max: %.4g)\n", _policyLearner->_learningRate, _policyLearningRate);
+  _k->_logger->logInfo("Normal", " + Learning Rate:                  %.4e (Max: %.4e)\n", _policyLearner->_learningRate, _policyLearningRate);
   _policyExperiment._logger->_verbosityLevel = _k->_logger->_verbosityLevel;
   _policyExperiment._solver->printGenerationAfter();
   _policyExperiment._logger->setVerbosityLevel("Silent");

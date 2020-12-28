@@ -99,14 +99,15 @@ class HMC : public Sampler
   * @param helper Helper struct for large argument list.
   * @param depth Current depth of binary tree.
   */
-  void buildTreeUtil(std::shared_ptr<TreeHelperEuclidean> helper, int depth);
+  void buildTreeUtil(std::shared_ptr<TreeHelperEuclidean> helper, const size_t depth);
 
   /**
   * @brief Recursive binary tree building algorithm. Used if Use NUTS is set to True.
   * @param helper Helper struct for large argument list.
   * @param rho Sum of momenta encountered along momentum.
+  * @param depth Current depth of binary tree.
   */
-  void buildTreeUtilIntegration(std::shared_ptr<TreeHelperRiemannian> helper, std::vector<double> &rho);
+  void buildTreeUtilIntegration(std::shared_ptr<TreeHelperRiemannian> helper, std::vector<double> &rho, const size_t depth);
 
   /**
   * @brief Helper function to print std::vector.

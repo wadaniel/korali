@@ -185,6 +185,7 @@ void HMC::runGeneration()
       auto helperPtr = std::make_shared<TreeHelperEuclidean>();
       helperPtr->logUniSampleIn = logUniSample;
       runGenerationNUTSUtil(helperPtr);
+      if(helperPtr.unique() == false) KORALI_LOG_ERROR("LEAK");
     }
     else if (_version == "Riemannian")
     {
@@ -720,6 +721,7 @@ void HMC::buildTreeUtil(std::shared_ptr<TreeHelperEuclidean> helper, int depth)
       helper->numLeavesOut += numLeavesSubtree;
 
       helper->buildCriterionOut = buildCriterionSubtree && helper->computeCriterion(*_hamiltonian);
+      if(helperSubtree.unique() == false) KORALI_LOG_ERROR("LEAK");
     }
   }
 }
@@ -822,6 +824,7 @@ void HMC::buildTreeUtilIntegration(std::shared_ptr<TreeHelperRiemannian> helper,
       std::vector<double> pEnd = helper->directionIn == -1 ? helperSubtree->pLeftOut : helperSubtree->pRightOut;
       // helper->buildCriterionOut = buildCriterionSubtree && helper->computeCriterion(_hamiltonian, pStart, pEnd, rhoSubtree);
       helper->buildCriterionOut = false;
+      if(helperSubtree.unique() == false) KORALI_LOG_ERROR("LEAK");
     }
   }
 }

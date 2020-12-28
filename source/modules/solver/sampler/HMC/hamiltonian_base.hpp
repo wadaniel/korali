@@ -192,6 +192,8 @@ class Hamiltonian
     else 
         KORALI_LOG_ERROR("Couldnt retrieve gradient.");
 
+    // to TEST
+    // std::fill(_currentGradient.begin(), _currentGradient.end(), 0.0);
   }
 
   /**

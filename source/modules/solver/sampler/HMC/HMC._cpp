@@ -829,6 +829,7 @@ void HMC::buildTreeUtilIntegration(std::shared_ptr<TreeHelperRiemannian> helper,
   }
 }
 
+
 void HMC::__printVec(const std::vector<double> vec) const
 {
   for (size_t i = 0; i < vec.size(); ++i)

@@ -45,13 +45,13 @@ void HMC::setInitialConfiguration()
   if (_version == "Euclidean" || _useAdaptiveStepSize)
   {
     size_t adaptionLength = _initialFastAdaptionInterval + _initialSlowAdaptionInterval + _finalFastAdaptionInterval;
-    if(_burnIn < adaptionLength)
+    if (_burnIn < adaptionLength)
     {
-        _k->_logger->logInfo("Minimal", "Burn In (%zu) smaller than adaption length: %zu\n", adaptionLength);
-        _k->_logger->logInfo("Minimal", "Reducing windows to (15%/75%/10%) of Burn In period\n");
-        _initialFastAdaptionInterval = _burnIn * 0.15;
-        _finalFastAdaptionInterval = _burnIn * 0.10;
-        _initialSlowAdaptionInterval = _burnIn - _initialFastAdaptionInterval - _finalFastAdaptionInterval;
+      _k->_logger->logInfo("Minimal", "Burn In (%zu) smaller than adaption length: %zu\n", adaptionLength);
+      _k->_logger->logInfo("Minimal", "Reducing windows to (15%/75%/10%) of Burn In period\n");
+      _initialFastAdaptionInterval = _burnIn * 0.15;
+      _finalFastAdaptionInterval = _burnIn * 0.10;
+      _initialSlowAdaptionInterval = _burnIn - _initialFastAdaptionInterval - _finalFastAdaptionInterval;
     }
 
     size_t minBurnInLength = 100;
@@ -185,7 +185,7 @@ void HMC::runGeneration()
       auto helperPtr = std::make_shared<TreeHelperEuclidean>();
       helperPtr->logUniSampleIn = logUniSample;
       runGenerationNUTSUtil(helperPtr);
-      if(helperPtr.unique() == false) KORALI_LOG_ERROR("LEAK");
+      if (helperPtr.unique() == false) KORALI_LOG_ERROR("LEAK");
     }
     else if (_version == "Riemannian")
     {
@@ -216,7 +216,6 @@ void HMC::runGeneration()
 void HMC::runGenerationHMC(const double logUniSample)
 {
   // Track energies from leader
-  _hamiltonian->updateHamiltonian(_positionLeader, _k);
   const double oldK = _hamiltonian->K(_momentumLeader);
   const double oldU = _hamiltonian->U();
 
@@ -227,7 +226,6 @@ void HMC::runGenerationHMC(const double logUniSample)
   std::transform(std::cbegin(_momentumCandidate), std::cend(_momentumCandidate), std::begin(_momentumCandidate), std::negate<double>());
 
   // Save energies from candidate
-  _hamiltonian->updateHamiltonian(_positionCandidate, _k);
   const double newK = _hamiltonian->K(_momentumCandidate);
   const double newU = _hamiltonian->U();
   const double logAlpha = std::min(0.0, -(newK - oldK + newU - oldU));
@@ -326,7 +324,7 @@ void HMC::runGenerationNUTSUtil(std::shared_ptr<TreeHelperEuclidean> helper)
     depth++;
   }
 
-  printf("depth %d\n", depth);
+  // printf("depth %d\n", depth);
   _acceptanceProbability /= (double)numLeavesSubtree;
   _acceptanceCountNUTS += _acceptanceProbability;
   _runningAcceptanceRate = _acceptanceRateLearningRate * _runningAcceptanceRate + (1. - _acceptanceRateLearningRate) * _acceptanceProbability;
@@ -432,7 +430,6 @@ void HMC::runGenerationNUTSUtilRiemannian(std::shared_ptr<TreeHelperRiemannian> 
   _acceptanceProbability /= (double)numLeavesSubtree;
   _acceptanceCountNUTS += _acceptanceProbability;
   _runningAcceptanceRate = _acceptanceRateLearningRate * _runningAcceptanceRate + (1. - _acceptanceRateLearningRate) * _acceptanceProbability;
-    
 }
 
 void HMC::saveSample()
@@ -645,7 +642,6 @@ void HMC::buildTreeUtil(std::shared_ptr<TreeHelperEuclidean> helper, int depth)
     const double deltaMax = 100;
     _integrator->step(helper->qLeftOut, helper->pLeftOut, helper->directionIn * _stepSize, *_hamiltonian, _k);
 
-    _hamiltonian->updateHamiltonian(helper->qLeftOut, _k);
     const double leafK = _hamiltonian->K(helper->pLeftOut);
     const double leafU = _hamiltonian->U();
     const double leafH = leafU + leafK;
@@ -721,7 +717,7 @@ void HMC::buildTreeUtil(std::shared_ptr<TreeHelperEuclidean> helper, int depth)
       helper->numLeavesOut += numLeavesSubtree;
 
       helper->buildCriterionOut = buildCriterionSubtree && helper->computeCriterion(*_hamiltonian);
-      if(helperSubtree.unique() == false) KORALI_LOG_ERROR("LEAK");
+      if (helperSubtree.unique() == false) KORALI_LOG_ERROR("LEAK");
     }
   }
 }
@@ -824,11 +820,10 @@ void HMC::buildTreeUtilIntegration(std::shared_ptr<TreeHelperRiemannian> helper,
       std::vector<double> pEnd = helper->directionIn == -1 ? helperSubtree->pLeftOut : helperSubtree->pRightOut;
       // helper->buildCriterionOut = buildCriterionSubtree && helper->computeCriterion(_hamiltonian, pStart, pEnd, rhoSubtree);
       helper->buildCriterionOut = false;
-      if(helperSubtree.unique() == false) KORALI_LOG_ERROR("LEAK");
+      if (helperSubtree.unique() == false) KORALI_LOG_ERROR("LEAK");
     }
   }
 }
-
 
 void HMC::__printVec(const std::vector<double> vec) const
 {

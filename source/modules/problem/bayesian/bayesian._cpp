@@ -33,6 +33,18 @@ void Bayesian::evaluateLogPrior(Sample &sample)
   sample["logPrior"] = logPrior;
 }
 
+void Bayesian::evaluateLogPriorGradient(Sample &sample)
+{
+  size_t numParam = sample["Parameters"].size();
+  std::vector<double> logPriorGradient(numParam, 0.);
+
+  for (size_t i = 0; i < numParam; i++)
+    logPriorGradient[i] = _k->_distributions[_k->_variables[i]->_distributionIndex]->getLogDensityGradient(sample["Parameters"][i]);
+
+  sample["logPrior Gradient"] = logPriorGradient;
+}
+
+
 void Bayesian::evaluateLogPosterior(Sample &sample)
 {
   int sampleId = sample["Sample Id"];
@@ -67,15 +79,18 @@ void Bayesian::evaluate(Sample &sample)
 
 void Bayesian::evaluateGradient(Sample &sample)
 {
+  evaluateLogPriorGradient(sample);
   evaluateLoglikelihoodGradient(sample);
-  sample["grad(F(x))"] = sample["logLikelihood Gradient"];
-  sample["grad(logP(x))"] = sample["logLikelihood Gradient"]; // TODO: need gradients from prior (D.W.)
+  auto logLikGrad = sample["logLikelihood Gradient"].get<std::vector<double>>();
+  auto logPriorGrad = sample["logPrior Gradient"].get<std::vector<double>>();
+  for(size_t i = 0; i < logPriorGrad.size(); ++i)
+        logLikGrad[i] += logPriorGrad[i];
+  sample["grad(logP(x))"] = logLikGrad;
 }
 
 void Bayesian::evaluateHessian(Sample &sample)
 {
   evaluateLogLikelihoodHessian(sample);
-  sample["H(F(x))"] = sample["logLikelihood Hessian"];
   sample["H(logP(x))"] = sample["logLikelihood Hessian"]; // TODO: Hessian from prior (D.W.)
 }
 

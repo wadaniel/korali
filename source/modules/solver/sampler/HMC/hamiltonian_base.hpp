@@ -7,6 +7,7 @@
 #include "modules/experiment/experiment.hpp"
 #include "modules/problem/problem.hpp"
 #include "modules/problem/sampling/sampling.hpp"
+#include "modules/problem/bayesian/bayesian.hpp"
 #include "modules/problem/bayesian/reference/reference.hpp"
 #include "sample/sample.hpp"
 
@@ -178,20 +179,16 @@ class Hamiltonian
 
     auto samplingProblemPtr = dynamic_cast<korali::problem::Sampling *>(_k->_problem);
     auto referenceProblemPtr = dynamic_cast<korali::problem::bayesian::Reference *>(_k->_problem);
+    auto bayesianProblemPtr = dynamic_cast<korali::problem::Bayesian *>(_k->_problem);
     
     if(samplingProblemPtr != nullptr)
-    {
         samplingProblemPtr->evaluateGradient(sample);
-        _currentGradient = sample["grad(logP(x))"].get<std::vector<double>>();
-    }
-    else if(referenceProblemPtr != nullptr)
-    {
-        referenceProblemPtr->evaluateGradient(sample);
-        _currentGradient = sample["logLikelihood Gradient"].get<std::vector<double>>();
-    }
+    else if(bayesianProblemPtr != nullptr)
+        bayesianProblemPtr->evaluateGradient(sample);
     else 
         KORALI_LOG_ERROR("Couldnt retrieve gradient.");
 
+    _currentGradient = sample["grad(logP(x))"].get<std::vector<double>>();
     // to TEST
     // std::fill(_currentGradient.begin(), _currentGradient.end(), 0.0);
   }

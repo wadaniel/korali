@@ -257,12 +257,8 @@ void Continuous::updateExperienceImportanceWeight(size_t expId)
  // Now calculating importance weight
  auto expImportanceWeight = calculateImportanceWeight(expAction, expMeans, expSigmas, curMeans, curSigmas);
 
- // Now calculating KL divergence gradient
- auto expKLDivergenceGradient = calculateKLDivergenceGradient(expMeans, expSigmas, curMeans, curSigmas);
-
  // Updating values to the experience
  _experienceReplay[expId].policy["Importance Weight"] = expImportanceWeight;
- _experienceReplay[expId].policy["KL Divergence Gradient"] = expKLDivergenceGradient;
 }
 
 } // namespace agent

@@ -153,9 +153,9 @@ void HMC::setInitialConfiguration()
   _acceptanceCount = 0;
   _proposedSampleCount = 0;
   _chainLength = 0;
-  _acceptanceRate = _targetAcceptanceRate;
+  _acceptanceRate = 1.0;
   _acceptanceRateError = 0.0;
-  _runningAcceptanceRate = _targetAcceptanceRate;
+  _runningAcceptanceRate = 1.0;
 }
 
 void HMC::runGeneration()

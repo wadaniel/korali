@@ -5,10 +5,10 @@
 
 #include "engine.hpp"
 #include "modules/experiment/experiment.hpp"
-#include "modules/problem/problem.hpp"
-#include "modules/problem/sampling/sampling.hpp"
 #include "modules/problem/bayesian/bayesian.hpp"
 #include "modules/problem/bayesian/reference/reference.hpp"
+#include "modules/problem/problem.hpp"
+#include "modules/problem/sampling/sampling.hpp"
 #include "sample/sample.hpp"
 
 namespace korali
@@ -178,17 +178,17 @@ class Hamiltonian
     _currentEvaluation = KORALI_GET(double, sample, "logP(x)");
 
     auto samplingProblemPtr = dynamic_cast<korali::problem::Sampling *>(_k->_problem);
-    auto referenceProblemPtr = dynamic_cast<korali::problem::bayesian::Reference *>(_k->_problem);
     auto bayesianProblemPtr = dynamic_cast<korali::problem::Bayesian *>(_k->_problem);
-    
-    if(samplingProblemPtr != nullptr)
-        samplingProblemPtr->evaluateGradient(sample);
-    else if(bayesianProblemPtr != nullptr)
-        bayesianProblemPtr->evaluateGradient(sample);
-    else 
-        KORALI_LOG_ERROR("Couldnt retrieve gradient.");
+
+    if (samplingProblemPtr != nullptr)
+      samplingProblemPtr->evaluateGradient(sample);
+    else if (bayesianProblemPtr != nullptr)
+      bayesianProblemPtr->evaluateGradient(sample);
+    else
+      KORALI_LOG_ERROR("Couldnt retrieve gradient.");
 
     _currentGradient = sample["grad(logP(x))"].get<std::vector<double>>();
+
     // to TEST
     // std::fill(_currentGradient.begin(), _currentGradient.end(), 0.0);
   }

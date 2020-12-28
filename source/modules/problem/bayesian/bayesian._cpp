@@ -44,7 +44,6 @@ void Bayesian::evaluateLogPriorGradient(Sample &sample)
   sample["logPrior Gradient"] = logPriorGradient;
 }
 
-
 void Bayesian::evaluateLogPosterior(Sample &sample)
 {
   int sampleId = sample["Sample Id"];
@@ -83,8 +82,8 @@ void Bayesian::evaluateGradient(Sample &sample)
   evaluateLoglikelihoodGradient(sample);
   auto logLikGrad = sample["logLikelihood Gradient"].get<std::vector<double>>();
   auto logPriorGrad = sample["logPrior Gradient"].get<std::vector<double>>();
-  for(size_t i = 0; i < logPriorGrad.size(); ++i)
-        logLikGrad[i] += logPriorGrad[i];
+  for (size_t i = 0; i < logPriorGrad.size(); ++i)
+    logLikGrad[i] += logPriorGrad[i];
   sample["grad(logP(x))"] = logLikGrad;
 }
 

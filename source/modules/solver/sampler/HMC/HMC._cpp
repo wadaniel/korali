@@ -195,7 +195,6 @@ void HMC::runGeneration()
     }
     else if (_version == "Riemannian Const")
     {
-      // std::cout << "runGeneration" << std::endl;
       auto helperPtr = std::make_shared<TreeHelperEuclidean>();
       helperPtr->logUniSampleIn = logUniSample;
       runGenerationNUTSUtil(helperPtr);
@@ -231,9 +230,10 @@ void HMC::runGenerationHMC(const double logUniSample)
   const double logAlpha = std::min(0.0, -(newK - oldK + newU - oldU));
 
   // Accept or reject sample
-  _acceptanceProbability = isNan(_positionCandidate) ? 0.0 : std::exp(logAlpha);
+  bool isNanPositionCandidate = isNan(_positionCandidate);
+  _acceptanceProbability = isNanPositionCandidate ? 0.0 : std::exp(logAlpha);
   _runningAcceptanceRate = _acceptanceRateLearningRate * _runningAcceptanceRate + (1. - _acceptanceRateLearningRate) * _acceptanceProbability;
-  if (logUniSample <= logAlpha && !isNan(_positionCandidate))
+  if (logUniSample <= logAlpha && !isNanPositionCandidate)
   {
     _acceptanceCount++;
     _positionLeader = _positionCandidate;
@@ -349,7 +349,6 @@ void HMC::runGenerationNUTSUtilRiemannian(std::shared_ptr<TreeHelperRiemannian> 
   double numValidLeavesSubtree;
   const double oldH = oldU + oldK;
 
-  helper->depthIn = 0;
   helper->rootHIn = oldH;
   helper->buildCriterionOut = true;
 
@@ -366,7 +365,7 @@ void HMC::runGenerationNUTSUtilRiemannian(std::shared_ptr<TreeHelperRiemannian> 
       helper->pIn = pLeft;
       helper->directionIn = -1;
 
-      buildTreeUtilIntegration(helper, rhoLeft);
+      buildTreeUtilIntegration(helper, rhoLeft, depth);
 
       qLeft = helper->qLeftOut;
       pLeft = helper->pLeftOut;
@@ -383,7 +382,7 @@ void HMC::runGenerationNUTSUtilRiemannian(std::shared_ptr<TreeHelperRiemannian> 
       helper->pIn = pRight;
       helper->directionIn = 1;
 
-      buildTreeUtilIntegration(helper, rhoRight);
+      buildTreeUtilIntegration(helper, rhoRight, depth);
 
       // qLeft = --
       // pLeft = --
@@ -426,7 +425,7 @@ void HMC::runGenerationNUTSUtilRiemannian(std::shared_ptr<TreeHelperRiemannian> 
     depth++;
   }
 
-  printf("depth %d\n", depth);
+  // printf("depth %d\n", depth);
   _acceptanceProbability /= (double)numLeavesSubtree;
   _acceptanceCountNUTS += _acceptanceProbability;
   _runningAcceptanceRate = _acceptanceRateLearningRate * _runningAcceptanceRate + (1. - _acceptanceRateLearningRate) * _acceptanceProbability;
@@ -632,7 +631,7 @@ void HMC::finalize()
   _modelEvaluationCount = _hamiltonian->getNumHamiltonianObjectUpdates();
 }
 
-void HMC::buildTreeUtil(std::shared_ptr<TreeHelperEuclidean> helper, int depth)
+void HMC::buildTreeUtil(std::shared_ptr<TreeHelperEuclidean> helper, const size_t depth)
 {
   helper->qLeftOut = helper->qIn;
   helper->pLeftOut = helper->pIn;
@@ -678,15 +677,10 @@ void HMC::buildTreeUtil(std::shared_ptr<TreeHelperEuclidean> helper, int depth)
 
         buildTreeUtil(helperSubtree, depth - 1);
 
-        // helperSubtree->qRightOut = --
-        // helperSubtree->pRightOut = --
-        numValidLeavesSubtree = helperSubtree->numValidLeavesOut;
-        buildCriterionSubtree = helperSubtree->buildCriterionOut;
-        alphaSubtree = helperSubtree->alphaOut;
-        numLeavesSubtree = helperSubtree->numLeavesOut;
-
         helper->qLeftOut = helperSubtree->qLeftOut;
         helper->pLeftOut = helperSubtree->pLeftOut;
+        // helperSubtree->qRightOut = --
+        // helperSubtree->pRightOut = --
       }
       else
       {
@@ -697,14 +691,13 @@ void HMC::buildTreeUtil(std::shared_ptr<TreeHelperEuclidean> helper, int depth)
 
         // helperSubtree->qLeftOut = --
         // helperSubtree->pLeftOut = --
-        numValidLeavesSubtree = helperSubtree->numValidLeavesOut;
-        buildCriterionSubtree = helperSubtree->buildCriterionOut;
-        alphaSubtree = helperSubtree->alphaOut;
-        numLeavesSubtree = helperSubtree->numLeavesOut;
-
         helper->qRightOut = helperSubtree->qRightOut;
         helper->pRightOut = helperSubtree->pRightOut;
       }
+      numValidLeavesSubtree = helperSubtree->numValidLeavesOut;
+      buildCriterionSubtree = helperSubtree->buildCriterionOut;
+      alphaSubtree = helperSubtree->alphaOut;
+      numLeavesSubtree = helperSubtree->numLeavesOut;
 
       // First check to avoid divising by zero
       if (numValidLeavesSubtree != 0 && _uniformGenerator->getRandomNumber() < numValidLeavesSubtree / (helper->numValidLeavesOut + numValidLeavesSubtree))
@@ -722,15 +715,15 @@ void HMC::buildTreeUtil(std::shared_ptr<TreeHelperEuclidean> helper, int depth)
   }
 }
 
-void HMC::buildTreeUtilIntegration(std::shared_ptr<TreeHelperRiemannian> helper, std::vector<double> &rho)
+void HMC::buildTreeUtilIntegration(std::shared_ptr<TreeHelperRiemannian> helper, std::vector<double> &rho, const size_t depth)
 {
   helper->qLeftOut = helper->qIn;
   helper->pLeftOut = helper->pIn;
 
-  if (helper->depthIn == 0)
+  if (depth == 0)
   {
     const double deltaMax = 100;
-    _integrator->step(helper->qLeftOut, helper->pLeftOut, _stepSize, *_hamiltonian, _k);
+    _integrator->step(helper->qLeftOut, helper->pLeftOut, helper->directionIn * _stepSize, *_hamiltonian, _k);
 
     _hamiltonian->updateHamiltonian(helper->pLeftOut, _k);
     const double leafK = _hamiltonian->K(helper->pLeftOut);
@@ -747,27 +740,17 @@ void HMC::buildTreeUtilIntegration(std::shared_ptr<TreeHelperRiemannian> helper,
     helper->pRightOut = helper->pLeftOut;
     helper->qProposedOut = helper->qLeftOut;
 
-    // std::cout << "rho (before sum) = " << std::endl;
-    // __printVec(rho);
-    // add latest p to rho
     std::transform(std::cbegin(rho), std::cend(rho), std::cbegin(helper->pRightOut), std::begin(rho), std::plus<double>());
-
-    // std::cout << "helper->pRightOut" << std::endl;
-    // __printVec(helper->pRightOut);
-    // std::cout << "rho (after sum) = " << std::endl;
-    // __printVec(rho);
   }
   else
   {
     int numLeavesSubtree;
+    bool buildCriterionSubtree;
     double numValidLeavesSubtree, alphaSubtree;
-
-    helper->depthIn = helper->depthIn - 1;
-
-    std::vector<double> pStart = helper->pIn;
-
+    auto pStart = helper->pIn;
     std::vector<double> rhoFirstSubtree(_dimensions, 0.0);
-    buildTreeUtilIntegration(helper, rhoFirstSubtree);
+
+    buildTreeUtilIntegration(helper, rhoFirstSubtree, depth - 1);
 
     if (helper->buildCriterionOut == true)
     {
@@ -782,8 +765,10 @@ void HMC::buildTreeUtilIntegration(std::shared_ptr<TreeHelperRiemannian> helper,
       {
         helperSubtree->qIn = helper->qLeftOut;
         helperSubtree->pIn = helper->pLeftOut;
-        buildTreeUtilIntegration(helperSubtree, rhoSecondSubtree);
+        buildTreeUtilIntegration(helperSubtree, rhoSecondSubtree, depth - 1);
 
+        helper->qLeftOut = helperSubtree->qLeftOut;
+        helper->pLeftOut = helperSubtree->pLeftOut;
         // helperSubtree->qRightOut = --
         // helperSubtree->pRightOut = --
       }
@@ -791,14 +776,16 @@ void HMC::buildTreeUtilIntegration(std::shared_ptr<TreeHelperRiemannian> helper,
       {
         helperSubtree->qIn = helper->qRightOut;
         helperSubtree->pIn = helper->pRightOut;
-        buildTreeUtilIntegration(helperSubtree, rhoSecondSubtree);
+        buildTreeUtilIntegration(helperSubtree, rhoSecondSubtree, depth - 1);
 
         // helperSubtree->qLeftOut = --
         // helperSubtree->pLeftOut = --
+        helper->qRightOut = helperSubtree->qRightOut;
+        helper->pRightOut = helperSubtree->pRightOut;
       }
 
       numValidLeavesSubtree = helperSubtree->numValidLeavesOut;
-      //buildCriterionSubtree = helperSubtree->buildCriterionOut;
+      buildCriterionSubtree = helperSubtree->buildCriterionOut;
       alphaSubtree = helperSubtree->alphaOut;
       numLeavesSubtree = helperSubtree->numLeavesOut;
 
@@ -818,8 +805,7 @@ void HMC::buildTreeUtilIntegration(std::shared_ptr<TreeHelperRiemannian> helper,
       helper->numLeavesOut += numLeavesSubtree;
 
       std::vector<double> pEnd = helper->directionIn == -1 ? helperSubtree->pLeftOut : helperSubtree->pRightOut;
-      // helper->buildCriterionOut = buildCriterionSubtree && helper->computeCriterion(_hamiltonian, pStart, pEnd, rhoSubtree);
-      helper->buildCriterionOut = false;
+      helper->buildCriterionOut = buildCriterionSubtree && helper->computeCriterion(*_hamiltonian, pStart, pEnd, rhoSubtree);
       if (helperSubtree.unique() == false) KORALI_LOG_ERROR("LEAK");
     }
   }

@@ -21,9 +21,8 @@ double Gamma::getLogDensity(const double x) const
 double Gamma::getLogDensityGradient(const double x) const
 {
   if (x < 0.) return 0.;
-  return (1.-_shape)/x-1./_scale;
+  return (1. - _shape) / x - 1. / _scale;
 }
-
 
 double Gamma::getRandomNumber()
 {

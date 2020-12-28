@@ -16,7 +16,6 @@ namespace sampler
 */
 class Leapfrog
 {
-
   public:
   /**
   * @brief Abstract base class for Leapfrog integration.

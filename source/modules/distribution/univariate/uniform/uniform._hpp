@@ -32,7 +32,7 @@ class Uniform : public korali::distribution::Univariate
  */
   double getLogDensity(const double x) const override;
 
- /**
+  /**
  * @brief Gets the Gradient of the log probability density of the distribution wrt. to x.
  * @param x point to evaluate grad(log(P(x)))
  * @return Gradient of log of probability density.

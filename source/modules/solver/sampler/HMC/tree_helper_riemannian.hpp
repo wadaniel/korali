@@ -17,12 +17,23 @@ struct TreeHelperRiemannian : public TreeHelper
   /**
     * @brief Computes No U-Turn Sampling (NUTS) criterion
     * @param hamiltonian Hamiltonian object of system
+    * @return Returns of tree should be built further.
+    */
+  bool computeCriterion(Hamiltonian &hamiltonian) override
+  {
+    std::cout << "wrong termination criterion used in NUTS" << std::endl;
+    return false;
+  }
+
+  /**
+    * @brief Computes No U-Turn Sampling (NUTS) criterion
+    * @param hamiltonian Hamiltonian object of system
     * @param pStart Starting momentum of trajectory
     * @param pEnd Ending momentum of trajsectory
     * @param rho Sum of momenta encountered in trajectory
     * @return Returns of tree should be built further.
     */
-  bool computeCriterion(Hamiltonian &hamiltonian, const std::vector<double> pStart, const std::vector<double> pEnd, std::vector<double> rho)
+  bool computeCriterion(Hamiltonian &hamiltonian, const std::vector<double> pStart, const std::vector<double> pEnd, std::vector<double> rho) override
   {
     std::vector<double> tmpVectorOne(hamiltonian.getStateSpaceDim(), 0.0);
     std::transform(std::cbegin(rho), std::cend(rho), std::cbegin(pStart), std::begin(tmpVectorOne), std::minus<double>());

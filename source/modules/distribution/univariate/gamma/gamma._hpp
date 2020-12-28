@@ -31,7 +31,7 @@ class Gamma : public korali::distribution::Univariate
  * @return Log of probability density.
  */
   double getLogDensity(double x) const override;
- 
+
   /**
  * @brief Gets the Gradient of the log probability density of the distribution wrt. to x.
  * @param x point to evaluate grad(log(P(x)))

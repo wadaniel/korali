@@ -188,7 +188,7 @@ class Hamiltonian
   * @param pRight Right argument (momentum).
   * @return pLeft.transpose * _inverseMetric * pRight.
   */
-  virtual double innerProduct(const std::vector<double>& pLeft, const std::vector<double>& pRight) const = 0;
+  virtual double innerProduct(const std::vector<double> &pLeft, const std::vector<double> &pRight) const = 0;
 
   /**
   * @brief Computes NUTS criterion on euclidean domain.

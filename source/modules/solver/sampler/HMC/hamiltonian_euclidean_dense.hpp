@@ -170,7 +170,7 @@ class HamiltonianEuclideanDense : public HamiltonianEuclidean
   * @param pRight Right argument (momentum).
   * @return pLeft.transpose * _inverseMetric * pRight.
   */
-  double innerProduct(const std::vector<double>& pLeft, const std::vector<double>& pRight) const
+  double innerProduct(const std::vector<double> &pLeft, const std::vector<double> &pRight) const
   {
     double result = 0.0;
 

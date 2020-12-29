@@ -33,7 +33,7 @@ struct TreeHelperRiemannian : public TreeHelper
     * @param rho Sum of momenta encountered in trajectory
     * @return Returns of tree should be built further.
     */
-  bool computeCriterion(const Hamiltonian &hamiltonian, const std::vector<double>& pStart, const std::vector<double>& pEnd, const std::vector<double>& rho) const override
+  bool computeCriterion(const Hamiltonian &hamiltonian, const std::vector<double> &pStart, const std::vector<double> &pEnd, const std::vector<double> &rho) const override
   {
     std::vector<double> tmpVectorOne(hamiltonian.getStateSpaceDim(), 0.0);
     std::transform(std::cbegin(rho), std::cend(rho), std::cbegin(pStart), std::begin(tmpVectorOne), std::minus<double>());

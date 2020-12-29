@@ -43,11 +43,10 @@ void HMC::setInitialConfiguration()
 
   if (_version == "Euclidean" && _useAdaptiveStepSize)
   {
-    size_t adaptionLength = _initialFastAdaptionInterval + _initialSlowAdaptionInterval + _finalFastAdaptionInterval;
-    if (_burnIn < adaptionLength)
+    if (_burnIn < _initialFastAdaptionInterval + _initialSlowAdaptionInterval + _finalFastAdaptionInterval)
     {
-      _k->_logger->logInfo("Minimal", "Burn In (%zu) smaller than adaption length: %zu\n", adaptionLength);
-      _k->_logger->logInfo("Minimal", "Reducing windows to (15%/75%/10%) of Burn In period\n");
+      _k->_logger->logInfo("Minimal", "Burn In (%zu) smaller than adaption length: %zu\n", _initialFastAdaptionInterval + _initialSlowAdaptionInterval + _finalFastAdaptionInterval);
+      _k->_logger->logInfo("Minimal", "Reducing adaption window lengths to (15%/75%/10%) of Burn In period\n");
       _initialFastAdaptionInterval = _burnIn * 0.15;
       _finalFastAdaptionInterval = _burnIn * 0.10;
       _initialSlowAdaptionInterval = _burnIn - _initialFastAdaptionInterval - _finalFastAdaptionInterval;
@@ -65,7 +64,6 @@ void HMC::setInitialConfiguration()
   _positionCandidate.resize(_dimensions);
   _momentumLeader.resize(_dimensions);
   _momentumCandidate.resize(_dimensions);
-  _positionMean.resize(_dimensions);
 
   // Prepare DBs
   _sampleDatabase.resize(0);
@@ -138,9 +136,6 @@ void HMC::setInitialConfiguration()
     else
       _hamiltonian = std::make_unique<HamiltonianRiemannianConstDense>(_dimensions, _multivariateGenerator, metric, inverseMetric, _inverseRegularizationParameter);
   }
-
-  _hamiltonian->verbosity = _hamiltonianVerbosity;
-  _integrator->verbosity = _integratorVerbosity;
 
   if (_useAdaptiveStepSize == true)
   {
@@ -433,12 +428,14 @@ void HMC::runGenerationNUTSUtilRiemannian(std::shared_ptr<TreeHelperRiemannian> 
 
 void HMC::saveSample()
 {
-  if (_chainLength >= _burnIn)
+  // Store samples after burn in period
+  if (_burnIn <= _chainLength)
   {
     _sampleDatabase.push_back(_positionLeader);
     _sampleEvaluationDatabase.push_back(_leaderEvaluation);
   }
-  else if (_version == "Euclidean" && (_chainLength > _initialFastAdaptionInterval) && (_chainLength < _initialFastAdaptionInterval + _initialSlowAdaptionInterval))
+  // Keep samples during slow adaption interval for metric calculation
+  else if (_version == "Euclidean" && (_initialFastAdaptionInterval <= _chainLength) && (_chainLength < _initialFastAdaptionInterval + _initialSlowAdaptionInterval))
   {
     _euclideanWarmupSampleDatabase.push_back(_positionLeader);
   }
@@ -449,8 +446,8 @@ void HMC::updateStepSize()
   // Adapt step size during burn in period
   if (_chainLength <= _burnIn)
   {
-    size_t terminalFastPeriodStart = _initialFastAdaptionInterval + _initialSlowAdaptionInterval;
-    size_t terminalFastPeriodEnd = terminalFastPeriodStart + _finalFastAdaptionInterval;
+    const size_t terminalFastPeriodStart = _initialFastAdaptionInterval + _initialSlowAdaptionInterval;
+    const size_t terminalFastPeriodEnd = terminalFastPeriodStart + _finalFastAdaptionInterval;
 
     bool isInitalFastPeriod = _chainLength < _initialFastAdaptionInterval;
     bool isTerminalFastPeriod = (_chainLength >= terminalFastPeriodStart) && (_chainLength < terminalFastPeriodEnd);
@@ -513,20 +510,13 @@ void HMC::updateState()
   // Update Step Size, Dual Step Size, H Bar and apply step size jitter
   updateStepSize();
 
-  // init chain mean
-  if (_sampleDatabase.size() == 1)
-    for (size_t d = 0; d < _dimensions; ++d) _positionMean[d] = _positionLeader[d];
-  // calculate chain mean for > 1 sample
-  else if (_sampleDatabase.size() > 1)
-    for (size_t d = 0; d < _dimensions; ++d) _positionMean[d] = (_positionMean[d] * (_sampleDatabase.size() - 1) + _positionLeader[d]) / _sampleDatabase.size();
-
-  if (_version == "Euclidean" && _useAdaptiveStepSize)
-    if (_chainLength == _initialFastAdaptionInterval + _initialSlowAdaptionInterval)
-    {
-      int err = _hamiltonian->updateMetricMatricesEuclidean(_euclideanWarmupSampleDatabase);
-      if (err == GSL_EDOM) KORALI_LOG_ERROR("Inverse Metric negative definite (not updating Metric). Increase 'Initial Slow Adaption Interval' (is %zu).", _initialSlowAdaptionInterval);
-      _euclideanWarmupSampleDatabase.clear();
-    }
+  // Update metric at the end of slow adaption period
+  if (_version == "Euclidean" && _useAdaptiveStepSize && _chainLength == _initialFastAdaptionInterval + _initialSlowAdaptionInterval)
+  {
+    int err = _hamiltonian->updateMetricMatricesEuclidean(_euclideanWarmupSampleDatabase);
+    if (err == GSL_EDOM) KORALI_LOG_ERROR("Inverse Metric negative definite (not updating Metric). Increase 'Initial Slow Adaption Interval' (is %zu).", _initialSlowAdaptionInterval);
+    _euclideanWarmupSampleDatabase.clear();
+  }
 }
 
 void HMC::printGenerationBefore()
@@ -619,9 +609,9 @@ void HMC::printGenerationAfter()
 
 void HMC::finalize()
 {
-  _k->_logger->logInfo("Minimal", "Number of Generated Samples: %zu\n", _proposedSampleCount);
-  _k->_logger->logInfo("Minimal", "Acceptance Rate: %.2f%%\n", 100 * _acceptanceRate);
-  if (_sampleDatabase.size() == _maxSamples) _k->_logger->logInfo("Minimal", "Max Samples Reached.\n");
+  _k->_logger->logInfo("Normal", "Number of Generated Samples: %zu\n", _proposedSampleCount);
+  _k->_logger->logInfo("Normal", "Acceptance Rate: %.2f%%\n", 100 * _acceptanceRate);
+  if (_sampleDatabase.size() == _maxSamples) _k->_logger->logInfo("Normal", "Max Samples Reached.\n");
   (*_k)["Results"]["Sample Database"] = _sampleDatabase;
 
   _modelEvaluationCount = _hamiltonian->getNumHamiltonianObjectUpdates();

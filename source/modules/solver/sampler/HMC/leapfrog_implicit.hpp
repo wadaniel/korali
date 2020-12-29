@@ -42,11 +42,6 @@ class LeapfrogImplicit : public Leapfrog
   */
   void step(std::vector<double> &q, std::vector<double> &p, const double stepSize, Hamiltonian &hamiltonian, korali::Experiment *_k) override
   {
-    if (verbosity == true)
-    {
-      std::cout << "------------START OF LeapfrogImplicit Step-------------" << std::endl;
-    }
-
     size_t stateSpaceDim = hamiltonian.getStateSpaceDim();
     double delta = 1e-6 * stepSize;
 
@@ -58,21 +53,9 @@ class LeapfrogImplicit : public Leapfrog
       p[i] = p[i] - stepSize / 2.0 * dphi_dq[i];
     }
 
-    if (verbosity == true)
-    {
-      std::cout << "after dphi_dq first init and set p" << std::endl;
-    }
-
     std::vector<double> rho = p;
     std::vector<double> pPrime(stateSpaceDim);
     double deltaP;
-
-    if (verbosity == true)
-    {
-      std::cout << "Starting FPI on p" << std::endl;
-      std::cout << "p = " << std::endl;
-      __printVec(p);
-    }
 
     size_t numIter = 0;
     do
@@ -94,37 +77,16 @@ class LeapfrogImplicit : public Leapfrog
         }
       }
 
-      if (verbosity == true)
-      {
-        std::cout << "deltaP = " << deltaP << std::endl;
-      }
-
       p = pPrime;
       ++numIter;
-
-      if (numIter > 10) hamiltonian.verbosity = false;
 
     } while (deltaP > delta && numIter < _maxNumFixedPointIter);
     if (_maxNumFixedPointIter <= numIter)
       _k->_logger->logInfo("Detailed", "Maximum number (%zu) of fixed point iterations reached during implicit leapfrog scheme.\n", _maxNumFixedPointIter);
 
-    if (verbosity == true)
-    {
-      std::cout << "Total number of (momentum) iterations in FPI = " << numIter << std::endl;
-      std::cout << "p = " << std::endl;
-      __printVec(p);
-    }
-
     std::vector<double> qPrime(stateSpaceDim);
     std::vector<double> sigma = q;
     double deltaQ;
-
-    if (verbosity == true)
-    {
-      std::cout << "Starting FPI on q" << std::endl;
-      std::cout << "q = " << std::endl;
-      __printVec(q);
-    }
 
     numIter = 0;
     do
@@ -148,24 +110,12 @@ class LeapfrogImplicit : public Leapfrog
         }
       }
 
-      if (verbosity == true)
-      {
-        std::cout << "deltaQ = " << deltaQ << std::endl;
-      }
-
       q = qPrime;
       ++numIter;
     } while (deltaQ > delta && numIter < _maxNumFixedPointIter);
 
     if (_maxNumFixedPointIter <= numIter)
       _k->_logger->logInfo("Detailed", "Maximum number (%zu) of fixed point iterations reached during implicit leapfrog scheme.\n", _maxNumFixedPointIter);
-
-    if (verbosity == true)
-    {
-      std::cout << "Total number of (position) iterations in FPI = " << numIter << std::endl;
-      std::cout << "q = " << std::endl;
-      __printVec(q);
-    }
 
     hamiltonian.updateHamiltonian(q, _k);
     std::vector<double> dtau_dq = hamiltonian.dtau_dq(p);
@@ -174,23 +124,11 @@ class LeapfrogImplicit : public Leapfrog
       p[i] = p[i] - stepSize / 2.0 * dtau_dq[i];
     }
 
-    if (verbosity == true)
-    {
-      std::cout << "after last step dtau_dq" << std::endl;
-    }
-
     dphi_dq = hamiltonian.dphi_dq();
     for (size_t i = 0; i < stateSpaceDim; ++i)
     {
       p[i] = p[i] - stepSize / 2.0 * dphi_dq[i];
     }
-
-    if (verbosity == true)
-    {
-      std::cout << "-------------END OF LeapfrogImplicit Step--------------" << std::endl;
-    }
-
-    return;
   }
 };
 

@@ -156,7 +156,7 @@ void HMC::setInitialConfiguration()
   _acceptanceRateError = 0.0;
   _runningAcceptanceRate = 1.0;
   _currentDepth = 0;
-  _dualStepSize = _stepSize;
+  _logDualStepSize = std::log(_stepSize);
 }
 
 void HMC::runGeneration()
@@ -446,17 +446,18 @@ void HMC::saveSample()
 
 void HMC::updateStepSize()
 {
+  // Adapt step size during burn in period
   if (_chainLength <= _burnIn)
   {
     size_t terminalFastPeriodStart = _initialFastAdaptionInterval + _initialSlowAdaptionInterval;
     size_t terminalFastPeriodEnd = terminalFastPeriodStart + _finalFastAdaptionInterval;
 
-    bool isInitalFastPeriod = _chainLength <= _initialFastAdaptionInterval;
-    bool isTerminalFastPeriod = (_chainLength > terminalFastPeriodStart) && (_chainLength <= terminalFastPeriodEnd);
+    bool isInitalFastPeriod = _chainLength < _initialFastAdaptionInterval;
+    bool isTerminalFastPeriod = (_chainLength >= terminalFastPeriodStart) && (_chainLength < terminalFastPeriodEnd);
 
     if (_useAdaptiveStepSize == true)
     {
-      // Reset before starting terminal fast period
+      // Reset statistics before starting terminal fast period
       if (_chainLength == terminalFastPeriodStart)
       {
         _acceptanceRateError = 0.0;
@@ -464,20 +465,19 @@ void HMC::updateStepSize()
         _mu = std::log(10.0 * _stepSize);
       }
 
-      // Check warm-up window
+      // Update step size and dual step size during fast adaption periods
       if (isInitalFastPeriod || isTerminalFastPeriod)
       {
-        const double counter = isInitalFastPeriod ? _chainLength : _chainLength - terminalFastPeriodStart;
+        const double counter = isInitalFastPeriod ? _chainLength + 1 : _chainLength + 1 - terminalFastPeriodStart;
         _acceptanceProbability = (_acceptanceProbability > 1.0) ? 1.0 : _acceptanceProbability;
         _runningAcceptanceRate = (_runningAcceptanceRate > 1.0) ? 1.0 : _runningAcceptanceRate;
         _acceptanceRateError = _targetAcceptanceRate - _runningAcceptanceRate;
-        const double eta = 1.0 / (counter + 10.0); //std::pow(_chainLength + 1., -_adaptiveStepSizeScheduleConstant);
+        const double eta = 1.0 / (counter + 10.0);
         _hBar = (1.0 - eta) * _hBar + eta * _acceptanceRateError;
 
         const double logStep = _mu - _hBar * std::sqrt(counter) / _adaptiveStepSizeSpeedConstant;
-        const double logAveragedStep = std::pow(counter, -_adaptiveStepSizeScheduleConstant);
-
-        _dualStepSize = (1.0 - logAveragedStep) * _dualStepSize + logAveragedStep * logStep;
+        const double dualEta = std::pow(counter, -_adaptiveStepSizeScheduleConstant);
+        _logDualStepSize = (1.0 - dualEta) * _logDualStepSize + dualEta * logStep;
         _stepSize = std::exp(logStep);
 
         if (_useNUTS == false)
@@ -490,17 +490,16 @@ void HMC::updateStepSize()
           }
         }
       }
+      // Fix step size after terminal fast epriod
       else if (_chainLength == terminalFastPeriodEnd)
       {
-        _stepSize = _dualStepSize;
+        _stepSize = std::exp(_logDualStepSize);
       }
     }
-    else
-    {
-      // Apply Step Size Jitter
-      _stepSize = _dualStepSize * (1.0 + _stepSizeJitter * (2.0 * _uniformGenerator->getRandomNumber() - 1.0));
-    }
   }
+
+  // Apply Step Size Jitter
+  _stepSize = std::exp(_logDualStepSize) * (1.0 + _stepSizeJitter * (2.0 * _uniformGenerator->getRandomNumber() - 1.0));
 }
 
 void HMC::updateState()
@@ -540,10 +539,9 @@ void HMC::printGenerationAfter()
   // Number of Samples
   _k->_logger->logInfo("Minimal", "Database Entries %ld\n", _sampleDatabase.size());
 
-  _useNUTS == true ? _k->_logger->logInfo("Detailed", "Accepted Samples Indicator (NUTS): %lf\n", _acceptanceCountNUTS) : _k->_logger->logInfo("Normal", "Accepted Samples: %zu\n", _acceptanceCount);
-
   _k->_logger->logInfo("Normal", "Acceptance Rate Proposals: %.2f%%\n", 100. * _acceptanceRate);
   _k->_logger->logInfo("Normal", "Running Acceptance Rate: %.2f%%\n", 100. * _runningAcceptanceRate);
+  _k->_logger->logInfo("Detailed", "Num Model Evaluations: %zu\n", _modelEvaluationCount);
 
   // Current Sample
   _k->_logger->logInfo("Detailed", "Current Leader:\n");
@@ -553,7 +551,6 @@ void HMC::printGenerationAfter()
 
   _k->_logger->logInfo("Detailed", "Current Metric:\n");
 
-  //_hamiltonian->//updateHamiltonian(_positionLeader, _k);
   auto metric = _hamiltonian->getMetric();
   if (_useDiagonalMetric == true || _version == "Static")
   {
@@ -602,20 +599,19 @@ void HMC::printGenerationAfter()
     // Step Size
     _k->_logger->logInfo("Detailed", "Step Size: %lf\n", _stepSize);
     // Dual Step Size
-    _k->_logger->logInfo("Detailed", "Dual Step Size: %lf\n", _dualStepSize);
+    _k->_logger->logInfo("Detailed", "Dual Step Size: %lf\n", std::exp(_logDualStepSize));
+  }
 
-    if (_useNUTS == false)
-    {
-      // Num Integration Steps
-      _k->_logger->logInfo("Detailed", "Num Integration Steps: %ld\n", _numIntegrationSteps);
-    }
-    else
-    {
-      _k->_logger->logInfo("Detailed", "NUTS Current Depth: %zu\n", _currentDepth);
-    }
-
-    // Dual Step Size
-    _k->_logger->logInfo("Detailed", "H Bar: %lf\n", _hBar);
+  if (_useNUTS == false)
+  {
+    // Num Integration Steps
+    _k->_logger->logInfo("Detailed", "Num Integration Steps: %ld\n", _numIntegrationSteps);
+    _k->_logger->logInfo("Normal", "Accepted Samples: %zu\n", _acceptanceCount);
+  }
+  else
+  {
+    _k->_logger->logInfo("Detailed", "Accepted Samples Indicator (NUTS): %lf\n", _acceptanceCountNUTS);
+    _k->_logger->logInfo("Detailed", "Current Depth (NUTS): %zu\n", _currentDepth);
   }
 
   return;

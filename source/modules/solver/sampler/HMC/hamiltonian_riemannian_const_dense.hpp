@@ -60,7 +60,7 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannianConst
   * @param stateSpaceDim Dimension of State Space.
   * @param multivariateGenerator Multivariate generator needed for momentum sampling.
   */
-  HamiltonianRiemannianConstDense(const size_t stateSpaceDim, korali::distribution::multivariate::Normal *multivariateGenerator, korali::Experiment* k) : HamiltonianRiemannianConst{stateSpaceDim, k}
+  HamiltonianRiemannianConstDense(const size_t stateSpaceDim, korali::distribution::multivariate::Normal *multivariateGenerator, korali::Experiment *k) : HamiltonianRiemannianConst{stateSpaceDim, k}
   {
     _metric.resize(stateSpaceDim * stateSpaceDim);
     _inverseMetric.resize(stateSpaceDim * stateSpaceDim);
@@ -86,7 +86,7 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannianConst
   * @param multivariateGenerator Generator needed for momentum sampling.
   * @param inverseRegularizationParam Inverse regularization parameter of SoftAbs metric that controls hardness of approximation: For large values _inverseMetric is closer to analytical formula (and therefore closer to degeneracy in certain cases). 
   */
-  HamiltonianRiemannianConstDense(const size_t stateSpaceDim, korali::distribution::multivariate::Normal *multivariateGenerator, const double inverseRegularizationParam, korali::Experiment* k) : HamiltonianRiemannianConst{stateSpaceDim, k}
+  HamiltonianRiemannianConstDense(const size_t stateSpaceDim, korali::distribution::multivariate::Normal *multivariateGenerator, const double inverseRegularizationParam, korali::Experiment *k) : HamiltonianRiemannianConst{stateSpaceDim, k}
   {
     _metric.resize(stateSpaceDim * stateSpaceDim);
     _inverseMetric.resize(stateSpaceDim * stateSpaceDim);
@@ -114,7 +114,7 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannianConst
   * @param inverseMetric Inverse Metric for initialization. 
   * @param inverseRegularizationParam Inverse regularization parameter of SoftAbs metric that controls hardness of approximation: For large values _inverseMetric is closer to analytical formula (and therefore closer to degeneracy in certain cases). 
   */
-  HamiltonianRiemannianConstDense(const size_t stateSpaceDim, korali::distribution::multivariate::Normal *multivariateGenerator, const std::vector<double> metric, const std::vector<double> inverseMetric, const double inverseRegularizationParam, korali::Experiment* k) : HamiltonianRiemannianConstDense{stateSpaceDim, multivariateGenerator, inverseRegularizationParam, k}
+  HamiltonianRiemannianConstDense(const size_t stateSpaceDim, korali::distribution::multivariate::Normal *multivariateGenerator, const std::vector<double> metric, const std::vector<double> inverseMetric, const double inverseRegularizationParam, korali::Experiment *k) : HamiltonianRiemannianConstDense{stateSpaceDim, multivariateGenerator, inverseRegularizationParam, k}
   {
     assert(metric.size() == stateSpaceDim * stateSpaceDim);
     assert(inverseMetric.size() == stateSpaceDim * stateSpaceDim);
@@ -293,9 +293,10 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannianConst
 
     KORALI_START(sample);
     KORALI_WAIT(sample);
+    _modelEvaluationCount++;
     _currentEvaluation = KORALI_GET(double, sample, "logP(x)");
 
-    if(samplingProblemPtr != nullptr)
+    if (samplingProblemPtr != nullptr)
     {
       samplingProblemPtr->evaluateGradient(sample);
       samplingProblemPtr->evaluateHessian(sample);
@@ -305,7 +306,7 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannianConst
       bayesianProblemPtr->evaluateGradient(sample);
       bayesianProblemPtr->evaluateHessian(sample);
     }
- 
+
     _currentGradient = sample["grad(logP(x))"].get<std::vector<double>>();
     _currentHessian = sample["H(logP(x))"].get<std::vector<double>>();
   }
@@ -327,7 +328,7 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannianConst
   * @param pRight Right argument (momentum).
   * @return pLeft.transpose * _inverseMetric * pRight.
   */
-  double innerProduct(std::vector<double> pLeft, std::vector<double> pRight) const
+  double innerProduct(const std::vector<double>& pLeft, const std::vector<double>& pRight) const
   {
     double result = 0.0;
 

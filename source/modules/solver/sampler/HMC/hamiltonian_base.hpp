@@ -37,15 +37,14 @@ class Hamiltonian
   * @brief Constructor with State Space Dim.
   * @param stateSpaceDim Dimension of State Space.
   */
-  Hamiltonian(const size_t stateSpaceDim, korali::Experiment *k) : _stateSpaceDim{stateSpaceDim}, _numHamiltonianObjectUpdates{0} {
-  
+  Hamiltonian(const size_t stateSpaceDim, korali::Experiment *k) : _modelEvaluationCount(0), _stateSpaceDim{stateSpaceDim}, _numHamiltonianObjectUpdates{0}
+  {
     _k = k;
     samplingProblemPtr = dynamic_cast<korali::problem::Sampling *>(k->_problem);
     bayesianProblemPtr = dynamic_cast<korali::problem::Bayesian *>(k->_problem);
 
     if (samplingProblemPtr != nullptr && bayesianProblemPtr != nullptr)
-        KORALI_LOG_ERROR("Problem type not compatible with Hamiltonian object.");
- 
+      KORALI_LOG_ERROR("Problem type not compatible with Hamiltonian object. Problem type must be either 'Sampling' or 'Bayesian'.");
   };
 
   /**
@@ -166,13 +165,14 @@ class Hamiltonian
 
     KORALI_START(sample);
     KORALI_WAIT(sample);
+    _modelEvaluationCount++;
     _currentEvaluation = KORALI_GET(double, sample, "logP(x)");
- 
-    if(samplingProblemPtr != nullptr)
+
+    if (samplingProblemPtr != nullptr)
       samplingProblemPtr->evaluateGradient(sample);
     else
       bayesianProblemPtr->evaluateGradient(sample);
- 
+
     _currentGradient = sample["grad(logP(x))"].get<std::vector<double>>();
   }
 
@@ -188,7 +188,7 @@ class Hamiltonian
   * @param pRight Right argument (momentum).
   * @return pLeft.transpose * _inverseMetric * pRight.
   */
-  virtual double innerProduct(std::vector<double> pLeft, std::vector<double> pRight) const = 0;
+  virtual double innerProduct(const std::vector<double>& pLeft, const std::vector<double>& pRight) const = 0;
 
   /**
   * @brief Computes NUTS criterion on euclidean domain.
@@ -198,7 +198,7 @@ class Hamiltonian
   * @param pRight Rightmost momentum.
   * @return Returns if trees should be built further.
   */
-  bool computeStandardCriterion(const std::vector<double> &qLeft, const std::vector<double> &pLeft, const std::vector<double> &qRight, const std::vector<double> &pRight)
+  bool computeStandardCriterion(const std::vector<double> &qLeft, const std::vector<double> &pLeft, const std::vector<double> &qRight, const std::vector<double> &pRight) const
   {
     std::vector<double> tmpVector(_stateSpaceDim, 0.0);
 
@@ -322,22 +322,26 @@ class Hamiltonian
   ///////////////////////////////////////// SETTERS END ////////////////////////////////////////
   //////////////////////////////////////////////////////////////////////////////////////////////
 
+  /**
+  * @brief Number of model evaluations.
+  */
+  size_t _modelEvaluationCount;
+
   protected:
- 
   /**
   @brief Pointer to the korali experiment.
   */
-  korali::Experiment * _k;
+  korali::Experiment *_k;
 
   /**
   @brief Pointer to the sampling problem (might be NULL)
   */
-  korali::problem::Sampling* samplingProblemPtr;
- 
+  korali::problem::Sampling *samplingProblemPtr;
+
   /**
   @brief Pointer to the Bayesian problem (might be NULL)
   */
-  korali::problem::Bayesian* bayesianProblemPtr;
+  korali::problem::Bayesian *bayesianProblemPtr;
 
   /**
   @brief Current evaluation of objective (return value of sample evaluation).

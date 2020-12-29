@@ -25,6 +25,15 @@ namespace solver
 {
 namespace sampler
 {
+
+enum class EVersion
+{
+  Static = 0,
+  Euclidean = 1,
+  Riemannian = 2, 
+  Riemannian_Const = 3,
+};
+
 class HMC : public Sampler
 {
   std::shared_ptr<Hamiltonian> _hamiltonian;
@@ -63,16 +72,16 @@ class HMC : public Sampler
   void runGenerationHMC(const double logUniSample);
 
   /**
-  * @brief Rund NUTS algorithm with buildTreeUtil.
-  * @param helper Helper struct for large argument list.
+  * @brief Runs NUTS algorithm with buildTreeUtil.
+  * @param logUniSample Log of uniform sample needed for Metropolis accepance / rejection step.
   */
-  void runGenerationNUTSUtil(std::shared_ptr<TreeHelperEuclidean> helper);
+  void runGenerationNUTS(const double logUniSample);
 
   /**
-  * @brief Rund NUTS algorithm with buildTreeUtil.
-  * @param helper Helper struct for large argument list.
+  * @brief Runs NUTS algorithm with buildTreeUtil.
+  * @param logUniSample Log of uniform sample needed for Metropolis accepance / rejection step.
   */
-  void runGenerationNUTSUtilRiemannian(std::shared_ptr<TreeHelperRiemannian> helper);
+  void runGenerationNUTSRiemannian(const double logUniSample);
 
   /**
   * @brief Saves sample.
@@ -109,18 +118,6 @@ class HMC : public Sampler
   */
   void buildTreeUtilIntegration(std::shared_ptr<TreeHelperRiemannian> helper, std::vector<double> &rho, const size_t depth);
 
-  /**
-  * @brief Helper function to print std::vector.
-  * @param vec Vector to be printed.
-  */
-  void __printVec(const std::vector<double> vec) const;
-
-  /**
-  * @brief Checks if vector is Nan.
-  * @param vec Input vector.
-  * @return True if at least one value in vec is nan.
-  */
-  bool isNan(const std::vector<double> vec) const;
 };
 
 } // namespace sampler

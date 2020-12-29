@@ -37,7 +37,7 @@ class HamiltonianRiemannianConstDiag : public HamiltonianRiemannianConst
   * @param stateSpaceDim Dimension of State Space.
   * @param normalGenerator Generator needed for momentum sampling.
   */
-  HamiltonianRiemannianConstDiag(const size_t stateSpaceDim, korali::distribution::univariate::Normal *normalGenerator, korali::Experiment*k ) : HamiltonianRiemannianConst{stateSpaceDim, k}
+  HamiltonianRiemannianConstDiag(const size_t stateSpaceDim, korali::distribution::univariate::Normal *normalGenerator, korali::Experiment *k) : HamiltonianRiemannianConst{stateSpaceDim, k}
   {
     _metric.resize(stateSpaceDim);
     _inverseMetric.resize(stateSpaceDim);
@@ -51,7 +51,7 @@ class HamiltonianRiemannianConstDiag : public HamiltonianRiemannianConst
   * @param normalGenerator Generator needed for momentum sampling.
   * @param inverseRegularizationParam Inverse regularization parameter of SoftAbs metric that controls hardness of approximation: For large values _inverseMetric is closer to analytical formula (and therefore closer to degeneracy in certain cases). 
   */
-  HamiltonianRiemannianConstDiag(const size_t stateSpaceDim, korali::distribution::univariate::Normal *normalGenerator, const double inverseRegularizationParam, korali::Experiment* k) : HamiltonianRiemannianConst{stateSpaceDim, k}
+  HamiltonianRiemannianConstDiag(const size_t stateSpaceDim, korali::distribution::univariate::Normal *normalGenerator, const double inverseRegularizationParam, korali::Experiment *k) : HamiltonianRiemannianConst{stateSpaceDim, k}
   {
     _metric.resize(stateSpaceDim);
     _inverseMetric.resize(stateSpaceDim);
@@ -67,7 +67,7 @@ class HamiltonianRiemannianConstDiag : public HamiltonianRiemannianConst
   * @param inverseMetric Inverse Metric for initialization. 
   * @param inverseRegularizationParam Inverse regularization parameter of SoftAbs metric that controls hardness of approximation: For large values _inverseMetric is closer to analytical formula (and therefore closer to degeneracy in certain cases). 
   */
-  HamiltonianRiemannianConstDiag(const size_t stateSpaceDim, korali::distribution::univariate::Normal *normalGenerator, const std::vector<double> metric, const std::vector<double> inverseMetric, const double inverseRegularizationParam, korali::Experiment* k) : HamiltonianRiemannianConstDiag{stateSpaceDim, normalGenerator, inverseRegularizationParam, k}
+  HamiltonianRiemannianConstDiag(const size_t stateSpaceDim, korali::distribution::univariate::Normal *normalGenerator, const std::vector<double> metric, const std::vector<double> inverseMetric, const double inverseRegularizationParam, korali::Experiment *k) : HamiltonianRiemannianConstDiag{stateSpaceDim, normalGenerator, inverseRegularizationParam, k}
   {
     _metric = metric;
     _inverseMetric = inverseMetric;
@@ -214,7 +214,7 @@ class HamiltonianRiemannianConstDiag : public HamiltonianRiemannianConst
     KORALI_WAIT(sample);
     _currentEvaluation = KORALI_GET(double, sample, "logP(x)");
 
-    if(samplingProblemPtr != nullptr)
+    if (samplingProblemPtr != nullptr)
     {
       samplingProblemPtr->evaluateGradient(sample);
       samplingProblemPtr->evaluateHessian(sample);
@@ -227,7 +227,6 @@ class HamiltonianRiemannianConstDiag : public HamiltonianRiemannianConst
 
     _currentGradient = sample["grad(logP(x))"].get<std::vector<double>>();
     _currentHessian = sample["H(logP(x))"].get<std::vector<double>>();
-
   }
 
   /**
@@ -252,7 +251,7 @@ class HamiltonianRiemannianConstDiag : public HamiltonianRiemannianConst
   * @param pRight Right argument (momentum).
   * @return pLeft.transpose * _inverseMetric * pRight.
   */
-  double innerProduct(std::vector<double> pLeft, std::vector<double> pRight) const
+  double innerProduct(const std::vector<double>& pLeft, const std::vector<double>& pRight) const
   {
     double result = 0.0;
 

@@ -17,7 +17,7 @@ namespace sampler
 class LeapfrogExplicit : public Leapfrog
 {
   public:
-  LeapfrogExplicit(std::shared_ptr<Hamiltonian> hamiltonian) : Leapfrog(hamiltonian) {};
+  LeapfrogExplicit(std::shared_ptr<Hamiltonian> hamiltonian) : Leapfrog(hamiltonian){};
 
   /**
   * @brief Explicit Leapfrog stepping scheme used for evolving Hamiltonian Dynamics.

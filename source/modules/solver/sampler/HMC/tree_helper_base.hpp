@@ -34,7 +34,7 @@ struct TreeHelper
   /**
     * @brief Depth of binary tree inpu.
     */
-  int depthIn;
+  size_t depthIn;
 
   /**
     * @brief Energy of root of binary tree (i.e. starting position) input.
@@ -75,14 +75,14 @@ struct TreeHelper
   /**
     * @brief Number of valid leaves encountererd (needed for adaptive time stepping).
     */
-  int numLeavesOut;
+  size_t numLeavesOut;
 
   /**
     * @brief Computes No U-Turn Sampling (NUTS) criterion
     * @param hamiltonian Hamiltonian object of system
     * @return Returns of tree should be built further.
     */
-  virtual bool computeCriterion(Hamiltonian &hamiltonian) = 0;
+  virtual bool computeCriterion(const Hamiltonian &hamiltonian) const = 0;
 
   /**
     * @brief Computes No U-Turn Sampling (NUTS) criterion
@@ -92,7 +92,7 @@ struct TreeHelper
     * @param rho Sum of momenta encountered in trajectory
     * @return Returns of tree should be built further.
     */
-  virtual bool computeCriterion(Hamiltonian &hamiltonian, const std::vector<double> pStart, const std::vector<double> pEnd, std::vector<double> rho) = 0;
+  virtual bool computeCriterion(const Hamiltonian &hamiltonian, const std::vector<double>& pStart, const std::vector<double>& pEnd, const std::vector<double>& rho) const = 0;
 };
 
 } // namespace sampler

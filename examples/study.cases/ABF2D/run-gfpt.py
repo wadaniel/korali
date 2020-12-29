@@ -58,14 +58,13 @@ e["Solver"]["Mode"] = "Training"
 e["Solver"]["Time Sequence Length"] = 4
 e["Solver"]["Experiences Per Generation"] = 600
 e["Solver"]["Experiences Between Policy Updates"] = 200
-e["Solver"]["Cache Persistence"] = 10
+e["Solver"]["Cache Persistence"] = 20
 
 ### Defining the configuration of replay memory
 
 e["Solver"]["Experience Replay"]["Start Size"] =   1024
 e["Solver"]["Experience Replay"]["Maximum Size"] = 32768
-e["Solver"]["Experience Replay"]["Serialization Frequency"] = 500
-e["Solver"]["Experience Replay"]["Importance Weight"]["Update Frequency"] = 5
+e["Solver"]["Experience Replay"]["Serialization Frequency"] = 100
 
 ### Configuring Mini Batch
 
@@ -93,7 +92,7 @@ e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 40.0
 ### Setting file output configuration
 
 e["File Output"]["Enabled"] = True
-e["File Output"]["Frequency"] = 500
+e["File Output"]["Frequency"] = 100
 e["File Output"]["Path"] = "_results"
 
 ### Running Experiment

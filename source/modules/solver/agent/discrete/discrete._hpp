@@ -27,7 +27,7 @@ class Discrete : public Agent
    */
   float calculateImportanceWeight(const size_t actionIdx, const std::vector<float> &curProbabilities, const std::vector<float> &oldProbabilities);
 
-  void updateExperienceImportanceWeight(size_t expId) override;
+  float getExperienceImportanceWeight(size_t expId) override;
 
   void getAction(korali::Sample &sample) override;
   virtual void initializeAgent();

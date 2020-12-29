@@ -70,7 +70,6 @@ void Agent::initialize()
   _agentComputationTime = 0.0;
   _agentCommunicationTime = 0.0;
   _agentPolicyEvaluationTime = 0.0;
-  _experienceReplayOffPolicyUpdateTime = 0.0;
 
   // Initializing session-specific counters
   _sessionExperienceCount = 0;
@@ -157,10 +156,8 @@ void Agent::trainingGeneration()
         _policyUpdateCount++;
         _sessionPolicyUpdateCount++;
 
-        // Now re-calculating importance weight of the entire experience database
-        if (_experienceReplayImportanceWeightUpdateFrequency > 0)
-         if (_policyUpdateCount % _experienceReplayImportanceWeightUpdateFrequency == 0)
-          updateExperienceReplayImportanceWeights();
+        // Now re-calculating the current off-policy ratio of experiences in the experience replay memory
+        _experienceReplayOffPolicyCurrentRatio = getExperienceReplayOffPolicyRatio();
       }
     }
   }
@@ -229,11 +226,8 @@ void Agent::attendAgent(size_t agentId)
 
     if (isTerminal)
     {
-      // Posprocess episode after first roll-out
+      //  Now that we have the entire episode, process its experiences (add them to replay memory)
       processEpisode(_episodes[agentId]);
-
-      // Now that we have the entire episode, process its experiences (add them to replay memory)
-      for (size_t i = 0; i < _episodes[agentId].size(); i++) processExperience(_episodes[agentId][i]);
 
       // Increasing total experience counters
       _experienceCount += _episodes[agentId].size();
@@ -291,82 +285,71 @@ void Agent::attendAgent(size_t agentId)
 
 void Agent::processEpisode(std::vector<knlohmann::json> &episode)
 {
-  // Approximate Vtbc by backward iteration after initial episode roll out
+  // Approximate the retrace value of the experience by backward iteration after initial episode roll out
   float sumRewards = 0.0;
   for (ssize_t expId = episode.size() - 1; expId >= 0; expId--)
   {
     sumRewards = _discountFactor * sumRewards + episode[expId]["Reward"].get<float>();
     episode[expId]["Policy"]["Vtbc"] = sumRewards;
   }
-}
 
-void Agent::processExperience(knlohmann::json &experience)
-{
-  experience_t e;
-
-  // Creating cache for the new experience
-  e.cache.setMaxAge(_cachePersistence);
-  e.cache.setTimer(&_policyUpdateCount);
-
-  // Getting state, action, reward, and whether it's terminal
-  e.state = experience["State"].get<std::vector<float>>();
-  e.action = experience["Action"].get<std::vector<float>>();
-  e.reward = experience["Reward"].get<float>();
-
-  if (experience["Termination"] == "Non Terminal") e.termination = e_nonTerminal;
-  if (experience["Termination"] == "Terminal") e.termination = e_terminal;
-  if (experience["Termination"] == "Truncated")
+  // Now adding episode's experiences into the replay memory
+  for (size_t expId = 0; expId < episode.size(); expId++)
   {
-    e.termination = e_truncated;
-    e.truncatedState = experience["Truncated State"].get<std::vector<float>>();
+   // Storage for new experience
+   experience_t e;
+
+   // Creating cache for the new experience
+   e.cache.setMaxAge(_cachePersistence);
+   e.cache.setTimer(&_policyUpdateCount);
+
+   // Getting state, action, reward, and whether it's terminal
+   e.state = episode[expId]["State"].get<std::vector<float>>();
+   e.action = episode[expId]["Action"].get<std::vector<float>>();
+   e.reward = episode[expId]["Reward"].get<float>();
+
+   if (episode[expId]["Termination"] == "Non Terminal") e.termination = e_nonTerminal;
+   if (episode[expId]["Termination"] == "Terminal") e.termination = e_terminal;
+   if (episode[expId]["Termination"] == "Truncated")
+   {
+     e.termination = e_truncated;
+     e.truncatedState = episode[expId]["Truncated State"].get<std::vector<float>>();
+   }
+
+   // Updating experience's importance weight in its cache. Initially assumed to be 1.0 because its freshly produced
+   e.cache.set("Importance Weight", 1.0f);
+
+   // Updating metadata for prioritized minibatch selection
+   e.metadata["Mini Batch"]["Priority"] = _experienceReplayMaxPriority;
+   e.metadata["Mini Batch"]["Probability"] = 0.0;
+
+   // Storing policy
+   e.policy = episode[expId]["Policy"];
+
+   // Adding experience
+   _experienceReplay.add(e);
   }
-
-  // Updating metadata for prioritized minibatch selection
-  e.metadata["Mini Batch"]["Priority"] = _experienceReplayMaxPriority;
-  e.metadata["Mini Batch"]["Probability"] = 0.0;
-
-  // Storing policy
-  e.policy = experience["Policy"];
-
-  // Adding experience
-  _experienceReplay.add(e);
 }
 
-bool Agent::isExperienceOnPolicy(size_t expId)
+float Agent::getExperienceReplayOffPolicyRatio()
 {
- float expImportanceWeight = _experienceReplay[expId].policy["Importance Weight"].get<float>();
-
- if ((expImportanceWeight > (1.0f / _experienceReplayOffPolicyCutoffScale)) &&
-     (expImportanceWeight < _experienceReplayOffPolicyCutoffScale)) return true;
-
- return false;
-}
-
-void Agent::updateExperienceReplayImportanceWeights()
-{
- // Profiling
- auto beginTime = std::chrono::steady_clock::now();
-
- // Updating the importance weights for all the experiences in the ER
- #pragma omp parallel for schedule(dynamic, 1)
- for (size_t expId = 0; expId < _experienceReplay.size(); expId++)
-  updateExperienceImportanceWeight(expId);
-
  // Counting number of off-policy experiences
-  size_t expCount = _experienceReplay.size();
-  size_t offPolicyCount = 0;
+ size_t expCount = _experienceReplay.size();
+ size_t offPolicyCount = 0;
 
-  // Count off-policy experiences
-  for (size_t expId = 0; expId < expCount; expId++)
-   if (isExperienceOnPolicy(expId) == false)
-    offPolicyCount++;
+ // Count off-policy experiences
+ for (size_t expId = 0; expId < expCount; expId++)
+ {
+  // Getting the last calculated value of the experience's importance weight. We can tolerate this approximation.
+  float expImportanceWeight = _experienceReplay[expId].cache.get("Importance Weight");
 
-  // Updating off policy ratio
-  _experienceReplayOffPolicyCurrentRatio = (float)offPolicyCount / (float)expCount;
+  // It is off policy if it is outside the [1/cutoff, cutoff] region
+  if ((expImportanceWeight < (1.0f / _experienceReplayOffPolicyCutoffScale)) ||
+      (expImportanceWeight > _experienceReplayOffPolicyCutoffScale)) offPolicyCount++;
+ }
 
-  // Profiling
-  auto endTime = std::chrono::steady_clock::now();
-  _experienceReplayOffPolicyUpdateTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();
+ // Returning off policy ratio
+ return (float)offPolicyCount / (float)expCount;
 }
 
 void Agent::updateExperienceReplayProbabilities()
@@ -619,8 +602,10 @@ void Agent::printGenerationAfter()
     else
       _k->_logger->logInfo("Normal", " + Total Experience Count:      %lu\n", _experienceCount);
 
-    if (_experienceReplayImportanceWeightUpdateFrequency > 0)
-      _k->_logger->logInfo("Normal", " + Current Off-Policy Ratio:    %f (Target: %f)\n", _experienceReplayOffPolicyCurrentRatio, _experienceReplayOffPolicyTarget);
+    if (_experienceReplayOffPolicyTarget < 1.0f)
+     _k->_logger->logInfo("Normal", " + Current Off-Policy Ratio:    %f (Target: %f)\n", _experienceReplayOffPolicyCurrentRatio, _experienceReplayOffPolicyTarget);
+    else
+     _k->_logger->logInfo("Normal", " + Current Off-Policy Ratio:    %f\n", _experienceReplayOffPolicyCurrentRatio);
 
     _k->_logger->logInfo("Normal", "Training Statistics:\n");
 
@@ -649,8 +634,6 @@ void Agent::printGenerationAfter()
     _k->_logger->logInfo("Normal", " + Average Agent Computation Time:                    %fs\n", _sessionEpisodeCount > 0 ? (_agentComputationTime / _sessionEpisodeCount) / 1.0e+9 : 0.0);
     _k->_logger->logInfo("Normal", " + Average Agent Communication/Wait Time:             %fs\n", _sessionEpisodeCount > 0 ? (_agentCommunicationTime / _sessionEpisodeCount) / 1.0e+9 : 0.0);
     _k->_logger->logInfo("Normal", " + Average Agent Policy Evaluation Time:              %fs\n", _sessionEpisodeCount > 0 ? (_agentPolicyEvaluationTime / _sessionEpisodeCount) / 1.0e+9 : 0.0);
-    if (_experienceReplayImportanceWeightUpdateFrequency > 0)
-     _k->_logger->logInfo("Normal", " + Cumulative Off-Policy Ratio Evaluation Time:       %fs\n", _experienceReplayOffPolicyUpdateTime / 1.0e+9);
     _k->_logger->logInfo("Normal", " + Cumulative Experience Replay Serialization Time:   %fs\n", _serializationTime / 1.0e+9);
     _k->_logger->logInfo("Normal", " + Cumulative Result File Saving I/O Time:            %fs\n", _k->_resultSavingTime / 1.0e+9);
     _k->_logger->logInfo("Normal", " + Generation Running Time:                           %fs\n", _generationTime / 1.0e+9);

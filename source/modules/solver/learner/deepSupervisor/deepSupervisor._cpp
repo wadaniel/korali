@@ -99,9 +99,6 @@ void DeepSupervisor::initialize()
   if (_optimizer == "Adam") _adamSolver = new korali::fAdam(weightAndBiasParameters.size());
   if (_optimizer == "AdaBelief") _adamSolver = new korali::fAdaBelief(weightAndBiasParameters.size());
 
-  // Setting learning rate
-  _adamSolver->_eta = _learningRate;
-
   // Setting initial guesses as the current weight and bias parameters
   for (size_t i = 0; i < weightAndBiasParameters.size(); i++)
     _adamSolver->_initialValues[i] = weightAndBiasParameters[i];
@@ -125,6 +122,9 @@ void DeepSupervisor::runGeneration()
 
   // Checking that incoming data has a correct format
   _problem->verifyData();
+
+  // Updating optimizer's learning rate, in case it changed
+  _adamSolver->_eta = _learningRate;
 
   for (size_t step = 0; step < _stepsPerGeneration; step++)
   {

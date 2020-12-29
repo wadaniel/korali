@@ -185,11 +185,6 @@ class Agent : public Solver
    */
   double _agentPolicyEvaluationTime;
 
-  /**
-   * @brief [Profiling] Measures the time taken to update the off-policy ratio.
-   */
-  double _experienceReplayOffPolicyUpdateTime;
-
   /****************************************************************************************************
    * Common Agent functions
    ***************************************************************************************************/
@@ -217,12 +212,6 @@ class Agent : public Solver
   void processEpisode(std::vector<knlohmann::json> &episode);
 
   /**
-  * @brief Handles the addition of experience information to the replay memory and other management operations
-  * @param experience The experience to process
-  */
-  void processExperience(knlohmann::json &experience);
-
-  /**
   * @brief Updates priority of experience.
   * @param expId The experience to update
   * @param priority New value for experience expId
@@ -235,9 +224,9 @@ class Agent : public Solver
   void updateExperienceReplayProbabilities();
 
   /**
-  * @brief Updates the importance weight of the stored experiences and re-calculates off-policy ratio
+  * @brief Calculates the ratio of off-policy experience in the replay memory
   */
-  void updateExperienceReplayImportanceWeights();
+  float getExperienceReplayOffPolicyRatio();
 
   /**
   * @brief Generates an experience mini batch from the replay memory
@@ -285,13 +274,6 @@ class Agent : public Solver
   * @return A vector with the importance weights corresponding to the experience indices.
   */
   std::vector<float> calculateImportanceWeights(std::vector<size_t> miniBatch);
-
-  /**
-   * @brief Indicates whether an experience is on policy
-   * @param expId The index of the experience within the Experience Replay memory
-   * @return True, if it's on policy. False, if it's off policy.
-   */
-  bool isExperienceOnPolicy(size_t expId);
 
   /**
    * @brief Listens to incoming experience from the given agent, sends back policy or terminates the episode depending on what's needed
@@ -360,10 +342,10 @@ class Agent : public Solver
   virtual knlohmann::json getTrainingState() = 0;
 
   /**
-  * @brief Returns the value of importance weight for a given experience
+  * @brief Returns the value of importance weight for a given experience in the replay memory
   * @param expId Index of the experience in the ER to calculate the importance weight for
   */
-  virtual void updateExperienceImportanceWeight(size_t expId) = 0;
+  virtual float getExperienceImportanceWeight(size_t expId) = 0;
 
   /**
     * @brief Initializes the internal state of the policy

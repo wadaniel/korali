@@ -239,7 +239,7 @@ std::vector<float> Continuous::calculateKLDivergenceGradient(const std::vector<f
   return klGrad;
 }
 
-void Continuous::updateExperienceImportanceWeight(size_t expId)
+float Continuous::getExperienceImportanceWeight(size_t expId)
 {
  // Getting the state sequence and action for the given experience
  auto expStateSequence = getStateTimeSequence(expId);
@@ -257,8 +257,8 @@ void Continuous::updateExperienceImportanceWeight(size_t expId)
  // Now calculating importance weight
  auto expImportanceWeight = calculateImportanceWeight(expAction, expMeans, expSigmas, curMeans, curSigmas);
 
- // Updating values to the experience
- _experienceReplay[expId].policy["Importance Weight"] = expImportanceWeight;
+ // Returning experience's importance weight
+ return expImportanceWeight;
 }
 
 } // namespace agent

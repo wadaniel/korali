@@ -172,8 +172,8 @@ float GFPT::retraceFunction(size_t expId)
     // Calculating state value function
     float curV = _experienceReplay[curId].cache.access("State Value", [this, expStateSequence]() { return this->stateValueFunction(expStateSequence); });
 
-    // Getting importance weight of the action
-    float importanceWeight = _experienceReplay[curId].policy["Importance Weight"];
+    // Calculating importance weight
+    float importanceWeight = _experienceReplay[curId].cache.access("Importance Weight", [this, curId]() { return getExperienceImportanceWeight(curId); });
 
     // Truncate importance weight
     float truncatedImportanceWeight = std::min(1.0f, importanceWeight);
@@ -362,8 +362,14 @@ void GFPT::trainPolicy()
     // Creating storage for action gradients
     std::vector<float> meanGradients(_problem->_actionVectorSize, 0.0f);
 
+    // Getting experience's importance weight (or recalculating it if not in cache memory)
+    float importanceWeight = _experienceReplay[expId].cache.access("Importance Weight", [this, expId]() { return getExperienceImportanceWeight(expId); });
+
+    // Checking whether the experience is on policy (i.e., it is within the [1/cutoff, cutoff] region)
+    bool isOnPolicy = (importanceWeight > (1.0f / _experienceReplayOffPolicyCutoffScale)) && (importanceWeight < _experienceReplayOffPolicyCutoffScale);
+
     // If the experiment if on-policy, we use it for the calculation of the gradients
-    if (isExperienceOnPolicy(expId))
+    if (isOnPolicy)
     {
       // Getting current sate/action time sequence
       auto expStateActionSequence = getStateActionTimeSequence(expId);

@@ -93,8 +93,8 @@ void HMC::setInitialConfiguration()
     inverseMetric.resize(_dimensions);
     for (size_t i = 0; i < _dimensions; ++i)
     {
-      metric[i] = _k->_variables[i]->_initialStandardDeviation * _k->_variables[i]->_initialStandardDeviation;
-      inverseMetric[i] = 1.0 / metric[i];
+      inverseMetric[i] = _k->_variables[i]->_initialStandardDeviation * _k->_variables[i]->_initialStandardDeviation;
+      metric[i] = 1.0 / inverseMetric[i];
     }
   }
   else

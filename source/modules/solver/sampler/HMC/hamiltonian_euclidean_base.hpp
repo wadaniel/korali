@@ -36,7 +36,7 @@ class HamiltonianEuclidean : public Hamiltonian
   * @brief Constructor with State Space Dim.
   * @param stateSpaceDim Dimension of State Space.
   */
-  HamiltonianEuclidean(const size_t stateSpaceDim) : Hamiltonian{stateSpaceDim} {}
+  HamiltonianEuclidean(const size_t stateSpaceDim, korali::Experiment *k) : Hamiltonian{stateSpaceDim, k} {}
 
   /**
   * @brief Destructor of abstract base class.

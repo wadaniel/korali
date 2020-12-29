@@ -37,10 +37,16 @@ class Hamiltonian
   * @brief Constructor with State Space Dim.
   * @param stateSpaceDim Dimension of State Space.
   */
-  Hamiltonian(const size_t stateSpaceDim) : _stateSpaceDim{stateSpaceDim}, _numHamiltonianObjectUpdates{0}
-  {
-    verbosity = false;
-  }
+  Hamiltonian(const size_t stateSpaceDim, korali::Experiment *k) : _stateSpaceDim{stateSpaceDim}, _numHamiltonianObjectUpdates{0} {
+  
+    _k = k;
+    samplingProblemPtr = dynamic_cast<korali::problem::Sampling *>(k->_problem);
+    bayesianProblemPtr = dynamic_cast<korali::problem::Bayesian *>(k->_problem);
+
+    if (samplingProblemPtr != nullptr && bayesianProblemPtr != nullptr)
+        KORALI_LOG_ERROR("Problem type not compatible with Hamiltonian object.");
+ 
+  };
 
   /**
   * @brief Destructor of abstract base class.
@@ -87,13 +93,6 @@ class Hamiltonian
     double evaluation = _currentEvaluation;
     evaluation *= -1.0;
 
-    // if (verbosity == true)
-    // {
-    //   std::cout << "In Hamiltonian::U :" << std::endl;
-    //   std::cout << "U() = " << evaluation << std::endl
-    //             << std::endl;
-    // }
-
     return evaluation;
   }
 
@@ -107,14 +106,6 @@ class Hamiltonian
 
     // negate to get dU
     std::transform(grad.cbegin(), grad.cend(), grad.begin(), std::negate<double>());
-
-    // if (verbosity == true)
-    // {
-    //   std::cout << "In Hamiltonian::dU :" << std::endl;
-    //   std::cout << "dU() = " << std::endl;
-    //   __printVec(grad);
-    //   std::cout << std::endl;
-    // }
 
     return grad;
   }
@@ -165,7 +156,7 @@ class Hamiltonian
   * @param q Current position.
   * @param _k Experiment object.
   */
-  virtual void updateHamiltonian(const std::vector<double> &q, korali::Experiment *_k)
+  virtual void updateHamiltonian(const std::vector<double> &q)
   {
     auto sample = korali::Sample();
     sample["Sample Id"] = _numHamiltonianObjectUpdates++;
@@ -176,20 +167,13 @@ class Hamiltonian
     KORALI_START(sample);
     KORALI_WAIT(sample);
     _currentEvaluation = KORALI_GET(double, sample, "logP(x)");
-
-    auto samplingProblemPtr = dynamic_cast<korali::problem::Sampling *>(_k->_problem);
-    auto bayesianProblemPtr = dynamic_cast<korali::problem::Bayesian *>(_k->_problem);
-
-    if (samplingProblemPtr != nullptr)
+ 
+    if(samplingProblemPtr != nullptr)
       samplingProblemPtr->evaluateGradient(sample);
-    else if (bayesianProblemPtr != nullptr)
-      bayesianProblemPtr->evaluateGradient(sample);
     else
-      KORALI_LOG_ERROR("Couldnt retrieve gradient.");
-
+      bayesianProblemPtr->evaluateGradient(sample);
+ 
     _currentGradient = sample["grad(logP(x))"].get<std::vector<double>>();
-    // to TEST
-    // std::fill(_currentGradient.begin(), _currentGradient.end(), 0.0);
   }
 
   /**
@@ -222,23 +206,6 @@ class Hamiltonian
     double dotProductLeft = std::inner_product(std::cbegin(tmpVector), std::cend(tmpVector), std::cbegin(pLeft), 0.0);
     double dotProductRight = std::inner_product(std::cbegin(tmpVector), std::cend(tmpVector), std::cbegin(pRight), 0.0);
 
-    if (verbosity)
-    {
-      std::cout << "In Hamiltonian::computeStandardCriterion :" << std::endl;
-      std::cout << "qLeft = " << std::endl;
-      __printVec(qLeft);
-      std::cout << "pLeft = " << std::endl;
-      __printVec(pLeft);
-      std::cout << "qRight = " << std::endl;
-      __printVec(qRight);
-      std::cout << "pRight = " << std::endl;
-      __printVec(pRight);
-      std::cout << "dotProductLeft = " << dotProductLeft << std::endl;
-      std::cout << "dotProductRight = " << dotProductRight << std::endl;
-      bool __returnVal = (dotProductLeft > 0) && (dotProductRight > 0);
-      std::cout << "return (dotProductLeft > 0) && (dotProductRight > 0) = " << __returnVal << std::endl;
-    }
-
     return (dotProductLeft >= 0) && (dotProductRight >= 0);
   }
 
@@ -258,13 +225,8 @@ class Hamiltonian
   * @param _k Korali experiment object
   * @return Error code to indicate if update was successful.
   */
-  virtual int updateMetricMatricesRiemannian(const std::vector<double> &q, korali::Experiment *_k)
+  virtual int updateMetricMatricesRiemannian(const std::vector<double> &q)
   {
-    if (verbosity == true)
-    {
-      std::cout << "in Hamiltonian::updateMetricMatricesRiemannian" << std::endl;
-    }
-
     return 0;
   };
 
@@ -360,32 +322,22 @@ class Hamiltonian
   ///////////////////////////////////////// SETTERS END ////////////////////////////////////////
   //////////////////////////////////////////////////////////////////////////////////////////////
 
-  //////////////////////////////////////////////////////////////////////////////////////////////
-  /////////////////////////////////// DEBUGGER MEMBERS START ///////////////////////////////////
-  //////////////////////////////////////////////////////////////////////////////////////////////
-
-  /**
-  * @brief verbosity boolean for debuggin purposes.
-  */
-  bool verbosity;
-
-  /**
-  * @brief Debug printer function for std::vector. TODO: REMOVE
-  * @param vec Vector to be printed.
-  */
-  void __printVec(std::vector<double> vec) const
-  {
-    for (size_t i = 0; i < vec.size(); ++i)
-    {
-      std::cout << vec[i] << std::endl;
-    }
-    return;
-  }
-
   protected:
-  //////////////////////////////////////////////////////////////////////////////////////////////
-  //////////////////////////////////// DEBUGGER MEMBERS END ////////////////////////////////////
-  //////////////////////////////////////////////////////////////////////////////////////////////
+ 
+  /**
+  @brief Pointer to the korali experiment.
+  */
+  korali::Experiment * _k;
+
+  /**
+  @brief Pointer to the sampling problem (might be NULL)
+  */
+  korali::problem::Sampling* samplingProblemPtr;
+ 
+  /**
+  @brief Pointer to the Bayesian problem (might be NULL)
+  */
+  korali::problem::Bayesian* bayesianProblemPtr;
 
   /**
   @brief Current evaluation of objective (return value of sample evaluation).

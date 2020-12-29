@@ -109,32 +109,32 @@ void HMC::setInitialConfiguration()
   // Initializing Integrator and Hamiltonian
   if (_version == "Static")
   {
-    _integrator = std::make_unique<LeapfrogExplicit>();
-    _hamiltonian = std::make_unique<HamiltonianEuclideanDiag>(_dimensions, _normalGenerator, metric, inverseMetric);
+    _hamiltonian = std::make_shared<HamiltonianEuclideanDiag>(_dimensions, _normalGenerator, metric, inverseMetric, _k);
+    _integrator = std::make_unique<LeapfrogExplicit>(_hamiltonian);
   }
   else if (_version == "Euclidean")
   {
-    _integrator = std::make_unique<LeapfrogExplicit>();
     if (_useDiagonalMetric)
-      _hamiltonian = std::make_unique<HamiltonianEuclideanDiag>(_dimensions, _normalGenerator, metric, inverseMetric);
+      _hamiltonian = std::make_shared<HamiltonianEuclideanDiag>(_dimensions, _normalGenerator, metric, inverseMetric, _k);
     else
-      _hamiltonian = std::make_unique<HamiltonianEuclideanDense>(_dimensions, _multivariateGenerator, metric, inverseMetric);
+      _hamiltonian = std::make_shared<HamiltonianEuclideanDense>(_dimensions, _multivariateGenerator, metric, inverseMetric, _k);
+    _integrator = std::make_unique<LeapfrogExplicit>(_hamiltonian);
   }
   else if (_version == "Riemannian")
   {
-    _integrator = std::make_unique<LeapfrogImplicit>(_maxNumFixedPointIteration);
     if (_useDiagonalMetric)
-      _hamiltonian = std::make_unique<HamiltonianRiemannianDiag>(_dimensions, _normalGenerator, metric, inverseMetric, _inverseRegularizationParameter);
+      _hamiltonian = std::make_shared<HamiltonianRiemannianDiag>(_dimensions, _normalGenerator, metric, inverseMetric, _inverseRegularizationParameter, _k);
     else
       KORALI_LOG_ERROR("Riemannian Metric only supported with Diagonal Metric");
+    _integrator = std::make_unique<LeapfrogImplicit>(_maxNumFixedPointIteration, _hamiltonian);
   }
   else if (_version == "Riemannian Const")
   {
-    _integrator = std::make_unique<LeapfrogExplicit>();
     if (_useDiagonalMetric)
-      _hamiltonian = std::make_unique<HamiltonianRiemannianConstDiag>(_dimensions, _normalGenerator, metric, inverseMetric, _inverseRegularizationParameter);
+      _hamiltonian = std::make_shared<HamiltonianRiemannianConstDiag>(_dimensions, _normalGenerator, metric, inverseMetric, _inverseRegularizationParameter, _k);
     else
-      _hamiltonian = std::make_unique<HamiltonianRiemannianConstDense>(_dimensions, _multivariateGenerator, metric, inverseMetric, _inverseRegularizationParameter);
+      _hamiltonian = std::make_shared<HamiltonianRiemannianConstDense>(_dimensions, _multivariateGenerator, metric, inverseMetric, _inverseRegularizationParameter, _k);
+    _integrator = std::make_unique<LeapfrogExplicit>(_hamiltonian);
   }
 
   if (_useAdaptiveStepSize == true)
@@ -157,7 +157,7 @@ void HMC::setInitialConfiguration()
 void HMC::runGeneration()
 {
   if (_k->_currentGeneration == 1) setInitialConfiguration();
-  _hamiltonian->updateHamiltonian(_positionLeader, _k);
+  _hamiltonian->updateHamiltonian(_positionLeader);
 
   // Samples Momentum Candidate from N(0.0, metric)
   _momentumCandidate = _hamiltonian->sampleMomentum();
@@ -170,7 +170,7 @@ void HMC::runGeneration()
 
   if (_version == "Riemannian Const")
   {
-    int err = _hamiltonian->updateMetricMatricesRiemannian(_positionLeader, _k);
+    int err = _hamiltonian->updateMetricMatricesRiemannian(_positionLeader);
     if (err > 0) _k->_logger->logWarning("Minimal", "Error during metric update.");
   }
 
@@ -215,7 +215,7 @@ void HMC::runGenerationHMC(const double logUniSample)
   const double oldU = _hamiltonian->U();
 
   for (size_t i = 0; i < _numIntegrationSteps; ++i)
-    _integrator->step(_positionCandidate, _momentumCandidate, _stepSize, *_hamiltonian, _k);
+    _integrator->step(_positionCandidate, _momentumCandidate, _stepSize);
 
   // Negate proposed momentum to make proposal symmetric
   std::transform(std::cbegin(_momentumCandidate), std::cend(_momentumCandidate), std::begin(_momentumCandidate), std::negate<double>());
@@ -328,7 +328,7 @@ void HMC::runGenerationNUTSUtil(std::shared_ptr<TreeHelperEuclidean> helper)
 
 void HMC::runGenerationNUTSUtilRiemannian(std::shared_ptr<TreeHelperRiemannian> helper)
 {
-  _hamiltonian->updateHamiltonian(_positionLeader, _k);
+  _hamiltonian->updateHamiltonian(_positionLeader);
   const double oldK = _hamiltonian->K(_momentumLeader);
   const double oldU = _hamiltonian->U();
 
@@ -494,9 +494,11 @@ void HMC::updateStepSize()
       }
     }
   }
-
-  // Apply Step Size Jitter
-  _stepSize = std::exp(_logDualStepSize) * (1.0 + _stepSizeJitter * (2.0 * _uniformGenerator->getRandomNumber() - 1.0));
+  // Apply Step Size Jitter after burn in period
+  else
+  {
+    _stepSize = std::exp(_logDualStepSize) * (1.0 + _stepSizeJitter * (2.0 * _uniformGenerator->getRandomNumber() - 1.0));
+  }
 }
 
 void HMC::updateState()
@@ -625,7 +627,7 @@ void HMC::buildTreeUtil(std::shared_ptr<TreeHelperEuclidean> helper, const size_
   if (depth == 0)
   {
     const double deltaMax = 100;
-    _integrator->step(helper->qLeftOut, helper->pLeftOut, helper->directionIn * _stepSize, *_hamiltonian, _k);
+    _integrator->step(helper->qLeftOut, helper->pLeftOut, helper->directionIn * _stepSize);
 
     const double leafK = _hamiltonian->K(helper->pLeftOut);
     const double leafU = _hamiltonian->U();
@@ -709,9 +711,9 @@ void HMC::buildTreeUtilIntegration(std::shared_ptr<TreeHelperRiemannian> helper,
   if (depth == 0)
   {
     const double deltaMax = 100;
-    _integrator->step(helper->qLeftOut, helper->pLeftOut, helper->directionIn * _stepSize, *_hamiltonian, _k);
+    _integrator->step(helper->qLeftOut, helper->pLeftOut, helper->directionIn * _stepSize);
 
-    _hamiltonian->updateHamiltonian(helper->pLeftOut, _k);
+    _hamiltonian->updateHamiltonian(helper->pLeftOut);
     const double leafK = _hamiltonian->K(helper->pLeftOut);
     const double leafU = _hamiltonian->U();
     const double leafH = leafU + leafK;

@@ -31,23 +31,21 @@ class LeapfrogImplicit : public Leapfrog
   * @brief Constructor for implicit leapfrog stepper.
   * @param maxNumFixedPointIter Maximum fixed point iterations.
   */
-  LeapfrogImplicit(size_t maxNumFixedPointIter) : _maxNumFixedPointIter(maxNumFixedPointIter){};
+  LeapfrogImplicit(size_t maxNumFixedPointIter, std::shared_ptr<Hamiltonian> hamiltonian) : Leapfrog(hamiltonian), _maxNumFixedPointIter(maxNumFixedPointIter){};
   /**
   * @brief Implicit Leapfrog stepping scheme used for evolving Hamiltonian Dynamics.
   * @param q Position which is evolved.
   * @param p Momentum which is evolved.
   * @param stepSize Step Size used for Leap Frog Scheme.
-  * @param hamiltonian Hamiltonian object to calulcate energies.
-  * @param _k Experiment object.
   */
-  void step(std::vector<double> &q, std::vector<double> &p, const double stepSize, Hamiltonian &hamiltonian, korali::Experiment *_k) override
+  void step(std::vector<double> &q, std::vector<double> &p, const double stepSize) override
   {
-    size_t stateSpaceDim = hamiltonian.getStateSpaceDim();
+    size_t stateSpaceDim = _hamiltonian->getStateSpaceDim();
     double delta = 1e-6 * stepSize;
 
     // half step of momentum
-    hamiltonian.updateHamiltonian(q, _k);
-    std::vector<double> dphi_dq = hamiltonian.dphi_dq();
+    _hamiltonian->updateHamiltonian(q);
+    std::vector<double> dphi_dq = _hamiltonian->dphi_dq();
     for (size_t i = 0; i < stateSpaceDim; ++i)
     {
       p[i] = p[i] - stepSize / 2.0 * dphi_dq[i];
@@ -61,8 +59,8 @@ class LeapfrogImplicit : public Leapfrog
     do
     {
       deltaP = 0.0;
-      hamiltonian.updateHamiltonian(q, _k);
-      std::vector<double> dtau_dq = hamiltonian.dtau_dq(p);
+      _hamiltonian->updateHamiltonian(q);
+      std::vector<double> dtau_dq = _hamiltonian->dtau_dq(p);
       for (size_t i = 0; i < stateSpaceDim; ++i)
       {
         pPrime[i] = rho[i] - stepSize / 2.0 * dtau_dq[i];
@@ -81,9 +79,7 @@ class LeapfrogImplicit : public Leapfrog
       ++numIter;
 
     } while (deltaP > delta && numIter < _maxNumFixedPointIter);
-    if (_maxNumFixedPointIter <= numIter)
-      _k->_logger->logInfo("Detailed", "Maximum number (%zu) of fixed point iterations reached during implicit leapfrog scheme.\n", _maxNumFixedPointIter);
-
+   
     std::vector<double> qPrime(stateSpaceDim);
     std::vector<double> sigma = q;
     double deltaQ;
@@ -92,10 +88,10 @@ class LeapfrogImplicit : public Leapfrog
     do
     {
       deltaQ = 0.0;
-      hamiltonian.updateHamiltonian(sigma, _k);
-      std::vector<double> dtau_dp_sigma = hamiltonian.dtau_dp(p);
-      hamiltonian.updateHamiltonian(q, _k);
-      std::vector<double> dtau_dp_q = hamiltonian.dtau_dp(p);
+      _hamiltonian->updateHamiltonian(sigma);
+      std::vector<double> dtau_dp_sigma = _hamiltonian->dtau_dp(p);
+      _hamiltonian->updateHamiltonian(q);
+      std::vector<double> dtau_dp_q = _hamiltonian->dtau_dp(p);
       for (size_t i = 0; i < stateSpaceDim; ++i)
       {
         qPrime[i] = sigma[i] + stepSize / 2.0 * dtau_dp_sigma[i] + stepSize / 2.0 * dtau_dp_q[i];
@@ -114,17 +110,14 @@ class LeapfrogImplicit : public Leapfrog
       ++numIter;
     } while (deltaQ > delta && numIter < _maxNumFixedPointIter);
 
-    if (_maxNumFixedPointIter <= numIter)
-      _k->_logger->logInfo("Detailed", "Maximum number (%zu) of fixed point iterations reached during implicit leapfrog scheme.\n", _maxNumFixedPointIter);
-
-    hamiltonian.updateHamiltonian(q, _k);
-    std::vector<double> dtau_dq = hamiltonian.dtau_dq(p);
+    _hamiltonian->updateHamiltonian(q);
+    std::vector<double> dtau_dq = _hamiltonian->dtau_dq(p);
     for (size_t i = 0; i < stateSpaceDim; ++i)
     {
       p[i] = p[i] - stepSize / 2.0 * dtau_dq[i];
     }
 
-    dphi_dq = hamiltonian.dphi_dq();
+    dphi_dq = _hamiltonian->dphi_dq();
     for (size_t i = 0; i < stateSpaceDim; ++i)
     {
       p[i] = p[i] - stepSize / 2.0 * dphi_dq[i];

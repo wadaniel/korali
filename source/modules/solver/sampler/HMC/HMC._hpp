@@ -27,7 +27,7 @@ namespace sampler
 {
 class HMC : public Sampler
 {
-  std::unique_ptr<Hamiltonian> _hamiltonian;
+  std::shared_ptr<Hamiltonian> _hamiltonian;
   std::unique_ptr<Leapfrog> _integrator;
 
   /**

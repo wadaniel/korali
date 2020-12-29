@@ -36,19 +36,19 @@ void HMC::setInitialConfiguration()
 
   // Validate configuration
   if (_burnIn < 0) KORALI_LOG_ERROR("Burn In must be larger equal 0 (is %zu).\n", _burnIn);
-  if (_stepSize <= 0.0) KORALI_LOG_ERROR("Step Size must be larger 0 (is %lf).\n", _stepSize);
+  if (_stepSize <= 0.) KORALI_LOG_ERROR("Step Size must be larger 0 (is %lf).\n", _stepSize);
   if (_maxDepth < 0) KORALI_LOG_ERROR("Max Depth must be non-negative (is %zu).\n", _maxDepth);
-  if (_inverseRegularizationParameter <= 0.0) KORALI_LOG_ERROR("Inverse Regularization Parameter must be positive (is %lf).\n", _inverseRegularizationParameter);
-  if (_targetAcceptanceRate <= 0.0 || _targetAcceptanceRate > 1.0) KORALI_LOG_ERROR("Target Acceptance Rate must be in interval (0.0, 1.0] (is %lf).\n", _targetAcceptanceRate);
-  if (_acceptanceRateLearningRate <= 0.0 || _acceptanceRateLearningRate > 1.0) KORALI_LOG_ERROR("Acceptance Rate Learning Rate must be in interval (0.0, 1.0] (is %lf).\n", _acceptanceRateLearningRate);
-  if (_targetIntegrationTime <= 0.0) KORALI_LOG_ERROR("Target Integration Time must be greater 0 (is %lf).\n", _targetIntegrationTime);
+  if (_inverseRegularizationParameter <= 0.) KORALI_LOG_ERROR("Inverse Regularization Parameter must be positive (is %lf).\n", _inverseRegularizationParameter);
+  if (_targetAcceptanceRate <= 0. || _targetAcceptanceRate > 1.0) KORALI_LOG_ERROR("Target Acceptance Rate must be in interval (0.0, 1.0] (is %lf).\n", _targetAcceptanceRate);
+  if (_acceptanceRateLearningRate <= 0. || _acceptanceRateLearningRate > 1.) KORALI_LOG_ERROR("Acceptance Rate Learning Rate must be in interval (0.0, 1.0] (is %lf).\n", _acceptanceRateLearningRate);
+  if (_targetIntegrationTime <= 0.) KORALI_LOG_ERROR("Target Integration Time must be greater 0 (is %lf).\n", _targetIntegrationTime);
   if (_numIntegrationSteps <= 0) KORALI_LOG_ERROR("Num Integration Steps must be larger equal 1 (is %zu).\n", _numIntegrationSteps);
   if (_maxIntegrationSteps < _numIntegrationSteps) KORALI_LOG_ERROR("Max Integration Steps must be larger equal 'Num Integrations Steps' (is %zu).\n", _maxIntegrationSteps);
   if (_maxNumFixedPointIteration <= 0) KORALI_LOG_ERROR("Max Num Fixed Point Iterations must be larger equal 1 (is %zu).\n", _maxNumFixedPointIteration);
-  if (_adaptiveStepSizeSpeedConstant <= 0.0) KORALI_LOG_ERROR("Adaptive Step Size Speed Constant must be positive (is %lf).\n", _adaptiveStepSizeSpeedConstant);
-  if (_adaptiveStepSizeStabilizationConstant <= 0.0) KORALI_LOG_ERROR("Adaptive Step Size Stabilization Constant must be non-negative (is %lf).\n", _adaptiveStepSizeStabilizationConstant);
-  if (_adaptiveStepSizeScheduleConstant <= 0.0 || _adaptiveStepSizeScheduleConstant > 1.0) KORALI_LOG_ERROR("Adaptive Step Size Schedule Constant must be in the interval (0.0, 1.0] (is %lf).\n", _adaptiveStepSizeScheduleConstant);
-  if (_stepSizeJitter < 0.0 || _stepSizeJitter > 1.0) KORALI_LOG_ERROR("Step Size Jitter has to in [0.0, 1.0] (is %lf).\n", _stepSizeJitter);
+  if (_adaptiveStepSizeSpeedConstant <= 0.) KORALI_LOG_ERROR("Adaptive Step Size Speed Constant must be positive (is %lf).\n", _adaptiveStepSizeSpeedConstant);
+  if (_adaptiveStepSizeStabilizationConstant <= 0.) KORALI_LOG_ERROR("Adaptive Step Size Stabilization Constant must be non-negative (is %lf).\n", _adaptiveStepSizeStabilizationConstant);
+  if (_adaptiveStepSizeScheduleConstant <= 0. || _adaptiveStepSizeScheduleConstant > 1.) KORALI_LOG_ERROR("Adaptive Step Size Schedule Constant must be in the interval (0.0, 1.0] (is %lf).\n", _adaptiveStepSizeScheduleConstant);
+  if (_stepSizeJitter < 0. || _stepSizeJitter > 1.0) KORALI_LOG_ERROR("Step Size Jitter has to in [0.0, 1.0] (is %lf).\n", _stepSizeJitter);
 
   if (_initialFastAdaptionInterval < 0) KORALI_LOG_ERROR("Initial Fast Adaption Interval must be greater equal 0 (is %zu).\n", _initialFastAdaptionInterval);
   if (_initialSlowAdaptionInterval < 0) KORALI_LOG_ERROR("Initial Slow Adaption Interval must be greater equal 0 (is %zu).\n", _initialSlowAdaptionInterval);
@@ -103,18 +103,18 @@ void HMC::setInitialConfiguration()
     for (size_t i = 0; i < _dimensions; ++i)
     {
       inverseMetric[i] = _k->_variables[i]->_initialStandardDeviation * _k->_variables[i]->_initialStandardDeviation;
-      metric[i] = 1.0 / inverseMetric[i];
+      metric[i] = 1. / inverseMetric[i];
     }
   }
   else
   {
-    metric.resize(_dimensions * _dimensions, 0.0);
-    inverseMetric.resize(_dimensions * _dimensions, 0.0);
+    metric.resize(_dimensions * _dimensions, 0.);
+    inverseMetric.resize(_dimensions * _dimensions, 0.);
 
     for (size_t d = 0; d < _dimensions; ++d)
     {
-      metric[d * _dimensions + d] = _k->_variables[d]->_initialStandardDeviation * _k->_variables[d]->_initialStandardDeviation;
-      inverseMetric[d * _dimensions + d] = 1.0 / metric[d * _dimensions + d];
+      inverseMetric[d * _dimensions + d] = _k->_variables[d]->_initialStandardDeviation * _k->_variables[d]->_initialStandardDeviation;
+      metric[d * _dimensions + d] = 1./ inverseMetric[d* _dimensions + d];
     }
   }
 
@@ -154,17 +154,17 @@ void HMC::setInitialConfiguration()
   _acceptanceCount = 0;
   _proposedSampleCount = 0;
   _chainLength = 0;
-  _acceptanceRate = 1.0;
-  _acceptanceRateError = 0.0;
-  _runningAcceptanceRate = 1.0;
+  _acceptanceRate = 1.;
+  _acceptanceRateError = 0.;
+  _runningAcceptanceRate = 1.;
   _currentDepth = 0;
 
   // Initialize step size
   _logDualStepSize = std::log(_stepSize);
   if (_useAdaptiveStepSize == true)
   {
-    _mu = std::log(10.0 * _stepSize);
-    _hBar = 0.0;
+    _mu = std::log(10. * _stepSize);
+    _hBar = 0.;
   }
 }
 
@@ -173,7 +173,7 @@ void HMC::runGeneration()
   if (_k->_currentGeneration == 1) setInitialConfiguration();
   _hamiltonian->updateHamiltonian(_positionLeader);
 
-  // Samples Momentum Candidate from N(0.0, metric)
+  // Samples Momentum Candidate from N(0., metric)
   _momentumCandidate = _hamiltonian->sampleMomentum();
   _proposedSampleCount++;
 
@@ -226,11 +226,11 @@ void HMC::runGenerationHMC(const double logUniSample)
   // Save energies from candidate
   const double newK = _hamiltonian->K(_momentumCandidate);
   const double newU = _hamiltonian->U();
-  const double logAlpha = std::min(0.0, -(newK - oldK + newU - oldU));
+  const double logAlpha = std::min(0., -(newK - oldK + newU - oldU));
 
   // Accept or reject sample
   bool isNanPositionCandidate = isanynan(_positionCandidate);
-  _acceptanceProbability = isNanPositionCandidate ? 0.0 : std::exp(logAlpha);
+  _acceptanceProbability = isNanPositionCandidate ? 0. : std::exp(logAlpha);
   _runningAcceptanceRate = _acceptanceRateLearningRate * _runningAcceptanceRate + (1. - _acceptanceRateLearningRate) * _acceptanceProbability;
   if (logUniSample <= logAlpha && !isNanPositionCandidate)
   {
@@ -254,7 +254,7 @@ void HMC::runGenerationNUTS(const double logUniSample)
   size_t numLeavesSubtree;
   bool buildCriterion = true;
   bool buildCriterionSubtree;
-  double numValidLeaves = 1.0;
+  double numValidLeaves = 1.;
   double numValidLeavesSubtree;
   const double oldH = oldU + oldK;
 
@@ -346,7 +346,7 @@ void HMC::runGenerationNUTSRiemannian(const double logUniSample)
   size_t numLeavesSubtree;
   bool buildCriterion = true;
   bool buildCriterionSubtree;
-  double numValidLeaves = 1.0;
+  double numValidLeaves = 1.;
   double numValidLeavesSubtree;
   const double oldH = oldU + oldK;
 
@@ -356,8 +356,8 @@ void HMC::runGenerationNUTSRiemannian(const double logUniSample)
   helper->buildCriterionOut = true;
 
   std::vector<double> rhoInit = _momentumLeader;
-  std::vector<double> rhoLeft(_dimensions, 0.0);
-  std::vector<double> rhoRight(_dimensions, 0.0);
+  std::vector<double> rhoLeft(_dimensions, 0.);
+  std::vector<double> rhoRight(_dimensions, 0.);
   while (buildCriterion == true && depth <= _maxDepth)
   {
     helper->depthIn = depth;
@@ -417,7 +417,7 @@ void HMC::runGenerationNUTSRiemannian(const double logUniSample)
 
     numValidLeaves += numValidLeavesSubtree;
 
-    std::vector<double> deltaRho(_dimensions, 0.0);
+    std::vector<double> deltaRho(_dimensions, 0.);
 
     std::transform(std::cbegin(rhoLeft), std::cend(rhoLeft), std::cbegin(deltaRho), std::begin(deltaRho), std::plus<double>());
     std::transform(cbegin(rhoInit), std::cend(rhoInit), std::cbegin(deltaRho), std::begin(deltaRho), std::plus<double>());
@@ -464,24 +464,24 @@ void HMC::updateStepSize()
       // Reset statistics before starting terminal fast period
       if (_chainLength == terminalFastPeriodStart)
       {
-        _acceptanceRateError = 0.0;
-        _hBar = 0.0;
-        _mu = std::log(10.0 * _stepSize);
+        _acceptanceRateError = 0.;
+        _hBar = 0.;
+        _mu = std::log(10. * _stepSize);
       }
 
       // Update step size and dual step size during fast adaption periods
       if (isInitalFastPeriod || isTerminalFastPeriod)
       {
         const double counter = isInitalFastPeriod ? _chainLength + 1 : _chainLength + 1 - terminalFastPeriodStart;
-        _acceptanceProbability = (_acceptanceProbability > 1.0) ? 1.0 : _acceptanceProbability;
-        _runningAcceptanceRate = (_runningAcceptanceRate > 1.0) ? 1.0 : _runningAcceptanceRate;
+        _acceptanceProbability = (_acceptanceProbability > 1.) ? 1. : _acceptanceProbability;
+        _runningAcceptanceRate = (_runningAcceptanceRate > 1.) ? 1. : _runningAcceptanceRate;
         _acceptanceRateError = _targetAcceptanceRate - _runningAcceptanceRate;
-        const double eta = 1.0 / (counter + 10.0);
-        _hBar = (1.0 - eta) * _hBar + eta * _acceptanceRateError;
+        const double eta = 1. / (counter + 10.);
+        _hBar = (1. - eta) * _hBar + eta * _acceptanceRateError;
 
         const double logStep = _mu - _hBar * std::sqrt(counter) / _adaptiveStepSizeSpeedConstant;
         const double dualEta = std::pow(counter, -_adaptiveStepSizeScheduleConstant);
-        _logDualStepSize = (1.0 - dualEta) * _logDualStepSize + dualEta * logStep;
+        _logDualStepSize = (1. - dualEta) * _logDualStepSize + dualEta * logStep;
         _stepSize = std::exp(logStep);
 
         if (_useNUTS == false)
@@ -504,7 +504,7 @@ void HMC::updateStepSize()
   // Apply Step Size Jitter after burn in period
   else
   {
-    _stepSize = std::exp(_logDualStepSize) * (1.0 + _stepSizeJitter * (2.0 * _uniformGenerator->getRandomNumber() - 1.0));
+    _stepSize = std::exp(_logDualStepSize) * (1. + _stepSizeJitter * (2. * _uniformGenerator->getRandomNumber() - 1.));
   }
 }
 
@@ -544,11 +544,11 @@ void HMC::buildTreeUtil(std::shared_ptr<TreeHelperEuclidean> helper, const size_
     const double leafU = _hamiltonian->U();
     const double leafH = leafU + leafK;
 
-    helper->numValidLeavesOut = (helper->logUniSampleIn <= helper->rootHIn - leafH) ? 1.0 : 0.0;
+    helper->numValidLeavesOut = (helper->logUniSampleIn <= helper->rootHIn - leafH) ? 1. : 0.;
 
     helper->buildCriterionOut = (helper->rootHIn - leafH + deltaMax > helper->logUniSampleIn);
 
-    helper->alphaOut = isanynan(helper->qLeftOut) ? 0.0 : std::min(1.0, std::exp(helper->rootHIn - leafH));
+    helper->alphaOut = isanynan(helper->qLeftOut) ? 0.0 : std::min(1., std::exp(helper->rootHIn - leafH));
     helper->numLeavesOut = 1;
     helper->qRightOut = helper->qLeftOut;
     helper->pRightOut = helper->pLeftOut;
@@ -628,11 +628,11 @@ void HMC::buildTreeUtilIntegration(std::shared_ptr<TreeHelperRiemannian> helper,
     const double leafU = _hamiltonian->U();
     const double leafH = leafU + leafK;
 
-    helper->numValidLeavesOut = (helper->logUniSampleIn <= helper->rootHIn - leafH) ? 1.0 : 0.0;
+    helper->numValidLeavesOut = (helper->logUniSampleIn <= helper->rootHIn - leafH) ? 1. : 0.;
 
     helper->buildCriterionOut = (helper->rootHIn - leafH + deltaMax > helper->logUniSampleIn);
 
-    helper->alphaOut = isanynan(helper->qLeftOut) ? 0.0 : std::min(1.0, std::exp(helper->rootHIn - leafH));
+    helper->alphaOut = isanynan(helper->qLeftOut) ? 0.0 : std::min(1., std::exp(helper->rootHIn - leafH));
     helper->numLeavesOut = 1;
     helper->qRightOut = helper->qLeftOut;
     helper->pRightOut = helper->pLeftOut;
@@ -646,7 +646,7 @@ void HMC::buildTreeUtilIntegration(std::shared_ptr<TreeHelperRiemannian> helper,
     bool buildCriterionSubtree;
     double numValidLeavesSubtree, alphaSubtree;
     auto pStart = helper->pIn;
-    std::vector<double> rhoFirstSubtree(_dimensions, 0.0);
+    std::vector<double> rhoFirstSubtree(_dimensions, 0.);
 
     buildTreeUtilIntegration(helper, rhoFirstSubtree, depth - 1);
 
@@ -658,7 +658,7 @@ void HMC::buildTreeUtilIntegration(std::shared_ptr<TreeHelperRiemannian> helper,
       helperSubtree->depthIn = helper->depthIn;
       helperSubtree->rootHIn = helper->rootHIn;
 
-      std::vector<double> rhoSecondSubtree(_dimensions, 0.0);
+      std::vector<double> rhoSecondSubtree(_dimensions, 0.);
       if (helper->directionIn == -1)
       {
         helperSubtree->qIn = helper->qLeftOut;

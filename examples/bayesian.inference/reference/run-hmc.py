@@ -25,15 +25,9 @@ e["Solver"]["Version"] = "Euclidean"
 e["Solver"]["Inverse Regularization Parameter"] = 0.1
 e["Solver"]["Burn In"] = 100
 e["Solver"]["Use NUTS"] = True
-e["Solver"]["Use Diagonal Metric"] = True
-e["Solver"]["Max Depth"] = 10
-e["Solver"]["Use Adaptive Step Size"] = True
-#e["Solver"]["Num Integration Steps"] = 20
-#e["Solver"]["Target Integration Time"] = 0.5
+e["Solver"]["Max Depth"] = 5
 e["Solver"]["Step Size"] = 1.0
-#e["Solver"]["Max Integration Steps"] = 1000
-#e["Solver"]["Adaptive Step Size Schedule Constant"] = 0.01
-#e["Solver"]["Target Acceptance Rate"] = 0.75
+e["Solver"]["Use Adaptive Step Size"] = True
 e["Solver"]["Termination Criteria"]["Max Samples"] = 5000
 
 # Configuring the problem's random distributions

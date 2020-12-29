@@ -50,59 +50,59 @@ int main(int argc, char *argv[])
   e["Variables"][14]["Type"] = "Action";
   e["Variables"][14]["Lower Bound"] = lowerBounds[0];
   e["Variables"][14]["Upper Bound"] = upperBounds[0];
-  e["Variables"][14]["Exploration Sigma"] = (upperBounds[0] - lowerBounds[0]) * 0.1;
+  e["Variables"][14]["Exploration Sigma"] = (upperBounds[0] - lowerBounds[0]) * 0.20;
 
   e["Variables"][15]["Name"] = "Rotation X";
   e["Variables"][15]["Type"] = "Action";
   e["Variables"][15]["Lower Bound"] = lowerBounds[1];
   e["Variables"][15]["Upper Bound"] = upperBounds[1];
-  e["Variables"][15]["Exploration Sigma"] = (upperBounds[1] - lowerBounds[1]) * 0.1;
+  e["Variables"][15]["Exploration Sigma"] = (upperBounds[1] - lowerBounds[1]) * 0.20;
 
   e["Variables"][16]["Name"] = "Rotation Y";
   e["Variables"][16]["Type"] = "Action";
   e["Variables"][16]["Lower Bound"] = lowerBounds[2];
   e["Variables"][16]["Upper Bound"] = upperBounds[2];
-  e["Variables"][16]["Exploration Sigma"] = (upperBounds[2] - lowerBounds[2]) * 0.1;
+  e["Variables"][16]["Exploration Sigma"] = (upperBounds[2] - lowerBounds[2]) * 0.20;
 
   e["Variables"][17]["Name"] = "Rotation Z";
   e["Variables"][17]["Type"] = "Action";
   e["Variables"][17]["Lower Bound"] = lowerBounds[3];
   e["Variables"][17]["Upper Bound"] = upperBounds[3];
-  e["Variables"][17]["Exploration Sigma"] = (upperBounds[3] - lowerBounds[3]) * 0.1;
+  e["Variables"][17]["Exploration Sigma"] = (upperBounds[3] - lowerBounds[3]) * 0.20;
 
   /// Defining Agent Configuration
 
   e["Solver"]["Type"] = "Agent / Continuous / GFPT";
   e["Solver"]["Mode"] = "Training";
-  e["Solver"]["Time Sequence Length"] = 4;
   e["Solver"]["Experiences Per Generation"] = 972;
-  e["Solver"]["Experiences Between Policy Updates"] = 50;
-  e["Solver"]["Cache Persistence"] = 10;
+  e["Solver"]["Experiences Between Policy Updates"] = 243;
+  e["Solver"]["Cache Persistence"] = 20;
 
   /// Defining the configuration of replay memory
 
-  e["Solver"]["Experience Replay"]["Start Size"] =   4096;
+  e["Solver"]["Experience Replay"]["Start Size"] =   8192;
   e["Solver"]["Experience Replay"]["Maximum Size"] = 65536;
   e["Solver"]["Experience Replay"]["Serialization Frequency"] = 20;
-  e["Solver"]["Experience Replay"]["Off Policy"]["Cutoff Scale"] = 10.0;
+  e["Solver"]["Experience Replay"]["Off Policy"]["Cutoff Scale"] = 4.0;
   e["Solver"]["Experience Replay"]["Off Policy"]["Target"] = 0.4;
 
   /// Configuring Mini Batch
 
-  e["Solver"]["Mini Batch Size"] = 256;
+  e["Solver"]["Mini Batch Size"] = 16;
   e["Solver"]["Mini Batch Strategy"] = "Uniform";
 
   /// Defining Critic and Policy Configuration
 
   e["Solver"]["Critic"]["Learning Rate"] = 0.0001;
-  e["Solver"]["Policy"]["Learning Rate"] = 0.00001;
-  e["Solver"]["Policy"]["Target Accuracy"] = 0.000001;
-  e["Solver"]["Policy"]["Optimization Candidates"] = 32;
+  e["Solver"]["Policy"]["Learning Rate"] = 0.0001;
+  e["Solver"]["Policy"]["Target Accuracy"] = 0.0001;
+  e["Solver"]["Policy"]["Optimization Candidates"] = 24;
 
   /// Configuring the neural network and its hidden layers
 
   e["Solver"]["Neural Network"]["Engine"] = "OneDNN";
 
+  e["Solver"]["Time Sequence Length"] = 4;
   e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Recurrent/GRU";
   e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 32;
 
@@ -138,5 +138,8 @@ int main(int argc, char *argv[])
   e["File Output"]["Path"] = "_results";
 
   auto k = korali::Engine();
+  e["Solver"]["Agent Count"] = 4;
+  k["Conduit"]["Type"] = "Concurrent";
+  k["Conduit"]["Concurrent Jobs"] = 4;
   k.run(e);
 }

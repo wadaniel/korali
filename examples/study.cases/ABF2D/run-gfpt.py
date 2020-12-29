@@ -55,16 +55,24 @@ e["Variables"][6]["Exploration Sigma"] = 0.5
 
 e["Solver"]["Type"] = "Agent / Continuous / GFPT"
 e["Solver"]["Mode"] = "Training"
-e["Solver"]["Time Sequence Length"] = 4
 e["Solver"]["Experiences Per Generation"] = 600
 e["Solver"]["Experiences Between Policy Updates"] = 200
 e["Solver"]["Cache Persistence"] = 20
+e["Solver"]["Learning Rate"] = 0.001
 
 ### Defining the configuration of replay memory
 
-e["Solver"]["Experience Replay"]["Start Size"] =   1024
-e["Solver"]["Experience Replay"]["Maximum Size"] = 32768
+e["Solver"]["Experience Replay"]["Start Size"] = 4096
+e["Solver"]["Experience Replay"]["Maximum Size"] = 65536
 e["Solver"]["Experience Replay"]["Serialization Frequency"] = 100
+
+### Configuring the Remember-and-Forget Experience Replay algorithm
+
+e["Solver"]["Experience Replay"]["REFER"]["Enabled"] = False
+e["Solver"]["Experience Replay"]["REFER"]["Cutoff Scale"] = 4.0
+e["Solver"]["Experience Replay"]["REFER"]["Target"] = 0.1
+e["Solver"]["Experience Replay"]["REFER"]["Initial Beta"] = 0.3
+e["Solver"]["Experience Replay"]["REFER"]["Annealing Rate"] = 5e-7
 
 ### Configuring Mini Batch
 
@@ -73,8 +81,8 @@ e["Solver"]["Mini Batch Strategy"] = "Uniform"
 
 ## Defining Critic and Policy Configuration
 
-e["Solver"]["Critic"]["Learning Rate"] = 0.001  
-e["Solver"]["Policy"]["Learning Rate"] = 0.0001
+e["Solver"]["Critic"]["Advantage Function Population"] = 12
+e["Solver"]["Policy"]["Learning Rate Scale"] = 0.1
 e["Solver"]["Policy"]["Target Accuracy"] = 0.0001
 e["Solver"]["Policy"]["Optimization Candidates"] = 24
 
@@ -82,6 +90,7 @@ e["Solver"]["Policy"]["Optimization Candidates"] = 24
 
 e["Solver"]["Neural Network"]["Engine"] = "OneDNN"
 
+e["Solver"]["Time Sequence Length"] = 4
 e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Recurrent/GRU"
 e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 32
 

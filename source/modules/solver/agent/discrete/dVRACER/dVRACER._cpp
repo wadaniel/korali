@@ -43,11 +43,6 @@ void dVRACER::initializeAgent()
   _criticPolicyProblem = dynamic_cast<problem::SupervisedLearning *>(_criticPolicyExperiment._problem);
   _criticPolicyLearner = dynamic_cast<solver::learner::DeepSupervisor *>(_criticPolicyExperiment._solver);
 
-  // Get initial learning rate
-  _referInitialLearningRate = _criticPolicyLearner->_learningRate;
-  _referCutoff = _referCutoffScale + 1.0f;
-  _referOffPolicyFraction = 0.0f;
-
   /*********************************************************************
   * Loading/Setting Hyperparameters
   *********************************************************************/
@@ -68,36 +63,6 @@ void dVRACER::trainPolicy()
   float cumulativePolicyError = 0.0;
   float cumulativePolicyErrorSquared = 0.0;
   size_t policyErrorCounter = 0;
-
-  /***************************************************************************
-   * Adjusting REFER off-policiness and learning rate parameters
-   **************************************************************************/
-
-  // Update off-policy fraction
-  size_t expCount = _experienceReplay.size();
-  size_t offPolicyCount = 0;
-#pragma omp parallel for reduction(+ \
-                                   : offPolicyCount)
-  for (size_t id = 0; id < expCount; id++)
-  {
-    float expImportanceWeight = _experienceReplay[id].metadata["Importance Weight"].get<float>();
-    if (expImportanceWeight > _referCutoff || expImportanceWeight < 1. / _referCutoff)
-      offPolicyCount++;
-  }
-
-  _referOffPolicyFraction = (float)offPolicyCount / (float)expCount;
-
-  // Updating cutoff
-  _referCutoff = 1.0f + _referCutoffScale / (1.0f + _referAnnealingRate * (float)_policyUpdateCount);
-
-  // Update learning rate
-  _criticPolicyLearner->_learningRate = _referInitialLearningRate / (1.0f + _referAnnealingRate * _policyUpdateCount);
-
-  // Updating beta parameter
-  if (_referOffPolicyFraction > _referTargetOffPolicyFraction)
-    _referBeta = (1.0f - _criticPolicyLearner->_learningRate) * _referBeta;
-  else
-    _referBeta = (1.0f - _criticPolicyLearner->_learningRate) * _referBeta + _criticPolicyLearner->_learningRate;
 
   /****************************************************************************
   * Training the critic/learner network with a mini-batch
@@ -128,7 +93,7 @@ void dVRACER::trainPolicy()
 
     // Update value and weight in cache
     _experienceReplay[expId].cache.set("State Value", V);
-    _experienceReplay[expId].metadata["Importance Weight"] = importanceWeight;
+    _experienceReplay[expId].cache.set("Importance Weight", importanceWeight);
 
     /******************************************************
     * Gradient calculation
@@ -150,8 +115,11 @@ void dVRACER::trainPolicy()
     cumulativeTdError -= (V - expVtbc);
     cumulativeTdErrorSquared += gradientLoss[0] * gradientLoss[0];
 
+    // Checking whether the experience is on policy (i.e., it is within the [1/cutoff, cutoff] region)
+    bool isOnPolicy = (importanceWeight > (1.0f / _experienceReplayREFERCutoffScale)) && (importanceWeight < _experienceReplayREFERCutoffScale);
+
     // Compute policy gradient only if inside trust region
-    if (importanceWeight < _referCutoff && importanceWeight > 1. / _referCutoff)
+    if (isOnPolicy)
     {
       // Qret for terminal state is just reward
       float Qret = _experienceReplay[expId].reward;
@@ -197,7 +165,7 @@ void dVRACER::trainPolicy()
       for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
       {
         // '-' because the optimizer is maximizing
-        gradientLoss[1 + i] = -_referBeta * lossOffPolicy * polGrad[i];
+        gradientLoss[1 + i] = -_experienceReplayREFERCurrentBeta * lossOffPolicy * polGrad[i];
       }
     }
 
@@ -207,7 +175,7 @@ void dVRACER::trainPolicy()
     for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
     {
       // Step towards old policy (gradient pointing to larger difference between old and current policy)
-      gradientLoss[1 + i] -= (1.0f - _referBeta) * klGrad[i];
+      gradientLoss[1 + i] -= (1.0f - _experienceReplayREFERCurrentBeta) * klGrad[i];
     }
 
     // Set status as learning problem input
@@ -222,12 +190,17 @@ void dVRACER::trainPolicy()
   // Compute average and std of Value target
   _averageQStar = _cumulativeQStar / (float)_miniBatchSize;
   _stdevQStar = sqrt(_cumulativeQStarSquared / (float)_miniBatchSize - _averageQStar * _averageQStar);
+
   // Compute average and std of Value Loss
   _averageTDError = cumulativeTdError / (float)_miniBatchSize;
   _stdevTDError = std::sqrt(cumulativeTdErrorSquared / (float)_miniBatchSize - _averageTDError * _averageTDError);
+
   // Compute average and std of Off-Policy Gradient Objective
   _averagePolicyError = cumulativePolicyError / (float)policyErrorCounter;
   _stdevPolicyError = std::sqrt(cumulativePolicyErrorSquared / (float)policyErrorCounter - _averagePolicyError * _averagePolicyError);
+
+  // Updating learning rate for critic/policy learner guided by REFER
+  _criticPolicyLearner->_learningRate = _experienceReplayREFERCurrentLearningRate;
 
   // Running one generation of the optimization method with the given mini-batch
   _criticPolicyLearner->runGeneration();
@@ -245,7 +218,7 @@ void dVRACER::updateVtbc(size_t expId)
   // access experiences
   float reward = _experienceReplay[expId].reward;
   float value = _experienceReplay[expId].cache.get("State Value");                  // calculated before
-  float importanceWeight = _experienceReplay[expId].metadata["Importance Weight"].get<float>(); // calculated before
+  float importanceWeight = _experienceReplay[expId].cache.get("Importance Weight"); // calculated before
 
   // truncate importance weight
   float truncatedImportanceWeight = std::min(1.0f, importanceWeight);
@@ -259,45 +232,28 @@ void dVRACER::updateVtbc(size_t expId)
   }
   else if (_experienceReplay[expId].termination == e_truncated) // If the episode was truncated add contribution
   {
-    auto truncatedState = _experienceReplay[expId].truncatedState;
+    auto truncatedState = getTruncatedStateTimeSequence(expId);
     float truncatedValue = stateValueFunction(truncatedState);
     vTbc += truncatedImportanceWeight * _discountFactor * truncatedValue;
   }
 
-  // update current target
+  // Update current target
   _experienceReplay[expId].policy["Vtbc"] = vTbc;
 
   // Now iterating backwards to update the rest of vTbc
   for (ssize_t curId = expId - 1; curId >= episodeStartId; curId--)
   {
-    // access experiences
+    // Access experience information
+    auto expStateSequence = getStateTimeSequence(curId);
     float reward = _experienceReplay[curId].reward;
 
-    float value, importanceWeight;
-    if (_experienceReplay[curId].cache.contains("State Value"))
-    {
-      value = _experienceReplay[curId].cache.get("State Value");                  // calculated before
-      importanceWeight = _experienceReplay[curId].metadata["Importance Weight"].get<float>(); // calculated before
-    }
-    else
-    {
-      // Get state, action, mean, Sigma and importance weight for this experience
-      auto expStateSequence = getStateTimeSequence(expId);
-      auto expPvals = _experienceReplay[expId].policy["Action Probabilities"].get<std::vector<float>>();
-      size_t expActionIdx = _experienceReplay[expId].policy["Action Index"].get<size_t>();
+    // Calculating state value function
+    float value = _experienceReplay[curId].cache.access("State Value", [this, expStateSequence]() { return this->stateValueFunction(expStateSequence); });
 
-      // Forward the neural network for this state to get current action probabilities
-      auto policy = runPolicy(expStateSequence);
-      value = policy["State Value"].get<float>();
-      auto curPvals = policy["Action Probabilities"].get<std::vector<float>>();
+    // Calculating importance weight
+    float importanceWeight = _experienceReplay[curId].cache.access("Importance Weight", [this, curId]() { return getExperienceImportanceWeight(curId); });
 
-      // Compute importance weight
-      importanceWeight = calculateImportanceWeight(expActionIdx, curPvals, expPvals);
-
-      _experienceReplay[curId].cache.set("State Value", value);
-      _experienceReplay[curId].metadata["Importance Weight"] = importanceWeight;
-    }
-
+    // Truncating importance weight
     float truncatedImportanceWeight = std::min(1.0f, importanceWeight);
 
     // Calculating vTbc
@@ -345,10 +301,10 @@ std::vector<float> dVRACER::calculateKLDivergenceGradient(const std::vector<floa
   return klGrad;
 }
 
-float dVRACER::stateValueFunction(const std::vector<float> &state)
+float dVRACER::stateValueFunction(const std::vector<std::vector<float>> &state)
 {
   // Calculating V(s_i)
-  float v = _criticPolicyLearner->getEvaluation({{state}})[0][0];
+  float v = _criticPolicyLearner->getEvaluation({state})[0][0];
   return v;
 }
 
@@ -434,6 +390,7 @@ knlohmann::json dVRACER::getTrainingState()
 void dVRACER::printAgentInformation()
 {
   _k->_logger->logInfo("Normal", "Critic Information:\n");
+  _k->_logger->logInfo("Normal", " + Learning Rate:                                     %.3e\n", _criticPolicyLearner->_learningRate);
   _k->_logger->logInfo("Normal", " + Average (Std) Vtbc in Mini-Batch:  %f (%f)\n", _averageQStar, _stdevQStar);
   _k->_logger->logInfo("Normal", " + Average (Std) TD-Error in Mini-Batch:  %f (%f)\n", _averageTDError, _stdevTDError);
   _k->_logger->logInfo("Normal", " + Average (Std) Off-Policy Objective in Mini-Batch:  %f (%f)\n", _averagePolicyError, _stdevPolicyError);
@@ -442,12 +399,6 @@ void dVRACER::printAgentInformation()
   _criticPolicyExperiment._logger->_verbosityLevel = _k->_logger->_verbosityLevel;
   _criticPolicyExperiment._solver->printGenerationAfter();
   _criticPolicyExperiment._logger->setVerbosityLevel("Silent");
-
-  _k->_logger->logInfo("Normal", "REF-ER Information\n");
-  _k->_logger->logInfo("Normal", " + Off-Policy Fraction: %.6f (Target: %.6f)\n", _referOffPolicyFraction, _referTargetOffPolicyFraction);
-  _k->_logger->logInfo("Normal", " + Policy Learning Rate: %.6f\n", _criticPolicyLearner->_learningRate);
-  _k->_logger->logInfo("Normal", " + Beta: %.6f\n", _referBeta);
-  _k->_logger->logInfo("Normal", " + Cut-off: %.6f\n", _referCutoff);
 }
 
 } // namespace discrete

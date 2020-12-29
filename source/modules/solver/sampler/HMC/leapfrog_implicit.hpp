@@ -79,7 +79,7 @@ class LeapfrogImplicit : public Leapfrog
       ++numIter;
 
     } while (deltaP > delta && numIter < _maxNumFixedPointIter);
-   
+
     std::vector<double> qPrime(stateSpaceDim);
     std::vector<double> sigma = q;
     double deltaQ;

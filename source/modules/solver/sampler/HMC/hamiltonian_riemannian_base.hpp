@@ -58,7 +58,7 @@ class HamiltonianRiemannian : public Hamiltonian
   * @brief Hessian of potential energy function used for Riemannian metric.
   * @return Hessian of potential energy.
   */
-  std::vector<double> __hessianU()
+  std::vector<double> __hessianU() const
   {
     auto hessian = _currentHessian;
 
@@ -74,7 +74,7 @@ class HamiltonianRiemannian : public Hamiltonian
   * @param alpha Hyperparameter.
   * @return function value at x.
   */
-  double __softAbsFunc(const double x, const double alpha)
+  double __softAbsFunc(const double x, const double alpha) const
   {
     double result;
     if (std::abs(x * alpha) < 0.5)

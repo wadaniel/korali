@@ -16,7 +16,6 @@ namespace sampler
 */
 class Leapfrog
 {
-
   protected:
   /**
   * @brief Pointer to hamiltonian object to calculate energies..
@@ -24,7 +23,7 @@ class Leapfrog
   std::shared_ptr<Hamiltonian> _hamiltonian;
 
   public:
-  Leapfrog(std::shared_ptr<Hamiltonian> hamiltonian) :  _hamiltonian(hamiltonian) {} ;
+  Leapfrog(std::shared_ptr<Hamiltonian> hamiltonian) : _hamiltonian(hamiltonian){};
 
   /**
   * @brief Abstract base class for Leapfrog integration.

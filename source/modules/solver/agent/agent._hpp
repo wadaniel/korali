@@ -224,9 +224,9 @@ class Agent : public Solver
   void updateExperienceReplayProbabilities();
 
   /**
-  * @brief Calculates the ratio of off-policy experience in the replay memory
+  * @brief Update all information required by the REFER algorithm (see: https://arxiv.org/abs/1807.05827)
   */
-  float getExperienceReplayOffPolicyRatio();
+  void updateREFERInformation();
 
   /**
   * @brief Generates an experience mini batch from the replay memory

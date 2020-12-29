@@ -31,7 +31,7 @@ class HamiltonianEuclideanDense : public HamiltonianEuclidean
   * @brief Constructor with State Space Dim.
   * @param stateSpaceDim Dimension of State Space.
   */
-  HamiltonianEuclideanDense(const size_t stateSpaceDim) : HamiltonianEuclidean{stateSpaceDim}
+  HamiltonianEuclideanDense(const size_t stateSpaceDim, korali::Experiment *k) : HamiltonianEuclidean{stateSpaceDim, k}
   {
     _metric.resize(stateSpaceDim * stateSpaceDim);
     _inverseMetric.resize(stateSpaceDim * stateSpaceDim);
@@ -42,7 +42,7 @@ class HamiltonianEuclideanDense : public HamiltonianEuclidean
   * @param stateSpaceDim Dimension of State Space.
   * @param multivariateGenerator Generator needed for momentum sampling.
   */
-  HamiltonianEuclideanDense(const size_t stateSpaceDim, korali::distribution::multivariate::Normal *multivariateGenerator) : HamiltonianEuclidean{stateSpaceDim}
+  HamiltonianEuclideanDense(const size_t stateSpaceDim, korali::distribution::multivariate::Normal *multivariateGenerator, korali::Experiment*k ) : HamiltonianEuclidean{stateSpaceDim, k}
   {
     _metric.resize(stateSpaceDim * stateSpaceDim);
     _inverseMetric.resize(stateSpaceDim * stateSpaceDim);
@@ -57,7 +57,7 @@ class HamiltonianEuclideanDense : public HamiltonianEuclidean
   * @param metric Metric for initialization. 
   * @param inverseMetric Inverse Metric for initialization. 
   */
-  HamiltonianEuclideanDense(const size_t stateSpaceDim, korali::distribution::multivariate::Normal *multivariateGenerator, const std::vector<double> metric, const std::vector<double> inverseMetric) : HamiltonianEuclideanDense{stateSpaceDim, multivariateGenerator}
+  HamiltonianEuclideanDense(const size_t stateSpaceDim, korali::distribution::multivariate::Normal *multivariateGenerator, const std::vector<double> metric, const std::vector<double> inverseMetric, korali::Experiment* k) : HamiltonianEuclideanDense{stateSpaceDim, multivariateGenerator, k}
   {
     _metric = metric;
     _inverseMetric = inverseMetric;

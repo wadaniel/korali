@@ -31,7 +31,7 @@ class HamiltonianRiemannian : public Hamiltonian
   * @brief Constructor with State Space Dim.
   * @param stateSpaceDim Dimension of State Space.
   */
-  HamiltonianRiemannian(const size_t stateSpaceDim) : Hamiltonian{stateSpaceDim}, _logDetMetric{1.0} { _currentHessian.resize(stateSpaceDim * stateSpaceDim); }
+  HamiltonianRiemannian(const size_t stateSpaceDim, korali::Experiment *k) : Hamiltonian{stateSpaceDim, k}, _logDetMetric{1.0} { _currentHessian.resize(stateSpaceDim * stateSpaceDim); }
 
   /**
   * @brief Destructor of abstract base class.
@@ -64,13 +64,6 @@ class HamiltonianRiemannian : public Hamiltonian
 
     // negate to get dU
     std::transform(hessian.cbegin(), hessian.cend(), hessian.begin(), std::negate<double>());
-
-    if (verbosity == true)
-    {
-      std::cout << "In HamiltonianRiemannianDiag::__hessianU :" << std::endl;
-      std::cout << "__hessianU() = " << std::endl;
-      __printVec(hessian);
-    }
 
     return hessian;
   }

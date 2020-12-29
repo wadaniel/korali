@@ -16,16 +16,23 @@ namespace sampler
 */
 class Leapfrog
 {
+
+  protected:
+  /**
+  * @brief Pointer to hamiltonian object to calculate energies..
+  */
+  std::shared_ptr<Hamiltonian> _hamiltonian;
+
   public:
+  Leapfrog(std::shared_ptr<Hamiltonian> hamiltonian) :  _hamiltonian(hamiltonian) {} ;
+
   /**
   * @brief Abstract base class for Leapfrog integration.
   * @param q Position which is evolved.
   * @param p Momentum which is evolved.
   * @param stepSize Step Size used for Leap Frog Scheme.
-  * @param hamiltonian Hamiltonian object to calulcate energies.
-  * @param _k Experiment object.
   */
-  virtual void step(std::vector<double> &q, std::vector<double> &p, const double stepSize, Hamiltonian &hamiltonian, korali::Experiment *_k) = 0;
+  virtual void step(std::vector<double> &q, std::vector<double> &p, const double stepSize) = 0;
 };
 
 } // namespace sampler

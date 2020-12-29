@@ -31,7 +31,7 @@ class HamiltonianRiemannianConst : public HamiltonianRiemannian
   * @brief Constructor with State Space Dim.
   * @param stateSpaceDim Dimension of State Space.
   */
-  HamiltonianRiemannianConst(const size_t stateSpaceDim) : HamiltonianRiemannian{stateSpaceDim} {}
+  HamiltonianRiemannianConst(const size_t stateSpaceDim, korali::Experiment *k) : HamiltonianRiemannian{stateSpaceDim, k} {}
 
   /**
   * @brief Destructor of abstract base class.

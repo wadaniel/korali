@@ -25,7 +25,7 @@ class HamiltonianRiemannianConstDiag : public HamiltonianRiemannianConst
   * @brief Constructor with State Space Dim.
   * @param stateSpaceDim Dimension of State Space.
   */
-  HamiltonianRiemannianConstDiag(const size_t stateSpaceDim) : HamiltonianRiemannianConst{stateSpaceDim}
+  HamiltonianRiemannianConstDiag(const size_t stateSpaceDim, korali::Experiment *k) : HamiltonianRiemannianConst{stateSpaceDim, k}
   {
     _metric.resize(stateSpaceDim);
     _inverseMetric.resize(stateSpaceDim);
@@ -37,7 +37,7 @@ class HamiltonianRiemannianConstDiag : public HamiltonianRiemannianConst
   * @param stateSpaceDim Dimension of State Space.
   * @param normalGenerator Generator needed for momentum sampling.
   */
-  HamiltonianRiemannianConstDiag(const size_t stateSpaceDim, korali::distribution::univariate::Normal *normalGenerator) : HamiltonianRiemannianConst{stateSpaceDim}
+  HamiltonianRiemannianConstDiag(const size_t stateSpaceDim, korali::distribution::univariate::Normal *normalGenerator, korali::Experiment*k ) : HamiltonianRiemannianConst{stateSpaceDim, k}
   {
     _metric.resize(stateSpaceDim);
     _inverseMetric.resize(stateSpaceDim);
@@ -51,7 +51,7 @@ class HamiltonianRiemannianConstDiag : public HamiltonianRiemannianConst
   * @param normalGenerator Generator needed for momentum sampling.
   * @param inverseRegularizationParam Inverse regularization parameter of SoftAbs metric that controls hardness of approximation: For large values _inverseMetric is closer to analytical formula (and therefore closer to degeneracy in certain cases). 
   */
-  HamiltonianRiemannianConstDiag(const size_t stateSpaceDim, korali::distribution::univariate::Normal *normalGenerator, const double inverseRegularizationParam) : HamiltonianRiemannianConst{stateSpaceDim}
+  HamiltonianRiemannianConstDiag(const size_t stateSpaceDim, korali::distribution::univariate::Normal *normalGenerator, const double inverseRegularizationParam, korali::Experiment* k) : HamiltonianRiemannianConst{stateSpaceDim, k}
   {
     _metric.resize(stateSpaceDim);
     _inverseMetric.resize(stateSpaceDim);
@@ -67,7 +67,7 @@ class HamiltonianRiemannianConstDiag : public HamiltonianRiemannianConst
   * @param inverseMetric Inverse Metric for initialization. 
   * @param inverseRegularizationParam Inverse regularization parameter of SoftAbs metric that controls hardness of approximation: For large values _inverseMetric is closer to analytical formula (and therefore closer to degeneracy in certain cases). 
   */
-  HamiltonianRiemannianConstDiag(const size_t stateSpaceDim, korali::distribution::univariate::Normal *normalGenerator, const std::vector<double> metric, const std::vector<double> inverseMetric, const double inverseRegularizationParam) : HamiltonianRiemannianConstDiag{stateSpaceDim, normalGenerator, inverseRegularizationParam}
+  HamiltonianRiemannianConstDiag(const size_t stateSpaceDim, korali::distribution::univariate::Normal *normalGenerator, const std::vector<double> metric, const std::vector<double> inverseMetric, const double inverseRegularizationParam, korali::Experiment* k) : HamiltonianRiemannianConstDiag{stateSpaceDim, normalGenerator, inverseRegularizationParam, k}
   {
     _metric = metric;
     _inverseMetric = inverseMetric;
@@ -106,12 +106,6 @@ class HamiltonianRiemannianConstDiag : public HamiltonianRiemannianConst
   double K(const std::vector<double> &p) override
   {
     double result = this->tau(p) + 0.5 * _logDetMetric;
-    // if (verbosity == true)
-    // {
-    //   std::cout << "In HamiltonianRiemannianConstDiag::K :" << std::endl;
-    //   // printf("%s\n", _sample->_js.getJson().dump(2).c_str());
-    //   std::cout << "K(p) = " << result << std::endl;
-    // }
 
     return result;
   }
@@ -129,12 +123,6 @@ class HamiltonianRiemannianConstDiag : public HamiltonianRiemannianConst
       tmpVector[i] = _inverseMetric[i] * p[i];
     }
 
-    if (verbosity == true)
-    {
-      std::cout << "HamiltonianRiemannianConst::dK(p):" << std::endl;
-      __printVec(tmpVector);
-    }
-
     return tmpVector;
   }
 
@@ -147,19 +135,12 @@ class HamiltonianRiemannianConstDiag : public HamiltonianRiemannianConst
   {
     double tmpScalar = 0.0;
 
-    // this->updateHamiltonian(q, _k);
+    // this->updateHamiltonian(q);
 
     for (size_t i = 0; i < _stateSpaceDim; ++i)
     {
       tmpScalar += p[i] * _inverseMetric[i] * p[i];
     }
-
-    // if (verbosity == true)
-    // {
-    //   std::cout << "In HamiltonianRiemannianConstDiag::tau :" << std::endl;
-    //   // printf("%s\n", _sample->_js.getJson().dump(2).c_str());
-    //   std::cout << "tau(p) = " << 0.5 * tmpScalar << std::endl;
-    // }
 
     return 0.5 * tmpScalar;
   }
@@ -173,14 +154,6 @@ class HamiltonianRiemannianConstDiag : public HamiltonianRiemannianConst
   {
     std::vector<double> result(_stateSpaceDim, 0.0);
 
-    // if (verbosity == true)
-    // {
-    //   std::cout << "dtau_dq(p) = ";
-    //   __printVec(result);
-    //   std::cout << "with p = " << std::endl;
-    //   __printVec(p);
-    // }
-
     return result;
   }
 
@@ -193,14 +166,6 @@ class HamiltonianRiemannianConstDiag : public HamiltonianRiemannianConst
   {
     std::vector<double> result = this->dK(p);
 
-    // if (verbosity == true)
-    // {
-    //   std::cout << "dtau_dp(p) = ";
-    //   __printVec(result);
-    //   std::cout << "with p = " << std::endl;
-    //   __printVec(p);
-    // }
-
     return result;
   }
 
@@ -210,12 +175,6 @@ class HamiltonianRiemannianConstDiag : public HamiltonianRiemannianConst
   */
   double phi() override
   {
-    // if (verbosity == true)
-    // {
-    //   std::cout << "In HamiltonianRiemannianConstDiag::phi :" << std::endl;
-    //   printf("%s\n", _sample->_js.getJson().dump(2).c_str());
-    // }
-
     return this->U() + 0.5 * _logDetMetric;
   }
 
@@ -226,12 +185,6 @@ class HamiltonianRiemannianConstDiag : public HamiltonianRiemannianConst
   std::vector<double> dphi_dq() override
   {
     std::vector<double> result = this->dU();
-
-    // if (verbosity == true)
-    // {
-    //   std::cout << "dphi_dq() = ";
-    //   __printVec(result);
-    // }
 
     return result;
   }
@@ -249,9 +202,8 @@ class HamiltonianRiemannianConstDiag : public HamiltonianRiemannianConst
   * @param q Current position.
   * @param _k Experiment object.
   */
-  void updateHamiltonian(const std::vector<double> &q, korali::Experiment *_k) override
+  void updateHamiltonian(const std::vector<double> &q) override
   {
-    // TODO: I think this is the same function as in hamiltonian base (D.W.)
     auto sample = korali::Sample();
     sample["Sample Id"] = _numHamiltonianObjectUpdates++;
     sample["Module"] = "Problem";
@@ -262,19 +214,20 @@ class HamiltonianRiemannianConstDiag : public HamiltonianRiemannianConst
     KORALI_WAIT(sample);
     _currentEvaluation = KORALI_GET(double, sample, "logP(x)");
 
-    sample["Operation"] = "Evaluate Gradient";
+    if(samplingProblemPtr != nullptr)
+    {
+      samplingProblemPtr->evaluateGradient(sample);
+      samplingProblemPtr->evaluateHessian(sample);
+    }
+    else
+    {
+      bayesianProblemPtr->evaluateGradient(sample);
+      bayesianProblemPtr->evaluateHessian(sample);
+    }
 
-    KORALI_START(sample);
-    KORALI_WAIT(sample);
-    _currentGradient = KORALI_GET(std::vector<double>, sample, "grad(logP(x))");
+    _currentGradient = sample["grad(logP(x))"].get<std::vector<double>>();
+    _currentHessian = sample["H(logP(x))"].get<std::vector<double>>();
 
-    sample["Operation"] = "Evaluate Hessian";
-
-    // TODO: remove hack, evaluate Hessian only when required by the solver (D.W.)
-    KORALI_START(sample);
-    KORALI_WAIT(sample);
-
-    _currentHessian = KORALI_GET(std::vector<double>, sample, "H(logP(x))");
   }
 
   /**
@@ -288,12 +241,6 @@ class HamiltonianRiemannianConstDiag : public HamiltonianRiemannianConst
     for (size_t i = 0; i < _stateSpaceDim; ++i)
     {
       result[i] = std::sqrt(_metric[i]) * _normalGenerator->getRandomNumber();
-    }
-
-    if (verbosity == true)
-    {
-      std::cout << "In HamiltonianRiemannianConstDiag::sampleMomentum()" << std::endl;
-      __printVec(result);
     }
 
     return result;
@@ -323,16 +270,9 @@ class HamiltonianRiemannianConstDiag : public HamiltonianRiemannianConst
   * @param _k Experiment object.
   * @return Returns error code to indicate if update was unsuccessful. 
   */
-  int updateMetricMatricesRiemannian(const std::vector<double> &q, korali::Experiment *_k) override
+  int updateMetricMatricesRiemannian(const std::vector<double> &q) override
   {
     auto hessian = _currentHessian;
-
-    // if (verbosity == true)
-    // {
-    //   std::cout << "In updateMetricMatricesRiemannian::updateHamiltonian after getting hessian :" << std::endl;
-    //   std::cout << "H = " << std::endl;
-    //   __printVec(hessian);
-    // }
 
     // constant for condition number of _metric
     double detMetric = 1.0;
@@ -344,17 +284,6 @@ class HamiltonianRiemannianConstDiag : public HamiltonianRiemannianConst
       detMetric *= _metric[i];
     }
     _logDetMetric = std::log(detMetric);
-
-    // if (verbosity == true)
-    // {
-    //   std::cout << "In updateMetricMatricesRiemannian::updateHamiltonian end :" << std::endl;
-    //   printf("%s\n", _sample->_js.getJson().dump(2).c_str());
-    //   std::cout << "_logDetMetric = " << _logDetMetric << std::endl;
-    //   std::cout << "_metric = " << std::endl;
-    //   __printVec(_metric);
-    //   std::cout << "_inverseMetric = " << std::endl;
-    //   __printVec(_inverseMetric);
-    // }
 
     return 0;
   }

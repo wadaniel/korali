@@ -123,11 +123,13 @@ logEcho "[Korali] Checking Pre-requisites..."
 log "[Korali] Checking for C++ Compiler..."
 
 USE_CXX=""
+STRIPPED_CXX=""
 compiler_list=( clang++ CC icc icpc g++ c++)
 
 for compiler in "${compiler_list[@]}"; do
   if [[ "$CXX" == *"$compiler"* ]]; then
     USE_CXX=$CXX
+    STRIPPED_CXX=$compiler
     break
   fi
 done
@@ -137,6 +139,7 @@ if [[ "$USE_CXX" == "" ]]; then
     $compiler --version > /dev/null 2>&1
     if [ $? -eq 0 ]; then
       USE_CXX=$compiler
+    STRIPPED_CXX=$compiler
       break
     fi
   done
@@ -147,7 +150,7 @@ if [[ "$USE_CXX" == "" ]]; then
   logEcho "[Korali] Solution: Please define a valid C++ compiler in \$CXX."
   exitWithError
 else
-  logEcho "[Korali] Using compiler $USE_CXX."
+  logEcho "[Korali] Using compiler $STRIPPED_CXX ($USE_CXX)."
 fi
 
 
@@ -377,10 +380,10 @@ fi
 BLASLIBS="-lblas"
 PTHREADFLAGS="-pthread"
 OMPFLAGS="-fopenmp"
-if [[ "$USE_CXX" == "icpc" || "$USE_CXX" == "icc" ]]; then
+if [[ "$STRIPPED_CXX" == "icpc" || "$STRIPPED_CXX" == "icc" ]]; then
  OMPFLAGS="-qopenmp"
 fi
-if [[ "$USE_CXX" == "clang++" ]]; then
+if [[ "$STRIPPED_CXX" == "clang++" ]]; then
  OMPFLAGS="-lomp"
 fi
 

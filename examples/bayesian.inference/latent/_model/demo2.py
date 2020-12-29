@@ -189,6 +189,10 @@ class model():
         for i in range(self.nClusters):
             sample['Latent Variables'] = np.full((self.N,),i).tolist()
             prob[:,i] = np.exp( self.latent_data_logpdf(sample,flatten=False) )
+
+        print(sample['Hyperparameters'])
+        print(sample['Latent Variables'])
+
         prob /= prob.sum(axis=1, keepdims=True)
 
         samples = np.zeros((Ns,self.nLatent))

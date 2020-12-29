@@ -180,13 +180,8 @@ void SAEM::calculateSampleSVectors()
   {
     auto v = KORALI_GET(std::vector<double>, k[i], "S");
 
-    _k->_logger->logInfo("Minimal", "========> %d \n", v.size());
-    _k->_logger->logInfo("Minimal", "========> %d \n", _latentProblem->_sDimension);
-    _k->_logger->logInfo("Minimal", "========> %d \n", _currentSamplesSVectors.size());
-    _k->_logger->logInfo("Minimal", "========> %d \n", _currentSamplesSVectors[0].size());
-
     if (v.size() != (size_t)_latentProblem->_sDimension)
-      KORALI_LOG_ERROR("S vector had incorrect size, or incorrect size was given as 'S Dimension' when defining the problem");
+      KORALI_LOG_ERROR("The vector 'S' has incorrect size, or incorrect size is given as 'S Dimension' when defining the problem.");
 
     _currentSamplesSVectors[i] = v;
   }

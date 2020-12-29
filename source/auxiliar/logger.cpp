@@ -118,6 +118,7 @@ void Logger::logError [[noreturn]] (const char *fileName, const int lineNumber, 
   outString += info;
 
   throw std::runtime_error(outString.c_str());
+  
 }
 
 } // namespace korali

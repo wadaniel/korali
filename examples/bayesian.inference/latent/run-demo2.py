@@ -20,7 +20,7 @@ def main():
     e['Problem']['S Of Likelihood Model'] = m.S
     e['Problem']['Zeta Of Likelihood Model'] = m.zeta
     e['Problem']['Phi Of Likelihood Model'] = m.phi
-    e['Problem']['S Dimension'] = 17 #m.sizeS
+    e['Problem']['S Dimension'] = m.sizeS
     e['Problem']['Latent Variable Sampler'] = lambda sample: m.sample_latent(sample)
 
     e['Solver']['Type'] = 'SAEM'

@@ -32,7 +32,7 @@ struct TreeHelperEuclidean : public TreeHelper
   * @param rho Sum of momenta encountered in trajectory
   * @return Returns of tree should be built further.
   */
-  bool computeCriterion(const Hamiltonian &hamiltonian, const std::vector<double>& pStart, const std::vector<double>& pEnd, const std::vector<double>& rho) const override
+  bool computeCriterion(const Hamiltonian &hamiltonian, const std::vector<double> &pStart, const std::vector<double> &pEnd, const std::vector<double> &rho) const override
   {
     std::cout << "wrong termination criterion used in NUTS" << std::endl;
     return false;

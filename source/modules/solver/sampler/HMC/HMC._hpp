@@ -25,12 +25,11 @@ namespace solver
 {
 namespace sampler
 {
-
 enum class EVersion
 {
   Static = 0,
   Euclidean = 1,
-  Riemannian = 2, 
+  Riemannian = 2,
   Riemannian_Const = 3,
 };
 
@@ -117,7 +116,6 @@ class HMC : public Sampler
   * @param depth Current depth of binary tree.
   */
   void buildTreeUtilIntegration(std::shared_ptr<TreeHelperRiemannian> helper, std::vector<double> &rho, const size_t depth);
-
 };
 
 } // namespace sampler

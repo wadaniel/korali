@@ -134,8 +134,6 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
   {
     double tmpScalar = 0.0;
 
-    // this->updateHamiltonian(q);
-
     for (size_t i = 0; i < _stateSpaceDim; ++i)
     {
       tmpScalar += p[i] * _inverseMetric[i] * p[i];
@@ -160,7 +158,6 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
       result[j] = 0.0;
       for (size_t i = 0; i < _stateSpaceDim; ++i)
       {
-        // double arg = _inverseRegularizationParam * (gradU[i] * gradU[i]); // unused
         result[j] += hessianU[i * _stateSpaceDim + j] * this->__taylorSeriesTauFunc(gradU[i], _inverseRegularizationParam) * p[i] * p[i];
       }
     }
@@ -206,8 +203,6 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
       dLogDetMetric_dq[j] = 0.0;
       for (size_t i = 0; i < _stateSpaceDim; ++i)
       {
-        // double arg = _inverseRegularizationParam * (gradU[i] * gradU[i]);
-        // dLogDetMetric_dq[j] += 1.0 / _metric[i] * ( 2.0 * hessianU[i*_stateSpaceDim + j] * gradU[i] * 1.0 / std::tanh(arg) - 2.0 * _inverseRegularizationParam * hessianU[i*_stateSpaceDim + j] * gradU[i] / (std::sinh(arg) * std::sinh(arg)) );
         dLogDetMetric_dq[j] += 2.0 * hessianU[i * _stateSpaceDim + j] * this->__taylorSeriesPhiFunc(gradU[i], _inverseRegularizationParam);
       }
     }
@@ -262,14 +257,15 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
     _currentHessian = sample["H(logP(x))"].get<std::vector<double>>();
 
     // constant for condition number of _metric
-    double detMetric = 1.0;
+    _logDetMetric = 0.0;
     for (size_t i = 0; i < _stateSpaceDim; ++i)
     {
       _metric[i] = this->__softAbsFunc(_currentGradient[i] * _currentGradient[i], _inverseRegularizationParam);
       _inverseMetric[i] = 1.0 / _metric[i];
-      detMetric *= _metric[i];
+      _logDetMetric += std::log(_metric[i]);
     }
-    _logDetMetric = std::log(detMetric);
+
+    return;
   }
 
   /**
@@ -330,7 +326,7 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
   {
     double result;
 
-    if (std::abs(x) < 0.5)
+    if (std::abs(x * alpha) < 0.5)
     {
       double a3 = 2.0 / 3.0;
       double a7 = -14.0 / 45.0;
@@ -356,7 +352,7 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
   {
     double result;
 
-    if (std::abs(x) < 0.5)
+    if (std::abs(x * alpha) < 0.5)
     {
       double a3 = -2.0 / 3.0;
       double a7 = 8.0 / 15.0;

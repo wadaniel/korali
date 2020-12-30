@@ -32,11 +32,6 @@ struct TreeHelper
     */
   int directionIn;
   /**
-    * @brief Depth of binary tree inpu.
-    */
-  size_t depthIn;
-
-  /**
     * @brief Energy of root of binary tree (i.e. starting position) input.
     */
   double rootHIn;

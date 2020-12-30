@@ -18,22 +18,24 @@ namespace optimizer
 {
 void DEA::setInitialConfiguration()
 {
-  for (size_t d = 0; d < _k->_variables.size(); ++d)
+  _variableCount = _k->_variables.size();  
+  
+  for (size_t d = 0; d < _variableCount; ++d)
     if (_k->_variables[d]->_upperBound < _k->_variables[d]->_lowerBound)
       KORALI_LOG_ERROR("Lower Bound (%.4f) of variable \'%s\'  exceeds Upper Bound (%.4f).\n", _k->_variables[d]->_lowerBound, _k->_variables[d]->_name.c_str(), _k->_variables[d]->_upperBound);
 
   // Allocating Memory
   _samplePopulation.resize(_populationSize);
-  for (size_t i = 0; i < _populationSize; i++) _samplePopulation[i].resize(_k->_variables.size());
+  for (size_t i = 0; i < _populationSize; i++) _samplePopulation[i].resize(_variableCount);
 
   _candidatePopulation.resize(_populationSize);
-  for (size_t i = 0; i < _populationSize; i++) _candidatePopulation[i].resize(_k->_variables.size());
+  for (size_t i = 0; i < _populationSize; i++) _candidatePopulation[i].resize(_variableCount);
 
-  _previousMean.resize(_k->_variables.size());
-  _currentMean.resize(_k->_variables.size());
-  _bestEverVariables.resize(_k->_variables.size());
-  _currentBestVariables.resize(_k->_variables.size());
-  _maxDistances.resize(_k->_variables.size());
+  _previousMean.resize(_variableCount);
+  _currentMean.resize(_variableCount);
+  _bestEverVariables.resize(_variableCount);
+  _currentBestVariables.resize(_variableCount);
+  _maxDistances.resize(_variableCount);
 
   _valueVector.resize(_populationSize);
   for (size_t i = 0; i < _populationSize; i++) _valueVector[i] = -Inf;
@@ -51,14 +53,14 @@ void DEA::setInitialConfiguration()
 
   initSamples();
 
-  for (size_t d = 0; d < _k->_variables.size(); ++d)
+  for (size_t d = 0; d < _variableCount; ++d)
   {
     _previousMean[d] = 0.0;
     _currentMean[d] = 0.0;
   }
 
   for (size_t i = 0; i < _populationSize; ++i)
-    for (size_t d = 0; d < _k->_variables.size(); ++d)
+    for (size_t d = 0; d < _variableCount; ++d)
       _currentMean[d] += _samplePopulation[i][d] / ((double)_populationSize);
 }
 
@@ -90,7 +92,7 @@ void DEA::initSamples()
 {
   /* skip sampling in gen 1 */
   for (size_t i = 0; i < _populationSize; ++i)
-    for (size_t d = 0; d < _k->_variables.size(); ++d)
+    for (size_t d = 0; d < _variableCount; ++d)
     {
       double width = _k->_variables[d]->_upperBound - _k->_variables[d]->_lowerBound;
       _candidatePopulation[i][d] = _k->_variables[d]->_lowerBound + width * _uniformGenerator->getRandomNumber();
@@ -167,8 +169,8 @@ void DEA::mutateSingle(size_t sampleIdx)
     parent = &_samplePopulation[_bestSampleIndex][0];
   }
 
-  size_t rn = _uniformGenerator->getRandomNumber() * _k->_variables.size();
-  for (size_t d = 0; d < _k->_variables.size(); ++d)
+  size_t rn = _uniformGenerator->getRandomNumber() * _variableCount;
+  for (size_t d = 0; d < _variableCount; ++d)
   {
     if ((_uniformGenerator->getRandomNumber() < _crossoverRate) || (d == rn))
       _candidatePopulation[sampleIdx][d] = parent[d] + _mutationRate * (_samplePopulation[a][d] - _samplePopulation[b][d]);
@@ -179,7 +181,7 @@ void DEA::mutateSingle(size_t sampleIdx)
 
 void DEA::fixInfeasible(size_t sampleIdx)
 {
-  for (size_t d = 0; d < _k->_variables.size(); ++d)
+  for (size_t d = 0; d < _variableCount; ++d)
   {
     double len = 0.0;
     if (_candidatePopulation[sampleIdx][d] < _k->_variables[d]->_lowerBound)
@@ -202,7 +204,7 @@ void DEA::updateSolver(std::vector<Sample> &samples)
   _previousBestValue = _currentBestValue;
   _currentBestValue = _valueVector[_bestSampleIndex];
 
-  for (size_t d = 0; d < _k->_variables.size(); ++d) _currentBestVariables[d] = _candidatePopulation[_bestSampleIndex][d];
+  for (size_t d = 0; d < _variableCount; ++d) _currentBestVariables[d] = _candidatePopulation[_bestSampleIndex][d];
 
   _previousMean = _currentMean;
   std::fill(std::begin(_currentMean), std::end(_currentMean), 0.0);
@@ -215,7 +217,7 @@ void DEA::updateSolver(std::vector<Sample> &samples)
   {
     if (_currentBestValue > _bestEverValue)
     {
-      for (size_t d = 0; d < _k->_variables.size(); ++d) _samplePopulation[_bestSampleIndex][d] = _candidatePopulation[_bestSampleIndex][d];
+      for (size_t d = 0; d < _variableCount; ++d) _samplePopulation[_bestSampleIndex][d] = _candidatePopulation[_bestSampleIndex][d];
       _bestEverValue = _currentBestValue;
     }
     acceptRuleRecognized = true;
@@ -237,7 +239,7 @@ void DEA::updateSolver(std::vector<Sample> &samples)
   {
     for (size_t i = 0; i < _populationSize; ++i)
       if (_valueVector[i] > _bestEverValue)
-        for (size_t d = 0; d < _k->_variables.size(); ++d) _samplePopulation[i][d] = _candidatePopulation[i][d];
+        for (size_t d = 0; d < _variableCount; ++d) _samplePopulation[i][d] = _candidatePopulation[i][d];
     if (_currentBestValue > _bestEverValue)
     {
       _bestEverValue = _currentBestValue;
@@ -249,7 +251,7 @@ void DEA::updateSolver(std::vector<Sample> &samples)
   {
     for (size_t i = 0; i < _populationSize; ++i)
       if (_valueVector[i] > _bestEverValue)
-        for (size_t d = 0; d < _k->_variables.size(); ++d)
+        for (size_t d = 0; d < _variableCount; ++d)
         {
           _samplePopulation[i][d] = _candidatePopulation[i][d];
           _bestEverValue = _valueVector[i];
@@ -260,10 +262,10 @@ void DEA::updateSolver(std::vector<Sample> &samples)
   if (acceptRuleRecognized == false) KORALI_LOG_ERROR("Accept Rule (%s) not recognized.\n", _acceptRule.c_str());
 
   for (size_t i = 0; i < _populationSize; ++i)
-    for (size_t d = 0; d < _k->_variables.size(); ++d)
+    for (size_t d = 0; d < _variableCount; ++d)
       _currentMean[d] += _samplePopulation[i][d] / ((double)_populationSize);
 
-  for (size_t d = 0; d < _k->_variables.size(); ++d)
+  for (size_t d = 0; d < _variableCount; ++d)
   {
     double max = -Inf;
     double min = +Inf;
@@ -276,7 +278,7 @@ void DEA::updateSolver(std::vector<Sample> &samples)
   }
 
   _currentMinimumStepSize = +Inf;
-  for (size_t d = 0; d < _k->_variables.size(); ++d) std::min(_currentMinimumStepSize, fabs(_currentMean[d] - _previousMean[d]));
+  for (size_t d = 0; d < _variableCount; ++d) std::min(_currentMinimumStepSize, fabs(_currentMean[d] - _previousMean[d]));
 }
 
 /************************************************************************/
@@ -289,9 +291,9 @@ void DEA::printGenerationAfter()
 {
   _k->_logger->logInfo("Normal", "Current Function Value: Max = %+6.3e - Best = %+6.3e\n", _currentBestValue, _bestEverValue);
   _k->_logger->logInfo("Detailed", "Variable = (MeanX, BestX):\n");
-  for (size_t d = 0; d < _k->_variables.size(); d++) _k->_logger->logData("Detailed", "         %s = (%+6.3e, %+6.3e)\n", _k->_variables[d]->_name.c_str(), _currentMean[d], _bestEverVariables[d]);
+  for (size_t d = 0; d < _variableCount; d++) _k->_logger->logData("Detailed", "         %s = (%+6.3e, %+6.3e)\n", _k->_variables[d]->_name.c_str(), _currentMean[d], _bestEverVariables[d]);
   _k->_logger->logInfo("Detailed", "Max Width:\n");
-  for (size_t d = 0; d < _k->_variables.size(); d++) _k->_logger->logData("Detailed", "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _maxDistances[d]);
+  for (size_t d = 0; d < _variableCount; d++) _k->_logger->logData("Detailed", "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _maxDistances[d]);
   _k->_logger->logInfo("Detailed", "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
 }
 
@@ -303,7 +305,7 @@ void DEA::finalize()
 
   _k->_logger->logInfo("Minimal", "Optimum found: %e\n", _bestEverValue);
   _k->_logger->logInfo("Minimal", "Optimum found at:\n");
-  for (size_t d = 0; d < _k->_variables.size(); ++d) _k->_logger->logData("Minimal", "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _bestEverVariables[d]);
+  for (size_t d = 0; d < _variableCount; ++d) _k->_logger->logData("Minimal", "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _bestEverVariables[d]);
   _k->_logger->logInfo("Minimal", "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
 }
 

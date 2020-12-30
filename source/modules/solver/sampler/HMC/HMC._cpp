@@ -503,7 +503,7 @@ void HMC::updateStepSize()
     }
   }
   // Apply Step Size Jitter after burn in period
-  else
+  else if(_stepSizeJitter > 0.)
   {
     _stepSize = std::exp(_logDualStepSize) * (1. + _stepSizeJitter * (2. * _uniformGenerator->getRandomNumber() - 1.));
   }
@@ -767,8 +767,6 @@ void HMC::printGenerationAfter()
     _k->_logger->logInfo("Detailed", "Accepted Samples Indicator (NUTS): %lf\n", _acceptanceCountNUTS);
     _k->_logger->logInfo("Detailed", "Current Depth (NUTS): %zu\n", _currentDepth);
   }
-
-  return;
 }
 
 void HMC::finalize()

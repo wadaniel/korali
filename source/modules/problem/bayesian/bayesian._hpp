@@ -60,13 +60,19 @@ class Bayesian : public korali::Problem
  * @param sample A Korali Sample
  */
   virtual void evaluateHessian(korali::Sample &sample);
+ 
+  /**
+ * @brief Evaluates the gradient of the logPrior w.r.t. to the variables, and stores it in sample["logPrior Hessian"]
+ * @param sample A Korali Sample
+ */
+  void evaluateLogPriorHessian(korali::Sample &sample);
 
   /**
  * @brief Evaluates the gradient of the logLikelikood w.r.t. to the variables, and stores it in sample["logLikelihood Hessian"]
  * @param sample A Korali Sample
  */
   virtual void evaluateLogLikelihoodHessian(korali::Sample &sample) { KORALI_LOG_ERROR("Hessian not yet implemented for selected Bayesian problem and logLikelihood model."); }
-
+ 
   /**
  * @brief Evaluates the empirical Fisher information.
  * @param sample A Korali Sample

@@ -44,6 +44,17 @@ void Bayesian::evaluateLogPriorGradient(Sample &sample)
   sample["logPrior Gradient"] = logPriorGradient;
 }
 
+void Bayesian::evaluateLogPriorHessian(Sample &sample)
+{
+  size_t numParam = sample["Parameters"].size();
+  std::vector<double> logPriorHessian(numParam*numParam, 0.);
+
+  for (size_t i = 0; i < numParam; i++)
+    logPriorHessian[i * numParam + i] = _k->_distributions[_k->_variables[i]->_distributionIndex]->getLogDensityHessian(sample["Parameters"][i]);
+
+  sample["logPrior Hessian"] = logPriorHessian;
+}
+
 void Bayesian::evaluateLogPosterior(Sample &sample)
 {
   int sampleId = sample["Sample Id"];
@@ -72,7 +83,6 @@ void Bayesian::evaluate(Sample &sample)
 {
   evaluateLogPosterior(sample);
   sample["F(x)"] = sample["logPosterior"];
-  sample["P(x)"] = sample["logPosterior"];
   sample["logP(x)"] = sample["logPosterior"];
 }
 
@@ -80,8 +90,8 @@ void Bayesian::evaluateGradient(Sample &sample)
 {
   evaluateLogPriorGradient(sample);
   evaluateLoglikelihoodGradient(sample);
-  auto logLikGrad = sample["logLikelihood Gradient"].get<std::vector<double>>();
   auto logPriorGrad = sample["logPrior Gradient"].get<std::vector<double>>();
+  auto logLikGrad = sample["logLikelihood Gradient"].get<std::vector<double>>();
   for (size_t i = 0; i < logPriorGrad.size(); ++i)
     logLikGrad[i] += logPriorGrad[i];
   sample["grad(logP(x))"] = logLikGrad;
@@ -89,8 +99,15 @@ void Bayesian::evaluateGradient(Sample &sample)
 
 void Bayesian::evaluateHessian(Sample &sample)
 {
+  evaluateLogPriorHessian(sample);
   evaluateLogLikelihoodHessian(sample);
-  sample["H(logP(x))"] = sample["logLikelihood Hessian"]; // TODO: Hessian from prior (D.W.)
+  auto logPriorHessian = sample["logPrior Hessian"].get<std::vector<double>>();
+  auto logLikHessian = sample["logLikelihood Hessian"].get<std::vector<double>>();
+  size_t numParam = logPriorHessian.size();
+  for (size_t i = 0; i < numParam; i++)
+    logLikHessian[i * numParam + i] += logPriorHessian[i * numParam + i];
+
+  sample["H(logP(x))"] = logLikHessian;
 }
 
 } // namespace problem

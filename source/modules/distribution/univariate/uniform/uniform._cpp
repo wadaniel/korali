@@ -24,6 +24,11 @@ double Uniform::getLogDensityGradient(const double x) const
   return 0.0;
 }
 
+double Uniform::getLogDensityHessian(const double x) const
+{
+  return 0.0;
+}
+
 double Uniform::getRandomNumber()
 {
   if (_maximum - _minimum <= 0.0)

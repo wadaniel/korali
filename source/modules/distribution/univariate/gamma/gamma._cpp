@@ -24,6 +24,12 @@ double Gamma::getLogDensityGradient(const double x) const
   return (1. - _shape) / x - 1. / _scale;
 }
 
+double Gamma::getLogDensityHessian(const double x) const
+{
+  if (x < 0.) return 0.;
+  return (_shape-1.) / (x*x);
+}
+
 double Gamma::getRandomNumber()
 {
   return gsl_ran_gamma(_range, _shape, _scale);

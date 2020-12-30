@@ -230,9 +230,8 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
   */
   void updateHamiltonian(const std::vector<double> &q) override
   {
-    // TODO: I think this is the same function as in hamiltonian base (D.W.)
     auto sample = korali::Sample();
-    sample["Sample Id"] = _numHamiltonianObjectUpdates++;
+    sample["Sample Id"] = _modelEvaluationCount;
     sample["Module"] = "Problem";
     sample["Operation"] = "Evaluate";
     sample["Parameters"] = q;

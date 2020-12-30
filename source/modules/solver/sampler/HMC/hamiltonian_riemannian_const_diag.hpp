@@ -1,7 +1,7 @@
 #ifndef HAMILTONIAN_RIEMANNIAN_CONST_DIAG_H
 #define HAMILTONIAN_RIEMANNIAN_CONST_DIAG_H
 
-#include "hamiltonian_riemannian_const_base.hpp"
+#include "hamiltonian_riemannian_base.hpp"
 #include "modules/distribution/univariate/normal/normal.hpp"
 
 namespace korali
@@ -14,7 +14,7 @@ namespace sampler
 * \class HamiltonianRiemannianConstDiag
 * @brief Used for diagonal Riemannian metric.
 */
-class HamiltonianRiemannianConstDiag : public HamiltonianRiemannianConst
+class HamiltonianRiemannianConstDiag : public HamiltonianRiemannian
 {
   public:
   //////////////////////////////////////////////////////////////////////////////////////////////
@@ -25,7 +25,7 @@ class HamiltonianRiemannianConstDiag : public HamiltonianRiemannianConst
   * @brief Constructor with State Space Dim.
   * @param stateSpaceDim Dimension of State Space.
   */
-  HamiltonianRiemannianConstDiag(const size_t stateSpaceDim, korali::Experiment *k) : HamiltonianRiemannianConst{stateSpaceDim, k}
+  HamiltonianRiemannianConstDiag(const size_t stateSpaceDim, korali::Experiment *k) : HamiltonianRiemannian{stateSpaceDim, k}
   {
     _metric.resize(stateSpaceDim);
     _inverseMetric.resize(stateSpaceDim);
@@ -37,7 +37,7 @@ class HamiltonianRiemannianConstDiag : public HamiltonianRiemannianConst
   * @param stateSpaceDim Dimension of State Space.
   * @param normalGenerator Generator needed for momentum sampling.
   */
-  HamiltonianRiemannianConstDiag(const size_t stateSpaceDim, korali::distribution::univariate::Normal *normalGenerator, korali::Experiment *k) : HamiltonianRiemannianConst{stateSpaceDim, k}
+  HamiltonianRiemannianConstDiag(const size_t stateSpaceDim, korali::distribution::univariate::Normal *normalGenerator, korali::Experiment *k) : HamiltonianRiemannian{stateSpaceDim, k}
   {
     _metric.resize(stateSpaceDim);
     _inverseMetric.resize(stateSpaceDim);
@@ -51,7 +51,7 @@ class HamiltonianRiemannianConstDiag : public HamiltonianRiemannianConst
   * @param normalGenerator Generator needed for momentum sampling.
   * @param inverseRegularizationParam Inverse regularization parameter of SoftAbs metric that controls hardness of approximation: For large values _inverseMetric is closer to analytical formula (and therefore closer to degeneracy in certain cases). 
   */
-  HamiltonianRiemannianConstDiag(const size_t stateSpaceDim, korali::distribution::univariate::Normal *normalGenerator, const double inverseRegularizationParam, korali::Experiment *k) : HamiltonianRiemannianConst{stateSpaceDim, k}
+  HamiltonianRiemannianConstDiag(const size_t stateSpaceDim, korali::distribution::univariate::Normal *normalGenerator, const double inverseRegularizationParam, korali::Experiment *k) : HamiltonianRiemannian{stateSpaceDim, k}
   {
     _metric.resize(stateSpaceDim);
     _inverseMetric.resize(stateSpaceDim);
@@ -205,13 +205,14 @@ class HamiltonianRiemannianConstDiag : public HamiltonianRiemannianConst
   void updateHamiltonian(const std::vector<double> &q) override
   {
     auto sample = korali::Sample();
-    sample["Sample Id"] = _numHamiltonianObjectUpdates++;
+    sample["Sample Id"] = _modelEvaluationCount;
     sample["Module"] = "Problem";
     sample["Operation"] = "Evaluate";
     sample["Parameters"] = q;
 
     KORALI_START(sample);
     KORALI_WAIT(sample);
+    _modelEvaluationCount++;
     _currentEvaluation = KORALI_GET(double, sample, "logP(x)");
 
     if (samplingProblemPtr != nullptr)

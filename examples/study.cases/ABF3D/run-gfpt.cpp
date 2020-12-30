@@ -4,7 +4,7 @@
 int main(int argc, char *argv[])
 {
 #ifndef TEST
-  initializeEnvironment("_deps/msode/launch_scripts/rl/config/helix_2d_eu_const.json");
+  initializeEnvironment("_config/helix_2d_eu_const.json");
 #endif
 
   auto e = korali::Experiment();

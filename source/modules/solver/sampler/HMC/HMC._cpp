@@ -23,15 +23,15 @@ namespace sampler
 void HMC::setInitialConfiguration()
 {
   _dimensions = _k->_variables.size();
-  
+
   // Set version of HMC
   if (_version == "Static")
     _eVersion = EVersion::Static;
   else if (_version == "Euclidean")
     _eVersion = EVersion::Euclidean;
-  else if (_version == "Remannian")
+  else if (_version == "Riemannian")
     _eVersion = EVersion::Riemannian;
-  else if (_version == "Remannian Const")
+  else if (_version == "Riemannian Const")
     _eVersion = EVersion::Riemannian_Const;
   else
     KORALI_LOG_ERROR("Version must be either 'Static', 'Euclidean', 'Riemannian' or 'Riemannian Const' (is %s)\n", _version.c_str());
@@ -50,7 +50,7 @@ void HMC::setInitialConfiguration()
   if (_adaptiveStepSizeSpeedConstant <= 0.) KORALI_LOG_ERROR("Adaptive Step Size Speed Constant must be positive (is %lf).\n", _adaptiveStepSizeSpeedConstant);
   if (_adaptiveStepSizeStabilizationConstant <= 0.) KORALI_LOG_ERROR("Adaptive Step Size Stabilization Constant must be non-negative (is %lf).\n", _adaptiveStepSizeStabilizationConstant);
   if (_adaptiveStepSizeScheduleConstant <= 0. || _adaptiveStepSizeScheduleConstant > 1.) KORALI_LOG_ERROR("Adaptive Step Size Schedule Constant must be in the interval (0.0, 1.0] (is %lf).\n", _adaptiveStepSizeScheduleConstant);
-  if (_stepSizeJitter < 0. || _stepSizeJitter > 1.0) KORALI_LOG_ERROR("Step Size Jitter has to in [0.0, 1.0] (is %lf).\n", _stepSizeJitter);
+  if (_stepSizeJitter < 0. || _stepSizeJitter > 1.0) KORALI_LOG_ERROR("Step Size Jitter has to be in [0.0, 1.0] (is %lf).\n", _stepSizeJitter);
 
   if (_initialFastAdaptionInterval < 0) KORALI_LOG_ERROR("Initial Fast Adaption Interval must be greater equal 0 (is %zu).\n", _initialFastAdaptionInterval);
   if (_initialSlowAdaptionInterval < 0) KORALI_LOG_ERROR("Initial Slow Adaption Interval must be greater equal 0 (is %zu).\n", _initialSlowAdaptionInterval);
@@ -116,7 +116,7 @@ void HMC::setInitialConfiguration()
     for (size_t d = 0; d < _dimensions; ++d)
     {
       inverseMetric[d * _dimensions + d] = _k->_variables[d]->_initialStandardDeviation * _k->_variables[d]->_initialStandardDeviation;
-      metric[d * _dimensions + d] = 1./ inverseMetric[d* _dimensions + d];
+      metric[d * _dimensions + d] = 1. / inverseMetric[d * _dimensions + d];
     }
   }
 
@@ -272,7 +272,7 @@ void HMC::runGenerationNUTS(const double logUniSample)
       helper->pIn = pLeft;
       helper->directionIn = -1;
 
-      buildTreeUtil(helper, _currentDepth);
+      buildTree(helper, _currentDepth);
 
       // qRight = --
       // pRight = --
@@ -287,9 +287,9 @@ void HMC::runGenerationNUTS(const double logUniSample)
     {
       helper->qIn = qRight;
       helper->pIn = pRight;
-      helper->directionIn = 1;
+      helper->directionIn = +1;
 
-      buildTreeUtil(helper, _currentDepth);
+      buildTree(helper, _currentDepth);
 
       // qLeft = --
       // pLeft = --
@@ -368,7 +368,7 @@ void HMC::runGenerationNUTSRiemannian(const double logUniSample)
       helper->pIn = pLeft;
       helper->directionIn = -1;
 
-      buildTreeUtilIntegration(helper, rhoLeft, depth);
+      buildTreeIntegration(helper, rhoLeft, depth);
 
       // qRight = --
       // pRight = --
@@ -383,9 +383,9 @@ void HMC::runGenerationNUTSRiemannian(const double logUniSample)
     {
       helper->qIn = qRight;
       helper->pIn = pRight;
-      helper->directionIn = 1;
+      helper->directionIn = +1;
 
-      buildTreeUtilIntegration(helper, rhoRight, depth);
+      buildTreeIntegration(helper, rhoRight, depth);
 
       // qLeft = --
       // pLeft = --
@@ -503,7 +503,7 @@ void HMC::updateStepSize()
     }
   }
   // Apply Step Size Jitter after burn in period
-  else if(_stepSizeJitter > 0.)
+  else if (_stepSizeJitter > 0.)
   {
     _stepSize = std::exp(_logDualStepSize) * (1. + _stepSizeJitter * (2. * _uniformGenerator->getRandomNumber() - 1.));
   }
@@ -531,7 +531,7 @@ void HMC::updateState()
   _chainLength++;
 }
 
-void HMC::buildTreeUtil(std::shared_ptr<TreeHelperEuclidean> helper, const size_t depth)
+void HMC::buildTree(std::shared_ptr<TreeHelperEuclidean> helper, const size_t depth)
 {
   helper->qLeftOut = helper->qIn;
   helper->pLeftOut = helper->pIn;
@@ -561,7 +561,7 @@ void HMC::buildTreeUtil(std::shared_ptr<TreeHelperEuclidean> helper, const size_
     bool buildCriterionSubtree;
     double numValidLeavesSubtree, alphaSubtree;
 
-    buildTreeUtil(helper, depth - 1);
+    buildTree(helper, depth - 1);
 
     if (helper->buildCriterionOut == true)
     {
@@ -575,7 +575,7 @@ void HMC::buildTreeUtil(std::shared_ptr<TreeHelperEuclidean> helper, const size_
         helperSubtree->qIn = helper->qLeftOut;
         helperSubtree->pIn = helper->pLeftOut;
 
-        buildTreeUtil(helperSubtree, depth - 1);
+        buildTree(helperSubtree, depth - 1);
 
         helper->qLeftOut = helperSubtree->qLeftOut;
         helper->pLeftOut = helperSubtree->pLeftOut;
@@ -587,7 +587,7 @@ void HMC::buildTreeUtil(std::shared_ptr<TreeHelperEuclidean> helper, const size_
         helperSubtree->qIn = helper->qRightOut;
         helperSubtree->pIn = helper->pRightOut;
 
-        buildTreeUtil(helperSubtree, depth - 1);
+        buildTree(helperSubtree, depth - 1);
 
         // helperSubtree->qLeftOut = --
         // helperSubtree->pLeftOut = --
@@ -614,7 +614,7 @@ void HMC::buildTreeUtil(std::shared_ptr<TreeHelperEuclidean> helper, const size_
   }
 }
 
-void HMC::buildTreeUtilIntegration(std::shared_ptr<TreeHelperRiemannian> helper, std::vector<double> &rho, const size_t depth)
+void HMC::buildTreeIntegration(std::shared_ptr<TreeHelperRiemannian> helper, std::vector<double> &rho, const size_t depth)
 {
   helper->qLeftOut = helper->qIn;
   helper->pLeftOut = helper->pIn;
@@ -649,7 +649,7 @@ void HMC::buildTreeUtilIntegration(std::shared_ptr<TreeHelperRiemannian> helper,
     auto pStart = helper->pIn;
     std::vector<double> rhoFirstSubtree(_dimensions, 0.);
 
-    buildTreeUtilIntegration(helper, rhoFirstSubtree, depth - 1);
+    buildTreeIntegration(helper, rhoFirstSubtree, depth - 1);
 
     if (helper->buildCriterionOut == true)
     {
@@ -664,7 +664,7 @@ void HMC::buildTreeUtilIntegration(std::shared_ptr<TreeHelperRiemannian> helper,
       {
         helperSubtree->qIn = helper->qLeftOut;
         helperSubtree->pIn = helper->pLeftOut;
-        buildTreeUtilIntegration(helperSubtree, rhoSecondSubtree, depth - 1);
+        buildTreeIntegration(helperSubtree, rhoSecondSubtree, depth - 1);
 
         helper->qLeftOut = helperSubtree->qLeftOut;
         helper->pLeftOut = helperSubtree->pLeftOut;
@@ -675,7 +675,7 @@ void HMC::buildTreeUtilIntegration(std::shared_ptr<TreeHelperRiemannian> helper,
       {
         helperSubtree->qIn = helper->qRightOut;
         helperSubtree->pIn = helper->pRightOut;
-        buildTreeUtilIntegration(helperSubtree, rhoSecondSubtree, depth - 1);
+        buildTreeIntegration(helperSubtree, rhoSecondSubtree, depth - 1);
 
         // helperSubtree->qLeftOut = --
         // helperSubtree->pLeftOut = --

@@ -119,6 +119,14 @@ class GFPT : public Continuous
    */
   float retraceFunction(size_t expId);
 
+  /**
+   * @brief Returns the optimal action for a given experience, based on the evaluation of the advantage function
+   * @param expId The id (position within the replay memory) of the experience
+   * @param curMeans The current means of the policy to use as initial guess
+   * @return The optimal action
+   */
+  std::vector<float> optimizeAction(const size_t expId, const std::vector<float> &curMeans);
+
   knlohmann::json runPolicy(const std::vector<std::vector<float>> &stateSequence) override;
 
   knlohmann::json getAgentPolicy() override;

@@ -77,9 +77,14 @@ struct experience_t
   knlohmann::json metadata;
 
   /**
-   * @brief Provides a cached repository for pre-calculated values. Allows for expiration threshold.
+   * @brief Provides a cached repository for pre-calculated values. It has an expiration threshold after which it's values should be re-calculated.
    */
   kCache<std::string, float, size_t> cache;
+
+  /**
+   * @brief Provides a cached repository for pre-calculated vector values. It has an expiration threshold after which it's values should be re-calculated.
+   */
+  kCache<std::string, std::vector<float>, size_t> vectorCache;
 };
 
 class Agent : public Solver
@@ -181,9 +186,19 @@ class Agent : public Solver
   double _agentCommunicationTime;
 
   /**
-   * @brief [Profiling] Measures the average policy evaluation time per episode taken by Agents.
+   * @brief [Profiling] Measures the average policy evaluation time per episode taken by Agents
    */
   double _agentPolicyEvaluationTime;
+
+  /**
+   * @brief [Profiling] Measures the time taken to update the policy in the current generation
+   */
+  double _policyUpdateTime;
+
+  /**
+   * @brief [Profiling] Measures the time taken to update the attend the agent's state
+   */
+  double _agentAttendingTime;
 
   /****************************************************************************************************
    * Common Agent functions

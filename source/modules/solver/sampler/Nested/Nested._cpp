@@ -547,9 +547,9 @@ void Nested::generatePosterior()
   std::shuffle(permutation.begin(), permutation.end(), std::default_random_engine(_shuffleSeed));
 
   size_t rndIdx;
-  _posteriorSampleDatabase.clear();
-  _posteriorSampleLogPriorDatabase.clear();
-  _posteriorSampleLogLikelihoodDatabase.clear();
+  std::vector<std::vector<double>> posteriorSamples;
+  std::vector<double> posteriorSampleLogPriorDatabase;
+  std::vector<double> posteriorSampleLogLikelihoodDatabase;
 
   double k = 1.0;
   double sum = _uniformGenerator->getRandomNumber();
@@ -559,13 +559,17 @@ void Nested::generatePosterior()
     sum += exp(_sampleLogWeightDatabase[rndIdx] - maxLogWtDb);
     if (sum > k)
     {
-      _posteriorSampleDatabase.push_back(_sampleDatabase[rndIdx]);
-      _posteriorSampleLogPriorDatabase.push_back(_sampleLogPriorDatabase[rndIdx]);
-      _posteriorSampleLogLikelihoodDatabase.push_back(_sampleLogLikelihoodDatabase[rndIdx]);
+      posteriorSamples.push_back(_sampleDatabase[rndIdx]);
+      posteriorSampleLogPriorDatabase.push_back(_sampleLogPriorDatabase[rndIdx]);
+      posteriorSampleLogLikelihoodDatabase.push_back(_sampleLogLikelihoodDatabase[rndIdx]);
       k++;
     }
   }
-  return;
+ 
+  (*_k)["Results"]["Posterior Sample Database"] = posteriorSamples;
+  (*_k)["Results"]["Posterior Sample LogPrior Database"] = posteriorSampleLogPriorDatabase;
+  (*_k)["Results"]["Posterior Sample LogLikelihood Database"] = posteriorSampleLogLikelihoodDatabase;
+
 }
 
 double Nested::l2distance(const std::vector<double> &sampleOne, const std::vector<double> &sampleTwo) const
@@ -1017,13 +1021,9 @@ void Nested::finalize()
   if (_addLivePoints == true) consumeLiveSamples();
 
   generatePosterior();
-  (*_k)["Results"]["Posterior Sample Database"] = _posteriorSampleDatabase;
-  (*_k)["Results"]["Posterior Sample LogPrior Database"] = _posteriorSampleLogPriorDatabase;
-  (*_k)["Results"]["Posterior Sample LogLikelihood Database"] = _posteriorSampleLogLikelihoodDatabase;
-
+  
   _k->_logger->logInfo("Minimal", "Final Log Evidence: %.4f (+- %.4F)\n", _logEvidence, sqrt(_logEvidenceVar));
   _k->_logger->logInfo("Minimal", "Max evaluation: %.2f\n", _maxEvaluation);
-  _k->_logger->logInfo("Minimal", "Posterior Samples: %zu\n", _posteriorSampleDatabase.size());
   _k->_logger->logInfo("Minimal", "Sampling Efficiency: %.2f%%\n", 100.0 * _acceptedSamples / ((double)(_generatedSamples - _numberLivePoints)));
   return;
 }

@@ -57,6 +57,7 @@
 #include "solver/optimizer/CMAES/CMAES.hpp"
 #include "solver/optimizer/DEA/DEA.hpp"
 #include "solver/optimizer/LMCMAES/LMCMAES.hpp"
+#include "solver/optimizer/MOCMAES/MOCMAES.hpp"
 #include "solver/optimizer/Rprop/Rprop.hpp"
 #include "solver/optimizer/gridSearch/gridSearch.hpp"
 #include "solver/optimizer/optimizer.hpp"
@@ -146,6 +147,7 @@ Module *Module::getModule(knlohmann::json &js, Experiment *e)
   if (moduleType == "Agent/Continuous/NAF") module = new korali::solver::agent::continuous::NAF();
   if (moduleType == "Agent/Continuous/VRACER") module = new korali::solver::agent::continuous::VRACER();
   if (moduleType == "Optimizer/CMAES") module = new korali::solver::optimizer::CMAES();
+  if (moduleType == "Optimizer/MOCMAES") module = new korali::solver::optimizer::MOCMAES();
   if (moduleType == "Optimizer/DEA") module = new korali::solver::optimizer::DEA();
   if (moduleType == "Optimizer/Adam") module = new korali::solver::optimizer::Adam();
   if (moduleType == "Optimizer/Rprop") module = new korali::solver::optimizer::Rprop();

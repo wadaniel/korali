@@ -25,6 +25,7 @@ e["Solver"]["Version"] = "Euclidean"
 e["Solver"]["Inverse Regularization Parameter"] = 0.1
 e["Solver"]["Burn In"] = 100
 e["Solver"]["Use NUTS"] = True
+e["Solver"]["Use Diagonal Metric"] = False
 e["Solver"]["Max Depth"] = 5
 e["Solver"]["Step Size"] = 1.0
 e["Solver"]["Use Adaptive Step Size"] = True

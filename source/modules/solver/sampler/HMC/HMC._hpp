@@ -71,13 +71,13 @@ class HMC : public Sampler
   void runGenerationHMC(const double logUniSample);
 
   /**
-  * @brief Runs NUTS algorithm with buildTreeUtil.
+  * @brief Runs NUTS algorithm with buildTree.
   * @param logUniSample Log of uniform sample needed for Metropolis accepance / rejection step.
   */
   void runGenerationNUTS(const double logUniSample);
 
   /**
-  * @brief Runs NUTS algorithm with buildTreeUtil.
+  * @brief Runs NUTS algorithm with buildTree.
   * @param logUniSample Log of uniform sample needed for Metropolis accepance / rejection step.
   */
   void runGenerationNUTSRiemannian(const double logUniSample);
@@ -107,7 +107,7 @@ class HMC : public Sampler
   * @param helper Helper struct for large argument list.
   * @param depth Current depth of binary tree.
   */
-  void buildTreeUtil(std::shared_ptr<TreeHelperEuclidean> helper, const size_t depth);
+  void buildTree(std::shared_ptr<TreeHelperEuclidean> helper, const size_t depth);
 
   /**
   * @brief Recursive binary tree building algorithm. Used if Use NUTS is set to True.
@@ -115,7 +115,7 @@ class HMC : public Sampler
   * @param rho Sum of momenta encountered along momentum.
   * @param depth Current depth of binary tree.
   */
-  void buildTreeUtilIntegration(std::shared_ptr<TreeHelperRiemannian> helper, std::vector<double> &rho, const size_t depth);
+  void buildTreeIntegration(std::shared_ptr<TreeHelperRiemannian> helper, std::vector<double> &rho, const size_t depth);
 };
 
 } // namespace sampler

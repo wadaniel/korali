@@ -22,6 +22,8 @@ namespace sampler
 {
 void HMC::setInitialConfiguration()
 {
+  _dimensions = _k->_variables.size();
+  
   // Set version of HMC
   if (_version == "Static")
     _eVersion = EVersion::Static;
@@ -150,7 +152,6 @@ void HMC::setInitialConfiguration()
   }
 
   // Initialize common variables
-  _dimensions = _k->_variables.size();
   _acceptanceCount = 0;
   _proposedSampleCount = 0;
   _chainLength = 0;
@@ -724,24 +725,6 @@ void HMC::printGenerationAfter()
   for (size_t d = 0; d < _dimensions; ++d) _k->_logger->logData("Detailed", "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _positionLeader[d]);
   _k->_logger->logInfo("Detailed", "Current Candidate:\n");
   for (size_t d = 0; d < _dimensions; ++d) _k->_logger->logData("Detailed", "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _positionCandidate[d]);
-
-  _k->_logger->logInfo("Detailed", "Current Metric:\n");
-
-  auto metric = _hamiltonian->getMetric();
-  if (_useDiagonalMetric == true || _eVersion == EVersion::Static)
-  {
-    for (size_t d = 0; d < _dimensions; ++d)
-      _k->_logger->logData("Detailed", "         %+6.3e  \n", metric[d]);
-  }
-  else
-  {
-    for (size_t d = 0; d < _dimensions; ++d)
-    {
-      for (size_t e = 0; e < _dimensions; ++e)
-        _k->_logger->logData("Detailed", "         %+6.3e  ", metric[d * _dimensions + e]);
-      _k->_logger->logInfo("Detailed", "\n");
-    }
-  }
 
   _k->_logger->logInfo("Detailed", "Gradient:\n");
   auto grad = _hamiltonian->dU();

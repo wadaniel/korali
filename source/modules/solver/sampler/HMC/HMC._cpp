@@ -361,7 +361,6 @@ void HMC::runGenerationNUTSRiemannian(const double logUniSample)
   std::vector<double> rhoRight(_dimensions, 0.);
   while (buildCriterion == true && depth <= _maxDepth)
   {
-    helper->depthIn = depth;
     if (_uniformGenerator->getRandomNumber() < 0.5)
     {
       helper->qIn = qLeft;
@@ -656,7 +655,6 @@ void HMC::buildTreeIntegration(std::shared_ptr<TreeHelperRiemannian> helper, std
       auto helperSubtree = std::make_shared<TreeHelperRiemannian>();
       helperSubtree->logUniSampleIn = helper->logUniSampleIn;
       helperSubtree->directionIn = helper->directionIn;
-      helperSubtree->depthIn = helper->depthIn;
       helperSubtree->rootHIn = helper->rootHIn;
 
       std::vector<double> rhoSecondSubtree(_dimensions, 0.);

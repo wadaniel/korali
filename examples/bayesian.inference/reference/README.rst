@@ -1,9 +1,10 @@
+.. _examples-bayesian-inference-reference:
 
 Inference with Reference Data
 ==================================
 
 In this tutorial we show how to **optimize** and **sample** the posterior
-distribution of a Bayesian inference problem. 
+distribution of a Bayesian inference problem.
 
 Problem Description
 ---------------------------
@@ -286,7 +287,7 @@ To sample the posterior distribution with the Nested sampler wa set a few settin
 or instead use Mulit Ellipsoidal Sampling
 
 .. code-block:: python
- 
+
     e["Solver"]["Type"] = "Sampler/Nested"
     e["Solver"]["Number Live Points"] = 1500
     e["Solver"]["Resampling Method"] = "Multi Ellipse"

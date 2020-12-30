@@ -38,6 +38,13 @@ class Gamma : public korali::distribution::Univariate
  * @return Gradient of log of probability density.
  */
   double getLogDensityGradient(double x) const override;
+ 
+  /**
+ * @brief Gets the second derivative of the log probability density of the distribution wrt. to x.
+ * @param x point to evaluate H(log(P(x)))
+ * @return Hessian of log of probability density.
+ */
+  double getLogDensityHessian(double x) const override;
 
   /**
   * @brief Draws and returns a random number from the distribution.

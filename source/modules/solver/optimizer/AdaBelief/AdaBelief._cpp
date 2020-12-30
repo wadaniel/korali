@@ -10,19 +10,21 @@ namespace optimizer
 {
 void AdaBelief::setInitialConfiguration()
 {
-  for (size_t i = 0; i < _k->_variables.size(); i++)
+  _variableCount = _k->_variables.size();
+  
+  for (size_t i = 0; i < _variableCount; i++)
     if (std::isfinite(_k->_variables[i]->_initialValue) == false)
       KORALI_LOG_ERROR("Initial Value of variable \'%s\' not defined (no defaults can be calculated).\n", _k->_variables[i]->_name.c_str());
 
-  _currentValue.resize(_k->_variables.size());
-  for (size_t i = 0; i < _k->_variables.size(); i++)
+  _currentValue.resize(_variableCount);
+  for (size_t i = 0; i < _variableCount; i++)
     _currentValue[i] = _k->_variables[i]->_initialValue;
 
-  _gradient.resize(_k->_variables.size());
-  _firstMoment.resize(_k->_variables.size(), 0.0);
-  _biasCorrectedFirstMoment.resize(_k->_variables.size(), 0.0);
-  _secondCentralMoment.resize(_k->_variables.size(), 0.0);
-  _biasCorrectedSecondCentralMoment.resize(_k->_variables.size(), 0.0);
+  _gradient.resize(_variableCount);
+  _firstMoment.resize(_variableCount, 0.0);
+  _biasCorrectedFirstMoment.resize(_variableCount, 0.0);
+  _secondCentralMoment.resize(_variableCount, 0.0);
+  _biasCorrectedSecondCentralMoment.resize(_variableCount, 0.0);
 
   _bestEvaluation = Inf;
   _gradientNorm = 1;
@@ -60,10 +62,10 @@ void AdaBelief::processResult(double evaluation, std::vector<double> &gradient)
 
   _gradient = gradient;
 
-  if (_gradient.size() != _k->_variables.size())
-    KORALI_LOG_ERROR("Size of sample's gradient evaluations vector (%lu) is different from the number of problem variables defined (%lu).\n", _gradient.size(), _k->_variables.size());
+  if (_gradient.size() != _variableCount)
+    KORALI_LOG_ERROR("Size of sample's gradient evaluations vector (%lu) is different from the number of problem variables defined (%lu).\n", _gradient.size(), _variableCount);
 
-  for (size_t i = 0; i < _k->_variables.size(); i++)
+  for (size_t i = 0; i < _variableCount; i++)
   {
     _gradient[i] = -_gradient[i]; // minimize
     _gradientNorm += _gradient[i] * _gradient[i];
@@ -74,7 +76,7 @@ void AdaBelief::processResult(double evaluation, std::vector<double> &gradient)
     _bestEvaluation = _currentEvaluation;
 
   // update first and second moment estimators and bias corrected versions
-  for (size_t i = 0; i < _k->_variables.size(); i++)
+  for (size_t i = 0; i < _variableCount; i++)
   {
     _firstMoment[i] = _beta1 * _firstMoment[i] + (1 - _beta1) * _gradient[i];
     _biasCorrectedFirstMoment[i] = _firstMoment[i] / (1 - std::pow(_beta1, _modelEvaluationCount));
@@ -83,7 +85,7 @@ void AdaBelief::processResult(double evaluation, std::vector<double> &gradient)
   }
 
   // update parameters
-  for (size_t i = 0; i < _k->_variables.size(); i++)
+  for (size_t i = 0; i < _variableCount; i++)
   {
     _currentValue[i] -= _eta / (std::sqrt(_biasCorrectedSecondCentralMoment[i]) + _epsilon) * _biasCorrectedFirstMoment[i];
   }
@@ -97,13 +99,13 @@ void AdaBelief::printGenerationBefore()
 void AdaBelief::printGenerationAfter()
 {
   _k->_logger->logInfo("Normal", "x = [ ");
-  for (size_t k = 0; k < _k->_variables.size(); k++) _k->_logger->logData("Normal", " %.5le  ", _currentValue[k]);
+  for (size_t k = 0; k < _variableCount; k++) _k->_logger->logData("Normal", " %.5le  ", _currentValue[k]);
   _k->_logger->logData("Normal", " ]\n");
 
   _k->_logger->logInfo("Normal", "F(X) = %le \n", _currentEvaluation);
 
   _k->_logger->logInfo("Normal", "DF(X) = [ ");
-  for (size_t k = 0; k < _k->_variables.size(); k++) _k->_logger->logData("Normal", " %.5le  ", _gradient[k]);
+  for (size_t k = 0; k < _variableCount; k++) _k->_logger->logData("Normal", " %.5le  ", _gradient[k]);
   _k->_logger->logData("Normal", " ]\n");
 
   _k->_logger->logInfo("Normal", "|DF(X)| = %le \n", _gradientNorm);

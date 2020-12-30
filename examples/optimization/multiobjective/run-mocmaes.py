@@ -17,8 +17,8 @@ k = korali.Engine()
 e = korali.Experiment()
 
 # Configuring Problem
-#e["Random Seed"] = 0xC0F33
-e["Problem"]["Type"] = "Multiobjectiveoptimization"
+e["Random Seed"] = 0xC0F33
+e["Problem"]["Type"] = "Optimization"
 e["Problem"]["Objective Function"] = negative_rosenbrock_and_sphere
 e["Problem"]["Num Objectives"] = 2
 

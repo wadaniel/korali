@@ -30,7 +30,6 @@
 #include "problem/hierarchical/theta/theta.hpp"
 #include "problem/hierarchical/thetaNew/thetaNew.hpp"
 #include "problem/integration/integration.hpp"
-#include "problem/multiobjectiveoptimization/multiobjectiveoptimization.hpp"
 #include "problem/optimization/optimization.hpp"
 #include "problem/problem.hpp"
 #include "problem/propagation/propagation.hpp"
@@ -127,7 +126,6 @@ Module *Module::getModule(knlohmann::json &js, Experiment *e)
   if (moduleType == "Hierarchical/ThetaNew") module = new korali::problem::hierarchical::ThetaNew();
   if (moduleType == "Integration") module = new korali::problem::Integration();
   if (moduleType == "Optimization") module = new korali::problem::Optimization();
-  if (moduleType == "Multiobjectiveoptimization") module = new korali::problem::Multiobjectiveoptimization();
   if (moduleType == "Propagation") module = new korali::problem::Propagation();
   if (moduleType == "Sampling") module = new korali::problem::Sampling();
   if (moduleType == "ReinforcementLearning/Continuous") module = new korali::problem::reinforcementLearning::Continuous();

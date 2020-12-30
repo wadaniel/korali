@@ -565,11 +565,10 @@ void Nested::generatePosterior()
       k++;
     }
   }
- 
+
   (*_k)["Results"]["Posterior Sample Database"] = posteriorSamples;
   (*_k)["Results"]["Posterior Sample LogPrior Database"] = posteriorSampleLogPriorDatabase;
   (*_k)["Results"]["Posterior Sample LogLikelihood Database"] = posteriorSampleLogLikelihoodDatabase;
-
 }
 
 double Nested::l2distance(const std::vector<double> &sampleOne, const std::vector<double> &sampleTwo) const
@@ -1021,7 +1020,7 @@ void Nested::finalize()
   if (_addLivePoints == true) consumeLiveSamples();
 
   generatePosterior();
-  
+
   _k->_logger->logInfo("Minimal", "Final Log Evidence: %.4f (+- %.4F)\n", _logEvidence, sqrt(_logEvidenceVar));
   _k->_logger->logInfo("Minimal", "Max evaluation: %.2f\n", _maxEvaluation);
   _k->_logger->logInfo("Minimal", "Sampling Efficiency: %.2f%%\n", 100.0 * _acceptedSamples / ((double)(_generatedSamples - _numberLivePoints)));

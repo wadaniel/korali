@@ -1,5 +1,5 @@
 #include "engine.hpp"
-#include "modules/problem/multiobjectiveoptimization/multiobjectiveoptimization.hpp"
+#include "modules/problem/optimization/optimization.hpp"
 #include "modules/solver/optimizer/MOCMAES/MOCMAES.hpp"
 #include "sample/sample.hpp"
 
@@ -15,11 +15,14 @@ void MOCMAES::setInitialConfiguration()
 {
   knlohmann::json problemConfig = (*_k)["Problem"];
   _variableCount = _k->_variables.size();
-
-  auto problemPtr = dynamic_cast<korali::problem::Multiobjectiveoptimization *>(_k->_problem);
+  
+  auto problemPtr = dynamic_cast<korali::problem::Optimization *>(_k->_problem);
   if (problemPtr == nullptr)
-    KORALI_LOG_ERROR("Korali problem incompatible with MO-CMAES, must be of type 'Multiobjective Optimization'.\n");
+    KORALI_LOG_ERROR("Korali problem incompatible with MO-CMAES, must be of type 'Optimization'.\n");
+ 
   _numObjectives = problemPtr->_numObjectives;
+  if(_numObjectives < 2) 
+    KORALI_LOG_ERROR("Problem requires multiple objectives, 'Num Objectives' is set to %zu\n.", _numObjectives);
 
   // Initializing Population Size
   if (_populationSize == 0) _populationSize = std::ceil(4. + floor(3. * log((double)_variableCount)));
@@ -151,7 +154,7 @@ void MOCMAES::runGeneration()
   for (size_t i = 0; i < _populationSize; i++)
   {
     samples[i]["Module"] = "Problem";
-    samples[i]["Operation"] = "Evaluate";
+    samples[i]["Operation"] = "Evaluate Multiple";
     samples[i]["Parameters"] = _currentSamplePopulation[i];
     samples[i]["Sample Id"] = i;
     _modelEvaluationCount++;

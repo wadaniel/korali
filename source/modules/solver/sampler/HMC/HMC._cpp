@@ -334,7 +334,6 @@ void HMC::runGenerationNUTS(const double logUniSample)
 
 void HMC::runGenerationNUTSRiemannian(const double logUniSample)
 {
-  _hamiltonian->updateHamiltonian(_positionLeader);
   const double oldK = _hamiltonian->K(_momentumLeader);
   const double oldU = _hamiltonian->U();
 
@@ -623,7 +622,6 @@ void HMC::buildTreeIntegration(std::shared_ptr<TreeHelperRiemannian> helper, std
     const double deltaMax = 100;
     _integrator->step(helper->qLeftOut, helper->pLeftOut, helper->directionIn * _stepSize);
 
-    _hamiltonian->updateHamiltonian(helper->pLeftOut);
     const double leafK = _hamiltonian->K(helper->pLeftOut);
     const double leafU = _hamiltonian->U();
     const double leafH = leafU + leafK;

@@ -15,13 +15,13 @@ void MOCMAES::setInitialConfiguration()
 {
   knlohmann::json problemConfig = (*_k)["Problem"];
   _variableCount = _k->_variables.size();
-  
+
   auto problemPtr = dynamic_cast<korali::problem::Optimization *>(_k->_problem);
   if (problemPtr == nullptr)
     KORALI_LOG_ERROR("Korali problem incompatible with MO-CMAES, must be of type 'Optimization'.\n");
- 
+
   _numObjectives = problemPtr->_numObjectives;
-  if(_numObjectives < 2) 
+  if (_numObjectives < 2)
     KORALI_LOG_ERROR("Problem requires multiple objectives, 'Num Objectives' is set to %zu\n.", _numObjectives);
 
   // Initializing Population Size

@@ -22,7 +22,7 @@ namespace sampler
 {
 void HMC::setInitialConfiguration()
 {
-  _dimensions = _k->_variables.size();
+  _variableCount = _k->_variables.size();
 
   // Set version of HMC
   if (_version == "Static")
@@ -74,10 +74,10 @@ void HMC::setInitialConfiguration()
   }
 
   // Resizing vectors of internal settings to correct dimensions
-  _positionLeader.resize(_dimensions);
-  _positionCandidate.resize(_dimensions);
-  _momentumLeader.resize(_dimensions);
-  _momentumCandidate.resize(_dimensions);
+  _positionLeader.resize(_variableCount);
+  _positionCandidate.resize(_variableCount);
+  _momentumLeader.resize(_variableCount);
+  _momentumCandidate.resize(_variableCount);
 
   // Prepare DBs
   _sampleDatabase.resize(0);
@@ -85,7 +85,7 @@ void HMC::setInitialConfiguration()
   _sampleEvaluationDatabase.resize(0);
 
   // initializing variable defaults
-  for (size_t i = 0; i < _dimensions; i++)
+  for (size_t i = 0; i < _variableCount; i++)
   {
     if (std::isfinite(_k->_variables[i]->_initialMean) == false)
       KORALI_LOG_ERROR("Initial Mean of variable \'%s\' not defined.\n", _k->_variables[i]->_name.c_str());
@@ -100,9 +100,9 @@ void HMC::setInitialConfiguration()
 
   if (_useDiagonalMetric == true || _eVersion == EVersion::Static)
   {
-    metric.resize(_dimensions);
-    inverseMetric.resize(_dimensions);
-    for (size_t i = 0; i < _dimensions; ++i)
+    metric.resize(_variableCount);
+    inverseMetric.resize(_variableCount);
+    for (size_t i = 0; i < _variableCount; ++i)
     {
       inverseMetric[i] = _k->_variables[i]->_initialStandardDeviation * _k->_variables[i]->_initialStandardDeviation;
       metric[i] = 1. / inverseMetric[i];
@@ -110,34 +110,34 @@ void HMC::setInitialConfiguration()
   }
   else
   {
-    metric.resize(_dimensions * _dimensions, 0.);
-    inverseMetric.resize(_dimensions * _dimensions, 0.);
+    metric.resize(_variableCount * _variableCount, 0.);
+    inverseMetric.resize(_variableCount * _variableCount, 0.);
 
-    for (size_t d = 0; d < _dimensions; ++d)
+    for (size_t d = 0; d < _variableCount; ++d)
     {
-      inverseMetric[d * _dimensions + d] = _k->_variables[d]->_initialStandardDeviation * _k->_variables[d]->_initialStandardDeviation;
-      metric[d * _dimensions + d] = 1. / inverseMetric[d * _dimensions + d];
+      inverseMetric[d * _variableCount + d] = _k->_variables[d]->_initialStandardDeviation * _k->_variables[d]->_initialStandardDeviation;
+      metric[d * _variableCount + d] = 1. / inverseMetric[d * _variableCount + d];
     }
   }
 
   // Initializing Integrator and Hamiltonian
   if (_eVersion == EVersion::Static)
   {
-    _hamiltonian = std::make_shared<HamiltonianEuclideanDiag>(_dimensions, _normalGenerator, metric, inverseMetric, _k);
+    _hamiltonian = std::make_shared<HamiltonianEuclideanDiag>(_variableCount, _normalGenerator, metric, inverseMetric, _k);
     _integrator = std::make_unique<LeapfrogExplicit>(_hamiltonian);
   }
   else if (_eVersion == EVersion::Euclidean)
   {
     if (_useDiagonalMetric)
-      _hamiltonian = std::make_shared<HamiltonianEuclideanDiag>(_dimensions, _normalGenerator, metric, inverseMetric, _k);
+      _hamiltonian = std::make_shared<HamiltonianEuclideanDiag>(_variableCount, _normalGenerator, metric, inverseMetric, _k);
     else
-      _hamiltonian = std::make_shared<HamiltonianEuclideanDense>(_dimensions, _multivariateGenerator, metric, inverseMetric, _k);
+      _hamiltonian = std::make_shared<HamiltonianEuclideanDense>(_variableCount, _multivariateGenerator, metric, inverseMetric, _k);
     _integrator = std::make_unique<LeapfrogExplicit>(_hamiltonian);
   }
   else if (_eVersion == EVersion::Riemannian)
   {
     if (_useDiagonalMetric)
-      _hamiltonian = std::make_shared<HamiltonianRiemannianDiag>(_dimensions, _normalGenerator, metric, inverseMetric, _inverseRegularizationParameter, _k);
+      _hamiltonian = std::make_shared<HamiltonianRiemannianDiag>(_variableCount, _normalGenerator, metric, inverseMetric, _inverseRegularizationParameter, _k);
     else
       KORALI_LOG_ERROR("Riemannian Metric only supported with Diagonal Metric");
     _integrator = std::make_unique<LeapfrogImplicit>(_maxNumFixedPointIteration, _hamiltonian);
@@ -145,9 +145,9 @@ void HMC::setInitialConfiguration()
   else if (_eVersion == EVersion::Riemannian_Const)
   {
     if (_useDiagonalMetric)
-      _hamiltonian = std::make_shared<HamiltonianRiemannianConstDiag>(_dimensions, _normalGenerator, metric, inverseMetric, _inverseRegularizationParameter, _k);
+      _hamiltonian = std::make_shared<HamiltonianRiemannianConstDiag>(_variableCount, _normalGenerator, metric, inverseMetric, _inverseRegularizationParameter, _k);
     else
-      _hamiltonian = std::make_shared<HamiltonianRiemannianConstDense>(_dimensions, _multivariateGenerator, metric, inverseMetric, _inverseRegularizationParameter, _k);
+      _hamiltonian = std::make_shared<HamiltonianRiemannianConstDense>(_variableCount, _multivariateGenerator, metric, inverseMetric, _inverseRegularizationParameter, _k);
     _integrator = std::make_unique<LeapfrogExplicit>(_hamiltonian);
   }
 
@@ -356,8 +356,8 @@ void HMC::runGenerationNUTSRiemannian(const double logUniSample)
   helper->buildCriterionOut = true;
 
   std::vector<double> rhoInit = _momentumLeader;
-  std::vector<double> rhoLeft(_dimensions, 0.);
-  std::vector<double> rhoRight(_dimensions, 0.);
+  std::vector<double> rhoLeft(_variableCount, 0.);
+  std::vector<double> rhoRight(_variableCount, 0.);
   while (buildCriterion == true && depth <= _maxDepth)
   {
     if (_uniformGenerator->getRandomNumber() < 0.5)
@@ -416,7 +416,7 @@ void HMC::runGenerationNUTSRiemannian(const double logUniSample)
 
     numValidLeaves += numValidLeavesSubtree;
 
-    std::vector<double> deltaRho(_dimensions, 0.);
+    std::vector<double> deltaRho(_variableCount, 0.);
 
     std::transform(std::cbegin(rhoLeft), std::cend(rhoLeft), std::cbegin(deltaRho), std::begin(deltaRho), std::plus<double>());
     std::transform(cbegin(rhoInit), std::cend(rhoInit), std::cbegin(deltaRho), std::begin(deltaRho), std::plus<double>());
@@ -644,7 +644,7 @@ void HMC::buildTreeIntegration(std::shared_ptr<TreeHelperRiemannian> helper, std
     bool buildCriterionSubtree;
     double numValidLeavesSubtree, alphaSubtree;
     auto pStart = helper->pIn;
-    std::vector<double> rhoFirstSubtree(_dimensions, 0.);
+    std::vector<double> rhoFirstSubtree(_variableCount, 0.);
 
     buildTreeIntegration(helper, rhoFirstSubtree, depth - 1);
 
@@ -655,7 +655,7 @@ void HMC::buildTreeIntegration(std::shared_ptr<TreeHelperRiemannian> helper, std
       helperSubtree->directionIn = helper->directionIn;
       helperSubtree->rootHIn = helper->rootHIn;
 
-      std::vector<double> rhoSecondSubtree(_dimensions, 0.);
+      std::vector<double> rhoSecondSubtree(_variableCount, 0.);
       if (helper->directionIn == -1)
       {
         helperSubtree->qIn = helper->qLeftOut;
@@ -718,9 +718,9 @@ void HMC::printGenerationAfter()
   _k->_logger->logInfo("Detailed", "Num Model Evaluations: %zu\n", _hamiltonian->_modelEvaluationCount);
 
   _k->_logger->logInfo("Detailed", "Current Leader:\n");
-  for (size_t d = 0; d < _dimensions; ++d) _k->_logger->logData("Detailed", "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _positionLeader[d]);
+  for (size_t d = 0; d < _variableCount; ++d) _k->_logger->logData("Detailed", "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _positionLeader[d]);
   _k->_logger->logInfo("Detailed", "Current Candidate:\n");
-  for (size_t d = 0; d < _dimensions; ++d) _k->_logger->logData("Detailed", "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _positionCandidate[d]);
+  for (size_t d = 0; d < _variableCount; ++d) _k->_logger->logData("Detailed", "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _positionCandidate[d]);
 
   _k->_logger->logInfo("Detailed", "Gradient:\n");
   auto grad = _hamiltonian->dU();
@@ -731,15 +731,15 @@ void HMC::printGenerationAfter()
   auto inverseMetric = _hamiltonian->getInverseMetric();
   if (_useDiagonalMetric == true || _eVersion == EVersion::Static)
   {
-    for (size_t e = 0; e < _dimensions; ++e)
+    for (size_t e = 0; e < _variableCount; ++e)
       _k->_logger->logData("Detailed", "         %+6.3e  \n", inverseMetric[e]);
   }
   else
   {
-    for (size_t d = 0; d < _dimensions; ++d)
+    for (size_t d = 0; d < _variableCount; ++d)
     {
-      for (size_t e = 0; e < _dimensions; ++e)
-        _k->_logger->logData("Normal", "         %+6.3e  ", inverseMetric[d * _dimensions + e]);
+      for (size_t e = 0; e < _variableCount; ++e)
+        _k->_logger->logData("Normal", "         %+6.3e  ", inverseMetric[d * _variableCount + e]);
       _k->_logger->logInfo("Normal", "\n");
     }
   }

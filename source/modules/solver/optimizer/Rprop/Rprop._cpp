@@ -15,7 +15,7 @@ namespace optimizer
 void Rprop::setInitialConfiguration()
 {
   _variableCount = _k->_variables.size();
-  
+
   for (size_t i = 0; i < _variableCount; i++)
     if (std::isfinite(_k->_variables[i]->_initialValue) == false)
       KORALI_LOG_ERROR("Initial Value of variable \'%s\' not defined (no defaults can be calculated).\n", _k->_variables[i]->_name.c_str());

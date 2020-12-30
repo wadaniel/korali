@@ -17,7 +17,7 @@ namespace optimizer
 void LMCMAES::setInitialConfiguration()
 {
   _variableCount = _k->_variables.size();
-  
+
   // Establishing optimization goal
   _bestEverValue = -std::numeric_limits<double>::infinity();
 

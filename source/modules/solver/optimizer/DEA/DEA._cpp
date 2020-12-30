@@ -18,8 +18,8 @@ namespace optimizer
 {
 void DEA::setInitialConfiguration()
 {
-  _variableCount = _k->_variables.size();  
-  
+  _variableCount = _k->_variables.size();
+
   for (size_t d = 0; d < _variableCount; ++d)
     if (_k->_variables[d]->_upperBound < _k->_variables[d]->_lowerBound)
       KORALI_LOG_ERROR("Lower Bound (%.4f) of variable \'%s\'  exceeds Upper Bound (%.4f).\n", _k->_variables[d]->_lowerBound, _k->_variables[d]->_name.c_str(), _k->_variables[d]->_upperBound);

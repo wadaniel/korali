@@ -17,7 +17,7 @@ namespace optimizer
 void CMAES::setInitialConfiguration()
 {
   knlohmann::json problemConfig = (*_k)["Problem"];
-  _variableCount = _k->_variables.size();  
+  _variableCount = _k->_variables.size();
 
   // Establishing optimization goal
   _bestEverValue = -std::numeric_limits<double>::infinity();

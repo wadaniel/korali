@@ -51,9 +51,9 @@ void Optimization::evaluateMultiple(Sample &sample)
   auto evaluation = KORALI_GET(std::vector<double>, sample, "F(x)");
 
   // If result is not a finite number, objective function evaluates to -Infinity
-  for(size_t i = 0; i < evaluation.size(); ++i)
+  for (size_t i = 0; i < evaluation.size(); ++i)
     if (std::isnan(evaluation[i]))
-        sample["F(x)"][i] = -Inf;
+      sample["F(x)"][i] = -Inf;
 }
 
 void Optimization::evaluateWithGradients(Sample &sample)

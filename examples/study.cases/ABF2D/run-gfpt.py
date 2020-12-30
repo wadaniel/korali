@@ -22,7 +22,7 @@ e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = env
 e["Problem"]["Training Reward Threshold"] = 40.0
 e["Problem"]["Policy Testing Episodes"] = 20
-e["Problem"]["Actions Between Policy Updates"] = 1
+e["Problem"]["Actions Between Policy Updates"] = 500
 
 ### Defining state variables
 
@@ -68,10 +68,10 @@ e["Solver"]["Experience Replay"]["Serialization Frequency"] = 100
 
 ### Configuring the Remember-and-Forget Experience Replay algorithm
 
-e["Solver"]["Experience Replay"]["REFER"]["Enabled"] = False
+e["Solver"]["Experience Replay"]["REFER"]["Enabled"] = True
 e["Solver"]["Experience Replay"]["REFER"]["Cutoff Scale"] = 4.0
 e["Solver"]["Experience Replay"]["REFER"]["Target"] = 0.1
-e["Solver"]["Experience Replay"]["REFER"]["Initial Beta"] = 0.3
+e["Solver"]["Experience Replay"]["REFER"]["Initial Beta"] = 0.6
 e["Solver"]["Experience Replay"]["REFER"]["Annealing Rate"] = 5e-7
 
 ### Configuring Mini Batch
@@ -96,7 +96,7 @@ e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 32
 
 ### Defining Termination Criteria
 
-e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 40.0
+e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 50.0
 
 ### Setting file output configuration
 

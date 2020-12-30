@@ -77,7 +77,7 @@ class kCache
    * @brief Re-sets the maximum age threshold
    * @param maxAge the maximum age threshold
    */
-  void setMaxAge(const valType &maxAge)
+  void setMaxAge(const timerType &maxAge)
   {
     _maxAge = maxAge;
   }

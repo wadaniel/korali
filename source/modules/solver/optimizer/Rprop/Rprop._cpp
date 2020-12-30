@@ -14,18 +14,20 @@ namespace optimizer
 {
 void Rprop::setInitialConfiguration()
 {
-  for (size_t i = 0; i < _k->_variables.size(); i++)
+  _variableCount = _k->_variables.size();
+
+  for (size_t i = 0; i < _variableCount; i++)
     if (std::isfinite(_k->_variables[i]->_initialValue) == false)
       KORALI_LOG_ERROR("Initial Value of variable \'%s\' not defined (no defaults can be calculated).\n", _k->_variables[i]->_name.c_str());
 
-  _currentX.resize(_k->_variables.size(), 0.0);
-  for (size_t i = 0; i < _k->_variables.size(); i++)
+  _currentX.resize(_variableCount, 0.0);
+  for (size_t i = 0; i < _variableCount; i++)
     _currentX[i] = _k->_variables[i]->_initialValue;
 
   _bestX = _currentX;
-  _delta.resize(_k->_variables.size(), _delta0);
-  _currentGradient.resize(_k->_variables.size(), 0);
-  _previousGradient.resize(_k->_variables.size(), 0.0);
+  _delta.resize(_variableCount, _delta0);
+  _currentGradient.resize(_variableCount, 0);
+  _previousGradient.resize(_variableCount, 0.0);
 
   _bestEvaluation = Inf;
   _xDiff = Inf;
@@ -52,10 +54,10 @@ void Rprop::evaluateFunctionAndGradient(Sample &sample)
   _currentEvaluation = -KORALI_GET(double, sample, "F(x)");
   _currentGradient = KORALI_GET(std::vector<double>, sample, "Gradient");
 
-  if (_currentGradient.size() != _k->_variables.size())
-    KORALI_LOG_ERROR("Size of sample's gradient evaluations vector (%lu) is different from the number of problem variables defined (%lu).\n", _currentGradient.size(), _k->_variables.size());
+  if (_currentGradient.size() != _variableCount)
+    KORALI_LOG_ERROR("Size of sample's gradient evaluations vector (%lu) is different from the number of problem variables defined (%lu).\n", _currentGradient.size(), _variableCount);
 
-  for (size_t i = 0; i < _k->_variables.size(); i++)
+  for (size_t i = 0; i < _variableCount; i++)
     _currentGradient[i] = -_currentGradient[i];
 }
 
@@ -77,8 +79,8 @@ void Rprop::runGeneration(void)
   {
     _bestEvaluation = _currentEvaluation;
 
-    std::vector<double> tmp(_k->_variables.size());
-    for (size_t j = 0; j < _k->_variables.size(); j++) tmp[j] = _bestX[j] - _currentX[j];
+    std::vector<double> tmp(_variableCount);
+    for (size_t j = 0; j < _variableCount; j++) tmp[j] = _bestX[j] - _currentX[j];
     _xDiff = vectorNorm(tmp);
     _bestX = _currentX;
     _maxStallCounter = 0;
@@ -92,7 +94,7 @@ void Rprop::runGeneration(void)
 // Rprop_plus
 void Rprop::Update_plus(void)
 {
-  for (size_t i = 0; i < _k->_variables.size(); i++)
+  for (size_t i = 0; i < _variableCount; i++)
   {
     double productGradient = _previousGradient[i] * _currentGradient[i];
     if (productGradient > 0)
@@ -118,7 +120,7 @@ void Rprop::Update_plus(void)
 // Rprop_minus
 void Rprop::Update_minus(void)
 {
-  for (size_t i = 0; i < _k->_variables.size(); i++)
+  for (size_t i = 0; i < _variableCount; i++)
   {
     double productGradient = _previousGradient[i] * _currentGradient[i];
     if (productGradient > 0)
@@ -132,7 +134,7 @@ void Rprop::Update_minus(void)
 // iRprop_plus
 void Rprop::Update_iplus(void)
 {
-  for (size_t i = 0; i < _k->_variables.size(); i++)
+  for (size_t i = 0; i < _variableCount; i++)
   {
     double productGradient = _previousGradient[i] * _currentGradient[i];
     if (productGradient > 0)
@@ -158,7 +160,7 @@ void Rprop::Update_iplus(void)
 // iRprop_minus
 void Rprop::Update_iminus(void)
 {
-  for (size_t i = 0; i < _k->_variables.size(); i++)
+  for (size_t i = 0; i < _variableCount; i++)
   {
     double productGradient = _previousGradient[i] * _currentGradient[i];
     if (productGradient > 0)
@@ -182,17 +184,17 @@ void Rprop::printGenerationBefore()
 void Rprop::printGenerationAfter()
 {
   _k->_logger->logInfo("Normal", "X = [ ");
-  for (size_t k = 0; k < _k->_variables.size(); k++) _k->_logger->logData("Normal", " %.5le  ", _currentX[k]);
+  for (size_t k = 0; k < _variableCount; k++) _k->_logger->logData("Normal", " %.5le  ", _currentX[k]);
   _k->_logger->logData("Normal", " ]\n");
 
   _k->_logger->logInfo("Normal", "F(X) = %le \n", _currentEvaluation);
 
   _k->_logger->logInfo("Normal", "DF(X) = [ ");
-  for (size_t k = 0; k < _k->_variables.size(); k++) _k->_logger->logData("Normal", " %.5le  ", _currentGradient[k]);
+  for (size_t k = 0; k < _variableCount; k++) _k->_logger->logData("Normal", " %.5le  ", _currentGradient[k]);
   _k->_logger->logData("Normal", " ]\n");
 
   _k->_logger->logInfo("Normal", "X_best = [ ");
-  for (size_t k = 0; k < _k->_variables.size(); k++) _k->_logger->logData("Normal", " %.5le  ", _bestX[k]);
+  for (size_t k = 0; k < _variableCount; k++) _k->_logger->logData("Normal", " %.5le  ", _bestX[k]);
   _k->_logger->logData("Normal", " ]\n");
 }
 

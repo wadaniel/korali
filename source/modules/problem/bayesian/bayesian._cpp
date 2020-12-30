@@ -47,7 +47,7 @@ void Bayesian::evaluateLogPriorGradient(Sample &sample)
 void Bayesian::evaluateLogPriorHessian(Sample &sample)
 {
   size_t numParam = sample["Parameters"].size();
-  std::vector<double> logPriorHessian(numParam*numParam, 0.);
+  std::vector<double> logPriorHessian(numParam * numParam, 0.);
 
   for (size_t i = 0; i < numParam; i++)
     logPriorHessian[i * numParam + i] = _k->_distributions[_k->_variables[i]->_distributionIndex]->getLogDensityHessian(sample["Parameters"][i]);

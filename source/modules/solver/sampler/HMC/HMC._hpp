@@ -48,22 +48,6 @@ class HMC : public Sampler
   */
   void finishSample(size_t sampleId);
 
-  public:
-  /**
- * @brief Configures HMC.
- */
-  void setInitialConfiguration() override;
-
-  /**
-  * @brief Final console output at termination.
-  */
-  void finalize() override;
-
-  /**
-  * @brief Generate a sample and evaluate it.
-  */
-  void runGeneration() override;
-
   /**
   * @brief Runs generation for HMC sampler.
   * @param logUniSample Log of uniform sample needed for Metropolis accepance / rejection step.
@@ -93,16 +77,6 @@ class HMC : public Sampler
   void updateStepSize();
 
   /**
-  * @brief Console Output before generation runs.
-  */
-  void printGenerationBefore() override;
-
-  /**
-  * @brief Console output after generation.
-  */
-  void printGenerationAfter() override;
-
-  /**
   * @brief Recursive binary tree building algorithm. Used if Use NUTS is set to True.
   * @param helper Helper struct for large argument list.
   * @param depth Current depth of binary tree.
@@ -116,6 +90,32 @@ class HMC : public Sampler
   * @param depth Current depth of binary tree.
   */
   void buildTreeIntegration(std::shared_ptr<TreeHelperRiemannian> helper, std::vector<double> &rho, const size_t depth);
+
+  public:
+  /**
+ * @brief Configures HMC.
+ */
+  void setInitialConfiguration() override;
+
+  /**
+  * @brief Final console output at termination.
+  */
+  void finalize() override;
+
+  /**
+  * @brief Generate a sample and evaluate it.
+  */
+  void runGeneration() override;
+
+  /**
+  * @brief Console Output before generation runs.
+  */
+  void printGenerationBefore() override;
+
+  /**
+  * @brief Console output after generation.
+  */
+  void printGenerationAfter() override;
 };
 
 } // namespace sampler

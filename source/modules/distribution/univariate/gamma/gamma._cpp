@@ -27,7 +27,7 @@ double Gamma::getLogDensityGradient(const double x) const
 double Gamma::getLogDensityHessian(const double x) const
 {
   if (x < 0.) return 0.;
-  return (_shape-1.) / (x*x);
+  return (_shape - 1.) / (x * x);
 }
 
 double Gamma::getRandomNumber()

@@ -509,6 +509,8 @@ void HMC::updateStepSize()
 
 void HMC::updateState()
 {
+  _modelEvaluationCount = _hamiltonian->_modelEvaluationCount;
+
   // Update Acceptance Rate
   if (_useNUTS)
     _acceptanceRate = (double)_acceptanceCountNUTS / ((double)_chainLength + 1);
@@ -769,10 +771,8 @@ void HMC::finalize()
 {
   _k->_logger->logInfo("Normal", "Number of Generated Samples: %zu\n", _proposedSampleCount);
   _k->_logger->logInfo("Normal", "Acceptance Rate: %.2f%%\n", 100 * _acceptanceRate);
-  _k->_logger->logInfo("Normal", "Num Model Evaluations: %zu\n", _hamiltonian->_modelEvaluationCount);
+  _k->_logger->logInfo("Normal", "Num Model Evaluations: %zu\n", _modelEvaluationCount);
   (*_k)["Results"]["Sample Database"] = _sampleDatabase;
-
-  _modelEvaluationCount = _hamiltonian->getNumHamiltonianObjectUpdates();
 }
 
 } // namespace sampler

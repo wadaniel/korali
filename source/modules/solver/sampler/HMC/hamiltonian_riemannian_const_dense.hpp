@@ -1,7 +1,7 @@
 #ifndef HAMILTONIAN_RIEMANNIAN_CONST_DENSE_H
 #define HAMILTONIAN_RIEMANNIAN_CONST_DENSE_H
 
-#include "hamiltonian_riemannian_const_base.hpp"
+#include "hamiltonian_riemannian_base.hpp"
 #include "modules/distribution/multivariate/normal/normal.hpp"
 #include <gsl/gsl_blas.h>
 #include <gsl/gsl_eigen.h>
@@ -16,7 +16,7 @@ namespace sampler
 * \class HamiltonianRiemannianConstDense
 * @brief Used for dense Riemannian metric.
 */
-class HamiltonianRiemannianConstDense : public HamiltonianRiemannianConst
+class HamiltonianRiemannianConstDense : public HamiltonianRiemannian
 {
   public:
   //////////////////////////////////////////////////////////////////////////////////////////////
@@ -27,7 +27,7 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannianConst
   * @brief Constructor with State Space Dim.
   * @param stateSpaceDim Dimension of State Space.
   */
-  HamiltonianRiemannianConstDense(const size_t stateSpaceDim, korali::Experiment *k) : HamiltonianRiemannianConst{stateSpaceDim, k}
+  HamiltonianRiemannianConstDense(const size_t stateSpaceDim, korali::Experiment *k) : HamiltonianRiemannian{stateSpaceDim, k}
   {
     _metric.resize(stateSpaceDim * stateSpaceDim);
     _inverseMetric.resize(stateSpaceDim * stateSpaceDim);
@@ -60,7 +60,7 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannianConst
   * @param stateSpaceDim Dimension of State Space.
   * @param multivariateGenerator Multivariate generator needed for momentum sampling.
   */
-  HamiltonianRiemannianConstDense(const size_t stateSpaceDim, korali::distribution::multivariate::Normal *multivariateGenerator, korali::Experiment *k) : HamiltonianRiemannianConst{stateSpaceDim, k}
+  HamiltonianRiemannianConstDense(const size_t stateSpaceDim, korali::distribution::multivariate::Normal *multivariateGenerator, korali::Experiment *k) : HamiltonianRiemannian{stateSpaceDim, k}
   {
     _metric.resize(stateSpaceDim * stateSpaceDim);
     _inverseMetric.resize(stateSpaceDim * stateSpaceDim);
@@ -86,7 +86,7 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannianConst
   * @param multivariateGenerator Generator needed for momentum sampling.
   * @param inverseRegularizationParam Inverse regularization parameter of SoftAbs metric that controls hardness of approximation: For large values _inverseMetric is closer to analytical formula (and therefore closer to degeneracy in certain cases). 
   */
-  HamiltonianRiemannianConstDense(const size_t stateSpaceDim, korali::distribution::multivariate::Normal *multivariateGenerator, const double inverseRegularizationParam, korali::Experiment *k) : HamiltonianRiemannianConst{stateSpaceDim, k}
+  HamiltonianRiemannianConstDense(const size_t stateSpaceDim, korali::distribution::multivariate::Normal *multivariateGenerator, const double inverseRegularizationParam, korali::Experiment *k) : HamiltonianRiemannian{stateSpaceDim, k}
   {
     _metric.resize(stateSpaceDim * stateSpaceDim);
     _inverseMetric.resize(stateSpaceDim * stateSpaceDim);
@@ -286,7 +286,7 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannianConst
   void updateHamiltonian(const std::vector<double> &q) override
   {
     auto sample = korali::Sample();
-    sample["Sample Id"] = _numHamiltonianObjectUpdates++;
+    sample["Sample Id"] = _modelEvaluationCount;
     sample["Module"] = "Problem";
     sample["Operation"] = "Evaluate";
     sample["Parameters"] = q;

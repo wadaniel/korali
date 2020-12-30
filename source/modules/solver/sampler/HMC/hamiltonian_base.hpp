@@ -37,7 +37,7 @@ class Hamiltonian
   * @brief Constructor with State Space Dim.
   * @param stateSpaceDim Dimension of State Space.
   */
-  Hamiltonian(const size_t stateSpaceDim, korali::Experiment *k) : _modelEvaluationCount(0), _stateSpaceDim{stateSpaceDim}, _numHamiltonianObjectUpdates{0}
+  Hamiltonian(const size_t stateSpaceDim, korali::Experiment *k) : _modelEvaluationCount(0), _stateSpaceDim{stateSpaceDim}
   {
     _k = k;
     samplingProblemPtr = dynamic_cast<korali::problem::Sampling *>(k->_problem);
@@ -158,7 +158,7 @@ class Hamiltonian
   virtual void updateHamiltonian(const std::vector<double> &q)
   {
     auto sample = korali::Sample();
-    sample["Sample Id"] = _numHamiltonianObjectUpdates++;
+    sample["Sample Id"] = _modelEvaluationCount;
     sample["Module"] = "Problem";
     sample["Operation"] = "Evaluate";
     sample["Parameters"] = q;
@@ -265,15 +265,6 @@ class Hamiltonian
     return _inverseMetric;
   }
 
-  /**
-  * @brief Getter function for number of hamiltonian object updates.
-  * @return Number of hamiltonian object updates.
-  */
-  size_t getNumHamiltonianObjectUpdates() const
-  {
-    return _numHamiltonianObjectUpdates;
-  }
-
   //////////////////////////////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////// GETTERS END ////////////////////////////////////////
   //////////////////////////////////////////////////////////////////////////////////////////////
@@ -368,11 +359,6 @@ State Space Dimension needed for Leapfrog integrator.
   * @brief _inverseMetric
   */
   std::vector<double> _inverseMetric;
-
-  /**
-  * @brief Number of model evaluations
-  */
-  size_t _numHamiltonianObjectUpdates;
 };
 
 } // namespace sampler

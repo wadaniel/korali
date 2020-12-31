@@ -27,11 +27,10 @@ class LeapfrogExplicit : public Leapfrog
   */
   void step(std::vector<double> &q, std::vector<double> &p, const double stepSize) override
   {
-    size_t stateSpaceDim = _hamiltonian->getStateSpaceDim();
     _hamiltonian->updateHamiltonian(q);
     std::vector<double> dU = _hamiltonian->dU();
 
-    for (size_t i = 0; i < stateSpaceDim; ++i)
+    for (size_t i = 0; i < dU.size(); ++i)
     {
       p[i] -= 0.5 * stepSize * dU[i];
     }
@@ -39,7 +38,7 @@ class LeapfrogExplicit : public Leapfrog
     // would need to update in Riemannian case
     std::vector<double> dK = _hamiltonian->dK(p);
 
-    for (size_t i = 0; i < stateSpaceDim; ++i)
+    for (size_t i = 0; i < dK.size(); ++i)
     {
       q[i] += stepSize * dK[i];
     }
@@ -47,7 +46,7 @@ class LeapfrogExplicit : public Leapfrog
     _hamiltonian->updateHamiltonian(q);
     dU = _hamiltonian->dU();
 
-    for (size_t i = 0; i < stateSpaceDim; ++i)
+    for (size_t i = 0; i < dU.size(); ++i)
     {
       p[i] -= 0.5 * stepSize * dU[i];
     }

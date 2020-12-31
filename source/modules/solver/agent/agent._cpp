@@ -677,16 +677,16 @@ void Agent::printGenerationAfter()
 
     printAgentInformation();
 
-    _k->_logger->logInfo("Detailed", "Profiling Information: [Generation] - [Session]\n");
-    _k->_logger->logInfo("Detailed", " + Policy Update Time:                  [%fs] - [%fs]\n", _sessionPolicyUpdateTime / 1.0e+9, _generationPolicyUpdateTime / 1.0e+9);
-    _k->_logger->logInfo("Detailed", " + Experience Serialization Time:       [%fs] - [%fs]\n", _sessionSerializationTime / 1.0e+9, _generationSerializationTime / 1.0e+9);
-    _k->_logger->logInfo("Detailed", " + Agent Attending Time:                [%fs] - [%fs]\n", _sessionAgentAttendingTime / 1.0e+9), _generationAgentAttendingTime / 1.0e+9;
-    _k->_logger->logInfo("Detailed", " + Avg Agent Computation Time:          [%fs] - [%fs]\n", _sessionAgentComputationTime / 1.0e+9, _generationAgentComputationTime / 1.0e+9);
-    _k->_logger->logInfo("Detailed", " + Avg Agent Communication/Wait Time:   [%fs] - [%fs]\n", _sessionAgentCommunicationTime / 1.0e+9, _generationAgentCommunicationTime / 1.0e+9);
-    _k->_logger->logInfo("Detailed", " + Avg Agent Policy Evaluation Time:    [%fs] - [%fs]\n", _sessionAgentPolicyEvaluationTime / 1.0e+9, _generationAgentPolicyEvaluationTime / 1.0e+9);
-    _k->_logger->logInfo("Detailed", " + Running Time:                        [%fs] - [%fs]\n", _sessionRunningTime / 1.0e+9, _generationRunningTime / 1.0e+9);
-    _k->_logger->logInfo("Detailed", " + Experience Serialization Time:       [%fs] - [%fs]\n", _sessionSerializationTime / 1.0e+9, _generationSerializationTime / 1.0e+9);
-    _k->_logger->logInfo("Detailed", " + [I/O] Result File Saving Time:                    %fs\n", _k->_resultSavingTime / 1.0e+9);
+    _k->_logger->logInfo("Detailed", "Profiling Information:                  [Generation] - [Session]\n");
+    _k->_logger->logInfo("Detailed", " + Policy Update Time:                  [%5.3fs] - [%3.3fs]\n", _generationPolicyUpdateTime / 1.0e+9, _sessionPolicyUpdateTime / 1.0e+9);
+    _k->_logger->logInfo("Detailed", " + Experience Serialization Time:       [%5.3fs] - [%3.3fs]\n", _generationSerializationTime / 1.0e+9, _sessionSerializationTime / 1.0e+9);
+    _k->_logger->logInfo("Detailed", " + Agent Attending Time:                [%5.3fs] - [%3.3fs]\n", _generationAgentAttendingTime / 1.0e+9, _sessionAgentAttendingTime / 1.0e+9);
+    _k->_logger->logInfo("Detailed", " + Avg Agent Computation Time:          [%5.3fs] - [%3.3fs]\n", _generationAgentComputationTime / 1.0e+9, _sessionAgentComputationTime / 1.0e+9);
+    _k->_logger->logInfo("Detailed", " + Avg Agent Communication/Wait Time:   [%5.3fs] - [%3.3fs]\n", _generationAgentCommunicationTime / 1.0e+9, _sessionAgentCommunicationTime / 1.0e+9);
+    _k->_logger->logInfo("Detailed", " + Avg Agent Policy Evaluation Time:    [%5.3fs] - [%3.3fs]\n", _generationAgentPolicyEvaluationTime / 1.0e+9, _sessionAgentPolicyEvaluationTime / 1.0e+9);
+    _k->_logger->logInfo("Detailed", " + Running Time:                        [%5.3fs] - [%3.3fs]\n", _generationRunningTime / 1.0e+9, _sessionRunningTime / 1.0e+9);
+    _k->_logger->logInfo("Detailed", " + Experience Serialization Time:       [%5.3fs] - [%3.3fs]\n", _generationSerializationTime / 1.0e+9, _sessionSerializationTime / 1.0e+9);
+    _k->_logger->logInfo("Detailed", " + [I/O] Result File Saving Time:        %5.3fs\n", _k->_resultSavingTime / 1.0e+9);
   }
 
   if (_mode == "Testing")

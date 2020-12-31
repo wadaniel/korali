@@ -20,7 +20,7 @@ setResultsDir(args.dir)
 
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = env
-e["Problem"]["Training Reward Threshold"] = 40.0
+e["Problem"]["Training Reward Threshold"] = 42.0
 e["Problem"]["Policy Testing Episodes"] = 20
 e["Problem"]["Actions Between Policy Updates"] = 200
 
@@ -110,7 +110,7 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tan
 
 ### Defining Termination Criteria
 
-e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 50.0
+e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 42.0
 
 ### Setting console/file output configuration
 

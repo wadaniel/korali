@@ -35,10 +35,11 @@ struct TreeHelperRiemannian : public TreeHelper
     */
   bool computeCriterion(const Hamiltonian &hamiltonian, const std::vector<double> &pStart, const std::vector<double> &pEnd, const std::vector<double> &rho) const override
   {
-    std::vector<double> tmpVectorOne(hamiltonian.getStateSpaceDim(), 0.0);
+    size_t dim = rho.size();
+    std::vector<double> tmpVectorOne(dim, 0.0);
     std::transform(std::cbegin(rho), std::cend(rho), std::cbegin(pStart), std::begin(tmpVectorOne), std::minus<double>());
 
-    std::vector<double> tmpVectorTwo(hamiltonian.getStateSpaceDim(), 0.0);
+    std::vector<double> tmpVectorTwo(dim, 0.0);
     std::transform(std::cbegin(rho), std::cend(rho), std::cbegin(pStart), std::begin(tmpVectorTwo), std::minus<double>());
 
     return hamiltonian.innerProduct(pStart, tmpVectorOne) > 0.0 && hamiltonian.innerProduct(pEnd, tmpVectorTwo) > 0.0;

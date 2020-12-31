@@ -165,40 +165,84 @@ class Agent : public Solver
   */
   std::mt19937 *mt;
 
+  /****************************************************************************************************
+   * Session-wise Profiling Timers
+   ***************************************************************************************************/
+
   /**
   * @brief [Profiling] Measures the amount of time taken by the generation
   */
-  double _generationTime;
+  double _sessionRunningTime;
 
   /**
   * @brief [Profiling] Measures the amount of time taken by ER serialization
   */
-  double _serializationTime;
+  double _sessionSerializationTime;
 
   /**
    * @brief [Profiling] Stores the computation time per episode taken by Agents
    */
-  double _agentComputationTime;
+  double _sessionAgentComputationTime;
 
   /**
    * @brief [Profiling] Measures the average communication time per episode taken by Agents
    */
-  double _agentCommunicationTime;
+  double _sessionAgentCommunicationTime;
 
   /**
    * @brief [Profiling] Measures the average policy evaluation time per episode taken by Agents
    */
-  double _agentPolicyEvaluationTime;
+  double _sessionAgentPolicyEvaluationTime;
 
   /**
    * @brief [Profiling] Measures the time taken to update the policy in the current generation
    */
-  double _policyUpdateTime;
+  double _sessionPolicyUpdateTime;
 
   /**
    * @brief [Profiling] Measures the time taken to update the attend the agent's state
    */
-  double _agentAttendingTime;
+  double _sessionAgentAttendingTime;
+
+  /****************************************************************************************************
+   * Generation-wise Profiling Timers
+   ***************************************************************************************************/
+
+  /**
+  * @brief [Profiling] Measures the amount of time taken by the generation
+  */
+  double _generationRunningTime;
+
+  /**
+  * @brief [Profiling] Measures the amount of time taken by ER serialization
+  */
+  double _generationSerializationTime;
+
+  /**
+   * @brief [Profiling] Stores the computation time per episode taken by Agents
+   */
+  double _generationAgentComputationTime;
+
+  /**
+   * @brief [Profiling] Measures the average communication time per episode taken by Agents
+   */
+  double _generationAgentCommunicationTime;
+
+  /**
+   * @brief [Profiling] Measures the average policy evaluation time per episode taken by Agents
+   */
+  double _generationAgentPolicyEvaluationTime;
+
+  /**
+   * @brief [Profiling] Measures the time taken to update the policy in the current generation
+   */
+  double _generationPolicyUpdateTime;
+
+  /**
+   * @brief [Profiling] Measures the time taken to update the attend the agent's state
+   */
+  double _generationAgentAttendingTime;
+
 
   /****************************************************************************************************
    * Common Agent functions

@@ -72,16 +72,6 @@ class GFPT : public Continuous
   problem::SupervisedLearning *_policyProblem;
 
   /**
-  * @brief [Profiling] Measures the amount of time taken by critic updates
-  */
-  double _criticUpdateTime;
-
-  /**
-   * @brief [Profiling] Measures the amount of time taken by policy updates
-   */
-  double _policyUpdateTime;
-
-  /**
    * @brief Calculates the state value function V(s,a)
    * @param stateSequence State sequence to evaluate
    * @return The value of V(s)

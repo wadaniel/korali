@@ -136,6 +136,20 @@ void GFPT::initializeAgent()
     _batchOptimizationNetworks[threadIdx] = dynamic_cast<NeuralNetwork *>(getModule(nnConfig, _k));
     _batchOptimizationNetworks[threadIdx]->initialize();
   }
+
+  /*********************************************************************
+  * Initializing exploration sigma values
+  *********************************************************************/
+
+  if (_k->_currentGeneration == 0)
+  {
+   _currentExplorationSigmas.resize(_problem->_actionVectorSize);
+   for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+   {
+     size_t varIdx = _problem->_actionVectorIndexes[i];
+     _currentExplorationSigmas[i] = _k->_variables[varIdx]->_explorationSigmaInitial;
+   }
+  }
 }
 
 float GFPT::retraceFunction(size_t expId)
@@ -237,25 +251,11 @@ float GFPT::averageActionAdvantageFunction(const std::vector<float> &expMeans, c
 
 void GFPT::trainPolicy()
 {
- /*******************************************************************
- * Adapting learning rates based on the REFER algorithm
- ******************************************************************/
-
-  _vLearner->_learningRate = _experienceReplayREFERCurrentLearningRate;
-  _aLearner->_learningRate = _experienceReplayREFERCurrentLearningRate;
-  _policyLearner->_learningRate = _experienceReplayREFERCurrentLearningRate;
-
-  /***************************************************************************************
-  * Updating Policy Network by performing a Gradient descent step with latest experiences
-  ***************************************************************************************/
-
-  auto beginTime = std::chrono::steady_clock::now(); // Profiling
+  // Creating minibatch for the critic update
+  auto miniBatchIndexes = generateMiniBatch(_miniBatchSize);
 
   // Calculating cumulative Q*, for statistical purposes
   _cumulativeQStar = 0.0;
-
-  // Creating minibatch for the critic update
-  auto miniBatchIndexes = generateMiniBatch(_miniBatchSize);
 
 #pragma omp parallel for schedule(dynamic, 1)
   for (size_t b = 0; b < _miniBatchSize; b++)
@@ -277,7 +277,9 @@ void GFPT::trainPolicy()
 
     // Updating action distributions for the current state
     auto policy = runPolicy(expStateSequence);
-    auto expMeans = policy["Action Means"].get<std::vector<float>>();
+    auto expMeans = _experienceReplay[expId].policy["Action Means"].get<std::vector<float>>();
+    auto expSigmas = _experienceReplay[expId].policy["Action Sigmas"].get<std::vector<float>>();
+    auto curMeans = policy["Action Means"].get<std::vector<float>>();
     auto curSigmas = policy["Action Sigmas"].get<std::vector<float>>();
 
     // Now calculating V, A, and avgA for current state/action
@@ -298,58 +300,13 @@ void GFPT::trainPolicy()
 
     // Keeping statistics
     _cumulativeQStar += Vtbc;
-  }
 
-  // Updating learning rate for critic learners guided by REFER
-  _aLearner->_learningRate = _experienceReplayREFERCurrentLearningRate;
-  _vLearner->_learningRate = _experienceReplayREFERCurrentLearningRate;
+    /*******************************************************************
+    * Computing Policy gradients with a gradient-free method (CMAES)
+    ******************************************************************/
 
-  // Running one generation of the optimization method with the given mini-batch
-  _aLearner->runGeneration();
-  _vLearner->runGeneration();
-
-  // Keeping critic/policy statistics
-  _averageQStar = _cumulativeQStar / (float)_miniBatchSize;
-
-  auto endTime = std::chrono::steady_clock::now();                                                        // Profiling
-  _criticUpdateTime = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
-
-  /*******************************************************************
-  * Now computing new policy gradients with a stochastic method (CMAES)
-  ******************************************************************/
-
-  beginTime = std::chrono::steady_clock::now(); // Profiling
-
-  // Updating parameters for batch optimization
-
-  auto aHyperparameters = _aLearner->getTrainingHyperparameters();
-
-  // Updating thread-local configuration
-  for (size_t threadIdx = 0; threadIdx < _maxThreads; threadIdx++)
-  {
-    // Updating batch evaluation network for the advantage function for CMAES steps
-    _batchOptimizationNetworks[threadIdx]->setHyperparameters(aHyperparameters);
-  }
-
-#pragma omp parallel for schedule(dynamic, 1)
-  for (size_t b = 0; b < _miniBatchSize; b++)
-  {
     // Creating storage for action gradients
     std::vector<float> meanGradients(_problem->_actionVectorSize, 0.0f);
-
-    // Getting experience id
-    size_t expId = miniBatchIndexes[b];
-
-    // Get state, action, mean, Sigma for this experience
-    auto expStateSequence = getStateTimeSequence(expId);
-    auto expAction = _experienceReplay[expId].action;
-    auto expMeans = _experienceReplay[expId].policy["Action Means"].get<std::vector<float>>();
-    auto expSigmas = _experienceReplay[expId].policy["Action Sigmas"].get<std::vector<float>>();
-
-    // Forward the neural network for this state to get current means and sigmas and Value
-    auto policy = runPolicy(expStateSequence);
-    auto curMeans = policy["Action Means"].get<std::vector<float>>();
-    auto curSigmas = policy["Action Sigmas"].get<std::vector<float>>();
 
     // Re-computing importance weight for the experiment and storing it into cache
     float importanceWeight = calculateImportanceWeight(expAction, curMeans, curSigmas, expMeans, expSigmas);
@@ -378,20 +335,32 @@ void GFPT::trainPolicy()
     _policyProblem->_solutionData[b] = meanGradients;
   }
 
-  // Updating learning rate for policy learner guided by REFER
+  // Updating learning rate for critic/policy learners guided by REFER
+  _aLearner->_learningRate = _experienceReplayREFERCurrentLearningRate;
+  _vLearner->_learningRate = _experienceReplayREFERCurrentLearningRate;
   _policyLearner->_learningRate = _experienceReplayREFERCurrentLearningRate * _policyLearningRateScale;
 
   // Running one generation of the optimization method with the given mini-batch
+  _aLearner->runGeneration();
+  _vLearner->runGeneration();
   _policyLearner->runGeneration();
 
-  // Getting new hyperparameters
-  auto newPolicyHyperparameters = _policyLearner->getTrainingHyperparameters();
+  // Updating batch evaluation network for the advantage function for CMAES steps
+  auto aHyperparameters = _aLearner->getTrainingHyperparameters();
+  for (size_t threadIdx = 0; threadIdx < _maxThreads; threadIdx++)
+    _batchOptimizationNetworks[threadIdx]->setHyperparameters(aHyperparameters);
 
-  // Updating hyperparameters
-  _policyLearner->setInferenceHyperparameters(newPolicyHyperparameters);
+  // Updating action exploration sigmas
+  for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+  {
+    size_t varIdx = _problem->_actionVectorIndexes[i];
+    _currentExplorationSigmas[i] = _currentExplorationSigmas[i] * (1.0f - _k->_variables[varIdx]->_explorationSigmaAnnealingRate);
+    if (_currentExplorationSigmas[i] < _k->_variables[varIdx]->_explorationSigmaFinal)
+     _currentExplorationSigmas[i] = _k->_variables[varIdx]->_explorationSigmaFinal;
+  }
 
-  endTime = std::chrono::steady_clock::now();                                                             // Profiling
-  _policyUpdateTime = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
+  // Keeping critic statistics
+  _averageQStar = _cumulativeQStar / (float)_miniBatchSize;
 }
 
 std::vector<float> GFPT::optimizeAction(const size_t expId, const std::vector<float> &curMeans)
@@ -463,7 +432,7 @@ knlohmann::json GFPT::runPolicy(const std::vector<std::vector<float>> &state)
   for (size_t i = 0; i < _problem->_actionVectorSize; ++i)
   {
     auto varIdx = _problem->_actionVectorIndexes[i];
-    float sigma = _k->_variables[varIdx]->_explorationSigma;
+    float sigma = _currentExplorationSigmas[i];
 
     actionMeans[i] = eval[i];
     actionSigmas[i] = sigma;
@@ -520,6 +489,13 @@ void GFPT::printAgentInformation()
 
   _k->_logger->logInfo("Normal", " + Average Q-Value in Mini-Batch:  %.4e\n", _averageQStar);
 
+  _k->_logger->logInfo("Normal", "Action Exploration Sigmas:\n");
+  for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+  {
+    size_t varIdx = _problem->_actionVectorIndexes[i];
+    _k->_logger->logInfo("Normal", " + %s:                  %.4f\n", _k->_variables[varIdx]->_name.c_str(), _currentExplorationSigmas[i]);
+  }
+
   _k->_logger->logInfo("Normal", "V Function Information:\n");
 
   _k->_logger->logInfo("Normal", " + Learning Rate:                  %.4e (Max: %.4e)\n", _vLearner->_learningRate, _learningRate);
@@ -540,9 +516,6 @@ void GFPT::printAgentInformation()
   _policyExperiment._logger->_verbosityLevel = _k->_logger->_verbosityLevel;
   _policyExperiment._solver->printGenerationAfter();
   _policyExperiment._logger->setVerbosityLevel("Silent");
-
-  _k->_logger->logInfo("Normal", " + Critic Update Time:         %fs\n", _criticUpdateTime / 1.0e+9f);
-  _k->_logger->logInfo("Normal", " + Policy Update Time:         %fs\n", _policyUpdateTime / 1.0e+9f);
 }
 
 } // namespace continuous

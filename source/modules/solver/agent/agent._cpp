@@ -69,7 +69,13 @@ void Agent::initialize()
   deserializeExperienceReplay();
 
   // Initializing session-wise profiling timers
-  _serializationTime = 0.0;
+  _sessionRunningTime = 0.0;
+  _sessionSerializationTime = 0.0;
+  _sessionAgentComputationTime = 0.0;
+  _sessionAgentCommunicationTime = 0.0;
+  _sessionAgentPolicyEvaluationTime = 0.0;
+  _sessionPolicyUpdateTime = 0.0;
+  _sessionAgentAttendingTime = 0.0;
 
   // Initializing session-specific counters
   _sessionExperienceCount = 0;
@@ -112,11 +118,13 @@ void Agent::trainingGeneration()
   auto beginTime = std::chrono::steady_clock::now(); // Profiling
 
   // Setting generation-specific timers
-  _agentComputationTime = 0.0;
-  _agentCommunicationTime = 0.0;
-  _agentPolicyEvaluationTime = 0.0;
-  _policyUpdateTime = 0.0;
-  _agentAttendingTime = 0.0;
+  _generationRunningTime = 0.0;
+  _generationSerializationTime = 0.0;
+  _generationAgentComputationTime = 0.0;
+  _generationAgentCommunicationTime = 0.0;
+  _generationAgentPolicyEvaluationTime = 0.0;
+  _generationPolicyUpdateTime = 0.0;
+  _generationAgentAttendingTime = 0.0;
 
   // Setting training state if continuing from previous results
   if (_k->_currentGeneration > 0) setTrainingState(_trainingState);
@@ -146,7 +154,8 @@ void Agent::trainingGeneration()
       if (_isAgentRunning[agentId] == true)
         attendAgent(agentId);
     auto endTime = std::chrono::steady_clock::now(); // Profiling
-    _agentAttendingTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
+    _sessionAgentAttendingTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
+    _generationAgentAttendingTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
 
     // Perform optimization steps on the critic/policy, if reached the minimum replay memory size
     if (_sessionExperienceCount > _sessionExperiencesUntilStartSize)
@@ -170,7 +179,8 @@ void Agent::trainingGeneration()
         if (_experienceReplayREFEREnabled == true) updateREFERInformation();
 
         auto endTime = std::chrono::steady_clock::now(); // Profiling
-        _policyUpdateTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
+        _sessionPolicyUpdateTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
+        _generationPolicyUpdateTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
       }
     }
   }
@@ -189,12 +199,14 @@ void Agent::trainingGeneration()
       auto beginTime = std::chrono::steady_clock::now(); // Profiling
       serializeExperienceReplay();
       auto endTime = std::chrono::steady_clock::now(); // Profiling
-      _serializationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
+      _sessionSerializationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
+      _generationSerializationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
     }
 
   // Measuring generation time
   auto endTime = std::chrono::steady_clock::now(); // Profiling
-  _generationTime = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
+  _sessionRunningTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
+  _generationRunningTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
 
   // Increasing session's generation count
   _sessionGeneration++;
@@ -283,9 +295,12 @@ void Agent::attendAgent(size_t agentId)
       }
 
       // Obtaining profiling information
-      _agentComputationTime += _agents[agentId]["Computation Time"].get<double>();
-      _agentCommunicationTime += _agents[agentId]["Communication Time"].get<double>();
-      _agentPolicyEvaluationTime += _agents[agentId]["Policy Evaluation Time"].get<double>();
+      _sessionAgentComputationTime += _agents[agentId]["Computation Time"].get<double>();
+      _sessionAgentCommunicationTime += _agents[agentId]["Communication Time"].get<double>();
+      _sessionAgentPolicyEvaluationTime += _agents[agentId]["Policy Evaluation Time"].get<double>();
+      _generationAgentComputationTime += _agents[agentId]["Computation Time"].get<double>();
+      _generationAgentCommunicationTime += _agents[agentId]["Communication Time"].get<double>();
+      _generationAgentPolicyEvaluationTime += _agents[agentId]["Policy Evaluation Time"].get<double>();
 
       // Set agent as finished
       _isAgentRunning[agentId] = false;
@@ -662,15 +677,16 @@ void Agent::printGenerationAfter()
 
     printAgentInformation();
 
-    _k->_logger->logInfo("Normal", "Profiling Information:\n");
-    _k->_logger->logInfo("Normal", " + [Session] Experience Serialization Time:          %fs\n", _serializationTime / 1.0e+9);
-    _k->_logger->logInfo("Normal", " + [Session] Result File Saving I/O Time:            %fs\n", _k->_resultSavingTime / 1.0e+9);
-    _k->_logger->logInfo("Normal", " + [Generation] Policy Update Time:                  %fs\n", _policyUpdateTime / 1.0e+9);
-    _k->_logger->logInfo("Normal", " + [Generation] Agent Attending Time:                %fs\n", _agentAttendingTime / 1.0e+9);
-    _k->_logger->logInfo("Normal", " + [Generation] Avg Agent Computation Time:          %fs\n", _sessionEpisodeCount > 0 ? (_agentComputationTime / _sessionEpisodeCount) / 1.0e+9 : 0.0);
-    _k->_logger->logInfo("Normal", " + [Generation] Avg Agent Communication/Wait Time:   %fs\n", _sessionEpisodeCount > 0 ? (_agentCommunicationTime / _sessionEpisodeCount) / 1.0e+9 : 0.0);
-    _k->_logger->logInfo("Normal", " + [Generation] Avg Agent Policy Evaluation Time:    %fs\n", _sessionEpisodeCount > 0 ? (_agentPolicyEvaluationTime / _sessionEpisodeCount) / 1.0e+9 : 0.0);
-    _k->_logger->logInfo("Normal", " + [Generation] Running Time:                        %fs\n", _generationTime / 1.0e+9);
+    _k->_logger->logInfo("Detailed", "Profiling Information: [Generation] - [Session]\n");
+    _k->_logger->logInfo("Detailed", " + Policy Update Time:                  [%fs] - [%fs]\n", _sessionPolicyUpdateTime / 1.0e+9, _generationPolicyUpdateTime / 1.0e+9);
+    _k->_logger->logInfo("Detailed", " + Experience Serialization Time:       [%fs] - [%fs]\n", _sessionSerializationTime / 1.0e+9, _generationSerializationTime / 1.0e+9);
+    _k->_logger->logInfo("Detailed", " + Agent Attending Time:                [%fs] - [%fs]\n", _sessionAgentAttendingTime / 1.0e+9), _generationAgentAttendingTime / 1.0e+9;
+    _k->_logger->logInfo("Detailed", " + Avg Agent Computation Time:          [%fs] - [%fs]\n", _sessionAgentComputationTime / 1.0e+9, _generationAgentComputationTime / 1.0e+9);
+    _k->_logger->logInfo("Detailed", " + Avg Agent Communication/Wait Time:   [%fs] - [%fs]\n", _sessionAgentCommunicationTime / 1.0e+9, _generationAgentCommunicationTime / 1.0e+9);
+    _k->_logger->logInfo("Detailed", " + Avg Agent Policy Evaluation Time:    [%fs] - [%fs]\n", _sessionAgentPolicyEvaluationTime / 1.0e+9, _generationAgentPolicyEvaluationTime / 1.0e+9);
+    _k->_logger->logInfo("Detailed", " + Running Time:                        [%fs] - [%fs]\n", _sessionRunningTime / 1.0e+9, _generationRunningTime / 1.0e+9);
+    _k->_logger->logInfo("Detailed", " + Experience Serialization Time:       [%fs] - [%fs]\n", _sessionSerializationTime / 1.0e+9, _generationSerializationTime / 1.0e+9);
+    _k->_logger->logInfo("Detailed", " + [I/O] Result File Saving Time:                    %fs\n", _k->_resultSavingTime / 1.0e+9);
   }
 
   if (_mode == "Testing")

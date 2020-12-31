@@ -22,7 +22,7 @@ e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = env
 e["Problem"]["Training Reward Threshold"] = 40.0
 e["Problem"]["Policy Testing Episodes"] = 20
-e["Problem"]["Actions Between Policy Updates"] = 500
+e["Problem"]["Actions Between Policy Updates"] = 200
 
 ### Defining state variables
 
@@ -37,27 +37,33 @@ e["Variables"][4]["Name"] = "Magnet Rotation X"
 e["Variables"][4]["Type"] = "Action"
 e["Variables"][4]["Lower Bound"] = -1.0
 e["Variables"][4]["Upper Bound"] = +1.0
-e["Variables"][4]["Exploration Sigma"] = 0.5
+e["Variables"][4]["Exploration Sigma"]["Initial"] = 0.5
+e["Variables"][4]["Exploration Sigma"]["Final"] = 0.05
+e["Variables"][4]["Exploration Sigma"]["Annealing Rate"] = 1e-5
 
 e["Variables"][5]["Name"] = "Magnet Rotation Y"
 e["Variables"][5]["Type"] = "Action"
 e["Variables"][5]["Lower Bound"] = -1.0
 e["Variables"][5]["Upper Bound"] = +1.0
-e["Variables"][5]["Exploration Sigma"] = 0.5
+e["Variables"][5]["Exploration Sigma"]["Initial"] = 0.5
+e["Variables"][5]["Exploration Sigma"]["Final"] = 0.05
+e["Variables"][5]["Exploration Sigma"]["Annealing Rate"] = 1e-5
 
 e["Variables"][6]["Name"] = "Magnet Intensity"
 e["Variables"][6]["Type"] = "Action"
 e["Variables"][6]["Lower Bound"] = +0.0
 e["Variables"][6]["Upper Bound"] = +2.0
-e["Variables"][6]["Exploration Sigma"] = 0.5
+e["Variables"][6]["Exploration Sigma"]["Initial"] = 0.5
+e["Variables"][6]["Exploration Sigma"]["Final"] = 0.05
+e["Variables"][6]["Exploration Sigma"]["Annealing Rate"] = 1e-5
 
 ### Defining Agent Configuration 
 
 e["Solver"]["Type"] = "Agent / Continuous / GFPT"
 e["Solver"]["Mode"] = "Training"
-e["Solver"]["Experiences Per Generation"] = 600
-e["Solver"]["Experiences Between Policy Updates"] = 200
-e["Solver"]["Cache Persistence"] = 20
+e["Solver"]["Experiences Per Generation"] = 200
+e["Solver"]["Experiences Between Policy Updates"] = 10
+e["Solver"]["Cache Persistence"] = 200
 e["Solver"]["Learning Rate"] = 0.001
 
 ### Defining the configuration of replay memory
@@ -83,23 +89,32 @@ e["Solver"]["Mini Batch Strategy"] = "Uniform"
 
 e["Solver"]["Critic"]["Advantage Function Population"] = 12
 e["Solver"]["Policy"]["Learning Rate Scale"] = 0.1
-e["Solver"]["Policy"]["Target Accuracy"] = 0.0001
+e["Solver"]["Policy"]["Target Accuracy"] = 0.01
 e["Solver"]["Policy"]["Optimization Candidates"] = 24
 
 ### Configuring the neural network and its hidden layers
 
 e["Solver"]["Neural Network"]["Engine"] = "OneDNN"
 
-e["Solver"]["Time Sequence Length"] = 4
-e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Recurrent/GRU"
-e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 32
+e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear"
+e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 64
+
+e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Activation"
+e["Solver"]["Neural Network"]["Hidden Layers"][1]["Function"] = "Elementwise/Tanh"
+
+e["Solver"]["Neural Network"]["Hidden Layers"][2]["Type"] = "Layer/Linear"
+e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 64
+
+e["Solver"]["Neural Network"]["Hidden Layers"][3]["Type"] = "Layer/Activation"
+e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tanh"
 
 ### Defining Termination Criteria
 
 e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 50.0
 
-### Setting file output configuration
+### Setting console/file output configuration
 
+e["Console Output"]["Verbosity"] = "Detailed"
 e["File Output"]["Enabled"] = True
 e["File Output"]["Frequency"] = 100
 e["File Output"]["Path"] = "_results"

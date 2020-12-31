@@ -183,8 +183,8 @@ void HMC::runGeneration()
 
   if (_eVersion == EVersion::Riemannian_Const)
   {
-    int err = _hamiltonian->updateMetricMatricesRiemannian(_positionLeader); // TODO: double check, is this not needed fo Riamannian?
-    if (err > 0) _k->_logger->logWarning("Minimal", "Error during metric update.");
+    int err = _hamiltonian->updateMetricMatricesRiemannian(_positionLeader);
+    if (err > 0) _k->_logger->logWarning("Normal", "Error during metric update.");
   }
 
   // New uniform sample for accept / reject
@@ -193,13 +193,13 @@ void HMC::runGeneration()
   // Execute version specific generation
   if (_useNUTS)
   {
-    if (_eVersion == EVersion::Static || _eVersion == EVersion::Euclidean || _eVersion == EVersion::Riemannian_Const)
-    {
-      runGenerationNUTS(logUniSample); // TODO: double check, this method also for Riemannian Const?
-    }
-    else /* _eVersion == EVersion::Riemannian */
+    if (_eVersion == EVersion::Riemannian)
     {
       runGenerationNUTSRiemannian(logUniSample);
+    }
+    else
+    {
+      runGenerationNUTS(logUniSample);
     }
   }
   else
@@ -310,7 +310,7 @@ void HMC::runGenerationNUTS(const double logUniSample)
     {
       if (numValidLeaves == 0)
       {
-        KORALI_LOG_ERROR("Division by zero encountered in NUTS (numValidLeaves is %lf).\n", numValidLeaves);
+        _k->_logger->logWarning("Normal", "Division by zero encountered in NUTS (numValidLeaves is %lf), candidate rejected.\n", numValidLeaves);
       }
       if (_uniformGenerator->getRandomNumber() < numValidLeavesSubtree / numValidLeaves && isanynan(_positionCandidate) == false)
       {
@@ -405,7 +405,7 @@ void HMC::runGenerationNUTSRiemannian(const double logUniSample)
     {
       if (numValidLeaves == 0)
       {
-        KORALI_LOG_ERROR("Division by zero encountered in NUTS (numValidLeaves is %lf).\n", numValidLeaves);
+        _k->_logger->logWarning("Normal", "Division by zero encountered in NUTS (numValidLeaves is %lf), candidate rejected.\n", numValidLeaves);
       }
       if (_uniformGenerator->getRandomNumber() < numValidLeavesSubtree / numValidLeaves && isanynan(_positionCandidate) == false)
       {
@@ -488,7 +488,7 @@ void HMC::updateStepSize()
           _numIntegrationSteps = std::max((size_t)1, (size_t)std::round(_targetIntegrationTime / _stepSize));
           if (_numIntegrationSteps > _maxIntegrationSteps)
           {
-            _k->_logger->logWarning("Minimal", "Num Integration Steps (%zu) exceeding hard limit 'Max Integration Steps' (%zu).\n", _numIntegrationSteps, _maxIntegrationSteps);
+            _k->_logger->logWarning("Normal", "Num Integration Steps (%zu) exceeding hard limit 'Max Integration Steps' (%zu).\n", _numIntegrationSteps, _maxIntegrationSteps);
             _numIntegrationSteps = _maxIntegrationSteps;
           }
         }

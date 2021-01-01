@@ -53,32 +53,32 @@ int main(int argc, char *argv[])
   e["Variables"][14]["Lower Bound"] = lowerBounds[0];
   e["Variables"][14]["Upper Bound"] = upperBounds[0];
   e["Variables"][14]["Exploration Sigma"]["Initial"] = (upperBounds[0] - lowerBounds[0]) * 0.20;
-  e["Variables"][14]["Exploration Sigma"]["Final"] = (upperBounds[0] - lowerBounds[0]) * 0.02;
-  e["Variables"][14]["Exploration Sigma"]["Annealing Rate"] = 1e-5;
+  e["Variables"][14]["Exploration Sigma"]["Final"] = (upperBounds[0] - lowerBounds[0]) * 0.04;
+  e["Variables"][14]["Exploration Sigma"]["Annealing Rate"] = 3e-6;
 
   e["Variables"][15]["Name"] = "Rotation X";
   e["Variables"][15]["Type"] = "Action";
   e["Variables"][15]["Lower Bound"] = lowerBounds[1];
   e["Variables"][15]["Upper Bound"] = upperBounds[1];
   e["Variables"][15]["Exploration Sigma"]["Initial"] = (upperBounds[1] - lowerBounds[1]) * 0.20;
-  e["Variables"][15]["Exploration Sigma"]["Final"] = (upperBounds[1] - lowerBounds[1]) * 0.02;
-  e["Variables"][15]["Exploration Sigma"]["Annealing Rate"] = 1e-5;
+  e["Variables"][15]["Exploration Sigma"]["Final"] = (upperBounds[1] - lowerBounds[1]) * 0.04;
+  e["Variables"][15]["Exploration Sigma"]["Annealing Rate"] = 3e-6;
 
   e["Variables"][16]["Name"] = "Rotation Y";
   e["Variables"][16]["Type"] = "Action";
   e["Variables"][16]["Lower Bound"] = lowerBounds[2];
   e["Variables"][16]["Upper Bound"] = upperBounds[2];
   e["Variables"][16]["Exploration Sigma"]["Initial"] = (upperBounds[2] - lowerBounds[2]) * 0.20;
-  e["Variables"][16]["Exploration Sigma"]["Final"] = (upperBounds[2] - lowerBounds[2]) * 0.02;
-  e["Variables"][16]["Exploration Sigma"]["Annealing Rate"] = 1e-5;
+  e["Variables"][16]["Exploration Sigma"]["Final"] = (upperBounds[2] - lowerBounds[2]) * 0.04;
+  e["Variables"][16]["Exploration Sigma"]["Annealing Rate"] = 3e-6;
 
   e["Variables"][17]["Name"] = "Rotation Z";
   e["Variables"][17]["Type"] = "Action";
   e["Variables"][17]["Lower Bound"] = lowerBounds[3];
   e["Variables"][17]["Upper Bound"] = upperBounds[3];
   e["Variables"][17]["Exploration Sigma"]["Initial"] = (upperBounds[3] - lowerBounds[3]) * 0.20;
-  e["Variables"][17]["Exploration Sigma"]["Final"] = (upperBounds[3] - lowerBounds[3]) * 0.02;
-  e["Variables"][17]["Exploration Sigma"]["Annealing Rate"] = 1e-5;
+  e["Variables"][17]["Exploration Sigma"]["Final"] = (upperBounds[3] - lowerBounds[3]) * 0.04;
+  e["Variables"][17]["Exploration Sigma"]["Annealing Rate"] = 3e-6;
 
   /// Defining Agent Configuration
 

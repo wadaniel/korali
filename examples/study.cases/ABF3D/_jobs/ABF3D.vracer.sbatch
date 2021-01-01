@@ -1,6 +1,6 @@
 #!/bin/bash -l
 #SBATCH --job-name="ABF3D_VRACER"
-#SBATCH --output=/scratch/snx3000/smartin/ABF3D_VRACER/log%j.out
+#SBATCH --output=ABF3D_VRACER_%j.out
 #SBATCH --time=24:00:00
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-core=1
@@ -17,7 +17,7 @@ pushd ..
 cat run-vracer.cpp
 
 expDir=$SCRATCH/ABF3D_VRACER/$SLURM_JOB_ID
-mkdir $expDir
+mkdir -p $expDir
 cp run-vracer $expDir
 cp -r _config $expDir
 

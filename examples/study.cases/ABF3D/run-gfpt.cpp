@@ -3,14 +3,13 @@
 
 int main(int argc, char *argv[])
 {
-#ifndef TEST
-  initializeEnvironment("_config/helix_2d_eu_const.json");
-#endif
+  /////// Initializing environment
 
-  auto e = korali::Experiment();
+  initializeEnvironment("_config/helix_2d_eu_const.json");
 
   ////// Checking if existing results are there and continuing them
 
+  auto e = korali::Experiment();
   auto found = e.loadState("_results/latest");
   if (found == true) printf("Continuing execution from previous run...\n");
 
@@ -41,44 +40,39 @@ int main(int argc, char *argv[])
 
   //// Setting action variables
 
-#ifndef TEST
   auto [lowerBounds, upperBounds] = _environment->getActionBounds();
-#else
-  std::vector<float> lowerBounds = {0.0, 0.0, 0.0, 0.0};
-  std::vector<float> upperBounds = {1.0, 1.0, 1.0, 1.0};
-#endif
 
   e["Variables"][14]["Name"] = "Frequency (w)";
   e["Variables"][14]["Type"] = "Action";
   e["Variables"][14]["Lower Bound"] = lowerBounds[0];
   e["Variables"][14]["Upper Bound"] = upperBounds[0];
-  e["Variables"][14]["Exploration Sigma"]["Initial"] = (upperBounds[0] - lowerBounds[0]) * 0.20;
-  e["Variables"][14]["Exploration Sigma"]["Final"] = (upperBounds[0] - lowerBounds[0]) * 0.04;
-  e["Variables"][14]["Exploration Sigma"]["Annealing Rate"] = 2e-6;
+  e["Variables"][14]["Exploration Sigma"]["Initial"] = (upperBounds[0] - lowerBounds[0]) * 0.40;
+  e["Variables"][14]["Exploration Sigma"]["Final"] = (upperBounds[0] - lowerBounds[0]) * 0.10;
+  e["Variables"][14]["Exploration Sigma"]["Annealing Rate"] = 5e-6;
 
   e["Variables"][15]["Name"] = "Rotation X";
   e["Variables"][15]["Type"] = "Action";
   e["Variables"][15]["Lower Bound"] = lowerBounds[1];
   e["Variables"][15]["Upper Bound"] = upperBounds[1];
-  e["Variables"][15]["Exploration Sigma"]["Initial"] = (upperBounds[1] - lowerBounds[1]) * 0.20;
-  e["Variables"][15]["Exploration Sigma"]["Final"] = (upperBounds[1] - lowerBounds[1]) * 0.04;
-  e["Variables"][15]["Exploration Sigma"]["Annealing Rate"] = 2e-6;
+  e["Variables"][15]["Exploration Sigma"]["Initial"] = (upperBounds[1] - lowerBounds[1]) * 0.40;
+  e["Variables"][15]["Exploration Sigma"]["Final"] = (upperBounds[1] - lowerBounds[1]) * 0.10;
+  e["Variables"][15]["Exploration Sigma"]["Annealing Rate"] = 5e-6;
 
   e["Variables"][16]["Name"] = "Rotation Y";
   e["Variables"][16]["Type"] = "Action";
   e["Variables"][16]["Lower Bound"] = lowerBounds[2];
   e["Variables"][16]["Upper Bound"] = upperBounds[2];
-  e["Variables"][16]["Exploration Sigma"]["Initial"] = (upperBounds[2] - lowerBounds[2]) * 0.20;
-  e["Variables"][16]["Exploration Sigma"]["Final"] = (upperBounds[2] - lowerBounds[2]) * 0.04;
-  e["Variables"][16]["Exploration Sigma"]["Annealing Rate"] = 2e-6;
+  e["Variables"][16]["Exploration Sigma"]["Initial"] = (upperBounds[2] - lowerBounds[2]) * 0.40;
+  e["Variables"][16]["Exploration Sigma"]["Final"] = (upperBounds[2] - lowerBounds[2]) * 0.10;
+  e["Variables"][16]["Exploration Sigma"]["Annealing Rate"] = 5e-6;
 
   e["Variables"][17]["Name"] = "Rotation Z";
   e["Variables"][17]["Type"] = "Action";
   e["Variables"][17]["Lower Bound"] = lowerBounds[3];
   e["Variables"][17]["Upper Bound"] = upperBounds[3];
-  e["Variables"][17]["Exploration Sigma"]["Initial"] = (upperBounds[3] - lowerBounds[3]) * 0.20;
-  e["Variables"][17]["Exploration Sigma"]["Final"] = (upperBounds[3] - lowerBounds[3]) * 0.04;
-  e["Variables"][17]["Exploration Sigma"]["Annealing Rate"] = 2e-6;
+  e["Variables"][17]["Exploration Sigma"]["Initial"] = (upperBounds[3] - lowerBounds[3]) * 0.40;
+  e["Variables"][17]["Exploration Sigma"]["Final"] = (upperBounds[3] - lowerBounds[3]) * 0.10;
+  e["Variables"][17]["Exploration Sigma"]["Annealing Rate"] = 5e-6;
 
   /// Defining Agent Configuration
 
@@ -91,8 +85,8 @@ int main(int argc, char *argv[])
 
   /// Defining the configuration of replay memory
 
-  e["Solver"]["Experience Replay"]["Start Size"] = 16384;
-  e["Solver"]["Experience Replay"]["Maximum Size"] = 131072;
+  e["Solver"]["Experience Replay"]["Start Size"] = 4096;
+  e["Solver"]["Experience Replay"]["Maximum Size"] = 65536;
   e["Solver"]["Experience Replay"]["Serialization Frequency"] = 100;
 
   /// Configuring the Remember-and-Forget Experience Replay algorithm
@@ -113,7 +107,7 @@ int main(int argc, char *argv[])
   e["Solver"]["Critic"]["Advantage Function Population"] = 16;
   e["Solver"]["Policy"]["Learning Rate Scale"] = 1.0;
   e["Solver"]["Policy"]["Target Accuracy"] = 0.01;
-  e["Solver"]["Policy"]["Optimization Candidates"] = 32;
+  e["Solver"]["Policy"]["Optimization Candidates"] = 24;
 
   /// Configuring the neural network and its hidden layers
 
@@ -134,12 +128,6 @@ int main(int argc, char *argv[])
   ////// Defining Termination Criteria
 
   e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 1.3;
-
-  ////// If using configuration test, run for a couple generations only
-
-#ifdef TEST
-  e["Solver"]["Termination Criteria"]["Max Generations"] = 1;
-#endif
 
   ////// Setting file output configuration
 

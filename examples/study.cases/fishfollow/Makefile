@@ -1,13 +1,9 @@
-BINARIES = run-korali
+BINARIES = run-gfpt
 KORALICXX=$(shell python3 -m korali.cxx --compiler)
 KORALICFLAGS=`python3 -m korali.cxx --cflags`
 KORALILIBS=`python3 -m korali.cxx --libs`
-ifeq ($(TEST), true)
- CUBISMCFLAGS=-DTEST
- else
- CUBISMCFLAGS=$(shell cat cubism.cflags.txt) -I_deps/cubism/source -I_deps/cubism/Cubism/include -DCUBISM
- CUBISMLIBS= libcubism.a $(shell cat cubism.libs.txt) -lstdc++fs
-endif
+CUBISMCFLAGS=$(shell cat cubism.cflags.txt) -I_deps/cubism/source -I_deps/cubism/Cubism/include -DCUBISM
+CUBISMLIBS= libcubism.a $(shell cat cubism.libs.txt) -lstdc++fs
 
 .SECONDARY:
 .PHONY: all 

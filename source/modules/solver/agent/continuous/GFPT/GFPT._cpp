@@ -276,9 +276,6 @@ void GFPT::trainPolicy()
     // Selecting a uniformly random selected, yet not repeated experience
     size_t expId = miniBatchIndexes[b];
 
-    // We calculate qStar depending on whether we use retrace or not
-    float Vtbc = retraceFunction(expId);
-
     // Getting experience's current state, state/action sequences
     auto expStateSequence = getStateTimeSequence(expId);
     auto expStateActionSequence = getStateActionTimeSequence(expId);
@@ -311,6 +308,9 @@ void GFPT::trainPolicy()
     /*****************************************
     * Calculating Critic Gradients
     *****************************************/
+
+    // Using retrace to obtain a better estimation of the state value function
+    float Vtbc = retraceFunction(expId);
 
     // Now calculating V, A, and avgA for current state/action
     float curA = currentActionAdvantageFunction(expStateActionSequence);

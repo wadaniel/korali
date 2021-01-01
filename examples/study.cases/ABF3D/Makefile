@@ -3,18 +3,14 @@ KORALICXX=$(shell python3 -m korali.cxx --compiler)
 KORALICFLAGS=`python3 -m korali.cxx --cflags`
 KORALILIBS=`python3 -m korali.cxx --libs`
 
-ifeq ($(TEST), true)
- MSODECFLAGS=-DTEST
-else
-	MSODECFLAGS=-I_deps/msode/src -I../_deps/msode/src -I_deps/msode/extern/json/include/ -I. -DNDEBUG -O3 -DMSODE
-	MSODELIBS=_deps/msode/build/lib/libgtest.a \
-          _deps/msode/build/src/msode/rl/librl.a\
-          -lpthread \
-          _deps/msode/build/src/msode/analytic_control/libanalytic_control.a\
-          _deps/msode/build/src/msode/utils/libutils.a \
-          _deps/msode/build/src/msode/core/libmsode.a \
-          -lbfd -ldl
-endif
+MSODECFLAGS=-I_deps/msode/src -I../_deps/msode/src -I_deps/msode/extern/json/include/ -I. -DNDEBUG -O3
+MSODELIBS=_deps/msode/build/lib/libgtest.a \
+         _deps/msode/build/src/msode/rl/librl.a\
+         -lpthread \
+         _deps/msode/build/src/msode/analytic_control/libanalytic_control.a\
+         _deps/msode/build/src/msode/utils/libutils.a \
+         _deps/msode/build/src/msode/core/libmsode.a \
+         -lbfd -ldl
 
 .SECONDARY:
 .PHONY: all 

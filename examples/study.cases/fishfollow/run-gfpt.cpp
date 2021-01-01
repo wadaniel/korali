@@ -6,7 +6,6 @@ std::string _resultsPath;
 int main(int argc, char *argv[])
 {
   // Gathering actual arguments from MPI
-#ifndef TEST
   int provided;
   MPI_Init_thread(&argc, &argv, MPI_THREAD_FUNNELED, &provided);
   if (provided != MPI_THREAD_FUNNELED)
@@ -14,7 +13,6 @@ int main(int argc, char *argv[])
     printf("Error initializing MPI\n");
     exit(-1);
   }
-#endif
 
   // Storing parameters
   _argc = argc;
@@ -22,14 +20,12 @@ int main(int argc, char *argv[])
 
   // Getting number of workers
   int N = 1;
-#ifndef TEST
   MPI_Comm_size(MPI_COMM_WORLD, &N);
   N = N - 1; // Minus one for Korali's engine
 
   // Initializing Cubism
   _environment = new Simulation(_argc, _argv);
   _environment->init();
-#endif
 
   // Setting results path
   std::string trainingResultsPath = "_trainingResults";
@@ -41,14 +37,12 @@ int main(int argc, char *argv[])
 
   ////// Checking if existing results are there and continuing them
 
-#ifndef TEST
   auto found = e.loadState(trainingResultsPath + std::string("/latest"));
   if (found == true) printf("Continuing execution from previous run...\n");
-#endif
 
   // Configuring Experiment
   e["Problem"]["Environment Function"] = &runEnvironment;
-  e["Problem"]["Training Reward Threshold"] = 2.0;
+  e["Problem"]["Training Reward Threshold"] = 8.0;
   e["Problem"]["Policy Testing Episodes"] = 5;
   e["Problem"]["Actions Between Policy Updates"] = 100;
 
@@ -68,62 +62,70 @@ int main(int argc, char *argv[])
   e["Variables"][curVariable]["Type"] = "Action";
   e["Variables"][curVariable]["Lower Bound"] = -1.0;
   e["Variables"][curVariable]["Upper Bound"] = +1.0;
-  e["Variables"][curVariable]["Exploration Sigma"] = 0.1;
+  e["Variables"][curVariable]["Exploration Sigma"]["Initial"] = 0.4;
+  e["Variables"][curVariable]["Exploration Sigma"]["Final"] = 0.05;
+  e["Variables"][curVariable]["Exploration Sigma"]["Annealing Rate"] = 1e-5;
 
   curVariable++;
   e["Variables"][curVariable]["Name"] = "Force";
   e["Variables"][curVariable]["Type"] = "Action";
   e["Variables"][curVariable]["Lower Bound"] = -0.25;
   e["Variables"][curVariable]["Upper Bound"] = +0.25;
-  e["Variables"][curVariable]["Exploration Sigma"] = 0.05;
+  e["Variables"][curVariable]["Exploration Sigma"]["Initial"] = 0.1;
+  e["Variables"][curVariable]["Exploration Sigma"]["Final"] = 0.02;
+  e["Variables"][curVariable]["Exploration Sigma"]["Annealing Rate"] = 1e-5;
 
-  //// Defining Agent Configuration
+  /// Defining Agent Configuration
 
   e["Solver"]["Type"] = "Agent / Continuous / GFPT";
   e["Solver"]["Mode"] = "Training";
   e["Solver"]["Agent Count"] = N;
   e["Solver"]["Experiences Per Generation"] = N * 4;
   e["Solver"]["Experiences Between Policy Updates"] = 1;
-  e["Solver"]["Cache Persistence"] = 10;
+  e["Solver"]["Cache Persistence"] = 100;
+  e["Solver"]["Learning Rate"] = 0.001;
 
-  e["Solver"]["Experience Replay"]["Start Size"] = 1000;
-  e["Solver"]["Experience Replay"]["Maximum Size"] = 100000;
+  /// Defining the configuration of replay memory
+
+  e["Solver"]["Experience Replay"]["Start Size"] = 1024;
+  e["Solver"]["Experience Replay"]["Maximum Size"] = 65536;
   e["Solver"]["Experience Replay"]["Serialization Frequency"] = 1;
 
-  //// Defining Critic/Policy Configuration
+  /// Configuring the Remember-and-Forget Experience Replay algorithm
 
-  e["Solver"]["Discount Factor"] = 0.99;
+  e["Solver"]["Experience Replay"]["REFER"]["Enabled"] = true;
+  e["Solver"]["Experience Replay"]["REFER"]["Cutoff Scale"] = 4.0;
+  e["Solver"]["Experience Replay"]["REFER"]["Target"] = 0.1;
+  e["Solver"]["Experience Replay"]["REFER"]["Initial Beta"] = 0.6;
+  e["Solver"]["Experience Replay"]["REFER"]["Annealing Rate"] = 5e-7;
+
+  //// Configuring Mini Batch
+
   e["Solver"]["Mini Batch Size"] = 128;
-  e["Solver"]["Critic"]["Learning Rate"] = 0.0001;
-  e["Solver"]["Policy"]["Learning Rate"] = 0.000001;
-  e["Solver"]["Policy"]["Target Accuracy"] = 0.0001;
-  e["Solver"]["Policy"]["Optimization Candidates"] = 8;
+  e["Solver"]["Mini Batch Strategy"] = "Uniform";
+
+  //// Defining Critic and Policy Configuration
+
+  e["Solver"]["Critic"]["Advantage Function Population"] = 12;
+  e["Solver"]["Policy"]["Learning Rate Scale"] = 0.1;
+  e["Solver"]["Policy"]["Target Accuracy"] = 0.01;
+  e["Solver"]["Policy"]["Optimization Candidates"] = 24;
 
   //// Defining Neural Network
 
   e["Solver"]["Neural Network"]["Engine"] = "OneDNN";
 
-  e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear";
+  e["Solver"]["Time Sequence Length"] = 16;
+
+  e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Recurrent/GRU";
   e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 32;
 
-  e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Activation";
-  e["Solver"]["Neural Network"]["Hidden Layers"][1]["Function"] = "Elementwise/Tanh";
-
-  e["Solver"]["Neural Network"]["Hidden Layers"][2]["Type"] = "Layer/Linear";
-  e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 32;
-
-  e["Solver"]["Neural Network"]["Hidden Layers"][3]["Type"] = "Layer/Activation";
-  e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tanh";
+  e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Recurrent/GRU";
+  e["Solver"]["Neural Network"]["Hidden Layers"][1]["Output Channels"] = 32;
 
   ////// Defining Termination Criteria
 
-  e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 8.0;
-
-  ////// If using syntax test, run for a couple generations only
-
-#ifdef TEST
-  e["Solver"]["Termination Criteria"]["Max Generations"] = 20;
-#endif
+  e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 16.0;
 
   ////// Setting Korali output configuration
 
@@ -141,16 +143,12 @@ int main(int argc, char *argv[])
   k["Profiling"]["Path"] = trainingResultsPath + std::string("/profiling.json");
   k["Profiling"]["Frequency"] = 60;
 
-#ifndef TEST
   k["Conduit"]["Type"] = "Distributed";
   k["Conduit"]["Communicator"] = MPI_COMM_WORLD;
-#endif
 
   k.run(e);
 
   ////// Now testing policy, dumping trajectory results
-
-#ifndef TEST
 
   printf("[Korali] Done with training. Now running learned policy to dump the trajectory.\n");
 
@@ -168,5 +166,4 @@ int main(int argc, char *argv[])
 
   printf("[Korali] Finished. Testing dump files stored in %s\n", testingResultsPath.c_str());
 
-#endif
 }

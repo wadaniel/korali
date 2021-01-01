@@ -10,10 +10,8 @@ extern std::string _resultsPath;
 extern int _argc;
 extern char **_argv;
 
-#ifndef TEST
-
-  #include "Obstacles/StefanFish.h"
-  #include "Simulation.h"
+#include "Obstacles/StefanFish.h"
+#include "Simulation.h"
 
 void initializeEnvironment();
 void setInitialConditions(StefanFish *agent, Shape *object, const bool isTraining);
@@ -23,4 +21,3 @@ bool isTerminal(StefanFish *agent, Shape *object);
 extern std::mt19937 _randomGenerator;
 extern Simulation *_environment;
 
-#endif

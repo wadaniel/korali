@@ -17,9 +17,14 @@ class GFPT : public Continuous
 {
   public:
   /**
-   * @brief A neural network for the simultaneous evaluation of CMAES candidates (one per thread)
+   * @brief A neural network for the simultaneous evaluation of the advantage CMAES candidates (one per thread)
    */
   std::vector<NeuralNetwork *> _batchOptimizationNetworks;
+
+  /**
+   * @brief A neural network for the simultaneous evaluation of the average advantage function (one per thread)
+   */
+  std::vector<NeuralNetwork *> _batchAdvantageNetworks;
 
   /**
    * @brief Pointer to training experiment's V(s) problem
@@ -79,12 +84,11 @@ class GFPT : public Continuous
   float stateValueFunction(const std::vector<std::vector<float>> &stateSequence);
 
   /**
-   * @brief Returns the advantage value of the given state/action
-   * @param stateActionSequence State sequence to evaluate
-   * @param action Final action in the sequence to evaluate
+   * @brief Returns the advantage value of the given state/action sequence
+   * @param stateActionSequence State/action sequence to evaluate
    * @return The advantage value
    */
-  float currentActionAdvantageFunction(const std::vector<std::vector<float>> &stateActionSequence, const std::vector<float> &action);
+  float currentActionAdvantageFunction(const std::vector<std::vector<float>> &stateActionSequence);
 
   /**
    * @brief Returns the average advantage value of all actions given the state
@@ -93,7 +97,7 @@ class GFPT : public Continuous
    * @param stateActionSequence State/action sequence to evaluate
    * @return The average advantage value
    */
-  float averageActionAdvantageFunction(const std::vector<float> &curMeans, const std::vector<float> &curSigmas, const std::vector<std::vector<float>> &stateActionSequence);
+  float averageActionAdvantageFunction(const std::vector<std::vector<float>> &stateActionSequence, const std::vector<float> &curMeans, const std::vector<float> &curSigmas);
 
   /**
    * @brief Returns the best action: that with highest advantage for the given state

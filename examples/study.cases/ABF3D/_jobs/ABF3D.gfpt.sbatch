@@ -1,6 +1,6 @@
 #!/bin/bash -l
 #SBATCH --job-name="ABF3D_GFPT"
-#SBATCH --output=/scratch/snx3000/smartin/ABF3D_GFPT/log%j.out
+#SBATCH --output=ABF3D_GFPT_%j.out
 #SBATCH --time=24:00:00
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-core=1
@@ -17,7 +17,7 @@ pushd ..
 cat run-gfpt.cpp
 
 expDir=$SCRATCH/ABF3D_GFPT/$SLURM_JOB_ID
-mkdir $expDir
+mkdir -p $expDir
 cp run-gfpt $expDir
 cp -r _config $expDir
 

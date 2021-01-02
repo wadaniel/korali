@@ -12,7 +12,7 @@ Ns = 100
 # fileName: output directory
 fileName = 'samplesOut.dat'
 
-# Prepare file
+# Prepare folder
 prepareOutputDir()
 
 # Creating new experiment

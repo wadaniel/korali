@@ -110,22 +110,22 @@ float Discrete::calculateImportanceWeight(const size_t actionIdx, const std::vec
 
 float Discrete::getExperienceImportanceWeight(size_t expId)
 {
- // Getting the state sequence and action index for the given experience
- auto expStateSequence = getStateTimeSequence(expId);
- auto expActionIdx = _experienceReplay[expId].policy["Action Index"].get<size_t>();
+  // Getting the state sequence and action index for the given experience
+  auto expStateSequence = getStateTimeSequence(expId);
+  auto expActionIdx = _experienceReplay[expId].policy["Action Index"].get<size_t>();
 
- // Get action probabilities for the policy used for the experience
- auto expPvals = _experienceReplay[expId].policy["Action Probabilities"].get<std::vector<float>>();
+  // Get action probabilities for the policy used for the experience
+  auto expPvals = _experienceReplay[expId].policy["Action Probabilities"].get<std::vector<float>>();
 
- // Getting current policy and calculating its action probabilities
- auto policy = runPolicy(expStateSequence);
- auto curPvals = policy["Action Probabilities"].get<std::vector<float>>();
+  // Getting current policy and calculating its action probabilities
+  auto policy = runPolicy(expStateSequence);
+  auto curPvals = policy["Action Probabilities"].get<std::vector<float>>();
 
- // Now calculating importance weight
- auto expImportanceWeight = calculateImportanceWeight(expActionIdx, curPvals, expPvals);
+  // Now calculating importance weight
+  auto expImportanceWeight = calculateImportanceWeight(expActionIdx, curPvals, expPvals);
 
- // Returning experience's importance weight
- return expImportanceWeight;
+  // Returning experience's importance weight
+  return expImportanceWeight;
 }
 
 } // namespace agent

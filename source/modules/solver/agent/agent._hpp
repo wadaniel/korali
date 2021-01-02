@@ -243,7 +243,6 @@ class Agent : public Solver
    */
   double _generationAgentAttendingTime;
 
-
   /****************************************************************************************************
    * Common Agent functions
    ***************************************************************************************************/
@@ -403,6 +402,7 @@ class Agent : public Solver
   /**
   * @brief Returns the value of importance weight for a given experience in the replay memory
   * @param expId Index of the experience in the ER to calculate the importance weight for
+  * @return The experience's importance weight
   */
   virtual float getExperienceImportanceWeight(size_t expId) = 0;
 
@@ -421,7 +421,6 @@ class Agent : public Solver
    * @param sample Sample on which the action and metadata will be stored
    */
   virtual void getAction(korali::Sample &sample) = 0;
-
 
   void runGeneration() override;
   void printGenerationAfter() override;

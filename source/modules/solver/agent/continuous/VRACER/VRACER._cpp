@@ -215,7 +215,7 @@ void VRACER::trainPolicy()
       for (size_t i = 0; i < 2 * _problem->_actionVectorSize; i++)
       {
         // '-' because the optimizer is maximizing
-        gradientLoss[1 + i] = - _experienceReplayREFERCurrentBeta * lossOffPolicy * polGrad[i];
+        gradientLoss[1 + i] = -_experienceReplayREFERCurrentBeta * lossOffPolicy * polGrad[i];
       }
     }
 

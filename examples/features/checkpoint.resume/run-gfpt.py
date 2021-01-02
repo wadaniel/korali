@@ -49,13 +49,15 @@ e["Variables"][4]["Name"] = "Force"
 e["Variables"][4]["Type"] = "Action"
 e["Variables"][4]["Lower Bound"] = -10.0
 e["Variables"][4]["Upper Bound"] = +10.0
-e["Variables"][4]["Exploration Sigma"] = 0.35
+e["Variables"][4]["Exploration Sigma"]["Initial"] = 1.0
+e["Variables"][4]["Exploration Sigma"]["Final"] = 1.0
+e["Variables"][4]["Exploration Sigma"]["Annealing Rate"] = 0.0
 
 ### Defining Agent Configuration 
 
 e["Solver"]["Type"] = "Agent / Continuous / GFPT"
 e["Solver"]["Mode"] = "Training"
-e["Solver"]["Agent Count"] = 5
+e["Solver"]["Time Sequence Length"] = 1
 e["Solver"]["Experiences Per Generation"] = 500
 e["Solver"]["Experiences Between Policy Updates"] = 1
 e["Solver"]["Cache Persistence"] = 10
@@ -65,16 +67,17 @@ e["Solver"]["Discount Factor"] = 0.99
 
 e["Solver"]["Mini Batch Size"] = 32
 e["Solver"]["Mini Batch Strategy"] = "Uniform"
-e["Solver"]["Experience Replay"]["Start Size"] =   2000
-e["Solver"]["Experience Replay"]["Maximum Size"] = 100000
+e["Solver"]["Experience Replay"]["Start Size"] =   1024
+e["Solver"]["Experience Replay"]["Maximum Size"] = 32768
 e["Solver"]["Experience Replay"]["Serialization Frequency"] = 10
 
 ## Defining Critic and Policy Configuration
 
-e["Solver"]["Critic"]["Learning Rate"] = 0.01
-e["Solver"]["Policy"]["Learning Rate"] = 0.01
-e["Solver"]["Policy"]["Optimization Candidates"] = 32
-e["Solver"]["Policy"]["Target Accuracy"] = 0.00001
+e["Solver"]["Learning Rate"] = 0.01
+e["Solver"]["Policy"]["Learning Rate Scale"] = 1.0
+e["Solver"]["Critic"]["Advantage Function Population"] = 12
+e["Solver"]["Policy"]["Target Accuracy"] = 0.001
+e["Solver"]["Policy"]["Optimization Candidates"] = 12
 
 ### Configuring the neural network and its hidden layers
 

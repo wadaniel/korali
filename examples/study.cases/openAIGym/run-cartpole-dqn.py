@@ -39,29 +39,35 @@ e["Variables"][3]["Type"] = "State"
 
 e["Variables"][4]["Name"] = "Push Direction"
 e["Variables"][4]["Type"] = "Action"
+e["Variables"][4]["Exploration Sigma"]["Initial"] = 1.0
+e["Variables"][4]["Exploration Sigma"]["Final"] = 1.0
+e["Variables"][4]["Exploration Sigma"]["Annealing Rate"] = 0.0
 
-### Configuring DQN hyperparameters
+### Defining Agent Configuration 
 
-e["Solver"]["Type"] = "Agent / Discrete / DQN"
+e["Solver"]["Type"] = "Agent / Continuous / GFPT"
 e["Solver"]["Mode"] = "Training"
+e["Solver"]["Time Sequence Length"] = 1
+e["Solver"]["Experiences Per Generation"] = 500
 e["Solver"]["Experiences Between Policy Updates"] = 1
-e["Solver"]["Experiences Per Generation"] = 100
+e["Solver"]["Cache Persistence"] = 10
+e["Solver"]["Discount Factor"] = 0.99
 
-### Defining Experience Replay configuration
-
-e["Solver"]["Experience Replay"]["Start Size"] = 1000
-e["Solver"]["Experience Replay"]["Maximum Size"] = 50000
-
-### Defining probability of taking a random action (epsilon)
-
-e["Solver"]["Random Action Probability"] = 0.05
-
-## Defining Q-Critic and Action-selection (policy) optimizers
+### Defining the configuration of replay memory
 
 e["Solver"]["Mini Batch Size"] = 32
-e["Solver"]["Learning Rate"] = 0.0001
-e["Solver"]["Discount Factor"] = 0.99
-e["Solver"]["Target Update Delay"] = 50
+e["Solver"]["Mini Batch Strategy"] = "Uniform"
+e["Solver"]["Experience Replay"]["Start Size"] =   1024
+e["Solver"]["Experience Replay"]["Maximum Size"] = 32768
+e["Solver"]["Experience Replay"]["Serialization Frequency"] = 10
+
+## Defining Critic and Policy Configuration
+
+e["Solver"]["Learning Rate"] = 0.01
+e["Solver"]["Policy"]["Learning Rate Scale"] = 1.0
+e["Solver"]["Critic"]["Advantage Function Population"] = 12
+e["Solver"]["Policy"]["Target Accuracy"] = 0.001
+e["Solver"]["Policy"]["Optimization Candidates"] = 12
 
 ### Configuring the neural network and its hidden layers
 

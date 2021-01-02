@@ -165,5 +165,4 @@ int main(int argc, char *argv[])
   k.run(e);
 
   printf("[Korali] Finished. Testing dump files stored in %s\n", testingResultsPath.c_str());
-
 }

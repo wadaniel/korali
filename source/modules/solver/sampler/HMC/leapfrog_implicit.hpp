@@ -40,19 +40,19 @@ class LeapfrogImplicit : public Leapfrog
   */
   void step(std::vector<double> &q, std::vector<double> &p, const double stepSize) override
   {
-    size_t stateSpaceDim = _hamiltonian->getStateSpaceDim();
+    size_t dim = p.size();
     double delta = 1e-6 * stepSize;
 
     // half step of momentum
     _hamiltonian->updateHamiltonian(q);
     std::vector<double> dphi_dq = _hamiltonian->dphi_dq();
-    for (size_t i = 0; i < stateSpaceDim; ++i)
+    for (size_t i = 0; i < dim; ++i)
     {
       p[i] = p[i] - stepSize / 2.0 * dphi_dq[i];
     }
 
     std::vector<double> rho = p;
-    std::vector<double> pPrime(stateSpaceDim);
+    std::vector<double> pPrime(dim);
     double deltaP;
 
     size_t numIter = 0;
@@ -61,13 +61,13 @@ class LeapfrogImplicit : public Leapfrog
       deltaP = 0.0;
       _hamiltonian->updateHamiltonian(q);
       std::vector<double> dtau_dq = _hamiltonian->dtau_dq(p);
-      for (size_t i = 0; i < stateSpaceDim; ++i)
+      for (size_t i = 0; i < dim; ++i)
       {
         pPrime[i] = rho[i] - stepSize / 2.0 * dtau_dq[i];
       }
 
       // find max delta
-      for (size_t i = 0; i < stateSpaceDim; ++i)
+      for (size_t i = 0; i < dim; ++i)
       {
         if (std::abs(p[i] - pPrime[i]) > deltaP)
         {
@@ -80,7 +80,7 @@ class LeapfrogImplicit : public Leapfrog
 
     } while (deltaP > delta && numIter < _maxNumFixedPointIter);
 
-    std::vector<double> qPrime(stateSpaceDim);
+    std::vector<double> qPrime(dim);
     std::vector<double> sigma = q;
     double deltaQ;
 
@@ -92,13 +92,13 @@ class LeapfrogImplicit : public Leapfrog
       std::vector<double> dtau_dp_sigma = _hamiltonian->dtau_dp(p);
       _hamiltonian->updateHamiltonian(q);
       std::vector<double> dtau_dp_q = _hamiltonian->dtau_dp(p);
-      for (size_t i = 0; i < stateSpaceDim; ++i)
+      for (size_t i = 0; i < dim; ++i)
       {
         qPrime[i] = sigma[i] + stepSize / 2.0 * dtau_dp_sigma[i] + stepSize / 2.0 * dtau_dp_q[i];
       }
 
       // find max delta
-      for (size_t i = 0; i < stateSpaceDim; ++i)
+      for (size_t i = 0; i < dim; ++i)
       {
         if (std::abs(q[i] - qPrime[i]) > deltaQ)
         {
@@ -112,13 +112,13 @@ class LeapfrogImplicit : public Leapfrog
 
     _hamiltonian->updateHamiltonian(q);
     std::vector<double> dtau_dq = _hamiltonian->dtau_dq(p);
-    for (size_t i = 0; i < stateSpaceDim; ++i)
+    for (size_t i = 0; i < dim; ++i)
     {
       p[i] = p[i] - stepSize / 2.0 * dtau_dq[i];
     }
 
     dphi_dq = _hamiltonian->dphi_dq();
-    for (size_t i = 0; i < stateSpaceDim; ++i)
+    for (size_t i = 0; i < dim; ++i)
     {
       p[i] = p[i] - stepSize / 2.0 * dphi_dq[i];
     }

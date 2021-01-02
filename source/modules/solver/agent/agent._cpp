@@ -153,8 +153,8 @@ void Agent::trainingGeneration()
     for (size_t agentId = 0; agentId < _agentCount; agentId++)
       if (_isAgentRunning[agentId] == true)
         attendAgent(agentId);
-    auto endTime = std::chrono::steady_clock::now(); // Profiling
-    _sessionAgentAttendingTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
+    auto endTime = std::chrono::steady_clock::now();                                                                    // Profiling
+    _sessionAgentAttendingTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
     _generationAgentAttendingTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
 
     // Perform optimization steps on the critic/policy, if reached the minimum replay memory size
@@ -178,8 +178,8 @@ void Agent::trainingGeneration()
         // If using REFER, updating its information
         if (_experienceReplayREFEREnabled == true) updateREFERInformation();
 
-        auto endTime = std::chrono::steady_clock::now(); // Profiling
-        _sessionPolicyUpdateTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
+        auto endTime = std::chrono::steady_clock::now();                                                                  // Profiling
+        _sessionPolicyUpdateTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
         _generationPolicyUpdateTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
       }
     }
@@ -198,14 +198,14 @@ void Agent::trainingGeneration()
       _k->_logger->logInfo("Normal", "Serializing Experience Replay database...\n");
       auto beginTime = std::chrono::steady_clock::now(); // Profiling
       serializeExperienceReplay();
-      auto endTime = std::chrono::steady_clock::now(); // Profiling
-      _sessionSerializationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
+      auto endTime = std::chrono::steady_clock::now();                                                                   // Profiling
+      _sessionSerializationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
       _generationSerializationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
     }
 
   // Measuring generation time
-  auto endTime = std::chrono::steady_clock::now(); // Profiling
-  _sessionRunningTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
+  auto endTime = std::chrono::steady_clock::now();                                                             // Profiling
+  _sessionRunningTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
   _generationRunningTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
 
   // Increasing session's generation count
@@ -324,76 +324,76 @@ void Agent::processEpisode(std::vector<knlohmann::json> &episode)
   // Now adding episode's experiences into the replay memory
   for (size_t expId = 0; expId < episode.size(); expId++)
   {
-   // Storage for new experience
-   experience_t e;
+    // Storage for new experience
+    experience_t e;
 
-   // Creating caches for the new experience
-   e.cache.setMaxAge(_cachePersistence);
-   e.cache.setTimer(&_policyUpdateCount);
-   e.vectorCache.setMaxAge(_cachePersistence);
-   e.vectorCache.setTimer(&_policyUpdateCount);
+    // Creating caches for the new experience
+    e.cache.setMaxAge(_cachePersistence);
+    e.cache.setTimer(&_policyUpdateCount);
+    e.vectorCache.setMaxAge(_cachePersistence);
+    e.vectorCache.setTimer(&_policyUpdateCount);
 
-   // Getting state, action, reward, and whether it's terminal
-   e.state = episode[expId]["State"].get<std::vector<float>>();
-   e.action = episode[expId]["Action"].get<std::vector<float>>();
-   e.reward = episode[expId]["Reward"].get<float>();
+    // Getting state, action, reward, and whether it's terminal
+    e.state = episode[expId]["State"].get<std::vector<float>>();
+    e.action = episode[expId]["Action"].get<std::vector<float>>();
+    e.reward = episode[expId]["Reward"].get<float>();
 
-   if (episode[expId]["Termination"] == "Non Terminal") e.termination = e_nonTerminal;
-   if (episode[expId]["Termination"] == "Terminal") e.termination = e_terminal;
-   if (episode[expId]["Termination"] == "Truncated")
-   {
-     e.termination = e_truncated;
-     e.truncatedState = episode[expId]["Truncated State"].get<std::vector<float>>();
-   }
+    if (episode[expId]["Termination"] == "Non Terminal") e.termination = e_nonTerminal;
+    if (episode[expId]["Termination"] == "Terminal") e.termination = e_terminal;
+    if (episode[expId]["Termination"] == "Truncated")
+    {
+      e.termination = e_truncated;
+      e.truncatedState = episode[expId]["Truncated State"].get<std::vector<float>>();
+    }
 
-   // Updating experience's importance weight in its cache. Initially assumed to be 1.0 because its freshly produced
-   e.cache.set("Importance Weight", 1.0f);
+    // Updating experience's importance weight in its cache. Initially assumed to be 1.0 because its freshly produced
+    e.cache.set("Importance Weight", 1.0f);
 
-   // Updating metadata for prioritized minibatch selection
-   e.metadata["Mini Batch"]["Priority"] = _experienceReplayMaxPriority;
-   e.metadata["Mini Batch"]["Probability"] = 0.0;
+    // Updating metadata for prioritized minibatch selection
+    e.metadata["Mini Batch"]["Priority"] = _experienceReplayMaxPriority;
+    e.metadata["Mini Batch"]["Probability"] = 0.0;
 
-   // Storing policy
-   e.policy = episode[expId]["Policy"];
+    // Storing policy
+    e.policy = episode[expId]["Policy"];
 
-   // Adding experience
-   _experienceReplay.add(e);
+    // Adding experience
+    _experienceReplay.add(e);
   }
 }
 
 void Agent::updateREFERInformation()
 {
- // First, re-calculate the off-policy ratio of experiences in the ER
+  // First, re-calculate the off-policy ratio of experiences in the ER
 
- // Counting number of off-policy experiences
- size_t expCount = _experienceReplay.size();
- size_t offPolicyCount = 0;
+  // Counting number of off-policy experiences
+  size_t expCount = _experienceReplay.size();
+  size_t offPolicyCount = 0;
 
- // Count off-policy experiences
- for (size_t expId = 0; expId < expCount; expId++)
- {
-  // Getting the last calculated value of the experience's importance weight. We can tolerate this approximation.
-  float expImportanceWeight = _experienceReplay[expId].cache.get("Importance Weight");
+  // Count off-policy experiences
+  for (size_t expId = 0; expId < expCount; expId++)
+  {
+    // Getting the last calculated value of the experience's importance weight. We can tolerate this approximation.
+    float expImportanceWeight = _experienceReplay[expId].cache.get("Importance Weight");
 
-  // It is off policy if it is outside the [1/cutoff, cutoff] region
-  if ((expImportanceWeight < (1.0f / _experienceReplayREFERCurrentCutoff)) ||
-      (expImportanceWeight > _experienceReplayREFERCurrentCutoff)) offPolicyCount++;
- }
+    // It is off policy if it is outside the [1/cutoff, cutoff] region
+    if ((expImportanceWeight < (1.0f / _experienceReplayREFERCurrentCutoff)) ||
+        (expImportanceWeight > _experienceReplayREFERCurrentCutoff)) offPolicyCount++;
+  }
 
- // Calculating off policy ratio
- _experienceReplayREFERCurrentRatio = (float)offPolicyCount / (float)expCount;
+  // Calculating off policy ratio
+  _experienceReplayREFERCurrentRatio = (float)offPolicyCount / (float)expCount;
 
- // Now updating the rest of the REFER variables
- _experienceReplayREFERCurrentCutoff = 1.0f + _experienceReplayREFERCutoffScale / (1.0f + _experienceReplayREFERAnnealingRate * (float)_policyUpdateCount);
+  // Now updating the rest of the REFER variables
+  _experienceReplayREFERCurrentCutoff = 1.0f + _experienceReplayREFERCutoffScale / (1.0f + _experienceReplayREFERAnnealingRate * (float)_policyUpdateCount);
 
- // Updating current learning rate
- _experienceReplayREFERCurrentLearningRate = _learningRate / (1.0f + _experienceReplayREFERAnnealingRate * _policyUpdateCount);
+  // Updating current learning rate
+  _experienceReplayREFERCurrentLearningRate = _learningRate / (1.0f + _experienceReplayREFERAnnealingRate * _policyUpdateCount);
 
- // Updating beta parameter
- if (_experienceReplayREFERCurrentRatio > _experienceReplayREFERTarget)
-  _experienceReplayREFERCurrentBeta = (1.0f - _experienceReplayREFERCurrentLearningRate) * _experienceReplayREFERCurrentBeta;
- else
-  _experienceReplayREFERCurrentBeta = (1.0f - _experienceReplayREFERCurrentLearningRate) * _experienceReplayREFERCurrentBeta + _experienceReplayREFERCurrentLearningRate;
+  // Updating beta parameter
+  if (_experienceReplayREFERCurrentRatio > _experienceReplayREFERTarget)
+    _experienceReplayREFERCurrentBeta = (1.0f - _experienceReplayREFERCurrentLearningRate) * _experienceReplayREFERCurrentBeta;
+  else
+    _experienceReplayREFERCurrentBeta = (1.0f - _experienceReplayREFERCurrentLearningRate) * _experienceReplayREFERCurrentBeta + _experienceReplayREFERCurrentLearningRate;
 }
 
 void Agent::updateExperienceReplayProbabilities()
@@ -401,7 +401,7 @@ void Agent::updateExperienceReplayProbabilities()
   // Rank priorities
   auto experienceRanking = std::vector<std::pair<float, size_t>>(_experienceReplay.size());
   for (size_t i = 0; i < _experienceReplay.size(); ++i)
-   experienceRanking[i] = std::make_pair(_experienceReplay[i].metadata["Mini Batch"]["Priority"].get<float>(), i + 1);
+    experienceRanking[i] = std::make_pair(_experienceReplay[i].metadata["Mini Batch"]["Priority"].get<float>(), i + 1);
   sort(experienceRanking.begin(), experienceRanking.end());
 
   // Calculate rank based probabilities
@@ -648,10 +648,10 @@ void Agent::printGenerationAfter()
 
     if (_experienceReplayREFEREnabled == true)
     {
-     _k->_logger->logInfo("Normal", "REFER Statistics:\n");
-     _k->_logger->logInfo("Normal", " + Current Off-Policy Ratio:    %f (Target: %f)\n", _experienceReplayREFERCurrentRatio, _experienceReplayREFERTarget);
-     _k->_logger->logInfo("Normal", " + Importance Weight Cutoff:    [%.3f, %.3f]\n", 1.0f/_experienceReplayREFERCurrentCutoff, _experienceReplayREFERCurrentCutoff);
-     _k->_logger->logInfo("Normal", " + Beta Factor:                 %f\n", _experienceReplayREFERCurrentBeta);
+      _k->_logger->logInfo("Normal", "REFER Statistics:\n");
+      _k->_logger->logInfo("Normal", " + Current Off-Policy Ratio:    %f (Target: %f)\n", _experienceReplayREFERCurrentRatio, _experienceReplayREFERTarget);
+      _k->_logger->logInfo("Normal", " + Importance Weight Cutoff:    [%.3f, %.3f]\n", 1.0f / _experienceReplayREFERCurrentCutoff, _experienceReplayREFERCurrentCutoff);
+      _k->_logger->logInfo("Normal", " + Beta Factor:                 %f\n", _experienceReplayREFERCurrentBeta);
     }
 
     _k->_logger->logInfo("Normal", "Training Statistics:\n");

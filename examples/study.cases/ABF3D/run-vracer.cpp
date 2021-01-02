@@ -129,8 +129,8 @@ int main(int argc, char *argv[])
   e["File Output"]["Path"] = "_results";
 
   auto k = korali::Engine();
-//  e["Solver"]["Agent Count"] = 4;
-//  k["Conduit"]["Type"] = "Concurrent";
-//  k["Conduit"]["Concurrent Jobs"] = 4;
+  //  e["Solver"]["Agent Count"] = 4;
+  //  k["Conduit"]["Type"] = "Concurrent";
+  //  k["Conduit"]["Concurrent Jobs"] = 4;
   k.run(e);
 }

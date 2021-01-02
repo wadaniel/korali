@@ -44,13 +44,18 @@ e["Solver"]["Discount Factor"] = 0.99
 e["Solver"]["Learning Rate"] = 1e-4
 e["Solver"]["Mini Batch Size"] = 256
 
+### Configuring the Remember-and-Forget Experience Replay algorithm
+
+e["Solver"]["Experience Replay"]["REFER"]["Enabled"] = True
+e["Solver"]["Experience Replay"]["REFER"]["Cutoff Scale"] = 4.0
+e["Solver"]["Experience Replay"]["REFER"]["Target"] = 0.1
+e["Solver"]["Experience Replay"]["REFER"]["Initial Beta"] = 0.6
+e["Solver"]["Experience Replay"]["REFER"]["Annealing Rate"] = 5e-7
+
 ### Defining the configuration of replay memory
 
 e["Solver"]["Experience Replay"]["Start Size"] = 131072
 e["Solver"]["Experience Replay"]["Maximum Size"] = 262144
-
-e["Solver"]["Refer"]["Target Off Policy Fraction"] = 0.30
-e["Solver"]["Refer"]["Cutoff Scale"] = 4.0
 
 ### Configuring the neural network and its hidden layers
 

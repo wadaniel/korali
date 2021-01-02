@@ -21,8 +21,8 @@ class Lander:
   def reset(self, seed):
     self.posX = np.random.uniform(-0.2, 0.2)
     self.posY = 0.9
-    self.velX = np.random.uniform(-0.2, 0.2)
-    self.velY = np.random.uniform(-0.1, 0.1)
+    self.velX = np.random.uniform(-0.5, 0.5)
+    self.velY = np.random.uniform(-0.2, 0.1)
     self.prevDistance = self.getDistance()
     self.step = 0
     self.t = 0

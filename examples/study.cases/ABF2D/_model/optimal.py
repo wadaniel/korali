@@ -54,14 +54,17 @@ if __name__ == '__main__':
         d = np.dot(X, n)
         betas = np.dot(Vinv, d)
         steps = 0
+        reward = 0
 
         for b, wc in zip(betas, wcs):
-            nsteps = abs(round(b / sim.dt))
+            nsteps = int((abs(round(b / sim.dt))))
             s = np.sign(b)
             action = [-s*n[0], -s*n[1], wc]
             steps += nsteps
             for step in range(nsteps):
                 sim.advance(action)
+                reward = reward + sim.getReward()
+        print(f"reward: {reward}")
         return steps
 
 

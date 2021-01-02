@@ -40,6 +40,7 @@ int main(int argc, char *argv[])
   //// Defining Agent Configuration
 
   e["Solver"]["Type"] = "Agent / Continuous / GFPT";
+  e["Solver"]["Mode"] = "Training";
   e["Solver"]["Experiences Between Policy Updates"] = 1;
   e["Solver"]["Cache Persistence"] = 10;
 
@@ -47,49 +48,30 @@ int main(int argc, char *argv[])
   e["Solver"]["Experience Replay"]["Maximum Size"] = 10000;
   e["Solver"]["Mini Batch Strategy"] = "Uniform";
 
-  //// Defining Critic Configuration
+  //// Defining Critic/Policy Configuration
 
+  e["Solver"]["Discount Factor"] = 0.99;
+  e["Solver"]["Mini Batch Size"] = 128;
   e["Solver"]["Critic"]["Learning Rate"] = 0.0001;
-  e["Solver"]["Critic"]["Discount Factor"] = 0.99;
-  e["Solver"]["Critic"]["Mini Batch Size"] = 256;
-
-  e["Solver"]["Critic"]["Neural Network"]["Engine"] = "OneDNN";
-
-  e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense";
-  e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear";
-
-  e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Type"] = "Layer/Dense";
-  e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Node Count"] = 128;
-  e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Activation Function"]["Type"] = "Elementwise/Tanh";
-
-  e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Type"] = "Layer/Dense";
-  e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Node Count"] = 128;
-  e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Elementwise/Tanh";
-
-  e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Type"] = "Layer/Dense";
-  e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Elementwise/Linear";
-
-  //// Defining Policy Configuration
-
   e["Solver"]["Policy"]["Learning Rate"] = 0.000001;
-  e["Solver"]["Policy"]["Mini Batch Size"] = 256;
   e["Solver"]["Policy"]["Target Accuracy"] = 0.0001;
+  e["Solver"]["Policy"]["Optimization Candidates"] = 8;
 
-  e["Solver"]["Policy"]["Neural Network"]["Engine"] = "OneDNN";
+  //// Defining Neural Network
 
-  e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense";
-  e["Solver"]["Policy"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear";
+  e["Solver"]["Neural Network"]["Engine"] = "OneDNN";
 
-  e["Solver"]["Policy"]["Neural Network"]["Layers"][1]["Type"] = "Layer/Dense";
-  e["Solver"]["Policy"]["Neural Network"]["Layers"][1]["Node Count"] = 128;
-  e["Solver"]["Policy"]["Neural Network"]["Layers"][1]["Activation Function"]["Type"] = "Elementwise/Tanh";
+  e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear";
+  e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 32;
 
-  e["Solver"]["Policy"]["Neural Network"]["Layers"][2]["Type"] = "Layer/Dense";
-  e["Solver"]["Policy"]["Neural Network"]["Layers"][2]["Node Count"] = 128;
-  e["Solver"]["Policy"]["Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Elementwise/Tanh";
+  e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Activation";
+  e["Solver"]["Neural Network"]["Hidden Layers"][1]["Function"] = "Elementwise/Tanh";
 
-  e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Type"] = "Layer/Dense";
-  e["Solver"]["Policy"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Elementwise/Tanh";
+  e["Solver"]["Neural Network"]["Hidden Layers"][2]["Type"] = "Layer/Linear";
+  e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 32;
+
+  e["Solver"]["Neural Network"]["Hidden Layers"][3]["Type"] = "Layer/Activation";
+  e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tanh";
 
   ////// Defining Termination Criteria
 

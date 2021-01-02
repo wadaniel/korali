@@ -175,20 +175,17 @@ void Experiment::saveState()
 
 bool Experiment::loadState(const std::string &path)
 {
-  if (loadJsonFromFile(_js.getJson(), path.c_str()))
-  {
-    initialize();
-    return true;
-  }
-  return false;
+  return loadJsonFromFile(_js.getJson(), path.c_str());
 }
 
 Experiment::Experiment()
 {
   _runID = getTimehash();
   _k = this;
-  _isInitialized = false;
   _logger = NULL;
+  _engine = NULL;
+  _currentGeneration = 0;
+  _isInitialized = false;
 }
 
 void Experiment::initialize()
@@ -201,70 +198,58 @@ void Experiment::initialize()
   __returnThread = co_active();
   co_switch(_thread);
 
-  if (_isInitialized == false)
+  // Clearning sample and previous result information
+  _js["Results"] = knlohmann::json();
+  _js["Samples"] = knlohmann::json();
+
+  // Initializing Variables
+  if (isDefined(_js.getJson(), "Variables"))
   {
-    // Clearning sample and previous result information
-    _js["Results"] = knlohmann::json();
-    _js["Samples"] = knlohmann::json();
-
-    // Initializing Variables
-    if (isDefined(_js.getJson(), "Variables"))
-    {
-      _variables.resize(_js["Variables"].size());
-      for (size_t i = 0; i < _js["Variables"].size(); i++) _variables[i] = new Variable;
-    }
-
-    applyModuleDefaults(_js.getJson());
-    setSeed(_js.getJson());
-    setConfiguration(_js.getJson());
-    getConfiguration(_js.getJson());
-
-    // Creating logger if not created before
-    _logger = new Logger(_consoleOutputVerbosity, stdout);
-
-    _isInitialized = true;
+    _variables.resize(_js["Variables"].size());
+    for (size_t i = 0; i < _variables.size(); i++) _variables[i] = new Variable;
   }
 
-  if (isDefined(_js.getJson(), "Solver", "Termination Criteria", "Max Generations"))
-    _solver->_maxGenerations = _js["Solver"]["Termination Criteria"]["Max Generations"].get<size_t>();
+  // If this is the initial run, apply defaults
+  if (_currentGeneration == 0)
+  {
+    applyModuleDefaults(_js.getJson());
+    setSeed(_js.getJson());
+  }
+
+  // Setting configuration
+  setConfiguration(_js.getJson());
+
+  // Getting configuration back into the JSON storage
+  getConfiguration(_js.getJson());
+
+  // Initializing problem and solver modules
+  _problem->initialize();
+  _solver->initialize();
+
+  // Updating verbosity level
+  _logger = new Logger(_consoleOutputVerbosity, stdout);
+
+  _isInitialized = true;
 }
 
 void Experiment::finalize()
 {
+  for (size_t i = 0; i < _variables.size(); i++) delete _variables[i];
+  _variables.clear();
+  delete _logger;
   co_delete(_thread);
 }
 
-std::vector<float> Experiment::getAction(const std::vector<float> &state)
+std::vector<std::vector<float>> Experiment::getEvaluation(const std::vector<std::vector<std::vector<float>>> &inputBatch)
 {
-  auto agent = dynamic_cast<solver::Agent *>(_k->_solver);
-  if (agent != NULL)
-  {
-    korali::Sample sample;
-    sample["State"] = state;
-    sample["Mode"] = "Testing";
-    agent->getAction(sample);
-    return sample["Action"].get<std::vector<float>>();
-  }
-  else
-    KORALI_LOG_ERROR("This solver does not support getAction.\n");
-}
+  // First check that the experiment has been initialized.
+  if (_isInitialized == false) initialize();
 
-std::vector<float> Experiment::getEvaluation(const std::vector<float> &inputBatch)
-{
   auto learner = dynamic_cast<solver::Learner *>(_k->_solver);
   if (learner != NULL)
     return learner->getEvaluation(inputBatch);
   else
     KORALI_LOG_ERROR("This solver does not support evaluation operations.\n");
-}
-
-std::vector<float> Experiment::getGradients(const std::vector<float> &outputDiffs)
-{
-  auto learner = dynamic_cast<solver::Learner *>(_k->_solver);
-  if (learner != NULL)
-    return learner->getGradients(outputDiffs);
-  else
-    KORALI_LOG_ERROR("This solver does not provide gradients.\n");
 }
 
 knlohmann::json &Experiment::operator[](const std::string &key) { return _js[key]; }

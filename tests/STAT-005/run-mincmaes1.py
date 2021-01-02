@@ -29,7 +29,7 @@ fopt = e["Solver"]["Best Ever Value"]
 x = e["Solver"]["Current Best Variables"]
 f = e["Solver"]["Current Best Value"]
 
-assertclose(2.0, xopt, 1e-3)
-assertclose(2.0, x, 1e-3)
-assertclose(-10.0, fopt, 1e-6)
-assertclose(-10.0, f, 1e-4)
+assertclose(2.0, xopt, 1e-2)
+assertclose(2.0, x, 1e-2)
+assertclose(-10.0, fopt, 1e-3)
+assertclose(-10.0, f, 1e-2)

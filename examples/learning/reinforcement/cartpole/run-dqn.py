@@ -37,12 +37,14 @@ e["Variables"][4]["Type"] = "Action"
 ### Configuring DQN hyperparameters
 
 e["Solver"]["Type"] = "Agent / Discrete / DQN"
-e["Solver"]["Experiences Between Policy Updates"] = 10
+e["Solver"]["Mode"] = "Training"
+e["Solver"]["Experiences Between Policy Updates"] = 1
+e["Solver"]["Experiences Per Generation"] = 100
 
 ### Defining Experience Replay configuration
 
 e["Solver"]["Experience Replay"]["Start Size"] = 1000
-e["Solver"]["Experience Replay"]["Maximum Size"] = 10000
+e["Solver"]["Experience Replay"]["Maximum Size"] = 50000
 
 ### Defining probability of taking a random action (epsilon)
 
@@ -50,26 +52,26 @@ e["Solver"]["Random Action Probability"] = 0.05
 
 ## Defining Q-Critic and Action-selection (policy) optimizers
 
-e["Solver"]["Critic"]["Mini Batch Size"] = 32
-e["Solver"]["Critic"]["Learning Rate"] = 0.001
-e["Solver"]["Critic"]["Discount Factor"] = 0.99
-e["Solver"]["Critic"]["Target Update Delay"] = 500
+e["Solver"]["Mini Batch Size"] = 32
+e["Solver"]["Learning Rate"] = 0.0001
+e["Solver"]["Discount Factor"] = 0.99
+e["Solver"]["Target Update Delay"] = 50
 
-### Defining the shape of the neural network
+### Configuring the neural network and its hidden layers
 
-e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear"
+e["Solver"]["Neural Network"]["Engine"] = "OneDNN"
 
-e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Type"] = "Layer/Dense"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Node Count"] = 32
-e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Activation Function"]["Type"] = "Elementwise/Tanh"
+e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear"
+e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 32
 
-e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Type"] = "Layer/Dense"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Node Count"] = 32
-e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Elementwise/Tanh"
+e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Activation"
+e["Solver"]["Neural Network"]["Hidden Layers"][1]["Function"] = "Elementwise/Tanh"
 
-e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Type"] = "Layer/Dense"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Elementwise/Linear"
+e["Solver"]["Neural Network"]["Hidden Layers"][2]["Type"] = "Layer/Linear"
+e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 32
+
+e["Solver"]["Neural Network"]["Hidden Layers"][3]["Type"] = "Layer/Activation"
+e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tanh"
 
 ### Defining Termination Criteria
 

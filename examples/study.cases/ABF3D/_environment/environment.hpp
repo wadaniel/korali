@@ -3,12 +3,11 @@
 
 #include "korali.hpp"
 #include <fstream>
+#include <random>
 #include <type_traits>
 
 void runEnvironment(korali::Sample &s);
 void initializeEnvironment(const std::string confFileName);
-
-#ifndef TEST
 
 extern bool _isTraining;
 extern std::mt19937 _randomGenerator;
@@ -27,5 +26,3 @@ using namespace msode::factory;
 extern std::unique_ptr<msode::rl::MSodeEnvironment> _environment;
 
 using Status = typename std::remove_pointer<decltype(_environment.get())>::type::Status;
-
-#endif

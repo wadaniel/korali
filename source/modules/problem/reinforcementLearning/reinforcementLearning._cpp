@@ -36,6 +36,16 @@ Sample *__currentSample;
 size_t __envFunctionId;
 
 /**
+ * @brief Pointer to the agent (Korali solver module)
+ */
+solver::Agent *_agent;
+
+/**
+  * @brief Stores the environment thread (coroutine).
+  */
+cothread_t _envThread;
+
+/**
  * @brief Thread wrapper to run an environment
  */
 void __environmentWrapper()
@@ -59,26 +69,21 @@ void __environmentWrapper()
   KORALI_LOG_ERROR("Resuming a finished agent\n");
 }
 
-void ReinforcementLearning::runEpisode(Sample &agent)
+void ReinforcementLearning::runTrainingEpisode(Sample &agent)
 {
-  /***************************************************************
-   * Environment Configuration section
-   ***************************************************************/
+  // Profiling information - Computation and communication time taken by the agent
+  double agentPolicyEvaluationTime = 0.0;
+  double agentComputationTime = 0.0;
+  double agentCommunicationTime = 0.0;
 
-  // Getting RL-compatible solver
-  auto _agent = dynamic_cast<solver::Agent *>(_k->_solver);
-
-  // First, we update the initial policy's hyperparameters
-  _agent->updateAgentPolicy(agent["Hyperparameters"]);
-
-  // Creating agent coroutine
-  __currentSample = &agent;
-  __envFunctionId = _environmentFunction;
-  agent._workerThread = co_active();
-  auto envThread = co_create(1 << 28, __environmentWrapper);
+  // Initializing environment configuration
+  initializeEnvironment(agent);
 
   // Counter for the total number of actions taken
   size_t actionCount = 0;
+
+  // Setting mode to traing to add exploratory noise or random actions
+  agent["Mode"] = "Training";
 
   // Reserving storage for sending back experiences
   knlohmann::json experience;
@@ -87,27 +92,23 @@ void ReinforcementLearning::runEpisode(Sample &agent)
   // Storage to keep track of cumulative reward
   float trainingReward = 0.0;
 
-  /***************************************************************
-  * Environment Execution section
-  ***************************************************************/
-
   // Setting termination status of initial state (and the following ones) to non terminal.
   // The environment will change this at the last state, indicating whether the episode was
   // "Success" or "Truncated".
   agent["Termination"] = "Non Terminal";
 
-  // Using testing mode, where noise is added for exploration
-  agent["Mode"] = "Training";
-
   // Getting first state
-  co_switch(envThread);
+  runEnvironment();
 
   // Saving experiences
   while (agent["Termination"] == "Non Terminal")
   {
     // Generating new action from policy
+    auto beginTime0 = std::chrono::steady_clock::now(); // Profiling
     _agent->getAction(agent);
     actionCount++;
+    auto endTime0 = std::chrono::steady_clock::now();                                                                 // Profiling
+    agentPolicyEvaluationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime0 - beginTime0).count(); // Profiling
 
     // Storing the current state
     experience["State"] = agent["State"];
@@ -119,7 +120,10 @@ void ReinforcementLearning::runEpisode(Sample &agent)
     experience["Policy"] = agent["Policy"];
 
     // Jumping back into the _agent's environment
-    co_switch(envThread);
+    auto beginTime1 = std::chrono::steady_clock::now(); // Profiling
+    runEnvironment();
+    auto endTime1 = std::chrono::steady_clock::now();                                                            // Profiling
+    agentComputationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime1 - beginTime1).count(); // Profiling
 
     // Storing experience's reward
     experience["Reward"] = agent["Reward"];
@@ -133,37 +137,35 @@ void ReinforcementLearning::runEpisode(Sample &agent)
     // Adding to cumulative training reward
     trainingReward += agent["Reward"].get<float>();
 
-    // If training, updating engine with the current experience
-    if (agent["Mode"] == "Training")
+    auto beginTime2 = std::chrono::steady_clock::now(); // Profiling
+
+    // Checking if we requested the given number of actions in between policy updates and it is not a terminal state
+    bool requestNewPolicy = (agent["Termination"] == "Non Terminal") &&
+                            (actionCount % _actionsBetweenPolicyUpdates == 0);
+
+    experience["Request New Policy"] = requestNewPolicy;
+
+    // Sending experience to engine if it's non terminal. If it's terminal we send it last (see below)
+    if (agent["Termination"] == "Non Terminal") KORALI_SEND_MSG_TO_ENGINE(experience);
+
+    // If requested new policy, wait for incoming message containing new hyperparameters
+    if (requestNewPolicy)
     {
-      // Checking if we requested the given number of actions in between policy updates and it is not a terminal state
-      bool requestNewPolicy = (agent["Termination"] == "Non Terminal") &&
-                              (actionCount % _actionsBetweenPolicyUpdates == 0);
-
-      experience["Request New Policy"] = requestNewPolicy;
-
-      // Sending experience to engine if it's non terminal. If it's terminal we send it last (see below)
-      if (agent["Termination"] == "Non Terminal") KORALI_SEND_MSG_TO_ENGINE(experience);
-
-      // If requested new policy, wait for incoming message containing new hyperparameters
-      if (requestNewPolicy)
-      {
-        agent["Hyperparameters"] = KORALI_RECV_MSG_FROM_ENGINE();
-        _agent->updateAgentPolicy(agent["Hyperparameters"]);
-      }
+      agent["Hyperparameters"] = KORALI_RECV_MSG_FROM_ENGINE();
+      _agent->setAgentPolicy(agent["Hyperparameters"]);
     }
-  }
 
-  // Freeing training co-routine memory
-  co_delete(envThread);
+    auto endTime2 = std::chrono::steady_clock::now();                                                              // Profiling
+    agentCommunicationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime2 - beginTime2).count(); // Profiling
+  }
 
   // Setting cumulative reward
   agent["Training Reward"] = trainingReward;
 
-  // Specifying whether the agent performed policy testing
-  agent["Tested Policy"] = false;
+  // Finalizing Environment
+  finalizeEnvironment();
 
-  // If the training reward exceeded the threshold, then test the last policy
+  // If the training reward exceeds the threshold, then also run testing on it
   if (trainingReward > _trainingRewardThreshold)
   {
     float averageTestingReward = 0.0;
@@ -172,49 +174,104 @@ void ReinforcementLearning::runEpisode(Sample &agent)
 
     for (size_t i = 0; i < _policyTestingEpisodes; i++)
     {
-      float currentTestingReward = 0.0;
+      runTestingEpisode(agent);
 
-      // Re-create environment
-      envThread = co_create(1 << 28, __environmentWrapper);
-
-      // Using testing mode, where no noise is given to the action
-      agent["Mode"] = "Testing";
-
-      // Setting initial non terminal state
-      agent["Termination"] = "Non Terminal";
-
-      // Getting first state
-      co_switch(envThread);
-
-      // Running environment using the last policy only
-      while (agent["Termination"] == "Non Terminal")
-      {
-        _agent->getAction(agent);
-        co_switch(envThread);
-        currentTestingReward += agent["Reward"].get<float>();
-      }
+      // Getting current testing reward
+      float currentTestingReward = agent["Testing Reward"];
 
       // Adding current testing reward to the average and keeping statistics
       averageTestingReward += currentTestingReward;
       if (currentTestingReward > bestTestingReward) bestTestingReward = currentTestingReward;
       if (currentTestingReward < worstTestingReward) worstTestingReward = currentTestingReward;
-
-      // Freeing training co-routine memory
-      co_delete(envThread);
     }
 
-    // Calculating average
-    averageTestingReward = averageTestingReward / (float)_policyTestingEpisodes;
+    // Normalizing average
+    averageTestingReward /= (float)_policyTestingEpisodes;
 
     // Storing testing information
-    agent["Tested Policy"] = true;
     agent["Average Testing Reward"] = averageTestingReward;
     agent["Best Testing Reward"] = bestTestingReward;
     agent["Worst Testing Reward"] = worstTestingReward;
+
+    // Indicate that the agent has been tested
+    agent["Tested Policy"] = true;
   }
 
-  // Sending last experience last (after testing), to prevent unnecessary waiting in the engine
+  // Sending last experience last (after testing)
+  // This is important to prevent the engine for block-waiting for the return of the sample
+  // while the testing runs are being performed.
   KORALI_SEND_MSG_TO_ENGINE(experience);
+
+  // Adding profiling information to agent
+  agent["Computation Time"] = agentComputationTime;
+  agent["Communication Time"] = agentCommunicationTime;
+  agent["Policy Evaluation Time"] = agentPolicyEvaluationTime;
+}
+
+void ReinforcementLearning::runTestingEpisode(Sample &agent)
+{
+  float testingReward = 0.0;
+
+  // Initializing Environment
+  initializeEnvironment(agent);
+
+  // Setting mode to testing to prevent the addition of noise or random actions
+  agent["Mode"] = "Testing";
+
+  // Setting initial non terminal state
+  agent["Termination"] = "Non Terminal";
+
+  // Getting first state
+  runEnvironment();
+
+  // Running environment using the last policy only
+  while (agent["Termination"] == "Non Terminal")
+  {
+    _agent->getAction(agent);
+    runEnvironment();
+    testingReward += agent["Reward"].get<float>();
+  }
+
+  // Storing the cumulative reward of the testing episode
+  agent["Testing Reward"] = testingReward;
+
+  // Finalizing Environment
+  finalizeEnvironment();
+}
+
+void ReinforcementLearning::initializeEnvironment(Sample &agent)
+{
+  // Getting RL-compatible solver
+  _agent = dynamic_cast<solver::Agent *>(_k->_solver);
+
+  // First, we update the initial policy's hyperparameters
+  _agent->setAgentPolicy(agent["Hyperparameters"]);
+
+  // Then, we reset the state sequence for time-dependent learners
+  _agent->resetTimeSequence();
+
+  // Appending any user-defined settings
+  agent["Custom Settings"] = _customSettings;
+
+  // Creating agent coroutine
+  __currentSample = &agent;
+  __envFunctionId = _environmentFunction;
+  agent._workerThread = co_active();
+
+  // Creating coroutine
+  _envThread = co_create(1 << 28, __environmentWrapper);
+}
+
+void ReinforcementLearning::finalizeEnvironment()
+{
+  // Freeing training co-routine memory
+  co_delete(_envThread);
+}
+
+void ReinforcementLearning::runEnvironment()
+{
+  // Switching back to the environment's thread
+  co_switch(_envThread);
 }
 
 } // namespace problem

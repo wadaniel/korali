@@ -63,11 +63,11 @@ class Lander:
       return 0
 
   def getState(self):
-    state = np.zeros(4)
+    state = np.zeros(2)
     state[0] = self.posX # X Position
     state[1] = self.posY # Y Position
-    state[2] = self.velX # X Velocity
-    state[3] = self.velY # Y Velocity
+    #state[2] = self.velX # X Velocity
+    #state[3] = self.velY # Y Velocity
     return state
 
   def getReward(self):

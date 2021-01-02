@@ -20,9 +20,7 @@ fileList=`ls *.py`
 
 for file in $fileList
 do
- sed -e 's/k.resume(/k["Dry Run"] = True; k.resume(/g'\
-     -e 's/k.run(/k["Dry Run"] = True; k.run(/g'\
-  $file > _$file; check_result
+ sed -e 's/k.run(/k["Dry Run"] = True; k.run(/g' $file > _$file; check_result
 done
 
 ##### Running Tests

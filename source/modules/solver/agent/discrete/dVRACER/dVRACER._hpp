@@ -35,7 +35,7 @@ class dVRACER : public Discrete
    * @param state state to evaluate
    * @return The value of V(s)
    */
-  float stateValueFunction(const std::vector<float> &state);
+  float stateValueFunction(const std::vector<std::vector<float>> &state);
 
   /**
    * @brief Update the V-target or current and previous experiences in the episode
@@ -62,9 +62,10 @@ class dVRACER : public Discrete
 
   void setTrainingState(const knlohmann::json &state) override;
   knlohmann::json getTrainingState() override;
-  knlohmann::json runPolicy(const std::vector<float> &state) override;
+  knlohmann::json runPolicy(const std::vector<std::vector<float>> &stateSequence) override;
   void trainPolicy() override;
-  void updateAgentPolicy(const knlohmann::json &hyperparameters) override;
+  knlohmann::json getAgentPolicy() override;
+  void setAgentPolicy(const knlohmann::json &hyperparameters) override;
   void printAgentInformation() override;
   void initializeAgent() override;
 };

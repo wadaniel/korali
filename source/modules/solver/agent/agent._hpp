@@ -57,16 +57,6 @@ struct experience_t
   float reward;
 
   /**
-   * @brief Contains priority of the experience (for minibatch selection)
-   */
-  float priority;
-
-  /**
-   * @brief Contains probability of selecting the experience (for minibatch selection)
-   */
-  float probability;
-
-  /**
    * @brief Specifies whether the experience is terminal (truncated or normal) or not.
    */
   termination_t termination;
@@ -87,9 +77,14 @@ struct experience_t
   knlohmann::json metadata;
 
   /**
-   * @brief Provides a cached repository for pre-calculated values. Allows for expiration threshold.
+   * @brief Provides a cached repository for pre-calculated values. It has an expiration threshold after which it's values should be re-calculated.
    */
   kCache<std::string, float, size_t> cache;
+
+  /**
+   * @brief Provides a cached repository for pre-calculated vector values. It has an expiration threshold after which it's values should be re-calculated.
+   */
+  kCache<std::string, std::vector<float>, size_t> vectorCache;
 };
 
 class Agent : public Solver
@@ -111,9 +106,39 @@ class Agent : public Solver
   std::vector<std::vector<knlohmann::json>> _episodes;
 
   /**
+   * @brief Session-specific experience count. This is useful in case of restart: counters from the old session won't count
+   */
+  size_t _sessionExperienceCount;
+
+  /**
+   * @brief Session-specific episode count. This is useful in case of restart: counters from the old session won't count
+   */
+  size_t _sessionEpisodeCount;
+
+  /**
+   * @brief Session-specific generation count. This is useful in case of restart: counters from the old session won't count
+   */
+  size_t _sessionGeneration;
+
+  /**
+   * @brief Session-specific policy update count. This is useful in case of restart: counters from the old session won't count
+   */
+  size_t _sessionPolicyUpdateCount;
+
+  /**
+   * @brief Session-specific counter that keeps track of how many experiences need to be obtained this session to reach the start training threshold.
+   */
+  size_t _sessionExperiencesUntilStartSize;
+
+  /**
   * @brief Stores experience replay states.
   */
   cBuffer<experience_t> _experienceReplay;
+
+  /**
+  * @brief Stores the current sequence of states observed by the agent (limited to time sequence length defined by the user)
+  */
+  cBuffer<std::vector<float>> _stateTimeSequence;
 
   /**
   * @brief Stores the priority annealing rate.
@@ -140,66 +165,88 @@ class Agent : public Solver
   */
   std::mt19937 *mt;
 
+  /****************************************************************************************************
+   * Session-wise Profiling Timers
+   ***************************************************************************************************/
+
   /**
   * @brief [Profiling] Measures the amount of time taken by the generation
   */
-  double _generationTime;
+  double _sessionRunningTime;
 
   /**
   * @brief [Profiling] Measures the amount of time taken by ER serialization
   */
-  double _serializationTime;
+  double _sessionSerializationTime;
 
   /**
-  * @brief Trains the Agent's policy, based on the new experiences
+   * @brief [Profiling] Stores the computation time per episode taken by Agents
+   */
+  double _sessionAgentComputationTime;
+
+  /**
+   * @brief [Profiling] Measures the average communication time per episode taken by Agents
+   */
+  double _sessionAgentCommunicationTime;
+
+  /**
+   * @brief [Profiling] Measures the average policy evaluation time per episode taken by Agents
+   */
+  double _sessionAgentPolicyEvaluationTime;
+
+  /**
+   * @brief [Profiling] Measures the time taken to update the policy in the current generation
+   */
+  double _sessionPolicyUpdateTime;
+
+  /**
+   * @brief [Profiling] Measures the time taken to update the attend the agent's state
+   */
+  double _sessionAgentAttendingTime;
+
+  /****************************************************************************************************
+   * Generation-wise Profiling Timers
+   ***************************************************************************************************/
+
+  /**
+  * @brief [Profiling] Measures the amount of time taken by the generation
   */
-  virtual void trainPolicy() = 0;
+  double _generationRunningTime;
 
   /**
-  * @brief Function to pass state through the NN and calculates the action probabilities, along with any additional information
-  * @param state The current state
-  * @return A JSON object containing the information produced by the policy given the current state
+  * @brief [Profiling] Measures the amount of time taken by ER serialization
   */
-  virtual knlohmann::json runPolicy(const std::vector<float> &state) = 0;
+  double _generationSerializationTime;
 
   /**
-  * @brief Updates the agent's hyperparameters
-  * @param hyperparameters The hyperparameters to update the agent.
-  */
-  virtual void updateAgentPolicy(const knlohmann::json &hyperparameters) = 0;
-
-  /**
-   * @brief Sets training state to continue learning from a previous run or state file
-   * @param state The state to update the training NNs.
+   * @brief [Profiling] Stores the computation time per episode taken by Agents
    */
-  virtual void setTrainingState(const knlohmann::json &state) = 0;
+  double _generationAgentComputationTime;
 
   /**
-   * @brief Obtains the current training state to store to a file and continue learning later
-   * @return The state to store
+   * @brief [Profiling] Measures the average communication time per episode taken by Agents
    */
-  virtual knlohmann::json getTrainingState() = 0;
+  double _generationAgentCommunicationTime;
 
   /**
-    * @brief Initializes the internal state of the policy
-    */
-  virtual void initializeAgent() = 0;
-
-  /**
- * @brief Runs a generation of the environment(s), running an action on each episode, and updating the policy.
- */
-  void runGeneration() override;
-
-  /**
-   * @brief Prints information about the training policy
+   * @brief [Profiling] Measures the average policy evaluation time per episode taken by Agents
    */
-  virtual void printAgentInformation() = 0;
+  double _generationAgentPolicyEvaluationTime;
 
   /**
-   * @brief Gathers the next action either from the policy or randomly
-   * @param sample Sample on which the action and metadata will be stored
+   * @brief [Profiling] Measures the time taken to update the policy in the current generation
    */
-  virtual void getAction(korali::Sample &sample) = 0;
+  double _generationPolicyUpdateTime;
+
+  /**
+   * @brief [Profiling] Measures the time taken to update the attend the agent's state
+   */
+  double _generationAgentAttendingTime;
+
+
+  /****************************************************************************************************
+   * Common Agent functions
+   ***************************************************************************************************/
 
   /**
    * @brief Mini-batch based normalization routine for Neural Networks with state and action inputs (typically critics)
@@ -224,12 +271,6 @@ class Agent : public Solver
   void processEpisode(std::vector<knlohmann::json> &episode);
 
   /**
-  * @brief Handles the addition of experience information to the replay memory and other management operations
-  * @param experience The experience to process
-  */
-  void processExperience(knlohmann::json &experience);
-
-  /**
   * @brief Updates priority of experience.
   * @param expId The experience to update
   * @param priority New value for experience expId
@@ -242,11 +283,49 @@ class Agent : public Solver
   void updateExperienceReplayProbabilities();
 
   /**
+  * @brief Update all information required by the REFER algorithm (see: https://arxiv.org/abs/1807.05827)
+  */
+  void updateREFERInformation();
+
+  /**
   * @brief Generates an experience mini batch from the replay memory
   * @param size Size of the mini batch to create
   * @return A vector with the indexes to the experiences in the mini batch
   */
   std::vector<size_t> generateMiniBatch(size_t size);
+
+  /**
+  * @brief Resets time sequence within the agent, to forget past actions from other episodes
+  */
+  void resetTimeSequence();
+
+  /**
+  * @brief Calculates the starting experience index of the time sequence for the selected experience
+  * @param expId The index of the latest experience in the sequence
+  * @return The starting time sequence index
+  */
+  size_t getTimeSequenceStartExpId(size_t expId);
+
+  /**
+   * @brief Gets a vector of states corresponding of time sequence corresponding to the provided last experience index
+   * @param expId The index of the latest experience in the sequence
+   * @return The time step vector of states
+   */
+  std::vector<std::vector<float>> getStateTimeSequence(size_t expId);
+
+  /**
+   * @brief Gets a vector of states corresponding of time sequence corresponding to the provided second-to-last experience index for which a truncated state exists
+   * @param expId The index of the second-to-latest experience in the sequence
+   * @return The time step vector of states, including the truncated state
+   */
+  std::vector<std::vector<float>> getTruncatedStateTimeSequence(size_t expId);
+
+  /**
+  * @brief Gets a vector of state/actions corresponding of time sequence corresponding to the provided last experience index
+  * @param expId The index of the latest experience in the sequence
+  * @return The time step vector of state/actions
+  */
+  std::vector<std::vector<float>> getStateActionTimeSequence(size_t expId);
 
   /**
   * @brief Calculates importance weights of experiences.
@@ -271,6 +350,80 @@ class Agent : public Solver
    */
   void deserializeExperienceReplay();
 
+  /**
+   * @brief Runs a generation when running in training mode
+   */
+  void trainingGeneration();
+
+  /**
+   * @brief Runs a generation when running in testing mode
+   */
+  void testingGeneration();
+
+  /****************************************************************************************************
+   * Virtual functions (responsibilities) for learning algorithms to fulfill
+   ***************************************************************************************************/
+
+  /**
+  * @brief Trains the Agent's policy, based on the new experiences
+  */
+  virtual void trainPolicy() = 0;
+
+  /**
+   * @brief Obtains the policy hyperaparamters from the learner for the agent to generate new actions
+   * @return The current policy hyperparameters
+   */
+  virtual knlohmann::json getAgentPolicy() = 0;
+
+  /**
+  * @brief Function to pass a state time series through the NN and calculates the action probabilities, along with any additional information
+  * @param stateSequence The state time series (Format: TxS, where T is the time series lenght, and S is the state size)
+  * @return A JSON object containing the information produced by the policy given the current state
+  */
+  virtual knlohmann::json runPolicy(const std::vector<std::vector<float>> &stateSequence) = 0;
+
+  /**
+  * @brief Updates the agent's hyperparameters
+  * @param hyperparameters The hyperparameters to update the agent.
+  */
+  virtual void setAgentPolicy(const knlohmann::json &hyperparameters) = 0;
+
+  /**
+   * @brief Sets training state to continue learning from a previous run or state file
+   * @param state The state to update the training NNs.
+   */
+  virtual void setTrainingState(const knlohmann::json &state) = 0;
+
+  /**
+   * @brief Obtains the current training state to store to a file and continue learning later
+   * @return The state to store
+   */
+  virtual knlohmann::json getTrainingState() = 0;
+
+  /**
+  * @brief Returns the value of importance weight for a given experience in the replay memory
+  * @param expId Index of the experience in the ER to calculate the importance weight for
+  */
+  virtual float getExperienceImportanceWeight(size_t expId) = 0;
+
+  /**
+    * @brief Initializes the internal state of the policy
+    */
+  virtual void initializeAgent() = 0;
+
+  /**
+   * @brief Prints information about the training policy
+   */
+  virtual void printAgentInformation() = 0;
+
+  /**
+   * @brief Gathers the next action either from the policy or randomly
+   * @param sample Sample on which the action and metadata will be stored
+   */
+  virtual void getAction(korali::Sample &sample) = 0;
+
+
+  void runGeneration() override;
   void printGenerationAfter() override;
   void initialize() override;
   void finalize() override;

@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -12,6 +13,10 @@ def plot(csv_file: str,
     df = pd.read_csv(csv_file)
 
     nabfs = len(df.columns) // 2
+
+    if (not png_file is None):
+     plt.ioff()
+     matplotlib.use('Agg')
 
     fig, ax = plt.subplots()
 

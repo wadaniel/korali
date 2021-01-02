@@ -4,30 +4,38 @@
 ##  Distributed under the terms of the MIT license.
 
 import numpy as np
+import math
 
 class Lander:
   def __init__(self):
     self.dt = 0.04
+    self.t_max = 8
     self.t = 0.0
-    self.g = -0.3
+    self.g = -0.6
     self.posY = 0.0
     self.posX = 0.0
     self.velY = 0.0
     self.velX = 0.0
     self.step=0
 
-  def reset(self):
+  def reset(self, seed):
     self.posX = np.random.uniform(-0.2, 0.2)
-    self.posY = np.random.uniform(0.8, 0.9)
-    self.velX = np.random.uniform(-0.1, 0.1)
+    self.posY = 0.9
+    self.velX = np.random.uniform(-0.2, 0.2)
     self.velY = np.random.uniform(-0.1, 0.1)
+    self.prevDistance = self.getDistance()
     self.step = 0
     self.t = 0
-
+    
   def isOver(self):
     return self.posY < 0.0
 
+  def getDistance(self):
+    return math.sqrt(self.posY*self.posY + self.posX*self.posX)  
+
   def advance(self, action):
+    self.prevDistance = self.getDistance()
+  
     self.fX = action[0]
     if (self.fX > 1.0):
       self.fX = 1.0
@@ -63,6 +71,8 @@ class Lander:
     return state
 
   def getReward(self):
-    reward = -abs(self.posX) -self.posY # We want the lander to be centered on X as much as possible
-    if (self.posY <= 0): reward = reward + 100 - 1000*(self.velY*self.velY)
-    return reward
+    currDistance = self.getDistance()
+    r = -self.dt / self.t_max
+    r += self.prevDistance - currDistance # reward shaping
+    if (self.posY <= 0): r = r + 4 - 20*(self.velY*self.velY)
+    return r

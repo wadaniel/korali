@@ -4,18 +4,19 @@ from lander import *
 ######## Defining Environment Storage
 
 lander = Lander()
-maxSteps = 200
 
 def env(s):
 
  cumulativeReward = 0
  
  # Initializing environment
- lander.reset()
+ sampleId = s["Sample Id"]
+ lander.reset(sampleId)
  s["State"] = lander.getState().tolist()
  step = 0
  done = False
-
+ 
+ maxSteps = 200
  while not done and step < maxSteps:
 
   # Getting new action
@@ -36,9 +37,9 @@ def env(s):
   # Advancing step counter
   step = step + 1
 
- print(str(lander.getState()), end="")
- print(" Step: " + str(step), end="")
- print(" Reward: " + str(cumulativeReward))
+ #print(str(lander.getState()), end="")
+ #print(" Step: " + str(step), end="")
+ #print(" Reward: " + str(cumulativeReward))
 
  # Setting finalization status
  if (lander.isOver()):

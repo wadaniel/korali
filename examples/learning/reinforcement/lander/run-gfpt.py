@@ -15,7 +15,7 @@ e = korali.Experiment()
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = env
 e["Problem"]["Actions Between Policy Updates"] = 1
-e["Problem"]["Training Reward Threshold"] = 0
+e["Problem"]["Training Reward Threshold"] = 3.0
 e["Problem"]["Policy Testing Episodes"] = 10
 
 ### Defining State variables
@@ -38,18 +38,18 @@ e["Variables"][4]["Exploration Sigma"]["Annealing Rate"] = 1e-5
 e["Variables"][5]["Name"] = "Force Y"
 e["Variables"][5]["Type"] = "Action"
 e["Variables"][5]["Lower Bound"] = +0.0
-e["Variables"][5]["Upper Bound"] = +0.5
-e["Variables"][5]["Exploration Sigma"]["Initial"] = 0.05
-e["Variables"][5]["Exploration Sigma"]["Final"] = 0.005
+e["Variables"][5]["Upper Bound"] = +1.0
+e["Variables"][5]["Exploration Sigma"]["Initial"] = 0.2
+e["Variables"][5]["Exploration Sigma"]["Final"] = 0.05
 e["Variables"][5]["Exploration Sigma"]["Annealing Rate"] = 1e-5
 
 ### Defining Agent Configuration 
 
 e["Solver"]["Type"] = "Agent / Continuous / GFPT"
 e["Solver"]["Mode"] = "Training"
-e["Solver"]["Learning Rate"] = 0.001
+e["Solver"]["Learning Rate"] = 0.01
 e["Solver"]["Experiences Per Generation"] = 500
-e["Solver"]["Experiences Between Policy Updates"] = 1
+e["Solver"]["Experiences Between Policy Updates"] = 10
 e["Solver"]["Cache Persistence"] = 100
 e["Solver"]["Discount Factor"] = 0.99
 
@@ -99,7 +99,7 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tan
 
 ### Defining Termination Criteria
 
-e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 0
+e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 3.0
 
 ### Setting file output configuration
 

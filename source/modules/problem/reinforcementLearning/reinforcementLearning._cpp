@@ -165,6 +165,9 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
   // Finalizing Environment
   finalizeEnvironment();
 
+  // Setting tested policy flag to false, unless we do testing
+  agent["Tested Policy"] = false;
+
   // If the training reward exceeds the threshold, then also run testing on it
   if (trainingReward > _trainingRewardThreshold)
   {

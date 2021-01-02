@@ -522,7 +522,7 @@ void HMC::updateState()
   updateStepSize();
 
   // Update metric at the end of slow adaption period
-  if (_eVersion == EVersion::Euclidean && _useAdaptiveStepSize && _chainLength == _initialFastAdaptionInterval + _initialSlowAdaptionInterval)
+  if (_eVersion == EVersion::Euclidean && _chainLength == _initialFastAdaptionInterval + _initialSlowAdaptionInterval)
   {
     int err = _hamiltonian->updateMetricMatricesEuclidean(_euclideanWarmupSampleDatabase);
     if (err == GSL_EDOM) KORALI_LOG_ERROR("Inverse Metric negative definite (not updating Metric). Increase 'Initial Slow Adaption Interval' (is %zu).", _initialSlowAdaptionInterval);

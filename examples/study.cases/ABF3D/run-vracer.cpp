@@ -3,9 +3,9 @@
 
 int main(int argc, char *argv[])
 {
-#ifndef TEST
-  initializeEnvironment("_config/helix_2d_eu_const.json");
-#endif
+  /////// Initializing environment
+
+ initializeEnvironment("_config/helix_2d_eu_const.json");
 
   auto e = korali::Experiment();
 
@@ -41,12 +41,7 @@ int main(int argc, char *argv[])
 
   //// Setting action variables
 
-#ifndef TEST
   auto [lowerBounds, upperBounds] = _environment->getActionBounds();
-#else
-  std::vector<float> lowerBounds = {0.0, 0.0, 0.0, 0.0};
-  std::vector<float> upperBounds = {1.0, 1.0, 1.0, 1.0};
-#endif
 
   e["Variables"][14]["Name"] = "Frequency (w)";
   e["Variables"][14]["Type"] = "Action";
@@ -115,12 +110,6 @@ int main(int argc, char *argv[])
   ////// Defining Termination Criteria
 
   e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 1.3;
-
-  ////// If using configuration test, run for a couple generations only
-
-#ifdef TEST
-  e["Solver"]["Termination Criteria"]["Max Generations"] = 1;
-#endif
 
   ////// Setting file output configuration
 

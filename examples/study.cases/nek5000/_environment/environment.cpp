@@ -6,8 +6,6 @@
 #include "unistd.h"
 #include <dlfcn.h>
 
-#ifndef TEST
-
 void runEnvironment(korali::Sample &s)
 {
   // Loading the agent as dynamic library because Nek5000 has non-reentrant code
@@ -63,20 +61,3 @@ void runEnvironment(korali::Sample &s)
   s["Termination"] = "Terminal";
 }
 
-#else
-
-// Environment for configuration test only
-void runEnvironment(korali::Sample &s)
-{
-  fprintf(stderr, "[Warning] Using test-only setup. If you want to run the actual experiment, run ./install_deps.sh first and re-compile.\n");
-
-  for (size_t i = 0; i < 10; i++)
-  {
-    s["State"] = {1, 1, 1, 1, 1, 1};
-    s.update();
-    s["Reward"] = -10.0;
-  }
-  s["Termination"] = "Terminal";
-}
-
-#endif

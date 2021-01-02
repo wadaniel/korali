@@ -10,14 +10,12 @@ void Sampling::initialize()
   if (_k->_variables.size() == 0) KORALI_LOG_ERROR("Sampling Evaluation problems require at least one variable.\n");
 }
 
-// TODO: clean up namings logP(x), F(x), .. (D.W.)
 void Sampling::evaluate(Sample &sample)
 {
   sample.run(_probabilityFunction);
 
   auto evaluation = KORALI_GET(double, sample, "logP(x)");
 
-  // If result is not a finite number, objective function evaluates to -Infinity
   if (std::isnan(evaluation))
     sample["logP(x)"] = -Inf;
   else
@@ -28,8 +26,6 @@ void Sampling::evaluate(Sample &sample)
 
 void Sampling::evaluateGradient(korali::Sample &sample)
 {
-  sample.run(_probabilityFunction);
-
   size_t Nth = _k->_variables.size();
   auto gradient = KORALI_GET(std::vector<double>, sample, "grad(logP(x))");
   if (gradient.size() != Nth)
@@ -38,8 +34,6 @@ void Sampling::evaluateGradient(korali::Sample &sample)
 
 void Sampling::evaluateHessian(korali::Sample &sample)
 {
-  sample.run(_probabilityFunction);
-
   size_t Nth = _k->_variables.size();
   auto hessian = KORALI_GET(std::vector<std::vector<double>>, sample, "H(logP(x))");
 

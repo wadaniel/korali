@@ -22,26 +22,24 @@ e["Problem"]["Policy Testing Episodes"] = 10
 
 e["Variables"][0]["Name"] = "Position X"
 e["Variables"][1]["Name"] = "Position Y"
-e["Variables"][2]["Name"] = "Velocity X"
-e["Variables"][3]["Name"] = "Velocity Y"
 
 ### Defining Action variables 
 
-e["Variables"][4]["Name"] = "Force X"
-e["Variables"][4]["Type"] = "Action"
-e["Variables"][4]["Lower Bound"] = -0.1
-e["Variables"][4]["Upper Bound"] = +0.1
-e["Variables"][4]["Exploration Sigma"]["Initial"] = 0.02
-e["Variables"][4]["Exploration Sigma"]["Final"] = 0.005
-e["Variables"][4]["Exploration Sigma"]["Annealing Rate"] = 1e-5
+e["Variables"][2]["Name"] = "Force X"
+e["Variables"][2]["Type"] = "Action"
+e["Variables"][2]["Lower Bound"] = -0.1
+e["Variables"][2]["Upper Bound"] = +0.1
+e["Variables"][2]["Exploration Sigma"]["Initial"] = 0.02
+e["Variables"][2]["Exploration Sigma"]["Final"] = 0.005
+e["Variables"][2]["Exploration Sigma"]["Annealing Rate"] = 1e-5
 
-e["Variables"][5]["Name"] = "Force Y"
-e["Variables"][5]["Type"] = "Action"
-e["Variables"][5]["Lower Bound"] = +0.0
-e["Variables"][5]["Upper Bound"] = +1.0
-e["Variables"][5]["Exploration Sigma"]["Initial"] = 0.2
-e["Variables"][5]["Exploration Sigma"]["Final"] = 0.05
-e["Variables"][5]["Exploration Sigma"]["Annealing Rate"] = 1e-5
+e["Variables"][3]["Name"] = "Force Y"
+e["Variables"][3]["Type"] = "Action"
+e["Variables"][3]["Lower Bound"] = +0.0
+e["Variables"][3]["Upper Bound"] = +1.0
+e["Variables"][3]["Exploration Sigma"]["Initial"] = 0.2
+e["Variables"][3]["Exploration Sigma"]["Final"] = 0.05
+e["Variables"][3]["Exploration Sigma"]["Annealing Rate"] = 1e-5
 
 ### Defining Agent Configuration 
 
@@ -83,23 +81,26 @@ e["Solver"]["Policy"]["Optimization Candidates"] = 12
 
 e["Solver"]["Neural Network"]["Engine"] = "OneDNN"
 
-e["Solver"]["Time Sequence Length"] = 1
+e["Solver"]["Time Sequence Length"] = 4
 
-e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear"
-e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 32
+e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Recurrent/GRU"
+e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 16 
 
-e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Activation"
-e["Solver"]["Neural Network"]["Hidden Layers"][1]["Function"] = "Elementwise/Tanh"
+#e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear"
+#e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 32
 
-e["Solver"]["Neural Network"]["Hidden Layers"][2]["Type"] = "Layer/Linear"
-e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 32
+#e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Activation"
+#e["Solver"]["Neural Network"]["Hidden Layers"][1]["Function"] = "Elementwise/Tanh"
 
-e["Solver"]["Neural Network"]["Hidden Layers"][3]["Type"] = "Layer/Activation"
-e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tanh"
+#e["Solver"]["Neural Network"]["Hidden Layers"][2]["Type"] = "Layer/Linear"
+#e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 32
+
+#e["Solver"]["Neural Network"]["Hidden Layers"][3]["Type"] = "Layer/Activation"
+#e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tanh"
 
 ### Defining Termination Criteria
 
-e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 3.0
+e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 2.0
 
 ### Setting file output configuration
 

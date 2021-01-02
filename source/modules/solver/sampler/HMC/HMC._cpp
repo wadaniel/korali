@@ -483,27 +483,30 @@ void HMC::updateStepSize()
         _logDualStepSize = (1. - dualEta) * _logDualStepSize + dualEta * logStep;
         _stepSize = std::exp(logStep);
 
-        if (_useNUTS == false)
-        {
-          _numIntegrationSteps = std::max((size_t)1, (size_t)std::round(_targetIntegrationTime / _stepSize));
-          if (_numIntegrationSteps > _maxIntegrationSteps)
-          {
-            _k->_logger->logWarning("Minimal", "Num Integration Steps (%zu) exceeding hard limit 'Max Integration Steps' (%zu).\n", _numIntegrationSteps, _maxIntegrationSteps);
-            _numIntegrationSteps = _maxIntegrationSteps;
-          }
-        }
       }
       // Fix step size after terminal fast epriod
       else if (_chainLength == terminalFastPeriodEnd)
       {
         _stepSize = std::exp(_logDualStepSize);
       }
+
     }
   }
+  
   // Apply Step Size Jitter after burn in period
   else if (_stepSizeJitter > 0.)
   {
     _stepSize = std::exp(_logDualStepSize) * (1. + _stepSizeJitter * (2. * _uniformGenerator->getRandomNumber() - 1.));
+  }
+
+  if (_useNUTS == false)
+  {
+    _numIntegrationSteps = std::max((size_t)1, (size_t)std::round(_targetIntegrationTime / _stepSize));
+    if (_numIntegrationSteps > _maxIntegrationSteps)
+    {
+      _k->_logger->logWarning("Minimal", "Num Integration Steps (%zu) exceeding hard limit 'Max Integration Steps' (%zu).\n", _numIntegrationSteps, _maxIntegrationSteps);
+      _numIntegrationSteps = _maxIntegrationSteps;
+    }
   }
 }
 

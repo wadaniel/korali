@@ -78,7 +78,6 @@ void Bayesian::evaluateLogPosterior(Sample &sample)
   }
 }
 
-// TODO: clean up namings F, P, logP, .. (D.W.)
 void Bayesian::evaluate(Sample &sample)
 {
   evaluateLogPosterior(sample);

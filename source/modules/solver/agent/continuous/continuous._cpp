@@ -261,6 +261,50 @@ float Continuous::getExperienceImportanceWeight(size_t expId)
   return expImportanceWeight;
 }
 
+float Continuous::retraceFunction(size_t expId)
+{
+  // Finding last experience in the episode that corresponds to expId
+  ssize_t startId = expId;
+  ssize_t endId = startId;
+  while (_experienceReplay[endId].termination == e_nonTerminal) endId++;
+
+  // Calculating initial Vtbc
+  float Vtbc = 0.0f;
+
+  // If it was a truncated episode, add the value function for the terminal state to Vtbc
+  if (_experienceReplay[endId].termination == e_truncated)
+  {
+    // Get truncated state sequence, adding the truncated state to it and removing first time element
+    auto expTruncatedStateSequence = getTruncatedStateTimeSequence(endId);
+    float terminalV = _experienceReplay[endId].cache.access("Terminal State Value", [this, expTruncatedStateSequence]() { return this->stateValueFunction(expTruncatedStateSequence); });
+    Vtbc = terminalV;
+  }
+
+  // Now iterating backwards to calculate the rest of vTbc
+  for (ssize_t curId = endId; curId >= startId; curId--)
+  {
+    // Getting current reward, action, and state
+    auto curReward = _experienceReplay[curId].reward;
+    auto expStateSequence = getStateTimeSequence(curId);
+    auto expAction = _experienceReplay[curId].action;
+
+    // Calculating state value function
+    float curV = _experienceReplay[curId].cache.access("State Value", [this, expStateSequence]() { return this->stateValueFunction(expStateSequence); });
+
+    // Calculating importance weight
+    float importanceWeight = _experienceReplay[curId].cache.access("Importance Weight", [this, curId]() { return getExperienceImportanceWeight(curId); });
+
+    // Truncate importance weight
+    float truncatedImportanceWeight = std::min(1.0f, importanceWeight);
+
+    // Calculating Vtbc
+    Vtbc = curV + truncatedImportanceWeight * (curReward + _discountFactor * Vtbc - curV);
+  }
+
+  // Returning Vtbc
+  return Vtbc;
+}
+
 } // namespace agent
 
 } // namespace solver

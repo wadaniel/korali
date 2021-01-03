@@ -95,6 +95,13 @@ void NAF::initializeAgent()
   _averageActionSigmas.resize(_problem->_actionVectorSize);
 }
 
+float NAF::stateValueFunction(const std::vector<std::vector<float>> &state)
+{
+  // Calculating V(s_i)
+  float v = _criticLearner->getEvaluation({state})[0][0];
+  return v;
+}
+
 void NAF::trainPolicy()
 {
   /***********************************************************************************

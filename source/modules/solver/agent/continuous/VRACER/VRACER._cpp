@@ -20,7 +20,7 @@ void VRACER::initializeAgent()
  *********************************************************************/
 
   _criticPolicyExperiment["Problem"]["Type"] = "Supervised Learning";
-  _criticPolicyExperiment["Problem"]["Max Timebs"] = _timeSequenceLength;
+  _criticPolicyExperiment["Problem"]["Max Timesteps"] = _timeSequenceLength;
   _criticPolicyExperiment["Problem"]["Training Batch Size"] = _miniBatchSize;
   _criticPolicyExperiment["Problem"]["Inference Batch Size"] = 1;
   _criticPolicyExperiment["Problem"]["Input"]["Size"] = _problem->_stateVectorSize;

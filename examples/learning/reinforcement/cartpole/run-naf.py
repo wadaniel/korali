@@ -49,8 +49,8 @@ e["Solver"]["Mini Batch Strategy"] = "Prioritized"
 
 ### Defining Experience Replay configuration
 
-e["Solver"]["Experience Replay"]["Start Size"] =   1000
-e["Solver"]["Experience Replay"]["Maximum Size"] = 10000
+e["Solver"]["Experience Replay"]["Start Size"] =   2048
+e["Solver"]["Experience Replay"]["Maximum Size"] = 32768
 
 ### Configuring the neural network and its hidden layers
 

@@ -31,7 +31,7 @@ void NAF::initializeAgent()
   _qExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
   _qExperiment["Solver"]["Optimizer"] = _optimizer;
   _qExperiment["Solver"]["Learning Rate"] = _learningRate;
-  _qExperiment["Solver"]["Loss Function"] = "Mean Squared Error";
+  _qExperiment["Solver"]["Loss Function"] = "Direct Gradient";
   _qExperiment["Solver"]["Steps Per Generation"] = 1;
   _qExperiment["Solver"]["Neural Network"]["Engine"] = _neuralNetworkEngine;
   _qExperiment["Solver"]["Neural Network"]["Hidden Layers"] = _neuralNetworkHiddenLayers;

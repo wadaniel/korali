@@ -334,6 +334,13 @@ class Agent : public Solver
   std::vector<float> calculateImportanceWeights(std::vector<size_t> miniBatch);
 
   /**
+   * @brief Returns the retrace value for the given experience
+   * @param expId The id (position within the replay memory) of the experience
+   * @return The qRet value of the experience
+   */
+  float retraceFunction(size_t expId);
+
+  /**
    * @brief Listens to incoming experience from the given agent, sends back policy or terminates the episode depending on what's needed
    * @param agentId The Agent's ID
    */
@@ -362,6 +369,13 @@ class Agent : public Solver
   /****************************************************************************************************
    * Virtual functions (responsibilities) for learning algorithms to fulfill
    ***************************************************************************************************/
+
+  /**
+   * @brief Calculates the state value function V(s,a)
+   * @param stateSequence State sequence to evaluate
+   * @return The value of V(s)
+   */
+  virtual float stateValueFunction(const std::vector<std::vector<float>> &stateSequence) = 0;
 
   /**
   * @brief Trains the Agent's policy, based on the new experiences

@@ -42,13 +42,6 @@ void dVRACER::initializeAgent()
   // Getting learner and problem pointers
   _criticPolicyProblem = dynamic_cast<problem::SupervisedLearning *>(_criticPolicyExperiment._problem);
   _criticPolicyLearner = dynamic_cast<solver::learner::DeepSupervisor *>(_criticPolicyExperiment._solver);
-
-  /*********************************************************************
-  * Loading/Setting Hyperparameters
-  *********************************************************************/
-
-  // Get the initial set of policy NN hyperparameters
-  _hyperparameters["Policy"] = _criticPolicyLearner->getTrainingHyperparameters();
 }
 
 void dVRACER::trainPolicy()

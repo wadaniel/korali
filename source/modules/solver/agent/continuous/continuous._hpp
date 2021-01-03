@@ -56,20 +56,6 @@ class Continuous : public Agent
   */
   std::vector<float> generateTestingAction(const std::vector<float> &curMeans, const std::vector<float> &curSigmas);
 
-  /**
-   * @brief Returns the retrace value for the given experience
-   * @param expId The id (position within the replay memory) of the experience
-   * @return The qRet value of the experience
-   */
-  float retraceFunction(size_t expId);
-
-  /**
-   * @brief Calculates the state value function V(s,a)
-   * @param stateSequence State sequence to evaluate
-   * @return The value of V(s)
-   */
-  virtual float stateValueFunction(const std::vector<std::vector<float>> &stateSequence) = 0;
-
   float getExperienceImportanceWeight(size_t expId) override;
   virtual void getAction(korali::Sample &sample) override;
   virtual void initializeAgent();

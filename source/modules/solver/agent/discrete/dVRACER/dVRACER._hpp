@@ -31,13 +31,6 @@ class dVRACER : public Discrete
   problem::SupervisedLearning *_criticPolicyProblem;
 
   /**
-   * @brief Calculates the state value function V(s,a)
-   * @param state state to evaluate
-   * @return The value of V(s)
-   */
-  float stateValueFunction(const std::vector<std::vector<float>> &state);
-
-  /**
    * @brief Update the V-target or current and previous experiences in the episode
    * @param expId Current Experience Id
    */
@@ -60,6 +53,7 @@ class dVRACER : public Discrete
    */
   std::vector<float> calculateKLDivergenceGradient(const std::vector<float> &oldPvalues, const std::vector<float> &curPvalues);
 
+  float stateValueFunction(const std::vector<std::vector<float>> &state) override;
   void setTrainingState(const knlohmann::json &state) override;
   knlohmann::json getTrainingState() override;
   knlohmann::json runPolicy(const std::vector<std::vector<float>> &stateSequence) override;

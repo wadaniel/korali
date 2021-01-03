@@ -404,11 +404,8 @@ knlohmann::json GFPT::runPolicy(const std::vector<std::vector<float>> &state)
 
   for (size_t i = 0; i < _problem->_actionVectorSize; ++i)
   {
-    auto varIdx = _problem->_actionVectorIndexes[i];
-    float sigma = _currentExplorationSigmas[i];
-
     actionMeans[i] = eval[i];
-    actionSigmas[i] = sigma;
+    actionSigmas[i] = _currentExplorationSigmas[i];
   }
 
   knlohmann::json policy;

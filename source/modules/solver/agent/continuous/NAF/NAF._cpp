@@ -117,19 +117,22 @@ void NAF::trainPolicy()
 
   // Creating minibatch for the critic update
   auto miniBatchIndexes = generateMiniBatch(_miniBatchSize);
-  auto importanceWeights = calculateImportanceWeights(miniBatchIndexes);
 
   // Reevaluating minibatch with Qhat
 #pragma omp parallel for schedule(dynamic, 1)
-  for (size_t i = 0; i < _miniBatchSize; i++)
+  for (size_t b = 0; b < _miniBatchSize; b++)
   {
     // Selecting a uniformly random selected, yet not repeated experience
-    size_t expId = miniBatchIndexes[i];
+    size_t expId = miniBatchIndexes[b];
 
     // Access experiences
     auto curStateSequence = getStateTimeSequence(expId);
     auto curAction = _experienceReplay[expId].action;
     float yHat = _experienceReplay[expId].reward;
+
+    // Getting current experience probability and calculating importance weight
+    float probability = _experienceReplay[expId].metadata["Mini Batch"]["Probability"];
+    float weight = std::pow((float)_experienceReplay.size() * probability, -_importanceWeightAnnealingRate);
 
     // Evaluate Q
     auto qEvaluation = _qLearner->getEvaluation({curStateSequence})[0];
@@ -154,13 +157,11 @@ void NAF::trainPolicy()
     cumulativeTdError += diff;
     cumulativeTdErrorSquarred += (diff * diff);
 
-    // Update experience priority
-    updateExperienceReplayPriority(expId, abs(diff));
+    // Updating experience priority
+    _experienceReplay[expId].metadata["Mini Batch"]["Priority"] = abs(diff);
 
+    // Reserving storage for critic/policy gradient
     std::vector<float> policyGradient(1 + 2 * _problem->_actionVectorSize);
-
-    // Fetch importance weight
-    float weight = importanceWeights[i];
 
     // Calculating Gradients of Loss Li wrt. V(s)
     policyGradient[0] = weight * diff;
@@ -174,8 +175,8 @@ void NAF::trainPolicy()
       policyGradient[1 + curAction.size() + j] = -weight * 0.5 * diff * dmu * dmu / (_actionScalings[j] * _actionScalings[j]);
     }
 
-    _qProblem->_inputData[i] = curStateSequence;
-    _qProblem->_solutionData[i] = policyGradient;
+    _qProblem->_inputData[b] = curStateSequence;
+    _qProblem->_solutionData[b] = policyGradient;
 
     // Keeping statistics
     _cumulativeQStar += yHat;

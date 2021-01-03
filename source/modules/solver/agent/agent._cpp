@@ -403,27 +403,11 @@ void Agent::updateExperienceReplayProbabilities()
 
   // Update probabilities
   for (size_t i = 0; i < _experienceReplay.size(); ++i)
-    _experienceReplay[i].metadata["Mini Batch"]["Probability"] = std::pow((float)experienceRanking[i].second, _priorityAnnealingRate) / (prioritySum);
-}
-
-void Agent::updateExperienceReplayPriority(size_t expId, float priority)
-{
-  // Insert priority calculated in learner
-  if (priority > _experienceReplayMaxPriority) _experienceReplayMaxPriority = priority;
-  _experienceReplay[expId].metadata["Mini Batch"]["Priority"] = priority;
-}
-
-std::vector<float> Agent::calculateImportanceWeights(std::vector<size_t> miniBatch)
-{
-  auto importanceWeights = std::vector<float>(miniBatch.size(), 1.0);
-
-  if (_miniBatchStrategy == "Prioritized")
   {
-    for (size_t i = 0; i < miniBatch.size(); ++i)
-      importanceWeights[i] = std::pow((float)_experienceReplay.size() * _experienceReplay[miniBatch[i]].metadata["Mini Batch"]["Probability"].get<float>(), -_importanceWeightAnnealingRate);
+    float priority = std::pow((float)experienceRanking[i].second, _priorityAnnealingRate) / (prioritySum);
+    _experienceReplay[i].metadata["Mini Batch"]["Probability"] = priority;
+    if (priority > _experienceReplayMaxPriority) _experienceReplayMaxPriority = priority;
   }
-
-  return importanceWeights;
 }
 
 std::vector<size_t> Agent::generateMiniBatch(size_t size)

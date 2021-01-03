@@ -20,7 +20,7 @@ void VRACER::initializeAgent()
  *********************************************************************/
 
   _criticPolicyExperiment["Problem"]["Type"] = "Supervised Learning";
-  _criticPolicyExperiment["Problem"]["Max Timesteps"] = _timeSequenceLength;
+  _criticPolicyExperiment["Problem"]["Max Timebs"] = _timeSequenceLength;
   _criticPolicyExperiment["Problem"]["Training Batch Size"] = _miniBatchSize;
   _criticPolicyExperiment["Problem"]["Inference Batch Size"] = 1;
   _criticPolicyExperiment["Problem"]["Input"]["Size"] = _problem->_stateVectorSize;
@@ -106,10 +106,10 @@ void VRACER::trainPolicy()
 
   // Fill Minibatch
 #pragma omp parallel for schedule(dynamic, 1)
-  for (size_t step = 0; step < _miniBatchSize; step++)
+  for (size_t b = 0; b < _miniBatchSize; b++)
   {
     // Getting index of current experiment
-    size_t curId = miniBatchIndexes[step];
+    size_t curId = miniBatchIndexes[b];
 
     // Get state, action, mean, Sigma for this experience
     auto expStateSequence = getStateTimeSequence(curId);
@@ -213,10 +213,10 @@ void VRACER::trainPolicy()
     }
 
     // Set status as learning problem input
-    _criticPolicyProblem->_inputData[step] = expStateSequence;
+    _criticPolicyProblem->_inputData[b] = expStateSequence;
 
     // Set Gradient of Loss as Solution
-    _criticPolicyProblem->_solutionData[step] = gradientLoss;
+    _criticPolicyProblem->_solutionData[b] = gradientLoss;
   }
 
   // Compute average and std of Value target

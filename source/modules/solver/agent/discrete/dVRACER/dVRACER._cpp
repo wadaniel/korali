@@ -66,10 +66,10 @@ void dVRACER::trainPolicy()
 
   // Fill Minibatch
 #pragma omp parallel for schedule(dynamic, 1)
-  for (size_t step = 0; step < _miniBatchSize; step++)
+  for (size_t b = 0; b < _miniBatchSize; b++)
   {
     // Getting index of current experiment
-    size_t expId = miniBatchIndexes[step];
+    size_t expId = miniBatchIndexes[b];
 
     // Get state, action, and action probabilities from experience
     auto expStateSequence = getStateTimeSequence(expId);
@@ -93,7 +93,7 @@ void dVRACER::trainPolicy()
     *******************************************************/
 
     // Get Vtbc before update
-    float expVtbc = _experienceReplay[expId].policy["Vtbc"].get<float>();
+    float expVtbc = retraceFunction(expId);
 
     // Storage for the update gradient
     std::vector<float> gradientLoss(1 + _problem->_possibleActions.size());
@@ -123,7 +123,7 @@ void dVRACER::trainPolicy()
       // In this case add Vtbc
       if (isNormal == true)
       {
-        float nextExpVtbc = _experienceReplay[expId + 1].policy["Vtbc"].get<float>();
+        float nextExpVtbc = retraceFunction(expId + 1);
         Qret += _discountFactor * nextExpVtbc;
       }
 
@@ -172,12 +172,10 @@ void dVRACER::trainPolicy()
     }
 
     // Set status as learning problem input
-    _criticPolicyProblem->_inputData[step] = expStateSequence;
+    _criticPolicyProblem->_inputData[b] = expStateSequence;
 
     // Set Gradient of Loss as Solution
-    _criticPolicyProblem->_solutionData[step] = gradientLoss;
-
-    updateVtbc(expId);
+    _criticPolicyProblem->_solutionData[b] = gradientLoss;
   }
 
   // Compute average and std of Value target
@@ -200,98 +198,6 @@ void dVRACER::trainPolicy()
 
   // Storing average policy hyperparameters
   _hyperparameters["Policy"] = _criticPolicyLearner->getTrainingHyperparameters();
-}
-
-void dVRACER::updateVtbc(size_t expId)
-{
-  // Finding first experience in the episode that corresponds to expId
-  ssize_t episodeStartId = expId;
-  while (_experienceReplay[episodeStartId].termination == e_nonTerminal && episodeStartId > 0) episodeStartId--;
-
-  // access experiences
-  float reward = _experienceReplay[expId].reward;
-  float value = _experienceReplay[expId].cache.get("State Value");                  // calculated before
-  float importanceWeight = _experienceReplay[expId].cache.get("Importance Weight"); // calculated before
-
-  // truncate importance weight
-  float truncatedImportanceWeight = std::min(1.0f, importanceWeight);
-
-  // Initializing vTbc to weighted reward of the last
-  float vTbc = value + truncatedImportanceWeight * (reward - value);
-
-  if (_experienceReplay[expId].termination == e_nonTerminal) // If expId is somewhere in the middle of an episode
-  {
-    vTbc += truncatedImportanceWeight * _discountFactor * _experienceReplay[expId + 1].policy["Vtbc"].get<float>();
-  }
-  else if (_experienceReplay[expId].termination == e_truncated) // If the episode was truncated add contribution
-  {
-    auto truncatedState = getTruncatedStateTimeSequence(expId);
-    float truncatedValue = stateValueFunction(truncatedState);
-    vTbc += truncatedImportanceWeight * _discountFactor * truncatedValue;
-  }
-
-  // Update current target
-  _experienceReplay[expId].policy["Vtbc"] = vTbc;
-
-  // Now iterating backwards to update the rest of vTbc
-  for (ssize_t curId = expId - 1; curId >= episodeStartId; curId--)
-  {
-    // Access experience information
-    auto expStateSequence = getStateTimeSequence(curId);
-    float reward = _experienceReplay[curId].reward;
-
-    // Calculating state value function
-    float value = _experienceReplay[curId].cache.access("State Value", [this, expStateSequence]() { return this->stateValueFunction(expStateSequence); });
-
-    // Calculating importance weight
-    float importanceWeight = _experienceReplay[curId].cache.access("Importance Weight", [this, curId]() { return getExperienceImportanceWeight(curId); });
-
-    // Truncating importance weight
-    float truncatedImportanceWeight = std::min(1.0f, importanceWeight);
-
-    // Calculating vTbc
-    vTbc = value + truncatedImportanceWeight * (reward + _discountFactor * vTbc - value);
-    _experienceReplay[curId].policy["Vtbc"] = vTbc;
-  }
-}
-
-std::vector<float> dVRACER::calculateImportanceWeightGradient(size_t actionIdx, const std::vector<float> &curPvals, const std::vector<float> &oldPvals)
-{
-  std::vector<float> grad(_problem->_possibleActions.size(), 0.0);
-
-  float importanceWeight = curPvals[actionIdx] / oldPvals[actionIdx];
-
-  // calculate gradient of categorical distribution normalized by old pvals
-  for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
-  {
-    if (i == actionIdx)
-      grad[i] = importanceWeight * (1. - curPvals[i]);
-    else
-      grad[i] = -importanceWeight * curPvals[i];
-  }
-
-  return grad;
-}
-
-std::vector<float> dVRACER::calculateKLDivergenceGradient(const std::vector<float> &oldPvalues, const std::vector<float> &curPvalues)
-{
-  std::vector<float> klGrad(_problem->_possibleActions.size(), 0.0);
-
-  // Gradient wrt NN output i
-  for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
-  {
-    // Iterate over all pvalues
-    for (size_t j = 0; j < _problem->_possibleActions.size(); j++)
-    {
-      float impW = oldPvalues[j] / curPvalues[j];
-      if (i == j)
-        klGrad[i] -= impW * curPvalues[i] * (1.0 - curPvalues[i]);
-      else
-        klGrad[i] += impW * curPvalues[i] * curPvalues[j];
-    }
-  }
-
-  return klGrad;
 }
 
 float dVRACER::stateValueFunction(const std::vector<std::vector<float>> &state)

@@ -32,13 +32,6 @@ class VRACER : public Continuous
   problem::SupervisedLearning *_criticPolicyProblem;
 
   /**
-   * @brief Calculates the state value function V(s,a)
-   * @param state Time sequence of states to evaluate
-   * @return The value of V(s)
-   */
-  float stateValueFunction(const std::vector<std::vector<float>> &state);
-
-  /**
    * @brief Update the V-target or current and previous experiences in the episode
    * @param expId Current Experience Id
    */
@@ -55,6 +48,7 @@ class VRACER : public Continuous
    */
   std::vector<float> calculateImportanceWeightGradient(const std::vector<float> &oldAction, const std::vector<float> &curParamsOne, const std::vector<float> &curParamsTwo, const std::vector<float> &oldParamsOne, const std::vector<float> &oldParamsTwo);
 
+  float stateValueFunction(const std::vector<std::vector<float>> &stateSequence) override;
   knlohmann::json getAgentPolicy() override;
   void setAgentPolicy(const knlohmann::json &hyperparameters) override;
   void setTrainingState(const knlohmann::json &state) override;

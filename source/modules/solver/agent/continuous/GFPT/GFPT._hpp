@@ -77,13 +77,6 @@ class GFPT : public Continuous
   problem::SupervisedLearning *_policyProblem;
 
   /**
-   * @brief Calculates the state value function V(s,a)
-   * @param stateSequence State sequence to evaluate
-   * @return The value of V(s)
-   */
-  float stateValueFunction(const std::vector<std::vector<float>> &stateSequence);
-
-  /**
    * @brief Returns the advantage value of the given state/action sequence
    * @param stateActionSequence State/action sequence to evaluate
    * @return The advantage value
@@ -107,13 +100,6 @@ class GFPT : public Continuous
   std::vector<float> argmaxAction(const std::vector<float> &state);
 
   /**
-   * @brief Returns the retrace value for the given experience
-   * @param expId The id (position within the replay memory) of the experience
-   * @return The qRet value of the experience
-   */
-  float retraceFunction(size_t expId);
-
-  /**
    * @brief Returns the optimal action for a given experience, based on the evaluation of the advantage function
    * @param expId The id (position within the replay memory) of the experience
    * @param curMeans The current means of the policy to use as initial guess
@@ -122,7 +108,7 @@ class GFPT : public Continuous
   std::vector<float> optimizeAction(const size_t expId, const std::vector<float> &curMeans);
 
   knlohmann::json runPolicy(const std::vector<std::vector<float>> &stateSequence) override;
-
+  float stateValueFunction(const std::vector<std::vector<float>> &stateSequence) override;
   knlohmann::json getAgentPolicy() override;
   void setAgentPolicy(const knlohmann::json &hyperparameters) override;
   void setTrainingState(const knlohmann::json &state) override;

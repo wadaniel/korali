@@ -313,14 +313,6 @@ void Agent::attendAgent(size_t agentId)
 
 void Agent::processEpisode(std::vector<knlohmann::json> &episode)
 {
-  // Approximate the retrace value of the experience by backward iteration after initial episode roll out
-  float sumRewards = 0.0;
-  for (ssize_t expId = episode.size() - 1; expId >= 0; expId--)
-  {
-    sumRewards = _discountFactor * sumRewards + episode[expId]["Reward"].get<float>();
-    episode[expId]["Policy"]["Vtbc"] = sumRewards;
-  }
-
   // Now adding episode's experiences into the replay memory
   for (size_t expId = 0; expId < episode.size(); expId++)
   {

@@ -476,7 +476,7 @@ std::vector<size_t> Agent::generateMiniBatch(size_t size)
       if (cumulativeProbability > pvalues[batchIdx])
         miniBatch[batchIdx++] = expId;
       else
-        cumulativeProbability += _experienceReplay[++expId].metadata["Mini Batch"]["Probability"].get<float>();
+        cumulativeProbability += _experienceReplay[expId++].metadata["Mini Batch"]["Probability"].get<float>();
     }
 
     // Uniform fill if miniBatch not full due to numerical precision during probability accumulation (cumulative probability < 1)

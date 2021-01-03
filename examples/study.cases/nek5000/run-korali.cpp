@@ -85,12 +85,6 @@ int main(int argc, char *argv[])
 
   e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 1.3;
 
-  ////// If using configuration test, run for a couple generations only
-
-#ifdef TEST
-  e["Solver"]["Termination Criteria"]["Max Generations"] = 20;
-#endif
-
   ////// Setting file output configuration
 
   e["File Output"]["Enabled"] = false;

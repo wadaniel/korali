@@ -165,7 +165,7 @@ void VRACER::trainPolicy()
       // In this case add Vtbc
       if (isNormal == true)
       {
-        float nextExpVtbc = retraceFunction(curId+1);
+        float nextExpVtbc = retraceFunction(curId + 1);
         Qret += _discountFactor * nextExpVtbc;
       }
 

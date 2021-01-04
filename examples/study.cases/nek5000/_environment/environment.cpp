@@ -60,4 +60,3 @@ void runEnvironment(korali::Sample &s)
   // Setting termination status
   s["Termination"] = "Terminal";
 }
-

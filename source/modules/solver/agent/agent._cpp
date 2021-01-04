@@ -1,7 +1,7 @@
+#include "auxiliar/fs.hpp"
 #include "engine.hpp"
 #include "modules/solver/agent/agent.hpp"
 #include "sample/sample.hpp"
-#include "auxiliar/fs.hpp"
 #include <chrono>
 
 namespace korali
@@ -360,10 +360,10 @@ void Agent::processEpisode(std::vector<knlohmann::json> &episode)
   // Updating average cumulative reward statistics
   _trainingAverageReward = 0.0f;
   ssize_t startEpisodeId = _trainingRewardHistory.size() - _trainingAverageDepth;
-  ssize_t endEpisodeId = _trainingRewardHistory.size()-1;
+  ssize_t endEpisodeId = _trainingRewardHistory.size() - 1;
   if (startEpisodeId < 0) startEpisodeId = 0;
   for (ssize_t e = startEpisodeId; e <= endEpisodeId; e++)
-   _trainingAverageReward += _trainingRewardHistory[e];
+    _trainingAverageReward += _trainingRewardHistory[e];
   _trainingAverageReward /= (float)(endEpisodeId - startEpisodeId + 1);
 }
 
@@ -605,7 +605,7 @@ std::vector<std::vector<float>> Agent::getStateActionTimeSequence(size_t expId)
 
 void Agent::finalize()
 {
-  if (_experienceReplaySerializationFrequency > 0)  serializeExperienceReplay();
+  if (_experienceReplaySerializationFrequency > 0) serializeExperienceReplay();
 
   _k->_logger->logInfo("Normal", "Waiting for pending agents to finish...\n");
 
@@ -657,7 +657,7 @@ void Agent::serializeExperienceReplay()
 
   // Storing database to file
   if (saveJsonToFile(dbPath.c_str(), experienceReplayDatabase) != 0)
-   KORALI_LOG_ERROR("Could not serialize experience replay database into file %s\n", dbPath.c_str());
+    KORALI_LOG_ERROR("Could not serialize experience replay database into file %s\n", dbPath.c_str());
 
   auto endTime = std::chrono::steady_clock::now();                                                                   // Profiling
   _sessionSerializationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
@@ -666,23 +666,23 @@ void Agent::serializeExperienceReplay()
 
 void Agent::deserializeExperienceReplay()
 {
- auto beginTime = std::chrono::steady_clock::now(); // Profiling
+  auto beginTime = std::chrono::steady_clock::now(); // Profiling
 
- // Creating JSON storage variable
- knlohmann::json experienceReplayDatabase;
+  // Creating JSON storage variable
+  knlohmann::json experienceReplayDatabase;
 
- // Resolving file path
- std::string dbPath = "./" + _k->_fileOutputPath + "/" + _experienceReplaySerializationFileName;
+  // Resolving file path
+  std::string dbPath = "./" + _k->_fileOutputPath + "/" + _experienceReplaySerializationFileName;
 
- // Loading database from file
- _k->_logger->logInfo("Detailed", "Loading previous run ER database from file %s...\n", dbPath.c_str());
- if (loadJsonFromFile(experienceReplayDatabase, dbPath.c_str()) == false)
-  KORALI_LOG_ERROR("Could not deserialize experience replay database.\n");
+  // Loading database from file
+  _k->_logger->logInfo("Detailed", "Loading previous run ER database from file %s...\n", dbPath.c_str());
+  if (loadJsonFromFile(experienceReplayDatabase, dbPath.c_str()) == false)
+    KORALI_LOG_ERROR("Could not deserialize experience replay database.\n");
 
- // Clearing existing database
- _experienceReplay.clear();
+  // Clearing existing database
+  _experienceReplay.clear();
 
- // Deserializing database from JSON to the agent's database
+  // Deserializing database from JSON to the agent's database
   for (size_t i = 0; i < experienceReplayDatabase.size(); i++)
   {
     experience_t e;
@@ -700,20 +700,20 @@ void Agent::deserializeExperienceReplay()
   // Now updating the cache for every experience
   for (size_t i = 0; i < _experienceReplay.size(); i++)
   {
-   // Creating caches for the new experience
-   _experienceReplay[i].cache.setMaxAge(_cachePersistence);
-   _experienceReplay[i].cache.setTimer(&_policyUpdateCount);
+    // Creating caches for the new experience
+    _experienceReplay[i].cache.setMaxAge(_cachePersistence);
+    _experienceReplay[i].cache.setTimer(&_policyUpdateCount);
 
-   for (size_t c = 0; c < experienceReplayDatabase[i]["Cache"]["Keys"].size(); c++)
-   {
-    auto key = experienceReplayDatabase[i]["Cache"]["Keys"][c].get<std::string>();
-    auto val = experienceReplayDatabase[i]["Cache"]["Values"][c].get<float>();
-    auto time = experienceReplayDatabase[i]["Cache"]["Times"][c].get<size_t>();
-    _experienceReplay[i].cache.set(key, val, time);
-   }
+    for (size_t c = 0; c < experienceReplayDatabase[i]["Cache"]["Keys"].size(); c++)
+    {
+      auto key = experienceReplayDatabase[i]["Cache"]["Keys"][c].get<std::string>();
+      auto val = experienceReplayDatabase[i]["Cache"]["Values"][c].get<float>();
+      auto time = experienceReplayDatabase[i]["Cache"]["Times"][c].get<size_t>();
+      _experienceReplay[i].cache.set(key, val, time);
+    }
   }
 
-  auto endTime = std::chrono::steady_clock::now();         // Profiling
+  auto endTime = std::chrono::steady_clock::now();                                                                         // Profiling
   double deserializationTime = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count() / 1.0e+9; // Profiling
   _k->_logger->logInfo("Detailed", "Took %f to deserialize ER database.\n", deserializationTime);
 }

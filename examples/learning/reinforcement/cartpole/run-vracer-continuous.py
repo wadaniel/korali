@@ -47,8 +47,9 @@ e["Solver"]["Cache Persistence"] = 100
 
 e["Solver"]["Experience Replay"]["Start Size"] = 1000
 e["Solver"]["Experience Replay"]["Maximum Size"] = 10000
-e["Solver"]["Refer"]["Target Off Policy Fraction"] = 0.1
-e["Solver"]["Refer"]["Cutoff Scale"] = 4.0
+e["Solver"]["Experience Replay"]["REFER"]["Enabled"] = True
+e["Solver"]["Experience Replay"]["REFER"]["Target"] = 0.1
+e["Solver"]["Experience Replay"]["REFER"]["Cutoff Scale"] = 4.0
 
 ## Defining Neural Network Configuration for Policy and Critic into Critic Container
 

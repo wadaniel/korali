@@ -43,35 +43,47 @@ e["Variables"][4]["Upper Bound"] = +10.0
 ### Configuring NAF hyperparameters
 
 e["Solver"]["Type"] = "Agent / Continuous / NAF"
+e["Solver"]["Mode"] = "Training"
 e["Solver"]["Target Learning Rate"] = 0.01
+e["Solver"]["Experiences Per Generation"] = 500
 e["Solver"]["Experiences Between Policy Updates"] = 5
 e["Solver"]["Covariance Scaling"] = 0.001
-e["Solver"]["Mini Batch Strategy"] = "Prioritized"
+#e["Solver"]["Mini Batch Strategy"] = "Prioritized"
+#e["Solver"]["Cache Persistence"] = 100
 
-### Defining Experience Replay configuration
+### Defining the configuration of replay memory
 
-e["Solver"]["Experience Replay"]["Start Size"] =   1000
+e["Solver"]["Experience Replay"]["Start Size"] = 1000
 e["Solver"]["Experience Replay"]["Maximum Size"] = 10000
+
+## Defining Neural Network Configuration for Policy and Critic into Critic Container
+
+e["Solver"]["Discount Factor"] = 0.99
+e["Solver"]["Learning Rate"] = 1e-5
+e["Solver"]["Mini Batch Size"] = 256
+
+### Configuring the neural network and its hidden layers
+
+e["Solver"]["Neural Network"]["Engine"] = "OneDNN"
+
+e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear"
+e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 128
+
+e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Activation"
+e["Solver"]["Neural Network"]["Hidden Layers"][1]["Function"] = "Elementwise/Tanh"
+
+e["Solver"]["Neural Network"]["Hidden Layers"][2]["Type"] = "Layer/Linear"
+e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 128
+
+e["Solver"]["Neural Network"]["Hidden Layers"][3]["Type"] = "Layer/Activation"
+e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tanh"
+
 
 ## Defining Q-Network
 
-e["Solver"]["Critic"]["Discount Factor"] = 0.99
-e["Solver"]["Critic"]["Learning Rate"] = 1e-4
-e["Solver"]["Critic"]["Mini Batch Size"] = 256
-
-e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear"
-
-e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Type"] = "Layer/Dense"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Node Count"] = 128
-e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Activation Function"]["Type"] = "Elementwise/Tanh"
-
-e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Type"] = "Layer/Dense"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Node Count"] = 128
-e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Elementwise/Tanh"
-
-e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Type"] = "Layer/Dense"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Elementwise/Linear"
+e["Solver"]["Discount Factor"] = 0.99
+e["Solver"]["Learning Rate"] = 1e-4
+e["Solver"]["Mini Batch Size"] = 256
 
 ### Defining Termination Criteria
 

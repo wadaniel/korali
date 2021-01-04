@@ -1,6 +1,7 @@
 #include "engine.hpp"
 #include "modules/solver/agent/agent.hpp"
 #include "sample/sample.hpp"
+#include "auxiliar/fs.hpp"
 #include <chrono>
 
 namespace korali
@@ -33,20 +34,21 @@ void Agent::initialize()
   {
     _currentEpisode = 0;
     _policyUpdateCount = 0;
-    _candidatePoliciesTested = 0;
+    _testingCandidateCount = 0;
     _currentSampleID = 0;
     _cumulativeQStar = 0;
     _experienceCount = 0;
     _experienceReplayMaxPriority = 0.0;
 
-    // Initialize best rewards
-    _averageTestingReward = -korali::Inf;
-    _bestTestingReward = -korali::Inf;
-    _worstTestingReward = +korali::Inf;
-    _bestTrainingReward = -korali::Inf;
-    _bestTrainingEpisode = 0;
-    _bestAverageTestingReward = -korali::Inf;
-    _bestTestingEpisode = 0;
+    // Initializing training and episode statistics
+    _testingAverageReward = -korali::Inf;
+    _testingBestReward = -korali::Inf;
+    _testingWorstReward = +korali::Inf;
+    _trainingBestReward = -korali::Inf;
+    _trainingBestEpisodeId = 0;
+    _trainingAverageReward = 0.0f;
+    _testingBestAverageReward = -korali::Inf;
+    _testingBestEpisodeId = 0;
 
     // Initializing training hyperparameters
     _trainingState = getTrainingState();
@@ -55,8 +57,8 @@ void Agent::initialize()
     _hyperparameters = getAgentPolicy();
 
     // Initialize best hyperparameters
-    _bestTestingHyperparameters = _hyperparameters;
-    _bestTrainingHyperparameters = _hyperparameters;
+    _testingBestHyperparameters = _hyperparameters;
+    _trainingBestHyperparameters = _hyperparameters;
 
     // Initializing REFER information
     _experienceReplayREFERCurrentRatio = 0.0f;
@@ -66,7 +68,7 @@ void Agent::initialize()
   }
 
   // If this continues a previous run, deserialize previous input experience replay
-  deserializeExperienceReplay();
+  if (_k->_currentGeneration > 0) deserializeExperienceReplay();
 
   // Initializing session-wise profiling timers
   _sessionRunningTime = 0.0;
@@ -96,7 +98,7 @@ void Agent::initialize()
 
   // Setting testing policy to best testing hyperparameters if not custom-set by the user
   if (_mode == "Testing")
-    if (_testingPolicy.empty()) _testingPolicy = _bestTestingHyperparameters;
+    if (_testingPolicy.empty()) _testingPolicy = _testingBestHyperparameters;
 
   // Checking if there's testing samples defined
   if (_mode == "Testing")
@@ -130,7 +132,7 @@ void Agent::trainingGeneration()
   if (_k->_currentGeneration > 0) setTrainingState(_trainingState);
 
   // Running until all _agents have finished
-  while (_sessionExperienceCount < _experiencesPerGeneration * _sessionGeneration)
+  while (_sessionEpisodeCount < _episodesPerGeneration * _sessionGeneration)
   {
     // Launching (or re-launching) agents
     for (size_t agentId = 0; agentId < _agentCount; agentId++)
@@ -149,13 +151,9 @@ void Agent::trainingGeneration()
     KORALI_LISTEN(_agents);
 
     // Attending to running agents, checking if any experience has been received
-    auto beginTime = std::chrono::steady_clock::now(); // Profiling
     for (size_t agentId = 0; agentId < _agentCount; agentId++)
       if (_isAgentRunning[agentId] == true)
         attendAgent(agentId);
-    auto endTime = std::chrono::steady_clock::now();                                                                    // Profiling
-    _sessionAgentAttendingTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
-    _generationAgentAttendingTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
 
     // Perform optimization steps on the critic/policy, if reached the minimum replay memory size
     if (_sessionExperienceCount > _sessionExperiencesUntilStartSize)
@@ -194,14 +192,7 @@ void Agent::trainingGeneration()
   // Now serializing experience replay database
   if (_experienceReplaySerializationFrequency > 0)
     if (_k->_currentGeneration % _experienceReplaySerializationFrequency == 0)
-    {
-      _k->_logger->logInfo("Normal", "Serializing Experience Replay database...\n");
-      auto beginTime = std::chrono::steady_clock::now(); // Profiling
       serializeExperienceReplay();
-      auto endTime = std::chrono::steady_clock::now();                                                                   // Profiling
-      _sessionSerializationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
-      _generationSerializationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
-    }
 
   // Measuring generation time
   auto endTime = std::chrono::steady_clock::now();                                                             // Profiling
@@ -230,6 +221,8 @@ void Agent::testingGeneration()
 
 void Agent::attendAgent(size_t agentId)
 {
+  auto beginTime = std::chrono::steady_clock::now(); // Profiling
+
   // Storage for the incoming experience
   knlohmann::json experience;
 
@@ -265,32 +258,32 @@ void Agent::attendAgent(size_t agentId)
       KORALI_WAIT(_agents[agentId]);
 
       // Getting the training reward of the latest episode
-      _lastTrainingReward = _agents[agentId]["Training Reward"].get<float>();
+      _trainingLastReward = _agents[agentId]["Training Reward"].get<float>();
 
       // Keeping training statistics. Updating if exceeded best training policy so far.
-      if (_lastTrainingReward > _bestTrainingReward)
+      if (_trainingLastReward > _trainingBestReward)
       {
-        _bestTrainingReward = _lastTrainingReward;
-        _bestTrainingEpisode = _agents[agentId]["Sample Id"];
-        _bestTrainingHyperparameters = _agents[agentId]["Hyperparameters"];
+        _trainingBestReward = _trainingLastReward;
+        _trainingBestEpisodeId = _agents[agentId]["Sample Id"];
+        _trainingBestHyperparameters = _agents[agentId]["Hyperparameters"];
       }
 
       // If the policy has exceeded the threshold during training, we gather its statistics
       if (_agents[agentId]["Tested Policy"] == true)
       {
-        _candidatePoliciesTested++;
+        _testingCandidateCount++;
 
-        _averageTestingReward = _agents[agentId]["Average Testing Reward"].get<float>();
-        _bestTestingReward = _agents[agentId]["Best Testing Reward"].get<float>();
-        _worstTestingReward = _agents[agentId]["Worst Testing Reward"].get<float>();
+        _testingAverageReward = _agents[agentId]["Average Testing Reward"].get<float>();
+        _testingBestReward = _agents[agentId]["Best Testing Reward"].get<float>();
+        _testingWorstReward = _agents[agentId]["Worst Testing Reward"].get<float>();
 
         // If the average testing reward is better than the previous best, replace it
         // and store hyperparameters as best so far.
-        if (_averageTestingReward > _bestAverageTestingReward)
+        if (_testingAverageReward > _testingBestAverageReward)
         {
-          _bestAverageTestingReward = _averageTestingReward;
-          _bestTestingEpisode = _agents[agentId]["Sample Id"];
-          _bestTestingHyperparameters = _agents[agentId]["Hyperparameters"];
+          _testingBestAverageReward = _testingAverageReward;
+          _testingBestEpisodeId = _agents[agentId]["Sample Id"];
+          _testingBestHyperparameters = _agents[agentId]["Hyperparameters"];
         }
       }
 
@@ -309,10 +302,17 @@ void Agent::attendAgent(size_t agentId)
       _sessionEpisodeCount++;
     }
   }
+
+  auto endTime = std::chrono::steady_clock::now();                                                                    // Profiling
+  _sessionAgentAttendingTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
+  _generationAgentAttendingTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
 }
 
 void Agent::processEpisode(std::vector<knlohmann::json> &episode)
 {
+  // Storage for cumulative reward
+  float cumulativeReward = 0.0f;
+
   // Now adding episode's experiences into the replay memory
   for (size_t expId = 0; expId < episode.size(); expId++)
   {
@@ -322,8 +322,6 @@ void Agent::processEpisode(std::vector<knlohmann::json> &episode)
     // Creating caches for the new experience
     e.cache.setMaxAge(_cachePersistence);
     e.cache.setTimer(&_policyUpdateCount);
-    e.vectorCache.setMaxAge(_cachePersistence);
-    e.vectorCache.setTimer(&_policyUpdateCount);
 
     // Getting state, action, reward, and whether it's terminal
     e.state = episode[expId]["State"].get<std::vector<float>>();
@@ -350,7 +348,23 @@ void Agent::processEpisode(std::vector<knlohmann::json> &episode)
 
     // Adding experience
     _experienceReplay.add(e);
+
+    // Adding to cumulative reward
+    cumulativeReward += e.reward;
   }
+
+  // Storing history information
+  _trainingRewardHistory.push_back(cumulativeReward);
+  _trainingExperienceHistory.push_back(episode.size());
+
+  // Updating average cumulative reward statistics
+  _trainingAverageReward = 0.0f;
+  ssize_t startEpisodeId = _trainingRewardHistory.size() - _trainingAverageDepth;
+  ssize_t endEpisodeId = _trainingRewardHistory.size()-1;
+  if (startEpisodeId < 0) startEpisodeId = 0;
+  for (ssize_t e = startEpisodeId; e <= endEpisodeId; e++)
+   _trainingAverageReward += _trainingRewardHistory[e];
+  _trainingAverageReward /= (float)(endEpisodeId - startEpisodeId + 1);
 }
 
 void Agent::updateREFERInformation()
@@ -591,11 +605,7 @@ std::vector<std::vector<float>> Agent::getStateActionTimeSequence(size_t expId)
 
 void Agent::finalize()
 {
-  if (_experienceReplaySerializationFrequency > 0)
-  {
-    _k->_logger->logInfo("Normal", "Serializing Experience Replay database...\n");
-    serializeExperienceReplay();
-  }
+  if (_experienceReplaySerializationFrequency > 0)  serializeExperienceReplay();
 
   _k->_logger->logInfo("Normal", "Waiting for pending agents to finish...\n");
 
@@ -618,34 +628,94 @@ void Agent::finalize()
 
 void Agent::serializeExperienceReplay()
 {
-  _experienceReplayDatabase.resize(_experienceReplay.size());
+  _k->_logger->logInfo("Normal", "Serializing Experience Replay database...\n");
+  auto beginTime = std::chrono::steady_clock::now(); // Profiling
 
+  // Creating JSON storage variable
+  knlohmann::json experienceReplayDatabase;
+
+  // Serializing agent's database into the JSON storage
   for (size_t i = 0; i < _experienceReplay.size(); i++)
   {
-    _experienceReplayDatabase[i]["State"] = _experienceReplay[i].state;
-    _experienceReplayDatabase[i]["Action"] = _experienceReplay[i].action;
-    _experienceReplayDatabase[i]["Reward"] = _experienceReplay[i].reward;
-    _experienceReplayDatabase[i]["Termination"] = _experienceReplay[i].termination;
-    _experienceReplayDatabase[i]["Truncated State"] = _experienceReplay[i].truncatedState;
-    _experienceReplayDatabase[i]["Policy"] = _experienceReplay[i].policy;
-    _experienceReplayDatabase[i]["Metadata"] = _experienceReplay[i].metadata;
+    experienceReplayDatabase[i]["State"] = _experienceReplay[i].state;
+    experienceReplayDatabase[i]["Action"] = _experienceReplay[i].action;
+    experienceReplayDatabase[i]["Reward"] = _experienceReplay[i].reward;
+    experienceReplayDatabase[i]["Termination"] = _experienceReplay[i].termination;
+    experienceReplayDatabase[i]["Truncated State"] = _experienceReplay[i].truncatedState;
+    experienceReplayDatabase[i]["Policy"] = _experienceReplay[i].policy;
+    experienceReplayDatabase[i]["Metadata"] = _experienceReplay[i].metadata;
+    experienceReplayDatabase[i]["Cache"]["Keys"] = _experienceReplay[i].cache.getKeys();
+    experienceReplayDatabase[i]["Cache"]["Values"] = _experienceReplay[i].cache.getValues();
+    experienceReplayDatabase[i]["Cache"]["Times"] = _experienceReplay[i].cache.getTimes();
   }
+
+  // If results directory doesn't exist, create it
+  if (!dirExists(_k->_fileOutputPath)) mkdir(_k->_fileOutputPath);
+
+  // Resolving file path
+  std::string dbPath = "./" + _k->_fileOutputPath + "/" + _experienceReplaySerializationFileName;
+
+  // Storing database to file
+  if (saveJsonToFile(dbPath.c_str(), experienceReplayDatabase) != 0)
+   KORALI_LOG_ERROR("Could not serialize experience replay database into file %s\n", dbPath.c_str());
+
+  auto endTime = std::chrono::steady_clock::now();                                                                   // Profiling
+  _sessionSerializationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
+  _generationSerializationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
 }
 
 void Agent::deserializeExperienceReplay()
 {
-  for (size_t i = 0; i < _experienceReplayDatabase.size(); i++)
+ auto beginTime = std::chrono::steady_clock::now(); // Profiling
+
+ // Creating JSON storage variable
+ knlohmann::json experienceReplayDatabase;
+
+ // Resolving file path
+ std::string dbPath = "./" + _k->_fileOutputPath + "/" + _experienceReplaySerializationFileName;
+
+ // Loading database from file
+ _k->_logger->logInfo("Detailed", "Loading previous run ER database from file %s...\n", dbPath.c_str());
+ if (loadJsonFromFile(experienceReplayDatabase, dbPath.c_str()) == false)
+  KORALI_LOG_ERROR("Could not deserialize experience replay database.\n");
+
+ // Clearing existing database
+ _experienceReplay.clear();
+
+ // Deserializing database from JSON to the agent's database
+  for (size_t i = 0; i < experienceReplayDatabase.size(); i++)
   {
     experience_t e;
-    e.state = _experienceReplayDatabase[i]["State"].get<std::vector<float>>();
-    e.action = _experienceReplayDatabase[i]["Action"].get<std::vector<float>>();
-    e.reward = _experienceReplayDatabase[i]["Reward"].get<float>();
-    e.termination = _experienceReplayDatabase[i]["Termination"].get<termination_t>();
-    e.truncatedState = _experienceReplayDatabase[i]["Truncated State"].get<std::vector<float>>();
-    e.policy = _experienceReplayDatabase[i]["Policy"];
-    e.metadata = _experienceReplayDatabase[i]["Metadata"];
+    e.state = experienceReplayDatabase[i]["State"].get<std::vector<float>>();
+    e.action = experienceReplayDatabase[i]["Action"].get<std::vector<float>>();
+    e.reward = experienceReplayDatabase[i]["Reward"].get<float>();
+    e.termination = experienceReplayDatabase[i]["Termination"].get<termination_t>();
+    e.truncatedState = experienceReplayDatabase[i]["Truncated State"].get<std::vector<float>>();
+    e.policy = experienceReplayDatabase[i]["Policy"];
+    e.metadata = experienceReplayDatabase[i]["Metadata"];
+
     _experienceReplay.add(e);
   }
+
+  // Now updating the cache for every experience
+  for (size_t i = 0; i < _experienceReplay.size(); i++)
+  {
+   // Creating caches for the new experience
+   _experienceReplay[i].cache.setMaxAge(_cachePersistence);
+   _experienceReplay[i].cache.setTimer(&_policyUpdateCount);
+
+   for (size_t c = 0; c < experienceReplayDatabase[i]["Cache"]["Keys"].size(); c++)
+   {
+    auto key = experienceReplayDatabase[i]["Cache"]["Keys"][c].get<std::string>();
+    auto val = experienceReplayDatabase[i]["Cache"]["Values"][c].get<float>();
+    auto time = experienceReplayDatabase[i]["Cache"]["Times"][c].get<size_t>();
+    _experienceReplay[i].cache.set(key, val, time);
+   }
+  }
+
+  auto endTime = std::chrono::steady_clock::now();         // Profiling
+  double deserializationTime = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count() / 1.0e+9; // Profiling
+  _k->_logger->logInfo("Detailed", "Took %f to deserialize ER database.\n", deserializationTime);
 }
 
 void Agent::printGenerationAfter()
@@ -681,19 +751,20 @@ void Agent::printGenerationAfter()
     else
       _k->_logger->logInfo("Normal", " + Policy Update Count:         %lu\n", _policyUpdateCount);
 
-    _k->_logger->logInfo("Normal", " + Latest Reward:              %f/%f\n", _lastTrainingReward, _problem->_trainingRewardThreshold);
-    _k->_logger->logInfo("Normal", " + Best Reward:                 %f (%lu)\n", _bestTrainingReward, _bestTrainingEpisode);
+    _k->_logger->logInfo("Normal", " + Latest Reward:               %f/%f\n", _trainingLastReward, _problem->_trainingRewardThreshold);
+    _k->_logger->logInfo("Normal", " + %lu-Deep Average Reward:      %f\n", _trainingAverageDepth, _trainingAverageReward);
+    _k->_logger->logInfo("Normal", " + Best Reward:                 %f (%lu)\n", _trainingBestReward, _trainingBestEpisodeId);
 
     _k->_logger->logInfo("Normal", "Testing Statistics:\n");
 
-    _k->_logger->logInfo("Normal", " + Candidate Policies:          %lu\n", _candidatePoliciesTested);
+    _k->_logger->logInfo("Normal", " + Candidate Policies:          %lu\n", _testingCandidateCount);
 
-    _k->_logger->logInfo("Normal", " + Latest Average (Worst / Best) Reward: %f (%f / %f)\n", _averageTestingReward, _worstTestingReward, _bestTestingReward);
+    _k->_logger->logInfo("Normal", " + Latest Average (Worst / Best) Reward: %f (%f / %f)\n", _testingAverageReward, _testingWorstReward, _testingBestReward);
 
-    if (_targetAverageTestingReward > -korali::Inf)
-      _k->_logger->logInfo("Normal", " + Best Average Reward: %f/%f (%lu)\n", _bestAverageTestingReward, _targetAverageTestingReward, _bestTestingEpisode);
+    if (_testingTargetAverageReward > -korali::Inf)
+      _k->_logger->logInfo("Normal", " + Best Average Reward: %f/%f (%lu)\n", _testingBestAverageReward, _testingTargetAverageReward, _testingBestEpisodeId);
     else
-      _k->_logger->logInfo("Normal", " + Best Average Reward: %f (%lu)\n", _bestAverageTestingReward, _bestTestingEpisode);
+      _k->_logger->logInfo("Normal", " + Best Average Reward: %f (%lu)\n", _testingBestAverageReward, _testingBestEpisodeId);
 
     printAgentInformation();
 

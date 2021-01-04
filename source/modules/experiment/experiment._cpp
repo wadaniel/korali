@@ -222,12 +222,12 @@ void Experiment::initialize()
   // Getting configuration back into the JSON storage
   getConfiguration(_js.getJson());
 
+  // Updating verbosity level
+  _logger = new Logger(_consoleOutputVerbosity, stdout);
+
   // Initializing problem and solver modules
   _problem->initialize();
   _solver->initialize();
-
-  // Updating verbosity level
-  _logger = new Logger(_consoleOutputVerbosity, stdout);
 
   _isInitialized = true;
 }

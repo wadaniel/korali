@@ -21,13 +21,6 @@ do
         ${file} > __test-${file}; check_result
 done
 
-###### If this is macOS, C++ linking may not be automatic: do not run test
-arch="$(uname -s)"
-if [ "$arch" == "Darwin" ]; then
- log "[Korali] MacOS (Darwin) System Detected, aborting test."
- exit 0
-fi
-
 ##### Running Test
 
 for file in __test-*.py

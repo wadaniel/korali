@@ -80,11 +80,6 @@ struct experience_t
    * @brief Provides a cached repository for pre-calculated values. It has an expiration threshold after which it's values should be re-calculated.
    */
   kCache<std::string, float, size_t> cache;
-
-  /**
-   * @brief Provides a cached repository for pre-calculated vector values. It has an expiration threshold after which it's values should be re-calculated.
-   */
-  kCache<std::string, std::vector<float>, size_t> vectorCache;
 };
 
 class Agent : public Solver

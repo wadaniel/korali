@@ -46,7 +46,7 @@ e["Variables"][3]["Exploration Sigma"]["Annealing Rate"] = 1e-5
 e["Solver"]["Type"] = "Agent / Continuous / GFPT"
 e["Solver"]["Mode"] = "Training"
 e["Solver"]["Learning Rate"] = 0.01
-e["Solver"]["Experiences Per Generation"] = 500
+e["Solver"]["Episodes Per Generation"] = 1
 e["Solver"]["Experiences Between Policy Updates"] = 10
 e["Solver"]["Cache Persistence"] = 100
 e["Solver"]["Discount Factor"] = 0.99
@@ -60,7 +60,7 @@ e["Solver"]["Mini Batch Strategy"] = "Uniform"
 
 e["Solver"]["Experience Replay"]["Start Size"] = 4096
 e["Solver"]["Experience Replay"]["Maximum Size"] = 65536
-e["Solver"]["Experience Replay"]["Serialization Frequency"] = 0
+e["Solver"]["Experience Replay"]["Serialization"]["Frequency"] = 0
 
 ### Configuring the Remember-and-Forget Experience Replay algorithm
 
@@ -100,7 +100,7 @@ e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 16
 
 ### Defining Termination Criteria
 
-e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 2.0
+e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 2.0
 
 ### Setting file output configuration
 

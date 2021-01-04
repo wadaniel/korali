@@ -37,7 +37,7 @@ e["Variables"][5]["Exploration Sigma"]["Annealing Rate"] = 0.00
 e["Solver"]["Type"] = "Agent / Continuous / GFPT"
 e["Solver"]["Mode"] = "Training"
 e["Solver"]["Time Sequence Length"] = 1
-e["Solver"]["Experiences Per Generation"] = 500
+e["Solver"]["Episodes Per Generation"] = 1
 e["Solver"]["Experiences Between Policy Updates"] = 1
 e["Solver"]["Cache Persistence"] = 10
 e["Solver"]["Discount Factor"] = 0.99
@@ -48,7 +48,7 @@ e["Solver"]["Mini Batch Size"] = 32
 e["Solver"]["Mini Batch Strategy"] = "Uniform"
 e["Solver"]["Experience Replay"]["Start Size"] =   1024
 e["Solver"]["Experience Replay"]["Maximum Size"] = 32768
-e["Solver"]["Experience Replay"]["Serialization Frequency"] = 10
+e["Solver"]["Experience Replay"]["Serialization"]["Frequency"] = 10
 
 ## Defining Critic and Policy Configuration
 
@@ -77,7 +77,7 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tan
 ### Defining Termination Criteria
 
 e["Problem"]["Training Reward Threshold"] = 750
-e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 900
+e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 900
 
 ### Setting file output configuration
 

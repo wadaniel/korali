@@ -26,7 +26,7 @@ e["Problem"]["Actions Between Policy Updates"] = 200
 
 ### Defining Termination Criteria
 
-e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 40.0
+e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 40.0
 
 ### Defining state variables
 
@@ -58,7 +58,7 @@ e["Solver"]["Type"] = "Agent / Continuous / VRACER"
 e["Solver"]["Mode"] = "Training"
 e["Solver"]["Experiences Between Policy Updates"] = 1
 e["Solver"]["Cache Persistence"] = 250
-e["Solver"]["Experiences Per Generation"] = 200
+e["Solver"]["Episodes Per Generation"] = 1
 e["Solver"]["Policy Distribution"] = "Normal"
 e["Solver"]["Discount Factor"] = 0.99
 e["Solver"]["Learning Rate"] = 1e-4

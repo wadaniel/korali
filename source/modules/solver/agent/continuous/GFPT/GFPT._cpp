@@ -258,8 +258,8 @@ void GFPT::trainPolicy()
     // Checking whether the experience is on policy (i.e., it is within the [1/cutoff, cutoff] region)
     bool isOnPolicy = (importanceWeight > (1.0f / _experienceReplayREFERCutoffScale)) && (importanceWeight < _experienceReplayREFERCutoffScale);
 
-    // Optimizing best action for the selected experience (or gathering the value from the cache, if recently calculated)
-    auto bstMean = _experienceReplay[expId].vectorCache.access("Optimal Action", [this, expId, curMeans]() { return this->optimizeAction(expId, curMeans); });
+    // Optimizing best action for the selected experience
+    auto bstMean = optimizeAction(expId, curMeans);
 
     /*****************************************
     * Calculating Critic Gradients

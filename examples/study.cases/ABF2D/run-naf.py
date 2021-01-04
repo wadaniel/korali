@@ -26,7 +26,7 @@ e["Problem"]["Actions Between Policy Updates"] = 1
 
 ### Defining Termination Criteria
 
-e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 60.0
+e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 60.0
 
 ### Defining state variables
 

@@ -39,35 +39,37 @@ e["Variables"][3]["Type"] = "State"
 
 e["Variables"][4]["Name"] = "Push Direction"
 e["Variables"][4]["Type"] = "Action"
-e["Variables"][4]["Exploration Sigma"]["Initial"] = 1.0
-e["Variables"][4]["Exploration Sigma"]["Final"] = 1.0
-e["Variables"][4]["Exploration Sigma"]["Annealing Rate"] = 0.0
 
-### Defining Agent Configuration 
+### Configuring Agent hyperparameters
 
-e["Solver"]["Type"] = "Agent / Continuous / GFPT"
+e["Solver"]["Type"] = "Agent / Discrete / DVRACER"
 e["Solver"]["Mode"] = "Training"
-e["Solver"]["Time Sequence Length"] = 1
-e["Solver"]["Experiences Per Generation"] = 500
-e["Solver"]["Experiences Between Policy Updates"] = 1
-e["Solver"]["Cache Persistence"] = 10
+e["Solver"]["Experiences Between Policy Updates"] = 10
+e["Solver"]["Cache Persistence"] = 500
+e["Solver"]["Episodes Per Generation"] = 1
+
+### Defining Experience Replay configuration
+
+e["Solver"]["Experience Replay"]["Start Size"] = 1000
+e["Solver"]["Experience Replay"]["Maximum Size"] = 10000
+
+### Configuring the Remember-and-Forget Experience Replay algorithm
+
+e["Solver"]["Experience Replay"]["REFER"]["Enabled"] = True
+e["Solver"]["Experience Replay"]["REFER"]["Cutoff Scale"] = 4.0
+e["Solver"]["Experience Replay"]["REFER"]["Target"] = 0.1
+e["Solver"]["Experience Replay"]["REFER"]["Initial Beta"] = 0.6
+e["Solver"]["Experience Replay"]["REFER"]["Annealing Rate"] = 5e-7
+
+### Defining probability of taking a random action (epsilon)
+
+e["Solver"]["Random Action Probability"] = 0.05
+
+## Defining Q-Critic and Action-selection (policy) optimizers
+
 e["Solver"]["Discount Factor"] = 0.99
-
-### Defining the configuration of replay memory
-
+e["Solver"]["Learning Rate"] = 1e-4
 e["Solver"]["Mini Batch Size"] = 32
-e["Solver"]["Mini Batch Strategy"] = "Uniform"
-e["Solver"]["Experience Replay"]["Start Size"] =   1024
-e["Solver"]["Experience Replay"]["Maximum Size"] = 32768
-e["Solver"]["Experience Replay"]["Serialization Frequency"] = 10
-
-## Defining Critic and Policy Configuration
-
-e["Solver"]["Learning Rate"] = 0.01
-e["Solver"]["Policy"]["Learning Rate Scale"] = 1.0
-e["Solver"]["Critic"]["Advantage Function Population"] = 12
-e["Solver"]["Policy"]["Target Accuracy"] = 0.001
-e["Solver"]["Policy"]["Optimization Candidates"] = 12
 
 ### Configuring the neural network and its hidden layers
 
@@ -87,7 +89,7 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tan
 
 ### Defining Termination Criteria
 
-e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 800
+e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 800
 
 ### Setting file output configuration
 

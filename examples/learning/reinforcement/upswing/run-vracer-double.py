@@ -33,12 +33,13 @@ e["Variables"][7]["Upper Bound"] = +20.0
 
 ### Defining Termination Criteria
 
-e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 900
+e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 900
 
 ### Defining Agent Configuration 
 
 e["Solver"]["Type"] = "Agent / Continuous / VRACER"
 e["Solver"]["Mode"] = "Training"
+e["Solver"]["Episodes Per Generation"] = 1
 e["Solver"]["Experiences Between Policy Updates"] = 1
 e["Solver"]["Cache Persistence"] = 500
 e["Solver"]["Policy Distribution"] = "Normal"

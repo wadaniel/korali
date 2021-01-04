@@ -40,7 +40,7 @@ e["Variables"][4]["Upper Bound"] = +10.0
 e["Solver"]["Type"] = "Agent / Continuous / VRACER"
 e["Solver"]["Mode"] = "Training"
 e["Solver"]["Experiences Between Policy Updates"] = 10
-e["Solver"]["Experiences Per Generation"] = 500
+e["Solver"]["Episodes Per Generation"] = 1
 e["Solver"]["Cache Persistence"] = 100
 
 ### Defining the configuration of replay memory
@@ -80,7 +80,7 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tan
 
 ### Defining Termination Criteria
 
-e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 450
+e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 450
 
 ### Setting file output configuration
 

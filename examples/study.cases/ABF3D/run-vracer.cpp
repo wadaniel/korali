@@ -5,7 +5,7 @@ int main(int argc, char *argv[])
 {
   /////// Initializing environment
 
- initializeEnvironment("_config/dpd_2_d_eu_gaussian.json");
+  initializeEnvironment("_config/dpd_2_d_eu_gaussian.json");
 
   auto e = korali::Experiment();
 

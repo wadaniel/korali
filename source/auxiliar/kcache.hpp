@@ -182,32 +182,32 @@ class kCache
   */
   std::vector<keyType> getKeys()
   {
-   std::vector <keyType> v;
-   for(auto it = _data.begin(); it != _data.end(); ++it ) v.push_back( it->first );
-   return v;
+    std::vector<keyType> v;
+    for (auto it = _data.begin(); it != _data.end(); ++it) v.push_back(it->first);
+    return v;
   }
 
   /**
    * @brief Returns the stored entry values in the cache
    * @return A vector containing all stored entry values, ordered by key
    */
-   std::vector<valType> getValues()
-   {
-    std::vector <valType> v;
-    for(auto it = _data.begin(); it != _data.end(); ++it ) v.push_back( it->second.value );
+  std::vector<valType> getValues()
+  {
+    std::vector<valType> v;
+    for (auto it = _data.begin(); it != _data.end(); ++it) v.push_back(it->second.value);
     return v;
-   }
+  }
 
   /**
    * @brief Returns the stored entry times in the cache
    * @return A vector containing all stored entry times, ordered by key
    */
-   std::vector<timerType> getTimes()
-   {
-    std::vector <timerType> v;
-    for(auto it = _data.begin(); it != _data.end(); ++it ) v.push_back( it->second.time );
+  std::vector<timerType> getTimes()
+  {
+    std::vector<timerType> v;
+    for (auto it = _data.begin(); it != _data.end(); ++it) v.push_back(it->second.time);
     return v;
-   }
+  }
 };
 
 } // namespace korali

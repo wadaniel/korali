@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
 
   e["Solver"]["Mini Batch Size"] = 32;
   e["Solver"]["Mini Batch Strategy"] = "Uniform";
-  e["Solver"]["Experience Replay"]["Start Size"] =   1024;
+  e["Solver"]["Experience Replay"]["Start Size"] = 1024;
   e["Solver"]["Experience Replay"]["Maximum Size"] = 32768;
   e["Solver"]["Experience Replay"]["Serialization"]["Frequency"] = 1;
 

@@ -32,7 +32,7 @@ void DQN::initializeAgent()
   {
     _criticExperiment["Problem"]["Solution"][i][0] = 0.0;
 
-    for (size_t j = 0; j < _k->_variables.size(); j++)
+    for (size_t j = 0; j < _variableCount; j++)
       _criticExperiment["Problem"]["Inputs"][i][j] = 0.0;
   }
 

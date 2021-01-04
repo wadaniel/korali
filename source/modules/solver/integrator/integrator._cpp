@@ -8,15 +8,17 @@ namespace solver
 {
 void Integrator::setInitialConfiguration()
 {
+  _variableCount = _k->_variables.size();
+
   _integral = 0;
   _sampleCount = 1;
-  for (size_t i = 0; i < _k->_variables.size(); i++)
+  for (size_t i = 0; i < _variableCount; i++)
     _sampleCount *= _k->_variables[i]->_numberOfGridpoints;
   _maxModelEvaluations = std::min(_maxModelEvaluations, _sampleCount);
 
   if (_k->_variables[0]->_samplePoints.size() > 0)
   { //quadrature
-    _indicesHelper.resize(_k->_variables.size());
+    _indicesHelper.resize(_variableCount);
     _indicesHelper[0] = _k->_variables[0]->_samplePoints.size();
     _indicesHelper[1] = _k->_variables[0]->_samplePoints.size();
     for (size_t i = 2; i < _indicesHelper.size(); i++)
@@ -33,14 +35,14 @@ void Integrator::runGeneration()
   _executionsPerGeneration = std::min(_executionsPerGeneration, _maxModelEvaluations - _modelEvaluationCount);
 
   std::vector<Sample> samples(_executionsPerGeneration);
-  std::vector<double> sampleData(_k->_variables.size());
-  std::vector<std::vector<size_t>> usedIndices(_executionsPerGeneration, std::vector<size_t>(_k->_variables.size()));
+  std::vector<double> sampleData(_variableCount);
+  std::vector<std::vector<size_t>> usedIndices(_executionsPerGeneration, std::vector<size_t>(_variableCount));
 
   size_t rest, index;
   for (size_t i = 0; i < _executionsPerGeneration; i++)
   {
     rest = _modelEvaluationCount;
-    for (int d = _k->_variables.size() - 1; d >= 0; d--)
+    for (int d = _variableCount - 1; d >= 0; d--)
     {
       if (_k->_variables[0]->_samplePoints.size() > 0)
       { //quadrature
@@ -78,7 +80,7 @@ void Integrator::runGeneration()
   for (size_t i = 0; i < _executionsPerGeneration; i++)
   {
     weight = 1.0;
-    for (size_t d = 0; d < _k->_variables.size(); d++)
+    for (size_t d = 0; d < _variableCount; d++)
       weight *= _k->_variables[d]->_quadratureWeights[usedIndices[i][d]];
 
     auto f = KORALI_GET(double, samples[i], "Evaluation");

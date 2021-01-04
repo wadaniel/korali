@@ -497,7 +497,7 @@ void HMC::updateStepSize()
     _stepSize = std::exp(_logDualStepSize) * (1. + _stepSizeJitter * (2. * _uniformGenerator->getRandomNumber() - 1.));
   }
 
-  if (_useNUTS == false)
+  if (_useNUTS == false && _useAdaptiveStepSize == true)
   {
     _numIntegrationSteps = std::max((size_t)1, (size_t)std::round(_targetIntegrationTime / _stepSize));
     if (_numIntegrationSteps > _maxIntegrationSteps)

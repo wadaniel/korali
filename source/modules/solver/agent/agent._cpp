@@ -715,7 +715,7 @@ void Agent::deserializeExperienceReplay()
 
   auto endTime = std::chrono::steady_clock::now();                                                                         // Profiling
   double deserializationTime = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count() / 1.0e+9; // Profiling
-  _k->_logger->logInfo("Detailed", "Took %f to deserialize ER database.\n", deserializationTime);
+  _k->_logger->logInfo("Detailed", "Took %fs to deserialize ER database.\n", deserializationTime);
 }
 
 void Agent::printGenerationAfter()

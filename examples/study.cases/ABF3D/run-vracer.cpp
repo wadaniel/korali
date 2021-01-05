@@ -5,7 +5,7 @@ int main(int argc, char *argv[])
 {
   /////// Initializing environment
 
-  initializeEnvironment("_config/dpd_2_d_eu_gaussian.json");
+  initializeEnvironment("_config/helix_2d_eu_const.json");
 
   auto e = korali::Experiment();
 
@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
   e["Problem"]["Environment Function"] = &runEnvironment;
   e["Problem"]["Training Reward Threshold"] = 1.5;
   e["Problem"]["Policy Testing Episodes"] = 20;
-  e["Problem"]["Actions Between Policy Updates"] = 243;
+  e["Problem"]["Actions Between Policy Updates"] = 1;
 
   //// Setting state variables
 
@@ -69,27 +69,26 @@ int main(int argc, char *argv[])
   e["Solver"]["Mode"] = "Training";
   e["Solver"]["Episodes Per Generation"] = 1;
   e["Solver"]["Experiences Between Policy Updates"] = 1;
-  e["Solver"]["Cache Persistence"] = 500;
+  e["Solver"]["Cache Persistence"] = 200;
   e["Solver"]["Learning Rate"] = 1e-4;
+  e["Solver"]["Discount Factor"] = 0.95;
 
   /// Defining the configuration of replay memory
 
   e["Solver"]["Experience Replay"]["Start Size"] = 4096;
   e["Solver"]["Experience Replay"]["Maximum Size"] = 65536;
-  e["Solver"]["Experience Replay"]["Serialization"]["Frequency"] = 10;
-  e["Solver"]["Experience Replay"]["Serialization"]["File Name"] = "erdb.dat";
 
   /// Configuring the Remember-and-Forget Experience Replay algorithm
 
   e["Solver"]["Experience Replay"]["REFER"]["Enabled"] = true;
   e["Solver"]["Experience Replay"]["REFER"]["Cutoff Scale"] = 4.0;
-  e["Solver"]["Experience Replay"]["REFER"]["Target"] = 0.1;
+  e["Solver"]["Experience Replay"]["REFER"]["Target"] = 0.25;
   e["Solver"]["Experience Replay"]["REFER"]["Initial Beta"] = 0.1;
   e["Solver"]["Experience Replay"]["REFER"]["Annealing Rate"] = 5e-7;
 
   /// Configuring Mini Batch
 
-  e["Solver"]["Mini Batch Size"] = 128;
+  e["Solver"]["Mini Batch Size"] = 256;
   e["Solver"]["Mini Batch Strategy"] = "Uniform";
 
   /// Configuring the neural network and its hidden layers

@@ -190,9 +190,10 @@ void Agent::trainingGeneration()
   if (_miniBatchStrategy == "Prioritized") updateExperienceReplayProbabilities();
 
   // Now serializing experience replay database
-  if (_experienceReplaySerializationFrequency > 0)
-    if (_k->_currentGeneration % _experienceReplaySerializationFrequency == 0)
-      serializeExperienceReplay();
+  if (_k->_fileOutputEnabled)
+   if (_k->_fileOutputFrequency > 0)
+    if (_k->_currentGeneration % _k->_fileOutputFrequency == 0)
+     serializeExperienceReplay();
 
   // Measuring generation time
   auto endTime = std::chrono::steady_clock::now();                                                             // Profiling
@@ -605,7 +606,8 @@ std::vector<std::vector<float>> Agent::getStateActionTimeSequence(size_t expId)
 
 void Agent::finalize()
 {
-  if (_experienceReplaySerializationFrequency > 0) serializeExperienceReplay();
+ if (_k->_fileOutputEnabled)
+     serializeExperienceReplay();
 
   _k->_logger->logInfo("Normal", "Waiting for pending agents to finish...\n");
 
@@ -653,7 +655,7 @@ void Agent::serializeExperienceReplay()
   if (!dirExists(_k->_fileOutputPath)) mkdir(_k->_fileOutputPath);
 
   // Resolving file path
-  std::string dbPath = "./" + _k->_fileOutputPath + "/" + _experienceReplaySerializationFileName;
+  std::string dbPath = "./" + _k->_fileOutputPath + "/ERDb.json";
 
   // Storing database to file
   if (saveJsonToFile(dbPath.c_str(), experienceReplayDatabase) != 0)
@@ -672,7 +674,7 @@ void Agent::deserializeExperienceReplay()
   knlohmann::json experienceReplayDatabase;
 
   // Resolving file path
-  std::string dbPath = "./" + _k->_fileOutputPath + "/" + _experienceReplaySerializationFileName;
+  std::string dbPath = "./" + _k->_fileOutputPath + "/ERDb.json";
 
   // Loading database from file
   _k->_logger->logInfo("Detailed", "Loading previous run ER database from file %s...\n", dbPath.c_str());

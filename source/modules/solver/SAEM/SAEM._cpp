@@ -21,13 +21,13 @@ void SAEM::initialize()
   if (iCompare(_k->_problem->getType(), "Bayesian/Latent/ExponentialLatent") == false)
     KORALI_LOG_ERROR("SAEM can only optimize problems of type 'Bayesian/Latent/ExponentialLatent' .\n");
 
+  _variableCount = _k->_variables.size();
   _latentProblem = dynamic_cast<korali::problem::bayesian::latent::ExponentialLatent *>(_k->_problem);
 
-  _numberVariables = _k->_variables.size();
-  _numberLatent = _latentProblem->_latentVariableIndices.size();
-  _numberHyperparameters = _numberVariables - _numberLatent;
+  _numberLatentVariables = _latentProblem->_latentVariableIndices.size();
+  _numberHyperparameters = _variableCount - _numberLatentVariables;
 
-  for (size_t i = 0; i < _numberVariables; i++)
+  for (size_t i = 0; i < _variableCount; i++)
     if (std::isfinite(_k->_variables[i]->_initialValue) == false)
       KORALI_LOG_ERROR("Initial Value of variable \'%s\' not defined (no defaults can be calculated).\n", _k->_variables[i]->_name.c_str());
 
@@ -38,7 +38,7 @@ void SAEM::initialize()
 
   // The variables are our hyperparameters
   int hyperparamIdx = 0;
-  for (size_t i = 0; i < _numberVariables; i++)
+  for (size_t i = 0; i < _variableCount; i++)
   {
     if (isLatent(i))
       continue;
@@ -89,8 +89,8 @@ void SAEM::setInitialConfiguration()
   std::fill(_previousS.begin(), _previousS.end(), -1); // Set to something != 0, to detect it if it is used anywhere
 
   // set initial "sample means"
-  _previousLatentSampleMeans.resize(_numberLatent);
-  for (size_t i = 0; i < _numberLatent; i++)
+  _previousLatentSampleMeans.resize(_numberLatentVariables);
+  for (size_t i = 0; i < _numberLatentVariables; i++)
   {
     size_t idx = _latentProblem->_latentVariableIndices[i];
     _previousLatentSampleMeans[i] = _k->_variables[idx]->_initialValue;
@@ -99,7 +99,7 @@ void SAEM::setInitialConfiguration()
   // Set starting values for hyperparameters
   _currentHyperparameters.resize(_numberHyperparameters);
   size_t hyperparam_index = 0;
-  for (size_t i = 0; i < _numberVariables; i++)
+  for (size_t i = 0; i < _variableCount; i++)
   {
     if (isLatent(i)) continue;
     _currentHyperparameters[hyperparam_index] = _k->_variables[i]->_initialValue;
@@ -116,7 +116,7 @@ void SAEM::sampleLatent()
   sample["Sample Id"] = 0;
   sample["Hyperparameters"] = _currentHyperparameters;
   sample["Number Samples"] = _numberSamplesPerStep;
-  sample["Number Of Latent Variables"] = _numberLatent;
+  sample["Number Of Latent Variables"] = _numberLatentVariables;
   sample["Module"] = "Problem";
   sample["Operation"] = "Sample Latent Variables";
 
@@ -334,7 +334,7 @@ void SAEM::printGenerationAfter()
   _k->_logger->logInfo("Normal", "    Current LogLikelihood:          %.2e\n", _currentLogLikelihood);
   _k->_logger->logInfo("Normal", "    Best LogLikelihood:             %.2e\n", _bestLogLikelihood);
   _k->_logger->logInfo("Detailed", "    - Current latent variable sample values : \n");
-  for (size_t i = 0; i < _numberLatent; i++)
+  for (size_t i = 0; i < _numberLatentVariables; i++)
   {
     int idx = _latentProblem->_latentVariableIndices[i];
     _k->_logger->logInfo("Detailed", "      %s : %.2f +- %.2f  \n", _k->_variables[idx]->_name.c_str(), _currentSampleMeans[i], _currentSampleStandardDeviations[i]);
@@ -373,7 +373,7 @@ void SAEM::finalize()
 
   _k->_logger->logInfo("Minimal", "-- Final latent variable sample values : \n");
 
-  for (size_t i = 0; i < _numberLatent; i++)
+  for (size_t i = 0; i < _numberLatentVariables; i++)
   {
     int idx = _latentProblem->_latentVariableIndices[i];
     _k->_logger->logInfo("Minimal", " %s : %.2f +- %.2f  \n", _k->_variables[idx]->_name.c_str(), _currentSampleMeans[i], _currentSampleStandardDeviations[i]);

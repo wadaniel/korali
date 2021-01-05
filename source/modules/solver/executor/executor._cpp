@@ -8,17 +8,18 @@ namespace solver
 {
 void Executor::runGeneration()
 {
+  _variableCount = _k->_variables.size();
   _sampleCount = std::max(_k->_variables[0]->_precomputedValues.size(), _k->_variables[0]->_sampledValues.size());
 
   _maxModelEvaluations = std::min(_maxModelEvaluations, _sampleCount);
   _executionsPerGeneration = std::min(_executionsPerGeneration, _maxModelEvaluations - _modelEvaluationCount);
 
   std::vector<Sample> samples(_executionsPerGeneration);
-  std::vector<double> sampleData(_k->_variables.size());
+  std::vector<double> sampleData(_variableCount);
 
   for (size_t i = 0; i < _executionsPerGeneration; i++)
   {
-    for (size_t d = 0; d < _k->_variables.size(); d++)
+    for (size_t d = 0; d < _variableCount; d++)
     {
       if (_k->_variables[0]->_precomputedValues.size() > 0)
         sampleData[d] = _k->_variables[d]->_precomputedValues[_modelEvaluationCount];

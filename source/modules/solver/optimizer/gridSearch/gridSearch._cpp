@@ -10,8 +10,10 @@ namespace optimizer
 {
 void GridSearch::setInitialConfiguration()
 {
+  _variableCount = _variableCount;
+
   _numberOfValues = 1;
-  for (size_t i = 0; i < _k->_variables.size(); i++)
+  for (size_t i = 0; i < _variableCount; i++)
     _numberOfValues *= _k->_variables[i]->_values.size();
 
   if (_numberOfValues > _maxModelEvaluations)
@@ -22,11 +24,11 @@ void GridSearch::setInitialConfiguration()
   _maxModelEvaluations = _numberOfValues;
 
   _objective.resize(_numberOfValues);
-  _locationOfMaximum.resize(_k->_variables.size());
+  _locationOfMaximum.resize(_variableCount);
 
   // We assume i = _index[0] + _index[1]*_sample[0].size() + _index[1]*_sample[0].size()*_sample[1].size() + .....
-  _indexHelper.resize(_k->_variables.size());
-  for (size_t i = 0; i < _k->_variables.size(); i++)
+  _indexHelper.resize(_variableCount);
+  for (size_t i = 0; i < _variableCount; i++)
   {
     if (i == 0 || i == 1)
       _indexHelper[i] = _k->_variables[0]->_values.size();
@@ -41,13 +43,13 @@ void GridSearch::runGeneration()
 
   // Example: Evaluating a sample
   std::vector<Sample> samples(_numberOfValues);
-  std::vector<double> sampleData(_k->_variables.size());
+  std::vector<double> sampleData(_variableCount);
 
   size_t rest, index;
   for (size_t i = 0; i < _numberOfValues; i++)
   {
     rest = i;
-    for (int d = _k->_variables.size() - 1; d >= 0; d--)
+    for (int d = _variableCount - 1; d >= 0; d--)
     {
       // We assume i = _index[0] + _index[1]*_sample[0].size() + _index[1]*_sample[0].size()*_sample[1].size() + .....
       if (d == 0)

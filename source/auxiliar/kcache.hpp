@@ -105,6 +105,20 @@ class kCache
   }
 
   /**
+   * @brief Updates the value of a data element in the cache, forcing a specific time for it
+   * @param key Key of the data element to update
+   * @param val Value of the data element to update
+   * @param time Time assigned to the data element
+   */
+  void set(const keyType &key, const valType &val, const timerType &time)
+  {
+    omp_set_lock(&_lock);
+    _data[key].value = val;
+    _data[key].time = time;
+    omp_unset_lock(&_lock);
+  }
+
+  /**
    * @brief Checks whether a given data element is present in cache
    * @param key Key of the data element to check
    * @return Whether or not the data element is present
@@ -160,6 +174,39 @@ class kCache
     }
 
     return val;
+  }
+
+  /**
+  * @brief Returns the stored entry keys as an ordered vector
+  * @return A vector containing all ordered keys
+  */
+  std::vector<keyType> getKeys()
+  {
+    std::vector<keyType> v;
+    for (auto it = _data.begin(); it != _data.end(); ++it) v.push_back(it->first);
+    return v;
+  }
+
+  /**
+   * @brief Returns the stored entry values in the cache
+   * @return A vector containing all stored entry values, ordered by key
+   */
+  std::vector<valType> getValues()
+  {
+    std::vector<valType> v;
+    for (auto it = _data.begin(); it != _data.end(); ++it) v.push_back(it->second.value);
+    return v;
+  }
+
+  /**
+   * @brief Returns the stored entry times in the cache
+   * @return A vector containing all stored entry times, ordered by key
+   */
+  std::vector<timerType> getTimes()
+  {
+    std::vector<timerType> v;
+    for (auto it = _data.begin(); it != _data.end(); ++it) v.push_back(it->second.time);
+    return v;
   }
 };
 

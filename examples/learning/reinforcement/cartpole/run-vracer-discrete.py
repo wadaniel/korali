@@ -40,14 +40,20 @@ e["Solver"]["Type"] = "Agent / Discrete / DVRACER"
 e["Solver"]["Mode"] = "Training"
 e["Solver"]["Experiences Between Policy Updates"] = 10
 e["Solver"]["Cache Persistence"] = 500
-e["Solver"]["Experiences Per Generation"] = 500
+e["Solver"]["Episodes Per Generation"] = 1
 
 ### Defining Experience Replay configuration
 
 e["Solver"]["Experience Replay"]["Start Size"] = 1000
 e["Solver"]["Experience Replay"]["Maximum Size"] = 10000
-e["Solver"]["Refer"]["Target Off Policy Fraction"] = 0.1
-e["Solver"]["Refer"]["Cutoff Scale"] = 1.0
+
+### Configuring the Remember-and-Forget Experience Replay algorithm
+
+e["Solver"]["Experience Replay"]["REFER"]["Enabled"] = True
+e["Solver"]["Experience Replay"]["REFER"]["Cutoff Scale"] = 4.0
+e["Solver"]["Experience Replay"]["REFER"]["Target"] = 0.1
+e["Solver"]["Experience Replay"]["REFER"]["Initial Beta"] = 0.6
+e["Solver"]["Experience Replay"]["REFER"]["Annealing Rate"] = 5e-7
 
 ### Defining probability of taking a random action (epsilon)
 
@@ -77,7 +83,7 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tan
 
 ### Defining Termination Criteria
 
-e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 450
+e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 450
 
 ### Setting file output configuration
 

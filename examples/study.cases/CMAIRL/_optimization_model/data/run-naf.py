@@ -17,7 +17,7 @@ envp = lambda s : env(s,target)
 
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = envp
-e["Problem"]["Training Reward Threshold"] = 490
+e["Problem"]["Training Reward Threshold"] = 10
 e["Problem"]["Policy Testing Episodes"] = 20
 e["Problem"]["Actions Between Policy Updates"] = 5
 
@@ -79,7 +79,7 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tan
 
 ### Defining Termination Criteria
 
-e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 490
+e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 10
 e["Solver"]["Termination Criteria"]["Max Generations"] = 10000
 
 ### Setting file output configuration

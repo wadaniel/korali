@@ -14,7 +14,7 @@ e = korali.Experiment()
 
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = env
-e["Problem"]["Actions Between Policy Updates"] = 1
+e["Problem"]["Actions Between Policy Updates"] = 500
 e["Problem"]["Training Reward Threshold"] = 450
 e["Problem"]["Policy Testing Episodes"] = 10
 
@@ -39,9 +39,9 @@ e["Variables"][4]["Exploration Sigma"]["Annealing Rate"] = 0.0
 
 e["Solver"]["Type"] = "Agent / Continuous / GFPT"
 e["Solver"]["Mode"] = "Training"
-e["Solver"]["Episodes Per Generation"] = 1
+e["Solver"]["Episodes Per Generation"] = 10
 e["Solver"]["Experiences Between Policy Updates"] = 1
-e["Solver"]["Cache Persistence"] = 10
+e["Solver"]["Cache Persistence"] = 50
 e["Solver"]["Discount Factor"] = 0.99
 
 ### Defining the configuration of replay memory
@@ -50,6 +50,7 @@ e["Solver"]["Mini Batch Size"] = 32
 e["Solver"]["Mini Batch Strategy"] = "Uniform"
 e["Solver"]["Experience Replay"]["Start Size"] =   1024
 e["Solver"]["Experience Replay"]["Maximum Size"] = 32768
+e["Solver"]["Experience Replay"]["REFER"]["Enabled"] = False
 
 ## Defining Critic and Policy Configuration
 

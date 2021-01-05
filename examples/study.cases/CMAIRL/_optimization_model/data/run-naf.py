@@ -20,6 +20,7 @@ e["Problem"]["Environment Function"] = envp
 e["Problem"]["Training Reward Threshold"] = 490
 e["Problem"]["Policy Testing Episodes"] = 20
 e["Problem"]["Actions Between Policy Updates"] = 5
+e["Problem"]["Custom Settings"]["Record Observations"] = "False"
 
 e["Variables"][0]["Name"] = "Cart Position"
 e["Variables"][0]["Type"] = "State"
@@ -80,7 +81,7 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tan
 ### Defining Termination Criteria
 
 e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 490
-e["Solver"]["Termination Criteria"]["Max Generations"] = 10000
+e["Solver"]["Termination Criteria"]["Max Generations"] = 100
 
 ### Setting file output configuration
 
@@ -98,6 +99,7 @@ print('[Korali] Done training. Now running learned policy to produce observation
 ### Now testing policy, dumping trajectory results
 
 e["Solver"]["Mode"] = "Testing"
+e["Problem"]["Custom Settings"]["Record Observations"] = "True"
 e["Solver"]["Testing"]["Sample Ids"] = [1, 2, 3]
 
 k.run(e)

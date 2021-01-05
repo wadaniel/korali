@@ -29,11 +29,13 @@ def env(s, th):
   s["Reward"] = cart.getReward()
    
   # Storing New State
-  s["State"] = cart.getState().tolist()
+  state = cart.getState().tolist()
+  s["State"] = state
   
   if s["Mode"] == "Testing" and s["Custom Settings"]["Record Observations"] == True:
       stateaction = s["State"]
-      stateaction.append(s["Action"][0])
+      action = s["Action"]
+      stateaction.append(action[0])
       salist.append(stateaction)
   
   # Advancing step counter

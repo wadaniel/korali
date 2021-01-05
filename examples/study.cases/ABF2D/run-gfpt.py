@@ -70,7 +70,6 @@ e["Solver"]["Learning Rate"] = 0.001
 
 e["Solver"]["Experience Replay"]["Start Size"] = 4096
 e["Solver"]["Experience Replay"]["Maximum Size"] = 65536
-e["Solver"]["Experience Replay"]["Serialization"]["Frequency"] = 100
 
 ### Configuring the Remember-and-Forget Experience Replay algorithm
 

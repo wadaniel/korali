@@ -191,9 +191,9 @@ void Agent::trainingGeneration()
 
   // Now serializing experience replay database
   if (_k->_fileOutputEnabled)
-   if (_k->_fileOutputFrequency > 0)
-    if (_k->_currentGeneration % _k->_fileOutputFrequency == 0)
-     serializeExperienceReplay();
+    if (_k->_fileOutputFrequency > 0)
+      if (_k->_currentGeneration % _k->_fileOutputFrequency == 0)
+        serializeExperienceReplay();
 
   // Measuring generation time
   auto endTime = std::chrono::steady_clock::now();                                                             // Profiling
@@ -606,8 +606,8 @@ std::vector<std::vector<float>> Agent::getStateActionTimeSequence(size_t expId)
 
 void Agent::finalize()
 {
- if (_k->_fileOutputEnabled)
-     serializeExperienceReplay();
+  if (_k->_fileOutputEnabled)
+    serializeExperienceReplay();
 
   _k->_logger->logInfo("Normal", "Waiting for pending agents to finish...\n");
 

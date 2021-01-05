@@ -1,5 +1,6 @@
 run*
-_results
+_trainingResults
+_testingResults
 *.txt
 *.h5
 *.xmf

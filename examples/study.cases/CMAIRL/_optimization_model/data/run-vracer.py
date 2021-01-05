@@ -16,7 +16,6 @@ e = korali.Experiment()
 envp = lambda s : env(s,target)
 
 ### Defining the Cartpole problem's configuration
-
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = envp
 e["Problem"]["Training Reward Threshold"] = 490
@@ -83,7 +82,7 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tan
 
 ### Defining Termination Criteria
 
-e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 490
+e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 495
 e["Solver"]["Termination Criteria"]["Max Generations"] = 10000
 
 ### Setting file output configuration
@@ -92,7 +91,7 @@ e["File Output"]["Enabled"] = False
 
 ### Running Experiment
 
-e["Problem"]["Custom Settings"]["Record Observations"] = False
+e["Problem"]["Custom Settings"]["Record Observations"] = "False"
 
 k.run(e)
 
@@ -104,8 +103,8 @@ print('[Korali] Done training. Now running learned policy to produce observation
 ### Now testing policy, dumping trajectory results
 
 e["Solver"]["Mode"] = "Testing"
-e["Solver"]["Testing"]["Sample Ids"] = [0]
-e["Problem"]["Custom Settings"]["Record Observations"] = True
+e["Solver"]["Testing"]["Sample Ids"] = [0, 1, 2]
+e["Problem"]["Custom Settings"]["Record Observations"] = "True"
 
 
 k.run(e)

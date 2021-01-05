@@ -6,22 +6,7 @@ import korali
 
 sys.path.append('./_rl_model/_model')
 from env import *
-
-
-# 1-d problem
-def model(p):
-  x = p["Parameters"][0]
-  p["F(x)"] = -0.5 * x * x
-
-# multi dimensional problem (rosenbrock)
-def negative_rosenbrock(p):
-    x = p["Parameters"]
-    dim = len(x)
-    res = 0.
-    for i in range(dim-1):
-        res += 100*(x[i+1]-x[i]**2)**2+(1-x[i])**2
-
-    p["F(x)"] = -res
+from evalenv import *
 
 
 # rl cartpole with unknown reward
@@ -30,6 +15,7 @@ def rl_cartpole_vracer(p):
     k = korali.Engine()
     e = korali.Experiment()
 
+    # environment with parametrized reward function
     target = p["Parameters"][0]
     envp = lambda s : env(s,target)
 
@@ -58,7 +44,7 @@ def rl_cartpole_vracer(p):
     e["Variables"][4]["Lower Bound"] = -10.0
     e["Variables"][4]["Upper Bound"] = +10.0
 
-    ### Defining Agent Configuration 
+    ## Defining Agent Configuration 
 
     e["Solver"]["Type"] = "Agent / Continuous / VRACER"
     e["Solver"]["Experiences Between Policy Updates"] = 5
@@ -67,7 +53,7 @@ def rl_cartpole_vracer(p):
     e["Solver"]["Refer"]["Target Off Policy Fraction"] = 0.1
     e["Solver"]["Refer"]["Cutoff Scale"] = 4.0
 
-    ### Defining the configuration of replay memory
+    ## Defining the configuration of replay memory
 
     e["Solver"]["Experience Replay"]["Start Size"] = 1000
     e["Solver"]["Experience Replay"]["Maximum Size"] = 10000
@@ -92,12 +78,12 @@ def rl_cartpole_vracer(p):
     e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Type"] = "Layer/Dense"
     e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Elementwise/Linear"
 
-    ### Defining Termination Criteria
+    ## Defining Termination Criteria
 
     e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 490
     e["Solver"]["Termination Criteria"]["Max Generations"] = 2500
 
-    ### Setting file output configuration
+    ## Setting file output configuration
 
     e["File Output"]["Enabled"] = False
     e["Console Output"]["Verbosity"] = "Silent"
@@ -110,11 +96,12 @@ def rl_cartpole_vracer(p):
     
     e["Solver"]["Mode"] = "Testing"
     e["Solver"]["Testing"]["Sample Ids"] = [0]
-    e["Problem"]["Environment Function"] = evalEnv
+    e["Problem"]["Policy Testing Episodes"] = 1
+    e["Problem"]["Environment Function"] = evalenv
 
     k.run(e)
 
     print("[Korali] Finished testing.")
-
+    suml2 = e["Solver"]["Testing"]["Average Reward"]
    
     p["F(x)"] = -suml2 # maximize

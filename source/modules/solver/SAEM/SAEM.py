@@ -19,7 +19,7 @@ def plotVariables(genList):
       lastGen = genList[i]['Current Generation']
 
   some_gen = list(genList.keys())[0]
-  numLatent = genList[some_gen]["Solver"]["Number Latent"]
+  numLatent = genList[some_gen]["Solver"]["Number Latent Variables"]
   numHyper = genList[some_gen]["Solver"]["Number Hyperparameters"]
   numSamples = genList[some_gen]["Solver"]["Number Samples Per Step"]
   sample_means = np.zeros((len(genList), numLatent))

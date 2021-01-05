@@ -23,7 +23,8 @@ def env(s, th):
   s.update()
   
   # Performing the action
-  done = cart.advance(s["Action"])
+  action = s["Action"]
+  done = cart.advance(action)
   
   # Getting Reward
   s["Reward"] = cart.getReward()

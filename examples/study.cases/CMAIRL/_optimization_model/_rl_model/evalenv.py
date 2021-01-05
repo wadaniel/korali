@@ -4,7 +4,7 @@ from cartpole import *
 
 ######## Defining Environment Storage
 
-def evalenv(s, th):
+def evalenv(s):
 
  obsfile = 'observations.csv'
  states = []

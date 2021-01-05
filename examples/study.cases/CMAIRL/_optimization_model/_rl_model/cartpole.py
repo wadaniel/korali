@@ -48,6 +48,10 @@ class CartPole:
 
   def advance(self, action):
     self.F = action[0]
+    if not isinstance(self.F, float):
+        print("CATCH")
+        print(self.F)
+        print(action[0])
     if (self.F > 10.0):
       self.F = 10.0
     elif self.F < -10.0:

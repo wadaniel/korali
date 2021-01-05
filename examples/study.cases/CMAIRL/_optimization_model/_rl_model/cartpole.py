@@ -9,6 +9,8 @@ import math
 import numpy as np, sys
 from scipy.integrate import ode
 
+from helper import quadratic_reward
+
 class CartPole:
   def __init__(self, targetAngle):
     self.targetAngle = targetAngle

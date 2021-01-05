@@ -103,29 +103,18 @@ def rl_cartpole_vracer(p):
     e["Console Output"]["Verbosity"] = "Silent"
 
     ### Running Experiment
+    
+    k.run(e)
+
+    ### Evaluate Policy
+    
+    e["Solver"]["Mode"] = "Testing"
+    e["Solver"]["Testing"]["Sample Ids"] = [0]
+    e["Problem"]["Environment Function"] = evalEnv
 
     k.run(e)
 
-    ## Read observations
+    print("[Korali] Finished testing.")
 
-    states = []
-    obsactions = []
-
-    obsfile = '_rl_model/data/observations-vracer.csv'
-
-    with open(obsfile) as csv_file:
-        csv_reader = csv.reader(csv_file, delimiter=',', quoting=csv.QUOTE_NONNUMERIC)
-        for row in csv_reader:
-            states.append(row[:4])
-            obsactions.append(row[4])
-
-    ### Evaluating sum of squarred errors
-
-    suml2 = 0.0
-
-    for i, state in enumerate(states):
-        action = e.getAction(state)
-        l2 = np.sum(np.power((np.array(obsactions[i])-np.array(action)),2))
-        suml2 += l2
-    
+   
     p["F(x)"] = -suml2 # maximize

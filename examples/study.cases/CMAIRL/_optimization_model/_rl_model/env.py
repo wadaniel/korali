@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import csv
 from cartpole import *
 
 ######## Defining Environment Storage
@@ -6,6 +7,8 @@ from cartpole import *
 maxSteps = 500
 
 def env(s, th):
+
+ salist = []
 
  # Initializing environment
  cart = CartPole(th)
@@ -28,6 +31,11 @@ def env(s, th):
   # Storing New State
   s["State"] = cart.getState().tolist()
   
+  if s["Mode"] == "Testing" and s["Custom Settings"]["Record Observations"] == True:
+      stateaction = s["State"]
+      stateaction.append(s["Action"][0])
+      salist.append(stateaction)
+  
   # Advancing step counter
   step = step + 1
 
@@ -36,3 +44,13 @@ def env(s, th):
   s["Termination"] = "Terminal"
  else:
   s["Termination"] = "Truncated"
+
+ if s["Mode"] == "Testing" and s["Custom Settings"]["Record Observations"] == True:
+    print("Generating observations for sample {0}".format(s["Sample Id"]))
+    print("Observations recorded: {0}".format(len(salist)))
+    print("Reward during recoding: {0}".format(s["Reward"]))
+
+    with open('observations.csv', 'a') as myfile:
+      wr = csv.writer(myfile)
+      for stateaction in salist:
+        wr.writerow(stateaction)

@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 import os
 import sys
-sys.path.append('../_model')
+sys.path.append('../_rl_model')
 from env import *
 
 target = 0.0
-outfile = "observations-naf.dat"
+outfile = "observations-vracer.csv"
 
 ####### Defining Korali Problem
 
@@ -20,7 +20,7 @@ envp = lambda s : env(s,target)
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = envp
 e["Problem"]["Training Reward Threshold"] = 490
-e["Problem"]["Policy Testing Episodes"] = 10
+e["Problem"]["Policy Testing Episodes"] = 20
 e["Problem"]["Actions Between Policy Updates"] = 5
 
 e["Variables"][0]["Name"] = "Cart Position"
@@ -40,55 +40,51 @@ e["Variables"][4]["Type"] = "Action"
 e["Variables"][4]["Lower Bound"] = -10.0
 e["Variables"][4]["Upper Bound"] = +10.0
 
-### Configuring NAF hyperparameters
+### Defining Agent Configuration 
 
-e["Solver"]["Type"] = "Agent / Continuous / NAF"
+e["Solver"]["Type"] = "Agent / Continuous / VRACER"
 e["Solver"]["Mode"] = "Training"
-e["Solver"]["Target Learning Rate"] = 0.01
-e["Solver"]["Experiences Per Generation"] = 500
 e["Solver"]["Experiences Between Policy Updates"] = 5
-e["Solver"]["Covariance Scaling"] = 0.001
-#e["Solver"]["Mini Batch Strategy"] = "Prioritized"
-#e["Solver"]["Cache Persistence"] = 100
+e["Solver"]["Episodes Per Generation"] = 1
+e["Solver"]["Cache Persistence"] = 500
 
 ### Defining the configuration of replay memory
 
-e["Solver"]["Experience Replay"]["Start Size"] = 1000
-e["Solver"]["Experience Replay"]["Maximum Size"] = 10000
+e["Solver"]["Experience Replay"]["Start Size"] =   2048
+e["Solver"]["Experience Replay"]["Maximum Size"] = 32768
+
+e["Solver"]["Experience Replay"]["REFER"]["Enabled"] = True
+e["Solver"]["Experience Replay"]["REFER"]["Cutoff Scale"] = 4.0
+e["Solver"]["Experience Replay"]["REFER"]["Target"] = 0.1
+e["Solver"]["Experience Replay"]["REFER"]["Initial Beta"] = 0.3
+e["Solver"]["Experience Replay"]["REFER"]["Annealing Rate"] = 5e-7
 
 ## Defining Neural Network Configuration for Policy and Critic into Critic Container
 
 e["Solver"]["Discount Factor"] = 0.99
-e["Solver"]["Learning Rate"] = 1e-5
-e["Solver"]["Mini Batch Size"] = 256
+e["Solver"]["Learning Rate"] = 1e-4
+e["Solver"]["Mini Batch Size"] = 32
 
 ### Configuring the neural network and its hidden layers
 
 e["Solver"]["Neural Network"]["Engine"] = "OneDNN"
 
 e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear"
-e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 128
+e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 32
 
 e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Activation"
 e["Solver"]["Neural Network"]["Hidden Layers"][1]["Function"] = "Elementwise/Tanh"
 
 e["Solver"]["Neural Network"]["Hidden Layers"][2]["Type"] = "Layer/Linear"
-e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 128
+e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 32
 
 e["Solver"]["Neural Network"]["Hidden Layers"][3]["Type"] = "Layer/Activation"
 e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tanh"
 
-
-## Defining Q-Network
-
-e["Solver"]["Discount Factor"] = 0.99
-e["Solver"]["Learning Rate"] = 1e-4
-e["Solver"]["Mini Batch Size"] = 256
-
 ### Defining Termination Criteria
 
-e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 490
-e["Solver"]["Termination Criteria"]["Max Generations"] = 2500
+e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 490
+e["Solver"]["Termination Criteria"]["Max Generations"] = 10000
 
 ### Setting file output configuration
 
@@ -96,42 +92,22 @@ e["File Output"]["Enabled"] = False
 
 ### Running Experiment
 
+e["Problem"]["Custom Settings"]["Record Observations"] = False
+
 k.run(e)
 
 ### Recording Observations
 
 print('[Korali] Done training. Now running learned policy to produce observations.')
 
-states = []
-actions = []
 
-cart = CartPole(0.0)
+### Now testing policy, dumping trajectory results
 
-state = cart.getState().tolist()
-done = False
-step = 0
-while not done and step < 100:
- 
- action = e.getAction(state)
- 
- states.append(state)
- actions.append(action)
- 
- cart.advance(action)
+e["Solver"]["Mode"] = "Testing"
+e["Solver"]["Testing"]["Sample Ids"] = [0]
+e["Problem"]["Custom Settings"]["Record Observations"] = True
 
- reward = cart.getReward()
- step = step + 1
-
- state = cart.getState().tolist()
-
-### Running Experiment
 
 k.run(e)
 
-print('[Korali] Finished recording observations. Writing file {}..'.format(outfile))
-with open(outfile, 'w') as f:
-    for i in range(len(states)):
-        f.write(str(actions[i][0]))
-        f.write(", ")
-        f.write(", ".join(str(s) for s in states[i]))
-        f.write("\n")
+print("[Korali] Finished testing.")

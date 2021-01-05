@@ -6,8 +6,8 @@
 
 # Importing computational model
 import sys
-sys.path.append('./_rl_model')
-from model import *
+sys.path.append('./_optimization_model')
+from objfunc import *
 
 # Starting Korali's Engine
 import korali

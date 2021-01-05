@@ -1,5 +1,3 @@
 #!/bin/bash
 
-###### Nothing to be done  #########
-
-exit
+###### To-do 

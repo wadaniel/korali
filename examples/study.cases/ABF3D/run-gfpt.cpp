@@ -78,7 +78,7 @@ int main(int argc, char *argv[])
 
   e["Solver"]["Type"] = "Agent / Continuous / GFPT";
   e["Solver"]["Mode"] = "Training";
-  e["Solver"]["Experiences Per Generation"] = 243;
+  e["Solver"]["Episodes Per Generation"] = 1;
   e["Solver"]["Experiences Between Policy Updates"] = 10;
   e["Solver"]["Cache Persistence"] = 200;
   e["Solver"]["Learning Rate"] = 0.0001;
@@ -87,7 +87,6 @@ int main(int argc, char *argv[])
 
   e["Solver"]["Experience Replay"]["Start Size"] = 4096;
   e["Solver"]["Experience Replay"]["Maximum Size"] = 65536;
-  e["Solver"]["Experience Replay"]["Serialization Frequency"] = 100;
 
   /// Configuring the Remember-and-Forget Experience Replay algorithm
 
@@ -127,7 +126,7 @@ int main(int argc, char *argv[])
 
   ////// Defining Termination Criteria
 
-  e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 1.3;
+  e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 1.3;
 
   ////// Setting file output configuration
 
@@ -137,8 +136,5 @@ int main(int argc, char *argv[])
   e["File Output"]["Path"] = "_results";
 
   auto k = korali::Engine();
-//  e["Solver"]["Agent Count"] = 4;
-//  k["Conduit"]["Type"] = "Concurrent";
-//  k["Conduit"]["Concurrent Jobs"] = 4;
   k.run(e);
 }

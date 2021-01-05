@@ -80,11 +80,6 @@ struct experience_t
    * @brief Provides a cached repository for pre-calculated values. It has an expiration threshold after which it's values should be re-calculated.
    */
   kCache<std::string, float, size_t> cache;
-
-  /**
-   * @brief Provides a cached repository for pre-calculated vector values. It has an expiration threshold after which it's values should be re-calculated.
-   */
-  kCache<std::string, std::vector<float>, size_t> vectorCache;
 };
 
 class Agent : public Solver
@@ -243,7 +238,6 @@ class Agent : public Solver
    */
   double _generationAgentAttendingTime;
 
-
   /****************************************************************************************************
    * Common Agent functions
    ***************************************************************************************************/
@@ -269,13 +263,6 @@ class Agent : public Solver
   * @param episode A vector of experiences.
   */
   void processEpisode(std::vector<knlohmann::json> &episode);
-
-  /**
-  * @brief Updates priority of experience.
-  * @param expId The experience to update
-  * @param priority New value for experience expId
-  */
-  void updateExperienceReplayPriority(size_t expId, float priority);
 
   /**
   * @brief Updates probabilities of experiences stored based on their priority.
@@ -335,6 +322,13 @@ class Agent : public Solver
   std::vector<float> calculateImportanceWeights(std::vector<size_t> miniBatch);
 
   /**
+   * @brief Returns the retrace value for the given experience
+   * @param expId The id (position within the replay memory) of the experience
+   * @return The qRet value of the experience
+   */
+  float retraceFunction(size_t expId);
+
+  /**
    * @brief Listens to incoming experience from the given agent, sends back policy or terminates the episode depending on what's needed
    * @param agentId The Agent's ID
    */
@@ -363,6 +357,13 @@ class Agent : public Solver
   /****************************************************************************************************
    * Virtual functions (responsibilities) for learning algorithms to fulfill
    ***************************************************************************************************/
+
+  /**
+   * @brief Calculates the state value function V(s,a)
+   * @param stateSequence State sequence to evaluate
+   * @return The value of V(s)
+   */
+  virtual float stateValueFunction(const std::vector<std::vector<float>> &stateSequence) = 0;
 
   /**
   * @brief Trains the Agent's policy, based on the new experiences
@@ -403,12 +404,13 @@ class Agent : public Solver
   /**
   * @brief Returns the value of importance weight for a given experience in the replay memory
   * @param expId Index of the experience in the ER to calculate the importance weight for
+  * @return The experience's importance weight
   */
   virtual float getExperienceImportanceWeight(size_t expId) = 0;
 
   /**
-    * @brief Initializes the internal state of the policy
-    */
+   * @brief Initializes the internal state of the policy
+   */
   virtual void initializeAgent() = 0;
 
   /**
@@ -421,7 +423,6 @@ class Agent : public Solver
    * @param sample Sample on which the action and metadata will be stored
    */
   virtual void getAction(korali::Sample &sample) = 0;
-
 
   void runGeneration() override;
   void printGenerationAfter() override;

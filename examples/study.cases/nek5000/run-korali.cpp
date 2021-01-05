@@ -35,29 +35,36 @@ int main(int argc, char *argv[])
   e["Variables"][6]["Type"] = "Action";
   e["Variables"][6]["Lower Bound"] = 0.0;
   e["Variables"][6]["Upper Bound"] = 0.01;
-  e["Variables"][6]["Exploration Sigma"] = 0.0005;
+  e["Variables"][6]["Exploration Sigma"]["Initial"] = 0.0005;
+  e["Variables"][6]["Exploration Sigma"]["Final"] = 0.0005;
+  e["Variables"][6]["Exploration Sigma"]["Annealing Rate"] = 0.0;
 
-  //// Defining Agent Configuration
+  /// Defining Agent Configuration
 
   e["Solver"]["Type"] = "Agent / Continuous / GFPT";
   e["Solver"]["Mode"] = "Training";
+  e["Solver"]["Time Sequence Length"] = 1;
+  e["Solver"]["Episodes Per Generation"] = 1;
   e["Solver"]["Experiences Between Policy Updates"] = 1;
   e["Solver"]["Cache Persistence"] = 10;
-
-  e["Solver"]["Experience Replay"]["Start Size"] = 1000;
-  e["Solver"]["Experience Replay"]["Maximum Size"] = 10000;
-  e["Solver"]["Mini Batch Strategy"] = "Uniform";
-
-  //// Defining Critic/Policy Configuration
-
   e["Solver"]["Discount Factor"] = 0.99;
-  e["Solver"]["Mini Batch Size"] = 128;
-  e["Solver"]["Critic"]["Learning Rate"] = 0.0001;
-  e["Solver"]["Policy"]["Learning Rate"] = 0.000001;
-  e["Solver"]["Policy"]["Target Accuracy"] = 0.0001;
-  e["Solver"]["Policy"]["Optimization Candidates"] = 8;
 
-  //// Defining Neural Network
+  /// Defining the configuration of replay memory
+
+  e["Solver"]["Mini Batch Size"] = 32;
+  e["Solver"]["Mini Batch Strategy"] = "Uniform";
+  e["Solver"]["Experience Replay"]["Start Size"] = 1024;
+  e["Solver"]["Experience Replay"]["Maximum Size"] = 32768;
+
+  /// Defining Critic and Policy Configuration
+
+  e["Solver"]["Learning Rate"] = 0.01;
+  e["Solver"]["Policy"]["Learning Rate Scale"] = 1.0;
+  e["Solver"]["Critic"]["Advantage Function Population"] = 12;
+  e["Solver"]["Policy"]["Target Accuracy"] = 0.001;
+  e["Solver"]["Policy"]["Optimization Candidates"] = 12;
+
+  /// Configuring the neural network and its hidden layers
 
   e["Solver"]["Neural Network"]["Engine"] = "OneDNN";
 
@@ -75,13 +82,7 @@ int main(int argc, char *argv[])
 
   ////// Defining Termination Criteria
 
-  e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 1.3;
-
-  ////// If using configuration test, run for a couple generations only
-
-#ifdef TEST
-  e["Solver"]["Termination Criteria"]["Max Generations"] = 20;
-#endif
+  e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 1.3;
 
   ////// Setting file output configuration
 

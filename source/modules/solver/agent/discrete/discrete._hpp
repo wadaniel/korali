@@ -27,8 +27,24 @@ class Discrete : public Agent
    */
   float calculateImportanceWeight(const size_t actionIdx, const std::vector<float> &curProbabilities, const std::vector<float> &oldProbabilities);
 
-  float getExperienceImportanceWeight(size_t expId) override;
+  /**
+   * @brief Calculates the gradient of importance weight wrt to NN output
+   * @param actionIdx Action from memory
+   * @param curPvalues todo
+   * @param oldPvalues todo
+   * @return gradient of importance weight wrt NN output
+   */
+  std::vector<float> calculateImportanceWeightGradient(size_t actionIdx, const std::vector<float> &curPvalues, const std::vector<float> &oldPvalues);
 
+  /**
+   * @brief Calculates the gradient of KL(p_old, p_cur) wrt to the parameter of the 2nd (current) distribution.
+   * @param oldPvalues todo
+   * @param curPvalues todo
+   * @return gradient of KL wrt curParamsOne and curParamsTwo
+   */
+  std::vector<float> calculateKLDivergenceGradient(const std::vector<float> &oldPvalues, const std::vector<float> &curPvalues);
+
+  float getExperienceImportanceWeight(size_t expId) override;
   void getAction(korali::Sample &sample) override;
   virtual void initializeAgent();
 };

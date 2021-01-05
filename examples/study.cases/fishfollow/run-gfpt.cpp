@@ -80,7 +80,7 @@ int main(int argc, char *argv[])
   e["Solver"]["Type"] = "Agent / Continuous / GFPT";
   e["Solver"]["Mode"] = "Training";
   e["Solver"]["Agent Count"] = N;
-  e["Solver"]["Experiences Per Generation"] = N * 4;
+  e["Solver"]["Episodes Per Generation"] = 1;
   e["Solver"]["Experiences Between Policy Updates"] = 1;
   e["Solver"]["Cache Persistence"] = 100;
   e["Solver"]["Learning Rate"] = 0.001;
@@ -89,7 +89,6 @@ int main(int argc, char *argv[])
 
   e["Solver"]["Experience Replay"]["Start Size"] = 1024;
   e["Solver"]["Experience Replay"]["Maximum Size"] = 65536;
-  e["Solver"]["Experience Replay"]["Serialization Frequency"] = 1;
 
   /// Configuring the Remember-and-Forget Experience Replay algorithm
 
@@ -125,7 +124,7 @@ int main(int argc, char *argv[])
 
   ////// Defining Termination Criteria
 
-  e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 16.0;
+  e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 16.0;
 
   ////// Setting Korali output configuration
 
@@ -165,5 +164,4 @@ int main(int argc, char *argv[])
   k.run(e);
 
   printf("[Korali] Finished. Testing dump files stored in %s\n", testingResultsPath.c_str());
-
 }

@@ -35,10 +35,14 @@ e["Variables"][4]["Type"] = "Action"
 e["Variables"][4]["Lower Bound"] = -10.0
 e["Variables"][4]["Upper Bound"] = +10.0
 
-### Configuring NAF hyperparameters
+### Defining Solver
 
 e["Solver"]["Type"] = "Agent / Continuous / NAF"
 e["Solver"]["Mode"] = "Training"
+e["Solver"]["Episodes Per Generation"] = 1
+
+### Configuring NAF hyperparameters
+
 e["Solver"]["Discount Factor"] = 0.99
 e["Solver"]["Learning Rate"] = 1e-4
 e["Solver"]["Mini Batch Size"] = 32
@@ -49,8 +53,8 @@ e["Solver"]["Mini Batch Strategy"] = "Prioritized"
 
 ### Defining Experience Replay configuration
 
-e["Solver"]["Experience Replay"]["Start Size"] =   1000
-e["Solver"]["Experience Replay"]["Maximum Size"] = 10000
+e["Solver"]["Experience Replay"]["Start Size"] =   2048
+e["Solver"]["Experience Replay"]["Maximum Size"] = 32768
 
 ### Configuring the neural network and its hidden layers
 
@@ -70,7 +74,7 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tan
 
 ### Defining Termination Criteria
 
-e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 450
+e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 450
 
 ### Setting file output configuration
 

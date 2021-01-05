@@ -74,4 +74,3 @@ void initializeEnvironment(const std::string confFileName)
   const Config config = json::parse(confFile);
   _environment = rl::factory::createEnvironment(config, ConfPointer(""));
 }
-

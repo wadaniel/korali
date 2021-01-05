@@ -17,6 +17,7 @@ namespace optimizer
 void CMAES::setInitialConfiguration()
 {
   knlohmann::json problemConfig = (*_k)["Problem"];
+  _variableCount = _k->_variables.size();
 
   // Establishing optimization goal
   _bestEverValue = -std::numeric_limits<double>::infinity();
@@ -25,15 +26,15 @@ void CMAES::setInitialConfiguration()
   _previousBestValue = _bestEverValue;
   _currentBestValue = _bestEverValue;
 
-  if (_populationSize == 0) _populationSize = ceil(4.0 + floor(3 * log((double)_k->_variables.size())));
+  if (_populationSize == 0) _populationSize = ceil(4.0 + floor(3 * log((double)_variableCount)));
   if (_muValue == 0) _muValue = _populationSize / 2;
   if (_viabilityMuValue == 0) _viabilityMuValue = _viabilityPopulationSize / 2;
 
   size_t s_max = std::max(_populationSize, _viabilityPopulationSize);
   size_t mu_max = std::max(_muValue, _viabilityMuValue);
 
-  _chiSquareNumber = sqrt((double)_k->_variables.size()) * (1. - 1. / (4. * _k->_variables.size()) + 1. / (21. * _k->_variables.size() * _k->_variables.size()));
-  _chiSquareNumberDiscreteMutations = sqrt((double)_k->_variables.size()) * (1. - 1. / (4. * _k->_variables.size()) + 1. / (21. * _k->_variables.size() * _k->_variables.size()));
+  _chiSquareNumber = sqrt((double)_variableCount) * (1. - 1. / (4. * _variableCount) + 1. / (21. * _variableCount * _variableCount));
+  _chiSquareNumberDiscreteMutations = sqrt((double)_variableCount) * (1. - 1. / (4. * _variableCount) + 1. / (21. * _variableCount * _variableCount));
 
   _areConstraintsDefined = false;
   if (isDefined(problemConfig, "Constraints"))
@@ -62,31 +63,31 @@ void CMAES::setInitialConfiguration()
 
   // Allocating Memory
   _samplePopulation.resize(s_max);
-  for (size_t i = 0; i < s_max; i++) _samplePopulation[i].resize(_k->_variables.size());
+  for (size_t i = 0; i < s_max; i++) _samplePopulation[i].resize(_variableCount);
 
-  _evolutionPath.resize(_k->_variables.size());
-  _conjugateEvolutionPath.resize(_k->_variables.size());
-  _auxiliarBDZMatrix.resize(_k->_variables.size());
-  _meanUpdate.resize(_k->_variables.size());
-  _currentMean.resize(_k->_variables.size());
-  _previousMean.resize(_k->_variables.size());
-  _bestEverVariables.resize(_k->_variables.size());
-  _axisLengths.resize(_k->_variables.size());
-  _auxiliarAxisLengths.resize(_k->_variables.size());
-  _currentBestVariables.resize(_k->_variables.size());
+  _evolutionPath.resize(_variableCount);
+  _conjugateEvolutionPath.resize(_variableCount);
+  _auxiliarBDZMatrix.resize(_variableCount);
+  _meanUpdate.resize(_variableCount);
+  _currentMean.resize(_variableCount);
+  _previousMean.resize(_variableCount);
+  _bestEverVariables.resize(_variableCount);
+  _axisLengths.resize(_variableCount);
+  _auxiliarAxisLengths.resize(_variableCount);
+  _currentBestVariables.resize(_variableCount);
 
   _sortingIndex.resize(s_max);
   _valueVector.resize(s_max);
 
-  _covarianceMatrix.resize(_k->_variables.size() * _k->_variables.size());
-  _auxiliarCovarianceMatrix.resize(_k->_variables.size() * _k->_variables.size());
-  _covarianceEigenvectorMatrix.resize(_k->_variables.size() * _k->_variables.size());
-  _auxiliarCovarianceEigenvectorMatrix.resize(_k->_variables.size() * _k->_variables.size());
-  _bDZMatrix.resize(s_max * _k->_variables.size());
+  _covarianceMatrix.resize(_variableCount * _variableCount);
+  _auxiliarCovarianceMatrix.resize(_variableCount * _variableCount);
+  _covarianceEigenvectorMatrix.resize(_variableCount * _variableCount);
+  _auxiliarCovarianceEigenvectorMatrix.resize(_variableCount * _variableCount);
+  _bDZMatrix.resize(s_max * _variableCount);
 
-  _maskingMatrix.resize(_k->_variables.size());
-  _maskingMatrixSigma.resize(_k->_variables.size());
-  _discreteMutations.resize(_k->_variables.size() * _populationSize);
+  _maskingMatrix.resize(_variableCount);
+  _maskingMatrixSigma.resize(_variableCount);
+  _discreteMutations.resize(_variableCount * _populationSize);
   std::fill(std::begin(_discreteMutations), std::end(_discreteMutations), 0.0);
 
   _numberMaskingMatrixEntries = 0;
@@ -94,7 +95,7 @@ void CMAES::setInitialConfiguration()
   _muWeights.resize(mu_max);
 
   // Initializing variable defaults
-  for (size_t i = 0; i < _k->_variables.size(); i++)
+  for (size_t i = 0; i < _variableCount; i++)
   {
     if (std::isfinite(_k->_variables[i]->_initialValue) == false)
     {
@@ -133,12 +134,12 @@ void CMAES::setInitialConfiguration()
     for (size_t c = 0; c < _constraintEvaluations.size(); c++) _constraintEvaluations[c].resize(s_max);
 
     _normalConstraintApproximation.resize(_constraintEvaluations.size());
-    for (size_t i = 0; i < _constraintEvaluations.size(); i++) _normalConstraintApproximation[i].resize(_k->_variables.size());
+    for (size_t i = 0; i < _constraintEvaluations.size(); i++) _normalConstraintApproximation[i].resize(_variableCount);
 
     _bestConstraintEvaluations.resize(_constraintEvaluations.size());
 
-    _normalVectorLearningRate = 1.0 / (2.0 + _k->_variables.size());
-    _covarianceMatrixAdaptionFactor = _covarianceMatrixAdaptionStrength / (_k->_variables.size() + 2.);
+    _normalVectorLearningRate = 1.0 / (2.0 + _variableCount);
+    _covarianceMatrixAdaptionFactor = _covarianceMatrixAdaptionStrength / (_variableCount + 2.);
   }
   else
   {
@@ -163,7 +164,7 @@ void CMAES::setInitialConfiguration()
 
   _conjugateEvolutionPathL2Norm = 0.0;
 
-  for (size_t i = 0; i < _k->_variables.size(); i++) _currentMean[i] = _previousMean[i] = _k->_variables[i]->_initialValue;
+  for (size_t i = 0; i < _variableCount; i++) _currentMean[i] = _previousMean[i] = _k->_variables[i]->_initialValue;
 
   _currentMinStandardDeviation = +std::numeric_limits<double>::infinity();
   _currentMaxStandardDeviation = -std::numeric_limits<double>::infinity();
@@ -234,7 +235,7 @@ void CMAES::initMuWeights(size_t numsamplesmu)
 
   // Setting Cumulative Covariancea
   if ((_initialCumulativeCovariance <= 0) || (_initialCumulativeCovariance > 1))
-    _cumulativeCovariance = (4.0 + _effectiveMu / (1.0 * _k->_variables.size())) / (_k->_variables.size() + 4.0 + 2.0 * _effectiveMu / (1.0 * _k->_variables.size()));
+    _cumulativeCovariance = (4.0 + _effectiveMu / (1.0 * _variableCount)) / (_variableCount + 4.0 + 2.0 * _effectiveMu / (1.0 * _variableCount));
   else
     _cumulativeCovariance = _initialCumulativeCovariance;
 
@@ -244,33 +245,33 @@ void CMAES::initMuWeights(size_t numsamplesmu)
   {
     if (_areConstraintsDefined)
     {
-      _sigmaCumulationFactor = sqrt(_effectiveMu) / (sqrt(_effectiveMu) + sqrt(_k->_variables.size()));
+      _sigmaCumulationFactor = sqrt(_effectiveMu) / (sqrt(_effectiveMu) + sqrt(_variableCount));
     }
     else
     {
-      _sigmaCumulationFactor = (_effectiveMu + 2.0) / (_k->_variables.size() + _effectiveMu + 3.0);
+      _sigmaCumulationFactor = (_effectiveMu + 2.0) / (_variableCount + _effectiveMu + 3.0);
     }
   }
 
   // Setting Damping Factor
   _dampFactor = _initialDampFactor;
   if (_dampFactor <= 0.0)
-    _dampFactor = (1.0 + 2 * std::max(0.0, sqrt((_effectiveMu - 1.0) / (_k->_variables.size() + 1.0)) - 1)) + _sigmaCumulationFactor;
+    _dampFactor = (1.0 + 2 * std::max(0.0, sqrt((_effectiveMu - 1.0) / (_variableCount + 1.0)) - 1)) + _sigmaCumulationFactor;
 }
 
 void CMAES::initCovariance()
 {
   // Setting Sigma
   _trace = 0.0;
-  for (size_t i = 0; i < _k->_variables.size(); ++i) _trace += _k->_variables[i]->_initialStandardDeviation * _k->_variables[i]->_initialStandardDeviation;
-  _sigma = sqrt(_trace / _k->_variables.size());
+  for (size_t i = 0; i < _variableCount; ++i) _trace += _k->_variables[i]->_initialStandardDeviation * _k->_variables[i]->_initialStandardDeviation;
+  _sigma = sqrt(_trace / _variableCount);
 
   // Setting B, C and _axisD
-  for (size_t i = 0; i < _k->_variables.size(); ++i)
+  for (size_t i = 0; i < _variableCount; ++i)
   {
-    _covarianceEigenvectorMatrix[i * _k->_variables.size() + i] = 1.0;
-    _covarianceMatrix[i * _k->_variables.size() + i] = _axisLengths[i] = _k->_variables[i]->_initialStandardDeviation * sqrt(_k->_variables.size() / _trace);
-    _covarianceMatrix[i * _k->_variables.size() + i] *= _covarianceMatrix[i * _k->_variables.size() + i];
+    _covarianceEigenvectorMatrix[i * _variableCount + i] = 1.0;
+    _covarianceMatrix[i * _variableCount + i] = _axisLengths[i] = _k->_variables[i]->_initialStandardDeviation * sqrt(_variableCount / _trace);
+    _covarianceMatrix[i * _variableCount + i] *= _covarianceMatrix[i * _variableCount + i];
   }
 
   _minimumCovarianceEigenvalue = *std::min_element(std::begin(_axisLengths), std::end(_axisLengths));
@@ -280,11 +281,11 @@ void CMAES::initCovariance()
   _maximumCovarianceEigenvalue = _maximumCovarianceEigenvalue * _maximumCovarianceEigenvalue;
 
   _maximumDiagonalCovarianceMatrixElement = _covarianceMatrix[0];
-  for (size_t i = 1; i < _k->_variables.size(); ++i)
-    if (_maximumDiagonalCovarianceMatrixElement < _covarianceMatrix[i * _k->_variables.size() + i]) _maximumDiagonalCovarianceMatrixElement = _covarianceMatrix[i * _k->_variables.size() + i];
+  for (size_t i = 1; i < _variableCount; ++i)
+    if (_maximumDiagonalCovarianceMatrixElement < _covarianceMatrix[i * _variableCount + i]) _maximumDiagonalCovarianceMatrixElement = _covarianceMatrix[i * _variableCount + i];
   _minimumDiagonalCovarianceMatrixElement = _covarianceMatrix[0];
-  for (size_t i = 1; i < _k->_variables.size(); ++i)
-    if (_minimumDiagonalCovarianceMatrixElement > _covarianceMatrix[i * _k->_variables.size() + i]) _minimumDiagonalCovarianceMatrixElement = _covarianceMatrix[i * _k->_variables.size() + i];
+  for (size_t i = 1; i < _variableCount; ++i)
+    if (_minimumDiagonalCovarianceMatrixElement > _covarianceMatrix[i * _variableCount + i]) _minimumDiagonalCovarianceMatrixElement = _covarianceMatrix[i * _variableCount + i];
 }
 
 void CMAES::checkMeanAndSetRegime()
@@ -422,7 +423,7 @@ void CMAES::updateViabilityBoundaries()
 
 void CMAES::prepareGeneration()
 {
-  for (size_t d = 0; d < _k->_variables.size(); ++d) _auxiliarCovarianceMatrix = _covarianceMatrix;
+  for (size_t d = 0; d < _variableCount; ++d) _auxiliarCovarianceMatrix = _covarianceMatrix;
   updateEigensystem(_auxiliarCovarianceMatrix);
 
   for (size_t i = 0; i < _currentPopulationSize; ++i)
@@ -444,26 +445,26 @@ void CMAES::prepareGeneration()
 
 void CMAES::sampleSingle(size_t sampleIdx)
 {
-  for (size_t d = 0; d < _k->_variables.size(); ++d)
+  for (size_t d = 0; d < _variableCount; ++d)
   {
     double randomNumber = _normalGenerator->getRandomNumber();
     //printf("Random Number: %f\n", randomNumber);
 
     if (_isDiagonal)
     {
-      _bDZMatrix[sampleIdx * _k->_variables.size() + d] = _axisLengths[d] * randomNumber;
-      _samplePopulation[sampleIdx][d] = _currentMean[d] + _sigma * _bDZMatrix[sampleIdx * _k->_variables.size() + d];
+      _bDZMatrix[sampleIdx * _variableCount + d] = _axisLengths[d] * randomNumber;
+      _samplePopulation[sampleIdx][d] = _currentMean[d] + _sigma * _bDZMatrix[sampleIdx * _variableCount + d];
     }
     else
       _auxiliarBDZMatrix[d] = _axisLengths[d] * randomNumber;
   }
 
   if (!_isDiagonal)
-    for (size_t d = 0; d < _k->_variables.size(); ++d)
+    for (size_t d = 0; d < _variableCount; ++d)
     {
-      _bDZMatrix[sampleIdx * _k->_variables.size() + d] = 0.0;
-      for (size_t e = 0; e < _k->_variables.size(); ++e) _bDZMatrix[sampleIdx * _k->_variables.size() + d] += _covarianceEigenvectorMatrix[d * _k->_variables.size() + e] * _auxiliarBDZMatrix[e];
-      _samplePopulation[sampleIdx][d] = _currentMean[d] + _sigma * _bDZMatrix[sampleIdx * _k->_variables.size() + d];
+      _bDZMatrix[sampleIdx * _variableCount + d] = 0.0;
+      for (size_t e = 0; e < _variableCount; ++e) _bDZMatrix[sampleIdx * _variableCount + d] += _covarianceEigenvectorMatrix[d * _variableCount + e] * _auxiliarBDZMatrix[e];
+      _samplePopulation[sampleIdx][d] = _currentMean[d] + _sigma * _bDZMatrix[sampleIdx * _variableCount + d];
     }
 
   if (_hasDiscreteVariables)
@@ -473,7 +474,7 @@ void CMAES::sampleSingle(size_t sampleIdx)
       double p_geom = std::pow(0.7, 1.0 / _numberMaskingMatrixEntries);
       size_t select = std::floor(_uniformGenerator->getRandomNumber() * _numberMaskingMatrixEntries);
 
-      for (size_t d = 0; d < _k->_variables.size(); ++d)
+      for (size_t d = 0; d < _variableCount; ++d)
         if ((_maskingMatrix[d] == 1.0) && (select-- == 0))
         {
           double dmutation = 1.0;
@@ -481,17 +482,17 @@ void CMAES::sampleSingle(size_t sampleIdx)
           dmutation *= _k->_variables[d]->_granularity;
 
           if (_uniformGenerator->getRandomNumber() > 0.5) dmutation *= -1.0;
-          _discreteMutations[sampleIdx * _k->_variables.size() + d] = dmutation;
+          _discreteMutations[sampleIdx * _variableCount + d] = dmutation;
           _samplePopulation[sampleIdx][d] += dmutation;
         }
     }
     else if ((sampleIdx + 1) == _numberOfDiscreteMutations)
     {
-      for (size_t d = 0; d < _k->_variables.size(); ++d)
+      for (size_t d = 0; d < _variableCount; ++d)
         if (_k->_variables[d]->_granularity != 0.0)
         {
           double dmutation = std::round(_bestEverVariables[d] / _k->_variables[d]->_granularity) * _k->_variables[d]->_granularity - _samplePopulation[sampleIdx][d];
-          _discreteMutations[sampleIdx * _k->_variables.size() + d] = dmutation;
+          _discreteMutations[sampleIdx * _variableCount + d] = dmutation;
           _samplePopulation[sampleIdx][d] += dmutation;
         }
     }
@@ -525,7 +526,7 @@ void CMAES::updateDistribution(const std::vector<double> &evaluations)
   /* update current best */
   _currentBestValue = _valueVector[_bestValidSample];
 
-  for (size_t d = 0; d < _k->_variables.size(); ++d) _currentBestVariables[d] = _samplePopulation[_bestValidSample][d];
+  for (size_t d = 0; d < _variableCount; ++d) _currentBestVariables[d] = _samplePopulation[_bestValidSample][d];
 
   /* update xbestever */
   if (_currentBestValue > _bestEverValue || _k->_currentGeneration == 1)
@@ -533,7 +534,7 @@ void CMAES::updateDistribution(const std::vector<double> &evaluations)
     _previousBestEverValue = _bestEverValue;
     _bestEverValue = _currentBestValue;
 
-    for (size_t d = 0; d < _k->_variables.size(); ++d)
+    for (size_t d = 0; d < _variableCount; ++d)
       _bestEverVariables[d] = _currentBestVariables[d];
 
     if (_areConstraintsDefined)
@@ -542,7 +543,7 @@ void CMAES::updateDistribution(const std::vector<double> &evaluations)
   }
 
   /* set weights */
-  for (size_t d = 0; d < _k->_variables.size(); ++d)
+  for (size_t d = 0; d < _variableCount; ++d)
   {
     _previousMean[d] = _currentMean[d];
     _currentMean[d] = 0.;
@@ -553,13 +554,13 @@ void CMAES::updateDistribution(const std::vector<double> &evaluations)
   }
 
   /* calculate z := D^(-1) * B^(T) * _meanUpdate into _auxiliarBDZMatrix */
-  for (size_t d = 0; d < _k->_variables.size(); ++d)
+  for (size_t d = 0; d < _variableCount; ++d)
   {
     double sum = 0.0;
     if (_isDiagonal)
       sum = _meanUpdate[d];
     else
-      for (size_t e = 0; e < _k->_variables.size(); ++e) sum += _covarianceEigenvectorMatrix[e * _k->_variables.size() + d] * _meanUpdate[e]; /* B^(T) * _meanUpdate ( iterating B[e][d] = B^(T) ) */
+      for (size_t e = 0; e < _variableCount; ++e) sum += _covarianceEigenvectorMatrix[e * _variableCount + d] * _meanUpdate[e]; /* B^(T) * _meanUpdate ( iterating B[e][d] = B^(T) ) */
 
     _auxiliarBDZMatrix[d] = sum / _axisLengths[d]; /* D^(-1) * B^(T) * _meanUpdate */
   }
@@ -567,13 +568,13 @@ void CMAES::updateDistribution(const std::vector<double> &evaluations)
   _conjugateEvolutionPathL2Norm = 0.0;
 
   /* cumulation for _sigma (ps) using B*z */
-  for (size_t d = 0; d < _k->_variables.size(); ++d)
+  for (size_t d = 0; d < _variableCount; ++d)
   {
     double sum = 0.0;
     if (_isDiagonal)
       sum = _auxiliarBDZMatrix[d];
     else
-      for (size_t e = 0; e < _k->_variables.size(); ++e) sum += _covarianceEigenvectorMatrix[d * _k->_variables.size() + e] * _auxiliarBDZMatrix[e];
+      for (size_t e = 0; e < _variableCount; ++e) sum += _covarianceEigenvectorMatrix[d * _variableCount + e] * _auxiliarBDZMatrix[e];
 
     _conjugateEvolutionPath[d] = (1. - _sigmaCumulationFactor) * _conjugateEvolutionPath[d] + sqrt(_sigmaCumulationFactor * (2. - _sigmaCumulationFactor) * _effectiveMu) * sum;
 
@@ -582,10 +583,10 @@ void CMAES::updateDistribution(const std::vector<double> &evaluations)
   }
   _conjugateEvolutionPathL2Norm = std::sqrt(_conjugateEvolutionPathL2Norm);
 
-  int hsig = (1.4 + 2.0 / (_k->_variables.size() + 1) > _conjugateEvolutionPathL2Norm / sqrt(1. - pow(1. - _sigmaCumulationFactor, 2.0 * (1.0 + _k->_currentGeneration))) / _chiSquareNumber);
+  int hsig = (1.4 + 2.0 / (_variableCount + 1) > _conjugateEvolutionPathL2Norm / sqrt(1. - pow(1. - _sigmaCumulationFactor, 2.0 * (1.0 + _k->_currentGeneration))) / _chiSquareNumber);
 
-  /* cumulation for covariance matrix (pc) using B*D*z~_k->_variables.size()(0,C) */
-  for (size_t d = 0; d < _k->_variables.size(); ++d)
+  /* cumulation for covariance matrix (pc) using B*D*z~_variableCount(0,C) */
+  for (size_t d = 0; d < _variableCount; ++d)
     _evolutionPath[d] = (1. - _cumulativeCovariance) * _evolutionPath[d] + hsig * sqrt(_cumulativeCovariance * (2. - _cumulativeCovariance) * _effectiveMu) * _meanUpdate[d];
 
   /* update covariance matrix  */
@@ -607,42 +608,42 @@ void CMAES::updateDistribution(const std::vector<double> &evaluations)
   _currentMaxStandardDeviation = -std::numeric_limits<double>::infinity();
 
   // Calculating current Minimum and Maximum STD Devs
-  for (size_t i = 0; i < _k->_variables.size(); ++i)
+  for (size_t i = 0; i < _variableCount; ++i)
   {
-    _currentMinStandardDeviation = std::min(_currentMinStandardDeviation, _sigma * sqrt(_covarianceMatrix[i * _k->_variables.size() + i]));
-    _currentMaxStandardDeviation = std::max(_currentMaxStandardDeviation, _sigma * sqrt(_covarianceMatrix[i * _k->_variables.size() + i]));
+    _currentMinStandardDeviation = std::min(_currentMinStandardDeviation, _sigma * sqrt(_covarianceMatrix[i * _variableCount + i]));
+    _currentMaxStandardDeviation = std::max(_currentMaxStandardDeviation, _sigma * sqrt(_covarianceMatrix[i * _variableCount + i]));
   }
 }
 
 void CMAES::adaptC(int hsig)
 {
   /* definitions for speeding up inner-most loop */
-  //double ccov1  = std::min(_covarianceMatrixLearningRate * (1./_muCovariance) * (_isDiagonal ? (_k->_variables.size()+1.5) / 3. : 1.), 1.); (orig, alternative)
-  //double ccovmu = std::min(_covarianceMatrixLearningRate * (1-1./_muCovariance) * (_isDiagonal ? (_k->_variables.size()+1.5) / 3. : 1.), 1.-ccov1); (orig, alternative)
-  double ccov1 = 2.0 / (std::pow(_k->_variables.size() + 1.3, 2) + _effectiveMu);
-  double ccovmu = std::min(1.0 - ccov1, 2.0 * (_effectiveMu - 2 + 1 / _effectiveMu) / (std::pow(_k->_variables.size() + 2.0, 2) + _effectiveMu));
+  //double ccov1  = std::min(_covarianceMatrixLearningRate * (1./_muCovariance) * (_isDiagonal ? (_variableCount+1.5) / 3. : 1.), 1.); (orig, alternative)
+  //double ccovmu = std::min(_covarianceMatrixLearningRate * (1-1./_muCovariance) * (_isDiagonal ? (_variableCount+1.5) / 3. : 1.), 1.-ccov1); (orig, alternative)
+  double ccov1 = 2.0 / (std::pow(_variableCount + 1.3, 2) + _effectiveMu);
+  double ccovmu = std::min(1.0 - ccov1, 2.0 * (_effectiveMu - 2 + 1 / _effectiveMu) / (std::pow(_variableCount + 2.0, 2) + _effectiveMu));
   double sigmasquare = _sigma * _sigma;
 
   /* update covariance matrix */
-  for (size_t d = 0; d < _k->_variables.size(); ++d)
+  for (size_t d = 0; d < _variableCount; ++d)
     for (size_t e = _isDiagonal ? d : 0; e <= d; ++e)
     {
-      _covarianceMatrix[d * _k->_variables.size() + e] = (1 - ccov1 - ccovmu) * _covarianceMatrix[d * _k->_variables.size() + e] + ccov1 * (_evolutionPath[d] * _evolutionPath[e] + (1 - hsig) * _cumulativeCovariance * (2. - _cumulativeCovariance) * _covarianceMatrix[d * _k->_variables.size() + e]);
+      _covarianceMatrix[d * _variableCount + e] = (1 - ccov1 - ccovmu) * _covarianceMatrix[d * _variableCount + e] + ccov1 * (_evolutionPath[d] * _evolutionPath[e] + (1 - hsig) * _cumulativeCovariance * (2. - _cumulativeCovariance) * _covarianceMatrix[d * _variableCount + e]);
 
       for (size_t k = 0; k < _currentMuValue; ++k)
-        _covarianceMatrix[d * _k->_variables.size() + e] += ccovmu * _muWeights[k] * (_samplePopulation[_sortingIndex[k]][d] - _previousMean[d]) * (_samplePopulation[_sortingIndex[k]][e] - _previousMean[e]) / sigmasquare;
+        _covarianceMatrix[d * _variableCount + e] += ccovmu * _muWeights[k] * (_samplePopulation[_sortingIndex[k]][d] - _previousMean[d]) * (_samplePopulation[_sortingIndex[k]][e] - _previousMean[e]) / sigmasquare;
 
-      if (e < d) _covarianceMatrix[e * _k->_variables.size() + d] = _covarianceMatrix[d * _k->_variables.size() + e];
+      if (e < d) _covarianceMatrix[e * _variableCount + d] = _covarianceMatrix[d * _variableCount + e];
     }
 
   /* update maximal and minimal diagonal value */
   _maximumDiagonalCovarianceMatrixElement = _minimumDiagonalCovarianceMatrixElement = _covarianceMatrix[0];
-  for (size_t d = 1; d < _k->_variables.size(); ++d)
+  for (size_t d = 1; d < _variableCount; ++d)
   {
-    if (_maximumDiagonalCovarianceMatrixElement < _covarianceMatrix[d * _k->_variables.size() + d])
-      _maximumDiagonalCovarianceMatrixElement = _covarianceMatrix[d * _k->_variables.size() + d];
-    else if (_minimumDiagonalCovarianceMatrixElement > _covarianceMatrix[d * _k->_variables.size() + d])
-      _minimumDiagonalCovarianceMatrixElement = _covarianceMatrix[d * _k->_variables.size() + d];
+    if (_maximumDiagonalCovarianceMatrixElement < _covarianceMatrix[d * _variableCount + d])
+      _maximumDiagonalCovarianceMatrixElement = _covarianceMatrix[d * _variableCount + d];
+    else if (_minimumDiagonalCovarianceMatrixElement > _covarianceMatrix[d * _variableCount + d])
+      _minimumDiagonalCovarianceMatrixElement = _covarianceMatrix[d * _variableCount + d];
   }
 }
 
@@ -659,7 +660,7 @@ void CMAES::updateSigma()
   else if (_hasDiscreteVariables)
   {
     double pathL2 = 0.0;
-    for (size_t d = 0; d < _k->_variables.size(); ++d) pathL2 += _maskingMatrixSigma[d] * _conjugateEvolutionPath[d] * _conjugateEvolutionPath[d];
+    for (size_t d = 0; d < _variableCount; ++d) pathL2 += _maskingMatrixSigma[d] * _conjugateEvolutionPath[d] * _conjugateEvolutionPath[d];
     _sigma *= exp(_sigmaCumulationFactor / _dampFactor * (sqrt(pathL2) / _chiSquareNumberDiscreteMutations - 1.));
   }
   /* standard update */
@@ -677,7 +678,7 @@ void CMAES::updateSigma()
   }
 
   /* upper bound check for _sigma */
-  double _upperBound = sqrt(_trace / _k->_variables.size());
+  double _upperBound = sqrt(_trace / _variableCount);
 
   if (_sigma > _upperBound)
   {
@@ -696,10 +697,10 @@ void CMAES::numericalErrorTreatment()
   //TODO
 
   //treat minimal standard deviations
-  for (size_t d = 0; d < _k->_variables.size(); ++d)
-    if (_sigma * sqrt(_covarianceMatrix[d * _k->_variables.size() + d]) < _k->_variables[d]->_minimumStandardDeviationUpdate)
+  for (size_t d = 0; d < _variableCount; ++d)
+    if (_sigma * sqrt(_covarianceMatrix[d * _variableCount + d]) < _k->_variables[d]->_minimumStandardDeviationUpdate)
     {
-      _sigma = (_k->_variables[d]->_minimumStandardDeviationUpdate) / sqrt(_covarianceMatrix[d * _k->_variables.size() + d]) * exp(0.05 + _sigmaCumulationFactor / _dampFactor);
+      _sigma = (_k->_variables[d]->_minimumStandardDeviationUpdate) / sqrt(_covarianceMatrix[d * _variableCount + d]) * exp(0.05 + _sigmaCumulationFactor / _dampFactor);
       _k->_logger->logWarning("Detailed", "Sigma increased due to minimal standard deviation.\n");
     }
 
@@ -729,14 +730,14 @@ void CMAES::handleConstraints()
             _covarianceMatrixAdaptationCount++;
 
             double v2 = 0;
-            for (size_t d = 0; d < _k->_variables.size(); ++d)
+            for (size_t d = 0; d < _variableCount; ++d)
             {
-              _normalConstraintApproximation[c][d] = (1.0 - _normalVectorLearningRate) * _normalConstraintApproximation[c][d] + _normalVectorLearningRate * _bDZMatrix[i * _k->_variables.size() + d];
+              _normalConstraintApproximation[c][d] = (1.0 - _normalVectorLearningRate) * _normalConstraintApproximation[c][d] + _normalVectorLearningRate * _bDZMatrix[i * _variableCount + d];
               v2 += _normalConstraintApproximation[c][d] * _normalConstraintApproximation[c][d];
             }
-            for (size_t d = 0; d < _k->_variables.size(); ++d)
-              for (size_t e = 0; e < _k->_variables.size(); ++e)
-                _auxiliarCovarianceMatrix[d * _k->_variables.size() + e] = _auxiliarCovarianceMatrix[d * _k->_variables.size() + e] - ((_covarianceMatrixAdaptionFactor * _covarianceMatrixAdaptionFactor * _normalConstraintApproximation[c][d] * _normalConstraintApproximation[c][e]) / (v2 * _sampleConstraintViolationCounts[i] * _sampleConstraintViolationCounts[i]));
+            for (size_t d = 0; d < _variableCount; ++d)
+              for (size_t e = 0; e < _variableCount; ++e)
+                _auxiliarCovarianceMatrix[d * _variableCount + e] = _auxiliarCovarianceMatrix[d * _variableCount + e] - ((_covarianceMatrixAdaptionFactor * _covarianceMatrixAdaptionFactor * _normalConstraintApproximation[c][d] * _normalConstraintApproximation[c][e]) / (v2 * _sampleConstraintViolationCounts[i] * _sampleConstraintViolationCounts[i]));
           }
       }
 
@@ -786,10 +787,10 @@ void CMAES::updateDiscreteMutationMatrix()
   // implemented based on 'A CMA-ES for Mixed-Integer Nonlinear Optimization' by
   // Hansen2011
 
-  size_t entries = _k->_variables.size() + 1; // +1 to prevent 0-ness
+  size_t entries = _variableCount + 1; // +1 to prevent 0-ness
   std::fill(std::begin(_maskingMatrixSigma), std::end(_maskingMatrixSigma), 1.0);
-  for (size_t d = 0; d < _k->_variables.size(); ++d)
-    if (_sigma * std::sqrt(_covarianceMatrix[d * _k->_variables.size() + d]) / std::sqrt(_sigmaCumulationFactor) < 0.2 * _k->_variables[d]->_granularity)
+  for (size_t d = 0; d < _variableCount; ++d)
+    if (_sigma * std::sqrt(_covarianceMatrix[d * _variableCount + d]) / std::sqrt(_sigmaCumulationFactor) < 0.2 * _k->_variables[d]->_granularity)
     {
       _maskingMatrixSigma[d] = 0.0;
       entries--;
@@ -798,8 +799,8 @@ void CMAES::updateDiscreteMutationMatrix()
 
   _numberMaskingMatrixEntries = 0;
   std::fill(std::begin(_maskingMatrix), std::end(_maskingMatrix), 0.0);
-  for (size_t d = 0; d < _k->_variables.size(); ++d)
-    if (2.0 * _sigma * std::sqrt(_covarianceMatrix[d * _k->_variables.size() + d]) < _k->_variables[d]->_granularity)
+  for (size_t d = 0; d < _variableCount; ++d)
+    if (2.0 * _sigma * std::sqrt(_covarianceMatrix[d * _variableCount + d]) < _k->_variables[d]->_granularity)
     {
       _maskingMatrix[d] = 1.0;
       _numberMaskingMatrixEntries++;
@@ -811,17 +812,17 @@ void CMAES::updateDiscreteMutationMatrix()
 
 void CMAES::discretize(std::vector<double> &sample)
 {
-  if (sample.size() != _k->_variables.size())
-    KORALI_LOG_ERROR("Size of sample's parameter vector (%lu) is different from the number of problem variables.\n", sample.size(), _k->_variables.size());
+  if (sample.size() != _variableCount)
+    KORALI_LOG_ERROR("Size of sample's parameter vector (%lu) is different from the number of problem variables.\n", sample.size(), _variableCount);
 
-  for (size_t d = 0; d < _k->_variables.size(); ++d)
+  for (size_t d = 0; d < _variableCount; ++d)
     if (_k->_variables[d]->_granularity != 0.0)
       sample[d] = std::round(sample[d] / _k->_variables[d]->_granularity) * _k->_variables[d]->_granularity;
 }
 
 void CMAES::updateEigensystem(std::vector<double> &M)
 {
-  eigen(_k->_variables.size(), M, _auxiliarAxisLengths, _auxiliarCovarianceEigenvectorMatrix);
+  eigen(_variableCount, M, _auxiliarAxisLengths, _auxiliarCovarianceEigenvectorMatrix);
 
   /* find largest and smallest eigenvalue, they are supposed to be sorted anyway */
   double minCovEV = *std::min_element(std::begin(_auxiliarAxisLengths), std::end(_auxiliarAxisLengths));
@@ -832,7 +833,7 @@ void CMAES::updateEigensystem(std::vector<double> &M)
     return;
   }
 
-  for (size_t d = 0; d < _k->_variables.size(); ++d)
+  for (size_t d = 0; d < _variableCount; ++d)
   {
     _auxiliarAxisLengths[d] = sqrt(_auxiliarAxisLengths[d]);
     if (std::isfinite(_auxiliarAxisLengths[d]) == false)
@@ -840,8 +841,8 @@ void CMAES::updateEigensystem(std::vector<double> &M)
       _k->_logger->logWarning("Detailed", "Could not calculate root of Eigenvalue (%+6.3e) after Eigen decomp (no update possible).\n", _auxiliarAxisLengths[d]);
       return;
     }
-    for (size_t e = 0; e < _k->_variables.size(); ++e)
-      if (std::isfinite(_covarianceEigenvectorMatrix[d * _k->_variables.size() + e]) == false)
+    for (size_t e = 0; e < _variableCount; ++e)
+      if (std::isfinite(_covarianceEigenvectorMatrix[d * _variableCount + e]) == false)
       {
         _k->_logger->logWarning("Detailed", "Non finite value detected in B (no update possible).\n");
         return;
@@ -852,7 +853,7 @@ void CMAES::updateEigensystem(std::vector<double> &M)
   _maximumCovarianceEigenvalue = maxCovEV;
 
   /* write back */
-  for (size_t d = 0; d < _k->_variables.size(); ++d) _axisLengths[d] = _auxiliarAxisLengths[d];
+  for (size_t d = 0; d < _variableCount; ++d) _axisLengths[d] = _auxiliarAxisLengths[d];
   _covarianceEigenvectorMatrix.assign(std::begin(_auxiliarCovarianceEigenvectorMatrix), std::end(_auxiliarCovarianceEigenvectorMatrix));
 }
 
@@ -867,14 +868,14 @@ void CMAES::eigen(size_t size, std::vector<double> &M, std::vector<double> &diag
   for (size_t i = 0; i < size; i++)
     for (size_t j = 0; j <= i; j++)
     {
-      data[i * size + j] = M[i * _k->_variables.size() + j];
-      data[j * size + i] = M[i * _k->_variables.size() + j];
+      data[i * size + j] = M[i * _variableCount + j];
+      data[j * size + i] = M[i * _variableCount + j];
     }
 
   // GSL Workspace
-  gsl_vector *gsl_eval = gsl_vector_alloc(_k->_variables.size());
-  gsl_matrix *gsl_evec = gsl_matrix_alloc(_k->_variables.size(), _k->_variables.size());
-  gsl_eigen_symmv_workspace *gsl_work = gsl_eigen_symmv_alloc(_k->_variables.size());
+  gsl_vector *gsl_eval = gsl_vector_alloc(_variableCount);
+  gsl_matrix *gsl_evec = gsl_matrix_alloc(_variableCount, _variableCount);
+  gsl_eigen_symmv_workspace *gsl_work = gsl_eigen_symmv_alloc(_variableCount);
 
   gsl_matrix_view m = gsl_matrix_view_array(data.data(), size, size);
 
@@ -884,7 +885,7 @@ void CMAES::eigen(size_t size, std::vector<double> &M, std::vector<double> &diag
   for (size_t i = 0; i < size; i++)
   {
     gsl_vector_view gsl_evec_i = gsl_matrix_column(gsl_evec, i);
-    for (size_t j = 0; j < size; j++) Q[j * _k->_variables.size() + i] = gsl_vector_get(&gsl_evec_i.vector, j);
+    for (size_t j = 0; j < size; j++) Q[j * _variableCount + i] = gsl_vector_get(&gsl_evec_i.vector, j);
   }
 
   for (size_t i = 0; i < size; i++) diag[i] = gsl_vector_get(gsl_eval, i);
@@ -921,7 +922,7 @@ void CMAES::printGenerationAfter()
   _k->_logger->logInfo("Normal", "Covariance Eigenvalues: Min = %+6.3e -  Max = %+6.3e\n", _minimumCovarianceEigenvalue, _maximumCovarianceEigenvalue);
 
   _k->_logger->logInfo("Detailed", "Variable = (MeanX, BestX):\n");
-  for (size_t d = 0; d < _k->_variables.size(); d++) _k->_logger->logData("Detailed", "         %s = (%+6.3e, %+6.3e)\n", _k->_variables[d]->_name.c_str(), _currentMean[d], _bestEverVariables[d]);
+  for (size_t d = 0; d < _variableCount; d++) _k->_logger->logData("Detailed", "         %s = (%+6.3e, %+6.3e)\n", _k->_variables[d]->_name.c_str(), _currentMean[d], _bestEverVariables[d]);
 
   _k->_logger->logInfo("Detailed", "Constraint Evaluation at Current Function Value:\n");
   if (_areConstraintsDefined)
@@ -933,9 +934,9 @@ void CMAES::printGenerationAfter()
   }
 
   _k->_logger->logInfo("Detailed", "Covariance Matrix:\n");
-  for (size_t d = 0; d < _k->_variables.size(); d++)
+  for (size_t d = 0; d < _variableCount; d++)
   {
-    for (size_t e = 0; e <= d; e++) _k->_logger->logData("Detailed", "   %+6.3e  ", _covarianceMatrix[d * _k->_variables.size() + e]);
+    for (size_t e = 0; e <= d; e++) _k->_logger->logData("Detailed", "   %+6.3e  ", _covarianceMatrix[d * _variableCount + e]);
     _k->_logger->logInfo("Detailed", "\n");
   }
 
@@ -955,7 +956,7 @@ void CMAES::finalize()
 
   _k->_logger->logInfo("Minimal", "Optimum found: %e\n", _bestEverValue);
   _k->_logger->logInfo("Minimal", "Optimum found at:\n");
-  for (size_t d = 0; d < _k->_variables.size(); ++d) _k->_logger->logData("Minimal", "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _bestEverVariables[d]);
+  for (size_t d = 0; d < _variableCount; ++d) _k->_logger->logData("Minimal", "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _bestEverVariables[d]);
   if (_areConstraintsDefined)
   {
     _k->_logger->logInfo("Minimal", "Constraint Evaluation at Optimum:\n");

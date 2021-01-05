@@ -3,9 +3,9 @@
 
 int main(int argc, char *argv[])
 {
-#ifndef TEST
+  /////// Initializing environment
+
   initializeEnvironment("_config/helix_2d_eu_const.json");
-#endif
 
   auto e = korali::Experiment();
 
@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
 
   e["Problem"]["Type"] = "Reinforcement Learning / Continuous";
   e["Problem"]["Environment Function"] = &runEnvironment;
-  e["Problem"]["Training Reward Threshold"] = 1.0;
+  e["Problem"]["Training Reward Threshold"] = 1.5;
   e["Problem"]["Policy Testing Episodes"] = 20;
   e["Problem"]["Actions Between Policy Updates"] = 1;
 
@@ -41,12 +41,7 @@ int main(int argc, char *argv[])
 
   //// Setting action variables
 
-#ifndef TEST
   auto [lowerBounds, upperBounds] = _environment->getActionBounds();
-#else
-  std::vector<float> lowerBounds = {0.0, 0.0, 0.0, 0.0};
-  std::vector<float> upperBounds = {1.0, 1.0, 1.0, 1.0};
-#endif
 
   e["Variables"][14]["Name"] = "Frequency (w)";
   e["Variables"][14]["Type"] = "Action";
@@ -72,28 +67,28 @@ int main(int argc, char *argv[])
 
   e["Solver"]["Type"] = "Agent / Continuous / VRACER";
   e["Solver"]["Mode"] = "Training";
-  e["Solver"]["Experiences Per Generation"] = 243;
+  e["Solver"]["Episodes Per Generation"] = 1;
   e["Solver"]["Experiences Between Policy Updates"] = 1;
-  e["Solver"]["Cache Persistence"] = 100;
+  e["Solver"]["Cache Persistence"] = 200;
   e["Solver"]["Learning Rate"] = 1e-4;
+  e["Solver"]["Discount Factor"] = 0.95;
 
   /// Defining the configuration of replay memory
 
   e["Solver"]["Experience Replay"]["Start Size"] = 4096;
-  e["Solver"]["Experience Replay"]["Maximum Size"] = 32768;
-  e["Solver"]["Experience Replay"]["Serialization Frequency"] = 100;
+  e["Solver"]["Experience Replay"]["Maximum Size"] = 65536;
 
   /// Configuring the Remember-and-Forget Experience Replay algorithm
 
   e["Solver"]["Experience Replay"]["REFER"]["Enabled"] = true;
   e["Solver"]["Experience Replay"]["REFER"]["Cutoff Scale"] = 4.0;
-  e["Solver"]["Experience Replay"]["REFER"]["Target"] = 0.1;
-  e["Solver"]["Experience Replay"]["REFER"]["Initial Beta"] = 0.3;
+  e["Solver"]["Experience Replay"]["REFER"]["Target"] = 0.25;
+  e["Solver"]["Experience Replay"]["REFER"]["Initial Beta"] = 0.1;
   e["Solver"]["Experience Replay"]["REFER"]["Annealing Rate"] = 5e-7;
 
   /// Configuring Mini Batch
 
-  e["Solver"]["Mini Batch Size"] = 128;
+  e["Solver"]["Mini Batch Size"] = 256;
   e["Solver"]["Mini Batch Strategy"] = "Uniform";
 
   /// Configuring the neural network and its hidden layers
@@ -114,23 +109,15 @@ int main(int argc, char *argv[])
 
   ////// Defining Termination Criteria
 
-  e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 1.3;
-
-  ////// If using configuration test, run for a couple generations only
-
-#ifdef TEST
-  e["Solver"]["Termination Criteria"]["Max Generations"] = 1;
-#endif
+  e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 1.5;
 
   ////// Setting file output configuration
 
+  e["Console Output"]["Verbosity"] = "Detailed";
   e["File Output"]["Enabled"] = true;
   e["File Output"]["Frequency"] = 20;
   e["File Output"]["Path"] = "_results";
 
   auto k = korali::Engine();
-//  e["Solver"]["Agent Count"] = 4;
-//  k["Conduit"]["Type"] = "Concurrent";
-//  k["Conduit"]["Concurrent Jobs"] = 4;
   k.run(e);
 }

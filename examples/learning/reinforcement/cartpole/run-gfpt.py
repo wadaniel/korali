@@ -31,15 +31,15 @@ e["Variables"][4]["Name"] = "Force"
 e["Variables"][4]["Type"] = "Action"
 e["Variables"][4]["Lower Bound"] = -10.0
 e["Variables"][4]["Upper Bound"] = +10.0
-e["Variables"][4]["Exploration Sigma"] = 0.01
+e["Variables"][4]["Exploration Sigma"]["Initial"] = 1.0
+e["Variables"][4]["Exploration Sigma"]["Final"] = 1.0
+e["Variables"][4]["Exploration Sigma"]["Annealing Rate"] = 0.0
 
 ### Defining Agent Configuration 
 
 e["Solver"]["Type"] = "Agent / Continuous / GFPT"
 e["Solver"]["Mode"] = "Training"
-e["Solver"]["Agent Count"] = 5
-e["Solver"]["Time Sequence Length"] = 1
-e["Solver"]["Experiences Per Generation"] = 500
+e["Solver"]["Episodes Per Generation"] = 1
 e["Solver"]["Experiences Between Policy Updates"] = 1
 e["Solver"]["Cache Persistence"] = 10
 e["Solver"]["Discount Factor"] = 0.99
@@ -50,17 +50,18 @@ e["Solver"]["Mini Batch Size"] = 32
 e["Solver"]["Mini Batch Strategy"] = "Uniform"
 e["Solver"]["Experience Replay"]["Start Size"] =   1024
 e["Solver"]["Experience Replay"]["Maximum Size"] = 32768
-e["Solver"]["Experience Replay"]["Serialization Frequency"] = 10
-e["Solver"]["Experience Replay"]["Importance Weight"]["Update Frequency"] = 10
 
 ## Defining Critic and Policy Configuration
 
-e["Solver"]["Critic"]["Learning Rate"] = 0.0001
-e["Solver"]["Policy"]["Learning Rate"] = 0.0001
-e["Solver"]["Policy"]["Optimization Candidates"] = 128
-e["Solver"]["Policy"]["Target Accuracy"] = 0.00001
+e["Solver"]["Learning Rate"] = 0.01
+e["Solver"]["Policy"]["Learning Rate Scale"] = 1.0
+e["Solver"]["Critic"]["Advantage Function Population"] = 12
+e["Solver"]["Policy"]["Target Accuracy"] = 0.001
+e["Solver"]["Policy"]["Optimization Candidates"] = 12
 
 ### Configuring the neural network and its hidden layers
+
+e["Solver"]["Time Sequence Length"] = 1
 
 e["Solver"]["Neural Network"]["Engine"] = "OneDNN"
 
@@ -78,12 +79,12 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tan
 
 ### Defining Termination Criteria
 
-e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 450
+e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 450
 
 ### Setting file output configuration
 
-e["File Output"]["Enabled"] = True
-e["File Output"]["Frequency"] = 10
+e["Console Output"]["Verbosity"] = "Detailed"
+e["File Output"]["Enabled"] = False
  
 ### Running Training Experiment
 

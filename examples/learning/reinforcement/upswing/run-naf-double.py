@@ -35,6 +35,7 @@ e["Variables"][7]["Upper Bound"] = +20.0
 
 e["Solver"]["Type"] = "Agent / Continuous / NAF"
 e["Solver"]["Mode"] = "Training"
+e["Solver"]["Episodes Per Generation"] = 1
 e["Solver"]["Target Learning Rate"] = 0.8
 e["Solver"]["Experiences Between Policy Updates"] = 1
 e["Solver"]["Discount Factor"] = 1.0
@@ -64,7 +65,7 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tan
 
 ### Defining Termination Criteria
 
-e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 900
+e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 900
 #e["Solver"]["Termination Criteria"]["Max Generations"] = 30
 
 ### Setting file output configuration

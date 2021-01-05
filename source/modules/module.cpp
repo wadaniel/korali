@@ -19,8 +19,13 @@
 #include "distribution/univariate/uniform/uniform.hpp"
 #include "distribution/univariate/weibull/weibull.hpp"
 #include "experiment/experiment.hpp"
-#include "neuralNetwork/layer/dense/dense.hpp"
+#include "neuralNetwork/layer/activation/activation.hpp"
+#include "neuralNetwork/layer/input/input.hpp"
 #include "neuralNetwork/layer/layer.hpp"
+#include "neuralNetwork/layer/linear/linear.hpp"
+#include "neuralNetwork/layer/output/output.hpp"
+#include "neuralNetwork/layer/recurrent/gru/gru.hpp"
+#include "neuralNetwork/layer/recurrent/lstm/lstm.hpp"
 #include "neuralNetwork/neuralNetwork.hpp"
 #include "problem/bayesian/custom/custom.hpp"
 #include "problem/bayesian/latent/exponentialLatent/exponentialLatent.hpp"
@@ -38,15 +43,10 @@
 #include "problem/sampling/sampling.hpp"
 #include "problem/supervisedLearning/supervisedLearning.hpp"
 #include "solver/SAEM/SAEM.hpp"
-#include "solver/agent/continuous/DDPG/DDPG.hpp"
 #include "solver/agent/continuous/GFPT/GFPT.hpp"
 #include "solver/agent/continuous/NAF/NAF.hpp"
 #include "solver/agent/continuous/VRACER/VRACER.hpp"
-#include "solver/agent/continuous/cACER/cACER.hpp"
 #include "solver/agent/continuous/continuous.hpp"
-#include "solver/agent/discrete/DDQN/DDQN.hpp"
-#include "solver/agent/discrete/DQN/DQN.hpp"
-#include "solver/agent/discrete/dACER/dACER.hpp"
 #include "solver/agent/discrete/dVRACER/dVRACER.hpp"
 #include "solver/agent/discrete/discrete.hpp"
 #include "solver/executor/executor.hpp"
@@ -100,63 +100,63 @@ Module *Module::getModule(knlohmann::json &js, Experiment *e)
   // Creating module pointer from it's type.
   Module *module = nullptr;
 
-  if (moduleType == "Concurrent") module = new korali::conduit::Concurrent();
-  if (moduleType == "Distributed") module = new korali::conduit::Distributed();
-  if (moduleType == "Sequential") module = new korali::conduit::Sequential();
-  if (moduleType == "Multivariate/Normal") module = new korali::distribution::multivariate::Normal();
-  if (moduleType == "Specific/Multinomial") module = new korali::distribution::specific::Multinomial();
-  if (moduleType == "Univariate/Cauchy") module = new korali::distribution::univariate::Cauchy();
-  if (moduleType == "Univariate/Exponential") module = new korali::distribution::univariate::Exponential();
-  if (moduleType == "Univariate/Gamma") module = new korali::distribution::univariate::Gamma();
-  if (moduleType == "Univariate/Geometric") module = new korali::distribution::univariate::Geometric();
-  if (moduleType == "Univariate/Igamma") module = new korali::distribution::univariate::Igamma();
-  if (moduleType == "Univariate/Laplace") module = new korali::distribution::univariate::Laplace();
-  if (moduleType == "Univariate/LogNormal") module = new korali::distribution::univariate::LogNormal();
-  if (moduleType == "Univariate/Normal") module = new korali::distribution::univariate::Normal();
-  if (moduleType == "Univariate/TruncatedNormal") module = new korali::distribution::univariate::TruncatedNormal();
-  if (moduleType == "Univariate/Uniform") module = new korali::distribution::univariate::Uniform();
-  if (moduleType == "Univariate/Weibull") module = new korali::distribution::univariate::Weibull();
-  if (moduleType == "Experiment") module = new korali::Experiment();
-  if (moduleType == "Bayesian/Custom") module = new korali::problem::bayesian::Custom();
-  if (moduleType == "Bayesian/Latent") module = new korali::problem::bayesian::Latent();
-  if (moduleType == "Bayesian/Latent/ExponentialLatent") module = new korali::problem::bayesian::latent::ExponentialLatent();
-  if (moduleType == "Bayesian/Reference") module = new korali::problem::bayesian::Reference();
-  if (moduleType == "Hierarchical/Psi") module = new korali::problem::hierarchical::Psi();
-  if (moduleType == "Hierarchical/Theta") module = new korali::problem::hierarchical::Theta();
-  if (moduleType == "Hierarchical/ThetaNew") module = new korali::problem::hierarchical::ThetaNew();
-  if (moduleType == "Integration") module = new korali::problem::Integration();
-  if (moduleType == "Optimization") module = new korali::problem::Optimization();
-  if (moduleType == "Propagation") module = new korali::problem::Propagation();
-  if (moduleType == "Sampling") module = new korali::problem::Sampling();
-  if (moduleType == "ReinforcementLearning/Continuous") module = new korali::problem::reinforcementLearning::Continuous();
-  if (moduleType == "ReinforcementLearning/Discrete") module = new korali::problem::reinforcementLearning::Discrete();
-  if (moduleType == "SupervisedLearning") module = new korali::problem::SupervisedLearning();
-  if (moduleType == "Executor") module = new korali::solver::Executor();
-  if (moduleType == "Integrator") module = new korali::solver::Integrator();
-  if (moduleType == "SAEM") module = new korali::solver::SAEM();
-  if (moduleType == "Learner/GaussianProcess") module = new korali::solver::learner::GaussianProcess();
-  if (moduleType == "Learner/DeepSupervisor") module = new korali::solver::learner::DeepSupervisor();
-  if (moduleType == "Agent/Discrete/DACER") module = new korali::solver::agent::discrete::dACER();
-  if (moduleType == "Agent/Discrete/DQN") module = new korali::solver::agent::discrete::DQN();
-  if (moduleType == "Agent/Discrete/DDQN") module = new korali::solver::agent::discrete::DDQN();
-  if (moduleType == "Agent/Discrete/DVRACER") module = new korali::solver::agent::discrete::dVRACER();
-  if (moduleType == "Agent/Continuous/CACER") module = new korali::solver::agent::continuous::cACER();
-  if (moduleType == "Agent/Continuous/DDPG") module = new korali::solver::agent::continuous::DDPG();
-  if (moduleType == "Agent/Continuous/GFPT") module = new korali::solver::agent::continuous::GFPT();
-  if (moduleType == "Agent/Continuous/NAF") module = new korali::solver::agent::continuous::NAF();
-  if (moduleType == "Agent/Continuous/VRACER") module = new korali::solver::agent::continuous::VRACER();
-  if (moduleType == "Optimizer/CMAES") module = new korali::solver::optimizer::CMAES();
-  if (moduleType == "Optimizer/MOCMAES") module = new korali::solver::optimizer::MOCMAES();
-  if (moduleType == "Optimizer/DEA") module = new korali::solver::optimizer::DEA();
-  if (moduleType == "Optimizer/Adam") module = new korali::solver::optimizer::Adam();
-  if (moduleType == "Optimizer/Rprop") module = new korali::solver::optimizer::Rprop();
-  if (moduleType == "Optimizer/LMCMAES") module = new korali::solver::optimizer::LMCMAES();
-  if (moduleType == "Optimizer/GridSearch") module = new korali::solver::optimizer::GridSearch();
-  if (moduleType == "Sampler/Nested") module = new korali::solver::sampler::Nested();
-  if (moduleType == "Sampler/MCMC") module = new korali::solver::sampler::MCMC();
-  if (moduleType == "Sampler/TMCMC") module = new korali::solver::sampler::TMCMC();
-  if (moduleType == "NeuralNetwork") module = new korali::NeuralNetwork();
-  if (moduleType == "Layer/Dense") module = new korali::neuralNetwork::layer::Dense();
+  if (iCompare(moduleType, "Concurrent")) module = new korali::conduit::Concurrent();
+  if (iCompare(moduleType, "Distributed")) module = new korali::conduit::Distributed();
+  if (iCompare(moduleType, "Sequential")) module = new korali::conduit::Sequential();
+  if (iCompare(moduleType, "Multivariate/Normal")) module = new korali::distribution::multivariate::Normal();
+  if (iCompare(moduleType, "Specific/Multinomial")) module = new korali::distribution::specific::Multinomial();
+  if (iCompare(moduleType, "Univariate/Cauchy")) module = new korali::distribution::univariate::Cauchy();
+  if (iCompare(moduleType, "Univariate/Exponential")) module = new korali::distribution::univariate::Exponential();
+  if (iCompare(moduleType, "Univariate/Gamma")) module = new korali::distribution::univariate::Gamma();
+  if (iCompare(moduleType, "Univariate/Geometric")) module = new korali::distribution::univariate::Geometric();
+  if (iCompare(moduleType, "Univariate/Igamma")) module = new korali::distribution::univariate::Igamma();
+  if (iCompare(moduleType, "Univariate/Laplace")) module = new korali::distribution::univariate::Laplace();
+  if (iCompare(moduleType, "Univariate/LogNormal")) module = new korali::distribution::univariate::LogNormal();
+  if (iCompare(moduleType, "Univariate/Normal")) module = new korali::distribution::univariate::Normal();
+  if (iCompare(moduleType, "Univariate/TruncatedNormal")) module = new korali::distribution::univariate::TruncatedNormal();
+  if (iCompare(moduleType, "Univariate/Uniform")) module = new korali::distribution::univariate::Uniform();
+  if (iCompare(moduleType, "Univariate/Weibull")) module = new korali::distribution::univariate::Weibull();
+  if (iCompare(moduleType, "Experiment")) module = new korali::Experiment();
+  if (iCompare(moduleType, "Bayesian/Custom")) module = new korali::problem::bayesian::Custom();
+  if (iCompare(moduleType, "Bayesian/Latent")) module = new korali::problem::bayesian::Latent();
+  if (iCompare(moduleType, "Bayesian/Latent/ExponentialLatent")) module = new korali::problem::bayesian::latent::ExponentialLatent();
+  if (iCompare(moduleType, "Bayesian/Reference")) module = new korali::problem::bayesian::Reference();
+  if (iCompare(moduleType, "Hierarchical/Psi")) module = new korali::problem::hierarchical::Psi();
+  if (iCompare(moduleType, "Hierarchical/Theta")) module = new korali::problem::hierarchical::Theta();
+  if (iCompare(moduleType, "Hierarchical/ThetaNew")) module = new korali::problem::hierarchical::ThetaNew();
+  if (iCompare(moduleType, "Integration")) module = new korali::problem::Integration();
+  if (iCompare(moduleType, "Optimization")) module = new korali::problem::Optimization();
+  if (iCompare(moduleType, "Propagation")) module = new korali::problem::Propagation();
+  if (iCompare(moduleType, "Sampling")) module = new korali::problem::Sampling();
+  if (iCompare(moduleType, "ReinforcementLearning/Continuous")) module = new korali::problem::reinforcementLearning::Continuous();
+  if (iCompare(moduleType, "ReinforcementLearning/Discrete")) module = new korali::problem::reinforcementLearning::Discrete();
+  if (iCompare(moduleType, "SupervisedLearning")) module = new korali::problem::SupervisedLearning();
+  if (iCompare(moduleType, "Executor")) module = new korali::solver::Executor();
+  if (iCompare(moduleType, "Integrator")) module = new korali::solver::Integrator();
+  if (iCompare(moduleType, "SAEM")) module = new korali::solver::SAEM();
+  if (iCompare(moduleType, "Learner/GaussianProcess")) module = new korali::solver::learner::GaussianProcess();
+  if (iCompare(moduleType, "Learner/DeepSupervisor")) module = new korali::solver::learner::DeepSupervisor();
+  if (iCompare(moduleType, "Agent/Discrete/DVRACER")) module = new korali::solver::agent::discrete::dVRACER();
+  if (iCompare(moduleType, "Agent/Continuous/GFPT")) module = new korali::solver::agent::continuous::GFPT();
+  if (iCompare(moduleType, "Agent/Continuous/NAF")) module = new korali::solver::agent::continuous::NAF();
+  if (iCompare(moduleType, "Agent/Continuous/VRACER")) module = new korali::solver::agent::continuous::VRACER();
+  if (iCompare(moduleType, "Optimizer/CMAES")) module = new korali::solver::optimizer::CMAES();
+  if (iCompare(moduleType, "Optimizer/DEA")) module = new korali::solver::optimizer::DEA();
+  if (iCompare(moduleType, "Optimizer/Adam")) module = new korali::solver::optimizer::Adam();
+  if (iCompare(moduleType, "Optimizer/Rprop")) module = new korali::solver::optimizer::Rprop();
+  if (iCompare(moduleType, "Optimizer/LMCMAES")) module = new korali::solver::optimizer::LMCMAES();
+  if (iCompare(moduleType, "Optimizer/MOCMAES")) module = new korali::solver::optimizer::MOCMAES();
+  if (iCompare(moduleType, "Optimizer/GridSearch")) module = new korali::solver::optimizer::GridSearch();
+  if (iCompare(moduleType, "Sampler/Nested")) module = new korali::solver::sampler::Nested();
+  if (iCompare(moduleType, "Sampler/MCMC")) module = new korali::solver::sampler::MCMC();
+  if (iCompare(moduleType, "Sampler/TMCMC")) module = new korali::solver::sampler::TMCMC();
+  if (iCompare(moduleType, "NeuralNetwork")) module = new korali::NeuralNetwork();
+  if (iCompare(moduleType, "Layer/Linear")) module = new korali::neuralNetwork::layer::Linear();
+  if (iCompare(moduleType, "Layer/Recurrent/GRU")) module = new korali::neuralNetwork::layer::recurrent::GRU();
+  if (iCompare(moduleType, "Layer/Recurrent/LSTM")) module = new korali::neuralNetwork::layer::recurrent::LSTM();
+  if (iCompare(moduleType, "Layer/Input")) module = new korali::neuralNetwork::layer::Input();
+  if (iCompare(moduleType, "Layer/Output")) module = new korali::neuralNetwork::layer::Output();
+  if (iCompare(moduleType, "Layer/Activation")) module = new korali::neuralNetwork::layer::Activation();
 
   if (module == nullptr) KORALI_LOG_ERROR(" + Unrecognized module: %s.\n", moduleType.c_str());
 

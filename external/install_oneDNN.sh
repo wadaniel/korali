@@ -3,7 +3,7 @@
 ######### Global Definitions ########
 libName="oneDNN"
 binName="oneDNN"
-minVersion=1.5
+minVersion=2.0
 
 ######### Helper Functions ########
 
@@ -101,6 +101,7 @@ if [ ${fileFound} == 0 ]; then
  CXXFLAGS=-O3 ${CMAKE} .. \
      -DDNNL_BUILD_EXAMPLES=OFF \
      -DDNNL_BUILD_TESTS=OFF \
+     -DDNNL_ENABLE_CONCURRENT_EXEC=ON \
      -DCMAKE_INSTALL_PREFIX=${installDir} \
      -DDNNL_CPU_RUNTIME=SEQ \
      -DBUILD_SHARED_LIBS=true; check

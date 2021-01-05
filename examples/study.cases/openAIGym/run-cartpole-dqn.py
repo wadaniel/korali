@@ -20,6 +20,11 @@ e["Problem"]["Training Reward Threshold"] = 800
 e["Problem"]["Policy Testing Episodes"] = 20
 e["Problem"]["Actions Between Policy Updates"] = 1
 
+### Adding custom setting to run the environment without saving a movie during training
+e["Problem"]["Custom Settings"]["Save Movie"] = "Disabled"
+
+### Defining variables
+
 e["Variables"][0]["Name"] = "Cart Position"
 e["Variables"][0]["Type"] = "State"
 
@@ -35,15 +40,26 @@ e["Variables"][3]["Type"] = "State"
 e["Variables"][4]["Name"] = "Push Direction"
 e["Variables"][4]["Type"] = "Action"
 
-### Configuring DQN hyperparameters
+### Configuring Agent hyperparameters
 
-e["Solver"]["Type"] = "Agent / Discrete / DQN"
-e["Solver"]["Experiences Between Policy Updates"] = 1
+e["Solver"]["Type"] = "Agent / Discrete / DVRACER"
+e["Solver"]["Mode"] = "Training"
+e["Solver"]["Experiences Between Policy Updates"] = 10
+e["Solver"]["Cache Persistence"] = 500
+e["Solver"]["Episodes Per Generation"] = 1
 
 ### Defining Experience Replay configuration
 
 e["Solver"]["Experience Replay"]["Start Size"] = 1000
 e["Solver"]["Experience Replay"]["Maximum Size"] = 10000
+
+### Configuring the Remember-and-Forget Experience Replay algorithm
+
+e["Solver"]["Experience Replay"]["REFER"]["Enabled"] = True
+e["Solver"]["Experience Replay"]["REFER"]["Cutoff Scale"] = 4.0
+e["Solver"]["Experience Replay"]["REFER"]["Target"] = 0.1
+e["Solver"]["Experience Replay"]["REFER"]["Initial Beta"] = 0.6
+e["Solver"]["Experience Replay"]["REFER"]["Annealing Rate"] = 5e-7
 
 ### Defining probability of taking a random action (epsilon)
 
@@ -51,30 +67,29 @@ e["Solver"]["Random Action Probability"] = 0.05
 
 ## Defining Q-Critic and Action-selection (policy) optimizers
 
-e["Solver"]["Critic"]["Mini Batch Size"] = 32
-e["Solver"]["Critic"]["Learning Rate"] = 0.001
-e["Solver"]["Critic"]["Discount Factor"] = 0.99
-e["Solver"]["Critic"]["Target Update Delay"] = 500
+e["Solver"]["Discount Factor"] = 0.99
+e["Solver"]["Learning Rate"] = 1e-4
+e["Solver"]["Mini Batch Size"] = 32
 
-### Defining the shape of the neural network
+### Configuring the neural network and its hidden layers
 
-e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear"
+e["Solver"]["Neural Network"]["Engine"] = "OneDNN"
 
-e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Type"] = "Layer/Dense"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Node Count"] = 32
-e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Activation Function"]["Type"] = "Elementwise/Tanh"
+e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear"
+e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 32
 
-e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Type"] = "Layer/Dense"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Node Count"] = 32
-e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Elementwise/Tanh"
+e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Activation"
+e["Solver"]["Neural Network"]["Hidden Layers"][1]["Function"] = "Elementwise/Tanh"
 
-e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Type"] = "Layer/Dense"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Elementwise/Linear"
+e["Solver"]["Neural Network"]["Hidden Layers"][2]["Type"] = "Layer/Linear"
+e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 32
+
+e["Solver"]["Neural Network"]["Hidden Layers"][3]["Type"] = "Layer/Activation"
+e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tanh"
 
 ### Defining Termination Criteria
 
-e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 450
+e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 800
 
 ### Setting file output configuration
 
@@ -86,20 +101,13 @@ k.run(e)
 
 ### Now generating movie with the learned policy
 
-movieFile = './movie'
-cart = gym.wrappers.Monitor(cart, movieFile, force=True)
-maxSteps = 1000
+print('[Korali] Done with training. Now running learned policy to produce the movie.')
 
-print('[Korali] Done training. Now running learned policy to produce the movie.')
+moviePath = './_movie'
+e["Problem"]["Custom Settings"]["Save Movie"] = "Enabled"
+e["Problem"]["Custom Settings"]["Movie Path"] = moviePath
+e["Solver"]["Mode"] = "Testing"
+e["Solver"]["Testing"]["Sample Ids"] = [ 0 ]
+k.run(e)
 
-state = cart.reset().tolist()
-done = False
-step = 0
-while not done and step < 100:
- action = int(e.getAction(state)[0])
- print('[Korali] Step ' + str(step) + ' - State: ' + str(state) + ' - Action: ' + str(action), end = '')
- state, reward, done, info = cart.step(action)
- print('- Reward: ' + str(reward))
- step = step + 1
-
-print('[Korali] Finished. Movie stored in the folder: ' + movieFile)
+print('[Korali] Finished. Movie stored in the folder : ' + movieFile)

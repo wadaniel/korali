@@ -22,38 +22,28 @@ void NAF::initializeAgent()
  *********************************************************************/
 
   _qExperiment["Problem"]["Type"] = "Supervised Learning";
+  _qExperiment["Problem"]["Max Timesteps"] = _timeSequenceLength;
+  _qExperiment["Problem"]["Training Batch Size"] = _miniBatchSize;
+  _qExperiment["Problem"]["Inference Batch Size"] = 1;
+  _qExperiment["Problem"]["Input"]["Size"] = _problem->_stateVectorSize;
+  _qExperiment["Problem"]["Solution"]["Size"] = 1 + 2 * _problem->_actionVectorSize;
+
   _qExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
-  _qExperiment["Solver"]["Optimizer"] = _criticOptimizer;
-  _qExperiment["Solver"]["Learning Rate"] = _criticLearningRate;
+  _qExperiment["Solver"]["Optimizer"] = _optimizer;
+  _qExperiment["Solver"]["Learning Rate"] = _learningRate;
   _qExperiment["Solver"]["Loss Function"] = "Direct Gradient";
   _qExperiment["Solver"]["Steps Per Generation"] = 1;
-  _qExperiment["Solver"]["Neural Network"] = _criticNeuralNetwork;
+  _qExperiment["Solver"]["Neural Network"]["Engine"] = _neuralNetworkEngine;
+  _qExperiment["Solver"]["Neural Network"]["Hidden Layers"] = _neuralNetworkHiddenLayers;
 
-  // Initializing experiment with an initial zero set
-  size_t dimAction = _problem->_actionVectorSize;
-  for (size_t i = 0; i < _criticMiniBatchSize; i++)
-  {
-    for (size_t j = 0; j < _problem->_stateVectorSize; j++) _qExperiment["Problem"]["Inputs"][i][j] = 0.0;
-    for (size_t j = 0; j < 1 + 2 * _problem->_actionVectorSize; j++) _qExperiment["Problem"]["Solution"][i][j] = 0.0;
+  // Masks to normalize and rescaling output to fit the action's [lower, upper] bounds (and sigmas/P)
 
-    // V(s), mean(s) and P(s)
-    _qExperiment["Problem"]["Solution"][i][0] = 0.0; // V
-    for (size_t j = 0; j < dimAction; j++)
-    {
-      _qExperiment["Problem"]["Solution"][i][1 + j] = 0.0;             // Mean(i)
-      _qExperiment["Problem"]["Solution"][i][dimAction + 1 + j] = 0.0; // P(i)
-    }
-  }
+  _qExperiment["Solver"]["Neural Network"]["Output Layer"]["Scale"][0] = 1.0f;
+  _qExperiment["Solver"]["Neural Network"]["Output Layer"]["Shift"][0] = 0.0f;
+  _qExperiment["Solver"]["Neural Network"]["Output Layer"]["Tanh Mask"][0] = false;
+  _qExperiment["Solver"]["Neural Network"]["Output Layer"]["Softplus Mask"][0] = false;
 
-  // No output mask for value
-  _qExperiment["Solver"]["Neural Network"]["Output"]["Scale"][0] = 1.0f;
-  _qExperiment["Solver"]["Neural Network"]["Output"]["Shift"][0] = 0.0f;
-  _qExperiment["Solver"]["Neural Network"]["Output"]["Absolute Mask"][0] = false;
-  _qExperiment["Solver"]["Neural Network"]["Output"]["Tanh Mask"][0] = false;
-  _qExperiment["Solver"]["Neural Network"]["Output"]["Softplus Mask"][0] = false;
-  _qExperiment["Solver"]["Neural Network"]["Output"]["Sigmoid Mask"][0] = false;
-
-  for (size_t i = 0; i < dimAction; i++)
+  for (size_t i = 0; i < _problem->_actionVectorSize; i++)
   {
     size_t varIdx = _problem->_actionVectorIndexes[i];
     auto lowerBound = _k->_variables[varIdx]->_lowerBound;
@@ -62,30 +52,20 @@ void NAF::initializeAgent()
     float shift = (upperBound + lowerBound) * 0.5;
 
     // Tanh mask for Mean
-    _qExperiment["Solver"]["Neural Network"]["Output"]["Scale"][i + 1] = scale;
-    _qExperiment["Solver"]["Neural Network"]["Output"]["Shift"][i + 1] = shift;
-    _qExperiment["Solver"]["Neural Network"]["Output"]["Absolute Mask"][i + 1] = false;
-    _qExperiment["Solver"]["Neural Network"]["Output"]["Tanh Mask"][i + 1] = true;
-    _qExperiment["Solver"]["Neural Network"]["Output"]["Softplus Mask"][i + 1] = false;
-    _qExperiment["Solver"]["Neural Network"]["Output"]["Sigmoid Mask"][i + 1] = false;
+    _qExperiment["Solver"]["Neural Network"]["Output Layer"]["Scale"][i + 1] = scale;
+    _qExperiment["Solver"]["Neural Network"]["Output Layer"]["Shift"][i + 1] = shift;
+    _qExperiment["Solver"]["Neural Network"]["Output Layer"]["Tanh Mask"][i + 1] = true;
+    _qExperiment["Solver"]["Neural Network"]["Output Layer"]["Softplus Mask"][i + 1] = false;
 
     // Softplus mask for P
-    _qExperiment["Solver"]["Neural Network"]["Output"]["Scale"][dimAction + i + 1] = 1.0;
-    _qExperiment["Solver"]["Neural Network"]["Output"]["Shift"][dimAction + i + 1] = 0.0;
-    _qExperiment["Solver"]["Neural Network"]["Output"]["Absolute Mask"][dimAction + i + 1] = false;
-    _qExperiment["Solver"]["Neural Network"]["Output"]["Tanh Mask"][dimAction + i + 1] = false;
-    _qExperiment["Solver"]["Neural Network"]["Output"]["Tanh Mask"][dimAction + i + 1] = false;
-    _qExperiment["Solver"]["Neural Network"]["Output"]["Softplus Mask"][dimAction + i + 1] = true;
-    _qExperiment["Solver"]["Neural Network"]["Output"]["Sigmoid Mask"][dimAction + i + 1] = false;
+    _qExperiment["Solver"]["Neural Network"]["Output Layer"]["Scale"][_problem->_actionVectorSize + i + 1] = 1.0f;
+    _qExperiment["Solver"]["Neural Network"]["Output Layer"]["Shift"][_problem->_actionVectorSize + i + 1] = 0.0f;
+    _qExperiment["Solver"]["Neural Network"]["Output Layer"]["Tanh Mask"][_problem->_actionVectorSize + i + 1] = false;
+    _qExperiment["Solver"]["Neural Network"]["Output Layer"]["Softplus Mask"][_problem->_actionVectorSize + i + 1] = true;
   }
-
-  size_t outputLayer = _qExperiment["Solver"]["Neural Network"]["Layers"].size() - 1;
-  _qExperiment["Solver"]["Neural Network"]["Layers"][outputLayer]["Weight Scaling"] = 0.1;
 
   // Running initialization to verify that the configuration is correct
   _qExperiment.initialize();
-
-  // Getting learner pointers
   _qProblem = dynamic_cast<problem::SupervisedLearning *>(_qExperiment._problem);
   _qLearner = dynamic_cast<solver::learner::DeepSupervisor *>(_qExperiment._solver);
 
@@ -115,6 +95,13 @@ void NAF::initializeAgent()
   _averageActionSigmas.resize(_problem->_actionVectorSize);
 }
 
+float NAF::stateValueFunction(const std::vector<std::vector<float>> &state)
+{
+  // Calculating V(s_i)
+  float v = _criticLearner->getEvaluation({state})[0][0];
+  return v;
+}
+
 void NAF::trainPolicy()
 {
   /***********************************************************************************
@@ -129,23 +116,26 @@ void NAF::trainPolicy()
   std::fill(_averageActionSigmas.begin(), _averageActionSigmas.end(), 0.0);
 
   // Creating minibatch for the critic update
-  auto miniBatchIndexes = generateMiniBatch(_criticMiniBatchSize);
-  auto importanceWeights = calculateImportanceWeights(miniBatchIndexes);
+  auto miniBatchIndexes = generateMiniBatch(_miniBatchSize);
 
   // Reevaluating minibatch with Qhat
 #pragma omp parallel for schedule(dynamic, 1)
-  for (size_t i = 0; i < _criticMiniBatchSize; i++)
+  for (size_t b = 0; b < _miniBatchSize; b++)
   {
     // Selecting a uniformly random selected, yet not repeated experience
-    size_t expId = miniBatchIndexes[i];
+    size_t expId = miniBatchIndexes[b];
 
     // Access experiences
-    auto curState = _experienceReplay[expId].state;
+    auto curStateSequence = getStateTimeSequence(expId);
     auto curAction = _experienceReplay[expId].action;
     float yHat = _experienceReplay[expId].reward;
 
+    // Getting current experience probability and calculating importance weight
+    float probability = _experienceReplay[expId].metadata["Mini Batch"]["Probability"];
+    float weight = std::pow((float)_experienceReplay.size() * probability, -_importanceWeightAnnealingRate);
+
     // Evaluate Q
-    auto qEvaluation = _qLearner->getEvaluation(curState);
+    auto qEvaluation = _qLearner->getEvaluation({curStateSequence})[0];
 
     // yHat* = r -- If terminal state
     // yHat* = r + gamma*V(s) -- If not terminal state
@@ -157,8 +147,8 @@ void NAF::trainPolicy()
       auto nextState = _experienceReplay[expId + 1].state;
 
       // Calculate target y
-      float vHat = _criticLearner->getEvaluation(nextState)[0];
-      yHat += _criticDiscountFactor * vHat;
+      float vHat = _criticLearner->getEvaluation({{nextState}})[0][0];
+      yHat += _discountFactor * vHat;
     }
 
     float qval = quadraticAdvantageFunction(curAction, qEvaluation) + qEvaluation[0]; // A(s,a) + V(s)
@@ -167,13 +157,11 @@ void NAF::trainPolicy()
     cumulativeTdError += diff;
     cumulativeTdErrorSquarred += (diff * diff);
 
-    // Update experience priority
-    updateExperienceReplayPriority(expId, abs(diff));
+    // Updating experience priority
+    _experienceReplay[expId].metadata["Mini Batch"]["Priority"] = abs(diff);
 
+    // Reserving storage for critic/policy gradient
     std::vector<float> policyGradient(1 + 2 * _problem->_actionVectorSize);
-
-    // Fetch importance weight
-    float weight = importanceWeights[i];
 
     // Calculating Gradients of Loss Li wrt. V(s)
     policyGradient[0] = weight * diff;
@@ -187,8 +175,8 @@ void NAF::trainPolicy()
       policyGradient[1 + curAction.size() + j] = -weight * 0.5 * diff * dmu * dmu / (_actionScalings[j] * _actionScalings[j]);
     }
 
-    _qProblem->_inputs[i] = curState;
-    _qProblem->_solution[i] = policyGradient;
+    _qProblem->_inputData[b] = curStateSequence;
+    _qProblem->_solutionData[b] = policyGradient;
 
     // Keeping statistics
     _cumulativeQStar += yHat;
@@ -197,16 +185,14 @@ void NAF::trainPolicy()
   }
 
   // Running one generation of the optimization method with the given mini-batch
-  _qLearner->initialize();
   _qLearner->runGeneration();
-  _qLearner->finalize();
 
   // Keeping statistics
-  _averageQStar = _cumulativeQStar / (float)_criticMiniBatchSize;
-  _stdevQStar = std::sqrt(_cumulativeQStarSquared / (float)_criticMiniBatchSize - _averageQStar * _averageQStar);
-  _averageTDError = cumulativeTdError / (float)_criticMiniBatchSize;
-  _stdevTDError = std::sqrt(cumulativeTdErrorSquarred / (float)_criticMiniBatchSize - _averageTDError * _averageTDError);
-  for (size_t j = 0; j < _averageActionSigmas.size(); j++) _averageActionSigmas[j] /= (float)_criticMiniBatchSize;
+  _averageQStar = _cumulativeQStar / (float)_miniBatchSize;
+  _stdevQStar = std::sqrt(_cumulativeQStarSquared / (float)_miniBatchSize - _averageQStar * _averageQStar);
+  _averageTDError = cumulativeTdError / (float)_miniBatchSize;
+  _stdevTDError = std::sqrt(cumulativeTdErrorSquarred / (float)_miniBatchSize - _averageTDError * _averageTDError);
+  for (size_t j = 0; j < _averageActionSigmas.size(); j++) _averageActionSigmas[j] /= (float)_miniBatchSize;
 
   /*********************************************************************
    * Updating hyperparameters and broadcasting them to the workers
@@ -222,9 +208,9 @@ void NAF::trainPolicy()
   _criticLearner->setInferenceHyperparameters(_qHatHyperparameter);
 }
 
-knlohmann::json NAF::runPolicy(const std::vector<float> &state)
+knlohmann::json NAF::runPolicy(const std::vector<std::vector<float>> &state)
 {
-  auto qNNoutput = _qLearner->getEvaluation(state);
+  auto qNNoutput = _qLearner->getEvaluation({state})[0];
 
   // Transforming NN output to receive mu and diagonal of P
   std::vector<float> actionMeans(_problem->_actionVectorSize);
@@ -264,6 +250,18 @@ float NAF::quadraticAdvantageFunction(const std::vector<float> &action, const st
     qval += dmu * diagP * dmu;
   }
   return -0.5 * qval;
+}
+
+knlohmann::json NAF::getAgentPolicy()
+{
+  knlohmann::json hyperparameters;
+  hyperparameters["Critic"] = _qLearner->getInferenceHyperparameters();
+  return hyperparameters;
+}
+
+void NAF::setAgentPolicy(const knlohmann::json &hyperparameters)
+{
+  _qLearner->setInferenceHyperparameters(hyperparameters["Critic"].get<std::vector<float>>());
 }
 
 void NAF::setTrainingState(const knlohmann::json &state)

@@ -80,11 +80,11 @@ void Nested::setInitialConfiguration()
   {
     if (dynamic_cast<distribution::Univariate *>(_k->_distributions[_k->_variables[d]->_distributionIndex]) == nullptr) KORALI_LOG_ERROR("Prior of variable %s is not of type Univariate (is %s).\n", _k->_variables[d]->_name.c_str(), _k->_distributions[_k->_variables[d]->_distributionIndex]->_type.c_str());
 
-    if ((_k->_distributions[_k->_variables[d]->_distributionIndex]->_type != "Univariate/Uniform") && (std::isfinite(_k->_variables[d]->_lowerBound) == false)) KORALI_LOG_ERROR("Prior of variable %s is not 'Univariate/Uniform' (is %s) AND lower bound not set (invalid configuration).\n", _k->_variables[d]->_name.c_str(), _k->_distributions[_k->_variables[d]->_distributionIndex]->_type.c_str());
+    if ((iCompare(_k->_distributions[_k->_variables[d]->_distributionIndex]->_type, "Univariate/Uniform") == false) && (std::isfinite(_k->_variables[d]->_lowerBound) == false)) KORALI_LOG_ERROR("Prior of variable %s is not 'Univariate/Uniform' (is %s) AND lower bound not set (invalid configuration).\n", _k->_variables[d]->_name.c_str(), _k->_distributions[_k->_variables[d]->_distributionIndex]->_type.c_str());
 
-    if ((_k->_distributions[_k->_variables[d]->_distributionIndex]->_type != "Univariate/Uniform") && (std::isfinite(_k->_variables[d]->_upperBound) == false)) KORALI_LOG_ERROR("Prior of variable %s is not 'Univariate/Uniform' (is %s) AND upper bound not set (invalid configuration).\n", _k->_variables[d]->_name.c_str(), _k->_distributions[_k->_variables[d]->_distributionIndex]->_type.c_str());
+    if ((iCompare(_k->_distributions[_k->_variables[d]->_distributionIndex]->_type, "Univariate/Uniform") == false) && (std::isfinite(_k->_variables[d]->_upperBound) == false)) KORALI_LOG_ERROR("Prior of variable %s is not 'Univariate/Uniform' (is %s) AND upper bound not set (invalid configuration).\n", _k->_variables[d]->_name.c_str(), _k->_distributions[_k->_variables[d]->_distributionIndex]->_type.c_str());
 
-    if (_k->_distributions[_k->_variables[d]->_distributionIndex]->_type == "Univariate/Uniform")
+    if (iCompare(_k->_distributions[_k->_variables[d]->_distributionIndex]->_type, "Univariate/Uniform"))
     {
       _priorWidth[d] = dynamic_cast<distribution::univariate::Uniform *>(_k->_distributions[_k->_variables[d]->_distributionIndex])->_maximum - dynamic_cast<distribution::univariate::Uniform *>(_k->_distributions[_k->_variables[d]->_distributionIndex])->_minimum;
       _priorLowerBound[d] = dynamic_cast<distribution::univariate::Uniform *>(_k->_distributions[_k->_variables[d]->_distributionIndex])->_minimum;

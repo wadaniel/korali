@@ -16,8 +16,13 @@ xtrain, ytrain = create_train_data()
 
 e['Random Seed'] = 0xC0FFEE
 e['Problem']['Type'] = 'Supervised Learning'
-e['Problem']['Inputs'] = [ [ x ] for x in xtrain ] 
-e['Problem']['Solution'] = [ [ y ]  for y in ytrain ]
+
+e["Problem"]["Training Batch Size"] = 1
+e["Problem"]["Inference Batch Size"] = 1
+e["Problem"]["Input"]["Data"] = [ [ [ x ] for x in xtrain ] ] 
+e["Problem"]["Input"]["Size"] = 1
+e["Problem"]["Solution"]["Data"] = [ [ y ]  for y in ytrain ]
+e["Problem"]["Solution"]["Size"] = 1
 
 e['Solver']['Type'] = 'Learner/Gaussian Process'
 e['Solver']['Covariance Function'] = 'CovSEiso'

@@ -318,6 +318,16 @@ void Agent::processEpisode(std::vector<knlohmann::json> &episode)
   // Storage for cumulative reward
   float cumulativeReward = 0.0f;
 
+  // Creating an estimation of the retrace value by backward iteration of the episode's experiences
+  std::vector<float> sumRewards(episode.size());
+  float rewardSum = 0.0f;
+  for (ssize_t expId = (ssize_t) episode.size() - 1; expId >= 0; expId--)
+  {
+    float curReward = episode[expId]["Reward"].get<float>();
+    sumRewards[expId] = _discountFactor * rewardSum + curReward;
+    rewardSum += curReward;
+  }
+
   // Now adding episode's experiences into the replay memory
   for (size_t expId = 0; expId < episode.size(); expId++)
   {
@@ -350,6 +360,9 @@ void Agent::processEpisode(std::vector<knlohmann::json> &episode)
 
     // Storing policy
     e.policy = episode[expId]["Policy"];
+
+    // Setting initial retrace value
+    e.cache.set("Retrace Value", sumRewards[expId]);
 
     // Adding experience
     _experienceReplay.add(e);
@@ -513,16 +526,27 @@ float Agent::retraceFunction(size_t expId)
   ssize_t endId = startId;
   while (_experienceReplay[endId].termination == e_nonTerminal) endId++;
 
-  // Calculating initial Vtbc
-  float Vtbc = 0.0f;
+  // Storage for the retrace value
+  float vRet = 0.0f;
 
-  // If it was a truncated episode, add the value function for the terminal state to Vtbc
+  // Checking in cache, whether the state value was obtained before
+  for (ssize_t curId = startId; curId <= endId; curId++)
+   if (_experienceReplay[curId].cache.contains("Retrace Value"))
+   {
+    // Getting the retrace value from cache
+    vRet = _experienceReplay[curId].cache.get("Retrace Value");
+
+    // Starting from the experience before the found experience
+    endId = curId - 1;
+   }
+
+  // If it was a truncated episode, add the value function for the terminal state to vRet
   if (_experienceReplay[endId].termination == e_truncated)
   {
     // Get truncated state sequence, adding the truncated state to it and removing first time element
     auto expTruncatedStateSequence = getTruncatedStateTimeSequence(endId);
     float terminalV = _experienceReplay[endId].cache.access("Terminal State Value", [this, expTruncatedStateSequence]() { return this->stateValueFunction(expTruncatedStateSequence); });
-    Vtbc = terminalV;
+    vRet = terminalV;
   }
 
   // Now iterating backwards to calculate the rest of vTbc
@@ -542,12 +566,15 @@ float Agent::retraceFunction(size_t expId)
     // Truncate importance weight
     float truncatedImportanceWeight = std::min(1.0f, importanceWeight);
 
-    // Calculating Vtbc
-    Vtbc = curV + truncatedImportanceWeight * (curReward + _discountFactor * Vtbc - curV);
+    // Calculating retrace value
+    vRet = curV + truncatedImportanceWeight * (curReward + _discountFactor * vRet - curV);
+
+    // Storing retrace value into the experience's cache
+    _experienceReplay[curId].cache.set("Retrace Value", vRet);
   }
 
-  // Returning Vtbc
-  return Vtbc;
+  // Returning vRet
+  return vRet;
 }
 
 void Agent::resetTimeSequence()

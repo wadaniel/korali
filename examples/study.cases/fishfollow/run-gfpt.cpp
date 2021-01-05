@@ -89,7 +89,6 @@ int main(int argc, char *argv[])
 
   e["Solver"]["Experience Replay"]["Start Size"] = 1024;
   e["Solver"]["Experience Replay"]["Maximum Size"] = 65536;
-  e["Solver"]["Experience Replay"]["Serialization"]["Frequency"] = 1;
 
   /// Configuring the Remember-and-Forget Experience Replay algorithm
 

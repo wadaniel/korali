@@ -87,7 +87,6 @@ int main(int argc, char *argv[])
 
   e["Solver"]["Experience Replay"]["Start Size"] = 4096;
   e["Solver"]["Experience Replay"]["Maximum Size"] = 65536;
-  e["Solver"]["Experience Replay"]["Serialization"]["Frequency"] = 100;
 
   /// Configuring the Remember-and-Forget Experience Replay algorithm
 
@@ -137,8 +136,5 @@ int main(int argc, char *argv[])
   e["File Output"]["Path"] = "_results";
 
   auto k = korali::Engine();
-  //  e["Solver"]["Agent Count"] = 4;
-  //  k["Conduit"]["Type"] = "Concurrent";
-  //  k["Conduit"]["Concurrent Jobs"] = 4;
   k.run(e);
 }

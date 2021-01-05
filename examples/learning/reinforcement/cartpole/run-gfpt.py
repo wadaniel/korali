@@ -50,7 +50,6 @@ e["Solver"]["Mini Batch Size"] = 32
 e["Solver"]["Mini Batch Strategy"] = "Uniform"
 e["Solver"]["Experience Replay"]["Start Size"] =   1024
 e["Solver"]["Experience Replay"]["Maximum Size"] = 32768
-e["Solver"]["Experience Replay"]["Serialization"]["Frequency"] = 0
 
 ## Defining Critic and Policy Configuration
 
@@ -86,7 +85,6 @@ e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 450
 
 e["Console Output"]["Verbosity"] = "Detailed"
 e["File Output"]["Enabled"] = False
-e["File Output"]["Frequency"] = 10
  
 ### Running Training Experiment
 

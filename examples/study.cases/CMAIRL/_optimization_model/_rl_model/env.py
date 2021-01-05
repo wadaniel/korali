@@ -9,7 +9,7 @@ maxSteps = 500
 def env(s, th):
 
  salist = []
-
+ 
  # Initializing environment
  cart = CartPole(th)
  
@@ -32,7 +32,7 @@ def env(s, th):
   state = cart.getState().tolist()
   s["State"] = state
   
-  if s["Mode"] == "Testing" and s["Custom Settings"]["Record Observations"] == True:
+  if s["Custom Settings"]["Record Observations"] == "True":
       stateaction = s["State"]
       action = s["Action"]
       stateaction.append(action[0])
@@ -47,7 +47,7 @@ def env(s, th):
  else:
   s["Termination"] = "Truncated"
 
- if s["Mode"] == "Testing" and s["Custom Settings"]["Record Observations"] == True:
+ if s["Custom Settings"]["Record Observations"] == "True":
     print("Generating observations for sample {0}".format(s["Sample Id"]))
     print("Observations recorded: {0}".format(len(salist)))
     print("Reward during recoding: {0}".format(s["Reward"]))

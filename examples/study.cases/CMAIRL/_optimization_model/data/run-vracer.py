@@ -99,13 +99,11 @@ k.run(e)
 
 print('[Korali] Done training. Now running learned policy to produce observations.')
 
-
 ### Now testing policy, dumping trajectory results
 
 e["Solver"]["Mode"] = "Testing"
 e["Solver"]["Testing"]["Sample Ids"] = [0, 1, 2]
 e["Problem"]["Custom Settings"]["Record Observations"] = "True"
-
 
 k.run(e)
 

@@ -169,7 +169,7 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
   agent["Tested Policy"] = false;
 
   // If the training reward exceeds the threshold, then also run testing on it
-  if (trainingReward > _trainingRewardThreshold)
+  if (trainingReward > _trainingRewardThreshold || _k->_currentGeneration % _testingFrequency == 0)
   {
     float averageTestingReward = 0.0;
     float bestTestingReward = -Inf;

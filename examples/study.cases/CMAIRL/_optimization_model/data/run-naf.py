@@ -18,6 +18,7 @@ envp = lambda s : env(s,target)
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = envp
 e["Problem"]["Training Reward Threshold"] = 490
+e["Problem"]["Testing Frequency"] = 1000
 e["Problem"]["Policy Testing Episodes"] = 20
 e["Problem"]["Actions Between Policy Updates"] = 5
 e["Problem"]["Custom Settings"]["Record Observations"] = "False"
@@ -46,12 +47,11 @@ e["Solver"]["Mode"] = "Training"
 e["Solver"]["Target Learning Rate"] = 0.01
 e["Solver"]["Experiences Between Policy Updates"] = 5
 e["Solver"]["Covariance Scaling"] = 0.01
-#e["Solver"]["Mini Batch Strategy"] = "Prioritized"
-#e["Solver"]["Cache Persistence"] = 100
+e["Solver"]["Mini Batch Strategy"] = "Prioritized"
 
 ### Defining the configuration of replay memory
 
-e["Solver"]["Experience Replay"]["Start Size"] =   2048
+e["Solver"]["Experience Replay"]["Start Size"] = 2000
 e["Solver"]["Experience Replay"]["Maximum Size"] = 32768
 
 

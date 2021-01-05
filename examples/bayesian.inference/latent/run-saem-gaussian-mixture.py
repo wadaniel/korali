@@ -57,40 +57,34 @@ def main():
   e["Distributions"][2]["Type"] = "Specific/Multinomial"
 
 
-    # * Define which hyperparameters we use (all mu, and sigma)
+  # Define which hyperparameters we use (all mu, and sigma)
   variable_counter = 0
   for cluster_idx in range(distrib2._p.nClusters):
     for dim in range(distrib2._p.nDimensions):
       e["Variables"][variable_counter]["Name"] = "mu_" + str(cluster_idx) + "_" + str(dim)
       e["Variables"][variable_counter]["Bayesian Type"] = "Hyperparameter"
-      e["Variables"][variable_counter][
-          "Prior Distribution"] = "Uniform 1"  # not used (?) but required
-      e["Variables"][variable_counter]["Initial Value"] = d2_initialHyperparams[
-          variable_counter]
-      e["Variables"][variable_counter]["Upper Bound"] = e["Distributions"][1][
-          "Maximum"]
-      e["Variables"][variable_counter]["Lower Bound"] = e["Distributions"][1][
-          "Minimum"]
+      e["Variables"][variable_counter]["Prior Distribution"] = "Uniform 1"  # not used (?) but required
+      e["Variables"][variable_counter]["Initial Value"] = d2_initialHyperparams[variable_counter]
+      e["Variables"][variable_counter]["Upper Bound"] = e["Distributions"][1]["Maximum"]
+      e["Variables"][variable_counter]["Lower Bound"] = e["Distributions"][1]["Minimum"]
 
       variable_counter += 1
 
   e["Variables"][variable_counter]["Name"] = "sigma"
   e["Variables"][variable_counter]["Bayesian Type"] = "Hyperparameter"
-  e["Variables"][variable_counter]["Prior Distribution"] = "Uniform 0"  # We probably don't need a prior distribution for any variable -- Edit: yes, seems korali demands one
+  e["Variables"][variable_counter]["Prior Distribution"] = "Uniform 0"
   e["Variables"][variable_counter]["Initial Value"] = 2.0
   e["Variables"][variable_counter]["Upper Bound"] = 5
   e["Variables"][variable_counter]["Lower Bound"] = 0
   variable_counter += 1
 
-  # * Latent variables
+  # Latent variables
   latent_counter = 0
   for cluster_idx in range(distrib2._p.nPoints):
-    e["Variables"][variable_counter]["Name"] = "cluster_assignment_" + str(
-        latent_counter)
+    e["Variables"][variable_counter]["Name"] = "cluster_assignment_" + str(latent_counter)
     e["Variables"][variable_counter]["Bayesian Type"] = "Latent"
     e["Variables"][variable_counter]["Prior Distribution"] = "Multinomial 2"
-    e["Variables"][variable_counter]["Initial Value"] = d2_initialLatentValues[
-        latent_counter]
+    e["Variables"][variable_counter]["Initial Value"] = d2_initialLatentValues[latent_counter]
 
     variable_counter += 1
     latent_counter += 1

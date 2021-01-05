@@ -8,6 +8,7 @@
 ******************************************************************************/
 
 #include <memory>
+#include <vector>
 
 /**
 * \namespace korali
@@ -26,7 +27,7 @@ class cBuffer
   /**
   * @brief Size of buffer container
   */
-  size_t _max_size;
+  size_t _maxSize;
 
   /**
   * @brief Number of elements already added
@@ -54,7 +55,7 @@ class cBuffer
    */
   cBuffer()
   {
-    _max_size = 0;
+    _maxSize = 0;
     _size = 0;
     _start = 0;
     _end = 0;
@@ -77,14 +78,14 @@ class cBuffer
 
   /**
   * @brief Returns the current number of elements in the buffer
-  * @param size The buffer size
+  * @param maxSize The buffer size
   */
-  void resize(size_t size)
+  void resize(size_t maxSize)
   {
-    _data = std::make_unique<T[]>(size);
+    _data = std::make_unique<T[]>(maxSize);
 
     _size = 0;
-    _max_size = size;
+    _maxSize = maxSize;
     _start = 0;
     _end = 0;
   }
@@ -99,17 +100,35 @@ class cBuffer
     _data[_end] = v;
 
     // Increasing size until we reach the max size
-    if (_size < _max_size) _size++;
+    if (_size < _maxSize) _size++;
 
     // Increasing end pointer, and continuing from beginning if exceeding size
     _end++;
-    if (_end == _max_size) _end = 0;
+    if (_end == _maxSize) _end = 0;
 
-    // If end pointer met start pointer, then push it one position to replace oldest entry
-    if (_end == _start) _start++;
+    // If the buffer is full, the _start pointer follows the end pointer
+    if (_size == _maxSize) _start = _end;
+  }
 
-    // If start pointer reached the end, send it back to the beginning
-    if (_start == _max_size) _start = 0;
+  /**
+  * @brief Returns the elements of the buffer in a vector format
+  * @return The vector with the circular buffer elements
+  */
+  std::vector<T> getVector()
+  {
+    std::vector<T> vector(_size);
+    for (size_t i = 0; i < _size; i++) vector[i] = (*this)[i];
+    return vector;
+  }
+
+  /**
+  * @brief Eliminates all contents of the buffer
+  */
+  void clear()
+  {
+    _size = 0;
+    _start = 0;
+    _end = 0;
   }
 
   /**
@@ -119,7 +138,7 @@ class cBuffer
   */
   T &operator[](size_t pos)
   {
-    return _data[(_start + pos) % _max_size];
+    return _data[(_start + pos) % _maxSize];
   }
 };
 

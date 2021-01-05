@@ -18,7 +18,7 @@ namespace solver
 /** @brief This is always run before (re-)starting the solver */
 void SAEM::initialize()
 {
-  if (_k->_problem->getType() != "Bayesian/Latent/ExponentialLatent")
+  if (iCompare(_k->_problem->getType(), "Bayesian/Latent/ExponentialLatent") == false)
     KORALI_LOG_ERROR("SAEM can only optimize problems of type 'Bayesian/Latent/ExponentialLatent' .\n");
 
   _variableCount = _k->_variables.size();

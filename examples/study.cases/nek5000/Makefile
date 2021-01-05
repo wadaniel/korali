@@ -3,14 +3,10 @@ KORALICXX=$(shell python3 -m korali.cxx --compiler)
 KORALICFLAGS=`python3 -m korali.cxx --cflags`
 KORALILIBS=`python3 -m korali.cxx --libs`
 
-ifeq ($(TEST), true)
- KORALICFLAGS+=-DTEST
-else
- AGENTLIB=libagent.so
- NEKDIR=_deps/nek5000
- NEK5000LIBS=-shared -L$(NEKDIR)/3rd_party/blasLapack -lblasLapack -L$(NEKDIR)/3rd_party/gslib/lib -lgs -Wl,--allow-multiple-definition -lgfortran
- ENVLIBOBJECTS=$(NEKDIR)/examples/turbChannel/obj/*.o $(NEKDIR)/examples/turbChannel/turbChannel.o agent.o
-endif
+AGENTLIB=libagent.so
+NEKDIR=_deps/nek5000
+NEK5000LIBS=-shared -L$(NEKDIR)/3rd_party/blasLapack -lblasLapack -L$(NEKDIR)/3rd_party/gslib/lib -lgs -Wl,--allow-multiple-definition -lgfortran
+ENVLIBOBJECTS=$(NEKDIR)/examples/turbChannel/obj/*.o $(NEKDIR)/examples/turbChannel/turbChannel.o agent.o
 
 .SECONDARY:
 .PHONY: all 

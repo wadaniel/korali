@@ -1,0 +1,254 @@
+#include "modules/neuralNetwork/layer/output/output.hpp"
+#include "modules/neuralNetwork/neuralNetwork.hpp"
+
+#ifdef _KORALI_USE_CUDNN
+  #include "auxiliar/cudaUtils.hpp"
+#endif
+
+#ifdef _KORALI_USE_ONEDNN
+  #include "auxiliar/dnnUtils.hpp"
+using namespace dnnl;
+#endif
+
+#ifdef _KORALI_USE_EIGEN
+  #include <Eigen/Dense>
+using namespace Eigen;
+#endif
+
+namespace korali
+{
+namespace neuralNetwork
+{
+namespace layer
+{
+void Output::initialize()
+{
+  if (_index != _nn->_layers.size() - 1)
+    KORALI_LOG_ERROR("Output layers can only be placed at the last position in the NN\n");
+
+  // The node count for this layer should be the same as the previous layer
+  _outputChannels = _prevLayer->_outputChannels;
+
+  // Checking Layer size
+  if (_outputChannels == 0) KORALI_LOG_ERROR("Node count for layer (%lu) should be larger than zero.\n", _index);
+}
+
+void Output::createForwardPipeline()
+{
+  size_t N = _nn->_batchSize;
+  size_t IC = _prevLayer->_outputChannels;
+  size_t OC = _outputChannels;
+
+  if (IC != OC) KORALI_LOG_ERROR("Output layers node count (%lu) is different than its previous layer's (%lu)\n", OC, IC);
+
+  // Calling base layer function
+  Layer::createForwardPipeline();
+
+  // Allocating storage for pre-processing data
+  _srcOutputValues = (float *)malloc(N * OC * sizeof(float));
+
+  // Check output scaling configuration
+  if (_scale.empty() == false)
+    if (_scale.size() != OC)
+      KORALI_LOG_ERROR("Wrong number of output scaling factors passed to the neural network. Expected: %lu, provided: %lu.\n", OC, _scale.size());
+
+  // Check output shifting configuration
+  if (_shift.empty() == false)
+    if (_shift.size() != OC)
+      KORALI_LOG_ERROR("Wrong number of output shift factors passed to the neural network. Expected: %lu, provided: %lu.\n", OC, _shift.size());
+
+  // Check output absolute mask configuration
+  if (_absoluteMask.empty() == false)
+    if (_absoluteMask.size() != OC)
+      KORALI_LOG_ERROR("Wrong size of output absolute mask passed to the neural network. Expected: %lu, provided: %lu.\n", OC, _absoluteMask.size());
+
+  // Check output tanh mask configuration
+  if (_tanhMask.empty() == false)
+  {
+    if (_tanhMask.size() != OC)
+      KORALI_LOG_ERROR("Wrong size of output Tanh mask passed to the neural network. Expected: %lu, provided: %lu.\n", OC, _tanhMask.size());
+  }
+
+  // Check output SoftPlus mask configuration
+  if (_softplusMask.empty() == false)
+  {
+    if (_softplusMask.size() != OC)
+      KORALI_LOG_ERROR("Wrong size of output SoftPlus mask passed to the neural network. Expected: %lu, provided: %lu.\n", OC, _softplusMask.size());
+  }
+
+  // Check output SoftPlus mask configuration
+  if (_sigmoidMask.empty() == false)
+  {
+    if (_sigmoidMask.size() != OC)
+      KORALI_LOG_ERROR("Wrong size of output Sigmoid mask passed to the neural network. Expected: %lu, provided: %lu.\n", OC, _sigmoidMask.size());
+  }
+}
+
+void Output::createBackwardPipeline()
+{
+  size_t N = _nn->_batchSize;
+  size_t IC = _prevLayer->_outputChannels;
+  size_t OC = _outputChannels;
+
+  if (IC != OC) KORALI_LOG_ERROR("Output layers node count (%lu) is different than its previous layer's (%lu)\n", OC, IC);
+
+  // Calling base layer function
+  Layer::createBackwardPipeline();
+
+  // Allocating storage for pre-processing data
+  _dstOutputGradients = (float *)malloc(N * OC * sizeof(float));
+}
+
+void Output::forwardData()
+{
+  size_t N = _nn->_batchSize;
+  size_t OC = _outputChannels;
+  int t = _nn->_currentTimestep;
+
+// Copying previous layer's output to this layer's output
+#ifdef _KORALI_USE_EIGEN
+  if (_nn->_engine == "Korali")
+  {
+    memcpy(_srcOutputValues, _prevLayer->_outputValues, N * OC * sizeof(float));
+  }
+#endif
+
+#ifdef _KORALI_USE_ONEDNN
+  if (_nn->_engine == "OneDNN")
+  {
+    read_from_dnnl_memory(_srcOutputValues, _prevLayer->_outputMem[t]);
+  }
+#endif
+
+#ifdef _KORALI_USE_CUDNN
+  if (_nn->_engine == "CuDNN")
+  {
+    cudaErrCheck(cudaMemcpy(_srcOutputValues, _prevLayer->_outputTensor[t], N * OC * sizeof(float), cudaMemcpyDeviceToHost));
+  }
+#endif
+
+  // Performing postprocessing
+  for (size_t i = 0; i < N; i++)
+    for (size_t j = 0; j < OC; j++)
+    {
+      auto x = _srcOutputValues[i * OC + j];
+
+      // If we use a softplus mask, then apply the mask now
+      if (_sigmoidMask.size() > 0)
+        if (_sigmoidMask[j] == true)
+          x = 1. / (1. + std::exp(-x));
+
+      // If we use a softplus mask, then apply the mask now
+      if (_softplusMask.size() > 0)
+        if (_softplusMask[j] == true)
+          x = 0.5 * (x + std::sqrt(1. + x * x));
+
+      // If we use a tanh mask, then apply the mask now
+      if (_tanhMask.size() > 0)
+        if (_tanhMask[j] == true)
+          x = std::tanh(x);
+
+      // If we use an absolute mask, then apply the mask now
+      if (_absoluteMask.size() > 0)
+        if (_absoluteMask[j] == true)
+          x = std::fabs(x);
+
+      // If we  use scaling, then apply the scaling factors now
+      if (_scale.size() > 0) x *= _scale[j];
+
+      // If we  use shifting, then apply the scaling factors now
+      if (_shift.size() > 0) x += _shift[j];
+
+      // Saving result to NN's output directly
+      size_t pos = (t * N * OC) + (i * OC) + j;
+      _nn->_rawOutputValues[pos] = x;
+    }
+}
+
+void Output::backwardData()
+{
+  const size_t N = _nn->_batchSize;
+  const size_t OC = _outputChannels;
+  const size_t t = _nn->_currentTimestep;
+
+  if (_nn->_mode == "Inference")
+    KORALI_LOG_ERROR("Requesting Layer backward data propagation but NN was configured for inference only.\n");
+
+  // Performing gradient pre-processing
+  for (size_t i = 0; i < N; i++)
+    for (size_t j = 0; j < OC; j++)
+    {
+      // Getting forward propagation output and passed gradients
+      size_t pos = (t * N * OC) + (i * OC) + j;
+      float x = _nn->_rawOutputValues[pos];
+      float g = _nn->_rawOutputGradients[pos];
+
+      // If we use shift, then apply the inverse shift to the forward output
+      if (_shift.size() > 0)
+        x = x - _shift[j];
+
+      // If we use scaling, then apply the inverse scaling factors gradient now
+      if (_scale.size() > 0)
+      {
+        x = x / _scale[j];
+        g = g * _scale[j];
+      }
+
+      // If we use an absolute mask, then restore the corresponding sign now
+      if (_absoluteMask.size() > 0)
+        if (_absoluteMask[j] == true)
+          if (std::signbit(x) != std::signbit(_srcOutputValues[i * OC + j]))
+            g = -g;
+
+      // If we use an tanh mask, then apply its derivative
+      if (_tanhMask.size() > 0)
+        if (_tanhMask[j] == true)
+        {
+          g = g * (1.0f - x * x); // x is still tanh(x)
+        }
+
+      // If we use a softplus  mask, then apply its derivative
+      if (_softplusMask.size() > 0)
+        if (_softplusMask[j] == true)
+        {
+          float nnx = x - 0.25 / x; // Approximation NN output
+          g = g * 0.5 * (nnx / std::sqrt(nnx * nnx + 1) + 1);
+        }
+
+      // If we use a sigmoid mask, then apply its derivative
+      if (_sigmoidMask.size() > 0)
+        if (_sigmoidMask[j] == true)
+        {
+          g = g * x * (1. - x); // x is still sigmoid(x)
+        }
+
+      _dstOutputGradients[i * OC + j] = g;
+    }
+
+#ifdef _KORALI_USE_EIGEN
+  if (_nn->_engine == "Korali")
+  {
+    memcpy(_prevLayer->_outputGradient, _dstOutputGradients, N * OC * sizeof(float));
+  }
+#endif
+
+#ifdef _KORALI_USE_ONEDNN
+  if (_nn->_engine == "OneDNN")
+  {
+    write_to_dnnl_memory(_dstOutputGradients, _prevLayer->_outputGradientMem[t]);
+  }
+#endif
+
+#ifdef _KORALI_USE_CUDNN
+  if (_nn->_engine == "CuDNN")
+  {
+    cudaErrCheck(cudaMemcpy(_prevLayer->_outputGradientTensor[t], _dstOutputGradients, N * OC * sizeof(float), cudaMemcpyHostToDevice));
+  }
+#endif
+}
+
+} // namespace layer
+
+} // namespace neuralNetwork
+
+} // namespace korali

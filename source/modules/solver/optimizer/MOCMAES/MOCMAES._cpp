@@ -208,10 +208,18 @@ void MOCMAES::sampleSingle(size_t sampleIdx)
   err = gsl_matrix_scale(&sig.matrix, _parentSigma[parentIdx]);
 
   if (err > 0) KORALI_LOG_ERROR("Error during Cholesky decomposition of covariance matrix.\n");
+  _multinormalGenerator->updateDistribution();
 
   // Generate new sample
-  _multinormalGenerator->updateDistribution();
-  _multinormalGenerator->getRandomVector(_currentSamplePopulation[sampleIdx].data(), _variableCount);
+  bool isFeasible;
+  do
+  {
+
+    _multinormalGenerator->getRandomVector(_currentSamplePopulation[sampleIdx].data(), _variableCount);
+    isFeasible = isSampleFeasible(_currentSamplePopulation[sampleIdx]);
+    //if (isFeasible == false) _infeasibleSampleCount++;
+
+  } while (isFeasible == false);
 
   // Set Covariance
   _currentCovarianceMatrix[sampleIdx] = _parentCovarianceMatrix[parentIdx];

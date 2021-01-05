@@ -4,7 +4,7 @@ import sys
 import csv
 import korali
 
-sys.path.append('./_rl_model/_model')
+sys.path.append('./_optimization_model/_rl_model/')
 from env import *
 from evalenv import *
 
@@ -23,9 +23,11 @@ def rl_cartpole_vracer(p):
 
     e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
     e["Problem"]["Environment Function"] = envp
-    e["Problem"]["Training Reward Threshold"] = 490
-    e["Problem"]["Policy Testing Episodes"] = 10
+    e["Problem"]["Testing Frequency"] = 500
+    e["Problem"]["Training Reward Threshold"] = 1e12
+    e["Problem"]["Policy Testing Episodes"] = 20
     e["Problem"]["Actions Between Policy Updates"] = 5
+    e["Problem"]["Custom Settings"]["Record Observations"] = "False"
 
     e["Variables"][0]["Name"] = "Cart Position"
     e["Variables"][0]["Type"] = "State"
@@ -47,41 +49,47 @@ def rl_cartpole_vracer(p):
     ## Defining Agent Configuration 
 
     e["Solver"]["Type"] = "Agent / Continuous / VRACER"
+    e["Solver"]["Mode"] = "Training"
     e["Solver"]["Experiences Between Policy Updates"] = 5
-    e["Solver"]["Cache Persistence"] = 500
+    e["Solver"]["Cache Persistence"] = 1000
+    
+    ### Defining the configuration of replay memory
 
-    e["Solver"]["Refer"]["Target Off Policy Fraction"] = 0.1
-    e["Solver"]["Refer"]["Cutoff Scale"] = 4.0
+    e["Solver"]["Experience Replay"]["Start Size"] =   2048
+    e["Solver"]["Experience Replay"]["Maximum Size"] = 32768
 
-    ## Defining the configuration of replay memory
-
-    e["Solver"]["Experience Replay"]["Start Size"] = 1000
-    e["Solver"]["Experience Replay"]["Maximum Size"] = 10000
+    e["Solver"]["Experience Replay"]["REFER"]["Enabled"] = True
+    e["Solver"]["Experience Replay"]["REFER"]["Cutoff Scale"] = 4.0
+    e["Solver"]["Experience Replay"]["REFER"]["Target"] = 0.1
+    e["Solver"]["Experience Replay"]["REFER"]["Initial Beta"] = 0.3
+    e["Solver"]["Experience Replay"]["REFER"]["Annealing Rate"] = 5e-7
 
     ## Defining Neural Network Configuration for Policy and Critic into Critic Container
 
-    e["Solver"]["Critic"]["Discount Factor"] = 0.99
-    e["Solver"]["Critic"]["Learning Rate"] = 1e-4
-    e["Solver"]["Critic"]["Mini Batch Size"] = 256
+    e["Solver"]["Discount Factor"] = 0.99
+    e["Solver"]["Learning Rate"] = 1e-4
+    e["Solver"]["Mini Batch Size"] = 32
 
-    e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
-    e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear"
+    ### Configuring the neural network and its hidden layers
 
-    e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Type"] = "Layer/Dense"
-    e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Node Count"] = 128
-    e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Activation Function"]["Type"] = "Elementwise/Tanh"
+    e["Solver"]["Neural Network"]["Engine"] = "OneDNN"
 
-    e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Type"] = "Layer/Dense"
-    e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Node Count"] = 128
-    e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Elementwise/Tanh"
+    e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear"
+    e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 32
 
-    e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Type"] = "Layer/Dense"
-    e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Elementwise/Linear"
+    e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Activation"
+    e["Solver"]["Neural Network"]["Hidden Layers"][1]["Function"] = "Elementwise/Tanh"
 
-    ## Defining Termination Criteria
+    e["Solver"]["Neural Network"]["Hidden Layers"][2]["Type"] = "Layer/Linear"
+    e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 32
 
-    e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 490
-    e["Solver"]["Termination Criteria"]["Max Generations"] = 2500
+    e["Solver"]["Neural Network"]["Hidden Layers"][3]["Type"] = "Layer/Activation"
+    e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tanh"
+
+    ### Defining Termination Criteria
+
+    e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 1e12
+    e["Solver"]["Termination Criteria"]["Max Generations"] = 10000
 
     ## Setting file output configuration
 
@@ -101,7 +109,8 @@ def rl_cartpole_vracer(p):
 
     k.run(e)
 
-    print("[Korali] Finished testing.")
-    suml2 = e["Solver"]["Testing"]["Average Reward"]
+    print("[Korali] Finished testing (p {0} error {1}.".format(target, suml2error))
+
+    suml2error = e["Solver"]["Testing"]["Average Reward"]
    
-    p["F(x)"] = -suml2 # maximize
+    p["F(x)"] = -suml2error # maximize

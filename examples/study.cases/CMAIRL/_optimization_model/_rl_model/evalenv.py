@@ -29,3 +29,6 @@ def evalenv(s):
 
     # Compare with observations
     s["Reward"] = np.sum(np.power((np.array(obsactions[i])-np.array(action)),2))
+
+ # Done
+ s["Termination"] = "Terminal"

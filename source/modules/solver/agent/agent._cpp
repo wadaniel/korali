@@ -109,6 +109,9 @@ void Agent::initialize()
     if (_testingSampleIds.size() == 0)
       KORALI_LOG_ERROR("For testing, you need to indicate the sample ids to run in the ['Testing']['Sample Ids'] field.\n");
 
+  // Prepare storage for rewards from tested samples
+  _testingReward.resize(_testingSampleIds.size());
+
   // Storage for the entire episodes before adding it to the replay memory
   _episodes.resize(_agentCount);
 }
@@ -222,6 +225,11 @@ void Agent::testingGeneration()
   }
 
   KORALI_WAITALL(_agents);
+
+  for (size_t agentId = 0; agentId < _testingSampleIds.size(); agentId++)
+  {
+    _testingReward[agentId] = _agents[agentId]["Testing Reward"].get<float>();
+  }
 }
 
 void Agent::attendAgent(size_t agentId)
@@ -792,7 +800,7 @@ void Agent::printGenerationAfter()
     for (size_t agentId = 0; agentId < _testingSampleIds.size(); agentId++)
     {
       _k->_logger->logInfo("Normal", " + Sample %lu:\n", _testingSampleIds[agentId]);
-      _k->_logger->logInfo("Normal", "   + Cumulative Reward               %f\n", _agents[agentId]["Testing Reward"].get<float>());
+      _k->_logger->logInfo("Normal", "   + Cumulative Reward               %f\n", _testingReward[agentId]);
     }
   }
 }

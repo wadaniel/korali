@@ -31,26 +31,18 @@ for i in range(dim):
 
 # Configuring CMA-ES parameters
 e["Solver"]["Type"] = "Optimizer/CMAES"
-e["Solver"]["Population Size"] = 6
+e["Solver"]["Population Size"] = 4
 e["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 0.1
 e["Solver"]["Termination Criteria"]["Max Generations"] = 500
 
 # Configuring results path
-e["File Output"]["Path"] = '_korali_result_cmaes'
+e["File Output"]["Path"] = '_korali_result_cmaes_vracer'
 e["File Output"]["Enabled"] = True
 e["File Output"]["Frequency"] = 1
 
 e["Console Output"]["Verbosity"] = "Detailed"
 
 k["Conduit"]["Type"] = "Concurrent"
-k["Conduit"]["Concurrent Jobs"] = 6
+k["Conduit"]["Concurrent Jobs"] = 4
 
-#found = e.loadState('_korali_result_cmaes/latest')
-#if (found == False):
-#  print('Previous State not found, begin from start..')
-
-#else:
-#  print('Continue from previous run..')
-
-# Running Korali
 k.run(e)

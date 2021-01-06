@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 import csv
+import numpy as np
 from cartpole import *
 
 ######## Defining Environment Storage
 
 def evalenv(s):
-
  obsfile = 'observations.csv'
  states = []
  obsactions = []
@@ -28,7 +28,8 @@ def evalenv(s):
     action = s["Action"]
 
     # Compare with observations
-    s["Reward"] = np.sum(np.power((np.array(obsactions[i])-np.array(action)),2))
+    reward = np.linalg.norm(np.array(obsactions[i])-np.array(action))
+    s["Reward"] = reward
 
  # Done
  s["Termination"] = "Terminal"

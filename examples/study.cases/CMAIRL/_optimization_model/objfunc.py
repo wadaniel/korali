@@ -88,8 +88,8 @@ def rl_cartpole_vracer(p):
 
     ### Defining Termination Criteria
 
-    e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 450
-    e["Solver"]["Termination Criteria"]["Max Generations"] = 7000
+    e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 490
+    e["Solver"]["Termination Criteria"]["Max Generations"] = 6000
 
     ## Setting file output configuration
 
@@ -110,7 +110,7 @@ def rl_cartpole_vracer(p):
 
     k.run(e)
 
-    suml2error = e["Solver"]["Testing"]["Average Reward"]
+    suml2error = e["Solver"]["Testing"]["Reward"][0]
     
     print("[Korali] Finished testing (p {0} error {1}.".format(target, suml2error))
    
@@ -193,7 +193,7 @@ def rl_cartpole_naf(p):
     ### Defining Termination Criteria
 
     e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 490
-    e["Solver"]["Termination Criteria"]["Max Generations"] = 5000
+    e["Solver"]["Termination Criteria"]["Max Generations"] = 6000
 
     ## Setting file output configuration
 
@@ -214,7 +214,7 @@ def rl_cartpole_naf(p):
 
     k.run(e)
 
-    suml2error = e["Solver"]["Testing"]["Average Reward"]
+    suml2error = e["Solver"]["Testing"]["Reward"][0]
     
     print("[Korali] Finished testing (p {0} error {1}.".format(target, suml2error))
    

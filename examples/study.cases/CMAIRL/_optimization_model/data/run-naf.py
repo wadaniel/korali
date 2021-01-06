@@ -51,7 +51,7 @@ e["Solver"]["Mini Batch Strategy"] = "Prioritized"
 
 ### Defining the configuration of replay memory
 
-e["Solver"]["Experience Replay"]["Start Size"] = 2000
+e["Solver"]["Experience Replay"]["Start Size"] = 2048
 e["Solver"]["Experience Replay"]["Maximum Size"] = 32768
 
 

@@ -42,15 +42,15 @@ e["File Output"]["Frequency"] = 1
 
 e["Console Output"]["Verbosity"] = "Detailed"
 
-#k["Conduit"]["Type"] = "Concurrent"
-#k["Conduit"]["Concurrent Jobs"] = 8
+k["Conduit"]["Type"] = "Concurrent"
+k["Conduit"]["Concurrent Jobs"] = 6
 
-found = e.loadState('_korali_result_cmaes/latest')
-if (found == False):
-  print('Previous State not found, begin from start..')
+#found = e.loadState('_korali_result_cmaes/latest')
+#if (found == False):
+#  print('Previous State not found, begin from start..')
 
-else:
-  print('Continue from previous run..')
+#else:
+#  print('Continue from previous run..')
 
 # Running Korali
 k.run(e)

@@ -266,7 +266,7 @@ void GFPT::trainPolicy()
     *****************************************/
 
     // Using retrace to obtain a better estimation of the state value function
-    float Vtbc = retraceFunction(expId);
+    float retV = retraceFunction(expId);
 
     // Now calculating V, A, and avgA for current state/action
     float curA = currentActionAdvantageFunction(expStateActionSequence);
@@ -274,8 +274,8 @@ void GFPT::trainPolicy()
     float curV = stateValueFunction(expStateSequence);
 
     // Now calculating targets for V(s) and A(s,a)
-    float vTarget = Vtbc - curV + curA;
-    float aTarget = Vtbc - curV + avgA;
+    float vTarget = retV - curV + curA;
+    float aTarget = retV - curV + avgA;
 
     // Updating inputs to training learners
     _aProblem->_inputData[b] = expStateActionSequence;
@@ -285,7 +285,7 @@ void GFPT::trainPolicy()
     _vProblem->_solutionData[b] = {vTarget};
 
     // Keeping statistics
-    _cumulativeQStar += Vtbc;
+    _cumulativeQStar += retV;
 
     /*****************************************
     * Calculating Policy Gradients

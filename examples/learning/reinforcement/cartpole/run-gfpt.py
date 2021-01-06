@@ -40,7 +40,7 @@ e["Variables"][4]["Exploration Sigma"]["Annealing Rate"] = 0.0
 e["Solver"]["Type"] = "Agent / Continuous / GFPT"
 e["Solver"]["Mode"] = "Training"
 e["Solver"]["Episodes Per Generation"] = 10
-e["Solver"]["Experiences Between Policy Updates"] = 1
+e["Solver"]["Experiences Between Policy Updates"] = 10
 e["Solver"]["Cache Persistence"] = 50
 e["Solver"]["Discount Factor"] = 0.99
 
@@ -85,7 +85,8 @@ e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 450
 ### Setting file output configuration
 
 e["Console Output"]["Verbosity"] = "Detailed"
-e["File Output"]["Enabled"] = False
+e["File Output"]["Enabled"] = True
+e["File Output"]["Frequency"] = 10
  
 ### Running Training Experiment
 

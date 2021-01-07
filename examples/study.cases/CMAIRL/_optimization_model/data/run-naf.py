@@ -18,9 +18,8 @@ envp = lambda s : env(s,target)
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = envp
 e["Problem"]["Training Reward Threshold"] = 490
-e["Problem"]["Testing Frequency"] = 1000
 e["Problem"]["Policy Testing Episodes"] = 20
-e["Problem"]["Actions Between Policy Updates"] = 5
+e["Problem"]["Actions Between Policy Updates"] = 1
 e["Problem"]["Custom Settings"]["Record Observations"] = "False"
 
 e["Variables"][0]["Name"] = "Cart Position"
@@ -40,26 +39,36 @@ e["Variables"][4]["Type"] = "Action"
 e["Variables"][4]["Lower Bound"] = -10.0
 e["Variables"][4]["Upper Bound"] = +10.0
 
-### Configuring NAF hyperparameters
+### Defining Solver
 
 e["Solver"]["Type"] = "Agent / Continuous / NAF"
 e["Solver"]["Mode"] = "Training"
+e["Solver"]["Episodes Per Generation"] = 1
+
+### Configuring NAF hyperparameters
+
+e["Solver"]["Discount Factor"] = 0.99
+e["Solver"]["Learning Rate"] = 1e-2
+e["Solver"]["Mini Batch Size"] = 32
 e["Solver"]["Target Learning Rate"] = 0.01
 e["Solver"]["Experiences Between Policy Updates"] = 5
 e["Solver"]["Covariance Scaling"] = 0.01
-e["Solver"]["Mini Batch Strategy"] = "Prioritized"
+e["Solver"]["Mini Batch Strategy"] = "Prioritized" 
 
-### Defining the configuration of replay memory
+### Defining Experience Replay configuration
 
-e["Solver"]["Experience Replay"]["Start Size"] = 2048
+e["Solver"]["Experience Replay"]["Start Size"] =   2048
 e["Solver"]["Experience Replay"]["Maximum Size"] = 32768
 
 
-## Defining Neural Network Configuration for Policy and Critic into Critic Container
+### Configuring the Remember-and-Forget Experience Replay algorithm
 
-e["Solver"]["Discount Factor"] = 0.99
-e["Solver"]["Learning Rate"] = 1e-4
-e["Solver"]["Mini Batch Size"] = 32
+e["Solver"]["Experience Replay"]["REFER"]["Enabled"] = True
+e["Solver"]["Experience Replay"]["REFER"]["Cutoff Scale"] = 4.0
+e["Solver"]["Experience Replay"]["REFER"]["Target"] = 0.1
+e["Solver"]["Experience Replay"]["REFER"]["Initial Beta"] = 0.6
+e["Solver"]["Experience Replay"]["REFER"]["Annealing Rate"] = 5e-7
+
 
 ### Configuring the neural network and its hidden layers
 
@@ -77,11 +86,9 @@ e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 32
 e["Solver"]["Neural Network"]["Hidden Layers"][3]["Type"] = "Layer/Activation"
 e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tanh"
 
-
 ### Defining Termination Criteria
 
 e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 495
-e["Solver"]["Termination Criteria"]["Max Generations"] = 10000
 
 ### Setting file output configuration
 

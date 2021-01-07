@@ -132,9 +132,9 @@ def rl_cartpole_naf(p):
     e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
     e["Problem"]["Environment Function"] = envp
     e["Problem"]["Testing Frequency"] = 500
-    e["Problem"]["Training Reward Threshold"] = 450
+    e["Problem"]["Training Reward Threshold"] = 490
     e["Problem"]["Policy Testing Episodes"] = 20
-    e["Problem"]["Actions Between Policy Updates"] = 5
+    e["Problem"]["Actions Between Policy Updates"] = 1
     e["Problem"]["Custom Settings"]["Record Observations"] = "False"
 
     e["Variables"][0]["Name"] = "Cart Position"
@@ -154,25 +154,36 @@ def rl_cartpole_naf(p):
     e["Variables"][4]["Lower Bound"] = -10.0
     e["Variables"][4]["Upper Bound"] = +10.0
 
-    ## Defining Agent Configuration 
-    
+    ### Defining Solver
+
     e["Solver"]["Type"] = "Agent / Continuous / NAF"
     e["Solver"]["Mode"] = "Training"
+    e["Solver"]["Episodes Per Generation"] = 1
+
+    ### Configuring NAF hyperparameters
+
+    e["Solver"]["Discount Factor"] = 0.99
+    e["Solver"]["Learning Rate"] = 1e-2
+    e["Solver"]["Mini Batch Size"] = 32
     e["Solver"]["Target Learning Rate"] = 0.01
     e["Solver"]["Experiences Between Policy Updates"] = 5
     e["Solver"]["Covariance Scaling"] = 0.01
-    e["Solver"]["Mini Batch Strategy"] = "Prioritized"
+    e["Solver"]["Mini Batch Strategy"] = "Prioritized" 
 
-    ### Defining the configuration of replay memory
+    ### Defining Experience Replay configuration
 
     e["Solver"]["Experience Replay"]["Start Size"] =   2048
     e["Solver"]["Experience Replay"]["Maximum Size"] = 32768
 
-    ## Defining Neural Network Configuration for Policy and Critic into Critic Container
 
-    e["Solver"]["Discount Factor"] = 0.99
-    e["Solver"]["Learning Rate"] = 1e-4
-    e["Solver"]["Mini Batch Size"] = 32
+    ### Configuring the Remember-and-Forget Experience Replay algorithm
+
+    e["Solver"]["Experience Replay"]["REFER"]["Enabled"] = True
+    e["Solver"]["Experience Replay"]["REFER"]["Cutoff Scale"] = 4.0
+    e["Solver"]["Experience Replay"]["REFER"]["Target"] = 0.1
+    e["Solver"]["Experience Replay"]["REFER"]["Initial Beta"] = 0.6
+    e["Solver"]["Experience Replay"]["REFER"]["Annealing Rate"] = 5e-7
+
 
     ### Configuring the neural network and its hidden layers
 
@@ -192,17 +203,17 @@ def rl_cartpole_naf(p):
 
     ### Defining Termination Criteria
 
-    e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 490
-    e["Solver"]["Termination Criteria"]["Max Generations"] = 8000
+    e["Solver"]["Termination Criteria"]["Max Generations"] = 5000
+    e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 495
 
-    ## Setting file output configuration
+    ### Setting file output configuration
 
     e["File Output"]["Enabled"] = False
-    e["Console Output"]["Verbosity"] = "Silent"
 
     ### Running Experiment
-    
+
     k.run(e)
+
 
     ### Evaluate Policy
     

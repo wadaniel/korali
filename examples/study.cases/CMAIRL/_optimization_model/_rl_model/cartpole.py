@@ -14,23 +14,26 @@ from helper import quadratic_reward
 class CartPole:
   def __init__(self, targetAngle):
     self.targetAngle = targetAngle
-    self.dt = 0.1
+    self.dt = 0.02
     self.step=0
-    self.u = np.random.uniform(-0.5, 0.5, 4)
+    self.u = np.asarray([0, 0, 0, 0])     
     self.F=0
     self.t=0
-    self.x_threshold = 7.0
+    self.x_threshold = 2.4
+    self.th_threshold = math.pi / 15
+
     self.ODE = ode(self.system).set_integrator('dopri5')
 
   def reset(self):
-    self.u = np.random.uniform(-0.5, 0.5, 4)
+    self.u = np.random.uniform(-0.05, 0.05, 4)
     self.step = 0
     self.F = 0
     self.t = 0
 
   def isFailed(self):
     return (abs(self.u[0])>self.x_threshold)
-
+    #return (abs(self.u[0])>self.x_threshold or abs(self.u[2])>self.th_threshold)
+ 
   def isOver(self):
     return self.isFailed()
 
@@ -72,3 +75,4 @@ class CartPole:
 
   def getReward(self):
     return np.cos(self.u[2]-self.targetAngle)
+    #return 1.0 - 1.0*self.isFailed();

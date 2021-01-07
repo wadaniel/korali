@@ -92,7 +92,7 @@ void NAF::initializeAgent()
   _qHatHyperparameter = qHyperparameters;
   _criticLearner->setInferenceHyperparameters(qHyperparameters);
 
-  _averageActionSigmas.resize(_problem->_actionVectorSize);
+  _statisticsAverageActionSigmas.resize(_problem->_actionVectorSize);
 }
 
 float NAF::stateValueFunction(const std::vector<std::vector<float>> &state)
@@ -108,12 +108,12 @@ void NAF::trainPolicy()
    * Training Phase
    **********************************************************************************/
 
-  // Calculating cumulative Q*, for statistical purposes
-  _cumulativeQStar = 0.0;
-  _cumulativeQStarSquared = 0.0;
+  // [Statistics] Zeroing initial cumulative Q*
+  float cumulativeQStar = 0.0;
+  float cumulativeQStarSquared = 0.0;
   float cumulativeTdError = 0.0;
   float cumulativeTdErrorSquarred = 0.0;
-  std::fill(_averageActionSigmas.begin(), _averageActionSigmas.end(), 0.0);
+  std::fill(_statisticsAverageActionSigmas.begin(), _statisticsAverageActionSigmas.end(), 0.0);
 
   // Creating minibatch for the critic update
   auto miniBatchIndexes = generateMiniBatch(_miniBatchSize);
@@ -179,20 +179,20 @@ void NAF::trainPolicy()
     _qProblem->_solutionData[b] = policyGradient;
 
     // Keeping statistics
-    _cumulativeQStar += yHat;
-    _cumulativeQStarSquared += yHat * yHat;
-    for (size_t j = 0; j < curAction.size(); j++) _averageActionSigmas[j] += std::sqrt(qEvaluation[1 + curAction.size() + j]);
+    cumulativeQStar += yHat;
+    cumulativeQStarSquared += yHat * yHat;
+    for (size_t j = 0; j < curAction.size(); j++) _statisticsAverageActionSigmas[j] += std::sqrt(qEvaluation[1 + curAction.size() + j]);
   }
 
   // Running one generation of the optimization method with the given mini-batch
   _qLearner->runGeneration();
 
   // Keeping statistics
-  _averageQStar = _cumulativeQStar / (float)_miniBatchSize;
-  _stdevQStar = std::sqrt(_cumulativeQStarSquared / (float)_miniBatchSize - _averageQStar * _averageQStar);
-  _averageTDError = cumulativeTdError / (float)_miniBatchSize;
-  _stdevTDError = std::sqrt(cumulativeTdErrorSquarred / (float)_miniBatchSize - _averageTDError * _averageTDError);
-  for (size_t j = 0; j < _averageActionSigmas.size(); j++) _averageActionSigmas[j] /= (float)_miniBatchSize;
+  _statisticsAverageQStar = cumulativeQStar / (float)_miniBatchSize;
+  _statisticsStdevQStar = std::sqrt(cumulativeQStarSquared / (float)_miniBatchSize - _statisticsAverageQStar * _statisticsAverageQStar);
+  _statisticsAverageTDError = cumulativeTdError / (float)_miniBatchSize;
+  _statisticsStdevTDError = std::sqrt(cumulativeTdErrorSquarred / (float)_miniBatchSize - _statisticsAverageTDError * _statisticsAverageTDError);
+  for (size_t j = 0; j < _statisticsAverageActionSigmas.size(); j++) _statisticsAverageActionSigmas[j] /= (float)_miniBatchSize;
 
   /*********************************************************************
    * Updating hyperparameters and broadcasting them to the workers
@@ -287,10 +287,10 @@ knlohmann::json NAF::getTrainingState()
 void NAF::printAgentInformation()
 {
   _k->_logger->logInfo("Normal", "Critic Information:\n");
-  _k->_logger->logInfo("Normal", " + Average (Std) Q-Value in Mini-Batch:  %f (%f)\n", _averageQStar, _stdevQStar);
-  _k->_logger->logInfo("Normal", " + Average (Std) TD-Error in Mini-Batch:  %f (%f)\n", _averageTDError, _stdevTDError);
+  _k->_logger->logInfo("Normal", " + Average (Std) Q-Value in Mini-Batch:  %f (%f)\n", _statisticsAverageQStar, _statisticsStdevQStar);
+  _k->_logger->logInfo("Normal", " + Average (Std) TD-Error in Mini-Batch:  %f (%f)\n", _statisticsAverageTDError, _statisticsStdevTDError);
   _k->_logger->logInfo("Normal", " + Average P values in Mini-Batch: \n");
-  for (size_t i = 0; i < _averageActionSigmas.size(); ++i) _k->_logger->logInfo("Normal", " +  [ %f ]\n", _averageActionSigmas[i]);
+  for (size_t i = 0; i < _statisticsAverageActionSigmas.size(); ++i) _k->_logger->logInfo("Normal", " +  [ %f ]\n", _statisticsAverageActionSigmas[i]);
 
   _qExperiment._logger->_verbosityLevel = _k->_logger->_verbosityLevel;
   _qExperiment._solver->printGenerationAfter();

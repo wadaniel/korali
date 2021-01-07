@@ -38,7 +38,6 @@ void Agent::initialize()
     _policyUpdateCount = 0;
     _testingCandidateCount = 0;
     _currentSampleID = 0;
-    _cumulativeQStar = 0;
     _experienceCount = 0;
     _experienceReplayMaxPriority = 0.0;
 
@@ -194,7 +193,8 @@ void Agent::trainingGeneration()
   if (_miniBatchStrategy == "Prioritized") updateExperienceReplayProbabilities();
 
   // Now serializing experience replay database
-  if (_k->_fileOutputEnabled)
+  if (_experienceReplaySerialize == true)
+   if (_k->_fileOutputEnabled)
     if (_k->_fileOutputFrequency > 0)
       if (_k->_currentGeneration % _k->_fileOutputFrequency == 0)
         serializeExperienceReplay();
@@ -672,7 +672,8 @@ std::vector<std::vector<float>> Agent::getStateActionTimeSequence(size_t expId)
 
 void Agent::finalize()
 {
-  if (_k->_fileOutputEnabled)
+  if (_experienceReplaySerialize == true)
+   if (_k->_fileOutputEnabled)
     serializeExperienceReplay();
 
   _k->_logger->logInfo("Normal", "Waiting for pending agents to finish...\n");
@@ -745,7 +746,7 @@ void Agent::deserializeExperienceReplay()
   // Loading database from file
   _k->_logger->logInfo("Detailed", "Loading previous run ER database from file %s...\n", dbPath.c_str());
   if (loadJsonFromFile(experienceReplayDatabase, dbPath.c_str()) == false)
-    KORALI_LOG_ERROR("Could not deserialize experience replay database.\n");
+    KORALI_LOG_ERROR("Trying to resume experiement but could not find or deserialize experience replay database.\n");
 
   // Clearing existing database
   _experienceReplay.clear();

@@ -39,12 +39,12 @@ std::vector<float> Linear::generateInitialHyperparameters()
   if (_prevLayer != NULL)
   {
     // Setting value for this layer's xavier constant
-    float xavierConstant = (_weightScaling * sqrtf(6.0f)) / sqrt(_outputChannels + _prevLayer->_outputChannels);
+    float xavierConstant = sqrtf(6.0f) / sqrt(_outputChannels + _prevLayer->_outputChannels);
 
     // Adding layer's weights hyperparameter values
     for (size_t i = 0; i < _outputChannels; i++)
       for (size_t j = 0; j < _prevLayer->_outputChannels; j++)
-        hyperparameters.push_back(xavierConstant * _nn->_uniformGenerator->getRandomNumber());
+        hyperparameters.push_back(_weightScaling * xavierConstant * _nn->_uniformGenerator->getRandomNumber());
 
     // Adding layer's bias hyperparameter values
     for (size_t i = 0; i < _outputChannels; i++)

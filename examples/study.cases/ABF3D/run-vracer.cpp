@@ -45,23 +45,27 @@ int main(int argc, char *argv[])
 
   e["Variables"][14]["Name"] = "Frequency (w)";
   e["Variables"][14]["Type"] = "Action";
-  e["Variables"][14]["Lower Bound"] = lowerBounds[0];
-  e["Variables"][14]["Upper Bound"] = upperBounds[0];
+  e["Variables"][14]["Lower Bound"] = 0.0f;
+  e["Variables"][14]["Upper Bound"] = 1.0f;
+  e["Variables"][14]["Exploration Sigma"]["Initial"] = 0.2f;
 
   e["Variables"][15]["Name"] = "Rotation X";
   e["Variables"][15]["Type"] = "Action";
-  e["Variables"][15]["Lower Bound"] = lowerBounds[1];
-  e["Variables"][15]["Upper Bound"] = upperBounds[1];
+  e["Variables"][15]["Lower Bound"] = 0.0f;
+  e["Variables"][15]["Upper Bound"] = 1.0f;
+  e["Variables"][15]["Exploration Sigma"]["Initial"] = 0.2f;
 
   e["Variables"][16]["Name"] = "Rotation Y";
   e["Variables"][16]["Type"] = "Action";
-  e["Variables"][16]["Lower Bound"] = lowerBounds[2];
-  e["Variables"][16]["Upper Bound"] = upperBounds[2];
+  e["Variables"][16]["Lower Bound"] = 0.0f;
+  e["Variables"][16]["Upper Bound"] = 1.0f;
+  e["Variables"][16]["Exploration Sigma"]["Initial"] = 0.2f;
 
   e["Variables"][17]["Name"] = "Rotation Z";
   e["Variables"][17]["Type"] = "Action";
-  e["Variables"][17]["Lower Bound"] = lowerBounds[3];
-  e["Variables"][17]["Upper Bound"] = upperBounds[3];
+  e["Variables"][17]["Lower Bound"] = 0.0f;
+  e["Variables"][17]["Upper Bound"] = 1.0f;
+  e["Variables"][17]["Exploration Sigma"]["Initial"] = 0.2f;
 
   /// Defining Agent Configuration
 

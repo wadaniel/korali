@@ -10,7 +10,7 @@ int main(int argc, char *argv[])
   ////// Checking if existing results are there and continuing them
 
   auto e = korali::Experiment();
-  auto found = e.loadState("_results/latest");
+  auto found = e.loadState("_result_gfpt/latest");
   if (found == true) printf("Continuing execution from previous run...\n");
 
   ////// Defining problem configuration
@@ -44,35 +44,35 @@ int main(int argc, char *argv[])
 
   e["Variables"][14]["Name"] = "Frequency (w)";
   e["Variables"][14]["Type"] = "Action";
-  e["Variables"][14]["Lower Bound"] = lowerBounds[0];
-  e["Variables"][14]["Upper Bound"] = upperBounds[0];
-  e["Variables"][14]["Exploration Sigma"]["Initial"] = (upperBounds[0] - lowerBounds[0]) * 0.40;
-  e["Variables"][14]["Exploration Sigma"]["Final"] = (upperBounds[0] - lowerBounds[0]) * 0.10;
-  e["Variables"][14]["Exploration Sigma"]["Annealing Rate"] = 5e-6;
+  e["Variables"][14]["Lower Bound"] = 0.0f;
+  e["Variables"][14]["Upper Bound"] = 1.0f;
+  e["Variables"][14]["Exploration Sigma"]["Initial"] = 0.2f;
+  e["Variables"][14]["Exploration Sigma"]["Final"] = 0.2f;
+  e["Variables"][14]["Exploration Sigma"]["Annealing Rate"] = 0.0f;
 
   e["Variables"][15]["Name"] = "Rotation X";
   e["Variables"][15]["Type"] = "Action";
-  e["Variables"][15]["Lower Bound"] = lowerBounds[1];
-  e["Variables"][15]["Upper Bound"] = upperBounds[1];
-  e["Variables"][15]["Exploration Sigma"]["Initial"] = (upperBounds[1] - lowerBounds[1]) * 0.40;
-  e["Variables"][15]["Exploration Sigma"]["Final"] = (upperBounds[1] - lowerBounds[1]) * 0.10;
-  e["Variables"][15]["Exploration Sigma"]["Annealing Rate"] = 5e-6;
+  e["Variables"][15]["Lower Bound"] = 0.0f;
+  e["Variables"][15]["Upper Bound"] = 1.0f;
+  e["Variables"][15]["Exploration Sigma"]["Initial"] = 0.2f;
+  e["Variables"][15]["Exploration Sigma"]["Final"] = 0.2f;
+  e["Variables"][15]["Exploration Sigma"]["Annealing Rate"] = 0.0f;
 
   e["Variables"][16]["Name"] = "Rotation Y";
   e["Variables"][16]["Type"] = "Action";
-  e["Variables"][16]["Lower Bound"] = lowerBounds[2];
-  e["Variables"][16]["Upper Bound"] = upperBounds[2];
-  e["Variables"][16]["Exploration Sigma"]["Initial"] = (upperBounds[2] - lowerBounds[2]) * 0.40;
-  e["Variables"][16]["Exploration Sigma"]["Final"] = (upperBounds[2] - lowerBounds[2]) * 0.10;
-  e["Variables"][16]["Exploration Sigma"]["Annealing Rate"] = 5e-6;
+  e["Variables"][16]["Lower Bound"] = 0.0f;
+  e["Variables"][16]["Upper Bound"] = 1.0f;
+  e["Variables"][16]["Exploration Sigma"]["Initial"] = 0.2f;
+  e["Variables"][16]["Exploration Sigma"]["Final"] = 0.2f;
+  e["Variables"][16]["Exploration Sigma"]["Annealing Rate"] = 0.0f;
 
   e["Variables"][17]["Name"] = "Rotation Z";
   e["Variables"][17]["Type"] = "Action";
-  e["Variables"][17]["Lower Bound"] = lowerBounds[3];
-  e["Variables"][17]["Upper Bound"] = upperBounds[3];
-  e["Variables"][17]["Exploration Sigma"]["Initial"] = (upperBounds[3] - lowerBounds[3]) * 0.40;
-  e["Variables"][17]["Exploration Sigma"]["Final"] = (upperBounds[3] - lowerBounds[3]) * 0.10;
-  e["Variables"][17]["Exploration Sigma"]["Annealing Rate"] = 5e-6;
+  e["Variables"][17]["Lower Bound"] = 0.0f;
+  e["Variables"][17]["Upper Bound"] = 1.0f;
+  e["Variables"][17]["Exploration Sigma"]["Initial"] = 0.2f;
+  e["Variables"][17]["Exploration Sigma"]["Final"] = 0.2f;
+  e["Variables"][17]["Exploration Sigma"]["Annealing Rate"] = 0.0f;
 
   /// Defining Agent Configuration
 
@@ -85,7 +85,7 @@ int main(int argc, char *argv[])
 
   /// Defining the configuration of replay memory
 
-  e["Solver"]["Experience Replay"]["Start Size"] = 4096;
+  e["Solver"]["Experience Replay"]["Start Size"] = 8192;
   e["Solver"]["Experience Replay"]["Maximum Size"] = 65536;
 
   /// Configuring the Remember-and-Forget Experience Replay algorithm
@@ -103,23 +103,23 @@ int main(int argc, char *argv[])
 
   /// Defining Critic and Policy Configuration
 
-  e["Solver"]["Critic"]["Advantage Function Population"] = 16;
-  e["Solver"]["Policy"]["Learning Rate Scale"] = 1.0;
-  e["Solver"]["Policy"]["Target Accuracy"] = 0.01;
-  e["Solver"]["Policy"]["Optimization Candidates"] = 24;
+  e["Solver"]["Critic"]["Advantage Function Population"] = 32;
+  e["Solver"]["Policy"]["Learning Rate Scale"] = 0.1;
+  e["Solver"]["Policy"]["Target Accuracy"] = 0.000001;
+  e["Solver"]["Policy"]["Optimization Candidates"] = 32;
 
   /// Configuring the neural network and its hidden layers
 
   e["Solver"]["Neural Network"]["Engine"] = "OneDNN";
 
   e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear";
-  e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 128;
+  e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 64;
 
   e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Activation";
   e["Solver"]["Neural Network"]["Hidden Layers"][1]["Function"] = "Elementwise/Tanh";
 
   e["Solver"]["Neural Network"]["Hidden Layers"][2]["Type"] = "Layer/Linear";
-  e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 128;
+  e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 64;
 
   e["Solver"]["Neural Network"]["Hidden Layers"][3]["Type"] = "Layer/Activation";
   e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tanh";
@@ -130,10 +130,11 @@ int main(int argc, char *argv[])
 
   ////// Setting file output configuration
 
+  e["Solver"]["Experience Replay"]["Serialize"] = false;
   e["Console Output"]["Verbosity"] = "Detailed";
   e["File Output"]["Enabled"] = true;
-  e["File Output"]["Frequency"] = 20;
-  e["File Output"]["Path"] = "_results";
+  e["File Output"]["Frequency"] = 1;
+  e["File Output"]["Path"] = "_result_gfpt";
 
   auto k = korali::Engine();
   k.run(e);

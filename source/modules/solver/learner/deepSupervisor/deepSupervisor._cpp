@@ -44,6 +44,7 @@ void DeepSupervisor::initialize()
   // Adding linear transformation layer to convert hidden state to match output channels
   neuralNetworkConfig["Layers"][curLayer]["Type"] = "Layer/Linear";
   neuralNetworkConfig["Layers"][curLayer]["Output Channels"] = _problem->_solutionSize;
+  neuralNetworkConfig["Layers"][curLayer]["Weight Scaling"] = _outputWeightsScaling;
   curLayer++;
 
   // Applying a user-defined pre-activation function

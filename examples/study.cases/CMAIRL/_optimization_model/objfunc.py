@@ -209,6 +209,7 @@ def rl_cartpole_naf(p):
     ### Setting file output configuration
 
     e["File Output"]["Enabled"] = False
+    e["Console Output"]["Verbosity"] = "Silent"
 
     ### Running Experiment
 

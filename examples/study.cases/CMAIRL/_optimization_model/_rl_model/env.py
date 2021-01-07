@@ -12,7 +12,8 @@ def env(s, th):
  
  # Initializing environment
  cart = CartPole(th)
- 
+ cart.reset()
+
  s["State"] = cart.getState().tolist()
  step = 0
  done = False

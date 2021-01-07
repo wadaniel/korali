@@ -205,14 +205,14 @@ void VRACER::trainPolicy()
 
     if (_experienceReplayREFEREnabled)
     {
-        // Compute derivative of kullback-leibler divergence wrt current distribution params
-        auto klGrad = calculateKLDivergenceGradient(expMeans, expSigmas, curMeans, curSigmas);
+      // Compute derivative of kullback-leibler divergence wrt current distribution params
+      auto klGrad = calculateKLDivergenceGradient(expMeans, expSigmas, curMeans, curSigmas);
 
-        for (size_t i = 0; i < 2 * _problem->_actionVectorSize; i++)
-        {
-          // Step towards old policy (gradient pointing to larger difference between old and current policy)
-          gradientLoss[1 + i] -= (1.0f - _experienceReplayREFERCurrentBeta) * klGrad[i];
-        }
+      for (size_t i = 0; i < 2 * _problem->_actionVectorSize; i++)
+      {
+        // Step towards old policy (gradient pointing to larger difference between old and current policy)
+        gradientLoss[1 + i] -= (1.0f - _experienceReplayREFERCurrentBeta) * klGrad[i];
+      }
     }
 
     // Set status as learning problem input

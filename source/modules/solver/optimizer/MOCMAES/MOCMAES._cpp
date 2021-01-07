@@ -214,7 +214,6 @@ void MOCMAES::sampleSingle(size_t sampleIdx)
   bool isFeasible;
   do
   {
-
     _multinormalGenerator->getRandomVector(_currentSamplePopulation[sampleIdx].data(), _variableCount);
     isFeasible = isSampleFeasible(_currentSamplePopulation[sampleIdx]);
     //if (isFeasible == false) _infeasibleSampleCount++;

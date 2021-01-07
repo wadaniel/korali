@@ -100,6 +100,9 @@ def rl_cartpole_vracer(p):
     ### Running Experiment
     
     k.run(e)
+    
+    best = e["Solver"]["Testing"]["Best Average Reward"]
+    print("[Korali] Finished training (p {0} best reward {1}.".format(target, best))
 
     ### Evaluate Policy
     
@@ -213,7 +216,9 @@ def rl_cartpole_naf(p):
     ### Running Experiment
 
     k.run(e)
-
+ 
+    best = e["Solver"]["Testing"]["Best Average Reward"]
+    print("[Korali] Finished training (p {0} best reward {1}.".format(target, best))
 
     ### Evaluate Policy
     

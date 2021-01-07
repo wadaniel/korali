@@ -51,7 +51,8 @@ def rl_cartpole_vracer(p):
     e["Solver"]["Type"] = "Agent / Continuous / VRACER"
     e["Solver"]["Mode"] = "Training"
     e["Solver"]["Experiences Between Policy Updates"] = 5
-    e["Solver"]["Cache Persistence"] = 1000
+    e["Solver"]["Episodes Per Generation"] = 1
+    e["Solver"]["Cache Persistence"] = 500
     
     ### Defining the configuration of replay memory
 
@@ -89,7 +90,7 @@ def rl_cartpole_vracer(p):
     ### Defining Termination Criteria
 
     e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 490
-    e["Solver"]["Termination Criteria"]["Max Generations"] = 8000
+    e["Solver"]["Termination Criteria"]["Max Generations"] = 5000
 
     ## Setting file output configuration
 
@@ -104,8 +105,6 @@ def rl_cartpole_vracer(p):
     
     e["Solver"]["Mode"] = "Testing"
     e["Solver"]["Testing"]["Sample Ids"] = [0]
-    e["Solver"]["Discount Factor"] = 1.0
-    e["Problem"]["Policy Testing Episodes"] = 1
     e["Problem"]["Environment Function"] = evalenv
 
     k.run(e)
@@ -220,8 +219,6 @@ def rl_cartpole_naf(p):
     
     e["Solver"]["Mode"] = "Testing"
     e["Solver"]["Testing"]["Sample Ids"] = [0]
-    e["Solver"]["Discount Factor"] = 1.0
-    e["Problem"]["Policy Testing Episodes"] = 1
     e["Problem"]["Environment Function"] = evalenv
 
     k.run(e)

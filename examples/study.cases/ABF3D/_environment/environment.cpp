@@ -33,13 +33,18 @@ void runEnvironment(korali::Sample &s)
     // Reading new action
     std::vector<double> action = s["Action"];
 
-    // Printing Action:
-    // if (curActionIndex % 20 == 0)
-    // {
-    //  printf("Action %lu: [ %f", curActionIndex, action[0]);
-    //  for (size_t i = 1; i < action.size(); i++) printf(", %f", action[i]);
-    //  printf("]\n");
-    // }
+    // Scaling to lower-upper bounds
+    auto [lowerBounds, upperBounds] = _environment->getActionBounds();
+    for (size_t i = 0; i < action.size(); i++)
+     action[i] = action[i] * (upperBounds[i] - lowerBounds[i]);
+
+//     // Printing Action:
+//     if (curActionIndex % 20 == 0)
+//     {
+//      printf("Action %lu: [ %f", curActionIndex, action[0]);
+//      for (size_t i = 1; i < action.size(); i++) printf(", %f", action[i]);
+//      printf("]\n");
+//     }
 
     // Setting action
     status = _environment->advance(action);

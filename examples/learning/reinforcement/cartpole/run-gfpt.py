@@ -58,7 +58,7 @@ e["Solver"]["Learning Rate"] = 0.01
 e["Solver"]["Policy"]["Learning Rate Scale"] = 1.0
 e["Solver"]["Critic"]["Advantage Function Population"] = 12
 e["Solver"]["Policy"]["Target Accuracy"] = 0.001
-e["Solver"]["Policy"]["Optimization Candidates"] = 12
+e["Solver"]["Policy"]["Optimization Candidates"] = 32
 
 ### Configuring the neural network and its hidden layers
 

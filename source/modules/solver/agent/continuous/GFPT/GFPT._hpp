@@ -22,11 +22,6 @@ class GFPT : public Continuous
   std::vector<NeuralNetwork *> _batchOptimizationNetworks;
 
   /**
-   * @brief A neural network for the simultaneous evaluation of the average advantage function (one per thread)
-   */
-  std::vector<NeuralNetwork *> _batchAdvantageNetworks;
-
-  /**
    * @brief Pointer to training experiment's V(s) problem
    */
   problem::SupervisedLearning *_vProblem;
@@ -84,15 +79,6 @@ class GFPT : public Continuous
   float currentActionAdvantageFunction(const std::vector<std::vector<float>> &stateActionSequence);
 
   /**
-   * @brief Returns the average advantage value of all actions given the state
-   * @param curMeans Means of the current policy
-   * @param curSigmas Standard deviations of the current policy
-   * @param stateActionSequence State/action sequence to evaluate
-   * @return The average advantage value
-   */
-  float averageActionAdvantageFunction(const std::vector<std::vector<float>> &stateActionSequence, const std::vector<float> &curMeans, const std::vector<float> &curSigmas);
-
-  /**
    * @brief Returns the best action: that with highest advantage for the given state
    * @param state State to evaluate
    * @return The best action
@@ -105,7 +91,7 @@ class GFPT : public Continuous
    * @param curMeans The current means of the policy to use as initial guess
    * @return The optimal action
    */
-  std::vector<float> optimizeAction(const size_t expId, const std::vector<float> &curMeans);
+  knlohmann::json optimizeAction(const size_t expId, const std::vector<float> &curMeans);
 
   knlohmann::json runPolicy(const std::vector<std::vector<float>> &stateSequence) override;
   float stateValueFunction(const std::vector<std::vector<float>> &stateSequence) override;

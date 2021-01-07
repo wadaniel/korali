@@ -4,10 +4,13 @@ import json
 import numpy as np
 import matplotlib.pyplot as plt
 from korali.plotter.helpers import hlsColors, drawMulticoloredLine
+from scipy.signal import savgol_filter
 import math 
 
 def plot(genList, args):
 
+ ##################### Plotting Rewards / Episode
+ 
  lastGenId = 0
  for i in genList:
    if genList[i]['Current Generation'] > lastGenId:
@@ -34,35 +37,65 @@ def plot(genList, args):
  
  # Setting average depth
  averageDepth = 10
+ confidenceLevel = 2.326
  
  # Getting average cumulative reward statistics
- averageHistory = [ ]
- expCount = 0
- rewardSum = 0
- for i, r in enumerate(rewardHistory):
-  rewardSum = rewardSum + r
-  expCount = expCount + 1
- 
-  # Adjusting for moving average 
-  if (i >= averageDepth):
-    expCount = averageDepth
-    rewardSum = rewardSum - rewardHistory[i - averageDepth]
-    
-  curAverage = rewardSum / expCount;
-  averageHistory.append(curAverage)
- 
- fig = plt.figure()
- ax = fig.add_subplot(111)
- ax.set_ylabel('Cumulative Reward')  
- ax.set_xlabel('Episode')
- ax.set_title(solverName)
- ax.plot(rewardHistory, 'x', markersize=1, label='Episode Reward')
- ax.plot(averageHistory, '-', label='10-Episode Average')
- ax.hlines(trainingRewardThreshold, 0, episodeCount, linestyle='--', label='Training Threshold')
- ax.hlines(testingRewardThreshold, 0, episodeCount, linestyle='--', label='Testing Threshold')
- 
- plt.xlim([0, episodeCount-1])
- plt.ylim([minPlotReward - 0.1*abs(minPlotReward), maxPlotReward + 0.1*abs(maxPlotReward)])
- ax.yaxis.grid()
+ meanHistory = [ rewardHistory[0] ]
+ confIntervalHistory = [ 0.0 ]
+ for i in range(1, len(rewardHistory)):
+  startPos = i - averageDepth
+  if (startPos < 0): startPos = 0
+  endPos = i
+  data = rewardHistory[startPos:endPos]
+  mean = np.mean(data)
+  stdDev = np.std(data)
+  confInterval = confidenceLevel * stdDev / math.sqrt(len(data))
+  confIntervalHistory.append(confInterval)
+  meanHistory.append(mean)
+  
+ meanHistory = np.array(meanHistory)
+ confIntervalHistory = np.array(confIntervalHistory)
+  
+ epList = range(0, episodeCount) 
+ fig1 = plt.figure()
+ ax1 = fig1.add_subplot(111)
+ ax1.set_ylabel('Cumulative Reward')  
+ ax1.set_xlabel('Episode')
+ ax1.set_title(solverName)
+ ax1.plot(epList, rewardHistory, 'x', markersize=1, label='Episode Reward')
+ ax1.plot(epList, meanHistory, '-', label='10 Episode Average')
+ ax1.fill_between(epList, (meanHistory-confIntervalHistory), (meanHistory+confIntervalHistory), color='b', alpha=.1, label='98% Confidence Interval')
+ ax1.hlines(trainingRewardThreshold, 0, episodeCount, linestyle='dashed', label='Training Threshold', color='red')
+ ax1.hlines(testingRewardThreshold, 0, episodeCount, linestyle='dashdot', label='Testing Threshold', color='blue')
+ ax1.legend(loc='lower right', ncol=1, fontsize=8)
+ ax1.yaxis.grid()
+ ax1.set_xlim([0, episodeCount-1])
+ ax1.set_ylim([minPlotReward - 0.1*abs(minPlotReward), maxPlotReward + 0.1*abs(maxPlotReward)])
 
- ax.legend(loc='lower right', ncol=1, fontsize=8)  
+ ##################### (GFPT) Plotting Diagonal Covariance Values
+ 
+ if ('GFPT' in agent['Solver']['Type']):
+  varNames = [ ]
+  for var in agent['Variables']:
+   if (var['Type'] == 'Action'):
+    varNames.append(var['Name'])
+    
+  varCovariances = [ ]
+  for i in range(len(varNames)):
+   varCovariances.append([ ])
+   for gen in genList:
+    varCovariances[i].append(genList[gen]['Solver']['Statistics']['Average Covariance'][i])
+   
+  fig2 = plt.figure()
+  ax2 = fig2.add_subplot(111)
+  ax2.set_ylabel('Covariance Matrix Diagonal')  
+  ax2.set_xlabel('Generation')
+  ax2.set_title('GFPT - Cov Analysis')
+  
+  for i in range(len(varNames)):
+   ax2.plot(savgol_filter(varCovariances[i], 27, 3), '-', label=varNames[i])
+  
+  ax2.legend(loc='lower right', ncol=1, fontsize=8)
+  ax2.yaxis.grid()
+  ax2.set_xlim([0, len(genList)-1])
+    

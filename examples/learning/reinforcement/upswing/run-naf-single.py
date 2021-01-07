@@ -37,14 +37,22 @@ e["Solver"]["Episodes Per Generation"] = 1
 e["Solver"]["Target Learning Rate"] = 0.001
 e["Solver"]["Experiences Between Policy Updates"] = 10
 e["Solver"]["Covariance Scaling"] = 0.01
-e["Solver"]["Mini Batch Strategy"] = "Prioritized"
-e["Solver"]["Learning Rate"] = 0.000001
+#e["Solver"]["Mini Batch Strategy"] = "Prioritized"
+e["Solver"]["Learning Rate"] = 10-2
 e["Solver"]["Mini Batch Size"] = 32
 
 ### Defining Experience Replay configuration
 
 e["Solver"]["Experience Replay"]["Start Size"] =   131072
 e["Solver"]["Experience Replay"]["Maximum Size"] = 262144
+
+### Configuring the Remember-and-Forget Experience Replay algorithm
+
+e["Solver"]["Experience Replay"]["REFER"]["Enabled"] = True
+e["Solver"]["Experience Replay"]["REFER"]["Cutoff Scale"] = 4.0
+e["Solver"]["Experience Replay"]["REFER"]["Target"] = 0.1
+e["Solver"]["Experience Replay"]["REFER"]["Initial Beta"] = 0.6
+e["Solver"]["Experience Replay"]["REFER"]["Annealing Rate"] = 5e-7
 
 ### Configuring the neural network and its hidden layers
 

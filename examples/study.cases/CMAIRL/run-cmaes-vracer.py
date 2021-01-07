@@ -26,8 +26,8 @@ dim = 1
 # Defining the problem's variables.
 for i in range(dim):
     e["Variables"][i]["Name"] = "X" + str(i)
-    e["Variables"][i]["Lower Bound"] = -1.0
-    e["Variables"][i]["Upper Bound"] = +1.0
+    e["Variables"][i]["Lower Bound"] = -3.14
+    e["Variables"][i]["Upper Bound"] = +3.14
 
 # Configuring CMA-ES parameters
 e["Solver"]["Type"] = "Optimizer/CMAES"

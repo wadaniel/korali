@@ -924,9 +924,9 @@ void CMAES::printGenerationAfter()
   _k->_logger->logInfo("Detailed", "Variable = (MeanX, BestX):\n");
   for (size_t d = 0; d < _variableCount; d++) _k->_logger->logData("Detailed", "         %s = (%+6.3e, %+6.3e)\n", _k->_variables[d]->_name.c_str(), _currentMean[d], _bestEverVariables[d]);
 
-  _k->_logger->logInfo("Detailed", "Constraint Evaluation at Current Function Value:\n");
   if (_areConstraintsDefined)
   {
+    _k->_logger->logInfo("Detailed", "Constraint Evaluation at Current Function Value:\n");
     if (_bestValidSample >= 0)
       for (size_t c = 0; c < _constraintEvaluations.size(); c++) _k->_logger->logData("Detailed", "         ( %+6.3e )\n", _constraintEvaluations[c][_bestValidSample]);
     else

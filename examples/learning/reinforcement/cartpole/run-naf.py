@@ -44,7 +44,7 @@ e["Solver"]["Episodes Per Generation"] = 1
 ### Configuring NAF hyperparameters
 
 e["Solver"]["Discount Factor"] = 0.99
-e["Solver"]["Learning Rate"] = 1e-4
+e["Solver"]["Learning Rate"] = 1e-2
 e["Solver"]["Mini Batch Size"] = 32
 e["Solver"]["Target Learning Rate"] = 0.01
 e["Solver"]["Experiences Between Policy Updates"] = 5
@@ -55,6 +55,16 @@ e["Solver"]["Mini Batch Strategy"] = "Prioritized"
 
 e["Solver"]["Experience Replay"]["Start Size"] =   2048
 e["Solver"]["Experience Replay"]["Maximum Size"] = 32768
+
+
+### Configuring the Remember-and-Forget Experience Replay algorithm
+
+e["Solver"]["Experience Replay"]["REFER"]["Enabled"] = True
+e["Solver"]["Experience Replay"]["REFER"]["Cutoff Scale"] = 4.0
+e["Solver"]["Experience Replay"]["REFER"]["Target"] = 0.1
+e["Solver"]["Experience Replay"]["REFER"]["Initial Beta"] = 0.6
+e["Solver"]["Experience Replay"]["REFER"]["Annealing Rate"] = 5e-7
+
 
 ### Configuring the neural network and its hidden layers
 

@@ -90,7 +90,7 @@ def rl_cartpole_vracer(p):
     ### Defining Termination Criteria
 
     e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 490
-    e["Solver"]["Termination Criteria"]["Max Generations"] = 5000
+    e["Solver"]["Termination Criteria"]["Max Generations"] = 3000
 
     ## Setting file output configuration
 
@@ -202,7 +202,7 @@ def rl_cartpole_naf(p):
 
     ### Defining Termination Criteria
 
-    e["Solver"]["Termination Criteria"]["Max Generations"] = 5000
+    e["Solver"]["Termination Criteria"]["Max Generations"] = 3000
     e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 495
 
     ### Setting file output configuration

@@ -130,7 +130,7 @@ void NAF::trainPolicy()
     auto expAction = _experienceReplay[curId].action;
     auto expMeans = _experienceReplay[curId].policy["Action Means"].get<std::vector<float>>();
     auto expSigmas = _experienceReplay[curId].policy["Action Sigmas"].get<std::vector<float>>();
-  
+
     // Forward the neural network for this state to get current means and sigmas and Value
     auto policy = runPolicy(expStateSequence);
     float V = policy["State Value"].get<float>();
@@ -140,7 +140,7 @@ void NAF::trainPolicy()
 
     // Compute importance weight
     float importanceWeight = calculateImportanceWeight(expAction, curMeans, curSigmas, expMeans, expSigmas);
- 
+
     // Update value and weight in cache
     _experienceReplay[curId].cache.set("State Value", V);
     _experienceReplay[curId].cache.set("Importance Weight", importanceWeight);
@@ -149,13 +149,13 @@ void NAF::trainPolicy()
     float probability = _experienceReplay[curId].metadata["Mini Batch"]["Probability"];
     float weight = std::pow((float)_experienceReplay.size() * probability, -_importanceWeightAnnealingRate);
 
-    float yHat = _experienceReplay[curId ].reward;
+    float yHat = _experienceReplay[curId].reward;
 
     // yHat* = r -- If terminal state
     // yHat* = r + gamma*V(s) -- If not terminal state
 
     // If state is not terminal (next state is filled) then add Qnew to the Q value.
-    if (_experienceReplay[curId ].termination == e_nonTerminal)
+    if (_experienceReplay[curId].termination == e_nonTerminal)
     {
       // Getting experience's next state
       auto nextState = _experienceReplay[curId + 1].state;
@@ -172,7 +172,7 @@ void NAF::trainPolicy()
     cumulativeTdErrorSquarred += (diff * diff);
 
     // Updating experience priority
-    _experienceReplay[curId ].metadata["Mini Batch"]["Priority"] = abs(diff);
+    _experienceReplay[curId].metadata["Mini Batch"]["Priority"] = abs(diff);
 
     // Reserving storage for critic/policy gradient
     std::vector<float> policyGradient(1 + 2 * _problem->_actionVectorSize);
@@ -190,22 +190,22 @@ void NAF::trainPolicy()
       {
         float dmu = expAction[i] - curMeans[i];
         policyGradient[1 + i] = weight * _experienceReplayREFERCurrentBeta * diff * dmu * curDiagP[i];
-        policyGradient[1 + i + _problem->_actionVectorSize] = -weight * _experienceReplayREFERCurrentBeta * 0.5 * diff * dmu * dmu / (_actionScalings[i]*_actionScalings[i]);
+        policyGradient[1 + i + _problem->_actionVectorSize] = -weight * _experienceReplayREFERCurrentBeta * 0.5 * diff * dmu * dmu / (_actionScalings[i] * _actionScalings[i]);
       }
     }
- 
+
     if (_experienceReplayREFEREnabled)
     {
-        // Compute derivative of kullback-leibler divergence wrt current distribution params
-        auto klGrad = calculateKLDivergenceGradient(expMeans, expSigmas, curMeans, curSigmas);
+      // Compute derivative of kullback-leibler divergence wrt current distribution params
+      auto klGrad = calculateKLDivergenceGradient(expMeans, expSigmas, curMeans, curSigmas);
 
-        for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-        {
-          // Step towards old policy (gradient pointing to larger difference between old and current policy)
-          policyGradient[1 + i] -= weight * (1.0f - _experienceReplayREFERCurrentBeta) * klGrad[i];
-          // inlcude gradient of sigma wrt. diagP
-          policyGradient[1 + i + _problem->_actionVectorSize ] -= weight * (1.0f - _experienceReplayREFERCurrentBeta) * klGrad[i + _problem->_actionVectorSize] * (-0.5*std::sqrt(_covarianceScaling) * std::pow(curDiagP[i], -1.5));
-        }
+      for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+      {
+        // Step towards old policy (gradient pointing to larger difference between old and current policy)
+        policyGradient[1 + i] -= weight * (1.0f - _experienceReplayREFERCurrentBeta) * klGrad[i];
+        // inlcude gradient of sigma wrt. diagP
+        policyGradient[1 + i + _problem->_actionVectorSize] -= weight * (1.0f - _experienceReplayREFERCurrentBeta) * klGrad[i + _problem->_actionVectorSize] * (-0.5 * std::sqrt(_covarianceScaling) * std::pow(curDiagP[i], -1.5));
+      }
     }
 
     _qProblem->_inputData[b] = expStateSequence;
@@ -254,7 +254,7 @@ knlohmann::json NAF::runPolicy(const std::vector<std::vector<float>> &state)
   for (size_t i = 0; i < _problem->_actionVectorSize; ++i)
   {
     actionMeans[i] = qNNoutput[1 + i];
-    diagP[i] = qNNoutput[1 + _problem->_actionVectorSize + i] / (_actionScalings[i]*_actionScalings[i]);
+    diagP[i] = qNNoutput[1 + _problem->_actionVectorSize + i] / (_actionScalings[i] * _actionScalings[i]);
     actionSigmas[i] = std::sqrt(_covarianceScaling) / std::sqrt(diagP[i]);
   }
 

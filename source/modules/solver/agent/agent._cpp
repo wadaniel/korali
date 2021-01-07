@@ -71,8 +71,8 @@ void Agent::initialize()
 
   // If this continues a previous training run, deserialize previous input experience replay
   if (_mode == "Training")
-   if (_k->_currentGeneration > 0)
-    deserializeExperienceReplay();
+    if (_k->_currentGeneration > 0)
+      deserializeExperienceReplay();
 
   // Initializing session-wise profiling timers
   _sessionRunningTime = 0.0;

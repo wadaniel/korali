@@ -15,7 +15,12 @@ k = korali.Engine()
 
 # Creating new experiment
 e = korali.Experiment()
-
+found = e.loadState('_korali_result_cmaes_vracer/latest')
+if (found == True):
+  print('------------------------------------------------------')
+  print('Continuing execution from latest...')
+  print('------------------------------------------------------')
+ 
 # Configuring Problem
 e["Random Seed"] = 0xC0FEE
 e["Problem"]["Type"] = "Optimization"

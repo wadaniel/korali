@@ -153,8 +153,8 @@ void VRACER::trainPolicy()
     // Checking whether the experience is on policy (i.e., it is within the [1/cutoff, cutoff] region)
     bool isOnPolicy = (importanceWeight > (1.0f / _experienceReplayREFERCutoffScale)) && (importanceWeight < _experienceReplayREFERCutoffScale);
 
-    // Compute policy gradient only if inside trust region
-    if (isOnPolicy)
+    // Compute policy gradient only if inside trust region (or REFER disabled)
+    if (isOnPolicy || _experienceReplayREFEREnabled == false)
     {
       // Qret for terminal state is just reward
       float Qret = _experienceReplay[curId].reward;
@@ -203,13 +203,16 @@ void VRACER::trainPolicy()
       }
     }
 
-    // Compute derivative of kullback-leibler divergence wrt current distribution params
-    auto klGrad = calculateKLDivergenceGradient(expMeans, expSigmas, curMeans, curSigmas);
-
-    for (size_t i = 0; i < 2 * _problem->_actionVectorSize; i++)
+    if (_experienceReplayREFEREnabled)
     {
-      // Step towards old policy (gradient pointing to larger difference between old and current policy)
-      gradientLoss[1 + i] -= (1.0f - _experienceReplayREFERCurrentBeta) * klGrad[i];
+        // Compute derivative of kullback-leibler divergence wrt current distribution params
+        auto klGrad = calculateKLDivergenceGradient(expMeans, expSigmas, curMeans, curSigmas);
+
+        for (size_t i = 0; i < 2 * _problem->_actionVectorSize; i++)
+        {
+          // Step towards old policy (gradient pointing to larger difference between old and current policy)
+          gradientLoss[1 + i] -= (1.0f - _experienceReplayREFERCurrentBeta) * klGrad[i];
+        }
     }
 
     // Set status as learning problem input

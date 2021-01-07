@@ -65,7 +65,7 @@ void Agent::initialize()
     // Initializing REFER information
     _experienceReplayREFERCurrentRatio = 0.0f;
     _experienceReplayREFERCurrentCutoff = _experienceReplayREFERCutoffScale + 1.0f;
-    _experienceReplayREFERCurrentBeta = _experienceReplayREFERInitialBeta;
+    _experienceReplayREFERCurrentBeta = _experienceReplayREFEREnabled ? _experienceReplayREFERInitialBeta : 1.0;
     _experienceReplayREFERCurrentLearningRate = _learningRate;
   }
 

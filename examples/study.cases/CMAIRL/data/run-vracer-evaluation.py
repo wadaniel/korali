@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
 import os
 import sys
-sys.path.append('../_rl_model')
+sys.path.append('../_optimization_model/_rl_model')
 from env import *
-
-target = 0.0
-outfile = "observations-vracer.csv"
+from evalenv import *
 
 ####### Defining Korali Problem
 
@@ -13,6 +11,7 @@ import korali
 k = korali.Engine()
 e = korali.Experiment()
 
+target = 0.
 envp = lambda s : env(s,target)
 
 ### Defining the Cartpole problem's configuration
@@ -82,7 +81,7 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tan
 
 ### Defining Termination Criteria
 
-e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 495
+e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 499
 
 ### Setting file output configuration
 
@@ -94,16 +93,15 @@ e["Problem"]["Custom Settings"]["Record Observations"] = "False"
 
 k.run(e)
 
-### Recording Observations
 
-print('[Korali] Done training. Now running learned policy to produce observations.')
-
-### Now testing policy, dumping trajectory results
-
+### Evaluate Policy
+    
 e["Solver"]["Mode"] = "Testing"
-e["Solver"]["Testing"]["Sample Ids"] = [0, 1, 2]
-e["Problem"]["Custom Settings"]["Record Observations"] = "True"
+e["Solver"]["Testing"]["Sample Ids"] = [0]
+e["Problem"]["Environment Function"] = evalenv
 
 k.run(e)
 
-print("[Korali] Finished testing.")
+suml2error = e["Solver"]["Testing"]["Reward"][0]
+
+print("[Korali] Finished testing (p {0} error {1}.".format(target, suml2error))

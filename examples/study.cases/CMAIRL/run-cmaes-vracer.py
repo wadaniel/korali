@@ -36,7 +36,7 @@ for i in range(dim):
 
 # Configuring CMA-ES parameters
 e["Solver"]["Type"] = "Optimizer/CMAES"
-e["Solver"]["Population Size"] = 4
+e["Solver"]["Population Size"] = 6
 e["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 0.1
 e["Solver"]["Termination Criteria"]["Max Generations"] = 500
 
@@ -48,6 +48,6 @@ e["File Output"]["Frequency"] = 1
 e["Console Output"]["Verbosity"] = "Detailed"
 
 k["Conduit"]["Type"] = "Concurrent"
-k["Conduit"]["Concurrent Jobs"] = 4
+k["Conduit"]["Concurrent Jobs"] = 6
 
 k.run(e)

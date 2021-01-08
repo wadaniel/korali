@@ -28,7 +28,6 @@ def evalenv(s):
     action = s["Action"]
 
     # Compare with observations
-    print(obsactions[i], action)
     reward = np.linalg.norm(np.array(obsactions[i])-np.array(action))
     s["Reward"] = reward
 

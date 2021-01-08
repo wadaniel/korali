@@ -19,8 +19,9 @@ class CartPole:
     self.u = np.asarray([0, 0, 0, 0])     
     self.F=0
     self.t=0
-    self.x_threshold = 2.4
+    self.x_threshold = 5.0
     self.th_threshold = math.pi / 15
+    self.energyscale = 0.1
 
     self.ODE = ode(self.system).set_integrator('dopri5')
 
@@ -74,5 +75,4 @@ class CartPole:
     return state
 
   def getReward(self):
-    return np.cos(self.u[2]-self.targetAngle)
-    #return 1.0 - 1.0*self.isFailed();
+    return np.cos(self.u[2]-self.targetAngle) - self.energyscale * self.F**2

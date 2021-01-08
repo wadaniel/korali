@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import os
 import sys
-sys.path.append('../_rl_model')
+sys.path.append('../_optimization_model/_rl_model')
 from env import *
 
 ####### Defining Korali Problem
@@ -52,7 +52,7 @@ e["Solver"]["Learning Rate"] = 1e-3
 e["Solver"]["Mini Batch Size"] = 32
 e["Solver"]["Target Learning Rate"] = 0.01
 e["Solver"]["Experiences Between Policy Updates"] = 5
-e["Solver"]["Covariance Scaling"] = 0.001
+e["Solver"]["Covariance Scaling"] = 0.0001
 e["Solver"]["Mini Batch Strategy"] = "Prioritized" 
 
 ### Defining Experience Replay configuration
@@ -107,7 +107,7 @@ print('[Korali] Done training. Now running learned policy to produce observation
 
 e["Solver"]["Mode"] = "Testing"
 e["Problem"]["Custom Settings"]["Record Observations"] = "True"
-e["Solver"]["Testing"]["Sample Ids"] = [0, 1, 2]
+e["Solver"]["Testing"]["Sample Ids"] = [i for i in range(10)]
 
 k.run(e)
 

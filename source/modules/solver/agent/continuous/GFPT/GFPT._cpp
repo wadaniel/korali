@@ -93,7 +93,7 @@ void GFPT::initializeAgent()
     auto upperBound = _k->_variables[varIdx]->_upperBound;
     float scale = (upperBound - lowerBound) * 0.5;
     float shift = (upperBound + lowerBound) * 0.5;
-    float sigma = _k->_variables[varIdx]->_explorationSigmaInitial;
+    // float sigma = _k->_variables[varIdx]->_explorationSigmaInitial;
 
     _policyExperiment["Solver"]["Neural Network"]["Output Layer"]["Tanh Mask"][i] = true; // Step 1) Regularize to [-1, +1]
     _policyExperiment["Solver"]["Neural Network"]["Output Layer"]["Sigmoid Mask"][i] = false; // Do not apply sigmoid mask to sigmas

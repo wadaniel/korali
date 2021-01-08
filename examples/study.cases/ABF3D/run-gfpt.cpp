@@ -5,12 +5,13 @@ int main(int argc, char *argv[])
 {
   /////// Initializing environment
 
+  _resultDir = "_result_gfpt";
   initializeEnvironment("_config/helix_2d_eu_const.json");
 
   ////// Checking if existing results are there and continuing them
 
   auto e = korali::Experiment();
-  auto found = e.loadState("_result_gfpt/latest");
+  auto found = e.loadState(_resultDir + std::string("/latest"));
   if (found == true) printf("Continuing execution from previous run...\n");
 
   ////// Defining problem configuration
@@ -105,7 +106,7 @@ int main(int argc, char *argv[])
 
   e["Solver"]["Critic"]["Advantage Function Population"] = 32;
   e["Solver"]["Policy"]["Learning Rate Scale"] = 0.1;
-  e["Solver"]["Policy"]["Target Accuracy"] = 0.000001;
+  e["Solver"]["Policy"]["Target Accuracy"] = 0.00001;
   e["Solver"]["Policy"]["Optimization Candidates"] = 32;
 
   /// Configuring the neural network and its hidden layers
@@ -113,13 +114,13 @@ int main(int argc, char *argv[])
   e["Solver"]["Neural Network"]["Engine"] = "OneDNN";
 
   e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear";
-  e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 64;
+  e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 128;
 
   e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Activation";
   e["Solver"]["Neural Network"]["Hidden Layers"][1]["Function"] = "Elementwise/Tanh";
 
   e["Solver"]["Neural Network"]["Hidden Layers"][2]["Type"] = "Layer/Linear";
-  e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 64;
+  e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 128;
 
   e["Solver"]["Neural Network"]["Hidden Layers"][3]["Type"] = "Layer/Activation";
   e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tanh";
@@ -130,11 +131,11 @@ int main(int argc, char *argv[])
 
   ////// Setting file output configuration
 
-  e["Solver"]["Experience Replay"]["Serialize"] = false;
+  e["Solver"]["Experience Replay"]["Serialize"] = true;
   e["Console Output"]["Verbosity"] = "Detailed";
   e["File Output"]["Enabled"] = true;
-  e["File Output"]["Frequency"] = 1;
-  e["File Output"]["Path"] = "_result_gfpt";
+  e["File Output"]["Frequency"] = 10;
+  e["File Output"]["Path"] = _resultDir;
 
   auto k = korali::Engine();
   k.run(e);

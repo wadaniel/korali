@@ -199,9 +199,6 @@ void dVRACER::trainPolicy()
 
   // Running one generation of the optimization method with the given mini-batch
   _criticPolicyLearner->runGeneration();
-
-  // Storing average policy hyperparameters
-  _hyperparameters["Policy"] = _criticPolicyLearner->getTrainingHyperparameters();
 }
 
 float dVRACER::stateValueFunction(const std::vector<std::vector<float>> &state)

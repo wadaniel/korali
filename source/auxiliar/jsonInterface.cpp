@@ -103,7 +103,8 @@ bool loadJsonFromFile(knlohmann::json &dst, const char *fileName)
 
 int saveJsonToFile(const char *fileName, const knlohmann::json &js)
 {
-  FILE *fid = fopen(fileName, "w");
+  std::string auxFile = std::string(fileName) + ".aux";
+  FILE *fid = fopen(auxFile.c_str(), "w");
   if (fid != NULL)
   {
     fprintf(fid, "%s", js.dump(1).c_str());
@@ -114,7 +115,8 @@ int saveJsonToFile(const char *fileName, const knlohmann::json &js)
     return -1;
   }
 
-  return 0;
+  std::string moveCommand = std::string("mv ") + auxFile + std::string(" ") + std::string(fileName);
+  return system(moveCommand.c_str());
 }
 
 } // namespace korali

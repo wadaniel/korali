@@ -51,16 +51,6 @@ void Agent::initialize()
     _testingBestAverageReward = -korali::Inf;
     _testingBestEpisodeId = 0;
 
-    // Initializing training hyperparameters
-    _trainingState = getTrainingState();
-
-    // Getting initial policy hyperparameters (for agents to generate actions)
-    _hyperparameters = getAgentPolicy();
-
-    // Initialize best hyperparameters
-    _testingBestHyperparameters = _hyperparameters;
-    _trainingBestHyperparameters = _hyperparameters;
-
     // Initializing REFER information
     _experienceReplayREFERCurrentRatio = 0.0f;
     _experienceReplayREFERCurrentCutoff = _experienceReplayREFERCutoffScale + 1.0f;
@@ -72,6 +62,9 @@ void Agent::initialize()
   if (_mode == "Training")
    if (_k->_currentGeneration > 0)
     deserializeExperienceReplay();
+
+  // Getting agent's initial policy
+  _trainingCurrentPolicy = getAgentPolicy();
 
   // Initializing session-wise profiling timers
   _sessionRunningTime = 0.0;
@@ -101,7 +94,7 @@ void Agent::initialize()
 
   // Setting testing policy to best testing hyperparameters if not custom-set by the user
   if (_mode == "Testing")
-    if (_testingPolicy.empty()) _testingPolicy = _testingBestHyperparameters;
+    if (_testingPolicy.empty()) _testingPolicy = _testingBestPolicy;
 
   // Checking if there's testing samples defined
   if (_mode == "Testing")
@@ -131,9 +124,6 @@ void Agent::trainingGeneration()
   _generationPolicyUpdateTime = 0.0;
   _generationAgentAttendingTime = 0.0;
 
-  // Setting training state if continuing from previous results
-  if (_k->_currentGeneration > 0) setTrainingState(_trainingState);
-
   // Running until all _agents have finished
   while (_sessionEpisodeCount < _episodesPerGeneration * _sessionGeneration)
   {
@@ -144,7 +134,7 @@ void Agent::trainingGeneration()
         _agents[agentId]["Sample Id"] = _currentEpisode++;
         _agents[agentId]["Module"] = "Problem";
         _agents[agentId]["Operation"] = "Run Training Episode";
-        _agents[agentId]["Hyperparameters"] = _hyperparameters;
+        _agents[agentId]["Policy"] = _trainingCurrentPolicy;
 
         KORALI_START(_agents[agentId]);
         _isAgentRunning[agentId] = true;
@@ -170,7 +160,7 @@ void Agent::trainingGeneration()
         trainPolicy();
 
         // Getting new policy hyperparameters (for agents to generate actions)
-        _hyperparameters = getAgentPolicy();
+        _trainingCurrentPolicy = getAgentPolicy();
 
         // Increasing policy update counters
         _policyUpdateCount++;
@@ -185,9 +175,6 @@ void Agent::trainingGeneration()
       }
     }
   }
-
-  // Gathering their training hyperparameters (for checkpoint/resume purposes)
-  _trainingState = getTrainingState();
 
   // Updating experience probabilities
   if (_miniBatchStrategy == "Prioritized") updateExperienceReplayProbabilities();
@@ -216,7 +203,7 @@ void Agent::testingGeneration()
     _agents[agentId]["Sample Id"] = _testingSampleIds[agentId];
     _agents[agentId]["Module"] = "Problem";
     _agents[agentId]["Operation"] = "Run Testing Episode";
-    _agents[agentId]["Hyperparameters"] = _testingPolicy;
+    _agents[agentId]["Policy"] = _testingPolicy;
 
     KORALI_START(_agents[agentId]);
   }
@@ -245,7 +232,7 @@ void Agent::attendAgent(size_t agentId)
 
     // If agent requested new policy, send the new hyperparameters
     if (experience["Request New Policy"] == true)
-      KORALI_SEND_MSG_TO_SAMPLE(_agents[agentId], _hyperparameters);
+      KORALI_SEND_MSG_TO_SAMPLE(_agents[agentId], _trainingCurrentPolicy);
 
     if (isTerminal)
     {
@@ -270,7 +257,7 @@ void Agent::attendAgent(size_t agentId)
       {
         _trainingBestReward = _trainingLastReward;
         _trainingBestEpisodeId = _agents[agentId]["Sample Id"];
-        _trainingBestHyperparameters = _agents[agentId]["Hyperparameters"];
+        _trainingBestPolicy = _agents[agentId]["Policy"];
       }
 
       // If the policy has exceeded the threshold during training, we gather its statistics
@@ -288,7 +275,7 @@ void Agent::attendAgent(size_t agentId)
         {
           _testingBestAverageReward = _testingAverageReward;
           _testingBestEpisodeId = _agents[agentId]["Sample Id"];
-          _testingBestHyperparameters = _agents[agentId]["Hyperparameters"];
+          _testingBestPolicy = _agents[agentId]["Policy"];
         }
       }
 
@@ -697,36 +684,44 @@ void Agent::finalize()
 
 void Agent::serializeExperienceReplay()
 {
-  _k->_logger->logInfo("Normal", "Serializing Experience Replay database...\n");
+  _k->_logger->logInfo("Detailed", "Serializing Agent's Training State...\n");
   auto beginTime = std::chrono::steady_clock::now(); // Profiling
 
   // Creating JSON storage variable
-  knlohmann::json experienceReplayDatabase;
+  knlohmann::json stateJson;
 
   // Serializing agent's database into the JSON storage
   for (size_t i = 0; i < _experienceReplay.size(); i++)
   {
-    experienceReplayDatabase[i]["State"] = _experienceReplay[i].state;
-    experienceReplayDatabase[i]["Action"] = _experienceReplay[i].action;
-    experienceReplayDatabase[i]["Reward"] = _experienceReplay[i].reward;
-    experienceReplayDatabase[i]["Termination"] = _experienceReplay[i].termination;
-    experienceReplayDatabase[i]["Truncated State"] = _experienceReplay[i].truncatedState;
-    experienceReplayDatabase[i]["Policy"] = _experienceReplay[i].policy;
-    experienceReplayDatabase[i]["Metadata"] = _experienceReplay[i].metadata;
-    experienceReplayDatabase[i]["Cache"]["Keys"] = _experienceReplay[i].cache.getKeys();
-    experienceReplayDatabase[i]["Cache"]["Values"] = _experienceReplay[i].cache.getValues();
-    experienceReplayDatabase[i]["Cache"]["Times"] = _experienceReplay[i].cache.getTimes();
+   stateJson["Experience Replay"][i]["State"] = _experienceReplay[i].state;
+   stateJson["Experience Replay"][i]["Action"] = _experienceReplay[i].action;
+   stateJson["Experience Replay"][i]["Reward"] = _experienceReplay[i].reward;
+   stateJson["Experience Replay"][i]["Termination"] = _experienceReplay[i].termination;
+   stateJson["Experience Replay"][i]["Truncated State"] = _experienceReplay[i].truncatedState;
+   stateJson["Experience Replay"][i]["Policy"] = _experienceReplay[i].policy;
+   stateJson["Experience Replay"][i]["Metadata"] = _experienceReplay[i].metadata;
+   stateJson["Experience Replay"][i]["Cache"]["Keys"] = _experienceReplay[i].cache.getKeys();
+   stateJson["Experience Replay"][i]["Cache"]["Values"] = _experienceReplay[i].cache.getValues();
+   stateJson["Experience Replay"][i]["Cache"]["Times"] = _experienceReplay[i].cache.getTimes();
   }
+
+  // Storing training/testing policies
+  stateJson["Training"]["Current Policy"] = _trainingCurrentPolicy;
+  stateJson["Training"]["Best Policy"] = _trainingBestPolicy;
+  stateJson["Testing"]["Best Policy"] = _testingBestPolicy;
+
+  // Storing current agent's training state
+  stateJson["Training"]["State"] = getTrainingState();
 
   // If results directory doesn't exist, create it
   if (!dirExists(_k->_fileOutputPath)) mkdir(_k->_fileOutputPath);
 
   // Resolving file path
-  std::string dbPath = "./" + _k->_fileOutputPath + "/ERDb.json";
+  std::string statePath = "./" + _k->_fileOutputPath + "/state.json";
 
   // Storing database to file
-  if (saveJsonToFile(dbPath.c_str(), experienceReplayDatabase) != 0)
-    KORALI_LOG_ERROR("Could not serialize experience replay database into file %s\n", dbPath.c_str());
+  if (saveJsonToFile(statePath.c_str(), stateJson) != 0)
+    KORALI_LOG_ERROR("Could not serialize training state into file %s\n", statePath.c_str());
 
   auto endTime = std::chrono::steady_clock::now();                                                                   // Profiling
   _sessionSerializationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
@@ -738,30 +733,30 @@ void Agent::deserializeExperienceReplay()
   auto beginTime = std::chrono::steady_clock::now(); // Profiling
 
   // Creating JSON storage variable
-  knlohmann::json experienceReplayDatabase;
+  knlohmann::json stateJson;
 
   // Resolving file path
-  std::string dbPath = "./" + _k->_fileOutputPath + "/ERDb.json";
+  std::string statePath = "./" + _k->_fileOutputPath + "/state.json";
 
   // Loading database from file
-  _k->_logger->logInfo("Detailed", "Loading previous run ER database from file %s...\n", dbPath.c_str());
-  if (loadJsonFromFile(experienceReplayDatabase, dbPath.c_str()) == false)
-    KORALI_LOG_ERROR("Trying to resume experiement but could not find or deserialize experience replay database.\n");
+  _k->_logger->logInfo("Detailed", "Loading previous run training state from file %s...\n", statePath.c_str());
+  if (loadJsonFromFile(stateJson, statePath.c_str()) == false)
+    KORALI_LOG_ERROR("Trying to resume experiment but could not find or deserialize training state.\n");
 
   // Clearing existing database
   _experienceReplay.clear();
 
-  // Deserializing database from JSON to the agent's database
-  for (size_t i = 0; i < experienceReplayDatabase.size(); i++)
+  // Deserializing database from JSON to the agent's state
+  for (size_t i = 0; i < stateJson["Experience Replay"].size(); i++)
   {
     experience_t e;
-    e.state = experienceReplayDatabase[i]["State"].get<std::vector<float>>();
-    e.action = experienceReplayDatabase[i]["Action"].get<std::vector<float>>();
-    e.reward = experienceReplayDatabase[i]["Reward"].get<float>();
-    e.termination = experienceReplayDatabase[i]["Termination"].get<termination_t>();
-    e.truncatedState = experienceReplayDatabase[i]["Truncated State"].get<std::vector<float>>();
-    e.policy = experienceReplayDatabase[i]["Policy"];
-    e.metadata = experienceReplayDatabase[i]["Metadata"];
+    e.state = stateJson["Experience Replay"][i]["State"].get<std::vector<float>>();
+    e.action = stateJson["Experience Replay"][i]["Action"].get<std::vector<float>>();
+    e.reward = stateJson["Experience Replay"][i]["Reward"].get<float>();
+    e.termination = stateJson["Experience Replay"][i]["Termination"].get<termination_t>();
+    e.truncatedState = stateJson["Experience Replay"][i]["Truncated State"].get<std::vector<float>>();
+    e.policy = stateJson["Experience Replay"][i]["Policy"];
+    e.metadata = stateJson["Experience Replay"][i]["Metadata"];
 
     _experienceReplay.add(e);
   }
@@ -773,18 +768,26 @@ void Agent::deserializeExperienceReplay()
     _experienceReplay[i].cache.setMaxAge(_cachePersistence);
     _experienceReplay[i].cache.setTimer(&_policyUpdateCount);
 
-    for (size_t c = 0; c < experienceReplayDatabase[i]["Cache"]["Keys"].size(); c++)
+    for (size_t c = 0; c < stateJson["Experience Replay"][i]["Cache"]["Keys"].size(); c++)
     {
-      auto key = experienceReplayDatabase[i]["Cache"]["Keys"][c].get<std::string>();
-      auto val = experienceReplayDatabase[i]["Cache"]["Values"][c].get<float>();
-      auto time = experienceReplayDatabase[i]["Cache"]["Times"][c].get<size_t>();
+      auto key = stateJson["Experience Replay"][i]["Cache"]["Keys"][c].get<std::string>();
+      auto val = stateJson["Experience Replay"][i]["Cache"]["Values"][c].get<float>();
+      auto time = stateJson["Experience Replay"][i]["Cache"]["Times"][c].get<size_t>();
       _experienceReplay[i].cache.set(key, val, time);
     }
   }
 
+  // Restoring training/testing policies
+  _trainingCurrentPolicy = stateJson["Training"]["Current Policy"];
+  _trainingBestPolicy = stateJson["Training"]["Best Policy"];
+  _testingBestPolicy = stateJson["Testing"]["Best Policy"];
+
+  // Setting current agent's training state
+  setTrainingState(stateJson["Training"]["State"]);
+
   auto endTime = std::chrono::steady_clock::now();                                                                         // Profiling
   double deserializationTime = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count() / 1.0e+9; // Profiling
-  _k->_logger->logInfo("Detailed", "Took %fs to deserialize ER database.\n", deserializationTime);
+  _k->_logger->logInfo("Detailed", "Took %fs to deserialize training state.\n", deserializationTime);
 }
 
 void Agent::printGenerationAfter()

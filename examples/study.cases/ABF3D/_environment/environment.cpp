@@ -2,13 +2,19 @@
 //  Copyright (c) 2020 CSE-Lab, ETH Zurich, Switzerland.
 
 #include "environment.hpp"
+#include <unistd.h>
+#include <sys/stat.h>
 
+std::string _resultDir;
 bool _isTraining;
 std::mt19937 _randomGenerator;
 std::unique_ptr<msode::rl::MSodeEnvironment> _environment;
 
 void runEnvironment(korali::Sample &s)
 {
+  // Changing to results directory
+  chdir(_resultDir.c_str());
+
   // Setting seed
   size_t sampleId = s["Sample Id"];
 
@@ -64,6 +70,8 @@ void runEnvironment(korali::Sample &s)
     s["Termination"] = "Terminal";
   else
     s["Termination"] = "Truncated";
+
+  chdir("..");
 }
 
 void initializeEnvironment(const std::string confFileName)
@@ -78,4 +86,7 @@ void initializeEnvironment(const std::string confFileName)
 
   const Config config = json::parse(confFile);
   _environment = rl::factory::createEnvironment(config, ConfPointer(""));
+
+  // Creating result directory
+  mkdir(_resultDir.c_str(), S_IRWXU);
 }

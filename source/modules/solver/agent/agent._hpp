@@ -146,6 +146,21 @@ class Agent : public Solver
   float _importanceWeightAnnealingRate;
 
   /**
+  * @brief [Internal Use] Stores the current policy configuration.
+  */
+  knlohmann::json _trainingCurrentPolicy;
+
+  /**
+  * @brief [Internal Use] Stores the training policy configuration that has produced the best results.
+  */
+  knlohmann::json _trainingBestPolicy;
+
+   /**
+  * @brief [Internal Use] Stores the candidate policy configuration that has produced the best results.
+  */
+  knlohmann::json _testingBestPolicy;
+
+  /**
   * @brief Storage for the pointer to the learning problem
   */
   problem::ReinforcementLearning *_problem;

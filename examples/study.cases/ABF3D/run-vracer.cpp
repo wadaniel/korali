@@ -5,13 +5,14 @@ int main(int argc, char *argv[])
 {
   /////// Initializing environment
 
+  _resultDir = "_result_vracer";
   initializeEnvironment("_config/helix_2d_eu_const.json");
 
   auto e = korali::Experiment();
 
   ////// Checking if existing results are there and continuing them
 
-  auto found = e.loadState("_results/latest");
+  auto found = e.loadState(_resultDir + std::string("/latest"));
   if (found == true) printf("Continuing execution from previous run...\n");
 
   ////// Defining problem configuration
@@ -119,8 +120,8 @@ int main(int argc, char *argv[])
 
   e["Console Output"]["Verbosity"] = "Detailed";
   e["File Output"]["Enabled"] = true;
-  e["File Output"]["Frequency"] = 20;
-  e["File Output"]["Path"] = "_results";
+  e["File Output"]["Frequency"] = 10;
+  e["File Output"]["Path"] = _resultDir;
 
   auto k = korali::Engine();
   k.run(e);

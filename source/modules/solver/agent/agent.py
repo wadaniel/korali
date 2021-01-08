@@ -86,14 +86,23 @@ def plot(genList, args):
    for gen in genList:
     varCovariances[i].append(genList[gen]['Solver']['Statistics']['Average Covariance'][i])
    
+  genIds = [ ]
+  for gen in genList:
+   genIds.append(genList[gen]['Current Generation'])
+   
   fig2 = plt.figure()
   ax2 = fig2.add_subplot(111)
+  ax2.set_xticks(genIds)
   ax2.set_ylabel('Covariance Matrix Diagonal')  
   ax2.set_xlabel('Generation')
   ax2.set_title('GFPT - Cov Analysis')
   
+  smoothWidth = 27;
+  if (smoothWidth > len(genList)): smoothWidth = len(genList) - 1
+  if ((smoothWidth % 2) == 0): smoothWidth = smoothWidth - 1 
+  
   for i in range(len(varNames)):
-   ax2.plot(savgol_filter(varCovariances[i], 27, 3), '-', label=varNames[i])
+   ax2.plot(savgol_filter(varCovariances[i], smoothWidth, 3), '-', label=varNames[i])
   
   ax2.legend(loc='lower right', ncol=1, fontsize=8)
   ax2.yaxis.grid()

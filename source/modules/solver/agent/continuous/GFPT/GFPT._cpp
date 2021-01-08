@@ -220,7 +220,8 @@ void GFPT::trainPolicy()
 
     // Optimizing best action for the selected experience
     auto optResults = optimizeAction(expId, curMeans);
-    auto bstMean = optResults["Best Variables"].get<std::vector<float>>();
+    auto bstMeans = optResults["Best Means"].get<std::vector<float>>();
+    auto bstSigmas = optResults["Best Sigmas"].get<std::vector<float>>();
     auto bstA = optResults["Best Value"].get<float>();
 
     /*****************************************
@@ -254,7 +255,7 @@ void GFPT::trainPolicy()
 
     if (isOnPolicy)
       for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-        meanGradients[i] += _experienceReplayREFERCurrentBeta * (bstMean[i] - curMeans[i]);
+        meanGradients[i] += _experienceReplayREFERCurrentBeta * (bstMeans[i] - curMeans[i]);
 
     // Now adding slowdown factor to prevent from deviating too much into off-policy (REFER)
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
@@ -362,15 +363,21 @@ knlohmann::json GFPT::optimizeAction(const size_t expId, const std::vector<float
     actionOptimizer->_currentGeneration++;
   }
 
+  // Grabbing diagonal covariances
+  std::vector<float> bestSigmas(_problem->_actionVectorSize);
+  for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+   bestSigmas[i] = sqrt(fabs(actionOptimizer->_covarianceMatrix[i * _problem->_actionVectorSize + i]));
+
   // Keeping statistics
   #pragma omp critical
-  for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-   _statisticsAverageCovariance[i] += actionOptimizer->_covarianceMatrix[i * _problem->_actionVectorSize + i];
+  for (size_t i = 0; i < _problem->_actionVectorSize; i++) _statisticsAverageCovariance[i] += bestSigmas[i];
 
   // Returning optimization results
   knlohmann::json result;
-  result["Best Variables"] = actionOptimizer->_bestEverVariables;
+  result["Best Sigmas"] = bestSigmas;
+  result["Best Means"] = actionOptimizer->_bestEverVariables;
   result["Best Value"] = actionOptimizer->_bestEverValue;
+
   return result;
 }
 

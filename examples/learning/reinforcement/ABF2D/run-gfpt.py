@@ -65,7 +65,7 @@ e["Solver"]["Learning Rate"] = 0.001
 
 ### Defining the configuration of replay memory
 
-e["Solver"]["Experience Replay"]["Start Size"] = 16384
+e["Solver"]["Experience Replay"]["Start Size"] = 4096
 e["Solver"]["Experience Replay"]["Maximum Size"] = 65536
 
 ### Configuring the Remember-and-Forget Experience Replay algorithm

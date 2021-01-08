@@ -63,6 +63,9 @@ void Agent::initialize()
    if (_k->_currentGeneration > 0)
     deserializeExperienceReplay();
 
+  // Obtaining training state
+  _trainingState = getTrainingState();
+
   // Getting agent's initial policy
   _trainingCurrentPolicy = getAgentPolicy();
 
@@ -123,6 +126,9 @@ void Agent::trainingGeneration()
   _generationAgentPolicyEvaluationTime = 0.0;
   _generationPolicyUpdateTime = 0.0;
   _generationAgentAttendingTime = 0.0;
+
+  // Updating training state from previous generation
+  setTrainingState(_trainingState);
 
   // Running until all _agents have finished
   while (_sessionEpisodeCount < _episodesPerGeneration * _sessionGeneration)
@@ -190,6 +196,9 @@ void Agent::trainingGeneration()
   auto endTime = std::chrono::steady_clock::now();                                                             // Profiling
   _sessionRunningTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
   _generationRunningTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
+
+  // Gathering learners training state (for checkpoint/resume purpose)
+  _trainingState = getTrainingState();
 
   // Increasing session's generation count
   _sessionGeneration++;
@@ -711,7 +720,7 @@ void Agent::serializeExperienceReplay()
   stateJson["Testing"]["Best Policy"] = _testingBestPolicy;
 
   // Storing current agent's training state
-  stateJson["Training"]["State"] = getTrainingState();
+  stateJson["Training"]["State"] = _trainingState;
 
   // If results directory doesn't exist, create it
   if (!dirExists(_k->_fileOutputPath)) mkdir(_k->_fileOutputPath);

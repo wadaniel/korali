@@ -26,11 +26,13 @@ def plot(genList, args):
   psL2 = [0.0] * numgens
   axis = [None] * numdim
   objVec = [None] * numdim
+  bestobjVec = [None] * numdim
   ssdev = [None] * numdim
 
   for i in range(numdim):
     axis[i] = [None] * numgens
     objVec[i] = [None] * numgens
+    bestobjVec[i] = [None] * numgens
     ssdev[i] = [None] * numgens
 
   curPos = 0
@@ -48,6 +50,7 @@ def plot(genList, args):
     for i in range(numdim):
       axis[i][curPos] = genList[gen]['Solver']['Axis Lengths'][i]
       objVec[i][curPos] = genList[gen]['Solver']['Current Best Variables'][i]
+      bestobjVec[i][curPos] = genList[gen]['Solver']['Best Ever Variables'][i]
       ssdev[i][curPos] = genList[gen]['Solver']["Sigma"] * np.sqrt(
           genList[gen]['Solver']['Covariance Matrix'][i * numdim + i])
 
@@ -81,7 +84,8 @@ def plot(genList, args):
   ax[0, 1].set_title('Objective Variables')
   ax[0, 1].grid(True)
   for i in range(numdim):
-    ax[0, 1].plot(genIds, objVec[i], color=colors[i], label=names[i])
+    ax[0, 1].plot(genIds, objVec[i], color=colors[i], label=names[i], linewidth=2)
+    ax[0, 1].plot(genIds, bestobjVec[i], color=colors[i], linestyle='dashed',linewidth=1)
   ax[0, 1].legend(
       bbox_to_anchor=(1.04, 0.5),
       loc="center left",
@@ -93,11 +97,11 @@ def plot(genList, args):
   ax[1, 0].grid(True)
   ax[1, 0].set_yscale('log')
   for i in range(numdim):
-    ax[1, 0].plot(genIds, axis[i], color=colors[i])
+    ax[1, 0].plot(genIds, axis[i], color=colors[i], linewidth=1)
 
   # Lower Left Plot
   ax[1, 1].set_title('$\sigma \sqrt{diag(\mathbf{C})}$')
   ax[1, 1].grid(True)
   ax[1, 1].set_yscale('log')
   for i in range(numdim):
-    ax[1, 1].plot(genIds, ssdev[i], color=colors[i], label=names[i])
+    ax[1, 1].plot(genIds, ssdev[i], color=colors[i], label=names[i], linewidth=1)

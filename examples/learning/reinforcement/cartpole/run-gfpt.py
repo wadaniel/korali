@@ -14,26 +14,29 @@ e = korali.Experiment()
 
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = env
+e["Problem"]["Training Reward Threshold"] = 750
+e["Problem"]["Policy Testing Episodes"] = 20
 e["Problem"]["Actions Between Policy Updates"] = 1
-e["Problem"]["Training Reward Threshold"] = 450
-e["Problem"]["Policy Testing Episodes"] = 10
-
-### Defining State variables
 
 e["Variables"][0]["Name"] = "Cart Position"
-e["Variables"][1]["Name"] = "Cart Velocity"
-e["Variables"][2]["Name"] = "Pole Angle"
-e["Variables"][3]["Name"] = "Pole Angular Velocity"
+e["Variables"][0]["Type"] = "State"
 
-### Defining Action variables 
+e["Variables"][1]["Name"] = "Angle 1"
+e["Variables"][1]["Type"] = "State"
 
-e["Variables"][4]["Name"] = "Force"
-e["Variables"][4]["Type"] = "Action"
-e["Variables"][4]["Lower Bound"] = -10.0
-e["Variables"][4]["Upper Bound"] = +10.0
-e["Variables"][4]["Exploration Sigma"]["Initial"] = 1.0
-e["Variables"][4]["Exploration Sigma"]["Final"] = 1.0
-e["Variables"][4]["Exploration Sigma"]["Annealing Rate"] = 0.0
+e["Variables"][2]["Name"] = "Car Velocity"
+e["Variables"][2]["Type"] = "State"
+
+e["Variables"][3]["Name"] = "Angular Velocity 1"
+e["Variables"][3]["Type"] = "State"
+
+e["Variables"][4]["Name"] = "Height Proxy"
+e["Variables"][4]["Type"] = "State"
+
+e["Variables"][5]["Name"] = "Force"
+e["Variables"][5]["Type"] = "Action"
+e["Variables"][5]["Lower Bound"] = -20.0
+e["Variables"][5]["Upper Bound"] = +20.0
 
 ### Defining Agent Configuration 
 

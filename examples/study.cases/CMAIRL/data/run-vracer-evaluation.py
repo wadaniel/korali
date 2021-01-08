@@ -3,6 +3,7 @@ import os
 import sys
 sys.path.append('../_rl_model')
 from env import *
+from evalenv import *
 
 ####### Defining Korali Problem
 
@@ -14,13 +15,11 @@ target = 0.
 envp = lambda s : env(s,target)
 
 ### Defining the Cartpole problem's configuration
-
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = envp
 e["Problem"]["Training Reward Threshold"] = 490
 e["Problem"]["Policy Testing Episodes"] = 20
-e["Problem"]["Actions Between Policy Updates"] = 1
-e["Problem"]["Custom Settings"]["Record Observations"] = "False"
+e["Problem"]["Actions Between Policy Updates"] = 5
 
 e["Variables"][0]["Name"] = "Cart Position"
 e["Variables"][0]["Type"] = "State"
@@ -39,36 +38,30 @@ e["Variables"][4]["Type"] = "Action"
 e["Variables"][4]["Lower Bound"] = -10.0
 e["Variables"][4]["Upper Bound"] = +10.0
 
-### Defining Solver
+### Defining Agent Configuration 
 
-e["Solver"]["Type"] = "Agent / Continuous / NAF"
+e["Solver"]["Type"] = "Agent / Continuous / VRACER"
 e["Solver"]["Mode"] = "Training"
-e["Solver"]["Episodes Per Generation"] = 1
-
-### Configuring NAF hyperparameters
-
-e["Solver"]["Discount Factor"] = 0.99
-e["Solver"]["Learning Rate"] = 1e-3
-e["Solver"]["Mini Batch Size"] = 32
-e["Solver"]["Target Learning Rate"] = 0.01
 e["Solver"]["Experiences Between Policy Updates"] = 5
-e["Solver"]["Covariance Scaling"] = 0.001
-e["Solver"]["Mini Batch Strategy"] = "Prioritized" 
+e["Solver"]["Episodes Per Generation"] = 1
+e["Solver"]["Cache Persistence"] = 500
 
-### Defining Experience Replay configuration
+### Defining the configuration of replay memory
 
 e["Solver"]["Experience Replay"]["Start Size"] =   2048
 e["Solver"]["Experience Replay"]["Maximum Size"] = 32768
 
-
-### Configuring the Remember-and-Forget Experience Replay algorithm
-
 e["Solver"]["Experience Replay"]["REFER"]["Enabled"] = True
 e["Solver"]["Experience Replay"]["REFER"]["Cutoff Scale"] = 4.0
 e["Solver"]["Experience Replay"]["REFER"]["Target"] = 0.1
-e["Solver"]["Experience Replay"]["REFER"]["Initial Beta"] = 0.6
+e["Solver"]["Experience Replay"]["REFER"]["Initial Beta"] = 0.3
 e["Solver"]["Experience Replay"]["REFER"]["Annealing Rate"] = 5e-7
 
+## Defining Neural Network Configuration for Policy and Critic into Critic Container
+
+e["Solver"]["Discount Factor"] = 0.99
+e["Solver"]["Learning Rate"] = 1e-4
+e["Solver"]["Mini Batch Size"] = 32
 
 ### Configuring the neural network and its hidden layers
 
@@ -96,19 +89,19 @@ e["File Output"]["Enabled"] = False
 
 ### Running Experiment
 
+e["Problem"]["Custom Settings"]["Record Observations"] = "False"
+
 k.run(e)
 
-### Recording Observations
 
-print('[Korali] Done training. Now running learned policy to produce observations.')
-
-
-### Now testing policy, dumping trajectory results
-
+### Evaluate Policy
+    
 e["Solver"]["Mode"] = "Testing"
-e["Problem"]["Custom Settings"]["Record Observations"] = "True"
-e["Solver"]["Testing"]["Sample Ids"] = [0, 1, 2]
+e["Solver"]["Testing"]["Sample Ids"] = [0]
+e["Problem"]["Environment Function"] = evalenv
 
 k.run(e)
 
-print("[Korali] Finished testing.")
+suml2error = e["Solver"]["Testing"]["Reward"][0]
+
+print("[Korali] Finished testing (p {0} error {1}.".format(target, suml2error))

@@ -23,8 +23,8 @@ def rl_cartpole_vracer(p):
 
     e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
     e["Problem"]["Environment Function"] = envp
-    e["Problem"]["Testing Frequency"] = 500
-    e["Problem"]["Training Reward Threshold"] = 450
+    e["Problem"]["Testing Frequency"] = 100
+    e["Problem"]["Training Reward Threshold"] = 490
     e["Problem"]["Policy Testing Episodes"] = 20
     e["Problem"]["Actions Between Policy Updates"] = 5
     e["Problem"]["Custom Settings"]["Record Observations"] = "False"
@@ -90,7 +90,7 @@ def rl_cartpole_vracer(p):
     ### Defining Termination Criteria
 
     e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 490
-    e["Solver"]["Termination Criteria"]["Max Generations"] = 3000
+    e["Solver"]["Termination Criteria"]["Max Generations"] = 5000
 
     ## Setting file output configuration
 

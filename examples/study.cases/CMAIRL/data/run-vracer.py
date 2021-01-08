@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import os
 import sys
-sys.path.append('../_rl_model')
+sys.path.append('../_optimization_model/_rl_model')
 from env import *
 
 target = 0.0

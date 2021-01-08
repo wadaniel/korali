@@ -34,25 +34,19 @@ e["Variables"][4]["Name"] = "Magnet Rotation X"
 e["Variables"][4]["Type"] = "Action"
 e["Variables"][4]["Lower Bound"] = -1.0
 e["Variables"][4]["Upper Bound"] = +1.0
-e["Variables"][4]["Exploration Sigma"]["Initial"] = 0.5
-e["Variables"][4]["Exploration Sigma"]["Final"] = 0.05
-e["Variables"][4]["Exploration Sigma"]["Annealing Rate"] = 1e-5
+e["Variables"][4]["Initial Exploration Noise"] = 0.5
 
 e["Variables"][5]["Name"] = "Magnet Rotation Y"
 e["Variables"][5]["Type"] = "Action"
 e["Variables"][5]["Lower Bound"] = -1.0
 e["Variables"][5]["Upper Bound"] = +1.0
-e["Variables"][5]["Exploration Sigma"]["Initial"] = 0.5
-e["Variables"][5]["Exploration Sigma"]["Final"] = 0.05
-e["Variables"][5]["Exploration Sigma"]["Annealing Rate"] = 1e-5
+e["Variables"][5]["Initial Exploration Noise"] = 0.5
 
 e["Variables"][6]["Name"] = "Magnet Intensity"
 e["Variables"][6]["Type"] = "Action"
 e["Variables"][6]["Lower Bound"] = +0.0
 e["Variables"][6]["Upper Bound"] = +2.0
-e["Variables"][6]["Exploration Sigma"]["Initial"] = 0.5
-e["Variables"][6]["Exploration Sigma"]["Final"] = 0.05
-e["Variables"][6]["Exploration Sigma"]["Annealing Rate"] = 1e-5
+e["Variables"][6]["Initial Exploration Noise"] = 0.5
 
 ### Defining Agent Configuration 
 
@@ -110,7 +104,7 @@ e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 41.0
 
 ### Setting console/file output configuration
 
-e["Solver"]["Experience Replay"]["Serialize"] = False
+e["Solver"]["Experience Replay"]["Serialize"] = True
 e["Console Output"]["Verbosity"] = "Detailed"
 e["File Output"]["Enabled"] = True
 e["File Output"]["Frequency"] = 1

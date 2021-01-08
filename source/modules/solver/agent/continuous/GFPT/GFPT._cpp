@@ -73,8 +73,7 @@ void GFPT::initializeAgent()
   _policyExperiment["Problem"]["Training Batch Size"] = _miniBatchSize;
   _policyExperiment["Problem"]["Inference Batch Size"] = 1;
   _policyExperiment["Problem"]["Input"]["Size"] = _problem->_stateVectorSize;
-  _policyExperiment["Problem"]["Solution"]["Size"] = _problem->_actionVectorSize;
-//  _policyExperiment["Problem"]["Solution"]["Size"] = 2 * _problem->_actionVectorSize;
+  _policyExperiment["Problem"]["Solution"]["Size"] = 2 * _problem->_actionVectorSize;
 
   _policyExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
   _policyExperiment["Solver"]["Optimizer"] = _optimizer;
@@ -93,17 +92,17 @@ void GFPT::initializeAgent()
     auto upperBound = _k->_variables[varIdx]->_upperBound;
     float scale = (upperBound - lowerBound) * 0.5;
     float shift = (upperBound + lowerBound) * 0.5;
-    // float sigma = _k->_variables[varIdx]->_explorationSigmaInitial;
+    float sigma = _k->_variables[varIdx]->_initialExplorationNoise;
 
     _policyExperiment["Solver"]["Neural Network"]["Output Layer"]["Tanh Mask"][i] = true; // Step 1) Regularize to [-1, +1]
     _policyExperiment["Solver"]["Neural Network"]["Output Layer"]["Sigmoid Mask"][i] = false; // Do not apply sigmoid mask to sigmas
     _policyExperiment["Solver"]["Neural Network"]["Output Layer"]["Scale"][i] = scale;    // Step 2) Rescale to real spread
     _policyExperiment["Solver"]["Neural Network"]["Output Layer"]["Shift"][i] = shift;    // Step 3) Shift to fit
 
-//    _policyExperiment["Solver"]["Neural Network"]["Output Layer"]["Tanh Mask"][_problem->_actionVectorSize + i] = false; // Do not apply tanh mask to sigmas
-//    _policyExperiment["Solver"]["Neural Network"]["Output Layer"]["Sigmoid Mask"][_problem->_actionVectorSize + i] = true; // Step 1) Regularize to [0, +inf]
-//    _policyExperiment["Solver"]["Neural Network"]["Output Layer"]["Scale"][_problem->_actionVectorSize + i] = sigma * 2.0f;  // Step 2) With an initial value of 0.5, rescale sigma by multiplying by two
-//    _policyExperiment["Solver"]["Neural Network"]["Output Layer"]["Shift"][_problem->_actionVectorSize + i] = 0.0f;    // Step 3) Shift to fit
+    _policyExperiment["Solver"]["Neural Network"]["Output Layer"]["Tanh Mask"][_problem->_actionVectorSize + i] = false; // Do not apply tanh mask to sigmas
+    _policyExperiment["Solver"]["Neural Network"]["Output Layer"]["Sigmoid Mask"][_problem->_actionVectorSize + i] = true; // Step 1) Regularize to [0, +inf]
+    _policyExperiment["Solver"]["Neural Network"]["Output Layer"]["Scale"][_problem->_actionVectorSize + i] = sigma * 2.0f;  // Step 2) With an initial value of 0.5, rescale sigma by multiplying by two
+    _policyExperiment["Solver"]["Neural Network"]["Output Layer"]["Shift"][_problem->_actionVectorSize + i] = 0.0f;    // Step 3) Shift to fit
   }
 
   // Running initialization to verify that the configuration is correct
@@ -151,20 +150,11 @@ void GFPT::initializeAgent()
   }
 
   /*********************************************************************
-  * Initializing exploration sigma values
+  * IAllocating storage for statistics
   *********************************************************************/
 
   if (_k->_currentGeneration == 0)
-  {
-    _currentExplorationSigmas.resize(_problem->_actionVectorSize);
-    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-    {
-      size_t varIdx = _problem->_actionVectorIndexes[i];
-      _currentExplorationSigmas[i] = _k->_variables[varIdx]->_explorationSigmaInitial;
-    }
-
     _statisticsAverageCovariance.resize(_problem->_actionVectorSize, 0.0f);
-  }
 }
 
 float GFPT::stateValueFunction(const std::vector<std::vector<float>> &stateSequence)
@@ -250,34 +240,33 @@ void GFPT::trainPolicy()
     * Calculating Policy Gradients
     *****************************************/
 
-    // If the experiment if on-policy, we use it for the calculation of the gradients
-    std::vector<float> meanGradients(_problem->_actionVectorSize, 0.0f);
+    // Calculating the KL divergence gradients to prevent off-policiness (REFER)
+    std::vector<float> gfptGradients(2 * _problem->_actionVectorSize, 0.0f);
+    auto referKLDivGrads = calculateKLDivergenceGradient(curMeans, curSigmas, expMeans, expSigmas);
 
+    // Storage for the policy gradients
+    std::vector<float> policyGradients(2 * _problem->_actionVectorSize, 0.0f);
+
+    // If the experiment if on-policy, we use it for the calculation of the gradients
     if (isOnPolicy)
       for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-        meanGradients[i] += _experienceReplayREFERCurrentBeta * (bstMeans[i] - curMeans[i]);
+      {
+       bstSigmas[i] = bstSigmas[i] / _policyTargetAccuracy;
+       if (bstSigmas[i] < 0.10) bstSigmas[i] = 0.10;
+       if (bstSigmas[i] > 0.50) bstSigmas[i] = 0.50;
+
+       gfptGradients[i] = bstMeans[i] - curMeans[i];
+       gfptGradients[_problem->_actionVectorSize + i] = (bstSigmas[i] - curSigmas[i]);
+      }
 
     // Now adding slowdown factor to prevent from deviating too much into off-policy (REFER)
-    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-      meanGradients[i] += (1.0f - _experienceReplayREFERCurrentBeta) * (expMeans[i] - curMeans[i]);
-
-    // For sigmas, we'll just fix it to a fixed value for now
-    std::vector<float> sigmaGradients(_problem->_actionVectorSize, 0.0f);
-    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-     sigmaGradients[i] = _currentExplorationSigmas[i];
-
-    // Now putting mean and sigma gradients together
-    std::vector<float> policyGradients(2 * _problem->_actionVectorSize);
-    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-    {
-     policyGradients[i] = meanGradients[i];
-     policyGradients[i + _problem->_actionVectorSize] = sigmaGradients[i];
-    }
+    for (size_t i = 0; i < 2 * _problem->_actionVectorSize; i++)
+     policyGradients[i] += _experienceReplayREFERCurrentBeta * gfptGradients[i] +
+                           (1.0f - _experienceReplayREFERCurrentBeta) * referKLDivGrads[i];
 
     // Adding means to the policy update
     _policyProblem->_inputData[b] = expStateSequence;
-//    _policyProblem->_solutionData[b] = policyGradients;
-    _policyProblem->_solutionData[b] = meanGradients;
+    _policyProblem->_solutionData[b] = gfptGradients;
   }
 
   // Updating learning rate for critic/policy learners guided by REFER
@@ -294,15 +283,6 @@ void GFPT::trainPolicy()
   auto aHyperparameters = _aLearner->getTrainingHyperparameters();
   for (size_t threadIdx = 0; threadIdx < _maxThreads; threadIdx++)
    _batchOptimizationNetworks[threadIdx]->setHyperparameters(aHyperparameters);
-
-  // Updating action exploration sigmas
-  for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-  {
-    size_t varIdx = _problem->_actionVectorIndexes[i];
-    _currentExplorationSigmas[i] = _currentExplorationSigmas[i] * (1.0f - _k->_variables[varIdx]->_explorationSigmaAnnealingRate);
-    if (_currentExplorationSigmas[i] < _k->_variables[varIdx]->_explorationSigmaFinal)
-      _currentExplorationSigmas[i] = _k->_variables[varIdx]->_explorationSigmaFinal;
-  }
 
   for (size_t i = 0; i < _problem->_actionVectorSize; i++)
    _statisticsAverageCovariance[i] /= (float)_miniBatchSize;
@@ -366,7 +346,7 @@ knlohmann::json GFPT::optimizeAction(const size_t expId, const std::vector<float
   // Grabbing diagonal covariances
   std::vector<float> bestSigmas(_problem->_actionVectorSize);
   for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-   bestSigmas[i] = sqrt(fabs(actionOptimizer->_covarianceMatrix[i * _problem->_actionVectorSize + i]));
+   bestSigmas[i] = fabs(actionOptimizer->_covarianceMatrix[i * _problem->_actionVectorSize + i]);
 
   // Keeping statistics
   #pragma omp critical
@@ -391,8 +371,7 @@ knlohmann::json GFPT::runPolicy(const std::vector<std::vector<float>> &state)
   for (size_t i = 0; i < _problem->_actionVectorSize; ++i)
   {
     actionMeans[i] = eval[i];
-//    actionSigmas[i] = eval[_problem->_actionVectorSize + i];
-    actionSigmas[i] = _currentExplorationSigmas[i];
+    actionSigmas[i] = eval[_problem->_actionVectorSize + i];
   }
 
   knlohmann::json policy;
@@ -462,13 +441,6 @@ void GFPT::printAgentInformation()
   _policyExperiment._logger->_verbosityLevel = _k->_logger->_verbosityLevel;
   _policyExperiment._solver->printGenerationAfter();
   _policyExperiment._logger->setVerbosityLevel("Silent");
-
-  _k->_logger->logInfo("Normal", "Action Exploration Sigma Targets:\n");
-  for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-  {
-    size_t varIdx = _problem->_actionVectorIndexes[i];
-    _k->_logger->logInfo("Normal", " + %s:                  %.4f\n", _k->_variables[varIdx]->_name.c_str(), _currentExplorationSigmas[i]);
-  }
 }
 
 } // namespace continuous

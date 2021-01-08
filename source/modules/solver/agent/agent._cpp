@@ -140,7 +140,7 @@ void Agent::trainingGeneration()
         _agents[agentId]["Sample Id"] = _currentEpisode++;
         _agents[agentId]["Module"] = "Problem";
         _agents[agentId]["Operation"] = "Run Training Episode";
-        _agents[agentId]["Policy"] = _trainingCurrentPolicy;
+        _agents[agentId]["Policy Hyperparameters"] = _trainingCurrentPolicy;
 
         KORALI_START(_agents[agentId]);
         _isAgentRunning[agentId] = true;
@@ -212,7 +212,7 @@ void Agent::testingGeneration()
     _agents[agentId]["Sample Id"] = _testingSampleIds[agentId];
     _agents[agentId]["Module"] = "Problem";
     _agents[agentId]["Operation"] = "Run Testing Episode";
-    _agents[agentId]["Policy"] = _testingPolicy;
+    _agents[agentId]["Policy Hyperparameters"] = _testingPolicy;
 
     KORALI_START(_agents[agentId]);
   }
@@ -266,7 +266,7 @@ void Agent::attendAgent(size_t agentId)
       {
         _trainingBestReward = _trainingLastReward;
         _trainingBestEpisodeId = _agents[agentId]["Sample Id"];
-        _trainingBestPolicy = _agents[agentId]["Policy"];
+        _trainingBestPolicy = _agents[agentId]["Policy Hyperparameters"];
       }
 
       // If the policy has exceeded the threshold during training, we gather its statistics
@@ -284,7 +284,7 @@ void Agent::attendAgent(size_t agentId)
         {
           _testingBestAverageReward = _testingAverageReward;
           _testingBestEpisodeId = _agents[agentId]["Sample Id"];
-          _testingBestPolicy = _agents[agentId]["Policy"];
+          _testingBestPolicy = _agents[agentId]["Policy Hyperparameters"];
         }
       }
 

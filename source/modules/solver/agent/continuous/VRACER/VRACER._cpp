@@ -50,7 +50,7 @@ void VRACER::initializeAgent()
     auto upperBound = _k->_variables[varIdx]->_upperBound;
     float scale = (upperBound - lowerBound) * 0.5;
     float shift = (upperBound + lowerBound) * 0.5;
-    float sigma = _k->_variables[varIdx]->_explorationSigmaInitial;
+    float sigma = _k->_variables[varIdx]->_initialExplorationNoise;
 
     // Tanh mask for Mean
     _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Scale"][i + 1] = scale;

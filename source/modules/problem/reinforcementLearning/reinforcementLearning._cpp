@@ -248,7 +248,7 @@ void ReinforcementLearning::initializeEnvironment(Sample &agent)
   _agent = dynamic_cast<solver::Agent *>(_k->_solver);
 
   // First, we update the initial policy's hyperparameters
-  _agent->setAgentPolicy(agent["Policy"]);
+  _agent->setAgentPolicy(agent["Policy Hyperparameters"]);
 
   // Then, we reset the state sequence for time-dependent learners
   _agent->resetTimeSequence();

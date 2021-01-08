@@ -41,39 +41,29 @@ int main(int argc, char *argv[])
 
   //// Setting action variables
 
-  auto [lowerBounds, upperBounds] = _environment->getActionBounds();
-
   e["Variables"][14]["Name"] = "Frequency (w)";
   e["Variables"][14]["Type"] = "Action";
   e["Variables"][14]["Lower Bound"] = 0.0f;
   e["Variables"][14]["Upper Bound"] = 1.0f;
-  e["Variables"][14]["Exploration Sigma"]["Initial"] = 0.2f;
-  e["Variables"][14]["Exploration Sigma"]["Final"] = 0.2f;
-  e["Variables"][14]["Exploration Sigma"]["Annealing Rate"] = 0.0f;
+  e["Variables"][14]["Initial Exploration Noise"] = 0.5f;
 
   e["Variables"][15]["Name"] = "Rotation X";
   e["Variables"][15]["Type"] = "Action";
   e["Variables"][15]["Lower Bound"] = 0.0f;
   e["Variables"][15]["Upper Bound"] = 1.0f;
-  e["Variables"][15]["Exploration Sigma"]["Initial"] = 0.2f;
-  e["Variables"][15]["Exploration Sigma"]["Final"] = 0.2f;
-  e["Variables"][15]["Exploration Sigma"]["Annealing Rate"] = 0.0f;
+  e["Variables"][15]["Initial Exploration Noise"] = 0.5f;
 
   e["Variables"][16]["Name"] = "Rotation Y";
   e["Variables"][16]["Type"] = "Action";
   e["Variables"][16]["Lower Bound"] = 0.0f;
   e["Variables"][16]["Upper Bound"] = 1.0f;
-  e["Variables"][16]["Exploration Sigma"]["Initial"] = 0.2f;
-  e["Variables"][16]["Exploration Sigma"]["Final"] = 0.2f;
-  e["Variables"][16]["Exploration Sigma"]["Annealing Rate"] = 0.0f;
+  e["Variables"][16]["Initial Exploration Noise"] = 0.5f;
 
   e["Variables"][17]["Name"] = "Rotation Z";
   e["Variables"][17]["Type"] = "Action";
   e["Variables"][17]["Lower Bound"] = 0.0f;
   e["Variables"][17]["Upper Bound"] = 1.0f;
-  e["Variables"][17]["Exploration Sigma"]["Initial"] = 0.2f;
-  e["Variables"][17]["Exploration Sigma"]["Final"] = 0.2f;
-  e["Variables"][17]["Exploration Sigma"]["Annealing Rate"] = 0.0f;
+  e["Variables"][17]["Initial Exploration Noise"] = 0.5f;
 
   /// Defining Agent Configuration
 
@@ -106,7 +96,7 @@ int main(int argc, char *argv[])
 
   e["Solver"]["Critic"]["Advantage Function Population"] = 32;
   e["Solver"]["Policy"]["Learning Rate Scale"] = 0.1;
-  e["Solver"]["Policy"]["Target Accuracy"] = 0.00001;
+  e["Solver"]["Policy"]["Target Accuracy"] = 0.0001;
   e["Solver"]["Policy"]["Optimization Candidates"] = 32;
 
   /// Configuring the neural network and its hidden layers

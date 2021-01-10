@@ -252,11 +252,15 @@ void GFPT::trainPolicy()
       for (size_t i = 0; i < _problem->_actionVectorSize; i++)
       {
        bstSigmas[i] = bstSigmas[i] / _policyTargetAccuracy;
-       if (bstSigmas[i] < 0.10) bstSigmas[i] = 0.10;
+       if (bstSigmas[i] < 0.05) bstSigmas[i] = 0.05;
        if (bstSigmas[i] > 0.50) bstSigmas[i] = 0.50;
 
        gfptGradients[i] = bstMeans[i] - curMeans[i];
-       gfptGradients[_problem->_actionVectorSize + i] = (bstSigmas[i] - curSigmas[i]);
+       //gfptGradients[_problem->_actionVectorSize + i] = (bstSigmas[i] - curSigmas[i]);
+
+       size_t varIdx = _problem->_actionVectorIndexes[i];
+       float sigma = _k->_variables[varIdx]->_initialExplorationNoise;
+       gfptGradients[_problem->_actionVectorSize + i] = (sigma - curSigmas[i]);
       }
 
     // Now adding slowdown factor to prevent from deviating too much into off-policy (REFER)

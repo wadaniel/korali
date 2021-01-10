@@ -36,7 +36,6 @@ e["Variables"][5]["Exploration Sigma"]["Annealing Rate"] = 0.00
 
 e["Solver"]["Type"] = "Agent / Continuous / GFPT"
 e["Solver"]["Mode"] = "Training"
-e["Solver"]["Time Sequence Length"] = 1
 e["Solver"]["Episodes Per Generation"] = 1
 e["Solver"]["Experiences Between Policy Updates"] = 1
 e["Solver"]["Cache Persistence"] = 10
@@ -59,6 +58,8 @@ e["Solver"]["Policy"]["Optimization Candidates"] = 12
 
 ### Configuring the neural network and its hidden layers
 
+e["Solver"]["Time Sequence Length"] = 1
+
 e["Solver"]["Neural Network"]["Engine"] = "OneDNN"
 
 e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear"
@@ -75,14 +76,13 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tan
 
 ### Defining Termination Criteria
 
-e["Problem"]["Training Reward Threshold"] = 750
 e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 900
 
 ### Setting file output configuration
 
-#e["Console Output"]["Verbosity"] = "Silent"
+e["Console Output"]["Verbosity"] = "Detailed"
 e["File Output"]["Enabled"] = False
-
-### Running Experiment
+ 
+### Running Training Experiment
 
 k.run(e)

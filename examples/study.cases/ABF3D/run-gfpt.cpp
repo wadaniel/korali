@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
   e["Problem"]["Environment Function"] = &runEnvironment;
   e["Problem"]["Training Reward Threshold"] = 1.0;
   e["Problem"]["Policy Testing Episodes"] = 20;
-  e["Problem"]["Actions Between Policy Updates"] = 1;
+  e["Problem"]["Actions Between Policy Updates"] = 243;
 
   //// Setting state variables
 
@@ -45,25 +45,25 @@ int main(int argc, char *argv[])
   e["Variables"][14]["Type"] = "Action";
   e["Variables"][14]["Lower Bound"] = 0.0f;
   e["Variables"][14]["Upper Bound"] = 1.0f;
-  e["Variables"][14]["Initial Exploration Noise"] = 0.5f;
+  e["Variables"][14]["Initial Exploration Noise"] = 0.1f;
 
   e["Variables"][15]["Name"] = "Rotation X";
   e["Variables"][15]["Type"] = "Action";
   e["Variables"][15]["Lower Bound"] = 0.0f;
   e["Variables"][15]["Upper Bound"] = 1.0f;
-  e["Variables"][15]["Initial Exploration Noise"] = 0.5f;
+  e["Variables"][15]["Initial Exploration Noise"] = 0.1f;
 
   e["Variables"][16]["Name"] = "Rotation Y";
   e["Variables"][16]["Type"] = "Action";
   e["Variables"][16]["Lower Bound"] = 0.0f;
   e["Variables"][16]["Upper Bound"] = 1.0f;
-  e["Variables"][16]["Initial Exploration Noise"] = 0.5f;
+  e["Variables"][16]["Initial Exploration Noise"] = 0.1f;
 
   e["Variables"][17]["Name"] = "Rotation Z";
   e["Variables"][17]["Type"] = "Action";
   e["Variables"][17]["Lower Bound"] = 0.0f;
   e["Variables"][17]["Upper Bound"] = 1.0f;
-  e["Variables"][17]["Initial Exploration Noise"] = 0.5f;
+  e["Variables"][17]["Initial Exploration Noise"] = 0.1f;
 
   /// Defining Agent Configuration
 
@@ -96,7 +96,7 @@ int main(int argc, char *argv[])
 
   e["Solver"]["Critic"]["Advantage Function Population"] = 32;
   e["Solver"]["Policy"]["Learning Rate Scale"] = 0.1;
-  e["Solver"]["Policy"]["Target Accuracy"] = 0.0001;
+  e["Solver"]["Policy"]["Target Accuracy"] = 0.00001;
   e["Solver"]["Policy"]["Optimization Candidates"] = 32;
 
   /// Configuring the neural network and its hidden layers
@@ -124,7 +124,7 @@ int main(int argc, char *argv[])
   e["Solver"]["Experience Replay"]["Serialize"] = true;
   e["Console Output"]["Verbosity"] = "Detailed";
   e["File Output"]["Enabled"] = true;
-  e["File Output"]["Frequency"] = 10;
+  e["File Output"]["Frequency"] = 4;
   e["File Output"]["Path"] = _resultDir;
 
   auto k = korali::Engine();

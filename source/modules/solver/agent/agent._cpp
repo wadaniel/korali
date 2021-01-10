@@ -40,15 +40,17 @@ void Agent::initialize()
     _currentSampleID = 0;
     _cumulativeQStar = 0;
     _experienceCount = 0;
-    _experienceReplayMaxPriority = 0.0;
+    _experienceReplayMaxPriority = 0.0f;
 
     // Initializing training and episode statistics
     _testingAverageReward = -korali::Inf;
+    _testingStdevReward = +korali::Inf;
     _testingBestReward = -korali::Inf;
     _testingWorstReward = +korali::Inf;
     _trainingBestReward = -korali::Inf;
     _trainingBestEpisodeId = 0;
     _trainingAverageReward = 0.0f;
+    _testingPreviousAverageReward = -korali::Inf;
     _testingBestAverageReward = -korali::Inf;
     _testingBestEpisodeId = 0;
 
@@ -286,7 +288,9 @@ void Agent::attendAgent(size_t agentId)
       {
         _testingCandidateCount++;
 
+        _testingPreviousAverageReward = _testingAverageReward;
         _testingAverageReward = _agents[agentId]["Average Testing Reward"].get<float>();
+        _testingStdevReward = _agents[agentId]["Stdev Testing Reward"].get<float>();
         _testingBestReward = _agents[agentId]["Best Testing Reward"].get<float>();
         _testingWorstReward = _agents[agentId]["Worst Testing Reward"].get<float>();
 
@@ -389,6 +393,7 @@ void Agent::updateREFERInformation()
   size_t offPolicyCount = 0;
 
   // Count off-policy experiences
+#pragma omp parallel for reduction(+:offPolicyCount)
   for (size_t expId = 0; expId < expCount; expId++)
   {
     // Getting the last calculated value of the experience's importance weight. We can tolerate this approximation.
@@ -773,7 +778,7 @@ void Agent::printGenerationAfter()
 
     _k->_logger->logInfo("Normal", " + Candidate Policies:          %lu\n", _testingCandidateCount);
 
-    _k->_logger->logInfo("Normal", " + Latest Average (Worst / Best) Reward: %f (%f / %f)\n", _testingAverageReward, _testingWorstReward, _testingBestReward);
+    _k->_logger->logInfo("Normal", " + Latest Average (Stdev / Worst / Best) Reward: %f (%f / %f / %f)\n", _testingAverageReward, _testingStdevReward, _testingWorstReward, _testingBestReward);
 
     if (_testingTargetAverageReward > -korali::Inf)
       _k->_logger->logInfo("Normal", " + Best Average Reward: %f/%f (%lu)\n", _testingBestAverageReward, _testingTargetAverageReward, _testingBestEpisodeId);

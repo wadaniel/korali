@@ -11,14 +11,15 @@ import korali
 k = korali.Engine()
 e = korali.Experiment()
 
-target = 0.
+target = 0.5
 envp = lambda s : env(s,target)
 
 ### Defining the Cartpole problem's configuration
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = envp
 e["Problem"]["Training Reward Threshold"] = 490
-e["Problem"]["Policy Testing Episodes"] = 20
+e["Problem"]["Testing Frequency"] = 100
+e["Problem"]["Policy Testing Episodes"] = 25
 e["Problem"]["Actions Between Policy Updates"] = 5
 
 e["Variables"][0]["Name"] = "Cart Position"
@@ -44,7 +45,7 @@ e["Solver"]["Type"] = "Agent / Continuous / VRACER"
 e["Solver"]["Mode"] = "Training"
 e["Solver"]["Experiences Between Policy Updates"] = 5
 e["Solver"]["Episodes Per Generation"] = 1
-e["Solver"]["Cache Persistence"] = 500
+e["Solver"]["Cache Persistence"] = 2000
 
 ### Defining the configuration of replay memory
 
@@ -82,6 +83,8 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tan
 ### Defining Termination Criteria
 
 e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 499
+e["Solver"]["Termination Criteria"]["Max Generations"] = 5000
+e["Solver"]["Termination Criteria"]["Testing"]["Average Reward Increment"] = 1.0
 
 ### Setting file output configuration
 

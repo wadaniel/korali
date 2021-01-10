@@ -24,7 +24,7 @@ def rl_cartpole_vracer(p):
     e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
     e["Problem"]["Environment Function"] = envp
     e["Problem"]["Testing Frequency"] = 100
-    e["Problem"]["Training Reward Threshold"] = 490
+    e["Problem"]["Training Reward Threshold"] = 500
     e["Problem"]["Policy Testing Episodes"] = 20
     e["Problem"]["Actions Between Policy Updates"] = 5
     e["Problem"]["Custom Settings"]["Record Observations"] = "False"
@@ -89,7 +89,8 @@ def rl_cartpole_vracer(p):
 
     ### Defining Termination Criteria
 
-    e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 490
+#    e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 498
+    e["Solver"]["Termination Criteria"]["Testing"]["Average Reward Increment"] = 1.0
     e["Solver"]["Termination Criteria"]["Max Generations"] = 5000
 
     ## Setting file output configuration
@@ -100,9 +101,10 @@ def rl_cartpole_vracer(p):
     ### Running Experiment
     
     k.run(e)
-    
+ 
+    gen  = e["Current Generation"]
     best = e["Solver"]["Testing"]["Best Average Reward"]
-    print("[Korali] Finished training (p {0} best reward {1}.".format(target, best))
+    print("[Korali] Finished training after {0} gens (p {1} best reward {2}.".format(gen, target, best))
 
     ### Evaluate Policy
     
@@ -133,9 +135,9 @@ def rl_cartpole_naf(p):
 
     e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
     e["Problem"]["Environment Function"] = envp
-    e["Problem"]["Testing Frequency"] = 500
-    e["Problem"]["Training Reward Threshold"] = 490
-    e["Problem"]["Policy Testing Episodes"] = 20
+    e["Problem"]["Testing Frequency"] = 100
+    e["Problem"]["Training Reward Threshold"] = 500
+    e["Problem"]["Policy Testing Episodes"] = 25
     e["Problem"]["Actions Between Policy Updates"] = 1
     e["Problem"]["Custom Settings"]["Record Observations"] = "False"
 
@@ -205,8 +207,9 @@ def rl_cartpole_naf(p):
 
     ### Defining Termination Criteria
 
-    e["Solver"]["Termination Criteria"]["Max Generations"] = 3000
-    e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 495
+    e["Solver"]["Termination Criteria"]["Max Generations"] = 5000
+    e["Solver"]["Termination Criteria"]["Testing"]["Average Reward Increment"] = 1.0
+    #e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 495
 
     ### Setting file output configuration
 
@@ -217,8 +220,9 @@ def rl_cartpole_naf(p):
 
     k.run(e)
  
+    gen  = e["Current Generation"]
     best = e["Solver"]["Testing"]["Best Average Reward"]
-    print("[Korali] Finished training (p {0} best reward {1}.".format(target, best))
+    print("[Korali] Finished training after {0} gens (p {1} best reward {2}.".format(gen, target, best))
 
     ### Evaluate Policy
     

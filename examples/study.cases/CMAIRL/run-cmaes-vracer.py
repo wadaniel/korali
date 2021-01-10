@@ -17,9 +17,7 @@ k = korali.Engine()
 e = korali.Experiment()
 found = e.loadState('_korali_result_cmaes_vracer/latest')
 if (found == True):
-  print('------------------------------------------------------')
   print('Continuing execution from latest...')
-  print('------------------------------------------------------')
  
 # Configuring Problem
 e["Random Seed"] = 0xC0FEE
@@ -38,7 +36,7 @@ for i in range(dim):
 e["Solver"]["Type"] = "Optimizer/CMAES"
 e["Solver"]["Population Size"] = 6
 e["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 0.1
-e["Solver"]["Termination Criteria"]["Max Generations"] = 500
+e["Solver"]["Termination Criteria"]["Max Generations"] = 100
 
 # Configuring results path
 e["File Output"]["Path"] = '_korali_result_cmaes_vracer'

@@ -69,10 +69,6 @@ def main(path, check, test, output, args):
   solverDir = ""
   moduleName = ""
   
-  if ("agent" in solverName):
-   solverDir = curdir + '/../modules/solver/agent'
-   moduleName = 'agent'
-   
   if ("cmaes" in solverName):
    solverDir = curdir + '/../modules/solver/optimizer/CMAES'
    moduleName = 'CMAES'

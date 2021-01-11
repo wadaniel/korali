@@ -17,9 +17,9 @@ setResultsDir('_result_gfpt')
 
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = env
-e["Problem"]["Training Reward Threshold"] = 50.0
-e["Problem"]["Policy Testing Episodes"] = 20
-e["Problem"]["Actions Between Policy Updates"] = 200
+e["Problem"]["Training Reward Threshold"] = 42.0
+e["Problem"]["Policy Testing Episodes"] = 1
+e["Problem"]["Actions Between Policy Updates"] = 1
 
 ### Defining state variables
 
@@ -53,9 +53,9 @@ e["Variables"][6]["Initial Exploration Noise"] = 0.5
 e["Solver"]["Type"] = "Agent / Continuous / GFPT"
 e["Solver"]["Mode"] = "Training"
 e["Solver"]["Episodes Per Generation"] = 1
-e["Solver"]["Experiences Between Policy Updates"] = 10
+e["Solver"]["Experiences Between Policy Updates"] = 1
 e["Solver"]["Cache Persistence"] = 200
-e["Solver"]["Learning Rate"] = 0.001
+e["Solver"]["Learning Rate"] = 0.0001
 
 ### Defining the configuration of replay memory
 
@@ -77,10 +77,9 @@ e["Solver"]["Mini Batch Strategy"] = "Uniform"
 
 ## Defining Critic and Policy Configuration
 
-e["Solver"]["Critic"]["Advantage Function Population"] = 12
 e["Solver"]["Policy"]["Learning Rate Scale"] = 0.1
-e["Solver"]["Policy"]["Target Accuracy"] = 0.0001
-e["Solver"]["Policy"]["Optimization Candidates"] = 32
+e["Solver"]["Policy"]["Target Accuracy"] = 0.05
+e["Solver"]["Policy"]["Optimization Candidates"] = 64
 
 ### Configuring the neural network and its hidden layers
 
@@ -100,7 +99,7 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tan
 
 ### Defining Termination Criteria
 
-e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 50.0
+e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 42.0
 
 ### Setting console/file output configuration
 

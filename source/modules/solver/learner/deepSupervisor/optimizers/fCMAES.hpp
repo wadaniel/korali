@@ -143,6 +143,9 @@ class fCMAES
 * @brief [Internal Use] Determines the step size.
 */
   float _sigma;
+
+  bool _noUpdatePossible;
+
   /**
 * @brief [Internal Use] The trace of the initial covariance matrix.
 */
@@ -308,13 +311,9 @@ class fCMAES
 */
   float _minValueDifferenceThreshold;
   /**
-* @brief [Termination Criteria] Specifies the minimal standard deviation for any variable in any proposed sample.
+* @brief [Termination Criteria] Finishes execution when the maximum standard deviation falls below this threshold
 */
-  float _minStandardDeviation;
-  /**
-* @brief [Termination Criteria] Specifies the maximal standard deviation for any variable in any proposed sample.
-*/
-  float _maxStandardDeviation;
+  float _targetMaxStandardDeviation;
 
   /**
 * @brief [Termination Criteria] Specifies the mininum update to the variable means before triggering termination.

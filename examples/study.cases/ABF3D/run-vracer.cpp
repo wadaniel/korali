@@ -45,26 +45,26 @@ int main(int argc, char *argv[])
   e["Variables"][14]["Name"] = "Frequency (w)";
   e["Variables"][14]["Type"] = "Action";
   e["Variables"][14]["Lower Bound"] = 0.0f;
-  e["Variables"][14]["Upper Bound"] = 1.0f;
-  e["Variables"][14]["Initial Exploration Noise"] = 0.5f;
+  e["Variables"][14]["Upper Bound"] = 2.0f;
+  e["Variables"][14]["Initial Exploration Noise"] = 0.50f;
 
   e["Variables"][15]["Name"] = "Rotation X";
   e["Variables"][15]["Type"] = "Action";
-  e["Variables"][15]["Lower Bound"] = 0.0f;
+  e["Variables"][15]["Lower Bound"] = -1.0f;
   e["Variables"][15]["Upper Bound"] = 1.0f;
-  e["Variables"][15]["Initial Exploration Noise"] = 0.5f;
+  e["Variables"][15]["Initial Exploration Noise"] = 0.50f;
 
   e["Variables"][16]["Name"] = "Rotation Y";
   e["Variables"][16]["Type"] = "Action";
-  e["Variables"][16]["Lower Bound"] = 0.0f;
+  e["Variables"][16]["Lower Bound"] = -1.0f;
   e["Variables"][16]["Upper Bound"] = 1.0f;
-  e["Variables"][16]["Initial Exploration Noise"] = 0.5f;
+  e["Variables"][16]["Initial Exploration Noise"] = 0.50f;
 
   e["Variables"][17]["Name"] = "Rotation Z";
   e["Variables"][17]["Type"] = "Action";
-  e["Variables"][17]["Lower Bound"] = 0.0f;
+  e["Variables"][17]["Lower Bound"] = -1.0f;
   e["Variables"][17]["Upper Bound"] = 1.0f;
-  e["Variables"][17]["Initial Exploration Noise"] = 0.5f;
+  e["Variables"][17]["Initial Exploration Noise"] = 0.50f;
 
   /// Defining Agent Configuration
 

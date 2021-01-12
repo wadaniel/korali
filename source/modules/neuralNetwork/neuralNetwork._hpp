@@ -3,7 +3,7 @@
 
 #include "modules/experiment/experiment.hpp"
 #include "modules/module.hpp"
-#include "modules/neuralNetwork/layer/dense/dense.hpp"
+#include "modules/neuralNetwork/layer/layer.hpp"
 #include "modules/solver/solver.hpp"
 
 #ifdef _KORALI_USE_ONEDNN
@@ -17,10 +17,6 @@
 
 namespace korali
 {
-#ifdef _KORALI_USE_ONEDNN
-extern dnnl::engine _engine;
-#endif
-
 class NeuralNetwork : public Module
 {
   public:
@@ -29,7 +25,9 @@ class NeuralNetwork : public Module
   /**
    * @brief oneDNN Stream to run operations
    */
-  dnnl::stream _stream;
+  dnnl::stream _dnnlStream;
+
+  dnnl::engine _dnnlEngine;
 
 #endif
 
@@ -49,6 +47,51 @@ class NeuralNetwork : public Module
    */
   size_t _hyperparameterCount;
 
+  /**
+   * @brief Raw data for the NN input values. Format: TxNxIC (T: Time steps, N: Mini-batch size, IC: Input channels).
+   */
+  std::vector<float> _rawInputValues;
+
+  /**
+   * @brief Raw data for the NN input gradients. Format: TxNxIC (T: Time steps, N: Mini-batch size, IC: Input channels).
+   */
+  std::vector<float> _rawInputGradients;
+
+  /**
+   * @brief Formatted data for the NN input gradients. Format: NxIC (N: Mini-batch size, IC: Input channels).
+   */
+  std::vector<std::vector<float>> _inputGradients;
+
+  /**
+   * @brief Raw data for the NN output values. Format: NxOC (N: Mini-batch size, OC: Output channels).
+   */
+  std::vector<float> _rawOutputValues;
+
+  /**
+   * @brief Raw data for the NN output gradients. Format: NxOC (N: Mini-batch size, OC: Output channels).
+   */
+  std::vector<float> _rawOutputGradients;
+
+  /**
+   * @brief Formatted data for the NN output values. Format: NxOC (N: Mini-batch size, OC: Output channels).
+   */
+  std::vector<std::vector<float>> _outputValues;
+
+  /**
+   * @brief F data for the NN hyperparameter gradients. Format: H (H: Hyperparameter count).
+   */
+  std::vector<float> _hyperparameterGradients;
+
+  /**
+   * @brief Remembers the position of the last timestep provided as input
+   */
+  std::vector<size_t> _inputBatchLastStep;
+
+  /**
+   * @brief Keeps track of t_he current timestep
+   */
+  size_t _currentTimestep;
+
   void initialize() override;
 
   /**
@@ -56,12 +99,6 @@ class NeuralNetwork : public Module
    * @return The initial hyperparameters
    */
   std::vector<float> generateInitialHyperparameters();
-
-  /**
-   * @brief Updates the internal values of the NN inputs
-   * @param input The input batch
-   */
-  void setInput(const std::vector<std::vector<float>> &input);
 
   /**
    * @brief Updates the values of weights, biases configuration to the NN
@@ -76,27 +113,16 @@ class NeuralNetwork : public Module
   std::vector<float> getHyperparameters();
 
   /**
-   * @brief Forward-propagates the input batch data through the network.
+   * @brief Forward-propagates the input values through the network.
+   * @param inputValues The input values.  Format: TxNxIC (T: Time steps, N: Mini-batch, IC: Input channels).
   */
-  void forward();
+  void forward(const std::vector<std::vector<std::vector<float>>> &inputValues);
 
   /**
-   * @brief Backward-propagates the gradients data through the network.
-   * @param gradients Output differentials
+   * @brief Backward-propagates the gradients through the network.
+   * @param outputGradients Output gradients. Format: NxOC (N: Mini-batch size, OC: Output channels).
   */
-  void backward(const std::vector<std::vector<float>> &gradients);
-
-  /**
-  * @brief Runs the backward propagation procedure and returns the gradients of the weights and biases with respect to the output
-  * @return The calculated gradients
-  */
-  std::vector<float> getHyperparameterGradients();
-
-  /**
-   * @brief Backward-propagates to find out the gradients of the input data.
-   * @return The gradients of the input data wrt to the output data
-  */
-  std::vector<float> getDataGradients();
+  void backward(const std::vector<std::vector<float>> &outputGradients);
 
   /**
    * @brief Creator that sets initialized flag to false

@@ -17,10 +17,6 @@ std::stack<Engine *> _engineStack;
 bool isPythonActive = 0;
 size_t _maxThreads;
 
-#ifdef _KORALI_USE_ONEDNN
-dnnl::engine _engine;
-#endif
-
 Engine::Engine()
 {
   _cumulativeTime = 0.0;
@@ -29,10 +25,6 @@ Engine::Engine()
 
   // Detecting maximum number of threads that modules can run
   _maxThreads = omp_get_max_threads();
-
-#ifdef _KORALI_USE_ONEDNN
-  _engine = dnnl::engine(dnnl::engine::kind::cpu, 0);
-#endif
 
   // Turn Off GSL Error Handler
   gsl_set_error_handler_off();
@@ -240,7 +232,5 @@ PYBIND11_MODULE(libkorali, m)
     .def("__getitem__", pybind11::overload_cast<pybind11::object>(&Experiment::getItem), pybind11::return_value_policy::reference)
     .def("__setitem__", pybind11::overload_cast<pybind11::object, pybind11::object>(&Experiment::setItem), pybind11::return_value_policy::reference)
     .def("loadState", &Experiment::loadState)
-    .def("getEvaluation", &Experiment::getEvaluation)
-    .def("getAction", &Experiment::getAction)
-    .def("getGradients", &Experiment::getGradients);
+    .def("getEvaluation", &Experiment::getEvaluation);
 }

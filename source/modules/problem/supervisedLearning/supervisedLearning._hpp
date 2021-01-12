@@ -11,6 +11,11 @@ class SupervisedLearning : public korali::Problem
 {
   public:
   void initialize() override;
+
+  /**
+   * @brief Checks whether the input data has the correct shape
+   */
+  void verifyData();
 };
 
 } // namespace problem

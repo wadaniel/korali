@@ -1,9 +1,124 @@
 #include "modules/neuralNetwork/layer/layer.hpp"
+#include "modules/neuralNetwork/neuralNetwork.hpp"
+
+#ifdef _KORALI_USE_CUDNN
+  #include "auxiliar/cudaUtils.hpp"
+#endif
+
+#ifdef _KORALI_USE_ONEDNN
+  #include "auxiliar/dnnUtils.hpp"
+using namespace dnnl;
+#endif
+
+#ifdef _KORALI_USE_EIGEN
+  #include <Eigen/Dense>
+using namespace Eigen;
+#endif
 
 namespace korali
 {
 namespace neuralNetwork
 {
+void Layer::createForwardPipeline()
+{
+  // Obtaining batch size
+  ssize_t N = _nn->_batchSize;
+
+  // Checking Layer sizes
+  if (_outputChannels == 0) KORALI_LOG_ERROR("Node count for layer (%lu) should be larger than zero.\n", _index);
+  ssize_t OC = _outputChannels;
+
+#ifdef _KORALI_USE_EIGEN
+  if (_nn->_engine == "Korali")
+  {
+    _outputValues = (float *)malloc(N * OC * sizeof(float));
+  }
+#endif
+
+#ifdef _KORALI_USE_ONEDNN
+  if (_nn->_engine == "OneDNN")
+  {
+    // Setting propagation kind
+    _propKind = _nn->_mode == "Training" ? prop_kind::forward_training : prop_kind::forward_inference;
+
+    // Creating layer's data memory storage
+    const memory::dims layerDims = {N, OC};
+    auto dataMemDesc = memory::desc(layerDims, memory::data_type::f32, memory::format_tag::nc);
+
+    // Creating activation layer memory
+    _outputMem.resize(_nn->_timestepCount);
+    for (size_t t = 0; t < _nn->_timestepCount; t++)
+      _outputMem[t] = memory(dataMemDesc, _nn->_dnnlEngine);
+  }
+#endif
+
+#ifdef _KORALI_USE_CUDNN
+  if (_nn->_engine == "CuDNN")
+  {
+    // Setting propagation mode
+    _forwardMode = _nn->_mode == "Training" ? CUDNN_FWD_MODE_TRAINING : CUDNN_FWD_MODE_INFERENCE;
+
+    cudnnErrCheck(cudnnCreateTensorDescriptor(&_outputTensorDesc));
+    cudnnErrCheck(cudnnSetTensor4dDescriptor(_outputTensorDesc, CUDNN_TENSOR_NCHW, CUDNN_DATA_FLOAT, N, OC, 1, 1));
+
+    _outputTensor.resize(_nn->_timestepCount);
+    for (size_t t = 0; t < _nn->_timestepCount; t++)
+      cudaErrCheck(cudaMalloc((void **)&_outputTensor[t], N * OC * sizeof(float)));
+  }
+#endif
+}
+
+void Layer::createBackwardPipeline()
+{
+  if (_nn->_mode == "Inference")
+    KORALI_LOG_ERROR("Requesting layer's backward pipeline creation but NN was configured for inference only.\n");
+
+  /*********************************************************************************
+  *  Initializing memory objects and primitives for BACKWARD propagation
+  *********************************************************************************/
+
+  size_t N = _nn->_batchSize;
+  size_t OC = _outputChannels;
+
+#ifdef _KORALI_USE_EIGEN
+  if (_nn->_engine == "Korali")
+  {
+    _outputGradient = (float *)malloc(N * OC * sizeof(float));
+  }
+#endif
+
+// Creating backward propagation primitives for activation functions
+#ifdef _KORALI_USE_ONEDNN
+  if (_nn->_engine == "OneDNN")
+  {
+    // Creating data-related gradient memory
+    _outputGradientMem.resize(_nn->_timestepCount);
+    for (size_t t = 0; t < _nn->_timestepCount; t++)
+      _outputGradientMem[t] = memory(_outputMem[t].get_desc(), _nn->_dnnlEngine);
+  }
+#endif
+
+#ifdef _KORALI_USE_CUDNN
+  if (_nn->_engine == "CuDNN")
+  {
+    _outputGradientTensor.resize(_nn->_timestepCount);
+    for (size_t i = 0; i < _nn->_timestepCount; i++)
+      cudaErrCheck(cudaMalloc((void **)&_outputGradientTensor[i], N * OC * sizeof(float)));
+  }
+#endif
+}
+
+std::vector<float> Layer::generateInitialHyperparameters()
+{
+  std::vector<float> hyperparameters;
+  return hyperparameters;
+}
+
+void Layer::createHyperparameterMemory()
+{
+  _hyperparameterCount = 0;
+}
+
 } // namespace neuralNetwork
 
 } // namespace korali

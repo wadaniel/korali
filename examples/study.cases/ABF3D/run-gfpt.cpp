@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
   e["Problem"]["Environment Function"] = &runEnvironment;
   e["Problem"]["Training Reward Threshold"] = 1.0;
   e["Problem"]["Policy Testing Episodes"] = 20;
-  e["Problem"]["Actions Between Policy Updates"] = 243;
+  e["Problem"]["Actions Between Policy Updates"] = 1;
 
   //// Setting state variables
 
@@ -44,26 +44,26 @@ int main(int argc, char *argv[])
   e["Variables"][14]["Name"] = "Frequency (w)";
   e["Variables"][14]["Type"] = "Action";
   e["Variables"][14]["Lower Bound"] = 0.0f;
-  e["Variables"][14]["Upper Bound"] = 1.0f;
-  e["Variables"][14]["Initial Exploration Noise"] = 0.5f;
+  e["Variables"][14]["Upper Bound"] = 2.0f;
+  e["Variables"][14]["Initial Exploration Noise"] = 0.50f;
 
   e["Variables"][15]["Name"] = "Rotation X";
   e["Variables"][15]["Type"] = "Action";
-  e["Variables"][15]["Lower Bound"] = 0.0f;
+  e["Variables"][15]["Lower Bound"] = -1.0f;
   e["Variables"][15]["Upper Bound"] = 1.0f;
-  e["Variables"][15]["Initial Exploration Noise"] = 0.5f;
+  e["Variables"][15]["Initial Exploration Noise"] = 0.50f;
 
   e["Variables"][16]["Name"] = "Rotation Y";
   e["Variables"][16]["Type"] = "Action";
-  e["Variables"][16]["Lower Bound"] = 0.0f;
+  e["Variables"][16]["Lower Bound"] = -1.0f;
   e["Variables"][16]["Upper Bound"] = 1.0f;
-  e["Variables"][16]["Initial Exploration Noise"] = 0.5f;
+  e["Variables"][16]["Initial Exploration Noise"] = 0.50f;
 
   e["Variables"][17]["Name"] = "Rotation Z";
   e["Variables"][17]["Type"] = "Action";
-  e["Variables"][17]["Lower Bound"] = 0.0f;
+  e["Variables"][17]["Lower Bound"] = -1.0f;
   e["Variables"][17]["Upper Bound"] = 1.0f;
-  e["Variables"][17]["Initial Exploration Noise"] = 0.5f;
+  e["Variables"][17]["Initial Exploration Noise"] = 0.50f;
 
   /// Defining Agent Configuration
 
@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
   e["Solver"]["Mode"] = "Training";
   e["Solver"]["Episodes Per Generation"] = 1;
   e["Solver"]["Experiences Between Policy Updates"] = 1;
-  e["Solver"]["Cache Persistence"] = 200;
+  e["Solver"]["Cache Persistence"] = 243;
   e["Solver"]["Learning Rate"] = 0.0001;
 
   /// Defining the configuration of replay memory
@@ -94,22 +94,22 @@ int main(int argc, char *argv[])
 
   /// Defining Critic and Policy Configuration
 
-  e["Solver"]["Policy"]["Learning Rate Scale"] = 0.1;
+  e["Solver"]["Policy"]["Learning Rate Scale"] = 0.01;
   e["Solver"]["Policy"]["Target Accuracy"] = 0.05;
-  e["Solver"]["Policy"]["Optimization Candidates"] = 32;
+  e["Solver"]["Policy"]["Optimization Candidates"] = 64;
 
   /// Configuring the neural network and its hidden layers
 
   e["Solver"]["Neural Network"]["Engine"] = "OneDNN";
 
   e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear";
-  e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 64;
+  e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 128;
 
   e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Activation";
   e["Solver"]["Neural Network"]["Hidden Layers"][1]["Function"] = "Elementwise/Tanh";
 
   e["Solver"]["Neural Network"]["Hidden Layers"][2]["Type"] = "Layer/Linear";
-  e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 64;
+  e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 128;
 
   e["Solver"]["Neural Network"]["Hidden Layers"][3]["Type"] = "Layer/Activation";
   e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tanh";

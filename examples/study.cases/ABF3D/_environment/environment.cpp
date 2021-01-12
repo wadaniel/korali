@@ -41,16 +41,18 @@ void runEnvironment(korali::Sample &s)
 
     // Scaling to lower-upper bounds
     auto [lowerBounds, upperBounds] = _environment->getActionBounds();
-    for (size_t i = 0; i < action.size(); i++)
-     action[i] = action[i] * (upperBounds[i] - lowerBounds[i]);
+//    for (size_t i = 0; i < action.size(); i++)
+//     action[i] = action[i] * (upperBounds[i] - lowerBounds[i]) * 0.5;
 
-//     // Printing Action:
-//     if (curActionIndex % 20 == 0)
-//     {
-//      printf("Action %lu: [ %f", curActionIndex, action[0]);
-//      for (size_t i = 1; i < action.size(); i++) printf(", %f", action[i]);
-//      printf("]\n");
-//     }
+    action[0] = action[0] * (upperBounds[0] - lowerBounds[0]) * 0.5f + lowerBounds[0];
+
+     // Printing Action:
+     if (curActionIndex % 20 == 0)
+     {
+      printf("Action %lu: [ %f", curActionIndex, action[0]);
+      for (size_t i = 1; i < action.size(); i++) printf(", %f", action[i]);
+      printf("]\n");
+     }
 
     // Setting action
     status = _environment->advance(action);

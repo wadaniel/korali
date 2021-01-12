@@ -729,8 +729,24 @@ void HMC::printGenerationAfter()
   auto grad = _hamiltonian->dU();
   for (auto &g : grad) _k->_logger->logData("Detailed", "         %+6.3e  \n", g);
 
-  _k->_logger->logInfo("Detailed", "Current Inverse Metric:\n");
+  _k->_logger->logInfo("Detailed", "Current Metric:\n");
+  auto metric = _hamiltonian->getMetric();
+  if (_useDiagonalMetric == true || _eVersion == EVersion::Static)
+  {
+    for (size_t e = 0; e < _variableCount; ++e)
+      _k->_logger->logData("Detailed", "         %+6.3e  \n", metric[e]);
+  }
+  else
+  {
+    for (size_t d = 0; d < _variableCount; ++d)
+    {
+      for (size_t e = 0; e < _variableCount; ++e)
+        _k->_logger->logData("Normal", "         %+6.3e  ", metric[d * _variableCount + e]);
+      _k->_logger->logInfo("Normal", "\n");
+    }
+  }
 
+  _k->_logger->logInfo("Detailed", "Current Inverse Metric:\n");
   auto inverseMetric = _hamiltonian->getInverseMetric();
   if (_useDiagonalMetric == true || _eVersion == EVersion::Static)
   {

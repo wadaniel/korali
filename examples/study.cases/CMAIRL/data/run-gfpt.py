@@ -5,7 +5,7 @@ sys.path.append('../_optimization_model/_rl_model')
 from env import *
 
 target = 0.0
-outfile = "observations-vracer.csv"
+outfile = "observations-gfpt.csv"
 
 ####### Defining Korali Problem
 
@@ -16,11 +16,12 @@ e = korali.Experiment()
 envp = lambda s : env(s,target)
 
 ### Defining the Cartpole problem's configuration
+
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = envp
 e["Problem"]["Training Reward Threshold"] = 490
 e["Problem"]["Policy Testing Episodes"] = 25
-e["Problem"]["Actions Between Policy Updates"] = 5
+e["Problem"]["Actions Between Policy Updates"] = 1
 
 e["Variables"][0]["Name"] = "Cart Position"
 e["Variables"][0]["Type"] = "State"
@@ -41,14 +42,17 @@ e["Variables"][4]["Upper Bound"] = +10.0
 
 ### Defining Agent Configuration 
 
-e["Solver"]["Type"] = "Agent / Continuous / VRACER"
+e["Solver"]["Type"] = "Agent / Continuous / GFPT"
 e["Solver"]["Mode"] = "Training"
-e["Solver"]["Experiences Between Policy Updates"] = 5
 e["Solver"]["Episodes Per Generation"] = 1
-e["Solver"]["Cache Persistence"] = 1000
+e["Solver"]["Experiences Between Policy Updates"] = 1
+e["Solver"]["Cache Persistence"] = 2000
+e["Solver"]["Discount Factor"] = 0.99
 
 ### Defining the configuration of replay memory
 
+e["Solver"]["Mini Batch Size"] = 32
+e["Solver"]["Mini Batch Strategy"] = "Uniform"
 e["Solver"]["Experience Replay"]["Start Size"] =   2048
 e["Solver"]["Experience Replay"]["Maximum Size"] = 32768
 
@@ -58,13 +62,18 @@ e["Solver"]["Experience Replay"]["REFER"]["Target"] = 0.1
 e["Solver"]["Experience Replay"]["REFER"]["Initial Beta"] = 0.3
 e["Solver"]["Experience Replay"]["REFER"]["Annealing Rate"] = 5e-7
 
-## Defining Neural Network Configuration for Policy and Critic into Critic Container
 
-e["Solver"]["Discount Factor"] = 0.99
-e["Solver"]["Learning Rate"] = 1e-4
-e["Solver"]["Mini Batch Size"] = 24
+## Defining Critic and Policy Configuration
+
+e["Solver"]["Learning Rate"] = 0.01
+e["Solver"]["Policy"]["Learning Rate Scale"] = 1.0
+e["Solver"]["Critic"]["Advantage Function Population"] = 12
+e["Solver"]["Policy"]["Target Accuracy"] = 0.001
+e["Solver"]["Policy"]["Optimization Candidates"] = 12
 
 ### Configuring the neural network and its hidden layers
+
+e["Solver"]["Time Sequence Length"] = 1
 
 e["Solver"]["Neural Network"]["Engine"] = "OneDNN"
 
@@ -101,7 +110,7 @@ print('[Korali] Done training. Now running learned policy to produce observation
 ### Now testing policy, dumping trajectory results
 
 e["Solver"]["Mode"] = "Testing"
-e["Solver"]["Testing"]["Sample Ids"] = [i for i in range(20)]
+e["Solver"]["Testing"]["Sample Ids"] = [i for i in range(10)]
 e["Problem"]["Custom Settings"]["Record Observations"] = "True"
 
 k.run(e)

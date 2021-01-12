@@ -18,6 +18,7 @@ def rl_cartpole_vracer(p):
     # environment with parametrized reward function
     target = p["Parameters"][0]
     envp = lambda s : env(s,target)
+    envpObs = lambda s : envWithTestObs(s,target)
 
     ### Defining the Cartpole problem's configuration
 
@@ -25,7 +26,7 @@ def rl_cartpole_vracer(p):
     e["Problem"]["Environment Function"] = envp
     e["Problem"]["Testing Frequency"] = 100
     e["Problem"]["Training Reward Threshold"] = 500
-    e["Problem"]["Policy Testing Episodes"] = 20
+    e["Problem"]["Policy Testing Episodes"] = 25
     e["Problem"]["Actions Between Policy Updates"] = 5
     e["Problem"]["Custom Settings"]["Record Observations"] = "False"
 
@@ -52,7 +53,7 @@ def rl_cartpole_vracer(p):
     e["Solver"]["Mode"] = "Training"
     e["Solver"]["Experiences Between Policy Updates"] = 5
     e["Solver"]["Episodes Per Generation"] = 1
-    e["Solver"]["Cache Persistence"] = 500
+    e["Solver"]["Cache Persistence"] = 1000
     
     ### Defining the configuration of replay memory
 
@@ -89,9 +90,9 @@ def rl_cartpole_vracer(p):
 
     ### Defining Termination Criteria
 
-#    e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 498
-    e["Solver"]["Termination Criteria"]["Testing"]["Average Reward Increment"] = 1.0
-    e["Solver"]["Termination Criteria"]["Max Generations"] = 5000
+    e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 495
+    e["Solver"]["Termination Criteria"]["Testing"]["Average Reward Increment"] = 3.0
+    e["Solver"]["Termination Criteria"]["Max Generations"] = 3000
 
     ## Setting file output configuration
 
@@ -208,7 +209,7 @@ def rl_cartpole_naf(p):
     ### Defining Termination Criteria
 
     e["Solver"]["Termination Criteria"]["Max Generations"] = 5000
-    e["Solver"]["Termination Criteria"]["Testing"]["Average Reward Increment"] = 1.0
+    e["Solver"]["Termination Criteria"]["Testing"]["Average Reward Increment"] = 2.0
     #e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 495
 
     ### Setting file output configuration

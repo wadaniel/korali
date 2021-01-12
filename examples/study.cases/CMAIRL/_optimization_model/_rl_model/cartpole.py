@@ -21,7 +21,7 @@ class CartPole:
     self.t=0
     self.x_threshold = 5.0
     self.th_threshold = math.pi / 15
-    self.energyscale = 0.1
+    self.energyscale = 0.01
 
     self.ODE = ode(self.system).set_integrator('dopri5')
 

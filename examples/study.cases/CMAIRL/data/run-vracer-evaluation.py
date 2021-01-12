@@ -11,8 +11,9 @@ import korali
 k = korali.Engine()
 e = korali.Experiment()
 
-target = 0.5
+target = 1.
 envp = lambda s : env(s,target)
+envpObs = lambda s : envWithTestObs(s,target)
 
 ### Defining the Cartpole problem's configuration
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
@@ -54,7 +55,7 @@ e["Solver"]["Experience Replay"]["Maximum Size"] = 32768
 
 e["Solver"]["Experience Replay"]["REFER"]["Enabled"] = True
 e["Solver"]["Experience Replay"]["REFER"]["Cutoff Scale"] = 4.0
-e["Solver"]["Experience Replay"]["REFER"]["Target"] = 0.1
+e["Solver"]["Experience Replay"]["REFER"]["Target"] = 0.2
 e["Solver"]["Experience Replay"]["REFER"]["Initial Beta"] = 0.3
 e["Solver"]["Experience Replay"]["REFER"]["Annealing Rate"] = 5e-7
 
@@ -62,7 +63,7 @@ e["Solver"]["Experience Replay"]["REFER"]["Annealing Rate"] = 5e-7
 
 e["Solver"]["Discount Factor"] = 0.99
 e["Solver"]["Learning Rate"] = 1e-4
-e["Solver"]["Mini Batch Size"] = 32
+e["Solver"]["Mini Batch Size"] = 128
 
 ### Configuring the neural network and its hidden layers
 
@@ -82,9 +83,9 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tan
 
 ### Defining Termination Criteria
 
-e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 499
+e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 495
+e["Solver"]["Termination Criteria"]["Testing"]["Average Reward Increment"] = 3.0
 e["Solver"]["Termination Criteria"]["Max Generations"] = 5000
-e["Solver"]["Termination Criteria"]["Testing"]["Average Reward Increment"] = 1.0
 
 ### Setting file output configuration
 

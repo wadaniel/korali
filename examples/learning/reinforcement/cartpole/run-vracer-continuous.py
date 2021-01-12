@@ -34,6 +34,7 @@ e["Variables"][4]["Name"] = "Force"
 e["Variables"][4]["Type"] = "Action"
 e["Variables"][4]["Lower Bound"] = -10.0
 e["Variables"][4]["Upper Bound"] = +10.0
+e["Variables"][4]["Initial Exploration Noise"] = 1.0
 
 ### Defining Agent Configuration 
 
@@ -59,7 +60,7 @@ e["Solver"]["Experience Replay"]["REFER"]["Annealing Rate"] = 5e-7
 ## Defining Neural Network Configuration for Policy and Critic into Critic Container
 
 e["Solver"]["Discount Factor"] = 0.99
-e["Solver"]["Learning Rate"] = 1e-4
+e["Solver"]["Learning Rate"] = 1e-3
 e["Solver"]["Mini Batch Size"] = 32
 
 ### Configuring the neural network and its hidden layers

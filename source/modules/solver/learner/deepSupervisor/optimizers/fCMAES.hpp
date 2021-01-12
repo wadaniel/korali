@@ -144,6 +144,9 @@ class fCMAES
 */
   float _sigma;
 
+  /**
+* @brief [Internal Use] This flag remembers if it was not possible to produce an update and terminates
+*/
   bool _noUpdatePossible;
 
   /**

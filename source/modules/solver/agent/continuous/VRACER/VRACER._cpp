@@ -52,6 +52,9 @@ void VRACER::initializeAgent()
     float shift = (upperBound + lowerBound) * 0.5;
     float sigma = _k->_variables[varIdx]->_initialExplorationNoise;
 
+    // Checking correct noise configuration
+    if (sigma <= 0.0f) KORALI_LOG_ERROR("Provided initial noise (%f) for action variable %lu is not defined or negative.\n", sigma, varIdx);
+
     // Tanh mask for Mean
     _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Scale"][i + 1] = scale;
     _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Shift"][i + 1] = shift;

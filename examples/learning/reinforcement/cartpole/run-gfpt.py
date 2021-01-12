@@ -31,9 +31,7 @@ e["Variables"][4]["Name"] = "Force"
 e["Variables"][4]["Type"] = "Action"
 e["Variables"][4]["Lower Bound"] = -10.0
 e["Variables"][4]["Upper Bound"] = +10.0
-e["Variables"][4]["Exploration Sigma"]["Initial"] = 1.0
-e["Variables"][4]["Exploration Sigma"]["Final"] = 1.0
-e["Variables"][4]["Exploration Sigma"]["Annealing Rate"] = 0.0
+e["Variables"][4]["Initial Exploration Noise"] = 1.0
 
 ### Defining Agent Configuration 
 
@@ -56,13 +54,10 @@ e["Solver"]["Experience Replay"]["REFER"]["Enabled"] = False
 
 e["Solver"]["Learning Rate"] = 0.01
 e["Solver"]["Policy"]["Learning Rate Scale"] = 1.0
-e["Solver"]["Critic"]["Advantage Function Population"] = 12
-e["Solver"]["Policy"]["Target Accuracy"] = 0.001
+e["Solver"]["Policy"]["Target Accuracy"] = 0.01
 e["Solver"]["Policy"]["Optimization Candidates"] = 32
 
 ### Configuring the neural network and its hidden layers
-
-e["Solver"]["Time Sequence Length"] = 1
 
 e["Solver"]["Neural Network"]["Engine"] = "OneDNN"
 
@@ -86,7 +81,7 @@ e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 450
 
 e["Console Output"]["Verbosity"] = "Detailed"
 e["File Output"]["Enabled"] = True
-e["File Output"]["Frequency"] = 10
+e["File Output"]["Frequency"] = 1
  
 ### Running Training Experiment
 

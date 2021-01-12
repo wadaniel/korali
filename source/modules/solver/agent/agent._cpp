@@ -60,8 +60,8 @@ void Agent::initialize()
 
   // If this continues a previous training run, deserialize previous input experience replay
   if (_mode == "Training")
-   if (_k->_currentGeneration > 0)
-    deserializeExperienceReplay();
+    if (_k->_currentGeneration > 0)
+      deserializeExperienceReplay();
 
   // Obtaining training state
   _trainingState = getTrainingState();
@@ -187,10 +187,10 @@ void Agent::trainingGeneration()
 
   // Now serializing experience replay database
   if (_experienceReplaySerialize == true)
-   if (_k->_fileOutputEnabled)
-    if (_k->_fileOutputFrequency > 0)
-      if (_k->_currentGeneration % _k->_fileOutputFrequency == 0)
-        serializeExperienceReplay();
+    if (_k->_fileOutputEnabled)
+      if (_k->_fileOutputFrequency > 0)
+        if (_k->_currentGeneration % _k->_fileOutputFrequency == 0)
+          serializeExperienceReplay();
 
   // Measuring generation time
   auto endTime = std::chrono::steady_clock::now();                                                             // Profiling
@@ -388,11 +388,11 @@ void Agent::processEpisode(std::vector<knlohmann::json> &episode)
   // Now going backwards, setting the retrace value of every experience
   for (ssize_t expId = endId; expId >= startId; expId--)
   {
-   // Calculating retrace value with the discount factor. Importance weight is 1.0f because the policy is current.
-   retV = _discountFactor * retV + _experienceReplay[expId].reward;
+    // Calculating retrace value with the discount factor. Importance weight is 1.0f because the policy is current.
+    retV = _discountFactor * retV + _experienceReplay[expId].reward;
 
-   // Setting initial retrace value in the experience's cache
-   _experienceReplay[expId].cache.set("Retrace Value", retV);
+    // Setting initial retrace value in the experience's cache
+    _experienceReplay[expId].cache.set("Retrace Value", retV);
   }
 
   /*********************************************************************
@@ -559,14 +559,14 @@ float Agent::retraceFunction(size_t expId)
 
   // Checking in cache, whether the state value was obtained before
   for (ssize_t curId = startId; curId <= endId; curId++)
-   if (_experienceReplay[curId].cache.contains("Retrace Value"))
-   {
-    // Getting the retrace value from cache
-    retV = _experienceReplay[curId].cache.get("Retrace Value");
+    if (_experienceReplay[curId].cache.contains("Retrace Value"))
+    {
+      // Getting the retrace value from cache
+      retV = _experienceReplay[curId].cache.get("Retrace Value");
 
-    // Starting from the experience before the found experience
-    endId = curId - 1;
-   }
+      // Starting from the experience before the found experience
+      endId = curId - 1;
+    }
 
   // If we found it for the initial experience, return immediately
   if (endId < startId) return retV;
@@ -669,8 +669,8 @@ std::vector<std::vector<float>> Agent::getStateActionTimeSequence(size_t expId)
 void Agent::finalize()
 {
   if (_experienceReplaySerialize == true)
-   if (_k->_fileOutputEnabled)
-    serializeExperienceReplay();
+    if (_k->_fileOutputEnabled)
+      serializeExperienceReplay();
 
   _k->_logger->logInfo("Normal", "Waiting for pending agents to finish...\n");
 
@@ -702,16 +702,16 @@ void Agent::serializeExperienceReplay()
   // Serializing agent's database into the JSON storage
   for (size_t i = 0; i < _experienceReplay.size(); i++)
   {
-   stateJson["Experience Replay"][i]["State"] = _experienceReplay[i].state;
-   stateJson["Experience Replay"][i]["Action"] = _experienceReplay[i].action;
-   stateJson["Experience Replay"][i]["Reward"] = _experienceReplay[i].reward;
-   stateJson["Experience Replay"][i]["Termination"] = _experienceReplay[i].termination;
-   stateJson["Experience Replay"][i]["Truncated State"] = _experienceReplay[i].truncatedState;
-   stateJson["Experience Replay"][i]["Policy"] = _experienceReplay[i].policy;
-   stateJson["Experience Replay"][i]["Metadata"] = _experienceReplay[i].metadata;
-   stateJson["Experience Replay"][i]["Cache"]["Keys"] = _experienceReplay[i].cache.getKeys();
-   stateJson["Experience Replay"][i]["Cache"]["Values"] = _experienceReplay[i].cache.getValues();
-   stateJson["Experience Replay"][i]["Cache"]["Times"] = _experienceReplay[i].cache.getTimes();
+    stateJson["Experience Replay"][i]["State"] = _experienceReplay[i].state;
+    stateJson["Experience Replay"][i]["Action"] = _experienceReplay[i].action;
+    stateJson["Experience Replay"][i]["Reward"] = _experienceReplay[i].reward;
+    stateJson["Experience Replay"][i]["Termination"] = _experienceReplay[i].termination;
+    stateJson["Experience Replay"][i]["Truncated State"] = _experienceReplay[i].truncatedState;
+    stateJson["Experience Replay"][i]["Policy"] = _experienceReplay[i].policy;
+    stateJson["Experience Replay"][i]["Metadata"] = _experienceReplay[i].metadata;
+    stateJson["Experience Replay"][i]["Cache"]["Keys"] = _experienceReplay[i].cache.getKeys();
+    stateJson["Experience Replay"][i]["Cache"]["Values"] = _experienceReplay[i].cache.getValues();
+    stateJson["Experience Replay"][i]["Cache"]["Times"] = _experienceReplay[i].cache.getTimes();
   }
 
   // Storing training/testing policies

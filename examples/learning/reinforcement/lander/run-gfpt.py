@@ -29,17 +29,13 @@ e["Variables"][2]["Name"] = "Force X"
 e["Variables"][2]["Type"] = "Action"
 e["Variables"][2]["Lower Bound"] = -0.1
 e["Variables"][2]["Upper Bound"] = +0.1
-e["Variables"][2]["Exploration Sigma"]["Initial"] = 0.02
-e["Variables"][2]["Exploration Sigma"]["Final"] = 0.005
-e["Variables"][2]["Exploration Sigma"]["Annealing Rate"] = 1e-5
+e["Variables"][2]["Initial Exploration Noise"] = 0.02
 
 e["Variables"][3]["Name"] = "Force Y"
 e["Variables"][3]["Type"] = "Action"
 e["Variables"][3]["Lower Bound"] = +0.0
 e["Variables"][3]["Upper Bound"] = +1.0
-e["Variables"][3]["Exploration Sigma"]["Initial"] = 0.2
-e["Variables"][3]["Exploration Sigma"]["Final"] = 0.05
-e["Variables"][3]["Exploration Sigma"]["Annealing Rate"] = 1e-5
+e["Variables"][3]["Initial Exploration Noise"] = 0.02
 
 ### Defining Agent Configuration 
 
@@ -71,10 +67,9 @@ e["Solver"]["Experience Replay"]["REFER"]["Annealing Rate"] = 5e-7
 
 ### Defining Critic and Policy Configuration
 
-e["Solver"]["Critic"]["Advantage Function Population"] = 12
 e["Solver"]["Policy"]["Learning Rate Scale"] = 0.1
 e["Solver"]["Policy"]["Target Accuracy"] = 0.001
-e["Solver"]["Policy"]["Optimization Candidates"] = 12
+e["Solver"]["Policy"]["Optimization Candidates"] = 32
 
 ### Configuring the neural network and its hidden layers
 

@@ -155,7 +155,7 @@ class Agent : public Solver
   */
   knlohmann::json _trainingBestPolicy;
 
-   /**
+  /**
   * @brief Stores the candidate policy configuration that has produced the best results.
   */
   knlohmann::json _testingBestPolicy;

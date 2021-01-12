@@ -123,11 +123,13 @@ logEcho "[Korali] Checking Pre-requisites..."
 log "[Korali] Checking for C++ Compiler..."
 
 USE_CXX=""
+STRIPPED_CXX=""
 compiler_list=( clang++ CC icc icpc g++ c++)
 
 for compiler in "${compiler_list[@]}"; do
   if [[ "$CXX" == *"$compiler"* ]]; then
-    USE_CXX=$compiler
+    USE_CXX=$CXX
+    STRIPPED_CXX=$compiler
     break
   fi
 done
@@ -137,6 +139,7 @@ if [[ "$USE_CXX" == "" ]]; then
     $compiler --version > /dev/null 2>&1
     if [ $? -eq 0 ]; then
       USE_CXX=$compiler
+    STRIPPED_CXX=$compiler
       break
     fi
   done
@@ -147,7 +150,7 @@ if [[ "$USE_CXX" == "" ]]; then
   logEcho "[Korali] Solution: Please define a valid C++ compiler in \$CXX."
   exitWithError
 else
-  logEcho "[Korali] Using compiler $USE_CXX."
+  logEcho "[Korali] Using compiler $STRIPPED_CXX ($USE_CXX)."
 fi
 
 
@@ -323,7 +326,7 @@ fi
 
 if [ "$USE_CUDNN" == "YES" ]; then
   CUDNNCFLAGS+=" -D_KORALI_USE_CUDNN -I${CUDA_ROOT}/include -I${CUDNN_ROOT}/include"
-  CUDNNLIBS+=" -lcudart -lcudnn -lcudnn_ops_infer -lcudnn_ops_train -lcudnn_cnn_infer -lcudnn_cnn_train -lcudnn_adv_infer -lcudnn_adv_train -Wl,-rpath -Wl,${CUDA_ROOT}/lib64/ -L${CUDA_ROOT}/lib64/ -Wl,-rpath -Wl,${CUDA_ROOT}/lib -L${CUDA_ROOT}/lib -Wl,-rpath -Wl,${CUDNN_ROOT}/lib64/ -L${CUDNN_ROOT}/lib64/ -Wl,-rpath -Wl,${CUDNN_ROOT}/lib -L${CUDNN_ROOT}/lib"
+  CUDNNLIBS+=" -lcudart -lcudnn -lcudnn_ops_infer -lcudnn_ops_train -lcudnn_cnn_infer -lcudnn_cnn_train -Wl,-rpath -Wl,${CUDA_ROOT}/lib64/ -L${CUDA_ROOT}/lib64/ -Wl,-rpath -Wl,${CUDA_ROOT}/lib -L${CUDA_ROOT}/lib -Wl,-rpath -Wl,${CUDNN_ROOT}/lib64/ -L${CUDNN_ROOT}/lib64/ -Wl,-rpath -Wl,${CUDNN_ROOT}/lib -L${CUDNN_ROOT}/lib"
   logEcho "[Korali] Using CUDA Libraries located at ${CUDA_ROOT}."
   logEcho "[Korali] Using CUDNN Libraries located at ${CUDNN_ROOT}."
 fi
@@ -377,10 +380,10 @@ fi
 BLASLIBS="-lblas"
 PTHREADFLAGS="-pthread"
 OMPFLAGS="-fopenmp"
-if [[ "$USE_CXX" == "icpc" || "$USE_CXX" == "icc" ]]; then
+if [[ "$STRIPPED_CXX" == "icpc" || "$STRIPPED_CXX" == "icc" ]]; then
  OMPFLAGS="-qopenmp"
 fi
-if [[ "$USE_CXX" == "clang++" ]]; then
+if [[ "$STRIPPED_CXX" == "clang++" ]]; then
  OMPFLAGS="-lomp"
 fi
 

@@ -331,9 +331,6 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannian
   */
   int updateMetricMatricesRiemannian(const std::vector<double> &q) override
   {
-    // constant for condition number of _metric
-    // double detMetric = 1.0; // unused
-
     auto hessian = _currentHessian;
     gsl_matrix_view Xv = gsl_matrix_view_array(hessian.data(), _stateSpaceDim, _stateSpaceDim);
     gsl_matrix *X = &Xv.matrix;
@@ -355,15 +352,13 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannian
 
     gsl_matrix_set_all(tmpMatOne, 0.0);
     gsl_matrix_set_all(tmpMatTwo, 0.0);
+    gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1.0, Q, lambdaSoftAbs, 0.0, tmpMatOne); // Q * \lambda_{SoftAbs}
+    gsl_blas_dgemm(CblasNoTrans, CblasTrans, 1.0, tmpMatOne, Q, 0.0, tmpMatTwo);       // Q * \lambda_{SoftAbs} * Q^T
 
-    gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1.0, Q, lambdaSoftAbs, 0.0, tmpMatOne);
-    gsl_blas_dgemm(CblasNoTrans, CblasTrans, 1.0, lambdaSoftAbs, Q, 0.0, tmpMatTwo);
-
-    // gsl_matrix_set_all(tmpMatThree, 0.0); // unused
+    gsl_matrix_set_all(tmpMatThree, 0.0);
     gsl_matrix_set_all(tmpMatFour, 0.0);
-
-    // gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1.0, Q, lambdaSoftAbs, 0.0, tmpMatThree); // unused
-    gsl_blas_dgemm(CblasNoTrans, CblasTrans, 1.0, inverseLambdaSoftAbs, Q, 0.0, tmpMatFour);
+    gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1.0, Q, inverseLambdaSoftAbs, 0.0, tmpMatThree); // Q * (\lambda_{SoftAbs})^{-1}
+    gsl_blas_dgemm(CblasNoTrans, CblasTrans, 1.0, tmpMatThree, Q, 0.0, tmpMatFour);             // Q * (\lambda_{SoftAbs})^{-1} * Q^T
 
     for (size_t i = 0; i < _stateSpaceDim; ++i)
     {

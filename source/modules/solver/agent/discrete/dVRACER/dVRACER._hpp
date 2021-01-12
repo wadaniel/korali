@@ -30,40 +30,13 @@ class dVRACER : public Discrete
    */
   problem::SupervisedLearning *_criticPolicyProblem;
 
-  /**
-   * @brief Calculates the state value function V(s,a)
-   * @param state state to evaluate
-   * @return The value of V(s)
-   */
-  float stateValueFunction(const std::vector<float> &state);
-
-  /**
-   * @brief Update the V-target or current and previous experiences in the episode
-   * @param expId Current Experience Id
-   */
-  void updateVtbc(size_t expId);
-
-  /**
-   * @brief Calculates the gradient of importance weight wrt to NN output
-   * @param actionIdx Action from memory
-   * @param curPvalues todo
-   * @param oldPvalues todo 
-   * @return gradient of importance weight wrt NN output
-   */
-  std::vector<float> calculateImportanceWeightGradient(size_t actionIdx, const std::vector<float> &curPvalues, const std::vector<float> &oldPvalues);
-
-  /**
-   * @brief Calculates the gradient of KL(p_old, p_cur) wrt to the parameter of the 2nd (current) distribution.
-   * @param oldPvalues todo 
-   * @param curPvalues todo
-   * @return gradient of KL wrt curParamsOne and curParamsTwo
-   */
-  std::vector<float> calculateKLDivergenceGradient(const std::vector<float> &oldPvalues, const std::vector<float> &curPvalues);
-
+  float stateValueFunction(const std::vector<std::vector<float>> &state) override;
   void setTrainingState(const knlohmann::json &state) override;
   knlohmann::json getTrainingState() override;
-  knlohmann::json runPolicy(const std::vector<float> &state) override;
+  knlohmann::json runPolicy(const std::vector<std::vector<float>> &stateSequence) override;
   void trainPolicy() override;
+  knlohmann::json getAgentPolicy() override;
+  void setAgentPolicy(const knlohmann::json &hyperparameters) override;
   void printAgentInformation() override;
   void initializeAgent() override;
 };

@@ -222,12 +222,12 @@ void Experiment::initialize()
   // Getting configuration back into the JSON storage
   getConfiguration(_js.getJson());
 
+  // Updating verbosity level
+  _logger = new Logger(_consoleOutputVerbosity, stdout);
+
   // Initializing problem and solver modules
   _problem->initialize();
   _solver->initialize();
-
-  // Updating verbosity level
-  _logger = new Logger(_consoleOutputVerbosity, stdout);
 
   _isInitialized = true;
 }
@@ -240,25 +240,7 @@ void Experiment::finalize()
   co_delete(_thread);
 }
 
-std::vector<float> Experiment::getAction(const std::vector<float> &state)
-{
-  // First check that the experiment has been initialized.
-  if (_isInitialized == false) initialize();
-
-  auto agent = dynamic_cast<solver::Agent *>(_k->_solver);
-  if (agent != NULL)
-  {
-    korali::Sample sample;
-    sample["State"] = state;
-    sample["Mode"] = "Testing";
-    agent->getAction(sample);
-    return sample["Action"].get<std::vector<float>>();
-  }
-  else
-    KORALI_LOG_ERROR("This solver does not support getAction.\n");
-}
-
-std::vector<float> Experiment::getEvaluation(const std::vector<float> &inputBatch)
+std::vector<std::vector<float>> Experiment::getEvaluation(const std::vector<std::vector<std::vector<float>>> &inputBatch)
 {
   // First check that the experiment has been initialized.
   if (_isInitialized == false) initialize();
@@ -268,18 +250,6 @@ std::vector<float> Experiment::getEvaluation(const std::vector<float> &inputBatc
     return learner->getEvaluation(inputBatch);
   else
     KORALI_LOG_ERROR("This solver does not support evaluation operations.\n");
-}
-
-std::vector<float> Experiment::getGradients(const std::vector<float> &outputDiffs)
-{
-  // First check that the experiment has been initialized.
-  if (_isInitialized == false) initialize();
-
-  auto learner = dynamic_cast<solver::Learner *>(_k->_solver);
-  if (learner != NULL)
-    return learner->getGradients(outputDiffs);
-  else
-    KORALI_LOG_ERROR("This solver does not provide gradients.\n");
 }
 
 knlohmann::json &Experiment::operator[](const std::string &key) { return _js[key]; }

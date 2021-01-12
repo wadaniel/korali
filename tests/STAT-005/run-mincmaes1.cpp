@@ -30,8 +30,8 @@ int main(int argc, char **argv)
   std::vector<double> xopt = e["Solver"]["Best Ever Variables"];
   double fopt = e["Solver"]["Best Ever Value"];
 
-  assert(std::abs((fopt - -10.0) / fopt) <= 1e-6);
-  assert(std::abs((xopt[0] - 2.0) / fopt) <= 1e-3);
+  assert(std::abs((fopt - -10.0) / fopt) <= 1e-3);
+  assert(std::abs((xopt[0] - 2.0) / fopt) <= 1e-2);
 
   return 0;
 }

@@ -98,8 +98,8 @@ def main(path, check, test, output, args):
    moduleName = 'TMCMC'
 
   if (solverDir == ""):
-   print("[Korali] Error: Solver '{0}' does not provide support for plotting.".format(solverName))
-   exit(-1)
+   print("[Korali] Solver '{0}' does not provide support for plotting.".format(solverName))
+   exit(0)
    
   sys.path.append(solverDir)
   solverLib = importlib.import_module(moduleName, package=None)

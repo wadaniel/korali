@@ -302,6 +302,11 @@ void Agent::attendAgent(size_t agentId)
           _testingBestEpisodeId = _agents[agentId]["Sample Id"];
           _testingBestHyperparameters = _agents[agentId]["Hyperparameters"];
         }
+        else
+        {
+            printf(" ----------------- BACKUP AGENT ---------------- \n");
+            backupAgent();
+        }
       }
 
       // Obtaining profiling information
@@ -619,6 +624,11 @@ std::vector<std::vector<float>> Agent::getStateActionTimeSequence(size_t expId)
   }
 
   return timeSequence;
+}
+
+void Agent::backupAgent()
+{
+    setAgentPolicy(_testingBestHyperparameters);
 }
 
 void Agent::finalize()

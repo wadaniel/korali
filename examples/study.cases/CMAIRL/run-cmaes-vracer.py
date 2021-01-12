@@ -15,7 +15,7 @@ k = korali.Engine()
 
 # Creating new experiment
 e = korali.Experiment()
-found = e.loadState('_korali_result_cmaes_vracer/latest')
+found = e.loadState('_korali_result_cmaes_vracer_obs/latest')
 if (found == True):
   print('Continuing execution from latest...')
  
@@ -34,7 +34,7 @@ for i in range(dim):
 
 # Configuring CMA-ES parameters
 e["Solver"]["Type"] = "Optimizer/CMAES"
-e["Solver"]["Population Size"] = 6
+e["Solver"]["Population Size"] = 8
 e["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 0.1
 e["Solver"]["Termination Criteria"]["Max Generations"] = 100
 
@@ -46,6 +46,6 @@ e["File Output"]["Frequency"] = 1
 e["Console Output"]["Verbosity"] = "Detailed"
 
 k["Conduit"]["Type"] = "Concurrent"
-k["Conduit"]["Concurrent Jobs"] = 6
+k["Conduit"]["Concurrent Jobs"] = 8
 
 k.run(e)

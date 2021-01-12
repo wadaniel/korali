@@ -115,8 +115,7 @@ int saveJsonToFile(const char *fileName, const knlohmann::json &js)
     return -1;
   }
 
-  std::string moveCommand = std::string("mv ") + auxFile + std::string(" ") + std::string(fileName);
-  return system(moveCommand.c_str());
+  return rename(auxFile.c_str(), fileName);
 }
 
 } // namespace korali

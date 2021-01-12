@@ -104,8 +104,6 @@ e["Preserve Random Number Generator States"] = True
 
 # Configuring base parameter file
 parameterString = ''
-parameterString += 'np = 3 * 36\n'
-parameterString += 'sharpen = True\n'
 
 # Logging configuration
 print('--------------------------------------------------')

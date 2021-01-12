@@ -43,6 +43,9 @@ def model(x, resultFolder, objective):
  except IOError:
   print("[Korali] Error: Could not load result file: " + resultFile)
   exit(1)
+
+ # Printing resultContent
+ print(resultContent)
  
  # Parsing output into a python dict
  resultDict = eval(resultContent)
@@ -53,11 +56,11 @@ def model(x, resultFolder, objective):
  # If sample is valid, evaluating result based on objective
  if (resultDict['valid'] == True):
   if (objective == 'minNumCoal'):
-   objectiveValue = -float(resultDict['num_coal']) + 2.0 * float(resultDict['min_velocity'])
+   objectiveValue = -float(resultDict['max_volume'])
   if (objective == 'maxNumCoal'):
-   objectiveValue = float(resultDict['num_coal']) + 2.0 * float(resultDict['min_velocity']) 
+   objectiveValue = float(resultDict['max_volume']) 
   if (objective == 'maxMeanVel'):
-   objectiveValue = float(resultDict['mean_velocity'])
+   objectiveValue = -float(resultDict['max_time'])
 
  # Assigning objective function value
  x["F(x)"] = objectiveValue

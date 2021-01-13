@@ -50,7 +50,7 @@ class NAF : public Continuous
   * @brief Function to calculate the advantage A(s,a).
   * @param action The current action a
   * @param mean Output of the NN evaluated for state s
-  * @param P The quadratic term of the advantage function
+  * @param diagP The quadratic term of the advantage function
   * @return value of Q(s,a)
   */
   float quadraticAdvantageFunction(const std::vector<float> &action, const std::vector<float> &mean, const std::vector<float> &diagP);

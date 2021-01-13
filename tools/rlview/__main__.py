@@ -91,7 +91,7 @@ def plotRewardHistory(ax, results, minReward, maxReward, averageDepth):
     
   epList = range(0, len(rewardHistory)) 
   ax.plot(epList, rewardHistory, 'x', markersize=1, label='Episode Reward (' + solverName + ')')
-  ax.plot(epList, meanHistory, '-', label='10 Episode Average (' + solverName + ')')
+  ax.plot(epList, meanHistory, '-', label=str(averageDepth) + '-Episode Average (' + solverName + ')')
   ax.fill_between(epList, (meanHistory-confIntervalHistory), (meanHistory+confIntervalHistory), color='b', alpha=.1, label='98% Confidence Interval (' + solverName + ')')
   
  ## Configuring common plotting features

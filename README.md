@@ -22,10 +22,6 @@ Visit: https://www.cse-lab.ethz.ch/korali/ for more information.
 + tests/ Contains test scripts to verify Korali's correctness
 + tools/ Contains Korali's additional tools and scripts 
 
-## Apps
-
-See: https://github.com/cselab/korali-apps
-
 ## Contact us
 
 The Korali Project is developed and maintained by

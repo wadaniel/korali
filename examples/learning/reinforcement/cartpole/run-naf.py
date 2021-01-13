@@ -88,7 +88,7 @@ e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 450
 
 ### Setting file output configuration
 
-e["File Output"]["Enabled"] = True
+e["File Output"]["Enabled"] = False
 
 ### Running Experiment
 

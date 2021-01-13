@@ -267,7 +267,7 @@ if __name__ == '__main__':
    results = parseResults(args.dir)
    plt.pause(fq)
    ax1.clear()
-   plotRewardHistory(ax1, results, args.minReward, args.maxReward, averageDepth)
+   plotRewardHistory(ax1, results, args.minReward, args.maxReward, int(args.averageDepth))
    if ('GFPT' in solverName):
     ax2.clear()
     plotGFPTCovariance(ax2, results)

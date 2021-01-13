@@ -16,7 +16,7 @@ e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = env
 e["Problem"]["Training Reward Threshold"] = 750
 e["Problem"]["Policy Testing Episodes"] = 1
-e["Problem"]["Actions Between Policy Updates"] = 1
+e["Problem"]["Actions Between Policy Updates"] = 500
 
 e["Variables"][0]["Name"] = "Cart Position"
 e["Variables"][1]["Name"] = "Angle 1"
@@ -28,33 +28,40 @@ e["Variables"][5]["Name"] = "Force"
 e["Variables"][5]["Type"] = "Action"
 e["Variables"][5]["Lower Bound"] = -20.0
 e["Variables"][5]["Upper Bound"] = +20.0
-e["Variables"][5]["Exploration Sigma"]["Initial"] = 1.00
-e["Variables"][5]["Exploration Sigma"]["Final"] = 1.00
-e["Variables"][5]["Exploration Sigma"]["Annealing Rate"] = 0.00
+e["Variables"][5]["Initial Exploration Noise"] = 2.00
 
 ### Defining Agent Configuration 
 
 e["Solver"]["Type"] = "Agent / Continuous / GFPT"
 e["Solver"]["Mode"] = "Training"
 e["Solver"]["Episodes Per Generation"] = 1
-e["Solver"]["Experiences Between Policy Updates"] = 1
-e["Solver"]["Cache Persistence"] = 10
-e["Solver"]["Discount Factor"] = 0.99
+e["Solver"]["Experiences Between Policy Updates"] = 10
+e["Solver"]["Cache Persistence"] = 100
+e["Solver"]["Learning Rate"] = 0.001
 
 ### Defining the configuration of replay memory
 
-e["Solver"]["Mini Batch Size"] = 32
+e["Solver"]["Experience Replay"]["Start Size"] = 4096
+e["Solver"]["Experience Replay"]["Maximum Size"] = 65536
+
+### Configuring the Remember-and-Forget Experience Replay algorithm
+
+e["Solver"]["Experience Replay"]["REFER"]["Enabled"] = True
+e["Solver"]["Experience Replay"]["REFER"]["Cutoff Scale"] = 4.0
+e["Solver"]["Experience Replay"]["REFER"]["Target"] = 0.1
+e["Solver"]["Experience Replay"]["REFER"]["Initial Beta"] = 0.6
+e["Solver"]["Experience Replay"]["REFER"]["Annealing Rate"] = 5e-7
+
+### Configuring Mini Batch
+
+e["Solver"]["Mini Batch Size"] = 128
 e["Solver"]["Mini Batch Strategy"] = "Uniform"
-e["Solver"]["Experience Replay"]["Start Size"] =   1024
-e["Solver"]["Experience Replay"]["Maximum Size"] = 32768
 
 ## Defining Critic and Policy Configuration
 
-e["Solver"]["Learning Rate"] = 0.01
 e["Solver"]["Policy"]["Learning Rate Scale"] = 1.0
-e["Solver"]["Critic"]["Advantage Function Population"] = 12
-e["Solver"]["Policy"]["Target Accuracy"] = 0.001
-e["Solver"]["Policy"]["Optimization Candidates"] = 12
+e["Solver"]["Policy"]["Target Accuracy"] = 0.05
+e["Solver"]["Policy"]["Optimization Candidates"] = 32
 
 ### Configuring the neural network and its hidden layers
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-resultDir="_result"
+resultDir="_result_gfpt"
 movieDir="_movie"
 
 cd ${resultDir}

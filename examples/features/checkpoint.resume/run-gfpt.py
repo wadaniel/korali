@@ -49,9 +49,7 @@ e["Variables"][4]["Name"] = "Force"
 e["Variables"][4]["Type"] = "Action"
 e["Variables"][4]["Lower Bound"] = -10.0
 e["Variables"][4]["Upper Bound"] = +10.0
-e["Variables"][4]["Exploration Sigma"]["Initial"] = 1.0
-e["Variables"][4]["Exploration Sigma"]["Final"] = 1.0
-e["Variables"][4]["Exploration Sigma"]["Annealing Rate"] = 0.0
+e["Variables"][4]["Initial Exploration Noise"] = 2.0
 
 ### Defining Agent Configuration 
 
@@ -73,9 +71,8 @@ e["Solver"]["Experience Replay"]["Maximum Size"] = 32768
 
 e["Solver"]["Learning Rate"] = 0.01
 e["Solver"]["Policy"]["Learning Rate Scale"] = 1.0
-e["Solver"]["Critic"]["Advantage Function Population"] = 12
-e["Solver"]["Policy"]["Target Accuracy"] = 0.001
-e["Solver"]["Policy"]["Optimization Candidates"] = 12
+e["Solver"]["Policy"]["Target Accuracy"] = 0.01
+e["Solver"]["Policy"]["Optimization Candidates"] = 32
 
 ### Configuring the neural network and its hidden layers
 

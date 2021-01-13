@@ -21,22 +21,24 @@ e["Random Seed"] = 0xC0FEE
 e["Problem"]["Type"] = "Optimization"
 e["Problem"]["Objective Function"] = negative_rosenbrock
 
-dim = 3
+dim = 3000
 
 # Defining the problem's variables.
 for i in range(dim):
     e["Variables"][i]["Name"] = "X" + str(i)
     e["Variables"][i]["Lower Bound"] = -25.0
     e["Variables"][i]["Upper Bound"] = +25.0
-    e["Variables"][i]["Initial Standard Deviation"] = 3.0
+    e["Variables"][i]["Initial Standard Deviation"] = 3.0/55.
 
 # Configuring LM-CMA parameters
 e["Solver"]["Type"] = "Optimizer/LMCMAES"
-e["Solver"]["Population Size"] = 32
+e["Solver"]["Population Size"] = 128
+e["Solver"]["Is Sigma Bounded"] = True
 e["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-32
-e["Solver"]["Termination Criteria"]["Max Generations"] = 100
+e["Solver"]["Termination Criteria"]["Max Generations"] = 1000
 
 # Configuring results path
+e["File Output"]["Enabled"] = False
 e["File Output"]["Path"] = '_korali_result_lmcma'
 e["File Output"]["Frequency"] = 1
 

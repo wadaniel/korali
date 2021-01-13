@@ -839,13 +839,13 @@ void CMAES::updateEigensystem(const std::vector<double> &M)
       _k->_logger->logWarning("Detailed", "Could not calculate root of Eigenvalue (%+6.3e) after Eigen decomp (no update possible).\n", _auxiliarAxisLengths[d]);
       return;
     }
-    if(!_isDiagonal)
-    for (size_t e = 0; e < _variableCount; ++e)
-      if (std::isfinite(_auxiliarCovarianceEigenvectorMatrix[d * _variableCount + e]) == false)
-      {
-        _k->_logger->logWarning("Detailed", "Non finite value detected in B (no update possible).\n");
-        return;
-      }
+    if (!_isDiagonal)
+      for (size_t e = 0; e < _variableCount; ++e)
+        if (std::isfinite(_auxiliarCovarianceEigenvectorMatrix[d * _variableCount + e]) == false)
+        {
+          _k->_logger->logWarning("Detailed", "Non finite value detected in B (no update possible).\n");
+          return;
+        }
   }
 
   _minimumCovarianceEigenvalue = minCovEV;
@@ -862,45 +862,44 @@ void CMAES::updateEigensystem(const std::vector<double> &M)
 
 void CMAES::eigen(size_t size, const std::vector<double> &M, std::vector<double> &diag, std::vector<double> &Q) const
 {
-
-  if(_isDiagonal)
+  if (_isDiagonal)
   {
     std::fill(Q.begin(), Q.end(), 0);
-    for(size_t i = 0; i < size; ++i) Q[i * size + i] = 1.;
-    for(size_t i = 0; i < size; ++i) diag[i] = M[i * size + i];
+    for (size_t i = 0; i < size; ++i) Q[i * size + i] = 1.;
+    for (size_t i = 0; i < size; ++i) diag[i] = M[i * size + i];
   }
   else
   {
-  std::vector<double> data(size * size);
+    std::vector<double> data(size * size);
 
-  for (size_t i = 0; i < size; i++)
-    for (size_t j = 0; j <= i; j++)
+    for (size_t i = 0; i < size; i++)
+      for (size_t j = 0; j <= i; j++)
+      {
+        data[i * size + j] = M[i * size + j];
+        data[j * size + i] = M[i * size + j];
+      }
+
+    // GSL Workspace
+    gsl_vector *gsl_eval = gsl_vector_alloc(size);
+    gsl_matrix *gsl_evec = gsl_matrix_alloc(size, size);
+    gsl_eigen_symmv_workspace *gsl_work = gsl_eigen_symmv_alloc(size);
+
+    gsl_matrix_view m = gsl_matrix_view_array(data.data(), size, size);
+
+    gsl_eigen_symmv(&m.matrix, gsl_eval, gsl_evec, gsl_work);
+    gsl_eigen_symmv_sort(gsl_eval, gsl_evec, GSL_EIGEN_SORT_ABS_ASC);
+
+    for (size_t i = 0; i < size; i++)
     {
-      data[i * size + j] = M[i * size + j];
-      data[j * size + i] = M[i * size + j];
+      gsl_vector_view gsl_evec_i = gsl_matrix_column(gsl_evec, i);
+      for (size_t j = 0; j < size; j++) Q[j * size + i] = gsl_vector_get(&gsl_evec_i.vector, j);
     }
 
-  // GSL Workspace
-  gsl_vector *gsl_eval = gsl_vector_alloc(size);
-  gsl_matrix *gsl_evec = gsl_matrix_alloc(size, size);
-  gsl_eigen_symmv_workspace *gsl_work = gsl_eigen_symmv_alloc(size);
+    for (size_t i = 0; i < size; i++) diag[i] = gsl_vector_get(gsl_eval, i);
 
-  gsl_matrix_view m = gsl_matrix_view_array(data.data(), size, size);
-
-  gsl_eigen_symmv(&m.matrix, gsl_eval, gsl_evec, gsl_work);
-  gsl_eigen_symmv_sort(gsl_eval, gsl_evec, GSL_EIGEN_SORT_ABS_ASC);
-
-  for (size_t i = 0; i < size; i++)
-  {
-    gsl_vector_view gsl_evec_i = gsl_matrix_column(gsl_evec, i);
-    for (size_t j = 0; j < size; j++) Q[j * size + i] = gsl_vector_get(&gsl_evec_i.vector, j);
-  }
-
-  for (size_t i = 0; i < size; i++) diag[i] = gsl_vector_get(gsl_eval, i);
-
-  gsl_vector_free(gsl_eval);
-  gsl_matrix_free(gsl_evec);
-  gsl_eigen_symmv_free(gsl_work);
+    gsl_vector_free(gsl_eval);
+    gsl_matrix_free(gsl_evec);
+    gsl_eigen_symmv_free(gsl_work);
   }
 }
 

@@ -187,14 +187,14 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
 
       // Adding current testing reward to the average and keeping statistics
       averageTestingReward += currentTestingReward;
-      stdevTestingReward += currentTestingReward*currentTestingReward;
+      stdevTestingReward += currentTestingReward * currentTestingReward;
       if (currentTestingReward > bestTestingReward) bestTestingReward = currentTestingReward;
       if (currentTestingReward < worstTestingReward) worstTestingReward = currentTestingReward;
     }
 
     // Normalizing average
     averageTestingReward /= (float)_policyTestingEpisodes;
-    stdevTestingReward = std::sqrt(stdevTestingReward / (float)_policyTestingEpisodes - averageTestingReward*averageTestingReward );
+    stdevTestingReward = std::sqrt(stdevTestingReward / (float)_policyTestingEpisodes - averageTestingReward * averageTestingReward);
 
     // Storing testing information
     agent["Average Testing Reward"] = averageTestingReward;

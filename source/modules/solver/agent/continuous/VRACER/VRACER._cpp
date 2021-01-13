@@ -82,7 +82,7 @@ void VRACER::initializeAgent()
   _criticPolicyExperiment.initialize();
   _criticPolicyProblem = dynamic_cast<problem::SupervisedLearning *>(_criticPolicyExperiment._problem);
   _criticPolicyLearner = dynamic_cast<solver::learner::DeepSupervisor *>(_criticPolicyExperiment._solver);
-  
+
   // Init statistics
   _averageActionSigmas.resize(_problem->_actionVectorSize);
 }
@@ -99,7 +99,7 @@ void VRACER::trainPolicy()
   float cumulativePolicyError = 0.0;
   float cumulativePolicyErrorSquared = 0.0;
   size_t policyErrorCounter = 0;
-  
+
   std::fill(_averageActionSigmas.begin(), _averageActionSigmas.end(), 0.0);
 
   /****************************************************************************
@@ -223,7 +223,7 @@ void VRACER::trainPolicy()
 
     // Compute statistics
     for (size_t i = 0; i < _problem->_actionVectorSize; i++) _averageActionSigmas[i] += curSigmas[i];
-    
+
     // Set status as learning problem input
     _criticPolicyProblem->_inputData[b] = expStateSequence;
 
@@ -242,7 +242,7 @@ void VRACER::trainPolicy()
   // Compute average and std of Off-Policy Gradient Objective
   _averagePolicyError = cumulativePolicyError / (float)policyErrorCounter;
   _stdevPolicyError = std::sqrt(cumulativePolicyErrorSquared / (float)policyErrorCounter - _averagePolicyError * _averagePolicyError);
-  
+
   // Compute average action stadard deviation
   for (size_t j = 0; j < _problem->_actionVectorSize; j++) _averageActionSigmas[j] /= (float)_miniBatchSize;
 

@@ -304,7 +304,7 @@ void Agent::attendAgent(size_t agentId)
         }
         else if (_testingBackupAgent)
         {
-            backupAgent();
+          backupAgent();
         }
       }
 
@@ -397,7 +397,8 @@ void Agent::updateREFERInformation()
   size_t offPolicyCount = 0;
 
   // Count off-policy experiences
-#pragma omp parallel for reduction(+:offPolicyCount)
+#pragma omp parallel for reduction(+ \
+                                   : offPolicyCount)
   for (size_t expId = 0; expId < expCount; expId++)
   {
     // Getting the last calculated value of the experience's importance weight. We can tolerate this approximation.
@@ -627,7 +628,7 @@ std::vector<std::vector<float>> Agent::getStateActionTimeSequence(size_t expId)
 
 void Agent::backupAgent()
 {
-    setAgentPolicy(_testingBestHyperparameters);
+  setAgentPolicy(_testingBestHyperparameters);
 }
 
 void Agent::finalize()

@@ -16,7 +16,7 @@ from scipy.signal import savgol_filter
 
 ##################### Plotting Reward History
 
-def plotRewardHistory(ax, results, minReward, maxReward):
+def plotRewardHistory(ax, results, minReward, maxReward, averageDepth):
 
  lastGenId = 0
   
@@ -59,7 +59,6 @@ def plotRewardHistory(ax, results, minReward, maxReward):
  
  # Setting average depth
  
- averageDepth = 10
  confidenceLevel = 2.326
  
  ## Plotting the individual experiment results
@@ -219,6 +218,11 @@ if __name__ == '__main__':
       action='store_true',
       required=False)
  parser.add_argument(
+      '--averageDepth',
+      help='Specifies the depth for plotting average',
+      default=10,
+      required=False)
+ parser.add_argument(
       '--test',
       help='Run without graphics (for testing purpose)',
       action='store_true',
@@ -251,7 +255,7 @@ if __name__ == '__main__':
      
  ### Creating plots
      
- plotRewardHistory(ax1, results, args.minReward, args.maxReward)
+ plotRewardHistory(ax1, results, args.minReward, args.maxReward, int(args.averageDepth))
  if ('GFPT' in solverName): plotGFPTCovariance(ax2, results) 
  plt.draw()
  
@@ -263,7 +267,7 @@ if __name__ == '__main__':
    results = parseResults(args.dir)
    plt.pause(fq)
    ax1.clear()
-   plotRewardHistory(ax1, results, args.minReward, args.maxReward)
+   plotRewardHistory(ax1, results, args.minReward, args.maxReward, averageDepth)
    if ('GFPT' in solverName):
     ax2.clear()
     plotGFPTCovariance(ax2, results)

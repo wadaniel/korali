@@ -423,8 +423,7 @@ void CMAES::updateViabilityBoundaries()
 
 void CMAES::prepareGeneration()
 {
-  for (size_t d = 0; d < _variableCount; ++d) _auxiliarCovarianceMatrix = _covarianceMatrix;
-  updateEigensystem(_auxiliarCovarianceMatrix);
+  updateEigensystem(_covarianceMatrix);
 
   for (size_t i = 0; i < _currentPopulationSize; ++i)
   {
@@ -448,7 +447,6 @@ void CMAES::sampleSingle(size_t sampleIdx)
   for (size_t d = 0; d < _variableCount; ++d)
   {
     double randomNumber = _normalGenerator->getRandomNumber();
-    //printf("Random Number: %f\n", randomNumber);
 
     if (_isDiagonal)
     {
@@ -820,14 +818,14 @@ void CMAES::discretize(std::vector<double> &sample)
       sample[d] = std::round(sample[d] / _k->_variables[d]->_granularity) * _k->_variables[d]->_granularity;
 }
 
-void CMAES::updateEigensystem(std::vector<double> &M)
+void CMAES::updateEigensystem(const std::vector<double> &M)
 {
   eigen(_variableCount, M, _auxiliarAxisLengths, _auxiliarCovarianceEigenvectorMatrix);
 
   /* find largest and smallest eigenvalue, they are supposed to be sorted anyway */
   double minCovEV = *std::min_element(std::begin(_auxiliarAxisLengths), std::end(_auxiliarAxisLengths));
   double maxCovEV = *std::max_element(std::begin(_auxiliarAxisLengths), std::end(_auxiliarAxisLengths));
-  if (_minimumCovarianceEigenvalue <= 0.0)
+  if (minCovEV <= 0.0)
   {
     _k->_logger->logWarning("Detailed", "Min Eigenvalue smaller or equal 0.0 (%+6.3e) after Eigen decomp (no update possible).\n", _minimumCovarianceEigenvalue);
     return;
@@ -841,8 +839,9 @@ void CMAES::updateEigensystem(std::vector<double> &M)
       _k->_logger->logWarning("Detailed", "Could not calculate root of Eigenvalue (%+6.3e) after Eigen decomp (no update possible).\n", _auxiliarAxisLengths[d]);
       return;
     }
+    if(!_isDiagonal)
     for (size_t e = 0; e < _variableCount; ++e)
-      if (std::isfinite(_covarianceEigenvectorMatrix[d * _variableCount + e]) == false)
+      if (std::isfinite(_auxiliarCovarianceEigenvectorMatrix[d * _variableCount + e]) == false)
       {
         _k->_logger->logWarning("Detailed", "Non finite value detected in B (no update possible).\n");
         return;
@@ -861,21 +860,30 @@ void CMAES::updateEigensystem(std::vector<double> &M)
 /*                    Additional Methods                                */
 /************************************************************************/
 
-void CMAES::eigen(size_t size, std::vector<double> &M, std::vector<double> &diag, std::vector<double> &Q) const
+void CMAES::eigen(size_t size, const std::vector<double> &M, std::vector<double> &diag, std::vector<double> &Q) const
 {
+
+  if(_isDiagonal)
+  {
+    std::fill(Q.begin(), Q.end(), 0);
+    for(size_t i = 0; i < size; ++i) Q[i * size + i] = 1.;
+    for(size_t i = 0; i < size; ++i) diag[i] = M[i * size + i];
+  }
+  else
+  {
   std::vector<double> data(size * size);
 
   for (size_t i = 0; i < size; i++)
     for (size_t j = 0; j <= i; j++)
     {
-      data[i * size + j] = M[i * _variableCount + j];
-      data[j * size + i] = M[i * _variableCount + j];
+      data[i * size + j] = M[i * size + j];
+      data[j * size + i] = M[i * size + j];
     }
 
   // GSL Workspace
-  gsl_vector *gsl_eval = gsl_vector_alloc(_variableCount);
-  gsl_matrix *gsl_evec = gsl_matrix_alloc(_variableCount, _variableCount);
-  gsl_eigen_symmv_workspace *gsl_work = gsl_eigen_symmv_alloc(_variableCount);
+  gsl_vector *gsl_eval = gsl_vector_alloc(size);
+  gsl_matrix *gsl_evec = gsl_matrix_alloc(size, size);
+  gsl_eigen_symmv_workspace *gsl_work = gsl_eigen_symmv_alloc(size);
 
   gsl_matrix_view m = gsl_matrix_view_array(data.data(), size, size);
 
@@ -885,7 +893,7 @@ void CMAES::eigen(size_t size, std::vector<double> &M, std::vector<double> &diag
   for (size_t i = 0; i < size; i++)
   {
     gsl_vector_view gsl_evec_i = gsl_matrix_column(gsl_evec, i);
-    for (size_t j = 0; j < size; j++) Q[j * _variableCount + i] = gsl_vector_get(&gsl_evec_i.vector, j);
+    for (size_t j = 0; j < size; j++) Q[j * size + i] = gsl_vector_get(&gsl_evec_i.vector, j);
   }
 
   for (size_t i = 0; i < size; i++) diag[i] = gsl_vector_get(gsl_eval, i);
@@ -893,6 +901,7 @@ void CMAES::eigen(size_t size, std::vector<double> &M, std::vector<double> &diag
   gsl_vector_free(gsl_eval);
   gsl_matrix_free(gsl_evec);
   gsl_eigen_symmv_free(gsl_work);
+  }
 }
 
 void CMAES::sort_index(const std::vector<double> &vec, std::vector<size_t> &sortingIndex, size_t N) const

@@ -407,6 +407,7 @@ void LMCMAES::printGenerationAfter()
   _k->_logger->logInfo("Normal", "Sigma:                        %+6.3e\n", _sigma);
   _k->_logger->logInfo("Normal", "Current Function Value: Max = %+6.3e - Best = %+6.3e\n", _currentBestValue, _bestEverValue);
   _k->_logger->logInfo("Normal", "Cholesky Factor:        Min = %+6.3e -  Max = %+6.3e\n", _minCholeskyFactorVectorProductEntry, _maxCholeskyFactorVectorProductEntry);
+  _k->_logger->logInfo("Normal", "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
 
   _k->_logger->logInfo("Detailed", "Variable = (MeanX, BestX):\n");
   for (size_t d = 0; d < _variableCount; d++) _k->_logger->logData("Detailed", "         %s = (%+6.3e, %+6.3e)\n", _k->_variables[d]->_name.c_str(), _currentMean[d], _bestEverVariables[d]);

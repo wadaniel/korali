@@ -25,12 +25,13 @@ setup(
     author_email='martiser@ethz.ch',
     description='High Performance Framework for Uncertainty Quantification and Optimization',
     url='Webpage: https://www.cse-lab.ethz.ch/korali/',
-    packages=[ 'korali', 'korali.plotter', 'korali.profiler', 'korali.cxx'  ],
+    packages=[ 'korali', 'korali.plotter', 'korali.profiler', 'korali.cxx', 'korali.rlview'  ],
     package_dir={
         'korali': sourceDir, 
         'korali.plotter': toolsDir + '/plotter',
         'korali.profiler': toolsDir + '/profiler',
-        'korali.cxx': toolsDir + '/cxx'
+        'korali.cxx': toolsDir + '/cxx',
+        'korali.rlview': toolsDir + '/rlview'
     },
     include_package_data=True,
     package_data={ 'korali': koraliFiles },

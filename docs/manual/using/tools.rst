@@ -7,7 +7,7 @@ Tools
 
    tools/plotter 
    tools/profiler
-   tools/mdev
+   tools/rlview
 
 
 

@@ -5,13 +5,14 @@ int main(int argc, char *argv[])
 {
   /////// Initializing environment
 
+  _resultDir = "_result_vracer";
   initializeEnvironment("_config/helix_2d_eu_const.json");
 
   auto e = korali::Experiment();
 
   ////// Checking if existing results are there and continuing them
 
-  auto found = e.loadState("_results/latest");
+  auto found = e.loadState(_resultDir + std::string("/latest"));
   if (found == true) printf("Continuing execution from previous run...\n");
 
   ////// Defining problem configuration
@@ -41,27 +42,29 @@ int main(int argc, char *argv[])
 
   //// Setting action variables
 
-  auto [lowerBounds, upperBounds] = _environment->getActionBounds();
-
   e["Variables"][14]["Name"] = "Frequency (w)";
   e["Variables"][14]["Type"] = "Action";
-  e["Variables"][14]["Lower Bound"] = lowerBounds[0];
-  e["Variables"][14]["Upper Bound"] = upperBounds[0];
+  e["Variables"][14]["Lower Bound"] = 0.0f;
+  e["Variables"][14]["Upper Bound"] = 2.0f;
+  e["Variables"][14]["Initial Exploration Noise"] = 0.50f;
 
   e["Variables"][15]["Name"] = "Rotation X";
   e["Variables"][15]["Type"] = "Action";
-  e["Variables"][15]["Lower Bound"] = lowerBounds[1];
-  e["Variables"][15]["Upper Bound"] = upperBounds[1];
+  e["Variables"][15]["Lower Bound"] = -1.0f;
+  e["Variables"][15]["Upper Bound"] = 1.0f;
+  e["Variables"][15]["Initial Exploration Noise"] = 0.50f;
 
   e["Variables"][16]["Name"] = "Rotation Y";
   e["Variables"][16]["Type"] = "Action";
-  e["Variables"][16]["Lower Bound"] = lowerBounds[2];
-  e["Variables"][16]["Upper Bound"] = upperBounds[2];
+  e["Variables"][16]["Lower Bound"] = -1.0f;
+  e["Variables"][16]["Upper Bound"] = 1.0f;
+  e["Variables"][16]["Initial Exploration Noise"] = 0.50f;
 
   e["Variables"][17]["Name"] = "Rotation Z";
   e["Variables"][17]["Type"] = "Action";
-  e["Variables"][17]["Lower Bound"] = lowerBounds[3];
-  e["Variables"][17]["Upper Bound"] = upperBounds[3];
+  e["Variables"][17]["Lower Bound"] = -1.0f;
+  e["Variables"][17]["Upper Bound"] = 1.0f;
+  e["Variables"][17]["Initial Exploration Noise"] = 0.50f;
 
   /// Defining Agent Configuration
 
@@ -115,8 +118,8 @@ int main(int argc, char *argv[])
 
   e["Console Output"]["Verbosity"] = "Detailed";
   e["File Output"]["Enabled"] = true;
-  e["File Output"]["Frequency"] = 20;
-  e["File Output"]["Path"] = "_results";
+  e["File Output"]["Frequency"] = 10;
+  e["File Output"]["Path"] = _resultDir;
 
   auto k = korali::Engine();
   k.run(e);

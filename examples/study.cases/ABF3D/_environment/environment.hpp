@@ -9,6 +9,7 @@
 void runEnvironment(korali::Sample &s);
 void initializeEnvironment(const std::string confFileName);
 
+extern std::string _resultDir;
 extern bool _isTraining;
 extern std::mt19937 _randomGenerator;
 

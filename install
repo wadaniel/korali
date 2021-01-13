@@ -41,7 +41,7 @@ function check()
  if [ ! $? -eq 0 ]
  then
   exitWithError
- fi 
+ fi
 }
 
 for i in "$@"
@@ -52,17 +52,17 @@ case $i in
     python3 -m pip uninstall -y korali >> $logFile 2>&1
     make -C source clean >> $logFile 2>&1
     make -C external/libco clean >> $logFile 2>&1
-    shift 
+    shift
     ;;
     --help)
     print_help
-    exit 0 
-    shift 
+    exit 0
+    shift
     ;;
     *)
     print_help
     echo ""
-    echo "[Korali] Error:  Unknown option $i."       
+    echo "[Korali] Error:  Unknown option $i."
     exit 1
     ;;
 esac
@@ -82,7 +82,7 @@ if [ ! $? == 0 ]; then
 fi
 
 # Detecting Korali Base Directory
- 
+
 baseKoraliDir=$PWD
 foundbinVersionFile=0
 
@@ -98,8 +98,8 @@ fi
 ######## Start Configuration ######
 
 version=`cat docs/VERSION`
-logEcho "[Korali] Installing Korali v${version}..." 
-logEcho "[Korali] Determining Configuration..." 
+logEcho "[Korali] Installing Korali v${version}..."
+logEcho "[Korali] Determining Configuration..."
 logEcho "[Korali] Using $NJOBS jobs."
 log "[Korali] Checking for architecture..."
 arch="$(uname -s)"
@@ -111,7 +111,7 @@ if [ "$arch" == "Linux" ]; then
  log "[Korali] Linux System Detected."
 fi
 
-# If using MacOs, change flags 
+# If using MacOs, change flags
 if [ "$arch" == "Darwin" ]; then
  log "[Korali] MacOS (Darwin) System Detected."
  SHAREDLIB_FLAG="-dynamiclib"
@@ -215,7 +215,7 @@ if [ "$USE_CUDNN" == "YES" ]; then
   logEcho "[Korali] The \$CUDA_ROOT environment variable needs to be defined for CUDNN support."
   exitWithError
  fi
- 
+
  if [ -z "$CUDNN_ROOT" ]; then
   logEcho "[Korali] The \$CUDNN_ROOT environment variable needs to be defined for CUDNN support."
   exitWithError
@@ -224,16 +224,16 @@ fi
 
 ######## Checking support for OpenMP ########
 
-# if clang and macos: check if openmp has been installed 
+# if clang and macos: check if openmp has been installed
 if [[ "$USE_CXX" == "clang++" && "$arch" == "Darwin" ]]; then
- 
+
  brew --version > /dev/null 2>&1
  if [ ! $? == 0 ]; then
   logEcho "[Korali] Error: brew not found."
   logEcho "         Solution: install brew from https://brew.sh"
   exitWithError
  fi
- 
+
  brew list libomp > /dev/null 2>&1
  if [ ! $? == 0 ]; then
   logEcho "[Korali] Error: OpenMP not found."
@@ -245,7 +245,7 @@ if [[ "$USE_CXX" == "clang++" && "$arch" == "Darwin" ]]; then
  fi
 
  llvm-config --version > /dev/null 2>&1
- if [ $? == 0 ]; then # brew version of clang, 
+ if [ $? == 0 ]; then # brew version of clang,
   if [[ "$LIBRARY_PATH" != *"llvm"* ]]; then
    logEcho "[Korali] Error: LLVM library path not found in \$LIBRARY_PATH."
    logEcho "         Solution: Run the commands:"
@@ -326,7 +326,7 @@ fi
 
 if [ "$USE_CUDNN" == "YES" ]; then
   CUDNNCFLAGS+=" -D_KORALI_USE_CUDNN -I${CUDA_ROOT}/include -I${CUDNN_ROOT}/include"
-  CUDNNLIBS+=" -lcudart -lcudnn -lcudnn_ops_infer -lcudnn_ops_train -lcudnn_cnn_infer -lcudnn_cnn_train -Wl,-rpath -Wl,${CUDA_ROOT}/lib64/ -L${CUDA_ROOT}/lib64/ -Wl,-rpath -Wl,${CUDA_ROOT}/lib -L${CUDA_ROOT}/lib -Wl,-rpath -Wl,${CUDNN_ROOT}/lib64/ -L${CUDNN_ROOT}/lib64/ -Wl,-rpath -Wl,${CUDNN_ROOT}/lib -L${CUDNN_ROOT}/lib"
+  CUDNNLIBS+=" -lcudart -lcudnn -lcudnn_ops_infer -lcudnn_ops_train -lcudnn_cnn_infer -lcudnn_cnn_train -lcudnn_adv_infer -lcudnn_adv_train -Wl,-rpath -Wl,${CUDA_ROOT}/lib64/ -L${CUDA_ROOT}/lib64/ -Wl,-rpath -Wl,${CUDA_ROOT}/lib -L${CUDA_ROOT}/lib -Wl,-rpath -Wl,${CUDNN_ROOT}/lib64/ -L${CUDNN_ROOT}/lib64/ -Wl,-rpath -Wl,${CUDNN_ROOT}/lib -L${CUDNN_ROOT}/lib"
   logEcho "[Korali] Using CUDA Libraries located at ${CUDA_ROOT}."
   logEcho "[Korali] Using CUDNN Libraries located at ${CUDNN_ROOT}."
 fi
@@ -408,7 +408,7 @@ echo ONEDNNLIBS=$ONEDNNLIBS >> source/Makefile.conf
 
 echo LIBGPCFLAGS=$LIBGPCFLAGS >> source/Makefile.conf
 echo LIBGPLIBS=$LIBGPLIBS >> source/Makefile.conf
- 
+
 echo LIBCOCFLAGS=$LIBCOCFLAGS >> source/Makefile.conf
 echo LIBCOLIBS=$LIBCOLIBS >> source/Makefile.conf
 
@@ -437,7 +437,7 @@ echo OPTFLAGS=$OPTFLAGS >> source/Makefile.conf
 echo WARNINGFLAGS=$WARNINGFLAGS >> source/Makefile.conf
 echo MACHINEARCH=$arch >> source/Makefile.conf
 
-echo PYBIND11INCLUDES=$PYBIND11INCLUDES >> source/Makefile.conf 
+echo PYBIND11INCLUDES=$PYBIND11INCLUDES >> source/Makefile.conf
 echo PYTHONLIBS=$PYTHONLIBS >> source/Makefile.conf
 
 ######## Compiling Korali C++ Engine #########
@@ -460,7 +460,7 @@ fi
 if [ "$arch" == "Darwin" ]; then
  if [ -f ${LIBGPROOT}/lib64/libgp.dylib ]; then
    install_name_tool -change libgp.dylib ${LIBGPROOT}/lib64/libgp.dylib source/libkorali.so; check
- else 
+ else
    install_name_tool -change libgp.dylib ${LIBGPROOT}/lib/libgp.dylib source/libkorali.so; check
  fi
 fi

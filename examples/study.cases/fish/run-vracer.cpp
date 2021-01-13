@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
   e["Problem"]["Environment Function"] = &runEnvironment;
   e["Problem"]["Training Reward Threshold"] = 8.0;
   e["Problem"]["Policy Testing Episodes"] = 5;
-  e["Problem"]["Actions Between Policy Updates"] = 100;
+  e["Problem"]["Actions Between Policy Updates"] = 1;
 
   // Adding custom setting to run the environment without dumping the state files during training
   e["Problem"]["Custom Settings"]["Dump Frequency"] = 0.0;
@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
   e["Variables"][curVariable]["Exploration Sigma"]["Annealing Rate"] = 1e-5;
 
   curVariable++;
-  e["Variables"][curVariable]["Name"] = "Force";
+  e["Variables"][curVariable]["Name"] = "Speed";
   e["Variables"][curVariable]["Type"] = "Action";
   e["Variables"][curVariable]["Lower Bound"] = -0.25;
   e["Variables"][curVariable]["Upper Bound"] = +0.25;
@@ -77,13 +77,14 @@ int main(int argc, char *argv[])
 
   /// Defining Agent Configuration
 
-  e["Solver"]["Type"] = "Agent / Continuous / GFPT";
+  e["Solver"]["Type"] = "Agent / Continuous / VRACER";
   e["Solver"]["Mode"] = "Training";
   e["Solver"]["Agent Count"] = N;
   e["Solver"]["Episodes Per Generation"] = 1;
   e["Solver"]["Experiences Between Policy Updates"] = 1;
-  e["Solver"]["Cache Persistence"] = 100;
-  e["Solver"]["Learning Rate"] = 0.001;
+  e["Solver"]["Cache Persistence"] = 200;
+  e["Solver"]["Learning Rate"] = 1e-4;
+  e["Solver"]["Discount Factor"] = 0.95;
 
   /// Defining the configuration of replay memory
 
@@ -105,7 +106,6 @@ int main(int argc, char *argv[])
 
   //// Defining Critic and Policy Configuration
 
-  e["Solver"]["Critic"]["Advantage Function Population"] = 12;
   e["Solver"]["Policy"]["Learning Rate Scale"] = 0.1;
   e["Solver"]["Policy"]["Target Accuracy"] = 0.01;
   e["Solver"]["Policy"]["Optimization Candidates"] = 24;
@@ -113,12 +113,9 @@ int main(int argc, char *argv[])
   //// Defining Neural Network
 
   e["Solver"]["Neural Network"]["Engine"] = "OneDNN";
-
   e["Solver"]["Time Sequence Length"] = 16;
-
   e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Recurrent/GRU";
   e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 32;
-
   e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Recurrent/GRU";
   e["Solver"]["Neural Network"]["Hidden Layers"][1]["Output Channels"] = 32;
 
@@ -128,6 +125,7 @@ int main(int argc, char *argv[])
 
   ////// Setting Korali output configuration
 
+  e["Console Output"]["Verbosity"] = "Detailed";
   e["File Output"]["Enabled"] = true;
   e["File Output"]["Frequency"] = 1;
   e["File Output"]["Path"] = trainingResultsPath;

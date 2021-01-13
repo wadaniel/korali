@@ -1,4 +1,4 @@
-//  Korali environment for CubismUP_2D For Fish Following Experiment
+//  Korali environment for CubismUP-2D
 //  Copyright (c) 2020 CSE-Lab, ETH Zurich, Switzerland.
 
 #include "environment.hpp"
@@ -11,6 +11,7 @@ char **_argv;
 std::mt19937 _randomGenerator;
 Simulation *_environment;
 
+// Swimmer following an obstacle
 void runEnvironment(korali::Sample &s)
 {
   // Setting seed
@@ -144,12 +145,12 @@ void runEnvironment(korali::Sample &s)
 
 void setInitialConditions(StefanFish *agent, Shape *object, const bool isTraining)
 {
-  // Initial fixed conditions for testing
+  // Initial fixed conditions
   double SA = 0.0;
   double SX = 0.3;
   double SY = 0.0;
 
-  // If training, add noise to them
+  // or with noise
   //if (isTraining)
   //{
   // std::uniform_real_distribution<double> disA(-20. / 180. * M_PI, 20. / 180. * M_PI);

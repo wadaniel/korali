@@ -1,15 +1,15 @@
-BINARIES = run-gfpt
+BINARIES = run-vracer
 KORALICXX=$(shell python3 -m korali.cxx --compiler)
 KORALICFLAGS=`python3 -m korali.cxx --cflags`
 KORALILIBS=`python3 -m korali.cxx --libs`
-CUBISMCFLAGS=$(shell cat cubism.cflags.txt) -I_deps/cubism/source -I_deps/cubism/Cubism/include -DCUBISM
-CUBISMLIBS= libcubism.a $(shell cat cubism.libs.txt) -lstdc++fs
+CUBISMCFLAGS=$(shell cat cup.cflags.txt) -I_deps/CUP-2D/source -I_deps/CUP-2D/Cubism/include -DCUBISM
+CUBISMLIBS= libcup.a $(shell cat cup.libs.txt) -lstdc++fs
 
 .SECONDARY:
 .PHONY: all 
 all: $(BINARIES)
 
-$(BINARIES) : % : %.o environment.o 
+$(BINARIES): % : %.o environment.o 
 	$(KORALICXX) -o $@ $^ $(KORALILIBS) $(CUBISMLIBS)
 
 %.o: %.cpp
@@ -20,5 +20,4 @@ environment.o: _environment/environment.cpp
 
 .PHONY: clean
 clean:
-	$(MAKE) -C _environment clean
 	$(RM) $(BINARIES) *.o *.ti *.optrpt *.h5 *.dat *.xmf

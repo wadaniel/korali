@@ -28,15 +28,17 @@ for i in range(dim):
     e["Variables"][i]["Name"] = "X" + str(i)
     e["Variables"][i]["Lower Bound"] = -25.0
     e["Variables"][i]["Upper Bound"] = +25.0
-    e["Variables"][i]["Initial Standard Deviation"] = 3.0
+    e["Variables"][i]["Initial Standard Deviation"] = 3.0/100.
 
 # Configuring CMA-ES parameters
 e["Solver"]["Type"] = "Optimizer/CMAES"
 e["Solver"]["Population Size"] = 32
+e["Solver"]["Is Diagonal"] = True
 e["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-32
 e["Solver"]["Termination Criteria"]["Max Generations"] = 100
 
 # Configuring results path
+#e["File Output"]["Enabled"] = False
 e["File Output"]["Path"] = '_korali_result_cmaes'
 e["File Output"]["Frequency"] = 1
 

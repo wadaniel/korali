@@ -30,6 +30,7 @@ e["Variables"][7]["Name"] = "Force"
 e["Variables"][7]["Type"] = "Action"
 e["Variables"][7]["Lower Bound"] = -20.0
 e["Variables"][7]["Upper Bound"] = +20.0
+e["Variables"][7]["Initial Exploration Noise"] = 2.0
 
 ### Defining Termination Criteria
 

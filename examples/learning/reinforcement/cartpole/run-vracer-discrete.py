@@ -62,7 +62,7 @@ e["Solver"]["Random Action Probability"] = 0.05
 ## Defining Q-Critic and Action-selection (policy) optimizers
 
 e["Solver"]["Discount Factor"] = 0.99
-e["Solver"]["Learning Rate"] = 1e-4
+e["Solver"]["Learning Rate"] = 1e-3
 e["Solver"]["Mini Batch Size"] = 32
 
 ### Configuring the neural network and its hidden layers

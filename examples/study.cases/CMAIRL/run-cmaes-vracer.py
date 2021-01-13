@@ -15,7 +15,7 @@ k = korali.Engine()
 
 # Creating new experiment
 e = korali.Experiment()
-found = e.loadState('_korali_result_cmaes_vracer_obs/latest')
+found = e.loadState('_korali_result_cmaes_vracer/latest')
 if (found == True):
   print('Continuing execution from latest...')
  

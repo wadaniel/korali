@@ -20,7 +20,7 @@ e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = envp
 e["Problem"]["Training Reward Threshold"] = 490
 e["Problem"]["Testing Frequency"] = 100
-e["Problem"]["Policy Testing Episodes"] = 25
+e["Problem"]["Policy Testing Episodes"] = 1
 e["Problem"]["Actions Between Policy Updates"] = 5
 
 e["Variables"][0]["Name"] = "Cart Position"
@@ -93,6 +93,7 @@ e["File Output"]["Enabled"] = False
 
 ### Running Experiment
 
+e["Solver"]["Testing"]["Backup Agent"] = True
 e["Problem"]["Custom Settings"]["Record Observations"] = "False"
 
 k.run(e)

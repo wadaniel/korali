@@ -302,9 +302,8 @@ void Agent::attendAgent(size_t agentId)
           _testingBestEpisodeId = _agents[agentId]["Sample Id"];
           _testingBestHyperparameters = _agents[agentId]["Hyperparameters"];
         }
-        else
+        else if (_testingBackupAgent)
         {
-            printf(" ----------------- BACKUP AGENT ---------------- \n");
             backupAgent();
         }
       }

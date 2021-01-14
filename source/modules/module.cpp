@@ -161,17 +161,10 @@ Module *Module::getModule(knlohmann::json &js, Experiment *e)
   if (module == nullptr) KORALI_LOG_ERROR(" + Unrecognized module: %s.\n", moduleType.c_str());
 
   // If this is a new experiment, we should assign it its own configuration
-  if (isExperiment == true)
-    dynamic_cast<Experiment *>(module)->_js.getJson() = js;
+  if (isExperiment == true) dynamic_cast<Experiment *>(module)->_js.getJson() = js;
 
   // If this is a module inside an experiment, it needs to be properly configured
-  if (isExperiment == false)
-  {
-    module->_k = e;
-    module->applyVariableDefaults();
-    module->applyModuleDefaults(js);
-    module->setConfiguration(js);
-  }
+  if (isExperiment == false) module->_k = e;
 
   return module;
 }

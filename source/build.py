@@ -95,8 +95,7 @@ def consumeValue(base, moduleName, path, varName, varType, isMandatory, options)
     cString += ' ' + varName + '.resize(' + base + path + '.size());\n'
     cString += ' for(size_t i = 0; i < ' + base + path + '.size(); i++)'
     cString += ' {\n'
-    #cString += '   if (_k->_isInitialized == false) '' + varName + [i] = ((' + baseType + ') korali::Module::getModule(' + base + path + '[i], _k);\n'
-    cString += '  ' + varName + '[i] = (' + baseType + ') korali::Module::getModule(' + base + path + '[i], _k);\n'
+    cString += '   ' + varName + '[i] = (' + baseType + ') korali::Module::getModule(' + base + path + '[i], _k);\n'
     if (not 'Experiment' in varType):
      cString += '   ' + varName + '[i]->applyVariableDefaults();\n'
      cString += '   ' + varName + '[i]->applyModuleDefaults(' + base + path + '[i]);\n'
@@ -106,12 +105,14 @@ def consumeValue(base, moduleName, path, varName, varType, isMandatory, options)
 
   if ('korali::' in varType and not detectedKoraliType):
     rhs = 'dynamic_cast<' + varType + '>(korali::Module::getModule(' + base + path + ', _k));\n'
-   # cString += 'if (_k->_isInitialized == false)  ' + varName + ' = ' + rhs
-    cString += ' ' + varName + ' = ' + rhs
+    if ('Solver' in varType):
+      cString += '  if (_k->_isInitialized == false) ' + varName + ' = ' + rhs
+    else:
+      cString += ' ' + varName + ' = ' + rhs
     if (not 'Experiment' in varType):
-     cString += ' ' + varName + '->applyVariableDefaults();'
-     cString += ' ' + varName + '->applyModuleDefaults(' + base + path + ');'
-     cString += ' ' + varName + '->setConfiguration(' + base + path + ');'
+     cString += ' ' + varName + '->applyVariableDefaults();\n'
+     cString += ' ' + varName + '->applyModuleDefaults(' + base + path + ');\n'
+     cString += ' ' + varName + '->setConfiguration(' + base + path + ');\n'
     detectedKoraliType = True
    
   if (not detectedKoraliType):

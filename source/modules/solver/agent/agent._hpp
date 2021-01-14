@@ -444,11 +444,6 @@ class Agent : public Solver
    */
   virtual void getAction(korali::Sample &sample) = 0;
 
-  /**
-   * @brief Sets hyperparameter to best testing hyperparameter
-   */
-  void backupAgent();
-
   void runGeneration() override;
   void printGenerationAfter() override;
   void initialize() override;

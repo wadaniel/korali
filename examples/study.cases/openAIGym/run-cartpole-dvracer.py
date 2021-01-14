@@ -16,7 +16,7 @@ e = korali.Experiment()
 e["Problem"]["Type"] = "Reinforcement Learning / Discrete"
 e["Problem"]["Possible Actions"] = [ [ 0.0 ], [ 1.0 ] ]
 e["Problem"]["Environment Function"] = env
-e["Problem"]["Training Reward Threshold"] = 800
+e["Problem"]["Training Reward Threshold"] = 80
 e["Problem"]["Policy Testing Episodes"] = 20
 e["Problem"]["Actions Between Policy Updates"] = 1
 
@@ -89,7 +89,7 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tan
 
 ### Defining Termination Criteria
 
-e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 800
+e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 80
 
 ### Setting file output configuration
 

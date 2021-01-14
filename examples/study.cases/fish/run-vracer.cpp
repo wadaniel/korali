@@ -62,18 +62,14 @@ int main(int argc, char *argv[])
   e["Variables"][curVariable]["Type"] = "Action";
   e["Variables"][curVariable]["Lower Bound"] = -1.0;
   e["Variables"][curVariable]["Upper Bound"] = +1.0;
-  e["Variables"][curVariable]["Exploration Sigma"]["Initial"] = 0.4;
-  e["Variables"][curVariable]["Exploration Sigma"]["Final"] = 0.05;
-  e["Variables"][curVariable]["Exploration Sigma"]["Annealing Rate"] = 1e-5;
+  e["Variables"][curVariable]["Initial Exploration Noise"] = 0.50f;
 
   curVariable++;
   e["Variables"][curVariable]["Name"] = "Speed";
   e["Variables"][curVariable]["Type"] = "Action";
   e["Variables"][curVariable]["Lower Bound"] = -0.25;
   e["Variables"][curVariable]["Upper Bound"] = +0.25;
-  e["Variables"][curVariable]["Exploration Sigma"]["Initial"] = 0.1;
-  e["Variables"][curVariable]["Exploration Sigma"]["Final"] = 0.02;
-  e["Variables"][curVariable]["Exploration Sigma"]["Annealing Rate"] = 1e-5;
+  e["Variables"][curVariable]["Initial Exploration Noise"] = 0.50f;
 
   /// Defining Agent Configuration
 
@@ -104,12 +100,6 @@ int main(int argc, char *argv[])
   e["Solver"]["Mini Batch Size"] = 128;
   e["Solver"]["Mini Batch Strategy"] = "Uniform";
 
-  //// Defining Critic and Policy Configuration
-
-  e["Solver"]["Policy"]["Learning Rate Scale"] = 0.1;
-  e["Solver"]["Policy"]["Target Accuracy"] = 0.01;
-  e["Solver"]["Policy"]["Optimization Candidates"] = 24;
-
   //// Defining Neural Network
 
   e["Solver"]["Neural Network"]["Engine"] = "OneDNN";
@@ -125,10 +115,10 @@ int main(int argc, char *argv[])
 
   ////// Setting Korali output configuration
 
-  e["Console Output"]["Verbosity"] = "Detailed";
-  e["File Output"]["Enabled"] = true;
-  e["File Output"]["Frequency"] = 1;
-  e["File Output"]["Path"] = trainingResultsPath;
+  // e["Console Output"]["Verbosity"] = "Detailed";
+  // e["File Output"]["Enabled"] = true;
+  // e["File Output"]["Frequency"] = 1;
+  // e["File Output"]["Path"] = trainingResultsPath;
 
   ////// Running Experiment
 

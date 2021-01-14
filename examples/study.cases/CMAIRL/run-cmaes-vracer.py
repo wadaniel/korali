@@ -45,7 +45,7 @@ e["File Output"]["Frequency"] = 1
 
 e["Console Output"]["Verbosity"] = "Detailed"
 
-#k["Conduit"]["Type"] = "Concurrent"
-#k["Conduit"]["Concurrent Jobs"] = 8
+k["Conduit"]["Type"] = "Concurrent"
+k["Conduit"]["Concurrent Jobs"] = 8
 
 k.run(e)

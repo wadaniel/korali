@@ -298,10 +298,6 @@ void Agent::attendAgent(size_t agentId)
           _testingBestEpisodeId = _agents[agentId]["Sample Id"];
           _testingBestPolicy = _agents[agentId]["Policy Hyperparameters"];
         }
-        else if (_testingBackupAgent)
-        {
-            setAgentPolicy(_testingBestPolicy);
-        }
       }
 
       // Obtaining profiling information

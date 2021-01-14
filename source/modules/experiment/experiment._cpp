@@ -223,7 +223,7 @@ void Experiment::initialize()
   getConfiguration(_js.getJson());
 
   // Updating verbosity level
-  _logger = new Logger(_consoleOutputVerbosity, stdout);
+  if (_isInitialized == false) _logger = new Logger(_consoleOutputVerbosity, stdout);
 
   // Initializing problem and solver modules
   _problem->initialize();

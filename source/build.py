@@ -76,61 +76,57 @@ def getParentClassName(headerFileString):
 
 
 def consumeValue(base, moduleName, path, varName, varType, isMandatory, options):
-  cString = '\n'
-
   # We ignore variable types, as they are managed by the modules themselves
-  if ('std::vector<korali::Variable' in varType):  return cString
+  if ('std::vector<korali::Variable' in varType): return ''
 
-  # Checking whether its defined
-  cString += ' if (isDefined(' + base + ', ' + path.replace('][', ", ").replace('[', '').replace(']', '') + '))\n'
-  cString += ' {\n'
-    
   # Flag to indicate a Korali module was detected
   detectedKoraliType = False
-    
+  
+  # Checking whether its defined
+  cString = ' if (isDefined(' + base + ', ' + path.replace('][', ", ").replace('[', '').replace(']', '') + '))\n'
+  cString += ' {\n'
+
   if ('korali::Sample' in varType and not detectedKoraliType):
     cString += ' ' + varName + '._js.getJson() = ' + base + path + ';\n'
     detectedKoraliType = True
 
-  if ('std::vector<korali::Variable*>' in varType and not detectedKoraliType):
-    detectedKoraliType = True
-
   if ('std::vector<korali::' in varType and not detectedKoraliType):
     baseType = varType.replace('std::vector<', '').replace('>', '')
-    cString += ' ' + varName + '.clear();\n'
-    cString += ' for(size_t i = 0; i < ' + base + path + '.size(); i++) ' + varName + '.push_back((' + baseType + ') korali::Module::getModule(' + base + path + '[i], _k));\n'
+    cString += ' ' + varName + '.resize(' + base + path + '.size());\n'
+    cString += ' for(size_t i = 0; i < ' + base + path + '.size(); i++)'
+    cString += ' {\n'
+    #cString += '   if (_k->_isInitialized == false) '' + varName + [i] = ((' + baseType + ') korali::Module::getModule(' + base + path + '[i], _k);\n'
+    cString += '  ' + varName + '[i] = (' + baseType + ') korali::Module::getModule(' + base + path + '[i], _k);\n'
+    if (not 'Experiment' in varType):
+     cString += '   ' + varName + '[i]->applyVariableDefaults();\n'
+     cString += '   ' + varName + '[i]->applyModuleDefaults(' + base + path + '[i]);\n'
+     cString += '   ' + varName + '[i]->setConfiguration(' + base + path + '[i]);\n'
+    cString += ' }\n'
     detectedKoraliType = True
 
   if ('korali::' in varType and not detectedKoraliType):
     rhs = 'dynamic_cast<' + varType + '>(korali::Module::getModule(' + base + path + ', _k));\n'
+   # cString += 'if (_k->_isInitialized == false)  ' + varName + ' = ' + rhs
     cString += ' ' + varName + ' = ' + rhs
-    detectedKoraliType = True
-  if ('gsl_rng*' in varType and not detectedKoraliType):
-    rhs = 'setRange(' + base + path + '.get<std::string>());\n'
-    cString += ' ' + varName + ' = ' + rhs
+    if (not 'Experiment' in varType):
+     cString += ' ' + varName + '->applyVariableDefaults();'
+     cString += ' ' + varName + '->applyModuleDefaults(' + base + path + ');'
+     cString += ' ' + varName + '->setConfiguration(' + base + path + ');'
     detectedKoraliType = True
-
+   
   if (not detectedKoraliType):
     rhs = base + path + '.get<' + varType + '>();\n'
-    cString += '   try { ' + varName + ' = ' + rhs + '} catch (const std::exception& e) { KORALI_LOG_ERROR(" + Object: [ ' + moduleName + ' ] \\n + Key:    ' + path.replace('"', "'") + '\\n%s", e.what()); } \n'
+    if ('gsl_rng*' in varType): rhs = 'setRange(' + base + path + '.get<std::string>());\n'
   
-    cString += '\n'
-  
-    if (options):
-      cString += '{\n'
-      validVarName = 'validOption'
-      cString += ' bool ' + validVarName + ' = false; \n'
-      for v in options:
-        cString += ' if (' + varName + ' == "' + v + '") ' + validVarName + ' = true; \n'
-      cString += ' if (' + validVarName + ' == false) KORALI_LOG_ERROR(" + Unrecognized value (%s) provided for mandatory setting: ' + path.replace(
-          '"', "'") + ' required by ' + moduleName + '.\\n", ' + varName + '.c_str()); \n'
-      cString += '}\n'
-
+    cString += ' try { ' + varName + ' = ' + rhs + '} catch (const std::exception& e)\n'
+    cString += ' { KORALI_LOG_ERROR(" + Object: [ ' + moduleName + ' ] \\n + Key:    ' + path.replace('"', "'") + '\\n%s", e.what()); } \n'  
+    if (options):      cString += '{\n'      validVarName = 'validOption'      cString += ' bool ' + validVarName + ' = false; \n'      for v in options:        cString += ' if (' + varName + ' == "' + v + '") ' + validVarName + ' = true; \n'      cString += ' if (' + validVarName + ' == false) KORALI_LOG_ERROR(" + Unrecognized value (%s) provided for mandatory setting: ' + path.replace('"', "'") + ' required by ' + moduleName + '.\\n", ' + varName + '.c_str()); \n'      cString += '}\n'  
   cString += '   eraseValue(' + base + ', ' + path.replace('][', ", ").replace('[', '').replace(']', '') + ');\n'
   cString += ' }\n'
   if (isMandatory):
     cString += '  else '
     cString += '  KORALI_LOG_ERROR(" + No value provided for mandatory setting: ' + path.replace('"', "'") + ' required by ' + moduleName + '.\\n"); \n'
+
   cString += '\n'
   return cString
 
@@ -669,4 +665,6 @@ newBaseString = newBaseString.replace(' // Variable Declaration List',
 save_if_different(variableNewHeaderFile, newBaseString)
 
 print("[Korali] End Parser\n")
+
+
 

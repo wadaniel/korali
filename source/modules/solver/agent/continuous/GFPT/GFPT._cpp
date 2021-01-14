@@ -149,6 +149,8 @@ void GFPT::initializeAgent()
     _aLearner->_trainingNeuralNetwork->getConfiguration(nnConfig);
     nnConfig["Batch Size"] = _policyOptimizationCandidates;
     _batchOptimizationNetworks[threadIdx] = dynamic_cast<NeuralNetwork *>(getModule(nnConfig, _k));
+    _batchOptimizationNetworks[threadIdx]->applyModuleDefaults(nnConfig);
+    _batchOptimizationNetworks[threadIdx]->setConfiguration(nnConfig);
     _batchOptimizationNetworks[threadIdx]->initialize();
   }
 

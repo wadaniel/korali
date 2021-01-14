@@ -80,6 +80,8 @@ void Engine::start()
 
   // Only initialize conduit if the Engine being ran is the first one in the process
   auto conduit = dynamic_cast<Conduit *>(getModule(_js["Conduit"], _k));
+  conduit->applyModuleDefaults(_js["Conduit"]);
+  conduit->setConfiguration(_js["Conduit"]);
   conduit->initialize();
 
   // Initializing conduit server

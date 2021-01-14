@@ -64,6 +64,8 @@ void DeepSupervisor::initialize()
   trainingNeuralNetworkConfig["Batch Size"] = _problem->_trainingBatchSize;
   trainingNeuralNetworkConfig["Mode"] = "Training";
   _trainingNeuralNetwork = dynamic_cast<NeuralNetwork *>(getModule(trainingNeuralNetworkConfig, _k));
+  _trainingNeuralNetwork->applyModuleDefaults(trainingNeuralNetworkConfig);
+  _trainingNeuralNetwork->setConfiguration(trainingNeuralNetworkConfig);
   _trainingNeuralNetwork->initialize();
 
   // Creating inference neural networks (one per thread)
@@ -74,6 +76,8 @@ void DeepSupervisor::initialize()
     inferenceNeuralNetworkConfig["Batch Size"] = _problem->_inferenceBatchSize;
     inferenceNeuralNetworkConfig["Mode"] = "Inference";
     _inferenceNeuralNetworks[i] = dynamic_cast<NeuralNetwork *>(getModule(inferenceNeuralNetworkConfig, _k));
+    _inferenceNeuralNetworks[i]->applyModuleDefaults(inferenceNeuralNetworkConfig);
+    _inferenceNeuralNetworks[i]->setConfiguration(inferenceNeuralNetworkConfig);
     _inferenceNeuralNetworks[i]->initialize();
   }
 

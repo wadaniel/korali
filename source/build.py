@@ -120,10 +120,18 @@ def consumeValue(base, moduleName, path, varName, varType, isMandatory, options)
     if ('gsl_rng*' in varType): rhs = 'setRange(' + base + path + '.get<std::string>());\n'
   
     cString += ' try { ' + varName + ' = ' + rhs + '} catch (const std::exception& e)\n'
-    cString += ' { KORALI_LOG_ERROR(" + Object: [ ' + moduleName + ' ] \\n + Key:    ' + path.replace('"', "'") + '\\n%s", e.what()); } \n'  
-    if (options):      cString += '{\n'      validVarName = 'validOption'      cString += ' bool ' + validVarName + ' = false; \n'      for v in options:        cString += ' if (' + varName + ' == "' + v + '") ' + validVarName + ' = true; \n'      cString += ' if (' + validVarName + ' == false) KORALI_LOG_ERROR(" + Unrecognized value (%s) provided for mandatory setting: ' + path.replace('"', "'") + ' required by ' + moduleName + '.\\n", ' + varName + '.c_str()); \n'      cString += '}\n'  
+    cString += ' { KORALI_LOG_ERROR(" + Object: [ ' + moduleName + ' ] \\n + Key:    ' + path.replace('"', "'") + '\\n%s", e.what()); } \n'  
+    if (options):
+      cString += '{\n'
+      validVarName = 'validOption'
+      cString += ' bool ' + validVarName + ' = false; \n'
+      for v in options:  cString += ' if (' + varName + ' == "' + v + '") ' + validVarName + ' = true; \n'
+      cString += ' if (' + validVarName + ' == false) KORALI_LOG_ERROR(" + Unrecognized value (%s) provided for mandatory setting: ' + path.replace('"', "'") + ' required by ' + moduleName + '.\\n", ' + varName + '.c_str()); \n'
+      cString += '}\n'  
+  
   cString += '   eraseValue(' + base + ', ' + path.replace('][', ", ").replace('[', '').replace(']', '') + ');\n'
   cString += ' }\n'
+  
   if (isMandatory):
     cString += '  else '
     cString += '  KORALI_LOG_ERROR(" + No value provided for mandatory setting: ' + path.replace('"', "'") + ' required by ' + moduleName + '.\\n"); \n'

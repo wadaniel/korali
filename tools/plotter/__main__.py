@@ -65,19 +65,45 @@ def main(path, check, test, output, args):
 
   del genList[0]
 
-  requestedSolver = js['Solver']['Type']
-  solverName = requestedSolver.rsplit('/')[-1]
+  solverName = js['Solver']['Type'].lower() 
+  solverDir = ""
+  moduleName = ""
+  
+  if ("cmaes" in solverName):
+   solverDir = curdir + '/../modules/solver/optimizer/CMAES'
+   moduleName = 'CMAES'
+   
+  if ("dea" in solverName):
+   solverDir = curdir + '/../modules/solver/optimizer/DEA'
+   moduleName = 'DEA'
 
-  solverDir = curdir + '/../modules/solver/'
-  for folder in requestedSolver.rsplit('/')[:-1]:
-    solverDir += folder.lower()
-  solverDir += '/' + solverName
-  solverFile = solverDir + '/' + solverName + '.py'
+  if ("lmcmaes" in solverName):
+   solverDir = curdir + '/../modules/solver/optimizer/LMCMAES'
+   moduleName = 'LMCMAES'
+   
+  if ("mocmaes" in solverName):
+   solverDir = curdir + '/../modules/solver/optimizer/MOCMAES'
+   moduleName = 'MOCMAES'
+   
+  if ("mcmc" in solverName):
+   solverDir = curdir + '/../modules/solver/sampler/MCMC'
+   moduleName = 'MCMC'
+   
+  if ("nested" in solverName):
+   solverDir = curdir + '/../modules/solver/sampler/Nested'
+   moduleName = 'Nested'
+   
+  if ("tmcmc" in solverName):
+   solverDir = curdir + '/../modules/solver/sampler/TMCMC'
+   moduleName = 'TMCMC'
 
-  if os.path.isfile(solverFile):
-    sys.path.append(solverDir)
-    solverLib = importlib.import_module(solverName, package=None)
-    solverLib.plot(genList, args)
+  if (solverDir == ""):
+   print("[Korali] Solver '{0}' does not provide support for plotting.".format(solverName))
+   exit(0)
+   
+  sys.path.append(solverDir)
+  solverLib = importlib.import_module(moduleName, package=None)
+  solverLib.plot(genList, args)
 
   if not output:
     plt.show()
@@ -85,25 +111,6 @@ def main(path, check, test, output, args):
   else:
     plt.savefig(output)
     exit(0)
-
-  if solverName.replace(' ', '') == 'Executor':
-    # TODO
-    print("[Korali] No plotter for solver of type Executor available...")
-    exit(0)
-
-  if solverName.replace(' ', '') == 'Rprop':
-    # TODO
-    print("[Korali] No plotter for solver of type Rprop available...")
-    exit(0)
-
-  if solverName.replace(' ', '') == 'DeepLearner':
-    # TODO
-    print("[Korali] No plotter for solver of type Deep Learner available...")
-    exit(0)
-
-  print("[Korali] Error: Did not recognize solver '{0}' for plotting...".format(
-      solverName))
-  exit(-1)
 
 
 if __name__ == '__main__':

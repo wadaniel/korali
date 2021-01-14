@@ -8,9 +8,11 @@ import json
 
 
 def getVariableType(v):
-  # Replacing bools with ints for Python compatibility
-  return v['Type'].replace('bool', 'int').replace(
-      'std::function<void(korali::Sample&)>', 'std::uint64_t')
+  # Replacing bools with ints for Python compatibility+
+  vType = v['Type']
+  vType = vType.replace('bool', 'int')
+  vType = vType.replace('std::function<void(korali::Sample&)>', 'std::uint64_t')
+  return vType
 
 def getCXXVariableName(v):
   cVarName = ''
@@ -39,7 +41,6 @@ def getVariableOptions(v):
     for item in v["Options"]:
       options.append(item["Value"])
   return options
-
 
 def getOptionName(path):
   nameList = path.rsplit('/')
@@ -77,68 +78,61 @@ def getParentClassName(headerFileString):
 def consumeValue(base, moduleName, path, varName, varType, isMandatory, options):
   cString = '\n'
 
-  if ('std::function' in varType):
-    cString += ' try { ' + varName + ' = ' + base + path + '.get<size_t>(); } catch (const std::exception& e) {\n'
-    cString += '   KORALI_LOG_ERROR(" + Object: [ ' + moduleName + ' ] \\n + Key:    ' + path.replace('"', "'") + '\\n%s", e.what());\n'
-    cString += ' } \n'
-    cString += '   eraseValue(' + base + ', ' + path.replace('][', ", ").replace('[', '').replace(']', '') + ');\n'
-    return cString
+  # We ignore variable types, as they are managed by the modules themselves
+  if ('std::vector<korali::Variable' in varType):  return cString
 
-  if ('std::vector<korali::Variable' in varType):
-    return cString
-
-  if ('korali::Sample' in varType):
+  # Checking whether its defined
+  cString += ' if (isDefined(' + base + ', ' + path.replace('][', ", ").replace('[', '').replace(']', '') + '))\n'
+  cString += ' {\n'
+    
+  # Flag to indicate a Korali module was detected
+  detectedKoraliType = False
+    
+  if ('korali::Sample' in varType and not detectedKoraliType):
     cString += ' ' + varName + '._js.getJson() = ' + base + path + ';\n'
-    cString += '   eraseValue(' + base + ', ' + path.replace('][', ", ").replace('[', '').replace(']', '') + ');\n'
-    return cString
+    detectedKoraliType = True
 
-  if ('std::vector<korali::Variable*>' in varType):
-    cString += ' eraseValue(' + base + ', ' + path.replace('][', ", ").replace('[', '').replace(']', '') + ');\n\n'
-    return cString
+  if ('std::vector<korali::Variable*>' in varType and not detectedKoraliType):
+    detectedKoraliType = True
 
-  if ('std::vector<korali::' in varType):
+  if ('std::vector<korali::' in varType and not detectedKoraliType):
     baseType = varType.replace('std::vector<', '').replace('>', '')
     cString += ' ' + varName + '.clear();\n'
-    cString += ' for(size_t i = 0; i < ' + base + path + '.size(); i++) ' + varName + '.push_back((' + baseType + ')korali::Module::getModule(' + base + path + '[i], _k));\n'
-    cString += ' eraseValue(' + base + ', ' + path.replace('][', ", ").replace('[', '').replace(']', '') + ');\n\n'
-    return cString
+    cString += ' for(size_t i = 0; i < ' + base + path + '.size(); i++) ' + varName + '.push_back((' + baseType + ') korali::Module::getModule(' + base + path + '[i], _k));\n'
+    detectedKoraliType = True
 
-  rhs = base + path + '.get<' + varType + '>();\n'
-
-  if ('korali::' in varType):
+  if ('korali::' in varType and not detectedKoraliType):
     rhs = 'dynamic_cast<' + varType + '>(korali::Module::getModule(' + base + path + ', _k));\n'
-
-  if ('gsl_rng*' in varType):
+    cString += ' ' + varName + ' = ' + rhs
+    detectedKoraliType = True
+  if ('gsl_rng*' in varType and not detectedKoraliType):
     rhs = 'setRange(' + base + path + '.get<std::string>());\n'
+    cString += ' ' + varName + ' = ' + rhs
+    detectedKoraliType = True
 
-  cString += ' if (isDefined(' + base + ', ' + path.replace('][', ", ").replace('[', '').replace(']', '') + '))  \n  { \n'
-  if (not 'korali::' in varType): cString += ' try {\n'
-  cString += varName + ' = ' + rhs + '\n'
-  if (not 'korali::' in varType): cString += ' } catch (const std::exception& e) {\n'
-  if (not 'korali::' in varType): cString += '   KORALI_LOG_ERROR(" + Object: [ ' + moduleName + ' ] \\n + Key:    ' + path.replace('"', "'") + '\\n%s", e.what());\n'
-  if (not 'korali::' in varType): cString += ' } \n'
+  if (not detectedKoraliType):
+    rhs = base + path + '.get<' + varType + '>();\n'
+    cString += '   try { ' + varName + ' = ' + rhs + '} catch (const std::exception& e) { KORALI_LOG_ERROR(" + Object: [ ' + moduleName + ' ] \\n + Key:    ' + path.replace('"', "'") + '\\n%s", e.what()); } \n'
+  
+    cString += '\n'
+  
+    if (options):
+      cString += '{\n'
+      validVarName = 'validOption'
+      cString += ' bool ' + validVarName + ' = false; \n'
+      for v in options:
+        cString += ' if (' + varName + ' == "' + v + '") ' + validVarName + ' = true; \n'
+      cString += ' if (' + validVarName + ' == false) KORALI_LOG_ERROR(" + Unrecognized value (%s) provided for mandatory setting: ' + path.replace(
+          '"', "'") + ' required by ' + moduleName + '.\\n", ' + varName + '.c_str()); \n'
+      cString += '}\n'
+
   cString += '   eraseValue(' + base + ', ' + path.replace('][', ", ").replace('[', '').replace(']', '') + ');\n'
-  cString += '  }\n'
-
+  cString += ' }\n'
   if (isMandatory):
     cString += '  else '
     cString += '  KORALI_LOG_ERROR(" + No value provided for mandatory setting: ' + path.replace('"', "'") + ' required by ' + moduleName + '.\\n"); \n'
-
-  cString += '\n'
-
-  if (options):
-    cString += '{\n'
-    validVarName = 'validOption'
-    cString += ' bool ' + validVarName + ' = false; \n'
-    for v in options:
-      cString += ' if (' + varName + ' == "' + v + '") ' + validVarName + ' = true; \n'
-    cString += ' if (' + validVarName + ' == false) KORALI_LOG_ERROR(" + Unrecognized value (%s) provided for mandatory setting: ' + path.replace(
-        '"', "'") + ' required by ' + moduleName + '.\\n", ' + varName + '.c_str()); \n'
-    cString += '}\n'
-
   cString += '\n'
   return cString
-
 
 #####################################################################
 
@@ -421,40 +415,33 @@ def createHeaderDeclarations(module):
       headerString += '/**\n'
       headerString += '* @brief ' + v["Description"] + '\n'
       headerString += '*/\n'
-      headerString += ' ' + getVariableType(v) + ' ' + getCXXVariableName(
-          v["Name"]) + ';\n'
+      headerString += ' ' + getVariableType(v) + ' ' + getCXXVariableName(v["Name"]) + ';\n'
 
   if 'Internal Settings' in module:
     for v in module["Internal Settings"]:
       headerString += '/**\n'
       headerString += '* @brief [Internal Use] ' + v["Description"] + '\n'
       headerString += '*/\n'
-      headerString += ' ' + getVariableType(v) + ' ' + getCXXVariableName(
-          v["Name"]) + ';\n'
+      headerString += ' ' + getVariableType(v) + ' ' + getCXXVariableName(v["Name"]) + ';\n'
 
   if 'Termination Criteria' in module:
     for v in module["Termination Criteria"]:
       headerString += '/**\n'
-      headerString += '* @brief [Termination Criteria] ' + v[
-          "Description"] + '\n'
+      headerString += '* @brief [Termination Criteria] ' + v["Description"] + '\n'
       headerString += '*/\n'
-      headerString += ' ' + getVariableType(v) + ' ' + getCXXVariableName(
-          v["Name"]) + ';\n'
+      headerString += ' ' + getVariableType(v) + ' ' + getCXXVariableName(v["Name"]) + ';\n'
 
   if 'Conditional Variables' in module:
     for v in module["Conditional Variables"]:
       headerString += '/**\n'
-      headerString += '* @brief [Conditional Variable Value] ' + v[
-          "Description"] + '\n'
+      headerString += '* @brief [Conditional Variable Value] ' + v["Description"] + '\n'
       headerString += '*/\n'
       headerString += ' double ' + getCXXVariableName(v["Name"]) + ';\n'
 
       headerString += '/**\n'
-      headerString += '* @brief [Conditional Variable Reference] ' + v[
-          "Description"] + '\n'
+      headerString += '* @brief [Conditional Variable Reference] ' + v["Description"] + '\n'
       headerString += '*/\n'
-      headerString += ' std::string ' + getCXXVariableName(
-          v["Name"]) + 'Conditional;\n'
+      headerString += ' std::string ' + getCXXVariableName(v["Name"]) + 'Conditional;\n'
 
   return headerString
 
@@ -682,3 +669,4 @@ newBaseString = newBaseString.replace(' // Variable Declaration List',
 save_if_different(variableNewHeaderFile, newBaseString)
 
 print("[Korali] End Parser\n")
+

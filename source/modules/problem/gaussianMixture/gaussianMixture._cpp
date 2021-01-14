@@ -1,0 +1,24 @@
+#include "modules/problem/gaussianMixture/gaussianMixture.hpp"
+
+namespace korali
+{
+namespace problem
+{
+void GaussianMixture::initialize()
+{
+
+}
+
+void GaussianMixture::updateMeanSufficientStatistics(korali::Sample &sample)
+{
+
+}
+
+void GaussianMixture::updateHyperparameters(korali::Sample &sample)
+{
+
+}
+
+} // namespace problem
+
+} // namespace korali

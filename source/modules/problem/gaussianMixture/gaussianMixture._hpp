@@ -1,0 +1,33 @@
+#ifndef _KORALI_PROBLEM_GAUSSIAN_MIXTURE_HPP_
+#define _KORALI_PROBLEM_GAUSSIAN_MIXTURE_HPP_
+
+#include "modules/problem/problem.hpp"
+
+namespace korali
+{
+namespace problem
+{
+class GaussianMixture : public korali::Problem
+{
+  private:
+  public:
+  void initialize() override;
+
+  /**
+   * @brief Update the expected value of the sufficient statistics.
+   * @param
+   */
+  void updateMeanSufficientStatistics(korali::Sample &sample);
+
+  /**
+   * @brief Update the hyperparameters of the mixture distribution (weights,means,covariances).
+   * @param
+   */
+  void updateHyperparameters(korali::Sample &sample);
+
+};
+
+} // namespace problem
+} // namespace korali
+
+#endif // _KORALI_PROBLEM_GAUSSIAN_MIXTURE_HPP_

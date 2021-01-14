@@ -1,0 +1,33 @@
+#ifndef _KORALI_SOLVER_EM_HPP_
+#define _KORALI_SOLVER_EM_HPP_
+
+#include "modules/solver/solver.hpp"
+
+namespace korali
+{
+namespace solver
+{
+class EM : public Solver
+{
+  private:
+  public:
+  /**
+  * @brief Generate a sample and evaluate it.
+  */
+  void runGeneration() override;
+
+  /**
+  * @brief Console Output before generation runs.
+  */
+  void printGenerationBefore() override;
+
+  /**
+  * @brief Console output after generation.
+  */
+  void printGenerationAfter() override;
+};
+
+} // namespace solver
+} // namespace korali
+
+#endif // _KORALI_SOLVER_EM_HPP_

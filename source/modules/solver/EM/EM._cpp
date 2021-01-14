@@ -1,0 +1,24 @@
+#include "engine.hpp"
+#include "modules/solver/EM/EM.hpp"
+#include "sample/sample.hpp"
+
+namespace korali
+{
+namespace solver
+{
+
+void EM::runGeneration()
+{
+}
+
+void EM::printGenerationBefore()
+{
+}
+
+void EM::printGenerationAfter()
+{
+}
+
+} // namespace solver
+
+} // namespace korali

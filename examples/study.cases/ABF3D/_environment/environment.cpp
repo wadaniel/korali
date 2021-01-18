@@ -47,12 +47,12 @@ void runEnvironment(korali::Sample &s)
     action[0] = action[0] * (upperBounds[0] - lowerBounds[0]) * 0.5f + lowerBounds[0];
 
     // Printing Action:
-    if (curActionIndex % 20 == 0)
-    {
-      printf("Action %lu: [ %f", curActionIndex, action[0]);
-      for (size_t i = 1; i < action.size(); i++) printf(", %f", action[i]);
-      printf("]\n");
-    }
+    // if (curActionIndex % 20 == 0)
+    //{
+    //  printf("Action %lu: [ %f", curActionIndex, action[0]);
+    //  for (size_t i = 1; i < action.size(); i++) printf(", %f", action[i]);
+    //  printf("]\n");
+    //}
 
     // Setting action
     status = _environment->advance(action);

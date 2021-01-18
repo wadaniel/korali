@@ -76,7 +76,7 @@ int main(int argc, char *argv[])
 
   /// Defining the configuration of replay memory
 
-  e["Solver"]["Experience Replay"]["Start Size"] = 8192;
+  e["Solver"]["Experience Replay"]["Start Size"] = 16384;
   e["Solver"]["Experience Replay"]["Maximum Size"] = 65536;
 
   /// Configuring the Remember-and-Forget Experience Replay algorithm
@@ -89,14 +89,14 @@ int main(int argc, char *argv[])
 
   /// Configuring Mini Batch
 
-  e["Solver"]["Mini Batch Size"] = 256;
+  e["Solver"]["Mini Batch Size"] = 512;
   e["Solver"]["Mini Batch Strategy"] = "Uniform";
 
   /// Defining Critic and Policy Configuration
 
-  e["Solver"]["Policy"]["Learning Rate Scale"] = 0.01;
-  e["Solver"]["Policy"]["Target Accuracy"] = 0.05;
-  e["Solver"]["Policy"]["Optimization Candidates"] = 64;
+  e["Solver"]["Policy"]["Learning Rate Scale"] = 0.1;
+  e["Solver"]["Policy"]["Target Accuracy"] = 0.0005;
+  e["Solver"]["Policy"]["Optimization Candidates"] = 128;
 
   /// Configuring the neural network and its hidden layers
 

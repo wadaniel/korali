@@ -413,7 +413,7 @@ void VRACER::printAgentInformation()
   _k->_logger->logInfo("Normal", " + Average (Std) Vtbc in Mini-Batch:                  %f (%f)\n", _statisticsAverageQStar, _statisticsStdevQStar);
   _k->_logger->logInfo("Normal", " + Average (Std) TD-Error in Mini-Batch:              %f (%f)\n", _statisticsAverageTDError, _statisticsStdevTDError);
   _k->_logger->logInfo("Normal", " + Average (Std) Off-Policy Objective in Mini-Batch:  %f (%f)\n", _statisticsAveragePolicyError, _statisticsStdevPolicyError);
-  _k->_logger->logInfo("Normal", " + Average Action Std in Mini-Batch: \n");
+  _k->_logger->logInfo("Normal", " + Average Action Noise (Sigma) in Mini-Batch: \n");
   for (size_t i = 0; i < _problem->_actionVectorSize; ++i) _k->_logger->logInfo("Normal", " +  [ %f ]\n", _statisticsAverageActionSigmas[i]);
 
   _k->_logger->logInfo("Normal", "Neural Network Information:\n");

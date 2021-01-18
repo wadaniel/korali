@@ -106,35 +106,39 @@ def plotRewardHistory(ax, results, minReward, maxReward, averageDepth):
  ax.set_xlim([minPlotEpisode, maxPlotEpisode-1])
  ax.set_ylim([minPlotReward - 0.1*abs(minPlotReward), maxPlotReward + 0.1*abs(maxPlotReward)])
 
-##################### (GFPT) Plotting Diagonal Covariance Values
+##################### Plotting Action Sgimas
 
-def plotGFPTCovariance(ax, results):
+def plotActionSigmas(ax, results):
  varNames = [ ]
  for var in results[0][0]['Variables']:
   if (var['Type'] == 'Action'):
    varNames.append(var['Name'])
    
- varCovariances = [ ]
+ actionSigmas = [ ]
  for i in range(len(varNames)):
-  varCovariances.append([ ])
+  actionSigmas.append([ ])
   for gen in results[0]:
-   varCovariances[i].append(gen['Solver']['Statistics']['Average Covariance'][i])
+   actionSigmas[i].append(gen['Solver']['Statistics']['Average Target Sigmas'][i])
   
  genIds = [ ]
  for gen in results[0]:
   genIds.append(gen['Current Generation'])
   
- ax.set_xticks(genIds)
+ xTickRange = range(0, len(genIds), int(len(genIds)/10))
+ xTickLabels = [ genIds[i] for i in xTickRange ]
+   
+ ax.set_xticks(xTickRange)
+ ax.set_xticklabels(xTickLabels)
  ax.set_ylabel('Covariance Matrix Diagonal')  
  ax.set_xlabel('Generation')
- ax.set_title('GFPT - Cov Analysis')
+ ax.set_title('Action Noise (Sigmas)')
  
  smoothWidth = 27;
  if (smoothWidth > len(results[0])): smoothWidth = len(results[0]) - 1
  if ((smoothWidth % 2) == 0): smoothWidth = smoothWidth - 1 
  
  for i in range(len(varNames)):
-  ax.plot(savgol_filter(varCovariances[i], smoothWidth, 3), '-', label=varNames[i])
+  ax.plot(savgol_filter(actionSigmas[i], smoothWidth, 3), '-', label=varNames[i])
  
  ax.legend(loc='lower right', ncol=1, fontsize=8)
  ax.yaxis.grid()
@@ -247,16 +251,14 @@ if __name__ == '__main__':
  ### Creating figure(s)
   
  fig1 = plt.figure()
+ fig2 = plt.figure()
  ax1 = fig1.add_subplot(111)
- 
- if ('GFPT' in results[0][0]['Solver']['Type']):
-  fig2 = plt.figure()
-  ax2 = fig2.add_subplot(111) 
+ ax2 = fig2.add_subplot(111) 
      
  ### Creating plots
      
  plotRewardHistory(ax1, results, args.minReward, args.maxReward, int(args.averageDepth))
- if ('GFPT' in solverName): plotGFPTCovariance(ax2, results) 
+ plotActionSigmas(ax2, results) 
  plt.draw()
  
  ### Printing live results if update frequency > 0
@@ -267,10 +269,9 @@ if __name__ == '__main__':
    results = parseResults(args.dir)
    plt.pause(fq)
    ax1.clear()
+   ax2.clear()
    plotRewardHistory(ax1, results, args.minReward, args.maxReward, int(args.averageDepth))
-   if ('GFPT' in solverName):
-    ax2.clear()
-    plotGFPTCovariance(ax2, results)
+   plotActionSigmas(ax2, results)
    plt.draw()
    
  plt.show() 

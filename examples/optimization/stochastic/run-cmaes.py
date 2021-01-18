@@ -20,7 +20,7 @@ e = korali.Experiment()
 # Configuring Problem
 e["Random Seed"] = 0xC0FEE
 e["Problem"]["Type"] = "Optimization"
-e["Problem"]["Objective Function"] = negative_rosenbrock
+e["Problem"]["Objective Function"] = negative_sphere
 
 dim = 3
 
@@ -34,6 +34,7 @@ for i in range(dim):
 # Configuring CMA-ES parameters
 e["Solver"]["Type"] = "Optimizer/CMAES"
 e["Solver"]["Population Size"] = 32
+#e["Solver"]["Use Gradient Information"] = True
 e["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-32
 e["Solver"]["Termination Criteria"]["Max Generations"] = 100
 

@@ -10,10 +10,13 @@ def negative_sphere(p):
     x = p["Parameters"]
     dim = len(x)
     res = 0.
+    grad = [0.]*dim
     for i in range(dim):
         res += x[i]**2
+        grad[i] = -x[i]
 
-    p["F(x)"] = -res
+    p["F(x)"] = -0.5*res
+    p["Gradient"] = grad
 
 # multi dimensional problem (rosenbrock)
 def negative_rosenbrock(p):

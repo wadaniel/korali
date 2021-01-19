@@ -133,7 +133,6 @@ void GFPT::initializeAgent()
     }
 
     // Setting termination criterion for optimizer -- stop when the given accuracy has been reached for the advantage estimation
-    //_actionOptimizers[threadIdx]->_targetMaxStandardDeviation = _policyTargetAccuracy;
       _actionOptimizers[threadIdx]->_minValueDifferenceThreshold = _policyTargetAccuracy;
   }
 
@@ -266,12 +265,7 @@ void GFPT::trainPolicy()
     std::vector<float> policyGradients(2 * _problem->_actionVectorSize, 0.0f);
 
     // Calculating the KL divergence gradients to prevent off-policiness (REFER)
-    std::vector<float> referKLDivGrads(2 * _problem->_actionVectorSize, 0.0f);
-    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-    {
-       referKLDivGrads[i] = expMeans[i] - curMeans[i];
-       referKLDivGrads[_problem->_actionVectorSize + i] = (expSigmas[i] - curSigmas[i]);
-    }
+    auto referKLDivGrads = calculateKLDivergenceGradient(curMeans, curSigmas, expMeans, expSigmas);
 
     // If the experiment if on-policy, we use it for the calculation of the gradients
     std::vector<float> gfptGradients(2 * _problem->_actionVectorSize, 0.0f);

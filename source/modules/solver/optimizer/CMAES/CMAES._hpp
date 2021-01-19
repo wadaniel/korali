@@ -39,9 +39,8 @@ class CMAES : public Optimizer
 
   /**
  * @brief Updates mean and covariance of Gaussian proposal distribution.
- * @param evaluations Model evaluations for proposed samples
  */
-  void updateDistribution(const std::vector<double> &evaluations);
+  void updateDistribution();
 
   /**
     * @brief Updates the system of eigenvalues and eigenvectors

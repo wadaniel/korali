@@ -83,6 +83,7 @@ void CMAES::setInitialConfiguration()
   {
     _gradients.resize(s_max);
     for (size_t i = 0; i < s_max; ++i) _gradients[i].resize(_variableCount);
+    if (_gradientStepSize <= 0.) KORALI_LOG_ERROR("Gradient Step Size must be larger than 0.0 (is %f)", _gradientStepSize);
   }
 
   _covarianceMatrix.resize(_variableCount * _variableCount);
@@ -563,7 +564,7 @@ void CMAES::updateDistribution()
 
     if (_useGradientInformation)
       for (size_t i = 0; i < _currentMuValue; ++i)
-        _currentMean[d] += _muWeights[i] * _gradientStepSize * _gradients[_sortingIndex[i]][d];
+        _currentMean[d] += _muWeights[i] * _gradientStepSize / std::sqrt(_variableCount) * _sigma * _gradients[_sortingIndex[i]][d];
 
     _meanUpdate[d] = (_currentMean[d] - _previousMean[d]) / _sigma;
   }

@@ -79,6 +79,13 @@ void CMAES::setInitialConfiguration()
   _sortingIndex.resize(s_max);
   _valueVector.resize(s_max);
 
+  if (_useGradientInformation)
+  {
+    _gradients.resize(s_max);
+    for (size_t i = 0; i < s_max; ++i) _gradients[i].resize(_variableCount);
+    if (_gradientStepSize <= 0.) KORALI_LOG_ERROR("Gradient Step Size must be larger than 0.0 (is %f)", _gradientStepSize);
+  }
+
   _covarianceMatrix.resize(_variableCount * _variableCount);
   _auxiliarCovarianceMatrix.resize(_variableCount * _variableCount);
   _covarianceEigenvectorMatrix.resize(_variableCount * _variableCount);
@@ -95,7 +102,7 @@ void CMAES::setInitialConfiguration()
   _muWeights.resize(mu_max);
 
   // Initializing variable defaults
-  for (size_t i = 0; i < _variableCount; i++)
+  for (size_t i = 0; i < _variableCount; ++i)
   {
     if (std::isfinite(_k->_variables[i]->_initialValue) == false)
     {
@@ -182,6 +189,12 @@ void CMAES::runGeneration()
     handleConstraints();
   }
 
+  std::string operation;
+  if (_useGradientInformation)
+    operation = "Evaluate With Gradients";
+  else
+    operation = "Evaluate";
+
   // Initializing Sample Evaluation
   std::vector<Sample> samples(_currentPopulationSize);
   for (size_t i = 0; i < _currentPopulationSize; i++)
@@ -189,7 +202,7 @@ void CMAES::runGeneration()
     if (_hasDiscreteVariables) discretize(_samplePopulation[i]);
 
     samples[i]["Module"] = "Problem";
-    samples[i]["Operation"] = "Evaluate";
+    samples[i]["Operation"] = operation;
     samples[i]["Parameters"] = _samplePopulation[i];
     samples[i]["Sample Id"] = i;
     _modelEvaluationCount++;
@@ -201,11 +214,14 @@ void CMAES::runGeneration()
   KORALI_WAITALL(samples);
 
   // Gathering evaluations
-  std::vector<double> evaluations(_currentPopulationSize);
   for (size_t i = 0; i < _currentPopulationSize; i++)
-    evaluations[i] = KORALI_GET(double, samples[i], "F(x)");
+    _valueVector[i] = KORALI_GET(double, samples[i], "F(x)");
 
-  updateDistribution(evaluations);
+  if (_useGradientInformation)
+    for (size_t i = 0; i < _currentPopulationSize; i++)
+      _gradients[i] = KORALI_GET(std::vector<double>, samples[i], "Gradient");
+
+  updateDistribution();
 }
 
 void CMAES::initMuWeights(size_t numsamplesmu)
@@ -438,7 +454,7 @@ void CMAES::prepareGeneration()
 
       if (isFeasible == false) _infeasibleSampleCount++;
 
-    } while (isFeasible == false);
+    } while (isFeasible == false && (_infeasibleSampleCount < _maxInfeasibleResamplings));
   }
 }
 
@@ -497,10 +513,8 @@ void CMAES::sampleSingle(size_t sampleIdx)
   }
 }
 
-void CMAES::updateDistribution(const std::vector<double> &evaluations)
+void CMAES::updateDistribution()
 {
-  _valueVector = evaluations;
-
   /* Generate _sortingIndex */
   sort_index(_valueVector, _sortingIndex, _currentPopulationSize);
 
@@ -540,16 +554,29 @@ void CMAES::updateDistribution(const std::vector<double> &evaluations)
         _bestConstraintEvaluations[c] = _constraintEvaluations[c][_bestValidSample];
   }
 
-  /* set weights */
+  /* update mean */
   for (size_t d = 0; d < _variableCount; ++d)
   {
     _previousMean[d] = _currentMean[d];
     _currentMean[d] = 0.;
     for (size_t i = 0; i < _currentMuValue; ++i)
       _currentMean[d] += _muWeights[i] * _samplePopulation[_sortingIndex[i]][d];
-
-    _meanUpdate[d] = (_currentMean[d] - _previousMean[d]) / _sigma;
   }
+
+  if (_useGradientInformation)
+  {
+    double l2update = 0.;
+    for (size_t d = 0; d < _variableCount; ++d)
+      l2update += (_currentMean[d] - _previousMean[d]) * (_currentMean[d] - _previousMean[d]);
+    l2update = std::sqrt(l2update / _variableCount);
+
+    for (size_t d = 0; d < _variableCount; ++d)
+      for (size_t i = 0; i < _currentMuValue; ++i)
+        _currentMean[d] += _muWeights[i] * _gradientStepSize / std::sqrt(_variableCount) * _gradients[_sortingIndex[i]][d];
+  }
+
+  for (size_t d = 0; d < _variableCount; ++d)
+    _meanUpdate[d] = (_currentMean[d] - _previousMean[d]) / _sigma;
 
   /* calculate z := D^(-1) * B^(T) * _meanUpdate into _auxiliarBDZMatrix */
   for (size_t d = 0; d < _variableCount; ++d)
@@ -579,6 +606,8 @@ void CMAES::updateDistribution(const std::vector<double> &evaluations)
     /* calculate norm(ps)^2 */
     _conjugateEvolutionPathL2Norm += std::pow(_conjugateEvolutionPath[d], 2.0);
   }
+
+  /* calculate norm(ps) */
   _conjugateEvolutionPathL2Norm = std::sqrt(_conjugateEvolutionPathL2Norm);
 
   int hsig = (1.4 + 2.0 / (_variableCount + 1) > _conjugateEvolutionPathL2Norm / sqrt(1. - pow(1. - _sigmaCumulationFactor, 2.0 * (1.0 + _k->_currentGeneration))) / _chiSquareNumber);
@@ -962,9 +991,9 @@ void CMAES::finalize()
   (*_k)["Results"]["Best Sample"]["F(x)"] = _bestEverValue;
   (*_k)["Results"]["Best Sample"]["Parameters"] = _bestEverVariables;
 
-  _k->_logger->logInfo("Minimal", "Optimum found: %e\n", _bestEverValue);
   _k->_logger->logInfo("Minimal", "Optimum found at:\n");
   for (size_t d = 0; d < _variableCount; ++d) _k->_logger->logData("Minimal", "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _bestEverVariables[d]);
+  _k->_logger->logInfo("Minimal", "Optimum found: %e\n", _bestEverValue);
   if (_areConstraintsDefined)
   {
     _k->_logger->logInfo("Minimal", "Constraint Evaluation at Optimum:\n");

@@ -1,4 +1,16 @@
 #include "modules/problem/gaussianMixture/gaussianMixture.hpp"
+#include "modules/distribution/multivariate/normal/normal.hpp"
+#include "sample/sample.hpp"
+
+#include <random> // std::default_random_engine
+#include <numeric> // std::iota
+#include <algorithm> // std::random_shuffle
+
+#include <gsl/gsl_linalg.h>
+#include <gsl/gsl_matrix.h>
+
+
+using namespace Eigen;
 
 namespace korali
 {
@@ -6,16 +18,136 @@ namespace problem
 {
 void GaussianMixture::initialize()
 {
+  _dataSize = _data.size();
+  _dataDimension = _data[0].size();
+
+  if(_dataSize<2*_dataDimension*_numberOfDistributions)
+    KORALI_LOG_ERROR("The size of the data set must greater than 2*\'Data Dimension\'*\'Number of Distributions\' \n");
+
+  size_t m = _numberOfDistributions;
+  size_t d = _dataDimension;
+
+  _weights.resize(m);
+  _means.resize(m*d);
+  _covariances.resize(m*d*d);
+
+  _eigWeights.push_back( VectorXd::Map( _weights.data(), m ) );
+  for (size_t i=0; i<m; i++){
+    _eigMeans.push_back( VectorXd::Map( _means.data()+i*m, d ) );
+    _eigCovariances.push_back( MatrixXd::Map( _covariances.data()+i*d*d, d, d ) );
+  }
+
+  _S1.push_back( VectorXd::Zero(m) );
+  for (size_t i=0; i<m; i++){
+    _S2.push_back( VectorXd::Zero( d ) );
+    _S3.push_back( MatrixXd::Zero( d, d ) );
+  }
+
+  for (size_t i=0; i<_dataSize; i++){
+    Map<VectorXd> v(_data[i].data(),d);
+    _outerProductData.push_back( v * v.transpose() );
+  }
+
+  if (_k->_currentGeneration == 0){
+
+    // Initialize the multivariate normal modules
+    for (size_t i=0; i<_numberOfDistributions; i++){
+      knlohmann::json distributionConfig;
+      distributionConfig["Type"] = "Multivariate/Normal";
+      _multivariateNormal.push_back( dynamic_cast<korali::distribution::multivariate::Normal*>(getModule(distributionConfig, _k)) );
+      _multivariateNormal[i]->applyModuleDefaults(distributionConfig);
+      _multivariateNormal[i]->setConfiguration(distributionConfig);
+      _multivariateNormal[i]->initialize();
+    }
+
+    // Initialize the weights
+    _eigWeights[0].array() = 1./m;
+
+    _shuffleSeed = _k->_randomSeed++;
+    std::vector<int> permutation(_dataSize);
+    std::iota(std::begin(permutation), std::end(permutation), 0);
+    std::shuffle(permutation.begin(), permutation.end(), std::default_random_engine(_shuffleSeed));
+
+    // Initialize the means
+    for (size_t i=0; i<m; i++)
+      _eigMeans[i].setZero();
+    VectorXd localSize = ArrayXd::Zero(_numberOfDistributions);
+    size_t cnt=0;
+    while (cnt<_dataSize){
+      for (size_t i=0; i<_numberOfDistributions; i++){
+        localSize[i]++;
+        Map<VectorXd> v(_data[permutation[cnt]].data(),d);
+        _eigMeans[i] += (v-_eigMeans[i])/localSize[i];
+        cnt++;
+        if(cnt>=_dataSize) break;
+      }
+    }
+
+    // Initialize the covariances
+    // One-pass stable algorithm for covariance
+    VectorXd mean = ArrayXd::Zero(d);
+    MatrixXd covariance = MatrixXd::Zero(d,d);
+    for (size_t i = 0; i < _dataSize; i++) {
+      Map<VectorXd> v(_data[i].data(),d);
+      VectorXd diff = v - mean;
+      mean += diff / (i + 1);
+      covariance += diff * diff.transpose() * i / (i + 1);
+    }
+    covariance *= 1. / (_dataSize-1);
+
+    for (size_t i=0; i<m; i++)
+      _eigCovariances[i] = covariance;
+  }
 
 }
 
 void GaussianMixture::updateMeanSufficientStatistics(korali::Sample &sample)
 {
+    MatrixXd beta(_dataSize,_numberOfDistributions);
 
+    for (size_t j=0; j<_numberOfDistributions; j++){
+      _multivariateNormal[j]->setProperty( "Mean", _eigMeans[j].data(), _eigMeans[j].size() );
+      _multivariateNormal[j]->setProperty( "Sigma", _eigCovariances[j].data(), _eigCovariances[j].size() );
+
+
+      gsl_matrix_view sigma = gsl_matrix_view_array(&_multivariateNormal[j]->_sigma[0], _dataDimension, _dataDimension);
+      int status = gsl_linalg_cholesky_decomp( &sigma.matrix );
+      if (status == GSL_SUCCESS)
+        _multivariateNormal[j]->updateDistribution();
+      else
+        KORALI_LOG_ERROR("Cholesky decomposition of the covariance was unsuccessful. (%s)",  gsl_strerror (status));
+
+      for (size_t i=0; i<_dataSize; i++){
+        double result;
+        _multivariateNormal[j]->getDensity( _data[i].data(), &result, _dataDimension);
+        beta(i,j) = result * _eigWeights[0][j];
+      }
+    }
+
+    for (size_t i=0; i<_dataSize; i++)
+      beta.row(i) = beta.row(i)/beta.row(i).sum();
+
+
+    for (size_t j=0; j<_numberOfDistributions; j++){
+      _S1[0][j] = beta.col(j).sum();
+      _S2[j].setZero();
+      _S3[j].setZero();
+      for (size_t i=0; i<_dataSize; i++){
+        Map<VectorXd> v(_data[i].data(),_dataDimension);
+        _S2[j] += beta(i,j) * v;
+        _S3[j] += beta(i,j) * _outerProductData[i];
+      }
+    }
 }
 
 void GaussianMixture::updateHyperparameters(korali::Sample &sample)
 {
+  _eigWeights[0] = _S1[0] / _dataSize;
+
+  for (size_t j=0; j<_numberOfDistributions; j++){
+    _eigMeans[j] = _S2[j] / _S1[0][j];
+    _eigCovariances[j] = _S3[j] / _S1[0][j] - _eigMeans[j]*_eigMeans[j].transpose();
+  }
 
 }
 

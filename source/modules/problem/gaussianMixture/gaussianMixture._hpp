@@ -1,7 +1,13 @@
 #ifndef _KORALI_PROBLEM_GAUSSIAN_MIXTURE_HPP_
 #define _KORALI_PROBLEM_GAUSSIAN_MIXTURE_HPP_
 
+#include "modules/distribution/distribution.hpp"
+#include "modules/distribution/multivariate/normal/normal.hpp"
 #include "modules/problem/problem.hpp"
+
+#include <Eigen/Dense>
+
+using namespace Eigen;
 
 namespace korali
 {
@@ -10,6 +16,21 @@ namespace problem
 class GaussianMixture : public korali::Problem
 {
   private:
+    /*
+    * @brief Seed for the shuffle randomizer
+    */
+    size_t _shuffleSeed;
+
+    std::vector< Map<VectorXd> > _eigWeights;
+    std::vector< Map<VectorXd> > _eigMeans;
+    std::vector< Map<MatrixXd> > _eigCovariances;
+
+    std::vector< VectorXd > _S1;
+    std::vector< VectorXd > _S2;
+    std::vector< MatrixXd > _S3;
+
+    std::vector< MatrixXd > _outerProductData;
+
   public:
   void initialize() override;
 

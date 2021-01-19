@@ -42,6 +42,7 @@
 #include "problem/reinforcementLearning/discrete/discrete.hpp"
 #include "problem/sampling/sampling.hpp"
 #include "problem/supervisedLearning/supervisedLearning.hpp"
+#include "problem/gaussianMixture/gaussianMixture.hpp"
 #include "solver/SAEM/SAEM.hpp"
 #include "solver/agent/continuous/GFPT/GFPT.hpp"
 #include "solver/agent/continuous/NAF/NAF.hpp"
@@ -65,6 +66,7 @@
 #include "solver/sampler/Nested/Nested.hpp"
 #include "solver/sampler/TMCMC/TMCMC.hpp"
 #include "solver/sampler/sampler.hpp"
+#include "solver/EM/EM.hpp"
 
 namespace korali
 {
@@ -128,12 +130,14 @@ Module *Module::getModule(knlohmann::json &js, Experiment *e)
   if (iCompare(moduleType, "Optimization")) module = new korali::problem::Optimization();
   if (iCompare(moduleType, "Propagation")) module = new korali::problem::Propagation();
   if (iCompare(moduleType, "Sampling")) module = new korali::problem::Sampling();
+  if (iCompare(moduleType, "GaussianMixture")) module = new korali::problem::GaussianMixture();
   if (iCompare(moduleType, "ReinforcementLearning/Continuous")) module = new korali::problem::reinforcementLearning::Continuous();
   if (iCompare(moduleType, "ReinforcementLearning/Discrete")) module = new korali::problem::reinforcementLearning::Discrete();
   if (iCompare(moduleType, "SupervisedLearning")) module = new korali::problem::SupervisedLearning();
   if (iCompare(moduleType, "Executor")) module = new korali::solver::Executor();
   if (iCompare(moduleType, "Integrator")) module = new korali::solver::Integrator();
   if (iCompare(moduleType, "SAEM")) module = new korali::solver::SAEM();
+  if (iCompare(moduleType, "EM")) module = new korali::solver::EM();
   if (iCompare(moduleType, "Learner/GaussianProcess")) module = new korali::solver::learner::GaussianProcess();
   if (iCompare(moduleType, "Learner/DeepSupervisor")) module = new korali::solver::learner::DeepSupervisor();
   if (iCompare(moduleType, "Agent/Discrete/DVRACER")) module = new korali::solver::agent::discrete::dVRACER();

@@ -9,6 +9,23 @@ namespace solver
 
 void EM::runGeneration()
 {
+
+  Sample sample;
+
+  sample["Module"] = "Problem";
+  sample["Operation"] = "Update Mean Sufficient Statistics";
+  // sample["Parameters"] = _currentValue;
+  sample["Sample Id"] = 0;
+  KORALI_START(sample);
+  KORALI_WAIT(sample);
+
+  sample["Module"] = "Problem";
+  sample["Operation"] = "Update Hyperparameters";
+  // sample["Parameters"] = _currentValue;
+  sample["Sample Id"] = 0;
+  KORALI_START(sample);
+  KORALI_WAIT(sample);
+
 }
 
 void EM::printGenerationBefore()

@@ -66,6 +66,26 @@ void Normal::setProperty(const std::string &propertyName, const std::vector<doub
   if (recognizedProperty == false) KORALI_LOG_ERROR("Unrecognized property: %s for the Multivariate Normal distribution", propertyName.c_str());
 }
 
+void Normal::setProperty(const std::string &propertyName, const double* values, size_t n)
+{
+  bool recognizedProperty = false;
+  if (propertyName == "Mean")
+  {
+    _meanVector.resize(n);
+    for(size_t i=0; i<n; i++)
+      _meanVector[i] = values[i];
+    recognizedProperty = true;
+  }
+  if (propertyName == "Sigma")
+  {
+    _sigma.resize(n);
+    for(size_t i=0; i<n; i++)
+      _sigma[i] = values[i];
+    recognizedProperty = true;
+  }
+  if (recognizedProperty == false) KORALI_LOG_ERROR("Unrecognized property: %s for the Multivariate Normal distribution", propertyName.c_str());
+}
+
 } // namespace multivariate
 
 } // namespace distribution

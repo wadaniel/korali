@@ -178,7 +178,7 @@ void Agent::trainingGeneration()
         _sessionPolicyUpdateCount++;
 
         // If using REFER, updating its information
-        if (_experienceReplayREFEREnabled == true) updateREFERInformation();
+        updateREFERInformation();
 
         auto endTime = std::chrono::steady_clock::now();                                                                  // Profiling
         _sessionPolicyUpdateTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
@@ -837,6 +837,10 @@ void Agent::printGenerationAfter()
       _k->_logger->logInfo("Normal", " + Current Off-Policy Ratio:    %f (Target: %f)\n", _experienceReplayREFERCurrentRatio, _experienceReplayREFERTarget);
       _k->_logger->logInfo("Normal", " + Importance Weight Cutoff:    [%.3f, %.3f]\n", 1.0f / _experienceReplayREFERCurrentCutoff, _experienceReplayREFERCurrentCutoff);
       _k->_logger->logInfo("Normal", " + Beta Factor:                 %f\n", _experienceReplayREFERCurrentBeta);
+    }
+    else
+    {
+     _k->_logger->logInfo("Normal", " + Current Off-Policy Ratio:    %f\n", _experienceReplayREFERCurrentRatio);
     }
 
     _k->_logger->logInfo("Normal", "Training Statistics:\n");

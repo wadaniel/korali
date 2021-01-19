@@ -109,6 +109,10 @@ def plotRewardHistory(ax, results, minReward, maxReward, averageDepth):
 ##################### Plotting Action Sgimas
 
 def plotActionSigmas(ax, results):
+ 
+ if ('Statistics' not in results[0][0]['Solver']): return
+ if ('Average Action Sigmas' not in results[0][0]['Solver']['Statistics']): return
+
  varNames = [ ]
  for var in results[0][0]['Variables']:
   if (var['Type'] == 'Action'):
@@ -118,7 +122,7 @@ def plotActionSigmas(ax, results):
  for i in range(len(varNames)):
   actionSigmas.append([ ])
   for gen in results[0]:
-   actionSigmas[i].append(gen['Solver']['Statistics']['Average Target Sigmas'][i])
+   actionSigmas[i].append(gen['Solver']['Statistics']['Average Action Sigmas'][i])
   
  genIds = [ ]
  for gen in results[0]:

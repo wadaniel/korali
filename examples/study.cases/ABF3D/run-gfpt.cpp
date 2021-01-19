@@ -95,7 +95,7 @@ int main(int argc, char *argv[])
   /// Defining Critic and Policy Configuration
 
   e["Solver"]["Policy"]["Learning Rate Scale"] = 0.1;
-  e["Solver"]["Policy"]["Target Accuracy"] = 0.0005;
+  e["Solver"]["Policy"]["Target Accuracy"] = 0.001;
   e["Solver"]["Policy"]["Optimization Candidates"] = 128;
 
   /// Configuring the neural network and its hidden layers

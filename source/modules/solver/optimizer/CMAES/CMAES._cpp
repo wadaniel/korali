@@ -454,7 +454,7 @@ void CMAES::prepareGeneration()
 
       if (isFeasible == false) _infeasibleSampleCount++;
 
-    } while (isFeasible == false);
+    } while (isFeasible == false && (_infeasibleSampleCount < _maxInfeasibleResamplings) );
   }
 }
 
@@ -554,20 +554,30 @@ void CMAES::updateDistribution()
         _bestConstraintEvaluations[c] = _constraintEvaluations[c][_bestValidSample];
   }
 
-  /* set weights */
+  /* update mean */
   for (size_t d = 0; d < _variableCount; ++d)
   {
     _previousMean[d] = _currentMean[d];
     _currentMean[d] = 0.;
     for (size_t i = 0; i < _currentMuValue; ++i)
       _currentMean[d] += _muWeights[i] * _samplePopulation[_sortingIndex[i]][d];
-
-    if (_useGradientInformation)
-      for (size_t i = 0; i < _currentMuValue; ++i)
-        _currentMean[d] += _muWeights[i] * _gradientStepSize / std::sqrt(_variableCount) * _sigma * _gradients[_sortingIndex[i]][d];
-
-    _meanUpdate[d] = (_currentMean[d] - _previousMean[d]) / _sigma;
   }
+
+
+  if (_useGradientInformation)
+  {
+    double l2update = 0.;
+    for (size_t d = 0; d < _variableCount; ++d)
+      l2update += (_currentMean[d] - _previousMean[d])*(_currentMean[d] - _previousMean[d]);
+    l2update = std::sqrt(l2update/_variableCount);
+
+    for (size_t d = 0; d < _variableCount; ++d)
+    for (size_t i = 0; i < _currentMuValue; ++i)
+      _currentMean[d] += _muWeights[i] * _gradientStepSize / std::sqrt(_variableCount) * _gradients[_sortingIndex[i]][d];
+  }
+  
+  for (size_t d = 0; d < _variableCount; ++d)
+    _meanUpdate[d] = (_currentMean[d] - _previousMean[d]) / _sigma;
 
   /* calculate z := D^(-1) * B^(T) * _meanUpdate into _auxiliarBDZMatrix */
   for (size_t d = 0; d < _variableCount; ++d)
@@ -597,6 +607,8 @@ void CMAES::updateDistribution()
     /* calculate norm(ps)^2 */
     _conjugateEvolutionPathL2Norm += std::pow(_conjugateEvolutionPath[d], 2.0);
   }
+
+  /* calculate norm(ps) */
   _conjugateEvolutionPathL2Norm = std::sqrt(_conjugateEvolutionPathL2Norm);
 
   int hsig = (1.4 + 2.0 / (_variableCount + 1) > _conjugateEvolutionPathL2Norm / sqrt(1. - pow(1. - _sigmaCumulationFactor, 2.0 * (1.0 + _k->_currentGeneration))) / _chiSquareNumber);
@@ -980,9 +992,9 @@ void CMAES::finalize()
   (*_k)["Results"]["Best Sample"]["F(x)"] = _bestEverValue;
   (*_k)["Results"]["Best Sample"]["Parameters"] = _bestEverVariables;
 
-  _k->_logger->logInfo("Minimal", "Optimum found: %e\n", _bestEverValue);
   _k->_logger->logInfo("Minimal", "Optimum found at:\n");
   for (size_t d = 0; d < _variableCount; ++d) _k->_logger->logData("Minimal", "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _bestEverVariables[d]);
+  _k->_logger->logInfo("Minimal", "Optimum found: %e\n", _bestEverValue);
   if (_areConstraintsDefined)
   {
     _k->_logger->logInfo("Minimal", "Constraint Evaluation at Optimum:\n");

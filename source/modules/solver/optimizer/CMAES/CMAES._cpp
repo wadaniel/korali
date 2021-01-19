@@ -454,7 +454,7 @@ void CMAES::prepareGeneration()
 
       if (isFeasible == false) _infeasibleSampleCount++;
 
-    } while (isFeasible == false && (_infeasibleSampleCount < _maxInfeasibleResamplings) );
+    } while (isFeasible == false && (_infeasibleSampleCount < _maxInfeasibleResamplings));
   }
 }
 
@@ -563,19 +563,18 @@ void CMAES::updateDistribution()
       _currentMean[d] += _muWeights[i] * _samplePopulation[_sortingIndex[i]][d];
   }
 
-
   if (_useGradientInformation)
   {
     double l2update = 0.;
     for (size_t d = 0; d < _variableCount; ++d)
-      l2update += (_currentMean[d] - _previousMean[d])*(_currentMean[d] - _previousMean[d]);
-    l2update = std::sqrt(l2update/_variableCount);
+      l2update += (_currentMean[d] - _previousMean[d]) * (_currentMean[d] - _previousMean[d]);
+    l2update = std::sqrt(l2update / _variableCount);
 
     for (size_t d = 0; d < _variableCount; ++d)
-    for (size_t i = 0; i < _currentMuValue; ++i)
-      _currentMean[d] += _muWeights[i] * _gradientStepSize / std::sqrt(_variableCount) * _gradients[_sortingIndex[i]][d];
+      for (size_t i = 0; i < _currentMuValue; ++i)
+        _currentMean[d] += _muWeights[i] * _gradientStepSize / std::sqrt(_variableCount) * _gradients[_sortingIndex[i]][d];
   }
-  
+
   for (size_t d = 0; d < _variableCount; ++d)
     _meanUpdate[d] = (_currentMean[d] - _previousMean[d]) / _sigma;
 

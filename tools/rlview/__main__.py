@@ -16,32 +16,31 @@ from scipy.signal import savgol_filter
 
 ##################### Plotting Reward History
 
-def plotRewardHistory(ax, results, minReward, maxReward, averageDepth):
+def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, maxEpisode):
 
- lastGenId = 0
-  
- ## Finding last generation among all experiments
- for r in results: 
-    if r[-1]['Current Generation'] > lastGenId:
-     lastGenId = r[-1]['Current Generation']
+ confidenceLevel = 2.326 # 98%
 
- ## Finding x-axis (reward) limits
+ ## Setting initial x-axis (episode) and  y-axis (reward) limits
  
  maxPlotEpisode = -math.inf
  minPlotEpisode = 0
- 
- for r in results:
-  episodeCount = len(r[-1]["Solver"]["Training"]["Reward History"])
-  if (episodeCount > maxPlotEpisode): maxPlotEpisode = episodeCount
   
- ## Finding y-axis (reward) limits
-
  maxPlotReward = -math.inf
  minPlotReward = +math.inf
-   
- for r in results:
+
+ ## Plotting the individual experiment results
+    
+ for resId, r in enumerate(results):
+  
+  # Gathering current folder's results
+  
+  rewardHistory = r[-1]["Solver"]["Training"]["Reward History"]
+  
+  # Updating common plot limits
  
-  rewardHistory = results[0][-1]["Solver"]["Training"]["Reward History"]
+  episodeCount = len(r[-1]["Solver"]["Training"]["Reward History"])
+  if (episodeCount > maxPlotEpisode): maxPlotEpisode = episodeCount
+  if (maxEpisode): maxPlotEpisode = int(maxEpisode)
  
   trainingRewardThreshold = r[-1]["Problem"]["Training Reward Threshold"]
   testingRewardThreshold = r[-1]["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"]
@@ -54,28 +53,12 @@ def plotRewardHistory(ax, results, minReward, maxReward, averageDepth):
   if (trainingRewardThreshold < minPlotReward): minPlotReward = trainingRewardThreshold
   if (testingRewardThreshold < minPlotReward): minPlotReward = testingRewardThreshold
  
- if (minReward): minPlotReward = float(minReward)
- if (maxReward): maxPlotReward = float(maxReward)
- 
- # Setting average depth
- 
- confidenceLevel = 2.326
- 
- ## Plotting the individual experiment results
-
- for r in results:
-  
-  # Gathering result information
-  
-  solverName = r[-1]["Solver"]["Type"]
-  rewardHistory = r[-1]["Solver"]["Training"]["Reward History"]
- 
   # Getting average cumulative reward statistics
   
   meanHistory = [ rewardHistory[0] ]
   confIntervalHistory = [ 0.0 ]
   for i in range(1, len(rewardHistory)):
-   startPos = i - averageDepth
+   startPos = i - int(averageDepth)
    if (startPos < 0): startPos = 0
    endPos = i
    data = rewardHistory[startPos:endPos]
@@ -87,66 +70,76 @@ def plotRewardHistory(ax, results, minReward, maxReward, averageDepth):
   meanHistory = np.array(meanHistory)
   confIntervalHistory = np.array(confIntervalHistory)
 
-  # Plotting result
+  # Plotting common plot
     
   epList = range(0, len(rewardHistory)) 
-  ax.plot(epList, rewardHistory, 'x', markersize=1, label='Episode Reward (' + solverName + ')')
-  ax.plot(epList, meanHistory, '-', label=str(averageDepth) + '-Episode Average (' + solverName + ')')
-  ax.fill_between(epList, (meanHistory-confIntervalHistory), (meanHistory+confIntervalHistory), color='b', alpha=.1, label='98% Confidence Interval (' + solverName + ')')
+  ax.plot(epList, rewardHistory, 'x', markersize=1, label='Episode Reward (' + dirs[resId] + ')')
+  ax.plot(epList, meanHistory, '-', label=str(averageDepth) + '-Episode Average (' + dirs[resId] + ')')
+  ax.fill_between(epList, (meanHistory-confIntervalHistory), (meanHistory+confIntervalHistory), color='b', alpha=.1, label='98% Confidence Interval (' + dirs[resId] + ')')
   
  ## Configuring common plotting features
+ 
+ if (minReward): minPlotReward = float(minReward)
+ if (maxReward): maxPlotReward = float(maxReward)
  
  ax.set_ylabel('Cumulative Reward')  
  ax.set_xlabel('Episode')
  ax.set_title('Korali RL History Viewer')
  ax.hlines(trainingRewardThreshold, 0, episodeCount, linestyle='dashed', label='Training Threshold', color='red')
  ax.hlines(testingRewardThreshold, 0, episodeCount, linestyle='dashdot', label='Testing Threshold', color='blue')
- ax.legend(loc='lower right', ncol=1, fontsize=8)
+ ax.legend(loc='upper left', ncol=1, fontsize=8)
  ax.yaxis.grid()
  ax.set_xlim([minPlotEpisode, maxPlotEpisode-1])
  ax.set_ylim([minPlotReward - 0.1*abs(minPlotReward), maxPlotReward + 0.1*abs(maxPlotReward)])
 
 ##################### Plotting Action Sgimas
 
-def plotActionSigmas(ax, results):
+def plotActionSigmas(ax, dirs, results, maxEpisode):
  
- if ('Statistics' not in results[0][0]['Solver']): return
- if ('Average Action Sigmas' not in results[0][0]['Solver']['Statistics']): return
+ for resId, r in enumerate(results):
 
- varNames = [ ]
- for var in results[0][0]['Variables']:
-  if (var['Type'] == 'Action'):
-   varNames.append(var['Name'])
-   
- actionSigmas = [ ]
- for i in range(len(varNames)):
-  actionSigmas.append([ ])
-  for gen in results[0]:
-   actionSigmas[i].append(gen['Solver']['Statistics']['Average Action Sigmas'][i])
+  if ('Statistics' not in r[0]['Solver']): continue
+  if ('Average Action Sigmas' not in r[0]['Solver']['Statistics']): continue
+ 
+  genIds = [ ]
+  for gen in r:
+   if (maxEpisode):
+    if (len(gen["Solver"]["Training"]["Reward History"]) < int(maxEpisode)):
+     genIds.append(gen['Current Generation'])
+   else: 
+    genIds.append(gen['Current Generation'])
+    
+  varNames = [ ]
+  for var in r[0]['Variables']:
+   if (var['Type'] == 'Action'):
+    varNames.append(var['Name'])
+    
+  actionSigmas = [ ]
+  for i in range(len(varNames)):
+   actionSigmas.append([ ])
+   for genPos, genId in enumerate(genIds):
+    actionSigmas[i].append(r[genPos]['Solver']['Statistics']['Average Action Sigmas'][i])
+
+  xTickRange = range(0, len(genIds), int(len(genIds)/10))
+  xTickLabels = [ genIds[i] for i in xTickRange ]
+    
+  ax.set_xticks(xTickRange)
+  ax.set_xticklabels(xTickLabels)
+  ax.set_ylabel('Covariance Matrix Diagonal')  
+  ax.set_xlabel('Generation')
+  ax.set_title('Action Noise (Sigmas)')
   
- genIds = [ ]
- for gen in results[0]:
-  genIds.append(gen['Current Generation'])
+  smoothWidth = 27;
+  if (smoothWidth > len(genIds)): smoothWidth = len(genIds) - 1
+  if ((smoothWidth % 2) == 0): smoothWidth = smoothWidth - 1 
   
- xTickRange = range(0, len(genIds), int(len(genIds)/10))
- xTickLabels = [ genIds[i] for i in xTickRange ]
-   
- ax.set_xticks(xTickRange)
- ax.set_xticklabels(xTickLabels)
- ax.set_ylabel('Covariance Matrix Diagonal')  
- ax.set_xlabel('Generation')
- ax.set_title('Action Noise (Sigmas)')
- 
- smoothWidth = 27;
- if (smoothWidth > len(results[0])): smoothWidth = len(results[0]) - 1
- if ((smoothWidth % 2) == 0): smoothWidth = smoothWidth - 1 
- 
- for i in range(len(varNames)):
-  ax.plot(savgol_filter(actionSigmas[i], smoothWidth, 3), '-', label=varNames[i])
- 
- ax.legend(loc='lower right', ncol=1, fontsize=8)
- ax.yaxis.grid()
- ax.set_xlim([0, len(results[0])-1])
+  for i in range(len(varNames)):
+   ax.plot(savgol_filter(actionSigmas[i], smoothWidth, 3), '-', label=varNames[i] + ' (' + dirs[resId] + ')')
+  
+  ax.legend(loc='upper left', ncol=1, fontsize=8)
+  ax.yaxis.grid()
+  
+  ax.set_xlim([0, len(genIds)-1])
 
 ##################### Results parser
 
@@ -206,6 +199,11 @@ if __name__ == '__main__':
      required=False,
      nargs='+')
  parser.add_argument(
+     '--maxEpisode',
+     help='Maximum episode to display',
+     default=None,
+     required=False)
+ parser.add_argument(
      '--maxReward',
      help='Maximum reward to display',
      default=None,
@@ -250,7 +248,6 @@ if __name__ == '__main__':
  ### Reading values from result files
 
  results = parseResults(args.dir)
- solverName = results[0][0]['Solver']['Type']
   
  ### Creating figure(s)
   
@@ -261,8 +258,8 @@ if __name__ == '__main__':
      
  ### Creating plots
      
- plotRewardHistory(ax1, results, args.minReward, args.maxReward, int(args.averageDepth))
- plotActionSigmas(ax2, results) 
+ plotRewardHistory(ax1, args.dir, results, args.minReward, args.maxReward, args.averageDepth, args.maxEpisode)
+ plotActionSigmas(ax2, args.dir, results, args.maxEpisode) 
  plt.draw()
  
  ### Printing live results if update frequency > 0
@@ -274,8 +271,8 @@ if __name__ == '__main__':
    plt.pause(fq)
    ax1.clear()
    ax2.clear()
-   plotRewardHistory(ax1, results, args.minReward, args.maxReward, int(args.averageDepth))
-   plotActionSigmas(ax2, results)
+   plotRewardHistory(ax1, args.dir, results, args.minReward, args.maxReward, args.averageDepth, args.maxEpisode)
+   plotActionSigmas(ax2, args.dir, results, args.maxEpisode)
    plt.draw()
    
  plt.show() 

@@ -257,6 +257,9 @@ float Continuous::getExperienceImportanceWeight(size_t expId)
   // Now calculating importance weight
   auto expImportanceWeight = calculateImportanceWeight(expAction, expMeans, expSigmas, curMeans, curSigmas);
 
+  // Updating the impiortance weight value in the experience replay memory
+  _experienceReplay[expId].policy["Importance Weight"] = expImportanceWeight;
+
   // Returning experience's importance weight
   return expImportanceWeight;
 }

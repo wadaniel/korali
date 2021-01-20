@@ -123,13 +123,13 @@ void NAF::trainPolicy()
   for (size_t b = 0; b < _miniBatchSize; b++)
   {
     // Selecting a uniformly random selected, yet not repeated experience
-    size_t curId = miniBatchIndexes[b];
+    size_t expId = miniBatchIndexes[b];
 
     // Access experiences
-    auto expStateSequence = getStateTimeSequence(curId);
-    auto expAction = _experienceReplay[curId].action;
-    auto expMeans = _experienceReplay[curId].policy["Action Means"].get<std::vector<float>>();
-    auto expSigmas = _experienceReplay[curId].policy["Action Sigmas"].get<std::vector<float>>();
+    auto expStateSequence = getStateTimeSequence(expId);
+    auto expAction = _experienceReplay[expId].action;
+    auto expMeans = _experienceReplay[expId].policy["Action Means"].get<std::vector<float>>();
+    auto expSigmas = _experienceReplay[expId].policy["Action Sigmas"].get<std::vector<float>>();
 
     // Forward the neural network for this state to get current means and sigmas and Value
     auto policy = runPolicy(expStateSequence);
@@ -140,25 +140,22 @@ void NAF::trainPolicy()
 
     // Compute importance weight
     float importanceWeight = calculateImportanceWeight(expAction, curMeans, curSigmas, expMeans, expSigmas);
-
-    // Update value and weight in cache
-    _experienceReplay[curId].cache.set("State Value", V);
-    _experienceReplay[curId].cache.set("Importance Weight", importanceWeight);
+    _experienceReplay[expId].policy["Importance Weight"] = importanceWeight;
 
     // Getting current experience probability and calculating importance weight
-    float probability = _experienceReplay[curId].metadata["Mini Batch"]["Probability"];
+    float probability = _experienceReplay[expId].metadata["Mini Batch"]["Probability"];
     float weight = std::pow((float)_experienceReplay.size() * probability, -_importanceWeightAnnealingRate);
 
-    float yHat = _experienceReplay[curId].reward;
+    float yHat = _experienceReplay[expId].reward;
 
     // yHat* = r -- If terminal state
     // yHat* = r + gamma*V(s) -- If not terminal state
 
     // If state is not terminal (next state is filled) then add Qnew to the Q value.
-    if (_experienceReplay[curId].termination == e_nonTerminal)
+    if (_experienceReplay[expId].termination == e_nonTerminal)
     {
       // Getting experience's next state
-      auto nextState = _experienceReplay[curId + 1].state;
+      auto nextState = _experienceReplay[expId + 1].state;
 
       // Calculate target y
       float vHat = _criticLearner->getEvaluation({{nextState}})[0][0];
@@ -172,7 +169,7 @@ void NAF::trainPolicy()
     cumulativeTdErrorSquarred += (diff * diff);
 
     // Updating experience priority
-    _experienceReplay[curId].metadata["Mini Batch"]["Priority"] = abs(diff);
+    _experienceReplay[expId].metadata["Mini Batch"]["Priority"] = abs(diff);
 
     // Reserving storage for critic/policy gradient
     std::vector<float> policyGradient(1 + 2 * _problem->_actionVectorSize);

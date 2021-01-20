@@ -89,13 +89,13 @@ int main(int argc, char *argv[])
 
   /// Configuring Mini Batch
 
-  e["Solver"]["Mini Batch Size"] = 128;
+  e["Solver"]["Mini Batch Size"] = 256;
   e["Solver"]["Mini Batch Strategy"] = "Uniform";
 
   /// Defining Critic and Policy Configuration
 
-  e["Solver"]["Policy"]["Learning Rate Scale"] = 0.01;
-  e["Solver"]["Policy"]["Target Accuracy"] = 0.05;
+  e["Solver"]["Policy"]["Learning Rate Scale"] = 1.0;
+  e["Solver"]["Policy"]["Target Accuracy"] = 0.005;
   e["Solver"]["Policy"]["Optimization Candidates"] = 128;
 
   /// Configuring the neural network and its hidden layers

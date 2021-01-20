@@ -77,8 +77,8 @@ void GFPT::initializeAgent()
 
   _policyExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
   _policyExperiment["Solver"]["Optimizer"] = _optimizer;
-  _policyExperiment["Solver"]["Learning Rate"] = _learningRate;
-  _policyExperiment["Solver"]["Loss Function"] = "Mean Squared Error";
+  _policyExperiment["Solver"]["Learning Rate"] = _learningRate * _policyLearningRateScale;
+  _policyExperiment["Solver"]["Loss Function"] = "Direct Gradient";
   _policyExperiment["Solver"]["Steps Per Generation"] = 1;
   _policyExperiment["Solver"]["Neural Network"]["Engine"] = _neuralNetworkEngine;
   _policyExperiment["Solver"]["Neural Network"]["Hidden Layers"] = _neuralNetworkHiddenLayers;
@@ -133,7 +133,7 @@ void GFPT::initializeAgent()
     }
 
     // Setting termination criterion for optimizer -- stop when the given accuracy has been reached for the advantage estimation
-      _actionOptimizers[threadIdx]->_minValueDifferenceThreshold = _policyTargetAccuracy;
+    _actionOptimizers[threadIdx]->_minValueDifferenceThreshold = _policyTargetAccuracy;
   }
 
   /*********************************************************************
@@ -182,8 +182,8 @@ void GFPT::trainPolicy()
   // [Statistics] Zeroing average diagonal covariance
   for (size_t i = 0; i < _problem->_actionVectorSize; i++)
   {
-   _statisticsAverageActionSigmas[i] = 0.0f;
-   _statisticsAverageTargetSigmas[i] = 0.0f;
+    _statisticsAverageActionSigmas[i] = 0.0f;
+    _statisticsAverageTargetSigmas[i] = 0.0f;
   }
 
 #pragma omp parallel for schedule(dynamic, 1)
@@ -220,14 +220,6 @@ void GFPT::trainPolicy()
     auto bstSigmas = optResults["Best Sigmas"].get<std::vector<float>>();
     auto avgA = optResults["Average Advantage Value"].get<float>();
 
-    // Computing statistics
-    #pragma omp critical
-    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-    {
-     _statisticsAverageTargetSigmas[i] += bstSigmas[i];
-     _statisticsAverageActionSigmas[i] += curSigmas[i];
-    }
-
     /*****************************************
     * Calculating Critic Gradients
     *****************************************/
@@ -257,6 +249,9 @@ void GFPT::trainPolicy()
     // Storage for the policy gradients
     std::vector<float> policyTarget(2 * _problem->_actionVectorSize, 0.0f);
 
+    // Getting REFER gradients
+    auto referKLDivGrads = calculateKLDivergenceGradient(curMeans, curSigmas, expMeans, expSigmas);
+
     // Re-computing importance weight for the experiment and storing it into cache
     float importanceWeight = calculateImportanceWeight(expAction, curMeans, curSigmas, expMeans, expSigmas);
     _experienceReplay[expId].cache.set("Importance Weight", importanceWeight);
@@ -265,16 +260,26 @@ void GFPT::trainPolicy()
     bool isOnPolicy = (importanceWeight > (1.0f / _experienceReplayREFERCutoffScale)) && (importanceWeight < _experienceReplayREFERCutoffScale);
 
     // If the experiment if on-policy, we use it for the calculation of the gradients
-    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
     if (isOnPolicy)
+      for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+      {
+        policyTarget[i] += _experienceReplayREFERCurrentBeta * (bstMeans[i] - curMeans[i]);
+        policyTarget[_problem->_actionVectorSize + i] += _experienceReplayREFERCurrentBeta * (bstSigmas[i] - curSigmas[i]);
+      }
+
+    // Applying REFER gradients
+    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
     {
-      policyTarget[i] = bstMeans[i];
-      policyTarget[_problem->_actionVectorSize + i] = bstSigmas[i];
+      policyTarget[i] += (1.0f - _experienceReplayREFERCurrentBeta) * referKLDivGrads[i];
+      policyTarget[_problem->_actionVectorSize + i] += (1.0f - _experienceReplayREFERCurrentBeta) * referKLDivGrads[_problem->_actionVectorSize + i];
     }
-    else
+
+// Computing statistics
+#pragma omp critical
+    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
     {
-     policyTarget[i] = curMeans[i];
-     policyTarget[_problem->_actionVectorSize + i] = curSigmas[i];
+      _statisticsAverageTargetSigmas[i] += curSigmas[i] + policyTarget[_problem->_actionVectorSize + i];
+      _statisticsAverageActionSigmas[i] += curSigmas[i];
     }
 
     // Adding means to the policy update
@@ -326,7 +331,7 @@ knlohmann::json GFPT::optimizeAction(const std::vector<std::vector<float>> state
   float averageAdvantage = 0.0f;
 
   // Run the CMAES experiment until the desired convergence
-  while (actionOptimizer->checkTermination() == false || actionOptimizer->_currentGeneration < 10)
+  while (actionOptimizer->checkTermination() == false)
   {
     // Asking CMAES to generate candidates
     actionOptimizer->prepareGeneration();
@@ -353,8 +358,8 @@ knlohmann::json GFPT::optimizeAction(const std::vector<std::vector<float>> state
     // Re-calculating average advantage value from the last generation
     averageAdvantage = 0.0f;
     for (size_t i = 0; i < _policyOptimizationCandidates; i++)
-     averageAdvantage += candidateEvaluations[i];
-    averageAdvantage /= (float) _policyOptimizationCandidates;
+      averageAdvantage += candidateEvaluations[i];
+    averageAdvantage /= (float)_policyOptimizationCandidates;
 
     // Running one more CMAES iteration
     actionOptimizer->updateDistribution(candidateEvaluations);
@@ -364,7 +369,7 @@ knlohmann::json GFPT::optimizeAction(const std::vector<std::vector<float>> state
   // Grabbing diagonal covariances
   std::vector<float> bstSigmas(_problem->_actionVectorSize);
   for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-   bstSigmas[i] = actionOptimizer->_sigma * sqrtf(actionOptimizer->_covarianceMatrix[i * _problem->_actionVectorSize + i]);
+    bstSigmas[i] = actionOptimizer->_sigma * sqrtf(actionOptimizer->_covarianceMatrix[i * _problem->_actionVectorSize + i]);
 
   // Returning optimization results
   knlohmann::json result;
@@ -373,8 +378,8 @@ knlohmann::json GFPT::optimizeAction(const std::vector<std::vector<float>> state
   result["Best Value"] = actionOptimizer->_bestEverValue;
   result["Average Advantage Value"] = averageAdvantage;
 
-//  if (curThread == 0)
-//   printf("Last Gen: %lu - Bestf: %f - Diff: %f\n",  actionOptimizer->_currentGeneration, actionOptimizer->_bestEverValue, averageAdvantage - actionOptimizer->_bestEverValue);
+  //  if (curThread == 0)
+  //   printf("Last Gen: %lu - Bestf: %f - Diff: %f\n",  actionOptimizer->_currentGeneration, actionOptimizer->_bestEverValue, averageAdvantage - actionOptimizer->_bestEverValue);
 
   return result;
 }
@@ -386,7 +391,7 @@ knlohmann::json GFPT::runPolicy(const std::vector<std::vector<float>> &state)
   std::vector<float> actionMeans(_problem->_actionVectorSize);
   std::vector<float> actionSigmas(_problem->_actionVectorSize);
 
-  for (size_t i = 0; i < _problem->_actionVectorSize; ++i)
+  for (size_t i = 0; i < _problem->_actionVectorSize; i++)
   {
     actionMeans[i] = eval[i];
     actionSigmas[i] = eval[_problem->_actionVectorSize + i];
@@ -442,7 +447,7 @@ void GFPT::printAgentInformation()
   _k->_logger->logInfo("Normal", " + Training Loss: [V = %.3e] [A = %.3e] [P = %.3e]\n", _vLearner->_currentLoss, _aLearner->_currentLoss, _policyLearner->_currentLoss);
   _k->_logger->logInfo("Normal", " + Learning Rate: [V = %.3e] [A = %.3e] [P = %.3e]\n", _vLearner->_learningRate, _aLearner->_learningRate, _policyLearner->_learningRate);
   _k->_logger->logInfo("Normal", " + Average Action Sigma: [ Current ] -> [ Target ]\n");
-    for (size_t i = 0; i < _problem->_actionVectorSize; ++i) _k->_logger->logInfo("Normal", " +  [ %f ] -> [ %f ] \n", _statisticsAverageActionSigmas[i], _statisticsAverageTargetSigmas[i]);
+  for (size_t i = 0; i < _problem->_actionVectorSize; ++i) _k->_logger->logInfo("Normal", " +  [ %f ] -> [ %f ] \n", _statisticsAverageActionSigmas[i], _statisticsAverageTargetSigmas[i]);
 }
 
 } // namespace continuous

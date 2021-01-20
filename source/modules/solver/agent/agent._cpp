@@ -726,7 +726,7 @@ void Agent::serializeExperienceReplay()
   if (!dirExists(_k->_fileOutputPath)) mkdir(_k->_fileOutputPath);
 
   // Resolving file path
-  std::string statePath = "./" + _k->_fileOutputPath + "/state.json";
+  std::string statePath = _k->_fileOutputPath + "/state.json";
 
   // Storing database to file
   if (saveJsonToFile(statePath.c_str(), stateJson) != 0)
@@ -745,7 +745,7 @@ void Agent::deserializeExperienceReplay()
   knlohmann::json stateJson;
 
   // Resolving file path
-  std::string statePath = "./" + _k->_fileOutputPath + "/state.json";
+  std::string statePath = _k->_fileOutputPath + "/state.json";
 
   // Loading database from file
   _k->_logger->logInfo("Detailed", "Loading previous run training state from file %s...\n", statePath.c_str());

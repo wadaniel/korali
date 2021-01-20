@@ -326,7 +326,7 @@ void NAF::printAgentInformation()
   _k->_logger->logInfo("Normal", "Critic Information:\n");
   _k->_logger->logInfo("Normal", " + Average (Std) Q-Value in Mini-Batch:  %f (%f)\n", _statisticsAverageQStar, _statisticsStdevQStar);
   _k->_logger->logInfo("Normal", " + Average (Std) TD-Error in Mini-Batch:  %f (%f)\n", _statisticsAverageTDError, _statisticsStdevTDError);
-  _k->_logger->logInfo("Normal", " + Average P values in Mini-Batch: \n");
+  _k->_logger->logInfo("Normal", " + Average Action Sigma in Mini-Batch: \n");
   for (size_t i = 0; i < _statisticsAverageActionSigmas.size(); ++i) _k->_logger->logInfo("Normal", " +  [ %f ]\n", _statisticsAverageActionSigmas[i]);
 
   _qExperiment._logger->_verbosityLevel = _k->_logger->_verbosityLevel;

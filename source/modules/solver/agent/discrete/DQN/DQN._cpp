@@ -177,11 +177,11 @@ float DQN::stateValueFunction(const std::vector<std::vector<float>> &state)
     pActions[i] *= invSumExpQVal;
 
   // Calculating V(s_i) as the expectation of Q(s_i,a)
-  float v = 0.;
+  float stateValue = 0.;
   for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
-    v += qval[i] * pActions[i];
+    stateValue += qval[i] * pActions[i];
 
-  return v;
+  return stateValue;
 }
 
 knlohmann::json DQN::runPolicy(const std::vector<std::vector<float>> &state)
@@ -235,9 +235,15 @@ knlohmann::json DQN::runPolicy(const std::vector<std::vector<float>> &state)
   // Normalizing action probabilities
   for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
     pActions[i] *= invSumExpQVal;
+ 
+  // Calculating V(s_i) as the expectation of Q(s_i,a)
+  float stateValue = 0.;
+  for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
+    stateValue += qval[i] * pActions[i];
 
   // Returning action probabilities
   knlohmann::json policy;
+  policy["State Value"] = stateValue;
   policy["Action Probabilities"] = pActions;
   return policy;
 }
@@ -271,11 +277,12 @@ knlohmann::json DQN::getTrainingState()
 void DQN::printAgentInformation()
 {
   _k->_logger->logInfo("Normal", "Critic Information:\n");
-  _k->_logger->logInfo("Normal", " + Avg Q-Value in Mini-Batch:  %f (%f)\n", _statisticsAverageQStar, _statisticsStdevQStar);
+  _k->_logger->logInfo("Normal", " + Avg (Std) Q-Value in Mini-Batch:  %f (%f)\n", _statisticsAverageQStar, _statisticsStdevQStar);
 
   _criticPolicyExperiment._logger->_verbosityLevel = _k->_logger->_verbosityLevel;
   _criticPolicyExperiment._solver->printGenerationAfter();
   _criticPolicyExperiment._logger->setVerbosityLevel("Silent");
+ 
 }
 
 } // namespace discrete

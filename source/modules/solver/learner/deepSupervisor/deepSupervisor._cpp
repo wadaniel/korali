@@ -157,15 +157,15 @@ void DeepSupervisor::runGeneration()
 
     if (_l2Regularization > 0.)
     {
-        auto nnHyperparameters = _trainingNeuralNetwork->getHyperparameters();
+      auto nnHyperparameters = _trainingNeuralNetwork->getHyperparameters();
 
-        float l2param = 0.;
-        for(size_t i = 0; i < _trainingNeuralNetwork->_hyperparameterCount; ++i)
-            l2param += nnHyperparameters[i]*nnHyperparameters[i];
-        l2param = std::sqrt(l2param);
-        
-        // Apply gradient of l2 penalty
-        for(size_t i = 0; i < _trainingNeuralNetwork->_hyperparameterCount; ++i)
+      float l2param = 0.;
+      for (size_t i = 0; i < _trainingNeuralNetwork->_hyperparameterCount; ++i)
+        l2param += nnHyperparameters[i] * nnHyperparameters[i];
+      l2param = std::sqrt(l2param);
+
+      // Apply gradient of l2 penalty
+      for (size_t i = 0; i < _trainingNeuralNetwork->_hyperparameterCount; ++i)
         _trainingNeuralNetwork->_hyperparameterGradients[i] -= _l2Regularization / l2param * nnHyperparameters[i];
     }
 

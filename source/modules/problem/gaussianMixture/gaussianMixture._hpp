@@ -46,6 +46,11 @@ class GaussianMixture : public korali::Problem
    */
   void updateHyperparameters(korali::Sample &sample);
 
+  /**
+   * @brief Print the hyperparameters
+   * @param
+   */
+  void printHyperparameters(void);
 };
 
 } // namespace problem

@@ -1,5 +1,6 @@
 #include "engine.hpp"
 #include "modules/solver/EM/EM.hpp"
+#include "modules/problem/GaussianMixture/GaussianMixture.hpp"
 #include "sample/sample.hpp"
 
 namespace korali
@@ -34,6 +35,8 @@ void EM::printGenerationBefore()
 
 void EM::printGenerationAfter()
 {
+  auto problem = dynamic_cast<korali::problem::GaussianMixture *>(_k->_problem);
+  problem->printHyperparameters();
 }
 
 } // namespace solver

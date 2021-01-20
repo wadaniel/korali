@@ -33,7 +33,7 @@ void GaussianMixture::initialize()
 
   _eigWeights.push_back( VectorXd::Map( _weights.data(), m ) );
   for (size_t i=0; i<m; i++){
-    _eigMeans.push_back( VectorXd::Map( _means.data()+i*m, d ) );
+    _eigMeans.push_back( VectorXd::Map( _means.data()+i*d, d ) );
     _eigCovariances.push_back( MatrixXd::Map( _covariances.data()+i*d*d, d, d ) );
   }
 
@@ -65,19 +65,19 @@ void GaussianMixture::initialize()
 
     _shuffleSeed = _k->_randomSeed++;
     std::vector<int> permutation(_dataSize);
-    std::iota(std::begin(permutation), std::end(permutation), 0);
-    std::shuffle(permutation.begin(), permutation.end(), std::default_random_engine(_shuffleSeed));
+    std::iota( std::begin(permutation), std::end(permutation), 0 );
+    std::shuffle( permutation.begin(), permutation.end(), std::default_random_engine(_shuffleSeed) );
 
     // Initialize the means
     for (size_t i=0; i<m; i++)
       _eigMeans[i].setZero();
-    VectorXd localSize = ArrayXd::Zero(_numberOfDistributions);
+    VectorXd localDataSize = ArrayXd::Zero(_numberOfDistributions);
     size_t cnt=0;
     while (cnt<_dataSize){
       for (size_t i=0; i<_numberOfDistributions; i++){
-        localSize[i]++;
+        localDataSize[i]++;
         Map<VectorXd> v(_data[permutation[cnt]].data(),d);
-        _eigMeans[i] += (v-_eigMeans[i])/localSize[i];
+        _eigMeans[i] += (v-_eigMeans[i])/localDataSize[i];
         cnt++;
         if(cnt>=_dataSize) break;
       }
@@ -87,7 +87,7 @@ void GaussianMixture::initialize()
     // One-pass stable algorithm for covariance
     VectorXd mean = ArrayXd::Zero(d);
     MatrixXd covariance = MatrixXd::Zero(d,d);
-    for (size_t i = 0; i < _dataSize; i++) {
+    for (size_t i=0; i<_dataSize; i++) {
       Map<VectorXd> v(_data[i].data(),d);
       VectorXd diff = v - mean;
       mean += diff / (i + 1);
@@ -98,6 +98,9 @@ void GaussianMixture::initialize()
     for (size_t i=0; i<m; i++)
       _eigCovariances[i] = covariance;
   }
+
+  printHyperparameters();
+
 
 }
 
@@ -120,16 +123,15 @@ void GaussianMixture::updateMeanSufficientStatistics(korali::Sample &sample)
       for (size_t i=0; i<_dataSize; i++){
         double result;
         _multivariateNormal[j]->getDensity( _data[i].data(), &result, _dataDimension);
-        beta(i,j) = result * _eigWeights[0][j];
+        beta(i,j) = result * _eigWeights[0](j);
       }
     }
 
     for (size_t i=0; i<_dataSize; i++)
       beta.row(i) = beta.row(i)/beta.row(i).sum();
 
-
     for (size_t j=0; j<_numberOfDistributions; j++){
-      _S1[0][j] = beta.col(j).sum();
+      _S1[0](j) = beta.col(j).sum();
       _S2[j].setZero();
       _S3[j].setZero();
       for (size_t i=0; i<_dataSize; i++){
@@ -148,6 +150,54 @@ void GaussianMixture::updateHyperparameters(korali::Sample &sample)
     _eigMeans[j] = _S2[j] / _S1[0][j];
     _eigCovariances[j] = _S3[j] / _S1[0][j] - _eigMeans[j]*_eigMeans[j].transpose();
   }
+
+}
+
+void GaussianMixture::printHyperparameters(void)
+{
+  // for (size_t k = 0; k < _numberOfDistributions; k++)
+  //   std::cout << _weights[k] << "  ";
+  // std::cout << "\n";
+  //
+  // for (size_t k = 0; k < _numberOfDistributions*_dataDimension; k++)
+  //   std::cout << _means[k] << "  ";
+  // std::cout << "\n";
+  //
+  //   for (size_t k = 0; k < _numberOfDistributions*_dataDimension*_dataDimension; k++)
+  //     std::cout << _covariances[k] << "  ";
+  //   std::cout << "\n";
+  //
+  //   std::cout << "*************************\n";
+  //   std::cout << _eigWeights[0] << "\n";
+  //   for (size_t k = 0; k < _numberOfDistributions; k++)
+  //     std::cout << _eigMeans[k] << "\n";
+  //   for (size_t k = 0; k < _numberOfDistributions; k++)
+  //     std::cout << _eigCovariances[k] << "\n";
+
+
+  _k->_logger->logInfo("Detailed", "Hyperparameters: \n");
+
+  _k->_logger->logInfo("Detailed", "  Weights: \n");
+  for (size_t k = 0; k < _numberOfDistributions; k++)
+    _k->_logger->logData("Detailed", "  %.10lf", _eigWeights[0](k));
+  _k->_logger->logData("Detailed","\n");
+
+    for (size_t k = 0; k < _numberOfDistributions; k++){
+      _k->_logger->logInfo("Detailed", "  Mean of mode %zu: \n",k);
+        for (size_t i = 0; i < _dataDimension; i++)
+          _k->_logger->logData("Detailed", "  %.10lf", _eigMeans[k](i));
+        _k->_logger->logData("Detailed","\n");
+    }
+
+    for (size_t k = 0; k < _numberOfDistributions; k++){
+      _k->_logger->logInfo("Detailed", "  Covariance of mode %zu: \n",k);
+        for (size_t i = 0; i < _dataDimension; i++){
+          for (size_t j = 0; j < _dataDimension; j++)
+            _k->_logger->logData("Detailed", "  %.10lf", _eigCovariances[k](i,j));
+          _k->_logger->logData("Detailed","\n");
+        }
+    }
+
 
 }
 

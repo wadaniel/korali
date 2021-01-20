@@ -65,14 +65,14 @@ def main(path, check, test, output, args):
 
   del genList[0]
 
-  solverName = js['Solver']['Type'].lower() 
+  solverName = js['Solver']['Type'].lower()
   solverDir = ""
   moduleName = ""
-  
+
   if ("cmaes" in solverName):
    solverDir = curdir + '/../modules/solver/optimizer/CMAES'
    moduleName = 'CMAES'
-   
+
   if ("dea" in solverName):
    solverDir = curdir + '/../modules/solver/optimizer/DEA'
    moduleName = 'DEA'
@@ -80,27 +80,31 @@ def main(path, check, test, output, args):
   if ("lmcmaes" in solverName):
    solverDir = curdir + '/../modules/solver/optimizer/LMCMAES'
    moduleName = 'LMCMAES'
-   
+
   if ("mocmaes" in solverName):
    solverDir = curdir + '/../modules/solver/optimizer/MOCMAES'
    moduleName = 'MOCMAES'
-   
+
   if ("mcmc" in solverName):
    solverDir = curdir + '/../modules/solver/sampler/MCMC'
    moduleName = 'MCMC'
-   
+
   if ("nested" in solverName):
    solverDir = curdir + '/../modules/solver/sampler/Nested'
    moduleName = 'Nested'
-   
+
   if ("tmcmc" in solverName):
    solverDir = curdir + '/../modules/solver/sampler/TMCMC'
    moduleName = 'TMCMC'
 
+  if ("em" in solverName):
+   solverDir = curdir + '/../modules/solver/EM'
+   moduleName = 'EM'
+
   if (solverDir == ""):
    print("[Korali] Solver '{0}' does not provide support for plotting.".format(solverName))
    exit(0)
-   
+
   sys.path.append(solverDir)
   solverLib = importlib.import_module(moduleName, package=None)
   solverLib.plot(genList, args)

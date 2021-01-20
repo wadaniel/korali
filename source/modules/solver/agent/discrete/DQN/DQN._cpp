@@ -19,25 +19,26 @@ void DQN::initializeAgent()
   * Initializing Critic (Q) Learner
   *********************************************************************/
 
-  _criticExperiment["Problem"]["Type"] = "Supervised Learning";
-  _criticExperiment["Problem"]["Max Timesteps"] = _timeSequenceLength;
-  _criticExperiment["Problem"]["Training Batch Size"] = _miniBatchSize;
-  _criticExperiment["Problem"]["Inference Batch Size"] = 1;
-  _criticExperiment["Problem"]["Input"]["Size"] = _problem->_stateVectorSize + _problem->_actionVectorSize;
-  _criticExperiment["Problem"]["Solution"]["Size"] = 1;
+  _criticPolicyExperiment["Problem"]["Type"] = "Supervised Learning";
+  _criticPolicyExperiment["Problem"]["Max Timesteps"] = _timeSequenceLength;
+  _criticPolicyExperiment["Problem"]["Training Batch Size"] = _miniBatchSize;
+  _criticPolicyExperiment["Problem"]["Inference Batch Size"] = 1;
+  _criticPolicyExperiment["Problem"]["Input"]["Size"] = _problem->_stateVectorSize + _problem->_actionVectorSize;
+  _criticPolicyExperiment["Problem"]["Solution"]["Size"] = 1;
 
-  _criticExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
-  _criticExperiment["Solver"]["Optimizer"] = _optimizer;
-  _criticExperiment["Solver"]["Learning Rate"] = _learningRate;
-  _criticExperiment["Solver"]["Loss Function"] = "Mean Squared Error";
-  _criticExperiment["Solver"]["Steps Per Generation"] = 1;
-  _criticExperiment["Solver"]["Neural Network"]["Engine"] = _neuralNetworkEngine;
-  _criticExperiment["Solver"]["Neural Network"]["Hidden Layers"] = _neuralNetworkHiddenLayers;
+  _criticPolicyExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
+  _criticPolicyExperiment["Solver"]["Optimizer"] = _optimizer;
+  _criticPolicyExperiment["Solver"]["Learning Rate"] = _learningRate;
+  _criticPolicyExperiment["Solver"]["L2 Regularization"] = _l2Regularization;
+  _criticPolicyExperiment["Solver"]["Loss Function"] = "Mean Squared Error";
+  _criticPolicyExperiment["Solver"]["Steps Per Generation"] = 1;
+  _criticPolicyExperiment["Solver"]["Neural Network"]["Engine"] = _neuralNetworkEngine;
+  _criticPolicyExperiment["Solver"]["Neural Network"]["Hidden Layers"] = _neuralNetworkHiddenLayers;
 
   // Running initialization to verify that the configuration is correct
-  _criticExperiment.initialize();
-  _criticProblem = dynamic_cast<problem::SupervisedLearning *>(_criticExperiment._problem);
-  _criticLearner = dynamic_cast<solver::learner::DeepSupervisor *>(_criticExperiment._solver);
+  _criticPolicyExperiment.initialize();
+  _criticPolicyProblem = dynamic_cast<problem::SupervisedLearning *>(_criticPolicyExperiment._problem);
+  _criticPolicyLearner = dynamic_cast<solver::learner::DeepSupervisor *>(_criticPolicyExperiment._solver);
 }
 
 void DQN::trainPolicy()
@@ -49,13 +50,15 @@ void DQN::trainPolicy()
   // Delay using latest critic taget for training until reaching a number of experiences
   if (_policyUpdateCount % _targetUpdateDelay == 0)
   {
-    auto criticHyperparameters = _hyperparameters["Critic"].get<std::vector<float>>();
-    _criticLearner->setInferenceHyperparameters(criticHyperparameters);
+    // TODO: evaluate if this is still correct (D.W.)
+    knlohmann::json hyperparameters;
+    hyperparameters["Critic/Policy"] = _criticPolicyLearner->getTrainingHyperparameters();
+    _criticPolicyLearner->setInferenceHyperparameters(hyperparameters);
   }
 
   // Calculating cumulative Q*, for statistical purposes
-  _cumulativeQStar = 0.0;
-  _cumulativeQStarSquared = 0.0;
+  float cumulativeQStar = 0.0;
+  float cumulativeQStarSquared = 0.0;
 
   // Creating minibatch for the critic update
   auto miniBatchIndexes = generateMiniBatch(_miniBatchSize);
@@ -100,39 +103,32 @@ void DQN::trainPolicy()
       size_t t = nextStateActionSequence.size() - 1;
       for (size_t i = 0; i < _problem->_actionVectorSize; i++) nextStateActionSequence[t][_problem->_stateVectorSize + i] = bestAction[i];
 
-      auto qNextExp = _criticLearner->getEvaluation({nextStateActionSequence})[0][0];
+      auto qNextExp = _criticPolicyLearner->getEvaluation({nextStateActionSequence})[0][0];
 
       qStar += _discountFactor * qNextExp;
     }
 
     // Updating inputs to training learner
-    _criticProblem->_inputData[b] = curStateActionSequence;
-    _criticProblem->_solutionData[b] = {qStar};
+    _criticPolicyProblem->_inputData[b] = curStateActionSequence;
+    _criticPolicyProblem->_solutionData[b] = {qStar};
 
     // Keeping statistics
-    _cumulativeQStar += qStar;
-    _cumulativeQStarSquared += qStar * qStar;
+    cumulativeQStar += qStar;
+    cumulativeQStarSquared += qStar * qStar;
   }
 
   // Running one generation of the optimization method with the given mini-batch
-  _criticLearner->runGeneration();
+  _criticPolicyLearner->runGeneration();
 
   // Keeping statistics
-  _averageQStar = (float)_cumulativeQStar / (float)_miniBatchSize;
-  _stdevQStar = sqrt(_cumulativeQStarSquared / (float)_miniBatchSize - _averageQStar * _averageQStar);
+  _statisticsAverageQStar = (float)cumulativeQStar / (float)_miniBatchSize;
+  _statisticsStdevQStar = sqrt(cumulativeQStarSquared / (float)_miniBatchSize - _statisticsAverageQStar * _statisticsAverageQStar);
 }
 
-knlohmann::json DQN::getAgentPolicy()
+float DQN::stateValueFunction(const std::vector<std::vector<float>> &state)
 {
-  knlohmann::json hyperparameters;
-  hyperparameters["Critic"] = _criticLearner->getTrainingHyperparameters();
-  return hyperparameters;
-}
-
-void DQN::setAgentPolicy(const knlohmann::json &hyperparameters)
-{
-  auto criticHyperparameters = hyperparameters["Critic"].get<std::vector<float>>();
-  _criticLearner->setInferenceHyperparameters(criticHyperparameters);
+  // Calculating V(s_i)
+  return 0.0; //TODO (D.W.)
 }
 
 knlohmann::json DQN::runPolicy(const std::vector<std::vector<float>> &state)
@@ -159,7 +155,7 @@ knlohmann::json DQN::runPolicy(const std::vector<std::vector<float>> &state)
         stateActionInput[t][_problem->_stateVectorSize + i] = _problem->_possibleActions[t][i];
 
     // Computing Q(s,a_i)
-    qval[i] = _criticLearner->getEvaluation({stateActionInput})[0][0];
+    qval[i] = _criticPolicyLearner->getEvaluation({stateActionInput})[0][0];
 
     // Extracting max Q(s,a_i)
     if (qval[i] > maxq) maxq = qval[i];
@@ -193,28 +189,41 @@ knlohmann::json DQN::runPolicy(const std::vector<std::vector<float>> &state)
   return policy;
 }
 
+
+knlohmann::json DQN::getAgentPolicy()
+{
+  knlohmann::json hyperparameters;
+  hyperparameters["Critic/Policy"] = _criticPolicyLearner->getTrainingHyperparameters();
+  return hyperparameters;
+}
+
+void DQN::setAgentPolicy(const knlohmann::json &hyperparameters)
+{
+  _criticPolicyLearner->setInferenceHyperparameters(hyperparameters["Critic/Policy"].get<std::vector<float>>());
+}
+
 void DQN::setTrainingState(const knlohmann::json &state)
 {
-  _criticLearner->setTrainingHyperparameters(state["Critic"]["Training"]);
-  _criticLearner->setInferenceHyperparameters(state["Critic"]["Inference"]);
+  _criticPolicyLearner->setTrainingHyperparameters(state["Critic/Policy"]["Training"]);
+  _criticPolicyLearner->setInferenceHyperparameters(state["Critic/Policy"]["Inference"]);
 }
 
 knlohmann::json DQN::getTrainingState()
 {
   knlohmann::json state;
-  state["Critic"]["Training"] = _criticLearner->getTrainingHyperparameters();
-  state["Critic"]["Inference"] = _criticLearner->getInferenceHyperparameters();
+  state["Critic/Policy"]["Training"] = _criticPolicyLearner->getTrainingHyperparameters();
+  state["Critic/Policy"]["Inference"] = _criticPolicyLearner->getInferenceHyperparameters();
   return state;
 }
 
 void DQN::printAgentInformation()
 {
   _k->_logger->logInfo("Normal", "Critic Information:\n");
-  _k->_logger->logInfo("Normal", " + Avg Q-Value in Mini-Batch:  %f (%f)\n", _averageQStar, _stdevQStar);
+  _k->_logger->logInfo("Normal", " + Avg Q-Value in Mini-Batch:  %f (%f)\n", _statisticsAverageQStar, _statisticsStdevQStar);
 
-  _criticExperiment._logger->_verbosityLevel = _k->_logger->_verbosityLevel;
-  _criticExperiment._solver->printGenerationAfter();
-  _criticExperiment._logger->setVerbosityLevel("Silent");
+  _criticPolicyExperiment._logger->_verbosityLevel = _k->_logger->_verbosityLevel;
+  _criticPolicyExperiment._solver->printGenerationAfter();
+  _criticPolicyExperiment._logger->setVerbosityLevel("Silent");
 }
 
 } // namespace discrete

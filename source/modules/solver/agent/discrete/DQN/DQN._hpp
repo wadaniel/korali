@@ -17,26 +17,27 @@ class DQN : public Discrete
 {
   public:
   /**
-  * @brief Pointer to training experiment's learner
+   * @brief Pointer to training the actor network
+   */
+  learner::DeepSupervisor *_criticPolicyLearner;
+
+  /**
+  * @brief Korali experiment for obtaining the agent's action
   */
-  learner::DeepSupervisor *_criticLearner;
+  korali::Experiment _criticPolicyExperiment;
 
   /**
-   * @brief Korali experiment for the training of the critic
+   * @brief Pointer to actor's experiment problem
    */
-  korali::Experiment _criticExperiment;
+  problem::SupervisedLearning *_criticPolicyProblem;
 
-  /**
-   * @brief Pointer to training experiment's problem
-   */
-  problem::SupervisedLearning *_criticProblem;
-
+  float stateValueFunction(const std::vector<std::vector<float>> &state) override;
   void setTrainingState(const knlohmann::json &hyperparameters) override;
   knlohmann::json getTrainingState() override;
-  knlohmann::json getAgentPolicy() override;
-  void setAgentPolicy(const knlohmann::json &hyperparameters) override;
   knlohmann::json runPolicy(const std::vector<std::vector<float>> &stateSequence) override;
   void trainPolicy() override;
+  knlohmann::json getAgentPolicy() override;
+  void setAgentPolicy(const knlohmann::json &hyperparameters) override;
   void printAgentInformation() override;
   void initializeAgent() override;
 };

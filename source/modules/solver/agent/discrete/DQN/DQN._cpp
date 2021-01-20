@@ -51,9 +51,8 @@ void DQN::trainPolicy()
   if (_policyUpdateCount % _targetUpdateDelay == 0)
   {
     // TODO: evaluate if this is still correct (D.W.)
-    knlohmann::json hyperparameters;
-    hyperparameters["Critic/Policy"] = _criticPolicyLearner->getTrainingHyperparameters();
-    _criticPolicyLearner->setInferenceHyperparameters(hyperparameters);
+    auto hyperparam = _criticPolicyLearner->getTrainingHyperparameters();
+    _criticPolicyLearner->setInferenceHyperparameters(hyperparam);
   }
 
   // Calculating cumulative Q*, for statistical purposes
@@ -127,8 +126,62 @@ void DQN::trainPolicy()
 
 float DQN::stateValueFunction(const std::vector<std::vector<float>> &state)
 {
-  // Calculating V(s_i)
-  return 0.0; //TODO (D.W.)
+  // Storing state into the critic input (will not change)
+  std::vector<std::vector<float>> stateActionInput(state.size());
+  for (size_t t = 0; t < state.size(); t++)
+  {
+    stateActionInput[t].resize(_problem->_stateVectorSize + _problem->_actionVectorSize);
+    for (size_t i = 0; i < state.size(); i++) stateActionInput[t][i] = state[t][i];
+  }
+
+  // Storage for action probabilities
+  float maxq = -korali::Inf;
+  std::vector<float> qval(_problem->_possibleActions.size());
+  std::vector<float> pActions(_problem->_possibleActions.size());
+
+  // Iterating over all possible actions, checking their Q(s,a_i)
+  for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
+  {
+    // Copying the values of the possible action onto the state/action vector
+    for (size_t t = 0; t < state.size(); t++)
+      for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+        stateActionInput[t][_problem->_stateVectorSize + i] = _problem->_possibleActions[t][i];
+
+    // Computing Q(s,a_i)
+    qval[i] = _criticPolicyLearner->getEvaluation({stateActionInput})[0][0];
+
+    // Extracting max Q(s,a_i)
+    if (qval[i] > maxq) maxq = qval[i];
+  }
+
+  // Storage for the cumulative e^Q(s,a_i)/maxq
+  float sumExpQVal = 0.0;
+
+  for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
+  {
+    // Computing e^(Q(s,a_i) - maxq)
+    float expCurQVal = std::exp(qval[i] - maxq);
+
+    // Computing Sum_i(e^Q(s,a_i)/e^maxq)
+    sumExpQVal += expCurQVal;
+
+    // Storing partial value of the probability of the action
+    pActions[i] = expCurQVal;
+  }
+
+  // Calculating inverse of Sum_i(e^Q(s,a_i))
+  float invSumExpQVal = 1.0f / sumExpQVal;
+
+  // Normalizing action probabilities
+  for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
+    pActions[i] *= invSumExpQVal;
+
+  // Calculating V(s_i) as the expectation of Q(s_i,a)
+  float v = 0.;
+  for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
+    v += qval[i] * pActions[i];
+
+  return v;
 }
 
 knlohmann::json DQN::runPolicy(const std::vector<std::vector<float>> &state)
@@ -188,7 +241,6 @@ knlohmann::json DQN::runPolicy(const std::vector<std::vector<float>> &state)
   policy["Action Probabilities"] = pActions;
   return policy;
 }
-
 
 knlohmann::json DQN::getAgentPolicy()
 {

@@ -1,6 +1,9 @@
 import sys
 import os
 import json
+from pathlib import Path
+from shutil import copyfile
+import glob
 
 ####################################################################
 # Helper Functions
@@ -81,7 +84,7 @@ def consumeValue(base, moduleName, path, varName, varType, isMandatory, options)
 
   # Flag to indicate a Korali module was detected
   detectedKoraliType = False
-  
+
   # Checking whether its defined
   cString = ' if (isDefined(' + base + ', ' + path.replace('][', ", ").replace('[', '').replace(']', '') + '))\n'
   cString += ' {\n'
@@ -114,24 +117,24 @@ def consumeValue(base, moduleName, path, varName, varType, isMandatory, options)
      cString += ' ' + varName + '->applyModuleDefaults(' + base + path + ');\n'
      cString += ' ' + varName + '->setConfiguration(' + base + path + ');\n'
     detectedKoraliType = True
-   
+
   if (not detectedKoraliType):
     rhs = base + path + '.get<' + varType + '>();\n'
     if ('gsl_rng*' in varType): rhs = 'setRange(' + base + path + '.get<std::string>());\n'
-  
+
     cString += ' try { ' + varName + ' = ' + rhs + '} catch (const std::exception& e)\n'
-    cString += ' { KORALI_LOG_ERROR(" + Object: [ ' + moduleName + ' ] \\n + Key:    ' + path.replace('"', "'") + '\\n%s", e.what()); } \n'  
+    cString += ' { KORALI_LOG_ERROR(" + Object: [ ' + moduleName + ' ] \\n + Key:    ' + path.replace('"', "'") + '\\n%s", e.what()); } \n'
     if (options):
       cString += '{\n'
       validVarName = 'validOption'
       cString += ' bool ' + validVarName + ' = false; \n'
       for v in options:  cString += ' if (' + varName + ' == "' + v + '") ' + validVarName + ' = true; \n'
       cString += ' if (' + validVarName + ' == false) KORALI_LOG_ERROR(" + Unrecognized value (%s) provided for mandatory setting: ' + path.replace('"', "'") + ' required by ' + moduleName + '.\\n", ' + varName + '.c_str()); \n'
-      cString += '}\n'  
-  
+      cString += '}\n'
+
   cString += '   eraseValue(' + base + ', ' + path.replace('][', ", ").replace('[', '').replace(']', '') + ');\n'
   cString += ' }\n'
-  
+
   if (isMandatory):
     cString += '  else '
     cString += '  KORALI_LOG_ERROR(" + No value provided for mandatory setting: ' + path.replace('"', "'") + ' required by ' + moduleName + '.\\n"); \n'
@@ -183,7 +186,7 @@ def createSetConfiguration(module):
                                  getCXXVariableName(v["Name"]),
                                  getVariableType(v), False,
                                  getVariableOptions(v))
-                                 
+
   # Consume Configuration Settings
   if 'Configuration Settings' in module:
     for v in module["Configuration Settings"]:
@@ -480,13 +483,14 @@ def save_if_different(filename, content):
     with open(filename) as f:
       existing = f.read()
     if content == existing:
-      return
+      return False
   except FileNotFoundError:
     pass
 
   with open(filename, 'w') as f:
     print('[Korali] Creating: ' + filename + '...')
     f.write(content)
+    return True
 
 
 ####################################################################
@@ -503,18 +507,25 @@ detectedModules = []
 variableDeclarationList = ''
 variableDeclarationSet = set()
 
+rootDir = os.path.abspath("../")
+includeDir = os.path.join( rootDir, 'include')
+
+Path(includeDir).mkdir(parents=True, exist_ok=True)
+
 # Detecting modules' json file
 for moduleDir, relDir, fileNames in os.walk(modulesDir):
+
   for fileName in fileNames:
+
     if '.config' in fileName:
       filePath = moduleDir + '/' + fileName
-      print('[Korali] Opening: ' + filePath + '...')
+      # print('[Korali] Opening: ' + filePath + '...')
       moduleFilename = fileName.replace('.config', '')
 
       # Loading template header .hpp file
       moduleTemplateHeaderFile = moduleDir + '/' + moduleFilename + '._hpp'
       with open(moduleTemplateHeaderFile, 'r') as file: moduleTemplateHeaderString = file.read()
-      
+
       # Loading Json configuration file
       with open(filePath, 'r') as file:
         moduleConfig = json.load(file)
@@ -527,7 +538,7 @@ for moduleDir, relDir, fileNames in os.walk(modulesDir):
       moduleConfig["Parent Class"] = getParentClassName(moduleTemplateHeaderString)
       moduleConfig["Option Name"] = getOptionName(modulePath)
       moduleConfig["Relative Path"] = os.path.relpath(moduleDir, modulesDir)
-      moduleConfig["Header Filename"] = os.path.join(moduleConfig["Relative Path"], moduleFilename + '.hpp') 
+      moduleConfig["Header Filename"] = os.path.join(moduleConfig["Relative Path"], moduleFilename + '.hpp')
 
       ####### Adding module and parent to list
 
@@ -536,10 +547,10 @@ for moduleDir, relDir, fileNames in os.walk(modulesDir):
       ###### Producing module code
 
       moduleCodeString = ''
-      
+
       # Adding namespaces
-      for n in moduleConfig["Namespace"]: moduleCodeString += 'namespace ' + n + ' { \n'  
-        
+      for n in moduleConfig["Namespace"]: moduleCodeString += 'namespace ' + n + ' { \n'
+
       moduleCodeString += createSetConfiguration(moduleConfig)
       moduleCodeString += createGetConfiguration(moduleConfig)
       moduleCodeString += createApplyModuleDefaults(moduleConfig)
@@ -621,8 +632,8 @@ for moduleDir, relDir, fileNames in os.walk(modulesDir):
       newHeaderString = moduleHeaderString.replace('public:', 'public: \n' + functionOverrideString + '\n')
 
       # Closing namespaces
-      for n in moduleConfig["Namespace"]: moduleCodeString += '} // namespace ' + n + '\n'  
-       
+      for n in moduleConfig["Namespace"]: moduleCodeString += '} // namespace ' + n + '\n'
+
       # Adding Doxygen Information
 
       doxyClassHeader = '/**\n'
@@ -637,15 +648,19 @@ for moduleDir, relDir, fileNames in os.walk(modulesDir):
 
       # Adding declarations
       declarationsString = createHeaderDeclarations(moduleConfig)
-      newHeaderString = newHeaderString.replace(
-          'public:', 'public: \n' + declarationsString + '\n')
+      newHeaderString = newHeaderString.replace('public:', 'public: \n' + declarationsString + '\n')
 
       # Retrieving variable declarations
       variableDeclarationList += createVariableDeclarations(moduleConfig)
 
       # Saving new header .hpp file
-      moduleNewHeaderFile = moduleDir + '/' + moduleFilename + '.hpp'
-      save_if_different(moduleNewHeaderFile, newHeaderString)
+      moduleNewHeaderDir  = os.path.join( includeDir, os.path.relpath(moduleDir) )
+      moduleNewHeaderFile = os.path.join( moduleNewHeaderDir, moduleFilename + '.hpp')
+
+      Path(moduleNewHeaderDir).mkdir(parents=True, exist_ok=True)
+
+      isDifferent = save_if_different(moduleNewHeaderFile, newHeaderString)
+
 
       ###### Creating code file
 
@@ -662,16 +677,44 @@ for moduleDir, relDir, fileNames in os.walk(modulesDir):
         moduleBaseCodeString += '\n\n' + moduleCodeString
         save_if_different(moduleNewCodeFile, moduleBaseCodeString)
 
+
 ###### Updating variable header file
 
-variableBaseHeaderFileName = koraliDir + '/variable/variable._hpp'
-variableNewHeaderFile = koraliDir + '/variable/variable.hpp'
+variableBaseHeaderFileName = os.path.join( koraliDir, 'variable', 'variable._hpp' )
+newHeaderDir = os.path.join( includeDir, 'variable' )
+variableNewHeaderFile = os.path.join( newHeaderDir, 'variable.hpp' )
 with open(variableBaseHeaderFileName, 'r') as file:
   variableBaseHeaderString = file.read()
 newBaseString = variableBaseHeaderString
-newBaseString = newBaseString.replace(' // Variable Declaration List',
-                                      variableDeclarationList)
+newBaseString = newBaseString.replace(' // Variable Declaration List',variableDeclarationList)
+
+Path(newHeaderDir).mkdir(parents=True, exist_ok=True)
 save_if_different(variableNewHeaderFile, newBaseString)
+
+# Ready to copy header files
+headerFileList = glob.glob('./auxiliar/*.hpp')
+headerFileList += [ './engine.hpp',
+                    './korali.hpp',
+                    './sample/sample.hpp',
+                    './modules/solver/learner/deepSupervisor/optimizers/fCMAES.hpp',
+                    './modules/solver/learner/deepSupervisor/optimizers/fAdaBelief.hpp',
+                    './modules/solver/learner/deepSupervisor/optimizers/fAdam.hpp',
+                    './modules/module.hpp'
+                    ]
+for _file in headerFileList:
+
+  newHeaderFile = os.path.join( includeDir, _file )
+  ( newHeaderDir, _ ) = os.path.split(newHeaderFile)
+  Path(newHeaderDir).mkdir(parents=True, exist_ok=True)
+  if ( not os.path.isfile(newHeaderFile) ) or os.stat(_file).st_mtime > os.stat(newHeaderFile).st_mtime:
+    print('[Korali] Copying: ' + newHeaderFile + '...')
+    copyfile(_file, newHeaderFile)
+  # else:
+  #   if :
+  #     copyfile(_file, newHeaderFile)
+
+
+
 
 print("[Korali] End Parser\n")
 

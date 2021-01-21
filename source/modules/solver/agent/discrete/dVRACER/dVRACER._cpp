@@ -253,6 +253,24 @@ knlohmann::json dVRACER::runPolicy(const std::vector<std::vector<float>> &state)
   // Normalizing action probabilities
   for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
     pActions[i] *= invSumExpQVal;
+ 
+  // Safety check
+  float cumPval = 0.0;
+  for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
+  {
+    if(std::isfinite(pActions[i]) == false)
+    {
+        //_k->_logger->logWarning("Minimal", "Non finite probability detected\n");
+        pActions[i] = 0.;
+        //for (auto& st : state)
+        //for (auto& s : st)
+        //    _k->_logger->logWarning("Minimal", "%f \n", s);
+    }
+    cumPval += pActions[i];
+  }
+  for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
+    pActions[i] /= cumPval;
+
 
   // Returning action probabilities along with state value and importance weight
   knlohmann::json policy;

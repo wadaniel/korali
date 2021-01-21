@@ -18,7 +18,7 @@ envp = lambda s : env(s,target)
 ### Defining the Cartpole problem's configuration
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = envp
-e["Problem"]["Training Reward Threshold"] = 490
+e["Problem"]["Training Reward Threshold"] = 495
 e["Problem"]["Policy Testing Episodes"] = 25
 e["Problem"]["Actions Between Policy Updates"] = 5
 
@@ -63,7 +63,8 @@ e["Solver"]["Experience Replay"]["REFER"]["Annealing Rate"] = 5e-7
 
 e["Solver"]["Discount Factor"] = 0.99
 e["Solver"]["Learning Rate"] = 1e-4
-e["Solver"]["Mini Batch Size"] = 24
+e["Solver"]["L2 Regularization"] = 1e-4
+e["Solver"]["Mini Batch Size"] = 32
 
 ### Configuring the neural network and its hidden layers
 

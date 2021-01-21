@@ -691,7 +691,8 @@ Path(newHeaderDir).mkdir(parents=True, exist_ok=True)
 save_if_different(variableNewHeaderFile, newBaseString)
 
 # Ready to copy header files
-headerFileList = glob.glob('auxiliar/*.hpp')
+headerFileList = glob.glob(sourceDir+'/auxiliar/*.hpp')
+headerFileList = [ './auxiliar/'+os.path.split(_file)[1] for _file in  headerFileList ]
 headerFileList += [ 'engine.hpp',
                     'korali.hpp',
                     'sample/sample.hpp',

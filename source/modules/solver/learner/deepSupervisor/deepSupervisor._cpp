@@ -156,18 +156,12 @@ void DeepSupervisor::runGeneration()
     // Backward propagating the gradients through the training neural network
     _trainingNeuralNetwork->backward(gradientVector);
 
-    // Apply gradient of L2 regularizer and add l2 penalty
+    // Apply gradient of L2 regularizer
     if (_l2Regularization > 0.)
     {
       auto nnHyperparameters = _trainingNeuralNetwork->getHyperparameters();
-
-      float l2param2 = 0.;
       for (size_t i = 0; i < _trainingNeuralNetwork->_hyperparameterCount; ++i)
-      {
-        l2param2 += nnHyperparameters[i] * nnHyperparameters[i];
         _trainingNeuralNetwork->_hyperparameterGradients[i] -= _l2Regularization * nnHyperparameters[i];
-      }
-      _currentLoss += 0.5 * _l2Regularization * l2param2;
     }
 
     // Passing hyperparameter gradients through an ADAM update

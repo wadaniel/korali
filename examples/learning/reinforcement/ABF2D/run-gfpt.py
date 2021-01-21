@@ -17,7 +17,7 @@ setResultsDir('_result_gfpt')
 
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = env
-e["Problem"]["Training Reward Threshold"] = 42.0
+e["Problem"]["Training Reward Threshold"] = 50.0
 e["Problem"]["Policy Testing Episodes"] = 1
 e["Problem"]["Actions Between Policy Updates"] = 1
 
@@ -77,8 +77,8 @@ e["Solver"]["Mini Batch Strategy"] = "Uniform"
 
 ## Defining Critic and Policy Configuration
 
-e["Solver"]["Policy"]["Learning Rate Scale"] = 0.1
-e["Solver"]["Policy"]["Target Accuracy"] = 0.05
+e["Solver"]["Policy"]["Learning Rate Scale"] = 1.0
+e["Solver"]["Policy"]["Target Accuracy"] = 0.01
 e["Solver"]["Policy"]["Optimization Candidates"] = 64
 
 ### Configuring the neural network and its hidden layers
@@ -99,7 +99,7 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tan
 
 ### Defining Termination Criteria
 
-e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 42.0
+e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 50.0
 
 ### Setting console/file output configuration
 

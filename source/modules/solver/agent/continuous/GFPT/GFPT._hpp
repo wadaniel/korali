@@ -76,7 +76,7 @@ class GFPT : public Continuous
    * @param stateActionSequence State/action sequence to evaluate
    * @return The advantage value
    */
-  float currentActionAdvantageFunction(const std::vector<std::vector<float>> &stateActionSequence);
+  float getActionAdvantage(const std::vector<std::vector<float>> &stateActionSequence);
 
   /**
    * @brief Returns the best action: that with highest advantage for the given state
@@ -87,11 +87,11 @@ class GFPT : public Continuous
 
   /**
    * @brief Returns the optimal action for a given experience, based on the evaluation of the advantage function
-   * @param expId The id (position within the replay memory) of the experience
+   * @param stateActionSequence Time sequence of state/actions
    * @param curMeans The current means of the policy to use as initial guess
    * @return The optimal action
    */
-  knlohmann::json optimizeAction(const size_t expId, const std::vector<float> &curMeans);
+  knlohmann::json optimizeAction(const std::vector<std::vector<float>> stateActionSequence, const std::vector<float> &curMeans);
 
   knlohmann::json runPolicy(const std::vector<std::vector<float>> &stateSequence) override;
   float stateValueFunction(const std::vector<std::vector<float>> &stateSequence) override;

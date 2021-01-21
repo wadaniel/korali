@@ -499,18 +499,17 @@ def save_if_different(filename, content):
 
 print("\n[Korali] Start Parser")
 
-koraliDir = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
-modulesDir = koraliDir + '/modules/'
+sourceDir = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
+rootDir = os.path.dirname( sourceDir )
+modulesDir = os.path.join( sourceDir, 'modules' )
+includeDir = os.path.join( rootDir, 'include')
+
+Path(includeDir).mkdir(parents=True, exist_ok=True)
 
 # modules List
 detectedModules = []
 variableDeclarationList = ''
 variableDeclarationSet = set()
-
-rootDir = os.path.abspath("../")
-includeDir = os.path.join( rootDir, 'include')
-
-Path(includeDir).mkdir(parents=True, exist_ok=True)
 
 # Detecting modules' json file
 for moduleDir, relDir, fileNames in os.walk(modulesDir):
@@ -680,7 +679,7 @@ for moduleDir, relDir, fileNames in os.walk(modulesDir):
 
 ###### Updating variable header file
 
-variableBaseHeaderFileName = os.path.join( koraliDir, 'variable', 'variable._hpp' )
+variableBaseHeaderFileName = os.path.join( sourceDir, 'variable', 'variable._hpp' )
 newHeaderDir = os.path.join( includeDir, 'variable' )
 variableNewHeaderFile = os.path.join( newHeaderDir, 'variable.hpp' )
 with open(variableBaseHeaderFileName, 'r') as file:
@@ -692,14 +691,14 @@ Path(newHeaderDir).mkdir(parents=True, exist_ok=True)
 save_if_different(variableNewHeaderFile, newBaseString)
 
 # Ready to copy header files
-headerFileList = glob.glob('./auxiliar/*.hpp')
-headerFileList += [ './engine.hpp',
-                    './korali.hpp',
-                    './sample/sample.hpp',
-                    './modules/solver/learner/deepSupervisor/optimizers/fCMAES.hpp',
-                    './modules/solver/learner/deepSupervisor/optimizers/fAdaBelief.hpp',
-                    './modules/solver/learner/deepSupervisor/optimizers/fAdam.hpp',
-                    './modules/module.hpp'
+headerFileList = glob.glob('./source/auxiliar/*.hpp')
+headerFileList += [ './source/engine.hpp',
+                    './source/korali.hpp',
+                    './source/sample/sample.hpp',
+                    './source/modules/solver/learner/deepSupervisor/optimizers/fCMAES.hpp',
+                    './source/modules/solver/learner/deepSupervisor/optimizers/fAdaBelief.hpp',
+                    './source/modules/solver/learner/deepSupervisor/optimizers/fAdam.hpp',
+                    './source/modules/module.hpp'
                     ]
 for _file in headerFileList:
 
@@ -709,12 +708,6 @@ for _file in headerFileList:
   if ( not os.path.isfile(newHeaderFile) ) or os.stat(_file).st_mtime > os.stat(newHeaderFile).st_mtime:
     print('[Korali] Copying: ' + newHeaderFile + '...')
     copyfile(_file, newHeaderFile)
-  # else:
-  #   if :
-  #     copyfile(_file, newHeaderFile)
-
-
-
 
 print("[Korali] End Parser\n")
 

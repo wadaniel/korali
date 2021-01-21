@@ -517,8 +517,9 @@ for moduleDir, relDir, fileNames in os.walk(modulesDir):
   for fileName in fileNames:
 
     if '.config' in fileName:
+
       filePath = moduleDir + '/' + fileName
-      # print('[Korali] Opening: ' + filePath + '...')
+
       moduleFilename = fileName.replace('.config', '')
 
       # Loading template header .hpp file
@@ -653,13 +654,13 @@ for moduleDir, relDir, fileNames in os.walk(modulesDir):
       variableDeclarationList += createVariableDeclarations(moduleConfig)
 
       # Saving new header .hpp file
-      moduleNewHeaderDir  = os.path.join( includeDir, os.path.relpath(moduleDir) )
+      p = Path(os.path.relpath(moduleDir))
+      moduleNewHeaderDir  = os.path.join( includeDir, Path(*p.parts[1:]) )
       moduleNewHeaderFile = os.path.join( moduleNewHeaderDir, moduleFilename + '.hpp')
 
       Path(moduleNewHeaderDir).mkdir(parents=True, exist_ok=True)
 
       isDifferent = save_if_different(moduleNewHeaderFile, newHeaderString)
-
 
       ###### Creating code file
 
@@ -676,7 +677,6 @@ for moduleDir, relDir, fileNames in os.walk(modulesDir):
         moduleBaseCodeString += '\n\n' + moduleCodeString
         save_if_different(moduleNewCodeFile, moduleBaseCodeString)
 
-
 ###### Updating variable header file
 
 variableBaseHeaderFileName = os.path.join( sourceDir, 'variable', 'variable._hpp' )
@@ -691,23 +691,25 @@ Path(newHeaderDir).mkdir(parents=True, exist_ok=True)
 save_if_different(variableNewHeaderFile, newBaseString)
 
 # Ready to copy header files
-headerFileList = glob.glob('./source/auxiliar/*.hpp')
-headerFileList += [ './source/engine.hpp',
-                    './source/korali.hpp',
-                    './source/sample/sample.hpp',
-                    './source/modules/solver/learner/deepSupervisor/optimizers/fCMAES.hpp',
-                    './source/modules/solver/learner/deepSupervisor/optimizers/fAdaBelief.hpp',
-                    './source/modules/solver/learner/deepSupervisor/optimizers/fAdam.hpp',
-                    './source/modules/module.hpp'
+headerFileList = glob.glob('auxiliar/*.hpp')
+headerFileList += [ 'engine.hpp',
+                    'korali.hpp',
+                    'sample/sample.hpp',
+                    'modules/solver/learner/deepSupervisor/optimizers/fCMAES.hpp',
+                    'modules/solver/learner/deepSupervisor/optimizers/fAdaBelief.hpp',
+                    'modules/solver/learner/deepSupervisor/optimizers/fAdam.hpp',
+                    'modules/module.hpp'
                     ]
+
 for _file in headerFileList:
 
+  headerFile = os.path.join( sourceDir, _file )
   newHeaderFile = os.path.join( includeDir, _file )
   ( newHeaderDir, _ ) = os.path.split(newHeaderFile)
   Path(newHeaderDir).mkdir(parents=True, exist_ok=True)
-  if ( not os.path.isfile(newHeaderFile) ) or os.stat(_file).st_mtime > os.stat(newHeaderFile).st_mtime:
+  if ( not os.path.isfile(newHeaderFile) ) or os.stat(headerFile).st_mtime > os.stat(newHeaderFile).st_mtime:
     print('[Korali] Copying: ' + newHeaderFile + '...')
-    copyfile(_file, newHeaderFile)
+    copyfile(headerFile, newHeaderFile)
 
 print("[Korali] End Parser\n")
 

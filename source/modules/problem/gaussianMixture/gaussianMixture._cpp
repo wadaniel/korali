@@ -183,6 +183,11 @@ double GaussianMixture::computeHyperparametersDifference(void){
   return diff;
 }
 
+void GaussianMixture::computeDataLogLikelihood(void)
+{
+  
+}
+
 void GaussianMixture::printHyperparameters(void)
 {
   _k->_logger->logInfo("Detailed", "Hyperparameters: \n");

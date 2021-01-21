@@ -400,6 +400,8 @@ echo SHAREDLIB_FLAG=$SHAREDLIB_FLAG >> source/Makefile.conf
 echo MPIFLAGS=$MPIFLAGS >> source/Makefile.conf
 echo BLASLIBS=$BLASLIBS >> source/Makefile.conf
 
+echo TEST_FLAG=-headerpad_max_install_names >> source/Makefile.conf
+
 echo CUDNNCFLAGS=$CUDNNCFLAGS >> source/Makefile.conf
 echo CUDNNLIBS=$CUDNNLIBS >> source/Makefile.conf
 

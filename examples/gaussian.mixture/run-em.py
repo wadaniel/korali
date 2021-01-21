@@ -32,10 +32,10 @@ e["Problem"]["Data"] = data
 
 # Configuring the MCMC sampler parameters
 e["Solver"]["Type"] = "EM"
-e["Solver"]["Termination Criteria"]["Max Generations"] = 2000
+e["Solver"]["Termination Criteria"]["Max Generations"] = 200
 
 # Configuring output settings
-e["File Output"]["Frequency"] = 5
+e["File Output"]["Frequency"] = 1
 e["Console Output"]["Frequency"] = 1
 e["Console Output"]["Verbosity"] = "Detailed"
 

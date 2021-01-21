@@ -4,9 +4,9 @@ WARNINGFLAGS += -Wall -Wno-deprecated-declarations -Wno-cast-function-type -Wno-
 
 # ==============================================================================
 CXXFLAGS  = -g $(OPTFLAGS)  $(CXXARCH) $(WARNINGFLAGS)
-CXXFLAGS += -I. -I./external  
+CXXFLAGS += -I. -I./external
 CXXFLAGS += $(MPIFLAGS)
-CXXFLAGS += $(EIGENCFLAGS) 
+CXXFLAGS += $(EIGENCFLAGS)
 CXXFLAGS += $(GSLCFLAGS)
 CXXFLAGS += $(RTNORMCFLAGS)
 CXXFLAGS += $(CUDNNCFLAGS)
@@ -18,8 +18,9 @@ CXXFLAGS += $(OMPFLAGS)
 CXXFLAGS += $(PTHREADFLAGS)
 
 LDFLAGS = $(SHAREDLIB_FLAG)
+LDFLAGS += $(TEST_FLAG)
 LDFLAGS += $(RTNORMLIBS)
-LDFLAGS += $(GSLLIBS) 
+LDFLAGS += $(GSLLIBS)
 LDFLAGS += $(CUDNNLIBS)
 LDFLAGS += $(ONEDNNLIBS)
 LDFLAGS += $(LIBGPLIBS)
@@ -56,7 +57,7 @@ all: libkorali.so
 clean:
 	@rm -f `find . -name "*._hpp" | sed 's/._hpp/.hpp/g'`
 	@rm -f `find . -name "*._cpp" | sed 's/._cpp/.cpp/g'`
-	@rm -f `find . -name "*.o" -not -type d` 
+	@rm -f `find . -name "*.o" -not -type d`
 	@rm -f  *.so *.a $(OBJECTS)
 	@rm -rf $(OBJDIR) $(DEPDIR)
 

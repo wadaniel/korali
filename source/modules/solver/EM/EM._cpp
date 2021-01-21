@@ -27,6 +27,9 @@ void EM::runGeneration()
   KORALI_START(sample);
   KORALI_WAIT(sample);
 
+  auto problem = dynamic_cast<korali::problem::GaussianMixture *>(_k->_problem);
+  _hyperparametersDifference = problem->computeHyperparametersDifference();
+
 }
 
 void EM::printGenerationBefore()

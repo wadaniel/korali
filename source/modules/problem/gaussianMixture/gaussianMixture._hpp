@@ -25,6 +25,10 @@ class GaussianMixture : public korali::Problem
     std::vector< Map<VectorXd> > _eigMeans;
     std::vector< Map<MatrixXd> > _eigCovariances;
 
+    std::vector< VectorXd > _eigWeightsOld;
+    std::vector< VectorXd > _eigMeansOld;
+    std::vector< MatrixXd > _eigCovariancesOld;
+
     std::vector< VectorXd > _S1;
     std::vector< VectorXd > _S2;
     std::vector< MatrixXd > _S3;
@@ -51,6 +55,13 @@ class GaussianMixture : public korali::Problem
    * @param
    */
   void printHyperparameters(void);
+
+  /**
+   * @brief Computes the L1 vector norm of the hyperparameters difference between two succesive generations.
+   * @param
+   */
+  double computeHyperparametersDifference(void);
+
 };
 
 } // namespace problem

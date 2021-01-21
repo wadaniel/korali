@@ -155,18 +155,18 @@ void DeepSupervisor::runGeneration()
     // Backward propagating the gradients through the training neural network
     _trainingNeuralNetwork->backward(gradientVector);
 
+    // Apply gradient of L2 regularizer and add l2 penalty
     if (_l2Regularization > 0.)
     {
       auto nnHyperparameters = _trainingNeuralNetwork->getHyperparameters();
 
-      float l2param = 0.;
+      float l2param2 = 0.;
       for (size_t i = 0; i < _trainingNeuralNetwork->_hyperparameterCount; ++i)
-        l2param += nnHyperparameters[i] * nnHyperparameters[i];
-      l2param = std::sqrt(l2param);
-
-      // Apply gradient of l2 penalty
-      for (size_t i = 0; i < _trainingNeuralNetwork->_hyperparameterCount; ++i)
-        _trainingNeuralNetwork->_hyperparameterGradients[i] -= _l2Regularization / l2param * nnHyperparameters[i];
+      {
+        l2param2 += nnHyperparameters[i] * nnHyperparameters[i];
+        _trainingNeuralNetwork->_hyperparameterGradients[i] -= _l2Regularization * nnHyperparameters[i];
+      }
+      _currentLoss += 0.5 * _l2Regularization * l2param2;
     }
 
     // Passing hyperparameter gradients through an ADAM update
@@ -239,10 +239,15 @@ std::vector<std::vector<float>> DeepSupervisor::getEvaluation(const std::vector<
   for (size_t b = 0; b < N; b++)
     for (size_t t = 0; t < input[b].size(); t++)
       if (input[b][t].size() > IC)
-        KORALI_LOG_ERROR("A different vector  size (%lu) passed for batch %lu, timestep %lu for inference than expected (%lu).\n", input[b][t].size(), b, t, IC);
+        KORALI_LOG_ERROR("A different vector size (%lu) passed for batch %lu, timestep %lu for inference than expected (%lu).\n", input[b][t].size(), b, t, IC);
 
   // Running the input values through the neural network
   _inferenceNeuralNetworks[curThread]->forward(input);
+
+  // Safety check
+  for(auto& outVec : _inferenceNeuralNetworks[curThread]->_outputValues) for(auto out : outVec)
+    if(std::isfinite(out) == false)
+        _k->_logger->logWarning("Minimal", "Non finite NN output detected\n");
 
   // Returning the output values for the last given timestep
   return _inferenceNeuralNetworks[curThread]->_outputValues;

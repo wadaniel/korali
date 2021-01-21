@@ -38,12 +38,15 @@ void fAdam::reset()
   _currentGeneration = 1;
   _modelEvaluationCount = 0;
 
+  bool check = false;
   for (size_t i = 0; i < _nVars; i++)
-    if (std::isfinite(_initialValues[i]) == false)
-      fprintf(stderr, "Initial Value of variable \'%lu\' not defined (no defaults can be calculated).\n", i);
-
-  for (size_t i = 0; i < _nVars; i++)
+  {
+    if (std::isfinite(_initialValues[i]) == false) check = true;
+    //KORALI_LOG_ERROR("Initial Value of variable \'%lu\' not defined (no defaults can be calculated).\n", i);
     _currentValue[i] = _initialValues[i];
+  }
+  if (check == true)
+    fprintf(stderr, "fAdam input contains non finite value.\n");
 
   for (size_t i = 0; i < _nVars; i++)
   {
@@ -95,6 +98,16 @@ void fAdam::processResult(float evaluation, std::vector<float> &gradient)
   {
     _currentValue[i] -= _eta / (std::sqrt(_biasCorrectedSecondMoment[i]) + _epsilon) * _biasCorrectedFirstMoment[i];
   }
+
+  bool check = false;
+  for (size_t i = 0; i < _nVars; i++)
+  {
+    if (std::isfinite(_currentValue[i]) == false)
+        check = true;
+  }
+  if (check == true) fprintf(stderr, "fAdam input contains non finite value.\n");
+
+
 }
 
 bool fAdam::checkTermination()

@@ -88,7 +88,10 @@ void Discrete::getAction(korali::Sample &sample)
   {
     float cump = 0.0;
     for (float p : pActions) cump += p;
-    KORALI_LOG_ERROR("Action index (%lu) exceeds action vector size (%lu). This points to a bug in probability calculation (cumulative p = %f).\n", actionIdx, _problem->_possibleActions.size(), cump);
+    _k->_logger->logWarning("Minimal", "Action index (%lu) exceeds action vector size (%lu). This points to a bug in probability calculation (cumulative p = %f).\n", actionIdx, _problem->_possibleActions.size(), cump);
+    for(size_t i = 0; i < _problem->_possibleActions.size(); ++i) _k->_logger->logWarning("Minimal", "p(a_%zu) = %f\n", i, pActions[i]);
+    actionIdx = _problem->_possibleActions.size() - 1;
+    KORALI_LOG_ERROR("STOP");
   }
 
   sample["Action"] = _problem->_possibleActions[actionIdx];

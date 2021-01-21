@@ -89,28 +89,31 @@ void Agent::initialize()
   // Calculating how many more experiences do we need in this session to reach the starting size
   _sessionExperiencesUntilStartSize = _experienceReplay.size() > _experienceReplayStartSize ? 0 : _experienceReplayStartSize - _experienceReplay.size();
 
-  // Creating storate for _agents and their status
-  if (_mode == "Training") _agents.resize(_agentCount);
-  if (_mode == "Testing") _agents.resize(_testingSampleIds.size());
-  _isAgentRunning.resize(_agentCount, false);
+  if (_mode == "Training")
+  {
+   // Creating storate for _agents and their status
+   _agents.resize(_agentCount);
+   _isAgentRunning.resize(_agentCount, false);
 
-  // Fixing termination criteria for testing mode
-  if (_mode == "Testing") _maxGenerations = _k->_currentGeneration + 1;
+   // Storage for the entire episodes before adding it to the replay memory
+     _episodes.resize(_agentCount);
+  }
 
-  // Setting testing policy to best testing hyperparameters if not custom-set by the user
   if (_mode == "Testing")
-    if (_testingPolicy.empty()) _testingPolicy = _testingBestPolicy;
+  {
+   // Fixing termination criteria for testing mode
+   _maxGenerations = _k->_currentGeneration + 1;
 
-  // Checking if there's testing samples defined
-  if (_mode == "Testing")
-    if (_testingSampleIds.size() == 0)
-      KORALI_LOG_ERROR("For testing, you need to indicate the sample ids to run in the ['Testing']['Sample Ids'] field.\n");
+   // Setting testing policy to best testing hyperparameters if not custom-set by the user
+   if (_testingPolicy.empty()) _testingPolicy = _testingBestPolicy;
 
-  // Prepare storage for rewards from tested samples
-  _testingReward.resize(_testingSampleIds.size());
+   // Checking if there's testing samples defined
+   if (_testingSampleIds.size() == 0)
+     KORALI_LOG_ERROR("For testing, you need to indicate the sample ids to run in the ['Testing']['Sample Ids'] field.\n");
 
-  // Storage for the entire episodes before adding it to the replay memory
-  _episodes.resize(_agentCount);
+   // Prepare storage for rewards from tested samples
+   _testingReward.resize(_testingSampleIds.size());
+  }
 }
 
 void Agent::runGeneration()
@@ -211,23 +214,24 @@ void Agent::trainingGeneration()
 
 void Agent::testingGeneration()
 {
+  // Allocating testing agents
+  std::vector<Sample> testingAgents(_testingSampleIds.size());
+
   // Launching  agents
   for (size_t agentId = 0; agentId < _testingSampleIds.size(); agentId++)
   {
-    _agents[agentId]["Sample Id"] = _testingSampleIds[agentId];
-    _agents[agentId]["Module"] = "Problem";
-    _agents[agentId]["Operation"] = "Run Testing Episode";
-    _agents[agentId]["Policy Hyperparameters"] = _testingPolicy;
+    testingAgents[agentId]["Sample Id"] = _testingSampleIds[agentId];
+    testingAgents[agentId]["Module"] = "Problem";
+    testingAgents[agentId]["Operation"] = "Run Testing Episode";
+    testingAgents[agentId]["Policy Hyperparameters"] = _testingPolicy;
 
-    KORALI_START(_agents[agentId]);
+    KORALI_START(testingAgents[agentId]);
   }
 
-  KORALI_WAITALL(_agents);
+  KORALI_WAITALL(testingAgents);
 
   for (size_t agentId = 0; agentId < _testingSampleIds.size(); agentId++)
-  {
-    _testingReward[agentId] = _agents[agentId]["Testing Reward"].get<float>();
-  }
+    _testingReward[agentId] = testingAgents[agentId]["Testing Reward"].get<float>();
 }
 
 void Agent::attendAgent(size_t agentId)

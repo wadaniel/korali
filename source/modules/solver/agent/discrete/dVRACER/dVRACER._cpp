@@ -254,24 +254,6 @@ knlohmann::json dVRACER::runPolicy(const std::vector<std::vector<float>> &state)
   for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
     pActions[i] *= invSumExpQVal;
  
-  // Safety check
-  float cumPval = 0.0;
-  for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
-  {
-    if(std::isfinite(pActions[i]) == false)
-    {
-        //_k->_logger->logWarning("Minimal", "Non finite probability detected\n");
-        pActions[i] = 0.;
-        //for (auto& st : state)
-        //for (auto& s : st)
-        //    _k->_logger->logWarning("Minimal", "%f \n", s);
-    }
-    cumPval += pActions[i];
-  }
-  for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
-    pActions[i] /= cumPval;
-
-
   // Returning action probabilities along with state value and importance weight
   knlohmann::json policy;
   policy["State Value"] = stateValue;
@@ -303,6 +285,7 @@ knlohmann::json dVRACER::getTrainingState()
   knlohmann::json state;
   state["Critic/Policy"]["Training"] = _criticPolicyLearner->getTrainingHyperparameters();
   state["Critic/Policy"]["Inference"] = _criticPolicyLearner->getInferenceHyperparameters();
+
   return state;
 }
 
@@ -318,6 +301,7 @@ void dVRACER::printAgentInformation()
   _criticPolicyExperiment._logger->_verbosityLevel = _k->_logger->_verbosityLevel;
   _criticPolicyExperiment._solver->printGenerationAfter();
   _criticPolicyExperiment._logger->setVerbosityLevel("Silent");
+
 }
 
 } // namespace discrete

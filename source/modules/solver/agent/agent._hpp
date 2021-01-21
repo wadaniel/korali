@@ -14,6 +14,7 @@ namespace korali
 {
 namespace solver
 {
+
 /**
 * @brief This enumerator details all possible termination statuses for a given episode's experience
 */

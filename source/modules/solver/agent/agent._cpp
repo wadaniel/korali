@@ -8,6 +8,7 @@ namespace korali
 {
 namespace solver
 {
+
 void Agent::initialize()
 {
   _variableCount = _k->_variables.size();
@@ -135,7 +136,6 @@ void Agent::trainingGeneration()
   _generationPolicyUpdateTime = 0.0;
   _generationAgentAttendingTime = 0.0;
 
-  // Updating training state from previous generation
   setTrainingState(_trainingState);
 
   // Running until all _agents have finished

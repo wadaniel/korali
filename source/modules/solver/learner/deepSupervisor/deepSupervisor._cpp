@@ -112,6 +112,9 @@ void DeepSupervisor::initialize()
   // Resetting solver before using it
   _adamSolver->reset();
 
+  _currentLoss = 0.;
+  _l2Hyperparameter = 0.;
+
   // Initialize statistics
   if (_k->_currentGeneration == 0)
   {
@@ -183,6 +186,10 @@ void DeepSupervisor::runGeneration()
     _inferenceNeuralNetworks[i]->setHyperparameters(hyperparameters);
   _hyperparameters = _trainingNeuralNetwork->getHyperparameters();
 
+  _l2Hyperparameter = 0.;
+  for(float param : _hyperparameters) _l2Hyperparameter += param*param;
+  _l2Hyperparameter = std::sqrt(_l2Hyperparameter);
+
 }
 
 std::vector<float> DeepSupervisor::getTrainingHyperparameters()
@@ -253,7 +260,8 @@ void DeepSupervisor::printGenerationAfter()
     _k->_logger->logInfo("Detailed", " + Suboptimal Generation Count: %lu\n", _suboptimalGenerationCount);
   }
   else if (_lossFunction == "Direct Gradient")
-    _k->_logger->logInfo("Normal", " + Gradient L2-Norm: %.15f\n", sqrt(_currentLoss));
+    _k->_logger->logInfo("Normal", " + Gradient L2-Norm: %.15f\n", std::sqrt(_currentLoss));
+  _k->_logger->logInfo("Normal", " + Hyperparameter L2-Norm: %.15f\n", _l2Hyperparameter);
 }
 
 } // namespace learner

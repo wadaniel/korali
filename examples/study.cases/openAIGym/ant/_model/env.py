@@ -11,9 +11,6 @@ def env(s):
 
  # Initializing environment
  ant.reset_model()
- print(ant.observation_space)
- print(ant.action_space.low)
- exit(0)
  s["State"] = ant._get_obs().tolist()
  step = 0
  done = False

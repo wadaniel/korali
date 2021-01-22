@@ -14,31 +14,22 @@ e = korali.Experiment()
 
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = env
-e["Problem"]["Training Reward Threshold"] = 950
+e["Problem"]["Training Reward Threshold"] = 750
 e["Problem"]["Policy Testing Episodes"] = 20
 e["Problem"]["Actions Between Policy Updates"] = 1
 
 # Defining State Variables
 
-e["Variables"][0]["Name"] = "Cart X Position"
-e["Variables"][1]["Name"] = "Sin(Joint 1 Angle)"
-e["Variables"][2]["Name"] = "Sin(Joint 2 Angle)"
-e["Variables"][3]["Name"] = "Sin(Joint 3 Angle)"
-e["Variables"][4]["Name"] = "Cos(Joint 1 Angle)"
-e["Variables"][5]["Name"] = "Cos(Joint 2 Angle)"
-e["Variables"][6]["Name"] = "Cos(Joint 3 Angle)"
-e["Variables"][7]["Name"] = "Joint 1 Velocity"
-e["Variables"][8]["Name"] = "Joint 2 Velocity"
-e["Variables"][9]["Name"] = "Joint 3 Velocity"
-e["Variables"][10]["Name"] = "Force Constraint"
+for i in range(112): 
+ e["Variables"][i]["Name"] = "State Variable " + str(i)
 
 # Defining Action Variable
 
-e["Variables"][11]["Name"] = "Force"
-e["Variables"][11]["Type"] = "Action"
-e["Variables"][11]["Lower Bound"] = -1.0
-e["Variables"][11]["Upper Bound"] = +1.0
-e["Variables"][11]["Initial Exploration Noise"] = 0.5
+e["Variables"][112]["Name"] = "Force"
+e["Variables"][112]["Type"] = "Action"
+e["Variables"][112]["Lower Bound"] = -1.0
+e["Variables"][112]["Upper Bound"] = +1.0
+e["Variables"][112]["Initial Exploration Noise"] = 0.5
 
 ### Defining Agent Configuration 
 
@@ -83,7 +74,7 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tan
 
 ### Defining Termination Criteria
 
-e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 950
+e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 750
 
 ### Setting file output configuration
 

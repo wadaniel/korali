@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-from inverted_double_pendulum import *
+
+import gym
 
 ######## Defining Environment Storage
 
-pendulum = InvertedDoublePendulumEnv()
+pendulum = gym.make('InvertedDoublePendulum-v2').unwrapped
 maxSteps = 100
 
 def env(s):
@@ -32,10 +33,11 @@ def env(s):
   # Advancing step counter
   step = step + 1
 
+ # Setting termination status
  if (done):
-   s["Termination"] = "Normal"
+  s["Termination"] = "Terminal"
  else:
-   s["Termination"] = "Truncated"
+  s["Termination"] = "Truncated"
  
 if __name__ == "__main__":
   print("Start Main..")

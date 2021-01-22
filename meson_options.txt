@@ -1,0 +1,2 @@
+option('mpi', type : 'boolean', value : true, description : 'MPI support', yield: true)
+# option('openmp', type : 'boolean', value : true, description : 'OpenMP support', yield: true)

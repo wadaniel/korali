@@ -147,7 +147,7 @@ void setInitialConditions(StefanFish *agent, Shape *object, const bool isTrainin
 {
   // Initial fixed conditions
   double SA = 0.0;
-  double SX = 0.5;
+  double SX = 0.3;
   double SY = 0.0;
 
   // or with noise

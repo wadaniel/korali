@@ -686,6 +686,8 @@ std::vector<std::vector<float>> Agent::getStateActionTimeSequence(size_t expId)
 
 void Agent::finalize()
 {
+  if (_mode != "Training") return;
+
   if (_experienceReplaySerialize == true)
     if (_k->_fileOutputEnabled)
       serializeExperienceReplay();

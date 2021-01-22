@@ -19,8 +19,8 @@ envpObs = lambda s : envWithTestObs(s,target)
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = envp
 e["Problem"]["Training Reward Threshold"] = 490
-e["Problem"]["Testing Frequency"] = 100
-e["Problem"]["Policy Testing Episodes"] = 1
+e["Problem"]["Testing Frequency"] = 250
+e["Problem"]["Policy Testing Episodes"] = 25
 e["Problem"]["Actions Between Policy Updates"] = 5
 
 e["Variables"][0]["Name"] = "Cart Position"
@@ -47,7 +47,7 @@ e["Solver"]["Type"] = "Agent / Continuous / VRACER"
 e["Solver"]["Mode"] = "Training"
 e["Solver"]["Experiences Between Policy Updates"] = 5
 e["Solver"]["Episodes Per Generation"] = 1
-e["Solver"]["Cache Persistence"] = 2000
+e["Solver"]["Cache Persistence"] = 250
 
 ### Defining the configuration of replay memory
 
@@ -64,7 +64,8 @@ e["Solver"]["Experience Replay"]["REFER"]["Annealing Rate"] = 5e-7
 
 e["Solver"]["Discount Factor"] = 0.99
 e["Solver"]["Learning Rate"] = 1e-4
-e["Solver"]["Mini Batch Size"] = 128
+e["Solver"]["L2 Regularization"] = 1e2
+e["Solver"]["Mini Batch Size"] = 32
 
 ### Configuring the neural network and its hidden layers
 
@@ -94,7 +95,7 @@ e["File Output"]["Enabled"] = False
 
 ### Running Experiment
 
-e["Solver"]["Testing"]["Backup Agent"] = True
+#e["Solver"]["Testing"]["Backup Agent"] = False
 e["Problem"]["Custom Settings"]["Record Observations"] = "False"
 
 k.run(e)

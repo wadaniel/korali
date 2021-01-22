@@ -28,16 +28,17 @@ actionVariableCount = ant.action_space.shape[0]
 for i in range(stateVariableCount):
  e["Variables"][i]["Name"] = "State Variable " + str(i)
  e["Variables"][i]["Type"] = "State"
- e["Variables"][i]["Lower Bound"] = ant.observation_space.low[i]
- e["Variables"][i]["Upper Bound"] = ant.observation_space.high[i]
+ e["Variables"][i]["Lower Bound"] = float(ant.observation_space.low[i])
+ e["Variables"][i]["Upper Bound"] = float(ant.observation_space.high[i])
  
 # Defining Action Variables
 
 for i in range(actionVariableCount):
  e["Variables"][stateVariableCount + i]["Name"] = "Action Variable " + str(i)
  e["Variables"][stateVariableCount + i]["Type"] = "Action"
- e["Variables"][stateVariableCount + i]["Lower Bound"] = ant.action_space.low[i]
- e["Variables"][stateVariableCount + i]["Upper Bound"] = ant.action_space.high[i]
+ e["Variables"][stateVariableCount + i]["Lower Bound"] = float(ant.action_space.low[i])
+ e["Variables"][stateVariableCount + i]["Upper Bound"] = float(ant.action_space.high[i])
+ e["Variables"][stateVariableCount + i]["Initial Exploration Noise"] = 0.25 * float(ant.action_space.high[i] - ant.action_space.low[i])
  
 ### Defining Agent Configuration 
 

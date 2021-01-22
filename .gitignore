@@ -2,7 +2,6 @@ install.config
 _korali_result
 __test*
 _result_*
-build
 .exrc
 setup.py
 .setup
@@ -41,9 +40,9 @@ fontconfig/
 .vscode/
 .metadata/
 *.cproject
-*.externalToolBuilders/ 
-*.project/ 
+*.externalToolBuilders/
+*.project/
 .project/
-*.settings/ 
+*.settings/
 *.d
 

@@ -109,6 +109,9 @@ def plotActionSigmas(ax, dirs, results, maxEpisode):
    else: 
     genIds.append(gen['Current Generation'])
     
+  genTicks = int(len(genIds)/10)
+  if (genTicks == 0): continue
+  
   varNames = [ ]
   for var in r[0]['Variables']:
    if (var['Type'] == 'Action'):
@@ -120,7 +123,7 @@ def plotActionSigmas(ax, dirs, results, maxEpisode):
    for genPos, genId in enumerate(genIds):
     actionSigmas[i].append(r[genPos]['Solver']['Statistics']['Average Action Sigmas'][i])
 
-  xTickRange = range(0, len(genIds), int(len(genIds)/10))
+  xTickRange = range(0, len(genIds), genTicks)
   xTickLabels = [ genIds[i] for i in xTickRange ]
     
   ax.set_xticks(xTickRange)

@@ -487,7 +487,9 @@ def saveIfDifferent(filename, content):
     f.write(content)
     return True
 
+
 ####################################################################
+
 
 def buildHeaderCodeStrings( modulesDir, moduleDir, fileName):
 
@@ -633,16 +635,16 @@ class codeBuilder():
       self.Paths = Paths
       self.variableDeclarationList = ''
       self.variableDeclarationSet = set()
-      # Make the header files include folder
+      # Create the include folder
       Path(self.Paths['include']).mkdir(parents=True, exist_ok=True)
 
+      # Check if the root path is korali's root path
       for _key in self.Paths:
         if not os.path.exists(self.Paths[_key]):
           sys.exit("[Korali] Error:  " + self.Paths[_key] + "  is not a valid korali root folder.")
 
 
     def buildHeadersAndSource( self, moduleDir, fileName ):
-
       if '.config' in fileName:
         moduleFilename = fileName.replace('.config', '')
 

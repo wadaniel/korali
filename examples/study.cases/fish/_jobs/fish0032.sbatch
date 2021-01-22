@@ -1,8 +1,8 @@
 #!/bin/bash -l
 #SBATCH --job-name="fish0032"
 #SBATCH --output=fish0032_%j.out
-#SBATCH --time=02:00:00
-#SBATCH --nodes=33
+#SBATCH --time=24:00:00
+#SBATCH --nodes=65
 #SBATCH --ntasks-per-core=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --account=s929
@@ -11,16 +11,6 @@
 #SBATCH --constraint=gpu
 #SBATCH --dependency=singleton
 
-date 
-
 cd ..
-cat run-korali.cpp
-
-RET=1
-until [ ${RET} -eq 0 ]; do
-    ./run_test.sh
-    RET=$?
-done
-
-
-date
+rm -rf _trainingResults
+./run.sh

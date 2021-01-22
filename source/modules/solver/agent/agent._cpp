@@ -426,7 +426,7 @@ void Agent::processEpisode(std::vector<knlohmann::json> &episode)
   if (startEpisodeId < 0) startEpisodeId = 0;
   for (ssize_t e = startEpisodeId; e <= endEpisodeId; e++)
     _trainingAverageReward += _trainingRewardHistory[e];
-  _trainingAverageReward /= (float)(endEpisodeId - startEpisodeId + 1);
+  _trainingAverageReward /= (float)(_trainingAverageDepth);
 }
 
 void Agent::updateREFERInformation()
@@ -851,7 +851,7 @@ void Agent::printGenerationAfter()
       _k->_logger->logInfo("Normal", " + Policy Update Count:         %lu\n", _policyUpdateCount);
 
     _k->_logger->logInfo("Normal", " + Latest Reward:               %f/%f\n", _trainingLastReward, _problem->_trainingRewardThreshold);
-    _k->_logger->logInfo("Normal", " + %lu-Deep Average Reward:      %f\n", _trainingAverageDepth, _trainingAverageReward);
+    _k->_logger->logInfo("Normal", " + %lu-Episode Average Reward:  %f\n", _trainingAverageDepth, _trainingAverageReward);
     _k->_logger->logInfo("Normal", " + Best Reward:                 %f (%lu)\n", _trainingBestReward, _trainingBestEpisodeId);
 
     _k->_logger->logInfo("Normal", "Testing Statistics:\n");

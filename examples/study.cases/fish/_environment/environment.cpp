@@ -147,14 +147,14 @@ void setInitialConditions(StefanFish *agent, Shape *object, const bool isTrainin
 {
   // Initial fixed conditions
   double SA = 0.0;
-  double SX = 0.3;
+  double SX = 0.5;
   double SY = 0.0;
 
   // or with noise
   //if (isTraining)
   //{
   // std::uniform_real_distribution<double> disA(-20. / 180. * M_PI, 20. / 180. * M_PI);
-  // std::uniform_real_distribution<double> disX(0.25, 0.35);
+  // std::uniform_real_distribution<double> disX(0.45, 0.55);
   // std::uniform_real_distribution<double> disY(-0.05, 0.05);
 
   // SA = disA(_randomGenerator);

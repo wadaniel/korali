@@ -6,17 +6,13 @@ In this study case, we replicate the fish swimming experiment from CSELab.
 Dependencies
 --------------------------
 
-This study case has the following prerequisite libraries:
+CubismUP-2D has the following prerequisite libraries:
 
+- MPI, with the $MPICXX enviroment variable defined.
 - HYPRE, with the $HYPRE_ROOT environment variable defined.
-- GSL, with the $GSL_ROOT_DIR environment variable defined.
+- GSL, with the $GSL_ROOT environment variable defined.
 - HDF5, with the $HDF5_ROOT environment variable defined.
-
-On Daint load:
-
-module load daint-gpu
-module swap PrgEnv-cray PrgEnv-gnu
-module load cray-hdf5-parallel cray-fftw cray-petsc cudatoolkit GSL cray-python
+- FFTW, with the $FFTW_ROOT environment variable defined.
 
 Setup
 ---------------------------

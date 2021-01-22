@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
   MPI_Comm_size(MPI_COMM_WORLD, &N);
   N = N - 1; // Minus one for Korali's engine
 
-  // Initializing Cubism
+  // Initializing CUP
   _environment = new Simulation(_argc, _argv);
   _environment->init();
 
@@ -115,10 +115,10 @@ int main(int argc, char *argv[])
 
   ////// Setting Korali output configuration
 
-  // e["Console Output"]["Verbosity"] = "Detailed";
-  // e["File Output"]["Enabled"] = true;
-  // e["File Output"]["Frequency"] = 1;
-  // e["File Output"]["Path"] = trainingResultsPath;
+  e["Console Output"]["Verbosity"] = "Detailed";
+  e["File Output"]["Enabled"] = true;
+  e["File Output"]["Frequency"] = 1;
+  e["File Output"]["Path"] = trainingResultsPath;
 
   ////// Running Experiment
 

@@ -5,7 +5,7 @@ import argparse
 from builders import *
 
 
-print("\n[Korali] Start Parser")
+print("\n[Korali] Start Code Building")
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--dir', '-d', default='./', help='Korali root directory')
@@ -19,7 +19,7 @@ dir['modules'] = os.path.join( dir['source'], 'modules' )
 
 # These header files are copied directly. No build is needed.
 headerFileList = glob.glob(dir['source']+'/auxiliar/*.hpp')
-headerFileList = [ './auxiliar/'+os.path.split(_file)[1] for _file in  headerFileList ]
+headerFileList = [ os.path.relpath( _file, dir['source'] ) for _file in  headerFileList ]
 headerFileList += [ 'engine.hpp',
                     'korali.hpp',
                     'sample/sample.hpp',
@@ -29,19 +29,15 @@ headerFileList += [ 'engine.hpp',
                     'modules/module.hpp'
                   ]
 
-
 builder = codeBuilder(dir)
 
-for moduleDir, relDir, fileNames in os.walk(dir['modules']):
+for moduleDir, relDir, fileNames in os.walk( dir['modules'] ):
   for fileName in fileNames:
-    builder.buildHeadersAndSource(moduleDir, fileName)
+    builder.buildHeadersAndSource( moduleDir, fileName )
 
 builder.buildVariableHeader()
 
 for _file in headerFileList:
   builder.copyNoBuildHeaders(_file)
 
-print("[Korali] End Parser\n")
-
-
-
+print("[Korali] End Code Building\n")

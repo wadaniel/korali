@@ -696,11 +696,8 @@ void Agent::finalize()
 
   // Waiting for pending agents to finish
   bool agentsRemain = true;
-  while (agentsRemain == true)
+  do
   {
-    // Listening to _agents for incoming experiences
-    KORALI_LISTEN(_agents);
-
     agentsRemain = false;
     for (size_t agentId = 0; agentId < _agentCount; agentId++)
       if (_isAgentRunning[agentId] == true)
@@ -708,7 +705,9 @@ void Agent::finalize()
         attendAgent(agentId);
         agentsRemain = true;
       }
-  }
+
+    if (agentsRemain) KORALI_LISTEN(_agents);
+  } while (agentsRemain == true);
 }
 
 void Agent::serializeExperienceReplay()

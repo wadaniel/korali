@@ -9,16 +9,20 @@ outfile = "observations-vracer.csv"
 
 ####### Defining Korali Problem
 
+envp = lambda s : env(s,target)
+
 import korali
 k = korali.Engine()
 e = korali.Experiment()
 
-envp = lambda s : env(s,target)
-
+found = e.loadState('_korali_result/latest')
+if (found == True):
+  print('Continuing execution from latest...')
+ 
 ### Defining the Cartpole problem's configuration
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = envp
-e["Problem"]["Training Reward Threshold"] = 495
+e["Problem"]["Training Reward Threshold"] = 490
 e["Problem"]["Policy Testing Episodes"] = 25
 e["Problem"]["Actions Between Policy Updates"] = 5
 
@@ -46,7 +50,7 @@ e["Solver"]["Type"] = "Agent / Continuous / VRACER"
 e["Solver"]["Mode"] = "Training"
 e["Solver"]["Experiences Between Policy Updates"] = 5
 e["Solver"]["Episodes Per Generation"] = 1
-e["Solver"]["Cache Persistence"] = 1000
+e["Solver"]["Cache Persistence"] = 250
 
 ### Defining the configuration of replay memory
 
@@ -63,7 +67,7 @@ e["Solver"]["Experience Replay"]["REFER"]["Annealing Rate"] = 5e-7
 
 e["Solver"]["Discount Factor"] = 0.99
 e["Solver"]["Learning Rate"] = 1e-4
-e["Solver"]["L2 Regularization"] = 1e2
+e["Solver"]["L2 Regularization"] = 0
 e["Solver"]["Mini Batch Size"] = 32
 
 ### Configuring the neural network and its hidden layers
@@ -88,13 +92,14 @@ e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 499
 
 ### Setting file output configuration
 
-e["File Output"]["Enabled"] = False
+e["File Output"]["Enabled"] = True
 
 ### Running Experiment
 
 e["Problem"]["Custom Settings"]["Record Observations"] = "False"
 
-k.run(e)
+if found == False:
+    k.run(e)
 
 ### Recording Observations
 

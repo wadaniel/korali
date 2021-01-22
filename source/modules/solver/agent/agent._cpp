@@ -62,8 +62,8 @@ void Agent::initialize()
   }
 
   // If this continues a previous training run, deserialize previous input experience replay
-  if (_mode == "Training")
-    if (_k->_currentGeneration > 0)
+  if (_k->_currentGeneration > 0)
+   if (_mode == "Training" || _testingBestPolicy.empty() )
       deserializeExperienceReplay();
 
   // Obtaining training state
@@ -106,7 +106,19 @@ void Agent::initialize()
    _maxGenerations = _k->_currentGeneration + 1;
 
    // Setting testing policy to best testing hyperparameters if not custom-set by the user
-   if (_testingPolicy.empty()) _testingPolicy = _testingBestPolicy;
+   if (_testingPolicy.empty())
+   {
+    // Checking if testing policies have been generated
+    if (_testingBestPolicy.empty())
+    {
+     _k->_logger->logWarning("Minimal", "Trying to test policy, but no testing policies have been generated during training yet or given in the configuration. Using current training policy instead.\n");
+     _testingPolicy = _trainingCurrentPolicy;
+    }
+    else
+    {
+    _testingPolicy = _testingBestPolicy;
+    }
+   }
 
    // Checking if there's testing samples defined
    if (_testingSampleIds.size() == 0)
@@ -745,7 +757,7 @@ void Agent::serializeExperienceReplay()
   if (!dirExists(_k->_fileOutputPath)) mkdir(_k->_fileOutputPath);
 
   // Resolving file path
-  std::string statePath = "./" + _k->_fileOutputPath + "/state.json";
+  std::string statePath = _k->_fileOutputPath + "/state.json";
 
   // Storing database to file
   if (saveJsonToFile(statePath.c_str(), stateJson) != 0)
@@ -764,12 +776,12 @@ void Agent::deserializeExperienceReplay()
   knlohmann::json stateJson;
 
   // Resolving file path
-  std::string statePath = "./" + _k->_fileOutputPath + "/state.json";
+  std::string statePath = _k->_fileOutputPath + "/state.json";
 
   // Loading database from file
   _k->_logger->logInfo("Detailed", "Loading previous run training state from file %s...\n", statePath.c_str());
   if (loadJsonFromFile(stateJson, statePath.c_str()) == false)
-    KORALI_LOG_ERROR("Trying to resume experiment but could not find or deserialize training state.\n");
+    KORALI_LOG_ERROR("Trying to resume training or test policy but could not find or deserialize agent's state from from file %s...\n", statePath.c_str());
 
   // Clearing existing database
   _experienceReplay.clear();

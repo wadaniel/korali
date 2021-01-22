@@ -18,19 +18,27 @@ e["Problem"]["Training Reward Threshold"] = 750
 e["Problem"]["Policy Testing Episodes"] = 20
 e["Problem"]["Actions Between Policy Updates"] = 1
 
+# Getting environment variable counts
+
+stateVariableCount = ant.observation_space.shape[0]
+actionVariableCount = ant.action_space.shape[0]
+
 # Defining State Variables
 
-for i in range(112): 
+for i in range(stateVariableCount):
  e["Variables"][i]["Name"] = "State Variable " + str(i)
+ e["Variables"][i]["Type"] = "State"
+ e["Variables"][i]["Lower Bound"] = ant.observation_space.low[i]
+ e["Variables"][i]["Upper Bound"] = ant.observation_space.high[i]
+ 
+# Defining Action Variables
 
-# Defining Action Variable
-
-e["Variables"][112]["Name"] = "Force"
-e["Variables"][112]["Type"] = "Action"
-e["Variables"][112]["Lower Bound"] = -1.0
-e["Variables"][112]["Upper Bound"] = +1.0
-e["Variables"][112]["Initial Exploration Noise"] = 0.5
-
+for i in range(actionVariableCount):
+ e["Variables"][stateVariableCount + i]["Name"] = "Action Variable " + str(i)
+ e["Variables"][stateVariableCount + i]["Type"] = "Action"
+ e["Variables"][stateVariableCount + i]["Lower Bound"] = ant.action_space.low[i]
+ e["Variables"][stateVariableCount + i]["Upper Bound"] = ant.action_space.high[i]
+ 
 ### Defining Agent Configuration 
 
 e["Solver"]["Type"] = "Agent / Continuous / VRACER"

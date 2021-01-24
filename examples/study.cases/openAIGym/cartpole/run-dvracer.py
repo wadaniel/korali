@@ -82,10 +82,6 @@ e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 32
 e["Solver"]["Neural Network"]["Hidden Layers"][3]["Type"] = "Layer/Activation"
 e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tanh"
 
-### Defining Termination Criteria
-
-e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 80
-
 ### Setting file output configuration
 
 e["File Output"]["Enabled"] = False

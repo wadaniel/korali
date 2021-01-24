@@ -33,7 +33,8 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
  for resId, r in enumerate(results):
   
   # Gathering current folder's results
-  
+
+  if (len(r) == 0): continue  
   rewardHistory = r[-1]["Solver"]["Training"]["Reward History"]
   
   # Updating common plot limits
@@ -104,6 +105,7 @@ def plotActionSigmas(ax, dirs, results, maxEpisode):
  
  for resId, r in enumerate(results):
 
+  if (len(r) == 0): continue  
   if ('Statistics' not in r[0]['Solver']): continue
   if ('Average Action Sigmas' not in r[0]['Solver']['Statistics']): continue
  

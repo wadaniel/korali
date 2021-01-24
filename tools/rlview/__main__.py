@@ -38,17 +38,24 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
   
   # Updating common plot limits
  
+  
   episodeCount = len(r[-1]["Solver"]["Training"]["Reward History"])
   if (episodeCount > maxPlotEpisode): maxPlotEpisode = episodeCount
   if (maxEpisode): maxPlotEpisode = int(maxEpisode)
+
+  if (max(rewardHistory) > maxPlotReward): maxPlotReward = max(rewardHistory)
  
   trainingRewardThreshold = r[-1]["Problem"]["Training Reward Threshold"]
   testingRewardThreshold = r[-1]["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"]
-  
-  if (max(rewardHistory) > maxPlotReward): maxPlotReward = max(rewardHistory)
-  if (trainingRewardThreshold > maxPlotReward): maxPlotReward = trainingRewardThreshold
-  if (testingRewardThreshold > maxPlotReward): maxPlotReward = testingRewardThreshold
-  
+ 
+  if (trainingRewardThreshold != math.inf): 
+   ax.hlines(trainingRewardThreshold, 0, episodeCount, linestyle='dashed', label='Training Threshold', color='red')
+   if (trainingRewardThreshold > maxPlotReward): maxPlotReward = trainingRewardThreshold
+
+  if (testingRewardThreshold != math.inf): 
+   ax.hlines(testingRewardThreshold, 0, episodeCount, linestyle='dashdot', label='Testing Threshold', color='blue')
+   if (testingRewardThreshold > maxPlotReward): maxPlotReward = testingRewardThreshold
+     
   if (min(rewardHistory) < minPlotReward): minPlotReward = min(rewardHistory)
   if (trainingRewardThreshold < minPlotReward): minPlotReward = trainingRewardThreshold
   if (testingRewardThreshold < minPlotReward): minPlotReward = testingRewardThreshold
@@ -85,8 +92,7 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
  ax.set_ylabel('Cumulative Reward')  
  ax.set_xlabel('Episode')
  ax.set_title('Korali RL History Viewer')
- ax.hlines(trainingRewardThreshold, 0, episodeCount, linestyle='dashed', label='Training Threshold', color='red')
- ax.hlines(testingRewardThreshold, 0, episodeCount, linestyle='dashdot', label='Testing Threshold', color='blue')
+ 
  ax.legend(loc='upper left', ncol=1, fontsize=8)
  ax.yaxis.grid()
  ax.set_xlim([minPlotEpisode, maxPlotEpisode-1])

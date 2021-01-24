@@ -6,6 +6,7 @@
 #include "modules/module.hpp"
 #include <string>
 #include <vector>
+#include <sstream>
 
 /*! \namespace Korali
     \brief The Korali namespace includes all Korali-specific functions, variables, and modules.

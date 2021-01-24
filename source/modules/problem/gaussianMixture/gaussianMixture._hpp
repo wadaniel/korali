@@ -35,6 +35,8 @@ class GaussianMixture : public korali::Problem
 
     std::vector< MatrixXd > _outerProductData;
 
+    double _dataLoglikelihoodOld;
+
   public:
   void initialize() override;
 
@@ -61,6 +63,18 @@ class GaussianMixture : public korali::Problem
    * @param
    */
   double computeHyperparametersDifference(void);
+
+  /**
+   * @brief Computes the L1 vector norm of the hyperparameters difference between two succesive generations.
+   * @param
+   */
+  double computeDataLogLikelihood(void);
+
+  /**
+   * @brief Computes the absolute of the data loglikelihood difference between two succesive generations.
+   * @param
+   */
+  double computeDataLoglikelihoodDifference(void);
 
 };
 

@@ -184,7 +184,7 @@ def createSetConfiguration(module):
                                  getCXXVariableName(v["Name"]),
                                  getVariableType(v), False,
                                  getVariableOptions(v))
-                                 
+
   # Consume Configuration Settings
   if 'Configuration Settings' in module:
     for v in module["Configuration Settings"]:
@@ -349,10 +349,13 @@ def createCheckTermination(module):
     for v in module["Termination Criteria"]:
       codeString += ' if (' + v["Criteria"] + ')\n'
       codeString += ' {\n'
-      codeString += '  _terminationCriteria.push_back("' + module[
-          "Name"] + getVariablePath(v).replace(
-              '"', "'") + ' = " + std::to_string(' + getCXXVariableName(
-                  v["Name"]) + ') + ".");\n'
+      codeString += ' std::ostringstream streamObj;\n'
+      codeString += ' streamObj << ' + getCXXVariableName(v["Name"]) + ';\n';
+
+      codeString += '  _terminationCriteria.push_back("'     \
+                    + module["Name"]                         \
+                    + getVariablePath(v).replace('"', "'")   \
+                    + ' = " + streamObj.str() );\n'
       codeString += '  hasFinished = true;\n'
       codeString += ' }\n\n'
 
@@ -522,7 +525,7 @@ for moduleDir, relDir, fileNames in os.walk(modulesDir):
       # Loading template header .hpp file
       moduleTemplateHeaderFile = moduleDir + '/' + moduleFilename + '._hpp'
       with open(moduleTemplateHeaderFile, 'r') as file: moduleTemplateHeaderString = file.read()
-      
+
       # Loading Json configuration file
       with open(filePath, 'r') as file:
         moduleConfig = json.load(file)
@@ -535,7 +538,7 @@ for moduleDir, relDir, fileNames in os.walk(modulesDir):
       moduleConfig["Parent Class"] = getParentClassName(moduleTemplateHeaderString)
       moduleConfig["Option Name"] = getOptionName(modulePath)
       moduleConfig["Relative Path"] = os.path.relpath(moduleDir, modulesDir)
-      moduleConfig["Header Filename"] = os.path.join(moduleConfig["Relative Path"], moduleFilename + '.hpp') 
+      moduleConfig["Header Filename"] = os.path.join(moduleConfig["Relative Path"], moduleFilename + '.hpp')
 
       ####### Adding module and parent to list
 
@@ -544,10 +547,10 @@ for moduleDir, relDir, fileNames in os.walk(modulesDir):
       ###### Producing module code
 
       moduleCodeString = ''
-      
+
       # Adding namespaces
-      for n in moduleConfig["Namespace"]: moduleCodeString += 'namespace ' + n + ' { \n'  
-        
+      for n in moduleConfig["Namespace"]: moduleCodeString += 'namespace ' + n + ' { \n'
+
       moduleCodeString += createSetConfiguration(moduleConfig)
       moduleCodeString += createGetConfiguration(moduleConfig)
       moduleCodeString += createApplyModuleDefaults(moduleConfig)
@@ -629,8 +632,8 @@ for moduleDir, relDir, fileNames in os.walk(modulesDir):
       newHeaderString = moduleHeaderString.replace('public:', 'public: \n' + functionOverrideString + '\n')
 
       # Closing namespaces
-      for n in moduleConfig["Namespace"]: moduleCodeString += '} // namespace ' + n + '\n'  
-       
+      for n in moduleConfig["Namespace"]: moduleCodeString += '} // namespace ' + n + '\n'
+
       # Adding Doxygen Information
 
       doxyClassHeader = '/**\n'

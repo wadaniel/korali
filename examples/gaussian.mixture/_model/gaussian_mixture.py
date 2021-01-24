@@ -1,4 +1,5 @@
 #! /usr/bin/env python3
+import sys
 import numpy as np
 from scipy.stats import multivariate_normal
 import matplotlib.pyplot as plt
@@ -30,11 +31,15 @@ class gm():
         self.rv = [ multivariate_normal(mean=self.mean[k],cov=self.covariance[k])
                         for k in range(self.N) ]
 
-    def pdf(self, x):
-        s = 0
+    # x must be of dimension M times self.Nd
+    def pdfs(self, x):
+        p = np.zeros((x.shape[0],self.N))
         for k in range(self.N):
-            s += self.weights[k]*self.rv[k].pdf(x)
-        return s
+            p[:,k] = self.rv[k].pdf(x)
+        return p
+
+    def pdf(self, x):
+        return np.sum( np.multiply( self.weights, self.pdfs(x) ), axis=1 )
 
     def rvs(self, size):
         choice = np.random.choice(self.N, size, p=self.weights)

@@ -10,7 +10,6 @@ namespace solver
 
 void EM::runGeneration()
 {
-
   Sample sample;
 
   sample["Module"] = "Problem";
@@ -22,13 +21,15 @@ void EM::runGeneration()
 
   sample["Module"] = "Problem";
   sample["Operation"] = "Update Hyperparameters";
-  // sample["Parameters"] = _currentValue;
   sample["Sample Id"] = 0;
   KORALI_START(sample);
   KORALI_WAIT(sample);
 
   auto problem = dynamic_cast<korali::problem::GaussianMixture *>(_k->_problem);
   _hyperparametersDifference = problem->computeHyperparametersDifference();
+
+  problem->computeDataLogLikelihood();
+  _dataLoglikelihoodDifference = problem->computeDataLoglikelihoodDifference();
 
 }
 

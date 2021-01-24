@@ -133,8 +133,13 @@ void GaussianMixture::updateMeanSufficientStatistics(korali::Sample &sample)
       }
     }
 
-    for (size_t i=0; i<_dataSize; i++)
-      beta.row(i) = beta.row(i)/beta.row(i).sum();
+    _dataLoglikelihoodOld = _dataLoglikelihood;
+    _dataLoglikelihood = 0.;
+    for (size_t i=0; i<_dataSize; i++){
+      double sum = beta.row(i).sum();
+      _dataLoglikelihood += log(sum);
+      beta.row(i) = beta.row(i)/sum;
+    }
 
     for (size_t j=0; j<_numberOfDistributions; j++){
       _S1[0](j) = beta.col(j).sum();
@@ -183,9 +188,16 @@ double GaussianMixture::computeHyperparametersDifference(void){
   return diff;
 }
 
-void GaussianMixture::computeDataLogLikelihood(void)
+double GaussianMixture::computeDataLogLikelihood(void)
 {
-  
+  return _dataLoglikelihood;
+}
+
+double GaussianMixture::computeDataLoglikelihoodDifference(void)
+{
+  double diff = abs( _dataLoglikelihoodOld - _dataLoglikelihood );
+  _k->_logger->logInfo("Detailed", "Difference of Data Loglikelihod: %le \n", diff);
+  return diff;
 }
 
 void GaussianMixture::printHyperparameters(void)

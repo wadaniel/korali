@@ -11,16 +11,17 @@ build_env.set('CXX', _cpp.cmd_array()[0])
 # and fallback installer script that will install the dependency in
 # MESON_INSTALL_PREFIX
 external_required = {
-  'libco': [_c, 'install_libco.sh'],
+  'gsl': [_cpp, 'install_gsl.sh'],
+  # 'co': [_c, 'install_libco.sh'],
   }
-  # 'libgsl': 'install_gsl.sh',
 
 foreach libname, fallback : external_required
   _lib = fallback[0].find_library(libname, required: false)
   # _lib = dependency(libname, required: false)
+  run_command(fallback[1], check: true, env: build_env)
   if not _lib.found()
     run_command(fallback[1], check: true, env: build_env)
-    _d = declare_dependency(include_directories: 'include')
+    _d = declare_dependency(include_directories: 'prefix'/'include')
     korali_deps += _d
   else
     korali_deps += _lib

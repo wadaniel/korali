@@ -20,6 +20,7 @@ def env(s):
   s.update()
   
   # Performing the action
+  print(s["Action"])
   state, reward, done, _ = swimmer.step(s["Action"])
   
   # Getting Reward

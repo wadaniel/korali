@@ -52,6 +52,7 @@ if __name__ == "__main__":
   print("New State (len {}) ..".format(len(state)))
   print(state)
   print("Reward..")
+  print(reward)
   print(done)
   print("Done!")
   

@@ -8,7 +8,7 @@ import korali
 k = korali.Engine()
 e = korali.Experiment()
 
-outdir = '_korali_result'
+outdir = '_korali_result_gru'
 found = e.loadState(outdir+'/latest')
 if (found == True):
   print('Continuing execution from latest...')
@@ -56,7 +56,7 @@ e["Solver"]["Cache Persistence"] = 250
 e["Solver"]["Episodes Per Generation"] = 1
 e["Solver"]["Policy Distribution"] = "Normal"
 e["Solver"]["Discount Factor"] = 0.99
-e["Solver"]["Learning Rate"] = 1e-3
+e["Solver"]["Learning Rate"] = 1e-5
 e["Solver"]["Mini Batch Size"] = 128
 
 ### Defining the configuration of replay memory
@@ -76,17 +76,9 @@ e["Solver"]["Experience Replay"]["REFER"]["Annealing Rate"] = 5e-7
 
 e["Solver"]["Neural Network"]["Engine"] = "OneDNN"
 
-e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear"
+e["Solver"]["Time Sequence Length"] = 8
+e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Recurrent/GRU"
 e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 128
-
-e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Activation"
-e["Solver"]["Neural Network"]["Hidden Layers"][1]["Function"] = "Elementwise/Tanh"
-
-e["Solver"]["Neural Network"]["Hidden Layers"][2]["Type"] = "Layer/Linear"
-e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 128
-
-e["Solver"]["Neural Network"]["Hidden Layers"][3]["Type"] = "Layer/Activation"
-e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tanh"
 
 ### Defining Termination Criteria
 

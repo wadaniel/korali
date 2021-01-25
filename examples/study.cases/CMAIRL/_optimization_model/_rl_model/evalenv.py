@@ -6,7 +6,7 @@ from cartpole import *
 ######## Defining Environment Storage
 
 def evalenv(s):
- obsfile = 'observations.csv'
+ obsfile = s["Custom Settings"]["Input"]
  states = []
  obsactions = []
 

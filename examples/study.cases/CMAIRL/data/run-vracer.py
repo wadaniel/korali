@@ -4,8 +4,10 @@ import sys
 sys.path.append('../_optimization_model/_rl_model')
 from env import *
 
-target = 0.0
-outfile = "observations-vracer.csv"
+
+outfile = "observations-vracer-reg-{}-t-{}.csv".format(run, target)
+
+resultdir = "_korali_result_reg_01_{}-t-{}".format(run, target)
 
 ####### Defining Korali Problem
 
@@ -15,7 +17,7 @@ import korali
 k = korali.Engine()
 e = korali.Experiment()
 
-found = e.loadState('_korali_result/latest')
+found = e.loadState(resultdir + '/latest')
 if (found == True):
   print('Continuing execution from latest...')
  
@@ -24,6 +26,7 @@ e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = envp
 e["Problem"]["Training Reward Threshold"] = 490
 e["Problem"]["Policy Testing Episodes"] = 25
+e["Problem"]["Testing Frequency"] = 100
 e["Problem"]["Actions Between Policy Updates"] = 5
 
 e["Variables"][0]["Name"] = "Cart Position"
@@ -67,7 +70,7 @@ e["Solver"]["Experience Replay"]["REFER"]["Annealing Rate"] = 5e-7
 
 e["Solver"]["Discount Factor"] = 0.99
 e["Solver"]["Learning Rate"] = 1e-4
-e["Solver"]["L2 Regularization"] = 0
+e["Solver"]["L2 Regularization"] = 0.1
 e["Solver"]["Mini Batch Size"] = 32
 
 ### Configuring the neural network and its hidden layers
@@ -89,10 +92,14 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tan
 ### Defining Termination Criteria
 
 e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 499
+e["Solver"]["Termination Criteria"]["Max Generations"] = 5000
 
 ### Setting file output configuration
 
 e["File Output"]["Enabled"] = True
+e["File Output"]["Frequency"] = 500
+e["File Output"]["Path"] = resultdir
+
 
 ### Running Experiment
 
@@ -109,7 +116,7 @@ print('[Korali] Done training. Now running learned policy to produce observation
 
 e["Solver"]["Mode"] = "Testing"
 e["Solver"]["Testing"]["Sample Ids"] = [i for i in range(20)]
-e["Problem"]["Custom Settings"]["Record Observations"] = "True"
+e["Problem"]["Custom Settings"]["Output"] = outfile
 
 k.run(e)
 

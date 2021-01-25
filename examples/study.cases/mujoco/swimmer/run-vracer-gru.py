@@ -54,15 +54,15 @@ e["Solver"]["Mode"] = "Training"
 e["Solver"]["Experiences Between Policy Updates"] = 1
 e["Solver"]["Cache Persistence"] = 250
 e["Solver"]["Episodes Per Generation"] = 1
-e["Solver"]["Policy Distribution"] = "Normal"
-e["Solver"]["Discount Factor"] = 0.99
-e["Solver"]["Learning Rate"] = 1e-5
+e["Solver"]["Discount Factor"] = 0.95
+e["Solver"]["Learning Rate"] = 1e-4
 e["Solver"]["Mini Batch Size"] = 128
 
 ### Defining the configuration of replay memory
 
-e["Solver"]["Experience Replay"]["Start Size"] = 16384
-e["Solver"]["Experience Replay"]["Maximum Size"] = 65536
+e["Solver"]["Experience Replay"]["Start Size"] = 4096;
+e["Solver"]["Experience Replay"]["Maximum Size"] = 65536;
+
 
 ### Configuring the Remember-and-Forget Experience Replay algorithm
 

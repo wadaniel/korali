@@ -39,7 +39,7 @@ def env(s):
  
 if __name__ == "__main__":
   print("Start Main..")
-  print("lower / upper action space of env: {}, {}". format(pendulum.action_space.high[0], pendulum.action_space.low[0]))
+  print("lower / upper action space of env: {}, {}". format(pendulum.action_space.low[0], pendulum.action_space.high[0]))
   print("Reset..")
   pendulum.reset_model()
   print("Get Obs..")
@@ -51,6 +51,7 @@ if __name__ == "__main__":
   print("New Obs..")
   print(state)
   print("Reward..")
+  print(reward)
   print(done)
   print("Done!")
   

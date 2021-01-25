@@ -2,22 +2,28 @@
 import os
 import sys
 sys.path.append('../_optimization_model/_rl_model')
-from env import *
 from evalenv import *
 
-####### Defining Korali Problem
+target = 0.5
+run = 2
 
 import korali
 k = korali.Engine()
 e = korali.Experiment()
 
-target = 1.
-envp = lambda s : env(s,target)
-envpObs = lambda s : envWithTestObs(s,target)
+infile = "observations-vracer-reg-{}-t-{}.csv".format(run, target)
+resultdir = "_korali_eval_result_reg_01_{}-t-{}".format(run, target)
+previousresultdir = "_korali_result_reg_01_{}-t-{}".format(run, target)
 
+### Defining Korali Problem
+found = e.loadState(previousresultdir + '/latest')
+if (found == False):
+  print('Previous run not found, exit...')
+  sys.exit()
+ 
 ### Defining the Cartpole problem's configuration
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
-e["Problem"]["Environment Function"] = envp
+e["Problem"]["Environment Function"] = evalenv
 e["Problem"]["Training Reward Threshold"] = 490
 e["Problem"]["Testing Frequency"] = 250
 e["Problem"]["Policy Testing Episodes"] = 25
@@ -93,20 +99,15 @@ e["Solver"]["Termination Criteria"]["Max Generations"] = 5000
 
 e["File Output"]["Enabled"] = False
 
-### Running Experiment
+### Evaluate Experiment
 
-#e["Solver"]["Testing"]["Backup Agent"] = False
-e["Problem"]["Custom Settings"]["Record Observations"] = "False"
+e["Problem"]["Custom Settings"]["Input"] = infile
 
-k.run(e)
-
+e["Solver"]["Mode"] = "Testing"
+e["Solver"]["Testing"]["Sample Ids"] = [0]
 
 ### Evaluate Policy
     
-e["Solver"]["Mode"] = "Testing"
-e["Solver"]["Testing"]["Sample Ids"] = [0]
-e["Problem"]["Environment Function"] = evalenv
-
 k.run(e)
 
 suml2error = e["Solver"]["Testing"]["Reward"][0]

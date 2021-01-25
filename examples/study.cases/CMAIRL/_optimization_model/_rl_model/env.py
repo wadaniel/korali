@@ -50,11 +50,12 @@ def env(s, th):
   s["Termination"] = "Truncated"
 
  if s["Custom Settings"]["Record Observations"] == "True":
+    obsfile = s["Custom Settings"]["Output"]
     print("Generating observations for sample {0}".format(s["Sample Id"]))
     print("Observations recorded: {0}".format(len(salist)))
     print("Reward during recoding: {0}".format(s["Reward"]))
 
-    with open('observations.csv', 'a') as myfile:
+    with open(obsfile, 'a') as myfile:
       wr = csv.writer(myfile)
       for stateaction in salist:
         wr.writerow(stateaction)
@@ -99,7 +100,7 @@ def envWithTestObs(s, th):
 
  else: # Testing
 
-     obsfile = 'observations.csv'
+     obsfile = s["Custom Settings"]["Output"]
      states = []
      obsactions = []
 

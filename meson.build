@@ -28,6 +28,10 @@ if openmp_dep.found()
   korali_deps += openmp_dep
 endif
 
+# process korali dependencies
+subdir('external')
+subdir_done()
+
 # generate sources and headers
 generator_script = files('tools/build/build.py')
 generator_result = run_command(python, generator_script)

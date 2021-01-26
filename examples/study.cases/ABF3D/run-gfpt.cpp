@@ -73,6 +73,7 @@ int main(int argc, char *argv[])
   e["Solver"]["Experiences Between Policy Updates"] = 1;
   e["Solver"]["Cache Persistence"] = 243;
   e["Solver"]["Learning Rate"] = 0.0001;
+  e["Solver"]["Discount Factor"] = 0.995;
 
   /// Defining the configuration of replay memory
 

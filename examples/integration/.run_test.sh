@@ -1,15 +1,15 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-###### Auxiliar Functions and Variables #########
-
-source ../../tests/functions.sh
- 
 ##### Deleting Previous Results
 
 echo "  + Deleting previous results..."
-rm -rf _korali_result*; check_result
+rm -rf _korali_result*
+exit_code=$?
 
 ##### Running Tests
 
-python3 ./run-integration.py; check_result 
+python3 ./run-integration.py
+exit_code=$(( $exit_code || $? ))
 
+
+exit $exit_code

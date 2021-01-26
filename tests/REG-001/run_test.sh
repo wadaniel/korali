@@ -1,33 +1,32 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Check Code Formatting and documentation
 
-###### Auxiliar Functions and Variables #########
- 
-source ../functions.sh
-
-############# STEP 1 ##############
-
+echo "----------------------------------------------"
 echo "[Korali] Beginning code formatting check..."
+echo "----------------------------------------------"
 
-pushd ../../tools/dev-tools/
-check_result
+pushd ../../tools/style/  > /dev/null
+exit_code=$?
 
- ./check_style_cxx.sh 
- check_result
+./check_style_cxx.sh
+exit_code=$(( $exit_code || $? ))
 
-popd
-check_result
+popd  > /dev/null
+exit_code=$(( $exit_code || $? ))
 
-############## STEP 2 ################
 
+echo "----------------------------------------------"
 echo "[Korali] Beginning code formatting check..."
+echo "----------------------------------------------"
 
-pushd ../../docs/
-check_result
+pushd ../../docs/  > /dev/null
+exit_code=$(( $exit_code || $? ))
 
- ./build.sh
- check_result
+./build.sh
+exit_code=$(( $exit_code || $? ))
 
-popd
-check_result
+popd  > /dev/null
+exit_code=$(( $exit_code || $? ))
+
+exit $exit_code

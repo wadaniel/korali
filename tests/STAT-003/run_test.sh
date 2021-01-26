@@ -1,22 +1,21 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-source ../functions.sh
-
-############# STEP 1 ##############
-
-echo "[Korali] Beginning STAT-003 test"
+echo "-------------------------------------"
+echo "[Korali] Beginning Stat Test 002"
 echo "[Korali] minimization with non-finites tests..."
+exit_code=$?
 
 for file in run*.py
 do
   echo "-------------------------------------"
   echo " Running $file"
   echo "-------------------------------------"
-  ./"$file" 
-  check_result
+  ./"$file"
+  exit_code=$(( $exit_code || $? ))
 done
 
 echo "[Korali] Removing results..."
-rm -rf _results_* 
+rm -rf _results_*
+exit_code=$(( $exit_code || $? ))
 
-
+exit $exit_code

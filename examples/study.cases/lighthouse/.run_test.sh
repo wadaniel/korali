@@ -1,25 +1,20 @@
-#!/bin/bash
-
-###### Auxiliar Functions and Variables #########
-
-function check_result()
-{
- if [ ! $? -eq 0 ]
- then 
-  echo "[Korali] Error detected."
-  exit -1
- fi 
-}
+#!/usr/bin/env bash
 
 ##### Deleting Previous Results
 
 echo "  + Deleting previous results..."
-rm -rf _results_*; check_result
- 
+rm -rf _results_*
+exit_code=$?
+
 ##### Running Tests
 
 echo "  + Running test files..."
 
-python3 ./run-example1.py; check_result
-python3 ./run-example2.py; check_result
-  
+python3 ./run-example1.py
+exit_code=$(( $exit_code || $? ))
+
+python3 ./run-example2.py
+exit_code=$(( $exit_code || $? ))
+
+
+exit $exit_code

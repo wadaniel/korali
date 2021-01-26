@@ -1,14 +1,15 @@
-#!/bin/bash
-
-###### Auxiliar Functions and Variables #########
-
-source ../../../tests/functions.sh
+#!/usr/bin/env bash
 
 ##### Deleting Previous Results
 
 echo "  + Deleting previous results..."
-rm -rf _korali_result*; check_result
+rm -rf _korali_result*
+exit_code=$?
 
-##### Running Tests 
+##### Running Tests
 
-python3 ./run-cmaes.py; check_result
+python3 ./run-cmaes.py
+exit_code=$(( $exit_code || $? ))
+
+
+exit $exit_code

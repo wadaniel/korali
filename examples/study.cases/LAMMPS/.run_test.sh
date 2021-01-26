@@ -1,39 +1,34 @@
-#!/bin/bash
-
-###### Auxiliar Functions and Variables #########
-
-function check_result()
-{
- if [ ! $? -eq 0 ]
- then 
-  echo "[Korali] Error detected."
-  exit -1
- fi 
-}
+#!/usr/bin/env bash
 
 ##### Deleting Previous Results
 
 echo "  + Deleting previous results..."
-rm -rf _korali_result*; check_result
- 
+rm -rf _korali_result*
+exit_code=$?
+
 ##### Creating test files
 
 echo "  + Creating test files..."
 
 sed 's/k.run(/k["Dry Run"] = True; k.run(/g' run-cmaes.py > __test-cmaes.py
+exit_code=$(( $exit_code || $? ))
 sed 's/k.run(/k["Dry Run"] = True; k.run(/g' run-tmcmc.py > __test-tmcmc.py
+exit_code=$(( $exit_code || $? ))
 
 ##### Running Tests
 
 echo "  + Running test files..."
 
-python3 ./__test-cmaes.py; check_result
-python3 ./__test-tmcmc.py; check_result
+python3 ./__test-cmaes.py
+exit_code=$(( $exit_code || $? ))
+
+python3 ./__test-tmcmc.py
+exit_code=$(( $exit_code || $? ))
 
 ##### Deleting Tests
 
 echo "  + Removing test files..."
-
 rm __test*
 
-  
+
+exit $exit_code

@@ -66,10 +66,9 @@ k.run(e)
 print("[Korali] Read & Evaluate Output..")
 
 src = "_korali_result"
-resultfiles = [
-    f for f in os.listdir(src) if os.path.isfile(os.path.join(src, f))
-]
+resultfiles = [ f for f in os.listdir(src) if os.path.isfile(os.path.join(src, f)) ]
 auxList = resultfiles
+
 resultfiles = []
 for f in auxList:
   if (f.startswith('gen')):

@@ -1,16 +1,18 @@
-#!/bin/bash
-
-###### Auxiliar Functions and Variables #########
-
-source ../../tests/functions.sh
+#!/usr/bin/env bash
 
 ##### Deleting Previous Results
 
 echo "  + Deleting previous results..."
-rm -rf _korali_result* _executor_output; check_result
+rm -rf _korali_result* _executor_output
+exit_code=$?
 
 ##### Running Tests
 
-python3 ./run-execution.py; check_result
-python3 ./run-uncertainty-propagation.py; check_result
+python3 ./run-execution.py
+exit_code=$(( $exit_code || $? ))
 
+python3 ./run-uncertainty-propagation.py
+exit_code=$(( $exit_code || $? ))
+
+
+exit $exit_code

@@ -41,7 +41,7 @@ e["Solver"]["Mode"] = "Training"
 e["Solver"]["Experiences Between Policy Updates"] = 10
 e["Solver"]["Cache Persistence"] = 500
 e["Solver"]["Episodes Per Generation"] = 1
-e["Solver"]["Target Update Delay"] = 500
+e["Solver"]["Target Update Frequency"] = 5000
 
 ### Defining Experience Replay configuration
 
@@ -63,7 +63,7 @@ e["Solver"]["Random Action Probability"] = 0.05
 ## Defining Q-Critic and Action-selection (policy) optimizers
 
 e["Solver"]["Discount Factor"] = 0.99
-e["Solver"]["Learning Rate"] = 1e-1
+e["Solver"]["Learning Rate"] = 1e-3
 e["Solver"]["Mini Batch Size"] = 32
 
 ### Configuring the neural network and its hidden layers

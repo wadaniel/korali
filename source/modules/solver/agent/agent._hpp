@@ -85,6 +85,8 @@ struct experience_t
 
 class Agent : public Solver
 {
+  size_t _rewardRescaleCount = 0;
+  float _rewardScale = 1.0;
   public:
   /**
   * @brief Array of agents collecting new experiences

@@ -28,9 +28,12 @@ if openmp_dep.found()
   korali_deps += openmp_dep
 endif
 
-# process korali dependencies
-subdir('external')
-subdir_done()
+# process required korali dependencies
+korali_deps += dependency('libco', fallback: ['libco', 'libco_dep'], required: true)
+korali_deps += dependency('gsl', fallback: ['gsl', 'gsl_dep'], required: true)
+
+# process optional korali dependencies
+# TODO: [fabianw@mavt.ethz.ch; 2021-01-26] 
 
 # generate sources and headers
 generator_script = files('tools/build/build.py')
@@ -38,17 +41,18 @@ generator_result = run_command(python, generator_script)
 if generator_result.returncode() != 0
   error('Can not generate source files using `tools/build/build.py`')
 endif
-install_subdir('include', install_dir: 'prefix')
-korali_include = include_directories('include')
-korali_deps += declare_dependency(include_directories: korali_include)
+korali_inc = include_directories('include')
 
-# process korali source
+# process korali
+korali_install_dir = python.get_install_dir() + 'korali'
+install_subdir('include', install_dir: korali_install_dir) # cpp headers
 subdir('source')
 
-# create a pkg-config entry
-pkg_mod = import('pkgconfig')
-pkg_mod.generate(
-  name: 'Korali',
-  filebase: 'korali',
-  description: 'High-Performance Uncertainty Quantification, Optimization, and DRL',
-)
+# # create a pkg-config entry
+# pkg_mod = import('pkgconfig')
+# pkg_mod.generate(
+#   name: 'Korali',
+#   filebase: 'korali',
+#   description: 'High-Performance Uncertainty Quantification, Optimization, and DRL',
+#   libraries: pyton_extension
+# )

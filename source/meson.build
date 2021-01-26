@@ -1,7 +1,10 @@
-# TODO: [fabianw@mavt.ethz.ch; 2021-01-24] collect all sources
 korali_src = files('engine.cpp')
 
 # create a python package
-pypack = python.extension_module('korali', 
+pyton_extension = python.extension_module('korali', 
   korali_src, 
-  dependencies: [korali_deps, python.dependency()])
+  include_directories: korali_inc,
+  dependencies: [korali_deps, python.dependency()],
+  install: true,
+  install_dir: korali_install_dir,
+)

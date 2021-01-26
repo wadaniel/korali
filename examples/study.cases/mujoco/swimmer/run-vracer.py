@@ -8,7 +8,7 @@ import korali
 k = korali.Engine()
 e = korali.Experiment()
 
-outdir = '_korali_result2'
+outdir = '_korali_result_rescale'
 found = e.loadState(outdir+'/latest')
 if (found == True):
   print('Continuing execution from latest...')
@@ -18,7 +18,7 @@ if (found == True):
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = env
 e["Problem"]["Training Reward Threshold"] = 80.
-e["Problem"]["Policy Testing Episodes"] = 20
+e["Problem"]["Policy Testing Episodes"] = 10
 e["Problem"]["Actions Between Policy Updates"] = 200
 
 ### Defining state variables
@@ -39,31 +39,31 @@ e["Variables"][8]["Name"] = "Rotation Joint 1"
 e["Variables"][8]["Type"] = "Action"
 e["Variables"][8]["Lower Bound"] = -1.0
 e["Variables"][8]["Upper Bound"] = +1.0
-e["Variables"][8]["Initial Exploration Noise"] = 0.1
+e["Variables"][8]["Initial Exploration Noise"] = 0.5
 
 e["Variables"][9]["Name"] = "Rotation Joint 2"
 e["Variables"][9]["Type"] = "Action"
 e["Variables"][9]["Lower Bound"] = -1.0
 e["Variables"][9]["Upper Bound"] = +1.0
-e["Variables"][9]["Initial Exploration Noise"] = 0.1
+e["Variables"][9]["Initial Exploration Noise"] = 0.5
 
 ### Defining Agent Configuration 
 
 e["Solver"]["Type"] = "Agent / Continuous / VRACER"
 e["Solver"]["Mode"] = "Training"
 e["Solver"]["Experiences Between Policy Updates"] = 1
-e["Solver"]["Cache Persistence"] = 250
-e["Solver"]["Episodes Per Generation"] = 1
+e["Solver"]["Cache Persistence"] = 1000
+e["Solver"]["Episodes Per Generation"] = 5
 e["Solver"]["Policy Distribution"] = "Normal"
-e["Solver"]["Discount Factor"] = 0.99
-e["Solver"]["Learning Rate"] = 1e-3
-e["Solver"]["L2 Regularization"] = 1e-4
-e["Solver"]["Mini Batch Size"] = 128
+e["Solver"]["Discount Factor"] = 0.995
+e["Solver"]["Learning Rate"] = 1e-4
+#e["Solver"]["L2 Regularization"] = 1e-4
+e["Solver"]["Mini Batch Size"] = 256
 
 ### Defining the configuration of replay memory
 
-e["Solver"]["Experience Replay"]["Start Size"] = 16384
-e["Solver"]["Experience Replay"]["Maximum Size"] = 65536
+e["Solver"]["Experience Replay"]["Start Size"] = 32768
+e["Solver"]["Experience Replay"]["Maximum Size"] = 262144
 
 ### Configuring the Remember-and-Forget Experience Replay algorithm
 
@@ -92,6 +92,7 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tan
 ### Defining Termination Criteria
 
 e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 250.
+e["Solver"]["Termination Criteria"]["Max Generations"] = 47000.
 
 ### Setting file output configuration
 

@@ -179,22 +179,25 @@ void Agent::trainingGeneration()
     {
     
         // Recalculate reward scaling factor
-        if ( _sessionExperienceCount >= 1000 * _rewardRescaleCount + _sessionExperiencesUntilStartSize)
+        if ( _sessionExperienceCount >= 10000 * _rewardRescaleCount + _sessionExperiencesUntilStartSize)
         {
             _rewardRescaleCount++;
             float rewardSumOfSquares = 0.;
             printf("rescale rewards\n");
+#pragma omp parallel for reduction(+ \
+                                   : rewardSumOfSquares)
             for(size_t i = 0; i < _experienceReplay.size(); ++i)
             {
                 rewardSumOfSquares += _experienceReplay[i].reward * _experienceReplay[i].reward;
             }
 
-            _rewardScale = std::sqrt( rewardSumOfSquares / (float) _experienceReplay.size() );
+            _rewardScale = 1.0/std::sqrt( rewardSumOfSquares / (float) _experienceReplay.size() );
 
             float eps = 1e-7;
+#pragma omp parallel for schedule(dynamic, 1)
             for(size_t i = 0; i < _experienceReplay.size(); ++i)
             {
-                _experienceReplay[i].reward /= ( _rewardScale + eps );
+                _experienceReplay[i].reward *= ( _rewardScale + eps );
             }
         }
 
@@ -407,7 +410,7 @@ void Agent::processEpisode(std::vector<knlohmann::json> &episode)
 
     // Scale reward
     float eps = 1e-7;
-    e.reward /= (_rewardScale + eps);
+    e.reward *= (_rewardScale + eps);
     _experienceReplay.add(e);
   }
 
@@ -893,6 +896,7 @@ void Agent::printGenerationAfter()
     _k->_logger->logInfo("Normal", " + Latest Reward:               %f/%f\n", _trainingLastReward, _problem->_trainingRewardThreshold);
     _k->_logger->logInfo("Normal", " + %lu-Episode Average Reward:  %f\n", _trainingAverageDepth, _trainingAverageReward);
     _k->_logger->logInfo("Normal", " + Best Reward:                 %f (%lu)\n", _trainingBestReward, _trainingBestEpisodeId);
+    _k->_logger->logInfo("Normal", " + Reward Scale:                 %f \n", _rewardScale);
 
     _k->_logger->logInfo("Normal", "Testing Statistics:\n");
 

@@ -139,7 +139,7 @@ void dVRACER::trainPolicy()
 
         // for truncated state, Vtbc == V - forward network
         auto policy = runPolicy(expTruncatedStateSequence);
-        auto nextExpVtbc = policy["State Value"].get<float>();
+        float nextExpVtbc = policy["State Value"].get<float>();
 
         // add value to Qret
         Qret += _discountFactor * nextExpVtbc;

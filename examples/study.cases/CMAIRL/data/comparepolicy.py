@@ -79,12 +79,13 @@ if __name__ == "__main__":
 
     print(pminerrors)
     x = np.power(0.5,range(len(pmuerrors))) * adjust
+
+    axes = plt.axes()
+    axes.set_ylim([0, max(pmuerrors)+1.5*max(psdeverrors)])
     plt.errorbar(x=x, y=pmuerrors, yerr=psdeverrors)
+    plt.errorbar(x=x, y=pmuerrors, yerr=psdeverrors)
+    plt.xlabel('Target Angle [rad]')
+    plt.ylabel('Action L2 Error')
     plt.tight_layout()
     plt.savefig('policies.png')
-
-
-
-
-
 

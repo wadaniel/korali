@@ -53,14 +53,14 @@ void Discrete::getAction(korali::Sample &sample)
     {
       // Categorical action sampled from action probabilites (from ACER paper [Wang2017])
       float curSum = 0.0;
-      //      printf("pActions: ");
       for (actionIdx = 0; actionIdx < pActions.size(); actionIdx++)
       {
         curSum += pActions[actionIdx];
         if (x < curSum) break;
       }
+      
       // NOTE: In original DQN paper [Minh2015] we choose max
-      // actionIdx = std::distance(pActions.begin(), std::max_element(pActions.begin(), pActions.end()));
+      actionIdx = std::distance(pActions.begin(), std::max_element(pActions.begin(), pActions.end()));
     }
 
     // Storing action idx, policy and importance weight

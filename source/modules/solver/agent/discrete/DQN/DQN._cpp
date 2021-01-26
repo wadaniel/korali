@@ -15,6 +15,8 @@ void DQN::initializeAgent()
   // Initializing common discrete agent configuration
   Discrete::initializeAgent();
 
+  if(_targetUpdateFrequency == 0) KORALI_LOG_ERROR("Target Update Frequency must be at least 1 (is %zu).", _targetUpdateFrequency);
+
   /*********************************************************************
   * Initializing Critic (Q) Learner
   *********************************************************************/
@@ -48,12 +50,13 @@ void DQN::trainPolicy()
    **********************************************************************************/
 
   // Delay using latest critic taget for training until reaching a number of experiences
-  if (_policyUpdateCount % _targetUpdateDelay == 0)
+  if (_policyUpdateCount % _targetUpdateFrequency == 0)
   {
-    // TODO: evaluate if this is still correct (D.W.)
-    auto hyperparam = _criticPolicyLearner->getTrainingHyperparameters();
-    _criticPolicyLearner->setInferenceHyperparameters(hyperparam);
+    _delayedInferenceHyperparams = _criticPolicyLearner->getTrainingHyperparameters();
   }
+
+  // Reset inference hyperparams
+  _criticPolicyLearner->setInferenceHyperparameters(_delayedInferenceHyperparams);
 
   // Calculating cumulative Q*, for statistical purposes
   float cumulativeQStar = 0.0;
@@ -105,6 +108,19 @@ void DQN::trainPolicy()
       auto qNextExp = _criticPolicyLearner->getEvaluation({nextStateActionSequence})[0][0];
 
       qStar += _discountFactor * qNextExp;
+    }
+
+    if (_experienceReplay[expId].termination == e_truncated)
+    {
+        // Get truncated state sequence, adding the truncated state to it and removing first time element
+        auto expTruncatedStateSequence = getTruncatedStateTimeSequence(expId);
+
+        // for truncated state, Vtbc == V - forward network
+        auto policy = runPolicy(expTruncatedStateSequence);
+        float nextExp = policy["State Value"].get<float>();
+
+        // add value to Qret
+        qStar += _discountFactor * nextExp;
     }
 
     // Updating inputs to training learner

@@ -177,6 +177,30 @@ void Agent::trainingGeneration()
     // Perform optimization steps on the critic/policy, if reached the minimum replay memory size
     if (_sessionExperienceCount > _sessionExperiencesUntilStartSize)
     {
+    
+        // Recalculate reward scaling factor
+        if ( _sessionExperienceCount >= 1000 * _rewardRescaleCount + _sessionExperiencesUntilStartSize)
+        {
+            _rewardRescaleCount++;
+            float rewardSumOfSquares = 0.;
+            printf("rescale rewards\n");
+            for(size_t i = 0; i < _experienceReplay.size(); ++i)
+            {
+                rewardSumOfSquares += _experienceReplay[i].reward * _experienceReplay[i].reward;
+            }
+
+            _rewardScale = std::sqrt( rewardSumOfSquares / (float) _experienceReplay.size() );
+
+            float eps = 1e-7;
+            for(size_t i = 0; i < _experienceReplay.size(); ++i)
+            {
+                _experienceReplay[i].reward /= ( _rewardScale + eps );
+            }
+        }
+
+
+
+
       // If we accumulated enough experiences between updates in this session, update now
       while (_sessionExperienceCount > (_experiencesBetweenPolicyUpdates * _sessionPolicyUpdateCount + _sessionExperiencesUntilStartSize))
       {
@@ -381,6 +405,9 @@ void Agent::processEpisode(std::vector<knlohmann::json> &episode)
     // Keeping statistics
     cumulativeReward += e.reward;
 
+    // Scale reward
+    float eps = 1e-7;
+    e.reward /= (_rewardScale + eps);
     _experienceReplay.add(e);
   }
 

@@ -25,3 +25,4 @@
 * write tests in meson
 * configure circleci
 * write separate tests for each file
+* check again the test in running.cxx, running.mpi, reinforcement

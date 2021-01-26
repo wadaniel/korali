@@ -1,23 +1,21 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Brief: Re-run all examples and features for basic sanity check.
 
-###### Auxiliar Functions and Variables #########
-
-source ../functions.sh
-
-############# STEP 1 ##############
+echo "----------------------------------------------"
+echo "[Korali] Beginning examples test..."
+echo "----------------------------------------------"
 
 dir=$PWD/../../examples
 
-echo "[Korali] Beginning examples test..."
-echo "-------------------------------------"
-
-pushd $dir; check_result
+pushd $dir  > /dev/null
+exit_code=$?
 
 ./.run_test.sh
-check_result
+exit_code=$(( $exit_code || $? ))
 
-popd
-check_result
+popd > /dev/null
+exit_code=$(( $exit_code || $? ))
 
+
+exit $exit_code

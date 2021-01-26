@@ -1,5 +1,1 @@
-#!/bin/bash
-
-###### Nothing to be done  #########
-
-exit
+#!/usr/bin/env bash

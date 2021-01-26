@@ -1,27 +1,21 @@
-#!/bin/bash
-
-###### Auxiliar Functions and Variables #########
-
-source ../functions.sh
-
-############# STEP 1 ##############
+#!/usr/bin/env bash
 
 echo "[Korali] Checking Pip Installation"
 python3 -m pip check korali
-check_result
-
-############# STEP 2 ##############
+exit_code=$?
 
 echo "[Korali] Checking korali.plotter"
 python3 -m korali.plotter --check
-check_result
+exit_code=$(( $exit_code || $? ))
 
 echo "[Korali] Checking korali.cxx"
 python3 -m korali.cxx --cflags
-check_result
+exit_code=$(( $exit_code || $? ))
 
 python3 -m korali.cxx --compiler
-check_result
+exit_code=$(( $exit_code || $? ))
 
 python3 -m korali.cxx --libs
-check_result
+exit_code=$(( $exit_code || $? ))
+
+exit $exit_code

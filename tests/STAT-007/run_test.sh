@@ -1,15 +1,17 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-source ../functions.sh
+echo "-------------------------------------"
+echo "[Korali] Beginning Stat Test 007"
+exit_code=$?
 
 cmaes_criteria=(
-"Max Generations" 
-"Max Generations" 
-"Max Infeasible Resamplings" 
+"Max Generations"
+"Max Generations"
+"Max Infeasible Resamplings"
 "Min Value Difference Threshold"
-"Min Standard Deviation" 
+"Min Standard Deviation"
 "Max Standard Deviation"
-"Max Condition Covariance Matrix" 
+"Max Condition Covariance Matrix"
 )
 
 cmaes_values=(
@@ -23,9 +25,9 @@ cmaes_values=(
 )
 
 dea_criteria=(
-"Max Generations" 
-"Max Generations" 
-"Max Infeasible Resamplings" 
+"Max Generations"
+"Max Generations"
+"Max Infeasible Resamplings"
 "Min Value Difference Threshold"
 )
 
@@ -37,8 +39,8 @@ dea_values=(
 )
 
 tmcmc_criteria=(
-"Max Generations" 
-"Max Generations" 
+"Max Generations"
+"Max Generations"
 "Target Annealing Exponent"
 )
 
@@ -72,11 +74,11 @@ for ((i=0;i<${#cmaes_criteria[@]};++i)); do
   echo "Running File: cmaes_termination.py"
 
   python3 ./cmaes_termination.py --criterion "${cmaes_criteria[$i]}" --value ${cmaes_values[$i]}
-  check_result
+  exit_code=$(( $exit_code || $? ))
 
   echo "[Korali] Removing results..."
   rm -rf "_korali_result"
-  check_result
+  exit_code=$(( $exit_code || $? ))
 
   echo "-------------------------------------"
 
@@ -96,11 +98,11 @@ for ((i=0;i<${#dea_criteria[@]};++i)); do
   echo "Running File: dea_termination.py"
 
   python3 ./dea_termination.py --criterion "${dea_criteria[$i]}" --value ${dea_values[$i]}
-  check_result
+  exit_code=$(( $exit_code || $? ))
 
   echo "[Korali] Removing results..."
   rm -rf "_korali_result"
-  check_result
+  exit_code=$(( $exit_code || $? ))
 
   echo "-------------------------------------"
 
@@ -120,11 +122,11 @@ for ((i=0;i<${#tmcmc_criteria[@]};++i)); do
   echo "Running File: tmcmc_termination.py"
 
   python3 ./tmcmc_termination.py --criterion "${tmcmc_criteria[$i]}" --value ${tmcmc_values[$i]}
-  check_result
+  exit_code=$(( $exit_code || $? ))
 
   echo "[Korali] Removing results..."
   rm -rf "_korali_result"
-  check_result
+  exit_code=$(( $exit_code || $? ))
 
   echo "-------------------------------------"
 
@@ -143,12 +145,15 @@ for ((i=0;i<${#nested_criteria[@]};++i)); do
   echo "Running File: nested_termination.py"
 
   python3 ./nested_termination.py --criterion "${nested_criteria[$i]}" --value ${nested_values[$i]}
-  check_result
+  exit_code=$(( $exit_code || $? ))
 
   echo "[Korali] Removing results..."
   rm -rf "_korali_result"
-  check_result
+  exit_code=$(( $exit_code || $? ))
 
   echo "-------------------------------------"
 
 done
+
+
+exit $exit_code

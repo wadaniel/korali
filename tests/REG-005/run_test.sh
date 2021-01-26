@@ -1,20 +1,23 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-source ../functions.sh
+pushd ../../ > /dev/null
 
-pushd ../../
-
+echo "----------------------------------------------"
 echo "[Korali] Beginning profiling tests..."
 
 profFiles=`find . -name profiling.json`
+exit_code=$?
 
 for f in $profFiles
 do
    echo "----------------------------------------------"
-   echo " Processing profiler information from $f ..."
+   echo "[Korali] Processing profiler information from $f ..."
    echo "----------------------------------------------"
    echo "python3 -m korali.profiler --test --input $f "
-   check_result
+   exit_code=$(( $exit_code || $? ))
 done
 
-popd
+popd > /dev/null
+exit_code=$(( $exit_code || $? ))
+
+exit $exit_code

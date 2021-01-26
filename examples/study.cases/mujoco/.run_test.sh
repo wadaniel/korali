@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 ###### Check if necessary python modules are installed ######
 python3 -m pip show mujoco_py
@@ -7,12 +7,18 @@ if [ $? -ne 0 ]; then
  exit 0
 fi
 
-###### Auxiliar Functions and Variables #########
 
-source ../../../tests/functions.sh
 
 ##### Running Test
 
-pushd _inverted_double_pendulum; check_result
-  ./.run_test.sh; check_result
-popd
+pushd _inverted_double_pendulum > /dev/null
+exit_code=$?
+
+./.run_test.sh
+exit_code=$(( $exit_code || $? ))
+
+popd > /dev/null
+exit_code=$(( $exit_code || $? ))
+
+
+exit $exit_code

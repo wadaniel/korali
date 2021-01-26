@@ -1,18 +1,20 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-source ../functions.sh
-
+echo "-------------------------------------"
 echo "[Korali] Beginning Stat Test 004"
+exit_code=$?
 
 for file in run-*.py
 do
   echo "-------------------------------------"
   echo " Running $file"
   echo "-------------------------------------"
-  ./"$file" 
-  check_result
+  ./"$file"
+  exit_code=$(( $exit_code || $? ))
 done
 
 echo "[Korali] Removing results..."
-rm -rf _korali_result 
-check_result
+rm -rf _korali_result
+exit_code=$(( $exit_code || $? ))
+
+exit $exit_code

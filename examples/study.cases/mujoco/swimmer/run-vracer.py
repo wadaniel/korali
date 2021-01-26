@@ -8,7 +8,7 @@ import korali
 k = korali.Engine()
 e = korali.Experiment()
 
-outdir = '_korali_result'
+outdir = '_korali_result2'
 found = e.loadState(outdir+'/latest')
 if (found == True):
   print('Continuing execution from latest...')
@@ -39,13 +39,13 @@ e["Variables"][8]["Name"] = "Rotation Joint 1"
 e["Variables"][8]["Type"] = "Action"
 e["Variables"][8]["Lower Bound"] = -1.0
 e["Variables"][8]["Upper Bound"] = +1.0
-e["Variables"][8]["Initial Exploration Noise"] = 0.5
+e["Variables"][8]["Initial Exploration Noise"] = 0.1
 
 e["Variables"][9]["Name"] = "Rotation Joint 2"
 e["Variables"][9]["Type"] = "Action"
 e["Variables"][9]["Lower Bound"] = -1.0
 e["Variables"][9]["Upper Bound"] = +1.0
-e["Variables"][9]["Initial Exploration Noise"] = 0.5
+e["Variables"][9]["Initial Exploration Noise"] = 0.1
 
 ### Defining Agent Configuration 
 
@@ -57,6 +57,7 @@ e["Solver"]["Episodes Per Generation"] = 1
 e["Solver"]["Policy Distribution"] = "Normal"
 e["Solver"]["Discount Factor"] = 0.99
 e["Solver"]["Learning Rate"] = 1e-3
+e["Solver"]["L2 Regularization"] = 1e-4
 e["Solver"]["Mini Batch Size"] = 128
 
 ### Defining the configuration of replay memory

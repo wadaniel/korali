@@ -24,17 +24,17 @@ class GFPT : public Continuous
   /**
    * @brief Pointer to training experiment's V(s) problem
    */
-  problem::SupervisedLearning *_vProblem;
+  problem::SupervisedLearning *_vpProblem;
 
   /**
   * @brief Pointer to training experiment's V(s) critic learner
   */
-  learner::DeepSupervisor *_vLearner;
+  learner::DeepSupervisor *_vpLearner;
 
   /**
    * @brief Korali experiment for the training of V(s)
    */
-  korali::Experiment _vExperiment;
+  korali::Experiment _vpExperiment;
 
   /**
   * @brief Pointer to training experiment's Q(s,x) problem
@@ -55,21 +55,6 @@ class GFPT : public Continuous
    * @brief Korali optimizer for finding the optimal action as per the critic. One instance per parallel thread.
    */
   std::vector<korali::fCMAES *> _actionOptimizers;
-
-  /**
-  * @brief Korali experiment for argmax_action(Q) based on a trained Q-Network
-  */
-  korali::Experiment _policyExperiment;
-
-  /**
-   * @brief Pointer to training the actor network
-   */
-  learner::DeepSupervisor *_policyLearner;
-
-  /**
-   * @brief Pointer to actor's experiment problem
-   */
-  problem::SupervisedLearning *_policyProblem;
 
   /**
    * @brief Returns the advantage value of the given state/action sequence

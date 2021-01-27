@@ -28,12 +28,14 @@ def readActions(obsfile):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--obsfiles', type=str, nargs='+', help='Observation file to read', required=True)
-    parser.add_argument('--policies', type=str, nargs='+', help='Observation file to read', required=True)
+    parser.add_argument('--policies', type=str, nargs='+', help='Policy (previous korali run) to read', required=True)
+    parser.add_argument('--outfile', type=str, help='Name of output file', required=True)
 
     args = parser.parse_args()
 
     files = args.obsfiles
     policies = args.policies
+    outfile = args.outfile
 
     perrors = []
     for policy in policies:
@@ -87,5 +89,5 @@ if __name__ == "__main__":
     plt.xlabel('Target Angle [rad]')
     plt.ylabel('Action L2 Error')
     plt.tight_layout()
-    plt.savefig('policies.png')
+    plt.savefig(outfile)
 

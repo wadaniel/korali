@@ -2,7 +2,7 @@
 export OMP_NUM_THREADS=4
 
 
-target=0.5
+target=0.125
 RUNDIR="./t${target}"
 
 mkdir $RUNDIR

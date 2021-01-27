@@ -179,6 +179,7 @@ void Agent::trainingGeneration()
     {
     
         // Recalculate reward scaling factor
+        if (false)
         if ( _sessionExperienceCount >= 10000 * _rewardRescaleCount + _sessionExperiencesUntilStartSize)
         {
             _rewardRescaleCount++;

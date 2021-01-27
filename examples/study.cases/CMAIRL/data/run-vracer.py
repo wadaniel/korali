@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 import os
 import sys
-sys.path.append('../_optimization_model/_rl_model')
+sys.path.append('../../_optimization_model/_rl_model')
 from env import *
 
 
-outfile = "observations-vracer-reg-{}-t-{}.csv".format(run, target)
 
-resultdir = "_korali_result_reg_01_{}-t-{}".format(run, target)
+outfile = "observations-vracer-{}-t-{}.csv".format(run, target)
+resultdir = "_korali_result_{}-t-{}".format(run, target)
 
 ####### Defining Korali Problem
 
@@ -24,7 +24,7 @@ if (found == True):
 ### Defining the Cartpole problem's configuration
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = envp
-e["Problem"]["Training Reward Threshold"] = 490
+e["Problem"]["Training Reward Threshold"] = 498
 e["Problem"]["Policy Testing Episodes"] = 25
 e["Problem"]["Testing Frequency"] = 100
 e["Problem"]["Actions Between Policy Updates"] = 5
@@ -70,7 +70,7 @@ e["Solver"]["Experience Replay"]["REFER"]["Annealing Rate"] = 5e-7
 
 e["Solver"]["Discount Factor"] = 0.99
 e["Solver"]["Learning Rate"] = 1e-4
-e["Solver"]["L2 Regularization"] = 0.1
+e["Solver"]["L2 Regularization"] = 0.0
 e["Solver"]["Mini Batch Size"] = 32
 
 ### Configuring the neural network and its hidden layers
@@ -97,7 +97,7 @@ e["Solver"]["Termination Criteria"]["Max Generations"] = 5000
 ### Setting file output configuration
 
 e["File Output"]["Enabled"] = True
-e["File Output"]["Frequency"] = 500
+e["File Output"]["Frequency"] = 1000
 e["File Output"]["Path"] = resultdir
 
 

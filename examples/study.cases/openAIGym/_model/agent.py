@@ -9,9 +9,7 @@ def initEnvironment(e, envName):
  
  env = gym.make(envName)
  
- print(env.action_space)
  ### Defining problem configuration for openAI Gym environments
- 
  e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
  e["Problem"]["Environment Function"] = lambda x : agent(x, env)
  e["Problem"]["Training Reward Threshold"] = math.inf

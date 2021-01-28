@@ -845,15 +845,22 @@ void Agent::printGenerationAfter()
     else
       _k->_logger->logInfo("Normal", " + Policy Update Count:         %lu\n", _policyUpdateCount);
 
-    _k->_logger->logInfo("Normal", " + Latest Reward:               %f/%f\n", _trainingLastReward, _problem->_trainingRewardThreshold);
+    if (isinf(_problem->_trainingRewardThreshold) == false)
+      _k->_logger->logInfo("Normal", " + Latest Reward:               %f/%f\n", _trainingLastReward, _problem->_trainingRewardThreshold);
+    else
+      _k->_logger->logInfo("Normal", " + Latest Reward:               %f\n", _trainingLastReward);
+
     _k->_logger->logInfo("Normal", " + %lu-Deep Average Reward:      %f\n", _trainingAverageDepth, _trainingAverageReward);
     _k->_logger->logInfo("Normal", " + Best Reward:                 %f (%lu)\n", _trainingBestReward, _trainingBestEpisodeId);
 
-    _k->_logger->logInfo("Normal", "Testing Statistics:\n");
+    if (isinf(_problem->_trainingRewardThreshold) == false)
+    {
+      _k->_logger->logInfo("Normal", "Testing Statistics:\n");
 
-    _k->_logger->logInfo("Normal", " + Candidate Policies:          %lu\n", _testingCandidateCount);
+      _k->_logger->logInfo("Normal", " + Candidate Policies:          %lu\n", _testingCandidateCount);
 
-    _k->_logger->logInfo("Normal", " + Latest Average (Stdev / Worst / Best) Reward: %f (%f / %f / %f)\n", _testingAverageReward, _testingStdevReward, _testingWorstReward, _testingBestReward);
+      _k->_logger->logInfo("Normal", " + Latest Average (Stdev / Worst / Best) Reward: %f (%f / %f / %f)\n", _testingAverageReward, _testingStdevReward, _testingWorstReward, _testingBestReward);
+    }
 
     if (_testingTargetAverageReward > -korali::Inf)
       _k->_logger->logInfo("Normal", " + Best Average Reward: %f/%f (%lu)\n", _testingBestAverageReward, _testingTargetAverageReward, _testingBestEpisodeId);

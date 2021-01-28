@@ -262,11 +262,11 @@ void GFPT::trainPolicy()
     auto bstValue = optResults["Average Value"].get<float>();
 
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-     gfptGradients[i] =  bstMeans[i] - curMeans[i];
+      gfptGradients[i] = bstMeans[i] - curMeans[i];
 
     // Getting REFER gradients
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-     referGradients[i] = expMeans[i] - curMeans[i];
+      referGradients[i] = expMeans[i] - curMeans[i];
 
     // Re-computing importance weight for the experiment and storing it into cache
     float importanceWeight = calculateImportanceWeight(expAction, curMeans, curSigmas, expMeans, expSigmas);
@@ -277,11 +277,11 @@ void GFPT::trainPolicy()
 
     // If the experiment if on-policy, we use it for the calculation of the gradients
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-    if (isOnPolicy) pGradients[i] += _experienceReplayREFERCurrentBeta * gfptGradients[i];
+      if (isOnPolicy) pGradients[i] += _experienceReplayREFERCurrentBeta * gfptGradients[i];
 
     // Applying REFER gradients
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-     pGradients[i] += (1.0f - _experienceReplayREFERCurrentBeta) * referGradients[i];
+      pGradients[i] += (1.0f - _experienceReplayREFERCurrentBeta) * referGradients[i];
 
 // Computing statistics
 #pragma omp critical
@@ -369,7 +369,7 @@ knlohmann::json GFPT::optimizeAction(const std::vector<std::vector<float>> state
     prvAverageAdvantage = curAverageAdvantage;
     curAverageAdvantage = 0.0f;
     for (size_t i = 0; i < _policyOptimizationCandidates; i++)
-     curAverageAdvantage += candidateEvaluations[i];
+      curAverageAdvantage += candidateEvaluations[i];
     curAverageAdvantage /= (float)_policyOptimizationCandidates;
 
     // Running one more CMAES iteration
@@ -394,11 +394,11 @@ knlohmann::json GFPT::runPolicy(const std::vector<std::vector<float>> &state)
 
   for (size_t i = 0; i < _problem->_actionVectorSize; i++)
   {
-   size_t varIdx = _problem->_actionVectorIndexes[i];
-   float sigma = _k->_variables[varIdx]->_initialExplorationNoise;
+    size_t varIdx = _problem->_actionVectorIndexes[i];
+    float sigma = _k->_variables[varIdx]->_initialExplorationNoise;
 
-   // Checking correct noise configuration
-   if (sigma <= 0.0f) KORALI_LOG_ERROR("Provided initial noise (%f) for action variable %lu is not defined or negative.\n", sigma, varIdx);
+    // Checking correct noise configuration
+    if (sigma <= 0.0f) KORALI_LOG_ERROR("Provided initial noise (%f) for action variable %lu is not defined or negative.\n", sigma, varIdx);
 
     actionMeans[i] = eval[i];
     actionSigmas[i] = sigma;

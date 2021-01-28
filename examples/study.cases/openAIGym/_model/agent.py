@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 
 import gym
+import pyBulletEnvironments
 import math
 
 def initEnvironment(e, envName):
 
+ 
  env = gym.make(envName)
  
+ print(env.action_space)
  ### Defining problem configuration for openAI Gym environments
  
  e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
@@ -16,7 +19,6 @@ def initEnvironment(e, envName):
  e["Problem"]["Actions Between Policy Updates"] = 1
  
  # Getting environment variable counts
- 
  stateVariableCount = env.observation_space.shape[0]
  actionVariableCount = env.action_space.shape[0]
  

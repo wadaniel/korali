@@ -9,8 +9,6 @@
 #SBATCH --cpus-per-task=12
 #SBATCH --partition=normal
 #SBATCH --constraint=gpu
-#SBATCH --dependency=singleton
 
 cd ..
-rm -rf _trainingResults
 ./run.sh

@@ -28,8 +28,18 @@ int main(int argc, char *argv[])
   _environment->init();
 
   // Setting results path
-  std::string trainingResultsPath = "_trainingResults";
-  std::string testingResultsPath = "_testingResults";
+
+  // for the GRP 2x32 run
+  // std::string trainingResultsPath = "_testingResults";
+  // std::string testingResultsPath = "_testingResults";
+
+  // for the GRU 64 run
+  // std::string trainingResultsPath = "_trainingResults-GRU64/";
+  // std::string testingResultsPath = "_testingResults-GRU64";
+
+  // for the FFN 2x128 run
+  std::string trainingResultsPath = "_trainingResults-FF128x2/";
+  std::string testingResultsPath = "_testingResults-FF128x2/";
 
   // Creating Experiment
   auto e = korali::Experiment();
@@ -102,12 +112,33 @@ int main(int argc, char *argv[])
 
   //// Defining Neural Network
 
+  // two GRU layers with 32
+  // e["Solver"]["Neural Network"]["Engine"] = "OneDNN";
+  // e["Solver"]["Time Sequence Length"] = 16;
+  // e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Recurrent/GRU";
+  // e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 32;
+  // e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Recurrent/GRU";
+  // e["Solver"]["Neural Network"]["Hidden Layers"][1]["Output Channels"] = 32;
+
+  // one GRU layer with 64
+  // e["Solver"]["Neural Network"]["Engine"] = "OneDNN";
+  // e["Solver"]["Time Sequence Length"] = 16;
+  // e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Recurrent/GRU";
+  // e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 64;
+
+  // two FF layers with 128
   e["Solver"]["Neural Network"]["Engine"] = "OneDNN";
-  e["Solver"]["Time Sequence Length"] = 16;
-  e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Recurrent/GRU";
-  e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 32;
-  e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Recurrent/GRU";
-  e["Solver"]["Neural Network"]["Hidden Layers"][1]["Output Channels"] = 32;
+  e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear";
+  e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 128;
+
+  e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Activation";
+  e["Solver"]["Neural Network"]["Hidden Layers"][1]["Function"] = "Elementwise/Tanh";
+
+  e["Solver"]["Neural Network"]["Hidden Layers"][2]["Type"] = "Layer/Linear";
+  e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 128;
+
+  e["Solver"]["Neural Network"]["Hidden Layers"][3]["Type"] = "Layer/Activation";
+  e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tanh";
 
   ////// Defining Termination Criteria
 

@@ -14,7 +14,8 @@ def env(s, th):
  cart = CartPole(th)
  cart.reset()
 
- s["State"] = cart.getState().tolist()
+ state = cart.getState().tolist()
+ s["State"] = state
  step = 0
  done = False
 
@@ -31,14 +32,17 @@ def env(s, th):
   s["Reward"] = cart.getReward()
    
   # Storing New State
-  state = cart.getState().tolist()
-  s["State"] = state
+  newstate = cart.getState().tolist()
+  s["State"] = newstate
   
   if s["Custom Settings"]["Record Observations"] == "True":
-      stateaction = s["State"]
-      action = s["Action"]
-      stateaction.append(action[0])
-      salist.append(stateaction)
+      stateactionstate = state
+      stateactionstate.append(action[0])
+      stateactionstate.append(newstate)
+
+      salist.append(stateactionstate)
+
+  state = newstate
   
   # Advancing step counter
   step = step + 1

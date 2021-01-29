@@ -11,11 +11,19 @@ korali_source = files([
 
 korali_source_config = [] # collection of .config files used in code generation
 subdir('auxiliar')
+subdir('modules')
+# subdir_done()
+# subdir('sample')
 
-# create a python package
+# # must be processed last due to source generation dependencies
+# subdir('variable')
+
+# create korali python extension
+korali_install_dir = python.get_install_dir() + 'korali'
 pyton_extension = python.extension_module('korali', 
-  korali_src, 
-  include_directories: korali_inc,
+  korali_source, 
+  cpp_args: korali_cpp_args,
+  include_directories: korali_include,
   dependencies: [korali_deps, python.dependency()],
   install: true,
   install_dir: korali_install_dir,

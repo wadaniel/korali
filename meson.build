@@ -1,4 +1,4 @@
-project('Korali', ['cpp', 'c'],
+project('Korali', ['c', 'cpp'],
   version: '2.0.0',
   license: 'GPL-3.0-only', # or also later?
   default_options: ['cpp_std=c++17', 'b_ndebug=if-release']
@@ -9,14 +9,14 @@ python = pymodule.find_installation('python3', required: true)
 
 # list of Korali dependencies
 korali_deps = []
-cpp_args = []
+korali_cpp_args = []
 
 # check for MPI
 mpi_dep = dependency('mpi', language: 'c', required: false)
 user_want_mpi = get_option('mpi')
 if user_want_mpi and mpi_dep.found()
   korali_deps += mpi_dep
-  cpp_args += '-D_KORALI_USE_MPI'
+  korali_cpp_args += '-D_KORALI_USE_MPI'
 elif user_want_mpi and not mpi_dep.found()
   message('''Configuration requests MPI but could not find implementation.
     Building without MPI support''')

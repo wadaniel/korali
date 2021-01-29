@@ -1,4 +1,14 @@
-korali_src = files('engine.cpp')
+# define code generator object
+# FIXME: [fabianw@mavt.ethz.ch; 2021-01-29] special version only for testing
+korali_gen = find_program('../tools/build/build_fabian.py')
+
+korali_include = include_directories('.')
+korali_source = files([
+  'engine.cpp',
+  'engine.hpp',
+  'korali.hpp',
+  ])
+
 
 # create a python package
 pyton_extension = python.extension_module('korali', 

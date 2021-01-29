@@ -37,18 +37,14 @@ korali_deps += dependency('librtnorm', fallback: ['rtnorm', 'librtnorm_dep'], re
 # process optional korali dependencies
 # TODO: [fabianw@mavt.ethz.ch; 2021-01-26] 
 
-# generate sources and headers
-generator_script = files('tools/build/build.py')
-generator_result = run_command(python, generator_script)
-if generator_result.returncode() != 0
-  error('Can not generate source files using `tools/build/build.py`')
-endif
-korali_inc = include_directories('include')
-
 # process korali
-korali_install_dir = python.get_install_dir() + 'korali'
-install_subdir('include', install_dir: korali_install_dir) # cpp headers
 subdir('source')
+
+# FIXME: [fabianw@mavt.ethz.ch; 2021-01-29] this must be generated in the
+# installation stage
+subdir_done()
+korali_inc = include_directories('include')
+install_subdir('include', install_dir: korali_install_dir) # cpp headers
 
 # # create a pkg-config entry
 # pkg_mod = import('pkgconfig')

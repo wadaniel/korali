@@ -32,6 +32,7 @@ endif
 korali_deps += dependency('libco', fallback: ['libco', 'libco_dep'], required: true)
 korali_deps += dependency('gsl', fallback: ['gsl', 'gsl_dep'], required: true)
 korali_deps += dependency('eigen3', fallback: ['eigen', 'eigen_dep'], required: true)
+korali_deps += dependency('librtnorm', fallback: ['rtnorm', 'librtnorm_dep'], required: true)
 
 # process optional korali dependencies
 # TODO: [fabianw@mavt.ethz.ch; 2021-01-26] 

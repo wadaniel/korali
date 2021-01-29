@@ -9,6 +9,8 @@ korali_source = files([
   'korali.hpp',
   ])
 
+korali_source_config = [] # collection of .config files used in code generation
+subdir('auxiliar')
 
 # create a python package
 pyton_extension = python.extension_module('korali', 

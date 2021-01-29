@@ -30,6 +30,9 @@ class CartPole:
     self.step = 0
     self.F = 0
     self.t = 0
+ 
+  def setState(self, state):
+    self.u = state
 
   def isFailed(self):
     return (abs(self.u[0])>self.x_threshold)

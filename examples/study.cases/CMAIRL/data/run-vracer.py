@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 import os
 import sys
+sys.path.append('../_optimization_model/_rl_model')
 sys.path.append('../../_optimization_model/_rl_model')
 from env import *
-
 
 
 outfile = "observations-vracer-{}-t-{}.csv".format(run, target)
@@ -117,6 +117,7 @@ print('[Korali] Done training. Now running learned policy to produce observation
 e["Solver"]["Mode"] = "Testing"
 e["Solver"]["Testing"]["Sample Ids"] = [i for i in range(20)]
 e["Problem"]["Custom Settings"]["Output"] = outfile
+e["Problem"]["Custom Settings"]["Record Observations"] = "False"
 
 k.run(e)
 

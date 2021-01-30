@@ -1,5 +1,4 @@
-#ifndef _KORALI_CONDUIT_MPI_HPP_
-#define _KORALI_CONDUIT_MPI_HPP_
+@startIncludeGuard
 
 #include "modules/conduit/conduit.hpp"
 #include <map>
@@ -10,30 +9,33 @@
   #include "mpi.h"
 #endif
 
+
 namespace korali
 {
 #ifdef _KORALI_USE_MPI
-/**
- * @brief Communicator storage for the current Korali Worker
- */
-extern MPI_Comm __KoraliTeamComm;
+  /**
+   * @brief Communicator storage for the current Korali Worker
+   */
+  extern MPI_Comm __KoraliTeamComm;
 
-/**
-  * @brief Returns Communicator for the current Korali Worker
-  * @return An MPI Communicator
-  */
-extern MPI_Comm getKoraliMPIComm();
+  /**
+    * @brief Returns Communicator for the current Korali Worker
+    * @return An MPI Communicator
+    */
+  extern MPI_Comm getKoraliMPIComm();
 
-/**
-  * @brief Returns Communicator for the current Korali Worker
-  * @return An MPI Communicator (in the form of a long integer, for Python compatibility)
-  */
-extern long int getKoraliMPICommPointer();
+  /**
+    * @brief Returns Communicator for the current Korali Worker
+    * @return An MPI Communicator (in the form of a long integer, for Python compatibility)
+    */
+  extern long int getKoraliMPICommPointer();
 #endif
+} // namespace korali
 
-namespace conduit
-{
-class Distributed : public Conduit
+
+@startNamespace
+
+class @className : public @parentClassName
 {
   public:
 #ifdef _KORALI_USE_MPI
@@ -106,7 +108,6 @@ class Distributed : public Conduit
   void abort() override;
 };
 
-} // namespace conduit
-} // namespace korali
+@endNamespace
 
-#endif // _KORALI_CONDUIT_MPI_HPP_
+@endIncludeGuard

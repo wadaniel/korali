@@ -1,5 +1,4 @@
-#ifndef _KORALI_SOLVER_GAUSSIAN_PROCESS_HPP_
-#define _KORALI_SOLVER_GAUSSIAN_PROCESS_HPP_
+@startIncludeGuard
 
 #include "engine.hpp"
 
@@ -13,13 +12,9 @@
 
 #include <memory>
 
-namespace korali
-{
-namespace solver
-{
-namespace learner
-{
-class GaussianProcess : public Learner
+@startNamespace
+
+class @className : public @parentClassName
 {
   public:
   ~GaussianProcess();
@@ -59,8 +54,7 @@ class GaussianProcess : public Learner
   void runGeneration() override;
   void printGenerationAfter() override;
 };
-} // namespace learner
-} // namespace solver
-} // namespace korali
 
-#endif // _KORALI_SOLVER_GAUSSIAN_PROCESS_HPP_
+@endNamespace
+
+@endIncludeGuard

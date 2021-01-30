@@ -15,13 +15,9 @@ using namespace dnnl;
 using namespace Eigen;
 #endif
 
-namespace korali
-{
-namespace neuralNetwork
-{
-namespace layer
-{
-void Activation::initialize()
+@startNamespace
+
+void @className::initialize()
 {
   // The node count for this layer should be the same as the previous layer
   _outputChannels = _prevLayer->_outputChannels;
@@ -34,7 +30,7 @@ void Activation::initialize()
   if (_index == _nn->_layers.size() - 1) KORALI_LOG_ERROR("Activation layers cannot be the last layer of the NN\n");
 }
 
-void Activation::createForwardPipeline()
+void @className::createForwardPipeline()
 {
   // Calling base layer function
   Layer::createForwardPipeline();
@@ -104,7 +100,7 @@ void Activation::createForwardPipeline()
 #endif
 }
 
-void Activation::createBackwardPipeline()
+void @className::createBackwardPipeline()
 {
   // Calling base layer function
   Layer::createBackwardPipeline();
@@ -143,7 +139,7 @@ void Activation::createBackwardPipeline()
 #endif
 }
 
-void Activation::forwardData()
+void @className::forwardData()
 {
   size_t N = _nn->_batchSize;
   size_t OC = _outputChannels;
@@ -242,7 +238,7 @@ void Activation::forwardData()
 #endif
 }
 
-void Activation::backwardData()
+void @className::backwardData()
 {
   size_t N = _nn->_batchSize;
   size_t OC = _outputChannels;
@@ -346,8 +342,4 @@ void Activation::backwardData()
 #endif
 }
 
-} // namespace layer
-
-} // namespace neuralNetwork
-
-} // namespace korali
+@endNamespace

@@ -17,15 +17,9 @@ using namespace Eigen;
 
 #define LSTM_LINEAR_LAYERS 8
 
-namespace korali
-{
-namespace neuralNetwork
-{
-namespace layer
-{
-namespace recurrent
-{
-void LSTM::initialize()
+@startNamespace
+
+void @className::initialize()
 {
   Recurrent::initialize();
 
@@ -37,7 +31,7 @@ void LSTM::initialize()
 #endif
 }
 
-void LSTM::createForwardPipeline()
+void @className::createForwardPipeline()
 {
   // Calling base layer function
   Layer::createForwardPipeline();
@@ -206,7 +200,7 @@ void LSTM::createForwardPipeline()
 #endif
 }
 
-void LSTM::createBackwardPipeline()
+void @className::createBackwardPipeline()
 {
   // Calling base layer function
   Layer::createBackwardPipeline();
@@ -304,7 +298,7 @@ void LSTM::createBackwardPipeline()
 #endif
 }
 
-void LSTM::forwardData()
+void @className::forwardData()
 {
   const size_t t = _nn->_currentTimestep;
 
@@ -362,7 +356,7 @@ void LSTM::forwardData()
 #endif
 }
 
-void LSTM::backwardData()
+void @className::backwardData()
 {
   // Getting current timestep
   const size_t t = _nn->_currentTimestep;
@@ -437,7 +431,4 @@ void LSTM::backwardData()
 #endif
 }
 
-} // namespace recurrent
-} // namespace layer
-} // namespace neuralNetwork
-} // namespace korali
+@endNamespace

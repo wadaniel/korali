@@ -1,19 +1,11 @@
-#ifndef _KORALI_AGENT_CONTINUOUS_NAF_HPP_
-
-#define _KORALI_AGENT_CONTINUOUS_NAF_HPP_
+@startIncludeGuard
 
 #include "modules/problem/reinforcementLearning/continuous/continuous.hpp"
 #include "modules/solver/agent/continuous/continuous.hpp"
 
-namespace korali
-{
-namespace solver
-{
-namespace agent
-{
-namespace continuous
-{
-class NAF : public Continuous
+@startNamespace
+
+class @className : public @parentClassName
 {
   public:
   /**
@@ -66,9 +58,6 @@ class NAF : public Continuous
   void initializeAgent() override;
 };
 
-} // namespace continuous
-} // namespace agent
-} // namespace solver
-} // namespace korali
+@endNamespace
 
-#endif // _KORALI_AGENT_DISCRETE_NAF_HPP_
+@endIncludeGuard

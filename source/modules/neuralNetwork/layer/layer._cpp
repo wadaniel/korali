@@ -15,11 +15,9 @@ using namespace dnnl;
 using namespace Eigen;
 #endif
 
-namespace korali
-{
-namespace neuralNetwork
-{
-void Layer::createForwardPipeline()
+@startNamespace
+
+void @className::createForwardPipeline()
 {
   // Obtaining batch size
   ssize_t N = _nn->_batchSize;
@@ -68,7 +66,7 @@ void Layer::createForwardPipeline()
 #endif
 }
 
-void Layer::createBackwardPipeline()
+void @className::createBackwardPipeline()
 {
   if (_nn->_mode == "Inference")
     KORALI_LOG_ERROR("Requesting layer's backward pipeline creation but NN was configured for inference only.\n");
@@ -108,17 +106,15 @@ void Layer::createBackwardPipeline()
 #endif
 }
 
-std::vector<float> Layer::generateInitialHyperparameters()
+std::vector<float> @className::generateInitialHyperparameters()
 {
   std::vector<float> hyperparameters;
   return hyperparameters;
 }
 
-void Layer::createHyperparameterMemory()
+void @className::createHyperparameterMemory()
 {
   _hyperparameterCount = 0;
 }
 
-} // namespace neuralNetwork
-
-} // namespace korali
+@endNamespace

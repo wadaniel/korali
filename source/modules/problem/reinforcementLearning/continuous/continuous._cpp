@@ -2,13 +2,9 @@
 #include "modules/solver/agent/continuous/continuous.hpp"
 #include "sample/sample.hpp"
 
-namespace korali
-{
-namespace problem
-{
-namespace reinforcementLearning
-{
-void Continuous::initialize()
+@startNamespace
+
+void @className::initialize()
 {
   ReinforcementLearning::initialize();
 
@@ -25,8 +21,4 @@ void Continuous::initialize()
   }
 }
 
-} // namespace reinforcementLearning
-
-} // namespace problem
-
-} // namespace korali
+@endNamespace

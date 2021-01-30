@@ -1,15 +1,10 @@
-#ifndef _KORALI_LAYER_LINEAR_HPP_
-#define _KORALI_LAYER_LINEAR_HPP_
+@startIncludeGuard
 
 #include "modules/neuralNetwork/layer/layer.hpp"
 
-namespace korali
-{
-namespace neuralNetwork
-{
-namespace layer
-{
-class Linear : public Layer
+@startNamespace
+
+class @className : public @parentClassName
 {
   public:
   /********************************************************
@@ -152,10 +147,6 @@ class Linear : public Layer
   void backwardHyperparameters() override;
 };
 
-} // namespace layer
+@endNamespace
 
-} // namespace neuralNetwork
-
-} // namespace korali
-
-#endif // _KORALI_LAYER_LINEAR_HPP_
+@endIncludeGuard

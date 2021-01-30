@@ -15,15 +15,9 @@ using namespace dnnl;
 using namespace Eigen;
 #endif
 
-namespace korali
-{
-namespace neuralNetwork
-{
-namespace layer
-{
-namespace recurrent
-{
-void GRU::initialize()
+@startNamespace
+
+void @className::initialize()
 {
   Recurrent::initialize();
 
@@ -35,7 +29,7 @@ void GRU::initialize()
 #endif
 }
 
-void GRU::createForwardPipeline()
+void @className::createForwardPipeline()
 {
   // Calling base layer function
   Layer::createForwardPipeline();
@@ -190,7 +184,7 @@ void GRU::createForwardPipeline()
 #endif
 }
 
-void GRU::createBackwardPipeline()
+void @className::createBackwardPipeline()
 {
   // Calling base layer function
   Layer::createBackwardPipeline();
@@ -276,7 +270,7 @@ void GRU::createBackwardPipeline()
 #endif
 }
 
-void GRU::forwardData()
+void @className::forwardData()
 {
   const size_t t = _nn->_currentTimestep;
 
@@ -332,7 +326,7 @@ void GRU::forwardData()
 #endif
 }
 
-void GRU::backwardData()
+void @className::backwardData()
 {
   // Getting current timestep
   const size_t t = _nn->_currentTimestep;
@@ -403,7 +397,4 @@ void GRU::backwardData()
 #endif
 }
 
-} // namespace recurrent
-} // namespace layer
-} // namespace neuralNetwork
-} // namespace korali
+@endNamespace

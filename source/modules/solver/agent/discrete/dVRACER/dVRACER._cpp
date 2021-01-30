@@ -2,15 +2,9 @@
 #include "modules/solver/agent/discrete/dVRACER/dVRACER.hpp"
 #include "sample/sample.hpp"
 
-namespace korali
-{
-namespace solver
-{
-namespace agent
-{
-namespace discrete
-{
-void dVRACER::initializeAgent()
+@startNamespace
+
+void @className::initializeAgent()
 {
   // Initializing common discrete agent configuration
   Discrete::initializeAgent();
@@ -44,7 +38,7 @@ void dVRACER::initializeAgent()
   _criticPolicyLearner = dynamic_cast<solver::learner::DeepSupervisor *>(_criticPolicyExperiment._solver);
 }
 
-void dVRACER::trainPolicy()
+void @className::trainPolicy()
 {
   // Resetting statistics
   float cumulativeQStar = 0.0;
@@ -198,14 +192,14 @@ void dVRACER::trainPolicy()
   _criticPolicyLearner->runGeneration();
 }
 
-float dVRACER::stateValueFunction(const std::vector<std::vector<float>> &state)
+float @className::stateValueFunction(const std::vector<std::vector<float>> &state)
 {
   // Calculating V(s_i)
   float v = _criticPolicyLearner->getEvaluation({state})[0][0];
   return v;
 }
 
-knlohmann::json dVRACER::runPolicy(const std::vector<std::vector<float>> &state)
+knlohmann::json @className::runPolicy(const std::vector<std::vector<float>> &state)
 {
   // Forward the neural network for this state
   std::vector<float> evaluation = _criticPolicyLearner->getEvaluation({state})[0];
@@ -258,25 +252,25 @@ knlohmann::json dVRACER::runPolicy(const std::vector<std::vector<float>> &state)
   return policy;
 }
 
-knlohmann::json dVRACER::getAgentPolicy()
+knlohmann::json @className::getAgentPolicy()
 {
   knlohmann::json hyperparameters;
   hyperparameters["Critic/Policy"] = _criticPolicyLearner->getInferenceHyperparameters();
   return hyperparameters;
 }
 
-void dVRACER::setAgentPolicy(const knlohmann::json &hyperparameters)
+void @className::setAgentPolicy(const knlohmann::json &hyperparameters)
 {
   _criticPolicyLearner->setInferenceHyperparameters(hyperparameters["Critic/Policy"].get<std::vector<float>>());
 }
 
-void dVRACER::setTrainingState(const knlohmann::json &state)
+void @className::setTrainingState(const knlohmann::json &state)
 {
   _criticPolicyLearner->setTrainingHyperparameters(state["Critic/Policy"]["Training"]);
   _criticPolicyLearner->setInferenceHyperparameters(state["Critic/Policy"]["Inference"]);
 }
 
-knlohmann::json dVRACER::getTrainingState()
+knlohmann::json @className::getTrainingState()
 {
   knlohmann::json state;
   state["Critic/Policy"]["Training"] = _criticPolicyLearner->getTrainingHyperparameters();
@@ -284,7 +278,7 @@ knlohmann::json dVRACER::getTrainingState()
   return state;
 }
 
-void dVRACER::printAgentInformation()
+void @className::printAgentInformation()
 {
   _k->_logger->logInfo("Normal", "Critic Information:\n");
   _k->_logger->logInfo("Normal", " + Learning Rate:                                     %.3e\n", _criticPolicyLearner->_learningRate);
@@ -298,7 +292,4 @@ void dVRACER::printAgentInformation()
   _criticPolicyExperiment._logger->setVerbosityLevel("Silent");
 }
 
-} // namespace discrete
-} // namespace agent
-} // namespace solver
-} // namespace korali
+@endNamespace

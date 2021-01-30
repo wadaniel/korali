@@ -15,13 +15,11 @@ using namespace dnnl;
 using namespace Eigen;
 #endif
 
-namespace korali
-{
-namespace neuralNetwork
-{
+@startNamespace
+
 namespace layer
 {
-void Recurrent::initialize()
+void @className::initialize()
 {
   // Checking Layer size
   if (_outputChannels == 0) KORALI_LOG_ERROR("Node count for layer %lu should be larger than zero.\n", _index);
@@ -35,7 +33,7 @@ void Recurrent::initialize()
     if (_prevLayer->_outputChannels != _outputChannels) KORALI_LOG_ERROR("Node count for layer %lu should be the same as that of the previous layer, when depth > 1.\n", _index);
 }
 
-void Recurrent::createHyperparameterMemory()
+void @className::createHyperparameterMemory()
 {
   // Getting dimensions
   const size_t L = _depth;     // Physical Layers
@@ -152,7 +150,7 @@ void Recurrent::createHyperparameterMemory()
 #endif
 }
 
-std::vector<float> Recurrent::generateInitialHyperparameters()
+std::vector<float> @className::generateInitialHyperparameters()
 {
   std::vector<float> hyperparameters;
 
@@ -187,7 +185,7 @@ std::vector<float> Recurrent::generateInitialHyperparameters()
   return hyperparameters;
 }
 
-void Recurrent::backwardHyperparameters()
+void @className::backwardHyperparameters()
 {
   if (_nn->_mode == "Inference")
     KORALI_LOG_ERROR("Requesting Layer hyperparameter gradient propagation but NN was configured for inference only.\n");
@@ -228,7 +226,7 @@ void Recurrent::backwardHyperparameters()
 #endif
 }
 
-void Recurrent::setHyperparameters(float *hyperparameters)
+void @className::setHyperparameters(float *hyperparameters)
 {
 #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
@@ -250,7 +248,7 @@ void Recurrent::setHyperparameters(float *hyperparameters)
 #endif
 }
 
-void Recurrent::getHyperparameters(float *hyperparameters)
+void @className::getHyperparameters(float *hyperparameters)
 {
 #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
@@ -272,7 +270,7 @@ void Recurrent::getHyperparameters(float *hyperparameters)
 #endif
 }
 
-void Recurrent::getHyperparameterGradients(float *gradient)
+void @className::getHyperparameterGradients(float *gradient)
 {
 #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
@@ -294,8 +292,4 @@ void Recurrent::getHyperparameterGradients(float *gradient)
 #endif
 }
 
-} // namespace layer
-
-} // namespace neuralNetwork
-
-} // namespace korali
+@endNamespace

@@ -7,12 +7,8 @@
   #include <Eigen/Dense>
 #endif
 
-namespace korali
-{
-namespace solver
-{
-namespace learner
-{
+@startNamespace
+
 #ifdef _KORALI_USE_EIGEN
 /**
   * @brief Converts a vector of floats to Eigen format
@@ -28,9 +24,9 @@ static Eigen::VectorXd toEigen(const std::vector<float> &v)
 }
 #endif
 
-GaussianProcess::~GaussianProcess() = default;
+@className::~GaussianProcess() = default;
 
-void GaussianProcess::initialize()
+void @className::initialize()
 {
 #ifdef _KORALI_USE_LIBGP
 
@@ -98,7 +94,7 @@ void GaussianProcess::initialize()
 }
 
 #ifdef _KORALI_USE_LIBGP
-void GaussianProcess::runSample(Sample &sample, libgp::GaussianProcess *gp)
+void @className::runSample(Sample &sample, libgp::GaussianProcess *gp)
 {
   #ifdef _KORALI_USE_EIGEN
 
@@ -118,7 +114,7 @@ void GaussianProcess::runSample(Sample &sample, libgp::GaussianProcess *gp)
 }
 #endif
 
-void GaussianProcess::runGeneration()
+void @className::runGeneration()
 {
   _koraliExperiment["Solver"]["Termination Criteria"]["Max Generations"] = _koraliExperiment._currentGeneration + 1;
   korali::Engine engine;
@@ -126,12 +122,12 @@ void GaussianProcess::runGeneration()
   _gpHyperparameters = _koraliExperiment["Results"]["Best Sample"]["Parameters"].get<std::vector<float>>();
 }
 
-void GaussianProcess::printGenerationAfter()
+void @className::printGenerationAfter()
 {
   return;
 }
 
-std::vector<std::vector<float>> GaussianProcess::getEvaluation(const std::vector<std::vector<std::vector<float>>> &input)
+std::vector<std::vector<float>> @className::getEvaluation(const std::vector<std::vector<std::vector<float>>> &input)
 {
   std::vector<float> output(2);
 
@@ -152,28 +148,24 @@ std::vector<std::vector<float>> GaussianProcess::getEvaluation(const std::vector
   return {output};
 }
 
-std::vector<float> GaussianProcess::getInferenceHyperparameters()
+std::vector<float> @className::getInferenceHyperparameters()
 {
   return _gpHyperparameters;
 }
 
-void GaussianProcess::setInferenceHyperparameters(const std::vector<float> &hyperparameters)
+void @className::setInferenceHyperparameters(const std::vector<float> &hyperparameters)
 {
   _gpHyperparameters = hyperparameters;
 }
 
-std::vector<float> GaussianProcess::getTrainingHyperparameters()
+std::vector<float> @className::getTrainingHyperparameters()
 {
   return _gpHyperparameters;
 }
 
-void GaussianProcess::setTrainingHyperparameters(const std::vector<float> &hyperparameters)
+void @className::setTrainingHyperparameters(const std::vector<float> &hyperparameters)
 {
   _gpHyperparameters = hyperparameters;
 }
 
-} // namespace learner
-
-} // namespace solver
-
-} // namespace korali
+@endNamespace

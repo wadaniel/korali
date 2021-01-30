@@ -15,13 +15,9 @@ using namespace dnnl;
 using namespace Eigen;
 #endif
 
-namespace korali
-{
-namespace neuralNetwork
-{
-namespace layer
-{
-void Linear::initialize()
+@startNamespace
+
+void @className:::initialize()
 {
   // Checking Layer size
   if (_outputChannels == 0) KORALI_LOG_ERROR("Node count for layer (%lu) should be larger than zero.\n", _index);
@@ -31,7 +27,7 @@ void Linear::initialize()
   if (_index == _nn->_layers.size() - 1) KORALI_LOG_ERROR("Feed Forward layers cannot be the last layer of the NN\n");
 }
 
-std::vector<float> Linear::generateInitialHyperparameters()
+std::vector<float> @className:::generateInitialHyperparameters()
 {
   std::vector<float> hyperparameters;
 
@@ -54,7 +50,7 @@ std::vector<float> Linear::generateInitialHyperparameters()
   return hyperparameters;
 }
 
-void Linear::createHyperparameterMemory()
+void @className:::createHyperparameterMemory()
 {
   // Checking Layer sizes
   ssize_t OC = _outputChannels;
@@ -108,7 +104,7 @@ void Linear::createHyperparameterMemory()
 #endif
 }
 
-void Linear::createForwardPipeline()
+void @className:::createForwardPipeline()
 {
   // Calling base layer function
   Layer::createForwardPipeline();
@@ -143,7 +139,7 @@ void Linear::createForwardPipeline()
 #endif
 }
 
-void Linear::createBackwardPipeline()
+void @className:::createBackwardPipeline()
 {
   /*********************************************************************************
   *  Initializing memory objects and primitives for BACKWARD propagation
@@ -178,7 +174,7 @@ void Linear::createBackwardPipeline()
 #endif
 }
 
-void Linear::forwardData()
+void @className:::forwardData()
 {
   size_t N = _nn->_batchSize;
   size_t IC = _prevLayer->_outputChannels;
@@ -243,7 +239,7 @@ void Linear::forwardData()
 #endif
 }
 
-void Linear::backwardData()
+void @className:::backwardData()
 {
   int N = _nn->_batchSize;
   int IC = _prevLayer->_outputChannels;
@@ -299,7 +295,7 @@ void Linear::backwardData()
 #endif
 }
 
-void Linear::backwardHyperparameters()
+void @className:::backwardHyperparameters()
 {
   const size_t N = _nn->_batchSize;
   const size_t IC = _prevLayer->_outputChannels;
@@ -373,7 +369,7 @@ void Linear::backwardHyperparameters()
 #endif
 }
 
-void Linear::setHyperparameters(float *hyperparameters)
+void @className:::setHyperparameters(float *hyperparameters)
 {
   size_t IC = _prevLayer->_outputChannels;
   size_t OC = _outputChannels;
@@ -403,7 +399,7 @@ void Linear::setHyperparameters(float *hyperparameters)
 #endif
 }
 
-void Linear::getHyperparameters(float *hyperparameters)
+void @className:::getHyperparameters(float *hyperparameters)
 {
   size_t IC = _prevLayer->_outputChannels;
   size_t OC = _outputChannels;
@@ -433,7 +429,7 @@ void Linear::getHyperparameters(float *hyperparameters)
 #endif
 }
 
-void Linear::getHyperparameterGradients(float *gradient)
+void @className:::getHyperparameterGradients(float *gradient)
 {
   size_t IC = _prevLayer->_outputChannels;
   size_t OC = _outputChannels;
@@ -463,8 +459,4 @@ void Linear::getHyperparameterGradients(float *gradient)
 #endif
 }
 
-} // namespace layer
-
-} // namespace neuralNetwork
-
-} // namespace korali
+@endNamespace

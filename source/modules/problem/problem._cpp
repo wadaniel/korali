@@ -1,5 +1,5 @@
 #include "modules/problem/problem.hpp"
 
-namespace korali
-{
-} // namespace korali
+@startNamespace
+
+@endNamespace

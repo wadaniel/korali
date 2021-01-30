@@ -4,11 +4,9 @@
 #include "sample/sample.hpp"
 #include <chrono>
 
-namespace korali
-{
-namespace solver
-{
-void Agent::initialize()
+@startNamespace
+
+void @className::initialize()
 {
   _variableCount = _k->_variables.size();
 
@@ -113,13 +111,13 @@ void Agent::initialize()
   _episodes.resize(_agentCount);
 }
 
-void Agent::runGeneration()
+void @className::runGeneration()
 {
   if (_mode == "Training") trainingGeneration();
   if (_mode == "Testing") testingGeneration();
 }
 
-void Agent::trainingGeneration()
+void @className::trainingGeneration()
 {
   auto beginTime = std::chrono::steady_clock::now(); // Profiling
 
@@ -209,7 +207,7 @@ void Agent::trainingGeneration()
   _sessionGeneration++;
 }
 
-void Agent::testingGeneration()
+void @className::testingGeneration()
 {
   // Launching  agents
   for (size_t agentId = 0; agentId < _testingSampleIds.size(); agentId++)
@@ -230,7 +228,7 @@ void Agent::testingGeneration()
   }
 }
 
-void Agent::attendAgent(size_t agentId)
+void @className::attendAgent(size_t agentId)
 {
   auto beginTime = std::chrono::steady_clock::now(); // Profiling
 
@@ -321,7 +319,7 @@ void Agent::attendAgent(size_t agentId)
   _generationAgentAttendingTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
 }
 
-void Agent::processEpisode(std::vector<knlohmann::json> &episode)
+void @className::processEpisode(std::vector<knlohmann::json> &episode)
 {
   /*********************************************************************
   * Adding episode's experiences into the replay memory
@@ -425,7 +423,7 @@ void Agent::processEpisode(std::vector<knlohmann::json> &episode)
   _trainingAverageReward /= (float)(endEpisodeId - startEpisodeId + 1);
 }
 
-void Agent::updateREFERInformation()
+void @className::updateREFERInformation()
 {
   // First, re-calculate the off-policy ratio of experiences in the ER
 
@@ -462,7 +460,7 @@ void Agent::updateREFERInformation()
     _experienceReplayREFERCurrentBeta = (1.0f - _experienceReplayREFERCurrentLearningRate) * _experienceReplayREFERCurrentBeta + _experienceReplayREFERCurrentLearningRate;
 }
 
-void Agent::updateExperienceReplayProbabilities()
+void @className::updateExperienceReplayProbabilities()
 {
   // Rank priorities
   auto experienceRanking = std::vector<std::pair<float, size_t>>(_experienceReplay.size());
@@ -484,7 +482,7 @@ void Agent::updateExperienceReplayProbabilities()
   }
 }
 
-std::vector<size_t> Agent::generateMiniBatch(size_t size)
+std::vector<size_t> @className::generateMiniBatch(size_t size)
 {
   // Allocating storage for mini batch experiecne indexes
   std::vector<size_t> miniBatch(size);
@@ -537,7 +535,7 @@ std::vector<size_t> Agent::generateMiniBatch(size_t size)
   return miniBatch;
 }
 
-size_t Agent::getTimeSequenceStartExpId(size_t expId)
+size_t @className::getTimeSequenceStartExpId(size_t expId)
 {
   size_t startId = expId;
 
@@ -561,7 +559,7 @@ size_t Agent::getTimeSequenceStartExpId(size_t expId)
   return startId;
 }
 
-float Agent::retraceFunction(size_t expId)
+float @className::retraceFunction(size_t expId)
 {
   // Finding last experience in the episode that corresponds to expId
   ssize_t startId = expId;
@@ -617,12 +615,12 @@ float Agent::retraceFunction(size_t expId)
   return retV;
 }
 
-void Agent::resetTimeSequence()
+void @className::resetTimeSequence()
 {
   _stateTimeSequence.clear();
 }
 
-std::vector<std::vector<float>> Agent::getStateTimeSequence(size_t expId)
+std::vector<std::vector<float>> @className::getStateTimeSequence(size_t expId)
 {
   // Getting starting expId
   size_t startId = getTimeSequenceStartExpId(expId);
@@ -637,7 +635,7 @@ std::vector<std::vector<float>> Agent::getStateTimeSequence(size_t expId)
   return timeSequence;
 }
 
-std::vector<std::vector<float>> Agent::getTruncatedStateTimeSequence(size_t expId)
+std::vector<std::vector<float>> @className::getTruncatedStateTimeSequence(size_t expId)
 {
   // Getting starting expId
   size_t startId = getTimeSequenceStartExpId(expId);
@@ -655,7 +653,7 @@ std::vector<std::vector<float>> Agent::getTruncatedStateTimeSequence(size_t expI
   return timeSequence;
 }
 
-std::vector<std::vector<float>> Agent::getStateActionTimeSequence(size_t expId)
+std::vector<std::vector<float>> @className::getStateActionTimeSequence(size_t expId)
 {
   // Getting starting expId
   size_t startId = getTimeSequenceStartExpId(expId);
@@ -675,7 +673,7 @@ std::vector<std::vector<float>> Agent::getStateActionTimeSequence(size_t expId)
   return timeSequence;
 }
 
-void Agent::finalize()
+void @className::finalize()
 {
   if (_experienceReplaySerialize == true)
     if (_k->_fileOutputEnabled)
@@ -700,7 +698,7 @@ void Agent::finalize()
   }
 }
 
-void Agent::serializeExperienceReplay()
+void @className::serializeExperienceReplay()
 {
   _k->_logger->logInfo("Detailed", "Serializing Agent's Training State...\n");
   auto beginTime = std::chrono::steady_clock::now(); // Profiling
@@ -746,7 +744,7 @@ void Agent::serializeExperienceReplay()
   _generationSerializationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
 }
 
-void Agent::deserializeExperienceReplay()
+void @className::deserializeExperienceReplay()
 {
   auto beginTime = std::chrono::steady_clock::now(); // Profiling
 
@@ -808,7 +806,7 @@ void Agent::deserializeExperienceReplay()
   _k->_logger->logInfo("Detailed", "Took %fs to deserialize training state.\n", deserializationTime);
 }
 
-void Agent::printGenerationAfter()
+void @className::printGenerationAfter()
 {
   if (_mode == "Training")
   {
@@ -884,6 +882,4 @@ void Agent::printGenerationAfter()
   }
 }
 
-} // namespace solver
-
-} // namespace korali
+@endNamespace

@@ -2,13 +2,9 @@
 #include "modules/solver/agent/continuous/continuous.hpp"
 #include "sample/sample.hpp"
 
-namespace korali
-{
-namespace solver
-{
-namespace agent
-{
-void Continuous::initializeAgent()
+@startNamespace
+
+void @className::initializeAgent()
 {
   // Getting continuous problem pointer
   _problem = dynamic_cast<problem::reinforcementLearning::Continuous *>(_k->_problem);
@@ -40,7 +36,7 @@ void Continuous::initializeAgent()
   }
 }
 
-void Continuous::getAction(korali::Sample &sample)
+void @className::getAction(korali::Sample &sample)
 {
   // Getting current state
   auto state = sample["State"].get<std::vector<float>>();
@@ -57,7 +53,7 @@ void Continuous::getAction(korali::Sample &sample)
   auto curSigmas = policy["Action Sigmas"].get<std::vector<float>>();
 
   /*****************************************************************************
-  * During Training we select action according to policy's probability 
+  * During Training we select action according to policy's probability
   * distribution
   ****************************************************************************/
 
@@ -81,7 +77,7 @@ void Continuous::getAction(korali::Sample &sample)
   sample["Action"] = action;
 }
 
-std::vector<float> Continuous::generateTrainingAction(const std::vector<float> &paramsOne, const std::vector<float> &paramsTwo)
+std::vector<float> @className::generateTrainingAction(const std::vector<float> &paramsOne, const std::vector<float> &paramsTwo)
 {
   std::vector<float> action(_problem->_actionVectorSize);
   if (_policyDistribution == "Normal")
@@ -100,7 +96,7 @@ std::vector<float> Continuous::generateTrainingAction(const std::vector<float> &
   return action;
 }
 
-std::vector<float> Continuous::generateTestingAction(const std::vector<float> &paramsOne, const std::vector<float> &paramsTwo)
+std::vector<float> @className::generateTestingAction(const std::vector<float> &paramsOne, const std::vector<float> &paramsTwo)
 {
   std::vector<float> action(_problem->_actionVectorSize);
   if (_policyDistribution == "Normal")
@@ -132,7 +128,7 @@ std::vector<float> Continuous::generateTestingAction(const std::vector<float> &p
   return action;
 }
 
-float Continuous::calculateImportanceWeight(const std::vector<float> &action, const std::vector<float> &curParamsOne, const std::vector<float> &curParamsTwo, const std::vector<float> &oldParamsOne, const std::vector<float> &oldParamsTwo)
+float @className::calculateImportanceWeight(const std::vector<float> &action, const std::vector<float> &curParamsOne, const std::vector<float> &curParamsTwo, const std::vector<float> &oldParamsOne, const std::vector<float> &oldParamsTwo)
 {
   float logpCurPolicy = 0.0f;
   float logpOldPolicy = 0.0f;
@@ -169,7 +165,7 @@ float Continuous::calculateImportanceWeight(const std::vector<float> &action, co
   return importanceWeight;
 }
 
-std::vector<float> Continuous::calculateKLDivergenceGradient(const std::vector<float> &oldParamsOne, const std::vector<float> &oldParamsTwo, const std::vector<float> &curParamsOne, const std::vector<float> &curParamsTwo)
+std::vector<float> @className::calculateKLDivergenceGradient(const std::vector<float> &oldParamsOne, const std::vector<float> &oldParamsTwo, const std::vector<float> &curParamsOne, const std::vector<float> &curParamsTwo)
 {
   std::vector<float> klGrad(2.0 * _problem->_actionVectorSize, 0.0);
 
@@ -239,7 +235,7 @@ std::vector<float> Continuous::calculateKLDivergenceGradient(const std::vector<f
   return klGrad;
 }
 
-float Continuous::getExperienceImportanceWeight(size_t expId)
+float @className::getExperienceImportanceWeight(size_t expId)
 {
   // Getting the state sequence and action for the given experience
   auto expStateSequence = getStateTimeSequence(expId);
@@ -264,8 +260,4 @@ float Continuous::getExperienceImportanceWeight(size_t expId)
   return expImportanceWeight;
 }
 
-} // namespace agent
-
-} // namespace solver
-
-} // namespace korali
+@endNamespace

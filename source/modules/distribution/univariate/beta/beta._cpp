@@ -1,30 +1,26 @@
 #include "modules/distribution/univariate/beta/beta.hpp"
 #include "modules/experiment/experiment.hpp"
 
-namespace korali
-{
-namespace distribution
-{
-namespace univariate
-{
-double Beta::getDensity(const double x) const
+@startNamespace
+
+double @className::getDensity(const double x) const
 {
   return gsl_ran_beta_pdf(x, _alpha, _beta);
 }
 
-double Beta::getLogDensity(const double x) const
+double @className::getLogDensity(const double x) const
 {
   if (x < 0.) return -INFINITY;
   if (x > 1.) return -INFINITY;
   return _aux + (_alpha - 1.) * std::log(x) + (_beta - 1.) * std::log(1. - x);
 }
 
-double Beta::getRandomNumber()
+double @className::getRandomNumber()
 {
   return gsl_ran_beta(_range, _alpha, _beta);
 }
 
-void Beta::updateDistribution()
+void @className::updateDistribution()
 {
   if (_alpha <= 0.0) KORALI_LOG_ERROR("Incorrect Shape parameter (alpha) of Beta distribution: %f.\n", _alpha);
   if (_beta <= 0.0) KORALI_LOG_ERROR("Incorrect Shape (beta) parameter of Beta distribution: %f.\n", _beta);
@@ -32,8 +28,4 @@ void Beta::updateDistribution()
   _aux = gsl_sf_lngamma(_alpha + _beta) - gsl_sf_lngamma(_alpha) - gsl_sf_lngamma(_beta);
 }
 
-} // namespace univariate
-
-} // namespace distribution
-
-} // namespace korali
+@endNamespace

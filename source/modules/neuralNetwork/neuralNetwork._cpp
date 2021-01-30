@@ -1,16 +1,16 @@
 #include "modules/experiment/experiment.hpp"
 #include "modules/neuralNetwork/neuralNetwork.hpp"
 
-namespace korali
-{
-NeuralNetwork::NeuralNetwork()
+@startNamespace
+
+@className::NeuralNetwork()
 {
   _isInitialized = false;
   _batchSize = 0;
   _timestepCount = 0;
 }
 
-void NeuralNetwork::initialize()
+void @className::initialize()
 {
   if (_engine == "OneDNN")
   {
@@ -111,7 +111,7 @@ void NeuralNetwork::initialize()
   _isInitialized = true;
 }
 
-std::vector<float> NeuralNetwork::generateInitialHyperparameters()
+std::vector<float> @className::generateInitialHyperparameters()
 {
   // Setting initial values for hyperparameters
   std::vector<float> initialHyperparameters;
@@ -125,7 +125,7 @@ std::vector<float> NeuralNetwork::generateInitialHyperparameters()
   return initialHyperparameters;
 }
 
-void NeuralNetwork::forward(const std::vector<std::vector<std::vector<float>>> &inputValues)
+void @className::forward(const std::vector<std::vector<std::vector<float>>> &inputValues)
 {
   size_t T = _timestepCount;
   size_t N = _batchSize;
@@ -168,7 +168,7 @@ void NeuralNetwork::forward(const std::vector<std::vector<std::vector<float>>> &
       _outputValues[b][i] = _rawOutputValues[_inputBatchLastStep[b] * N * OC + b * OC + i];
 }
 
-void NeuralNetwork::backward(const std::vector<std::vector<float>> &outputGradients)
+void @className::backward(const std::vector<std::vector<float>> &outputGradients)
 {
   // Getting batch dimensions
   size_t T = _timestepCount;
@@ -237,7 +237,7 @@ void NeuralNetwork::backward(const std::vector<std::vector<float>> &outputGradie
       _inputGradients[b][i] = _rawInputGradients[_inputBatchLastStep[b] * N * IC + b * IC + i];
 }
 
-std::vector<float> NeuralNetwork::getHyperparameters()
+std::vector<float> @className::getHyperparameters()
 {
   auto params = std::vector<float>(_hyperparameterCount);
 
@@ -252,7 +252,7 @@ std::vector<float> NeuralNetwork::getHyperparameters()
   return params;
 }
 
-void NeuralNetwork::setHyperparameters(const std::vector<float> &hyperparameters)
+void @className::setHyperparameters(const std::vector<float> &hyperparameters)
 {
   if (hyperparameters.size() != _hyperparameterCount)
     KORALI_LOG_ERROR("Wrong number of hyperparameters passed to the neural network. Expected: %lu, provided: %lu.\n", _hyperparameterCount, hyperparameters.size());
@@ -267,4 +267,5 @@ void NeuralNetwork::setHyperparameters(const std::vector<float> &hyperparameters
     currPos += _layers[i]->_hyperparameterCount;
   }
 }
-} // namespace korali
+
+@endNamespace

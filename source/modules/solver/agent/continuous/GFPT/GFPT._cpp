@@ -3,15 +3,9 @@
 #include "sample/sample.hpp"
 #include <omp.h>
 
-namespace korali
-{
-namespace solver
-{
-namespace agent
-{
-namespace continuous
-{
-void GFPT::initializeAgent()
+@startNamespace
+
+void @className::initializeAgent()
 {
   // Initializing common discrete agent configuration
   Continuous::initializeAgent();
@@ -164,17 +158,17 @@ void GFPT::initializeAgent()
   }
 }
 
-float GFPT::stateValueFunction(const std::vector<std::vector<float>> &stateSequence)
+float @className::stateValueFunction(const std::vector<std::vector<float>> &stateSequence)
 {
   return _vLearner->getEvaluation({stateSequence})[0][0];
 }
 
-float GFPT::getActionAdvantage(const std::vector<std::vector<float>> &stateActionSequence)
+float @className::getActionAdvantage(const std::vector<std::vector<float>> &stateActionSequence)
 {
   return _aLearner->getEvaluation({stateActionSequence})[0][0];
 }
 
-void GFPT::trainPolicy()
+void @className::trainPolicy()
 {
   // Creating minibatch for the critic update
   auto miniBatchIndexes = generateMiniBatch(_miniBatchSize);
@@ -305,7 +299,7 @@ void GFPT::trainPolicy()
   }
 }
 
-knlohmann::json GFPT::optimizeAction(const std::vector<std::vector<float>> stateActionSequence, const std::vector<float> &curMeans)
+knlohmann::json @className::optimizeAction(const std::vector<std::vector<float>> stateActionSequence, const std::vector<float> &curMeans)
 {
   // Getting current thread ID and corresponding optimizer and batch optimization NN
   size_t curThread = omp_get_thread_num();
@@ -384,7 +378,7 @@ knlohmann::json GFPT::optimizeAction(const std::vector<std::vector<float>> state
   return result;
 }
 
-knlohmann::json GFPT::runPolicy(const std::vector<std::vector<float>> &state)
+knlohmann::json @className::runPolicy(const std::vector<std::vector<float>> &state)
 {
   auto eval = _policyLearner->getEvaluation({state})[0];
 
@@ -403,20 +397,20 @@ knlohmann::json GFPT::runPolicy(const std::vector<std::vector<float>> &state)
   return policy;
 }
 
-knlohmann::json GFPT::getAgentPolicy()
+knlohmann::json @className::getAgentPolicy()
 {
   knlohmann::json hyperparameters;
   hyperparameters["Policy"] = _policyLearner->getInferenceHyperparameters();
   return hyperparameters;
 }
 
-void GFPT::setAgentPolicy(const knlohmann::json &hyperparameters)
+void @className::setAgentPolicy(const knlohmann::json &hyperparameters)
 {
   auto policyHyperparameters = hyperparameters["Policy"].get<std::vector<float>>();
   _policyLearner->setInferenceHyperparameters(policyHyperparameters);
 }
 
-void GFPT::setTrainingState(const knlohmann::json &state)
+void @className::setTrainingState(const knlohmann::json &state)
 {
   _aLearner->setTrainingHyperparameters(state["A"]["Training"]);
   _aLearner->setInferenceHyperparameters(state["A"]["Inference"]);
@@ -428,7 +422,7 @@ void GFPT::setTrainingState(const knlohmann::json &state)
   _policyLearner->setInferenceHyperparameters(state["Policy"]["Inference"]);
 }
 
-knlohmann::json GFPT::getTrainingState()
+knlohmann::json @className::getTrainingState()
 {
   knlohmann::json state;
   state["A"]["Training"] = _aLearner->getTrainingHyperparameters();
@@ -442,7 +436,7 @@ knlohmann::json GFPT::getTrainingState()
   return state;
 }
 
-void GFPT::printAgentInformation()
+void @className::printAgentInformation()
 {
   _k->_logger->logInfo("Normal", " + Training Loss: [V = %.3e] [A = %.3e] [P = %.3e]\n", _vLearner->_currentLoss, _aLearner->_currentLoss, _policyLearner->_currentLoss);
   _k->_logger->logInfo("Normal", " + Learning Rate: [V = %.3e] [A = %.3e] [P = %.3e]\n", _vLearner->_learningRate, _aLearner->_learningRate, _policyLearner->_learningRate);
@@ -450,7 +444,4 @@ void GFPT::printAgentInformation()
   for (size_t i = 0; i < _problem->_actionVectorSize; ++i) _k->_logger->logInfo("Normal", " +  [ %f ] -> [ %f ] \n", _statisticsAverageActionSigmas[i], _statisticsAverageTargetSigmas[i]);
 }
 
-} // namespace continuous
-} // namespace agent
-} // namespace solver
-} // namespace korali
+@endNamespace

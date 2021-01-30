@@ -12,8 +12,8 @@ korali_source = files([
 korali_source_config = [] # collection of .config files used in code generation
 subdir('auxiliar')
 subdir('modules')
+subdir('sample')
 # subdir_done()
-# subdir('sample')
 
 # # must be processed last due to source generation dependencies
 # subdir('variable')

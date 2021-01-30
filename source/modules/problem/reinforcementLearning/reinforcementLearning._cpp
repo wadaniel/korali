@@ -3,11 +3,9 @@
 #include "modules/solver/agent/agent.hpp"
 #include "sample/sample.hpp"
 
-namespace korali
-{
-namespace problem
-{
-void ReinforcementLearning::initialize()
+@startNamespace
+
+void @className::initialize()
 {
   // Processing state/action variable configuration
   _stateVectorIndexes.clear();
@@ -71,7 +69,7 @@ void __environmentWrapper()
   KORALI_LOG_ERROR("Resuming a finished agent\n");
 }
 
-void ReinforcementLearning::runTrainingEpisode(Sample &agent)
+void @className::runTrainingEpisode(Sample &agent)
 {
   // Profiling information - Computation and communication time taken by the agent
   double agentPolicyEvaluationTime = 0.0;
@@ -217,7 +215,7 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
   agent["Policy Evaluation Time"] = agentPolicyEvaluationTime;
 }
 
-void ReinforcementLearning::runTestingEpisode(Sample &agent)
+void @className::runTestingEpisode(Sample &agent)
 {
   float testingReward = 0.0;
 
@@ -248,7 +246,7 @@ void ReinforcementLearning::runTestingEpisode(Sample &agent)
   finalizeEnvironment();
 }
 
-void ReinforcementLearning::initializeEnvironment(Sample &agent)
+void @className::initializeEnvironment(Sample &agent)
 {
   // Getting RL-compatible solver
   _agent = dynamic_cast<solver::Agent *>(_k->_solver);
@@ -271,18 +269,16 @@ void ReinforcementLearning::initializeEnvironment(Sample &agent)
   _envThread = co_create(1 << 28, __environmentWrapper);
 }
 
-void ReinforcementLearning::finalizeEnvironment()
+void @className::finalizeEnvironment()
 {
   // Freeing training co-routine memory
   co_delete(_envThread);
 }
 
-void ReinforcementLearning::runEnvironment()
+void @className::runEnvironment()
 {
   // Switching back to the environment's thread
   co_switch(_envThread);
 }
 
-} // namespace problem
-
-} // namespace korali
+@endNamespace

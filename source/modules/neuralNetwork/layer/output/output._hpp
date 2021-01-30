@@ -1,15 +1,10 @@
-#ifndef _KORALI_LAYER_OUTPUT_HPP_
-#define _KORALI_LAYER_OUTPUT_HPP_
+@startIncludeGuard
 
 #include "modules/neuralNetwork/layer/layer.hpp"
 
-namespace korali
-{
-namespace neuralNetwork
-{
-namespace layer
-{
-class Output : public Layer
+@startNamespace
+
+class @className : public @parentClassName
 {
   public:
   /**
@@ -29,10 +24,6 @@ class Output : public Layer
   void backwardData() override;
 };
 
-} // namespace layer
+@endNamespace
 
-} // namespace neuralNetwork
-
-} // namespace korali
-
-#endif // _KORALI_LAYER_OUTPUT_HPP_
+@endIncludeGuard

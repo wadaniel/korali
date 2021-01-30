@@ -1,5 +1,4 @@
-#ifndef _KORALI_NEURAL_NETWORK_HPP_
-#define _KORALI_NEURAL_NETWORK_HPP_
+@startIncludeGuard
 
 #include "modules/experiment/experiment.hpp"
 #include "modules/module.hpp"
@@ -15,9 +14,9 @@
   #include <cudnn.h>
 #endif
 
-namespace korali
-{
-class NeuralNetwork : public Module
+@startNamespace
+
+class @className : public @parentClassName
 {
   public:
 #ifdef _KORALI_USE_ONEDNN
@@ -130,6 +129,6 @@ class NeuralNetwork : public Module
   NeuralNetwork();
 };
 
-} // namespace korali
+@endNamespace
 
-#endif // _KORALI_SOLVER_NEURAL_NETWORK_HPP_
+@endIncludeGuard

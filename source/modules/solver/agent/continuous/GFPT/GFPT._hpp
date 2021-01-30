@@ -1,19 +1,12 @@
-#ifndef _KORALI_AGENT_CONTINUOUS_GFPT_HPP_
-#define _KORALI_AGENT_CONTINUOUS_GFPT_HPP_
+@startIncludeGuard
 
 #include "modules/problem/reinforcementLearning/continuous/continuous.hpp"
 #include "modules/solver/agent/continuous/continuous.hpp"
 #include "modules/solver/learner/deepSupervisor/optimizers/fCMAES.hpp"
 
-namespace korali
-{
-namespace solver
-{
-namespace agent
-{
-namespace continuous
-{
-class GFPT : public Continuous
+@startNamespace
+
+class @className : public @parentClassName
 {
   public:
   /**
@@ -104,9 +97,6 @@ class GFPT : public Continuous
   void initializeAgent() override;
 };
 
-} // namespace continuous
-} // namespace agent
-} // namespace solver
-} // namespace korali
+@endNamespace
 
-#endif // _KORALI_AGENT_CONTINUOUS_GFPT_HPP_
+@endIncludeGuard

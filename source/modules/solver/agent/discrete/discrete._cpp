@@ -2,19 +2,15 @@
 #include "modules/solver/agent/discrete/discrete.hpp"
 #include "sample/sample.hpp"
 
-namespace korali
-{
-namespace solver
-{
-namespace agent
-{
-void Discrete::initializeAgent()
+@startNamespace
+
+void @className::initializeAgent()
 {
   // Getting discrete problem pointer
   _problem = dynamic_cast<problem::reinforcementLearning::Discrete *>(_k->_problem);
 }
 
-void Discrete::getAction(korali::Sample &sample)
+void @className::getAction(korali::Sample &sample)
 {
   // Getting current state
   auto state = sample["State"].get<std::vector<float>>();
@@ -94,7 +90,7 @@ void Discrete::getAction(korali::Sample &sample)
   sample["Action"] = _problem->_possibleActions[actionIdx];
 }
 
-float Discrete::calculateImportanceWeight(const size_t actionIdx, const std::vector<float> &curProbabilities, const std::vector<float> &oldProbabilities)
+float @className::calculateImportanceWeight(const size_t actionIdx, const std::vector<float> &curProbabilities, const std::vector<float> &oldProbabilities)
 {
   // Getting probability density of action for current policy
   float pCurPolicy = curProbabilities[actionIdx];
@@ -108,7 +104,7 @@ float Discrete::calculateImportanceWeight(const size_t actionIdx, const std::vec
   return importanceWeight;
 }
 
-float Discrete::getExperienceImportanceWeight(size_t expId)
+float @className::getExperienceImportanceWeight(size_t expId)
 {
   // Getting the state sequence and action index for the given experience
   auto expStateSequence = getStateTimeSequence(expId);
@@ -128,7 +124,7 @@ float Discrete::getExperienceImportanceWeight(size_t expId)
   return expImportanceWeight;
 }
 
-std::vector<float> Discrete::calculateImportanceWeightGradient(size_t actionIdx, const std::vector<float> &curPvals, const std::vector<float> &oldPvals)
+std::vector<float> @className::calculateImportanceWeightGradient(size_t actionIdx, const std::vector<float> &curPvals, const std::vector<float> &oldPvals)
 {
   std::vector<float> grad(_problem->_possibleActions.size(), 0.0);
 
@@ -146,7 +142,7 @@ std::vector<float> Discrete::calculateImportanceWeightGradient(size_t actionIdx,
   return grad;
 }
 
-std::vector<float> Discrete::calculateKLDivergenceGradient(const std::vector<float> &oldPvalues, const std::vector<float> &curPvalues)
+std::vector<float> @className::calculateKLDivergenceGradient(const std::vector<float> &oldPvalues, const std::vector<float> &curPvalues)
 {
   std::vector<float> klGrad(_problem->_possibleActions.size(), 0.0);
 
@@ -167,8 +163,4 @@ std::vector<float> Discrete::calculateKLDivergenceGradient(const std::vector<flo
   return klGrad;
 }
 
-} // namespace agent
-
-} // namespace solver
-
-} // namespace korali
+@endNamespace

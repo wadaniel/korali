@@ -2,15 +2,9 @@
 #include "modules/solver/agent/continuous/VRACER/VRACER.hpp"
 #include "sample/sample.hpp"
 
-namespace korali
-{
-namespace solver
-{
-namespace agent
-{
-namespace continuous
-{
-void VRACER::initializeAgent()
+@startNamespace
+
+void @className::initializeAgent()
 {
   // Initializing common discrete agent configuration
   Continuous::initializeAgent();
@@ -92,7 +86,7 @@ void VRACER::initializeAgent()
   _statisticsAverageActionSigmas.resize(_problem->_actionVectorSize);
 }
 
-void VRACER::trainPolicy()
+void @className::trainPolicy()
 {
   // Resetting statistics
   float cumulativeQStar = 0.0;
@@ -259,7 +253,7 @@ void VRACER::trainPolicy()
   _criticPolicyLearner->runGeneration();
 }
 
-std::vector<float> VRACER::calculateImportanceWeightGradient(const std::vector<float> &action, const std::vector<float> &curParamsOne, const std::vector<float> &curParamsTwo, const std::vector<float> &oldParamsOne, const std::vector<float> &oldParamsTwo)
+std::vector<float> @className::calculateImportanceWeightGradient(const std::vector<float> &action, const std::vector<float> &curParamsOne, const std::vector<float> &curParamsTwo, const std::vector<float> &oldParamsOne, const std::vector<float> &oldParamsTwo)
 {
   std::vector<float> grad(2 * _problem->_actionVectorSize, 0.0);
 
@@ -349,14 +343,14 @@ std::vector<float> VRACER::calculateImportanceWeightGradient(const std::vector<f
   return grad;
 }
 
-float VRACER::stateValueFunction(const std::vector<std::vector<float>> &state)
+float @className::stateValueFunction(const std::vector<std::vector<float>> &state)
 {
   // Calculating V(s_i)
   float v = _criticPolicyLearner->getEvaluation({state})[0][0];
   return v;
 }
 
-knlohmann::json VRACER::runPolicy(const std::vector<std::vector<float>> &state)
+knlohmann::json @className::runPolicy(const std::vector<std::vector<float>> &state)
 {
   // Forward the neural network for this state
   auto evaluation = _criticPolicyLearner->getEvaluation({state})[0];
@@ -377,25 +371,25 @@ knlohmann::json VRACER::runPolicy(const std::vector<std::vector<float>> &state)
   return policy;
 }
 
-knlohmann::json VRACER::getAgentPolicy()
+knlohmann::json @className::getAgentPolicy()
 {
   knlohmann::json hyperparameters;
   hyperparameters["Policy"] = _criticPolicyLearner->getInferenceHyperparameters();
   return hyperparameters;
 }
 
-void VRACER::setAgentPolicy(const knlohmann::json &hyperparameters)
+void @className::setAgentPolicy(const knlohmann::json &hyperparameters)
 {
   _criticPolicyLearner->setInferenceHyperparameters(hyperparameters["Policy"].get<std::vector<float>>());
 }
 
-void VRACER::setTrainingState(const knlohmann::json &state)
+void @className::setTrainingState(const knlohmann::json &state)
 {
   _criticPolicyLearner->setTrainingHyperparameters(state["Critic/Policy"]["Training"]);
   _criticPolicyLearner->setInferenceHyperparameters(state["Critic/Policy"]["Inference"]);
 }
 
-knlohmann::json VRACER::getTrainingState()
+knlohmann::json @className::getTrainingState()
 {
   knlohmann::json state;
   state["Critic/Policy"]["Training"] = _criticPolicyLearner->getTrainingHyperparameters();
@@ -403,7 +397,7 @@ knlohmann::json VRACER::getTrainingState()
   return state;
 }
 
-void VRACER::printAgentInformation()
+void @className::printAgentInformation()
 {
   _k->_logger->logInfo("Normal", "Critic Information:\n");
   _k->_logger->logInfo("Normal", " + Learning Rate:                                     %.3e\n", _criticPolicyLearner->_learningRate);
@@ -419,7 +413,4 @@ void VRACER::printAgentInformation()
   _criticPolicyExperiment._logger->setVerbosityLevel("Silent");
 }
 
-} // namespace continuous
-} // namespace agent
-} // namespace solver
-} // namespace korali
+@endNamespace

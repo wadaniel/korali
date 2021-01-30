@@ -1,19 +1,15 @@
 #include "modules/distribution/univariate/uniform/uniform.hpp"
 #include "modules/experiment/experiment.hpp"
 
-namespace korali
-{
-namespace distribution
-{
-namespace univariate
-{
-double Uniform::getDensity(const double x) const
+@startNamespace
+
+double @className::getDensity(const double x) const
 {
   if (_maximum - _minimum <= 0.0) return NaN;
   return gsl_ran_flat_pdf(x, _minimum, _maximum);
 }
 
-double Uniform::getLogDensity(const double x) const
+double @className::getLogDensity(const double x) const
 {
   if (_maximum - _minimum <= 0.0) return NaN;
 
@@ -21,7 +17,7 @@ double Uniform::getLogDensity(const double x) const
   return -Inf;
 }
 
-double Uniform::getRandomNumber()
+double @className::getRandomNumber()
 {
   if (_maximum - _minimum <= 0.0)
     KORALI_LOG_ERROR("Maximum (%f) bound must be higher than Minimum (%f) bound in a Uniform distribution in order to draw a random number.\n", _maximum, _minimum);
@@ -29,7 +25,7 @@ double Uniform::getRandomNumber()
   return gsl_ran_flat(_range, _minimum, _maximum);
 }
 
-void Uniform::updateDistribution()
+void @className::updateDistribution()
 {
   if (_maximum - _minimum <= 0.0)
     _aux = NaN;
@@ -37,8 +33,4 @@ void Uniform::updateDistribution()
     _aux = -gsl_sf_log(_maximum - _minimum);
 }
 
-} // namespace univariate
-
-} // namespace distribution
-
-} // namespace korali
+@endNamespace

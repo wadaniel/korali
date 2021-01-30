@@ -15,13 +15,9 @@ using namespace dnnl;
 using namespace Eigen;
 #endif
 
-namespace korali
-{
-namespace neuralNetwork
-{
-namespace layer
-{
-void Input::initialize()
+@startNamespace
+
+void @className::initialize()
 {
   // Checking Layer size
   if (_outputChannels == 0) KORALI_LOG_ERROR("Output Channels for layer (%lu) should be larger than zero.\n", _index);
@@ -30,7 +26,7 @@ void Input::initialize()
   if (_index != 0) KORALI_LOG_ERROR("Input layers can only be placed at the start of the NN\n");
 }
 
-void Input::forwardData()
+void @className::forwardData()
 {
   size_t N = _nn->_batchSize;
   size_t OC = _outputChannels;
@@ -58,7 +54,7 @@ void Input::forwardData()
 #endif
 }
 
-void Input::backwardData()
+void @className::backwardData()
 {
   int N = _nn->_batchSize;
   int OC = _outputChannels;
@@ -89,8 +85,4 @@ void Input::backwardData()
 #endif
 }
 
-} // namespace layer
-
-} // namespace neuralNetwork
-
-} // namespace korali
+@endNamespace

@@ -9,13 +9,9 @@
  * + Do not require gradient if the solver is purely stochastic
  *****************************************************************/
 
-namespace korali
-{
-namespace solver
-{
-namespace learner
-{
-void DeepSupervisor::initialize()
+@startNamespace
+
+void @className::initialize()
 {
   // Getting problem pointer
   _problem = dynamic_cast<problem::SupervisedLearning *>(_k->_problem);
@@ -119,7 +115,7 @@ void DeepSupervisor::initialize()
   }
 }
 
-void DeepSupervisor::runGeneration()
+void @className::runGeneration()
 {
   // Grabbing constants
   size_t N = _problem->_trainingBatchSize;
@@ -175,12 +171,12 @@ void DeepSupervisor::runGeneration()
   _hyperparameters = _trainingNeuralNetwork->getHyperparameters();
 }
 
-std::vector<float> DeepSupervisor::getTrainingHyperparameters()
+std::vector<float> @className::getTrainingHyperparameters()
 {
   return _trainingNeuralNetwork->getHyperparameters();
 }
 
-void DeepSupervisor::setTrainingHyperparameters(const std::vector<float> &hyperparameters)
+void @className::setTrainingHyperparameters(const std::vector<float> &hyperparameters)
 {
   // Update evaluation network
   _trainingNeuralNetwork->setHyperparameters(hyperparameters);
@@ -193,19 +189,19 @@ void DeepSupervisor::setTrainingHyperparameters(const std::vector<float> &hyperp
   _adamSolver->reset();
 }
 
-std::vector<float> DeepSupervisor::getInferenceHyperparameters()
+std::vector<float> @className::getInferenceHyperparameters()
 {
   return _inferenceNeuralNetworks[0]->getHyperparameters();
 }
 
-void DeepSupervisor::setInferenceHyperparameters(const std::vector<float> &hyperparameters)
+void @className::setInferenceHyperparameters(const std::vector<float> &hyperparameters)
 {
   // Update evaluation network
   for (size_t i = 0; i < _maxThreads; i++)
     _inferenceNeuralNetworks[i]->setHyperparameters(hyperparameters);
 }
 
-std::vector<std::vector<float>> DeepSupervisor::getEvaluation(const std::vector<std::vector<std::vector<float>>> &input)
+std::vector<std::vector<float>> @className::getEvaluation(const std::vector<std::vector<std::vector<float>>> &input)
 {
   // Grabbing constants
   size_t N = _problem->_inferenceBatchSize;
@@ -234,7 +230,7 @@ std::vector<std::vector<float>> DeepSupervisor::getEvaluation(const std::vector<
   return _inferenceNeuralNetworks[curThread]->_outputValues;
 }
 
-void DeepSupervisor::printGenerationAfter()
+void @className::printGenerationAfter()
 {
   // Printing results so far
   if (_lossFunction == "Mean Squared Error")
@@ -246,8 +242,4 @@ void DeepSupervisor::printGenerationAfter()
     _k->_logger->logInfo("Normal", " + Gradient L2-Norm: %.15f\n", sqrt(_currentLoss));
 }
 
-} // namespace learner
-
-} // namespace solver
-
-} // namespace korali
+@endNamespace

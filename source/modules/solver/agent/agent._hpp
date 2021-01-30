@@ -1,5 +1,4 @@
-#ifndef _KORALI_AGENT_HPP_
-#define _KORALI_AGENT_HPP_
+@startIncludeGuard
 
 #include "auxiliar/cbuffer.hpp"
 #include "auxiliar/kcache.hpp"
@@ -10,10 +9,8 @@
 #include <algorithm> // std::shuffle
 #include <random>
 
-namespace korali
-{
-namespace solver
-{
+@startNamespace
+
 /**
 * @brief This enumerator details all possible termination statuses for a given episode's experience
 */
@@ -82,7 +79,7 @@ struct experience_t
   kCache<std::string, float, size_t> cache;
 };
 
-class Agent : public Solver
+class @className : public @parentClassName
 {
   public:
   /**
@@ -450,7 +447,6 @@ class Agent : public Solver
   void finalize() override;
 };
 
-} // namespace solver
-} // namespace korali
+@endNamespace
 
-#endif // _KORALI_AGENT_HPP_
+@endIncludeGuard

@@ -1,34 +1,26 @@
 #include "modules/distribution/univariate/geometric/geometric.hpp"
 #include "modules/experiment/experiment.hpp"
 
-namespace korali
-{
-namespace distribution
-{
-namespace univariate
-{
-double Geometric::getDensity(const double x) const
+@startNamespace
+
+double @className::getDensity(const double x) const
 {
   return gsl_ran_geometric_pdf((int)x, _successProbability);
 }
 
-double Geometric::getLogDensity(const double x) const
+double @className::getLogDensity(const double x) const
 {
   return log(_successProbability) + (x - 1) * log(1.0 - _successProbability);
 }
 
-double Geometric::getRandomNumber()
+double @className::getRandomNumber()
 {
   return gsl_ran_geometric(_range, _successProbability);
 }
 
-void Geometric::updateDistribution()
+void @className::updateDistribution()
 {
   _aux = 0.0;
 }
 
-} // namespace univariate
-
-} // namespace distribution
-
-} // namespace korali
+@endNamespace

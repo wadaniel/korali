@@ -1,36 +1,28 @@
 #include "modules/distribution/univariate/cauchy/cauchy.hpp"
 #include "modules/experiment/experiment.hpp"
 
-namespace korali
-{
-namespace distribution
-{
-namespace univariate
-{
-double Cauchy::getDensity(const double x) const
+@startNamespace
+
+double @className::getDensity(const double x) const
 {
   return gsl_ran_cauchy_pdf(x - _location, _scale);
 }
 
-double Cauchy::getLogDensity(const double x) const
+double @className::getLogDensity(const double x) const
 {
   return _aux - gsl_sf_log(1. + gsl_sf_pow_int((x - _location) / _scale, 2));
 }
 
-double Cauchy::getRandomNumber()
+double @className::getRandomNumber()
 {
   return _location + gsl_ran_cauchy(_range, _scale);
 }
 
-void Cauchy::updateDistribution()
+void @className::updateDistribution()
 {
   if (_scale <= 0) KORALI_LOG_ERROR("Incorrect Scale parameter of Cauchy distribution: %f.\n", _scale);
 
   _aux = -gsl_sf_log(_scale * M_PI);
 }
 
-} // namespace univariate
-
-} // namespace distribution
-
-} // namespace korali
+@endNamespace

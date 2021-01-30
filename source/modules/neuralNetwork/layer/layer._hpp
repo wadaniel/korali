@@ -1,5 +1,4 @@
-#ifndef _KORALI_LAYER_HPP_
-#define _KORALI_LAYER_HPP_
+@startIncludeGuard
 
 #include "modules/distribution/univariate/uniform/uniform.hpp"
 #include "modules/module.hpp"
@@ -13,13 +12,9 @@
   #include <cudnn.h>
 #endif
 
-namespace korali
-{
-class NeuralNetwork;
+@startNamespace
 
-namespace neuralNetwork
-{
-class Layer : public Module
+class @className : public @parentClassName
 {
   public:
   /**
@@ -160,8 +155,6 @@ class Layer : public Module
   virtual void backwardHyperparameters(){};
 };
 
-} // namespace neuralNetwork
+@endNamespace
 
-} // namespace korali
-
-#endif // _KORALI_LAYER_HPP_
+@endIncludeGuard

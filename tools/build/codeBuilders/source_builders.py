@@ -1,4 +1,4 @@
-from variables import *
+from . import variables as vr
 import json
 import sys
 
@@ -118,45 +118,45 @@ def createSetConfiguration(module):
   # Consume Internal Settings
   if 'Internal Settings' in module:
     for v in module["Internal Settings"]:
-      codeString += consumeValue('js', module["Name"], getVariablePath(v),
-                                 getCXXVariableName(v["Name"]),
-                                 getVariableType(v), False,
-                                 getVariableOptions(v))
+      codeString += consumeValue('js', module["Name"], vr.getVariablePath(v),
+                                 vr.getCXXVariableName(v["Name"]),
+                                 vr.getVariableType(v), False,
+                                 vr.getVariableOptions(v))
 
   # Consume Configuration Settings
   if 'Configuration Settings' in module:
     for v in module["Configuration Settings"]:
-      codeString += consumeValue('js', module["Name"], getVariablePath(v),
-                                 getCXXVariableName(v["Name"]),
-                                 getVariableType(v), True,
-                                 getVariableOptions(v))
+      codeString += consumeValue('js', module["Name"], vr.getVariablePath(v),
+                                 vr.getCXXVariableName(v["Name"]),
+                                 vr.getVariableType(v), True,
+                                 vr.getVariableOptions(v))
 
   if 'Termination Criteria' in module:
     for v in module["Termination Criteria"]:
       codeString += consumeValue(
-          'js', module["Name"], '["Termination Criteria"]' + getVariablePath(v),
-          getCXXVariableName(v["Name"]), getVariableType(v), True,
-          getVariableOptions(v))
+          'js', module["Name"], '["Termination Criteria"]' + vr.getVariablePath(v),
+          vr.getCXXVariableName(v["Name"]), vr.getVariableType(v), True,
+          vr.getVariableOptions(v))
 
   if 'Variables Configuration' in module:
     codeString += ' if (isDefined(_k->_js.getJson(), "Variables"))\n'
     codeString += ' for (size_t i = 0; i < _k->_js["Variables"].size(); i++) { \n'
     for v in module["Variables Configuration"]:
       codeString += consumeValue(
-          '_k->_js["Variables"][i]', module["Name"], getVariablePath(v),
-          '_k->_variables[i]->' + getCXXVariableName(v["Name"]),
-          getVariableType(v), True, getVariableOptions(v))
+          '_k->_js["Variables"][i]', module["Name"], vr.getVariablePath(v),
+          '_k->_variables[i]->' + vr.getCXXVariableName(v["Name"]),
+          vr.getVariableType(v), True, vr.getVariableOptions(v))
     codeString += ' } \n'
 
   if 'Conditional Variables' in module:
     codeString += '  _hasConditionalVariables = false; \n'
     for v in module["Conditional Variables"]:
-      codeString += ' if(js' + getVariablePath(v) + '.is_number()) ' + getCXXVariableName(v["Name"]) + ' = js' + getVariablePath(v) + ';\n'
-      codeString += ' if(js' + getVariablePath(
+      codeString += ' if(js' + vr.getVariablePath(v) + '.is_number()) ' + vr.getCXXVariableName(v["Name"]) + ' = js' + vr.getVariablePath(v) + ';\n'
+      codeString += ' if(js' + vr.getVariablePath(
           v
-      ) + '.is_string()) { _hasConditionalVariables = true; ' + getCXXVariableName(
-          v["Name"]) + 'Conditional = js' + getVariablePath(v) + '; } \n'
-      codeString += ' eraseValue(js, ' + getVariablePath(v).replace(
+      ) + '.is_string()) { _hasConditionalVariables = true; ' + vr.getCXXVariableName(
+          v["Name"]) + 'Conditional = js' + vr.getVariablePath(v) + '; } \n'
+      codeString += ' eraseValue(js, ' + vr.getVariablePath(v).replace(
           '][', ", ").replace('[', '').replace(']', '') + ');\n\n'
 
   if 'Compatible Solvers' in module:
@@ -192,35 +192,35 @@ def createGetConfiguration(module):
 
   if 'Configuration Settings' in module:
     for v in module["Configuration Settings"]:
-      codeString += saveValue('js', getVariablePath(v),
-                              getCXXVariableName(v["Name"]), getVariableType(v))
+      codeString += saveValue('js', vr.getVariablePath(v),
+                              vr.getCXXVariableName(v["Name"]), vr.getVariableType(v))
 
   if 'Termination Criteria' in module:
     for v in module["Termination Criteria"]:
       codeString += saveValue('js',
-                              '["Termination Criteria"]' + getVariablePath(v),
-                              getCXXVariableName(v["Name"]), getVariableType(v))
+                              '["Termination Criteria"]' + vr.getVariablePath(v),
+                              vr.getCXXVariableName(v["Name"]), vr.getVariableType(v))
 
   if 'Internal Settings' in module:
     for v in module["Internal Settings"]:
-      codeString += saveValue('js', getVariablePath(v),
-                              getCXXVariableName(v["Name"]), getVariableType(v))
+      codeString += saveValue('js', vr.getVariablePath(v),
+                              vr.getCXXVariableName(v["Name"]), vr.getVariableType(v))
 
   if 'Variables Configuration' in module:
     codeString += ' for (size_t i = 0; i <  _k->_variables.size(); i++) { \n'
     for v in module["Variables Configuration"]:
       codeString += saveValue(
-          '_k->_js["Variables"][i]', getVariablePath(v),
-          '_k->_variables[i]->' + getCXXVariableName(v["Name"]),
-          getVariableType(v))
+          '_k->_js["Variables"][i]', vr.getVariablePath(v),
+          '_k->_variables[i]->' + vr.getCXXVariableName(v["Name"]),
+          vr.getVariableType(v))
     codeString += ' } \n'
 
   if 'Conditional Variables' in module:
     for v in module["Conditional Variables"]:
-      codeString += ' if(' + getCXXVariableName(
-          v["Name"]) + 'Conditional == "") js' + getVariablePath(v) + ' = ' + getCXXVariableName(v["Name"]) + ';\n'
-      codeString += ' if(' + getCXXVariableName(
-          v["Name"]) + 'Conditional != "") js' + getVariablePath(v) + ' = ' + getCXXVariableName(v["Name"]) + 'Conditional; \n'
+      codeString += ' if(' + vr.getCXXVariableName(
+          v["Name"]) + 'Conditional == "") js' + vr.getVariablePath(v) + ' = ' + vr.getCXXVariableName(v["Name"]) + ';\n'
+      codeString += ' if(' + vr.getCXXVariableName(
+          v["Name"]) + 'Conditional != "") js' + vr.getVariablePath(v) + ' = ' + vr.getCXXVariableName(v["Name"]) + 'Conditional; \n'
 
   codeString += ' ' + module["Parent Class Name"] + '::getConfiguration(js);\n'
 
@@ -282,7 +282,7 @@ def createCheckTermination(module):
     for v in module["Termination Criteria"]:
       codeString += ' if (' + v["Criteria"] + ')\n'
       codeString += ' {\n'
-      codeString += '  _terminationCriteria.push_back("' + module["Name"] + getVariablePath(v).replace('"', "'") + ' = " + std::to_string(' + getCXXVariableName(v["Name"]) + ') + ".");\n'
+      codeString += '  _terminationCriteria.push_back("' + module["Name"] + vr.getVariablePath(v).replace('"', "'") + ' = " + std::to_string(' + vr.getCXXVariableName(v["Name"]) + ') + ".");\n'
       codeString += '  hasFinished = true;\n'
       codeString += ' }\n\n'
 
@@ -324,7 +324,7 @@ def createGetPropertyPointer(module):
   codeString += '{\n'
 
   for v in module["Conditional Variables"]:
-    codeString += ' if (property == "' + v["Name"][0] + '") return &' + getCXXVariableName(v["Name"]) + ';\n'
+    codeString += ' if (property == "' + v["Name"][0] + '") return &' + vr.getCXXVariableName(v["Name"]) + ';\n'
 
   codeString += ' KORALI_LOG_ERROR(" + Property %s not recognized for distribution ' + module["Class Name"] + '.\\n", property.c_str());\n'
   codeString += ' return NULL;\n'

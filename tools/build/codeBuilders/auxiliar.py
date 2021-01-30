@@ -1,6 +1,6 @@
 from pathlib import Path
 import json
-from header_builders import startIncludeGuard, endIncludeGuard, startNamespace, endNamespace
+from . import header_builders as hb
 
 def pathSplitAtDir( path, dir ):
   ''' Return the path in the `path` variable up to the dir folder.
@@ -40,14 +40,14 @@ def loadModuleConfiguration( configFilePath, templateFilePath ):
 
 
 def replaceKeys( moduleConfig, codeString ):
-  codeString = codeString.replace( '@startIncludeGuard', startIncludeGuard(moduleConfig) )
-  codeString = codeString.replace( '@endIncludeGuard', endIncludeGuard(moduleConfig) )
+  codeString = codeString.replace( '@startIncludeGuard', hb.startIncludeGuard(moduleConfig) )
+  codeString = codeString.replace( '@endIncludeGuard', hb.endIncludeGuard(moduleConfig) )
 
   codeString = codeString.replace( '@className', moduleConfig['Class Name'] )
   codeString = codeString.replace( '@parentClassName', moduleConfig['Parent Class Name'] )
 
-  codeString = codeString.replace( '@startNamespace', startNamespace(moduleConfig) )
-  codeString = codeString.replace( '@endNamespace', endNamespace(moduleConfig) )
+  codeString = codeString.replace( '@startNamespace', hb.startNamespace(moduleConfig) )
+  codeString = codeString.replace( '@endNamespace', hb.endNamespace(moduleConfig) )
 
   return codeString
 

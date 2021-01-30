@@ -1,5 +1,5 @@
 import sys
-from variables import *
+from . import variables as vr
 
 def checkHeaderTemplateString( templateFilePath, moduleTemplateString ):
   """These keywords shouls appear only once"""
@@ -54,33 +54,33 @@ def createHeaderDeclarations(moduleConfig):
       string += '/**\n  '
       string += '* @brief ' + v["Description"] + '\n  '
       string += '*/\n  '
-      string += ' ' + getVariableType(v) + ' ' + getCXXVariableName(v["Name"]) + ';\n  '
+      string += ' ' + vr.getVariableType(v) + ' ' + vr.getCXXVariableName(v["Name"]) + ';\n  '
 
   if 'Internal Settings' in moduleConfig:
     for v in moduleConfig["Internal Settings"]:
       string += '/**\n  '
       string += '* @brief [Internal Use] ' + v["Description"] + '\n  '
       string += '*/\n  '
-      string += ' ' + getVariableType(v) + ' ' + getCXXVariableName(v["Name"]) + ';\n  '
+      string += ' ' + vr.getVariableType(v) + ' ' + vr.getCXXVariableName(v["Name"]) + ';\n  '
 
   if 'Termination Criteria' in moduleConfig:
     for v in moduleConfig["Termination Criteria"]:
       string += '/**\n  '
       string += '* @brief [Termination Criteria] ' + v["Description"] + '\n  '
       string += '*/\n  '
-      string += ' ' + getVariableType(v) + ' ' + getCXXVariableName(v["Name"]) + ';\n  '
+      string += ' ' + vr.getVariableType(v) + ' ' + vr.getCXXVariableName(v["Name"]) + ';\n  '
 
   if 'Conditional Variables' in moduleConfig:
     for v in moduleConfig["Conditional Variables"]:
       string += '/**\n  '
       string += '* @brief [Conditional Variable Value] ' + v["Description"] + '\n  '
       string += '*/\n  '
-      string += ' double ' + getCXXVariableName(v["Name"]) + ';\n  '
+      string += ' double ' + vr.getCXXVariableName(v["Name"]) + ';\n  '
 
       string += '/**\n  '
       string += '* @brief [Conditional Variable Reference] ' + v["Description"] + '\n  '
       string += '*/\n  '
-      string += ' std::string ' + getCXXVariableName(v["Name"]) + 'Conditional;\n  '
+      string += ' std::string ' + vr.getCXXVariableName(v["Name"]) + 'Conditional;\n  '
 
   return string
 

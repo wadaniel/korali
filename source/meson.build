@@ -13,10 +13,9 @@ korali_source_config = [] # collection of .config files used in code generation
 subdir('auxiliar')
 subdir('modules')
 subdir('sample')
-# subdir_done()
 
-# # must be processed last due to source generation dependencies
-# subdir('variable')
+# must process last due to dependency on populated korali_source_config list
+subdir('variable')
 
 # create korali python extension
 korali_install_dir = python.get_install_dir() + 'korali'

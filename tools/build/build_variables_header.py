@@ -1,37 +1,43 @@
-#! /usr/bin/env python3
-import argparse
+#!/usr/bin/env python3
 import os
-import json
-from pathlib import Path
+import re
+import argparse
+
+from codeBuilders import builders
 
 
-from variables import getCXXVariableName, getVariableType
-
-variableHeaderTemplateFile = '/Users/garampat/work/ETH-work/projects/korali/source/variable'
-configFileList = []
-modulesDir = '../../source/modules/'
-for moduleDir, relDir, fileNames in os.walk( modulesDir ):
-    for fileName in fileNames:
-        if '.config' in fileName:
-          _name = os.path.splitext(fileName)[0]
-          configFileList.append(os.path.join(moduleDir,_name+'.config'))
+def parse_args():
+    parser = argparse.ArgumentParser()
+    # yapf: disable
+    parser.add_argument('--input', nargs='+', type=str, help='Input file(s)', required=True)
+    parser.add_argument('--output', type=str, help='Output file')
+    # yapf: enable
+    return parser.parse_known_args()
 
 
-variableDeclarationString = ''
-variableDeclarationSet = set()
+def translate(src, dst, configFileList):
 
-for _file in configFileList:
-  p = Path(_file)
-  p = p.resolve()
+    builders.buildVariablesHeader(configFileList, src, dst)
 
-  moduleConfig = json.loads( p.read_text() )
+    # print the file path for each config file
+    print(f"Have {len(configFileList)} .config files:")
+    for p in configFileList:
+        print(f"\t{p}")
 
-  if 'Variables Configuration' in moduleConfig:
-    for v in moduleConfig["Variables Configuration"]:
-      varName = getCXXVariableName(v["Name"])
-      if (not varName in variableDeclarationSet):
-        variableDeclarationString += '/**\n'
-        variableDeclarationString += '* @brief [Module: ' + moduleConfig["Module Data"]["Class Name"] + '] ' + v["Description"] + '\n'
-        variableDeclarationString += '*/\n'
-        variableDeclarationString += '  ' + getVariableType(v) + ' ' + varName + ';\n'
-        variableDeclarationSet.add(varName)
+
+def main(args):
+    # because of unknown number of input files, convention is that the first
+    # (required) file in `input` is the `variable._hpp` template.  The rest are
+    # .config files
+    template = args.input[0]
+    config_files = args.input[1:]
+
+    if args.output is None:
+        args.output = os.path.splitext(template)[0] + '.hpp'
+
+    translate(template, args.output, config_files)
+
+
+if __name__ == "__main__":
+    args, _ = parse_args()
+    main(args)

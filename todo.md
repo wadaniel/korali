@@ -1,3 +1,8 @@
+# Korali core
+
+* [ ] Use new implementation of subprojects/rtnorm
+
+
 # Python module
 
 * [ ] restructure python
@@ -11,7 +16,7 @@
 * [ ] move json to external
 * [ ] move dnnUtils to external
 * [ ] check for more third-party code to move
-* [ ] rename external to third-party (or subprojects)
+* [X] rename external to third-party (or subprojects)
 * [ ] optional third-party
 
 

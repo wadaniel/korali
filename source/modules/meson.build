@@ -2,6 +2,7 @@ modules_source = files([
   'module.cpp',
   'module.hpp',
 ])
+korali_include += include_directories('.')
 korali_source += modules_source
 
 subdir('conduit')

@@ -71,13 +71,13 @@ def buildCodeFromTemplate( configFile, templateFile, outputFile=None ):
   configFilePath = configFilePath.resolve()
 
   templateFilePath = Path(templateFile)
-  templateFilePath.resolve()
+  templateFilePath = templateFilePath.resolve()
 
   if configFilePath.suffix != '.config' :
     sys.exit(f'[Korali] Error: {configFilePath} is not a .config file.\n')
 
   if configFilePath.parent != templateFilePath.parent:
-    sys.exit('[Korali] Error: configuration file and template file are not in the same directory.')
+    sys.exit(f'[Korali] Error: configuration file and template file are not in the same directory.\n{configFilePath.parent}\n{templateFilePath.parent}\n')
 
   if '._hpp' == templateFilePath.suffix:
     codeString = buildHeaderString( configFilePath, templateFilePath )

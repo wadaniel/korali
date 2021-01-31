@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+from pathlib import Path
+import codeBuilders.auxiliar as aux
+import os
 
 class Args:
     def __init__(self, input, config=None, output=None):
@@ -7,23 +10,43 @@ class Args:
       self.output = output
 
 
+def makeTestPath( codeFilePath ):
+  p = Path( codeFilePath )
+  p = p.resolve()
+  r = aux.pathSplitAtDir( p, 'source' )
+  r = p.relative_to(r)
+  t = Path('./test_source/').joinpath(r)
+  return str(t)
+
+
 from build import *
 
 configFileList = []
 headerFileList = []
 sourceFileList = []
+outHeaderFileList = []
+outSourceFileList = []
 modulesDir = '../../source/modules'
 for moduleDir, relDir, fileNames in os.walk( modulesDir ):
     for fileName in fileNames:
         if '.config' in fileName:
             _name = os.path.splitext(fileName)[0]
             configFileList.append(os.path.abspath(os.path.join(moduleDir,_name+'.config')))
-            headerFileList.append(os.path.abspath(os.path.join(moduleDir,_name+'._hpp')))
-            sourceFileList.append(os.path.abspath(os.path.join(moduleDir,_name+'._cpp')))
 
-for configFile, headerFile, sourceFile in zip(configFileList, headerFileList, sourceFileList):
-    args = Args( [headerFile,sourceFile], configFile )
+            _file = os.path.abspath(os.path.join(moduleDir,_name+'._hpp'))
+            headerFileList.append(_file)
+            outHeaderFileList.append( makeTestPath(_file) )
+
+            _file = os.path.abspath(os.path.join(moduleDir,_name+'._cpp'))
+            sourceFileList.append(_file)
+            outSourceFileList.append( makeTestPath(_file) )
+
+for config, inHeader, inSource, outHeader, outSource in \
+ zip(configFileList, headerFileList, sourceFileList, outHeaderFileList, outSourceFileList):
+    print( [inHeader,inSource], config, [outHeader,outSource] )
+    args = Args( [inHeader,inSource], config, [outHeader,outSource] )
     main(args)
+
 
 
 from build_variables_header import *
@@ -37,6 +60,7 @@ for moduleDir, relDir, fileNames in os.walk( modulesDir ):
             _name = os.path.splitext(fileName)[0]
             configFileList.append(os.path.join(moduleDir,_name+'.config'))
 
-args = Args( [variableHeaderTemplateFile] + configFileList )
+outHeader = makeTestPath(variableHeaderTemplateFile)
+args = Args( [variableHeaderTemplateFile] + configFileList, output=outHeader )
 
 main(args)

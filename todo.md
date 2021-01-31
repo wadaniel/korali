@@ -1,6 +1,8 @@
 # Korali core
 
 * [ ] Use new implementation of subprojects/rtnorm
+* [ ] Provide option to explicitly index the namespace hierarchy (e.g.
+  @startNamespace0)
 
 
 # Python module

@@ -8,6 +8,7 @@ subdir('conduit')
 subdir('conduit/concurrent')
 subdir('conduit/distributed')
 subdir('conduit/sequential')
+subdir_done()
 
 subdir('distribution')
 subdir('distribution/multivariate')

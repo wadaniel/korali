@@ -2,7 +2,7 @@
 # FIXME: [fabianw@mavt.ethz.ch; 2021-01-29] special version only for testing
 korali_gen = find_program('../tools/build/build.py')
 
-korali_include = include_directories('.')
+korali_include = [include_directories('.')]
 korali_source = files([
   'engine.cpp',
   'engine.hpp',

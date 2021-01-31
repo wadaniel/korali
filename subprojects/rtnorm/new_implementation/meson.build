@@ -3,16 +3,16 @@ project('rtnorm', 'cpp',
   default_options: ['b_ndebug=if-release']
 )
 
-gsl_dep = dependency('gsl', fallback: ['gsl', 'gsl_dep'], required: true)
+openmp_dep = dependency('openmp', required: false)
 
 src = files([
   'rtnorm.cpp',
-  'rtnorm.hpp',
+  'qnorm.cpp',
   ])
 inc = include_directories('.')
-install_headers('rtnorm.hpp')
+install_headers('rtnorm.hpp', 'rtnorm_constants.hpp')
 librtnorm = static_library('rtnorm', src, 
-  dependencies: gsl_dep, 
+  dependencies: openmp_dep, 
   include_directories: inc, 
   pic: true, 
   install: true
@@ -20,7 +20,7 @@ librtnorm = static_library('rtnorm', src,
 
 # create dependency object that is used by dependent project
 librtnorm_dep = declare_dependency(
-  dependencies: gsl_dep, 
+  dependencies: openmp_dep, 
   include_directories: inc, 
   link_with: librtnorm
 )

@@ -13,6 +13,7 @@ using namespace std;
 
 @startNamespace
 
+/*
 * @brief Temporary storage to hold the pointer to the current conduit
 */
 Sequential *_currentConduit;

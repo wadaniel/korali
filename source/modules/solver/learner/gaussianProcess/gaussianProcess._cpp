@@ -3,18 +3,16 @@
 #include "modules/solver/learner/gaussianProcess/gaussianProcess.hpp"
 #include "sample/sample.hpp"
 
-#ifdef _KORALI_USE_EIGEN
-  #include <Eigen/Dense>
-#endif
+#include <Eigen/Dense>
 
 @startNamespace
 
-#ifdef _KORALI_USE_EIGEN
 /**
   * @brief Converts a vector of floats to Eigen format
   * @param v the vector to convert
   * @return An Eigen vector type
  */
+#ifdef _KORALI_USE_LIBGP
 static Eigen::VectorXd toEigen(const std::vector<float> &v)
 {
   Eigen::VectorXd ev(v.size());
@@ -24,13 +22,12 @@ static Eigen::VectorXd toEigen(const std::vector<float> &v)
 }
 #endif
 
+
 @className::~GaussianProcess() = default;
 
 void @className::initialize()
 {
 #ifdef _KORALI_USE_LIBGP
-
-  #ifdef _KORALI_USE_EIGEN
 
   _problem = dynamic_cast<problem::SupervisedLearning *>(_k->_problem);
 
@@ -84,10 +81,6 @@ void @className::initialize()
     _gp->add_pattern(inData, outData);
   }
 
-  #else
-  KORALI_LOG_ERROR("Korali requires the Eigen library to be installed to use the Gaussian Process learner.\n");
-  #endif
-
 #else
   KORALI_LOG_ERROR("Korali requires the LibGP library to be installed to use the Gaussian Process learner.\n");
 #endif
@@ -96,8 +89,6 @@ void @className::initialize()
 #ifdef _KORALI_USE_LIBGP
 void @className::runSample(Sample &sample, libgp::GaussianProcess *gp)
 {
-  #ifdef _KORALI_USE_EIGEN
-
   size_t gpParameterDimension = gp->covf().get_param_dim();
   const Eigen::VectorXd p = toEigen(sample["Parameters"].get<std::vector<float>>());
 
@@ -109,8 +100,6 @@ void @className::runSample(Sample &sample, libgp::GaussianProcess *gp)
   Eigen::VectorXd eigenGrad = gp->log_likelihood_gradient();
   for (size_t i = 0; i < gpParameterDimension; i++)
     sample["Gradient"][i] = eigenGrad[i];
-
-  #endif
 }
 #endif
 

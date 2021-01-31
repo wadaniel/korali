@@ -11,8 +11,6 @@ class @className : public @parentClassName
  * Engine specific members
  *******************************************************/
 
-#ifdef _KORALI_USE_EIGEN
-
   /**
 * @brief Contains the values of the weights
 */
@@ -33,10 +31,8 @@ class @className : public @parentClassName
 */
   float *_biasGradient;
 
-#endif
 
 #ifdef _KORALI_USE_ONEDNN
-
   /**
  * @brief oneDNN Memory object descriptor to contain the weights of inner product with incoming channels
  */

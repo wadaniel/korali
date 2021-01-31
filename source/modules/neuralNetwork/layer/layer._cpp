@@ -10,10 +10,8 @@
 using namespace dnnl;
 #endif
 
-#ifdef _KORALI_USE_EIGEN
-  #include <Eigen/Dense>
+#include <Eigen/Dense>
 using namespace Eigen;
-#endif
 
 @startNamespace
 
@@ -26,12 +24,10 @@ void @className::createForwardPipeline()
   if (_outputChannels == 0) KORALI_LOG_ERROR("Node count for layer (%lu) should be larger than zero.\n", _index);
   ssize_t OC = _outputChannels;
 
-#ifdef _KORALI_USE_EIGEN
   if (_nn->_engine == "Korali")
   {
     _outputValues = (float *)malloc(N * OC * sizeof(float));
   }
-#endif
 
 #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
@@ -78,12 +74,10 @@ void @className::createBackwardPipeline()
   size_t N = _nn->_batchSize;
   size_t OC = _outputChannels;
 
-#ifdef _KORALI_USE_EIGEN
   if (_nn->_engine == "Korali")
   {
     _outputGradient = (float *)malloc(N * OC * sizeof(float));
   }
-#endif
 
 // Creating backward propagation primitives for activation functions
 #ifdef _KORALI_USE_ONEDNN

@@ -10,10 +10,10 @@
 using namespace dnnl;
 #endif
 
-#ifdef _KORALI_USE_EIGEN
-  #include <Eigen/Dense>
+
+#include <Eigen/Dense>
 using namespace Eigen;
-#endif
+
 
 #define LSTM_LINEAR_LAYERS 8
 
@@ -300,7 +300,9 @@ void @className::createBackwardPipeline()
 
 void @className::forwardData()
 {
+#if defined(_KORALI_USE_ONEDNN) || defined(_KORALI_USE_CUDNN)
   const size_t t = _nn->_currentTimestep;
+#endif
 
 #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
@@ -358,8 +360,10 @@ void @className::forwardData()
 
 void @className::backwardData()
 {
-  // Getting current timestep
+
+#if defined(_KORALI_USE_ONEDNN) || defined(_KORALI_USE_CUDNN)
   const size_t t = _nn->_currentTimestep;
+#endif
 
   if (_nn->_mode == "Inference")
     KORALI_LOG_ERROR("Requesting Layer backward data propagation but NN was configured for inference only.\n");

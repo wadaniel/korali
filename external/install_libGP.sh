@@ -11,7 +11,7 @@ function check()
  if [ ! $? -eq 0 ]
  then
   exit $?
- fi 
+ fi
 }
 
 ######### Environment Configuration ########
@@ -65,13 +65,13 @@ if [ -f ${localFile} ]; then
  fileFound=1
  filePath=${localFile}
 fi
- 
+
 ######## If not installed, download and install ########
 
 if [ ${fileFound} == 0 ]; then
 
  # Checking whether eigen is accessible
- $externalDir/install_eigen.sh 
+ $externalDir/install_eigen.sh
  if [ $? != 0 ]; then
   echo "[Korali] Error: eigen is required to install ${libName}, but was not found."
   echo "[Korali] Solution: Run install_eigen.sh to install it."
@@ -79,16 +79,16 @@ if [ ${fileFound} == 0 ]; then
  fi
 
  echo "[Korali] Downloading ${libName}... "
- 
+
  rm -rf $buildDir; check
  rm -rf $installDir; check
- 
+
  mkdir -p $buildDir; check
  pushd $buildDir; check
- 
+
  # no versioning system
  git clone https://github.com/mblum/libgp.git --depth=1 $buildDir; check
-  
+
  echo "[Korali] Configuring ${libName}... "
  mkdir -p build; check
  cd build; check
@@ -102,18 +102,18 @@ if [ ${fileFound} == 0 ]; then
 
  echo "[Korali] Building ${libName}... "
  make -j$NJOBS; check
- 
+
  echo "[Korali] Installing ${libName}... "
  make install; check
- 
+
  popd; check
- 
+
  echo "[Korali] Finished installing ${libName}."
  binPath=${installDir}/bin/${binName}
- 
+
  echo "[Korali] Cleaning up build folder..."
  rm -rf $buildDir; check
- 
+
 fi
 
 ######## Finalization ########

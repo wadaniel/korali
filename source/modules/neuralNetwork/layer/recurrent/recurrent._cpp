@@ -10,10 +10,10 @@
 using namespace dnnl;
 #endif
 
-#ifdef _KORALI_USE_EIGEN
-  #include <Eigen/Dense>
+
+#include <Eigen/Dense>
 using namespace Eigen;
-#endif
+
 
 @startNamespace
 

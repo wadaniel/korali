@@ -10,10 +10,8 @@
 using namespace dnnl;
 #endif
 
-#ifdef _KORALI_USE_EIGEN
-  #include <Eigen/Dense>
+#include <Eigen/Dense>
 using namespace Eigen;
-#endif
 
 @startNamespace
 
@@ -102,12 +100,10 @@ void @className::forwardData()
   int t = _nn->_currentTimestep;
 
 // Copying previous layer's output to this layer's output
-#ifdef _KORALI_USE_EIGEN
   if (_nn->_engine == "Korali")
   {
     memcpy(_srcOutputValues, _prevLayer->_outputValues, N * OC * sizeof(float));
   }
-#endif
 
 #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
@@ -221,12 +217,10 @@ void @className::backwardData()
       _dstOutputGradients[i * OC + j] = g;
     }
 
-#ifdef _KORALI_USE_EIGEN
   if (_nn->_engine == "Korali")
   {
     memcpy(_prevLayer->_outputGradient, _dstOutputGradients, N * OC * sizeof(float));
   }
-#endif
 
 #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")

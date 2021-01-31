@@ -20,9 +20,9 @@ def translate(src, dst, configFileList):
     builders.buildVariablesHeader(configFileList, src, dst)
 
     # print the file path for each config file
-    print(f"Have {len(configFileList)} .config files:")
-    for p in configFileList:
-        print(f"\t{p}")
+    # print(f"Have {len(configFileList)} .config files:")
+    # for p in configFileList:
+    #     print(f"\t{p}")
 
 
 def main(args):

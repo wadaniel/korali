@@ -344,7 +344,7 @@ void @className::updateDistribution()
   {
     // Update Success rate
     _currentSuccessProbabilities[i] *= (1. - _successLearningRate);
-    if (sortedIndices[i] >= values.size() - _muValue) _currentSuccessProbabilities[i] + _successLearningRate; // sucess, considered a parent
+    if (sortedIndices[i] >= (int)(values.size() - _muValue)) _currentSuccessProbabilities[i] += _successLearningRate; // sucess, considered a parent
 
     // Update Evolutionpath
     for (size_t d = 0; d < _variableCount; ++d)
@@ -376,7 +376,7 @@ void @className::updateDistribution()
   // Update parents
   size_t pidx = 0;
   for (size_t i = 0; i < sortedIndices.size(); ++i)
-    if (sortedIndices[i] >= values.size() - _muValue)
+    if (sortedIndices[i] >= (int)(values.size() - _muValue))
     {
       if (i < _populationSize)
       {

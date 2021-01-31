@@ -10,10 +10,10 @@
 using namespace dnnl;
 #endif
 
-#ifdef _KORALI_USE_EIGEN
-  #include <Eigen/Dense>
+
+#include <Eigen/Dense>
 using namespace Eigen;
-#endif
+
 
 @startNamespace
 
@@ -59,7 +59,6 @@ void @className::createHyperparameterMemory()
   // Setting hyperparameter count
   _hyperparameterCount = IC * OC + OC;
 
-#ifdef _KORALI_USE_EIGEN
   if (_nn->_engine == "Korali")
   {
     _weightValues = (float *)malloc(IC * OC * sizeof(float));
@@ -68,7 +67,6 @@ void @className::createHyperparameterMemory()
     _biasValues = (float *)malloc(OC * sizeof(float));
     _biasGradient = (float *)malloc(OC * sizeof(float));
   }
-#endif
 
 #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
@@ -176,12 +174,10 @@ void @className::createBackwardPipeline()
 
 void @className::forwardData()
 {
+
   size_t N = _nn->_batchSize;
   size_t IC = _prevLayer->_outputChannels;
   size_t OC = _outputChannels;
-  size_t t = _nn->_currentTimestep;
-
-#ifdef _KORALI_USE_EIGEN
   if (_nn->_engine == "Korali")
   {
     // Performing Wx computation
@@ -196,11 +192,11 @@ void @className::forwardData()
       for (size_t j = 0; j < OC; j++)
         _outputValues[i * OC + j] += _biasValues[j];
   }
-#endif
 
 #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
   {
+    size_t t = _nn->_currentTimestep;
     // Arguments to the inner product operation
     std::unordered_map<int, dnnl::memory> forwardInnerProductArgs;
     forwardInnerProductArgs[DNNL_ARG_SRC] = _prevLayer->_outputMem[t];
@@ -241,15 +237,12 @@ void @className::forwardData()
 
 void @className::backwardData()
 {
-  int N = _nn->_batchSize;
-  int IC = _prevLayer->_outputChannels;
-  int OC = _outputChannels;
-  int t = _nn->_currentTimestep;
-
   if (_nn->_mode == "Inference")
     KORALI_LOG_ERROR("Requesting Layer backward data propagation but NN was configured for inference only.\n");
 
-#ifdef _KORALI_USE_EIGEN
+  int N = _nn->_batchSize;
+  int IC = _prevLayer->_outputChannels;
+  int OC = _outputChannels;
   if (_nn->_engine == "Korali")
   {
     // Backward propagating Wx+b operation
@@ -259,9 +252,9 @@ void @className::backwardData()
 
     matC = matA * matB;
   }
-#endif
 
 #ifdef _KORALI_USE_ONEDNN
+  int t = _nn->_currentTimestep;
   if (_nn->_engine == "OneDNN")
   {
     _backwardDataArgs[DNNL_ARG_DIFF_DST] = _outputGradientMem[t];             // Input
@@ -297,15 +290,12 @@ void @className::backwardData()
 
 void @className::backwardHyperparameters()
 {
-  const size_t N = _nn->_batchSize;
-  const size_t IC = _prevLayer->_outputChannels;
-  const size_t OC = _outputChannels;
-  const size_t t = _nn->_currentTimestep;
-
   if (_nn->_mode == "Inference")
     KORALI_LOG_ERROR("Requesting Layer hyperparameter gradient propagation but NN was configured for inference only.\n");
 
-#ifdef _KORALI_USE_EIGEN
+  const size_t N = _nn->_batchSize;
+  const size_t IC = _prevLayer->_outputChannels;
+  const size_t OC = _outputChannels;
   if (_nn->_engine == "Korali")
   {
     // Performing Weight gradient calculation
@@ -320,9 +310,9 @@ void @className::backwardHyperparameters()
     for (size_t i = 1; i < N; i++)
       for (size_t j = 0; j < OC; j++) _biasGradient[j] += _outputGradient[i * OC + j];
   }
-#endif
 
 #ifdef _KORALI_USE_ONEDNN
+  const size_t t = _nn->_currentTimestep;
   if (_nn->_engine == "OneDNN")
   {
     //Arguments for the backward propagation of the gradient wrt Weights and Biases
@@ -374,13 +364,11 @@ void @className::setHyperparameters(float *hyperparameters)
   size_t IC = _prevLayer->_outputChannels;
   size_t OC = _outputChannels;
 
-#ifdef _KORALI_USE_EIGEN
   if (_nn->_engine == "Korali")
   {
     memcpy(_weightValues, &hyperparameters[0], IC * OC * sizeof(float));
     memcpy(_biasValues, &hyperparameters[IC * OC], OC * sizeof(float));
   }
-#endif
 
 #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
@@ -404,13 +392,11 @@ void @className::getHyperparameters(float *hyperparameters)
   size_t IC = _prevLayer->_outputChannels;
   size_t OC = _outputChannels;
 
-#ifdef _KORALI_USE_EIGEN
   if (_nn->_engine == "Korali")
   {
     memcpy(&hyperparameters[0], _weightValues, IC * OC * sizeof(float));
     memcpy(&hyperparameters[IC * OC], _biasValues, OC * sizeof(float));
   }
-#endif
 
 #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
@@ -434,13 +420,11 @@ void @className::getHyperparameterGradients(float *gradient)
   size_t IC = _prevLayer->_outputChannels;
   size_t OC = _outputChannels;
 
-#ifdef _KORALI_USE_EIGEN
   if (_nn->_engine == "Korali")
   {
     memcpy(&gradient[0], _weightGradient, IC * OC * sizeof(float));
     memcpy(&gradient[IC * OC], _biasGradient, OC * sizeof(float));
   }
-#endif
 
 #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")

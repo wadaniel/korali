@@ -49,8 +49,6 @@ class @className : public @parentClassName
 
   // Input/output memory elements
 
-#ifdef _KORALI_USE_EIGEN
-
   /**
  * @brief Contains the output values of the layer
  */
@@ -61,7 +59,6 @@ class @className : public @parentClassName
  */
   float *_outputGradient;
 
-#endif
 
 #ifdef _KORALI_USE_ONEDNN
   /**

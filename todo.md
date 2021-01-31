@@ -1,6 +1,7 @@
 # Korali core
 
 * [ ] Use new implementation of subprojects/rtnorm
+* [ ] remove eigen and rtnorm flags
 * [ ] Provide option to explicitly index the namespace hierarchy (e.g.
   @startNamespace0)
 
@@ -39,3 +40,4 @@
 # FIXME
 
 * [ ] pybind is installed with --user and was not found by meson
+

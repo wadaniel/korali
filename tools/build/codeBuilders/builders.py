@@ -92,6 +92,13 @@ def buildCodeFromTemplate( configFile, templateFile, outputFile=None ):
   else:
     filePath = Path(outputFile)
 
+  filePath = filePath.resolve()
+  # if does not exist create  the path of filePath
+  try:
+      filePath.parents[0].mkdir(parents=True, exist_ok=False)
+  except FileExistsError:
+      pass
+
   filePath.write_text(codeString)
 
 
@@ -127,5 +134,12 @@ def buildVariablesHeader(configFileList, templateFile, outputFile=None ):
     filePath = variableHeaderTemplatePath.with_suffix('.hpp')
   else:
     filePath = Path(outputFile)
+
+  filePath = filePath.resolve()
+  # if does not exist create  the path of filePath
+  try:
+      filePath.parents[0].mkdir(parents=True, exist_ok=False)
+  except FileExistsError:
+      pass
 
   filePath.write_text(variableHeaderString)

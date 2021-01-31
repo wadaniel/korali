@@ -1,0 +1,28 @@
+@startIncludeGuard
+
+#include "modules/solver/optimizer/optimizer.hpp"
+#include <vector>
+
+@startNamespace
+
+class @className : public @parentClassName
+{
+  private:
+  void evaluateFunctionAndGradient(Sample &sample);
+
+  void Update_plus(void);   // Rprop_plus
+  void Update_minus(void);  // Rprop_minus
+  void Update_iplus(void);  // iRprop_plus
+  void Update_iminus(void); // iRprop_minus
+
+  public:
+  void setInitialConfiguration() override;
+  void finalize() override;
+  void runGeneration() override;
+  void printGenerationBefore() override;
+  void printGenerationAfter() override;
+};
+
+@endNamespace
+
+@endIncludeGuard

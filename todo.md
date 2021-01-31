@@ -20,6 +20,7 @@
 * [ ] doxygen
 * [ ] site
 
+
 # Tests
 
 * [ ] return value in all tests
@@ -27,3 +28,7 @@
 * [ ] configure circleci
 * [ ] write separate tests for each file
 * [ ] check again the test in running.cxx, running.mpi, reinforcement
+
+# FIXME
+
+* [ ] pybind is installed with --user and was not found by meson

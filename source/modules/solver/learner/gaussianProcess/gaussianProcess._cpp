@@ -12,7 +12,6 @@
   * @param v the vector to convert
   * @return An Eigen vector type
  */
-#ifdef _KORALI_USE_LIBGP
 static Eigen::VectorXd toEigen(const std::vector<float> &v)
 {
   Eigen::VectorXd ev(v.size());
@@ -20,14 +19,12 @@ static Eigen::VectorXd toEigen(const std::vector<float> &v)
     ev[i] = v[i];
   return ev;
 }
-#endif
 
 
 @className::~GaussianProcess() = default;
 
 void @className::initialize()
 {
-#ifdef _KORALI_USE_LIBGP
 
   _problem = dynamic_cast<problem::SupervisedLearning *>(_k->_problem);
 
@@ -81,12 +78,9 @@ void @className::initialize()
     _gp->add_pattern(inData, outData);
   }
 
-#else
-  KORALI_LOG_ERROR("Korali requires the LibGP library to be installed to use the Gaussian Process learner.\n");
-#endif
 }
 
-#ifdef _KORALI_USE_LIBGP
+
 void @className::runSample(Sample &sample, libgp::GaussianProcess *gp)
 {
   size_t gpParameterDimension = gp->covf().get_param_dim();
@@ -101,7 +95,6 @@ void @className::runSample(Sample &sample, libgp::GaussianProcess *gp)
   for (size_t i = 0; i < gpParameterDimension; i++)
     sample["Gradient"][i] = eigenGrad[i];
 }
-#endif
 
 void @className::runGeneration()
 {
@@ -123,16 +116,12 @@ std::vector<std::vector<float>> @className::getEvaluation(const std::vector<std:
   if (input.size() > 1) KORALI_LOG_ERROR("Gaussian Process does not support multi-timestep evaluation.\n");
   if (input[0].size() > 1) KORALI_LOG_ERROR("Gaussian Process does not support minibatch evaluation.\n");
 
-#ifdef _KORALI_USE_LIBGP
-
   _gp->covf().set_loghyper(toEigen(_gpHyperparameters));
 
   std::vector<double> inputData(input[0][0].begin(), input[0][0].end());
 
   output[0] = _gp->f(inputData.data());
   output[1] = _gp->var(inputData.data());
-
-#endif
 
   return {output};
 }

@@ -1,0 +1,28 @@
+sources = files([
+'cov.cc',
+'cov_factory.cc',
+'cov_linear_ard.cc',
+'cov_linear_one.cc',
+'cov_matern3_iso.cc',
+'cov_matern5_iso.cc',
+'cov_noise.cc',
+'cov_rq_iso.cc',
+'cov_periodic_matern3_iso.cc',
+'cov_periodic.cc',
+'cov_se_ard.cc',
+'cov_se_iso.cc',
+'cov_sum.cc',
+'cov_prod.cc',
+'gp.cc',
+'gp_utils.cc',
+'sampleset.cc',
+'rprop.cc',
+'input_dim_filter.cc',
+'cg.cc',
+])
+
+libgp = static_library('libgp', sources,
+                        dependencies: eigen3_dep,
+                        include_directories: inc,
+                        pic: true,
+                        install: true )

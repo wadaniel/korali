@@ -11,16 +11,17 @@ src = files([
   ])
 inc = include_directories('.')
 install_headers('rtnorm.hpp')
-librtnorm = static_library('rtnorm', src, 
-  dependencies: gsl_dep, 
-  include_directories: inc, 
-  pic: true, 
+
+rtnorm = static_library('rtnorm', src,
+  dependencies: gsl_dep,
+  include_directories: inc,
+  pic: true,
   install: true
 )
 
 # create dependency object that is used by dependent project
-librtnorm_dep = declare_dependency(
-  dependencies: gsl_dep, 
-  include_directories: inc, 
-  link_with: librtnorm
+rtnorm_dep = declare_dependency(
+  dependencies: gsl_dep,
+  include_directories: inc,
+  link_with: rtnorm
 )

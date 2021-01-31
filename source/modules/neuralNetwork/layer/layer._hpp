@@ -12,6 +12,11 @@
   #include <cudnn.h>
 #endif
 
+namespace korali
+{
+    class NeuralNetwork;
+}
+
 @startNamespace
 
 class @className : public @parentClassName
@@ -25,7 +30,6 @@ class @className : public @parentClassName
   /**
    * @brief Pointer to the parent neural network
    */
-  class NeuralNetwork;
   NeuralNetwork *_nn;
 
   /**

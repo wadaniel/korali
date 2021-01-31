@@ -17,7 +17,7 @@ using namespace Eigen;
 
 @startNamespace
 
-void @className:::initialize()
+void @className::initialize()
 {
   // Checking Layer size
   if (_outputChannels == 0) KORALI_LOG_ERROR("Node count for layer (%lu) should be larger than zero.\n", _index);
@@ -27,7 +27,7 @@ void @className:::initialize()
   if (_index == _nn->_layers.size() - 1) KORALI_LOG_ERROR("Feed Forward layers cannot be the last layer of the NN\n");
 }
 
-std::vector<float> @className:::generateInitialHyperparameters()
+std::vector<float> @className::generateInitialHyperparameters()
 {
   std::vector<float> hyperparameters;
 
@@ -50,7 +50,7 @@ std::vector<float> @className:::generateInitialHyperparameters()
   return hyperparameters;
 }
 
-void @className:::createHyperparameterMemory()
+void @className::createHyperparameterMemory()
 {
   // Checking Layer sizes
   ssize_t OC = _outputChannels;
@@ -104,7 +104,7 @@ void @className:::createHyperparameterMemory()
 #endif
 }
 
-void @className:::createForwardPipeline()
+void @className::createForwardPipeline()
 {
   // Calling base layer function
   Layer::createForwardPipeline();
@@ -139,7 +139,7 @@ void @className:::createForwardPipeline()
 #endif
 }
 
-void @className:::createBackwardPipeline()
+void @className::createBackwardPipeline()
 {
   /*********************************************************************************
   *  Initializing memory objects and primitives for BACKWARD propagation
@@ -174,7 +174,7 @@ void @className:::createBackwardPipeline()
 #endif
 }
 
-void @className:::forwardData()
+void @className::forwardData()
 {
   size_t N = _nn->_batchSize;
   size_t IC = _prevLayer->_outputChannels;
@@ -239,7 +239,7 @@ void @className:::forwardData()
 #endif
 }
 
-void @className:::backwardData()
+void @className::backwardData()
 {
   int N = _nn->_batchSize;
   int IC = _prevLayer->_outputChannels;
@@ -295,7 +295,7 @@ void @className:::backwardData()
 #endif
 }
 
-void @className:::backwardHyperparameters()
+void @className::backwardHyperparameters()
 {
   const size_t N = _nn->_batchSize;
   const size_t IC = _prevLayer->_outputChannels;
@@ -369,7 +369,7 @@ void @className:::backwardHyperparameters()
 #endif
 }
 
-void @className:::setHyperparameters(float *hyperparameters)
+void @className::setHyperparameters(float *hyperparameters)
 {
   size_t IC = _prevLayer->_outputChannels;
   size_t OC = _outputChannels;
@@ -399,7 +399,7 @@ void @className:::setHyperparameters(float *hyperparameters)
 #endif
 }
 
-void @className:::getHyperparameters(float *hyperparameters)
+void @className::getHyperparameters(float *hyperparameters)
 {
   size_t IC = _prevLayer->_outputChannels;
   size_t OC = _outputChannels;
@@ -429,7 +429,7 @@ void @className:::getHyperparameters(float *hyperparameters)
 #endif
 }
 
-void @className:::getHyperparameterGradients(float *gradient)
+void @className::getHyperparameterGradients(float *gradient)
 {
   size_t IC = _prevLayer->_outputChannels;
   size_t OC = _outputChannels;

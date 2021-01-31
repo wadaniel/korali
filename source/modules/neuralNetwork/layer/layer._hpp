@@ -25,6 +25,7 @@ class @className : public @parentClassName
   /**
    * @brief Pointer to the parent neural network
    */
+  class NeuralNetwork;
   NeuralNetwork *_nn;
 
   /**

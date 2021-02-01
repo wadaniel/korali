@@ -23,18 +23,15 @@ elif user_want_mpi and not mpi_dep.found()
 endif
 
 # check for OpenMP support
-openmp_dep = dependency('openmp', required: false)
-if openmp_dep.found()
-  korali_deps += openmp_dep
-endif
+korali_deps += dependency('openmp', required: false)
 
 # process required korali dependencies
-korali_deps += dependency('pybind11', fallback: ['pybind11', 'pybind11_dep'], required: true)
-korali_deps += dependency('libco', fallback: ['libco', 'libco_dep'], required: true)
-korali_deps += dependency('gsl', fallback: ['gsl', 'gsl_dep'], required: true)
 korali_deps += dependency('eigen3', fallback: ['eigen', 'eigen_dep'], required: true)
-korali_deps += dependency('rtnorm', fallback: ['rtnorm', 'rtnorm_dep'], required: true)
+korali_deps += dependency('gsl', fallback: ['gsl', 'gsl_dep'], required: true)
+korali_deps += dependency('libco', fallback: ['libco', 'libco_dep'], required: true)
 korali_deps += dependency('libgp', fallback: ['libgp', 'libgp_dep'], required: true)
+korali_deps += dependency('pybind11', fallback: ['pybind11', 'pybind11_dep'], required: true)
+korali_deps += dependency('rtnorm', fallback: ['rtnorm', 'rtnorm_dep'], required: true)
 
 # process optional korali dependencies
 # TODO: [fabianw@mavt.ethz.ch; 2021-01-26]

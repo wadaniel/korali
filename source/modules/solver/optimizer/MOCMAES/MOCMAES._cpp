@@ -338,7 +338,7 @@ std::vector<int> MOCMAES::sortSampleIndices(const std::vector<std::vector<double
 void MOCMAES::updateDistribution()
 {
   auto values = _currentValues;
-  //values.insert(std::end(values), std::begin(_previousValues), std::end(_previousValues));
+  values.insert(std::end(values), std::begin(_previousValues), std::end(_previousValues));
 
   // Sort current and previous evlauations
   auto sortedIndices = sortSampleIndices(values);

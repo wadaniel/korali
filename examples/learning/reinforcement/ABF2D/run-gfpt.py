@@ -11,7 +11,7 @@ e = korali.Experiment()
 
 ### Setting results dir for ABF2D trajectories
  
-setResultsDir('_result_gfpt')
+setResultsDir('_result_gfpt_gradadj_fixed')
 
 ### Defining Korali Problem
 
@@ -66,8 +66,8 @@ e["Solver"]["Experience Replay"]["Maximum Size"] = 65536
 
 e["Solver"]["Experience Replay"]["REFER"]["Enabled"] = True
 e["Solver"]["Experience Replay"]["REFER"]["Cutoff Scale"] = 4.0
-e["Solver"]["Experience Replay"]["REFER"]["Target"] = 1.0
-e["Solver"]["Experience Replay"]["REFER"]["Initial Beta"] = 1.0
+e["Solver"]["Experience Replay"]["REFER"]["Target"] = 0.1
+e["Solver"]["Experience Replay"]["REFER"]["Initial Beta"] = 0.3
 e["Solver"]["Experience Replay"]["REFER"]["Annealing Rate"] = 5e-7
 
 ### Configuring Mini Batch
@@ -99,6 +99,7 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tan
 
 ### Defining Termination Criteria
 
+e["Solver"]["Termination Criteria"]["Max Generations"] = 600.0
 e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 50.0
 
 ### Setting console/file output configuration

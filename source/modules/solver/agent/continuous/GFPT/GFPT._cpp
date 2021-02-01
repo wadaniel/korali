@@ -258,15 +258,31 @@ void GFPT::trainPolicy()
 
     // Optimizing best action for the selected experience
     auto optResults = optimizeAction(expStateActionSequence, curMeans);
-    auto bstMeans = optResults["Best Means"].get<std::vector<float>>();
-    auto bstValue = optResults["Average Value"].get<float>();
+    //auto bstMeans = optResults["Best Means"].get<std::vector<float>>();
+    auto bstMeans = optResults["Best Variable"].get<std::vector<float>>();
+    //auto bstValue = optResults["Average Value"].get<float>();
+    auto bstValue = optResults["Best Value"].get<float>();
 
+    float curValue = getActionAdvantage(expStateActionSequence);
+
+    //auto curStateActionSequence = expStateActionSequence;
+    //for(size_t i = 0; i < _problem->_actionVectorSize; ++i) curStateActionSequence[0][_problem->_actionVectorSize+i] = bstMeans[i];
+    //float bstValue = getActionAdvantage(curStateActionSequence);
+
+    float distSquare = 0.0;
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-      gfptGradients[i] = bstMeans[i] - curMeans[i];
+      distSquare += (bstMeans[i] - curMeans[i])*(bstMeans[i]-curMeans[i]);
+    float C = (bstValue-curValue) / distSquare;
+    if( C > 1e4 ) { printf("C: %f\n", C); C = 1e4; }
+    if( C < 0.0 ) { printf("C: %f\n", C); C = 0.0; }
+
+    // Calculate dy/dx
+    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+      gfptGradients[i] = C * (bstMeans[i] - curMeans[i]);
 
     // Getting REFER gradients
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-      referGradients[i] = expMeans[i] - curMeans[i];
+      referGradients[i] = (expMeans[i] - curMeans[i])/(curSigmas[i]*curSigmas[i]);
 
     // Re-computing importance weight for the experiment and storing it into cache
     float importanceWeight = calculateImportanceWeight(expAction, curMeans, curSigmas, expMeans, expSigmas);
@@ -280,8 +296,8 @@ void GFPT::trainPolicy()
       if (isOnPolicy) pGradients[i] += _experienceReplayREFERCurrentBeta * gfptGradients[i];
 
     // Applying REFER gradients
-    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-      pGradients[i] += (1.0f - _experienceReplayREFERCurrentBeta) * referGradients[i];
+    //for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+    //  pGradients[i] += (1.0f - _experienceReplayREFERCurrentBeta) * referGradients[i];
 
 // Computing statistics
 #pragma omp critical
@@ -381,6 +397,10 @@ knlohmann::json GFPT::optimizeAction(const std::vector<std::vector<float>> state
   knlohmann::json result;
   result["Best Means"] = actionOptimizer->_currentMean;
   result["Average Value"] = curAverageAdvantage;
+  result["Best Variable"] = actionOptimizer->_currentBestVariables;
+  result["Best Value"] = actionOptimizer->_currentBestValue;
+
+  
 
   return result;
 }

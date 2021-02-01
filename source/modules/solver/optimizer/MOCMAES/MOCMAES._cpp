@@ -343,7 +343,11 @@ void MOCMAES::updateDistribution()
   // Sort current and previous evlauations
   auto sortedIndices = sortSampleIndices(values);
 
+  // Precompute factors
   const double evolutionPathFactor = std::sqrt(_evolutionPathAdaptionStrength * (2. - _evolutionPathAdaptionStrength));
+  const double d = 1.0 + 2.0 * std::max( 0.0, std::sqrt( (_muValue - 1.)/ (_variableCount + 1.) ) - 1.0) + _evolutionPathAdaptionStrength;
+  const double chiN = std::sqrt(_variableCount)*(1.-1./(4.*_variableCount)+1./(21.*_variableCount*_variableCount));
+
   for (size_t i = 0; i < _populationSize; ++i)
   {
     // Update Success rate
@@ -354,13 +358,12 @@ void MOCMAES::updateDistribution()
     // Update Evolutionpath
     for (size_t d = 0; d < _variableCount; ++d)
       _currentEvolutionPaths[i][d] = (1. - _evolutionPathAdaptionStrength) * _currentEvolutionPaths[i][d];
-
-    if (_currentSuccessProbabilities[i] < _targetSuccessRate)
-    {
-      const auto &parent = _parentSamplePopulation[_parentIndex[i]];
+    const auto &parent = _parentSamplePopulation[_parentIndex[i]];
       for (size_t d = 0; d < _variableCount; ++d)
-        _currentEvolutionPaths[i][d] += evolutionPathFactor * (_currentSamplePopulation[i][d] - parent[d]) / _currentSigma[i];
-    }
+        _currentEvolutionPaths[i][d] += evolutionPathFactor / std::sqrt(_currentCovarianceMatrix[i][d * _variableCount + d]) * (_currentSamplePopulation[i][d] - parent[d]) / _currentSigma[i];
+    double evolutionPathLength = 0.;
+    for (size_t d = 0; d < _variableCount; ++d) evolutionPathLength += _currentEvolutionPaths[i][d] * _currentEvolutionPaths[i][d];
+    evolutionPathLength = std::sqrt(evolutionPathLength);
 
     // Update Covariance
     for (size_t d = 0; d < _variableCount; ++d)
@@ -375,7 +378,7 @@ void MOCMAES::updateDistribution()
     }
 
     // Update Sigma
-    _currentSigma[i] *= std::exp((_currentSuccessProbabilities[i] - _targetSuccessRate) / (( _variableCount) * (1. - _targetSuccessRate)));
+    _currentSigma[i] *= std::exp(_evolutionPathAdaptionStrength / d * (evolutionPathLength/chiN - 1.0));
   }
 
   // Update parents

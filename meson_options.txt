@@ -1,2 +1,3 @@
 option('mpi', type : 'boolean', value : true, description : 'MPI support', yield: true)
+option('onednn', type : 'boolean', value : true, description : 'oneDNN support', yield: true)
 # option('openmp', type : 'boolean', value : true, description : 'OpenMP support', yield: true)

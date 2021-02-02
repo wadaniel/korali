@@ -34,7 +34,17 @@ korali_deps += dependency('pybind11', fallback: ['pybind11', 'pybind11_dep'], re
 korali_deps += dependency('rtnorm', fallback: ['rtnorm', 'rtnorm_dep'], required: true)
 
 # process optional korali dependencies
-# TODO: [fabianw@mavt.ethz.ch; 2021-01-26]
+onednn_dep = dependency('onednn', required: false)
+user_want_onednn = get_option('onednn')
+if user_want_onednn and onednn_dep.found()
+  korali_deps += onednn_dep
+  korali_cpp_args += '-D_KORALI_USE_ONEDNN'
+elif user_want_onednn and not onednn_dep.found()
+  cmake = import('cmake')
+  sub_proj = cmake.subproject('onednn')
+  # message('CMaket targets:\n - ' + '\n - '.join(sub_proj.target_list()))
+  oneDNN_dep = sub_proj.dependency('dnnl')
+endif
 
 # process korali
 subdir('source')

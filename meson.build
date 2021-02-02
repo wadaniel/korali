@@ -4,8 +4,13 @@ project('Korali', ['c', 'cpp'],
   default_options: ['cpp_std=c++17', 'b_ndebug=if-release']
 )
 
+# python installation
 pymodule = import('python')
 python = pymodule.find_installation('python3', required: true)
+
+korali = 'korali' # python package name
+korali_extensions = 'libkorali' # cpp extensions name
+korali_install_dir = python.get_install_dir() / korali
 
 # list of Korali dependencies
 korali_deps = []

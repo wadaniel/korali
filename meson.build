@@ -25,13 +25,6 @@ endif
 # check for OpenMP support
 korali_deps += dependency('openmp', required: false)
 
-# process required korali dependencies
-korali_deps += dependency('eigen3', fallback: ['eigen', 'eigen_dep'], required: true)
-korali_deps += dependency('gsl', fallback: ['gsl', 'gsl_dep'], required: true)
-korali_deps += dependency('libco', fallback: ['libco', 'libco_dep'], required: true)
-korali_deps += dependency('libgp', fallback: ['libgp', 'libgp_dep'], required: true)
-korali_deps += dependency('pybind11', fallback: ['pybind11', 'pybind11_dep'], required: true)
-korali_deps += dependency('rtnorm', fallback: ['rtnorm', 'rtnorm_dep'], required: true)
 
 # process optional korali dependencies
 onednn_dep = dependency('onednn', required: false)
@@ -40,11 +33,36 @@ if user_want_onednn and onednn_dep.found()
   korali_deps += onednn_dep
   korali_cpp_args += '-D_KORALI_USE_ONEDNN'
 elif user_want_onednn and not onednn_dep.found()
+  onednn_version = '2.0'
+  _r = run_command('subprojects/onednn/._fetch.sh', [onednn_version, join_paths('subprojects','onednn')])
+
   cmake = import('cmake')
-  sub_proj = cmake.subproject('onednn')
+
+  opt_var = cmake.subproject_options()
+  opt_var.add_cmake_defines({
+      'DNNL_BUILD_EXAMPLES': false,
+      'DNNL_BUILD_TESTS': false,
+      'DNNL_ENABLE_CONCURRENT_EXEC': true,
+      'CMAKE_INSTALL_PREFIX': '@PREFIX@',
+      'DNNL_CPU_RUNTIME': 'SEQ',
+      'BUILD_SHARED_LIBS': true,
+      })
+
+  sub_proj = cmake.subproject('onednn', options: opt_var)
+
   # message('CMaket targets:\n - ' + '\n - '.join(sub_proj.target_list()))
   oneDNN_dep = sub_proj.dependency('dnnl')
 endif
+
+# process required korali dependencies
+korali_deps += dependency('eigen3', fallback: ['eigen', 'eigen_dep'], required: true)
+korali_deps += dependency('gsl', fallback: ['gsl', 'gsl_dep'], required: true)
+korali_deps += dependency('libco', fallback: ['libco', 'libco_dep'], required: true)
+korali_deps += dependency('libgp', fallback: ['libgp', 'libgp_dep'], required: true)
+korali_deps += dependency('pybind11', fallback: ['pybind11', 'pybind11_dep'], required: true)
+korali_deps += dependency('rtnorm', fallback: ['rtnorm', 'rtnorm_dep'], required: true)
+
+
 
 # process korali
 subdir('source')

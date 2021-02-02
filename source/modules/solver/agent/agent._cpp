@@ -211,7 +211,7 @@ void Agent::trainingGeneration()
         _sessionPolicyUpdateCount++;
 
         // If using REFER, updating its information
-        if (_experienceReplayREFEREnabled == true) updateREFERInformation();
+        updateREFERInformation();
 
         auto endTime = std::chrono::steady_clock::now();                                                                  // Profiling
         _sessionPolicyUpdateTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
@@ -386,15 +386,15 @@ void Agent::processEpisode(std::vector<knlohmann::json> &episode)
       e.truncatedState = episode[expId]["Truncated State"].get<std::vector<float>>();
     }
 
-    // Updating experience's importance weight in its cache. Initially assumed to be 1.0 because its freshly produced
-    e.cache.set("Importance Weight", 1.0f);
-
     // Updating metadata for prioritized minibatch selection
     e.metadata["Mini Batch"]["Priority"] = _experienceReplayMaxPriority;
     e.metadata["Mini Batch"]["Probability"] = 0.0;
 
     // Storing policy
     e.policy = episode[expId]["Policy"];
+
+    // Updating experience's importance weight in policy data. Initially assumed to be 1.0 because its freshly produced
+    e.policy["Importance Weight"] = 1.0f;
 
     // Keeping statistics
     cumulativeReward += e.reward;
@@ -470,13 +470,13 @@ void Agent::updateREFERInformation()
   size_t expCount = _experienceReplay.size();
   size_t offPolicyCount = 0;
 
-  // Count off-policy experiences
+// Count off-policy experiences
 #pragma omp parallel for reduction(+ \
                                    : offPolicyCount)
   for (size_t expId = 0; expId < expCount; expId++)
   {
     // Getting the last calculated value of the experience's importance weight. We can tolerate this approximation.
-    float expImportanceWeight = _experienceReplay[expId].cache.get("Importance Weight");
+    float expImportanceWeight = _experienceReplay[expId].policy["Importance Weight"];
 
     // It is off policy if it is outside the [1/cutoff, cutoff] region
     if ((expImportanceWeight < (1.0f / _experienceReplayREFERCurrentCutoff)) ||
@@ -624,12 +624,7 @@ float Agent::retraceFunction(size_t expId)
 
   // If it was a truncated episode, add the value function for the terminal state to retV
   if (_experienceReplay[endId].termination == e_truncated)
-  {
-    // Get truncated state sequence, adding the truncated state to it and removing first time element
-    auto expTruncatedStateSequence = getTruncatedStateTimeSequence(endId);
-    float terminalV = _experienceReplay[endId].cache.access("Terminal State Value", [this, expTruncatedStateSequence]() { return this->stateValueFunction(expTruncatedStateSequence); });
-    retV = terminalV;
-  }
+    retV = stateValueFunction(getTruncatedStateTimeSequence(endId));
 
   // Now iterating backwards to calculate the rest of vTbc
   for (ssize_t curId = endId; curId >= startId; curId--)
@@ -640,10 +635,10 @@ float Agent::retraceFunction(size_t expId)
     auto expAction = _experienceReplay[curId].action;
 
     // Calculating state value function
-    float curV = _experienceReplay[curId].cache.access("State Value", [this, expStateSequence]() { return this->stateValueFunction(expStateSequence); });
+    float curV = stateValueFunction(expStateSequence);
 
     // Calculating importance weight
-    float importanceWeight = _experienceReplay[curId].cache.access("Importance Weight", [this, curId]() { return getExperienceImportanceWeight(curId); });
+    float importanceWeight = getExperienceImportanceWeight(curId);
 
     // Truncate importance weight
     float truncatedImportanceWeight = std::min(1.0f, importanceWeight);
@@ -876,6 +871,10 @@ void Agent::printGenerationAfter()
       _k->_logger->logInfo("Normal", " + Importance Weight Cutoff:    [%.3f, %.3f]\n", 1.0f / _experienceReplayREFERCurrentCutoff, _experienceReplayREFERCurrentCutoff);
       _k->_logger->logInfo("Normal", " + Beta Factor:                 %f\n", _experienceReplayREFERCurrentBeta);
     }
+    else
+    {
+      _k->_logger->logInfo("Normal", " + Current Off-Policy Ratio:    %f\n", _experienceReplayREFERCurrentRatio);
+    }
 
     _k->_logger->logInfo("Normal", "Training Statistics:\n");
 
@@ -889,11 +888,14 @@ void Agent::printGenerationAfter()
     _k->_logger->logInfo("Normal", " + Best Reward:                 %f (%lu)\n", _trainingBestReward, _trainingBestEpisodeId);
     _k->_logger->logInfo("Normal", " + Reward Scale:                 %f \n", _rewardScale);
 
-    _k->_logger->logInfo("Normal", "Testing Statistics:\n");
+    if (isinf(_problem->_trainingRewardThreshold) == false)
+    {
+      _k->_logger->logInfo("Normal", "Testing Statistics:\n");
 
-    _k->_logger->logInfo("Normal", " + Candidate Policies:          %lu\n", _testingCandidateCount);
+      _k->_logger->logInfo("Normal", " + Candidate Policies:          %lu\n", _testingCandidateCount);
 
-    _k->_logger->logInfo("Normal", " + Latest Average (Stdev / Worst / Best) Reward: %f (%f / %f / %f)\n", _testingAverageReward, _testingStdevReward, _testingWorstReward, _testingBestReward);
+      _k->_logger->logInfo("Normal", " + Latest Average (Stdev / Worst / Best) Reward: %f (%f / %f / %f)\n", _testingAverageReward, _testingStdevReward, _testingWorstReward, _testingBestReward);
+    }
 
     if (_testingTargetAverageReward > -korali::Inf)
       _k->_logger->logInfo("Normal", " + Best Average Reward: %f/%f (%lu)\n", _testingBestAverageReward, _testingTargetAverageReward, _testingBestEpisodeId);

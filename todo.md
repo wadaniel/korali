@@ -1,9 +1,10 @@
 # Korali core
 
 * [ ] Use new implementation of subprojects/rtnorm
-* [ ] remove eigen and rtnorm flags
+* [X] remove eigen and rtnorm flags
 * [ ] Provide option to explicitly index the namespace hierarchy (e.g.
   @startNamespace0)
+* [ ] change "" to <> in includes where needed (examples cxx)
 
 
 # Python module
@@ -16,8 +17,6 @@
 # Third-party
 
 * [X] libco and gsl
-* [ ] move json to external
-* [ ] move dnnUtils to external
 * [ ] check for more third-party code to move
 * [X] rename external to third-party (or subprojects)
 * [ ] optional third-party

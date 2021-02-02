@@ -206,6 +206,8 @@ void GFPT::trainPolicy()
     /*****************************************
     * Calculating Critic Gradients
     *****************************************/
+    
+    float curV = stateValueFunction(expStateSequence);
 
     // Using retrace to obtain a better estimation of the state value function
     float retV = retraceFunction(expId);
@@ -243,7 +245,7 @@ void GFPT::trainPolicy()
     _vProblem->_solutionData[b] = {retV};
 
     _qProblem->_inputData[b] = expStateActionSequence;
-    _qProblem->_solutionData[b] = {retQ};
+    _qProblem->_solutionData[b] = {retQ - curV};
 
     /*****************************************
     * Calculating Policy Gradients

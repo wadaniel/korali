@@ -76,11 +76,10 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
   confIntervalHistory = np.array(confIntervalHistory)
 
   # Plotting common plot
-    
+  clr='red'
+  if ('GFPT' in dirs[resId]): clr='blue'    
   epList = range(0, len(rewardHistory)) 
-  ax.plot(epList, rewardHistory, 'x', markersize=1.3)
-  ax.plot(epList, meanHistory, '-', label=str(averageDepth) + '-Episode Average (' + dirs[resId] + ')')
-  ax.fill_between(epList, (meanHistory-confIntervalHistory), (meanHistory+confIntervalHistory), color='b', alpha=.1)
+  ax.plot(epList, meanHistory, '-', label=str(averageDepth) + '-Episode Average (' + dirs[resId] + ')', color=clr)
   
  ## Configuring common plotting features
  

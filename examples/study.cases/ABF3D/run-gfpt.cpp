@@ -73,10 +73,11 @@ int main(int argc, char *argv[])
   e["Solver"]["Experiences Between Policy Updates"] = 1;
   e["Solver"]["Cache Persistence"] = 243;
   e["Solver"]["Learning Rate"] = 0.0001;
+  e["Solver"]["Discount Factor"] = 0.995;
 
   /// Defining the configuration of replay memory
 
-  e["Solver"]["Experience Replay"]["Start Size"] = 8192;
+  e["Solver"]["Experience Replay"]["Start Size"] = 4096;
   e["Solver"]["Experience Replay"]["Maximum Size"] = 65536;
 
   /// Configuring the Remember-and-Forget Experience Replay algorithm
@@ -94,9 +95,9 @@ int main(int argc, char *argv[])
 
   /// Defining Critic and Policy Configuration
 
-  e["Solver"]["Policy"]["Learning Rate Scale"] = 0.01;
-  e["Solver"]["Policy"]["Target Accuracy"] = 0.05;
-  e["Solver"]["Policy"]["Optimization Candidates"] = 64;
+  e["Solver"]["Policy"]["Learning Rate Scale"] = 1.0;
+  e["Solver"]["Policy"]["Target Accuracy"] = 0.005;
+  e["Solver"]["Policy"]["Optimization Candidates"] = 128;
 
   /// Configuring the neural network and its hidden layers
 

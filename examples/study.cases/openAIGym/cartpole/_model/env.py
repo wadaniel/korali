@@ -4,7 +4,6 @@ import gym
 def env(s):
 
  # Creating Environment object
- maxSteps = 1000
  cart = gym.make('CartPole-v1').unwrapped
  
  # Checking whether to save a movie
@@ -25,7 +24,7 @@ def env(s):
  done = False
 
  # Running steps until termination is met
- while not done and step < maxSteps:
+ while not done and step < cart._max_episode_steps:
 
   # Getting new action
   s.update()

@@ -23,19 +23,14 @@ e["Problem"]["Actions Between Policy Updates"] = 1
 ### Adding custom setting to run the environment without saving a movie during training
 e["Problem"]["Custom Settings"]["Save Movie"] = "Disabled"
 
-### Defining variables
+# Defining State Variables
 
 e["Variables"][0]["Name"] = "Cart Position"
-e["Variables"][0]["Type"] = "State"
-
 e["Variables"][1]["Name"] = "Cart Velocity"
-e["Variables"][1]["Type"] = "State"
-
 e["Variables"][2]["Name"] = "Pole Angle"
-e["Variables"][2]["Type"] = "State"
-
 e["Variables"][3]["Name"] = "Pole Angular Velocity"
-e["Variables"][3]["Type"] = "State"
+
+# Defining Action Variable
 
 e["Variables"][4]["Name"] = "Push Direction"
 e["Variables"][4]["Type"] = "Action"
@@ -86,10 +81,6 @@ e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 32
 
 e["Solver"]["Neural Network"]["Hidden Layers"][3]["Type"] = "Layer/Activation"
 e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tanh"
-
-### Defining Termination Criteria
-
-e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 80
 
 ### Setting file output configuration
 

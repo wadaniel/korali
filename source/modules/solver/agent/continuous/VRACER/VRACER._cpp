@@ -120,13 +120,13 @@ void VRACER::trainPolicy()
   for (size_t b = 0; b < _miniBatchSize; b++)
   {
     // Getting index of current experiment
-    size_t curId = miniBatchIndexes[b];
+    size_t expId = miniBatchIndexes[b];
 
     // Get state, action, mean, Sigma for this experience
-    auto expStateSequence = getStateTimeSequence(curId);
-    auto expAction = _experienceReplay[curId].action;
-    auto expMeans = _experienceReplay[curId].policy["Action Means"].get<std::vector<float>>();
-    auto expSigmas = _experienceReplay[curId].policy["Action Sigmas"].get<std::vector<float>>();
+    auto expStateSequence = getStateTimeSequence(expId);
+    auto expAction = _experienceReplay[expId].action;
+    auto expMeans = _experienceReplay[expId].policy["Action Means"].get<std::vector<float>>();
+    auto expSigmas = _experienceReplay[expId].policy["Action Sigmas"].get<std::vector<float>>();
 
     // Forward the neural network for this state to get current means and sigmas and Value
     auto policy = runPolicy(expStateSequence);
@@ -136,10 +136,7 @@ void VRACER::trainPolicy()
 
     // Compute importance weight
     float importanceWeight = calculateImportanceWeight(expAction, curMeans, curSigmas, expMeans, expSigmas);
-
-    // Update value and weight in cache
-    _experienceReplay[curId].cache.set("State Value", V);
-    _experienceReplay[curId].cache.set("Importance Weight", importanceWeight);
+    _experienceReplay[expId].policy["Importance Weight"] = importanceWeight;
 
     /******************************************************
     * Gradient calculation
@@ -149,7 +146,7 @@ void VRACER::trainPolicy()
     std::vector<float> gradientLoss(1 + 2 * _problem->_actionVectorSize);
 
     // Get Vtbc before update
-    float expVtbc = retraceFunction(curId);
+    float expVtbc = retraceFunction(expId);
 
     // Keeping critic statistics
     cumulativeQStar += expVtbc;
@@ -168,26 +165,26 @@ void VRACER::trainPolicy()
     if (isOnPolicy || _experienceReplayREFEREnabled == false)
     {
       // Qret for terminal state is just reward
-      float Qret = _rewardScale*_experienceReplay[curId].reward;
+      float Qret = _rewardScale*_experienceReplay[expId].reward;
 
       // Check whether experience is non-terminal
-      bool isNormal = _experienceReplay[curId].termination == e_nonTerminal;
+      bool isNormal = _experienceReplay[expId].termination == e_nonTerminal;
 
       // In this case add Vtbc
       if (isNormal == true)
       {
-        float nextExpVtbc = retraceFunction(curId + 1);
+        float nextExpVtbc = retraceFunction(expId + 1);
         Qret += _discountFactor * nextExpVtbc;
       }
 
       // Check whether experience is truncated
-      bool isTrucated = _experienceReplay[curId].termination == e_truncated;
+      bool isTrucated = _experienceReplay[expId].termination == e_truncated;
 
       // For truncated state add value
       if (isTrucated == true)
       {
         // get truncated state
-        auto truncatedState = getTruncatedStateTimeSequence(curId);
+        auto truncatedState = getTruncatedStateTimeSequence(expId);
 
         // for truncated state, Vtbc == V - forward network
         float nextExpVtbc = stateValueFunction(truncatedState);
@@ -263,96 +260,6 @@ void VRACER::trainPolicy()
   _criticPolicyLearner->runGeneration();
 }
 
-std::vector<float> VRACER::calculateImportanceWeightGradient(const std::vector<float> &action, const std::vector<float> &curParamsOne, const std::vector<float> &curParamsTwo, const std::vector<float> &oldParamsOne, const std::vector<float> &oldParamsTwo)
-{
-  std::vector<float> grad(2 * _problem->_actionVectorSize, 0.0);
-
-  if (_policyDistribution == "Normal")
-  {
-    float logImportanceWeight = 0.0;
-
-    // ParamsOne are the Means, ParamsTwo are the Sigmas
-    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-    {
-      // Deviation from expAction and current Mean
-      float curActionDiff = (action[i] - curParamsOne[i]);
-
-      // Deviation from expAction and old Mean
-      float oldActionDiff = (action[i] - oldParamsOne[i]);
-
-      // Inverse Variances
-      float curInvVar = 1. / (curParamsTwo[i] * curParamsTwo[i]);
-      float oldInvVar = 1. / (oldParamsTwo[i] * oldParamsTwo[i]);
-
-      // Calc Imp Weight
-      logImportanceWeight += std::log(oldParamsTwo[i] / curParamsTwo[i]);
-      logImportanceWeight += 0.5 * (oldActionDiff * oldActionDiff * oldInvVar - curActionDiff * curActionDiff * curInvVar);
-
-      // Gradient with respect to Mean
-      grad[i] = curActionDiff * curInvVar;
-
-      // Gradient with respect to Sigma
-      grad[_problem->_actionVectorSize + i] = (curActionDiff * curActionDiff) * (curInvVar / curParamsTwo[i]) - 1.0f / curParamsTwo[i];
-    }
-
-    float importanceWeight = std::exp(logImportanceWeight);
-
-    // Scale by importance weight to get gradient
-    for (size_t i = 0; i < 2 * _problem->_actionVectorSize; i++)
-      grad[i] *= importanceWeight;
-  }
-  else /* _policyDistribution == "Beta" */
-  {
-    // ParamsOne are the Means, ParamsTwo are the Variance Coefficients
-    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-    {
-      // Variable preparation
-      const float muCur = curParamsOne[i];
-      const float varcoefCur = curParamsTwo[i];
-
-      float alphaCur;
-      float betaCur;
-      std::tie(alphaCur, betaCur) = betaParamTransformAlt(muCur, varcoefCur, _actionLowerBounds[i], _actionUpperBounds[i]);
-
-      const float muOld = oldParamsOne[i];
-      const float varcoefOld = oldParamsTwo[i];
-
-      float alphaOld;
-      float betaOld;
-      std::tie(alphaOld, betaOld) = betaParamTransformAlt(muOld, varcoefOld, _actionLowerBounds[i], _actionUpperBounds[i]);
-
-      // Log probability of action with old policy params
-      const float logpOldPolicy = betaLogDensityAlt(action[i], muOld, varcoefOld, _actionLowerBounds[i], _actionUpperBounds[i]);
-      const float invpOldPolicy = std::exp(-logpOldPolicy);
-
-      // Variable preparation
-      const float Bab = gsl_sf_beta(alphaCur, betaCur);
-
-      const float psiAb = gsl_sf_psi(alphaCur + betaCur);
-
-      const float logscale = std::log(_actionScalings[i]);
-      const float powscale = std::pow(_actionScalings[i], -betaCur - alphaCur + 1.);
-      const float factor = -1. * std::pow(action[i] - _actionLowerBounds[i], alphaCur - 1.) * powscale * std::pow(_actionUpperBounds[i] - action[i], betaCur - 1.) * invpOldPolicy / Bab;
-
-      // Rho Grad wrt alpha and beta
-      const float daBab = gsl_sf_psi(alphaCur) - psiAb;
-      const float drhoda = ((logscale - std::log(action[i] - _actionLowerBounds[i])) + daBab) * factor;
-      const float dbBab = gsl_sf_psi(betaCur) - psiAb;
-      const float drhodb = (logscale - std::log(_actionUpperBounds[i] - action[i]) + dbBab) * factor;
-
-      // Derivatives of alpha and beta wrt mu and varc
-      float dadmu, dadvarc, dbdmu, dbdvarc;
-      std::tie(dadmu, dadvarc, dbdmu, dbdvarc) = derivativesBetaParamTransformAlt(muCur, varcoefCur, _actionLowerBounds[i], _actionUpperBounds[i]);
-
-      // Rho Grad wrt mu and varc
-      grad[i] = drhoda * dadmu + drhodb * dbdmu;
-      grad[_problem->_actionVectorSize + i] = drhoda * dadvarc + drhodb * dbdvarc;
-    }
-  }
-
-  return grad;
-}
-
 float VRACER::stateValueFunction(const std::vector<std::vector<float>> &state)
 {
   // Calculating V(s_i)
@@ -414,7 +321,7 @@ void VRACER::printAgentInformation()
   _k->_logger->logInfo("Normal", " + Average (Std) Vtbc in Mini-Batch:                  %f (%f)\n", _statisticsAverageQStar, _statisticsStdevQStar);
   _k->_logger->logInfo("Normal", " + Average (Std) TD-Error in Mini-Batch:              %f (%f)\n", _statisticsAverageTDError, _statisticsStdevTDError);
   _k->_logger->logInfo("Normal", " + Average (Std) Off-Policy Objective in Mini-Batch:  %f (%f)\n", _statisticsAveragePolicyError, _statisticsStdevPolicyError);
-  _k->_logger->logInfo("Normal", " + Average Action Std in Mini-Batch: \n");
+  _k->_logger->logInfo("Normal", " + Average Action Noise (Sigma) in Mini-Batch: \n");
   for (size_t i = 0; i < _problem->_actionVectorSize; ++i) _k->_logger->logInfo("Normal", " +  [ %f ]\n", _statisticsAverageActionSigmas[i]);
 
   _k->_logger->logInfo("Normal", "Neural Network Information:\n");

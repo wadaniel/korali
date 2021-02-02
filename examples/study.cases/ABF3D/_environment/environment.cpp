@@ -22,7 +22,15 @@ void runEnvironment(korali::Sample &s)
   _environment->reset(_randomGenerator, sampleId, true);
 
   // Setting initial state
-  s["State"] = _environment->getState();
+  auto state = _environment->getState();
+
+  s["State"] = state;
+  state[0] = state[0] / 20.0f; // Swimmer 1 - Pos X
+  state[1] = state[1] / 20.0f; // Swimmer 1 - Pos Y
+  state[2] = state[2] / 20.0f; // Swimmer 1 - Pos Z
+  state[7] = state[7] / 20.0f; // Swimmer 2 - Pos X
+  state[8] = state[8] / 20.0f; // Swimmer 2 - Pos Y
+  state[9] = state[9] / 20.0f; // Swimmer 2 - Pos Z
 
   // Defining status variable that tells us whether when the simulation is done
   Status status{Status::Running};
@@ -47,12 +55,12 @@ void runEnvironment(korali::Sample &s)
     action[0] = action[0] * (upperBounds[0] - lowerBounds[0]) * 0.5f + lowerBounds[0];
 
     // Printing Action:
-    if (curActionIndex % 20 == 0)
-    {
-      printf("Action %lu: [ %f", curActionIndex, action[0]);
-      for (size_t i = 1; i < action.size(); i++) printf(", %f", action[i]);
-      printf("]\n");
-    }
+    // if (curActionIndex % 20 == 0)
+    //{
+    //  printf("Action %lu: [ %f", curActionIndex, action[0]);
+    //  for (size_t i = 1; i < action.size(); i++) printf(", %f", action[i]);
+    //  printf("]\n");
+    //}
 
     // Setting action
     status = _environment->advance(action);
@@ -61,7 +69,23 @@ void runEnvironment(korali::Sample &s)
     s["Reward"] = _environment->getReward();
 
     // Storing new state
-    s["State"] = _environment->getState();
+    auto state = _environment->getState();
+
+    state[0] = state[0] / 20.0f; // Swimmer 1 - Pos X
+    state[1] = state[1] / 20.0f; // Swimmer 1 - Pos Y
+    state[2] = state[2] / 20.0f; // Swimmer 1 - Pos Z
+    state[7] = state[7] / 20.0f; // Swimmer 2 - Pos X
+    state[8] = state[8] / 20.0f; // Swimmer 2 - Pos Y
+    state[9] = state[9] / 20.0f; // Swimmer 2 - Pos Z
+    s["State"] = state;
+
+    //  Printing State:
+    if (curActionIndex % 100 == 0)
+    {
+      printf("State %lu: [ %.3f", curActionIndex, state[0]);
+      for (size_t i = 1; i < state.size(); i++) printf(", %.3f", state[i]);
+      printf("]\n");
+    }
 
     // Increasing action count
     curActionIndex++;

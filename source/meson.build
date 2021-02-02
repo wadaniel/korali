@@ -18,8 +18,7 @@ subdir('sample')
 subdir('variable')
 
 # create korali python extension
-korali_install_dir = python.get_install_dir() + 'korali'
-pyton_extension = python.extension_module('korali',
+pyton_extension = python.extension_module(korali_extensions,
   korali_source,
   cpp_args: korali_cpp_args,
   include_directories: korali_include,

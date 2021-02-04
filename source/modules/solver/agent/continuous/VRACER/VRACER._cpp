@@ -28,7 +28,8 @@ void VRACER::initializeAgent()
 
   _criticPolicyExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
   _criticPolicyExperiment["Solver"]["Optimizer"] = _optimizer;
-  _criticPolicyExperiment["Solver"]["L2 Regularization"] = _l2Regularization;;
+  _criticPolicyExperiment["Solver"]["L2 Regularization"] = _l2Regularization;
+  ;
   _criticPolicyExperiment["Solver"]["Learning Rate"] = _learningRate;
   _criticPolicyExperiment["Solver"]["Loss Function"] = "Direct Gradient";
   _criticPolicyExperiment["Solver"]["Steps Per Generation"] = 1;
@@ -165,7 +166,7 @@ void VRACER::trainPolicy()
     if (isOnPolicy || _experienceReplayREFEREnabled == false)
     {
       // Qret for terminal state is just reward
-      float Qret = _rewardScale*_experienceReplay[expId].reward;
+      float Qret = _rewardScale * _experienceReplay[expId].reward;
 
       // Check whether experience is non-terminal
       bool isNormal = _experienceReplay[expId].termination == e_nonTerminal;

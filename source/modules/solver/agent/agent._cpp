@@ -8,7 +8,6 @@ namespace korali
 {
 namespace solver
 {
-
 void Agent::initialize()
 {
   _variableCount = _k->_variables.size();
@@ -63,7 +62,7 @@ void Agent::initialize()
 
   // If this continues a previous training run, deserialize previous input experience replay
   if (_k->_currentGeneration > 0)
-   if (_mode == "Training" || _testingBestPolicy.empty() )
+    if (_mode == "Training" || _testingBestPolicy.empty())
       deserializeExperienceReplay();
 
   // Obtaining training state
@@ -92,40 +91,40 @@ void Agent::initialize()
 
   if (_mode == "Training")
   {
-   // Creating storate for _agents and their status
-   _agents.resize(_agentCount);
-   _isAgentRunning.resize(_agentCount, false);
+    // Creating storate for _agents and their status
+    _agents.resize(_agentCount);
+    _isAgentRunning.resize(_agentCount, false);
 
-   // Storage for the entire episodes before adding it to the replay memory
-     _episodes.resize(_agentCount);
+    // Storage for the entire episodes before adding it to the replay memory
+    _episodes.resize(_agentCount);
   }
 
   if (_mode == "Testing")
   {
-   // Fixing termination criteria for testing mode
-   _maxGenerations = _k->_currentGeneration + 1;
+    // Fixing termination criteria for testing mode
+    _maxGenerations = _k->_currentGeneration + 1;
 
-   // Setting testing policy to best testing hyperparameters if not custom-set by the user
-   if (_testingPolicy.empty())
-   {
-    // Checking if testing policies have been generated
-    if (_testingBestPolicy.empty())
+    // Setting testing policy to best testing hyperparameters if not custom-set by the user
+    if (_testingPolicy.empty())
     {
-     _k->_logger->logWarning("Minimal", "Trying to test policy, but no testing policies have been generated during training yet or given in the configuration. Using current training policy instead.\n");
-     _testingPolicy = _trainingCurrentPolicy;
+      // Checking if testing policies have been generated
+      if (_testingBestPolicy.empty())
+      {
+        _k->_logger->logWarning("Minimal", "Trying to test policy, but no testing policies have been generated during training yet or given in the configuration. Using current training policy instead.\n");
+        _testingPolicy = _trainingCurrentPolicy;
+      }
+      else
+      {
+        _testingPolicy = _testingBestPolicy;
+      }
     }
-    else
-    {
-    _testingPolicy = _testingBestPolicy;
-    }
-   }
 
-   // Checking if there's testing samples defined
-   if (_testingSampleIds.size() == 0)
-     KORALI_LOG_ERROR("For testing, you need to indicate the sample ids to run in the ['Testing']['Sample Ids'] field.\n");
+    // Checking if there's testing samples defined
+    if (_testingSampleIds.size() == 0)
+      KORALI_LOG_ERROR("For testing, you need to indicate the sample ids to run in the ['Testing']['Sample Ids'] field.\n");
 
-   // Prepare storage for rewards from tested samples
-   _testingReward.resize(_testingSampleIds.size());
+    // Prepare storage for rewards from tested samples
+    _testingReward.resize(_testingSampleIds.size());
   }
 }
 
@@ -177,23 +176,21 @@ void Agent::trainingGeneration()
     // Perform optimization steps on the critic/policy, if reached the minimum replay memory size
     if (_sessionExperienceCount > _sessionExperiencesUntilStartSize)
     {
-    
-        // Recalculate reward scaling factor
-        if (false)
-        if ( _sessionExperienceCount >= 10000 * _rewardRescaleCount + _sessionExperiencesUntilStartSize)
+      // Recalculate reward scaling factor
+      if (false)
+        if (_sessionExperienceCount >= 10000 * _rewardRescaleCount + _sessionExperiencesUntilStartSize)
         {
-            _rewardRescaleCount++;
-            float rewardSumOfSquares = 0.;
+          _rewardRescaleCount++;
+          float rewardSumOfSquares = 0.;
 #pragma omp parallel for reduction(+ \
                                    : rewardSumOfSquares)
-            for(size_t i = 0; i < _experienceReplay.size(); ++i)
-            {
-                rewardSumOfSquares += _experienceReplay[i].reward * _experienceReplay[i].reward;
-            }
+          for (size_t i = 0; i < _experienceReplay.size(); ++i)
+          {
+            rewardSumOfSquares += _experienceReplay[i].reward * _experienceReplay[i].reward;
+          }
 
-            _rewardScale = 1.0/std::sqrt( rewardSumOfSquares / (float) _experienceReplay.size() );
+          _rewardScale = 1.0 / std::sqrt(rewardSumOfSquares / (float)_experienceReplay.size());
         }
-
 
       // If we accumulated enough experiences between updates in this session, update now
       while (_sessionExperienceCount > (_experiencesBetweenPolicyUpdates * _sessionPolicyUpdateCount + _sessionExperiencesUntilStartSize))

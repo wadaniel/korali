@@ -14,7 +14,7 @@ tarball="v${VERSION}.tar.gz"
 if [[ ! -f ${tarball} ]]; then
     git clean -xdf .
     cp .gitignore .gitignore.bak
-    wget "https://github.com/oneapi-src/oneDNN/archive/${tarball}"
+    curl -L -o ${tarball} "https://github.com/oneapi-src/oneDNN/archive/${tarball}"
     tar --strip-components=1 -xzvf ${tarball}
     mv .gitignore.bak .gitignore
 fi

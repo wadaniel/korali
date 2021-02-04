@@ -36,4 +36,6 @@ void @className::evaluateFisherInformation(Sample &sample)
     if (sample["Fisher Information"][d].size() != Nth) KORALI_LOG_ERROR("Bayesian problem of type Custom requires Fisher Information of size %zux%zu\n", Nth, Nth);
 }
 
+@moduleAutoCode
+
 @endNamespace

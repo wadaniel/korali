@@ -13,4 +13,6 @@ bool @className::isSampleFeasible(const std::vector<double> &sample)
   return true;
 }
 
+@moduleAutoCode
+
 @endNamespace

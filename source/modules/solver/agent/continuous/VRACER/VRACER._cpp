@@ -413,4 +413,6 @@ void @className::printAgentInformation()
   _criticPolicyExperiment._logger->setVerbosityLevel("Silent");
 }
 
+@moduleAutoCode
+
 @endNamespace

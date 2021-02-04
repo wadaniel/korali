@@ -10,15 +10,15 @@ from . import variables as vr
 
 def buildHeaderString( configFilePath, templateFilePath ):
 
-  moduleTemplateString = templateFilePath.read_text()
+  moduleTemplate = templateFilePath.read_text()
 
-  hb.checkHeaderTemplateString( templateFilePath, moduleTemplateString )
+  moduleConfig = aux.loadModuleConfiguration( configFilePath, moduleTemplate )
 
-  moduleConfig = aux.loadModuleConfiguration( configFilePath, moduleTemplateString )
+  hb.checkHeaderTemplateString( moduleConfig, templateFilePath, moduleTemplate )
 
   headerString = hb.createHeaderDoxygenString(moduleConfig)
 
-  headerString += moduleTemplateString
+  headerString += moduleTemplate
 
   overrideFunctionString = hb.createOverrideFunctionString(moduleConfig)
   headerString = headerString.replace('public:', 'public: \n' + overrideFunctionString + '\n')
@@ -37,11 +37,11 @@ def buildHeaderString( configFilePath, templateFilePath ):
 
 def buildCodeString( configFilePath, templateFilePath ):
 
-  moduleTemplateString = templateFilePath.read_text()
+  moduleTemplate = templateFilePath.read_text()
 
-  sb.checkSourceTemplateString( templateFilePath, moduleTemplateString )
+  moduleConfig = aux.loadModuleConfiguration( configFilePath, moduleTemplate )
 
-  moduleConfig = aux.loadModuleConfiguration( configFilePath, moduleTemplateString )
+  sb.checkSourceTemplateString( moduleConfig, templateFilePath, moduleTemplate )
 
   sourceString = sb.createSetConfiguration(moduleConfig)
   sourceString += sb.createGetConfiguration(moduleConfig)
@@ -57,7 +57,7 @@ def buildCodeString( configFilePath, templateFilePath ):
   if 'Conditional Variables' in moduleConfig:
     sourceString += sb.createGetPropertyPointer(moduleConfig)
 
-  sourceString = moduleTemplateString.replace( '@endNamespace',  sourceString + '\n\n@endNamespace')
+  sourceString = moduleTemplate.replace( '@moduleAutoCode',  sourceString )
 
   sourceString = aux.replaceKeys( moduleConfig, sourceString );
 
@@ -100,7 +100,6 @@ def buildCodeFromTemplate( configFile, templateFile, outputFile=None ):
       pass
 
   filePath.write_text(codeString)
-
 
 
 def buildVariablesHeader(configFileList, templateFile, outputFile=None ):

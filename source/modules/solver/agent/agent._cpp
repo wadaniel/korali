@@ -882,4 +882,6 @@ void @className::printGenerationAfter()
   }
 }
 
+@moduleAutoCode
+
 @endNamespace

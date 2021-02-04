@@ -28,4 +28,6 @@ void @className::updateDistribution()
   _aux = gsl_sf_lngamma(_alpha + _beta) - gsl_sf_lngamma(_alpha) - gsl_sf_lngamma(_beta);
 }
 
+@moduleAutoCode
+
 @endNamespace

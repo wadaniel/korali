@@ -8,4 +8,6 @@ void @className::getSelections(std::vector<double> &p, std::vector<unsigned int>
   gsl_ran_multinomial(_range, p.size(), N, p.data(), n.data());
 }
 
+@moduleAutoCode
+
 @endNamespace

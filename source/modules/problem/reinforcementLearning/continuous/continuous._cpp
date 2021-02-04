@@ -21,4 +21,6 @@ void @className::initialize()
   }
 }
 
+@moduleAutoCode
+
 @endNamespace

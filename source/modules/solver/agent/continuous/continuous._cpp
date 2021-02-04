@@ -260,4 +260,6 @@ float @className::getExperienceImportanceWeight(size_t expId)
   return expImportanceWeight;
 }
 
+@moduleAutoCode
+
 @endNamespace

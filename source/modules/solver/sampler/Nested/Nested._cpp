@@ -1023,4 +1023,6 @@ void @className::finalize()
   return;
 }
 
+@moduleAutoCode
+
 @endNamespace

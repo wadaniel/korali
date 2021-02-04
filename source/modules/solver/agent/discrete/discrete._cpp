@@ -163,4 +163,6 @@ std::vector<float> @className::calculateKLDivergenceGradient(const std::vector<f
   return klGrad;
 }
 
+@moduleAutoCode
+
 @endNamespace

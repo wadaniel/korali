@@ -57,4 +57,6 @@ void @className::evaluateLogLikelihood(Sample &sample)
   sample["logLikelihood"] = -log(_psiProblemSampleCount) + logSumExp(logValues);
 }
 
+@moduleAutoCode
+
 @endNamespace

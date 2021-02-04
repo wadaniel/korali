@@ -12,12 +12,11 @@
   #include <cudnn.h>
 #endif
 
-namespace korali
-{
-    class NeuralNetwork;
-}
+@startNamespace0
 
-@startNamespace
+  class NeuralNetwork;
+
+@startNamespace1
 
 class @className : public @parentClassName
 {
@@ -157,6 +156,8 @@ class @className : public @parentClassName
   virtual void backwardHyperparameters(){};
 };
 
-@endNamespace
+@endNamespace1
+
+@endNamespace0
 
 @endIncludeGuard

@@ -273,4 +273,6 @@ void @className::setSeed(knlohmann::json &js)
   }
 }
 
+@moduleAutoCode
+
 @endNamespace

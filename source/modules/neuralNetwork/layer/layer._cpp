@@ -111,4 +111,6 @@ void @className::createHyperparameterMemory()
   _hyperparameterCount = 0;
 }
 
+@moduleAutoCode
+
 @endNamespace

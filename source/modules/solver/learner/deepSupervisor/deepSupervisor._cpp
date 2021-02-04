@@ -242,4 +242,6 @@ void @className::printGenerationAfter()
     _k->_logger->logInfo("Normal", " + Gradient L2-Norm: %.15f\n", sqrt(_currentLoss));
 }
 
+@moduleAutoCode
+
 @endNamespace

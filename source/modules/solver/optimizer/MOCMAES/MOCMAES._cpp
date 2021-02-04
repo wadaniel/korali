@@ -540,4 +540,6 @@ void @className::finalize()
   */
 }
 
+@moduleAutoCode
+
 @endNamespace

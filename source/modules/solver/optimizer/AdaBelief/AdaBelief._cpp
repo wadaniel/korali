@@ -115,4 +115,6 @@ void @className::finalize()
   (*_k)["Results"]["Best Sample"]["Parameters"] = _currentValue;
 }
 
+@moduleAutoCode
+
 @endNamespace

@@ -25,4 +25,6 @@ void @className::updateDistribution()
   _aux = -gsl_sf_log(_scale * M_PI);
 }
 
+@moduleAutoCode
+
 @endNamespace

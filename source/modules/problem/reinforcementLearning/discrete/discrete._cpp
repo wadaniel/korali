@@ -20,4 +20,6 @@ void @className::initialize()
       KORALI_LOG_ERROR("For possible action %lu, incorrect vector size provided. Expected: %lu, Provided: %lu.\n", i, _actionVectorSize, _possibleActions[i].size());
 }
 
+@moduleAutoCode
+
 @endNamespace

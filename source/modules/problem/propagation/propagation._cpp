@@ -49,4 +49,6 @@ void @className::execute(Sample &sample)
   sample.run(_executionModel);
 }
 
+@moduleAutoCode
+
 @endNamespace

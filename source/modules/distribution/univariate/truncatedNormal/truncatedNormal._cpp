@@ -44,4 +44,6 @@ void @className::updateDistribution()
   }
 }
 
+@moduleAutoCode
+
 @endNamespace

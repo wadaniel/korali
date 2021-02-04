@@ -115,4 +115,6 @@ size_t @className::getProcessId()
   return 0;
 }
 
+@moduleAutoCode
+
 @endNamespace

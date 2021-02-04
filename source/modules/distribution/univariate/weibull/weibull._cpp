@@ -27,4 +27,6 @@ void @className::updateDistribution()
   _aux = log(_shape / _scale) - (_shape - 1.0) * log(_scale);
 }
 
+@moduleAutoCode
+
 @endNamespace

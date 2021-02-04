@@ -78,4 +78,6 @@ void @className::evaluateWithGradients(Sample &sample)
     for (size_t i = 0; i < sample["Gradient"].size(); i++) sample["Gradient"][i] = gradient[i];
 }
 
+@moduleAutoCode
+
 @endNamespace

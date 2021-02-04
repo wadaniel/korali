@@ -290,4 +290,6 @@ void @className::getHyperparameterGradients(float *gradient)
 #endif
 }
 
+@moduleAutoCode
+
 @endNamespace

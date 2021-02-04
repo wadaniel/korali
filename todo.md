@@ -2,8 +2,7 @@
 
 * [ ] Use new implementation of subprojects/rtnorm
 * [X] remove eigen and rtnorm flags
-* [ ] Provide option to explicitly index the namespace hierarchy (e.g.
-  @startNamespace0)
+* [X] Provide option to explicitly index the namespace hierarchy (e.g. @startNamespace0)
 * [ ] change "" to <> in includes where needed (examples cxx)
 
 
@@ -19,7 +18,7 @@
 * [X] libco and gsl
 * [ ] check for more third-party code to move
 * [X] rename external to third-party (or subprojects)
-* [ ] optional third-party
+* [Χ] optional third-party
 * [ ] Fix the `git clean -xdf .` in all `._fetch.sh` scripts. It will fail in a release.
 
 
@@ -31,7 +30,7 @@
 
 # Tests
 
-* [ ] return value in all tests
+* [X] return value in all tests
 * [ ] write tests in meson
 * [ ] configure circleci
 * [ ] write separate tests for each file
@@ -39,5 +38,4 @@
 
 # FIXME
 
-* [ ] pybind is installed with --user and was not found by meson
-
+* [Χ] pybind is installed with --user and was not found by meson

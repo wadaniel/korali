@@ -237,4 +237,6 @@ void @className::backwardData()
 #endif
 }
 
+@moduleAutoCode
+
 @endNamespace

@@ -62,4 +62,6 @@ void @className::setProperty(const std::string &propertyName, const std::vector<
   if (recognizedProperty == false) KORALI_LOG_ERROR("Unrecognized property: %s for the Multivariate Normal distribution", propertyName.c_str());
 }
 
+@moduleAutoCode
+
 @endNamespace

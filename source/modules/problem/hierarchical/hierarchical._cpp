@@ -73,4 +73,6 @@ void @className::evaluate(Sample &sample)
   sample["F(x)"] = sample["logPosterior"];
 }
 
+@moduleAutoCode
+
 @endNamespace

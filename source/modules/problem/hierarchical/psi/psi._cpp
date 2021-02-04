@@ -152,4 +152,6 @@ void Psi::evaluateLogLikelihood(Sample &sample)
   sample["logLikelihood"] = logLikelihood;
 }
 
+@moduleAutoCode
+
 @endNamespace

@@ -16,6 +16,8 @@ def makeTestPath( codeFilePath ):
   r = aux.pathSplitAtDir( p, 'source' )
   r = p.relative_to(r)
   t = Path('./test_source/').joinpath(r)
+  suffix = t.suffix.replace('_','')
+  t = t.with_suffix(suffix)
   return str(t)
 
 
@@ -42,11 +44,10 @@ for moduleDir, relDir, fileNames in os.walk( modulesDir ):
             outSourceFileList.append( makeTestPath(_file) )
 
 for config, inHeader, inSource, outHeader, outSource in \
- zip(configFileList, headerFileList, sourceFileList, outHeaderFileList, outSourceFileList):
+  zip(configFileList, headerFileList, sourceFileList, outHeaderFileList, outSourceFileList):
     print( [inHeader,inSource], config, [outHeader,outSource] )
     args = Args( [inHeader,inSource], config, [outHeader,outSource] )
     main(args)
-
 
 
 from build_variables_header import *

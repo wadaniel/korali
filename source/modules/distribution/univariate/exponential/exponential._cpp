@@ -24,4 +24,6 @@ void @className::updateDistribution()
   _aux = 0.0;
 }
 
+@moduleAutoCode
+
 @endNamespace

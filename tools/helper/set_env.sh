@@ -31,7 +31,7 @@ if [[ -d ${SUBPROJECTS_DIR} ]]; then
     # FIXME: [fabianw@mavt.ethz.ch; 2021-02-04] 
     # Is OSX DYLD_LIBRARY_PATH and '*.dylib'?
     _SUBPROJECT_SO=''
-    for so in $(find ${SUBPROJECTS_DIR} -type f -name "*.so*"); do
+    for so in $(find -L ${SUBPROJECTS_DIR} -type f \( -name "*.so" -o -name "*.dylib" \)); do
         if [[ "${so}" == *"subprojects/"*"/build/"* ]]; then
             # never use something that is below a `build` directory within
             # subprojects.

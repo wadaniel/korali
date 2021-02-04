@@ -45,7 +45,7 @@ void Discrete::getAction(korali::Sample &sample)
     float x = _uniformGenerator->getRandomNumber();
 
     // If p < e, then we choose the action randomly, with a uniform probability, among all possible actions.
-    if (pEpsilon < _randomActionProbability)
+    if (pEpsilon < _randomActionProbability / _policyUpdateCount)
     {
       actionIdx = floor(x * _problem->_possibleActions.size());
     }
@@ -58,9 +58,10 @@ void Discrete::getAction(korali::Sample &sample)
         curSum += pActions[actionIdx];
         if (x < curSum) break;
       }
-      
+      if(actionIdx >= pActions.size()) KORALI_LOG_ERROR("XXX\n");
+
       // NOTE: In original DQN paper [Minh2015] we choose max
-      actionIdx = std::distance(pActions.begin(), std::max_element(pActions.begin(), pActions.end()));
+      // actionIdx = std::distance(pActions.begin(), std::max_element(pActions.begin(), pActions.end()));
     }
 
     // Storing action idx, policy and importance weight

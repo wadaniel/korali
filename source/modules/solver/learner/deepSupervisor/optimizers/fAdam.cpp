@@ -37,6 +37,7 @@ void fAdam::reset()
 {
   _currentGeneration = 1;
   _modelEvaluationCount = 0;
+  _currentValue = _initialValues;
 
   for (size_t i = 0; i < _nVars; i++)
   {

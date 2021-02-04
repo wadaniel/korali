@@ -11,7 +11,7 @@ e = korali.Experiment()
 
 ### Setting results dir for ABF2D trajectories
  
-setResultsDir('_result_gfpt')
+setResultsDir('_result_gfpt_new')
 
 ### Defining Korali Problem
 
@@ -54,32 +54,32 @@ e["Solver"]["Type"] = "Agent / Continuous / GFPT"
 e["Solver"]["Mode"] = "Training"
 e["Solver"]["Episodes Per Generation"] = 1
 e["Solver"]["Experiences Between Policy Updates"] = 1
-e["Solver"]["Cache Persistence"] = 200
-e["Solver"]["Learning Rate"] = 0.001
+e["Solver"]["Cache Persistence"] = 100
+e["Solver"]["Learning Rate"] = 1e-4
 
 ### Defining the configuration of replay memory
 
-e["Solver"]["Experience Replay"]["Start Size"] = 4096
-e["Solver"]["Experience Replay"]["Maximum Size"] = 65536
+e["Solver"]["Experience Replay"]["Start Size"] = 65536
+e["Solver"]["Experience Replay"]["Maximum Size"] = 2*65536
 
 ### Configuring the Remember-and-Forget Experience Replay algorithm
 
 e["Solver"]["Experience Replay"]["REFER"]["Enabled"] = True
 e["Solver"]["Experience Replay"]["REFER"]["Cutoff Scale"] = 4.0
-e["Solver"]["Experience Replay"]["REFER"]["Target"] = 0.5
+e["Solver"]["Experience Replay"]["REFER"]["Target"] = 0.1
 e["Solver"]["Experience Replay"]["REFER"]["Initial Beta"] = 0.3
 e["Solver"]["Experience Replay"]["REFER"]["Annealing Rate"] = 5e-7
 
 ### Configuring Mini Batch
 
-e["Solver"]["Mini Batch Size"] = 128
+e["Solver"]["Mini Batch Size"] = 32
 e["Solver"]["Mini Batch Strategy"] = "Uniform"
 
 ## Defining Critic and Policy Configuration
 
 e["Solver"]["Policy"]["Learning Rate Scale"] = 1.0
-e["Solver"]["Policy"]["Target Accuracy"] = 0.0001
-e["Solver"]["Policy"]["Optimization Candidates"] = 24
+e["Solver"]["Policy"]["Target Accuracy"] = 0.001
+e["Solver"]["Policy"]["Optimization Candidates"] = 32
 
 ### Configuring the neural network and its hidden layers
 
@@ -100,6 +100,7 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tan
 ### Defining Termination Criteria
 
 e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 50.0
+e["Solver"]["Termination Criteria"]["Max Generations"] = 500
 
 ### Setting console/file output configuration
 
@@ -107,7 +108,7 @@ e["Solver"]["Experience Replay"]["Serialize"] = False
 e["Console Output"]["Verbosity"] = "Detailed"
 e["File Output"]["Enabled"] = True
 e["File Output"]["Frequency"] = 1
-e["File Output"]["Path"] = "_result_gfpt"
+e["File Output"]["Path"] = "_result_gfpt_new"
 
 ### Running Experiment
 

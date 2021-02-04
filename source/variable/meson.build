@@ -1,4 +1,3 @@
-# FIXME: [fabianw@mavt.ethz.ch; 2021-01-29] special version only for testing
 korali_gen_variable = find_program('../../tools/build/build_variables_header.py')
 
 gen_variable = custom_target('gen_variable',

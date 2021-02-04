@@ -1,5 +1,4 @@
 # define code generator object
-# FIXME: [fabianw@mavt.ethz.ch; 2021-01-29] special version only for testing
 korali_gen = find_program('../tools/build/build.py')
 
 korali_include = [include_directories('.')]
@@ -18,10 +17,16 @@ subdir('sample')
 subdir('variable')
 
 # create korali python extension
-korali_install_dir = python.get_install_dir() + 'korali'
-pyton_extension = python.extension_module('korali',
+# see: https://mesonbuild.com/Reference-tables.html#compiler-ids
+compiler_id = meson.get_compiler('cpp').get_id()
+link_args = []
+if compiler_id == 'gcc' or compiler_id == 'clang' or compiler_id == 'intel'
+  link_args = ['-lgsl', '-lgslcblas']
+endif
+pyton_extension = python.extension_module(korali_extensions,
   korali_source,
   cpp_args: korali_cpp_args,
+  link_args: link_args,
   include_directories: korali_include,
   dependencies: [korali_deps, python.dependency()],
   install: true,

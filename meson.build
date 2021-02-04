@@ -59,8 +59,8 @@ elif user_want_onednn and not onednn_dep.found()
 
   sub_proj = cmake.subproject('onednn', options: opt_var)
 
-  # message('CMaket targets:\n - ' + '\n - '.join(sub_proj.target_list()))
-  oneDNN_dep = sub_proj.dependency('dnnl')
+  korali_deps += sub_proj.dependency('dnnl')
+  korali_cpp_args += '-D_KORALI_USE_ONEDNN'
 endif
 
 # process required korali dependencies

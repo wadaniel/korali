@@ -104,7 +104,6 @@ void DeepSupervisor::initialize()
 
   if (_optimizer == "Adam") _adamSolver = new korali::fAdam(weightAndBiasParameters.size());
   if (_optimizer == "AdaBelief") _adamSolver = new korali::fAdaBelief(weightAndBiasParameters.size());
-  if (_optimizer == "GradientDescendent") _adamSolver = new korali::fGradientDescendent(weightAndBiasParameters.size());
 
   // Setting initial guesses as the current weight and bias parameters
   for (size_t i = 0; i < weightAndBiasParameters.size(); i++)

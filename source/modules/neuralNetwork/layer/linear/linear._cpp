@@ -48,8 +48,7 @@ std::vector<float> Linear::generateInitialHyperparameters()
 
     // Adding layer's bias hyperparameter values
     for (size_t i = 0; i < _outputChannels; i++)
-      //hyperparameters.push_back(0.0f);
-      hyperparameters.push_back(_weightScaling * xavierConstant * _nn->_uniformGenerator->getRandomNumber());
+      hyperparameters.push_back(0.0f);
   }
 
   return hyperparameters;

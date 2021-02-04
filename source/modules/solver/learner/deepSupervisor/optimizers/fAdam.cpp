@@ -37,6 +37,11 @@ void fAdam::reset()
 {
   _currentGeneration = 1;
   _modelEvaluationCount = 0;
+
+  for (size_t i = 0; i < _nVars; i++)
+    if (std::isfinite(_initialValues[i]) == false)
+      fprintf(stderr, "Initial Value of variable \'%lu\' not defined (no defaults can be calculated).\n", i);
+
   _currentValue = _initialValues;
 
   for (size_t i = 0; i < _nVars; i++)

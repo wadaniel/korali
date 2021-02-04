@@ -91,7 +91,7 @@ class GFPT : public Continuous
    * @param curMeans The current means of the policy to use as initial guess
    * @return The optimal action
    */
-  knlohmann::json optimizeAction(const std::vector<std::vector<float>> stateActionSequence, const std::vector<float> &curMeans, const std::vector<float> &curSigmas);
+  knlohmann::json optimizeAction(const std::vector<std::vector<float>> stateActionSequence, const std::vector<float> &curMeans);
 
   knlohmann::json runPolicy(const std::vector<std::vector<float>> &stateSequence) override;
   float stateValueFunction(const std::vector<std::vector<float>> &stateSequence) override;

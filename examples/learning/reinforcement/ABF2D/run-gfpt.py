@@ -11,7 +11,7 @@ e = korali.Experiment()
 
 ### Setting results dir for ABF2D trajectories
  
-setResultsDir('_result_gfpt_new')
+setResultsDir('_result_gfpt')
 
 ### Defining Korali Problem
 
@@ -108,7 +108,7 @@ e["Solver"]["Experience Replay"]["Serialize"] = False
 e["Console Output"]["Verbosity"] = "Detailed"
 e["File Output"]["Enabled"] = True
 e["File Output"]["Frequency"] = 1
-e["File Output"]["Path"] = "_result_gfpt_new"
+e["File Output"]["Path"] = "_result_gfpt"
 
 ### Running Experiment
 

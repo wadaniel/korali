@@ -66,4 +66,6 @@ void @className::evaluateGradient(Sample &sample)
   evaluateLoglikelihoodGradient(sample);
 }
 
+@moduleAutoCode
+
 @endNamespace

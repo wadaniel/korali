@@ -33,4 +33,6 @@ void @className::updateDistribution()
     _aux = -gsl_sf_log(_maximum - _minimum);
 }
 
+@moduleAutoCode
+
 @endNamespace

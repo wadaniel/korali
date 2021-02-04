@@ -49,4 +49,6 @@ void @className::printGenerationAfter()
   _k->_logger->logInfo("Minimal", "Total Executions %lu.\n", _modelEvaluationCount);
 }
 
+@moduleAutoCode
+
 @endNamespace

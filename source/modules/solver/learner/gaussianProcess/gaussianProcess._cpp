@@ -146,4 +146,6 @@ void @className::setTrainingHyperparameters(const std::vector<float> &hyperparam
   _gpHyperparameters = hyperparameters;
 }
 
+@moduleAutoCode
+
 @endNamespace

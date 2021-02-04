@@ -281,4 +281,6 @@ void @className::runEnvironment()
   co_switch(_envThread);
 }
 
+@moduleAutoCode
+
 @endNamespace

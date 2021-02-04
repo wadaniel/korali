@@ -102,4 +102,6 @@ void @className::finalize()
   _k->_logger->logInfo("Minimal", "Integral Calculated: %e\n", _integral);
 }
 
+@moduleAutoCode
+
 @endNamespace

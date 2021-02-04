@@ -47,4 +47,6 @@ void @className::verifyData()
       KORALI_LOG_ERROR("Solution vector size of batch %lu is inconsistent. Size: %lu - Expected: %lu.\n", b, _solutionData[b].size(), _solutionSize);
 }
 
+@moduleAutoCode
+
 @endNamespace

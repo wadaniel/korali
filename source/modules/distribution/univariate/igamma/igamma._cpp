@@ -28,4 +28,6 @@ void @className::updateDistribution()
   _aux = std::exp(_auxLog);
 }
 
+@moduleAutoCode
+
 @endNamespace

@@ -257,4 +257,6 @@ void @className::setHyperparameters(const std::vector<float> &hyperparameters)
   }
 }
 
+@moduleAutoCode
+
 @endNamespace

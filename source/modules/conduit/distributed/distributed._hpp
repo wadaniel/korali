@@ -9,9 +9,8 @@
   #include "mpi.h"
 #endif
 
+@startNamespace0
 
-namespace korali
-{
 #ifdef _KORALI_USE_MPI
   /**
    * @brief Communicator storage for the current Korali Worker
@@ -30,10 +29,8 @@ namespace korali
     */
   extern long int getKoraliMPICommPointer();
 #endif
-} // namespace korali
 
-
-@startNamespace
+@startNamespace1
 
 class @className : public @parentClassName
 {
@@ -108,6 +105,8 @@ class @className : public @parentClassName
   void abort() override;
 };
 
-@endNamespace
+@endNamespace1
+
+@endNamespace0
 
 @endIncludeGuard

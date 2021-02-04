@@ -3,5 +3,6 @@
 
 @startNamespace
 
-@endNamespace
+@moduleAutoCode
 
+@endNamespace

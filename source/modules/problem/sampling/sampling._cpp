@@ -26,4 +26,6 @@ void @className::evaluate(Sample &sample)
   sample["F(x)"] = sample["P(x)"];
 }
 
+@moduleAutoCode
+
 @endNamespace

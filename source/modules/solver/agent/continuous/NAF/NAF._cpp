@@ -325,4 +325,6 @@ void @className::printAgentInformation()
   _qExperiment._logger->setVerbosityLevel("Silent");
 }
 
+@moduleAutoCode
+
 @endNamespace

@@ -27,4 +27,6 @@ void @className::updateDistribution()
   _aux = -gsl_sf_lngamma(_shape) - _shape * log(_scale);
 }
 
+@moduleAutoCode
+
 @endNamespace

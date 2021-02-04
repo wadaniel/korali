@@ -104,4 +104,6 @@ void @className::finalize()
   _modelEvaluationCount = 0;
 }
 
+@moduleAutoCode
+
 @endNamespace

@@ -305,4 +305,6 @@ void @className::finalize()
   _k->_logger->logInfo("Minimal", "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
 }
 
+@moduleAutoCode
+
 @endNamespace

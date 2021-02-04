@@ -5,8 +5,6 @@ import argparse
 from builders import *
 
 
-# print("\n[Korali] Start generating code generation dependencies")
-
 parser = argparse.ArgumentParser()
 parser.add_argument('--dir', '-d', default='./', help='Korali root directory')
 args = parser.parse_args()
@@ -29,4 +27,3 @@ for moduleDir, relDir, fileNames in os.walk( modulesDir ):
             cnt += 1
 
 print(cnt)
-# print("\n[Korali] End generating code generation dependencies")

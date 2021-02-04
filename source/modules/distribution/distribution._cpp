@@ -61,4 +61,6 @@ gsl_rng *@className::setRange(const std::string rangeString)
   return rng;
 }
 
+@moduleAutoCode
+
 @endNamespace

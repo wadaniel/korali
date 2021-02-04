@@ -444,4 +444,6 @@ void @className::printAgentInformation()
   for (size_t i = 0; i < _problem->_actionVectorSize; ++i) _k->_logger->logInfo("Normal", " +  [ %f ] -> [ %f ] \n", _statisticsAverageActionSigmas[i], _statisticsAverageTargetSigmas[i]);
 }
 
+@moduleAutoCode
+
 @endNamespace

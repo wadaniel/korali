@@ -231,4 +231,6 @@ size_t @className::getProcessId()
   return _workerId;
 }
 
+@moduleAutoCode
+
 @endNamespace

@@ -1,18 +1,21 @@
 import sys
 from . import variables as vr
+from . import auxiliar as aux
+import re
 
-def checkHeaderTemplateString( templateFilePath, moduleTemplateString ):
+
+def checkHeaderTemplateString( moduleConfig, templateFilePath, moduleTemplate ):
   """These keywords shouls appear only once"""
 
   substrings = ['@startIncludeGuard',
                 '@endIncludeGuard',
-                '@startNamespace',
-                '@endNamespace',
                 '@className',
                 '@parentClassName']
   for s in substrings:
-    if moduleTemplateString.count(s) != 1:
+    if moduleTemplate.count(s) != 1:
       sys.exit(f'[Korali] Error: keyword {s} must appear exactly one time in file: {templateFilePath}' )
+
+  aux.checkNamespaceKeys(moduleConfig, templateFilePath, moduleTemplate)
 
 
 def startIncludeGuard(moduleConfig):

@@ -1,17 +1,11 @@
 from . import variables as vr
+from . import auxiliar as aux
 import json
 import sys
 
-
-def checkSourceTemplateString( templateFilePath, moduleTemplateString ):
+def checkSourceTemplateString( moduleConfig, templateFilePath, moduleTemplate ):
   """These keywords shouls appear only once"""
-
-  substrings = ['@startNamespace',
-                '@endNamespace'
-                ]
-  for s in substrings:
-    if moduleTemplateString.count(s) != 1:
-      sys.exit(f'[Korali] Error: keyword {s} must appear exactly one time in file: {templateFilePath}' )
+  aux.checkNamespaceKeys(moduleConfig, templateFilePath, moduleTemplate)
 
 
 def consumeValue(base, moduleName, path, varName, varType, isMandatory, options):
@@ -78,8 +72,6 @@ def consumeValue(base, moduleName, path, varName, varType, isMandatory, options)
   cString += '\n'
   return cString
 
-#####################################################################
-
 
 def saveValue(base, path, varName, varType):
 
@@ -105,9 +97,6 @@ def saveValue(base, path, varName, varType):
 
   sString = '   ' + base + path + ' = ' + varName + ';\n'
   return sString
-
-
-####################################################################
 
 
 def createSetConfiguration(module):
@@ -182,9 +171,6 @@ def createSetConfiguration(module):
   return codeString
 
 
-####################################################################
-
-
 def createGetConfiguration(module):
   codeString = 'void ' + module["Class Name"] + '::getConfiguration(knlohmann::json& js) \n{\n\n'
 
@@ -233,9 +219,6 @@ def createGetConfiguration(module):
   return codeString
 
 
-####################################################################
-
-
 def createApplyModuleDefaults(module):
   codeString = 'void ' + module["Class Name"] + '::applyModuleDefaults(knlohmann::json& js) \n{\n\n'
 
@@ -249,9 +232,6 @@ def createApplyModuleDefaults(module):
   codeString += '} \n\n'
 
   return codeString
-
-
-####################################################################
 
 
 def createApplyVariableDefaults(module):
@@ -268,9 +248,6 @@ def createApplyVariableDefaults(module):
   codeString += '} \n\n'
 
   return codeString
-
-
-####################################################################
 
 
 def createCheckTermination(module):
@@ -293,9 +270,6 @@ def createCheckTermination(module):
   return codeString
 
 
-####################################################################
-
-
 def createRunOperation(module):
   codeString = 'bool ' + module["Class Name"] + '::runOperation(std::string operation, korali::Sample& sample)\n'
   codeString += '{\n'
@@ -314,9 +288,6 @@ def createRunOperation(module):
   codeString += '}\n\n'
 
   return codeString
-
-
-####################################################################
 
 
 def createGetPropertyPointer(module):

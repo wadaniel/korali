@@ -85,4 +85,6 @@ void @className::execute(Sample &sample)
   if (std::isnan(evaluation)) KORALI_LOG_ERROR("The function evaluation returned NaN.\n");
 }
 
+@moduleAutoCode
+
 @endNamespace

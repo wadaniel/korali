@@ -28,4 +28,6 @@ void @className::updateDistribution()
   _logNormalization = -0.5 * gsl_sf_log(2 * M_PI) - gsl_sf_log(_standardDeviation);
 }
 
+@moduleAutoCode
+
 @endNamespace

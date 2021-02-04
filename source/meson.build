@@ -17,9 +17,16 @@ subdir('sample')
 subdir('variable')
 
 # create korali python extension
+# see: https://mesonbuild.com/Reference-tables.html#compiler-ids
+compiler_id = meson.get_compiler('cpp').get_id()
+link_args = []
+if compiler_id == 'gcc' or compiler_id == 'clang' or compiler_id == 'intel'
+  link_args = ['-lgsl', '-lgslcblas']
+endif
 pyton_extension = python.extension_module(korali_extensions,
   korali_source,
   cpp_args: korali_cpp_args,
+  link_args: link_args,
   include_directories: korali_include,
   dependencies: [korali_deps, python.dependency()],
   install: true,

@@ -4,6 +4,7 @@
 * [X] remove eigen and rtnorm flags
 * [X] Provide option to explicitly index the namespace hierarchy (e.g. @startNamespace0)
 * [ ] change "" to <> in includes where needed (examples cxx)
+* [ ] integrate meson in CircleCI config
 
 
 # Python module
@@ -16,7 +17,7 @@
 # Third-party
 
 * [X] libco and gsl
-* [ ] check for more third-party code to move
+* [X] check for more third-party code to move
 * [X] rename external to third-party (or subprojects)
 * [Χ] optional third-party
 * [ ] Fix the `git clean -xdf .` in all `._fetch.sh` scripts. It will fail in a release.

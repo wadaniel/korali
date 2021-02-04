@@ -37,8 +37,8 @@ def env(s, th):
   
   if s["Custom Settings"]["Record Observations"] == "True":
       stateactionstate = state
-      stateactionstate.append(action[0])
-      stateactionstate.append(newstate)
+      stateactionstate.extend(action)
+      stateactionstate.extend(newstate)
 
       salist.append(stateactionstate)
 

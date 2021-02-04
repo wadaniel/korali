@@ -56,7 +56,7 @@ if __name__ == "__main__":
  
         e["Problem"]["Environment Function"] = evalenv
         e["Problem"]["Custom Settings"]["Input"] = infile
-        e["Problem"]["Custom Settings"]["Comparison"] = infile
+        e["Problem"]["Custom Settings"]["Comparison"] = comparison
         e["Solver"]["Mode"] = "Testing"
         e["Solver"]["Testing"]["Sample Ids"] = [0]
         e["File Output"]["Enabled"] = False

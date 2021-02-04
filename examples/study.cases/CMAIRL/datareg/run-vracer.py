@@ -119,9 +119,9 @@ print('[Korali] Done training. Now running learned policy to produce observation
 ### Now testing policy, dumping trajectory results
 
 e["Solver"]["Mode"] = "Testing"
-e["Solver"]["Testing"]["Sample Ids"] = [i for i in range(20)]
+e["Solver"]["Testing"]["Sample Ids"] = [i for i in range(100)]
 e["Problem"]["Custom Settings"]["Output"] = outfile
-e["Problem"]["Custom Settings"]["Record Observations"] = "False"
+e["Problem"]["Custom Settings"]["Record Observations"] = "True"
 
 k.run(e)
 

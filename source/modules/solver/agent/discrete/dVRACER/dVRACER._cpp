@@ -250,7 +250,7 @@ knlohmann::json dVRACER::runPolicy(const std::vector<std::vector<float>> &state)
   // Normalizing action probabilities
   for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
     pActions[i] *= invSumExpQVal;
- 
+
   // Returning action probabilities along with state value and importance weight
   knlohmann::json policy;
   policy["State Value"] = stateValue;
@@ -298,7 +298,6 @@ void dVRACER::printAgentInformation()
   _criticPolicyExperiment._logger->_verbosityLevel = _k->_logger->_verbosityLevel;
   _criticPolicyExperiment._solver->printGenerationAfter();
   _criticPolicyExperiment._logger->setVerbosityLevel("Silent");
-
 }
 
 } // namespace discrete

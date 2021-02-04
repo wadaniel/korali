@@ -15,7 +15,7 @@ void DQN::initializeAgent()
   // Initializing common discrete agent configuration
   Discrete::initializeAgent();
 
-  if(_targetUpdateFrequency == 0) KORALI_LOG_ERROR("Target Update Frequency must be at least 1 (is %zu).", _targetUpdateFrequency);
+  if (_targetUpdateFrequency == 0) KORALI_LOG_ERROR("Target Update Frequency must be at least 1 (is %zu).", _targetUpdateFrequency);
 
   /*********************************************************************
   * Initializing Critic (Q) Learner
@@ -71,7 +71,7 @@ void DQN::trainPolicy()
   {
     // Selecting a uniformly random selected, yet not repeated experience
     size_t expId = miniBatchIndexes[b];
- 
+
     // Get state, action, and action probabilities from experience
     /*
     auto expStateSequence = getStateTimeSequence(expId);
@@ -103,7 +103,6 @@ void DQN::trainPolicy()
     // If state is not terminal (next state is filled) then add Qnew to the Q value.
     if (_experienceReplay[expId].termination == e_nonTerminal)
     {
-
       // Getting experience's next state's and state/action sequence
       auto nextStateActionSequence = getStateActionTimeSequence(expId + 1);
       auto nextStateSequence = getStateTimeSequence(expId + 1);
@@ -111,7 +110,6 @@ void DQN::trainPolicy()
       // Getting action probabilities for next state, as per the critic
       auto policy = runPolicy(nextStateSequence);
       auto pActions = policy["Action Probabilities"].get<std::vector<float>>();
- 
 
       // Finding the best action index from the probabilities
       size_t bestActionIdx = std::distance(pActions.begin(), std::max_element(pActions.begin(), pActions.end()));
@@ -129,20 +127,19 @@ void DQN::trainPolicy()
 
       //float nextExpVtbc = retraceFunction(expId + 1);
       //qStar += _discountFactor * nextExpVtbc;
-
     }
 
     if (_experienceReplay[expId].termination == e_truncated)
     {
-        // Get truncated state sequence, adding the truncated state to it and removing first time element
-        auto expTruncatedStateSequence = getTruncatedStateTimeSequence(expId);
+      // Get truncated state sequence, adding the truncated state to it and removing first time element
+      auto expTruncatedStateSequence = getTruncatedStateTimeSequence(expId);
 
-        // for truncated state, Vtbc == V - forward network
-        auto policy = runPolicy(expTruncatedStateSequence);
-        float nextExp = policy["State Value"].get<float>();
+      // for truncated state, Vtbc == V - forward network
+      auto policy = runPolicy(expTruncatedStateSequence);
+      float nextExp = policy["State Value"].get<float>();
 
-        // add value to Qret
-        qStar += _discountFactor * nextExp;
+      // add value to Qret
+      qStar += _discountFactor * nextExp;
     }
 
     // Updating inputs to training learner
@@ -156,7 +153,7 @@ void DQN::trainPolicy()
 
   // Running one generation of the optimization method with the given mini-batch
   _criticPolicyLearner->runGeneration();
-  
+
   // Keeping statistics
   _statisticsAverageQStar = (float)cumulativeQStar / (float)_miniBatchSize;
   _statisticsStdevQStar = std::sqrt(cumulativeQStarSquared / (float)_miniBatchSize - _statisticsAverageQStar * _statisticsAverageQStar);
@@ -219,7 +216,7 @@ knlohmann::json DQN::runPolicy(const std::vector<std::vector<float>> &stateSeque
   // Normalizing action probabilities
   for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
     pActions[i] *= invSumExpQVal;
- 
+
   // Calculating V(s_i) as the expectation of Q(s_i,a)
   float stateValue = 0.;
   for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
@@ -266,7 +263,6 @@ void DQN::printAgentInformation()
   _criticPolicyExperiment._logger->_verbosityLevel = _k->_logger->_verbosityLevel;
   _criticPolicyExperiment._solver->printGenerationAfter();
   _criticPolicyExperiment._logger->setVerbosityLevel("Silent");
- 
 }
 
 } // namespace discrete

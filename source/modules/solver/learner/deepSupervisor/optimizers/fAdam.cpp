@@ -53,7 +53,6 @@ void fAdam::reset()
 
 void fAdam::processResult(float evaluation, std::vector<float> &gradient)
 {
-
   _modelEvaluationCount++;
   _currentEvaluation = evaluation;
 
@@ -90,7 +89,6 @@ void fAdam::processResult(float evaluation, std::vector<float> &gradient)
   {
     _currentValue[i] -= _eta / (std::sqrt(_biasCorrectedSecondMoment[i]) + _epsilon) * _biasCorrectedFirstMoment[i];
   }
-
 }
 
 bool fAdam::checkTermination()

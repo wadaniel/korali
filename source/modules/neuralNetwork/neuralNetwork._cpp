@@ -223,7 +223,6 @@ void NeuralNetwork::backward(const std::vector<std::vector<float>> &outputGradie
     for (size_t i = 0; i < _hyperparameterCount; i++)
       _hyperparameterGradients[i] += batchHyperparameterGradients[i];
   }
-
 }
 
 std::vector<float> NeuralNetwork::getHyperparameters()

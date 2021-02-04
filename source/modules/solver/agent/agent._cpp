@@ -176,22 +176,6 @@ void Agent::trainingGeneration()
     // Perform optimization steps on the critic/policy, if reached the minimum replay memory size
     if (_sessionExperienceCount > _sessionExperiencesUntilStartSize)
     {
-      // Recalculate reward scaling factor
-      if (false)
-        if (_sessionExperienceCount >= 10000 * _rewardRescaleCount + _sessionExperiencesUntilStartSize)
-        {
-          _rewardRescaleCount++;
-          float rewardSumOfSquares = 0.;
-#pragma omp parallel for reduction(+ \
-                                   : rewardSumOfSquares)
-          for (size_t i = 0; i < _experienceReplay.size(); ++i)
-          {
-            rewardSumOfSquares += _experienceReplay[i].reward * _experienceReplay[i].reward;
-          }
-
-          _rewardScale = 1.0 / std::sqrt(rewardSumOfSquares / (float)_experienceReplay.size());
-        }
-
       // If we accumulated enough experiences between updates in this session, update now
       while (_sessionExperienceCount > (_experiencesBetweenPolicyUpdates * _sessionPolicyUpdateCount + _sessionExperiencesUntilStartSize))
       {
@@ -397,8 +381,6 @@ void Agent::processEpisode(std::vector<knlohmann::json> &episode)
     cumulativeReward += e.reward;
 
     // Scale reward
-    float eps = 1e-7;
-    e.reward *= (_rewardScale + eps);
     _experienceReplay.add(e);
   }
 
@@ -883,7 +865,6 @@ void Agent::printGenerationAfter()
     _k->_logger->logInfo("Normal", " + Latest Reward:               %f/%f\n", _trainingLastReward, _problem->_trainingRewardThreshold);
     _k->_logger->logInfo("Normal", " + %lu-Episode Average Reward:  %f\n", _trainingAverageDepth, _trainingAverageReward);
     _k->_logger->logInfo("Normal", " + Best Reward:                 %f (%lu)\n", _trainingBestReward, _trainingBestEpisodeId);
-    _k->_logger->logInfo("Normal", " + Reward Scale:                 %f \n", _rewardScale);
 
     if (isinf(_problem->_trainingRewardThreshold) == false)
     {

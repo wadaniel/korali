@@ -168,14 +168,14 @@ float DQN::stateValueFunction(const std::vector<std::vector<float>> &state)
   return policy["State Value"];
 }
 
-knlohmann::json DQN::runPolicy(const std::vector<std::vector<float>> &state)
+knlohmann::json DQN::runPolicy(const std::vector<std::vector<float>> &stateSequence)
 {
   // Storing state into the critic input (will not change)
-  std::vector<std::vector<float>> stateActionInput(state.size());
-  for (size_t t = 0; t < state.size(); t++)
+  std::vector<std::vector<float>> stateActionInput(stateSequence.size());
+  for (size_t t = 0; t < stateSequence.size(); t++)
   {
     stateActionInput[t].resize(_problem->_stateVectorSize + _problem->_actionVectorSize);
-    for (size_t i = 0; i < state.size(); i++) stateActionInput[t][i] = state[t][i];
+    for (size_t i = 0; i < _problem->_stateVectorSize; i++) stateActionInput[t][i] = stateSequence[t][i];
   }
 
   // Storage for action probabilities
@@ -187,9 +187,9 @@ knlohmann::json DQN::runPolicy(const std::vector<std::vector<float>> &state)
   for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
   {
     // Copying the values of the possible action onto the state/action vector
-    for (size_t t = 0; t < state.size(); t++)
-      for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-        stateActionInput[t][_problem->_stateVectorSize + i] = _problem->_possibleActions[t][i];
+    for (size_t t = 0; t < stateSequence.size(); t++)
+      for (size_t j = 0; j < _problem->_actionVectorSize; j++)
+        stateActionInput[t][_problem->_stateVectorSize + j] = _problem->_possibleActions[i][j];
 
     // Computing Q(s,a_i)
     qval[i] = _criticPolicyLearner->getEvaluation({stateActionInput})[0][0];

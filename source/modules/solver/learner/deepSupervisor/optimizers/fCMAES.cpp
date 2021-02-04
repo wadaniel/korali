@@ -237,16 +237,7 @@ void fCMAES::prepareGeneration()
 
   for (size_t i = 0; i < _populationSize; ++i)
   {
-    bool isFeasible;
-    do
-    {
-      sampleSingle(i);
-
-      isFeasible = isSampleFeasible(_samplePopulation[i]);
-
-      if (isFeasible == false) _infeasibleSampleCount++;
-
-    } while (isFeasible == false);
+    sampleSingle(i);
   }
 }
 

@@ -36,6 +36,7 @@ void DQN::initializeAgent()
   _criticPolicyExperiment["Solver"]["Steps Per Generation"] = 1;
   _criticPolicyExperiment["Solver"]["Neural Network"]["Engine"] = _neuralNetworkEngine;
   _criticPolicyExperiment["Solver"]["Neural Network"]["Hidden Layers"] = _neuralNetworkHiddenLayers;
+  _criticPolicyExperiment["Solver"]["Output Weights Scaling"] = 0.0001;
 
   // Running initialization to verify that the configuration is correct
   _criticPolicyExperiment.initialize();
@@ -70,6 +71,21 @@ void DQN::trainPolicy()
   {
     // Selecting a uniformly random selected, yet not repeated experience
     size_t expId = miniBatchIndexes[b];
+ 
+    // Get state, action, and action probabilities from experience
+    /*
+    auto expStateSequence = getStateTimeSequence(expId);
+    auto expPvals = _experienceReplay[expId].policy["Action Probabilities"].get<std::vector<float>>();
+    size_t expActionIdx = _experienceReplay[expId].policy["Action Index"].get<size_t>();
+
+    // Forward the neural network for this state to get current action probabilities
+    auto policy = runPolicy(expStateSequence);
+    auto curPvals = policy["Action Probabilities"].get<std::vector<float>>();
+  
+    // Compute importance weight
+    float importanceWeight = calculateImportanceWeight(expActionIdx, curPvals, expPvals);
+    _experienceReplay[expId].policy["Importance Weight"] = importanceWeight;
+    */
 
     // Qhat = max_a(qhat) with s' fixed
     // Q* = r + y*Qhat -- If not terminal state
@@ -87,6 +103,7 @@ void DQN::trainPolicy()
     // If state is not terminal (next state is filled) then add Qnew to the Q value.
     if (_experienceReplay[expId].termination == e_nonTerminal)
     {
+
       // Getting experience's next state's and state/action sequence
       auto nextStateActionSequence = getStateActionTimeSequence(expId + 1);
       auto nextStateSequence = getStateTimeSequence(expId + 1);
@@ -94,6 +111,7 @@ void DQN::trainPolicy()
       // Getting action probabilities for next state, as per the critic
       auto policy = runPolicy(nextStateSequence);
       auto pActions = policy["Action Probabilities"].get<std::vector<float>>();
+ 
 
       // Finding the best action index from the probabilities
       size_t bestActionIdx = std::distance(pActions.begin(), std::max_element(pActions.begin(), pActions.end()));
@@ -108,6 +126,10 @@ void DQN::trainPolicy()
       auto qNextExp = _criticPolicyLearner->getEvaluation({nextStateActionSequence})[0][0];
 
       qStar += _discountFactor * qNextExp;
+
+      //float nextExpVtbc = retraceFunction(expId + 1);
+      //qStar += _discountFactor * nextExpVtbc;
+
     }
 
     if (_experienceReplay[expId].termination == e_truncated)
@@ -134,10 +156,10 @@ void DQN::trainPolicy()
 
   // Running one generation of the optimization method with the given mini-batch
   _criticPolicyLearner->runGeneration();
-
+  
   // Keeping statistics
   _statisticsAverageQStar = (float)cumulativeQStar / (float)_miniBatchSize;
-  _statisticsStdevQStar = sqrt(cumulativeQStarSquared / (float)_miniBatchSize - _statisticsAverageQStar * _statisticsAverageQStar);
+  _statisticsStdevQStar = std::sqrt(cumulativeQStarSquared / (float)_miniBatchSize - _statisticsAverageQStar * _statisticsAverageQStar);
 }
 
 float DQN::stateValueFunction(const std::vector<std::vector<float>> &state)

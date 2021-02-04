@@ -19,22 +19,46 @@ void GFPT::initializeAgent()
   /*********************************************************************
   * State Value Function Learner
   *********************************************************************/
+  float _l2Regularization = 0.0;
 
   _vExperiment["Problem"]["Type"] = "Supervised Learning";
   _vExperiment["Problem"]["Max Timesteps"] = _timeSequenceLength;
   _vExperiment["Problem"]["Training Batch Size"] = _miniBatchSize;
   _vExperiment["Problem"]["Inference Batch Size"] = 1;
   _vExperiment["Problem"]["Input"]["Size"] = _problem->_stateVectorSize;
-  _vExperiment["Problem"]["Solution"]["Size"] = 1;
+  _vExperiment["Problem"]["Solution"]["Size"] = 1 + _problem->_actionVectorSize;
 
   _vExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
   _vExperiment["Solver"]["Optimizer"] = _optimizer;
   _vExperiment["Solver"]["Learning Rate"] = _learningRate;
-  _vExperiment["Solver"]["Loss Function"] = "Mean Squared Error";
+  _vExperiment["Solver"]["L2 Regularization"] = _l2Regularization;;
+  _vExperiment["Solver"]["Loss Function"] = "Direct Gradient";
   _vExperiment["Solver"]["Steps Per Generation"] = 1;
   _vExperiment["Solver"]["Neural Network"]["Engine"] = _neuralNetworkEngine;
   _vExperiment["Solver"]["Neural Network"]["Hidden Layers"] = _neuralNetworkHiddenLayers;
   _vExperiment["Solver"]["Output Weights Scaling"] = 0.001;
+  
+  _vExperiment["Solver"]["Neural Network"]["Output Layer"]["Scale"][0] = 1.0;
+  _vExperiment["Solver"]["Neural Network"]["Output Layer"]["Shift"][0] = 0.0;
+  _vExperiment["Solver"]["Neural Network"]["Output Layer"]["Tanh Mask"][0] = false;
+ 
+  // Adding policy masks, with masks to normalize and rescale the output to fit the action's [lower, upper] bounds
+  for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+  {
+    size_t varIdx = _problem->_actionVectorIndexes[i];
+    auto lowerBound = _k->_variables[varIdx]->_lowerBound;
+    auto upperBound = _k->_variables[varIdx]->_upperBound;
+    float shift = (upperBound + lowerBound) * 0.5;
+    float scale = (upperBound - lowerBound) * 0.5;
+    float sigma = _k->_variables[varIdx]->_initialExplorationNoise;
+
+    // Checking correct noise configuration
+    if (sigma <= 0.0f) KORALI_LOG_ERROR("Provided initial noise (%f) for action variable %lu is not defined or negative.\n", sigma, varIdx);
+
+    _vExperiment["Solver"]["Neural Network"]["Output Layer"]["Scale"][i+1] = scale;
+    _vExperiment["Solver"]["Neural Network"]["Output Layer"]["Shift"][i+1] = shift;
+    _vExperiment["Solver"]["Neural Network"]["Output Layer"]["Tanh Mask"][i+1] = true;
+  }
 
   // Running initialization to verify that the configuration is correct
   _vExperiment.initialize();
@@ -54,6 +78,7 @@ void GFPT::initializeAgent()
 
   _qExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
   _qExperiment["Solver"]["Optimizer"] = _optimizer;
+  _qExperiment["Solver"]["L2 Regularization"] = _l2Regularization;;
   _qExperiment["Solver"]["Learning Rate"] = _learningRate;
   _qExperiment["Solver"]["Loss Function"] = "Mean Squared Error";
   _qExperiment["Solver"]["Steps Per Generation"] = 1;
@@ -64,49 +89,6 @@ void GFPT::initializeAgent()
   _qExperiment.initialize();
   _qProblem = dynamic_cast<problem::SupervisedLearning *>(_qExperiment._problem);
   _qLearner = dynamic_cast<solver::learner::DeepSupervisor *>(_qExperiment._solver);
-
-  /*********************************************************************
-  * Policy Learner
-  *********************************************************************/
-
-  _pExperiment["Problem"]["Type"] = "Supervised Learning";
-  _pExperiment["Problem"]["Max Timesteps"] = _timeSequenceLength;
-  _pExperiment["Problem"]["Training Batch Size"] = _miniBatchSize;
-  _pExperiment["Problem"]["Inference Batch Size"] = 1;
-  _pExperiment["Problem"]["Input"]["Size"] = _problem->_stateVectorSize;
-  _pExperiment["Problem"]["Solution"]["Size"] = _problem->_actionVectorSize;
-
-  _pExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
-  _pExperiment["Solver"]["Optimizer"] = _optimizer;
-  _pExperiment["Solver"]["Learning Rate"] = _learningRate * _policyLearningRateScale;
-  _pExperiment["Solver"]["Loss Function"] = "Direct Gradient";
-  _pExperiment["Solver"]["Steps Per Generation"] = 1;
-  _pExperiment["Solver"]["Neural Network"]["Engine"] = _neuralNetworkEngine;
-  _pExperiment["Solver"]["Neural Network"]["Hidden Layers"] = _neuralNetworkHiddenLayers;
-  _pExperiment["Solver"]["Output Weights Scaling"] = 0.001;
-
-  // Adding policy masks, with masks to normalize and rescale the output to fit the action's [lower, upper] bounds
-  for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-  {
-    size_t varIdx = _problem->_actionVectorIndexes[i];
-    auto lowerBound = _k->_variables[varIdx]->_lowerBound;
-    auto upperBound = _k->_variables[varIdx]->_upperBound;
-    float shift = (upperBound + lowerBound) * 0.5;
-    float scale = (upperBound - lowerBound) * 0.5;
-    float sigma = _k->_variables[varIdx]->_initialExplorationNoise;
-
-    // Checking correct noise configuration
-    if (sigma <= 0.0f) KORALI_LOG_ERROR("Provided initial noise (%f) for action variable %lu is not defined or negative.\n", sigma, varIdx);
-
-    _pExperiment["Solver"]["Neural Network"]["Output Layer"]["Scale"][i] = scale;
-    _pExperiment["Solver"]["Neural Network"]["Output Layer"]["Shift"][i] = shift;
-    _pExperiment["Solver"]["Neural Network"]["Output Layer"]["Tanh Mask"][i] = true;
-  }
-
-  // Running initialization to verify that the configuration is correct
-  _pExperiment.initialize();
-  _pProblem = dynamic_cast<problem::SupervisedLearning *>(_pExperiment._problem);
-  _pLearner = dynamic_cast<solver::learner::DeepSupervisor *>(_pExperiment._solver);
 
   /*********************************************************************
   * Initializing Action Optimizers (one per thread)
@@ -200,14 +182,13 @@ void GFPT::trainPolicy()
 
     // Updating action distributions for the current state
     auto policy = runPolicy(expStateSequence);
+    float V = policy["State Value"].get<float>();
     auto curMeans = policy["Action Means"].get<std::vector<float>>();
     auto curSigmas = policy["Action Sigmas"].get<std::vector<float>>();
 
     /*****************************************
     * Calculating Critic Gradients
     *****************************************/
-    
-    float curV = stateValueFunction(expStateSequence);
 
     // Using retrace to obtain a better estimation of the state value function
     float retV = retraceFunction(expId);
@@ -241,35 +222,36 @@ void GFPT::trainPolicy()
       retQ += _discountFactor * nextExpVtbc;
     }
 
-    _vProblem->_inputData[b] = expStateSequence;
-    _vProblem->_solutionData[b] = {retV};
-
     _qProblem->_inputData[b] = expStateActionSequence;
-    _qProblem->_solutionData[b] = {retQ - curV};
+    _qProblem->_solutionData[b] = {retQ}; // target
 
     /*****************************************
     * Calculating Policy Gradients
     *****************************************/
 
     // Storage for the v+policy gradients
-    std::vector<float> pGradients(_problem->_actionVectorSize, 0.0f);
+    std::vector<float> vGradients(1 + 1 * _problem->_actionVectorSize, 0.0f);
+    vGradients[0] = -(V - retV); // Direct
 
     // Storage for the GFPT and REFER gradients
     std::vector<float> gfptGradients(_problem->_actionVectorSize, 0.0f);
     std::vector<float> referGradients(_problem->_actionVectorSize, 0.0f);
 
     // Optimizing best action for the selected experience
-    auto optResults = optimizeAction(expStateActionSequence, curMeans);
+    auto optResults = optimizeAction(expStateActionSequence, curMeans, curSigmas);
     auto bstMeans = optResults["Best Means"].get<std::vector<float>>();
-    auto bstValue = optResults["Average Value"].get<float>();
+    
+    float bstValue = optResults["Average Value"].get<float>();
+    float curValue = getActionAdvantage(expStateActionSequence);
 
+    if (bstValue > curValue)
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-      gfptGradients[i] = bstMeans[i] - curMeans[i];
-
+        gfptGradients[i] =  -(curMeans[i] - bstMeans[i]);
+    
     // Getting REFER gradients
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-      referGradients[i] = expMeans[i] - curMeans[i];
-
+        referGradients[i] = -(curMeans[i] - expMeans[i])/(curSigmas[i]*curSigmas[i]);
+ 
     // Re-computing importance weight for the experiment and storing it into cache
     float importanceWeight = calculateImportanceWeight(expAction, curMeans, curSigmas, expMeans, expSigmas);
     _experienceReplay[expId].cache.set("Importance Weight", importanceWeight);
@@ -277,13 +259,15 @@ void GFPT::trainPolicy()
     // Checking whether the experience is on policy (i.e., it is within the [1/cutoff, cutoff] region)
     bool isOnPolicy = (importanceWeight > (1.0f / _experienceReplayREFERCutoffScale)) && (importanceWeight < _experienceReplayREFERCutoffScale);
 
-    // If the experiment if on-policy, we use it for the calculation of the gradients
+    // If the experiment is on-policy, we use it for the calculation of the gradients
+    if (isOnPolicy)
+    if (bstValue > curValue)
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-      if (isOnPolicy) pGradients[i] += _experienceReplayREFERCurrentBeta * gfptGradients[i];
+        vGradients[i+1] = _experienceReplayREFERCurrentBeta * gfptGradients[i];
 
     // Applying REFER gradients
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-      pGradients[i] += (1.0f - _experienceReplayREFERCurrentBeta) * referGradients[i];
+      vGradients[i+1] += (1.0f - _experienceReplayREFERCurrentBeta) * referGradients[i];
 
 // Computing statistics
 #pragma omp critical
@@ -292,16 +276,16 @@ void GFPT::trainPolicy()
       _statisticsAverageTargetSigmas[i] += curSigmas[i];
       _statisticsAverageActionSigmas[i] += curSigmas[i];
     }
-
+ 
     // Adding means to the policy update
-    _pProblem->_inputData[b] = expStateSequence;
-    _pProblem->_solutionData[b] = pGradients;
+    _vProblem->_inputData[b] = expStateSequence;
+    _vProblem->_solutionData[b] = vGradients;
+
   }
 
   // Running one generation of the optimization method with the given mini-batch
   _vLearner->runGeneration();
   _qLearner->runGeneration();
-  _pLearner->runGeneration();
 
   // Updating batch evaluation network for the advantage function for CMAES steps
   auto aHyperparameters = _qLearner->getTrainingHyperparameters();
@@ -316,7 +300,7 @@ void GFPT::trainPolicy()
   }
 }
 
-knlohmann::json GFPT::optimizeAction(const std::vector<std::vector<float>> stateActionSequence, const std::vector<float> &curMeans)
+knlohmann::json GFPT::optimizeAction(const std::vector<std::vector<float>> stateActionSequence, const std::vector<float> &curMeans, const std::vector<float>& curSigmas)
 {
   // Getting current thread ID and corresponding optimizer and batch optimization NN
   size_t curThread = omp_get_thread_num();
@@ -334,6 +318,7 @@ knlohmann::json GFPT::optimizeAction(const std::vector<std::vector<float>> state
 
   // Setting initial action means from the current means
   actionOptimizer->_initialMeans = curMeans;
+  actionOptimizer->_initialStandardDeviations = curSigmas;
 
   // Resetting the state of the CMAES optimizer for the new batch
   actionOptimizer->reset();
@@ -389,7 +374,7 @@ knlohmann::json GFPT::optimizeAction(const std::vector<std::vector<float>> state
 
 knlohmann::json GFPT::runPolicy(const std::vector<std::vector<float>> &state)
 {
-  auto eval = _pLearner->getEvaluation({state})[0];
+  auto eval = _vLearner->getEvaluation({state})[0];
 
   std::vector<float> actionMeans(_problem->_actionVectorSize);
   std::vector<float> actionSigmas(_problem->_actionVectorSize);
@@ -402,11 +387,12 @@ knlohmann::json GFPT::runPolicy(const std::vector<std::vector<float>> &state)
     // Checking correct noise configuration
     if (sigma <= 0.0f) KORALI_LOG_ERROR("Provided initial noise (%f) for action variable %lu is not defined or negative.\n", sigma, varIdx);
 
-    actionMeans[i] = eval[i];
+    actionMeans[i] = eval[i+1];
     actionSigmas[i] = sigma;
   }
 
   knlohmann::json policy;
+  policy["State Value"] = eval[0];
   policy["Action Means"] = actionMeans;
   policy["Action Sigmas"] = actionSigmas;
   return policy;
@@ -415,14 +401,14 @@ knlohmann::json GFPT::runPolicy(const std::vector<std::vector<float>> &state)
 knlohmann::json GFPT::getAgentPolicy()
 {
   knlohmann::json hyperparameters;
-  hyperparameters["Policy"] = _pLearner->getInferenceHyperparameters();
+  hyperparameters["Policy"] = _vLearner->getInferenceHyperparameters();
   return hyperparameters;
 }
 
 void GFPT::setAgentPolicy(const knlohmann::json &hyperparameters)
 {
   auto policyHyperparameters = hyperparameters["Policy"].get<std::vector<float>>();
-  _pLearner->setInferenceHyperparameters(policyHyperparameters);
+  _vLearner->setInferenceHyperparameters(policyHyperparameters);
 }
 
 void GFPT::setTrainingState(const knlohmann::json &state)
@@ -432,9 +418,6 @@ void GFPT::setTrainingState(const knlohmann::json &state)
 
   _vLearner->setTrainingHyperparameters(state["V"]["Training"]);
   _vLearner->setInferenceHyperparameters(state["V"]["Inference"]);
-
-  _pLearner->setTrainingHyperparameters(state["P"]["Training"]);
-  _pLearner->setInferenceHyperparameters(state["P"]["Inference"]);
 }
 
 knlohmann::json GFPT::getTrainingState()
@@ -447,18 +430,21 @@ knlohmann::json GFPT::getTrainingState()
   state["V"]["Training"] = _vLearner->getTrainingHyperparameters();
   state["V"]["Inference"] = _vLearner->getInferenceHyperparameters();
 
-  state["P"]["Training"] = _pLearner->getTrainingHyperparameters();
-  state["P"]["Inference"] = _pLearner->getInferenceHyperparameters();
-
   return state;
 }
 
 void GFPT::printAgentInformation()
 {
-  _k->_logger->logInfo("Normal", " + Training Loss: [V = %.3e] [Q = %.3e] [P = %.3e]\n", _vLearner->_currentLoss, _qLearner->_currentLoss, _pLearner->_currentLoss);
-  _k->_logger->logInfo("Normal", " + Learning Rate: [V = %.3e] [Q = %.3e] [P = %.3e]\n", _vLearner->_learningRate, _qLearner->_learningRate, _pLearner->_learningRate);
+  _k->_logger->logInfo("Normal", " + Training Loss: [V = %.3e] [Q = %.3e]\n", _vLearner->_currentLoss, _qLearner->_currentLoss);
+  _k->_logger->logInfo("Normal", " + Learning Rate: [V = %.3e] [Q = %.3e]\n", _vLearner->_learningRate, _qLearner->_learningRate);
   _k->_logger->logInfo("Normal", " + Average Action Sigma: [ Current ] -> [ Target ]\n");
   for (size_t i = 0; i < _problem->_actionVectorSize; ++i) _k->_logger->logInfo("Normal", " +  [ %f ] -> [ %f ] \n", _statisticsAverageActionSigmas[i], _statisticsAverageTargetSigmas[i]);
+ 
+  _k->_logger->logInfo("Normal", "Neural Network Information:\n");
+  _vExperiment._logger->_verbosityLevel = _k->_logger->_verbosityLevel;
+  _vExperiment._solver->printGenerationAfter();
+  _vExperiment._logger->setVerbosityLevel("Silent");
+
 }
 
 } // namespace continuous

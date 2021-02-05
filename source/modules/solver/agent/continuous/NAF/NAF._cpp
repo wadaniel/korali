@@ -30,6 +30,8 @@ void NAF::initializeAgent()
 
   _qExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
   _qExperiment["Solver"]["Optimizer"] = _optimizer;
+  _qExperiment["Solver"]["L2 Regularization"]["Enabled"] = _l2RegularizationEnabled;
+  _qExperiment["Solver"]["L2 Regularization"]["Importance"] = _l2RegularizationImportance;
   _qExperiment["Solver"]["Learning Rate"] = _learningRate;
   _qExperiment["Solver"]["Loss Function"] = "Direct Gradient";
   _qExperiment["Solver"]["Steps Per Generation"] = 1;

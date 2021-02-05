@@ -102,6 +102,13 @@ void NeuralNetwork::initialize()
 
   // Making sure we do not re-initialize
   _isInitialized = true;
+
+  // Allocating storage for formatted input gradients (only for training)
+  if (_mode == "Training")
+  {
+    _inputGradients.resize(N);
+    for (size_t b = 0; b < N; b++) _inputGradients[b].resize(IC);
+  }
 }
 
 std::vector<float> NeuralNetwork::generateInitialHyperparameters()
@@ -223,6 +230,11 @@ void NeuralNetwork::backward(const std::vector<std::vector<float>> &outputGradie
     for (size_t i = 0; i < _hyperparameterCount; i++)
       _hyperparameterGradients[i] += batchHyperparameterGradients[i];
   }
+
+  // Copying input gradients -- only for the last timestep provided in the input
+  for (size_t b = 0; b < N; b++)
+    for (size_t i = 0; i < IC; i++)
+      _inputGradients[b][i] = _rawInputGradients[_inputBatchLastStep[b] * N * IC + b * IC + i];
 }
 
 std::vector<float> NeuralNetwork::getHyperparameters()

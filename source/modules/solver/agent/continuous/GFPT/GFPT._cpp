@@ -29,6 +29,8 @@ void GFPT::initializeAgent()
 
   _vExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
   _vExperiment["Solver"]["Optimizer"] = _optimizer;
+  _vExperiment["Solver"]["L2 Regularization"]["Enabled"] = _l2RegularizationEnabled;
+  _vExperiment["Solver"]["L2 Regularization"]["Importance"] = _l2RegularizationImportance;
   _vExperiment["Solver"]["Learning Rate"] = _learningRate;
   _vExperiment["Solver"]["Loss Function"] = "Mean Squared Error";
   _vExperiment["Solver"]["Steps Per Generation"] = 1;
@@ -54,6 +56,8 @@ void GFPT::initializeAgent()
 
   _qExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
   _qExperiment["Solver"]["Optimizer"] = _optimizer;
+  _qExperiment["Solver"]["L2 Regularization"]["Enabled"] = _l2RegularizationEnabled;
+  _qExperiment["Solver"]["L2 Regularization"]["Importance"] = _l2RegularizationImportance;
   _qExperiment["Solver"]["Learning Rate"] = _learningRate;
   _qExperiment["Solver"]["Loss Function"] = "Mean Squared Error";
   _qExperiment["Solver"]["Steps Per Generation"] = 1;
@@ -78,6 +82,8 @@ void GFPT::initializeAgent()
 
   _pExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
   _pExperiment["Solver"]["Optimizer"] = _optimizer;
+  _pExperiment["Solver"]["L2 Regularization"]["Enabled"] = _l2RegularizationEnabled;
+  _pExperiment["Solver"]["L2 Regularization"]["Importance"] = _l2RegularizationImportance;
   _pExperiment["Solver"]["Learning Rate"] = _learningRate * _policyLearningRateScale;
   _pExperiment["Solver"]["Loss Function"] = "Direct Gradient";
   _pExperiment["Solver"]["Steps Per Generation"] = 1;

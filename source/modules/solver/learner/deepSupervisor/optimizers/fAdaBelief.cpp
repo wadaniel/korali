@@ -57,7 +57,9 @@ void fAdaBelief::processResult(float evaluation, std::vector<float> &gradient)
 
   // update parameters
   for (size_t i = 0; i < _nVars; i++)
+  {
     _currentValue[i] -= _eta / (std::sqrt(_biasCorrectedSecondCentralMoment[i]) + _epsilon) * _biasCorrectedFirstMoment[i];
+  }
 }
 
 } // namespace korali

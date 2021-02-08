@@ -61,8 +61,8 @@ void Agent::initialize()
   }
 
   // If this continues a previous training run, deserialize previous input experience replay
-  if (_mode == "Training")
-    if (_k->_currentGeneration > 0)
+  if (_k->_currentGeneration > 0)
+    if (_mode == "Training" || _testingBestPolicy.empty())
       deserializeExperienceReplay();
 
   // Obtaining training state
@@ -89,28 +89,43 @@ void Agent::initialize()
   // Calculating how many more experiences do we need in this session to reach the starting size
   _sessionExperiencesUntilStartSize = _experienceReplay.size() > _experienceReplayStartSize ? 0 : _experienceReplayStartSize - _experienceReplay.size();
 
-  // Creating storate for _agents and their status
-  if (_mode == "Training") _agents.resize(_agentCount);
-  if (_mode == "Testing") _agents.resize(_testingSampleIds.size());
-  _isAgentRunning.resize(_agentCount, false);
+  if (_mode == "Training")
+  {
+    // Creating storate for _agents and their status
+    _agents.resize(_agentCount);
+    _isAgentRunning.resize(_agentCount, false);
 
-  // Fixing termination criteria for testing mode
-  if (_mode == "Testing") _maxGenerations = _k->_currentGeneration + 1;
+    // Storage for the entire episodes before adding it to the replay memory
+    _episodes.resize(_agentCount);
+  }
 
-  // Setting testing policy to best testing hyperparameters if not custom-set by the user
   if (_mode == "Testing")
-    if (_testingPolicy.empty()) _testingPolicy = _testingBestPolicy;
+  {
+    // Fixing termination criteria for testing mode
+    _maxGenerations = _k->_currentGeneration + 1;
 
-  // Checking if there's testing samples defined
-  if (_mode == "Testing")
+    // Setting testing policy to best testing hyperparameters if not custom-set by the user
+    if (_testingPolicy.empty())
+    {
+      // Checking if testing policies have been generated
+      if (_testingBestPolicy.empty())
+      {
+        _k->_logger->logWarning("Minimal", "Trying to test policy, but no testing policies have been generated during training yet or given in the configuration. Using current training policy instead.\n");
+        _testingPolicy = _trainingCurrentPolicy;
+      }
+      else
+      {
+        _testingPolicy = _testingBestPolicy;
+      }
+    }
+
+    // Checking if there's testing samples defined
     if (_testingSampleIds.size() == 0)
       KORALI_LOG_ERROR("For testing, you need to indicate the sample ids to run in the ['Testing']['Sample Ids'] field.\n");
 
-  // Prepare storage for rewards from tested samples
-  _testingReward.resize(_testingSampleIds.size());
-
-  // Storage for the entire episodes before adding it to the replay memory
-  _episodes.resize(_agentCount);
+    // Prepare storage for rewards from tested samples
+    _testingReward.resize(_testingSampleIds.size());
+  }
 }
 
 void Agent::runGeneration()
@@ -132,7 +147,6 @@ void Agent::trainingGeneration()
   _generationPolicyUpdateTime = 0.0;
   _generationAgentAttendingTime = 0.0;
 
-  // Updating training state from previous generation
   setTrainingState(_trainingState);
 
   // Running until all _agents have finished
@@ -211,23 +225,24 @@ void Agent::trainingGeneration()
 
 void Agent::testingGeneration()
 {
+  // Allocating testing agents
+  std::vector<Sample> testingAgents(_testingSampleIds.size());
+
   // Launching  agents
   for (size_t agentId = 0; agentId < _testingSampleIds.size(); agentId++)
   {
-    _agents[agentId]["Sample Id"] = _testingSampleIds[agentId];
-    _agents[agentId]["Module"] = "Problem";
-    _agents[agentId]["Operation"] = "Run Testing Episode";
-    _agents[agentId]["Policy Hyperparameters"] = _testingPolicy;
+    testingAgents[agentId]["Sample Id"] = _testingSampleIds[agentId];
+    testingAgents[agentId]["Module"] = "Problem";
+    testingAgents[agentId]["Operation"] = "Run Testing Episode";
+    testingAgents[agentId]["Policy Hyperparameters"] = _testingPolicy;
 
-    KORALI_START(_agents[agentId]);
+    KORALI_START(testingAgents[agentId]);
   }
 
-  KORALI_WAITALL(_agents);
+  KORALI_WAITALL(testingAgents);
 
   for (size_t agentId = 0; agentId < _testingSampleIds.size(); agentId++)
-  {
-    _testingReward[agentId] = _agents[agentId]["Testing Reward"].get<float>();
-  }
+    _testingReward[agentId] = testingAgents[agentId]["Testing Reward"].get<float>();
 }
 
 void Agent::attendAgent(size_t agentId)
@@ -365,6 +380,7 @@ void Agent::processEpisode(std::vector<knlohmann::json> &episode)
     // Keeping statistics
     cumulativeReward += e.reward;
 
+    // Scale reward
     _experienceReplay.add(e);
   }
 
@@ -422,7 +438,7 @@ void Agent::processEpisode(std::vector<knlohmann::json> &episode)
   if (startEpisodeId < 0) startEpisodeId = 0;
   for (ssize_t e = startEpisodeId; e <= endEpisodeId; e++)
     _trainingAverageReward += _trainingRewardHistory[e];
-  _trainingAverageReward /= (float)(endEpisodeId - startEpisodeId + 1);
+  _trainingAverageReward /= (float)(_trainingAverageDepth);
 }
 
 void Agent::updateREFERInformation()
@@ -677,6 +693,8 @@ std::vector<std::vector<float>> Agent::getStateActionTimeSequence(size_t expId)
 
 void Agent::finalize()
 {
+  if (_mode != "Training") return;
+
   if (_experienceReplaySerialize == true)
     if (_k->_fileOutputEnabled)
       serializeExperienceReplay();
@@ -685,11 +703,8 @@ void Agent::finalize()
 
   // Waiting for pending agents to finish
   bool agentsRemain = true;
-  while (agentsRemain == true)
+  do
   {
-    // Listening to _agents for incoming experiences
-    KORALI_LISTEN(_agents);
-
     agentsRemain = false;
     for (size_t agentId = 0; agentId < _agentCount; agentId++)
       if (_isAgentRunning[agentId] == true)
@@ -697,7 +712,9 @@ void Agent::finalize()
         attendAgent(agentId);
         agentsRemain = true;
       }
-  }
+
+    if (agentsRemain) KORALI_LISTEN(_agents);
+  } while (agentsRemain == true);
 }
 
 void Agent::serializeExperienceReplay()
@@ -735,7 +752,7 @@ void Agent::serializeExperienceReplay()
   if (!dirExists(_k->_fileOutputPath)) mkdir(_k->_fileOutputPath);
 
   // Resolving file path
-  std::string statePath = "./" + _k->_fileOutputPath + "/state.json";
+  std::string statePath = _k->_fileOutputPath + "/state.json";
 
   // Storing database to file
   if (saveJsonToFile(statePath.c_str(), stateJson) != 0)
@@ -754,12 +771,12 @@ void Agent::deserializeExperienceReplay()
   knlohmann::json stateJson;
 
   // Resolving file path
-  std::string statePath = "./" + _k->_fileOutputPath + "/state.json";
+  std::string statePath = _k->_fileOutputPath + "/state.json";
 
   // Loading database from file
   _k->_logger->logInfo("Detailed", "Loading previous run training state from file %s...\n", statePath.c_str());
   if (loadJsonFromFile(stateJson, statePath.c_str()) == false)
-    KORALI_LOG_ERROR("Trying to resume experiment but could not find or deserialize training state.\n");
+    KORALI_LOG_ERROR("Trying to resume training or test policy but could not find or deserialize agent's state from from file %s...\n", statePath.c_str());
 
   // Clearing existing database
   _experienceReplay.clear();
@@ -845,12 +862,8 @@ void Agent::printGenerationAfter()
     else
       _k->_logger->logInfo("Normal", " + Policy Update Count:         %lu\n", _policyUpdateCount);
 
-    if (isinf(_problem->_trainingRewardThreshold) == false)
-      _k->_logger->logInfo("Normal", " + Latest Reward:               %f/%f\n", _trainingLastReward, _problem->_trainingRewardThreshold);
-    else
-      _k->_logger->logInfo("Normal", " + Latest Reward:               %f\n", _trainingLastReward);
-
-    _k->_logger->logInfo("Normal", " + %lu-Deep Average Reward:      %f\n", _trainingAverageDepth, _trainingAverageReward);
+    _k->_logger->logInfo("Normal", " + Latest Reward:               %f/%f\n", _trainingLastReward, _problem->_trainingRewardThreshold);
+    _k->_logger->logInfo("Normal", " + %lu-Episode Average Reward:  %f\n", _trainingAverageDepth, _trainingAverageReward);
     _k->_logger->logInfo("Normal", " + Best Reward:                 %f (%lu)\n", _trainingBestReward, _trainingBestEpisodeId);
 
     if (isinf(_problem->_trainingRewardThreshold) == false)

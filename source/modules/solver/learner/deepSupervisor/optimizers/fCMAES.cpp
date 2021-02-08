@@ -234,10 +234,8 @@ void fCMAES::prepareGeneration()
 {
   for (size_t d = 0; d < _nVars; ++d) _auxiliarCovarianceMatrix = _covarianceMatrix;
   updateEigensystem(_auxiliarCovarianceMatrix);
-
+  bool isFeasible;
   for (size_t i = 0; i < _populationSize; ++i)
-  {
-    bool isFeasible;
     do
     {
       sampleSingle(i);
@@ -247,7 +245,6 @@ void fCMAES::prepareGeneration()
       if (isFeasible == false) _infeasibleSampleCount++;
 
     } while (isFeasible == false);
-  }
 }
 
 void fCMAES::sampleSingle(size_t sampleIdx)
@@ -255,7 +252,6 @@ void fCMAES::sampleSingle(size_t sampleIdx)
   for (size_t d = 0; d < _nVars; ++d)
   {
     float randomNumber = _normalGenerator(_randomGenerator);
-    //printf("Random Number: %f\n", randomNumber);
 
     if (_isDiagonal)
     {

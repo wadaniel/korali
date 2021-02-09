@@ -1,0 +1,50 @@
+#ifndef _KORALI_AGENT_DISCRETE_DQN_HPP_
+
+#define _KORALI_AGENT_DISCRETE_DQN_HPP_
+
+#include "modules/problem/reinforcementLearning/discrete/discrete.hpp"
+#include "modules/solver/agent/discrete/discrete.hpp"
+
+namespace korali
+{
+namespace solver
+{
+namespace agent
+{
+namespace discrete
+{
+class DQN : public Discrete
+{
+  public:
+  /**
+   * @brief Pointer to training the actor network
+   */
+  learner::DeepSupervisor *_criticPolicyLearner;
+
+  /**
+  * @brief Korali experiment for obtaining the agent's action
+  */
+  korali::Experiment _criticPolicyExperiment;
+
+  /**
+   * @brief Pointer to actor's experiment problem
+   */
+  problem::SupervisedLearning *_criticPolicyProblem;
+
+  float stateValueFunction(const std::vector<std::vector<float>> &state) override;
+  void setTrainingState(const knlohmann::json &hyperparameters) override;
+  knlohmann::json getTrainingState() override;
+  knlohmann::json runPolicy(const std::vector<std::vector<float>> &stateSequence) override;
+  void trainPolicy() override;
+  knlohmann::json getAgentPolicy() override;
+  void setAgentPolicy(const knlohmann::json &hyperparameters) override;
+  void printAgentInformation() override;
+  void initializeAgent() override;
+};
+
+} // namespace discrete
+} // namespace agent
+} // namespace solver
+} // namespace korali
+
+#endif // _KORALI_AGENT_DISCRETE_DQN_HPP_

@@ -23,7 +23,6 @@ void ReinforcementLearning::initialize()
 
   if (_actionVectorSize == 0) KORALI_LOG_ERROR("No action variables have been defined.\n");
   if (_stateVectorSize == 0) KORALI_LOG_ERROR("No state variables have been defined.\n");
-
   if (_testingFrequency == 0) _testingFrequency = _k->_solver->_maxGenerations;
 }
 

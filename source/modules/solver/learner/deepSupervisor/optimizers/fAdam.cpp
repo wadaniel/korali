@@ -42,8 +42,7 @@ void fAdam::reset()
     if (std::isfinite(_initialValues[i]) == false)
       fprintf(stderr, "Initial Value of variable \'%lu\' not defined (no defaults can be calculated).\n", i);
 
-  for (size_t i = 0; i < _nVars; i++)
-    _currentValue[i] = _initialValues[i];
+  _currentValue = _initialValues;
 
   for (size_t i = 0; i < _nVars; i++)
   {

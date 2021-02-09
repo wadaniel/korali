@@ -30,6 +30,8 @@ void dVRACER::initializeAgent()
 
   _criticPolicyExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
   _criticPolicyExperiment["Solver"]["Optimizer"] = _optimizer;
+  _criticPolicyExperiment["Solver"]["L2 Regularization"]["Enabled"] = _l2RegularizationEnabled;
+  _criticPolicyExperiment["Solver"]["L2 Regularization"]["Importance"] = _l2RegularizationImportance;
   _criticPolicyExperiment["Solver"]["Learning Rate"] = _learningRate;
   _criticPolicyExperiment["Solver"]["Loss Function"] = "Direct Gradient";
   _criticPolicyExperiment["Solver"]["Steps Per Generation"] = 1;
@@ -135,7 +137,7 @@ void dVRACER::trainPolicy()
 
         // for truncated state, Vtbc == V - forward network
         auto policy = runPolicy(expTruncatedStateSequence);
-        auto nextExpVtbc = policy["State Value"].get<float>();
+        float nextExpVtbc = policy["State Value"].get<float>();
 
         // add value to Qret
         Qret += _discountFactor * nextExpVtbc;
@@ -281,6 +283,7 @@ knlohmann::json dVRACER::getTrainingState()
   knlohmann::json state;
   state["Critic/Policy"]["Training"] = _criticPolicyLearner->getTrainingHyperparameters();
   state["Critic/Policy"]["Inference"] = _criticPolicyLearner->getInferenceHyperparameters();
+
   return state;
 }
 

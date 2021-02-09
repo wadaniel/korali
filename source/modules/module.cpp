@@ -47,6 +47,7 @@
 #include "solver/agent/continuous/NAF/NAF.hpp"
 #include "solver/agent/continuous/VRACER/VRACER.hpp"
 #include "solver/agent/continuous/continuous.hpp"
+#include "solver/agent/discrete/DQN/DQN.hpp"
 #include "solver/agent/discrete/dVRACER/dVRACER.hpp"
 #include "solver/agent/discrete/discrete.hpp"
 #include "solver/executor/executor.hpp"
@@ -136,6 +137,7 @@ Module *Module::getModule(knlohmann::json &js, Experiment *e)
   if (iCompare(moduleType, "SAEM")) module = new korali::solver::SAEM();
   if (iCompare(moduleType, "Learner/GaussianProcess")) module = new korali::solver::learner::GaussianProcess();
   if (iCompare(moduleType, "Learner/DeepSupervisor")) module = new korali::solver::learner::DeepSupervisor();
+  if (iCompare(moduleType, "Agent/Discrete/DQN")) module = new korali::solver::agent::discrete::DQN();
   if (iCompare(moduleType, "Agent/Discrete/DVRACER")) module = new korali::solver::agent::discrete::dVRACER();
   if (iCompare(moduleType, "Agent/Continuous/GFPT")) module = new korali::solver::agent::continuous::GFPT();
   if (iCompare(moduleType, "Agent/Continuous/NAF")) module = new korali::solver::agent::continuous::NAF();

@@ -169,6 +169,96 @@ float Continuous::calculateImportanceWeight(const std::vector<float> &action, co
   return importanceWeight;
 }
 
+std::vector<float> Continuous::calculateImportanceWeightGradient(const std::vector<float> &action, const std::vector<float> &curParamsOne, const std::vector<float> &curParamsTwo, const std::vector<float> &oldParamsOne, const std::vector<float> &oldParamsTwo)
+{
+  std::vector<float> grad(2 * _problem->_actionVectorSize, 0.0);
+
+  if (_policyDistribution == "Normal")
+  {
+    float logImportanceWeight = 0.0;
+
+    // ParamsOne are the Means, ParamsTwo are the Sigmas
+    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+    {
+      // Deviation from expAction and current Mean
+      float curActionDiff = (action[i] - curParamsOne[i]);
+
+      // Deviation from expAction and old Mean
+      float oldActionDiff = (action[i] - oldParamsOne[i]);
+
+      // Inverse Variances
+      float curInvVar = 1. / (curParamsTwo[i] * curParamsTwo[i]);
+      float oldInvVar = 1. / (oldParamsTwo[i] * oldParamsTwo[i]);
+
+      // Calc Imp Weight
+      logImportanceWeight += std::log(oldParamsTwo[i] / curParamsTwo[i]);
+      logImportanceWeight += 0.5 * (oldActionDiff * oldActionDiff * oldInvVar - curActionDiff * curActionDiff * curInvVar);
+
+      // Gradient with respect to Mean
+      grad[i] = curActionDiff * curInvVar;
+
+      // Gradient with respect to Sigma
+      grad[_problem->_actionVectorSize + i] = (curActionDiff * curActionDiff) * (curInvVar / curParamsTwo[i]) - 1.0f / curParamsTwo[i];
+    }
+
+    float importanceWeight = std::exp(logImportanceWeight);
+
+    // Scale by importance weight to get gradient
+    for (size_t i = 0; i < 2 * _problem->_actionVectorSize; i++)
+      grad[i] *= importanceWeight;
+  }
+  else /* _policyDistribution == "Beta" */
+  {
+    // ParamsOne are the Means, ParamsTwo are the Variance Coefficients
+    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+    {
+      // Variable preparation
+      const float muCur = curParamsOne[i];
+      const float varcoefCur = curParamsTwo[i];
+
+      float alphaCur;
+      float betaCur;
+      std::tie(alphaCur, betaCur) = betaParamTransformAlt(muCur, varcoefCur, _actionLowerBounds[i], _actionUpperBounds[i]);
+
+      const float muOld = oldParamsOne[i];
+      const float varcoefOld = oldParamsTwo[i];
+
+      float alphaOld;
+      float betaOld;
+      std::tie(alphaOld, betaOld) = betaParamTransformAlt(muOld, varcoefOld, _actionLowerBounds[i], _actionUpperBounds[i]);
+
+      // Log probability of action with old policy params
+      const float logpOldPolicy = betaLogDensityAlt(action[i], muOld, varcoefOld, _actionLowerBounds[i], _actionUpperBounds[i]);
+      const float invpOldPolicy = std::exp(-logpOldPolicy);
+
+      // Variable preparation
+      const float Bab = gsl_sf_beta(alphaCur, betaCur);
+
+      const float psiAb = gsl_sf_psi(alphaCur + betaCur);
+
+      const float logscale = std::log(_actionScalings[i]);
+      const float powscale = std::pow(_actionScalings[i], -betaCur - alphaCur + 1.);
+      const float factor = -1. * std::pow(action[i] - _actionLowerBounds[i], alphaCur - 1.) * powscale * std::pow(_actionUpperBounds[i] - action[i], betaCur - 1.) * invpOldPolicy / Bab;
+
+      // Rho Grad wrt alpha and beta
+      const float daBab = gsl_sf_psi(alphaCur) - psiAb;
+      const float drhoda = ((logscale - std::log(action[i] - _actionLowerBounds[i])) + daBab) * factor;
+      const float dbBab = gsl_sf_psi(betaCur) - psiAb;
+      const float drhodb = (logscale - std::log(_actionUpperBounds[i] - action[i]) + dbBab) * factor;
+
+      // Derivatives of alpha and beta wrt mu and varc
+      float dadmu, dadvarc, dbdmu, dbdvarc;
+      std::tie(dadmu, dadvarc, dbdmu, dbdvarc) = derivativesBetaParamTransformAlt(muCur, varcoefCur, _actionLowerBounds[i], _actionUpperBounds[i]);
+
+      // Rho Grad wrt mu and varc
+      grad[i] = drhoda * dadmu + drhodb * dbdmu;
+      grad[_problem->_actionVectorSize + i] = drhoda * dadvarc + drhodb * dbdvarc;
+    }
+  }
+
+  return grad;
+}
+
 std::vector<float> Continuous::calculateKLDivergenceGradient(const std::vector<float> &oldParamsOne, const std::vector<float> &oldParamsTwo, const std::vector<float> &curParamsOne, const std::vector<float> &curParamsTwo)
 {
   std::vector<float> klGrad(2.0 * _problem->_actionVectorSize, 0.0);
@@ -256,6 +346,9 @@ float Continuous::getExperienceImportanceWeight(size_t expId)
 
   // Now calculating importance weight
   auto expImportanceWeight = calculateImportanceWeight(expAction, expMeans, expSigmas, curMeans, curSigmas);
+
+  // Updating the impiortance weight value in the experience replay memory
+  _experienceReplay[expId].policy["Importance Weight"] = expImportanceWeight;
 
   // Returning experience's importance weight
   return expImportanceWeight;

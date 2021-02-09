@@ -23,6 +23,8 @@ void ReinforcementLearning::initialize()
 
   if (_actionVectorSize == 0) KORALI_LOG_ERROR("No action variables have been defined.\n");
   if (_stateVectorSize == 0) KORALI_LOG_ERROR("No state variables have been defined.\n");
+
+  if (_testingFrequency == 0) _testingFrequency = _k->_solver->_maxGenerations;
 }
 
 /**
@@ -169,9 +171,10 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
   agent["Tested Policy"] = false;
 
   // If the training reward exceeds the threshold, then also run testing on it
-  if (trainingReward > _trainingRewardThreshold)
+  if (trainingReward > _trainingRewardThreshold || _k->_currentGeneration % _testingFrequency == 0)
   {
     float averageTestingReward = 0.0;
+    float stdevTestingReward = 0.0;
     float bestTestingReward = -Inf;
     float worstTestingReward = +Inf;
 
@@ -184,15 +187,18 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
 
       // Adding current testing reward to the average and keeping statistics
       averageTestingReward += currentTestingReward;
+      stdevTestingReward += currentTestingReward * currentTestingReward;
       if (currentTestingReward > bestTestingReward) bestTestingReward = currentTestingReward;
       if (currentTestingReward < worstTestingReward) worstTestingReward = currentTestingReward;
     }
 
     // Normalizing average
     averageTestingReward /= (float)_policyTestingEpisodes;
+    stdevTestingReward = std::sqrt(stdevTestingReward / (float)_policyTestingEpisodes - averageTestingReward * averageTestingReward);
 
     // Storing testing information
     agent["Average Testing Reward"] = averageTestingReward;
+    agent["Stdev Testing Reward"] = stdevTestingReward;
     agent["Best Testing Reward"] = bestTestingReward;
     agent["Worst Testing Reward"] = worstTestingReward;
 

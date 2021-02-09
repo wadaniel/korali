@@ -17,9 +17,9 @@ setResultsDir('_result_gfpt')
 
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = env
-e["Problem"]["Training Reward Threshold"] = 42.0
+e["Problem"]["Training Reward Threshold"] = 50.0
 e["Problem"]["Policy Testing Episodes"] = 1
-e["Problem"]["Actions Between Policy Updates"] = 1
+e["Problem"]["Actions Between Policy Updates"] = 200
 
 ### Defining state variables
 
@@ -34,19 +34,19 @@ e["Variables"][4]["Name"] = "Magnet Rotation X"
 e["Variables"][4]["Type"] = "Action"
 e["Variables"][4]["Lower Bound"] = -1.0
 e["Variables"][4]["Upper Bound"] = +1.0
-e["Variables"][4]["Initial Exploration Noise"] = 0.5
+e["Variables"][4]["Initial Exploration Noise"] = 0.25
 
 e["Variables"][5]["Name"] = "Magnet Rotation Y"
 e["Variables"][5]["Type"] = "Action"
 e["Variables"][5]["Lower Bound"] = -1.0
 e["Variables"][5]["Upper Bound"] = +1.0
-e["Variables"][5]["Initial Exploration Noise"] = 0.5
+e["Variables"][5]["Initial Exploration Noise"] = 0.25
 
 e["Variables"][6]["Name"] = "Magnet Intensity"
 e["Variables"][6]["Type"] = "Action"
 e["Variables"][6]["Lower Bound"] = +0.0
 e["Variables"][6]["Upper Bound"] = +2.0
-e["Variables"][6]["Initial Exploration Noise"] = 0.5
+e["Variables"][6]["Initial Exploration Noise"] = 0.25
 
 ### Defining Agent Configuration 
 
@@ -55,7 +55,7 @@ e["Solver"]["Mode"] = "Training"
 e["Solver"]["Episodes Per Generation"] = 1
 e["Solver"]["Experiences Between Policy Updates"] = 1
 e["Solver"]["Cache Persistence"] = 200
-e["Solver"]["Learning Rate"] = 0.0001
+e["Solver"]["Learning Rate"] = 0.001
 
 ### Defining the configuration of replay memory
 
@@ -66,8 +66,8 @@ e["Solver"]["Experience Replay"]["Maximum Size"] = 65536
 
 e["Solver"]["Experience Replay"]["REFER"]["Enabled"] = True
 e["Solver"]["Experience Replay"]["REFER"]["Cutoff Scale"] = 4.0
-e["Solver"]["Experience Replay"]["REFER"]["Target"] = 0.1
-e["Solver"]["Experience Replay"]["REFER"]["Initial Beta"] = 0.6
+e["Solver"]["Experience Replay"]["REFER"]["Target"] = 1.0
+e["Solver"]["Experience Replay"]["REFER"]["Initial Beta"] = 1.0
 e["Solver"]["Experience Replay"]["REFER"]["Annealing Rate"] = 5e-7
 
 ### Configuring Mini Batch
@@ -77,9 +77,9 @@ e["Solver"]["Mini Batch Strategy"] = "Uniform"
 
 ## Defining Critic and Policy Configuration
 
-e["Solver"]["Policy"]["Learning Rate Scale"] = 0.1
-e["Solver"]["Policy"]["Target Accuracy"] = 0.05
-e["Solver"]["Policy"]["Optimization Candidates"] = 64
+e["Solver"]["Policy"]["Learning Rate Scale"] = 1.0
+e["Solver"]["Policy"]["Target Accuracy"] = 0.0001
+e["Solver"]["Policy"]["Optimization Candidates"] = 24
 
 ### Configuring the neural network and its hidden layers
 
@@ -99,7 +99,7 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tan
 
 ### Defining Termination Criteria
 
-e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 42.0
+e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 50.0
 
 ### Setting console/file output configuration
 

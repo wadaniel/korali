@@ -39,15 +39,14 @@ class CMAES : public Optimizer
 
   /**
  * @brief Updates mean and covariance of Gaussian proposal distribution.
- * @param evaluations Model evaluations for proposed samples
  */
-  void updateDistribution(const std::vector<double> &evaluations);
+  void updateDistribution();
 
   /**
     * @brief Updates the system of eigenvalues and eigenvectors
     * @param M Input matrix
  */
-  void updateEigensystem(std::vector<double> &M);
+  void updateEigensystem(const std::vector<double> &M);
 
   /**
   * @brief Method that checks potential numerical issues and does correction. Not yet implemented.
@@ -58,10 +57,10 @@ class CMAES : public Optimizer
    * @brief Function for eigenvalue decomposition.
    * @param N Matrix size
    * @param C Input matrix
-   * @param diag Means
-   * @param Q Output Matrix
+   * @param diag Sorted eigenvalues
+   * @param Q eingenvectors of C
  */
-  void eigen(size_t N, std::vector<double> &C, std::vector<double> &diag, std::vector<double> &Q) const;
+  void eigen(size_t N, const std::vector<double> &C, std::vector<double> &diag, std::vector<double> &Q) const;
 
   /**
   * @brief Descending sort of vector elements, stores ordering in _sortingIndex.

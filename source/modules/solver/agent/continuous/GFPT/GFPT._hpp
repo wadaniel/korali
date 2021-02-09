@@ -37,19 +37,34 @@ class GFPT : public Continuous
   korali::Experiment _vExperiment;
 
   /**
-  * @brief Pointer to training experiment's A(s,x) problem
+  * @brief Pointer to training experiment's Q(s,x) problem
   */
-  problem::SupervisedLearning *_aProblem;
+  problem::SupervisedLearning *_qProblem;
 
   /**
-  * @brief Pointer to training experiment's A(s,x) learner
+  * @brief Pointer to training experiment's Q(s,x) learner
   */
-  learner::DeepSupervisor *_aLearner;
+  learner::DeepSupervisor *_qLearner;
 
   /**
-   * @brief Korali experiment for the training of A(s,x)
+   * @brief Korali experiment for the training of Q(s,x)
    */
-  korali::Experiment _aExperiment;
+  korali::Experiment _qExperiment;
+
+  /**
+   * @brief Pointer to training experiment's P(s) problem
+   */
+  problem::SupervisedLearning *_pProblem;
+
+  /**
+  * @brief Pointer to training experiment's P(s) policy learner
+  */
+  learner::DeepSupervisor *_pLearner;
+
+  /**
+   * @brief Korali experiment for the training of P(s) policy
+   */
+  korali::Experiment _pExperiment;
 
   /**
    * @brief Korali optimizer for finding the optimal action as per the critic. One instance per parallel thread.
@@ -57,26 +72,11 @@ class GFPT : public Continuous
   std::vector<korali::fCMAES *> _actionOptimizers;
 
   /**
-  * @brief Korali experiment for argmax_action(Q) based on a trained Q-Network
-  */
-  korali::Experiment _policyExperiment;
-
-  /**
-   * @brief Pointer to training the actor network
-   */
-  learner::DeepSupervisor *_policyLearner;
-
-  /**
-   * @brief Pointer to actor's experiment problem
-   */
-  problem::SupervisedLearning *_policyProblem;
-
-  /**
    * @brief Returns the advantage value of the given state/action sequence
    * @param stateActionSequence State/action sequence to evaluate
    * @return The advantage value
    */
-  float currentActionAdvantageFunction(const std::vector<std::vector<float>> &stateActionSequence);
+  float getActionAdvantage(const std::vector<std::vector<float>> &stateActionSequence);
 
   /**
    * @brief Returns the best action: that with highest advantage for the given state
@@ -87,11 +87,11 @@ class GFPT : public Continuous
 
   /**
    * @brief Returns the optimal action for a given experience, based on the evaluation of the advantage function
-   * @param expId The id (position within the replay memory) of the experience
+   * @param stateActionSequence Time sequence of state/actions
    * @param curMeans The current means of the policy to use as initial guess
    * @return The optimal action
    */
-  knlohmann::json optimizeAction(const size_t expId, const std::vector<float> &curMeans);
+  knlohmann::json optimizeAction(const std::vector<std::vector<float>> stateActionSequence, const std::vector<float> &curMeans);
 
   knlohmann::json runPolicy(const std::vector<std::vector<float>> &stateSequence) override;
   float stateValueFunction(const std::vector<std::vector<float>> &stateSequence) override;

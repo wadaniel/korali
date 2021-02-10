@@ -139,7 +139,7 @@ void DeepSupervisor::runGeneration()
     _trainingNeuralNetwork->forward(_problem->_inputData);
 
     // Creating gradient vector
-    auto &gradientVector = _problem->_solutionData;
+    auto gradientVector = _problem->_solutionData;
 
     // If we use an MSE loss function, we need to update the gradient vector with its difference with each of batch's last timestep of the NN output
     if (_lossFunction == "Mean Squared Error")

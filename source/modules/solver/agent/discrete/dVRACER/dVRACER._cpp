@@ -32,7 +32,7 @@ void dVRACER::initializeAgent()
   _criticPolicyExperiment["Solver"]["Optimizer"] = _optimizer;
   _criticPolicyExperiment["Solver"]["L2 Regularization"]["Enabled"] = _l2RegularizationEnabled;
   _criticPolicyExperiment["Solver"]["L2 Regularization"]["Importance"] = _l2RegularizationImportance;
-  _criticPolicyExperiment["Solver"]["Learning Rate"] = _learningRate;
+  _criticPolicyExperiment["Solver"]["Learning Rate"] = _currentLearningRate;
   _criticPolicyExperiment["Solver"]["Loss Function"] = "Direct Gradient";
   _criticPolicyExperiment["Solver"]["Steps Per Generation"] = 1;
   _criticPolicyExperiment["Solver"]["Neural Network"]["Engine"] = _neuralNetworkEngine;
@@ -108,7 +108,7 @@ void dVRACER::trainPolicy()
     cumulativeTdErrorSquared += gradientLoss[0] * gradientLoss[0];
 
     // Checking whether the experience is on policy (i.e., it is within the [1/cutoff, cutoff] region)
-    bool isOnPolicy = (importanceWeight > (1.0f / _experienceReplayREFERCutoffScale)) && (importanceWeight < _experienceReplayREFERCutoffScale);
+    bool isOnPolicy = (importanceWeight > (1.0f / _experienceReplayOffPolicyCurrentCutoff)) && (importanceWeight < _experienceReplayOffPolicyCurrentCutoff);
 
     // Compute policy gradient only if inside trust region
     if (isOnPolicy)
@@ -157,7 +157,7 @@ void dVRACER::trainPolicy()
       for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
       {
         // '-' because the optimizer is maximizing
-        gradientLoss[1 + i] = -_experienceReplayREFERCurrentBeta * lossOffPolicy * polGrad[i];
+        gradientLoss[1 + i] = -_experienceReplayOffPolicyREFERBeta * lossOffPolicy * polGrad[i];
       }
     }
 
@@ -167,7 +167,7 @@ void dVRACER::trainPolicy()
     for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
     {
       // Step towards old policy (gradient pointing to larger difference between old and current policy)
-      gradientLoss[1 + i] -= (1.0f - _experienceReplayREFERCurrentBeta) * klGrad[i];
+      gradientLoss[1 + i] -= (1.0f - _experienceReplayOffPolicyREFERBeta) * klGrad[i];
     }
 
     // Set status as learning problem input
@@ -194,7 +194,7 @@ void dVRACER::trainPolicy()
   _statisticsStdevPolicyError = std::sqrt(cumulativePolicyErrorSquared / (float)policyErrorCounter - _statisticsAveragePolicyError * _statisticsAveragePolicyError);
 
   // Updating learning rate for critic/policy learner guided by REFER
-  _criticPolicyLearner->_learningRate = _experienceReplayREFERCurrentLearningRate;
+  _criticPolicyLearner->_learningRate = _currentLearningRate;
 
   // Running one generation of the optimization method with the given mini-batch
   _criticPolicyLearner->runGeneration();
@@ -290,7 +290,6 @@ knlohmann::json dVRACER::getTrainingState()
 void dVRACER::printAgentInformation()
 {
   _k->_logger->logInfo("Normal", "Critic Information:\n");
-  _k->_logger->logInfo("Normal", " + Learning Rate:                                     %.3e\n", _criticPolicyLearner->_learningRate);
   _k->_logger->logInfo("Normal", " + Average (Std) Vtbc in Mini-Batch:  %f (%f)\n", _statisticsAverageQStar, _statisticsStdevQStar);
   _k->_logger->logInfo("Normal", " + Average (Std) TD-Error in Mini-Batch:  %f (%f)\n", _statisticsAverageTDError, _statisticsStdevTDError);
   _k->_logger->logInfo("Normal", " + Average (Std) Off-Policy Objective in Mini-Batch:  %f (%f)\n", _statisticsAveragePolicyError, _statisticsStdevPolicyError);

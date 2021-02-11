@@ -290,11 +290,6 @@ class Agent : public Solver
   void updateExperienceReplayProbabilities();
 
   /**
-  * @brief Update all information required by the REFER algorithm (see: https://arxiv.org/abs/1807.05827)
-  */
-  void updateREFERInformation();
-
-  /**
   * @brief Generates an experience mini batch from the replay memory
   * @param size Size of the mini batch to create
   * @return A vector with the indexes to the experiences in the mini batch

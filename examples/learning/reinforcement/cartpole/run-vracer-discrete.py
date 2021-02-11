@@ -47,14 +47,6 @@ e["Solver"]["Episodes Per Generation"] = 1
 e["Solver"]["Experience Replay"]["Start Size"] = 1000
 e["Solver"]["Experience Replay"]["Maximum Size"] = 10000
 
-### Configuring the Remember-and-Forget Experience Replay algorithm
-
-e["Solver"]["Experience Replay"]["REFER"]["Enabled"] = True
-e["Solver"]["Experience Replay"]["REFER"]["Cutoff Scale"] = 4.0
-e["Solver"]["Experience Replay"]["REFER"]["Target"] = 0.1
-e["Solver"]["Experience Replay"]["REFER"]["Initial Beta"] = 0.6
-e["Solver"]["Experience Replay"]["REFER"]["Annealing Rate"] = 5e-7
-
 ### Defining probability of taking a random action (epsilon)
 
 e["Solver"]["Random Action Probability"] = 0.05

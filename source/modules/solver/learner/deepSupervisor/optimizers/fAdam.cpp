@@ -1,7 +1,7 @@
 #include "fAdam.hpp"
 #include <cmath>
-#include <stdio.h>
 #include <cstdlib>
+#include <stdio.h>
 
 namespace korali
 {
@@ -118,7 +118,6 @@ void fAdam::printInfo()
   printf("DF(X) = [ ");
   for (size_t k = 0; k < _nVars; k++) printf(" %.5le  ", _gradient[k]);
   printf(" ]\n");
-
 }
 
 } // namespace korali

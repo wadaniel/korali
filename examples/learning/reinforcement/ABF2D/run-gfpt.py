@@ -62,14 +62,6 @@ e["Solver"]["Learning Rate"] = 1e-4
 e["Solver"]["Experience Replay"]["Start Size"] = 65536
 e["Solver"]["Experience Replay"]["Maximum Size"] = 2*65536
 
-### Configuring the Remember-and-Forget Experience Replay algorithm
-
-e["Solver"]["Experience Replay"]["REFER"]["Enabled"] = True
-e["Solver"]["Experience Replay"]["REFER"]["Cutoff Scale"] = 4.0
-e["Solver"]["Experience Replay"]["REFER"]["Target"] = 0.1
-e["Solver"]["Experience Replay"]["REFER"]["Initial Beta"] = 0.3
-e["Solver"]["Experience Replay"]["REFER"]["Annealing Rate"] = 5e-7
-
 ### Configuring Mini Batch
 
 e["Solver"]["Mini Batch Size"] = 32
@@ -100,7 +92,6 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tan
 ### Defining Termination Criteria
 
 e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 50.0
-e["Solver"]["Termination Criteria"]["Max Generations"] = 500
 
 ### Setting console/file output configuration
 

@@ -192,8 +192,10 @@ void Agent::trainingGeneration()
 
         // Updating REFER learning rate and beta parameters
         _currentLearningRate = _learningRate / (1.0f + _experienceReplayOffPolicyAnnealingRate * (float)_policyUpdateCount);
-        if (_experienceReplayOffPolicyRatio > _experienceReplayOffPolicyTarget) _experienceReplayOffPolicyREFERBeta = (1.0f - _currentLearningRate) * _experienceReplayOffPolicyREFERBeta;
-        else _experienceReplayOffPolicyREFERBeta = (1.0f - _currentLearningRate) * _experienceReplayOffPolicyREFERBeta + _currentLearningRate;
+        if (_experienceReplayOffPolicyRatio > _experienceReplayOffPolicyTarget)
+          _experienceReplayOffPolicyREFERBeta = (1.0f - _currentLearningRate) * _experienceReplayOffPolicyREFERBeta;
+        else
+          _experienceReplayOffPolicyREFERBeta = (1.0f - _currentLearningRate) * _experienceReplayOffPolicyREFERBeta + _currentLearningRate;
 
         auto endTime = std::chrono::steady_clock::now();                                                                  // Profiling
         _sessionPolicyUpdateTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
@@ -448,8 +450,9 @@ void Agent::processEpisode(std::vector<knlohmann::json> &episode)
   size_t expCount = _experienceReplay.size();
   size_t offPolicyCount = 0;
 
-// Count off-policy experiences
-  #pragma omp parallel for reduction(+: offPolicyCount)
+  // Count off-policy experiences
+#pragma omp parallel for reduction(+ \
+                                   : offPolicyCount)
   for (size_t expId = 0; expId < expCount; expId++)
   {
     // Getting the last calculated value of the experience's importance weight. We can tolerate this approximation.
@@ -465,7 +468,6 @@ void Agent::processEpisode(std::vector<knlohmann::json> &episode)
 
   // Now updating the off policy Cutoff
   _experienceReplayOffPolicyCurrentCutoff = 1.0f + _experienceReplayOffPolicyCutoffScale / (1.0f + _experienceReplayOffPolicyAnnealingRate * (float)_policyUpdateCount);
-
 }
 
 void Agent::updateExperienceReplayProbabilities()

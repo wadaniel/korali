@@ -32,7 +32,7 @@ void NAF::initializeAgent()
   _qExperiment["Solver"]["Optimizer"] = _optimizer;
   _qExperiment["Solver"]["L2 Regularization"]["Enabled"] = _l2RegularizationEnabled;
   _qExperiment["Solver"]["L2 Regularization"]["Importance"] = _l2RegularizationImportance;
-  _qExperiment["Solver"]["Learning Rate"] = _learningRate;
+  _qExperiment["Solver"]["Learning Rate"] = _currentLearningRate;
   _qExperiment["Solver"]["Loss Function"] = "Direct Gradient";
   _qExperiment["Solver"]["Steps Per Generation"] = 1;
   _qExperiment["Solver"]["Neural Network"]["Engine"] = _neuralNetworkEngine;
@@ -180,31 +180,28 @@ void NAF::trainPolicy()
     policyGradient[0] = weight * diff;
 
     // Checking whether the experience is on policy (i.e., it is within the [1/cutoff, cutoff] region)
-    bool isOnPolicy = (importanceWeight > (1.0f / _experienceReplayREFERCutoffScale)) && (importanceWeight < _experienceReplayREFERCutoffScale);
+    bool isOnPolicy = (importanceWeight > (1.0f / _experienceReplayOffPolicyCurrentCutoff)) && (importanceWeight < _experienceReplayOffPolicyCurrentCutoff);
 
     // Compute mu(s) & and P(s) gradient only if inside trust region (or REFER disabled)
-    if (isOnPolicy || _experienceReplayREFEREnabled == false)
+    if (isOnPolicy)
     {
       for (size_t i = 0; i < _problem->_actionVectorSize; i++)
       {
         float dmu = expAction[i] - curMeans[i];
-        policyGradient[1 + i] = weight * _experienceReplayREFERCurrentBeta * diff * dmu * curDiagP[i];
-        policyGradient[1 + i + _problem->_actionVectorSize] = -weight * _experienceReplayREFERCurrentBeta * 0.5 * diff * dmu * dmu / (_actionScalings[i] * _actionScalings[i]);
+        policyGradient[1 + i] = weight * _experienceReplayOffPolicyREFERBeta * diff * dmu * curDiagP[i];
+        policyGradient[1 + i + _problem->_actionVectorSize] = -weight * _experienceReplayOffPolicyREFERBeta * 0.5 * diff * dmu * dmu / (_actionScalings[i] * _actionScalings[i]);
       }
     }
 
-    if (_experienceReplayREFEREnabled)
-    {
-      // Compute derivative of kullback-leibler divergence wrt current distribution params
-      auto klGrad = calculateKLDivergenceGradient(expMeans, expSigmas, curMeans, curSigmas);
+    // Compute derivative of kullback-leibler divergence wrt current distribution params
+    auto klGrad = calculateKLDivergenceGradient(expMeans, expSigmas, curMeans, curSigmas);
 
-      for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-      {
-        // Step towards old policy (gradient pointing to larger difference between old and current policy)
-        policyGradient[1 + i] -= weight * (1.0f - _experienceReplayREFERCurrentBeta) * klGrad[i];
-        // inlcude gradient of sigma wrt. diagP
-        policyGradient[1 + i + _problem->_actionVectorSize] -= weight * (1.0f - _experienceReplayREFERCurrentBeta) * klGrad[i + _problem->_actionVectorSize] * (-0.5 * std::sqrt(_covarianceScaling) * std::pow(curDiagP[i], -1.5));
-      }
+    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+    {
+      // Step towards old policy (gradient pointing to larger difference between old and current policy)
+      policyGradient[1 + i] -= weight * (1.0f - _experienceReplayOffPolicyREFERBeta) * klGrad[i];
+      // inlcude gradient of sigma wrt. diagP
+      policyGradient[1 + i + _problem->_actionVectorSize] -= weight * (1.0f - _experienceReplayOffPolicyREFERBeta) * klGrad[i + _problem->_actionVectorSize] * (-0.5 * std::sqrt(_covarianceScaling) * std::pow(curDiagP[i], -1.5));
     }
 
     _qProblem->_inputData[b] = expStateSequence;
@@ -218,6 +215,9 @@ void NAF::trainPolicy()
 
   // Running one generation of the optimization method with the given mini-batch
   _qLearner->runGeneration();
+
+  // Updating learning rate for critic/policy learner guided by REFER
+  _criticLearner->_learningRate = _currentLearningRate;
 
   // Keeping statistics
   _statisticsAverageQStar = cumulativeQStar / (float)_miniBatchSize;

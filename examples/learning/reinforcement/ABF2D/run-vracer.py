@@ -67,11 +67,10 @@ e["Solver"]["Experience Replay"]["Maximum Size"] = 65536
 
 ### Configuring the Remember-and-Forget Experience Replay algorithm
 
-e["Solver"]["Experience Replay"]["REFER"]["Enabled"] = True
-e["Solver"]["Experience Replay"]["REFER"]["Cutoff Scale"] = 4.0
-e["Solver"]["Experience Replay"]["REFER"]["Target"] = 0.1
-e["Solver"]["Experience Replay"]["REFER"]["Initial Beta"] = 1.0
-e["Solver"]["Experience Replay"]["REFER"]["Annealing Rate"] = 5e-7
+e["Solver"]["Experience Replay"]["Off Policy"]["Cutoff Scale"] = 4.0
+e["Solver"]["Experience Replay"]["Off Policy"]["Target"] = 0.1
+e["Solver"]["Experience Replay"]["Off Policy"]["Annealing Rate"] = 5e-7
+e["Solver"]["Experience Replay"]["Off Policy"]["REFER Beta"] = 0.3
 
 ### Configuring the neural network and its hidden layers
 

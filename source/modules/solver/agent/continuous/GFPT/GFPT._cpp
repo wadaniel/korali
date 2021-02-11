@@ -31,7 +31,7 @@ void GFPT::initializeAgent()
   _vExperiment["Solver"]["Optimizer"] = _optimizer;
   _vExperiment["Solver"]["L2 Regularization"]["Enabled"] = _l2RegularizationEnabled;
   _vExperiment["Solver"]["L2 Regularization"]["Importance"] = _l2RegularizationImportance;
-  _vExperiment["Solver"]["Learning Rate"] = _learningRate;
+  _vExperiment["Solver"]["Learning Rate"] = _currentLearningRate;
   _vExperiment["Solver"]["Loss Function"] = "Mean Squared Error";
   _vExperiment["Solver"]["Steps Per Generation"] = 1;
   _vExperiment["Solver"]["Neural Network"]["Engine"] = _neuralNetworkEngine;
@@ -58,7 +58,7 @@ void GFPT::initializeAgent()
   _qExperiment["Solver"]["Optimizer"] = _optimizer;
   _qExperiment["Solver"]["L2 Regularization"]["Enabled"] = _l2RegularizationEnabled;
   _qExperiment["Solver"]["L2 Regularization"]["Importance"] = _l2RegularizationImportance;
-  _qExperiment["Solver"]["Learning Rate"] = _learningRate;
+  _qExperiment["Solver"]["Learning Rate"] = _currentLearningRate * _advantageLearningRateScale;
   _qExperiment["Solver"]["Loss Function"] = "Mean Squared Error";
   _qExperiment["Solver"]["Steps Per Generation"] = 1;
   _qExperiment["Solver"]["Neural Network"]["Engine"] = _neuralNetworkEngine;
@@ -84,7 +84,7 @@ void GFPT::initializeAgent()
   _pExperiment["Solver"]["Optimizer"] = _optimizer;
   _pExperiment["Solver"]["L2 Regularization"]["Enabled"] = _l2RegularizationEnabled;
   _pExperiment["Solver"]["L2 Regularization"]["Importance"] = _l2RegularizationImportance;
-  _pExperiment["Solver"]["Learning Rate"] = _learningRate * _policyLearningRateScale;
+  _pExperiment["Solver"]["Learning Rate"] = _currentLearningRate * _policyLearningRateScale;
   _pExperiment["Solver"]["Loss Function"] = "Direct Gradient";
   _pExperiment["Solver"]["Steps Per Generation"] = 1;
   _pExperiment["Solver"]["Neural Network"]["Engine"] = _neuralNetworkEngine;
@@ -279,15 +279,15 @@ void GFPT::trainPolicy()
     _experienceReplay[expId].cache.set("Importance Weight", importanceWeight);
 
     // Checking whether the experience is on policy (i.e., it is within the [1/cutoff, cutoff] region)
-    bool isOnPolicy = (importanceWeight > (1.0f / _experienceReplayREFERCutoffScale)) && (importanceWeight < _experienceReplayREFERCutoffScale);
+    bool isOnPolicy = (importanceWeight > (1.0f / _experienceReplayOffPolicyCurrentCutoff)) && (importanceWeight < _experienceReplayOffPolicyCurrentCutoff);
 
     // If the experiment if on-policy, we use it for the calculation of the gradients
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-      if (isOnPolicy) pGradients[i] += _experienceReplayREFERCurrentBeta * gfptGradients[i];
+      if (isOnPolicy) pGradients[i] += _experienceReplayOffPolicyREFERBeta * gfptGradients[i];
 
     // Applying REFER gradients
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-      pGradients[i] += (1.0f - _experienceReplayREFERCurrentBeta) * referGradients[i];
+      pGradients[i] += (1.0f - _experienceReplayOffPolicyREFERBeta) * referGradients[i];
 
 // Computing statistics
 #pragma omp critical
@@ -383,6 +383,11 @@ knlohmann::json GFPT::optimizeAction(const std::vector<std::vector<float>> state
     actionOptimizer->_currentGeneration++;
   }
 
+  // Updating learning rate for critic/policy learner guided by REFER
+  _vLearner->_learningRate = _currentLearningRate;
+  _qLearner->_learningRate = _currentLearningRate * _advantageLearningRateScale;
+  _pLearner->_learningRate = _currentLearningRate * _policyLearningRateScale;
+
   // Returning optimization results
   knlohmann::json result;
   result["Best Means"] = actionOptimizer->_currentMean;
@@ -460,7 +465,6 @@ knlohmann::json GFPT::getTrainingState()
 void GFPT::printAgentInformation()
 {
   _k->_logger->logInfo("Normal", " + Training Loss: [V = %.3e] [Q = %.3e] [P = %.3e]\n", _vLearner->_currentLoss, _qLearner->_currentLoss, _pLearner->_currentLoss);
-  _k->_logger->logInfo("Normal", " + Learning Rate: [V = %.3e] [Q = %.3e] [P = %.3e]\n", _vLearner->_learningRate, _qLearner->_learningRate, _pLearner->_learningRate);
   _k->_logger->logInfo("Normal", " + Average Action Sigma: [ Current ] -> [ Target ]\n");
   for (size_t i = 0; i < _problem->_actionVectorSize; ++i) _k->_logger->logInfo("Normal", " +  [ %f ] -> [ %f ] \n", _statisticsAverageActionSigmas[i], _statisticsAverageTargetSigmas[i]);
 }

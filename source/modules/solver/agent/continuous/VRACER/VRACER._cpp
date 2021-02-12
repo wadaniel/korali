@@ -138,6 +138,9 @@ void VRACER::trainPolicy()
 
     // Compute importance weight
     float importanceWeight = calculateImportanceWeight(expAction, curMeans, curSigmas, expMeans, expSigmas);
+
+    // Important: store computed information for use in retrace.
+    _experienceReplay[expId].policy["State Value"] = V;
     _experienceReplay[expId].policy["Importance Weight"] = importanceWeight;
 
     /******************************************************

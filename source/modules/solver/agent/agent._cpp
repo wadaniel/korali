@@ -423,6 +423,7 @@ void Agent::processEpisode(std::vector<knlohmann::json> &episode)
     retV = _discountFactor * retV + _experienceReplay[expId].reward;
 
     // Setting initial retrace value in the experience's cache
+    _experienceReplay[expId].policy["State Value"] = retV;
     _experienceReplay[expId].cache.set("Retrace Value", retV);
   }
 
@@ -606,10 +607,10 @@ float Agent::retraceFunction(size_t expId)
     auto expAction = _experienceReplay[curId].action;
 
     // Calculating state value function
-    float curV = stateValueFunction(expStateSequence);
+    float curV = _experienceReplay[curId].policy["State Value"];
 
     // Calculating importance weight
-    float importanceWeight = getExperienceImportanceWeight(curId);
+    float importanceWeight = _experienceReplay[curId].policy["Importance Weight"];
 
     // Truncate importance weight
     float truncatedImportanceWeight = std::min(1.0f, importanceWeight);

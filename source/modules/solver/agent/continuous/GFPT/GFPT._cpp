@@ -209,6 +209,16 @@ void GFPT::trainPolicy()
     auto curMeans = policy["Action Means"].get<std::vector<float>>();
     auto curSigmas = policy["Action Sigmas"].get<std::vector<float>>();
 
+    // Re-computing importance weight for the experience
+    float importanceWeight = calculateImportanceWeight(expAction, curMeans, curSigmas, expMeans, expSigmas);
+
+    // Get state value function
+    auto curV = stateValueFunction(expStateSequence);
+
+    // Important: store computed information for use in retrace.
+    _experienceReplay[expId].policy["State Value"] = curV;
+    _experienceReplay[expId].policy["Importance Weight"] = importanceWeight;
+
     /*****************************************
     * Calculating Critic Gradients
     *****************************************/
@@ -273,10 +283,6 @@ void GFPT::trainPolicy()
     // Getting REFER gradients
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
       referGradients[i] = expMeans[i] - curMeans[i];
-
-    // Re-computing importance weight for the experiment and storing it into cache
-    float importanceWeight = calculateImportanceWeight(expAction, curMeans, curSigmas, expMeans, expSigmas);
-    _experienceReplay[expId].cache.set("Importance Weight", importanceWeight);
 
     // Checking whether the experience is on policy (i.e., it is within the [1/cutoff, cutoff] region)
     bool isOnPolicy = (importanceWeight > (1.0f / _experienceReplayOffPolicyCurrentCutoff)) && (importanceWeight < _experienceReplayOffPolicyCurrentCutoff);

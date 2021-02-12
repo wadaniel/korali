@@ -144,6 +144,10 @@ void NAF::trainPolicy()
     float importanceWeight = calculateImportanceWeight(expAction, curMeans, curSigmas, expMeans, expSigmas);
     _experienceReplay[expId].policy["Importance Weight"] = importanceWeight;
 
+    // Important: store computed information for use in retrace.
+    _experienceReplay[expId].policy["State Value"] = V;
+    _experienceReplay[expId].policy["Importance Weight"] = importanceWeight;
+
     // Getting current experience probability and calculating importance weight
     float probability = _experienceReplay[expId].metadata["Mini Batch"]["Probability"];
     float weight = std::pow((float)_experienceReplay.size() * probability, -_importanceWeightAnnealingRate);

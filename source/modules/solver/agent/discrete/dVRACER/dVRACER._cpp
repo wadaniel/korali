@@ -87,6 +87,10 @@ void dVRACER::trainPolicy()
     float importanceWeight = calculateImportanceWeight(expActionIdx, curPvals, expPvals);
     _experienceReplay[expId].policy["Importance Weight"] = importanceWeight;
 
+    // Important: store computed information for use in retrace.
+    _experienceReplay[expId].policy["State Value"] = V;
+    _experienceReplay[expId].policy["Importance Weight"] = importanceWeight;
+
     /******************************************************
     * Gradient calculation
     *******************************************************/

@@ -44,6 +44,9 @@ if user_want_onednn and onednn_dep.found()
 elif user_want_onednn and not onednn_dep.found()
   onednn_version = '2.0'
   _r = run_command('subprojects/onednn/._fetch.sh', [onednn_version, join_paths('subprojects','onednn')])
+  if _r.returncode() != 0
+    error('Failed to obtain onednn source for version ' + onednn_version)
+  endif
 
   cmake = import('cmake')
 

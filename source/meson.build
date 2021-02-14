@@ -29,7 +29,7 @@ subdir('sample')
 subdir('variable')
 
 # create korali python extension
-pyton_extension = python.extension_module(korali_extension,
+python_extension = python.extension_module(korali_extension,
   korali_source,
   cpp_args: korali_cpp_args,
   include_directories: korali_include,

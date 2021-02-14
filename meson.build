@@ -84,12 +84,15 @@ subdir('source')
 # process korali pure python
 subdir('python/korali')
 
+# create symbolic link to shared library (used for pkg-config later)
+meson.add_install_script('tools/build/post_install.sh', korali_install_base, korali_extension)
 
-# # create a pkg-config entry
-# pkg_mod = import('pkgconfig')
-# pkg_mod.generate(
-#   name: 'Korali',
-#   filebase: 'korali',
-#   description: 'High-Performance Uncertainty Quantification, Optimization, and DRL',
-#   libraries: pyton_extension
-# )
+# create a pkg-config entry
+pkg_mod = import('pkgconfig')
+pkg_mod.generate(
+  name: 'Korali',
+  filebase: 'korali',
+  description: 'High-Performance Uncertainty Quantification, Optimization, and DRL',
+  extra_cflags: ['-I' + korali_install_headers],
+  libraries: ['-L' + korali_install_base, '-l' + korali]
+)

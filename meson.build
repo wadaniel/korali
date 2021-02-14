@@ -78,8 +78,11 @@ korali_deps += dependency('pybind11', fallback: ['pybind11', 'pybind11_dep'], re
 korali_deps += dependency('rtnorm', fallback: ['rtnorm', 'rtnorm_dep'], required: true)
 
 
-# process korali
+# process korali extension
 subdir('source')
+
+# process korali pure python
+subdir('python/korali')
 
 
 # # create a pkg-config entry

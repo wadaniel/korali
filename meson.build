@@ -13,8 +13,9 @@ pymodule = import('python')
 python = pymodule.find_installation('python3', required: true)
 
 korali = 'korali' # python package name
-korali_extensions = 'libkorali' # cpp extensions name
-korali_install_dir = python.get_install_dir() / korali
+korali_extension = 'libkorali' # cpp extensions name
+korali_install_base = python.get_install_dir() / korali
+korali_install_headers = korali_install_base / 'include'
 
 # list of Korali dependencies
 korali_deps = []
@@ -77,15 +78,9 @@ korali_deps += dependency('pybind11', fallback: ['pybind11', 'pybind11_dep'], re
 korali_deps += dependency('rtnorm', fallback: ['rtnorm', 'rtnorm_dep'], required: true)
 
 
-
 # process korali
 subdir('source')
 
-# FIXME: [fabianw@mavt.ethz.ch; 2021-01-29] this must be generated in the
-# installation stage
-subdir_done()
-korali_inc = include_directories('include')
-install_subdir('include', install_dir: korali_install_dir) # cpp headers
 
 # # create a pkg-config entry
 # pkg_mod = import('pkgconfig')

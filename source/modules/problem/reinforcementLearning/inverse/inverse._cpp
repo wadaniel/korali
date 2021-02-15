@@ -1,0 +1,54 @@
+#include "modules/problem/reinforcementLearning/continuous/continuous.hpp"
+#include "modules/problem/reinforcementLearning/inverse/inverse.hpp"
+//#include "modules/solver/agent/continuous/continuous.hpp"
+#include "sample/sample.hpp"
+
+namespace korali
+{
+namespace problem
+{
+namespace reinforcementLearning
+{
+void Inverse::initialize()
+{
+  Continuous::initialize();
+
+  /*********************************************************************
+   * Verifying Continuous Variable Information
+   *********************************************************************/
+
+  for (size_t i = 0; i < _actionVectorIndexes.size(); i++)
+  {
+    size_t varIdx = _actionVectorIndexes[i];
+    if (_k->_variables[varIdx]->_upperBound < _k->_variables[varIdx]->_lowerBound) KORALI_LOG_ERROR("Upper bound for variable %lu (%s) is lower than the lower bound (%f < %f).\n", varIdx, _k->_variables[varIdx]->_name.c_str(), _k->_variables[varIdx]->_upperBound, _k->_variables[varIdx]->_lowerBound);
+    if (std::isfinite(_k->_variables[varIdx]->_lowerBound) == false) KORALI_LOG_ERROR("Lower bound for variable %lu (%s) is not finite or has not been specified.\n", varIdx, _k->_variables[varIdx]->_name.c_str());
+    if (std::isfinite(_k->_variables[varIdx]->_upperBound) == false) KORALI_LOG_ERROR("Upper bound for variable %lu (%s) is not finite or has not been specified.\n", varIdx, _k->_variables[varIdx]->_name.c_str());
+  }
+ 
+  // Creating JSON storage variable
+  knlohmann::json observationJson;
+
+  printf("XX\n");
+  if (loadJsonFromFile(observationJson, _observationFile.c_str()) == false)
+    KORALI_LOG_ERROR("Trying to load observations but could not find or deserialize agent's state from file %s...\n", _observationFile.c_str());
+  
+  printf("XX\n");
+  if (observationJson.contains("States") == false)
+    KORALI_LOG_ERROR("States not found in 'Observation File' (%s)\n", _observationFile.c_str());
+  
+  printf("XX\n");
+  if (observationJson.contains("Actions") == false)
+    KORALI_LOG_ERROR("Actions not found in 'Observation File' (%s)\n", _observationFile.c_str());
+
+  printf("XX\n");
+  _observationJson = observationJson;
+
+  printf("XX\n");
+
+}
+
+} // namespace reinforcementLearning
+
+} // namespace problem
+
+} // namespace korali

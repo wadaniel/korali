@@ -146,7 +146,7 @@ void NAF::trainPolicy()
     auto curDiagP = policy["Diag P"].get<std::vector<float>>();
 
     // Compute importance weight
-    float importanceWeight = calculateImportanceWeight(expAction, curMeans, curSigmas, expMeans, expSigmas);
+    float importanceWeight = 0.0f;//calculateImportanceWeight(expAction, curMeans, curSigmas, expMeans, expSigmas);
     _experienceReplay[expId].metadata["Importance Weight"] = importanceWeight;
 
     // Important: store computed information for use in retrace.
@@ -203,7 +203,7 @@ void NAF::trainPolicy()
     }
 
     // Compute derivative of kullback-leibler divergence wrt current distribution params
-    auto klGrad = calculateKLDivergenceGradient(expMeans, expSigmas, curMeans, curSigmas);
+    std::vector<float> klGrad; //calculateKLDivergenceGradient(expMeans, expSigmas, curMeans, curSigmas);
 
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
     {

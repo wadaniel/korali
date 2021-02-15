@@ -202,6 +202,7 @@ void GFPT::trainPolicy()
 
     // Get state, action, mean, Sigma for this experience
     auto expStateSequence = getStateTimeSequence(expId);
+    auto expStateActionSequence = getStateActionTimeSequence(expId);
     auto expAction = _experienceReplay[expId].action;
     auto expMeans = _experienceReplay[expId].metadata["Action Means"].get<std::vector<float>>();
     auto expSigmas = _experienceReplay[expId].metadata["Action Sigmas"].get<std::vector<float>>();

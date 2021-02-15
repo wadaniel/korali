@@ -318,6 +318,17 @@ class Agent : public Solver
   */
   std::vector<std::vector<float>> getStateActionTimeSequence(size_t expId);
 
+
+  /**
+   * @brief Calculates importance weight of current action from old and new policies
+   * @param action The action taken
+   * @param curPolicy The current policy
+   * @param oldPolicy The old policy, the one used for take the action in the first place
+   * @return The importance weight
+   */
+  virtual float calculateImportanceWeight(const std::vector<float> &action, knlohmann::json &curPolicy, knlohmann::json &oldPolicy) = 0;
+
+
   /**
    * @brief Returns the retrace value for the given experience
    * @param expId The id (position within the replay memory) of the experience

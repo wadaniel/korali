@@ -87,18 +87,22 @@ void Discrete::getAction(korali::Sample &sample)
   }
 
   // Storing action itself, its idx, and probabilities
-  sample["Metadata"]["Action Probabilities"] = pActions;
-  sample["Metadata"]["Action Index"] = actionIdx;
+  sample["Metadata"]["Experience Policy"]["Action Probabilities"] = pActions;
+  sample["Metadata"]["Experience Policy"]["Action Index"] = actionIdx;
   sample["Action"] = _problem->_possibleActions[actionIdx];
 }
 
-float Discrete::calculateImportanceWeight(const size_t actionIdx, const std::vector<float> &curProbabilities, const std::vector<float> &oldProbabilities)
+float Discrete::calculateImportanceWeight(const std::vector<float> &action, knlohmann::json &curPolicy, knlohmann::json &oldPolicy)
 {
+  auto pVectorCurPolicy = curPolicy["Action Probabilities"].get<std::vector<float>>();
+  auto pVectorOldPolicy = oldPolicy["Action Probabilities"].get<std::vector<float>>();
+  auto actionIdx = oldPolicy["Action Index"].get<size_t>();
+
   // Getting probability density of action for current policy
-  float pCurPolicy = curProbabilities[actionIdx];
+  float pCurPolicy = pVectorCurPolicy[actionIdx];
 
   // Getting probability density of action for old policy
-  float pOldPolicy = oldProbabilities[actionIdx];
+  float pOldPolicy = pVectorOldPolicy[actionIdx];
 
   // Now calculating importance weight for the old s,a experience
   float importanceWeight = pCurPolicy / pOldPolicy;

@@ -104,6 +104,11 @@ float NAF::stateValueFunction(const std::vector<std::vector<float>> &state)
   return v;
 }
 
+void NAF::updateExperienceMetadata(size_t expId)
+{
+ KORALI_LOG_ERROR("To-do.\n");
+}
+
 void NAF::trainPolicy()
 {
   /***********************************************************************************
@@ -130,8 +135,8 @@ void NAF::trainPolicy()
     // Access experiences
     auto expStateSequence = getStateTimeSequence(expId);
     auto expAction = _experienceReplay[expId].action;
-    auto expMeans = _experienceReplay[expId].policy["Action Means"].get<std::vector<float>>();
-    auto expSigmas = _experienceReplay[expId].policy["Action Sigmas"].get<std::vector<float>>();
+    auto expMeans = _experienceReplay[expId].metadata["Action Means"].get<std::vector<float>>();
+    auto expSigmas = _experienceReplay[expId].metadata["Action Sigmas"].get<std::vector<float>>();
 
     // Forward the neural network for this state to get current means and sigmas and Value
     auto policy = runPolicy(expStateSequence);
@@ -142,11 +147,11 @@ void NAF::trainPolicy()
 
     // Compute importance weight
     float importanceWeight = calculateImportanceWeight(expAction, curMeans, curSigmas, expMeans, expSigmas);
-    _experienceReplay[expId].policy["Importance Weight"] = importanceWeight;
+    _experienceReplay[expId].metadata["Importance Weight"] = importanceWeight;
 
     // Important: store computed information for use in retrace.
-    _experienceReplay[expId].policy["State Value"] = V;
-    _experienceReplay[expId].policy["Importance Weight"] = importanceWeight;
+    _experienceReplay[expId].metadata["State Value"] = V;
+    _experienceReplay[expId].metadata["Importance Weight"] = importanceWeight;
 
     // Getting current experience probability and calculating importance weight
     float probability = _experienceReplay[expId].metadata["Mini Batch"]["Probability"];

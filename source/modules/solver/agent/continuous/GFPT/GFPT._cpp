@@ -173,6 +173,11 @@ float GFPT::getActionAdvantage(const std::vector<std::vector<float>> &stateActio
   return _qLearner->getEvaluation({stateActionSequence})[0][0];
 }
 
+void GFPT::updateExperienceMetadata(size_t expId)
+{
+
+}
+
 void GFPT::trainPolicy()
 {
   // Creating minibatch for the critic update
@@ -192,32 +197,21 @@ void GFPT::trainPolicy()
     * Gathering experience information
     *******************************************************************************************/
 
-    // Selecting a uniformly random selected, yet not repeated experience
+    // Getting index of current experiment
     size_t expId = miniBatchIndexes[b];
 
-    // Getting experience's current state, state/action sequences
+    // Get state, action, mean, Sigma for this experience
     auto expStateSequence = getStateTimeSequence(expId);
-    auto expStateActionSequence = getStateActionTimeSequence(expId);
     auto expAction = _experienceReplay[expId].action;
+    auto expMeans = _experienceReplay[expId].metadata["Action Means"].get<std::vector<float>>();
+    auto expSigmas = _experienceReplay[expId].metadata["Action Sigmas"].get<std::vector<float>>();
 
-    // Getting Experience's policy distribution
-    auto expMeans = _experienceReplay[expId].policy["Action Means"].get<std::vector<float>>();
-    auto expSigmas = _experienceReplay[expId].policy["Action Sigmas"].get<std::vector<float>>();
-
-    // Updating action distributions for the current state
-    auto policy = runPolicy(expStateSequence);
-    auto curMeans = policy["Action Means"].get<std::vector<float>>();
-    auto curSigmas = policy["Action Sigmas"].get<std::vector<float>>();
-
-    // Re-computing importance weight for the experience
-    float importanceWeight = calculateImportanceWeight(expAction, curMeans, curSigmas, expMeans, expSigmas);
-
-    // Get state value function
-    auto curV = stateValueFunction(expStateSequence);
-
-    // Important: store computed information for use in retrace.
-    _experienceReplay[expId].policy["State Value"] = curV;
-    _experienceReplay[expId].policy["Importance Weight"] = importanceWeight;
+    // Gathering metadata
+    float V = _experienceReplay[expId].metadata["State Value"];
+    auto curMeans = _experienceReplay[expId].metadata["Current Means"].get<std::vector<float>>();
+    auto curSigmas = _experienceReplay[expId].metadata["Current Sigmas"].get<std::vector<float>>();
+    float importanceWeight = _experienceReplay[expId].metadata["Importance Weight"];
+    float expVtbc = _experienceReplay[expId].metadata["Retrace Value"];
 
     /*****************************************
     * Calculating Critic Gradients

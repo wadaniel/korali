@@ -46,6 +46,11 @@ void dVRACER::initializeAgent()
   _criticPolicyLearner = dynamic_cast<solver::learner::DeepSupervisor *>(_criticPolicyExperiment._solver);
 }
 
+void dVRACER::updateExperienceMetadata(size_t expId)
+{
+ KORALI_LOG_ERROR("To-do.\n");
+}
+
 void dVRACER::trainPolicy()
 {
   // Resetting statistics
@@ -75,8 +80,8 @@ void dVRACER::trainPolicy()
 
     // Get state, action, and action probabilities from experience
     auto expStateSequence = getStateTimeSequence(expId);
-    auto expPvals = _experienceReplay[expId].policy["Action Probabilities"].get<std::vector<float>>();
-    size_t expActionIdx = _experienceReplay[expId].policy["Action Index"].get<size_t>();
+    auto expPvals = _experienceReplay[expId].metadata["Action Probabilities"].get<std::vector<float>>();
+    size_t expActionIdx = _experienceReplay[expId].metadata["Action Index"].get<size_t>();
 
     // Forward the neural network for this state to get current action probabilities
     auto policy = runPolicy(expStateSequence);
@@ -85,11 +90,11 @@ void dVRACER::trainPolicy()
 
     // Compute importance weight
     float importanceWeight = calculateImportanceWeight(expActionIdx, curPvals, expPvals);
-    _experienceReplay[expId].policy["Importance Weight"] = importanceWeight;
+    _experienceReplay[expId].metadata["Importance Weight"] = importanceWeight;
 
     // Important: store computed information for use in retrace.
-    _experienceReplay[expId].policy["State Value"] = V;
-    _experienceReplay[expId].policy["Importance Weight"] = importanceWeight;
+    _experienceReplay[expId].metadata["State Value"] = V;
+    _experienceReplay[expId].metadata["Importance Weight"] = importanceWeight;
 
     /******************************************************
     * Gradient calculation

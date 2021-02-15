@@ -132,6 +132,9 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
     // Storing termination status
     experience["Termination"] = agent["Termination"];
 
+    // Adding metadata from the agent module
+    experience["Metadata"] = agent["Metadata"];
+
     // If the episode was truncated, then save the terminal state
     if (agent["Termination"] == "Truncated") experience["Truncated State"] = agent["State"];
 

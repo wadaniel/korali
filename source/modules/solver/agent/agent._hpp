@@ -2,7 +2,6 @@
 #define _KORALI_AGENT_HPP_
 
 #include "auxiliar/cbuffer.hpp"
-#include "auxiliar/kcache.hpp"
 #include "modules/problem/reinforcementLearning/reinforcementLearning.hpp"
 #include "modules/problem/supervisedLearning/supervisedLearning.hpp"
 #include "modules/solver/learner/deepSupervisor/deepSupervisor.hpp"
@@ -67,19 +66,9 @@ struct experience_t
   std::vector<float> truncatedState;
 
   /**
-   * @brief Contains information about the policy used to generate the action
-   */
-  knlohmann::json policy;
-
-  /**
    * @brief Contains any additional necessary information about the experience
    */
   knlohmann::json metadata;
-
-  /**
-   * @brief Provides a cached repository for pre-calculated values. It has an expiration threshold after which it's values should be re-calculated.
-   */
-  kCache<std::string, float, size_t> cache;
 };
 
 class Agent : public Solver
@@ -282,7 +271,7 @@ class Agent : public Solver
   * @brief Additional post-processing of episode after episode terminated.
   * @param episode A vector of experiences.
   */
-  void processEpisode(std::vector<knlohmann::json> &episode);
+  void processEpisode(size_t episodeId, std::vector<knlohmann::json> &episode);
 
   /**
   * @brief Updates probabilities of experiences stored based on their priority.
@@ -328,13 +317,6 @@ class Agent : public Solver
   * @return The time step vector of state/actions
   */
   std::vector<std::vector<float>> getStateActionTimeSequence(size_t expId);
-
-  /**
-  * @brief Calculates importance weights of experiences.
-  * @param miniBatch vector of experience indices.
-  * @return A vector with the importance weights corresponding to the experience indices.
-  */
-  std::vector<float> calculateImportanceWeights(std::vector<size_t> miniBatch);
 
   /**
    * @brief Returns the retrace value for the given experience
@@ -417,13 +399,6 @@ class Agent : public Solver
   virtual knlohmann::json getTrainingState() = 0;
 
   /**
-  * @brief Returns the value of importance weight for a given experience in the replay memory
-  * @param expId Index of the experience in the ER to calculate the importance weight for
-  * @return The experience's importance weight
-  */
-  virtual float getExperienceImportanceWeight(size_t expId) = 0;
-
-  /**
    * @brief Initializes the internal state of the policy
    */
   virtual void initializeAgent() = 0;
@@ -438,6 +413,8 @@ class Agent : public Solver
    * @param sample Sample on which the action and metadata will be stored
    */
   virtual void getAction(korali::Sample &sample) = 0;
+
+  virtual void updateExperienceMetadata(size_t expId) = 0;
 
   void runGeneration() override;
   void printGenerationAfter() override;

@@ -67,7 +67,6 @@ class Continuous : public Agent
   */
   std::vector<float> generateTestingAction(const std::vector<float> &curMeans, const std::vector<float> &curSigmas);
 
-  float getExperienceImportanceWeight(size_t expId) override;
   virtual void getAction(korali::Sample &sample) override;
   virtual void initializeAgent();
 };

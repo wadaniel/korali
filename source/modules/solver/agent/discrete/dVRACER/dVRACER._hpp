@@ -30,6 +30,7 @@ class dVRACER : public Discrete
    */
   problem::SupervisedLearning *_criticPolicyProblem;
 
+  void updateExperienceMetadata(size_t expId) override;
   float stateValueFunction(const std::vector<std::vector<float>> &state) override;
   void setTrainingState(const knlohmann::json &state) override;
   knlohmann::json getTrainingState() override;

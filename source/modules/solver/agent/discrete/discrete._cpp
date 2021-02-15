@@ -62,11 +62,6 @@ void Discrete::getAction(korali::Sample &sample)
       // NOTE: In original DQN paper [Minh2015] we choose max
       // actionIdx = std::distance(pActions.begin(), std::max_element(pActions.begin(), pActions.end()));
     }
-
-    // Storing action idx, policy and importance weight
-    sample["Policy"] = policy;
-    sample["Policy"]["Importance Weight"] = 1.0f;
-    sample["Policy"]["Action Index"] = actionIdx;
   }
 
   /*****************************************************************************
@@ -76,9 +71,7 @@ void Discrete::getAction(korali::Sample &sample)
 
   // Finding the best action index from the probabilities
   if (sample["Mode"] == "Testing")
-  {
     actionIdx = std::distance(pActions.begin(), std::max_element(pActions.begin(), pActions.end()));
-  }
 
   /*****************************************************************************
   * Storing the action itself
@@ -93,6 +86,9 @@ void Discrete::getAction(korali::Sample &sample)
     actionIdx = _problem->_possibleActions.size() - 1;
   }
 
+  // Storing action itself, its idx, and probabilities
+  sample["Metadata"]["Action Probabilities"] = pActions;
+  sample["Metadata"]["Action Index"] = actionIdx;
   sample["Action"] = _problem->_possibleActions[actionIdx];
 }
 
@@ -108,26 +104,6 @@ float Discrete::calculateImportanceWeight(const size_t actionIdx, const std::vec
   float importanceWeight = pCurPolicy / pOldPolicy;
 
   return importanceWeight;
-}
-
-float Discrete::getExperienceImportanceWeight(size_t expId)
-{
-  // Getting the state sequence and action index for the given experience
-  auto expStateSequence = getStateTimeSequence(expId);
-  auto expActionIdx = _experienceReplay[expId].policy["Action Index"].get<size_t>();
-
-  // Get action probabilities for the policy used for the experience
-  auto expPvals = _experienceReplay[expId].policy["Action Probabilities"].get<std::vector<float>>();
-
-  // Getting current policy and calculating its action probabilities
-  auto policy = runPolicy(expStateSequence);
-  auto curPvals = policy["Action Probabilities"].get<std::vector<float>>();
-
-  // Now calculating importance weight
-  auto expImportanceWeight = calculateImportanceWeight(expActionIdx, curPvals, expPvals);
-
-  // Returning experience's importance weight
-  return expImportanceWeight;
 }
 
 std::vector<float> Discrete::calculateImportanceWeightGradient(size_t actionIdx, const std::vector<float> &curPvals, const std::vector<float> &oldPvals)

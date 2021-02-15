@@ -95,6 +95,33 @@ void VRACER::initializeAgent()
   _statisticsAverageActionSigmas.resize(_problem->_actionVectorSize);
 }
 
+void VRACER::updateExperienceMetadata(size_t expId)
+{
+ // Get state, action, mean, Sigma for this experience
+ auto expStateSequence = getStateTimeSequence(expId);
+ auto expAction = _experienceReplay[expId].action;
+ auto expMeans = _experienceReplay[expId].metadata["Action Means"].get<std::vector<float>>();
+ auto expSigmas = _experienceReplay[expId].metadata["Action Sigmas"].get<std::vector<float>>();
+
+ // Forward the neural network for this state to get current means and sigmas and Value
+ auto policy = runPolicy(expStateSequence);
+ float V = policy["State Value"].get<float>();
+ auto curMeans = policy["Action Means"].get<std::vector<float>>();
+ auto curSigmas = policy["Action Sigmas"].get<std::vector<float>>();
+
+ // Compute importance weight
+ float importanceWeight = calculateImportanceWeight(expAction, curMeans, curSigmas, expMeans, expSigmas);
+
+ // Store computed information for use in retrace.
+ #pragma omp critical
+ {
+  _experienceReplay[expId].metadata["State Value"] = V;
+  _experienceReplay[expId].metadata["Importance Weight"] = importanceWeight;
+  _experienceReplay[expId].metadata["Current Means"] = curMeans;
+  _experienceReplay[expId].metadata["Current Sigmas"] = curSigmas;
+ }
+}
+
 void VRACER::trainPolicy()
 {
   // Resetting statistics
@@ -127,21 +154,15 @@ void VRACER::trainPolicy()
     // Get state, action, mean, Sigma for this experience
     auto expStateSequence = getStateTimeSequence(expId);
     auto expAction = _experienceReplay[expId].action;
-    auto expMeans = _experienceReplay[expId].policy["Action Means"].get<std::vector<float>>();
-    auto expSigmas = _experienceReplay[expId].policy["Action Sigmas"].get<std::vector<float>>();
+    auto expMeans = _experienceReplay[expId].metadata["Action Means"].get<std::vector<float>>();
+    auto expSigmas = _experienceReplay[expId].metadata["Action Sigmas"].get<std::vector<float>>();
 
-    // Forward the neural network for this state to get current means and sigmas and Value
-    auto policy = runPolicy(expStateSequence);
-    float V = policy["State Value"].get<float>();
-    auto curMeans = policy["Action Means"].get<std::vector<float>>();
-    auto curSigmas = policy["Action Sigmas"].get<std::vector<float>>();
-
-    // Compute importance weight
-    float importanceWeight = calculateImportanceWeight(expAction, curMeans, curSigmas, expMeans, expSigmas);
-
-    // Important: store computed information for use in retrace.
-    _experienceReplay[expId].policy["State Value"] = V;
-    _experienceReplay[expId].policy["Importance Weight"] = importanceWeight;
+    // Gathering metadata
+    float V = _experienceReplay[expId].metadata["State Value"];
+    auto curMeans = _experienceReplay[expId].metadata["Current Means"].get<std::vector<float>>();
+    auto curSigmas = _experienceReplay[expId].metadata["Current Sigmas"].get<std::vector<float>>();
+    float importanceWeight = _experienceReplay[expId].metadata["Importance Weight"];
+    float expVtbc = _experienceReplay[expId].metadata["Retrace Value"];
 
     /******************************************************
     * Gradient calculation
@@ -149,9 +170,6 @@ void VRACER::trainPolicy()
 
     // Storage for the update gradient
     std::vector<float> gradientLoss(1 + 2 * _problem->_actionVectorSize);
-
-    // Get Vtbc before update
-    float expVtbc = retraceFunction(expId);
 
     // Keeping critic statistics
     cumulativeQStar += expVtbc;
@@ -279,9 +297,9 @@ knlohmann::json VRACER::runPolicy(const std::vector<std::vector<float>> &state)
   }
 
   knlohmann::json policy;
+  policy["State Value"] = stateValue;
   policy["Action Means"] = actionMeans;
   policy["Action Sigmas"] = actionSigmas;
-  policy["State Value"] = stateValue;
   return policy;
 }
 

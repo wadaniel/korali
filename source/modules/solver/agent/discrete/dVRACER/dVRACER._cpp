@@ -89,7 +89,7 @@ void dVRACER::trainPolicy()
     auto V = policy["State Value"].get<float>();
 
     // Compute importance weight
-    float importanceWeight = calculateImportanceWeight(expActionIdx, curPvals, expPvals);
+    float importanceWeight = 0.0f;//calculateImportanceWeight(expActionIdx, curPvals, expPvals);
     _experienceReplay[expId].metadata["Importance Weight"] = importanceWeight;
 
     // Important: store computed information for use in retrace.
@@ -160,7 +160,7 @@ void dVRACER::trainPolicy()
       policyErrorCounter++;
 
       // Compute Policy Gradient wrt Params
-      auto polGrad = calculateImportanceWeightGradient(expActionIdx, curPvals, expPvals);
+      std::vector<float> polGrad;//calculateImportanceWeightGradient(expActionIdx, curPvals, expPvals);
 
       // Set Gradient of Loss wrt Params
       for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
@@ -171,7 +171,7 @@ void dVRACER::trainPolicy()
     }
 
     // Compute derivative of kullback-leibler divergence wrt current distribution params
-    auto klGrad = calculateKLDivergenceGradient(expPvals, curPvals);
+    std::vector<float> klGrad; //calculateKLDivergenceGradient(expPvals, curPvals);
 
     for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
     {
@@ -221,9 +221,6 @@ knlohmann::json dVRACER::runPolicy(const std::vector<std::vector<float>> &state)
   // Forward the neural network for this state
   std::vector<float> evaluation = _criticPolicyLearner->getEvaluation({state})[0];
 
-  // Get state value
-  auto stateValue = evaluation[0];
-
   // Storage for action probabilities
   float maxq = -korali::Inf;
   std::vector<float> qval(_problem->_possibleActions.size());
@@ -263,8 +260,7 @@ knlohmann::json dVRACER::runPolicy(const std::vector<std::vector<float>> &state)
 
   // Returning action probabilities along with state value and importance weight
   knlohmann::json policy;
-  policy["State Value"] = stateValue;
-  policy["Action Probabilities"] = pActions;
+  policy["Current Policy"]["Action Probabilities"] = pActions;
 
   return policy;
 }

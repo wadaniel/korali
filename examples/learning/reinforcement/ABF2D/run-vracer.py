@@ -53,7 +53,6 @@ e["Variables"][6]["Initial Exploration Noise"] = 0.25
 e["Solver"]["Type"] = "Agent / Continuous / VRACER"
 e["Solver"]["Mode"] = "Training"
 e["Solver"]["Experiences Between Policy Updates"] = 1
-e["Solver"]["Cache Persistence"] = 250
 e["Solver"]["Episodes Per Generation"] = 1
 e["Solver"]["Policy Distribution"] = "Normal"
 e["Solver"]["Discount Factor"] = 0.99
@@ -94,7 +93,7 @@ e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 50.0
 
 ### Setting file output configuration
 
-e["Solver"]["Experience Replay"]["Serialize"] = False
+e["Solver"]["Experience Replay"]["Serialize"] = True
 e["Console Output"]["Verbosity"] = "Detailed"
 e["File Output"]["Enabled"] = True
 e["File Output"]["Frequency"] = 10

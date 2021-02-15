@@ -768,7 +768,7 @@ void Agent::deserializeExperienceReplay()
   // Loading database from file
   _k->_logger->logInfo("Detailed", "Loading previous run training state from file %s...\n", statePath.c_str());
   if (loadJsonFromFile(stateJson, statePath.c_str()) == false)
-    KORALI_LOG_ERROR("Trying to resume training or test policy but could not find or deserialize agent's state from from file %s...\n", statePath.c_str());
+    KORALI_LOG_ERROR("Trying to resume training or test policy but could not find or deserialize agent's state from file %s...\n", statePath.c_str());
 
   // Clearing existing database
   _experienceReplay.clear();

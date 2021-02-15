@@ -38,8 +38,9 @@
 #include "problem/optimization/optimization.hpp"
 #include "problem/problem.hpp"
 #include "problem/propagation/propagation.hpp"
-#include "problem/reinforcementLearning/continuous/continuous.hpp"
 #include "problem/reinforcementLearning/discrete/discrete.hpp"
+#include "problem/reinforcementLearning/continuous/continuous.hpp"
+#include "problem/reinforcementLearning/inverse/inverse.hpp"
 #include "problem/sampling/sampling.hpp"
 #include "problem/supervisedLearning/supervisedLearning.hpp"
 #include "solver/SAEM/SAEM.hpp"
@@ -129,8 +130,9 @@ Module *Module::getModule(knlohmann::json &js, Experiment *e)
   if (iCompare(moduleType, "Optimization")) module = new korali::problem::Optimization();
   if (iCompare(moduleType, "Propagation")) module = new korali::problem::Propagation();
   if (iCompare(moduleType, "Sampling")) module = new korali::problem::Sampling();
-  if (iCompare(moduleType, "ReinforcementLearning/Continuous")) module = new korali::problem::reinforcementLearning::Continuous();
   if (iCompare(moduleType, "ReinforcementLearning/Discrete")) module = new korali::problem::reinforcementLearning::Discrete();
+  if (iCompare(moduleType, "ReinforcementLearning/Continuous")) module = new korali::problem::reinforcementLearning::Continuous();
+  if (iCompare(moduleType, "ReinforcementLearning/Inverse")) module = new korali::problem::reinforcementLearning::Inverse();
   if (iCompare(moduleType, "SupervisedLearning")) module = new korali::problem::SupervisedLearning();
   if (iCompare(moduleType, "Executor")) module = new korali::solver::Executor();
   if (iCompare(moduleType, "Integrator")) module = new korali::solver::Integrator();

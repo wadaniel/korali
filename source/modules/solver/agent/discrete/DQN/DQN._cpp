@@ -45,11 +45,6 @@ void DQN::initializeAgent()
   _criticPolicyLearner = dynamic_cast<solver::learner::DeepSupervisor *>(_criticPolicyExperiment._solver);
 }
 
-void DQN::updateExperienceMetadata(size_t expId)
-{
- KORALI_LOG_ERROR("To-do.\n");
-}
-
 void DQN::trainPolicy()
 {
   /***********************************************************************************

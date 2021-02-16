@@ -442,7 +442,7 @@ void Agent::processEpisode(size_t episodeId, std::vector<knlohmann::json> &episo
   if (startEpisodeId < 0) startEpisodeId = 0;
   for (ssize_t e = startEpisodeId; e <= endEpisodeId; e++)
     _trainingAverageReward += _trainingRewardHistory[e];
-  _trainingAverageReward /= (float)(_trainingAverageDepth);
+  _trainingAverageReward /= (float)(endEpisodeId-startEpisodeId+1);
 
   /*********************************************************************
    * Updating off-policy ratio
@@ -559,8 +559,12 @@ std::vector<size_t> Agent::generateMiniBatch(size_t size)
    // Running policy for the current state
    auto curPolicy = runPolicy(expStateSequence);
 
-   // Get state value function
-   auto V = stateValueFunction(expStateSequence);
+   // Get state value function. Some algorithms return it as part of the policy
+   float V = 0.0f;
+   if (isDefined(curPolicy, "State Value"))
+    V = curPolicy["State Value"].get<float>();
+   else
+    V = stateValueFunction(expStateSequence);
 
    // Compute importance weight
    float importanceWeight = calculateImportanceWeight(expAction, curPolicy, expPolicy);

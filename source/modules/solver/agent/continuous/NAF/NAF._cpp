@@ -100,13 +100,8 @@ void NAF::initializeAgent()
 float NAF::stateValueFunction(const std::vector<std::vector<float>> &state)
 {
   // Calculating V(s_i)
-  float v = _criticLearner->getEvaluation({state})[0][0];
-  return v;
-}
-
-void NAF::updateExperienceMetadata(size_t expId)
-{
- KORALI_LOG_ERROR("To-do.\n");
+  float V = _criticLearner->getEvaluation({state})[0][0];
+  return V;
 }
 
 void NAF::trainPolicy()
@@ -129,29 +124,24 @@ void NAF::trainPolicy()
 #pragma omp parallel for schedule(dynamic, 1)
   for (size_t b = 0; b < _miniBatchSize; b++)
   {
-    // Selecting a uniformly random selected, yet not repeated experience
+    // Getting index of current experiment
     size_t expId = miniBatchIndexes[b];
 
-    // Access experiences
+    // Get state, action and policy for this experience
     auto expStateSequence = getStateTimeSequence(expId);
     auto expAction = _experienceReplay[expId].action;
-    auto expMeans = _experienceReplay[expId].metadata["Action Means"].get<std::vector<float>>();
-    auto expSigmas = _experienceReplay[expId].metadata["Action Sigmas"].get<std::vector<float>>();
+    auto expPolicy = _experienceReplay[expId].metadata["Experience Policy"];
 
-    // Forward the neural network for this state to get current means and sigmas and Value
-    auto policy = runPolicy(expStateSequence);
-    float V = policy["State Value"].get<float>();
-    auto curMeans = policy["Action Means"].get<std::vector<float>>();
-    auto curSigmas = policy["Action Sigmas"].get<std::vector<float>>();
-    auto curDiagP = policy["Diag P"].get<std::vector<float>>();
+    // Gathering metadata
+    float V = _experienceReplay[expId].metadata["State Value"];
+    auto curPolicy = _experienceReplay[expId].metadata["Current Policy"];
+    float importanceWeight = _experienceReplay[expId].metadata["Importance Weight"];
+    float retV = _experienceReplay[expId].metadata["Retrace Value"];
 
-    // Compute importance weight
-    float importanceWeight = 0.0f;//calculateImportanceWeight(expAction, curMeans, curSigmas, expMeans, expSigmas);
-    _experienceReplay[expId].metadata["Importance Weight"] = importanceWeight;
-
-    // Important: store computed information for use in retrace.
-    _experienceReplay[expId].metadata["State Value"] = V;
-    _experienceReplay[expId].metadata["Importance Weight"] = importanceWeight;
+    // Gathering current policy information
+    auto curMeans = curPolicy["Action Means"].get<std::vector<float>>();
+    auto curSigmas = curPolicy["Action Sigmas"].get<std::vector<float>>();
+    auto curDiagP = curPolicy["Diag P"].get<std::vector<float>>();
 
     // Getting current experience probability and calculating importance weight
     float probability = _experienceReplay[expId].metadata["Mini Batch"]["Probability"];
@@ -203,7 +193,7 @@ void NAF::trainPolicy()
     }
 
     // Compute derivative of kullback-leibler divergence wrt current distribution params
-    std::vector<float> klGrad; //calculateKLDivergenceGradient(expMeans, expSigmas, curMeans, curSigmas);
+    std::vector<float> klGrad = calculateKLDivergenceGradient(expPolicy, curPolicy);
 
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
     {

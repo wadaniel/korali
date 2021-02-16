@@ -46,11 +46,6 @@ void dVRACER::initializeAgent()
   _criticPolicyLearner = dynamic_cast<solver::learner::DeepSupervisor *>(_criticPolicyExperiment._solver);
 }
 
-void dVRACER::updateExperienceMetadata(size_t expId)
-{
- KORALI_LOG_ERROR("To-do.\n");
-}
-
 void dVRACER::trainPolicy()
 {
   // Resetting statistics
@@ -78,30 +73,26 @@ void dVRACER::trainPolicy()
     // Getting index of current experiment
     size_t expId = miniBatchIndexes[b];
 
-    // Get state, action, and action probabilities from experience
+    // Get state, action and policy for this experience
     auto expStateSequence = getStateTimeSequence(expId);
-    auto expPvals = _experienceReplay[expId].metadata["Action Probabilities"].get<std::vector<float>>();
-    size_t expActionIdx = _experienceReplay[expId].metadata["Action Index"].get<size_t>();
+    auto expPolicy = _experienceReplay[expId].metadata["Experience Policy"];
+    auto expAction = _experienceReplay[expId].action;
+    auto expActionIdx = expPolicy["Action Index"].get<float>();
+    auto expActionProbabilities = expPolicy["Action Probabilities"].get<std::vector<float>>();
 
-    // Forward the neural network for this state to get current action probabilities
-    auto policy = runPolicy(expStateSequence);
-    auto curPvals = policy["Action Probabilities"].get<std::vector<float>>();
-    auto V = policy["State Value"].get<float>();
+    // Gathering metadata
+    float V = _experienceReplay[expId].metadata["State Value"];
+    auto curPolicy = _experienceReplay[expId].metadata["Current Policy"];
+    float importanceWeight = _experienceReplay[expId].metadata["Importance Weight"];
+    float expVtbc = _experienceReplay[expId].metadata["Retrace Value"];
+    auto curActionProbabilities = curPolicy["Action Probabilities"].get<std::vector<float>>();
 
-    // Compute importance weight
-    float importanceWeight = 0.0f;//calculateImportanceWeight(expActionIdx, curPvals, expPvals);
-    _experienceReplay[expId].metadata["Importance Weight"] = importanceWeight;
-
-    // Important: store computed information for use in retrace.
-    _experienceReplay[expId].metadata["State Value"] = V;
-    _experienceReplay[expId].metadata["Importance Weight"] = importanceWeight;
+    // Gathering policyInformation
+    V = _experienceReplay[expId].metadata["State Value"];
 
     /******************************************************
     * Gradient calculation
     *******************************************************/
-
-    // Get Vtbc before update
-    float expVtbc = retraceFunction(expId);
 
     // Storage for the update gradient
     std::vector<float> gradientLoss(1 + _problem->_possibleActions.size());
@@ -145,8 +136,7 @@ void dVRACER::trainPolicy()
         auto expTruncatedStateSequence = getTruncatedStateTimeSequence(expId);
 
         // for truncated state, Vtbc == V - forward network
-        auto policy = runPolicy(expTruncatedStateSequence);
-        float nextExpVtbc = policy["State Value"].get<float>();
+        float nextExpVtbc = stateValueFunction(expTruncatedStateSequence);
 
         // add value to Qret
         Qret += _discountFactor * nextExpVtbc;
@@ -160,7 +150,7 @@ void dVRACER::trainPolicy()
       policyErrorCounter++;
 
       // Compute Policy Gradient wrt Params
-      std::vector<float> polGrad;//calculateImportanceWeightGradient(expActionIdx, curPvals, expPvals);
+      auto polGrad = calculateImportanceWeightGradient(expActionIdx, curActionProbabilities, expActionProbabilities);
 
       // Set Gradient of Loss wrt Params
       for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
@@ -171,7 +161,7 @@ void dVRACER::trainPolicy()
     }
 
     // Compute derivative of kullback-leibler divergence wrt current distribution params
-    std::vector<float> klGrad; //calculateKLDivergenceGradient(expPvals, curPvals);
+    std::vector<float> klGrad = calculateKLDivergenceGradient(expActionProbabilities, curActionProbabilities);
 
     for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
     {
@@ -212,14 +202,17 @@ void dVRACER::trainPolicy()
 float dVRACER::stateValueFunction(const std::vector<std::vector<float>> &state)
 {
   // Calculating V(s_i)
-  float v = _criticPolicyLearner->getEvaluation({state})[0][0];
-  return v;
+  float V = _criticPolicyLearner->getEvaluation({state})[0][0];
+  return V;
 }
 
 knlohmann::json dVRACER::runPolicy(const std::vector<std::vector<float>> &state)
 {
   // Forward the neural network for this state
   std::vector<float> evaluation = _criticPolicyLearner->getEvaluation({state})[0];
+
+  // Getting state value
+  float V = evaluation[0];
 
   // Storage for action probabilities
   float maxq = -korali::Inf;
@@ -260,7 +253,8 @@ knlohmann::json dVRACER::runPolicy(const std::vector<std::vector<float>> &state)
 
   // Returning action probabilities along with state value and importance weight
   knlohmann::json policy;
-  policy["Current Policy"]["Action Probabilities"] = pActions;
+  policy["State Value"] = V;
+  policy["Action Probabilities"] = pActions;
 
   return policy;
 }

@@ -39,7 +39,6 @@ e["Variables"][4]["Type"] = "Action"
 e["Solver"]["Type"] = "Agent / Discrete / DQN"
 e["Solver"]["Mode"] = "Training"
 e["Solver"]["Experiences Between Policy Updates"] = 1
-e["Solver"]["Cache Persistence"] = 1
 e["Solver"]["Episodes Per Generation"] = 1
 e["Solver"]["Target Update Frequency"] = 100
 
@@ -54,7 +53,6 @@ e["Solver"]["Random Action Probability"] = 0.05
 
 ## Defining Q-Critic and Action-selection (policy) optimizers
 
-#e["Solver"]["Optimizer"] = "GradientDescendent"
 e["Solver"]["Optimizer"] = "AdaBelief"
 e["Solver"]["Discount Factor"] = 0.99
 e["Solver"]["Learning Rate"] = 1e-4

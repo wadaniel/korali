@@ -95,10 +95,6 @@ void VRACER::initializeAgent()
   _statisticsAverageActionSigmas.resize(_problem->_actionVectorSize);
 }
 
-void VRACER::updateExperienceMetadata(size_t expId)
-{
-}
-
 void VRACER::trainPolicy()
 {
   // Resetting statistics
@@ -247,14 +243,17 @@ void VRACER::trainPolicy()
 float VRACER::stateValueFunction(const std::vector<std::vector<float>> &state)
 {
   // Calculating V(s_i)
-  float v = _criticPolicyLearner->getEvaluation({state})[0][0];
-  return v;
+  float V = _criticPolicyLearner->getEvaluation({state})[0][0];
+  return V;
 }
 
 knlohmann::json VRACER::runPolicy(const std::vector<std::vector<float>> &state)
 {
   // Forward the neural network for this state
   auto evaluation = _criticPolicyLearner->getEvaluation({state})[0];
+
+  // Getting state value
+  float V = evaluation[0];
 
   std::vector<float> actionMeans(_problem->_actionVectorSize);
   std::vector<float> actionSigmas(_problem->_actionVectorSize);
@@ -265,6 +264,7 @@ knlohmann::json VRACER::runPolicy(const std::vector<std::vector<float>> &state)
   }
 
   knlohmann::json policy;
+  policy["State Value"] = V;
   policy["Action Means"] = actionMeans;
   policy["Action Sigmas"] = actionSigmas;
   return policy;

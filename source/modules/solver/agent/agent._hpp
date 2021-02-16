@@ -425,8 +425,6 @@ class Agent : public Solver
    */
   virtual void getAction(korali::Sample &sample) = 0;
 
-  virtual void updateExperienceMetadata(size_t expId) = 0;
-
   void runGeneration() override;
   void printGenerationAfter() override;
   void initialize() override;

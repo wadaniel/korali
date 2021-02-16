@@ -93,7 +93,6 @@ class GFPT : public Continuous
    */
   knlohmann::json optimizeAction(const std::vector<std::vector<float>> stateActionSequence, const std::vector<float> &curMeans);
 
-  void updateExperienceMetadata(size_t expId) override;
   knlohmann::json runPolicy(const std::vector<std::vector<float>> &stateSequence) override;
   float stateValueFunction(const std::vector<std::vector<float>> &stateSequence) override;
   knlohmann::json getAgentPolicy() override;

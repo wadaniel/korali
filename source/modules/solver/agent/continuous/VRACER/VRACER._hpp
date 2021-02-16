@@ -37,7 +37,6 @@ class VRACER : public Continuous
    */
   void updateVtbc(size_t expId);
 
-  void updateExperienceMetadata(size_t expId) override;
   float stateValueFunction(const std::vector<std::vector<float>> &stateSequence) override;
   knlohmann::json getAgentPolicy() override;
   void setAgentPolicy(const knlohmann::json &hyperparameters) override;

@@ -28,6 +28,9 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
  maxPlotReward = -math.inf
  minPlotReward = +math.inf
 
+ ## Creating colormap
+ cmap = matplotlib.cm.get_cmap('viridis', len(results))
+
  ## Plotting the individual experiment results
     
  for resId, r in enumerate(results):
@@ -76,10 +79,9 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
   confIntervalHistory = np.array(confIntervalHistory)
 
   # Plotting common plot
-  clr='red'
-  if ('GFPT' in dirs[resId]): clr='blue'    
   epList = range(0, len(rewardHistory)) 
-  ax.plot(epList, meanHistory, '-', label=str(averageDepth) + '-Episode Average (' + dirs[resId] + ')', color=clr)
+  ax.plot(epList, rewardHistory, 'x', markersize=1.3, color=cmap.colors[resId])
+  ax.plot(epList, meanHistory, '-', label=str(averageDepth) + '-Episode Average (' + dirs[resId] + ')', color=cmap.colors[resId])
   
  ## Configuring common plotting features
  
@@ -126,6 +128,7 @@ def parseResults(dir):
   genList = [ ]
  
   for file in resultFiles:
+   if (not 'aux' in file):
     with open(p + '/' + file) as f:
       genJs = json.load(f)
       solverRunId = genJs['Run ID']

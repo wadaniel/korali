@@ -10,4 +10,8 @@ fi
 
 set -x
 
-$mpiflags ./run-vracer -bpdx 32 -bpdy 16 -poissonType cosine -muteAll 1 -tdump 0 -nu 0.000018 -tend 0 -shapes 'halfDisk_radius=.06_angle=20_xpos=.1_bForced=1_bFixed=1_xvel=0.15_tAccel=5,stefanfish_L=.2_xpos=.4' 
+# AMR
+$mpiflags ./run-vracer  -bpdx 32 -bpdy 16 -levelMax 3 -Rtol 0.1 -Ctol 0.01 -poissonType cosine -muteAll 1 -verbose 0 -tdump 0 -nu 0.000018 -tend 0 -poissonType cosine -shapes 'halfDisk_radius=.06_angle=20_xpos=.2_bForced=1_bFixed=1_xvel=0.15_tAccel=5,stefanfish_L=.2_xpos=.4_bFixedy=1'
+
+# NO AMR
+# $mpiflags ./run-vracer -bpdx 32 -bpdy 16 -poissonType cosine -muteAll 1 -tdump 0 -nu 0.000018 -tend 0 -shapes 'halfDisk_radius=.06_angle=20_xpos=.2_bForced=1_bFixed=1_xvel=0.15_tAccel=5,stefanfish_L=.2_xpos=.5' 

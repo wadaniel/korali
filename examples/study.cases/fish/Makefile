@@ -9,7 +9,7 @@ CUBISMLIBS= libcup.a $(shell cat cup.libs.txt) -lstdc++fs
 .PHONY: all 
 all: $(BINARIES)
 
-$(BINARIES): % : %.o environment.o 
+$(BINARIES): % : %.o environment.o libcup.a
 	$(KORALICXX) -o $@ $^ $(KORALILIBS) $(CUBISMLIBS)
 
 %.o: %.cpp

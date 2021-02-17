@@ -16,9 +16,10 @@ Visit: https://www.cse-lab.ethz.ch/korali/ for more information.
 
 + docs/ Contains all documentation for Korali source and website
 + examples/ Contains example scripts that solve all of Korali's problem types
-+ external/ Contains installation scripts for external libraries required by Korali
-+ features/ Contains example scripts showcasing Korali's advanced features.
-+ source/ Contains Korali's source code
++ poc/ Contains proof of concepts
++ python/ Contains Korali's pure python source code
++ source/ Contains Korali's C++ source code (python extension)
++ subprojects/ Contains external dependencies required by Korali
 + tests/ Contains test scripts to verify Korali's correctness
 + tools/ Contains Korali's additional tools and scripts 
 

@@ -130,10 +130,10 @@ void VRACER::trainPolicy()
     auto expPolicy = _experienceReplay[expId].metadata["Experience Policy"];
 
     // Gathering metadata
-    float V = _experienceReplay[expId].metadata["State Value"];
+    float V = _experienceReplay[expId].stateValue;
     auto curPolicy = _experienceReplay[expId].metadata["Current Policy"];
-    float importanceWeight = _experienceReplay[expId].metadata["Importance Weight"];
-    float expVtbc = _experienceReplay[expId].metadata["Retrace Value"];
+    float importanceWeight = _experienceReplay[expId].importanceWeight;
+    float expVtbc = _experienceReplay[expId].retraceValue;
 
     /******************************************************
     * Gradient calculation
@@ -167,7 +167,7 @@ void VRACER::trainPolicy()
       // In this case add Vtbc
       if (isNormal == true)
       {
-        float nextExpVtbc =_experienceReplay[expId+1].metadata["Retrace Value"];
+        float nextExpVtbc = _experienceReplay[expId + 1].retraceValue;
         Qret += _discountFactor * nextExpVtbc;
       }
 
@@ -177,7 +177,7 @@ void VRACER::trainPolicy()
       // For truncated state add value
       if (isTrucated == true)
       {
-        float nextExpVtbc = _experienceReplay[expId].metadata["Truncated State Value"];
+        float nextExpVtbc = _experienceReplay[expId].truncatedStateValue;
         Qret += _discountFactor * nextExpVtbc;
       }
 
@@ -249,24 +249,47 @@ float VRACER::stateValueFunction(const std::vector<std::vector<float>> &state)
 
 knlohmann::json VRACER::runPolicy(const std::vector<std::vector<float>> &state)
 {
+  // Storage for policy
+  knlohmann::json policy;
+
   // Forward the neural network for this state
   auto evaluation = _criticPolicyLearner->getEvaluation({state})[0];
 
   // Getting state value
   float V = evaluation[0];
+  policy["State Value"] = V;
 
-  std::vector<float> actionMeans(_problem->_actionVectorSize);
-  std::vector<float> actionSigmas(_problem->_actionVectorSize);
-  for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+  // Getting distribution parameters
+  if (_policyDistribution == "Normal")
   {
-    actionMeans[i] = evaluation[i + 1];
-    actionSigmas[i] = evaluation[_problem->_actionVectorSize + i + 1];
+    std::vector<float> actionMeans(_problem->_actionVectorSize);
+    std::vector<float> actionSigmas(_problem->_actionVectorSize);
+
+    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+    {
+      actionMeans[i] = evaluation[i + 1];
+      actionSigmas[i] = evaluation[_problem->_actionVectorSize + i + 1];
+    }
+
+    policy["Action Means"] = actionMeans;
+    policy["Action Sigmas"] = actionSigmas;
   }
 
-  knlohmann::json policy;
-  policy["State Value"] = V;
-  policy["Action Means"] = actionMeans;
-  policy["Action Sigmas"] = actionSigmas;
+  if (_policyDistribution == "Beta")
+  {
+    std::vector<float> actionAlpha(_problem->_actionVectorSize);
+    std::vector<float> actionBeta(_problem->_actionVectorSize);
+
+    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+    {
+      actionAlpha[i] = evaluation[i + 1];
+      actionBeta[i] = evaluation[_problem->_actionVectorSize + i + 1];
+    }
+
+    policy["Action Alpha"] = actionAlpha;
+    policy["Action Beta"] = actionBeta;
+  }
+
   return policy;
 }
 

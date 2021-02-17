@@ -44,7 +44,6 @@ e["Solver"]["Mode"] = "Training"
 e["Solver"]["Learning Rate"] = 0.01
 e["Solver"]["Episodes Per Generation"] = 1
 e["Solver"]["Experiences Between Policy Updates"] = 10
-e["Solver"]["Cache Persistence"] = 100
 e["Solver"]["Discount Factor"] = 0.99
 
 ### Defining the configuration of replay memory

@@ -38,7 +38,6 @@ e["Solver"]["Type"] = "Agent / Continuous / GFPT"
 e["Solver"]["Mode"] = "Training"
 e["Solver"]["Episodes Per Generation"] = 1
 e["Solver"]["Experiences Between Policy Updates"] = 10
-e["Solver"]["Cache Persistence"] = 200
 e["Solver"]["Learning Rate"] = 0.001
 
 ### Defining the configuration of replay memory

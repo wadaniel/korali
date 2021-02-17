@@ -1,0 +1,29 @@
+[build-system]
+requires = ["wheel>0.33", "mesonpep517", "ninja", "meson", "toml", "setuptools"]
+build-backend = "mesonpep517.buildapi"
+
+[tool.mesonpep517.metadata]
+author = "Korali devs TODO"
+author-email = "dummy@ethz.ch"
+summary = "High-performance framework for uncertainty quantification, optimization and reinforcement learning"
+home-page = "https://www.cse-lab.ethz.ch/korali/"
+description-file = "README.md"
+meson-python-option-name = "python3"
+requires-python = "py3"
+platforms = "any"
+project-urls = [
+    "Source, https://github.com/cselab/korali",
+    "Documentation, https://www.cse-lab.ethz.ch/korali/docs",
+    ]
+# requires = [
+#     "argparse",
+#     "json",
+#     "matplotlib",
+#     "numpy",
+#     "colorsys",
+#     ]
+meson-options = [
+    "--buildtype=release",
+    "--prefix=/home/fabs/mnt/2TB_disk/disk2/code/korali/test_install",
+    "-Donednn=false"
+    ]

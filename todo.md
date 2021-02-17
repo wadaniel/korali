@@ -5,13 +5,16 @@
 * [X] Provide option to explicitly index the namespace hierarchy (e.g. @startNamespace0)
 * [ ] change "" to <> in includes where needed (examples cxx)
 * [ ] integrate meson in CircleCI config
+* [X] add pkg-config entry for korali installation
+* [ ] update Dockerfile with meson support
+* [ ] may need `config.h` header -- check what are all these flags in `python/korali/cxx/cflags.py`
 
 
 # Python module
 
-* [ ] restructure python
-* [ ] env script (gitignore)
-* [ ] add requirements.txt file
+* [X] restructure python
+* [X] env script (gitignore)
+* [X] add requirements.txt file (will be taken care of by pep517; see pyproject.toml file)
 
 
 # Third-party
@@ -21,6 +24,7 @@
 * [X] rename external to third-party (or subprojects)
 * [Χ] optional third-party
 * [ ] Fix the `git clean -xdf .` in all `._fetch.sh` scripts. It will fail in a release.
+* [ ] doxygen and llvm dependencies
 
 
 # Documentation

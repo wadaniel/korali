@@ -33,4 +33,7 @@ p = mod.add_project('configure',
   configure_options: lib_opt,
 )
 
-gsl_dep = p.dependency('gsl')
+gsl_dep = declare_dependency(
+  dependencies: p.dependency('gsl'),
+  link_args: '-lgslcblas',
+)

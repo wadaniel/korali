@@ -125,6 +125,10 @@ void Agent::initialize()
     // Prepare storage for rewards from tested samples
     _testingReward.resize(_testingSampleIds.size());
   }
+
+  // TODO: find good initialization
+  _featureWeights.resize(_problem->_observedFeatures[0].size(), 1.0);
+
 }
 
 void Agent::runGeneration()
@@ -180,6 +184,9 @@ void Agent::trainingGeneration()
       {
         auto beginTime = std::chrono::steady_clock::now(); // Profiling
 
+        // Update the reward function based on guided cost learning
+        updateRewardFunction(_problem->_observedFeatures);
+
         // Calling the algorithm specific policy training algorithm
         trainPolicy();
 
@@ -201,7 +208,9 @@ void Agent::trainingGeneration()
         _sessionPolicyUpdateTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
         _generationPolicyUpdateTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
       }
+
     }
+  
   }
 
   // Updating experience probabilities
@@ -246,6 +255,77 @@ void Agent::testingGeneration()
 
   for (size_t agentId = 0; agentId < _testingSampleIds.size(); agentId++)
     _testingReward[agentId] = testingAgents[agentId]["Testing Reward"].get<float>();
+}
+
+
+float Agent::calculateReward(std::vector<float> features)
+{
+    // TODO
+    float reward = 0.0;
+    for (size_t i = 0; i < features.size(); ++i) reward += _featureWeights[i] * features[i];
+    return reward;
+}
+
+
+void Agent::updateRewardFunction(const std::vector<std::vector<float>>& observedFeatures)
+{
+    // TODO
+    size_t M = 10;
+    float rewardFunctionLearningRate = 1e-5;
+    std::vector<float> featureWeightGradient(_featureWeights.size(), 0.0);
+
+    auto miniBatchIndexes = generateMiniBatch(M);
+
+    //return;
+    for (size_t m = 0; m < M; ++m)
+    {
+        // Getting index of current experiment
+        size_t expId = miniBatchIndexes[m];
+        
+        // Find start of current trajectory
+        while( expId > 0 && _experienceReplay[expId].termination == e_nonTerminal) expId--; 
+        if (expId > 0) expId++;
+        miniBatchIndexes[m] = expId;
+    }
+
+
+    // Estimate partition function
+    float maxExp = -Inf;
+    std::vector<float> exponents(M, 0.0);
+    for (size_t m = 0; m < M; ++m)
+    {
+        // Getting index of current experiment
+        size_t expId = miniBatchIndexes[m];
+
+        float cumReward = 0.0;
+        float trajetoryLogProbability = 0.0;
+        while(_experienceReplay[expId].termination == e_nonTerminal)
+        {
+            cumReward += calculateReward(_experienceReplay[expId].features);
+            
+            auto expStateSequence = getStateTimeSequence(expId);
+            auto expAction = _experienceReplay[expId].action;
+            auto policy = runPolicy(expStateSequence);
+            auto curMeans = policy["Action Means"].get<std::vector<float>>();
+            auto curSigmas = policy["Action Sigmas"].get<std::vector<float>>();
+
+            for (size_t i = 0; i < _problem->_actionVectorSize; ++i)
+                trajetoryLogProbability += normalLogDensity(expAction[i], curMeans[i], curSigmas[i]);
+            expId++;
+        }
+
+        exponents[m] = cumReward - trajetoryLogProbability;
+        if(exponents[m] > maxExp) maxExp = exponents[m];
+    }
+
+    float sumExp = 0.0;
+    for(size_t m = 0; m < M; ++m) sumExp += std::exp(exponents[m] - maxExp);
+
+    float partitionFunction = maxExp + std::log(sumExp) - std::log(M);
+
+    for(size_t i = 0; i < _featureWeights.size(); ++i)
+        _featureWeights[i] += rewardFunctionLearningRate * featureWeightGradient[i];
+
 }
 
 void Agent::attendAgent(size_t agentId)
@@ -360,6 +440,7 @@ void Agent::processEpisode(std::vector<knlohmann::json> &episode)
     // Getting state, action, reward, and whether it's terminal
     e.state = episode[expId]["State"].get<std::vector<float>>();
     e.action = episode[expId]["Action"].get<std::vector<float>>();
+    e.features = episode[expId]["Features"].get<std::vector<float>>();
     e.reward = episode[expId]["Reward"].get<float>();
 
     if (episode[expId]["Termination"] == "Non Terminal") e.termination = e_nonTerminal;
@@ -381,7 +462,7 @@ void Agent::processEpisode(std::vector<knlohmann::json> &episode)
     e.policy["Importance Weight"] = 1.0f;
 
     // Keeping statistics
-    cumulativeReward += e.reward;
+    cumulativeReward += calculateReward(e.features);
 
     // Scale reward
     _experienceReplay.add(e);
@@ -420,7 +501,7 @@ void Agent::processEpisode(std::vector<knlohmann::json> &episode)
   for (ssize_t expId = endId; expId >= startId; expId--)
   {
     // Calculating retrace value with the discount factor. Importance weight is 1.0f because the policy is current.
-    retV = _discountFactor * retV + _experienceReplay[expId].reward;
+    retV = _discountFactor * retV + calculateReward(_experienceReplay[expId].features);
 
     // Setting initial retrace value in the experience's cache
     _experienceReplay[expId].cache.set("Retrace Value", retV);
@@ -601,7 +682,7 @@ float Agent::retraceFunction(size_t expId)
   for (ssize_t curId = endId; curId >= startId; curId--)
   {
     // Getting current reward, action, and state
-    auto curReward = _experienceReplay[curId].reward;
+    auto curReward = calculateReward(_experienceReplay[curId].features);
     auto expStateSequence = getStateTimeSequence(curId);
     auto expAction = _experienceReplay[curId].action;
 

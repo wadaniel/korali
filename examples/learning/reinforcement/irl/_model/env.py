@@ -25,6 +25,9 @@ def env(s):
   
   # Getting Reward
   s["Reward"] = cart.getReward()
+  
+  # Getting Features
+  s["Features"] = [ cart.getReward() ] 
    
   # Storing New State
   s["State"] = cart.getState().tolist()

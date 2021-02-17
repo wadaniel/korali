@@ -141,7 +141,7 @@ float Continuous::calculateImportanceWeight(const std::vector<float> &action, co
   if (_policyDistribution == "Normal")
   {
     // ParamsOne are the Means, ParamsTwo are the Sigmas
-    for (size_t i = 0; i < action.size(); i++)
+    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
     {
       logpOldPolicy += normalLogDensity(action[i], oldParamsOne[i], oldParamsTwo[i]);
       logpCurPolicy += normalLogDensity(action[i], curParamsOne[i], curParamsTwo[i]);
@@ -150,7 +150,7 @@ float Continuous::calculateImportanceWeight(const std::vector<float> &action, co
   else /* _policyDistribution == "Beta" */
   {
     // ParamsOne are the Means, ParamsTwo are the Variance Coefficients
-    for (size_t i = 0; i < action.size(); i++)
+    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
     {
       logpOldPolicy += betaLogDensityAlt(action[i], oldParamsOne[i], oldParamsTwo[i], _actionLowerBounds[i], _actionUpperBounds[i]);
       logpCurPolicy += betaLogDensityAlt(action[i], curParamsOne[i], curParamsTwo[i], _actionLowerBounds[i], _actionUpperBounds[i]);

@@ -32,10 +32,13 @@ e["Variables"][5]["Initial Exploration Noise"] = 2.00
 
 ### Defining Agent Configuration 
 
-e["Solver"]["Type"] = "Agent / Continuous / GFPT"
+e["Solver"]["Type"] = "Agent / Continuous / DDPG"
 e["Solver"]["Mode"] = "Training"
 e["Solver"]["Episodes Per Generation"] = 1
 e["Solver"]["Experiences Between Policy Updates"] = 10
+e["Solver"]["Learning Rate"] = 0.001
+e["Solver"]["Policy"]["Learning Rate Scale"] = 0.1
+e["Solver"]["Policy"]["Adoption Rate"] = 0.1
 
 ### Defining the configuration of replay memory
 
@@ -53,12 +56,6 @@ e["Solver"]["Experience Replay"]["Off Policy"]["REFER Beta"] = 0.3
 
 e["Solver"]["Mini Batch Size"] = 128
 e["Solver"]["Mini Batch Strategy"] = "Uniform"
- 
-### Defining Critic and Policy Configuration
-
-e["Solver"]["Learning Rate"] = 0.001
-e["Solver"]["Policy"]["Target Accuracy"] = 0.000001
-e["Solver"]["Policy"]["Optimization Candidates"] = 64
 
 ### Configuring the neural network and its hidden layers
 

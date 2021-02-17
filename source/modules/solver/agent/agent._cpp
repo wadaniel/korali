@@ -425,6 +425,7 @@ void Agent::processEpisode(size_t episodeId, std::vector<knlohmann::json> &episo
 
     // Updating experience's importance weight. Initially assumed to be 1.0 because its freshly produced
     _experienceReplay[expId].importanceWeight = 1.0f;
+    _experienceReplay[expId].isOnPolicy = true;
   }
 
   /*********************************************************************
@@ -582,6 +583,7 @@ std::vector<size_t> Agent::generateMiniBatch(size_t size)
       if (_experienceReplay[expId].termination == e_truncated) _experienceReplay[expId].truncatedStateValue = truncatedV;
       _experienceReplay[expId].importanceWeight = importanceWeight;
       _experienceReplay[expId].metadata["Current Policy"] = curPolicy;
+      _experienceReplay[expId].isOnPolicy = (importanceWeight > (1.0f / _experienceReplayOffPolicyCurrentCutoff)) && (importanceWeight < _experienceReplayOffPolicyCurrentCutoff);
     }
   }
 

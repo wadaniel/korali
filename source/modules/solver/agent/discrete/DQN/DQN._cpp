@@ -152,11 +152,11 @@ void DQN::trainPolicy()
     cumulativeQStarSquared += qStar * qStar;
   }
 
-  // Running one generation of the optimization method with the given mini-batch
-  _criticPolicyLearner->runGeneration();
-
   // Updating learning rate for critic/policy learner guided by REFER
   _criticPolicyLearner->_learningRate = _currentLearningRate;
+
+  // Running one generation of the optimization method with the given mini-batch
+  _criticPolicyLearner->runGeneration();
 
   // Keeping statistics
   _statisticsAverageQStar = (float)cumulativeQStar / (float)_miniBatchSize;

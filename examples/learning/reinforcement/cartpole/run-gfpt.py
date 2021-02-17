@@ -50,10 +50,16 @@ e["Solver"]["Experience Replay"]["Maximum Size"] = 32768
 
 ## Defining Critic and Policy Configuration
 
-e["Solver"]["Learning Rate"] = 0.01
-e["Solver"]["Policy"]["Learning Rate Scale"] = 1.0
-e["Solver"]["Policy"]["Target Accuracy"] = 0.01
-e["Solver"]["Policy"]["Optimization Candidates"] = 32
+e["Solver"]["Learning Rate"] = 0.0001
+e["Solver"]["Policy"]["Target Accuracy"] = 0.000001
+e["Solver"]["Policy"]["Optimization Candidates"] = 64
+
+### Configuring the Remember-and-Forget Experience Replay algorithm
+
+e["Solver"]["Experience Replay"]["Off Policy"]["Cutoff Scale"] = 4.0
+e["Solver"]["Experience Replay"]["Off Policy"]["Target"] = 0.1
+e["Solver"]["Experience Replay"]["Off Policy"]["Annealing Rate"] = 5e-7
+e["Solver"]["Experience Replay"]["Off Policy"]["REFER Beta"] = 0.3
 
 ### Configuring the neural network and its hidden layers
 

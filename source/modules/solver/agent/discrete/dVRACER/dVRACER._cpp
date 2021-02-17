@@ -83,7 +83,6 @@ void dVRACER::trainPolicy()
     // Gathering metadata
     float V = _experienceReplay[expId].stateValue;
     auto curPolicy = _experienceReplay[expId].metadata["Current Policy"];
-    float importanceWeight = _experienceReplay[expId].importanceWeight;
     float expVtbc = _experienceReplay[expId].retraceValue;
     auto curActionProbabilities = curPolicy["Action Probabilities"].get<std::vector<float>>();
 
@@ -107,11 +106,8 @@ void dVRACER::trainPolicy()
     cumulativeTdError -= (V - expVtbc);
     cumulativeTdErrorSquared += gradientLoss[0] * gradientLoss[0];
 
-    // Checking whether the experience is on policy (i.e., it is within the [1/cutoff, cutoff] region)
-    bool isOnPolicy = (importanceWeight > (1.0f / _experienceReplayOffPolicyCurrentCutoff)) && (importanceWeight < _experienceReplayOffPolicyCurrentCutoff);
-
     // Compute policy gradient only if inside trust region
-    if (isOnPolicy)
+    if (_experienceReplay[expId].isOnPolicy)
     {
       // Qret for terminal state is just reward
       float Qret = _experienceReplay[expId].reward;

@@ -21,40 +21,34 @@ class Continuous : public Agent
 
   /**
    * @brief Calculates the gradient of policy wrt to the parameter of the 2nd (current) distribution evaluated at old action.
-   * @param oldAction Action from memory
-   * @param curParamsOne cur means for Normal distribution, beta for Beta distribution
-   * @param curParamsTwo cur sigmas for Normal distribution, alpha for Beta distribution
-   * @param oldParamsOne old means for Normal distribution, beta for Beta distribution
-   * @param oldParamsTwo old sigmas for Normal distribution, alpha for Beta distribution
+   * @param action The action taken by the agent in the given experience
+   * @param oldPolicy The policy for the given state used at the time the action was performed
+   * @param curPolicy The current policy for the given state
    * @return gradient of policy wrt curParamsOne and curParamsTwo
    */
   std::vector<float> calculateImportanceWeightGradient(const std::vector<float> &action, knlohmann::json &curPolicy, knlohmann::json &oldPolicy);
 
   /**
    * @brief Calculates the gradient of KL(p_old, p_cur) wrt to the parameter of the 2nd (current) distribution.
-   * @param oldParamsOne old means for Normal distribution, alpha for Beta distribution
-   * @param oldParamsTwo old sigmas for Normal distribution, beta for Beta distribution
-   * @param curParamsOne cur means for Normal distribution, alpha for Beta distribution
-   * @param curParamsTwo cur sigmas for Normal distribution, beta for Beta distribution
-   * @return gradient of KL wrt curParamsOne and curParamsTwo
+   * @param oldPolicy The policy for the given state used at the time the action was performed
+   * @param curPolicy The current policy for the given state
+   * @return
    */
   std::vector<float> calculateKLDivergenceGradient(knlohmann::json &oldPolicy, knlohmann::json &curPolicy);
 
   /**
   * @brief Function to generate randomized actions from neural network output.
-  * @param curMeans parameter vector for policy distribution
-  * @param curSigmas parameter vector for policy distribution
+  * @param curPolicy The current policy for the given state
   * @return An action vector
   */
-  std::vector<float> generateTrainingAction(const std::vector<float> &curMeans, const std::vector<float> &curSigmas);
+  std::vector<float> generateTrainingAction(knlohmann::json &curPolicy);
 
   /**
   * @brief Function to generate deterministic actions from neural network output required for policy evaluation, respectively testing.
-  * @param curMeans parameter vector for policy distribution
-  * @param curSigmas parameter vector for policy distribution
+  * @param curPolicy The current policy for the given state
   * @return An action vector
   */
-  std::vector<float> generateTestingAction(const std::vector<float> &curMeans, const std::vector<float> &curSigmas);
+  std::vector<float> generateTestingAction(knlohmann::json &curPolicy);
 
   float calculateImportanceWeight(const std::vector<float> &action, knlohmann::json &curPolicy, knlohmann::json &oldPolicy) override;
   virtual void getAction(korali::Sample &sample) override;

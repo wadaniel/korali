@@ -17,7 +17,7 @@ void Continuous::initializeAgent()
     KORALI_LOG_ERROR("Policy Distribution must be either 'Normal' or 'Beta' (is '%s').", _policyDistribution.c_str());
 
   /*********************************************************************
-  * Initializing Action Noise Sigmas
+  * Initializing Action Space Information
   *********************************************************************/
 
   // Allocating space for the inverse variance calculation
@@ -53,68 +53,78 @@ void Continuous::getAction(korali::Sample &sample)
 
   // Forward state sequence to get the Gaussian means and sigmas from policy
   auto policy = runPolicy(_stateTimeSequence.getVector());
-  auto curMeans = policy["Action Means"].get<std::vector<float>>();
-  auto curSigmas = policy["Action Sigmas"].get<std::vector<float>>();
 
   /*****************************************************************************
   * During Training we select action according to policy's probability 
   * distribution
   ****************************************************************************/
 
-  if (sample["Mode"] == "Training") action = generateTrainingAction(curMeans, curSigmas);
+  if (sample["Mode"] == "Training") action = generateTrainingAction(policy);
 
   /*****************************************************************************
   * During testing, we select the means (point of highest density) for all
   * elements of the action vector
   ****************************************************************************/
 
-  if (sample["Mode"] == "Testing") action = generateTestingAction(curMeans, curSigmas);
+  if (sample["Mode"] == "Testing") action = generateTestingAction(policy);
 
   /*****************************************************************************
   * Storing the action and it's policy
   ****************************************************************************/
 
-  sample["Metadata"]["Experience Policy"]["Action Means"] = curMeans;
-  sample["Metadata"]["Experience Policy"]["Action Sigmas"] = curSigmas;
+  sample["Metadata"]["Experience Policy"] = policy;
   sample["Action"] = action;
 }
 
-std::vector<float> Continuous::generateTrainingAction(const std::vector<float> &paramsOne, const std::vector<float> &paramsTwo)
+std::vector<float> Continuous::generateTrainingAction(knlohmann::json &curPolicy)
 {
   std::vector<float> action(_problem->_actionVectorSize);
   if (_policyDistribution == "Normal")
   {
-    // ParamsOne are the Means, ParamsTwo are the Sigmas
+    // Getting parameters from the new and old policies
+    auto curMeans = curPolicy["Action Means"].get<std::vector<float>>();
+    auto curSigmas = curPolicy["Action Sigmas"].get<std::vector<float>>();
+
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-      action[i] = paramsOne[i] + paramsTwo[i] * _normalGenerator->getRandomNumber();
+      action[i] = curMeans[i] + curSigmas[i] * _normalGenerator->getRandomNumber();
   }
-  else /* _policyDistribution == "Beta" */
+
+  if (_policyDistribution == "Beta")
   {
-    // ParamsOne are the Means, ParamsTwo are the Variance Coefficients
+    auto curAlpha = curPolicy["Action Alpha"].get<std::vector<float>>();
+    auto curBeta = curPolicy["Action Beta"].get<std::vector<float>>();
+
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-      action[i] = ranBetaAlt(_normalGenerator->_range, paramsOne[i], paramsTwo[i], _actionLowerBounds[i], _actionUpperBounds[i]);
+      action[i] = ranBetaAlt(_normalGenerator->_range, curAlpha[i], curBeta[i], _actionLowerBounds[i], _actionUpperBounds[i]);
   }
 
   return action;
 }
 
-std::vector<float> Continuous::generateTestingAction(const std::vector<float> &paramsOne, const std::vector<float> &paramsTwo)
+std::vector<float> Continuous::generateTestingAction(knlohmann::json &curPolicy)
 {
   std::vector<float> action(_problem->_actionVectorSize);
   if (_policyDistribution == "Normal")
   {
+    // Getting parameters from the new and old policies
+    auto curMeans = curPolicy["Action Means"].get<std::vector<float>>();
+
     // ParamsOne are the Means, ParamsTwo are the Sigmas
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-      action[i] = paramsOne[i];
+      action[i] = curMeans[i];
   }
-  else /* _policyDistribution == "Beta" */
+
+  if (_policyDistribution == "Beta")
   {
+    auto curAlpha = curPolicy["Action Alpha"].get<std::vector<float>>();
+    auto curBeta = curPolicy["Action Beta"].get<std::vector<float>>();
+
     // ParamsOne are the Means, ParamsTwo are the Variance Coefficients
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
     {
       float alpha;
       float beta;
-      std::tie(alpha, beta) = betaParamTransformAlt(paramsOne[i], paramsTwo[i], _actionLowerBounds[i], _actionUpperBounds[i]);
+      std::tie(alpha, beta) = betaParamTransformAlt(curAlpha[i], curBeta[i], _actionLowerBounds[i], _actionUpperBounds[i]);
 
       if (alpha > 1. && beta > 1.)
         action[i] = _actionLowerBounds[i] + (_actionUpperBounds[i] - _actionLowerBounds[i]) * (alpha - 1) / (alpha + beta - 2);
@@ -135,15 +145,15 @@ float Continuous::calculateImportanceWeight(const std::vector<float> &action, kn
   float logpCurPolicy = 0.0f;
   float logpOldPolicy = 0.0f;
 
-  // Getting parameters from the new and old policies
-  auto oldMeans = oldPolicy["Action Means"].get<std::vector<float>>();
-  auto oldSigmas = oldPolicy["Action Sigmas"].get<std::vector<float>>();
-  auto curMeans = curPolicy["Action Means"].get<std::vector<float>>();
-  auto curSigmas = curPolicy["Action Sigmas"].get<std::vector<float>>();
-
   // Getting probability densities for current and past action given current policy
   if (_policyDistribution == "Normal")
   {
+    // Getting parameters from the new and old policies
+    auto oldMeans = oldPolicy["Action Means"].get<std::vector<float>>();
+    auto oldSigmas = oldPolicy["Action Sigmas"].get<std::vector<float>>();
+    auto curMeans = curPolicy["Action Means"].get<std::vector<float>>();
+    auto curSigmas = curPolicy["Action Sigmas"].get<std::vector<float>>();
+
     // ParamsOne are the Means, ParamsTwo are the Sigmas
     for (size_t i = 0; i < action.size(); i++)
     {
@@ -151,13 +161,20 @@ float Continuous::calculateImportanceWeight(const std::vector<float> &action, kn
       logpCurPolicy += normalLogDensity(action[i], curMeans[i], curSigmas[i]);
     }
   }
-  else /* _policyDistribution == "Beta" */
+
+  if (_policyDistribution == "Beta")
   {
+    // Getting parameters from the new and old policies
+    auto oldAlpha = oldPolicy["Action Alpha"].get<std::vector<float>>();
+    auto oldBeta = oldPolicy["Action Beta"].get<std::vector<float>>();
+    auto curAlpha = curPolicy["Action Alpha"].get<std::vector<float>>();
+    auto curBeta = curPolicy["Action Beta"].get<std::vector<float>>();
+
     // ParamsOne are the Means, ParamsTwo are the Variance Coefficients
     for (size_t i = 0; i < action.size(); i++)
     {
-      logpOldPolicy += betaLogDensityAlt(action[i], oldMeans[i], oldSigmas[i], _actionLowerBounds[i], _actionUpperBounds[i]);
-      logpCurPolicy += betaLogDensityAlt(action[i], curMeans[i], curSigmas[i], _actionLowerBounds[i], _actionUpperBounds[i]);
+      logpOldPolicy += betaLogDensityAlt(action[i], oldAlpha[i], oldBeta[i], _actionLowerBounds[i], _actionUpperBounds[i]);
+      logpCurPolicy += betaLogDensityAlt(action[i], curAlpha[i], curBeta[i], _actionLowerBounds[i], _actionUpperBounds[i]);
     }
   }
 
@@ -177,14 +194,14 @@ std::vector<float> Continuous::calculateImportanceWeightGradient(const std::vect
 {
   std::vector<float> grad(2 * _problem->_actionVectorSize, 0.0);
 
-  // Getting parameters from the new and old policies
-  auto oldMeans = oldPolicy["Action Means"].get<std::vector<float>>();
-  auto oldSigmas = oldPolicy["Action Sigmas"].get<std::vector<float>>();
-  auto curMeans = curPolicy["Action Means"].get<std::vector<float>>();
-  auto curSigmas = curPolicy["Action Sigmas"].get<std::vector<float>>();
-
   if (_policyDistribution == "Normal")
   {
+    // Getting parameters from the new and old policies
+    auto oldMeans = oldPolicy["Action Means"].get<std::vector<float>>();
+    auto oldSigmas = oldPolicy["Action Sigmas"].get<std::vector<float>>();
+    auto curMeans = curPolicy["Action Means"].get<std::vector<float>>();
+    auto curSigmas = curPolicy["Action Sigmas"].get<std::vector<float>>();
+
     float logImportanceWeight = 0.0;
 
     // ParamsOne are the Means, ParamsTwo are the Sigmas
@@ -217,21 +234,28 @@ std::vector<float> Continuous::calculateImportanceWeightGradient(const std::vect
     for (size_t i = 0; i < 2 * _problem->_actionVectorSize; i++)
       grad[i] *= importanceWeight;
   }
-  else /* _policyDistribution == "Beta" */
+
+  if (_policyDistribution == "Beta")
   {
+    // Getting parameters from the new and old policies
+    auto oldAlpha = oldPolicy["Action Alpha"].get<std::vector<float>>();
+    auto oldBeta = oldPolicy["Action Beta"].get<std::vector<float>>();
+    auto curAlpha = curPolicy["Action Alpha"].get<std::vector<float>>();
+    auto curBeta = curPolicy["Action Beta"].get<std::vector<float>>();
+
     // ParamsOne are the Means, ParamsTwo are the Variance Coefficients
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
     {
       // Variable preparation
-      const float muCur = curMeans[i];
-      const float varcoefCur = curSigmas[i];
+      const float muCur = curAlpha[i];
+      const float varcoefCur = curBeta[i];
 
       float alphaCur;
       float betaCur;
       std::tie(alphaCur, betaCur) = betaParamTransformAlt(muCur, varcoefCur, _actionLowerBounds[i], _actionUpperBounds[i]);
 
-      const float muOld = oldMeans[i];
-      const float varcoefOld = oldSigmas[i];
+      const float muOld = oldAlpha[i];
+      const float varcoefOld = oldBeta[i];
 
       float alphaOld;
       float betaOld;
@@ -243,7 +267,6 @@ std::vector<float> Continuous::calculateImportanceWeightGradient(const std::vect
 
       // Variable preparation
       const float Bab = gsl_sf_beta(alphaCur, betaCur);
-
       const float psiAb = gsl_sf_psi(alphaCur + betaCur);
 
       const float logscale = std::log(_actionScalings[i]);
@@ -273,15 +296,14 @@ std::vector<float> Continuous::calculateKLDivergenceGradient(knlohmann::json &ol
 {
   std::vector<float> klGrad(2.0 * _problem->_actionVectorSize, 0.0);
 
-  // Getting parameters from the new and old policies
-  auto oldMeans = oldPolicy["Action Means"].get<std::vector<float>>();
-  auto oldSigmas = oldPolicy["Action Sigmas"].get<std::vector<float>>();
-  auto curMeans = curPolicy["Action Means"].get<std::vector<float>>();
-  auto curSigmas = curPolicy["Action Sigmas"].get<std::vector<float>>();
-
   if (_policyDistribution == "Normal")
   {
-    // ParamsOne are the Means, ParamsTwo are the Sigmas
+    // Getting parameters from the new and old policies
+    auto oldMeans = oldPolicy["Action Means"].get<std::vector<float>>();
+    auto oldSigmas = oldPolicy["Action Sigmas"].get<std::vector<float>>();
+    auto curMeans = curPolicy["Action Means"].get<std::vector<float>>();
+    auto curSigmas = curPolicy["Action Sigmas"].get<std::vector<float>>();
+
     for (size_t i = 0; i < _problem->_actionVectorSize; ++i)
     {
       float curInvVar = 1. / (curSigmas[i] * curSigmas[i]);
@@ -303,21 +325,28 @@ std::vector<float> Continuous::calculateKLDivergenceGradient(knlohmann::json &ol
       klGrad[_problem->_actionVectorSize + i] = gradTr + gradQuad + gradDet;
     }
   }
-  else /* _policyDistribution == "Beta" */
+
+  if (_policyDistribution == "Beta")
   {
     // ParamsOne are the Means, ParamsTwo are the Variance Coefficients
     for (size_t i = 0; i < _problem->_actionVectorSize; ++i)
     {
+      // Getting parameters from the new and old policies
+      auto oldAlpha = oldPolicy["Action Alpha"].get<std::vector<float>>();
+      auto oldBeta = oldPolicy["Action Beta"].get<std::vector<float>>();
+      auto curAlpha = curPolicy["Action Alpha"].get<std::vector<float>>();
+      auto curBeta = curPolicy["Action Beta"].get<std::vector<float>>();
+
       // Variable preparation
-      const float muCur = curMeans[i];
-      const float varcoefCur = curSigmas[i];
+      const float muCur = curAlpha[i];
+      const float varcoefCur = curBeta[i];
 
       float alphaCur;
       float betaCur;
       std::tie(alphaCur, betaCur) = betaParamTransformAlt(muCur, varcoefCur, _actionLowerBounds[i], _actionUpperBounds[i]);
 
-      const float muOld = oldMeans[i];
-      const float varcoefOld = oldSigmas[i];
+      const float muOld = oldAlpha[i];
+      const float varcoefOld = oldBeta[i];
 
       float alphaOld;
       float betaOld;

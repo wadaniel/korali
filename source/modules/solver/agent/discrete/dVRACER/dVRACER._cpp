@@ -81,14 +81,14 @@ void dVRACER::trainPolicy()
     auto expActionProbabilities = expPolicy["Action Probabilities"].get<std::vector<float>>();
 
     // Gathering metadata
-    float V = _experienceReplay[expId].metadata["State Value"];
+    float V = _experienceReplay[expId].stateValue;
     auto curPolicy = _experienceReplay[expId].metadata["Current Policy"];
-    float importanceWeight = _experienceReplay[expId].metadata["Importance Weight"];
-    float expVtbc = _experienceReplay[expId].metadata["Retrace Value"];
+    float importanceWeight = _experienceReplay[expId].importanceWeight;
+    float expVtbc = _experienceReplay[expId].retraceValue;
     auto curActionProbabilities = curPolicy["Action Probabilities"].get<std::vector<float>>();
 
     // Gathering policyInformation
-    V = _experienceReplay[expId].metadata["State Value"];
+    V = _experienceReplay[expId].stateValue;
 
     /******************************************************
     * Gradient calculation
@@ -132,13 +132,7 @@ void dVRACER::trainPolicy()
       // For truncated state add value
       if (isTrucated == true)
       {
-        // Get truncated state sequence, adding the truncated state to it and removing first time element
-        auto expTruncatedStateSequence = getTruncatedStateTimeSequence(expId);
-
-        // for truncated state, Vtbc == V - forward network
-        float nextExpVtbc = stateValueFunction(expTruncatedStateSequence);
-
-        // add value to Qret
+        float nextExpVtbc = _experienceReplay[expId].truncatedStateValue;
         Qret += _discountFactor * nextExpVtbc;
       }
 

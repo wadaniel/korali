@@ -204,10 +204,10 @@ void GFPT::trainPolicy()
     auto expSigmas = expPolicy["Action Sigmas"].get<std::vector<float>>();
 
     // Gathering metadata
-    float V = _experienceReplay[expId].metadata["State Value"];
+    float V = _experienceReplay[expId].stateValue;
     auto curPolicy = _experienceReplay[expId].metadata["Current Policy"];
-    float importanceWeight = _experienceReplay[expId].metadata["Importance Weight"];
-    float retV = _experienceReplay[expId].metadata["Retrace Value"];
+    float importanceWeight = _experienceReplay[expId].importanceWeight;
+    float retV = _experienceReplay[expId].retraceValue;
 
     // Gathering current policy information
     auto curMeans = curPolicy["Action Means"].get<std::vector<float>>();

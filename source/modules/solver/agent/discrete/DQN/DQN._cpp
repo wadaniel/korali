@@ -85,7 +85,7 @@ void DQN::trainPolicy()
   
     // Compute importance weight
     float importanceWeight = calculateImportanceWeight(expActionIdx, curPvals, expPvals);
-    _experienceReplay[expId].metadata["Importance Weight"] = importanceWeight;
+    _experienceReplay[expId].importanceWeight = importanceWeight;
     */
 
     // Qhat = max_a(qhat) with s' fixed

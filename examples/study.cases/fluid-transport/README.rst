@@ -1,7 +1,5 @@
-Study Case: Reinforcement Learning on Artificial Swimmers
-==========================================================
-
-In this study case, we replicate the fish swimming experiment from CSELab.
+Study Case: Reinforcement Learning on Optimal Transport in Fluid
+=================================================================
 
 Dependencies
 --------------------------

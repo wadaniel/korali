@@ -47,4 +47,4 @@ fontconfig/
 *.d
 
 # build directories
-/build
+/build*

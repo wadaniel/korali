@@ -96,7 +96,7 @@ void Nested::setInitialConfiguration()
     }
   }
 
-  if ((_resamplingMethod == "Ellipse" || _resamplingMethod == "Multi Ellipse") && (_variableCount == 2)) KORALI_LOG_ERROR("Resampling Method Ellipse only suitable for problems of dim larger 2.");
+  if ((_resamplingMethod == "Ellipse" || _resamplingMethod == "Multi Ellipse") && (_variableCount < 3)) KORALI_LOG_ERROR("Resampling Method 'Ellipse' and 'Multi Ellipse' only suitable for problems of dim larger 2 (use Resampling Method 'Box').");
 
   _candidateLogLikelihoods.resize(_batchSize);
   _candidateLogPriors.resize(_batchSize);

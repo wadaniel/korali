@@ -76,12 +76,9 @@ void runEnvironment(korali::Sample &s)
     // Setting action
     agent->act(t, action);
 
-    // Check if simulation is done.
-    done = isTerminal(agent, object);
-
     // Run the simulation until next action is required
     tNextAct += agent->getLearnTPeriod() * 0.5;
-    while (done == false && t < tNextAct)
+    while ( t < tNextAct )
     {
       // Advance simulation
       const double dt = _environment->calcMaxTimestep();

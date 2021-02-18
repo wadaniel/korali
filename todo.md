@@ -6,7 +6,7 @@
 * [ ] change "" to <> in includes where needed (examples cxx)
 * [ ] integrate meson in CircleCI config
 * [X] add pkg-config entry for korali installation
-* [ ] update Dockerfile with meson support
+* [X] update Dockerfile with meson support
 * [ ] may need `config.h` header -- check what are all these flags in `python/korali/cxx/cflags.py`
 
 

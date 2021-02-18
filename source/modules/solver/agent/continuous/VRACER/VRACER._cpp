@@ -124,21 +124,15 @@ void VRACER::trainPolicy()
     // Getting index of current experiment
     size_t expId = miniBatchIndexes[b];
 
-    // Get state, action, mean, Sigma for this experience
+    // Get state, action and policy for this experience
     auto expStateSequence = getStateTimeSequence(expId);
     auto expAction = _experienceReplay[expId].action;
-    auto expMeans = _experienceReplay[expId].policy["Action Means"].get<std::vector<float>>();
-    auto expSigmas = _experienceReplay[expId].policy["Action Sigmas"].get<std::vector<float>>();
+    auto expPolicy = _experienceReplay[expId].metadata["Experience Policy"];
 
-    // Forward the neural network for this state to get current means and sigmas and Value
-    auto policy = runPolicy(expStateSequence);
-    float V = policy["State Value"].get<float>();
-    auto curMeans = policy["Action Means"].get<std::vector<float>>();
-    auto curSigmas = policy["Action Sigmas"].get<std::vector<float>>();
-
-    // Compute importance weight
-    float importanceWeight = calculateImportanceWeight(expAction, curMeans, curSigmas, expMeans, expSigmas);
-    _experienceReplay[expId].policy["Importance Weight"] = importanceWeight;
+    // Gathering metadata
+    float V = _experienceReplay[expId].stateValue;
+    auto curPolicy = _experienceReplay[expId].metadata["Current Policy"];
+    float expVtbc = _experienceReplay[expId].retraceValue;
 
     /******************************************************
     * Gradient calculation
@@ -146,9 +140,6 @@ void VRACER::trainPolicy()
 
     // Storage for the update gradient
     std::vector<float> gradientLoss(1 + 2 * _problem->_actionVectorSize);
-
-    // Get Vtbc before update
-    float expVtbc = retraceFunction(expId);
 
     // Keeping critic statistics
     cumulativeQStar += expVtbc;
@@ -160,11 +151,8 @@ void VRACER::trainPolicy()
     cumulativeTdError -= gradientLoss[0];
     cumulativeTdErrorSquared += gradientLoss[0] * gradientLoss[0];
 
-    // Checking whether the experience is on policy (i.e., it is within the [1/cutoff, cutoff] region)
-    bool isOnPolicy = (importanceWeight > (1.0f / _experienceReplayOffPolicyCurrentCutoff)) && (importanceWeight < _experienceReplayOffPolicyCurrentCutoff);
-
     // Compute policy gradient only if inside trust region (or offPolicy disabled)
-    if (isOnPolicy)
+    if (_experienceReplay[expId].isOnPolicy)
     {
       // Qret for terminal state is just reward
       float Qret = _experienceReplay[expId].reward;
@@ -175,7 +163,7 @@ void VRACER::trainPolicy()
       // In this case add Vtbc
       if (isNormal == true)
       {
-        float nextExpVtbc = retraceFunction(expId + 1);
+        float nextExpVtbc = _experienceReplay[expId + 1].retraceValue;
         Qret += _discountFactor * nextExpVtbc;
       }
 
@@ -185,13 +173,7 @@ void VRACER::trainPolicy()
       // For truncated state add value
       if (isTrucated == true)
       {
-        // get truncated state
-        auto truncatedState = getTruncatedStateTimeSequence(expId);
-
-        // for truncated state, Vtbc == V - forward network
-        float nextExpVtbc = stateValueFunction(truncatedState);
-
-        // add value to Qret
+        float nextExpVtbc = _experienceReplay[expId].truncatedStateValue;
         Qret += _discountFactor * nextExpVtbc;
       }
 
@@ -204,7 +186,7 @@ void VRACER::trainPolicy()
       policyErrorCounter++;
 
       // Compute Policy Gradient wrt Params
-      auto polGrad = calculateImportanceWeightGradient(expAction, curMeans, curSigmas, expMeans, expSigmas);
+      auto polGrad = calculateImportanceWeightGradient(expAction, curPolicy, expPolicy);
 
       // Set Gradient of Loss wrt Params
       for (size_t i = 0; i < 2 * _problem->_actionVectorSize; i++)
@@ -212,14 +194,14 @@ void VRACER::trainPolicy()
     }
 
     // Compute derivative of kullback-leibler divergence wrt current distribution params
-    auto klGrad = calculateKLDivergenceGradient(expMeans, expSigmas, curMeans, curSigmas);
+    auto klGrad = calculateKLDivergenceGradient(expPolicy, curPolicy);
 
     // Step towards old policy (gradient pointing to larger difference between old and current policy)
     for (size_t i = 0; i < 2 * _problem->_actionVectorSize; i++)
       gradientLoss[1 + i] -= (1.0f - _experienceReplayOffPolicyREFERBeta) * klGrad[i];
 
     // Compute statistics
-    for (size_t i = 0; i < _problem->_actionVectorSize; i++) _statisticsAverageActionSigmas[i] += curSigmas[i];
+    for (size_t i = 0; i < _problem->_actionVectorSize; i++) _statisticsAverageActionSigmas[i] += curPolicy["Action Sigmas"][i].get<float>();
 
     // Set status as learning problem input
     _criticPolicyProblem->_inputData[b] = expStateSequence;
@@ -257,28 +239,53 @@ void VRACER::trainPolicy()
 float VRACER::stateValueFunction(const std::vector<std::vector<float>> &state)
 {
   // Calculating V(s_i)
-  float v = _criticPolicyLearner->getEvaluation({state})[0][0];
-  return v;
+  float V = _criticPolicyLearner->getEvaluation({state})[0][0];
+  return V;
 }
 
 knlohmann::json VRACER::runPolicy(const std::vector<std::vector<float>> &state)
 {
+  // Storage for policy
+  knlohmann::json policy;
+
   // Forward the neural network for this state
   auto evaluation = _criticPolicyLearner->getEvaluation({state})[0];
-  auto stateValue = evaluation[0];
 
-  std::vector<float> actionMeans(_problem->_actionVectorSize);
-  std::vector<float> actionSigmas(_problem->_actionVectorSize);
-  for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+  // Getting state value
+  float V = evaluation[0];
+  policy["State Value"] = V;
+
+  // Getting distribution parameters
+  if (_policyDistribution == "Normal")
   {
-    actionMeans[i] = evaluation[i + 1];
-    actionSigmas[i] = evaluation[_problem->_actionVectorSize + i + 1];
+    std::vector<float> actionMeans(_problem->_actionVectorSize);
+    std::vector<float> actionSigmas(_problem->_actionVectorSize);
+
+    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+    {
+      actionMeans[i] = evaluation[i + 1];
+      actionSigmas[i] = evaluation[_problem->_actionVectorSize + i + 1];
+    }
+
+    policy["Action Means"] = actionMeans;
+    policy["Action Sigmas"] = actionSigmas;
   }
 
-  knlohmann::json policy;
-  policy["Action Means"] = actionMeans;
-  policy["Action Sigmas"] = actionSigmas;
-  policy["State Value"] = stateValue;
+  if (_policyDistribution == "Beta")
+  {
+    std::vector<float> actionAlpha(_problem->_actionVectorSize);
+    std::vector<float> actionBeta(_problem->_actionVectorSize);
+
+    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+    {
+      actionAlpha[i] = evaluation[i + 1];
+      actionBeta[i] = evaluation[_problem->_actionVectorSize + i + 1];
+    }
+
+    policy["Action Alpha"] = actionAlpha;
+    policy["Action Beta"] = actionBeta;
+  }
+
   return policy;
 }
 

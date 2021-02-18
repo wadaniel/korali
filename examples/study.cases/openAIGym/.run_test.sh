@@ -24,9 +24,7 @@ rm -rf __test-*; check_result
 
 for file in *.py
 do
- sed -e 's%Defining Termination Criteria%Defining Termination Criteria\ne["Solver"]["Termination Criteria"]["Max Generations"] = 30\n%g' \
-     -e 's%k.run(e)%k.run(e); exit(0);\n%g' \
-        ${file} > __test-${file}; check_result
+ sed -e 's%\["Max Generations"\] =%["Max Generations"] = 20 #%g' ${file} > __test-${file}; check_result
 done
 
 ##### Running Test
@@ -34,7 +32,7 @@ done
 for file in __test-*.py
 do
  echo "Running ${file} ..."
- OMP_NUM_THREADS=4 python3 ${file}; check_result
+ OMP_NUM_THREADS=4 python3 ${file} --env Ant-v2; check_result
 done
 
 ##### Deleting Tests

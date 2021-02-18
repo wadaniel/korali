@@ -333,18 +333,17 @@ void Agent::updateRewardFunction()
 
   for (size_t i = 0; i < N; ++i)
   {
-    size_t trajectoryIndex = (size_t) (_uniformGenerator->getRandomNumber() * _problem->_numberObservedTrajectories);
-    for(size_t j = 0; j < _problem->_observationsFeatures[trajectoryIndex].size(); ++j)
-        for (size_t k = 0; k < _problem->_featureVectorSize; ++k)
-            featureWeightGradient[k] += 1.0 / (float)N * _problem->_observationsFeatures[trajectoryIndex][j][k];
+    size_t trajectoryIndex = (size_t)(_uniformGenerator->getRandomNumber() * _problem->_numberObservedTrajectories);
+    for (size_t j = 0; j < _problem->_observationsFeatures[trajectoryIndex].size(); ++j)
+      for (size_t k = 0; k < _problem->_featureVectorSize; ++k)
+        featureWeightGradient[k] += 1.0 / (float)N * _problem->_observationsFeatures[trajectoryIndex][j][k];
   }
- 
+
   for (size_t i = 0; i < _problem->_featureVectorSize; ++i)
   {
     printf("fwg[%zu] %f\n", i, featureWeightGradient[i]);
     _featureWeights[i] += _rewardfunctionLearningRate * featureWeightGradient[i];
   }
-
 }
 
 void Agent::attendAgent(size_t agentId)

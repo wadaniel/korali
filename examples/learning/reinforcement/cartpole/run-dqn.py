@@ -39,7 +39,6 @@ e["Variables"][4]["Type"] = "Action"
 e["Solver"]["Type"] = "Agent / Discrete / DQN"
 e["Solver"]["Mode"] = "Training"
 e["Solver"]["Experiences Between Policy Updates"] = 1
-e["Solver"]["Cache Persistence"] = 1
 e["Solver"]["Episodes Per Generation"] = 1
 e["Solver"]["Target Update Frequency"] = 100
 
@@ -48,21 +47,12 @@ e["Solver"]["Target Update Frequency"] = 100
 e["Solver"]["Experience Replay"]["Start Size"] = 5000
 e["Solver"]["Experience Replay"]["Maximum Size"] = 10000
 
-### Configuring the Remember-and-Forget Experience Replay algorithm
-
-e["Solver"]["Experience Replay"]["REFER"]["Enabled"] = False
-e["Solver"]["Experience Replay"]["REFER"]["Cutoff Scale"] = 4.0
-e["Solver"]["Experience Replay"]["REFER"]["Target"] = 1
-e["Solver"]["Experience Replay"]["REFER"]["Initial Beta"] = 0.6
-e["Solver"]["Experience Replay"]["REFER"]["Annealing Rate"] = 5e-7
-
 ### Defining probability of taking a random action (epsilon)
 
 e["Solver"]["Random Action Probability"] = 0.05
 
 ## Defining Q-Critic and Action-selection (policy) optimizers
 
-#e["Solver"]["Optimizer"] = "GradientDescendent"
 e["Solver"]["Optimizer"] = "AdaBelief"
 e["Solver"]["Discount Factor"] = 0.99
 e["Solver"]["Learning Rate"] = 1e-4

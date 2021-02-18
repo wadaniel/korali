@@ -32,7 +32,7 @@ if (found == True):
 
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = env
-e["Problem"]["Actions Between Policy Updates"] = 1
+e["Problem"]["Actions Between Policy Updates"] = 500
 e["Problem"]["Training Reward Threshold"] = 450
 e["Problem"]["Policy Testing Episodes"] = 10
 
@@ -49,15 +49,14 @@ e["Variables"][4]["Name"] = "Force"
 e["Variables"][4]["Type"] = "Action"
 e["Variables"][4]["Lower Bound"] = -10.0
 e["Variables"][4]["Upper Bound"] = +10.0
-e["Variables"][4]["Initial Exploration Noise"] = 2.0
+e["Variables"][4]["Initial Exploration Noise"] = 1.0
 
 ### Defining Agent Configuration 
 
 e["Solver"]["Type"] = "Agent / Continuous / GFPT"
 e["Solver"]["Mode"] = "Training"
-e["Solver"]["Episodes Per Generation"] = 1
-e["Solver"]["Experiences Between Policy Updates"] = 1
-e["Solver"]["Cache Persistence"] = 10
+e["Solver"]["Episodes Per Generation"] = 10
+e["Solver"]["Experiences Between Policy Updates"] = 10
 e["Solver"]["Discount Factor"] = 0.99
 
 ### Defining the configuration of replay memory
@@ -67,16 +66,20 @@ e["Solver"]["Mini Batch Strategy"] = "Uniform"
 e["Solver"]["Experience Replay"]["Start Size"] =   1024
 e["Solver"]["Experience Replay"]["Maximum Size"] = 32768
 
+### Configuring the Remember-and-Forget Experience Replay algorithm
+
+e["Solver"]["Experience Replay"]["Off Policy"]["Cutoff Scale"] = 4.0
+e["Solver"]["Experience Replay"]["Off Policy"]["Target"] = 0.1
+e["Solver"]["Experience Replay"]["Off Policy"]["Annealing Rate"] = 5e-7
+e["Solver"]["Experience Replay"]["Off Policy"]["REFER Beta"] = 0.3
+
 ## Defining Critic and Policy Configuration
 
-e["Solver"]["Learning Rate"] = 0.01
-e["Solver"]["Policy"]["Learning Rate Scale"] = 1.0
-e["Solver"]["Policy"]["Target Accuracy"] = 0.01
-e["Solver"]["Policy"]["Optimization Candidates"] = 32
+e["Solver"]["Learning Rate"] = 0.0001
+e["Solver"]["Policy"]["Target Accuracy"] = 0.000001 
+e["Solver"]["Policy"]["Optimization Candidates"] = 64
 
 ### Configuring the neural network and its hidden layers
-
-e["Solver"]["Time Sequence Length"] = 1
 
 e["Solver"]["Neural Network"]["Engine"] = "OneDNN"
 
@@ -106,4 +109,3 @@ e["File Output"]["Frequency"] = 1
 ### Running Training Experiment
 
 k.run(e)
-

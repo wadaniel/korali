@@ -53,7 +53,6 @@ e["Variables"][6]["Initial Exploration Noise"] = 0.25
 e["Solver"]["Type"] = "Agent / Continuous / VRACER"
 e["Solver"]["Mode"] = "Training"
 e["Solver"]["Experiences Between Policy Updates"] = 1
-e["Solver"]["Cache Persistence"] = 250
 e["Solver"]["Episodes Per Generation"] = 1
 e["Solver"]["Policy Distribution"] = "Normal"
 e["Solver"]["Discount Factor"] = 0.99
@@ -67,11 +66,10 @@ e["Solver"]["Experience Replay"]["Maximum Size"] = 65536
 
 ### Configuring the Remember-and-Forget Experience Replay algorithm
 
-e["Solver"]["Experience Replay"]["REFER"]["Enabled"] = True
-e["Solver"]["Experience Replay"]["REFER"]["Cutoff Scale"] = 4.0
-e["Solver"]["Experience Replay"]["REFER"]["Target"] = 0.1
-e["Solver"]["Experience Replay"]["REFER"]["Initial Beta"] = 1.0
-e["Solver"]["Experience Replay"]["REFER"]["Annealing Rate"] = 5e-7
+e["Solver"]["Experience Replay"]["Off Policy"]["Cutoff Scale"] = 4.0
+e["Solver"]["Experience Replay"]["Off Policy"]["Target"] = 0.1
+e["Solver"]["Experience Replay"]["Off Policy"]["Annealing Rate"] = 5e-7
+e["Solver"]["Experience Replay"]["Off Policy"]["REFER Beta"] = 0.3
 
 ### Configuring the neural network and its hidden layers
 
@@ -95,7 +93,7 @@ e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 50.0
 
 ### Setting file output configuration
 
-e["Solver"]["Experience Replay"]["Serialize"] = False
+e["Solver"]["Experience Replay"]["Serialize"] = True
 e["Console Output"]["Verbosity"] = "Detailed"
 e["File Output"]["Enabled"] = True
 e["File Output"]["Frequency"] = 10

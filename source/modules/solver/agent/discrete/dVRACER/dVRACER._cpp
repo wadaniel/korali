@@ -32,7 +32,7 @@ void dVRACER::initializeAgent()
   _criticPolicyExperiment["Solver"]["Optimizer"] = _optimizer;
   _criticPolicyExperiment["Solver"]["L2 Regularization"]["Enabled"] = _l2RegularizationEnabled;
   _criticPolicyExperiment["Solver"]["L2 Regularization"]["Importance"] = _l2RegularizationImportance;
-  _criticPolicyExperiment["Solver"]["Learning Rate"] = _learningRate;
+  _criticPolicyExperiment["Solver"]["Learning Rate"] = _currentLearningRate;
   _criticPolicyExperiment["Solver"]["Loss Function"] = "Direct Gradient";
   _criticPolicyExperiment["Solver"]["Steps Per Generation"] = 1;
   _criticPolicyExperiment["Solver"]["Neural Network"]["Engine"] = _neuralNetworkEngine;
@@ -73,26 +73,25 @@ void dVRACER::trainPolicy()
     // Getting index of current experiment
     size_t expId = miniBatchIndexes[b];
 
-    // Get state, action, and action probabilities from experience
+    // Get state, action and policy for this experience
     auto expStateSequence = getStateTimeSequence(expId);
-    auto expPvals = _experienceReplay[expId].policy["Action Probabilities"].get<std::vector<float>>();
-    size_t expActionIdx = _experienceReplay[expId].policy["Action Index"].get<size_t>();
+    auto expPolicy = _experienceReplay[expId].metadata["Experience Policy"];
+    auto expAction = _experienceReplay[expId].action;
+    auto expActionIdx = expPolicy["Action Index"].get<float>();
+    auto expActionProbabilities = expPolicy["Action Probabilities"].get<std::vector<float>>();
 
-    // Forward the neural network for this state to get current action probabilities
-    auto policy = runPolicy(expStateSequence);
-    auto curPvals = policy["Action Probabilities"].get<std::vector<float>>();
-    auto V = policy["State Value"].get<float>();
+    // Gathering metadata
+    float V = _experienceReplay[expId].stateValue;
+    auto curPolicy = _experienceReplay[expId].metadata["Current Policy"];
+    float expVtbc = _experienceReplay[expId].retraceValue;
+    auto curActionProbabilities = curPolicy["Action Probabilities"].get<std::vector<float>>();
 
-    // Compute importance weight
-    float importanceWeight = calculateImportanceWeight(expActionIdx, curPvals, expPvals);
-    _experienceReplay[expId].policy["Importance Weight"] = importanceWeight;
+    // Gathering policyInformation
+    V = _experienceReplay[expId].stateValue;
 
     /******************************************************
     * Gradient calculation
     *******************************************************/
-
-    // Get Vtbc before update
-    float expVtbc = retraceFunction(expId);
 
     // Storage for the update gradient
     std::vector<float> gradientLoss(1 + _problem->_possibleActions.size());
@@ -107,11 +106,8 @@ void dVRACER::trainPolicy()
     cumulativeTdError -= (V - expVtbc);
     cumulativeTdErrorSquared += gradientLoss[0] * gradientLoss[0];
 
-    // Checking whether the experience is on policy (i.e., it is within the [1/cutoff, cutoff] region)
-    bool isOnPolicy = (importanceWeight > (1.0f / _experienceReplayREFERCutoffScale)) && (importanceWeight < _experienceReplayREFERCutoffScale);
-
     // Compute policy gradient only if inside trust region
-    if (isOnPolicy)
+    if (_experienceReplay[expId].isOnPolicy)
     {
       // Qret for terminal state is just reward
       float Qret = _experienceReplay[expId].reward;
@@ -132,14 +128,7 @@ void dVRACER::trainPolicy()
       // For truncated state add value
       if (isTrucated == true)
       {
-        // Get truncated state sequence, adding the truncated state to it and removing first time element
-        auto expTruncatedStateSequence = getTruncatedStateTimeSequence(expId);
-
-        // for truncated state, Vtbc == V - forward network
-        auto policy = runPolicy(expTruncatedStateSequence);
-        float nextExpVtbc = policy["State Value"].get<float>();
-
-        // add value to Qret
+        float nextExpVtbc = _experienceReplay[expId].truncatedStateValue;
         Qret += _discountFactor * nextExpVtbc;
       }
 
@@ -151,23 +140,23 @@ void dVRACER::trainPolicy()
       policyErrorCounter++;
 
       // Compute Policy Gradient wrt Params
-      auto polGrad = calculateImportanceWeightGradient(expActionIdx, curPvals, expPvals);
+      auto polGrad = calculateImportanceWeightGradient(expActionIdx, curActionProbabilities, expActionProbabilities);
 
       // Set Gradient of Loss wrt Params
       for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
       {
         // '-' because the optimizer is maximizing
-        gradientLoss[1 + i] = -_experienceReplayREFERCurrentBeta * lossOffPolicy * polGrad[i];
+        gradientLoss[1 + i] = -_experienceReplayOffPolicyREFERBeta * lossOffPolicy * polGrad[i];
       }
     }
 
     // Compute derivative of kullback-leibler divergence wrt current distribution params
-    auto klGrad = calculateKLDivergenceGradient(expPvals, curPvals);
+    std::vector<float> klGrad = calculateKLDivergenceGradient(expActionProbabilities, curActionProbabilities);
 
     for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
     {
       // Step towards old policy (gradient pointing to larger difference between old and current policy)
-      gradientLoss[1 + i] -= (1.0f - _experienceReplayREFERCurrentBeta) * klGrad[i];
+      gradientLoss[1 + i] -= (1.0f - _experienceReplayOffPolicyREFERBeta) * klGrad[i];
     }
 
     // Set status as learning problem input
@@ -194,7 +183,7 @@ void dVRACER::trainPolicy()
   _statisticsStdevPolicyError = std::sqrt(cumulativePolicyErrorSquared / (float)policyErrorCounter - _statisticsAveragePolicyError * _statisticsAveragePolicyError);
 
   // Updating learning rate for critic/policy learner guided by REFER
-  _criticPolicyLearner->_learningRate = _experienceReplayREFERCurrentLearningRate;
+  _criticPolicyLearner->_learningRate = _currentLearningRate;
 
   // Running one generation of the optimization method with the given mini-batch
   _criticPolicyLearner->runGeneration();
@@ -203,8 +192,8 @@ void dVRACER::trainPolicy()
 float dVRACER::stateValueFunction(const std::vector<std::vector<float>> &state)
 {
   // Calculating V(s_i)
-  float v = _criticPolicyLearner->getEvaluation({state})[0][0];
-  return v;
+  float V = _criticPolicyLearner->getEvaluation({state})[0][0];
+  return V;
 }
 
 knlohmann::json dVRACER::runPolicy(const std::vector<std::vector<float>> &state)
@@ -212,8 +201,8 @@ knlohmann::json dVRACER::runPolicy(const std::vector<std::vector<float>> &state)
   // Forward the neural network for this state
   std::vector<float> evaluation = _criticPolicyLearner->getEvaluation({state})[0];
 
-  // Get state value
-  auto stateValue = evaluation[0];
+  // Getting state value
+  float V = evaluation[0];
 
   // Storage for action probabilities
   float maxq = -korali::Inf;
@@ -254,7 +243,7 @@ knlohmann::json dVRACER::runPolicy(const std::vector<std::vector<float>> &state)
 
   // Returning action probabilities along with state value and importance weight
   knlohmann::json policy;
-  policy["State Value"] = stateValue;
+  policy["State Value"] = V;
   policy["Action Probabilities"] = pActions;
 
   return policy;
@@ -290,7 +279,6 @@ knlohmann::json dVRACER::getTrainingState()
 void dVRACER::printAgentInformation()
 {
   _k->_logger->logInfo("Normal", "Critic Information:\n");
-  _k->_logger->logInfo("Normal", " + Learning Rate:                                     %.3e\n", _criticPolicyLearner->_learningRate);
   _k->_logger->logInfo("Normal", " + Average (Std) Vtbc in Mini-Batch:  %f (%f)\n", _statisticsAverageQStar, _statisticsStdevQStar);
   _k->_logger->logInfo("Normal", " + Average (Std) TD-Error in Mini-Batch:  %f (%f)\n", _statisticsAverageTDError, _statisticsStdevTDError);
   _k->_logger->logInfo("Normal", " + Average (Std) Off-Policy Objective in Mini-Batch:  %f (%f)\n", _statisticsAveragePolicyError, _statisticsStdevPolicyError);

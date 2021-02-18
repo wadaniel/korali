@@ -50,7 +50,7 @@ struct experience_t
    * @brief Stores the actiont aken by the agent at the given state
    */
   std::vector<float> action;
- 
+
   /**
    * @brief Features given by the environment to calculate the reward
    */
@@ -353,7 +353,7 @@ class Agent : public Solver
    * @param agentId The Agent's ID
    */
   void attendAgent(size_t agentId);
- 
+
   /**
    * @brief Serializes the experience replay into a JSON compatible format
    */
@@ -373,7 +373,7 @@ class Agent : public Solver
    * @brief Runs a generation when running in testing mode
    */
   void testingGeneration();
-  
+
   /**
    * @brief TODO.
    * @param features Features returned from the environment to calculate the reward.
@@ -383,8 +383,7 @@ class Agent : public Solver
   /**
   * @brief Update the weights of the reward function based on guided cost learning
   */
-  void updateRewardFunction(const std::vector<std::vector<float>>& observedFeatures);
-
+  void updateRewardFunction();
 
   /****************************************************************************************************
    * Virtual functions (responsibilities) for learning algorithms to fulfill
@@ -455,7 +454,6 @@ class Agent : public Solver
    * @param sample Sample on which the action and metadata will be stored
    */
   virtual void getAction(korali::Sample &sample) = 0;
- 
 
   void runGeneration() override;
   void printGenerationAfter() override;

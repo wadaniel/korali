@@ -39,7 +39,6 @@ e["Variables"][4]["Type"] = "Action"
 e["Solver"]["Type"] = "Agent / Discrete / DVRACER"
 e["Solver"]["Mode"] = "Training"
 e["Solver"]["Experiences Between Policy Updates"] = 10
-e["Solver"]["Cache Persistence"] = 500
 e["Solver"]["Episodes Per Generation"] = 1
 
 ### Defining Experience Replay configuration

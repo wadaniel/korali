@@ -42,7 +42,6 @@ e["Solver"]["Type"] = "Agent / Continuous / VRACER"
 e["Solver"]["Mode"] = "Training"
 e["Solver"]["Experiences Between Policy Updates"] = 10
 e["Solver"]["Episodes Per Generation"] = 1
-e["Solver"]["Cache Persistence"] = 100
 
 ### Defining the configuration of replay memory
 

@@ -72,12 +72,11 @@ check
 cp -r manual/.build/html/* web/docs
 check
 
-doxygenBin=../external/doxygen
-# If doxygen is not installed, run the installation script
-if [ ! -f $doxygenBin ]; then
- pushd ..
- ./external/install_doxygen.sh
- popd
+# FIXME: [fabianw@mavt.ethz.ch; 2021-02-17] refactor doxygen into sphinx
+doxygenBin=$(command -v doxygen >/dev/null)
+if [ ! $? -eq 0 ]; then
+    echo "[Korali] Error: please install doxygen on your system."
+    exit -1
 fi
 
 # Running Doxygen
@@ -86,8 +85,6 @@ $doxygenBin doxygen.config 2>&1 | grep -E 'warning|error'
 if [ $? -eq 0 ]; then
  echo "[Korali] Error running doxygen."
  echo "[Korali] Hint: Check if there is any missing variable/function documentation."
- echo "[Korali] Hint: Also make sure doxygen is correctly installed by running:"
- echo "[Korali]           > {KORALI_ROOT}/external/install_doxygen.sh"
  exit -1
 fi 
 

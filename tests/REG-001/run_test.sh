@@ -9,7 +9,8 @@ echo "----------------------------------------------"
 pushd ../../tools/style/  > /dev/null
 exit_code=$?
 
-./check_style_cxx.sh
+./style_cxx.sh check
+# FIXME: [fabianw@mavt.ethz.ch; 2021-02-17] should python code not also be checked?
 exit_code=$(( $exit_code || $? ))
 
 popd  > /dev/null

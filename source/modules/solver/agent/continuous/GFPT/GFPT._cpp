@@ -185,30 +185,21 @@ void GFPT::trainPolicy()
     *****************************************/
 
     // Storage for the V+policy gradients
-    std::vector<float> vpGradients(1 + 2 * _problem->_actionVectorSize, 0.0f);
+    std::vector<float> vpGradients(1 + 2*_problem->_actionVectorSize, 0.0f);
 
-    // Qret for terminal state is just reward
-    float retQ = _experienceReplay[expId].reward;
+     // This variable contains a target for the next state (if exists)
+     float nextV = 0.0f;
 
-    // Check whether experience is non-terminal
-    bool isNormal = _experienceReplay[expId].termination == e_nonTerminal;
+     // If it's a non-terminal experience, add retrace value of next state
+     if (_experienceReplay[expId].termination == e_nonTerminal)
+      nextV = _experienceReplay[expId + 1].retraceValue;
 
-    // In this case add Vtbc
-    if (isNormal == true)
-    {
-      float nextExpVtbc = _experienceReplay[expId + 1].retraceValue;
-      retQ += _discountFactor * nextExpVtbc;
-    }
+     // For truncated episode experience, use state value of truncated state
+     if (_experienceReplay[expId].termination == e_truncated)
+      nextV = _experienceReplay[expId].truncatedStateValue;
 
-    // Check whether experience is truncated
-    bool isTrucated = _experienceReplay[expId].termination == e_truncated;
-
-    // For truncated state add value
-    if (isTrucated == true)
-    {
-      float nextExpVtbc = _experienceReplay[expId].truncatedStateValue;
-      retQ += _discountFactor * nextExpVtbc;
-    }
+     // Qret for terminal state is just reward
+     float retQ = _experienceReplay[expId].reward + _discountFactor * nextV;
 
     vpGradients[0] = retV - curV;
 

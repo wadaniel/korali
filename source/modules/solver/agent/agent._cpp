@@ -494,14 +494,14 @@ void Agent::updateExperienceReplayProbabilities()
   }
 }
 
-std::vector<size_t> Agent::generateMiniBatch(size_t size)
+std::vector<size_t> Agent::generateMiniBatch(size_t miniBatchSize)
 {
   // Allocating storage for mini batch experiecne indexes
-  std::vector<size_t> miniBatch(size);
+  std::vector<size_t> miniBatch(miniBatchSize);
 
   if (_miniBatchStrategy == "Uniform")
   {
-    for (size_t i = 0; i < size; i++)
+    for (size_t i = 0; i < miniBatchSize; i++)
     {
       // Producing random (uniform) number for the selection of the experience
       float x = _uniformGenerator->getRandomNumber();
@@ -517,9 +517,9 @@ std::vector<size_t> Agent::generateMiniBatch(size_t size)
   if (_miniBatchStrategy == "Prioritized")
   {
     // Allocating storage for uniform random numbers
-    auto pvalues = std::vector<float>(size);
+    auto pvalues = std::vector<float>(miniBatchSize);
 
-    for (size_t i = 0; i < size; i++)
+    for (size_t i = 0; i < miniBatchSize; i++)
       pvalues[i] = _uniformGenerator->getRandomNumber();
 
     // Sort selections ascending for traversal
@@ -531,7 +531,7 @@ std::vector<size_t> Agent::generateMiniBatch(size_t size)
 
     // Sampling from multinomial distribution using inverse transform
     cumulativeProbability += _experienceReplay[0].metadata["Mini Batch"]["Probability"].get<float>();
-    while (batchIdx < size && expId < _experienceReplay.size())
+    while (batchIdx < miniBatchSize && expId < _experienceReplay.size())
     {
       if (cumulativeProbability > pvalues[batchIdx])
         miniBatch[batchIdx++] = expId;
@@ -540,7 +540,7 @@ std::vector<size_t> Agent::generateMiniBatch(size_t size)
     }
 
     // Uniform fill if miniBatch not full due to numerical precision during probability accumulation (cumulative probability < 1)
-    while (batchIdx < size)
+    while (batchIdx < miniBatchSize)
       miniBatch[batchIdx++] = std::floor(_uniformGenerator->getRandomNumber() * (float)(_experienceReplay.size() - 1));
   }
 
@@ -549,7 +549,7 @@ std::vector<size_t> Agent::generateMiniBatch(size_t size)
    *********************************************/
 
 #pragma omp parallel for schedule(dynamic, 1)
-  for (size_t i = 0; i < size; i++)
+  for (size_t i = 0; i < miniBatchSize; i++)
   {
     auto expId = miniBatch[i];
 
@@ -563,10 +563,8 @@ std::vector<size_t> Agent::generateMiniBatch(size_t size)
 
     // Get state value function. Some algorithms return it as part of the policy
     float V = 0.0f;
-    if (isDefined(curPolicy, "State Value"))
-      V = curPolicy["State Value"].get<float>();
-    else
-      V = stateValueFunction(expStateSequence);
+    if (isDefined(curPolicy, "State Value"))  V = curPolicy["State Value"].get<float>();
+    else V = stateValueFunction(expStateSequence);
 
     // Compute importance weight
     float importanceWeight = calculateImportanceWeight(expAction, curPolicy, expPolicy);
@@ -593,7 +591,7 @@ std::vector<size_t> Agent::generateMiniBatch(size_t size)
 
   // Selecting experiences, such that only one (the most advanced) per unique episode remains
   std::map<size_t, size_t> episodeMaxExperienceAge;
-  for (size_t i = 0; i < size; i++)
+  for (size_t i = 0; i < miniBatchSize; i++)
   {
     size_t experienceId = miniBatch[i];
     size_t episodeId = _experienceReplay[experienceId].episodeId;
@@ -603,7 +601,7 @@ std::vector<size_t> Agent::generateMiniBatch(size_t size)
   }
 
   std::vector<size_t> experienceRetraceIds;
-  for (size_t i = 0; i < size; i++)
+  for (size_t i = 0; i < miniBatchSize; i++)
   {
     size_t experienceId = miniBatch[i];
     size_t episodeId = _experienceReplay[experienceId].episodeId;

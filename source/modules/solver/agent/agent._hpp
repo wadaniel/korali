@@ -316,10 +316,10 @@ class Agent : public Solver
 
   /**
   * @brief Generates an experience mini batch from the replay memory
-  * @param size Size of the mini batch to create
+  * @param miniBatchSize Size of the mini batch to create
   * @return A vector with the indexes to the experiences in the mini batch
   */
-  std::vector<size_t> generateMiniBatch(size_t size);
+  std::vector<size_t> generateMiniBatch(size_t miniBatchSize);
 
   /**
   * @brief Resets time sequence within the agent, to forget past actions from other episodes

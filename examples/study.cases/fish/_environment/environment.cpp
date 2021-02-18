@@ -45,7 +45,7 @@ void runEnvironment(korali::Sample &s)
   _environment->sim.dumpTime = s["Custom Settings"]["Dump Frequency"].get<double>();
 
   // Reseting environment and setting initial conditions
-  _environment->reset();
+  _environment->resetRL();
   setInitialConditions(agent, object, s["Mode"] == "Training");
 
   // Setting initial state

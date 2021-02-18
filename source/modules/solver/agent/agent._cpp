@@ -644,10 +644,12 @@ size_t Agent::getTimeSequenceStartExpId(size_t expId)
 
 float Agent::retraceFunction(size_t expId)
 {
-  // Finding last experience in the episode that corresponds to expId
+  // Finding the earliest experience corresponding to the same episode as this experience
   ssize_t endId = expId;
-  ssize_t startId = endId;
-  while (_experienceReplay[startId].episodePos > 0 && startId > 0) startId--;
+  ssize_t startId = endId - _experienceReplay[endId].episodePos;
+
+  // If the starting experience has already been discarded, take the earliest one that still remains
+  if (startId < 0) startId = 0;
 
   // Storage for the retrace value
   float retV = 0.0f;
@@ -797,7 +799,7 @@ void Agent::serializeExperienceReplay()
     stateJson["Experience Replay"][i]["Metadata"] = _experienceReplay[i].metadata;
   }
 
-  //  // Storing training/testing policies
+  // Storing training/testing policies
   stateJson["Training"]["Current Policy"] = _trainingCurrentPolicy;
   stateJson["Training"]["Best Policy"] = _trainingBestPolicy;
   stateJson["Testing"]["Best Policy"] = _testingBestPolicy;

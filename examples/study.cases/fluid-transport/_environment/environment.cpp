@@ -167,6 +167,9 @@ void setInitialConditions(SmartCylinder* agent, const bool isTraining)
   // Setting initial position and orientation for the fish
   double C[2] = { locationX, locationY};
   agent->setCenterOfMass(C);
+
+  // After moving the agent, the mesh has to be adapted in AMR
+  _environment->initialAdaptMesh();
 }
 
 bool isTerminal(SmartCylinder* agent, std::vector<double> target )

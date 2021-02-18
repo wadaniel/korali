@@ -168,6 +168,9 @@ void setInitialConditions(StefanFish *agent, Shape *object, const bool isTrainin
   double C[2] = {object->center[0] + SX, object->center[1] + SY};
   agent->setCenterOfMass(C);
   agent->setOrientation(SA);
+
+  // After moving the agent, the mesh has to be adapted in AMR
+  _environment->initialAdaptMesh();
 }
 
 bool isTerminal(StefanFish *agent, Shape *object)

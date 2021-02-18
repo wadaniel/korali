@@ -17,7 +17,9 @@ e["Problem"]["Environment Function"] = env
 e["Problem"]["Training Reward Threshold"] = 400
 e["Problem"]["Policy Testing Episodes"] = 20
 e["Problem"]["Actions Between Policy Updates"] = 5
-e["Problem"]["Observation File"] = "./observations.json"
+e["Problem"]["Observations"]["States"] =  [ [ [ 1.0, 1.0, 1.0, 1.0 ] ] ] 
+e["Problem"]["Observations"]["Actions"] =  [ [ [ 0.2 ] ] ] 
+e["Problem"]["Observations"]["Features"] =  [ [ [ 1.0 ] ] ] 
 
 e["Variables"][0]["Name"] = "Cart Position"
 e["Variables"][0]["Type"] = "State"
@@ -54,6 +56,7 @@ e["Solver"]["Experience Replay"]["Maximum Size"] = 10000
 
 e["Solver"]["Discount Factor"] = 0.99
 e["Solver"]["Learning Rate"] = 1e-3
+e["Solver"]["Rewardfunction Learning Rate"] = 0.0
 e["Solver"]["Mini Batch Size"] = 32
 
 ### Configuring the neural network and its hidden layers

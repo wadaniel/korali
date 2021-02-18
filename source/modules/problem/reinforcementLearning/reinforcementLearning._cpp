@@ -25,57 +25,42 @@ void ReinforcementLearning::initialize()
   if (_stateVectorSize == 0) KORALI_LOG_ERROR("No state variables have been defined.\n");
   if (_testingFrequency == 0) _testingFrequency = _k->_solver->_maxGenerations;
 
-  knlohmann::json observationJson;
+  _numberObservedTrajectories = _observationsStates.size();
+  _featureVectorSize = _observationsFeatures[0][0].size();
 
-  // Validation of observation file
-  if (loadJsonFromFile(observationJson, _observationFile.c_str()) == false)
-    KORALI_LOG_ERROR("Trying to load observations but could not find or deserialize file %s...\n", _observationFile.c_str());
-  
-  if (observationJson.contains("States") == false)
-    KORALI_LOG_ERROR("States not found in 'Observation File' (%s)\n", _observationFile.c_str());
-  
-  if (observationJson.contains("Actions") == false)
-    KORALI_LOG_ERROR("Actions not found in 'Observation File' (%s)\n", _observationFile.c_str());
- 
-  if (observationJson.contains("Features") == false)
-    KORALI_LOG_ERROR("Features not found in 'Observation File' (%s)\n", _observationFile.c_str());
+  if (_observationsActions.size() != _numberObservedTrajectories)
+    KORALI_LOG_ERROR("Number of trajectories mismacht for observed states and actions.\n");
 
-  if(observationJson["States"].size() == 0)
-    KORALI_LOG_ERROR("Number of observed actions is zero\n");
-  
-  if(observationJson["States"].size() != observationJson["Actions"].size())
-    KORALI_LOG_ERROR("Number of observed states and actions is not equal.\n");
- 
-  if(observationJson["States"].size() != observationJson["Features"].size())
-    KORALI_LOG_ERROR("Number of observed states and features is not equal.\n");
+  if (_observationsFeatures.size() != _numberObservedTrajectories)
+    KORALI_LOG_ERROR("Number of trajectories mismacht for observed states and features.\n");
 
-  _observedStates.resize(0);
-  _observedActions.resize(0); 
-  _observedFeatures.resize(0); 
-
-  for(size_t i = 0; i < observationJson["States"].size(); ++i)
+  for (size_t j = 0; j < _numberObservedTrajectories; ++j)
   {
-      if(observationJson["States"][i].size() != _stateVectorSize)
+    size_t trajectoryLength = _observationsStates[j].size();
+    for (size_t i = 0; i < _observationsStates[j].size(); ++i)
+    {
+      if (_observationsStates[j][i].size() != _stateVectorSize)
         KORALI_LOG_ERROR("Dimension of observed state (index %zu) does not agree with problem configuration.\n", i);
-      _observedStates.push_back(observationJson["States"][i].get<std::vector<float>>());
-  }
- 
-  for(size_t i = 0; i < observationJson["Actions"].size(); ++i)
-  {
-      if(observationJson["Actions"][i].size() != _actionVectorSize)
+    }
+
+    if (_observationsActions[j].size() != trajectoryLength)
+      KORALI_LOG_ERROR("Trajectory length of observed actions does not agree with observed states\n");
+
+    for (size_t i = 0; i < _observationsActions[j].size(); ++i)
+    {
+      if (_observationsActions[j][i].size() != _actionVectorSize)
         KORALI_LOG_ERROR("Dimension of observed action (index %zu) does not agree with problem configuration.\n", i);
-      _observedActions.push_back(observationJson["Actions"][i].get<std::vector<float>>());
-  }
- 
-  for(size_t i = 0; i < observationJson["Features"].size(); ++i)
-  {
-      // TODO: add check
-      //if(observationJson["Actions"][i].size() != _actionVectorSize)
-      //  KORALI_LOG_ERROR("Dimension of observed action (index %zu) does not agree with problem configuration.\n", i);
-      _observedFeatures.push_back(observationJson["Features"][i].get<std::vector<float>>());
-  }
+    }
 
+    if (_observationsFeatures[j].size() != trajectoryLength)
+      KORALI_LOG_ERROR("Trajectory length of observed features does not agree with observed states\n");
 
+    for (size_t i = 0; i < _observationsFeatures[j].size(); ++i)
+    {
+      if (_observationsFeatures[j][i].size() != _featureVectorSize)
+        KORALI_LOG_ERROR("Dimension of observed features (index %zu) does not agree with problem configuration.\n", i);
+    }
+  }
 }
 
 /**
@@ -177,14 +162,14 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
     runEnvironment();
     auto endTime1 = std::chrono::steady_clock::now();                                                            // Profiling
     agentComputationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime1 - beginTime1).count(); // Profiling
- 
+
     // Storing features of linear reward function
     experience["Features"] = agent["Features"];
 
     // Storing experience's reward
     //experience["Reward"] = agent["Reward"];
     experience["Reward"] = _agent->calculateReward(agent["Features"].get<std::vector<float>>());
-    
+
     // Storing termination status
     experience["Termination"] = agent["Termination"];
 

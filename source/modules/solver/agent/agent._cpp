@@ -127,8 +127,7 @@ void Agent::initialize()
   }
 
   // TODO: find good initialization
-  _featureWeights.resize(_problem->_observedFeatures[0].size(), 1.0);
-
+  _featureWeights.resize(_problem->_featureVectorSize, 1.0);
 }
 
 void Agent::runGeneration()
@@ -185,7 +184,7 @@ void Agent::trainingGeneration()
         auto beginTime = std::chrono::steady_clock::now(); // Profiling
 
         // Update the reward function based on guided cost learning
-        updateRewardFunction(_problem->_observedFeatures);
+        updateRewardFunction();
 
         // Calling the algorithm specific policy training algorithm
         trainPolicy();
@@ -208,9 +207,7 @@ void Agent::trainingGeneration()
         _sessionPolicyUpdateTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
         _generationPolicyUpdateTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
       }
-
     }
-  
   }
 
   // Updating experience probabilities
@@ -257,74 +254,96 @@ void Agent::testingGeneration()
     _testingReward[agentId] = testingAgents[agentId]["Testing Reward"].get<float>();
 }
 
-
 float Agent::calculateReward(std::vector<float> features)
 {
-    // TODO
-    float reward = 0.0;
-    for (size_t i = 0; i < features.size(); ++i) reward += _featureWeights[i] * features[i];
-    return reward;
+  // TODO
+  float reward = 0.0;
+  for (size_t i = 0; i < features.size(); ++i) reward += _featureWeights[i] * features[i];
+  return reward;
 }
 
-
-void Agent::updateRewardFunction(const std::vector<std::vector<float>>& observedFeatures)
+void Agent::updateRewardFunction()
 {
-    // TODO
-    size_t M = 10;
-    float rewardFunctionLearningRate = 1e-5;
-    std::vector<float> featureWeightGradient(_featureWeights.size(), 0.0);
+  // TODO
+  size_t N = 10;
+  size_t M = 10;
 
-    auto miniBatchIndexes = generateMiniBatch(M);
+  auto miniBatchIndexes = generateMiniBatch(M);
 
-    //return;
-    for (size_t m = 0; m < M; ++m)
+  //return;
+  for (size_t m = 0; m < M; ++m)
+  {
+    // Getting index of current experiment
+    size_t expId = miniBatchIndexes[m];
+
+    // Find start of current trajectory
+    while (expId > 0 && _experienceReplay[expId].termination == e_nonTerminal) expId--;
+    if (expId > 0) expId++;
+    miniBatchIndexes[m] = expId;
+  }
+
+  // Estimate partition function
+  float maxExp = -Inf;
+  std::vector<float> exponents(M, 0.0);
+  for (size_t m = 0; m < M; ++m)
+  {
+    // Getting index of current experiment
+    size_t expId = miniBatchIndexes[m];
+
+    float cumReward = 0.0;
+    float trajetoryLogProbability = 0.0;
+    while (_experienceReplay[expId].termination == e_nonTerminal)
     {
-        // Getting index of current experiment
-        size_t expId = miniBatchIndexes[m];
-        
-        // Find start of current trajectory
-        while( expId > 0 && _experienceReplay[expId].termination == e_nonTerminal) expId--; 
-        if (expId > 0) expId++;
-        miniBatchIndexes[m] = expId;
+      cumReward += calculateReward(_experienceReplay[expId].features);
+
+      auto expStateSequence = getStateTimeSequence(expId);
+      auto expAction = _experienceReplay[expId].action;
+      auto policy = runPolicy(expStateSequence);
+      auto curMeans = policy["Action Means"].get<std::vector<float>>();
+      auto curSigmas = policy["Action Sigmas"].get<std::vector<float>>();
+
+      for (size_t i = 0; i < _problem->_actionVectorSize; ++i)
+        trajetoryLogProbability += normalLogDensity(expAction[i], curMeans[i], curSigmas[i]);
+      expId++;
     }
 
+    exponents[m] = cumReward - trajetoryLogProbability;
+    if (exponents[m] > maxExp) maxExp = exponents[m];
+  }
 
-    // Estimate partition function
-    float maxExp = -Inf;
-    std::vector<float> exponents(M, 0.0);
+  float sumExp = 0.0;
+  for (size_t m = 0; m < M; ++m) sumExp += std::exp(exponents[m] - maxExp);
+
+  float logPartitionFunction = maxExp + std::log(sumExp) - std::log(M);
+
+  std::vector<float> featureWeightGradient(_problem->_featureVectorSize, 0.0);
+
+  for (size_t i = 0; i < _problem->_featureVectorSize; ++i)
+  {
     for (size_t m = 0; m < M; ++m)
     {
-        // Getting index of current experiment
-        size_t expId = miniBatchIndexes[m];
-
-        float cumReward = 0.0;
-        float trajetoryLogProbability = 0.0;
-        while(_experienceReplay[expId].termination == e_nonTerminal)
-        {
-            cumReward += calculateReward(_experienceReplay[expId].features);
-            
-            auto expStateSequence = getStateTimeSequence(expId);
-            auto expAction = _experienceReplay[expId].action;
-            auto policy = runPolicy(expStateSequence);
-            auto curMeans = policy["Action Means"].get<std::vector<float>>();
-            auto curSigmas = policy["Action Sigmas"].get<std::vector<float>>();
-
-            for (size_t i = 0; i < _problem->_actionVectorSize; ++i)
-                trajetoryLogProbability += normalLogDensity(expAction[i], curMeans[i], curSigmas[i]);
-            expId++;
-        }
-
-        exponents[m] = cumReward - trajetoryLogProbability;
-        if(exponents[m] > maxExp) maxExp = exponents[m];
+      size_t expId = miniBatchIndexes[m];
+      while (_experienceReplay[expId].termination == e_nonTerminal)
+      {
+        featureWeightGradient[i] -= std::exp(exponents[m] - logPartitionFunction) * _experienceReplay[expId].features[i];
+        expId++;
+      }
     }
+  }
 
-    float sumExp = 0.0;
-    for(size_t m = 0; m < M; ++m) sumExp += std::exp(exponents[m] - maxExp);
-
-    float partitionFunction = maxExp + std::log(sumExp) - std::log(M);
-
-    for(size_t i = 0; i < _featureWeights.size(); ++i)
-        _featureWeights[i] += rewardFunctionLearningRate * featureWeightGradient[i];
+  for (size_t i = 0; i < N; ++i)
+  {
+    size_t trajectoryIndex = (size_t) (_uniformGenerator->getRandomNumber() * _problem->_numberObservedTrajectories);
+    for(size_t j = 0; j < _problem->_observationsFeatures[trajectoryIndex].size(); ++j)
+        for (size_t k = 0; k < _problem->_featureVectorSize; ++k)
+            featureWeightGradient[k] += 1.0 / (float)N * _problem->_observationsFeatures[trajectoryIndex][j][k];
+  }
+ 
+  for (size_t i = 0; i < _problem->_featureVectorSize; ++i)
+  {
+    printf("fwg[%zu] %f\n", i, featureWeightGradient[i]);
+    _featureWeights[i] += _rewardfunctionLearningRate * featureWeightGradient[i];
+  }
 
 }
 

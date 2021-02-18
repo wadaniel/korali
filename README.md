@@ -14,6 +14,7 @@ Visit: https://www.cse-lab.ethz.ch/korali/ for more information.
 
 ## Folders
 
++ docker/ Contains the build file for a Korali docker image
 + docs/ Contains all documentation for Korali source and website
 + examples/ Contains example scripts that solve all of Korali's problem types
 + poc/ Contains proof of concepts

@@ -185,21 +185,21 @@ void GFPT::trainPolicy()
     *****************************************/
 
     // Storage for the V+policy gradients
-    std::vector<float> vpGradients(1 + 2*_problem->_actionVectorSize, 0.0f);
+    std::vector<float> vpGradients(1 + 2 * _problem->_actionVectorSize, 0.0f);
 
-     // This variable contains a target for the next state (if exists)
-     float nextV = 0.0f;
+    // This variable contains a target for the next state (if exists)
+    float nextV = 0.0f;
 
-     // If it's a non-terminal experience, add retrace value of next state
-     if (_experienceReplay[expId].termination == e_nonTerminal)
+    // If it's a non-terminal experience, add retrace value of next state
+    if (_experienceReplay[expId].termination == e_nonTerminal)
       nextV = _experienceReplay[expId + 1].retraceValue;
 
-     // For truncated episode experience, use state value of truncated state
-     if (_experienceReplay[expId].termination == e_truncated)
+    // For truncated episode experience, use state value of truncated state
+    if (_experienceReplay[expId].termination == e_truncated)
       nextV = _experienceReplay[expId].truncatedStateValue;
 
-     // Qret for terminal state is just reward
-     float retQ = _experienceReplay[expId].reward + _discountFactor * nextV;
+    // Qret for terminal state is just reward
+    float retQ = _experienceReplay[expId].reward + _discountFactor * nextV;
 
     vpGradients[0] = retV - curV;
 

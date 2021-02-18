@@ -1,5 +1,6 @@
 #include "fAdam.hpp"
 #include <cmath>
+#include <cstdlib>
 #include <stdio.h>
 
 namespace korali
@@ -40,9 +41,13 @@ void fAdam::reset()
 
   for (size_t i = 0; i < _nVars; i++)
     if (std::isfinite(_initialValues[i]) == false)
+    {
       fprintf(stderr, "Initial Value of variable \'%lu\' not defined (no defaults can be calculated).\n", i);
+      std::abort();
+    }
 
-  _currentValue = _initialValues;
+  for (size_t i = 0; i < _nVars; i++)
+    _currentValue[i] = _initialValues[i];
 
   for (size_t i = 0; i < _nVars; i++)
   {
@@ -53,7 +58,6 @@ void fAdam::reset()
   }
 
   _bestEvaluation = +std::numeric_limits<float>::infinity();
-  _gradientNorm = 1.0f;
 }
 
 void fAdam::processResult(float evaluation, std::vector<float> &gradient)
@@ -62,20 +66,20 @@ void fAdam::processResult(float evaluation, std::vector<float> &gradient)
   _currentEvaluation = evaluation;
 
   _currentEvaluation = -_currentEvaluation; //minimize
-  _gradientNorm = 0.0f;
 
   _gradient = gradient;
 
   if (_gradient.size() != _nVars)
+  {
     fprintf(stderr, "Size of sample's gradient evaluations vector (%lu) is different from the number of problem variables defined (%lu).\n", _gradient.size(), _nVars);
+    std::abort();
+  }
 
   for (size_t i = 0; i < _nVars; i++)
   {
     _gradient[i] = -_gradient[i]; // minimize
     _squaredGradient[i] = _gradient[i] * _gradient[i];
-    _gradientNorm += _squaredGradient[i];
   }
-  _gradientNorm = sqrtf(_gradientNorm);
 
   if (_currentEvaluation < _bestEvaluation)
     _bestEvaluation = _currentEvaluation;
@@ -98,8 +102,6 @@ void fAdam::processResult(float evaluation, std::vector<float> &gradient)
 
 bool fAdam::checkTermination()
 {
-  if ((_currentGeneration > 1) && (_gradientNorm <= _minGradientNorm)) return true;
-  if ((_currentGeneration > 1) && (_gradientNorm >= _maxGradientNorm)) return true;
   if (_currentGeneration >= _maxGenerations) return true;
 
   return false;
@@ -116,8 +118,6 @@ void fAdam::printInfo()
   printf("DF(X) = [ ");
   for (size_t k = 0; k < _nVars; k++) printf(" %.5le  ", _gradient[k]);
   printf(" ]\n");
-
-  printf("|DF(X)| = %le \n", _gradientNorm);
 }
 
 } // namespace korali

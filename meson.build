@@ -22,7 +22,7 @@ korali_deps = []
 korali_cpp_args = []
 
 # check for MPI
-mpi_dep = dependency('mpi', language: 'c', required: false)
+mpi_dep = dependency('mpi', language: 'cpp', required: false)
 user_want_mpi = get_option('mpi')
 if user_want_mpi and mpi_dep.found()
   korali_deps += mpi_dep

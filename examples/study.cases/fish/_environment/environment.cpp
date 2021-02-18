@@ -169,8 +169,8 @@ void setInitialConditions(StefanFish *agent, Shape *object, const bool isTrainin
   agent->setCenterOfMass(C);
   agent->setOrientation(SA);
 
-  // After moving the agent, the mesh has to be adapted in AMR
-  _environment->initialAdaptMesh();
+  // After moving the agent, the obstacles have to be restarted
+  _environment->startObstacles();
 }
 
 bool isTerminal(StefanFish *agent, Shape *object)

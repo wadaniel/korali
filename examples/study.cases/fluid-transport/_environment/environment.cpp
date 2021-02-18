@@ -168,8 +168,8 @@ void setInitialConditions(SmartCylinder* agent, const bool isTraining)
   double C[2] = { locationX, locationY};
   agent->setCenterOfMass(C);
 
-  // After moving the agent, the mesh has to be adapted in AMR
-  _environment->initialAdaptMesh();
+  // After moving the agent, the obstacles have to be restarted
+  _environment->startObstacles();
 }
 
 bool isTerminal(SmartCylinder* agent, std::vector<double> target )

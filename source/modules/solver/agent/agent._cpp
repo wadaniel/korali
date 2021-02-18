@@ -563,8 +563,10 @@ std::vector<size_t> Agent::generateMiniBatch(size_t miniBatchSize)
 
     // Get state value function. Some algorithms return it as part of the policy
     float V = 0.0f;
-    if (isDefined(curPolicy, "State Value"))  V = curPolicy["State Value"].get<float>();
-    else V = stateValueFunction(expStateSequence);
+    if (isDefined(curPolicy, "State Value"))
+      V = curPolicy["State Value"].get<float>();
+    else
+      V = stateValueFunction(expStateSequence);
 
     // Compute importance weight
     float importanceWeight = calculateImportanceWeight(expAction, curPolicy, expPolicy);
@@ -591,28 +593,32 @@ std::vector<size_t> Agent::generateMiniBatch(size_t miniBatchSize)
 
   // Selecting experiences, such that only one (the most advanced) per unique episode remains
   std::map<size_t, size_t> episodeMaxExperienceAge;
+  std::map<size_t, size_t> episodeMaxExperienceId;
+
   for (size_t i = 0; i < miniBatchSize; i++)
   {
     size_t experienceId = miniBatch[i];
     size_t episodeId = _experienceReplay[experienceId].episodeId;
     size_t episodePos = _experienceReplay[experienceId].episodePos;
     size_t curMaxPosition = episodeMaxExperienceAge.find(episodeId) == episodeMaxExperienceAge.end() ? 0 : episodeMaxExperienceAge[episodeId];
-    if (episodePos >= curMaxPosition) episodeMaxExperienceAge[episodeId] = episodePos;
+
+    // If this is a new oldest experience in the episode, store it's position and id
+    if (episodePos >= curMaxPosition)
+    {
+      episodeMaxExperienceAge[episodeId] = episodePos;
+      episodeMaxExperienceId[episodeId] = experienceId;
+    }
   }
 
+  // Passing the content of the map to a vector
   std::vector<size_t> experienceRetraceIds;
-  for (size_t i = 0; i < miniBatchSize; i++)
-  {
-    size_t experienceId = miniBatch[i];
-    size_t episodeId = _experienceReplay[experienceId].episodeId;
-    size_t episodePos = _experienceReplay[experienceId].episodePos;
-    size_t curMaxPosition = episodeMaxExperienceAge[episodeId];
-    if (curMaxPosition == episodePos) experienceRetraceIds.push_back(experienceId);
-  }
+  for (const auto &expId : episodeMaxExperienceId) experienceRetraceIds.push_back(expId.first);
 
+// Running all experiences in parallel
 #pragma omp parallel for schedule(dynamic, 1)
   for (size_t i = 0; i < experienceRetraceIds.size(); i++) retraceFunction(experienceRetraceIds[i]);
 
+  // Returning generated minibatch
   return miniBatch;
 }
 

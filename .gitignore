@@ -48,3 +48,4 @@ fontconfig/
 
 # build directories
 /build*
+/test_install

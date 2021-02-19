@@ -25,42 +25,51 @@ void ReinforcementLearning::initialize()
   if (_stateVectorSize == 0) KORALI_LOG_ERROR("No state variables have been defined.\n");
   if (_testingFrequency == 0) _testingFrequency = _k->_solver->_maxGenerations;
 
+  // Validating observations
   _numberObservedTrajectories = _observationsStates.size();
   _featureVectorSize = _observationsFeatures[0][0].size();
+  printf("X\n");
+  if (_featureVectorSize == 0) KORALI_LOG_ERROR("No features have been defined.\n");
 
   if (_observationsActions.size() != _numberObservedTrajectories)
-    KORALI_LOG_ERROR("Number of trajectories mismacht for observed states and actions.\n");
+    KORALI_LOG_ERROR("Number of trajectories mismatch between observed states and observed actions.\n");
 
   if (_observationsFeatures.size() != _numberObservedTrajectories)
-    KORALI_LOG_ERROR("Number of trajectories mismacht for observed states and features.\n");
+    KORALI_LOG_ERROR("Number of trajectories mismacht between observed states and observed features.\n");
 
-  for (size_t j = 0; j < _numberObservedTrajectories; ++j)
+  for (size_t t = 0; t < _numberObservedTrajectories; ++t)
   {
-    size_t trajectoryLength = _observationsStates[j].size();
-    for (size_t i = 0; i < _observationsStates[j].size(); ++i)
+    printf("X\n");
+    size_t trajectoryLength = _observationsStates[t].size();
+    for (size_t i = 0; i < trajectoryLength; ++i)
     {
-      if (_observationsStates[j][i].size() != _stateVectorSize)
-        KORALI_LOG_ERROR("Dimension of observed state (index %zu) does not agree with problem configuration.\n", i);
+      if (_observationsStates[t][i].size() != _stateVectorSize)
+        KORALI_LOG_ERROR("Dimension of observed state (trajectory %zu index %zu) does not agree with problem configuration.\n", t, i);
     }
 
-    if (_observationsActions[j].size() != trajectoryLength)
-      KORALI_LOG_ERROR("Trajectory length of observed actions does not agree with observed states\n");
+    printf("X\n");
+    if (_observationsActions[t].size() != trajectoryLength)
+      KORALI_LOG_ERROR("Trajectory length of observed actions (trajectory %zu) does not agree with trajectory length of observed states\n", t);
 
-    for (size_t i = 0; i < _observationsActions[j].size(); ++i)
+    for (size_t i = 0; i < trajectoryLength; ++i)
     {
-      if (_observationsActions[j][i].size() != _actionVectorSize)
-        KORALI_LOG_ERROR("Dimension of observed action (index %zu) does not agree with problem configuration.\n", i);
+      if (_observationsActions[t][i].size() != _actionVectorSize)
+        KORALI_LOG_ERROR("Dimension of observed action (trajectory %zu index %zu) does not agree with problem configuration.\n", t, i);
     }
 
-    if (_observationsFeatures[j].size() != trajectoryLength)
-      KORALI_LOG_ERROR("Trajectory length of observed features does not agree with observed states\n");
+    printf("X\n");
+    if (_observationsFeatures[t].size() != trajectoryLength)
+      KORALI_LOG_ERROR("Trajectory length of observed features (trajectory %zu) does not agree with observed states\n", t);
 
-    for (size_t i = 0; i < _observationsFeatures[j].size(); ++i)
+    printf("XX\n");
+    for (size_t i = 0; i < trajectoryLength; ++i)
     {
-      if (_observationsFeatures[j][i].size() != _featureVectorSize)
-        KORALI_LOG_ERROR("Dimension of observed features (index %zu) does not agree with problem configuration.\n", i);
+      if (_observationsFeatures[t][i].size() != _featureVectorSize)
+        KORALI_LOG_ERROR("Dimension (%zu) of observed features (trajectory %zu index %zu) does not agree with problem configuration.\n", _observationsFeatures[t][i].size(), t, i, _featureVectorSize);
     }
+    printf("Y\n");
   }
+  printf("X\n");
 }
 
 /**
@@ -167,7 +176,6 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
     experience["Features"] = agent["Features"];
 
     // Storing experience's reward
-    //experience["Reward"] = agent["Reward"];
     experience["Reward"] = _agent->calculateReward(agent["Features"].get<std::vector<float>>());
 
     // Storing termination status

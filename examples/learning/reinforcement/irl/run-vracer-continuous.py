@@ -2,7 +2,42 @@
 import os
 import sys
 sys.path.append('./_model')
+import json
 from env import *
+
+
+####### Load observations
+
+obsfile = "observations-t-0.0.json"
+obsstates = []
+obsactions = []
+with open(obsfile, 'r') as infile:
+    obsjson = json.load(infile)
+    obsstates = obsjson["States"]
+    obsactions = obsjson["Actions"]
+
+### Compute Feauters from states
+
+maxFeatures = [-1.0, -1.0]
+obsfeatures = []
+for trajectory in obsstates:
+    features = []
+    for state in trajectory:
+        # Cart Position, Cart Velocity, Pole Angle, Pole Angular Velocity
+        feature1 = np.cos(state[2])
+        feature2 = state[1]*state[1]
+        #features.append([feature1])
+        features.append([feature1, feature2]) 
+        
+        if(maxFeatures[0] < feature1):
+            maxFeatures[0] = feature1
+        if(maxFeatures[1] < feature2):
+            maxFeatures[1] = feature2
+    obsfeatures.append(features)
+    
+print("Total observed trajectories: {}/{}".format(len(obsstates), len(obsactions)))
+print("Max feature values found in observations:")
+print(maxFeatures)
 
 ####### Defining Korali Problem
 
@@ -17,9 +52,9 @@ e["Problem"]["Environment Function"] = env
 e["Problem"]["Training Reward Threshold"] = 400
 e["Problem"]["Policy Testing Episodes"] = 20
 e["Problem"]["Actions Between Policy Updates"] = 5
-e["Problem"]["Observations"]["States"] =  [ [ [ 1.0, 1.0, 1.0, 1.0 ] ] ] 
-e["Problem"]["Observations"]["Actions"] =  [ [ [ 0.2 ] ] ] 
-e["Problem"]["Observations"]["Features"] =  [ [ [ 1.0 ] ] ] 
+e["Problem"]["Observations"]["States"] = obsstates
+e["Problem"]["Observations"]["Actions"] = obsactions
+e["Problem"]["Observations"]["Features"] = obsfeatures
 
 e["Variables"][0]["Name"] = "Cart Position"
 e["Variables"][0]["Type"] = "State"
@@ -49,28 +84,30 @@ e["Solver"]["Cache Persistence"] = 100
 
 ### Defining the configuration of replay memory
 
-e["Solver"]["Experience Replay"]["Start Size"] = 1000
-e["Solver"]["Experience Replay"]["Maximum Size"] = 10000
+e["Solver"]["Experience Replay"]["Start Size"] = 65536
+e["Solver"]["Experience Replay"]["Maximum Size"] = 131072
 
 ## Defining Neural Network Configuration for Policy and Critic into Critic Container
 
 e["Solver"]["Discount Factor"] = 0.99
 e["Solver"]["Learning Rate"] = 1e-3
-e["Solver"]["Rewardfunction Learning Rate"] = 0.0
-e["Solver"]["Mini Batch Size"] = 32
+e["Solver"]["Rewardfunction Learning Rate"] = 1e-4
+e["Solver"]["Demonstration Batch Size"] = 10
+e["Solver"]["Background Batch Size"] = 10
+e["Solver"]["Mini Batch Size"] = 64
 
 ### Configuring the neural network and its hidden layers
 
 e["Solver"]["Neural Network"]["Engine"] = "OneDNN"
 
 e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear"
-e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 32
+e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 64
 
 e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Activation"
 e["Solver"]["Neural Network"]["Hidden Layers"][1]["Function"] = "Elementwise/Tanh"
 
 e["Solver"]["Neural Network"]["Hidden Layers"][2]["Type"] = "Layer/Linear"
-e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 32
+e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 64
 
 e["Solver"]["Neural Network"]["Hidden Layers"][3]["Type"] = "Layer/Activation"
 e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tanh"

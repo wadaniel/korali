@@ -26,11 +26,13 @@ def env(s):
   # Getting Reward
   s["Reward"] = cart.getReward()
   
-  # Getting Features
-  s["Features"] = [ cart.getReward() ] 
-   
   # Storing New State
+  state = cart.getState().tolist()
   s["State"] = cart.getState().tolist()
+  
+  # Getting Features
+  #s["Features"] = [ np.cos(state[2]) ]
+  s["Features"] = [ np.cos(state[2]), state[1]*state[1] ]
   
   # Advancing step counter
   step = step + 1

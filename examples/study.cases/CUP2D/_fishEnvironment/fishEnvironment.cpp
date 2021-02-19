@@ -1,7 +1,7 @@
 //  Korali environment for CubismUP-2D
 //  Copyright (c) 2020 CSE-Lab, ETH Zurich, Switzerland.
 
-#include "environment.hpp"
+#include "fishEnvironment.hpp"
 #include <chrono>
 #include <filesystem>
 
@@ -37,21 +37,19 @@ void runEnvironment(korali::Sample &s)
   auto curPath = std::filesystem::current_path();
   std::filesystem::current_path(resDir);
 
-  // Obtaining agent
-  SmartCylinder* agent = dynamic_cast<SmartCylinder *>(_environment->getShapes()[0]);
+  // Obtaining environment objects and agent
+  Shape *object = _environment->getShapes()[0];
+  StefanFish *agent = dynamic_cast<StefanFish *>(_environment->getShapes()[1]);
 
   // Establishing environment's dump frequency
   _environment->sim.dumpTime = s["Custom Settings"]["Dump Frequency"].get<double>();
 
   // Reseting environment and setting initial conditions
   _environment->resetRL();
-  setInitialConditions(agent, s["Mode"] == "Training");
-
-  // Set target 
-  std::vector<double> target{0.8,0.5};
+  setInitialConditions(agent, object, s["Mode"] == "Training");
 
   // Setting initial state
-  auto state = agent->state( target );
+  auto state = agent->state(object);
   s["State"] = state;
 
   // Setting initial time and step conditions
@@ -76,10 +74,10 @@ void runEnvironment(korali::Sample &s)
     std::vector<double> action = s["Action"];
 
     // Setting action
-    agent->act( action );
+    agent->act(t, action);
 
     // Run the simulation until next action is required
-    tNextAct += 0.1;
+    tNextAct += agent->getLearnTPeriod() * 0.5;
     while ( t < tNextAct )
     {
       // Advance simulation
@@ -94,11 +92,11 @@ void runEnvironment(korali::Sample &s)
       }
 
       // Re-check if simulation is done.
-      done = isTerminal( agent, target );
+      done = isTerminal(agent, object);
     }
 
-    // Reward is +10 if state is terminal; otherwise obtain it from inverse distance to target
-    double reward = done ? 100.0 : agent->reward( target );
+    // Reward is -10 if state is terminal; otherwise obtain it from the agent's efficiency
+    double reward = done ? -10.0 : agent->EffPDefBnd;
 
     // Getting ending time
     auto endTime = std::chrono::steady_clock::now(); // Profiling
@@ -117,7 +115,7 @@ void runEnvironment(korali::Sample &s)
     fflush(stdout);
 
     // Obtaining new agent state
-    state = agent->state( target );
+    state = agent->state(object);
 
     // Storing reward
     s["Reward"] = reward;
@@ -142,45 +140,49 @@ void runEnvironment(korali::Sample &s)
   fclose(logFile);
 }
 
-void setInitialConditions(SmartCylinder* agent, const bool isTraining)
+void setInitialConditions(StefanFish *agent, Shape *object, const bool isTraining)
 {
   // Initial fixed conditions
-  double locationX = 0.2;
-  double locationY = 0.5;
+  double SA = 0.0;
+  double SX = 0.3;
+  double SY = 0.0;
 
   // or with noise
-  if (isTraining)
-  {
-    std::uniform_real_distribution<double> dis(-0.05, 0.05);
+  //if (isTraining)
+  //{
+  // std::uniform_real_distribution<double> disA(-20. / 180. * M_PI, 20. / 180. * M_PI);
+  // std::uniform_real_distribution<double> disX(0.45, 0.55);
+  // std::uniform_real_distribution<double> disY(-0.05, 0.05);
 
-    double distX = dis(_randomGenerator);
-    double distY = dis(_randomGenerator);
-
-    locationX += distX;
-    locationY += distY;
-  }
+  // SA = disA(_randomGenerator);
+  // SX = disX(_randomGenerator);
+  // SY = disY(_randomGenerator);
+  //}
 
   printf("[Korali] Initial Conditions:\n");
-  printf("[Korali] locationX: %f\n", locationX);
-  printf("[Korali] locationY: %f\n", locationY);
+  printf("[Korali] SA: %f\n", SA);
+  printf("[Korali] SX: %f\n", SX);
+  printf("[Korali] SY: %f\n", SY);
 
   // Setting initial position and orientation for the fish
-  double C[2] = { locationX, locationY};
+  double C[2] = {object->center[0] + SX, object->center[1] + SY};
   agent->setCenterOfMass(C);
+  agent->setOrientation(SA);
 
   // After moving the agent, the obstacles have to be restarted
   _environment->startObstacles();
 }
 
-bool isTerminal(SmartCylinder* agent, std::vector<double> target )
+bool isTerminal(StefanFish *agent, Shape *object)
 {
-  const double dX = (agent->center[0] - target[0]);
-  const double dY = (agent->center[1] - target[1]);
-
-  const double dTarget = std::sqrt(dX*dX+dY*dY);
+  const double X = (agent->center[0] - object->center[0]);
+  const double Y = (agent->center[1] - object->center[1]);
 
   bool terminal = false;
-  if ( dTarget < 1e-1 ) terminal = true;
+  if (X < +0.15) terminal = true;
+  if (X > +0.55) terminal = true;
+  if (Y < -0.1) terminal = true;
+  if (Y > +0.1) terminal = true;
 
   return terminal;
 }

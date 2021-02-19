@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+if [ $# -gt 0 ]; then
+  cd $1
+fi
+
 echo "-------------------------------------"
 echo "[Korali] Beginning Stat Test 002"
 echo "[Korali] minimization with non-finites tests..."

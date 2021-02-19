@@ -1,10 +1,16 @@
 #!/usr/bin/env bash
 
+if [ $# -gt 0 ]; then
+  cd $1
+fi
+
 echo "-------------------------------------"
 echo "[Korali] Beginning Stat Test 001"
 exit_code=$?
 
-for file in run*.py
+echo $(pwd)
+
+for file in $(find . -name "run*.py")
 do
   echo "-------------------------------------"
   echo " Running $file"

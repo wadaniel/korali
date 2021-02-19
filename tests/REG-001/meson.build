@@ -1,6 +1,9 @@
 e = find_program('./run_test.sh', required: true)
 
-test('Check style', e,
-      timeout: 100,
-      suite: 'Regression'
+current_dir = meson.current_source_dir()
+
+test('Code Formatting', e,
+      args: [current_dir],
+      timeout : 1000,
+      suite: 'Sampling'
     )

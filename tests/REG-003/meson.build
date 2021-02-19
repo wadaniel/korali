@@ -1,6 +1,9 @@
 e = find_program('./run_test.sh', required: true)
 
-test('Test plotter', e,
-      timeout: 100,
-      suite: 'Regression'
+current_dir = meson.current_source_dir()
+
+test('Plotter', e,
+      args: [current_dir],
+      timeout : 1000,
+      suite: 'Sampling'
     )

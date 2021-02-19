@@ -1,0 +1,5 @@
+subdir('constrained')
+subdir('discrete')
+subdir('gradient')
+subdir('multiobjective')
+subdir('stochastic')

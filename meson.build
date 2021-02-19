@@ -84,6 +84,9 @@ subdir('source')
 # process korali pure python
 subdir('python/korali')
 
+subdir('tests')
+subdir('examples')
+
 # create symbolic link to shared library (used for pkg-config later)
 meson.add_install_script('tools/build/post_install.sh', korali_install_base, korali_extension)
 

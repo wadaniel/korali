@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+if [ $# -gt 0 ]; then
+  cd $1
+fi
+
 ###### Check if necessary python modules are installed ######
 python3 -m pip show gym
 if [ $? -ne 0 ]; then

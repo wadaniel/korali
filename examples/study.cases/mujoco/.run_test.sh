@@ -1,13 +1,15 @@
 #!/usr/bin/env bash
 
+if [ $# -gt 0 ]; then
+  cd $1
+fi
+
 ###### Check if necessary python modules are installed ######
 python3 -m pip show mujoco_py
 if [ $? -ne 0 ]; then
  echo "[Korali] mujoco_py not found, aborting test"
  exit 0
 fi
-
-
 
 ##### Running Test
 
@@ -19,6 +21,5 @@ exit_code=$(( $exit_code || $? ))
 
 popd > /dev/null
 exit_code=$(( $exit_code || $? ))
-
 
 exit $exit_code

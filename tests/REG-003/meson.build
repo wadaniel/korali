@@ -5,5 +5,5 @@ current_dir = meson.current_source_dir()
 test('Plotter', e,
       args: [current_dir],
       timeout : 1000,
-      suite: 'Sampling'
+      suite: 'Regression'
     )

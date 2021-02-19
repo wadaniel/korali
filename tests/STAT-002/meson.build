@@ -5,5 +5,5 @@ current_dir = meson.current_source_dir()
 test('MCMC', e,
       args: [current_dir],
       timeout : 1000,
-      suite: 'Sampling'
+      suite: 'Statistics'
     )

@@ -88,7 +88,6 @@ int main(int argc, char *argv[])
   e["Solver"]["Agent Count"] = N;
   e["Solver"]["Episodes Per Generation"] = 1;
   e["Solver"]["Experiences Between Policy Updates"] = 1;
-  e["Solver"]["Cache Persistence"] = 200;
   e["Solver"]["Learning Rate"] = 1e-4;
   e["Solver"]["Discount Factor"] = 0.95;
 
@@ -96,14 +95,6 @@ int main(int argc, char *argv[])
 
   e["Solver"]["Experience Replay"]["Start Size"] = 1024;
   e["Solver"]["Experience Replay"]["Maximum Size"] = 65536;
-
-  /// Configuring the Remember-and-Forget Experience Replay algorithm
-
-  e["Solver"]["Experience Replay"]["REFER"]["Enabled"] = true;
-  e["Solver"]["Experience Replay"]["REFER"]["Cutoff Scale"] = 4.0;
-  e["Solver"]["Experience Replay"]["REFER"]["Target"] = 0.1;
-  e["Solver"]["Experience Replay"]["REFER"]["Initial Beta"] = 0.6;
-  e["Solver"]["Experience Replay"]["REFER"]["Annealing Rate"] = 5e-7;
 
   //// Configuring Mini Batch
 

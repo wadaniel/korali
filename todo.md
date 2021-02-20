@@ -15,6 +15,7 @@
 * [X] restructure python
 * [X] env script (gitignore)
 * [X] add requirements.txt file (will be taken care of by pep517; see pyproject.toml file)
+* [ ] how to handle subproject installations with PyPI install?
 
 
 # Third-party

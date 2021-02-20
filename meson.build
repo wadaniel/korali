@@ -1,4 +1,4 @@
-project('Korali', ['c', 'cpp'],
+project('korali', ['c', 'cpp'],
   version: '2.0.0',
   license: 'GPL-3.0-only', # or also later?
   default_options: [
@@ -90,7 +90,7 @@ meson.add_install_script('tools/build/post_install.sh', korali_install_base, kor
 # create a pkg-config entry
 pkg_mod = import('pkgconfig')
 pkg_mod.generate(
-  name: 'Korali',
+  name: 'korali',
   filebase: 'korali',
   description: 'High-Performance Uncertainty Quantification, Optimization, and DRL',
   extra_cflags: ['-I' + korali_install_headers],

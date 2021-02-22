@@ -243,8 +243,14 @@ void runEnvironmentCmaes(korali::Sample &s)
   double distanceNextAct = dist;
 
   // Setting maximum number of steps before truncation
-  size_t maxSteps = 1e5;
-
+  size_t maxSteps = 1e6;
+  double distThreshold = 1e-3;
+  if(dDist <= distThreshold)
+  {
+    fprintf(stderr, "Decrease distance threshold bewlow %f due to large amount of params\n", dDist);
+    exit(-1);
+  }
+ 
   // Starting main environment loop
   bool done = false;
   size_t forceIdx = 0;
@@ -256,7 +262,6 @@ void runEnvironmentCmaes(korali::Sample &s)
     centerArr = agent->center;
     currentPos[0] = centerArr[0];
     currentPos[1] = centerArr[1];
-    dist = distance(currentPos, target);
 
     if (dist < distanceNextAct)
     {
@@ -273,7 +278,8 @@ void runEnvironmentCmaes(korali::Sample &s)
     t += dt;
  
     bool error = _environment->advance(dt);
-    done = isTerminal( agent, target );
+    dist = distance(currentPos, target);
+    done = (dist <= distThreshold);
  
     curStep++;
     
@@ -281,7 +287,7 @@ void runEnvironmentCmaes(korali::Sample &s)
     printf("[Korali] Sample %lu, Step: %lu/%lu\n", sampleId, curStep, maxSteps);
     printf("[Korali] State: [ %.6f, %.6f ]", currentPos[0], currentPos[1]);
     printf("[Korali] Force: [ %.6f, %.6f ]\n", action[0], action[1]);
-    printf("[Korali] Terminal?: %d\n", done);
+    printf("[Korali] Energy %f, Distance %f, Terminal?: %d\n", agent->energy, dist, done);
     printf("[Korali] Time: %.3fs\n", t);
     printf("[Korali] -------------------------------------------------------\n");
     fflush(stdout);
@@ -301,7 +307,7 @@ void runEnvironmentCmaes(korali::Sample &s)
   }  
 
   // Reward is square deviation from 2sec (dummy)
-  s["F(x)"] = -1.0*(t-2.0)*(t-2.0);
+  s["F(x)"] = -1.0*(t-2.0)*(t-2.0)-dist;
 
   // Switching back to experiment directory
   std::filesystem::current_path(curPath);

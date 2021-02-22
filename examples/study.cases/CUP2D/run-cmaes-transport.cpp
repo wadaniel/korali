@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
   e["Solver"]["Type"] = "Optimizer/CMAES";
   e["Solver"]["Population Size"] = (size_t) (4+3*std::log(numVariables));
   e["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-32;
-  e["Solver"]["Termination Criteria"]["Max Generations"] = 2;
+  e["Solver"]["Termination Criteria"]["Max Generations"] = 5;
  
   // Setting up the variables
   for (size_t var = 0; var < numVariables; ++var)

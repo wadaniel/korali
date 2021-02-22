@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
   N = N - 1; // Minus one for Korali's engine
 
   // Init CUP2D
-   Simulation *_environment = new Simulation(_argc, _argv);
+  _environment = new Simulation(_argc, _argv);
   _environment->init();
 
   std::string resultsPath = "_results_transport_cmaes/";

@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
   e["Problem"]["Custom Settings"]["Dump Path"] = trainingResultsPath;
 
   // Setting up the 20 state variables
-  const size_t numStates = 0;
+  const size_t numStates = 20;
   size_t curVariable = 0;
   for (; curVariable < numStates; curVariable++)
   {

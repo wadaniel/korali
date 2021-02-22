@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
   _argv = argv;
 
   // Getting number of workers
-  int N = 1;
+  int N = 2;
   MPI_Comm_size(MPI_COMM_WORLD, &N);
   N = N - 1; // Minus one for Korali's engine
 

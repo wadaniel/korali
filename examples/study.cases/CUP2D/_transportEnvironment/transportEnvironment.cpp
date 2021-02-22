@@ -196,19 +196,22 @@ void runEnvironmentCmaes(korali::Sample &s)
   // Creating results directory
   std::string baseDir = "_results_transport_cmaes";
   char resDir[64];
-  sprintf(resDir, "%s/sample%08lu", baseDir, sampleId);
-  std::filesystem::create_directories(resDir);
-
+  sprintf(resDir, "%s/sample%08lu", baseDir.c_str(), sampleId);
+  std::filesystem::create_directories(resDir); 
+  printf("OK1\n");
   // Redirecting all output to the log file
   char logFilePath[128];
   sprintf(logFilePath, "%s/log.txt", resDir);
+  printf("OK2\n");
   auto logFile = freopen(logFilePath, "a", stdout);
+  printf("OK3\n");
   if (logFile == NULL)
   {
     printf("Error creating log file: %s.\n", logFilePath);
     exit(-1);
   }
 
+  printf("OK4\n");
   // Switching to results directory
   auto curPath = std::filesystem::current_path();
   std::filesystem::current_path(resDir);
@@ -254,6 +257,7 @@ void runEnvironmentCmaes(korali::Sample &s)
 
   while (done == false && curStep < maxSteps)
   {
+    printf("OK\n");
     centerArr = agent->center;
     currentPos[0] = centerArr[0];
     currentPos[1] = centerArr[1];
@@ -289,6 +293,7 @@ void runEnvironmentCmaes(korali::Sample &s)
     printf("[Korali] -------------------------------------------------------\n");
     fflush(stdout);
 
+    printf("OK\n");
     done = isTerminal( agent, target );
     curStep++;
 

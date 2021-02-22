@@ -35,15 +35,11 @@ int main(int argc, char *argv[])
   e["Random Seed"] = 0xC0FEE;
   e["Problem"]["Type"] = "Optimization";
   
-  auto found = e.loadState(resultsPath + std::string("/latest"));
+  auto found = e.loadState(resultsPath + std::string("latest"));
   if (found == true) printf("[Korali] Continuing execution from previous run...\n");
 
   // Configuring Experiment
-  e["Problem"]["Objective Function"] = &runEnvironment;
-
-  // Adding custom setting to run the environment without dumping the state files during optimization
-  e["Problem"]["Custom Settings"]["Dump Frequency"] = 0.0;
-  e["Problem"]["Custom Settings"]["Dump Path"] = resultsPath;
+  e["Problem"]["Objective Function"] = &runEnvironmentCmaes;
 
   const double maxForce = 1e-2;
   const size_t numVariables = 8;
@@ -52,7 +48,7 @@ int main(int argc, char *argv[])
   e["Solver"]["Type"] = "Optimizer/CMAES";
   e["Solver"]["Population Size"] = (size_t) (4+3*std::log(numVariables));
   e["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-32;
-  e["Solver"]["Termination Criteria"]["Max Generations"] = 100;
+  e["Solver"]["Termination Criteria"]["Max Generations"] = 2;
  
   // Setting up the variables
   for (size_t var = 0; var < numVariables; ++var)

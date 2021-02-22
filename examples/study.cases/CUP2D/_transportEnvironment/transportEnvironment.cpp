@@ -194,8 +194,9 @@ void runEnvironmentCmaes(korali::Sample &s)
   _randomGenerator.seed(sampleId);
 
   // Creating results directory
+  std::string baseDir = "_results_transport_cmaes";
   char resDir[64];
-  sprintf(resDir, "%s/sample%08lu", s["Custom Settings"]["Dump Path"].get<std::string>().c_str(), sampleId);
+  sprintf(resDir, "%s/sample%08lu", baseDir, sampleId);
   std::filesystem::create_directories(resDir);
 
   // Redirecting all output to the log file
@@ -216,7 +217,7 @@ void runEnvironmentCmaes(korali::Sample &s)
   SmartCylinder* agent = dynamic_cast<SmartCylinder *>(_environment->getShapes()[0]);
 
   // Establishing environment's dump frequency
-  _environment->sim.dumpTime = s["Custom Settings"]["Dump Frequency"].get<double>();
+  _environment->sim.dumpTime = 0.0;
 
   // Reseting environment and setting initial conditions
   _environment->resetRL();
@@ -280,7 +281,7 @@ void runEnvironmentCmaes(korali::Sample &s)
     }
  
     // Printing Information:
-    printf("[Korali] Step: %lu/%lu\n", curStep, maxSteps);
+    printf("[Korali] Sample %lu, Step: %lu/%lu\n", sampleId, curStep, maxSteps);
     printf("[Korali] State: [ %.3f, %.3f ]", currentPos[0], currentPos[1]);
     printf("[Korali] Action: [ %.3f, %.3f ]\n", action[0], action[1]);
     printf("[Korali] Terminal?: %d\n", done);

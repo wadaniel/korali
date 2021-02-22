@@ -58,9 +58,9 @@ int main(int argc, char *argv[])
   for (size_t var = 0; var < numVariables; ++var)
   {
     e["Variables"][var]["Name"] = std::string("StateVar") + std::to_string(var);
-    e["Variables"][var]["Lower Bound"] = -maxForce;
+    e["Variables"][var]["Lower Bound"] = 0.0;
     e["Variables"][var]["Upper Bound"] = +maxForce;
-    e["Variables"][var]["Initial Standard Deviation"] = 0.5*maxForce/std::sqrt(numVariables);
+    e["Variables"][var]["Initial Standard Deviation"] = 0.3*maxForce/std::sqrt(numVariables);
   }
 
   ////// Setting Korali output configuration

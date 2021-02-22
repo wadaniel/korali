@@ -3,8 +3,6 @@
 
 #include "environment.hpp"
 
-#ifdef MSODE
-
 bool _isTraining;
 std::mt19937 _randomGenerator;
 std::unique_ptr<msode::rl::MSodeEnvironment> _environment;
@@ -76,21 +74,3 @@ void initializeEnvironment(const std::string confFileName)
   const Config config = json::parse(confFile);
   _environment = rl::factory::createEnvironment(config, ConfPointer(""));
 }
-
-#else
-
-// Environment for syntax test only
-void runEnvironment(korali::Sample &s)
-{
-  fprintf(stderr, "[Warning] Using test-only setup. If you want to run the actual experiment, run ./install_deps.sh first and re-compile.\n");
-
-  for (size_t i = 0; i < 243; i++)
-  {
-    s["State"] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
-    s.update();
-    s["Reward"] = 0.0001;
-  }
-  s["Termination"] = "Terminal";
-}
-
-#endif

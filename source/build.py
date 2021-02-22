@@ -45,7 +45,7 @@ def getOptionName(path):
   nameList = path.rsplit('/')
   optionName = ''
   for name in nameList[1:-1]:
-    optionName += name[0].capitalize() + name[1:] + '/'
+    optionName += name + '/'
   optionName += getModuleName(path)
   return optionName
 
@@ -53,7 +53,6 @@ def getOptionName(path):
 def getModuleName(path):
   nameList = path.rsplit('/', 1)
   moduleName = nameList[-1]
-  moduleName = moduleName[0].capitalize() + moduleName[1:]
   return moduleName
 
 
@@ -224,11 +223,11 @@ def createSetConfiguration(module):
 
   if 'Compatible Solvers' in module:
     codeString += '  bool detectedCompatibleSolver = false; \n'
-    codeString += '  std::string solverName = _k->_js["Solver"]["Type"]; \n'
+    codeString += '  std::string solverName = toLower(_k->_js["Solver"]["Type"]); \n'
     codeString += '  std::string candidateSolverName; \n'
     codeString += '  solverName.erase(remove_if(solverName.begin(), solverName.end(), isspace), solverName.end()); \n'
     for v in module["Compatible Solvers"]:
-      codeString += '   candidateSolverName = "' + v + '"; \n'
+      codeString += '   candidateSolverName = toLower("' + v + '"); \n'
       codeString += '   candidateSolverName.erase(remove_if(candidateSolverName.begin(), candidateSolverName.end(), isspace), candidateSolverName.end()); \n'
       codeString += '   if (solverName.rfind(candidateSolverName, 0) == 0) detectedCompatibleSolver = true;\n'
     codeString += '  if (detectedCompatibleSolver == false) KORALI_LOG_ERROR(" + Specified solver (%s) is not compatible with problem of type: ' + module[

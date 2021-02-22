@@ -220,6 +220,15 @@ class Hamiltonian
   }
 
   /**
+  * @brief Getter function for metric.
+  * @return Returns metric of hamiltonian.
+  */
+  std::vector<double> getMetric() const
+  {
+    return _metric;
+  }
+
+  /**
   * @brief Number of model evaluations.
   */
   size_t _modelEvaluationCount;

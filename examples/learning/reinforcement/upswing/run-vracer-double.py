@@ -19,25 +19,12 @@ e["Problem"]["Policy Testing Episodes"] = 20
 e["Problem"]["Actions Between Policy Updates"] = 10
 
 e["Variables"][0]["Name"] = "Cart Position"
-e["Variables"][0]["Type"] = "State"
-
 e["Variables"][1]["Name"] = "Angle 1"
-e["Variables"][1]["Type"] = "State"
-
 e["Variables"][2]["Name"] = "Angle 2"
-e["Variables"][2]["Type"] = "State"
-
 e["Variables"][3]["Name"] = "Car Velocity"
-e["Variables"][3]["Type"] = "State"
-
 e["Variables"][4]["Name"] = "Angular Velocity 1"
-e["Variables"][4]["Type"] = "State"
-
 e["Variables"][5]["Name"] = "Angular Velocity 2"
-e["Variables"][5]["Type"] = "State"
-
 e["Variables"][6]["Name"] = "Height Proxy"
-e["Variables"][6]["Type"] = "State"
 
 e["Variables"][7]["Name"] = "Force"
 e["Variables"][7]["Type"] = "Action"
@@ -46,42 +33,48 @@ e["Variables"][7]["Upper Bound"] = +20.0
 
 ### Defining Termination Criteria
 
-e["Solver"]["Termination Criteria"]["Target Average Testing Reward"] = 900
+e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 900
 
 ### Defining Agent Configuration 
 
 e["Solver"]["Type"] = "Agent / Continuous / VRACER"
+e["Solver"]["Mode"] = "Training"
+e["Solver"]["Episodes Per Generation"] = 1
 e["Solver"]["Experiences Between Policy Updates"] = 1
 e["Solver"]["Cache Persistence"] = 500
 e["Solver"]["Policy Distribution"] = "Normal"
+e["Solver"]["Discount Factor"] = 0.99
+e["Solver"]["Learning Rate"] = 1e-4
+e["Solver"]["Mini Batch Size"] = 256
 
-e["Solver"]["Refer"]["Target Off Policy Fraction"] = 0.30
-e["Solver"]["Refer"]["Cutoff Scale"] = 4.0
+### Configuring the Remember-and-Forget Experience Replay algorithm
+
+e["Solver"]["Experience Replay"]["REFER"]["Enabled"] = True
+e["Solver"]["Experience Replay"]["REFER"]["Cutoff Scale"] = 4.0
+e["Solver"]["Experience Replay"]["REFER"]["Target"] = 0.1
+e["Solver"]["Experience Replay"]["REFER"]["Initial Beta"] = 0.6
+e["Solver"]["Experience Replay"]["REFER"]["Annealing Rate"] = 5e-7
 
 ### Defining the configuration of replay memory
 
 e["Solver"]["Experience Replay"]["Start Size"] = 131072
 e["Solver"]["Experience Replay"]["Maximum Size"] = 262144
 
-## Defining Neural Network Configuration for Policy and Critic into Critic Container
+### Configuring the neural network and its hidden layers
 
-e["Solver"]["Critic"]["Discount Factor"] = 0.99
-e["Solver"]["Critic"]["Learning Rate"] = 1e-4
-e["Solver"]["Critic"]["Mini Batch Size"] = 256
+e["Solver"]["Neural Network"]["Engine"] = "OneDNN"
 
-e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear"
+e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear"
+e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 32
 
-e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Type"] = "Layer/Dense"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Node Count"] = 32
-e["Solver"]["Critic"]["Neural Network"]["Layers"][1]["Activation Function"]["Type"] = "Elementwise/Tanh"
+e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Activation"
+e["Solver"]["Neural Network"]["Hidden Layers"][1]["Function"] = "Elementwise/Tanh"
 
-e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Type"] = "Layer/Dense"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Node Count"] = 32
-e["Solver"]["Critic"]["Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Elementwise/Tanh"
+e["Solver"]["Neural Network"]["Hidden Layers"][2]["Type"] = "Layer/Linear"
+e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 32
 
-e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Type"] = "Layer/Dense"
-e["Solver"]["Critic"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Elementwise/Linear"
+e["Solver"]["Neural Network"]["Hidden Layers"][3]["Type"] = "Layer/Activation"
+e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tanh"
 
 ### Setting file output configuration
 

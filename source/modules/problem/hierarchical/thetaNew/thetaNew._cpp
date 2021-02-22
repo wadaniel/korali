@@ -19,10 +19,6 @@ void ThetaNew::initialize()
   _psiExperimentObject.initialize();
 
   // Psi-problem correctness checks
-  std::string psiProblemType = _psiExperiment["Problem"]["Type"];
-  if (psiProblemType != "Hierarchical/Psi")
-    KORALI_LOG_ERROR("The Hierarchical Bayesian (Theta) can only accept a psi-problem of type 'Hierarchical/Psi' but psi-Problem is of type: '%s'.\n", psiProblemType.c_str());
-
   if (_psiExperiment["Is Finished"] == false)
     KORALI_LOG_ERROR("The Hierarchical Bayesian (Theta New) requires that the psi-problem has run completely, but it has not.\n");
 

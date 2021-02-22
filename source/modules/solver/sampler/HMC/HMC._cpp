@@ -482,16 +482,6 @@ void HMC::updateStepSize()
         const double dualEta = std::pow(counter, -_adaptiveStepSizeScheduleConstant);
         _logDualStepSize = (1. - dualEta) * _logDualStepSize + dualEta * logStep;
         _stepSize = std::exp(logStep);
-
-        if (_useNUTS == false)
-        {
-          _numIntegrationSteps = std::max((size_t)1, (size_t)std::round(_targetIntegrationTime / _stepSize));
-          if (_numIntegrationSteps > _maxIntegrationSteps)
-          {
-            _k->_logger->logWarning("Normal", "Num Integration Steps (%zu) exceeding hard limit 'Max Integration Steps' (%zu).\n", _numIntegrationSteps, _maxIntegrationSteps);
-            _numIntegrationSteps = _maxIntegrationSteps;
-          }
-        }
       }
       // Fix step size after terminal fast epriod
       else if (_chainLength == terminalFastPeriodEnd)
@@ -500,10 +490,21 @@ void HMC::updateStepSize()
       }
     }
   }
+
   // Apply Step Size Jitter after burn in period
   else if (_stepSizeJitter > 0.)
   {
     _stepSize = std::exp(_logDualStepSize) * (1. + _stepSizeJitter * (2. * _uniformGenerator->getRandomNumber() - 1.));
+  }
+
+  if (_useNUTS == false && _useAdaptiveStepSize == true)
+  {
+    _numIntegrationSteps = std::max((size_t)1, (size_t)std::round(_targetIntegrationTime / _stepSize));
+    if (_numIntegrationSteps > _maxIntegrationSteps)
+    {
+      _k->_logger->logWarning("Minimal", "Num Integration Steps (%zu) exceeding hard limit 'Max Integration Steps' (%zu).\n", _numIntegrationSteps, _maxIntegrationSteps);
+      _numIntegrationSteps = _maxIntegrationSteps;
+    }
   }
 }
 
@@ -521,7 +522,7 @@ void HMC::updateState()
   updateStepSize();
 
   // Update metric at the end of slow adaption period
-  if (_eVersion == EVersion::Euclidean && _useAdaptiveStepSize && _chainLength == _initialFastAdaptionInterval + _initialSlowAdaptionInterval)
+  if (_eVersion == EVersion::Euclidean && _chainLength == _initialFastAdaptionInterval + _initialSlowAdaptionInterval)
   {
     int err = _hamiltonian->updateMetricMatricesEuclidean(_euclideanWarmupSampleDatabase);
     if (err == GSL_EDOM) KORALI_LOG_ERROR("Inverse Metric negative definite (not updating Metric). Increase 'Initial Slow Adaption Interval' (is %zu).", _initialSlowAdaptionInterval);
@@ -728,8 +729,24 @@ void HMC::printGenerationAfter()
   auto grad = _hamiltonian->dU();
   for (auto &g : grad) _k->_logger->logData("Detailed", "         %+6.3e  \n", g);
 
-  _k->_logger->logInfo("Detailed", "Current Inverse Metric:\n");
+  _k->_logger->logInfo("Detailed", "Current Metric:\n");
+  auto metric = _hamiltonian->getMetric();
+  if (_useDiagonalMetric == true || _eVersion == EVersion::Static)
+  {
+    for (size_t e = 0; e < _variableCount; ++e)
+      _k->_logger->logData("Detailed", "         %+6.3e  \n", metric[e]);
+  }
+  else
+  {
+    for (size_t d = 0; d < _variableCount; ++d)
+    {
+      for (size_t e = 0; e < _variableCount; ++e)
+        _k->_logger->logData("Normal", "         %+6.3e  ", metric[d * _variableCount + e]);
+      _k->_logger->logInfo("Normal", "\n");
+    }
+  }
 
+  _k->_logger->logInfo("Detailed", "Current Inverse Metric:\n");
   auto inverseMetric = _hamiltonian->getInverseMetric();
   if (_useDiagonalMetric == true || _eVersion == EVersion::Static)
   {

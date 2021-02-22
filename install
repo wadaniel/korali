@@ -323,7 +323,7 @@ fi
 
 if [ "$USE_CUDNN" == "YES" ]; then
   CUDNNCFLAGS+=" -D_KORALI_USE_CUDNN -I${CUDA_ROOT}/include -I${CUDNN_ROOT}/include"
-  CUDNNLIBS+=" -lcudart -lcudnn -lcudnn_ops_infer -lcudnn_ops_train -lcudnn_cnn_infer -lcudnn_cnn_train -Wl,-rpath -Wl,${CUDA_ROOT}/lib64/ -L${CUDA_ROOT}/lib64/ -Wl,-rpath -Wl,${CUDA_ROOT}/lib -L${CUDA_ROOT}/lib -Wl,-rpath -Wl,${CUDNN_ROOT}/lib64/ -L${CUDNN_ROOT}/lib64/ -Wl,-rpath -Wl,${CUDNN_ROOT}/lib -L${CUDNN_ROOT}/lib"
+  CUDNNLIBS+=" -lcudart -lcudnn -lcudnn_ops_infer -lcudnn_ops_train -lcudnn_cnn_infer -lcudnn_cnn_train -lcudnn_adv_infer -lcudnn_adv_train -Wl,-rpath -Wl,${CUDA_ROOT}/lib64/ -L${CUDA_ROOT}/lib64/ -Wl,-rpath -Wl,${CUDA_ROOT}/lib -L${CUDA_ROOT}/lib -Wl,-rpath -Wl,${CUDNN_ROOT}/lib64/ -L${CUDNN_ROOT}/lib64/ -Wl,-rpath -Wl,${CUDNN_ROOT}/lib -L${CUDNN_ROOT}/lib"
   logEcho "[Korali] Using CUDA Libraries located at ${CUDA_ROOT}."
   logEcho "[Korali] Using CUDNN Libraries located at ${CUDNN_ROOT}."
 fi

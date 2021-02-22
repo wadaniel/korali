@@ -19,8 +19,11 @@ void Discrete::getAction(korali::Sample &sample)
   // Getting current state
   auto state = sample["State"].get<std::vector<float>>();
 
+  // Adding state to the state time sequence
+  _stateTimeSequence.add(state);
+
   // Getting the probability of the actions given by the agent's policy
-  auto policy = runPolicy(state);
+  auto policy = runPolicy(_stateTimeSequence.getVector());
   auto pActions = policy["Action Probabilities"].get<std::vector<float>>();
 
   // Storage for the action index to use
@@ -60,8 +63,9 @@ void Discrete::getAction(korali::Sample &sample)
       // actionIdx = std::distance(pActions.begin(), std::max_element(pActions.begin(), pActions.end()));
     }
 
-    // Storing action metadata
+    // Storing action idx, policy and importance weight
     sample["Policy"] = policy;
+    sample["Policy"]["Importance Weight"] = 1.0f;
     sample["Policy"]["Action Index"] = actionIdx;
   }
 
@@ -102,6 +106,65 @@ float Discrete::calculateImportanceWeight(const size_t actionIdx, const std::vec
   float importanceWeight = pCurPolicy / pOldPolicy;
 
   return importanceWeight;
+}
+
+float Discrete::getExperienceImportanceWeight(size_t expId)
+{
+  // Getting the state sequence and action index for the given experience
+  auto expStateSequence = getStateTimeSequence(expId);
+  auto expActionIdx = _experienceReplay[expId].policy["Action Index"].get<size_t>();
+
+  // Get action probabilities for the policy used for the experience
+  auto expPvals = _experienceReplay[expId].policy["Action Probabilities"].get<std::vector<float>>();
+
+  // Getting current policy and calculating its action probabilities
+  auto policy = runPolicy(expStateSequence);
+  auto curPvals = policy["Action Probabilities"].get<std::vector<float>>();
+
+  // Now calculating importance weight
+  auto expImportanceWeight = calculateImportanceWeight(expActionIdx, curPvals, expPvals);
+
+  // Returning experience's importance weight
+  return expImportanceWeight;
+}
+
+std::vector<float> Discrete::calculateImportanceWeightGradient(size_t actionIdx, const std::vector<float> &curPvals, const std::vector<float> &oldPvals)
+{
+  std::vector<float> grad(_problem->_possibleActions.size(), 0.0);
+
+  float importanceWeight = curPvals[actionIdx] / oldPvals[actionIdx];
+
+  // calculate gradient of categorical distribution normalized by old pvals
+  for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
+  {
+    if (i == actionIdx)
+      grad[i] = importanceWeight * (1. - curPvals[i]);
+    else
+      grad[i] = -importanceWeight * curPvals[i];
+  }
+
+  return grad;
+}
+
+std::vector<float> Discrete::calculateKLDivergenceGradient(const std::vector<float> &oldPvalues, const std::vector<float> &curPvalues)
+{
+  std::vector<float> klGrad(_problem->_possibleActions.size(), 0.0);
+
+  // Gradient wrt NN output i
+  for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
+  {
+    // Iterate over all pvalues
+    for (size_t j = 0; j < _problem->_possibleActions.size(); j++)
+    {
+      float impW = oldPvalues[j] / curPvalues[j];
+      if (i == j)
+        klGrad[i] -= impW * curPvalues[i] * (1.0 - curPvalues[i]);
+      else
+        klGrad[i] += impW * curPvalues[i] * curPvalues[j];
+    }
+  }
+
+  return klGrad;
 }
 
 } // namespace agent

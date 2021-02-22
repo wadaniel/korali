@@ -23,13 +23,13 @@ e["Problem"]["Computational Model"] = lambda sampleData: modelWithGradients(samp
 e["Solver"]["Type"] = "Sampler/HMC"
 e["Solver"]["Version"] = "Euclidean"
 e["Solver"]["Inverse Regularization Parameter"] = 0.1
-e["Solver"]["Burn In"] = 100
+e["Solver"]["Burn In"] = 500
 e["Solver"]["Use NUTS"] = True
-e["Solver"]["Use Diagonal Metric"] = False
+e["Solver"]["Use Diagonal Metric"] = True
 e["Solver"]["Max Depth"] = 5
 e["Solver"]["Step Size"] = 1.0
 e["Solver"]["Use Adaptive Step Size"] = True
-e["Solver"]["Termination Criteria"]["Max Samples"] = 5000
+e["Solver"]["Termination Criteria"]["Max Samples"] = 20000
 
 # Configuring the problem's random distributions
 e["Distributions"][0]["Name"] = "Uniform 0"
@@ -64,7 +64,7 @@ e["Variables"][2]["Initial Mean"] = 2.50
 e["Variables"][2]["Initial Standard Deviation"] = 1.0
 
 # Configuring output settings
-e["File Output"]["Frequency"] = 1e3
+e["File Output"]["Enabled"] = False
 e["Console Output"]["Frequency"] = 1
 
 e["File Output"]["Path"] = '_korali_result_hmc'

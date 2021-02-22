@@ -1,8 +1,0 @@
-run*
-_results
-*.txt
-*.h5
-*.xmf
-*.dat
-_deps
-*.a

@@ -8,8 +8,8 @@
 int _argc;
 char **_argv;
 
-std::mt19937 _randomGenerator;
 Simulation *_environment;
+std::mt19937 _randomGenerator;
 
 // Swimmer following an obstacle
 void runEnvironment(korali::Sample &s)
@@ -151,7 +151,7 @@ void setInitialConditions(SmartCylinder* agent, const bool isTraining)
   // or with noise
   if (isTraining)
   {
-    std::uniform_real_distribution<double> dis(-0.05, 0.05);
+    std::uniform_real_distribution<double> dis(-0.01, 0.01);
 
     double distX = dis(_randomGenerator);
     double distY = dis(_randomGenerator);

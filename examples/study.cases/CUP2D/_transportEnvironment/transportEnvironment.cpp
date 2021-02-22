@@ -110,7 +110,7 @@ void runEnvironment(korali::Sample &s)
     printf("[Korali] State: [ %.3f", state[0]);
     for (size_t i = 1; i < state.size(); i++) printf(", %.3f", state[i]);
     printf("]\n");
-    printf("[Korali] Action: [ %.3f, %.3f ]\n", action[0], action[1]);
+    printf("[Korali] Force: [ %.3f, %.3f ]\n", action[0], action[1]);
     printf("[Korali] Reward: %.3f\n", reward);
     printf("[Korali] Terminal?: %d\n", done);
     printf("[Korali] Time: %.3fs\n", actionTime);
@@ -198,20 +198,16 @@ void runEnvironmentCmaes(korali::Sample &s)
   char resDir[64];
   sprintf(resDir, "%s/sample%08lu", baseDir.c_str(), sampleId);
   std::filesystem::create_directories(resDir); 
-  printf("OK1\n");
   // Redirecting all output to the log file
   char logFilePath[128];
   sprintf(logFilePath, "%s/log.txt", resDir);
-  printf("OK2\n");
   auto logFile = freopen(logFilePath, "a", stdout);
-  printf("OK3\n");
   if (logFile == NULL)
   {
     printf("Error creating log file: %s.\n", logFilePath);
     exit(-1);
   }
 
-  printf("OK4\n");
   // Switching to results directory
   auto curPath = std::filesystem::current_path();
   std::filesystem::current_path(resDir);
@@ -247,7 +243,7 @@ void runEnvironmentCmaes(korali::Sample &s)
   double distanceNextAct = dist;
 
   // Setting maximum number of steps before truncation
-  size_t maxSteps = 200;
+  size_t maxSteps = 1e5;
 
   // Starting main environment loop
   bool done = false;
@@ -257,7 +253,6 @@ void runEnvironmentCmaes(korali::Sample &s)
 
   while (done == false && curStep < maxSteps)
   {
-    printf("OK\n");
     centerArr = agent->center;
     currentPos[0] = centerArr[0];
     currentPos[1] = centerArr[1];
@@ -276,26 +271,27 @@ void runEnvironmentCmaes(korali::Sample &s)
     agent->act( action );
     double dt = _environment->calcMaxTimestep();
     t += dt;
-
-    bool ok = _environment->advance(dt);
-    if (ok == false)
+ 
+    bool error = _environment->advance(dt);
+    done = isTerminal( agent, target );
+ 
+    curStep++;
+    
+    // Printing Information:
+    printf("[Korali] Sample %lu, Step: %lu/%lu\n", sampleId, curStep, maxSteps);
+    printf("[Korali] State: [ %.6f, %.6f ]", currentPos[0], currentPos[1]);
+    printf("[Korali] Force: [ %.6f, %.6f ]\n", action[0], action[1]);
+    printf("[Korali] Terminal?: %d\n", done);
+    printf("[Korali] Time: %.3fs\n", t);
+    printf("[Korali] -------------------------------------------------------\n");
+    fflush(stdout);
+ 
+    if (error == true)
     {
       fprintf(stderr, "Error during environment\n");
       exit(-1);
     }
  
-    // Printing Information:
-    printf("[Korali] Sample %lu, Step: %lu/%lu\n", sampleId, curStep, maxSteps);
-    printf("[Korali] State: [ %.3f, %.3f ]", currentPos[0], currentPos[1]);
-    printf("[Korali] Action: [ %.3f, %.3f ]\n", action[0], action[1]);
-    printf("[Korali] Terminal?: %d\n", done);
-    printf("[Korali] Time: %.3fs\n", t);
-    printf("[Korali] -------------------------------------------------------\n");
-    fflush(stdout);
-
-    printf("OK\n");
-    done = isTerminal( agent, target );
-    curStep++;
 
   }
   

@@ -24,30 +24,17 @@ int main(int argc, char *argv[])
   MPI_Comm_size(MPI_COMM_WORLD, &N);
   N = N - 1; // Minus one for Korali's engine
 
-  // Initializing CUP
-  _environment = new Simulation(_argc, _argv);
+  // Init CUP2D
+   Simulation *_environment = new Simulation(_argc, _argv);
   _environment->init();
 
-  // Setting results path
-
-  // for the GRP 2x32 run
-  // std::string trainingResultsPath = "_testingResults";
-  // std::string testingResultsPath = "_testingResults";
-
-  // for the GRU 64 run
-  // std::string trainingResultsPath = "_trainingResults-GRU64/";
-  // std::string testingResultsPath = "_testingResults-GRU64";
-
-  // for the FFN 2x128 run
-  std::string trainingResultsPath = "_trainingResults/";
-  std::string testingResultsPath = "_testingResults/";
+  std::string trainingResultsPath = "_results_transport_training/";
+  std::string testingResultsPath = "_results_transport_testing/";
 
   // Creating Experiment
   auto e = korali::Experiment();
   e["Problem"]["Type"] = "Reinforcement Learning / Continuous";
-
-  ////// Checking if existing results are there and continuing them
-
+  
   auto found = e.loadState(trainingResultsPath + std::string("/latest"));
   if (found == true) printf("[Korali] Continuing execution from previous run...\n");
 
@@ -62,25 +49,28 @@ int main(int argc, char *argv[])
   e["Problem"]["Custom Settings"]["Dump Path"] = trainingResultsPath;
 
   // Setting up the 20 state variables
+  const size_t numStates = 0;
   size_t curVariable = 0;
-  for (; curVariable < 20; curVariable++)
+  for (; curVariable < numStates; curVariable++)
   {
     e["Variables"][curVariable]["Name"] = std::string("StateVar") + std::to_string(curVariable);
     e["Variables"][curVariable]["Type"] = "State";
   }
 
+  const double maxForce = 1e-2;
+
   e["Variables"][curVariable]["Name"] = "Force X";
   e["Variables"][curVariable]["Type"] = "Action";
-  e["Variables"][curVariable]["Lower Bound"] = -1.0;
-  e["Variables"][curVariable]["Upper Bound"] = +1.0;
-  e["Variables"][curVariable]["Initial Exploration Noise"] = 0.50f;
+  e["Variables"][curVariable]["Lower Bound"] = -maxForce;
+  e["Variables"][curVariable]["Upper Bound"] = +maxForce;
+  e["Variables"][curVariable]["Initial Exploration Noise"] = 0.5*maxForce;
 
   curVariable++;
   e["Variables"][curVariable]["Name"] = "Force Y";
   e["Variables"][curVariable]["Type"] = "Action";
-  e["Variables"][curVariable]["Lower Bound"] = -1.0;
-  e["Variables"][curVariable]["Upper Bound"] = +1.0;
-  e["Variables"][curVariable]["Initial Exploration Noise"] = 0.50f;
+  e["Variables"][curVariable]["Lower Bound"] = -maxForce;
+  e["Variables"][curVariable]["Upper Bound"] = +maxForce;
+  e["Variables"][curVariable]["Initial Exploration Noise"] = 0.5*maxForce;
 
   /// Defining Agent Configuration
 

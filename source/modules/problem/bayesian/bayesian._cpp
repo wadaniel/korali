@@ -98,13 +98,13 @@ void Bayesian::evaluateGradient(Sample &sample)
 
 void Bayesian::evaluateHessian(Sample &sample)
 {
-  size_t numParam = sample["Parameters"].size();
   evaluateLogPriorHessian(sample);
   evaluateLogLikelihoodHessian(sample);
   auto logPriorHessian = sample["logPrior Hessian"].get<std::vector<double>>();
   auto logLikHessian = sample["logLikelihood Hessian"].get<std::vector<double>>();
-  for (size_t i = 0; i < numParam; i++)
-    logLikHessian[i * numParam + i] += logPriorHessian[i * numParam + i];
+  size_t numElement = logPriorHessian.size();
+  for (size_t i = 0; i < numElement; i++)
+    logLikHessian[i] += logPriorHessian[i];
 
   sample["H(logP(x))"] = logLikHessian;
 }

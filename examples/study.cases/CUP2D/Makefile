@@ -1,4 +1,4 @@
-BINARIES = run-vracer-transport run-vracer-fish
+BINARIES = run-cmaes-transport run-vracer-transport run-vracer-fish
 KORALICXX=$(shell python3 -m korali.cxx --compiler)
 KORALICFLAGS=`python3 -m korali.cxx --cflags`
 KORALILIBS=`python3 -m korali.cxx --libs`
@@ -9,11 +9,17 @@ CUBISMLIBS= libcup.a $(shell cat cup.libs.txt) -lstdc++fs
 .PHONY: all
 all: $(BINARIES)
 
+run-cmaes-transport: run-cmaes-transport.o transportEnvironment.o libcup.a
+	$(KORALICXX) -o $@ $^ $(KORALILIBS) $(CUBISMLIBS)
+
 run-vracer-transport: run-vracer-transport.o transportEnvironment.o libcup.a
 	$(KORALICXX) -o $@ $^ $(KORALILIBS) $(CUBISMLIBS)
 
 run-vracer-fish: run-vracer-fish.o fishEnvironment.o libcup.a
 	$(KORALICXX) -o $@ $^ $(KORALILIBS) $(CUBISMLIBS)
+
+run-cmaes-transport.o: run-cmaes-transport.cpp
+	$(KORALICXX) -c $< $(KORALICFLAGS) $(CUBISMCFLAGS)
 
 run-vracer-transport.o: run-vracer-transport.cpp
 	$(KORALICXX) -c $< $(KORALICFLAGS) $(CUBISMCFLAGS)

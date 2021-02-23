@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
   N = N - 1; // Minus one for Korali's engine
  
   // Defining constants
-  const double maxForce = 1e-2;
+  const double maxForce = 1e-1;
   const size_t numVariables = 8;
  
   // Init CUP2D

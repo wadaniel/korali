@@ -475,10 +475,10 @@ void runEnvironmentMocmaes(korali::Sample &s)
   double endX = 0.8;
   double height = 0.5;
   size_t maxSteps = 1e6;
-  double distThreshold = 1e-3;
+  size_t maxEnergy = 0.1;
  
   // Creating results directory
-  std::string baseDir = "_results_transport_cmaes";
+  std::string baseDir = "_results_transport_mocmaes";
   char resDir[64];
   sprintf(resDir, "%s/sample%08lu", baseDir.c_str(), sampleId);
   std::filesystem::create_directories(resDir); 
@@ -558,7 +558,7 @@ void runEnvironmentMocmaes(korali::Sample &s)
     energy = agent->energy;
 
     // Checkting termination
-    done = (dist <= distThreshold) && (curStep <= maxSteps);
+    done = (currentPos[0] >= endX) && (curStep <= maxSteps);
  
     curStep++;
     
@@ -585,10 +585,15 @@ void runEnvironmentMocmaes(korali::Sample &s)
   }
 
   // Penalization for not reaching target
-  if (dist > distThreshold)
+  if (currentPos[0] < endX)
   {
-	t += dist*1e6;
-	energy += dist*1e6;
+	t += (endX-currentPos[0])*1e6;
+	energy += (endX-currentPos[0])*1e6;
+  }
+  if (energy > maxEnergy)
+  {
+	t += (energy-maxEnergy)*1e6;
+	energy += (energy-maxEnergy)*1e6;
   }
   
   // Setting Objectives

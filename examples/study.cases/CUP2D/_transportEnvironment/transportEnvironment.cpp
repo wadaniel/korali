@@ -317,12 +317,13 @@ void runEnvironmentCmaes(korali::Sample &s)
 }
 
 
-std::vector<double> logDivision(double start, double end, size_t nedges)
+std::vector<double> logDivision(double start, double end, size_t nvertices)
 {
-    std::vector<double> vertices(nedges+1, 0.0);
-    for(size_t idx = 0; idx < nedges; ++idx)
+    std::vector<double> vertices(nvertices, 0.0);
+    for(size_t idx = 0; idx < nvertices; ++idx)
     {
-        vertices[idx] = std::exp((double) idx / (double) nedges * std::log(end-start+1.0)) - 1.0 + start;
+        vertices[idx] = std::exp((double) idx / (double) (nvertices-1.0) * std::log(end-start+1.0)) - 1.0 + start;
+	printf("v %zu %lf\n", idx, vertices[idx]);
     }
     return vertices;
 }
@@ -379,7 +380,7 @@ void optimizeTimeWithEnergyBudget(korali::Sample &s)
 
   double* centerArr = agent->center;
   std::vector<double> currentPos(centerArr, centerArr+2);
-  std::vector<double> edges = logDivision(startX, endX, numParams+1);
+  std::vector<double> vertices = logDivision(startX, endX, numParams+1);
   std::vector<double> energyBudgets(numParams+1);
   energyBudgets[0] = energyBudget * params[0];
   for(size_t idx = 1; idx < numParams; ++idx)
@@ -406,7 +407,7 @@ void optimizeTimeWithEnergyBudget(korali::Sample &s)
   // Starting main environment loop
   bool done = false;
   size_t forceIdx = 0;
-  double force = params[forceIdx];
+  double force = params[forceIdx++];
   std::vector<double> action(2, 0.0);
 
   while (done == false && curStep < maxSteps)
@@ -415,9 +416,11 @@ void optimizeTimeWithEnergyBudget(korali::Sample &s)
     currentPos[0] = centerArr[0];
     currentPos[1] = centerArr[1];
 
-    if (currentPos[0] >= edges[forceIdx+1])
+    if (forceIdx+1 < vertices.size())
+    if (currentPos[0] >= vertices[forceIdx+1])
     {
-	force = params[++forceIdx];
+	forceIdx++;
+	force = params[forceIdx];
     }
 
     action[0] = force*(target[0]-currentPos[0])/dist;
@@ -475,10 +478,10 @@ void runEnvironmentMocmaes(korali::Sample &s)
   double endX = 0.8;
   double height = 0.5;
   size_t maxSteps = 1e6;
-  size_t maxEnergy = 0.1;
+  size_t maxEnergy = 1e-3;
  
   // Creating results directory
-  std::string baseDir = "_results_transport_mocmaes";
+  std::string baseDir = "true_results_transport_mocmaes";
   char resDir[64];
   sprintf(resDir, "%s/sample%08lu", baseDir.c_str(), sampleId);
   std::filesystem::create_directories(resDir); 
@@ -519,7 +522,7 @@ void runEnvironmentMocmaes(korali::Sample &s)
 
   double* centerArr = agent->center;
   std::vector<double> currentPos(centerArr, centerArr+2);
-  std::vector<double> edges = logDivision(startX, endX, numParams+1);
+  std::vector<double> vertices = logDivision(startX, endX, numParams+1);
 
   // Init counting variables
   double dist = distance(currentPos, target);
@@ -539,9 +542,11 @@ void runEnvironmentMocmaes(korali::Sample &s)
     currentPos[0] = centerArr[0];
     currentPos[1] = centerArr[1];
 
-    if (currentPos[0] >= edges[forceIdx+1])
+    if (forceIdx+1 < vertices.size())
+    if (currentPos[0] >= vertices[forceIdx+1])
     {
-	force = params[++forceIdx];
+	forceIdx++;
+	force = params[forceIdx];
     }
 
     action[0] = force*(target[0]-currentPos[0])/dist;
@@ -581,7 +586,7 @@ void runEnvironmentMocmaes(korali::Sample &s)
   
   if(forceIdx != numParams)
   {
-      fprintf(stderr, "Error during sanity check, forceIdx %zu, expected %zu\n", forceIdx, numParams);
+      fprintf(stderr, "Error during sanity check (sampleId %zu), forceIdx %zu, expected %zu\n", sampleId, forceIdx, numParams);
   }
 
   // Penalization for not reaching target

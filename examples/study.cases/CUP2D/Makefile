@@ -12,6 +12,9 @@ all: $(BINARIES)
 run-cmaes-transport: run-cmaes-transport.o transportEnvironment.o libcup.a
 	$(KORALICXX) -o $@ $^ $(KORALILIBS) $(CUBISMLIBS)
 
+run-mocmaes-transport: run-mocmaes-transport.o transportEnvironment.o libcup.a
+	$(KORALICXX) -o $@ $^ $(KORALILIBS) $(CUBISMLIBS)
+
 run-vracer-transport: run-vracer-transport.o transportEnvironment.o libcup.a
 	$(KORALICXX) -o $@ $^ $(KORALILIBS) $(CUBISMLIBS)
 
@@ -19,6 +22,9 @@ run-vracer-fish: run-vracer-fish.o fishEnvironment.o libcup.a
 	$(KORALICXX) -o $@ $^ $(KORALILIBS) $(CUBISMLIBS)
 
 run-cmaes-transport.o: run-cmaes-transport.cpp
+	$(KORALICXX) -c $< $(KORALICFLAGS) $(CUBISMCFLAGS)
+
+run-mocmaes-transport.o: run-mocmaes-transport.cpp
 	$(KORALICXX) -c $< $(KORALICFLAGS) $(CUBISMCFLAGS)
 
 run-vracer-transport.o: run-vracer-transport.cpp

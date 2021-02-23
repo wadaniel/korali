@@ -1,4 +1,4 @@
-BINARIES = run-cmaes-transport run-vracer-transport run-vracer-fish
+BINARIES = run-cmaes-transport run-mocmaes-transport run-vracer-transport run-vracer-fish
 KORALICXX=$(shell python3 -m korali.cxx --compiler)
 KORALICFLAGS=`python3 -m korali.cxx --cflags`
 KORALILIBS=`python3 -m korali.cxx --libs`

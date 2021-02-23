@@ -330,20 +330,17 @@ std::vector<double> logDivision(double start, double end, size_t nedges)
 // Swimmer following an obstacle
 void optimizeTimeWithEnergyBudget(korali::Sample &s)
 {
- 
+  size_t sampleId = s["Sample Id"];
   double startX = 0.2;
   double endX = 0.8;
   double energyBudget = 1.0;
-
-  // Setting seed
-  size_t sampleId = s["Sample Id"];
-  _randomGenerator.seed(sampleId);
 
   // Creating results directory
   std::string baseDir = "_results_transport_cmaes";
   char resDir[64];
   sprintf(resDir, "%s/sample%08lu", baseDir.c_str(), sampleId);
   std::filesystem::create_directories(resDir); 
+  
   // Redirecting all output to the log file
   char logFilePath[128];
   sprintf(logFilePath, "%s/log.txt", resDir);
@@ -472,7 +469,136 @@ void optimizeTimeWithEnergyBudget(korali::Sample &s)
 
 void runEnvironmentMocmaes(korali::Sample &s)
 {
-	// TODO
+  // Defining constants
+  size_t sampleId = s["Sample Id"];
+  double startX = 0.2;
+  double endX = 0.8;
+  double height = 0.5;
+  size_t maxSteps = 1e6;
+  double distThreshold = 1e-3;
+ 
+  // Creating results directory
+  std::string baseDir = "_results_transport_cmaes";
+  char resDir[64];
+  sprintf(resDir, "%s/sample%08lu", baseDir.c_str(), sampleId);
+  std::filesystem::create_directories(resDir); 
+  // Redirecting all output to the log file
+  char logFilePath[128];
+  sprintf(logFilePath, "%s/log.txt", resDir);
+  auto logFile = freopen(logFilePath, "a", stdout);
+  if (logFile == NULL)
+  {
+    printf("Error creating log file: %s.\n", logFilePath);
+    exit(-1);
+  }
 
+  // Switching to results directory
+  auto curPath = std::filesystem::current_path();
+  std::filesystem::current_path(resDir);
+
+  // Obtaining agent
+  SmartCylinder* agent = dynamic_cast<SmartCylinder *>(_environment->getShapes()[0]);
+
+  // Establishing environment's dump frequency
+  _environment->sim.dumpTime = 0.0;
+
+  // Reseting environment and setting initial conditions
+  _environment->resetRL();
+  std::vector<double> start{startX, height};
+  setInitialConditions(agent, start, false);
+
+  // Set target 
+  std::vector<double> target{endX, height};
+
+  // Setting initial state
+  auto state = agent->state( target );
+
+  // Parametrization of force
+  std::vector<double> params = s["Parameters"];
+  size_t numParams = params.size();
+
+  double* centerArr = agent->center;
+  std::vector<double> currentPos(centerArr, centerArr+2);
+  std::vector<double> edges = logDivision(startX, endX, numParams+1);
+
+  // Init counting variables
+  double dist = distance(currentPos, target);
+  double energy = 0.0; // Total energy
+  double t = 0.0;      // Current time
+  size_t curStep = 0;  // Current Step
+
+  // Starting main environment loop
+  bool done = false;
+  size_t forceIdx = 0;
+  double force = params[forceIdx];
+  std::vector<double> action(2, 0.0);
+
+  while (done == false)
+  {
+    centerArr = agent->center;
+    currentPos[0] = centerArr[0];
+    currentPos[1] = centerArr[1];
+
+    if (currentPos[0] >= edges[forceIdx+1])
+    {
+	force = params[++forceIdx];
+    }
+
+    action[0] = force*(target[0]-currentPos[0])/dist;
+    action[1] = force*(target[1]-currentPos[1])/dist;
+
+    // Setting action
+    agent->act( action );
+    double dt = _environment->calcMaxTimestep();
+    t += dt;
+ 
+    // Update distance and check termination
+    bool error = _environment->advance(dt);
+    dist = distance(currentPos, target);
+    energy = agent->energy;
+
+    // Checkting termination
+    done = (dist <= distThreshold) && (curStep <= maxSteps);
+ 
+    curStep++;
+    
+    // Printing Information:
+    printf("[Korali] Sample %lu, Step: %lu/%lu\n", sampleId, curStep, maxSteps);
+    printf("[Korali] State: [ %.6f, %.6f ]\n", currentPos[0], currentPos[1]);
+    printf("[Korali] Force: [ %.6f, %.6f ]\n", action[0], action[1]);
+    printf("[Korali] Energy %f, Distance %f, Terminal?: %d\n", energy, dist, done);
+    printf("[Korali] Time: %.3fs\n", t);
+    printf("[Korali] -------------------------------------------------------\n");
+    fflush(stdout);
+ 
+    if (error == true)
+    {
+      fprintf(stderr, "Error during environment\n");
+      exit(-1);
+    }
+
+  }
+  
+  if(forceIdx != numParams)
+  {
+      fprintf(stderr, "Error during sanity check, forceIdx %zu, expected %zu\n", forceIdx, numParams);
+  }
+
+  // Penalization for not reaching target
+  if (dist > distThreshold)
+  {
+	t += dist*1e6;
+	energy += dist*1e6;
+  }
+  
+  // Setting Objectives
+  std::vector<double> objectives = { -t, -energy };
+  s["F(x)"] = objectives;
+
+  // Switching back to experiment directory
+  std::filesystem::current_path(curPath);
+
+  // Closing log file
+  fclose(logFile);
 
 }

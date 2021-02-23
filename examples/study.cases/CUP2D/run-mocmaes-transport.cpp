@@ -23,37 +23,41 @@ int main(int argc, char *argv[])
   int N = 2;
   MPI_Comm_size(MPI_COMM_WORLD, &N);
   N = N - 1; // Minus one for Korali's engine
-
+ 
+  // Defining constants
+  const double maxForce = 1e-2;
+  const size_t numVariables = 8;
+ 
   // Init CUP2D
   _environment = new Simulation(_argc, _argv);
   _environment->init();
 
-  std::string resultsPath = "_results_transport_cmaes/";
+  std::string resultsPath = "_results_transport_mocmaes/";
 
   // Creating Experiment
   auto e = korali::Experiment();
-  e["Random Seed"] = 0xC0FEE;
-  e["Problem"]["Type"] = "Optimization";
-  
+
   auto found = e.loadState(resultsPath + std::string("latest"));
   if (found == true) printf("[Korali] Continuing execution from previous run...\n");
 
-  // Configuring Experiment
-  e["Problem"]["Objective Function"] = &runEnvironmentCmaes;
-
-  const double maxForce = 1e-2;
-  const size_t numVariables = 8;
+  e["Random Seed"] = 0xC0FEE;
+  e["Problem"]["Type"] = "Optimization";
+  e["Problem"]["Objective Function"] = &runEnvironmentMocmaes;
+  e["Problem"]["Num Objectives"] = 2;
   
-  // Configuring CMA-ES parameters
-  e["Solver"]["Type"] = "Optimizer/CMAES";
+ 
+  // Configuring MO-CMA-ES parameters
+  e["Solver"]["Type"] = "Optimizer/MOCMAES";
   e["Solver"]["Population Size"] = 32;
+  e["Solver"]["Mu Value"] = 16;
   e["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-16;
+  e["Solver"]["Termination Criteria"]["Min Variable Difference Threshold"] = 1e-16;
   e["Solver"]["Termination Criteria"]["Max Generations"] = 5;
  
   // Setting up the variables
   for (size_t var = 0; var < numVariables; ++var)
   {
-    e["Variables"][var]["Name"] = std::string("Force") + std::to_string(var);
+    e["Variables"][var]["Name"] = std::string("Velocity") + std::to_string(var);
     e["Variables"][var]["Lower Bound"] = 0.0;
     e["Variables"][var]["Upper Bound"] = +maxForce;
     e["Variables"][var]["Initial Standard Deviation"] = 0.3*maxForce/std::sqrt(numVariables);
@@ -69,12 +73,6 @@ int main(int argc, char *argv[])
   ////// Running Experiment
 
   auto k = korali::Engine();
-
-  // Configuring profiler output
-
-  k["Profiling"]["Detail"] = "Full";
-  k["Profiling"]["Path"] = resultsPath + std::string("/profiling.json");
-  k["Profiling"]["Frequency"] = 10;
 
   k["Conduit"]["Type"] = "Distributed";
   k["Conduit"]["Communicator"] = MPI_COMM_WORLD;

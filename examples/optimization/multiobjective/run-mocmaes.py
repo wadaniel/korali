@@ -31,7 +31,7 @@ for i in range(dim):
     e["Variables"][i]["Upper Bound"] = +25.0
     e["Variables"][i]["Initial Standard Deviation"] = 3.0
 
-# Configuring CMA-ES parameters
+# Configuring MO-CMA-ES parameters
 e["Solver"]["Type"] = "Optimizer/MOCMAES"
 e["Solver"]["Population Size"] = 32
 e["Solver"]["Mu Value"] = 16

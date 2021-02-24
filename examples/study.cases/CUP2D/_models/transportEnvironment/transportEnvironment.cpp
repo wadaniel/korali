@@ -480,7 +480,7 @@ void runEnvironmentMocmaes(korali::Sample &s)
 
   // Constraints
   size_t maxSteps = 1e6;
-  size_t maxEnergy = 1e-2;
+  double maxEnergy = 1e-2;
  
   // Creating results directory
   std::string baseDir = "true_results_transport_mocmaes0/";
@@ -594,11 +594,13 @@ void runEnvironmentMocmaes(korali::Sample &s)
   // Penalization for not reaching target
   if (currentPos[0] < endX)
   {
+    printf("Target not reached, penalizing objectives..\n");
 	t += (endX-currentPos[0])*1e9;
 	energy += (endX-currentPos[0])*1e9;
   }
   if (energy > maxEnergy)
   {
+    printf("Max energy violated (%f), penalizing objectives..\n", maxEnergy);
 	t += (energy-maxEnergy)*1e9;
 	energy += (energy-maxEnergy)*1e9;
   }

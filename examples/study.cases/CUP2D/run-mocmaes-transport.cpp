@@ -1,5 +1,5 @@
 // Select which environment to use
-#include "_transportEnvironment/transportEnvironment.hpp"
+#include "_models/transportEnvironment/transportEnvironment.hpp"
 #include "korali.hpp"
 
 std::string _resultsPath;
@@ -18,17 +18,16 @@ int main(int argc, char *argv[])
   // Storing parameters
   _argc = argc;
   _argv = argv;
-
  
   // Defining constants
   const double maxForce = 1e-2;
-  const size_t numVariables = 16;
+  const size_t numVariables = 4;
  
   // Init CUP2D
   _environment = new Simulation(_argc, _argv);
   _environment->init();
 
-  std::string resultsPath = "true_results_transport_mocmaes/";
+  std::string resultsPath = "true_results_transport_mocmaes0/";
 
   // Creating Experiment
   auto e = korali::Experiment();
@@ -56,7 +55,7 @@ int main(int argc, char *argv[])
     e["Variables"][var]["Name"] = std::string("Velocity") + std::to_string(var);
     e["Variables"][var]["Lower Bound"] = 0.0;
     e["Variables"][var]["Upper Bound"] = +maxForce;
-    e["Variables"][var]["Initial Standard Deviation"] = 0.2*maxForce/std::sqrt(numVariables);
+    e["Variables"][var]["Initial Standard Deviation"] = 0.5*maxForce/std::sqrt(numVariables);
   }
 
   ////// Setting Korali output configuration

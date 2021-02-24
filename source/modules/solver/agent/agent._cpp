@@ -610,9 +610,9 @@ std::vector<size_t> Agent::generateMiniBatch(size_t miniBatchSize)
     }
   }
 
-  // Passing the content of the map to a vector
+  // Passing the values (experience Ids) of the map to a vector
   std::vector<size_t> experienceRetraceIds;
-  for (const auto &expId : episodeMaxExperienceId) experienceRetraceIds.push_back(expId.first);
+  for (const auto &episode : episodeMaxExperienceId) experienceRetraceIds.push_back(episode.second);
 
 // Running all experiences in parallel
 #pragma omp parallel for schedule(dynamic, 1)

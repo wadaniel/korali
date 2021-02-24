@@ -1,5 +1,5 @@
 // Select which environment to use
-#include "_transportEnvironment/transportEnvironment.hpp"
+#include "_models/transportEnvironment/transportEnvironment.hpp"
 #include "korali.hpp"
 
 std::string _resultsPath;

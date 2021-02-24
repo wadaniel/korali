@@ -477,11 +477,13 @@ void runEnvironmentMocmaes(korali::Sample &s)
   double startX = 0.2;
   double endX = 0.8;
   double height = 0.5;
+
+  // Constraints
   size_t maxSteps = 1e6;
-  size_t maxEnergy = 1e-3;
+  size_t maxEnergy = 1e-2;
  
   // Creating results directory
-  std::string baseDir = "true_results_transport_mocmaes";
+  std::string baseDir = "true_results_transport_mocmaes0/";
   char resDir[64];
   sprintf(resDir, "%s/sample%08lu", baseDir.c_str(), sampleId);
   std::filesystem::create_directories(resDir); 
@@ -592,17 +594,18 @@ void runEnvironmentMocmaes(korali::Sample &s)
   // Penalization for not reaching target
   if (currentPos[0] < endX)
   {
-	t += (endX-currentPos[0])*1e6;
-	energy += (endX-currentPos[0])*1e6;
+	t += (endX-currentPos[0])*1e9;
+	energy += (endX-currentPos[0])*1e9;
   }
   if (energy > maxEnergy)
   {
-	t += (energy-maxEnergy)*1e6;
-	energy += (energy-maxEnergy)*1e6;
+	t += (energy-maxEnergy)*1e9;
+	energy += (energy-maxEnergy)*1e9;
   }
   
   // Setting Objectives
   std::vector<double> objectives = { -t, -energy };
+  printf("Objectives: %f (time), %f (energy)\n", t, energy);
   s["F(x)"] = objectives;
 
   // Switching back to experiment directory

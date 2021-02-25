@@ -71,7 +71,7 @@ e["Solver"]["Termination Criteria"]["Max Generations"] = 100000
 e["Solver"]["Experience Replay"]["Serialize"] = True
 e["Console Output"]["Verbosity"] = "Detailed"
 e["File Output"]["Enabled"] = True
-e["File Output"]["Frequency"] = 5
+e["File Output"]["Frequency"] = 500
 e["File Output"]["Path"] = resultFolder
 
 ### Running Experiment

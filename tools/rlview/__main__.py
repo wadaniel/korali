@@ -90,7 +90,11 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
   ax.plot(cumulativeObsList, meanHistory, '-', label=str(averageDepth) + '-Episode Average (' + dirs[resId] + ')', color=cmap(colCurrIndex), zorder=1)
   
   # Updating color index
-  if (len(results) > 1): colCurrIndex = colCurrIndex + (1.0 / float(len(results)-1)) - 0.0001
+  if (len(results) > 1):
+   colCurrIndex = colCurrIndex + (1.0 / float(len(results)-1)) - 0.0001
+   if (colCurrIndex > 0.4 and colCurrIndex < 0.6):
+    if (colCurrIndex < 0.5): colCurrIndex = colCurrIndex - 0.1
+    if (colCurrIndex > 0.5): colCurrIndex = colCurrIndex + 0.1 
   
  ## Configuring common plotting features
  

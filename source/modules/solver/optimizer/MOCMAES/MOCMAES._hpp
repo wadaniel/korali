@@ -27,7 +27,7 @@ class MOCMAES : public Optimizer
   void sampleSingle(size_t sampleIdx);
 
   /**
- * @brief Sort sample indeces based on non-dominance (primary) and contribution and contributing hypervolume (secondary).
+ * @brief Sort sample ascending based on non-dominance (primary) and contributing hypervolume (secondary).
  * @param values Values to sort
  * @return sorted indices
  */

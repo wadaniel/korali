@@ -21,13 +21,13 @@ int main(int argc, char *argv[])
  
   // Defining constants
   const double maxForce = 1e-2;
-  const size_t numVariables = 4;
+  const size_t numVariables = 4; // Discretization of path
  
   // Init CUP2D
   _environment = new Simulation(_argc, _argv);
   _environment->init();
 
-  std::string resultsPath = "true_results_transport_mocmaes0/";
+  std::string resultsPath = "true_results_transport_mocmaes2/";
 
   // Creating Experiment
   auto e = korali::Experiment();
@@ -43,11 +43,11 @@ int main(int argc, char *argv[])
  
   // Configuring MO-CMA-ES parameters
   e["Solver"]["Type"] = "Optimizer/MOCMAES";
-  e["Solver"]["Population Size"] = 64;
-  e["Solver"]["Mu Value"] = 32;
+  e["Solver"]["Population Size"] = 32;
+  e["Solver"]["Mu Value"] = 16;
   e["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-16;
   e["Solver"]["Termination Criteria"]["Min Variable Difference Threshold"] = 1e-16;
-  e["Solver"]["Termination Criteria"]["Max Generations"] = 50;
+  e["Solver"]["Termination Criteria"]["Max Generations"] = 500;
  
   // Setting up the variables
   for (size_t var = 0; var < numVariables; ++var)

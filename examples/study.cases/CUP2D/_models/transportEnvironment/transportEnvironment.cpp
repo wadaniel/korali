@@ -480,10 +480,10 @@ void runEnvironmentMocmaes(korali::Sample &s)
 
   // Constraints
   size_t maxSteps = 1e6;
-  double maxEnergy = 1e-2;
+  double maxEnergy = 1e-1;
  
   // Creating results directory
-  std::string baseDir = "true_results_transport_mocmaes0/";
+  std::string baseDir = "true_results_transport_mocmaes2/";
   char resDir[64];
   sprintf(resDir, "%s/sample%08lu", baseDir.c_str(), sampleId);
   std::filesystem::create_directories(resDir); 

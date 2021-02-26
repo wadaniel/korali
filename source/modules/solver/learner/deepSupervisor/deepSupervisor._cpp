@@ -111,15 +111,8 @@ void DeepSupervisor::initialize()
   // Resetting solver before using it
   _adamSolver->reset();
 
-  _currentLoss = 0.;
-  _l2Hyperparameter = 0.;
-
-  // Initialize statistics
-  if (_k->_currentGeneration == 0)
-  {
-    _minimumLoss = korali::Inf;
-    _suboptimalGenerationCount = 0;
-  }
+  _currentLoss = 0.0f;
+  _l2Hyperparameter = 0.0f;
 }
 
 void DeepSupervisor::runGeneration()
@@ -167,12 +160,6 @@ void DeepSupervisor::runGeneration()
 
     // Passing hyperparameter gradients through an ADAM update
     _adamSolver->processResult(_currentLoss, _trainingNeuralNetwork->_hyperparameterGradients);
-
-    // Updating best loss if better, or increasing suboptimal generation count
-    if (_currentLoss < _minimumLoss)
-      _minimumLoss = _currentLoss;
-    else
-      _suboptimalGenerationCount++;
 
     // Getting new set of hyperparameters from Adam
     _trainingNeuralNetwork->setHyperparameters(_adamSolver->_currentValue);
@@ -264,13 +251,8 @@ std::vector<std::vector<float>> DeepSupervisor::getDataGradients(const std::vect
 void DeepSupervisor::printGenerationAfter()
 {
   // Printing results so far
-  if (_lossFunction == "Mean Squared Error")
-  {
-    _k->_logger->logInfo("Normal", " + Training Loss: %.15f\n", _currentLoss);
-    _k->_logger->logInfo("Detailed", " + Suboptimal Generation Count: %lu\n", _suboptimalGenerationCount);
-  }
-  else if (_lossFunction == "Direct Gradient")
-    _k->_logger->logInfo("Normal", " + Gradient L2-Norm: %.15f\n", std::sqrt(_currentLoss));
+  if (_lossFunction == "Mean Squared Error") _k->_logger->logInfo("Normal", " + Training Loss: %.15f\n", _currentLoss);
+  if (_lossFunction == "Direct Gradient") _k->_logger->logInfo("Normal", " + Gradient L2-Norm: %.15f\n", std::sqrt(_currentLoss));
   _k->_logger->logInfo("Normal", " + Hyperparameter L2-Norm: %.15f\n", _l2Hyperparameter);
 }
 

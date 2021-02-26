@@ -53,20 +53,28 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
   if (currObsCount > maxPlotObservations): maxPlotObservations = currObsCount
   if (maxObservations): maxPlotObservations = int(maxObservations)
 
-  if (max(rewardHistory) > maxPlotReward): maxPlotReward = max(rewardHistory)
- 
+  if (min(rewardHistory) < minPlotReward): 
+   if (min(rewardHistory) > -math.inf):
+    minPlotReward = min(rewardHistory)
+  
+  if (max(rewardHistory) > maxPlotReward):
+   if (max(rewardHistory) < math.inf):
+    maxPlotReward = max(rewardHistory)
+
   trainingRewardThreshold = r[-1]["Problem"]["Training Reward Threshold"]
   testingRewardThreshold = r[-1]["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"]
  
-  if (trainingRewardThreshold != math.inf): 
+  if (trainingRewardThreshold != -math.inf and trainingRewardThreshold != math.inf): 
    if (trainingRewardThreshold > maxPlotReward): maxPlotReward = trainingRewardThreshold
 
-  if (testingRewardThreshold != math.inf): 
+  if (testingRewardThreshold != -math.inf and testingRewardThreshold != math.inf): 
    if (testingRewardThreshold > maxPlotReward): maxPlotReward = testingRewardThreshold
-     
-  if (min(rewardHistory) < minPlotReward): minPlotReward = min(rewardHistory)
-  if (trainingRewardThreshold < minPlotReward): minPlotReward = trainingRewardThreshold
-  if (testingRewardThreshold < minPlotReward): minPlotReward = testingRewardThreshold
+  
+  if (trainingRewardThreshold != -math.inf and trainingRewardThreshold != math.inf):   
+   if (trainingRewardThreshold < minPlotReward): minPlotReward = trainingRewardThreshold
+   
+  if (testingRewardThreshold != -math.inf and testingRewardThreshold != math.inf): 
+   if (testingRewardThreshold < minPlotReward): minPlotReward = testingRewardThreshold
  
   # Getting average cumulative reward statistics
   
@@ -97,7 +105,7 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
     if (colCurrIndex > 0.5): colCurrIndex = colCurrIndex + 0.1 
   
  ## Configuring common plotting features
- 
+
  if (minReward): minPlotReward = float(minReward)
  if (maxReward): maxPlotReward = float(maxReward)
  

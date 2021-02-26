@@ -243,6 +243,10 @@ class Agent : public Solver
    */
   double _sessionAgentAttendingTime;
 
+  double _sessionUpdateNeuralNetworkTime;
+  double _sessionGradientCalculationTime;
+  double _sessionGenerateMiniBatchTime;
+
   /****************************************************************************************************
    * Generation-wise Profiling Timers
    ***************************************************************************************************/
@@ -281,6 +285,10 @@ class Agent : public Solver
    * @brief [Profiling] Measures the time taken to update the attend the agent's state
    */
   double _generationAgentAttendingTime;
+
+  double _generationUpdateNeuralNetworkTime;
+  double _generationGradientCalculationTime;
+  double _generationGenerateMiniBatchTime;
 
   /****************************************************************************************************
    * Common Agent functions

@@ -21,7 +21,6 @@ int main(int argc, char *argv[])
   e["Problem"]["Environment Function"] = &runEnvironment;
   e["Problem"]["Training Reward Threshold"] = 1.5;
   e["Problem"]["Policy Testing Episodes"] = 20;
-  e["Problem"]["Actions Between Policy Updates"] = 1;
 
   //// Setting state variables
 

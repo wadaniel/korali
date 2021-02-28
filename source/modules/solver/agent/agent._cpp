@@ -457,32 +457,6 @@ void Agent::processEpisode(size_t episodeId, std::vector<knlohmann::json> &episo
   for (ssize_t e = startEpisodeId; e <= endEpisodeId; e++)
     _trainingAverageReward += _trainingRewardHistory[e];
   _trainingAverageReward /= (float)(endEpisodeId - startEpisodeId + 1);
-
-  /*********************************************************************
-   * Updating off-policy ratio
-   *********************************************************************/
-
-  size_t expCount = _experienceReplay.size();
-  size_t offPolicyCount = 0;
-
-// Count off-policy experiences
-#pragma omp parallel for reduction(+ \
-                                   : offPolicyCount)
-  for (size_t expId = 0; expId < expCount; expId++)
-  {
-    // Getting the last calculated value of the experience's importance weight. We can tolerate this approximation.
-    float expImportanceWeight = _experienceReplay[expId].importanceWeight;
-
-    // It is off policy if it is outside the [1/cutoff, cutoff] region
-    if ((expImportanceWeight < (1.0f / _experienceReplayOffPolicyCurrentCutoff)) ||
-        (expImportanceWeight > _experienceReplayOffPolicyCurrentCutoff)) offPolicyCount++;
-  }
-
-  // Calculating off policy ratio
-  _experienceReplayOffPolicyRatio = (float)offPolicyCount / (float)expCount;
-
-  // Now updating the off policy Cutoff
-  _experienceReplayOffPolicyCurrentCutoff = 1.0f + _experienceReplayOffPolicyCutoffScale / (1.0f + _experienceReplayOffPolicyAnnealingRate * (float)_policyUpdateCount);
 }
 
 void Agent::updateExperienceReplayProbabilities()
@@ -561,7 +535,9 @@ std::vector<size_t> Agent::generateMiniBatch(size_t miniBatchSize)
    * Updating experience's metadata
    *********************************************/
 
-#pragma omp parallel for schedule(guided)
+  size_t offPolicyCount = 0;
+
+  #pragma omp parallel for schedule(guided)
   for (size_t i = 0; i < miniBatchSize; i++)
   {
     auto expId = miniBatch[i];
@@ -593,7 +569,15 @@ std::vector<size_t> Agent::generateMiniBatch(size_t miniBatchSize)
       _experienceReplay[expId].importanceWeight = importanceWeight;
       _experienceReplay[expId].metadata["Current Policy"] = curPolicy;
       _experienceReplay[expId].isOnPolicy = (importanceWeight > (1.0f / _experienceReplayOffPolicyCurrentCutoff)) && (importanceWeight < _experienceReplayOffPolicyCurrentCutoff);
+      if (_experienceReplay[expId].isOnPolicy == false) offPolicyCount++;
     }
+
+    // Updating the off policy Ratio
+    float alpha = 0.01f; // ~100 updates to reach 63.2% of the target
+    _experienceReplayOffPolicyRatio = alpha * (float)offPolicyCount / (float)miniBatchSize + (1.0f - alpha) * _experienceReplayOffPolicyRatio;
+
+    // Updating the off policy Cutoff
+    _experienceReplayOffPolicyCurrentCutoff = 1.0f + _experienceReplayOffPolicyCutoffScale / (1.0f + _experienceReplayOffPolicyAnnealingRate * (float)_policyUpdateCount);
   }
 
   /**************************************************

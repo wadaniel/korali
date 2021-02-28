@@ -27,7 +27,7 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
  minPlotReward = +math.inf
 
  ## Creating colormap
- cmap = matplotlib.cm.get_cmap('coolwarm')
+ cmap = matplotlib.cm.get_cmap('brg')
  colCurrIndex = 0.0
 
  ## Plotting the individual experiment results
@@ -94,15 +94,12 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
   confIntervalHistory = np.array(confIntervalHistory)
 
   # Plotting common plot
-  ax.plot(cumulativeObsList, rewardHistory, 'x', markersize=1.3, color=cmap(colCurrIndex), alpha=0.2, zorder=0)
+  ax.plot(cumulativeObsList, rewardHistory, 'x', markersize=1.3, color=cmap(colCurrIndex), alpha=0.5, zorder=0)
   ax.plot(cumulativeObsList, meanHistory, '-', label=str(averageDepth) + '-Episode Average (' + dirs[resId] + ')', color=cmap(colCurrIndex), zorder=1)
   
   # Updating color index
   if (len(results) > 1):
    colCurrIndex = colCurrIndex + (1.0 / float(len(results)-1)) - 0.0001
-   if (colCurrIndex > 0.4 and colCurrIndex < 0.6):
-    if (colCurrIndex < 0.5): colCurrIndex = colCurrIndex - 0.1
-    if (colCurrIndex > 0.5): colCurrIndex = colCurrIndex + 0.1 
   
  ## Configuring common plotting features
 
@@ -210,7 +207,7 @@ if __name__ == '__main__':
  parser.add_argument(
       '--averageDepth',
       help='Specifies the depth for plotting average',
-      default=1000,
+      default=300,
       required=False)
  parser.add_argument(
       '--test',

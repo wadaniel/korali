@@ -537,7 +537,7 @@ std::vector<size_t> Agent::generateMiniBatch(size_t miniBatchSize)
 
   size_t offPolicyCount = 0;
 
-  #pragma omp parallel for schedule(guided)
+#pragma omp parallel for schedule(guided)
   for (size_t i = 0; i < miniBatchSize; i++)
   {
     auto expId = miniBatch[i];

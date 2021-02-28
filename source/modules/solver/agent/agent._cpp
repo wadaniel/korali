@@ -90,7 +90,6 @@ void Agent::initialize()
   _sessionGeneration = 1;
   _sessionPolicyUpdateCount = 0;
 
-
   // Calculating how many more experiences do we need in this session to reach the starting size
   _sessionExperiencesUntilStartSize = _experienceReplay.size() > _experienceReplayStartSize ? 0 : _experienceReplayStartSize - _experienceReplay.size();
 
@@ -152,7 +151,7 @@ void Agent::trainingGeneration()
   _generationPolicyUpdateTime = 0.0;
   _generationAgentAttendingTime = 0.0;
   _generationUpdateNeuralNetworkTime = 0.0;
-  _generationGradientCalculationTime  = 0.0;
+  _generationGradientCalculationTime = 0.0;
   _generationGenerateMiniBatchTime = 0.0;
 
   setTrainingState(_trainingState);
@@ -467,7 +466,8 @@ void Agent::processEpisode(size_t episodeId, std::vector<knlohmann::json> &episo
   size_t offPolicyCount = 0;
 
 // Count off-policy experiences
-#pragma omp parallel for reduction(+ : offPolicyCount)
+#pragma omp parallel for reduction(+ \
+                                   : offPolicyCount)
   for (size_t expId = 0; expId < expCount; expId++)
   {
     // Getting the last calculated value of the experience's importance weight. We can tolerate this approximation.
@@ -561,15 +561,15 @@ std::vector<size_t> Agent::generateMiniBatch(size_t miniBatchSize)
    * Updating experience's metadata
    *********************************************/
 
-  #pragma omp parallel for schedule(guided)
+#pragma omp parallel for schedule(guided)
   for (size_t i = 0; i < miniBatchSize; i++)
   {
     auto expId = miniBatch[i];
 
     // Get state, action, mean, Sigma for this experience
     auto expStateSequence = getStateTimeSequence(expId);
-    const auto& expAction = _experienceReplay[expId].action;
-    auto& expPolicy = _experienceReplay[expId].metadata["Experience Policy"];
+    const auto &expAction = _experienceReplay[expId].action;
+    auto &expPolicy = _experienceReplay[expId].metadata["Experience Policy"];
 
     // Running policy for the current state
     auto curPolicy = runPolicy(expStateSequence);
@@ -585,14 +585,14 @@ std::vector<size_t> Agent::generateMiniBatch(size_t miniBatchSize)
     if (_experienceReplay[expId].termination == e_truncated)
       truncatedV = stateValueFunction(getTruncatedStateTimeSequence(expId));
 
-    // Store computed information for use in replay memory.
-    #pragma omp critical
+// Store computed information for use in replay memory.
+#pragma omp critical
     {
-     _experienceReplay[expId].stateValue = V;
-     if (_experienceReplay[expId].termination == e_truncated) _experienceReplay[expId].truncatedStateValue = truncatedV;
-     _experienceReplay[expId].importanceWeight = importanceWeight;
-     _experienceReplay[expId].metadata["Current Policy"] = curPolicy;
-     _experienceReplay[expId].isOnPolicy = (importanceWeight > (1.0f / _experienceReplayOffPolicyCurrentCutoff)) && (importanceWeight < _experienceReplayOffPolicyCurrentCutoff);
+      _experienceReplay[expId].stateValue = V;
+      if (_experienceReplay[expId].termination == e_truncated) _experienceReplay[expId].truncatedStateValue = truncatedV;
+      _experienceReplay[expId].importanceWeight = importanceWeight;
+      _experienceReplay[expId].metadata["Current Policy"] = curPolicy;
+      _experienceReplay[expId].isOnPolicy = (importanceWeight > (1.0f / _experienceReplayOffPolicyCurrentCutoff)) && (importanceWeight < _experienceReplayOffPolicyCurrentCutoff);
     }
   }
 
@@ -606,9 +606,9 @@ std::vector<size_t> Agent::generateMiniBatch(size_t miniBatchSize)
 
   for (size_t i = 0; i < miniBatchSize; i++)
   {
-    const size_t& experienceId = miniBatch[i];
-    const size_t& episodeId = _experienceReplay[experienceId].episodeId;
-    const size_t& episodePos = _experienceReplay[experienceId].episodePos;
+    const size_t &experienceId = miniBatch[i];
+    const size_t &episodeId = _experienceReplay[experienceId].episodeId;
+    const size_t &episodePos = _experienceReplay[experienceId].episodePos;
     const size_t curMaxPosition = episodeMaxExperienceAge.find(episodeId) == episodeMaxExperienceAge.end() ? 0 : episodeMaxExperienceAge[episodeId];
 
     // If this is a new oldest experience in the episode, store it's position and id
@@ -623,8 +623,8 @@ std::vector<size_t> Agent::generateMiniBatch(size_t miniBatchSize)
   std::vector<size_t> experienceRetraceIds;
   for (const auto &episode : episodeMaxExperienceId) experienceRetraceIds.push_back(episode.second);
 
- // Running all experiences in parallel
-  #pragma omp parallel for schedule(guided)
+    // Running all experiences in parallel
+#pragma omp parallel for schedule(guided)
   for (size_t i = 0; i < experienceRetraceIds.size(); i++) retraceFunction(experienceRetraceIds[i]);
 
   // Returning generated minibatch
@@ -678,15 +678,15 @@ float Agent::retraceFunction(size_t expId)
   for (ssize_t curId = endId; curId >= startId; curId--)
   {
     // Getting current reward, action, and state
-    const auto& curReward = _experienceReplay[curId].reward;
+    const auto &curReward = _experienceReplay[curId].reward;
     auto expStateSequence = getStateTimeSequence(curId);
-    const auto& expAction = _experienceReplay[curId].action;
+    const auto &expAction = _experienceReplay[curId].action;
 
     // Calculating state value function
-    const float& curV = _experienceReplay[curId].stateValue;
+    const float &curV = _experienceReplay[curId].stateValue;
 
     // Calculating importance weight
-    const float& importanceWeight = _experienceReplay[curId].importanceWeight;
+    const float &importanceWeight = _experienceReplay[curId].importanceWeight;
 
     // Truncate importance weight
     const float truncatedImportanceWeight = std::min(1.0f, importanceWeight);

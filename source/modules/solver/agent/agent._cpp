@@ -609,7 +609,7 @@ std::vector<size_t> Agent::generateMiniBatch(size_t miniBatchSize)
     const size_t& experienceId = miniBatch[i];
     const size_t& episodeId = _experienceReplay[experienceId].episodeId;
     const size_t& episodePos = _experienceReplay[experienceId].episodePos;
-    connt size_t curMaxPosition = episodeMaxExperienceAge.find(episodeId) == episodeMaxExperienceAge.end() ? 0 : episodeMaxExperienceAge[episodeId];
+    const size_t curMaxPosition = episodeMaxExperienceAge.find(episodeId) == episodeMaxExperienceAge.end() ? 0 : episodeMaxExperienceAge[episodeId];
 
     // If this is a new oldest experience in the episode, store it's position and id
     if (episodePos >= curMaxPosition)

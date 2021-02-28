@@ -561,7 +561,7 @@ std::vector<size_t> Agent::generateMiniBatch(size_t miniBatchSize)
    * Updating experience's metadata
    *********************************************/
 
-#pragma omp parallel for
+  #pragma omp parallel for schedule(guided)
   for (size_t i = 0; i < miniBatchSize; i++)
   {
     auto expId = miniBatch[i];
@@ -624,7 +624,7 @@ std::vector<size_t> Agent::generateMiniBatch(size_t miniBatchSize)
   for (const auto &episode : episodeMaxExperienceId) experienceRetraceIds.push_back(episode.second);
 
  // Running all experiences in parallel
-  #pragma omp parallel for schedule(dynamic, 1)
+  #pragma omp parallel for schedule(guided)
   for (size_t i = 0; i < experienceRetraceIds.size(); i++) retraceFunction(experienceRetraceIds[i]);
 
   // Returning generated minibatch

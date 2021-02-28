@@ -123,7 +123,7 @@ void VRACER::trainPolicy()
 
   std::fill(_statisticsAverageActionSigmas.begin(), _statisticsAverageActionSigmas.end(), 0.0);
 
-#pragma omp parallel for schedule(dynamic, 1)
+#pragma omp parallel for schedule(guided)
   for (size_t b = 0; b < _miniBatchSize; b++)
   {
     // Getting index of current experiment
@@ -131,13 +131,13 @@ void VRACER::trainPolicy()
 
     // Get state, action and policy for this experience
     auto expStateSequence = getStateTimeSequence(expId);
-    auto expAction = _experienceReplay[expId].action;
-    auto expPolicy = _experienceReplay[expId].metadata["Experience Policy"];
+    const auto& expAction = _experienceReplay[expId].action;
+    auto& expPolicy = _experienceReplay[expId].metadata["Experience Policy"];
 
     // Gathering metadata
-    float V = _experienceReplay[expId].stateValue;
-    auto curPolicy = _experienceReplay[expId].metadata["Current Policy"];
-    float expVtbc = _experienceReplay[expId].retraceValue;
+    const float& V = _experienceReplay[expId].stateValue;
+    auto& curPolicy = _experienceReplay[expId].metadata["Current Policy"];
+    const float& expVtbc = _experienceReplay[expId].retraceValue;
 
     /******************************************************
     * Gradient calculation

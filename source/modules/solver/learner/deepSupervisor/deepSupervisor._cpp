@@ -70,15 +70,17 @@ void DeepSupervisor::initialize()
 
   // Creating inference neural networks (one per thread)
   _inferenceNeuralNetworks.resize(_maxThreads);
-  for (size_t i = 0; i < _maxThreads; i++)
+
+  #pragma omp parallel
   {
+    size_t curThread = omp_get_thread_num();
     auto inferenceNeuralNetworkConfig = neuralNetworkConfig;
     inferenceNeuralNetworkConfig["Batch Size"] = _problem->_inferenceBatchSize;
     inferenceNeuralNetworkConfig["Mode"] = "Training";
-    _inferenceNeuralNetworks[i] = dynamic_cast<NeuralNetwork *>(getModule(inferenceNeuralNetworkConfig, _k));
-    _inferenceNeuralNetworks[i]->applyModuleDefaults(inferenceNeuralNetworkConfig);
-    _inferenceNeuralNetworks[i]->setConfiguration(inferenceNeuralNetworkConfig);
-    _inferenceNeuralNetworks[i]->initialize();
+    _inferenceNeuralNetworks[curThread] = dynamic_cast<NeuralNetwork *>(getModule(inferenceNeuralNetworkConfig, _k));
+    _inferenceNeuralNetworks[curThread]->applyModuleDefaults(inferenceNeuralNetworkConfig);
+    _inferenceNeuralNetworks[curThread]->setConfiguration(inferenceNeuralNetworkConfig);
+    _inferenceNeuralNetworks[curThread]->initialize();
   }
 
   /*****************************************************************
@@ -92,8 +94,11 @@ void DeepSupervisor::initialize()
   _trainingNeuralNetwork->setHyperparameters(_hyperparameters);
 
   // Copying hyperparameters and normalization parameters from training to evaluation
-  for (size_t i = 0; i < _maxThreads; i++)
-    _inferenceNeuralNetworks[i]->setHyperparameters(_hyperparameters);
+  #pragma omp parallel
+  {
+    size_t curThread = omp_get_thread_num();
+    _inferenceNeuralNetworks[curThread]->setHyperparameters(_hyperparameters);
+  }
 
   /*****************************************************************
   * Setting up weight and bias optimization experiment
@@ -167,8 +172,12 @@ void DeepSupervisor::runGeneration()
 
   // Copying hyperparameters and normalization parameters from training to evaluation
   _hyperparameters = _trainingNeuralNetwork->getHyperparameters();
-  for (size_t i = 0; i < _maxThreads; i++)
-    _inferenceNeuralNetworks[i]->setHyperparameters(_hyperparameters);
+
+  #pragma omp parallel
+  {
+   size_t curThread = omp_get_thread_num();
+    _inferenceNeuralNetworks[curThread]->setHyperparameters(_hyperparameters);
+  }
 
   _l2Hyperparameter = 0.;
   for (float param : _hyperparameters) _l2Hyperparameter += param * param;

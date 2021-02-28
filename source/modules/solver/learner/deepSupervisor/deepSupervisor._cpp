@@ -71,7 +71,7 @@ void DeepSupervisor::initialize()
   // Creating inference neural networks (one per thread)
   _inferenceNeuralNetworks.resize(_maxThreads);
 
-  #pragma omp parallel
+#pragma omp parallel
   {
     size_t curThread = omp_get_thread_num();
     auto inferenceNeuralNetworkConfig = neuralNetworkConfig;
@@ -93,8 +93,8 @@ void DeepSupervisor::initialize()
   // Creating and setting hyperparameter structures
   _trainingNeuralNetwork->setHyperparameters(_hyperparameters);
 
-  // Copying hyperparameters and normalization parameters from training to evaluation
-  #pragma omp parallel
+// Copying hyperparameters and normalization parameters from training to evaluation
+#pragma omp parallel
   {
     size_t curThread = omp_get_thread_num();
     _inferenceNeuralNetworks[curThread]->setHyperparameters(_hyperparameters);
@@ -173,9 +173,9 @@ void DeepSupervisor::runGeneration()
   // Copying hyperparameters and normalization parameters from training to evaluation
   _hyperparameters = _trainingNeuralNetwork->getHyperparameters();
 
-  #pragma omp parallel
+#pragma omp parallel
   {
-   size_t curThread = omp_get_thread_num();
+    size_t curThread = omp_get_thread_num();
     _inferenceNeuralNetworks[curThread]->setHyperparameters(_hyperparameters);
   }
 

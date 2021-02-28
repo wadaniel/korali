@@ -104,8 +104,8 @@ void VRACER::trainPolicy()
   // Creating a minibatch of starting experiences for the trajectories update
   auto beginTime = std::chrono::steady_clock::now(); // Profiling
   auto miniBatchIndexes = generateMiniBatch(_miniBatchSize);
-  auto endTime = std::chrono::steady_clock::now();                                                             // Profiling
-  _generationGenerateMiniBatchTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
+  auto endTime = std::chrono::steady_clock::now();                                                                       // Profiling
+  _generationGenerateMiniBatchTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
 
   // Fill Minibatch
   beginTime = std::chrono::steady_clock::now(); // Profiling
@@ -131,13 +131,13 @@ void VRACER::trainPolicy()
 
     // Get state, action and policy for this experience
     auto expStateSequence = getStateTimeSequence(expId);
-    const auto& expAction = _experienceReplay[expId].action;
-    auto& expPolicy = _experienceReplay[expId].metadata["Experience Policy"];
+    const auto &expAction = _experienceReplay[expId].action;
+    auto &expPolicy = _experienceReplay[expId].metadata["Experience Policy"];
 
     // Gathering metadata
-    const float& V = _experienceReplay[expId].stateValue;
-    auto& curPolicy = _experienceReplay[expId].metadata["Current Policy"];
-    const float& expVtbc = _experienceReplay[expId].retraceValue;
+    const float &V = _experienceReplay[expId].stateValue;
+    auto &curPolicy = _experienceReplay[expId].metadata["Current Policy"];
+    const float &expVtbc = _experienceReplay[expId].retraceValue;
 
     /******************************************************
     * Gradient calculation
@@ -234,8 +234,8 @@ void VRACER::trainPolicy()
   // Compute average action stadard deviation
   for (size_t j = 0; j < _problem->_actionVectorSize; j++) _statisticsAverageActionSigmas[j] /= (float)_miniBatchSize;
 
-  endTime = std::chrono::steady_clock::now();                                                             // Profiling
-  _generationGradientCalculationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
+  endTime = std::chrono::steady_clock::now();                                                                              // Profiling
+  _generationGradientCalculationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
 
   beginTime = std::chrono::steady_clock::now(); // Profiling
   // Updating learning rate for critic/policy learner guided by REFER
@@ -244,8 +244,8 @@ void VRACER::trainPolicy()
   // Running one generation of the optimization method with the given mini-batch
   _criticPolicyLearner->runGeneration();
 
-  endTime = std::chrono::steady_clock::now();                                                             // Profiling
-  _generationUpdateNeuralNetworkTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
+  endTime = std::chrono::steady_clock::now();                                                                              // Profiling
+  _generationUpdateNeuralNetworkTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
 }
 
 float VRACER::stateValueFunction(const std::vector<std::vector<float>> &state)

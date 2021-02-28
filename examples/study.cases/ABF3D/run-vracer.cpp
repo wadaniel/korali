@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
 
   e["Problem"]["Type"] = "Reinforcement Learning / Continuous";
   e["Problem"]["Environment Function"] = &runEnvironment;
-  e["Problem"]["Training Reward Threshold"] = 1.5;
+  e["Problem"]["Training Reward Threshold"] = 1.6;
   e["Problem"]["Policy Testing Episodes"] = 20;
 
   //// Setting state variables
@@ -102,7 +102,7 @@ int main(int argc, char *argv[])
 
   ////// Defining Termination Criteria
 
-  e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 1.5;
+  e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 1.6;
 
   ////// Setting file output configuration
 

@@ -243,6 +243,21 @@ class Agent : public Solver
    */
   double _sessionAgentAttendingTime;
 
+  /**
+   * @brief [Profiling] Measures the NN update times
+   */
+  double _sessionUpdateNeuralNetworkTime;
+
+  /**
+   * @brief [Profiling] Measures gradient calculation times
+   */
+  double _sessionGradientCalculationTime;
+
+  /**
+  * @brief [Profiling] Measures mini batch generation times
+  */
+  double _sessionGenerateMiniBatchTime;
+
   /****************************************************************************************************
    * Generation-wise Profiling Timers
    ***************************************************************************************************/
@@ -281,6 +296,21 @@ class Agent : public Solver
    * @brief [Profiling] Measures the time taken to update the attend the agent's state
    */
   double _generationAgentAttendingTime;
+
+  /**
+   * @brief [Profiling] Measures the NN update times
+   */
+  double _generationUpdateNeuralNetworkTime;
+
+  /**
+   * @brief [Profiling] Measures gradient calculation times
+   */
+  double _generationGradientCalculationTime;
+
+  /**
+  * @brief [Profiling] Measures mini batch generation times
+  */
+  double _generationGenerateMiniBatchTime;
 
   /****************************************************************************************************
    * Common Agent functions
@@ -361,7 +391,7 @@ class Agent : public Solver
    * @param oldPolicy The old policy, the one used for take the action in the first place
    * @return The importance weight
    */
-  virtual float calculateImportanceWeight(const std::vector<float> &action, knlohmann::json &curPolicy, knlohmann::json &oldPolicy) = 0;
+  virtual float calculateImportanceWeight(const std::vector<float> &action, const knlohmann::json &curPolicy, const knlohmann::json &oldPolicy) = 0;
 
   /**
    * @brief Returns the retrace value for the given experience

@@ -57,6 +57,9 @@ void Agent::initialize()
     _experienceReplayOffPolicyRatio = 0.0f;
     _experienceReplayOffPolicyCurrentCutoff = _experienceReplayOffPolicyCutoffScale + 1.0f;
     _currentLearningRate = _learningRate;
+
+    _rewardRescalingMean = 0.0;
+    _rewardRescalingSdev = 1.0;
   }
 
   // If this continues a previous training run, deserialize previous input experience replay
@@ -156,6 +159,8 @@ void Agent::trainingGeneration()
 
   setTrainingState(_trainingState);
 
+  if (_k->_currentGeneration % _rewardRescalingFrequency == 0) rescaleRewards();
+  
   // Running until all _agents have finished
   while (_sessionEpisodeCount < _episodesPerGeneration * _sessionGeneration)
   {
@@ -259,6 +264,36 @@ void Agent::testingGeneration()
 
   for (size_t agentId = 0; agentId < _testingSampleIds.size(); agentId++)
     _testingReward[agentId] = testingAgents[agentId]["Testing Reward"].get<float>();
+}
+
+void Agent::rescaleRewards()
+{
+    
+    float sumReward = 0.0;
+    float sumReward2 = 0.0;
+
+    for (size_t i = 0; i < _experienceReplay.size(); i++)
+    {
+      float reward = _experienceReplay[i].reward  * _rewardRescalingSdev + _rewardRescalingMean;
+      sumReward += reward;
+      sumReward2 += reward*reward;
+    }
+
+    float newRewardRescalingMean = sumReward / (float)_experienceReplay.size();
+    float newRewardRescalingSdev = std::sqrt(sumReward2 / (float)_experienceReplay.size() - newRewardRescalingMean * newRewardRescalingMean + 1e-9);
+
+    for (size_t i = 0; i < _experienceReplay.size(); i++)
+    {
+      _experienceReplay[i].reward *= _rewardRescalingSdev;
+      _experienceReplay[i].reward += _rewardRescalingMean;
+      _experienceReplay[i].reward -= newRewardRescalingMean;
+      _experienceReplay[i].reward /= newRewardRescalingSdev;
+    }
+
+    _rewardRescalingMean = newRewardRescalingMean;
+    _rewardRescalingSdev = newRewardRescalingSdev;
+    printf( "new reward mean and sdev %f %f\n", _rewardRescalingMean, _rewardRescalingSdev);
+
 }
 
 void Agent::attendAgent(size_t agentId)
@@ -372,7 +407,9 @@ void Agent::processEpisode(size_t episodeId, std::vector<knlohmann::json> &episo
     // Getting state, action, reward, and whether it's terminal
     e.state = episode[expId]["State"].get<std::vector<float>>();
     e.action = episode[expId]["Action"].get<std::vector<float>>();
-    e.reward = episode[expId]["Reward"].get<float>();
+    
+    float unscaledReward = episode[expId]["Reward"].get<float>();
+    e.reward = (unscaledReward - _rewardRescalingMean) / _rewardRescalingSdev;
 
     if (episode[expId]["Termination"] == "Non Terminal") e.termination = e_nonTerminal;
     if (episode[expId]["Termination"] == "Terminal") e.termination = e_terminal;
@@ -394,7 +431,7 @@ void Agent::processEpisode(size_t episodeId, std::vector<knlohmann::json> &episo
     e.episodePos = expId;
 
     // Keeping statistics
-    cumulativeReward += e.reward;
+    cumulativeReward += unscaledReward;
 
     // Scale reward
     _experienceReplay.add(e);

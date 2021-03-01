@@ -425,6 +425,11 @@ class Agent : public Solver
    * @brief Runs a generation when running in testing mode
    */
   void testingGeneration();
+ 
+  /**
+   * @brief Rescales rewards to have a zero mean and unit variance
+   */
+  void rescaleRewards();
 
   /****************************************************************************************************
    * Virtual functions (responsibilities) for learning algorithms to fulfill

@@ -60,6 +60,7 @@ void Agent::initialize()
 
     _rewardRescalingMean = 0.0;
     _rewardRescalingSdev = 1.0;
+    _rewardRescalingCount = 0;
   }
 
   // If this continues a previous training run, deserialize previous input experience replay
@@ -159,8 +160,6 @@ void Agent::trainingGeneration()
 
   setTrainingState(_trainingState);
 
-  if (_k->_currentGeneration % _rewardRescalingFrequency == 0) rescaleRewards();
-  
   // Running until all _agents have finished
   while (_sessionEpisodeCount < _episodesPerGeneration * _sessionGeneration)
   {
@@ -186,8 +185,15 @@ void Agent::trainingGeneration()
         attendAgent(agentId);
 
     // Perform optimization steps on the critic/policy, if reached the minimum replay memory size
-    if (_sessionExperienceCount > _sessionExperiencesUntilStartSize)
+    if (_experienceCount >= _experienceReplayStartSize)
     {
+      
+      // If we accumulated enough experiences between rescaling updates, we rescale rewards again
+      if (_experienceCount >= _experiencesBetweenRewardRescaling * _rewardRescalingCount + _experienceReplayStartSize)
+      {
+        rescaleRewards();
+      }
+
       // If we accumulated enough experiences between updates in this session, update now
       while (_sessionExperienceCount > (_experiencesBetweenPolicyUpdates * _sessionPolicyUpdateCount + _sessionExperiencesUntilStartSize))
       {
@@ -292,8 +298,9 @@ void Agent::rescaleRewards()
 
     _rewardRescalingMean = newRewardRescalingMean;
     _rewardRescalingSdev = newRewardRescalingSdev;
+    _rewardRescalingCount++;
+    
     printf( "new reward mean and sdev %f %f\n", _rewardRescalingMean, _rewardRescalingSdev);
-
 }
 
 void Agent::attendAgent(size_t agentId)

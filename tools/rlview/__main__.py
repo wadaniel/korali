@@ -16,7 +16,7 @@ from scipy.signal import savgol_filter
 
 ##################### Plotting Reward History
 
-def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, maxObservations):
+def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, maxObservations, showSamples):
 
  confidenceLevel = 2.326 # 98%
 
@@ -86,7 +86,8 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
   confIntervalHistory = np.array(confIntervalHistory)
 
   # Plotting common plot
-  ax.plot(cumulativeObsList, rewardHistory, 'x', markersize=1.3, color=cmap(colCurrIndex), alpha=0.5, zorder=0)
+  if showSamples:
+    ax.plot(cumulativeObsList, rewardHistory, 'x', markersize=1.3, color=cmap(colCurrIndex), alpha=0.5, zorder=0)
   ax.plot(cumulativeObsList, meanHistory, '-', label=str(averageDepth) + '-Episode Average (' + dirs[resId] + ')', color=cmap(colCurrIndex), zorder=1)
   
   # Updating color index
@@ -202,6 +203,12 @@ if __name__ == '__main__':
       default=300,
       required=False)
  parser.add_argument(
+      '--showSamples',
+      help='Option to plot episode returns or not.',
+      type=lambda arg: (str(arg).lower() != 'false'),
+      default=True,
+      required=False)
+ parser.add_argument(
       '--test',
       help='Run without graphics (for testing purpose)',
       action='store_true',
@@ -229,7 +236,7 @@ if __name__ == '__main__':
      
  ### Creating plots
      
- plotRewardHistory(ax1, args.dir, results, args.minReward, args.maxReward, args.averageDepth, args.maxObservations)
+ plotRewardHistory(ax1, args.dir, results, args.minReward, args.maxReward, args.averageDepth, args.maxObservations, args.showSamples)
  plt.draw()
  
  ### Printing live results if update frequency > 0

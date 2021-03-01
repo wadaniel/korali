@@ -667,8 +667,6 @@ float Agent::retraceFunction(size_t expId)
 
     // Getting current reward, action, and state
     const auto curReward = exp.reward;
-    auto expStateSequence = getStateTimeSequence(curId);
-    const auto &expAction = exp.action;
 
     // Calculating state value function
     const float curV = exp.stateValue;

@@ -391,7 +391,7 @@ class Agent : public Solver
    * @param oldPolicy The old policy, the one used for take the action in the first place
    * @return The importance weight
    */
-  virtual float calculateImportanceWeight(const std::vector<float> &action, knlohmann::json &curPolicy, knlohmann::json &oldPolicy) = 0;
+  virtual float calculateImportanceWeight(const std::vector<float> &action, const knlohmann::json &curPolicy, const knlohmann::json &oldPolicy) = 0;
 
   /**
    * @brief Returns the retrace value for the given experience

@@ -545,7 +545,7 @@ std::vector<size_t> Agent::generateMiniBatch(size_t miniBatchSize)
     // Get state, action, mean, Sigma for this experience
     auto expStateSequence = getStateTimeSequence(expId);
     const auto &expAction = _experienceReplay[expId].action;
-    auto &expPolicy = _experienceReplay[expId].metadata["Experience Policy"];
+    const auto &expPolicy = _experienceReplay[expId].metadata["Experience Policy"];
 
     // Running policy for the current state
     auto curPolicy = runPolicy(expStateSequence);
@@ -590,9 +590,11 @@ std::vector<size_t> Agent::generateMiniBatch(size_t miniBatchSize)
 
   for (size_t i = 0; i < miniBatchSize; i++)
   {
-    const size_t &experienceId = miniBatch[i];
-    const size_t &episodeId = _experienceReplay[experienceId].episodeId;
-    const size_t &episodePos = _experienceReplay[experienceId].episodePos;
+    const size_t experienceId = miniBatch[i];
+    auto &exp = _experienceReplay[experienceId];
+
+    const size_t episodeId = exp.episodeId;
+    const size_t episodePos = exp.episodePos;
     const size_t curMaxPosition = episodeMaxExperienceAge.find(episodeId) == episodeMaxExperienceAge.end() ? 0 : episodeMaxExperienceAge[episodeId];
 
     // If this is a new oldest experience in the episode, store it's position and id
@@ -661,16 +663,18 @@ float Agent::retraceFunction(size_t expId)
   // Now iterating backwards to calculate the rest of vTbc
   for (ssize_t curId = endId; curId >= startId; curId--)
   {
+    auto &exp = _experienceReplay[curId];
+
     // Getting current reward, action, and state
-    const auto &curReward = _experienceReplay[curId].reward;
+    const auto curReward = exp.reward;
     auto expStateSequence = getStateTimeSequence(curId);
-    const auto &expAction = _experienceReplay[curId].action;
+    const auto &expAction = exp.action;
 
     // Calculating state value function
-    const float &curV = _experienceReplay[curId].stateValue;
+    const float curV = exp.stateValue;
 
     // Calculating importance weight
-    const float &importanceWeight = _experienceReplay[curId].importanceWeight;
+    const float importanceWeight = exp.importanceWeight;
 
     // Truncate importance weight
     const float truncatedImportanceWeight = std::min(1.0f, importanceWeight);
@@ -679,7 +683,7 @@ float Agent::retraceFunction(size_t expId)
     retV = curV + truncatedImportanceWeight * (curReward + _discountFactor * retV - curV);
 
     // Storing retrace value into the experience's cache
-    _experienceReplay[curId].retraceValue = retV;
+    exp.retraceValue = retV;
   }
 
   // Returning retrace value

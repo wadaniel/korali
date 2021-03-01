@@ -2,7 +2,7 @@
 import os
 import sys
 sys.path.append('./_model')
-from single_env import *
+from double_env import *
 
 ####### Defining Korali Problem
 
@@ -15,27 +15,32 @@ e = korali.Experiment()
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = env
 e["Problem"]["Training Reward Threshold"] = 750
-e["Problem"]["Policy Testing Episodes"] = 1
-e["Problem"]["Actions Between Policy Updates"] = 500
+e["Problem"]["Policy Testing Episodes"] = 10
+e["Problem"]["Actions Between Policy Updates"] = 1
 
 e["Variables"][0]["Name"] = "Cart Position"
-e["Variables"][1]["Name"] = "Angle 1"
-e["Variables"][2]["Name"] = "Car Velocity"
+e["Variables"][1]["Name"] = "Cart Velocity"
+e["Variables"][2]["Name"] = "Angle 1"
 e["Variables"][3]["Name"] = "Angular Velocity 1"
-e["Variables"][4]["Name"] = "Height Proxy"
+e["Variables"][4]["Name"] = "Angle 2"
+e["Variables"][5]["Name"] = "Angular Velocity 2"
+e["Variables"][6]["Name"] = "Height Proxy"
 
-e["Variables"][5]["Name"] = "Force"
-e["Variables"][5]["Type"] = "Action"
-e["Variables"][5]["Lower Bound"] = -20.0
-e["Variables"][5]["Upper Bound"] = +20.0
-e["Variables"][5]["Initial Exploration Noise"] = 2.00
+e["Variables"][7]["Name"] = "Force"
+e["Variables"][7]["Type"] = "Action"
+e["Variables"][7]["Lower Bound"] = -20.0
+e["Variables"][7]["Upper Bound"] = +20.0
+e["Variables"][7]["Initial Exploration Noise"] = 2.00
 
 ### Defining Agent Configuration 
 
-e["Solver"]["Type"] = "Agent / Continuous / GFPT"
+e["Solver"]["Type"] = "Agent / Continuous / DDPG"
 e["Solver"]["Mode"] = "Training"
 e["Solver"]["Episodes Per Generation"] = 1
 e["Solver"]["Experiences Between Policy Updates"] = 10
+e["Solver"]["Learning Rate"] = 0.001
+e["Solver"]["Policy"]["Learning Rate Scale"] = 0.1
+e["Solver"]["Policy"]["Adoption Rate"] = 0.1
 
 ### Defining the configuration of replay memory
 
@@ -53,12 +58,6 @@ e["Solver"]["Experience Replay"]["Off Policy"]["REFER Beta"] = 0.3
 
 e["Solver"]["Mini Batch Size"] = 128
 e["Solver"]["Mini Batch Strategy"] = "Uniform"
- 
-### Defining Critic and Policy Configuration
-
-e["Solver"]["Learning Rate"] = 0.001
-e["Solver"]["Policy"]["Target Accuracy"] = 0.000001
-e["Solver"]["Policy"]["Optimization Candidates"] = 64
 
 ### Configuring the neural network and its hidden layers
 

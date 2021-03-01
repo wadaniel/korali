@@ -76,8 +76,8 @@ void DQN::trainPolicy()
     // Get state, action, and action probabilities from experience
     /*
     auto expStateSequence = getStateTimeSequence(expId);
-    auto expPvals = _experienceReplay[expId].policy["Action Probabilities"].get<std::vector<float>>();
-    size_t expActionIdx = _experienceReplay[expId].policy["Action Index"].get<size_t>();
+    auto expPvals = _experienceReplay[expId].metadata["Action Probabilities"].get<std::vector<float>>();
+    size_t expActionIdx = _experienceReplay[expId].metadata["Action Index"].get<size_t>();
 
     // Forward the neural network for this state to get current action probabilities
     auto policy = runPolicy(expStateSequence);
@@ -85,7 +85,7 @@ void DQN::trainPolicy()
   
     // Compute importance weight
     float importanceWeight = calculateImportanceWeight(expActionIdx, curPvals, expPvals);
-    _experienceReplay[expId].policy["Importance Weight"] = importanceWeight;
+    _experienceReplay[expId].importanceWeight = importanceWeight;
     */
 
     // Qhat = max_a(qhat) with s' fixed
@@ -152,11 +152,11 @@ void DQN::trainPolicy()
     cumulativeQStarSquared += qStar * qStar;
   }
 
-  // Running one generation of the optimization method with the given mini-batch
-  _criticPolicyLearner->runGeneration();
-
   // Updating learning rate for critic/policy learner guided by REFER
   _criticPolicyLearner->_learningRate = _currentLearningRate;
+
+  // Running one generation of the optimization method with the given mini-batch
+  _criticPolicyLearner->runGeneration();
 
   // Keeping statistics
   _statisticsAverageQStar = (float)cumulativeQStar / (float)_miniBatchSize;

@@ -43,8 +43,15 @@ class DeepSupervisor : public Learner
    */
   std::vector<NeuralNetwork *> _inferenceNeuralNetworks;
 
-  std::vector<std::vector<float>> getEvaluation(const std::vector<std::vector<std::vector<float>>> &input) override;
+  /**
+    * @brief Calculates the gradients with respect to the inputs (data), given an input and output gradients
+    * @param input The inputs from which to infer outputs. Format: BxTxIC (B: Batch Size, T: Time steps, IC: Input channels)
+    * @param outputGradients The output gradients. Format: BxOC (B: Batch Size, OC: Input channels)
+    * @return The inferred batch input gradients Format: BxIC (B: Batch Size, IC: Output channels)
+   */
+  std::vector<std::vector<float>> getDataGradients(const std::vector<std::vector<std::vector<float>>> &input, const std::vector<std::vector<float>> &outputGradients);
 
+  std::vector<std::vector<float>> getEvaluation(const std::vector<std::vector<std::vector<float>>> &input) override;
   std::vector<float> getTrainingHyperparameters() override;
   void setTrainingHyperparameters(const std::vector<float> &hyperparameters) override;
   std::vector<float> getInferenceHyperparameters() override;

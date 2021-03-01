@@ -9,6 +9,7 @@ import matplotlib
 import importlib
 import math 
 import numpy as np
+import scipy.stats as st
 import matplotlib.pyplot as plt
 
 from korali.plotter.helpers import hlsColors, drawMulticoloredLine
@@ -16,9 +17,7 @@ from scipy.signal import savgol_filter
 
 ##################### Plotting Reward History
 
-def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, maxObservations):
-
- confidenceLevel = 2.326 # 98%
+def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, maxObservations, showSamples, showCI):
 
  ## Setting initial x-axis (episode) and  y-axis (reward) limits
  
@@ -79,7 +78,8 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
   # Getting average cumulative reward statistics
   
   meanHistory = [ rewardHistory[0] ]
-  confIntervalHistory = [ 0.0 ]
+  confIntervalLowerHistory= [ rewardHistory[0] ]
+  confIntervalUpperHistory= [ rewardHistory[0] ]
   for i in range(1, len(rewardHistory)):
    startPos = i - int(averageDepth)
    if (startPos < 0): startPos = 0
@@ -87,15 +87,22 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
    data = rewardHistory[startPos:endPos]
    mean = np.mean(data)
    stdDev = np.std(data)
-   confInterval = confidenceLevel * stdDev / math.sqrt(len(data))
-   confIntervalHistory.append(confInterval)
+   if showCI > 0.0:
+    ciLow = np.percentile(data, 50-50*showCI)
+    ciUp = np.percentile(data, 50+50*showCI)
+    confIntervalLowerHistory.append(ciLow)
+    confIntervalUpperHistory.append(ciUp)
    meanHistory.append(mean)
   meanHistory = np.array(meanHistory)
-  confIntervalHistory = np.array(confIntervalHistory)
+  confIntervalLowerHistory = np.array(confIntervalLowerHistory)
+  confIntervalUpperHistory = np.array(confIntervalUpperHistory)
 
   # Plotting common plot
-  ax.plot(cumulativeObsList, rewardHistory, 'x', markersize=1.3, color=cmap(colCurrIndex), alpha=0.5, zorder=0)
   ax.plot(cumulativeObsList, meanHistory, '-', label=str(averageDepth) + '-Episode Average (' + dirs[resId] + ')', color=cmap(colCurrIndex), zorder=1)
+  if showSamples:
+    ax.plot(cumulativeObsList, rewardHistory, 'x', markersize=1.3, color=cmap(colCurrIndex), alpha=0.5, zorder=0)
+  if showCI > 0.0:
+    ax.fill_between(cumulativeObsList, confIntervalLowerHistory, confIntervalUpperHistory, color=cmap(colCurrIndex), alpha=0.2)
   
   # Updating color index
   if (len(results) > 1):
@@ -210,6 +217,19 @@ if __name__ == '__main__':
       default=300,
       required=False)
  parser.add_argument(
+      '--showSamples',
+      help='Option to plot episode returns or not.',
+      type=lambda arg: (str(arg).lower() != 'false'),
+      default=True,
+      required=False)
+ parser.add_argument(
+      '--showCI',
+      help='Option to plot the reward confidence interval.',
+      type = float,
+      default=0.0,
+      required=False)
+
+ parser.add_argument(
       '--test',
       help='Run without graphics (for testing purpose)',
       action='store_true',
@@ -222,6 +242,13 @@ if __name__ == '__main__':
   print("[Korali] RL Viewer correctly installed.")
   exit(0)
  
+ ### Validating input
+
+ if args.showCI < 0.0 or args.showCI > 1.0:
+  print("[Korali] Argument of confidence interval must be in [0,1].")
+  exit(-1)
+
+
  ### Setup without graphics, if needed
  
  if (args.test): matplotlib.use('Agg')
@@ -237,7 +264,7 @@ if __name__ == '__main__':
      
  ### Creating plots
      
- plotRewardHistory(ax1, args.dir, results, args.minReward, args.maxReward, args.averageDepth, args.maxObservations)
+ plotRewardHistory(ax1, args.dir, results, args.minReward, args.maxReward, args.averageDepth, args.maxObservations, args.showSamples, args.showCI)
  plt.draw()
  
  ### Printing live results if update frequency > 0
@@ -248,7 +275,7 @@ if __name__ == '__main__':
    results = parseResults(args.dir)
    plt.pause(fq)
    ax1.clear()
-   plotRewardHistory(ax1, args.dir, results, args.minReward, args.maxReward, args.averageDepth, args.maxObservations)
+   plotRewardHistory(ax1, args.dir, results, args.minReward, args.maxReward, args.averageDepth, args.maxObservations, args.showSamples, args.showCI)
    plt.draw()
    
  plt.show() 

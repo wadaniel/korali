@@ -2,7 +2,6 @@
 #define _KORALI_AGENT_HPP_
 
 #include "auxiliar/cbuffer.hpp"
-#include "auxiliar/kcache.hpp"
 #include "modules/problem/reinforcementLearning/reinforcementLearning.hpp"
 #include "modules/problem/supervisedLearning/supervisedLearning.hpp"
 #include "modules/solver/learner/deepSupervisor/deepSupervisor.hpp"
@@ -42,6 +41,16 @@ enum termination_t
 struct experience_t
 {
   /**
+  * @brief Episode that experience belongs to
+  */
+  size_t episodeId;
+
+  /**
+  * @brief Position within the episode of this experience
+  */
+  size_t episodePos;
+
+  /**
   * @brief Stores the state of the experience
   */
   std::vector<float> state;
@@ -62,9 +71,24 @@ struct experience_t
   float reward;
 
   /**
-   * @brief Specifies whether the experience is terminal (truncated or normal) or not.
+   * @brief Contains state value (V) estimation for the current state / policy combination
    */
-  termination_t termination;
+  float stateValue;
+
+  /**
+   * @brief Contains the result of the retrace (Vtbc) function for the currrent experience
+   */
+  float retraceValue;
+
+  /**
+   * @brief Contains the latest calculation of the experience's importance weight
+   */
+  float importanceWeight;
+
+  /**
+   * @brief Indicates whether the experience is on policy, given the specified off-policiness criteria
+   */
+  bool isOnPolicy;
 
   /**
    * @brief If this is a truncated terminal experience, the truncated state is also saved here
@@ -72,19 +96,19 @@ struct experience_t
   std::vector<float> truncatedState;
 
   /**
-   * @brief Contains information about the policy used to generate the action
+   * @brief If this is a truncated terminal experience, this contains the state value for that state
    */
-  knlohmann::json policy;
+  float truncatedStateValue;
+
+  /**
+   * @brief Specifies whether the experience is terminal (truncated or normal) or not.
+   */
+  termination_t termination;
 
   /**
    * @brief Contains any additional necessary information about the experience
    */
   knlohmann::json metadata;
-
-  /**
-   * @brief Provides a cached repository for pre-calculated values. It has an expiration threshold after which it's values should be re-calculated.
-   */
-  kCache<std::string, float, size_t> cache;
 };
 
 class Agent : public Solver
@@ -285,9 +309,10 @@ class Agent : public Solver
 
   /**
   * @brief Additional post-processing of episode after episode terminated.
-  * @param episode A vector of experiences.
+  * @param episodeId The unique identifier of the provided episode
+  * @param episode A vector of experiences pertaining to the episode.
   */
-  void processEpisode(std::vector<knlohmann::json> &episode);
+  void processEpisode(size_t episodeId, std::vector<knlohmann::json> &episode);
 
   /**
   * @brief Updates probabilities of experiences stored based on their priority.
@@ -296,10 +321,10 @@ class Agent : public Solver
 
   /**
   * @brief Generates an experience mini batch from the replay memory
-  * @param size Size of the mini batch to create
+  * @param miniBatchSize Size of the mini batch to create
   * @return A vector with the indexes to the experiences in the mini batch
   */
-  std::vector<size_t> generateMiniBatch(size_t size);
+  std::vector<size_t> generateMiniBatch(size_t miniBatchSize);
 
   /**
   * @brief Resets time sequence within the agent, to forget past actions from other episodes
@@ -335,11 +360,13 @@ class Agent : public Solver
   std::vector<std::vector<float>> getStateActionTimeSequence(size_t expId);
 
   /**
-  * @brief Calculates importance weights of experiences.
-  * @param miniBatch vector of experience indices.
-  * @return A vector with the importance weights corresponding to the experience indices.
-  */
-  std::vector<float> calculateImportanceWeights(std::vector<size_t> miniBatch);
+   * @brief Calculates importance weight of current action from old and new policies
+   * @param action The action taken
+   * @param curPolicy The current policy
+   * @param oldPolicy The old policy, the one used for take the action in the first place
+   * @return The importance weight
+   */
+  virtual float calculateImportanceWeight(const std::vector<float> &action, knlohmann::json &curPolicy, knlohmann::json &oldPolicy) = 0;
 
   /**
    * @brief Returns the retrace value for the given experience
@@ -431,13 +458,6 @@ class Agent : public Solver
    * @return The state to store
    */
   virtual knlohmann::json getTrainingState() = 0;
-
-  /**
-  * @brief Returns the value of importance weight for a given experience in the replay memory
-  * @param expId Index of the experience in the ER to calculate the importance weight for
-  * @return The experience's importance weight
-  */
-  virtual float getExperienceImportanceWeight(size_t expId) = 0;
 
   /**
    * @brief Initializes the internal state of the policy

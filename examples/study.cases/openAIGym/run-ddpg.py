@@ -19,7 +19,7 @@ e = korali.Experiment()
 
 ### Defining results folder and loading previous results, if any
 
-resultFolder = '_result_gfpt/' 
+resultFolder = '_result_ddpg/' 
 e.loadState(resultFolder + '/latest');
 
 ### Initializing openAI Gym environment
@@ -28,17 +28,19 @@ initEnvironment(e, args.env)
 
 ### Defining Agent Configuration 
 
-e["Solver"]["Type"] = "Agent / Continuous / GFPT"
+e["Solver"]["Type"] = "Agent / Continuous / DDPG"
 e["Solver"]["Mode"] = "Training"
 e["Solver"]["Episodes Per Generation"] = 1
 e["Solver"]["Experiences Between Policy Updates"] = 1
+e["Solver"]["Learning Rate"] = 1e-4
 e["Solver"]["Discount Factor"] = 0.995
-e["Solver"]["Learning Rate"] = 0.001
+e["Solver"]["Policy"]["Learning Rate Scale"] = 0.1
+e["Solver"]["Policy"]["Adoption Rate"] = 0.01
 
 ### Defining the configuration of replay memory
 
-e["Solver"]["Experience Replay"]["Start Size"] = 4096
-e["Solver"]["Experience Replay"]["Maximum Size"] = 65536
+e["Solver"]["Experience Replay"]["Start Size"] = 32768
+e["Solver"]["Experience Replay"]["Maximum Size"] = 262144
 
 ### Configuring the Remember-and-Forget Experience Replay algorithm
 
@@ -52,23 +54,18 @@ e["Solver"]["Experience Replay"]["Off Policy"]["REFER Beta"] = 0.3
 e["Solver"]["Mini Batch Size"] = 128
 e["Solver"]["Mini Batch Strategy"] = "Uniform"
 
-## Defining Critic and Policy Configuration
-
-e["Solver"]["Policy"]["Target Accuracy"] = 0.000001
-e["Solver"]["Policy"]["Optimization Candidates"] = 64
-
 ### Configuring the neural network and its hidden layers
 
 e["Solver"]["Neural Network"]["Engine"] = "OneDNN"
 
 e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear"
-e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 64
+e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 128
 
 e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Activation"
 e["Solver"]["Neural Network"]["Hidden Layers"][1]["Function"] = "Elementwise/Tanh"
 
 e["Solver"]["Neural Network"]["Hidden Layers"][2]["Type"] = "Layer/Linear"
-e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 64
+e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 128
 
 e["Solver"]["Neural Network"]["Hidden Layers"][3]["Type"] = "Layer/Activation"
 e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tanh"

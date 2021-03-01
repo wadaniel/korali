@@ -43,6 +43,7 @@
 #include "problem/sampling/sampling.hpp"
 #include "problem/supervisedLearning/supervisedLearning.hpp"
 #include "solver/SAEM/SAEM.hpp"
+#include "solver/agent/continuous/DDPG/DDPG.hpp"
 #include "solver/agent/continuous/GFPT/GFPT.hpp"
 #include "solver/agent/continuous/NAF/NAF.hpp"
 #include "solver/agent/continuous/VRACER/VRACER.hpp"
@@ -140,6 +141,7 @@ Module *Module::getModule(knlohmann::json &js, Experiment *e)
   if (iCompare(moduleType, "Agent/Discrete/DQN")) module = new korali::solver::agent::discrete::DQN();
   if (iCompare(moduleType, "Agent/Discrete/DVRACER")) module = new korali::solver::agent::discrete::dVRACER();
   if (iCompare(moduleType, "Agent/Continuous/GFPT")) module = new korali::solver::agent::continuous::GFPT();
+  if (iCompare(moduleType, "Agent/Continuous/DDPG")) module = new korali::solver::agent::continuous::DDPG();
   if (iCompare(moduleType, "Agent/Continuous/NAF")) module = new korali::solver::agent::continuous::NAF();
   if (iCompare(moduleType, "Agent/Continuous/VRACER")) module = new korali::solver::agent::continuous::VRACER();
   if (iCompare(moduleType, "Optimizer/CMAES")) module = new korali::solver::optimizer::CMAES();

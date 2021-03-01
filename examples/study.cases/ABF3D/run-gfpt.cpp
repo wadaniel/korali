@@ -8,17 +8,18 @@ int main(int argc, char *argv[])
   _resultDir = "_result_gfpt";
   initializeEnvironment("_config/helix_2d_eu_const.json");
 
+  auto e = korali::Experiment();
+
   ////// Checking if existing results are there and continuing them
 
-  auto e = korali::Experiment();
-  auto found = e.loadState(_resultDir + std::string("/latest"));
-  if (found == true) printf("Continuing execution from previous run...\n");
+  //auto found = e.loadState(_resultDir + std::string("/latest"));
+  //if (found == true) printf("Continuing execution from previous run...\n");
 
   ////// Defining problem configuration
 
   e["Problem"]["Type"] = "Reinforcement Learning / Continuous";
   e["Problem"]["Environment Function"] = &runEnvironment;
-  e["Problem"]["Training Reward Threshold"] = 1.0;
+  e["Problem"]["Training Reward Threshold"] = 1.5;
   e["Problem"]["Policy Testing Episodes"] = 20;
   e["Problem"]["Actions Between Policy Updates"] = 1;
 
@@ -71,9 +72,10 @@ int main(int argc, char *argv[])
   e["Solver"]["Mode"] = "Training";
   e["Solver"]["Episodes Per Generation"] = 1;
   e["Solver"]["Experiences Between Policy Updates"] = 1;
-  e["Solver"]["Cache Persistence"] = 243;
-  e["Solver"]["Learning Rate"] = 0.0001;
-  e["Solver"]["Discount Factor"] = 0.995;
+  e["Solver"]["Learning Rate"] = 1e-4;
+  e["Solver"]["Policy"]["Optimization Candidates"] = 16;
+  e["Solver"]["Policy"]["Target Accuracy"] = 0.00001f;
+  e["Solver"]["Discount Factor"] = 0.99;
 
   /// Defining the configuration of replay memory
 
@@ -82,22 +84,15 @@ int main(int argc, char *argv[])
 
   /// Configuring the Remember-and-Forget Experience Replay algorithm
 
-  e["Solver"]["Experience Replay"]["REFER"]["Enabled"] = true;
-  e["Solver"]["Experience Replay"]["REFER"]["Cutoff Scale"] = 4.0;
-  e["Solver"]["Experience Replay"]["REFER"]["Target"] = 0.1;
-  e["Solver"]["Experience Replay"]["REFER"]["Initial Beta"] = 0.6;
-  e["Solver"]["Experience Replay"]["REFER"]["Annealing Rate"] = 5e-7;
+  e["Solver"]["Experience Replay"]["Off Policy"]["Cutoff Scale"] = 4.0;
+  e["Solver"]["Experience Replay"]["Off Policy"]["Target"] = 0.1;
+  e["Solver"]["Experience Replay"]["Off Policy"]["Annealing Rate"] = 5e-7;
+  e["Solver"]["Experience Replay"]["Off Policy"]["REFER Beta"] = 0.3;
 
   /// Configuring Mini Batch
 
   e["Solver"]["Mini Batch Size"] = 256;
   e["Solver"]["Mini Batch Strategy"] = "Uniform";
-
-  /// Defining Critic and Policy Configuration
-
-  e["Solver"]["Policy"]["Learning Rate Scale"] = 1.0;
-  e["Solver"]["Policy"]["Target Accuracy"] = 0.005;
-  e["Solver"]["Policy"]["Optimization Candidates"] = 128;
 
   /// Configuring the neural network and its hidden layers
 
@@ -117,14 +112,13 @@ int main(int argc, char *argv[])
 
   ////// Defining Termination Criteria
 
-  e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 1.3;
+  e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 1.5;
 
   ////// Setting file output configuration
 
-  e["Solver"]["Experience Replay"]["Serialize"] = false;
   e["Console Output"]["Verbosity"] = "Detailed";
   e["File Output"]["Enabled"] = true;
-  e["File Output"]["Frequency"] = 4;
+  e["File Output"]["Frequency"] = 10;
   e["File Output"]["Path"] = _resultDir;
 
   auto k = korali::Engine();

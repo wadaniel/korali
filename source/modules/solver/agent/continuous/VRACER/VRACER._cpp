@@ -129,15 +129,18 @@ void VRACER::trainPolicy()
     // Getting index of current experiment
     size_t expId = miniBatchIndexes[b];
 
+    // Getting experience reference
+    auto &exp = _experienceReplay[expId];
+
     // Get state, action and policy for this experience
     auto expStateSequence = getStateTimeSequence(expId);
-    const auto &expAction = _experienceReplay[expId].action;
-    auto &expPolicy = _experienceReplay[expId].metadata["Experience Policy"];
+    const auto &expAction = exp.action;
+    auto &expPolicy = exp.metadata["Experience Policy"];
 
     // Gathering metadata
-    const float &V = _experienceReplay[expId].stateValue;
-    auto &curPolicy = _experienceReplay[expId].metadata["Current Policy"];
-    const float &expVtbc = _experienceReplay[expId].retraceValue;
+    const float &V = exp.stateValue;
+    const auto &curPolicy = exp.metadata["Current Policy"];
+    const float &expVtbc = exp.retraceValue;
 
     /******************************************************
     * Gradient calculation
@@ -157,13 +160,13 @@ void VRACER::trainPolicy()
     cumulativeTdErrorSquared += gradientLoss[0] * gradientLoss[0];
 
     // Compute policy gradient only if inside trust region (or offPolicy disabled)
-    if (_experienceReplay[expId].isOnPolicy)
+    if (exp.isOnPolicy)
     {
       // Qret for terminal state is just reward
-      float Qret = _experienceReplay[expId].reward;
+      float Qret = exp.reward;
 
       // Check whether experience is non-terminal
-      bool isNormal = _experienceReplay[expId].termination == e_nonTerminal;
+      bool isNormal = exp.termination == e_nonTerminal;
 
       // In this case add Vtbc
       if (isNormal == true)
@@ -173,12 +176,12 @@ void VRACER::trainPolicy()
       }
 
       // Check whether experience is truncated
-      bool isTrucated = _experienceReplay[expId].termination == e_truncated;
+      bool isTrucated = exp.termination == e_truncated;
 
       // For truncated state add value
       if (isTrucated == true)
       {
-        float nextExpVtbc = _experienceReplay[expId].truncatedStateValue;
+        float nextExpVtbc = exp.truncatedStateValue;
         Qret += _discountFactor * nextExpVtbc;
       }
 

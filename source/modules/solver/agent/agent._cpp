@@ -298,9 +298,26 @@ void Agent::rescaleRewards()
 
     _rewardRescalingMean = newRewardRescalingMean;
     _rewardRescalingSdev = newRewardRescalingSdev;
+
+    // Recalculating retrace value during first update.
+    if(_rewardRescalingCount == 0)
+    {
+      float retV = 0.0;
+      for (int expId = _experienceReplay.size() - 1; expId >= 0; --expId)
+      {
+        if(_experienceReplay[expId].termination == e_terminal) retV = 0.0;
+      
+        retV = _discountFactor * retV + _experienceReplay[expId].reward;
+
+        _experienceReplay[expId].stateValue = retV;
+        _experienceReplay[expId].retraceValue = retV;
+      }
+    }
+
     _rewardRescalingCount++;
     
     printf( "new reward mean and sdev %f %f\n", _rewardRescalingMean, _rewardRescalingSdev);
+  
 }
 
 void Agent::attendAgent(size_t agentId)

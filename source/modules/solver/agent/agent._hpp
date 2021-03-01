@@ -36,6 +36,37 @@ enum termination_t
 };
 
 /**
+* @brief Structure to store policy information
+*/
+struct policy_t
+{
+ /**
+  * @brief Contains state value (V) estimation for the given state / policy combination
+  */
+ float stateValue;
+
+ /**
+  * @brief [Continuous] Contains the action means for the policy
+  */
+ std::vector<float> actionMeans;
+
+ /**
+  * @brief [Continuous] Contains the action sigmas for the policy
+  */
+ std::vector<float> actionSigmas;
+
+ /**
+  * @brief [Discrete]
+  */
+ size_t actionIndex;
+
+ /**
+  * @brief [Discrete] Contains the probabilities of discrete actions
+  */
+ std::vector<float> actionProbabilities;
+};
+
+/**
 * @brief Structure to store all relevant information about an agent's experience within a given episode
 */
 struct experience_t
@@ -66,14 +97,14 @@ struct experience_t
   float reward;
 
   /**
-   * @brief Contains state value (V) estimation for the current state / policy combination
-   */
-  float stateValue;
-
-  /**
    * @brief Contains the result of the retrace (Vtbc) function for the currrent experience
    */
   float retraceValue;
+
+  /**
+   * @brief Contains state value (V) estimation for the current state / policy combination
+   */
+  float stateValue;
 
   /**
    * @brief Contains the latest calculation of the experience's importance weight
@@ -101,9 +132,24 @@ struct experience_t
   termination_t termination;
 
   /**
-   * @brief Contains any additional necessary information about the experience
+   * @brief Contains the policy information produced at the moment of the action was taken
    */
-  knlohmann::json metadata;
+  policy_t experiencePolicy;
+
+  /**
+   * @brief Contains the most current policy information given the experience state
+   */
+  policy_t currentPolicy;
+
+  /**
+   * @brief For prioritized experience replay, this stores the experience's priority
+   */
+  float priority;
+
+  /**
+   * @brief For prioritized experience replay, this stores the experience's probability
+   */
+  float probability;
 };
 
 class Agent : public Solver
@@ -391,7 +437,7 @@ class Agent : public Solver
    * @param oldPolicy The old policy, the one used for take the action in the first place
    * @return The importance weight
    */
-  virtual float calculateImportanceWeight(const std::vector<float> &action, const knlohmann::json &curPolicy, const knlohmann::json &oldPolicy) = 0;
+  virtual float calculateImportanceWeight(const std::vector<float> &action, const policy_t &curPolicy, const policy_t &oldPolicy) = 0;
 
   /**
    * @brief Returns the retrace value for the given experience
@@ -453,7 +499,7 @@ class Agent : public Solver
   * @param stateSequence The state time series (Format: TxS, where T is the time series lenght, and S is the state size)
   * @return A JSON object containing the information produced by the policy given the current state
   */
-  virtual knlohmann::json runPolicy(const std::vector<std::vector<float>> &stateSequence) = 0;
+  virtual policy_t runPolicy(const std::vector<std::vector<float>> &stateSequence) = 0;
 
   /**
   * @brief Updates the agent's hyperparameters

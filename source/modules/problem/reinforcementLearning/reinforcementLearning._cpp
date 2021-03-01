@@ -132,9 +132,6 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
     // Storing termination status
     experience["Termination"] = agent["Termination"];
 
-    // Adding metadata from the agent module
-    experience["Metadata"] = agent["Metadata"];
-
     // If the episode was truncated, then save the terminal state
     if (agent["Termination"] == "Truncated") experience["Truncated State"] = agent["State"];
 
@@ -156,8 +153,8 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
     // If requested new policy, wait for incoming message containing new hyperparameters
     if (requestNewPolicy)
     {
-      agent["Policy"] = KORALI_RECV_MSG_FROM_ENGINE();
-      _agent->setAgentPolicy(agent["Policy"]);
+      agent["Policy Hyperparameters"] = KORALI_RECV_MSG_FROM_ENGINE();
+      _agent->setAgentPolicy(agent["Policy Hyperparameters"]);
     }
 
     auto endTime2 = std::chrono::steady_clock::now();                                                              // Profiling

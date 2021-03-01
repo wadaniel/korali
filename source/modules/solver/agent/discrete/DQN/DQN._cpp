@@ -76,12 +76,12 @@ void DQN::trainPolicy()
     // Get state, action, and action probabilities from experience
     /*
     auto expStateSequence = getStateTimeSequence(expId);
-    auto expPvals = _experienceReplay[expId].metadata["Action Probabilities"].get<std::vector<float>>();
+    auto expPvals = _experienceReplay[expId].metadata.actionProbabilities;
     size_t expActionIdx = _experienceReplay[expId].metadata["Action Index"].get<size_t>();
 
     // Forward the neural network for this state to get current action probabilities
     auto policy = runPolicy(expStateSequence);
-    auto curPvals = policy["Action Probabilities"].get<std::vector<float>>();
+    auto curPvals = policy.actionProbabilities;
   
     // Compute importance weight
     float importanceWeight = calculateImportanceWeight(expActionIdx, curPvals, expPvals);
@@ -110,7 +110,7 @@ void DQN::trainPolicy()
 
       // Getting action probabilities for next state, as per the critic
       auto policy = runPolicy(nextStateSequence);
-      auto pActions = policy["Action Probabilities"].get<std::vector<float>>();
+      auto pActions = policy.actionProbabilities;
 
       // Finding the best action index from the probabilities
       size_t bestActionIdx = std::distance(pActions.begin(), std::max_element(pActions.begin(), pActions.end()));
@@ -137,7 +137,7 @@ void DQN::trainPolicy()
 
       // for truncated state, Vtbc == V - forward network
       auto policy = runPolicy(expTruncatedStateSequence);
-      float nextExp = policy["State Value"].get<float>();
+      float nextExp = policy.stateValue;
 
       // add value to Qret
       qStar += _discountFactor * nextExp;
@@ -166,10 +166,10 @@ void DQN::trainPolicy()
 float DQN::stateValueFunction(const std::vector<std::vector<float>> &state)
 {
   auto policy = runPolicy(state);
-  return policy["State Value"];
+  return policy.stateValue;
 }
 
-knlohmann::json DQN::runPolicy(const std::vector<std::vector<float>> &stateSequence)
+policy_t DQN::runPolicy(const std::vector<std::vector<float>> &stateSequence)
 {
   // Storing state into the critic input (will not change)
   std::vector<std::vector<float>> stateActionInput(stateSequence.size());
@@ -227,9 +227,9 @@ knlohmann::json DQN::runPolicy(const std::vector<std::vector<float>> &stateSeque
     stateValue += qval[i] * pActions[i];
 
   // Returning action probabilities
-  knlohmann::json policy;
-  policy["State Value"] = stateValue;
-  policy["Action Probabilities"] = pActions;
+  policy_t policy;
+  policy.stateValue = stateValue;
+  policy.actionProbabilities= pActions;
   return policy;
 }
 

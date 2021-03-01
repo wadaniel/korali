@@ -43,7 +43,7 @@ void Continuous::initializeAgent()
 void Continuous::getAction(korali::Sample &sample)
 {
   // Getting current state
-  auto state = sample["State"].get<std::vector<float>>();
+  auto state = sample["State"];
 
   // Adding state to the state time sequence
   _stateTimeSequence.add(state);
@@ -72,18 +72,20 @@ void Continuous::getAction(korali::Sample &sample)
   * Storing the action and it's policy
   ****************************************************************************/
 
-  sample["Metadata"]["Experience Policy"] = policy;
+  sample["Policy"]["Action Means"] = policy.actionMeans;
+  sample["Policy"]["Action Sigmas"] = policy.actionSigmas;
+  sample["Policy"]["State Value"] = policy.stateValue;
   sample["Action"] = action;
 }
 
-std::vector<float> Continuous::generateTrainingAction(const knlohmann::json &curPolicy)
+std::vector<float> Continuous::generateTrainingAction(const policy_t &curPolicy)
 {
   std::vector<float> action(_problem->_actionVectorSize);
   if (_policyDistribution == "Normal")
   {
     // Getting parameters from the new and old policies
-    auto curMeans = curPolicy["Action Means"].get<std::vector<float>>();
-    auto curSigmas = curPolicy["Action Sigmas"].get<std::vector<float>>();
+    const auto& curMeans = curPolicy.actionMeans;
+    const auto& curSigmas = curPolicy.actionSigmas;
 
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
       action[i] = curMeans[i] + curSigmas[i] * _normalGenerator->getRandomNumber();
@@ -91,8 +93,8 @@ std::vector<float> Continuous::generateTrainingAction(const knlohmann::json &cur
 
   if (_policyDistribution == "Beta")
   {
-    auto curAlpha = curPolicy["Action Alpha"].get<std::vector<float>>();
-    auto curBeta = curPolicy["Action Beta"].get<std::vector<float>>();
+    const auto& curAlpha = curPolicy.actionMeans;
+    const auto& curBeta = curPolicy.actionSigmas;
 
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
       action[i] = ranBetaAlt(_normalGenerator->_range, curAlpha[i], curBeta[i], _actionLowerBounds[i], _actionUpperBounds[i]);
@@ -101,13 +103,13 @@ std::vector<float> Continuous::generateTrainingAction(const knlohmann::json &cur
   return action;
 }
 
-std::vector<float> Continuous::generateTestingAction(const knlohmann::json &curPolicy)
+std::vector<float> Continuous::generateTestingAction(const policy_t &curPolicy)
 {
   std::vector<float> action(_problem->_actionVectorSize);
   if (_policyDistribution == "Normal")
   {
     // Getting parameters from the new and old policies
-    auto curMeans = curPolicy["Action Means"].get<std::vector<float>>();
+    const auto& curMeans = curPolicy.actionMeans;
 
     // ParamsOne are the Means, ParamsTwo are the Sigmas
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
@@ -116,8 +118,8 @@ std::vector<float> Continuous::generateTestingAction(const knlohmann::json &curP
 
   if (_policyDistribution == "Beta")
   {
-    auto curAlpha = curPolicy["Action Alpha"].get<std::vector<float>>();
-    auto curBeta = curPolicy["Action Beta"].get<std::vector<float>>();
+    const auto& curAlpha = curPolicy.actionMeans;
+    const auto& curBeta = curPolicy.actionSigmas;
 
     // ParamsOne are the Means, ParamsTwo are the Variance Coefficients
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
@@ -140,7 +142,7 @@ std::vector<float> Continuous::generateTestingAction(const knlohmann::json &curP
   return action;
 }
 
-float Continuous::calculateImportanceWeight(const std::vector<float> &action, const knlohmann::json &curPolicy, const knlohmann::json &oldPolicy)
+float Continuous::calculateImportanceWeight(const std::vector<float> &action, const policy_t &curPolicy, const policy_t &oldPolicy)
 {
   float logpCurPolicy = 0.0f;
   float logpOldPolicy = 0.0f;
@@ -149,10 +151,10 @@ float Continuous::calculateImportanceWeight(const std::vector<float> &action, co
   if (_policyDistribution == "Normal")
   {
     // Getting parameters from the new and old policies
-    auto oldMeans = oldPolicy["Action Means"].get<std::vector<float>>();
-    auto oldSigmas = oldPolicy["Action Sigmas"].get<std::vector<float>>();
-    auto curMeans = curPolicy["Action Means"].get<std::vector<float>>();
-    auto curSigmas = curPolicy["Action Sigmas"].get<std::vector<float>>();
+    const auto& oldMeans = oldPolicy.actionMeans;
+    const auto& oldSigmas = oldPolicy.actionSigmas;
+    const auto& curMeans = curPolicy.actionMeans;
+    const auto& curSigmas = curPolicy.actionSigmas;
 
     // ParamsOne are the Means, ParamsTwo are the Sigmas
     for (size_t i = 0; i < action.size(); i++)
@@ -165,10 +167,10 @@ float Continuous::calculateImportanceWeight(const std::vector<float> &action, co
   if (_policyDistribution == "Beta")
   {
     // Getting parameters from the new and old policies
-    auto oldAlpha = oldPolicy["Action Alpha"].get<std::vector<float>>();
-    auto oldBeta = oldPolicy["Action Beta"].get<std::vector<float>>();
-    auto curAlpha = curPolicy["Action Alpha"].get<std::vector<float>>();
-    auto curBeta = curPolicy["Action Beta"].get<std::vector<float>>();
+    const auto& oldAlpha = oldPolicy.actionMeans;
+    const auto& oldBeta = oldPolicy.actionSigmas;
+    const auto& curAlpha = curPolicy.actionMeans;
+    const auto& curBeta = curPolicy.actionSigmas;
 
     // ParamsOne are the Means, ParamsTwo are the Variance Coefficients
     for (size_t i = 0; i < action.size(); i++)
@@ -190,17 +192,17 @@ float Continuous::calculateImportanceWeight(const std::vector<float> &action, co
   return importanceWeight;
 }
 
-std::vector<float> Continuous::calculateImportanceWeightGradient(const std::vector<float> &action, const knlohmann::json &curPolicy, const knlohmann::json &oldPolicy)
+std::vector<float> Continuous::calculateImportanceWeightGradient(const std::vector<float> &action, const policy_t &curPolicy, const policy_t &oldPolicy)
 {
   std::vector<float> grad(2 * _problem->_actionVectorSize, 0.0);
 
   if (_policyDistribution == "Normal")
   {
     // Getting parameters from the new and old policies
-    auto oldMeans = oldPolicy["Action Means"].get<std::vector<float>>();
-    auto oldSigmas = oldPolicy["Action Sigmas"].get<std::vector<float>>();
-    auto curMeans = curPolicy["Action Means"].get<std::vector<float>>();
-    auto curSigmas = curPolicy["Action Sigmas"].get<std::vector<float>>();
+    const auto& oldMeans = oldPolicy.actionMeans;
+    const auto& oldSigmas = oldPolicy.actionSigmas;
+    const auto& curMeans = curPolicy.actionMeans;
+    const auto& curSigmas = curPolicy.actionSigmas;
 
     float logImportanceWeight = 0.0;
 
@@ -238,10 +240,10 @@ std::vector<float> Continuous::calculateImportanceWeightGradient(const std::vect
   if (_policyDistribution == "Beta")
   {
     // Getting parameters from the new and old policies
-    auto oldAlpha = oldPolicy["Action Alpha"].get<std::vector<float>>();
-    auto oldBeta = oldPolicy["Action Beta"].get<std::vector<float>>();
-    auto curAlpha = curPolicy["Action Alpha"].get<std::vector<float>>();
-    auto curBeta = curPolicy["Action Beta"].get<std::vector<float>>();
+    const auto& oldAlpha = oldPolicy.actionMeans;
+    const auto& oldBeta = oldPolicy.actionSigmas;
+    const auto& curAlpha = curPolicy.actionMeans;
+    const auto& curBeta = curPolicy.actionSigmas;
 
     // ParamsOne are the Means, ParamsTwo are the Variance Coefficients
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
@@ -292,17 +294,17 @@ std::vector<float> Continuous::calculateImportanceWeightGradient(const std::vect
   return grad;
 }
 
-std::vector<float> Continuous::calculateKLDivergenceGradient(const knlohmann::json &oldPolicy, const knlohmann::json &curPolicy)
+std::vector<float> Continuous::calculateKLDivergenceGradient(const policy_t &oldPolicy, const policy_t &curPolicy)
 {
   std::vector<float> klGrad(2.0 * _problem->_actionVectorSize, 0.0);
 
   if (_policyDistribution == "Normal")
   {
     // Getting parameters from the new and old policies
-    auto oldMeans = oldPolicy["Action Means"].get<std::vector<float>>();
-    auto oldSigmas = oldPolicy["Action Sigmas"].get<std::vector<float>>();
-    auto curMeans = curPolicy["Action Means"].get<std::vector<float>>();
-    auto curSigmas = curPolicy["Action Sigmas"].get<std::vector<float>>();
+    const auto& oldMeans = oldPolicy.actionMeans;
+    const auto& oldSigmas = oldPolicy.actionSigmas;
+    const auto& curMeans = curPolicy.actionMeans;
+    const auto& curSigmas = curPolicy.actionSigmas;
 
     for (size_t i = 0; i < _problem->_actionVectorSize; ++i)
     {
@@ -332,10 +334,10 @@ std::vector<float> Continuous::calculateKLDivergenceGradient(const knlohmann::js
     for (size_t i = 0; i < _problem->_actionVectorSize; ++i)
     {
       // Getting parameters from the new and old policies
-      auto oldAlpha = oldPolicy["Action Alpha"].get<std::vector<float>>();
-      auto oldBeta = oldPolicy["Action Beta"].get<std::vector<float>>();
-      auto curAlpha = curPolicy["Action Alpha"].get<std::vector<float>>();
-      auto curBeta = curPolicy["Action Beta"].get<std::vector<float>>();
+      const auto& oldAlpha = oldPolicy.actionMeans;
+      const auto& oldBeta = oldPolicy.actionSigmas;
+      const auto& curAlpha = curPolicy.actionMeans;
+      const auto& curBeta = curPolicy.actionSigmas;
 
       // Variable preparation
       const float muCur = curAlpha[i];

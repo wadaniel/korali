@@ -67,7 +67,7 @@ class DDPG : public Continuous
    */
   float getActionAdvantage(const std::vector<std::vector<float>> &stateActionSequence);
 
-  knlohmann::json runPolicy(const std::vector<std::vector<float>> &stateSequence) override;
+  policy_t runPolicy(const std::vector<std::vector<float>> &stateSequence) override;
   float stateValueFunction(const std::vector<std::vector<float>> &stateSequence) override;
   knlohmann::json getAgentPolicy() override;
   void setAgentPolicy(const knlohmann::json &hyperparameters) override;

@@ -35,6 +35,8 @@ e["Solver"]["Episodes Per Generation"] = 1
 e["Solver"]["Policy Distribution"] = "Normal"
 e["Solver"]["Discount Factor"] = 0.995
 e["Solver"]["Learning Rate"] = 1e-4
+e["Solver"]["L2 Regularization"]["Enabled"] = True
+e["Solver"]["L2 Regularization"]["Importance"] = 1e-3
 e["Solver"]["Mini Batch Size"] = 256
 
 ### Defining the configuration of replay memory
@@ -67,7 +69,7 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tan
 
 ### Setting file output configuration
 
-e["Solver"]["Termination Criteria"]["Max Generations"] = 100000
+e["Solver"]["Termination Criteria"]["Max Experiences"] = 1e6
 e["Solver"]["Experience Replay"]["Serialize"] = True
 e["Console Output"]["Verbosity"] = "Detailed"
 e["File Output"]["Enabled"] = True

@@ -45,14 +45,15 @@ e["Solver"]["Episodes Per Generation"] = 1
 
 ### Defining the configuration of replay memory
 
-e["Solver"]["Experience Replay"]["Start Size"] = 1000
-e["Solver"]["Experience Replay"]["Maximum Size"] = 10000
+e["Solver"]["Experience Replay"]["Start Size"] = 10000
+e["Solver"]["Experience Replay"]["Maximum Size"] = 20000
 
 ## Defining Neural Network Configuration for Policy and Critic into Critic Container
 
 e["Solver"]["Discount Factor"] = 0.99
 e["Solver"]["Learning Rate"] = 1e-3
 e["Solver"]["Mini Batch Size"] = 32
+e["Solver"]["Reward Rescaling Frequency"] = 100
 
 ### Configuring the neural network and its hidden layers
 

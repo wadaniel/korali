@@ -398,13 +398,13 @@ class Agent : public Solver
    * @param expId The id (position within the replay memory) of the experience
    * @return The qRet value of the experience
    */
-  float retraceFunction(size_t expId);
+  float retraceFunction(const size_t expId);
 
   /**
    * @brief Listens to incoming experience from the given agent, sends back policy or terminates the episode depending on what's needed
    * @param agentId The Agent's ID
    */
-  void attendAgent(size_t agentId);
+  void attendAgent(const size_t agentId);
 
   /**
    * @brief Serializes the experience replay into a JSON compatible format

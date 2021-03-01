@@ -261,7 +261,7 @@ void Agent::testingGeneration()
     _testingReward[agentId] = testingAgents[agentId]["Testing Reward"].get<float>();
 }
 
-void Agent::attendAgent(size_t agentId)
+void Agent::attendAgent(const size_t agentId)
 {
   // Storage for the incoming experience
   knlohmann::json experience;
@@ -571,14 +571,15 @@ std::vector<size_t> Agent::generateMiniBatch(size_t miniBatchSize)
       _experienceReplay[expId].isOnPolicy = (importanceWeight > (1.0f / _experienceReplayOffPolicyCurrentCutoff)) && (importanceWeight < _experienceReplayOffPolicyCurrentCutoff);
       if (_experienceReplay[expId].isOnPolicy == false) offPolicyCount++;
     }
-
-    // Updating the off policy Ratio
-    float alpha = 0.01f; // ~100 updates to reach 63.2% of the target
-    _experienceReplayOffPolicyRatio = alpha * (float)offPolicyCount / (float)miniBatchSize + (1.0f - alpha) * _experienceReplayOffPolicyRatio;
-
-    // Updating the off policy Cutoff
-    _experienceReplayOffPolicyCurrentCutoff = 1.0f + _experienceReplayOffPolicyCutoffScale / (1.0f + _experienceReplayOffPolicyAnnealingRate * (float)_policyUpdateCount);
   }
+
+  // Updating the off policy Ratio
+  float alpha = 0.01f; // ~100 updates to reach 63.2% of the target
+  _experienceReplayOffPolicyRatio = alpha * (float)offPolicyCount / (float)miniBatchSize + (1.0f - alpha) * _experienceReplayOffPolicyRatio;
+
+  // Updating the off policy Cutoff
+  _experienceReplayOffPolicyCurrentCutoff = 1.0f + _experienceReplayOffPolicyCutoffScale / (1.0f + _experienceReplayOffPolicyAnnealingRate * (float)_policyUpdateCount);
+
 
   /**************************************************
    * Calculating retrace value for selected experience
@@ -641,7 +642,7 @@ size_t Agent::getTimeSequenceStartExpId(size_t expId)
   return startId;
 }
 
-float Agent::retraceFunction(size_t expId)
+float Agent::retraceFunction(const size_t expId)
 {
   // Finding the earliest experience corresponding to the same episode as this experience
   ssize_t endId = expId;

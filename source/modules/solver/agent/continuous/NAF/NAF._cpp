@@ -130,19 +130,25 @@ void NAF::trainPolicy()
     // Get state, action and policy for this experience
     auto expStateSequence = getStateTimeSequence(expId);
     auto expAction = _experienceReplay[expId].action;
-    auto expPolicy = _experienceReplay[expId].metadata["Experience Policy"];
+    auto expPolicy = _experienceReplay[expId].experiencePolicy;
 
     // Gathering metadata
     float V = _experienceReplay[expId].stateValue;
-    auto curPolicy = _experienceReplay[expId].metadata["Current Policy"];
+    auto curPolicy = _experienceReplay[expId].currentPolicy;
 
     // Gathering current policy information
-    auto curMeans = curPolicy["Action Means"].get<std::vector<float>>();
-    auto curSigmas = curPolicy["Action Sigmas"].get<std::vector<float>>();
-    auto curDiagP = curPolicy["Diag P"].get<std::vector<float>>();
+    auto curMeans = curPolicy.actionMeans;
+    auto curSigmas = curPolicy.actionSigmas;
+
+    std::vector<float> curDiagP(_problem->_actionVectorSize);
+    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+    {
+     float sqrtDiagP = std::sqrt(_covarianceScaling) / curSigmas[i];
+     curDiagP[i] = sqrtDiagP*sqrtDiagP;
+    }
 
     // Getting current experience probability and calculating importance weight
-    float probability = _experienceReplay[expId].metadata["Mini Batch"]["Probability"];
+    float probability = _experienceReplay[expId].probability;
     float weight = std::pow((float)_experienceReplay.size() * probability, -_importanceWeightAnnealingRate);
 
     float yHat = _experienceReplay[expId].reward;
@@ -168,7 +174,7 @@ void NAF::trainPolicy()
     cumulativeTdErrorSquarred += (diff * diff);
 
     // Updating experience priority
-    _experienceReplay[expId].metadata["Mini Batch"]["Priority"] = abs(diff);
+    _experienceReplay[expId].priority = abs(diff);
 
     // Reserving storage for critic/policy gradient
     std::vector<float> policyGradient(1 + 2 * _problem->_actionVectorSize);
@@ -235,10 +241,10 @@ void NAF::trainPolicy()
   _criticLearner->setInferenceHyperparameters(_qHatHyperparameter);
 }
 
-knlohmann::json NAF::runPolicy(const std::vector<std::vector<float>> &state)
+policy_t NAF::runPolicy(const std::vector<std::vector<float>> &state)
 {
   // Storage for policy
-  knlohmann::json policy;
+ policy_t policy;
 
   // Evaluating critic NN
   auto eval = _qLearner->getEvaluation({state})[0];
@@ -259,8 +265,8 @@ knlohmann::json NAF::runPolicy(const std::vector<std::vector<float>> &state)
       actionSigmas[i] = std::sqrt(_covarianceScaling) / std::sqrt(diagP[i]);
     }
 
-    policy["Action Means"] = actionMeans;
-    policy["Action Sigmas"] = actionSigmas;
+    policy.actionMeans = actionMeans;
+    policy.actionSigmas = actionSigmas;
   }
 
   if (_policyDistribution == "Beta")
@@ -277,12 +283,11 @@ knlohmann::json NAF::runPolicy(const std::vector<std::vector<float>> &state)
       if (actionBeta[i] > 1.0) actionBeta[i] = 1.0;
     }
 
-    policy["Action Alpha"] = actionAlpha;
-    policy["Action Beta"] = actionBeta;
+    policy.actionMeans = actionAlpha;
+    policy.actionSigmas = actionBeta;
   }
 
-  policy["State Value"] = stateValue;
-  policy["Diag P"] = diagP;
+  policy.stateValue = stateValue;
 
   return policy;
 }

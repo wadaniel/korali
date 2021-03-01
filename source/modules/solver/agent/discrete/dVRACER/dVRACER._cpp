@@ -75,16 +75,16 @@ void dVRACER::trainPolicy()
 
     // Get state, action and policy for this experience
     auto expStateSequence = getStateTimeSequence(expId);
-    auto expPolicy = _experienceReplay[expId].metadata["Experience Policy"];
+    auto expPolicy = _experienceReplay[expId].experiencePolicy;
     auto expAction = _experienceReplay[expId].action;
-    auto expActionIdx = expPolicy["Action Index"].get<float>();
-    auto expActionProbabilities = expPolicy["Action Probabilities"].get<std::vector<float>>();
+    auto expActionIdx = expPolicy.actionIndex;
+    auto expActionProbabilities = expPolicy.actionProbabilities;
 
     // Gathering metadata
     float V = _experienceReplay[expId].stateValue;
-    auto curPolicy = _experienceReplay[expId].metadata["Current Policy"];
+    auto curPolicy = _experienceReplay[expId].currentPolicy;
     float expVtbc = _experienceReplay[expId].retraceValue;
-    auto curActionProbabilities = curPolicy["Action Probabilities"].get<std::vector<float>>();
+    auto curActionProbabilities = curPolicy.actionProbabilities;
 
     // Gathering policyInformation
     V = _experienceReplay[expId].stateValue;
@@ -196,7 +196,7 @@ float dVRACER::stateValueFunction(const std::vector<std::vector<float>> &state)
   return V;
 }
 
-knlohmann::json dVRACER::runPolicy(const std::vector<std::vector<float>> &state)
+policy_t dVRACER::runPolicy(const std::vector<std::vector<float>> &state)
 {
   // Forward the neural network for this state
   std::vector<float> evaluation = _criticPolicyLearner->getEvaluation({state})[0];
@@ -242,9 +242,9 @@ knlohmann::json dVRACER::runPolicy(const std::vector<std::vector<float>> &state)
     pActions[i] *= invSumExpQVal;
 
   // Returning action probabilities along with state value and importance weight
-  knlohmann::json policy;
-  policy["State Value"] = V;
-  policy["Action Probabilities"] = pActions;
+  policy_t policy;
+  policy.stateValue = V;
+  policy.actionProbabilities= pActions;
 
   return policy;
 }

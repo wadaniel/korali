@@ -160,7 +160,8 @@ void NeuralNetwork::forward(const std::vector<std::vector<std::vector<float>>> &
 
   // Forward propagate layers, once per timestep
   for (_currentTimestep = 0; _currentTimestep < T; _currentTimestep++)
-    for (size_t i = 0; i < layerCount; i++) _layers[i]->forwardData();
+    for (size_t i = 0; i < layerCount; i++)
+      _layers[i]->forwardData();
 
   // Copying output values -- only for the last timestep provided in the input
   for (size_t b = 0; b < N; b++)

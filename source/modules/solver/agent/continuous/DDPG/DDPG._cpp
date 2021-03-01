@@ -138,18 +138,18 @@ void DDPG::trainPolicy()
     auto expStateSequence = getStateTimeSequence(expId);
     auto expStateActionSequence = getStateActionTimeSequence(expId);
     auto expAction = _experienceReplay[expId].action;
-    auto expPolicy = _experienceReplay[expId].metadata["Experience Policy"];
+    auto expPolicy = _experienceReplay[expId].experiencePolicy;
 
     // Gathering metadata
     float curV = _experienceReplay[expId].stateValue;
-    auto curPolicy = _experienceReplay[expId].metadata["Current Policy"];
+    auto curPolicy = _experienceReplay[expId].currentPolicy;
     float retV = _experienceReplay[expId].retraceValue;
 
     // Gathering policy information
-    auto expMeans = expPolicy["Action Means"].get<std::vector<float>>();
-    auto expSigmas = expPolicy["Action Sigmas"].get<std::vector<float>>();
-    auto curMeans = curPolicy["Action Means"].get<std::vector<float>>();
-    auto curSigmas = curPolicy["Action Sigmas"].get<std::vector<float>>();
+    auto expMeans = expPolicy.actionMeans;
+    auto expSigmas = expPolicy.actionSigmas;
+    auto curMeans = curPolicy.actionMeans;
+    auto curSigmas = curPolicy.actionSigmas;
 
     /*****************************************
     * Calculating Critic Gradients
@@ -245,7 +245,7 @@ void DDPG::trainPolicy()
   _pLearner->setInferenceHyperparameters(newPolicyHyperparameters);
 }
 
-knlohmann::json DDPG::runPolicy(const std::vector<std::vector<float>> &state)
+policy_t DDPG::runPolicy(const std::vector<std::vector<float>> &state)
 {
   auto eval = _pLearner->getEvaluation({state})[0];
 
@@ -264,9 +264,9 @@ knlohmann::json DDPG::runPolicy(const std::vector<std::vector<float>> &state)
     actionSigmas[i] = sigma;
   }
 
-  knlohmann::json policy;
-  policy["Action Means"] = actionMeans;
-  policy["Action Sigmas"] = actionSigmas;
+  policy_t policy;
+  policy.actionMeans = actionMeans;
+  policy.actionSigmas = actionSigmas;
   return policy;
 }
 

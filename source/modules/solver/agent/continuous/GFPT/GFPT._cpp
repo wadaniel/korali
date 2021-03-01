@@ -167,18 +167,18 @@ void GFPT::trainPolicy()
     auto expStateSequence = getStateTimeSequence(expId);
     auto expState = _experienceReplay[expId].state;
     auto expAction = _experienceReplay[expId].action;
-    auto expPolicy = _experienceReplay[expId].metadata["Experience Policy"];
+    auto expPolicy = _experienceReplay[expId].experiencePolicy;
 
     // Gathering metadata
     float curV = _experienceReplay[expId].stateValue;
-    auto curPolicy = _experienceReplay[expId].metadata["Current Policy"];
+    auto curPolicy = _experienceReplay[expId].currentPolicy;
     float retV = _experienceReplay[expId].retraceValue;
 
     // Gathering policy information
-    auto expMeans = expPolicy["Action Means"].get<std::vector<float>>();
-    auto expSigmas = expPolicy["Action Sigmas"].get<std::vector<float>>();
-    auto curMeans = curPolicy["Action Means"].get<std::vector<float>>();
-    auto curSigmas = curPolicy["Action Sigmas"].get<std::vector<float>>();
+    auto expMeans = expPolicy.actionMeans;
+    auto expSigmas = expPolicy.actionSigmas;
+    auto curMeans = curPolicy.actionMeans;
+    auto curSigmas = curPolicy.actionSigmas;
 
     /*****************************************
     * Calculating Critic Gradients
@@ -331,7 +331,7 @@ knlohmann::json GFPT::optimizeAction(const std::vector<std::vector<float>> state
   return result;
 }
 
-knlohmann::json GFPT::runPolicy(const std::vector<std::vector<float>> &state)
+policy_t GFPT::runPolicy(const std::vector<std::vector<float>> &state)
 {
   // Forward the neural network for this state
   auto evaluation = _vpLearner->getEvaluation({state})[0];
@@ -345,10 +345,10 @@ knlohmann::json GFPT::runPolicy(const std::vector<std::vector<float>> &state)
     actionSigmas[i] = evaluation[_problem->_actionVectorSize + i + 1];
   }
 
-  knlohmann::json policy;
-  policy["Action Means"] = actionMeans;
-  policy["Action Sigmas"] = actionSigmas;
-  policy["State Value"] = stateValue;
+  policy_t policy;
+  policy.actionMeans = actionMeans;
+  policy.actionSigmas = actionSigmas;
+  policy.stateValue = stateValue;
   return policy;
 }
 

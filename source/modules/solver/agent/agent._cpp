@@ -284,7 +284,6 @@ void Agent::rescaleRewards()
       sumReward += reward;
       sumReward2 += reward*reward;
     }
-    _rewardRescalingSdev = std::sqrt(sumReward2+1e-9);
 
     float newRewardRescalingMean = sumReward / (float)_experienceReplay.size();
     float newRewardRescalingSdev = std::sqrt(sumReward2 / (float)_experienceReplay.size() - newRewardRescalingMean * newRewardRescalingMean + 1e-9);

@@ -98,9 +98,6 @@ void Agent::initialize()
     // Creating storate for _agents and their status
     _agents.resize(_agentCount);
     _isAgentRunning.resize(_agentCount, false);
-
-    // Storage for the entire episodes before adding it to the replay memory
-    _episodes.resize(_agentCount);
   }
 
   if (_mode == "Testing")
@@ -263,45 +260,29 @@ void Agent::testingGeneration()
 
 void Agent::attendAgent(const size_t agentId)
 {
-  // Storage for the incoming experience
-  knlohmann::json experience;
+  auto beginTime = std::chrono::steady_clock::now(); // Profiling
+
+  // Storage for the incoming message
+  knlohmann::json message;
 
   // Retrieving the experience, if any has arrived for the current agent.
-  if (_agents[agentId].retrievePendingMessage(experience))
+  if (_agents[agentId].retrievePendingMessage(message))
   {
-    // Storage to determine terminal state
-    bool isTerminal = false;
-
-    // Storing experience in the episode
-    _episodes[agentId].push_back(experience);
-
-    // Check if experience is terminal
-    isTerminal = experience["Termination"] != "Non Terminal";
-
-    auto beginTime = std::chrono::steady_clock::now(); // Profiling
+    // Getting episode Id
+    size_t episodeId = message["Sample Id"];
 
     // If agent requested new policy, send the new hyperparameters
-    if (experience["Request New Policy"] == true)
+    if (message["Action"] == "Request New Policy")
       KORALI_SEND_MSG_TO_SAMPLE(_agents[agentId], _trainingCurrentPolicy);
 
-    auto endTime = std::chrono::steady_clock::now();                                                                    // Profiling
-    _sessionAgentAttendingTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
-    _generationAgentAttendingTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
-
-    if (isTerminal)
+    if (message["Action"] == "Send Episode")
     {
-      // Getting episode Id
-      size_t episodeId = _agents[agentId]["Sample Id"];
-
       //  Now that we have the entire episode, process its experiences (add them to replay memory)
-      processEpisode(episodeId, _episodes[agentId]);
+      processEpisode(episodeId, message["Experiences"]);
 
       // Increasing total experience counters
-      _experienceCount += _episodes[agentId].size();
-      _sessionExperienceCount += _episodes[agentId].size();
-
-      // Now clear the episode of all its current experiences
-      _episodes[agentId].clear();
+      _experienceCount += message["Experiences"].size();
+      _sessionExperienceCount += message["Experiences"].size();
 
       // Waiting for the agent to come back with all the information
       KORALI_WAIT(_agents[agentId]);
@@ -353,9 +334,13 @@ void Agent::attendAgent(const size_t agentId)
       _sessionEpisodeCount++;
     }
   }
+
+  auto endTime = std::chrono::steady_clock::now();                                                                    // Profiling
+  _sessionAgentAttendingTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
+  _generationAgentAttendingTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
 }
 
-void Agent::processEpisode(size_t episodeId, std::vector<knlohmann::json> &episode)
+void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
 {
   /*********************************************************************
   * Adding episode's experiences into the replay memory

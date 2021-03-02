@@ -41,12 +41,13 @@ e["Variables"][4]["Initial Exploration Noise"] = 1.0
 e["Solver"]["Type"] = "Agent / Continuous / VRACER"
 e["Solver"]["Mode"] = "Training"
 e["Solver"]["Experiences Between Policy Updates"] = 10
+e["Solver"]["Experiences Between Reward Rescaling"] = 1000
 e["Solver"]["Episodes Per Generation"] = 1
 
 ### Defining the configuration of replay memory
 
-e["Solver"]["Experience Replay"]["Start Size"] = 1000
-e["Solver"]["Experience Replay"]["Maximum Size"] = 10000
+e["Solver"]["Experience Replay"]["Start Size"] = 10000
+e["Solver"]["Experience Replay"]["Maximum Size"] = 20000
 
 ## Defining Neural Network Configuration for Policy and Critic into Critic Container
 
@@ -76,7 +77,7 @@ e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 450
 
 ### Setting file output configuration
 
-e["File Output"]["Enabled"] = False
+e["File Output"]["Enabled"] = True
 
 ### Running Experiment
 

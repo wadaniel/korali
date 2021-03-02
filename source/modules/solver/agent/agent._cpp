@@ -456,8 +456,7 @@ void Agent::processEpisode(size_t episodeId, std::vector<knlohmann::json> &episo
     e.episodePos = expId;
 
     // Keeping statistics
-    //cumulativeReward += unscaledReward;
-    cumulativeReward += e.reward;
+    cumulativeReward += unscaledReward;
 
     // Scale reward
     _experienceReplay.add(e);

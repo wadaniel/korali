@@ -150,6 +150,7 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
      knlohmann::json message;
 
      // Sending request to engine
+     message["Sample Id"] = agent["Sample Id"];
      message["Action"] = "Request New Policy";
      KORALI_SEND_MSG_TO_ENGINE(message);
 

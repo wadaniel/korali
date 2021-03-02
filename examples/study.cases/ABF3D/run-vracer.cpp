@@ -108,7 +108,7 @@ int main(int argc, char *argv[])
 
   e["Console Output"]["Verbosity"] = "Detailed";
   e["File Output"]["Enabled"] = true;
-  e["File Output"]["Frequency"] = 10;
+  e["File Output"]["Frequency"] = 100;
   e["File Output"]["Path"] = _resultDir;
 
   auto k = korali::Engine();

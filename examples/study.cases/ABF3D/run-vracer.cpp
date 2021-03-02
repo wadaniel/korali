@@ -6,7 +6,7 @@ int main(int argc, char *argv[])
   /////// Initializing environment
 
   _resultDir = "_result_vracer";
-  initializeEnvironment("_config/helix_2d_eu_const.json");
+  initializeEnvironment("_config/dpd_2_d_eu_gaussian.json");
 
   auto e = korali::Experiment();
 
@@ -19,9 +19,8 @@ int main(int argc, char *argv[])
 
   e["Problem"]["Type"] = "Reinforcement Learning / Continuous";
   e["Problem"]["Environment Function"] = &runEnvironment;
-  e["Problem"]["Training Reward Threshold"] = 1.5;
+  e["Problem"]["Training Reward Threshold"] = 1.6;
   e["Problem"]["Policy Testing Episodes"] = 20;
-  e["Problem"]["Actions Between Policy Updates"] = 1;
 
   //// Setting state variables
 
@@ -103,7 +102,7 @@ int main(int argc, char *argv[])
 
   ////// Defining Termination Criteria
 
-  e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 1.5;
+  e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 1.6;
 
   ////// Setting file output configuration
 

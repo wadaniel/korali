@@ -188,8 +188,8 @@ void Agent::trainingGeneration()
     if (_experienceCount >= _experienceReplayStartSize)
     {
       
-      // If we accumulated enough experiences between rescaling updates, we rescale rewards again
-      if (_experienceCount >= _experiencesBetweenRewardRescaling * _rewardRescalingCount + _experienceReplayStartSize)
+      // If we performed enough policy updates, we rescale rewards again
+      if (_policyUpdateCount >= _updatesBetweenRewardRescaling * _rewardRescalingCount)
       {
         rescaleRewards();
       }
@@ -274,20 +274,24 @@ void Agent::testingGeneration()
 
 void Agent::rescaleRewards()
 {
-    
-    float sumReward = 0.0;
+    //float sumReward = 0.0;
     float sumReward2 = 0.0;
 
+    // Calculate mean and standard deviation of rewards.
     for (size_t i = 0; i < _experienceReplay.size(); i++)
     {
-      float reward = _experienceReplay[i].reward  * _rewardRescalingSdev + _rewardRescalingMean;
-      sumReward += reward;
+      float reward = _experienceReplay[i].reward;
+      //float reward = _experienceReplay[i].reward  * _rewardRescalingSdev + _rewardRescalingMean;
+      //sumReward += reward;
       sumReward2 += reward*reward;
     }
+    _rewardRescalingSdev = std::sqrt(sumReward2+1e-9);
 
+    /*
     float newRewardRescalingMean = sumReward / (float)_experienceReplay.size();
     float newRewardRescalingSdev = std::sqrt(sumReward2 / (float)_experienceReplay.size() - newRewardRescalingMean * newRewardRescalingMean + 1e-9);
 
+    // Rescale rewards s.t. mean equals 0.0 and standard deviation 1.0.
     for (size_t i = 0; i < _experienceReplay.size(); i++)
     {
       _experienceReplay[i].reward *= _rewardRescalingSdev;
@@ -298,8 +302,9 @@ void Agent::rescaleRewards()
 
     _rewardRescalingMean = newRewardRescalingMean;
     _rewardRescalingSdev = newRewardRescalingSdev;
-
-    // Recalculating retrace value during first update.
+    */
+    
+    // Recalculating retrace value with rescalred rewards during first update.
     if(_rewardRescalingCount == 0)
     {
       float retV = 0.0;
@@ -307,17 +312,16 @@ void Agent::rescaleRewards()
       {
         if(_experienceReplay[expId].termination == e_terminal) retV = 0.0;
       
-        retV = _discountFactor * retV + _experienceReplay[expId].reward;
+        retV = _discountFactor * retV + _experienceReplay[expId].reward / _rewardRescalingSdev;
+        //retV = _discountFactor * retV + _experienceReplay[expId].reward;
 
         _experienceReplay[expId].stateValue = retV;
         _experienceReplay[expId].retraceValue = retV;
       }
     }
-
-    _rewardRescalingCount++;
     
+    _rewardRescalingCount++;
     printf( "new reward mean and sdev %f %f\n", _rewardRescalingMean, _rewardRescalingSdev);
-  
 }
 
 void Agent::attendAgent(size_t agentId)
@@ -432,8 +436,9 @@ void Agent::processEpisode(size_t episodeId, std::vector<knlohmann::json> &episo
     e.state = episode[expId]["State"].get<std::vector<float>>();
     e.action = episode[expId]["Action"].get<std::vector<float>>();
     
-    float unscaledReward = episode[expId]["Reward"].get<float>();
-    e.reward = (unscaledReward - _rewardRescalingMean) / _rewardRescalingSdev;
+    e.reward = episode[expId]["Reward"].get<float>();
+    //float unscaledReward = episode[expId]["Reward"].get<float>();
+    //e.reward = (unscaledReward - _rewardRescalingMean) / _rewardRescalingSdev;
 
     if (episode[expId]["Termination"] == "Non Terminal") e.termination = e_nonTerminal;
     if (episode[expId]["Termination"] == "Terminal") e.termination = e_terminal;
@@ -455,7 +460,8 @@ void Agent::processEpisode(size_t episodeId, std::vector<knlohmann::json> &episo
     e.episodePos = expId;
 
     // Keeping statistics
-    cumulativeReward += unscaledReward;
+    //cumulativeReward += unscaledReward;
+    cumulativeReward += e.reward;
 
     // Scale reward
     _experienceReplay.add(e);
@@ -491,7 +497,7 @@ void Agent::processEpisode(size_t episodeId, std::vector<knlohmann::json> &episo
   for (ssize_t expId = endId; expId >= startId; expId--)
   {
     // Calculating retrace value with the discount factor. Importance weight is 1.0f because the policy is current.
-    retV = _discountFactor * retV + _experienceReplay[expId].reward;
+    retV = _discountFactor * retV + _experienceReplay[expId].reward / _rewardRescalingSdev;
 
     // Setting initial retrace value in the experience's cache
     _experienceReplay[expId].stateValue = retV;
@@ -727,7 +733,7 @@ float Agent::retraceFunction(size_t expId)
     auto &exp = _experienceReplay[curId];
 
     // Getting current reward, action, and state
-    const auto curReward = exp.reward;
+    const auto curReward = exp.reward / _rewardRescalingSdev;
 
     // Calculating state value function
     const float curV = exp.stateValue;

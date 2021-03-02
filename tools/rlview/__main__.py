@@ -102,7 +102,7 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
   if showSamples:
     ax.plot(cumulativeObsList, rewardHistory, 'x', markersize=1.3, color=cmap(colCurrIndex), alpha=0.5, zorder=0)
   if showCI > 0.0:
-    ax.fill_between(cumulativeObsList, confIntervalLowerHistory, confIntervalUpperHistory, color=cmap(colCurrIndex), alpha=0.2)
+    ax.fill_between(cumulativeObsList, confIntervalLowerHistory, confIntervalUpperHistory, color=cmap(colCurrIndex), facecolor="none", alpha=0.2)
   
   # Updating color index
   if (len(results) > 1):

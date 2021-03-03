@@ -19,7 +19,7 @@ e = korali.Experiment()
 
 ### Defining results folder and loading previous results, if any
 
-resultFolder = '_result_vracer/' 
+resultFolder = '_result_vracer_walker_x0/' 
 e.loadState(resultFolder + '/latest');
 
 ### Initializing openAI Gym environment
@@ -74,7 +74,7 @@ e["Solver"]["Termination Criteria"]["Max Experiences"] = 10e6
 e["Solver"]["Experience Replay"]["Serialize"] = True
 e["Console Output"]["Verbosity"] = "Detailed"
 e["File Output"]["Enabled"] = True
-e["File Output"]["Frequency"] = 100
+e["File Output"]["Frequency"] = 500
 e["File Output"]["Path"] = resultFolder
 
 ### Running Experiment

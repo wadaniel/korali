@@ -369,8 +369,8 @@ void Agent::updateRewardFunction()
       featureWeightGradient[k] -= std::exp(exponents[_backgroundBatchSize + n] - logPartitionFunction) * gradReturn[k];
   }
 
-  for (size_t k = 0; k < _problem->_featureVectorSize; ++k)
-    printf("fwg[%zu] %f \n", k, featureWeightGradient[k]);
+  //for (size_t k = 0; k < _problem->_featureVectorSize; ++k)
+  //printf("fwg[%zu] %f \n", k, featureWeightGradient[k]);
 
   for (size_t n = 0; n < _demonstrationBatchSize; ++n)
   {
@@ -384,7 +384,7 @@ void Agent::updateRewardFunction()
   for (size_t k = 0; k < _problem->_featureVectorSize; ++k)
   {
     _featureWeights[k] += _rewardfunctionLearningRate * featureWeightGradient[k];
-    printf("fw[%zu] %f (%f)\n", k, _featureWeights[k], featureWeightGradient[k]);
+    //printf("fw[%zu] %f (%f)\n", k, _featureWeights[k], featureWeightGradient[k]);
   }
 }
 
@@ -1063,6 +1063,11 @@ void Agent::printGenerationAfter()
     _k->_logger->logInfo("Detailed", " + Avg Agent Policy Evaluation Time:    [%5.3fs] - [%3.3fs]\n", _generationAgentPolicyEvaluationTime / 1.0e+9, _sessionAgentPolicyEvaluationTime / 1.0e+9);
     _k->_logger->logInfo("Detailed", " + Running Time:                        [%5.3fs] - [%3.3fs]\n", _generationRunningTime / 1.0e+9, _sessionRunningTime / 1.0e+9);
     _k->_logger->logInfo("Detailed", " + [I/O] Result File Saving Time:        %5.3fs\n", _k->_resultSavingTime / 1.0e+9);
+  }
+
+  for (size_t k = 0; k < _problem->_featureVectorSize; ++k)
+  {
+    printf("fw[%zu] %f\n", k, _featureWeights[k]);
   }
 
   if (_mode == "Testing")

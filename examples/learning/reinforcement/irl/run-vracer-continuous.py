@@ -26,8 +26,10 @@ for trajectory in obsstates:
         # Cart Position, Cart Velocity, Pole Angle, Pole Angular Velocity
         feature1 = np.cos(state[2])
         feature2 = state[1]*state[1]
+        feature3 = np.random.normal(0.0, 0.1) # dummy
         #features.append([feature1])
-        features.append([feature1, feature2]) 
+        #features.append([feature1, feature2]) 
+        features.append([feature1, feature2, feature3]) 
         
         if(maxFeatures[0] < feature1):
             maxFeatures[0] = feature1
@@ -78,13 +80,12 @@ e["Variables"][4]["Initial Exploration Noise"] = 1.0
 
 e["Solver"]["Type"] = "Agent / Continuous / VRACER"
 e["Solver"]["Mode"] = "Training"
-e["Solver"]["Experiences Between Policy Updates"] = 10
+e["Solver"]["Experiences Between Policy Updates"] = 1
 e["Solver"]["Episodes Per Generation"] = 1
-e["Solver"]["Cache Persistence"] = 100
 
 ### Defining the configuration of replay memory
 
-e["Solver"]["Experience Replay"]["Start Size"] = 65536
+e["Solver"]["Experience Replay"]["Start Size"] = 32768
 e["Solver"]["Experience Replay"]["Maximum Size"] = 131072
 
 ## Defining Neural Network Configuration for Policy and Critic into Critic Container
@@ -114,11 +115,14 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tan
 
 ### Defining Termination Criteria
 
-e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 450
+#e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 450
+e["Solver"]["Termination Criteria"]["Max Experiences"] = 1e6
 
 ### Setting file output configuration
 
-e["File Output"]["Enabled"] = False
+e["File Output"]["Enabled"] = True
+e["File Output"]["Frequency"] = 100
+e["File Output"]["Path"] = '_korali_results_f3'
 
 ### Running Experiment
 

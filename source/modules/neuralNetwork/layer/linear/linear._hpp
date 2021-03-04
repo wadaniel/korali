@@ -48,6 +48,11 @@ class Linear : public Layer
   dnnl::memory _weightsMem;
 
   /**
+ * @brief oneDNN Memory object descriptor to contain the weights of inner product with incoming channels
+ */
+  dnnl::memory _weightsReorderMem;
+
+  /**
  * @brief oneDNN Memory object descriptor to contain the bias to add to incoming channels
  */
   dnnl::memory _biasMem;

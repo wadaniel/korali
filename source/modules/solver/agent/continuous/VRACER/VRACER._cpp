@@ -297,6 +297,15 @@ policy_t VRACER::runPolicy(const std::vector<std::vector<float>> &state)
     policy.actionSigmas = actionBeta;
   }
 
+  // Sanity checks for means and sigmas
+  for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+   if (std::isfinite(policy.actionMeans[i]) == false)
+    KORALI_LOG_ERROR("Policy means variable %lu returned an invalid value: %f\n", policy.actionMeans[i]);
+
+  for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+     if (std::isfinite(policy.actionSigmas[i]) == false)
+      KORALI_LOG_ERROR("Policy means variable %lu returned an invalid value: %f\n", policy.actionSigmas[i]);
+
   return policy;
 }
 

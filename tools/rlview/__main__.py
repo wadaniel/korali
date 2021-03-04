@@ -94,8 +94,8 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
   confIntervalHistory = np.array(confIntervalHistory)
 
   # Plotting common plot
-  ax.plot(cumulativeObsList, rewardHistory, 'x', markersize=1.3, color=cmap(colCurrIndex), alpha=0.5, zorder=0)
-  ax.plot(cumulativeObsList, meanHistory, '-', label=str(averageDepth) + '-Episode Average (' + dirs[resId] + ')', color=cmap(colCurrIndex), zorder=1)
+  ax.plot(cumulativeObsList, rewardHistory, 'x', markersize=1.3, color=cmap(colCurrIndex), alpha=0.15, zorder=0)
+  ax.plot(cumulativeObsList, meanHistory, '-', color=cmap(colCurrIndex), zorder=1)
   
   # Updating color index
   if (len(results) > 1):
@@ -110,27 +110,26 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
  ax.set_xlabel('# Observations')
  ax.set_title('Korali RL History Viewer')
  
- ax.legend(loc='upper left', ncol=1, fontsize=8)
  ax.yaxis.grid()
  ax.set_xlim([0, maxPlotObservations-1])
  ax.set_ylim([minPlotReward - 0.1*abs(minPlotReward), maxPlotReward + 0.1*abs(maxPlotReward)])
  
- if (trainingRewardThreshold != math.inf): 
-  ax.hlines(trainingRewardThreshold, 0, maxPlotObservations, linestyle='dashed', label='Training Threshold', color='red')
+ #if (trainingRewardThreshold != math.inf): 
+ # ax.hlines(trainingRewardThreshold, 0, maxPlotObservations, linestyle='dashed', label='Training Threshold', color='red')
 
- if (testingRewardThreshold != math.inf): 
-  ax.hlines(testingRewardThreshold, 0, maxPlotObservations, linestyle='dashdot', label='Testing Threshold', color='blue')
+ #if (testingRewardThreshold != math.inf): 
+ # ax.hlines(testingRewardThreshold, 0, maxPlotObservations, linestyle='dashdot', label='Testing Threshold', color='blue')
 
 ##################### Results parser
 
 def parseResults(dir):
 
  results = [ ]
+ 
  for p in dir:
   configFile = p + '/latest'
   if (not os.path.isfile(configFile)):
-    print(
-        "[Korali] Error: Did not find any results in the {0} folder...".format(p))
+    print("[Korali] Error: Did not find any results in the {0} folder...".format(p))
     exit(-1)
  
   with open(configFile) as f:
@@ -157,8 +156,48 @@ def parseResults(dir):
  
   del genList[0]
   results.append(genList)
-
+  
  return results
+ 
+##################### Plotting Smarties Results
+
+def plotSmartiesResults(ax, smartiesFiles, averageDepth):
+ 
+ results = [ ]
+ 
+ for p in smartiesFiles:
+  resultFile = p
+  if (not os.path.isfile(resultFile)):
+    print("[Korali] Error: Did not find any results in the {0} file...".format(p))
+    exit(-1)
+ 
+  with open(resultFile) as f:
+    resRows = f.readlines()[1:]
+ 
+  rewardHistory = [ ]
+  cumulativeObsList = [ ]
+  for i, r in enumerate(resRows):
+   #if (i % 20 == 0):
+   columnInfo = r.split()
+   rewardHistory.append(float(columnInfo[4]))
+   cumulativeObsList.append(int(columnInfo[1]) + 131072)
+
+  #for i, r in enumerate(avgRewards):
+  # print('Nobs: ' + str(numObs[i]) + ' - avgRewards: ' + str(avgRewards[i]))
+   
+  meanHistory = [ rewardHistory[0] ]
+  for i in range(1, len(rewardHistory)):
+   startPos = i - int(averageDepth)
+   if (startPos < 0): startPos = 0
+   endPos = i
+   data = rewardHistory[startPos:endPos]
+   mean = np.mean(data)
+   meanHistory.append(mean)
+  meanHistory = np.array(meanHistory)
+  
+  # Plotting common plot
+  ax.plot(cumulativeObsList, meanHistory, '--', label='Smarties', color='red', zorder=1)
+  ax.plot(cumulativeObsList, rewardHistory, 'x', markersize=1.3, color='red', alpha=0.15, zorder=0)
 
 ##################### Main Routine: Parsing arguments and result files
   
@@ -214,6 +253,12 @@ if __name__ == '__main__':
       help='Run without graphics (for testing purpose)',
       action='store_true',
       required=False)
+ parser.add_argument(
+     '--smartiesResults',
+     help='Path(s) to smarties result files, separated by space',
+     default=[ ],
+     required=False,
+     nargs='*')
  args = parser.parse_args()
 
  ### Checking installation
@@ -229,7 +274,10 @@ if __name__ == '__main__':
  ### Reading values from result files
 
  results = parseResults(args.dir)
-  
+ if (len(results) == 0): 
+  print('Error: No result folders have been provided for plotting.')
+  exit(-1)
+ 
  ### Creating figure(s)
   
  fig1 = plt.figure()
@@ -238,6 +286,7 @@ if __name__ == '__main__':
  ### Creating plots
      
  plotRewardHistory(ax1, args.dir, results, args.minReward, args.maxReward, args.averageDepth, args.maxObservations)
+ plotSmartiesResults(ax1, args.smartiesResults, args.averageDepth)
  plt.draw()
  
  ### Printing live results if update frequency > 0
@@ -249,6 +298,7 @@ if __name__ == '__main__':
    plt.pause(fq)
    ax1.clear()
    plotRewardHistory(ax1, args.dir, results, args.minReward, args.maxReward, args.averageDepth, args.maxObservations)
+   plotSmartiesResults(ax1, args.smartiesResults, args.averageDepth)
    plt.draw()
    
  plt.show() 

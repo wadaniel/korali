@@ -103,11 +103,21 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
   // Saving experiences
   while (agent["Termination"] == "Non Terminal")
   {
+    // Sanity checks for state
+    for (size_t i = 0; i < _stateVectorSize; i++)
+     if (std::isfinite(agent["State"][i].get<float>()) == false)
+      KORALI_LOG_ERROR("Environment state variable %lu returned an invalid value: %f\n", agent["State"][i].get<float>());
+
     // Generating new action from policy
     auto beginTime0 = std::chrono::steady_clock::now(); // Profiling
     _agent->getAction(agent);
     auto endTime0 = std::chrono::steady_clock::now();                                                                 // Profiling
     agentPolicyEvaluationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime0 - beginTime0).count(); // Profiling
+
+    // Sanity checks for action
+    for (size_t i = 0; i < _actionVectorSize; i++)
+     if (std::isfinite(agent["Action"][i].get<float>()) == false)
+      KORALI_LOG_ERROR("Agent agent variable %lu returned an invalid value: %f\n", agent["Action"][i].get<float>());
 
     // Storing the current state
     episode["Experiences"][actionCount]["State"] = agent["State"];
@@ -124,6 +134,10 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
     auto endTime1 = std::chrono::steady_clock::now();                                                            // Profiling
     agentComputationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime1 - beginTime1).count(); // Profiling
 
+    // Sanity checks for reward
+    if (std::isfinite(agent["Reward"].get<float>()) == false)
+     KORALI_LOG_ERROR("Environment reward returned an invalid value: %f\n", agent["Reward"].get<float>());
+
     // Storing experience's reward
     episode["Experiences"][actionCount]["Reward"] = agent["Reward"];
 
@@ -131,7 +145,15 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
     episode["Experiences"][actionCount]["Termination"] = agent["Termination"];
 
     // If the episode was truncated, then save the terminal state
-    if (agent["Termination"] == "Truncated") episode["Experiences"][actionCount]["Truncated State"] = agent["State"];
+    if (agent["Termination"] == "Truncated")
+    {
+     episode["Experiences"][actionCount]["Truncated State"] = agent["State"];
+
+     // Sanity checks for truncated state
+     for (size_t i = 0; i < _stateVectorSize; i++)
+      if (std::isfinite(agent["State"][i].get<float>()) == false)
+       KORALI_LOG_ERROR("Environment truncatedstate variable %lu returned an invalid value: %f\n", agent["State"][i].get<float>());
+    }
 
     // Adding to cumulative training reward
     trainingReward += agent["Reward"].get<float>();

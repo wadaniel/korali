@@ -368,7 +368,10 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
     }
 
     if (isDefined(episode[expId], "Policy", "State Value"))
+    {
      e.experiencePolicy.stateValue = episode[expId]["Policy"]["State Value"].get<float>();
+     e.stateValue = episode[expId]["Policy"]["State Value"].get<float>();
+    }
 
     if (isDefined(episode[expId], "Policy", "Action Means"))
      e.experiencePolicy.actionMeans = episode[expId]["Policy"]["Action Means"].get<std::vector<float>>();
@@ -418,6 +421,10 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
 
     // Calculating the state value function of the truncated state
     float truncatedV = stateValueFunction(expTruncatedStateSequence);
+
+    // Sanity checks for truncated state value
+    if (std::isfinite(truncatedV) == false)
+     KORALI_LOG_ERROR("Calculated state value for truncated state returned an invalid value: %f\n", truncatedV);
 
     // Adding truncated state value to the retrace value
     retV += _discountFactor * truncatedV;
@@ -551,8 +558,16 @@ std::vector<size_t> Agent::generateMiniBatch(size_t miniBatchSize)
     // Grabbing state value from the latenst policy
     auto stateValue = curPolicy.stateValue;
 
+    // Sanity checks for state value
+    if (std::isfinite(stateValue) == false)
+     KORALI_LOG_ERROR("Calculated state value for state returned an invalid value: %f\n", stateValue);
+
     // Compute importance weight
     const float importanceWeight = calculateImportanceWeight(expAction, curPolicy, expPolicy);
+
+    // Sanity checks for state value
+    if (std::isfinite(importanceWeight) == false)
+     KORALI_LOG_ERROR("Calculated state value for importanceWeight returned an invalid value: %f\n", importanceWeight);
 
     // If this is the truncated experience of an episode, then obtain truncated state value
     float truncatedV = 0.0f;
@@ -793,6 +808,7 @@ void Agent::serializeExperienceReplay()
     stateJson["Experience Replay"][i]["State"] = _experienceReplay[i].state;
     stateJson["Experience Replay"][i]["Action"] = _experienceReplay[i].action;
     stateJson["Experience Replay"][i]["Reward"] = _experienceReplay[i].reward;
+    stateJson["Experience Replay"][i]["State Value"] = _experienceReplay[i].stateValue;
     stateJson["Experience Replay"][i]["Retrace Value"] = _experienceReplay[i].retraceValue;
     stateJson["Experience Replay"][i]["Importance Weight"] = _experienceReplay[i].importanceWeight;
     stateJson["Experience Replay"][i]["Is On Policy"] = _experienceReplay[i].isOnPolicy;
@@ -800,7 +816,7 @@ void Agent::serializeExperienceReplay()
     stateJson["Experience Replay"][i]["Truncated State Value"] = _experienceReplay[i].truncatedStateValue;
     stateJson["Experience Replay"][i]["Termination"] = _experienceReplay[i].termination;
 
-    stateJson["Experience Replay"][i]["Experience Policy"]["State Value"] = _experienceReplay[i].experiencePolicy.stateValue;
+    stateJson["Experience Replay"][i]["Experience Policy"]["State Value"] = _experienceReplay[i].stateValue;
     stateJson["Experience Replay"][i]["Experience Policy"]["Action Means"] = _experienceReplay[i].experiencePolicy.actionMeans;
     stateJson["Experience Replay"][i]["Experience Policy"]["Action Sigmas"] = _experienceReplay[i].experiencePolicy.actionSigmas;
     stateJson["Experience Replay"][i]["Experience Policy"]["Action Index"] = _experienceReplay[i].experiencePolicy.actionIndex;
@@ -863,6 +879,7 @@ void Agent::deserializeExperienceReplay()
     e.state = stateJson["Experience Replay"][i]["State"].get<std::vector<float>>();
     e.action = stateJson["Experience Replay"][i]["Action"].get<std::vector<float>>();
     e.reward = stateJson["Experience Replay"][i]["Reward"].get<float>();
+    e.stateValue = stateJson["Experience Replay"][i]["State Value"].get<float>();
     e.retraceValue = stateJson["Experience Replay"][i]["Retrace Value"].get<float>();
     e.importanceWeight = stateJson["Experience Replay"][i]["Importance Weight"].get<float>();
     e.isOnPolicy = stateJson["Experience Replay"][i]["Is On Policy"].get<bool>();

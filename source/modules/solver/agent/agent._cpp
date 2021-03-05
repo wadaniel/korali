@@ -372,6 +372,10 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
      e.experiencePolicy.stateValue = episode[expId]["Policy"]["State Value"].get<float>();
      e.stateValue = episode[expId]["Policy"]["State Value"].get<float>();
     }
+    else
+    {
+     KORALI_LOG_ERROR("Policy has not produced state value for the current experience.\n");
+    }
 
     if (isDefined(episode[expId], "Policy", "Action Means"))
      e.experiencePolicy.actionMeans = episode[expId]["Policy"]["Action Means"].get<std::vector<float>>();
@@ -627,7 +631,7 @@ std::vector<size_t> Agent::generateMiniBatch(size_t miniBatchSize)
   for (const auto &episode : episodeMaxExperienceId) experienceRetraceIds.push_back(episode.second);
 
     // Running all experiences in parallel
-#pragma omp parallel for schedule(guided)
+  #pragma omp parallel for schedule(guided)
   for (size_t i = 0; i < experienceRetraceIds.size(); i++) retraceFunction(experienceRetraceIds[i]);
 
   auto endTime = std::chrono::steady_clock::now();
@@ -686,7 +690,7 @@ float Agent::retraceFunction(const size_t expId)
     auto &exp = _experienceReplay[curId];
 
     // Getting current reward, action, and state
-    const auto curReward = exp.reward;
+    const float curReward = exp.reward;
 
     // Calculating state value function
     const float curV = exp.stateValue;

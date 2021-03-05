@@ -80,12 +80,12 @@ void runEnvironment(korali::Sample &s)
     s["State"] = state;
 
     //  Printing State:
-    if (curActionIndex % 100 == 0)
-    {
-      printf("State %lu: [ %.3f", curActionIndex, state[0]);
-      for (size_t i = 1; i < state.size(); i++) printf(", %.3f", state[i]);
-      printf("]\n");
-    }
+//    if (curActionIndex % 100 == 0)
+//    {
+//      printf("State %lu: [ %.3f", curActionIndex, state[0]);
+//      for (size_t i = 1; i < state.size(); i++) printf(", %.3f", state[i]);
+//      printf("]\n");
+//    }
 
     // Increasing action count
     curActionIndex++;

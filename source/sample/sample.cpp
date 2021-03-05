@@ -73,6 +73,11 @@ knlohmann::json &Sample::globals()
   return *_globals;
 }
 
+Sample::~Sample()
+{
+ _js.getJson().clear();
+}
+
 bool Sample::contains(const std::string &key) { return _self->_js.contains(key); }
 knlohmann::json &Sample::operator[](const std::string &key) { return _self->_js[key]; }
 knlohmann::json &Sample::operator[](const unsigned long int &key) { return _self->_js[key]; }

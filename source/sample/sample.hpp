@@ -110,6 +110,8 @@ class Sample
   */
   Sample();
 
+  ~Sample();
+
   /**
   * @brief Runs a computational model by reinterpreting a numerical pointer to a function(sample) object to an actual function pointer and calls it.
   * @param functionPosition Number containing a pointer to a function.

@@ -12,13 +12,25 @@ namespace korali
 * @brief Temporary storage to hold the pointer to the current sample to process
 */
 Sample *_currentSample;
+void Conduit::coroutineWrapper() {
 
-void Conduit::coroutineWrapper()
+ // Getting pointers for sample and engine
+ Sample *sample = _currentSample;
+ Engine *engine = _engineStack.top();
+
+ engine->_conduit->runSample(sample, engine);
+
+ // Now that the sample is finished, set its state to finished and come back to the experiment thread
+ sample->_state = SampleState::finished;
+ co_switch(engine->_currentExperiment->_thread);
+
+ // Safety check to make sure we do not continue a sample that has ended
+ if (sample->_state != SampleState::uninitialized)
+   KORALI_LOG_ERROR("Resuming a finished sample\n");
+}
+
+void Conduit::runSample(Sample* sample, Engine* engine)
 {
-  // Getting pointers for sample and engine
-  Engine *engine = _engineStack.top();
-  Sample *sample = _currentSample;
-
   // Setting sample information
   (*sample)["Experiment Id"] = engine->_currentExperiment->_experimentId;
   (*sample)["Current Generation"] = engine->_currentExperiment->_currentGeneration;
@@ -82,13 +94,7 @@ void Conduit::coroutineWrapper()
   timelineJs["Current Generation"] = engine->_currentExperiment->_currentGeneration;
   __profiler["Timelines"]["Worker " + to_string(sample->_workerId)] += timelineJs;
 
-  // Now that the sample is finished, set its state to finished and come back to the experiment thread
-  sample->_state = SampleState::finished;
-  co_switch(engine->_currentExperiment->_thread);
-
-  // Safety check to make sure we do not continue a sample that has ended
-  if (sample->_state != SampleState::uninitialized)
-    KORALI_LOG_ERROR("Resuming a finished sample\n");
+  endMessage.clear();
 }
 
 void Conduit::worker()
@@ -204,7 +210,10 @@ void Conduit::wait(Sample &sample)
 
   size_t sampleId = KORALI_GET(size_t, sample, "Sample Id");
 
-  engine->_currentExperiment->_sampleInfo["Samples"][sampleId] = sample._js.getJson();
+  // If the user wants to store sample information, this is where we store its information
+  if (engine->_currentExperiment->_storeSampleInformation == true)
+   engine->_currentExperiment->_sampleInfo["Samples"][sampleId] = sample._js.getJson();
+
   if (sample._isAllocated == true)
   {
     free(sample._sampleThread);
@@ -240,7 +249,10 @@ size_t Conduit::waitAny(vector<Sample> &samples)
       {
         auto sampleId = KORALI_GET(size_t, samples[currentSample], "Sample Id");
 
-        engine->_currentExperiment->_sampleInfo["Samples"][sampleId] = samples[currentSample]._js.getJson();
+        // If the user wants to store sample information, this is where we store its information
+        if (engine->_currentExperiment->_storeSampleInformation == true)
+         engine->_currentExperiment->_sampleInfo["Samples"][sampleId] = samples[currentSample]._js.getJson();
+
         if (samples[currentSample]._isAllocated == true)
         {
           free(samples[currentSample]._sampleThread);
@@ -289,7 +301,10 @@ void Conduit::waitAll(vector<Sample> &samples)
   {
     auto sampleId = KORALI_GET(size_t, samples[i], "Sample Id");
 
-    engine->_currentExperiment->_sampleInfo["Samples"][sampleId] = samples[i]._js.getJson();
+    // If the user wants to store sample information, this is where we store its information
+    if (engine->_currentExperiment->_storeSampleInformation == true)
+     engine->_currentExperiment->_sampleInfo["Samples"][sampleId] = samples[i]._js.getJson();
+
     if (samples[i]._isAllocated == true)
     {
       free(samples[i]._sampleThread);

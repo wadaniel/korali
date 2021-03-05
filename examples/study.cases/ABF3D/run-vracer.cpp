@@ -69,7 +69,7 @@ int main(int argc, char *argv[])
 
   e["Solver"]["Type"] = "Agent / Continuous / VRACER";
   e["Solver"]["Mode"] = "Training";
-  e["Solver"]["Episodes Per Generation"] = 1;
+  e["Solver"]["Episodes Per Generation"] = 10;
   e["Solver"]["Experiences Between Policy Updates"] = 1;
   e["Solver"]["Learning Rate"] = 1e-4;
   e["Solver"]["Discount Factor"] = 0.99;
@@ -110,7 +110,7 @@ int main(int argc, char *argv[])
 
   e["Console Output"]["Verbosity"] = "Detailed";
   e["File Output"]["Enabled"] = true;
-  e["File Output"]["Frequency"] = 100;
+  e["File Output"]["Frequency"] = 10;
   e["File Output"]["Path"] = _resultDir;
 
   auto k = korali::Engine();

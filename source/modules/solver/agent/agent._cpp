@@ -490,6 +490,10 @@ void Agent::updateExperienceReplayProbabilities()
 
 std::vector<size_t> Agent::generateMiniBatch(size_t miniBatchSize)
 {
+ auto beginTimeT0 = std::chrono::steady_clock::now(); // Profiling
+
+ //printf("----------------------------------------\n");
+
  auto beginTime = std::chrono::steady_clock::now(); // Profiling
 
   // Allocating storage for mini batch experiecne indexes
@@ -540,13 +544,22 @@ std::vector<size_t> Agent::generateMiniBatch(size_t miniBatchSize)
       miniBatch[batchIdx++] = std::floor(_uniformGenerator->getRandomNumber() * (float)(_experienceReplay.size() - 1));
   }
 
+  // Sorting minibatch
+  std::sort (miniBatch.begin(), miniBatch.end());
+
+  auto endTime = std::chrono::steady_clock::now(); // Profiling
+  double t = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
+  //printf("A: %f\n", t / 1.0e+9);
+
   /**********************************************
    * Updating experience's metadata
    *********************************************/
 
+  beginTime = std::chrono::steady_clock::now(); // Profiling
+
   size_t offPolicyCount = 0;
 
-#pragma omp parallel for schedule(guided)
+  #pragma omp parallel for reduction(+: offPolicyCount) schedule(dynamic)
   for (size_t i = 0; i < miniBatchSize; i++)
   {
     auto expId = miniBatch[i];
@@ -588,10 +601,14 @@ std::vector<size_t> Agent::generateMiniBatch(size_t miniBatchSize)
     _experienceReplay[expId].currentPolicy = curPolicy;
     _experienceReplay[expId].isOnPolicy = isOnPolicy;
 
-    if (isOnPolicy == false)
-    #pragma omp atomic
-     offPolicyCount++;
+    offPolicyCount++;
   }
+
+  endTime = std::chrono::steady_clock::now(); // Profiling
+  t = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
+  //printf("B: %f\n", t / 1.0e+9);
+
+  beginTime = std::chrono::steady_clock::now(); // Profiling
 
   // Updating the off policy Ratio
   float alpha = 0.01f; // ~100 updates to reach 63.2% of the target
@@ -600,42 +617,42 @@ std::vector<size_t> Agent::generateMiniBatch(size_t miniBatchSize)
   // Updating the off policy Cutoff
   _experienceReplayOffPolicyCurrentCutoff = 1.0f + _experienceReplayOffPolicyCutoffScale / (1.0f + _experienceReplayOffPolicyAnnealingRate * (float)_policyUpdateCount);
 
+  // Now filtering experiences from the same episode
+  std::vector<size_t> retraceMiniBatch;
 
-  /**************************************************
-   * Calculating retrace value for selected experience
-   *************************************************/
+  // Adding last experience from the sorted minibatch
+  retraceMiniBatch.push_back(miniBatch[miniBatchSize-1]);
 
-  // Selecting experiences, such that only one (the most advanced) per unique episode remains
-  std::map<size_t, size_t> episodeMaxExperienceAge;
-  std::map<size_t, size_t> episodeMaxExperienceId;
-
-  for (size_t i = 0; i < miniBatchSize; i++)
+  // Adding experiences so long as they do not repeat episodes
+  for (ssize_t i = miniBatchSize-2; i >= 0; i--)
   {
-    const size_t experienceId = miniBatch[i];
-    auto &exp = _experienceReplay[experienceId];
-
-    const size_t episodeId = exp.episodeId;
-    const size_t episodePos = exp.episodePos;
-    const size_t curMaxPosition = episodeMaxExperienceAge.find(episodeId) == episodeMaxExperienceAge.end() ? 0 : episodeMaxExperienceAge[episodeId];
-
-    // If this is a new oldest experience in the episode, store it's position and id
-    if (episodePos >= curMaxPosition)
-    {
-      episodeMaxExperienceAge[episodeId] = episodePos;
-      episodeMaxExperienceId[episodeId] = experienceId;
-    }
+   size_t currExpId = miniBatch[i];
+   size_t nextExpId = miniBatch[i+1];
+   size_t curEpisode = _experienceReplay[currExpId].episodeId;
+   size_t nextEpisode = _experienceReplay[nextExpId].episodeId;
+   if (curEpisode != nextEpisode) retraceMiniBatch.push_back(currExpId);
   }
 
-  // Passing the values (experience Ids) of the map to a vector
-  std::vector<size_t> experienceRetraceIds;
-  for (const auto &episode : episodeMaxExperienceId) experienceRetraceIds.push_back(episode.second);
+  //printf("MiniBatchSize: %lu - RetraceMiniBatch: %lu\n", miniBatchSize, retraceMiniBatch.size());
 
-    // Running all experiences in parallel
-  #pragma omp parallel for schedule(guided)
-  for (size_t i = 0; i < experienceRetraceIds.size(); i++) retraceFunction(experienceRetraceIds[i]);
+  endTime = std::chrono::steady_clock::now(); // Profiling
+  t = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
+  //printf("C: %f\n", t / 1.0e+9);
 
-  auto endTime = std::chrono::steady_clock::now();
-  _generationGenerateMiniBatchTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
+  beginTime = std::chrono::steady_clock::now(); // Profiling
+
+  // Calculating retrace value for the oldest experiences of unique episodes
+  #pragma omp parallel for schedule(guided, 1)
+  for (size_t i = 0; i < miniBatchSize; i++) retraceFunction(retraceMiniBatch[i]);
+
+  endTime = std::chrono::steady_clock::now(); // Profiling
+  t = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
+  //printf("D: %f\n", t / 1.0e+9);
+
+  auto endTimeT0 = std::chrono::steady_clock::now();
+  _generationGenerateMiniBatchTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTimeT0 - beginTimeT0).count(); // Profiling
+
+  //printf("----------------------------------------\n");
 
   // Returning generated minibatch
   return miniBatch;

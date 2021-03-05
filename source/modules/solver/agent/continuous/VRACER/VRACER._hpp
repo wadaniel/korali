@@ -16,6 +16,12 @@ namespace continuous
 class VRACER : public Continuous
 {
   public:
+
+  /**
+  * @brief A neural network for the batch evaluation of the neural network
+  */
+  NeuralNetwork * _batchPolicyNetwork;
+
   /**
    * @brief Pointer to training the actor network
    */
@@ -36,6 +42,8 @@ class VRACER : public Continuous
    * @param expId Current Experience Id
    */
   void updateVtbc(size_t expId);
+
+  std::vector<policy_t> runPolicyBatch(const std::vector<std::vector<std::vector<float>>> &stateBatch) override;
 
   float stateValueFunction(const std::vector<std::vector<float>> &stateSequence) override;
   knlohmann::json getAgentPolicy() override;

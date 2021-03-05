@@ -397,6 +397,8 @@ class Agent : public Solver
   */
   void resetTimeSequence();
 
+  virtual std::vector<policy_t> runPolicyBatch(const std::vector<std::vector<std::vector<float>>> &stateBatch) { return std::vector<policy_t>(); };
+
   /**
   * @brief Calculates the starting experience index of the time sequence for the selected experience
   * @param expId The index of the latest experience in the sequence

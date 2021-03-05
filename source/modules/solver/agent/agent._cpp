@@ -559,18 +559,26 @@ std::vector<size_t> Agent::generateMiniBatch(size_t miniBatchSize)
 
   size_t offPolicyCount = 0;
 
+  std::vector<std::vector<std::vector<float>>> stateMiniBatch(_miniBatchSize);
+  #pragma omp parallel for schedule(dynamic)
+  for (size_t i = 0; i < miniBatchSize; i++)
+  {
+   auto expId = miniBatch[i];
+   stateMiniBatch[i] = getStateTimeSequence(expId);
+  }
+
+  // Run policy for the entire minibatch
+  auto curPolicyVector = runPolicyBatch(stateMiniBatch);
+
   #pragma omp parallel for schedule(dynamic)
   for (size_t i = 0; i < miniBatchSize; i++)
   {
     auto expId = miniBatch[i];
 
     // Get state, action, mean, Sigma for this experience
-    auto expStateSequence = getStateTimeSequence(expId);
     const auto &expAction = _experienceReplay[expId].action;
     const auto &expPolicy = _experienceReplay[expId].experiencePolicy;
-
-    // Running policy for the current state
-    auto curPolicy = runPolicy(expStateSequence);
+    const auto &curPolicy = curPolicyVector[i];
 
     // Grabbing state value from the latenst policy
     auto stateValue = curPolicy.stateValue;

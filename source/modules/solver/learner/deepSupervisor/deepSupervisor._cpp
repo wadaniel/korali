@@ -309,7 +309,7 @@ std::vector<std::vector<float>> DeepSupervisor::getEvaluation(const std::vector<
 
   // Check whether the input has the correct shape
   if (input.size() != _problem->_inferenceBatchSize)
-    KORALI_LOG_ERROR("A different batch size (%lu) passed than the one in the configuration.\n", input.size(), _problem->_inferenceBatchSize);
+    KORALI_LOG_ERROR("A different batch size (%lu) passed than the one in the configuration (%lu).\n", input.size(), _problem->_inferenceBatchSize);
 
   for (size_t b = 0; b < N; b++)
     if (input[b].size() > _problem->_maxTimesteps)

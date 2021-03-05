@@ -91,6 +91,17 @@ void VRACER::initializeAgent()
   _criticPolicyProblem = dynamic_cast<problem::SupervisedLearning *>(_criticPolicyExperiment._problem);
   _criticPolicyLearner = dynamic_cast<solver::learner::DeepSupervisor *>(_criticPolicyExperiment._solver);
 
+  /*********************************************************************
+  * Creating a special evaluation network for mini batch evaluation
+  *********************************************************************/
+  knlohmann::json nnConfig;
+  _criticPolicyLearner->_trainingNeuralNetwork->getConfiguration(nnConfig);
+  nnConfig["Batch Size"] = _miniBatchSize;
+  _batchPolicyNetwork = dynamic_cast<NeuralNetwork *>(getModule(nnConfig, _k));
+  _batchPolicyNetwork->applyModuleDefaults(nnConfig);
+  _batchPolicyNetwork->setConfiguration(nnConfig);
+  _batchPolicyNetwork->initialize();
+
   // Init statistics
   _statisticsAverageActionSigmas.resize(_problem->_actionVectorSize);
 }
@@ -244,6 +255,10 @@ void VRACER::trainPolicy()
   // Running one generation of the optimization method with the given mini-batch
   _criticPolicyLearner->runGeneration();
 
+  // Updating batch evaluation network for the advantage function for CMAES steps
+  auto criticHyperparameters = _criticPolicyLearner->getTrainingHyperparameters();
+  _batchPolicyNetwork->setHyperparameters(criticHyperparameters);
+
    endTime = std::chrono::steady_clock::now();                                                                              // Profiling
   _generationUpdateNeuralNetworkTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
 }
@@ -307,6 +322,45 @@ policy_t VRACER::runPolicy(const std::vector<std::vector<float>> &state)
       KORALI_LOG_ERROR("Policy means variable %lu returned an invalid value: %f\n", policy.actionSigmas[i]);
 
   return policy;
+}
+
+std::vector<policy_t> VRACER::runPolicyBatch(const std::vector<std::vector<std::vector<float>>> &stateBatch)
+{
+ // Getting batch size
+ size_t batchSize = stateBatch.size();
+
+  // Storage for policy
+ std::vector<policy_t> policyVector(batchSize);
+
+  // Forward the neural network for this state
+  _batchPolicyNetwork->forward(stateBatch);
+  const auto &evaluation = _batchPolicyNetwork->_outputValues;
+
+  for (size_t b = 0; b < batchSize; b++)
+  {
+   // Getting state value
+   policyVector[b].stateValue = evaluation[b][0];
+
+   policyVector[b].actionMeans.resize(_problem->_actionVectorSize);
+   policyVector[b].actionSigmas.resize(_problem->_actionVectorSize);
+
+   for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+   {
+    policyVector[b].actionMeans[i] = evaluation[b][i + 1];
+    policyVector[b].actionSigmas[i] = evaluation[b][_problem->_actionVectorSize + i + 1];
+   }
+
+   // Sanity checks for means and sigmas
+   for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+    if (std::isfinite(policyVector[b].actionMeans[i]) == false)
+     KORALI_LOG_ERROR("Policy means variable %lu returned an invalid value: %f\n", policyVector[b].actionMeans[i]);
+
+   for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+      if (std::isfinite(policyVector[b].actionSigmas[i]) == false)
+       KORALI_LOG_ERROR("Policy means variable %lu returned an invalid value: %f\n", policyVector[b].actionSigmas[i]);
+  }
+
+  return policyVector;
 }
 
 knlohmann::json VRACER::getAgentPolicy()

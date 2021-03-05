@@ -559,7 +559,7 @@ std::vector<size_t> Agent::generateMiniBatch(size_t miniBatchSize)
 
   size_t offPolicyCount = 0;
 
-  #pragma omp parallel for reduction(+: offPolicyCount) schedule(dynamic)
+  #pragma omp parallel for schedule(dynamic)
   for (size_t i = 0; i < miniBatchSize; i++)
   {
     auto expId = miniBatch[i];
@@ -601,7 +601,9 @@ std::vector<size_t> Agent::generateMiniBatch(size_t miniBatchSize)
     _experienceReplay[expId].currentPolicy = curPolicy;
     _experienceReplay[expId].isOnPolicy = isOnPolicy;
 
-    offPolicyCount++;
+    if (isOnPolicy == false)
+    #pragma omp atomic
+     offPolicyCount++;
   }
 
   endTime = std::chrono::steady_clock::now(); // Profiling
@@ -955,7 +957,7 @@ void Agent::printGenerationAfter()
       _k->_logger->logInfo("Normal", " + Total Experience Count:      %lu\n", _experienceCount);
 
     _k->_logger->logInfo("Normal", "Off-Policy Statistics:\n");
-    _k->_logger->logInfo("Normal", " + Off-Policy Ratio:            %f (Target: %f)\n", _experienceReplayOffPolicyRatio, _experienceReplayOffPolicyTarget);
+    _k->_logger->logInfo("Normal", " + Off-Policy Ratio:            %f (Target: < %f)\n", _experienceReplayOffPolicyRatio, _experienceReplayOffPolicyTarget);
     _k->_logger->logInfo("Normal", " + Importance Weight Cutoff:    [%.3f, %.3f]\n", 1.0f / _experienceReplayOffPolicyCurrentCutoff, _experienceReplayOffPolicyCurrentCutoff);
     _k->_logger->logInfo("Normal", " + REFER Beta Factor:           %f\n", _experienceReplayOffPolicyREFERBeta);
 

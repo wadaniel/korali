@@ -131,6 +131,8 @@ void VRACER::trainPolicy()
 
   std::fill(_statisticsAverageActionSigmas.begin(), _statisticsAverageActionSigmas.end(), 0.0);
 
+  std::vector<std::vector<float>> gradientVector(_miniBatchSize);
+
 #pragma omp parallel for schedule(guided)
   for (size_t b = 0; b < _miniBatchSize; b++)
   {
@@ -224,6 +226,7 @@ void VRACER::trainPolicy()
 
     // Set Gradient of Loss as Solution
     _criticPolicyProblem->_solutionData[b] = gradientLoss;
+    gradientVector[b] = gradientLoss;
   }
 
   /******************************************************************
@@ -254,6 +257,8 @@ void VRACER::trainPolicy()
 
   // Running one generation of the optimization method with the given mini-batch
   _criticPolicyLearner->runGeneration();
+
+  //_batchPolicyNetwork->backward(gradientVector);
 
   // Updating batch evaluation network for the advantage function for CMAES steps
   auto criticHyperparameters = _criticPolicyLearner->getTrainingHyperparameters();

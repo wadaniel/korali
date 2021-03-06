@@ -557,18 +557,16 @@ std::vector<size_t> Agent::generateMiniBatch(size_t miniBatchSize)
 
   beginTime = std::chrono::steady_clock::now(); // Profiling
 
-  size_t offPolicyCount = 0;
-
   std::vector<std::vector<std::vector<float>>> stateMiniBatch(_miniBatchSize);
   #pragma omp parallel for schedule(dynamic)
   for (size_t i = 0; i < miniBatchSize; i++)
-  {
-   auto expId = miniBatch[i];
-   stateMiniBatch[i] = getStateTimeSequence(expId);
-  }
+   stateMiniBatch[i] = getStateTimeSequence(miniBatch[i]);
 
   // Run policy for the entire minibatch
   auto curPolicyVector = runPolicyBatch(stateMiniBatch);
+
+  // Storage to keep track of off-policy experiences
+  size_t offPolicyCount = 0;
 
   #pragma omp parallel for schedule(dynamic)
   for (size_t i = 0; i < miniBatchSize; i++)
@@ -603,15 +601,15 @@ std::vector<size_t> Agent::generateMiniBatch(size_t miniBatchSize)
     bool isOnPolicy = (importanceWeight > (1.0f / _experienceReplayOffPolicyCurrentCutoff)) && (importanceWeight < _experienceReplayOffPolicyCurrentCutoff);
 
     // Store computed information for use in replay memory.
-    _experienceReplay[expId].stateValue = stateValue;
-    if (_experienceReplay[expId].termination == e_truncated) _experienceReplay[expId].truncatedStateValue = truncatedV;
-    _experienceReplay[expId].importanceWeight = importanceWeight;
-    _experienceReplay[expId].currentPolicy = curPolicy;
-    _experienceReplay[expId].isOnPolicy = isOnPolicy;
-
-    if (isOnPolicy == false)
-    #pragma omp atomic
-     offPolicyCount++;
+    #pragma omp critical // Critical needed here because there might be repeated experiences in the minibatch
+    {
+     _experienceReplay[expId].stateValue = stateValue;
+     if (_experienceReplay[expId].termination == e_truncated) _experienceReplay[expId].truncatedStateValue = truncatedV;
+     _experienceReplay[expId].importanceWeight = importanceWeight;
+     _experienceReplay[expId].currentPolicy = curPolicy;
+     _experienceReplay[expId].isOnPolicy = isOnPolicy;
+     if (isOnPolicy == false) offPolicyCount++;
+    }
   }
 
   endTime = std::chrono::steady_clock::now(); // Profiling

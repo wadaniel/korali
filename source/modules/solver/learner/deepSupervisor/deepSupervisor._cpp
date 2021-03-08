@@ -110,8 +110,7 @@ void DeepSupervisor::initialize()
   if (_optimizer == "AdaBelief") _adamSolver = new korali::fAdaBelief(weightAndBiasParameters.size());
 
   // Setting initial guesses as the current weight and bias parameters
-  for (size_t i = 0; i < weightAndBiasParameters.size(); i++)
-    _adamSolver->_initialValues[i] = weightAndBiasParameters[i];
+  _adamSolver->_initialValues = weightAndBiasParameters;
 
   // Resetting solver before using it
   _adamSolver->reset();
@@ -210,8 +209,11 @@ std::vector<float> DeepSupervisor::getInferenceHyperparameters()
 void DeepSupervisor::setInferenceHyperparameters(const std::vector<float> &hyperparameters)
 {
   // Update evaluation network
-  for (size_t i = 0; i < _maxThreads; i++)
-    _inferenceNeuralNetworks[i]->setHyperparameters(hyperparameters);
+  #pragma omp parallel
+ {
+  size_t curThread = omp_get_thread_num();
+  _inferenceNeuralNetworks[curThread]->setHyperparameters(hyperparameters);
+ }
 }
 
 std::vector<std::vector<float>> DeepSupervisor::getEvaluation(const std::vector<std::vector<std::vector<float>>> &input)

@@ -38,7 +38,7 @@ def reward(s):
   
   reward /= N
 
-  sig = 1
+  sig = 0.01
   K = 1
   Z = 0.0
   for trajectory in obsstates:
@@ -52,7 +52,7 @@ def reward(s):
         # Cart Position, Cart Velocity, Pole Angle, Pole Angular Velocity
         feature1 = np.cos(rs2)
         feature2 = rs1*rs1
-        feature3 = np.random.normal(0.0, 0.1) # dummy
+        feature3 = np.random.normal(0.0, sig) # dummy
         rewardTraj += th0*feature1 + th1*feature2 + th2*feature3
       
       Z += np.exp(rewardTraj)
@@ -90,7 +90,7 @@ e["Solver"]["Termination Criteria"]["Max Generations"] = 250
 # Configuring results path
 e["Console Output"]["Verbosity"] = "Detailed"
 e["File Output"]["Enabled"] = True
-e["File Output"]["Path"] = '_korali_result_cmaes'
+e["File Output"]["Path"] = '_korali_result_cmaes_x'
 e["File Output"]["Frequency"] = 1
 
 # Running Korali

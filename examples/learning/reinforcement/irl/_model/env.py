@@ -32,11 +32,8 @@ def env(s):
   s["State"] = cart.getState().tolist()
   
   # Getting Features
-  #s["Features"] = [ np.cos(state[2]) ]
-  #s["Features"] = [ np.cos(state[2]), state[1]*state[1] ]
-  #s["Features"] = [ np.cos(state[2]), state[1]*state[1] ]
-  #s["Features"] = [ np.cos(state[2]), state[1]*state[1], np.random.normal(state[0], 0.05) ]
-  s["Features"] = [ np.cos(state[2]), state[1]*state[1], np.random.normal(0.0, 0.1) ]
+  s["Features"] = [ np.cos(state[2]), state[1]*state[1] ]
+  #s["Features"] = [ np.cos(state[2]), state[1]*state[1], np.random.normal(0.0, 0.1) ]
   
   # Advancing step counter
   step = step + 1

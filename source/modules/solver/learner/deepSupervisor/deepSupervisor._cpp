@@ -132,17 +132,20 @@ void DeepSupervisor::runGeneration()
   _adamSolver->_eta = _learningRate;
   for (size_t step = 0; step < _stepsPerGeneration; step++)
   {
-    // Forward propagating the input values through the training neural network
-    _trainingNeuralNetwork->forward(_problem->_inputData);
-
     // Creating gradient vector
     auto gradientVector = _problem->_solutionData;
 
     // If we use an MSE loss function, we need to update the gradient vector with its difference with each of batch's last timestep of the NN output
     if (_lossFunction == "Mean Squared Error")
+    {
+
+     // Forward propagating the input values through the training neural network
+     _trainingNeuralNetwork->forward(_problem->_inputData);
+
       for (size_t b = 0; b < N; b++)
         for (size_t i = 0; i < OC; i++)
           gradientVector[b][i] = gradientVector[b][i] - _trainingNeuralNetwork->_outputValues[b][i];
+    }
 
     // Calculating loss across the batch size
     _currentLoss = 0.0;

@@ -131,8 +131,6 @@ void VRACER::trainPolicy()
 
   std::fill(_statisticsAverageActionSigmas.begin(), _statisticsAverageActionSigmas.end(), 0.0);
 
-  std::vector<std::vector<float>> gradientVector(_miniBatchSize);
-
 #pragma omp parallel for schedule(guided)
   for (size_t b = 0; b < _miniBatchSize; b++)
   {
@@ -223,7 +221,6 @@ void VRACER::trainPolicy()
 
     // Set Gradient of Loss as Solution
     _criticPolicyProblem->_solutionData[b] = gradientLoss;
-    gradientVector[b] = gradientLoss;
   }
 
   /******************************************************************
@@ -254,12 +251,6 @@ void VRACER::trainPolicy()
 
   // Running one generation of the optimization method with the given mini-batch
   _criticPolicyLearner->runGeneration();
-
-  //_batchPolicyNetwork->backward(gradientVector);
-
-  // Updating batch evaluation network for the advantage function for CMAES steps
-  auto criticHyperparameters = _criticPolicyLearner->getTrainingHyperparameters();
-  _batchPolicyNetwork->setHyperparameters(criticHyperparameters);
 
    endTime = std::chrono::steady_clock::now();                                                                              // Profiling
   _generationUpdateNeuralNetworkTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
@@ -335,8 +326,8 @@ std::vector<policy_t> VRACER::runPolicyBatch(const std::vector<std::vector<std::
  std::vector<policy_t> policyVector(batchSize);
 
   // Forward the neural network for this state
-  _batchPolicyNetwork->forward(stateBatch);
-  const auto &evaluation = _batchPolicyNetwork->_outputValues;
+ _criticPolicyLearner->_trainingNeuralNetwork->forward(stateBatch);
+  const auto &evaluation = _criticPolicyLearner->_trainingNeuralNetwork->_outputValues;
 
   for (size_t b = 0; b < batchSize; b++)
   {

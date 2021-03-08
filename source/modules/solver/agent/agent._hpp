@@ -66,92 +66,6 @@ struct policy_t
  std::vector<float> actionProbabilities;
 };
 
-/**
-* @brief Structure to store all relevant information about an agent's experience within a given episode
-*/
-struct experience_t
-{
-  /**
-  * @brief Episode that experience belongs to
-  */
-  size_t episodeId;
-
-  /**
-  * @brief Position within the episode of this experience
-  */
-  size_t episodePos;
-
-  /**
-  * @brief Stores the state of the experience
-  */
-  std::vector<float> state;
-
-  /**
-   * @brief Stores the actiont aken by the agent at the given state
-   */
-  std::vector<float> action;
-
-  /**
-   * @brief Contains the reward of the state/action pair
-   */
-  float reward;
-
-  /**
-   * @brief Contains the result of the retrace (Vtbc) function for the currrent experience
-   */
-  float retraceValue;
-
-  /**
-   * @brief Contains state value (V) estimation for the current state / policy combination
-   */
-  float stateValue;
-
-  /**
-   * @brief Contains the latest calculation of the experience's importance weight
-   */
-  float importanceWeight;
-
-  /**
-   * @brief Indicates whether the experience is on policy, given the specified off-policiness criteria
-   */
-  bool isOnPolicy;
-
-  /**
-   * @brief If this is a truncated terminal experience, the truncated state is also saved here
-   */
-  std::vector<float> truncatedState;
-
-  /**
-   * @brief If this is a truncated terminal experience, this contains the state value for that state
-   */
-  float truncatedStateValue;
-
-  /**
-   * @brief Specifies whether the experience is terminal (truncated or normal) or not.
-   */
-  termination_t termination;
-
-  /**
-   * @brief Contains the policy information produced at the moment of the action was taken
-   */
-  policy_t experiencePolicy;
-
-  /**
-   * @brief Contains the most current policy information given the experience state
-   */
-  policy_t currentPolicy;
-
-  /**
-   * @brief For prioritized experience replay, this stores the experience's priority
-   */
-  float priority;
-
-  /**
-   * @brief For prioritized experience replay, this stores the experience's probability
-   */
-  float probability;
-};
-
 class Agent : public Solver
 {
   public:
@@ -191,14 +105,87 @@ class Agent : public Solver
   size_t _sessionExperiencesUntilStartSize;
 
   /**
-  * @brief Stores experience replay states.
+  * @brief Stores the state of the experience
   */
-  cBuffer<experience_t> _experienceReplay;
+  cBuffer<std::vector<float>> _stateVector;
+
+  /**
+   * @brief Stores the actiont aken by the agent at the given state
+   */
+  cBuffer<std::vector<float>> _actionVector;
 
   /**
   * @brief Stores the current sequence of states observed by the agent (limited to time sequence length defined by the user)
   */
   cBuffer<std::vector<float>> _stateTimeSequence;
+
+  /**
+  * @brief Episode that experience belongs to
+  */
+  cBuffer<size_t> _episodeIdVector;
+
+  /**
+  * @brief Position within the episode of this experience
+  */
+  cBuffer<size_t> _episodePosVector;
+
+  /**
+   * @brief Contains the latest calculation of the experience's importance weight
+   */
+  cBuffer<float> _importanceWeightVector;
+
+  /**
+   * @brief Contains the latest calculation of the experience's truncated importance weight
+   */
+  cBuffer<float> _truncatedImportanceWeightVector;
+
+  /**
+   * @brief For prioritized experience replay, this stores the experience's priority
+   */
+  cBuffer<float> _priorityVector;
+
+  /**
+   * @brief For prioritized experience replay, this stores the experience's probability
+   */
+  cBuffer<float> _probabilityVector;
+
+  /**
+   * @brief Contains the most current policy information given the experience state
+   */
+  cBuffer<policy_t> _curPolicyVector;
+
+  /**
+   * @brief Contains the policy information produced at the moment of the action was taken
+   */
+  cBuffer<policy_t> _expPolicyVector;
+
+  /**
+   * @brief Indicates whether the experience is on policy, given the specified off-policiness criteria
+   */
+  cBuffer<bool> _isOnPolicyVector;
+
+  /**
+   * @brief Specifies whether the experience is terminal (truncated or normal) or not.
+   */
+  cBuffer<termination_t> _terminationVector;
+
+  /**
+   * @brief Contains the result of the retrace (Vtbc) function for the currrent experience
+   */
+  cBuffer<float> _retraceValueVector;
+
+  /**
+   * @brief If this is a truncated terminal experience, this contains the state value for that state
+   */
+  cBuffer<float> _truncatedStateValueVector;
+
+  /**
+   * @brief If this is a truncated terminal experience, the truncated state is also saved here
+   */
+  cBuffer<std::vector<float>> _truncatedStateVector;
+
+  cBuffer<float> _rewardVector;
+  cBuffer<float> _stateValueVector;
 
   /**
   * @brief Stores the priority annealing rate.
@@ -379,11 +366,6 @@ class Agent : public Solver
   * @param episode A vector of experiences pertaining to the episode.
   */
   void processEpisode(size_t episodeId, knlohmann::json &episode);
-
-  /**
-  * @brief Updates probabilities of experiences stored based on their priority.
-  */
-  void updateExperienceReplayProbabilities();
 
   /**
   * @brief Generates an experience mini batch from the replay memory

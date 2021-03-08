@@ -2,6 +2,7 @@
 import os
 import sys
 sys.path.append('./_model')
+import math
 import json
 from env import *
 
@@ -18,7 +19,7 @@ with open(obsfile, 'r') as infile:
 
 ### Compute Feauters from states
 
-maxFeatures = [-1.0, -1.0]
+maxFeatures = [-math.inf, -math.inf]
 obsfeatures = []
 for trajectory in obsstates:
     features = []

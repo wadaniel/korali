@@ -49,12 +49,12 @@ void ReinforcementLearning::initialize()
 
     printf("X\n");
     if (_observationsActions[t].size() != trajectoryLength)
-      KORALI_LOG_ERROR("Trajectory length of observed actions (trajectory %zu) does not agree with trajectory length of observed states\n", t);
+      KORALI_LOG_ERROR("Trajectory (%zu) length of observed actions (%zu) does not agree with trajectory length of observed states (%zu)\n", t, _observationsActions[t].size(), trajectoryLength);
 
     for (size_t i = 0; i < trajectoryLength; ++i)
     {
       if (_observationsActions[t][i].size() != _actionVectorSize)
-        KORALI_LOG_ERROR("Dimension of observed action (trajectory %zu index %zu) does not agree with problem configuration.\n", t, i);
+        KORALI_LOG_ERROR("Dimension of observed action (%zu) does not agree with problem configuration (trajectory %zu index %zu).\n", _observationsActions[t][i].size(), t, i);
     }
 
     printf("X\n");

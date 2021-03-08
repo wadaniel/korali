@@ -47,7 +47,3 @@ if __name__ == '__main__':
   plt.ylabel('Weights')
   plt.legend()
   plt.show()
-  
-
-
-

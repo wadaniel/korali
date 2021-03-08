@@ -268,6 +268,7 @@ void Agent::updateRewardFunction()
 
   auto trajectoryStartIndexes = generateMiniBatch(_backgroundBatchSize);
 
+#pragma omp parallel for schedule(dynamic, 1)
   for (size_t m = 0; m < _backgroundBatchSize; ++m)
   {
     // Getting index of current experience
@@ -280,8 +281,8 @@ void Agent::updateRewardFunction()
   }
 
   // Estimate partition function
-  float maxExp = -Inf;
   std::vector<float> exponents(_backgroundBatchSize + _demonstrationBatchSize, 0.0);
+#pragma omp parallel for schedule(dynamic, 1)
   for (size_t m = 0; m < _backgroundBatchSize; ++m)
   {
     // Getting index of current experiment
@@ -305,9 +306,9 @@ void Agent::updateRewardFunction()
     }
 
     exponents[m] = cumReward - trajetoryLogProbability;
-    if (exponents[m] > maxExp) maxExp = exponents[m];
   }
 
+#pragma omp parallel for schedule(dynamic, 1)
   for (size_t n = 0; n < _demonstrationBatchSize; ++n)
   {
     size_t observedTrajectoryIdx = observedTrajectoryIndexes[n];
@@ -331,8 +332,12 @@ void Agent::updateRewardFunction()
     }
 
     exponents[_backgroundBatchSize + n] = cumReward - observedTrajetoryLogProbability;
-    if (exponents[_backgroundBatchSize + n] > maxExp) maxExp = exponents[_backgroundBatchSize + n];
   }
+ 
+  // Log-sum exp trick
+  float maxExp = -Inf;
+  for (size_t m = 0; m < _backgroundBatchSize + _demonstrationBatchSize; ++m)
+    if (exponents[m] > maxExp) maxExp = exponents[m];
 
   float sumExp = 0.0;
   for (size_t i = 0; i < _backgroundBatchSize + _demonstrationBatchSize; ++i) sumExp += std::exp(exponents[i] - maxExp);

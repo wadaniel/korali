@@ -7,7 +7,7 @@ from korali.plotter.helpers import hlsColors, drawMulticoloredLine
 import sys, os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-plotSamples = True
+plotSamples = False
 
 #Plot scatter plot in upper triangle of figure
 def plot_upper_triangle(ax, theta, f=None):
@@ -20,8 +20,8 @@ def plot_upper_triangle(ax, theta, f=None):
       else:
         ax[i, j].plot(theta[:, i], theta[:, j], '.', markersize=3)
       ax[i, j].grid(b=True, which='both')
-      ax[i, j].set_xlabel("X"+str(i))
-      ax[i, j].set_ylabel("X"+str(j))
+      ax[i, j].set_xlabel("F"+str(i))
+      ax[i, j].set_ylabel("F"+str(j))
 
 
 #Plot scatter plot in lower triangle of figure
@@ -35,8 +35,8 @@ def plot_lower_triangle(ax, theta, f=None):
       else:
         ax[i, j].plot(theta[:, i], theta[:, j], '.', markersize=3)
       ax[i, j].grid(b=True, which='both')
-      ax[i, j].set_xlabel("X"+str(i))
-      ax[i, j].set_ylabel("X"+str(j))
+      ax[i, j].set_xlabel("F"+str(i))
+      ax[i, j].set_ylabel("F"+str(j))
 
 
 def plotGen(genList, idx):

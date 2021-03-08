@@ -43,13 +43,8 @@
 #include "problem/sampling/sampling.hpp"
 #include "problem/supervisedLearning/supervisedLearning.hpp"
 #include "solver/SAEM/SAEM.hpp"
-#include "solver/agent/continuous/DDPG/DDPG.hpp"
-#include "solver/agent/continuous/GFPT/GFPT.hpp"
-#include "solver/agent/continuous/NAF/NAF.hpp"
 #include "solver/agent/continuous/VRACER/VRACER.hpp"
 #include "solver/agent/continuous/continuous.hpp"
-#include "solver/agent/discrete/DQN/DQN.hpp"
-#include "solver/agent/discrete/dVRACER/dVRACER.hpp"
 #include "solver/agent/discrete/discrete.hpp"
 #include "solver/executor/executor.hpp"
 #include "solver/integrator/integrator.hpp"
@@ -138,11 +133,6 @@ Module *Module::getModule(knlohmann::json &js, Experiment *e)
   if (iCompare(moduleType, "SAEM")) module = new korali::solver::SAEM();
   if (iCompare(moduleType, "Learner/GaussianProcess")) module = new korali::solver::learner::GaussianProcess();
   if (iCompare(moduleType, "Learner/DeepSupervisor")) module = new korali::solver::learner::DeepSupervisor();
-  if (iCompare(moduleType, "Agent/Discrete/DQN")) module = new korali::solver::agent::discrete::DQN();
-  if (iCompare(moduleType, "Agent/Discrete/DVRACER")) module = new korali::solver::agent::discrete::dVRACER();
-  if (iCompare(moduleType, "Agent/Continuous/GFPT")) module = new korali::solver::agent::continuous::GFPT();
-  if (iCompare(moduleType, "Agent/Continuous/DDPG")) module = new korali::solver::agent::continuous::DDPG();
-  if (iCompare(moduleType, "Agent/Continuous/NAF")) module = new korali::solver::agent::continuous::NAF();
   if (iCompare(moduleType, "Agent/Continuous/VRACER")) module = new korali::solver::agent::continuous::VRACER();
   if (iCompare(moduleType, "Optimizer/CMAES")) module = new korali::solver::optimizer::CMAES();
   if (iCompare(moduleType, "Optimizer/DEA")) module = new korali::solver::optimizer::DEA();

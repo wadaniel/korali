@@ -17,12 +17,7 @@ class VRACER : public Continuous
 {
   public:
 
-  /**
-  * @brief A neural network for the batch evaluation of the neural network
-  */
-  NeuralNetwork * _batchPolicyNetwork;
-
-  /**
+ /**
    * @brief Pointer to training the actor network
    */
   learner::DeepSupervisor *_criticPolicyLearner;

@@ -526,7 +526,7 @@ std::vector<size_t> Agent::generateMiniBatch(size_t miniBatchSize)
   beginTime = std::chrono::steady_clock::now(); // Profiling
 
   std::vector<std::vector<std::vector<float>>> stateMiniBatch(_miniBatchSize);
-  #pragma omp parallel for schedule(dynamic)
+  #pragma omp parallel for
   for (size_t i = 0; i < miniBatchSize; i++)
    stateMiniBatch[i] = getStateTimeSequence(miniBatch[i]);
 
@@ -644,7 +644,44 @@ std::vector<size_t> Agent::generateMiniBatch(size_t miniBatchSize)
 
   // Calculating retrace value for the oldest experiences of unique episodes
   #pragma omp parallel for schedule(guided, 1)
-  for (size_t i = 0; i < retraceMiniBatch.size(); i++) retraceFunction(retraceMiniBatch[i]);
+  for (size_t i = 0; i < retraceMiniBatch.size(); i++)
+  {
+   // Finding the earliest experience corresponding to the same episode as this experience
+   ssize_t endId = retraceMiniBatch[i];
+   ssize_t startId = endId - _episodePosVector[endId];
+
+   // If the starting experience has already been discarded, take the earliest one that still remains
+   if (startId < 0) startId = 0;
+
+   // Storage for the retrace value
+   float retV = 0.0f;
+
+   // If it was a truncated episode, add the value function for the terminal state to retV
+   if (_terminationVector[endId] == e_truncated)
+     retV = _truncatedStateValueVector[endId];
+
+   if (_terminationVector[endId] == e_nonTerminal)
+     retV = _retraceValueVector[endId + 1];
+
+   // Now iterating backwards to calculate the rest of vTbc
+   for (ssize_t curId = endId; curId >= startId; curId--)
+   {
+     // Getting current reward, action, and state
+     const float curReward = _rewardVector[curId];
+
+     // Calculating state value function
+     const float curV = _stateValueVector[curId];
+
+     // Truncate importance weight
+     const float truncatedImportanceWeight = _truncatedImportanceWeightVector[curId];
+
+     // Calculating retrace value
+     retV = curV + truncatedImportanceWeight * (curReward + _discountFactor * retV - curV);
+
+     // Storing retrace value into the experience's cache
+     _retraceValueVector[curId] = retV;
+   }
+  }
 
   endTime = std::chrono::steady_clock::now(); // Profiling
   t = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
@@ -681,48 +718,6 @@ size_t Agent::getTimeSequenceStartExpId(size_t expId)
   }
 
   return startId;
-}
-
-float Agent::retraceFunction(const size_t expId)
-{
-  // Finding the earliest experience corresponding to the same episode as this experience
-  ssize_t endId = expId;
-  ssize_t startId = endId - _episodePosVector[endId];
-
-  // If the starting experience has already been discarded, take the earliest one that still remains
-  if (startId < 0) startId = 0;
-
-  // Storage for the retrace value
-  float retV = 0.0f;
-
-  // If it was a truncated episode, add the value function for the terminal state to retV
-  if (_terminationVector[expId] == e_truncated)
-    retV = _truncatedStateValueVector[expId];
-
-  if (_terminationVector[expId] == e_nonTerminal)
-    retV = _retraceValueVector[expId + 1];
-
-  // Now iterating backwards to calculate the rest of vTbc
-  for (ssize_t curId = endId; curId >= startId; curId--)
-  {
-    // Getting current reward, action, and state
-    const float curReward = _rewardVector[curId];
-
-    // Calculating state value function
-    const float curV = _stateValueVector[curId];
-
-    // Truncate importance weight
-    const float truncatedImportanceWeight = _truncatedImportanceWeightVector[curId];
-
-    // Calculating retrace value
-    retV = curV + truncatedImportanceWeight * (curReward + _discountFactor * retV - curV);
-
-    // Storing retrace value into the experience's cache
-    _retraceValueVector[curId] = retV;
-  }
-
-  // Returning retrace value
-  return retV;
 }
 
 void Agent::resetTimeSequence()

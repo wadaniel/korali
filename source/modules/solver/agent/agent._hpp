@@ -419,13 +419,6 @@ class Agent : public Solver
   virtual float calculateImportanceWeight(const std::vector<float> &action, const policy_t &curPolicy, const policy_t &oldPolicy) = 0;
 
   /**
-   * @brief Returns the retrace value for the given experience
-   * @param expId The id (position within the replay memory) of the experience
-   * @return The qRet value of the experience
-   */
-  float retraceFunction(const size_t expId);
-
-  /**
    * @brief Listens to incoming experience from the given agent, sends back policy or terminates the episode depending on what's needed
    * @param agentId The Agent's ID
    */

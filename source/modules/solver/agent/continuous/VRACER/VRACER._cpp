@@ -247,16 +247,29 @@ policy_t VRACER::runPolicy(const std::vector<std::vector<float>> &state)
 
 std::vector<policy_t> VRACER::runPolicyBatch(const std::vector<std::vector<std::vector<float>>> &stateBatch)
 {
- // Getting batch size
- size_t batchSize = stateBatch.size();
+  // Getting batch size
+  size_t batchSize = stateBatch.size();
 
   // Storage for policy
- std::vector<policy_t> policyVector(batchSize);
+  std::vector<policy_t> policyVector(batchSize);
 
   // Forward the neural network for this state
- _criticPolicyLearner->_trainingNeuralNetwork->forward(stateBatch);
-  const auto &evaluation = _criticPolicyLearner->_trainingNeuralNetwork->_outputValues;
+  auto beginTime = std::chrono::steady_clock::now(); // Profiling
+  _criticPolicyLearner->_trainingNeuralNetwork->forward(stateBatch);
+  auto endTime = std::chrono::steady_clock::now(); // Profiling
+  auto t = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
+  //printf(" - NN Fwd: %f\n", t / 1.0e+9);
 
+  beginTime = std::chrono::steady_clock::now(); // Profiling
+  const auto &evaluation = _criticPolicyLearner->_trainingNeuralNetwork->_outputValues;
+  endTime = std::chrono::steady_clock::now(); // Profiling
+  t = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
+  //printf(" - Getting vals: %f\n", t / 1.0e+9);
+
+
+  beginTime = std::chrono::steady_clock::now(); // Profiling
+
+  #pragma omp parallel for
   for (size_t b = 0; b < batchSize; b++)
   {
    // Getting state value
@@ -278,6 +291,10 @@ std::vector<policy_t> VRACER::runPolicyBatch(const std::vector<std::vector<std::
     policyVector[b].actionSigmas[i] = sigma;
    }
   }
+
+  endTime = std::chrono::steady_clock::now(); // Profiling
+  t = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
+  //printf(" - batchPolicy: %f\n", t / 1.0e+9);
 
   return policyVector;
 }

@@ -131,8 +131,6 @@ std::vector<float> NeuralNetwork::generateInitialHyperparameters()
 
 void NeuralNetwork::forward(const std::vector<std::vector<std::vector<float>>> &inputValues)
 {
- auto beginTime = std::chrono::steady_clock::now(); // Profiling
-
   size_t T = _timestepCount;
   size_t N = _batchSize;
   size_t IC = _layers[0]->_outputChannels;
@@ -152,29 +150,11 @@ void NeuralNetwork::forward(const std::vector<std::vector<std::vector<float>>> &
         KORALI_LOG_ERROR("Input size of input batch (%lu), timestep (%lu) is different (%lu) than input channels configured (%lu).\n", b, t, inputValues[b][t].size(), IC);
   }
 
-  auto endTime = std::chrono::steady_clock::now(); // Profiling
-  auto t = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
-  // if (N > 1) printf(" + Checks: %f\n", t  / 1.0e+9);
-
-  beginTime = std::chrono::steady_clock::now(); // Profiling
-
   // First, re-setting all input values to zero
   std::fill(_rawInputValues.begin(), _rawInputValues.end(), 0.0f);
 
-  endTime = std::chrono::steady_clock::now(); // Profiling
-  t = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
-  // if (N > 1) printf(" + Fill: %f\n", t  / 1.0e+9);
-
-  beginTime = std::chrono::steady_clock::now(); // Profiling
-
   // Storing timestep count per batch input, for later use on backward propagation
   for (size_t b = 0; b < N; b++) _inputBatchLastStep[b] = inputValues[b].size() - 1;
-
-  endTime = std::chrono::steady_clock::now(); // Profiling
-  t = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
-  // if (N > 1) printf(" + StoreTstep: %f\n", t  / 1.0e+9);
-
-  beginTime = std::chrono::steady_clock::now(); // Profiling
 
   // Now replacing values provided by the user in N*T*IC format
   #pragma omp parallel for simd
@@ -183,39 +163,19 @@ void NeuralNetwork::forward(const std::vector<std::vector<std::vector<float>>> &
       for (size_t i = 0; i < IC; i++)
         _rawInputValues[t * N * IC + b * IC + i] = inputValues[b][t][i];
 
-  endTime = std::chrono::steady_clock::now(); // Profiling
-  t = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
-  // if (N > 1) printf(" + ReplaceVal: %f\n", t  / 1.0e+9);
-
   // Forward propagate layers, once per timestep
   for (_currentTimestep = 0; _currentTimestep < T; _currentTimestep++)
     for (size_t i = 0; i < layerCount; i++)
-    {
-      auto beginTime = std::chrono::steady_clock::now(); // Profiling
       _layers[i]->forwardData();
-      auto endTime = std::chrono::steady_clock::now(); // Profiling
-      auto t = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
-      // if (N > 1) printf(" + Layer %lu: %f\n", i, t  / 1.0e+9);
-    }
 
-  beginTime = std::chrono::steady_clock::now(); // Profiling
-
-  // Copying output values -- only for the last timestep provided in the input
   #pragma omp parallel for simd
   for (size_t b = 0; b < N; b++)
     for (size_t i = 0; i < OC; i++)
       _outputValues[b][i] = _rawOutputValues[_inputBatchLastStep[b] * N * OC + b * OC + i];
-
-  endTime = std::chrono::steady_clock::now(); // Profiling
-  t = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
-  // if (N > 1) printf(" + FinalCpy: %f\n", t  / 1.0e+9);
 }
 
 void NeuralNetwork::backward(const std::vector<std::vector<float>> &outputGradients)
 {
-// printf("--------------------------------------\n");
-  auto beginTime = std::chrono::steady_clock::now(); // Profiling
-
   // Getting batch dimensions
   size_t T = _timestepCount;
   size_t N = _batchSize;
@@ -236,39 +196,19 @@ void NeuralNetwork::backward(const std::vector<std::vector<float>> &outputGradie
   // First, re-setting all output gradients to zero
   std::fill(_rawOutputGradients.begin(), _rawOutputGradients.end(), 0.0f);
 
-  auto endTime = std::chrono::steady_clock::now(); // Profiling
-  auto t = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
-//  printf("Check n Fill: %f\n", t / 1.0e+9);
-
-  beginTime = std::chrono::steady_clock::now(); // Profiling
-
   // To store the gradients in the NN we place them on the last input timestep
   #pragma omp parallel for simd
   for (size_t b = 0; b < N; b++)
     for (size_t i = 0; i < OC; i++)
       _rawOutputGradients[_inputBatchLastStep[b] * N * OC + b * OC + i] = outputGradients[b][i];
 
-  endTime = std::chrono::steady_clock::now(); // Profiling
-  t = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
-//  printf("Copy to Raw: %f\n", t / 1.0e+9);
-
-  beginTime = std::chrono::steady_clock::now(); // Profiling
-
   // Resetting cumulative hyperparameter gradients
   std::fill(_hyperparameterGradients.begin(), _hyperparameterGradients.end(), 0.0f);
-
-  endTime = std::chrono::steady_clock::now(); // Profiling
-  t = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
-//  printf("Resetting : %f\n", t / 1.0e+9);
-
-  double backPropTime = 0.0;
-  double hyperparTime = 0.0;
-  double hypercpyTime = 0.0;
 
   // Backward propagating in time, process the corresponding mini-batch
   for (size_t t = 0; t < T; t++)
   {
-    // Getting hyperparameter gradients for the current timestep
+    // Storage for the hyperparameter gradients for the current timestep, if needed (T > 1)
     std::vector<float> batchHyperparameterGradients(_hyperparameterCount);
 
     // Starting from the last timestep, and going backwards
@@ -280,56 +220,33 @@ void NeuralNetwork::backward(const std::vector<std::vector<float>> &outputGradie
       // Starting from the last layer, and going backwards
       size_t curLayer = lastLayer - i;
 
-      beginTime = std::chrono::steady_clock::now(); // Profiling
-
       // Running backward data propagation
       _layers[curLayer]->backwardData();
-
-      endTime = std::chrono::steady_clock::now(); // Profiling
-      t = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
-      backPropTime += t;
     }
-
-    beginTime = std::chrono::steady_clock::now(); // Profiling
 
     for (size_t i = 0; i < layerCount; i++)
     {
      _layers[i]->backwardHyperparameters();
-     _layers[i]->getHyperparameterGradients(&batchHyperparameterGradients[_layers[i]->_hyperparameterIndex]);
+
+     // If we are passing only one timestep, copy the hyperparameters directly on the NN output
+     if (T == 1) _layers[i]->getHyperparameterGradients(&_hyperparameterGradients[_layers[i]->_hyperparameterIndex]);
+     if (T > 1) _layers[i]->getHyperparameterGradients(&batchHyperparameterGradients[_layers[i]->_hyperparameterIndex]);
     }
 
-    endTime = std::chrono::steady_clock::now(); // Profiling
-    t = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
-    hyperparTime += t;
-
-    beginTime = std::chrono::steady_clock::now(); // Profiling
-
-    // Adding current hyperparameters to the cumulative vector
-    #pragma omp parallel for simd
-    for (size_t i = 0; i < _hyperparameterCount; i++)
-      _hyperparameterGradients[i] += batchHyperparameterGradients[i];
-
-    endTime = std::chrono::steady_clock::now(); // Profiling
-    t = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
-    hypercpyTime += t;
+    // Adding current hyperparameters to the cumulative vector, only if more than one timestep used
+    if (T > 1)
+    {
+     #pragma omp parallel for simd
+     for (size_t i = 0; i < _hyperparameterCount; i++)
+       _hyperparameterGradients[i] += batchHyperparameterGradients[i];
+    }
   }
-
-//  printf("Backprop : %f\n", backPropTime / 1.0e+9);
-//  printf("Hyperpar : %f\n", hyperparTime / 1.0e+9);
-//  printf("Hypercpy : %f\n", hypercpyTime / 1.0e+9);
-
-  beginTime = std::chrono::steady_clock::now(); // Profiling
 
   // Copying input gradients -- only for the last timestep provided in the input
 #pragma omp parallel for simd
   for (size_t b = 0; b < N; b++)
     for (size_t i = 0; i < IC; i++)
       _inputGradients[b][i] = _rawInputGradients[_inputBatchLastStep[b] * N * IC + b * IC + i];
-
-  endTime = std::chrono::steady_clock::now(); // Profiling
-  t = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
-//  printf("Backcopy : %f\n", t / 1.0e+9);
-//  printf("--------------------------------------\n");
 }
 
 std::vector<float> NeuralNetwork::getHyperparameters()
@@ -337,6 +254,7 @@ std::vector<float> NeuralNetwork::getHyperparameters()
   auto params = std::vector<float>(_hyperparameterCount);
 
   size_t layerCount = _layers.size();
+
   for (size_t i = 0; i < layerCount; i++)
     _layers[i]->getHyperparameters(&params[_layers[i]->_hyperparameterIndex]);
 
@@ -351,6 +269,7 @@ void NeuralNetwork::setHyperparameters(const std::vector<float> &hyperparameters
   auto params = std::vector<float>(hyperparameters.begin(), hyperparameters.end());
 
   size_t layerCount = _layers.size();
+
   for (size_t i = 0; i < layerCount; i++)
     _layers[i]->setHyperparameters(&params[_layers[i]->_hyperparameterIndex]);
 }

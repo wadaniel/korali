@@ -276,20 +276,6 @@ class Agent : public Solver
    */
   double _sessionAgentAttendingTime;
 
-  /**
-   * @brief [Profiling] Measures the NN update times
-   */
-  double _sessionUpdateNeuralNetworkTime;
-
-  /**
-   * @brief [Profiling] Measures gradient calculation times
-   */
-  double _sessionGradientCalculationTime;
-
-  /**
-  * @brief [Profiling] Measures mini batch generation times
-  */
-  double _sessionGenerateMiniBatchTime;
 
   /****************************************************************************************************
    * Generation-wise Profiling Timers
@@ -330,20 +316,6 @@ class Agent : public Solver
    */
   double _generationAgentAttendingTime;
 
-  /**
-   * @brief [Profiling] Measures the NN update times
-   */
-  double _generationUpdateNeuralNetworkTime;
-
-  /**
-   * @brief [Profiling] Measures gradient calculation times
-   */
-  double _generationGradientCalculationTime;
-
-  /**
-  * @brief [Profiling] Measures mini batch generation times
-  */
-  double _generationGenerateMiniBatchTime;
 
   /****************************************************************************************************
    * Common Agent functions

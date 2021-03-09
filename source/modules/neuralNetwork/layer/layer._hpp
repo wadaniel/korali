@@ -43,9 +43,14 @@ class Layer : public Module
   Layer *_nextLayer;
 
   /**
-  * @brief Number of NN hyperparameters (weights/bias)
+  * @brief Number of layer hyperparameters
   */
   size_t _hyperparameterCount;
+
+  /**
+  * @brief Starting index of hyperparameters
+  */
+  size_t _hyperparameterIndex;
 
   // Input/output memory elements
 

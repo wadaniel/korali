@@ -116,7 +116,6 @@ void DeepSupervisor::initialize()
   _adamSolver->reset();
 
   _currentLoss = 0.0f;
-  _l2Hyperparameter = 0.0f;
 }
 
 void DeepSupervisor::runGeneration()
@@ -125,19 +124,19 @@ void DeepSupervisor::runGeneration()
   size_t N = _problem->_trainingBatchSize;
   size_t OC = _problem->_solutionSize;
 
-  // Checking that incoming data has a correct format
-  _problem->verifyData();
-
   // Updating optimizer's learning rate, in case it changed
   _adamSolver->_eta = _learningRate;
+
   for (size_t step = 0; step < _stepsPerGeneration; step++)
   {
-    // Creating gradient vector
-    auto gradientVector = _problem->_solutionData;
-
     // If we use an MSE loss function, we need to update the gradient vector with its difference with each of batch's last timestep of the NN output
     if (_lossFunction == "Mean Squared Error")
     {
+     // Checking that incoming data has a correct format
+     _problem->verifyData();
+
+     // Creating gradient vector
+     auto gradientVector = _problem->_solutionData;
 
      // Forward propagating the input values through the training neural network
      _trainingNeuralNetwork->forward(_problem->_inputData);
@@ -145,17 +144,21 @@ void DeepSupervisor::runGeneration()
       for (size_t b = 0; b < N; b++)
         for (size_t i = 0; i < OC; i++)
           gradientVector[b][i] = gradientVector[b][i] - _trainingNeuralNetwork->_outputValues[b][i];
+
+      // Backward propagating the gradients through the training neural network
+      _trainingNeuralNetwork->backward(gradientVector);
+
+      // Calculating loss across the batch size
+      _currentLoss = 0.0;
+      for (size_t b = 0; b < N; b++)
+        for (size_t i = 0; i < OC; i++)
+          _currentLoss += gradientVector[b][i] * gradientVector[b][i];
+      _currentLoss = _currentLoss / ((float)N * 2.0f);
     }
 
-    // Calculating loss across the batch size
-    _currentLoss = 0.0;
-    for (size_t b = 0; b < N; b++)
-      for (size_t i = 0; i < OC; i++)
-        _currentLoss += gradientVector[b][i] * gradientVector[b][i];
-    _currentLoss = _currentLoss / ((float)N * 2.0f);
-
-    // Backward propagating the gradients through the training neural network
-    _trainingNeuralNetwork->backward(gradientVector);
+    // If using direct gradient, backward propagating the gradients directly through the training neural network
+    if (_lossFunction == "Direct Gradient")
+     _trainingNeuralNetwork->backward(_problem->_solutionData);
 
     // Apply gradient of L2 regularizer
     if (_l2RegularizationEnabled)
@@ -173,17 +176,11 @@ void DeepSupervisor::runGeneration()
   }
 
   // Copying hyperparameters and normalization parameters from training to evaluation
-  _hyperparameters = _trainingNeuralNetwork->getHyperparameters();
-
   #pragma omp parallel
   {
     size_t curThread = omp_get_thread_num();
-    _inferenceNeuralNetworks[curThread]->setHyperparameters(_hyperparameters);
+    _inferenceNeuralNetworks[curThread]->setHyperparameters(_adamSolver->_currentValue);
   }
-
-  _l2Hyperparameter = 0.;
-  for (float param : _hyperparameters) _l2Hyperparameter += param * param;
-  _l2Hyperparameter = std::sqrt(_l2Hyperparameter);
 }
 
 std::vector<float> DeepSupervisor::getTrainingHyperparameters()
@@ -267,7 +264,6 @@ void DeepSupervisor::printGenerationAfter()
   // Printing results so far
   if (_lossFunction == "Mean Squared Error") _k->_logger->logInfo("Normal", " + Training Loss: %.15f\n", _currentLoss);
   if (_lossFunction == "Direct Gradient") _k->_logger->logInfo("Normal", " + Gradient L2-Norm: %.15f\n", std::sqrt(_currentLoss));
-  _k->_logger->logInfo("Normal", " + Hyperparameter L2-Norm: %.15f\n", _l2Hyperparameter);
 }
 
 } // namespace learner

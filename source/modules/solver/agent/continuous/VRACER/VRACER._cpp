@@ -65,25 +65,12 @@ void VRACER::initializeAgent()
     _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Softplus Mask"][i + 1] = false;
     _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Sigmoid Mask"][i + 1] = false;
 
-    if (_policyDistribution == "Normal")
-    {
-      // Softplus mask for Sigma
-      _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Scale"][_problem->_actionVectorSize + i + 1] = sigma * 2.0f;
-      _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Shift"][_problem->_actionVectorSize + i + 1] = 0.0f;
-      _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Tanh Mask"][_problem->_actionVectorSize + i + 1] = false;
-      _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Softplus Mask"][_problem->_actionVectorSize + i + 1] = true;
-      _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Sigmoid Mask"][_problem->_actionVectorSize + i + 1] = false;
-    }
-
-    if (_policyDistribution == "Beta")
-    {
-      // Sigmoid in mask for Variance Coefficients in (0,1)
-      _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Scale"][_problem->_actionVectorSize + i + 1] = sigma * 2.0f;
-      _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Shift"][_problem->_actionVectorSize + i + 1] = 0.0f;
-      _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Tanh Mask"][_problem->_actionVectorSize + i + 1] = false;
-      _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Softplus Mask"][_problem->_actionVectorSize + i + 1] = false;
-      _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Sigmoid Mask"][_problem->_actionVectorSize + i + 1] = true;
-    }
+    // Softplus mask for Sigma
+    _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Scale"][_problem->_actionVectorSize + i + 1] = sigma * 2.0f;
+    _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Shift"][_problem->_actionVectorSize + i + 1] = 0.0f;
+    _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Tanh Mask"][_problem->_actionVectorSize + i + 1] = false;
+    _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Softplus Mask"][_problem->_actionVectorSize + i + 1] = true;
+    _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Sigmoid Mask"][_problem->_actionVectorSize + i + 1] = false;
   }
 
   // Running initialization to verify that the configuration is correct
@@ -118,17 +105,6 @@ void VRACER::trainPolicy()
   // Fill Minibatch
   auto beginTime = std::chrono::steady_clock::now(); // Profiling
 
-  // Resetting statistics
-  float cumulativeQStar = 0.0;
-  float cumulativeQStarSquared = 0.0;
-
-  float cumulativeTdError = 0.0;
-  float cumulativeTdErrorSquared = 0.0;
-
-  float cumulativePolicyError = 0.0;
-  float cumulativePolicyErrorSquared = 0.0;
-  size_t policyErrorCounter = 0;
-
   std::fill(_statisticsAverageActionSigmas.begin(), _statisticsAverageActionSigmas.end(), 0.0);
 
 #pragma omp parallel for schedule(guided)
@@ -154,15 +130,8 @@ void VRACER::trainPolicy()
     // Storage for the update gradient
     std::vector<float> gradientLoss(1 + 2 * _problem->_actionVectorSize);
 
-    // Keeping critic statistics
-    cumulativeQStar += expVtbc;
-    cumulativeQStarSquared += expVtbc * expVtbc;
-
     // Gradient of Value Function V(s) (eq. (9); *-1 because the optimizer is maximizing)
-    gradientLoss[0] = -(V - expVtbc);
-
-    cumulativeTdError -= gradientLoss[0];
-    cumulativeTdErrorSquared += gradientLoss[0] * gradientLoss[0];
+    gradientLoss[0] = expVtbc - V;
 
     // Compute policy gradient only if inside trust region (or offPolicy disabled)
     if (_isOnPolicyVector[expId])
@@ -191,19 +160,14 @@ void VRACER::trainPolicy()
       }
 
       // Compute Off-Policy Objective (eq. 5)
-      float lossOffPolicy = -(Qret - V);
-
-      // Compute statistics
-      cumulativePolicyError += lossOffPolicy;
-      cumulativePolicyErrorSquared += lossOffPolicy * lossOffPolicy;
-      policyErrorCounter++;
+      float lossOffPolicy = Qret - V;
 
       // Compute Policy Gradient wrt Params
       auto polGrad = calculateImportanceWeightGradient(expAction, curPolicy, expPolicy);
 
       // Set Gradient of Loss wrt Params
       for (size_t i = 0; i < 2 * _problem->_actionVectorSize; i++)
-        gradientLoss[1 + i] = -_experienceReplayOffPolicyREFERBeta * lossOffPolicy * polGrad[i];
+        gradientLoss[1 + i] = _experienceReplayOffPolicyREFERBeta * lossOffPolicy * polGrad[i];
     }
 
     // Compute derivative of kullback-leibler divergence wrt current distribution params
@@ -226,18 +190,6 @@ void VRACER::trainPolicy()
   /******************************************************************
    * Computing Statistics
    *****************************************************************/
-
-  // Compute average and std of Value target
-  _statisticsAverageQStar = cumulativeQStar / (float)_miniBatchSize;
-  _statisticsStdevQStar = sqrt(cumulativeQStarSquared / (float)_miniBatchSize - _statisticsAverageQStar * _statisticsAverageQStar);
-
-  // Compute average and std of Value Loss
-  _statisticsAverageTDError = cumulativeTdError / (float)_miniBatchSize;
-  _statisticsStdevTDError = std::sqrt(cumulativeTdErrorSquared / (float)_miniBatchSize - _statisticsAverageTDError * _statisticsAverageTDError);
-
-  // Compute average and std of Off-Policy Gradient Objective
-  _statisticsAveragePolicyError = cumulativePolicyError / (float)policyErrorCounter;
-  _statisticsStdevPolicyError = std::sqrt(cumulativePolicyErrorSquared / (float)policyErrorCounter - _statisticsAveragePolicyError * _statisticsAveragePolicyError);
 
   // Compute average action stadard deviation
   for (size_t j = 0; j < _problem->_actionVectorSize; j++) _statisticsAverageActionSigmas[j] /= (float)_miniBatchSize;
@@ -275,44 +227,20 @@ policy_t VRACER::runPolicy(const std::vector<std::vector<float>> &state)
   policy.stateValue = evaluation[0];
 
   // Getting distribution parameters
-  if (_policyDistribution == "Normal")
-  {
-    std::vector<float> actionMeans(_problem->_actionVectorSize);
-    std::vector<float> actionSigmas(_problem->_actionVectorSize);
-
-    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-    {
-      actionMeans[i] = evaluation[i + 1];
-      actionSigmas[i] = evaluation[_problem->_actionVectorSize + i + 1];
-    }
-
-    policy.actionMeans = actionMeans;
-    policy.actionSigmas = actionSigmas;
-  }
-
-  if (_policyDistribution == "Beta")
-  {
-    std::vector<float> actionAlpha(_problem->_actionVectorSize);
-    std::vector<float> actionBeta(_problem->_actionVectorSize);
-
-    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-    {
-      actionAlpha[i] = evaluation[i + 1];
-      actionBeta[i] = evaluation[_problem->_actionVectorSize + i + 1];
-    }
-
-    policy.actionMeans = actionAlpha;
-    policy.actionSigmas = actionBeta;
-  }
-
-  // Sanity checks for means and sigmas
-  for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-   if (std::isfinite(policy.actionMeans[i]) == false)
-    KORALI_LOG_ERROR("Policy means variable %lu returned an invalid value: %f\n", policy.actionMeans[i]);
+  policy.actionMeans.resize(_problem->_actionVectorSize);
+  policy.actionSigmas.resize(_problem->_actionVectorSize);
 
   for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-     if (std::isfinite(policy.actionSigmas[i]) == false)
-      KORALI_LOG_ERROR("Policy means variable %lu returned an invalid value: %f\n", policy.actionSigmas[i]);
+  {
+    const auto mean = evaluation[i + 1];
+    const auto sigma = evaluation[_problem->_actionVectorSize + i + 1];
+
+    if (std::isfinite(mean) == false)  KORALI_LOG_ERROR("Policy mean of variable %lu returned an invalid value: %f\n", mean);
+    if (std::isfinite(sigma) == false) KORALI_LOG_ERROR("Policy sigma of variable %lu returned an invalid value: %f\n", sigma);
+
+    policy.actionMeans[i] = mean;
+    policy.actionSigmas[i] = sigma;
+  }
 
   return policy;
 }
@@ -334,23 +262,21 @@ std::vector<policy_t> VRACER::runPolicyBatch(const std::vector<std::vector<std::
    // Getting state value
    policyVector[b].stateValue = evaluation[b][0];
 
+   // Getting distribution parameters
    policyVector[b].actionMeans.resize(_problem->_actionVectorSize);
    policyVector[b].actionSigmas.resize(_problem->_actionVectorSize);
 
    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
    {
-    policyVector[b].actionMeans[i] = evaluation[b][i + 1];
-    policyVector[b].actionSigmas[i] = evaluation[b][_problem->_actionVectorSize + i + 1];
+    const auto mean = evaluation[b][i + 1];
+    const auto sigma = evaluation[b][_problem->_actionVectorSize + i + 1];
+
+    if (std::isfinite(mean) == false)  KORALI_LOG_ERROR("Policy mean of variable %lu returned an invalid value: %f\n", mean);
+    if (std::isfinite(sigma) == false) KORALI_LOG_ERROR("Policy sigma of variable %lu returned an invalid value: %f\n", sigma);
+
+    policyVector[b].actionMeans[i] = mean;
+    policyVector[b].actionSigmas[i] = sigma;
    }
-
-   // Sanity checks for means and sigmas
-   for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-    if (std::isfinite(policyVector[b].actionMeans[i]) == false)
-     KORALI_LOG_ERROR("Policy means variable %lu returned an invalid value: %f\n", policyVector[b].actionMeans[i]);
-
-   for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-      if (std::isfinite(policyVector[b].actionSigmas[i]) == false)
-       KORALI_LOG_ERROR("Policy means variable %lu returned an invalid value: %f\n", policyVector[b].actionSigmas[i]);
   }
 
   return policyVector;
@@ -385,9 +311,6 @@ knlohmann::json VRACER::getTrainingState()
 void VRACER::printAgentInformation()
 {
   _k->_logger->logInfo("Normal", "Critic Information:\n");
-  _k->_logger->logInfo("Normal", " + Average (Std) Vtbc in Mini-Batch:                  %f (%f)\n", _statisticsAverageQStar, _statisticsStdevQStar);
-  _k->_logger->logInfo("Normal", " + Average (Std) TD-Error in Mini-Batch:              %f (%f)\n", _statisticsAverageTDError, _statisticsStdevTDError);
-  _k->_logger->logInfo("Normal", " + Average (Std) Off-Policy Objective in Mini-Batch:  %f (%f)\n", _statisticsAveragePolicyError, _statisticsStdevPolicyError);
   _k->_logger->logInfo("Normal", " + Average Action Noise (Sigma) in Mini-Batch: \n");
   for (size_t i = 0; i < _problem->_actionVectorSize; ++i) _k->_logger->logInfo("Normal", " +  [ %f ]\n", _statisticsAverageActionSigmas[i]);
 

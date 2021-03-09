@@ -93,11 +93,6 @@ void Agent::initialize()
   _sessionPolicyUpdateTime = 0.0;
   _sessionAgentAttendingTime = 0.0;
 
-  // Policy update timers
-  _sessionUpdateNeuralNetworkTime = 0.0;
-  _sessionGradientCalculationTime = 0.0;
-  _sessionGenerateMiniBatchTime = 0.0;
-
   // Initializing session-specific counters
   _sessionExperienceCount = 0;
   _sessionEpisodeCount = 0;
@@ -161,9 +156,6 @@ void Agent::trainingGeneration()
   _generationAgentPolicyEvaluationTime = 0.0;
   _generationPolicyUpdateTime = 0.0;
   _generationAgentAttendingTime = 0.0;
-  _generationUpdateNeuralNetworkTime = 0.0;
-  _generationGradientCalculationTime = 0.0;
-  _generationGenerateMiniBatchTime = 0.0;
 
   setTrainingState(_trainingState);
 
@@ -234,11 +226,6 @@ void Agent::trainingGeneration()
   auto endTime = std::chrono::steady_clock::now();                                                             // Profiling
   _sessionRunningTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
   _generationRunningTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
-
-  // Updating time counters
-  _sessionUpdateNeuralNetworkTime += _generationUpdateNeuralNetworkTime;
-  _sessionGradientCalculationTime += _generationGradientCalculationTime;
-  _sessionGenerateMiniBatchTime += _generationGenerateMiniBatchTime;
 
   // Gathering learners training state (for checkpoint/resume purpose)
   _trainingState = getTrainingState();
@@ -494,12 +481,8 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
 
 std::vector<size_t> Agent::generateMiniBatch(size_t miniBatchSize)
 {
- //printf("----------------------------------------\n");
-
- auto beginTime = std::chrono::steady_clock::now(); // Profiling
-
-  // Allocating storage for mini batch experiecne indexes
-  std::vector<size_t> miniBatch(miniBatchSize);
+ // Allocating storage for mini batch experiecne indexes
+ std::vector<size_t> miniBatch(miniBatchSize);
 
  for (size_t i = 0; i < miniBatchSize; i++)
  {
@@ -516,35 +499,17 @@ std::vector<size_t> Agent::generateMiniBatch(size_t miniBatchSize)
   // Sorting minibatch
   std::sort (miniBatch.begin(), miniBatch.end());
 
-  auto endTime = std::chrono::steady_clock::now(); // Profiling
-  double t = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
-  //printf("SelectSort: %f\n", t / 1.0e+9);
-
   /**********************************************
    * Updating experience's metadata
    *********************************************/
-
-  beginTime = std::chrono::steady_clock::now(); // Profiling
 
   std::vector<std::vector<std::vector<float>>> stateMiniBatch(_miniBatchSize);
   #pragma omp parallel for
   for (size_t i = 0; i < miniBatchSize; i++)
    stateMiniBatch[i] = getStateTimeSequence(miniBatch[i]);
 
-  endTime = std::chrono::steady_clock::now(); // Profiling
-  t = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
-  //printf("GetSequences: %f\n", t / 1.0e+9);
-
-  beginTime = std::chrono::steady_clock::now(); // Profiling
-
   // Run policy for the entire minibatch
   auto curPolicyVector = runPolicyBatch(stateMiniBatch);
-
-  endTime = std::chrono::steady_clock::now(); // Profiling
-  t = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
-  //printf("RunBatch    : %f\n", t / 1.0e+9);
-
-  beginTime = std::chrono::steady_clock::now(); // Profiling
 
   // Creating a selection of unique experiences from the mini batch
   std::vector<size_t> updateBatch;
@@ -552,16 +517,10 @@ std::vector<size_t> Agent::generateMiniBatch(size_t miniBatchSize)
   for (size_t i = 1; i < miniBatchSize; i++)
    if(miniBatch[i] != miniBatch[i-1]) updateBatch.push_back(i);
 
-  endTime = std::chrono::steady_clock::now(); // Profiling
-  t = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
-  //printf("NonRepBatch   : %f\n", t / 1.0e+9);
-
-  beginTime = std::chrono::steady_clock::now(); // Profiling
-
   // Storage to keep track of off-policy experiences
   size_t offPolicyCount = 0;
 
-  #pragma omp parallel for schedule(dynamic) reduction(+ : offPolicyCount)
+  #pragma omp parallel for reduction(+ : offPolicyCount)
   for (size_t i = 0; i < updateBatch.size(); i++)
   {
     auto batchId = updateBatch[i];
@@ -606,12 +565,6 @@ std::vector<size_t> Agent::generateMiniBatch(size_t miniBatchSize)
     if (isOnPolicy == false) offPolicyCount++;
   }
 
-  endTime = std::chrono::steady_clock::now(); // Profiling
-  t = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
-  //printf("UpdateExps: %f\n", t / 1.0e+9);
-
-  beginTime = std::chrono::steady_clock::now(); // Profiling
-
   // Updating the off policy Ratio
   float alpha = 0.01f; // ~100 updates to reach 63.2% of the target
   _experienceReplayOffPolicyRatio = alpha * (float)offPolicyCount / (float)updateBatch.size() + (1.0f - alpha) * _experienceReplayOffPolicyRatio;
@@ -634,14 +587,6 @@ std::vector<size_t> Agent::generateMiniBatch(size_t miniBatchSize)
    size_t nextEpisode = _episodeIdVector[nextExpId];
    if (curEpisode != nextEpisode) retraceMiniBatch.push_back(currExpId);
   }
-
-  //printf("MiniBatchSize: %lu - RetraceMiniBatch: %lu\n", miniBatchSize, retraceMiniBatch.size());
-
-  endTime = std::chrono::steady_clock::now(); // Profiling
-  t = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
-  //printf("CreateRetraceIdx: %f\n", t / 1.0e+9);
-
-  beginTime = std::chrono::steady_clock::now(); // Profiling
 
   // Calculating retrace value for the oldest experiences of unique episodes
   #pragma omp parallel for schedule(guided, 1)
@@ -687,12 +632,6 @@ std::vector<size_t> Agent::generateMiniBatch(size_t miniBatchSize)
      _retraceLastUpdateVector[curId] = _policyUpdateCount;
    }
   }
-
-  endTime = std::chrono::steady_clock::now(); // Profiling
-  t = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
-  //printf("Retrace: %f\n", t / 1.0e+9);
-
-  //printf("----------------------------------------\n");
 
   // Returning generated minibatch
   return miniBatch;
@@ -1008,9 +947,6 @@ void Agent::printGenerationAfter()
     _k->_logger->logInfo("Detailed", " + Avg Agent Communication/Wait Time:   [%5.3fs] - [%3.3fs]\n", _generationAgentCommunicationTime / 1.0e+9, _sessionAgentCommunicationTime / 1.0e+9);
     _k->_logger->logInfo("Detailed", " + Avg Agent Policy Evaluation Time:    [%5.3fs] - [%3.3fs]\n", _generationAgentPolicyEvaluationTime / 1.0e+9, _sessionAgentPolicyEvaluationTime / 1.0e+9);
     _k->_logger->logInfo("Detailed", " + Policy Update Time:                  [%5.3fs] - [%3.3fs]\n", _generationPolicyUpdateTime / 1.0e+9, _sessionPolicyUpdateTime / 1.0e+9);
-    _k->_logger->logInfo("Detailed", "   + Generate Mini Batch Time:          [%5.3fs] - [%3.3fs]\n", _generationGenerateMiniBatchTime / 1.0e+9, _sessionGenerateMiniBatchTime / 1.0e+9);
-    _k->_logger->logInfo("Detailed", "   + Gradient Calculation Time:         [%5.3fs] - [%3.3fs]\n", _generationGradientCalculationTime / 1.0e+9, _sessionGradientCalculationTime / 1.0e+9);
-    _k->_logger->logInfo("Detailed", "   + Neural Network Update Time         [%5.3fs] - [%3.3fs]\n", _generationUpdateNeuralNetworkTime / 1.0e+9, _sessionUpdateNeuralNetworkTime / 1.0e+9);
     _k->_logger->logInfo("Detailed", " + Running Time:                        [%5.3fs] - [%3.3fs]\n", _generationRunningTime / 1.0e+9, _sessionRunningTime / 1.0e+9);
     _k->_logger->logInfo("Detailed", " + [I/O] Result File Saving Time:        %5.3fs\n", _k->_resultSavingTime / 1.0e+9);
   }

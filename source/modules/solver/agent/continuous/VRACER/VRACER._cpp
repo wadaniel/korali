@@ -1,6 +1,7 @@
 #include "engine.hpp"
 #include "modules/solver/agent/continuous/VRACER/VRACER.hpp"
 #include "sample/sample.hpp"
+#include "omp.h"
 
 namespace korali
 {
@@ -78,17 +79,6 @@ void VRACER::initializeAgent()
   _criticPolicyProblem = dynamic_cast<problem::SupervisedLearning *>(_criticPolicyExperiment._problem);
   _criticPolicyLearner = dynamic_cast<solver::learner::DeepSupervisor *>(_criticPolicyExperiment._solver);
 
-  /*********************************************************************
-  * Creating a special evaluation network for mini batch evaluation
-  *********************************************************************/
-  knlohmann::json nnConfig;
-  _criticPolicyLearner->_trainingNeuralNetwork->getConfiguration(nnConfig);
-  nnConfig["Batch Size"] = _miniBatchSize;
-  _batchPolicyNetwork = dynamic_cast<NeuralNetwork *>(getModule(nnConfig, _k));
-  _batchPolicyNetwork->applyModuleDefaults(nnConfig);
-  _batchPolicyNetwork->setConfiguration(nnConfig);
-  _batchPolicyNetwork->initialize();
-
   // Init statistics
   _statisticsAverageActionSigmas.resize(_problem->_actionVectorSize);
 }
@@ -99,8 +89,13 @@ void VRACER::trainPolicy()
   * Training the critic/learner network with a mini-batch
   ***************************************************************************/
 
+  auto beginTimeT0 = std::chrono::steady_clock::now(); // Profiling
+
   // Creating a minibatch of starting experiences for the trajectories update
   auto miniBatchIndexes = generateMiniBatch(_miniBatchSize);
+
+  auto endTimeT0 = std::chrono::steady_clock::now();
+  _generationGenerateMiniBatchTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTimeT0 - beginTimeT0).count(); // Profiling
 
   // Fill Minibatch
   auto beginTime = std::chrono::steady_clock::now(); // Profiling
@@ -266,7 +261,6 @@ std::vector<policy_t> VRACER::runPolicyBatch(const std::vector<std::vector<std::
   t = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
   //printf(" - Getting vals: %f\n", t / 1.0e+9);
 
-
   beginTime = std::chrono::steady_clock::now(); // Profiling
 
   #pragma omp parallel for
@@ -302,7 +296,7 @@ std::vector<policy_t> VRACER::runPolicyBatch(const std::vector<std::vector<std::
 knlohmann::json VRACER::getAgentPolicy()
 {
   knlohmann::json hyperparameters;
-  hyperparameters["Policy"] = _criticPolicyLearner->getInferenceHyperparameters();
+  hyperparameters["Policy"] = _criticPolicyLearner->getTrainingHyperparameters();
   return hyperparameters;
 }
 

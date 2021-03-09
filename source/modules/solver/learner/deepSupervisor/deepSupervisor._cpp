@@ -169,7 +169,7 @@ void DeepSupervisor::runGeneration()
     }
 
     // Passing hyperparameter gradients through an ADAM update
-    _adamSolver->processResult(_currentLoss, _trainingNeuralNetwork->_hyperparameterGradients);
+    _adamSolver->processResult(0.0f, _trainingNeuralNetwork->_hyperparameterGradients);
 
     // Getting new set of hyperparameters from Adam
     _trainingNeuralNetwork->setHyperparameters(_adamSolver->_currentValue);

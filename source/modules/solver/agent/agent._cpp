@@ -26,6 +26,7 @@ void Agent::initialize()
   _stateVector.resize(_experienceReplayMaximumSize);
   _actionVector.resize(_experienceReplayMaximumSize);
   _retraceValueVector.resize(_experienceReplayMaximumSize);
+  _retraceLastUpdateVector.resize(_experienceReplayMaximumSize);
   _rewardVector.resize(_experienceReplayMaximumSize);
   _stateValueVector.resize(_experienceReplayMaximumSize);
   _importanceWeightVector.resize(_experienceReplayMaximumSize);
@@ -424,6 +425,7 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
 
     // Adding placeholder for retrace value
     _retraceValueVector.add(0.0f);
+    _retraceLastUpdateVector.add(0);
 
     // Updating experience's importance weight. Initially assumed to be 1.0 because its freshly produced
     _importanceWeightVector.add(1.0f);
@@ -469,6 +471,7 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
 
     // Setting initial retrace value in the experience's cache
     _retraceValueVector[expId] = retV;
+    _retraceLastUpdateVector[expId] = _policyUpdateCount;
   }
 
   /*********************************************************************
@@ -491,8 +494,6 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
 
 std::vector<size_t> Agent::generateMiniBatch(size_t miniBatchSize)
 {
- auto beginTimeT0 = std::chrono::steady_clock::now(); // Profiling
-
  //printf("----------------------------------------\n");
 
  auto beginTime = std::chrono::steady_clock::now(); // Profiling
@@ -634,7 +635,7 @@ std::vector<size_t> Agent::generateMiniBatch(size_t miniBatchSize)
    if (curEpisode != nextEpisode) retraceMiniBatch.push_back(currExpId);
   }
 
-  ////printf("MiniBatchSize: %lu - RetraceMiniBatch: %lu\n", miniBatchSize, retraceMiniBatch.size());
+  //printf("MiniBatchSize: %lu - RetraceMiniBatch: %lu\n", miniBatchSize, retraceMiniBatch.size());
 
   endTime = std::chrono::steady_clock::now(); // Profiling
   t = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
@@ -666,6 +667,9 @@ std::vector<size_t> Agent::generateMiniBatch(size_t miniBatchSize)
    // Now iterating backwards to calculate the rest of vTbc
    for (ssize_t curId = endId; curId >= startId; curId--)
    {
+     // If this retrace value (and previous ones) was calculated recently, skipping the entire process
+     if (_policyUpdateCount - _retraceLastUpdateVector[curId] < _retraceUpdateDelay) break;
+
      // Getting current reward, action, and state
      const float curReward = _rewardVector[curId];
 
@@ -680,15 +684,13 @@ std::vector<size_t> Agent::generateMiniBatch(size_t miniBatchSize)
 
      // Storing retrace value into the experience's cache
      _retraceValueVector[curId] = retV;
+     _retraceLastUpdateVector[curId] = _policyUpdateCount;
    }
   }
 
   endTime = std::chrono::steady_clock::now(); // Profiling
   t = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
   //printf("Retrace: %f\n", t / 1.0e+9);
-
-  auto endTimeT0 = std::chrono::steady_clock::now();
-  _generationGenerateMiniBatchTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTimeT0 - beginTimeT0).count(); // Profiling
 
   //printf("----------------------------------------\n");
 
@@ -822,6 +824,7 @@ void Agent::serializeExperienceReplay()
     stateJson["Experience Replay"][i]["Reward"] = _rewardVector[i];
     stateJson["Experience Replay"][i]["State Value"] = _stateValueVector[i];
     stateJson["Experience Replay"][i]["Retrace Value"] = _retraceValueVector[i];
+    stateJson["Experience Replay"][i]["Retrace Last Update"] = _retraceLastUpdateVector[i];
     stateJson["Experience Replay"][i]["Importance Weight"] = _importanceWeightVector[i];
     stateJson["Experience Replay"][i]["Truncated Importance Weight"] = _truncatedImportanceWeightVector[i];
     stateJson["Experience Replay"][i]["Is On Policy"] = _isOnPolicyVector[i];
@@ -909,6 +912,7 @@ void Agent::deserializeExperienceReplay()
     _rewardVector.add(stateJson["Experience Replay"][i]["Reward"].get<float>());
     _stateValueVector.add(stateJson["Experience Replay"][i]["State Value"].get<float>());
     _retraceValueVector.add(stateJson["Experience Replay"][i]["Retrace Value"].get<float>());
+    _retraceLastUpdateVector.add(stateJson["Experience Replay"][i]["Retrace Last Update"].get<float>());
     _importanceWeightVector.add(stateJson["Experience Replay"][i]["Importance Weight"].get<float>());
     _truncatedImportanceWeightVector.add(stateJson["Experience Replay"][i]["Truncated Importance Weight"].get<float>());
     _isOnPolicyVector.add(stateJson["Experience Replay"][i]["Is On Policy"].get<bool>());

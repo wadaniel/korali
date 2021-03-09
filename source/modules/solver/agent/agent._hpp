@@ -175,6 +175,11 @@ class Agent : public Solver
   cBuffer<float> _retraceValueVector;
 
   /**
+   * @brief Contains the update count of the latest calculation of the experience's retrace value
+   */
+  cBuffer<size_t> _retraceLastUpdateVector;
+
+  /**
    * @brief If this is a truncated terminal experience, this contains the state value for that state
    */
   cBuffer<float> _truncatedStateValueVector;

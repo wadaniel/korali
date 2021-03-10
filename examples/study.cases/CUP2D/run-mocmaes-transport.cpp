@@ -21,13 +21,13 @@ int main(int argc, char *argv[])
  
   // Defining constants
   const double maxForce = 1e-2;
-  const size_t numVariables = 4; // Discretization of path
+  const size_t numVariables = 8; // Discretization of path
  
   // Init CUP2D
   _environment = new Simulation(_argc, _argv);
   _environment->init();
 
-  std::string resultsPath = "true_results_transport_mocmaes2/";
+  std::string resultsPath = "_results_transport_mocmaes/";
 
   // Creating Experiment
   auto e = korali::Experiment();

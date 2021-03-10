@@ -163,7 +163,7 @@ void VRACER::trainPolicy()
     if (exp.isOnPolicy)
     {
       // Qret for terminal state is just reward
-      float Qret = exp.reward / _rewardRescalingSdev;
+      float Qret = exp.reward;
 
       // Check whether experience is non-terminal
       bool isNormal = exp.termination == e_nonTerminal;

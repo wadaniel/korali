@@ -70,6 +70,7 @@ int main(int argc, char *argv[])
   e["Solver"]["Type"] = "Agent / Continuous / VRACER";
   e["Solver"]["Mode"] = "Training";
   e["Solver"]["Episodes Per Generation"] = 10;
+  e["Solver"]["Updates Between Reward Rescaling"] = 20000;
   e["Solver"]["Experiences Between Policy Updates"] = 1;
   e["Solver"]["Learning Rate"] = 1e-4;
   e["Solver"]["Discount Factor"] = 0.99;

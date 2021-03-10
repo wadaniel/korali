@@ -386,6 +386,16 @@ void Agent::updateRewardFunction()
         featureWeightGradient[k] += 1.0 / (float)_demonstrationBatchSize * _problem->_observationsFeatures[observedTrajectoryIdx][i][k];
   }
 
+  // L1 penalization
+  float lambda = 1e-1;
+  for (size_t k = 0; k < _problem->_featureVectorSize; ++k)
+  {
+      if(_featureWeights[k] > 0.0)
+        featureWeightGradient[k] -= lambda*_featureWeights[k];
+      else
+        featureWeightGradient[k] += lambda*_featureWeights[k];
+  }
+
   for (size_t k = 0; k < _problem->_featureVectorSize; ++k)
   {
     _featureWeights[k] += _rewardfunctionLearningRate * featureWeightGradient[k];

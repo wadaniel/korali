@@ -22,7 +22,7 @@ e["Problem"]["Type"] = "Optimization"
 e["Problem"]["Objective Function"] = negative_rosenbrock_and_sphere
 e["Problem"]["Num Objectives"] = 2
 
-dim = 2
+dim = 4
 
 # Defining the problem's variables.
 for i in range(dim):

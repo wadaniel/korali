@@ -98,14 +98,14 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
   confIntervalUpperHistory = np.array(confIntervalUpperHistory)
 
   # Plotting common plot
-  #ax.plot(cumulativeObsList, rewardHistory, 'x', markersize=1.3, color=cmap(colCurrIndex), alpha=0.15, zorder=0)
-  #ax.plot(cumulativeObsList, meanHistory, '-', color=cmap(colCurrIndex), zorder=1) 
+  ax.plot(cumulativeObsList, rewardHistory, 'x', markersize=1.3, color='blue', alpha=0.15, zorder=0)
+  ax.plot(cumulativeObsList, meanHistory, '-', color='cyan', lineWidth=3.0, zorder=1) 
 
-  ax.plot(cumulativeObsList, meanHistory, '-', label=str(averageDepth) + '-Episode Average (' + dirs[resId] + ')', color=cmap(colCurrIndex), zorder=1)
-  if showSamples:
-    ax.plot(cumulativeObsList, rewardHistory, 'x', markersize=1.3, color=cmap(colCurrIndex), alpha=0.5, zorder=0)
-  if showCI > 0.0:
-    ax.fill_between(cumulativeObsList, confIntervalLowerHistory, confIntervalUpperHistory, color=cmap(colCurrIndex), facecolor="none", alpha=0.2)
+  #ax.plot(cumulativeObsList, meanHistory, '-', label=str(averageDepth) + '-Episode Average (' + dirs[resId] + ')', color=cmap(colCurrIndex), zorder=1)
+  #if showSamples:
+  #  ax.plot(cumulativeObsList, rewardHistory, 'x', markersize=1.3, color=cmap(colCurrIndex), alpha=0.5, zorder=0)
+  #if showCI > 0.0:
+  #  ax.fill_between(cumulativeObsList, confIntervalLowerHistory, confIntervalUpperHistory, color=cmap(colCurrIndex), facecolor="none", alpha=0.2)
   
   # Updating color index
   if (len(results) > 1):
@@ -206,7 +206,7 @@ def plotSmartiesResults(ax, smartiesFiles, averageDepth):
   meanHistory = np.array(meanHistory)
   
   # Plotting common plot
-  ax.plot(cumulativeObsList, meanHistory, '--', label='Smarties', color='red', zorder=1)
+  ax.plot(cumulativeObsList, meanHistory, '-', lineWidth=3, label='Smarties', color='fuchsia', zorder=1)
   ax.plot(cumulativeObsList, rewardHistory, 'x', markersize=1.3, color='red', alpha=0.15, zorder=0)
 
 ##################### Main Routine: Parsing arguments and result files

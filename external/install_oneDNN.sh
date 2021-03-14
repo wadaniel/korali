@@ -3,7 +3,7 @@
 ######### Global Definitions ########
 libName="oneDNN"
 binName="oneDNN"
-minVersion=2.0
+minVersion=2.1.1
 
 ######### Helper Functions ########
 
@@ -82,7 +82,7 @@ if [ ${fileFound} == 0 ]; then
  
  rm -rf $buildDir; check
  rm -rf $installDir; check
- 
+
  mkdir -p $buildDir; check
  pushd $buildDir; check
  
@@ -103,7 +103,6 @@ if [ ${fileFound} == 0 ]; then
      -DDNNL_BUILD_TESTS=OFF \
      -DDNNL_ENABLE_CONCURRENT_EXEC=ON \
      -DCMAKE_INSTALL_PREFIX=${installDir} \
-     -DDNNL_CPU_RUNTIME=SEQ \
      -DBUILD_SHARED_LIBS=true; check
 
  echo "[Korali] Building ${libName}... "

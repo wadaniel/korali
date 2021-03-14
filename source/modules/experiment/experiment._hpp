@@ -1,7 +1,7 @@
 @startIncludeGuard
 
 #include "auxiliar/koraliJson.hpp"
-#include "libco.h"
+#include "auxiliar/libco/libco.h"
 #include "modules/module.hpp"
 #include "variable/variable.hpp"
 #include <chrono>

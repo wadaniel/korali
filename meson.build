@@ -72,10 +72,7 @@ korali_deps += dependency('eigen3', fallback: ['eigen', 'eigen_dep'], required: 
 # TODO: [fabianw@mavt.ethz.ch; 2021-02-13] should probably test for system cblas
 # (needs benchmark: gslcblas versus system cblas (and possibly ATLAS))
 korali_deps += dependency('gsl', fallback: ['gsl', 'gsl_dep'], required: true)
-korali_deps += dependency('libco', fallback: ['libco', 'libco_dep'], required: true)
-korali_deps += dependency('libgp', fallback: ['libgp', 'libgp_dep'], required: true)
 korali_deps += dependency('pybind11', fallback: ['pybind11', 'pybind11_dep'], required: true)
-korali_deps += dependency('rtnorm', fallback: ['rtnorm', 'rtnorm_dep'], required: true)
 
 
 # process korali extension

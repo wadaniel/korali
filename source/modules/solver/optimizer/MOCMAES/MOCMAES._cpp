@@ -340,7 +340,7 @@ void MOCMAES::updateDistribution()
   auto values = _currentValues;
   values.insert(std::end(values), std::begin(_previousValues), std::end(_previousValues));
 
-  // Sort current and previous evlauations
+  // Sort current and previous evaluations ascending (assign larger index to 'larger' samples)
   auto sortedIndices = sortSampleIndices(values);
 
   // Precompute factors
@@ -382,10 +382,13 @@ void MOCMAES::updateDistribution()
   }
 
   // Update parents
-  size_t pidx = 0;
   for (size_t i = 0; i < sortedIndices.size(); ++i)
     if (sortedIndices[i] >= values.size() - _muValue)
-    {
+    { 
+      // insert parent samples descending, the 'largest' first
+      size_t pidx = values.size() - sortedIndices[i] - 1;
+
+      // a sample from current generation
       if (i < _populationSize)
       {
         _parentSamplePopulation[pidx] = _currentSamplePopulation[i];
@@ -394,6 +397,7 @@ void MOCMAES::updateDistribution()
         _parentEvolutionPaths[pidx] = _currentEvolutionPaths[i];
         _parentSuccessProbabilities[pidx] = _currentSuccessProbabilities[i];
       }
+      // a sample from previous generation
       else
       {
         const size_t j = i - _populationSize;
@@ -403,7 +407,6 @@ void MOCMAES::updateDistribution()
         _parentEvolutionPaths[pidx] = _previousEvolutionPaths[j];
         _parentSuccessProbabilities[pidx] = _previousSuccessProbabilities[j];
       }
-      pidx++;
     }
 }
 

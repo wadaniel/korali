@@ -171,6 +171,9 @@ void setInitialConditions(SmartCylinder* agent, std::vector<double>& start, bool
 
   // After moving the agent, the obstacles have to be restarted
   _environment->startObstacles();
+
+  // Reset energy
+  agent->energy = 0.;
 }
 
 bool isTerminal(SmartCylinder* agent, std::vector<double>& target )
@@ -480,10 +483,10 @@ void runEnvironmentMocmaes(korali::Sample &s)
 
   // Constraints
   size_t maxSteps = 1e6;
-  size_t maxEnergy = 1e-2;
+  double maxEnergy = 1e-1;
  
   // Creating results directory
-  std::string baseDir = "true_results_transport_mocmaes0/";
+  std::string baseDir = "_log_transport_mocmaes/";
   char resDir[64];
   sprintf(resDir, "%s/sample%08lu", baseDir.c_str(), sampleId);
   std::filesystem::create_directories(resDir); 
@@ -551,8 +554,16 @@ void runEnvironmentMocmaes(korali::Sample &s)
 	force = params[forceIdx];
     }
 
-    action[0] = force*(target[0]-currentPos[0])/dist;
-    action[1] = force*(target[1]-currentPos[1])/dist;
+    if (dist > 0.)
+    {
+        action[0] = force*(target[0]-currentPos[0])/dist;
+        action[1] = force*(target[1]-currentPos[1])/dist;
+    }
+    else
+    {
+        action[0] = force*(target[0]-currentPos[0]);
+        action[1] = force*(target[1]-currentPos[1]);
+    }
 
     // Setting action
     agent->act( action );
@@ -594,18 +605,20 @@ void runEnvironmentMocmaes(korali::Sample &s)
   // Penalization for not reaching target
   if (currentPos[0] < endX)
   {
+    printf("Target not reached, penalizing objectives..\n");
 	t += (endX-currentPos[0])*1e9;
 	energy += (endX-currentPos[0])*1e9;
   }
   if (energy > maxEnergy)
   {
+    printf("Max energy violated (%f), penalizing objectives..\n", maxEnergy);
 	t += (energy-maxEnergy)*1e9;
 	energy += (energy-maxEnergy)*1e9;
   }
   
   // Setting Objectives
   std::vector<double> objectives = { -t, -energy };
-  printf("Objectives: %f (time), %f (energy)\n", t, energy);
+  printf("Objectives: %f (time), %f (energy) (total steps %zu) \n", t, energy, curStep);
   s["F(x)"] = objectives;
 
   // Switching back to experiment directory

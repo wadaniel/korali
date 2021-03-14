@@ -144,7 +144,8 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
     auto beginTime2 = std::chrono::steady_clock::now(); // Profiling
 
     // Checking if we requested the given number of actions in between policy updates and it is not a terminal state
-    bool requestNewPolicy = (agent["Termination"] == "Non Terminal") &&
+    bool requestNewPolicy = (_actionsBetweenPolicyUpdates > 0) &&
+                            (agent["Termination"] == "Non Terminal") &&
                             (actionCount % _actionsBetweenPolicyUpdates == 0);
 
     experience["Request New Policy"] = requestNewPolicy;

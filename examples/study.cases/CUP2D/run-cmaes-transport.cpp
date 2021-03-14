@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
   _environment = new Simulation(_argc, _argv);
   _environment->init();
 
-  std::string resultsPath = "_results_transport_cmaes/";
+  std::string resultsPath = "results_transport_cmaes/";
 
   // Creating Experiment
   auto e = korali::Experiment();
@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
   
   // Configuring CMA-ES parameters
   e["Solver"]["Type"] = "Optimizer/CMAES";
-  e["Solver"]["Population Size"] = 32;
+  e["Solver"]["Population Size"] = 4;
   e["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-16;
   e["Solver"]["Termination Criteria"]["Max Generations"] = 5;
  

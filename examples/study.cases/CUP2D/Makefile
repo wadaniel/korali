@@ -31,4 +31,4 @@ transportEnvironment.o: _models/transportEnvironment/transportEnvironment.cpp
 
 .PHONY: clean
 clean:
-	$(RM) $(BINARIES) *.o *.ti *.optrpt *.h5 *.dat *.xmf
+	$(RM) $(TRANSPORT) $(FISH) *.o *.ti *.optrpt *.h5 *.dat *.xmf

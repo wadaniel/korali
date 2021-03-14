@@ -2,7 +2,7 @@
 
 #include "engine.hpp"
 
-#include "gp.h"
+#include "auxiliar/libgp/gp.h"
 
 #include "modules/experiment/experiment.hpp"
 #include "modules/problem/supervisedLearning/supervisedLearning.hpp"

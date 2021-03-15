@@ -5,7 +5,7 @@ mpiflags="mpirun -n 2"
 
 if [ ! -z $SLURM_NNODES ]; then
  N=$SLURM_NNODES
- mpiflags="srun -N $N -n $(($N+1)) -c 12"
+ mpiflags="ddt srun -N $N -n $(($N+1)) -c 12"
 fi
 
 set -x
@@ -39,7 +39,7 @@ NU=${NU:-0.0001125}
 # windmill semiAxisX=$MAAXIS semiAxisY=$MIAXIS xpos=$XPOS ypos=$YPOS4 bForced=1 xvel=$XVEL tAccel=0 bBlockAng=0
 # "
 
-$mpiflags ./run-vracer-windmill -bpdx $BPDX -bdpy $BPDY -levelMax $LEVELS -Rtol $RTOL -Ctol $CTOL -extent $EXTENT -CFL $CFL -tdump 0.1 -nu $NU -tend 50 -poissonType dirichlet -iterativePensalization 0 -muteAll 0 -verbose 1 "windmill_semiAxisX=0.0375_semiAxisY=0.01_xpos=0.2_ypos=0.2_bForced=1_bFixed=1_xvel=0.15_tAccel=0_bBlockAng=0,windmill_semiAxisX=0.0375_semiAxisY=0.01_xpos=0.2_ypos=0.4_bForced=1_bFixed=1_xvel=0.15_tAccel=0_bBlockAng=0,windmill_semiAxisX=0.0375_semiAxisY=0.01_xpos=0.2_ypos=0.6_bForced=1_bFixed=1_xvel=0.15_tAccel=0_bBlockAng=0,windmill_semiAxisX=0.0375_semiAxisY=0.01_xpos=0.2_ypos=0.8_bForced=1_bFixed=1_xvel=0.15_tAccel=0_bBlockAng=0,"
+$mpiflags ./run-vracer-windmill -bpdx 8 -bdpy 8 -levelMax 3 -Rtol 1 -Ctol 0.1 -extent 1 -CFL 0.3 -tdump 0.1 -nu 0.0001125 -tend 50 -poissonType dirichlet -iterativePensalization 0 -muteAll 0 -verbose 1 "windmill_semiAxisX=0.0375_semiAxisY=0.01_xpos=0.2_ypos=0.2_bForced=1_bFixed=1_xvel=0.15_tAccel=0_bBlockAng=0,windmill_semiAxisX=0.0375_semiAxisY=0.01_xpos=0.2_ypos=0.4_bForced=1_bFixed=1_xvel=0.15_tAccel=0_bBlockAng=0,windmill_semiAxisX=0.0375_semiAxisY=0.01_xpos=0.2_ypos=0.6_bForced=1_bFixed=1_xvel=0.15_tAccel=0_bBlockAng=0,windmill_semiAxisX=0.0375_semiAxisY=0.01_xpos=0.2_ypos=0.8_bForced=1_bFixed=1_xvel=0.15_tAccel=0_bBlockAng=0"
 
 # AMR
 #$mpiflags ./run-vracer-transport  -bpdx 32 -bpdy 32 -levelMax 3 -Rtol 0.1 -Ctol 0.01 -poissonType dirichlet -muteAll 1 -verbose 0 -tdump 0 -nu 0.000018 -tend 0 -shapes ''

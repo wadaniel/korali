@@ -44,6 +44,11 @@ void runEnvironment(korali::Sample &s)
   Windmill* agent3 = dynamic_cast<Windmill*>(_environment->getShapes()[2]);
   Windmill* agent4 = dynamic_cast<Windmill*>(_environment->getShapes()[3]);
 
+  // useful agent functions :
+  // void act( double action );
+  // double reward( std::array<Real,2> target, std::vector<double> target_vel, double C = 10);
+  // std::vector<double> state();
+
   // Establishing environment's dump frequency
   _environment->sim.dumpTime = s["Custom Settings"]["Dump Frequency"].get<double>();
 
@@ -57,14 +62,14 @@ void runEnvironment(korali::Sample &s)
 
   // Set target
   std::array<Real,2> target_pos{0.8,0.5};
-  std::array<Real,2> target_vel{0.8,0.5};
+  std::vector<double> target_vel={0.8,0.5};
 
-  auto state1 = agent1->state();
-  auto state2 = agent2->state();
-  auto state3 = agent3->state();
-  auto state4 = agent4->state();
+  std::vector<double> state1 = agent1->state();
+  std::vector<double> state2 = agent2->state();
+  std::vector<double> state3 = agent3->state();
+  std::vector<double> state4 = agent4->state();
 
-  std::vector<std::array<Real, 2>> state = {state1, state2, state3, state4};
+  std::vector<double> state = {state1[0], state1[1], state2[0], state2[1], state3[0], state3[1], state4[0], state4[1]};
 
   s["State"] = state;
 
@@ -127,7 +132,13 @@ void runEnvironment(korali::Sample &s)
     // Printing Information:
     printf("[Korali] Sample %lu - Step: %lu/%lu\n", sampleId, curStep, maxSteps);
     printf("[Korali] State: [ ");
-    for (size_t i = 0; i < state.size(); i++) printf("[%.3f, %.3f] ", state[i][0], state[i][1]);
+    for (size_t i = 0; i < state.size(); i++){
+      if (i%2 == 0){
+        printf("[%.3f, ", state[i]);
+      } else {
+        printf("%.3f]", state[i]);
+      }
+    }
     printf("]\n");
     printf("[Korali] Force: [ %.3f, %.3f, %.3f, %.3f  ]\n", action[0], action[1], action[2], action[3]);
     printf("[Korali] Reward: %.3f\n", reward);
@@ -140,7 +151,7 @@ void runEnvironment(korali::Sample &s)
     state2 = agent2->state();
     state3 = agent3->state();
     state4 = agent4->state();
-    state = std::vector<std::array<Real, 2>>  {state1, state2, state3, state4};
+    std::vector<double> state = {state1[0], state1[1], state2[0], state2[1], state3[0], state3[1], state4[0], state4[1]};
 
     // Storing reward
     s["Reward"] = reward;

@@ -127,6 +127,7 @@ void Agent::initialize()
   }
 
   _featureWeights.resize(_problem->_featureVectorSize, 1.0 / (float)_problem->_featureVectorSize);
+  _softMaxFeatureWeights.resize(_problem->_featureVectorSize, 1.0 / (float)_problem->_featureVectorSize);
 }
 
 void Agent::runGeneration()
@@ -177,13 +178,15 @@ void Agent::trainingGeneration()
     // Perform optimization steps on the critic/policy, if reached the minimum replay memory size
     if (_sessionExperienceCount > _sessionExperiencesUntilStartSize)
     {
+ 
+      // Update the reward function based on guided cost learning
+      if (_sessionExperienceCount > (_experiencesBetweenRewardUpdates * _sessionPolicyUpdateCount + _sessionExperiencesUntilStartSize))
+        updateRewardFunction();
+
       // If we accumulated enough experiences between updates in this session, update now
       while (_sessionExperienceCount > (_experiencesBetweenPolicyUpdates * _sessionPolicyUpdateCount + _sessionExperiencesUntilStartSize))
       {
         auto beginTime = std::chrono::steady_clock::now(); // Profiling
-
-        // Update the reward function based on guided cost learning
-        updateRewardFunction();
 
         // Calling the algorithm specific policy training algorithm
         trainPolicy();
@@ -253,11 +256,27 @@ void Agent::testingGeneration()
     _testingReward[agentId] = testingAgents[agentId]["Testing Reward"].get<float>();
 }
 
-float Agent::calculateReward(std::vector<float> features)
+float Agent::calculateReward(const std::vector<float>& features)
 {
   float reward = 0.0;
-  for (size_t i = 0; i < features.size(); ++i) reward += _featureWeights[i] * features[i];
+  for (size_t i = 0; i < _problem->_featureVectorSize; ++i) reward += _softMaxFeatureWeights[i] * features[i];
   return reward;
+}
+
+std::vector<float> Agent::calculateRewardGradient(const std::vector<float>& features)
+{
+  std::vector<float> rewardGrad(features.size(), 0.0);
+  
+  for (size_t i = 0; i < _problem->_featureVectorSize; ++i) 
+    for (size_t j = 0; j < _problem->_featureVectorSize; ++j) 
+    {
+        if (i == j)
+            rewardGrad[i] += _softMaxFeatureWeights[i] * (1. - _softMaxFeatureWeights[i]) * features[i];
+        else
+            rewardGrad[j] -= _softMaxFeatureWeights[i] * _softMaxFeatureWeights[j] * features[i];
+    }
+
+  return rewardGrad;
 }
 
 void Agent::updateRewardFunction()
@@ -268,24 +287,24 @@ void Agent::updateRewardFunction()
 
   auto trajectoryStartIndexes = generateMiniBatch(_backgroundBatchSize);
 
+  // Find start of current trajectory and store it
 #pragma omp parallel for schedule(dynamic, 1)
   for (size_t m = 0; m < _backgroundBatchSize; ++m)
   {
     // Getting index of current experience
     size_t expId = trajectoryStartIndexes[m];
 
-    // Find start of current trajectory
     while (expId > 0 && _experienceReplay[expId].termination == e_nonTerminal) expId--;
     if (expId > 0) expId++;
     trajectoryStartIndexes[m] = expId;
   }
 
-  // Estimate partition function
   std::vector<float> exponents(_backgroundBatchSize + _demonstrationBatchSize, 0.0);
+  
+  // Estimate partition function
 #pragma omp parallel for schedule(dynamic, 1)
   for (size_t m = 0; m < _backgroundBatchSize; ++m)
   {
-    // Getting index of current experiment
     size_t expId = trajectoryStartIndexes[m];
 
     float cumReward = 0.0;
@@ -345,49 +364,44 @@ void Agent::updateRewardFunction()
   float logPartitionFunction = maxExp + std::log(sumExp); // without std::log(1/M)
 
   std::vector<float> featureWeightGradient(_problem->_featureVectorSize, 0.0);
-
+  
+  // Calculate gradient of loglikelihood wrt. feature weights
   for (size_t m = 0; m < _backgroundBatchSize; ++m)
   {
     size_t expId = trajectoryStartIndexes[m];
-    std::vector<float> gradReturn(_problem->_featureVectorSize, 0.0);
     while (_experienceReplay[expId].termination == e_nonTerminal)
     {
+      auto gradReturn = calculateRewardGradient(_experienceReplay[expId].features);
       for (size_t k = 0; k < _problem->_featureVectorSize; ++k)
-        gradReturn[k] += _experienceReplay[expId].features[k];
+      {
+        featureWeightGradient[k] -= std::exp(exponents[m] - logPartitionFunction) * gradReturn[k];
+        //printf("grads0 %f %f\n", gradReturn[k], featureWeightGradient[k]);
+      }
       expId++;
     }
-    for (size_t k = 0; k < _problem->_featureVectorSize; ++k)
-      featureWeightGradient[k] -= std::exp(exponents[m] - logPartitionFunction) * gradReturn[k];
   }
 
   for (size_t n = 0; n < _demonstrationBatchSize; ++n)
   {
     size_t observedTrajectoryIdx = observedTrajectoryIndexes[n];
     size_t observedTrajectoryLength = _problem->_observationsFeatures[observedTrajectoryIdx].size();
-    std::vector<float> gradReturn(_problem->_featureVectorSize, 0.0);
     for (size_t i = 0; i < observedTrajectoryLength; ++i)
     {
-      for (size_t k = 0; k < _problem->_featureVectorSize; ++k)
-        gradReturn[k] += _problem->_observationsFeatures[observedTrajectoryIdx][i][k];
+        auto gradReturn = calculateRewardGradient(_problem->_observationsFeatures[observedTrajectoryIdx][i]);
+        for (size_t k = 0; k < _problem->_featureVectorSize; ++k)
+        {
+            featureWeightGradient[k] += (1.0/ (float)_demonstrationBatchSize - std::exp(exponents[_backgroundBatchSize + n] - logPartitionFunction)) * gradReturn[k];
+            //printf("grads1 %f %f\n", gradReturn[k], featureWeightGradient[k]);
+        }
     }
-    for (size_t k = 0; k < _problem->_featureVectorSize; ++k)
-      featureWeightGradient[k] -= std::exp(exponents[_backgroundBatchSize + n] - logPartitionFunction) * gradReturn[k];
   }
 
   //for (size_t k = 0; k < _problem->_featureVectorSize; ++k)
   //printf("fwg[%zu] %f \n", k, featureWeightGradient[k]);
 
-  for (size_t n = 0; n < _demonstrationBatchSize; ++n)
-  {
-    size_t observedTrajectoryIdx = observedTrajectoryIndexes[n];
-    size_t trajectoryLength = _problem->_observationsFeatures[observedTrajectoryIdx].size();
-    for (size_t i = 0; i < trajectoryLength; ++i)
-      for (size_t k = 0; k < _problem->_featureVectorSize; ++k)
-        featureWeightGradient[k] += 1.0 / (float)_demonstrationBatchSize * _problem->_observationsFeatures[observedTrajectoryIdx][i][k];
-  }
-
   // L1 penalization
   float lambda = 1e-1;
+  if(false)
   for (size_t k = 0; k < _problem->_featureVectorSize; ++k)
   {
       if(_featureWeights[k] > 0.0)
@@ -401,6 +415,22 @@ void Agent::updateRewardFunction()
     _featureWeights[k] += _rewardfunctionLearningRate * featureWeightGradient[k];
     //printf("fw[%zu] %f (%f)\n", k, _featureWeights[k], featureWeightGradient[k]);
   }
+
+  // Calculate softmax of feature weights
+  float normalization = 0.;
+  for (size_t i = 0; i < _problem->_featureVectorSize; ++i) 
+  {
+      float expFeature = std::exp(_featureWeights[i]);
+      _softMaxFeatureWeights[i] = expFeature;
+      normalization += expFeature;
+  }
+  
+  for (size_t i = 0; i < _problem->_featureVectorSize; ++i) 
+  {
+      _softMaxFeatureWeights[i] /= normalization;
+      //printf("smfw[%zu] %f %f %f \n", i, _featureWeights[i], featureWeightGradient[i], _softMaxFeatureWeights[i]);
+  }
+
 }
 
 void Agent::attendAgent(size_t agentId)
@@ -1082,7 +1112,7 @@ void Agent::printGenerationAfter()
 
   for (size_t k = 0; k < _problem->_featureVectorSize; ++k)
   {
-    printf("fw[%zu] %f\n", k, _featureWeights[k]);
+    printf("fw[%zu] %f (%f) \n", k, _featureWeights[k], _softMaxFeatureWeights[k]);
   }
 
   if (_mode == "Testing")

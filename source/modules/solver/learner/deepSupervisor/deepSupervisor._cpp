@@ -70,15 +70,17 @@ void DeepSupervisor::initialize()
 
   // Creating inference neural networks (one per thread)
   _inferenceNeuralNetworks.resize(_maxThreads);
-  for (size_t i = 0; i < _maxThreads; i++)
+
+#pragma omp parallel
   {
+    size_t curThread = omp_get_thread_num();
     auto inferenceNeuralNetworkConfig = neuralNetworkConfig;
     inferenceNeuralNetworkConfig["Batch Size"] = _problem->_inferenceBatchSize;
     inferenceNeuralNetworkConfig["Mode"] = "Training";
-    _inferenceNeuralNetworks[i] = dynamic_cast<NeuralNetwork *>(getModule(inferenceNeuralNetworkConfig, _k));
-    _inferenceNeuralNetworks[i]->applyModuleDefaults(inferenceNeuralNetworkConfig);
-    _inferenceNeuralNetworks[i]->setConfiguration(inferenceNeuralNetworkConfig);
-    _inferenceNeuralNetworks[i]->initialize();
+    _inferenceNeuralNetworks[curThread] = dynamic_cast<NeuralNetwork *>(getModule(inferenceNeuralNetworkConfig, _k));
+    _inferenceNeuralNetworks[curThread]->applyModuleDefaults(inferenceNeuralNetworkConfig);
+    _inferenceNeuralNetworks[curThread]->setConfiguration(inferenceNeuralNetworkConfig);
+    _inferenceNeuralNetworks[curThread]->initialize();
   }
 
   /*****************************************************************
@@ -91,9 +93,12 @@ void DeepSupervisor::initialize()
   // Creating and setting hyperparameter structures
   _trainingNeuralNetwork->setHyperparameters(_hyperparameters);
 
-  // Copying hyperparameters and normalization parameters from training to evaluation
-  for (size_t i = 0; i < _maxThreads; i++)
-    _inferenceNeuralNetworks[i]->setHyperparameters(_hyperparameters);
+// Copying hyperparameters and normalization parameters from training to evaluation
+#pragma omp parallel
+  {
+    size_t curThread = omp_get_thread_num();
+    _inferenceNeuralNetworks[curThread]->setHyperparameters(_hyperparameters);
+  }
 
   /*****************************************************************
   * Setting up weight and bias optimization experiment
@@ -111,15 +116,8 @@ void DeepSupervisor::initialize()
   // Resetting solver before using it
   _adamSolver->reset();
 
-  _currentLoss = 0.;
-  _l2Hyperparameter = 0.;
-
-  // Initialize statistics
-  if (_k->_currentGeneration == 0)
-  {
-    _minimumLoss = korali::Inf;
-    _suboptimalGenerationCount = 0;
-  }
+  _currentLoss = 0.0f;
+  _l2Hyperparameter = 0.0f;
 }
 
 void DeepSupervisor::runGeneration()
@@ -168,20 +166,18 @@ void DeepSupervisor::runGeneration()
     // Passing hyperparameter gradients through an ADAM update
     _adamSolver->processResult(_currentLoss, _trainingNeuralNetwork->_hyperparameterGradients);
 
-    // Updating best loss if better, or increasing suboptimal generation count
-    if (_currentLoss < _minimumLoss)
-      _minimumLoss = _currentLoss;
-    else
-      _suboptimalGenerationCount++;
-
     // Getting new set of hyperparameters from Adam
     _trainingNeuralNetwork->setHyperparameters(_adamSolver->_currentValue);
   }
 
   // Copying hyperparameters and normalization parameters from training to evaluation
   _hyperparameters = _trainingNeuralNetwork->getHyperparameters();
-  for (size_t i = 0; i < _maxThreads; i++)
-    _inferenceNeuralNetworks[i]->setHyperparameters(_hyperparameters);
+
+#pragma omp parallel
+  {
+    size_t curThread = omp_get_thread_num();
+    _inferenceNeuralNetworks[curThread]->setHyperparameters(_hyperparameters);
+  }
 
   _l2Hyperparameter = 0.;
   for (float param : _hyperparameters) _l2Hyperparameter += param * param;
@@ -264,13 +260,8 @@ std::vector<std::vector<float>> DeepSupervisor::getDataGradients(const std::vect
 void DeepSupervisor::printGenerationAfter()
 {
   // Printing results so far
-  if (_lossFunction == "Mean Squared Error")
-  {
-    _k->_logger->logInfo("Normal", " + Training Loss: %.15f\n", _currentLoss);
-    _k->_logger->logInfo("Detailed", " + Suboptimal Generation Count: %lu\n", _suboptimalGenerationCount);
-  }
-  else if (_lossFunction == "Direct Gradient")
-    _k->_logger->logInfo("Normal", " + Gradient L2-Norm: %.15f\n", std::sqrt(_currentLoss));
+  if (_lossFunction == "Mean Squared Error") _k->_logger->logInfo("Normal", " + Training Loss: %.15f\n", _currentLoss);
+  if (_lossFunction == "Direct Gradient") _k->_logger->logInfo("Normal", " + Gradient L2-Norm: %.15f\n", std::sqrt(_currentLoss));
   _k->_logger->logInfo("Normal", " + Hyperparameter L2-Norm: %.15f\n", _l2Hyperparameter);
 }
 

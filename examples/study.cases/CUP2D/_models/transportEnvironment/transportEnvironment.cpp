@@ -2,6 +2,7 @@
 //  Copyright (c) 2020 CSE-Lab, ETH Zurich, Switzerland.
 
 #include "transportEnvironment.hpp"
+#include "spline.h"
 #include <chrono>
 #include <filesystem>
 
@@ -527,7 +528,12 @@ void runEnvironmentMocmaes(korali::Sample &s)
 
   double* centerArr = agent->center;
   std::vector<double> currentPos(centerArr, centerArr+2);
-  std::vector<double> vertices = logDivision(startX, endX, numParams+1);
+  
+  //std::vector<double> vertices = logDivision(startX, endX, numParams+1);
+  std::vector<double> edges(numParams, 0.0);
+  for(size_t i = 0; i < numParams; ++i) edges[i] = startX + i*(endX-startX)/(float)numParams;
+
+  tk::spline forceSpline(edges,params);
 
   // Init counting variables
   double dist = distance(currentPos, target);
@@ -537,8 +543,8 @@ void runEnvironmentMocmaes(korali::Sample &s)
 
   // Starting main environment loop
   bool done = false;
-  size_t forceIdx = 0;
-  double force = params[forceIdx];
+  //size_t forceIdx = 0;
+  //double force = params[forceIdx];
   std::vector<double> action(2, 0.0);
 
   while (done == false)
@@ -547,12 +553,13 @@ void runEnvironmentMocmaes(korali::Sample &s)
     currentPos[0] = centerArr[0];
     currentPos[1] = centerArr[1];
 
-    if (forceIdx+1 < vertices.size())
-    if (currentPos[0] >= vertices[forceIdx+1])
-    {
-	forceIdx++;
-	force = params[forceIdx];
-    }
+    //if (forceIdx+1 < vertices.size())
+    //if (currentPos[0] >= vertices[forceIdx+1])
+    //{
+	//forceIdx++;
+	//force = params[forceIdx];
+    //}
+    double force = forceSpline(currentPos[0]);
 
     if (dist > 0.)
     {
@@ -597,10 +604,10 @@ void runEnvironmentMocmaes(korali::Sample &s)
 
   }
   
-  if(forceIdx != numParams)
-  {
-      fprintf(stderr, "Error during sanity check (sampleId %zu), forceIdx %zu, expected %zu\n", sampleId, forceIdx, numParams);
-  }
+  //if(forceIdx != numParams)
+  //{
+  //    fprintf(stderr, "Error during sanity check (sampleId %zu), forceIdx %zu, expected %zu\n", sampleId, forceIdx, numParams);
+  //}
 
   // Penalization for not reaching target
   if (currentPos[0] < endX)

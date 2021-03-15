@@ -14,7 +14,6 @@ def initEnvironment(e, envName):
  e["Problem"]["Environment Function"] = lambda x : agent(x, env)
  e["Problem"]["Training Reward Threshold"] = math.inf
  e["Problem"]["Policy Testing Episodes"] = 20
- e["Problem"]["Actions Between Policy Updates"] = 1
  
  # Getting environment variable counts
  stateVariableCount = env.observation_space.shape[0]

@@ -38,10 +38,10 @@ void fAdaBelief::processResult(float evaluation, std::vector<float> &gradient)
   // update first and second moment estimators and bias corrected versions
   for (size_t i = 0; i < _nVars; i++)
   {
-    _firstMoment[i] = _beta1 * _firstMoment[i] + notBeta1 * -gradient[i];
+    _firstMoment[i] = _beta1 * _firstMoment[i] - notBeta1 * gradient[i];
 
     const float biasCorrectedFirstMoment = _firstMoment[i] * firstCentralMomentFactor;
-    const float secondMomentGradientDiff = -gradient[i] - _firstMoment[i];
+    const float secondMomentGradientDiff = gradient[i] + _firstMoment[i];
     _secondCentralMoment[i] = _beta2 * _secondCentralMoment[i] + notBeta2 * secondMomentGradientDiff * secondMomentGradientDiff;
 
     const float biasCorrectedSecondCentralMoment = _secondCentralMoment[i] * secondCentralMomentFactor;

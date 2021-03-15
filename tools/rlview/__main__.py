@@ -9,6 +9,7 @@ import matplotlib
 import importlib
 import math 
 import numpy as np
+import scipy.stats as st
 import matplotlib.pyplot as plt
 
 from korali.plotter.helpers import hlsColors, drawMulticoloredLine
@@ -16,55 +17,69 @@ from scipy.signal import savgol_filter
 
 ##################### Plotting Reward History
 
-def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, maxEpisode):
-
- confidenceLevel = 2.326 # 98%
+def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, maxObservations, showSamples, showCI):
 
  ## Setting initial x-axis (episode) and  y-axis (reward) limits
  
- maxPlotEpisode = -math.inf
- minPlotEpisode = 0
-  
+ maxPlotObservations = -math.inf
  maxPlotReward = -math.inf
  minPlotReward = +math.inf
 
  ## Creating colormap
- cmap = matplotlib.cm.get_cmap('viridis', len(results))
+ cmap = matplotlib.cm.get_cmap('brg')
+ colCurrIndex = 0.0
 
  ## Plotting the individual experiment results
     
  for resId, r in enumerate(results):
   
-  # Gathering current folder's results
-
   if (len(r) == 0): continue  
+  
   rewardHistory = r[-1]["Solver"]["Training"]["Reward History"]
+  obsCountHistory = r[-1]["Solver"]["Training"]["Experience History"]
+  
+  # Gathering observation count for each result
+  
+  currObsCount = 0
+  cumulativeObsList = []
+  epList = range(0, len(rewardHistory)) 
+  for c in obsCountHistory:
+   currObsCount = currObsCount + c
+   cumulativeObsList.append(currObsCount)
   
   # Updating common plot limits
  
-  episodeCount = len(r[-1]["Solver"]["Training"]["Reward History"])
-  if (episodeCount > maxPlotEpisode): maxPlotEpisode = episodeCount
-  if (maxEpisode): maxPlotEpisode = int(maxEpisode)
+  if (currObsCount > maxPlotObservations): maxPlotObservations = currObsCount
+  if (maxObservations): maxPlotObservations = int(maxObservations)
 
-  if (max(rewardHistory) > maxPlotReward): maxPlotReward = max(rewardHistory)
- 
+  if (min(rewardHistory) < minPlotReward): 
+   if (min(rewardHistory) > -math.inf):
+    minPlotReward = min(rewardHistory)
+  
+  if (max(rewardHistory) > maxPlotReward):
+   if (max(rewardHistory) < math.inf):
+    maxPlotReward = max(rewardHistory)
+
   trainingRewardThreshold = r[-1]["Problem"]["Training Reward Threshold"]
   testingRewardThreshold = r[-1]["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"]
  
-  if (trainingRewardThreshold != math.inf): 
+  if (trainingRewardThreshold != -math.inf and trainingRewardThreshold != math.inf): 
    if (trainingRewardThreshold > maxPlotReward): maxPlotReward = trainingRewardThreshold
 
-  if (testingRewardThreshold != math.inf): 
+  if (testingRewardThreshold != -math.inf and testingRewardThreshold != math.inf): 
    if (testingRewardThreshold > maxPlotReward): maxPlotReward = testingRewardThreshold
-     
-  if (min(rewardHistory) < minPlotReward): minPlotReward = min(rewardHistory)
-  if (trainingRewardThreshold < minPlotReward): minPlotReward = trainingRewardThreshold
-  if (testingRewardThreshold < minPlotReward): minPlotReward = testingRewardThreshold
+  
+  if (trainingRewardThreshold != -math.inf and trainingRewardThreshold != math.inf):   
+   if (trainingRewardThreshold < minPlotReward): minPlotReward = trainingRewardThreshold
+   
+  if (testingRewardThreshold != -math.inf and testingRewardThreshold != math.inf): 
+   if (testingRewardThreshold < minPlotReward): minPlotReward = testingRewardThreshold
  
   # Getting average cumulative reward statistics
   
   meanHistory = [ rewardHistory[0] ]
-  confIntervalHistory = [ 0.0 ]
+  confIntervalLowerHistory= [ rewardHistory[0] ]
+  confIntervalUpperHistory= [ rewardHistory[0] ]
   for i in range(1, len(rewardHistory)):
    startPos = i - int(averageDepth)
    if (startPos < 0): startPos = 0
@@ -72,36 +87,46 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
    data = rewardHistory[startPos:endPos]
    mean = np.mean(data)
    stdDev = np.std(data)
-   confInterval = confidenceLevel * stdDev / math.sqrt(len(data))
-   confIntervalHistory.append(confInterval)
+   if showCI > 0.0:
+    ciLow = np.percentile(data, 50-50*showCI)
+    ciUp = np.percentile(data, 50+50*showCI)
+    confIntervalLowerHistory.append(ciLow)
+    confIntervalUpperHistory.append(ciUp)
    meanHistory.append(mean)
   meanHistory = np.array(meanHistory)
-  confIntervalHistory = np.array(confIntervalHistory)
+  confIntervalLowerHistory = np.array(confIntervalLowerHistory)
+  confIntervalUpperHistory = np.array(confIntervalUpperHistory)
 
   # Plotting common plot
-  epList = range(0, len(rewardHistory)) 
-  ax.plot(epList, rewardHistory, 'x', markersize=1.3, color=cmap.colors[resId])
-  ax.plot(epList, meanHistory, '-', label=str(averageDepth) + '-Episode Average (' + dirs[resId] + ')', color=cmap.colors[resId])
+  ax.plot(cumulativeObsList, meanHistory, '-', label=str(averageDepth) + '-Episode Average (' + dirs[resId] + ')', color=cmap(colCurrIndex), zorder=1)
+  if showSamples:
+    ax.plot(cumulativeObsList, rewardHistory, 'x', markersize=1.3, color=cmap(colCurrIndex), alpha=0.5, zorder=0)
+  if showCI > 0.0:
+    ax.fill_between(cumulativeObsList, confIntervalLowerHistory, confIntervalUpperHistory, color=cmap(colCurrIndex), facecolor="none", alpha=0.2)
+  
+  # Updating color index
+  if (len(results) > 1):
+   colCurrIndex = colCurrIndex + (1.0 / float(len(results)-1)) - 0.0001
   
  ## Configuring common plotting features
- 
+
  if (minReward): minPlotReward = float(minReward)
  if (maxReward): maxPlotReward = float(maxReward)
  
  ax.set_ylabel('Cumulative Reward')  
- ax.set_xlabel('Episode')
+ ax.set_xlabel('# Observations')
  ax.set_title('Korali RL History Viewer')
  
  ax.legend(loc='upper left', ncol=1, fontsize=8)
  ax.yaxis.grid()
- ax.set_xlim([minPlotEpisode, maxPlotEpisode-1])
+ ax.set_xlim([0, maxPlotObservations-1])
  ax.set_ylim([minPlotReward - 0.1*abs(minPlotReward), maxPlotReward + 0.1*abs(maxPlotReward)])
  
  if (trainingRewardThreshold != math.inf): 
-  ax.hlines(trainingRewardThreshold, 0, episodeCount, linestyle='dashed', label='Training Threshold', color='red')
+  ax.hlines(trainingRewardThreshold, 0, maxPlotObservations, linestyle='dashed', label='Training Threshold', color='red')
 
  if (testingRewardThreshold != math.inf): 
-  ax.hlines(testingRewardThreshold, 0, episodeCount, linestyle='dashdot', label='Testing Threshold', color='blue')
+  ax.hlines(testingRewardThreshold, 0, maxPlotObservations, linestyle='dashdot', label='Testing Threshold', color='blue')
 
 ##################### Results parser
 
@@ -162,8 +187,8 @@ if __name__ == '__main__':
      required=False,
      nargs='+')
  parser.add_argument(
-     '--maxEpisode',
-     help='Maximum episode to display',
+     '--maxObservations',
+     help='Maximum observations (x-axis) to display',
      default=None,
      required=False)
  parser.add_argument(
@@ -189,8 +214,21 @@ if __name__ == '__main__':
  parser.add_argument(
       '--averageDepth',
       help='Specifies the depth for plotting average',
-      default=10,
+      default=300,
       required=False)
+ parser.add_argument(
+      '--showSamples',
+      help='Option to plot episode returns or not.',
+      type=lambda arg: (str(arg).lower() != 'false'),
+      default=True,
+      required=False)
+ parser.add_argument(
+      '--showCI',
+      help='Option to plot the reward confidence interval.',
+      type = float,
+      default=0.0,
+      required=False)
+
  parser.add_argument(
       '--test',
       help='Run without graphics (for testing purpose)',
@@ -204,6 +242,13 @@ if __name__ == '__main__':
   print("[Korali] RL Viewer correctly installed.")
   exit(0)
  
+ ### Validating input
+
+ if args.showCI < 0.0 or args.showCI > 1.0:
+  print("[Korali] Argument of confidence interval must be in [0,1].")
+  exit(-1)
+
+
  ### Setup without graphics, if needed
  
  if (args.test): matplotlib.use('Agg')
@@ -219,7 +264,7 @@ if __name__ == '__main__':
      
  ### Creating plots
      
- plotRewardHistory(ax1, args.dir, results, args.minReward, args.maxReward, args.averageDepth, args.maxEpisode)
+ plotRewardHistory(ax1, args.dir, results, args.minReward, args.maxReward, args.averageDepth, args.maxObservations, args.showSamples, args.showCI)
  plt.draw()
  
  ### Printing live results if update frequency > 0
@@ -230,7 +275,7 @@ if __name__ == '__main__':
    results = parseResults(args.dir)
    plt.pause(fq)
    ax1.clear()
-   plotRewardHistory(ax1, args.dir, results, args.minReward, args.maxReward, args.averageDepth, args.maxEpisode)
+   plotRewardHistory(ax1, args.dir, results, args.minReward, args.maxReward, args.averageDepth, args.maxObservations, args.showSamples, args.showCI)
    plt.draw()
    
  plt.show() 

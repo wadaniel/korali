@@ -22,21 +22,17 @@
 #env=Swimmer-v2
 #env=Walker2d-v2
 
-env=AntBulletEnv-v0
+#env=AntBulletEnv-v0
 #env=HalfCheetahBulletEnv-v0
 #env=HopperBulletEnv-v0
 #env=HumanoidBulletEnv-v0
-#env=HumanoidFlagrunHarderBulletEnv-v0
-#env=InvertedDoublePendulumBulletEnv-v0
-#env=InvertedPendulumBulletEnv-v0
-#env=InvertedPendulumSwingupBulletEnv-v0
-#env=Walker2DBulletEnv-v0
+env=Walker2DBulletEnv-v0
 
 pushd ..
 
 cat run-vracer.py
 
-expDir=$SCRATCH/OpenAIGym_VRACER/$SLURM_JOB_ID
+expDir=$SCRATCH/OpenAIGym_VRACER/$env/$SLURM_JOB_ID
 mkdir -p $expDir
 cp run-vracer.py $expDir
 cp -r _model $expDir

@@ -26,7 +26,7 @@ class Continuous : public Agent
    * @param curPolicy The current policy for the given state
    * @return gradient of policy wrt curParamsOne and curParamsTwo
    */
-  std::vector<float> calculateImportanceWeightGradient(const std::vector<float> &action, knlohmann::json &curPolicy, knlohmann::json &oldPolicy);
+  std::vector<float> calculateImportanceWeightGradient(const std::vector<float> &action, const knlohmann::json &curPolicy, const knlohmann::json &oldPolicy);
 
   /**
    * @brief Calculates the gradient of KL(p_old, p_cur) wrt to the parameter of the 2nd (current) distribution.
@@ -34,23 +34,23 @@ class Continuous : public Agent
    * @param curPolicy The current policy for the given state
    * @return
    */
-  std::vector<float> calculateKLDivergenceGradient(knlohmann::json &oldPolicy, knlohmann::json &curPolicy);
+  std::vector<float> calculateKLDivergenceGradient(const knlohmann::json &oldPolicy, const knlohmann::json &curPolicy);
 
   /**
   * @brief Function to generate randomized actions from neural network output.
   * @param curPolicy The current policy for the given state
   * @return An action vector
   */
-  std::vector<float> generateTrainingAction(knlohmann::json &curPolicy);
+  std::vector<float> generateTrainingAction(const knlohmann::json &curPolicy);
 
   /**
   * @brief Function to generate deterministic actions from neural network output required for policy evaluation, respectively testing.
   * @param curPolicy The current policy for the given state
   * @return An action vector
   */
-  std::vector<float> generateTestingAction(knlohmann::json &curPolicy);
+  std::vector<float> generateTestingAction(const knlohmann::json &curPolicy);
 
-  float calculateImportanceWeight(const std::vector<float> &action, knlohmann::json &curPolicy, knlohmann::json &oldPolicy) override;
+  float calculateImportanceWeight(const std::vector<float> &action, const knlohmann::json &curPolicy, const knlohmann::json &oldPolicy) override;
   virtual void getAction(korali::Sample &sample) override;
   virtual void initializeAgent();
 };

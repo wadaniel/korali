@@ -79,25 +79,13 @@ class fAdam
 */
   std::vector<float> _gradient;
   /**
-* @brief [Internal Use] Square of gradient of function with respect to Parameters.
-*/
-  std::vector<float> _squaredGradient;
-  /**
 * @brief [Internal Use] Estimate of first moment of Gradient.
 */
   std::vector<float> _firstMoment;
   /**
-* @brief [Internal Use] Bias corrected estimate of first moment of Gradient.
-*/
-  std::vector<float> _biasCorrectedFirstMoment;
-  /**
 * @brief [Internal Use] Old estimate of second moment of Gradient.
 */
   std::vector<float> _secondMoment;
-  /**
-* @brief [Internal Use] Bias corrected estimate of second moment of Gradient.
-*/
-  std::vector<float> _biasCorrectedSecondMoment;
   /**
 * @brief [Termination Criteria] Specifies the minimal norm for the gradient of function with respect to Parameters.
 */

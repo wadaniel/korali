@@ -57,6 +57,10 @@ void Agent::initialize()
     _experienceReplayOffPolicyRatio = 0.0f;
     _experienceReplayOffPolicyCurrentCutoff = _experienceReplayOffPolicyCutoffScale + 1.0f;
     _currentLearningRate = _learningRate;
+
+    _rewardRescalingMean = 0.0;
+    _rewardRescalingSdev = 1.0;
+    _rewardRescalingCount = 0;
   }
 
   // If this continues a previous training run, deserialize previous input experience replay
@@ -78,6 +82,11 @@ void Agent::initialize()
   _sessionAgentPolicyEvaluationTime = 0.0;
   _sessionPolicyUpdateTime = 0.0;
   _sessionAgentAttendingTime = 0.0;
+
+  // Policy update timers
+  _sessionUpdateNeuralNetworkTime = 0.0;
+  _sessionGradientCalculationTime = 0.0;
+  _sessionGenerateMiniBatchTime = 0.0;
 
   // Initializing session-specific counters
   _sessionExperienceCount = 0;
@@ -145,6 +154,9 @@ void Agent::trainingGeneration()
   _generationAgentPolicyEvaluationTime = 0.0;
   _generationPolicyUpdateTime = 0.0;
   _generationAgentAttendingTime = 0.0;
+  _generationUpdateNeuralNetworkTime = 0.0;
+  _generationGradientCalculationTime = 0.0;
+  _generationGenerateMiniBatchTime = 0.0;
 
   setTrainingState(_trainingState);
 
@@ -173,8 +185,15 @@ void Agent::trainingGeneration()
         attendAgent(agentId);
 
     // Perform optimization steps on the critic/policy, if reached the minimum replay memory size
-    if (_sessionExperienceCount > _sessionExperiencesUntilStartSize)
+    if (_experienceCount >= _experienceReplayStartSize)
     {
+      
+      // If we performed enough policy updates, we rescale rewards again
+      if (_policyUpdateCount >= _updatesBetweenRewardRescaling * _rewardRescalingCount)
+      {
+        rescaleRewards();
+      }
+
       // If we accumulated enough experiences between updates in this session, update now
       while (_sessionExperienceCount > (_experiencesBetweenPolicyUpdates * _sessionPolicyUpdateCount + _sessionExperiencesUntilStartSize))
       {
@@ -219,6 +238,11 @@ void Agent::trainingGeneration()
   _sessionRunningTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
   _generationRunningTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
 
+  // Updating time counters
+  _sessionUpdateNeuralNetworkTime += _generationUpdateNeuralNetworkTime;
+  _sessionGradientCalculationTime += _generationGradientCalculationTime;
+  _sessionGenerateMiniBatchTime += _generationGenerateMiniBatchTime;
+
   // Gathering learners training state (for checkpoint/resume purpose)
   _trainingState = getTrainingState();
 
@@ -248,10 +272,56 @@ void Agent::testingGeneration()
     _testingReward[agentId] = testingAgents[agentId]["Testing Reward"].get<float>();
 }
 
+void Agent::rescaleRewards()
+{
+    float sumReward = 0.0;
+    float sumReward2 = 0.0;
+
+    // Calculate mean and standard deviation of unscaled rewards.
+    for (size_t i = 0; i < _experienceReplay.size(); i++)
+    {
+      float reward = _experienceReplay[i].reward  * _rewardRescalingSdev + _rewardRescalingMean;
+      sumReward += reward;
+      sumReward2 += reward*reward;
+    }
+
+    float newRewardRescalingMean = sumReward / (float)_experienceReplay.size();
+    float newRewardRescalingSdev = std::sqrt(sumReward2 / (float)_experienceReplay.size() - newRewardRescalingMean * newRewardRescalingMean + 1e-9);
+
+    // Rescale rewards s.t. mean equals 0.0 and standard deviation 1.0.
+    for (size_t i = 0; i < _experienceReplay.size(); i++)
+    {
+      _experienceReplay[i].reward *= _rewardRescalingSdev;
+      _experienceReplay[i].reward += _rewardRescalingMean;
+      _experienceReplay[i].reward -= newRewardRescalingMean;
+      _experienceReplay[i].reward /= newRewardRescalingSdev;
+    }
+
+    printf( "previous reward mean and sdev %f %f\n", _rewardRescalingMean, _rewardRescalingSdev);
+    _rewardRescalingMean = newRewardRescalingMean;
+    _rewardRescalingSdev = newRewardRescalingSdev;
+    
+    // Recalculating retrace value with scaled rewards during first update.
+    if(_rewardRescalingCount == 0)
+    {
+      float retV = 0.0;
+      for (int expId = _experienceReplay.size() - 1; expId >= 0; --expId)
+      {
+        if(_experienceReplay[expId].termination == e_terminal) retV = 0.0;
+      
+        retV = _discountFactor * retV + _experienceReplay[expId].reward;
+
+        _experienceReplay[expId].stateValue = retV;
+        _experienceReplay[expId].retraceValue = retV;
+      }
+    }
+    
+    _rewardRescalingCount++;
+    printf( "new reward mean and sdev %f %f\n", _rewardRescalingMean, _rewardRescalingSdev);
+}
+
 void Agent::attendAgent(size_t agentId)
 {
-  auto beginTime = std::chrono::steady_clock::now(); // Profiling
-
   // Storage for the incoming experience
   knlohmann::json experience;
 
@@ -267,9 +337,15 @@ void Agent::attendAgent(size_t agentId)
     // Check if experience is terminal
     isTerminal = experience["Termination"] != "Non Terminal";
 
+    auto beginTime = std::chrono::steady_clock::now(); // Profiling
+
     // If agent requested new policy, send the new hyperparameters
     if (experience["Request New Policy"] == true)
       KORALI_SEND_MSG_TO_SAMPLE(_agents[agentId], _trainingCurrentPolicy);
+
+    auto endTime = std::chrono::steady_clock::now();                                                                    // Profiling
+    _sessionAgentAttendingTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
+    _generationAgentAttendingTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
 
     if (isTerminal)
     {
@@ -336,10 +412,6 @@ void Agent::attendAgent(size_t agentId)
       _sessionEpisodeCount++;
     }
   }
-
-  auto endTime = std::chrono::steady_clock::now();                                                                    // Profiling
-  _sessionAgentAttendingTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
-  _generationAgentAttendingTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
 }
 
 void Agent::processEpisode(size_t episodeId, std::vector<knlohmann::json> &episode)
@@ -359,7 +431,9 @@ void Agent::processEpisode(size_t episodeId, std::vector<knlohmann::json> &episo
     // Getting state, action, reward, and whether it's terminal
     e.state = episode[expId]["State"].get<std::vector<float>>();
     e.action = episode[expId]["Action"].get<std::vector<float>>();
-    e.reward = episode[expId]["Reward"].get<float>();
+    
+    float unscaledReward = episode[expId]["Reward"].get<float>();
+    e.reward = (unscaledReward - _rewardRescalingMean) / _rewardRescalingSdev;
 
     if (episode[expId]["Termination"] == "Non Terminal") e.termination = e_nonTerminal;
     if (episode[expId]["Termination"] == "Terminal") e.termination = e_terminal;
@@ -381,7 +455,7 @@ void Agent::processEpisode(size_t episodeId, std::vector<knlohmann::json> &episo
     e.episodePos = expId;
 
     // Keeping statistics
-    cumulativeReward += e.reward;
+    cumulativeReward += unscaledReward;
 
     // Scale reward
     _experienceReplay.add(e);
@@ -444,32 +518,6 @@ void Agent::processEpisode(size_t episodeId, std::vector<knlohmann::json> &episo
   for (ssize_t e = startEpisodeId; e <= endEpisodeId; e++)
     _trainingAverageReward += _trainingRewardHistory[e];
   _trainingAverageReward /= (float)(endEpisodeId - startEpisodeId + 1);
-
-  /*********************************************************************
-   * Updating off-policy ratio
-   *********************************************************************/
-
-  size_t expCount = _experienceReplay.size();
-  size_t offPolicyCount = 0;
-
-// Count off-policy experiences
-#pragma omp parallel for reduction(+ \
-                                   : offPolicyCount)
-  for (size_t expId = 0; expId < expCount; expId++)
-  {
-    // Getting the last calculated value of the experience's importance weight. We can tolerate this approximation.
-    float expImportanceWeight = _experienceReplay[expId].importanceWeight;
-
-    // It is off policy if it is outside the [1/cutoff, cutoff] region
-    if ((expImportanceWeight < (1.0f / _experienceReplayOffPolicyCurrentCutoff)) ||
-        (expImportanceWeight > _experienceReplayOffPolicyCurrentCutoff)) offPolicyCount++;
-  }
-
-  // Calculating off policy ratio
-  _experienceReplayOffPolicyRatio = (float)offPolicyCount / (float)expCount;
-
-  // Now updating the off policy Cutoff
-  _experienceReplayOffPolicyCurrentCutoff = 1.0f + _experienceReplayOffPolicyCutoffScale / (1.0f + _experienceReplayOffPolicyAnnealingRate * (float)_policyUpdateCount);
 }
 
 void Agent::updateExperienceReplayProbabilities()
@@ -548,35 +596,33 @@ std::vector<size_t> Agent::generateMiniBatch(size_t miniBatchSize)
    * Updating experience's metadata
    *********************************************/
 
-#pragma omp parallel for schedule(dynamic, 1)
+  size_t offPolicyCount = 0;
+
+#pragma omp parallel for schedule(guided)
   for (size_t i = 0; i < miniBatchSize; i++)
   {
     auto expId = miniBatch[i];
 
     // Get state, action, mean, Sigma for this experience
     auto expStateSequence = getStateTimeSequence(expId);
-    auto expAction = _experienceReplay[expId].action;
-    auto expPolicy = _experienceReplay[expId].metadata["Experience Policy"];
+    const auto &expAction = _experienceReplay[expId].action;
+    const auto &expPolicy = _experienceReplay[expId].metadata["Experience Policy"];
 
     // Running policy for the current state
     auto curPolicy = runPolicy(expStateSequence);
 
     // Get state value function. Some algorithms return it as part of the policy
-    float V = 0.0f;
-    if (isDefined(curPolicy, "State Value"))
-      V = curPolicy["State Value"].get<float>();
-    else
-      V = stateValueFunction(expStateSequence);
+    const float V = isDefined(curPolicy, "State Value") ? curPolicy["State Value"].get<float>() : stateValueFunction(expStateSequence);
 
     // Compute importance weight
-    float importanceWeight = calculateImportanceWeight(expAction, curPolicy, expPolicy);
+    const float importanceWeight = calculateImportanceWeight(expAction, curPolicy, expPolicy);
 
     // If this is the truncated experience of an episode, then obtain truncated state value
     float truncatedV = 0.0f;
     if (_experienceReplay[expId].termination == e_truncated)
       truncatedV = stateValueFunction(getTruncatedStateTimeSequence(expId));
 
-// Store computed information for use in retrace.
+// Store computed information for use in replay memory.
 #pragma omp critical
     {
       _experienceReplay[expId].stateValue = V;
@@ -584,7 +630,15 @@ std::vector<size_t> Agent::generateMiniBatch(size_t miniBatchSize)
       _experienceReplay[expId].importanceWeight = importanceWeight;
       _experienceReplay[expId].metadata["Current Policy"] = curPolicy;
       _experienceReplay[expId].isOnPolicy = (importanceWeight > (1.0f / _experienceReplayOffPolicyCurrentCutoff)) && (importanceWeight < _experienceReplayOffPolicyCurrentCutoff);
+      if (_experienceReplay[expId].isOnPolicy == false) offPolicyCount++;
     }
+
+    // Updating the off policy Ratio
+    float alpha = 0.01f; // ~100 updates to reach 63.2% of the target
+    _experienceReplayOffPolicyRatio = alpha * (float)offPolicyCount / (float)miniBatchSize + (1.0f - alpha) * _experienceReplayOffPolicyRatio;
+
+    // Updating the off policy Cutoff
+    _experienceReplayOffPolicyCurrentCutoff = 1.0f + _experienceReplayOffPolicyCutoffScale / (1.0f + _experienceReplayOffPolicyAnnealingRate * (float)_policyUpdateCount);
   }
 
   /**************************************************
@@ -597,10 +651,12 @@ std::vector<size_t> Agent::generateMiniBatch(size_t miniBatchSize)
 
   for (size_t i = 0; i < miniBatchSize; i++)
   {
-    size_t experienceId = miniBatch[i];
-    size_t episodeId = _experienceReplay[experienceId].episodeId;
-    size_t episodePos = _experienceReplay[experienceId].episodePos;
-    size_t curMaxPosition = episodeMaxExperienceAge.find(episodeId) == episodeMaxExperienceAge.end() ? 0 : episodeMaxExperienceAge[episodeId];
+    const size_t experienceId = miniBatch[i];
+    auto &exp = _experienceReplay[experienceId];
+
+    const size_t episodeId = exp.episodeId;
+    const size_t episodePos = exp.episodePos;
+    const size_t curMaxPosition = episodeMaxExperienceAge.find(episodeId) == episodeMaxExperienceAge.end() ? 0 : episodeMaxExperienceAge[episodeId];
 
     // If this is a new oldest experience in the episode, store it's position and id
     if (episodePos >= curMaxPosition)
@@ -610,12 +666,12 @@ std::vector<size_t> Agent::generateMiniBatch(size_t miniBatchSize)
     }
   }
 
-  // Passing the content of the map to a vector
+  // Passing the values (experience Ids) of the map to a vector
   std::vector<size_t> experienceRetraceIds;
-  for (const auto &expId : episodeMaxExperienceId) experienceRetraceIds.push_back(expId.first);
+  for (const auto &episode : episodeMaxExperienceId) experienceRetraceIds.push_back(episode.second);
 
-// Running all experiences in parallel
-#pragma omp parallel for schedule(dynamic, 1)
+    // Running all experiences in parallel
+#pragma omp parallel for schedule(guided)
   for (size_t i = 0; i < experienceRetraceIds.size(); i++) retraceFunction(experienceRetraceIds[i]);
 
   // Returning generated minibatch
@@ -668,25 +724,25 @@ float Agent::retraceFunction(size_t expId)
   // Now iterating backwards to calculate the rest of vTbc
   for (ssize_t curId = endId; curId >= startId; curId--)
   {
+    auto &exp = _experienceReplay[curId];
+
     // Getting current reward, action, and state
-    auto curReward = _experienceReplay[curId].reward;
-    auto expStateSequence = getStateTimeSequence(curId);
-    auto expAction = _experienceReplay[curId].action;
+    const auto curReward = exp.reward;
 
     // Calculating state value function
-    float curV = _experienceReplay[curId].stateValue;
+    const float curV = exp.stateValue;
 
     // Calculating importance weight
-    float importanceWeight = _experienceReplay[curId].importanceWeight;
+    const float importanceWeight = exp.importanceWeight;
 
     // Truncate importance weight
-    float truncatedImportanceWeight = std::min(1.0f, importanceWeight);
+    const float truncatedImportanceWeight = std::min(1.0f, importanceWeight);
 
     // Calculating retrace value
     retV = curV + truncatedImportanceWeight * (curReward + _discountFactor * retV - curV);
 
     // Storing retrace value into the experience's cache
-    _experienceReplay[curId].retraceValue = retV;
+    exp.retraceValue = retV;
   }
 
   // Returning retrace value
@@ -936,6 +992,9 @@ void Agent::printGenerationAfter()
     _k->_logger->logInfo("Detailed", " + Avg Agent Computation Time:          [%5.3fs] - [%3.3fs]\n", _generationAgentComputationTime / 1.0e+9, _sessionAgentComputationTime / 1.0e+9);
     _k->_logger->logInfo("Detailed", " + Avg Agent Communication/Wait Time:   [%5.3fs] - [%3.3fs]\n", _generationAgentCommunicationTime / 1.0e+9, _sessionAgentCommunicationTime / 1.0e+9);
     _k->_logger->logInfo("Detailed", " + Avg Agent Policy Evaluation Time:    [%5.3fs] - [%3.3fs]\n", _generationAgentPolicyEvaluationTime / 1.0e+9, _sessionAgentPolicyEvaluationTime / 1.0e+9);
+    _k->_logger->logInfo("Detailed", "   + Generate Mini Batch Time:          [%5.3fs] - [%3.3fs]\n", _generationGenerateMiniBatchTime / 1.0e+9, _sessionGenerateMiniBatchTime / 1.0e+9);
+    _k->_logger->logInfo("Detailed", "   + Gradient Calculation Time:         [%5.3fs] - [%3.3fs]\n", _generationGradientCalculationTime / 1.0e+9, _sessionGradientCalculationTime / 1.0e+9);
+    _k->_logger->logInfo("Detailed", "   + Neural Network Update Time         [%5.3fs] - [%3.3fs]\n", _generationUpdateNeuralNetworkTime / 1.0e+9, _sessionUpdateNeuralNetworkTime / 1.0e+9);
     _k->_logger->logInfo("Detailed", " + Running Time:                        [%5.3fs] - [%3.3fs]\n", _generationRunningTime / 1.0e+9, _sessionRunningTime / 1.0e+9);
     _k->_logger->logInfo("Detailed", " + [I/O] Result File Saving Time:        %5.3fs\n", _k->_resultSavingTime / 1.0e+9);
   }

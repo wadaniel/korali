@@ -18,7 +18,7 @@ class Discrete : public Agent
  */
   problem::reinforcementLearning::Discrete *_problem;
 
-  float calculateImportanceWeight(const std::vector<float> &action, knlohmann::json &curPolicy, knlohmann::json &oldPolicy) override;
+  float calculateImportanceWeight(const std::vector<float> &action, const knlohmann::json &curPolicy, const knlohmann::json &oldPolicy) override;
 
   /**
    * @brief Calculates the gradient of importance weight wrt to NN output
@@ -27,7 +27,7 @@ class Discrete : public Agent
    * @param oldPvalues todo
    * @return gradient of importance weight wrt NN output
    */
-  std::vector<float> calculateImportanceWeightGradient(size_t actionIdx, const std::vector<float> &curPvalues, const std::vector<float> &oldPvalues);
+  std::vector<float> calculateImportanceWeightGradient(const size_t actionIdx, const std::vector<float> &curPvalues, const std::vector<float> &oldPvalues);
 
   /**
    * @brief Calculates the gradient of KL(p_old, p_cur) wrt to the parameter of the 2nd (current) distribution.

@@ -52,7 +52,7 @@ void Continuous::getAction(korali::Sample &sample)
   std::vector<float> action(_problem->_actionVectorSize);
 
   // Forward state sequence to get the Gaussian means and sigmas from policy
-  auto policy = runPolicy(_stateTimeSequence.getVector());
+  const auto &policy = runPolicy(_stateTimeSequence.getVector());
 
   /*****************************************************************************
   * During Training we select action according to policy's probability 
@@ -76,7 +76,7 @@ void Continuous::getAction(korali::Sample &sample)
   sample["Action"] = action;
 }
 
-std::vector<float> Continuous::generateTrainingAction(knlohmann::json &curPolicy)
+std::vector<float> Continuous::generateTrainingAction(const knlohmann::json &curPolicy)
 {
   std::vector<float> action(_problem->_actionVectorSize);
   if (_policyDistribution == "Normal")
@@ -101,7 +101,7 @@ std::vector<float> Continuous::generateTrainingAction(knlohmann::json &curPolicy
   return action;
 }
 
-std::vector<float> Continuous::generateTestingAction(knlohmann::json &curPolicy)
+std::vector<float> Continuous::generateTestingAction(const knlohmann::json &curPolicy)
 {
   std::vector<float> action(_problem->_actionVectorSize);
   if (_policyDistribution == "Normal")
@@ -140,7 +140,7 @@ std::vector<float> Continuous::generateTestingAction(knlohmann::json &curPolicy)
   return action;
 }
 
-float Continuous::calculateImportanceWeight(const std::vector<float> &action, knlohmann::json &curPolicy, knlohmann::json &oldPolicy)
+float Continuous::calculateImportanceWeight(const std::vector<float> &action, const knlohmann::json &curPolicy, const knlohmann::json &oldPolicy)
 {
   float logpCurPolicy = 0.0f;
   float logpOldPolicy = 0.0f;
@@ -190,7 +190,7 @@ float Continuous::calculateImportanceWeight(const std::vector<float> &action, kn
   return importanceWeight;
 }
 
-std::vector<float> Continuous::calculateImportanceWeightGradient(const std::vector<float> &action, knlohmann::json &curPolicy, knlohmann::json &oldPolicy)
+std::vector<float> Continuous::calculateImportanceWeightGradient(const std::vector<float> &action, const knlohmann::json &curPolicy, const knlohmann::json &oldPolicy)
 {
   std::vector<float> grad(2 * _problem->_actionVectorSize, 0.0);
 
@@ -292,7 +292,7 @@ std::vector<float> Continuous::calculateImportanceWeightGradient(const std::vect
   return grad;
 }
 
-std::vector<float> Continuous::calculateKLDivergenceGradient(knlohmann::json &oldPolicy, knlohmann::json &curPolicy)
+std::vector<float> Continuous::calculateKLDivergenceGradient(const knlohmann::json &oldPolicy, const knlohmann::json &curPolicy)
 {
   std::vector<float> klGrad(2.0 * _problem->_actionVectorSize, 0.0);
 

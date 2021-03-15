@@ -92,7 +92,7 @@ void Discrete::getAction(korali::Sample &sample)
   sample["Action"] = _problem->_possibleActions[actionIdx];
 }
 
-float Discrete::calculateImportanceWeight(const std::vector<float> &action, knlohmann::json &curPolicy, knlohmann::json &oldPolicy)
+float Discrete::calculateImportanceWeight(const std::vector<float> &action, const knlohmann::json &curPolicy, const knlohmann::json &oldPolicy)
 {
   auto pVectorCurPolicy = curPolicy["Action Probabilities"].get<std::vector<float>>();
   auto pVectorOldPolicy = oldPolicy["Action Probabilities"].get<std::vector<float>>();
@@ -110,7 +110,7 @@ float Discrete::calculateImportanceWeight(const std::vector<float> &action, knlo
   return importanceWeight;
 }
 
-std::vector<float> Discrete::calculateImportanceWeightGradient(size_t actionIdx, const std::vector<float> &curPvals, const std::vector<float> &oldPvals)
+std::vector<float> Discrete::calculateImportanceWeightGradient(const size_t actionIdx, const std::vector<float> &curPvals, const std::vector<float> &oldPvals)
 {
   std::vector<float> grad(_problem->_possibleActions.size(), 0.0);
 

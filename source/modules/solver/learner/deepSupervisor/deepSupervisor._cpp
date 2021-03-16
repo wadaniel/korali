@@ -69,19 +69,13 @@ void DeepSupervisor::initialize()
   _trainingNeuralNetwork->initialize();
 
   // Creating inference neural networks (one per thread)
-  int maxThreads = omp_get_max_threads();
-  _inferenceNeuralNetworks.resize(maxThreads);
-
-  for (int curThread = 0; curThread < maxThreads; curThread++)
-  {
-    auto inferenceNeuralNetworkConfig = neuralNetworkConfig;
-    inferenceNeuralNetworkConfig["Batch Size"] = _problem->_inferenceBatchSize;
-    inferenceNeuralNetworkConfig["Mode"] = "Training";
-    _inferenceNeuralNetworks[curThread] = dynamic_cast<NeuralNetwork *>(getModule(inferenceNeuralNetworkConfig, _k));
-    _inferenceNeuralNetworks[curThread]->applyModuleDefaults(inferenceNeuralNetworkConfig);
-    _inferenceNeuralNetworks[curThread]->setConfiguration(inferenceNeuralNetworkConfig);
-    _inferenceNeuralNetworks[curThread]->initialize();
-  }
+  auto inferenceNeuralNetworkConfig = neuralNetworkConfig;
+  inferenceNeuralNetworkConfig["Batch Size"] = _problem->_inferenceBatchSize;
+  inferenceNeuralNetworkConfig["Mode"] = "Training";
+  _inferenceNeuralNetwork = dynamic_cast<NeuralNetwork *>(getModule(inferenceNeuralNetworkConfig, _k));
+  _inferenceNeuralNetwork->applyModuleDefaults(inferenceNeuralNetworkConfig);
+  _inferenceNeuralNetwork->setConfiguration(inferenceNeuralNetworkConfig);
+  _inferenceNeuralNetwork->initialize();
 
   /*****************************************************************
   * Initializing NN hyperparameters
@@ -94,8 +88,7 @@ void DeepSupervisor::initialize()
   _trainingNeuralNetwork->setHyperparameters(_hyperparameters);
 
   // Copying hyperparameters and normalization parameters from training to evaluation
-  for (int curThread = 0; curThread < maxThreads; curThread++)
-    _inferenceNeuralNetworks[curThread]->setHyperparameters(_hyperparameters);
+  _inferenceNeuralNetwork->setHyperparameters(_hyperparameters);
 
   /*****************************************************************
   * Setting up weight and bias optimization experiment
@@ -138,9 +131,13 @@ void DeepSupervisor::runGeneration()
      // Forward propagating the input values through the training neural network
      _trainingNeuralNetwork->forward(_problem->_inputData);
 
+     // Getting a reference to the neural network output
+     const auto& results = _trainingNeuralNetwork->getOutputValues();
+
+     // Calculating gradients via the loss function
       for (size_t b = 0; b < N; b++)
         for (size_t i = 0; i < OC; i++)
-          gradientVector[b][i] = gradientVector[b][i] - _trainingNeuralNetwork->_outputValues[b][i];
+          gradientVector[b][i] = gradientVector[b][i] - results[b][i];
 
       // Backward propagating the gradients through the training neural network
       _trainingNeuralNetwork->backward(gradientVector);
@@ -157,27 +154,26 @@ void DeepSupervisor::runGeneration()
     if (_lossFunction == "Direct Gradient")
      _trainingNeuralNetwork->backward(_problem->_solutionData);
 
+    // Getting hyperparameter gradients
+    auto nnHyperparameterGradients = _trainingNeuralNetwork->getHyperparameterGradients();
+
     // Apply gradient of L2 regularizer
     if (_l2RegularizationEnabled)
     {
-      auto nnHyperparameters = _trainingNeuralNetwork->getHyperparameters();
-      for (size_t i = 0; i < _trainingNeuralNetwork->_hyperparameterCount; ++i)
-        _trainingNeuralNetwork->_hyperparameterGradients[i] -= _l2RegularizationImportance * nnHyperparameters[i];
+      const auto nnHyperparameters = _trainingNeuralNetwork->getHyperparameters();
+      for (size_t i = 0; i < nnHyperparameterGradients.size(); ++i)
+       nnHyperparameterGradients[i] -= _l2RegularizationImportance * nnHyperparameters[i];
     }
 
     // Passing hyperparameter gradients through an ADAM update
-    _adamSolver->processResult(0.0f, _trainingNeuralNetwork->_hyperparameterGradients);
+    _adamSolver->processResult(0.0f, nnHyperparameterGradients);
 
     // Getting new set of hyperparameters from Adam
     _trainingNeuralNetwork->setHyperparameters(_adamSolver->_currentValue);
   }
 
   // Copying hyperparameters and normalization parameters from training to evaluation
-  #pragma omp parallel
-  {
-    size_t curThread = omp_get_thread_num();
-    _inferenceNeuralNetworks[curThread]->setHyperparameters(_adamSolver->_currentValue);
-  }
+  _inferenceNeuralNetwork->setHyperparameters(_adamSolver->_currentValue);
 }
 
 std::vector<float> DeepSupervisor::getTrainingHyperparameters()
@@ -200,17 +196,12 @@ void DeepSupervisor::setTrainingHyperparameters(const std::vector<float> &hyperp
 
 std::vector<float> DeepSupervisor::getInferenceHyperparameters()
 {
-  return _inferenceNeuralNetworks[0]->getHyperparameters();
+  return _inferenceNeuralNetwork->getHyperparameters();
 }
 
 void DeepSupervisor::setInferenceHyperparameters(const std::vector<float> &hyperparameters)
 {
-  // Update evaluation network
-  #pragma omp parallel
- {
-  size_t curThread = omp_get_thread_num();
-  _inferenceNeuralNetworks[curThread]->setHyperparameters(hyperparameters);
- }
+ _inferenceNeuralNetwork->setHyperparameters(hyperparameters);
 }
 
 std::vector<std::vector<float>> DeepSupervisor::getEvaluation(const std::vector<std::vector<std::vector<float>>> &input)
@@ -218,9 +209,6 @@ std::vector<std::vector<float>> DeepSupervisor::getEvaluation(const std::vector<
   // Grabbing constants
   size_t N = _problem->_inferenceBatchSize;
   size_t IC = _problem->_inputSize;
-
-  // Getting current thread ID
-  size_t curThread = omp_get_thread_num();
 
   // Check whether the input has the correct shape
   if (input.size() != _problem->_inferenceBatchSize)
@@ -236,24 +224,22 @@ std::vector<std::vector<float>> DeepSupervisor::getEvaluation(const std::vector<
         KORALI_LOG_ERROR("A different vector size (%lu) passed for batch %lu, timestep %lu for inference than expected (%lu).\n", input[b][t].size(), b, t, IC);
 
   // Running the input values through the neural network
-  _inferenceNeuralNetworks[curThread]->forward(input);
+  _inferenceNeuralNetwork->forward(input);
 
   // Returning the output values for the last given timestep
-  return _inferenceNeuralNetworks[curThread]->_outputValues;
+  return _inferenceNeuralNetwork->getOutputValues();
 }
 
 std::vector<std::vector<float>> DeepSupervisor::getDataGradients(const std::vector<std::vector<std::vector<float>>> &input, const std::vector<std::vector<float>> &outputGradients)
 {
   // Getting current thread ID
-  size_t curThread = omp_get_thread_num();
-
   auto forwardEvaluation = getEvaluation(input);
 
   // Running the input values through the neural network
-  _inferenceNeuralNetworks[curThread]->backward(outputGradients);
+  _inferenceNeuralNetwork->backward(outputGradients);
 
   // Returning the input data gradients
-  return _inferenceNeuralNetworks[curThread]->_inputGradients;
+  return _inferenceNeuralNetwork->getInputGradients();
 }
 
 void DeepSupervisor::printGenerationAfter()

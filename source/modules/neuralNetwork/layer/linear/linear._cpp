@@ -97,6 +97,38 @@ void Linear::createHyperparameterMemory()
 #endif
 }
 
+void Linear::copyHyperparameterPointers(Layer* dstLayer)
+{
+ Linear* dstPtr = dynamic_cast<Linear *>(dstLayer);
+ dstPtr->_hyperparameterCount = _hyperparameterCount;
+
+#ifdef _KORALI_USE_EIGEN
+  if (_nn->_engine == "Korali")
+  {
+    dstPtr->_weightValues = _weightValues;
+    dstPtr->_biasValues = _biasValues;
+  }
+#endif
+
+#ifdef _KORALI_USE_ONEDNN
+  if (_nn->_engine == "OneDNN")
+  {
+    dstPtr->_weightsMem = _weightsMem;
+    dstPtr->_biasMem = _biasMem;
+  }
+#endif
+
+#ifdef _KORALI_USE_CUDNN
+  if (_nn->_engine == "CuDNN")
+  {
+   dstPtr->_weightsFilterDesc = _weightsFilterDesc;
+   dstPtr->_weightsFilter = _weightsFilter;
+   dstPtr->_biasTensorDesc = _biasTensorDesc;
+   dstPtr->_biasTensor = _biasTensor;
+  }
+#endif
+}
+
 void Linear::createForwardPipeline()
 {
   // Calling base layer function
@@ -190,12 +222,11 @@ void Linear::createBackwardPipeline()
 #endif
 }
 
-void Linear::forwardData()
+void Linear::forwardData(const size_t t)
 {
   size_t N = _nn->_batchSize;
   size_t IC = _prevLayer->_outputChannels;
   size_t OC = _outputChannels;
-  size_t t = _nn->_currentTimestep;
 
 #ifdef _KORALI_USE_EIGEN
   if (_nn->_engine == "Korali")
@@ -255,12 +286,11 @@ void Linear::forwardData()
 #endif
 }
 
-void Linear::backwardData()
+void Linear::backwardData(const size_t t)
 {
   int N = _nn->_batchSize;
   int IC = _prevLayer->_outputChannels;
   int OC = _outputChannels;
-  int t = _nn->_currentTimestep;
 
   if (_nn->_mode == "Inference")
     KORALI_LOG_ERROR("Requesting Layer backward data propagation but NN was configured for inference only.\n");
@@ -311,12 +341,11 @@ void Linear::backwardData()
 #endif
 }
 
-void Linear::backwardHyperparameters()
+void Linear::backwardHyperparameters(size_t t)
 {
   const size_t N = _nn->_batchSize;
   const size_t IC = _prevLayer->_outputChannels;
   const size_t OC = _outputChannels;
-  const size_t t = _nn->_currentTimestep;
 
   if (_nn->_mode == "Inference")
     KORALI_LOG_ERROR("Requesting Layer hyperparameter gradient propagation but NN was configured for inference only.\n");

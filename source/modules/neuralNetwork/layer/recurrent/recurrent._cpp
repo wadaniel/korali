@@ -148,6 +148,33 @@ void Recurrent::createHyperparameterMemory()
 #endif
 }
 
+void Recurrent::copyHyperparameterPointers(Layer* dstLayer)
+{
+ Recurrent* dstPtr = dynamic_cast<Recurrent *>(dstLayer);
+ dstPtr->_hyperparameterCount = _hyperparameterCount;
+
+ #ifdef _KORALI_USE_ONEDNN
+  if (_nn->_engine == "OneDNN")
+  {
+   dstPtr->_weightsLayerMem = _weightsLayerMem;
+   dstPtr->_weightsRecurrentMem = _weightsRecurrentMem;
+   dstPtr->_biasMem = _biasMem;
+  }
+#endif
+
+#ifdef _KORALI_USE_CUDNN
+  if (_nn->_engine == "CuDNN")
+  {
+   dstPtr->_rnnDesc = _rnnDesc;
+   dstPtr->_dropoutDesc = _dropoutDesc;
+   dstPtr->_weightsSize = _weightsSize;
+   dstPtr->_weightsTensor = _weightsTensor;
+   dstPtr->_gateWeightTensors = _gateWeightTensors;
+   dstPtr->_gateBiasTensors = _gateBiasTensors;
+  }
+#endif
+}
+
 std::vector<float> Recurrent::generateInitialHyperparameters()
 {
   std::vector<float> hyperparameters;
@@ -210,7 +237,7 @@ void Recurrent::createBackwardPipeline()
 
 }
 
-void Recurrent::backwardHyperparameters()
+void Recurrent::backwardHyperparameters(const size_t t)
 {
   if (_nn->_mode == "Inference")
     KORALI_LOG_ERROR("Requesting Layer hyperparameter gradient propagation but NN was configured for inference only.\n");
@@ -225,8 +252,6 @@ void Recurrent::backwardHyperparameters()
 #ifdef _KORALI_USE_CUDNN
   if (_nn->_engine == "CuDNN")
   {
-    const size_t t = _nn->_currentTimestep;
-
     // We need to clear the gradients because they are additive in CUDNN
     cudaErrCheck(cudaMemset(_weightsGradientTensor, 0, _hyperparameterCount));
 

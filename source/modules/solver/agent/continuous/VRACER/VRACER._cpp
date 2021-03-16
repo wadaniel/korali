@@ -235,8 +235,7 @@ std::vector<policy_t> VRACER::runPolicyBatch(const std::vector<std::vector<std::
 
   // Forward the neural network for this state
   _criticPolicyLearner->_trainingNeuralNetwork->forward(stateBatch);
-
-  const auto &evaluation = _criticPolicyLearner->_trainingNeuralNetwork->_outputValues;
+  const auto &evaluation = _criticPolicyLearner->_trainingNeuralNetwork->getOutputValues();
 
   #pragma omp parallel for
   for (size_t b = 0; b < batchSize; b++)

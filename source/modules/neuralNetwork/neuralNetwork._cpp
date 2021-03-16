@@ -51,41 +51,51 @@ void NeuralNetwork::initialize()
 #endif
   }
 
-  // Assigning relevant metadata to all the layers
+  // Creating layer objects
   size_t layerCount = _layers.size();
+  _layerVector.resize(layerCount);
   for (size_t i = 0; i < layerCount; i++)
   {
-    _layers[i]->_prevLayer = i > 0 ? _layers[i - 1] : NULL;
-    _layers[i]->_nextLayer = i < layerCount - 1 ? _layers[i + 1] : NULL;
-    _layers[i]->_index = i;
-    _layers[i]->_nn = this;
+   auto layerJson = _layers[i];
+   _layerVector[i] = dynamic_cast<neuralNetwork::Layer *>(getModule(layerJson, _k));
+   _layerVector[i]->applyModuleDefaults(_layers[i]);
+   _layerVector[i]->setConfiguration(_layers[i]);
+  }
+
+  // Assigning relevant metadata to all the layers
+  for (size_t i = 0; i < layerCount; i++)
+  {
+    _layerVector[i]->_prevLayer = i > 0 ? _layerVector[i - 1] : NULL;
+    _layerVector[i]->_nextLayer = i < layerCount - 1 ? _layerVector[i + 1] : NULL;
+    _layerVector[i]->_index = i;
+    _layerVector[i]->_nn = this;
   }
 
   // Initialize layers
-  for (size_t i = 0; i < layerCount; i++) _layers[i]->initialize();
+  for (size_t i = 0; i < layerCount; i++) _layerVector[i]->initialize();
 
   // Creating forward and backward-propagation pipeline
-  for (size_t i = 0; i < layerCount; i++) _layers[i]->createHyperparameterMemory();
+  for (size_t i = 0; i < layerCount; i++) _layerVector[i]->createHyperparameterMemory();
 
   // Getting layer parameter counts and indexes
   _hyperparameterCount = 0;
   for (size_t i = 0; i < layerCount; i++)
   {
-   _layers[i]->_hyperparameterIndex = _hyperparameterCount;
-   _hyperparameterCount += _layers[i]->_hyperparameterCount;
+   _layerVector[i]->_hyperparameterIndex = _hyperparameterCount;
+   _hyperparameterCount += _layerVector[i]->_hyperparameterCount;
   }
 
   // Getting batch dimensions
   const size_t T = _timestepCount;
   const size_t N = _batchSize;
-  const size_t IC = _layers[0]->_outputChannels;
-  const size_t OC = _layers[layerCount - 1]->_outputChannels;
+  const size_t IC = _layerVector[0]->_outputChannels;
+  const size_t OC = _layerVector[layerCount - 1]->_outputChannels;
   const size_t H = _hyperparameterCount;
 
   // Create forward and backward (only for training) pipelines
-  for (size_t i = 0; i < layerCount; i++) _layers[i]->createForwardPipeline();
+  for (size_t i = 0; i < layerCount; i++) _layerVector[i]->createForwardPipeline();
   if (_mode == "Training")
-    for (size_t i = 0; i < layerCount; i++) _layers[i]->createBackwardPipeline();
+    for (size_t i = 0; i < layerCount; i++) _layerVector[i]->createBackwardPipeline();
 
   // Allocating NN Forward storage
   _rawInputValues.resize(T * N * IC);
@@ -120,9 +130,9 @@ std::vector<float> NeuralNetwork::generateInitialHyperparameters()
   // Setting initial values for hyperparameters
   std::vector<float> initialHyperparameters;
 
-  for (size_t i = 0; i < _layers.size(); i++)
+  for (size_t i = 0; i < _layerVector.size(); i++)
   {
-    auto layerParameters = _layers[i]->generateInitialHyperparameters();
+    auto layerParameters = _layerVector[i]->generateInitialHyperparameters();
     initialHyperparameters.insert(initialHyperparameters.end(), layerParameters.begin(), layerParameters.end());
   }
 
@@ -133,10 +143,10 @@ void NeuralNetwork::forward(const std::vector<std::vector<std::vector<float>>> &
 {
   size_t T = _timestepCount;
   size_t N = _batchSize;
-  size_t IC = _layers[0]->_outputChannels;
-  size_t layerCount = _layers.size();
+  size_t IC = _layerVector[0]->_outputChannels;
+  size_t layerCount = _layerVector.size();
   size_t lastLayer = layerCount - 1;
-  size_t OC = _layers[lastLayer]->_outputChannels;
+  size_t OC = _layerVector[lastLayer]->_outputChannels;
 
   // Safety checks
   if (inputValues.size() != N) KORALI_LOG_ERROR("Batch size of NN input (%lu) is not the same as NN configuration (%lu).\n", inputValues.size(), N);
@@ -166,7 +176,7 @@ void NeuralNetwork::forward(const std::vector<std::vector<std::vector<float>>> &
   // Forward propagate layers, once per timestep
   for (_currentTimestep = 0; _currentTimestep < T; _currentTimestep++)
     for (size_t i = 0; i < layerCount; i++)
-      _layers[i]->forwardData();
+      _layerVector[i]->forwardData();
 
   #pragma omp parallel for simd
   for (size_t b = 0; b < N; b++)
@@ -179,10 +189,10 @@ void NeuralNetwork::backward(const std::vector<std::vector<float>> &outputGradie
   // Getting batch dimensions
   size_t T = _timestepCount;
   size_t N = _batchSize;
-  size_t layerCount = _layers.size();
+  size_t layerCount = _layerVector.size();
   size_t lastLayer = layerCount - 1;
-  size_t OC = _layers[lastLayer]->_outputChannels;
-  size_t IC = _layers[0]->_outputChannels;
+  size_t OC = _layerVector[lastLayer]->_outputChannels;
+  size_t IC = _layerVector[0]->_outputChannels;
 
   if (_mode == "Inference")
     KORALI_LOG_ERROR("Requesting backward propagation but NN was configured for inference only.\n");
@@ -221,16 +231,16 @@ void NeuralNetwork::backward(const std::vector<std::vector<float>> &outputGradie
       size_t curLayer = lastLayer - i;
 
       // Running backward data propagation
-      _layers[curLayer]->backwardData();
+      _layerVector[curLayer]->backwardData();
     }
 
     for (size_t i = 0; i < layerCount; i++)
     {
-     _layers[i]->backwardHyperparameters();
+     _layerVector[i]->backwardHyperparameters();
 
      // If we are passing only one timestep, copy the hyperparameters directly on the NN output
-     if (T == 1) _layers[i]->getHyperparameterGradients(&_hyperparameterGradients[_layers[i]->_hyperparameterIndex]);
-     if (T > 1) _layers[i]->getHyperparameterGradients(&batchHyperparameterGradients[_layers[i]->_hyperparameterIndex]);
+     if (T == 1) _layerVector[i]->getHyperparameterGradients(&_hyperparameterGradients[_layerVector[i]->_hyperparameterIndex]);
+     if (T > 1) _layerVector[i]->getHyperparameterGradients(&batchHyperparameterGradients[_layerVector[i]->_hyperparameterIndex]);
     }
 
     // Adding current hyperparameters to the cumulative vector, only if more than one timestep used
@@ -253,10 +263,10 @@ std::vector<float> NeuralNetwork::getHyperparameters()
 {
   auto params = std::vector<float>(_hyperparameterCount);
 
-  size_t layerCount = _layers.size();
+  size_t layerCount = _layerVector.size();
 
   for (size_t i = 0; i < layerCount; i++)
-    _layers[i]->getHyperparameters(&params[_layers[i]->_hyperparameterIndex]);
+    _layerVector[i]->getHyperparameters(&params[_layerVector[i]->_hyperparameterIndex]);
 
   return params;
 }
@@ -268,9 +278,9 @@ void NeuralNetwork::setHyperparameters(const std::vector<float> &hyperparameters
 
   auto params = std::vector<float>(hyperparameters.begin(), hyperparameters.end());
 
-  size_t layerCount = _layers.size();
+  size_t layerCount = _layerVector.size();
 
   for (size_t i = 0; i < layerCount; i++)
-    _layers[i]->setHyperparameters(&params[_layers[i]->_hyperparameterIndex]);
+    _layerVector[i]->setHyperparameters(&params[_layerVector[i]->_hyperparameterIndex]);
 }
 } // namespace korali

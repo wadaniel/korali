@@ -193,7 +193,7 @@ void GRU::createForwardPipeline()
 void GRU::createBackwardPipeline()
 {
   // Calling base layer function
-  Layer::createBackwardPipeline();
+  Recurrent::createBackwardPipeline();
 
   // Checking Layer sizes
   if (_outputChannels == 0) KORALI_LOG_ERROR("Node count for layer (%lu) should be larger than zero.\n", _index);

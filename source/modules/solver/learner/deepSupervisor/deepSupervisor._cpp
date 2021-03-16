@@ -69,11 +69,11 @@ void DeepSupervisor::initialize()
   _trainingNeuralNetwork->initialize();
 
   // Creating inference neural networks (one per thread)
-  _inferenceNeuralNetworks.resize(_maxThreads);
+  int maxThreads = omp_get_max_threads();
+  _inferenceNeuralNetworks.resize(maxThreads);
 
-#pragma omp parallel
+  for (int curThread = 0; curThread < maxThreads; curThread++)
   {
-    size_t curThread = omp_get_thread_num();
     auto inferenceNeuralNetworkConfig = neuralNetworkConfig;
     inferenceNeuralNetworkConfig["Batch Size"] = _problem->_inferenceBatchSize;
     inferenceNeuralNetworkConfig["Mode"] = "Training";
@@ -93,12 +93,9 @@ void DeepSupervisor::initialize()
   // Creating and setting hyperparameter structures
   _trainingNeuralNetwork->setHyperparameters(_hyperparameters);
 
-// Copying hyperparameters and normalization parameters from training to evaluation
-#pragma omp parallel
-  {
-    size_t curThread = omp_get_thread_num();
+  // Copying hyperparameters and normalization parameters from training to evaluation
+  for (int curThread = 0; curThread < maxThreads; curThread++)
     _inferenceNeuralNetworks[curThread]->setHyperparameters(_hyperparameters);
-  }
 
   /*****************************************************************
   * Setting up weight and bias optimization experiment

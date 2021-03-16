@@ -50,7 +50,7 @@ class NeuralNetwork : public Module
   /**
    * @brief Internal container for the NN layer forward/backward pipelines.
    */
-  std::vector<korali::neuralNetwork::Layer*> _layerVector;
+  std::vector<std::vector<korali::neuralNetwork::Layer*>> _layerVector;
 
   /**
    * @brief Raw data for the NN input values. Format: TxNxIC (T: Time steps, N: Mini-batch size, IC: Input channels).

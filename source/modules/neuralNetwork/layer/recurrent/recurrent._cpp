@@ -64,19 +64,16 @@ void Recurrent::createHyperparameterMemory()
     auto weightInputMemDesc = memory::desc(weightInputDims, memory::data_type::f32, memory::format_tag::ldigo);
 
     _weightsLayerMem = memory(weightInputMemDesc, _nn->_dnnlEngine);
-    _weightsLayerGradientMem = memory(weightInputMemDesc, _nn->_dnnlEngine);
 
     memory::dims weightRecurrentDims = {L, D, OC, G, OC};
     auto weightRecurrentMemDesc = memory::desc(weightRecurrentDims, memory::data_type::f32, memory::format_tag::ldigo);
 
     _weightsRecurrentMem = memory(weightRecurrentMemDesc, _nn->_dnnlEngine);
-    _weightsRecurrentGradientMem = memory(weightRecurrentMemDesc, _nn->_dnnlEngine);
 
     memory::dims bias_dims = {L, D, G, OC};
     auto biasMemDesc = memory::desc(bias_dims, memory::data_type::f32, memory::format_tag::ldgo);
 
     _biasMem = memory(biasMemDesc, _nn->_dnnlEngine);
-    _biasGradientMem = memory(biasMemDesc, _nn->_dnnlEngine);
   }
 #endif
 
@@ -120,7 +117,6 @@ void Recurrent::createHyperparameterMemory()
 
     // Creating memory for hyperparameters and their gradients
     cudaErrCheck(cudaMalloc((void **)&_weightsTensor, _weightsSize));
-    cudaErrCheck(cudaMalloc((void **)&_weightsGradientTensor, _weightsSize));
 
     // Allocating space to store pointers to hyperparameters and their sizes
     _gateWeightTensors.resize(_gateCount);
@@ -185,6 +181,33 @@ std::vector<float> Recurrent::generateInitialHyperparameters()
         hyperparameters.push_back(0.0f);
 
   return hyperparameters;
+}
+
+void Recurrent::createBackwardPipeline()
+{
+  /*********************************************************************************
+  *  Initializing memory objects and primitives for BACKWARD propagation
+  *********************************************************************************/
+
+  // Calling base layer function
+ Layer::createBackwardPipeline();
+
+#ifdef _KORALI_USE_ONEDNN
+  if (_nn->_engine == "OneDNN")
+  {
+    _weightsLayerGradientMem = memory(_weightsLayerMem.get_desc(), _nn->_dnnlEngine);
+    _weightsRecurrentGradientMem = memory(_weightsRecurrentMem.get_desc(), _nn->_dnnlEngine);
+    _biasGradientMem = memory(_biasMem.get_desc(), _nn->_dnnlEngine);
+  }
+#endif
+
+#ifdef _KORALI_USE_CUDNN
+  if (_nn->_engine == "CuDNN")
+  {
+    cudaErrCheck(cudaMalloc((void **)&_weightsGradientTensor, _weightsSize));
+  }
+#endif
+
 }
 
 void Recurrent::backwardHyperparameters()

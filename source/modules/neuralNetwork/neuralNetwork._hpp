@@ -17,6 +17,55 @@
 
 namespace korali
 {
+
+struct layerPipeline_t
+{
+ /**
+  * @brief Internal container for the NN layer forward/backward pipelines.
+  */
+ std::vector<korali::neuralNetwork::Layer*> _layerVector;
+
+ /**
+  * @brief Raw data for the NN input values. Format: TxNxIC (T: Time steps, N: Mini-batch size, IC: Input channels).
+  */
+ std::vector<float> _rawInputValues;
+
+ /**
+  * @brief Raw data for the NN input gradients. Format: TxNxIC (T: Time steps, N: Mini-batch size, IC: Input channels).
+  */
+ std::vector<float> _rawInputGradients;
+
+ /**
+   * @brief Formatted data for the NN input gradients. Format: NxIC (N: Mini-batch size, IC: Input channels).
+ */
+ std::vector<std::vector<float>> _inputGradients;
+
+ /**
+  * @brief Raw data for the NN output values. Format: NxOC (N: Mini-batch size, OC: Output channels).
+  */
+ std::vector<float> _rawOutputValues;
+
+ /**
+  * @brief Raw data for the NN output gradients. Format: NxOC (N: Mini-batch size, OC: Output channels).
+  */
+ std::vector<float> _rawOutputGradients;
+
+ /**
+  * @brief Formatted data for the NN output values. Format: NxOC (N: Mini-batch size, OC: Output channels).
+  */
+ std::vector<std::vector<float>> _outputValues;
+
+ /**
+  * @brief F data for the NN hyperparameter gradients. Format: H (H: Hyperparameter count).
+  */
+ std::vector<float> _hyperparameterGradients;
+
+ /**
+  * @brief Remembers the position of the last timestep provided as input
+  */
+ std::vector<size_t> _inputBatchLastStep;
+};
+
 class NeuralNetwork : public Module
 {
   public:
@@ -28,6 +77,8 @@ class NeuralNetwork : public Module
   dnnl::stream _dnnlStream;
 
   dnnl::engine _dnnlEngine;
+
+  std::vector<layerPipeline_t> _pipelines;
 
 #endif
 
@@ -46,56 +97,6 @@ class NeuralNetwork : public Module
    * @brief Number of NN hyperparameters (weights/bias)
    */
   size_t _hyperparameterCount;
-
-  /**
-   * @brief Internal container for the NN layer forward/backward pipelines.
-   */
-  std::vector<std::vector<korali::neuralNetwork::Layer*>> _layerVector;
-
-  /**
-   * @brief Raw data for the NN input values. Format: TxNxIC (T: Time steps, N: Mini-batch size, IC: Input channels).
-   */
-  std::vector<float> _rawInputValues;
-
-  /**
-   * @brief Raw data for the NN input gradients. Format: TxNxIC (T: Time steps, N: Mini-batch size, IC: Input channels).
-   */
-  std::vector<float> _rawInputGradients;
-
-  /**
-    * @brief Formatted data for the NN input gradients. Format: NxIC (N: Mini-batch size, IC: Input channels).
-  */
-  std::vector<std::vector<float>> _inputGradients;
-
-  /**
-   * @brief Raw data for the NN output values. Format: NxOC (N: Mini-batch size, OC: Output channels).
-   */
-  std::vector<float> _rawOutputValues;
-
-  /**
-   * @brief Raw data for the NN output gradients. Format: NxOC (N: Mini-batch size, OC: Output channels).
-   */
-  std::vector<float> _rawOutputGradients;
-
-  /**
-   * @brief Formatted data for the NN output values. Format: NxOC (N: Mini-batch size, OC: Output channels).
-   */
-  std::vector<std::vector<float>> _outputValues;
-
-  /**
-   * @brief F data for the NN hyperparameter gradients. Format: H (H: Hyperparameter count).
-   */
-  std::vector<float> _hyperparameterGradients;
-
-  /**
-   * @brief Remembers the position of the last timestep provided as input
-   */
-  std::vector<size_t> _inputBatchLastStep;
-
-  /**
-   * @brief Keeps track of t_he current timestep
-   */
-  size_t _currentTimestep;
 
   void initialize() override;
 
@@ -128,6 +129,10 @@ class NeuralNetwork : public Module
    * @param outputGradients Output gradients. Format: NxOC (N: Mini-batch size, OC: Output channels).
   */
   void backward(const std::vector<std::vector<float>> &outputGradients);
+
+  std::vector<std::vector<float>>& getOutputValues();
+  std::vector<std::vector<float>>& getInputGradients();
+  std::vector<float>& getHyperparameterGradients();
 
   /**
    * @brief Creator that sets initialized flag to false

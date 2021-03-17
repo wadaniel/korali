@@ -42,36 +42,26 @@ void VRACER::initializeAgent()
   // Masks to normalize and rescaling output to fit the action's [lower, upper] bounds (and sigmas/P)
   _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Scale"][0] = 1.0f;
   _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Shift"][0] = 0.0f;
-  _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Tanh Mask"][0] = false;
   _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Softplus Mask"][0] = false;
-  _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Sigmoid Mask"][0] = false;
 
   // Normalizing and rescaling output to fit the action's [lower, upper] bounds
   for (size_t i = 0; i < _problem->_actionVectorSize; i++)
   {
     size_t varIdx = _problem->_actionVectorIndexes[i];
-    auto lowerBound = _k->_variables[varIdx]->_lowerBound;
-    auto upperBound = _k->_variables[varIdx]->_upperBound;
-    float scale = (upperBound - lowerBound) * 0.5;
-    float shift = (upperBound + lowerBound) * 0.5;
     float sigma = _k->_variables[varIdx]->_initialExplorationNoise;
 
     // Checking correct noise configuration
     if (sigma <= 0.0f) KORALI_LOG_ERROR("Provided initial noise (%f) for action variable %lu is not defined or negative.\n", sigma, varIdx);
 
     // Tanh mask for Mean
-    _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Scale"][i + 1] = scale;
-    _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Shift"][i + 1] = shift;
-    _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Tanh Mask"][i + 1] = true;
+    _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Scale"][i + 1] = 1.0f;
+    _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Shift"][i + 1] = 0.0f;
     _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Softplus Mask"][i + 1] = false;
-    _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Sigmoid Mask"][i + 1] = false;
 
     // Softplus mask for Sigma
     _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Scale"][_problem->_actionVectorSize + i + 1] = sigma * 2.0f;
     _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Shift"][_problem->_actionVectorSize + i + 1] = 0.0f;
-    _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Tanh Mask"][_problem->_actionVectorSize + i + 1] = false;
     _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Softplus Mask"][_problem->_actionVectorSize + i + 1] = true;
-    _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Sigmoid Mask"][_problem->_actionVectorSize + i + 1] = false;
   }
 
   // Running initialization to verify that the configuration is correct
@@ -197,7 +187,7 @@ std::vector<policy_t> VRACER::runPolicy(const std::vector<std::vector<std::vecto
   std::vector<policy_t> policyVector(batchSize);
 
   // Forward the neural network for this state
-  auto evaluation = _criticPolicyLearner->getEvaluation(stateBatch);
+  const auto& evaluation = _criticPolicyLearner->getEvaluation(stateBatch);
 
   #pragma omp parallel for
   for (size_t b = 0; b < batchSize; b++)

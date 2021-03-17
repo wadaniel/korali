@@ -131,8 +131,8 @@ class NeuralNetwork : public Module
   void backward(const std::vector<std::vector<float>> &outputGradients);
 
   size_t getBatchSizeIdx(const size_t batchSize);
-  std::vector<std::vector<float>> getOutputValues(const size_t batchSize);
-  std::vector<std::vector<float>> getInputGradients(const size_t batchSize);
+  std::vector<std::vector<float>>& getOutputValues(const size_t batchSize);
+  std::vector<std::vector<float>>& getInputGradients(const size_t batchSize);
   std::vector<float>& getHyperparameterGradients(const size_t batchSize);
 
   /**

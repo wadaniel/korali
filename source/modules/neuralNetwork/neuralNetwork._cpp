@@ -358,7 +358,7 @@ size_t NeuralNetwork::getBatchSizeIdx(const size_t batchSize)
  return batchSizeIdx;
 }
 
-std::vector<std::vector<float>> NeuralNetwork::getOutputValues(const size_t batchSize)
+std::vector<std::vector<float>>& NeuralNetwork::getOutputValues(const size_t batchSize)
 {
  size_t curThread = omp_get_thread_num();
  size_t batchSizeIdx = getBatchSizeIdx(batchSize);
@@ -366,7 +366,7 @@ std::vector<std::vector<float>> NeuralNetwork::getOutputValues(const size_t batc
  return p->_outputValues;
 }
 
-std::vector<std::vector<float>> NeuralNetwork::getInputGradients(const size_t batchSize)
+std::vector<std::vector<float>>& NeuralNetwork::getInputGradients(const size_t batchSize)
 {
  size_t curThread = omp_get_thread_num();
  size_t batchSizeIdx = getBatchSizeIdx(batchSize);

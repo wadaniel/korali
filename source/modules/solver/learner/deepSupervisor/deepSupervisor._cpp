@@ -178,7 +178,7 @@ void DeepSupervisor::setHyperparameters(const std::vector<float> &hyperparameter
   _adamSolver->reset();
 }
 
-std::vector<std::vector<float>> DeepSupervisor::getEvaluation(const std::vector<std::vector<std::vector<float>>> &input)
+std::vector<std::vector<float>>& DeepSupervisor::getEvaluation(const std::vector<std::vector<std::vector<float>>> &input)
 {
   // Grabbing constants
  const size_t N = input.size();
@@ -190,12 +190,9 @@ std::vector<std::vector<float>> DeepSupervisor::getEvaluation(const std::vector<
   return _neuralNetwork->getOutputValues(N);
 }
 
-std::vector<std::vector<float>> DeepSupervisor::getDataGradients(const std::vector<std::vector<std::vector<float>>> &input, const std::vector<std::vector<float>> &outputGradients)
+std::vector<std::vector<float>>& DeepSupervisor::getDataGradients(const std::vector<std::vector<std::vector<float>>> &input, const std::vector<std::vector<float>> &outputGradients)
 {
   const size_t N = input.size();
-
-  // Getting current thread ID
-  auto forwardEvaluation = getEvaluation(input);
 
   // Running the input values through the neural network
   _neuralNetwork->backward(outputGradients);

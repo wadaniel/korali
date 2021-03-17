@@ -196,20 +196,8 @@ std::vector<policy_t> VRACER::runPolicy(const std::vector<std::vector<std::vecto
    policyVector[b].stateValue = evaluation[b][0];
 
    // Getting distribution parameters
-   policyVector[b].actionMeans.resize(_problem->_actionVectorSize);
-   policyVector[b].actionSigmas.resize(_problem->_actionVectorSize);
-
-   for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-   {
-    const auto mean = evaluation[b][i + 1];
-    const auto sigma = evaluation[b][_problem->_actionVectorSize + i + 1];
-
-    if (std::isfinite(mean) == false)  KORALI_LOG_ERROR("Policy mean of variable %lu returned an invalid value: %f\n", mean);
-    if (std::isfinite(sigma) == false) KORALI_LOG_ERROR("Policy sigma of variable %lu returned an invalid value: %f\n", sigma);
-
-    policyVector[b].actionMeans[i] = mean;
-    policyVector[b].actionSigmas[i] = sigma;
-   }
+   policyVector[b].actionMeans.assign(evaluation[b].begin() + 1, evaluation[b].begin() + _problem->_actionVectorSize);
+   policyVector[b].actionSigmas.assign(evaluation[b].begin() + _problem->_actionVectorSize + 1, evaluation[b].end());
   }
 
   return policyVector;

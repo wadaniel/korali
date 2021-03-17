@@ -82,9 +82,6 @@ void Agent::initialize()
     if (_mode == "Training" || _testingBestPolicy.empty())
       deserializeExperienceReplay();
 
-  // Obtaining training state
-  _trainingState = getTrainingState();
-
   // Getting agent's initial policy
   _trainingCurrentPolicy = getAgentPolicy();
 
@@ -161,8 +158,6 @@ void Agent::trainingGeneration()
   _generationPolicyUpdateTime = 0.0;
   _generationAgentAttendingTime = 0.0;
 
-  setTrainingState(_trainingState);
-
   // Running until all _agents have finished
   while (_sessionEpisodeCount < _episodesPerGeneration * _sessionGeneration)
   {
@@ -234,9 +229,6 @@ void Agent::trainingGeneration()
   auto endTime = std::chrono::steady_clock::now();                                                             // Profiling
   _sessionRunningTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
   _generationRunningTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
-
-  // Gathering learners training state (for checkpoint/resume purpose)
-  _trainingState = getTrainingState();
 
   // Increasing session's generation count
   _sessionGeneration++;
@@ -497,7 +489,8 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
     auto expTruncatedStateSequence = getTruncatedStateTimeSequence(endId);
 
     // Calculating the state value function of the truncated state
-    float truncatedV = stateValueFunction(expTruncatedStateSequence);
+    auto truncatedPolicy = runPolicy({expTruncatedStateSequence})[0];
+    float truncatedV = truncatedPolicy.stateValue;
 
     // Sanity checks for truncated state value
     if (std::isfinite(truncatedV) == false)
@@ -566,7 +559,7 @@ std::vector<size_t> Agent::generateMiniBatch(size_t miniBatchSize)
    stateMiniBatch[i] = getStateTimeSequence(miniBatch[i]);
 
   // Run policy for the entire minibatch
-  auto curPolicyVector = runPolicyBatch(stateMiniBatch);
+  auto curPolicyVector = runPolicy(stateMiniBatch);
 
   // Creating a selection of unique experiences from the mini batch
   std::vector<size_t> updateBatch;
@@ -606,7 +599,10 @@ std::vector<size_t> Agent::generateMiniBatch(size_t miniBatchSize)
     // If this is the truncated experience of an episode, then obtain truncated state value
     float truncatedV = 0.0f;
     if (_terminationVector[expId] == e_truncated)
-      truncatedV = stateValueFunction(getTruncatedStateTimeSequence(expId));
+    {
+      auto truncatedPolicy = runPolicy({getTruncatedStateTimeSequence(expId)})[0];
+      truncatedV = truncatedPolicy.stateValue;
+    }
 
     // Checking if experience is still on policy
     bool isOnPolicy = (importanceWeight > (1.0f / _experienceReplayOffPolicyCurrentCutoff)) && (importanceWeight < _experienceReplayOffPolicyCurrentCutoff);
@@ -846,9 +842,6 @@ void Agent::serializeExperienceReplay()
   stateJson["Training"]["Best Policy"] = _trainingBestPolicy;
   stateJson["Testing"]["Best Policy"] = _testingBestPolicy;
 
-  // Storing current agent's training state
-  stateJson["Training"]["State"] = _trainingState;
-
   // If results directory doesn't exist, create it
   if (!dirExists(_k->_fileOutputPath)) mkdir(_k->_fileOutputPath);
 
@@ -939,7 +932,7 @@ void Agent::deserializeExperienceReplay()
   _testingBestPolicy = stateJson["Testing"]["Best Policy"];
 
   // Setting current agent's training state
-  setTrainingState(stateJson["Training"]["State"]);
+  setAgentPolicy(_trainingCurrentPolicy);
 
   auto endTime = std::chrono::steady_clock::now();                                                                         // Profiling
   double deserializationTime = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count() / 1.0e+9; // Profiling

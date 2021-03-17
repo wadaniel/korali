@@ -224,7 +224,7 @@ void Linear::createBackwardPipeline()
 
 void Linear::forwardData(const size_t t)
 {
-  size_t N = _nn->_batchSize;
+  size_t N = _batchSize;
   size_t IC = _prevLayer->_outputChannels;
   size_t OC = _outputChannels;
 
@@ -288,7 +288,7 @@ void Linear::forwardData(const size_t t)
 
 void Linear::backwardData(const size_t t)
 {
-  int N = _nn->_batchSize;
+  int N = _batchSize;
   int IC = _prevLayer->_outputChannels;
   int OC = _outputChannels;
 
@@ -343,7 +343,7 @@ void Linear::backwardData(const size_t t)
 
 void Linear::backwardHyperparameters(size_t t)
 {
-  const size_t N = _nn->_batchSize;
+  const size_t N = _batchSize;
   const size_t IC = _prevLayer->_outputChannels;
   const size_t OC = _outputChannels;
 

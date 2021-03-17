@@ -78,7 +78,7 @@ class NeuralNetwork : public Module
 
   dnnl::engine _dnnlEngine;
 
-  std::vector<layerPipeline_t> _pipelines;
+  std::vector<std::vector<layerPipeline_t>> _pipelines;
 
 #endif
 
@@ -130,9 +130,10 @@ class NeuralNetwork : public Module
   */
   void backward(const std::vector<std::vector<float>> &outputGradients);
 
-  std::vector<std::vector<float>>& getOutputValues();
-  std::vector<std::vector<float>>& getInputGradients();
-  std::vector<float>& getHyperparameterGradients();
+  size_t getBatchSizeIdx(const size_t batchSize);
+  std::vector<std::vector<float>> getOutputValues(const size_t batchSize);
+  std::vector<std::vector<float>> getInputGradients(const size_t batchSize);
+  std::vector<float>& getHyperparameterGradients(const size_t batchSize);
 
   /**
    * @brief Creator that sets initialized flag to false

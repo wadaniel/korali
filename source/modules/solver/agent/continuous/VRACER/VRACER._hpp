@@ -38,14 +38,10 @@ class VRACER : public Continuous
    */
   void updateVtbc(size_t expId);
 
-  std::vector<policy_t> runPolicyBatch(const std::vector<std::vector<std::vector<float>>> &stateBatch) override;
+  std::vector<policy_t> runPolicy(const std::vector<std::vector<std::vector<float>>> &stateBatch) override;
 
-  float stateValueFunction(const std::vector<std::vector<float>> &stateSequence) override;
   knlohmann::json getAgentPolicy() override;
   void setAgentPolicy(const knlohmann::json &hyperparameters) override;
-  void setTrainingState(const knlohmann::json &state) override;
-  knlohmann::json getTrainingState() override;
-  policy_t runPolicy(const std::vector<std::vector<float>> &stateSequence) override;
   void trainPolicy() override;
   void printAgentInformation() override;
   void initializeAgent() override;

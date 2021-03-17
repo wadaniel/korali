@@ -218,11 +218,6 @@ class Agent : public Solver
   knlohmann::json _testingBestPolicy;
 
   /**
-  * @brief Stores the state of training networks, necessary to continue learning at a later point.
-  */
-  knlohmann::json _trainingState;
-
-  /**
   * @brief Storage for the pointer to the learning problem
   */
   problem::ReinforcementLearning *_problem;
@@ -356,7 +351,12 @@ class Agent : public Solver
   */
   void resetTimeSequence();
 
-  virtual std::vector<policy_t> runPolicyBatch(const std::vector<std::vector<std::vector<float>>> &stateBatch) { return std::vector<policy_t>(); };
+  /**
+  * @brief Function to pass a state time series through the NN and calculates the action probabilities, along with any additional information
+  * @param stateBatch The batch of state time series (Format: BxTxS, B is batch size, T is the time series lenght, and S is the state size)
+  * @return A JSON object containing the information produced by the policies given the current state series
+  */
+  virtual std::vector<policy_t> runPolicy(const std::vector<std::vector<std::vector<float>>> &stateBatch) = 0;
 
   /**
   * @brief Calculates the starting experience index of the time sequence for the selected experience
@@ -431,13 +431,6 @@ class Agent : public Solver
    ***************************************************************************************************/
 
   /**
-   * @brief Calculates the state value function V(s,a)
-   * @param stateSequence State sequence to evaluate
-   * @return The value of V(s)
-   */
-  virtual float stateValueFunction(const std::vector<std::vector<float>> &stateSequence) = 0;
-
-  /**
   * @brief Trains the Agent's policy, based on the new experiences
   */
   virtual void trainPolicy() = 0;
@@ -449,29 +442,10 @@ class Agent : public Solver
   virtual knlohmann::json getAgentPolicy() = 0;
 
   /**
-  * @brief Function to pass a state time series through the NN and calculates the action probabilities, along with any additional information
-  * @param stateSequence The state time series (Format: TxS, where T is the time series lenght, and S is the state size)
-  * @return A JSON object containing the information produced by the policy given the current state
-  */
-  virtual policy_t runPolicy(const std::vector<std::vector<float>> &stateSequence) = 0;
-
-  /**
   * @brief Updates the agent's hyperparameters
   * @param hyperparameters The hyperparameters to update the agent.
   */
   virtual void setAgentPolicy(const knlohmann::json &hyperparameters) = 0;
-
-  /**
-   * @brief Sets training state to continue learning from a previous run or state file
-   * @param state The state to update the training NNs.
-   */
-  virtual void setTrainingState(const knlohmann::json &state) = 0;
-
-  /**
-   * @brief Obtains the current training state to store to a file and continue learning later
-   * @return The state to store
-   */
-  virtual knlohmann::json getTrainingState() = 0;
 
   /**
    * @brief Initializes the internal state of the policy

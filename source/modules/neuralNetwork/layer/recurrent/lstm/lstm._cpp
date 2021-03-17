@@ -51,7 +51,7 @@ void LSTM::createForwardPipeline()
     // Checking Layer sizes
     const memory::dim T = 1;                            // time steps
     const memory::dim G = _gateCount;                   // Gates
-    const memory::dim N = _nn->_batchSize;              // Batch size
+    const memory::dim N = _batchSize;              // Batch size
     const memory::dim IC = _prevLayer->_outputChannels; // channels
     const memory::dim OC = _outputChannels;             // channels
     const memory::dim L = _depth;                       // layers
@@ -127,7 +127,7 @@ void LSTM::createForwardPipeline()
   {
     // Obtaining batch size
     const size_t L = _depth;
-    const size_t N = _nn->_batchSize;
+    const size_t N = _batchSize;
     const size_t IC = _prevLayer->_outputChannels;
     const size_t OC = _outputChannels;
 
@@ -220,7 +220,7 @@ void LSTM::createBackwardPipeline()
     // Checking Layer sizes
     const memory::dim T = 1;                            // time steps
     const memory::dim G = _gateCount;                   // layers
-    const memory::dim N = _nn->_batchSize;              // Batch size
+    const memory::dim N = _batchSize;              // Batch size
     const memory::dim IC = _prevLayer->_outputChannels; // channels
     const memory::dim OC = _outputChannels;             // channels
     const memory::dim L = _depth;                       // layers
@@ -290,7 +290,7 @@ void LSTM::createBackwardPipeline()
   {
     // Obtaining batch size
     size_t L = _depth;
-    size_t N = _nn->_batchSize;
+    size_t N = _batchSize;
     size_t C = _outputChannels;
 
     // Allocating hidden state tensors
@@ -330,7 +330,7 @@ void LSTM::forwardData(const size_t t)
 #ifdef _KORALI_USE_CUDNN
   if (_nn->_engine == "CuDNN")
   {
-    const size_t N = _nn->_batchSize;
+    const size_t N = _batchSize;
 
     // Creating array of sequence lengths necessary for CuDNN
     std::vector<int> seqLengthArray(N, 1);

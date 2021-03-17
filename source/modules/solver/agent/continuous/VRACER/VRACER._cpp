@@ -188,44 +188,7 @@ void VRACER::trainPolicy()
   _criticPolicyLearner->runGeneration();
 }
 
-float VRACER::stateValueFunction(const std::vector<std::vector<float>> &state)
-{
-  // Calculating V(s_i)
-  float V = _criticPolicyLearner->getEvaluation({state})[0][0];
-  return V;
-}
-
-policy_t VRACER::runPolicy(const std::vector<std::vector<float>> &state)
-{
-  // Storage for policy
- policy_t policy;
-
-  // Forward the neural network for this state
-  auto evaluation = _criticPolicyLearner->getEvaluation({state})[0];
-
-  // Getting state value
-  policy.stateValue = evaluation[0];
-
-  // Getting distribution parameters
-  policy.actionMeans.resize(_problem->_actionVectorSize);
-  policy.actionSigmas.resize(_problem->_actionVectorSize);
-
-  for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-  {
-    const auto mean = evaluation[i + 1];
-    const auto sigma = evaluation[_problem->_actionVectorSize + i + 1];
-
-    if (std::isfinite(mean) == false)  KORALI_LOG_ERROR("Policy mean of variable %lu returned an invalid value: %f\n", mean);
-    if (std::isfinite(sigma) == false) KORALI_LOG_ERROR("Policy sigma of variable %lu returned an invalid value: %f\n", sigma);
-
-    policy.actionMeans[i] = mean;
-    policy.actionSigmas[i] = sigma;
-  }
-
-  return policy;
-}
-
-std::vector<policy_t> VRACER::runPolicyBatch(const std::vector<std::vector<std::vector<float>>> &stateBatch)
+std::vector<policy_t> VRACER::runPolicy(const std::vector<std::vector<std::vector<float>>> &stateBatch)
 {
   // Getting batch size
   size_t batchSize = stateBatch.size();
@@ -234,8 +197,7 @@ std::vector<policy_t> VRACER::runPolicyBatch(const std::vector<std::vector<std::
   std::vector<policy_t> policyVector(batchSize);
 
   // Forward the neural network for this state
-  _criticPolicyLearner->_trainingNeuralNetwork->forward(stateBatch);
-  const auto &evaluation = _criticPolicyLearner->_trainingNeuralNetwork->getOutputValues();
+  auto evaluation = _criticPolicyLearner->getEvaluation(stateBatch);
 
   #pragma omp parallel for
   for (size_t b = 0; b < batchSize; b++)
@@ -266,27 +228,13 @@ std::vector<policy_t> VRACER::runPolicyBatch(const std::vector<std::vector<std::
 knlohmann::json VRACER::getAgentPolicy()
 {
   knlohmann::json hyperparameters;
-  hyperparameters["Policy"] = _criticPolicyLearner->getTrainingHyperparameters();
+  hyperparameters["Policy"] = _criticPolicyLearner->getHyperparameters();
   return hyperparameters;
 }
 
 void VRACER::setAgentPolicy(const knlohmann::json &hyperparameters)
 {
-  _criticPolicyLearner->setInferenceHyperparameters(hyperparameters["Policy"].get<std::vector<float>>());
-}
-
-void VRACER::setTrainingState(const knlohmann::json &state)
-{
-  _criticPolicyLearner->setTrainingHyperparameters(state["Critic/Policy"]["Training"]);
-  _criticPolicyLearner->setInferenceHyperparameters(state["Critic/Policy"]["Inference"]);
-}
-
-knlohmann::json VRACER::getTrainingState()
-{
-  knlohmann::json state;
-  state["Critic/Policy"]["Training"] = _criticPolicyLearner->getTrainingHyperparameters();
-  state["Critic/Policy"]["Inference"] = _criticPolicyLearner->getInferenceHyperparameters();
-  return state;
+  _criticPolicyLearner->setHyperparameters(hyperparameters["Policy"].get<std::vector<float>>());
 }
 
 void VRACER::printAgentInformation()

@@ -24,6 +24,8 @@ class GaussianProcess : public Learner
   public:
   ~GaussianProcess();
 
+  std::vector<std::vector<float>> _outputValues;
+
   /**
   * @brief Korali engine for optimizing NN weights and biases
   */
@@ -51,10 +53,8 @@ class GaussianProcess : public Learner
 #endif
 
   std::vector<std::vector<float>> getEvaluation(const std::vector<std::vector<std::vector<float>>> &input) override;
-  std::vector<float> getTrainingHyperparameters() override;
-  void setTrainingHyperparameters(const std::vector<float> &hyperparameters) override;
-  std::vector<float> getInferenceHyperparameters() override;
-  void setInferenceHyperparameters(const std::vector<float> &hyperparameters) override;
+  std::vector<float> getHyperparameters() override;
+  void setHyperparameters(const std::vector<float> &hyperparameters) override;
   void initialize() override;
   void runGeneration() override;
   void printGenerationAfter() override;

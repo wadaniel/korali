@@ -32,7 +32,7 @@ void Input::initialize()
 
 void Input::forwardData(const size_t t)
 {
-  size_t N = _nn->_batchSize;
+  size_t N = _batchSize;
   size_t OC = _outputChannels;
 
 #ifdef _KORALI_USE_EIGEN
@@ -59,7 +59,7 @@ void Input::forwardData(const size_t t)
 
 void Input::backwardData(const size_t t)
 {
-  int N = _nn->_batchSize;
+  int N = _batchSize;
   int OC = _outputChannels;
 
   if (_nn->_mode == "Inference")

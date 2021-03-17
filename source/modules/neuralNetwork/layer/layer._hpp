@@ -55,6 +55,8 @@ class Layer : public Module
   */
   size_t _hyperparameterIndex;
 
+  size_t _batchSize;
+
   // Input/output memory elements
 
 #ifdef _KORALI_USE_EIGEN

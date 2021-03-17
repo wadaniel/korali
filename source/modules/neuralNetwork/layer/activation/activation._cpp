@@ -145,7 +145,7 @@ void Activation::createBackwardPipeline()
 
 void Activation::forwardData(const size_t t)
 {
-  size_t N = _nn->_batchSize;
+  size_t N = _batchSize;
   size_t OC = _outputChannels;
 
 #ifdef _KORALI_USE_EIGEN
@@ -243,7 +243,7 @@ void Activation::forwardData(const size_t t)
 
 void Activation::backwardData(const size_t t)
 {
-  size_t N = _nn->_batchSize;
+  size_t N = _batchSize;
   size_t OC = _outputChannels;
 
   if (_nn->_mode == "Inference")

@@ -484,7 +484,7 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
   if (_terminationVector[endId] == e_truncated)
   {
     // Get state sequence, appending the truncated state to it and removing first time element
-    auto expTruncatedStateSequence = getTruncatedStateTimeSequence(endId);
+    auto expTruncatedStateSequence = getTruncatedStateSequence(endId);
 
     // Calculating the state value function of the truncated state
     auto truncatedPolicy = runPolicy({expTruncatedStateSequence})[0];
@@ -595,7 +595,7 @@ void Agent::updateExperienceMetadata(const std::vector<size_t>& miniBatch, const
     float truncatedV = 0.0f;
     if (_terminationVector[expId] == e_truncated)
     {
-      auto truncatedPolicy = runPolicy({getTruncatedStateTimeSequence(expId)})[0];
+      auto truncatedPolicy = runPolicy({getTruncatedStateSequence(expId)})[0];
       truncatedV = truncatedPolicy.stateValue;
     }
 
@@ -707,22 +707,43 @@ void Agent::resetTimeSequence()
   _stateTimeSequence.clear();
 }
 
-std::vector<std::vector<float>> Agent::getStateTimeSequence(size_t expId)
+std::vector<std::vector<std::vector<float>>> Agent::getMiniBatchStateSequence(const std::vector<size_t>& miniBatch, const bool includeAction)
 {
-  // Getting starting expId
-  size_t startId = getTimeSequenceStartExpId(expId);
+  const size_t miniBatchSize = miniBatch.size();
+  std::vector<std::vector<std::vector<float>>> stateSequenceVector(miniBatchSize);
 
-  // Creating storage for the time sequence
-  std::vector<std::vector<float>> timeSequence;
+  // Calculating size of state vector
+  const size_t stateSize = includeAction ? _problem->_stateVectorSize + _problem->_actionVectorSize : _problem->_stateVectorSize;
 
-  // Now adding states
-  for (size_t e = startId; e <= expId; e++)
-    timeSequence.push_back(_stateVector[e]);
+  #pragma omp parallel for
+  for (size_t b = 0; b < miniBatch.size(); b++)
+  {
+   // Getting current expId
+   const size_t expId = miniBatch[b];
 
-  return timeSequence;
+   // Getting starting expId
+   const size_t startId = getTimeSequenceStartExpId(expId);
+
+   // Calculating time sequence length
+   const size_t T = expId - startId + 1;
+
+   // Resizing state sequence vector to the correct time sequence length
+   stateSequenceVector[b].resize(T);
+
+   // Now adding states (and actions, if required)
+   for (size_t t = 0; t < T; t++)
+   {
+    size_t curId = startId + t;
+    stateSequenceVector[b][t].reserve(stateSize);
+    stateSequenceVector[b][t].insert(stateSequenceVector[b][t].begin(), _stateVector[curId].begin(), _stateVector[curId].end());
+    if (includeAction) stateSequenceVector[b][t].insert(stateSequenceVector[b][t].begin(), _actionVector[curId].begin(), _actionVector[curId].end());
+   }
+  }
+
+  return stateSequenceVector;
 }
 
-std::vector<std::vector<float>> Agent::getTruncatedStateTimeSequence(size_t expId)
+std::vector<std::vector<float>> Agent::getTruncatedStateSequence(size_t expId)
 {
   // Getting starting expId
   size_t startId = getTimeSequenceStartExpId(expId);
@@ -736,26 +757,6 @@ std::vector<std::vector<float>> Agent::getTruncatedStateTimeSequence(size_t expI
 
   // Lastly, adding truncated state
   timeSequence.push_back(_truncatedStateVector[expId]);
-
-  return timeSequence;
-}
-
-std::vector<std::vector<float>> Agent::getStateActionTimeSequence(size_t expId)
-{
-  // Getting starting expId
-  size_t startId = getTimeSequenceStartExpId(expId);
-
-  // Creating storage for the time sequence
-  std::vector<std::vector<float>> timeSequence;
-
-  // Now adding state/action vectors
-  for (size_t e = startId; e <= expId; e++)
-  {
-    std::vector<float> stateAction(_problem->_stateVectorSize + _problem->_actionVectorSize);
-    for (size_t i = 0; i < _problem->_stateVectorSize; i++) stateAction[i] = _stateVector[e][i];
-    for (size_t i = 0; i < _problem->_actionVectorSize; i++) stateAction[_problem->_stateVectorSize + i] = _actionVector[e][i];
-    timeSequence.push_back(stateAction);
-  }
 
   return timeSequence;
 }

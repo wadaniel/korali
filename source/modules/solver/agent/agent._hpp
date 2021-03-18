@@ -365,23 +365,17 @@ class Agent : public Solver
   /**
    * @brief Gets a vector of states corresponding of time sequence corresponding to the provided last experience index
    * @param expId The index of the latest experience in the sequence
+   * @includeAction Specifies whether to include the experience's action in the sequence
    * @return The time step vector of states
    */
-  std::vector<std::vector<float>> getStateTimeSequence(size_t expId);
+  std::vector<std::vector<std::vector<float>>> getMiniBatchStateSequence(const std::vector<size_t>& miniBatch, const bool includeAction = false);
 
   /**
    * @brief Gets a vector of states corresponding of time sequence corresponding to the provided second-to-last experience index for which a truncated state exists
    * @param expId The index of the second-to-latest experience in the sequence
    * @return The time step vector of states, including the truncated state
    */
-  std::vector<std::vector<float>> getTruncatedStateTimeSequence(size_t expId);
-
-  /**
-  * @brief Gets a vector of state/actions corresponding of time sequence corresponding to the provided last experience index
-  * @param expId The index of the latest experience in the sequence
-  * @return The time step vector of state/actions
-  */
-  std::vector<std::vector<float>> getStateActionTimeSequence(size_t expId);
+  std::vector<std::vector<float>> getTruncatedStateSequence(size_t expId);
 
   /**
    * @brief Calculates importance weight of current action from old and new policies

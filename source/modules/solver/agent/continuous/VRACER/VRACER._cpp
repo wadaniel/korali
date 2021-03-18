@@ -76,19 +76,15 @@ void VRACER::initializeAgent()
 void VRACER::trainPolicy()
 {
   // Obtaining Minibatch experience ids
-
   auto miniBatch = generateMiniBatch(_miniBatchSize);
 
   // Gathering state sequences for selected minibatch
-
-  auto statesVector = getMiniBatchStateSequence(miniBatch);
+  auto stateSequence= getMiniBatchStateSequence(miniBatch);
 
   // Running policy NN on the Minibatch experiences
-
-  auto policyInfo = runPolicy(statesVector);
+  auto policyInfo = runPolicy(stateSequence);
 
   // Using policy information to update experience's metadata
-
   updateExperienceMetadata(miniBatch, policyInfo);
 
  /****************************************************************************
@@ -125,21 +121,15 @@ void VRACER::trainPolicy()
       // Qret for terminal state is just reward
       float Qret = _rewardVector[expId];
 
-      // Check whether experience is non-terminal
-      bool isNormal = _terminationVector[expId] == e_nonTerminal;
-
-      // In this case add Vtbc
-      if (isNormal == true)
+      // If experience is non-terminal, add Vtbc
+      if (_terminationVector[expId] == e_nonTerminal)
       {
         float nextExpVtbc = _retraceValueVector[expId + 1];
         Qret += _discountFactor * nextExpVtbc;
       }
 
-      // Check whether experience is truncated
-      bool isTrucated = _terminationVector[expId] == e_truncated;
-
-      // For truncated state add value
-      if (isTrucated == true)
+      // If experience is truncated, add truncated state value
+      if (_terminationVector[expId] == e_truncated)
       {
         float nextExpVtbc = _truncatedStateValueVector[expId];
         Qret += _discountFactor * nextExpVtbc;

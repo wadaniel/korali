@@ -709,8 +709,11 @@ void Agent::resetTimeSequence()
 
 std::vector<std::vector<std::vector<float>>> Agent::getMiniBatchStateSequence(const std::vector<size_t>& miniBatch, const bool includeAction)
 {
+  // Getting mini batch size
   const size_t miniBatchSize = miniBatch.size();
-  std::vector<std::vector<std::vector<float>>> stateSequenceVector(miniBatchSize);
+
+  // Allocating state sequence vector
+  std::vector<std::vector<std::vector<float>>> stateSequence(miniBatchSize);
 
   // Calculating size of state vector
   const size_t stateSize = includeAction ? _problem->_stateVectorSize + _problem->_actionVectorSize : _problem->_stateVectorSize;
@@ -728,19 +731,19 @@ std::vector<std::vector<std::vector<float>>> Agent::getMiniBatchStateSequence(co
    const size_t T = expId - startId + 1;
 
    // Resizing state sequence vector to the correct time sequence length
-   stateSequenceVector[b].resize(T);
+   stateSequence[b].resize(T);
 
    // Now adding states (and actions, if required)
    for (size_t t = 0; t < T; t++)
    {
     size_t curId = startId + t;
-    stateSequenceVector[b][t].reserve(stateSize);
-    stateSequenceVector[b][t].insert(stateSequenceVector[b][t].begin(), _stateVector[curId].begin(), _stateVector[curId].end());
-    if (includeAction) stateSequenceVector[b][t].insert(stateSequenceVector[b][t].begin(), _actionVector[curId].begin(), _actionVector[curId].end());
+    stateSequence[b][t].reserve(stateSize);
+    stateSequence[b][t].insert(stateSequence[b][t].begin(), _stateVector[curId].begin(), _stateVector[curId].end());
+    if (includeAction) stateSequence[b][t].insert(stateSequence[b][t].begin(), _actionVector[curId].begin(), _actionVector[curId].end());
    }
   }
 
-  return stateSequenceVector;
+  return stateSequence;
 }
 
 std::vector<std::vector<float>> Agent::getTruncatedStateSequence(size_t expId)

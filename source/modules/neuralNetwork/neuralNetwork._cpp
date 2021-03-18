@@ -219,6 +219,22 @@ void NeuralNetwork::forward(const std::vector<std::vector<std::vector<float>>> &
   size_t lastLayer = layerCount - 1;
   size_t OC = p->_layerVector[lastLayer]->_outputChannels;
 
+
+  // Safety checks for timestep information
+  for (size_t b = 0; b < N; b++)
+  {
+    if (inputValues[b].size() > T)
+      KORALI_LOG_ERROR("Timestep of input batch (%lu) is larger (%lu) than max configured (%lu).\n", b, inputValues[b].size(), T);
+
+    for (size_t t = 0; t < inputValues[b].size(); t++)
+      if (inputValues[b][t].size() != IC)
+        KORALI_LOG_ERROR("Input size of input batch (%lu), timestep (%lu) is different (%lu) than input channels configured (%lu).\n", b, t, inputValues[b][t].size(), IC);
+  }
+
+
+  // First, re-setting all input values to zero
+  std::fill(p->_rawInputValues.begin(), p->_rawInputValues.end(), 0.0f);
+
   // Storing timestep count per batch input, for later use on backward propagation
   for (size_t b = 0; b < N; b++) p->_inputBatchLastStep[b] = inputValues[b].size() - 1;
 
@@ -262,6 +278,13 @@ void NeuralNetwork::backward(const std::vector<std::vector<float>> &outputGradie
   // Safety checks
   if (_mode == "Inference")
     KORALI_LOG_ERROR("Requesting backward propagation but NN was configured for inference only.\n");
+
+  for (size_t b = 0; b < N; b++)
+    if (outputGradients[b].size() > OC)
+      KORALI_LOG_ERROR("Size (%lu) of output gradients batch %lu, is different than expected (%lu).\n", outputGradients[b].size(), b, OC);
+
+  // First, re-setting all output gradients to zero
+  std::fill(p->_rawOutputGradients.begin(), p->_rawOutputGradients.end(), 0.0f);
 
   // To store the gradients in the NN we place them on the last input timestep
   #pragma omp parallel for simd

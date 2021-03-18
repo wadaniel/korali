@@ -528,37 +528,35 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
 
 std::vector<size_t> Agent::generateMiniBatch(size_t miniBatchSize)
 {
- // Allocating storage for mini batch experiecne indexes
- std::vector<size_t> miniBatch(miniBatchSize);
+  // Allocating storage for mini batch experiecne indexes
+  std::vector<size_t> miniBatch(miniBatchSize);
 
- for (size_t i = 0; i < miniBatchSize; i++)
- {
-   // Producing random (uniform) number for the selection of the experience
-   float x = _uniformGenerator->getRandomNumber();
+  for (size_t i = 0; i < miniBatchSize; i++)
+  {
+    // Producing random (uniform) number for the selection of the experience
+    float x = _uniformGenerator->getRandomNumber();
 
-   // Selecting experience
-   size_t expId = std::floor(x * (float)(_stateVector.size() - 1));
+    // Selecting experience
+    size_t expId = std::floor(x * (float)(_stateVector.size() - 1));
 
-   // Setting experience
-   miniBatch[i] = expId;
- }
+    // Setting experience
+    miniBatch[i] = expId;
+  }
 
-  // Sorting minibatch
+  // Sorting minibatch -- this helps with locality and also
+  // to quickly detect duplicates when updating metadata
   std::sort (miniBatch.begin(), miniBatch.end());
 
-  /**********************************************
-   * Updating experience's metadata
-   *********************************************/
+  // Returning generated minibatch
+  return miniBatch;
+}
 
-  std::vector<std::vector<std::vector<float>>> stateMiniBatch(_miniBatchSize);
-  #pragma omp parallel for
-  for (size_t i = 0; i < miniBatchSize; i++)
-   stateMiniBatch[i] = getStateTimeSequence(miniBatch[i]);
-
-  // Run policy for the entire minibatch
-  auto curPolicyVector = runPolicy(stateMiniBatch);
+void Agent::updateExperienceMetadata(const std::vector<size_t>& miniBatch, const std::vector<policy_t>& policyData)
+{
+  const size_t miniBatchSize = miniBatch.size();
 
   // Creating a selection of unique experiences from the mini batch
+  // Important: this assumes the minibatch ids are sorted.
   std::vector<size_t> updateBatch;
   updateBatch.push_back(0);
   for (size_t i = 1; i < miniBatchSize; i++)
@@ -576,7 +574,7 @@ std::vector<size_t> Agent::generateMiniBatch(size_t miniBatchSize)
     // Get state, action, mean, Sigma for this experience
     const auto &expAction = _actionVector[expId];
     const auto &expPolicy = _expPolicyVector[expId];
-    const auto &curPolicy = curPolicyVector[batchId];
+    const auto &curPolicy = policyData[batchId];
 
     // Grabbing state value from the latenst policy
     auto stateValue = curPolicy.stateValue;
@@ -606,13 +604,13 @@ std::vector<size_t> Agent::generateMiniBatch(size_t miniBatchSize)
 
     // Store computed information for use in replay memory.
     _curPolicyVector[expId] = curPolicy;
-   _stateValueVector[expId] = stateValue;
-   _truncatedStateValueVector[expId] = truncatedV;
-   _importanceWeightVector[expId] = importanceWeight;
-   _isOnPolicyVector[expId] = isOnPolicy;
-   _truncatedImportanceWeightVector[expId] = truncatedImportanceWeight;
+    _stateValueVector[expId] = stateValue;
+    _truncatedStateValueVector[expId] = truncatedV;
+    _importanceWeightVector[expId] = importanceWeight;
+    _isOnPolicyVector[expId] = isOnPolicy;
+    _truncatedImportanceWeightVector[expId] = truncatedImportanceWeight;
 
-    if (isOnPolicy == false) offPolicyCount++;
+     if (isOnPolicy == false) offPolicyCount++;
   }
 
   // Updating the off policy Ratio
@@ -678,9 +676,6 @@ std::vector<size_t> Agent::generateMiniBatch(size_t miniBatchSize)
      _retraceValueVector[curId] = retV;
    }
   }
-
-  // Returning generated minibatch
-  return miniBatch;
 }
 
 size_t Agent::getTimeSequenceStartExpId(size_t expId)

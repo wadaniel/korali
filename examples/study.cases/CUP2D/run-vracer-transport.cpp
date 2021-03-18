@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
   _environment = new Simulation(_argc, _argv);
   _environment->init();
 
-  std::string trainingResultsPath = "_results_transport_training/";
+  std::string trainingResultsPath = "_trainingResults/";
   std::string testingResultsPath = "_results_transport_testing/";
 
   // Creating Experiment
@@ -81,6 +81,7 @@ int main(int argc, char *argv[])
   e["Solver"]["Experiences Between Policy Updates"] = 1;
   e["Solver"]["Learning Rate"] = 1e-4;
   e["Solver"]["Discount Factor"] = 0.95;
+  e["Solver"]["Updates Between Reward Rescaling"] = 20000;
 
   /// Defining the configuration of replay memory
 

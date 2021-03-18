@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
   _environment = new Simulation(_argc, _argv);
   _environment->init();
 
-  std::string trainingResultsPath = "_trainingResults/";
+  std::string trainingResultsPath = "_results_transport_training/";
   std::string testingResultsPath = "_results_transport_testing/";
 
   // Creating Experiment

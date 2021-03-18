@@ -102,6 +102,7 @@ int main(int argc, char *argv[])
   e["Solver"]["Experiences Between Policy Updates"] = 1;
   e["Solver"]["Learning Rate"] = 1e-4;
   e["Solver"]["Discount Factor"] = 0.95;
+  e["Solver"]["Updates Between Reward Rescaling"] = 20000;
 
   /// Defining the configuration of replay memory
 

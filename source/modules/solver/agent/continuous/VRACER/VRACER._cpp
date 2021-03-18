@@ -75,24 +75,19 @@ void VRACER::initializeAgent()
 
 void VRACER::trainPolicy()
 {
-  /****************************************************************************
-  * Obtaining Minibatch experience ids
-  ***************************************************************************/
+  // Obtaining Minibatch experience ids
 
   auto miniBatch = generateMiniBatch(_miniBatchSize);
 
-  /****************************************************************************
-  * Running policy NN on the Minibatch experiences
-  ***************************************************************************/
+  // Gathering state sequences for selected minibatch
 
-  std::vector<std::vector<std::vector<float>>> stateVector(_miniBatchSize);
-  #pragma omp parallel for
-  for (size_t i = 0; i < _miniBatchSize; i++) stateVector[i] = getStateTimeSequence(miniBatch[i]);
-  auto policyInfo = runPolicy(stateVector);
+  auto statesVector = getMiniBatchStateSequence(miniBatch);
 
-  /****************************************************************************
-  * Using policy information to update experience's metadata
-  ***************************************************************************/
+  // Running policy NN on the Minibatch experiences
+
+  auto policyInfo = runPolicy(statesVector);
+
+  // Using policy information to update experience's metadata
 
   updateExperienceMetadata(miniBatch, policyInfo);
 
@@ -100,7 +95,7 @@ void VRACER::trainPolicy()
   * Now calculating policy gradients
   ***************************************************************************/
 
-  // Statistics
+  // Resetting statistics
   std::fill(_statisticsAverageActionSigmas.begin(), _statisticsAverageActionSigmas.end(), 0.0);
 
 #pragma omp parallel for

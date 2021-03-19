@@ -403,17 +403,15 @@ class Agent : public Solver
 
   /**
    * @brief TODO.
-   * @param state TODO
    * @param features Features returned from the environment to calculate the reward.
    */
-  float calculateReward(const std::vector<float>& state, const std::vector<float>& features);
+  float calculateReward(const std::vector<float>& features);
  
   /**
    * @brief TODO.
-   * @param state TODO
    * @param features Features returned from the environment to calculate the reward.
    */
-  std::vector<float> calculateRewardGradient(const std::vector<float>& state, const std::vector<float>& features);
+  std::vector<float> calculateRewardGradient(const std::vector<float>& features);
 
   /**
   * @brief Update the weights of the reward function based on guided cost learning

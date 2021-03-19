@@ -258,18 +258,18 @@ void Agent::testingGeneration()
     _testingReward[agentId] = testingAgents[agentId]["Testing Reward"].get<float>();
 }
 
-float Agent::calculateReward(const std::vector<float>& state, const std::vector<float>& features)
+float Agent::calculateReward(const std::vector<float>& features)
 {
   float reward = 0.0;
 #ifdef COSREWARD
-  reward += std::cos(features[0]-_featureWeights[0]);
+  reward = std::cos(features[0]-_featureWeights[0]);
 #else
   for (size_t i = 0; i < _problem->_featureVectorSize; ++i) reward += _softMaxFeatureWeights[i] * features[i];
 #endif
   return reward;
 }
 
-std::vector<float> Agent::calculateRewardGradient(const std::vector<float>& state, const std::vector<float>& features)
+std::vector<float> Agent::calculateRewardGradient(const std::vector<float>& features)
 {
   std::vector<float> rewardGrad(features.size(), 0.0);
 #ifdef COSREWARD
@@ -319,7 +319,7 @@ void Agent::updateRewardFunction()
     float trajetoryLogProbability = 0.0;
     while (_experienceReplay[expId].termination == e_nonTerminal)
     {
-      cumReward += calculateReward(_experienceReplay[expId].state, _experienceReplay[expId].features);
+      cumReward += calculateReward(_experienceReplay[expId].features);
 
       auto expStateSequence = getStateTimeSequence(expId);
       auto expAction = _experienceReplay[expId].action;
@@ -345,7 +345,7 @@ void Agent::updateRewardFunction()
     float observedTrajetoryLogProbability = 0.0;
     for (size_t i = 0; i < observedTrajectoryLength; ++i)
     {
-      cumReward += calculateReward(_problem->_observationsStates[n][i], _problem->_observationsFeatures[n][i]);
+      cumReward += calculateReward(_problem->_observationsFeatures[n][i]);
 
       std::vector<std::vector<float>> observedStateSequence = {_problem->_observationsStates[observedTrajectoryIdx][i]};
       auto observedAction = _problem->_observationsActions[observedTrajectoryIdx][i];
@@ -379,7 +379,7 @@ void Agent::updateRewardFunction()
     size_t expId = trajectoryStartIndexes[m];
     while (_experienceReplay[expId].termination == e_nonTerminal)
     {
-      auto gradReturn = calculateRewardGradient(_experienceReplay[expId].state, _experienceReplay[expId].features);
+      auto gradReturn = calculateRewardGradient(_experienceReplay[expId].features);
       for (size_t k = 0; k < _problem->_featureVectorSize; ++k)
       {
         featureWeightGradient[k] -= std::exp(exponents[m] - logPartitionFunction) * gradReturn[k];
@@ -395,7 +395,7 @@ void Agent::updateRewardFunction()
     size_t observedTrajectoryLength = _problem->_observationsFeatures[observedTrajectoryIdx].size();
     for (size_t i = 0; i < observedTrajectoryLength; ++i)
     {
-        auto gradReturn = calculateRewardGradient(_problem->_observationsStates[observedTrajectoryIdx][i], _problem->_observationsFeatures[observedTrajectoryIdx][i]);
+        auto gradReturn = calculateRewardGradient(_problem->_observationsFeatures[observedTrajectoryIdx][i]);
         for (size_t k = 0; k < _problem->_featureVectorSize; ++k)
         {
             featureWeightGradient[k] += (1.0/ (float)_demonstrationBatchSize - std::exp(exponents[_backgroundBatchSize + n] - logPartitionFunction)) * gradReturn[k];
@@ -553,7 +553,7 @@ void Agent::processEpisode(size_t episodeId, std::vector<knlohmann::json> &episo
     e.state = episode[expId]["State"].get<std::vector<float>>();
     e.action = episode[expId]["Action"].get<std::vector<float>>();
     e.features = episode[expId]["Features"].get<std::vector<float>>();
-    e.reward = episode[expId]["Reward"].get<float>();
+    e.reward = calculateReward(e.features);
 
     if (episode[expId]["Termination"] == "Non Terminal") e.termination = e_nonTerminal;
     if (episode[expId]["Termination"] == "Terminal") e.termination = e_terminal;
@@ -575,7 +575,7 @@ void Agent::processEpisode(size_t episodeId, std::vector<knlohmann::json> &episo
     e.episodePos = expId;
 
     // Keeping statistics
-    cumulativeReward += calculateReward(e.state, e.features);
+    cumulativeReward += calculateReward(e.features);
 
     // Scale reward
     _experienceReplay.add(e);
@@ -611,7 +611,7 @@ void Agent::processEpisode(size_t episodeId, std::vector<knlohmann::json> &episo
   for (ssize_t expId = endId; expId >= startId; expId--)
   {
     // Calculating retrace value with the discount factor. Importance weight is 1.0f because the policy is current.
-    retV = _discountFactor * retV + calculateReward(_experienceReplay[expId].state, _experienceReplay[expId].features);
+    retV = _discountFactor * retV + calculateReward(_experienceReplay[expId].features);
 
     // Setting initial retrace value in the experience's cache
     _experienceReplay[expId].stateValue = retV;
@@ -847,7 +847,7 @@ float Agent::retraceFunction(size_t expId)
   for (ssize_t curId = endId; curId >= startId; curId--)
   {
     // Getting current reward, action, and state
-    auto curReward = calculateReward(_experienceReplay[curId].state, _experienceReplay[curId].features);
+    auto curReward = calculateReward(_experienceReplay[curId].features);
     auto expStateSequence = getStateTimeSequence(curId);
     auto expAction = _experienceReplay[curId].action;
 

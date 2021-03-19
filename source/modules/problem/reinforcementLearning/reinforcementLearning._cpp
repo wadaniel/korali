@@ -80,6 +80,10 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
   // Initializing environment configuration
   initializeEnvironment(agent);
 
+  // Define state rescaling variables
+  auto stateRescalingMeans = agent["State Rescaling"]["Means"].get<std::vector<float>>();
+  auto stateRescalingSdevs = agent["State Rescaling"]["Standard Deviations"].get<std::vector<float>>();
+
   // Counter for the total number of actions taken
   size_t actionCount = 0;
 
@@ -108,6 +112,16 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
      if (std::isfinite(agent["State"][i].get<float>()) == false)
       KORALI_LOG_ERROR("Environment state variable %lu returned an invalid value: %f\n", agent["State"][i].get<float>());
 
+    // Retrieve the current state
+    auto state = agent["State"].get<std::vector<float>>();
+
+    // Scale the state
+    for(size_t d = 0; d < _stateVectorSize; ++d)
+        state[d] = (state[d] - stateRescalingMeans[d])/stateRescalingSdevs[d];
+
+    // Re-storing state into agent
+    agent["State"] = state;
+
     // Generating new action from policy
     auto beginTime0 = std::chrono::steady_clock::now(); // Profiling
     _agent->getAction(agent);
@@ -119,8 +133,8 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
      if (std::isfinite(agent["Action"][i].get<float>()) == false)
       KORALI_LOG_ERROR("Agent agent variable %lu returned an invalid value: %f\n", agent["Action"][i].get<float>());
 
-    // Storing the current state
-    episode["Experiences"][actionCount]["State"] = agent["State"];
+    // Store the current state in the experience
+    episode["Experiences"][actionCount]["State"] = state;
 
     // Storing the current action
     episode["Experiences"][actionCount]["Action"] = agent["Action"];

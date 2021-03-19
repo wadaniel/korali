@@ -169,7 +169,7 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
     experience["Features"] = agent["Features"];
 
     // Storing experience's reward
-    experience["Reward"] = _agent->calculateReward(agent["State"].get<std::vector<float>>(), agent["Features"].get<std::vector<float>>());
+    experience["Reward"] = _agent->calculateReward(agent["Features"].get<std::vector<float>>());
 
     // Storing termination status
     experience["Termination"] = agent["Termination"];
@@ -181,7 +181,7 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
     if (agent["Termination"] == "Truncated") experience["Truncated State"] = agent["State"];
 
     // Adding to cumulative training reward
-    trainingReward += agent["Reward"].get<float>();
+    trainingReward += experience["Reward"].get<float>();
 
     auto beginTime2 = std::chrono::steady_clock::now(); // Profiling
 
@@ -285,7 +285,7 @@ void ReinforcementLearning::runTestingEpisode(Sample &agent)
 
     auto features = agent["Features"];
 
-    testingReward += _agent->calculateReward(agent["State"].get<std::vector<float>>(), agent["Features"].get<std::vector<float>>());
+    testingReward += _agent->calculateReward(agent["Features"].get<std::vector<float>>());
   }
 
   // Storing the cumulative reward of the testing episode

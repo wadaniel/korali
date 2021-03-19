@@ -66,7 +66,7 @@ def cosenv(s):
   #print(s["Action"]) 
   
   # Getting Reward
-  s["Reward"] = cart.getReward()
+  s["Reward"] = 0.0
   
   # Storing New State
   state = cart.getState().tolist()

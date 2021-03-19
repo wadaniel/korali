@@ -305,7 +305,7 @@ void Agent::rescaleRewards()
     sumReward2 += reward*reward;
   }
 
-  float newRewardRescalingMean = sumReward / (float)_rewardVector.size();
+  float newRewardRescalingMean = 0.0; //sumReward / (float)_rewardVector.size();
   float newRewardRescalingSdev = std::sqrt(sumReward2 / (float)_rewardVector.size() - newRewardRescalingMean * newRewardRescalingMean + 1e-9);
 
   // Rescale rewards s.t. mean equals 0.0 and standard deviation 1.0.

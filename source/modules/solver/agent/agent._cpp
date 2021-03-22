@@ -325,15 +325,15 @@ void Agent::rescaleRewards()
   // Recalculating retrace value with scaled rewards during first update.
   if(_rewardRescalingCount == 0)
   {
-    float retV = 0.0;
-    for (int expId = _rewardVector.size() - 1; expId >= 0; --expId)
-    {
-      if(_terminationVector[expId] == e_terminal) retV = 0.0;
-    
-      retV = _discountFactor * retV + _rewardVector[expId];
-      _stateValueVector[expId] = retV;
-      _retraceValueVector[expId] = retV;
-    }
+   float retV = 0.0;
+   for (int expId = _rewardVector.size() - 1; expId >= 0; --expId)
+   {
+     if(_terminationVector[expId] == e_terminal) retV = 0.0;
+
+     retV = _discountFactor * retV + _rewardVector[expId];
+     _stateValueVector[expId] = retV;
+     _retraceValueVector[expId] = retV;
+   }
   }
 
   _rewardRescalingCount++;

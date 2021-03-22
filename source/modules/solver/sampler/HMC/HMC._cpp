@@ -169,10 +169,10 @@ void HMC::setInitialConfiguration()
 void HMC::runGeneration()
 {
   if (_k->_currentGeneration == 1) setInitialConfiguration();
-  _hamiltonian->updateHamiltonian(_positionLeader);
+  _hamiltonian->updateHamiltonian(_positionLeader, _metric, _inverseMetric);
 
   // Samples Momentum Candidate from N(0., metric)
-  _momentumCandidate = _hamiltonian->sampleMomentum();
+  _momentumCandidate = _hamiltonian->sampleMomentum(_metric);
   _proposedSampleCount++;
 
   _positionCandidate = _positionLeader;

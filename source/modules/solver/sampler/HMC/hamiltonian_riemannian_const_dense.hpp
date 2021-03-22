@@ -25,8 +25,6 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannian
   */
   HamiltonianRiemannianConstDense(const size_t stateSpaceDim, korali::Experiment *k) : HamiltonianRiemannian{stateSpaceDim, k}
   {
-    _metric.resize(stateSpaceDim * stateSpaceDim);
-    _inverseMetric.resize(stateSpaceDim * stateSpaceDim);
     _inverseRegularizationParam = 1.0;
 
     // Initialize multivariate normal distribution
@@ -35,7 +33,7 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannian
 
     // Cholesky Decomposition
     for (size_t d = 0; d < _stateSpaceDim; ++d)
-      _multivariateGenerator->_sigma[d * _stateSpaceDim + d] = sqrt(_metric[d * _stateSpaceDim + d]);
+      _multivariateGenerator->_sigma[d * _stateSpaceDim + d] = sqrt(metric[d * _stateSpaceDim + d]);
 
     _multivariateGenerator->updateDistribution();
 
@@ -58,8 +56,6 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannian
   */
   HamiltonianRiemannianConstDense(const size_t stateSpaceDim, korali::distribution::multivariate::Normal *multivariateGenerator, korali::Experiment *k) : HamiltonianRiemannian{stateSpaceDim, k}
   {
-    _metric.resize(stateSpaceDim * stateSpaceDim);
-    _inverseMetric.resize(stateSpaceDim * stateSpaceDim);
 
     _multivariateGenerator = multivariateGenerator;
     _inverseRegularizationParam = 1.0;
@@ -80,12 +76,10 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannian
   * @brief Constructor with State Space Dim.
   * @param stateSpaceDim Dimension of State Space.
   * @param multivariateGenerator Generator needed for momentum sampling.
-  * @param inverseRegularizationParam Inverse regularization parameter of SoftAbs metric that controls hardness of approximation: For large values _inverseMetric is closer to analytical formula (and therefore closer to degeneracy in certain cases). 
+  * @param inverseRegularizationParam Inverse regularization parameter of SoftAbs metric that controls hardness of approximation: For large values inverseMetric is closer to analytical formula (and therefore closer to degeneracy in certain cases). 
   */
   HamiltonianRiemannianConstDense(const size_t stateSpaceDim, korali::distribution::multivariate::Normal *multivariateGenerator, const double inverseRegularizationParam, korali::Experiment *k) : HamiltonianRiemannian{stateSpaceDim, k}
   {
-    _metric.resize(stateSpaceDim * stateSpaceDim);
-    _inverseMetric.resize(stateSpaceDim * stateSpaceDim);
 
     _multivariateGenerator = multivariateGenerator;
     _inverseRegularizationParam = inverseRegularizationParam;
@@ -108,16 +102,10 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannian
   * @param multivariateGenerator Generator needed for momentum sampling.
   * @param metric Metric for initialization. 
   * @param inverseMetric Inverse Metric for initialization. 
-  * @param inverseRegularizationParam Inverse regularization parameter of SoftAbs metric that controls hardness of approximation: For large values _inverseMetric is closer to analytical formula (and therefore closer to degeneracy in certain cases). 
+  * @param inverseRegularizationParam Inverse regularization parameter of SoftAbs metric that controls hardness of approximation: For large values inverseMetric is closer to analytical formula (and therefore closer to degeneracy in certain cases). 
   */
-  HamiltonianRiemannianConstDense(const size_t stateSpaceDim, korali::distribution::multivariate::Normal *multivariateGenerator, const std::vector<double> metric, const std::vector<double> inverseMetric, const double inverseRegularizationParam, korali::Experiment *k) : HamiltonianRiemannianConstDense{stateSpaceDim, multivariateGenerator, inverseRegularizationParam, k}
+  HamiltonianRiemannianConstDense(const size_t stateSpaceDim, korali::distribution::multivariate::Normal *multivariateGenerator, const double inverseRegularizationParam, korali::Experiment *k) : HamiltonianRiemannianConstDense{stateSpaceDim, multivariateGenerator, inverseRegularizationParam, k}
   {
-    assert(metric.size() == stateSpaceDim * stateSpaceDim);
-    assert(inverseMetric.size() == stateSpaceDim * stateSpaceDim);
-
-    _metric = metric;
-    _inverseMetric = inverseMetric;
-
     std::vector<double> mean(stateSpaceDim, 0.0);
 
     // Initialize multivariate normal distribution
@@ -167,7 +155,7 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannian
   */
   double K(const std::vector<double> &p) override
   {
-    double result = this->tau(p) + 0.5 * _logDetMetric;
+    double result = this->tau(p, inverseMetric) + 0.5 * _logDetMetric;
 
     return result;
   }
@@ -175,11 +163,12 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannian
   /**
   * @brief Purely virtual gradient of kintetic energy function dK(q, p) = inverseMetric(q) * p + 0.5 * dlogDetMetric_dq(q) used for Hamiltonian Dynamics.
   * @param p Current momentum.
+  * @param inverseMetric Current inverse metric.
   * @return Gradient of Kinetic energy with current momentum.
   */
-  std::vector<double> dK(const std::vector<double> &p) override
+  std::vector<double> dK(const std::vector<double> &p, const std::vector<double> &inverseMetric) override
   {
-    std::vector<double> tmpVector(_stateSpaceDim, 0.0);
+    std::vector<double> gradient(_stateSpaceDim, 0.0);
     double tmpScalar = 0.0;
 
     for (size_t i = 0; i < _stateSpaceDim; ++i)
@@ -187,20 +176,20 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannian
       tmpScalar = 0.0;
       for (size_t j = 0; j < _stateSpaceDim; ++j)
       {
-        tmpScalar += _inverseMetric[i * _stateSpaceDim + j] * p[j];
+        tmpScalar += inverseMetric[i * _stateSpaceDim + j] * p[j];
       }
-      tmpVector[i] = tmpScalar;
+      gradient[i] = tmpScalar;
     }
 
-    return tmpVector;
+    return gradient;
   }
 
   /**
   * @brief Purely virtual function tau(q, p) = 0.5 * p^T * inverseMetric(q) * p (no logDetMetric term)
-  * @param p Current momentum.
+  * @param momentum Current momentum.
   * @return Gradient of Kinetic energy with current momentum.
   */
-  double tau(const std::vector<double> &p) override
+  double tau(const std::vector<double> &momentum, const std::vector<double> &inverseMetric) override
   {
     double tmpScalar = 0.0;
 
@@ -208,7 +197,7 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannian
 
     for (size_t i = 0; i < _stateSpaceDim; ++i)
     {
-      tmpScalar += p[i] * _inverseMetric[i] * p[i];
+      tmpScalar += momentum[i] * inverseMetric[i] * momentum[i];
     }
 
     return 0.5 * tmpScalar;
@@ -219,7 +208,7 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannian
   * @param p Current momentum.
   * @return Gradient of Kinetic energy with current momentum.
   */
-  std::vector<double> dtau_dq(const std::vector<double> &p) override
+  std::vector<double> dtau_dq(const std::vector<double> &p, const std::vector<double>& inverseMetric) override
   {
     std::vector<double> result(_stateSpaceDim, 0.0);
 
@@ -229,11 +218,12 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannian
   /**
   * @brief Purely virtual gradient of dtau_dp(q, p) = inverseMetric(q) * p used for Hamiltonian Dynamics.
   * @param p Current momentum.
+  * @param inverseMetric Current inverse metric.
   * @return Gradient of Kinetic energy with current momentum.
   */
-  std::vector<double> dtau_dp(const std::vector<double> &p) override
+  std::vector<double> dtau_dp(const std::vector<double> &p, const std::vector<double> &inverseMetric) override
   {
-    std::vector<double> result = this->dK(p);
+    std::vector<double> result = this->dK(p, inverseMetric);
 
     return result;
   }
@@ -261,9 +251,10 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannian
   /**
   * @brief Updates current position of hamiltonian.
   * @param q Current position.
+  * @param inverseMetric Current inverse metric.
   * @param _k Experiment object.
   */
-  void updateHamiltonian(const std::vector<double> &q) override
+  void updateHamiltonian(const std::vector<double> &q, std::vector<double>& metric, std;:vector<double>& inverseMetric) override
   {
     auto sample = korali::Sample();
     sample["Sample Id"] = _modelEvaluationCount;
@@ -293,9 +284,10 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannian
 
   /**
   * @brief Generates sample of momentum.
-  * @return Sample of momentum from normal distribution with covariance matrix _metric. Only variance taken into account with diagonal metric.
+  * @param metric Current metric.
+  * @return Sample of momentum from normal distribution with covariance matrix metric. Only variance taken into account with diagonal metric.
   */
-  std::vector<double> sampleMomentum() const override
+  std::vector<double> sampleMomentum(const std::vector<double>& metric) const override
   {
     std::vector<double> result(_stateSpaceDim, 0.0);
     _multivariateGenerator->getRandomVector(&result[0], _stateSpaceDim);
@@ -306,9 +298,10 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannian
   * @brief Calculates inner product induces by inverse metric.
   * @param pLeft Left argument (momentum).
   * @param pRight Right argument (momentum).
-  * @return pLeft.transpose * _inverseMetric * pRight.
+  * @param inverseMetric Current inverse metric.
+  * @return pLeft.transpose * inverseMetric * pRight.
   */
-  double innerProduct(const std::vector<double> &pLeft, const std::vector<double> &pRight) const
+  double innerProduct(const std::vector<double> &pLeft, const std::vector<double> &pRight, const std::vector<double> &inverseMetric) const
   {
     double result = 0.0;
 
@@ -316,7 +309,7 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannian
     {
       for (size_t j = 0; j < _stateSpaceDim; ++j)
       {
-        result += pLeft[i] * _inverseMetric[i * _stateSpaceDim + j] * pRight[j];
+        result += pLeft[i] * inverseMetric[i * _stateSpaceDim + j] * pRight[j];
       }
     }
 
@@ -326,10 +319,12 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannian
   /**
   * @brief Updates Metric and Inverse Metric according to SoftAbs.
   * @param q Current position.
+  * @param metric Current metric.
+  * @param inverseMetric Current inverse metric.
   * @param _k Experiment object.
   * @return Returns error code of Cholesky decomposition of GSL.
   */
-  int updateMetricMatricesRiemannian(const std::vector<double> &q) override
+  int updateMetricMatricesRiemannian(const std::vector<double> &q, std::vector<double>& metric,  std::vector<double>& inverseMetric) override
   {
     auto hessian = _currentHessian;
     gsl_matrix_view Xv = gsl_matrix_view_array(hessian.data(), _stateSpaceDim, _stateSpaceDim);
@@ -364,12 +359,12 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannian
     {
       for (size_t j = 0; j < _stateSpaceDim; ++j)
       {
-        _metric[i + j * _stateSpaceDim] = gsl_matrix_get(tmpMatTwo, i, j);
-        _inverseMetric[i + j * _stateSpaceDim] = gsl_matrix_get(tmpMatFour, i, j);
+        metric[i + j * _stateSpaceDim] = gsl_matrix_get(tmpMatTwo, i, j);
+        inverseMetric[i + j * _stateSpaceDim] = gsl_matrix_get(tmpMatFour, i, j);
       }
     }
 
-    _multivariateGenerator->_sigma = _metric;
+    _multivariateGenerator->_sigma = metric;
 
     // Cholesky Decomp
     gsl_matrix_view sigma = gsl_matrix_view_array(&_multivariateGenerator->_sigma[0], _stateSpaceDim, _stateSpaceDim);
@@ -384,13 +379,13 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannian
   }
 
   /**
-  * @brief Inverse regularization parameter of SoftAbs metric that controls hardness of approximation: For large values _inverseMetric is closer to analytical formula (and therefore closer to degeneracy in certain cases). 
+  * @brief Inverse regularization parameter of SoftAbs metric that controls hardness of approximation: For large values inverseMetric is closer to analytical formula (and therefore closer to degeneracy in certain cases). 
   */
   double _inverseRegularizationParam;
 
   private:
   /**
-  * @brief Multi dimensional normal generator needed for sampling of momentum from dense _metric.
+  * @brief Multi dimensional normal generator needed for sampling of momentum from dense metric.
   */
   korali::distribution::multivariate::Normal *_multivariateGenerator;
 

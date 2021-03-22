@@ -11,6 +11,7 @@ if __name__ == '__main__':
 
   parser = argparse.ArgumentParser()
   parser.add_argument('--resultdir', type=str, help='directory to read')
+  parser.add_argument('--logy', action='store_true', help='logscale y axis')
 
   args = parser.parse_args()
   resultdir = args.resultdir
@@ -23,27 +24,24 @@ if __name__ == '__main__':
   
   resultFiles = sorted(resultFiles)
   nexperiences = []
-  featureweight1 = []
-  featureweight2 = []
-  featureweight3 = []
+  featureweights = []
   for file in resultFiles:
     with open( resultdir + '/' + file) as f:
       genJs = json.load(f)
       n = genJs['Solver']['Experience Count']
       weights = genJs['Solver']['Feature Weights']
+      if (args.logy):
+          weights = [ abs(w) for w in weights ] 
       nexperiences.append(n)
-      featureweight1.append(weights[0])
-      featureweight2.append(weights[1])
-      if len(weights) > 2:
-        featureweight3.append(weights[2])
+      featureweights.append(weights)
 
-  print(nexperiences)
-  plt.plot(nexperiences, featureweight1, label='Weight 1')
-  plt.plot(nexperiences, featureweight2, label='Weight 2')
-  if len(featureweight3) > 1:
-    plt.plot(nexperiences, featureweight3, label='Weight 3')
-  plt.title('Feature Weights of Linear Reward Function')
+  plt.plot(nexperiences, featureweights)
+  #plt.title('Feature Weights of Linear Reward Function')
+  plt.title('Target Angle in Parametrized Reward Function')
   plt.xlabel('Observation Count')
-  plt.ylabel('Weights')
+  #plt.ylabel('Weights')
+  plt.ylabel('Absolute Target Angle')
+  if(args.logy):
+      plt.yscale('log')
   plt.legend()
   plt.show()

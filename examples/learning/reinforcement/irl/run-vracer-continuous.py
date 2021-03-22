@@ -81,6 +81,7 @@ e["Variables"][4]["Initial Exploration Noise"] = 1.0
 e["Solver"]["Type"] = "Agent / Continuous / VRACER"
 e["Solver"]["Mode"] = "Training"
 e["Solver"]["Experiences Between Policy Updates"] = 1
+e["Solver"]["Experiences Between Reward Updates"] = 1
 e["Solver"]["Episodes Per Generation"] = 1
 
 ### Defining the configuration of replay memory

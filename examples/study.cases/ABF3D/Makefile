@@ -1,4 +1,4 @@
-BINARIES = run-gfpt run-vracer run-ddpg
+BINARIES = run-gfpt run-vracer run-ppo
 KORALICXX=$(shell python3 -m korali.cxx --compiler)
 KORALICFLAGS=`python3 -m korali.cxx --cflags`
 KORALILIBS=`python3 -m korali.cxx --libs`

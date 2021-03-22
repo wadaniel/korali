@@ -5,7 +5,7 @@ int main(int argc, char *argv[])
 {
   /////// Initializing environment
 
-  _resultDir = "_result_vracer";
+  _resultDir = "_result_ppo";
   initializeEnvironment("_config/dpd_2_d_eu_gaussian.json");
 
   auto e = korali::Experiment();
@@ -67,26 +67,34 @@ int main(int argc, char *argv[])
 
   /// Defining Agent Configuration
 
-  e["Solver"]["Type"] = "Agent / Continuous / VRACER";
+  e["Solver"]["Type"] = "Agent / Continuous / PPO";
   e["Solver"]["Mode"] = "Training";
-  e["Solver"]["Episodes Per Generation"] = 10;
+  e["Solver"]["Episodes Per Generation"] = 5;
   e["Solver"]["Updates Between Reward Rescaling"] = 20000;
-  e["Solver"]["Experiences Between Policy Updates"] = 1;
-  e["Solver"]["Episodes Between Policy Updates"] = 1;
+  e["Solver"]["Experiences Between Policy Updates"] = 1e8;
   e["Solver"]["Learning Rate"] = 1e-4;
   e["Solver"]["Discount Factor"] = 0.99;
   e["Solver"]["L2 Regularization"]["Enabled"] = true;
   e["Solver"]["L2 Regularization"]["Importance"] = 1e-3;
 
+  // PPO specific parameters
+
+  e["Solver"]["Lambda"] = 0.95;
+  e["Solver"]["Epsilon"] = 0.2;
+  e["Solver"]["Number Of Training Epochs"] = 10;
+  e["Solver"]["Episodes Between Policy Updates"] = 5;
+
   /// Defining the configuration of replay memory
 
-  e["Solver"]["Experience Replay"]["Start Size"] = 131072;
-  e["Solver"]["Experience Replay"]["Maximum Size"] = 262144;
+  e["Solver"]["Experience Replay"]["Start Size"] = 0;
+  e["Solver"]["Experience Replay"]["Maximum Size"] = 1850; // should be related to N*
+  // e["Solver"]["Experience Replay"]["Off Policy"]["Cutoff Scale"] = 1e7; // turn off cutoff
+  // e["Solver"]["Experience Replay"]["Off Policy"]["REFER Beta"] = 1; // turn off cutoff
 
   /// Configuring Mini Batch
 
-  e["Solver"]["Mini Batch Size"] = 256;
-  e["Solver"]["Mini Batch Strategy"] = "Uniform";
+  e["Solver"]["Mini Batch Size"] = 64;
+  e["Solver"]["Mini Batch Strategy"] = "On Policy";
 
   /// Configuring the neural network and its hidden layers
 

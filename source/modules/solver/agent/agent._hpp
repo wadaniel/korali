@@ -175,6 +175,11 @@ class Agent : public Solver
   cBuffer<float> _retraceValueVector;
 
   /**
+   * @brief Contains the result of the Advantage function estimate for the currrent experience
+   */
+  cBuffer<float> _advantageEstimateVector;
+
+  /**
    * @brief Contains the update count of the latest calculation of the experience's retrace value
    */
   cBuffer<size_t> _retraceLastUpdateVector;

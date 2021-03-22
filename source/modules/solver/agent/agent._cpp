@@ -26,6 +26,7 @@ void Agent::initialize()
   _stateVector.resize(_experienceReplayMaximumSize);
   _actionVector.resize(_experienceReplayMaximumSize);
   _retraceValueVector.resize(_experienceReplayMaximumSize);
+  _advantageEstimateVector.resize(_experienceReplayMaximumSize);
   _retraceLastUpdateVector.resize(_experienceReplayMaximumSize);
   _rewardVector.resize(_experienceReplayMaximumSize);
   _stateValueVector.resize(_experienceReplayMaximumSize);
@@ -54,6 +55,7 @@ void Agent::initialize()
     _testingCandidateCount = 0;
     _currentSampleID = 0;
     _experienceCount = 0;
+    _newEpisodesCount = 0;
 
     // Initializing training and episode statistics
     _testingAverageReward = -korali::Inf;
@@ -144,8 +146,11 @@ void Agent::initialize()
 
 void Agent::runGeneration()
 {
+	std::cout << "Start runGeneration()\n";
+	fflush(0);
   if (_mode == "Training") trainingGeneration();
   if (_mode == "Testing") testingGeneration();
+  std::cout << "End runGeneration()\n";
 }
 
 void Agent::trainingGeneration()
@@ -167,6 +172,7 @@ void Agent::trainingGeneration()
   while (_sessionEpisodeCount < _episodesPerGeneration * _sessionGeneration)
   {
     // Launching (or re-launching) agents
+    std::cout << "Before launching agents\n";
     for (size_t agentId = 0; agentId < _agentCount; agentId++)
       if (_isAgentRunning[agentId] == false)
       {
@@ -178,6 +184,7 @@ void Agent::trainingGeneration()
         KORALI_START(_agents[agentId]);
         _isAgentRunning[agentId] = true;
       }
+      std::cout << "After launching agents\n";
 
     // Listening to _agents for incoming experiences
     KORALI_LISTEN(_agents);
@@ -191,24 +198,35 @@ void Agent::trainingGeneration()
     if (_experienceCount >= _experienceReplayStartSize)
     {
       // If we performed enough policy updates, we rescale rewards again
-      if (_policyUpdateCount >= _updatesBetweenRewardRescaling * _rewardRescalingCount)
+      if (_policyUpdateCount >= _updatesBetweenRewardRescaling * _rewardRescalingCount && _miniBatchStrategy != "On Policy")
         rescaleRewards();
 
       // If we accumulated enough experiences between updates in this session, update now
-      while (_sessionExperienceCount > (_experiencesBetweenPolicyUpdates * _sessionPolicyUpdateCount + _sessionExperiencesUntilStartSize))
+      // std::cout << "_newEpisodesCount/_episodesBetweenPolicyUpdates=" << _newEpisodesCount << "/" << _episodesBetweenPolicyUpdates << "\n";
+      // std::cout << "_sessionExperienceCount > (_experiencesBetweenPolicyUpdates * _sessionPolicyUpdateCount + _sessionExperiencesUntilStartSize)=" << (_sessionExperienceCount > (_experiencesBetweenPolicyUpdates * _sessionPolicyUpdateCount + _sessionExperiencesUntilStartSize)) << "\n";
+      // std::cout << "_newEpisodesCount > _episodesBetweenPolicyUpdates=" << (_newEpisodesCount > _episodesBetweenPolicyUpdates) << "\n";
+      // std::cout << "_sessionExperienceCount > (_experiencesBetweenPolicyUpdates * _sessionPolicyUpdateCount + _sessionExperiencesUntilStartSize) || _newEpisodesCount > _episodesBetweenPolicyUpdates=" << (_sessionExperienceCount > (_experiencesBetweenPolicyUpdates * _sessionPolicyUpdateCount + _sessionExperiencesUntilStartSize) || _newEpisodesCount > _episodesBetweenPolicyUpdates) << "\n";
+
+      while (_sessionExperienceCount > (_experiencesBetweenPolicyUpdates * _sessionPolicyUpdateCount + _sessionExperiencesUntilStartSize) || _newEpisodesCount > _episodesBetweenPolicyUpdates )
       {
+
         auto beginTime = std::chrono::steady_clock::now(); // Profiling
 
         // Calling the algorithm specific policy training algorithm
         trainPolicy();
 
-        auto endTime = std::chrono::steady_clock::now();                                                                  // Profiling
-        _sessionPolicyUpdateTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
+        auto endTime = std::chrono::steady_clock::now();  // Profiling
+
+        _sessionPolicyUpdateTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
         _generationPolicyUpdateTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
 
         // Increasing policy update counters
         _policyUpdateCount++;
         _sessionPolicyUpdateCount++;
+
+        // Reset new episode counters
+      	_newEpisodesCount = 0;
+      	_newEpisodesExperienceCount = 0;
 
         // Updating REFER learning rate and beta parameters
         _currentLearningRate = _learningRate / (1.0f + _experienceReplayOffPolicyAnnealingRate * (float)_policyUpdateCount);
@@ -314,6 +332,8 @@ void Agent::rescaleRewards()
 
 void Agent::attendAgent(size_t agentId)
 {
+  std::cout << "start of attendAgent(size_t agentId)\n";
+
   auto beginTime = std::chrono::steady_clock::now(); // Profiling
 
   // Storage for the incoming message
@@ -337,6 +357,10 @@ void Agent::attendAgent(size_t agentId)
       // Increasing total experience counters
       _experienceCount += message["Experiences"].size();
       _sessionExperienceCount += message["Experiences"].size();
+
+      // Increase new episodes and experience counter
+      _newEpisodesCount++;
+      _newEpisodesExperienceCount += message["Experiences"].size();
 
       // Waiting for the agent to come back with all the information
       KORALI_WAIT(_agents[agentId]);
@@ -387,6 +411,7 @@ void Agent::attendAgent(size_t agentId)
       // Increasing session episode count
       _sessionEpisodeCount++;
     }
+    std::cout << "end of attendAgent(size_t agentId)\n";
   }
 
   auto endTime = std::chrono::steady_clock::now();                                                                    // Profiling
@@ -471,11 +496,21 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
     _retraceValueVector.add(0.0f);
     _retraceLastUpdateVector.add(0);
 
+    // Adding placeholder for advantage estimate
+    _advantageEstimateVector.add(0.0f);
+
     // Updating experience's importance weight. Initially assumed to be 1.0 because its freshly produced
     _importanceWeightVector.add(1.0f);
     _truncatedImportanceWeightVector.add(1.0f);
     _isOnPolicyVector.add(true);
   }
+
+
+  // Getting position of the final experience of the episode in the replay memory
+  ssize_t endId = (ssize_t)_stateVector.size() - 1;
+
+  // Getting the starting ID of the initial experience of the episode in the replay memory
+  ssize_t startId = endId - (ssize_t)episode.size() + 1;
 
   /*********************************************************************
    * Computing initial retrace value for the newly added experiences
@@ -483,12 +518,6 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
 
   // Storage for the retrace value
   float retV = 0.0f;
-
-  // Getting position of the final experience of the episode in the replay memory
-  ssize_t endId = (ssize_t)_stateVector.size() - 1;
-
-  // Getting the starting ID of the initial experience of the episode in the replay memory
-  ssize_t startId = endId - (ssize_t)episode.size() + 1;
 
   // If it was a truncated episode, add the value function for the terminal state to retV
   if (_terminationVector[endId] == e_truncated)
@@ -519,6 +548,43 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
   }
 
   /*********************************************************************
+   * Computing advantage estimate
+   *********************************************************************/
+
+  // Storage for the advantage estimate
+  float Aest = _rewardVector[endId] - _stateValueVector[endId];
+
+  // If it was a truncated episode, add the value function for the terminal state to retV
+  if (_terminationVector[endId] == e_truncated)
+  {
+    // Get state sequence, appending the truncated state to it and removing first time element
+    auto expTruncatedStateSequence = getTruncatedStateTimeSequence(endId);
+
+    // Calculating the state value function of the truncated state
+    float truncatedV = stateValueFunction(expTruncatedStateSequence);
+
+    // Sanity checks for truncated state value
+    if (std::isfinite(truncatedV) == false)
+     KORALI_LOG_ERROR("Calculated state value for truncated state returned an invalid value: %f\n", truncatedV);
+
+    // Adding truncated state value to the retrace value
+    Aest += _discountFactor * truncatedV;
+  }
+
+  // Now going backwards, setting the advantage estimate of every experience
+  for (ssize_t expId = endId-1; expId >= startId; expId--)
+  {
+  	// Compute contribution for current state 
+    float deltaExpId = _rewardVector[expId] + _discountFactor * _stateValueVector[expId+1] - _stateValueVector[expId];
+
+    // Complete recursion
+    Aest = deltaExpId + (_discountFactor * _lambda) * Aest;
+
+    // Set value in the experience
+    _advantageEstimateVector[expId] = Aest;
+  }
+
+  /*********************************************************************
    * Updating statistics/bookkeeping
    *********************************************************************/
 
@@ -538,156 +604,214 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
 
 std::vector<size_t> Agent::generateMiniBatch(size_t miniBatchSize)
 {
- // Allocating storage for mini batch experiecne indexes
- std::vector<size_t> miniBatch(miniBatchSize);
-
- for (size_t i = 0; i < miniBatchSize; i++)
- {
-   // Producing random (uniform) number for the selection of the experience
-   float x = _uniformGenerator->getRandomNumber();
-
-   // Selecting experience
-   size_t expId = std::floor(x * (float)(_stateVector.size() - 1));
-
-   // Setting experience
-   miniBatch[i] = expId;
- }
-
-  // Sorting minibatch
-  std::sort (miniBatch.begin(), miniBatch.end());
-
-  /**********************************************
-   * Updating experience's metadata
-   *********************************************/
-
-  std::vector<std::vector<std::vector<float>>> stateMiniBatch(_miniBatchSize);
-  #pragma omp parallel for
-  for (size_t i = 0; i < miniBatchSize; i++)
-   stateMiniBatch[i] = getStateTimeSequence(miniBatch[i]);
-
-  // Run policy for the entire minibatch
-  auto curPolicyVector = runPolicyBatch(stateMiniBatch);
-
-  // Creating a selection of unique experiences from the mini batch
-  std::vector<size_t> updateBatch;
-  updateBatch.push_back(0);
-  for (size_t i = 1; i < miniBatchSize; i++)
-   if(miniBatch[i] != miniBatch[i-1]) updateBatch.push_back(i);
-
-  // Storage to keep track of off-policy experiences
-  size_t offPolicyCount = 0;
-
-  #pragma omp parallel for reduction(+ : offPolicyCount)
-  for (size_t i = 0; i < updateBatch.size(); i++)
+  // Allocating storage for mini batch experiecne indexes
+  std::vector<size_t> miniBatch(miniBatchSize);
+  
+  if( _miniBatchStrategy == "Uniform" )
   {
-    auto batchId = updateBatch[i];
-    auto expId = miniBatch[batchId];
-
-    // Get state, action, mean, Sigma for this experience
-    const auto &expAction = _actionVector[expId];
-    const auto &expPolicy = _expPolicyVector[expId];
-    const auto &curPolicy = curPolicyVector[batchId];
-
-    // Grabbing state value from the latenst policy
-    auto stateValue = curPolicy.stateValue;
-
-    // Sanity checks for state value
-    if (std::isfinite(stateValue) == false)
-     KORALI_LOG_ERROR("Calculated state value for state returned an invalid value: %f\n", stateValue);
-
-    // Compute importance weight
-    const float importanceWeight = calculateImportanceWeight(expAction, curPolicy, expPolicy);
-    const float truncatedImportanceWeight = std::min(1.0f, importanceWeight);
-
-    // Sanity checks for state value
-    if (std::isfinite(importanceWeight) == false)
-     KORALI_LOG_ERROR("Calculated state value for importanceWeight returned an invalid value: %f\n", importanceWeight);
-
-    // If this is the truncated experience of an episode, then obtain truncated state value
-    float truncatedV = 0.0f;
-    if (_terminationVector[expId] == e_truncated)
-      truncatedV = stateValueFunction(getTruncatedStateTimeSequence(expId));
-
-    // Checking if experience is still on policy
-    bool isOnPolicy = (importanceWeight > (1.0f / _experienceReplayOffPolicyCurrentCutoff)) && (importanceWeight < _experienceReplayOffPolicyCurrentCutoff);
-
-    // Store computed information for use in replay memory.
-    _curPolicyVector[expId] = curPolicy;
-   _stateValueVector[expId] = stateValue;
-   _truncatedStateValueVector[expId] = truncatedV;
-   _importanceWeightVector[expId] = importanceWeight;
-   _isOnPolicyVector[expId] = isOnPolicy;
-   _truncatedImportanceWeightVector[expId] = truncatedImportanceWeight;
-
-    if (isOnPolicy == false) offPolicyCount++;
-  }
-
-  // Updating the off policy Ratio
-  float alpha = 0.01f; // ~100 updates to reach 63.2% of the target
-  _experienceReplayOffPolicyRatio = alpha * (float)offPolicyCount / (float)updateBatch.size() + (1.0f - alpha) * _experienceReplayOffPolicyRatio;
-
-  // Updating the off policy Cutoff
-  _experienceReplayOffPolicyCurrentCutoff = 1.0f + _experienceReplayOffPolicyCutoffScale / (1.0f + _experienceReplayOffPolicyAnnealingRate * (float)_policyUpdateCount);
-
-  // Now filtering experiences from the same episode
-  std::vector<size_t> retraceMiniBatch;
-
-  // Adding last experience from the sorted minibatch
-  retraceMiniBatch.push_back(miniBatch[miniBatchSize-1]);
-
-  // Adding experiences so long as they do not repeat episodes
-  for (ssize_t i = miniBatchSize-2; i >= 0; i--)
-  {
-   size_t currExpId = miniBatch[i];
-   size_t nextExpId = miniBatch[i+1];
-   size_t curEpisode = _episodeIdVector[currExpId];
-   size_t nextEpisode = _episodeIdVector[nextExpId];
-   if (curEpisode != nextEpisode) retraceMiniBatch.push_back(currExpId);
-  }
-
-  // Calculating retrace value for the oldest experiences of unique episodes
-  #pragma omp parallel for schedule(guided, 1)
-  for (size_t i = 0; i < retraceMiniBatch.size(); i++)
-  {
-   // Finding the earliest experience corresponding to the same episode as this experience
-   ssize_t endId = retraceMiniBatch[i];
-   ssize_t startId = endId - _episodePosVector[endId];
-
-   // If the starting experience has already been discarded, take the earliest one that still remains
-   if (startId < 0) startId = 0;
-
-   // Storage for the retrace value
-   float retV = 0.0f;
-
-   // If it was a truncated episode, add the value function for the terminal state to retV
-   if (_terminationVector[endId] == e_truncated)
-     retV = _truncatedStateValueVector[endId];
-
-   if (_terminationVector[endId] == e_nonTerminal)
-     retV = _retraceValueVector[endId + 1];
-
-   // Now iterating backwards to calculate the rest of vTbc
-   for (ssize_t curId = endId; curId >= startId; curId--)
+   for (size_t i = 0; i < miniBatchSize; i++)
    {
-     // If this retrace value (and previous ones) was calculated recently, skipping the entire process
-     if (_policyUpdateCount - _retraceLastUpdateVector[curId] < _retraceUpdateDelay) break;
+     // Producing random (uniform) number for the selection of the experience
+     float x = _uniformGenerator->getRandomNumber();
 
-     // Getting current reward, action, and state
-     const float curReward = _rewardVector[curId];
+     // Selecting experience
+     size_t expId = std::floor(x * (float)(_stateVector.size() - 1));
 
-     // Calculating state value function
-     const float curV = _stateValueVector[curId];
-
-     // Truncate importance weight
-     const float truncatedImportanceWeight = _truncatedImportanceWeightVector[curId];
-
-     // Calculating retrace value
-     retV = curV + truncatedImportanceWeight * (curReward + _discountFactor * retV - curV);
-
-     // Storing retrace value into the experience's cache
-     _retraceValueVector[curId] = retV;
-     _retraceLastUpdateVector[curId] = _policyUpdateCount;
+     // Setting experience
+     miniBatch[i] = expId;
    }
+
+    // Sorting minibatch
+    std::sort (miniBatch.begin(), miniBatch.end());
+
+    /**********************************************
+     * Updating experience's metadata
+     *********************************************/
+
+    std::vector<std::vector<std::vector<float>>> stateMiniBatch(_miniBatchSize);
+    #pragma omp parallel for
+    for (size_t i = 0; i < miniBatchSize; i++)
+     stateMiniBatch[i] = getStateTimeSequence(miniBatch[i]);
+
+    // Run policy for the entire minibatch
+    auto curPolicyVector = runPolicyBatch(stateMiniBatch);
+
+    // Creating a selection of unique experiences from the mini batch
+    std::vector<size_t> updateBatch;
+    updateBatch.push_back(0);
+    for (size_t i = 1; i < miniBatchSize; i++)
+     if(miniBatch[i] != miniBatch[i-1]) updateBatch.push_back(i);
+
+    // Storage to keep track of off-policy experiences
+    size_t offPolicyCount = 0;
+
+    #pragma omp parallel for reduction(+ : offPolicyCount)
+    for (size_t i = 0; i < updateBatch.size(); i++)
+    {
+      auto batchId = updateBatch[i];
+      auto expId = miniBatch[batchId];
+
+      // Get state, action, mean, Sigma for this experience
+      const auto &expAction = _actionVector[expId];
+      const auto &expPolicy = _expPolicyVector[expId];
+      const auto &curPolicy = curPolicyVector[batchId];
+
+      // Grabbing state value from the latenst policy
+      auto stateValue = curPolicy.stateValue;
+
+      // Sanity checks for state value
+      if (std::isfinite(stateValue) == false)
+       KORALI_LOG_ERROR("Calculated state value for state returned an invalid value: %f\n", stateValue);
+
+      // Compute importance weight
+      const float importanceWeight = calculateImportanceWeight(expAction, curPolicy, expPolicy);
+      const float truncatedImportanceWeight = std::min(1.0f, importanceWeight);
+
+      // Sanity checks for state value
+      if (std::isfinite(importanceWeight) == false)
+       KORALI_LOG_ERROR("Calculated state value for importanceWeight returned an invalid value: %f\n", importanceWeight);
+
+      // If this is the truncated experience of an episode, then obtain truncated state value
+      float truncatedV = 0.0f;
+      if (_terminationVector[expId] == e_truncated)
+        truncatedV = stateValueFunction(getTruncatedStateTimeSequence(expId));
+
+      // Checking if experience is still on policy
+      bool isOnPolicy = (importanceWeight > (1.0f / _experienceReplayOffPolicyCurrentCutoff)) && (importanceWeight < _experienceReplayOffPolicyCurrentCutoff);
+
+      // Store computed information for use in replay memory.
+      _curPolicyVector[expId] = curPolicy;
+     _stateValueVector[expId] = stateValue;
+     _truncatedStateValueVector[expId] = truncatedV;
+     _importanceWeightVector[expId] = importanceWeight;
+     _isOnPolicyVector[expId] = isOnPolicy;
+     _truncatedImportanceWeightVector[expId] = truncatedImportanceWeight;
+
+      if (isOnPolicy == false) offPolicyCount++;
+    }
+
+    // Updating the off policy Ratio
+    float alpha = 0.01f; // ~100 updates to reach 63.2% of the target
+    _experienceReplayOffPolicyRatio = alpha * (float)offPolicyCount / (float)updateBatch.size() + (1.0f - alpha) * _experienceReplayOffPolicyRatio;
+
+    // Updating the off policy Cutoff
+    _experienceReplayOffPolicyCurrentCutoff = 1.0f + _experienceReplayOffPolicyCutoffScale / (1.0f + _experienceReplayOffPolicyAnnealingRate * (float)_policyUpdateCount);
+
+    // Now filtering experiences from the same episode
+    std::vector<size_t> retraceMiniBatch;
+
+    // Adding last experience from the sorted minibatch
+    retraceMiniBatch.push_back(miniBatch[miniBatchSize-1]);
+
+    // Adding experiences so long as they do not repeat episodes
+    for (ssize_t i = miniBatchSize-2; i >= 0; i--)
+    {
+     size_t currExpId = miniBatch[i];
+     size_t nextExpId = miniBatch[i+1];
+     size_t curEpisode = _episodeIdVector[currExpId];
+     size_t nextEpisode = _episodeIdVector[nextExpId];
+     if (curEpisode != nextEpisode) retraceMiniBatch.push_back(currExpId);
+    }
+
+    // Calculating retrace value for the oldest experiences of unique episodes
+    #pragma omp parallel for schedule(guided, 1)
+    for (size_t i = 0; i < retraceMiniBatch.size(); i++)
+    {
+     // Finding the earliest experience corresponding to the same episode as this experience
+     ssize_t endId = retraceMiniBatch[i];
+     ssize_t startId = endId - _episodePosVector[endId];
+
+     // If the starting experience has already been discarded, take the earliest one that still remains
+     if (startId < 0) startId = 0;
+
+     // Storage for the retrace value
+     float retV = 0.0f;
+
+     // If it was a truncated episode, add the value function for the terminal state to retV
+     if (_terminationVector[endId] == e_truncated)
+       retV = _truncatedStateValueVector[endId];
+
+     if (_terminationVector[endId] == e_nonTerminal)
+       retV = _retraceValueVector[endId + 1];
+
+     // Now iterating backwards to calculate the rest of vTbc
+     for (ssize_t curId = endId; curId >= startId; curId--)
+     {
+       // If this retrace value (and previous ones) was calculated recently, skipping the entire process
+       if (_policyUpdateCount - _retraceLastUpdateVector[curId] < _retraceUpdateDelay) break;
+
+       // Getting current reward, action, and state
+       const float curReward = _rewardVector[curId];
+
+       // Calculating state value function
+       const float curV = _stateValueVector[curId];
+
+       // Truncate importance weight
+       const float truncatedImportanceWeight = _truncatedImportanceWeightVector[curId];
+
+       // Calculating retrace value
+       retV = curV + truncatedImportanceWeight * (curReward + _discountFactor * retV - curV);
+
+       // Storing retrace value into the experience's cache
+       _retraceValueVector[curId] = retV;
+       _retraceLastUpdateVector[curId] = _policyUpdateCount;
+     }
+    }
+  }
+  if( _miniBatchStrategy == "On Policy" )
+  {
+  	// sample experiences from the newly gathered episodes
+   for (size_t i = 0; i < miniBatchSize; i++)
+   {
+     // Producing random (uniform) number for the selection of the experience
+     float x = _uniformGenerator->getRandomNumber();
+
+     // Selecting experience
+     size_t expId = _stateVector.size() - std::ceil(x * (float)(  _newEpisodesExperienceCount ));
+
+     // Setting experience
+     miniBatch[i] = expId;
+   }
+
+    /**********************************************
+     * Gathering experience's metadata
+     *********************************************/
+
+    std::vector<std::vector<std::vector<float>>> stateMiniBatch(_miniBatchSize);
+    #pragma omp parallel for
+    for (size_t i = 0; i < miniBatchSize; i++)
+     stateMiniBatch[i] = getStateTimeSequence(miniBatch[i]);
+
+    // Run policy for the entire minibatch
+    auto curPolicyVector = runPolicyBatch(stateMiniBatch);
+
+    #pragma omp parallel for
+    for (size_t i = 0; i < miniBatch.size(); i++)
+    {
+      auto expId = miniBatch[i];
+
+      // Get state, action, mean, Sigma for this experience
+      const auto &expAction = _actionVector[expId];
+      const auto &expPolicy = _expPolicyVector[expId];
+      const auto &curPolicy = curPolicyVector[expId];
+
+      // Grabbing state value from the latenst policy
+      auto stateValue = curPolicy.stateValue;
+
+      // Sanity checks for state value
+      if (std::isfinite(stateValue) == false)
+       KORALI_LOG_ERROR("Calculated state value for state returned an invalid value: %f\n", stateValue);
+
+      // If this is the truncated experience of an episode, then obtain truncated state value
+      float truncatedV = 0.0f;
+      if (_terminationVector[expId] == e_truncated)
+        truncatedV = stateValueFunction(getTruncatedStateTimeSequence(expId));
+
+      // Store computed information for use in replay memory.
+      _curPolicyVector[expId] = curPolicy;
+     _stateValueVector[expId] = stateValue;
+     _truncatedStateValueVector[expId] = truncatedV;
+    }
   }
 
   // Returning generated minibatch
@@ -820,6 +944,7 @@ void Agent::serializeExperienceReplay()
     stateJson["Experience Replay"][i]["Reward"] = _rewardVector[i];
     stateJson["Experience Replay"][i]["State Value"] = _stateValueVector[i];
     stateJson["Experience Replay"][i]["Retrace Value"] = _retraceValueVector[i];
+    stateJson["Experience Replay"][i]["Advantage Estimate"] = _advantageEstimateVector[i];
     stateJson["Experience Replay"][i]["Retrace Last Update"] = _retraceLastUpdateVector[i];
     stateJson["Experience Replay"][i]["Importance Weight"] = _importanceWeightVector[i];
     stateJson["Experience Replay"][i]["Truncated Importance Weight"] = _truncatedImportanceWeightVector[i];
@@ -883,6 +1008,7 @@ void Agent::deserializeExperienceReplay()
   _stateVector.clear();
   _actionVector.clear();
   _retraceValueVector.clear();
+  _advantageEstimateVector.clear();
   _rewardVector.clear();
   _stateValueVector.clear();
   _importanceWeightVector.clear();
@@ -908,6 +1034,7 @@ void Agent::deserializeExperienceReplay()
     _rewardVector.add(stateJson["Experience Replay"][i]["Reward"].get<float>());
     _stateValueVector.add(stateJson["Experience Replay"][i]["State Value"].get<float>());
     _retraceValueVector.add(stateJson["Experience Replay"][i]["Retrace Value"].get<float>());
+    _advantageEstimateVector.add(stateJson["Experience Replay"][i]["Advantage Estimate"].get<float>());
     _retraceLastUpdateVector.add(stateJson["Experience Replay"][i]["Retrace Last Update"].get<float>());
     _importanceWeightVector.add(stateJson["Experience Replay"][i]["Importance Weight"].get<float>());
     _truncatedImportanceWeightVector.add(stateJson["Experience Replay"][i]["Truncated Importance Weight"].get<float>());

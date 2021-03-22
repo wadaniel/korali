@@ -18,14 +18,7 @@ class Discrete : public Agent
  */
   problem::reinforcementLearning::Discrete *_problem;
 
-  /**
-   * @brief Calculates importance weight of current action from old and current policies
-   * @param actionIdx Index of the action taken
-   * @param curProbabilities Probability distributions of current policy
-   * @param oldProbabilities Probability distributions of old policy
-   * @return The importance weight
-   */
-  float calculateImportanceWeight(const size_t actionIdx, const std::vector<float> &curProbabilities, const std::vector<float> &oldProbabilities);
+  float calculateImportanceWeight(const std::vector<float> &action, const knlohmann::json &curPolicy, const knlohmann::json &oldPolicy) override;
 
   /**
    * @brief Calculates the gradient of importance weight wrt to NN output
@@ -34,7 +27,7 @@ class Discrete : public Agent
    * @param oldPvalues todo
    * @return gradient of importance weight wrt NN output
    */
-  std::vector<float> calculateImportanceWeightGradient(size_t actionIdx, const std::vector<float> &curPvalues, const std::vector<float> &oldPvalues);
+  std::vector<float> calculateImportanceWeightGradient(const size_t actionIdx, const std::vector<float> &curPvalues, const std::vector<float> &oldPvalues);
 
   /**
    * @brief Calculates the gradient of KL(p_old, p_cur) wrt to the parameter of the 2nd (current) distribution.
@@ -44,7 +37,6 @@ class Discrete : public Agent
    */
   std::vector<float> calculateKLDivergenceGradient(const std::vector<float> &oldPvalues, const std::vector<float> &curPvalues);
 
-  float getExperienceImportanceWeight(size_t expId) override;
   void getAction(korali::Sample &sample) override;
   virtual void initializeAgent();
 };

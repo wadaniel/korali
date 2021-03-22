@@ -79,6 +79,13 @@ void CMAES::setInitialConfiguration()
   _sortingIndex.resize(s_max);
   _valueVector.resize(s_max);
 
+  if (_useGradientInformation)
+  {
+    _gradients.resize(s_max);
+    for (size_t i = 0; i < s_max; ++i) _gradients[i].resize(_variableCount);
+    if (_gradientStepSize <= 0.) KORALI_LOG_ERROR("Gradient Step Size must be larger than 0.0 (is %f)", _gradientStepSize);
+  }
+
   _covarianceMatrix.resize(_variableCount * _variableCount);
   _auxiliarCovarianceMatrix.resize(_variableCount * _variableCount);
   _covarianceEigenvectorMatrix.resize(_variableCount * _variableCount);
@@ -95,7 +102,7 @@ void CMAES::setInitialConfiguration()
   _muWeights.resize(mu_max);
 
   // Initializing variable defaults
-  for (size_t i = 0; i < _variableCount; i++)
+  for (size_t i = 0; i < _variableCount; ++i)
   {
     if (std::isfinite(_k->_variables[i]->_initialValue) == false)
     {
@@ -182,6 +189,12 @@ void CMAES::runGeneration()
     handleConstraints();
   }
 
+  std::string operation;
+  if (_useGradientInformation)
+    operation = "Evaluate With Gradients";
+  else
+    operation = "Evaluate";
+
   // Initializing Sample Evaluation
   std::vector<Sample> samples(_currentPopulationSize);
   for (size_t i = 0; i < _currentPopulationSize; i++)
@@ -189,7 +202,7 @@ void CMAES::runGeneration()
     if (_hasDiscreteVariables) discretize(_samplePopulation[i]);
 
     samples[i]["Module"] = "Problem";
-    samples[i]["Operation"] = "Evaluate";
+    samples[i]["Operation"] = operation;
     samples[i]["Parameters"] = _samplePopulation[i];
     samples[i]["Sample Id"] = i;
     _modelEvaluationCount++;
@@ -201,11 +214,14 @@ void CMAES::runGeneration()
   KORALI_WAITALL(samples);
 
   // Gathering evaluations
-  std::vector<double> evaluations(_currentPopulationSize);
   for (size_t i = 0; i < _currentPopulationSize; i++)
-    evaluations[i] = KORALI_GET(double, samples[i], "F(x)");
+    _valueVector[i] = KORALI_GET(double, samples[i], "F(x)");
 
-  updateDistribution(evaluations);
+  if (_useGradientInformation)
+    for (size_t i = 0; i < _currentPopulationSize; i++)
+      _gradients[i] = KORALI_GET(std::vector<double>, samples[i], "Gradient");
+
+  updateDistribution();
 }
 
 void CMAES::initMuWeights(size_t numsamplesmu)
@@ -423,8 +439,7 @@ void CMAES::updateViabilityBoundaries()
 
 void CMAES::prepareGeneration()
 {
-  for (size_t d = 0; d < _variableCount; ++d) _auxiliarCovarianceMatrix = _covarianceMatrix;
-  updateEigensystem(_auxiliarCovarianceMatrix);
+  updateEigensystem(_covarianceMatrix);
 
   for (size_t i = 0; i < _currentPopulationSize; ++i)
   {
@@ -439,7 +454,7 @@ void CMAES::prepareGeneration()
 
       if (isFeasible == false) _infeasibleSampleCount++;
 
-    } while (isFeasible == false);
+    } while (isFeasible == false && (_infeasibleSampleCount < _maxInfeasibleResamplings));
   }
 }
 
@@ -448,7 +463,6 @@ void CMAES::sampleSingle(size_t sampleIdx)
   for (size_t d = 0; d < _variableCount; ++d)
   {
     double randomNumber = _normalGenerator->getRandomNumber();
-    //printf("Random Number: %f\n", randomNumber);
 
     if (_isDiagonal)
     {
@@ -499,10 +513,8 @@ void CMAES::sampleSingle(size_t sampleIdx)
   }
 }
 
-void CMAES::updateDistribution(const std::vector<double> &evaluations)
+void CMAES::updateDistribution()
 {
-  _valueVector = evaluations;
-
   /* Generate _sortingIndex */
   sort_index(_valueVector, _sortingIndex, _currentPopulationSize);
 
@@ -542,16 +554,29 @@ void CMAES::updateDistribution(const std::vector<double> &evaluations)
         _bestConstraintEvaluations[c] = _constraintEvaluations[c][_bestValidSample];
   }
 
-  /* set weights */
+  /* update mean */
   for (size_t d = 0; d < _variableCount; ++d)
   {
     _previousMean[d] = _currentMean[d];
     _currentMean[d] = 0.;
     for (size_t i = 0; i < _currentMuValue; ++i)
       _currentMean[d] += _muWeights[i] * _samplePopulation[_sortingIndex[i]][d];
-
-    _meanUpdate[d] = (_currentMean[d] - _previousMean[d]) / _sigma;
   }
+
+  if (_useGradientInformation)
+  {
+    double l2update = 0.;
+    for (size_t d = 0; d < _variableCount; ++d)
+      l2update += (_currentMean[d] - _previousMean[d]) * (_currentMean[d] - _previousMean[d]);
+    l2update = std::sqrt(l2update / _variableCount);
+
+    for (size_t d = 0; d < _variableCount; ++d)
+      for (size_t i = 0; i < _currentMuValue; ++i)
+        _currentMean[d] += _muWeights[i] * _gradientStepSize / std::sqrt(_variableCount) * _gradients[_sortingIndex[i]][d];
+  }
+
+  for (size_t d = 0; d < _variableCount; ++d)
+    _meanUpdate[d] = (_currentMean[d] - _previousMean[d]) / _sigma;
 
   /* calculate z := D^(-1) * B^(T) * _meanUpdate into _auxiliarBDZMatrix */
   for (size_t d = 0; d < _variableCount; ++d)
@@ -581,6 +606,8 @@ void CMAES::updateDistribution(const std::vector<double> &evaluations)
     /* calculate norm(ps)^2 */
     _conjugateEvolutionPathL2Norm += std::pow(_conjugateEvolutionPath[d], 2.0);
   }
+
+  /* calculate norm(ps) */
   _conjugateEvolutionPathL2Norm = std::sqrt(_conjugateEvolutionPathL2Norm);
 
   int hsig = (1.4 + 2.0 / (_variableCount + 1) > _conjugateEvolutionPathL2Norm / sqrt(1. - pow(1. - _sigmaCumulationFactor, 2.0 * (1.0 + _k->_currentGeneration))) / _chiSquareNumber);
@@ -820,14 +847,14 @@ void CMAES::discretize(std::vector<double> &sample)
       sample[d] = std::round(sample[d] / _k->_variables[d]->_granularity) * _k->_variables[d]->_granularity;
 }
 
-void CMAES::updateEigensystem(std::vector<double> &M)
+void CMAES::updateEigensystem(const std::vector<double> &M)
 {
   eigen(_variableCount, M, _auxiliarAxisLengths, _auxiliarCovarianceEigenvectorMatrix);
 
   /* find largest and smallest eigenvalue, they are supposed to be sorted anyway */
   double minCovEV = *std::min_element(std::begin(_auxiliarAxisLengths), std::end(_auxiliarAxisLengths));
   double maxCovEV = *std::max_element(std::begin(_auxiliarAxisLengths), std::end(_auxiliarAxisLengths));
-  if (_minimumCovarianceEigenvalue <= 0.0)
+  if (minCovEV <= 0.0)
   {
     _k->_logger->logWarning("Detailed", "Min Eigenvalue smaller or equal 0.0 (%+6.3e) after Eigen decomp (no update possible).\n", _minimumCovarianceEigenvalue);
     return;
@@ -841,12 +868,13 @@ void CMAES::updateEigensystem(std::vector<double> &M)
       _k->_logger->logWarning("Detailed", "Could not calculate root of Eigenvalue (%+6.3e) after Eigen decomp (no update possible).\n", _auxiliarAxisLengths[d]);
       return;
     }
-    for (size_t e = 0; e < _variableCount; ++e)
-      if (std::isfinite(_covarianceEigenvectorMatrix[d * _variableCount + e]) == false)
-      {
-        _k->_logger->logWarning("Detailed", "Non finite value detected in B (no update possible).\n");
-        return;
-      }
+    if (!_isDiagonal)
+      for (size_t e = 0; e < _variableCount; ++e)
+        if (std::isfinite(_auxiliarCovarianceEigenvectorMatrix[d * _variableCount + e]) == false)
+        {
+          _k->_logger->logWarning("Detailed", "Non finite value detected in B (no update possible).\n");
+          return;
+        }
   }
 
   _minimumCovarianceEigenvalue = minCovEV;
@@ -861,38 +889,47 @@ void CMAES::updateEigensystem(std::vector<double> &M)
 /*                    Additional Methods                                */
 /************************************************************************/
 
-void CMAES::eigen(size_t size, std::vector<double> &M, std::vector<double> &diag, std::vector<double> &Q) const
+void CMAES::eigen(size_t size, const std::vector<double> &M, std::vector<double> &diag, std::vector<double> &Q) const
 {
-  std::vector<double> data(size * size);
+  if (_isDiagonal)
+  {
+    std::fill(Q.begin(), Q.end(), 0);
+    for (size_t i = 0; i < size; ++i) Q[i * size + i] = 1.;
+    for (size_t i = 0; i < size; ++i) diag[i] = M[i * size + i];
+  }
+  else
+  {
+    std::vector<double> data(size * size);
 
-  for (size_t i = 0; i < size; i++)
-    for (size_t j = 0; j <= i; j++)
+    for (size_t i = 0; i < size; i++)
+      for (size_t j = 0; j <= i; j++)
+      {
+        data[i * size + j] = M[i * size + j];
+        data[j * size + i] = M[i * size + j];
+      }
+
+    // GSL Workspace
+    gsl_vector *gsl_eval = gsl_vector_alloc(size);
+    gsl_matrix *gsl_evec = gsl_matrix_alloc(size, size);
+    gsl_eigen_symmv_workspace *gsl_work = gsl_eigen_symmv_alloc(size);
+
+    gsl_matrix_view m = gsl_matrix_view_array(data.data(), size, size);
+
+    gsl_eigen_symmv(&m.matrix, gsl_eval, gsl_evec, gsl_work);
+    gsl_eigen_symmv_sort(gsl_eval, gsl_evec, GSL_EIGEN_SORT_ABS_ASC);
+
+    for (size_t i = 0; i < size; i++)
     {
-      data[i * size + j] = M[i * _variableCount + j];
-      data[j * size + i] = M[i * _variableCount + j];
+      gsl_vector_view gsl_evec_i = gsl_matrix_column(gsl_evec, i);
+      for (size_t j = 0; j < size; j++) Q[j * size + i] = gsl_vector_get(&gsl_evec_i.vector, j);
     }
 
-  // GSL Workspace
-  gsl_vector *gsl_eval = gsl_vector_alloc(_variableCount);
-  gsl_matrix *gsl_evec = gsl_matrix_alloc(_variableCount, _variableCount);
-  gsl_eigen_symmv_workspace *gsl_work = gsl_eigen_symmv_alloc(_variableCount);
+    for (size_t i = 0; i < size; i++) diag[i] = gsl_vector_get(gsl_eval, i);
 
-  gsl_matrix_view m = gsl_matrix_view_array(data.data(), size, size);
-
-  gsl_eigen_symmv(&m.matrix, gsl_eval, gsl_evec, gsl_work);
-  gsl_eigen_symmv_sort(gsl_eval, gsl_evec, GSL_EIGEN_SORT_ABS_ASC);
-
-  for (size_t i = 0; i < size; i++)
-  {
-    gsl_vector_view gsl_evec_i = gsl_matrix_column(gsl_evec, i);
-    for (size_t j = 0; j < size; j++) Q[j * _variableCount + i] = gsl_vector_get(&gsl_evec_i.vector, j);
+    gsl_vector_free(gsl_eval);
+    gsl_matrix_free(gsl_evec);
+    gsl_eigen_symmv_free(gsl_work);
   }
-
-  for (size_t i = 0; i < size; i++) diag[i] = gsl_vector_get(gsl_eval, i);
-
-  gsl_vector_free(gsl_eval);
-  gsl_matrix_free(gsl_evec);
-  gsl_eigen_symmv_free(gsl_work);
 }
 
 void CMAES::sort_index(const std::vector<double> &vec, std::vector<size_t> &sortingIndex, size_t N) const
@@ -924,9 +961,9 @@ void CMAES::printGenerationAfter()
   _k->_logger->logInfo("Detailed", "Variable = (MeanX, BestX):\n");
   for (size_t d = 0; d < _variableCount; d++) _k->_logger->logData("Detailed", "         %s = (%+6.3e, %+6.3e)\n", _k->_variables[d]->_name.c_str(), _currentMean[d], _bestEverVariables[d]);
 
-  _k->_logger->logInfo("Detailed", "Constraint Evaluation at Current Function Value:\n");
   if (_areConstraintsDefined)
   {
+    _k->_logger->logInfo("Detailed", "Constraint Evaluation at Current Function Value:\n");
     if (_bestValidSample >= 0)
       for (size_t c = 0; c < _constraintEvaluations.size(); c++) _k->_logger->logData("Detailed", "         ( %+6.3e )\n", _constraintEvaluations[c][_bestValidSample]);
     else
@@ -954,9 +991,9 @@ void CMAES::finalize()
   (*_k)["Results"]["Best Sample"]["F(x)"] = _bestEverValue;
   (*_k)["Results"]["Best Sample"]["Parameters"] = _bestEverVariables;
 
-  _k->_logger->logInfo("Minimal", "Optimum found: %e\n", _bestEverValue);
   _k->_logger->logInfo("Minimal", "Optimum found at:\n");
   for (size_t d = 0; d < _variableCount; ++d) _k->_logger->logData("Minimal", "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _bestEverVariables[d]);
+  _k->_logger->logInfo("Minimal", "Optimum found: %e\n", _bestEverValue);
   if (_areConstraintsDefined)
   {
     _k->_logger->logInfo("Minimal", "Constraint Evaluation at Optimum:\n");

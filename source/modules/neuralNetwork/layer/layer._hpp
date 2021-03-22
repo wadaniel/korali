@@ -106,6 +106,12 @@ class Layer : public Module
 #endif
 
   /**
+   * @brief Returns the output values for the current layer
+   * @return The output values
+   */
+  std::vector<std::vector<float>> getOutput();
+
+  /**
    * @brief Generates the initial weight/bias hyperparameters for the layer
    * @return The initial hyperparameters
    */

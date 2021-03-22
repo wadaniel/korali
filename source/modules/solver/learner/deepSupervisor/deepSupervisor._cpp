@@ -44,6 +44,7 @@ void DeepSupervisor::initialize()
   // Adding linear transformation layer to convert hidden state to match output channels
   neuralNetworkConfig["Layers"][curLayer]["Type"] = "Layer/Linear";
   neuralNetworkConfig["Layers"][curLayer]["Output Channels"] = _problem->_solutionSize;
+  neuralNetworkConfig["Layers"][curLayer]["Weight Scaling"] = _outputWeightsScaling;
   curLayer++;
 
   // Applying a user-defined pre-activation function
@@ -63,17 +64,23 @@ void DeepSupervisor::initialize()
   trainingNeuralNetworkConfig["Batch Size"] = _problem->_trainingBatchSize;
   trainingNeuralNetworkConfig["Mode"] = "Training";
   _trainingNeuralNetwork = dynamic_cast<NeuralNetwork *>(getModule(trainingNeuralNetworkConfig, _k));
+  _trainingNeuralNetwork->applyModuleDefaults(trainingNeuralNetworkConfig);
+  _trainingNeuralNetwork->setConfiguration(trainingNeuralNetworkConfig);
   _trainingNeuralNetwork->initialize();
 
   // Creating inference neural networks (one per thread)
   _inferenceNeuralNetworks.resize(_maxThreads);
-  for (size_t i = 0; i < _maxThreads; i++)
+
+#pragma omp parallel
   {
+    size_t curThread = omp_get_thread_num();
     auto inferenceNeuralNetworkConfig = neuralNetworkConfig;
     inferenceNeuralNetworkConfig["Batch Size"] = _problem->_inferenceBatchSize;
-    inferenceNeuralNetworkConfig["Mode"] = "Inference";
-    _inferenceNeuralNetworks[i] = dynamic_cast<NeuralNetwork *>(getModule(inferenceNeuralNetworkConfig, _k));
-    _inferenceNeuralNetworks[i]->initialize();
+    inferenceNeuralNetworkConfig["Mode"] = "Training";
+    _inferenceNeuralNetworks[curThread] = dynamic_cast<NeuralNetwork *>(getModule(inferenceNeuralNetworkConfig, _k));
+    _inferenceNeuralNetworks[curThread]->applyModuleDefaults(inferenceNeuralNetworkConfig);
+    _inferenceNeuralNetworks[curThread]->setConfiguration(inferenceNeuralNetworkConfig);
+    _inferenceNeuralNetworks[curThread]->initialize();
   }
 
   /*****************************************************************
@@ -86,9 +93,12 @@ void DeepSupervisor::initialize()
   // Creating and setting hyperparameter structures
   _trainingNeuralNetwork->setHyperparameters(_hyperparameters);
 
-  // Copying hyperparameters and normalization parameters from training to evaluation
-  for (size_t i = 0; i < _maxThreads; i++)
-    _inferenceNeuralNetworks[i]->setHyperparameters(_hyperparameters);
+// Copying hyperparameters and normalization parameters from training to evaluation
+#pragma omp parallel
+  {
+    size_t curThread = omp_get_thread_num();
+    _inferenceNeuralNetworks[curThread]->setHyperparameters(_hyperparameters);
+  }
 
   /*****************************************************************
   * Setting up weight and bias optimization experiment
@@ -106,12 +116,8 @@ void DeepSupervisor::initialize()
   // Resetting solver before using it
   _adamSolver->reset();
 
-  // Initialize statistics
-  if (_k->_currentGeneration == 0)
-  {
-    _minimumLoss = korali::Inf;
-    _suboptimalGenerationCount = 0;
-  }
+  _currentLoss = 0.0f;
+  _l2Hyperparameter = 0.0f;
 }
 
 void DeepSupervisor::runGeneration()
@@ -125,7 +131,6 @@ void DeepSupervisor::runGeneration()
 
   // Updating optimizer's learning rate, in case it changed
   _adamSolver->_eta = _learningRate;
-
   for (size_t step = 0; step < _stepsPerGeneration; step++)
   {
     // Forward propagating the input values through the training neural network
@@ -150,24 +155,33 @@ void DeepSupervisor::runGeneration()
     // Backward propagating the gradients through the training neural network
     _trainingNeuralNetwork->backward(gradientVector);
 
+    // Apply gradient of L2 regularizer
+    if (_l2RegularizationEnabled)
+    {
+      auto nnHyperparameters = _trainingNeuralNetwork->getHyperparameters();
+      for (size_t i = 0; i < _trainingNeuralNetwork->_hyperparameterCount; ++i)
+        _trainingNeuralNetwork->_hyperparameterGradients[i] -= _l2RegularizationImportance * nnHyperparameters[i];
+    }
+
     // Passing hyperparameter gradients through an ADAM update
     _adamSolver->processResult(_currentLoss, _trainingNeuralNetwork->_hyperparameterGradients);
-
-    // Updating best loss if better, or increasing suboptimal generation count
-    if (_currentLoss < _minimumLoss)
-      _minimumLoss = _currentLoss;
-    else
-      _suboptimalGenerationCount++;
 
     // Getting new set of hyperparameters from Adam
     _trainingNeuralNetwork->setHyperparameters(_adamSolver->_currentValue);
   }
 
   // Copying hyperparameters and normalization parameters from training to evaluation
-  auto hyperparameters = _trainingNeuralNetwork->getHyperparameters();
-  for (size_t i = 0; i < _maxThreads; i++)
-    _inferenceNeuralNetworks[i]->setHyperparameters(hyperparameters);
   _hyperparameters = _trainingNeuralNetwork->getHyperparameters();
+
+#pragma omp parallel
+  {
+    size_t curThread = omp_get_thread_num();
+    _inferenceNeuralNetworks[curThread]->setHyperparameters(_hyperparameters);
+  }
+
+  _l2Hyperparameter = 0.;
+  for (float param : _hyperparameters) _l2Hyperparameter += param * param;
+  _l2Hyperparameter = std::sqrt(_l2Hyperparameter);
 }
 
 std::vector<float> DeepSupervisor::getTrainingHyperparameters()
@@ -220,7 +234,7 @@ std::vector<std::vector<float>> DeepSupervisor::getEvaluation(const std::vector<
   for (size_t b = 0; b < N; b++)
     for (size_t t = 0; t < input[b].size(); t++)
       if (input[b][t].size() > IC)
-        KORALI_LOG_ERROR("A different vector  size (%lu) passed for batch %lu, timestep %lu for inference than expected (%lu).\n", input[b][t].size(), b, t, IC);
+        KORALI_LOG_ERROR("A different vector size (%lu) passed for batch %lu, timestep %lu for inference than expected (%lu).\n", input[b][t].size(), b, t, IC);
 
   // Running the input values through the neural network
   _inferenceNeuralNetworks[curThread]->forward(input);
@@ -229,16 +243,26 @@ std::vector<std::vector<float>> DeepSupervisor::getEvaluation(const std::vector<
   return _inferenceNeuralNetworks[curThread]->_outputValues;
 }
 
+std::vector<std::vector<float>> DeepSupervisor::getDataGradients(const std::vector<std::vector<std::vector<float>>> &input, const std::vector<std::vector<float>> &outputGradients)
+{
+  // Getting current thread ID
+  size_t curThread = omp_get_thread_num();
+
+  auto forwardEvaluation = getEvaluation(input);
+
+  // Running the input values through the neural network
+  _inferenceNeuralNetworks[curThread]->backward(outputGradients);
+
+  // Returning the input data gradients
+  return _inferenceNeuralNetworks[curThread]->_inputGradients;
+}
+
 void DeepSupervisor::printGenerationAfter()
 {
   // Printing results so far
-  if (_lossFunction == "Mean Squared Error")
-  {
-    _k->_logger->logInfo("Normal", " + Training Loss: %.15f\n", _currentLoss);
-    _k->_logger->logInfo("Detailed", " + Suboptimal Generation Count: %lu\n", _suboptimalGenerationCount);
-  }
-  else if (_lossFunction == "Direct Gradient")
-    _k->_logger->logInfo("Normal", " + Gradient L2-Norm: %.15f\n", sqrt(_currentLoss));
+  if (_lossFunction == "Mean Squared Error") _k->_logger->logInfo("Normal", " + Training Loss: %.15f\n", _currentLoss);
+  if (_lossFunction == "Direct Gradient") _k->_logger->logInfo("Normal", " + Gradient L2-Norm: %.15f\n", std::sqrt(_currentLoss));
+  _k->_logger->logInfo("Normal", " + Hyperparameter L2-Norm: %.15f\n", _l2Hyperparameter);
 }
 
 } // namespace learner

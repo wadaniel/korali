@@ -49,10 +49,11 @@ class NAF : public Continuous
   /**
   * @brief Function to calculate the advantage A(s,a).
   * @param action The current action a
-  * @param qEvaluation Output of the NN evaluated for state s
+  * @param mean Output of the NN evaluated for state s
+  * @param diagP The quadratic term of the advantage function
   * @return value of Q(s,a)
   */
-  float quadraticAdvantageFunction(const std::vector<float> &action, const std::vector<float> &qEvaluation);
+  float quadraticAdvantageFunction(const std::vector<float> &action, const std::vector<float> &mean, const std::vector<float> &diagP);
 
   float stateValueFunction(const std::vector<std::vector<float>> &state) override;
   knlohmann::json getAgentPolicy() override;

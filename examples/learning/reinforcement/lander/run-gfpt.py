@@ -29,26 +29,20 @@ e["Variables"][2]["Name"] = "Force X"
 e["Variables"][2]["Type"] = "Action"
 e["Variables"][2]["Lower Bound"] = -0.1
 e["Variables"][2]["Upper Bound"] = +0.1
-e["Variables"][2]["Exploration Sigma"]["Initial"] = 0.02
-e["Variables"][2]["Exploration Sigma"]["Final"] = 0.005
-e["Variables"][2]["Exploration Sigma"]["Annealing Rate"] = 1e-5
+e["Variables"][2]["Initial Exploration Noise"] = 0.02
 
 e["Variables"][3]["Name"] = "Force Y"
 e["Variables"][3]["Type"] = "Action"
 e["Variables"][3]["Lower Bound"] = +0.0
 e["Variables"][3]["Upper Bound"] = +1.0
-e["Variables"][3]["Exploration Sigma"]["Initial"] = 0.2
-e["Variables"][3]["Exploration Sigma"]["Final"] = 0.05
-e["Variables"][3]["Exploration Sigma"]["Annealing Rate"] = 1e-5
+e["Variables"][3]["Initial Exploration Noise"] = 0.02
 
 ### Defining Agent Configuration 
 
 e["Solver"]["Type"] = "Agent / Continuous / GFPT"
 e["Solver"]["Mode"] = "Training"
-e["Solver"]["Learning Rate"] = 0.01
 e["Solver"]["Episodes Per Generation"] = 1
 e["Solver"]["Experiences Between Policy Updates"] = 10
-e["Solver"]["Cache Persistence"] = 100
 e["Solver"]["Discount Factor"] = 0.99
 
 ### Defining the configuration of replay memory
@@ -63,18 +57,16 @@ e["Solver"]["Experience Replay"]["Maximum Size"] = 65536
 
 ### Configuring the Remember-and-Forget Experience Replay algorithm
 
-e["Solver"]["Experience Replay"]["REFER"]["Enabled"] = True
-e["Solver"]["Experience Replay"]["REFER"]["Cutoff Scale"] = 4.0
-e["Solver"]["Experience Replay"]["REFER"]["Target"] = 0.1
-e["Solver"]["Experience Replay"]["REFER"]["Initial Beta"] = 0.6
-e["Solver"]["Experience Replay"]["REFER"]["Annealing Rate"] = 5e-7
+e["Solver"]["Experience Replay"]["Off Policy"]["Cutoff Scale"] = 4.0
+e["Solver"]["Experience Replay"]["Off Policy"]["Target"] = 0.1
+e["Solver"]["Experience Replay"]["Off Policy"]["Annealing Rate"] = 5e-7
+e["Solver"]["Experience Replay"]["Off Policy"]["REFER Beta"] = 0.3
 
-### Defining Critic and Policy Configuration
+## Defining Critic and Policy Configuration
 
-e["Solver"]["Critic"]["Advantage Function Population"] = 12
-e["Solver"]["Policy"]["Learning Rate Scale"] = 0.1
-e["Solver"]["Policy"]["Target Accuracy"] = 0.001
-e["Solver"]["Policy"]["Optimization Candidates"] = 12
+e["Solver"]["Learning Rate"] = 0.001
+e["Solver"]["Policy"]["Target Accuracy"] = 0.000001
+e["Solver"]["Policy"]["Optimization Candidates"] = 64
 
 ### Configuring the neural network and its hidden layers
 

@@ -30,7 +30,9 @@ void NAF::initializeAgent()
 
   _qExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
   _qExperiment["Solver"]["Optimizer"] = _optimizer;
-  _qExperiment["Solver"]["Learning Rate"] = _learningRate;
+  _qExperiment["Solver"]["L2 Regularization"]["Enabled"] = _l2RegularizationEnabled;
+  _qExperiment["Solver"]["L2 Regularization"]["Importance"] = _l2RegularizationImportance;
+  _qExperiment["Solver"]["Learning Rate"] = _currentLearningRate;
   _qExperiment["Solver"]["Loss Function"] = "Direct Gradient";
   _qExperiment["Solver"]["Steps Per Generation"] = 1;
   _qExperiment["Solver"]["Neural Network"]["Engine"] = _neuralNetworkEngine;
@@ -92,14 +94,14 @@ void NAF::initializeAgent()
   _qHatHyperparameter = qHyperparameters;
   _criticLearner->setInferenceHyperparameters(qHyperparameters);
 
-  _averageActionSigmas.resize(_problem->_actionVectorSize);
+  _statisticsAverageActionSigmas.resize(_problem->_actionVectorSize);
 }
 
 float NAF::stateValueFunction(const std::vector<std::vector<float>> &state)
 {
   // Calculating V(s_i)
-  float v = _criticLearner->getEvaluation({state})[0][0];
-  return v;
+  float V = _criticLearner->getEvaluation({state})[0][0];
+  return V;
 }
 
 void NAF::trainPolicy()
@@ -108,12 +110,12 @@ void NAF::trainPolicy()
    * Training Phase
    **********************************************************************************/
 
-  // Calculating cumulative Q*, for statistical purposes
-  _cumulativeQStar = 0.0;
-  _cumulativeQStarSquared = 0.0;
+  // [Statistics] Zeroing initial cumulative Q*
+  float cumulativeQStar = 0.0;
+  float cumulativeQStarSquared = 0.0;
   float cumulativeTdError = 0.0;
   float cumulativeTdErrorSquarred = 0.0;
-  std::fill(_averageActionSigmas.begin(), _averageActionSigmas.end(), 0.0);
+  std::fill(_statisticsAverageActionSigmas.begin(), _statisticsAverageActionSigmas.end(), 0.0);
 
   // Creating minibatch for the critic update
   auto miniBatchIndexes = generateMiniBatch(_miniBatchSize);
@@ -122,20 +124,28 @@ void NAF::trainPolicy()
 #pragma omp parallel for schedule(dynamic, 1)
   for (size_t b = 0; b < _miniBatchSize; b++)
   {
-    // Selecting a uniformly random selected, yet not repeated experience
+    // Getting index of current experiment
     size_t expId = miniBatchIndexes[b];
 
-    // Access experiences
-    auto curStateSequence = getStateTimeSequence(expId);
-    auto curAction = _experienceReplay[expId].action;
-    float yHat = _experienceReplay[expId].reward;
+    // Get state, action and policy for this experience
+    auto expStateSequence = getStateTimeSequence(expId);
+    auto expAction = _experienceReplay[expId].action;
+    auto expPolicy = _experienceReplay[expId].metadata["Experience Policy"];
+
+    // Gathering metadata
+    float V = _experienceReplay[expId].stateValue;
+    auto curPolicy = _experienceReplay[expId].metadata["Current Policy"];
+
+    // Gathering current policy information
+    auto curMeans = curPolicy["Action Means"].get<std::vector<float>>();
+    auto curSigmas = curPolicy["Action Sigmas"].get<std::vector<float>>();
+    auto curDiagP = curPolicy["Diag P"].get<std::vector<float>>();
 
     // Getting current experience probability and calculating importance weight
     float probability = _experienceReplay[expId].metadata["Mini Batch"]["Probability"];
     float weight = std::pow((float)_experienceReplay.size() * probability, -_importanceWeightAnnealingRate);
 
-    // Evaluate Q
-    auto qEvaluation = _qLearner->getEvaluation({curStateSequence})[0];
+    float yHat = _experienceReplay[expId].reward;
 
     // yHat* = r -- If terminal state
     // yHat* = r + gamma*V(s) -- If not terminal state
@@ -151,7 +161,7 @@ void NAF::trainPolicy()
       yHat += _discountFactor * vHat;
     }
 
-    float qval = quadraticAdvantageFunction(curAction, qEvaluation) + qEvaluation[0]; // A(s,a) + V(s)
+    float qval = quadraticAdvantageFunction(expAction, curMeans, curDiagP) + V; // A(s,a) + V(s)
     float diff = yHat - qval;
 
     cumulativeTdError += diff;
@@ -166,33 +176,50 @@ void NAF::trainPolicy()
     // Calculating Gradients of Loss Li wrt. V(s)
     policyGradient[0] = weight * diff;
 
-    // Calculating Gradients of Li wrt. mu(s) and P(s)
-    for (size_t j = 0; j < curAction.size(); j++)
+    // Compute mu(s) & and P(s) gradient only if inside trust region (or REFER disabled)
+    if (_experienceReplay[expId].isOnPolicy)
     {
-      float diagP = qEvaluation[1 + curAction.size() + j] / (_actionScalings[j] * _actionScalings[j]);
-      float dmu = curAction[j] - qEvaluation[1 + j];
-      policyGradient[1 + j] = weight * diff * dmu * diagP;
-      policyGradient[1 + curAction.size() + j] = -weight * 0.5 * diff * dmu * dmu / (_actionScalings[j] * _actionScalings[j]);
+      for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+      {
+        float dmu = expAction[i] - curMeans[i];
+        policyGradient[1 + i] = weight * _experienceReplayOffPolicyREFERBeta * diff * dmu * curDiagP[i];
+        policyGradient[1 + i + _problem->_actionVectorSize] = -weight * _experienceReplayOffPolicyREFERBeta * 0.5 * diff * dmu * dmu / (_actionScalings[i] * _actionScalings[i]);
+      }
     }
 
-    _qProblem->_inputData[b] = curStateSequence;
+    // Compute derivative of kullback-leibler divergence wrt current distribution params
+    std::vector<float> klGrad = calculateKLDivergenceGradient(expPolicy, curPolicy);
+
+    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+    {
+      // Step towards old policy (gradient pointing to larger difference between old and current policy)
+      policyGradient[1 + i] -= weight * (1.0f - _experienceReplayOffPolicyREFERBeta) * klGrad[i];
+
+      // inlcude gradient of sigma wrt. diagP
+      policyGradient[1 + i + _problem->_actionVectorSize] -= weight * (1.0f - _experienceReplayOffPolicyREFERBeta) * klGrad[i + _problem->_actionVectorSize] * (-0.5 * std::sqrt(_covarianceScaling) * std::pow(curDiagP[i], -1.5));
+    }
+
+    _qProblem->_inputData[b] = expStateSequence;
     _qProblem->_solutionData[b] = policyGradient;
 
     // Keeping statistics
-    _cumulativeQStar += yHat;
-    _cumulativeQStarSquared += yHat * yHat;
-    for (size_t j = 0; j < curAction.size(); j++) _averageActionSigmas[j] += std::sqrt(qEvaluation[1 + curAction.size() + j]);
+    cumulativeQStar += yHat;
+    cumulativeQStarSquared += yHat * yHat;
+    for (size_t j = 0; j < _problem->_actionVectorSize; j++) _statisticsAverageActionSigmas[j] += curSigmas[j];
   }
+
+  // Updating learning rate for critic/policy learner guided by REFER
+  _criticLearner->_learningRate = _currentLearningRate;
 
   // Running one generation of the optimization method with the given mini-batch
   _qLearner->runGeneration();
 
   // Keeping statistics
-  _averageQStar = _cumulativeQStar / (float)_miniBatchSize;
-  _stdevQStar = std::sqrt(_cumulativeQStarSquared / (float)_miniBatchSize - _averageQStar * _averageQStar);
-  _averageTDError = cumulativeTdError / (float)_miniBatchSize;
-  _stdevTDError = std::sqrt(cumulativeTdErrorSquarred / (float)_miniBatchSize - _averageTDError * _averageTDError);
-  for (size_t j = 0; j < _averageActionSigmas.size(); j++) _averageActionSigmas[j] /= (float)_miniBatchSize;
+  _statisticsAverageQStar = cumulativeQStar / (float)_miniBatchSize;
+  _statisticsStdevQStar = std::sqrt(cumulativeQStarSquared / (float)_miniBatchSize - _statisticsAverageQStar * _statisticsAverageQStar);
+  _statisticsAverageTDError = cumulativeTdError / (float)_miniBatchSize;
+  _statisticsStdevTDError = std::sqrt(cumulativeTdErrorSquarred / (float)_miniBatchSize - _statisticsAverageTDError * _statisticsAverageTDError);
+  for (size_t j = 0; j < _statisticsAverageActionSigmas.size(); j++) _statisticsAverageActionSigmas[j] /= (float)_miniBatchSize;
 
   /*********************************************************************
    * Updating hyperparameters and broadcasting them to the workers
@@ -210,44 +237,63 @@ void NAF::trainPolicy()
 
 knlohmann::json NAF::runPolicy(const std::vector<std::vector<float>> &state)
 {
-  auto qNNoutput = _qLearner->getEvaluation({state})[0];
+  // Storage for policy
+  knlohmann::json policy;
+
+  // Evaluating critic NN
+  auto eval = _qLearner->getEvaluation({state})[0];
+  float stateValue = eval[0];
 
   // Transforming NN output to receive mu and diagonal of P
-  std::vector<float> actionMeans(_problem->_actionVectorSize);
-  std::vector<float> actionSigmas(_problem->_actionVectorSize);
+  std::vector<float> diagP(_problem->_actionVectorSize);
 
-  for (size_t i = 0; i < _problem->_actionVectorSize; ++i)
+  if (_policyDistribution == "Normal")
   {
-    actionMeans[i] = qNNoutput[1 + i];
-    actionSigmas[i] = std::sqrt(_covarianceScaling) * _actionScalings[i] / qNNoutput[1 + _problem->_actionVectorSize + i];
+    std::vector<float> actionMeans(_problem->_actionVectorSize);
+    std::vector<float> actionSigmas(_problem->_actionVectorSize);
+
+    for (size_t i = 0; i < _problem->_actionVectorSize; ++i)
+    {
+      actionMeans[i] = eval[1 + i];
+      diagP[i] = eval[1 + _problem->_actionVectorSize + i] / (_actionScalings[i] * _actionScalings[i]);
+      actionSigmas[i] = std::sqrt(_covarianceScaling) / std::sqrt(diagP[i]);
+    }
+
+    policy["Action Means"] = actionMeans;
+    policy["Action Sigmas"] = actionSigmas;
   }
 
   if (_policyDistribution == "Beta")
   {
+    std::vector<float> actionAlpha(_problem->_actionVectorSize);
+    std::vector<float> actionBeta(_problem->_actionVectorSize);
+
     // Transform to variance coefficient
     for (size_t i = 0; i < _problem->_actionVectorSize; ++i)
     {
-      float mux = (actionMeans[i] - _actionLowerBounds[i]) / _actionScalings[i];
-      float sigx = actionSigmas[i] / _actionScalings[i];
-      actionSigmas[i] = mux * (1.0 - mux) / sigx;
-      if (actionSigmas[i] > 1.0) actionSigmas[i] = 1.0;
+      float mux = (actionAlpha[i] - _actionLowerBounds[i]) / _actionScalings[i];
+      float sigx = actionBeta[i] / _actionScalings[i];
+      actionBeta[i] = mux * (1.0 - mux) / sigx;
+      if (actionBeta[i] > 1.0) actionBeta[i] = 1.0;
     }
+
+    policy["Action Alpha"] = actionAlpha;
+    policy["Action Beta"] = actionBeta;
   }
 
-  knlohmann::json policy;
-  policy["Action Means"] = actionMeans;
-  policy["Action Sigmas"] = actionSigmas;
+  policy["State Value"] = stateValue;
+  policy["Diag P"] = diagP;
+
   return policy;
 }
 
-float NAF::quadraticAdvantageFunction(const std::vector<float> &action, const std::vector<float> &qEvaluation)
+float NAF::quadraticAdvantageFunction(const std::vector<float> &action, const std::vector<float> &mean, const std::vector<float> &diagP)
 {
   float qval = 0;
-  for (size_t i = 0; i < action.size(); ++i)
+  for (size_t i = 0; i < _problem->_actionVectorSize; ++i)
   {
-    float dmu = (action[i] - qEvaluation[i + 1]);
-    float diagP = qEvaluation[i + 1 + action.size()] / (_actionScalings[i] * _actionScalings[i]);
-    qval += dmu * diagP * dmu;
+    float dmu = (action[i] - mean[i]);
+    qval += dmu * diagP[i] * dmu;
   }
   return -0.5 * qval;
 }
@@ -287,10 +333,10 @@ knlohmann::json NAF::getTrainingState()
 void NAF::printAgentInformation()
 {
   _k->_logger->logInfo("Normal", "Critic Information:\n");
-  _k->_logger->logInfo("Normal", " + Average (Std) Q-Value in Mini-Batch:  %f (%f)\n", _averageQStar, _stdevQStar);
-  _k->_logger->logInfo("Normal", " + Average (Std) TD-Error in Mini-Batch:  %f (%f)\n", _averageTDError, _stdevTDError);
-  _k->_logger->logInfo("Normal", " + Average P values in Mini-Batch: \n");
-  for (size_t i = 0; i < _averageActionSigmas.size(); ++i) _k->_logger->logInfo("Normal", " +  [ %f ]\n", _averageActionSigmas[i]);
+  _k->_logger->logInfo("Normal", " + Average (Std) Q-Value in Mini-Batch:  %f (%f)\n", _statisticsAverageQStar, _statisticsStdevQStar);
+  _k->_logger->logInfo("Normal", " + Average (Std) TD-Error in Mini-Batch:  %f (%f)\n", _statisticsAverageTDError, _statisticsStdevTDError);
+  _k->_logger->logInfo("Normal", " + Average Action Sigma in Mini-Batch: \n");
+  for (size_t i = 0; i < _statisticsAverageActionSigmas.size(); ++i) _k->_logger->logInfo("Normal", " +  [ %f ]\n", _statisticsAverageActionSigmas[i]);
 
   _qExperiment._logger->_verbosityLevel = _k->_logger->_verbosityLevel;
   _qExperiment._solver->printGenerationAfter();

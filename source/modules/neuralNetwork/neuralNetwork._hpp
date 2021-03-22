@@ -58,8 +58,8 @@ class NeuralNetwork : public Module
   std::vector<float> _rawInputGradients;
 
   /**
-   * @brief Formatted data for the NN input gradients. Format: NxIC (N: Mini-batch size, IC: Input channels).
-   */
+    * @brief Formatted data for the NN input gradients. Format: NxIC (N: Mini-batch size, IC: Input channels).
+  */
   std::vector<std::vector<float>> _inputGradients;
 
   /**

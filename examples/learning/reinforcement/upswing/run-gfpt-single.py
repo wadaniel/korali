@@ -16,7 +16,7 @@ e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = env
 e["Problem"]["Training Reward Threshold"] = 750
 e["Problem"]["Policy Testing Episodes"] = 1
-e["Problem"]["Actions Between Policy Updates"] = 1
+e["Problem"]["Actions Between Policy Updates"] = 500
 
 e["Variables"][0]["Name"] = "Cart Position"
 e["Variables"][1]["Name"] = "Angle 1"
@@ -28,36 +28,41 @@ e["Variables"][5]["Name"] = "Force"
 e["Variables"][5]["Type"] = "Action"
 e["Variables"][5]["Lower Bound"] = -20.0
 e["Variables"][5]["Upper Bound"] = +20.0
-e["Variables"][5]["Exploration Sigma"]["Initial"] = 1.00
-e["Variables"][5]["Exploration Sigma"]["Final"] = 1.00
-e["Variables"][5]["Exploration Sigma"]["Annealing Rate"] = 0.00
+e["Variables"][5]["Initial Exploration Noise"] = 2.00
 
 ### Defining Agent Configuration 
 
 e["Solver"]["Type"] = "Agent / Continuous / GFPT"
 e["Solver"]["Mode"] = "Training"
-e["Solver"]["Time Sequence Length"] = 1
 e["Solver"]["Episodes Per Generation"] = 1
-e["Solver"]["Experiences Between Policy Updates"] = 1
-e["Solver"]["Cache Persistence"] = 10
-e["Solver"]["Discount Factor"] = 0.99
+e["Solver"]["Experiences Between Policy Updates"] = 10
 
 ### Defining the configuration of replay memory
 
-e["Solver"]["Mini Batch Size"] = 32
+e["Solver"]["Experience Replay"]["Start Size"] = 4096
+e["Solver"]["Experience Replay"]["Maximum Size"] = 65536
+
+### Configuring the Remember-and-Forget Experience Replay algorithm
+
+e["Solver"]["Experience Replay"]["Off Policy"]["Cutoff Scale"] = 4.0
+e["Solver"]["Experience Replay"]["Off Policy"]["Target"] = 0.1
+e["Solver"]["Experience Replay"]["Off Policy"]["Annealing Rate"] = 5e-7
+e["Solver"]["Experience Replay"]["Off Policy"]["REFER Beta"] = 0.3
+
+### Configuring Mini Batch
+
+e["Solver"]["Mini Batch Size"] = 128
 e["Solver"]["Mini Batch Strategy"] = "Uniform"
-e["Solver"]["Experience Replay"]["Start Size"] =   1024
-e["Solver"]["Experience Replay"]["Maximum Size"] = 32768
+ 
+### Defining Critic and Policy Configuration
 
-## Defining Critic and Policy Configuration
-
-e["Solver"]["Learning Rate"] = 0.01
-e["Solver"]["Policy"]["Learning Rate Scale"] = 1.0
-e["Solver"]["Critic"]["Advantage Function Population"] = 12
-e["Solver"]["Policy"]["Target Accuracy"] = 0.001
-e["Solver"]["Policy"]["Optimization Candidates"] = 12
+e["Solver"]["Learning Rate"] = 0.001
+e["Solver"]["Policy"]["Target Accuracy"] = 0.000001
+e["Solver"]["Policy"]["Optimization Candidates"] = 64
 
 ### Configuring the neural network and its hidden layers
+
+e["Solver"]["Time Sequence Length"] = 1
 
 e["Solver"]["Neural Network"]["Engine"] = "OneDNN"
 
@@ -75,14 +80,13 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tan
 
 ### Defining Termination Criteria
 
-e["Problem"]["Training Reward Threshold"] = 750
 e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 900
 
 ### Setting file output configuration
 
-#e["Console Output"]["Verbosity"] = "Silent"
+e["Console Output"]["Verbosity"] = "Detailed"
 e["File Output"]["Enabled"] = False
-
-### Running Experiment
+ 
+### Running Training Experiment
 
 k.run(e)

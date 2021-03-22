@@ -6,6 +6,7 @@
 
 # Importing computational model
 import sys
+import math
 sys.path.append('./_model')
 from model import *
 
@@ -28,15 +29,17 @@ for i in range(dim):
     e["Variables"][i]["Name"] = "X" + str(i)
     e["Variables"][i]["Lower Bound"] = -25.0
     e["Variables"][i]["Upper Bound"] = +25.0
-    e["Variables"][i]["Initial Standard Deviation"] = 3.0
+    e["Variables"][i]["Initial Standard Deviation"] = 15.0/math.sqrt(dim)
 
 # Configuring LM-CMA parameters
 e["Solver"]["Type"] = "Optimizer/LMCMAES"
 e["Solver"]["Population Size"] = 32
+e["Solver"]["Is Sigma Bounded"] = True
 e["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-32
 e["Solver"]["Termination Criteria"]["Max Generations"] = 100
 
 # Configuring results path
+e["File Output"]["Enabled"] = True
 e["File Output"]["Path"] = '_korali_result_lmcma'
 e["File Output"]["Frequency"] = 1
 

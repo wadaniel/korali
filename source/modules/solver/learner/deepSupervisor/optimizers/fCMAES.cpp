@@ -43,8 +43,7 @@ fCMAES::fCMAES(size_t nVars, size_t populationSize, size_t muSize)
   _minValue = -std::numeric_limits<float>::infinity();
   _maxValue = +std::numeric_limits<float>::infinity();
   _minValueDifferenceThreshold = -std::numeric_limits<float>::infinity();
-  _minStandardDeviation = -std::numeric_limits<float>::infinity();
-  _maxStandardDeviation = +std::numeric_limits<float>::infinity();
+  _targetMaxStandardDeviation = -std::numeric_limits<float>::infinity();
 
   // Random Number Generators
   _normalGenerator = std::normal_distribution<float>(0.0, 1.0);
@@ -96,6 +95,7 @@ fCMAES::fCMAES(size_t nVars, size_t populationSize, size_t muSize)
 void fCMAES::reset()
 {
   _currentGeneration = 1;
+  _noUpdatePossible = false;
 
   // Establishing optimization goal
   _bestEverValue = -std::numeric_limits<float>::infinity();
@@ -234,10 +234,8 @@ void fCMAES::prepareGeneration()
 {
   for (size_t d = 0; d < _nVars; ++d) _auxiliarCovarianceMatrix = _covarianceMatrix;
   updateEigensystem(_auxiliarCovarianceMatrix);
-
+  bool isFeasible;
   for (size_t i = 0; i < _populationSize; ++i)
-  {
-    bool isFeasible;
     do
     {
       sampleSingle(i);
@@ -247,7 +245,6 @@ void fCMAES::prepareGeneration()
       if (isFeasible == false) _infeasibleSampleCount++;
 
     } while (isFeasible == false);
-  }
 }
 
 void fCMAES::sampleSingle(size_t sampleIdx)
@@ -255,7 +252,6 @@ void fCMAES::sampleSingle(size_t sampleIdx)
   for (size_t d = 0; d < _nVars; ++d)
   {
     float randomNumber = _normalGenerator(_randomGenerator);
-    //printf("Random Number: %f\n", randomNumber);
 
     if (_isDiagonal)
     {
@@ -432,6 +428,7 @@ void fCMAES::updateEigensystem(std::vector<float> &M)
   if (minCovEVal <= 0.0)
   {
     fprintf(stderr, "Min Eigenvalue smaller or equal 0.0 (%+6.3e) after Eigen decomp (no update possible).\n", minCovEVal);
+    _noUpdatePossible = true;
     return;
   }
 
@@ -530,13 +527,13 @@ fCMAES::~fCMAES()
 
 bool fCMAES::checkTermination()
 {
+  if (_currentGeneration > 1 && _noUpdatePossible == true) return true;
   if (_currentGeneration > 1 && ((_maxInfeasibleResamplings > 0) && (_infeasibleSampleCount >= _maxInfeasibleResamplings))) return true;
   if (_currentGeneration > 1 && (_maximumCovarianceEigenvalue >= _maxConditionCovarianceMatrix * _minimumCovarianceEigenvalue)) return true;
   if (_currentGeneration > 1 && (-_bestEverValue < _minValue)) return true;
   if (_currentGeneration > 1 && (+_bestEverValue > _maxValue)) return true;
   if (_currentGeneration > 1 && (fabs(_currentBestValue - _previousBestValue) < _minValueDifferenceThreshold)) return true;
-  if (_currentGeneration > 1 && (_currentMinStandardDeviation <= _minStandardDeviation)) return true;
-  if (_currentGeneration > 1 && (_currentMaxStandardDeviation >= _maxStandardDeviation)) return true;
+  if (_currentGeneration > 1 && (_currentMaxStandardDeviation <= _targetMaxStandardDeviation)) return true;
 
   if (_currentGeneration > 1)
   {

@@ -23,6 +23,7 @@ void ReinforcementLearning::initialize()
 
   if (_actionVectorSize == 0) KORALI_LOG_ERROR("No action variables have been defined.\n");
   if (_stateVectorSize == 0) KORALI_LOG_ERROR("No state variables have been defined.\n");
+  if (_testingFrequency == 0) _testingFrequency = _k->_solver->_maxGenerations;
 }
 
 /**
@@ -131,6 +132,9 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
     // Storing termination status
     experience["Termination"] = agent["Termination"];
 
+    // Adding metadata from the agent module
+    experience["Metadata"] = agent["Metadata"];
+
     // If the episode was truncated, then save the terminal state
     if (agent["Termination"] == "Truncated") experience["Truncated State"] = agent["State"];
 
@@ -140,7 +144,8 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
     auto beginTime2 = std::chrono::steady_clock::now(); // Profiling
 
     // Checking if we requested the given number of actions in between policy updates and it is not a terminal state
-    bool requestNewPolicy = (agent["Termination"] == "Non Terminal") &&
+    bool requestNewPolicy = (_actionsBetweenPolicyUpdates > 0) &&
+                            (agent["Termination"] == "Non Terminal") &&
                             (actionCount % _actionsBetweenPolicyUpdates == 0);
 
     experience["Request New Policy"] = requestNewPolicy;
@@ -151,8 +156,8 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
     // If requested new policy, wait for incoming message containing new hyperparameters
     if (requestNewPolicy)
     {
-      agent["Hyperparameters"] = KORALI_RECV_MSG_FROM_ENGINE();
-      _agent->setAgentPolicy(agent["Hyperparameters"]);
+      agent["Policy"] = KORALI_RECV_MSG_FROM_ENGINE();
+      _agent->setAgentPolicy(agent["Policy"]);
     }
 
     auto endTime2 = std::chrono::steady_clock::now();                                                              // Profiling
@@ -169,9 +174,10 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
   agent["Tested Policy"] = false;
 
   // If the training reward exceeds the threshold, then also run testing on it
-  if (trainingReward > _trainingRewardThreshold)
+  if (trainingReward > _trainingRewardThreshold || _k->_currentGeneration % _testingFrequency == 0)
   {
     float averageTestingReward = 0.0;
+    float stdevTestingReward = 0.0;
     float bestTestingReward = -Inf;
     float worstTestingReward = +Inf;
 
@@ -184,15 +190,18 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
 
       // Adding current testing reward to the average and keeping statistics
       averageTestingReward += currentTestingReward;
+      stdevTestingReward += currentTestingReward * currentTestingReward;
       if (currentTestingReward > bestTestingReward) bestTestingReward = currentTestingReward;
       if (currentTestingReward < worstTestingReward) worstTestingReward = currentTestingReward;
     }
 
     // Normalizing average
     averageTestingReward /= (float)_policyTestingEpisodes;
+    stdevTestingReward = std::sqrt(stdevTestingReward / (float)_policyTestingEpisodes - averageTestingReward * averageTestingReward);
 
     // Storing testing information
     agent["Average Testing Reward"] = averageTestingReward;
+    agent["Stdev Testing Reward"] = stdevTestingReward;
     agent["Best Testing Reward"] = bestTestingReward;
     agent["Worst Testing Reward"] = worstTestingReward;
 
@@ -248,7 +257,7 @@ void ReinforcementLearning::initializeEnvironment(Sample &agent)
   _agent = dynamic_cast<solver::Agent *>(_k->_solver);
 
   // First, we update the initial policy's hyperparameters
-  _agent->setAgentPolicy(agent["Hyperparameters"]);
+  _agent->setAgentPolicy(agent["Policy Hyperparameters"]);
 
   // Then, we reset the state sequence for time-dependent learners
   _agent->resetTimeSequence();

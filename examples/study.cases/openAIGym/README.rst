@@ -1,4 +1,6 @@
-OpenAI Gym Examples
-======================
+Reinforcement Learning examples on OpenAI Gym
+==============================================
 
-Examples of different openAI Gym problem solved using Korali learning algorithms. Here we provide also the necessary code to generate movies from the learned policy.
+Exambles based on OpenAI Gym.
+To use the Mujoco environments, follow the installation instructions here:
+https://github.com/openai/mujoco-py#install-mujoco

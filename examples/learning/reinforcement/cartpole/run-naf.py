@@ -44,11 +44,11 @@ e["Solver"]["Episodes Per Generation"] = 1
 ### Configuring NAF hyperparameters
 
 e["Solver"]["Discount Factor"] = 0.99
-e["Solver"]["Learning Rate"] = 1e-4
+e["Solver"]["Learning Rate"] = 1e-2
 e["Solver"]["Mini Batch Size"] = 32
-e["Solver"]["Target Learning Rate"] = 0.01
+e["Solver"]["Target Learning Rate"] = 1e-3
 e["Solver"]["Experiences Between Policy Updates"] = 5
-e["Solver"]["Covariance Scaling"] = 0.001
+e["Solver"]["Covariance Scaling"] = 0.01
 e["Solver"]["Mini Batch Strategy"] = "Prioritized" 
 
 ### Defining Experience Replay configuration

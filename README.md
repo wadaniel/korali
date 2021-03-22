@@ -1,6 +1,6 @@
 # Korali
 
-High-performance framework for uncertainty quantification and optimization.
+High-performance framework for uncertainty quantification, optimization and reinforcement learning.
 
 ## Description
 
@@ -21,10 +21,6 @@ Visit: https://www.cse-lab.ethz.ch/korali/ for more information.
 + source/ Contains Korali's source code
 + tests/ Contains test scripts to verify Korali's correctness
 + tools/ Contains Korali's additional tools and scripts 
-
-## Apps
-
-See: https://github.com/cselab/korali-apps
 
 ## Contact us
 

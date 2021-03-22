@@ -43,10 +43,12 @@
 #include "problem/sampling/sampling.hpp"
 #include "problem/supervisedLearning/supervisedLearning.hpp"
 #include "solver/SAEM/SAEM.hpp"
+#include "solver/agent/continuous/DDPG/DDPG.hpp"
 #include "solver/agent/continuous/GFPT/GFPT.hpp"
 #include "solver/agent/continuous/NAF/NAF.hpp"
 #include "solver/agent/continuous/VRACER/VRACER.hpp"
 #include "solver/agent/continuous/continuous.hpp"
+#include "solver/agent/discrete/DQN/DQN.hpp"
 #include "solver/agent/discrete/dVRACER/dVRACER.hpp"
 #include "solver/agent/discrete/discrete.hpp"
 #include "solver/executor/executor.hpp"
@@ -137,8 +139,10 @@ Module *Module::getModule(knlohmann::json &js, Experiment *e)
   if (iCompare(moduleType, "SAEM")) module = new korali::solver::SAEM();
   if (iCompare(moduleType, "Learner/GaussianProcess")) module = new korali::solver::learner::GaussianProcess();
   if (iCompare(moduleType, "Learner/DeepSupervisor")) module = new korali::solver::learner::DeepSupervisor();
+  if (iCompare(moduleType, "Agent/Discrete/DQN")) module = new korali::solver::agent::discrete::DQN();
   if (iCompare(moduleType, "Agent/Discrete/DVRACER")) module = new korali::solver::agent::discrete::dVRACER();
   if (iCompare(moduleType, "Agent/Continuous/GFPT")) module = new korali::solver::agent::continuous::GFPT();
+  if (iCompare(moduleType, "Agent/Continuous/DDPG")) module = new korali::solver::agent::continuous::DDPG();
   if (iCompare(moduleType, "Agent/Continuous/NAF")) module = new korali::solver::agent::continuous::NAF();
   if (iCompare(moduleType, "Agent/Continuous/VRACER")) module = new korali::solver::agent::continuous::VRACER();
   if (iCompare(moduleType, "Optimizer/CMAES")) module = new korali::solver::optimizer::CMAES();
@@ -163,17 +167,10 @@ Module *Module::getModule(knlohmann::json &js, Experiment *e)
   if (module == nullptr) KORALI_LOG_ERROR(" + Unrecognized module: %s.\n", moduleType.c_str());
 
   // If this is a new experiment, we should assign it its own configuration
-  if (isExperiment == true)
-    dynamic_cast<Experiment *>(module)->_js.getJson() = js;
+  if (isExperiment == true) dynamic_cast<Experiment *>(module)->_js.getJson() = js;
 
   // If this is a module inside an experiment, it needs to be properly configured
-  if (isExperiment == false)
-  {
-    module->_k = e;
-    module->applyVariableDefaults();
-    module->applyModuleDefaults(js);
-    module->setConfiguration(js);
-  }
+  if (isExperiment == false) module->_k = e;
 
   return module;
 }

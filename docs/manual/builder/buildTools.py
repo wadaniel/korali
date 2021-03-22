@@ -25,4 +25,4 @@ shutil.copyfile(toolsSrcDir + '/profiler/README.rst',
 for file in glob.glob(r'' + toolsSrcDir + '/profiler/examples/*.png'):
   shutil.copy(file, toolsDstDir)
 
-shutil.copyfile(toolsSrcDir + '/mdev/README.rst', toolsDstDir + '/mdev.rst')
+shutil.copyfile(toolsSrcDir + '/rlview/README.rst', toolsDstDir + '/rlview.rst')

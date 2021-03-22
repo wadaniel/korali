@@ -4,8 +4,8 @@ WINDMILL = run-vracer-windmill
 KORALICXX=$(shell python3 -m korali.cxx --compiler)
 KORALICFLAGS=`python3 -m korali.cxx --cflags`
 KORALILIBS=`python3 -m korali.cxx --libs`
-CUBISMCFLAGS=$(shell cat cup.cflags.txt) -I_deps/CUP-2D/source -I_deps/CUP-2D/Cubism/include -DCUBISM
-CUBISMLIBS= libcup.a $(shell cat cup.libs.txt) -lstdc++fs
+CUBISMCFLAGS=$(shell cat _deps/CUP-2D/makefiles/cup.cflags.txt) -I_deps/CUP-2D/source -I_deps/CUP-2D/Cubism/include -DCUBISM
+CUBISMLIBS= _deps/CUP-2D/makefiles/libcup.a $(shell cat _deps/CUP-2D/makefiles/cup.libs.txt) -lstdc++fs
 
 .SECONDARY:
 .PHONY: all
@@ -17,13 +17,13 @@ fish: $(FISH)
 
 windmill: $(WINDMILL)
 
-$(TRANSPORT): %: %.o transportEnvironment.o libcup.a
+$(TRANSPORT): %: %.o transportEnvironment.o _deps/CUP-2D/makefiles/libcup.a
 	$(KORALICXX) -o $@ $^ $(KORALILIBS) $(CUBISMLIBS)
 
-$(FISH): %: %.o fishEnvironment.o libcup.a
+$(FISH): %: %.o fishEnvironment.o _deps/CUP-2D/makefiles/libcup.a
 	$(KORALICXX) -o $@ $^ $(KORALILIBS) $(CUBISMLIBS)
 
-$(WINDMILL): %: %.o windmillEnvironment.o libcup.a 
+$(WINDMILL): %: %.o windmillEnvironment.o _deps/CUP-2D/makefiles/libcup.a 
 	$(KORALICXX) -o $@ $^ $(KORALILIBS) $(CUBISMLIBS)
 
 %.o: %.cpp

@@ -26,13 +26,13 @@ void HMC::setInitialConfiguration()
 
   // Set version of HMC
   if (_version == "Static")
-    _eVersion = EVersion::Static;
+    _metricType = Metric::Static;
   else if (_version == "Euclidean")
-    _eVersion = EVersion::Euclidean;
+    _metricType = Metric::Euclidean;
   else if (_version == "Riemannian")
-    _eVersion = EVersion::Riemannian;
+    _metricType = Metric::Riemannian;
   else if (_version == "Riemannian Const")
-    _eVersion = EVersion::Riemannian_Const;
+    _metricType = Metric::Riemannian_Const;
   else
     KORALI_LOG_ERROR("Version must be either 'Static', 'Euclidean', 'Riemannian' or 'Riemannian Const' (is %s)\n", _version.c_str());
 
@@ -57,7 +57,7 @@ void HMC::setInitialConfiguration()
   if (_finalFastAdaptionInterval < 0) KORALI_LOG_ERROR("Final Fast Adaption Interval must be greater equal 0 (is %zu).\n", _finalFastAdaptionInterval);
 
   // Check adaption intervals
-  if (_eVersion == EVersion::Euclidean && _useAdaptiveStepSize)
+  if (_metricType == Metric::Euclidean && _useAdaptiveStepSize)
   {
     if (_burnIn < _initialFastAdaptionInterval + _initialSlowAdaptionInterval + _finalFastAdaptionInterval)
     {
@@ -68,7 +68,7 @@ void HMC::setInitialConfiguration()
       _initialSlowAdaptionInterval = _burnIn - _initialFastAdaptionInterval - _finalFastAdaptionInterval;
     }
 
-    size_t minBurnInLength = 100;
+    const size_t minBurnInLength = 100;
     if (_burnIn < minBurnInLength)
       KORALI_LOG_ERROR("Burn In too short for adaptive step size, must be larger than %zu (is %zu).", minBurnInLength, _burnIn);
   }
@@ -84,7 +84,7 @@ void HMC::setInitialConfiguration()
   _euclideanWarmupSampleDatabase.resize(0);
   _sampleEvaluationDatabase.resize(0);
 
-  // initializing variable defaults
+  // Initializing variable defaults
   for (size_t i = 0; i < _variableCount; i++)
   {
     if (std::isfinite(_k->_variables[i]->_initialMean) == false)
@@ -95,59 +95,56 @@ void HMC::setInitialConfiguration()
   }
 
   // Initializing metric and inverseMetric for diagonal and dense
-  std::vector<double> metric;
-  std::vector<double> inverseMetric;
-
-  if (_useDiagonalMetric == true || _eVersion == EVersion::Static)
+  if (_useDiagonalMetric == true || _metricType == Metric::Static)
   {
-    metric.resize(_variableCount);
-    inverseMetric.resize(_variableCount);
+    _metric.resize(_variableCount);
+    _inverseMetric.resize(_variableCount);
     for (size_t i = 0; i < _variableCount; ++i)
     {
-      inverseMetric[i] = _k->_variables[i]->_initialStandardDeviation * _k->_variables[i]->_initialStandardDeviation;
-      metric[i] = 1. / inverseMetric[i];
+      _inverseMetric[i] = _k->_variables[i]->_initialStandardDeviation * _k->_variables[i]->_initialStandardDeviation;
+      _metric[i] = 1. / _inverseMetric[i];
     }
   }
   else
   {
-    metric.resize(_variableCount * _variableCount, 0.);
-    inverseMetric.resize(_variableCount * _variableCount, 0.);
+    _metric.resize(_variableCount * _variableCount, 0.);
+    _inverseMetric.resize(_variableCount * _variableCount, 0.);
 
     for (size_t d = 0; d < _variableCount; ++d)
     {
-      inverseMetric[d * _variableCount + d] = _k->_variables[d]->_initialStandardDeviation * _k->_variables[d]->_initialStandardDeviation;
-      metric[d * _variableCount + d] = 1. / inverseMetric[d * _variableCount + d];
+      _inverseMetric[d * _variableCount + d] = _k->_variables[d]->_initialStandardDeviation * _k->_variables[d]->_initialStandardDeviation;
+      _metric[d * _variableCount + d] = 1. / _inverseMetric[d * _variableCount + d];
     }
   }
 
   // Initializing Integrator and Hamiltonian
-  if (_eVersion == EVersion::Static)
+  if (_metricType == Metric::Static)
   {
-    _hamiltonian = std::make_shared<HamiltonianEuclideanDiag>(_variableCount, _normalGenerator, metric, inverseMetric, _k);
+    _hamiltonian = std::make_shared<HamiltonianEuclideanDiag>(_variableCount, _normalGenerator, _metric, _inverseMetric, _k);
     _integrator = std::make_unique<LeapfrogExplicit>(_hamiltonian);
   }
-  else if (_eVersion == EVersion::Euclidean)
+  else if (_metricType == Metric::Euclidean)
   {
     if (_useDiagonalMetric)
-      _hamiltonian = std::make_shared<HamiltonianEuclideanDiag>(_variableCount, _normalGenerator, metric, inverseMetric, _k);
+      _hamiltonian = std::make_shared<HamiltonianEuclideanDiag>(_variableCount, _normalGenerator, _metric, _inverseMetric, _k);
     else
-      _hamiltonian = std::make_shared<HamiltonianEuclideanDense>(_variableCount, _multivariateGenerator, metric, inverseMetric, _k);
+      _hamiltonian = std::make_shared<HamiltonianEuclideanDense>(_variableCount, _multivariateGenerator, _metric, _inverseMetric, _k);
     _integrator = std::make_unique<LeapfrogExplicit>(_hamiltonian);
   }
-  else if (_eVersion == EVersion::Riemannian)
+  else if (_metricType == Metric::Riemannian)
   {
     if (_useDiagonalMetric)
-      _hamiltonian = std::make_shared<HamiltonianRiemannianDiag>(_variableCount, _normalGenerator, metric, inverseMetric, _inverseRegularizationParameter, _k);
+      _hamiltonian = std::make_shared<HamiltonianRiemannianDiag>(_variableCount, _normalGenerator, _metric, _inverseMetric, _inverseRegularizationParameter, _k);
     else
       KORALI_LOG_ERROR("Riemannian Metric only supported with Diagonal Metric");
     _integrator = std::make_unique<LeapfrogImplicit>(_maxNumFixedPointIteration, _hamiltonian);
   }
-  else if (_eVersion == EVersion::Riemannian_Const)
+  else if (_metricType == Metric::Riemannian_Const)
   {
     if (_useDiagonalMetric)
-      _hamiltonian = std::make_shared<HamiltonianRiemannianConstDiag>(_variableCount, _normalGenerator, metric, inverseMetric, _inverseRegularizationParameter, _k);
+      _hamiltonian = std::make_shared<HamiltonianRiemannianConstDiag>(_variableCount, _normalGenerator, _metric, _inverseMetric, _inverseRegularizationParameter, _k);
     else
-      _hamiltonian = std::make_shared<HamiltonianRiemannianConstDense>(_variableCount, _multivariateGenerator, metric, inverseMetric, _inverseRegularizationParameter, _k);
+      _hamiltonian = std::make_shared<HamiltonianRiemannianConstDense>(_variableCount, _multivariateGenerator, _metric, _inverseMetric, _inverseRegularizationParameter, _k);
     _integrator = std::make_unique<LeapfrogExplicit>(_hamiltonian);
   }
 
@@ -181,7 +178,7 @@ void HMC::runGeneration()
   _positionCandidate = _positionLeader;
   _momentumLeader = _momentumCandidate;
 
-  if (_eVersion == EVersion::Riemannian_Const)
+  if (_metricType == Metric::Riemannian_Const)
   {
     int err = _hamiltonian->updateMetricMatricesRiemannian(_positionLeader);
     if (err > 0) _k->_logger->logWarning("Normal", "Error during metric update.");
@@ -193,7 +190,7 @@ void HMC::runGeneration()
   // Execute version specific generation
   if (_useNUTS)
   {
-    if (_eVersion == EVersion::Riemannian)
+    if (_metricType == Metric::Riemannian)
     {
       runGenerationNUTSRiemannian(logUniSample);
     }
@@ -441,7 +438,7 @@ void HMC::saveSample()
     _sampleEvaluationDatabase.push_back(_leaderEvaluation);
   }
   // Keep samples during slow adaption interval for metric calculation
-  else if (_eVersion == EVersion::Euclidean && (_initialFastAdaptionInterval <= _chainLength) && (_chainLength < _initialFastAdaptionInterval + _initialSlowAdaptionInterval))
+  else if (_metricType == Metric::Euclidean && (_initialFastAdaptionInterval <= _chainLength) && (_chainLength < _initialFastAdaptionInterval + _initialSlowAdaptionInterval))
   {
     _euclideanWarmupSampleDatabase.push_back(_positionLeader);
   }
@@ -522,7 +519,7 @@ void HMC::updateState()
   updateStepSize();
 
   // Update metric at the end of slow adaption period
-  if (_eVersion == EVersion::Euclidean && _chainLength == _initialFastAdaptionInterval + _initialSlowAdaptionInterval)
+  if (_metricType == Metric::Euclidean && _chainLength == _initialFastAdaptionInterval + _initialSlowAdaptionInterval)
   {
     int err = _hamiltonian->updateMetricMatricesEuclidean(_euclideanWarmupSampleDatabase);
     if (err == GSL_EDOM) KORALI_LOG_ERROR("Inverse Metric negative definite (not updating Metric). Increase 'Initial Slow Adaption Interval' (is %zu).", _initialSlowAdaptionInterval);
@@ -731,7 +728,7 @@ void HMC::printGenerationAfter()
 
   _k->_logger->logInfo("Detailed", "Current Metric:\n");
   auto metric = _hamiltonian->getMetric();
-  if (_useDiagonalMetric == true || _eVersion == EVersion::Static)
+  if (_useDiagonalMetric == true || _metricType == Metric::Static)
   {
     for (size_t e = 0; e < _variableCount; ++e)
       _k->_logger->logData("Detailed", "         %+6.3e  \n", metric[e]);
@@ -747,18 +744,19 @@ void HMC::printGenerationAfter()
   }
 
   _k->_logger->logInfo("Detailed", "Current Inverse Metric:\n");
-  auto inverseMetric = _hamiltonian->getInverseMetric();
-  if (_useDiagonalMetric == true || _eVersion == EVersion::Static)
+  _inverseMetric = _hamiltonian->getInverseMetric();
+
+  if (_useDiagonalMetric == true || _metricType == Metric::Static)
   {
     for (size_t e = 0; e < _variableCount; ++e)
-      _k->_logger->logData("Detailed", "         %+6.3e  \n", inverseMetric[e]);
+      _k->_logger->logData("Detailed", "         %+6.3e  \n", _inverseMetric[e]);
   }
   else
   {
     for (size_t d = 0; d < _variableCount; ++d)
     {
       for (size_t e = 0; e < _variableCount; ++e)
-        _k->_logger->logData("Normal", "         %+6.3e  ", inverseMetric[d * _variableCount + e]);
+        _k->_logger->logData("Normal", "         %+6.3e  ", _inverseMetric[d * _variableCount + e]);
       _k->_logger->logInfo("Normal", "\n");
     }
   }

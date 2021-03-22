@@ -25,7 +25,7 @@ namespace solver
 {
 namespace sampler
 {
-enum class EVersion
+enum class Metric
 {
   Static = 0,
   Euclidean = 1,
@@ -49,7 +49,7 @@ class HMC : public Sampler
   void finishSample(size_t sampleId);
 
   /**
-  * @brief Runs generation for HMC sampler.
+  * @brief Runs generation of HMC sampler.
   * @param logUniSample Log of uniform sample needed for Metropolis accepance / rejection step.
   */
   void runGenerationHMC(const double logUniSample);
@@ -77,16 +77,16 @@ class HMC : public Sampler
   void updateStepSize();
 
   /**
-  * @brief Recursive binary tree building algorithm. Used if Use NUTS is set to True.
+  * @brief Recursive binary tree building algorithm. Applied if configuration 'Use NUTS' is set to True.
   * @param helper Helper struct for large argument list.
   * @param depth Current depth of binary tree.
   */
   void buildTree(std::shared_ptr<TreeHelperEuclidean> helper, const size_t depth);
 
   /**
-  * @brief Recursive binary tree building algorithm. Used if Use NUTS is set to True.
+  * @brief Recursive binary tree building algorithm. Applied if configuration 'Use NUTS' is set to True.
   * @param helper Helper struct for large argument list.
-  * @param rho Sum of momenta encountered along momentum.
+  * @param rho Sum of momenta encountered along path.
   * @param depth Current depth of binary tree.
   */
   void buildTreeIntegration(std::shared_ptr<TreeHelperRiemannian> helper, std::vector<double> &rho, const size_t depth);

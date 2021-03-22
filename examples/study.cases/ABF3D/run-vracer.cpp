@@ -69,20 +69,22 @@ int main(int argc, char *argv[])
 
   e["Solver"]["Type"] = "Agent / Continuous / VRACER";
   e["Solver"]["Mode"] = "Training";
-  e["Solver"]["Episodes Per Generation"] = 1;
+  e["Solver"]["Episodes Per Generation"] = 10;
+  e["Solver"]["Updates Between Reward Rescaling"] = 100000000;
   e["Solver"]["Experiences Between Policy Updates"] = 1;
   e["Solver"]["Learning Rate"] = 1e-4;
   e["Solver"]["Discount Factor"] = 0.99;
+  e["Solver"]["L2 Regularization"]["Enabled"] = true;
+  e["Solver"]["L2 Regularization"]["Importance"] = 1e-3;
 
   /// Defining the configuration of replay memory
 
-  e["Solver"]["Experience Replay"]["Start Size"] = 4096;
-  e["Solver"]["Experience Replay"]["Maximum Size"] = 65536;
+  e["Solver"]["Experience Replay"]["Start Size"] = 131072;
+  e["Solver"]["Experience Replay"]["Maximum Size"] = 262144;
 
   /// Configuring Mini Batch
 
   e["Solver"]["Mini Batch Size"] = 256;
-  e["Solver"]["Mini Batch Strategy"] = "Uniform";
 
   /// Configuring the neural network and its hidden layers
 
@@ -108,7 +110,7 @@ int main(int argc, char *argv[])
 
   e["Console Output"]["Verbosity"] = "Detailed";
   e["File Output"]["Enabled"] = true;
-  e["File Output"]["Frequency"] = 10;
+  e["File Output"]["Frequency"] = 30;
   e["File Output"]["Path"] = _resultDir;
 
   auto k = korali::Engine();

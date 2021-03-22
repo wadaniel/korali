@@ -29,8 +29,6 @@ class HamiltonianEuclideanDense : public HamiltonianEuclidean
   */
   HamiltonianEuclideanDense(const size_t stateSpaceDim, korali::Experiment *k) : HamiltonianEuclidean{stateSpaceDim, k}
   {
-    _metric.resize(stateSpaceDim * stateSpaceDim);
-    _inverseMetric.resize(stateSpaceDim * stateSpaceDim);
   }
 
   /**
@@ -40,9 +38,6 @@ class HamiltonianEuclideanDense : public HamiltonianEuclidean
   */
   HamiltonianEuclideanDense(const size_t stateSpaceDim, korali::distribution::multivariate::Normal *multivariateGenerator, korali::Experiment *k) : HamiltonianEuclidean{stateSpaceDim, k}
   {
-    _metric.resize(stateSpaceDim * stateSpaceDim);
-    _inverseMetric.resize(stateSpaceDim * stateSpaceDim);
-
     _multivariateGenerator = multivariateGenerator;
   }
 
@@ -55,9 +50,6 @@ class HamiltonianEuclideanDense : public HamiltonianEuclidean
   */
   HamiltonianEuclideanDense(const size_t stateSpaceDim, korali::distribution::multivariate::Normal *multivariateGenerator, const std::vector<double> metric, const std::vector<double> inverseMetric, korali::Experiment *k) : HamiltonianEuclideanDense{stateSpaceDim, multivariateGenerator, k}
   {
-    _metric = metric;
-    _inverseMetric = inverseMetric;
-
     std::vector<double> mean(stateSpaceDim, 0.0);
 
     // Initialize multivariate normal distribution
@@ -95,14 +87,14 @@ class HamiltonianEuclideanDense : public HamiltonianEuclidean
   * @param p Current momentum.
   * @return Kinetic energy.
   */
-  double K(const std::vector<double> &p) override
+  double K(const std::vector<double> &p, const std;:vector<double>& inverseMetric) override
   {
     double tmpScalar = 0.0;
     for (size_t i = 0; i < _stateSpaceDim; ++i)
     {
       for (size_t j = 0; j < _stateSpaceDim; ++j)
       {
-        tmpScalar += p[i] * _inverseMetric[i * _stateSpaceDim + j] * p[j];
+        tmpScalar += p[i] * inverseMetric[i * _stateSpaceDim + j] * p[j];
       }
     }
 
@@ -111,12 +103,13 @@ class HamiltonianEuclideanDense : public HamiltonianEuclidean
 
   /**
   * @brief Purely virtual gradient of kintetic energy function dK(q, p) = inverseMetric(q) * p + 0.5 * dlogDetMetric_dq(q) used for Hamiltonian Dynamics. For Euclidean metric logDetMetric(q) := 0.0.
-  * @param p Current momentum.
+  * @param momentum Current momentum.
+  * @param inverseMetric Current inverseMetric.
   * @return Gradient of Kinetic energy with current momentum.
   */
-  std::vector<double> dK(const std::vector<double> &p) override
+  std::vector<double> dK(const std::vector<double> &momentum, const std::vector<double>& inverseMetric) override
   {
-    std::vector<double> tmpVector(_stateSpaceDim, 0.0);
+    std::vector<double> gradient(_stateSpaceDim, 0.0);
     double tmpScalar = 0.0;
 
     for (size_t i = 0; i < _stateSpaceDim; ++i)
@@ -124,19 +117,20 @@ class HamiltonianEuclideanDense : public HamiltonianEuclidean
       tmpScalar = 0.0;
       for (size_t j = 0; j < _stateSpaceDim; ++j)
       {
-        tmpScalar += _inverseMetric[i * _stateSpaceDim + j] * p[j];
+        tmpScalar += inverseMetric[i * _stateSpaceDim + j] * momentum[j];
       }
-      tmpVector[i] = tmpScalar;
+      gradient[i] = tmpScalar;
     }
 
-    return tmpVector;
+    return gradient;
   }
 
   /**
   * @brief Generates sample of momentum.
-  * @return Sample of momentum from normal distribution with covariance matrix _metric.
+  * @param metric Current metric.
+  * @return Sample of momentum from normal distribution with covariance matrix metric.
   */
-  std::vector<double> sampleMomentum() const override
+  std::vector<double> sampleMomentum(const std::vector<double>& metric) const override
   {
     // TODO: Change
     std::vector<double> result(_stateSpaceDim, 0.0);
@@ -148,9 +142,9 @@ class HamiltonianEuclideanDense : public HamiltonianEuclidean
   * @brief Calculates inner product induces by inverse metric.
   * @param pLeft Left argument (momentum).
   * @param pRight Right argument (momentum).
-  * @return pLeft.transpose * _inverseMetric * pRight.
+  * @return pLeft.transpose * inverseMetric * pRight.
   */
-  double innerProduct(const std::vector<double> &pLeft, const std::vector<double> &pRight) const
+  double innerProduct(const std::vector<double> &pLeft, const std::vector<double> &pRight, const std::vector<double>& inverseMetric) const
   {
     double result = 0.0;
 
@@ -158,7 +152,7 @@ class HamiltonianEuclideanDense : public HamiltonianEuclidean
     {
       for (size_t j = 0; j < _stateSpaceDim; ++j)
       {
-        result += pLeft[i] * _inverseMetric[i * _stateSpaceDim + j] * pRight[j];
+        result += pLeft[i] * inverseMetric[i * _stateSpaceDim + j] * pRight[j];
       }
     }
 
@@ -193,16 +187,16 @@ class HamiltonianEuclideanDense : public HamiltonianEuclidean
         meank = sumk / numSamples;
         meani = sumi / numSamples;
         cov = sumOfSquares / numSamples - meani * meank;
-        _inverseMetric[i * _stateSpaceDim + k] = cov;
-        _inverseMetric[k * _stateSpaceDim + i] = cov;
+        inverseMetric[i * _stateSpaceDim + k] = cov;
+        inverseMetric[k * _stateSpaceDim + i] = cov;
       }
     }
 
     // update Metric to be consisitent with Inverse Metric
-    int err = __invertMatrix(_inverseMetric, _metric);
+    int err = __invertMatrix(inverseMetric, metric);
     if (err > 0) return err;
 
-    std::vector<double> sig = _metric;
+    std::vector<double> sig = metric;
     gsl_matrix_view sigView = gsl_matrix_view_array(&sig[0], _stateSpaceDim, _stateSpaceDim);
 
     // Cholesky Decomp
@@ -249,7 +243,7 @@ class HamiltonianEuclideanDense : public HamiltonianEuclidean
 
   private:
   /**
-  * @brief Multivariate normal generator needed for sampling of momentum from dense _metric.
+  * @brief Multivariate normal generator needed for sampling of momentum from dense metric.
   */
   korali::distribution::multivariate::Normal *_multivariateGenerator;
 };

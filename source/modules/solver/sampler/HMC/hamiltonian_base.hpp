@@ -66,10 +66,11 @@ class Hamiltonian
 
   /**
   * @brief Purely virtual gradient of kintetic energy function dK(q, p) = inverseMetric(q) * p + 0.5 * dlogDetMetric_dq(q) used for Hamiltonian Dynamics.
-  * @param p Current momentum.
+  * @param momentum Current momentum.
+  * @param inverseMetric Current inverse metric.
   * @return Gradient of Kinetic energy with current momentum.
   */
-  virtual std::vector<double> dK(const std::vector<double> &p) = 0;
+  virtual std::vector<double> dK(const std::vector<double>* momentum, const std::vector<double> &inverseMetric) = 0;
 
   /**
   * @brief Potential Energy function U(q) = -log(pi(q)) used for Hamiltonian Dynamics.
@@ -99,24 +100,27 @@ class Hamiltonian
 
   /**
   * @brief Purely virtual function tau(q, p) = 0.5 * p^T * inverseMetric(q) * p (no logDetMetric term)
-  * @param p Current momentum.
+  * @param momentum Current momentum.
+  * @param inverseMetric Current inverseMetric.
   * @return Gradient of Kinetic energy with current momentum.
   */
-  virtual double tau(const std::vector<double> &p) = 0;
+  virtual double tau(const std::vector<double> &momentum, const std::vector<double>& inverseMetric) = 0;
 
   /**
   * @brief Purely virtual gradient of dtau_dq(q, p) = 0.5 * p^T * dinverseMetric_dq(q) * p used for Hamiltonian Dynamics.
-  * @param p Current momentum.
+  * @param momentum Current momentum.
+  * @param inverseMetric Current inverseMetric.
   * @return Gradient of Kinetic energy with current momentum.
   */
-  virtual std::vector<double> dtau_dq(const std::vector<double> &p) = 0;
+  virtual std::vector<double> dtau_dq(const std::vector<double> &momentum, const std::vector<double>& inverseMetric) = 0;
 
   /**
   * @brief Purely virtual gradient of dtau_dp(q, p) = inverseMetric(q) * p used for Hamiltonian Dynamics.
-  * @param p Current momentum.
+  * @param momentum Current momentum.
+  * @param inverseMetric Current inverseMetric.
   * @return Gradient of Kinetic energy with current momentum.
   */
-  virtual std::vector<double> dtau_dp(const std::vector<double> &p) = 0;
+  virtual std::vector<double> dtau_dp(const std::vector<double> &momentum, const std::vector<double> &inverseMetric) = 0;
 
   /**
   * @brief Purely virtual gradient of phi(q) = 0.5 * logDetMetric(q) + U(q) used for Hamiltonian Dynamics.
@@ -135,7 +139,7 @@ class Hamiltonian
   * @param q Current position.
   * @param _k Experiment object.
   */
-  virtual void updateHamiltonian(const std::vector<double> &q)
+  virtual void updateHamiltonian(const std::vector<double> &q, std::vector<double>& metric, std::vector<double>& inverseMetric)
   {
     auto sample = korali::Sample();
     sample["Sample Id"] = _modelEvaluationCount;
@@ -158,17 +162,18 @@ class Hamiltonian
 
   /**
   * @brief Generates sample of momentum.
-  * @return Sample of momentum from normal distribution with covariance matrix _metric.
+  * @param metric Current metric.
+  * @return Sample of momentum from normal distribution with covariance matrix metric.
   */
-  virtual std::vector<double> sampleMomentum() const = 0;
+  virtual std::vector<double> sampleMomentum(const std::vector<double>& metric) const = 0;
 
   /**
   * @brief Calculates inner product induces by inverse metric.
   * @param pLeft Left argument (momentum).
   * @param pRight Right argument (momentum).
-  * @return pLeft.transpose * _inverseMetric * pRight.
+  * @return pLeft.transpose * inverseMetric * pRight.
   */
-  virtual double innerProduct(const std::vector<double> &pLeft, const std::vector<double> &pRight) const = 0;
+  virtual double innerProduct(const std::vector<double> &pLeft, const std::vector<double> &pRight, const std::vector<double> &inverseMetric) const = 0;
 
   /**
   * @brief Computes NUTS criterion on euclidean domain.
@@ -211,24 +216,6 @@ class Hamiltonian
   };
 
   /**
-  * @brief Getter function for inverse metric.
-  * @return Returns inverse metric of hamiltonian.
-  */
-  std::vector<double> getInverseMetric() const
-  {
-    return _inverseMetric;
-  }
-
-  /**
-  * @brief Getter function for metric.
-  * @return Returns metric of hamiltonian.
-  */
-  std::vector<double> getMetric() const
-  {
-    return _metric;
-  }
-
-  /**
   * @brief Number of model evaluations.
   */
   size_t _modelEvaluationCount;
@@ -264,15 +251,6 @@ class Hamiltonian
   */
   size_t _stateSpaceDim;
 
-  /**
-  * @brief Metric of the manifold.
-  */
-  std::vector<double> _metric;
-
-  /**
-  * @brief Inverse Metric from which the momentum is sampled.
-  */
-  std::vector<double> _inverseMetric;
 };
 
 } // namespace sampler

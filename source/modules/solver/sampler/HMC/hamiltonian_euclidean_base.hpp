@@ -43,20 +43,22 @@ class HamiltonianEuclidean : public Hamiltonian
 
   /**
   * @brief Purely virtual function tau(q, p) = 0.5 * p^T * inverseMetric(q) * p (no logDetMetric term)
-  * @param p Current momentum.
+  * @param momentum Current momentum.
+  * @param inverseMetric Current inverse metric.
   * @return Gradient of Kinetic energy with current momentum.
   */
-  double tau(const std::vector<double> &p) override
+  double tau(const std::vector<double> &momentum, const std::vector<double> &inverseMetric) override
   {
-    return this->K(p);
+    return this->K(momentum, inverseMetric);
   }
 
   /**
   * @brief Purely virtual gradient of dtau_dq(q, p) = 0.5 * p^T * dinverseMetric_dq(q) * p used for Hamiltonian Dynamics.
-  * @param p Current momentum.
+  * @param momentum Current momentum.
+  * @param inverseMetric Current inverseMetric.
   * @return Gradient of Kinetic energy with current momentum.
   */
-  std::vector<double> dtau_dq(const std::vector<double> &p) override
+  std::vector<double> dtau_dq(const std::vector<double> &momentum, const std::vector<double> &inverseMetric) override
   {
     return std::vector<double>(_stateSpaceDim, 0.0);
   }
@@ -66,9 +68,9 @@ class HamiltonianEuclidean : public Hamiltonian
   * @param p Current momentum.
   * @return Gradient of Kinetic energy with current momentum.
   */
-  std::vector<double> dtau_dp(const std::vector<double> &p) override
+  std::vector<double> dtau_dp(const std::vector<double> &p, const std::vector<double>& inverseMetric) override
   {
-    return this->dK(p);
+    return this->dK(momentum, inverseMetric);
   }
 
   /**

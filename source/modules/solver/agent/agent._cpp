@@ -328,7 +328,7 @@ void Agent::rescaleRewards()
    float retV = 0.0;
    for (int expId = _rewardVector.size() - 1; expId >= 0; --expId)
    {
-     if(_terminationVector[expId] == e_terminal) retV = 0.0;
+     if(_terminationVector[expId] != e_nonTerminal) retV = 0.0;
 
      retV = _discountFactor * retV + _rewardVector[expId];
      _stateValueVector[expId] = retV;

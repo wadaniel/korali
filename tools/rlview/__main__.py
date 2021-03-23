@@ -6,6 +6,7 @@ import json
 import argparse
 import time
 import matplotlib
+matplotlib.rcParams["backend"] = "TkAgg"
 import importlib
 import math 
 import numpy as np

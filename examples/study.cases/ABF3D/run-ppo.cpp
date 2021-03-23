@@ -71,23 +71,21 @@ int main(int argc, char *argv[])
   e["Solver"]["Mode"] = "Training";
   e["Solver"]["Episodes Per Generation"] = 5;
   e["Solver"]["Updates Between Reward Rescaling"] = 20000;
-  e["Solver"]["Experiences Between Policy Updates"] = 1e8;
+  e["Solver"]["Experiences Between Policy Updates"] = 1;
   e["Solver"]["Learning Rate"] = 1e-4;
-  e["Solver"]["Discount Factor"] = 0.99;
+  e["Solver"]["Discount Factor"] = 0.995;
   e["Solver"]["L2 Regularization"]["Enabled"] = true;
   e["Solver"]["L2 Regularization"]["Importance"] = 1e-3;
 
   // PPO specific parameters
-
-  e["Solver"]["Lambda"] = 0.95;
+  e["Solver"]["Lambda"] = 0.97;
   e["Solver"]["Epsilon"] = 0.2;
   e["Solver"]["Number Of Training Epochs"] = 10;
   e["Solver"]["Episodes Between Policy Updates"] = 5;
 
   /// Defining the configuration of replay memory
-
   e["Solver"]["Experience Replay"]["Start Size"] = 0;
-  e["Solver"]["Experience Replay"]["Maximum Size"] = 1850; // should be related to N*
+  e["Solver"]["Experience Replay"]["Maximum Size"] = 2196; // should be related to N*
   // e["Solver"]["Experience Replay"]["Off Policy"]["Cutoff Scale"] = 1e7; // turn off cutoff
   // e["Solver"]["Experience Replay"]["Off Policy"]["REFER Beta"] = 1; // turn off cutoff
 
@@ -120,7 +118,7 @@ int main(int argc, char *argv[])
 
   e["Console Output"]["Verbosity"] = "Detailed";
   e["File Output"]["Enabled"] = true;
-  e["File Output"]["Frequency"] = 30;
+  e["File Output"]["Frequency"] = 1;
   e["File Output"]["Path"] = _resultDir;
 
   auto k = korali::Engine();

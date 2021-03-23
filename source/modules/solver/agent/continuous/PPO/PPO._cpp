@@ -1,7 +1,7 @@
 #include "engine.hpp"
 #include "modules/solver/agent/continuous/PPO/PPO.hpp"
-#include "sample/sample.hpp"
 #include "omp.h"
+#include "sample/sample.hpp"
 
 namespace korali
 {
@@ -85,7 +85,7 @@ void PPO::initializeAgent()
 
 void PPO::trainPolicy()
 {
-  for( size_t e = 0; e < _numberOfTrainingEpochs; e++)
+  for (size_t e = 0; e < _numberOfTrainingEpochs; e++)
   {
     /****************************************************************************
     * Training the critic/learner network with a mini-batch
@@ -94,11 +94,10 @@ void PPO::trainPolicy()
     // Creating a minibatch of starting experiences for the trajectories update
     auto miniBatchIndexes = generateMiniBatch(_miniBatchSize);
 
-    // Fill Minibatch
-
+    // Create container for statistics
     std::fill(_statisticsAverageActionSigmas.begin(), _statisticsAverageActionSigmas.end(), 0.0);
 
-  #pragma omp parallel for
+#pragma omp parallel for
     for (size_t b = 0; b < _miniBatchSize; b++)
     {
       // Getting index of current experiment
@@ -120,7 +119,7 @@ void PPO::trainPolicy()
       // Storage for the update gradient
       std::vector<float> gradientLoss(1 + 2 * _problem->_actionVectorSize);
 
-      // Gradient of Value Function, if expVtbc is not updated, it corresponds to the episode return
+      // Gradient of Value Function (eq. ), if expVtbc is not updated, it corresponds to the episode return
       gradientLoss[0] = expVtbc - V;
 
       /********* use VRACER advantage estimate ******************
@@ -157,12 +156,12 @@ void PPO::trainPolicy()
       // Compute clipped PPO objective and determine whether to take gradient
       std::vector<float> polGrad(2 * _problem->_actionVectorSize, 0.0);
       float importanceWeight = _importanceWeightVector[expId];
-      if( lossOffPolicy >= 0 && importanceWeight < (1+_epsilon) )
+      if (lossOffPolicy >= 0 && importanceWeight < (1 + _epsilon))
       {
         // Compute Policy Gradient wrt Params
         polGrad = calculateImportanceWeightGradient(expAction, curPolicy, expPolicy);
       }
-      if( lossOffPolicy < 0 && importanceWeight > (1-_epsilon) )
+      if (lossOffPolicy < 0 && importanceWeight > (1 - _epsilon))
       {
         // Compute Policy Gradient wrt Params
         polGrad = calculateImportanceWeightGradient(expAction, curPolicy, expPolicy);
@@ -186,8 +185,7 @@ void PPO::trainPolicy()
 
       // Compute statistics
       for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-       _statisticsAverageActionSigmas[i] += curPolicy.actionSigmas[i];
-
+        _statisticsAverageActionSigmas[i] += curPolicy.actionSigmas[i];
 
       // Set Gradient of Loss as Solution
       _criticPolicyProblem->_solutionData[b] = gradientLoss;
@@ -206,7 +204,6 @@ void PPO::trainPolicy()
     // Running one generation of the optimization method with the given mini-batch
     _criticPolicyLearner->runGeneration();
   }
-
 }
 
 float PPO::stateValueFunction(const std::vector<std::vector<float>> &state)
@@ -219,7 +216,7 @@ float PPO::stateValueFunction(const std::vector<std::vector<float>> &state)
 policy_t PPO::runPolicy(const std::vector<std::vector<float>> &state)
 {
   // Storage for policy
- policy_t policy;
+  policy_t policy;
 
   // Forward the neural network for this state
   auto evaluation = _criticPolicyLearner->getEvaluation({state})[0];
@@ -236,7 +233,7 @@ policy_t PPO::runPolicy(const std::vector<std::vector<float>> &state)
     const auto mean = evaluation[i + 1];
     const auto sigma = evaluation[_problem->_actionVectorSize + i + 1];
 
-    if (std::isfinite(mean) == false)  KORALI_LOG_ERROR("Policy mean of variable %lu returned an invalid value: %f\n", mean);
+    if (std::isfinite(mean) == false) KORALI_LOG_ERROR("Policy mean of variable %lu returned an invalid value: %f\n", mean);
     if (std::isfinite(sigma) == false) KORALI_LOG_ERROR("Policy sigma of variable %lu returned an invalid value: %f\n", sigma);
 
     policy.actionMeans[i] = mean;
@@ -259,27 +256,27 @@ std::vector<policy_t> PPO::runPolicyBatch(const std::vector<std::vector<std::vec
 
   const auto &evaluation = _criticPolicyLearner->_trainingNeuralNetwork->_outputValues;
 
-  #pragma omp parallel for
+#pragma omp parallel for
   for (size_t b = 0; b < batchSize; b++)
   {
-   // Getting state value
-   policyVector[b].stateValue = evaluation[b][0];
+    // Getting state value
+    policyVector[b].stateValue = evaluation[b][0];
 
-   // Getting distribution parameters
-   policyVector[b].actionMeans.resize(_problem->_actionVectorSize);
-   policyVector[b].actionSigmas.resize(_problem->_actionVectorSize);
+    // Getting distribution parameters
+    policyVector[b].actionMeans.resize(_problem->_actionVectorSize);
+    policyVector[b].actionSigmas.resize(_problem->_actionVectorSize);
 
-   for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-   {
-    const auto mean = evaluation[b][i + 1];
-    const auto sigma = evaluation[b][_problem->_actionVectorSize + i + 1];
+    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+    {
+      const auto mean = evaluation[b][i + 1];
+      const auto sigma = evaluation[b][_problem->_actionVectorSize + i + 1];
 
-    if (std::isfinite(mean) == false)  KORALI_LOG_ERROR("Policy mean of variable %lu returned an invalid value: %f\n", mean);
-    if (std::isfinite(sigma) == false) KORALI_LOG_ERROR("Policy sigma of variable %lu returned an invalid value: %f\n", sigma);
+      if (std::isfinite(mean) == false) KORALI_LOG_ERROR("Policy mean of variable %lu returned an invalid value: %f\n", mean);
+      if (std::isfinite(sigma) == false) KORALI_LOG_ERROR("Policy sigma of variable %lu returned an invalid value: %f\n", sigma);
 
-    policyVector[b].actionMeans[i] = mean;
-    policyVector[b].actionSigmas[i] = sigma;
-   }
+      policyVector[b].actionMeans[i] = mean;
+      policyVector[b].actionSigmas[i] = sigma;
+    }
   }
 
   return policyVector;

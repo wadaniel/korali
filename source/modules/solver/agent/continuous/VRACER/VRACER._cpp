@@ -1,7 +1,7 @@
 #include "engine.hpp"
 #include "modules/solver/agent/continuous/VRACER/VRACER.hpp"
-#include "sample/sample.hpp"
 #include "omp.h"
+#include "sample/sample.hpp"
 
 namespace korali
 {
@@ -168,7 +168,7 @@ void VRACER::trainPolicy()
 
     // Compute statistics
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-     _statisticsAverageActionSigmas[i] += curPolicy.actionSigmas[i];
+      _statisticsAverageActionSigmas[i] += curPolicy.actionSigmas[i];
 
     // Set Gradient of Loss as Solution
     _criticPolicyProblem->_solutionData[b] = gradientLoss;
@@ -198,7 +198,7 @@ float VRACER::stateValueFunction(const std::vector<std::vector<float>> &state)
 policy_t VRACER::runPolicy(const std::vector<std::vector<float>> &state)
 {
   // Storage for policy
- policy_t policy;
+  policy_t policy;
 
   // Forward the neural network for this state
   auto evaluation = _criticPolicyLearner->getEvaluation({state})[0];
@@ -215,7 +215,7 @@ policy_t VRACER::runPolicy(const std::vector<std::vector<float>> &state)
     const auto mean = evaluation[i + 1];
     const auto sigma = evaluation[_problem->_actionVectorSize + i + 1];
 
-    if (std::isfinite(mean) == false)  KORALI_LOG_ERROR("Policy mean of variable %lu returned an invalid value: %f\n", mean);
+    if (std::isfinite(mean) == false) KORALI_LOG_ERROR("Policy mean of variable %lu returned an invalid value: %f\n", mean);
     if (std::isfinite(sigma) == false) KORALI_LOG_ERROR("Policy sigma of variable %lu returned an invalid value: %f\n", sigma);
 
     policy.actionMeans[i] = mean;
@@ -238,27 +238,27 @@ std::vector<policy_t> VRACER::runPolicyBatch(const std::vector<std::vector<std::
 
   const auto &evaluation = _criticPolicyLearner->_trainingNeuralNetwork->_outputValues;
 
-  #pragma omp parallel for
+#pragma omp parallel for
   for (size_t b = 0; b < batchSize; b++)
   {
-   // Getting state value
-   policyVector[b].stateValue = evaluation[b][0];
+    // Getting state value
+    policyVector[b].stateValue = evaluation[b][0];
 
-   // Getting distribution parameters
-   policyVector[b].actionMeans.resize(_problem->_actionVectorSize);
-   policyVector[b].actionSigmas.resize(_problem->_actionVectorSize);
+    // Getting distribution parameters
+    policyVector[b].actionMeans.resize(_problem->_actionVectorSize);
+    policyVector[b].actionSigmas.resize(_problem->_actionVectorSize);
 
-   for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-   {
-    const auto mean = evaluation[b][i + 1];
-    const auto sigma = evaluation[b][_problem->_actionVectorSize + i + 1];
+    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+    {
+      const auto mean = evaluation[b][i + 1];
+      const auto sigma = evaluation[b][_problem->_actionVectorSize + i + 1];
 
-    if (std::isfinite(mean) == false)  KORALI_LOG_ERROR("Policy mean of variable %lu returned an invalid value: %f\n", mean);
-    if (std::isfinite(sigma) == false) KORALI_LOG_ERROR("Policy sigma of variable %lu returned an invalid value: %f\n", sigma);
+      if (std::isfinite(mean) == false) KORALI_LOG_ERROR("Policy mean of variable %lu returned an invalid value: %f\n", mean);
+      if (std::isfinite(sigma) == false) KORALI_LOG_ERROR("Policy sigma of variable %lu returned an invalid value: %f\n", sigma);
 
-    policyVector[b].actionMeans[i] = mean;
-    policyVector[b].actionSigmas[i] = sigma;
-   }
+      policyVector[b].actionMeans[i] = mean;
+      policyVector[b].actionSigmas[i] = sigma;
+    }
   }
 
   return policyVector;

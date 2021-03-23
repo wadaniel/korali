@@ -40,30 +40,30 @@ enum termination_t
 */
 struct policy_t
 {
- /**
+  /**
   * @brief Contains state value (V) estimation for the given state / policy combination
   */
- float stateValue;
+  float stateValue;
 
- /**
+  /**
   * @brief [Continuous] Contains the action means for the policy
   */
- std::vector<float> actionMeans;
+  std::vector<float> actionMeans;
 
- /**
+  /**
   * @brief [Continuous] Contains the action sigmas for the policy
   */
- std::vector<float> actionSigmas;
+  std::vector<float> actionSigmas;
 
- /**
+  /**
   * @brief [Discrete]
   */
- size_t actionIndex;
+  size_t actionIndex;
 
- /**
+  /**
   * @brief [Discrete] Contains the probabilities of discrete actions
   */
- std::vector<float> actionProbabilities;
+  std::vector<float> actionProbabilities;
 };
 
 class Agent : public Solver
@@ -281,7 +281,6 @@ class Agent : public Solver
    */
   double _sessionAgentAttendingTime;
 
-
   /****************************************************************************************************
    * Generation-wise Profiling Timers
    ***************************************************************************************************/
@@ -320,7 +319,6 @@ class Agent : public Solver
    * @brief [Profiling] Measures the time taken to update the attend the agent's state
    */
   double _generationAgentAttendingTime;
-
 
   /****************************************************************************************************
    * Common Agent functions
@@ -425,7 +423,7 @@ class Agent : public Solver
    * @brief Runs a generation when running in testing mode
    */
   void testingGeneration();
- 
+
   /**
    * @brief Rescales rewards to have a zero mean and unit variance
    */

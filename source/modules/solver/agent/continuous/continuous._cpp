@@ -80,8 +80,8 @@ std::vector<float> Continuous::generateTrainingAction(const policy_t &curPolicy)
   std::vector<float> action(_problem->_actionVectorSize);
 
   // Getting parameters from the new and old policies
-  const auto& curMeans = curPolicy.actionMeans;
-  const auto& curSigmas = curPolicy.actionSigmas;
+  const auto &curMeans = curPolicy.actionMeans;
+  const auto &curSigmas = curPolicy.actionSigmas;
 
   for (size_t i = 0; i < _problem->_actionVectorSize; i++)
     action[i] = curMeans[i] + curSigmas[i] * _normalGenerator->getRandomNumber();
@@ -94,10 +94,10 @@ std::vector<float> Continuous::generateTestingAction(const policy_t &curPolicy)
   std::vector<float> action(_problem->_actionVectorSize);
 
   // Getting parameters from the new and old policies
-  const auto& curMeans = curPolicy.actionMeans;
+  const auto &curMeans = curPolicy.actionMeans;
 
   // ParamsOne are the Means, ParamsTwo are the Sigmas
-  for (size_t i = 0; i < _problem->_actionVectorSize; i++)  action[i] = curMeans[i];
+  for (size_t i = 0; i < _problem->_actionVectorSize; i++) action[i] = curMeans[i];
 
   return action;
 }
@@ -108,10 +108,10 @@ float Continuous::calculateImportanceWeight(const std::vector<float> &action, co
   float logpOldPolicy = 0.0f;
 
   // Getting parameters from the new and old policies
-  const auto& oldMeans = oldPolicy.actionMeans;
-  const auto& oldSigmas = oldPolicy.actionSigmas;
-  const auto& curMeans = curPolicy.actionMeans;
-  const auto& curSigmas = curPolicy.actionSigmas;
+  const auto &oldMeans = oldPolicy.actionMeans;
+  const auto &oldSigmas = oldPolicy.actionSigmas;
+  const auto &curMeans = curPolicy.actionMeans;
+  const auto &curSigmas = curPolicy.actionSigmas;
 
   // ParamsOne are the Means, ParamsTwo are the Sigmas
   for (size_t i = 0; i < action.size(); i++)
@@ -137,10 +137,10 @@ std::vector<float> Continuous::calculateImportanceWeightGradient(const std::vect
   std::vector<float> grad(2 * _problem->_actionVectorSize, 0.0);
 
   // Getting parameters from the new and old policies
-  const auto& oldMeans = oldPolicy.actionMeans;
-  const auto& oldSigmas = oldPolicy.actionSigmas;
-  const auto& curMeans = curPolicy.actionMeans;
-  const auto& curSigmas = curPolicy.actionSigmas;
+  const auto &oldMeans = oldPolicy.actionMeans;
+  const auto &oldSigmas = oldPolicy.actionSigmas;
+  const auto &curMeans = curPolicy.actionMeans;
+  const auto &curSigmas = curPolicy.actionSigmas;
 
   float logImportanceWeight = 0.0;
 
@@ -182,10 +182,10 @@ std::vector<float> Continuous::calculateKLDivergenceGradient(const policy_t &old
   std::vector<float> klGrad(2.0 * _problem->_actionVectorSize, 0.0);
 
   // Getting parameters from the new and old policies
-  const auto& oldMeans = oldPolicy.actionMeans;
-  const auto& oldSigmas = oldPolicy.actionSigmas;
-  const auto& curMeans = curPolicy.actionMeans;
-  const auto& curSigmas = curPolicy.actionSigmas;
+  const auto &oldMeans = oldPolicy.actionMeans;
+  const auto &oldSigmas = oldPolicy.actionSigmas;
+  const auto &curMeans = curPolicy.actionMeans;
+  const auto &curSigmas = curPolicy.actionSigmas;
 
   for (size_t i = 0; i < _problem->_actionVectorSize; ++i)
   {

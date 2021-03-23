@@ -71,8 +71,8 @@ void NeuralNetwork::initialize()
   _hyperparameterCount = 0;
   for (size_t i = 0; i < layerCount; i++)
   {
-   _layers[i]->_hyperparameterIndex = _hyperparameterCount;
-   _hyperparameterCount += _layers[i]->_hyperparameterCount;
+    _layers[i]->_hyperparameterIndex = _hyperparameterCount;
+    _hyperparameterCount += _layers[i]->_hyperparameterCount;
   }
 
   // Getting batch dimensions
@@ -156,8 +156,8 @@ void NeuralNetwork::forward(const std::vector<std::vector<std::vector<float>>> &
   // Storing timestep count per batch input, for later use on backward propagation
   for (size_t b = 0; b < N; b++) _inputBatchLastStep[b] = inputValues[b].size() - 1;
 
-  // Now replacing values provided by the user in N*T*IC format
-  #pragma omp parallel for simd
+// Now replacing values provided by the user in N*T*IC format
+#pragma omp parallel for simd
   for (size_t b = 0; b < N; b++)
     for (size_t t = 0; t < inputValues[b].size(); t++)
       for (size_t i = 0; i < IC; i++)
@@ -168,7 +168,7 @@ void NeuralNetwork::forward(const std::vector<std::vector<std::vector<float>>> &
     for (size_t i = 0; i < layerCount; i++)
       _layers[i]->forwardData();
 
-  #pragma omp parallel for simd
+#pragma omp parallel for simd
   for (size_t b = 0; b < N; b++)
     for (size_t i = 0; i < OC; i++)
       _outputValues[b][i] = _rawOutputValues[_inputBatchLastStep[b] * N * OC + b * OC + i];
@@ -196,8 +196,8 @@ void NeuralNetwork::backward(const std::vector<std::vector<float>> &outputGradie
   // First, re-setting all output gradients to zero
   std::fill(_rawOutputGradients.begin(), _rawOutputGradients.end(), 0.0f);
 
-  // To store the gradients in the NN we place them on the last input timestep
-  #pragma omp parallel for simd
+// To store the gradients in the NN we place them on the last input timestep
+#pragma omp parallel for simd
   for (size_t b = 0; b < N; b++)
     for (size_t i = 0; i < OC; i++)
       _rawOutputGradients[_inputBatchLastStep[b] * N * OC + b * OC + i] = outputGradients[b][i];
@@ -226,19 +226,19 @@ void NeuralNetwork::backward(const std::vector<std::vector<float>> &outputGradie
 
     for (size_t i = 0; i < layerCount; i++)
     {
-     _layers[i]->backwardHyperparameters();
+      _layers[i]->backwardHyperparameters();
 
-     // If we are passing only one timestep, copy the hyperparameters directly on the NN output
-     if (T == 1) _layers[i]->getHyperparameterGradients(&_hyperparameterGradients[_layers[i]->_hyperparameterIndex]);
-     if (T > 1) _layers[i]->getHyperparameterGradients(&batchHyperparameterGradients[_layers[i]->_hyperparameterIndex]);
+      // If we are passing only one timestep, copy the hyperparameters directly on the NN output
+      if (T == 1) _layers[i]->getHyperparameterGradients(&_hyperparameterGradients[_layers[i]->_hyperparameterIndex]);
+      if (T > 1) _layers[i]->getHyperparameterGradients(&batchHyperparameterGradients[_layers[i]->_hyperparameterIndex]);
     }
 
     // Adding current hyperparameters to the cumulative vector, only if more than one timestep used
     if (T > 1)
     {
-     #pragma omp parallel for simd
-     for (size_t i = 0; i < _hyperparameterCount; i++)
-       _hyperparameterGradients[i] += batchHyperparameterGradients[i];
+#pragma omp parallel for simd
+      for (size_t i = 0; i < _hyperparameterCount; i++)
+        _hyperparameterGradients[i] += batchHyperparameterGradients[i];
     }
   }
 

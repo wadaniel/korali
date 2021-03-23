@@ -36,12 +36,14 @@ e["Solver"]["Episodes Per Generation"] = 1
 e["Solver"]["Discount Factor"] = 0.995
 e["Solver"]["Learning Rate"] = 1e-4
 e["Solver"]["L2 Regularization"]["Enabled"] = True
-e["Solver"]["L2 Regularization"]["Importance"] = 1.0
+e["Solver"]["L2 Regularization"]["Importance"] = 1e-3
+e["Solver"]["Retrace Update Delay"] = 0
+e["Solver"]["Updates Between Reward Rescaling"] = 1000
 e["Solver"]["Mini Batch Size"] = 256
 
 ### Defining the configuration of replay memory
 
-e["Solver"]["Experience Replay"]["Start Size"] = 32768
+e["Solver"]["Experience Replay"]["Start Size"] = 131072
 e["Solver"]["Experience Replay"]["Maximum Size"] = 262144
 
 ### Configuring the Remember-and-Forget Experience Replay algorithm

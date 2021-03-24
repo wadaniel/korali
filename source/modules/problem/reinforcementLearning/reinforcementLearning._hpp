@@ -40,7 +40,17 @@ class ReinforcementLearning : public korali::Problem
   /**
    * @brief Runs/resumes the execution of the environment
    */
-  void runEnvironment();
+  void runEnvironment(Sample &agent);
+
+  void requestNewPolicy(Sample &agent);
+  void getAction(Sample &agent);
+
+  std::vector<float> _stateRescalingMeans;
+  std::vector<float> _stateRescalingSdevs;
+
+  double _agentPolicyEvaluationTime;
+  double _agentComputationTime;
+  double _agentCommunicationTime;
 };
 
 } // namespace problem

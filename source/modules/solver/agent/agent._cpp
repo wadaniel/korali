@@ -72,8 +72,8 @@ void Agent::initialize()
     _experienceReplayOffPolicyCurrentCutoff = _experienceReplayOffPolicyCutoffScale + 1.0f;
     _currentLearningRate = _learningRate;
 
-    _stateRescalingMeans.resize(_problem->_stateVectorSize, 0.0);
-    _stateRescalingSdevs.resize(_problem->_stateVectorSize, 1.0);
+    _stateRescalingMeans = std::vector<float>(_problem->_stateVectorSize, 0.0);
+    _stateRescalingSdevs = std::vector<float>(_problem->_stateVectorSize, 1.0);
 
     _rewardRescalingMean = 0.0;
     _rewardRescalingSdev = 1.0;
@@ -194,36 +194,9 @@ void Agent::trainingGeneration()
       if (_policyUpdateCount >= _updatesBetweenRewardRescaling * _rewardRescalingCount)
         rescaleRewards();
 
-//      // If we accumulated enough experiences, we rescale the states (once)
-//      if(_policyUpdateCount == 0)
-//      {
-//        // Calculation of state moments
-//        std::vector<float> sumStates(_problem->_stateVectorSize, 0.0);
-//        std::vector<float> squaredSumStates(_problem->_stateVectorSize, 0.0);
-//        for(size_t i = 0; i < _stateVector.size(); ++i)
-//         for(size_t d = 0; d < _problem->_stateVectorSize; ++d)
-//         {
-//          sumStates[d] += _stateVector[i][d];
-//          squaredSumStates[d] += _stateVector[i][d]*_stateVector[i][d];
-//         }
-//
-//        for(size_t d = 0; d < _problem->_stateVectorSize; ++d)
-//        {
-//            printf("state [%zu] : sum %lf squaredsum  %lf\n", d, sumStates[d], squaredSumStates[d]);
-//            _stateRescalingMeans[d] = sumStates[d]/(float) _stateVector.size();
-//            if(std::isfinite(_stateRescalingMeans[d]) == false) _stateRescalingMeans[d] = 0.;
-//            _stateRescalingSdevs[d] = std::sqrt( squaredSumStates[d] /(float) _stateVector.size() - _stateRescalingMeans[d]*_stateRescalingMeans[d] );
-//            if(std::isfinite(_stateRescalingSdevs[d]) == false) _stateRescalingSdevs[d] = 1.;
-//            if(_stateRescalingSdevs[d] <= 1e-9 ) _stateRescalingSdevs[d] = 1.;
-//            printf("state [%zu] : mean %f sdev %f\n", d, _stateRescalingMeans[d], _stateRescalingSdevs[d]);
-//        }
-//
-//       // Actual rescaling of initial states
-//       for(size_t i = 0; i < _stateVector.size(); ++i)
-//            for(size_t d = 0; d < _problem->_stateVectorSize; ++d)
-//                _stateVector[i][d] = (_stateVector[i][d] - _stateRescalingMeans[d])/_stateRescalingSdevs[d];
-//      }
-
+      // If we accumulated enough experiences, we rescale the states (once)
+      if(_policyUpdateCount == 0)
+       rescaleStates();
 
       // If we accumulated enough experiences between updates in this session, update now
       while (_sessionExperienceCount > (_experiencesBetweenPolicyUpdates * _sessionPolicyUpdateCount + _sessionExperiencesUntilStartSize))
@@ -290,6 +263,38 @@ void Agent::testingGeneration()
 
   for (size_t agentId = 0; agentId < _testingSampleIds.size(); agentId++)
     _testingReward[agentId] = testingAgents[agentId]["Testing Reward"].get<float>();
+}
+
+void Agent::rescaleStates()
+{
+  // Calculation of state moments
+  std::vector<float> sumStates(_problem->_stateVectorSize, 0.0);
+  std::vector<float> squaredSumStates(_problem->_stateVectorSize, 0.0);
+
+  for(size_t i = 0; i < _stateVector.size(); ++i)
+   for(size_t d = 0; d < _problem->_stateVectorSize; ++d)
+   {
+    sumStates[d] += _stateVector[i][d];
+    squaredSumStates[d] += _stateVector[i][d]*_stateVector[i][d];
+   }
+
+  for(size_t d = 0; d < _problem->_stateVectorSize; ++d)
+  {
+      //printf("state [%zu] : sum %lf squaredsum  %lf\n", d, sumStates[d], squaredSumStates[d]);
+      _stateRescalingMeans[d] = sumStates[d]/(float) _stateVector.size();
+      if(std::isfinite(_stateRescalingMeans[d]) == false) _stateRescalingMeans[d] = 0.0f;
+
+      _stateRescalingSdevs[d] = std::sqrt( squaredSumStates[d] /(float) _stateVector.size() - _stateRescalingMeans[d]*_stateRescalingMeans[d] );
+      if(std::isfinite(_stateRescalingSdevs[d]) == false) _stateRescalingSdevs[d] = 1.0f;
+      if(_stateRescalingSdevs[d] <= 1e-9 ) _stateRescalingSdevs[d] = 1.0f;
+
+      printf("state [%zu] : mean %f sdev %f\n", d, _stateRescalingMeans[d], _stateRescalingSdevs[d]);
+  }
+
+ // Actual rescaling of initial states
+ for(size_t i = 0; i < _stateVector.size(); ++i)
+      for(size_t d = 0; d < _problem->_stateVectorSize; ++d)
+          _stateVector[i][d] = (_stateVector[i][d] - _stateRescalingMeans[d])/_stateRescalingSdevs[d];
 }
 
 void Agent::rescaleRewards()

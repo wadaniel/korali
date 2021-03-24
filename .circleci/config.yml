@@ -22,6 +22,7 @@ jobs:
       buildargs: 
         type: string
         default: ""
+    resource_class: xlarge
     executor: << parameters.image >>  
     working_directory: ~/korali
     steps:
@@ -30,7 +31,7 @@ jobs:
           name: Build and test and install
           command: |
             CC=<< parameters.CC >> CXX=<< parameters.CXX >> meson setup build --prefix=~/test_install --buildtype=<< parameters.buildtype >>
-            ninja -C build -j 1
+            ninja -C build
             source tools/helper/set_env.sh build
             meson test -C build
             meson install -C build

@@ -1,4 +1,4 @@
-TRANSPORT = run-cmaes-transport run-mocmaes-transport run-vracer-transport 
+TRANSPORT = run-mocmaes-transport run-vracer-transport 
 FISH = run-vracer-fish
 WINDMILL = run-vracer-windmill
 KORALICXX=$(shell python3 -m korali.cxx --compiler)

@@ -23,11 +23,11 @@ export _clean_DYLD_LIBRARY_PATH=${DYLD_LIBRARY_PATH}
 export _clean_PYTHONPATH=${PYTHONPATH}
 
 # build paths
-# using python because realpath/readlink do not work reliable on OSX
-BUILD_DIR=$(python -c "import os; print(os.path.abspath('${1}'))"); shift
+# using python3 because realpath/readlink do not work reliable on OSX
+BUILD_DIR=$(python3 -c "import os; print(os.path.abspath('${1}'))"); shift
 SOURCE_DIR=$(pwd -P)
 if [[ $# -gt 0 ]]; then
-    SOURCE_DIR=$(python -c "import os; print(os.path.abspath('${1}'))"); shift
+    SOURCE_DIR=$(python3 -c "import os; print(os.path.abspath('${1}'))"); shift
 fi
 SUBPROJECTS_DIR="${BUILD_DIR}/subprojects"
 if [[ -d ${SUBPROJECTS_DIR} ]]; then

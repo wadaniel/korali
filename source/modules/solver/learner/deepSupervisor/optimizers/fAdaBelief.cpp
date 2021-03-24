@@ -36,6 +36,7 @@ void fAdaBelief::processResult(float evaluation, std::vector<float> &gradient)
   const float notBeta2 = 1.0f - _beta2;
 
   // update first and second moment estimators and bias corrected versions
+  #pragma omp parallel for simd
   for (size_t i = 0; i < _nVars; i++)
   {
     _firstMoment[i] = _beta1 * _firstMoment[i] - notBeta1 * gradient[i];

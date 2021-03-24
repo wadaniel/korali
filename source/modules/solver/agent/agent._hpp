@@ -420,6 +420,7 @@ class Agent : public Solver
   /**
    * @brief Rescales rewards to have a zero mean and unit variance
    */
+  void rescaleStates();
   void rescaleRewards();
 
   /****************************************************************************************************

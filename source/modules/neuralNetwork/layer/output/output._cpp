@@ -35,7 +35,7 @@ void Output::initialize()
 
 void Output::createForwardPipeline()
 {
-  size_t N = _nn->_batchSize;
+  size_t N = _batchSize;
   size_t IC = _prevLayer->_outputChannels;
   size_t OC = _outputChannels;
 
@@ -86,7 +86,7 @@ void Output::createForwardPipeline()
 
 void Output::createBackwardPipeline()
 {
-  size_t N = _nn->_batchSize;
+  size_t N = _batchSize;
   size_t IC = _prevLayer->_outputChannels;
   size_t OC = _outputChannels;
 
@@ -99,11 +99,10 @@ void Output::createBackwardPipeline()
   _dstOutputGradients = (float *)malloc(N * OC * sizeof(float));
 }
 
-void Output::forwardData()
+void Output::forwardData(const size_t t)
 {
-  size_t N = _nn->_batchSize;
+  size_t N = _batchSize;
   size_t OC = _outputChannels;
-  int t = _nn->_currentTimestep;
 
 // Copying previous layer's output to this layer's output
 #ifdef _KORALI_USE_EIGEN
@@ -128,6 +127,7 @@ void Output::forwardData()
 #endif
 
   // Performing postprocessing
+ #pragma omp parallel for simd
   for (size_t i = 0; i < N; i++)
     for (size_t j = 0; j < OC; j++)
     {
@@ -161,27 +161,27 @@ void Output::forwardData()
 
       // Saving result to NN's output directly
       size_t pos = (t * N * OC) + (i * OC) + j;
-      _nn->_rawOutputValues[pos] = x;
+      _pipeline->_rawOutputValues[pos] = x;
     }
 }
 
-void Output::backwardData()
+void Output::backwardData(const size_t t)
 {
-  const size_t N = _nn->_batchSize;
+  const size_t N = _batchSize;
   const size_t OC = _outputChannels;
-  const size_t t = _nn->_currentTimestep;
 
   if (_nn->_mode == "Inference")
     KORALI_LOG_ERROR("Requesting Layer backward data propagation but NN was configured for inference only.\n");
 
   // Performing gradient pre-processing
+  #pragma omp parallel for simd
   for (size_t i = 0; i < N; i++)
     for (size_t j = 0; j < OC; j++)
     {
       // Getting forward propagation output and passed gradients
       size_t pos = (t * N * OC) + (i * OC) + j;
-      float x = _nn->_rawOutputValues[pos];
-      float g = _nn->_rawOutputGradients[pos];
+      float x = _pipeline->_rawOutputValues[pos];
+      float g = _pipeline->_rawOutputGradients[pos];
 
       // If we use shift, then apply the inverse shift to the forward output
       if (_shift.size() > 0)

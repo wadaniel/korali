@@ -6,7 +6,7 @@ int main(int argc, char *argv[])
   /////// Initializing environment
 
   _resultDir = "_result_vracer";
-  initializeEnvironment("_config/helix_2d_eu_const.json");
+  initializeEnvironment("_config/dpd_2_d_eu_gaussian.json");
 
   auto e = korali::Experiment();
 
@@ -19,9 +19,8 @@ int main(int argc, char *argv[])
 
   e["Problem"]["Type"] = "Reinforcement Learning / Continuous";
   e["Problem"]["Environment Function"] = &runEnvironment;
-  e["Problem"]["Training Reward Threshold"] = 1.5;
+  e["Problem"]["Training Reward Threshold"] = 1.6;
   e["Problem"]["Policy Testing Episodes"] = 20;
-  e["Problem"]["Actions Between Policy Updates"] = 1;
 
   //// Setting state variables
 
@@ -70,20 +69,23 @@ int main(int argc, char *argv[])
 
   e["Solver"]["Type"] = "Agent / Continuous / VRACER";
   e["Solver"]["Mode"] = "Training";
-  e["Solver"]["Episodes Per Generation"] = 1;
+  e["Solver"]["Episodes Per Generation"] = 10;
+  e["Solver"]["Updates Between Reward Rescaling"] = 1000;
   e["Solver"]["Experiences Between Policy Updates"] = 1;
+  e["Solver"]["Retrace Update Delay"] = 0;
   e["Solver"]["Learning Rate"] = 1e-4;
   e["Solver"]["Discount Factor"] = 0.99;
+  e["Solver"]["L2 Regularization"]["Enabled"] = true;
+  e["Solver"]["L2 Regularization"]["Importance"] = 1e-3;
 
   /// Defining the configuration of replay memory
 
-  e["Solver"]["Experience Replay"]["Start Size"] = 4096;
-  e["Solver"]["Experience Replay"]["Maximum Size"] = 65536;
+  e["Solver"]["Experience Replay"]["Start Size"] = 131072;
+  e["Solver"]["Experience Replay"]["Maximum Size"] = 262144;
 
   /// Configuring Mini Batch
 
   e["Solver"]["Mini Batch Size"] = 256;
-  e["Solver"]["Mini Batch Strategy"] = "Uniform";
 
   /// Configuring the neural network and its hidden layers
 
@@ -103,13 +105,13 @@ int main(int argc, char *argv[])
 
   ////// Defining Termination Criteria
 
-  e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 1.5;
+  e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 1.6;
 
   ////// Setting file output configuration
 
   e["Console Output"]["Verbosity"] = "Detailed";
   e["File Output"]["Enabled"] = true;
-  e["File Output"]["Frequency"] = 10;
+  e["File Output"]["Frequency"] = 30;
   e["File Output"]["Path"] = _resultDir;
 
   auto k = korali::Engine();

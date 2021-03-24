@@ -19,7 +19,6 @@ e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = env
 e["Problem"]["Training Reward Threshold"] = 50.0
 e["Problem"]["Policy Testing Episodes"] = 20
-e["Problem"]["Actions Between Policy Updates"] = 200
 
 ### Defining state variables
 
@@ -96,7 +95,7 @@ e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 50.0
 e["Solver"]["Experience Replay"]["Serialize"] = True
 e["Console Output"]["Verbosity"] = "Detailed"
 e["File Output"]["Enabled"] = True
-e["File Output"]["Frequency"] = 10
+e["File Output"]["Frequency"] = 300
 e["File Output"]["Path"] = "_result_vracer"
 
 ### Running Experiment

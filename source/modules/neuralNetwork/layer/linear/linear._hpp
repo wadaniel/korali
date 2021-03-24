@@ -48,6 +48,11 @@ class Linear : public Layer
   dnnl::memory _weightsMem;
 
   /**
+ * @brief oneDNN Memory object descriptor to contain the weights of inner product with incoming channels
+ */
+  dnnl::memory _weightsReorderMem;
+
+  /**
  * @brief oneDNN Memory object descriptor to contain the bias to add to incoming channels
  */
   dnnl::memory _biasMem;
@@ -138,18 +143,19 @@ class Linear : public Layer
 
 #endif
 
+  void copyHyperparameterPointers(Layer* dstLayer) override;
   void initialize() override;
   std::vector<float> generateInitialHyperparameters() override;
   void createHyperparameterMemory() override;
   void createForwardPipeline() override;
   void createBackwardPipeline() override;
-  void forwardData() override;
+  void forwardData(const size_t t) override;
 
   void setHyperparameters(float *hyperparameters) override;
   void getHyperparameters(float *hyperparameters) override;
   void getHyperparameterGradients(float *gradient) override;
-  void backwardData() override;
-  void backwardHyperparameters() override;
+  void backwardData(const size_t t) override;
+  void backwardHyperparameters(const size_t t) override;
 };
 
 } // namespace layer

@@ -1,6 +1,6 @@
 @startIncludeGuard
 
-#include "libco.h"
+#include "auxiliar/libco/libco.h"
 #include "modules/experiment/experiment.hpp"
 #include "modules/module.hpp"
 #include <string>

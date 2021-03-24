@@ -46,6 +46,7 @@ fontconfig/
 *.settings/
 *.d
 
-# build directories
+# build directories and virtual environments
 /build*
 /test_install
+/py_venv*

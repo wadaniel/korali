@@ -1,4 +1,4 @@
-project('Korali', ['c', 'cpp'],
+project('korali', ['c', 'cpp'],
   version: '2.0.0',
   license: 'GPL-3.0-only', # or also later?
   default_options: [
@@ -72,10 +72,7 @@ korali_deps += dependency('eigen3', fallback: ['eigen', 'eigen_dep'], required: 
 # TODO: [fabianw@mavt.ethz.ch; 2021-02-13] should probably test for system cblas
 # (needs benchmark: gslcblas versus system cblas (and possibly ATLAS))
 korali_deps += dependency('gsl', fallback: ['gsl', 'gsl_dep'], required: true)
-korali_deps += dependency('libco', fallback: ['libco', 'libco_dep'], required: true)
-korali_deps += dependency('libgp', fallback: ['libgp', 'libgp_dep'], required: true)
 korali_deps += dependency('pybind11', fallback: ['pybind11', 'pybind11_dep'], required: true)
-korali_deps += dependency('rtnorm', fallback: ['rtnorm', 'rtnorm_dep'], required: true)
 
 
 # process korali extension
@@ -93,7 +90,7 @@ meson.add_install_script('tools/build/post_install.sh', korali_install_base, kor
 # create a pkg-config entry
 pkg_mod = import('pkgconfig')
 pkg_mod.generate(
-  name: 'Korali',
+  name: 'korali',
   filebase: 'korali',
   description: 'High-Performance Uncertainty Quantification, Optimization, and DRL',
   extra_cflags: ['-I' + korali_install_headers],

@@ -27,3 +27,7 @@ auxiliar_source = files([
 
 korali_source += auxiliar_header
 korali_source += auxiliar_source
+
+subdir('libco')
+subdir('libgp')
+subdir('rtnorm')

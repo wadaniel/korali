@@ -222,14 +222,9 @@ void VRACER::setAgentPolicy(const knlohmann::json &hyperparameters)
 
 void VRACER::printAgentInformation()
 {
-  _k->_logger->logInfo("Normal", "Critic Information:\n");
-  _k->_logger->logInfo("Normal", " + Average Action Noise (Sigma) in Mini-Batch: \n");
+  _k->_logger->logInfo("Normal", " + [VRACER] Average Action Noise (Sigma) in Mini-Batch: \n");
   for (size_t i = 0; i < _problem->_actionVectorSize; ++i) _k->_logger->logInfo("Normal", " +  [ %f ]\n", _statisticsAverageActionSigmas[i]);
-
-  _k->_logger->logInfo("Normal", "Neural Network Information:\n");
-  _criticPolicyExperiment._logger->_verbosityLevel = _k->_logger->_verbosityLevel;
-  _criticPolicyExperiment._solver->printGenerationAfter();
-  _criticPolicyExperiment._logger->setVerbosityLevel("Silent");
+  _k->_logger->logInfo("Normal", " + [VRACER] Policy Learning Rate: %.3e\n", _currentLearningRate);
 }
 
 } // namespace continuous

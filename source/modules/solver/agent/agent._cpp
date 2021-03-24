@@ -300,18 +300,38 @@ void Agent::rescaleRewards()
   // Calculate mean and standard deviation of unscaled rewards.
   for (size_t i = 0; i < _rewardVector.size(); i++)
   {
-    float reward = _rewardVector[i];
+    float reward = _rewardVector[i]  * _rewardRescalingSdev + _rewardRescalingMean;
     sumReward += reward;
     sumReward2 += reward*reward;
   }
 
-  float newRewardRescalingSdev = std::sqrt(sumReward2 / ((float)_rewardVector.size() + 1e-9));
+  float newRewardRescalingMean = sumReward / (float)_rewardVector.size();
+  float newRewardRescalingSdev = std::sqrt(sumReward2 / (float)_rewardVector.size() - newRewardRescalingMean * newRewardRescalingMean + 1e-9);
+
+  // Rescale rewards s.t. mean equals 0.0 and standard deviation 1.0.
+  #pragma omp parallel for simd
+  for (size_t i = 0; i < _rewardVector.size(); i++)
+  {
+   _rewardVector[i] *= _rewardRescalingSdev;
+   _rewardVector[i] += _rewardRescalingMean;
+   _rewardVector[i] -= newRewardRescalingMean;
+   _rewardVector[i] /= newRewardRescalingSdev;
+
+   _stateValueVector[i] *= _rewardRescalingSdev;
+   _stateValueVector[i] += _rewardRescalingMean;
+   _stateValueVector[i] -= newRewardRescalingMean;
+   _stateValueVector[i] /= newRewardRescalingSdev;
+
+   _retraceValueVector[i] *= _rewardRescalingSdev;
+   _retraceValueVector[i] += _rewardRescalingMean;
+   _retraceValueVector[i] -= newRewardRescalingMean;
+   _retraceValueVector[i] /= newRewardRescalingSdev;
+  }
 
   printf( "previous reward mean and sdev %f %f\n", _rewardRescalingMean, _rewardRescalingSdev);
-
+  _rewardRescalingMean = newRewardRescalingMean;
   _rewardRescalingSdev = newRewardRescalingSdev;
   _rewardRescalingCount++;
-
   printf( "new reward mean and sdev %f %f\n", _rewardRescalingMean, _rewardRescalingSdev);
 }
 
@@ -515,7 +535,7 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
   for (ssize_t expId = endId; expId >= startId; expId--)
   {
     // Calculating retrace value with the discount factor. Importance weight is 1.0f because the policy is current.
-    retV = _discountFactor * retV + _rewardVector[expId] * _rewardRescalingSdev;
+    retV = _discountFactor * retV + _rewardVector[expId];
 
     // Setting initial retrace value in the experience's cache
     _retraceValueVector[expId] = retV;
@@ -678,7 +698,7 @@ void Agent::updateExperienceMetadata(const std::vector<size_t>& miniBatch, const
      if (_policyUpdateCount - _retraceLastUpdateVector[curId] < _retraceUpdateDelay) break;
 
      // Getting current reward, action, and state
-     const float curReward = _rewardVector[curId] * _rewardRescalingSdev;
+     const float curReward = _rewardVector[curId];
 
      // Calculating state value function
      const float curV = _stateValueVector[curId];

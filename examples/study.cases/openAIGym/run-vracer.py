@@ -30,15 +30,14 @@ initEnvironment(e, args.env)
 
 e["Solver"]["Type"] = "Agent / Continuous / VRACER"
 e["Solver"]["Mode"] = "Training"
+e["Solver"]["Episodes Per Generation"] = 10
+e["Solver"]["Updates Between Reward Rescaling"] = 1000
 e["Solver"]["Experiences Between Policy Updates"] = 1
-e["Solver"]["Updates Between Reward Rescaling"] = 20000
-e["Solver"]["Episodes Per Generation"] = 1
-e["Solver"]["Discount Factor"] = 0.995
+e["Solver"]["Retrace Update Delay"] = 0
 e["Solver"]["Learning Rate"] = 1e-4
+e["Solver"]["Discount Factor"] = 0.99
 e["Solver"]["L2 Regularization"]["Enabled"] = True
 e["Solver"]["L2 Regularization"]["Importance"] = 1e-3
-e["Solver"]["Retrace Update Delay"] = 0
-e["Solver"]["Updates Between Reward Rescaling"] = 1000
 e["Solver"]["Mini Batch Size"] = 256
 
 ### Defining the configuration of replay memory
@@ -75,7 +74,7 @@ e["Solver"]["Termination Criteria"]["Max Experiences"] = 10e6
 e["Solver"]["Experience Replay"]["Serialize"] = True
 e["Console Output"]["Verbosity"] = "Detailed"
 e["File Output"]["Enabled"] = True
-e["File Output"]["Frequency"] = 500
+e["File Output"]["Frequency"] = 50
 e["File Output"]["Path"] = resultFolder
 
 ### Running Experiment

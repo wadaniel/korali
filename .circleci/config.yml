@@ -1,9 +1,13 @@
 version: 2.1
 
 executors:
-  circleci_latest:
+  ubuntu_openmpi:
     docker:
       - image: docker.io/cselab/ubuntu_openmpi:rolling
+  
+  fedora_openmpi:
+    docker:
+      - image:  docker.io/cselab/fedora_openmpi:latest
 
 jobs:
   build:
@@ -39,9 +43,16 @@ jobs:
           path: build/meson-logs
 
 workflows:
-  circleci_latest_gcc:
+  ubuntu_openmpi_gcc:
     jobs:
       - build:
           name: release
-          image: circleci_latest
+          image: ubuntu_openmpi
+          buildtype: release
+
+  fedora_openmpi_gcc:
+    jobs:
+      - build:
+          name: release
+          image: fedora_openmpi
           buildtype: release

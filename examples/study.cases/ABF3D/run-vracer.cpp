@@ -74,8 +74,6 @@ int main(int argc, char *argv[])
   e["Solver"]["Experiences Between Policy Updates"] = 1;
   e["Solver"]["Learning Rate"] = 1e-4;
   e["Solver"]["Discount Factor"] = 0.995;
-  e["Solver"]["L2 Regularization"]["Enabled"] = true;
-  e["Solver"]["L2 Regularization"]["Importance"] = 0.00000001f;
 
   /// Defining the configuration of replay memory
 

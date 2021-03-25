@@ -127,7 +127,7 @@ void Output::forwardData(const size_t t)
 #endif
 
   // Performing postprocessing
- #pragma omp parallel for simd
+#pragma omp parallel for simd
   for (size_t i = 0; i < N; i++)
     for (size_t j = 0; j < OC; j++)
     {
@@ -173,8 +173,8 @@ void Output::backwardData(const size_t t)
   if (_nn->_mode == "Inference")
     KORALI_LOG_ERROR("Requesting Layer backward data propagation but NN was configured for inference only.\n");
 
-  // Performing gradient pre-processing
-  #pragma omp parallel for simd
+// Performing gradient pre-processing
+#pragma omp parallel for simd
   for (size_t i = 0; i < N; i++)
     for (size_t j = 0; j < OC; j++)
     {

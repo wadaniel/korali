@@ -54,7 +54,7 @@ e["Solver"]["Mode"] = "Training"
 e["Solver"]["Experiences Between Policy Updates"] = 1
 e["Solver"]["Episodes Per Generation"] = 1
 e["Solver"]["Learning Rate"] = 1e-4
-e["Solver"]["Mini Batch Size"] = 128
+e["Solver"]["Mini Batch"]["Size"] = 128
 
 ### Configuring the neural network and its hidden layers
 

@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
 
   /// Configuring Mini Batch
 
-  e["Solver"]["Mini Batch Size"] = 256;
+  e["Solver"]["Mini Batch"]["Size"] = 256;
 
   /// Configuring the neural network and its hidden layers
 

@@ -35,6 +35,7 @@ e["Solver"]["Experiences Between Policy Updates"] = 1
 e["Solver"]["Learning Rate"] = 0.0001
 e["Solver"]["Discount Factor"] = 0.995
 e["Solver"]["Reward Rescaling"]["Frequency"] = 1000
+e["Solver"]["Mini Batch"]["Size"] = 256
 
 ### Configuring the neural network and its hidden layers
 

@@ -32,12 +32,8 @@ jobs:
 
       - run:
           name: Build Config File
-          command: cat .install.config.default | sed -e 's/NJOBS=/NJOBS=8 \#/g' -e 's/USE_ONEDNN=/USE_ONEDNN=YES \#/g' > install.config
+          command: cat .install.config.default | sed -e 's/NJOBS=/NJOBS=8 \#/g' > install.config
 
-      - restore_cache:
-          keys:
-            - cache-linux-onednn-v13
-            
       - restore_cache:
           keys:
             - cache-linux-doxygen-v13
@@ -124,15 +120,10 @@ jobs:
           name: build Korali
           command: ./install
 
-      - save_cache:
-          key: cache-linux-onednn-v13
-          paths:
-            - "~/korali/external/oneDNN/install"
-            
       - run:
           name: run tests
           command: pushd tests; ./run_all_tests.sh; popd
-          
+
       - store_artifacts:
           path: ~/korali/install.log
 

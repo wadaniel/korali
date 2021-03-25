@@ -22,7 +22,7 @@ namespace neuralNetwork
 void Layer::createForwardPipeline()
 {
   // Obtaining batch size
-  ssize_t N = _nn->_batchSize;
+  ssize_t N = _batchSize;
 
   // Checking Layer sizes
   if (_outputChannels == 0) KORALI_LOG_ERROR("Node count for layer (%lu) should be larger than zero.\n", _index);
@@ -70,7 +70,7 @@ void Layer::createForwardPipeline()
 
 std::vector<std::vector<float>> Layer::getOutput()
 {
-  size_t N = _nn->_batchSize;
+  size_t N = _batchSize;
   size_t OC = _outputChannels;
   int t = _nn->_timestepCount - 1;
 
@@ -116,7 +116,7 @@ void Layer::createBackwardPipeline()
   *  Initializing memory objects and primitives for BACKWARD propagation
   *********************************************************************************/
 
-  size_t N = _nn->_batchSize;
+  size_t N = _batchSize;
   size_t OC = _outputChannels;
 
 #ifdef _KORALI_USE_EIGEN

@@ -172,7 +172,9 @@ class Recurrent : public Layer
 
   void initialize() override;
   void createHyperparameterMemory() override;
-  void backwardHyperparameters() override;
+  void backwardHyperparameters(const size_t t) override;
+  void createBackwardPipeline() override;
+  void copyHyperparameterPointers(Layer *dstLayer);
   std::vector<float> generateInitialHyperparameters() override;
   void setHyperparameters(float *hyperparameters) override;
   void getHyperparameters(float *hyperparameters) override;

@@ -20,7 +20,7 @@ Installation Steps
   .. code-block:: bash
 
    cd korali
-    meson setup build --buildtype release --prefix PREFIX
+   meson setup build --buildtype release --prefix PREFIX
 
 where PREFIX is the absolute path where korali will be installed.
 

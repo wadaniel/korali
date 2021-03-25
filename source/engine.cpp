@@ -15,16 +15,12 @@ namespace korali
 {
 std::stack<Engine *> _engineStack;
 bool isPythonActive = 0;
-size_t _maxThreads;
 
 Engine::Engine()
 {
   _cumulativeTime = 0.0;
   _thread = co_active();
   _conduit = NULL;
-
-  // Detecting maximum number of threads that modules can run
-  _maxThreads = omp_get_max_threads();
 
   // Turn Off GSL Error Handler
   gsl_set_error_handler_off();

@@ -18,7 +18,7 @@
 # -- Project information -----------------------------------------------------
 
 project = 'korali'
-copyright = '2021, CSELab'
+copyright = '2020, CSELab'
 author = 'CSELab'
 
 
@@ -62,4 +62,21 @@ html_theme = 'alabaster'
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 
+# If false, no module index is generated.
+html_domain_indices = True
+
+# If false, no index is generated.
+html_use_index = True
+
+# If true, the index is split into individual pages for each letter.
+html_split_index = False
+
+# If true, links to the reST sources are added to the pages.
+html_show_sourcelink = False
+
+# If true, "Created using Sphinx" is shown in the HTML footer. Default is True.
+html_show_sphinx = False
+
+# If true, "(C) Copyright ..." is shown in the HTML footer. Default is True.
+html_show_copyright = True
 

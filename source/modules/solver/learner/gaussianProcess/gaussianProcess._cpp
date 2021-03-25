@@ -116,7 +116,7 @@ void GaussianProcess::runSample(Sample &sample, libgp::GaussianProcess *gp)
   //  sample["Gradient"][i] = eigenGrad[i];
 
   for (size_t i = 0; i < gpParameterDimension; i++)
-   sample["Gradient"][i] = 0.0f;
+    sample["Gradient"][i] = 0.0f;
 
   #endif
 }

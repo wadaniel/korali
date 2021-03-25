@@ -31,8 +31,6 @@ extensions = [
   'sphinx.ext.todo',
   'sphinx.ext.mathjax',
   'sphinx_rtd_theme',
-  'sphinxcontrib.bibtex',
-  'breathe',
 ]
 
 # Add any paths that contain templates here, relative to this directory.

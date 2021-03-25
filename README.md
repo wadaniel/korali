@@ -1,5 +1,14 @@
 # Korali
 
+.. image:: https://circleci.com/gh/cselab/korali.svg??style=shield
+  :target: https://circleci.com/gh/cselab/korali
+  :alt: Build Status
+.. image:: https://readthedocs.org/projects/korali/badge/?version=latest
+  :target: https://korali.readthedocs.io/en/latest/?badge=latest
+  :alt: Documentation Status
+
+
+
 High-performance framework for uncertainty quantification and optimization.
 
 ## Description

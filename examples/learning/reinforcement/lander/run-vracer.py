@@ -29,17 +29,17 @@ e["Variables"][2]["Name"] = "Force X"
 e["Variables"][2]["Type"] = "Action"
 e["Variables"][2]["Lower Bound"] = -0.1
 e["Variables"][2]["Upper Bound"] = +0.1
-e["Variables"][2]["Initial Exploration Noise"] = 0.02
+e["Variables"][2]["Initial Exploration Noise"] = 0.08
 
 e["Variables"][3]["Name"] = "Force Y"
 e["Variables"][3]["Type"] = "Action"
 e["Variables"][3]["Lower Bound"] = +0.0
 e["Variables"][3]["Upper Bound"] = +1.0
-e["Variables"][3]["Initial Exploration Noise"] = 0.02
+e["Variables"][3]["Initial Exploration Noise"] = 0.24
 
 ### Defining Agent Configuration 
 
-e["Solver"]["Type"] = "Agent / Continuous / GFPT"
+e["Solver"]["Type"] = "Agent / Continuous / VRACER"
 e["Solver"]["Mode"] = "Training"
 e["Solver"]["Episodes Per Generation"] = 1
 e["Solver"]["Experiences Between Policy Updates"] = 10
@@ -47,13 +47,8 @@ e["Solver"]["Discount Factor"] = 0.99
 
 ### Defining the configuration of replay memory
 
-e["Solver"]["Mini Batch Size"] = 32
+e["Solver"]["Mini Batch Size"] = 256
 e["Solver"]["Mini Batch Strategy"] = "Uniform"
-
-### Defining the configuration of replay memory
-
-e["Solver"]["Experience Replay"]["Start Size"] = 4096
-e["Solver"]["Experience Replay"]["Maximum Size"] = 65536
 
 ### Configuring the Remember-and-Forget Experience Replay algorithm
 
@@ -64,9 +59,7 @@ e["Solver"]["Experience Replay"]["Off Policy"]["REFER Beta"] = 0.3
 
 ## Defining Critic and Policy Configuration
 
-e["Solver"]["Learning Rate"] = 0.001
-e["Solver"]["Policy"]["Target Accuracy"] = 0.000001
-e["Solver"]["Policy"]["Optimization Candidates"] = 64
+e["Solver"]["Learning Rate"] = 0.0001
 
 ### Configuring the neural network and its hidden layers
 

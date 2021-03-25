@@ -22,6 +22,14 @@ void Agent::initialize()
   mt = new std::mt19937(rd());
   mt->seed(_k->_randomSeed++);
 
+  // If not set, using heurisitc for maximum size
+  if (_experienceReplayMaximumSize == 0)
+   _experienceReplayMaximumSize = std::pow(2, 14) * std::sqrt(_problem->_stateVectorSize + _problem->_actionVectorSize);
+
+  // If not set, filling ER before learning
+  if (_experienceReplayStartSize == 0)
+   _experienceReplayStartSize = _experienceReplayMaximumSize;
+
   //  Pre-allocating space for the experience replay memory
   _stateVector.resize(_experienceReplayMaximumSize);
   _actionVector.resize(_experienceReplayMaximumSize);
@@ -70,7 +78,8 @@ void Agent::initialize()
 
     // If cutoff scale is not defined, use a heuristic value
     if (_experienceReplayOffPolicyCutoffScale < 0.0f)
-     _experienceReplayOffPolicyCutoffScale = std::sqrt(_problem->_actionVectorSize / 2.0);
+     _experienceReplayOffPolicyCutoffScale = std::sqrt(_problem->_actionVectorSize / 2.0f);
+    _experienceReplayOffPolicyCutoffScale = std::max(2.0f, _experienceReplayOffPolicyCutoffScale);
 
     _experienceReplayOffPolicyRatio = 0.0f;
     _experienceReplayOffPolicyCurrentCutoff = _experienceReplayOffPolicyCutoffScale;
@@ -83,14 +92,6 @@ void Agent::initialize()
     _rewardRescalingMean = 0.0f;
     _rewardRescalingSdev = 1.0f;
     _rewardRescalingCount = 0;
-
-    // If not set, using heurisitc for maximum size
-    if (_experienceReplayMaximumSize == 0)
-     _experienceReplayMaximumSize = std::pow(2, 14) * std::sqrt(_problem->_stateVectorSize + _problem->_actionVectorSize);
-
-    // If not set, filling ER before learning
-    if (_experienceReplayStartSize == 0)
-     _experienceReplayStartSize = _experienceReplayMaximumSize;
   }
 
   // If this continues a previous training run, deserialize previous input experience replay

@@ -291,9 +291,10 @@ void Agent::rescaleStates()
     squaredSumStates[d] += _stateVector[i][d]*_stateVector[i][d];
    }
 
+  _k->_logger->logInfo("Detailed", " + Using State Normalization N(Mean, Sigma):\n");
+
   for(size_t d = 0; d < _problem->_stateVectorSize; ++d)
   {
-      //printf("state [%zu] : sum %lf squaredsum  %lf\n", d, sumStates[d], squaredSumStates[d]);
       _stateRescalingMeans[d] = sumStates[d]/(float) _stateVector.size();
       if(std::isfinite(_stateRescalingMeans[d]) == false) _stateRescalingMeans[d] = 0.0f;
 
@@ -301,7 +302,7 @@ void Agent::rescaleStates()
       if(std::isfinite(_stateRescalingSdevs[d]) == false) _stateRescalingSdevs[d] = 1.0f;
       if(_stateRescalingSdevs[d] <= 1e-9 ) _stateRescalingSdevs[d] = 1.0f;
 
-      printf("state [%zu] : mean %f sdev %f\n", d, _stateRescalingMeans[d], _stateRescalingSdevs[d]);
+      _k->_logger->logInfo("Detailed", " + State [%zu]: N(%f, %f)\n", d, _stateRescalingMeans[d], _stateRescalingSdevs[d]);
   }
 
  // Actual rescaling of initial states
@@ -346,11 +347,10 @@ void Agent::rescaleRewards()
    _retraceValueVector[i] /= newRewardRescalingSdev;
   }
 
-  printf( "previous reward mean and sdev %f %f\n", _rewardRescalingMean, _rewardRescalingSdev);
+  // Storing new statistics
   _rewardRescalingMean = newRewardRescalingMean;
   _rewardRescalingSdev = newRewardRescalingSdev;
   _rewardRescalingCount++;
-  printf( "new reward mean and sdev %f %f\n", _rewardRescalingMean, _rewardRescalingSdev);
 }
 
 void Agent::attendAgent(size_t agentId)

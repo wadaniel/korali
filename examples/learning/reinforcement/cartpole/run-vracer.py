@@ -34,26 +34,16 @@ e["Variables"][4]["Name"] = "Force"
 e["Variables"][4]["Type"] = "Action"
 e["Variables"][4]["Lower Bound"] = -10.0
 e["Variables"][4]["Upper Bound"] = +10.0
-e["Variables"][4]["Initial Exploration Noise"] = 1.0
+e["Variables"][4]["Initial Exploration Noise"] = 2.0
 
 ### Defining Agent Configuration 
 
 e["Solver"]["Type"] = "Agent / Continuous / VRACER"
 e["Solver"]["Mode"] = "Training"
 e["Solver"]["Experiences Between Policy Updates"] = 10
-e["Solver"]["Updates Between Reward Rescaling"] = 1000
 e["Solver"]["Episodes Per Generation"] = 1
-
-### Defining the configuration of replay memory
-
-e["Solver"]["Experience Replay"]["Start Size"] = 10000
-e["Solver"]["Experience Replay"]["Maximum Size"] = 20000
-
-## Defining Neural Network Configuration for Policy and Critic into Critic Container
-
-e["Solver"]["Discount Factor"] = 0.99
-e["Solver"]["Learning Rate"] = 1e-3
 e["Solver"]["Mini Batch Size"] = 32
+
 
 ### Configuring the neural network and its hidden layers
 

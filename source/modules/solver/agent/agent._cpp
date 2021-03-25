@@ -205,12 +205,14 @@ void Agent::trainingGeneration()
     if (_experienceCount >= _experienceReplayStartSize)
     {
       // If we performed enough policy updates, we rescale rewards again
-      if (_policyUpdateCount >= _updatesBetweenRewardRescaling * _rewardRescalingCount)
-        rescaleRewards();
+      if (_rewardRescalingEnabled == true)
+        if (_policyUpdateCount >= _rewardRescalingFrequency * _rewardRescalingCount)
+          rescaleRewards();
 
       // If we accumulated enough experiences, we rescale the states (once)
-      if (_policyUpdateCount == 0)
-        rescaleStates();
+      if (_stateRescalingEnabled == true)
+        if (_policyUpdateCount == 0)
+          rescaleStates();
 
       // If we accumulated enough experiences between updates in this session, update now
       while (_sessionExperienceCount > (_experiencesBetweenPolicyUpdates * _sessionPolicyUpdateCount + _sessionExperiencesUntilStartSize))

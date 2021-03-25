@@ -57,15 +57,7 @@ e["Solver"]["Type"] = "Agent / Continuous / VRACER"
 e["Solver"]["Mode"] = "Training"
 e["Solver"]["Episodes Per Generation"] = 10
 e["Solver"]["Experiences Between Policy Updates"] = 10
-e["Solver"]["Discount Factor"] = 0.99
-
-### Defining the configuration of replay memory
-
 e["Solver"]["Mini Batch Size"] = 32
-e["Solver"]["Mini Batch Strategy"] = "Uniform"
-
-## Defining Critic and Policy Configuration
-
 e["Solver"]["Learning Rate"] = 0.0001
 
 ### Configuring the neural network and its hidden layers

@@ -11,8 +11,9 @@ rm -rf _korali_result*; check_result
 
 ##### Running Test
 
-python3 ./train-surrogate.py; check_result
-python3 ./run-cmaes.py; check_result
+# On Hold until the libGP bug is fixed
+#python3 ./train-surrogate.py; check_result
+#python3 ./run-cmaes.py; check_result
 
   
   

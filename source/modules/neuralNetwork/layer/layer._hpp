@@ -156,6 +156,7 @@ class Layer : public Module
 
   /**
   * @brief Performs the forward propagation of the Wx+b operations
+  * @param t Indicates the current timestep
   */
   virtual void forwardData(const size_t t) = 0;
 
@@ -179,11 +180,13 @@ class Layer : public Module
 
   /**
    * @brief Performs the backward propagation of the data
+   * @param t Indicates the current timestep
    */
   virtual void backwardData(const size_t t) = 0;
 
   /**
   * @brief Calculates the gradients of layer hyperparameters
+  * @param t Indicates the current timestep
   */
   virtual void backwardHyperparameters(const size_t t){};
 };

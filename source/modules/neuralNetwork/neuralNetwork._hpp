@@ -78,17 +78,27 @@ class NeuralNetwork : public Module
    */
   dnnl::stream _dnnlStream;
 
+  /**
+   * @brief oneDNN Engine for the current NN
+   */
   dnnl::engine _dnnlEngine;
-
-  std::vector<std::vector<layerPipeline_t>> _pipelines;
 
 #endif
 
 #ifdef _KORALI_USE_CUDNN
 
+  /**
+   * @brief CUDNN handle for the execution of operations on the GPU
+   */
   cudnnHandle_t _cuDNNHandle;
 
 #endif
+
+  /**
+   * @brief Layer pipelines, one per threadCount * BatchSize combination. These are all replicas of the user-defined layers that
+   *        share the same hyperparameter space.
+   */
+  std::vector<std::vector<layerPipeline_t>> _pipelines;
 
   /**
    * @brief Flag to make sure the NN is initialized before creating

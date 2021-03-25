@@ -341,6 +341,11 @@ class Agent : public Solver
   */
   std::vector<size_t> generateMiniBatch(size_t miniBatchSize);
 
+  /**
+  * @brief Updates the state value, retrace, importance weight and other metadata for a given minibatch of experiences
+  * @param miniBatch The mini batch of experience ids to update
+  * @param policyData The policy to use to evaluate the experiences
+  */
   void updateExperienceMetadata(const std::vector<size_t>& miniBatch, const std::vector<policy_t>& policyData);
 
   /**
@@ -413,9 +418,13 @@ class Agent : public Solver
   void testingGeneration();
  
   /**
-   * @brief Rescales rewards to have a zero mean and unit variance
+   * @brief Rescales states to have a zero mean and unit variance
    */
   void rescaleStates();
+
+  /**
+   * @brief Rescales rewards to have a zero mean and unit variance
+   */
   void rescaleRewards();
 
   /****************************************************************************************************

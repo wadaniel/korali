@@ -40,7 +40,7 @@ e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 900
 
 e["Solver"]["Type"] = "Agent / Continuous / VRACER"
 e["Solver"]["Mode"] = "Training"
-e["Solver"]["Episodes Per Generation"] = 5
+e["Solver"]["Episodes Per Generation"] = 1
 e["Solver"]["Experiences Between Policy Updates"] = 1
 e["Solver"]["Learning Rate"] = 1e-4
 e["Solver"]["Mini Batch"]["Size"] = 256

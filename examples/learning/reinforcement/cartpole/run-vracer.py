@@ -42,8 +42,8 @@ e["Solver"]["Type"] = "Agent / Continuous / VRACER"
 e["Solver"]["Mode"] = "Training"
 e["Solver"]["Experiences Between Policy Updates"] = 10
 e["Solver"]["Episodes Per Generation"] = 1
+e["Solver"]["Learning Rate"] = 1e-3
 e["Solver"]["Mini Batch"]["Size"] = 32
-
 
 ### Configuring the neural network and its hidden layers
 

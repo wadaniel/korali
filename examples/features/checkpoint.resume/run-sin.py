@@ -57,7 +57,7 @@ e["Problem"]["Solution"]["Size"] = 1
 
 e["Solver"]["Type"] = "Learner/DeepSupervisor"
 e["Solver"]["Loss Function"] = "Mean Squared Error"
-e["Solver"]["Steps Per Generation"] = 200
+e["Solver"]["Steps Per Generation"] = 1
 e["Solver"]["Optimizer"] = "AdaBelief"
 e["Solver"]["Learning Rate"] = 0.005
 

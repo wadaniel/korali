@@ -55,7 +55,7 @@ e["Variables"][4]["Initial Exploration Noise"] = 1.0
 
 e["Solver"]["Type"] = "Agent / Continuous / VRACER"
 e["Solver"]["Mode"] = "Training"
-e["Solver"]["Episodes Per Generation"] = 10
+e["Solver"]["Episodes Per Generation"] = 1
 e["Solver"]["Experiences Between Policy Updates"] = 10
 e["Solver"]["Learning Rate"] = 0.0001
 e["Solver"]["Mini Batch"]["Size"] = 32

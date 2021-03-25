@@ -23,8 +23,8 @@ void Discrete::getAction(korali::Sample &sample)
   _stateTimeSequence.add(state);
 
   // Getting the probability of the actions given by the agent's policy
-  auto policy = runPolicy(_stateTimeSequence.getVector());
-  const auto &pActions = policy.actionProbabilities;
+  auto policy = runPolicy({_stateTimeSequence.getVector()})[0];
+  const auto& pActions = policy.actionProbabilities;
 
   // Storage for the action index to use
   size_t actionIdx = 0;

@@ -51,7 +51,7 @@ void LSTM::createForwardPipeline()
     // Checking Layer sizes
     const memory::dim T = 1;                            // time steps
     const memory::dim G = _gateCount;                   // Gates
-    const memory::dim N = _nn->_batchSize;              // Batch size
+    const memory::dim N = _batchSize;              // Batch size
     const memory::dim IC = _prevLayer->_outputChannels; // channels
     const memory::dim OC = _outputChannels;             // channels
     const memory::dim L = _depth;                       // layers
@@ -127,7 +127,7 @@ void LSTM::createForwardPipeline()
   {
     // Obtaining batch size
     const size_t L = _depth;
-    const size_t N = _nn->_batchSize;
+    const size_t N = _batchSize;
     const size_t IC = _prevLayer->_outputChannels;
     const size_t OC = _outputChannels;
 
@@ -209,7 +209,7 @@ void LSTM::createForwardPipeline()
 void LSTM::createBackwardPipeline()
 {
   // Calling base layer function
-  Layer::createBackwardPipeline();
+  Recurrent::createBackwardPipeline();
 
   // Checking Layer sizes
   if (_outputChannels == 0) KORALI_LOG_ERROR("Node count for layer (%lu) should be larger than zero.\n", _index);
@@ -220,7 +220,7 @@ void LSTM::createBackwardPipeline()
     // Checking Layer sizes
     const memory::dim T = 1;                            // time steps
     const memory::dim G = _gateCount;                   // layers
-    const memory::dim N = _nn->_batchSize;              // Batch size
+    const memory::dim N = _batchSize;              // Batch size
     const memory::dim IC = _prevLayer->_outputChannels; // channels
     const memory::dim OC = _outputChannels;             // channels
     const memory::dim L = _depth;                       // layers
@@ -290,7 +290,7 @@ void LSTM::createBackwardPipeline()
   {
     // Obtaining batch size
     size_t L = _depth;
-    size_t N = _nn->_batchSize;
+    size_t N = _batchSize;
     size_t C = _outputChannels;
 
     // Allocating hidden state tensors
@@ -304,10 +304,8 @@ void LSTM::createBackwardPipeline()
 #endif
 }
 
-void LSTM::forwardData()
+void LSTM::forwardData(const size_t t)
 {
-  const size_t t = _nn->_currentTimestep;
-
 #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
   {
@@ -332,7 +330,7 @@ void LSTM::forwardData()
 #ifdef _KORALI_USE_CUDNN
   if (_nn->_engine == "CuDNN")
   {
-    const size_t N = _nn->_batchSize;
+    const size_t N = _batchSize;
 
     // Creating array of sequence lengths necessary for CuDNN
     std::vector<int> seqLengthArray(N, 1);
@@ -362,11 +360,8 @@ void LSTM::forwardData()
 #endif
 }
 
-void LSTM::backwardData()
+void LSTM::backwardData(const size_t t)
 {
-  // Getting current timestep
-  const size_t t = _nn->_currentTimestep;
-
   if (_nn->_mode == "Inference")
     KORALI_LOG_ERROR("Requesting Layer backward data propagation but NN was configured for inference only.\n");
 

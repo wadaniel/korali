@@ -16,6 +16,7 @@
 namespace korali
 {
 class NeuralNetwork;
+struct layerPipeline_t;
 
 namespace neuralNetwork
 {
@@ -31,6 +32,8 @@ class Layer : public Module
    * @brief Pointer to the parent neural network
    */
   NeuralNetwork *_nn;
+
+  layerPipeline_t *_pipeline;
 
   /**
   * @brief Pointer to previous layer, NULL if this is the first layer
@@ -51,6 +54,8 @@ class Layer : public Module
   * @brief Starting index of hyperparameters
   */
   size_t _hyperparameterIndex;
+
+  size_t _batchSize;
 
   // Input/output memory elements
 
@@ -127,6 +132,8 @@ class Layer : public Module
   */
   virtual void createHyperparameterMemory();
 
+  virtual void copyHyperparameterPointers(Layer* dstLayer){};
+
   /**
    * @brief Initializes the layer's internal memory structures for the forward pipeline
    */
@@ -140,7 +147,7 @@ class Layer : public Module
   /**
   * @brief Performs the forward propagation of the Wx+b operations
   */
-  virtual void forwardData() = 0;
+  virtual void forwardData(const size_t t) = 0;
 
   /**
    * @brief Updates layer's hyperparameters (e.g., weights and biases)
@@ -163,12 +170,12 @@ class Layer : public Module
   /**
    * @brief Performs the backward propagation of the data
    */
-  virtual void backwardData() = 0;
+  virtual void backwardData(const size_t t) = 0;
 
   /**
   * @brief Calculates the gradients of layer hyperparameters
   */
-  virtual void backwardHyperparameters(){};
+  virtual void backwardHyperparameters(const size_t t){};
 };
 
 } // namespace neuralNetwork

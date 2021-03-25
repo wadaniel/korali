@@ -70,10 +70,10 @@ int main(int argc, char *argv[])
   e["Solver"]["Type"] = "Agent / Continuous / VRACER";
   e["Solver"]["Mode"] = "Training";
   e["Solver"]["Episodes Per Generation"] = 10;
-  e["Solver"]["Updates Between Reward Rescaling"] = 1000;
   e["Solver"]["Experiences Between Policy Updates"] = 1;
   e["Solver"]["Learning Rate"] = 1e-4;
   e["Solver"]["Discount Factor"] = 0.995;
+  e["Solver"]["Reward Rescaling"]["Frequency"] = 1000;
 
   /// Defining the configuration of replay memory
 

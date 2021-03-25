@@ -44,27 +44,12 @@ e["Solver"]["Mode"] = "Training"
 e["Solver"]["Episodes Per Generation"] = 1
 e["Solver"]["Experiences Between Policy Updates"] = 10
 e["Solver"]["Discount Factor"] = 0.99
-
-### Defining the configuration of replay memory
-
 e["Solver"]["Mini Batch Size"] = 256
-e["Solver"]["Mini Batch Strategy"] = "Uniform"
-
-### Configuring the Remember-and-Forget Experience Replay algorithm
-
-e["Solver"]["Experience Replay"]["Off Policy"]["Cutoff Scale"] = 4.0
-e["Solver"]["Experience Replay"]["Off Policy"]["Target"] = 0.1
-e["Solver"]["Experience Replay"]["Off Policy"]["Annealing Rate"] = 5e-7
-e["Solver"]["Experience Replay"]["Off Policy"]["REFER Beta"] = 0.3
-
-## Defining Critic and Policy Configuration
-
 e["Solver"]["Learning Rate"] = 0.0001
 
 ### Configuring the neural network and its hidden layers
 
 e["Solver"]["Neural Network"]["Engine"] = "OneDNN"
-
 e["Solver"]["Time Sequence Length"] = 4
 
 e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Recurrent/GRU"

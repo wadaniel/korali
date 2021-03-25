@@ -104,7 +104,12 @@ class Conduit : public Module
   */
   virtual void popEngine() = 0;
 
-  void runSample(Sample* sample, Engine* engine);
+  /**
+   * @brief Starts the execution of a sample, given an Engine
+   * @param sample the sample to execute
+   * @param engine The Korali engine to use for its execution
+   */
+  void runSample(Sample *sample, Engine *engine);
 
   /**
   * @brief Wrapper function for the sample coroutine

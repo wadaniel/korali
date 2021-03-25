@@ -97,10 +97,10 @@ void Linear::createHyperparameterMemory()
 #endif
 }
 
-void Linear::copyHyperparameterPointers(Layer* dstLayer)
+void Linear::copyHyperparameterPointers(Layer *dstLayer)
 {
- Linear* dstPtr = dynamic_cast<Linear *>(dstLayer);
- dstPtr->_hyperparameterCount = _hyperparameterCount;
+  Linear *dstPtr = dynamic_cast<Linear *>(dstLayer);
+  dstPtr->_hyperparameterCount = _hyperparameterCount;
 
 #ifdef _KORALI_USE_EIGEN
   if (_nn->_engine == "Korali")
@@ -121,10 +121,10 @@ void Linear::copyHyperparameterPointers(Layer* dstLayer)
 #ifdef _KORALI_USE_CUDNN
   if (_nn->_engine == "CuDNN")
   {
-   dstPtr->_weightsFilterDesc = _weightsFilterDesc;
-   dstPtr->_weightsFilter = _weightsFilter;
-   dstPtr->_biasTensorDesc = _biasTensorDesc;
-   dstPtr->_biasTensor = _biasTensor;
+    dstPtr->_weightsFilterDesc = _weightsFilterDesc;
+    dstPtr->_weightsFilter = _weightsFilter;
+    dstPtr->_biasTensorDesc = _biasTensorDesc;
+    dstPtr->_biasTensor = _biasTensor;
   }
 #endif
 }
@@ -170,18 +170,18 @@ void Linear::createBackwardPipeline()
   *  Initializing memory objects and primitives for BACKWARD propagation
   *********************************************************************************/
 
- // Checking Layer sizes
- ssize_t OC = _outputChannels;
- ssize_t IC = _prevLayer->_outputChannels;
+  // Checking Layer sizes
+  ssize_t OC = _outputChannels;
+  ssize_t IC = _prevLayer->_outputChannels;
 
   // Calling base layer function
- Layer::createBackwardPipeline();
+  Layer::createBackwardPipeline();
 
 #ifdef _KORALI_USE_EIGEN
   if (_nn->_engine == "Korali")
   {
-   _weightGradient = (float *)malloc(IC * OC * sizeof(float));
-   _biasGradient = (float *)malloc(OC * sizeof(float));
+    _weightGradient = (float *)malloc(IC * OC * sizeof(float));
+    _biasGradient = (float *)malloc(OC * sizeof(float));
   }
 #endif
 
@@ -189,8 +189,8 @@ void Linear::createBackwardPipeline()
 #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
   {
-   _weightsGradientMem = memory(_weightsMem.get_desc(), _nn->_dnnlEngine);
-   _biasGradientMem = memory(_biasMem.get_desc(), _nn->_dnnlEngine);
+    _weightsGradientMem = memory(_weightsMem.get_desc(), _nn->_dnnlEngine);
+    _biasGradientMem = memory(_biasMem.get_desc(), _nn->_dnnlEngine);
 
     auto backwardDataDesc = inner_product_backward_data::desc(
       _prevLayer->_outputGradientMem[0].get_desc(),

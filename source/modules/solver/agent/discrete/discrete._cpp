@@ -24,7 +24,7 @@ void Discrete::getAction(korali::Sample &sample)
 
   // Getting the probability of the actions given by the agent's policy
   auto policy = runPolicy({_stateTimeSequence.getVector()})[0];
-  const auto& pActions = policy.actionProbabilities;
+  const auto &pActions = policy.actionProbabilities;
 
   // Storage for the action index to use
   size_t actionIdx = 0;
@@ -95,8 +95,8 @@ void Discrete::getAction(korali::Sample &sample)
 
 float Discrete::calculateImportanceWeight(const std::vector<float> &action, const policy_t &curPolicy, const policy_t &oldPolicy)
 {
-  const auto& pVectorCurPolicy = curPolicy.actionProbabilities;
-  const auto& pVectorOldPolicy = oldPolicy.actionProbabilities;
+  const auto &pVectorCurPolicy = curPolicy.actionProbabilities;
+  const auto &pVectorOldPolicy = oldPolicy.actionProbabilities;
   auto actionIdx = oldPolicy.actionIndex;
 
   // Getting probability density of action for current policy

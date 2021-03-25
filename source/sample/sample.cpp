@@ -75,7 +75,7 @@ knlohmann::json &Sample::globals()
 
 Sample::~Sample()
 {
- _js.getJson().clear();
+  _js.getJson().clear();
 }
 
 bool Sample::contains(const std::string &key) { return _self->_js.contains(key); }

@@ -103,7 +103,7 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
   // Saving experiences
   while (agent["Termination"] == "Non Terminal")
   {
-   // Generating new action from the agent's policy
+    // Generating new action from the agent's policy
     getAction(agent);
 
     // Store the current state in the experience
@@ -120,7 +120,7 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
 
     // Sanity check for reward
     if (std::isfinite(agent["Reward"].get<float>()) == false)
-     KORALI_LOG_ERROR("Environment reward returned an invalid value: %f\n", agent["Reward"].get<float>());
+      KORALI_LOG_ERROR("Environment reward returned an invalid value: %f\n", agent["Reward"].get<float>());
 
     // Storing experience's reward
     episode["Experiences"][actionCount]["Reward"] = agent["Reward"];
@@ -269,38 +269,38 @@ void ReinforcementLearning::finalizeEnvironment()
 
 void ReinforcementLearning::requestNewPolicy(Sample &agent)
 {
- auto t0 = std::chrono::steady_clock::now(); // Profiling
+  auto t0 = std::chrono::steady_clock::now(); // Profiling
 
- // Reserving message storage for requesting new policy
- knlohmann::json message;
+  // Reserving message storage for requesting new policy
+  knlohmann::json message;
 
- // Sending request to engine
- message["Sample Id"] = agent["Sample Id"];
- message["Action"] = "Request New Policy";
- KORALI_SEND_MSG_TO_ENGINE(message);
+  // Sending request to engine
+  message["Sample Id"] = agent["Sample Id"];
+  message["Action"] = "Request New Policy";
+  KORALI_SEND_MSG_TO_ENGINE(message);
 
- // If requested new policy, wait for incoming message containing new hyperparameters
- agent["Policy Hyperparameters"] = KORALI_RECV_MSG_FROM_ENGINE();
- _agent->setAgentPolicy(agent["Policy Hyperparameters"]);
+  // If requested new policy, wait for incoming message containing new hyperparameters
+  agent["Policy Hyperparameters"] = KORALI_RECV_MSG_FROM_ENGINE();
+  _agent->setAgentPolicy(agent["Policy Hyperparameters"]);
 
- auto t1 = std::chrono::steady_clock::now();                                                       // Profiling
- _agentCommunicationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(t1 - t0).count(); // Profiling
+  auto t1 = std::chrono::steady_clock::now();                                                       // Profiling
+  _agentCommunicationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(t1 - t0).count(); // Profiling
 }
 
 void ReinforcementLearning::getAction(Sample &agent)
 {
- // Generating new action from policy
- auto t0 = std::chrono::steady_clock::now(); // Profiling
+  // Generating new action from policy
+  auto t0 = std::chrono::steady_clock::now(); // Profiling
 
- _agent->getAction(agent);
+  _agent->getAction(agent);
 
- auto t1 = std::chrono::steady_clock::now();                                                          // Profiling
- _agentPolicyEvaluationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(t1 - t0).count(); // Profiling
+  auto t1 = std::chrono::steady_clock::now();                                                          // Profiling
+  _agentPolicyEvaluationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(t1 - t0).count(); // Profiling
 
- // Sanity checks for action
- for (size_t i = 0; i < _actionVectorSize; i++)
-  if (std::isfinite(agent["Action"][i].get<float>()) == false)
-   KORALI_LOG_ERROR("Agent agent variable %lu returned an invalid value: %f\n", agent["Action"][i].get<float>());
+  // Sanity checks for action
+  for (size_t i = 0; i < _actionVectorSize; i++)
+    if (std::isfinite(agent["Action"][i].get<float>()) == false)
+      KORALI_LOG_ERROR("Agent agent variable %lu returned an invalid value: %f\n", agent["Action"][i].get<float>());
 }
 
 void ReinforcementLearning::runEnvironment(Sample &agent)
@@ -313,15 +313,15 @@ void ReinforcementLearning::runEnvironment(Sample &agent)
 
   // Sanity checks for state
   for (size_t i = 0; i < _stateVectorSize; i++)
-   if (std::isfinite(agent["State"][i].get<float>()) == false)
-    KORALI_LOG_ERROR("Environment state variable %lu returned an invalid value: %f\n", agent["State"][i].get<float>());
+    if (std::isfinite(agent["State"][i].get<float>()) == false)
+      KORALI_LOG_ERROR("Environment state variable %lu returned an invalid value: %f\n", agent["State"][i].get<float>());
 
   // Normalizing State
   auto state = agent["State"].get<std::vector<float>>();
 
   // Scale the state
-  for(size_t d = 0; d < _stateVectorSize; ++d)
-      state[d] = (state[d] - _stateRescalingMeans[d]) / _stateRescalingSdevs[d];
+  for (size_t d = 0; d < _stateVectorSize; ++d)
+    state[d] = (state[d] - _stateRescalingMeans[d]) / _stateRescalingSdevs[d];
 
   // Re-storing state into agent
   agent["State"] = state;

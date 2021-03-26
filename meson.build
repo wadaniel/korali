@@ -9,6 +9,9 @@ project('korali', ['c', 'cpp'],
     ]
 )
 
+# compiler object
+cpp = meson.get_compiler('cpp')
+
 # configuration object
 korali_conf = configuration_data()
 
@@ -76,6 +79,12 @@ elif user_want_onednn and dnnl_dep.found()
 else
   korali_use_onednn = false
 endif
+
+# FIXME: [fabianw@mavt.ethz.ch; 2021-03-26] CUDNN not tested
+korali_use_cudnn = false
+if get_option('cudnn') != ''
+  korali_deps += cpp.find_library('cudnn', dirs: [get_option('cudnn') + '/lib64'])
+  korali_use_cudnn = true
 endif
 
 korali_conf.set('_KORALI_USE_MPI', korali_use_mpi,
@@ -84,6 +93,10 @@ korali_conf.set('_KORALI_USE_MPI', korali_use_mpi,
 korali_conf.set('_KORALI_USE_ONEDNN', korali_use_onednn,
   description: 'Use Intel OndeDNN backend for Deep Neural Networks',
 )
+korali_conf.set('_KORALI_USE_CUDNN', korali_use_cudnn,
+  description: 'Use Nvidia CUDA backend for Deep Neural Networks',
+)
+
 # process korali extension
 subdir('source')
 

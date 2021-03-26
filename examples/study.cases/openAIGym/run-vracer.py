@@ -34,8 +34,13 @@ e["Solver"]["Episodes Per Generation"] = 10
 e["Solver"]["Experiences Between Policy Updates"] = 1
 e["Solver"]["Learning Rate"] = 0.0001
 e["Solver"]["Discount Factor"] = 0.995
-e["Solver"]["Reward Rescaling"]["Frequency"] = 1000
 e["Solver"]["Mini Batch"]["Size"] = 256
+
+### Setting Rescaling
+
+e["Solver"]["Reward Rescaling"]["Enabled"] = True
+e["Solver"]["Reward Rescaling"]["Frequency"] = 1000
+e["Solver"]["State Rescaling"]["Enabled"] = True
 
 ### Configuring the neural network and its hidden layers
 

@@ -27,11 +27,11 @@ class ReinforcementLearning : public korali::Problem
   void runTestingEpisode(korali::Sample &agent);
 
   /**
-   * @brief Initializes the environment and agent configuration
+   * @brief Initializes the environment and agent configuration.
    * @param agent Sample containing current agent/state information.
    */
   void initializeEnvironment(korali::Sample &agent);
-
+ 
   /**
    * @brief Finalizes the environemnt (frees resources)
    */

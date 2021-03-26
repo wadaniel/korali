@@ -187,15 +187,20 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
     auto endTime1 = std::chrono::steady_clock::now();                                                            // Profiling
     agentComputationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime1 - beginTime1).count(); // Profiling
 
-    // Storing features of linear reward function
+    // Storing features of the reward function
     episode["Experiences"][actionCount]["Features"] = agent["Features"];
-
+  
+    // Sanity checks for the features
+     for (size_t i = 0; i < _featureVectorSize; i++)
+      if (std::isfinite(agent["Features"][i].get<float>()) == false)
+       KORALI_LOG_ERROR("Feature variable %lu returned an invalid value: %f\n", agent["Features"][i].get<float>());
+ 
     // Storing experience's reward
     episode["Experiences"][actionCount]["Reward"] = _agent->calculateReward(agent["Features"].get<std::vector<float>>());
     
     // Sanity checks for reward
-    if (std::isfinite(episode["Experiences"][actionCount]["Reward"].get<float>() == false))
-     KORALI_LOG_ERROR("Calculated reward returned an invalid value\n");
+    if (std::isfinite(episode["Experiences"][actionCount]["Reward"].get<float>()) == false)
+     KORALI_LOG_ERROR("Calculated reward returned an invalid value: %f\n", episode[actionCount]["Reward"].get<float>());
 
     // Storing termination status
     episode["Experiences"][actionCount]["Termination"] = agent["Termination"];

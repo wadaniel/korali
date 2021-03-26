@@ -1,5 +1,6 @@
 @startIncludeGuard
 
+#include "config.hpp"
 #include "auxiliar/koraliJson.hpp"
 #include "auxiliar/libco/libco.h"
 #include "modules/module.hpp"

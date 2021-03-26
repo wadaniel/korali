@@ -109,9 +109,9 @@ T logSumExp(const T *logValues, const size_t &n)
 
   T sumExpValues = 0.0;
   for (size_t i = 0; i < n; i++)
-    sumExpValues += exp(logValues[i] - maxLogValue);
+    sumExpValues += std::exp(logValues[i] - maxLogValue);
 
-  return maxLogValue + log(sumExpValues);
+  return maxLogValue + std::log(sumExpValues);
 }
 
 /**

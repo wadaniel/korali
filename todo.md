@@ -4,11 +4,11 @@
 * [X] remove eigen and rtnorm flags
 * [X] Provide option to explicitly index the namespace hierarchy (e.g. @startNamespace0)
 * [ ] change "" to <> in includes where needed (examples cxx)
-* [ ] integrate meson in CircleCI config
+* [X] integrate meson in CircleCI config
 * [X] add pkg-config entry for korali installation
 * [X] update Dockerfile with meson support
 * [ ] may need `config.h` header -- check what are all these flags in `python/korali/cxx/cflags.py`
-
+* [ ] make a `requirements.txt`
 
 # Python module
 
@@ -25,7 +25,7 @@
 * [X] rename external to third-party (or subprojects)
 * [Χ] optional third-party
 * [ ] Fix the `git clean -xdf .` in all `._fetch.sh` scripts. It will fail in a release.
-* [ ] doxygen and llvm dependencies
+* [X] doxygen and llvm dependencies
 * [ ] check for minimum version of GSL
 
 
@@ -39,7 +39,7 @@
 
 * [X] return value in all tests
 * [X] write tests in meson
-* [ ] configure circleci
+* [X] configure circleci
 * [X] write separate tests for each file
 * [ ] check again the test in running.cxx, running.mpi, reinforcement
 

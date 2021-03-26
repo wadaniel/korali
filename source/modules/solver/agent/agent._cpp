@@ -339,15 +339,19 @@ void Agent::rescaleRewards()
     _rewardVector[i] -= newRewardRescalingMean;
     _rewardVector[i] /= newRewardRescalingSdev;
 
-    _stateValueVector[i] *= _rewardRescalingSigma;
-    _stateValueVector[i] += _rewardRescalingMean;
-    _stateValueVector[i] -= newRewardRescalingMean;
-    _stateValueVector[i] /= newRewardRescalingSdev;
+    // If this is done for the first time, also rscale state value and retrace vectors
+    if (_rewardRescalingCount == 0)
+    {
+     _stateValueVector[i] *= _rewardRescalingSigma;
+     _stateValueVector[i] += _rewardRescalingMean;
+     _stateValueVector[i] -= newRewardRescalingMean;
+     _stateValueVector[i] /= newRewardRescalingSdev;
 
-    _retraceValueVector[i] *= _rewardRescalingSigma;
-    _retraceValueVector[i] += _rewardRescalingMean;
-    _retraceValueVector[i] -= newRewardRescalingMean;
-    _retraceValueVector[i] /= newRewardRescalingSdev;
+     _retraceValueVector[i] *= _rewardRescalingSigma;
+     _retraceValueVector[i] += _rewardRescalingMean;
+     _retraceValueVector[i] -= newRewardRescalingMean;
+     _retraceValueVector[i] /= newRewardRescalingSdev;
+    }
   }
 
   // Storing new statistics

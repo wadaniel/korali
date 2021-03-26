@@ -4,6 +4,13 @@ korali_gen = find_program('../tools/build/build.py')
 # same place as implementation
 header_path = find_program('../tools/build/get_header_directory.py')
 
+configure_file(
+  output: 'config.hpp',
+  install: true,
+  install_dir: korali_install_headers,
+  configuration: korali_conf,
+)
+
 korali_include = [include_directories('.')]
 
 korali_header = files([

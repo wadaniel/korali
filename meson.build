@@ -9,6 +9,9 @@ project('korali', ['c', 'cpp'],
     ]
 )
 
+# configuration object
+korali_conf = configuration_data()
+
 # python installation
 pymodule = import('python')
 python = pymodule.find_installation('python3', required: true)
@@ -25,9 +28,10 @@ korali_cpp_args = []
 # check for MPI
 mpi_dep = dependency('mpi', language: 'cpp', required: false)
 user_want_mpi = get_option('mpi')
+korali_use_mpi = false
 if user_want_mpi and mpi_dep.found()
+  korali_use_mpi = true
   korali_deps += mpi_dep
-  korali_cpp_args += '-D_KORALI_USE_MPI'
 elif user_want_mpi and not mpi_dep.found()
   message('''Configuration requests MPI but could not find implementation.
     Building without MPI support''')
@@ -49,6 +53,7 @@ dnnl_dep = dependency(
   'dnnl',
   required: get_option('wrap_mode') == 'nofallback',
 )
+korali_use_onednn = true
 if user_want_onednn and (
      not dnnl_dep.found()
      or get_option('wrap_mode') == 'forcefallback'
@@ -66,12 +71,19 @@ if user_want_onednn and (
       })
   sub_proj = cmake.subproject('dnnl', options: opt_var)
   korali_deps += sub_proj.dependency('dnnl')
-  korali_cpp_args += '-D_KORALI_USE_ONEDNN'
 elif user_want_onednn and dnnl_dep.found()
   korali_deps += dnnl_dep
-  korali_cpp_args += '-D_KORALI_USE_ONEDNN'
+else
+  korali_use_onednn = false
+endif
 endif
 
+korali_conf.set('_KORALI_USE_MPI', korali_use_mpi,
+  description: 'Use MPI for distributed memory paralleism',
+)
+korali_conf.set('_KORALI_USE_ONEDNN', korali_use_onednn,
+  description: 'Use Intel OndeDNN backend for Deep Neural Networks',
+)
 # process korali extension
 subdir('source')
 

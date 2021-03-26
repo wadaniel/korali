@@ -1,4 +1,5 @@
-eigen*/
-pybind11*/
-opendnn*/
-packagecache/
+/dnnl*
+/eigen*
+/gsl*
+/packagecache
+/pybind11*

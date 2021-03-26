@@ -36,22 +36,25 @@ endif
 # check for OpenMP support
 korali_deps += dependency('openmp', required: false)
 
+# process required korali dependencies
+korali_deps += dependency('eigen3', fallback: ['eigen', 'eigen_dep'], required: true)
+# TODO: [fabianw@mavt.ethz.ch; 2021-02-13] should probably test for system cblas
+# (needs benchmark: gslcblas versus system cblas (and possibly ATLAS))
+korali_deps += dependency('gsl', fallback: ['gsl', 'gsl_dep'], required: true)
+korali_deps += dependency('pybind11', fallback: ['pybind11', 'pybind11_dep'], required: true)
 
 # process optional korali dependencies
-onednn_dep = dependency('onednn', required: false)
 user_want_onednn = get_option('onednn')
-if user_want_onednn and onednn_dep.found()
-  korali_deps += onednn_dep
-  korali_cpp_args += '-D_KORALI_USE_ONEDNN'
-elif user_want_onednn and not onednn_dep.found()
-  onednn_version = '2.0'
-  _r = run_command('subprojects/onednn/._fetch.sh', [onednn_version, join_paths('subprojects','onednn')])
-  if _r.returncode() != 0
-    error('Failed to obtain onednn source for version ' + onednn_version)
-  endif
-
+dnnl_dep = dependency(
+  'dnnl',
+  required: get_option('wrap_mode') == 'nofallback',
+)
+if user_want_onednn and (
+     not dnnl_dep.found()
+     or get_option('wrap_mode') == 'forcefallback'
+     or 'dnnl' in get_option('force_fallback_for')
+   )
   cmake = import('cmake')
-
   opt_var = cmake.subproject_options()
   opt_var.add_cmake_defines({
       'DNNL_BUILD_EXAMPLES': false,
@@ -61,20 +64,13 @@ elif user_want_onednn and not onednn_dep.found()
       'DNNL_CPU_RUNTIME': 'SEQ',
       'BUILD_SHARED_LIBS': true,
       })
-
-  sub_proj = cmake.subproject('onednn', options: opt_var)
-
+  sub_proj = cmake.subproject('dnnl', options: opt_var)
   korali_deps += sub_proj.dependency('dnnl')
   korali_cpp_args += '-D_KORALI_USE_ONEDNN'
+elif user_want_onednn and dnnl_dep.found()
+  korali_deps += dnnl_dep
+  korali_cpp_args += '-D_KORALI_USE_ONEDNN'
 endif
-
-# process required korali dependencies
-korali_deps += dependency('eigen3', fallback: ['eigen', 'eigen_dep'], required: true)
-# TODO: [fabianw@mavt.ethz.ch; 2021-02-13] should probably test for system cblas
-# (needs benchmark: gslcblas versus system cblas (and possibly ATLAS))
-korali_deps += dependency('gsl', fallback: ['gsl', 'gsl_dep'], required: true)
-korali_deps += dependency('pybind11', fallback: ['pybind11', 'pybind11_dep'], required: true)
-
 
 # process korali extension
 subdir('source')

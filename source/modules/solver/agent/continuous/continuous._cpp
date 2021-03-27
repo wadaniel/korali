@@ -84,7 +84,17 @@ std::vector<float> Continuous::generateTrainingAction(const policy_t &curPolicy)
   const auto &curSigmas = curPolicy.actionSigmas;
 
   for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-    action[i] = curMeans[i] + curSigmas[i] * _normalGenerator->getRandomNumber();
+  {
+    float actionValue = curMeans[i] + curSigmas[i] * _normalGenerator->getRandomNumber();
+
+    size_t varIdx = _problem->_actionVectorIndexes[i];
+    auto lowerBound = _k->_variables[varIdx]->_lowerBound;
+    auto upperBound = _k->_variables[varIdx]->_upperBound;
+    if (actionValue < lowerBound) actionValue = lowerBound;
+    if (actionValue > upperBound) actionValue = upperBound;
+
+    action[i] = actionValue;
+  }
 
   return action;
 }

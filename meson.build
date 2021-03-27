@@ -9,6 +9,12 @@ project('korali', ['c', 'cpp'],
     ]
 )
 
+# compiler object
+cpp = meson.get_compiler('cpp')
+
+# configuration object
+korali_conf = configuration_data()
+
 # python installation
 pymodule = import('python')
 python = pymodule.find_installation('python3', required: true)
@@ -25,9 +31,10 @@ korali_cpp_args = []
 # check for MPI
 mpi_dep = dependency('mpi', language: 'cpp', required: false)
 user_want_mpi = get_option('mpi')
+korali_use_mpi = false
 if user_want_mpi and mpi_dep.found()
+  korali_use_mpi = true
   korali_deps += mpi_dep
-  korali_cpp_args += '-D_KORALI_USE_MPI'
 elif user_want_mpi and not mpi_dep.found()
   message('''Configuration requests MPI but could not find implementation.
     Building without MPI support''')
@@ -36,22 +43,26 @@ endif
 # check for OpenMP support
 korali_deps += dependency('openmp', required: false)
 
+# process required korali dependencies
+korali_deps += dependency('eigen3', fallback: ['eigen', 'eigen_dep'], required: true)
+# TODO: [fabianw@mavt.ethz.ch; 2021-02-13] should probably test for system cblas
+# (needs benchmark: gslcblas versus system cblas (and possibly ATLAS))
+korali_deps += dependency('gsl', fallback: ['gsl', 'gsl_dep'], required: true)
+korali_deps += dependency('pybind11', fallback: ['pybind11', 'pybind11_dep'], required: true)
 
 # process optional korali dependencies
-onednn_dep = dependency('onednn', required: false)
 user_want_onednn = get_option('onednn')
-if user_want_onednn and onednn_dep.found()
-  korali_deps += onednn_dep
-  korali_cpp_args += '-D_KORALI_USE_ONEDNN'
-elif user_want_onednn and not onednn_dep.found()
-  onednn_version = '2.0'
-  _r = run_command('subprojects/onednn/._fetch.sh', [onednn_version, join_paths('subprojects','onednn')])
-  if _r.returncode() != 0
-    error('Failed to obtain onednn source for version ' + onednn_version)
-  endif
-
+dnnl_dep = dependency(
+  'dnnl',
+  required: get_option('wrap_mode') == 'nofallback',
+)
+korali_use_onednn = true
+if user_want_onednn and (
+     not dnnl_dep.found()
+     or get_option('wrap_mode') == 'forcefallback'
+     or 'dnnl' in get_option('force_fallback_for')
+   )
   cmake = import('cmake')
-
   opt_var = cmake.subproject_options()
   opt_var.add_cmake_defines({
       'DNNL_BUILD_EXAMPLES': false,
@@ -61,20 +72,30 @@ elif user_want_onednn and not onednn_dep.found()
       'DNNL_CPU_RUNTIME': 'SEQ',
       'BUILD_SHARED_LIBS': true,
       })
-
-  sub_proj = cmake.subproject('onednn', options: opt_var)
-
+  sub_proj = cmake.subproject('dnnl', options: opt_var)
   korali_deps += sub_proj.dependency('dnnl')
-  korali_cpp_args += '-D_KORALI_USE_ONEDNN'
+elif user_want_onednn and dnnl_dep.found()
+  korali_deps += dnnl_dep
+else
+  korali_use_onednn = false
 endif
 
-# process required korali dependencies
-korali_deps += dependency('eigen3', fallback: ['eigen', 'eigen_dep'], required: true)
-# TODO: [fabianw@mavt.ethz.ch; 2021-02-13] should probably test for system cblas
-# (needs benchmark: gslcblas versus system cblas (and possibly ATLAS))
-korali_deps += dependency('gsl', fallback: ['gsl', 'gsl_dep'], required: true)
-korali_deps += dependency('pybind11', fallback: ['pybind11', 'pybind11_dep'], required: true)
+# FIXME: [fabianw@mavt.ethz.ch; 2021-03-26] CUDNN not tested
+korali_use_cudnn = false
+if get_option('cudnn') != ''
+  korali_deps += cpp.find_library('cudnn', dirs: [get_option('cudnn') + '/lib64'])
+  korali_use_cudnn = true
+endif
 
+korali_conf.set('_KORALI_USE_MPI', korali_use_mpi,
+  description: 'Use MPI for distributed memory paralleism',
+)
+korali_conf.set('_KORALI_USE_ONEDNN', korali_use_onednn,
+  description: 'Use Intel OndeDNN backend for Deep Neural Networks',
+)
+korali_conf.set('_KORALI_USE_CUDNN', korali_use_cudnn,
+  description: 'Use Nvidia CUDA backend for Deep Neural Networks',
+)
 
 # process korali extension
 subdir('source')

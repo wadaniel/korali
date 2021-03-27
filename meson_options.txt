@@ -10,3 +10,9 @@ option('onednn',
   description : 'oneDNN support',
   yield: true
 )
+option('cudnn',
+  type : 'string',
+  value : '',
+  description : 'Path to cuDNN installation',
+  yield: true
+)

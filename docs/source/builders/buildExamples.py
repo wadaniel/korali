@@ -5,22 +5,17 @@ import json
 import shutil
 import copy
 import glob
+import argparse
 
-exampleSrcDir = '../../../examples'
 
-################################################
-# Process Example Function
-
-def processExample(exampleRelPath, exampleName):
-  examplePath = os.path.join(exampleSrcDir, exampleRelPath)
+def processExample(source, destination, exampleRelPath, exampleName):
+  examplePath = os.path.join(source, exampleRelPath)
   exampleReadmeFile = examplePath + '/README.rst'
-  exampleOutputDir = os.path.abspath(
-      os.path.join('../examples/' + exampleRelPath, os.pardir))
+  exampleOutputDir = os.path.abspath(os.path.join( destination + exampleRelPath, os.pardir))
 
   print('Processing file: ' + exampleReadmeFile)
 
-  exampleReadmeString = '.. _example_' + exampleRelPath.lower().replace(
-      './', '').replace('/', '-').replace(' ', '') + ':\n\n'
+  exampleReadmeString = '.. _example_' + exampleRelPath.lower().replace('./', '').replace('/', '-').replace(' ', '') + ':\n\n'
 
   # Creating subfolder list
   subFolderList = []
@@ -28,8 +23,7 @@ def processExample(exampleRelPath, exampleName):
   for f in list_dir:
     fullPath = os.path.join(examplePath, f)
     if not os.path.isfile(fullPath):
-      if (not '.o/' in fullPath and not '.d/' in fullPath and
-          not '/_' in fullPath):
+      if (not '.o/' in fullPath and not '.d/' in fullPath and not '/_' in fullPath):
         subFolderList.append(f)
 
   # Creating example's folder, if not exists
@@ -38,11 +32,11 @@ def processExample(exampleRelPath, exampleName):
 
   # Determining if its a parent or leaf example
   isParentExample = True
-  if (subFolderList == []):
+  if subFolderList == []:
     isParentExample = False
 
   # If there is a test script, do not proceed further
-  if (os.path.isfile(examplePath + '/.run_test.sh')):
+  if os.path.isfile(examplePath + '/.run_test.sh'):
     isParentExample = False
 
   # If its leaf, link to source code
@@ -72,7 +66,7 @@ def processExample(exampleRelPath, exampleName):
       if (not '/_' in subExampleFullPath):
         exampleReadmeString += '   ' + exampleName + '/' + f + '\n'
         subPath = os.path.join(exampleRelPath, f)
-        processExample(subPath, f)
+        processExample(source, destination, subPath, f)
 
   # Saving Example's readme file
   exampleReadmeString += '\n\n'
@@ -80,16 +74,21 @@ def processExample(exampleRelPath, exampleName):
     file.write(exampleReadmeString)
 
 
-############################################
-# Main Procedure
+def build_examples(source, destination):
+  shutil.rmtree(destination, ignore_errors=True, onerror=None)
+  os.makedirs(destination)
+  
+  list_dir = os.listdir(source)
+  for f in list_dir:
+    fullPath = os.path.join(source, f)
+    if not os.path.isfile(fullPath):
+      if (not '.o/' in fullPath and not '.d/' in fullPath and not '/_' in fullPath and not 'features' in fullPath):
+        processExample(source, destination, f, f)
 
-shutil.rmtree('../examples', ignore_errors=True, onerror=None)
-os.makedirs('../examples')
+if __name__ == "__main__":
+  parser = argparse.ArgumentParser()
+  parser.add_argument("--destination", help="Save the generated files in this folder")
+  parser.add_argument("--source", help="Read files from this folder")
+  args = parser.parse_args()
 
-list_dir = os.listdir(exampleSrcDir)
-for f in list_dir:
-  fullPath = os.path.join(exampleSrcDir, f)
-  if not os.path.isfile(fullPath):
-    if (not '.o/' in fullPath and not '.d/' in fullPath and
-        not '/_' in fullPath and not 'features' in fullPath):
-      processExample(f, f)
+  build_examples(args.source, args.destination) 

@@ -85,7 +85,7 @@ primary_domain = 'cpp'
 # Tell sphinx what the pygments highlight language should be
 highlight_language = 'cpp'
 
-latex_documents = []
+enable_pdf_build = false
 
 # -- Options for HTML output -------------------------------------------------
 

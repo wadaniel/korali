@@ -491,17 +491,11 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
       KORALI_LOG_ERROR("Policy has not produced state value for the current experience.\n");
     }
 
-    if (isDefined(episode[expId], "Policy", "Action Means"))
-      expPolicy.actionMeans = episode[expId]["Policy"]["Action Means"].get<std::vector<float>>();
-
-    if (isDefined(episode[expId], "Policy", "Action Sigmas"))
-      expPolicy.actionSigmas = episode[expId]["Policy"]["Action Sigmas"].get<std::vector<float>>();
+    if (isDefined(episode[expId], "Policy", "Distribution Parameters"))
+      expPolicy.distributionParameters = episode[expId]["Policy"]["Distribution Parameters"].get<std::vector<float>>();
 
     if (isDefined(episode[expId], "Policy", "Action Index"))
       expPolicy.actionIndex = episode[expId]["Policy"]["Action Index"].get<size_t>();
-
-    if (isDefined(episode[expId], "Policy", "Action Probabilities"))
-      expPolicy.actionProbabilities = episode[expId]["Policy"]["Action Probabilities"].get<std::vector<float>>();
 
     // Storing policy information
     _expPolicyVector.add(expPolicy);
@@ -874,16 +868,12 @@ void Agent::serializeExperienceReplay()
     stateJson["Experience Replay"][i]["Termination"] = _terminationVector[i];
 
     stateJson["Experience Replay"][i]["Experience Policy"]["State Value"] = _expPolicyVector[i].stateValue;
-    stateJson["Experience Replay"][i]["Experience Policy"]["Action Means"] = _expPolicyVector[i].actionMeans;
-    stateJson["Experience Replay"][i]["Experience Policy"]["Action Sigmas"] = _expPolicyVector[i].actionSigmas;
+    stateJson["Experience Replay"][i]["Experience Policy"]["Distribution Parameters"] = _expPolicyVector[i].distributionParameters;
     stateJson["Experience Replay"][i]["Experience Policy"]["Action Index"] = _expPolicyVector[i].actionIndex;
-    stateJson["Experience Replay"][i]["Experience Policy"]["Action Probabilities"] = _expPolicyVector[i].actionProbabilities;
 
     stateJson["Experience Replay"][i]["Current Policy"]["State Value"] = _curPolicyVector[i].stateValue;
-    stateJson["Experience Replay"][i]["Current Policy"]["Action Means"] = _curPolicyVector[i].actionMeans;
-    stateJson["Experience Replay"][i]["Current Policy"]["Action Sigmas"] = _curPolicyVector[i].actionSigmas;
+    stateJson["Experience Replay"][i]["Current Policy"]["Distribution Parameters"] = _curPolicyVector[i].distributionParameters;
     stateJson["Experience Replay"][i]["Current Policy"]["Action Index"] = _curPolicyVector[i].actionIndex;
-    stateJson["Experience Replay"][i]["Current Policy"]["Action Probabilities"] = _curPolicyVector[i].actionProbabilities;
   }
 
   // Storing training/testing policies
@@ -959,18 +949,14 @@ void Agent::deserializeExperienceReplay()
 
     policy_t expPolicy;
     expPolicy.stateValue = stateJson["Experience Replay"][i]["Experience Policy"]["State Value"].get<float>();
-    expPolicy.actionMeans = stateJson["Experience Replay"][i]["Experience Policy"]["Action Means"].get<std::vector<float>>();
-    expPolicy.actionSigmas = stateJson["Experience Replay"][i]["Experience Policy"]["Action Sigmas"].get<std::vector<float>>();
+    expPolicy.distributionParameters = stateJson["Experience Replay"][i]["Experience Policy"]["Distribution Parameters"].get<std::vector<float>>();
     expPolicy.actionIndex = stateJson["Experience Replay"][i]["Experience Policy"]["Action Index"].get<size_t>();
-    expPolicy.actionProbabilities = stateJson["Experience Replay"][i]["Experience Policy"]["Action Probabilities"].get<std::vector<float>>();
     _expPolicyVector.add(expPolicy);
 
     policy_t curPolicy;
     curPolicy.stateValue = stateJson["Experience Replay"][i]["Current Policy"]["State Value"].get<float>();
-    curPolicy.actionMeans = stateJson["Experience Replay"][i]["Current Policy"]["Action Means"].get<std::vector<float>>();
-    curPolicy.actionSigmas = stateJson["Experience Replay"][i]["Current Policy"]["Action Sigmas"].get<std::vector<float>>();
+    curPolicy.distributionParameters = stateJson["Experience Replay"][i]["Current Policy"]["Distribution Parameters"].get<std::vector<float>>();
     curPolicy.actionIndex = stateJson["Experience Replay"][i]["Current Policy"]["Action Index"].get<size_t>();
-    curPolicy.actionProbabilities = stateJson["Experience Replay"][i]["Current Policy"]["Action Probabilities"].get<std::vector<float>>();
     _curPolicyVector.add(curPolicy);
   }
 

@@ -28,7 +28,7 @@ void VRACER::initializeAgent()
   _criticPolicyExperiment["Problem"]["Training Batch Size"] = _miniBatchSize;
   _criticPolicyExperiment["Problem"]["Inference Batch Size"] = 1;
   _criticPolicyExperiment["Problem"]["Input"]["Size"] = _problem->_stateVectorSize;
-  _criticPolicyExperiment["Problem"]["Solution"]["Size"] = 1 + 2 * _problem->_actionVectorSize;
+  _criticPolicyExperiment["Problem"]["Solution"]["Size"] = 1 + _policyParameterCount;
 
   _criticPolicyExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
   _criticPolicyExperiment["Solver"]["Optimizer"] = _optimizer;
@@ -152,10 +152,6 @@ void VRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
     for (size_t i = 0; i < 2 * _problem->_actionVectorSize; i++)
       gradientLoss[1 + i] += klGradMultiplier * klGrad[i];
 
-    // Compute statistics
-    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-      _statisticsAverageActionSigmas[i] += curPolicy.actionSigmas[i];
-
     // Set Gradient of Loss as Solution
     _criticPolicyProblem->_solutionData[b] = gradientLoss;
   }
@@ -182,8 +178,7 @@ std::vector<policy_t> VRACER::runPolicy(const std::vector<std::vector<std::vecto
     policyVector[b].stateValue = evaluation[b][0];
 
     // Getting distribution parameters
-    policyVector[b].actionMeans.assign(evaluation[b].begin() + 1, evaluation[b].begin() + _problem->_actionVectorSize + 1);
-    policyVector[b].actionSigmas.assign(evaluation[b].begin() + _problem->_actionVectorSize + 1, evaluation[b].end());
+    policyVector[b].distributionParameters.assign(evaluation[b].begin() + 1, evaluation[b].end());
   }
 
   return policyVector;
@@ -203,8 +198,6 @@ void VRACER::setAgentPolicy(const knlohmann::json &hyperparameters)
 
 void VRACER::printAgentInformation()
 {
-  _k->_logger->logInfo("Normal", " + [VRACER] Average Action Noise (Sigma) in Mini-Batch: \n");
-  for (size_t i = 0; i < _problem->_actionVectorSize; ++i) _k->_logger->logInfo("Normal", " +  [ %f ]\n", _statisticsAverageActionSigmas[i]);
   _k->_logger->logInfo("Normal", " + [VRACER] Policy Learning Rate: %.3e\n", _currentLearningRate);
 }
 

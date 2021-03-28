@@ -46,24 +46,16 @@ struct policy_t
   float stateValue;
 
   /**
-  * @brief [Continuous] Contains the action means for the policy
+  * @brief Contains the parameters that define the policy distribution used to produced the action.
+  *        For continuous policies, it depends on the distribution selected.
+  *        For discrete policies, it contains the categorical probability of every action.
   */
-  std::vector<float> actionMeans;
+  std::vector<float> distributionParameters;
 
   /**
-  * @brief [Continuous] Contains the action sigmas for the policy
-  */
-  std::vector<float> actionSigmas;
-
-  /**
-  * @brief [Discrete]
+  * @brief [Discrete] Stores the index of the selected experience
   */
   size_t actionIndex;
-
-  /**
-  * @brief [Discrete] Contains the probabilities of discrete actions
-  */
-  std::vector<float> actionProbabilities;
 };
 
 class Agent : public Solver

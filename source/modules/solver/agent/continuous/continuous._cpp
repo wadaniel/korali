@@ -13,8 +13,7 @@ void Continuous::initializeAgent()
   // Getting continuous problem pointer
   _problem = dynamic_cast<problem::reinforcementLearning::Continuous *>(_k->_problem);
 
-  // Allocating action bounds, range, rescaling and mask information
-  _actionScalings.resize(_problem->_actionVectorSize);
+  // Allocating and obtaining action bounds information
   _actionLowerBounds.resize(_problem->_actionVectorSize);
   _actionUpperBounds.resize(_problem->_actionVectorSize);
 
@@ -25,11 +24,37 @@ void Continuous::initializeAgent()
     _actionUpperBounds[i] = _k->_variables[varIdx]->_upperBound;
 
     if (_actionUpperBounds[i] - _actionLowerBounds[i] <= 0.0) KORALI_LOG_ERROR("Upper (%f) and Lower Bound (%f) of action variable %lu invalid.\n", _actionUpperBounds[i], _actionLowerBounds[i], i);
+  }
 
-    // Obtaining lower and upper bounds for the action
-    _actionLowerBounds[i] = _actionLowerBounds[i];
-    _actionUpperBounds[i] = _actionUpperBounds[i];
-    _actionScalings[i] = _actionUpperBounds[i] - _actionLowerBounds[i];
+  // Obtaining policy parameter transformations (depends on which policy distribution chosen)
+  if (_policyDistribution == "Normal")
+  {
+    _policyParameterCount = 2 * _problem->_actionVectorSize; // Means and Sigmas
+
+    // Allocating space for the required transformations
+    _policyParameterTransformationMasks.resize(_policyParameterCount);
+    _policyParameterScaling.resize(_policyParameterCount);
+    _policyParameterShifting.resize(_policyParameterCount);
+
+    // Establishing transformations for the unbounded normal policy
+    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+    {
+      auto varIdx = _problem->_actionVectorIndexes[i];
+      float sigma = _k->_variables[varIdx]->_initialExplorationNoise;
+
+      // Checking correct noise configuration
+      if (sigma <= 0.0f) KORALI_LOG_ERROR("Provided initial noise (%f) for action variable %lu is not defined or negative.\n", sigma, varIdx);
+
+      // Identity mask for Means
+      _policyParameterScaling[i] = 1.0f;
+      _policyParameterShifting[i] = 0.0f;
+      _policyParameterTransformationMasks[i] = "Identity";
+
+      // Softplus mask for Sigmas
+      _policyParameterTransformationMasks[_problem->_actionVectorSize + i] = "Softplus";
+      _policyParameterScaling[_problem->_actionVectorSize + i] = sigma * 2.0f;
+      _policyParameterShifting[_problem->_actionVectorSize + i] = 0.0f;
+    }
   }
 }
 
@@ -282,8 +307,9 @@ std::vector<float> Continuous::calculateImportanceWeightGradient(const std::vect
 
      const float psiAb = gsl_sf_psi(alphaCur + betaCur);
 
-     const float logscale = std::log(_actionScalings[i]);
-     const float powscale = std::pow(_actionScalings[i], -betaCur - alphaCur + 1.);
+     const float actionRange = _actionUpperBounds[i] - _actionLowerBounds[i];
+     const float logscale = std::log(actionRange);
+     const float powscale = std::pow(actionRange, -betaCur - alphaCur + 1.);
      const float factor = -1. * std::pow(action[i] - _actionLowerBounds[i], alphaCur - 1.) * powscale * std::pow(_actionUpperBounds[i] - action[i], betaCur - 1.) * invpOldPolicy / Bab;
 
      // Rho Grad wrt alpha and beta
@@ -367,11 +393,13 @@ std::vector<float> Continuous::calculateKLDivergenceGradient(const policy_t &old
     const float psiAbCur = gsl_sf_psi(alphaCur + betaCur);
     const float psiAbOld = gsl_sf_psi(alphaOld + betaOld);
 
+    const float actionRange = _actionUpperBounds[i] - _actionLowerBounds[i];
+
     // KL Grad wrt alpha
-    const float dklda = (gsl_sf_psi(alphaCur) - psiAbCur - gsl_sf_psi(alphaOld) - psiAbOld) / _actionScalings[i];
+    const float dklda = (gsl_sf_psi(alphaCur) - psiAbCur - gsl_sf_psi(alphaOld) - psiAbOld) / actionRange;
 
     // KL Grad wrt beta
-    const float dkldb = (gsl_sf_psi(betaCur) - psiAbCur - gsl_sf_psi(betaOld) - psiAbOld) / _actionScalings[i];
+    const float dkldb = (gsl_sf_psi(betaCur) - psiAbCur - gsl_sf_psi(betaOld) - psiAbOld) / actionRange;
 
     // Derivatives of alpha and beta wrt mu and varc
     float dadmu, dadvarc, dbdmu, dbdvarc;

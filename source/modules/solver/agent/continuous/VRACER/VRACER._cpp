@@ -45,7 +45,7 @@ void VRACER::initializeAgent()
   // Masks to normalize and rescaling output to fit the action's [lower, upper] bounds (and sigmas/P)
   _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Scale"][0] = 1.0f;
   _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Shift"][0] = 0.0f;
-  _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Softplus Mask"][0] = false;
+  _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Transformation Mask"][0] = "Identity";
 
   // Normalizing and rescaling output to fit the action's [lower, upper] bounds
   for (size_t i = 0; i < _problem->_actionVectorSize; i++)
@@ -64,12 +64,12 @@ void VRACER::initializeAgent()
     // Tanh mask for Mean
     _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Scale"][i + 1] = 1.0f;
     _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Shift"][i + 1] = shift;
-    _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Softplus Mask"][i + 1] = false;
+    _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Transformation Mask"][i + 1] = "Identity";
 
     // Softplus mask for Sigma
     _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Scale"][_problem->_actionVectorSize + i + 1] = sigma * 2.0f;
     _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Shift"][_problem->_actionVectorSize + i + 1] = 0.0f;
-    _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Softplus Mask"][_problem->_actionVectorSize + i + 1] = true;
+    _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Transformation Mask"][_problem->_actionVectorSize + i + 1] = "Softplus";
   }
 
   // Running initialization to verify that the configuration is correct

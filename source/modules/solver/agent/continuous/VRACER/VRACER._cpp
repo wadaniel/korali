@@ -20,7 +20,7 @@ void VRACER::initializeAgent()
   _statisticsAverageActionSigmas.resize(_problem->_actionVectorSize);
 
   /*********************************************************************
- * Initializing Critic/Policy Experiment
+ * Initializing Critic/Policy Neural Network Optimization Experiment
  *********************************************************************/
 
   _criticPolicyExperiment["Problem"]["Type"] = "Supervised Learning";
@@ -42,34 +42,17 @@ void VRACER::initializeAgent()
   _criticPolicyExperiment["Solver"]["Neural Network"]["Hidden Layers"] = _neuralNetworkHiddenLayers;
   _criticPolicyExperiment["Solver"]["Output Weights Scaling"] = 0.001;
 
-  // Masks to normalize and rescaling output to fit the action's [lower, upper] bounds (and sigmas/P)
+  // No transformations for the state value output
   _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Scale"][0] = 1.0f;
   _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Shift"][0] = 0.0f;
   _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Transformation Mask"][0] = "Identity";
 
-  // Normalizing and rescaling output to fit the action's [lower, upper] bounds
-  for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+  // Setting transformations for the selected policy distribution output
+  for (size_t i = 0; i < _policyParameterCount; i++)
   {
-    auto varIdx = _problem->_actionVectorIndexes[i];
-    float sigma = _k->_variables[varIdx]->_initialExplorationNoise;
-    float scale = (_actionUpperBounds[i] - _actionLowerBounds[i]) * 0.5;
-    float shift = (_actionUpperBounds[i] + _actionLowerBounds[i]) * 0.5;
-
-    // Statistics-keeping
-    _statisticsAverageActionSigmas[i] = sigma;
-
-    // Checking correct noise configuration
-    if (sigma <= 0.0f) KORALI_LOG_ERROR("Provided initial noise (%f) for action variable %lu is not defined or negative.\n", sigma, varIdx);
-
-    // Tanh mask for Mean
-    _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Scale"][i + 1] = 1.0f;
-    _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Shift"][i + 1] = shift;
-    _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Transformation Mask"][i + 1] = "Identity";
-
-    // Softplus mask for Sigma
-    _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Scale"][_problem->_actionVectorSize + i + 1] = sigma * 2.0f;
-    _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Shift"][_problem->_actionVectorSize + i + 1] = 0.0f;
-    _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Transformation Mask"][_problem->_actionVectorSize + i + 1] = "Softplus";
+   _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Scale"][i + 1] = _policyParameterScaling[i];
+   _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Shift"][i + 1] = _policyParameterShifting[i];
+   _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Transformation Mask"][i + 1] = _policyParameterTransformationMasks[i];
   }
 
   // Running initialization to verify that the configuration is correct

@@ -26,20 +26,21 @@ import build_all_source
 import subprocess as sp
 
 # -- Project information -----------------------------------------------------
-
 project = 'korali'
 copyright = '2020, CSELab'
 author = 'CSELab'
 
+# Build generated code
 build_all_source.buildAllSource('../../source/','../generated_code/')
 
+# Build rst files
 be.build_examples('../../examples/', './examples/')
 bf.build_features('../../examples/features/', './features/')
 bm.build_modules('../../source/modules/', './modules/')
 bt.build_tools('../../python/korali/', './using/tools/')
 btst.build_tests('../../tests/', './dev/')
 
-
+# Run doxygen
 sp.run('(cd .. && doxygen)', shell=True) # compile the xml source
 
 # -- General configuration ---------------------------------------------------
@@ -72,9 +73,9 @@ master_doc = 'index'
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
 # breathe extension
-breathe_default_project = "Korali"
+breathe_default_project = "korali"
 breathe_projects = {
-        "Korali": "../doxygen/xml"
+        "korali": "../doxygen/xml"
 }
 breathe_domain_by_extension = { "h" : "cpp", "cu" : "cpp" }
 

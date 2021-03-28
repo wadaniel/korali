@@ -50,6 +50,12 @@ Korali's Documentation
    Source Files <https://www.cse-lab.ethz.ch/korali/docs/doxygen/html/files.html>
    Github Repository <https://github.com/cselab/korali>
 
+.. toctree::
+   :caption: Code Documentation
+   :name: code_documentation
+
+   code_documentation/index.rst
+
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`

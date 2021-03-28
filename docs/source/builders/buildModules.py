@@ -1,16 +1,12 @@
 #!/usr/bin/env python3
-
 import sys
 import os
 import json
 import shutil
 import copy
+import argparse
 
-moduleSrcDir = '../../../source/modules'
 
-
-################################################
-# Auxiliar Functions
 def getVariableName(v):
   cVarName = v["Name"].replace(" ", "")
   cVarName = '_' + cVarName[0].lower() + cVarName[1:]
@@ -108,15 +104,11 @@ def upcase_first_letter(s):
   return s[0].upper() + s[1:]
 
 
-################################################
-# Process Module Function
-
-
-def processModule(parentModuleConfig, moduleRelPath, moduleName):
-  modulePath = os.path.join(moduleSrcDir, moduleRelPath)
+def processModule(parentModuleConfig, source, destination, moduleRelPath, moduleName):
+  modulePath = os.path.join(source, moduleRelPath)
   moduleReadmeFile = modulePath + '/README.rst'
   moduleConfigFile = modulePath + '/' + moduleName + '.config'
-  moduleOutputDir = '../modules/' + moduleRelPath
+  moduleOutputDir = destination + moduleRelPath
 
   print('Processing file: ' + moduleConfigFile)
 
@@ -164,7 +156,7 @@ def processModule(parentModuleConfig, moduleRelPath, moduleName):
       moduleSourceFile = modulePath + '/' + moduleName + '._cpp'
       moduleReadmeString += '   ' + f + '/' + f + '\n'
       subPath = os.path.join(moduleRelPath, f)
-      processModule(moduleConfig, subPath, f)
+      processModule(moduleConfig, source, destination, subPath, f)
 
   # If its leaf, build configuration
   if (isParentModule == False):
@@ -293,16 +285,22 @@ def processModule(parentModuleConfig, moduleRelPath, moduleName):
     file.write(moduleReadmeString)
 
 
-############################################
-# Main Procedure
+def build_modules(source, destination):
+  shutil.rmtree(destination, ignore_errors=True, onerror=None)
+  os.makedirs(destination)
+  
+  list_dir = os.listdir(source)
+  for f in list_dir:
+    fullPath = os.path.join(source, f)
+    if not os.path.isfile(fullPath):
+      if (not '.o/' in fullPath and not '.d/' in fullPath and not 'engine' in fullPath):
+        processModule({}, source, destination, f, f)
 
-shutil.rmtree('../modules', ignore_errors=True, onerror=None)
-os.makedirs('../modules')
 
-list_dir = os.listdir(moduleSrcDir)
-for f in list_dir:
-  fullPath = os.path.join(moduleSrcDir, f)
-  if not os.path.isfile(fullPath):
-    if (not '.o/' in fullPath and not '.d/' in fullPath and
-        not 'engine' in fullPath):
-      processModule({}, f, f)
+if __name__ == "__main__":
+  parser = argparse.ArgumentParser()
+  parser.add_argument("--destination", help="Save the generated files in this folder")
+  parser.add_argument("--source", help="Read files from this folder")
+  args = parser.parse_args()
+
+  build_modules(args.source, args.destination) 

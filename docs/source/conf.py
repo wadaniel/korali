@@ -15,6 +15,10 @@ import sys
 sys.path.insert(0, os.path.abspath('.'))
 
 from builders import buildExamples as be
+from builders import buildFeatures as bf
+from builders import buildModules as bm
+from builders import buildTools as bt
+from builders import buildTests as btst
 
 
 # -- Project information -----------------------------------------------------
@@ -24,6 +28,10 @@ copyright = '2020, CSELab'
 author = 'CSELab'
 
 be.build_examples('../../examples/', './examples/')
+bf.build_features('../../examples/features/', './features/')
+bm.build_modules('../../source/modules/', './modules/')
+bt.build_tools('../../python/korali/', './using/tools/')
+btst.build_tests('../../tests/', './dev/')
 
 # -- General configuration ---------------------------------------------------
 

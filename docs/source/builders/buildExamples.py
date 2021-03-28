@@ -7,7 +7,6 @@ import copy
 import glob
 import argparse
 
-
 def processExample(source, destination, exampleRelPath, exampleName):
   examplePath = os.path.join(source, exampleRelPath)
   exampleReadmeFile = examplePath + '/README.rst'

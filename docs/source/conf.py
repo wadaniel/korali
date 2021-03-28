@@ -13,6 +13,7 @@
 import os
 import sys
 sys.path.insert(0, os.path.abspath('.'))
+sys.path.insert(0, os.path.abspath('../../tools/build/'))
 
 from builders import buildExamples as be
 from builders import buildFeatures as bf
@@ -20,6 +21,9 @@ from builders import buildModules as bm
 from builders import buildTools as bt
 from builders import buildTests as btst
 
+import build_all_source
+
+import subprocess as sp
 
 # -- Project information -----------------------------------------------------
 
@@ -27,11 +31,16 @@ project = 'korali'
 copyright = '2020, CSELab'
 author = 'CSELab'
 
+build_all_source.buildAllSource('../../source/','../generated_code/')
+
 be.build_examples('../../examples/', './examples/')
 bf.build_features('../../examples/features/', './features/')
 bm.build_modules('../../source/modules/', './modules/')
 bt.build_tools('../../python/korali/', './using/tools/')
 btst.build_tests('../../tests/', './dev/')
+
+
+sp.run('(cd .. && doxygen)', shell=True) # compile the xml source
 
 # -- General configuration ---------------------------------------------------
 
@@ -42,6 +51,7 @@ extensions = [
   'sphinx.ext.todo',
   'sphinx.ext.mathjax',
   'sphinx_rtd_theme',
+  'breathe',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -58,6 +68,21 @@ source_suffix = '.rst'
 
 # The master toctree document.
 master_doc = 'index'
+
+# The name of the Pygments (syntax highlighting) style to use.
+pygments_style = 'sphinx'
+# breathe extension
+breathe_default_project = "Korali"
+breathe_projects = {
+        "Korali": "../doxygen/xml"
+}
+breathe_domain_by_extension = { "h" : "cpp", "cu" : "cpp" }
+
+# Tell sphinx what the primary language being documented is
+primary_domain = 'cpp'
+
+# Tell sphinx what the pygments highlight language should be
+highlight_language = 'cpp'
 
 # -- Options for HTML output -------------------------------------------------
 

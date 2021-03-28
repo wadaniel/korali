@@ -50,12 +50,10 @@ void VRACER::initializeAgent()
   // Normalizing and rescaling output to fit the action's [lower, upper] bounds
   for (size_t i = 0; i < _problem->_actionVectorSize; i++)
   {
-    size_t varIdx = _problem->_actionVectorIndexes[i];
-    auto lowerBound = _k->_variables[varIdx]->_lowerBound;
-    auto upperBound = _k->_variables[varIdx]->_upperBound;
+    auto varIdx = _problem->_actionVectorIndexes[i];
     float sigma = _k->_variables[varIdx]->_initialExplorationNoise;
-    float scale = (upperBound - lowerBound) * 0.5;
-    float shift = (upperBound + lowerBound) * 0.5;
+    float scale = (_actionUpperBounds[i] - _actionLowerBounds[i]) * 0.5;
+    float shift = (_actionUpperBounds[i] + _actionLowerBounds[i]) * 0.5;
 
     // Statistics-keeping
     _statisticsAverageActionSigmas[i] = sigma;

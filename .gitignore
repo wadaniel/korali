@@ -49,3 +49,4 @@ fontconfig/
 /build*
 /test_install
 /py_venv*
+/.env

@@ -27,7 +27,7 @@ import subprocess as sp
 
 # -- Project information -----------------------------------------------------
 project = 'korali'
-copyright = '2020, CSELab'
+copyright = 'ETH Zurich'
 author = 'CSELab'
 
 # Build generated code
@@ -58,11 +58,6 @@ extensions = [
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
-# List of patterns, relative to source directory, that match files and
-# directories to ignore when looking for source files.
-# This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = []
-
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
 source_suffix = '.rst'
@@ -70,8 +65,14 @@ source_suffix = '.rst'
 # The master toctree document.
 master_doc = 'index'
 
+# List of patterns, relative to source directory, that match files and
+# directories to ignore when looking for source files.
+# This pattern also affects html_static_path and html_extra_path.
+exclude_patterns = []
+
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
+
 # breathe extension
 breathe_default_project = "korali"
 breathe_projects = {
@@ -84,8 +85,6 @@ primary_domain = 'cpp'
 
 # Tell sphinx what the pygments highlight language should be
 highlight_language = 'cpp'
-
-enable_pdf_build = False
 
 # -- Options for HTML output -------------------------------------------------
 
@@ -115,4 +114,5 @@ html_show_sphinx = False
 
 # If true, "(C) Copyright ..." is shown in the HTML footer. Default is True.
 html_show_copyright = True
+
 

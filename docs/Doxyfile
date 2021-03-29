@@ -21,3 +21,4 @@ EXCLUDE                = ../source/auxiliar/json.hpp \
                          ../source/auxiliar/libgp \
                          ../source/auxiliar/rtnorm \
 GENERATE_LATEX         = NO
+GENERATE_HTML          = NO

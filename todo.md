@@ -8,7 +8,7 @@
 * [X] add pkg-config entry for korali installation
 * [X] update Dockerfile with meson support
 * [ ] may need `config.h` header -- check what are all these flags in `python/korali/cxx/cflags.py`
-* [ ] make a `requirements.txt`
+* [X] make a `requirements.txt`
 
 # Python module
 
@@ -31,8 +31,8 @@
 
 # Documentation
 
-* [ ] doxygen
-* [ ] site
+* [X] doxygen
+* [X] site
 
 
 # Tests

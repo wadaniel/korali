@@ -42,12 +42,12 @@ void Agent::initialize()
   _isOnPolicyVector.resize(_experienceReplayMaximumSize);
   _episodePosVector.resize(_experienceReplayMaximumSize);
   _episodeIdVector.resize(_experienceReplayMaximumSize);
-  
-  // Pre-allocate space for background batch
-  _backgroundBatch.resize(_backgroundBatchSize);
-  _policyHyperparameterVector.resize(_backgroundBatchSize);
-  _backgroundBatchImportanceWeights.resize(_backgroundBatchSize);
-  _demonstrationBatchImportanceWeights.resize(_backgroundBatchSize);
+
+  // Pre-allocate space for policies
+  _policyVector.resize(_experienceReplayMaximumSize);
+
+  // Initialize background samples
+  _backgroundSampleSize = 0;
 
   //  Pre-allocating space for state time sequence
   _stateTimeSequence.resize(_timeSequenceLength);
@@ -105,6 +105,7 @@ void Agent::initialize()
   _sessionAgentPolicyEvaluationTime = 0.0;
   _sessionPolicyUpdateTime = 0.0;
   _sessionAgentAttendingTime = 0.0;
+  _sessionAgentTrajectoryLogProbilityUpdateTime = 0.0;
 
   // Initializing session-specific counters
   _sessionExperienceCount = 0;
@@ -203,45 +204,46 @@ void Agent::trainingGeneration()
     // Perform optimization steps on the critic/policy, if reached the minimum replay memory size
     if (_experienceCount >= _experienceReplayStartSize)
     {
- 
       // Update the reward function based on guided cost learning
       if (_sessionExperienceCount > (_experiencesBetweenRewardUpdates * _sessionPolicyUpdateCount + _sessionExperiencesUntilStartSize))
+      {
+        updateBackgroundBatch();
         updateRewardFunction();
-      
+      }
+
       // If we performed enough policy updates, we rescale rewards again
       // if (_policyUpdateCount >= _updatesBetweenRewardRescaling * _rewardRescalingCount)
       //  rescaleRewards();
 
-//      // If we accumulated enough experiences, we rescale the states (once)
-//      if(_policyUpdateCount == 0)
-//      {
-//        // Calculation of state moments
-//        std::vector<float> sumStates(_problem->_stateVectorSize, 0.0);
-//        std::vector<float> squaredSumStates(_problem->_stateVectorSize, 0.0);
-//        for(size_t i = 0; i < _stateVector.size(); ++i)
-//         for(size_t d = 0; d < _problem->_stateVectorSize; ++d)
-//         {
-//          sumStates[d] += _stateVector[i][d];
-//          squaredSumStates[d] += _stateVector[i][d]*_stateVector[i][d];
-//         }
-//
-//        for(size_t d = 0; d < _problem->_stateVectorSize; ++d)
-//        {
-//            printf("state [%zu] : sum %lf squaredsum  %lf\n", d, sumStates[d], squaredSumStates[d]);
-//            _stateRescalingMeans[d] = sumStates[d]/(float) _stateVector.size();
-//            if(std::isfinite(_stateRescalingMeans[d]) == false) _stateRescalingMeans[d] = 0.;
-//            _stateRescalingSdevs[d] = std::sqrt( squaredSumStates[d] /(float) _stateVector.size() - _stateRescalingMeans[d]*_stateRescalingMeans[d] );
-//            if(std::isfinite(_stateRescalingSdevs[d]) == false) _stateRescalingSdevs[d] = 1.;
-//            if(_stateRescalingSdevs[d] <= 1e-9 ) _stateRescalingSdevs[d] = 1.;
-//            printf("state [%zu] : mean %f sdev %f\n", d, _stateRescalingMeans[d], _stateRescalingSdevs[d]);
-//        }
-//
-//       // Actual rescaling of initial states
-//       for(size_t i = 0; i < _stateVector.size(); ++i)
-//            for(size_t d = 0; d < _problem->_stateVectorSize; ++d)
-//                _stateVector[i][d] = (_stateVector[i][d] - _stateRescalingMeans[d])/_stateRescalingSdevs[d];
-//      }
-
+      //      // If we accumulated enough experiences, we rescale the states (once)
+      //      if(_policyUpdateCount == 0)
+      //      {
+      //        // Calculation of state moments
+      //        std::vector<float> sumStates(_problem->_stateVectorSize, 0.0);
+      //        std::vector<float> squaredSumStates(_problem->_stateVectorSize, 0.0);
+      //        for(size_t i = 0; i < _stateVector.size(); ++i)
+      //         for(size_t d = 0; d < _problem->_stateVectorSize; ++d)
+      //         {
+      //          sumStates[d] += _stateVector[i][d];
+      //          squaredSumStates[d] += _stateVector[i][d]*_stateVector[i][d];
+      //         }
+      //
+      //        for(size_t d = 0; d < _problem->_stateVectorSize; ++d)
+      //        {
+      //            printf("state [%zu] : sum %lf squaredsum  %lf\n", d, sumStates[d], squaredSumStates[d]);
+      //            _stateRescalingMeans[d] = sumStates[d]/(float) _stateVector.size();
+      //            if(std::isfinite(_stateRescalingMeans[d]) == false) _stateRescalingMeans[d] = 0.;
+      //            _stateRescalingSdevs[d] = std::sqrt( squaredSumStates[d] /(float) _stateVector.size() - _stateRescalingMeans[d]*_stateRescalingMeans[d] );
+      //            if(std::isfinite(_stateRescalingSdevs[d]) == false) _stateRescalingSdevs[d] = 1.;
+      //            if(_stateRescalingSdevs[d] <= 1e-9 ) _stateRescalingSdevs[d] = 1.;
+      //            printf("state [%zu] : mean %f sdev %f\n", d, _stateRescalingMeans[d], _stateRescalingSdevs[d]);
+      //        }
+      //
+      //       // Actual rescaling of initial states
+      //       for(size_t i = 0; i < _stateVector.size(); ++i)
+      //            for(size_t d = 0; d < _problem->_stateVectorSize; ++d)
+      //                _stateVector[i][d] = (_stateVector[i][d] - _stateRescalingMeans[d])/_stateRescalingSdevs[d];
+      //      }
 
       // If we accumulated enough experiences between updates in this session, update now
       while (_sessionExperienceCount > (_experiencesBetweenPolicyUpdates * _sessionPolicyUpdateCount + _sessionExperiencesUntilStartSize))
@@ -310,239 +312,298 @@ void Agent::testingGeneration()
     _testingReward[agentId] = testingAgents[agentId]["Testing Reward"].get<float>();
 }
 
-float Agent::calculateReward(const std::vector<float>& features)
+float Agent::calculateReward(const std::vector<float> &features)
 {
   float reward = 0.0;
 #ifdef COSREWARD
-  reward = std::cos(features[0]-_featureWeights[0]);
+  reward = std::cos(features[0] - _featureWeights[0]);
 #else
   for (size_t i = 0; i < _problem->_featureVectorSize; ++i) reward += _softMaxFeatureWeights[i] * features[i];
 #endif
   return reward;
 }
 
-std::vector<float> Agent::calculateRewardGradient(const std::vector<float>& features)
+std::vector<float> Agent::calculateRewardGradient(const std::vector<float> &features)
 {
   std::vector<float> rewardGrad(features.size(), 0.0);
 #ifdef COSREWARD
-  rewardGrad[0] = std::sin(features[0]-_featureWeights[0]);
+  rewardGrad[0] = std::sin(features[0] - _featureWeights[0]);
 #else
-  for (size_t i = 0; i < _problem->_featureVectorSize; ++i) 
-    for (size_t j = 0; j < _problem->_featureVectorSize; ++j) 
+  for (size_t i = 0; i < _problem->_featureVectorSize; ++i)
+    for (size_t j = 0; j < _problem->_featureVectorSize; ++j)
     {
-        if (i == j)
-            rewardGrad[i] += _softMaxFeatureWeights[i] * (1. - _softMaxFeatureWeights[i]) * features[i];
-        else
-            rewardGrad[j] -= _softMaxFeatureWeights[i] * _softMaxFeatureWeights[j] * features[i];
+      if (i == j)
+        rewardGrad[i] += _softMaxFeatureWeights[i] * (1. - _softMaxFeatureWeights[i]) * features[i];
+      else
+        rewardGrad[j] -= _softMaxFeatureWeights[i] * _softMaxFeatureWeights[j] * features[i];
     }
 #endif
   return rewardGrad;
 }
 
-float Agent::evaluateTrajectoryLogProbability(const std::vector<std::vector<float>>& states, const std::vector<std::vector<float>>& actions, const std::vector<float>& policyHyperparameter)
+float Agent::evaluateTrajectoryLogProbability(const std::vector<std::vector<float>> &states, const std::vector<std::vector<float>> &actions, const std::vector<float> &policyHyperparameter)
 {
+  knlohmann::json policy;
+  policy["Policy"] = policyHyperparameter;
+  setAgentPolicy(policy);
 
-    knlohmann::json policy;
-    policy["Policy"] = policyHyperparameter;
-    setAgentPolicy(policy);
+  float trajectoryLogProbability = 0.0;
+  // Evaluate all states within a single trajectory and calculate probability of trajectory
+  for (size_t t = 0; t < states.size(); ++t)
+  {
+    auto evaluation = runPolicy({{states[t]}})[0];
+    for (size_t d = 0; d < _problem->_actionVectorSize; ++d)
+      trajectoryLogProbability += normalLogDensity(actions[t][d], evaluation.actionMeans[d], evaluation.actionSigmas[d]);
+  }
 
-    float trajectoryLogProbability = 0.0;
-    // Evaluate all states within a single trajectory and calculate probability of trajectory
-    for(size_t t = 0; t < states.size(); ++t)
-    {
-      auto evaluation = runPolicy( { { states[t] } } )[0];
-      for(size_t d = 0; d < _problem->_actionVectorSize; ++d)
-          trajectoryLogProbability += normalLogDensity(actions[t][d], evaluation.actionMeans[d], evaluation.actionSigmas[d]);
-    }
-
-    return trajectoryLogProbability;
+  return trajectoryLogProbability;
 }
 
-
-void Agent::updateRewardFunction()
+void Agent::updateBackgroundBatch()
 {
   // Initialize background batch
-  if(_backgroundBatch.size() == 0)
+  if (_backgroundSampleSize == 0)
   {
     // Getting index of last experience
-    size_t expId = _terminationVector.size()-1;
-    
+    size_t expId = _terminationVector.size() - 1;
+
     for (size_t m = 0; m < _backgroundBatchSize; ++m)
     {
-        // Compute starting idx
-        size_t episodeStartIdx = expId - _episodePosVector[expId];
-        
-        // Add starting index
-        _backgroundBatch.add(episodeStartIdx); 
- 
-        // Decrease counter to move to the next previous last experience of a trajectory
-        expId = episodeStartIdx - 1;
- 
-        if(_terminationVector[expId] == e_nonTerminal)
-            KORALI_LOG_ERROR("Experience %zu is not the start of a trajectory.", expId);
+      size_t episodeLength = _episodePosVector[expId];
+      size_t episodeStartIdx = expId - episodeLength;
+
+      // Allocate container for trajectory information
+      std::vector<std::vector<float>> trajectoryStates(episodeLength, std::vector<float>(_problem->_stateVectorSize));
+      std::vector<std::vector<float>> trajectoryActions(episodeLength, std::vector<float>(_problem->_actionVectorSize));
+      std::vector<std::vector<float>> trajectoryFeatures(episodeLength, std::vector<float>(_problem->_featureVectorSize));
+
+      // Store background trajectory
+      for (size_t i = 0; i < episodeLength; ++i)
+      {
+        for (size_t d = 0; d < _problem->_stateVectorSize; ++d)
+          trajectoryStates[i][d] = _stateVector[episodeStartIdx + i][d];
+        for (size_t a = 0; a < _problem->_actionVectorSize; ++a)
+          trajectoryActions[i][a] = _actionVector[episodeStartIdx + i][a];
+        for (size_t f = 0; f < _problem->_featureVectorSize; ++f)
+          trajectoryFeatures[i][f] = _featureVector[episodeStartIdx + i][f];
+      }
+      _backgroundTrajectoryStates.push_back(trajectoryStates);
+      _backgroundTrajectoryActions.push_back(trajectoryActions);
+      _backgroundTrajectoryFeatures.push_back(trajectoryFeatures);
+      _backgroundPolicyHyperparameter.push_back(_policyVector[episodeStartIdx]);
+
+      // Increase background sample counter
+      _backgroundSampleSize++;
+
+      if (episodeStartIdx == 0)
+        KORALI_LOG_ERROR("Increase exploration phase, not enough trajectories sampled");
+
+      // Decrease counter to move to the next previous last experience of a trajectory
+      expId = episodeStartIdx - 1;
+
+      if (_terminationVector[expId] == e_nonTerminal)
+        KORALI_LOG_ERROR("Experience %zu is not the start of a trajectory.", expId);
     }
 
-    if (expId == 0)
-      KORALI_LOG_ERROR("Increase exploration phase, not enough trajectories sampled");
+    if (_backgroundSampleSize != _backgroundBatchSize)
+      KORALI_LOG_ERROR("Error during background batch intialization or update. Size is %zu but should be %zu.", _backgroundSampleSize, _backgroundBatchSize);
+  
+    printf("Updating log probabilities ... ");
+    auto startTime = std::chrono::steady_clock::now();
+    
+    // Evaluate all trajectory logprobabilities
+    _backgroundTrajectoryLogProbabilities.resize(_backgroundSampleSize);
+    for (size_t i = 0; i < _backgroundSampleSize; ++i)
+    {
+        _backgroundTrajectoryLogProbabilities[i].resize(_backgroundSampleSize);
+        float trajectoryLogP = evaluateTrajectoryLogProbability(_backgroundTrajectoryStates[i], _backgroundTrajectoryActions[i], _backgroundPolicyHyperparameter[i]);
+        for (size_t j = 0; j < _backgroundSampleSize; ++j)
+            _backgroundTrajectoryLogProbabilities[i][j] = trajectoryLogP;
+    }
+    auto endTime = std::chrono::steady_clock::now();
+    
+    _sessionAgentTrajectoryLogProbilityUpdateTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - startTime).count();
+    printf("Done!\n");
+
+
+
   }
   // Insert latest trajectory to background batch
   else
   {
-    size_t expId = _terminationVector.size()-1;
-    size_t episodeStartIdx = expId - _episodePosVector[expId];
-    _backgroundBatch.add(episodeStartIdx);
-    if(_terminationVector[episodeStartIdx-1] == e_nonTerminal)
-        KORALI_LOG_ERROR("Experience %zu is not the start of a trajectory.", episodeStartIdx-1);
-  }
+    size_t expId = _terminationVector.size() - 1;
+    size_t episodeLength = _episodePosVector[expId];
+    size_t episodeStartIdx = expId - episodeLength;
 
-  if(_backgroundBatch.size() != _backgroundBatchSize)
-    KORALI_LOG_ERROR("Error during background batch intialization or update. Size is %zu but should be %zu.", _backgroundBatch.size(), _backgroundBatchSize);
+    // Allocate container for trajectory information
+    std::vector<std::vector<float>> trajectoryStates(episodeLength, std::vector<float>(_problem->_stateVectorSize));
+    std::vector<std::vector<float>> trajectoryActions(episodeLength, std::vector<float>(_problem->_actionVectorSize));
+    std::vector<std::vector<float>> trajectoryFeatures(episodeLength, std::vector<float>(_problem->_featureVectorSize));
 
-  std::vector<size_t> observedTrajectoryIndexes(_demonstrationBatchSize);
-  for (size_t n = 0; n < _demonstrationBatchSize; ++n)
-    observedTrajectoryIndexes[n] = (size_t)(_uniformGenerator->getRandomNumber() * _problem->_numberObservedTrajectories);
+    // Store background trajectory
+    for (size_t i = 0; i < episodeLength; ++i)
+    {
+      for (size_t d = 0; d < _problem->_stateVectorSize; ++d)
+        trajectoryStates[i][d] = _stateVector[episodeStartIdx + i][d];
+      for (size_t a = 0; a < _problem->_actionVectorSize; ++a)
+        trajectoryActions[i][a] = _actionVector[episodeStartIdx + i][a];
+      for (size_t f = 0; f < _problem->_featureVectorSize; ++f)
+        trajectoryFeatures[i][f] = _featureVector[episodeStartIdx + i][f];
+    }
+    _backgroundTrajectoryStates.push_back(trajectoryStates);
+    _backgroundTrajectoryActions.push_back(trajectoryActions);
+    _backgroundTrajectoryFeatures.push_back(trajectoryFeatures);
+    _backgroundPolicyHyperparameter.push_back(_policyVector[episodeStartIdx]);
 
+    // Increase background sample counter
+    _backgroundSampleSize++;
+    if (_terminationVector[episodeStartIdx - 1] == e_nonTerminal)
+      KORALI_LOG_ERROR("Experience %zu is not the start of a trajectory.", episodeStartIdx - 1);
+
+    printf("Updating log probabilities ... ");
+    auto startTime = std::chrono::steady_clock::now();
+    // For all previous background trajectories evaluate log probability with newest policy
+    for (size_t i = 0; i < _backgroundSampleSize - 1; ++i)
+      _backgroundTrajectoryLogProbabilities[i].push_back(evaluateTrajectoryLogProbability(_backgroundTrajectoryStates[i], _backgroundTrajectoryActions[i], _backgroundPolicyHyperparameter[_backgroundSampleSize - 1]));
+
+    // For newest policy evaluate trajectory log probability with all previous policies and the current one
+    std::vector<float> logProbabilitiesNewTrajectory(_backgroundSampleSize);
+    for (size_t i = 0; i < _backgroundSampleSize; ++i)
+      logProbabilitiesNewTrajectory[i] = evaluateTrajectoryLogProbability(_backgroundTrajectoryStates[_backgroundSampleSize - 1], _backgroundTrajectoryActions[_backgroundSampleSize - 1], _backgroundPolicyHyperparameter[i]);
+    _backgroundTrajectoryLogProbabilities.push_back(logProbabilitiesNewTrajectory);
  
-  std::vector<float> cumulativeRewardsDemonstrationBatch(_demonstrationBatchSize, 0.0);
-  
-  // Calculate cumulative rewards for demonstration batch
+    auto endTime = std::chrono::steady_clock::now();
+    _sessionAgentTrajectoryLogProbilityUpdateTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - startTime).count();
+ 
+    printf("Done!\n");
+  }
+}
+
+void Agent::updateRewardFunction()
+{
+  size_t stepsPerUpdate = 1;
+  for (size_t stepNum = 0; stepNum < stepsPerUpdate; ++stepNum)
+  {
+    std::vector<size_t> observedTrajectoryIndexes(_demonstrationBatchSize);
+    for (size_t n = 0; n < _demonstrationBatchSize; ++n)
+      observedTrajectoryIndexes[n] = (size_t)(_uniformGenerator->getRandomNumber() * (_problem->_numberObservedTrajectories-1));
+
+    // Calculate cumulative rewards for demonstration batch
+    std::vector<float> cumulativeRewardsDemonstrationBatch(_demonstrationBatchSize, 0.0);
 #pragma omp parallel for schedule(dynamic, 1)
-  for (size_t n = 0; n < _demonstrationBatchSize; ++n)
-  {
-    size_t observedTrajectoryIdx = observedTrajectoryIndexes[n];
-    size_t observedTrajectoryLength = _problem->_observationsFeatures[observedTrajectoryIdx].size();
-
-    float cumReward = 0.0;
-    for (size_t i = 0; i < observedTrajectoryLength; ++i)
+    for (size_t n = 0; n < _demonstrationBatchSize; ++n)
     {
-      cumReward += calculateReward(_problem->_observationsFeatures[n][i]);
+      size_t obsIdx = observedTrajectoryIndexes[n];
+      size_t observedTrajectoryLength = _problem->_observationsFeatures[obsIdx].size();
+
+      float cumReward = 0.0;
+      for (size_t i = 0; i < observedTrajectoryLength; ++i)
+        cumReward += calculateReward(_problem->_observationsFeatures[n][i]);
+
+      cumulativeRewardsDemonstrationBatch[n] = cumReward;
     }
 
-    cumulativeRewardsDemonstrationBatch[n] = cumReward;
-  }
-  
-  std::vector<float> cumulativeRewardsBackgroundBatch(_backgroundBatchSize, 0.0);
-  std::vector<std::vector<std::vector<float>>> trajectoryStates(_backgroundBatchSize);
-  std::vector<std::vector<std::vector<float>>> trajectoryActions(_backgroundBatchSize);
- 
-  // Calculate cumulative rewards for background batch and preparation of trajectories
+    std::vector<size_t> backgroundTrajectoryIndexes(_backgroundBatchSize);
+    for (size_t n = 0; n < _backgroundBatchSize; ++n)
+      backgroundTrajectoryIndexes[n] = (size_t)(_uniformGenerator->getRandomNumber() * (_backgroundSampleSize - 1));
+
+    // Calculate cumulative rewards for background batch
+    std::vector<float> cumulativeRewardsBackgroundBatch(_backgroundBatchSize, 0.0);
+    std::vector<std::vector<float>> backgroundTrajectoryLogProbabilities(_backgroundBatchSize, std::vector<float>(_backgroundBatchSize));
 #pragma omp parallel for schedule(dynamic, 1)
-  for (size_t m = 0; m < _backgroundBatchSize; ++m)
-  {
-    size_t expId = _backgroundBatch[m];
- 
-    float cumReward = 0.0;
-    std::vector<std::vector<float>> states;
-    std::vector<std::vector<float>> actions;
- 
-    while (_terminationVector[expId] == e_nonTerminal)
+    for (size_t m = 0; m < _backgroundBatchSize; ++m)
     {
-      //printf("cr %f %zu %zu %zu\n", cumReward, expId, _featureVector[expId].size(), _featureVector.size());
-      cumReward += calculateReward(_featureVector[expId]);
-      states.push_back(_stateVector[expId]);
-      actions.push_back(_actionVector[expId]);
-      expId++;
+      size_t bckIdx = backgroundTrajectoryIndexes[m];
+      size_t backgroundTrajectoryLength = _backgroundTrajectoryFeatures[bckIdx].size();
+
+      float cumReward = 0.;
+      for (size_t i = 0; i < backgroundTrajectoryLength; ++i)
+        cumReward += calculateReward(_backgroundTrajectoryFeatures[bckIdx][i]);
+      cumulativeRewardsBackgroundBatch[m] = cumReward;
+      for (size_t n = 0; n < _backgroundBatchSize; ++n)
+      {
+        size_t bckIdx2 = backgroundTrajectoryIndexes[n];
+        backgroundTrajectoryLogProbabilities[m][n] = _backgroundTrajectoryLogProbabilities[bckIdx][bckIdx2];
+      }
     }
 
-    cumulativeRewardsBackgroundBatch[m] = cumReward;
-  
-    trajectoryStates[m] = states;
-    trajectoryActions[m] = actions;
-  
-  }
-
-  std::vector<std::vector<float>> policyVector = _policyHyperparameterVector.getVector();
-  std::vector<std::vector<float>> sampleTrajectoryLogProbabilities(_backgroundBatchSize, std::vector<float>(policyVector.size()));
-  std::vector<std::vector<float>> demonstrationTrajectoryLogProbabilities(_demonstrationBatchSize, std::vector<float>(policyVector.size()));
-
-  // Evaluate policies from background distributions
-  for(size_t policyId = 0; policyId < policyVector.size(); ++policyId)
-  {
-    for(size_t m = 0; m < _backgroundBatchSize; ++m)
-    {
-      sampleTrajectoryLogProbabilities[m][policyId] = evaluateTrajectoryLogProbability(trajectoryStates[m], trajectoryActions[m], policyVector[policyId]);
-      //printf("sTLP[%zu][%zu] %f\n", m, policyId, sampleTrajectoryLogProbabilities[m][policyId]);
-    }
-
-    for(size_t m = 0; m < _demonstrationBatchSize; ++m)
-    {
-      demonstrationTrajectoryLogProbabilities[m][policyId] = evaluateTrajectoryLogProbability(_problem->_observationsStates[m], _problem->_observationsActions[m], policyVector[policyId]);
-      //printf("dTLP[%zu][%zu] %f\n", m, policyId, demonstrationTrajectoryLogProbabilities[m][policyId]);
-    }
-  }
-
-  // Calculate importance weights
+    // Calculate importance weights
+    std::vector<float> backgroundBatchImportanceWeights(_backgroundBatchSize);
 #pragma omp parallel for schedule(dynamic, 1)
-  for(size_t m = 0; m < _backgroundBatchSize; ++m)
-  {
-    // Caclculate importance weight (1/K sum_k q_k(T))^-1
-    _backgroundBatchImportanceWeights[m] = std::log((float)policyVector.size())-logSumExp(sampleTrajectoryLogProbabilities[m]);
-    printf("StIw %f cr %f (tot %f)\n", _backgroundBatchImportanceWeights[m], cumulativeRewardsBackgroundBatch[m], _backgroundBatchImportanceWeights[m] + cumulativeRewardsBackgroundBatch[m]);
-  }
-  
+    for (size_t m = 0; m < _backgroundBatchSize; ++m)
+    {
+      // Caclculate importance weight (1/K sum_k q_k(T))^-1
+      backgroundBatchImportanceWeights[m] = std::log((float)_backgroundBatchSize) - logSumExp(backgroundTrajectoryLogProbabilities[m]);
+      printf("StIw %f cr %f (tot %f)\n", backgroundBatchImportanceWeights[m], cumulativeRewardsBackgroundBatch[m], backgroundBatchImportanceWeights[m] + cumulativeRewardsBackgroundBatch[m]);
+    }
+
+    /*
 #pragma omp parallel for schedule(dynamic, 1)
   for(size_t m = 0; m < _demonstrationBatchSize; ++m)
   {
     // Caclculate importance weight (1/K sum_k q_k(T))^-1
-    _demonstrationBatchImportanceWeights[m] = std::log((float)policyVector.size())-logSumExp(demonstrationTrajectoryLogProbabilities[m]);
+    _demonstrationBatchImportanceWeights[m] = std::log((float)_backgroundBatchSize)-logSumExp(demonstrationTrajectoryLogProbabilities[m]);
     printf("DtIw %f cr %f (tot %f)\n", _demonstrationBatchImportanceWeights[m], cumulativeRewardsBackgroundBatch[m], _demonstrationBatchImportanceWeights[m] + cumulativeRewardsDemonstrationBatch[m]);
   }
+*/
 
+    // Preparation for calculation of log partition function with log-sum-exp trick
+    float maxExp = -Inf;
+    for (size_t m = 0; m < _backgroundBatchSize; ++m)
+      if (backgroundBatchImportanceWeights[m] + cumulativeRewardsBackgroundBatch[m] > maxExp) maxExp = backgroundBatchImportanceWeights[m] + cumulativeRewardsBackgroundBatch[m];
+    //for (size_t m = 0; m < _demonstrationBatchSize; ++m)
+    //  if (cumulativeRewardsDemonstrationBatch[m] > maxExp) maxExp = _demonstrationBatchImportanceWeights[m]+cumulativeRewardsDemonstrationBatch[m];
 
+    float sumExpNoMax = 0.0;
+    float sumSquaredExpNoMax = 0.0;
 
-  // Preparation for calculation of log partition function with log-sum-exp trick
-  float maxExp = -Inf;
-  for (size_t m = 0; m < _backgroundBatchSize; ++m)
-    if (_backgroundBatchImportanceWeights[m]+cumulativeRewardsBackgroundBatch[m] > maxExp) maxExp = _backgroundBatchImportanceWeights[m]+cumulativeRewardsBackgroundBatch[m];
-  for (size_t m = 0; m < _demonstrationBatchSize; ++m)
-    if (cumulativeRewardsDemonstrationBatch[m] > maxExp) maxExp = _demonstrationBatchImportanceWeights[m]+cumulativeRewardsDemonstrationBatch[m];
-
-  float sumExpNoMax = 0.0;
-  float sumSquaredExpNoMax = 0.0;
-  
-  for (size_t m = 0; m < _backgroundBatchSize; ++m) 
-  {
+    for (size_t m = 0; m < _backgroundBatchSize; ++m)
+    {
       //printf("%f\n", cumulativeRewardsBackgroundBatch[m]);
-      sumExpNoMax += std::exp(_backgroundBatchImportanceWeights[m]+cumulativeRewardsBackgroundBatch[m] - maxExp);
-      sumSquaredExpNoMax += std::exp(2.0*(_backgroundBatchImportanceWeights[m]+cumulativeRewardsBackgroundBatch[m]) - 2.0*maxExp);
-  }
-  
+      sumExpNoMax += std::exp(backgroundBatchImportanceWeights[m] + cumulativeRewardsBackgroundBatch[m] - maxExp);
+      sumSquaredExpNoMax += std::exp(2.0 * (backgroundBatchImportanceWeights[m] + cumulativeRewardsBackgroundBatch[m]) - 2.0 * maxExp);
+    }
+
+    /*
   for (size_t m = 0; m < _demonstrationBatchSize; ++m) 
   {
       //printf("%f\n", cumulativeRewardsDemonstrationBatch[m]);
       sumExpNoMax += std::exp(_demonstrationBatchImportanceWeights[m]+cumulativeRewardsDemonstrationBatch[m] - maxExp);
       sumSquaredExpNoMax += std::exp(2.0*(_demonstrationBatchImportanceWeights[m]+cumulativeRewardsDemonstrationBatch[m]) - 2.0*maxExp);
   }
+  */
 
-  // Calculate log of partition function
-  _logPartitionFunction = std::log(sumExpNoMax) + maxExp - std::log((float)_demonstrationBatchSize + (float)_backgroundBatchSize);
+    // Calculate log of partition function
+    _logPartitionFunction = std::log(sumExpNoMax) + maxExp - std::log((float)_backgroundBatchSize); // + (float)_demonstrationBatchSize);
 
-  // Calculate log expectiation of squared exponentiated reward
-  float logSquaredPartitionFunction = std::log(sumSquaredExpNoMax) + 2.0*maxExp - std::log((float)_demonstrationBatchSize + (float)_backgroundBatchSize);
+    // Calculate log expectiation of squared exponentiated reward
+    float logSquaredPartitionFunction = std::log(sumSquaredExpNoMax) + 2.0 * maxExp - std::log((float)_backgroundBatchSize); // + (float)_backgroundBatchSize);
 
-  // Calculate log of standard deviation of partition function estimate using save math
-  _logSdevPartitionFunction = 0.5*logSquaredPartitionFunction + 0.5*std::log(1.0-std::exp(2.0*_logPartitionFunction-logSquaredPartitionFunction));
-  printf("lpf %f (sd %f)\n", _logPartitionFunction, _logSdevPartitionFunction);
-  
-  // Reset gradient
-  std::fill(_featureWeightGradient.begin(), _featureWeightGradient.end(), 0);
-  
-  // Calculate gradient of loglikelihood wrt. feature weights (contribution from background batch)
-  for (size_t m = 0; m < _backgroundBatchSize; ++m)
-  {
-    size_t expId = _backgroundBatch[m];
-    while (_terminationVector[expId] == e_nonTerminal)
+    // Calculate log of standard deviation of partition function estimate using save math
+    _logSdevPartitionFunction = 0.5 * logSquaredPartitionFunction + 0.5 * std::log(1.0 - std::exp(2.0 * _logPartitionFunction - logSquaredPartitionFunction));
+    printf("lpf %f (sd %f)\n", _logPartitionFunction, _logSdevPartitionFunction);
+
+    // Reset gradient
+    std::fill(_featureWeightGradient.begin(), _featureWeightGradient.end(), 0);
+
+    // Calculate gradient of loglikelihood wrt. feature weights (contribution from background batch)
+    for (size_t m = 0; m < _backgroundBatchSize; ++m)
     {
-      auto gradReturn = calculateRewardGradient(_featureVector[expId]);
-      for (size_t k = 0; k < _problem->_featureVectorSize; ++k)
+      size_t bckIdx = backgroundTrajectoryIndexes[m];
+      size_t backgroundTrajectoryLength = _backgroundTrajectoryFeatures[bckIdx].size();
+      for (size_t t = 0; t < backgroundTrajectoryLength; ++t)
       {
-        _featureWeightGradient[k] -= (std::exp(_backgroundBatchImportanceWeights[m]+cumulativeRewardsBackgroundBatch[m]-_logPartitionFunction) / (_backgroundBatchSize + _demonstrationBatchSize) * gradReturn[k]);
-        //printf("grads0 %f %f\n", gradReturn[k], _featureWeightGradient[k]);
+        auto gradReturn = calculateRewardGradient(_backgroundTrajectoryFeatures[bckIdx][t]);
+        for (size_t k = 0; k < _problem->_featureVectorSize; ++k)
+        {
+          _featureWeightGradient[k] -= (std::exp(backgroundBatchImportanceWeights[m] + cumulativeRewardsBackgroundBatch[m] - _logPartitionFunction) / (float) _backgroundBatchSize * gradReturn[k]);
+          //_featureWeightGradient[k] -= (std::exp(backgroundBatchImportanceWeights[m]+cumulativeRewardsBackgroundBatch[m]-_logPartitionFunction) / (_backgroundBatchSize+_demonstrationBatchSize) * gradReturn[k]);
+          //printf("grads0 %f %f\n", gradReturn[k], _featureWeightGradient[k]);
+        }
       }
-      expId++;
     }
-  }
 
+    /*
   // Calculate gradient of loglikelihood wrt. feature weights (contribution from demonstration batch)
   for (size_t m = 0; m < _demonstrationBatchSize; ++m)
   {
@@ -557,28 +618,28 @@ void Agent::updateRewardFunction()
             //printf("grads1 %f %f\n", gradReturn[k], _featureWeightGradient[k]);
         }
     }
-  }
- 
-  for (size_t n = 0; n < _problem->_numberObservedTrajectories; ++n)
-  {
-    size_t observedTrajectoryLength = _problem->_observationsFeatures[n].size();
-    for (size_t i = 0; i < observedTrajectoryLength; ++i)
+  }*/
+
+    // Calculate gradient of loglikelihood wrt. feature weights (contribution from demonstration return)
+    for (size_t n = 0; n < _problem->_numberObservedTrajectories; ++n)
     {
+      size_t observedTrajectoryLength = _problem->_observationsFeatures[n].size();
+      for (size_t i = 0; i < observedTrajectoryLength; ++i)
+      {
         auto gradReturn = calculateRewardGradient(_problem->_observationsFeatures[n][i]);
         for (size_t k = 0; k < _problem->_featureVectorSize; ++k)
         {
-            _featureWeightGradient[k] += 1.0/(float)_problem->_numberObservedTrajectories * gradReturn[k];
-            //printf("grads1 %f %f\n", gradReturn[k], _featureWeightGradient[k]);
+          _featureWeightGradient[k] += 1.0 / (float)_problem->_numberObservedTrajectories * gradReturn[k];
+          //printf("grads1 %f %f\n", gradReturn[k], _featureWeightGradient[k]);
         }
+      }
     }
-  }
 
+    //for (size_t k = 0; k < _problem->_featureVectorSize; ++k)
+    //printf("fwg[%zu] %f \n", k, _featureWeightGradient[k]);
 
-  //for (size_t k = 0; k < _problem->_featureVectorSize; ++k)
-  //printf("fwg[%zu] %f \n", k, _featureWeightGradient[k]);
-
-  // L1 penalization
-  /*
+    // L1 penalization
+    /*
   float lambda = 1e-2;
   for (size_t k = 0; k < _problem->_featureVectorSize; ++k)
   {
@@ -589,29 +650,29 @@ void Agent::updateRewardFunction()
   }
   */
 
-  for (size_t k = 0; k < _problem->_featureVectorSize; ++k)
-  {
-    _featureWeights[k] += _rewardfunctionLearningRate * _featureWeightGradient[k];
-    printf("fw [%zu] %f (%f)\n", k, _featureWeights[k], _featureWeightGradient[k]);
+    for (size_t k = 0; k < _problem->_featureVectorSize; ++k)
+    {
+      _featureWeights[k] += _rewardfunctionLearningRate * _featureWeightGradient[k];
+      printf("fw [%zu] %f (%f)\n", k, _featureWeights[k], _featureWeightGradient[k]);
+    }
+  
   }
 
   // Calculate softmax of feature weights
   float normalization = 0.;
-  for (size_t i = 0; i < _problem->_featureVectorSize; ++i) 
+  for (size_t i = 0; i < _problem->_featureVectorSize; ++i)
   {
-      float expFeature = std::exp(_featureWeights[i]);
-      _softMaxFeatureWeights[i] = expFeature;
-      normalization += expFeature;
-  }
-  
-  for (size_t i = 0; i < _problem->_featureVectorSize; ++i) 
-  {
-      _softMaxFeatureWeights[i] /= normalization;
-      //printf("smfw[%zu] %f %f %f \n", i, _featureWeights[i], _featureWeightGradient[i], _softMaxFeatureWeights[i]);
+    float expFeature = std::exp(_featureWeights[i]);
+    _softMaxFeatureWeights[i] = expFeature;
+    normalization += expFeature;
   }
 
+  for (size_t i = 0; i < _problem->_featureVectorSize; ++i)
+  {
+    _softMaxFeatureWeights[i] /= normalization;
+    //printf("smfw[%zu] %f %f %f \n", i, _featureWeights[i], _featureWeightGradient[i], _softMaxFeatureWeights[i]);
+  }
 }
-
 
 void Agent::rescaleRewards()
 {
@@ -623,17 +684,17 @@ void Agent::rescaleRewards()
   {
     float reward = _rewardVector[i];
     sumReward += reward;
-    sumReward2 += reward*reward;
+    sumReward2 += reward * reward;
   }
 
   float newRewardRescalingSdev = std::sqrt(sumReward2 / ((float)_rewardVector.size() + 1e-9));
 
-  printf( "previous reward mean and sdev %f %f\n", _rewardRescalingMean, _rewardRescalingSdev);
+  printf("previous reward mean and sdev %f %f\n", _rewardRescalingMean, _rewardRescalingSdev);
 
   _rewardRescalingSdev = newRewardRescalingSdev;
   _rewardRescalingCount++;
 
-  printf( "new reward mean and sdev %f %f\n", _rewardRescalingMean, _rewardRescalingSdev);
+  printf("new reward mean and sdev %f %f\n", _rewardRescalingMean, _rewardRescalingSdev);
 }
 
 void Agent::attendAgent(size_t agentId)
@@ -726,14 +787,14 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode, std::vect
 
   // Storage for the episode's cumulative reward
   float cumulativeReward = 0.0f;
-  _policyHyperparameterVector.add(policyHyperparameters);
-    
+
   for (size_t expId = 0; expId < episode.size(); expId++)
   {
     // Getting state, action
     _stateVector.add(episode[expId]["State"].get<std::vector<float>>());
     _actionVector.add(episode[expId]["Action"].get<std::vector<float>>());
     _featureVector.add(episode[expId]["Features"].get<std::vector<float>>());
+    _policyVector.add(policyHyperparameters);
 
     // Getting and normalizing reward
     const float unscaledReward = episode[expId]["Reward"].get<float>();
@@ -761,25 +822,25 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode, std::vect
 
     if (isDefined(episode[expId], "Policy", "State Value"))
     {
-     expPolicy.stateValue = episode[expId]["Policy"]["State Value"].get<float>();
-     stateValue = episode[expId]["Policy"]["State Value"].get<float>();
+      expPolicy.stateValue = episode[expId]["Policy"]["State Value"].get<float>();
+      stateValue = episode[expId]["Policy"]["State Value"].get<float>();
     }
     else
     {
-     KORALI_LOG_ERROR("Policy has not produced state value for the current experience.\n");
+      KORALI_LOG_ERROR("Policy has not produced state value for the current experience.\n");
     }
 
     if (isDefined(episode[expId], "Policy", "Action Means"))
-     expPolicy.actionMeans = episode[expId]["Policy"]["Action Means"].get<std::vector<float>>();
+      expPolicy.actionMeans = episode[expId]["Policy"]["Action Means"].get<std::vector<float>>();
 
     if (isDefined(episode[expId], "Policy", "Action Sigmas"))
-     expPolicy.actionSigmas = episode[expId]["Policy"]["Action Sigmas"].get<std::vector<float>>();
+      expPolicy.actionSigmas = episode[expId]["Policy"]["Action Sigmas"].get<std::vector<float>>();
 
     if (isDefined(episode[expId], "Policy", "Action Index"))
-     expPolicy.actionIndex = episode[expId]["Policy"]["Action Index"].get<size_t>();
+      expPolicy.actionIndex = episode[expId]["Policy"]["Action Index"].get<size_t>();
 
     if (isDefined(episode[expId], "Policy", "Action Probabilities"))
-     expPolicy.actionProbabilities = episode[expId]["Policy"]["Action Probabilities"].get<std::vector<float>>();
+      expPolicy.actionProbabilities = episode[expId]["Policy"]["Action Probabilities"].get<std::vector<float>>();
 
     // Storing policy information
     _expPolicyVector.add(expPolicy);
@@ -828,7 +889,7 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode, std::vect
 
     // Sanity checks for truncated state value
     if (std::isfinite(truncatedV) == false)
-     KORALI_LOG_ERROR("Calculated state value for truncated state returned an invalid value: %f\n", truncatedV);
+      KORALI_LOG_ERROR("Calculated state value for truncated state returned an invalid value: %f\n", truncatedV);
 
     // Adding truncated state value to the retrace value
     retV += _discountFactor * truncatedV;
@@ -838,7 +899,7 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode, std::vect
   for (ssize_t expId = endId; expId >= startId; expId--)
   {
     // Calculating retrace value with the discount factor. Importance weight is 1.0f because the policy is current.
-    retV = _discountFactor * retV + calculateReward(_featureVector[expId])*_rewardRescalingSdev;
+    retV = _discountFactor * retV + calculateReward(_featureVector[expId]) * _rewardRescalingSdev;
 
     // Setting initial retrace value in the experience's cache
     _retraceValueVector[expId] = retV;
@@ -882,13 +943,13 @@ std::vector<size_t> Agent::generateMiniBatch(size_t miniBatchSize)
 
   // Sorting minibatch -- this helps with locality and also
   // to quickly detect duplicates when updating metadata
-  std::sort (miniBatch.begin(), miniBatch.end());
+  std::sort(miniBatch.begin(), miniBatch.end());
 
   // Returning generated minibatch
   return miniBatch;
 }
 
-void Agent::updateExperienceMetadata(const std::vector<size_t>& miniBatch, const std::vector<policy_t>& policyData)
+void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const std::vector<policy_t> &policyData)
 {
   const size_t miniBatchSize = miniBatch.size();
 
@@ -897,12 +958,13 @@ void Agent::updateExperienceMetadata(const std::vector<size_t>& miniBatch, const
   std::vector<size_t> updateBatch;
   updateBatch.push_back(0);
   for (size_t i = 1; i < miniBatchSize; i++)
-   if(miniBatch[i] != miniBatch[i-1]) updateBatch.push_back(i);
+    if (miniBatch[i] != miniBatch[i - 1]) updateBatch.push_back(i);
 
   // Storage to keep track of off-policy experiences
   size_t offPolicyCount = 0;
 
-  #pragma omp parallel for reduction(+ : offPolicyCount)
+#pragma omp parallel for reduction(+ \
+                                   : offPolicyCount)
   for (size_t i = 0; i < updateBatch.size(); i++)
   {
     auto batchId = updateBatch[i];
@@ -918,7 +980,7 @@ void Agent::updateExperienceMetadata(const std::vector<size_t>& miniBatch, const
 
     // Sanity checks for state value
     if (std::isfinite(stateValue) == false)
-     KORALI_LOG_ERROR("Calculated state value for state returned an invalid value: %f\n", stateValue);
+      KORALI_LOG_ERROR("Calculated state value for state returned an invalid value: %f\n", stateValue);
 
     // Compute importance weight
     const float importanceWeight = calculateImportanceWeight(expAction, curPolicy, expPolicy);
@@ -926,7 +988,7 @@ void Agent::updateExperienceMetadata(const std::vector<size_t>& miniBatch, const
 
     // Sanity checks for state value
     if (std::isfinite(importanceWeight) == false)
-     KORALI_LOG_ERROR("Calculated state value for importanceWeight returned an invalid value: %f\n", importanceWeight);
+      KORALI_LOG_ERROR("Calculated state value for importanceWeight returned an invalid value: %f\n", importanceWeight);
 
     // If this is the truncated experience of an episode, then obtain truncated state value
     float truncatedV = 0.0f;
@@ -947,7 +1009,7 @@ void Agent::updateExperienceMetadata(const std::vector<size_t>& miniBatch, const
     _isOnPolicyVector[expId] = isOnPolicy;
     _truncatedImportanceWeightVector[expId] = truncatedImportanceWeight;
 
-     if (isOnPolicy == false) offPolicyCount++;
+    if (isOnPolicy == false) offPolicyCount++;
   }
 
   // Updating the off policy Ratio
@@ -961,61 +1023,61 @@ void Agent::updateExperienceMetadata(const std::vector<size_t>& miniBatch, const
   std::vector<size_t> retraceMiniBatch;
 
   // Adding last experience from the sorted minibatch
-  retraceMiniBatch.push_back(miniBatch[miniBatchSize-1]);
+  retraceMiniBatch.push_back(miniBatch[miniBatchSize - 1]);
 
   // Adding experiences so long as they do not repeat episodes
-  for (ssize_t i = miniBatchSize-2; i >= 0; i--)
+  for (ssize_t i = miniBatchSize - 2; i >= 0; i--)
   {
-   size_t currExpId = miniBatch[i];
-   size_t nextExpId = miniBatch[i+1];
-   size_t curEpisode = _episodeIdVector[currExpId];
-   size_t nextEpisode = _episodeIdVector[nextExpId];
-   if (curEpisode != nextEpisode) retraceMiniBatch.push_back(currExpId);
+    size_t currExpId = miniBatch[i];
+    size_t nextExpId = miniBatch[i + 1];
+    size_t curEpisode = _episodeIdVector[currExpId];
+    size_t nextEpisode = _episodeIdVector[nextExpId];
+    if (curEpisode != nextEpisode) retraceMiniBatch.push_back(currExpId);
   }
 
-  // Calculating retrace value for the oldest experiences of unique episodes
-  #pragma omp parallel for schedule(guided, 1)
+// Calculating retrace value for the oldest experiences of unique episodes
+#pragma omp parallel for schedule(guided, 1)
   for (size_t i = 0; i < retraceMiniBatch.size(); i++)
   {
-   // Finding the earliest experience corresponding to the same episode as this experience
-   ssize_t endId = retraceMiniBatch[i];
-   ssize_t startId = endId - _episodePosVector[endId];
+    // Finding the earliest experience corresponding to the same episode as this experience
+    ssize_t endId = retraceMiniBatch[i];
+    ssize_t startId = endId - _episodePosVector[endId];
 
-   // If the starting experience has already been discarded, take the earliest one that still remains
-   if (startId < 0) startId = 0;
+    // If the starting experience has already been discarded, take the earliest one that still remains
+    if (startId < 0) startId = 0;
 
-   // Storage for the retrace value
-   float retV = 0.0f;
+    // Storage for the retrace value
+    float retV = 0.0f;
 
-   // If it was a truncated episode, add the value function for the terminal state to retV
-   if (_terminationVector[endId] == e_truncated)
-     retV = _truncatedStateValueVector[endId];
+    // If it was a truncated episode, add the value function for the terminal state to retV
+    if (_terminationVector[endId] == e_truncated)
+      retV = _truncatedStateValueVector[endId];
 
-   if (_terminationVector[endId] == e_nonTerminal)
-     retV = _retraceValueVector[endId + 1];
+    if (_terminationVector[endId] == e_nonTerminal)
+      retV = _retraceValueVector[endId + 1];
 
-   // Now iterating backwards to calculate the rest of vTbc
-   for (ssize_t curId = endId; curId >= startId; curId--)
-   {
-     // If this retrace value (and previous ones) was calculated recently, skipping the entire process
-     if (_policyUpdateCount - _retraceLastUpdateVector[curId] < _retraceUpdateDelay) break;
+    // Now iterating backwards to calculate the rest of vTbc
+    for (ssize_t curId = endId; curId >= startId; curId--)
+    {
+      // If this retrace value (and previous ones) was calculated recently, skipping the entire process
+      if (_policyUpdateCount - _retraceLastUpdateVector[curId] < _retraceUpdateDelay) break;
 
-     // Getting current reward, action, and state
-     const float curReward = _rewardVector[curId] * _rewardRescalingSdev;
+      // Getting current reward, action, and state
+      const float curReward = _rewardVector[curId] * _rewardRescalingSdev;
 
-     // Calculating state value function
-     const float curV = _stateValueVector[curId];
+      // Calculating state value function
+      const float curV = _stateValueVector[curId];
 
-     // Truncate importance weight
-     const float truncatedImportanceWeight = _truncatedImportanceWeightVector[curId];
+      // Truncate importance weight
+      const float truncatedImportanceWeight = _truncatedImportanceWeightVector[curId];
 
-     // Calculating retrace value
-     retV = curV + truncatedImportanceWeight * (curReward + _discountFactor * retV - curV);
+      // Calculating retrace value
+      retV = curV + truncatedImportanceWeight * (curReward + _discountFactor * retV - curV);
 
-     // Storing retrace value into the experience's cache
-     _retraceValueVector[curId] = retV;
-     _retraceLastUpdateVector[curId] = _policyUpdateCount;
-   }
+      // Storing retrace value into the experience's cache
+      _retraceValueVector[curId] = retV;
+      _retraceLastUpdateVector[curId] = _policyUpdateCount;
+    }
   }
 }
 
@@ -1048,7 +1110,7 @@ void Agent::resetTimeSequence()
   _stateTimeSequence.clear();
 }
 
-std::vector<std::vector<std::vector<float>>> Agent::getMiniBatchStateSequence(const std::vector<size_t>& miniBatch, const bool includeAction)
+std::vector<std::vector<std::vector<float>>> Agent::getMiniBatchStateSequence(const std::vector<size_t> &miniBatch, const bool includeAction)
 {
   // Getting mini batch size
   const size_t miniBatchSize = miniBatch.size();
@@ -1059,29 +1121,29 @@ std::vector<std::vector<std::vector<float>>> Agent::getMiniBatchStateSequence(co
   // Calculating size of state vector
   const size_t stateSize = includeAction ? _problem->_stateVectorSize + _problem->_actionVectorSize : _problem->_stateVectorSize;
 
-  #pragma omp parallel for
+#pragma omp parallel for
   for (size_t b = 0; b < miniBatch.size(); b++)
   {
-   // Getting current expId
-   const size_t expId = miniBatch[b];
+    // Getting current expId
+    const size_t expId = miniBatch[b];
 
-   // Getting starting expId
-   const size_t startId = getTimeSequenceStartExpId(expId);
+    // Getting starting expId
+    const size_t startId = getTimeSequenceStartExpId(expId);
 
-   // Calculating time sequence length
-   const size_t T = expId - startId + 1;
+    // Calculating time sequence length
+    const size_t T = expId - startId + 1;
 
-   // Resizing state sequence vector to the correct time sequence length
-   stateSequence[b].resize(T);
+    // Resizing state sequence vector to the correct time sequence length
+    stateSequence[b].resize(T);
 
-   // Now adding states (and actions, if required)
-   for (size_t t = 0; t < T; t++)
-   {
-    size_t curId = startId + t;
-    stateSequence[b][t].reserve(stateSize);
-    stateSequence[b][t].insert(stateSequence[b][t].begin(), _stateVector[curId].begin(), _stateVector[curId].end());
-    if (includeAction) stateSequence[b][t].insert(stateSequence[b][t].begin(), _actionVector[curId].begin(), _actionVector[curId].end());
-   }
+    // Now adding states (and actions, if required)
+    for (size_t t = 0; t < T; t++)
+    {
+      size_t curId = startId + t;
+      stateSequence[b][t].reserve(stateSize);
+      stateSequence[b][t].insert(stateSequence[b][t].begin(), _stateVector[curId].begin(), _stateVector[curId].end());
+      if (includeAction) stateSequence[b][t].insert(stateSequence[b][t].begin(), _actionVector[curId].begin(), _actionVector[curId].end());
+    }
   }
 
   return stateSequence;
@@ -1324,14 +1386,15 @@ void Agent::printGenerationAfter()
     printAgentInformation();
     _k->_logger->logInfo("Normal", " + Current Learning Rate:           %.3e\n", _currentLearningRate);
 
-    _k->_logger->logInfo("Detailed", "Profiling Information:                  [Generation] - [Session]\n");
-    _k->_logger->logInfo("Detailed", " + Experience Serialization Time:       [%5.3fs] - [%3.3fs]\n", _generationSerializationTime / 1.0e+9, _sessionSerializationTime / 1.0e+9);
-    _k->_logger->logInfo("Detailed", " + Agent Attending Time:                [%5.3fs] - [%3.3fs]\n", _generationAgentAttendingTime / 1.0e+9, _sessionAgentAttendingTime / 1.0e+9);
-    _k->_logger->logInfo("Detailed", " + Avg Agent Computation Time:          [%5.3fs] - [%3.3fs]\n", _generationAgentComputationTime / 1.0e+9, _sessionAgentComputationTime / 1.0e+9);
-    _k->_logger->logInfo("Detailed", " + Avg Agent Communication/Wait Time:   [%5.3fs] - [%3.3fs]\n", _generationAgentCommunicationTime / 1.0e+9, _sessionAgentCommunicationTime / 1.0e+9);
-    _k->_logger->logInfo("Detailed", " + Avg Agent Policy Evaluation Time:    [%5.3fs] - [%3.3fs]\n", _generationAgentPolicyEvaluationTime / 1.0e+9, _sessionAgentPolicyEvaluationTime / 1.0e+9);
-    _k->_logger->logInfo("Detailed", " + Policy Update Time:                  [%5.3fs] - [%3.3fs]\n", _generationPolicyUpdateTime / 1.0e+9, _sessionPolicyUpdateTime / 1.0e+9);
-    _k->_logger->logInfo("Detailed", " + Running Time:                        [%5.3fs] - [%3.3fs]\n", _generationRunningTime / 1.0e+9, _sessionRunningTime / 1.0e+9);
+    _k->_logger->logInfo("Detailed", "Profiling Information:                     [Generation] - [Session]\n");
+    _k->_logger->logInfo("Detailed", " + Experience Serialization Time:          [%5.3fs] - [%3.3fs]\n", _generationSerializationTime / 1.0e+9, _sessionSerializationTime / 1.0e+9);
+    _k->_logger->logInfo("Detailed", " + Agent Attending Time:                   [%5.3fs] - [%3.3fs]\n", _generationAgentAttendingTime / 1.0e+9, _sessionAgentAttendingTime / 1.0e+9);
+    _k->_logger->logInfo("Detailed", " + Avg Agent Computation Time:             [%5.3fs] - [%3.3fs]\n", _generationAgentComputationTime / 1.0e+9, _sessionAgentComputationTime / 1.0e+9);
+    _k->_logger->logInfo("Detailed", " + Avg Agent Communication/Wait Time:      [%5.3fs] - [%3.3fs]\n", _generationAgentCommunicationTime / 1.0e+9, _sessionAgentCommunicationTime / 1.0e+9);
+    _k->_logger->logInfo("Detailed", " + Avg Agent Policy Evaluation Time:       [%5.3fs] - [%3.3fs]\n", _generationAgentPolicyEvaluationTime / 1.0e+9, _sessionAgentPolicyEvaluationTime / 1.0e+9);
+    _k->_logger->logInfo("Detailed", " + Policy Update Time:                     [%5.3fs] - [%3.3fs]\n", _generationPolicyUpdateTime / 1.0e+9, _sessionPolicyUpdateTime / 1.0e+9);
+    _k->_logger->logInfo("Detailed", " + Running Time:                           [%5.3fs] - [%3.3fs]\n", _generationRunningTime / 1.0e+9, _sessionRunningTime / 1.0e+9);
+    _k->_logger->logInfo("Detailed", " + Trajectory Log Probability Update Time: [%5.3fs] \n", _sessionAgentTrajectoryLogProbilityUpdateTime / 1.0e+9);
     _k->_logger->logInfo("Detailed", " + [I/O] Result File Saving Time:        %5.3fs\n", _k->_resultSavingTime / 1.0e+9);
   }
 

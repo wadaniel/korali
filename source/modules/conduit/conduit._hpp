@@ -104,7 +104,7 @@ class Conduit : public Module
   */
   virtual void popEngine() = 0;
 
-  void runSample(Sample* sample, Engine* engine);
+  void runSample(Sample *sample, Engine *engine);
 
   /**
   * @brief Wrapper function for the sample coroutine

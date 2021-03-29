@@ -17,40 +17,46 @@ from scipy.signal import savgol_filter
 
 ##################### Plotting Reward History
 
-def plotIRL(ax, dirs, results ):
-
- ## Setting initial x-axis (episode) and  y-axis (reward) limits
- 
- maxPlotObservations = -math.inf
- maxPlotReward = -math.inf
- minPlotReward = +math.inf
+def plotIRL(axs, dirs, results ):
 
  ## Creating colormap
  cmap = matplotlib.cm.get_cmap('brg')
  colCurrIndex = 0.0
 
  ## Plotting the individual experiment results
-    
- for resId, r in enumerate(results):
   
-  if (len(r) == 0): continue  
-  
-  experienceCount.append(r["Solver"]["Experience Count"])
-  featureWeights.append(r["Solver"]["Feature Weights"])
-  featureWeightsGradient.append(r["Solver"]["Feature Weight Gradient"])
-  logPartitionFunction.append(r["Solver"]["Log Partition Function"])
-  logPartitionFunctionSdev.append(["Solver"]["Log Sdev Partition Function"])
-  
-  print(logPartitionFunctionSdev)
-  
-  
- ## Configuring common plotting features
+ for idx, r in enumerate(results):
 
- ax.set_ylabel('Cumulative Reward')  
- ax.set_xlabel('# Observations')
- ax.set_title('Korali RL History Viewer')
+    print("Processing {} ..".format(dirs[idx]))
+    experienceCount = []
+    featureWeights = []
+    featureWeightsGradient = []
+    logPartitionFunction = []
+    logPartitionFunctionSdev = []
  
- ax.yaxis.grid()
+    for s in r:
+        experienceCount.append(s['Solver']['Experience Count'])
+        featureWeights.append(s['Solver']['Feature Weights'])
+        featureWeightsGradient.append(s['Solver']['Feature Weight Gradient'])
+        logPartitionFunction.append(s['Solver']['Log Partition Function'])
+        logPartitionFunctionSdev.append(s['Solver']['Log Sdev Partition Function'])
+  
+    dtext = str(dirs[idx])
+    labeltxt = "dir" + dtext
+    axs[0, 0].plot(experienceCount, logPartitionFunction)
+    axs[1, 0].plot(experienceCount, logPartitionFunctionSdev)
+    axs[0, 1].plot(experienceCount, featureWeights, label=labeltxt)
+    axs[1, 1].plot(experienceCount, featureWeightsGradient)
+
+ ## Configuring common plotting features
+ axs[0, 0].set_title('Log Partition Function')
+ axs[1, 0].set_title('Log Standard Deviation Partition Function')
+ axs[0, 1].set_title('Feature Weights')
+ axs[1, 1].set_title('Gradient Llk wrt. Feature Weights')
+ axs[1, 0].set_xlabel('# Observations')
+ axs[1, 1].set_xlabel('# Observations')
+ #plt.legend(axs[0,1])
+ axs[0, 1].legend()
 
 ##################### Results parser
 
@@ -130,7 +136,7 @@ if __name__ == '__main__':
  ### Checking installation
  
  if (args.check == True):
-  print("[Korali] RL Viewer correctly installed.")
+  print("[Korali] IRL Viewer correctly installed.")
   exit(0)
  
  ### Setup without graphics, if needed
@@ -146,11 +152,12 @@ if __name__ == '__main__':
  
  ### Creating figure(s)
   
- fig1 = plt.figure()
- ax1 = fig1.add_subplot(111)
+ fig, axs = plt.subplots(2, 2)
      
  ### Creating plots
-     
- plotIRL(ax1, args.dir, results)
+   
+ print("Number of directories parsed: {}".format(len(results)))
+ print("Number of files per directory: {}".format([len(f) for f in results]))
+ plotIRL(axs, args.dir, results)
 
  plt.show() 

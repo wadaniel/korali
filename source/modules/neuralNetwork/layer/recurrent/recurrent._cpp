@@ -148,29 +148,29 @@ void Recurrent::createHyperparameterMemory()
 #endif
 }
 
-void Recurrent::copyHyperparameterPointers(Layer* dstLayer)
+void Recurrent::copyHyperparameterPointers(Layer *dstLayer)
 {
- Recurrent* dstPtr = dynamic_cast<Recurrent *>(dstLayer);
- dstPtr->_hyperparameterCount = _hyperparameterCount;
+  Recurrent *dstPtr = dynamic_cast<Recurrent *>(dstLayer);
+  dstPtr->_hyperparameterCount = _hyperparameterCount;
 
- #ifdef _KORALI_USE_ONEDNN
+#ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
   {
-   dstPtr->_weightsLayerMem = _weightsLayerMem;
-   dstPtr->_weightsRecurrentMem = _weightsRecurrentMem;
-   dstPtr->_biasMem = _biasMem;
+    dstPtr->_weightsLayerMem = _weightsLayerMem;
+    dstPtr->_weightsRecurrentMem = _weightsRecurrentMem;
+    dstPtr->_biasMem = _biasMem;
   }
 #endif
 
 #ifdef _KORALI_USE_CUDNN
   if (_nn->_engine == "CuDNN")
   {
-   dstPtr->_rnnDesc = _rnnDesc;
-   dstPtr->_dropoutDesc = _dropoutDesc;
-   dstPtr->_weightsSize = _weightsSize;
-   dstPtr->_weightsTensor = _weightsTensor;
-   dstPtr->_gateWeightTensors = _gateWeightTensors;
-   dstPtr->_gateBiasTensors = _gateBiasTensors;
+    dstPtr->_rnnDesc = _rnnDesc;
+    dstPtr->_dropoutDesc = _dropoutDesc;
+    dstPtr->_weightsSize = _weightsSize;
+    dstPtr->_weightsTensor = _weightsTensor;
+    dstPtr->_gateWeightTensors = _gateWeightTensors;
+    dstPtr->_gateBiasTensors = _gateBiasTensors;
   }
 #endif
 }
@@ -217,7 +217,7 @@ void Recurrent::createBackwardPipeline()
   *********************************************************************************/
 
   // Calling base layer function
- Layer::createBackwardPipeline();
+  Layer::createBackwardPipeline();
 
 #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
@@ -234,7 +234,6 @@ void Recurrent::createBackwardPipeline()
     cudaErrCheck(cudaMalloc((void **)&_weightsGradientTensor, _weightsSize));
   }
 #endif
-
 }
 
 void Recurrent::backwardHyperparameters(const size_t t)

@@ -132,7 +132,7 @@ class Layer : public Module
   */
   virtual void createHyperparameterMemory();
 
-  virtual void copyHyperparameterPointers(Layer* dstLayer){};
+  virtual void copyHyperparameterPointers(Layer *dstLayer){};
 
   /**
    * @brief Initializes the layer's internal memory structures for the forward pipeline

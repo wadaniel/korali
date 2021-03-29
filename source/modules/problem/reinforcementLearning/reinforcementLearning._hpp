@@ -31,7 +31,7 @@ class ReinforcementLearning : public korali::Problem
    * @param agent Sample containing current agent/state information.
    */
   void initializeEnvironment(korali::Sample &agent);
- 
+
   /**
    * @brief Finalizes the environemnt (frees resources)
    */

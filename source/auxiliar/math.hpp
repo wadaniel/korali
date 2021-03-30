@@ -164,6 +164,28 @@ T normalLogDensity(const T &x, const T &mean, const T &sigma)
 }
 
 /**
+* @brief Computes the log density of a squashed normal distribution.
+* @param px density evaluation point
+* @param mean Mean of normal distribution
+* @param sigma Standard Deviation of normal distribution
+* @return The log density
+*/
+template <typename T>
+T squashedNormalLogDensity(const T &px, const T &mean, const T &sigma)
+{
+  // logP(a) = logM(u) - log(1-tanh^2(h)) if a = tanh(u)
+  static constexpr T MIN = std::numeric_limits<T>::min();
+  const T invStdDev = 1.0f / sigma;
+  const T tanhx = std::tanh(px);
+  const T dtanhx = std::max(1.0f-tanhx*tanhx, MIN);
+  const T logExp = -std::pow((px - mean) * invStdDev, 2.0f) / 2.0f;
+
+  // This is log(sqrt(2*pi))
+  static constexpr T logConst = 9.1893853320467266954096885456237942e-01f;
+  return logExp + std::log(invStdDev / dtanhx) - logConst;
+}
+
+/**
 * @brief Computes the log density of the beta distribution.
 * @param x denisty evaluation point
 * @param alpha Shape of Beta distribution

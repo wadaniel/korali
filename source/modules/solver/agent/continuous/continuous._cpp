@@ -16,18 +16,23 @@ void Continuous::initializeAgent()
   // Allocating and obtaining action bounds information
   _actionLowerBounds.resize(_problem->_actionVectorSize);
   _actionUpperBounds.resize(_problem->_actionVectorSize);
+  _actionShifts.resize(_problem->_actionVectorSize);
+  _actionScales.resize(_problem->_actionVectorSize);
+
 
   for (size_t i = 0; i < _problem->_actionVectorSize; i++)
   {
     auto varIdx = _problem->_actionVectorIndexes[i];
     _actionLowerBounds[i] = _k->_variables[varIdx]->_lowerBound;
     _actionUpperBounds[i] = _k->_variables[varIdx]->_upperBound;
+    _actionShifts[i] = (_actionUpperBounds[i] + _actionLowerBounds[i]) * 0.5f;
+    _actionScales[i] = (_actionUpperBounds[i] - _actionLowerBounds[i]) * 0.5f;
 
     if (_actionUpperBounds[i] - _actionLowerBounds[i] <= 0.0) KORALI_LOG_ERROR("Upper (%f) and Lower Bound (%f) of action variable %lu invalid.\n", _actionUpperBounds[i], _actionLowerBounds[i], i);
   }
 
   // Obtaining policy parameter transformations (depends on which policy distribution chosen)
-  if (_policyDistribution == "Normal")
+  if (_policyDistribution == "Unbounded Normal" || _policyDistribution == "Squashed Normal")
   {
     _policyParameterCount = 2 * _problem->_actionVectorSize; // Means and Sigmas
 
@@ -130,7 +135,7 @@ std::vector<float> Continuous::generateTrainingAction(const policy_t &curPolicy)
   std::vector<float> action(_problem->_actionVectorSize);
 
   // Creating the action based on the selected policy
-  if (_policyDistribution == "Normal")
+  if (_policyDistribution == "Unbounded Normal")
   {
    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
    {
@@ -142,7 +147,16 @@ std::vector<float> Continuous::generateTrainingAction(const policy_t &curPolicy)
 
   if (_policyDistribution == "Squashed Normal")
   {
-    KORALI_LOG_ERROR("Not yet implemented.\n");
+   for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+   {
+     const float mean = curPolicy.distributionParameters[i];
+     const float sigma = curPolicy.distributionParameters[_problem->_actionVectorSize + i];
+     const float scale = _actionScales[i];
+     const float shift = _actionShifts[i];
+     const float unboundedAction = mean + sigma * _normalGenerator->getRandomNumber();
+
+     action[i] = (std::tanh(unboundedAction) * scale) + shift;
+   }
   }
 
   if (_policyDistribution == "Beta")
@@ -162,7 +176,7 @@ std::vector<float> Continuous::generateTestingAction(const policy_t &curPolicy)
 {
   std::vector<float> action(_problem->_actionVectorSize);
 
-  if (_policyDistribution == "Normal")
+  if (_policyDistribution == "Unbounded Normal")
   {
     // Take only the means without noise
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
@@ -171,7 +185,13 @@ std::vector<float> Continuous::generateTestingAction(const policy_t &curPolicy)
 
   if (_policyDistribution == "Squashed Normal")
   {
-    KORALI_LOG_ERROR("Not yet implemented.\n");
+    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+    {
+      const float mean = curPolicy.distributionParameters[i];
+      const float scale = _actionScales[i];
+      const float shift = _actionShifts[i];
+      action[i] = (std::tanh(mean) * scale) + shift;
+    }
   }
 
   if (_policyDistribution == "Beta")
@@ -206,7 +226,7 @@ float Continuous::calculateImportanceWeight(const std::vector<float> &action, co
   // Storage for importance weight value
   float importanceWeight = 0.0f;
 
-  if (_policyDistribution == "Normal")
+  if (_policyDistribution == "Unbounded Normal")
   {
     for (size_t i = 0; i < action.size(); i++)
     {
@@ -223,7 +243,21 @@ float Continuous::calculateImportanceWeight(const std::vector<float> &action, co
 
   if (_policyDistribution == "Squashed Normal")
   {
-    KORALI_LOG_ERROR("Not yet implemented.\n");
+    for (size_t i = 0; i < action.size(); i++)
+    {
+      // Getting parameters from the new and old policies
+      const float oldMean  = oldPolicy.distributionParameters[i];
+      const float oldSigma = oldPolicy.distributionParameters[_problem->_actionVectorSize + i];
+      const float curMean  = curPolicy.distributionParameters[i];
+      const float curSigma = curPolicy.distributionParameters[_problem->_actionVectorSize + i];
+
+      const float scale = _actionScales[i];
+      const float shift = _actionShifts[i];
+      const float unboundedAction = std::atanh((action[i] - shift) / scale);
+
+      logpOldPolicy += squashedNormalLogDensity(unboundedAction, oldMean, oldSigma);
+      logpCurPolicy += squashedNormalLogDensity(unboundedAction, curMean, curSigma);
+    }
   }
 
   if (_policyDistribution == "Beta")
@@ -259,7 +293,7 @@ std::vector<float> Continuous::calculateImportanceWeightGradient(const std::vect
   // Storage for importance weight gradients
   std::vector<float> importanceWeightGradients(2 * _problem->_actionVectorSize, 0.0);
 
-  if (_policyDistribution == "Normal")
+  if (_policyDistribution == "Unbounded Normal")
   {
    float logImportanceWeight = 0.0;
 
@@ -293,6 +327,49 @@ std::vector<float> Continuous::calculateImportanceWeightGradient(const std::vect
      importanceWeightGradients[_problem->_actionVectorSize + i] = (curActionDiff * curActionDiff) * (curInvVar / curSigma) - 1.0f / curSigma;
    }
 
+   float importanceWeight = std::exp(logImportanceWeight);
+
+   // Scale by importance weight to get gradient
+   for (size_t i = 0; i < 2 * _problem->_actionVectorSize; i++)
+     importanceWeightGradients[i] *= importanceWeight;
+  }
+
+  if (_policyDistribution == "Squashed Normal")
+  {
+   float logpOldPolicy = 0.0f;
+   float logpCurPolicy = 0.0f;
+
+   for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+   {
+     // Getting parameters from the new and old policies
+     const float oldMean  = oldPolicy.distributionParameters[i];
+     const float oldSigma = oldPolicy.distributionParameters[_problem->_actionVectorSize + i];
+     const float curMean  = curPolicy.distributionParameters[i];
+     const float curSigma = curPolicy.distributionParameters[_problem->_actionVectorSize + i];
+
+     const float scale = _actionScales[i];
+     const float shift = _actionShifts[i];
+     const float unboundedAction = std::atanh((action[i] - shift) / scale);
+
+     // Calculating log(importance weights)
+     logpOldPolicy += squashedNormalLogDensity(unboundedAction, oldMean, oldSigma);
+     logpCurPolicy += squashedNormalLogDensity(unboundedAction, curMean, curSigma);
+
+     // Deviation from expAction and current Mean
+     float curActionDiff = (unboundedAction - curMean);
+
+     // Inverse Variances
+     float curInvVar = 1. / (curSigma * curSigma);
+     float oldInvVar = 1. / (oldSigma * oldSigma);
+
+     // Gradient with respect to Mean
+     importanceWeightGradients[i] = curActionDiff * curInvVar;
+
+     // Gradient with respect to Sigma
+     importanceWeightGradients[_problem->_actionVectorSize + i] = (curActionDiff * curActionDiff) * (curInvVar / curSigma) - 1.0f / curSigma;
+   }
+
+   float logImportanceWeight = logpCurPolicy - logpOldPolicy;
    float importanceWeight = std::exp(logImportanceWeight);
 
    // Scale by importance weight to get gradient
@@ -356,7 +433,7 @@ std::vector<float> Continuous::calculateKLDivergenceGradient(const policy_t &old
   // Storage for KL Divergence Gradients
   std::vector<float> KLDivergenceGradients(2.0 * _problem->_actionVectorSize, 0.0);
 
-  if (_policyDistribution == "Normal")
+  if (_policyDistribution == "Unbounded Normal" || _policyDistribution == "Squashed Normal")
   {
    for (size_t i = 0; i < _problem->_actionVectorSize; ++i)
    {

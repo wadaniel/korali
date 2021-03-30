@@ -36,21 +36,20 @@ e["Solver"]["Learning Rate"] = 0.0001
 e["Solver"]["Discount Factor"] = 0.995
 e["Solver"]["Mini Batch"]["Size"] = 256
 
-### Setting Rescaling
-
-e["Solver"]["Reward Rescaling"]["Enabled"] = True
-e["Solver"]["Reward Rescaling"]["Frequency"] = 200000 
-e["Solver"]["State Rescaling"]["Enabled"] = True
-
 ### Setting Experience Replay and REFER settings
 
-e["Solver"]["Experience Replay"]["Start Size"] = 32768
-e["Solver"]["Experience Replay"]["Maximum Size"] = 262144
-e["Solver"]["Experience Replay"]["Off Policy"]["Annealing Rate"] = 5.0e-7
+e["Solver"]["Experience Replay"]["Off Policy"]["Annealing Rate"] = 5.0e-8
 e["Solver"]["Experience Replay"]["Off Policy"]["Cutoff Scale"] = 5.0
 e["Solver"]["Experience Replay"]["Off Policy"]["REFER Beta"] = 0.3
 e["Solver"]["Experience Replay"]["Off Policy"]["Target"] = 0.1
 
+e["Solver"]["Policy"]["Distribution"] = "Squashed Normal"
+e["Solver"]["L2 Regularization"]["Enabled"] = False
+e["Solver"]["L2 Regularization"]["Importance"] = 1.0
+e["Solver"]["State Rescaling"]["Enabled"] = True
+e["Solver"]["Reward Rescaling"]["Enabled"] = True
+e["Solver"]["Reward Rescaling"]["Frequency"] = 1000
+  
 ### Configuring the neural network and its hidden layers
 
 e["Solver"]["Neural Network"]["Engine"] = "OneDNN"

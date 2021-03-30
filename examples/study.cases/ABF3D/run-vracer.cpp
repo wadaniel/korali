@@ -73,6 +73,10 @@ int main(int argc, char *argv[])
   e["Solver"]["Experiences Between Policy Updates"] = 1;
   e["Solver"]["Learning Rate"] = 1e-4;
   e["Solver"]["Discount Factor"] = 0.995;
+
+  e["Solver"]["Policy"]["Distribution"] = "Squashed Normal";
+  e["Solver"]["L2 Regularization"]["Enabled"] = true;
+  e["Solver"]["L2 Regularization"]["Importance"] = 0.1;
   e["Solver"]["State Rescaling"]["Enabled"] = true;
   e["Solver"]["Reward Rescaling"]["Enabled"] = true;
   e["Solver"]["Reward Rescaling"]["Frequency"] = 1000;

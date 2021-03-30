@@ -366,7 +366,6 @@ std::vector<float> Continuous::calculateImportanceWeightGradient(const std::vect
 
      // Inverse Variances
      float curInvVar = 1. / (curSigma * curSigma);
-     float oldInvVar = 1. / (oldSigma * oldSigma);
 
      // Gradient with respect to Mean
      importanceWeightGradients[i] = curActionDiff * curInvVar;

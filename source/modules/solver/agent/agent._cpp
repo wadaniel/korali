@@ -208,7 +208,7 @@ void Agent::trainingGeneration()
       // If we performed enough policy updates, we rescale rewards again
       if (_rewardRescalingEnabled == true)
         if (_policyUpdateCount >= _rewardRescalingFrequency * _rewardRescalingCount)
-          rescaleRewards();
+          calculateRewardRescalingFactors();
 
       // If we accumulated enough experiences, we rescale the states (once)
       if (_stateRescalingEnabled == true)
@@ -315,49 +315,22 @@ void Agent::rescaleStates()
       _stateVector[i][d] = (_stateVector[i][d] - _stateRescalingMeans[d]) / _stateRescalingSigmas[d];
 }
 
-void Agent::rescaleRewards()
+void Agent::calculateRewardRescalingFactors()
 {
   float sumReward = 0.0;
-  float sumReward2 = 0.0;
+  float sumSquareReward = 0.0;
 
   // Calculate mean and standard deviation of unscaled rewards.
   for (size_t i = 0; i < _rewardVector.size(); i++)
   {
-    float reward = _rewardVector[i] * _rewardRescalingSigma + _rewardRescalingMean;
+    float reward = _rewardVector[i];
     sumReward += reward;
-    sumReward2 += reward * reward;
+    sumSquareReward += reward * reward;
   }
 
-  float newRewardRescalingMean = sumReward / (float)_rewardVector.size();
-  float newRewardRescalingSdev = std::sqrt(sumReward2 / (float)_rewardVector.size() - newRewardRescalingMean * newRewardRescalingMean + 1e-9);
-
-// Rescale rewards s.t. mean equals 0.0 and standard deviation 1.0.
-#pragma omp parallel for simd
-  for (size_t i = 0; i < _rewardVector.size(); i++)
-  {
-    _rewardVector[i] *= _rewardRescalingSigma;
-    _rewardVector[i] += _rewardRescalingMean;
-    _rewardVector[i] -= newRewardRescalingMean;
-    _rewardVector[i] /= newRewardRescalingSdev;
-
-    // If this is done for the first time, also rscale state value and retrace vectors
-    if (_rewardRescalingCount == 0)
-    {
-     _stateValueVector[i] *= _rewardRescalingSigma;
-     _stateValueVector[i] += _rewardRescalingMean;
-     _stateValueVector[i] -= newRewardRescalingMean;
-     _stateValueVector[i] /= newRewardRescalingSdev;
-
-     _retraceValueVector[i] *= _rewardRescalingSigma;
-     _retraceValueVector[i] += _rewardRescalingMean;
-     _retraceValueVector[i] -= newRewardRescalingMean;
-     _retraceValueVector[i] /= newRewardRescalingSdev;
-    }
-  }
-
-  // Storing new statistics
-  _rewardRescalingMean = newRewardRescalingMean;
-  _rewardRescalingSigma = newRewardRescalingSdev;
+  // Calculating reward scaling s,t. mean equals 0.0 and standard deviation 1.0.
+  _rewardRescalingMean = sumReward / (float)_rewardVector.size();
+  _rewardRescalingSigma = std::sqrt(sumSquareReward / (float)_rewardVector.size() - _rewardRescalingMean * _rewardRescalingMean + 1e-9);
   _rewardRescalingCount++;
 }
 
@@ -459,9 +432,11 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
     _actionVector.add(episode[expId]["Action"].get<std::vector<float>>());
 
     // Getting and normalizing reward
-    const float unscaledReward = episode[expId]["Reward"].get<float>();
-    const float reward = (unscaledReward - _rewardRescalingMean) / _rewardRescalingSigma;
+    const float reward = episode[expId]["Reward"].get<float>();
     _rewardVector.add(reward);
+
+    // Keeping statistics
+    cumulativeReward += reward;
 
     // Checking experience termination status and truncated state
     termination_t termination;
@@ -506,9 +481,6 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
     // Storing Episode information
     _episodeIdVector.add(episodeId);
     _episodePosVector.add(expId);
-
-    // Keeping statistics
-    cumulativeReward += unscaledReward;
 
     // Adding placeholder for retrace value
     _retraceValueVector.add(0.0f);
@@ -561,7 +533,7 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
   for (ssize_t expId = endId; expId >= startId; expId--)
   {
     // Calculating retrace value with the discount factor. Importance weight is 1.0f because the policy is current.
-    retV = _discountFactor * retV + _rewardVector[expId];
+    retV = _discountFactor * retV + getScaledReward(_rewardVector[expId]);
 
     // Setting initial retrace value in the experience's cache
     _retraceValueVector[expId] = retV;
@@ -722,7 +694,7 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
     for (ssize_t curId = endId; curId >= startId; curId--)
     {
       // Getting current reward, action, and state
-      const float curReward = _rewardVector[curId];
+      const float curReward = getScaledReward(_rewardVector[curId]);
 
       // Calculating state value function
       const float curV = _stateValueVector[curId];
@@ -767,6 +739,17 @@ void Agent::resetTimeSequence()
 {
   _stateTimeSequence.clear();
 }
+
+float Agent::getScaledReward(const float reward)
+{
+ float rescaledReward = (reward - _rewardRescalingMean) / _rewardRescalingSigma;
+
+ if (std::isfinite(rescaledReward) == false)
+   KORALI_LOG_ERROR("Scaled reward is non finite: %f (Mean: %f, Sigma: %f)\n", rescaledReward, _rewardRescalingMean, _rewardRescalingSigma);
+
+ return rescaledReward;
+}
+
 
 std::vector<std::vector<std::vector<float>>> Agent::getMiniBatchStateSequence(const std::vector<size_t> &miniBatch, const bool includeAction)
 {

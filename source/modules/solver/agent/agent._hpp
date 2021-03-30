@@ -420,9 +420,14 @@ class Agent : public Solver
   void rescaleStates();
 
   /**
-   * @brief Rescales rewards to have a zero mean and unit variance
+   * @brief Rescales a given reward
    */
-  void rescaleRewards();
+  float getScaledReward(const float reward);
+
+  /**
+   * @brief Re-calculates reward scaling factors to have a zero mean and unit variance
+   */
+  void calculateRewardRescalingFactors();
 
   /****************************************************************************************************
    * Virtual functions (responsibilities) for learning algorithms to fulfill

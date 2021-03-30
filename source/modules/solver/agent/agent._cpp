@@ -81,6 +81,7 @@ void Agent::initialize()
       _experienceReplayOffPolicyCutoffScale = std::sqrt(_problem->_actionVectorSize / 2.0f);
     _experienceReplayOffPolicyCutoffScale = std::max(2.0f, _experienceReplayOffPolicyCutoffScale);
 
+    _experienceReplayOffPolicyCount = 0;
     _experienceReplayOffPolicyRatio = 0.0f;
     _experienceReplayOffPolicyCurrentCutoff = _experienceReplayOffPolicyCutoffScale;
     _currentLearningRate = _learningRate;
@@ -512,10 +513,17 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
     // Adding placeholder for retrace value
     _retraceValueVector.add(0.0f);
 
+    // If there's an outgoing experience and it's off policy, subtract the off policy counter
+    if (_isOnPolicyVector.size() == _experienceReplayMaximumSize)
+     if (_isOnPolicyVector[0] == false)
+      _experienceReplayOffPolicyCount--;
+
+    // Adding new experience's on policiness (by default is true when adding it to the ER)
+    _isOnPolicyVector.add(true);
+
     // Updating experience's importance weight. Initially assumed to be 1.0 because its freshly produced
     _importanceWeightVector.add(1.0f);
     _truncatedImportanceWeightVector.add(1.0f);
-    _isOnPolicyVector.add(true);
   }
 
   /*********************************************************************
@@ -613,11 +621,6 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
   for (size_t i = 1; i < miniBatchSize; i++)
     if (miniBatch[i] != miniBatch[i - 1]) updateBatch.push_back(i);
 
-  // Storage to keep track of off-policy experiences
-  size_t offPolicyCount = 0;
-
-#pragma omp parallel for reduction(+ \
-                                   : offPolicyCount)
   for (size_t i = 0; i < updateBatch.size(); i++)
   {
     auto batchId = updateBatch[i];
@@ -654,6 +657,15 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
     // Checking if experience is still on policy
     bool isOnPolicy = (importanceWeight > (1.0f / _experienceReplayOffPolicyCurrentCutoff)) && (importanceWeight < _experienceReplayOffPolicyCurrentCutoff);
 
+    // Updating off policy count if a change is detected
+    if (_isOnPolicyVector[expId] == true && isOnPolicy == false)
+      #pragma omp atomic
+     _experienceReplayOffPolicyCount++;
+
+    if (_isOnPolicyVector[expId] == false && isOnPolicy == true)
+     #pragma omp atomic
+     _experienceReplayOffPolicyCount--;
+
     // Store computed information for use in replay memory.
     _curPolicyVector[expId] = curPolicy;
     _stateValueVector[expId] = stateValue;
@@ -661,13 +673,10 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
     _importanceWeightVector[expId] = importanceWeight;
     _isOnPolicyVector[expId] = isOnPolicy;
     _truncatedImportanceWeightVector[expId] = truncatedImportanceWeight;
-
-    if (isOnPolicy == false) offPolicyCount++;
   }
 
   // Updating the off policy Ratio
-  float alpha = 0.01f; // ~100 updates to reach 63.2% of the target
-  _experienceReplayOffPolicyRatio = alpha * (float)offPolicyCount / (float)updateBatch.size() + (1.0f - alpha) * _experienceReplayOffPolicyRatio;
+  _experienceReplayOffPolicyRatio = (float)_experienceReplayOffPolicyCount / (float)_isOnPolicyVector.size();
 
   // Updating the off policy Cutoff
   _experienceReplayOffPolicyCurrentCutoff = _experienceReplayOffPolicyCutoffScale / (1.0f + _experienceReplayOffPolicyAnnealingRate * (float)_policyUpdateCount);
@@ -992,7 +1001,7 @@ void Agent::printGenerationAfter()
       _k->_logger->logInfo("Normal", " + Total Experience Count:      %lu\n", _experienceCount);
 
     _k->_logger->logInfo("Normal", "Off-Policy Statistics:\n");
-    _k->_logger->logInfo("Normal", " + Off-Policy Ratio:            %f (Target: < %f)\n", _experienceReplayOffPolicyRatio, _experienceReplayOffPolicyTarget);
+    _k->_logger->logInfo("Normal", " + Count (Ratio/Target):        %lu/%lu (%.3f/%.3f)\n", _experienceReplayOffPolicyCount, _stateVector.size(), _experienceReplayOffPolicyRatio, _experienceReplayOffPolicyTarget);
     _k->_logger->logInfo("Normal", " + Importance Weight Cutoff:    [%.3f, %.3f]\n", 1.0f / _experienceReplayOffPolicyCurrentCutoff, _experienceReplayOffPolicyCurrentCutoff);
     _k->_logger->logInfo("Normal", " + REFER Beta Factor:           %f\n", _experienceReplayOffPolicyREFERBeta);
 

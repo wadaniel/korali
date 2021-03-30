@@ -43,9 +43,9 @@ e["Solver"]["Experience Replay"]["Off Policy"]["Cutoff Scale"] = 5.0
 e["Solver"]["Experience Replay"]["Off Policy"]["REFER Beta"] = 0.3
 e["Solver"]["Experience Replay"]["Off Policy"]["Target"] = 0.1
 
-e["Solver"]["Policy"]["Distribution"] = "Unbounded Normal"
+e["Solver"]["Policy"]["Distribution"] = "Squashed Normal"
 e["Solver"]["State Rescaling"]["Enabled"] = True
-e["Solver"]["Reward Rescaling"]["Enabled"] = True
+e["Solver"]["Reward Rescaling"]["Enabled"] = False
 e["Solver"]["Reward Rescaling"]["Frequency"] = 1000
   
 ### Configuring the neural network and its hidden layers

@@ -23,6 +23,7 @@ install_headers(korali_header,
 
 korali_source = files([
   'engine.cpp',
+  'pybinds.cpp'
 ])
 korali_source += korali_header
 

@@ -228,7 +228,7 @@ void Agent::trainingGeneration()
 
 
       // If we accumulated enough experiences between updates in this session, update now
-      // TODO (pw): this now assumes both arguments are true, meaning _newEpisodesCount == 1 and _experiencesBetweenPolicyUpdates==1 if the other is disabled, otherwise problematic, as _sessionExperiencesUntilStartSize == 0 for on-policy
+      // TODO (pw): this now assumes both arguments are true, meaning _newEpisodesCount == 0 and _experiencesBetweenPolicyUpdates==0 if the other is disabled, otherwise problematic, as _sessionExperiencesUntilStartSize == 0 for on-policy
       while ((_sessionExperienceCount > (_experiencesBetweenPolicyUpdates * _sessionPolicyUpdateCount + _sessionExperiencesUntilStartSize)) && (_newEpisodesCount >= _episodesBetweenPolicyUpdates))
       {
         auto beginTime = std::chrono::steady_clock::now(); // Profiling

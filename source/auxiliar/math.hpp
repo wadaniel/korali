@@ -168,21 +168,26 @@ T normalLogDensity(const T &x, const T &mean, const T &sigma)
 * @param px density evaluation point
 * @param mean Mean of normal distribution
 * @param sigma Standard Deviation of normal distribution
+* @param scale The scale used after the tanh normalization
 * @return The log density
 */
 template <typename T>
-T squashedNormalLogDensity(const T &px, const T &mean, const T &sigma)
+T squashedNormalLogDensity(const T &px, const T &mean, const T &sigma, const T &scale)
 {
-  // logP(a) = logM(u) - log(1-tanh^2(h)) if a = tanh(u)
-  static constexpr T MIN = std::numeric_limits<T>::min();
-  const T invStdDev = 1.0f / sigma;
-  const T tanhx = std::tanh(px);
-  const T dtanhx = std::max(1.0f-tanhx*tanhx, MIN);
-  const T logExp = -std::pow((px - mean) * invStdDev, 2.0f) / 2.0f;
+  // Compute contribution from normalLogDensity
+  const T logExp = -std::pow((px - mean) / sigma, 2.0f) / 2.0f;
+  static constexpr T logConst = 9.1893853320467266954096885456237942e-01f; // This is log(sqrt(2*pi))
+  const T logStdDev = std::log(sigma);
 
-  // This is log(sqrt(2*pi))
-  static constexpr T logConst = 9.1893853320467266954096885456237942e-01f;
-  return logExp + std::log(invStdDev / dtanhx) - logConst;
+  // Compute numerically safe factor from coordinate transformation
+  const T tanhX = std::tanh(px);
+  static constexpr T MIN = std::numeric_limits<T>::min();
+  const T dTanhX = std::max(1.0f-tanhX*tanhX, MIN);
+  const T logDTanhX = std::log(dTanhX);
+  const T logScale = std::log(scale);
+
+  // log[p(g(x))]=log[p(x)]-log[g'(x)]
+  return logExp - logConst - logStdDev -logDTanhX -logScale;
 }
 
 /**

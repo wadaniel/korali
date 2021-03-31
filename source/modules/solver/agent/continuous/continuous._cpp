@@ -255,8 +255,33 @@ float Continuous::calculateImportanceWeight(const std::vector<float> &action, co
       const float shift = _actionShifts[i];
       const float unboundedAction = std::atanh((action[i] - shift) / scale);
 
-      logpOldPolicy += squashedNormalLogDensity(unboundedAction, oldMean, oldSigma);
-      logpCurPolicy += squashedNormalLogDensity(unboundedAction, curMean, curSigma);
+      float oldSquashedProbability = squashedNormalLogDensity(unboundedAction, oldMean, oldSigma, scale);
+      float curSquashedProbability = squashedNormalLogDensity(unboundedAction, curMean, curSigma, scale);
+
+      if (std::isfinite(oldSquashedProbability) == false)
+      {
+       printf("oldMean: %f\n", oldMean);
+       printf("oldSigma: %f\n", oldSigma);
+       printf("scale: %f\n", scale);
+       printf("shift: %f\n", shift);
+       printf("action: %f\n", action[i]);
+       printf("unbounded action: %f\n", unboundedAction);
+       printf("unbounded action input: %f\n", (action[i] - shift) / scale);
+      }
+
+      if (std::isfinite(curSquashedProbability) == false)
+      {
+       printf("curMean: %f\n", curMean);
+       printf("curSigma: %f\n", curSigma);
+       printf("scale: %f\n", scale);
+       printf("shift: %f\n", shift);
+       printf("action: %f\n", action[i]);
+       printf("unbounded action: %f\n", unboundedAction);
+       printf("unbounded action input: %f\n", (action[i] - shift) / scale);
+      }
+
+      logpOldPolicy += oldSquashedProbability;
+      logpCurPolicy += curSquashedProbability;
     }
   }
 
@@ -358,8 +383,8 @@ std::vector<float> Continuous::calculateImportanceWeightGradient(const std::vect
      const float unboundedAction = std::atanh((action[i] - shift) / scale);
 
      // Calculating log(importance weights)
-     logpOldPolicy += squashedNormalLogDensity(unboundedAction, oldMean, oldSigma);
-     logpCurPolicy += squashedNormalLogDensity(unboundedAction, curMean, curSigma);
+     logpOldPolicy += squashedNormalLogDensity(unboundedAction, oldMean, oldSigma, scale);
+     logpCurPolicy += squashedNormalLogDensity(unboundedAction, curMean, curSigma, scale);
 
      // Deviation from expAction and current Mean
      float curActionDiff = (unboundedAction - curMean);

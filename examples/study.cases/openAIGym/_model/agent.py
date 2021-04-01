@@ -81,6 +81,8 @@ def agent(s, env):
 
  # Storage for cumulative reward
  cumulativeReward = 0.0
+ 
+ overSteps = 0
   
  while not done and step < 1000:
 
@@ -94,6 +96,19 @@ def agent(s, env):
   action = s["Action"]
   state, reward, done, _ = env.step(action)
  
+  isOver = False
+  for i, a in enumerate(action):
+   if (float(action[i]) > float(env.action_space.high[i])): 
+    #print("Action Over: " + str(action[i]))
+    isOver = True
+   if (float(action[i]) < float(env.action_space.low[i])): 
+    #print("Action Under: " + str(action[i]))
+    isOver = True
+
+  if (isOver == True):
+   overSteps = overSteps + 1
+   reward = reward * 0.5
+   
   # Getting Reward
   s["Reward"] = reward
   
@@ -113,4 +128,5 @@ def agent(s, env):
   s["Termination"] = "Terminal"
  else:
   s["Termination"] = "Truncated"
- 
+
+ print("Over Steps: " + str(overSteps) + "/" + str(step)) 

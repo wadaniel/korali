@@ -87,7 +87,7 @@ void Discrete::getAction(korali::Sample &sample)
   }
 
   // Storing action itself, its idx, and probabilities
-  sample["Policy"]["Action Probabilities"] = pActions;
+  sample["Policy"]["Distribution Parameters"] = pActions;
   sample["Policy"]["Action Index"] = actionIdx;
   sample["Policy"]["State Value"] = policy.stateValue;
   sample["Action"] = _problem->_possibleActions[actionIdx];

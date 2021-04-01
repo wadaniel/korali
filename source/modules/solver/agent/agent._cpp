@@ -15,6 +15,19 @@ void Agent::initialize()
   // Getting problem pointer
   _problem = dynamic_cast<problem::ReinforcementLearning *>(_k->_problem);
 
+  // Allocating and obtaining action bounds information
+  _actionLowerBounds.resize(_problem->_actionVectorSize);
+  _actionUpperBounds.resize(_problem->_actionVectorSize);
+
+  for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+  {
+    auto varIdx = _problem->_actionVectorIndexes[i];
+    _actionLowerBounds[i] = _k->_variables[varIdx]->_lowerBound;
+    _actionUpperBounds[i] = _k->_variables[varIdx]->_upperBound;
+
+    if (_actionUpperBounds[i] - _actionLowerBounds[i] <= 0.0) KORALI_LOG_ERROR("Upper (%f) and Lower Bound (%f) of action variable %lu invalid.\n", _actionUpperBounds[i], _actionLowerBounds[i], i);
+  }
+
   // Initializing selected policy
   initializeAgent();
 
@@ -427,12 +440,29 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
 
   for (size_t expId = 0; expId < episode.size(); expId++)
   {
-    // Getting state, action
+    // Getting state
     _stateVector.add(episode[expId]["State"].get<std::vector<float>>());
-    _actionVector.add(episode[expId]["Action"].get<std::vector<float>>());
 
-    // Getting and normalizing reward
-    const float reward = episode[expId]["Reward"].get<float>();
+    // Getting action
+    const auto action = episode[expId]["Action"].get<std::vector<float>>();
+    _actionVector.add(action);
+
+    // Getting reward
+    float reward = episode[expId]["Reward"].get<float>();
+
+    // If the action is outside the boundary, applying penalization factor
+    if (_rewardOutboundPenalizationEnabled == true)
+    {
+     bool outOfBounds = false;
+     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+     {
+      if (action[i] > _actionUpperBounds[i]) outOfBounds = true;
+      if (action[i] < _actionLowerBounds[i]) outOfBounds = true;
+     }
+
+     if (outOfBounds == true) reward = reward * _rewardOutboundPenalizationFactor;
+    }
+
     _rewardVector.add(reward);
 
     // Keeping statistics

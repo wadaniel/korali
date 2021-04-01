@@ -13,22 +13,13 @@ void Continuous::initializeAgent()
   // Getting continuous problem pointer
   _problem = dynamic_cast<problem::reinforcementLearning::Continuous *>(_k->_problem);
 
-  // Allocating and obtaining action bounds information
-  _actionLowerBounds.resize(_problem->_actionVectorSize);
-  _actionUpperBounds.resize(_problem->_actionVectorSize);
+  // Obtaining action shift and scales for bounded distributions
   _actionShifts.resize(_problem->_actionVectorSize);
   _actionScales.resize(_problem->_actionVectorSize);
-
-
   for (size_t i = 0; i < _problem->_actionVectorSize; i++)
   {
-    auto varIdx = _problem->_actionVectorIndexes[i];
-    _actionLowerBounds[i] = _k->_variables[varIdx]->_lowerBound;
-    _actionUpperBounds[i] = _k->_variables[varIdx]->_upperBound;
     _actionShifts[i] = (_actionUpperBounds[i] + _actionLowerBounds[i]) * 0.5f;
     _actionScales[i] = (_actionUpperBounds[i] - _actionLowerBounds[i]) * 0.5f;
-
-    if (_actionUpperBounds[i] - _actionLowerBounds[i] <= 0.0) KORALI_LOG_ERROR("Upper (%f) and Lower Bound (%f) of action variable %lu invalid.\n", _actionUpperBounds[i], _actionLowerBounds[i], i);
   }
 
   // Obtaining policy parameter transformations (depends on which policy distribution chosen)

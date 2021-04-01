@@ -106,7 +106,12 @@ float Discrete::calculateImportanceWeight(const std::vector<float> &action, cons
   float pOldPolicy = pVectorOldPolicy[actionIdx];
 
   // Now calculating importance weight for the old s,a experience
-  float importanceWeight = pCurPolicy / pOldPolicy;
+  float constexpr epsilon = 0.00000001f;
+  float importanceWeight = pCurPolicy / (pOldPolicy + epsilon);
+
+  // Safety checks
+  if (importanceWeight > 1024.0f)  importanceWeight = 1024.0f;
+  if (importanceWeight < -1024.0f) importanceWeight = -1024.0f;
 
   return importanceWeight;
 }

@@ -106,6 +106,7 @@ void Agent::initialize()
     _rewardRescalingMean = 0.0f;
     _rewardRescalingSigma = 1.0f;
     _rewardRescalingCount = 0;
+    _rewardOutboundPenalizationCount = 0;
   }
 
   // If this continues a previous training run, deserialize previous input experience replay
@@ -460,7 +461,11 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
       if (action[i] < _actionLowerBounds[i]) outOfBounds = true;
      }
 
-     if (outOfBounds == true) reward = reward * _rewardOutboundPenalizationFactor;
+     if (outOfBounds == true)
+     {
+      reward = reward * _rewardOutboundPenalizationFactor;
+      _rewardOutboundPenalizationCount++;
+     }
     }
 
     _rewardVector.add(reward);
@@ -1012,6 +1017,9 @@ void Agent::printGenerationAfter()
       _k->_logger->logInfo("Normal", " + Total Experience Count:      %lu/%lu\n", _experienceCount, _maxExperiences);
     else
       _k->_logger->logInfo("Normal", " + Total Experience Count:      %lu\n", _experienceCount);
+
+    if (_rewardOutboundPenalizationEnabled == true)
+      _k->_logger->logInfo("Normal", " + Out of Bound Actions:        %lu (%.3f%%)\n", _rewardOutboundPenalizationCount, 100.0f*((float)_rewardOutboundPenalizationEnabled/(float)_experienceCount));
 
     _k->_logger->logInfo("Normal", "Off-Policy Statistics:\n");
     _k->_logger->logInfo("Normal", " + Count (Ratio/Target):        %lu/%lu (%.3f/%.3f)\n", _experienceReplayOffPolicyCount, _stateVector.size(), _experienceReplayOffPolicyRatio, _experienceReplayOffPolicyTarget);

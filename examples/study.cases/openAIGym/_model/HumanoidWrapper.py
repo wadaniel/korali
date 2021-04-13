@@ -30,7 +30,7 @@ class HumanoidWrapper():
     self.env = env
     assert(self.env.observation_space.shape[0] == 376)
     assert(len(self.env.observation_space.shape) == 1)
-    self.env.observation_space.shape[0] = 257
+    self.env.observation_space.shape = [ 257 ]
     
   def reset(self):
     observation = self.env.reset()

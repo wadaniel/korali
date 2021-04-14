@@ -85,11 +85,11 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
   // Setting mode to traing to add exploratory noise or random actions
   agent["Mode"] = "Training";
 
-  // Reserving message storage for sending back the episode
-  knlohmann::json episode;
+  // Reserving message storage for sending back the agents episodes
+  std::vector<knlohmann::json> episode(_agentCount);
 
   // Storage to keep track of cumulative reward
-  float trainingReward = 0.0;
+  std::vector<float> trainingReward(_agentCount, 0.0f);
 
   // Setting termination status of initial state (and the following ones) to non terminal.
   // The environment will change this at the last state, indicating whether the episode was
@@ -106,32 +106,40 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
     getAction(agent);
 
     // Store the current state in the experience
-    episode["Experiences"][actionCount]["State"] = agent["State"];
+    for (size_t i = 0; i < _agentCount; i++)
+     episode[i]["Experiences"][actionCount]["State"] = agent["State"][i];
 
     // Storing the current action
-    episode["Experiences"][actionCount]["Action"] = agent["Action"];
+    for (size_t i = 0; i < _agentCount; i++)
+     episode[i]["Experiences"][actionCount]["Action"] = agent["Action"][i];
 
     // Storing the experience's policy
-    episode["Experiences"][actionCount]["Policy"] = agent["Policy"];
+    for (size_t i = 0; i < _agentCount; i++)
+     episode[i]["Experiences"][actionCount]["Policy"] = agent["Policy"][i];
 
     // Jumping back into the agent's environment
     runEnvironment(agent);
 
     // Sanity check for reward
-    if (std::isfinite(agent["Reward"].get<float>()) == false)
-      KORALI_LOG_ERROR("Environment reward returned an invalid value: %f\n", agent["Reward"].get<float>());
+    if (std::isfinite(agent["Reward"][i].get<float>()) == false)
+      KORALI_LOG_ERROR("Environment reward returned an invalid value: %f\n", agent["Reward"][i].get<float>());
 
     // Storing experience's reward
-    episode["Experiences"][actionCount]["Reward"] = agent["Reward"];
+    for (size_t i = 0; i < _agentCount; i++)
+     episode[i]["Experiences"][actionCount]["Reward"] = agent["Reward"][i];
 
     // Storing termination status
-    episode["Experiences"][actionCount]["Termination"] = agent["Termination"];
+    for (size_t i = 0; i < _agentCount; i++)
+     episode[i]["Experiences"][actionCount]["Termination"] = agent["Termination"][i];
 
     // If the episode was truncated, then save the terminal state
-    if (agent["Termination"] == "Truncated") episode["Experiences"][actionCount]["Truncated State"] = agent["State"];
+    if (agent["Termination"] == "Truncated")
+     for (size_t i = 0; i < _agentCount; i++)
+      episode[i]["Experiences"][actionCount]["Truncated State"] = agent["State"][i];
 
     // Adding to cumulative training reward
-    trainingReward += agent["Reward"].get<float>();
+    for (size_t i = 0; i < _agentCount; i++)
+     trainingReward[i] += agent["Reward"][i].get<float>();
 
     // Increasing counter for generated actions
     actionCount++;
@@ -143,7 +151,7 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
   }
 
   // Setting cumulative reward
-  agent["Training Reward"] = trainingReward;
+  agent["Training Rewards"] = trainingReward;
 
   // Finalizing Environment
   finalizeEnvironment();

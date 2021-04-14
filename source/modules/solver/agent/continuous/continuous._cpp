@@ -86,39 +86,43 @@ void Continuous::initializeAgent()
 
 void Continuous::getAction(korali::Sample &sample)
 {
-  // Getting current state
-  auto state = sample["State"];
+ // Get action for all the agents in the environment
+ for (size_t i = 0; i < sample["State"].size(); i++)
+ {
+   // Getting current state
+   auto state = sample["State"][i];
 
-  // Adding state to the state time sequence
-  _stateTimeSequence.add(state);
+   // Adding state to the state time sequence
+   _stateTimeSequence.add(state);
 
-  // Storage for the action to select
-  std::vector<float> action(_problem->_actionVectorSize);
+   // Storage for the action to select
+   std::vector<float> action(_problem->_actionVectorSize);
 
-  // Forward state sequence to get the Gaussian means and sigmas from policy
-  auto policy = runPolicy({_stateTimeSequence.getVector()})[0];
+   // Forward state sequence to get the Gaussian means and sigmas from policy
+   auto policy = runPolicy({_stateTimeSequence.getVector()})[0];
 
-  /*****************************************************************************
-  * During Training we select action according to policy's probability 
-  * distribution
-  ****************************************************************************/
+   /*****************************************************************************
+   * During Training we select action according to policy's probability
+   * distribution
+   ****************************************************************************/
 
-  if (sample["Mode"] == "Training") action = generateTrainingAction(policy);
+   if (sample["Mode"] == "Training") action = generateTrainingAction(policy);
 
-  /*****************************************************************************
-  * During testing, we select the means (point of highest density) for all
-  * elements of the action vector
-  ****************************************************************************/
+   /*****************************************************************************
+   * During testing, we select the means (point of highest density) for all
+   * elements of the action vector
+   ****************************************************************************/
 
-  if (sample["Mode"] == "Testing") action = generateTestingAction(policy);
+   if (sample["Mode"] == "Testing") action = generateTestingAction(policy);
 
-  /*****************************************************************************
-  * Storing the action and its policy
-  ****************************************************************************/
+   /*****************************************************************************
+   * Storing the action and its policy
+   ****************************************************************************/
 
-  sample["Policy"]["Distribution Parameters"] = policy.distributionParameters;
-  sample["Policy"]["State Value"] = policy.stateValue;
-  sample["Action"] = action;
+   sample["Policy"][i]["Distribution Parameters"] = policy.distributionParameters;
+   sample["Policy"][i]["State Value"] = policy.stateValue;
+   sample["Action"][i] = action;
+ }
 }
 
 std::vector<float> Continuous::generateTrainingAction(const policy_t &curPolicy)

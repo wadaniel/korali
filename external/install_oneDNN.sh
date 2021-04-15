@@ -103,6 +103,7 @@ if [ ${fileFound} == 0 ]; then
      -DDNNL_BUILD_TESTS=OFF \
      -DDNNL_ENABLE_CONCURRENT_EXEC=ON \
      -DCMAKE_INSTALL_PREFIX=${installDir} \
+     -DDNNL_ARCH_OPT_FLAGS='-march=native -mtune=native' \
      -DBUILD_SHARED_LIBS=true; check
 
  echo "[Korali] Building ${libName}... "

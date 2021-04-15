@@ -422,7 +422,7 @@ echo GSLCFLAGS=$GSLCFLAGS >> source/Makefile.conf
 echo GSLLIBS=$GSLLIBS  >> source/Makefile.conf
 
 if [ $DISTRIBUTION == "production" ]; then
-  OPTFLAGS="-O3 -DNDEBUG"
+  OPTFLAGS="-O3 -DNDEBUG -march=native -mtune=native"
   WARNINGFLAGS=""
 elif [ $DISTRIBUTION == "debug" ]; then
   OPTFLAGS="-O0 -g"

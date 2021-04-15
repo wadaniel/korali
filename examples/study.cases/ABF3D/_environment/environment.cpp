@@ -24,7 +24,7 @@ void runEnvironment(korali::Sample &s)
   // Setting initial state
   auto state = _environment->getState();
 
-  s["State"] = state;
+  s["State"][0] = state;
   state[0] = state[0] / 20.0f; // Swimmer 1 - Pos X
   state[1] = state[1] / 20.0f; // Swimmer 1 - Pos Y
   state[2] = state[2] / 20.0f; // Swimmer 1 - Pos Z
@@ -45,7 +45,7 @@ void runEnvironment(korali::Sample &s)
     s.update();
 
     // Reading new action
-    std::vector<double> action = s["Action"];
+    std::vector<double> action = s["Action"][0];
 
     // Scaling to lower-upper bounds
     auto [lowerBounds, upperBounds] = _environment->getActionBounds();
@@ -66,7 +66,7 @@ void runEnvironment(korali::Sample &s)
     status = _environment->advance(action);
 
     // Storing reward
-    s["Reward"] = _environment->getReward();
+    s["Reward"][0] = _environment->getReward();
 
     // Storing new state
     auto state = _environment->getState();
@@ -77,7 +77,7 @@ void runEnvironment(korali::Sample &s)
     state[7] = state[7] / 20.0f; // Swimmer 2 - Pos X
     state[8] = state[8] / 20.0f; // Swimmer 2 - Pos Y
     state[9] = state[9] / 20.0f; // Swimmer 2 - Pos Z
-    s["State"] = state;
+    s["State"][0] = state;
 
     //  Printing State:
     //    if (curActionIndex % 100 == 0)

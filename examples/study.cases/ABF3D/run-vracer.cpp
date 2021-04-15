@@ -74,12 +74,12 @@ int main(int argc, char *argv[])
   e["Solver"]["Learning Rate"] = 1e-4;
   e["Solver"]["Discount Factor"] = 0.995;
 
-  e["Solver"]["Policy"]["Distribution"] = "Squashed Normal";
-  e["Solver"]["L2 Regularization"]["Enabled"] = true;
-  e["Solver"]["L2 Regularization"]["Importance"] = 0.1;
+  e["Solver"]["Policy"]["Distribution"] = "Unbounded Normal";
   e["Solver"]["State Rescaling"]["Enabled"] = true;
-  e["Solver"]["Reward Rescaling"]["Enabled"] = true;
-  e["Solver"]["Reward Rescaling"]["Frequency"] = 1000;
+  e["Solver"]["Reward"]["Rescaling"]["Enabled"] = true;
+  e["Solver"]["Reward"]["Rescaling"]["Frequency"] = 1000;
+  e["Solver"]["Reward"]["Outbound Penalization"]["Enabled"] = true;
+  e["Solver"]["Reward"]["Outbound Penalization"]["Factor"] = 0.5;
 
   /// Defining the configuration of replay memory
 

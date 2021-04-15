@@ -85,7 +85,7 @@ e["Solver"]["Episodes Per Generation"] = 1
 
 ### Defining the configuration of replay memory
 
-e["Solver"]["Experience Replay"]["Start Size"] = 8192
+e["Solver"]["Experience Replay"]["Start Size"] = 4096
 e["Solver"]["Experience Replay"]["Maximum Size"] = 65536
 
 ## Defining Neural Network Configuration for Policy and Critic into Critic Container
@@ -93,10 +93,16 @@ e["Solver"]["Experience Replay"]["Maximum Size"] = 65536
 e["Solver"]["Discount Factor"] = 0.99
 e["Solver"]["Learning Rate"] = 1e-4
 e["Solver"]["Rewardfunction Learning Rate"] = 5e-5
-e["Solver"]["Demonstration Batch Size"] = 0
-e["Solver"]["Background Batch Size"] = 10
 e["Solver"]["Mini Batch Size"] = 256
 e["Solver"]["Updates Between Reward Rescaling"] = 0
+
+### IRL related configuration
+
+e["Solver"]["Updates Between Reward Rescaling"] = 0 # No reward rescaling
+e["Solver"]["Demonstration Batch Size"] = 100
+e["Solver"]["Background Batch Size"] = 20
+e["Solver"]["Use Fusion Distribution"] = True
+e["Solver"]["Experiences Between Partition Function Statistics"] = 100000
 
 ### Configuring the neural network and its hidden layers
 
@@ -117,13 +123,13 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tan
 ### Defining Termination Criteria
 
 #e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 450
-e["Solver"]["Termination Criteria"]["Max Experiences"] = 2e5
+e["Solver"]["Termination Criteria"]["Max Experiences"] = 1e6
 
 ### Setting file output configuration
 
 e["File Output"]["Enabled"] = True
-e["File Output"]["Frequency"] = 10
-e["File Output"]["Path"] = '_korali_results_cos_x10_2'
+e["File Output"]["Frequency"] = 100
+e["File Output"]["Path"] = '_korali_results_cos_z20_combo'
 
 ### Running Experiment
 

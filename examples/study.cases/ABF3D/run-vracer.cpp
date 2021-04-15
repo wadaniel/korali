@@ -84,7 +84,7 @@ int main(int argc, char *argv[])
   e["Solver"]["State Rescaling"]["Enabled"] = false;
   e["Solver"]["Reward"]["Rescaling"]["Enabled"] = true;
   e["Solver"]["Reward"]["Rescaling"]["Frequency"] = 1000;
-  e["Solver"]["Reward"]["Outbound Penalization"]["Enabled"] = false;
+  e["Solver"]["Reward"]["Outbound Penalization"]["Enabled"] = true;
   e["Solver"]["Reward"]["Outbound Penalization"]["Factor"] = 0.5;
 
   /// Defining the configuration of replay memory

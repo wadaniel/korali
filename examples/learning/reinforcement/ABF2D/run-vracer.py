@@ -19,7 +19,6 @@ e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = env
 e["Problem"]["Training Reward Threshold"] = 50.0
 e["Problem"]["Policy Testing Episodes"] = 20
-e["Problem"]["Actions Between Policy Updates"] = 200
 
 ### Defining state variables
 
@@ -54,22 +53,8 @@ e["Solver"]["Type"] = "Agent / Continuous / VRACER"
 e["Solver"]["Mode"] = "Training"
 e["Solver"]["Experiences Between Policy Updates"] = 1
 e["Solver"]["Episodes Per Generation"] = 1
-e["Solver"]["Policy Distribution"] = "Normal"
-e["Solver"]["Discount Factor"] = 0.99
 e["Solver"]["Learning Rate"] = 1e-4
-e["Solver"]["Mini Batch Size"] = 128
-
-### Defining the configuration of replay memory
-
-e["Solver"]["Experience Replay"]["Start Size"] = 4096
-e["Solver"]["Experience Replay"]["Maximum Size"] = 65536
-
-### Configuring the Remember-and-Forget Experience Replay algorithm
-
-e["Solver"]["Experience Replay"]["Off Policy"]["Cutoff Scale"] = 4.0
-e["Solver"]["Experience Replay"]["Off Policy"]["Target"] = 0.1
-e["Solver"]["Experience Replay"]["Off Policy"]["Annealing Rate"] = 5e-7
-e["Solver"]["Experience Replay"]["Off Policy"]["REFER Beta"] = 0.3
+e["Solver"]["Mini Batch"]["Size"] = 128
 
 ### Configuring the neural network and its hidden layers
 
@@ -96,7 +81,7 @@ e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 50.0
 e["Solver"]["Experience Replay"]["Serialize"] = True
 e["Console Output"]["Verbosity"] = "Detailed"
 e["File Output"]["Enabled"] = True
-e["File Output"]["Frequency"] = 10
+e["File Output"]["Frequency"] = 300
 e["File Output"]["Path"] = "_result_vracer"
 
 ### Running Experiment

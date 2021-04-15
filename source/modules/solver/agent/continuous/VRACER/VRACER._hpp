@@ -37,12 +37,16 @@ class VRACER : public Continuous
    */
   void updateVtbc(size_t expId);
 
-  float stateValueFunction(const std::vector<std::vector<float>> &stateSequence) override;
+  /**
+   * @brief Calculates the gradients for the policy/critic neural network
+   * @param miniBatch The indexes of the experience mini batch
+   */
+  void calculatePolicyGradients(const std::vector<size_t> &miniBatch);
+
+  std::vector<policy_t> runPolicy(const std::vector<std::vector<std::vector<float>>> &stateBatch) override;
+
   knlohmann::json getAgentPolicy() override;
   void setAgentPolicy(const knlohmann::json &hyperparameters) override;
-  void setTrainingState(const knlohmann::json &state) override;
-  knlohmann::json getTrainingState() override;
-  knlohmann::json runPolicy(const std::vector<std::vector<float>> &stateSequence) override;
   void trainPolicy() override;
   void printAgentInformation() override;
   void initializeAgent() override;

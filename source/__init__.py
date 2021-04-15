@@ -15,6 +15,10 @@ def Experiment():
   return Experiment()
 
 
-def getMPIComm():
+def getMPICommPtr():
   from libkorali import getMPICommPointer
   return getMPICommPointer()
+
+def getMPIComm():
+  from libkorali import getMPI4PyComm
+  return getMPI4PyComm()

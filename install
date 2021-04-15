@@ -387,6 +387,7 @@ if [[ "$STRIPPED_CXX" == "clang++" ]]; then
  OMPFLAGS="-lomp"
 fi
 
+MPI4PYINCLUDES=-I`python3 source/getMPI4pyIncludes.py`
 
 ######## Creating Compilation Config File ########
 
@@ -400,6 +401,7 @@ echo SHAREDLIB_FLAG=$SHAREDLIB_FLAG >> source/Makefile.conf
 echo MPIFLAGS=$MPIFLAGS >> source/Makefile.conf
 echo BLASLIBS=$BLASLIBS >> source/Makefile.conf
 
+echo MPI4PYINCLUDES=$MPI4PYINCLUDES >> source/Makefile.conf
 echo CUDNNCFLAGS=$CUDNNCFLAGS >> source/Makefile.conf
 echo CUDNNLIBS=$CUDNNLIBS >> source/Makefile.conf
 

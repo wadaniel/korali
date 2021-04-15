@@ -1,5 +1,6 @@
 #include "engine.hpp"
 #include "auxiliar/fs.hpp"
+#include "auxiliar/py2json.hpp"
 #include "auxiliar/koraliJson.hpp"
 #include "modules/conduit/conduit.hpp"
 #include "modules/conduit/distributed/distributed.hpp"
@@ -177,10 +178,12 @@ void Engine::serialize(knlohmann::json &js)
 }
 
 #ifdef _KORALI_USE_MPI
-long int Engine::getMPICommPointer()
+
+mpi4py_comm getMPI4PyComm()
 {
-  return (long int)(&__KoraliTeamComm);
+ return __koraliTeamComm;
 }
+
 #endif
 
 knlohmann::json &Engine::operator[](const std::string &key)
@@ -198,7 +201,9 @@ using namespace korali;
 PYBIND11_MODULE(libkorali, m)
 {
 #ifdef _KORALI_USE_MPI
-  m.def("getMPICommPointer", &Engine::getMPICommPointer, pybind11::return_value_policy::reference);
+  m.def("getMPICommPointer", &getMPICommPointer, pybind11::return_value_policy::reference);
+  m.def("getMPITeamId", &getMPITeamId);
+  m.def("getMPI4PyComm", &getMPI4PyComm);
 #endif
 
   pybind11::class_<Engine>(m, "Engine")

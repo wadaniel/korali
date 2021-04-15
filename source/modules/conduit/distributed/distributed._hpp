@@ -16,19 +16,31 @@ namespace korali
 /**
  * @brief Communicator storage for the current Korali Worker
  */
-extern MPI_Comm __KoraliTeamComm;
+extern MPI_Comm __koraliTeamComm;
 
 /**
   * @brief Returns Communicator for the current Korali Worker
   * @return An MPI Communicator
   */
-extern MPI_Comm getKoraliMPIComm();
+extern MPI_Comm getMPIComm();
 
 /**
   * @brief Returns Communicator for the current Korali Worker
   * @return An MPI Communicator (in the form of a long integer, for Python compatibility)
   */
-extern long int getKoraliMPICommPointer();
+extern long int getMPICommPointer();
+
+/**
+ * @brief Storage for the current worker id
+ */
+extern int __koraliTeamId;
+
+/**
+ * @brief Returns the current worker team MPI id
+ * @return Identifier of the MPI team
+ */
+extern int getMPITeamId();
+
 #endif
 
 namespace conduit

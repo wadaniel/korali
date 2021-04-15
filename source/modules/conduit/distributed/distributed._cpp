@@ -14,9 +14,11 @@ namespace korali
   #define MPI_MESSAGE_JSON_SIZE 1
   #define MPI_MESSAGE_JSON 2
 
-MPI_Comm __KoraliTeamComm;
-MPI_Comm getKoraliMPIComm() { return __KoraliTeamComm; }
-long int getKoraliMPICommPointer() { return (long int)(&__KoraliTeamComm); }
+MPI_Comm __koraliTeamComm;
+MPI_Comm getMPIComm() { return __koraliTeamComm; }
+long int getMPICommPointer() { return (long int)(&__koraliTeamComm); }
+int __koraliTeamId;
+int getMPITeamId() { return __koraliTeamId; }
 #endif
 
 namespace conduit
@@ -100,8 +102,9 @@ void Distributed::initialize()
     curWorker = _workerCount + 1;
   }
 
-  // Creating communicator
-  MPI_Comm_split(_mpiCommunicator, curWorker, _rankId, &__KoraliTeamComm);
+  // Creating communicator and setting team Id
+  __koraliTeamId = curWorker;
+  MPI_Comm_split(_mpiCommunicator, curWorker, _rankId, &__koraliTeamComm);
 
   // Waiting for all ranks to reach this point
   MPI_Barrier(_mpiCommunicator);
@@ -194,7 +197,7 @@ knlohmann::json Distributed::recvMessageFromEngine()
   auto message = knlohmann::json();
 
 #ifdef _KORALI_USE_MPI
-  MPI_Barrier(__KoraliTeamComm);
+  MPI_Barrier(__koraliTeamComm);
 
   MPI_Status status;
   MPI_Probe(getRootRank(), MPI_MESSAGE_JSON, _mpiCommunicator, &status);

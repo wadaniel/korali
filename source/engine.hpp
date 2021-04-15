@@ -137,12 +137,6 @@ class Engine : public Module
   Experiment *_currentExperiment;
 
   /**
-   * @brief Returns the worker teams MPI communication pointer (Distributed Conduit only).
-   * @return Numerical pointer to the MPI communicator
-   */
-  static long int getMPICommPointer();
-
-  /**
    * @brief Serializes Engine's data into a JSON object.
    * @param js Json object onto which to store the Engine data.
    */

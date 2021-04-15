@@ -307,13 +307,20 @@ fi
 # The --user flag should be set only if we are not inside a virtualenv.
 PIP_USER=$(python3 -c "import sys; hasattr(sys, 'real_prefix') or print('--user')")
 
-######## Checking support for Pybind11 ########
+######## Checking support for Pybind11 and mpi4py ########
 
 log "[Korali] Checking for Pybind11 support using \"python3 -m pybind11 -h\"..."
 python3 -m pybind11 -h >> $logFile 2>&1
 if [ $? -ne 0 ]; then
   logEcho "[Korali] pybind11 not found, trying to install it automatically."
   python3 -m pip install $PIP_USER pybind11 >> $logFile 2>&1; check
+fi
+
+log "[Korali] Checking for mpi4py support using \"python3 -m mpi4py -h\"..."
+python3 -m mpi4py -h >> $logFile 2>&1
+if [ $? -ne 0 ]; then
+  logEcho "[Korali] mpi4py not found, trying to install it automatically."
+  python3 -m pip install $PIP_USER mpi4py >> $logFile 2>&1; check
 fi
 
 ######## Determining Library Flags ########
@@ -365,6 +372,9 @@ if [[ $? -ne 0 ]]; then
     PYTHONLIBS=`python3-config --ldflags`; check
 fi
 
+MPI4PYINCLUDES=`python3 -c 'import mpi4py; print(mpi4py.get_include())'`;
+MPI4PYINCLUDES=-I${MPI4PYINCLUDES}
+
 CXXARCH="-std=c++17"
 which $USE_CXX | grep "cray" >> $logFile 2>&1
 if [ $? -eq 0 ]; then
@@ -386,8 +396,6 @@ fi
 if [[ "$STRIPPED_CXX" == "clang++" ]]; then
  OMPFLAGS="-lomp"
 fi
-
-MPI4PYINCLUDES=-I`python3 source/getMPI4pyIncludes.py`
 
 ######## Creating Compilation Config File ########
 

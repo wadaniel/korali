@@ -48,7 +48,7 @@ cothread_t _envThread;
 /*
  * @brief Stores the agent count for the environment
  */
-size_t __agentCount;
+size_t __agentsPerEnvironment;
 
 /**
  * @brief Thread wrapper to run an environment
@@ -94,12 +94,12 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
   knlohmann::json episodes;
 
   // Storage to keep track of cumulative reward
-  std::vector<float> trainingRewards(_agentCount, 0.0f);
+  std::vector<float> trainingRewards(_agentsPerEnvironment, 0.0f);
 
   // Setting termination status of initial state (and the following ones) to non terminal.
   // The environment will change this at the last state, indicating whether the episode was
   // "Success" or "Truncated".
-  for (size_t i = 0; i < _agentCount; i++)
+  for (size_t i = 0; i < _agentsPerEnvironment; i++)
    agent["Termination"] = "Non Terminal";
 
   // Getting first state
@@ -112,40 +112,40 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
     getAction(agent);
 
     // Store the current state in the experience
-    for (size_t i = 0; i < _agentCount; i++)
+    for (size_t i = 0; i < _agentsPerEnvironment; i++)
      episodes[i]["Experiences"][actionCount]["State"] = agent["State"][i];
 
     // Storing the current action
-    for (size_t i = 0; i < _agentCount; i++)
+    for (size_t i = 0; i < _agentsPerEnvironment; i++)
      episodes[i]["Experiences"][actionCount]["Action"] = agent["Action"][i];
 
     // Storing the experience's policy
-    for (size_t i = 0; i < _agentCount; i++)
+    for (size_t i = 0; i < _agentsPerEnvironment; i++)
      episodes[i]["Experiences"][actionCount]["Policy"] = agent["Policy"][i];
 
     // Jumping back into the agent's environment
     runEnvironment(agent);
 
     // Sanity check for reward
-    for (size_t i = 0; i < _agentCount; i++)
+    for (size_t i = 0; i < _agentsPerEnvironment; i++)
      if (std::isfinite(agent["Reward"][i].get<float>()) == false)
       KORALI_LOG_ERROR("Environment reward returned an invalid value: %f\n", agent["Reward"][i].get<float>());
 
     // Storing experience's reward
-    for (size_t i = 0; i < _agentCount; i++)
+    for (size_t i = 0; i < _agentsPerEnvironment; i++)
      episodes[i]["Experiences"][actionCount]["Reward"] = agent["Reward"][i];
 
     // Storing termination status
-    for (size_t i = 0; i < _agentCount; i++)
+    for (size_t i = 0; i < _agentsPerEnvironment; i++)
      episodes[i]["Experiences"][actionCount]["Termination"] = agent["Termination"];
 
     // If the episode was truncated, then save the terminal state
     if (agent["Termination"] == "Truncated")
-     for (size_t i = 0; i < _agentCount; i++)
+     for (size_t i = 0; i < _agentsPerEnvironment; i++)
       episodes[i]["Experiences"][actionCount]["Truncated State"] = agent["State"][i];
 
     // Adding to cumulative training reward
-    for (size_t i = 0; i < _agentCount; i++)
+    for (size_t i = 0; i < _agentsPerEnvironment; i++)
      trainingRewards[i] += agent["Reward"][i].get<float>();
 
     // Increasing counter for generated actions
@@ -168,7 +168,7 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
 
   // If the training reward of all the agentsexceeds the threshold or meets the periodic conditions, then also run testing on it
   bool runTest = false;
-  for (size_t i = 0; i < _agentCount; i++) runTest |= trainingRewards[i] > _trainingRewardThreshold;
+  for (size_t i = 0; i < _agentsPerEnvironment; i++) runTest |= trainingRewards[i] > _trainingRewardThreshold;
   runTest |= (_testingFrequency > 0) && (_k->_currentGeneration % _testingFrequency == 0);
 
   if (runTest)
@@ -186,7 +186,7 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
       auto currentTestingRewards = agent["Testing Rewards"].get<std::vector<float>>();
 
       // Adding current testing reward to the average and keeping statistics
-      for (size_t i = 0; i < _agentCount; i++)
+      for (size_t i = 0; i < _agentsPerEnvironment; i++)
       {
        averageTestingReward += currentTestingRewards[i];
        stdevTestingReward += currentTestingRewards[i] * currentTestingRewards[i];
@@ -196,8 +196,8 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
     }
 
     // Normalizing average
-    averageTestingReward /= (float)_policyTestingEpisodes * (float)_agentCount;
-    stdevTestingReward = std::sqrt(stdevTestingReward / ((float)_policyTestingEpisodes * (float)_agentCount) - averageTestingReward * averageTestingReward);
+    averageTestingReward /= (float)_policyTestingEpisodes * (float)_agentsPerEnvironment;
+    stdevTestingReward = std::sqrt(stdevTestingReward / ((float)_policyTestingEpisodes * (float)_agentsPerEnvironment) - averageTestingReward * averageTestingReward);
 
     // Storing testing information
     agent["Average Testing Reward"] = averageTestingReward;
@@ -213,7 +213,7 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
   // This is important to prevent the engine for block-waiting for the return of the sample
   // while the testing runs are being performed.
   knlohmann::json message;
-  message["Action"] = "Send Episode";
+  message["Action"] = "Send Episodes";
   message["Sample Id"] = agent["Sample Id"];
   message["Episodes"] = episodes;
 
@@ -227,7 +227,7 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
 
 void ReinforcementLearning::runTestingEpisode(Sample &agent)
 {
-  std::vector<float> testingRewards(_agentCount, 0.0);
+  std::vector<float> testingRewards(_agentsPerEnvironment, 0.0);
 
   // Initializing Environment
   initializeEnvironment(agent);
@@ -247,7 +247,7 @@ void ReinforcementLearning::runTestingEpisode(Sample &agent)
     getAction(agent);
     runEnvironment(agent);
 
-    for (size_t i = 0; i < _agentCount; i++)
+    for (size_t i = 0; i < _agentsPerEnvironment; i++)
      testingRewards[i] += agent["Reward"][i].get<float>();
   }
 
@@ -279,7 +279,7 @@ void ReinforcementLearning::initializeEnvironment(Sample &agent)
   // Creating agent coroutine
   __currentSample = &agent;
   __envFunctionId = _environmentFunction;
-  __agentCount = _agentCount;
+  __agentsPerEnvironment = _agentsPerEnvironment;
   agent._workerThread = co_active();
 
   // Creating coroutine
@@ -323,7 +323,7 @@ void ReinforcementLearning::getAction(Sample &agent)
   _agentPolicyEvaluationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(t1 - t0).count(); // Profiling
 
   // Sanity checks for action
-  for (size_t i = 0; i < _agentCount; i++)
+  for (size_t i = 0; i < _agentsPerEnvironment; i++)
    for (size_t j = 0; j < _actionVectorSize; j++)
     if (std::isfinite(agent["Action"][i][j].get<float>()) == false)
       KORALI_LOG_ERROR("Agent %lu variable %lu returned an invalid value: %f\n", i, j, agent["Action"][i][j].get<float>());
@@ -338,13 +338,13 @@ void ReinforcementLearning::runEnvironment(Sample &agent)
   _agentComputationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
 
   // Sanity checks for state
-  for (size_t i = 0; i < _agentCount; i++)
+  for (size_t i = 0; i < _agentsPerEnvironment; i++)
    for (size_t j = 0; j < _stateVectorSize; j++)
     if (std::isfinite(agent["State"][i][j].get<float>()) == false)
       KORALI_LOG_ERROR("Agent %lu state variable %lu returned an invalid value: %f\n", i, j, agent["State"][i][j].get<float>());
 
   // Normalizing State
-  for (size_t i = 0; i < _agentCount; i++)
+  for (size_t i = 0; i < _agentsPerEnvironment; i++)
   {
    auto state = agent["State"][i].get<std::vector<float>>();
 

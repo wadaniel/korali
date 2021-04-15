@@ -251,7 +251,6 @@ class Agent : public Solver
    * Storage for background batch
    ***************************************************************************************************/
 
-  size_t _backgroundSampleSize;
   std::vector<std::vector<std::vector<float>>> _backgroundTrajectoryStates;
   std::vector<std::vector<std::vector<float>>> _backgroundTrajectoryActions;
   std::vector<std::vector<std::vector<float>>> _backgroundTrajectoryFeatures;
@@ -261,7 +260,6 @@ class Agent : public Solver
   * @brief [Profiling] Measures the amount of time taken by the generation
   */
   double _sessionAgentTrajectoryLogProbilityUpdateTime;
-
 
   /****************************************************************************************************
    * Session-wise Profiling Timers
@@ -472,6 +470,11 @@ class Agent : public Solver
   * @brief Update the weights of the reward function based on guided cost learning
   */
   void updateRewardFunction();
+
+  /**
+  * @brief TODO
+  */
+  void partitionFunctionStat();
 
   /**
   * @brief Evaluates the log probability of a trajectory given policy hyperparameter

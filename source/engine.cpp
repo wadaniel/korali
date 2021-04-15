@@ -200,6 +200,11 @@ using namespace korali;
 
 PYBIND11_MODULE(libkorali, m)
 {
+ // import the mpi4py API
+ if (import_mpi4py() < 0) {
+   throw std::runtime_error("Could not load mpi4py API.");
+ }
+
 #ifdef _KORALI_USE_MPI
   m.def("getMPICommPointer", &getMPICommPointer, pybind11::return_value_policy::reference);
   m.def("getMPITeamId", &getMPITeamId);

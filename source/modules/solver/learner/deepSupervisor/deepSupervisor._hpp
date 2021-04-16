@@ -5,6 +5,8 @@
 #include "modules/solver/learner/deepSupervisor/optimizers/fAdaBelief.hpp"
 #include "modules/solver/learner/deepSupervisor/optimizers/fAdam.hpp"
 #include "modules/solver/learner/deepSupervisor/optimizers/fMadGrad.hpp"
+#include "modules/solver/learner/deepSupervisor/optimizers/fRMSProp.hpp"
+#include "modules/solver/learner/deepSupervisor/optimizers/fAdagrad.hpp"
 
 #include "modules/experiment/experiment.hpp"
 #include "modules/neuralNetwork/neuralNetwork.hpp"

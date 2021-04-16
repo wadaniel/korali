@@ -40,6 +40,11 @@ class fGradientBasedOptimizer
   */
   float _eta;
 
+  /*
+  * @brief Decay for gradient update
+  */
+  float _decay;
+
   /**
    * @brief Counter for the current generation
    */

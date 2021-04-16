@@ -87,6 +87,8 @@ void DeepSupervisor::initialize()
   if (_neuralNetworkOptimizer == "Adam") _optimizer = new korali::fAdam(weightAndBiasParameters.size());
   if (_neuralNetworkOptimizer == "AdaBelief") _optimizer = new korali::fAdaBelief(weightAndBiasParameters.size());
   if (_neuralNetworkOptimizer == "MADGRAD") _optimizer = new korali::fMadGrad(weightAndBiasParameters.size());
+  if (_neuralNetworkOptimizer == "RMSProp") _optimizer = new korali::fRMSProp(weightAndBiasParameters.size());
+  if (_neuralNetworkOptimizer == "Adagrad") _optimizer = new korali::fAdagrad(weightAndBiasParameters.size());
 
   // Setting initial guesses as the current weight and bias parameters
   _optimizer->_initialValues = weightAndBiasParameters;

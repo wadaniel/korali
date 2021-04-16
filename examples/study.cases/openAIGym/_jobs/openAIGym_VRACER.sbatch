@@ -1,7 +1,7 @@
 #!/bin/bash -l
-#SBATCH --job-name="OpenAIGym_VRACER"
-#SBATCH --output=OpenAIGym_VRACER_%j.out
-#SBATCH --time=24:00:00
+#SBATCH --job-name="openAIGym_VRACER"
+#SBATCH --output=/scratch/snx3000/smartin/logs/openAIGym_VRACER_%j.out
+#SBATCH --time=8:00:00
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-core=1
 #SBATCH --ntasks-per-node=1
@@ -14,7 +14,7 @@
 #env=Ant-v2
 #env=HalfCheetah-v2
 #env=Hopper-v2
-#env=Humanoid-v2
+env=Humanoid-v2
 #env=HumanoidStandup-v2
 #env=InvertedDoublePendulum-v2
 #env=InvertedPendulum-v2
@@ -26,7 +26,7 @@
 #env=HalfCheetahBulletEnv-v0
 #env=HopperBulletEnv-v0
 #env=HumanoidBulletEnv-v0
-env=Walker2DBulletEnv-v0
+#env=Walker2DBulletEnv-v0
 
 pushd ..
 

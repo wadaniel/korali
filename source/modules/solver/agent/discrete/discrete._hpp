@@ -18,7 +18,7 @@ class Discrete : public Agent
  */
   problem::reinforcementLearning::Discrete *_problem;
 
-  float calculateImportanceWeight(const std::vector<float> &action, const knlohmann::json &curPolicy, const knlohmann::json &oldPolicy) override;
+  float calculateImportanceWeight(const std::vector<float> &action, const policy_t &curPolicy, const policy_t &oldPolicy) override;
 
   /**
    * @brief Calculates the gradient of importance weight wrt to NN output

@@ -16,6 +16,7 @@
 namespace korali
 {
 class NeuralNetwork;
+struct layerPipeline_t;
 
 namespace neuralNetwork
 {
@@ -33,6 +34,11 @@ class Layer : public Module
   NeuralNetwork *_nn;
 
   /**
+   * @brief A pointer to the layer's containing pipeline
+   */
+  layerPipeline_t *_pipeline;
+
+  /**
   * @brief Pointer to previous layer, NULL if this is the first layer
   */
   Layer *_prevLayer;
@@ -43,9 +49,19 @@ class Layer : public Module
   Layer *_nextLayer;
 
   /**
-  * @brief Number of NN hyperparameters (weights/bias)
+  * @brief Number of layer hyperparameters
   */
   size_t _hyperparameterCount;
+
+  /**
+  * @brief Starting index of hyperparameters
+  */
+  size_t _hyperparameterIndex;
+
+  /**
+   * @brief Contains the batch size corresponding to the pipeline
+   */
+  size_t _batchSize;
 
   // Input/output memory elements
 
@@ -118,9 +134,15 @@ class Layer : public Module
   virtual std::vector<float> generateInitialHyperparameters();
 
   /**
-  * @brief  Initializes the layer's internal memory structures for hyperparameter storage
+  * @brief Initializes the layer's internal memory structures for hyperparameter storage
   */
   virtual void createHyperparameterMemory();
+
+  /**
+   * @brief Replicates the pointers for the current layer onto a destination layer
+   * @param dstLayer The destination layer onto which to copy the pointers
+   */
+  virtual void copyHyperparameterPointers(Layer *dstLayer){};
 
   /**
    * @brief Initializes the layer's internal memory structures for the forward pipeline
@@ -134,8 +156,9 @@ class Layer : public Module
 
   /**
   * @brief Performs the forward propagation of the Wx+b operations
+  * @param t Indicates the current timestep
   */
-  virtual void forwardData() = 0;
+  virtual void forwardData(const size_t t) = 0;
 
   /**
    * @brief Updates layer's hyperparameters (e.g., weights and biases)
@@ -157,13 +180,15 @@ class Layer : public Module
 
   /**
    * @brief Performs the backward propagation of the data
+   * @param t Indicates the current timestep
    */
-  virtual void backwardData() = 0;
+  virtual void backwardData(const size_t t) = 0;
 
   /**
   * @brief Calculates the gradients of layer hyperparameters
+  * @param t Indicates the current timestep
   */
-  virtual void backwardHyperparameters(){};
+  virtual void backwardHyperparameters(const size_t t){};
 };
 
 } // namespace neuralNetwork

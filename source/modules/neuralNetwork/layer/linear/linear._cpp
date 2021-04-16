@@ -67,10 +67,7 @@ void Linear::createHyperparameterMemory()
   if (_nn->_engine == "Korali")
   {
     _weightValues = (float *)malloc(IC * OC * sizeof(float));
-    _weightGradient = (float *)malloc(IC * OC * sizeof(float));
-
     _biasValues = (float *)malloc(OC * sizeof(float));
-    _biasGradient = (float *)malloc(OC * sizeof(float));
   }
 #endif
 
@@ -79,14 +76,10 @@ void Linear::createHyperparameterMemory()
   {
     memory::dims weightDims = {OC, IC};
     auto weightMemDesc = memory::desc(weightDims, memory::data_type::f32, memory::format_tag::ab);
-
     _weightsMem = memory(weightMemDesc, _nn->_dnnlEngine);
-    _weightsGradientMem = memory(_weightsMem.get_desc(), _nn->_dnnlEngine);
 
     auto biasMemDesc = memory::desc({OC}, memory::data_type::f32, memory::format_tag::a);
-
     _biasMem = memory(biasMemDesc, _nn->_dnnlEngine);
-    _biasGradientMem = memory(biasMemDesc, _nn->_dnnlEngine);
   }
 #endif
 
@@ -95,15 +88,43 @@ void Linear::createHyperparameterMemory()
   {
     cudnnErrCheck(cudnnCreateFilterDescriptor(&_weightsFilterDesc));
     cudnnErrCheck(cudnnSetFilter4dDescriptor(_weightsFilterDesc, CUDNN_DATA_FLOAT, CUDNN_TENSOR_NCHW, OC, IC, 1, 1));
-
     cudaErrCheck(cudaMalloc((void **)&_weightsFilter, IC * OC * sizeof(float)));
-    cudaErrCheck(cudaMalloc((void **)&_weightsGradientFilter, IC * OC * sizeof(float)));
 
     cudnnErrCheck(cudnnCreateTensorDescriptor(&_biasTensorDesc));
     cudnnErrCheck(cudnnSetTensor4dDescriptor(_biasTensorDesc, CUDNN_TENSOR_NCHW, CUDNN_DATA_FLOAT, 1, OC, 1, 1));
-
     cudaErrCheck(cudaMalloc((void **)&_biasTensor, OC * sizeof(float)));
-    cudaErrCheck(cudaMalloc((void **)&_biasGradientTensor, OC * sizeof(float)));
+  }
+#endif
+}
+
+void Linear::copyHyperparameterPointers(Layer *dstLayer)
+{
+  Linear *dstPtr = dynamic_cast<Linear *>(dstLayer);
+  dstPtr->_hyperparameterCount = _hyperparameterCount;
+
+#ifdef _KORALI_USE_EIGEN
+  if (_nn->_engine == "Korali")
+  {
+    dstPtr->_weightValues = _weightValues;
+    dstPtr->_biasValues = _biasValues;
+  }
+#endif
+
+#ifdef _KORALI_USE_ONEDNN
+  if (_nn->_engine == "OneDNN")
+  {
+    dstPtr->_weightsMem = _weightsMem;
+    dstPtr->_biasMem = _biasMem;
+  }
+#endif
+
+#ifdef _KORALI_USE_CUDNN
+  if (_nn->_engine == "CuDNN")
+  {
+    dstPtr->_weightsFilterDesc = _weightsFilterDesc;
+    dstPtr->_weightsFilter = _weightsFilter;
+    dstPtr->_biasTensorDesc = _biasTensorDesc;
+    dstPtr->_biasTensor = _biasTensor;
   }
 #endif
 }
@@ -149,13 +170,28 @@ void Linear::createBackwardPipeline()
   *  Initializing memory objects and primitives for BACKWARD propagation
   *********************************************************************************/
 
+  // Checking Layer sizes
+  ssize_t OC = _outputChannels;
+  ssize_t IC = _prevLayer->_outputChannels;
+
   // Calling base layer function
   Layer::createBackwardPipeline();
+
+#ifdef _KORALI_USE_EIGEN
+  if (_nn->_engine == "Korali")
+  {
+    _weightGradient = (float *)malloc(IC * OC * sizeof(float));
+    _biasGradient = (float *)malloc(OC * sizeof(float));
+  }
+#endif
 
 // Creating backward propagation primitives
 #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
   {
+    _weightsGradientMem = memory(_weightsMem.get_desc(), _nn->_dnnlEngine);
+    _biasGradientMem = memory(_biasMem.get_desc(), _nn->_dnnlEngine);
+
     auto backwardDataDesc = inner_product_backward_data::desc(
       _prevLayer->_outputGradientMem[0].get_desc(),
       _weightsMem.get_desc(),
@@ -176,14 +212,21 @@ void Linear::createBackwardPipeline()
     _backwardWeightsPrimitive = inner_product_backward_weights(backwardWeightsPrimitiveDesc);
   }
 #endif
+
+#ifdef _KORALI_USE_CUDNN
+  if (_nn->_engine == "CuDNN")
+  {
+    cudaErrCheck(cudaMalloc((void **)&_weightsGradientFilter, IC * OC * sizeof(float)));
+    cudaErrCheck(cudaMalloc((void **)&_biasGradientTensor, OC * sizeof(float)));
+  }
+#endif
 }
 
-void Linear::forwardData()
+void Linear::forwardData(const size_t t)
 {
-  size_t N = _nn->_batchSize;
+  size_t N = _batchSize;
   size_t IC = _prevLayer->_outputChannels;
   size_t OC = _outputChannels;
-  size_t t = _nn->_currentTimestep;
 
 #ifdef _KORALI_USE_EIGEN
   if (_nn->_engine == "Korali")
@@ -243,12 +286,11 @@ void Linear::forwardData()
 #endif
 }
 
-void Linear::backwardData()
+void Linear::backwardData(const size_t t)
 {
-  int N = _nn->_batchSize;
+  int N = _batchSize;
   int IC = _prevLayer->_outputChannels;
   int OC = _outputChannels;
-  int t = _nn->_currentTimestep;
 
   if (_nn->_mode == "Inference")
     KORALI_LOG_ERROR("Requesting Layer backward data propagation but NN was configured for inference only.\n");
@@ -299,12 +341,11 @@ void Linear::backwardData()
 #endif
 }
 
-void Linear::backwardHyperparameters()
+void Linear::backwardHyperparameters(size_t t)
 {
-  const size_t N = _nn->_batchSize;
+  const size_t N = _batchSize;
   const size_t IC = _prevLayer->_outputChannels;
   const size_t OC = _outputChannels;
-  const size_t t = _nn->_currentTimestep;
 
   if (_nn->_mode == "Inference")
     KORALI_LOG_ERROR("Requesting Layer hyperparameter gradient propagation but NN was configured for inference only.\n");

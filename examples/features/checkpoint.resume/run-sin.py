@@ -7,14 +7,16 @@ import time
 import korali
 k = korali.Engine()
 
+trainingBatchSize = 500
+inferenceBatchSize = 100
 scaling = 5.0
 np.random.seed(0xC0FFEE)
 
 # The input set has scaling and a linear element to break symmetry
-trainingInputSet = np.random.uniform(0, 2 * np.pi, 500)
+trainingInputSet = np.random.uniform(0, 2 * np.pi, trainingBatchSize)
 trainingSolutionSet = np.tanh(np.exp(np.sin(trainingInputSet))) * scaling 
 
-trainingInputSet = [ [ i ] for i in trainingInputSet.tolist() ]
+trainingInputSet = [ [ [ i ] ] for i in trainingInputSet.tolist() ]
 trainingSolutionSet = [ [ i ] for i in trainingSolutionSet.tolist() ]
 
 ### Defining a learning problem to infer values of sin(x)
@@ -39,37 +41,41 @@ if (found == True):
   print('------------------------------------------------------')
   e["Solver"]["Termination Criteria"]["Max Generations"] = 10
 
-### Configuring problem
- 
+### Defining a learning problem to infer values of sin(x)
+
 e["Problem"]["Type"] = "Supervised Learning"
-e["Problem"]["Inputs"] = trainingInputSet
-e["Problem"]["Solution"] = trainingSolutionSet
+e["Problem"]["Max Timesteps"] = 1
+e["Problem"]["Training Batch Size"] = trainingBatchSize
+e["Problem"]["Inference Batch Size"] = inferenceBatchSize
+
+e["Problem"]["Input"]["Data"] = trainingInputSet
+e["Problem"]["Input"]["Size"] = 1
+e["Problem"]["Solution"]["Data"] = trainingSolutionSet
+e["Problem"]["Solution"]["Size"] = 1
 
 ### Using a neural network solver (deep learning) for inference
 
 e["Solver"]["Type"] = "Learner/DeepSupervisor"
 e["Solver"]["Loss Function"] = "Mean Squared Error"
-e["Solver"]["Steps Per Generation"] = 5
+e["Solver"]["Steps Per Generation"] = 1
 e["Solver"]["Optimizer"] = "AdaBelief"
-e["Solver"]["Learning Rate"] = 0.05
+e["Solver"]["Learning Rate"] = 0.005
 
 ### Defining the shape of the neural network
 
-e["Solver"]["Neural Network"]["Layers"][0]["Type"] = "Layer/Dense"
-e["Solver"]["Neural Network"]["Layers"][0]["Node Count"] = 1
-e["Solver"]["Neural Network"]["Layers"][0]["Activation Function"]["Type"] = "Elementwise/Linear"
+e["Solver"]["Neural Network"]["Engine"] = "OneDNN"
 
-e["Solver"]["Neural Network"]["Layers"][1]["Type"] = "Layer/Dense"
-e["Solver"]["Neural Network"]["Layers"][1]["Node Count"] = 32
-e["Solver"]["Neural Network"]["Layers"][1]["Activation Function"]["Type"] = "Elementwise/Tanh"
+e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear"
+e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 32
 
-e["Solver"]["Neural Network"]["Layers"][2]["Type"] = "Layer/Dense"
-e["Solver"]["Neural Network"]["Layers"][2]["Node Count"] = 32
-e["Solver"]["Neural Network"]["Layers"][2]["Activation Function"]["Type"] = "Elementwise/Tanh"
+e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Activation"
+e["Solver"]["Neural Network"]["Hidden Layers"][1]["Function"] = "Elementwise/Tanh"
 
-e["Solver"]["Neural Network"]["Layers"][3]["Type"] = "Layer/Dense"
-e["Solver"]["Neural Network"]["Layers"][3]["Node Count"] = 1
-e["Solver"]["Neural Network"]["Layers"][3]["Activation Function"]["Type"] = "Elementwise/Linear"
+e["Solver"]["Neural Network"]["Hidden Layers"][2]["Type"] = "Layer/Linear"
+e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 32
+
+e["Solver"]["Neural Network"]["Hidden Layers"][3]["Type"] = "Layer/Activation"
+e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tanh"
 
 e["Console Output"]["Frequency"] = 1
 e["Random Seed"] = 0xC0FFEE

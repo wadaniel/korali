@@ -16,7 +16,7 @@ e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = env
 e["Problem"]["Training Reward Threshold"] = 400
 e["Problem"]["Policy Testing Episodes"] = 20
-e["Problem"]["Actions Between Policy Updates"] = 1
+e["Problem"]["Actions Between Policy Updates"] = 5
 
 e["Variables"][0]["Name"] = "Cart Position"
 e["Variables"][0]["Type"] = "State"
@@ -34,27 +34,16 @@ e["Variables"][4]["Name"] = "Force"
 e["Variables"][4]["Type"] = "Action"
 e["Variables"][4]["Lower Bound"] = -10.0
 e["Variables"][4]["Upper Bound"] = +10.0
+e["Variables"][4]["Initial Exploration Noise"] = 2.0
 
-### Defining Solver
+### Defining Agent Configuration 
 
-e["Solver"]["Type"] = "Agent / Continuous / NAF"
+e["Solver"]["Type"] = "Agent / Continuous / VRACER"
 e["Solver"]["Mode"] = "Training"
+e["Solver"]["Experiences Between Policy Updates"] = 10
 e["Solver"]["Episodes Per Generation"] = 1
-
-### Configuring NAF hyperparameters
-
-e["Solver"]["Discount Factor"] = 0.99
-e["Solver"]["Learning Rate"] = 1e-2
-e["Solver"]["Mini Batch Size"] = 32
-e["Solver"]["Target Learning Rate"] = 1e-3
-e["Solver"]["Experiences Between Policy Updates"] = 5
-e["Solver"]["Covariance Scaling"] = 0.01
-e["Solver"]["Mini Batch Strategy"] = "Prioritized" 
-
-### Defining Experience Replay configuration
-
-e["Solver"]["Experience Replay"]["Start Size"] =   2048
-e["Solver"]["Experience Replay"]["Maximum Size"] = 32768
+e["Solver"]["Learning Rate"] = 1e-3
+e["Solver"]["Mini Batch"]["Size"] = 32
 
 ### Configuring the neural network and its hidden layers
 
@@ -78,7 +67,7 @@ e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 450
 
 ### Setting file output configuration
 
-e["File Output"]["Enabled"] = False
+e["File Output"]["Enabled"] = True
 
 ### Running Experiment
 

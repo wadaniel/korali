@@ -84,14 +84,15 @@ void DeepSupervisor::initialize()
 
   auto weightAndBiasParameters = _neuralNetwork->getHyperparameters();
 
-  if (_optimizer == "Adam") _adamSolver = new korali::fAdam(weightAndBiasParameters.size());
-  if (_optimizer == "AdaBelief") _adamSolver = new korali::fAdaBelief(weightAndBiasParameters.size());
+  if (_neuralNetworkOptimizer == "Adam") _optimizer = new korali::fAdam(weightAndBiasParameters.size());
+  if (_neuralNetworkOptimizer == "AdaBelief") _optimizer = new korali::fAdaBelief(weightAndBiasParameters.size());
+  if (_neuralNetworkOptimizer == "MADGRAD") _optimizer = new korali::fMadGrad(weightAndBiasParameters.size());
 
   // Setting initial guesses as the current weight and bias parameters
-  _adamSolver->_initialValues = weightAndBiasParameters;
+  _optimizer->_initialValues = weightAndBiasParameters;
 
   // Resetting solver before using it
-  _adamSolver->reset();
+  _optimizer->reset();
 
   _currentLoss = 0.0f;
 }
@@ -103,7 +104,7 @@ void DeepSupervisor::runGeneration()
   const size_t OC = _problem->_solutionSize;
 
   // Updating optimizer's learning rate, in case it changed
-  _adamSolver->_eta = _learningRate;
+  _optimizer->_eta = _learningRate;
 
   for (size_t step = 0; step < _stepsPerGeneration; step++)
   {
@@ -154,10 +155,10 @@ void DeepSupervisor::runGeneration()
     }
 
     // Passing hyperparameter gradients through an ADAM update
-    _adamSolver->processResult(0.0f, nnHyperparameterGradients);
+    _optimizer->processResult(0.0f, nnHyperparameterGradients);
 
     // Getting new set of hyperparameters from Adam
-    _neuralNetwork->setHyperparameters(_adamSolver->_currentValue);
+    _neuralNetwork->setHyperparameters(_optimizer->_currentValue);
   }
 }
 
@@ -172,10 +173,10 @@ void DeepSupervisor::setHyperparameters(const std::vector<float> &hyperparameter
   _neuralNetwork->setHyperparameters(hyperparameters);
 
   // Need to update Adam to continue from there
-  _adamSolver->_initialValues = hyperparameters;
+  _optimizer->_initialValues = hyperparameters;
 
   // Resetting
-  _adamSolver->reset();
+  _optimizer->reset();
 }
 
 std::vector<std::vector<float>> &DeepSupervisor::getEvaluation(const std::vector<std::vector<std::vector<float>>> &input)

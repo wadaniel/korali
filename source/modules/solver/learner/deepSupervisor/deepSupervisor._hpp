@@ -1,8 +1,10 @@
 #ifndef _KORALI_SOLVER_DEEPSUPERVISOR_HPP_
 #define _KORALI_SOLVER_DEEPSUPERVISOR_HPP_
 
+#include "modules/solver/learner/deepSupervisor/optimizers/fGradientBasedOptimizer.hpp"
 #include "modules/solver/learner/deepSupervisor/optimizers/fAdaBelief.hpp"
 #include "modules/solver/learner/deepSupervisor/optimizers/fAdam.hpp"
+#include "modules/solver/learner/deepSupervisor/optimizers/fMadGrad.hpp"
 
 #include "modules/experiment/experiment.hpp"
 #include "modules/neuralNetwork/neuralNetwork.hpp"
@@ -29,9 +31,9 @@ class DeepSupervisor : public Learner
   korali::Experiment _optExperiment;
 
   /**
- * @brief ADAM solver pointer to access directly (for performance)
+ * @brief Gradient-based solver pointer to access directly (for performance)
  */
-  korali::fAdam *_adamSolver;
+  korali::fGradientBasedOptimizer *_optimizer;
 
   /**
    * @brief A neural network to be trained based on inputs and solutions

@@ -19,7 +19,7 @@ e = korali.Experiment()
 
 ### Defining results folder and loading previous results, if any
 
-resultFolder = '_result_vracer/' 
+resultFolder = '_result_vracer_' + args.env + '/'
 e.loadState(resultFolder + '/latest');
 
 ### Initializing openAI Gym environment
@@ -30,31 +30,31 @@ initEnvironment(e, args.env)
 
 e["Solver"]["Type"] = "Agent / Continuous / VRACER"
 e["Solver"]["Mode"] = "Training"
+e["Solver"]["Episodes Per Generation"] = 10
 e["Solver"]["Experiences Between Policy Updates"] = 1
-e["Solver"]["Updates Between Reward Rescaling"] = 200000
-e["Solver"]["Episodes Per Generation"] = 1
-e["Solver"]["Policy Distribution"] = "Normal"
+e["Solver"]["Learning Rate"] = 0.0001
 e["Solver"]["Discount Factor"] = 0.995
-e["Solver"]["Learning Rate"] = 1e-4
-e["Solver"]["L2 Regularization"]["Enabled"] = True
-e["Solver"]["L2 Regularization"]["Importance"] = 1.0
-e["Solver"]["Mini Batch Size"] = 256
+e["Solver"]["Mini Batch"]["Size"] = 256
 
-### Defining the configuration of replay memory
+### Setting Experience Replay and REFER settings
 
-e["Solver"]["Experience Replay"]["Start Size"] = 32768
-e["Solver"]["Experience Replay"]["Maximum Size"] = 262144
-
-### Configuring the Remember-and-Forget Experience Replay algorithm
-
-e["Solver"]["Experience Replay"]["Off Policy"]["Cutoff Scale"] = 4.0
-e["Solver"]["Experience Replay"]["Off Policy"]["Target"] = 0.1
-e["Solver"]["Experience Replay"]["Off Policy"]["Annealing Rate"] = 5e-7
+e["Solver"]["Experience Replay"]["Off Policy"]["Annealing Rate"] = 5.0e-8
+e["Solver"]["Experience Replay"]["Off Policy"]["Cutoff Scale"] = 5.0
 e["Solver"]["Experience Replay"]["Off Policy"]["REFER Beta"] = 0.3
+e["Solver"]["Experience Replay"]["Off Policy"]["Target"] = 0.1
 
+e["Solver"]["Policy"]["Distribution"] = "Unbounded Normal"
+e["Solver"]["State Rescaling"]["Enabled"] = True
+e["Solver"]["Reward"]["Rescaling"]["Enabled"] = True
+e["Solver"]["Reward"]["Rescaling"]["Frequency"] = 1000
+e["Solver"]["Reward"]["Outbound Penalization"]["Enabled"] = True
+e["Solver"]["Reward"]["Outbound Penalization"]["Factor"] = 0.5
+  
 ### Configuring the neural network and its hidden layers
 
 e["Solver"]["Neural Network"]["Engine"] = "OneDNN"
+e["Solver"]["L2 Regularization"]["Enabled"] = True
+e["Solver"]["L2 Regularization"]["Importance"] = 1.0
 
 e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear"
 e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 128
@@ -74,7 +74,7 @@ e["Solver"]["Termination Criteria"]["Max Experiences"] = 10e6
 e["Solver"]["Experience Replay"]["Serialize"] = True
 e["Console Output"]["Verbosity"] = "Detailed"
 e["File Output"]["Enabled"] = True
-e["File Output"]["Frequency"] = 100
+e["File Output"]["Frequency"] = 10
 e["File Output"]["Path"] = resultFolder
 
 ### Running Experiment

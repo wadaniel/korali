@@ -70,8 +70,8 @@ class LSTM : public Recurrent
   void initialize() override;
   void createForwardPipeline() override;
   void createBackwardPipeline() override;
-  void forwardData() override;
-  void backwardData() override;
+  void forwardData(const size_t t) override;
+  void backwardData(const size_t t) override;
 };
 
 } // namespace recurrent

@@ -36,12 +36,7 @@ class DeepSupervisor : public Learner
   /**
    * @brief A neural network to be trained based on inputs and solutions
    */
-  NeuralNetwork *_trainingNeuralNetwork;
-
-  /**
-   * @brief A neural network to perform inference of inputs and obtain gradients, one per thread.
-   */
-  std::vector<NeuralNetwork *> _inferenceNeuralNetworks;
+  NeuralNetwork *_neuralNetwork;
 
   /**
     * @brief Calculates the gradients with respect to the inputs (data), given an input and output gradients
@@ -49,13 +44,10 @@ class DeepSupervisor : public Learner
     * @param outputGradients The output gradients. Format: BxOC (B: Batch Size, OC: Input channels)
     * @return The inferred batch input gradients Format: BxIC (B: Batch Size, IC: Output channels)
    */
-  std::vector<std::vector<float>> getDataGradients(const std::vector<std::vector<std::vector<float>>> &input, const std::vector<std::vector<float>> &outputGradients);
-
-  std::vector<std::vector<float>> getEvaluation(const std::vector<std::vector<std::vector<float>>> &input) override;
-  std::vector<float> getTrainingHyperparameters() override;
-  void setTrainingHyperparameters(const std::vector<float> &hyperparameters) override;
-  std::vector<float> getInferenceHyperparameters() override;
-  void setInferenceHyperparameters(const std::vector<float> &hyperparameters) override;
+  std::vector<std::vector<float>> &getDataGradients(const std::vector<std::vector<std::vector<float>>> &input, const std::vector<std::vector<float>> &outputGradients);
+  std::vector<std::vector<float>> &getEvaluation(const std::vector<std::vector<std::vector<float>>> &input) override;
+  std::vector<float> getHyperparameters() override;
+  void setHyperparameters(const std::vector<float> &hyperparameters) override;
 
   void initialize() override;
   void runGeneration() override;

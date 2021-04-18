@@ -12,7 +12,9 @@ from os.path import isfile, join
 train_data = np.loadtxt('_data/sincos1d_train.dat', usecols=range(2))
 test_data = np.loadtxt('_data/sincos1d_test.dat', usecols=range(2))
 
-trainInput    = [ [ [ i ] for i in train_data[:, 0].tolist() ] ]
+print(train_data)
+
+trainInput    = [ [ [ i ] ] for i in train_data[:, 0].tolist() ]
 trainSolution = [ [ i ] for i in train_data[:, 1].tolist() ]
 
 import korali
@@ -21,7 +23,7 @@ e = korali.Experiment()
 
 e['Problem']['Type'] = 'Supervised Learning'
 
-e["Problem"]["Training Batch Size"] = 1
+e["Problem"]["Training Batch Size"] = len(trainInput)
 e["Problem"]["Inference Batch Size"] = 1
 e["Problem"]["Input"]["Data"] = trainInput
 e["Problem"]["Input"]["Size"] = 1

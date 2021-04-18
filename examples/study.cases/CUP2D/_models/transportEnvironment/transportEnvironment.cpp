@@ -519,9 +519,6 @@ void runEnvironmentMocmaes(korali::Sample &s)
   // Set target 
   std::vector<double> target{endX, height};
 
-  // Setting initial state
-  auto state = agent->state( target );
-
   // Parametrization of force
   std::vector<double> params = s["Parameters"];
   size_t numParams = params.size();

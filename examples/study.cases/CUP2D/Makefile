@@ -40,4 +40,4 @@ windmillEnvironment.o: _models/windmillEnvironment/windmillEnvironment.cpp
 
 .PHONY: clean
 clean:
-	$(RM) $(TRANSPORT) $(FISH) *.o *.ti *.optrpt *.h5 *.dat *.xmf
+	$(RM) $(TRANSPORT) $(FISH) $(WINDMILL) *.o *.ti *.optrpt *.h5 *.dat *.xmf

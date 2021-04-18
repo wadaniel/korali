@@ -28,13 +28,15 @@ int main(int argc, char *argv[])
   _environment = new Simulation(_argc, _argv);
   _environment->init();
 
-  std::string trainingResultsPath = "_results_windmill_training/";
-  std::string testingResultsPath = "_results_windmill_testing/";
+  std::string trainingResultsPath = "_results_windmill_training/r_6/";
+  std::string testingResultsPath = "_results_windmill_testing/r_6";
 
+  std::cout<<"------------------BEFORE SIM---------------------"<<std::endl;
   // Creating Experiment
   auto e = korali::Experiment();
   e["Problem"]["Type"] = "Reinforcement Learning / Continuous";
   
+
   auto found = e.loadState(trainingResultsPath + std::string("/latest"));
   if (found == true) printf("[Korali] Continuing execution from previous run...\n");
 
@@ -57,16 +59,16 @@ int main(int argc, char *argv[])
     } else{
       e["Variables"][curVariable]["Name"] = std::string("Omega ") + std::to_string(curVariable/2 + 1);
     }
-    e["Variables"][curVariable]["Type"] = "State";
+      e["Variables"][curVariable]["Type"] = "State";
   }
 
-  double max_torque = 1e-2;
-  for(size_t j=numStates; j < numStates + 5; ++j){
-    e["Variables"][curVariable]["Name"] = "Torque" + std::to_string(j-numStates+1);
-    e["Variables"][curVariable]["Type"] = "Action";
-    e["Variables"][curVariable]["Lower Bound"] = -max_torque;
-    e["Variables"][curVariable]["Upper Bound"] = +max_torque;
-    e["Variables"][curVariable]["Initial Exploration Noise"] = 0.5*max_torque;
+  double max_torque = 1.0e-6;
+  for(size_t j=numStates; j < numStates + 4; ++j){
+    e["Variables"][j]["Name"] = "Torque " + std::to_string(j-numStates+1);
+    e["Variables"][j]["Type"] = "Action";
+    e["Variables"][j]["Lower Bound"] = -max_torque;
+    e["Variables"][j]["Upper Bound"] = +max_torque;
+    e["Variables"][j]["Initial Exploration Noise"] = 0.5*max_torque;
   }
 
   // Setting up the 20 state variables
@@ -146,7 +148,7 @@ int main(int argc, char *argv[])
 
   ////// Defining Termination Criteria
 
-  e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 16.0;
+  e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 0.0;
 
   ////// Setting Korali output configuration
 
@@ -169,6 +171,7 @@ int main(int argc, char *argv[])
   k["Conduit"]["Communicator"] = MPI_COMM_WORLD;
 
   k.run(e);
+  std::cout<<"-----------------AFTER---------------------"<<std::endl;
 
   ////// Now testing policy, dumping trajectory results
 
@@ -185,6 +188,4 @@ int main(int argc, char *argv[])
   for (int i = 0; i < N; i++) e["Solver"]["Testing"]["Sample Ids"][i] = i;
 
   k.run(e);
-
-  printf("[Korali] Finished. Testing dump files stored in %s\n", testingResultsPath.c_str());
 }

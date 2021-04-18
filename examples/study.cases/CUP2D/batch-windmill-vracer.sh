@@ -5,7 +5,7 @@ mpiflags="mpirun -n 2"
 
 if [ ! -z $SLURM_NNODES ]; then
  N=$SLURM_NNODES
- mpiflags="srun -N $N -n $(($N)) -c 1"
+ mpiflags="srun -N $N -n $(($N+1)) -c 1"
 fi
 
 set -x
@@ -30,7 +30,7 @@ XVEL=${XVEL:-0.15}
 MAAXIS=${MAAXIS:-0.0375}
 MIAXIS=${MIAXIS:-0.01}
 
-NU=${NU:-0.001125}
+NU=${NU:-0.0001125}
 
 OPTIONS="-bpdx $BPDX -bpdy $BPDY -levelMax $LEVELS -Rtol $RTOL -Ctol $CTOL -extent $EXTENT -CFL $CFL -tdump 0 -nu $NU -tend 0 -muteAll 0 -verbose 1"
 # bForced, tAccel is needed here!

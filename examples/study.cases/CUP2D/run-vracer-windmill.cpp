@@ -28,8 +28,8 @@ int main(int argc, char *argv[])
   _environment = new Simulation(_argc, _argv);
   _environment->init();
 
-  std::string trainingResultsPath = "_results_windmill_training/r_6/";
-  std::string testingResultsPath = "_results_windmill_testing/r_6";
+  std::string trainingResultsPath = "_results_windmill_training/r_7/";
+  std::string testingResultsPath = "_results_windmill_testing/r_7/";
 
   std::cout<<"------------------BEFORE SIM---------------------"<<std::endl;
   // Creating Experiment
@@ -61,7 +61,7 @@ int main(int argc, char *argv[])
       e["Variables"][curVariable]["Type"] = "State";
   }
 
-  double max_torque = 1.0e-6;
+  double max_torque = 1.0e-7;
   for(size_t j=numStates; j < numStates + 4; ++j){
     e["Variables"][j]["Name"] = "Torque " + std::to_string(j-numStates+1);
     e["Variables"][j]["Type"] = "Action";
@@ -140,9 +140,8 @@ int main(int argc, char *argv[])
 
   k["Conduit"]["Type"] = "Distributed";
   k["Conduit"]["Communicator"] = MPI_COMM_WORLD;
-
-  k.run(e);
   std::cout<<"-----------------AFTER---------------------"<<std::endl;
+  k.run(e);
 
   ////// Now testing policy, dumping trajectory results
 

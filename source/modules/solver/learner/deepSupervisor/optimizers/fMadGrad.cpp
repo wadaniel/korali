@@ -54,7 +54,7 @@ void fMadGrad::processResult(float evaluation, std::vector<float> &gradient)
 
   for (size_t i = 0 ; i < _nVars; i++)
   {
-    _s[i] = _s[i] - lambda * gradient[i];
+    _s[i] = _s[i] + lambda * gradient[i];
     _v[i] = _v[i] - lambda * (gradient[i] * gradient[i]);
     _z[i] = _initialValues[i] - (1.0f / (std::cbrt(_v[i]) + _epsilon)) * _s[i];
     _currentValue[i] = (1.0f - _momentum) * _currentValue[i] +  _momentum * _z[i];

@@ -270,6 +270,19 @@ void Agent::trainingGeneration()
   _sessionRunningTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
   _generationRunningTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
 
+  /*********************************************************************
+   * Updating statistics/bookkeeping
+   *********************************************************************/
+
+  // Updating average cumulative reward statistics
+  _trainingAverageReward = 0.0f;
+  ssize_t startEpisodeId = _trainingRewardHistory.size() - _trainingAverageDepth;
+  ssize_t endEpisodeId = _trainingRewardHistory.size() - 1;
+  if (startEpisodeId < 0) startEpisodeId = 0;
+  for (ssize_t e = startEpisodeId; e <= endEpisodeId; e++)
+    _trainingAverageReward += _trainingRewardHistory[e];
+  _trainingAverageReward /= (float)(endEpisodeId - startEpisodeId + 1);
+
   // Increasing session's generation count
   _sessionGeneration++;
 }
@@ -379,6 +392,10 @@ void Agent::attendAgent(size_t agentId)
 
       // Getting the training reward of the latest episode
       _trainingLastReward = _agents[agentId]["Training Reward"].get<float>();
+
+      // Storing bookkeeping information
+      _trainingRewardHistory.push_back(_trainingLastReward);
+      _trainingExperienceHistory.push_back(message["Experiences"].size());
 
       // Keeping training statistics. Updating if exceeded best training policy so far.
       if (_trainingLastReward > _trainingBestReward)
@@ -573,23 +590,6 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
     // Setting initial retrace value in the experience's cache
     _retraceValueVector[expId] = retV;
   }
-
-  /*********************************************************************
-   * Updating statistics/bookkeeping
-   *********************************************************************/
-
-  // Storing history information
-  _trainingRewardHistory.push_back(cumulativeReward);
-  _trainingExperienceHistory.push_back(episode.size());
-
-  // Updating average cumulative reward statistics
-  _trainingAverageReward = 0.0f;
-  ssize_t startEpisodeId = _trainingRewardHistory.size() - _trainingAverageDepth;
-  ssize_t endEpisodeId = _trainingRewardHistory.size() - 1;
-  if (startEpisodeId < 0) startEpisodeId = 0;
-  for (ssize_t e = startEpisodeId; e <= endEpisodeId; e++)
-    _trainingAverageReward += _trainingRewardHistory[e];
-  _trainingAverageReward /= (float)(endEpisodeId - startEpisodeId + 1);
 }
 
 std::vector<size_t> Agent::generateMiniBatch(size_t miniBatchSize)

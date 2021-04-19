@@ -25,6 +25,7 @@ class fMadGrad : public fGradientBasedOptimizer
   std::vector<float> _v;
   std::vector<float> _z;
   float _epsilon;
+  float _momentum;
 
   virtual bool checkTermination() override;
   virtual void processResult(float evaluation, std::vector<float> &gradient) override;

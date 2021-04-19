@@ -31,13 +31,12 @@ void dVRACER::initializeAgent()
   _criticPolicyExperiment["Problem"]["Solution"]["Size"] = 1 + _problem->_possibleActions.size();
 
   _criticPolicyExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
-  _criticPolicyExperiment["Solver"]["Optimizer"] = _optimizer;
-
   _criticPolicyExperiment["Solver"]["L2 Regularization"]["Enabled"] = _l2RegularizationEnabled;
   _criticPolicyExperiment["Solver"]["L2 Regularization"]["Importance"] = _l2RegularizationImportance;
   _criticPolicyExperiment["Solver"]["Learning Rate"] = _currentLearningRate;
   _criticPolicyExperiment["Solver"]["Loss Function"] = "Direct Gradient";
   _criticPolicyExperiment["Solver"]["Steps Per Generation"] = 1;
+  _criticPolicyExperiment["Solver"]["Neural Network"]["Optimizer"] = _neuralNetworkOptimizer;
   _criticPolicyExperiment["Solver"]["Neural Network"]["Engine"] = _neuralNetworkEngine;
   _criticPolicyExperiment["Solver"]["Neural Network"]["Hidden Layers"] = _neuralNetworkHiddenLayers;
   _criticPolicyExperiment["Solver"]["Output Weights Scaling"] = 0.001;
@@ -224,6 +223,11 @@ knlohmann::json dVRACER::getAgentPolicy()
 void dVRACER::setAgentPolicy(const knlohmann::json &hyperparameters)
 {
   _criticPolicyLearner->setHyperparameters(hyperparameters["Policy"].get<std::vector<float>>());
+}
+
+void dVRACER::resetAgentOptimizers()
+{
+ _criticPolicyLearner->resetOptimizer();
 }
 
 void dVRACER::printAgentInformation()

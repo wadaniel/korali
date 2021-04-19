@@ -81,7 +81,7 @@ int main(int argc, char *argv[])
   e["Solver"]["Discount Factor"] = 0.995;
 
   e["Solver"]["Policy"]["Distribution"] = "Unbounded Normal";
-  e["Solver"]["State Rescaling"]["Enabled"] = true;
+  e["Solver"]["State Rescaling"]["Enabled"] = false;
   e["Solver"]["Reward"]["Rescaling"]["Enabled"] = true;
   e["Solver"]["Reward"]["Rescaling"]["Frequency"] = 1000;
   e["Solver"]["Reward"]["Outbound Penalization"]["Enabled"] = true;

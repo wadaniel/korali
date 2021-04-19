@@ -628,6 +628,7 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
   for (size_t i = 1; i < miniBatchSize; i++)
     if (miniBatch[i] != miniBatch[i - 1]) updateBatch.push_back(i);
 
+  #pragma omp parallel for schedule(guided, 1)
   for (size_t i = 0; i < updateBatch.size(); i++)
   {
     auto batchId = updateBatch[i];
@@ -774,17 +775,6 @@ void Agent::resetTimeSequence()
 {
   _stateTimeSequence.clear();
 }
-
-float Agent::getScaledReward(const float reward)
-{
- float rescaledReward = (reward - _rewardRescalingMean) / _rewardRescalingSigma;
-
- if (std::isfinite(rescaledReward) == false)
-   KORALI_LOG_ERROR("Scaled reward is non finite: %f (Mean: %f, Sigma: %f)\n", rescaledReward, _rewardRescalingMean, _rewardRescalingSigma);
-
- return rescaledReward;
-}
-
 
 std::vector<std::vector<std::vector<float>>> Agent::getMiniBatchStateSequence(const std::vector<size_t> &miniBatch, const bool includeAction)
 {

@@ -422,7 +422,15 @@ class Agent : public Solver
   /**
    * @brief Rescales a given reward
    */
-  float getScaledReward(const float reward);
+  inline float getScaledReward(const float reward)
+  {
+   float rescaledReward = (reward - _rewardRescalingMean) / _rewardRescalingSigma;
+
+   if (std::isfinite(rescaledReward) == false)
+     KORALI_LOG_ERROR("Scaled reward is non finite: %f (Mean: %f, Sigma: %f)\n", rescaledReward, _rewardRescalingMean, _rewardRescalingSigma);
+
+   return rescaledReward;
+  }
 
   /**
    * @brief Re-calculates reward scaling factors to have a zero mean and unit variance

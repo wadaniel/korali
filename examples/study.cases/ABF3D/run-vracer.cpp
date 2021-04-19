@@ -1,8 +1,14 @@
 #include "_environment/environment.hpp"
 #include "korali.hpp"
+#include <string>
 
 int main(int argc, char *argv[])
 {
+  /////// Getting configuration defaults
+
+  std::string optimizer = argc < 2 ? "Adam" : argv[1];
+  float learningRate = argc < 3 ? 1e-4f : std::stof(argv[2]);
+
   /////// Initializing environment
 
   _resultDir = "_result_vracer";
@@ -71,7 +77,7 @@ int main(int argc, char *argv[])
   e["Solver"]["Mode"] = "Training";
   e["Solver"]["Episodes Per Generation"] = 10;
   e["Solver"]["Experiences Between Policy Updates"] = 1;
-  e["Solver"]["Learning Rate"] = 1e-4;
+  e["Solver"]["Learning Rate"] = learningRate;
   e["Solver"]["Discount Factor"] = 0.995;
 
   e["Solver"]["Policy"]["Distribution"] = "Squashed Normal";
@@ -97,6 +103,7 @@ int main(int argc, char *argv[])
   /// Configuring the neural network and its hidden layers
 
   e["Solver"]["Neural Network"]["Engine"] = "OneDNN";
+  e["Solver"]["Neural Network"]["Optimizer"] = optimizer;
 
   e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear";
   e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 128;

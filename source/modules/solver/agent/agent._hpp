@@ -451,6 +451,11 @@ class Agent : public Solver
   virtual void setAgentPolicy(const knlohmann::json &hyperparameters) = 0;
 
   /**
+   * @brief Resets the states of the optimizers
+   */
+  virtual void resetAgentOptimizers() = 0;
+
+  /**
    * @brief Initializes the internal state of the policy
    */
   virtual void initializeAgent() = 0;

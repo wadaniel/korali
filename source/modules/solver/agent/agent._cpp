@@ -995,6 +995,9 @@ void Agent::deserializeExperienceReplay()
   // Setting current agent's training state
   setAgentPolicy(_trainingCurrentPolicy);
 
+  // Resetting the optimizers that the algorithm might be using
+  resetAgentOptimizers();
+
   auto endTime = std::chrono::steady_clock::now();                                                                         // Profiling
   double deserializationTime = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count() / 1.0e+9; // Profiling
   _k->_logger->logInfo("Detailed", "Took %fs to deserialize training state.\n", deserializationTime);

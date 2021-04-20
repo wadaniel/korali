@@ -406,6 +406,10 @@ void Agent::attendAgent(size_t agentId)
          _trainingBestEpisodeId = episodeId;
          _trainingBestPolicy = _agents[agentId]["Policy Hyperparameters"];
        }
+
+       // Storing bookkeeping information
+       _trainingRewardHistory.push_back(_trainingLastReward);
+       _trainingExperienceHistory.push_back(message["Episodes"][i]["Experiences"].size());
       }
 
       // If the policy has exceeded the threshold during training, we gather its statistics

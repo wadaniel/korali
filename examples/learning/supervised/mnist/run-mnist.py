@@ -15,44 +15,53 @@ e = korali.Experiment()
  
 learningRate = 0.0001
 decay = 0.0001
-batchSize = 60
+trainingBatchSize = 60
 epochs = 90
 
 ### Getting MNIST data
 
 mndata = MNIST('./_data')
 mndata.gz = True
-images, labels = mndata.load_training()
+trainingImages, trainingLabels = mndata.load_training()
+testingImages, testingLabels = mndata.load_testing()
 
 ### Converting images to Korali form (requires a time dimension)
 
-imageVector = [ [ x ] for x in images ]
+trainingImageVector = [ [ x ] for x in trainingImages ]
+testingImageVector = [ [ x ] for x in testingImages ]
 
 ### Converting label data to (0,1) vector form
 
-labelVector = [ ]
-for l in labels:
+trainingLabelVector = [ ]
+for l in trainingLabels:
+ newtrainingLabel = np.zeros(10).tolist()
+ newtrainingLabel[l] = 1
+ trainingLabelVector.append(newtrainingLabel)
+
+testingLabelVector = [ ]
+for l in testingLabels:
  newLabel = np.zeros(10).tolist()
  newLabel[l] = 1
- labelVector.append(newLabel)
+ testingLabelVector.append(newLabel)
 
 ### Shuffling training data set for stochastic gradient descent training
 
-jointSet = list(zip(imageVector, labelVector))
+jointSet = list(zip(trainingImageVector, trainingLabelVector))
 random.shuffle(jointSet)
-imageVector, labelVector = zip(*jointSet)
+trainingImageVector, trainingLabelVector = zip(*jointSet)
  
-### Calculating Steps per epoch
+### Calculating Derived Values
 
-stepsPerEpoch = int(len(imageVector) / batchSize)
+stepsPerEpoch = int(len(trainingImageVector) / trainingBatchSize)
+testingBatchSize = len(testingLabelVector)
  
 ### Configuring general problem settings
 
 e["Problem"]["Type"] = "Supervised Learning"
 e["Problem"]["Max Timesteps"] = 1
-e["Problem"]["Training Batch Size"] = batchSize
-e["Problem"]["Inference Batch Size"] = 1
-e["Problem"]["Input"]["Size"] = len(images[0])
+e["Problem"]["Training Batch Size"] = trainingBatchSize
+e["Problem"]["Inference Batch Size"] = testingBatchSize
+e["Problem"]["Input"]["Size"] = len(trainingImages[0])
 e["Problem"]["Solution"]["Size"] = 10
 
 ### Using a neural network solver (deep learning) for inference
@@ -95,8 +104,8 @@ e["Random Seed"] = 0xC0FFEE
 
 print("[Korali] Running MNIST solver.")
 print("[Korali] Algorithm: " + str(e["Solver"]["Neural Network"]["Optimizer"]))
-print("[Korali] Database Size: " + str(len(imageVector)))
-print("[Korali] Batch Size: " + str(batchSize))
+print("[Korali] Database Size: " + str(len(trainingImageVector)))
+print("[Korali] Batch Size: " + str(trainingBatchSize))
 print("[Korali] Epochs: " + str(epochs))
 print("[Korali] Initial Learning Rate: " + str(learningRate))
 print("[Korali] Decay: " + str(decay))
@@ -107,8 +116,8 @@ for epoch in range(epochs):
  for step in range(stepsPerEpoch):
  
   # Creating minibatch
-  miniBatchInput = imageVector[step * batchSize : (step+1) * batchSize]
-  miniBatchSolution = labelVector[step * batchSize : (step+1) * batchSize]
+  miniBatchInput = trainingImageVector[step * trainingBatchSize : (step+1) * trainingBatchSize]
+  miniBatchSolution = trainingLabelVector[step * trainingBatchSize : (step+1) * trainingBatchSize]
   
   # Passing minibatch to Korali
   e["Problem"]["Input"]["Data"] = miniBatchInput
@@ -125,8 +134,21 @@ for epoch in range(epochs):
  print("[Korali] --------------------------------------------------")
  print("[Korali] Epoch: " + str(epoch) + "/" + str(epochs))
  print("[Korali] Learning Rate: " + str(learningRate))
- print('[Korali] Current Loss: ' + str(e["Solver"]["Current Loss"])) 
+ print('[Korali] Current Training Loss: ' + str(e["Solver"]["Current Loss"])) 
     
+ # Evaluating testing set
+ testingInferredVector = testInferredSet = e.getEvaluation(testingImageVector)
+ 
+ # Getting loss for testing set
+ squaredMeanError = 0.0
+ for i, res in enumerate(testingInferredVector):
+  sol = testingLabelVector[i] 
+  for j, s in enumerate(sol):
+   diff = res[j] - sol[j]
+   squaredMeanError += diff * diff 
+ squaredMeanError = squaredMeanError / (float(testingBatchSize) * 2.0)
+ print('[Korali] Current Testing Loss:  ' + str(squaredMeanError))
+ 
  # Adjusting learning rate via decay
  learningRate = learningRate * (1.0 / (1.0 + decay * (epoch+1)));
  

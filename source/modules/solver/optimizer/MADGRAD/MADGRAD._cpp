@@ -64,7 +64,7 @@ void MADGRAD::processResult(double evaluation, std::vector<double> &gradient)
   _gradientNorm = 0.0;
   _gradient = gradient;
 
-  _scaledLearningRate = std::sqrt(_modelEvaluationCount+1.0) * _eta;
+  //_scaledLearningRate = std::sqrt(_modelEvaluationCount+1.0) * _eta;
 
   for (size_t i = 0; i < _variableCount; i++)
   {

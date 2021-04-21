@@ -28,7 +28,7 @@ for i in range(5):
 # Configuring Adam parameters
 e["Solver"]["Type"] = "Optimizer/Adam"
 e["Solver"]["Eta"] = 0.1
-e["Solver"]["Termination Criteria"]["Max Generations"] = 2000
+e["Solver"]["Termination Criteria"]["Max Generations"] = 5000
 
 # Configuring results path
 e["File Output"]["Path"] = '_korali_result_adam'

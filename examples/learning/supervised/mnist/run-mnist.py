@@ -44,12 +44,6 @@ for l in testingLabels:
  newLabel[l] = 1
  testingLabelVector.append(newLabel)
 
-### Shuffling training data set for stochastic gradient descent training
-
-jointSet = list(zip(trainingImageVector, trainingLabelVector))
-random.shuffle(jointSet)
-trainingImageVector, trainingLabelVector = zip(*jointSet)
- 
 ### Calculating Derived Values
 
 stepsPerEpoch = int(len(trainingImageVector) / trainingBatchSize)
@@ -113,6 +107,13 @@ print("[Korali] Decay: " + str(decay))
 ### Running SGD loop
 
 for epoch in range(epochs):
+
+ ### Shuffling training data set for stochastic gradient descent training
+
+ jointSet = list(zip(trainingImageVector, trainingLabelVector))
+ random.shuffle(jointSet)
+ trainingImageVector, trainingLabelVector = zip(*jointSet)
+ 
  for step in range(stepsPerEpoch):
  
   # Creating minibatch

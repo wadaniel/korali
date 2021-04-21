@@ -63,9 +63,6 @@ void Adam::processResult(double evaluation, std::vector<double> &gradient)
 
   _gradient = gradient;
 
-  if (_gradient.size() != _variableCount)
-    KORALI_LOG_ERROR("Size of sample's gradient evaluations vector (%lu) is different from the number of problem variables defined (%lu).\n", _gradient.size(), _variableCount);
-
   for (size_t i = 0; i < _variableCount; i++)
   {
     _gradient[i] = -_gradient[i]; // minimize

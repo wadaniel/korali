@@ -24,7 +24,7 @@ class fRMSProp : public fGradientBasedOptimizer
   std::vector<float> _r;
   std::vector<float> _v;
   float _epsilon;
-  float _decay;
+  float _beta;
 
   virtual bool checkTermination() override;
   virtual void processResult(float evaluation, std::vector<float> &gradient) override;

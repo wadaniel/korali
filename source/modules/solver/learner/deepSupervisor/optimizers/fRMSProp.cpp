@@ -11,7 +11,7 @@ fRMSProp::fRMSProp(size_t nVars) : fGradientBasedOptimizer(nVars)
   // Defaults
   _eta = 0.001f;
   _epsilon = 1e-08f;
-  _decay = 0.999;
+  _beta = 0.1;
 
   _r.resize(nVars);
   _v.resize(nVars);
@@ -50,7 +50,7 @@ void fRMSProp::processResult(float evaluation, std::vector<float> &gradient)
 
   for (size_t i = 0 ; i < _nVars; i++)
   {
-    _r[i] = (1.0f - _decay) * (gradient[i] * gradient[i]) + _decay * _r[i];
+    _r[i] = (1.0f - _beta) * (gradient[i] * gradient[i]) + _beta * _r[i] * _r[i];
     _v[i] = (_eta / (std::sqrt(_r[i]) + _epsilon)) * -gradient[i];
     _currentValue[i] = _currentValue[i] - _v[i];
   }

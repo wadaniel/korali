@@ -13,7 +13,8 @@ e = korali.Experiment()
 
 ### Hyperparameters
  
-learningRate = 0.0001
+optimizer = sys.argv[1]
+learningRate = float(sys.argv[2])
 decay = 0.0001
 trainingBatchSize = 60
 epochs = 90
@@ -68,7 +69,7 @@ e["Solver"]["Steps Per Generation"] = 1
 ### Defining the shape of the neural network
 
 e["Solver"]["Neural Network"]["Engine"] = "OneDNN"
-e["Solver"]["Neural Network"]["Optimizer"] = "Adam"
+e["Solver"]["Neural Network"]["Optimizer"] = optimizer
 
 e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear"
 e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 784

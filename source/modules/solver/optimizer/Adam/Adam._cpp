@@ -34,6 +34,12 @@ void Adam::setInitialConfiguration()
 void Adam::runGeneration()
 {
   if (_k->_currentGeneration == 1) setInitialConfiguration();
+  
+  // update parameters
+  for (size_t i = 0; i < _variableCount; i++)
+  {
+    _currentValue[i] -= _eta / (std::sqrt(_biasCorrectedSecondMoment[i]) + _epsilon) * _biasCorrectedFirstMoment[i];
+  }
 
   // Initializing Sample Evaluation
   Sample sample;
@@ -83,11 +89,6 @@ void Adam::processResult(double evaluation, std::vector<double> &gradient)
     _biasCorrectedSecondMoment[i] = _secondMoment[i] / (1 - std::pow(_beta2, _modelEvaluationCount));
   }
 
-  // update parameters
-  for (size_t i = 0; i < _variableCount; i++)
-  {
-    _currentValue[i] -= _eta / (std::sqrt(_biasCorrectedSecondMoment[i]) + _epsilon) * _biasCorrectedFirstMoment[i];
-  }
 }
 
 void Adam::printGenerationBefore()

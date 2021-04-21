@@ -20,10 +20,12 @@ def negative_rosenbrock(p):
     dim = len(x)
     res = 0.
     grad = [0.]*dim
+    a = 10
+    b = 1
     for i in range(dim-1):
-        res += 100*(x[i+1]-x[i]**2)**2+(1-x[i])**2
-        grad[i] += 2.*(1-x[i]) + 200.*(x[i+1]-x[i])
-        grad[i+1] -= 200.*(x[i+1]-x[i])
+        res += a*(x[i+1]-x[i]**2)**2+(b-x[i])**2
+        grad[i] += 2*(b-x[i]) + 2*a*(x[i+1]-x[i]**2)*2*x[i]
+        grad[i+1] -= 2*a*(x[i+1]-x[i]**2)
 
     p["F(x)"] = -res
     p["Gradient"] = grad

@@ -37,6 +37,13 @@ void MADGRAD::setInitialConfiguration()
 void MADGRAD::runGeneration()
 {
   if (_k->_currentGeneration == 1) setInitialConfiguration();
+ 
+  // update parameters
+  for (size_t i = 0; i < _variableCount; i++)
+  {
+    double intermediateParam = _initialParameter[i] + 1.0/(std::cbrt(_squaredGradientSum[i]) + _epsilon) * _gradientSum[i];
+    _currentValue[i] = (1.0 - _weightDecay) * _currentValue[i] + _weightDecay * intermediateParam;
+  }
 
   // Initializing Sample Evaluation
   Sample sample;
@@ -77,12 +84,6 @@ void MADGRAD::processResult(double evaluation, std::vector<double> &gradient)
   if (_currentEvaluation < _bestEvaluation)
     _bestEvaluation = _currentEvaluation;
 
-  // update parameters
-  for (size_t i = 0; i < _variableCount; i++)
-  {
-    double intermediateParam = _initialParameter[i] + 1.0/(std::cbrt(_squaredGradientSum[i]) + _epsilon) * _gradientSum[i];
-    _currentValue[i] = (1.0 - _weightDecay) * _currentValue[i] + _weightDecay * intermediateParam;
-  }
 }
 
 void MADGRAD::printGenerationBefore()

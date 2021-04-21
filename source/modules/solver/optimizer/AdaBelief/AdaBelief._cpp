@@ -33,6 +33,12 @@ void AdaBelief::setInitialConfiguration()
 void AdaBelief::runGeneration()
 {
   if (_k->_currentGeneration == 1) setInitialConfiguration();
+ 
+  // update parameters
+  for (size_t i = 0; i < _variableCount; i++)
+  {
+    _currentValue[i] -= _eta / (std::sqrt(_biasCorrectedSecondCentralMoment[i]) + _epsilon) * _biasCorrectedFirstMoment[i];
+  }
 
   // Initializing Sample Evaluation
   Sample sample;
@@ -81,11 +87,6 @@ void AdaBelief::processResult(double evaluation, std::vector<double> &gradient)
     _biasCorrectedSecondCentralMoment[i] = _secondCentralMoment[i] / (1 - std::pow(_beta2, _modelEvaluationCount));
   }
 
-  // update parameters
-  for (size_t i = 0; i < _variableCount; i++)
-  {
-    _currentValue[i] -= _eta / (std::sqrt(_biasCorrectedSecondCentralMoment[i]) + _epsilon) * _biasCorrectedFirstMoment[i];
-  }
 }
 
 void AdaBelief::printGenerationBefore()

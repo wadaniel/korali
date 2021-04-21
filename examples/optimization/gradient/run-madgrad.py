@@ -26,12 +26,12 @@ for i in range(5):
   e["Variables"][i]["Initial Value"] = -10.0 + i
 
 # Configuring Adam parameters
-e["Solver"]["Type"] = "Optimizer/AdaBelief"
+e["Solver"]["Type"] = "Optimizer/MADGRAD"
 e["Solver"]["Eta"] = 0.1
 e["Solver"]["Termination Criteria"]["Max Generations"] = 5000
 
 # Configuring results path
-e["File Output"]["Path"] = '_korali_result_adabelief'
+e["File Output"]["Path"] = '_korali_result_madgrad'
 
 # Running Experiment
 k.run(e)

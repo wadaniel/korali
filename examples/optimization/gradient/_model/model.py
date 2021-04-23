@@ -23,11 +23,11 @@ def negative_rosenbrock(p):
     a = 10
     b = 1
     for i in range(dim-1):
-        res += a*(x[i+1]-x[i]**2)**2+(b-x[i])**2
+        res -= a*(x[i+1]-x[i]**2)**2+(b-x[i])**2
         grad[i] += 2*(b-x[i]) + 2*a*(x[i+1]-x[i]**2)*2*x[i]
         grad[i+1] -= 2*a*(x[i+1]-x[i]**2)
 
-    p["F(x)"] = -res
+    p["F(x)"] = res
     p["Gradient"] = grad
 
 # negative himmelblau function

@@ -21,14 +21,9 @@ e["Problem"]["Type"] = "Optimization"
 e["Problem"]["Objective Function"] = negative_rosenbrock
 
 # Defining the problem's variables.
-i = 0
-e["Variables"][i]["Name"] = "X" + str(i)
-e["Variables"][i]["Initial Value"] = -5
-
-i = 1
-e["Variables"][i]["Name"] = "X" + str(i)
-e["Variables"][i]["Initial Value"] = 10
-
+for i in range(5):
+    e["Variables"][i]["Name"] = "X" + str(i)
+    e["Variables"][i]["Initial Value"] = -10
 
 # Configuring Adam parameters
 e["Solver"]["Type"] = "Optimizer/AdaBelief"

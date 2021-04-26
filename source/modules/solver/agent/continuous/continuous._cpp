@@ -18,8 +18,28 @@ void Continuous::initializeAgent()
   _actionScales.resize(_problem->_actionVectorSize);
   for (size_t i = 0; i < _problem->_actionVectorSize; i++)
   {
-    _actionShifts[i] = (_actionUpperBounds[i] + _actionLowerBounds[i]) * 0.5f;
-    _actionScales[i] = (_actionUpperBounds[i] - _actionLowerBounds[i]) * 0.5f;
+    // For unbounded distributions, finite bounds should result in an error message
+    if (_policyDistribution == "Unbounded Normal" || _policyDistribution == "Beta")
+    {
+     if (_actionLowerBounds[i] != -std::numeric_limits<float>::infinity())
+      KORALI_LOG_ERROR("Provided lower bound (%f) for action variable %lu is finite, but the distribution (%s) is unbounded.\n", _actionLowerBounds[i], i, _policyDistribution.c_str());
+
+     if (_actionUpperBounds[i] != std::numeric_limits<float>::infinity())
+      KORALI_LOG_ERROR("Provided upper bound (%f) for action variable %lu is finite, but the distribution (%s) is unbounded.\n", _actionUpperBounds[i], i, _policyDistribution.c_str());
+    }
+
+    // For bounded distributions, infinite bounds should result in an error message
+    if (_policyDistribution == "Squashed Normal")
+    {
+     if (isfinite(_actionLowerBounds[i]) == false)
+      KORALI_LOG_ERROR("Provided lower bound (%f) for action variable %lu is non-finite, but the distribution (%s) is bounded.\n", _actionLowerBounds[i], i, _policyDistribution.c_str());
+
+     if (isfinite(_actionUpperBounds[i]) == false)
+      KORALI_LOG_ERROR("Provided upper bound (%f) for action variable %lu is non-finite, but the distribution (%s) is bounded.\n", _actionUpperBounds[i], i, _policyDistribution.c_str());
+
+     _actionShifts[i] = (_actionUpperBounds[i] + _actionLowerBounds[i]) * 0.5f;
+     _actionScales[i] = (_actionUpperBounds[i] - _actionLowerBounds[i]) * 0.5f;
+    }
   }
 
   // Obtaining policy parameter transformations (depends on which policy distribution chosen)

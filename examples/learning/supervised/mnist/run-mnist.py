@@ -15,9 +15,9 @@ e = korali.Experiment()
  
 optimizer = sys.argv[1]
 learningRate = float(sys.argv[2])
-decay = 0.0001
+decay = 0.001
 trainingBatchSize = 60
-epochs = 90
+epochs = 60
 
 ### Getting MNIST data
 
@@ -154,3 +154,4 @@ for epoch in range(epochs):
  # Adjusting learning rate via decay
  learningRate = learningRate * (1.0 / (1.0 + decay * (epoch+1)));
  
+ sys.stdout.flush()

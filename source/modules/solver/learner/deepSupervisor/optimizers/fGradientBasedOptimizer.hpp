@@ -35,12 +35,12 @@ class fGradientBasedOptimizer
   */
   size_t _nVars;
 
-  /*
+  /**
   * @brief Learning Rate
   */
   float _eta;
 
-  /*
+  /**
   * @brief Decay for gradient update
   */
   float _decay;

@@ -21,9 +21,24 @@ class fRMSProp : public fGradientBasedOptimizer
  */
   fRMSProp(size_t nVars);
 
+  /**
+   * @brief Square gradient contribution
+   */
   std::vector<float> _r;
+
+  /**
+   * @brief Update rule
+   */
   std::vector<float> _v;
+
+  /**
+   * @brief Safety addition on divide
+   */
   float _epsilon;
+
+  /**
+   * @brief Decay of gradient contribution over time
+   */
   float _decay;
 
   virtual bool checkTermination() override;

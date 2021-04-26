@@ -420,7 +420,9 @@ class Agent : public Solver
   void rescaleStates();
 
   /**
-   * @brief Rescales a given reward
+   * @brief Rescales a given reward according to gaussian normalization parameters (mean+sigma)
+   * @param reward the input reward to rescale
+   * @return The normalized reward
    */
   inline float getScaledReward(const float reward)
   {

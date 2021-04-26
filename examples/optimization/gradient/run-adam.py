@@ -18,7 +18,7 @@ e = korali.Experiment()
 
 # Configuring Problem.
 e["Problem"]["Type"] = "Optimization"
-e["Problem"]["Objective Function"] = negative_himmelblau
+e["Problem"]["Objective Function"] = negative_rosenbrock
 
 # Defining the problem's variables.
 for i in range(5):

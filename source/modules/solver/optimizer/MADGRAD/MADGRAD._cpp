@@ -27,8 +27,8 @@ void MADGRAD::setInitialConfiguration()
   _gradientSum.resize(_variableCount, 0.0);
   _squaredGradientSum.resize(_variableCount, 0.0);
 
-  _bestEverValue = Inf;
-  _gradientNorm = 1;
+  _bestEverValue = -Inf;
+  _gradientNorm = 0.0;
   _scaledLearningRate = _eta;
 
   if (_eta <= 0) KORALI_LOG_ERROR("Learning Rate 'eta' must be larger 0 (is %lf).\n", _eta);
@@ -69,7 +69,7 @@ void MADGRAD::processResult(double evaluation, std::vector<double> &gradient)
 {
   _modelEvaluationCount++;
   _previousBestValue = _currentBestValue;
-  _currentBestValue = -evaluation; //minimize
+  _currentBestValue = evaluation;
 
   _gradientNorm = 0.0;
   _gradient = gradient;
@@ -84,7 +84,7 @@ void MADGRAD::processResult(double evaluation, std::vector<double> &gradient)
   }
   _gradientNorm = std::sqrt(_gradientNorm);
 
-  if (_currentBestValue < _bestEverValue)
+  if (_currentBestValue > _bestEverValue)
   {
     _bestEverValue = _currentBestValue;
     _bestEverGradient = _gradient;

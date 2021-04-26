@@ -28,7 +28,7 @@ void MADGRAD::setInitialConfiguration()
   _bestEvaluation = Inf;
   _gradientNorm = 1;
   _scaledLearningRate = _eta;
-    
+
   if (_eta <= 0) KORALI_LOG_ERROR("Learning Rate 'eta' must be larger 0 (is %lf).\n", _eta);
   if (_weightDecay <= 0) KORALI_LOG_ERROR("Weight decaymust be larger 0 (is %lf).\n", _weightDecay);
   if (_epsilon <= 0) KORALI_LOG_ERROR("Epsilon must be larger 0 (is %lf).\n", _epsilon);
@@ -37,11 +37,11 @@ void MADGRAD::setInitialConfiguration()
 void MADGRAD::runGeneration()
 {
   if (_k->_currentGeneration == 1) setInitialConfiguration();
- 
+
   // update parameters
   for (size_t i = 0; i < _variableCount; i++)
   {
-    double intermediateParam = _initialParameter[i] + 1.0/(std::cbrt(_squaredGradientSum[i]) + _epsilon) * _gradientSum[i];
+    double intermediateParam = _initialParameter[i] + 1.0 / (std::cbrt(_squaredGradientSum[i]) + _epsilon) * _gradientSum[i];
     _currentValue[i] = (1.0 - _weightDecay) * _currentValue[i] + _weightDecay * intermediateParam;
   }
 
@@ -83,7 +83,6 @@ void MADGRAD::processResult(double evaluation, std::vector<double> &gradient)
 
   if (_currentEvaluation < _bestEvaluation)
     _bestEvaluation = _currentEvaluation;
-
 }
 
 void MADGRAD::printGenerationBefore()

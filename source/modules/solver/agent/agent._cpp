@@ -471,18 +471,18 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
     // If the action is outside the boundary, applying penalization factor
     if (_rewardOutboundPenalizationEnabled == true)
     {
-     bool outOfBounds = false;
-     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-     {
-      if (action[i] > _actionUpperBounds[i]) outOfBounds = true;
-      if (action[i] < _actionLowerBounds[i]) outOfBounds = true;
-     }
+      bool outOfBounds = false;
+      for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+      {
+        if (action[i] > _actionUpperBounds[i]) outOfBounds = true;
+        if (action[i] < _actionLowerBounds[i]) outOfBounds = true;
+      }
 
-     if (outOfBounds == true)
-     {
-      reward = reward * _rewardOutboundPenalizationFactor;
-      _rewardOutboundPenalizationCount++;
-     }
+      if (outOfBounds == true)
+      {
+        reward = reward * _rewardOutboundPenalizationFactor;
+        _rewardOutboundPenalizationCount++;
+      }
     }
 
     _rewardVector.add(reward);
@@ -539,8 +539,8 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
 
     // If there's an outgoing experience and it's off policy, subtract the off policy counter
     if (_isOnPolicyVector.size() == _experienceReplayMaximumSize)
-     if (_isOnPolicyVector[0] == false)
-      _experienceReplayOffPolicyCount--;
+      if (_isOnPolicyVector[0] == false)
+        _experienceReplayOffPolicyCount--;
 
     // Adding new experience's on policiness (by default is true when adding it to the ER)
     _isOnPolicyVector.add(true);
@@ -628,7 +628,7 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
   for (size_t i = 1; i < miniBatchSize; i++)
     if (miniBatch[i] != miniBatch[i - 1]) updateBatch.push_back(i);
 
-  #pragma omp parallel for schedule(guided, 1)
+#pragma omp parallel for schedule(guided, 1)
   for (size_t i = 0; i < updateBatch.size(); i++)
   {
     auto batchId = updateBatch[i];
@@ -667,12 +667,12 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
 
     // Updating off policy count if a change is detected
     if (_isOnPolicyVector[expId] == true && isOnPolicy == false)
-      #pragma omp atomic
-     _experienceReplayOffPolicyCount++;
+#pragma omp atomic
+      _experienceReplayOffPolicyCount++;
 
     if (_isOnPolicyVector[expId] == false && isOnPolicy == true)
-     #pragma omp atomic
-     _experienceReplayOffPolicyCount--;
+#pragma omp atomic
+      _experienceReplayOffPolicyCount--;
 
     // Store computed information for use in replay memory.
     _curPolicyVector[expId] = curPolicy;
@@ -1012,7 +1012,7 @@ void Agent::printGenerationAfter()
       _k->_logger->logInfo("Normal", " + Total Experience Count:      %lu\n", _experienceCount);
 
     if (_rewardOutboundPenalizationEnabled == true)
-      _k->_logger->logInfo("Normal", " + Out of Bound Actions:        %lu (%.3f%%)\n", _rewardOutboundPenalizationCount, 100.0f*(float)_rewardOutboundPenalizationEnabled/(float)_experienceCount);
+      _k->_logger->logInfo("Normal", " + Out of Bound Actions:        %lu (%.3f%%)\n", _rewardOutboundPenalizationCount, 100.0f * (float)_rewardOutboundPenalizationEnabled / (float)_experienceCount);
 
     _k->_logger->logInfo("Normal", "Off-Policy Statistics:\n");
     _k->_logger->logInfo("Normal", " + Count (Ratio/Target):        %lu/%lu (%.3f/%.3f)\n", _experienceReplayOffPolicyCount, _stateVector.size(), _experienceReplayOffPolicyRatio, _experienceReplayOffPolicyTarget);
@@ -1048,10 +1048,10 @@ void Agent::printGenerationAfter()
     _k->_logger->logInfo("Normal", " + Current Learning Rate:           %.3e\n", _currentLearningRate);
 
     if (_rewardRescalingEnabled)
-     _k->_logger->logInfo("Normal", " + Reward Rescaling:            N(%.3e, %.3e)         \n", _rewardRescalingMean, _rewardRescalingSigma);
+      _k->_logger->logInfo("Normal", " + Reward Rescaling:            N(%.3e, %.3e)         \n", _rewardRescalingMean, _rewardRescalingSigma);
 
     if (_stateRescalingEnabled)
-     _k->_logger->logInfo("Normal", " + Using State Rescaling\n");
+      _k->_logger->logInfo("Normal", " + Using State Rescaling\n");
 
     _k->_logger->logInfo("Detailed", "Profiling Information:                  [Generation] - [Session]\n");
     _k->_logger->logInfo("Detailed", " + Experience Serialization Time:       [%5.3fs] - [%3.3fs]\n", _generationSerializationTime / 1.0e+9, _sessionSerializationTime / 1.0e+9);

@@ -424,12 +424,12 @@ class Agent : public Solver
    */
   inline float getScaledReward(const float reward)
   {
-   float rescaledReward = (reward - _rewardRescalingMean) / _rewardRescalingSigma;
+    float rescaledReward = (reward - _rewardRescalingMean) / _rewardRescalingSigma;
 
-   if (std::isfinite(rescaledReward) == false)
-     KORALI_LOG_ERROR("Scaled reward is non finite: %f (Mean: %f, Sigma: %f)\n", rescaledReward, _rewardRescalingMean, _rewardRescalingSigma);
+    if (std::isfinite(rescaledReward) == false)
+      KORALI_LOG_ERROR("Scaled reward is non finite: %f (Mean: %f, Sigma: %f)\n", rescaledReward, _rewardRescalingMean, _rewardRescalingSigma);
 
-   return rescaledReward;
+    return rescaledReward;
   }
 
   /**

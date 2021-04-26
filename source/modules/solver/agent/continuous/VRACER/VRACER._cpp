@@ -49,9 +49,9 @@ void VRACER::initializeAgent()
   // Setting transformations for the selected policy distribution output
   for (size_t i = 0; i < _policyParameterCount; i++)
   {
-   _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Scale"][i + 1] = _policyParameterScaling[i];
-   _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Shift"][i + 1] = _policyParameterShifting[i];
-   _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Transformation Mask"][i + 1] = _policyParameterTransformationMasks[i];
+    _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Scale"][i + 1] = _policyParameterScaling[i];
+    _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Shift"][i + 1] = _policyParameterShifting[i];
+    _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Transformation Mask"][i + 1] = _policyParameterTransformationMasks[i];
   }
 
   // Running initialization to verify that the configuration is correct
@@ -96,8 +96,8 @@ void VRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
 
   for (size_t i = 0; i < _problem->_actionVectorSize; i++)
   {
-   _maxMiniBatchPolicyMean[i] = 0.0f;
-   _maxMiniBatchPolicyStdDev[i] = 0.0f;
+    _maxMiniBatchPolicyMean[i] = 0.0f;
+    _maxMiniBatchPolicyStdDev[i] = 0.0f;
   }
 
 #pragma omp parallel for
@@ -162,8 +162,8 @@ void VRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
 
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
     {
-     if (std::abs(expPolicy.distributionParameters[i]) > _maxMiniBatchPolicyMean[i]) _maxMiniBatchPolicyMean[i] = std::abs(expPolicy.distributionParameters[i]);
-     if (std::abs(expPolicy.distributionParameters[_problem->_actionVectorSize + i]) > _maxMiniBatchPolicyStdDev[i]) _maxMiniBatchPolicyStdDev[i] = std::abs(expPolicy.distributionParameters[_problem->_actionVectorSize + i]);
+      if (std::abs(expPolicy.distributionParameters[i]) > _maxMiniBatchPolicyMean[i]) _maxMiniBatchPolicyMean[i] = std::abs(expPolicy.distributionParameters[i]);
+      if (std::abs(expPolicy.distributionParameters[_problem->_actionVectorSize + i]) > _maxMiniBatchPolicyStdDev[i]) _maxMiniBatchPolicyStdDev[i] = std::abs(expPolicy.distributionParameters[_problem->_actionVectorSize + i]);
     }
 
     // Set Gradient of Loss as Solution
@@ -212,7 +212,7 @@ void VRACER::setAgentPolicy(const knlohmann::json &hyperparameters)
 
 void VRACER::resetAgentOptimizers()
 {
- _criticPolicyLearner->resetOptimizer();
+  _criticPolicyLearner->resetOptimizer();
 }
 
 void VRACER::printAgentInformation()
@@ -220,7 +220,7 @@ void VRACER::printAgentInformation()
   _k->_logger->logInfo("Normal", " + [VRACER] Policy Learning Rate: %.3e\n", _currentLearningRate);
   _k->_logger->logInfo("Normal", " + [VRACER] Max Policy Parameters:\n");
   for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-   _k->_logger->logInfo("Normal", " + [VRACER] Action %lu - N(%.3e,%.3e)\n", i, _maxMiniBatchPolicyMean[i], _maxMiniBatchPolicyStdDev[i]);
+    _k->_logger->logInfo("Normal", " + [VRACER] Action %lu - N(%.3e,%.3e)\n", i, _maxMiniBatchPolicyMean[i], _maxMiniBatchPolicyStdDev[i]);
 }
 
 } // namespace continuous

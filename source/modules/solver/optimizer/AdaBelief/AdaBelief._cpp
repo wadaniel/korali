@@ -39,7 +39,7 @@ void AdaBelief::runGeneration()
   // update parameters
   for (size_t i = 0; i < _variableCount; i++)
   {
-    _currentVariable[i] -= _eta / (std::sqrt(_biasCorrectedSecondCentralMoment[i]) + _epsilon) * _biasCorrectedFirstMoment[i];
+    _currentVariable[i] += _eta / (std::sqrt(_biasCorrectedSecondCentralMoment[i]) + _epsilon) * _biasCorrectedFirstMoment[i];
   }
 
   // Initializing Sample Evaluation
@@ -64,19 +64,14 @@ void AdaBelief::processResult(double evaluation, std::vector<double> &gradient)
 {
   _modelEvaluationCount++;
   _previousBestValue = _currentBestValue;
-  _currentBestValue = -evaluation; //minimize
+  _currentBestValue = evaluation;
+  _bestEverValue = -Inf;
   _gradientNorm = 0.0;
 
   _gradient = gradient;
+  _gradientNorm = vectorNorm(_gradient);
 
-  for (size_t i = 0; i < _variableCount; i++)
-  {
-    _gradient[i] = -_gradient[i]; // minimize
-    _gradientNorm += _gradient[i] * _gradient[i];
-  }
-  _gradientNorm = std::sqrt(_gradientNorm);
-
-  if (_currentBestValue < _bestEverValue)
+  if (_currentBestValue > _bestEverValue)
   {
     _bestEverValue = _currentBestValue;
     _bestEverGradient = _gradient;

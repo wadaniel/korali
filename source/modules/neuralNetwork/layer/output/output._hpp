@@ -53,6 +53,9 @@ class Output : public Layer
  */
   float *_dstOutputGradients;
 
+  /**
+   * @brief Contains the description of the transformation to apply to each output element
+   */
   std::vector<transformation_t> _transformationVector;
 
   void initialize() override;

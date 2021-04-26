@@ -21,7 +21,14 @@ class fAdagrad : public fGradientBasedOptimizer
  */
   fAdagrad(size_t nVars);
 
+  /**
+  * @brief Squared Gradient Component
+  */
   std::vector<float> _s;
+
+  /**
+   * @brief Safety addition on divide
+   */
   float _epsilon;
 
   virtual bool checkTermination() override;

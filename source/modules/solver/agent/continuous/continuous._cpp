@@ -191,7 +191,7 @@ std::vector<float> Continuous::generateTestingAction(const policy_t &curPolicy)
   {
     // Take only the means without noise
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-      action[i] = curPolicy.distributionParameters[0];
+      action[i] = curPolicy.distributionParameters[i];
   }
 
   if (_policyDistribution == "Squashed Normal")

@@ -1,6 +1,6 @@
 #!/bin/bash -l
 #SBATCH --job-name="openAIGym_VRACER"
-#SBATCH --output=/scratch/snx3000/smartin/logs/openAIGym_VRACER_%j.out
+#SBATCH --output=openAIGym_VRACER_%j.out
 #SBATCH --time=8:00:00
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-core=1

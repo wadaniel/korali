@@ -16,17 +16,19 @@ void AdaBelief::setInitialConfiguration()
     if (std::isfinite(_k->_variables[i]->_initialValue) == false)
       KORALI_LOG_ERROR("Initial Value of variable \'%s\' not defined (no defaults can be calculated).\n", _k->_variables[i]->_name.c_str());
 
-  _currentValue.resize(_variableCount);
+  _currentVariable.resize(_variableCount);
   for (size_t i = 0; i < _variableCount; i++)
-    _currentValue[i] = _k->_variables[i]->_initialValue;
+    _currentVariable[i] = _k->_variables[i]->_initialValue;
 
+  _bestEverVariables = _currentVariable;
+  _bestEverGradient.resize(_variableCount, 0);
   _gradient.resize(_variableCount);
   _firstMoment.resize(_variableCount, 0.0);
   _biasCorrectedFirstMoment.resize(_variableCount, 0.0);
   _secondCentralMoment.resize(_variableCount, 0.0);
   _biasCorrectedSecondCentralMoment.resize(_variableCount, 0.0);
 
-  _bestEvaluation = Inf;
+  _bestEverValue = Inf;
   _gradientNorm = 1;
 }
 
@@ -37,14 +39,14 @@ void AdaBelief::runGeneration()
   // update parameters
   for (size_t i = 0; i < _variableCount; i++)
   {
-    _currentValue[i] -= _eta / (std::sqrt(_biasCorrectedSecondCentralMoment[i]) + _epsilon) * _biasCorrectedFirstMoment[i];
+    _currentVariable[i] -= _eta / (std::sqrt(_biasCorrectedSecondCentralMoment[i]) + _epsilon) * _biasCorrectedFirstMoment[i];
   }
 
   // Initializing Sample Evaluation
   Sample sample;
   sample["Module"] = "Problem";
   sample["Operation"] = "Evaluate With Gradients";
-  sample["Parameters"] = _currentValue;
+  sample["Parameters"] = _currentVariable;
   sample["Sample Id"] = 0;
   KORALI_START(sample);
 
@@ -61,9 +63,8 @@ void AdaBelief::runGeneration()
 void AdaBelief::processResult(double evaluation, std::vector<double> &gradient)
 {
   _modelEvaluationCount++;
-  _currentEvaluation = evaluation;
-
-  _currentEvaluation = -_currentEvaluation; //minimize
+  _previousBestValue = _currentBestValue;
+  _currentBestValue = -evaluation; //minimize
   _gradientNorm = 0.0;
 
   _gradient = gradient;
@@ -75,8 +76,12 @@ void AdaBelief::processResult(double evaluation, std::vector<double> &gradient)
   }
   _gradientNorm = std::sqrt(_gradientNorm);
 
-  if (_currentEvaluation < _bestEvaluation)
-    _bestEvaluation = _currentEvaluation;
+  if (_currentBestValue < _bestEverValue)
+  {
+    _bestEverValue = _currentBestValue;
+    _bestEverGradient = _gradient;
+    _bestEverVariables = _currentVariable;
+  }
 
   // update first and second moment estimators and bias corrected versions
   for (size_t i = 0; i < _variableCount; i++)
@@ -96,10 +101,10 @@ void AdaBelief::printGenerationBefore()
 void AdaBelief::printGenerationAfter()
 {
   _k->_logger->logInfo("Normal", "x = [ ");
-  for (size_t k = 0; k < _variableCount; k++) _k->_logger->logData("Normal", " %.5le  ", _currentValue[k]);
+  for (size_t k = 0; k < _variableCount; k++) _k->_logger->logData("Normal", " %.5le  ", _currentVariable[k]);
   _k->_logger->logData("Normal", " ]\n");
 
-  _k->_logger->logInfo("Normal", "F(X) = %le \n", _currentEvaluation);
+  _k->_logger->logInfo("Normal", "F(X) = %le \n", _currentBestValue);
 
   _k->_logger->logInfo("Normal", "DF(X) = [ ");
   for (size_t k = 0; k < _variableCount; k++) _k->_logger->logData("Normal", " %.5le  ", _gradient[k]);
@@ -111,9 +116,9 @@ void AdaBelief::printGenerationAfter()
 void AdaBelief::finalize()
 {
   // Updating Results
-  (*_k)["Results"]["Best Sample"]["F(x)"] = _currentEvaluation;
-  (*_k)["Results"]["Best Sample"]["Gradient(x)"] = _gradient;
-  (*_k)["Results"]["Best Sample"]["Parameters"] = _currentValue;
+  (*_k)["Results"]["Best Sample"]["F(x)"] = _bestEverValue;
+  (*_k)["Results"]["Best Sample"]["Gradient(x)"] = _bestEverGradient;
+  (*_k)["Results"]["Best Sample"]["Parameters"] = _bestEverVariables;
 }
 
 } // namespace optimizer

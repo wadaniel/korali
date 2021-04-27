@@ -24,6 +24,9 @@ class GaussianProcess : public Learner
   public:
   ~GaussianProcess();
 
+  /**
+  * @brief Storage for the output values
+  */
   std::vector<std::vector<float>> _outputValues;
 
   /**
@@ -52,7 +55,7 @@ class GaussianProcess : public Learner
   static void runSample(Sample &sample, libgp::GaussianProcess *gp);
 #endif
 
-  std::vector<std::vector<float>>& getEvaluation(const std::vector<std::vector<std::vector<float>>> &input) override;
+  std::vector<std::vector<float>> &getEvaluation(const std::vector<std::vector<std::vector<float>>> &input) override;
   std::vector<float> getHyperparameters() override;
   void setHyperparameters(const std::vector<float> &hyperparameters) override;
   void initialize() override;

@@ -51,7 +51,7 @@ void LSTM::createForwardPipeline()
     // Checking Layer sizes
     const memory::dim T = 1;                            // time steps
     const memory::dim G = _gateCount;                   // Gates
-    const memory::dim N = _batchSize;              // Batch size
+    const memory::dim N = _batchSize;                   // Batch size
     const memory::dim IC = _prevLayer->_outputChannels; // channels
     const memory::dim OC = _outputChannels;             // channels
     const memory::dim L = _depth;                       // layers
@@ -220,7 +220,7 @@ void LSTM::createBackwardPipeline()
     // Checking Layer sizes
     const memory::dim T = 1;                            // time steps
     const memory::dim G = _gateCount;                   // layers
-    const memory::dim N = _batchSize;              // Batch size
+    const memory::dim N = _batchSize;                   // Batch size
     const memory::dim IC = _prevLayer->_outputChannels; // channels
     const memory::dim OC = _outputChannels;             // channels
     const memory::dim L = _depth;                       // layers

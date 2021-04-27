@@ -14,5 +14,8 @@ rm -rf _result*; check_result
 python3 ./run-cmaes.py; check_result
 python3 ./run-cmaes.py; check_result
 
-python3 ./run-gfpt.py; check_result
-python3 ./run-gfpt.py; check_result
+python3 ./run-vracer.py; check_result
+python3 ./run-vracer.py; check_result
+
+python3 ./run-sin.py; check_result
+python3 ./run-sin.py; check_result

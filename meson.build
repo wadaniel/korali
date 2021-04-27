@@ -100,6 +100,8 @@ subdir('source')
 subdir('python/korali')
 
 # tests
-nomalloc = environment({'MALLOC_PERTURB_': '0'})
-subdir('tests')
-subdir('examples')
+if get_option('test')
+  nomalloc = environment({'MALLOC_PERTURB_': '0'})
+  subdir('tests')
+  subdir('examples')
+endif

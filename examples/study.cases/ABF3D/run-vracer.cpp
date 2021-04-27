@@ -45,46 +45,48 @@ int main(int argc, char *argv[])
   e["Variables"][14]["Type"] = "Action";
   e["Variables"][14]["Lower Bound"] = 0.0f;
   e["Variables"][14]["Upper Bound"] = 2.0f;
-  e["Variables"][14]["Initial Exploration Noise"] = 0.50f;
+  e["Variables"][14]["Initial Exploration Noise"] = 0.447f;
 
   e["Variables"][15]["Name"] = "Rotation X";
   e["Variables"][15]["Type"] = "Action";
   e["Variables"][15]["Lower Bound"] = -1.0f;
   e["Variables"][15]["Upper Bound"] = 1.0f;
-  e["Variables"][15]["Initial Exploration Noise"] = 0.50f;
+  e["Variables"][15]["Initial Exploration Noise"] = 0.447f;
 
   e["Variables"][16]["Name"] = "Rotation Y";
   e["Variables"][16]["Type"] = "Action";
   e["Variables"][16]["Lower Bound"] = -1.0f;
   e["Variables"][16]["Upper Bound"] = 1.0f;
-  e["Variables"][16]["Initial Exploration Noise"] = 0.50f;
+  e["Variables"][16]["Initial Exploration Noise"] = 0.447f;
 
   e["Variables"][17]["Name"] = "Rotation Z";
   e["Variables"][17]["Type"] = "Action";
   e["Variables"][17]["Lower Bound"] = -1.0f;
   e["Variables"][17]["Upper Bound"] = 1.0f;
-  e["Variables"][17]["Initial Exploration Noise"] = 0.50f;
+  e["Variables"][17]["Initial Exploration Noise"] = 0.447f;
 
   /// Defining Agent Configuration
 
   e["Solver"]["Type"] = "Agent / Continuous / VRACER";
   e["Solver"]["Mode"] = "Training";
   e["Solver"]["Episodes Per Generation"] = 10;
-  e["Solver"]["Updates Between Reward Rescaling"] = 100000000;
   e["Solver"]["Experiences Between Policy Updates"] = 1;
   e["Solver"]["Learning Rate"] = 1e-4;
-  e["Solver"]["Discount Factor"] = 0.99;
-  e["Solver"]["L2 Regularization"]["Enabled"] = true;
-  e["Solver"]["L2 Regularization"]["Importance"] = 1e-3;
+  e["Solver"]["Discount Factor"] = 0.995;
+  e["Solver"]["Reward Rescaling"]["Frequency"] = 1000;
 
   /// Defining the configuration of replay memory
 
   e["Solver"]["Experience Replay"]["Start Size"] = 131072;
   e["Solver"]["Experience Replay"]["Maximum Size"] = 262144;
+  e["Solver"]["Experience Replay"]["Off Policy"]["Cutoff Scale"] = 4.0;
+  e["Solver"]["Experience Replay"]["Off Policy"]["Target"] = 0.1;
+  e["Solver"]["Experience Replay"]["Off Policy"]["Annealing Rate"] = 0.0;
+  e["Solver"]["Experience Replay"]["Off Policy"]["REFER Beta"] = 0.3;
 
   /// Configuring Mini Batch
 
-  e["Solver"]["Mini Batch Size"] = 256;
+  e["Solver"]["Mini Batch"]["Size"] = 256;
 
   /// Configuring the neural network and its hidden layers
 

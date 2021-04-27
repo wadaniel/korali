@@ -28,7 +28,7 @@ e["Variables"][5]["Name"] = "Force"
 e["Variables"][5]["Type"] = "Action"
 e["Variables"][5]["Lower Bound"] = -20.0
 e["Variables"][5]["Upper Bound"] = +20.0
-e["Variables"][5]["Initial Exploration Noise"] = 2.0
+e["Variables"][5]["Initial Exploration Noise"] = 1.0
 
 ### Defining Termination Criteria
 
@@ -40,15 +40,8 @@ e["Solver"]["Type"] = "Agent / Continuous / VRACER"
 e["Solver"]["Mode"] = "Training"
 e["Solver"]["Episodes Per Generation"] = 1
 e["Solver"]["Experiences Between Policy Updates"] = 1
-e["Solver"]["Policy Distribution"] = "Normal"
-e["Solver"]["Discount Factor"] = 0.99
 e["Solver"]["Learning Rate"] = 1e-4
-e["Solver"]["Mini Batch Size"] = 256
-
-### Defining the configuration of replay memory
-
-e["Solver"]["Experience Replay"]["Start Size"] = 131072
-e["Solver"]["Experience Replay"]["Maximum Size"] = 262144
+e["Solver"]["Mini Batch"]["Size"] = 256
 
 ### Configuring the neural network and its hidden layers
 

@@ -30,26 +30,12 @@ initEnvironment(e, args.env)
 
 e["Solver"]["Type"] = "Agent / Continuous / VRACER"
 e["Solver"]["Mode"] = "Training"
+e["Solver"]["Episodes Per Generation"] = 10
 e["Solver"]["Experiences Between Policy Updates"] = 1
-e["Solver"]["Updates Between Reward Rescaling"] = 20000
-e["Solver"]["Episodes Per Generation"] = 1
+e["Solver"]["Learning Rate"] = 0.0001
 e["Solver"]["Discount Factor"] = 0.995
-e["Solver"]["Learning Rate"] = 1e-4
-e["Solver"]["L2 Regularization"]["Enabled"] = True
-e["Solver"]["L2 Regularization"]["Importance"] = 1.0
-e["Solver"]["Mini Batch Size"] = 256
-
-### Defining the configuration of replay memory
-
-e["Solver"]["Experience Replay"]["Start Size"] = 32768
-e["Solver"]["Experience Replay"]["Maximum Size"] = 262144
-
-### Configuring the Remember-and-Forget Experience Replay algorithm
-
-e["Solver"]["Experience Replay"]["Off Policy"]["Cutoff Scale"] = 4.0
-e["Solver"]["Experience Replay"]["Off Policy"]["Target"] = 0.1
-e["Solver"]["Experience Replay"]["Off Policy"]["Annealing Rate"] = 5e-7
-e["Solver"]["Experience Replay"]["Off Policy"]["REFER Beta"] = 0.3
+e["Solver"]["Reward Rescaling"]["Frequency"] = 1000
+e["Solver"]["Mini Batch"]["Size"] = 256
 
 ### Configuring the neural network and its hidden layers
 
@@ -73,7 +59,7 @@ e["Solver"]["Termination Criteria"]["Max Experiences"] = 10e6
 e["Solver"]["Experience Replay"]["Serialize"] = True
 e["Console Output"]["Verbosity"] = "Detailed"
 e["File Output"]["Enabled"] = True
-e["File Output"]["Frequency"] = 500
+e["File Output"]["Frequency"] = 50
 e["File Output"]["Path"] = resultFolder
 
 ### Running Experiment

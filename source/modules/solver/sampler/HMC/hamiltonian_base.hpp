@@ -55,14 +55,14 @@ class Hamiltonian
   * @param p Current momentum.
   * @return Total energy.
   */
-  virtual double H(const std::vector<double> &p) = 0;
+  virtual double H(const std::vector<double> &momentum, const std::vector<double> &inverseMetric) = 0;
 
   /**
   * @brief Purely virtual kinetic energy function K(q, p) = 0.5 * p.T * inverseMetric(q) * p + 0.5 * logDetMetric(q) used for Hamiltonian Dynamics.
   * @param p Current momentum.
   * @return Kinetic energy.
   */
-  virtual double K(const std::vector<double> &p) = 0;
+  virtual double K(const std::vector<double> &p, const std::vector<double> &inverseMetric) = 0;
 
   /**
   * @brief Purely virtual gradient of kintetic energy function dK(q, p) = inverseMetric(q) * p + 0.5 * dlogDetMetric_dq(q) used for Hamiltonian Dynamics.
@@ -70,7 +70,7 @@ class Hamiltonian
   * @param inverseMetric Current inverse metric.
   * @return Gradient of Kinetic energy with current momentum.
   */
-  virtual std::vector<double> dK(const std::vector<double>* momentum, const std::vector<double> &inverseMetric) = 0;
+  virtual std::vector<double> dK(const std::vector<double>& momentum, const std::vector<double> &inverseMetric) = 0;
 
   /**
   * @brief Potential Energy function U(q) = -log(pi(q)) used for Hamiltonian Dynamics.
@@ -199,7 +199,7 @@ class Hamiltonian
   * @param samples Contains samples. One row is one sample.
   * @return Error code of Cholesky decomposition needed for dense Metric.
   */
-  virtual int updateMetricMatricesEuclidean(const std::vector<std::vector<double>> &samples)
+  virtual int updateMetricMatricesEuclidean(const std::vector<std::vector<double>> &samples, std::vector<double>& metric, std::vector<double>& inverseMetric)
   {
     return -1;
   };

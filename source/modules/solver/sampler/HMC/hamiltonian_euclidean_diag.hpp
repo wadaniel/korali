@@ -23,8 +23,6 @@ class HamiltonianEuclideanDiag : public HamiltonianEuclidean
   */
   HamiltonianEuclideanDiag(const size_t stateSpaceDim, korali::Experiment *k) : HamiltonianEuclidean{stateSpaceDim, k}
   {
-    _metric.resize(stateSpaceDim);
-    _inverseMetric.resize(stateSpaceDim);
   }
 
   /**
@@ -34,8 +32,6 @@ class HamiltonianEuclideanDiag : public HamiltonianEuclidean
   */
   HamiltonianEuclideanDiag(const size_t stateSpaceDim, korali::distribution::univariate::Normal *normalGenerator, korali::Experiment *k) : HamiltonianEuclidean{stateSpaceDim, k}
   {
-    _metric.resize(stateSpaceDim);
-    _inverseMetric.resize(stateSpaceDim);
     _normalGenerator = normalGenerator;
   }
 
@@ -48,8 +44,6 @@ class HamiltonianEuclideanDiag : public HamiltonianEuclidean
   */
   HamiltonianEuclideanDiag(const size_t stateSpaceDim, korali::distribution::univariate::Normal *normalGenerator, const std::vector<double> metric, const std::vector<double> inverseMetric, korali::Experiment *k) : HamiltonianEuclideanDiag{stateSpaceDim, normalGenerator, k}
   {
-    _metric = metric;
-    _inverseMetric = inverseMetric;
   }
 
   /**
@@ -64,9 +58,9 @@ class HamiltonianEuclideanDiag : public HamiltonianEuclidean
   * @param p Current momentum.
   * @return Total energy.
   */
-  double H(const std::vector<double> &p) override
+  double H(const std::vector<double> &momentum, const std::vector<double>& inverseMetric) override
   {
-    return K(p) + U();
+    return K(momentum, inverseMetric) + U();
   }
 
   /**
@@ -74,15 +68,15 @@ class HamiltonianEuclideanDiag : public HamiltonianEuclidean
   * @param p Current momentum.
   * @return Kinetic energy.
   */
-  double K(const std::vector<double> &p) override
+  double K(const std::vector<double> &momentum, const std::vector<double>& inverseMetric) override
   {
-    double tmpScalar = 0.0;
+    double energy = 0.0;
     for (size_t i = 0; i < _stateSpaceDim; ++i)
     {
-      tmpScalar += p[i] * _inverseMetric[i] * p[i];
+      energy += momentum[i] * inverseMetric[i] * momentum[i];
     }
 
-    return 0.5 * tmpScalar;
+    return 0.5 * energy;
   }
 
   /**
@@ -90,12 +84,12 @@ class HamiltonianEuclideanDiag : public HamiltonianEuclidean
   * @param p Current momentum.
   * @return Gradient of Kinetic energy with current momentum.
   */
-  std::vector<double> dK(const std::vector<double> &p) override
+  std::vector<double> dK(const std::vector<double> &momentum, const std::vector<double>& inverseMetric) override
   {
     std::vector<double> tmpVector(_stateSpaceDim, 0.0);
     for (size_t i = 0; i < _stateSpaceDim; ++i)
     {
-      tmpVector[i] = _inverseMetric[i] * p[i];
+      tmpVector[i] = inverseMetric[i] * momentum[i];
     }
     return tmpVector;
   }
@@ -104,31 +98,13 @@ class HamiltonianEuclideanDiag : public HamiltonianEuclidean
   * @brief Generates sample of momentum.
   * @return Sample of momentum from normal distribution with covariance matrix _metric. Only variance taken into account with diagonal metric.
   */
-  std::vector<double> sampleMomentum() const override
+  std::vector<double> sampleMomentum(const std::vector<double>& metric) const override
   {
     std::vector<double> result(_stateSpaceDim);
 
     for (size_t i = 0; i < _stateSpaceDim; ++i)
     {
-      result[i] = std::sqrt(_metric[i]) * _normalGenerator->getRandomNumber();
-    }
-
-    return result;
-  }
-
-  /**
-  * @brief Calculates inner product induces by inverse metric.
-  * @param pLeft Left argument (momentum).
-  * @param pRight Right argument (momentum).
-  * @return pLeft.transpose * _inverseMetric * pRight.
-  */
-  double innerProduct(const std::vector<double> &pLeft, const std::vector<double> &pRight) const
-  {
-    double result = 0.0;
-
-    for (size_t i = 0; i < _stateSpaceDim; ++i)
-    {
-      result += pLeft[i] * _inverseMetric[i] * pRight[i];
+      result[i] = std::sqrt(metric[i]) * _normalGenerator->getRandomNumber();
     }
 
     return result;
@@ -139,7 +115,7 @@ class HamiltonianEuclideanDiag : public HamiltonianEuclidean
   * @param samples Contains samples. One row is one sample.
   * @return Error code not needed here to set to 0.
   */
-  int updateMetricMatricesEuclidean(const std::vector<std::vector<double>> &samples) override
+  int updateMetricMatricesEuclidean(const std::vector<std::vector<double>> &samples, std::vector<double>& metric, std::vector<double>& inverseMetric)
   {
     double mean, cov, sum;
     double sumOfSquares;
@@ -157,8 +133,8 @@ class HamiltonianEuclideanDiag : public HamiltonianEuclidean
       }
       mean = sum / (numSamples);
       cov = sumOfSquares / (numSamples)-mean * mean;
-      _inverseMetric[i] = cov;
-      _metric[i] = 1.0 / cov;
+      inverseMetric[i] = cov;
+      metric[i] = 1.0 / cov;
     }
 
     return 0;

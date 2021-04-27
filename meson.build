@@ -20,7 +20,6 @@ pymodule = import('python')
 python = pymodule.find_installation('python3', required: true)
 
 korali = 'korali' # python package name
-korali_extension = 'libkorali' # cpp extensions name
 korali_install_base = python.get_install_dir() / korali
 korali_install_headers = korali_install_base / 'include'
 summary({
@@ -31,8 +30,6 @@ summary({
 # list of Korali dependencies
 null_dep = dependency('', required : false) # used for simplification of code
 korali_deps = []
-korali_cpp_args = []
-
 
 # process required korali dependencies
 # TODO: [fabianw@mavt.ethz.ch; 2021-02-13] should probably test for system cblas
@@ -98,9 +95,10 @@ summary({
 # process korali extension
 subdir('source')
 
-# process korali pure python
+# process korali python sources
 subdir('python/korali')
 
+# tests
 nomalloc = environment({'MALLOC_PERTURB_': '0'})
 subdir('tests')
 subdir('examples')

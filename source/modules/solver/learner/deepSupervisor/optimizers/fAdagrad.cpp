@@ -5,7 +5,6 @@
 
 namespace korali
 {
-
 fAdagrad::fAdagrad(size_t nVars) : fGradientBasedOptimizer(nVars)
 {
   // Defaults
@@ -45,7 +44,7 @@ void fAdagrad::processResult(float evaluation, std::vector<float> &gradient)
     std::abort();
   }
 
-  for (size_t i = 0 ; i < _nVars; i++)
+  for (size_t i = 0; i < _nVars; i++)
   {
     _s[i] = _s[i] + (gradient[i] * gradient[i]);
     _currentValue[i] = _currentValue[i] + (_eta / std::sqrt(_s[i] + _epsilon)) * gradient[i];

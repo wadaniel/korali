@@ -212,7 +212,6 @@ std::vector<policy_t> dVRACER::runPolicy(const std::vector<std::vector<std::vect
   return policyVector;
 }
 
-
 knlohmann::json dVRACER::getAgentPolicy()
 {
   knlohmann::json hyperparameters;
@@ -227,7 +226,7 @@ void dVRACER::setAgentPolicy(const knlohmann::json &hyperparameters)
 
 void dVRACER::resetAgentOptimizers()
 {
- _criticPolicyLearner->resetOptimizer();
+  _criticPolicyLearner->resetOptimizer();
 }
 
 void dVRACER::printAgentInformation()

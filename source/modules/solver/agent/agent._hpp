@@ -420,16 +420,18 @@ class Agent : public Solver
   void rescaleStates();
 
   /**
-   * @brief Rescales a given reward
+   * @brief Rescales a given reward according to gaussian normalization parameters (mean+sigma)
+   * @param reward the input reward to rescale
+   * @return The normalized reward
    */
   inline float getScaledReward(const float reward)
   {
-   float rescaledReward = (reward - _rewardRescalingMean) / _rewardRescalingSigma;
+    float rescaledReward = (reward - _rewardRescalingMean) / _rewardRescalingSigma;
 
-   if (std::isfinite(rescaledReward) == false)
-     KORALI_LOG_ERROR("Scaled reward is non finite: %f (Mean: %f, Sigma: %f)\n", rescaledReward, _rewardRescalingMean, _rewardRescalingSigma);
+    if (std::isfinite(rescaledReward) == false)
+      KORALI_LOG_ERROR("Scaled reward is non finite: %f (Mean: %f, Sigma: %f)\n", rescaledReward, _rewardRescalingMean, _rewardRescalingSigma);
 
-   return rescaledReward;
+    return rescaledReward;
   }
 
   /**

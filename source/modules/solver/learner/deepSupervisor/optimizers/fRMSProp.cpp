@@ -5,7 +5,6 @@
 
 namespace korali
 {
-
 fRMSProp::fRMSProp(size_t nVars) : fGradientBasedOptimizer(nVars)
 {
   // Defaults
@@ -48,7 +47,7 @@ void fRMSProp::processResult(float evaluation, std::vector<float> &gradient)
     std::abort();
   }
 
-  for (size_t i = 0 ; i < _nVars; i++)
+  for (size_t i = 0; i < _nVars; i++)
   {
     _r[i] = (1.0f - _beta) * (gradient[i] * gradient[i]) + _beta * _r[i] * _r[i];
     _v[i] = (_eta / (std::sqrt(_r[i]) + _epsilon)) * -gradient[i];

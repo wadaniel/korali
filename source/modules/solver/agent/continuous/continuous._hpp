@@ -11,15 +11,13 @@ namespace solver
 {
 namespace agent
 {
-
 class Continuous : public Agent
 {
   public:
-
   /**
    * @brief Storage for the pointer to the (continuous) learning problem
    */
-   problem::reinforcementLearning::Continuous *_problem;
+  problem::reinforcementLearning::Continuous *_problem;
 
   /**
    * @brief Calculates the gradient of policy wrt to the parameter of the 2nd (current) distribution evaluated at old action.

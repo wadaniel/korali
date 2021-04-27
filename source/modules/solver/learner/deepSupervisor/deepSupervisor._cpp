@@ -180,11 +180,11 @@ void DeepSupervisor::setHyperparameters(const std::vector<float> &hyperparameter
 
 void DeepSupervisor::resetOptimizer()
 {
- // Need to update Adam to continue from there
- _optimizer->_initialValues = _neuralNetwork->getHyperparameters();
+  // Need to update Adam to continue from there
+  _optimizer->_initialValues = _neuralNetwork->getHyperparameters();
 
- // Resetting
- _optimizer->reset();
+  // Resetting
+  _optimizer->reset();
 }
 
 std::vector<std::vector<float>> &DeepSupervisor::getEvaluation(const std::vector<std::vector<std::vector<float>>> &input)

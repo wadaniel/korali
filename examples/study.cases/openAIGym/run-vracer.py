@@ -53,6 +53,7 @@ e["Solver"]["Reward"]["Outbound Penalization"]["Factor"] = 0.5
 ### Configuring the neural network and its hidden layers
 
 e["Solver"]["Neural Network"]["Engine"] = "OneDNN"
+e["Solver"]['Neural Network']['Optimizer'] = "Adam"
 e["Solver"]["L2 Regularization"]["Enabled"] = True
 e["Solver"]["L2 Regularization"]["Importance"] = 1.0
 

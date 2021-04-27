@@ -21,10 +21,29 @@ class fMadGrad : public fGradientBasedOptimizer
  */
   fMadGrad(size_t nVars);
 
+  /**
+  * @brief Gradient Component
+  */
   std::vector<float> _s;
+
+  /**
+  * @brief Squared Gradient Component
+  */
   std::vector<float> _v;
+
+  /**
+  * @brief Update rule
+  */
   std::vector<float> _z;
+
+  /**
+   * @brief Safety addition on divide
+   */
   float _epsilon;
+
+  /**
+   * @brief Update momentum
+   */
   float _momentum;
 
   virtual bool checkTermination() override;

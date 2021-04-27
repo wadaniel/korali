@@ -31,34 +31,30 @@ e["Variables"][3]["Name"] = "Swimmer 2 - Pos Y"
 
 e["Variables"][4]["Name"] = "Magnet Rotation X"
 e["Variables"][4]["Type"] = "Action"
-e["Variables"][4]["Lower Bound"] = -1.0
-e["Variables"][4]["Upper Bound"] = +1.0
-e["Variables"][4]["Initial Exploration Noise"] = 0.25
+e["Variables"][4]["Initial Exploration Noise"] = 0.45
 
 e["Variables"][5]["Name"] = "Magnet Rotation Y"
 e["Variables"][5]["Type"] = "Action"
-e["Variables"][5]["Lower Bound"] = -1.0
-e["Variables"][5]["Upper Bound"] = +1.0
-e["Variables"][5]["Initial Exploration Noise"] = 0.25
+e["Variables"][5]["Initial Exploration Noise"] = 0.45
 
 e["Variables"][6]["Name"] = "Magnet Intensity"
 e["Variables"][6]["Type"] = "Action"
-e["Variables"][6]["Lower Bound"] = +0.0
-e["Variables"][6]["Upper Bound"] = +2.0
-e["Variables"][6]["Initial Exploration Noise"] = 0.25
+e["Variables"][6]["Initial Exploration Noise"] = 0.45
 
 ### Defining Agent Configuration 
 
 e["Solver"]["Type"] = "Agent / Continuous / VRACER"
 e["Solver"]["Mode"] = "Training"
 e["Solver"]["Experiences Between Policy Updates"] = 1
-e["Solver"]["Episodes Per Generation"] = 1
-e["Solver"]["Learning Rate"] = 1e-4
+e["Solver"]["Episodes Per Generation"] = 50 
+e["Solver"]["Learning Rate"] = 1e-5
 e["Solver"]["Mini Batch"]["Size"] = 128
+e["Solver"]["Policy"]["Distribution"] = "Unbounded Normal"
 
 ### Configuring the neural network and its hidden layers
 
 e["Solver"]["Neural Network"]["Engine"] = "OneDNN"
+e["Solver"]["Neural Network"]["Optimizer"] = "Adam"
 
 e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear"
 e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 64

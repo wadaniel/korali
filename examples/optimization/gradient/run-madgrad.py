@@ -22,16 +22,16 @@ e["Problem"]["Objective Function"] = negative_rosenbrock
 
 # Defining the problem's variables.
 for i in range(5):
-  e["Variables"][i]["Name"] = "X" + str(i)
-  e["Variables"][i]["Initial Value"] = -10.0 + i
+    e["Variables"][i]["Name"] = "X" + str(i)
+    e["Variables"][i]["Initial Value"] = -10
 
-# Configuring CMA-ES parameters
-e["Solver"]["Type"] = "Optimizer/Rprop"
-e["Solver"]["Termination Criteria"]["Max Generations"] = 200
-e["Solver"]["Termination Criteria"]["Parameter Relative Tolerance"] = 1e-8
+# Configuring Adam parameters
+e["Solver"]["Type"] = "Optimizer/MADGRAD"
+e["Solver"]["Eta"] = 0.1
+e["Solver"]["Termination Criteria"]["Max Generations"] = 5000
 
 # Configuring results path
-e["File Output"]["Path"] = '_korali_result_rprop'
+e["File Output"]["Path"] = '_korali_result_madgrad'
 
 # Running Experiment
 k.run(e)

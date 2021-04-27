@@ -5,7 +5,6 @@
 
 namespace korali
 {
-
 fMadGrad::fMadGrad(size_t nVars) : fGradientBasedOptimizer(nVars)
 {
   // Defaults
@@ -50,14 +49,14 @@ void fMadGrad::processResult(float evaluation, std::vector<float> &gradient)
     std::abort();
   }
 
-  float lambda = _eta;// * std::sqrt((float)_modelEvaluationCount + 1.0f);
+  float lambda = _eta; // * std::sqrt((float)_modelEvaluationCount + 1.0f);
 
-  for (size_t i = 0 ; i < _nVars; i++)
+  for (size_t i = 0; i < _nVars; i++)
   {
     _s[i] = _s[i] + lambda * gradient[i];
     _v[i] = _v[i] - lambda * (gradient[i] * gradient[i]);
     _z[i] = _initialValues[i] - (1.0f / (std::cbrt(_v[i]) + _epsilon)) * _s[i];
-    _currentValue[i] = (1.0f - _momentum) * _currentValue[i] +  _momentum * _z[i];
+    _currentValue[i] = (1.0f - _momentum) * _currentValue[i] + _momentum * _z[i];
   }
 
   _modelEvaluationCount++;

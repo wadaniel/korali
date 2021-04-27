@@ -19,28 +19,28 @@ class fGradientBasedOptimizer
  * @brief Default constructor for the optimizer
  * @param nVars Variable-space dimensionality
  */
- fGradientBasedOptimizer(size_t nVars)
- {
-   // Variable Parameters
-   _currentGeneration = 1;
-   _nVars = nVars;
-   _initialValues.resize(_nVars, 0.0);
-   _currentValue.resize(_nVars, 0.0);
-   _gradient.resize(_nVars, 0.0);
-   _modelEvaluationCount = 0;
- }
+  fGradientBasedOptimizer(size_t nVars)
+  {
+    // Variable Parameters
+    _currentGeneration = 1;
+    _nVars = nVars;
+    _initialValues.resize(_nVars, 0.0);
+    _currentValue.resize(_nVars, 0.0);
+    _gradient.resize(_nVars, 0.0);
+    _modelEvaluationCount = 0;
+  }
 
   /**
   * @brief Number of problem variables
   */
   size_t _nVars;
 
-  /*
+  /**
   * @brief Learning Rate
   */
   float _eta;
 
-  /*
+  /**
   * @brief Decay for gradient update
   */
   float _decay;

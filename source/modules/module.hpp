@@ -5,6 +5,7 @@
 #ifndef _KORALI_MODULE_HPP_
 #define _KORALI_MODULE_HPP_
 
+#include "config.hpp"
 #include "auxiliar/koraliJson.hpp"
 #include "auxiliar/kstring.hpp"
 #include "auxiliar/logger.hpp"

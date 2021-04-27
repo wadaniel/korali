@@ -19,7 +19,7 @@ void Continuous::initializeAgent()
   for (size_t i = 0; i < _problem->_actionVectorSize; i++)
   {
     // For unbounded distributions, finite bounds should result in an error message
-    if (_policyDistribution == "Unbounded Normal" || _policyDistribution == "Beta")
+    if (_policyDistribution == "Normal" || _policyDistribution == "Beta")
     {
       if (_actionLowerBounds[i] != -std::numeric_limits<float>::infinity())
         KORALI_LOG_ERROR("Provided lower bound (%f) for action variable %lu is finite, but the distribution (%s) is unbounded.\n", _actionLowerBounds[i], i, _policyDistribution.c_str());
@@ -43,7 +43,7 @@ void Continuous::initializeAgent()
   }
 
   // Obtaining policy parameter transformations (depends on which policy distribution chosen)
-  if (_policyDistribution == "Unbounded Normal" || _policyDistribution == "Squashed Normal")
+  if (_policyDistribution == "Normal" || _policyDistribution == "Squashed Normal")
   {
     _policyParameterCount = 2 * _problem->_actionVectorSize; // Means and Sigmas
 
@@ -52,7 +52,7 @@ void Continuous::initializeAgent()
     _policyParameterScaling.resize(_policyParameterCount);
     _policyParameterShifting.resize(_policyParameterCount);
 
-    // Establishing transformations for the unbounded normal policy
+    // Establishing transformations for the Normal policy
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
     {
       auto varIdx = _problem->_actionVectorIndexes[i];
@@ -82,7 +82,7 @@ void Continuous::initializeAgent()
     _policyParameterScaling.resize(_policyParameterCount);
     _policyParameterShifting.resize(_policyParameterCount);
 
-    // Establishing transformations for the unbounded normal policy
+    // Establishing transformations for the Normal policy
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
     {
       auto varIdx = _problem->_actionVectorIndexes[i];
@@ -146,7 +146,7 @@ std::vector<float> Continuous::generateTrainingAction(const policy_t &curPolicy)
   std::vector<float> action(_problem->_actionVectorSize);
 
   // Creating the action based on the selected policy
-  if (_policyDistribution == "Unbounded Normal")
+  if (_policyDistribution == "Normal")
   {
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
     {
@@ -187,7 +187,7 @@ std::vector<float> Continuous::generateTestingAction(const policy_t &curPolicy)
 {
   std::vector<float> action(_problem->_actionVectorSize);
 
-  if (_policyDistribution == "Unbounded Normal")
+  if (_policyDistribution == "Normal")
   {
     // Take only the means without noise
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
@@ -237,7 +237,7 @@ float Continuous::calculateImportanceWeight(const std::vector<float> &action, co
   // Storage for importance weight value
   float importanceWeight = 0.0f;
 
-  if (_policyDistribution == "Unbounded Normal")
+  if (_policyDistribution == "Normal")
   {
     for (size_t i = 0; i < action.size(); i++)
     {
@@ -335,7 +335,7 @@ std::vector<float> Continuous::calculateImportanceWeightGradient(const std::vect
   // Storage for importance weight gradients
   std::vector<float> importanceWeightGradients(2 * _problem->_actionVectorSize, 0.0);
 
-  if (_policyDistribution == "Unbounded Normal")
+  if (_policyDistribution == "Normal")
   {
     float logImportanceWeight = 0.0;
 
@@ -474,7 +474,7 @@ std::vector<float> Continuous::calculateKLDivergenceGradient(const policy_t &old
   // Storage for KL Divergence Gradients
   std::vector<float> KLDivergenceGradients(2.0 * _problem->_actionVectorSize, 0.0);
 
-  if (_policyDistribution == "Unbounded Normal" || _policyDistribution == "Squashed Normal")
+  if (_policyDistribution == "Normal" || _policyDistribution == "Squashed Normal")
   {
     for (size_t i = 0; i < _problem->_actionVectorSize; ++i)
     {

@@ -49,7 +49,7 @@ e["Solver"]["Experiences Between Policy Updates"] = 1
 e["Solver"]["Episodes Per Generation"] = 50 
 e["Solver"]["Learning Rate"] = 1e-5
 e["Solver"]["Mini Batch"]["Size"] = 128
-e["Solver"]["Policy"]["Distribution"] = "Unbounded Normal"
+e["Solver"]["Policy"]["Distribution"] = "Normal"
 
 ### Configuring the neural network and its hidden layers
 

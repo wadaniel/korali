@@ -77,9 +77,9 @@ class HamiltonianEuclideanDense : public HamiltonianEuclidean
   * @param p Current momentum.
   * @return Total energy.
   */
-  double H(const std::vector<double> &p) override
+  double H(const std::vector<double> &momentum, const std::vector<double>& inverseMetric) override
   {
-    return K(p) + U();
+    return K(momentum, inverseMetric) + U();
   }
 
   /**
@@ -87,18 +87,18 @@ class HamiltonianEuclideanDense : public HamiltonianEuclidean
   * @param p Current momentum.
   * @return Kinetic energy.
   */
-  double K(const std::vector<double> &p, const std;:vector<double>& inverseMetric) override
+  double K(const std::vector<double> &momentum, const std::vector<double>& inverseMetric) override
   {
-    double tmpScalar = 0.0;
+    double energy = 0.0;
     for (size_t i = 0; i < _stateSpaceDim; ++i)
     {
       for (size_t j = 0; j < _stateSpaceDim; ++j)
       {
-        tmpScalar += p[i] * inverseMetric[i * _stateSpaceDim + j] * p[j];
+        energy += momentum[i] * inverseMetric[i * _stateSpaceDim + j] * momentum[j];
       }
     }
 
-    return 0.5 * tmpScalar;
+    return 0.5 * energy;
   }
 
   /**
@@ -164,7 +164,7 @@ class HamiltonianEuclideanDense : public HamiltonianEuclidean
   * @param samples Contains samples. One row is one sample.
   * @return Error code of Cholesky decomposition used to invert matrix.
   */
-  int updateMetricMatricesEuclidean(const std::vector<std::vector<double>> &samples) override
+  int updateMetricMatricesEuclidean(const std::vector<std::vector<double>> &samples, std::vector<double>& metric, std::vector<double>& inverseMetric) override
   {
     double sumk, sumi, sumOfSquares;
     double meank, meani, cov;

@@ -68,7 +68,7 @@ class HamiltonianEuclidean : public Hamiltonian
   * @param p Current momentum.
   * @return Gradient of Kinetic energy with current momentum.
   */
-  std::vector<double> dtau_dp(const std::vector<double> &p, const std::vector<double>& inverseMetric) override
+  std::vector<double> dtau_dp(const std::vector<double> &momentum, const std::vector<double>& inverseMetric) override
   {
     return this->dK(momentum, inverseMetric);
   }

@@ -90,16 +90,16 @@ class HamiltonianEuclideanDense : public HamiltonianEuclidean
   std::vector<double> dK(const std::vector<double> &momentum, const std::vector<double> &inverseMetric) override
   {
     std::vector<double> gradient(_stateSpaceDim, 0.0);
-    double tmpScalar = 0.0;
+    double gradi = 0.0;
 
     for (size_t i = 0; i < _stateSpaceDim; ++i)
     {
-      tmpScalar = 0.0;
+      gradi = 0.0;
       for (size_t j = 0; j < _stateSpaceDim; ++j)
       {
-        tmpScalar += inverseMetric[i * _stateSpaceDim + j] * momentum[j];
+        gradi += inverseMetric[i * _stateSpaceDim + j] * momentum[j];
       }
-      gradient[i] = tmpScalar;
+      gradient[i] = gradi;
     }
 
     return gradient;
@@ -112,7 +112,6 @@ class HamiltonianEuclideanDense : public HamiltonianEuclidean
   */
   std::vector<double> sampleMomentum(const std::vector<double> &metric) const override
   {
-    // TODO: Change
     std::vector<double> result(_stateSpaceDim, 0.0);
     _multivariateGenerator->getRandomVector(&result[0], _stateSpaceDim);
     return result;
@@ -175,7 +174,7 @@ class HamiltonianEuclideanDense : public HamiltonianEuclidean
     }
 
     // update Metric to be consisitent with Inverse Metric
-    int err = __invertMatrix(inverseMetric, metric);
+    int err = invertMatrix(inverseMetric, metric);
     if (err > 0) return err;
 
     std::vector<double> sig = metric;
@@ -194,7 +193,6 @@ class HamiltonianEuclideanDense : public HamiltonianEuclidean
 
   protected:
   // inverts mat via cholesky decomposition and writes inverted Matrix to inverseMat
-  // TODO: Avoid calculating cholesky decompisition twice
 
   /**
   * @brief Inverts s.p.d. matrix via Cholesky decomposition.
@@ -202,7 +200,7 @@ class HamiltonianEuclideanDense : public HamiltonianEuclidean
   * @param inverseMat Result of inversion.
   * @return Error code of Cholesky decomposition used to invert matrix.
   */
-  int __invertMatrix(const std::vector<double> &matrix, std::vector<double> &inverseMat)
+  int invertMatrix(const std::vector<double> &matrix, std::vector<double> &inverseMat)
   {
     const size_t dim = (size_t)std::sqrt(matrix.size());
     gsl_matrix_view invView = gsl_matrix_view_array(&inverseMat[0], dim, dim);

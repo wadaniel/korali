@@ -69,7 +69,7 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannian
   */
   double H(const std::vector<double> &momentum, const std::vector<double> &inverseMetric) override
   {
-    return this->K(momentum, inverseMetric) + this->U();
+    return K(momentum, inverseMetric) + U();
   }
 
   /**
@@ -80,7 +80,7 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannian
   */
   double K(const std::vector<double> &momentum, const std::vector<double> &inverseMetric) override
   {
-    double result = this->tau(momentum, inverseMetric) + 0.5 * _logDetMetric;
+    double result = tau(momentum, inverseMetric) + 0.5 * _logDetMetric;
 
     return result;
   }
@@ -94,16 +94,16 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannian
   std::vector<double> dK(const std::vector<double> &momentum, const std::vector<double> &inverseMetric) override
   {
     std::vector<double> gradient(_stateSpaceDim, 0.0);
-    double tmpScalar = 0.0;
+    double gradi = 0.0;
 
     for (size_t i = 0; i < _stateSpaceDim; ++i)
     {
-      tmpScalar = 0.0;
+      gradi = 0.0;
       for (size_t j = 0; j < _stateSpaceDim; ++j)
       {
-        tmpScalar += inverseMetric[i * _stateSpaceDim + j] * momentum[j];
+        gradi += inverseMetric[i * _stateSpaceDim + j] * momentum[j];
       }
-      gradient[i] = tmpScalar;
+      gradient[i] = gradi;
     }
 
     return gradient;
@@ -117,20 +117,18 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannian
   */
   double tau(const std::vector<double> &momentum, const std::vector<double> &inverseMetric) override
   {
-    double tmpScalar = 0.0;
-
-    // this->updateHamiltonian(q);
+    double tau = 0.0;
 
     for (size_t i = 0; i < _stateSpaceDim; ++i)
     {
-      tmpScalar += momentum[i] * inverseMetric[i] * momentum[i];
+      tau += momentum[i] * inverseMetric[i] * momentum[i];
     }
 
-    return 0.5 * tmpScalar;
+    return 0.5 * tau;
   }
 
   /**
-  * @brief Calculates gradient of dtau_dq(q, p) wrt. position.
+  * @brief Calculates gradient of tau(q, p) wrt. position.
   * @param momentum Current momentum.
   * @param inverseMetric Current inverseMetric.
   * @return Gradient of Kinetic energy with current momentum.
@@ -143,14 +141,14 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannian
   }
 
   /**
-  * @brief Calculates gradient of dtau_dp(q, p) wrt. momentum.
+  * @brief Calculates gradient of tau(q, p) wrt. momentum.
   * @param momentum Current momentum.
   * @param inverseMetric Current inverseMetric.
   * @return Gradient of Kinetic energy with current momentum.
   */
   std::vector<double> dtau_dp(const std::vector<double> &momentum, const std::vector<double> &inverseMetric) override
   {
-    std::vector<double> result = this->dK(momentum, inverseMetric);
+    std::vector<double> result = dK(momentum, inverseMetric);
 
     return result;
   }
@@ -161,7 +159,7 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannian
   */
   double phi() override
   {
-    return this->U() + 0.5 * _logDetMetric;
+    return U() + 0.5 * _logDetMetric;
   }
 
   /**
@@ -170,7 +168,7 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannian
   */
   std::vector<double> dphi_dq() override
   {
-    std::vector<double> result = this->dU();
+    std::vector<double> result = dU();
 
     return result;
   }
@@ -263,7 +261,7 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannian
     _logDetMetric = 0.0;
     for (size_t i = 0; i < _stateSpaceDim; ++i)
     {
-      double lambdaSoftAbs_i = __softAbsFunc(gsl_vector_get(lambda, i), _inverseRegularizationParam);
+      double lambdaSoftAbs_i = softAbsFunc(gsl_vector_get(lambda, i), _inverseRegularizationParam);
       gsl_matrix_set(lambdaSoftAbs, i, i, lambdaSoftAbs_i);
       gsl_matrix_set(inverseLambdaSoftAbs, i, i, 1.0 / lambdaSoftAbs_i);
       _logDetMetric += std::log(lambdaSoftAbs_i);

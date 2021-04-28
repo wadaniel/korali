@@ -22,6 +22,7 @@ class HamiltonianRiemannianConstDiag : public HamiltonianRiemannian
   * @param stateSpaceDim Dimension of State Space.
   * @param normalGenerator Generator needed for momentum sampling.
   * @param inverseRegularizationParam Inverse regularization parameter of SoftAbs metric that controls hardness of approximation: For large values inverseMetric is closer to analytical formula (and therefore closer to degeneracy in certain cases). 
+  * @param k Pointer to Korali object.
   */
   HamiltonianRiemannianConstDiag(const size_t stateSpaceDim, korali::distribution::univariate::Normal *normalGenerator, const double inverseRegularizationParam, korali::Experiment *k) : HamiltonianRiemannian{stateSpaceDim, k}
   {
@@ -39,6 +40,7 @@ class HamiltonianRiemannianConstDiag : public HamiltonianRiemannian
   /**
   * @brief Total energy function used for Hamiltonian Dynamics.
   * @param momentum Current momentum.
+  * @param inverseMetric Inverse of current metric.
   * @return Total energy.
   */
   double H(const std::vector<double> &momentum, const std::vector<double> &inverseMetric) override
@@ -189,8 +191,9 @@ class HamiltonianRiemannianConstDiag : public HamiltonianRiemannian
 
   /**
   * @brief Calculates inner product induces by inverse metric.
-  * @param leftMomentum Left vector of inner product.
-  * @param rightMoementum Right vector of inner product.
+  * @param momentumLeft Left vector of inner product.
+  * @param momentumRight Right vector of inner product.
+  * @param inverseMetric Inverse of curret metric.
   * @return inner product
   */
   double innerProduct(const std::vector<double> &momentumLeft, const std::vector<double> &momentumRight, const std::vector<double> &inverseMetric) const override

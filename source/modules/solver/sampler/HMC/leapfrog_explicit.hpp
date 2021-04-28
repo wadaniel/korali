@@ -17,12 +17,18 @@ namespace sampler
 class LeapfrogExplicit : public Leapfrog
 {
   public:
+  /**
+  * @brief Constructor for explicit leapfrog stepper.
+  * @param hamiltonian Hamiltonian of the system.
+  */
   LeapfrogExplicit(std::shared_ptr<Hamiltonian> hamiltonian) : Leapfrog(hamiltonian){};
 
   /**
   * @brief Explicit Leapfrog stepping scheme used for evolving Hamiltonian Dynamics.
   * @param position Position which is evolved.
   * @param momentum Momentum which is evolved.
+  * @param metric Current metric.
+  * @param inverseMetric Inverse of current metric.
   * @param stepSize Step Size used for Leap Frog Scheme.
   */
   void step(std::vector<double> &position, std::vector<double> &momentum, std::vector<double> &metric, std::vector<double> &inverseMetric, const double stepSize) override

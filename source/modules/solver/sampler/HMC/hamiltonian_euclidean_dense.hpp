@@ -28,6 +28,7 @@ class HamiltonianEuclideanDense : public HamiltonianEuclidean
   * @param stateSpaceDim Dimension of State Space.
   * @param metric Metric of space.
   * @param multivariateGenerator Generator needed for momentum sampling.
+  * @param k Pointer to Korali object.
   */
   HamiltonianEuclideanDense(const size_t stateSpaceDim, korali::distribution::multivariate::Normal *multivariateGenerator, const std::vector<double> &metric, korali::Experiment *k) : HamiltonianEuclidean{stateSpaceDim, k}
   {
@@ -54,6 +55,7 @@ class HamiltonianEuclideanDense : public HamiltonianEuclidean
   /**
   * @brief Total energy function used for Hamiltonian Dynamics.
   * @param momentum Current momentum.
+  * @param inverseMetric Inverse of current metric.
   * @return Total energy.
   */
   double H(const std::vector<double> &momentum, const std::vector<double> &inverseMetric) override
@@ -118,9 +120,10 @@ class HamiltonianEuclideanDense : public HamiltonianEuclidean
   }
 
   /**
-  * @brief Calculates inner product induces by inverse metric.
+  * @brief Calculates inner product induced by inverse metric.
   * @param leftMomentum Left vector of inner product.
-  * @param rightMoementum Right vector of inner product.
+  * @param rightMomentum Right vector of inner product.
+  * @param inverseMetric Inverse of current metric.
   * @return inner product
   */
   double innerProduct(const std::vector<double> &leftMomentum, const std::vector<double> &rightMomentum, const std::vector<double> &inverseMetric) const override

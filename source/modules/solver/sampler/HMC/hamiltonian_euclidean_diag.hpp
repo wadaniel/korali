@@ -20,6 +20,7 @@ class HamiltonianEuclideanDiag : public HamiltonianEuclidean
   /**
   * @brief Constructor with State Space Dim.
   * @param stateSpaceDim Dimension of State Space.
+  * @param k Pointer to Korali object.
   */
   HamiltonianEuclideanDiag(const size_t stateSpaceDim, korali::Experiment *k) : HamiltonianEuclidean{stateSpaceDim, k}
   {
@@ -29,6 +30,7 @@ class HamiltonianEuclideanDiag : public HamiltonianEuclidean
   * @brief Constructor with State Space Dim.
   * @param stateSpaceDim Dimension of State Space.
   * @param normalGenerator Generator needed for momentum sampling.
+  * @param k Pointer to Korali object.
   */
   HamiltonianEuclideanDiag(const size_t stateSpaceDim, korali::distribution::univariate::Normal *normalGenerator, korali::Experiment *k) : HamiltonianEuclidean{stateSpaceDim, k}
   {
@@ -45,6 +47,7 @@ class HamiltonianEuclideanDiag : public HamiltonianEuclidean
   /**
   * @brief Total energy function used for Hamiltonian Dynamics.
   * @param momentum Current momentum.
+  * @param inverseMetric Inverse of current metric.
   * @return Total energy.
   */
   double H(const std::vector<double> &momentum, const std::vector<double> &inverseMetric) override
@@ -105,7 +108,8 @@ class HamiltonianEuclideanDiag : public HamiltonianEuclidean
   /**
   * @brief Calculates inner product induces by inverse metric.
   * @param leftMomentum Left vector of inner product.
-  * @param rightMoementum Right vector of inner product.
+  * @param rightMomentum Right vector of inner product.
+  * @param inverseMetric Inverse of current metric.
   * @return inner product
   */
   double innerProduct(const std::vector<double> &leftMomentum, const std::vector<double> &rightMomentum, const std::vector<double> &inverseMetric) const override

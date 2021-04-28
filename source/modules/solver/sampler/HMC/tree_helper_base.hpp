@@ -73,21 +73,22 @@ struct TreeHelper
   size_t numLeavesOut;
 
   /**
-    * @brief Computes No U-Turn Sampling (NUTS) criterion
-    * @param hamiltonian Hamiltonian object of system
+    * @brief Computes No U-Turn Sampling (NUTS) criterion.
+    * @param hamiltonian Hamiltonian object of system.
     * @return Returns of tree should be built further.
     */
   virtual bool computeCriterion(const Hamiltonian &hamiltonian) const = 0;
 
   /**
-    * @brief Computes No U-Turn Sampling (NUTS) criterion
-    * @param hamiltonian Hamiltonian object of system
-    * @param pStart Starting momentum of trajectory
-    * @param pEnd Ending momentum of trajsectory
-    * @param rho Sum of momenta encountered in trajectory
+    * @brief Purely virtual function, computes No U-Turn Sampling (NUTS) criterion.
+    * @param hamiltonian Hamiltonian object of system.
+    * @param momentumStart Starting momentum of trajectory.
+    * @param momentumEnd Ending momentum of trajectory.
+    * @param inverseMetric Inverse of current metric.
+    * @param rho Sum of momenta encountered in trajectory.
     * @return Returns of tree should be built further.
     */
-  virtual bool computeCriterion(const Hamiltonian &hamiltonian, const std::vector<double> &pStart, const std::vector<double> &pEnd, const std::vector<double> &inverseMetric, const std::vector<double> &rho) const = 0;
+  virtual bool computeCriterion(const Hamiltonian &hamiltonian, const std::vector<double> &momentumStart, const std::vector<double> &momentumEnd, const std::vector<double> &inverseMetric, const std::vector<double> &rho) const = 0;
 };
 
 } // namespace sampler

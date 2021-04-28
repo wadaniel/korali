@@ -22,6 +22,7 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
   * @param stateSpaceDim Dimension of State Space.
   * @param normalGenerator Generator needed for momentum sampling.
   * @param inverseRegularizationParam Inverse regularization parameter of SoftAbs metric that controls hardness of approximation: For large values inverseMetric is closer to analytical formula (and therefore closer to degeneracy in certain cases). 
+  * @param k Pointer to Korali object.
   */
   HamiltonianRiemannianDiag(const size_t stateSpaceDim, korali::distribution::univariate::Normal *normalGenerator, const double inverseRegularizationParam, korali::Experiment *k) : HamiltonianRiemannian{stateSpaceDim, k}
   {
@@ -39,6 +40,7 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
   /**
   * @brief Total energy function used for Hamiltonian Dynamics.
   * @param momentum Current momentum.
+  * @param inverseMetric Inverse of current metric.
   * @return Total energy.
   */
   double H(const std::vector<double> &momentum, const std::vector<double> &inverseMetric) override
@@ -65,12 +67,12 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
   * @param inverseMetric Current inverseMetric.
   * @return Gradient of kinetic energy wrt. current momentum.
   */
-  std::vector<double> dK(const std::vector<double> &metric, const std::vector<double> &inverseMetric) override
+  std::vector<double> dK(const std::vector<double> &momentum, const std::vector<double> &inverseMetric) override
   {
     std::vector<double> gradient(_stateSpaceDim, 0.0);
     for (size_t i = 0; i < _stateSpaceDim; ++i)
     {
-      gradient[i] = inverseMetric[i] * metric[i];
+      gradient[i] = inverseMetric[i] * momentum[i];
     }
     return gradient;
   }
@@ -232,8 +234,9 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
 
   /**
   * @brief Calculates inner product induces by inverse metric.
-  * @param leftMomentum Left vector of inner product.
-  * @param rightMoementum Right vector of inner product.
+  * @param momentumLeft Left vector of inner product.
+  * @param momentumRight Right vector of inner product.
+  * @param inverseMetric Inverse of current metric.
   * @return inner product
   */
   double innerProduct(const std::vector<double> &momentumLeft, const std::vector<double> &momentumRight, const std::vector<double> &inverseMetric) const override

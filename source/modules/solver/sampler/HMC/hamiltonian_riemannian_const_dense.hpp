@@ -25,6 +25,7 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannian
   * @param multivariateGenerator Generator needed for momentum sampling.
   * @param metric Metric of space.
   * @param inverseRegularizationParam Inverse regularization parameter of SoftAbs metric that controls hardness of approximation: For large values inverseMetric is closer to analytical formula (and therefore closer to degeneracy in certain cases). 
+  * @param k Pointer to Korali object.
   */
   HamiltonianRiemannianConstDense(const size_t stateSpaceDim, korali::distribution::multivariate::Normal *multivariateGenerator, const std::vector<double> &metric, const double inverseRegularizationParam, korali::Experiment *k) : HamiltonianRiemannian{stateSpaceDim, k}
   {
@@ -65,6 +66,7 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannian
   /**
   * @brief Total energy function used for Hamiltonian Dynamics.
   * @param momentum Current momentum.
+  * @param inverseMetric Inverse of current metric.
   * @return Total energy.
   */
   double H(const std::vector<double> &momentum, const std::vector<double> &inverseMetric) override
@@ -179,13 +181,13 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannian
   * @param metric Current metric.
   * @param inverseMetric Inverse of current metric.
   */
-  void updateHamiltonian(const std::vector<double> &q, std::vector<double> &metric, std::vector<double> &inverseMetric) override
+  void updateHamiltonian(const std::vector<double> &position, std::vector<double> &metric, std::vector<double> &inverseMetric) override
   {
     auto sample = korali::Sample();
     sample["Sample Id"] = _modelEvaluationCount;
     sample["Module"] = "Problem";
     sample["Operation"] = "Evaluate";
-    sample["Parameters"] = q;
+    sample["Parameters"] = position;
 
     KORALI_START(sample);
     KORALI_WAIT(sample);
@@ -221,11 +223,12 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannian
 
   /**
   * @brief Calculates inner product induces by inverse metric.
-  * @param leftMomentum Left vector of inner product.
-  * @param rightMoementum Right vector of inner product.
+  * @param momentumLeft Left vector of inner product.
+  * @param momentumRight Right vector of inner product.
+  * @param inverseMetric Inverse of current metric.
   * @return inner product
   */
-  double innerProduct(const std::vector<double> &pLeft, const std::vector<double> &pRight, const std::vector<double> &inverseMetric) const override
+  double innerProduct(const std::vector<double> &momentumLeft, const std::vector<double> &momentumRight, const std::vector<double> &inverseMetric) const override
   {
     double result = 0.0;
 
@@ -233,7 +236,7 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannian
     {
       for (size_t j = 0; j < _stateSpaceDim; ++j)
       {
-        result += pLeft[i] * inverseMetric[i * _stateSpaceDim + j] * pRight[j];
+        result += momentumLeft[i] * inverseMetric[i * _stateSpaceDim + j] * momentumRight[j];
       }
     }
 

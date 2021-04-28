@@ -37,12 +37,12 @@ e["Problem"]["Solution"]["Size"] = 1
 e["Solver"]["Type"] = "Learner/DeepSupervisor"
 e["Solver"]["Loss Function"] = "Mean Squared Error"
 e["Solver"]["Steps Per Generation"] = 200
-e["Solver"]["Optimizer"] = "AdaBelief"
 e["Solver"]["Learning Rate"] = 0.005
 
 ### Defining the shape of the neural network
 
 e["Solver"]["Neural Network"]["Engine"] = "OneDNN"
+e["Solver"]["Neural Network"]["Optimizer"] = "MADGRAD"
 
 e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear"
 e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 32

@@ -46,24 +46,16 @@ struct policy_t
   float stateValue;
 
   /**
-  * @brief [Continuous] Contains the action means for the policy
+  * @brief Contains the parameters that define the policy distribution used to produced the action.
+  *        For continuous policies, it depends on the distribution selected.
+  *        For discrete policies, it contains the categorical probability of every action.
   */
-  std::vector<float> actionMeans;
+  std::vector<float> distributionParameters;
 
   /**
-  * @brief [Continuous] Contains the action sigmas for the policy
-  */
-  std::vector<float> actionSigmas;
-
-  /**
-  * @brief [Discrete]
+  * @brief [Discrete] Stores the index of the selected experience
   */
   size_t actionIndex;
-
-  /**
-  * @brief [Discrete] Contains the probabilities of discrete actions
-  */
-  std::vector<float> actionProbabilities;
 };
 
 class Agent : public Solver
@@ -110,7 +102,7 @@ class Agent : public Solver
   cBuffer<std::vector<float>> _stateVector;
 
   /**
-   * @brief Stores the actiont aken by the agent at the given state
+   * @brief Stores the action taken by the agent at the given state
    */
   cBuffer<std::vector<float>> _actionVector;
 
@@ -428,9 +420,24 @@ class Agent : public Solver
   void rescaleStates();
 
   /**
-   * @brief Rescales rewards to have a zero mean and unit variance
+   * @brief Rescales a given reward according to gaussian normalization parameters (mean+sigma)
+   * @param reward the input reward to rescale
+   * @return The normalized reward
    */
-  void rescaleRewards();
+  inline float getScaledReward(const float reward)
+  {
+    float rescaledReward = (reward - _rewardRescalingMean) / _rewardRescalingSigma;
+
+    if (std::isfinite(rescaledReward) == false)
+      KORALI_LOG_ERROR("Scaled reward is non finite: %f (Mean: %f, Sigma: %f)\n", rescaledReward, _rewardRescalingMean, _rewardRescalingSigma);
+
+    return rescaledReward;
+  }
+
+  /**
+   * @brief Re-calculates reward scaling factors to have a zero mean and unit variance
+   */
+  void calculateRewardRescalingFactors();
 
   /****************************************************************************************************
    * Virtual functions (responsibilities) for learning algorithms to fulfill
@@ -452,6 +459,11 @@ class Agent : public Solver
   * @param hyperparameters The hyperparameters to update the agent.
   */
   virtual void setAgentPolicy(const knlohmann::json &hyperparameters) = 0;
+
+  /**
+   * @brief Resets the states of the optimizers
+   */
+  virtual void resetAgentOptimizers() = 0;
 
   /**
    * @brief Initializes the internal state of the policy

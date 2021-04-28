@@ -43,7 +43,7 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
   */
   double H(const std::vector<double> &momentum, const std::vector<double> &inverseMetric) override
   {
-    return this->K(momentum, inverseMetric) + this->U();
+    return K(momentum, inverseMetric) + U();
   }
 
   /**
@@ -83,18 +83,18 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
   */
   double tau(const std::vector<double> &momentum, const std::vector<double> &inverseMetric) override
   {
-    double tmpScalar = 0.0;
+    double tau = 0.0;
 
     for (size_t i = 0; i < _stateSpaceDim; ++i)
     {
-      tmpScalar += momentum[i] * inverseMetric[i] * momentum[i];
+      tau += momentum[i] * inverseMetric[i] * momentum[i];
     }
 
-    return 0.5 * tmpScalar;
+    return 0.5 * tau;
   }
 
   /**
-  * @brief Calculates gradient of dtau_dq(q, p) wrt. position.
+  * @brief Calculates gradient of tau(q, p) wrt. position.
   * @param momentum Current momentum.
   * @param inverseMetric Current inverseMetric.
   * @return Gradient of Kinetic energy with current momentum.
@@ -102,15 +102,15 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
   std::vector<double> dtau_dq(const std::vector<double> &momentum, const std::vector<double> &inverseMetric) override
   {
     std::vector<double> result(_stateSpaceDim, 0.0);
-    std::vector<double> gradU = this->dU();
-    std::vector<double> hessianU = this->__hessianU();
+    std::vector<double> gradU = dU();
+    std::vector<double> hessian = hessianU();
 
     for (size_t j = 0; j < _stateSpaceDim; ++j)
     {
       result[j] = 0.0;
       for (size_t i = 0; i < _stateSpaceDim; ++i)
       {
-        result[j] += hessianU[i * _stateSpaceDim + j] * this->__taylorSeriesTauFunc(gradU[i], _inverseRegularizationParam) * momentum[i] * momentum[i];
+        result[j] += hessian[i * _stateSpaceDim + j] * taylorSeriesTauFunc(gradU[i], _inverseRegularizationParam) * momentum[i] * momentum[i];
       }
     }
 
@@ -118,14 +118,14 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
   }
 
   /**
-  * @brief Calculates gradient of dtau_dp(q, p) wrt. momentum.
+  * @brief Calculates gradient of tau(q, p) wrt. momentum.
   * @param momentum Current momentum.
   * @param inverseMetric Current inverseMetric.
   * @return Gradient of Kinetic energy with current momentum.
   */
   std::vector<double> dtau_dp(const std::vector<double> &momentum, const std::vector<double> &inverseMetric) override
   {
-    std::vector<double> result = this->dK(momentum, inverseMetric);
+    std::vector<double> result = dK(momentum, inverseMetric);
 
     return result;
   }
@@ -136,7 +136,7 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
   */
   double phi() override
   {
-    return this->U() + 0.5 * _logDetMetric;
+    return U() + 0.5 * _logDetMetric;
   }
 
   /**
@@ -146,8 +146,8 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
   std::vector<double> dphi_dq() override
   {
     std::vector<double> result(_stateSpaceDim, 0.0);
-    std::vector<double> gradU = this->dU();
-    std::vector<double> hessianU = this->__hessianU();
+    std::vector<double> gradU = dU();
+    std::vector<double> hessian = hessianU();
 
     std::vector<double> dLogDetMetric_dq(_stateSpaceDim, 0.0);
 
@@ -156,7 +156,7 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
       dLogDetMetric_dq[j] = 0.0;
       for (size_t i = 0; i < _stateSpaceDim; ++i)
       {
-        dLogDetMetric_dq[j] += 2.0 * hessianU[i * _stateSpaceDim + j] * this->__taylorSeriesPhiFunc(gradU[i], _inverseRegularizationParam);
+        dLogDetMetric_dq[j] += 2.0 * hessian[i * _stateSpaceDim + j] * taylorSeriesPhiFunc(gradU[i], _inverseRegularizationParam);
       }
     }
 
@@ -205,7 +205,7 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
     _logDetMetric = 0.0;
     for (size_t i = 0; i < _stateSpaceDim; ++i)
     {
-      metric[i] = this->__softAbsFunc(_currentGradient[i] * _currentGradient[i], _inverseRegularizationParam);
+      metric[i] = softAbsFunc(_currentGradient[i] * _currentGradient[i], _inverseRegularizationParam);
       inverseMetric[i] = 1.0 / metric[i];
       _logDetMetric += std::log(metric[i]);
     }
@@ -260,7 +260,7 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
   * @param alpha Hyperparameter.
   * @return function value at x.
   */
-  double __taylorSeriesPhiFunc(const double x, const double alpha)
+  double taylorSeriesPhiFunc(const double x, const double alpha)
   {
     double result;
 
@@ -286,7 +286,7 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
   * @param alpha Hyperparameter.
   * @return function value at x.
   */
-  double __taylorSeriesTauFunc(const double x, const double alpha)
+  double taylorSeriesTauFunc(const double x, const double alpha)
   {
     double result;
 

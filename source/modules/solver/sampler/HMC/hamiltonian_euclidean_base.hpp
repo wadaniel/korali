@@ -49,11 +49,11 @@ class HamiltonianEuclidean : public Hamiltonian
   */
   double tau(const std::vector<double> &momentum, const std::vector<double> &inverseMetric) override
   {
-    return this->K(momentum, inverseMetric);
+    return K(momentum, inverseMetric);
   }
 
   /**
-  * @brief Calculates gradient of dtau_dq(q, p) wrt. position.
+  * @brief Calculates gradient of tau(q, p) wrt. position.
   * @param momentum Current momentum.
   * @param inverseMetric Current inverseMetric.
   * @return Gradient of Kinetic energy with current momentum.
@@ -64,14 +64,14 @@ class HamiltonianEuclidean : public Hamiltonian
   }
 
   /**
-  * @brief Calculates gradient of dtau_dp(q, p) wrt. momentum.
+  * @brief Calculates gradient of tau(q, p) wrt. momentum.
   * @param momentum Current momentum.
   * @param inverseMetric Current inverseMetric.
   * @return Gradient of Kinetic energy with current momentum.
   */
   std::vector<double> dtau_dp(const std::vector<double> &momentum, const std::vector<double> &inverseMetric) override
   {
-    return this->dK(momentum, inverseMetric);
+    return dK(momentum, inverseMetric);
   }
 
   /**
@@ -80,7 +80,7 @@ class HamiltonianEuclidean : public Hamiltonian
   */
   double phi() override
   {
-    return this->U();
+    return U();
   }
 
   /**
@@ -89,7 +89,7 @@ class HamiltonianEuclidean : public Hamiltonian
   */
   std::vector<double> dphi_dq() override
   {
-    return this->dU();
+    return dU();
   }
 };
 

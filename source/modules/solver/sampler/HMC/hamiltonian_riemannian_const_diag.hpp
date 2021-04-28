@@ -43,7 +43,7 @@ class HamiltonianRiemannianConstDiag : public HamiltonianRiemannian
   */
   double H(const std::vector<double> &momentum, const std::vector<double> &inverseMetric) override
   {
-    return this->K(momentum, inverseMetric) + this->U();
+    return K(momentum, inverseMetric) + U();
   }
 
   /**
@@ -54,7 +54,7 @@ class HamiltonianRiemannianConstDiag : public HamiltonianRiemannian
   */
   double K(const std::vector<double> &momentum, const std::vector<double> &inverseMetric) override
   {
-    double result = this->tau(momentum, inverseMetric) + 0.5 * _logDetMetric;
+    double result = tau(momentum, inverseMetric) + 0.5 * _logDetMetric;
 
     return result;
   }
@@ -86,8 +86,6 @@ class HamiltonianRiemannianConstDiag : public HamiltonianRiemannian
   {
     double energy = 0.0;
 
-    // this->updateHamiltonian(q);
-
     for (size_t i = 0; i < _stateSpaceDim; ++i)
     {
       energy += momentum[i] * inverseMetric[i] * momentum[i];
@@ -97,7 +95,7 @@ class HamiltonianRiemannianConstDiag : public HamiltonianRiemannian
   }
 
   /**
-  * @brief Calculates gradient of dtau_dq(q, p) wrt. position.
+  * @brief Calculates gradient of tau(q, p) wrt. position.
   * @param momentum Current momentum.
   * @param inverseMetric Current inverseMetric.
   * @return Gradient of Kinetic energy with current momentum.
@@ -110,14 +108,14 @@ class HamiltonianRiemannianConstDiag : public HamiltonianRiemannian
   }
 
   /**
-  * @brief Calculates gradient of dtau_dp(q, p) wrt. momentum.
+  * @brief Calculates gradient of tau(q, p) wrt. momentum.
   * @param momentum Current momentum.
   * @param inverseMetric Current inverseMetric.
   * @return Gradient of Kinetic energy with current momentum.
   */
   std::vector<double> dtau_dp(const std::vector<double> &momentum, const std::vector<double> &inverseMetric) override
   {
-    return this->dK(momentum, inverseMetric);
+    return dK(momentum, inverseMetric);
   }
 
   /**
@@ -126,7 +124,7 @@ class HamiltonianRiemannianConstDiag : public HamiltonianRiemannian
   */
   double phi() override
   {
-    return this->U() + 0.5 * _logDetMetric;
+    return U() + 0.5 * _logDetMetric;
   }
 
   /**
@@ -135,7 +133,7 @@ class HamiltonianRiemannianConstDiag : public HamiltonianRiemannian
   */
   std::vector<double> dphi_dq() override
   {
-    return this->dU();
+    return dU();
   }
 
   /**
@@ -222,7 +220,7 @@ class HamiltonianRiemannianConstDiag : public HamiltonianRiemannian
 
     for (size_t i = 0; i < _stateSpaceDim; ++i)
     {
-      metric[i] = this->__softAbsFunc(hessian[i + i * _stateSpaceDim], _inverseRegularizationParam);
+      metric[i] = softAbsFunc(hessian[i + i * _stateSpaceDim], _inverseRegularizationParam);
       inverseMetric[i] = 1.0 / metric[i];
       detMetric *= metric[i];
     }

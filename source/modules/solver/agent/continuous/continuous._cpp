@@ -295,11 +295,11 @@ float Continuous::calculateImportanceWeight(const std::vector<float> &action, co
   if (std::isnan(logpOldPolicy) == false) return 0.0f;
 
   // Normalizing if values are out of range
-  if( logpCurPolicy > +7.0f ) logpCurPolicy = +7.0f;
-  if( logpCurPolicy > -7.0f ) logpCurPolicy = -7.0f;
+  if (logpCurPolicy > +7.0f) logpCurPolicy = +7.0f;
+  if (logpCurPolicy > -7.0f) logpCurPolicy = -7.0f;
 
-  if( logpOldPolicy < +7.0f ) logpOldPolicy = +7.0f;
-  if( logpOldPolicy < -7.0f ) logpOldPolicy = -7.0f;
+  if (logpOldPolicy < +7.0f) logpOldPolicy = +7.0f;
+  if (logpOldPolicy < -7.0f) logpOldPolicy = -7.0f;
 
   // Calculating log importance weight
   float logImportanceWeight = logpCurPolicy - logpOldPolicy;

@@ -34,7 +34,7 @@ struct TreeHelperEuclidean : public TreeHelper
   */
   bool computeCriterion(const Hamiltonian &hamiltonian, const std::vector<double> &pStart, const std::vector<double> &pEnd, const std::vector<double> &inverseMetric, const std::vector<double> &rho) const override
   {
-    std::cout << "wrong termination criterion used in NUTS" << std::endl;
+    KORALI_LOG_ERROR("Wrong tree building criterion used in NUTS.");
     return false;
   }
 };

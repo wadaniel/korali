@@ -209,7 +209,7 @@ class HamiltonianRiemannianConstDiag : public HamiltonianRiemannian
   * @param pRight Right argument (momentum).
   * @return pLeft.transpose * inverseMetric * pRight.
   */
-  double innerProduct(const std::vector<double> &pLeft, const std::vector<double> &pRight, const std::vector<double> &inverseMetric) const
+  double innerProduct(const std::vector<double> &pLeft, const std::vector<double> &pRight, const std::vector<double> &inverseMetric) const override
   {
     double result = 0.0;
 

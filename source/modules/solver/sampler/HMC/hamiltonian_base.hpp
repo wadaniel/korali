@@ -135,6 +135,14 @@ class Hamiltonian
   virtual std::vector<double> dphi_dq() = 0;
 
   /**
+  * @brief Purely virtual, calculates inner product induces by inverse metric.
+  * @param pLeft Left argument (momentum).
+  * @param pRight Right argument (momentum).
+  * @return pLeft.transpose * inverseMetric * pRight.
+  */
+  virtual double innerProduct(const std::vector<double> &pLeft, const std::vector<double> &pRight, const std::vector<double>& inverseMetric) const = 0;
+
+  /**
   * @brief Updates current position of hamiltonian.
   * @param q Current position.
   * @param _k Experiment object.
@@ -166,14 +174,6 @@ class Hamiltonian
   * @return Sample of momentum from normal distribution with covariance matrix metric.
   */
   virtual std::vector<double> sampleMomentum(const std::vector<double>& metric) const = 0;
-
-  /**
-  * @brief Calculates inner product induces by inverse metric.
-  * @param pLeft Left argument (momentum).
-  * @param pRight Right argument (momentum).
-  * @return pLeft.transpose * inverseMetric * pRight.
-  */
-  virtual double innerProduct(const std::vector<double> &pLeft, const std::vector<double> &pRight, const std::vector<double> &inverseMetric) const = 0;
 
   /**
   * @brief Computes NUTS criterion on euclidean domain.

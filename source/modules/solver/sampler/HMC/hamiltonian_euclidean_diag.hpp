@@ -36,17 +36,6 @@ class HamiltonianEuclideanDiag : public HamiltonianEuclidean
   }
 
   /**
-  * @brief Constructor with State Space Dim.
-  * @param stateSpaceDim Dimension of State Space.
-  * @param normalGenerator Generator needed for momentum sampling.
-  * @param metric Metric for initialization. 
-  * @param inverseMetric Inverse Metric for initialization. 
-  */
-  HamiltonianEuclideanDiag(const size_t stateSpaceDim, korali::distribution::univariate::Normal *normalGenerator, const std::vector<double> metric, const std::vector<double> inverseMetric, korali::Experiment *k) : HamiltonianEuclideanDiag{stateSpaceDim, normalGenerator, k}
-  {
-  }
-
-  /**
   * @brief Destructor of derived class.
   */
   ~HamiltonianEuclideanDiag()
@@ -109,6 +98,25 @@ class HamiltonianEuclideanDiag : public HamiltonianEuclidean
 
     return result;
   }
+ 
+  /**
+  * @brief Calculates inner product induces by inverse metric.
+  * @param pLeft Left argument (momentum).
+  * @param pRight Right argument (momentum).
+  * @return pLeft.transpose * inverseMetric * pRight.
+  */
+  double innerProduct(const std::vector<double> &pLeft, const std::vector<double> &pRight, const std::vector<double>& inverseMetric) const override
+  {
+    double result = 0.0;
+
+    for (size_t i = 0; i < _stateSpaceDim; ++i)
+    {
+        result += pLeft[i] * inverseMetric[i] * pRight[i];
+    }
+
+    return result;
+  }
+
 
   /**
   * @brief Updates diagonal Inverse Metric by using samples to approximate the Variance (diagonal of Fisher Information matrix).

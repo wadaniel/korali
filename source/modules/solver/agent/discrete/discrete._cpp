@@ -24,7 +24,7 @@ void Discrete::getAction(korali::Sample &sample)
 
   // Getting the probability of the actions given by the agent's policy
   auto policy = runPolicy({_stateTimeSequence.getVector()})[0];
-  const auto &pActions = policy.actionProbabilities;
+  const auto &pActions = policy.distributionParameters;
 
   // Storage for the action index to use
   size_t actionIdx = 0;
@@ -87,7 +87,7 @@ void Discrete::getAction(korali::Sample &sample)
   }
 
   // Storing action itself, its idx, and probabilities
-  sample["Policy"]["Action Probabilities"] = pActions;
+  sample["Policy"]["Distribution Parameters"] = pActions;
   sample["Policy"]["Action Index"] = actionIdx;
   sample["Policy"]["State Value"] = policy.stateValue;
   sample["Action"] = _problem->_possibleActions[actionIdx];
@@ -95,8 +95,8 @@ void Discrete::getAction(korali::Sample &sample)
 
 float Discrete::calculateImportanceWeight(const std::vector<float> &action, const policy_t &curPolicy, const policy_t &oldPolicy)
 {
-  const auto &pVectorCurPolicy = curPolicy.actionProbabilities;
-  const auto &pVectorOldPolicy = oldPolicy.actionProbabilities;
+  const auto &pVectorCurPolicy = curPolicy.distributionParameters;
+  const auto &pVectorOldPolicy = oldPolicy.distributionParameters;
   auto actionIdx = oldPolicy.actionIndex;
 
   // Getting probability density of action for current policy
@@ -106,7 +106,12 @@ float Discrete::calculateImportanceWeight(const std::vector<float> &action, cons
   float pOldPolicy = pVectorOldPolicy[actionIdx];
 
   // Now calculating importance weight for the old s,a experience
-  float importanceWeight = pCurPolicy / pOldPolicy;
+  float constexpr epsilon = 0.00000001f;
+  float importanceWeight = pCurPolicy / (pOldPolicy + epsilon);
+
+  // Safety checks
+  if (importanceWeight > 1024.0f) importanceWeight = 1024.0f;
+  if (importanceWeight < -1024.0f) importanceWeight = -1024.0f;
 
   return importanceWeight;
 }
@@ -116,6 +121,10 @@ std::vector<float> Discrete::calculateImportanceWeightGradient(const size_t acti
   std::vector<float> grad(_problem->_possibleActions.size(), 0.0);
 
   float importanceWeight = curPvals[actionIdx] / oldPvals[actionIdx];
+
+  // Safety checks
+  if (importanceWeight > 1024.0f) importanceWeight = 1024.0f;
+  if (importanceWeight < -1024.0f) importanceWeight = -1024.0f;
 
   // calculate gradient of categorical distribution normalized by old pvals
   for (size_t i = 0; i < _problem->_possibleActions.size(); i++)

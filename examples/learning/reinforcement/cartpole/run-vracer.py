@@ -45,9 +45,14 @@ e["Solver"]["Episodes Per Generation"] = 1
 e["Solver"]["Learning Rate"] = 1e-3
 e["Solver"]["Mini Batch"]["Size"] = 32
 
+e["Solver"]["State Rescaling"]["Enabled"] = True
+e["Solver"]["Reward"]["Rescaling"]["Enabled"] = True
+e["Solver"]["Reward"]["Rescaling"]["Frequency"] = 1000
+
 ### Configuring the neural network and its hidden layers
 
 e["Solver"]["Neural Network"]["Engine"] = "OneDNN"
+e["Solver"]["Neural Network"]["Optimizer"] = "Adam"
 
 e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear"
 e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 32

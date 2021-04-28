@@ -23,7 +23,7 @@ e["Problem"]["Probability Function"] = lexponential
 
 # Defining problem's variables and their HMC settings
 e["Variables"][0]["Name"] = "X0"
-e["Variables"][0]["Initial Mean"] = 1.0
+e["Variables"][0]["Initial Mean"] = 4.0
 e["Variables"][0]["Initial Standard Deviation"] = 1.0
 
 # Configuring the HMC sampler parameters

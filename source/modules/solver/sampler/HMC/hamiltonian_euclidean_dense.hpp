@@ -26,43 +26,22 @@ class HamiltonianEuclideanDense : public HamiltonianEuclidean
   /**
   * @brief Constructor with State Space Dim.
   * @param stateSpaceDim Dimension of State Space.
-  */
-  HamiltonianEuclideanDense(const size_t stateSpaceDim, korali::Experiment *k) : HamiltonianEuclidean{stateSpaceDim, k}
-  {
-  }
-
-  /**
-  * @brief Constructor with State Space Dim.
-  * @param stateSpaceDim Dimension of State Space.
+  * @param metric Metric of space.
   * @param multivariateGenerator Generator needed for momentum sampling.
   */
-  HamiltonianEuclideanDense(const size_t stateSpaceDim, korali::distribution::multivariate::Normal *multivariateGenerator, korali::Experiment *k) : HamiltonianEuclidean{stateSpaceDim, k}
+  HamiltonianEuclideanDense(const size_t stateSpaceDim, korali::distribution::multivariate::Normal *multivariateGenerator, const std::vector<double> &metric, korali::Experiment *k) : HamiltonianEuclidean{stateSpaceDim, k}
   {
     _multivariateGenerator = multivariateGenerator;
-  }
+    _multivariateGenerator->_meanVector = std::vector<double>(stateSpaceDim, 0.);
+    _multivariateGenerator->_sigma = metric;
+    gsl_matrix_view sigView = gsl_matrix_view_array(&_multivariateGenerator->_sigma[0], _stateSpaceDim, _stateSpaceDim);
 
-  /**
-  * @brief Constructor with State Space Dim.
-  * @param stateSpaceDim Dimension of State Space.
-  * @param multivariateGenerator Generator needed for momentum sampling.
-  * @param metric Metric for initialization. 
-  * @param inverseMetric Inverse Metric for initialization. 
-  */
-  HamiltonianEuclideanDense(const size_t stateSpaceDim, korali::distribution::multivariate::Normal *multivariateGenerator, const std::vector<double> metric, const std::vector<double> inverseMetric, korali::Experiment *k) : HamiltonianEuclideanDense{stateSpaceDim, multivariateGenerator, k}
-  {
-    std::vector<double> mean(stateSpaceDim, 0.0);
-
-    // Initialize multivariate normal distribution
-    _multivariateGenerator->_meanVector = std::vector<double>(stateSpaceDim, 0.0);
-    _multivariateGenerator->_sigma = std::vector<double>(stateSpaceDim * stateSpaceDim, 0.0);
-
-    // Cholesky Decomposition
-    for (size_t d = 0; d < stateSpaceDim; ++d)
+    // Cholesky Decomp
+    int err = gsl_linalg_cholesky_decomp(&sigView.matrix);
+    if (err == 0)
     {
-      _multivariateGenerator->_sigma[d * stateSpaceDim + d] = sqrt(metric[d * stateSpaceDim + d]);
+      _multivariateGenerator->updateDistribution();
     }
-
-    _multivariateGenerator->updateDistribution();
   }
 
   /**

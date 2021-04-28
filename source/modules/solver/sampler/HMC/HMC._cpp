@@ -120,21 +120,21 @@ void HMC::setInitialConfiguration()
   // Initializing Integrator and Hamiltonian
   if (_metricType == Metric::Static)
   {
-    _hamiltonian = std::make_shared<HamiltonianEuclideanDiag>(_variableCount, _normalGenerator, _metric, _inverseMetric, _k);
+    _hamiltonian = std::make_shared<HamiltonianEuclideanDiag>(_variableCount, _normalGenerator, _k);
     _integrator = std::make_unique<LeapfrogExplicit>(_hamiltonian);
   }
   else if (_metricType == Metric::Euclidean)
   {
     if (_useDiagonalMetric)
-      _hamiltonian = std::make_shared<HamiltonianEuclideanDiag>(_variableCount, _normalGenerator, _metric, _inverseMetric, _k);
+      _hamiltonian = std::make_shared<HamiltonianEuclideanDiag>(_variableCount, _normalGenerator, _k);
     else
-      _hamiltonian = std::make_shared<HamiltonianEuclideanDense>(_variableCount, _multivariateGenerator, _metric, _inverseMetric, _k);
+      _hamiltonian = std::make_shared<HamiltonianEuclideanDense>(_variableCount, _multivariateGenerator, _k);
     _integrator = std::make_unique<LeapfrogExplicit>(_hamiltonian);
   }
   else if (_metricType == Metric::Riemannian)
   {
     if (_useDiagonalMetric)
-      _hamiltonian = std::make_shared<HamiltonianRiemannianDiag>(_variableCount, _normalGenerator, _metric, _inverseMetric, _inverseRegularizationParameter, _k);
+      _hamiltonian = std::make_shared<HamiltonianRiemannianDiag>(_variableCount, _normalGenerator, _inverseRegularizationParameter, _k);
     else
       KORALI_LOG_ERROR("Riemannian Metric only supported with Diagonal Metric");
     _integrator = std::make_unique<LeapfrogImplicit>(_maxNumFixedPointIteration, _hamiltonian);
@@ -142,9 +142,9 @@ void HMC::setInitialConfiguration()
   else if (_metricType == Metric::Riemannian_Const)
   {
     if (_useDiagonalMetric)
-      _hamiltonian = std::make_shared<HamiltonianRiemannianConstDiag>(_variableCount, _normalGenerator, _metric, _inverseMetric, _inverseRegularizationParameter, _k);
+      _hamiltonian = std::make_shared<HamiltonianRiemannianConstDiag>(_variableCount, _normalGenerator, _inverseRegularizationParameter, _k);
     else
-      _hamiltonian = std::make_shared<HamiltonianRiemannianConstDense>(_variableCount, _multivariateGenerator, _metric, _inverseMetric, _inverseRegularizationParameter, _k);
+      _hamiltonian = std::make_shared<HamiltonianRiemannianConstDense>(_variableCount, _multivariateGenerator, _inverseRegularizationParameter, _k);
     _integrator = std::make_unique<LeapfrogExplicit>(_hamiltonian);
   }
 
@@ -419,7 +419,7 @@ void HMC::runGenerationNUTSRiemannian(const double logUniSample)
     std::transform(cbegin(rhoInit), std::cend(rhoInit), std::cbegin(deltaRho), std::begin(deltaRho), std::plus<double>());
     std::transform(std::cbegin(rhoRight), std::cend(rhoRight), std::cbegin(deltaRho), std::begin(deltaRho), std::plus<double>());
 
-    buildCriterion = buildCriterionSubtree && helper->computeCriterion(*_hamiltonian, pLeft, pRight, deltaRho);
+    buildCriterion = buildCriterionSubtree && helper->computeCriterion(*_hamiltonian, pLeft, pRight, _inverseMetric, deltaRho);
 
     depth++;
   }
@@ -700,7 +700,7 @@ void HMC::buildTreeIntegration(std::shared_ptr<TreeHelperRiemannian> helper, std
       helper->numLeavesOut += numLeavesSubtree;
 
       std::vector<double> pEnd = helper->directionIn == -1 ? helperSubtree->pLeftOut : helperSubtree->pRightOut;
-      helper->buildCriterionOut = buildCriterionSubtree && helper->computeCriterion(*_hamiltonian, pStart, pEnd, rhoSubtree);
+      helper->buildCriterionOut = buildCriterionSubtree && helper->computeCriterion(*_hamiltonian, pStart, pEnd, _inverseMetric, rhoSubtree);
     }
   }
 }

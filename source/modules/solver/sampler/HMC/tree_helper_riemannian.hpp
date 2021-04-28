@@ -33,7 +33,7 @@ struct TreeHelperRiemannian : public TreeHelper
     * @param rho Sum of momenta encountered in trajectory
     * @return Returns of tree should be built further.
     */
-  bool computeCriterion(const Hamiltonian &hamiltonian, const std::vector<double> &pStart, const std::vector<double> &pEnd, const std::vector<double> &rho) const override
+  bool computeCriterion(const Hamiltonian &hamiltonian, const std::vector<double> &pStart, const std::vector<double> &pEnd, const std::vector<double>& inverseMetric, const std::vector<double> &rho) const override
   {
     size_t dim = rho.size();
     std::vector<double> tmpVectorOne(dim, 0.0);
@@ -42,14 +42,8 @@ struct TreeHelperRiemannian : public TreeHelper
     std::vector<double> tmpVectorTwo(dim, 0.0);
     std::transform(std::cbegin(rho), std::cend(rho), std::cbegin(pStart), std::begin(tmpVectorTwo), std::minus<double>());
     
-    double innerProductStart = 0;
-    double innerProductEnd = 0;
-
-    for(size_t i = 0; i < dim; ++i)
-    {
-        innerProductStart += pStart[i] * tmpVectorOne[i];
-        innerProductEnd += pEnd[i] * tmpVectorTwo[i];
-    }
+    double innerProductStart = hamiltonian.innerProduct(pStart, pStart, inverseMetric);
+    double innerProductEnd = hamiltonian.innerProduct(pEnd, pEnd, inverseMetric);
 
     return innerProductStart > 0.0 && innerProductEnd > 0.0;
   }

@@ -19,58 +19,6 @@ namespace sampler
 class HamiltonianRiemannianConstDense : public HamiltonianRiemannian
 {
   public:
-  /**
-  * @brief Constructor with State Space Dim.
-  * @param stateSpaceDim Dimension of State Space.
-  */
-  HamiltonianRiemannianConstDense(const size_t stateSpaceDim, const std::vector<double>& metric, korali::Experiment *k) : HamiltonianRiemannian{stateSpaceDim, k}
-  {
-    _inverseRegularizationParam = 1.0;
-
-    // Initialize multivariate normal distribution
-    _multivariateGenerator->_meanVector = std::vector<double>(_stateSpaceDim, 0.0);
-    _multivariateGenerator->_sigma = std::vector<double>(_stateSpaceDim * _stateSpaceDim, 0.0);
-
-    // Cholesky Decomposition
-    for (size_t d = 0; d < _stateSpaceDim; ++d)
-      _multivariateGenerator->_sigma[d * _stateSpaceDim + d] = sqrt(metric[d * _stateSpaceDim + d]);
-
-    _multivariateGenerator->updateDistribution();
-
-    // Memory allocation
-    Q = gsl_matrix_alloc(stateSpaceDim, stateSpaceDim);
-    lambda = gsl_vector_alloc(stateSpaceDim);
-    w = gsl_eigen_symmv_alloc(stateSpaceDim);
-    lambdaSoftAbs = gsl_matrix_alloc(stateSpaceDim, stateSpaceDim);
-    inverseLambdaSoftAbs = gsl_matrix_alloc(stateSpaceDim, stateSpaceDim);
-    tmpMatOne = gsl_matrix_alloc(stateSpaceDim, stateSpaceDim);
-    tmpMatTwo = gsl_matrix_alloc(stateSpaceDim, stateSpaceDim);
-    tmpMatThree = gsl_matrix_alloc(stateSpaceDim, stateSpaceDim);
-    tmpMatFour = gsl_matrix_alloc(stateSpaceDim, stateSpaceDim);
-  }
-
-  /**
-  * @brief Constructor with State Space Dim.
-  * @param stateSpaceDim Dimension of State Space.
-  * @param multivariateGenerator Multivariate generator needed for momentum sampling.
-  */
-  HamiltonianRiemannianConstDense(const size_t stateSpaceDim, const std::vector<double>& metric, korali::distribution::multivariate::Normal *multivariateGenerator, korali::Experiment *k) : HamiltonianRiemannian{stateSpaceDim, k}
-  {
-
-    _multivariateGenerator = multivariateGenerator;
-    _inverseRegularizationParam = 1.0;
-
-    // Memory allocation
-    Q = gsl_matrix_alloc(stateSpaceDim, stateSpaceDim);
-    lambda = gsl_vector_alloc(stateSpaceDim);
-    w = gsl_eigen_symmv_alloc(stateSpaceDim);
-    lambdaSoftAbs = gsl_matrix_alloc(stateSpaceDim, stateSpaceDim);
-    inverseLambdaSoftAbs = gsl_matrix_alloc(stateSpaceDim, stateSpaceDim);
-    tmpMatOne = gsl_matrix_alloc(stateSpaceDim, stateSpaceDim);
-    tmpMatTwo = gsl_matrix_alloc(stateSpaceDim, stateSpaceDim);
-    tmpMatThree = gsl_matrix_alloc(stateSpaceDim, stateSpaceDim);
-    tmpMatFour = gsl_matrix_alloc(stateSpaceDim, stateSpaceDim);
-  }
 
   /**
   * @brief Constructor with State Space Dim.
@@ -78,9 +26,8 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannian
   * @param multivariateGenerator Generator needed for momentum sampling.
   * @param inverseRegularizationParam Inverse regularization parameter of SoftAbs metric that controls hardness of approximation: For large values inverseMetric is closer to analytical formula (and therefore closer to degeneracy in certain cases). 
   */
-  HamiltonianRiemannianConstDense(const size_t stateSpaceDim, const std::vector<double> &metric, korali::distribution::multivariate::Normal *multivariateGenerator, const double inverseRegularizationParam, korali::Experiment *k) : HamiltonianRiemannian{stateSpaceDim, k}
+  HamiltonianRiemannianConstDense(const size_t stateSpaceDim, korali::distribution::multivariate::Normal *multivariateGenerator, const double inverseRegularizationParam, korali::Experiment *k) : HamiltonianRiemannian{stateSpaceDim, k}
   {
-
     _multivariateGenerator = multivariateGenerator;
     _inverseRegularizationParam = inverseRegularizationParam;
 
@@ -266,7 +213,7 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannian
   * @param inverseMetric Current inverse metric.
   * @return pLeft.transpose * inverseMetric * pRight.
   */
-  double innerProduct(const std::vector<double> &pLeft, const std::vector<double> &pRight, const std::vector<double> &inverseMetric) const
+  double innerProduct(const std::vector<double> &pLeft, const std::vector<double> &pRight, const std::vector<double> &inverseMetric) const override
   {
     double result = 0.0;
 

@@ -43,5 +43,5 @@ e["File Output"]["Frequency"] = 0
 e["Random Seed"] = 1227
 k.run(e)
 
-verifyMean(e["Solver"]["Sample Database"], [4.0], 0.05)
+verifyMean(e["Solver"]["Sample Database"], [4.0], 0.25)
 verifyStd(e["Solver"]["Sample Database"], [math.sqrt(2)], 0.25)

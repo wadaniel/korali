@@ -680,7 +680,7 @@ void Reference::fisherInformationLoglikelihoodPositiveNormal(Sample &sample)
 
 void Reference::fisherInformationLoglikelihoodNegativeBinomial(Sample &sample)
 {
-      KORALI_LOG_ERROR("Fisher Information not yet implemented for logLikelihood model of type '%s'.", _likelihoodModel.c_str());
+  KORALI_LOG_ERROR("Fisher Information not yet implemented for logLikelihood model of type '%s'.", _likelihoodModel.c_str());
 }
 
 } // namespace bayesian

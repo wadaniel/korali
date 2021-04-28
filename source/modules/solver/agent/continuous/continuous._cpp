@@ -289,11 +289,8 @@ float Continuous::calculateImportanceWeight(const std::vector<float> &action, co
   }
 
   // Now calculating importance weight for the old s,a experience
-  if (std::isfinite(logpCurPolicy) == false)
-    KORALI_LOG_ERROR("Experience's log importance weight for current policy is non-finite: %f\n", logpCurPolicy);
-
-  if (std::isfinite(logpOldPolicy) == false)
-    KORALI_LOG_ERROR("Experience's log importance weight for old policy is non-finite: %f\n", logpOldPolicy);
+  if (std::isfinite(logpCurPolicy) == false) return 0.0f;
+  if (std::isfinite(logpOldPolicy) == false) return 0.0f;
 
   float logImportanceWeight = logpCurPolicy - logpOldPolicy;
 

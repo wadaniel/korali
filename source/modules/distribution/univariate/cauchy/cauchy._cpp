@@ -20,7 +20,14 @@ double Cauchy::getLogDensity(const double x) const
 double Cauchy::getLogDensityGradient(const double x) const
 {
   double tmp = (x - _location) / _scale;
-  return -2. / (1. + tmp * tmp) * tmp / _scale;
+  return -2. * tmp / (1. + tmp * tmp) / _scale;
+}
+
+double Cauchy::getLogDensityHessian(const double x) const
+{
+  double tmp = (x - _location) / _scale;
+  double tmp2 = tmp * tmp;
+  return -2. * ((1. + tmp2) - 2. * tmp2) / ((1. + tmp2) * (1. + tmp2) * _scale * _scale);
 }
 
 double Cauchy::getRandomNumber()

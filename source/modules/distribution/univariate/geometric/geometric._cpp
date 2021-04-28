@@ -14,12 +14,17 @@ double Geometric::getDensity(const double x) const
 
 double Geometric::getLogDensity(const double x) const
 {
-  return log(_successProbability) + (x - 1) * std::log(1.0 - _successProbability);
+  return std::log(_successProbability) + (x - 1) * std::log(1.0 - _successProbability);
 }
 
 double Geometric::getLogDensityGradient(const double x) const
 {
   return std::log(1.0 - _successProbability);
+}
+
+double Geometric::getLogDensityHessian(const double x) const
+{
+  return 0.;
 }
 
 double Geometric::getRandomNumber()

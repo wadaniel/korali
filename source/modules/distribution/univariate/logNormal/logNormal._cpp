@@ -27,6 +27,13 @@ double LogNormal::getLogDensityGradient(const double x) const
   return -1. / x - d / (x * _sigma);
 }
 
+double LogNormal::getLogDensityHessian(const double x) const
+{
+  if (x < 0) return 0.;
+  double d = (std::log(x) - _mu) / _sigma;
+  return 1. / (x * x) - d / ((x * _sigma) * (x * _sigma)) + d / (x * x * _sigma);
+}
+
 double LogNormal::getRandomNumber()
 {
   return gsl_ran_lognormal(_range, _mu, _sigma);

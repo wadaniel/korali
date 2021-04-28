@@ -25,14 +25,15 @@ struct TreeHelperEuclidean : public TreeHelper
   }
 
   /**
-  * @brief Computes No U-Turn Sampling (NUTS) criterion
-  * @param hamiltonian Hamiltonian object of system
-  * @param pStart Starting momentum of trajectory
-  * @param pEnd Ending momentum of trajsectory
-  * @param rho Sum of momenta encountered in trajectory
+  * @brief Computes No U-Turn Sampling (NUTS) criterion.
+  * @param hamiltonian Hamiltonian object of system.
+  * @param momentumStart Starting momentum of trajectory.
+  * @param momentumEnd Ending momentum of trajsectory.
+  * @param inverseMetric Inverse of current metric.
+  * @param rho Sum of momenta encountered in trajectory.
   * @return Returns of tree should be built further.
   */
-  bool computeCriterion(const Hamiltonian &hamiltonian, const std::vector<double> &pStart, const std::vector<double> &pEnd, const std::vector<double> &inverseMetric, const std::vector<double> &rho) const override
+  bool computeCriterion(const Hamiltonian &hamiltonian, const std::vector<double> &momentumStart, const std::vector<double> &momentumEnd, const std::vector<double> &inverseMetric, const std::vector<double> &rho) const override
   {
     KORALI_LOG_ERROR("Wrong tree building criterion used in NUTS.");
     return false;

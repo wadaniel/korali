@@ -20,26 +20,6 @@ class HamiltonianRiemannianConstDiag : public HamiltonianRiemannian
   /**
   * @brief Constructor with State Space Dim.
   * @param stateSpaceDim Dimension of State Space.
-  */
-  HamiltonianRiemannianConstDiag(const size_t stateSpaceDim, korali::Experiment *k) : HamiltonianRiemannian{stateSpaceDim, k}
-  {
-    _inverseRegularizationParam = 1.0;
-  }
-
-  /**
-  * @brief Constructor with State Space Dim.
-  * @param stateSpaceDim Dimension of State Space.
-  * @param normalGenerator Generator needed for momentum sampling.
-  */
-  HamiltonianRiemannianConstDiag(const size_t stateSpaceDim, korali::distribution::univariate::Normal *normalGenerator, korali::Experiment *k) : HamiltonianRiemannian{stateSpaceDim, k}
-  {
-    _normalGenerator = normalGenerator;
-    _inverseRegularizationParam = 1.0;
-  }
-
-  /**
-  * @brief Constructor with State Space Dim.
-  * @param stateSpaceDim Dimension of State Space.
   * @param normalGenerator Generator needed for momentum sampling.
   * @param inverseRegularizationParam Inverse regularization parameter of SoftAbs metric that controls hardness of approximation: For large values inverseMetric is closer to analytical formula (and therefore closer to degeneracy in certain cases). 
   */

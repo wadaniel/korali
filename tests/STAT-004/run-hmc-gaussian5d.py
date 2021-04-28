@@ -20,13 +20,13 @@ for useDiagonalMetric in [False, True]:
   e["Problem"]["Type"] = "Sampling"
   e["Problem"]["Probability Function"] = lg5
   e["File Output"]["Enabled"] = False
-  e["Console Output"]["Frequency"] = 500
+  e["Console Output"]["Frequency"] = 1
 
   # Defining problem's variables and their HMC settings
   for i in range(5):
     e["Variables"][i]["Name"] = "X" + str(i)
     e["Variables"][i]["Initial Mean"] = -1.0
-    e["Variables"][i]["Initial Standard Deviation"] = 1.0
+    e["Variables"][i]["Initial Standard Deviation"] = 0.1
 
   # Configuring the HMC sampler parameters
   e["Solver"]["Type"] = "Sampler/HMC"

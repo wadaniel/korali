@@ -20,7 +20,7 @@ e["Problem"]["Probability Function"] = model
 
 # Configuring the HMC sampler parameters
 e["Solver"]["Type"] = "Sampler/HMC"
-e["Solver"]["Burn In"] = 900
+e["Solver"]["Burn In"] = 1000
 e["Solver"]["Termination Criteria"]["Max Samples"] = 5000
 
 # HMC specific parameters
@@ -45,5 +45,5 @@ k = korali.Engine()
 k.run(e)
 
 # Testing Results
-checkMean(e, 0.0, 0.01)
+checkMean(e, 0.0, 0.1)
 checkStd(e, 1.0, 0.025)

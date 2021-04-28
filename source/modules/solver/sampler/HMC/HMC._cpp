@@ -117,36 +117,27 @@ void HMC::setInitialConfiguration()
     }
   }
 
-  // Initializing Integrator and Hamiltonian
+  // Initializing Hamiltonian
   if (_metricType == Metric::Static)
-  {
     _hamiltonian = std::make_shared<HamiltonianEuclideanDiag>(_variableCount, _normalGenerator, _k);
+  if (_metricType == Metric::Euclidean && _useDiagonalMetric == true)
+    _hamiltonian = std::make_shared<HamiltonianEuclideanDiag>(_variableCount, _normalGenerator, _k);
+  if (_metricType == Metric::Euclidean && _useDiagonalMetric == false)
+    _hamiltonian = std::make_shared<HamiltonianEuclideanDense>(_variableCount, _multivariateGenerator, _metric, _k);
+  if (_metricType == Metric::Riemannian_Const && _useDiagonalMetric == true)
+    _hamiltonian = std::make_shared<HamiltonianRiemannianConstDiag>(_variableCount, _normalGenerator, _inverseRegularizationParameter, _k);
+  if (_metricType == Metric::Riemannian_Const && _useDiagonalMetric == false)
+    _hamiltonian = std::make_shared<HamiltonianRiemannianConstDense>(_variableCount, _multivariateGenerator, _metric, _inverseRegularizationParameter, _k);
+  if (_metricType == Metric::Riemannian && _useDiagonalMetric == true)
+    _hamiltonian = std::make_shared<HamiltonianRiemannianDiag>(_variableCount, _normalGenerator, _inverseRegularizationParameter, _k);
+  if (_metricType == Metric::Riemannian && _useDiagonalMetric == false)
+    KORALI_LOG_ERROR("Riemannian Metric only supported with Diagonal Metric");
+
+  // Initializing Integrator
+  if (_metricType == Metric::Riemannian)
     _integrator = std::make_unique<LeapfrogExplicit>(_hamiltonian);
-  }
-  else if (_metricType == Metric::Euclidean)
-  {
-    if (_useDiagonalMetric)
-      _hamiltonian = std::make_shared<HamiltonianEuclideanDiag>(_variableCount, _normalGenerator, _k);
-    else
-      _hamiltonian = std::make_shared<HamiltonianEuclideanDense>(_variableCount, _multivariateGenerator, _k);
+  else
     _integrator = std::make_unique<LeapfrogExplicit>(_hamiltonian);
-  }
-  else if (_metricType == Metric::Riemannian)
-  {
-    if (_useDiagonalMetric)
-      _hamiltonian = std::make_shared<HamiltonianRiemannianDiag>(_variableCount, _normalGenerator, _inverseRegularizationParameter, _k);
-    else
-      KORALI_LOG_ERROR("Riemannian Metric only supported with Diagonal Metric");
-    _integrator = std::make_unique<LeapfrogImplicit>(_maxFixedPointIterations, _hamiltonian);
-  }
-  else if (_metricType == Metric::Riemannian_Const)
-  {
-    if (_useDiagonalMetric)
-      _hamiltonian = std::make_shared<HamiltonianRiemannianConstDiag>(_variableCount, _normalGenerator, _inverseRegularizationParameter, _k);
-    else
-      _hamiltonian = std::make_shared<HamiltonianRiemannianConstDense>(_variableCount, _multivariateGenerator, _inverseRegularizationParameter, _k);
-    _integrator = std::make_unique<LeapfrogExplicit>(_hamiltonian);
-  }
 
   // Initialize common variables
   _acceptanceCount = 0;
@@ -171,7 +162,7 @@ void HMC::runGeneration()
   if (_k->_currentGeneration == 1) setInitialConfiguration();
   _hamiltonian->updateHamiltonian(_positionLeader, _metric, _inverseMetric);
 
-  // Samples Momentum Candidate from N(0., metric)
+  // Samples Momentum Candidate from N(0, metric)
   _momentumCandidate = _hamiltonian->sampleMomentum(_metric);
   _proposedSampleCount++;
 

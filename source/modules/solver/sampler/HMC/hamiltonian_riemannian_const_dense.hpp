@@ -23,11 +23,24 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannian
   * @brief Constructor with State Space Dim.
   * @param stateSpaceDim Dimension of State Space.
   * @param multivariateGenerator Generator needed for momentum sampling.
+  * @param metric Metric of space.
   * @param inverseRegularizationParam Inverse regularization parameter of SoftAbs metric that controls hardness of approximation: For large values inverseMetric is closer to analytical formula (and therefore closer to degeneracy in certain cases). 
   */
-  HamiltonianRiemannianConstDense(const size_t stateSpaceDim, korali::distribution::multivariate::Normal *multivariateGenerator, const double inverseRegularizationParam, korali::Experiment *k) : HamiltonianRiemannian{stateSpaceDim, k}
+  HamiltonianRiemannianConstDense(const size_t stateSpaceDim, korali::distribution::multivariate::Normal *multivariateGenerator, const std::vector<double> &metric, const double inverseRegularizationParam, korali::Experiment *k) : HamiltonianRiemannian{stateSpaceDim, k}
   {
     _multivariateGenerator = multivariateGenerator;
+    _multivariateGenerator->_meanVector = std::vector<double>(stateSpaceDim, 0.);
+    _multivariateGenerator->_sigma = metric;
+
+    // Cholesky Decomp
+    gsl_matrix_view sigma = gsl_matrix_view_array(&_multivariateGenerator->_sigma[0], _stateSpaceDim, _stateSpaceDim);
+
+    int err = gsl_linalg_cholesky_decomp(&sigma.matrix);
+    if (err != GSL_EDOM)
+    {
+      _multivariateGenerator->updateDistribution();
+    }
+
     _inverseRegularizationParam = inverseRegularizationParam;
 
     // Memory allocation

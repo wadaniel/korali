@@ -32,6 +32,7 @@ class Hamiltonian
   /**
   * @brief Constructor with State Space Dim.
   * @param stateSpaceDim Dimension of State Space.
+  * @param k Pointer to Korali object.
   */
   Hamiltonian(const size_t stateSpaceDim, korali::Experiment *k) : _modelEvaluationCount(0), _stateSpaceDim{stateSpaceDim}
   {
@@ -53,6 +54,7 @@ class Hamiltonian
   /**
   * @brief Purely abstract total energy function used for Hamiltonian Dynamics.
   * @param momentum Current momentum.
+  * @param inverseMetric Current inverse of metric.
   * @return Total energy.
   */
   virtual double H(const std::vector<double> &momentum, const std::vector<double> &inverseMetric) = 0;
@@ -135,7 +137,8 @@ class Hamiltonian
   /**
   * @brief Purely virtual, calculates inner product induces by inverse metric.
   * @param leftMomentum Left vector of inner product.
-  * @param rightMoementum Right vector of inner product.
+  * @param rightMomentum Right vector of inner product.
+  * @param inverseMetric Inverse of current metric.
   * @return inner product
   */
   virtual double innerProduct(const std::vector<double> &leftMomentum, const std::vector<double> &rightMomentum, const std::vector<double> &inverseMetric) const = 0;

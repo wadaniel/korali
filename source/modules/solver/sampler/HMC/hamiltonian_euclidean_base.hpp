@@ -31,6 +31,7 @@ class HamiltonianEuclidean : public Hamiltonian
   /**
   * @brief Constructor with State Space Dim.
   * @param stateSpaceDim Dimension of State Space.
+  * @param k Pointer to Korali object.
   */
   HamiltonianEuclidean(const size_t stateSpaceDim, korali::Experiment *k) : Hamiltonian{stateSpaceDim, k} {}
 

@@ -26,6 +26,7 @@ class HamiltonianRiemannian : public Hamiltonian
   /**
   * @brief Constructor with State Space Dim.
   * @param stateSpaceDim Dimension of State Space.
+  * @param k Pointer to Korali object.
   */
   HamiltonianRiemannian(const size_t stateSpaceDim, korali::Experiment *k) : Hamiltonian{stateSpaceDim, k}, _logDetMetric{1.0} { _currentHessian.resize(stateSpaceDim * stateSpaceDim); }
 

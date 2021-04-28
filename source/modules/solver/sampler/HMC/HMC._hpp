@@ -25,11 +25,29 @@ namespace solver
 {
 namespace sampler
 {
-enum class Metric
+/**
+  * @brief Enum to set metric type.
+*/
+enum Metric
 {
+  /**
+  * @brief Static Metric type.
+  */
   Static = 0,
+
+  /**
+  * @brief Euclidean Metric type.
+  */
   Euclidean = 1,
+
+  /**
+  * @brief Riemannian Metric type.
+  */
   Riemannian = 2,
+
+  /**
+  * @brief Const Riemannian Metric type.
+  */
   Riemannian_Const = 3,
 };
 

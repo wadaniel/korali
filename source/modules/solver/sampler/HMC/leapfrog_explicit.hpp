@@ -21,34 +21,34 @@ class LeapfrogExplicit : public Leapfrog
 
   /**
   * @brief Explicit Leapfrog stepping scheme used for evolving Hamiltonian Dynamics.
-  * @param q Position which is evolved.
-  * @param p Momentum which is evolved.
+  * @param position Position which is evolved.
+  * @param momentum Momentum which is evolved.
   * @param stepSize Step Size used for Leap Frog Scheme.
   */
-  void step(std::vector<double> &q, std::vector<double> &p, std::vector<double>& metric, std::vector<double>& inverseMetric, const double stepSize) override
+  void step(std::vector<double> &position, std::vector<double> &momentum, std::vector<double> &metric, std::vector<double> &inverseMetric, const double stepSize) override
   {
-    _hamiltonian->updateHamiltonian(q, metric, inverseMetric);
+    _hamiltonian->updateHamiltonian(position, metric, inverseMetric);
     std::vector<double> dU = _hamiltonian->dU();
 
     for (size_t i = 0; i < dU.size(); ++i)
     {
-      p[i] -= 0.5 * stepSize * dU[i];
+      momentum[i] -= 0.5 * stepSize * dU[i];
     }
 
     // would need to update in Riemannian case
-    std::vector<double> dK = _hamiltonian->dK(p, metric);
+    std::vector<double> dK = _hamiltonian->dK(momentum, metric);
 
     for (size_t i = 0; i < dK.size(); ++i)
     {
-      q[i] += stepSize * dK[i];
+      position[i] += stepSize * dK[i];
     }
 
-    _hamiltonian->updateHamiltonian(q, metric, inverseMetric);
+    _hamiltonian->updateHamiltonian(position, metric, inverseMetric);
     dU = _hamiltonian->dU();
 
     for (size_t i = 0; i < dU.size(); ++i)
     {
-      p[i] -= 0.5 * stepSize * dU[i];
+      momentum[i] -= 0.5 * stepSize * dU[i];
     }
   }
 };

@@ -27,11 +27,11 @@ class Leapfrog
 
   /**
   * @brief Abstract base class for Leapfrog integration.
-  * @param q Position which is evolved.
-  * @param p Momentum which is evolved.
+  * @param position Position which is evolved.
+  * @param momentum Momentum which is evolved.
   * @param stepSize Step Size used for Leap Frog Scheme.
   */
-  virtual void step(std::vector<double> &q, std::vector<double> &p, std::vector<double>& metric, std::vector<double>& inverseMetric, const double stepSize) = 0;
+  virtual void step(std::vector<double> &position, std::vector<double> &momentum, std::vector<double> &metric, std::vector<double> &inverseMetric, const double stepSize) = 0;
 };
 
 } // namespace sampler

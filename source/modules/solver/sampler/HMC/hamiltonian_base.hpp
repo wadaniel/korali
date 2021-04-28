@@ -52,40 +52,38 @@ class Hamiltonian
 
   /**
   * @brief Purely abstract total energy function used for Hamiltonian Dynamics.
-  * @param p Current momentum.
+  * @param momentum Current momentum.
   * @return Total energy.
   */
   virtual double H(const std::vector<double> &momentum, const std::vector<double> &inverseMetric) = 0;
 
   /**
-  * @brief Purely virtual kinetic energy function K(q, p) = 0.5 * p.T * inverseMetric(q) * p + 0.5 * logDetMetric(q) used for Hamiltonian Dynamics.
-  * @param p Current momentum.
+  * @brief Purely virtual kinetic energy function.
+  * @param momentum Current momentum.
+  * @param inverseMetric Current inverse of metric.
   * @return Kinetic energy.
   */
-  virtual double K(const std::vector<double> &p, const std::vector<double> &inverseMetric) = 0;
+  virtual double K(const std::vector<double> &momentum, const std::vector<double> &inverseMetric) = 0;
 
   /**
-  * @brief Purely virtual gradient of kintetic energy function dK(q, p) = inverseMetric(q) * p + 0.5 * dlogDetMetric_dq(q) used for Hamiltonian Dynamics.
+  * @brief Purely virtual gradient of kintetic energy function.
   * @param momentum Current momentum.
   * @param inverseMetric Current inverse metric.
   * @return Gradient of Kinetic energy with current momentum.
   */
-  virtual std::vector<double> dK(const std::vector<double>& momentum, const std::vector<double> &inverseMetric) = 0;
+  virtual std::vector<double> dK(const std::vector<double> &momentum, const std::vector<double> &inverseMetric) = 0;
 
   /**
-  * @brief Potential Energy function U(q) = -log(pi(q)) used for Hamiltonian Dynamics.
+  * @brief Potential Energy function.
   * @return Potential energy.
   */
   virtual double U()
   {
-    double evaluation = _currentEvaluation;
-    evaluation *= -1.0;
-
-    return evaluation;
+    return -_currentEvaluation;
   }
 
   /**
-  * @brief Gradient of Potential Energy function dU(q) = -grad(log(pi(q))) used for Hamiltonian Dynamics.
+  * @brief Gradient of Potential Energy function.
   * @return Gradient of Potential energy.
   */
   virtual std::vector<double> dU()
@@ -99,23 +97,23 @@ class Hamiltonian
   }
 
   /**
-  * @brief Purely virtual function tau(q, p) = 0.5 * p^T * inverseMetric(q) * p (no logDetMetric term)
+  * @brief Purely virtual function tau(q, p) = 0.5 * momentum^T * inverseMetric(q) * momentum.
   * @param momentum Current momentum.
   * @param inverseMetric Current inverseMetric.
   * @return Gradient of Kinetic energy with current momentum.
   */
-  virtual double tau(const std::vector<double> &momentum, const std::vector<double>& inverseMetric) = 0;
+  virtual double tau(const std::vector<double> &momentum, const std::vector<double> &inverseMetric) = 0;
 
   /**
-  * @brief Purely virtual gradient of dtau_dq(q, p) = 0.5 * p^T * dinverseMetric_dq(q) * p used for Hamiltonian Dynamics.
+  * @brief Purely virtual gradient of dtau_dq(q, p) wrt. position.
   * @param momentum Current momentum.
   * @param inverseMetric Current inverseMetric.
   * @return Gradient of Kinetic energy with current momentum.
   */
-  virtual std::vector<double> dtau_dq(const std::vector<double> &momentum, const std::vector<double>& inverseMetric) = 0;
+  virtual std::vector<double> dtau_dq(const std::vector<double> &momentum, const std::vector<double> &inverseMetric) = 0;
 
   /**
-  * @brief Purely virtual gradient of dtau_dp(q, p) = inverseMetric(q) * p used for Hamiltonian Dynamics.
+  * @brief Purely virtual gradient of dtau_dp(q, p) wrt. momentum.
   * @param momentum Current momentum.
   * @param inverseMetric Current inverseMetric.
   * @return Gradient of Kinetic energy with current momentum.
@@ -123,37 +121,38 @@ class Hamiltonian
   virtual std::vector<double> dtau_dp(const std::vector<double> &momentum, const std::vector<double> &inverseMetric) = 0;
 
   /**
-  * @brief Purely virtual gradient of phi(q) = 0.5 * logDetMetric(q) + U(q) used for Hamiltonian Dynamics.
-  * @return Gradient of Kinetic energy with current momentum.
+  * @brief Purely virtual gradient of kinetic energy.
+  * @return Gradient of kinetic energy.
   */
   virtual double phi() = 0;
 
   /**
-  * @brief Purely virtual gradient of dphi_dq(q) = 0.5 * dlogDetMetric_dq(q) + dU(q) used for Hamiltonian Dynamics.
-  * @return Gradient of Kinetic energy with current momentum.
+  * @brief Purely virtual gradient of kinetic energy.
+  * @return Gradient of kinetic energy.
   */
   virtual std::vector<double> dphi_dq() = 0;
 
   /**
   * @brief Purely virtual, calculates inner product induces by inverse metric.
-  * @param pLeft Left argument (momentum).
-  * @param pRight Right argument (momentum).
-  * @return pLeft.transpose * inverseMetric * pRight.
+  * @param leftMomentum Left vector of inner product.
+  * @param rightMoementum Right vector of inner product.
+  * @return inner product
   */
-  virtual double innerProduct(const std::vector<double> &pLeft, const std::vector<double> &pRight, const std::vector<double>& inverseMetric) const = 0;
+  virtual double innerProduct(const std::vector<double> &leftMomentum, const std::vector<double> &rightMomentum, const std::vector<double> &inverseMetric) const = 0;
 
   /**
   * @brief Updates current position of hamiltonian.
-  * @param q Current position.
-  * @param _k Experiment object.
+  * @param position Current position.
+  * @param metric Current metric.
+  * @param inverseMetric Inverse of current metric.
   */
-  virtual void updateHamiltonian(const std::vector<double> &q, std::vector<double>& metric, std::vector<double>& inverseMetric)
+  virtual void updateHamiltonian(const std::vector<double> &position, std::vector<double> &metric, std::vector<double> &inverseMetric)
   {
     auto sample = korali::Sample();
     sample["Sample Id"] = _modelEvaluationCount;
     sample["Module"] = "Problem";
     sample["Operation"] = "Evaluate";
-    sample["Parameters"] = q;
+    sample["Parameters"] = position;
 
     KORALI_START(sample);
     KORALI_WAIT(sample);
@@ -169,48 +168,50 @@ class Hamiltonian
   }
 
   /**
-  * @brief Generates sample of momentum.
+  * @brief Purely virtual function to generates momentum vector.
   * @param metric Current metric.
-  * @return Sample of momentum from normal distribution with covariance matrix metric.
+  * @return Momentum sampled from normal distribution with metric as covariance matrix.
   */
-  virtual std::vector<double> sampleMomentum(const std::vector<double>& metric) const = 0;
+  virtual std::vector<double> sampleMomentum(const std::vector<double> &metric) const = 0;
 
   /**
   * @brief Computes NUTS criterion on euclidean domain.
-  * @param qLeft Leftmost position.
-  * @param pLeft Leftmost momentum.
-  * @param qRight Rightmost position.
-  * @param pRight Rightmost momentum.
-  * @return Returns if trees should be built further.
+  * @param positionLeft Leftmost position.
+  * @param momentumLeft Leftmost momentum.
+  * @param positionRight Rightmost position.
+  * @param momentumRight Rightmost momentum.
+  * @return Returns criterion if tree should be further increased.
   */
-  bool computeStandardCriterion(const std::vector<double> &qLeft, const std::vector<double> &pLeft, const std::vector<double> &qRight, const std::vector<double> &pRight) const
+  bool computeStandardCriterion(const std::vector<double> &positionLeft, const std::vector<double> &momentumLeft, const std::vector<double> &positionRight, const std::vector<double> &momentumRight) const
   {
     std::vector<double> tmpVector(_stateSpaceDim, 0.0);
 
-    std::transform(std::cbegin(qRight), std::cend(qRight), std::cbegin(qLeft), std::begin(tmpVector), std::minus<double>());
-    double dotProductLeft = std::inner_product(std::cbegin(tmpVector), std::cend(tmpVector), std::cbegin(pLeft), 0.0);
-    double dotProductRight = std::inner_product(std::cbegin(tmpVector), std::cend(tmpVector), std::cbegin(pRight), 0.0);
+    std::transform(std::begin(positionRight), std::cend(positionRight), std::cbegin(positionLeft), std::begin(tmpVector), std::minus<double>());
+    double dotProductLeft = std::inner_product(std::cbegin(tmpVector), std::cend(tmpVector), std::cbegin(momentumLeft), 0.0);
+    double dotProductRight = std::inner_product(std::cbegin(tmpVector), std::cend(tmpVector), std::cbegin(momentumRight), 0.0);
 
     return (dotProductLeft >= 0) && (dotProductRight >= 0);
   }
 
   /**
-  * @brief Updates Inverse Metric by using samples to approximate the covariance matrix via the Fisher information.
-  * @param samples Contains samples. One row is one sample.
-  * @return Error code of Cholesky decomposition needed for dense Metric.
+  * @brief Updates Inverse Metric by approximating the covariance matrix with the Fisher information.
+  * @param samples Vector of samples. 
+  * @param metric Current metric. 
+  * @param inverseMetric Inverse of current metric. 
+  * @return Error code of Cholesky decomposition.
   */
-  virtual int updateMetricMatricesEuclidean(const std::vector<std::vector<double>> &samples, std::vector<double>& metric, std::vector<double>& inverseMetric)
+  virtual int updateMetricMatricesEuclidean(const std::vector<std::vector<double>> &samples, std::vector<double> &metric, std::vector<double> &inverseMetric)
   {
     return -1;
   };
 
   /**
-  * @brief Updates Inverse Metric by using hessian.
-  * @param q current position
-  * @param _k Korali experiment object
+  * @brief Updates Metric and Inverse Metric by using hessian.
+  * @param metric Current metric.
+  * @param inverseMetric Inverse of current metric.
   * @return Error code to indicate if update was successful.
   */
-  virtual int updateMetricMatricesRiemannian(const std::vector<double> &position, std::vector<double>& metric, std::vector<double>& inverseMetric)
+  virtual int updateMetricMatricesRiemannian(std::vector<double> &metric, std::vector<double> &inverseMetric)
   {
     return 0;
   };
@@ -250,7 +251,6 @@ class Hamiltonian
   * @brief State Space Dimension needed for Leapfrog integrator.
   */
   size_t _stateSpaceDim;
-
 };
 
 } // namespace sampler

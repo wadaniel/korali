@@ -58,20 +58,21 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
 
   /**
   * @brief Total energy function used for Hamiltonian Dynamics.
-  * @param p Current momentum.
+  * @param momentum Current momentum.
   * @return Total energy.
   */
-  double H(const std::vector<double> &momentum, const std::vector<double>& inverseMetric) override
+  double H(const std::vector<double> &momentum, const std::vector<double> &inverseMetric) override
   {
     return this->K(momentum, inverseMetric) + this->U();
   }
 
   /**
-  * @brief Purely virtual kinetic energy function K(q, p) = 0.5 * p.T * inverseMetric(q) * p + 0.5 * logDetMetric(q) used for Hamiltonian Dynamics.
+  * @brief Kinetic energy function.
   * @param momentum Current momentum.
+  * @param inverseMetric Inverse of current metric.
   * @return Kinetic energy.
   */
-  double K(const std::vector<double> &momentum, const std::vector<double>& inverseMetric) override
+  double K(const std::vector<double> &momentum, const std::vector<double> &inverseMetric) override
   {
     double result = tau(momentum, inverseMetric) + 0.5 * _logDetMetric;
 
@@ -79,10 +80,10 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
   }
 
   /**
-  * @brief Purely virtual gradient of kintetic energy function dK(q, p) = inverseMetric(q) * p + 0.5 * dlogDetMetric_dq(q) used for Hamiltonian Dynamics.
+  * @brief Gradient of kintetic energy function 
   * @param momentum Current momentum.
-  * @param inverseMetric Current inverse metric.
-  * @return Gradient of Kinetic energy with current momentum.
+  * @param inverseMetric Current inverseMetric.
+  * @return Gradient of kinetic energy wrt. current momentum.
   */
   std::vector<double> dK(const std::vector<double> &metric, const std::vector<double> &inverseMetric) override
   {
@@ -95,10 +96,10 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
   }
 
   /**
-  * @brief Purely virtual function tau(q, p) = 0.5 * p^T * inverseMetric(q) * p (no logDetMetric term)
+  * @brief Calculates tau(q, p) = 0.5 * momentum^T * inverseMetric(q) * momentum.
   * @param momentum Current momentum.
-  * @param inverseMetric Current inverse metric.
-  * @return TODO.
+  * @param inverseMetric Current inverseMetric.
+  * @return Gradient of Kinetic energy with current momentum.
   */
   double tau(const std::vector<double> &momentum, const std::vector<double> &inverseMetric) override
   {
@@ -113,11 +114,12 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
   }
 
   /**
-  * @brief Purely virtual gradient of dtau_dq(q, p) = 0.5 * p^T * dinverseMetric_dq(q) * p used for Hamiltonian Dynamics.
-  * @param p Current momentum.
+  * @brief Calculates gradient of dtau_dq(q, p) wrt. position.
+  * @param momentum Current momentum.
+  * @param inverseMetric Current inverseMetric.
   * @return Gradient of Kinetic energy with current momentum.
   */
-  std::vector<double> dtau_dq(const std::vector<double> &p, const std::vector<double>& inverseMetric) override
+  std::vector<double> dtau_dq(const std::vector<double> &momentum, const std::vector<double> &inverseMetric) override
   {
     std::vector<double> result(_stateSpaceDim, 0.0);
     std::vector<double> gradU = this->dU();
@@ -128,7 +130,7 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
       result[j] = 0.0;
       for (size_t i = 0; i < _stateSpaceDim; ++i)
       {
-        result[j] += hessianU[i * _stateSpaceDim + j] * this->__taylorSeriesTauFunc(gradU[i], _inverseRegularizationParam) * p[i] * p[i];
+        result[j] += hessianU[i * _stateSpaceDim + j] * this->__taylorSeriesTauFunc(gradU[i], _inverseRegularizationParam) * momentum[i] * momentum[i];
       }
     }
 
@@ -136,8 +138,9 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
   }
 
   /**
-  * @brief Purely virtual gradient of dtau_dp(q, p) = inverseMetric(q) * p used for Hamiltonian Dynamics.
-  * @param p Current momentum.
+  * @brief Calculates gradient of dtau_dp(q, p) wrt. momentum.
+  * @param momentum Current momentum.
+  * @param inverseMetric Current inverseMetric.
   * @return Gradient of Kinetic energy with current momentum.
   */
   std::vector<double> dtau_dp(const std::vector<double> &momentum, const std::vector<double> &inverseMetric) override
@@ -157,8 +160,8 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
   }
 
   /**
-  * @brief Purely virtual gradient of dphi_dq(q) = 0.5 * dlogDetMetric_dq(q) + dU(q) used for Hamiltonian Dynamics.
-  * @return Gradient of Kinetic energy with current momentum.
+  * @brief Calculates gradient of kinetic energy.
+  * @return Gradient of kinetic energy.
   */
   std::vector<double> dphi_dq() override
   {
@@ -187,16 +190,17 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
 
   /**
   * @brief Updates current position of hamiltonian.
-  * @param q Current position.
-  * @param _k Experiment object.
+  * @param position Current position.
+  * @param metric Current metric.
+  * @param inverseMetric Inverse of current metric.
   */
-  void updateHamiltonian(const std::vector<double> &q, std::vector<double>& metric, std::vector<double>& inverseMetric) override
+  void updateHamiltonian(const std::vector<double> &position, std::vector<double> &metric, std::vector<double> &inverseMetric) override
   {
     auto sample = korali::Sample();
     sample["Sample Id"] = _modelEvaluationCount;
     sample["Module"] = "Problem";
     sample["Operation"] = "Evaluate";
-    sample["Parameters"] = q;
+    sample["Parameters"] = position;
 
     KORALI_START(sample);
     KORALI_WAIT(sample);
@@ -234,7 +238,7 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
   * @param metric Current metric.
   * @return Sample of momentum from normal distribution with covariance matrix metric. Only variance taken into account with diagonal metric.
   */
-  std::vector<double> sampleMomentum(const std::vector<double>& metric) const override
+  std::vector<double> sampleMomentum(const std::vector<double> &metric) const override
   {
     std::vector<double> result(_stateSpaceDim);
 
@@ -248,24 +252,24 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
 
   /**
   * @brief Calculates inner product induces by inverse metric.
-  * @param pLeft Left argument (momentum).
-  * @param pRight Right argument (momentum).
-  * @return pLeft.transpose * inverseMetric * pRight.
+  * @param leftMomentum Left vector of inner product.
+  * @param rightMoementum Right vector of inner product.
+  * @return inner product
   */
-  double innerProduct(const std::vector<double> &pLeft, const std::vector<double> &pRight, const std::vector<double>& inverseMetric) const override
+  double innerProduct(const std::vector<double> &momentumLeft, const std::vector<double> &momentumRight, const std::vector<double> &inverseMetric) const override
   {
     double result = 0.0;
 
     for (size_t i = 0; i < _stateSpaceDim; ++i)
     {
-      result += pLeft[i] * inverseMetric[i] * pRight[i];
+      result += momentumLeft[i] * inverseMetric[i] * momentumRight[i];
     }
 
     return result;
   }
 
   /**
-  * @brief Inverse regularization parameter of SoftAbs metric that controls hardness of approximation: For large values inverseMetric is closer to analytical formula (and therefore closer to degeneracy in certain cases). 
+  * @brief Inverse regularization parameter of SoftAbs metric that controls hardness of approximation
   */
   double _inverseRegularizationParam;
 

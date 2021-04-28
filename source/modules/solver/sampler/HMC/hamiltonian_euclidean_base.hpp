@@ -42,9 +42,9 @@ class HamiltonianEuclidean : public Hamiltonian
   }
 
   /**
-  * @brief Purely virtual function tau(q, p) = 0.5 * p^T * inverseMetric(q) * p (no logDetMetric term)
+  * @brief Calculates tau(q, p) = 0.5 * momentum^T * inverseMetric(q) * momentum.
   * @param momentum Current momentum.
-  * @param inverseMetric Current inverse metric.
+  * @param inverseMetric Current inverseMetric.
   * @return Gradient of Kinetic energy with current momentum.
   */
   double tau(const std::vector<double> &momentum, const std::vector<double> &inverseMetric) override
@@ -53,7 +53,7 @@ class HamiltonianEuclidean : public Hamiltonian
   }
 
   /**
-  * @brief Purely virtual gradient of dtau_dq(q, p) = 0.5 * p^T * dinverseMetric_dq(q) * p used for Hamiltonian Dynamics.
+  * @brief Calculates gradient of dtau_dq(q, p) wrt. position.
   * @param momentum Current momentum.
   * @param inverseMetric Current inverseMetric.
   * @return Gradient of Kinetic energy with current momentum.
@@ -64,18 +64,19 @@ class HamiltonianEuclidean : public Hamiltonian
   }
 
   /**
-  * @brief Purely virtual gradient of dtau_dp(q, p) = inverseMetric(q) * p used for Hamiltonian Dynamics.
-  * @param p Current momentum.
+  * @brief Calculates gradient of dtau_dp(q, p) wrt. momentum.
+  * @param momentum Current momentum.
+  * @param inverseMetric Current inverseMetric.
   * @return Gradient of Kinetic energy with current momentum.
   */
-  std::vector<double> dtau_dp(const std::vector<double> &momentum, const std::vector<double>& inverseMetric) override
+  std::vector<double> dtau_dp(const std::vector<double> &momentum, const std::vector<double> &inverseMetric) override
   {
     return this->dK(momentum, inverseMetric);
   }
 
   /**
-  * @brief Purely virtual gradient of phi(q) = 0.5 * logDetMetric(q) + U(q) used for Hamiltonian Dynamics.
-  * @return Gradient of Kinetic energy with current momentum.
+  * @brief Calculates gradient of kinetic energy.
+  * @return Gradient of kinetic energy.
   */
   double phi() override
   {
@@ -83,8 +84,8 @@ class HamiltonianEuclidean : public Hamiltonian
   }
 
   /**
-  * @brief Purely virtual gradient of dphi_dq(q) = 0.5 * dlogDetMetric_dq(q) + dU(q) used for Hamiltonian Dynamics.
-  * @return Gradient of Kinetic energy with current momentum.
+  * @brief Calculates gradient of kinetic energy.
+  * @return Gradient of kinetic energy.
   */
   std::vector<double> dphi_dq() override
   {

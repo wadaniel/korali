@@ -74,20 +74,21 @@ class HamiltonianEuclideanDense : public HamiltonianEuclidean
 
   /**
   * @brief Total energy function used for Hamiltonian Dynamics.
-  * @param p Current momentum.
+  * @param momentum Current momentum.
   * @return Total energy.
   */
-  double H(const std::vector<double> &momentum, const std::vector<double>& inverseMetric) override
+  double H(const std::vector<double> &momentum, const std::vector<double> &inverseMetric) override
   {
     return K(momentum, inverseMetric) + U();
   }
 
   /**
-  * @brief Kinetic energy function K(q, p) = 0.5 * p.T * inverseMetric(q) * p + 0.5 * logDetMetric(q) used for Hamiltonian Dynamics. For Euclidean metric logDetMetric(q) := 0.0.
-  * @param p Current momentum.
+  * @brief Kinetic energy function.
+  * @param momentum Current momentum.
+  * @param inverseMetric Inverse of current metric.
   * @return Kinetic energy.
   */
-  double K(const std::vector<double> &momentum, const std::vector<double>& inverseMetric) override
+  double K(const std::vector<double> &momentum, const std::vector<double> &inverseMetric) override
   {
     double energy = 0.0;
     for (size_t i = 0; i < _stateSpaceDim; ++i)
@@ -102,12 +103,12 @@ class HamiltonianEuclideanDense : public HamiltonianEuclidean
   }
 
   /**
-  * @brief Purely virtual gradient of kintetic energy function dK(q, p) = inverseMetric(q) * p + 0.5 * dlogDetMetric_dq(q) used for Hamiltonian Dynamics. For Euclidean metric logDetMetric(q) := 0.0.
+  * @brief Gradient of kintetic energy function 
   * @param momentum Current momentum.
   * @param inverseMetric Current inverseMetric.
-  * @return Gradient of Kinetic energy with current momentum.
+  * @return Gradient of kinetic energy wrt. current momentum.
   */
-  std::vector<double> dK(const std::vector<double> &momentum, const std::vector<double>& inverseMetric) override
+  std::vector<double> dK(const std::vector<double> &momentum, const std::vector<double> &inverseMetric) override
   {
     std::vector<double> gradient(_stateSpaceDim, 0.0);
     double tmpScalar = 0.0;
@@ -128,9 +129,9 @@ class HamiltonianEuclideanDense : public HamiltonianEuclidean
   /**
   * @brief Generates sample of momentum.
   * @param metric Current metric.
-  * @return Sample of momentum from normal distribution with covariance matrix metric.
+  * @return Momentum sampled from normal distribution with metric as covariance matrix.
   */
-  std::vector<double> sampleMomentum(const std::vector<double>& metric) const override
+  std::vector<double> sampleMomentum(const std::vector<double> &metric) const override
   {
     // TODO: Change
     std::vector<double> result(_stateSpaceDim, 0.0);
@@ -140,11 +141,11 @@ class HamiltonianEuclideanDense : public HamiltonianEuclidean
 
   /**
   * @brief Calculates inner product induces by inverse metric.
-  * @param pLeft Left argument (momentum).
-  * @param pRight Right argument (momentum).
-  * @return pLeft.transpose * inverseMetric * pRight.
+  * @param leftMomentum Left vector of inner product.
+  * @param rightMoementum Right vector of inner product.
+  * @return inner product
   */
-  double innerProduct(const std::vector<double> &pLeft, const std::vector<double> &pRight, const std::vector<double>& inverseMetric) const override
+  double innerProduct(const std::vector<double> &leftMomentum, const std::vector<double> &rightMomentum, const std::vector<double> &inverseMetric) const override
   {
     double result = 0.0;
 
@@ -152,7 +153,7 @@ class HamiltonianEuclideanDense : public HamiltonianEuclidean
     {
       for (size_t j = 0; j < _stateSpaceDim; ++j)
       {
-        result += pLeft[i] * inverseMetric[i * _stateSpaceDim + j] * pRight[j];
+        result += leftMomentum[i] * inverseMetric[i * _stateSpaceDim + j] * rightMomentum[j];
       }
     }
 
@@ -160,11 +161,13 @@ class HamiltonianEuclideanDense : public HamiltonianEuclidean
   }
 
   /**
-  * @brief Updates Inverse Metric by using samples to approximate the covariance matrix via the Fisher information.
-  * @param samples Contains samples. One row is one sample.
-  * @return Error code of Cholesky decomposition used to invert matrix.
+  * @brief Updates inverse Metric by approximating the covariance matrix with the Fisher information.
+  * @param samples Vector of samples. 
+  * @param metric Current metric. 
+  * @param inverseMetric Inverse of current metric. 
+  * @return Error code of Cholesky decomposition.
   */
-  int updateMetricMatricesEuclidean(const std::vector<std::vector<double>> &samples, std::vector<double>& metric, std::vector<double>& inverseMetric) override
+  int updateMetricMatricesEuclidean(const std::vector<std::vector<double>> &samples, std::vector<double> &metric, std::vector<double> &inverseMetric) override
   {
     double sumk, sumi, sumOfSquares;
     double meank, meani, cov;

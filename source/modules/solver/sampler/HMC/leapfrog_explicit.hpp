@@ -25,9 +25,9 @@ class LeapfrogExplicit : public Leapfrog
   * @param p Momentum which is evolved.
   * @param stepSize Step Size used for Leap Frog Scheme.
   */
-  void step(std::vector<double> &q, std::vector<double> &p, const double stepSize) override
+  void step(std::vector<double> &q, std::vector<double> &p, std::vector<double>& metric, std::vector<double>& inverseMetric, const double stepSize) override
   {
-    _hamiltonian->updateHamiltonian(q);
+    _hamiltonian->updateHamiltonian(q, metric, inverseMetric);
     std::vector<double> dU = _hamiltonian->dU();
 
     for (size_t i = 0; i < dU.size(); ++i)
@@ -36,14 +36,14 @@ class LeapfrogExplicit : public Leapfrog
     }
 
     // would need to update in Riemannian case
-    std::vector<double> dK = _hamiltonian->dK(p);
+    std::vector<double> dK = _hamiltonian->dK(p, metric);
 
     for (size_t i = 0; i < dK.size(); ++i)
     {
       q[i] += stepSize * dK[i];
     }
 
-    _hamiltonian->updateHamiltonian(q);
+    _hamiltonian->updateHamiltonian(q, metric, inverseMetric);
     dU = _hamiltonian->dU();
 
     for (size_t i = 0; i < dU.size(); ++i)

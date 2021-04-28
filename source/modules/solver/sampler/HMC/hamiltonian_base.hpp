@@ -210,7 +210,7 @@ class Hamiltonian
   * @param _k Korali experiment object
   * @return Error code to indicate if update was successful.
   */
-  virtual int updateMetricMatricesRiemannian(const std::vector<double> &q)
+  virtual int updateMetricMatricesRiemannian(const std::vector<double> &position, std::vector<double>& metric, std::vector<double>& inverseMetric)
   {
     return 0;
   };

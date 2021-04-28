@@ -31,7 +31,7 @@ class Leapfrog
   * @param p Momentum which is evolved.
   * @param stepSize Step Size used for Leap Frog Scheme.
   */
-  virtual void step(std::vector<double> &q, std::vector<double> &p, const double stepSize) = 0;
+  virtual void step(std::vector<double> &q, std::vector<double> &p, std::vector<double>& metric, std::vector<double>& inverseMetric, const double stepSize) = 0;
 };
 
 } // namespace sampler

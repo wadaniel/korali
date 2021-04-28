@@ -180,7 +180,7 @@ void HMC::runGeneration()
 
   if (_metricType == Metric::Riemannian_Const)
   {
-    int err = _hamiltonian->updateMetricMatricesRiemannian(_positionLeader, _metric, _inverseMetric);
+    int err = _hamiltonian->updateMetricMatricesRiemannian(_metric, _inverseMetric);
     if (err > 0) _k->_logger->logWarning("Normal", "Error during metric update.");
   }
 

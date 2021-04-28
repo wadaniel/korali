@@ -30,7 +30,6 @@ class Sampling : public korali::Problem
    * @param sample Sample to evaluate
    */
   virtual void evaluateHessian(korali::Sample &sample);
- 
 };
 
 } // namespace problem

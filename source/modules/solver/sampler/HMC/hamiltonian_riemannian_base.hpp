@@ -54,7 +54,7 @@ class HamiltonianRiemannian : public Hamiltonian
   /**
   * @brief Helper function f(x) = x * coth(alpha * x) for SoftAbs metric.
   * @param x Point of evaluation.
-  * @param alpha Hyperparameter.
+  * @param alpha Hardness parameter
   * @return function value at x.
   */
   double __softAbsFunc(const double x, const double alpha) const

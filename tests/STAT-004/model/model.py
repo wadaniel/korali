@@ -63,7 +63,7 @@ def lexponentialCustom(s):
   s["logLikelihood"] = r
 
 
-# log laplace with mean 4 and scale 1 (var 2)
+# log laplace with mean 4 and scale 1 (var 2 = 2*scale)
 def llaplace(s):
   x0 = s["Parameters"][0]
   mu = 4.0

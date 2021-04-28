@@ -16,7 +16,7 @@ for useDiagonalMetric in [False, True]:
 
     e["File Output"]["Enabled"] = False
     e["File Output"]["Frequency"] = 0
-    e["Console Output"]["Frequency"] = 5000
+    e["Console Output"]["Frequency"] = 500
 
     # Selecting problem and solver types.
     e["Problem"]["Type"] = "Sampling"
@@ -29,8 +29,8 @@ for useDiagonalMetric in [False, True]:
 
     # Configuring the HMC sampler parameters
     e["Solver"]["Type"] = "Sampler/HMC"
-    e["Solver"]["Burn In"] = 100
-    e["Solver"]["Termination Criteria"]["Max Samples"] = 25000
+    e["Solver"]["Burn In"] = 500
+    e["Solver"]["Termination Criteria"]["Max Samples"] = 5000
 
     # HMC specific parameters
     e["Solver"]["Num Integration Steps"] = 20
@@ -39,7 +39,7 @@ for useDiagonalMetric in [False, True]:
     e["Solver"]["Use Diagonal Metric"] = useDiagonalMetric
     e["Solver"]["Use Adaptive Step Size"] = True
     e["Solver"]["Target Integration Time"] = 0.5
-    e["Solver"]["Desired Average Acceptance Rate"] = 0.80
+    e["Solver"]["Target Acceptance Rate"] = 0.80
     e["Solver"]["Use NUTS"] = False
     # Running Korali
     e["Random Seed"] = 1227

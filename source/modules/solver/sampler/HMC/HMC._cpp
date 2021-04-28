@@ -728,8 +728,8 @@ void HMC::printGenerationAfter()
     for (size_t d = 0; d < _variableCount; ++d)
     {
       for (size_t e = 0; e < _variableCount; ++e)
-        _k->_logger->logData("Normal", "         %+6.3e  ", _metric[d * _variableCount + e]);
-      _k->_logger->logInfo("Normal", "\n");
+        _k->_logger->logData("Detailed", "         %+6.3e  ", _metric[d * _variableCount + e]);
+      _k->_logger->logInfo("Detailed", "\n");
     }
   }
 
@@ -745,8 +745,8 @@ void HMC::printGenerationAfter()
     for (size_t d = 0; d < _variableCount; ++d)
     {
       for (size_t e = 0; e < _variableCount; ++e)
-        _k->_logger->logData("Normal", "         %+6.3e  ", _inverseMetric[d * _variableCount + e]);
-      _k->_logger->logInfo("Normal", "\n");
+        _k->_logger->logData("Detailed", "         %+6.3e  ", _inverseMetric[d * _variableCount + e]);
+      _k->_logger->logInfo("Detailed", "\n");
     }
   }
 

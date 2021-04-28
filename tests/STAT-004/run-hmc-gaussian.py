@@ -29,7 +29,7 @@ e["Variables"][0]["Initial Standard Deviation"] = 1.0
 
 # Configuring the HMC sampler parameters
 e["Solver"]["Type"] = "Sampler/HMC"
-e["Solver"]["Burn In"] = 1000
+e["Solver"]["Burn In"] = 500
 e["Solver"]["Termination Criteria"]["Max Samples"] = 5000
 
 # HMC specific parameters
@@ -44,5 +44,5 @@ e["Solver"]["Use NUTS"] = False
 e["Random Seed"] = 1234
 k.run(e)
 
-verifyMean(e["Solver"]["Sample Database"], [-2.0], 0.05)
-verifyStd(e["Solver"]["Sample Database"], [3.0], 0.10)
+verifyMean(e["Solver"]["Sample Database"], [-2.0], 0.25)
+verifyStd(e["Solver"]["Sample Database"], [1.732], 0.25)

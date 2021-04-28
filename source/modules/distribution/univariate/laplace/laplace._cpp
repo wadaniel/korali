@@ -17,6 +17,14 @@ double Laplace::getLogDensity(const double x) const
   return _aux - fabs(x - _mean) / _width;
 }
 
+double Laplace::getLogDensityGradient(const double x) const
+{
+  if (x >= _mean)
+    return 1.0 / _width;
+  else
+    return -1.0 / _width;
+}
+
 double Laplace::getRandomNumber()
 {
   return _mean + gsl_ran_laplace(_range, _width);

@@ -19,6 +19,11 @@ double Normal::getLogDensity(const double x) const
   return _logNormalization - 0.5 * d * d;
 }
 
+double Normal::getLogDensityGradient(const double x) const
+{
+  return (x - _mean) / (_standardDeviation * _standardDeviation);
+}
+
 double Normal::getRandomNumber()
 {
   return _mean + gsl_ran_gaussian(_range, _standardDeviation);

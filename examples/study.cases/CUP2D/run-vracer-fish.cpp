@@ -53,9 +53,8 @@ int main(int argc, char *argv[])
 
   // Configuring Experiment
   e["Problem"]["Environment Function"] = &runEnvironment;
-  e["Problem"]["Training Reward Threshold"] = 8.0;
+  e["Problem"]["Training Reward Threshold"] = 200.0;
   e["Problem"]["Policy Testing Episodes"] = 5;
-  e["Problem"]["Actions Between Policy Updates"] = 1;
 
   // Adding custom setting to run the environment without dumping the state files during training
   e["Problem"]["Custom Settings"]["Dump Frequency"] = 0.0;
@@ -86,21 +85,30 @@ int main(int argc, char *argv[])
 
   e["Solver"]["Type"] = "Agent / Continuous / VRACER";
   e["Solver"]["Mode"] = "Training";
-  e["Solver"]["Agent Count"] = N;
   e["Solver"]["Episodes Per Generation"] = 1;
+  e["Solver"]["Agent Count"] = N;
   e["Solver"]["Experiences Between Policy Updates"] = 1;
   e["Solver"]["Learning Rate"] = 1e-4;
   e["Solver"]["Discount Factor"] = 0.95;
+  e["Solver"]["Mini Batch"]["Size"] =  128;
 
   /// Defining the configuration of replay memory
 
   e["Solver"]["Experience Replay"]["Start Size"] = 1024;
   e["Solver"]["Experience Replay"]["Maximum Size"] = 65536;
+  e["Solver"]["Experience Replay"]["Off Policy"]["Annealing Rate"] = 5.0e-8;
+  e["Solver"]["Experience Replay"]["Off Policy"]["Cutoff Scale"] = 5.0;
+  e["Solver"]["Experience Replay"]["Off Policy"]["REFER Beta"] = 0.3;
+  e["Solver"]["Experience Replay"]["Off Policy"]["Target"] = 0.1;
 
-  //// Configuring Mini Batch
-
-  e["Solver"]["Mini Batch Size"] = 128;
-  e["Solver"]["Mini Batch Strategy"] = "Uniform";
+  //// Defining Policy distribution and scaling parameters
+  
+  e["Solver"]["Policy"]["Distribution"] = "Unbounded Normal";
+  e["Solver"]["State Rescaling"]["Enabled"] = true;
+  e["Solver"]["Reward"]["Rescaling"]["Enabled"] = true;
+  e["Solver"]["Reward"]["Rescaling"]["Frequency"] = 1000;
+  e["Solver"]["Reward"]["Outbound Penalization"]["Enabled"] = true;
+  e["Solver"]["Reward"]["Outbound Penalization"]["Factor"] = 0.5;
 
   //// Defining Neural Network
 
@@ -120,6 +128,8 @@ int main(int argc, char *argv[])
 
   // two FF layers with 128
   e["Solver"]["Neural Network"]["Engine"] = "OneDNN";
+  e["Solver"]["L2 Regularization"]["Enabled"] = true;
+  e["Solver"]["L2 Regularization"]["Importance"] = 1.0;
   e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear";
   e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 128;
 
@@ -134,7 +144,7 @@ int main(int argc, char *argv[])
 
   ////// Defining Termination Criteria
 
-  e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 16.0;
+  e["Solver"]["Termination Criteria"]["Max Experiences"] = 1e7;
 
   ////// Setting Korali output configuration
 

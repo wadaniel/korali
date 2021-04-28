@@ -262,37 +262,14 @@ float Continuous::calculateImportanceWeight(const std::vector<float> &action, co
       const float curMean = curPolicy.distributionParameters[i];
       const float curSigma = curPolicy.distributionParameters[_problem->_actionVectorSize + i];
 
+      // Get unbounded action
       const float scale = _actionScales[i];
       const float shift = _actionShifts[i];
       const float unboundedAction = std::atanh((action[i] - shift) / scale);
 
-      float oldSquashedProbability = squashedNormalLogDensity(unboundedAction, oldMean, oldSigma, scale);
-      float curSquashedProbability = squashedNormalLogDensity(unboundedAction, curMean, curSigma, scale);
-
-      if (std::isfinite(oldSquashedProbability) == false)
-      {
-        printf("oldMean: %f\n", oldMean);
-        printf("oldSigma: %f\n", oldSigma);
-        printf("scale: %f\n", scale);
-        printf("shift: %f\n", shift);
-        printf("action: %f\n", action[i]);
-        printf("unbounded action: %f\n", unboundedAction);
-        printf("unbounded action input: %f\n", (action[i] - shift) / scale);
-      }
-
-      if (std::isfinite(curSquashedProbability) == false)
-      {
-        printf("curMean: %f\n", curMean);
-        printf("curSigma: %f\n", curSigma);
-        printf("scale: %f\n", scale);
-        printf("shift: %f\n", shift);
-        printf("action: %f\n", action[i]);
-        printf("unbounded action: %f\n", unboundedAction);
-        printf("unbounded action input: %f\n", (action[i] - shift) / scale);
-      }
-
-      logpOldPolicy += oldSquashedProbability;
-      logpCurPolicy += curSquashedProbability;
+      // Importance weight of squashed normal is the importance weight of normal evaluated at unbounded action
+      logpOldPolicy += normalLogDensity(unboundedAction, oldMean, oldSigma);
+      logpCurPolicy += normalLogDensity(unboundedAction, curMean, curSigma);
     }
   }
 
@@ -337,7 +314,8 @@ std::vector<float> Continuous::calculateImportanceWeightGradient(const std::vect
 
   if (_policyDistribution == "Normal")
   {
-    float logImportanceWeight = 0.0;
+    float logpOldPolicy = 0.0f;
+    float logpCurPolicy = 0.0f;
 
     // ParamsOne are the Means, ParamsTwo are the Sigmas
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
@@ -348,19 +326,15 @@ std::vector<float> Continuous::calculateImportanceWeightGradient(const std::vect
       const float curMean = curPolicy.distributionParameters[i];
       const float curSigma = curPolicy.distributionParameters[_problem->_actionVectorSize + i];
 
+      // Calculate importance weight
+      logpOldPolicy += normalLogDensity(action[i], oldMean, oldSigma);
+      logpCurPolicy += normalLogDensity(action[i], curMean, curSigma);
+
       // Deviation from expAction and current Mean
       float curActionDiff = (action[i] - curMean);
 
-      // Deviation from expAction and old Mean
-      float oldActionDiff = (action[i] - oldMean);
-
       // Inverse Variances
       float curInvVar = 1. / (curSigma * curSigma);
-      float oldInvVar = 1. / (oldSigma * oldSigma);
-
-      // Calc Imp Weight
-      logImportanceWeight += std::log(oldSigma / curSigma);
-      logImportanceWeight += 0.5 * (oldActionDiff * oldActionDiff * oldInvVar - curActionDiff * curActionDiff * curInvVar);
 
       // Gradient with respect to Mean
       importanceWeightGradients[i] = curActionDiff * curInvVar;
@@ -369,6 +343,7 @@ std::vector<float> Continuous::calculateImportanceWeightGradient(const std::vect
       importanceWeightGradients[_problem->_actionVectorSize + i] = (curActionDiff * curActionDiff) * (curInvVar / curSigma) - 1.0f / curSigma;
     }
 
+    float logImportanceWeight = logpCurPolicy - logpOldPolicy;
     float importanceWeight = std::exp(logImportanceWeight);
 
     // Scale by importance weight to get gradient
@@ -393,9 +368,9 @@ std::vector<float> Continuous::calculateImportanceWeightGradient(const std::vect
       const float shift = _actionShifts[i];
       const float unboundedAction = std::atanh((action[i] - shift) / scale);
 
-      // Calculating log(importance weights)
-      logpOldPolicy += squashedNormalLogDensity(unboundedAction, oldMean, oldSigma, scale);
-      logpCurPolicy += squashedNormalLogDensity(unboundedAction, curMean, curSigma, scale);
+      // Importance weight of squashed normal is the importance weight of normal evaluated at unbounded action
+      logpOldPolicy += normalLogDensity(unboundedAction, oldMean, oldSigma);
+      logpCurPolicy += normalLogDensity(unboundedAction, curMean, curSigma);
 
       // Deviation from expAction and current Mean
       float curActionDiff = (unboundedAction - curMean);

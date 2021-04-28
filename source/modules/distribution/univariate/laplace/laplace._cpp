@@ -25,6 +25,11 @@ double Laplace::getLogDensityGradient(const double x) const
     return -1.0 / _width;
 }
 
+double Laplace::getLogDensityHessian(const double x) const
+{
+  return 0.;
+}
+
 double Laplace::getRandomNumber()
 {
   return _mean + gsl_ran_laplace(_range, _width);

@@ -23,6 +23,11 @@ double Igamma::getLogDensityGradient(const double x) const
   return _scale / (x * x) - (_shape + 1.) / x;
 }
 
+double Igamma::getLogDensityHessian(const double x) const
+{
+  return -2. * _scale / (x * x * x) + (_shape + 1.) / (x * x);
+}
+
 double Igamma::getRandomNumber()
 {
   return 1. / gsl_ran_gamma(_range, _shape, 1. / _scale);

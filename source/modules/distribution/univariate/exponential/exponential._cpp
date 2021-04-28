@@ -24,6 +24,11 @@ double Exponential::getLogDensityGradient(const double x) const
   return -1.0 / _mean;
 }
 
+double Exponential::getLogDensityHessian(const double x) const
+{
+  return 0.;
+}
+
 double Exponential::getRandomNumber()
 {
   return _location + gsl_ran_exponential(_range, _mean);

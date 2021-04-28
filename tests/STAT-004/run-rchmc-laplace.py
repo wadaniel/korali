@@ -33,10 +33,10 @@ for useDiagonalMetric in [False, True]:
     e["Solver"]["Step Size"] = 0.05
     e["Solver"]["Version"] = 'Riemannian Const'
     e["Solver"]["Use Diagonal Metric"] = useDiagonalMetric
-    e["Solver"]["Use Adaptive Step Size"] = 1
+    e["Solver"]["Use Adaptive Step Size"] = True
     e["Solver"]["Target Integration Time"] = 0.5
     e["Solver"]["Target Acceptance Rate"] = 0.80
-    e["Solver"]["Use NUTS"] = 0
+    e["Solver"]["Use NUTS"] = False
 
     e["Console Output"]["Frequency"] = 5000
     e["File Output"]["Frequency"] = 0
@@ -46,5 +46,5 @@ for useDiagonalMetric in [False, True]:
     e["Random Seed"] = 1227
     k.run(e)
 
-    verifyMean(e["Solver"]["Sample Database"], [4.0], 0.05)
+    verifyMean(e["Solver"]["Sample Database"], [4.0], 0.1)
     verifyStd(e["Solver"]["Sample Database"], [math.sqrt(2)], 0.05)

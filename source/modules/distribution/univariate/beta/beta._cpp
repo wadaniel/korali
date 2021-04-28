@@ -24,6 +24,11 @@ double Beta::getRandomNumber()
   return gsl_ran_beta(_range, _alpha, _beta);
 }
 
+double Beta::getLogDensityGradient(const double x) const
+{
+  return (_alpha - 1.) / x - (_beta - 1.) / (1. - x);
+};
+
 void Beta::updateDistribution()
 {
   if (_alpha <= 0.0) KORALI_LOG_ERROR("Incorrect Shape parameter (alpha) of Beta distribution: %f.\n", _alpha);

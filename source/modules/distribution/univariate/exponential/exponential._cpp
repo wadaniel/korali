@@ -18,6 +18,12 @@ double Exponential::getLogDensity(const double x) const
   return -log(_mean) - (x - _location) / _mean;
 }
 
+double Exponential::getLogDensityGradient(const double x) const
+{
+  if (x - _location < 0) return 0.;
+  return -1.0 / _mean;
+}
+
 double Exponential::getRandomNumber()
 {
   return _location + gsl_ran_exponential(_range, _mean);

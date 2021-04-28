@@ -27,6 +27,11 @@ double TruncatedNormal::getLogDensity(const double x) const
   return _logNormalization - 0.5 * d * d;
 }
 
+double TruncatedNormal::getLogDensityGradient(const double x) const
+{
+  return (x - _mu) / (_sigma * _sigma);
+}
+
 double TruncatedNormal::getRandomNumber()
 {
 #ifdef _KORALI_USE_RTNORM

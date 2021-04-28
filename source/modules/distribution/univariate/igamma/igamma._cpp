@@ -15,7 +15,12 @@ double Igamma::getDensity(const double x) const
 double Igamma::getLogDensity(const double x) const
 {
   if (x < 0) return -INFINITY;
-  return _aux - (_shape + 1) * log(x) - (_scale / x);
+  return _aux - (_shape + 1) * std::log(x) - (_scale / x);
+}
+
+double Igamma::getLogDensityGradient(const double x) const
+{
+  return _scale / (x * x) - (_shape + 1.) / x;
 }
 
 double Igamma::getRandomNumber()

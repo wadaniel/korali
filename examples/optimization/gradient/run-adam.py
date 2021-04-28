@@ -18,17 +18,17 @@ e = korali.Experiment()
 
 # Configuring Problem.
 e["Problem"]["Type"] = "Optimization"
-e["Problem"]["Objective Function"] = model_with_gradient
+e["Problem"]["Objective Function"] = negative_rosenbrock
 
 # Defining the problem's variables.
 for i in range(5):
-  e["Variables"][i]["Name"] = "X" + str(i)
-  e["Variables"][i]["Initial Value"] = -10.0 + i
+    e["Variables"][i]["Name"] = "X" + str(i)
+    e["Variables"][i]["Initial Value"] = -10
 
 # Configuring Adam parameters
 e["Solver"]["Type"] = "Optimizer/Adam"
 e["Solver"]["Eta"] = 0.1
-e["Solver"]["Termination Criteria"]["Max Generations"] = 2000
+e["Solver"]["Termination Criteria"]["Max Generations"] = 5000
 
 # Configuring results path
 e["File Output"]["Path"] = '_korali_result_adam'

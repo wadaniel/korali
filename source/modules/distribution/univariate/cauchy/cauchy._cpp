@@ -14,7 +14,13 @@ double Cauchy::getDensity(const double x) const
 
 double Cauchy::getLogDensity(const double x) const
 {
-  return _aux - gsl_sf_log(1. + gsl_sf_pow_int((x - _location) / _scale, 2));
+  return _aux - std::log(1. + (x - _location) * (x - _location) / (_scale * _scale));
+}
+
+double Cauchy::getLogDensityGradient(const double x) const
+{
+  double tmp = (x - _location) / _scale;
+  return -2. / (1. + tmp * tmp) * tmp / _scale;
 }
 
 double Cauchy::getRandomNumber()

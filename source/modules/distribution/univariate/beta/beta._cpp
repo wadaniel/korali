@@ -27,7 +27,7 @@ double Beta::getRandomNumber()
 double Beta::getLogDensityGradient(const double x) const
 {
   return (_alpha - 1.) / x - (_beta - 1.) / (1. - x);
-};
+}
 
 void Beta::updateDistribution()
 {

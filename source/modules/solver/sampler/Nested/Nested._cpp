@@ -17,7 +17,6 @@
 #include <random> // std::default_random_engine
 
 #define L2DIST
-//#define RNDAX
 
 namespace korali
 {
@@ -866,23 +865,6 @@ bool Nested::kmeansClustering(const ellipse_t &parent, size_t maxIter, ellipse_t
 #endif
 
   size_t ax = 0;
-#ifdef RNDAX
-  double totlen = 0.0;
-  for (double ev : parent.evals) totlen += ev;
-
-  double cumlen = 0.0;
-  double rnd = _uniformGenerator->getRandomNumber();
-  for (size_t d = 0; d < _variableCount; ++d)
-  {
-    cumlen += parent.evals[d] / totlen;
-    if (rnd < cumlen)
-    {
-      ax = d;
-      break;
-    }
-  }
-#endif
-
   for (size_t d = 0; d < _variableCount; ++d)
   {
     childOne.mean[d] = parent.mean[d] + parent.paxes[d * _variableCount + ax] * parent.evals[ax];

@@ -50,16 +50,6 @@ class HamiltonianRiemannianConstDiag : public HamiltonianRiemannian
   }
 
   /**
-  * @brief Constructor with State Space Dim.
-  * @param stateSpaceDim Dimension of State Space.
-  * @param normalGenerator Generator needed for momentum sampling.
-  * @param inverseRegularizationParam Inverse regularization parameter of SoftAbs metric that controls hardness of approximation: For large values inverseMetric is closer to analytical formula (and therefore closer to degeneracy in certain cases). 
-  */
-  HamiltonianRiemannianConstDiag(const size_t stateSpaceDim, korali::distribution::univariate::Normal *normalGenerator, const double inverseRegularizationParam, korali::Experiment *k) : HamiltonianRiemannianConstDiag{stateSpaceDim, normalGenerator, inverseRegularizationParam, k}
-  {
-  }
-
-  /**
   * @brief Destructor of derived class.
   */
   ~HamiltonianRiemannianConstDiag()
@@ -71,9 +61,9 @@ class HamiltonianRiemannianConstDiag : public HamiltonianRiemannian
   * @param p Current momentum.
   * @return Total energy.
   */
-  double H(const std::vector<double> &p) override
+  double H(const std::vector<double> &momentum, const std::vector<double>& inverseMetric) override
   {
-    return this->K(p) + this->U();
+    return this->K(momentum, inverseMetric) + this->U();
   }
 
   /**
@@ -81,9 +71,9 @@ class HamiltonianRiemannianConstDiag : public HamiltonianRiemannian
   * @param p Current momentum.
   * @return Kinetic energy.
   */
-  double K(const std::vector<double> &p) override
+  double K(const std::vector<double> &momentum, const std::vector<double>& inverseMetric) override
   {
-    double result = this->tau(p, inverseMetric) + 0.5 * _logDetMetric;
+    double result = this->tau(momentum, inverseMetric) + 0.5 * _logDetMetric;
 
     return result;
   }
@@ -93,12 +83,12 @@ class HamiltonianRiemannianConstDiag : public HamiltonianRiemannian
   * @param p Current momentum.
   * @return Gradient of Kinetic energy with current momentum.
   */
-  std::vector<double> dK(const std::vector<double> &p, const std::vector<double> &inverseMetric) override
+  std::vector<double> dK(const std::vector<double> &momentum, const std::vector<double> &inverseMetric) override
   {
     std::vector<double> gradient(_stateSpaceDim, 0.0);
     for (size_t i = 0; i < _stateSpaceDim; ++i)
     {
-      gradient[i] = inverseMetric[i] * p[i];
+      gradient[i] = inverseMetric[i] * momentum[i];
     }
 
     return gradient;
@@ -109,18 +99,18 @@ class HamiltonianRiemannianConstDiag : public HamiltonianRiemannian
   * @param p Current momentum.
   * @return Gradient of Kinetic energy with current momentum.
   */
-  double tau(const std::vector<double> &p, const std::vector<double>& inverseMetric) override
+  double tau(const std::vector<double> &momentum, const std::vector<double>& inverseMetric) override
   {
-    double tmpScalar = 0.0;
+    double energy = 0.0;
 
     // this->updateHamiltonian(q);
 
     for (size_t i = 0; i < _stateSpaceDim; ++i)
     {
-      tmpScalar += p[i] * inverseMetric[i] * p[i];
+      energy += momentum[i] * inverseMetric[i] * momentum[i];
     }
 
-    return 0.5 * tmpScalar;
+    return 0.5 * energy;
   }
 
   /**
@@ -128,7 +118,7 @@ class HamiltonianRiemannianConstDiag : public HamiltonianRiemannian
   * @param p Current momentum.
   * @return Gradient of Kinetic energy with current momentum.
   */
-  std::vector<double> dtau_dq(const std::vector<double> &p, const std::vector<double> inverseMetric) override
+  std::vector<double> dtau_dq(const std::vector<double> &momentum, const std::vector<double>& inverseMetric) override
   {
     std::vector<double> result(_stateSpaceDim, 0.0);
 
@@ -140,11 +130,9 @@ class HamiltonianRiemannianConstDiag : public HamiltonianRiemannian
   * @param p Current momentum.
   * @return Gradient of Kinetic energy with current momentum.
   */
-  std::vector<double> dtau_dp(const std::vector<double> &p, const std::vector<double> &inverseMetric) override
+  std::vector<double> dtau_dp(const std::vector<double> &momentum, const std::vector<double> &inverseMetric) override
   {
-    std::vector<double> result = this->dK(p, inverseMetric);
-
-    return result;
+    return this->dK(momentum, inverseMetric);
   }
 
   /**
@@ -162,9 +150,7 @@ class HamiltonianRiemannianConstDiag : public HamiltonianRiemannian
   */
   std::vector<double> dphi_dq() override
   {
-    std::vector<double> result = this->dU();
-
-    return result;
+   return this->dU();
   }
 
   /**

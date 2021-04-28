@@ -50,18 +50,6 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
   }
 
   /**
-  * @brief Constructor with State Space Dim.
-  * @param stateSpaceDim Dimension of State Space.
-  * @param normalGenerator Generator needed for momentum sampling.
-  * @param metric Metric for initialization. 
-  * @param inverseMetric Inverse Metric for initialization. 
-  * @param inverseRegularizationParam Inverse regularization parameter of SoftAbs metric that controls hardness of approximation: For large values inverseMetric is closer to analytical formula (and therefore closer to degeneracy in certain cases). 
-  */
-  HamiltonianRiemannianDiag(const size_t stateSpaceDim, korali::distribution::univariate::Normal *normalGenerator, const double inverseRegularizationParam, korali::Experiment *k) : HamiltonianRiemannianDiag{stateSpaceDim, normalGenerator, k}
-  {
-  }
-
-  /**
   * @brief Destructor of derived class.
   */
   ~HamiltonianRiemannianDiag()
@@ -73,9 +61,9 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
   * @param p Current momentum.
   * @return Total energy.
   */
-  double H(const std::vector<double> &p) override
+  double H(const std::vector<double> &momentum, const std::vector<double>& inverseMetric) override
   {
-    return this->K(p) + this->U();
+    return this->K(momentum, inverseMetric) + this->U();
   }
 
   /**
@@ -85,7 +73,7 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
   */
   double K(const std::vector<double> &momentum, const std::vector<double>& inverseMetric) override
   {
-    double result = tau(p, inverseMetric) + 0.5 * _logDetMetric;
+    double result = tau(momentum, inverseMetric) + 0.5 * _logDetMetric;
 
     return result;
   }
@@ -202,7 +190,7 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
   * @param q Current position.
   * @param _k Experiment object.
   */
-  void updateHamiltonian(const std::vector<double> &q, std::veector<double>& metric, std::vector<double>& inverseMetric) override
+  void updateHamiltonian(const std::vector<double> &q, std::vector<double>& metric, std::vector<double>& inverseMetric) override
   {
     auto sample = korali::Sample();
     sample["Sample Id"] = _modelEvaluationCount;
@@ -246,7 +234,7 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
   * @param metric Current metric.
   * @return Sample of momentum from normal distribution with covariance matrix metric. Only variance taken into account with diagonal metric.
   */
-  std::vector<double> sampleMomentum(const std::vector<double> metric) const override
+  std::vector<double> sampleMomentum(const std::vector<double>& metric) const override
   {
     std::vector<double> result(_stateSpaceDim);
 

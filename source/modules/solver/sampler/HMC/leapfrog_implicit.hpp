@@ -38,13 +38,13 @@ class LeapfrogImplicit : public Leapfrog
   * @param p Momentum which is evolved.
   * @param stepSize Step Size used for Leap Frog Scheme.
   */
-  void step(std::vector<double> &q, std::vector<double> &p, const double stepSize) override
+  void step(std::vector<double> &q, std::vector<double> &p, std::vector<double>& metric, std::vector<double>& inverseMetric, const double stepSize) override
   {
     size_t dim = p.size();
     double delta = 1e-6 * stepSize;
 
     // half step of momentum
-    _hamiltonian->updateHamiltonian(q);
+    _hamiltonian->updateHamiltonian(q, metric, inverseMetric);
     std::vector<double> dphi_dq = _hamiltonian->dphi_dq();
     for (size_t i = 0; i < dim; ++i)
     {
@@ -59,8 +59,8 @@ class LeapfrogImplicit : public Leapfrog
     do
     {
       deltaP = 0.0;
-      _hamiltonian->updateHamiltonian(q);
-      std::vector<double> dtau_dq = _hamiltonian->dtau_dq(p);
+      _hamiltonian->updateHamiltonian(q, metric, inverseMetric);
+      std::vector<double> dtau_dq = _hamiltonian->dtau_dq(p, inverseMetric);
       for (size_t i = 0; i < dim; ++i)
       {
         pPrime[i] = rho[i] - stepSize / 2.0 * dtau_dq[i];
@@ -88,10 +88,10 @@ class LeapfrogImplicit : public Leapfrog
     do
     {
       deltaQ = 0.0;
-      _hamiltonian->updateHamiltonian(sigma);
-      std::vector<double> dtau_dp_sigma = _hamiltonian->dtau_dp(p);
-      _hamiltonian->updateHamiltonian(q);
-      std::vector<double> dtau_dp_q = _hamiltonian->dtau_dp(p);
+      _hamiltonian->updateHamiltonian(sigma, metric, inverseMetric);
+      std::vector<double> dtau_dp_sigma = _hamiltonian->dtau_dp(p, inverseMetric);
+      _hamiltonian->updateHamiltonian(q, metric, inverseMetric);
+      std::vector<double> dtau_dp_q = _hamiltonian->dtau_dp(p, inverseMetric);
       for (size_t i = 0; i < dim; ++i)
       {
         qPrime[i] = sigma[i] + stepSize / 2.0 * dtau_dp_sigma[i] + stepSize / 2.0 * dtau_dp_q[i];
@@ -110,8 +110,8 @@ class LeapfrogImplicit : public Leapfrog
       ++numIter;
     } while (deltaQ > delta && numIter < _maxNumFixedPointIter);
 
-    _hamiltonian->updateHamiltonian(q);
-    std::vector<double> dtau_dq = _hamiltonian->dtau_dq(p);
+    _hamiltonian->updateHamiltonian(q, metric, inverseMetric);
+    std::vector<double> dtau_dq = _hamiltonian->dtau_dq(p, inverseMetric);
     for (size_t i = 0; i < dim; ++i)
     {
       p[i] = p[i] - stepSize / 2.0 * dtau_dq[i];

@@ -41,8 +41,17 @@ struct TreeHelperRiemannian : public TreeHelper
 
     std::vector<double> tmpVectorTwo(dim, 0.0);
     std::transform(std::cbegin(rho), std::cend(rho), std::cbegin(pStart), std::begin(tmpVectorTwo), std::minus<double>());
+    
+    double innerProductStart = 0;
+    double innerProductEnd = 0;
 
-    return hamiltonian.innerProduct(pStart, tmpVectorOne) > 0.0 && hamiltonian.innerProduct(pEnd, tmpVectorTwo) > 0.0;
+    for(size_t i = 0; i < dim; ++i)
+    {
+        innerProductStart += pStart[i] * tmpVectorOne[i];
+        innerProductEnd += pEnd[i] * tmpVectorTwo[i];
+    }
+
+    return innerProductStart > 0.0 && innerProductEnd > 0.0;
   }
 };
 

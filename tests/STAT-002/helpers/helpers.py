@@ -20,3 +20,13 @@ def compareStd(k):
 
   assert np.isclose(std, chainstd), "Cholesky Decomposition of Chain" \
           "Covariance deviates from Standard Deviation of Samples ({0} vs {1})".format(std, chainstd)
+
+
+def compareMeanHMC(k):
+  warmupSamples = k["Solver"]["Sample Database"]
+
+  mean = np.mean(warmupSamples)
+  positionMean = k["Solver"]["Position Mean"]
+
+  assert np.isclose(mean, positionMean), "Position Mean deviates from Mean of "\
+          "Samples ({0} vs {1})".format(mean, positionMean)

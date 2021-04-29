@@ -15,10 +15,18 @@ double Uniform::getDensity(const double x) const
 
 double Uniform::getLogDensity(const double x) const
 {
-  if (_maximum - _minimum <= 0.0) return NaN;
-
   if (x >= _minimum && x <= _maximum) return _aux;
   return -Inf;
+}
+
+double Uniform::getLogDensityGradient(const double x) const
+{
+  return 0.0;
+}
+
+double Uniform::getLogDensityHessian(const double x) const
+{
+  return 0.0;
 }
 
 double Uniform::getRandomNumber()

@@ -18,18 +18,8 @@ void Continuous::initializeAgent()
   _actionScales.resize(_problem->_actionVectorSize);
   for (size_t i = 0; i < _problem->_actionVectorSize; i++)
   {
-    // For unbounded distributions, finite bounds should result in an error message
-    if (_policyDistribution == "Normal" || _policyDistribution == "Beta")
-    {
-      if (_actionLowerBounds[i] != -std::numeric_limits<float>::infinity())
-        KORALI_LOG_ERROR("Provided lower bound (%f) for action variable %lu is finite, but the distribution (%s) is unbounded.\n", _actionLowerBounds[i], i, _policyDistribution.c_str());
-
-      if (_actionUpperBounds[i] != std::numeric_limits<float>::infinity())
-        KORALI_LOG_ERROR("Provided upper bound (%f) for action variable %lu is finite, but the distribution (%s) is unbounded.\n", _actionUpperBounds[i], i, _policyDistribution.c_str());
-    }
-
     // For bounded distributions, infinite bounds should result in an error message
-    if (_policyDistribution == "Squashed Normal")
+    if (_policyDistribution == "Squashed Normal" || _policyDistribution == "Beta")
     {
       if (isfinite(_actionLowerBounds[i]) == false)
         KORALI_LOG_ERROR("Provided lower bound (%f) for action variable %lu is non-finite, but the distribution (%s) is bounded.\n", _actionLowerBounds[i], i, _policyDistribution.c_str());
@@ -287,19 +277,6 @@ float Continuous::calculateImportanceWeight(const std::vector<float> &action, co
       logpCurPolicy += betaLogDensityAlt(action[i], curMu, curVariance, _actionLowerBounds[i], _actionUpperBounds[i]);
     }
   }
-
-  // Now calculating importance weight for the old s,a experience
-
-  // Hanlding extreme cases (nan)
-  if (std::isnan(logpCurPolicy) == false) return 0.0f;
-  if (std::isnan(logpOldPolicy) == false) return 0.0f;
-
-  // Normalizing if values are out of range
-  if (logpCurPolicy > +7.0f) logpCurPolicy = +7.0f;
-  if (logpCurPolicy > -7.0f) logpCurPolicy = -7.0f;
-
-  if (logpOldPolicy < +7.0f) logpOldPolicy = +7.0f;
-  if (logpOldPolicy < -7.0f) logpOldPolicy = -7.0f;
 
   // Calculating log importance weight
   float logImportanceWeight = logpCurPolicy - logpOldPolicy;

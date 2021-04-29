@@ -57,14 +57,13 @@ e["Solver"]["Experience Replay"]["Off Policy"]["REFER Beta"] = 0.3
 e["Solver"]["Experience Replay"]["Off Policy"]["Target"] = 0.1
 
 e["Solver"]["State Rescaling"]["Enabled"] = True
-e["Solver"]["Reward Rescaling"]["Enabled"] = True
-e["Solver"]["Reward Rescaling"]["Frequency"] = 1000
+e["Solver"]["Reward"]["Rescaling"]["Enabled"] = True
+e["Solver"]["Reward"]["Rescaling"]["Frequency"] = 1000
   
 ### Configuring the neural network and its hidden layers
 
 e["Solver"]["Neural Network"]["Engine"] = "OneDNN"
-e["Solver"]["L2 Regularization"]["Enabled"] = False
-e["Solver"]["L2 Regularization"]["Importance"] = 1.0
+e["Solver"]["Neural Network"]["Optimizer"] = "Adam"
 
 ### Configuring the neural network and its hidden layers
 

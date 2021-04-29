@@ -182,12 +182,12 @@ T squashedNormalLogDensity(const T &px, const T &mean, const T &sigma, const T &
   // Compute numerically safe factor from coordinate transformation
   const T tanhX = std::tanh(px);
   static constexpr T MIN = std::numeric_limits<T>::min();
-  const T dTanhX = std::max(1.0f-tanhX*tanhX, MIN);
+  const T dTanhX = std::max(1.0f - tanhX * tanhX, MIN);
   const T logDTanhX = std::log(dTanhX);
   const T logScale = std::log(scale);
 
   // log[p(g(x))]=log[p(x)]-log[g'(x)]
-  return logExp - logConst - logStdDev -logDTanhX -logScale;
+  return logExp - logConst - logStdDev - logDTanhX - logScale;
 }
 
 /**

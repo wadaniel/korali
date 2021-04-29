@@ -85,19 +85,19 @@ void ReinforcementLearning::initialize()
         for (size_t j = 0; j < _stateVectorSize; ++j)
         {
             gsl_matrix_set(X, idx, j+1, (double) _observationsStates[t][i][j]);
-            printf("x %zu %zu %f\n", idx, j, _observationsStates[t][i][j]);
         }
  
         for (size_t j = 0; j < _actionVectorSize; ++j)
         {
             gsl_matrix_set(Y, idx, j, (double) _observationsActions[t][i][j]);
-            printf("Y %zu %zu %f\n", idx, j, _observationsActions[t][i][j]);
         }
 
         idx++;
     }
   }
 
+  _k->_logger->logInfo("Normal", "Linear Approximator Expert Policy\n");
+  
   // Do regression over actions
   for(size_t i = 0; i < _actionVectorSize; ++i)
   {
@@ -111,8 +111,8 @@ void ReinforcementLearning::initialize()
     
     for(size_t j = 0; j < _stateVectorSize + 1; ++j)
     {
-      _observationsApproximatorWeights[i][j] = gsl_vector_get(c,j);
-      printf("w: %f\n", _observationsApproximatorWeights[i][j]);
+      _observationsApproximatorWeights[j][i] = gsl_vector_get(c,j);
+      _k->_logger->logInfo("Normal", "    + Weights  [%zu, %zu] %f \n", i, j, _observationsApproximatorWeights[j][i]);
     }
   
     gsl_multifit_linear_free(work);
@@ -140,13 +140,11 @@ void ReinforcementLearning::initialize()
   for(size_t k = 0; k < _actionVectorSize; ++k)
   {
     _observationsApproximatorSigmas[k] = std::sqrt(squaredErrors[k]/(float) totalObservedPairs);
-    printf("approximator sigma %zu %f\n", k, _observationsApproximatorSigmas[k]);
+    _k->_logger->logInfo("Normal", "    + Sigma    [%zu] %f \n", k, _observationsApproximatorSigmas[k]);
   }
 
   gsl_matrix_free(X);
   gsl_matrix_free(Y);
-  
-  KORALI_LOG_ERROR("STOP TEST");
 }
 
 /**

@@ -47,25 +47,45 @@ void Output::initialize()
 
   // If no transformation mask is specified, use identity exclusively
   if (_transformationMask.size() == 0)
-   for (size_t i = 0; i < _outputChannels; i++)
-    _transformationVector[i] = t_identity;
+    for (size_t i = 0; i < _outputChannels; i++)
+      _transformationVector[i] = t_identity;
 
   // If incorrect size of mask is specified, produce error
   if (_transformationMask.size() != 0 && _transformationMask.size() != _outputChannels)
-   KORALI_LOG_ERROR("Wrong size of transformation mask specified: %lu, expected: %lu.\n", _transformationMask.size(), _outputChannels);
+    KORALI_LOG_ERROR("Wrong size of transformation mask specified: %lu, expected: %lu.\n", _transformationMask.size(), _outputChannels);
 
   // If transformation mask is specified, storing the correct transformations
   if (_transformationMask.size() == _outputChannels)
-   for (size_t i = 0; i < _outputChannels; i++)
-   {
-    bool isRecognized = false;
-    if (_transformationMask[i] == "Identity") { _transformationVector[i] = t_identity; isRecognized = true; }
-    if (_transformationMask[i] == "Absolute") { _transformationVector[i] = t_absolute; isRecognized = true; }
-    if (_transformationMask[i] == "Softplus") { _transformationVector[i] = t_softplus; isRecognized = true; }
-    if (_transformationMask[i] == "Tanh") { _transformationVector[i]  = t_tanh; isRecognized = true; }
-    if (_transformationMask[i] == "Sigmoid") { _transformationVector[i] = t_sigmoid; isRecognized = true; }
-    if (isRecognized == false) KORALI_LOG_ERROR("Wrong transformation mask specified: %s for output variable %lu.\n", _transformationMask[i].c_str(), i);
-   }
+    for (size_t i = 0; i < _outputChannels; i++)
+    {
+      bool isRecognized = false;
+      if (_transformationMask[i] == "Identity")
+      {
+        _transformationVector[i] = t_identity;
+        isRecognized = true;
+      }
+      if (_transformationMask[i] == "Absolute")
+      {
+        _transformationVector[i] = t_absolute;
+        isRecognized = true;
+      }
+      if (_transformationMask[i] == "Softplus")
+      {
+        _transformationVector[i] = t_softplus;
+        isRecognized = true;
+      }
+      if (_transformationMask[i] == "Tanh")
+      {
+        _transformationVector[i] = t_tanh;
+        isRecognized = true;
+      }
+      if (_transformationMask[i] == "Sigmoid")
+      {
+        _transformationVector[i] = t_sigmoid;
+        isRecognized = true;
+      }
+      if (isRecognized == false) KORALI_LOG_ERROR("Wrong transformation mask specified: %s for output variable %lu.\n", _transformationMask[i].c_str(), i);
+    }
 }
 
 void Output::createForwardPipeline()
@@ -185,7 +205,7 @@ void Output::backwardData(const size_t t)
           g = -g;
 
       if (_transformationVector[j] == t_tanh)
-       g = g * (1.0f - x * x);
+        g = g * (1.0f - x * x);
 
       if (_transformationVector[j] == t_softplus)
       {
@@ -194,7 +214,7 @@ void Output::backwardData(const size_t t)
       }
 
       if (_transformationVector[j] == t_sigmoid)
-       g = g * x * (1. - x);
+        g = g * x * (1. - x);
 
       _dstOutputGradients[i * OC + j] = g;
     }

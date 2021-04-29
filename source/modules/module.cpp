@@ -61,6 +61,7 @@
 #include "solver/optimizer/Rprop/Rprop.hpp"
 #include "solver/optimizer/gridSearch/gridSearch.hpp"
 #include "solver/optimizer/optimizer.hpp"
+#include "solver/sampler/HMC/HMC.hpp"
 #include "solver/sampler/MCMC/MCMC.hpp"
 #include "solver/sampler/Nested/Nested.hpp"
 #include "solver/sampler/TMCMC/TMCMC.hpp"
@@ -149,6 +150,7 @@ Module *Module::getModule(knlohmann::json &js, Experiment *e)
   if (iCompare(moduleType, "Optimizer/GridSearch")) module = new korali::solver::optimizer::GridSearch();
   if (iCompare(moduleType, "Sampler/Nested")) module = new korali::solver::sampler::Nested();
   if (iCompare(moduleType, "Sampler/MCMC")) module = new korali::solver::sampler::MCMC();
+  if (iCompare(moduleType, "Sampler/HMC")) module = new korali::solver::sampler::HMC();
   if (iCompare(moduleType, "Sampler/TMCMC")) module = new korali::solver::sampler::TMCMC();
   if (iCompare(moduleType, "NeuralNetwork")) module = new korali::NeuralNetwork();
   if (iCompare(moduleType, "Layer/Linear")) module = new korali::neuralNetwork::layer::Linear();

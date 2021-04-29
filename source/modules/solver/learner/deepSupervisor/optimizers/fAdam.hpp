@@ -5,6 +5,7 @@
 #ifndef _KORALI_FAST_ADAM_HPP_
 #define _KORALI_FAST_ADAM_HPP_
 
+#include "fGradientBasedOptimizer.hpp"
 #include <vector>
 
 namespace korali
@@ -12,7 +13,7 @@ namespace korali
 /**
 * @brief Class declaration for module: Adam.
 */
-class fAdam
+class fAdam : public fGradientBasedOptimizer
 {
   public:
   /**
@@ -22,31 +23,6 @@ class fAdam
   fAdam(size_t nVars);
 
   /**
-  * @brief Number of problem variables
-  */
-  size_t _nVars;
-
-  /**
-   * @brief Counter for the current generation
-   */
-  size_t _currentGeneration;
-
-  /**
-   * @brief Initial values for the variables
-   */
-  std::vector<float> _initialValues;
-
-  /**
-   * @brief Indicates how many generations to run
-   */
-  size_t _maxGenerations;
-
-  /**
-  * @brief Keeps track of how many model evaluations performed
-  */
-  size_t _modelEvaluationCount;
-
-  /**
 * @brief Beta for momentum update
 */
   float _beta1;
@@ -54,30 +30,12 @@ class fAdam
 * @brief Beta for gradient update
 */
   float _beta2;
-  /**
-* @brief Learning Rate
-*/
-  float _eta;
+
   /**
 * @brief Smoothing Term
 */
   float _epsilon;
-  /**
-* @brief [Internal Use] Current value of parameters.
-*/
-  std::vector<float> _currentValue;
-  /**
-* @brief [Internal Use] Function evaluation for the current parameters.
-*/
-  float _currentEvaluation;
-  /**
-* @brief [Internal Use] Smaller function evaluation
-*/
-  float _bestEvaluation;
-  /**
-* @brief [Internal Use] Gradient of Function with respect to Parameters.
-*/
-  std::vector<float> _gradient;
+
   /**
 * @brief [Internal Use] Estimate of first moment of Gradient.
 */
@@ -95,28 +53,10 @@ class fAdam
 */
   float _maxGradientNorm;
 
-  /**
-   * @brief Determines whether the module can trigger termination of an experiment run.
-   * @return True, if it should trigger termination; false, otherwise.
-   */
-  virtual bool checkTermination();
-
-  /**
-  * @brief Takes a sample evaluation and its gradient and calculates the next set of parameters
-  * @param evaluation The value of the objective function at the current set of parameters
-  * @param gradient The gradient of the objective function at the current set of parameters
-  */
-  virtual void processResult(float evaluation, std::vector<float> &gradient);
-
-  /**
-  * @brief Restores the optimizer to the initial state
-  */
-  virtual void reset();
-
-  /**
-   * @brief Prints progress information
-   */
-  virtual void printInfo();
+  virtual bool checkTermination() override;
+  virtual void processResult(float evaluation, std::vector<float> &gradient) override;
+  virtual void reset() override;
+  virtual void printInfo() override;
 };
 
 } // namespace korali

@@ -270,6 +270,19 @@ void Agent::trainingGeneration()
   _sessionRunningTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
   _generationRunningTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
 
+  /*********************************************************************
+   * Updating statistics/bookkeeping
+   *********************************************************************/
+
+  // Updating average cumulative reward statistics
+  _trainingAverageReward = 0.0f;
+  ssize_t startEpisodeId = _trainingRewardHistory.size() - _trainingAverageDepth;
+  ssize_t endEpisodeId = _trainingRewardHistory.size() - 1;
+  if (startEpisodeId < 0) startEpisodeId = 0;
+  for (ssize_t e = startEpisodeId; e <= endEpisodeId; e++)
+    _trainingAverageReward += _trainingRewardHistory[e];
+  _trainingAverageReward /= (float)(endEpisodeId - startEpisodeId + 1);
+
   // Increasing session's generation count
   _sessionGeneration++;
 }
@@ -380,6 +393,10 @@ void Agent::attendAgent(size_t agentId)
       // Getting the training reward of the latest episode
       _trainingLastReward = _agents[agentId]["Training Reward"].get<float>();
 
+      // Storing bookkeeping information
+      _trainingRewardHistory.push_back(_trainingLastReward);
+      _trainingExperienceHistory.push_back(message["Experiences"].size());
+
       // Keeping training statistics. Updating if exceeded best training policy so far.
       if (_trainingLastReward > _trainingBestReward)
       {
@@ -454,18 +471,18 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
     // If the action is outside the boundary, applying penalization factor
     if (_rewardOutboundPenalizationEnabled == true)
     {
-     bool outOfBounds = false;
-     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-     {
-      if (action[i] > _actionUpperBounds[i]) outOfBounds = true;
-      if (action[i] < _actionLowerBounds[i]) outOfBounds = true;
-     }
+      bool outOfBounds = false;
+      for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+      {
+        if (action[i] > _actionUpperBounds[i]) outOfBounds = true;
+        if (action[i] < _actionLowerBounds[i]) outOfBounds = true;
+      }
 
-     if (outOfBounds == true)
-     {
-      reward = reward * _rewardOutboundPenalizationFactor;
-      _rewardOutboundPenalizationCount++;
-     }
+      if (outOfBounds == true)
+      {
+        reward = reward * _rewardOutboundPenalizationFactor;
+        _rewardOutboundPenalizationCount++;
+      }
     }
 
     _rewardVector.add(reward);
@@ -522,8 +539,8 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
 
     // If there's an outgoing experience and it's off policy, subtract the off policy counter
     if (_isOnPolicyVector.size() == _experienceReplayMaximumSize)
-     if (_isOnPolicyVector[0] == false)
-      _experienceReplayOffPolicyCount--;
+      if (_isOnPolicyVector[0] == false)
+        _experienceReplayOffPolicyCount--;
 
     // Adding new experience's on policiness (by default is true when adding it to the ER)
     _isOnPolicyVector.add(true);
@@ -573,23 +590,6 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
     // Setting initial retrace value in the experience's cache
     _retraceValueVector[expId] = retV;
   }
-
-  /*********************************************************************
-   * Updating statistics/bookkeeping
-   *********************************************************************/
-
-  // Storing history information
-  _trainingRewardHistory.push_back(cumulativeReward);
-  _trainingExperienceHistory.push_back(episode.size());
-
-  // Updating average cumulative reward statistics
-  _trainingAverageReward = 0.0f;
-  ssize_t startEpisodeId = _trainingRewardHistory.size() - _trainingAverageDepth;
-  ssize_t endEpisodeId = _trainingRewardHistory.size() - 1;
-  if (startEpisodeId < 0) startEpisodeId = 0;
-  for (ssize_t e = startEpisodeId; e <= endEpisodeId; e++)
-    _trainingAverageReward += _trainingRewardHistory[e];
-  _trainingAverageReward /= (float)(endEpisodeId - startEpisodeId + 1);
 }
 
 std::vector<size_t> Agent::generateMiniBatch(size_t miniBatchSize)
@@ -628,6 +628,7 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
   for (size_t i = 1; i < miniBatchSize; i++)
     if (miniBatch[i] != miniBatch[i - 1]) updateBatch.push_back(i);
 
+#pragma omp parallel for schedule(guided, 1)
   for (size_t i = 0; i < updateBatch.size(); i++)
   {
     auto batchId = updateBatch[i];
@@ -666,12 +667,12 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
 
     // Updating off policy count if a change is detected
     if (_isOnPolicyVector[expId] == true && isOnPolicy == false)
-      #pragma omp atomic
-     _experienceReplayOffPolicyCount++;
+#pragma omp atomic
+      _experienceReplayOffPolicyCount++;
 
     if (_isOnPolicyVector[expId] == false && isOnPolicy == true)
-     #pragma omp atomic
-     _experienceReplayOffPolicyCount--;
+#pragma omp atomic
+      _experienceReplayOffPolicyCount--;
 
     // Store computed information for use in replay memory.
     _curPolicyVector[expId] = curPolicy;
@@ -774,17 +775,6 @@ void Agent::resetTimeSequence()
 {
   _stateTimeSequence.clear();
 }
-
-float Agent::getScaledReward(const float reward)
-{
- float rescaledReward = (reward - _rewardRescalingMean) / _rewardRescalingSigma;
-
- if (std::isfinite(rescaledReward) == false)
-   KORALI_LOG_ERROR("Scaled reward is non finite: %f (Mean: %f, Sigma: %f)\n", rescaledReward, _rewardRescalingMean, _rewardRescalingSigma);
-
- return rescaledReward;
-}
-
 
 std::vector<std::vector<std::vector<float>>> Agent::getMiniBatchStateSequence(const std::vector<size_t> &miniBatch, const bool includeAction)
 {
@@ -995,6 +985,9 @@ void Agent::deserializeExperienceReplay()
   // Setting current agent's training state
   setAgentPolicy(_trainingCurrentPolicy);
 
+  // Resetting the optimizers that the algorithm might be using
+  resetAgentOptimizers();
+
   auto endTime = std::chrono::steady_clock::now();                                                                         // Profiling
   double deserializationTime = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count() / 1.0e+9; // Profiling
   _k->_logger->logInfo("Detailed", "Took %fs to deserialize training state.\n", deserializationTime);
@@ -1019,7 +1012,7 @@ void Agent::printGenerationAfter()
       _k->_logger->logInfo("Normal", " + Total Experience Count:      %lu\n", _experienceCount);
 
     if (_rewardOutboundPenalizationEnabled == true)
-      _k->_logger->logInfo("Normal", " + Out of Bound Actions:        %lu (%.3f%%)\n", _rewardOutboundPenalizationCount, 100.0f*(float)_rewardOutboundPenalizationEnabled/(float)_experienceCount);
+      _k->_logger->logInfo("Normal", " + Out of Bound Actions:        %lu (%.3f%%)\n", _rewardOutboundPenalizationCount, 100.0f * (float)_rewardOutboundPenalizationEnabled / (float)_experienceCount);
 
     _k->_logger->logInfo("Normal", "Off-Policy Statistics:\n");
     _k->_logger->logInfo("Normal", " + Count (Ratio/Target):        %lu/%lu (%.3f/%.3f)\n", _experienceReplayOffPolicyCount, _stateVector.size(), _experienceReplayOffPolicyRatio, _experienceReplayOffPolicyTarget);
@@ -1055,10 +1048,10 @@ void Agent::printGenerationAfter()
     _k->_logger->logInfo("Normal", " + Current Learning Rate:           %.3e\n", _currentLearningRate);
 
     if (_rewardRescalingEnabled)
-     _k->_logger->logInfo("Normal", " + Reward Rescaling:            N(%.3e, %.3e)         \n", _rewardRescalingMean, _rewardRescalingSigma);
+      _k->_logger->logInfo("Normal", " + Reward Rescaling:            N(%.3e, %.3e)         \n", _rewardRescalingMean, _rewardRescalingSigma);
 
     if (_stateRescalingEnabled)
-     _k->_logger->logInfo("Normal", " + Using State Rescaling\n");
+      _k->_logger->logInfo("Normal", " + Using State Rescaling\n");
 
     _k->_logger->logInfo("Detailed", "Profiling Information:                  [Generation] - [Session]\n");
     _k->_logger->logInfo("Detailed", " + Experience Serialization Time:       [%5.3fs] - [%3.3fs]\n", _generationSerializationTime / 1.0e+9, _sessionSerializationTime / 1.0e+9);

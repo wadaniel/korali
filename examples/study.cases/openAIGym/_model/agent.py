@@ -52,16 +52,16 @@ def initEnvironment(e, envName, moviePath = ''):
  for i in stateVariablesIndexes:
   e["Variables"][i]["Name"] = "State Variable " + str(i)
   e["Variables"][i]["Type"] = "State"
-  e["Variables"][i]["Lower Bound"] = float(env.observation_space.low[i])
-  e["Variables"][i]["Upper Bound"] = float(env.observation_space.high[i])
+  #e["Variables"][i]["Lower Bound"] = float(env.observation_space.low[i])
+  #e["Variables"][i]["Upper Bound"] = float(env.observation_space.high[i])
   
  # Defining Action Variables
  
  for i in range(actionVariableCount):
   e["Variables"][stateVariableCount + i]["Name"] = "Action Variable " + str(i)
   e["Variables"][stateVariableCount + i]["Type"] = "Action"
-  e["Variables"][stateVariableCount + i]["Lower Bound"] = float(env.action_space.low[i])
-  e["Variables"][stateVariableCount + i]["Upper Bound"] = float(env.action_space.high[i])
+  #e["Variables"][stateVariableCount + i]["Lower Bound"] = float(env.action_space.low[i])
+  #e["Variables"][stateVariableCount + i]["Upper Bound"] = float(env.action_space.high[i])
   e["Variables"][stateVariableCount + i]["Initial Exploration Noise"] = 0.25
 
  ### Defining Termination Criteria

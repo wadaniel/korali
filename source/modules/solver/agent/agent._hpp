@@ -420,9 +420,19 @@ class Agent : public Solver
   void rescaleStates();
 
   /**
-   * @brief Rescales a given reward
+   * @brief Rescales a given reward according to gaussian normalization parameters (mean+sigma)
+   * @param reward the input reward to rescale
+   * @return The normalized reward
    */
-  float getScaledReward(const float reward);
+  inline float getScaledReward(const float reward)
+  {
+    float rescaledReward = (reward - _rewardRescalingMean) / _rewardRescalingSigma;
+
+    if (std::isfinite(rescaledReward) == false)
+      KORALI_LOG_ERROR("Scaled reward is non finite: %f (Mean: %f, Sigma: %f)\n", rescaledReward, _rewardRescalingMean, _rewardRescalingSigma);
+
+    return rescaledReward;
+  }
 
   /**
    * @brief Re-calculates reward scaling factors to have a zero mean and unit variance
@@ -449,6 +459,11 @@ class Agent : public Solver
   * @param hyperparameters The hyperparameters to update the agent.
   */
   virtual void setAgentPolicy(const knlohmann::json &hyperparameters) = 0;
+
+  /**
+   * @brief Resets the states of the optimizers
+   */
+  virtual void resetAgentOptimizers() = 0;
 
   /**
    * @brief Initializes the internal state of the policy

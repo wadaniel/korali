@@ -24,22 +24,23 @@ int main(int argc, char *argv[])
   MPI_Comm_size(MPI_COMM_WORLD, &N);
   N = N - 1; // Minus one for Korali's engine
 
-  // Init CUP2D
+  // Initialize CUP2D
   _environment = new Simulation(_argc, _argv);
   _environment->init();
 
+  // Set results path
   std::string trainingResultsPath = "_results_windmill_training/r_6/";
   std::string testingResultsPath = "_results_windmill_testing/r_6/";
-
-  // Creating Experiment
-  auto e = korali::Experiment();
-  e["Problem"]["Type"] = "Reinforcement Learning / Continuous";
   
+  // Creating Korali experiment
+  auto e = korali::Experiment();
 
+  // Check if there is log files to continue training
   auto found = e.loadState(trainingResultsPath + std::string("/latest"));
   if (found == true) printf("[Korali] Continuing execution from previous run...\n");
 
-  // Configuring Experiment
+  // Configuring problem
+  e["Problem"]["Type"] = "Reinforcement Learning / Continuous";
   e["Problem"]["Environment Function"] = &runEnvironment;
   e["Problem"]["Training Reward Threshold"] = 8.0;
   e["Problem"]["Policy Testing Episodes"] = 5;
@@ -70,7 +71,6 @@ int main(int argc, char *argv[])
   }
 
   /// Defining Agent Configuration
-
   e["Solver"]["Type"] = "Agent / Continuous / VRACER";
   e["Solver"]["Mode"] = "Training";
   e["Solver"]["Episodes Per Generation"] = 1;
@@ -79,13 +79,13 @@ int main(int argc, char *argv[])
   e["Solver"]["Learning Rate"] = 1e-4;
   e["Solver"]["Discount Factor"] = 0.95;
   e["Solver"]["Mini Batch"]["Size"] =  128;
+  e["Solver"]["Policy"]["Distribution"] = "Unbounded Normal";
 
   /// Defining the configuration of replay memory
-
   e["Solver"]["Experience Replay"]["Start Size"] = 1024;
   e["Solver"]["Experience Replay"]["Maximum Size"] = 65536;
   e["Solver"]["Experience Replay"]["Off Policy"]["Annealing Rate"] = 5.0e-8;
-  e["Solver"]["Experience Replay"]["Off Policy"]["Cutoff Scale"] = 5.0;
+  e["Solver"]["Experience Replay"]["Off Policy"]["Cutoff Scale"] = 4.0;
   e["Solver"]["Experience Replay"]["Off Policy"]["REFER Beta"] = 0.3;
   e["Solver"]["Experience Replay"]["Off Policy"]["Target"] = 0.1;
 
@@ -95,12 +95,11 @@ int main(int argc, char *argv[])
   e["Solver"]["State Rescaling"]["Enabled"] = true;
   e["Solver"]["Reward"]["Rescaling"]["Enabled"] = false; // this was true
   e["Solver"]["Reward"]["Rescaling"]["Frequency"] = 1000;
-  e["Solver"]["Reward"]["Outbound Penalization"]["Enabled"] = true;
-  e["Solver"]["Reward"]["Outbound Penalization"]["Factor"] = 0.5;
 
   /// Configuring the neural network and its hidden layers
-
   e["Solver"]["Neural Network"]["Engine"] = "OneDNN";
+  e["Solver"]["Neural Network"]["Optimizer"] = "Adam";
+  
   e["Solver"]["L2 Regularization"]["Enabled"] = true;
   e["Solver"]["L2 Regularization"]["Importance"] = 1.0;
 

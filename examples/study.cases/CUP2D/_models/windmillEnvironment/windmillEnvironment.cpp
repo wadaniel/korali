@@ -86,7 +86,8 @@ void runEnvironment(korali::Sample &s)
 
   while (curStep < maxSteps)
   {
-    // Getting initial time
+
+ // Getting initial time
     auto beginTime = std::chrono::steady_clock::now(); // Profiling
 
     // Getting new action
@@ -118,7 +119,7 @@ void runEnvironment(korali::Sample &s)
     }
 
     // reward( std::vector<double> target, std::vector<double> target_vel, double C = 10)
-    double C = 10.0;
+    double C = 1e8;
     double r1 = agent1->reward( target_pos, target_vel,  C);
     double r2 = agent2->reward( target_pos, target_vel,  C);
     double r3 = agent3->reward( target_pos, target_vel,  C);
@@ -128,6 +129,13 @@ void runEnvironment(korali::Sample &s)
     // Getting ending time
     auto endTime = std::chrono::steady_clock::now(); // Profiling
     double actionTime = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count() / 1.0e+9;
+
+    // Obtaining new agent state
+    state1 = agent1->state();
+    state2 = agent2->state();
+    state3 = agent3->state();
+    state4 = agent4->state();
+    state = {state1[0], state1[1], state2[0], state2[1], state3[0], state3[1], state4[0], state4[1]};
 
     // Printing Information:
     printf("[Korali] Sample %lu - Step: %lu/%lu\n", sampleId, curStep, maxSteps);
@@ -140,18 +148,11 @@ void runEnvironment(korali::Sample &s)
       }
     }
     printf("]\n");
-    printf("[Korali] Torque: [ %.5f, %.5f, %.5f, %.5f  ]\n", action[0], action[1], action[2], action[3]);
+    printf("[Korali] Previous Torque: [ %.8f, %.8f, %.8f, %.8f  ]\n", action[0], action[1], action[2], action[3]);
     printf("[Korali] Reward: %.3f\n", reward);
     printf("[Korali] Time: %.3fs\n", actionTime);
     printf("[Korali] -------------------------------------------------------\n");
     fflush(stdout);
-
-    // Obtaining new agent state
-    state1 = agent1->state();
-    state2 = agent2->state();
-    state3 = agent3->state();
-    state4 = agent4->state();
-    state = {state1[0], state1[1], state2[0], state2[1], state3[0], state3[1], state4[0], state4[1]};
 
     // Storing reward
     s["Reward"] = reward;

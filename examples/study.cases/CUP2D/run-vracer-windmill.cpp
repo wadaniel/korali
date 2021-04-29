@@ -28,10 +28,9 @@ int main(int argc, char *argv[])
   _environment = new Simulation(_argc, _argv);
   _environment->init();
 
-  std::string trainingResultsPath = "_results_windmill_training/r_7/";
-  std::string testingResultsPath = "_results_windmill_testing/r_7/";
+  std::string trainingResultsPath = "_results_windmill_training/r_6/";
+  std::string testingResultsPath = "_results_windmill_testing/r_6/";
 
-  std::cout<<"------------------BEFORE SIM---------------------"<<std::endl;
   // Creating Experiment
   auto e = korali::Experiment();
   e["Problem"]["Type"] = "Reinforcement Learning / Continuous";
@@ -50,24 +49,24 @@ int main(int argc, char *argv[])
   e["Problem"]["Custom Settings"]["Dump Path"] = trainingResultsPath;
 
   const size_t numStates = 8;
-  size_t curVariable = 0;
-  for (; curVariable < numStates; curVariable++)
+  for (int curVariable = 0; curVariable < numStates; curVariable++)
   {
     if(curVariable%2==0){
       e["Variables"][curVariable]["Name"] = std::string("Angle ") + std::to_string(curVariable/2 + 1);
     } else{
       e["Variables"][curVariable]["Name"] = std::string("Omega ") + std::to_string(curVariable/2 + 1);
     }
-      e["Variables"][curVariable]["Type"] = "State";
+    
+    e["Variables"][curVariable]["Type"] = "State";
   }
 
-  double max_torque = 1.0e-7;
+  double max_torque = 1e-6;
   for(size_t j=numStates; j < numStates + 4; ++j){
     e["Variables"][j]["Name"] = "Torque " + std::to_string(j-numStates+1);
     e["Variables"][j]["Type"] = "Action";
     e["Variables"][j]["Lower Bound"] = -max_torque;
     e["Variables"][j]["Upper Bound"] = +max_torque;
-    e["Variables"][j]["Initial Exploration Noise"] = 0.5*max_torque;
+    e["Variables"][j]["Initial Exploration Noise"] = 0.5;
   }
 
   /// Defining Agent Configuration
@@ -92,9 +91,9 @@ int main(int argc, char *argv[])
 
 
   //// Defining Policy distribution and scaling parameters
-  e["Solver"]["Policy"]["Distribution"] = "Unbounded Normal";
+  e["Solver"]["Policy"]["Distribution"] = "Squashed Normal";
   e["Solver"]["State Rescaling"]["Enabled"] = true;
-  e["Solver"]["Reward"]["Rescaling"]["Enabled"] = true;
+  e["Solver"]["Reward"]["Rescaling"]["Enabled"] = false; // this was true
   e["Solver"]["Reward"]["Rescaling"]["Frequency"] = 1000;
   e["Solver"]["Reward"]["Outbound Penalization"]["Enabled"] = true;
   e["Solver"]["Reward"]["Outbound Penalization"]["Factor"] = 0.5;
@@ -140,7 +139,7 @@ int main(int argc, char *argv[])
 
   k["Conduit"]["Type"] = "Distributed";
   k["Conduit"]["Communicator"] = MPI_COMM_WORLD;
-  std::cout<<"-----------------AFTER---------------------"<<std::endl;
+  
   k.run(e);
 
   ////// Now testing policy, dumping trajectory results

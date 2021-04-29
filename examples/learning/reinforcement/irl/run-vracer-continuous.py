@@ -94,9 +94,13 @@ e["Solver"]["Experience Replay"]["Maximum Size"] = 131072
 e["Solver"]["Discount Factor"] = 0.99
 e["Solver"]["Learning Rate"] = 1e-4
 e["Solver"]["Rewardfunction Learning Rate"] = 1e-4
+
+e["Solver"]["Updates Between Reward Rescaling"] = 0 # No reward rescaling
 e["Solver"]["Demonstration Batch Size"] = 10
 e["Solver"]["Background Batch Size"] = 10
 e["Solver"]["Mini Batch Size"] = 64
+e["Solver"]["Use Fusion Distribution"] = False
+e["Solver"]["Experiences Between Partition Function Statistics"] = 100000
 
 ### Configuring the neural network and its hidden layers
 

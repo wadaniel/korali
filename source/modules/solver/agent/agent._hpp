@@ -256,6 +256,7 @@ class Agent : public Solver
   std::vector<std::vector<std::vector<float>>> _backgroundTrajectoryFeatures;
   std::vector<std::vector<float>> _backgroundPolicyHyperparameter;
   std::vector<std::vector<float>> _backgroundTrajectoryLogProbabilities;
+  
   /**
   * @brief [Profiling] Measures the amount of time taken by the generation
   */

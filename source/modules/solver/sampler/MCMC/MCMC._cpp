@@ -77,7 +77,7 @@ void MCMC::runGeneration()
     KORALI_START(sample);
     KORALI_WAIT(sample);
 
-    double evaluation = KORALI_GET(double, sample, "P(x)");
+    double evaluation = KORALI_GET(double, sample, "logP(x)");
 
     _chainCandidatesEvaluations[i] = evaluation;
 

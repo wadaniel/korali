@@ -2,6 +2,7 @@
 #include "modules/problem/reinforcementLearning/reinforcementLearning.hpp"
 #include "modules/solver/agent/agent.hpp"
 #include "sample/sample.hpp"
+#include <gsl/gsl_multifit.h>
 
 namespace korali
 {
@@ -36,9 +37,12 @@ void ReinforcementLearning::initialize()
   if (_observationsFeatures.size() != _numberObservedTrajectories)
     KORALI_LOG_ERROR("Number of trajectories mismacht between observed states and observed features.\n");
 
+  size_t totalObservedPairs = 0;
   for (size_t t = 0; t < _numberObservedTrajectories; ++t)
   {
     size_t trajectoryLength = _observationsStates[t].size();
+    totalObservedPairs += trajectoryLength;
+
     for (size_t i = 0; i < trajectoryLength; ++i)
     {
       if (_observationsStates[t][i].size() != _stateVectorSize)
@@ -63,6 +67,80 @@ void ReinforcementLearning::initialize()
         KORALI_LOG_ERROR("Dimension (%zu) of observed features (trajectory %zu index %zu) does not agree with problem configuration.\n", _observationsFeatures[t][i].size(), t, i, _featureVectorSize);
     }
   }
+
+  // Allocate memory for linear controller
+  _observationsApproximatorWeights.resize(_stateVectorSize, std::vector<float>(_actionVectorSize));
+  _observationsApproximatorSigmas.resize(_actionVectorSize);
+
+  // Building linear controller for observed state action pairs
+  gsl_matrix *X = gsl_matrix_alloc (totalObservedPairs, _stateVectorSize);
+  gsl_matrix *Y = gsl_matrix_alloc (totalObservedPairs, _actionVectorSize);
+  size_t idx = 0;
+  for (size_t t = 0; t < _numberObservedTrajectories; ++t)
+  {
+    size_t trajectoryLength = _observationsStates[t].size();
+    for (size_t i = 0; i < trajectoryLength; ++i)
+    {
+        for (size_t j = 0; j < _stateVectorSize; ++j)
+            gsl_matrix_set(X, idx, j, (double) _observationsStates[t][i][j]);
+ 
+        for (size_t j = 0; j < _actionVectorSize; ++j)
+            gsl_matrix_set(Y, idx, j, (double) _observationsActions[t][i][j]);
+
+        idx++;
+    }
+  }
+
+  // Do regression over actions
+  for(size_t i = 0; i < _actionVectorSize; ++i)
+  {
+    double chisq;
+    gsl_vector *c = gsl_vector_alloc (_stateVectorSize);
+    gsl_matrix *cov = gsl_matrix_alloc (_stateVectorSize, _stateVectorSize);
+    gsl_multifit_linear_workspace * work = gsl_multifit_linear_alloc (totalObservedPairs, _stateVectorSize);
+
+    gsl_vector_view y = gsl_matrix_column(X, i);
+    gsl_multifit_linear (X, &y.vector, c, cov, &chisq, work);
+    
+    for(size_t j = 0; j < _stateVectorSize; ++j)
+    {
+      _observationsApproximatorWeights[i][j] = gsl_vector_get(c,j);
+      printf("w: %f\n", _observationsApproximatorWeights[i][j]);
+    }
+  
+    gsl_multifit_linear_free(work);
+    gsl_vector_free(c);
+    gsl_matrix_free(cov);
+   }
+
+  // Calculate standard errors
+  std::vector<float> squaredErrors(_actionVectorSize);
+  for(size_t t = 0; t < _numberObservedTrajectories; ++t)
+     for(size_t i = 0; i < _observationsStates[t].size(); ++i)
+     {
+         for(size_t k = 0; k < _actionVectorSize; ++k)
+         {
+              float approx = 0.;
+              for(size_t j = 0; j < _stateVectorSize; ++j)
+              {
+                  approx += _observationsStates[t][i][j] * _observationsApproximatorWeights[j][k];
+              }
+              approx = 0;
+              squaredErrors[k] += std::pow(_observationsActions[t][i][k] - approx, 2.);
+         }
+     }
+
+  // Set MLE sigma estimates
+  for(size_t k = 0; k < _actionVectorSize; ++k)
+  {
+    _observationsApproximatorSigmas[k] = std::sqrt(squaredErrors[k]/(float) totalObservedPairs);
+    printf("approximator sigma %zu %f\n", k, _observationsApproximatorSigmas[k]);
+  }
+
+  gsl_matrix_free(X);
+  gsl_matrix_free(Y);
+  
+  KORALI_LOG_ERROR("STOP TEST");
 }
 
 /**

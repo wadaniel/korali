@@ -248,7 +248,7 @@ class Agent : public Solver
   std::mt19937 *mt;
 
   /****************************************************************************************************
-   * Storage for background batch
+   * Storage for background batch and demonstration batch
    ***************************************************************************************************/
 
   std::vector<std::vector<std::vector<float>>> _backgroundTrajectoryStates;
@@ -256,6 +256,7 @@ class Agent : public Solver
   std::vector<std::vector<std::vector<float>>> _backgroundTrajectoryFeatures;
   std::vector<std::vector<float>> _backgroundPolicyHyperparameter;
   std::vector<std::vector<float>> _backgroundTrajectoryLogProbabilities;
+  std::vector<std::vector<float>> _demonstrationTrajectoryLogProbabilities;
   
   /**
   * @brief [Profiling] Measures the amount of time taken by the generation
@@ -462,6 +463,12 @@ class Agent : public Solver
    */
   std::vector<float> calculateRewardGradient(const std::vector<float> &features);
 
+ 
+  /**
+  * @brief Updates probabilities of demonstration batch.
+  */
+  void updateDemonstrationBatch();
+
   /**
   * @brief Updates the background samples and all dervied values and states.
   */
@@ -479,12 +486,22 @@ class Agent : public Solver
 
   /**
   * @brief Evaluates the log probability of a trajectory given policy hyperparameter
-  * @param policyHyperparameter The neural network policy hyperparameter.
   * @param states Vector of states in the trajectory.
   * @param actions Vector of actions in the trajectory.
+  * @param policyHyperparameter The neural network policy hyperparameter.
   * @return The log probability of the trajectory.
   */
   float evaluateTrajectoryLogProbability(const std::vector<std::vector<float>> &states, const std::vector<std::vector<float>> &actions, const std::vector<float> &policyHyperparameter);
+ 
+  /**
+  * @brief Evaluates the log probability of a trajectory given linear policy and standad deviations of gaussian errors.
+  * @param states Vector of states in the trajectory.
+  * @param actions Vector of actions in the trajectory.
+  * @param linearWeights Linear weights of policy.
+  * @param sigmas Estimated standard deviations of gaussian errors.
+  * @return The log probability of the trajectory.
+  */
+  float evaluateTrajectoryLogProbabilityWithLinearPolicy(const std::vector<std::vector<float>> &states, const std::vector<std::vector<float>> &actions, const std::vector<std::vector<float>> &linearWeights, const std::vector<float> &sigmas);
 
   /****************************************************************************************************
    * Virtual functions (responsibilities) for learning algorithms to fulfill

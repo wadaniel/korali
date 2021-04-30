@@ -129,6 +129,7 @@ e["Solver"]["Termination Criteria"]["Max Experiences"] = 1e6
 
 e["File Output"]["Enabled"] = True
 e["File Output"]["Frequency"] = 100
+#e["File Output"]["Path"] = '_korali_results_cos_z20_combo_wlin'
 e["File Output"]["Path"] = '_korali_results_cos_test'
 
 ### Running Experiment

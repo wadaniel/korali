@@ -94,11 +94,11 @@ e["Solver"]["Experience Replay"]["Maximum Size"] = 131072
 e["Solver"]["Discount Factor"] = 0.99
 e["Solver"]["Learning Rate"] = 1e-4
 e["Solver"]["Rewardfunction Learning Rate"] = 1e-4
+e["Solver"]["Mini Batch Size"] = 256
 
 e["Solver"]["Updates Between Reward Rescaling"] = 0 # No reward rescaling
-e["Solver"]["Demonstration Batch Size"] = 10
-e["Solver"]["Background Batch Size"] = 10
-e["Solver"]["Mini Batch Size"] = 64
+e["Solver"]["Demonstration Batch Size"] = 20
+e["Solver"]["Background Batch Size"] = 20
 e["Solver"]["Use Fusion Distribution"] = False
 e["Solver"]["Experiences Between Partition Function Statistics"] = 100000
 
@@ -107,13 +107,13 @@ e["Solver"]["Experiences Between Partition Function Statistics"] = 100000
 e["Solver"]["Neural Network"]["Engine"] = "OneDNN"
 
 e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear"
-e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 64
+e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 128
 
 e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Activation"
 e["Solver"]["Neural Network"]["Hidden Layers"][1]["Function"] = "Elementwise/Tanh"
 
 e["Solver"]["Neural Network"]["Hidden Layers"][2]["Type"] = "Layer/Linear"
-e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 64
+e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 128
 
 e["Solver"]["Neural Network"]["Hidden Layers"][3]["Type"] = "Layer/Activation"
 e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tanh"
@@ -121,13 +121,13 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tan
 ### Defining Termination Criteria
 
 #e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 450
-e["Solver"]["Termination Criteria"]["Max Experiences"] = 200000
+e["Solver"]["Termination Criteria"]["Max Experiences"] = 1e6
 
 ### Setting file output configuration
 
 e["File Output"]["Enabled"] = True
 e["File Output"]["Frequency"] = 100
-e["File Output"]["Path"] = '_korali_results_f2'
+e["File Output"]["Path"] = '_korali_results_f2_z20_single_wlin_4'
 
 ### Running Experiment
 

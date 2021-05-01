@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <chrono>
 
-#define COSREWARD
+//#define COSREWARD
 
 namespace korali
 {
@@ -552,9 +552,9 @@ void Agent::updateDemonstrationBatch()
   else
   // Evaluate demonstrations with latest policy
   {
+    printf("Updating log probabilities demonstration batch ... ");
     if (_useFusionDistribution)
     {
-      printf("Updating log probabilities demonstration batch ... ");
       // For all previous demonstration trajectories evaluate log probability with newest policy
       for (size_t i = 0; i < _problem->_numberObservedTrajectories; ++i)
       {
@@ -576,7 +576,7 @@ void Agent::partitionFunctionStat()
   std::vector<std::vector<float>> stats;
   std::vector<float> logpf(_backgroundSampleSize);
   std::vector<float> fusionLogpf(_backgroundSampleSize);
-
+  
   // Calculate cumulative rewards for background batch
   std::vector<float> cumulativeRewardsBackgroundBatch(_backgroundSampleSize, 0.0);
 #pragma omp parallel for
@@ -615,6 +615,7 @@ void Agent::partitionFunctionStat()
 #pragma omp parallel for
   for (size_t batchSize = 1; batchSize <= _backgroundSampleSize; ++batchSize)
   {
+
     // Get background trajectory log probabilities
     std::vector<std::vector<float>> backgroundTrajectoryLogProbabilities(batchSize, std::vector<float>(batchSize + 1));
     for (size_t m = 0; m < batchSize; ++m)
@@ -633,7 +634,7 @@ void Agent::partitionFunctionStat()
         demoTrajectoryLogProbabilities[n][i] = _demonstrationTrajectoryLogProbabilities[obsIdx][i];
       }
     }
-
+    
     // Calculate importance weights background batch
     std::vector<float> backgroundBatchLogImportanceWeights(batchSize);
     std::vector<float> fusionBackgroundBatchLogImportanceWeights(batchSize);
@@ -653,7 +654,7 @@ void Agent::partitionFunctionStat()
       // Calculate fusion importance weight (1/K sum_k q_k(T))^-1
       fusionDemoBatchLogImportanceWeights[n] = std::log((float)batchSize + 1) - logSumExp(demoTrajectoryLogProbabilities[n]);
     }
-
+    
     // Preparation for calculation of log partition function with log-sum-exp trick
     float maxExp = -Inf;
     for (size_t m = 0; m < batchSize; ++m)

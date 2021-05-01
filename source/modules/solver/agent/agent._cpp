@@ -805,9 +805,9 @@ void Agent::updateRewardFunction()
 
       for (size_t k = 0; k < _problem->_featureVectorSize; ++k)
       {
-          _featureWeightGradient[k] += std::exp(backgroundBatchLogImportanceWeights[m]+cumulativeRewardsBackgroundBatch[m] - _logPartitionFunction) * gradTrajReturn[k] / totalBatchSize;
+        _featureWeightGradient[k] += std::exp(backgroundBatchLogImportanceWeights[m] + cumulativeRewardsBackgroundBatch[m] - _logPartitionFunction) * gradTrajReturn[k] / totalBatchSize;
         printf("grad bb iw %f cr %f\n", backgroundBatchLogImportanceWeights[m], cumulativeRewardsBackgroundBatch[m]);
-          printf("grad bb %f %f\n", gradTrajReturn[k], _featureWeightGradient[k]);
+        printf("grad bb %f %f\n", gradTrajReturn[k], _featureWeightGradient[k]);
       }
     }
 
@@ -845,11 +845,11 @@ void Agent::updateRewardFunction()
         for (size_t k = 0; k < _problem->_featureVectorSize; ++k)
           gradTrajReturn[k] += gradReward[k];
       }
-    
+
       for (size_t k = 0; k < _problem->_featureVectorSize; ++k)
       {
-          _featureWeightGradient[k] += fac * gradTrajReturn[k];
-          printf("grad db ret %f %f\n", gradTrajReturn[k], _featureWeightGradient[k]);
+        _featureWeightGradient[k] += fac * gradTrajReturn[k];
+        printf("grad db ret %f %f\n", gradTrajReturn[k], _featureWeightGradient[k]);
       }
     }
 

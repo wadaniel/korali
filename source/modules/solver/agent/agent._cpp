@@ -219,7 +219,7 @@ void Agent::trainingGeneration()
 
       if (_backgroundSampleSize >= (_statisticLogPartitionFunction.size()) * (_backgroundBatchSize * 10))
       {
-        printf("bss %zu, slpf %zu", _backgroundSampleSize, _statisticLogPartitionFunction.size());
+        printf("bss %zu, slpf %zu\n", _backgroundSampleSize, _statisticLogPartitionFunction.size());
         partitionFunctionStat();
       }
 
@@ -576,8 +576,7 @@ void Agent::partitionFunctionStat()
   std::vector<std::vector<float>> stats;
   std::vector<float> logpf(_backgroundSampleSize);
   std::vector<float> fusionLogpf(_backgroundSampleSize);
-  size_t batchSize = 1;
-
+  
   // Calculate cumulative rewards for background batch
   std::vector<float> cumulativeRewardsBackgroundBatch(_backgroundSampleSize, 0.0);
 #pragma omp parallel for
@@ -586,32 +585,76 @@ void Agent::partitionFunctionStat()
     size_t backgroundTrajectoryLength = _backgroundTrajectoryFeatures[m].size();
 
     float cumReward = 0.;
-    for (size_t i = 0; i < backgroundTrajectoryLength; ++i)
-      cumReward += calculateReward(_backgroundTrajectoryFeatures[m][i]);
+    for (size_t t = 0; t < backgroundTrajectoryLength; ++t)
+      cumReward += calculateReward(_backgroundTrajectoryFeatures[m][t]);
     cumulativeRewardsBackgroundBatch[m] = cumReward;
   }
 
-  while (batchSize <= _backgroundSampleSize)
-  {
-    // Calculate cumulative rewards for background batch
-    std::vector<std::vector<float>> backgroundTrajectoryLogProbabilities(batchSize, std::vector<float>(batchSize + 1));
+  unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+  std::minstd_rand0 generator(seed);
 
+  // Randomize demonstration batch
+  std::vector<size_t> randomDemonstrationIndexes(_problem->_numberObservedTrajectories);
+  std::iota(std::begin(randomDemonstrationIndexes), std::end(randomDemonstrationIndexes), 0);
+  std::shuffle(randomDemonstrationIndexes.begin(), randomDemonstrationIndexes.end(), generator);
+
+  // Calculate cumulative rewards for demonstration batch
+  std::vector<float> cumulativeRewardsDemonstrationBatch(_demonstrationBatchSize, 0.0);
+#pragma omp parallel for
+  for (size_t n = 0; n < _demonstrationBatchSize; ++n)
+  {
+    size_t obsIdx = randomDemonstrationIndexes[n];
+    size_t observationTrajectoryLength = _problem->_observationsFeatures[obsIdx].size();
+
+    float cumReward = 0.;
+    for (size_t t = 0; t < observationTrajectoryLength; ++t)
+      cumReward += calculateReward(_problem->_observationsFeatures[obsIdx][t]);
+    cumulativeRewardsDemonstrationBatch[n] = cumReward;
+  }
+
+#pragma omp parallel for
+  for (size_t batchSize = 1; batchSize <= _backgroundSampleSize; ++batchSize)
+  {
+
+    // Get background trajectory log probabilities
+    std::vector<std::vector<float>> backgroundTrajectoryLogProbabilities(batchSize, std::vector<float>(batchSize + 1));
     for (size_t m = 0; m < batchSize; ++m)
       for (size_t i = 0; i < batchSize + 1; ++i)
       {
         backgroundTrajectoryLogProbabilities[m][i] = _backgroundTrajectoryLogProbabilities[m][i];
       }
 
-    // Calculate importance weights
+    // Get demonstration trajectory log probabilities
+    std::vector<std::vector<float>> demoTrajectoryLogProbabilities(_demonstrationBatchSize, std::vector<float>(batchSize + 1));
+    for (size_t n = 0; n < _demonstrationBatchSize; ++n)
+    {
+      size_t obsIdx = randomDemonstrationIndexes[n];
+      for (size_t i = 0; i < batchSize + 1; ++i)
+      {
+        demoTrajectoryLogProbabilities[n][i] = _demonstrationTrajectoryLogProbabilities[obsIdx][i];
+      }
+    }
+    
+    // Calculate importance weights background batch
     std::vector<float> backgroundBatchLogImportanceWeights(batchSize);
     std::vector<float> fusionBackgroundBatchLogImportanceWeights(batchSize);
     for (size_t m = 0; m < batchSize; ++m)
     {
-      // Calculate importance weight (1/K sum_k q_k(T))^-1
-      fusionBackgroundBatchLogImportanceWeights[m] = std::log((float)batchSize) - logSumExp(backgroundTrajectoryLogProbabilities[m]);
       backgroundBatchLogImportanceWeights[m] = -backgroundTrajectoryLogProbabilities[m][m + 1];
+      // Calculate fusion importance weight (1/K sum_k q_k(T))^-1
+      fusionBackgroundBatchLogImportanceWeights[m] = std::log((float)batchSize + 1) - logSumExp(backgroundTrajectoryLogProbabilities[m]);
     }
 
+    // Calculate importance weights demonstration batch
+    std::vector<float> demoBatchLogImportanceWeights(_demonstrationBatchSize);
+    std::vector<float> fusionDemoBatchLogImportanceWeights(_demonstrationBatchSize);
+    for (size_t n = 0; n < _demonstrationBatchSize; ++n)
+    {
+      demoBatchLogImportanceWeights[n] = -demoTrajectoryLogProbabilities[n][0];
+      // Calculate fusion importance weight (1/K sum_k q_k(T))^-1
+      fusionDemoBatchLogImportanceWeights[n] = std::log((float)batchSize + 1) - logSumExp(demoTrajectoryLogProbabilities[n]);
+    }
+    
     // Preparation for calculation of log partition function with log-sum-exp trick
     float maxExp = -Inf;
     for (size_t m = 0; m < batchSize; ++m)
@@ -620,6 +663,13 @@ void Agent::partitionFunctionStat()
       if (exp > maxExp) maxExp = exp;
     }
 
+    for (size_t n = 0; n < _demonstrationBatchSize; ++n)
+    {
+      float exp = demoBatchLogImportanceWeights[n] + cumulativeRewardsDemonstrationBatch[n];
+      if (exp > maxExp) maxExp = exp;
+    }
+
+    // Preparation for calculation of fusion log partition function with log-sum-exp trick
     float fusionMaxExp = -Inf;
     for (size_t m = 0; m < batchSize; ++m)
     {
@@ -627,17 +677,26 @@ void Agent::partitionFunctionStat()
       if (exp > fusionMaxExp) fusionMaxExp = exp;
     }
 
-    //printf("maxexp = %f\n", maxExp);
-    float sumExpNoMax = 0.0;
+    for (size_t n = 0; n < _demonstrationBatchSize; ++n)
+    {
+      float exp = fusionDemoBatchLogImportanceWeights[n] + cumulativeRewardsDemonstrationBatch[n];
+      if (exp > fusionMaxExp) fusionMaxExp = exp;
+    }
 
+    float sumExpNoMax = 0.0;
     for (size_t m = 0; m < batchSize; ++m)
     {
       float exp = backgroundBatchLogImportanceWeights[m] + cumulativeRewardsBackgroundBatch[m];
       sumExpNoMax += std::exp(exp - maxExp);
     }
+    for (size_t n = 0; n < _demonstrationBatchSize; ++n)
+    {
+      float exp = demoBatchLogImportanceWeights[n] + cumulativeRewardsDemonstrationBatch[n];
+      sumExpNoMax += std::exp(exp - maxExp);
+    }
 
     // Calculate log of partition function
-    float logPartitionFunction = std::log(sumExpNoMax) + maxExp - std::log((float)batchSize);
+    float logPartitionFunction = std::log(sumExpNoMax) + maxExp - std::log((float)batchSize + (float)_demonstrationBatchSize);
     logpf[batchSize - 1] = logPartitionFunction;
 
     float fusionSumExpNoMax = 0.0;
@@ -647,12 +706,15 @@ void Agent::partitionFunctionStat()
       float exp = fusionBackgroundBatchLogImportanceWeights[m] + cumulativeRewardsBackgroundBatch[m];
       fusionSumExpNoMax += std::exp(exp - fusionMaxExp);
     }
+    for (size_t n = 0; n < _demonstrationBatchSize; ++n)
+    {
+      float exp = fusionDemoBatchLogImportanceWeights[n] + cumulativeRewardsDemonstrationBatch[n];
+      fusionSumExpNoMax += std::exp(exp - fusionMaxExp);
+    }
 
     // Calculate log of fusion partition function
-    float fusionLogPartitionFunction = std::log(fusionSumExpNoMax) + fusionMaxExp - std::log((float)batchSize);
+    float fusionLogPartitionFunction = std::log(fusionSumExpNoMax) + fusionMaxExp - std::log((float)batchSize + (float)_demonstrationBatchSize);
     fusionLogpf[batchSize - 1] = fusionLogPartitionFunction;
-
-    batchSize += 1;
   }
 
   _statisticCumulativeRewards.push_back(cumulativeRewardsBackgroundBatch);
@@ -732,7 +794,7 @@ void Agent::updateRewardFunction()
         backgroundBatchLogImportanceWeights[m] = std::log((float)_backgroundBatchSize + 1.) - logSumExp(backgroundTrajectoryLogProbabilities[m]);
       else
         backgroundBatchLogImportanceWeights[m] = -backgroundTrajectoryLogProbabilities[m][m + 1];
-      printf("BbIw %f cr %f (tot %f)\n", backgroundBatchLogImportanceWeights[m], cumulativeRewardsBackgroundBatch[m], backgroundBatchLogImportanceWeights[m] + cumulativeRewardsBackgroundBatch[m]);
+      //printf("BbIw %f cr %f (tot %f)\n", backgroundBatchLogImportanceWeights[m], cumulativeRewardsBackgroundBatch[m], backgroundBatchLogImportanceWeights[m] + cumulativeRewardsBackgroundBatch[m]);
     }
 
     // Calculate importance weights of demonstration batch
@@ -745,7 +807,7 @@ void Agent::updateRewardFunction()
         demonstrationBatchLogImportanceWeights[n] = std::log((float)_backgroundBatchSize + 1.) - logSumExp(demonstrationTrajectoryLogProbabilities[n]);
       else
         demonstrationBatchLogImportanceWeights[n] = -demonstrationTrajectoryLogProbabilities[n][0];
-      printf("DbIw %f cr %f (tot %f)\n", demonstrationBatchLogImportanceWeights[n], cumulativeRewardsDemonstrationBatch[n], demonstrationBatchLogImportanceWeights[n] + cumulativeRewardsDemonstrationBatch[n]);
+      //printf("DbIw %f cr %f (tot %f)\n", demonstrationBatchLogImportanceWeights[n], cumulativeRewardsDemonstrationBatch[n], demonstrationBatchLogImportanceWeights[n] + cumulativeRewardsDemonstrationBatch[n]);
     }
 
     // Preparation for calculation of log partition function with log-sum-exp trick
@@ -785,7 +847,7 @@ void Agent::updateRewardFunction()
     // Calculate log of partition function
     float totalBatchSize = _backgroundBatchSize + _demonstrationBatchSize;
     _logPartitionFunction = std::log(sumExpNoMax) + maxExp - std::log(totalBatchSize);
-    printf("lpf %f\n", _logPartitionFunction);
+    //printf("lpf %f\n", _logPartitionFunction);
 
     // Reset gradient
     std::fill(_featureWeightGradient.begin(), _featureWeightGradient.end(), 0);
@@ -828,8 +890,7 @@ void Agent::updateRewardFunction()
       for (size_t k = 0; k < _problem->_featureVectorSize; ++k)
       {
         _featureWeightGradient[k] += std::exp(backgroundBatchLogImportanceWeights[m] + cumulativeRewardsBackgroundBatch[m] - _logPartitionFunction) * gradBackgroundTrajReturn[m][k] * invTotalBatchSize;
-        printf("grad bb iw %f cr %f\n", backgroundBatchLogImportanceWeights[m], cumulativeRewardsBackgroundBatch[m]);
-        printf("grad bb %f %f\n", gradBackgroundTrajReturn[m][k], _featureWeightGradient[k]);
+        //printf("grad bb %f %f\n", gradBackgroundTrajReturn[m][k], _featureWeightGradient[k]);
       }
     }
 
@@ -842,8 +903,7 @@ void Agent::updateRewardFunction()
       {
         // Contribution from partition function
         _featureWeightGradient[k] += std::exp(demonstrationBatchLogImportanceWeights[n] + cumulativeRewardsDemonstrationBatch[n] - _logPartitionFunction) * gradDemoTrajReturn[n][k] * invTotalBatchSize;
-        printf("grad db iw %f cr %f\n", demonstrationBatchLogImportanceWeights[n], cumulativeRewardsDemonstrationBatch[n]);
-        printf("grad db %f %f\n", gradDemoTrajReturn[n][k], _featureWeightGradient[k]);
+        //printf("grad db %f %f\n", gradDemoTrajReturn[n][k], _featureWeightGradient[k]);
 
         // Contribution from demonstration return
         _featureWeightGradient[k] += invDemoBatchSize * gradDemoTrajReturn[n][k];
@@ -868,7 +928,7 @@ void Agent::updateRewardFunction()
     for (size_t k = 0; k < _problem->_featureVectorSize; ++k)
     {
       _featureWeights[k] += _rewardfunctionLearningRate * _featureWeightGradient[k];
-      printf("fw [%zu] %f (%f)\n", k, _featureWeights[k], _featureWeightGradient[k]);
+      //printf("fw [%zu] %f (%f)\n", k, _featureWeights[k], _featureWeightGradient[k]);
     }
   }
 

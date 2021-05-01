@@ -452,13 +452,13 @@ class Agent : public Solver
   void rescaleRewards();
 
   /**
-   * @brief TODO.
+   * @brief Calculates the reward given a vector of features.
    * @param features Features returned from the environment to calculate the reward.
    */
   float calculateReward(const std::vector<float> &features);
 
   /**
-   * @brief TODO.
+   * @brief Calculates the gradient of the reward wrt. the feature weights.
    * @param features Features returned from the environment to calculate the reward.
    */
   std::vector<float> calculateRewardGradient(const std::vector<float> &features);
@@ -479,7 +479,7 @@ class Agent : public Solver
   void updateRewardFunction();
 
   /**
-  * @brief TODO
+  * @brief Collects statistics of partition function estimate.
   */
   void partitionFunctionStat();
 

@@ -69,78 +69,78 @@ void ReinforcementLearning::initialize()
   }
 
   // Allocate memory for linear controller
-  _observationsApproximatorWeights.resize(_actionVectorSize, std::vector<float>(_stateVectorSize+1));
+  _observationsApproximatorWeights.resize(_actionVectorSize, std::vector<float>(_stateVectorSize + 1));
   _observationsApproximatorSigmas.resize(_actionVectorSize);
 
   // Building linear controller for observed state action pairs
-  gsl_matrix *X = gsl_matrix_alloc (totalObservedPairs, _stateVectorSize + 1);
-  gsl_matrix *Y = gsl_matrix_alloc (totalObservedPairs, _actionVectorSize);
+  gsl_matrix *X = gsl_matrix_alloc(totalObservedPairs, _stateVectorSize + 1);
+  gsl_matrix *Y = gsl_matrix_alloc(totalObservedPairs, _actionVectorSize);
   size_t idx = 0;
   for (size_t t = 0; t < _numberObservedTrajectories; ++t)
   {
     size_t trajectoryLength = _observationsStates[t].size();
     for (size_t i = 0; i < trajectoryLength; ++i)
     {
-        gsl_matrix_set(X, idx, 0, 1.0); // intercept
-        for (size_t j = 0; j < _stateVectorSize; ++j)
-        {
-            gsl_matrix_set(X, idx, j+1, (double) _observationsStates[t][i][j]);
-        }
- 
-        for (size_t k = 0; k < _actionVectorSize; ++k)
-        {
-            gsl_matrix_set(Y, idx, k, (double) _observationsActions[t][i][k]);
-        }
+      gsl_matrix_set(X, idx, 0, 1.0); // intercept
+      for (size_t j = 0; j < _stateVectorSize; ++j)
+      {
+        gsl_matrix_set(X, idx, j + 1, (double)_observationsStates[t][i][j]);
+      }
 
-        idx++;
+      for (size_t k = 0; k < _actionVectorSize; ++k)
+      {
+        gsl_matrix_set(Y, idx, k, (double)_observationsActions[t][i][k]);
+      }
+
+      idx++;
     }
   }
 
   _k->_logger->logInfo("Normal", "Linear Approximator Expert Policy\n");
-  
+
   // Do regression over actions
-  for(size_t k = 0; k < _actionVectorSize; ++k)
+  for (size_t k = 0; k < _actionVectorSize; ++k)
   {
     double chisq;
-    gsl_vector *c = gsl_vector_alloc (_stateVectorSize + 1);
-    gsl_matrix *cov = gsl_matrix_alloc (_stateVectorSize + 1, _stateVectorSize + 1);
-    gsl_multifit_linear_workspace * work = gsl_multifit_linear_alloc (totalObservedPairs, _stateVectorSize + 1);
+    gsl_vector *c = gsl_vector_alloc(_stateVectorSize + 1);
+    gsl_matrix *cov = gsl_matrix_alloc(_stateVectorSize + 1, _stateVectorSize + 1);
+    gsl_multifit_linear_workspace *work = gsl_multifit_linear_alloc(totalObservedPairs, _stateVectorSize + 1);
 
     // predict action Y_k
     gsl_vector_view y = gsl_matrix_column(Y, k);
-    gsl_multifit_linear (X, &y.vector, c, cov, &chisq, work);
-    
-    for(size_t j = 0; j < _stateVectorSize + 1; ++j)
+    gsl_multifit_linear(X, &y.vector, c, cov, &chisq, work);
+
+    for (size_t j = 0; j < _stateVectorSize + 1; ++j)
     {
-      _observationsApproximatorWeights[k][j] = gsl_vector_get(c,j);
+      _observationsApproximatorWeights[k][j] = gsl_vector_get(c, j);
       _k->_logger->logInfo("Normal", "    + Weights  [%zu, %zu] %f \n", k, j, _observationsApproximatorWeights[k][j]);
     }
-  
+
     gsl_multifit_linear_free(work);
     gsl_vector_free(c);
     gsl_matrix_free(cov);
-   }
+  }
 
   // Calculate squared error over all predictions
   std::vector<float> squaredErrors(_actionVectorSize);
-  for(size_t t = 0; t < _numberObservedTrajectories; ++t)
-     for(size_t i = 0; i < _observationsStates[t].size(); ++i)
-     {
-         for(size_t k = 0; k < _actionVectorSize; ++k)
-         {
-              float approx = _observationsApproximatorWeights[k][0]; // intercept
-              for(size_t j = 0; j < _stateVectorSize; ++j)
-              {
-                  approx += _observationsStates[t][i][j] * _observationsApproximatorWeights[k][j+1];
-              }
-              squaredErrors[k] += std::pow(_observationsActions[t][i][k] - approx, 2.);
-         }
-     }
+  for (size_t t = 0; t < _numberObservedTrajectories; ++t)
+    for (size_t i = 0; i < _observationsStates[t].size(); ++i)
+    {
+      for (size_t k = 0; k < _actionVectorSize; ++k)
+      {
+        float approx = _observationsApproximatorWeights[k][0]; // intercept
+        for (size_t j = 0; j < _stateVectorSize; ++j)
+        {
+          approx += _observationsStates[t][i][j] * _observationsApproximatorWeights[k][j + 1];
+        }
+        squaredErrors[k] += std::pow(_observationsActions[t][i][k] - approx, 2.);
+      }
+    }
 
   // Set MLE sigma estimates
-  for(size_t k = 0; k < _actionVectorSize; ++k)
+  for (size_t k = 0; k < _actionVectorSize; ++k)
   {
-    _observationsApproximatorSigmas[k] = std::sqrt(squaredErrors[k]/(float) totalObservedPairs);
+    _observationsApproximatorSigmas[k] = std::sqrt(squaredErrors[k] / (float)totalObservedPairs);
     _k->_logger->logInfo("Normal", "    + Sigma    [%zu] %f \n", k, _observationsApproximatorSigmas[k]);
   }
 

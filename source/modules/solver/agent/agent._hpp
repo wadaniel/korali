@@ -257,7 +257,7 @@ class Agent : public Solver
   std::vector<std::vector<float>> _backgroundPolicyHyperparameter;
   std::vector<std::vector<float>> _backgroundTrajectoryLogProbabilities;
   std::vector<std::vector<float>> _demonstrationTrajectoryLogProbabilities;
-  
+
   /**
   * @brief [Profiling] Measures the amount of time taken by the generation
   */
@@ -463,16 +463,15 @@ class Agent : public Solver
    */
   std::vector<float> calculateRewardGradient(const std::vector<float> &features);
 
- 
+  /**
+  * @brief Adds latest trajectory to background batch and updates the background samples and all dervied values and states.
+  */
+  void updateBackgroundBatch();
+
   /**
   * @brief Updates probabilities of demonstration batch.
   */
   void updateDemonstrationBatch();
-
-  /**
-  * @brief Updates the background samples and all dervied values and states.
-  */
-  void updateBackgroundBatch();
 
   /**
   * @brief Update the weights of the reward function based on guided cost learning
@@ -492,7 +491,7 @@ class Agent : public Solver
   * @return The log probability of the trajectory.
   */
   float evaluateTrajectoryLogProbability(const std::vector<std::vector<float>> &states, const std::vector<std::vector<float>> &actions, const std::vector<float> &policyHyperparameter);
- 
+
   /**
   * @brief Evaluates the log probability of a trajectory given linear policy and standad deviations of gaussian errors.
   * @param states Vector of states in the trajectory.

@@ -790,66 +790,63 @@ void Agent::updateRewardFunction()
     // Reset gradient
     std::fill(_featureWeightGradient.begin(), _featureWeightGradient.end(), 0);
 
-    // Calculate gradient of loglikelihood wrt. feature weights (contribution from partition function & background batch)
+    // Calculate gradient of background batch trajectory returns
+    std::vector<std::vector<float>> gradBackgroundTrajReturn(_backgroundBatchSize, std::vector<float>(_problem->_featureVectorSize, 0.0));
+#pragma omp parallel for
     for (size_t m = 0; m < _backgroundBatchSize; ++m)
     {
       size_t bckIdx = randomBackgroundIndexes[m];
       size_t backgroundTrajectoryLength = _backgroundTrajectoryFeatures[bckIdx].size();
-      std::vector<float> gradTrajReturn(_problem->_featureVectorSize, 0.0);
       for (size_t t = 0; t < backgroundTrajectoryLength; ++t)
       {
         auto gradReward = calculateRewardGradient(_backgroundTrajectoryFeatures[bckIdx][t]);
         for (size_t k = 0; k < _problem->_featureVectorSize; ++k)
-          gradTrajReturn[k] += gradReward[k];
+          gradBackgroundTrajReturn[m][k] += gradReward[k];
       }
+    }
 
+    // Calculate gradient of demonstration batch trajectory returns
+    std::vector<std::vector<float>> gradDemoTrajReturn(_backgroundBatchSize, std::vector<float>(_problem->_featureVectorSize, 0.0));
+#pragma omp parallel for
+    for (size_t n = 0; n < _demonstrationBatchSize; ++n)
+    {
+      size_t obsIdx = randomDemonstrationIndexes[n];
+      size_t demonstrationTrajectoryLength = _problem->_observationsFeatures[obsIdx].size();
+      for (size_t t = 0; t < demonstrationTrajectoryLength; ++t)
+      {
+        auto gradReward = calculateRewardGradient(_problem->_observationsFeatures[obsIdx][t]);
+        for (size_t k = 0; k < _problem->_featureVectorSize; ++k)
+          gradDemoTrajReturn[n][k] += gradReward[k];
+      }
+    }
+
+    // Calculate gradient of loglikelihood wrt. feature weights (contribution from partition function & background batch)
+    float invTotalBatchSize = 1. / totalBatchSize;
+#pragma omp parallel for
+    for (size_t m = 0; m < _backgroundBatchSize; ++m)
+    {
       for (size_t k = 0; k < _problem->_featureVectorSize; ++k)
       {
-        _featureWeightGradient[k] += std::exp(backgroundBatchLogImportanceWeights[m] + cumulativeRewardsBackgroundBatch[m] - _logPartitionFunction) * gradTrajReturn[k] / totalBatchSize;
+        _featureWeightGradient[k] += std::exp(backgroundBatchLogImportanceWeights[m] + cumulativeRewardsBackgroundBatch[m] - _logPartitionFunction) * gradBackgroundTrajReturn[m][k] * invTotalBatchSize;
         printf("grad bb iw %f cr %f\n", backgroundBatchLogImportanceWeights[m], cumulativeRewardsBackgroundBatch[m]);
-        printf("grad bb %f %f\n", gradTrajReturn[k], _featureWeightGradient[k]);
+        printf("grad bb %f %f\n", gradBackgroundTrajReturn[m][k], _featureWeightGradient[k]);
       }
     }
 
-    // Calculate gradient of loglikelihood wrt. feature weights (contribution from partition function & demonstration batch)
+    float invDemoBatchSize = 1. / _demonstrationBatchSize;
+    // Calculate gradient of loglikelihood wrt. feature weights (contribution from partition function, demonstration return & demonstration batch)
+#pragma omp parallel for
     for (size_t n = 0; n < _demonstrationBatchSize; ++n)
     {
-      size_t obsIdx = randomDemonstrationIndexes[n];
-      size_t demonstrationTrajectoryLength = _problem->_observationsFeatures[obsIdx].size();
-      std::vector<float> gradTrajReturn(_problem->_featureVectorSize, 0.0);
-      for (size_t t = 0; t < demonstrationTrajectoryLength; ++t)
-      {
-        auto gradReward = calculateRewardGradient(_problem->_observationsFeatures[obsIdx][t]);
-        for (size_t k = 0; k < _problem->_featureVectorSize; ++k)
-          gradTrajReturn[k] += gradReward[k];
-      }
-
       for (size_t k = 0; k < _problem->_featureVectorSize; ++k)
       {
-        _featureWeightGradient[k] += std::exp(demonstrationBatchLogImportanceWeights[n] + cumulativeRewardsDemonstrationBatch[n] - _logPartitionFunction) * gradTrajReturn[k] / totalBatchSize;
+        // Contribution from partition function
+        _featureWeightGradient[k] += std::exp(demonstrationBatchLogImportanceWeights[n] + cumulativeRewardsDemonstrationBatch[n] - _logPartitionFunction) * gradDemoTrajReturn[n][k] * invTotalBatchSize;
         printf("grad db iw %f cr %f\n", demonstrationBatchLogImportanceWeights[n], cumulativeRewardsDemonstrationBatch[n]);
-        printf("grad db %zu %f %f\n", obsIdx, gradTrajReturn[k], _featureWeightGradient[k]);
-      }
-    }
+        printf("grad db %f %f\n", gradDemoTrajReturn[n][k], _featureWeightGradient[k]);
 
-    // Calculate gradient of loglikelihood wrt. feature weights (contribution from demonstration return)
-    float fac = 1. / (float)_problem->_numberObservedTrajectories;
-    for (size_t n = 0; n < _demonstrationBatchSize; ++n)
-    {
-      size_t obsIdx = randomDemonstrationIndexes[n];
-      size_t demonstrationTrajectoryLength = _problem->_observationsFeatures[obsIdx].size();
-      std::vector<float> gradTrajReturn(_problem->_featureVectorSize, 0.0);
-      for (size_t t = 0; t < demonstrationTrajectoryLength; ++t)
-      {
-        auto gradReward = calculateRewardGradient(_problem->_observationsFeatures[obsIdx][t]);
-        for (size_t k = 0; k < _problem->_featureVectorSize; ++k)
-          gradTrajReturn[k] += gradReward[k];
-      }
-
-      for (size_t k = 0; k < _problem->_featureVectorSize; ++k)
-      {
-        _featureWeightGradient[k] += fac * gradTrajReturn[k];
-        printf("grad db ret %f %f\n", gradTrajReturn[k], _featureWeightGradient[k]);
+        // Contribution from demonstration return
+        _featureWeightGradient[k] += invDemoBatchSize * gradDemoTrajReturn[n][k];
       }
     }
 

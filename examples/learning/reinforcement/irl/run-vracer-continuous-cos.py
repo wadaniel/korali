@@ -92,14 +92,14 @@ e["Solver"]["Experience Replay"]["Maximum Size"] = 65536
 
 e["Solver"]["Discount Factor"] = 0.99
 e["Solver"]["Learning Rate"] = 1e-4
-e["Solver"]["Rewardfunction Learning Rate"] = 5e-5
+e["Solver"]["Rewardfunction Learning Rate"] = 1e-6
 e["Solver"]["Mini Batch Size"] = 256
 e["Solver"]["Updates Between Reward Rescaling"] = 0
 
 ### IRL related configuration
 
 e["Solver"]["Updates Between Reward Rescaling"] = 0 # No reward rescaling
-e["Solver"]["Demonstration Batch Size"] = 100
+e["Solver"]["Demonstration Batch Size"] = 20
 e["Solver"]["Background Batch Size"] = 20
 e["Solver"]["Use Fusion Distribution"] = True
 e["Solver"]["Experiences Between Partition Function Statistics"] = 100000

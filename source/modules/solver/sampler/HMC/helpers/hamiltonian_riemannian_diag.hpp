@@ -33,9 +33,7 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
   /**
   * @brief Destructor of derived class.
   */
-  ~HamiltonianRiemannianDiag()
-  {
-  }
+  ~HamiltonianRiemannianDiag() = default;
 
   /**
   * @brief Total energy function used for Hamiltonian Dynamics.

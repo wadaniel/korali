@@ -33,11 +33,11 @@ def env(s):
   
   # Getting Features
   # Pole angle and cart velocity^2
-  #s["Features"] = [ np.cos(state[2]), state[1]*state[1] ]
+  s["Features"] = [ np.cos(state[2]), state[1]*state[1] ]
   # Pole angle, cart velocity^2 and dummy
-  s["Features"] = [ np.cos(state[2]), state[1]*state[1], np.random.normal(0.0, 0.1) ]
+  #s["Features"] = [ np.cos(state[2]), state[1]*state[1], np.random.normal(0.0, 0.1) ]
   # for COSREWARD setup: feature = angle
-  s["Features"] = [ state[2] ]
+  #s["Features"] = [ state[2] ]
   
   # Advancing step counter
   step = step + 1

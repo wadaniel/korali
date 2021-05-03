@@ -149,6 +149,48 @@ std::vector<float> Discrete::calculateKLDivergenceGradient(const std::vector<flo
   return klGrad;
 }
 
+float Discrete::evaluateTrajectoryLogProbability(const std::vector<std::vector<float>> &states, const std::vector<std::vector<float>> &actions, const std::vector<float> &policyHyperparameter)
+{
+  knlohmann::json policy;
+  policy["Policy"] = policyHyperparameter;
+  setAgentPolicy(policy);
+
+  float trajectoryLogProbability = 0.0;
+  // Evaluate all states within a single trajectory and calculate probability of trajectory
+  for (size_t t = 0; t < states.size(); ++t)
+  {
+    auto policy = runPolicy({{states[t]}})[0];
+
+    const auto &pActions = policy.actionProbabilities;
+    for (size_t actionIdx = 0; actionIdx < _problem->_possibleActions.size(); ++actionIdx)
+        if (actions[t] == _problem->_possibleActions[actionIdx])
+            trajectoryLogProbability += std::log(pActions[actionIdx]);
+  }
+
+  return trajectoryLogProbability;
+}
+
+float Discrete::evaluateTrajectoryLogProbabilityWithLinearPolicy(const std::vector<std::vector<float>> &states, const std::vector<std::vector<float>> &actions, const std::vector<std::vector<float>> &linearWeights, const std::vector<float> &sigmas)
+{
+  float trajectoryLogProbability = 0.0;
+  // Evaluate all states within a single trajectory and calculate probability of trajectory
+  for (size_t t = 0; t < states.size(); ++t)
+  {
+    std::vector<float> evaluation(_problem->_actionVectorSize);
+    for (size_t d = 0; d < _problem->_actionVectorSize; ++d)
+    {
+      // Predict action with linear policy
+      evaluation[d] = linearWeights[d][0];
+      for (size_t j = 0; j < _problem->_stateVectorSize; ++j)
+        evaluation[d] += states[t][j] * linearWeights[d][j + 1];
+    }
+    for (size_t d = 0; d < _problem->_actionVectorSize; ++d)
+      trajectoryLogProbability += normalLogDensity(actions[t][d], evaluation[d], sigmas[d]);
+  }
+
+  return trajectoryLogProbability;
+}
+
 } // namespace agent
 
 } // namespace solver

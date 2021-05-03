@@ -490,7 +490,7 @@ class Agent : public Solver
   * @param policyHyperparameter The neural network policy hyperparameter.
   * @return The log probability of the trajectory.
   */
-  float evaluateTrajectoryLogProbability(const std::vector<std::vector<float>> &states, const std::vector<std::vector<float>> &actions, const std::vector<float> &policyHyperparameter);
+  virtual float evaluateTrajectoryLogProbability(const std::vector<std::vector<float>> &states, const std::vector<std::vector<float>> &actions, const std::vector<float> &policyHyperparameter) = 0;
 
   /**
   * @brief Evaluates the log probability of a trajectory given linear policy and standad deviations of gaussian errors.
@@ -500,7 +500,7 @@ class Agent : public Solver
   * @param sigmas Estimated standard deviations of gaussian errors.
   * @return The log probability of the trajectory.
   */
-  float evaluateTrajectoryLogProbabilityWithLinearPolicy(const std::vector<std::vector<float>> &states, const std::vector<std::vector<float>> &actions, const std::vector<std::vector<float>> &linearWeights, const std::vector<float> &sigmas);
+  virtual float evaluateTrajectoryLogProbabilityWithLinearPolicy(const std::vector<std::vector<float>> &states, const std::vector<std::vector<float>> &actions, const std::vector<std::vector<float>> &linearWeights, const std::vector<float> &sigmas) = 0;
 
   /****************************************************************************************************
    * Virtual functions (responsibilities) for learning algorithms to fulfill

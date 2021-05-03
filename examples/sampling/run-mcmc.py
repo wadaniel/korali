@@ -30,6 +30,7 @@ e["Variables"][0]["Initial Standard Deviation"] = 1.0
 
 # Configuring output settings
 e["File Output"]["Frequency"] = 500
+e["File Output"]["Path"] = '_korali_result_mcmc'
 e["Console Output"]["Frequency"] = 500
 e["Console Output"]["Verbosity"] = "Detailed"
 

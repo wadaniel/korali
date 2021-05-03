@@ -33,6 +33,28 @@ void Bayesian::evaluateLogPrior(Sample &sample)
   sample["logPrior"] = logPrior;
 }
 
+void Bayesian::evaluateLogPriorGradient(Sample &sample)
+{
+  size_t numParam = sample["Parameters"].size();
+  std::vector<double> logPriorGradient(numParam, 0.);
+
+  for (size_t i = 0; i < numParam; i++)
+    logPriorGradient[i] = _k->_distributions[_k->_variables[i]->_distributionIndex]->getLogDensityGradient(sample["Parameters"][i]);
+
+  sample["logPrior Gradient"] = logPriorGradient;
+}
+
+void Bayesian::evaluateLogPriorHessian(Sample &sample)
+{
+  size_t numParam = sample["Parameters"].size();
+  std::vector<double> logPriorHessian(numParam * numParam, 0.);
+
+  for (size_t i = 0; i < numParam; i++)
+    logPriorHessian[i * numParam + i] = _k->_distributions[_k->_variables[i]->_distributionIndex]->getLogDensityHessian(sample["Parameters"][i]);
+
+  sample["logPrior Hessian"] = logPriorHessian;
+}
+
 void Bayesian::evaluateLogPosterior(Sample &sample)
 {
   int sampleId = sample["Sample Id"];
@@ -60,12 +82,31 @@ void Bayesian::evaluate(Sample &sample)
 {
   evaluateLogPosterior(sample);
   sample["F(x)"] = sample["logPosterior"];
-  sample["P(x)"] = sample["logPosterior"];
+  sample["logP(x)"] = sample["logPosterior"];
 }
 
 void Bayesian::evaluateGradient(Sample &sample)
 {
+  evaluateLogPriorGradient(sample);
   evaluateLoglikelihoodGradient(sample);
+  auto logPriorGrad = sample["logPrior Gradient"].get<std::vector<double>>();
+  auto logLikGrad = sample["logLikelihood Gradient"].get<std::vector<double>>();
+  for (size_t i = 0; i < logPriorGrad.size(); ++i)
+    logLikGrad[i] += logPriorGrad[i];
+  sample["grad(logP(x))"] = logLikGrad;
+}
+
+void Bayesian::evaluateHessian(Sample &sample)
+{
+  evaluateLogPriorHessian(sample);
+  evaluateLogLikelihoodHessian(sample);
+  auto logPriorHessian = sample["logPrior Hessian"].get<std::vector<double>>();
+  auto logLikHessian = sample["logLikelihood Hessian"].get<std::vector<double>>();
+  size_t numElement = logPriorHessian.size();
+  for (size_t i = 0; i < numElement; i++)
+    logLikHessian[i] += logPriorHessian[i];
+
+  sample["H(logP(x))"] = logLikHessian;
 }
 
 } // namespace problem

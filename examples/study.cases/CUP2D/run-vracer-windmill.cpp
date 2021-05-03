@@ -29,8 +29,8 @@ int main(int argc, char *argv[])
   _environment->init();
 
   // Set results path
-  std::string trainingResultsPath = "_results_windmill_training/r_5_100/";
-  std::string testingResultsPath = "_results_windmill_testing/r_5_100/";
+  std::string trainingResultsPath = "_results_windmill_training/r_5/";
+  std::string testingResultsPath = "_results_windmill_testing/r_5/";
   
   // Creating Korali experiment
   auto e = korali::Experiment();
@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
   e["Solver"]["Learning Rate"] = 1e-4;
   e["Solver"]["Discount Factor"] = 0.95;
   e["Solver"]["Mini Batch"]["Size"] =  128;
-  e["Solver"]["Policy"]["Distribution"] = "Normal";
+  e["Solver"]["Policy"]["Distribution"] = "Squashed Normal";
 
   /// Defining the configuration of replay memory
   e["Solver"]["Experience Replay"]["Start Size"] = 1024;

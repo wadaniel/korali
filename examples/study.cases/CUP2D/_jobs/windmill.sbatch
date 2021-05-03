@@ -1,8 +1,8 @@
 #!/bin/bash -l
-#SBATCH --job-name="windmill5_100"
-#SBATCH --output=output_windmill5_100%j.out
+#SBATCH --job-name="windmillnodes"
+#SBATCH --output=output_windmillnodes%j.out
 #SBATCH --time=24:00:00
-#SBATCH --nodes=33
+#SBATCH --nodes=65
 #SBATCH --ntasks-per-core=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --account=s929

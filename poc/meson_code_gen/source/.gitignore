@@ -1,7 +1,0 @@
-Makefile.conf
-*.hpp
-*.py
-*.cpp
-
-.d/
-.o/

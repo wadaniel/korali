@@ -40,7 +40,7 @@ korali_cpp_args = []
 # process required korali dependencies
 # TODO: [fabianw@mavt.ethz.ch; 2021-02-13] should probably test for system cblas
 # (needs benchmark: gslcblas versus system cblas (and possibly ATLAS))
-korali_deps += dependency('gsl', fallback: ['gsl', 'gsl_dep'], required: true)
+korali_deps += dependency('gsl', fallback: ['gsl', 'gsl_dep'], version : '>=2.5', required: true)
 korali_deps += dependency('eigen3', fallback: ['eigen', 'eigen_dep'], required: true)
 korali_deps += dependency('pybind11', fallback: ['pybind11', 'pybind11_dep'], required: true)
 
@@ -62,7 +62,7 @@ if get_option('onednn') or get_option('onednn_path') != ''
     d += get_option('onednn_path') / 'lib'
     d += get_option('onednn_path') / 'lib64'
   endif
-  onednn_dep = cpp.find_library('dnnl', dirs: d, required: true)
+  onednn_dep = cpp.find_library('dnnl', dirs: d, version : '>=2.0', required: true)
 endif
 korali_deps += onednn_dep
 

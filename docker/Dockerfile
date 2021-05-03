@@ -42,5 +42,4 @@ USER korali
 
 # install korali
 RUN git clone https://github.com/cselab/korali.git --recursive
-# FIXME: [fabianw@mavt.ethz.ch; 2021-02-18] use `master` branch once merged
-RUN (cd korali && git checkout meson && meson setup build --prefix=$HOME/.local --buildtype release --strip -Donednn=false && meson install -C build)
+RUN (cd korali && python3 -m pip install --user .)

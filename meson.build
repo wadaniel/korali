@@ -79,7 +79,7 @@ korali_deps += cudnn_dep
 
 # set configuration values
 korali_conf.set('_KORALI_USE_MPI', mpi_dep.found(),
-  description: 'Use MPI for distributed memory paralleism',
+  description: 'Use MPI for distributed memory parallelism',
 )
 korali_conf.set('_KORALI_USE_ONEDNN', onednn_dep.found(),
   description: 'Use Intel OndeDNN backend for Deep Neural Networks',

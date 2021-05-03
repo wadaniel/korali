@@ -23,7 +23,6 @@ install_headers(korali_header,
 
 korali_source = files([
   'engine.cpp',
-  'pybinds.cpp'
 ])
 korali_source += korali_header
 
@@ -39,7 +38,6 @@ subdir('variable')
 # create korali python extension
 python_extension = python.extension_module('lib' + korali,
   korali_source,
-  cpp_args: korali_cpp_args,
   include_directories: korali_include,
   dependencies: [korali_deps, python.dependency()],
   install: true,

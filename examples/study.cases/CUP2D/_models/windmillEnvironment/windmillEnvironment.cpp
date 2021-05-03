@@ -119,7 +119,7 @@ void runEnvironment(korali::Sample &s)
     }
 
     // reward( std::vector<double> target, std::vector<double> target_vel, double C = 10)
-    double C = 1e8;
+    double C = 0.5e8;
     double r1 = agent1->reward( target_pos, target_vel,  C);
     double r2 = agent2->reward( target_pos, target_vel,  C);
     double r3 = agent3->reward( target_pos, target_vel,  C);

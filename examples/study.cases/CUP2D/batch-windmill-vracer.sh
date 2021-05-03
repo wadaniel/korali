@@ -27,11 +27,11 @@ YPOS4=${YPOS4:-0.8}
 
 XVEL=${XVEL:-0.15}
 
-MAAXIS=${MAAXIS:-0.0375}
-MIAXIS=${MIAXIS:-0.0125}
+MAAXIS=${MAAXIS:-0.0405}
+MIAXIS=${MIAXIS:-0.0135}
 
 # choose Re=100, may change to 1000 later
-NU=${NU:-0.0001125}
+NU=${NU:-0.0001215}
 
 OPTIONS="-bpdx $BPDX -bpdy $BPDY -levelMax $LEVELS -Rtol $RTOL -Ctol $CTOL -extent $EXTENT -CFL $CFL -tdump 0 -nu $NU -tend 0 -muteAll 0 -verbose 1"
 # bForced, tAccel is needed here!

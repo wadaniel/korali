@@ -29,8 +29,8 @@ int main(int argc, char *argv[])
   _environment->init();
 
   // Set results path
-  std::string trainingResultsPath = "_results_windmill_training/r_6/";
-  std::string testingResultsPath = "_results_windmill_testing/r_6/";
+  std::string trainingResultsPath = "_results_windmill_training/r_5_100/";
+  std::string testingResultsPath = "_results_windmill_testing/r_5_100/";
   
   // Creating Korali experiment
   auto e = korali::Experiment();
@@ -61,7 +61,7 @@ int main(int argc, char *argv[])
     e["Variables"][curVariable]["Type"] = "State";
   }
 
-  double max_torque = 1e-6;
+  double max_torque = 1e-5;
   for(size_t j=numStates; j < numStates + 4; ++j){
     e["Variables"][j]["Name"] = "Torque " + std::to_string(j-numStates+1);
     e["Variables"][j]["Type"] = "Action";

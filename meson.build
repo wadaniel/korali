@@ -37,7 +37,6 @@ null_dep = dependency('', required : false) # used for simplification of code
 korali_deps = []
 korali_cpp_args = []
 
-
 # process required korali dependencies
 # TODO: [fabianw@mavt.ethz.ch; 2021-02-13] should probably test for system cblas
 # (needs benchmark: gslcblas versus system cblas (and possibly ATLAS))

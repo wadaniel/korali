@@ -50,7 +50,7 @@ subdir('neuralNetwork/layer/recurrent/lstm')
 
 subdir('problem')
 subdir('problem/bayesian')
-subdir('problem/bayesian/custom')
+subdir('problem/bayesian/custom') 
 subdir('problem/bayesian/reference')
 subdir('problem/hierarchical')
 subdir('problem/hierarchical/psi')

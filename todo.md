@@ -26,7 +26,7 @@
 * [Χ] optional third-party
 * [X] Fix the `git clean -xdf .` in all `._fetch.sh` scripts. It will fail in a release.
 * [X] doxygen and llvm dependencies
-* [ ] check for minimum version of GSL
+* [X] check for minimum version of GSL
 
 
 # Documentation

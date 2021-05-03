@@ -24,7 +24,7 @@
 * [X] check for more third-party code to move
 * [X] rename external to third-party (or subprojects)
 * [Χ] optional third-party
-* [ ] Fix the `git clean -xdf .` in all `._fetch.sh` scripts. It will fail in a release.
+* [X] Fix the `git clean -xdf .` in all `._fetch.sh` scripts. It will fail in a release.
 * [X] doxygen and llvm dependencies
 * [ ] check for minimum version of GSL
 

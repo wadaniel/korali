@@ -248,7 +248,7 @@ void @className::runGenerationNUTS(const double logUniSample)
   helper->rootHIn = oldH;
   helper->buildCriterionOut = true;
 
-  while (buildCriterion == true && _currentDepth <= _maxDepth)
+  do
   {
     if (_uniformGenerator->getRandomNumber() < 0.5)
     {
@@ -308,7 +308,7 @@ void @className::runGenerationNUTS(const double logUniSample)
     buildCriterion = buildCriterionSubtree && helper->computeCriterion(*_hamiltonian);
 
     _currentDepth++;
-  }
+  } while (buildCriterion == true && _currentDepth <= _maxDepth);
 
   _currentDepth--;
   _acceptanceProbability /= (double)numLeavesSubtree;

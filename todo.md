@@ -7,7 +7,7 @@
 * [X] integrate meson in CircleCI config
 * [X] add pkg-config entry for korali installation
 * [X] update Dockerfile with meson support
-* [ ] may need `config.h` header -- check what are all these flags in `python/korali/cxx/cflags.py`
+* [X] may need `config.h` header -- check what are all these flags in `python/korali/cxx/cflags.py`
 * [X] make a `requirements.txt`
 
 # Python module

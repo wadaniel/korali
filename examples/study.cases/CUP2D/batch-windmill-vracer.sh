@@ -5,7 +5,7 @@ mpiflags="mpirun -n 2"
 
 if [ ! -z $SLURM_NNODES ]; then
  N=$SLURM_NNODES
- mpiflags="srun -N $N -n $(($N)) -c 1"
+ mpiflags="srun -N $N -n $(($N+1)) -c 1"
 fi
 
 set -x

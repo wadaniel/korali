@@ -48,4 +48,4 @@ e["Random Seed"] = 1337
 k.run(e)
 
 verifyMean(e["Results"]["Posterior Sample Database"], [0.0, 0.0, 0.0, 0.0, 0.0], 0.05)
-verifyStd(e["Results"]["Posterior Sample Database"], [1.0, 1.0, 1.0, 1.0, 1.0], 0.05)
+verifyStd(e["Results"]["Posterior Sample Database"], [1.0, 1.0, 1.0, 1.0, 1.0], 0.15)

@@ -1,6 +1,8 @@
 #include "modules/experiment/experiment.hpp"
 #include "modules/neuralNetwork/neuralNetwork.hpp"
+#ifdef __OPENMP
 #include <omp.h>
+#endif
 
 @startNamespace
 
@@ -63,7 +65,11 @@ void @className::initialize()
 
   // Creating layer pipelines of format ThreadCount x Batch Sizes x Layer Count
   size_t layerCount = _layers.size();
+#ifdef __OPENMP
   int maxThreads = omp_get_max_threads();
+#else
+  int maxThreads = 1;
+#endif
   _pipelines.resize(maxThreads);
   for (int curThread = 0; curThread < maxThreads; curThread++)
   {
@@ -203,7 +209,11 @@ std::vector<float> @className::generateInitialHyperparameters()
 void @className::forward(const std::vector<std::vector<std::vector<float>>> &inputValues)
 {
   // Finding out current thread
+#ifdef __OPENMP
   size_t curThread = omp_get_thread_num();
+#else
+  size_t curThread = 1;
+#endif
 
   // Finding out pipeline corresponding to the input batch size id
   size_t N = inputValues.size();
@@ -257,7 +267,11 @@ void @className::forward(const std::vector<std::vector<std::vector<float>>> &inp
 void @className::backward(const std::vector<std::vector<float>> &outputGradients)
 {
   // Finding out current thread
+#ifdef __OPENMP
   size_t curThread = omp_get_thread_num();
+#else
+  size_t curThread = 1;
+#endif
 
   // Finding out pipeline corresponding to the input batch size id
   size_t N = outputGradients.size();
@@ -358,7 +372,11 @@ size_t @className::getBatchSizeIdx(const size_t batchSize)
 
 std::vector<std::vector<float>> &@className::getOutputValues(const size_t batchSize)
 {
+#ifdef __OPENMP
   size_t curThread = omp_get_thread_num();
+#else
+  size_t curThread = 1;
+#endif
   size_t batchSizeIdx = getBatchSizeIdx(batchSize);
   layerPipeline_t *p = &_pipelines[curThread][batchSizeIdx];
   return p->_outputValues;
@@ -366,7 +384,11 @@ std::vector<std::vector<float>> &@className::getOutputValues(const size_t batchS
 
 std::vector<std::vector<float>> &@className::getInputGradients(const size_t batchSize)
 {
+#ifdef __OPENMP
   size_t curThread = omp_get_thread_num();
+#else
+  size_t curThread = 1;
+#endif
   size_t batchSizeIdx = getBatchSizeIdx(batchSize);
   layerPipeline_t *p = &_pipelines[curThread][batchSizeIdx];
   return p->_inputGradients;
@@ -374,7 +396,11 @@ std::vector<std::vector<float>> &@className::getInputGradients(const size_t batc
 
 std::vector<float> &@className::getHyperparameterGradients(const size_t batchSize)
 {
+#ifdef __OPENMP
   size_t curThread = omp_get_thread_num();
+#else
+  size_t curThread = 1;
+#endif
   size_t batchSizeIdx = getBatchSizeIdx(batchSize);
   layerPipeline_t *p = &_pipelines[curThread][batchSizeIdx];
   return p->_hyperparameterGradients;

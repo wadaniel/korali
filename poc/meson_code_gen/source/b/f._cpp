@@ -1,6 +1,0 @@
-#include "f.hpp"
-#include <iostream>
-
-void @NAME@::swag() {
-    std::cout << "@NAME@'s swag is " << _swag << '\n';
-}

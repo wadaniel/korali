@@ -29,7 +29,6 @@ Folders
 - docker/ Contains the build file for a Korali docker image
 - docs/ Contains all documentation for Korali source and website
 - examples/ Contains example scripts that solve all of Korali's problem types
-- poc/ Contains proof of concepts
 - python/ Contains Korali's pure python source code
 - source/ Contains Korali's C++ source code (python extension)
 - subprojects/ Contains external dependencies required by Korali

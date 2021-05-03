@@ -85,13 +85,12 @@ int main(int argc, char *argv[])
   e["Solver"]["Experience Replay"]["Start Size"] = 1024;
   e["Solver"]["Experience Replay"]["Maximum Size"] = 65536;
   e["Solver"]["Experience Replay"]["Off Policy"]["Annealing Rate"] = 5.0e-8;
-  e["Solver"]["Experience Replay"]["Off Policy"]["Cutoff Scale"] = 4.0;
+  e["Solver"]["Experience Replay"]["Off Policy"]["Cutoff Scale"] = 5.0;
   e["Solver"]["Experience Replay"]["Off Policy"]["REFER Beta"] = 0.3;
   e["Solver"]["Experience Replay"]["Off Policy"]["Target"] = 0.1;
 
 
   //// Defining Policy distribution and scaling parameters
-  e["Solver"]["Policy"]["Distribution"] = "Squashed Normal";
   e["Solver"]["State Rescaling"]["Enabled"] = true;
   e["Solver"]["Reward"]["Rescaling"]["Enabled"] = false; // this was true
   e["Solver"]["Reward"]["Rescaling"]["Frequency"] = 1000;

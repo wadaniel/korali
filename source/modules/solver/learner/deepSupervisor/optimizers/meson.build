@@ -1,5 +1,6 @@
 deep_learner_optimizer_header = files([
   'fAdaBelief.hpp',
+  'fAdagrad.hpp',
   'fAdam.hpp',
   'fCMAES.hpp',
   'fGradientBasedOptimizer.hpp',
@@ -12,6 +13,7 @@ install_headers(deep_learner_optimizer_header,
 
 deep_learner_optimizer_source = files([
   'fAdaBelief.cpp',
+  'fAdagrad.cpp',
   'fAdam.cpp',
   'fCMAES.cpp',
   'fMadGrad.cpp',

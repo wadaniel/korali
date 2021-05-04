@@ -55,7 +55,6 @@ examples/optimization/meson.build:# TODO: [garampat@mavt.ethz.ch; 2021-03-24] mu
 examples/study.cases/RBCRelax/data/README.md:outer solution: TODO find viscosity
 examples/learning/surrogates/creation/README.rst:TODO
 tests/REG-000/run_test.sh:# TODO: @Fabian: how should we test for these?
-pyproject.toml:author = "Korali devs TODO"
 source/modules/solver/sampler/HMC/HMC._hpp:// TODO: REMOVE normal/normal.hpp
 source/modules/solver/sampler/HMC/HMC.config:    "Description": "TODO: is this the number of accepted proposals?"
 source/modules/solver/sampler/TMCMC/TMCMC._cpp:    // TODO: refine error treatment granularity

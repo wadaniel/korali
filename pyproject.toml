@@ -3,8 +3,8 @@ requires = ["wheel", "mesonpep517", "ninja", "meson", "toml", "setuptools"]
 build-backend = "mesonpep517.buildapi"
 
 [tool.mesonpep517.metadata]
-author = "Korali devs TODO"
-author-email = "dummy@ethz.ch"
+author = "S. Martin, D. Waelchli, G. Arampatzis, P. Weber"
+author-email = "martiser@ethz.ch"
 classifiers = [
     "Development Status :: 4 - Beta",
     "Environment :: Console",

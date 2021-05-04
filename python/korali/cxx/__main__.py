@@ -5,7 +5,6 @@ import ast
 import sysconfig
 import glob, os
 import subprocess
-#import korali
 
 def main():
   fileDir = os.path.dirname(os.path.realpath(__file__))
@@ -24,7 +23,7 @@ def main():
     correctSyntax = True
     pythonCFlagsCommand = subprocess.Popen("python3-config --includes", shell=True, stdout=subprocess.PIPE)
     pythonCFlags = pythonCFlagsCommand.stdout.read().decode()
-    flags = '-I' + koraliDir + '/include' + ' -I' + sysconfig.get_path("include") + ' -I' + sysconfig.get_path("platinclude") + ' -I' + configDict['PYBIND11_INCLUDES'] + ' ' + pythonCFlags
+    flags = '-std=c++17' + ' -I' + koraliDir + '/include' + ' -I' + sysconfig.get_path("include") + ' -I' + sysconfig.get_path("platinclude") + ' -I' + configDict['PYBIND11_INCLUDES'] + ' ' + pythonCFlags
 
   if (sys.argv[1] == '--libs'):
     correctSyntax = True
@@ -37,7 +36,6 @@ def main():
     
     # Looking for Korali library
     koraliLib = glob.glob(koraliDir + "/*.so")[0]
-    #koraliLib = lk.__file__
     flags = '-L' + koraliDir + ' -L' + koraliDir + '/../../../../lib' + ' -L' + koraliDir + '/../../../../lib64' + ' ' + koraliLib + ' ' + pythonLibs
 
   if (sys.argv[1] == '--compiler'):

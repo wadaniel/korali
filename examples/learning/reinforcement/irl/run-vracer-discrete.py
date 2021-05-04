@@ -13,7 +13,7 @@ from env import *
 
 ####### Load observations
 
-obsfile = "observations-continuous-t-0.0.json"
+obsfile = "observations-discrete-t-0.0.json"
 obsstates = []
 obsactions = []
 with open(obsfile, 'r') as infile:
@@ -53,7 +53,8 @@ e = korali.Experiment()
 
 ### Defining the Cartpole problem's configuration
 
-e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
+e["Problem"]["Type"] = "Reinforcement Learning / Discrete"
+e["Problem"]["Possible Actions"] = [ [ -10.0 ], [ -5.0 ], [ -1.0 ], [ 1.0 ], [ 5.0 ], [ 10.0 ] ]
 e["Problem"]["Environment Function"] = env
 e["Problem"]["Training Reward Threshold"] = 400
 e["Problem"]["Policy Testing Episodes"] = 20
@@ -82,7 +83,7 @@ e["Variables"][4]["Initial Exploration Noise"] = 1.0
 
 ### Defining Agent Configuration 
 
-e["Solver"]["Type"] = "Agent / Continuous / VRACER"
+e["Solver"]["Type"] = "Agent / Discrete / DVRACER"
 e["Solver"]["Mode"] = "Training"
 e["Solver"]["Experiences Between Policy Updates"] = 1
 e["Solver"]["Experiences Between Reward Updates"] = 1
@@ -131,7 +132,7 @@ e["Solver"]["Termination Criteria"]["Max Experiences"] = 1e6
 
 e["File Output"]["Enabled"] = True
 e["File Output"]["Frequency"] = 100
-e["File Output"]["Path"] = '_korali_results_f2_z20_single_wlin_4'
+e["File Output"]["Path"] = '_korali_results_f2_z20_discrete'
 
 ### Running Experiment
 

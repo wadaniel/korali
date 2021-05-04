@@ -17,6 +17,9 @@
 
 namespace korali
 {
+/**
+* @brief Structure containing the information of a layer pipeline. There is one pipeline per threadCount x batchSize combination.
+*/
 struct layerPipeline_t
 {
   /**
@@ -75,17 +78,27 @@ class NeuralNetwork : public Module
    */
   dnnl::stream _dnnlStream;
 
+  /**
+   * @brief oneDNN Engine for the current NN
+   */
   dnnl::engine _dnnlEngine;
-
-  std::vector<std::vector<layerPipeline_t>> _pipelines;
 
 #endif
 
 #ifdef _KORALI_USE_CUDNN
 
+  /**
+   * @brief CUDNN handle for the execution of operations on the GPU
+   */
   cudnnHandle_t _cuDNNHandle;
 
 #endif
+
+  /**
+   * @brief Layer pipelines, one per threadCount * BatchSize combination. These are all replicas of the user-defined layers that
+   *        share the same hyperparameter space.
+   */
+  std::vector<std::vector<layerPipeline_t>> _pipelines;
 
   /**
    * @brief Flag to make sure the NN is initialized before creating
@@ -96,8 +109,6 @@ class NeuralNetwork : public Module
    * @brief Number of NN hyperparameters (weights/bias)
    */
   size_t _hyperparameterCount;
-
-  void initialize() override;
 
   /**
    * @brief Generates the initial values for the hyperparameters
@@ -129,15 +140,40 @@ class NeuralNetwork : public Module
   */
   void backward(const std::vector<std::vector<float>> &outputGradients);
 
+  /**
+  * @brief Returns the pipeline index corresponding to the batch size requested
+  * @param batchSize Size of the batch to request
+  * @return Pipeline Id correspoding to the batch size
+  */
   size_t getBatchSizeIdx(const size_t batchSize);
+
+  /**
+   * @brief Returns a reference to the output values corresponding to the batch size's pipeline
+   * @param batchSize Size of the batch to request
+   * @return Reference to the output values
+   */
   std::vector<std::vector<float>> &getOutputValues(const size_t batchSize);
+
+  /**
+   * @brief Returns a reference to the input gradients corresponding to the batch size's pipeline
+   * @param batchSize Size of the batch to request
+   * @return Reference to the input gradients
+   */
   std::vector<std::vector<float>> &getInputGradients(const size_t batchSize);
+
+  /**
+   * @brief Returns a reference to the hyperparameter gradients corresponding to the batch size's pipeline
+   * @param batchSize Size of the batch to request
+   * @return Reference hyperparameter gradients
+   */
   std::vector<float> &getHyperparameterGradients(const size_t batchSize);
 
   /**
    * @brief Creator that sets initialized flag to false
    */
   NeuralNetwork();
+
+  void initialize() override;
 };
 
 } // namespace korali

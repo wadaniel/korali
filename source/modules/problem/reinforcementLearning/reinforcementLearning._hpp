@@ -39,8 +39,46 @@ class ReinforcementLearning : public korali::Problem
 
   /**
    * @brief Runs/resumes the execution of the environment
+   * @param agent Sample containing current agent/state information.
    */
-  void runEnvironment();
+  void runEnvironment(Sample &agent);
+
+  /**
+   * @brief Communicates with the Engine to get the latest policy
+   * @param agent Sample containing current agent/state information.
+   */
+  void requestNewPolicy(Sample &agent);
+
+  /**
+   * @brief Runs the policy on the current state to get the action
+   * @param agent Sample containing current agent/state information.
+   */
+  void getAction(Sample &agent);
+
+  /**
+   * @brief Contains the state rescaling means
+   */
+  std::vector<float> _stateRescalingMeans;
+
+  /**
+   * @brief Contains the state rescaling sigmas
+   */
+  std::vector<float> _stateRescalingSdevs;
+
+  /**
+   * @brief [Profiling] Stores policy evaluation time per episode
+   */
+  double _agentPolicyEvaluationTime;
+
+  /**
+  * @brief [Profiling] Stores environment evaluation time per episode
+  */
+  double _agentComputationTime;
+
+  /**
+  * @brief [Profiling] Stores communication time per episode
+  */
+  double _agentCommunicationTime;
 };
 
 } // namespace problem

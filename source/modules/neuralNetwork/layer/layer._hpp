@@ -33,6 +33,9 @@ class Layer : public Module
    */
   NeuralNetwork *_nn;
 
+  /**
+   * @brief A pointer to the layer's containing pipeline
+   */
   layerPipeline_t *_pipeline;
 
   /**
@@ -55,6 +58,9 @@ class Layer : public Module
   */
   size_t _hyperparameterIndex;
 
+  /**
+   * @brief Contains the batch size corresponding to the pipeline
+   */
   size_t _batchSize;
 
   // Input/output memory elements
@@ -128,10 +134,14 @@ class Layer : public Module
   virtual std::vector<float> generateInitialHyperparameters();
 
   /**
-  * @brief  Initializes the layer's internal memory structures for hyperparameter storage
+  * @brief Initializes the layer's internal memory structures for hyperparameter storage
   */
   virtual void createHyperparameterMemory();
 
+  /**
+   * @brief Replicates the pointers for the current layer onto a destination layer
+   * @param dstLayer The destination layer onto which to copy the pointers
+   */
   virtual void copyHyperparameterPointers(Layer *dstLayer){};
 
   /**
@@ -146,6 +156,7 @@ class Layer : public Module
 
   /**
   * @brief Performs the forward propagation of the Wx+b operations
+  * @param t Indicates the current timestep
   */
   virtual void forwardData(const size_t t) = 0;
 
@@ -169,11 +180,13 @@ class Layer : public Module
 
   /**
    * @brief Performs the backward propagation of the data
+   * @param t Indicates the current timestep
    */
   virtual void backwardData(const size_t t) = 0;
 
   /**
   * @brief Calculates the gradients of layer hyperparameters
+  * @param t Indicates the current timestep
   */
   virtual void backwardHyperparameters(const size_t t){};
 };

@@ -6,14 +6,14 @@ import math
 import json
 from env import *
 
-
 """Note:
-    - COMPILE KORALI with COSREWARD 
+    - COMPILE KORALI with COSREWARD directive
+    - ADJUST FEATURES IN ENVIRONMENT
 """
 
 ####### Load observations
 
-obsfile = "observations-t-0.0.json"
+obsfile = "observations-continuous-t-0.0.json"
 obsstates = []
 obsactions = []
 with open(obsfile, 'r') as infile:

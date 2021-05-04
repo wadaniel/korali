@@ -24,7 +24,6 @@ pymodule = import('python')
 python = pymodule.find_installation('python3', required: true)
 
 korali = 'korali' # python package name
-korali_extension = 'libkorali' # cpp extensions name
 korali_install_base = python.get_install_dir() / korali
 korali_install_headers = korali_install_base / 'include'
 summary({

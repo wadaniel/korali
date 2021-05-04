@@ -3,7 +3,7 @@ import os
 import sys
 import ast
 import sysconfig
-import glob, os
+import os
 import subprocess
 
 import libkorali as lk

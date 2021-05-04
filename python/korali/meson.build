@@ -1,6 +1,7 @@
 subdir('plotter')
 subdir('profiler')
 subdir('rlview')
+subdir('cxx')
 
 # pure python sources
 python_sources = files([

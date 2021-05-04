@@ -12,6 +12,29 @@ void Discrete::initializeAgent()
 {
   // Getting discrete problem pointer
   _problem = dynamic_cast<problem::reinforcementLearning::Discrete *>(_k->_problem);
+  
+  // Estimate action probabilities from observed actions
+  size_t numPossibleActions = _problem->_possibleActions.size();
+  _observationsApproximatorActionProbabilities.resize(numPossibleActions, 0.0);
+  for (size_t i = 0; i < _problem->_numberObservedTrajectories; ++i)
+  {
+    size_t trajectoryLength = _problem->_observationsActions[i].size();
+    for (size_t t = 0; t < trajectoryLength; ++t)
+    {
+        for(size_t actionIdx = 0; actionIdx < numPossibleActions; ++actionIdx)
+            if(_problem->_possibleActions[actionIdx] == _problem->_observationsActions[i][t])
+                _observationsApproximatorActionProbabilities[actionIdx]++;
+    }
+  }
+
+  size_t checkSum = 0;
+  for(size_t actionIdx = 0; actionIdx < numPossibleActions; ++actionIdx) checkSum += _observationsApproximatorActionProbabilities[actionIdx];
+  if (checkSum != _problem->_totalObservedStateActionPairs) KORALI_LOG_ERROR("Checksum test failed, error while action probability calculation (expected %zu, actual %zu).\n", _problem->_totalObservedStateActionPairs, checkSum);
+  
+  // Estimate of categorial probabilities with Dirichlet prior (alpha_i = 2)
+  for(size_t actionIdx = 0; actionIdx < numPossibleActions; ++actionIdx) _observationsApproximatorActionProbabilities[actionIdx] = ( _observationsApproximatorActionProbabilities[actionIdx] + 2.0 )/((float) _problem->_totalObservedStateActionPairs + 2.0 * numPossibleActions);
+  for(size_t actionIdx = 0; actionIdx < numPossibleActions; ++actionIdx) printf("Action Probabilities [%zu] : %f", actionIdx, _observationsApproximatorActionProbabilities[actionIdx]);
+
 }
 
 void Discrete::getAction(korali::Sample &sample)
@@ -170,22 +193,16 @@ float Discrete::evaluateTrajectoryLogProbability(const std::vector<std::vector<f
   return trajectoryLogProbability;
 }
 
-float Discrete::evaluateTrajectoryLogProbabilityWithLinearPolicy(const std::vector<std::vector<float>> &states, const std::vector<std::vector<float>> &actions, const std::vector<std::vector<float>> &linearWeights, const std::vector<float> &sigmas)
+float Discrete::evaluateTrajectoryLogProbabilityWithObservedPolicy(const std::vector<std::vector<float>> &states, const std::vector<std::vector<float>> &actions)
 {
   float trajectoryLogProbability = 0.0;
+  
   // Evaluate all states within a single trajectory and calculate probability of trajectory
   for (size_t t = 0; t < states.size(); ++t)
   {
-    std::vector<float> evaluation(_problem->_actionVectorSize);
-    for (size_t d = 0; d < _problem->_actionVectorSize; ++d)
-    {
-      // Predict action with linear policy
-      evaluation[d] = linearWeights[d][0];
-      for (size_t j = 0; j < _problem->_stateVectorSize; ++j)
-        evaluation[d] += states[t][j] * linearWeights[d][j + 1];
-    }
-    for (size_t d = 0; d < _problem->_actionVectorSize; ++d)
-      trajectoryLogProbability += normalLogDensity(actions[t][d], evaluation[d], sigmas[d]);
+    for(size_t actionIdx = 0; actionIdx < _problem->_possibleActions.size(); ++actionIdx)
+        if(_problem->_possibleActions[actionIdx] == actions[t])
+            trajectoryLogProbability += std::log(_observationsApproximatorActionProbabilities[actionIdx]);
   }
 
   return trajectoryLogProbability;

@@ -415,7 +415,7 @@ void Agent::updateBackgroundBatch()
       if (_useFusionDistribution)
       {
         // Insert probability from linear policy first
-        _backgroundTrajectoryLogProbabilities[i][0] = evaluateTrajectoryLogProbabilityWithLinearPolicy(_backgroundTrajectoryStates[i], _backgroundTrajectoryActions[i], _problem->_observationsApproximatorWeights, _problem->_observationsApproximatorSigmas);
+        _backgroundTrajectoryLogProbabilities[i][0] = evaluateTrajectoryLogProbabilityWithObservedPolicy(_backgroundTrajectoryStates[i], _backgroundTrajectoryActions[i]);
         for (size_t j = 0; j < _backgroundSampleSize; ++j)
           _backgroundTrajectoryLogProbabilities[i][j + 1] = trajectoryLogP;
       }
@@ -469,7 +469,7 @@ void Agent::updateBackgroundBatch()
     std::vector<float> logProbabilitiesNewTrajectory(_backgroundSampleSize + 1);
     if (_useFusionDistribution)
     {
-      logProbabilitiesNewTrajectory[0] = evaluateTrajectoryLogProbabilityWithLinearPolicy(_backgroundTrajectoryStates[_backgroundSampleSize - 1], _backgroundTrajectoryActions[_backgroundSampleSize - 1], _problem->_observationsApproximatorWeights, _problem->_observationsApproximatorSigmas);
+      logProbabilitiesNewTrajectory[0] = evaluateTrajectoryLogProbabilityWithObservedPolicy(_backgroundTrajectoryStates[_backgroundSampleSize - 1], _backgroundTrajectoryActions[_backgroundSampleSize - 1]);
       for (size_t i = 0; i < _backgroundSampleSize; ++i)
         logProbabilitiesNewTrajectory[i + 1] = evaluateTrajectoryLogProbability(_backgroundTrajectoryStates[_backgroundSampleSize - 1], _backgroundTrajectoryActions[_backgroundSampleSize - 1], _backgroundPolicyHyperparameter[i]);
     }
@@ -500,7 +500,7 @@ void Agent::updateDemonstrationBatch()
     for (size_t m = 0; m < _problem->_numberObservedTrajectories; ++m)
     {
       _demonstrationTrajectoryLogProbabilities[m].resize(_backgroundSampleSize + 1);
-      _demonstrationTrajectoryLogProbabilities[m][0] = evaluateTrajectoryLogProbabilityWithLinearPolicy(_problem->_observationsStates[m], _problem->_observationsActions[m], _problem->_observationsApproximatorWeights, _problem->_observationsApproximatorSigmas);
+      _demonstrationTrajectoryLogProbabilities[m][0] = evaluateTrajectoryLogProbabilityWithObservedPolicy(_problem->_observationsStates[m], _problem->_observationsActions[m]);
 
       if (_useFusionDistribution)
         for (size_t i = 0; i < _backgroundSampleSize; ++i)

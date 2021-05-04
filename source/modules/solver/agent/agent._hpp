@@ -493,14 +493,12 @@ class Agent : public Solver
   virtual float evaluateTrajectoryLogProbability(const std::vector<std::vector<float>> &states, const std::vector<std::vector<float>> &actions, const std::vector<float> &policyHyperparameter) = 0;
 
   /**
-  * @brief Evaluates the log probability of a trajectory given linear policy and standad deviations of gaussian errors.
+  * @brief Evaluates the log probability of a trajectory given a surrogate built from observed states and actions.
   * @param states Vector of states in the trajectory.
   * @param actions Vector of actions in the trajectory.
-  * @param linearWeights Linear weights of policy.
-  * @param sigmas Estimated standard deviations of gaussian errors.
   * @return The log probability of the trajectory.
   */
-  virtual float evaluateTrajectoryLogProbabilityWithLinearPolicy(const std::vector<std::vector<float>> &states, const std::vector<std::vector<float>> &actions, const std::vector<std::vector<float>> &linearWeights, const std::vector<float> &sigmas) = 0;
+  virtual float evaluateTrajectoryLogProbabilityWithObservedPolicy(const std::vector<std::vector<float>> &states, const std::vector<std::vector<float>> &actions) = 0;
 
   /****************************************************************************************************
    * Virtual functions (responsibilities) for learning algorithms to fulfill

@@ -11,9 +11,6 @@ def checkHeaderTemplateString( moduleConfig, templateFilePath, moduleTemplate ):
                 '@endIncludeGuard',
                 '@className',
                 '@parentClassName']
-  for s in substrings:
-    if moduleTemplate.count(s) != 1:
-      sys.exit(f'[Korali] Error: keyword {s} must appear exactly one time in file: {templateFilePath}' )
 
   aux.checkNamespaceKeys(moduleConfig, templateFilePath, moduleTemplate)
 

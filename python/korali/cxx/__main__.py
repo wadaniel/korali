@@ -4,6 +4,7 @@ import sys
 import ast
 import sysconfig
 import glob, os
+import subprocess
 
 def main():
   fileDir = os.path.dirname(os.path.realpath(__file__))
@@ -20,14 +21,22 @@ def main():
         
   if (sys.argv[1] == '--cflags'):
     correctSyntax = True
-    flags = '-I' + koraliDir + '/include' + ' -I' + sysconfig.get_path("include") + ' -I' + sysconfig.get_path("platinclude") + ' -I' + configDict['PYBIND11_INCLUDES']
+    pythonCFlagsCommand = subprocess.Popen("python3-config --includes", shell=True, stdout=subprocess.PIPE)
+    pythonCFlags = pythonCFlagsCommand.stdout.read().decode()
+    flags = '-I' + koraliDir + '/include' + ' -I' + sysconfig.get_path("include") + ' -I' + sysconfig.get_path("platinclude") + ' -I' + configDict['PYBIND11_INCLUDES'] + ' ' + pythonCFlags
 
   if (sys.argv[1] == '--libs'):
     correctSyntax = True
     
+    try:
+     pythonLibsCommand = subprocess.Popen("python3-config --ldflags --embed", shell=True, stdout=subprocess.PIPE)
+    except subprocess.CalledProcessError as e:
+     pythonLibsCommand = subprocess.Popen("python3-config --ldflags", shell=True, stdout=subprocess.PIPE)
+    pythonLibs = pythonLibsCommand.stdout.read().decode()
+    
     # Looking for Korali library
     koraliLib = glob.glob(koraliDir + "/*.so")[0]
-    flags = '-L' + koraliDir + ' -L' + koraliDir + '/../../../../lib' + ' -L' + koraliDir + '/../../../../lib64' + ' ' + koraliLib + ' -lpython'
+    flags = '-L' + koraliDir + ' -L' + koraliDir + '/../../../../lib' + ' -L' + koraliDir + '/../../../../lib64' + ' ' + koraliLib + ' ' + pythonLibs
 
   if (sys.argv[1] == '--compiler'):
     correctSyntax = True

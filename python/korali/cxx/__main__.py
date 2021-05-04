@@ -6,6 +6,8 @@ import sysconfig
 import glob, os
 import subprocess
 
+import libkorali as lk
+
 def main():
   fileDir = os.path.dirname(os.path.realpath(__file__))
   koraliDir = os.path.abspath(fileDir + '/../')
@@ -35,7 +37,7 @@ def main():
     pythonLibs = pythonLibsCommand.stdout.read().decode()
     
     # Looking for Korali library
-    koraliLib = glob.glob(koraliDir + "/*.so")[0]
+    koraliLib = os.path.realpath(lk.__file__)
     flags = '-L' + koraliDir + ' -L' + koraliDir + '/../../../../lib' + ' -L' + koraliDir + '/../../../../lib64' + ' ' + koraliLib + ' ' + pythonLibs
 
   if (sys.argv[1] == '--compiler'):

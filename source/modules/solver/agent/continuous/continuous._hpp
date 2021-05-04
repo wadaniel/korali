@@ -63,11 +63,9 @@ class Continuous : public Agent
   * @brief Evaluates the log probability of a trajectory given linear policy and standad deviations of gaussian errors.
   * @param states Vector of states in the trajectory.
   * @param actions Vector of actions in the trajectory.
-  * @param linearWeights Linear weights of policy.
-  * @param sigmas Estimated standard deviations of gaussian errors.
   * @return The log probability of the trajectory.
   */
-  virtual float evaluateTrajectoryLogProbabilityWithLinearPolicy(const std::vector<std::vector<float>> &states, const std::vector<std::vector<float>> &actions, const std::vector<std::vector<float>> &linearWeights, const std::vector<float> &sigmas) override;
+  virtual float evaluateTrajectoryLogProbabilityWithObservedPolicy(const std::vector<std::vector<float>> &states, const std::vector<std::vector<float>> &actions) override;
 
   float calculateImportanceWeight(const std::vector<float> &action, const policy_t &curPolicy, const policy_t &oldPolicy) override;
   virtual void getAction(korali::Sample &sample) override;

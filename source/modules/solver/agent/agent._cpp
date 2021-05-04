@@ -299,6 +299,8 @@ void Agent::testingGeneration()
     testingAgents[agentId]["Module"] = "Problem";
     testingAgents[agentId]["Operation"] = "Run Testing Episode";
     testingAgents[agentId]["Policy Hyperparameters"] = _testingPolicy;
+    testingAgents[agentId]["State Rescaling"]["Means"] = _stateRescalingMeans;
+    testingAgents[agentId]["State Rescaling"]["Standard Deviations"] = _stateRescalingSigmas;
 
     KORALI_START(testingAgents[agentId]);
   }

@@ -1361,10 +1361,7 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
     {
 
       // Getting current reward, action, and state
-      //const float curReward = _rewardVector[curId] * _rewardRescalingSdev;
       const float curReward = calculateReward(_featureVector[curId]);
-      // Getting current reward, action, and state
-      //const float curReward = getScaledReward(_rewardVector[curId]);
 
       // Calculating state value function
       const float curV = _stateValueVector[curId];

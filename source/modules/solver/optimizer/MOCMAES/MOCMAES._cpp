@@ -64,6 +64,10 @@ void MOCMAES::setInitialConfiguration()
     _currentBestVariables[k].resize(_variableCount);
   }
 
+  // Disable general termination criterion
+  _currentBestValue = +Inf;
+  _previousBestValue = -Inf;
+
   // Initializing variable defaults
   double trace = 0.;
   double minSdev = std::numeric_limits<double>::infinity();

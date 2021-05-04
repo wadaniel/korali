@@ -11,7 +11,8 @@ rm -rf _korali_result*; check_result
 
 ##### Running Test
 
-python3 ./run-surrogates.py; check_result
+# Not running this example until libGP is fixed
+#python3 ./run-surrogates.py; check_result
 
   
   

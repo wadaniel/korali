@@ -15,8 +15,8 @@ class Continuous : public Agent
 {
   public:
   /**
- * @brief Storage for the pointer to the (continuous) learning problem
- */
+   * @brief Storage for the pointer to the (continuous) learning problem
+   */
   problem::reinforcementLearning::Continuous *_problem;
 
   /**

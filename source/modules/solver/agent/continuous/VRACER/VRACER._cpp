@@ -16,8 +16,11 @@ void VRACER::initializeAgent()
   // Initializing common discrete agent configuration
   Continuous::initializeAgent();
 
+  // Init statistics
+  _statisticsAverageActionSigmas.resize(_problem->_actionVectorSize);
+
   /*********************************************************************
- * Initializing Critic/Policy Experiment
+ * Initializing Critic/Policy Neural Network Optimization Experiment
  *********************************************************************/
 
   _criticPolicyExperiment["Problem"]["Type"] = "Supervised Learning";
@@ -26,50 +29,30 @@ void VRACER::initializeAgent()
   _criticPolicyExperiment["Problem"]["Inference Batch Size"] = 1;
   _criticPolicyExperiment["Problem"]["Background Batch Size"] = _backgroundBatchSize;
   _criticPolicyExperiment["Problem"]["Input"]["Size"] = _problem->_stateVectorSize;
-  _criticPolicyExperiment["Problem"]["Solution"]["Size"] = 1 + 2 * _problem->_actionVectorSize;
+  _criticPolicyExperiment["Problem"]["Solution"]["Size"] = 1 + _policyParameterCount;
 
   _criticPolicyExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
-  _criticPolicyExperiment["Solver"]["Optimizer"] = _optimizer;
-
   _criticPolicyExperiment["Solver"]["L2 Regularization"]["Enabled"] = _l2RegularizationEnabled;
   _criticPolicyExperiment["Solver"]["L2 Regularization"]["Importance"] = _l2RegularizationImportance;
   _criticPolicyExperiment["Solver"]["Learning Rate"] = _currentLearningRate;
   _criticPolicyExperiment["Solver"]["Loss Function"] = "Direct Gradient";
   _criticPolicyExperiment["Solver"]["Steps Per Generation"] = 1;
+  _criticPolicyExperiment["Solver"]["Neural Network"]["Optimizer"] = _neuralNetworkOptimizer;
   _criticPolicyExperiment["Solver"]["Neural Network"]["Engine"] = _neuralNetworkEngine;
   _criticPolicyExperiment["Solver"]["Neural Network"]["Hidden Layers"] = _neuralNetworkHiddenLayers;
   _criticPolicyExperiment["Solver"]["Output Weights Scaling"] = 0.001;
 
-  // Masks to normalize and rescaling output to fit the action's [lower, upper] bounds (and sigmas/P)
+  // No transformations for the state value output
   _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Scale"][0] = 1.0f;
   _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Shift"][0] = 0.0f;
-  _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Tanh Mask"][0] = false;
-  _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Softplus Mask"][0] = false;
+  _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Transformation Mask"][0] = "Identity";
 
-  // Normalizing and rescaling output to fit the action's [lower, upper] bounds
-  for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+  // Setting transformations for the selected policy distribution output
+  for (size_t i = 0; i < _policyParameterCount; i++)
   {
-    size_t varIdx = _problem->_actionVectorIndexes[i];
-    float sigma = _k->_variables[varIdx]->_initialExplorationNoise;
-    auto lowerBound = _k->_variables[varIdx]->_lowerBound;
-    auto upperBound = _k->_variables[varIdx]->_upperBound;
-    float scale = (upperBound - lowerBound) * 0.5;
-    float shift = (upperBound + lowerBound) * 0.5;
-
-    // Checking correct noise configuration
-    if (sigma <= 0.0f) KORALI_LOG_ERROR("Provided initial noise (%f) for action variable %lu is not defined or negative.\n", sigma, varIdx);
-
-    // Tanh mask for Mean
-    _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Scale"][i + 1] = scale;
-    _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Shift"][i + 1] = shift;
-    _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Tanh Mask"][i + 1] = true;
-    _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Softplus Mask"][i + 1] = false;
-
-    // Softplus mask for Sigma
-    _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Scale"][_problem->_actionVectorSize + i + 1] = sigma * 2.0f;
-    _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Shift"][_problem->_actionVectorSize + i + 1] = 0.0f;
-    _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Tanh Mask"][_problem->_actionVectorSize + i + 1] = false;
-    _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Softplus Mask"][_problem->_actionVectorSize + i + 1] = true;
+    _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Scale"][i + 1] = _policyParameterScaling[i];
+    _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Shift"][i + 1] = _policyParameterShifting[i];
+    _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Transformation Mask"][i + 1] = _policyParameterTransformationMasks[i];
   }
 
   // Running initialization to verify that the configuration is correct
@@ -77,8 +60,8 @@ void VRACER::initializeAgent()
   _criticPolicyProblem = dynamic_cast<problem::SupervisedLearning *>(_criticPolicyExperiment._problem);
   _criticPolicyLearner = dynamic_cast<solver::learner::DeepSupervisor *>(_criticPolicyExperiment._solver);
 
-  // Init statistics
-  _statisticsAverageActionSigmas.resize(_problem->_actionVectorSize);
+  _maxMiniBatchPolicyMean.resize(_problem->_actionVectorSize);
+  _maxMiniBatchPolicyStdDev.resize(_problem->_actionVectorSize);
 }
 
 void VRACER::trainPolicy()
@@ -112,6 +95,12 @@ void VRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
 
   const size_t miniBatchSize = miniBatch.size();
 
+  for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+  {
+    _maxMiniBatchPolicyMean[i] = 0.0f;
+    _maxMiniBatchPolicyStdDev[i] = 0.0f;
+  }
+
 #pragma omp parallel for
   for (size_t b = 0; b < miniBatchSize; b++)
   {
@@ -137,7 +126,9 @@ void VRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
     if (_isOnPolicyVector[expId])
     {
       // Qret for terminal state is just reward
-      float Qret = _rewardVector[expId] * _rewardRescalingSdev;
+      //float Qret = _rewardVector[expId] * _rewardRescalingSdev;
+      float Qret = calculateReward(_featureVector[expId]);
+      //float Qret = getScaledReward(_rewardVector[expId]);
 
       // If experience is non-terminal, add Vtbc
       if (_terminationVector[expId] == e_nonTerminal)
@@ -174,7 +165,12 @@ void VRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
 
     // Compute statistics
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
-      _statisticsAverageActionSigmas[i] += curPolicy.actionSigmas[i];
+      _statisticsAverageActionSigmas[i] += expPolicy.distributionParameters[_problem->_actionVectorSize + i];
+    for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+    {
+      if (std::abs(expPolicy.distributionParameters[i]) > _maxMiniBatchPolicyMean[i]) _maxMiniBatchPolicyMean[i] = std::abs(expPolicy.distributionParameters[i]);
+      if (std::abs(expPolicy.distributionParameters[_problem->_actionVectorSize + i]) > _maxMiniBatchPolicyStdDev[i]) _maxMiniBatchPolicyStdDev[i] = std::abs(expPolicy.distributionParameters[_problem->_actionVectorSize + i]);
+    }
 
     // Set Gradient of Loss as Solution
     _criticPolicyProblem->_solutionData[b] = gradientLoss;
@@ -202,8 +198,7 @@ std::vector<policy_t> VRACER::runPolicy(const std::vector<std::vector<std::vecto
     policyVector[b].stateValue = evaluation[b][0];
 
     // Getting distribution parameters
-    policyVector[b].actionMeans.assign(evaluation[b].begin() + 1, evaluation[b].begin() + _problem->_actionVectorSize + 1);
-    policyVector[b].actionSigmas.assign(evaluation[b].begin() + _problem->_actionVectorSize + 1, evaluation[b].end());
+    policyVector[b].distributionParameters.assign(evaluation[b].begin() + 1, evaluation[b].end());
   }
 
   return policyVector;
@@ -221,16 +216,17 @@ void VRACER::setAgentPolicy(const knlohmann::json &hyperparameters)
   _criticPolicyLearner->setHyperparameters(hyperparameters["Policy"].get<std::vector<float>>());
 }
 
+void VRACER::resetAgentOptimizers()
+{
+  _criticPolicyLearner->resetOptimizer();
+}
+
 void VRACER::printAgentInformation()
 {
-  _k->_logger->logInfo("Normal", "Critic Information:\n");
-  _k->_logger->logInfo("Normal", " + Average Action Noise (Sigma) in Mini-Batch: \n");
-  for (size_t i = 0; i < _problem->_actionVectorSize; ++i) _k->_logger->logInfo("Normal", " +  [ %f ]\n", _statisticsAverageActionSigmas[i]);
-
-  _k->_logger->logInfo("Normal", "Neural Network Information:\n");
-  _criticPolicyExperiment._logger->_verbosityLevel = _k->_logger->_verbosityLevel;
-  _criticPolicyExperiment._solver->printGenerationAfter();
-  _criticPolicyExperiment._logger->setVerbosityLevel("Silent");
+  _k->_logger->logInfo("Normal", " + [VRACER] Policy Learning Rate: %.3e\n", _currentLearningRate);
+  _k->_logger->logInfo("Normal", " + [VRACER] Max Policy Parameters:\n");
+  for (size_t i = 0; i < _problem->_actionVectorSize; i++)
+    _k->_logger->logInfo("Normal", " + [VRACER] Action %lu - N(%.3e,%.3e)\n", i, _maxMiniBatchPolicyMean[i], _maxMiniBatchPolicyStdDev[i]);
 }
 
 } // namespace continuous

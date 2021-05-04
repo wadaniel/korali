@@ -15,7 +15,17 @@ double Weibull::getDensity(const double x) const
 double Weibull::getLogDensity(const double x) const
 {
   if (x < 0) return -INFINITY;
-  return _aux + (_scale - 1) * log(x) - pow((x / _scale), _shape);
+  return _aux + (_scale - 1.) * std::log(x) - std::pow((x / _scale), _shape);
+}
+
+double Weibull::getLogDensityGradient(const double x) const
+{
+  return ((_scale - 1.) - _shape * std::pow((x / _scale), _shape)) / x;
+}
+
+double Weibull::getLogDensityHessian(const double x) const
+{
+  return ((1. - _scale) + _shape * std::pow((x / _scale), _shape) - _shape * _shape * std::pow((x / _scale), _shape)) / (x * x);
 }
 
 double Weibull::getRandomNumber()

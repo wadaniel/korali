@@ -55,8 +55,8 @@ e = korali.Experiment()
 
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = env
-e["Problem"]["Training Reward Threshold"] = 400
-e["Problem"]["Policy Testing Episodes"] = 20
+e["Problem"]["Training Reward Threshold"] = 600
+e["Problem"]["Policy Testing Episodes"] = 1
 e["Problem"]["Actions Between Policy Updates"] = 5
 e["Problem"]["Observations"]["States"] = obsstates
 e["Problem"]["Observations"]["Actions"] = obsactions
@@ -126,13 +126,13 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tan
 ### Defining Termination Criteria
 
 #e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 450
-e["Solver"]["Termination Criteria"]["Max Experiences"] = 1e6
+e["Solver"]["Termination Criteria"]["Max Experiences"] = 10e6
 
 ### Setting file output configuration
 
 e["File Output"]["Enabled"] = True
-e["File Output"]["Frequency"] = 100
-e["File Output"]["Path"] = '_korali_results_f2_z20_single_wlin_4'
+e["File Output"]["Frequency"] = 10000
+e["File Output"]["Path"] = '_korali_results_continuous'
 
 ### Running Experiment
 

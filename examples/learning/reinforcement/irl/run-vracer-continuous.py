@@ -101,7 +101,7 @@ e["Solver"]["Rewardfunction Learning Rate"] = 1e-4
 e["Solver"]["Mini Batch"]["Size"] = 256
 
 e["Solver"]["Updates Between Reward Rescaling"] = 0 # No reward rescaling
-e["Solver"]["Demonstration Batch Size"] = 20
+e["Solver"]["Demonstration Batch Size"] = 10
 e["Solver"]["Background Batch Size"] = 20
 e["Solver"]["Use Fusion Distribution"] = False
 e["Solver"]["Experiences Between Partition Function Statistics"] = 100000

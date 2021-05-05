@@ -188,6 +188,7 @@ void Agent::initialize()
   _featureWeights.resize(_problem->_featureVectorSize, 1.0 / (float)_problem->_featureVectorSize);
   _featureWeightGradient.resize(_problem->_featureVectorSize, 0.0);
   _softMaxFeatureWeights.resize(_problem->_featureVectorSize, 1.0 / (float)_problem->_featureVectorSize);
+  if (_problem->_numberObservedTrajectories < _demonstrationBatchSize) KORALI_LOG_ERROR("Demonstration Batch Size (%zu) must be smaller than total number of observed trajectories (%zu).\n", _demonstrationBatchSize, _problem->_numberObservedTrajectories);
 }
 
 void Agent::runGeneration()
@@ -560,7 +561,7 @@ void Agent::partitionFunctionStat()
   std::vector<std::vector<float>> stats;
   std::vector<float> logpf(_backgroundSampleSize);
   std::vector<float> fusionLogpf(_backgroundSampleSize);
-  
+
   // Calculate cumulative rewards for background batch
   std::vector<float> cumulativeRewardsBackgroundBatch(_backgroundSampleSize, 0.0);
 #pragma omp parallel for
@@ -599,7 +600,6 @@ void Agent::partitionFunctionStat()
 #pragma omp parallel for
   for (size_t batchSize = 1; batchSize <= _backgroundSampleSize; ++batchSize)
   {
-
     // Get background trajectory log probabilities
     std::vector<std::vector<float>> backgroundTrajectoryLogProbabilities(batchSize, std::vector<float>(batchSize + 1));
     for (size_t m = 0; m < batchSize; ++m)
@@ -618,7 +618,7 @@ void Agent::partitionFunctionStat()
         demoTrajectoryLogProbabilities[n][i] = _demonstrationTrajectoryLogProbabilities[obsIdx][i];
       }
     }
-    
+
     // Calculate importance weights background batch
     std::vector<float> backgroundBatchLogImportanceWeights(batchSize);
     std::vector<float> fusionBackgroundBatchLogImportanceWeights(batchSize);
@@ -638,7 +638,7 @@ void Agent::partitionFunctionStat()
       // Calculate fusion importance weight (1/K sum_k q_k(T))^-1
       fusionDemoBatchLogImportanceWeights[n] = std::log((float)batchSize + 1) - logSumExp(demoTrajectoryLogProbabilities[n]);
     }
-    
+
     // Preparation for calculation of log partition function with log-sum-exp trick
     float maxExp = -Inf;
     for (size_t m = 0; m < batchSize; ++m)
@@ -736,7 +736,7 @@ void Agent::updateRewardFunction()
 
       float cumReward = 0.0;
       for (size_t t = 0; t < observedTrajectoryLength; ++t)
-        cumReward += calculateReward(_problem->_observationsFeatures[n][t]);
+        cumReward += calculateReward(_problem->_observationsFeatures[demIdx][t]);
       cumulativeRewardsDemonstrationBatch[n] = cumReward;
 
       demonstrationTrajectoryLogProbabilities[n][0] = _demonstrationTrajectoryLogProbabilities[demIdx][0];
@@ -1147,7 +1147,7 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode, std::vect
 
     if (isDefined(episode[expId], "Policy", "Action Index"))
       expPolicy.actionIndex = episode[expId]["Policy"]["Action Index"].get<size_t>();
-    
+
     if (isDefined(episode[expId], "Policy", "Distribution Parameters"))
       expPolicy.distributionParameters = episode[expId]["Policy"]["Distribution Parameters"].get<std::vector<float>>();
 
@@ -1214,8 +1214,7 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode, std::vect
   for (ssize_t expId = endId; expId >= startId; expId--)
   {
     // Calculating retrace value with the discount factor. Importance weight is 1.0f because the policy is current.
-    retV = _discountFactor * retV + calculateReward(episode[expId]["Features"].get<std::vector<float>>());
-    //retV = _discountFactor * retV + getScaledReward(_rewardVector[expId]);
+    retV = _discountFactor * retV + _rewardVector[expId];
 
     // Setting initial retrace value in the experience's cache
     _retraceValueVector[expId] = retV;
@@ -1359,7 +1358,6 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
     // Now iterating backwards to calculate the rest of vTbc
     for (ssize_t curId = endId; curId >= startId; curId--)
     {
-
       // Getting current reward, action, and state
       const float curReward = calculateReward(_featureVector[curId]);
 

@@ -164,13 +164,12 @@ void Continuous::initializeAgent()
   // Set MLE sigma estimates
   for (size_t k = 0; k < _problem->_actionVectorSize; ++k)
   {
-    _observationsApproximatorSigmas[k] = std::sqrt(squaredErrors[k] / (float) _problem->_totalObservedStateActionPairs);
+    _observationsApproximatorSigmas[k] = std::sqrt(squaredErrors[k] / (float)_problem->_totalObservedStateActionPairs);
     _k->_logger->logInfo("Normal", "    + Sigma    [%zu] %f \n", k, _observationsApproximatorSigmas[k]);
   }
 
   gsl_matrix_free(X);
   gsl_matrix_free(Y);
-
 }
 
 void Continuous::getAction(korali::Sample &sample)
@@ -596,7 +595,7 @@ float Continuous::evaluateTrajectoryLogProbability(const std::vector<std::vector
   {
     auto evaluation = runPolicy({{states[t]}})[0];
     for (size_t d = 0; d < _problem->_actionVectorSize; ++d)
-      trajectoryLogProbability += normalLogDensity(actions[t][d], evaluation.distributionParameters[d], evaluation.distributionParameters[ _problem->_actionVectorSize + d]);
+      trajectoryLogProbability += normalLogDensity(actions[t][d], evaluation.distributionParameters[d], evaluation.distributionParameters[_problem->_actionVectorSize + d]);
   }
 
   return trajectoryLogProbability;

@@ -287,8 +287,6 @@ void ReinforcementLearning::runTestingEpisode(Sample &agent)
   // Running environment using the last policy only
   while (agent["Termination"] == "Non Terminal")
   {
-
-
     getAction(agent);
     runEnvironment(agent);
     testingReward += _agent->calculateReward(agent["Features"].get<std::vector<float>>());

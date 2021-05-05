@@ -49,7 +49,7 @@ if get_option('mpi')
   mpi_dep = dependency('mpi', language: 'cpp', required: true)
 endif
 if get_option('openmp')
-  openmp_dep = dependency('openmp', required: true)
+  openmp_dep = dependency('openmp', required: false)
 endif
 korali_deps += [mpi_dep, openmp_dep]
 
@@ -88,7 +88,7 @@ korali_conf.set('_KORALI_USE_CUDNN', cudnn_dep.found(),
 )
 summary({
   'MPI': get_option('mpi'),
-  'OpenMP': get_option('openmp'),
+  'OpenMP': openmp_dep.found(),
   'oneDNN': onednn_dep.found(),
   'cuDNN': cudnn_dep.found(),
   }, section: 'Dependencies')

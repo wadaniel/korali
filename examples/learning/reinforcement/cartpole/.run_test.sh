@@ -17,7 +17,7 @@ rm -rf __test-*; check_result
 
 for file in *.py
 do
- sed -e 's%Defining Termination Criteria%Defining Termination Criteria\ne["Solver"]["Termination Criteria"]["Max Generations"] = 20\n%g' \
+ sed -e 's%k.run(e)%k.run(e)\nif int(e["Current Generation"]) == 1000:\n\tprint("Test failed, Cartpole did not converge", file=sys.stderr)\n\tsys.exit(-1)\n%g' \
         ${file} > __test-${file}; check_result
 done
 

@@ -10,7 +10,7 @@
 
 #include <functional>
 #include <map>
-#ifdef __OPENMP
+#ifdef _OPENMP
 #include <omp.h>
 #endif
 
@@ -62,7 +62,7 @@ class kCache
   /**
    * @brief Lock for thread-safe operation
    */
-#ifdef __OPENMP
+#ifdef _OPENMP
   omp_lock_t _lock;
 #endif
 
@@ -74,7 +74,7 @@ class kCache
   {
     _timer = &_maxAge;
     _maxAge = 0;
-#ifdef __OPENMP
+#ifdef _OPENMP
     omp_init_lock(&_lock);
 #endif
   }
@@ -104,12 +104,12 @@ class kCache
    */
   void set(const keyType &key, const valType &val)
   {
-#ifdef __OPENMP
+#ifdef _OPENMP
     omp_set_lock(&_lock);
 #endif
     _data[key].value = val;
     _data[key].time = *_timer;
-#ifdef __OPENMP
+#ifdef _OPENMP
     omp_unset_lock(&_lock);
 #endif
   }
@@ -122,12 +122,12 @@ class kCache
    */
   void set(const keyType &key, const valType &val, const timerType &time)
   {
-#ifdef __OPENMP
+#ifdef _OPENMP
     omp_set_lock(&_lock);
 #endif
     _data[key].value = val;
     _data[key].time = time;
-#ifdef __OPENMP
+#ifdef _OPENMP
     omp_unset_lock(&_lock);
 #endif
   }
@@ -139,19 +139,19 @@ class kCache
    */
   bool contains(const keyType &key)
   {
-#ifdef __OPENMP
+#ifdef _OPENMP
     omp_set_lock(&_lock);
 #endif
     if (_data.count(key) == 0)
     {
-#ifdef __OPENMP
+#ifdef _OPENMP
       omp_unset_lock(&_lock);
 #endif
       return false;
     }
 
     timerType age = *_timer - _data[key].time;
-#ifdef __OPENMP
+#ifdef _OPENMP
     omp_unset_lock(&_lock);
 #endif
 
@@ -167,11 +167,11 @@ class kCache
    */
   valType get(const keyType &key)
   {
-#ifdef __OPENMP
+#ifdef _OPENMP
     omp_set_lock(&_lock);
 #endif
     valType val = _data[key].value;
-#ifdef __OPENMP
+#ifdef _OPENMP
     omp_unset_lock(&_lock);
 #endif
     return val;

@@ -34,7 +34,7 @@ e["Variables"][4]["Name"] = "Force"
 e["Variables"][4]["Type"] = "Action"
 e["Variables"][4]["Lower Bound"] = -10.0
 e["Variables"][4]["Upper Bound"] = +10.0
-e["Variables"][4]["Initial Exploration Noise"] = 2.0
+e["Variables"][4]["Initial Exploration Noise"] = 1.0
 
 ### Defining Agent Configuration 
 
@@ -42,17 +42,22 @@ e["Solver"]["Type"] = "Agent / Continuous / VRACER"
 e["Solver"]["Mode"] = "Training"
 e["Solver"]["Experiences Between Policy Updates"] = 10
 e["Solver"]["Episodes Per Generation"] = 1
+
+e["Solver"]["Experience Replay"]["Start Size"] = 1000
+e["Solver"]["Experience Replay"]["Maximum Size"] = 10000
+
+e["Solver"]["Discount Factor"] = 0.99
 e["Solver"]["Learning Rate"] = 1e-3
 e["Solver"]["Mini Batch"]["Size"] = 32
 
-e["Solver"]["State Rescaling"]["Enabled"] = True
-e["Solver"]["Reward"]["Rescaling"]["Enabled"] = True
+e["Solver"]["State Rescaling"]["Enabled"] = False
+e["Solver"]["Reward"]["Rescaling"]["Enabled"] = False
 e["Solver"]["Reward"]["Rescaling"]["Frequency"] = 1000
 
 ### Configuring the neural network and its hidden layers
 
 e["Solver"]["Neural Network"]["Engine"] = "OneDNN"
-e["Solver"]["Neural Network"]["Optimizer"] = "Adam"
+e["Solver"]["Neural Network"]["Optimizer"] = "AdaBelief"
 
 e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear"
 e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 32

@@ -221,7 +221,7 @@ void @className::forwardData(const size_t t)
     // Performing Wx computation
     Map<MatrixXf> matA(_weightValues, IC, OC);
     Map<MatrixXf> matB(_prevLayer->_outputValues, IC, N);
-    Map<MatrixXf> matC(_outputValues, N, OC);
+    Map<MatrixXf> matC(_outputValues, OC, N);
 
     matC = matA.transpose() * matB;
 
@@ -286,7 +286,7 @@ void @className::backwardData(const size_t t)
     // Backward propagating Wx+b operation
     Map<MatrixXf> matA(_weightValues, IC, OC);
     Map<MatrixXf> matB(_outputGradient, OC, N);
-    Map<MatrixXf> matC(_prevLayer->_outputGradient, N, IC);
+    Map<MatrixXf> matC(_prevLayer->_outputGradient, IC, N);
 
     matC = matA * matB;
   }
@@ -339,7 +339,7 @@ void @className::backwardHyperparameters(size_t t)
     // Performing Weight gradient calculation
     Map<MatrixXf> matA(_prevLayer->_outputValues, IC, N);
     Map<MatrixXf> matB(_outputGradient, OC, N);
-    Map<MatrixXf> matC(_weightGradient, OC, IC);
+    Map<MatrixXf> matC(_weightGradient, IC, OC);
 
     matC = matA * matB.transpose();
 

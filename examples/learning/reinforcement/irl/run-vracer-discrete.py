@@ -56,8 +56,8 @@ e = korali.Experiment()
 e["Problem"]["Type"] = "Reinforcement Learning / Discrete"
 e["Problem"]["Possible Actions"] = [ [ -10.0 ], [ -5.0 ], [ -1.0 ], [ 0.0 ], [ 1.0 ], [ 5.0 ], [ 10.0 ] ]
 e["Problem"]["Environment Function"] = env
-e["Problem"]["Training Reward Threshold"] = 400
-e["Problem"]["Policy Testing Episodes"] = 20
+e["Problem"]["Training Reward Threshold"] = 600
+e["Problem"]["Policy Testing Episodes"] = 1
 e["Problem"]["Actions Between Policy Updates"] = 5
 e["Problem"]["Observations"]["States"] = obsstates
 e["Problem"]["Observations"]["Actions"] = obsactions
@@ -104,7 +104,7 @@ e["Solver"]["Mini Batch"]["Size"] = 256
 e["Solver"]["Updates Between Reward Rescaling"] = 0 # No reward rescaling
 e["Solver"]["Demonstration Batch Size"] = 10
 e["Solver"]["Background Batch Size"] = 20
-e["Solver"]["Use Fusion Distribution"] = True
+e["Solver"]["Use Fusion Distribution"] = False
 e["Solver"]["Experiences Between Partition Function Statistics"] = 100000
 
 ### Configuring the neural network and its hidden layers
@@ -127,13 +127,13 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tan
 ### Defining Termination Criteria
 
 #e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 450
-e["Solver"]["Termination Criteria"]["Max Experiences"] = 1e6
+e["Solver"]["Termination Criteria"]["Max Experiences"] = 10e6
 
 ### Setting file output configuration
 
 e["File Output"]["Enabled"] = True
-e["File Output"]["Frequency"] = 100
-e["File Output"]["Path"] = '_korali_results_f2_z20_discrete'
+e["File Output"]["Frequency"] = 1000
+e["File Output"]["Path"] = '_korali_results_discrete'
 
 ### Running Experiment
 

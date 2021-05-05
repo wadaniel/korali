@@ -54,7 +54,7 @@ e = korali.Experiment()
 ### Defining the Cartpole problem's configuration
 
 e["Problem"]["Type"] = "Reinforcement Learning / Discrete"
-e["Problem"]["Possible Actions"] = [ [ -10.0 ], [ -5.0 ], [ -1.0 ], [ 1.0 ], [ 5.0 ], [ 10.0 ] ]
+e["Problem"]["Possible Actions"] = [ [ -10.0 ], [ -5.0 ], [ -1.0 ], [ 0.0 ], [ 1.0 ], [ 5.0 ], [ 10.0 ] ]
 e["Problem"]["Environment Function"] = env
 e["Problem"]["Training Reward Threshold"] = 400
 e["Problem"]["Policy Testing Episodes"] = 20
@@ -99,17 +99,18 @@ e["Solver"]["Experience Replay"]["Maximum Size"] = 131072
 e["Solver"]["Discount Factor"] = 0.99
 e["Solver"]["Learning Rate"] = 1e-4
 e["Solver"]["Rewardfunction Learning Rate"] = 1e-4
-e["Solver"]["Mini Batch Size"] = 256
+e["Solver"]["Mini Batch"]["Size"] = 256
 
 e["Solver"]["Updates Between Reward Rescaling"] = 0 # No reward rescaling
-e["Solver"]["Demonstration Batch Size"] = 20
+e["Solver"]["Demonstration Batch Size"] = 10
 e["Solver"]["Background Batch Size"] = 20
-e["Solver"]["Use Fusion Distribution"] = False
+e["Solver"]["Use Fusion Distribution"] = True
 e["Solver"]["Experiences Between Partition Function Statistics"] = 100000
 
 ### Configuring the neural network and its hidden layers
 
 e["Solver"]["Neural Network"]["Engine"] = "OneDNN"
+e["Solver"]["Neural Network"]["Optimizer"] = "Adam"
 
 e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear"
 e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 128

@@ -51,11 +51,6 @@ struct policy_t
   size_t actionIndex;
 
   /**
-  * @brief [Discrete] Contains the probabilities of discrete actions
-  */
-  std::vector<float> actionProbabilities;
-
-  /**
   * @brief Contains the parameters that define the policy distribution used to produced the action.
   *        For continuous policies, it depends on the distribution selected.
   *        For discrete policies, it contains the categorical probability of every action.

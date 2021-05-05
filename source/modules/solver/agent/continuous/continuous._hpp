@@ -58,7 +58,7 @@ class Continuous : public Agent
   * @return The log probability of the trajectory.
   */
   virtual float evaluateTrajectoryLogProbability(const std::vector<std::vector<float>> &states, const std::vector<std::vector<float>> &actions, const std::vector<float> &policyHyperparameter) override;
- 
+
   /**
   * @brief Evaluates the log probability of a trajectory given linear policy and standad deviations of gaussian errors.
   * @param states Vector of states in the trajectory.

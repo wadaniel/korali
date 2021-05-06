@@ -1,5 +1,6 @@
 @startIncludeGuard
 
+#include "config.hpp"
 #include "modules/distribution/univariate/uniform/uniform.hpp"
 #include "modules/module.hpp"
 

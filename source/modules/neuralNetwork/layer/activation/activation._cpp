@@ -189,10 +189,6 @@ void @className::forwardData(const size_t t)
     }
   }
 
-#if defined(_KORALI_USE_ONEDNN) || defined(_KORALI_USE_CUDNN)
-  int t = _nn->_currentTimestep;
-#endif
-
 #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
   {
@@ -294,7 +290,6 @@ void @className::backwardData(const size_t t)
 #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
   {
-     int t = _nn->_currentTimestep;
     // Primitive arguments.
     _backwardActivationArgs[DNNL_ARG_DIFF_DST] = _outputGradientMem[t];             // Input
     _backwardActivationArgs[DNNL_ARG_SRC] = _prevLayer->_outputMem[t];              // Input
@@ -308,8 +303,6 @@ void @className::backwardData(const size_t t)
 #ifdef _KORALI_USE_CUDNN
   if (_nn->_engine == "CuDNN")
   {
-    int t = _nn->_currentTimestep;
-
     if (_function == "Elementwise/Linear")
     {
       cudaErrCheck(cudaMemcpy(

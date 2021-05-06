@@ -54,20 +54,24 @@ endif
 korali_deps += [mpi_dep, openmp_dep]
 
 onednn_dep = null_dep
-if get_option('onednn_path') != ''
+if get_option('onednn') or get_option('onednn_path') != ''
   d = []
-  d += get_option('onednn_path') / 'lib'
-  d += get_option('onednn_path') / 'lib64'
-  onednn_dep = cpp.find_library('dnnl', dirs: d, required: true)
+  if get_option('onednn_path') != ''
+    d += get_option('onednn_path') / 'lib'
+    d += get_option('onednn_path') / 'lib64'
+  endif
+  onednn_dep = cpp.find_library('dnnl', dirs: d, version : '>=2.0', required: true)
 endif
 korali_deps += onednn_dep
 
 cudnn_dep = null_dep
-if get_option('cudnn_path') != ''
+if get_option('cudnn') or get_option('cudnn_path') != ''
   korali_deps += dependency('cuda', required: true)
   d = []
-  d += get_option('cudnn_path') / 'lib'
-  d += get_option('cudnn_path') / 'lib64'
+  if get_option('cudnn_path') != ''
+    d += get_option('cudnn_path') / 'lib'
+    d += get_option('cudnn_path') / 'lib64'
+  endif
   cudnn_dep = cpp.find_library('cudnn', dirs: d, required: true)
 endif
 korali_deps += cudnn_dep

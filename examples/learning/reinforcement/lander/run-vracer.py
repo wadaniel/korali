@@ -46,6 +46,8 @@ e["Solver"]["Experiences Between Policy Updates"] = 1
 e["Solver"]["Discount Factor"] = 0.99
 e["Solver"]["Learning Rate"] = 0.0001
 e["Solver"]["Mini Batch"]["Size"] = 256
+e["Solver"]["Experience Replay"]["Start Size"] = 1000
+e["Solver"]["Experience Replay"]["Maximum Size"] = 10000
 
 ### Configuring the neural network and its hidden layers
 

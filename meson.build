@@ -45,9 +45,15 @@ korali_deps += dependency('pybind11', fallback: ['pybind11', 'pybind11_dep'], re
 # process optional korali dependencies
 mpi_dep = null_dep
 openmp_dep = null_dep
+
 if get_option('mpi')
-  mpi_dep = dependency('mpi', language: 'cpp', required: true)
+  mpi_dep = dependency('mpich')
+  
+  if mpi_dep.found() == false
+   mpi_dep = dependency('mpi', language: 'cpp', required: true)  
+  endif
 endif
+
 if get_option('openmp')
   openmp_dep = dependency('openmp', required: false)
 endif
@@ -60,7 +66,7 @@ if get_option('onednn') or get_option('onednn_path') != ''
     d += get_option('onednn_path') / 'lib'
     d += get_option('onednn_path') / 'lib64'
   endif
-  onednn_dep = cpp.find_library('dnnl', dirs: d, version : '>=2.0', required: true)
+  onednn_dep = cpp.find_library('dnnl', dirs: d, required: true)
 endif
 korali_deps += onednn_dep
 

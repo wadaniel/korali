@@ -38,6 +38,9 @@ e["Solver"]["Mini Batch"]["Size"] = 256
 
 ### Setting Experience Replay and REFER settings
 
+e["Solver"]["Experience Replay"]["Start Size"] = 32768
+e["Solver"]["Experience Replay"]["Maximum Size"] = 131072
+e["Solver"]["Experience Replay"]["Off Policy"]["Cutoff Scale"] = 5.0
 e["Solver"]["Experience Replay"]["Off Policy"]["Annealing Rate"] = 5.0e-8
 e["Solver"]["Experience Replay"]["Off Policy"]["Cutoff Scale"] = 5.0
 e["Solver"]["Experience Replay"]["Off Policy"]["REFER Beta"] = 0.3

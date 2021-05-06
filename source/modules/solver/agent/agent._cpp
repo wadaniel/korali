@@ -38,14 +38,6 @@ void Agent::initialize()
   mt = new std::mt19937(rd());
   mt->seed(_k->_randomSeed++);
 
-  // If not set, using heurisitc for maximum size
-  if (_experienceReplayMaximumSize == 0)
-    _experienceReplayMaximumSize = std::pow(2, 14) * std::sqrt(_problem->_stateVectorSize + _problem->_actionVectorSize);
-
-  // If not set, filling ER before learning
-  if (_experienceReplayStartSize == 0)
-    _experienceReplayStartSize = _experienceReplayMaximumSize;
-
   //  Pre-allocating space for the experience replay memory
   _stateVector.resize(_experienceReplayMaximumSize);
   _actionVector.resize(_experienceReplayMaximumSize);
@@ -145,6 +137,7 @@ void Agent::initialize()
   _sessionEpisodeCount = 0;
   _sessionGeneration = 1;
   _sessionPolicyUpdateCount = 0;
+  _sessionRewardUpdateCount = 0;
 
   // Calculating how many more experiences do we need in this session to reach the starting size
   _sessionExperiencesUntilStartSize = _stateVector.size() > _experienceReplayStartSize ? 0 : _experienceReplayStartSize - _stateVector.size();
@@ -239,14 +232,13 @@ void Agent::trainingGeneration()
     if (_experienceCount >= _experienceReplayStartSize)
     {
       // Update the reward function based on guided cost learning
-      if (_sessionExperienceCount > (_experiencesBetweenRewardUpdates * _sessionPolicyUpdateCount + _sessionExperiencesUntilStartSize))
+      if (_sessionExperienceCount > (_experiencesBetweenRewardUpdates * _sessionRewardUpdateCount + _sessionExperiencesUntilStartSize))
       {
-        updateBackgroundBatch();
-        updateDemonstrationBatch();
         updateRewardFunction();
+        _sessionRewardUpdateCount++;
       }
 
-      if (_backgroundSampleSize >= (_statisticLogPartitionFunction.size()) * (_backgroundBatchSize * 10))
+      if (_experienceCount > _experiencesBetweenPartitionFunctionStatistics * _statisticLogPartitionFunction.size())
       {
         printf("bss %zu, slpf %zu\n", _backgroundSampleSize, _statisticLogPartitionFunction.size());
         partitionFunctionStat();
@@ -543,7 +535,7 @@ void Agent::updateDemonstrationBatch()
       for (size_t i = 0; i < _problem->_numberObservedTrajectories; ++i)
       {
         if (_demonstrationTrajectoryLogProbabilities[i].size() != _backgroundSampleSize)
-          KORALI_LOG_ERROR("Sth strange, demo trans log probabilites vector (%zu) shall be of size background sample size (%zu)\n", _demonstrationTrajectoryLogProbabilities[i].size(), _backgroundSampleSize);
+          KORALI_LOG_ERROR("Something strange, demo trans log probabilites vector (%zu) shall be of size background sample size (%zu)\n", _demonstrationTrajectoryLogProbabilities[i].size(), _backgroundSampleSize);
         _demonstrationTrajectoryLogProbabilities[i].push_back(evaluateTrajectoryLogProbability(_problem->_observationsStates[i], _problem->_observationsActions[i], _backgroundPolicyHyperparameter[_backgroundSampleSize - 1]));
       }
     }
@@ -1027,6 +1019,12 @@ void Agent::attendAgent(size_t agentId)
         _trainingBestPolicy = _agents[agentId]["Policy Hyperparameters"];
       }
 
+      if (_experienceCount >= _experienceReplayStartSize)
+      {
+        updateBackgroundBatch();
+        updateDemonstrationBatch();
+      }
+
       // If the policy has exceeded the threshold during training, we gather its statistics
       if (_agents[agentId]["Tested Policy"] == true)
       {
@@ -1091,7 +1089,8 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode, std::vect
     _actionVector.add(action);
 
     // Getting reward
-    float reward = calculateReward(episode[expId]["Features"].get<std::vector<float>>());
+    //float reward = calculateReward(episode[expId]["Features"].get<std::vector<float>>());
+    float reward = episode[expId]["Reward"].get<float>();
 
     // If the action is outside the boundary, applying penalization factor
     if (_rewardOutboundPenalizationEnabled == true)
@@ -1160,7 +1159,8 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode, std::vect
     _episodePosVector.add(expId);
 
     // Keeping statistics
-    cumulativeReward += calculateReward(episode[expId]["Features"].get<std::vector<float>>());
+    //cumulativeReward += calculateReward(episode[expId]["Features"].get<std::vector<float>>());
+    cumulativeReward += _rewardVector[expId];
 
     // Adding placeholder for retrace value
     _retraceValueVector.add(0.0f);
@@ -1213,6 +1213,7 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode, std::vect
   for (ssize_t expId = endId; expId >= startId; expId--)
   {
     // Calculating retrace value with the discount factor. Importance weight is 1.0f because the policy is current.
+    //retV = _discountFactor * retV + calculateReward(episode[expId]["Features"].get<std::vector<float>>());
     retV = _discountFactor * retV + _rewardVector[expId];
 
     // Setting initial retrace value in the experience's cache
@@ -1358,7 +1359,8 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
     for (ssize_t curId = endId; curId >= startId; curId--)
     {
       // Getting current reward, action, and state
-      const float curReward = calculateReward(_featureVector[curId]);
+      //const float curReward = calculateReward(_featureVector[curId]);
+      const float curReward = _rewardVector[curId];
 
       // Calculating state value function
       const float curV = _stateValueVector[curId];

@@ -97,6 +97,11 @@ class Agent : public Solver
   size_t _sessionPolicyUpdateCount;
 
   /**
+   * @brief Session-specific reward update count. This is useful in case of restart: counters from the old session won't count
+   */
+  size_t _sessionRewardUpdateCount;
+
+  /**
    * @brief Session-specific counter that keeps track of how many experiences need to be obtained this session to reach the start training threshold.
    */
   size_t _sessionExperiencesUntilStartSize;

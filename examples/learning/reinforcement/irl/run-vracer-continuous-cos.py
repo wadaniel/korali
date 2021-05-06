@@ -52,7 +52,7 @@ e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = cosenv
 e["Problem"]["Training Reward Threshold"] = 501
 e["Problem"]["Policy Testing Episodes"] = 1
-#e["Problem"]["Actions Between Policy Updates"] = 1
+e["Problem"]["Actions Between Policy Updates"] = 5
 e["Problem"]["Observations"]["States"] = obsstates
 e["Problem"]["Observations"]["Actions"] = obsactions
 e["Problem"]["Observations"]["Features"] = obsfeatures
@@ -92,13 +92,13 @@ e["Solver"]["Experience Replay"]["Maximum Size"] = 131072
 
 e["Solver"]["Discount Factor"] = 0.99
 e["Solver"]["Learning Rate"] = 1e-4
-e["Solver"]["Rewardfunction Learning Rate"] = 1e-4
 e["Solver"]["Mini Batch"]["Size"] = 256
-e["Solver"]["Updates Between Reward Rescaling"] = 0
+e["Solver"]["Reward"]["Rescaling"]["Enabled"] = False
+e["Solver"]["State Rescaling"]["Enabled"] = False
 
 ### IRL related configuration
 
-e["Solver"]["Updates Between Reward Rescaling"] = 0 # No reward rescaling
+e["Solver"]["Rewardfunction Learning Rate"] = 1e-4
 e["Solver"]["Demonstration Batch Size"] = 10
 e["Solver"]["Background Batch Size"] = 20
 e["Solver"]["Use Fusion Distribution"] = False
@@ -123,15 +123,13 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tan
 
 ### Defining Termination Criteria
 
-#e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 450
 e["Solver"]["Termination Criteria"]["Max Experiences"] = 1e6
 
 ### Setting file output configuration
 
 e["File Output"]["Enabled"] = True
-e["File Output"]["Frequency"] = 100
-e["File Output"]["Path"] = '_korali_results_cos_z20_single_wlin_4'
-#e["File Output"]["Path"] = '_korali_results_cos_test'
+e["File Output"]["Frequency"] = 10000
+e["File Output"]["Path"] = '_korali_results_continuous_cos'
 
 ### Running Experiment
 

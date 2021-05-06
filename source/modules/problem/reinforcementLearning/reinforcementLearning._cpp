@@ -172,7 +172,8 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
       KORALI_LOG_ERROR("Environment reward returned an invalid value: %f\n", agent["Reward"].get<float>());
 
     // Storing experience's reward
-    episode["Experiences"][actionCount]["Reward"] = _agent->calculateReward(agent["Features"].get<std::vector<float>>());
+    //episode["Experiences"][actionCount]["Reward"] = _agent->calculateReward(agent["Features"].get<std::vector<float>>());
+    episode["Experiences"][actionCount]["Reward"] = agent["Reward"].get<float>();
 
     // Sanity checks for reward
     if (std::isfinite(episode["Experiences"][actionCount]["Reward"].get<float>()) == false)

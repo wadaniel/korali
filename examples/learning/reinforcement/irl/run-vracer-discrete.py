@@ -98,10 +98,13 @@ e["Solver"]["Experience Replay"]["Maximum Size"] = 131072
 
 e["Solver"]["Discount Factor"] = 0.99
 e["Solver"]["Learning Rate"] = 1e-4
-e["Solver"]["Rewardfunction Learning Rate"] = 1e-4
 e["Solver"]["Mini Batch"]["Size"] = 256
+e["Solver"]["Reward"]["Rescaling"]["Enabled"] = False
+e["Solver"]["State Rescaling"]["Enabled"] = False
 
-e["Solver"]["Updates Between Reward Rescaling"] = 0 # No reward rescaling
+### IRL related configuration
+
+e["Solver"]["Rewardfunction Learning Rate"] = 1e-4
 e["Solver"]["Demonstration Batch Size"] = 10
 e["Solver"]["Background Batch Size"] = 20
 e["Solver"]["Use Fusion Distribution"] = False
@@ -126,14 +129,13 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tan
 
 ### Defining Termination Criteria
 
-#e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 450
 e["Solver"]["Termination Criteria"]["Max Experiences"] = 10e6
 
 ### Setting file output configuration
 
 e["File Output"]["Enabled"] = True
-e["File Output"]["Frequency"] = 1000
-e["File Output"]["Path"] = '_korali_results_discrete'
+e["File Output"]["Frequency"] = 10000
+e["File Output"]["Path"] = '_korali_results_discrete2'
 
 ### Running Experiment
 

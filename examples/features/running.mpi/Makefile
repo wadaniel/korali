@@ -1,5 +1,5 @@
 BINARIES = run-tmcmc run-cmaes
-KORALICXX=$(shell python3 -m korali.cxx --compiler)
+CXX=mpic++
 KORALICFLAGS=`python3 -m korali.cxx --cflags`
 KORALILIBS=`python3 -m korali.cxx --libs`
 
@@ -8,13 +8,13 @@ KORALILIBS=`python3 -m korali.cxx --libs`
 all: $(BINARIES)
 
 $(BINARIES) : % : %.o _model/jacobi.o
-	$(KORALICXX) -o $@ $^ $(KORALILIBS)
+	$(CXX) -o $@ $^ $(KORALILIBS)
 
 _model/jacobi.o:
 	$(MAKE) -C _model all
 
 %.o: %.cpp
-	$(KORALICXX) -c $< $(KORALICFLAGS)
+	$(CXX) -c $< $(KORALICFLAGS)
 
 .PHONY: clean
 clean:

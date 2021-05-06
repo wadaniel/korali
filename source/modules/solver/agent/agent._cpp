@@ -91,8 +91,7 @@ void Agent::initialize()
 
     // If cutoff scale is not defined, use a heuristic value
     if (_experienceReplayOffPolicyCutoffScale < 0.0f)
-      _experienceReplayOffPolicyCutoffScale = std::sqrt(_problem->_actionVectorSize / 2.0f);
-    _experienceReplayOffPolicyCutoffScale = std::max(2.0f, _experienceReplayOffPolicyCutoffScale);
+      KORALI_LOG_ERROR("Expericne Replay Cutoff Scale must be larger 0.0");
 
     _experienceReplayOffPolicyCount = 0;
     _experienceReplayOffPolicyRatio = 0.0f;
@@ -299,6 +298,8 @@ void Agent::testingGeneration()
     testingAgents[agentId]["Module"] = "Problem";
     testingAgents[agentId]["Operation"] = "Run Testing Episode";
     testingAgents[agentId]["Policy Hyperparameters"] = _testingPolicy;
+    testingAgents[agentId]["State Rescaling"]["Means"] = _stateRescalingMeans;
+    testingAgents[agentId]["State Rescaling"]["Standard Deviations"] = _stateRescalingSigmas;
 
     KORALI_START(testingAgents[agentId]);
   }

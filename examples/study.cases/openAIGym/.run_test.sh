@@ -1,5 +1,12 @@
 #!/bin/bash
 
+
+###### Check OS ######
+
+if [ "$(uname)" == "Darwin" ]; then
+    exit
+fi
+
 ###### Auxiliar Functions and Variables #########
 
 source ../../../tests/functions.sh

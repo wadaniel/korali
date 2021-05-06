@@ -4,6 +4,6 @@
 # subdir('LAMMPS')
  subdir('lighthouse')
 # subdir('mujoco')
-# subdir('openAIGym')
+subdir('openAIGym')
 # subdir('RBCRelax')
 # subdir('RBCStretch')

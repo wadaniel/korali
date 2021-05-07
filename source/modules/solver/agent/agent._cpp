@@ -232,11 +232,11 @@ void Agent::trainingGeneration()
     if (_experienceCount >= _experienceReplayStartSize)
     {
       // Update the reward function based on guided cost learning
-      //if (_sessionExperienceCount > (_experiencesBetweenRewardUpdates * _sessionRewardUpdateCount + _sessionExperiencesUntilStartSize))
-      //{
-      //  updateRewardFunction();
-      //  _sessionRewardUpdateCount++;
-      //}
+      if (_sessionExperienceCount > (_experiencesBetweenRewardUpdates * _sessionRewardUpdateCount + _sessionExperiencesUntilStartSize))
+      {
+        updateRewardFunction();
+        _sessionRewardUpdateCount++;
+      }
 
       if (_experienceCount > _experiencesBetweenPartitionFunctionStatistics * _statisticLogPartitionFunction.size())
       {
@@ -1019,11 +1019,11 @@ void Agent::attendAgent(size_t agentId)
         _trainingBestPolicy = _agents[agentId]["Policy Hyperparameters"];
       }
 
-      //if (_experienceCount >= _experienceReplayStartSize)
-      //{
-      //  updateBackgroundBatch();
-      //  updateDemonstrationBatch();
-      //}
+      if (_experienceCount >= _experienceReplayStartSize)
+      {
+        updateBackgroundBatch();
+        updateDemonstrationBatch();
+      }
 
       // If the policy has exceeded the threshold during training, we gather its statistics
       if (_agents[agentId]["Tested Policy"] == true)
@@ -1080,7 +1080,6 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode, const std
   {
     // Getting state
     _stateVector.add(episode[expId]["State"].get<std::vector<float>>());
-    _actionVector.add(episode[expId]["Action"].get<std::vector<float>>());
     _featureVector.add(episode[expId]["Features"].get<std::vector<float>>());
     _policyVector.add(policyHyperparameters);
 
@@ -1089,8 +1088,7 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode, const std
     _actionVector.add(action);
 
     // Getting reward
-    //float reward = calculateReward(episode[expId]["Features"].get<std::vector<float>>());
-    float reward = episode[expId]["Reward"].get<float>();
+    float reward = calculateReward(episode[expId]["Features"].get<std::vector<float>>());
 
     // If the action is outside the boundary, applying penalization factor
     if (_rewardOutboundPenalizationEnabled == true)
@@ -1159,8 +1157,7 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode, const std
     _episodePosVector.add(expId);
 
     // Keeping statistics
-    //cumulativeReward += calculateReward(episode[expId]["Features"].get<std::vector<float>>());
-    cumulativeReward += _rewardVector[expId];
+    cumulativeReward += calculateReward(episode[expId]["Features"].get<std::vector<float>>());
 
     // Adding placeholder for retrace value
     _retraceValueVector.add(0.0f);
@@ -1213,8 +1210,7 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode, const std
   for (ssize_t expId = endId; expId >= startId; expId--)
   {
     // Calculating retrace value with the discount factor. Importance weight is 1.0f because the policy is current.
-    //retV = _discountFactor * retV + calculateReward(episode[expId]["Features"].get<std::vector<float>>());
-    retV = _discountFactor * retV + _rewardVector[expId];
+    retV = _discountFactor * retV + calculateReward(episode[expId]["Features"].get<std::vector<float>>());
 
     // Setting initial retrace value in the experience's cache
     _retraceValueVector[expId] = retV;
@@ -1359,8 +1355,7 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
     for (ssize_t curId = endId; curId >= startId; curId--)
     {
       // Getting current reward, action, and state
-      //const float curReward = calculateReward(_featureVector[curId]);
-      const float curReward = _rewardVector[curId];
+      const float curReward = calculateReward(_featureVector[curId]);
 
       // Calculating state value function
       const float curV = _stateValueVector[curId];

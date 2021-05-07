@@ -358,13 +358,27 @@ float Continuous::calculateImportanceWeight(const std::vector<float> &action, co
 
   // Calculating log importance weight
   float logImportanceWeight = logpCurPolicy - logpOldPolicy;
+ 
+  if (std::isfinite(logImportanceWeight) == false)
+  {
+      for (size_t i = 0; i < action.size(); i++) printf("a %f\n", action[i]);
+ 
+      for (size_t i = 0; i < action.size(); i++) printf("os %f\n", oldPolicy.distributionParameters[_problem->_actionVectorSize+i]);
+      for (size_t i = 0; i < action.size(); i++) printf("cs %f\n", curPolicy.distributionParameters[_problem->_actionVectorSize+i]);
+
+      KORALI_LOG_ERROR("Calculated value for logImportanceWeight returned an invalid value: %f %f %f\n", logImportanceWeight, logpOldPolicy, logpCurPolicy);
+
+  }
 
   // Normalizing extreme values to prevent loss of precision
   if (logImportanceWeight > +7.0f) logImportanceWeight = +7.0f;
   if (logImportanceWeight < -7.0f) logImportanceWeight = -7.0f;
 
-  // Calculating actual importance weight by exp
+  // Calculating importance weight by exp
   importanceWeight = std::exp(logImportanceWeight);
+ 
+  if (std::isfinite(importanceWeight) == false)
+    KORALI_LOG_ERROR("Calculated value for importanceWeight returned an invalid value: %f\n", importanceWeight);
 
   return importanceWeight;
 }

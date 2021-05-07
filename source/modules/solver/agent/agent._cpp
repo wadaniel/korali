@@ -1019,7 +1019,8 @@ void Agent::attendAgent(size_t agentId)
         _trainingBestPolicy = _agents[agentId]["Policy Hyperparameters"];
       }
 
-      if (_experienceCount >= _experienceReplayStartSize)
+      // Update background and demonstration batch after initial RM is full and then every 10 episodes
+      if ( _experienceCount >= _experienceReplayStartSize && (_trainingRewardHistory.size() >= _backgroundSampleSize*10) )
       {
         updateBackgroundBatch();
         updateDemonstrationBatch();
@@ -1073,9 +1074,6 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode, const std
   * Adding episode's experiences into the replay memory
   *********************************************************************/
 
-  // Storage for the episode's cumulative reward
-  float cumulativeReward = 0.0f;
-
   for (size_t expId = 0; expId < episode.size(); expId++)
   {
     // Getting state
@@ -1108,9 +1106,6 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode, const std
     }
 
     _rewardVector.add(reward);
-
-    // Keeping statistics
-    cumulativeReward += reward;
 
     // Checking experience termination status and truncated state
     termination_t termination;
@@ -1155,9 +1150,6 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode, const std
     // Storing Episode information
     _episodeIdVector.add(episodeId);
     _episodePosVector.add(expId);
-
-    // Keeping statistics
-    cumulativeReward += calculateReward(episode[expId]["Features"].get<std::vector<float>>());
 
     // Adding placeholder for retrace value
     _retraceValueVector.add(0.0f);
@@ -1210,7 +1202,7 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode, const std
   for (ssize_t expId = endId; expId >= startId; expId--)
   {
     // Calculating retrace value with the discount factor. Importance weight is 1.0f because the policy is current.
-    retV = _discountFactor * retV + calculateReward(episode[expId]["Features"].get<std::vector<float>>());
+    retV = _discountFactor * retV + calculateReward(_featureVector[expId]);
 
     // Setting initial retrace value in the experience's cache
     _retraceValueVector[expId] = retV;

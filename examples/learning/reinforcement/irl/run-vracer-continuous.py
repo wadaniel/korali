@@ -85,17 +85,15 @@ e["Variables"][4]["Initial Exploration Noise"] = 1.0
 e["Solver"]["Type"] = "Agent / Continuous / VRACER"
 e["Solver"]["Mode"] = "Training"
 e["Solver"]["Experiences Between Policy Updates"] = 10
-e["Solver"]["Episodes Per Generation"] = 1
+e["Solver"]["Episodes Per Generation"] = 10
 
 ### Defining the configuration of replay memory
 
-e["Solver"]["Experience Replay"]["Start Size"] = 1000
-e["Solver"]["Experience Replay"]["Maximum Size"] = 10000
+e["Solver"]["Experience Replay"]["Start Size"] = 32768
+e["Solver"]["Experience Replay"]["Maximum Size"] = 131072
 
 ## Defining Neural Network Configuration for Policy and Critic into Critic Container
 
-#e["Solver"]["Policy"]["Distribution"] = "Squashed Normal"
-e["Solver"]["Policy"]["Distribution"] = "Normal"
 e["Solver"]["Discount Factor"] = 0.99
 e["Solver"]["Learning Rate"] = 1e-3
 e["Solver"]["Mini Batch"]["Size"] = 32
@@ -104,12 +102,12 @@ e["Solver"]["State Rescaling"]["Enabled"] = False
 
 ### IRL related configuration
 
-e["Solver"]["Experiences Between Reward Updates"] = 1
+e["Solver"]["Experiences Between Reward Updates"] = 10
 e["Solver"]["Rewardfunction Learning Rate"] = 1e-4
 e["Solver"]["Demonstration Batch Size"] = 10
 e["Solver"]["Background Batch Size"] = 20
 e["Solver"]["Use Fusion Distribution"] = False
-e["Solver"]["Experiences Between Partition Function Statistics"] = 1e12
+e["Solver"]["Experiences Between Partition Function Statistics"] = 1e5
 
 ### Configuring the neural network and its hidden layers
 

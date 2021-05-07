@@ -85,9 +85,8 @@ e["Variables"][4]["Initial Exploration Noise"] = 1.0
 
 e["Solver"]["Type"] = "Agent / Discrete / DVRACER"
 e["Solver"]["Mode"] = "Training"
-e["Solver"]["Experiences Between Policy Updates"] = 1
-e["Solver"]["Experiences Between Reward Updates"] = 1
-e["Solver"]["Episodes Per Generation"] = 1
+e["Solver"]["Experiences Between Policy Updates"] = 10
+e["Solver"]["Episodes Per Generation"] = 10
 
 ### Defining the configuration of replay memory
 
@@ -98,17 +97,18 @@ e["Solver"]["Experience Replay"]["Maximum Size"] = 131072
 
 e["Solver"]["Discount Factor"] = 0.99
 e["Solver"]["Learning Rate"] = 1e-4
-e["Solver"]["Mini Batch"]["Size"] = 256
+e["Solver"]["Mini Batch"]["Size"] = 32
 e["Solver"]["Reward"]["Rescaling"]["Enabled"] = False
 e["Solver"]["State Rescaling"]["Enabled"] = False
 
 ### IRL related configuration
 
+e["Solver"]["Experiences Between Reward Updates"] = 10
 e["Solver"]["Rewardfunction Learning Rate"] = 1e-4
 e["Solver"]["Demonstration Batch Size"] = 10
 e["Solver"]["Background Batch Size"] = 20
 e["Solver"]["Use Fusion Distribution"] = False
-e["Solver"]["Experiences Between Partition Function Statistics"] = 100000
+e["Solver"]["Experiences Between Partition Function Statistics"] = 1e5
 
 ### Configuring the neural network and its hidden layers
 
@@ -116,13 +116,13 @@ e["Solver"]["Neural Network"]["Engine"] = "OneDNN"
 e["Solver"]["Neural Network"]["Optimizer"] = "Adam"
 
 e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear"
-e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 128
+e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 32
 
 e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Activation"
 e["Solver"]["Neural Network"]["Hidden Layers"][1]["Function"] = "Elementwise/Tanh"
 
 e["Solver"]["Neural Network"]["Hidden Layers"][2]["Type"] = "Layer/Linear"
-e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 128
+e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 32
 
 e["Solver"]["Neural Network"]["Hidden Layers"][3]["Type"] = "Layer/Activation"
 e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tanh"

@@ -1020,7 +1020,7 @@ void Agent::attendAgent(size_t agentId)
       }
 
       // Update background and demonstration batch after initial RM is full and then every 10 episodes
-      if ( _experienceCount >= _experienceReplayStartSize && (_trainingRewardHistory.size() >= _backgroundSampleSize*10) )
+      if ( _experienceCount >= _experienceReplayStartSize && (_trainingRewardHistory.size() >= _backgroundSampleSize*2) )
       {
         updateBackgroundBatch();
         updateDemonstrationBatch();

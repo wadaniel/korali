@@ -134,7 +134,7 @@ e["Solver"]["Termination Criteria"]["Max Experiences"] = 10e6
 
 e["File Output"]["Enabled"] = True
 e["File Output"]["Frequency"] = 10000
-e["File Output"]["Path"] = '_korali_results_continuous'
+e["File Output"]["Path"] = '_korali_results_continuous3'
 
 ### Running Experiment
 

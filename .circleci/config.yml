@@ -5,6 +5,10 @@ executors:
     docker:
       - image: docker.io/cselab/ubuntu_openmpi_onednn:latest
       
+  fedora_openmpi_onednn:
+    docker:
+      - image: docker.io/cselab/fedora_openmpi_onednn:latest
+          
 jobs:
   build:
     parameters:
@@ -45,3 +49,11 @@ workflows:
           name: release
           image: ubuntu_openmpi_onednn
           buildtype: release
+          
+  fedora_openmpi_gcc:
+    jobs:
+      - build:
+          name: release
+          image: fedora_openmpi_onednn
+          buildtype: release
+          

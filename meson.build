@@ -33,6 +33,7 @@ summary({
 
 # list of Korali dependencies
 null_dep = dependency('', required : false) # used for simplification of code
+korali_include = []
 korali_deps = []
 
 # process required korali dependencies
@@ -63,21 +64,45 @@ endif
 korali_deps += [mpi_dep, openmp_dep]
 
 onednn_dep = null_dep
-if get_option('onednn_path') != ''
-  d = []
-  d += get_option('onednn_path') / 'lib'
-  d += get_option('onednn_path') / 'lib64'
-  onednn_dep = cpp.find_library('dnnl', dirs: d, required: true)
+if get_option('onednn') or get_option('onednn_path') != ''
+  if get_option('onednn_path') != '' # prioritized if given
+    # this does not resolve other dependencies the library may depend on
+    onednn_dep = cpp.find_library('dnnl',
+      dirs: [
+        get_option('onednn_path') / 'lib',
+        get_option('onednn_path') / 'lib64'],
+      required: true)
+    inc = get_option('onednn_path') / 'include'
+    korali_include += include_directories(inc)
+    assert(cpp.has_header('dnnl.h', args: '-I' + inc))
+  elif get_option('onednn')
+    # preferred dependency resolution via pkg-config or cmake
+    onednn_dep = dependency('dnnl', required: true)
+  endif
 endif
 korali_deps += onednn_dep
 
 cudnn_dep = null_dep
-if get_option('cudnn_path') != ''
+if get_option('cudnn') or get_option('cudnn_path') != ''
+  # korali internal dependency
   korali_deps += dependency('cuda', required: true)
-  d = []
-  d += get_option('cudnn_path') / 'lib'
-  d += get_option('cudnn_path') / 'lib64'
-  cudnn_dep = cpp.find_library('cudnn', dirs: d, required: true)
+
+  # cuDNN does not provide any pkg-config or other config tools, assume it does
+  # not depend on other libraries
+  if get_option('cudnn_path') != '' # prioritized if given
+    cudnn_dep = cpp.find_library('cudnn',
+      dirs: [
+        get_option('cudnn_path') / 'lib',
+        get_option('cudnn_path') / 'lib64'],
+      required: true)
+    inc = get_option('cudnn_path') / 'include'
+    korali_include += include_directories(inc)
+    assert(cpp.has_header('cudnn.h', args: '-I' + inc))
+  elif get_option('cudnn')
+    # cuDNN is installed in system path but not discoverable
+    cudnn_dep = cpp.find_library('cudnn', required: true)
+    assert(cpp.has_header('cudnn.h'))
+  endif
 endif
 korali_deps += cudnn_dep
 

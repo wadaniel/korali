@@ -40,6 +40,9 @@ korali_deps = []
 # (needs benchmark: gslcblas versus system cblas (and possibly ATLAS))
 korali_deps += dependency('gsl', fallback: ['gsl', 'gsl_dep'], version : '>=2.5', required: true)
 korali_deps += dependency('eigen3', fallback: ['eigen', 'eigen_dep'], required: true)
+
+# Process pybind11
+run_command(python, '-m', 'pip', 'install', 'pybind11')
 korali_deps += dependency('pybind11', fallback: ['pybind11', 'pybind11_dep'], required: true)
 
 # process optional korali dependencies

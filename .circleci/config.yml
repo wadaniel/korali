@@ -4,11 +4,7 @@ executors:
   ubuntu_openmpi_onednn:
     docker:
       - image: docker.io/cselab/ubuntu_openmpi_onednn:latest
-  
-  fedora_openmpi:
-    docker:
-      - image:  docker.io/cselab/fedora_openmpi:latest
-
+      
 jobs:
   build:
     parameters:
@@ -25,7 +21,7 @@ jobs:
         default: debug
       buildargs: 
         type: string
-        default: ""
+        default: "-Donednn_path=/usr"
     resource_class: xlarge
     executor: << parameters.image >>  
     working_directory: ~/korali
@@ -34,7 +30,7 @@ jobs:
       - run:
           name: Build and test and install
           command: |
-            CC=<< parameters.CC >> CXX=<< parameters.CXX >> meson setup build --prefix=~/test_install -Donednn=true --buildtype=<< parameters.buildtype >>
+            CC=<< parameters.CC >> CXX=<< parameters.CXX >> meson setup build --prefix=~/test_install << parameters.buildargs >> --buildtype=<< parameters.buildtype >>
             ninja -C build
             source tools/helper/set_env.sh build
             meson test -C build
@@ -48,11 +44,4 @@ workflows:
       - build:
           name: release
           image: ubuntu_openmpi_onednn
-          buildtype: release
-
-  fedora_openmpi_gcc:
-    jobs:
-      - build:
-          name: release
-          image: fedora_openmpi
           buildtype: release

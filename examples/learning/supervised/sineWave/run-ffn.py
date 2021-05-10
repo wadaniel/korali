@@ -65,6 +65,12 @@ e["Random Seed"] = 0xC0FFEE
 ### Training the neural network
 
 e["Solver"]["Termination Criteria"]["Max Generations"] = 10
+
+### If this is test mode, run only a couple generations
+if len(sys.argv) == 2:
+ if sys.argv[1] == '--test':
+  e["Solver"]["Termination Criteria"]["Max Generations"] = 2
+  
 k.run(e)
 
 ### Obtaining inferred results from the NN and comparing them to the actual solution

@@ -11,17 +11,7 @@ configure_file(
   configuration: korali_conf,
 )
 
-korali_include = [include_directories('.')]
-
-# If ONEDNN is used, add its path into the includes
-if get_option('onednn_path') != ''
-  korali_include += get_option('onednn_path') / 'include'
-endif
-
-# If CUDNN is used, add its path into the includes
-if get_option('cudnn_path') != ''
-  korali_include += get_option('cudnn_path') / 'include'
-endif
+korali_include += include_directories('.')
 
 korali_header = files([
   'engine.hpp',

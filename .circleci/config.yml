@@ -21,7 +21,7 @@ jobs:
         default: debug
       buildargs: 
         type: string
-        default: "-Donednn_path=/usr"
+        default: "-Donednn_path=/usr/local"
     resource_class: xlarge
     executor: << parameters.image >>  
     working_directory: ~/korali

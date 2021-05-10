@@ -47,7 +47,7 @@ mpi_dep = null_dep
 openmp_dep = null_dep
 
 if get_option('mpi')
-  mpi_dep = dependency('mpi', language: 'cpp')  
+  mpi_dep = dependency('mpi', language: 'cpp', required: false)  
 
   if mpi_dep.found() == false
    mpi_dep = dependency('mpich', required: true)

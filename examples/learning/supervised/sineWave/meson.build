@@ -1,5 +1,5 @@
 e = find_program('./.test-run.py', required: true)
-test('learning.supervised', e,
+test('learning.supervised.sineWave', e,
       timeout : 1000,
       suite: 'learning',
       workdir: meson.current_source_dir(),

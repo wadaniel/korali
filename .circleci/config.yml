@@ -25,7 +25,7 @@ jobs:
         default: debugoptimized
       buildargs: 
         type: string
-        default: "-Donednn_path=/usr/local"
+        default: "-Donednn_path=/usr/local -Dmpi=true"
     resource_class: xlarge
     executor: << parameters.image >>  
     working_directory: ~/korali

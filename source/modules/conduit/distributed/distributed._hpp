@@ -1,5 +1,6 @@
 @startIncludeGuard
 
+#include "config.hpp"
 #include "modules/conduit/conduit.hpp"
 #include <map>
 #include <queue>
@@ -12,22 +13,39 @@
 @startNamespace0
 
 #ifdef _KORALI_USE_MPI
+
   /**
    * @brief Communicator storage for the current Korali Worker
    */
   extern MPI_Comm __KoraliTeamComm;
 
-  /**
-    * @brief Returns Communicator for the current Korali Worker
-    * @return An MPI Communicator
-    */
-  extern MPI_Comm getKoraliMPIComm();
+ /**
+   * @brief Returns Communicator for the current Korali Worker
+   * @return An MPI Communicator
+   */
+ extern MPI_Comm getKoraliMPIComm();
 
-  /**
-    * @brief Returns Communicator for the current Korali Worker
-    * @return An MPI Communicator (in the form of a long integer, for Python compatibility)
-    */
-  extern long int getKoraliMPICommPointer();
+ /**
+   * @brief Returns Communicator for the current Korali Worker
+   * @return An MPI Communicator (in the form of a long integer, for Python compatibility)
+   */
+ extern long int getKoraliMPICommPointer();
+
+
+#else
+
+ /**
+   * @brief Returns Communicator for the current Korali Worker
+   * @return An MPI Communicator
+   */
+ extern int getKoraliMPIComm();
+
+ /**
+   * @brief Returns Communicator for the current Korali Worker
+   * @return An MPI Communicator (in the form of a long integer, for Python compatibility)
+   */
+ extern long int getKoraliMPICommPointer();
+
 #endif
 
 @startNamespace1

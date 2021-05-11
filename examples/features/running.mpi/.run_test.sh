@@ -41,4 +41,4 @@ mpirun -n 9 ./run-tmcmc
 exit_code=$(( $exit_code || $? ))
 
 
-retun $exit_code
+exit $exit_code

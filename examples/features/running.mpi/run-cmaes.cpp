@@ -1,5 +1,5 @@
 #include "_model/jacobi.h"
-#include "korali.hpp"
+#include <korali.hpp>
 #include <unistd.h>
 
 int main(int argc, char *argv[])

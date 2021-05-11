@@ -121,6 +121,11 @@ class @className : public @parentClassName
   virtual void initServer() = 0;
 
   /**
+   * @brief Finalizes the workers
+   */
+  virtual void terminateServer() = 0;
+
+  /**
   * @brief (Engine -> Worker) Broadcasts a message to all workers
   * @param message JSON object with information to broadcast
   */

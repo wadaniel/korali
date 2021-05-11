@@ -28,15 +28,15 @@ void @className::initialize()
   _workerQueue.push(0);
 }
 
-void @className::finalize()
-{
-  co_delete(_workerThread);
-}
-
 void @className::initServer()
 {
   _currentConduit = this;
   _workerThread = co_create(1 << 28, _workerWrapper);
+}
+
+void @className::terminateServer()
+{
+  co_delete(_workerThread);
 }
 
 void @className::broadcastMessageToWorkers(knlohmann::json &message)

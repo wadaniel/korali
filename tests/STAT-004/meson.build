@@ -34,8 +34,8 @@ test('statistics.samplers.mean.std.nested', e,
       env: nomalloc
     )
 
-e = find_program('./.test-run-rhcmc.py', required: true)
-test('statistics.samplers.mean.std.rhcmc', e,
+e = find_program('./.test-run-rchmc.py', required: true)
+test('statistics.samplers.mean.std.rchmc', e,
       timeout : 1000,
       suite: 'statistics',
       workdir: meson.current_source_dir(),

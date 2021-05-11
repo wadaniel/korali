@@ -25,7 +25,7 @@ class @className : public @parentClassName
   bool isRoot() override;
   void initServer() override;
   void initialize() override;
-  void finalize() override;
+  void terminateServer() override;
 
   void stackEngine(Engine *engine) override;
   void popEngine() override;

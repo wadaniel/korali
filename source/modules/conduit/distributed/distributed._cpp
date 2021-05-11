@@ -119,7 +119,7 @@ void @className::initServer()
 #endif
 }
 
-void @className::finalize()
+void @className::terminateServer()
 {
 #ifdef _KORALI_USE_MPI
   auto terminationJs = knlohmann::json();

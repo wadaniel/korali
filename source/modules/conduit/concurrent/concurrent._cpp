@@ -44,7 +44,7 @@ void @className::initialize()
   }
 }
 
-void @className::finalize()
+void @className::terminateServer()
 {
   auto terminationJs = knlohmann::json();
   terminationJs["Conduit Action"] = "Terminate";
@@ -73,8 +73,6 @@ void @className::finalize()
     close(_inputsPipe[i][1]);        // Closing pipes
     close(_inputsPipe[i][0]);        // Closing pipes
   }
-
-  Conduit::finalize();
 }
 
 void @className::initServer()
@@ -86,6 +84,7 @@ void @className::initServer()
     {
       _workerId = i;
       worker();
+      exit(0);
     }
     _workerPids.push_back(processId);
   }

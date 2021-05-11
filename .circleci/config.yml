@@ -22,7 +22,7 @@ jobs:
         default: g++
       buildtype:
         type: string
-        default: debug
+        default: debugoptimized
       buildargs: 
         type: string
         default: "-Donednn_path=/usr/local"

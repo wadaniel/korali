@@ -103,7 +103,7 @@ void Conduit::worker()
   {
     auto js = recvMessageFromEngine();
 
-    if (js["Conduit Action"] == "Terminate") exit(0);
+    if (js["Conduit Action"] == "Terminate") break;
     if (js["Conduit Action"] == "Process Sample") workerProcessSample(js);
     if (js["Conduit Action"] == "Broadcast Globals") workerBroadcastGlobals(js);
     if (js["Conduit Action"] == "Stack Engine") workerStackEngine(js);

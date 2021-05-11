@@ -25,6 +25,7 @@
 #ifndef __KORALI__
   #include "config.hpp"
   #include "engine.hpp"
+  #include "modules/conduit/distributed/distributed.hpp"
   #include "modules/experiment/experiment.hpp"
   #include "sample/sample.hpp"
 #endif

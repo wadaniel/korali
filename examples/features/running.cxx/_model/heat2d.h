@@ -1,6 +1,6 @@
 #ifndef _HEAT2D_H_
 #define _HEAT2D_H_
-#include "korali.hpp"
+#include <korali.hpp>
 
 #include <stdlib.h>
 #include <vector>

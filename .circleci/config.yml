@@ -36,9 +36,8 @@ jobs:
           command: |
             CC=<< parameters.CC >> CXX=<< parameters.CXX >> meson setup build --prefix=~/test_install << parameters.buildargs >> --buildtype=<< parameters.buildtype >>
             ninja -C build
-            source tools/helper/set_env.sh build
-            meson test -C build
             meson install -C build
+            meson test -C build
       - store_artifacts:
           path: build/meson-logs
 

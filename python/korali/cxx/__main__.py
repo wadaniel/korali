@@ -7,17 +7,10 @@ import os
 import subprocess
 import korali
 import pybind11
-
 import libkorali as lk
 
 def main():
-  fileDir = os.path.dirname(os.path.realpath(__file__))
 
-  configFile = open(fileDir + '/flags.in', "r")
-  configFileContents = configFile.read()
-  configDict = ast.literal_eval(configFileContents)
-  configFile.close()
-  
   if (len(sys.argv) != 2):
     print('[Korali] Syntax error on call to korali.cxx module: Exactly one argument is required (--cflags, --libs, or --compiler).')
     exit(-1)

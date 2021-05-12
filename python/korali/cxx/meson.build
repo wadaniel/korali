@@ -1,9 +1,7 @@
 # Run flag generating command
-run_command(python, './createFlags.py', cpp.cmd_array())
 
 # pure python sources
 python_sources = files([
-  'flags.in',
   '__init__.py',
   '__main__.py'
 ])

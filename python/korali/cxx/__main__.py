@@ -15,12 +15,15 @@ def main():
     exit(-1)
   correctSyntax = False
   
+  # Looking for Korali library
+  koraliLib = os.path.realpath(lk.__file__)
+
   if (sys.argv[1] == '--cflags'):
     correctSyntax = True
     pythonCFlagsCommand = subprocess.Popen("python3-config --includes", shell=True, stdout=subprocess.PIPE)
     pythonCFlags = pythonCFlagsCommand.stdout.read().decode().rstrip("\n")
     pybind11Includes=pybind11.get_include()
-    koraliIncludes=' -I' + os.path.dirname(korali.__file__) + '/include'
+    koraliIncludes=' -I' + os.path.dirname(korali.__file__) + '/include' + ' -I' +  os.path.dirname(korali.__file__) + '/../../source' + ' -I' +  os.path.dirname(koraliLib)
     flags = '-std=c++17' + koraliIncludes + ' -I' + sysconfig.get_path("include") + ' -I' + sysconfig.get_path("platinclude") + ' -I' + pybind11Includes + ' ' + pythonCFlags
 
   if (sys.argv[1] == '--libs'):
@@ -30,10 +33,8 @@ def main():
      pythonLibsCommand = subprocess.Popen("python3-config --ldflags --embed", shell=True, stdout=subprocess.PIPE)
     except subprocess.CalledProcessError as e:
      pythonLibsCommand = subprocess.Popen("python3-config --ldflags", shell=True, stdout=subprocess.PIPE)
-    pythonLibs = pythonLibsCommand.stdout.read().decode()
+    pythonLibs = pythonLibsCommand.stdout.read().decode().rstrip("\n")
     
-    # Looking for Korali library
-    koraliLib = os.path.realpath(lk.__file__)
     flags = koraliLib + ' ' + pythonLibs
 
   if (correctSyntax == False):

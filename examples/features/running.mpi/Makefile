@@ -2,6 +2,10 @@ BINARIES = run-tmcmc run-cmaes
 KORALICFLAGS=`python3 -m korali.cxx --cflags`
 KORALILIBS=`python3 -m korali.cxx --libs`
 
+ifndef MPICXX
+	MPICXX=mpic++
+endif
+
 .SECONDARY:
 .PHONY: all 
 all: $(BINARIES)

@@ -14,7 +14,8 @@ def main():
   if (len(sys.argv) != 2):
     print('[Korali] Syntax error on call to korali.cxx module: Exactly one argument is required (--cflags, --libs, or --compiler).')
     exit(-1)
-        
+  correctSyntax = False
+  
   if (sys.argv[1] == '--cflags'):
     correctSyntax = True
     pythonCFlagsCommand = subprocess.Popen("python3-config --includes", shell=True, stdout=subprocess.PIPE)
@@ -37,7 +38,7 @@ def main():
     flags = koraliLib + ' ' + pythonLibs
 
   if (correctSyntax == False):
-   print('[Korali] Syntax error on call to korali.cxx module: Argument \'{0}\' not recognized (--cflags, --libs, or --compiler).'.format(sys.argv[1]))
+   print('[Korali] Syntax error on call to korali.cxx module: Argument \'{0}\' not recognized (--cflags, --libs).'.format(sys.argv[1]))
    exit(-1)
 
   print(flags + ' ')

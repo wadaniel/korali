@@ -25,7 +25,7 @@ def main():
     correctSyntax = True
     pythonCFlagsCommand = subprocess.Popen("python3-config --includes", shell=True, stdout=subprocess.PIPE)
     pythonCFlags = pythonCFlagsCommand.stdout.read().decode()
-    flags = '-std=c++17' + ' -I' + koraliDir + '/include' + ' -I' + sysconfig.get_path("include") + ' -I' + sysconfig.get_path("platinclude") + ' -I' + configDict['PYBIND11_INCLUDES'] + ' ' + pythonCFlags
+    flags = '-std=c++17' + '-I ' + koraliDir + '../../source/' + ' -I' + koraliDir + '/include' + ' -I' + sysconfig.get_path("include") + ' -I' + sysconfig.get_path("platinclude") + ' -I' + configDict['PYBIND11_INCLUDES'] + ' ' + pythonCFlags
 
   if (sys.argv[1] == '--libs'):
     correctSyntax = True

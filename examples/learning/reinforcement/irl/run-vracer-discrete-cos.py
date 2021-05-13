@@ -28,7 +28,7 @@ for trajectory in obsstates:
     features = []
     for state in trajectory:
         # Cart Position, Cart Velocity, Pole Angle, Pole Angular Velocity
-        feature = np.cos(state[2])
+        feature = state[2]
         if(maxFeatures[0] < feature):
             maxFeatures[0] = feature
         features.append([feature]) 
@@ -126,7 +126,7 @@ e["Solver"]["Termination Criteria"]["Max Experiences"] = 10e6
 
 e["File Output"]["Enabled"] = True
 e["File Output"]["Frequency"] = 10000
-e["File Output"]["Path"] = '_korali_results_discrete_cos_alpha2_2'
+e["File Output"]["Path"] = '_korali_results_discrete_cos_alpha2_1'
 
 ### Running Experiment
 

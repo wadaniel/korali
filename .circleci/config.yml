@@ -57,3 +57,12 @@ workflows:
           image: fedora_openmpi_onednn
           buildtype: release
           
+  macos_openmpi_clang:
+    jobs:
+      - build:
+          name: release
+          image: macos_openmpi_onednn
+          CXX: clang++
+          CXX: clang
+          buildtype: release
+          

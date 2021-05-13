@@ -38,7 +38,6 @@ jobs:
       - run:
           name: Build and test and install
           command: |
-            if [ -f ~/.bashrc ]; then source $HOME/.bashrc; fi
             CC=<< parameters.CC >> CXX=<< parameters.CXX >> meson setup build --prefix=~/test_install << parameters.buildargs >> --buildtype=<< parameters.buildtype >>
             ninja -C build
             source tools/helper/set_env.sh build

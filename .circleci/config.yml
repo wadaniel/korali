@@ -62,7 +62,7 @@ workflows:
       - build:
           name: release
           image: macos_openmpi_onednn
+          CC: clang
           CXX: clang++
-          CXX: clang
           buildtype: release
           

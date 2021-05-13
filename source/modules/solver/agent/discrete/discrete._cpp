@@ -31,7 +31,7 @@ void Discrete::initializeAgent()
 
   for (size_t actionIdx = 0; actionIdx < numPossibleActions; ++actionIdx)
     // Estimate of categorial probabilities with Dirichlet prior (alpha_i = 2)
-    _observationsApproximatorActionProbabilities[actionIdx] = _observationsApproximatorActionProbabilities[actionIdx] / ((float)_problem->_totalObservedStateActionPairs);
+    _observationsApproximatorActionProbabilities[actionIdx] = (_observationsApproximatorActionProbabilities[actionIdx]+1.0) / ((float)_problem->_totalObservedStateActionPairs + numPossibleActions);
   
 for (size_t actionIdx = 0; actionIdx < numPossibleActions; ++actionIdx) printf("Action Probabilities [%zu] : %f", actionIdx, _observationsApproximatorActionProbabilities[actionIdx]);
 }

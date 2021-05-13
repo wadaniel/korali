@@ -27,6 +27,13 @@ void ReinforcementLearning::initialize()
 
   // Validating observations
   _numberObservedTrajectories = _observationsStates.size();
+  if (_numberObservedTrajectories == 0) KORALI_LOG_ERROR("No states have been recorded.\n");
+  if (_observationsActions.size() == 0) KORALI_LOG_ERROR("No actions have been recorded.\n");
+  if (_observationsFeatures.size() == 0) KORALI_LOG_ERROR("No features have been recorded.\n");
+  if (_observationsStates[0].size() == 0) KORALI_LOG_ERROR("Observed states empty.\n");
+  if (_observationsActions[0].size() == 0) KORALI_LOG_ERROR("Observed actions empty.\n");
+  if (_observationsFeatures[0].size() == 0) KORALI_LOG_ERROR("Observed features empty.\n");
+
   _featureVectorSize = _observationsFeatures[0][0].size();
   if (_featureVectorSize == 0) KORALI_LOG_ERROR("No features have been defined.\n");
 

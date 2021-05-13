@@ -8,7 +8,6 @@ from env import *
 
 """Note:
     - COMPILE KORALI without COSREWARD (agent._cpp) directive
-    - ADJUST FEATURES IN ENVIRONMENT
 """
 
 ####### Load observations
@@ -29,16 +28,11 @@ for trajectory in obsstates:
     features = []
     for state in trajectory:
         # Cart Position, Cart Velocity, Pole Angle, Pole Angular Velocity
-        feature1 = np.cos(state[2])
-        feature2 = state[1]*state[1]
-        #feature3 = np.random.normal(0.0, 0.1) # dummy
-        features.append([feature1, feature2]) 
-        #features.append([feature1, feature2, feature3]) 
-        
-        if(maxFeatures[0] < feature1):
-            maxFeatures[0] = feature1
-        if(maxFeatures[1] < feature2):
-            maxFeatures[1] = feature2
+        feature = np.cos(state[2])
+        if(maxFeatures[0] < feature):
+            maxFeatures[0] = feature
+        features.append([feature]) 
+
     obsfeatures.append(features)
     
 print("Total observed trajectories: {}/{}".format(len(obsstates), len(obsactions)))
@@ -132,7 +126,7 @@ e["Solver"]["Termination Criteria"]["Max Experiences"] = 10e6
 
 e["File Output"]["Enabled"] = True
 e["File Output"]["Frequency"] = 10000
-e["File Output"]["Path"] = '_korali_results_discrete_cos_alpha2_1'
+e["File Output"]["Path"] = '_korali_results_discrete_cos_alpha2_2'
 
 ### Running Experiment
 

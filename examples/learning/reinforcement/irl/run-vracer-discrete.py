@@ -77,9 +77,6 @@ e["Variables"][3]["Type"] = "State"
 
 e["Variables"][4]["Name"] = "Force"
 e["Variables"][4]["Type"] = "Action"
-e["Variables"][4]["Lower Bound"] = -10.0
-e["Variables"][4]["Upper Bound"] = +10.0
-e["Variables"][4]["Initial Exploration Noise"] = 1.0
 
 ### Defining Agent Configuration 
 

@@ -8,7 +8,11 @@ executors:
   fedora_openmpi_onednn:
     docker:
       - image: docker.io/cselab/fedora_openmpi_onednn:latest
-          
+  
+  macos_openmpi_onednn:
+    docker:
+      - image: docker.io/cselab/macos_openmpi_onednn:latest      
+      
 jobs:
   build:
     parameters:

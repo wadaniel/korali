@@ -47,7 +47,7 @@ jobs:
           path: build/meson-logs
 
 workflows:
-  release:
+  korali_release:
     jobs:
       - build:
           name: ubuntu_openmpi_gcc

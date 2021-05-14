@@ -58,8 +58,6 @@ workflows:
           image: fedora_openmpi_onednn
           buildtype: release
       - build:
-          macos:  # indicate that we are using the macOS executor
-             xcode: 11.3.0 # indicate our selected version of Xcode
           name: macos_openmpi_clang
           image: macos_openmpi_onednn
           CC: clang

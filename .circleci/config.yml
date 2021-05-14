@@ -60,6 +60,7 @@ workflows:
       - build:
           name: macos_openmpi_clang
           image: macos_openmpi_onednn
+          buildargs: "-Donednn_path=/usr/local"
           CC: /home/linuxbrew/.linuxbrew/bin/clang
           CXX: /home/linuxbrew/.linuxbrew/bin/clang++
           buildtype: release

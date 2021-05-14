@@ -38,7 +38,7 @@ jobs:
       - run:
           name: Build and test and install
           command: |
-            bash -c 'CC=<< parameters.CC >> CXX=<< parameters.CXX >> meson setup build --prefix=~/test_install << parameters.buildargs >> --buildtype=<< parameters.buildtype >>'
+            CC=<< parameters.CC >> CXX=<< parameters.CXX >> meson setup build --prefix=~/test_install << parameters.buildargs >> --buildtype=<< parameters.buildtype >>
             ninja -C build
             source tools/helper/set_env.sh build
             meson install -C build
@@ -47,24 +47,19 @@ jobs:
           path: build/meson-logs
 
 workflows:
-  ubuntu_openmpi_gcc:
+  release:
     jobs:
       - build:
-          name: release
+          name: ubuntu_openmpi_gcc
           image: ubuntu_openmpi_onednn
           buildtype: release
-          
-  fedora_openmpi_gcc:
-    jobs:
       - build:
-          name: release
+          name: fedora_openmpi_gcc
           image: fedora_openmpi_onednn
           buildtype: release
-          
-  macos_openmpi_clang:
-    jobs:
       - build:
-          name: release
+          shell: /bin/bash
+          name: macos_openmpi_clang
           image: macos_openmpi_onednn
           CC: clang
           CXX: clang++

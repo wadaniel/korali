@@ -34,11 +34,11 @@ for i in range(dim):
 # Configuring CMA-ES parameters
 e["Solver"]["Type"] = "Optimizer/CMAES"
 e["Solver"]["Population Size"] = 32
-e["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-32
-e["Solver"]["Termination Criteria"]["Max Generations"] = 100
+#e["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-32
+e["Solver"]["Termination Criteria"]["Max Generations"] = 1e6
 
 # Configuring results path
-e["File Output"]["Enabled"] = True
+e["File Output"]["Enabled"] = False
 e["File Output"]["Path"] = '_korali_result_cmaes'
 e["File Output"]["Frequency"] = 1
 

@@ -48,7 +48,7 @@ e = korali.Experiment()
 ### Defining the Cartpole problem's configuration
 
 e["Problem"]["Type"] = "Reinforcement Learning / Discrete"
-e["Problem"]["Possible Actions"] = [ [ -10.0 ], [ -5.0 ], [ -1.0 ], [ 0.0 ], [ 1.0 ], [ 5.0 ], [ 10.0 ] ]
+e["Problem"]["Possible Actions"] = [ [i] for i in range(-10,11) ]
 e["Problem"]["Environment Function"] = cosenv
 e["Problem"]["Training Reward Threshold"] = 600
 e["Problem"]["Policy Testing Episodes"] = 1
@@ -81,7 +81,7 @@ e["Solver"]["Episodes Per Generation"] = 10
 
 ### Defining the configuration of replay memory
 
-e["Solver"]["Experience Replay"]["Start Size"] = 32768
+e["Solver"]["Experience Replay"]["Start Size"] = 1024
 e["Solver"]["Experience Replay"]["Maximum Size"] = 131072
 
 ## Defining Neural Network Configuration for Policy and Critic into Critic Container
@@ -94,12 +94,12 @@ e["Solver"]["State Rescaling"]["Enabled"] = False
 
 ### IRL related configuration
 
-e["Solver"]["Experiences Between Reward Updates"] = 10
+e["Solver"]["Experiences Between Reward Updates"] = 1000
 e["Solver"]["Rewardfunction Learning Rate"] = 1e-4
 e["Solver"]["Demonstration Batch Size"] = 10
 e["Solver"]["Background Batch Size"] = 20
-e["Solver"]["Use Fusion Distribution"] = False
-e["Solver"]["Experiences Between Partition Function Statistics"] = 3e5
+e["Solver"]["Use Fusion Distribution"] = True
+e["Solver"]["Experiences Between Partition Function Statistics"] = 2e5
 
 ### Configuring the neural network and its hidden layers
 
@@ -120,13 +120,13 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tan
 
 ### Defining Termination Criteria
 
-e["Solver"]["Termination Criteria"]["Max Experiences"] = 10e6
+e["Solver"]["Termination Criteria"]["Max Experiences"] = 1e7
 
 ### Setting file output configuration
 
 e["File Output"]["Enabled"] = True
-e["File Output"]["Frequency"] = 1000
-e["File Output"]["Path"] = '_korali_results_discrete_cos_alpha2_1'
+e["File Output"]["Frequency"] = 500
+e["File Output"]["Path"] = '_korali_results_discrete_cos_alpha2_2_fusion'
 
 ### Running Experiment
 

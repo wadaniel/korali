@@ -1020,7 +1020,7 @@ void Agent::attendAgent(size_t agentId)
       }
 
       // Update background and demonstration batch after initial RM is full and then every 10 episodes
-      if ( _experienceCount >= _experienceReplayStartSize && (_trainingRewardHistory.size() >= _backgroundSampleSize*2) )
+      if ( _experienceCount >= _experienceReplayStartSize && ( (_experienceCount-_experienceReplayStartSize)/_experiencesBetweenRewardUpdates >= _backgroundSampleSize) )
       {
         updateBackgroundBatch();
         updateDemonstrationBatch();
@@ -1453,11 +1453,7 @@ std::vector<std::vector<float>> Agent::getTruncatedStateSequence(size_t expId)
 void Agent::finalize()
 {
   if (_mode != "Training") return;
-
-  if (_experienceReplaySerialize == true)
-    if (_k->_fileOutputEnabled)
-      serializeExperienceReplay();
-
+  
   _k->_logger->logInfo("Normal", "Waiting for pending agents to finish...\n");
 
   // Waiting for pending agents to finish
@@ -1474,6 +1470,13 @@ void Agent::finalize()
 
     if (agentsRemain) KORALI_LISTEN(_agents);
   } while (agentsRemain == true);
+
+  partitionFunctionStat();
+
+  if (_experienceReplaySerialize == true)
+    if (_k->_fileOutputEnabled)
+      serializeExperienceReplay();
+
 }
 
 void Agent::serializeExperienceReplay()

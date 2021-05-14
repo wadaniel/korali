@@ -38,7 +38,6 @@ jobs:
       - run:
           name: Build and test and install
           command: |
-            source $HOME/.bashrc
             CC=<< parameters.CC >> CXX=<< parameters.CXX >> meson setup build --prefix=~/test_install << parameters.buildargs >> --buildtype=<< parameters.buildtype >>
             ninja -C build
             source tools/helper/set_env.sh build
@@ -61,7 +60,7 @@ workflows:
       - build:
           name: macos_openmpi_clang
           image: macos_openmpi_onednn
-          CC: clang
-          CXX: clang++
+          CC: /home/linuxbrew/.linuxbrew/bin/clang
+          CXX: /home/linuxbrew/.linuxbrew/bin/clang++
           buildtype: release
           

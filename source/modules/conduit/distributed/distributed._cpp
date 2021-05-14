@@ -9,18 +9,17 @@ using namespace std;
 
 @startNamespace0
 
+bool __isMPICommGiven = false;
+MPI_Comm __KoraliGlobalMPIComm;
+MPI_Comm __koraliWorkerMPIComm;
+#define __KORALI_MPI_MESSAGE_JSON_TAG 1
+
 #ifdef _KORALI_USE_MPI
-
-  #define __KORALI_MPI_MESSAGE_JSON_TAG 1
-  MPI_Comm __KoraliTeamComm;
-  MPI_Comm getKoraliMPIComm() { return __KoraliTeamComm; }
-  long int getKoraliMPICommPointer() { return (long int)(&__KoraliTeamComm); }
-
+ int setKoraliMPIComm(const MPI_Comm& comm) { __isMPICommGiven = true; return MPI_Comm_dup(comm, &__KoraliGlobalMPIComm); }
+ void* getKoraliWorkerMPIComm() { return &__koraliWorkerMPIComm; }
 #else
-
-  int getKoraliMPIComm() { return 0; }
-  long int getKoraliMPICommPointer() { return (long int)0; }
-
+ int setKoraliMPIComm(...) { KORALI_LOG_ERROR("Trying to setup MPI communicator but Korali was installed without support for MPI.\n"); return -1; }
+ void* getKoraliWorkerMPIComm() { KORALI_LOG_ERROR("Trying to setup MPI communicator but Korali was installed without support for MPI.\n"); return NULL; }
 #endif
 
 @startNamespace1
@@ -31,32 +30,22 @@ void @className::initialize()
   KORALI_LOG_ERROR("Running an Distributed-based Korali application, but Korali was installed without support for MPI.\n");
 #else
 
+  // Sanity checks for the correct initialization of MPI
   int isInitialized = 0;
   MPI_Initialized(&isInitialized);
-
-  if (isInitialized == 0) MPI_Init(NULL, NULL);
-
-  if (_communicator == 0)
-    _mpiCommunicator = MPI_COMM_WORLD;
-  else
-  #ifdef OMPI_MPI_H
-    _mpiCommunicator = *((MPI_Comm *)_communicator);
-  #else
-    _mpiCommunicator = (MPI_Comm)_communicator;
-  #endif
-
-  MPI_Comm_size(_mpiCommunicator, &_rankCount);
-  MPI_Comm_rank(_mpiCommunicator, &_rankId);
-
-  MPI_Barrier(_mpiCommunicator);
-  _continueEvaluations = true;
-
+  if (isInitialized == 0) KORALI_LOG_ERROR("Korali requires that the MPI is initialized by the user (e.g., via MPI_init) prior to running the engine.\n");
+  if (__isMPICommGiven == false) KORALI_LOG_ERROR("Korali requires that MPI communicator is passed (via setKoraliMPIComm) prior to running the engine.\n");
   if (_rankCount == 1) KORALI_LOG_ERROR("Korali Distributed applications require at least 2 Distributed ranks to run.\n");
 
+  // Getting size and id from the user-defined communicator
+  MPI_Comm_size(__KoraliGlobalMPIComm, &_rankCount);
+  MPI_Comm_rank(__KoraliGlobalMPIComm, &_rankId);
+  MPI_Barrier(__KoraliGlobalMPIComm);
+
+  // Determining ranks per worker
   int curWorker = 0;
   _workerCount = (_rankCount - 1) / _ranksPerWorker;
   _localRankId = 0;
-
   _workerIdSet = false;
 
   // Storage to map MPI ranks to their corresponding worker
@@ -96,7 +85,7 @@ void @className::initialize()
   if (isRoot())
   {
     int mpiSize;
-    MPI_Comm_size(_mpiCommunicator, &mpiSize);
+    MPI_Comm_size(__KoraliGlobalMPIComm, &mpiSize);
 
     if (_rankCount < _ranksPerWorker + 1)
       KORALI_LOG_ERROR("You are running Korali with %d ranks. However, you need at least %d ranks to have at least one worker team. \n", _rankCount, _ranksPerWorker + 1);
@@ -105,10 +94,10 @@ void @className::initialize()
   }
 
   // Creating communicator
-  MPI_Comm_split(_mpiCommunicator, curWorker, _rankId, &__KoraliTeamComm);
+  MPI_Comm_split(__KoraliGlobalMPIComm, curWorker, _rankId, &__koraliWorkerMPIComm);
 
   // Waiting for all ranks to reach this point
-  MPI_Barrier(_mpiCommunicator);
+  MPI_Barrier(__KoraliGlobalMPIComm);
 #endif
 }
 
@@ -132,7 +121,7 @@ void @className::terminateServer()
   {
     for (int i = 0; i < _workerCount; i++)
       for (int j = 0; j < _ranksPerWorker; j++)
-        MPI_Send(terminationString.c_str(), terminationStringSize, MPI_CHAR, _workerTeams[i][j], __KORALI_MPI_MESSAGE_JSON_TAG, _mpiCommunicator);
+        MPI_Send(terminationString.c_str(), terminationStringSize, MPI_CHAR, _workerTeams[i][j], __KORALI_MPI_MESSAGE_JSON_TAG, __KoraliGlobalMPIComm);
   }
 
 #endif
@@ -151,7 +140,7 @@ void @className::broadcastMessageToWorkers(knlohmann::json &message)
 
   for (int i = 0; i < _workerCount; i++)
     for (int j = 0; j < _ranksPerWorker; j++)
-      MPI_Send(messageString.c_str(), messageStringSize, MPI_CHAR, _workerTeams[i][j], __KORALI_MPI_MESSAGE_JSON_TAG, _mpiCommunicator);
+      MPI_Send(messageString.c_str(), messageStringSize, MPI_CHAR, _workerTeams[i][j], __KORALI_MPI_MESSAGE_JSON_TAG, __KoraliGlobalMPIComm);
 #endif
 }
 
@@ -176,7 +165,7 @@ bool @className::isRoot()
 void @className::abort()
 {
 #ifdef _KORALI_USE_MPI
-  MPI_Abort(_mpiCommunicator, -1);
+  MPI_Abort(__KoraliGlobalMPIComm, -1);
 #endif
 }
 
@@ -187,7 +176,7 @@ void @className::sendMessageToEngine(knlohmann::json &message)
   {
     string messageString = message.dump();
     size_t messageStringSize = messageString.size();
-    MPI_Send(messageString.c_str(), messageStringSize, MPI_CHAR, getRootRank(), __KORALI_MPI_MESSAGE_JSON_TAG, _mpiCommunicator);
+    MPI_Send(messageString.c_str(), messageStringSize, MPI_CHAR, getRootRank(), __KORALI_MPI_MESSAGE_JSON_TAG, __KoraliGlobalMPIComm);
   }
 #endif
 }
@@ -197,15 +186,15 @@ knlohmann::json @className::recvMessageFromEngine()
   auto message = knlohmann::json();
 
 #ifdef _KORALI_USE_MPI
-  MPI_Barrier(__KoraliTeamComm);
+  MPI_Barrier(__koraliWorkerMPIComm);
 
   MPI_Status status;
-  MPI_Probe(getRootRank(), __KORALI_MPI_MESSAGE_JSON_TAG, _mpiCommunicator, &status);
+  MPI_Probe(getRootRank(), __KORALI_MPI_MESSAGE_JSON_TAG, __KoraliGlobalMPIComm, &status);
   int messageSize = 0;
   MPI_Get_count(&status, MPI_CHAR, &messageSize);
 
   char *jsonStringChar = (char *)malloc(sizeof(char) * (messageSize + 1));
-  MPI_Recv(jsonStringChar, messageSize, MPI_CHAR, getRootRank(), __KORALI_MPI_MESSAGE_JSON_TAG, _mpiCommunicator, MPI_STATUS_IGNORE);
+  MPI_Recv(jsonStringChar, messageSize, MPI_CHAR, getRootRank(), __KORALI_MPI_MESSAGE_JSON_TAG, __KoraliGlobalMPIComm, MPI_STATUS_IGNORE);
 
   jsonStringChar[messageSize] = '\0';
   message = knlohmann::json::parse(jsonStringChar);
@@ -224,7 +213,7 @@ void @className::listenWorkers()
 
   // Reading pending messages from any worker
   MPI_Status status;
-  MPI_Iprobe(MPI_ANY_SOURCE, __KORALI_MPI_MESSAGE_JSON_TAG, _mpiCommunicator, &foundMessage, &status);
+  MPI_Iprobe(MPI_ANY_SOURCE, __KORALI_MPI_MESSAGE_JSON_TAG, __KoraliGlobalMPIComm, &foundMessage, &status);
 
   // If message found, receive it and storing in the corresponding sample's queue
   if (foundMessage == 1)
@@ -238,7 +227,7 @@ void @className::listenWorkers()
     int messageSize = 0;
     MPI_Get_count(&status, MPI_CHAR, &messageSize);
     char *messageStringChar = (char *)malloc(sizeof(char) * (messageSize + 1));
-    MPI_Recv(messageStringChar, messageSize, MPI_CHAR, source, __KORALI_MPI_MESSAGE_JSON_TAG, _mpiCommunicator, MPI_STATUS_IGNORE);
+    MPI_Recv(messageStringChar, messageSize, MPI_CHAR, source, __KORALI_MPI_MESSAGE_JSON_TAG, __KoraliGlobalMPIComm, MPI_STATUS_IGNORE);
     messageStringChar[messageSize] = '\0';
     auto message = knlohmann::json::parse(messageStringChar);
     free(messageStringChar);
@@ -259,7 +248,7 @@ void @className::sendMessageToSample(Sample &sample, knlohmann::json &message)
   for (int i = 0; i < _ranksPerWorker; i++)
   {
     int rankId = _workerTeams[sample._workerId][i];
-    MPI_Send(messageString.c_str(), messageStringSize, MPI_CHAR, rankId, __KORALI_MPI_MESSAGE_JSON_TAG, _mpiCommunicator);
+    MPI_Send(messageString.c_str(), messageStringSize, MPI_CHAR, rankId, __KORALI_MPI_MESSAGE_JSON_TAG, __KoraliGlobalMPIComm);
   }
 #endif
 }

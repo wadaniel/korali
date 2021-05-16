@@ -23,7 +23,7 @@ In Korali we have to set this flag to store the values of `Apples` and `Bananas`
 
 .. code-block:: python
 
-    e["File Output"]["Store Samples"] = True
+    e["Store Sample Information"] = True
 
 All evaluations can be found in the files in `_korali_results`.
 

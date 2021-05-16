@@ -366,8 +366,7 @@ To preserve the all input/output parameters for every sample generated in Korali
 
 .. code-block:: python
 
-   # Saving results to a file every 5 generations, instead of 1
-   e["File Output"]["Store Samples"] = True
+   e["Store Sample Information"] = True
   
 This option is by default disabled, since storing all samples may require large file sizes.
 
@@ -401,5 +400,3 @@ Plotting Results
 -----------------------------------------------
 
 To generate a plot with the results of your experiment, check the documentation for our :ref:`Korali Plotter <korali-plotter>` tool. 
-
-   

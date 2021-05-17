@@ -27,6 +27,9 @@ jobs:
       buildtype:
         type: string
         default: debugoptimized
+      runTests:
+        type: string
+        default: 'true'
       buildargs: 
         type: string
         default: "-Donednn_path=/usr/local -Dmpi=true"
@@ -41,8 +44,8 @@ jobs:
             CC=<< parameters.CC >> CXX=<< parameters.CXX >> meson setup build --prefix=~/test_install << parameters.buildargs >> --buildtype=<< parameters.buildtype >>
             ninja -C build
             source tools/helper/set_env.sh build
+            if [ "<< parameters.runTests >>" == "true" ]; then meson test -C build; fi
             meson install -C build
-            meson test -C build
       - store_artifacts:
           path: build/meson-logs
 
@@ -58,11 +61,11 @@ workflows:
           image: fedora_openmpi_onednn
           buildtype: release
       - build:
-          macos:  # indicate that we are using the macOS executor
-             xcode: 11.3.0 # indicate our selected version of Xcode
           name: macos_openmpi_clang
           image: macos_openmpi_onednn
-          CC: clang
-          CXX: clang++
+          buildargs: ""
+          CC: /home/linuxbrew/.linuxbrew/bin/clang
+          CXX: /home/linuxbrew/.linuxbrew/bin/clang++
+          runTests: 'false'
           buildtype: release
           

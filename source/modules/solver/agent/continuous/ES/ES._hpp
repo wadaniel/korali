@@ -1,0 +1,50 @@
+#ifndef _KORALI_AGENT_CONTINUOUS_ES_HPP_
+#define _KORALI_AGENT_CONTINUOUS_ES_HPP_
+
+#include "modules/distribution/univariate/normal/normal.hpp"
+#include "modules/problem/reinforcementLearning/continuous/continuous.hpp"
+#include "modules/solver/agent/continuous/continuous.hpp"
+
+namespace korali
+{
+namespace solver
+{
+namespace agent
+{
+namespace continuous
+{
+class ES : public Continuous
+{
+  public:
+  /**
+   * @brief Pointer to training the actor network
+   */
+  learner::DeepSupervisor *_criticPolicyLearner;
+
+  /**
+  * @brief Korali experiment for obtaining the agent's action
+  */
+  korali::Experiment _criticPolicyExperiment;
+
+  /**
+   * @brief Pointer to actor's experiment problem
+   */
+  problem::SupervisedLearning *_criticPolicyProblem;
+ 
+  void calculatePolicyGradients(const std::vector<float>& rewards, const std::vector<float>& policyHyperparameter);
+  std::vector<policy_t> runPolicy(const std::vector<std::vector<std::vector<float>>> &stateBatch) override;
+
+  knlohmann::json getAgentPolicy() override;
+  void setAgentPolicy(const knlohmann::json &hyperparameters) override;
+  void trainPolicy() override;
+  void resetAgentOptimizers() override;
+  void printAgentInformation() override;
+  void initializeAgent() override;
+};
+
+} // namespace continuous
+} // namespace agent
+} // namespace solver
+} // namespace korali
+
+#endif // _KORALI_AGENT_CONTINUOUS_ES_HPP_

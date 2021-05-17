@@ -44,6 +44,7 @@
 #include "problem/supervisedLearning/supervisedLearning.hpp"
 #include "solver/SAEM/SAEM.hpp"
 #include "solver/agent/continuous/VRACER/VRACER.hpp"
+#include "solver/agent/continuous/ES/ES.hpp"
 #include "solver/agent/continuous/continuous.hpp"
 #include "solver/agent/discrete/dVRACER/dVRACER.hpp"
 #include "solver/agent/discrete/discrete.hpp"

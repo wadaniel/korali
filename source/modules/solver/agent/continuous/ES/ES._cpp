@@ -1,0 +1,130 @@
+#include "engine.hpp"
+#include "modules/solver/agent/continuous/ES/ES.hpp"
+#include "omp.h"
+#include "sample/sample.hpp"
+
+namespace korali
+{
+namespace solver
+{
+namespace agent
+{
+namespace continuous
+{
+void ES::initializeAgent()
+{
+  // Initializing common discrete agent configuration
+  Continuous::initializeAgent();
+
+  /*********************************************************************
+ * Initializing Critic/Policy Neural Network Optimization Experiment
+ *********************************************************************/
+
+  _criticPolicyExperiment["Problem"]["Type"] = "Supervised Learning";
+  _criticPolicyExperiment["Problem"]["Max Timesteps"] = _timeSequenceLength;
+  _criticPolicyExperiment["Problem"]["Training Batch Size"] = _miniBatchSize;
+  _criticPolicyExperiment["Problem"]["Inference Batch Size"] = 1;
+  _criticPolicyExperiment["Problem"]["Input"]["Size"] = _problem->_stateVectorSize;
+  _criticPolicyExperiment["Problem"]["Solution"]["Size"] = _policyParameterCount;
+
+  _criticPolicyExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
+  _criticPolicyExperiment["Solver"]["L2 Regularization"]["Enabled"] = false;
+  _criticPolicyExperiment["Solver"]["L2 Regularization"]["Importance"] = 0.0;
+  _criticPolicyExperiment["Solver"]["Learning Rate"] = _currentLearningRate;
+  _criticPolicyExperiment["Solver"]["Loss Function"] = "Direct Gradient";
+  _criticPolicyExperiment["Solver"]["Steps Per Generation"] = 1;
+  _criticPolicyExperiment["Solver"]["Neural Network"]["Optimizer"] = _neuralNetworkOptimizer;
+  _criticPolicyExperiment["Solver"]["Neural Network"]["Engine"] = _neuralNetworkEngine;
+  _criticPolicyExperiment["Solver"]["Neural Network"]["Hidden Layers"] = _neuralNetworkHiddenLayers;
+  _criticPolicyExperiment["Solver"]["Output Weights Scaling"] = 0.001;
+
+  // Setting transformations for the selected policy distribution output
+  for (size_t i = 0; i < _policyParameterCount; i++)
+  {
+    _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Scale"][i] = _policyParameterScaling[i];
+    _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Shift"][i] = _policyParameterShifting[i];
+    _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Transformation Mask"][i] = _policyParameterTransformationMasks[i];
+  }
+
+  // Running initialization to verify that the configuration is correct
+  _criticPolicyExperiment.initialize();
+  _criticPolicyProblem = dynamic_cast<problem::SupervisedLearning *>(_criticPolicyExperiment._problem);
+  _criticPolicyLearner = dynamic_cast<solver::learner::DeepSupervisor *>(_criticPolicyExperiment._solver);
+
+}
+
+void ES::trainPolicy()
+{
+  // Obtaining Minibatch experience ids
+  const auto miniBatch = generateMiniBatch(_miniBatchSize);
+
+  // Gathering state sequences for selected minibatch
+  const auto stateSequence = getMiniBatchStateSequence(miniBatch);
+
+  // Running policy NN on the Minibatch experiences
+  const auto policyInfo = runPolicy(stateSequence);
+
+  // Using policy information to update experience's metadata
+  updateExperienceMetadata(miniBatch, policyInfo);
+
+  // Now calculating policy gradients
+  // calculatePolicyGradients(miniBatch);
+
+  // Updating learning rate for critic/policy learner guided by REFER
+  _criticPolicyLearner->_learningRate = _currentLearningRate;
+
+  // Now applying gradients to update policy NN
+  _criticPolicyLearner->runGeneration();
+}
+
+void ES::calculatePolicyGradients(const std::vector<float> &rewards, const std::vector<float>& policyHyperparameter)
+{
+  // TODO
+}
+
+std::vector<policy_t> ES::runPolicy(const std::vector<std::vector<std::vector<float>>> &stateBatch)
+{
+  // Getting batch size
+  size_t batchSize = stateBatch.size();
+
+  // Storage for policy
+  std::vector<policy_t> policyVector(batchSize);
+
+  // Forward the neural network for this state
+  const auto evaluation = _criticPolicyLearner->getEvaluation(stateBatch);
+
+#pragma omp parallel for
+  for (size_t b = 0; b < batchSize; b++)
+  {
+    // Getting distribution parameters
+    policyVector[b].distributionParameters.assign(evaluation[b].begin(), evaluation[b].end());
+  }
+
+  return policyVector;
+}
+
+knlohmann::json ES::getAgentPolicy()
+{
+  knlohmann::json hyperparameters;
+  hyperparameters["Policy"] = _criticPolicyLearner->getHyperparameters();
+  return hyperparameters;
+}
+
+void ES::setAgentPolicy(const knlohmann::json &hyperparameters)
+{
+  _criticPolicyLearner->setHyperparameters(hyperparameters["Policy"].get<std::vector<float>>());
+}
+
+void ES::resetAgentOptimizers()
+{
+  _criticPolicyLearner->resetOptimizer();
+}
+
+void ES::printAgentInformation()
+{
+}
+
+} // namespace continuous
+} // namespace agent
+} // namespace solver
+} // namespace korali

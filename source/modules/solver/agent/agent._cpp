@@ -215,47 +215,18 @@ void Agent::trainingGeneration()
       if (_isAgentRunning[agentId] == true)
         attendAgent(agentId);
 
-    // Perform optimization steps on the critic/policy, if reached the minimum replay memory size
-    if (_experienceCount >= _experienceReplayStartSize)
-    {
-      // If we performed enough policy updates, we rescale rewards again
-      if (_rewardRescalingEnabled == true)
-        if (_policyUpdateCount >= _rewardRescalingFrequency * _rewardRescalingCount)
-          calculateRewardRescalingFactors();
 
-      // If we accumulated enough experiences, we rescale the states (once)
-      if (_stateRescalingEnabled == true)
-        if (_policyUpdateCount == 0)
-          rescaleStates();
-
-      // If we accumulated enough experiences between updates in this session, update now
-      while (_sessionExperienceCount > (_experiencesBetweenPolicyUpdates * _sessionPolicyUpdateCount + _sessionExperiencesUntilStartSize))
-      {
-        auto beginTime = std::chrono::steady_clock::now(); // Profiling
-
-        // Calling the algorithm specific policy training algorithm
-        trainPolicy();
-
-        auto endTime = std::chrono::steady_clock::now();                                                                  // Profiling
-        _sessionPolicyUpdateTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();    // Profiling
-        _generationPolicyUpdateTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
-
-        // Increasing policy update counters
-        _policyUpdateCount++;
-        _sessionPolicyUpdateCount++;
-
-        // Updating REFER learning rate and beta parameters
-        _currentLearningRate = _learningRate / (1.0f + _experienceReplayOffPolicyAnnealingRate * (float)_policyUpdateCount);
-        if (_experienceReplayOffPolicyRatio > _experienceReplayOffPolicyTarget)
-          _experienceReplayOffPolicyREFERBeta = (1.0f - _currentLearningRate) * _experienceReplayOffPolicyREFERBeta;
-        else
-          _experienceReplayOffPolicyREFERBeta = (1.0f - _currentLearningRate) * _experienceReplayOffPolicyREFERBeta + _currentLearningRate;
-      }
 
       // Getting new policy hyperparameters (for agents to generate actions)
-      _trainingCurrentPolicy = getAgentPolicy();
     }
   }
+
+  // Update policy
+
+  // TODO
+
+  // Set new policy
+  _trainingCurrentPolicy = getAgentPolicy();
 
   // Now serializing experience replay database
   if (_experienceReplaySerialize == true)
@@ -550,47 +521,9 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
     _importanceWeightVector.add(1.0f);
     _truncatedImportanceWeightVector.add(1.0f);
   }
+  
+  // No retrace value calculation required
 
-  /*********************************************************************
-   * Computing initial retrace value for the newly added experiences
-   *********************************************************************/
-
-  // Storage for the retrace value
-  float retV = 0.0f;
-
-  // Getting position of the final experience of the episode in the replay memory
-  ssize_t endId = (ssize_t)_stateVector.size() - 1;
-
-  // Getting the starting ID of the initial experience of the episode in the replay memory
-  ssize_t startId = endId - (ssize_t)episode.size() + 1;
-
-  // If it was a truncated episode, add the value function for the terminal state to retV
-  if (_terminationVector[endId] == e_truncated)
-  {
-    // Get state sequence, appending the truncated state to it and removing first time element
-    auto expTruncatedStateSequence = getTruncatedStateSequence(endId);
-
-    // Calculating the state value function of the truncated state
-    auto truncatedPolicy = runPolicy({expTruncatedStateSequence})[0];
-    float truncatedV = truncatedPolicy.stateValue;
-
-    // Sanity checks for truncated state value
-    if (std::isfinite(truncatedV) == false)
-      KORALI_LOG_ERROR("Calculated state value for truncated state returned an invalid value: %f\n", truncatedV);
-
-    // Adding truncated state value to the retrace value
-    retV += _discountFactor * truncatedV;
-  }
-
-  // Now going backwards, setting the retrace value of every experience
-  for (ssize_t expId = endId; expId >= startId; expId--)
-  {
-    // Calculating retrace value with the discount factor. Importance weight is 1.0f because the policy is current.
-    retV = _discountFactor * retV + getScaledReward(_rewardVector[expId]);
-
-    // Setting initial retrace value in the experience's cache
-    _retraceValueVector[expId] = retV;
-  }
 }
 
 std::vector<size_t> Agent::generateMiniBatch(size_t miniBatchSize)

@@ -43,9 +43,6 @@ korali_deps += dependency('gsl', fallback: ['gsl', 'gsl_dep'], version : '>=2.5'
 korali_deps += dependency('eigen3', fallback: ['eigen', 'eigen_dep'], required: true)
 
 # Process pybind11
-# FIXME: [fabianw@mavt.ethz.ch; 2021-05-14] this should not be called here, we
-# use the fallback in dependency() in the next line
-run_command(python, '-m', 'pip', 'install', 'pybind11')
 korali_deps += dependency('pybind11', fallback: ['pybind11', 'pybind11_dep'], required: true)
 
 # process optional korali dependencies

@@ -1,7 +1,6 @@
 #! /usr/bin/env python3
 import os
 import sys
-import ast
 import sysconfig
 import subprocess
 import korali
@@ -11,7 +10,7 @@ import libkorali as lk
 def main():
 
   if (len(sys.argv) != 2):
-    print('[Korali] Syntax error on call to korali.cxx module: Exactly one argument is required (--cflags, --libs, or --compiler).')
+    print('[Korali] Syntax error on call to korali.cxx module: Exactly one argument is required (--cflags, --libs).')
     exit(-1)
   correctSyntax = False
   

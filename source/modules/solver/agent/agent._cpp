@@ -218,7 +218,6 @@ void Agent::trainingGeneration()
 
 
       // Getting new policy hyperparameters (for agents to generate actions)
-    }
   }
 
   // Update policy

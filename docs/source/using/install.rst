@@ -22,7 +22,14 @@ Installation Steps
    cd korali
    meson setup build --buildtype release --prefix PREFIX
 
-where PREFIX is the absolute path where korali will be installed.
+where PREFIX is the absolute path where korali will be installed. Optionally you can install Korali with support for MPI, OneDNN, and CUDNN, using the optional parameters: 
+
+  .. code-block:: bash
+
+   cd korali
+   meson setup build --buildtype release --prefix PREFIX -Dmpi=true -Donednn=true -Dcudnn
+
+For more information on these optional support, see *Optional Requirements* below.
 
 3. Compile Korali
 
@@ -39,9 +46,6 @@ where PREFIX is the absolute path where korali will be installed.
  .. code-block:: bash
 
     meson install -C build
-
-
-
 
 
 Troubleshooting
@@ -95,6 +99,12 @@ Mandatory Requirements
   - **Git Client**
       You need Git to clone (download) our code before installation.
 
+  - **meson**
+      To generate the installation configuration.
+
+  - **ninja**
+      To build Korali.
+
   - **Python3**
       Korali requires a version of Python higher than 3.0 to be installed in the system. Korali's installer will check the *python3* command. The path to this command should be present in the $PATH environment variable. *Hint:* Make sure Python3 is correctly installed or its module loaded before configuring Korali.
 
@@ -114,7 +124,21 @@ Optional Requirements
 ---------------------------------
 
  - **oneDNN**
-      Korali uses the `OneAPI Deep Neural Network Library <https://oneapi-src.github.io/oneDNN/>`_ for deep learning modules, and is disabled by default. You can enable it by modifying the installation configuration file. If you have an installation of oneDNN already in your system, make sure the environment variable ``DNNLROOT`` pointing to its installation folder is correctly defined. If OneDNN is not found, Korali will try to install it automatically.
+      Korali uses the `OneAPI Deep Neural Network Library <https://oneapi-src.github.io/oneDNN/>`_ for deep learning modules, and is disabled by default. You can enable it by adding the ``-Donednn=true`` option on the meson configuration line. To recommended configuration for oneDNN is:
+
+.. code-block:: bash
+
+    wget https://github.com/oneapi-src/oneDNN/archive/refs/tags/v2.2.2.tar.gz -O oneDNN-v2.2.2.tar.gz; \
+    tar -xzvf oneDNN-v2.2.2.tar.gz; \
+    mkdir -p "oneDNN-2.2.2/build"; \
+    cd "oneDNN-2.2.2/build"; \
+    CXXFLAGS=-O3 cmake .. \
+     -DCMAKE_INSTALL_PREFIX=$HOME/.local \
+     -DDNNL_BUILD_EXAMPLES=OFF \
+     -DDNNL_BUILD_TESTS=OFF \
+     -DDNNL_ENABLE_CONCURRENT_EXEC=ON \
+     -DDNNL_ARCH_OPT_FLAGS='-march=native -mtune=native' \
+     -DBUILD_SHARED_LIBS=true; make -j4; make install
 
   - **CMake**
       Korali requires that you have `CMake <https://cmake.org/>`_ version 3.0 or higher installed in your system if you need it to install certain external libraries automatically.

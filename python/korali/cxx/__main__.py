@@ -22,7 +22,7 @@ def main():
     pythonCFlagsCommand = subprocess.Popen("python3-config --includes", shell=True, stdout=subprocess.PIPE)
     pythonCFlags = pythonCFlagsCommand.stdout.read().decode().rstrip("\n")
     pybind11Includes=pybind11.get_include()
-    koraliIncludes=' -I' + os.path.dirname(korali.__file__) + '/include' + ' -I' +  os.path.dirname(korali.__file__) + '/../../../../include/' + ' -I' + os.path.dirname(korali.__file__) + '/../../source/'
+    koraliIncludes=' -I' + os.path.dirname(korali.__file__) + '/include' + ' -I' +  os.path.dirname(korali.__file__) + '/../../../../include/' + ' -I' + os.path.dirname(korali.__file__) + '/../../source/' + ' -I' + os.path.dirname(korali.__file__) + '/../../build/source/'
     flags = '-std=c++17' + koraliIncludes + ' -I' + sysconfig.get_path("include") + ' -I' + sysconfig.get_path("platinclude") + ' -I' + pybind11Includes + ' ' + pythonCFlags
 
   if (sys.argv[1] == '--libs'):

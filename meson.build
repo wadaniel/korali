@@ -53,7 +53,7 @@ if get_option('mpi')
   mpi_dep = dependency('mpi', language: 'cpp', required: false)  
 
   if mpi_dep.found() == false
-   mpi_dep = dependency('mpich', required: true)
+   mpi_dep = dependency('mpich', required: false)
   endif
 endif
 

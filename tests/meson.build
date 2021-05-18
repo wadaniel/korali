@@ -1,5 +1,4 @@
 subdir('REG-000')
-subdir('REG-004')
 subdir('STAT-001')
 subdir('STAT-002')
 subdir('STAT-003')

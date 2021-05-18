@@ -5,6 +5,7 @@
 #ifndef _KORALI_FAST_GRADIENT_BASED_OPTIMIZER_HPP_
 #define _KORALI_FAST_GRADIENT_BASED_OPTIMIZER_HPP_
 
+#include <cstddef>
 #include <vector>
 
 namespace korali

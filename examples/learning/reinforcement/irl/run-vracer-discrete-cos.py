@@ -126,7 +126,7 @@ e["Solver"]["Termination Criteria"]["Max Experiences"] = 1e7
 
 e["File Output"]["Enabled"] = True
 e["File Output"]["Frequency"] = 500
-e["File Output"]["Path"] = '_korali_results_discrete_cos_alpha2_2_fusion'
+e["File Output"]["Path"] = '_korali_results_discrete_cos_alpha1_1_fusion_scaled_nornd'
 
 ### Running Experiment
 

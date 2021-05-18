@@ -30,8 +30,10 @@ void Discrete::initializeAgent()
   if (checkSum != _problem->_totalObservedStateActionPairs) KORALI_LOG_ERROR("Checksum test failed, error while action probability calculation (expected %zu, actual %zu).\n", _problem->_totalObservedStateActionPairs, checkSum);
 
   for (size_t actionIdx = 0; actionIdx < numPossibleActions; ++actionIdx)
+    // Estimate of categorial probabilities with Dirichlet prior (alpha_i = 1)
+    _observationsApproximatorActionProbabilities[actionIdx] = (_observationsApproximatorActionProbabilities[actionIdx]) / ((float)_problem->_totalObservedStateActionPairs);
     // Estimate of categorial probabilities with Dirichlet prior (alpha_i = 2)
-    _observationsApproximatorActionProbabilities[actionIdx] = (_observationsApproximatorActionProbabilities[actionIdx]+1.0) / ((float)_problem->_totalObservedStateActionPairs + numPossibleActions);
+    //_observationsApproximatorActionProbabilities[actionIdx] = (_observationsApproximatorActionProbabilities[actionIdx]+1.0) / ((float)_problem->_totalObservedStateActionPairs + numPossibleActions);
   
 for (size_t actionIdx = 0; actionIdx < numPossibleActions; ++actionIdx) printf("Action Probabilities [%zu] : %f", actionIdx, _observationsApproximatorActionProbabilities[actionIdx]);
 }

@@ -52,7 +52,7 @@ e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = cosenv
 e["Problem"]["Training Reward Threshold"] = 501
 e["Problem"]["Policy Testing Episodes"] = 1
-e["Problem"]["Actions Between Policy Updates"] = 5
+e["Problem"]["Actions Between Policy Updates"] = 10
 e["Problem"]["Observations"]["States"] = obsstates
 e["Problem"]["Observations"]["Actions"] = obsactions
 e["Problem"]["Observations"]["Features"] = obsfeatures
@@ -79,30 +79,30 @@ e["Variables"][4]["Initial Exploration Noise"] = 0.1
 
 e["Solver"]["Type"] = "Agent / Continuous / VRACER"
 e["Solver"]["Mode"] = "Training"
-e["Solver"]["Experiences Between Policy Updates"] = 1
-e["Solver"]["Experiences Between Reward Updates"] = 1
+e["Solver"]["Experiences Between Policy Updates"] = 10
 e["Solver"]["Episodes Per Generation"] = 1
 
 ### Defining the configuration of replay memory
 
-e["Solver"]["Experience Replay"]["Start Size"] = 32768
+e["Solver"]["Experience Replay"]["Start Size"] = 1024
 e["Solver"]["Experience Replay"]["Maximum Size"] = 131072
 
 ## Defining Neural Network Configuration for Policy and Critic into Critic Container
 
 e["Solver"]["Discount Factor"] = 0.99
-e["Solver"]["Learning Rate"] = 1e-4
-e["Solver"]["Mini Batch"]["Size"] = 256
+e["Solver"]["Learning Rate"] = 1e-3
+e["Solver"]["Mini Batch"]["Size"] = 32
 e["Solver"]["Reward"]["Rescaling"]["Enabled"] = False
 e["Solver"]["State Rescaling"]["Enabled"] = False
 
 ### IRL related configuration
 
-e["Solver"]["Rewardfunction Learning Rate"] = 1e-4
+e["Solver"]["Experiences Between Reward Updates"] = 1000
+e["Solver"]["Rewardfunction Learning Rate"] = 1e-3
 e["Solver"]["Demonstration Batch Size"] = 10
 e["Solver"]["Background Batch Size"] = 20
-e["Solver"]["Use Fusion Distribution"] = False
-e["Solver"]["Experiences Between Partition Function Statistics"] = 3e5
+e["Solver"]["Use Fusion Distribution"] = True
+e["Solver"]["Experiences Between Partition Function Statistics"] = 2e5
 
 ### Configuring the neural network and its hidden layers
 
@@ -110,26 +110,26 @@ e["Solver"]["Neural Network"]["Engine"] = "OneDNN"
 e["Solver"]["Neural Network"]["Optimizer"] = "Adam"
 
 e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear"
-e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 128
+e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 32
 
 e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Activation"
 e["Solver"]["Neural Network"]["Hidden Layers"][1]["Function"] = "Elementwise/Tanh"
 
 e["Solver"]["Neural Network"]["Hidden Layers"][2]["Type"] = "Layer/Linear"
-e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 128
+e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 32
 
 e["Solver"]["Neural Network"]["Hidden Layers"][3]["Type"] = "Layer/Activation"
 e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tanh"
 
 ### Defining Termination Criteria
 
-e["Solver"]["Termination Criteria"]["Max Experiences"] = 1e6
+e["Solver"]["Termination Criteria"]["Max Experiences"] = 1e7
 
 ### Setting file output configuration
 
 e["File Output"]["Enabled"] = True
-e["File Output"]["Frequency"] = 1000
-e["File Output"]["Path"] = '_korali_results_continuous_cos'
+e["File Output"]["Frequency"] = 500
+e["File Output"]["Path"] = '_korali_results_continuous_cos_fusion_2_scaled_nornd'
 
 ### Running Experiment
 

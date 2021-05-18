@@ -22,19 +22,27 @@ def main():
     pythonCFlagsCommand = subprocess.Popen("python3-config --includes", shell=True, stdout=subprocess.PIPE)
     pythonCFlags = pythonCFlagsCommand.stdout.read().decode().rstrip("\n")
     pybind11Includes=pybind11.get_include()
-    koraliIncludes=' -I' + os.path.dirname(korali.__file__) + '/include' + ' -I' +  os.path.dirname(korali.__file__) + '/../../source' + ' -I' +  os.path.dirname(koraliLib)
+    koraliIncludes=' -I' + os.path.dirname(korali.__file__) + '/include' + ' -I' +  os.path.dirname(korali.__file__) + '/../../../../include/'
     flags = '-std=c++17' + koraliIncludes + ' -I' + sysconfig.get_path("include") + ' -I' + sysconfig.get_path("platinclude") + ' -I' + pybind11Includes + ' ' + pythonCFlags
 
   if (sys.argv[1] == '--libs'):
     correctSyntax = True
     
+    pythonPrefixCommand = subprocess.Popen("python3-config --prefix", shell=True, stdout=subprocess.PIPE)
+    pythonPrefix = pythonPrefixCommand.stdout.read().decode().rstrip("\n")
+
+    try:
+     pythonLibsCommand = subprocess.Popen("python3-config --ldflags --embed", shell=True, stdout=subprocess.PIPE)
+    except subprocess.CalledProcessError as e:
+     pythonLibsCommand = subprocess.Popen("python3-config --ldflags", shell=True, stdout=subprocess.PIPE)
+    pythonLibs = pythonLibsCommand.stdout.read().decode().rstrip("\n")
     try:
      pythonLibsCommand = subprocess.Popen("python3-config --ldflags --embed", shell=True, stdout=subprocess.PIPE)
     except subprocess.CalledProcessError as e:
      pythonLibsCommand = subprocess.Popen("python3-config --ldflags", shell=True, stdout=subprocess.PIPE)
     pythonLibs = pythonLibsCommand.stdout.read().decode().rstrip("\n")
     
-    flags = koraliLib + ' ' + pythonLibs
+    flags = koraliLib + ' -Wl,-rpath,' + os.path.dirname(korali.__file__) + ' ' + pythonLibs + ' -Wl,-rpath,' + pythonPrefix + '/lib'
 
   if (correctSyntax == False):
    print('[Korali] Syntax error on call to korali.cxx module: Argument \'{0}\' not recognized (--cflags, --libs).'.format(sys.argv[1]))

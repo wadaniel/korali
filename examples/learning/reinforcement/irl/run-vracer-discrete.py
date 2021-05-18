@@ -55,7 +55,7 @@ e = korali.Experiment()
 
 e["Problem"]["Type"] = "Reinforcement Learning / Discrete"
 e["Problem"]["Possible Actions"] = [ [ -10.0 ], [ -5.0 ], [ -1.0 ], [ 0.0 ], [ 1.0 ], [ 5.0 ], [ 10.0 ] ]
-e["Problem"]["Environment Function"] = cosenv
+e["Problem"]["Environment Function"] = env
 e["Problem"]["Training Reward Threshold"] = 600
 e["Problem"]["Policy Testing Episodes"] = 1
 e["Problem"]["Actions Between Policy Updates"] = 5
@@ -132,7 +132,7 @@ e["Solver"]["Termination Criteria"]["Max Experiences"] = 10e6
 
 e["File Output"]["Enabled"] = True
 e["File Output"]["Frequency"] = 1000
-e["File Output"]["Path"] = '_korali_results_discrete_cos_alpha2_2'
+e["File Output"]["Path"] = '_korali_results_discrete'
 
 ### Running Experiment
 

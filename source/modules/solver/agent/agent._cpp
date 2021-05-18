@@ -5,7 +5,8 @@
 #include <algorithm>
 #include <chrono>
 
-#define COSREWARD
+//#define COSREWARD
+#define COSREWARDSCALED
 
 namespace korali
 {
@@ -345,7 +346,11 @@ float Agent::calculateReward(const std::vector<float> &features)
 #ifdef COSREWARD
   reward = std::cos(features[0] - _featureWeights[0]);
 #else
+#ifdef COSREWARDSCALED
+  reward = std::cos(features[0] - _featureWeights[0])/500.0;
+#else
   for (size_t i = 0; i < _problem->_featureVectorSize; ++i) reward += _softMaxFeatureWeights[i] * features[i];
+#endif
 #endif
   return reward;
 }
@@ -356,6 +361,9 @@ std::vector<float> Agent::calculateRewardGradient(const std::vector<float> &feat
 #ifdef COSREWARD
   rewardGrad[0] = std::sin(features[0] - _featureWeights[0]);
 #else
+#ifdef COSREWARDSCALED
+  rewardGrad[0] = std::sin(features[0] - _featureWeights[0])/500.0;
+#else
   for (size_t i = 0; i < _problem->_featureVectorSize; ++i)
     for (size_t j = 0; j < _problem->_featureVectorSize; ++j)
     {
@@ -364,6 +372,7 @@ std::vector<float> Agent::calculateRewardGradient(const std::vector<float> &feat
       else
         rewardGrad[j] -= _softMaxFeatureWeights[i] * _softMaxFeatureWeights[j] * features[i];
     }
+#endif
 #endif
   return rewardGrad;
 }
@@ -572,7 +581,7 @@ void Agent::partitionFunctionStat()
   // Randomize demonstration batch
   std::vector<size_t> randomDemonstrationIndexes(_problem->_numberObservedTrajectories);
   std::iota(std::begin(randomDemonstrationIndexes), std::end(randomDemonstrationIndexes), 0);
-  std::shuffle(randomDemonstrationIndexes.begin(), randomDemonstrationIndexes.end(), generator);
+  //std::shuffle(randomDemonstrationIndexes.begin(), randomDemonstrationIndexes.end(), generator);
 
   // Calculate cumulative rewards for demonstration batch
   std::vector<float> cumulativeRewardsDemonstrationBatch(_demonstrationBatchSize, 0.0);
@@ -588,7 +597,7 @@ void Agent::partitionFunctionStat()
     cumulativeRewardsDemonstrationBatch[n] = cumReward;
   }
 
-#pragma omp parallel for
+#pragma omp parallel for schedule (dynamic)
   for (size_t batchSize = 1; batchSize <= _backgroundSampleSize; ++batchSize)
   {
     // Get background trajectory log probabilities
@@ -1454,6 +1463,12 @@ void Agent::finalize()
 {
   if (_mode != "Training") return;
   
+  if (_experienceReplaySerialize == true)
+    if (_k->_fileOutputEnabled)
+      serializeExperienceReplay();
+ 
+  partitionFunctionStat();
+  
   _k->_logger->logInfo("Normal", "Waiting for pending agents to finish...\n");
 
   // Waiting for pending agents to finish
@@ -1471,11 +1486,6 @@ void Agent::finalize()
     if (agentsRemain) KORALI_LISTEN(_agents);
   } while (agentsRemain == true);
 
-  partitionFunctionStat();
-
-  if (_experienceReplaySerialize == true)
-    if (_k->_fileOutputEnabled)
-      serializeExperienceReplay();
 
 }
 

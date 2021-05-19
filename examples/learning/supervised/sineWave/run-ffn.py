@@ -42,7 +42,7 @@ e["Solver"]["Learning Rate"] = 0.005
 ### Defining the shape of the neural network
 
 e["Solver"]["Neural Network"]["Engine"] = "OneDNN"
-e["Solver"]["Neural Network"]["Optimizer"] = "MADGRAD"
+e["Solver"]["Neural Network"]["Optimizer"] = "Adam"
 
 e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear"
 e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 32
@@ -65,6 +65,12 @@ e["Random Seed"] = 0xC0FFEE
 ### Training the neural network
 
 e["Solver"]["Termination Criteria"]["Max Generations"] = 10
+
+### If this is test mode, run only a couple generations
+if len(sys.argv) == 2:
+ if sys.argv[1] == '--test':
+  e["Solver"]["Termination Criteria"]["Max Generations"] = 2
+  
 k.run(e)
 
 ### Obtaining inferred results from the NN and comparing them to the actual solution
@@ -81,6 +87,6 @@ print("MSE on test set: {}".format(mse))
 
 ### Plotting Results
 
-plt.plot(testInputSet, testOutputSet, "o")
-plt.plot(testInputSet, testInferredSet, "x")
-plt.show()
+#plt.plot(testInputSet, testOutputSet, "o")
+#plt.plot(testInputSet, testInferredSet, "x")
+#plt.show()

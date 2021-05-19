@@ -1,6 +1,6 @@
-#ifndef _KORALI_CONDUIT_MPI_HPP_
-#define _KORALI_CONDUIT_MPI_HPP_
+@startIncludeGuard
 
+#include "config.hpp"
 #include "modules/conduit/conduit.hpp"
 #include <map>
 #include <queue>
@@ -10,39 +10,62 @@
   #include "mpi.h"
 #endif
 
-namespace korali
-{
-#ifdef _KORALI_USE_MPI
-/**
- * @brief Communicator storage for the current Korali Worker
- */
-extern MPI_Comm __KoraliTeamComm;
+@startNamespace0
 
-/**
-  * @brief Returns Communicator for the current Korali Worker
-  * @return An MPI Communicator
-  */
-extern MPI_Comm getKoraliMPIComm();
+// Defining fallback type for MPI_Comm in case Korali wasn't compiled with compatibility with MPI
+#ifndef _KORALI_USE_MPI
 
-/**
-  * @brief Returns Communicator for the current Korali Worker
-  * @return An MPI Communicator (in the form of a long integer, for Python compatibility)
-  */
-extern long int getKoraliMPICommPointer();
+  typedef long int MPI_Comm;
+
 #endif
 
-namespace conduit
-{
-class Distributed : public Conduit
+/**
+* @brief Communicator storage for the current Korali Worker
+*/
+extern MPI_Comm __KoraliGlobalMPIComm;
+
+/**
+* @brief Communicator storage for the current Korali Worker
+*/
+extern MPI_Comm __koraliWorkerMPIComm;
+
+#ifdef _KORALI_USE_MPI
+
+ /**
+  * @brief Sets global MPI communicator
+  * @param comm The MPI communicator to use
+  * @return The return code of MPI_Comm_Dup
+  */
+ int setKoraliMPIComm(const MPI_Comm& comm);
+
+ /**
+   * @brief Returns MPI communicator for the current Korali Worker
+   * @return A pointer to the MPI Communicator
+   */
+ extern void* getKoraliWorkerMPIComm();
+
+#else
+
+ /**
+   * @brief Error handler for when MPI is not defined
+   * @param ... accepts any parameters since it will fail anyway
+   * @return Error code -1
+   */
+ int setKoraliMPIComm(...);
+
+ /**
+  * @brief Error handler for when MPI is not defined
+  * @return A NULL pointer
+  */
+ extern void* getKoraliWorkerMPIComm();
+
+#endif
+
+@startNamespace1
+
+class @className : public @parentClassName
 {
   public:
-#ifdef _KORALI_USE_MPI
-
-  /**
-  * @brief Actual MPI communicator for internal use.
-  */
-  MPI_Comm _mpiCommunicator;
-#endif
 
   /**
   * @brief ID of the current rank.
@@ -79,14 +102,9 @@ class Distributed : public Conduit
   */
   std::vector<int> _rankToWorkerMap;
 
-  /**
-  * @brief Flag to mark termination for Korali teams.
-  */
-  bool _continueEvaluations;
-
   void initServer() override;
   void initialize() override;
-  void finalize() override;
+  void terminateServer() override;
 
   void stackEngine(Engine *engine) override;
   void popEngine() override;
@@ -106,7 +124,8 @@ class Distributed : public Conduit
   void abort() override;
 };
 
-} // namespace conduit
-} // namespace korali
+@endNamespace1
 
-#endif // _KORALI_CONDUIT_MPI_HPP_
+@endNamespace0
+
+@endIncludeGuard

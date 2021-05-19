@@ -5,6 +5,7 @@
 * @brief Include header for the Korali Engine
 */
 
+#include "config.hpp"
 #include "modules/conduit/conduit.hpp"
 #include "modules/conduit/distributed/distributed.hpp"
 #include "modules/experiment/experiment.hpp"
@@ -135,12 +136,6 @@ class Engine : public Module
   * @brief (Worker) Stores a pointer to the current Experiment being processed
   */
   Experiment *_currentExperiment;
-
-  /**
-   * @brief Returns the worker teams MPI communication pointer (Distributed Conduit only).
-   * @return Numerical pointer to the MPI communicator
-   */
-  static long int getMPICommPointer();
 
   /**
    * @brief Serializes Engine's data into a JSON object.

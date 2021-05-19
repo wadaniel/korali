@@ -3,15 +3,9 @@
 #include "omp.h"
 #include "sample/sample.hpp"
 
-namespace korali
-{
-namespace solver
-{
-namespace agent
-{
-namespace continuous
-{
-void ES::initializeAgent()
+@startNamespace
+
+void @className::initializeAgent()
 {
   // Initializing common discrete agent configuration
   Continuous::initializeAgent();
@@ -54,7 +48,7 @@ void ES::initializeAgent()
 
 }
 
-void ES::trainPolicy()
+void @className::trainPolicy()
 {
   size_t hyperparameterCount = _criticPolicyLearner->_hyperparameters.size();
   
@@ -81,7 +75,7 @@ void ES::trainPolicy()
 
 }
 
-std::vector<policy_t> ES::runPolicy(const std::vector<std::vector<std::vector<float>>> &stateBatch)
+std::vector<policy_t> @className::runPolicy(const std::vector<std::vector<std::vector<float>>> &stateBatch)
 {
   // Getting batch size
   size_t batchSize = stateBatch.size();
@@ -102,28 +96,27 @@ std::vector<policy_t> ES::runPolicy(const std::vector<std::vector<std::vector<fl
   return policyVector;
 }
 
-knlohmann::json ES::getAgentPolicy()
+knlohmann::json @className::getAgentPolicy()
 {
   knlohmann::json hyperparameters;
   hyperparameters["Policy"] = _criticPolicyLearner->getHyperparameters();
   return hyperparameters;
 }
 
-void ES::setAgentPolicy(const knlohmann::json &hyperparameters)
+void @className::setAgentPolicy(const knlohmann::json &hyperparameters)
 {
   _criticPolicyLearner->setHyperparameters(hyperparameters["Policy"].get<std::vector<float>>());
 }
 
-void ES::resetAgentOptimizers()
+void @className::resetAgentOptimizers()
 {
   _criticPolicyLearner->resetOptimizer();
 }
 
-void ES::printAgentInformation()
+void @className::printAgentInformation()
 {
 }
 
-} // namespace continuous
-} // namespace agent
-} // namespace solver
-} // namespace korali
+@moduleAutoCode
+
+@endNamespace

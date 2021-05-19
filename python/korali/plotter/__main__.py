@@ -12,9 +12,7 @@ curdir = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
 # Check if name has .png ending
 def validateOutput(output):
   if not (output.endswith(".png") or output.endswith(".eps") or output.endswith(".svg")):
-    print(
-        "[Korali] Error: Outputfile '{0}' must end with '.eps', '.png' or '.svg' suffix.".format(
-            output))
+    print("[Korali] Error: Outputfile '{0}' must end with '.eps', '.png' or '.svg' suffix.".format(output))
     sys.exit(-1)
 
 
@@ -37,9 +35,7 @@ def main(path, check, test, output, plotAll=False):
 
   configFile = path + '/gen00000000.json'
   if (not os.path.isfile(configFile)):
-    print(
-        "[Korali] Error: Did not find any results in the {0} folder...".format(
-            path))
+    print("[Korali] Error: Did not find any results in the {0} folder...".format(path))
     exit(-1)
 
   with open(configFile) as f:
@@ -58,16 +54,17 @@ def main(path, check, test, output, plotAll=False):
     with open(path + '/' + file) as f:
       genJs = json.load(f)
       solverRunId = genJs['Run ID']
-
+      print(solverRunId)
       if (configRunId == solverRunId):
         curGen = genJs['Current Generation']
         genList[curGen] = genJs
 
-  del genList[0]
-
   solverName = js['Solver']['Type'].lower()
   solverDir = ""
   moduleName = ""
+
+  print(len(genList))
+  exit(0)
 
   if ("cmaes" in solverName):
    solverDir = curdir + '/CMAES'

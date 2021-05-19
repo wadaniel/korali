@@ -62,6 +62,11 @@ e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 16
 
 e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 2.0
 
+### If this is test mode, run only a couple generations
+if len(sys.argv) == 2:
+ if sys.argv[1] == '--test':
+  e["Solver"]["Termination Criteria"]["Max Generations"] = 5
+  
 ### Setting file output configuration
 
 e["Console Output"]["Verbosity"] = "Detailed"

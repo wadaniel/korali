@@ -1,0 +1,8 @@
+subdir('checkpoint.resume')
+subdir('composite.korali')
+subdir('concurrent.execution')
+subdir('multiple.experiments')
+subdir('partial.runs')
+subdir('running.cxx')
+subdir('running.mpi')
+subdir('save.results')

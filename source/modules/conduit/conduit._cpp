@@ -6,8 +6,8 @@
 
 using namespace std;
 
-namespace korali
-{
+@startNamespace
+
 /**
 * @brief Temporary storage to hold the pointer to the current sample to process
 */
@@ -103,7 +103,7 @@ void Conduit::worker()
   {
     auto js = recvMessageFromEngine();
 
-    if (js["Conduit Action"] == "Terminate") exit(0);
+    if (js["Conduit Action"] == "Terminate") break;
     if (js["Conduit Action"] == "Process Sample") workerProcessSample(js);
     if (js["Conduit Action"] == "Broadcast Globals") workerBroadcastGlobals(js);
     if (js["Conduit Action"] == "Stack Engine") workerStackEngine(js);
@@ -332,4 +332,6 @@ void Conduit::listen(std::vector<Sample> &samples)
     }
 }
 
-} // namespace korali
+@moduleAutoCode
+
+@endNamespace

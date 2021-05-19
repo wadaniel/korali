@@ -1,5 +1,5 @@
 #include "_model/jacobi.h"
-#include "korali.hpp"
+#include <korali.hpp>
 #include <stdlib.h>
 #include <unistd.h>
 
@@ -92,11 +92,10 @@ int main(int argc, char *argv[])
 
   k["Conduit"]["Type"] = "Distributed";
   k["Conduit"]["Ranks Per Worker"] = workersPerTeam;
-  k["Conduit"]["Communicator"] = MPI_COMM_WORLD;
   k["Profiling"]["Detail"] = "Full";
   k["Profiling"]["Frequency"] = 0.5;
 
-  // We run a few generations first
+  korali::setKoraliMPIComm(MPI_COMM_WORLD);
   k.run(e);
 
   MPI_Finalize();

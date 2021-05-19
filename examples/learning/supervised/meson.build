@@ -1,0 +1,2 @@
+subdir('mnist')
+subdir('sineWave')

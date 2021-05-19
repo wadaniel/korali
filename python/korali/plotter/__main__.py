@@ -54,17 +54,16 @@ def main(path, check, test, output, plotAll=False):
     with open(path + '/' + file) as f:
       genJs = json.load(f)
       solverRunId = genJs['Run ID']
-      print(solverRunId)
+
       if (configRunId == solverRunId):
         curGen = genJs['Current Generation']
         genList[curGen] = genJs
 
+  del genList[0]
+
   solverName = js['Solver']['Type'].lower()
   solverDir = ""
   moduleName = ""
-
-  print(len(genList))
-  exit(0)
 
   if ("cmaes" in solverName):
    solverDir = curdir + '/CMAES'

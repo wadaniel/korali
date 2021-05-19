@@ -31,15 +31,16 @@ initEnvironment(e, args.env)
 e["Solver"]["Type"] = "Agent / Continuous / ES"
 e["Solver"]["Mode"] = "Training"
 e["Solver"]["Episodes Per Generation"] = 1
-e["Solver"]["Episodes Per Update"] = 32
+e["Solver"]["Episodes Per Update"] = 8
 
 e["Solver"]["Experience Replay"]["Start Size"] = 8096
 e["Solver"]["Experience Replay"]["Maximum Size"] = 10000
 
 e["Solver"]["Discount Factor"] = 0.99
-e["Solver"]["Learning Rate"] = 1e-4
-e["Solver"]["Noise Parameter"] = 1e-4
-e["Solver"]["Mini Batch"]["Size"] = 32
+e["Solver"]["Learning Rate"] = 0.02
+e["Solver"]["Noise Parameter"] = 0.17
+e["Solver"]["Mini Batch"]["Size"] = 1
+e["Solver"]["Experiences Between Policy Updates"] = 1
 
 e["Solver"]["State Rescaling"]["Enabled"] = True
 e["Solver"]["Reward"]["Rescaling"]["Enabled"] = False
@@ -50,7 +51,7 @@ e["Solver"]["Neural Network"]["Engine"] = "OneDNN"
 e["Solver"]["Neural Network"]["Optimizer"] = "AdaBelief"
 
 e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear"
-e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 4
+e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 2
 
 #e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Activation"
 #e["Solver"]["Neural Network"]["Hidden Layers"][1]["Function"] = "Elementwise/Tanh"

@@ -134,6 +134,7 @@ void @className::initialize()
     // Creating storate for _agents and their status
     _agents.resize(_agentCount);
     _isAgentRunning.resize(_agentCount, false);
+    _rolloutVector.resize(_agentCount);
   }
 
   if (_mode == "Testing")
@@ -186,7 +187,7 @@ void @className::trainingGeneration()
   
   auto policy = _trainingCurrentPolicy["Policy"].get<std::vector<float>>();
   size_t hyperparameterCount = policy.size();
-  for(size_t i = 0; i < hyperparameterCount; ++i) printf("t(%zu/%zu): %f\n", i, policy.size(), policy[i]);
+  //for(size_t i = 0; i < hyperparameterCount; ++i) printf("t(%zu/%zu): %f\n", i, policy.size(), policy[i]);
   
   for(size_t rollout = 0; rollout < _episodesPerUpdate; rollout+=2)
   {
@@ -228,6 +229,7 @@ void @className::trainingGeneration()
         _agents[agentId]["State Rescaling"]["Standard Deviations"] = _stateRescalingSigmas;
 
         KORALI_START(_agents[agentId]);
+        _rolloutVector[agentId] = rollout;
         rollout++;
         _isAgentRunning[agentId] = true;
       }
@@ -400,7 +402,8 @@ void @className::attendAgent(size_t agentId)
       _trainingExperienceHistory.push_back(message["Experiences"].size());
 
       // ES speicifcs
-      _rewardSampleVector[agentId] = _trainingLastReward;
+      size_t rollout = _rolloutVector[agentId];
+      _rewardSampleVector[rollout] = _trainingLastReward;
 
       // Keeping training statistics. Updating if exceeded best training policy so far.
       if (_trainingLastReward > _trainingBestReward)

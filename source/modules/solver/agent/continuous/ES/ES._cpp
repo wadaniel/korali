@@ -68,7 +68,7 @@ void @className::trainPolicy()
     hyperparameterGradient[i] /= ((float)_episodesPerUpdate * _noiseParameter);
     currentPolicyParameter[i] += _learningRate*hyperparameterGradient[i];
   }
-  for(size_t i = 0; i < hyperparameterCount; ++i) printf("gt(%zu/%zu): %f\n", i, hyperparameterCount, hyperparameterGradient[i]);
+  //for(size_t i = 0; i < hyperparameterCount; ++i) printf("gt(%zu/%zu): %f\n", i, hyperparameterCount, hyperparameterGradient[i]);
     
   _criticPolicyLearner->setHyperparameters(currentPolicyParameter);
   _policyUpdateCount++;

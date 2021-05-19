@@ -55,6 +55,12 @@ trainingImageVector, trainingLabelVector = zip(*jointSet)
 stepsPerEpoch = int(len(trainingImageVector) / trainingBatchSize)
 testingBatchSize = len(testingLabelVector)
  
+### If this is test mode, run only one epoch
+if len(sys.argv) == 2:
+ if sys.argv[1] == '--test':
+  epochs=1
+  stepsPerEpoch=1
+
 ### Configuring general problem settings
 
 e["Problem"]["Type"] = "Supervised Learning"

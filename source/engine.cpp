@@ -2,7 +2,6 @@
 #include "auxiliar/fs.hpp"
 #include "auxiliar/koraliJson.hpp"
 #include "modules/conduit/conduit.hpp"
-#include "modules/conduit/distributed/distributed.hpp"
 #include "modules/experiment/experiment.hpp"
 #include "modules/problem/problem.hpp"
 #include "modules/solver/solver.hpp"
@@ -126,7 +125,7 @@ void Engine::start()
   }
 
   // Finalizing Conduit if last engine in the stack
-  _conduit->finalize();
+  _conduit->terminateServer();
 }
 
 void Engine::saveProfilingInfo(const bool forceSave)
@@ -176,13 +175,6 @@ void Engine::serialize(knlohmann::json &js)
   }
 }
 
-#ifdef _KORALI_USE_MPI
-long int Engine::getMPICommPointer()
-{
-  return (long int)(&__KoraliTeamComm);
-}
-#endif
-
 knlohmann::json &Engine::operator[](const std::string &key)
 {
   return _js[key];
@@ -197,10 +189,6 @@ using namespace korali;
 
 PYBIND11_MODULE(libkorali, m)
 {
-#ifdef _KORALI_USE_MPI
-  m.def("getMPICommPointer", &Engine::getMPICommPointer, pybind11::return_value_policy::reference);
-#endif
-
   pybind11::class_<Engine>(m, "Engine")
     .def(pybind11::init<>())
     .def("run", [](Engine &k, Experiment &e) {

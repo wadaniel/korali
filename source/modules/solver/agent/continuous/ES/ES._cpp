@@ -36,15 +36,16 @@ void ES::initializeAgent()
   _criticPolicyExperiment["Solver"]["Neural Network"]["Optimizer"] = _neuralNetworkOptimizer;
   _criticPolicyExperiment["Solver"]["Neural Network"]["Engine"] = _neuralNetworkEngine;
   _criticPolicyExperiment["Solver"]["Neural Network"]["Hidden Layers"] = _neuralNetworkHiddenLayers;
-  _criticPolicyExperiment["Solver"]["Output Weights Scaling"] = 0.001;
-
-  // Setting transformations for the selected policy distribution output
+  _criticPolicyExperiment["Solver"]["Output Weights Scaling"] = 0.1;
+ 
+ // Setting transformations for the selected policy distribution output
   for (size_t i = 0; i < _policyParameterCount; i++)
   {
-    _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Scale"][i] = _policyParameterScaling[i];
-    _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Shift"][i] = _policyParameterShifting[i];
-    _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Transformation Mask"][i] = _policyParameterTransformationMasks[i];
+    _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Scale"][i] = 1.0; //_policyParameterScaling[i];
+    _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Shift"][i] = 0.0; //_policyParameterShifting[i];
+    _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Transformation Mask"][i] = "Identity"; //_policyParameterTransformationMasks[i];
   }
+
 
   // Running initialization to verify that the configuration is correct
   _criticPolicyExperiment.initialize();
@@ -55,31 +56,29 @@ void ES::initializeAgent()
 
 void ES::trainPolicy()
 {
-  // Obtaining Minibatch experience ids
-  const auto miniBatch = generateMiniBatch(_miniBatchSize);
+  size_t hyperparameterCount = _criticPolicyLearner->_hyperparameters.size();
+  
+  // Calculate Policy Gradient
+  std::vector<float> hyperparameterGradient(hyperparameterCount, 0.0);
+  for(size_t m = 0; m < _episodesPerUpdate; m+=2)
+  {
+    for(size_t i = 0; i < hyperparameterCount; ++i)
+      hyperparameterGradient[i] += (_rewardVector[m]-_rewardVector[m+1])*_sampleVector[m][i];
+  }
+ 
+  std::vector<float> currentPolicyParameter = _trainingCurrentPolicy["Policy"].get<std::vector<float>>();
+ 
+  // Scale Gradient and perform update 
+  for(size_t i = 0; i < hyperparameterCount; ++i)
+  {
+    hyperparameterGradient[i] /= ((float)_episodesPerUpdate * _noiseParameter);
+    currentPolicyParameter[i] += _learningRate*hyperparameterGradient[i];
+  }
+  for(size_t i = 0; i < hyperparameterCount; ++i) printf("gt(%zu/%zu): %f\n", i, hyperparameterCount, hyperparameterGradient[i]);
+    
+  _criticPolicyLearner->setHyperparameters(currentPolicyParameter);
+  _policyUpdateCount++;
 
-  // Gathering state sequences for selected minibatch
-  const auto stateSequence = getMiniBatchStateSequence(miniBatch);
-
-  // Running policy NN on the Minibatch experiences
-  const auto policyInfo = runPolicy(stateSequence);
-
-  // Using policy information to update experience's metadata
-  updateExperienceMetadata(miniBatch, policyInfo);
-
-  // Now calculating policy gradients
-  // calculatePolicyGradients(miniBatch);
-
-  // Updating learning rate for critic/policy learner guided by REFER
-  _criticPolicyLearner->_learningRate = _currentLearningRate;
-
-  // Now applying gradients to update policy NN
-  _criticPolicyLearner->runGeneration();
-}
-
-void ES::calculatePolicyGradients(const std::vector<float> &rewards, const std::vector<float>& policyHyperparameter)
-{
-  // TODO
 }
 
 std::vector<policy_t> ES::runPolicy(const std::vector<std::vector<std::vector<float>>> &stateBatch)

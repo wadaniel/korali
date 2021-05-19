@@ -35,14 +35,6 @@ void Agent::initialize()
   mt = new std::mt19937(rd());
   mt->seed(_k->_randomSeed++);
 
-  // If not set, using heurisitc for maximum size
-  if (_experienceReplayMaximumSize == 0)
-    _experienceReplayMaximumSize = std::pow(2, 14) * std::sqrt(_problem->_stateVectorSize + _problem->_actionVectorSize);
-
-  // If not set, filling ER before learning
-  if (_experienceReplayStartSize == 0)
-    _experienceReplayStartSize = _experienceReplayMaximumSize;
-
   //  Pre-allocating space for the experience replay memory
   _stateVector.resize(_experienceReplayMaximumSize);
   _actionVector.resize(_experienceReplayMaximumSize);
@@ -59,6 +51,11 @@ void Agent::initialize()
   _isOnPolicyVector.resize(_experienceReplayMaximumSize);
   _episodePosVector.resize(_experienceReplayMaximumSize);
   _episodeIdVector.resize(_experienceReplayMaximumSize);
+  
+  // ES specifics
+  _policySampleVector.resize(_episodesPerUpdate);
+  _sampleVector.resize(_episodesPerUpdate);
+  _rewardSampleVector.resize(_episodesPerUpdate);
 
   //  Pre-allocating space for state time sequence
   _stateTimeSequence.resize(_timeSequenceLength);
@@ -188,22 +185,52 @@ void Agent::trainingGeneration()
   _generationAgentPolicyEvaluationTime = 0.0;
   _generationPolicyUpdateTime = 0.0;
   _generationAgentAttendingTime = 0.0;
-
-  // Running until all _agents have finished
-  while (_sessionEpisodeCount < _episodesPerGeneration * _sessionGeneration)
+  
+  auto policy = _trainingCurrentPolicy["Policy"].get<std::vector<float>>();
+  size_t hyperparameterCount = policy.size();
+  for(size_t i = 0; i < hyperparameterCount; ++i) printf("t(%zu/%zu): %f\n", i, policy.size(), policy[i]);
+  
+  for(size_t rollout = 0; rollout < _episodesPerUpdate; rollout+=2)
   {
+    _policySampleVector[rollout] = policy;
+    _policySampleVector[rollout+1] = policy;
+    _sampleVector[rollout].resize(hyperparameterCount);
+    _sampleVector[rollout+1].resize(hyperparameterCount);
+    for(size_t i = 0; i < hyperparameterCount; ++i)
+    {
+      _sampleVector[rollout][i] = _normalGenerator->getRandomNumber();
+      _policySampleVector[rollout][i] += _noiseParameter*_sampleVector[rollout][i];
+    }
+    for(size_t i = 0; i < hyperparameterCount; ++i)
+    {
+      _sampleVector[rollout+1][i] = -_sampleVector[rollout][i];
+      _policySampleVector[rollout+1][i] += _noiseParameter*_sampleVector[rollout+1][i];
+    }
+
+  }
+  
+  size_t rollout = 0;
+  bool agentsRemain = false;
+  // Running until all _agents have finished
+  do
+  {
+    agentsRemain = false;
+
     // Launching (or re-launching) agents
     for (size_t agentId = 0; agentId < _agentCount; agentId++)
-      if (_isAgentRunning[agentId] == false)
+      if (_isAgentRunning[agentId] == false && rollout < _episodesPerUpdate)
       {
+        knlohmann::json policy;
+        policy["Policy"] = _policySampleVector[rollout];
         _agents[agentId]["Sample Id"] = _currentEpisode++;
         _agents[agentId]["Module"] = "Problem";
         _agents[agentId]["Operation"] = "Run Training Episode";
-        _agents[agentId]["Policy Hyperparameters"] = _trainingCurrentPolicy;
+        _agents[agentId]["Policy Hyperparameters"] = policy;
         _agents[agentId]["State Rescaling"]["Means"] = _stateRescalingMeans;
         _agents[agentId]["State Rescaling"]["Standard Deviations"] = _stateRescalingSigmas;
 
         KORALI_START(_agents[agentId]);
+        rollout++;
         _isAgentRunning[agentId] = true;
       }
 
@@ -213,16 +240,22 @@ void Agent::trainingGeneration()
     // Attending to running agents, checking if any experience has been received
     for (size_t agentId = 0; agentId < _agentCount; agentId++)
       if (_isAgentRunning[agentId] == true)
+      {
         attendAgent(agentId);
+        agentsRemain = true;
+      }
 
-
-
-      // Getting new policy hyperparameters (for agents to generate actions)
-  }
+    if (agentsRemain) KORALI_LISTEN(_agents);
+  } while (rollout < _episodesPerUpdate || agentsRemain == true);
 
   // Update policy
+  if(_experienceCount > _experienceReplayStartSize)
+  {
+    if(_policyUpdateCount == 0) rescaleStates();
 
-  // TODO
+    trainPolicy();
+  }
+
 
   // Set new policy
   _trainingCurrentPolicy = getAgentPolicy();
@@ -293,7 +326,7 @@ void Agent::rescaleStates()
       squaredSumStates[d] += _stateVector[i][d] * _stateVector[i][d];
     }
 
-  _k->_logger->logInfo("Detailed", " + Using State Normalization N(Mean, Sigma):\n");
+  _k->_logger->logInfo("Normal", " + Using State Normalization N(Mean, Sigma):\n");
 
   for (size_t d = 0; d < _problem->_stateVectorSize; ++d)
   {
@@ -304,7 +337,7 @@ void Agent::rescaleStates()
     if (std::isfinite(_stateRescalingSigmas[d]) == false) _stateRescalingSigmas[d] = 1.0f;
     if (_stateRescalingSigmas[d] <= 1e-9) _stateRescalingSigmas[d] = 1.0f;
 
-    _k->_logger->logInfo("Detailed", " + State [%zu]: N(%f, %f)\n", d, _stateRescalingMeans[d], _stateRescalingSigmas[d]);
+    _k->_logger->logInfo("Normal", " + State [%zu]: N(%f, %f)\n", d, _stateRescalingMeans[d], _stateRescalingSigmas[d]);
   }
 
   // Actual rescaling of initial states
@@ -367,6 +400,9 @@ void Agent::attendAgent(size_t agentId)
       // Storing bookkeeping information
       _trainingRewardHistory.push_back(_trainingLastReward);
       _trainingExperienceHistory.push_back(message["Experiences"].size());
+
+      // ES speicifcs
+      _rewardSampleVector[agentId] = _trainingLastReward;
 
       // Keeping training statistics. Updating if exceeded best training policy so far.
       if (_trainingLastReward > _trainingBestReward)
@@ -984,7 +1020,7 @@ void Agent::printGenerationAfter()
       _k->_logger->logInfo("Normal", " + Reward Rescaling:            N(%.3e, %.3e)         \n", _rewardRescalingMean, _rewardRescalingSigma);
 
     if (_stateRescalingEnabled)
-      _k->_logger->logInfo("Normal", " + Using State Rescaling\n");
+      _k->_logger->logInfo("Detailed", " + Using State Rescaling\n");
 
     _k->_logger->logInfo("Detailed", "Profiling Information:                  [Generation] - [Session]\n");
     _k->_logger->logInfo("Detailed", " + Experience Serialization Time:       [%5.3fs] - [%3.3fs]\n", _generationSerializationTime / 1.0e+9, _sessionSerializationTime / 1.0e+9);

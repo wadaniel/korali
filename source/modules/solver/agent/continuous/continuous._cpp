@@ -141,8 +141,11 @@ std::vector<float> Continuous::generateTrainingAction(const policy_t &curPolicy)
       const float mean = curPolicy.distributionParameters[i];
  
       auto varIdx = _problem->_actionVectorIndexes[i];
-      float sigma = _k->_variables[varIdx]->_initialExplorationNoise;
-      action[i] = mean + sigma * _normalGenerator->getRandomNumber();
+      //float sigma = _k->_variables[varIdx]->_initialExplorationNoise;
+      //if (sigma > 1e-6)
+      //  action[i] = mean + sigma * _normalGenerator->getRandomNumber();
+      //else
+      action[i] = mean;
     }
   }
 

@@ -30,6 +30,9 @@ jobs:
       runTests:
         type: string
         default: 'true'
+      runCoverage:
+        type: string
+        default: 'false'
       buildargs: 
         type: string
         default: "-Donednn_path=/usr/local -Dmpi=true"
@@ -39,13 +42,20 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Build and test and install
-          command: |
-            CC=<< parameters.CC >> CXX=<< parameters.CXX >> meson setup build --prefix=~/test_install << parameters.buildargs >> --buildtype=<< parameters.buildtype >>
-            ninja -C build
-            source tools/helper/set_env.sh build
-            if [ "<< parameters.runTests >>" == "true" ]; then meson test -C build; fi
-            meson install -C build
+          name: config
+          command: CC=<< parameters.CC >> CXX=<< parameters.CXX >> meson setup build --prefix=~/test_install << parameters.buildargs >> --buildtype=<< parameters.buildtype >> -Db_coverage=true
+      - run:
+          name: build
+          command: ninja -C build
+      - run:
+          name: test
+          command: source tools/env/set_env.sh build; if [ "<< parameters.runTests >>" == "true" ]; then meson test -C build; fi
+      - run:
+          name: install
+          command: meson install -C build
+      - run: 
+          name: coverage
+          command:  if [ "<< parameters.runCoverage >>" == "true" ]; then ninja -C build coverage && ./tools/coverage/coverage && ./tools/coverage/codecov -X search -X fix -f '*.gcov'; fi
       - store_artifacts:
           path: build/meson-logs
 
@@ -56,6 +66,7 @@ workflows:
           name: ubuntu_openmpi_gcc
           image: ubuntu_openmpi_onednn
           buildtype: release
+          runCoverage: 'true'
       - build:
           name: fedora_openmpi_gcc
           image: fedora_openmpi_onednn

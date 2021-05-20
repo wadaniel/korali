@@ -31,6 +31,21 @@ summary({
   'python': python.language_version()
   }, section: 'Python')
 
+# Code coverage configuration
+if get_option('b_coverage')
+  gcov_args = [
+    '-fno-inline',
+    '-Wno-error=cpp', # bypass _FORTIFY_SOURCE
+  ]
+  if cpp.get_id().to_lower() == 'gcc'
+    gcov_args += [
+      '-fno-default-inline',
+      '-fno-inline-small-functions',
+    ]
+  endif
+  add_project_arguments(gcov_args, language: ['cpp'])
+endif
+
 # list of Korali dependencies
 null_dep = dependency('', required : false) # used for simplification of code
 korali_include = []

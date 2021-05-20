@@ -1,7 +1,7 @@
 e = find_program('./.test-run.py', required: true)
-test('study.cases.lighthouse', e,
+test('studycases.lighthouse', e,
       timeout : 1000,
-      suite: 'study.cases',
+      suite: 'regression',
       workdir: meson.current_source_dir(),
       depends: python_extension,
       env: nomalloc

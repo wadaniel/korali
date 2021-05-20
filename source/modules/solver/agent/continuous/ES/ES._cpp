@@ -35,8 +35,8 @@ void @className::initializeAgent()
  // Setting transformations for the selected policy distribution output
   for (size_t i = 0; i < _policyParameterCount; i++)
   {
-    _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Scale"][i] = 1.0; //_policyParameterScaling[i];
-    _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Shift"][i] = 0.0; //_policyParameterShifting[i];
+    _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Scale"][i] = _policyParameterScaling[i];
+    _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Shift"][i] = _policyParameterShifting[i];
     _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Transformation Mask"][i] = "Identity"; //_policyParameterTransformationMasks[i];
   }
 
@@ -57,7 +57,7 @@ void @className::trainPolicy()
   for(size_t m = 0; m < _episodesPerUpdate; m+=2)
   {
     for(size_t i = 0; i < hyperparameterCount; ++i)
-      hyperparameterGradient[i] += (_rewardVector[m]-_rewardVector[m+1])*_sampleVector[m][i];
+      hyperparameterGradient[i] += (_rewardSampleVector[m]-_rewardSampleVector[m+1])*_sampleVector[m][i];
   }
  
   std::vector<float> currentPolicyParameter = _trainingCurrentPolicy["Policy"].get<std::vector<float>>();
@@ -65,7 +65,7 @@ void @className::trainPolicy()
   // Scale Gradient and perform update 
   for(size_t i = 0; i < hyperparameterCount; ++i)
   {
-    hyperparameterGradient[i] /= ((float)_episodesPerUpdate * _noiseParameter);
+    hyperparameterGradient[i] /= (0.5 * _episodesPerUpdate * _rewardSampleSdev);
     currentPolicyParameter[i] += _learningRate*hyperparameterGradient[i];
   }
   //for(size_t i = 0; i < hyperparameterCount; ++i) printf("gt(%zu/%zu): %f\n", i, hyperparameterCount, hyperparameterGradient[i]);

@@ -20,7 +20,7 @@ e = korali.Experiment()
 ### Defining results folder and loading previous results, if any
 
 resultFolder = '_result_es_' + args.env + '/'
-e.loadState(resultFolder + '/latest');
+#e.loadState(resultFolder + '/latest');
 
 ### Initializing openAI Gym environment
 
@@ -31,14 +31,14 @@ initEnvironment(e, args.env)
 e["Solver"]["Type"] = "Agent / Continuous / ES"
 e["Solver"]["Mode"] = "Training"
 e["Solver"]["Episodes Per Generation"] = 1
-e["Solver"]["Episodes Per Update"] = 8
+e["Solver"]["Episodes Per Update"] = 16
 
-e["Solver"]["Experience Replay"]["Start Size"] = 8096
-e["Solver"]["Experience Replay"]["Maximum Size"] = 10000
+e["Solver"]["Experience Replay"]["Start Size"] = 16384
+e["Solver"]["Experience Replay"]["Maximum Size"] = 32768
 
 e["Solver"]["Discount Factor"] = 0.99
 e["Solver"]["Learning Rate"] = 0.02
-e["Solver"]["Noise Parameter"] = 0.17
+e["Solver"]["Noise Parameter"] = 0.03
 e["Solver"]["Mini Batch"]["Size"] = 1
 e["Solver"]["Experiences Between Policy Updates"] = 1
 
@@ -50,8 +50,8 @@ e["Solver"]["Reward"]["Rescaling"]["Enabled"] = False
 e["Solver"]["Neural Network"]["Engine"] = "OneDNN"
 e["Solver"]["Neural Network"]["Optimizer"] = "AdaBelief"
 
-e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear"
-e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 2
+e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear" # no use
+e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 32 # no use
 
 #e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Activation"
 #e["Solver"]["Neural Network"]["Hidden Layers"][1]["Function"] = "Elementwise/Tanh"
@@ -64,10 +64,11 @@ e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 2
 
 ### Setting file output configuration
 
-e["Solver"]["Termination Criteria"]["Max Experiences"] = 10e6
-e["Solver"]["Experience Replay"]["Serialize"] = True
+e["Solver"]["Termination Criteria"]["Max Generations"] = 1000
+#e["Solver"]["Termination Criteria"]["Max Experiences"] = 10e6
+e["Solver"]["Experience Replay"]["Serialize"] = False
 e["Console Output"]["Verbosity"] = "Detailed"
-e["File Output"]["Enabled"] = True
+e["File Output"]["Enabled"] = False
 e["File Output"]["Frequency"] = 10
 e["File Output"]["Path"] = resultFolder
 

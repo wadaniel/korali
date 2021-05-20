@@ -37,6 +37,9 @@ def initEnvironment(e, envName, moviePath = ''):
  # Getting environment variable counts
  stateVariableCount = env.observation_space.shape[0]
  actionVariableCount = env.action_space.shape[0]
+
+ print("Num States: {}".format(stateVariableCount))
+ print("Num Actions: {}".format(actionVariableCount))
  
  # Generating state variable index list
  stateVariablesIndexes = range(stateVariableCount)

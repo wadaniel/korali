@@ -309,6 +309,10 @@ class @className : public @parentClassName
   std::vector<std::vector<float>> _sampleVector;
   std::vector<std::vector<float>> _policySampleVector;
   std::vector<float> _rewardSampleVector;
+  float _rewardSampleMean;
+  float _rewardSampleSdev;
+  float _rewardSampleMin;
+  float _rewardSampleMax;
 
 
   /****************************************************************************************************

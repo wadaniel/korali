@@ -1,5 +1,5 @@
 e = find_program('./test-run.py', required: true)
-test('python.plotter', e,
+test('cxx', e,
       timeout : 100,
       suite: 'python',
       workdir: meson.current_source_dir(),

@@ -16,11 +16,7 @@ def validateOutput(output):
     sys.exit(-1)
 
 
-def main(path, check, test, output, plotAll=False):
-
-  if (check == True):
-    print("[Korali] Plotter correctly installed.")
-    exit(0)
+def main(path, test, output, plotAll=False):
 
   if test or output:
     matplotlib.use('Agg')
@@ -124,11 +120,6 @@ if __name__ == '__main__':
       default='_korali_result',
       required=False)
   parser.add_argument(
-      '--check',
-      help='verifies that korali.plotter is available',
-      action='store_true',
-      required=False)
-  parser.add_argument(
       '--test',
       help='run without graphics (for testing purpose)',
       action='store_true',
@@ -139,4 +130,4 @@ if __name__ == '__main__':
       '--all', help='plot all generations', action='store_true', required=False)
   args = parser.parse_args()
 
-  main(args.dir, args.check, args.test, args.output, args.all)
+  main(args.dir, args.test, args.output, args.all)

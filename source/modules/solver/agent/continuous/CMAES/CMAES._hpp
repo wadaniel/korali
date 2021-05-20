@@ -1,0 +1,39 @@
+@startIncludeGuard
+
+#include "modules/distribution/univariate/normal/normal.hpp"
+#include "modules/problem/reinforcementLearning/continuous/continuous.hpp"
+#include "modules/solver/agent/continuous/continuous.hpp"
+
+@startNamespace
+
+class @className : public @parentClassName
+{
+  public:
+  /**
+   * @brief Pointer to training the actor network
+   */
+  learner::DeepSupervisor *_criticPolicyLearner;
+
+  /**
+  * @brief Korali experiment for obtaining the agent's action
+  */
+  korali::Experiment _criticPolicyExperiment;
+
+  /**
+   * @brief Pointer to actor's experiment problem
+   */
+  problem::SupervisedLearning *_criticPolicyProblem;
+ 
+  std::vector<policy_t> runPolicy(const std::vector<std::vector<std::vector<float>>> &stateBatch) override;
+
+  knlohmann::json getAgentPolicy() override;
+  void setAgentPolicy(const knlohmann::json &hyperparameters) override;
+  void trainPolicy() override;
+  void resetAgentOptimizers() override;
+  void printAgentInformation() override;
+  void initializeAgent() override;
+};
+
+@endNamespace
+
+@endIncludeGuard

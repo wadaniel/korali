@@ -1,0 +1,122 @@
+#include "engine.hpp"
+#include "modules/solver/agent/continuous/CMAES/CMAES.hpp"
+#include "omp.h"
+#include "sample/sample.hpp"
+
+@startNamespace
+
+void @className::initializeAgent()
+{
+  // Initializing common discrete agent configuration
+  Continuous::initializeAgent();
+
+  /*********************************************************************
+ * Initializing Critic/Policy Neural Network Optimization Experiment
+ *********************************************************************/
+
+  _criticPolicyExperiment["Problem"]["Type"] = "Supervised Learning";
+  _criticPolicyExperiment["Problem"]["Max Timesteps"] = _timeSequenceLength;
+  _criticPolicyExperiment["Problem"]["Training Batch Size"] = _miniBatchSize;
+  _criticPolicyExperiment["Problem"]["Inference Batch Size"] = 1;
+  _criticPolicyExperiment["Problem"]["Input"]["Size"] = _problem->_stateVectorSize;
+  _criticPolicyExperiment["Problem"]["Solution"]["Size"] = _policyParameterCount;
+
+  _criticPolicyExperiment["Solver"]["Type"] = "Learner/DeepSupervisor";
+  _criticPolicyExperiment["Solver"]["L2 Regularization"]["Enabled"] = false;
+  _criticPolicyExperiment["Solver"]["L2 Regularization"]["Importance"] = 0.0;
+  _criticPolicyExperiment["Solver"]["Learning Rate"] = _currentLearningRate;
+  _criticPolicyExperiment["Solver"]["Loss Function"] = "Direct Gradient";
+  _criticPolicyExperiment["Solver"]["Steps Per Generation"] = 1;
+  _criticPolicyExperiment["Solver"]["Neural Network"]["Optimizer"] = _neuralNetworkOptimizer;
+  _criticPolicyExperiment["Solver"]["Neural Network"]["Engine"] = _neuralNetworkEngine;
+  _criticPolicyExperiment["Solver"]["Neural Network"]["Hidden Layers"] = _neuralNetworkHiddenLayers;
+  _criticPolicyExperiment["Solver"]["Output Weights Scaling"] = 0.1;
+ 
+ // Setting transformations for the selected policy distribution output
+  for (size_t i = 0; i < _policyParameterCount; i++)
+  {
+    _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Scale"][i] = _policyParameterScaling[i];
+    _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Shift"][i] = _policyParameterShifting[i];
+    _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Transformation Mask"][i] = "Identity"; //_policyParameterTransformationMasks[i];
+  }
+
+
+  // Running initialization to verify that the configuration is correct
+  _criticPolicyExperiment.initialize();
+  _criticPolicyProblem = dynamic_cast<problem::SupervisedLearning *>(_criticPolicyExperiment._problem);
+  _criticPolicyLearner = dynamic_cast<solver::learner::DeepSupervisor *>(_criticPolicyExperiment._solver);
+
+}
+
+void @className::trainPolicy()
+{
+  size_t hyperparameterCount = _criticPolicyLearner->_hyperparameters.size();
+  
+  // Calculate Policy Gradient
+  std::vector<float> hyperparameterGradient(hyperparameterCount, 0.0);
+  for(size_t m = 0; m < _episodesPerUpdate; m+=2)
+  {
+    for(size_t i = 0; i < hyperparameterCount; ++i)
+      hyperparameterGradient[i] += (_rewardSampleVector[m]-_rewardSampleVector[m+1])*_sampleVector[m][i];
+  }
+ 
+  std::vector<float> currentPolicyParameter = _trainingCurrentPolicy["Policy"].get<std::vector<float>>();
+ 
+  // Scale Gradient and perform update 
+  for(size_t i = 0; i < hyperparameterCount; ++i)
+  {
+    hyperparameterGradient[i] /= (0.5 * _episodesPerUpdate * _rewardSampleSdev);
+    currentPolicyParameter[i] += _learningRate*hyperparameterGradient[i];
+  }
+  //for(size_t i = 0; i < hyperparameterCount; ++i) printf("gt(%zu/%zu): %f\n", i, hyperparameterCount, hyperparameterGradient[i]);
+    
+  _criticPolicyLearner->setHyperparameters(currentPolicyParameter);
+  _policyUpdateCount++;
+
+}
+
+std::vector<policy_t> @className::runPolicy(const std::vector<std::vector<std::vector<float>>> &stateBatch)
+{
+  // Getting batch size
+  size_t batchSize = stateBatch.size();
+
+  // Storage for policy
+  std::vector<policy_t> policyVector(batchSize);
+
+  // Forward the neural network for this state
+  const auto evaluation = _criticPolicyLearner->getEvaluation(stateBatch);
+
+#pragma omp parallel for
+  for (size_t b = 0; b < batchSize; b++)
+  {
+    // Getting distribution parameters
+    policyVector[b].distributionParameters.assign(evaluation[b].begin(), evaluation[b].end());
+  }
+
+  return policyVector;
+}
+
+knlohmann::json @className::getAgentPolicy()
+{
+  knlohmann::json hyperparameters;
+  hyperparameters["Policy"] = _criticPolicyLearner->getHyperparameters();
+  return hyperparameters;
+}
+
+void @className::setAgentPolicy(const knlohmann::json &hyperparameters)
+{
+  _criticPolicyLearner->setHyperparameters(hyperparameters["Policy"].get<std::vector<float>>());
+}
+
+void @className::resetAgentOptimizers()
+{
+  _criticPolicyLearner->resetOptimizer();
+}
+
+void @className::printAgentInformation()
+{
+}
+
+@moduleAutoCode
+
+@endNamespace

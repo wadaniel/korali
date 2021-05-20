@@ -1,5 +1,5 @@
 e = find_program('./.test-run-hmc.py', required: true)
-test('statistics.samplers.mean.std.hmc', e,
+test('samplers.mean.std.hmc', e,
       timeout : 1000,
       suite: 'statistics',
       workdir: meson.current_source_dir(),
@@ -8,7 +8,7 @@ test('statistics.samplers.mean.std.hmc', e,
     )
 
 e = find_program('./.test-run-mcmc.py', required: true)
-test('statistics.samplers.mean.std.mcmc', e,
+test('samplers.mean.std.mcmc', e,
       timeout : 1000,
       suite: 'statistics',
       workdir: meson.current_source_dir(),
@@ -17,7 +17,7 @@ test('statistics.samplers.mean.std.mcmc', e,
     )
 
 e = find_program('./.test-run-multinest.py', required: true)
-test('statistics.samplers.mean.std.multinest', e,
+test('samplers.mean.std.multinest', e,
       timeout : 1000,
       suite: 'statistics',
       workdir: meson.current_source_dir(),
@@ -26,7 +26,7 @@ test('statistics.samplers.mean.std.multinest', e,
     )
 
 e = find_program('./.test-run-nested.py', required: true)
-test('statistics.samplers.mean.std.nested', e,
+test('samplers.mean.std.nested', e,
       timeout : 1000,
       suite: 'statistics',
       workdir: meson.current_source_dir(),
@@ -35,7 +35,7 @@ test('statistics.samplers.mean.std.nested', e,
     )
 
 e = find_program('./.test-run-rchmc.py', required: true)
-test('statistics.samplers.mean.std.rchmc', e,
+test('samplers.mean.std.rchmc', e,
       timeout : 1000,
       suite: 'statistics',
       workdir: meson.current_source_dir(),
@@ -44,7 +44,7 @@ test('statistics.samplers.mean.std.rchmc', e,
     )
 
 e = find_program('./.test-run-tmcmc.py', required: true)
-test('statistics.samplers.mean.std.tmcmc', e,
+test('samplers.mean.std.tmcmc', e,
       timeout : 1000,
       suite: 'statistics',
       workdir: meson.current_source_dir(),

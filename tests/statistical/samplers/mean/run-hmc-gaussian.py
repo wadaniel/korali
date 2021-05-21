@@ -40,6 +40,7 @@ e["Solver"]["Use Diagonal Metric"] = True
 e["Solver"]["Use Adaptive Step Size"] = True
 e["Solver"]["Max Integration Steps"] = 1000
 e["Solver"]["Use NUTS"] = False
+
 # Running Korali
 e["Random Seed"] = 1234
 k.run(e)

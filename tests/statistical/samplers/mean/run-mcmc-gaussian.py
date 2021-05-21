@@ -13,7 +13,7 @@ import korali
 k = korali.Engine()
 e = korali.Experiment()
 
-e["File Output"]["Frequency"] = 0
+e["File Output"]["Enabled"] = False
 e["Console Output"]["Frequency"] = 5000
 
 # Selecting problem and solver types.
@@ -30,7 +30,7 @@ e["Solver"]["Type"] = "Sampler/MCMC"
 e["Solver"]["Burn In"] = 100
 e["Solver"]["Rejection Levels"] = 3
 e["Solver"]["Use Adaptive Sampling"] = True
-e["Solver"]["Termination Criteria"]["Max Samples"] = 100000
+e["Solver"]["Termination Criteria"]["Max Samples"] = 50000
 
 # Running Korali
 e["Random Seed"] = 1227

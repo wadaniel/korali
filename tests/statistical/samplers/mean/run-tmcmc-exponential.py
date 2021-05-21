@@ -15,17 +15,19 @@ e = korali.Experiment()
 
 # Setting up custom likelihood for the Bayesian Problem
 e["Problem"]["Type"] = "Bayesian/Custom"
-e["Problem"]["Likelihood Model"] = lgaussianCustom
+e["Problem"]["Likelihood Model"] = lexponentialCustom
 
 # Configuring TMCMC parameters
 e["Solver"]["Type"] = "Sampler/TMCMC"
+e["Solver"]["Target Coefficient Of Variation"] = 0.6
 e["Solver"]["Population Size"] = 5000
+e["Solver"]["Per Generation Burn In"] = [3, 3, 3, 3]
 
 # Configuring the problem's random distributions
 e["Distributions"][0]["Name"] = "Uniform 0"
 e["Distributions"][0]["Type"] = "Univariate/Uniform"
-e["Distributions"][0]["Minimum"] = -15.0
-e["Distributions"][0]["Maximum"] = +15.0
+e["Distributions"][0]["Minimum"] = 0.0
+e["Distributions"][0]["Maximum"] = 80.0
 
 # Configuring the problem's variables and their prior distributions
 e["Variables"][0]["Name"] = "a"
@@ -34,8 +36,10 @@ e["Variables"][0]["Prior Distribution"] = "Uniform 0"
 e["File Output"]["Frequency"] = 0
 
 # Running Korali
-e["Random Seed"] = 1337
+e["Random Seed"] = 1234
+k["Conduit"]["Type"] = "Concurrent"
+k["Conduit"]["Concurrent Jobs"] = 8
 k.run(e)
 
-verifyMean(e["Solver"]["Sample Database"], [-2.0], 0.05)
-verifyStd(e["Solver"]["Sample Database"], [3.0], 0.05)
+verifyMean(e["Solver"]["Sample Database"], [4.0], 0.05)
+verifyStd(e["Solver"]["Sample Database"], [4.0], 0.05)

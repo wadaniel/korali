@@ -1,9 +1,8 @@
 e = find_program('./.test-run.py', required: true)
-
-test('learning.reinforcement.cartpole', e,
+test('samplers.correctness', e,
       timeout : 1000,
+      suite: 'statistical',
       workdir: meson.current_source_dir(),
       depends: python_extension,
-      suite: 'regression',
-      is_parallel : false
+      env: nomalloc
     )

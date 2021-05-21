@@ -4,5 +4,6 @@ test('features.running.mpi', e,
       suite: 'regression',
       workdir: meson.current_source_dir(),
       depends: python_extension,
-      env: nomalloc
+      env: nomalloc,
+      is_parallel : false
     )

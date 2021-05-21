@@ -1,7 +1,7 @@
 e = find_program('./.test-run.py', required: true)
-test('constraint.cmaes', e,
+test('samplers.detailed.tmcmc', e,
       timeout : 1000,
-      suite: 'statistics',
+      suite: 'statistical',
       workdir: meson.current_source_dir(),
       depends: python_extension,
       env: nomalloc

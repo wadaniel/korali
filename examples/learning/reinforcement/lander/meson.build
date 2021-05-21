@@ -4,5 +4,6 @@ test('learning.reinforcement.lander', e,
       timeout : 1000,
       workdir: meson.current_source_dir(),
       depends: python_extension,
-      suite: 'regression'
+      suite: 'regression',
+      is_parallel : false
     )

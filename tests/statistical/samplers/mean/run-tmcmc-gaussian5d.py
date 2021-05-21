@@ -21,7 +21,7 @@ e["Problem"]["Likelihood Model"] = lg5
 
 # Configuring TMCMC parameters
 e["Solver"]["Type"] = "Sampler/TMCMC"
-e["Solver"]["Population Size"] = 10000
+e["Solver"]["Population Size"] = 1000
 e["Solver"]["Default Burn In"] = 3
 e["Solver"]["Target Coefficient Of Variation"] = 1.0
 
@@ -41,6 +41,8 @@ e["File Output"]["Frequency"] = 0
 e["Random Seed"] = 1234
 
 # Running Korali
+k["Conduit"]["Type"] = "Concurrent"
+k["Conduit"]["Concurrent Jobs"] = 8
 k.run(e)
 
 verifyMean(e["Solver"]["Sample Database"], [0.0, 0.0, 0.0, 0.0, 0.0], 0.1)

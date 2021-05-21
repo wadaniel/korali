@@ -23,6 +23,19 @@ class @className : public @parentClassName
    * @brief Pointer to actor's experiment problem
    */
   problem::SupervisedLearning *_criticPolicyProblem;
+  
+  float _cplus;
+  float _dampingConstant;
+  float _successRate;
+  float _successLearningRate;
+  float _targetSuccessRate;
+
+  float _searchPathLearningRate;
+  std::vector<float> _searchPath;
+  
+  std::vector<float> _wVector;
+  std::vector<float> _standardDevs;
+  std::vector<float> _previousPolicyHyperparameter;
  
   std::vector<policy_t> runPolicy(const std::vector<std::vector<std::vector<float>>> &stateBatch) override;
 

@@ -37,21 +37,68 @@ void @className::initializeAgent()
   {
     _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Scale"][i] = _policyParameterScaling[i];
     _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Shift"][i] = _policyParameterShifting[i];
-    _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Transformation Mask"][i] = "Identity"; //_policyParameterTransformationMasks[i];
+    _criticPolicyExperiment["Solver"]["Neural Network"]["Output Layer"]["Transformation Mask"][i] = "Identity";
   }
-
 
   // Running initialization to verify that the configuration is correct
   _criticPolicyExperiment.initialize();
   _criticPolicyProblem = dynamic_cast<problem::SupervisedLearning *>(_criticPolicyExperiment._problem);
   _criticPolicyLearner = dynamic_cast<solver::learner::DeepSupervisor *>(_criticPolicyExperiment._solver);
 
+  _dampingConstant = 1. + 0.5*_policyParameterCount;
+  _successLearningRate = 1./12.;
+  _targetSuccessRate = 2./11.;
+  _searchPathLearningRate = 2./(_policyParameterCount + 2.);
+  _cplus = 2./(_policyParameterCount*_policyParameterCount+6.);
 }
 
 void @className::trainPolicy()
 {
-  size_t hyperparameterCount = _criticPolicyLearner->_hyperparameters.size();
+  size_t hyperparameterCount = _currentPolicyHyperparameter.size();
+
+  // Descale success rate
+  _successRate *= (1.-_successLearningRate);   
+  if(_rewardSampleMax > _previousRewardSampleMax)
+  {
+    // Find best idx
+    float max = -Inf;
+    size_t bestIdx = 0;
+    for(size_t m = 0; m < _episodesPerUpdate; ++m)
+    {
+      if(_rewardSampleVector[m] > max) max = _rewardSampleVector[m]; 
+      bestIdx = m;
+    }
   
+    // Increase success rate
+    _successRate += _successLearningRate;
+
+    // Initialize squared l2 norm of w
+    float wnorm2 = 0.;
+
+    // Update search path and w
+    for(size_t i = 0; i < hyperparameterCount; ++i)
+    {
+      _searchPath[i] = (1.-_searchPathLearningRate)*_searchPath[i] + std::sqrt(_searchPathLearningRate*(2.-_searchPathLearningRate))*_standardDevs[i]*_sampleVector[bestIdx][i];
+      _wVector[i] = _standardDevs[i]/_standardDevs[i]*_sampleVector[bestIdx][i];
+      // Accumulate l2 norm
+      wnorm2 += _wVector[i]*_wVector[i];
+    }
+
+    // Compute coefficients a and b
+    float a = std::sqrt(1.-_cplus);
+    float b = a/wnorm2*(std::sqrt(1.+_cplus/(1.-_cplus)*wnorm2) - 1.);
+
+    // Update Sdevs
+    for(size_t i = 0; i < hyperparameterCount; ++i)
+    {
+      _standardDevs[i] = a*_standardDevs[i] + b * _standardDevs[i] * _wVector[i] * _wVector[i];
+    }
+
+  
+  }
+
+  _noiseParameter = _noiseParameter*std::exp(1./_dampingConstant*(_successLearningRate-_targetSuccessRate)/(1.-_targetSuccessRate));
+
   // Calculate Policy Gradient
   std::vector<float> hyperparameterGradient(hyperparameterCount, 0.0);
   for(size_t m = 0; m < _episodesPerUpdate; m+=2)
@@ -60,17 +107,15 @@ void @className::trainPolicy()
       hyperparameterGradient[i] += (_rewardSampleVector[m]-_rewardSampleVector[m+1])*_sampleVector[m][i];
   }
  
-  std::vector<float> currentPolicyParameter = _trainingCurrentPolicy["Policy"].get<std::vector<float>>();
- 
+  _previousPolicyHyperparameter = _currentPolicyHyperparameter;
   // Scale Gradient and perform update 
   for(size_t i = 0; i < hyperparameterCount; ++i)
   {
     hyperparameterGradient[i] /= (0.5 * _episodesPerUpdate * _rewardSampleSdev);
-    currentPolicyParameter[i] += _learningRate*hyperparameterGradient[i];
+    _currentPolicyHyperparameter[i] += _learningRate*hyperparameterGradient[i];
   }
-  //for(size_t i = 0; i < hyperparameterCount; ++i) printf("gt(%zu/%zu): %f\n", i, hyperparameterCount, hyperparameterGradient[i]);
     
-  _criticPolicyLearner->setHyperparameters(currentPolicyParameter);
+  _criticPolicyLearner->setHyperparameters(_currentPolicyHyperparameter);
   _policyUpdateCount++;
 
 }

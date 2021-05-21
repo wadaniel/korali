@@ -303,8 +303,9 @@ class @className : public @parentClassName
   double _generationAgentAttendingTime;
  
  /**
-  * @brief For evolution strategy.
+  * @brief For evolution strategy (ES).
   */
+  std::vector<float> _currentPolicyHyperparameter;
   std::vector<size_t> _rolloutVector;
   std::vector<std::vector<float>> _sampleVector;
   std::vector<std::vector<float>> _policySampleVector;
@@ -313,6 +314,7 @@ class @className : public @parentClassName
   float _rewardSampleSdev;
   float _rewardSampleMin;
   float _rewardSampleMax;
+  float _previousRewardSampleMax;
 
 
   /****************************************************************************************************

@@ -50,7 +50,7 @@ void @className::initializeAgent()
 
 void @className::trainPolicy()
 {
-  size_t hyperparameterCount = _criticPolicyLearner->_hyperparameters.size();
+  size_t hyperparameterCount = _currentPolicyHyperparameter.size();
   
   // Calculate Policy Gradient
   std::vector<float> hyperparameterGradient(hyperparameterCount, 0.0);
@@ -60,17 +60,14 @@ void @className::trainPolicy()
       hyperparameterGradient[i] += (_rewardSampleVector[m]-_rewardSampleVector[m+1])*_sampleVector[m][i];
   }
  
-  std::vector<float> currentPolicyParameter = _trainingCurrentPolicy["Policy"].get<std::vector<float>>();
- 
   // Scale Gradient and perform update 
   for(size_t i = 0; i < hyperparameterCount; ++i)
   {
     hyperparameterGradient[i] /= (0.5 * _episodesPerUpdate * _rewardSampleSdev);
-    currentPolicyParameter[i] += _learningRate*hyperparameterGradient[i];
+    _currentPolicyHyperparameter[i] += _learningRate*hyperparameterGradient[i];
   }
-  //for(size_t i = 0; i < hyperparameterCount; ++i) printf("gt(%zu/%zu): %f\n", i, hyperparameterCount, hyperparameterGradient[i]);
     
-  _criticPolicyLearner->setHyperparameters(currentPolicyParameter);
+  _criticPolicyLearner->setHyperparameters(_currentPolicyHyperparameter);
   _policyUpdateCount++;
 
 }

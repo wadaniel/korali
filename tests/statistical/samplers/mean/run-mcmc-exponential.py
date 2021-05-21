@@ -13,7 +13,7 @@ import korali
 k = korali.Engine()
 e = korali.Experiment()
 
-e["File Output"]["Frequency"] = 0
+e["File Output"]["Enabled"] = False
 e["Console Output"]["Frequency"] = 5000
 
 # Selecting problem and solver types.

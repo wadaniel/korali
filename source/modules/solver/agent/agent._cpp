@@ -186,29 +186,10 @@ void @className::trainingGeneration()
   _generationAgentPolicyEvaluationTime = 0.0;
   _generationPolicyUpdateTime = 0.0;
   _generationAgentAttendingTime = 0.0;
-  
-  size_t hyperparameterCount = _currentPolicyHyperparameter.size();
-  //for(size_t i = 0; i < hyperparameterCount; ++i) printf("t(%zu/%zu): %f\n", i, policy.size(), policy[i]);
-  
-  for(size_t rollout = 0; rollout < _episodesPerUpdate; rollout+=2)
-  {
-    _policySampleVector[rollout] = _currentPolicyHyperparameter;
-    _policySampleVector[rollout+1] = _currentPolicyHyperparameter;
-    _sampleVector[rollout].resize(hyperparameterCount);
-    _sampleVector[rollout+1].resize(hyperparameterCount);
-    for(size_t i = 0; i < hyperparameterCount; ++i)
-    {
-      _sampleVector[rollout][i] = _normalGenerator->getRandomNumber();
-      _policySampleVector[rollout][i] += _noiseParameter*_sampleVector[rollout][i];
-    }
-    for(size_t i = 0; i < hyperparameterCount; ++i)
-    {
-      _sampleVector[rollout+1][i] = -_sampleVector[rollout][i];
-      _policySampleVector[rollout+1][i] += _noiseParameter*_sampleVector[rollout+1][i];
-    }
+ 
+  // Prepare new policies to be evaluated
+  generateOffspring();
 
-  }
-  
   size_t rollout = 0;
   bool agentsRemain = false;
   // Running until all _agents have finished
@@ -850,6 +831,7 @@ void @className::printGenerationAfter()
 
     printAgentInformation();
     _k->_logger->logInfo("Normal", " + Current Learning Rate:           %.3e\n", _currentLearningRate);
+    _k->_logger->logInfo("Normal", " + Noise Parameter:           %.3e\n", _noiseParameter);
 
     if (_rewardRescalingEnabled)
       _k->_logger->logInfo("Normal", " + Reward Rescaling:            N(%.3e, %.3e)         \n", _rewardRescalingMean, _rewardRescalingSigma);

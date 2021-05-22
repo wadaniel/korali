@@ -48,6 +48,31 @@ void @className::initializeAgent()
 
 }
 
+void @className::generateOffspring()
+{
+  size_t hyperparameterCount = _currentPolicyHyperparameter.size();
+  
+  for(size_t rollout = 0; rollout < _episodesPerUpdate; rollout+=2)
+  {
+    _policySampleVector[rollout] = _currentPolicyHyperparameter;
+    _policySampleVector[rollout+1] = _currentPolicyHyperparameter;
+    _sampleVector[rollout].resize(hyperparameterCount);
+    _sampleVector[rollout+1].resize(hyperparameterCount);
+    for(size_t i = 0; i < hyperparameterCount; ++i)
+    {
+      _sampleVector[rollout][i] = _normalGenerator->getRandomNumber();
+      _policySampleVector[rollout][i] += _noiseParameter*_sampleVector[rollout][i];
+    }
+    for(size_t i = 0; i < hyperparameterCount; ++i)
+    {
+      _sampleVector[rollout+1][i] = -_sampleVector[rollout][i];
+      _policySampleVector[rollout+1][i] += _noiseParameter*_sampleVector[rollout+1][i];
+    }
+
+  }
+ 
+}
+
 void @className::trainPolicy()
 {
   size_t hyperparameterCount = _currentPolicyHyperparameter.size();

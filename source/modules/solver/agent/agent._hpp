@@ -455,6 +455,12 @@ class @className : public @parentClassName
   /****************************************************************************************************
    * Virtual functions (responsibilities) for learning algorithms to fulfill
    ***************************************************************************************************/
+ 
+  /**
+  * @brief Generates offspring policies
+  */
+  virtual void generateOffspring() = 0;
+
 
   /**
   * @brief Trains the Agent's policy, based on the new experiences

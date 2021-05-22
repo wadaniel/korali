@@ -48,14 +48,48 @@ void @className::initializeAgent()
   _dampingConstant = 1. + 0.5*_policyParameterCount;
   _successLearningRate = 1./12.;
   _targetSuccessRate = 2./11.;
+  _successRate = _targetSuccessRate;
   _searchPathLearningRate = 2./(_policyParameterCount + 2.);
   _cplus = 2./(_policyParameterCount*_policyParameterCount+6.);
+}
+
+
+void @className::generateOffspring()
+{
+  size_t hyperparameterCount = _currentPolicyHyperparameter.size();
+ 
+  // Init vectors
+  if(_standardDevs.size() == 0)
+  {
+    _searchPath.resize(hyperparameterCount, 0.0);
+    _standardDevs.resize(hyperparameterCount, 1.0);
+    _wVector.resize(hyperparameterCount, 0.0);
+  }
+
+  for(size_t rollout = 0; rollout < _episodesPerUpdate; rollout+=2)
+  {
+    _policySampleVector[rollout] = _currentPolicyHyperparameter;
+    _policySampleVector[rollout+1] = _currentPolicyHyperparameter;
+    _sampleVector[rollout].resize(hyperparameterCount);
+    _sampleVector[rollout+1].resize(hyperparameterCount);
+    for(size_t i = 0; i < hyperparameterCount; ++i)
+    {
+      _sampleVector[rollout][i] = _normalGenerator->getRandomNumber();
+      _policySampleVector[rollout][i] += _noiseParameter*_standardDevs[i]*_sampleVector[rollout][i];
+    }
+    for(size_t i = 0; i < hyperparameterCount; ++i)
+    {
+      _sampleVector[rollout+1][i] = -_sampleVector[rollout][i];
+      _policySampleVector[rollout+1][i] += _noiseParameter*_standardDevs[i]*_sampleVector[rollout+1][i];
+    }
+  }
+ 
 }
 
 void @className::trainPolicy()
 {
   size_t hyperparameterCount = _currentPolicyHyperparameter.size();
-
+ 
   // Descale success rate
   _successRate *= (1.-_successLearningRate);   
   if(_rewardSampleMax > _previousRewardSampleMax)
@@ -160,6 +194,10 @@ void @className::resetAgentOptimizers()
 
 void @className::printAgentInformation()
 {
+    _k->_logger->logInfo("Detailed", "Success Rate %f (%f)\n", _successRate, _targetSuccessRate);
+    _k->_logger->logInfo("Detailed", "Standard Deviations \n");
+    //for(size_t i = 0; i < _standardDevs.size(); ++i)
+    //_k->_logger->logInfo("Detailed", "  [%zu]: %f\n", i, _standardDevs[i]);
 }
 
 @moduleAutoCode

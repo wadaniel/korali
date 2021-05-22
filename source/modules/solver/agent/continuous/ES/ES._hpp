@@ -28,6 +28,7 @@ class @className : public @parentClassName
 
   knlohmann::json getAgentPolicy() override;
   void setAgentPolicy(const knlohmann::json &hyperparameters) override;
+  void generateOffspring() override;
   void trainPolicy() override;
   void resetAgentOptimizers() override;
   void printAgentInformation() override;

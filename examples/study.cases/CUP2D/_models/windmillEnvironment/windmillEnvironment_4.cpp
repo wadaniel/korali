@@ -41,6 +41,8 @@ void runEnvironment(korali::Sample &s)
   // Obtaining agent, 4 windmills 
   Windmill* agent1 = dynamic_cast<Windmill*>(_environment->getShapes()[0]);
   Windmill* agent2 = dynamic_cast<Windmill*>(_environment->getShapes()[1]);
+  Windmill* agent3 = dynamic_cast<Windmill*>(_environment->getShapes()[2]);
+  Windmill* agent4 = dynamic_cast<Windmill*>(_environment->getShapes()[3]);
 
   // useful agent functions :
   // void act( double action );
@@ -55,6 +57,8 @@ void runEnvironment(korali::Sample &s)
   bool random_init = (s["Mode"] == "Training");
   setInitialConditions(agent1, 0, random_init);
   setInitialConditions(agent2, 0, random_init);
+  setInitialConditions(agent3, 0, random_init);
+  setInitialConditions(agent4, 0, random_init);
 
   // Set target
   std::array<Real,2> target_pos{0.7,0.5};
@@ -62,8 +66,10 @@ void runEnvironment(korali::Sample &s)
 
   std::vector<double> state1 = agent1->state();
   std::vector<double> state2 = agent2->state();
+  std::vector<double> state3 = agent3->state();
+  std::vector<double> state4 = agent4->state();
 
-  std::vector<double> state = {state1[0], state1[1], state2[0], state2[1]};
+  std::vector<double> state = {state1[0], state1[1], state2[0], state2[1], state3[0], state3[1], state4[0], state4[1]};
 
   s["State"] = state;
 
@@ -93,6 +99,8 @@ void runEnvironment(korali::Sample &s)
     // Setting action
     agent1->act( action[0] );
     agent2->act( action[1] );
+    agent3->act( action[2] );
+    agent4->act( action[3] );
 
     // Run the simulation until next action is required
     tNextAct += 0.01;
@@ -114,10 +122,10 @@ void runEnvironment(korali::Sample &s)
     double C = 0.5e8;
     double r1 = agent1->reward( target_pos, target_vel,  C);
     double r2 = agent2->reward( target_pos, target_vel,  C);
-    double reward = (r1 + r2);
-	
-	printf("r1 : %.8f \n", r1);
-	printf("r2 : %.8f \n", r2);
+    double r3 = agent3->reward( target_pos, target_vel,  C);
+    double r4 = agent4->reward( target_pos, target_vel,  C);
+    double reward = (r1 + r2 + r3 + r4);
+
     // Getting ending time
     auto endTime = std::chrono::steady_clock::now(); // Profiling
     double actionTime = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count() / 1.0e+9;
@@ -125,7 +133,9 @@ void runEnvironment(korali::Sample &s)
     // Obtaining new agent state
     state1 = agent1->state();
     state2 = agent2->state();
-    state = {state1[0], state1[1], state2[0], state2[1]};
+    state3 = agent3->state();
+    state4 = agent4->state();
+    state = {state1[0], state1[1], state2[0], state2[1], state3[0], state3[1], state4[0], state4[1]};
 
     // Printing Information:
     printf("[Korali] Sample %lu - Step: %lu/%lu\n", sampleId, curStep, maxSteps);
@@ -138,7 +148,7 @@ void runEnvironment(korali::Sample &s)
       }
     }
     printf("]\n");
-    printf("[Korali] Previous Torque: [ %.8f, %.8f ]\n", action[0], action[1]);
+    printf("[Korali] Previous Torque: [ %.8f, %.8f, %.8f, %.8f  ]\n", action[0], action[1], action[2], action[3]);
     printf("[Korali] Reward: %.3f\n", reward);
     printf("[Korali] Time: %.3fs\n", actionTime);
     printf("[Korali] -------------------------------------------------------\n");

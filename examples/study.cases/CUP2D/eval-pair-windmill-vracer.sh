@@ -41,4 +41,4 @@ OBJECTS="windmill semiAxisX=$MAAXIS semiAxisY=$MIAXIS xpos=$XPOS ypos=$YPOS1 bFo
 windmill semiAxisX=$MAAXIS semiAxisY=$MIAXIS xpos=$XPOS ypos=$YPOS2 bForced=1 xvel=$XVEL tAccel=0 bBlockAng=0
 "
 
-$mpiflags ./run-vracer-windmill ${OPTIONS} -shapes "${OBJECTS}" test
+$mpiflags ./eval-vracer-windmill ${OPTIONS} -shapes "${OBJECTS}" twinlevels4

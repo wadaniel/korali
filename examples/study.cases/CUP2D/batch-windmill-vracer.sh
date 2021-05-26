@@ -50,4 +50,5 @@ windmill semiAxisX=$MAAXIS semiAxisY=$MIAXIS xpos=$XPOS ypos=$YPOS3 bForced=1 xv
 windmill semiAxisX=$MAAXIS semiAxisY=$MIAXIS xpos=$XPOS ypos=$YPOS4 bForced=1 xvel=$XVEL tAccel=0 bBlockAng=0
 "
 
-$mpiflags ./run-vracer-windmill ${OPTIONS} -shapes "${OBJECTS}"
+gdb --args $mpiflags ./run-vracer-windmill ${OPTIONS} -shapes "${OBJECTS}"
+#$mpiflags ./eval-vracer-windmill ${OPTIONS} -shapes "${OBJECTS}"

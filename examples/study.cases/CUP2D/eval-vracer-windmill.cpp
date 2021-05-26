@@ -44,14 +44,15 @@ int main(int argc, char *argv[])
 
   // Set results path
   std::string trainingResultsPath = "_results_windmill_training/" + folder;
-  std::string testingResultsPath = "_results_windmill_training/" + folder;
+  std::string testingResultsPath = "_results_windmill_testing/" + folder;
   
   // Creating Korali experiment
   auto e = korali::Experiment();
 
   // Check if there is log files to continue training
-  auto found = e.loadState(trainingResultsPath + std::string("/latest"));
+  auto found = e.loadState("twinlevels4/latest");
   if (found == true) printf("[Korali] Continuing execution from previous run...\n");
+  else { fprintf(stderr, "[Korali] Error: cannot find previous results\n"); exit(0); } 
 
   auto k = korali::Engine();
 
@@ -64,9 +65,10 @@ int main(int argc, char *argv[])
 
   // Adding custom setting to run the environment dumping the state files during testing
   e["Problem"]["Custom Settings"]["Dump Frequency"] = 0.1;
-  e["Problem"]["Custom Settings"]["Dump Path"] = testingResultsPath;
-  e["File Output"]["Path"] = testingResultsPath;
-  e["Solver"]["Testing"]["Policy"] = e["Solver"]["Best Training Hyperparamters"];
+  e["Problem"]["Custom Settings"]["Dump Path"] = "results";
+  e["Problem"]["Environment Function"] = &runEnvironment;
+  e["File Output"]["Path"] = "twinlevels4";
+  e["Solver"]["Testing"]["Policy"] = e["Solver"]["Best Training Hyperparameters"];
   e["Solver"]["Mode"] = "Testing";
   for (int i = 0; i < N; i++) e["Solver"]["Testing"]["Sample Ids"][i] = i;
 

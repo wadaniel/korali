@@ -43,26 +43,25 @@
 #include "problem/sampling/sampling.hpp"
 #include "problem/supervisedLearning/supervisedLearning.hpp"
 #include "solver/SAEM/SAEM.hpp"
-#include "solver/agent/continuous/DDPG/DDPG.hpp"
-#include "solver/agent/continuous/GFPT/GFPT.hpp"
-#include "solver/agent/continuous/NAF/NAF.hpp"
 #include "solver/agent/continuous/VRACER/VRACER.hpp"
 #include "solver/agent/continuous/continuous.hpp"
-#include "solver/agent/discrete/DQN/DQN.hpp"
 #include "solver/agent/discrete/dVRACER/dVRACER.hpp"
 #include "solver/agent/discrete/discrete.hpp"
 #include "solver/executor/executor.hpp"
 #include "solver/integrator/integrator.hpp"
 #include "solver/learner/deepSupervisor/deepSupervisor.hpp"
 #include "solver/learner/gaussianProcess/gaussianProcess.hpp"
+#include "solver/optimizer/AdaBelief/AdaBelief.hpp"
 #include "solver/optimizer/Adam/Adam.hpp"
 #include "solver/optimizer/CMAES/CMAES.hpp"
 #include "solver/optimizer/DEA/DEA.hpp"
 #include "solver/optimizer/LMCMAES/LMCMAES.hpp"
+#include "solver/optimizer/MADGRAD/MADGRAD.hpp"
 #include "solver/optimizer/MOCMAES/MOCMAES.hpp"
 #include "solver/optimizer/Rprop/Rprop.hpp"
 #include "solver/optimizer/gridSearch/gridSearch.hpp"
 #include "solver/optimizer/optimizer.hpp"
+#include "solver/sampler/HMC/HMC.hpp"
 #include "solver/sampler/MCMC/MCMC.hpp"
 #include "solver/sampler/Nested/Nested.hpp"
 #include "solver/sampler/TMCMC/TMCMC.hpp"
@@ -138,21 +137,20 @@ Module *Module::getModule(knlohmann::json &js, Experiment *e)
   if (iCompare(moduleType, "SAEM")) module = new korali::solver::SAEM();
   if (iCompare(moduleType, "Learner/GaussianProcess")) module = new korali::solver::learner::GaussianProcess();
   if (iCompare(moduleType, "Learner/DeepSupervisor")) module = new korali::solver::learner::DeepSupervisor();
-  if (iCompare(moduleType, "Agent/Discrete/DQN")) module = new korali::solver::agent::discrete::DQN();
-  if (iCompare(moduleType, "Agent/Discrete/DVRACER")) module = new korali::solver::agent::discrete::dVRACER();
-  if (iCompare(moduleType, "Agent/Continuous/GFPT")) module = new korali::solver::agent::continuous::GFPT();
-  if (iCompare(moduleType, "Agent/Continuous/DDPG")) module = new korali::solver::agent::continuous::DDPG();
-  if (iCompare(moduleType, "Agent/Continuous/NAF")) module = new korali::solver::agent::continuous::NAF();
   if (iCompare(moduleType, "Agent/Continuous/VRACER")) module = new korali::solver::agent::continuous::VRACER();
+  if (iCompare(moduleType, "Agent/Discrete/dVRACER")) module = new korali::solver::agent::discrete::dVRACER();
   if (iCompare(moduleType, "Optimizer/CMAES")) module = new korali::solver::optimizer::CMAES();
   if (iCompare(moduleType, "Optimizer/DEA")) module = new korali::solver::optimizer::DEA();
-  if (iCompare(moduleType, "Optimizer/Adam")) module = new korali::solver::optimizer::Adam();
   if (iCompare(moduleType, "Optimizer/Rprop")) module = new korali::solver::optimizer::Rprop();
+  if (iCompare(moduleType, "Optimizer/Adam")) module = new korali::solver::optimizer::Adam();
+  if (iCompare(moduleType, "Optimizer/AdaBelief")) module = new korali::solver::optimizer::AdaBelief();
+  if (iCompare(moduleType, "Optimizer/MADGRAD")) module = new korali::solver::optimizer::MADGRAD();
   if (iCompare(moduleType, "Optimizer/LMCMAES")) module = new korali::solver::optimizer::LMCMAES();
   if (iCompare(moduleType, "Optimizer/MOCMAES")) module = new korali::solver::optimizer::MOCMAES();
   if (iCompare(moduleType, "Optimizer/GridSearch")) module = new korali::solver::optimizer::GridSearch();
   if (iCompare(moduleType, "Sampler/Nested")) module = new korali::solver::sampler::Nested();
   if (iCompare(moduleType, "Sampler/MCMC")) module = new korali::solver::sampler::MCMC();
+  if (iCompare(moduleType, "Sampler/HMC")) module = new korali::solver::sampler::HMC();
   if (iCompare(moduleType, "Sampler/TMCMC")) module = new korali::solver::sampler::TMCMC();
   if (iCompare(moduleType, "NeuralNetwork")) module = new korali::NeuralNetwork();
   if (iCompare(moduleType, "Layer/Linear")) module = new korali::neuralNetwork::layer::Linear();

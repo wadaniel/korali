@@ -24,114 +24,84 @@ int main(int argc, char *argv[])
   MPI_Comm_size(MPI_COMM_WORLD, &N);
   N = N - 1; // Minus one for Korali's engine
 
-  // Init CUP2D
+  // Initialize CUP2D
   _environment = new Simulation(_argc, _argv);
   _environment->init();
 
-  std::string trainingResultsPath = "_results_windmill_training/";
-  std::string testingResultsPath = "_results_windmill_testing/";
-
-  // Creating Experiment
-  auto e = korali::Experiment();
-  e["Problem"]["Type"] = "Reinforcement Learning / Continuous";
+  // Set results path
+  std::string trainingResultsPath = "_results_windmill_training/r_5_100/";
+  std::string testingResultsPath = "_results_windmill_testing/r_5_100/";
   
+  // Creating Korali experiment
+  auto e = korali::Experiment();
+
+  // Check if there is log files to continue training
   auto found = e.loadState(trainingResultsPath + std::string("/latest"));
   if (found == true) printf("[Korali] Continuing execution from previous run...\n");
 
-  // Configuring Experiment
+  // Configuring problem
+  e["Problem"]["Type"] = "Reinforcement Learning / Continuous";
   e["Problem"]["Environment Function"] = &runEnvironment;
   e["Problem"]["Training Reward Threshold"] = 8.0;
   e["Problem"]["Policy Testing Episodes"] = 5;
-  e["Problem"]["Actions Between Policy Updates"] = 1;
 
   // Adding custom setting to run the environment without dumping the state files during training
   e["Problem"]["Custom Settings"]["Dump Frequency"] = 0.0;
   e["Problem"]["Custom Settings"]["Dump Path"] = trainingResultsPath;
 
   const size_t numStates = 8;
-  size_t curVariable = 0;
-  for (; curVariable < numStates; curVariable++)
+  for (int curVariable = 0; curVariable < numStates; curVariable++)
   {
     if(curVariable%2==0){
       e["Variables"][curVariable]["Name"] = std::string("Angle ") + std::to_string(curVariable/2 + 1);
     } else{
       e["Variables"][curVariable]["Name"] = std::string("Omega ") + std::to_string(curVariable/2 + 1);
     }
+    
     e["Variables"][curVariable]["Type"] = "State";
   }
 
-  double max_torque = 1e-2;
-  for(size_t j=numStates; j < numStates + 5; ++j){
-    e["Variables"][curVariable]["Name"] = "Torque" + std::to_string(j-numStates+1);
-    e["Variables"][curVariable]["Type"] = "Action";
-    e["Variables"][curVariable]["Lower Bound"] = -max_torque;
-    e["Variables"][curVariable]["Upper Bound"] = +max_torque;
-    e["Variables"][curVariable]["Initial Exploration Noise"] = 0.5*max_torque;
+  double max_torque = 1e-5;
+  for(size_t j=numStates; j < numStates + 4; ++j){
+    e["Variables"][j]["Name"] = "Torque " + std::to_string(j-numStates+1);
+    e["Variables"][j]["Type"] = "Action";
+    e["Variables"][j]["Lower Bound"] = -max_torque;
+    e["Variables"][j]["Upper Bound"] = +max_torque;
+    e["Variables"][j]["Initial Exploration Noise"] = 0.5;
   }
 
-  // Setting up the 20 state variables
-  // const size_t numStates = 20;
-  // size_t curVariable = 0;
-  // for (; curVariable < numStates; curVariable++)
-  // {
-  //   e["Variables"][curVariable]["Name"] = std::string("StateVar") + std::to_string(curVariable);
-  //   e["Variables"][curVariable]["Type"] = "State";
-  // }
-
-  // const double maxForce = 1e-2;
-
-  // e["Variables"][curVariable]["Name"] = "Force X";
-  // e["Variables"][curVariable]["Type"] = "Action";
-  // e["Variables"][curVariable]["Lower Bound"] = -maxForce;
-  // e["Variables"][curVariable]["Upper Bound"] = +maxForce;
-  // e["Variables"][curVariable]["Initial Exploration Noise"] = 0.5*maxForce;
-
-  // curVariable++;
-  // e["Variables"][curVariable]["Name"] = "Force Y";
-  // e["Variables"][curVariable]["Type"] = "Action";
-  // e["Variables"][curVariable]["Lower Bound"] = -maxForce;
-  // e["Variables"][curVariable]["Upper Bound"] = +maxForce;
-  // e["Variables"][curVariable]["Initial Exploration Noise"] = 0.5*maxForce;
-
   /// Defining Agent Configuration
-
   e["Solver"]["Type"] = "Agent / Continuous / VRACER";
   e["Solver"]["Mode"] = "Training";
-  e["Solver"]["Agent Count"] = N;
   e["Solver"]["Episodes Per Generation"] = 1;
+  e["Solver"]["Agent Count"] = N;
   e["Solver"]["Experiences Between Policy Updates"] = 1;
   e["Solver"]["Learning Rate"] = 1e-4;
   e["Solver"]["Discount Factor"] = 0.95;
-  e["Solver"]["Updates Between Reward Rescaling"] = 20000;
+  e["Solver"]["Mini Batch"]["Size"] =  128;
+  e["Solver"]["Policy"]["Distribution"] = "Normal";
 
   /// Defining the configuration of replay memory
-
   e["Solver"]["Experience Replay"]["Start Size"] = 1024;
   e["Solver"]["Experience Replay"]["Maximum Size"] = 65536;
+  e["Solver"]["Experience Replay"]["Off Policy"]["Annealing Rate"] = 5.0e-8;
+  e["Solver"]["Experience Replay"]["Off Policy"]["Cutoff Scale"] = 5.0;
+  e["Solver"]["Experience Replay"]["Off Policy"]["REFER Beta"] = 0.3;
+  e["Solver"]["Experience Replay"]["Off Policy"]["Target"] = 0.1;
 
-  //// Configuring Mini Batch
 
-  e["Solver"]["Mini Batch Size"] = 128;
-  e["Solver"]["Mini Batch Strategy"] = "Uniform";
+  //// Defining Policy distribution and scaling parameters
+  e["Solver"]["State Rescaling"]["Enabled"] = true;
+  e["Solver"]["Reward"]["Rescaling"]["Enabled"] = false; // this was true
+  e["Solver"]["Reward"]["Rescaling"]["Frequency"] = 1000;
 
-  //// Defining Neural Network
-
-  // two GRU layers with 32
-  // e["Solver"]["Neural Network"]["Engine"] = "OneDNN";
-  // e["Solver"]["Time Sequence Length"] = 16;
-  // e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Recurrent/GRU";
-  // e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 32;
-  // e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Recurrent/GRU";
-  // e["Solver"]["Neural Network"]["Hidden Layers"][1]["Output Channels"] = 32;
-
-  // one GRU layer with 64
-  // e["Solver"]["Neural Network"]["Engine"] = "OneDNN";
-  // e["Solver"]["Time Sequence Length"] = 16;
-  // e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Recurrent/GRU";
-  // e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 64;
-
-  // two FF layers with 128
+  /// Configuring the neural network and its hidden layers
   e["Solver"]["Neural Network"]["Engine"] = "OneDNN";
+  e["Solver"]["Neural Network"]["Optimizer"] = "Adam";
+  
+  e["Solver"]["L2 Regularization"]["Enabled"] = true;
+  e["Solver"]["L2 Regularization"]["Importance"] = 1.0;
+
   e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear";
   e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 128;
 
@@ -146,7 +116,7 @@ int main(int argc, char *argv[])
 
   ////// Defining Termination Criteria
 
-  e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 16.0;
+  e["Solver"]["Termination Criteria"]["Max Experiences"] = 1e7;
 
   ////// Setting Korali output configuration
 
@@ -167,7 +137,7 @@ int main(int argc, char *argv[])
 
   k["Conduit"]["Type"] = "Distributed";
   k["Conduit"]["Communicator"] = MPI_COMM_WORLD;
-
+  
   k.run(e);
 
   ////// Now testing policy, dumping trajectory results
@@ -185,6 +155,4 @@ int main(int argc, char *argv[])
   for (int i = 0; i < N; i++) e["Solver"]["Testing"]["Sample Ids"][i] = i;
 
   k.run(e);
-
-  printf("[Korali] Finished. Testing dump files stored in %s\n", testingResultsPath.c_str());
 }

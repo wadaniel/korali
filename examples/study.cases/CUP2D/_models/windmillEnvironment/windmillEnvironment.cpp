@@ -61,8 +61,8 @@ void runEnvironment(korali::Sample &s)
   setInitialConditions(agent4, 0, random_init);
 
   // Set target
-  std::array<Real,2> target_pos{0.8,0.5};
-  std::vector<double> target_vel={0.8,0.5};
+  std::array<Real,2> target_pos{0.4,0.5};
+  std::vector<double> target_vel={0.0,0.0};
 
   std::vector<double> state1 = agent1->state();
   std::vector<double> state2 = agent2->state();
@@ -86,7 +86,8 @@ void runEnvironment(korali::Sample &s)
 
   while (curStep < maxSteps)
   {
-    // Getting initial time
+
+ // Getting initial time
     auto beginTime = std::chrono::steady_clock::now(); // Profiling
 
     // Getting new action
@@ -117,17 +118,24 @@ void runEnvironment(korali::Sample &s)
       }
     }
 
-    // Reward is +10 if state is terminal; otherwise obtain it from inverse distance to target
     // reward( std::vector<double> target, std::vector<double> target_vel, double C = 10)
-    double r1 = agent1->reward( target_pos, target_vel,  10);
-    double r2 = agent2->reward( target_pos, target_vel,  10);
-    double r3 = agent3->reward( target_pos, target_vel,  10);
-    double r4 = agent4->reward( target_pos, target_vel,  10);
-    double reward = r1 + r2 + r3 + r4;
+    double C = 0.5e8;
+    double r1 = agent1->reward( target_pos, target_vel,  C);
+    double r2 = agent2->reward( target_pos, target_vel,  C);
+    double r3 = agent3->reward( target_pos, target_vel,  C);
+    double r4 = agent4->reward( target_pos, target_vel,  C);
+    double reward = (r1 + r2 + r3 + r4);
 
     // Getting ending time
     auto endTime = std::chrono::steady_clock::now(); // Profiling
     double actionTime = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count() / 1.0e+9;
+
+    // Obtaining new agent state
+    state1 = agent1->state();
+    state2 = agent2->state();
+    state3 = agent3->state();
+    state4 = agent4->state();
+    state = {state1[0], state1[1], state2[0], state2[1], state3[0], state3[1], state4[0], state4[1]};
 
     // Printing Information:
     printf("[Korali] Sample %lu - Step: %lu/%lu\n", sampleId, curStep, maxSteps);
@@ -140,18 +148,11 @@ void runEnvironment(korali::Sample &s)
       }
     }
     printf("]\n");
-    printf("[Korali] Force: [ %.3f, %.3f, %.3f, %.3f  ]\n", action[0], action[1], action[2], action[3]);
+    printf("[Korali] Previous Torque: [ %.8f, %.8f, %.8f, %.8f  ]\n", action[0], action[1], action[2], action[3]);
     printf("[Korali] Reward: %.3f\n", reward);
     printf("[Korali] Time: %.3fs\n", actionTime);
     printf("[Korali] -------------------------------------------------------\n");
     fflush(stdout);
-
-    // Obtaining new agent state
-    state1 = agent1->state();
-    state2 = agent2->state();
-    state3 = agent3->state();
-    state4 = agent4->state();
-    std::vector<double> state = {state1[0], state1[1], state2[0], state2[1], state3[0], state3[1], state4[0], state4[1]};
 
     // Storing reward
     s["Reward"] = reward;

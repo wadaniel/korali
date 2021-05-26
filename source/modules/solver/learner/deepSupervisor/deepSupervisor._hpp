@@ -2,7 +2,11 @@
 #define _KORALI_SOLVER_DEEPSUPERVISOR_HPP_
 
 #include "modules/solver/learner/deepSupervisor/optimizers/fAdaBelief.hpp"
+#include "modules/solver/learner/deepSupervisor/optimizers/fAdagrad.hpp"
 #include "modules/solver/learner/deepSupervisor/optimizers/fAdam.hpp"
+#include "modules/solver/learner/deepSupervisor/optimizers/fGradientBasedOptimizer.hpp"
+#include "modules/solver/learner/deepSupervisor/optimizers/fMadGrad.hpp"
+#include "modules/solver/learner/deepSupervisor/optimizers/fRMSProp.hpp"
 
 #include "modules/experiment/experiment.hpp"
 #include "modules/neuralNetwork/neuralNetwork.hpp"
@@ -29,19 +33,14 @@ class DeepSupervisor : public Learner
   korali::Experiment _optExperiment;
 
   /**
- * @brief ADAM solver pointer to access directly (for performance)
+ * @brief Gradient-based solver pointer to access directly (for performance)
  */
-  korali::fAdam *_adamSolver;
+  korali::fGradientBasedOptimizer *_optimizer;
 
   /**
    * @brief A neural network to be trained based on inputs and solutions
    */
-  NeuralNetwork *_trainingNeuralNetwork;
-
-  /**
-   * @brief A neural network to perform inference of inputs and obtain gradients, one per thread.
-   */
-  std::vector<NeuralNetwork *> _inferenceNeuralNetworks;
+  NeuralNetwork *_neuralNetwork;
 
   /**
     * @brief Calculates the gradients with respect to the inputs (data), given an input and output gradients
@@ -49,13 +48,16 @@ class DeepSupervisor : public Learner
     * @param outputGradients The output gradients. Format: BxOC (B: Batch Size, OC: Input channels)
     * @return The inferred batch input gradients Format: BxIC (B: Batch Size, IC: Output channels)
    */
-  std::vector<std::vector<float>> getDataGradients(const std::vector<std::vector<std::vector<float>>> &input, const std::vector<std::vector<float>> &outputGradients);
+  std::vector<std::vector<float>> &getDataGradients(const std::vector<std::vector<std::vector<float>>> &input, const std::vector<std::vector<float>> &outputGradients);
 
-  std::vector<std::vector<float>> getEvaluation(const std::vector<std::vector<std::vector<float>>> &input) override;
-  std::vector<float> getTrainingHyperparameters() override;
-  void setTrainingHyperparameters(const std::vector<float> &hyperparameters) override;
-  std::vector<float> getInferenceHyperparameters() override;
-  void setInferenceHyperparameters(const std::vector<float> &hyperparameters) override;
+  /**
+   * @brief Resets the optimizer after passing new hyperparameters
+   */
+  void resetOptimizer();
+
+  std::vector<std::vector<float>> &getEvaluation(const std::vector<std::vector<std::vector<float>>> &input) override;
+  std::vector<float> getHyperparameters() override;
+  void setHyperparameters(const std::vector<float> &hyperparameters) override;
 
   void initialize() override;
   void runGeneration() override;

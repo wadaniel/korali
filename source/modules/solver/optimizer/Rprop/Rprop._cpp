@@ -20,20 +20,21 @@ void Rprop::setInitialConfiguration()
     if (std::isfinite(_k->_variables[i]->_initialValue) == false)
       KORALI_LOG_ERROR("Initial Value of variable \'%s\' not defined (no defaults can be calculated).\n", _k->_variables[i]->_name.c_str());
 
-  _currentX.resize(_variableCount, 0.0);
+  _currentVariable.resize(_variableCount, 0.0);
   for (size_t i = 0; i < _variableCount; i++)
-    _currentX[i] = _k->_variables[i]->_initialValue;
+    _currentVariable[i] = _k->_variables[i]->_initialValue;
 
-  _bestX = _currentX;
+  _bestEverVariables = _currentVariable;
   _delta.resize(_variableCount, _delta0);
   _currentGradient.resize(_variableCount, 0);
+  _bestEverGradient.resize(_variableCount, 0);
   _previousGradient.resize(_variableCount, 0.0);
 
-  _bestEvaluation = Inf;
+  _bestEverValue = Inf;
   _xDiff = Inf;
   _maxStallCounter = 0;
   _normPreviousGradient = Inf;
-  _previousEvaluation = Inf;
+  _previousBestValue = Inf;
 }
 
 void Rprop::evaluateFunctionAndGradient(Sample &sample)
@@ -41,7 +42,7 @@ void Rprop::evaluateFunctionAndGradient(Sample &sample)
   // Initializing Sample Evaluation
   sample["Module"] = "Problem";
   sample["Operation"] = "Evaluate With Gradients";
-  sample["Parameters"] = _currentX;
+  sample["Parameters"] = _currentVariable;
   sample["Sample Id"] = 0;
   _modelEvaluationCount++;
   KORALI_START(sample);
@@ -51,7 +52,7 @@ void Rprop::evaluateFunctionAndGradient(Sample &sample)
 
   // Processing results
   // The 'minus' is there because we want Rprop to do Maximization be default.
-  _currentEvaluation = -KORALI_GET(double, sample, "F(x)");
+  _currentBestValue = -KORALI_GET(double, sample, "F(x)");
   _currentGradient = KORALI_GET(std::vector<double>, sample, "Gradient");
 
   if (_currentGradient.size() != _variableCount)
@@ -71,18 +72,19 @@ void Rprop::runGeneration(void)
 
   Update_iminus();
 
-  _previousEvaluation = _currentEvaluation;
+  _previousBestValue = _currentBestValue;
   _previousGradient = _currentGradient;
   _normPreviousGradient = vectorNorm(_previousGradient);
 
-  if (_currentEvaluation < _bestEvaluation)
+  if (_currentBestValue < _bestEverValue)
   {
-    _bestEvaluation = _currentEvaluation;
+    _bestEverValue = _currentBestValue;
 
     std::vector<double> tmp(_variableCount);
-    for (size_t j = 0; j < _variableCount; j++) tmp[j] = _bestX[j] - _currentX[j];
+    for (size_t j = 0; j < _variableCount; j++) tmp[j] = _bestEverVariables[j] - _currentVariable[j];
     _xDiff = vectorNorm(tmp);
-    _bestX = _currentX;
+    _bestEverVariables = _currentVariable;
+    _bestEverGradient = _currentGradient;
     _maxStallCounter = 0;
   }
   else
@@ -101,18 +103,18 @@ void Rprop::Update_plus(void)
     {
       _delta[i] = std::min(_delta[i] * _etaPlus, _deltaMax);
       _currentGradient[i] = -sign(_currentGradient[i]) * _delta[i];
-      _currentX[i] += _currentGradient[i];
+      _currentVariable[i] += _currentGradient[i];
     }
     else if (productGradient < 0)
     {
       _delta[i] = std::max(_delta[i] * _etaMinus, _deltaMin);
-      _currentX[i] -= _currentGradient[i];
+      _currentVariable[i] -= _currentGradient[i];
       _currentGradient[i] = 0;
     }
     else
     {
       _currentGradient[i] = -sign(_currentGradient[i]) * _delta[i];
-      _currentX[i] += _currentGradient[i];
+      _currentVariable[i] += _currentGradient[i];
     }
   }
 }
@@ -127,7 +129,7 @@ void Rprop::Update_minus(void)
       _delta[i] = std::min(_delta[i] * _etaPlus, _deltaMax);
     else if (productGradient < 0)
       _delta[i] = std::max(_delta[i] * _etaMinus, _deltaMin);
-    _currentX[i] += -sign(_currentGradient[i]) * _delta[i];
+    _currentVariable[i] += -sign(_currentGradient[i]) * _delta[i];
   }
 }
 
@@ -141,18 +143,18 @@ void Rprop::Update_iplus(void)
     {
       _delta[i] = std::min(_delta[i] * _etaPlus, _deltaMax);
       _currentGradient[i] = -sign(_currentGradient[i]) * _delta[i];
-      _currentX[i] += _currentGradient[i];
+      _currentVariable[i] += _currentGradient[i];
     }
     else if (productGradient < 0)
     {
       _delta[i] = std::max(_delta[i] * _etaMinus, _deltaMin);
-      if (_currentEvaluation > _previousEvaluation) _currentX[i] -= _currentGradient[i];
+      if (_currentBestValue > _previousBestValue) _currentVariable[i] -= _currentGradient[i];
       _currentGradient[i] = 0;
     }
     else
     {
       _currentGradient[i] = -sign(_currentGradient[i]) * _delta[i];
-      _currentX[i] += _currentGradient[i];
+      _currentVariable[i] += _currentGradient[i];
     }
   }
 }
@@ -172,7 +174,7 @@ void Rprop::Update_iminus(void)
       _delta[i] = std::max(_delta[i] * _etaMinus, _deltaMin);
       _currentGradient[i] = 0;
     }
-    _currentX[i] += -sign(_currentGradient[i]) * _delta[i];
+    _currentVariable[i] += -sign(_currentGradient[i]) * _delta[i];
   }
 }
 
@@ -184,26 +186,26 @@ void Rprop::printGenerationBefore()
 void Rprop::printGenerationAfter()
 {
   _k->_logger->logInfo("Normal", "X = [ ");
-  for (size_t k = 0; k < _variableCount; k++) _k->_logger->logData("Normal", " %.5le  ", _currentX[k]);
+  for (size_t k = 0; k < _variableCount; k++) _k->_logger->logData("Normal", " %.5le  ", _currentVariable[k]);
   _k->_logger->logData("Normal", " ]\n");
 
-  _k->_logger->logInfo("Normal", "F(X) = %le \n", _currentEvaluation);
+  _k->_logger->logInfo("Normal", "F(X) = %le \n", _currentBestValue);
 
   _k->_logger->logInfo("Normal", "DF(X) = [ ");
   for (size_t k = 0; k < _variableCount; k++) _k->_logger->logData("Normal", " %.5le  ", _currentGradient[k]);
   _k->_logger->logData("Normal", " ]\n");
 
   _k->_logger->logInfo("Normal", "X_best = [ ");
-  for (size_t k = 0; k < _variableCount; k++) _k->_logger->logData("Normal", " %.5le  ", _bestX[k]);
+  for (size_t k = 0; k < _variableCount; k++) _k->_logger->logData("Normal", " %.5le  ", _bestEverVariables[k]);
   _k->_logger->logData("Normal", " ]\n");
 }
 
 void Rprop::finalize()
 {
   // Updating Results
-  (*_k)["Results"]["Best Sample"]["F(x)"] = _currentEvaluation;
-  (*_k)["Results"]["Best Sample"]["Gradient(x)"] = _currentGradient;
-  (*_k)["Results"]["Best Sample"]["Parameters"] = _currentX;
+  (*_k)["Results"]["Best Sample"]["F(x)"] = _bestEverValue;
+  (*_k)["Results"]["Best Sample"]["Gradient(x)"] = _bestEverGradient;
+  (*_k)["Results"]["Best Sample"]["Parameters"] = _bestEverVariables;
   return;
 }
 

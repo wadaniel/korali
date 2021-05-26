@@ -23,7 +23,6 @@ void ReinforcementLearning::initialize()
 
   if (_actionVectorSize == 0) KORALI_LOG_ERROR("No action variables have been defined.\n");
   if (_stateVectorSize == 0) KORALI_LOG_ERROR("No state variables have been defined.\n");
-  if (_testingFrequency == 0) _testingFrequency = _k->_solver->_maxGenerations;
 }
 
 /**
@@ -73,9 +72,9 @@ void __environmentWrapper()
 void ReinforcementLearning::runTrainingEpisode(Sample &agent)
 {
   // Profiling information - Computation and communication time taken by the agent
-  double agentPolicyEvaluationTime = 0.0;
-  double agentComputationTime = 0.0;
-  double agentCommunicationTime = 0.0;
+  _agentPolicyEvaluationTime = 0.0;
+  _agentComputationTime = 0.0;
+  _agentCommunicationTime = 0.0;
 
   // Initializing environment configuration
   initializeEnvironment(agent);
@@ -86,9 +85,8 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
   // Setting mode to traing to add exploratory noise or random actions
   agent["Mode"] = "Training";
 
-  // Reserving storage for sending back experiences
-  knlohmann::json experience;
-  experience["Sample Id"] = agent["Sample Id"];
+  // Reserving message storage for sending back the episode
+  knlohmann::json episode;
 
   // Storage to keep track of cumulative reward
   float trainingReward = 0.0;
@@ -99,69 +97,49 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
   agent["Termination"] = "Non Terminal";
 
   // Getting first state
-  runEnvironment();
+  runEnvironment(agent);
 
   // Saving experiences
   while (agent["Termination"] == "Non Terminal")
   {
-    // Generating new action from policy
-    auto beginTime0 = std::chrono::steady_clock::now(); // Profiling
-    _agent->getAction(agent);
-    actionCount++;
-    auto endTime0 = std::chrono::steady_clock::now();                                                                 // Profiling
-    agentPolicyEvaluationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime0 - beginTime0).count(); // Profiling
+    // Generating new action from the agent's policy
+    getAction(agent);
 
-    // Storing the current state
-    experience["State"] = agent["State"];
+    // Store the current state in the experience
+    episode["Experiences"][actionCount]["State"] = agent["State"];
 
     // Storing the current action
-    experience["Action"] = agent["Action"];
+    episode["Experiences"][actionCount]["Action"] = agent["Action"];
 
     // Storing the experience's policy
-    experience["Policy"] = agent["Policy"];
+    episode["Experiences"][actionCount]["Policy"] = agent["Policy"];
 
-    // Jumping back into the _agent's environment
-    auto beginTime1 = std::chrono::steady_clock::now(); // Profiling
-    runEnvironment();
-    auto endTime1 = std::chrono::steady_clock::now();                                                            // Profiling
-    agentComputationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime1 - beginTime1).count(); // Profiling
+    // Jumping back into the agent's environment
+    runEnvironment(agent);
+
+    // Sanity check for reward
+    if (std::isfinite(agent["Reward"].get<float>()) == false)
+      KORALI_LOG_ERROR("Environment reward returned an invalid value: %f\n", agent["Reward"].get<float>());
 
     // Storing experience's reward
-    experience["Reward"] = agent["Reward"];
+    episode["Experiences"][actionCount]["Reward"] = agent["Reward"];
 
     // Storing termination status
-    experience["Termination"] = agent["Termination"];
-
-    // Adding metadata from the agent module
-    experience["Metadata"] = agent["Metadata"];
+    episode["Experiences"][actionCount]["Termination"] = agent["Termination"];
 
     // If the episode was truncated, then save the terminal state
-    if (agent["Termination"] == "Truncated") experience["Truncated State"] = agent["State"];
+    if (agent["Termination"] == "Truncated") episode["Experiences"][actionCount]["Truncated State"] = agent["State"];
 
     // Adding to cumulative training reward
     trainingReward += agent["Reward"].get<float>();
 
-    auto beginTime2 = std::chrono::steady_clock::now(); // Profiling
+    // Increasing counter for generated actions
+    actionCount++;
 
     // Checking if we requested the given number of actions in between policy updates and it is not a terminal state
-    bool requestNewPolicy = (_actionsBetweenPolicyUpdates > 0) &&
-                            (agent["Termination"] == "Non Terminal") &&
-                            (actionCount % _actionsBetweenPolicyUpdates == 0);
-
-    experience["Request New Policy"] = requestNewPolicy;
-
-    // Sending experience to engine if it's non terminal. If it's terminal we send it last (see below)
-    if (agent["Termination"] == "Non Terminal") KORALI_SEND_MSG_TO_ENGINE(experience);
-
-    // If requested new policy, wait for incoming message containing new hyperparameters
-    if (requestNewPolicy)
-    {
-      agent["Policy"] = KORALI_RECV_MSG_FROM_ENGINE();
-      _agent->setAgentPolicy(agent["Policy"]);
-    }
-
-    auto endTime2 = std::chrono::steady_clock::now();                                                              // Profiling
-    agentCommunicationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime2 - beginTime2).count(); // Profiling
+    if ((_actionsBetweenPolicyUpdates > 0) &&
+        (agent["Termination"] == "Non Terminal") &&
+        (actionCount % _actionsBetweenPolicyUpdates == 0)) requestNewPolicy(agent);
   }
 
   // Setting cumulative reward
@@ -173,8 +151,11 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
   // Setting tested policy flag to false, unless we do testing
   agent["Tested Policy"] = false;
 
-  // If the training reward exceeds the threshold, then also run testing on it
-  if (trainingReward > _trainingRewardThreshold || _k->_currentGeneration % _testingFrequency == 0)
+  // If the training reward exceeds the threshold or meets the periodic conditions, then also run testing on it
+  bool runTest = false;
+  runTest |= trainingReward > _trainingRewardThreshold;
+  runTest |= (_testingFrequency > 0) && (_k->_currentGeneration % _testingFrequency == 0);
+  if (runTest)
   {
     float averageTestingReward = 0.0;
     float stdevTestingReward = 0.0;
@@ -212,12 +193,16 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
   // Sending last experience last (after testing)
   // This is important to prevent the engine for block-waiting for the return of the sample
   // while the testing runs are being performed.
-  KORALI_SEND_MSG_TO_ENGINE(experience);
+  knlohmann::json message;
+  message["Action"] = "Send Episode";
+  message["Sample Id"] = agent["Sample Id"];
+  message["Experiences"] = episode["Experiences"];
+  KORALI_SEND_MSG_TO_ENGINE(message);
 
   // Adding profiling information to agent
-  agent["Computation Time"] = agentComputationTime;
-  agent["Communication Time"] = agentCommunicationTime;
-  agent["Policy Evaluation Time"] = agentPolicyEvaluationTime;
+  agent["Computation Time"] = _agentComputationTime;
+  agent["Communication Time"] = _agentCommunicationTime;
+  agent["Policy Evaluation Time"] = _agentPolicyEvaluationTime;
 }
 
 void ReinforcementLearning::runTestingEpisode(Sample &agent)
@@ -234,13 +219,13 @@ void ReinforcementLearning::runTestingEpisode(Sample &agent)
   agent["Termination"] = "Non Terminal";
 
   // Getting first state
-  runEnvironment();
+  runEnvironment(agent);
 
   // Running environment using the last policy only
   while (agent["Termination"] == "Non Terminal")
   {
-    _agent->getAction(agent);
-    runEnvironment();
+    getAction(agent);
+    runEnvironment(agent);
     testingReward += agent["Reward"].get<float>();
   }
 
@@ -262,6 +247,10 @@ void ReinforcementLearning::initializeEnvironment(Sample &agent)
   // Then, we reset the state sequence for time-dependent learners
   _agent->resetTimeSequence();
 
+  // Define state rescaling variables
+  _stateRescalingMeans = agent["State Rescaling"]["Means"].get<std::vector<float>>();
+  _stateRescalingSdevs = agent["State Rescaling"]["Standard Deviations"].get<std::vector<float>>();
+
   // Appending any user-defined settings
   agent["Custom Settings"] = _customSettings;
 
@@ -280,10 +269,64 @@ void ReinforcementLearning::finalizeEnvironment()
   co_delete(_envThread);
 }
 
-void ReinforcementLearning::runEnvironment()
+void ReinforcementLearning::requestNewPolicy(Sample &agent)
+{
+  auto t0 = std::chrono::steady_clock::now(); // Profiling
+
+  // Reserving message storage for requesting new policy
+  knlohmann::json message;
+
+  // Sending request to engine
+  message["Sample Id"] = agent["Sample Id"];
+  message["Action"] = "Request New Policy";
+  KORALI_SEND_MSG_TO_ENGINE(message);
+
+  // If requested new policy, wait for incoming message containing new hyperparameters
+  agent["Policy Hyperparameters"] = KORALI_RECV_MSG_FROM_ENGINE();
+  _agent->setAgentPolicy(agent["Policy Hyperparameters"]);
+
+  auto t1 = std::chrono::steady_clock::now();                                                       // Profiling
+  _agentCommunicationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(t1 - t0).count(); // Profiling
+}
+
+void ReinforcementLearning::getAction(Sample &agent)
+{
+  // Generating new action from policy
+  auto t0 = std::chrono::steady_clock::now(); // Profiling
+
+  _agent->getAction(agent);
+
+  auto t1 = std::chrono::steady_clock::now();                                                          // Profiling
+  _agentPolicyEvaluationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(t1 - t0).count(); // Profiling
+
+  // Sanity checks for action
+  for (size_t i = 0; i < _actionVectorSize; i++)
+    if (std::isfinite(agent["Action"][i].get<float>()) == false)
+      KORALI_LOG_ERROR("Agent agent variable %lu returned an invalid value: %f\n", agent["Action"][i].get<float>());
+}
+
+void ReinforcementLearning::runEnvironment(Sample &agent)
 {
   // Switching back to the environment's thread
+  auto beginTime = std::chrono::steady_clock::now(); // Profiling
   co_switch(_envThread);
+  auto endTime = std::chrono::steady_clock::now();                                                            // Profiling
+  _agentComputationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
+
+  // Sanity checks for state
+  for (size_t i = 0; i < _stateVectorSize; i++)
+    if (std::isfinite(agent["State"][i].get<float>()) == false)
+      KORALI_LOG_ERROR("Environment state variable %lu returned an invalid value: %f\n", agent["State"][i].get<float>());
+
+  // Normalizing State
+  auto state = agent["State"].get<std::vector<float>>();
+
+  // Scale the state
+  for (size_t d = 0; d < _stateVectorSize; ++d)
+    state[d] = (state[d] - _stateRescalingMeans[d]) / _stateRescalingSdevs[d];
+
+  // Re-storing state into agent
+  agent["State"] = state;
 }
 
 } // namespace problem

@@ -1,8 +1,14 @@
 #include "_environment/environment.hpp"
 #include "korali.hpp"
+#include <string>
 
 int main(int argc, char *argv[])
 {
+  /////// Getting configuration defaults
+
+  std::string optimizer = argc < 2 ? "Adam" : argv[1];
+  float learningRate = argc < 3 ? 1e-4f : std::stof(argv[2]);
+
   /////// Initializing environment
 
   _resultDir = "_result_vracer";
@@ -43,50 +49,51 @@ int main(int argc, char *argv[])
 
   e["Variables"][14]["Name"] = "Frequency (w)";
   e["Variables"][14]["Type"] = "Action";
-  e["Variables"][14]["Lower Bound"] = 0.0f;
-  e["Variables"][14]["Upper Bound"] = 2.0f;
-  e["Variables"][14]["Initial Exploration Noise"] = 0.50f;
+  e["Variables"][14]["Initial Exploration Noise"] = 0.447f;
 
   e["Variables"][15]["Name"] = "Rotation X";
   e["Variables"][15]["Type"] = "Action";
-  e["Variables"][15]["Lower Bound"] = -1.0f;
-  e["Variables"][15]["Upper Bound"] = 1.0f;
-  e["Variables"][15]["Initial Exploration Noise"] = 0.50f;
+  e["Variables"][15]["Initial Exploration Noise"] = 0.447f;
 
   e["Variables"][16]["Name"] = "Rotation Y";
   e["Variables"][16]["Type"] = "Action";
-  e["Variables"][16]["Lower Bound"] = -1.0f;
-  e["Variables"][16]["Upper Bound"] = 1.0f;
-  e["Variables"][16]["Initial Exploration Noise"] = 0.50f;
+  e["Variables"][16]["Initial Exploration Noise"] = 0.447f;
 
   e["Variables"][17]["Name"] = "Rotation Z";
   e["Variables"][17]["Type"] = "Action";
-  e["Variables"][17]["Lower Bound"] = -1.0f;
-  e["Variables"][17]["Upper Bound"] = 1.0f;
-  e["Variables"][17]["Initial Exploration Noise"] = 0.50f;
+  e["Variables"][17]["Initial Exploration Noise"] = 0.447f;
 
   /// Defining Agent Configuration
 
   e["Solver"]["Type"] = "Agent / Continuous / VRACER";
   e["Solver"]["Mode"] = "Training";
-  e["Solver"]["Episodes Per Generation"] = 1;
+  e["Solver"]["Episodes Per Generation"] = 10;
   e["Solver"]["Experiences Between Policy Updates"] = 1;
-  e["Solver"]["Learning Rate"] = 1e-4;
-  e["Solver"]["Discount Factor"] = 0.99;
+  e["Solver"]["Learning Rate"] = learningRate;
+  e["Solver"]["Discount Factor"] = 0.995;
+
+  e["Solver"]["Policy"]["Distribution"] = "Normal";
+  e["Solver"]["State Rescaling"]["Enabled"] = false;
+  e["Solver"]["Reward"]["Rescaling"]["Enabled"] = true;
+  e["Solver"]["Reward"]["Rescaling"]["Frequency"] = 1000;
 
   /// Defining the configuration of replay memory
 
-  e["Solver"]["Experience Replay"]["Start Size"] = 4096;
-  e["Solver"]["Experience Replay"]["Maximum Size"] = 65536;
+  e["Solver"]["Experience Replay"]["Start Size"] = 131072;
+  e["Solver"]["Experience Replay"]["Maximum Size"] = 262144;
+  e["Solver"]["Experience Replay"]["Off Policy"]["Cutoff Scale"] = 4.0;
+  e["Solver"]["Experience Replay"]["Off Policy"]["Target"] = 0.1;
+  e["Solver"]["Experience Replay"]["Off Policy"]["Annealing Rate"] = 0.0;
+  e["Solver"]["Experience Replay"]["Off Policy"]["REFER Beta"] = 0.3;
 
   /// Configuring Mini Batch
 
-  e["Solver"]["Mini Batch Size"] = 256;
-  e["Solver"]["Mini Batch Strategy"] = "Uniform";
+  e["Solver"]["Mini Batch"]["Size"] = 256;
 
   /// Configuring the neural network and its hidden layers
 
   e["Solver"]["Neural Network"]["Engine"] = "OneDNN";
+  e["Solver"]["Neural Network"]["Optimizer"] = optimizer;
 
   e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear";
   e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 128;
@@ -108,7 +115,7 @@ int main(int argc, char *argv[])
 
   e["Console Output"]["Verbosity"] = "Detailed";
   e["File Output"]["Enabled"] = true;
-  e["File Output"]["Frequency"] = 10;
+  e["File Output"]["Frequency"] = 30;
   e["File Output"]["Path"] = _resultDir;
 
   auto k = korali::Engine();

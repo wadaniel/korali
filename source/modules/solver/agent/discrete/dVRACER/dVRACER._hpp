@@ -1,6 +1,7 @@
 #ifndef _KORALI_AGENT_DISCRETE_DVRACER_HPP_
 #define _KORALI_AGENT_DISCRETE_DVRACER_HPP_
 
+#include "modules/distribution/univariate/normal/normal.hpp"
 #include "modules/problem/reinforcementLearning/discrete/discrete.hpp"
 #include "modules/solver/agent/discrete/discrete.hpp"
 
@@ -30,13 +31,24 @@ class dVRACER : public Discrete
    */
   problem::SupervisedLearning *_criticPolicyProblem;
 
-  float stateValueFunction(const std::vector<std::vector<float>> &state) override;
-  void setTrainingState(const knlohmann::json &state) override;
-  knlohmann::json getTrainingState() override;
-  knlohmann::json runPolicy(const std::vector<std::vector<float>> &stateSequence) override;
-  void trainPolicy() override;
+  /**
+   * @brief Update the V-target or current and previous experiences in the episode
+   * @param expId Current Experience Id
+   */
+  void updateVtbc(size_t expId);
+
+  /**
+   * @brief Calculates the gradients for the policy/critic neural network
+   * @param miniBatch The indexes of the experience mini batch
+   */
+  void calculatePolicyGradients(const std::vector<size_t> &miniBatch);
+
+  std::vector<policy_t> runPolicy(const std::vector<std::vector<std::vector<float>>> &stateBatch) override;
+
   knlohmann::json getAgentPolicy() override;
   void setAgentPolicy(const knlohmann::json &hyperparameters) override;
+  void trainPolicy() override;
+  void resetAgentOptimizers() override;
   void printAgentInformation() override;
   void initializeAgent() override;
 };

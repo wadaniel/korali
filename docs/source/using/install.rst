@@ -2,50 +2,77 @@
 Installation
 *********************
 
-Installation Steps
-====================
+Quick Installation
+==================
+
+To download and install Korali in the default setup, run the following:
+
+.. code-block:: bash
+
+     git clone https://github.com/cselab/korali.git
+     cd korali
+
+     # pip version 21 is required
+     python3 -m pip install --upgrade pip
+
+     python3 -m pip install --use-feature=in-tree-build .
+
+
+Note that the installation may take several minutes.
+
+In the default setup, Korali is compiled with no support for MPI, OneDNN or CUDNN.
+To enable them, see instructions below.
+
+
+Manual Installation
+===================
 
 1. Download Korali
 
-  Download the latest stable release of Korali with the following command:
+  Download Korali with the following command:
 
   .. code-block:: bash
 
-     git clone https://github.com/cselab/korali.git --branch latest
+     git clone https://github.com/cselab/korali.git
 
 2. Setup Korali
 
-  To build and install Korali, run:
+  To set up the compilation and installation, run:
 
   .. code-block:: bash
 
    cd korali
-   meson setup build --buildtype release --prefix PREFIX
+   meson setup build --buildtype=release --prefix=PREFIX
 
-where PREFIX is the absolute path where korali will be installed. Optionally you can install Korali with support for MPI, OneDNN, and CUDNN, using the optional parameters: 
+where ``PREFIX`` is the absolute path where Korali will be installed.
+For example, use ``$HOME/.local/`` to install it in the same folder where ``pip`` installs packages (this can be verified with ``python3 -m sysconfig | grep userbase``).
+Optionally you can install Korali with support for MPI, OneDNN, and CUDNN, using the optional parameters:
 
   .. code-block:: bash
 
    cd korali
-   meson setup build --buildtype release --prefix PREFIX -Dmpi=true -Donednn=true -Dcudnn
+   meson setup build --buildtype=release --prefix=PREFIX -Dmpi=true -Donednn=true -Dcudnn
 
 For more information on these optional support, see *Optional Requirements* below.
 
 3. Compile Korali
 
-  To compile korali run:
+  To compile Korali, run:
 
   .. code-block:: bash
 
    meson compile -C build
 
-3. Compile Korali
+4. Install Korali
 
-  To compile korali run:
+  To install Korali, run:
 
  .. code-block:: bash
 
     meson install -C build
+
+
+To uninstall Korali, run ``cd build && ninja uninstall`` or manually delete the folder containing the ``korali`` package.
 
 
 Troubleshooting

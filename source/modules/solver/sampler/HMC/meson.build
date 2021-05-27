@@ -1,19 +1,12 @@
-# generated with `tools/build/korali_gen_target.py`
-# If you modify this file, you likely need to modify all other
-# generated targets as well.  See the generator this file was
-# created with.
-header_install_dir = run_command(header_path, [korali_install_headers, meson.current_source_dir()]).stdout().strip()
+module_header = files(['HMC.hpp'])
+module_source = files(['HMC.cpp'])
 
-gen_HMC_919T0d = custom_target('gen_HMC_919T0d',
-    output: ['HMC.cpp', 'HMC.hpp'],
-    input: files([
-      'HMC._cpp',
-      'HMC._hpp',
-      'HMC.config',
-    ]),
-    command: [korali_gen, '--input', '@INPUT0@', '@INPUT1@', '--config', '@INPUT2@', '--output', '@OUTPUT@'],
-    install: true,
-    install_dir: [false, header_install_dir],
+install_headers(module_header,
+  install_dir: run_command(header_path, [korali_install_headers, meson.current_source_dir()]).stdout().strip()
 )
-korali_source += gen_HMC_919T0d
-korali_source_config += files('HMC.config') 
+
+korali_include += include_directories('.')
+korali_source += module_header
+korali_source += module_source
+
+subdir('helpers')

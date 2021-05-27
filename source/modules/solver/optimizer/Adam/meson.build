@@ -1,19 +1,10 @@
-# generated with `tools/build/korali_gen_target.py`
-# If you modify this file, you likely need to modify all other
-# generated targets as well.  See the generator this file was
-# created with.
-header_install_dir = run_command(header_path, [korali_install_headers, meson.current_source_dir()]).stdout().strip()
+module_header = files(['Adam.hpp'])
+module_source = files(['Adam.cpp'])
 
-gen_Adam_e4BDNR = custom_target('gen_Adam_e4BDNR',
-    output: ['Adam.cpp', 'Adam.hpp'],
-    input: files([
-      'Adam._cpp',
-      'Adam._hpp',
-      'Adam.config',
-    ]),
-    command: [korali_gen, '--input', '@INPUT0@', '@INPUT1@', '--config', '@INPUT2@', '--output', '@OUTPUT@'],
-    install: true,
-    install_dir: [false, header_install_dir],
+install_headers(module_header,
+  install_dir: run_command(header_path, [korali_install_headers, meson.current_source_dir()]).stdout().strip()
 )
-korali_source += gen_Adam_e4BDNR
-korali_source_config += files('Adam.config')
+
+korali_include += include_directories('.')
+korali_source += module_header
+korali_source += module_source

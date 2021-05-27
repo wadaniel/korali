@@ -5,7 +5,7 @@ gen_variable = custom_target('gen_variable',
     output: ['variable.hpp'],
     input: [files([
       'variable._hpp',
-    ]), korali_source_config],
+    ]), korali_config],
     command: [korali_gen_variable, '--input', '@INPUT@', '--output', '@OUTPUT@'],
     install: true,
     install_dir: header_install_dir,

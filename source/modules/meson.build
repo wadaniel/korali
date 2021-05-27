@@ -11,6 +11,7 @@ modules_source = files([
 korali_include += include_directories('.')
 korali_source += modules_header
 korali_source += modules_source
+korali_config = files([])
 
 subdir('conduit')
 subdir('distribution')

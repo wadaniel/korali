@@ -125,7 +125,7 @@ def plotGen(genList, idx):
         ax[1, 1].set_yscale('log')
         ax[1, 1].plot(genIds, minsdev)
 
-def plot(genList, , **kwargs):
+def plot(genList, **kwargs):
       numgens = len(genList)
 
       plotAll = kwargs['plotAll']

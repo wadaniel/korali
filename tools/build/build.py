@@ -18,8 +18,8 @@ def parse_args():
 def get_output_list(files):
     out = []
     for f in files:
-        suffix = os.path.splitext(f)[1].replace('_', '')
-        out.append(re.sub(r'\._(hpp|cpp)\s*$', suffix, f))
+        suffix = os.path.splitext(f)[1].replace('.base', '')
+        out.append(re.sub(r'\.base\s*$', suffix, f))
     return out
 
 

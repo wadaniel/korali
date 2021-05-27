@@ -1,5 +1,6 @@
 module_header = files(['dVRACER.hpp'])
 module_source = files(['dVRACER.cpp'])
+module_config = files(['dVRACER.config'])
 
 install_headers(module_header,
   install_dir: run_command(header_path, [korali_install_headers, meson.current_source_dir()]).stdout().strip()

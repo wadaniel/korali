@@ -87,7 +87,7 @@ def buildCodeFromTemplate( configFile, templateFile, outputFile=None ):
     sys.exit('[Korali] Error: Unknown extension in template file.\n')
 
   if outputFile == None:
-    suffix = templateFilePath.suffix.replace('_','')
+    suffix = templateFilePath.suffix.replace('.base','')
     filePath = templateFilePath.with_suffix(suffix)
   else:
     filePath = Path(outputFile)

@@ -8,7 +8,7 @@ High-performance framework for uncertainty quantification, optimization and rein
     :target: https://circleci.com/gh/cselab/korali
     :alt: Build Status
 .. image:: https://readthedocs.org/projects/korali/badge/?version=master
-    :target: https://korali.readthedocs.io/en/latest/?badge=master
+    :target: https://korali.readthedocs.io/en/master/?badge=master
     :alt: Documentation Status
 
 Description

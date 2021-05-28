@@ -522,6 +522,9 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
     if (isDefined(episode[expId], "Policy", "Action Index"))
       expPolicy.actionIndex = episode[expId]["Policy"]["Action Index"].get<size_t>();
 
+    if (isDefined(episode[expId], "Policy", "Unbounded Action"))
+      expPolicy.unboundedAction = episode[expId]["Policy"]["Unbounded Action"].get<std::vector<float>>();
+
     // Storing policy information
     _expPolicyVector.add(expPolicy);
     _curPolicyVector.add(expPolicy);

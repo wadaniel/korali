@@ -15,7 +15,6 @@ for useDiagonalMetric in [False, True]:
     e = korali.Experiment()
 
     e["File Output"]["Enabled"] = False
-    e["File Output"]["Frequency"] = 0
     e["Console Output"]["Frequency"] = 500
 
     # Selecting problem and solver types.

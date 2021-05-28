@@ -36,8 +36,7 @@ for i in range(5):
   e["Variables"][i]["Name"] = "a"
   e["Variables"][i]["Prior Distribution"] = "Uniform 0"
 
-e["File Output"]["Frequency"] = 0
-
+e["File Output"]["Enabled"] = False
 e["Random Seed"] = 1234
 
 # Running Korali

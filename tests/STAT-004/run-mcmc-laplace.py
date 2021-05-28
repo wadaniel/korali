@@ -29,7 +29,7 @@ e["Solver"]["Use Adaptive Sampling"] = True
 e["Solver"]["Termination Criteria"]["Max Samples"] = 100000
 
 e["Console Output"]["Frequency"] = 5000
-e["File Output"]["Frequency"] = 0
+e["File Output"]["Enabled"] = False
 
 # Running Korali
 e["Random Seed"] = 1227

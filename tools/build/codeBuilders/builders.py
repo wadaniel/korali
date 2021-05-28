@@ -79,9 +79,9 @@ def buildCodeFromTemplate( configFile, templateFile, outputFile=None ):
   if configFilePath.parent != templateFilePath.parent:
     sys.exit(f'[Korali] Error: configuration file and template file are not in the same directory.\n{configFilePath.parent}\n{templateFilePath.parent}\n')
 
-  if '._hpp' == templateFilePath.suffix:
+  if '.hpp.base' in str(templateFilePath):
     codeString = buildHeaderString( configFilePath, templateFilePath )
-  elif '._cpp' == templateFilePath.suffix:
+  elif '.cpp.base' in str(templateFilePath):
     codeString = buildCodeString( configFilePath, templateFilePath )
   else:
     sys.exit('[Korali] Error: Unknown extension in template file.\n')

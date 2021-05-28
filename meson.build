@@ -1,5 +1,5 @@
 project('korali', ['c', 'cpp'],
-  version: '2.0.0',
+  version: '3.0.0',
   license: 'GPL-3.0-only', # or also later?
   default_options: [
     'cpp_std=c++17',

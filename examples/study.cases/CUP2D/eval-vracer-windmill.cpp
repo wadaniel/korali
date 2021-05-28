@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
   auto e = korali::Experiment();
 
   // Check if there is log files to continue training
-  auto found = e.loadState("twinlevels4/latest");
+  auto found = e.loadState(trainingResultsPath+"/latest");
   if (found == true) printf("[Korali] Continuing execution from previous run...\n");
   else { fprintf(stderr, "[Korali] Error: cannot find previous results\n"); exit(0); } 
 
@@ -65,9 +65,9 @@ int main(int argc, char *argv[])
 
   // Adding custom setting to run the environment dumping the state files during testing
   e["Problem"]["Custom Settings"]["Dump Frequency"] = 0.1;
-  e["Problem"]["Custom Settings"]["Dump Path"] = "results";
+  e["Problem"]["Custom Settings"]["Dump Path"] = testingResultsPath;
   e["Problem"]["Environment Function"] = &runEnvironment;
-  e["File Output"]["Path"] = "twinlevels4";
+  e["File Output"]["Path"] = trainingResultsPath;
   e["Solver"]["Testing"]["Policy"] = e["Solver"]["Best Training Hyperparameters"];
   e["Solver"]["Mode"] = "Testing";
   for (int i = 0; i < N; i++) e["Solver"]["Testing"]["Sample Ids"][i] = i;

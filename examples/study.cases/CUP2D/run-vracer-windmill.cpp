@@ -93,7 +93,8 @@ int main(int argc, char *argv[])
   e["Solver"]["Learning Rate"] = 1e-4;
   e["Solver"]["Discount Factor"] = 0.95;
   e["Solver"]["Mini Batch"]["Size"] =  128;
-  e["Solver"]["Policy"]["Distribution"] = "Squashed Normal";
+  e["Solver"]["Policy"]["Distribution"] = "Normal";
+  // e["Solver"]["Policy"]["Distribution"] = "Squashed Normal";
 
   /// Defining the configuration of replay memory
   e["Solver"]["Experience Replay"]["Start Size"] = 1024;
@@ -102,9 +103,6 @@ int main(int argc, char *argv[])
   e["Solver"]["Experience Replay"]["Off Policy"]["Cutoff Scale"] = 5.0;
   e["Solver"]["Experience Replay"]["Off Policy"]["REFER Beta"] = 0.3;
   e["Solver"]["Experience Replay"]["Off Policy"]["Target"] = 0.1;
-
-  //////////////////////////////////////////////////
-  e["Solver"]["Termination Criteria"]["Max Experiences"] = 1;
 
 
   //// Defining Policy distribution and scaling parameters

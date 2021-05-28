@@ -57,8 +57,11 @@ void runEnvironment(korali::Sample &s)
   setInitialConditions(agent2, 0, random_init);
 
   // Set target
-  std::array<Real,2> target_pos{0.7,0.5};
+  std::array<Real,2> target_pos{0.7,0.7};
   std::vector<double> target_vel={0.0,0.0};
+
+  agent1->setTarget(target_pos);
+  agent2->setTarget(target_pos);
 
   std::vector<double> state1 = agent1->state();
   std::vector<double> state2 = agent2->state();
@@ -90,9 +93,11 @@ void runEnvironment(korali::Sample &s)
     // Reading new action
     std::vector<double> action = s["Action"];
 
+    double max_torque = 1e-4;
+
     // Setting action
-    agent1->act( action[0] );
-    agent2->act( action[1] );
+    agent1->act( max_torque * action[0] );
+    agent2->act( max_torque * action[1] );
 
     // Run the simulation until next action is required
     tNextAct += 0.01;
@@ -110,10 +115,13 @@ void runEnvironment(korali::Sample &s)
       }
     }
 
-    // reward( std::vector<double> target, std::vector<double> target_vel, double C = 10)
-    double C = 0.5e8;
-    double r1 = agent1->reward( target_pos, target_vel,  C);
-    double r2 = agent2->reward( target_pos, target_vel,  C);
+    // reward( std::vector<double> target_vel, double C = 10)
+    // double C = 0.5e8;
+    // double D = 0;
+    double C = 0;
+    double D = 1;
+    double r1 = agent1->reward( target_vel,  C, D);
+    double r2 = agent2->reward( target_vel,  C, D);
     double reward = (r1 + r2);
 	
 	printf("r1 : %.8f \n", r1);

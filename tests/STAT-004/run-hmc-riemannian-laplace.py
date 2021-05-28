@@ -37,7 +37,7 @@ e["Solver"]["Target Acceptance Rate"] = 0.80
 e["Solver"]["Use NUTS"] = 0
 
 e["Console Output"]["Frequency"] = 5000
-e["File Output"]["Frequency"] = 0
+e["File Output"]["Enabled"] = False
 
 # Running Korali
 e["Random Seed"] = 1227

@@ -205,9 +205,9 @@ void runEnvironmentMocmaes(korali::Sample &s)
 {
   // Defining constants
   size_t sampleId = s["Sample Id"];
-  double startX = 0.2;
-  double endX = 0.8;
-  double height = 0.5;
+  double startX = 1.0;
+  double endX = 3.0;
+  double height = 2.0;
 
   // Constraints
   size_t maxSteps = 1e5;
@@ -255,12 +255,13 @@ void runEnvironmentMocmaes(korali::Sample &s)
   
   //std::vector<double> vertices = logDivision(startX, endX, numParams+1);
   std::vector<double> edges(numParams, 0.0);
-  for(size_t i = 0; i < numParams; ++i) edges[i] = startX + i*(endX-startX)/(float)numParams;
+  for(size_t i = 0; i < numParams; ++i) edges[i] = startX + i*(endX-startX)/(float)(numParams-1.);
 
+  // Natural cubic spline (C^2) with natural boundary conditions (f''=0)
   tk::spline forceSpline(edges,params);
 
   // Init counting variables
-  double dist = distance(currentPos, target);
+  double distToTarget = distance(currentPos, target);
   double energy = 0.0; // Total energy
   double t = 0.0;      // Current time
   size_t curStep = 0;  // Current Step
@@ -283,15 +284,18 @@ void runEnvironmentMocmaes(korali::Sample &s)
 	//forceIdx++;
 	//force = params[forceIdx];
     //}
-    double force = forceSpline(currentPos[0]);
 
-    if (dist > 0.)
+    double force = std::abs(forceSpline(currentPos[0])); // std::abs because spline evaluation may be negative
+
+    if (distToTarget > 0.)
     {
-        action[0] = force*(target[0]-currentPos[0])/dist;
-        action[1] = force*(target[1]-currentPos[1])/dist;
+        // Split force in x & y component
+        action[0] = force*(target[0]-currentPos[0])/distToTarget;
+        action[1] = force*(target[1]-currentPos[1])/distToTarget;
     }
     else
     {
+        // Safe split in case of close distance
         action[0] = force*(target[0]-currentPos[0]);
         action[1] = force*(target[1]-currentPos[1]);
     }
@@ -303,11 +307,11 @@ void runEnvironmentMocmaes(korali::Sample &s)
  
     // Update distance and check termination
     bool error = _environment->advance(dt);
-    dist = distance(currentPos, target);
+    distToTarget = distance(currentPos, target);
     energy = agent->energy;
 
     // Checkting termination
-    done = (currentPos[0] >= endX) && (curStep <= maxSteps);
+    done = (currentPos[0] >= endX) || (curStep >= maxSteps) || (energy >= maxEnergy);
  
     curStep++;
     
@@ -315,7 +319,7 @@ void runEnvironmentMocmaes(korali::Sample &s)
     printf("[Korali] Sample %lu, Step: %lu/%lu\n", sampleId, curStep, maxSteps);
     printf("[Korali] State: [ %.6f, %.6f ]\n", currentPos[0], currentPos[1]);
     printf("[Korali] Force: [ %.6f, %.6f ]\n", action[0], action[1]);
-    printf("[Korali] Energy %f, Distance %f, Terminal?: %d\n", energy, dist, done);
+    printf("[Korali] Energy %f, Distance %f, Terminal?: %d\n", energy, distToTarget, done);
     printf("[Korali] Time: %.3fs\n", t);
     printf("[Korali] -------------------------------------------------------\n");
     fflush(stdout);

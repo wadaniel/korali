@@ -1,5 +1,4 @@
 #!/bin/bash
-
 # Set number of nodes here
 mpiflags="mpirun -n 2"
 
@@ -41,17 +40,4 @@ OBJECTS="windmill semiAxisX=$MAAXIS semiAxisY=$MIAXIS xpos=$XPOS ypos=$YPOS1 bFo
 windmill semiAxisX=$MAAXIS semiAxisY=$MIAXIS xpos=$XPOS ypos=$YPOS2 bForced=1 xvel=$XVEL tAccel=0 bBlockAng=0
 "
 
-# for only flow reward
-# $mpiflags ./run-vracer-windmill ${OPTIONS} -shapes "${OBJECTS}" flow_reward
-
-# for only energy reward
-# $mpiflags ./run-vracer-windmill ${OPTIONS} -shapes "${OBJECTS}" energy_reward
-
-# for only flow reward
-# $mpiflags ./run-vracer-windmill ${OPTIONS} -shapes "${OBJECTS}" flow_reward_normal
-
-# for only energy reward
-# $mpiflags ./run-vracer-windmill ${OPTIONS} -shapes "${OBJECTS}" energy_reward_normal
-
-# for both
-# $mpiflags ./run-vracer-windmill ${OPTIONS} -shapes "${OBJECTS}" both
+$mpiflags ./run-vracer-windmill ${OPTIONS} -shapes "${OBJECTS}" $1

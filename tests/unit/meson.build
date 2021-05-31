@@ -1,14 +1,10 @@
-r = run_command(python, '-m', 'korali.cxx', '--cflags')
-korali_cflags = r.stdout().strip().split()
-
-r = run_command(python, '-m', 'korali.cxx', '--libs')
-korali_libs = r.stdout().strip().split()
+pythonEmbed = dependency('python3-embed', required: true)
 
 engine_tester = executable('engine_tester',
   files(['engine.cpp']),
-  dependencies: [ gtest_main_dep ],
-  cpp_args: [ korali_cflags ],
-  link_args: [ korali_libs ]
+  include_directories: korali_include,
+  dependencies: [ gtest_main_dep, korali_deps, pythonEmbed ],
+  link_with: [ python_extension ]
   )
   
 test('engine', engine_tester,
@@ -18,9 +14,9 @@ test('engine', engine_tester,
 
 conduits_tester = executable('conduits_tester',
   files(['conduits.cpp']),
-  dependencies: [ gtest_main_dep ],
-  cpp_args: [ korali_cflags ],
-  link_args: [ korali_libs ]
+  include_directories: korali_include,
+  dependencies: [ gtest_main_dep, korali_deps, pythonEmbed ],
+  link_with: [ python_extension ]
   )
   
 test('conduits', conduits_tester,
@@ -29,10 +25,10 @@ test('conduits', conduits_tester,
 )
 
 distributions_tester = executable('distributions_tester',
-  files(['conduits.cpp']),
-  dependencies: [ gtest_main_dep ],
-  cpp_args: [ korali_cflags ],
-  link_args: [ korali_libs ]
+  files(['distributions.cpp']),
+  include_directories: korali_include,
+  dependencies: [ gtest_main_dep, korali_deps, pythonEmbed ],
+  link_with: [ python_extension ]
   )
   
 test('distributions', distributions_tester,

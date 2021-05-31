@@ -93,8 +93,6 @@ class Distribution : public Module
  */
   std::string getRange(gsl_rng *range) const;
 
-  void initialize() override;
-
   /**
  * @brief Updates the parameters of the distribution based on conditional variables.
  */

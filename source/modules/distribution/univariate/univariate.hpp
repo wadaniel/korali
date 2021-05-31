@@ -52,8 +52,6 @@ class Univariate : public Distribution
   void applyVariableDefaults() override;
   
 
-  void initialize() override;
-
   /**
  * @brief Gets the probability density of the distribution at point x.
  * @param x point to evaluate P(x)

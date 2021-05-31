@@ -9,11 +9,6 @@ namespace korali
 {
 
 
-void Distribution::initialize()
-{
-  if (_hasConditionalVariables == false) updateDistribution();
-}
-
 std::string Distribution::getRange(gsl_rng *range) const
 {
   unsigned char *state = (unsigned char *)gsl_rng_state(range);

@@ -1,5 +1,6 @@
 #include "gtest/gtest.h"
 #include "korali.hpp"
+#include "modules/distribution/univariate/beta/beta.hpp"
 
 namespace
 {
@@ -7,12 +8,41 @@ namespace
 
  TEST(Conduit, BetaDistribution)
  {
-//  knlohmann::json distributionJs;
-//  distributionJs["Type"] = "Distribution/Univariate/Beta";
+  knlohmann::json distributionJs;
+  Experiment e;
+  distribution::univariate::Beta* d;
+
+  // Creating distribution with an incorrect name
+  distributionJs["Type"] = "Distribution/Univariate/Beta";
+  ASSERT_ANY_THROW(d = dynamic_cast<korali::distribution::univariate::Beta *>(Module::getModule(distributionJs, &e)));
+
+  // Creating distribution correctly now
+  distributionJs["Type"] = "Univariate/Beta";
+  ASSERT_NO_THROW(d = dynamic_cast<korali::distribution::univariate::Beta *>(Module::getModule(distributionJs, &e)));
+
+  // Getting module defaults
+  distributionJs["Name"] = "Test";
+  ASSERT_NO_THROW(d->applyModuleDefaults(distributionJs));
+  auto baseJs = distributionJs;
+
+  // Testing correct shape
+  distributionJs = baseJs;
+  distributionJs["Alpha"] = 0.5;
+  distributionJs["Beta"] = 0.5;
+  ASSERT_NO_THROW(d->setConfiguration(distributionJs));
+  ASSERT_NO_THROW(d->updateDistribution());
+
+  // Testing incorrect shape (alpha)
+  d->_alpha = -0.5;
+  d->_beta = 0.5;
+  ASSERT_ANY_THROW(d->updateDistribution());
 //
-//  // Creating distribution
-//  Distribution* dist;
-//  ASSERT_NO_THROW(dist = dynamic_cast<korali::distribution::univariate::Beta *>(Module::getModule(distributionJs, NULL)));
+//  // Testing correct shape
+//  distributionJs = baseJs;
+//  distributionJs["Alpha"] = 0.25;
+//  distributionJs["Beta"] = 0.5;
+//  ASSERT_NO_THROW(d->setConfiguration(distributionJs));
+//  ASSERT_NO_THROW(d->updateDistribution());
 
 //  double @className::getDensity(const double x) const
 //  {

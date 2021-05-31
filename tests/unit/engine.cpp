@@ -10,10 +10,12 @@ namespace
  {
   Engine e;
 
+  // Triggering a configuration parsing error
   e._js["Condruit"] = "Typo";
   ASSERT_ANY_THROW(e.initialize());
 
-  e._js["Conduit"] = "No Typo";
+  // Selecting an incorrect conduit
+  e._js["Conduit"] = "Incorrect option";
   ASSERT_ANY_THROW(e.initialize());
  }
 

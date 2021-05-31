@@ -19,7 +19,6 @@ Sample::Sample()
 {
   _self = this;
   _state = SampleState::uninitialized;
-  _isAllocated = false;
 }
 
 void Sample::run(size_t functionPosition)

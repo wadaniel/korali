@@ -47,8 +47,6 @@ void Sequential::broadcastMessageToWorkers(knlohmann::json &message)
 {
   // Queueing outgoing message directly
   _workerMessageQueue.push(message);
-
-  co_switch(_workerThread);
 }
 
 void Sequential::sendMessageToEngine(knlohmann::json &message)

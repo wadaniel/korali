@@ -83,23 +83,10 @@ class Conduit : public Module
   virtual bool isRoot() { return true; }
 
   /**
- * @brief broadcast global information for all workers to have when processing a sample. Useful for Korali-in-Korali solvers.
- * @param key Key onto which to save the global information
- * @param globalsJs JSON object with information to broadcast
- */
-  void updateGlobals(std::string key, knlohmann::json &globalsJs);
-
-  /**
  * @brief  (Worker Side) Starts the processing of a sample at the worker side
  * @param js Contains sample's input data and metadata
  */
   void workerProcessSample(const knlohmann::json &js);
-
-  /**
-   * @brief (Worker Side) Accepts an incoming broadcast message containing global variables
-   * @param js Contains global data
-   */
-  void workerBroadcastGlobals(const knlohmann::json &js);
 
   /**
   * @brief (Worker Side) Accepts and stacks an incoming Korali engine from the main process

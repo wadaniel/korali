@@ -105,7 +105,6 @@ void Conduit::worker()
 
     if (js["Conduit Action"] == "Terminate") break;
     if (js["Conduit Action"] == "Process Sample") workerProcessSample(js);
-    if (js["Conduit Action"] == "Broadcast Globals") workerBroadcastGlobals(js);
     if (js["Conduit Action"] == "Stack Engine") workerStackEngine(js);
     if (js["Conduit Action"] == "Pop Engine") workerPopEngine();
   }
@@ -120,14 +119,6 @@ void Conduit::workerProcessSample(const knlohmann::json &js)
   s._js.getJson() = js;
   s.sampleLauncher();
   sendMessageToEngine(s._js.getJson());
-}
-
-void Conduit::workerBroadcastGlobals(const knlohmann::json &js)
-{
-  Engine *engine = _engineStack.top();
-  auto expId = js["Experiment Id"];
-  auto key = js["Globals"]["Key"].get<std::string>();
-  engine->_experimentVector[expId]->_globals[key] = js["Globals"]["Values"];
 }
 
 void Conduit::workerStackEngine(const knlohmann::json &js)
@@ -156,33 +147,13 @@ void Conduit::workerPopEngine()
   _engineStack.pop();
 }
 
-void Conduit::updateGlobals(std::string key, knlohmann::json &globalsJs)
-{
-  // Run broadcast only if this is the master process
-  if (!isRoot()) return;
-
-  Engine *engine = _engineStack.top();
-
-  knlohmann::json js;
-  js["Experiment Id"] = engine->_currentExperiment->_experimentId;
-  js["Conduit Action"] = "Broadcast Globals";
-  js["Globals"]["Key"] = key;
-  js["Globals"]["Values"] = globalsJs;
-
-  broadcastMessageToWorkers(js);
-}
-
 void Conduit::start(Sample &sample)
 {
   // Checking if sample id was defined
   KORALI_GET(size_t, sample, "Sample Id");
 
   if (sample._state != SampleState::uninitialized) KORALI_LOG_ERROR("Sample has already been initialized.\n");
-
-  if (sample._isAllocated == false)
-    sample._sampleThread = co_create(1 << 28, Conduit::coroutineWrapper);
-  else
-    KORALI_LOG_ERROR("Sample thread is already allocated; has it executed before being re-started?\n");
+  sample._sampleThread = co_create(1 << 28, Conduit::coroutineWrapper);
 
   _currentSample = &sample;
 
@@ -214,11 +185,6 @@ void Conduit::wait(Sample &sample)
   if (engine->_currentExperiment->_storeSampleInformation == true)
     engine->_currentExperiment->_sampleInfo["Samples"][sampleId] = sample._js.getJson();
 
-  if (sample._isAllocated == true)
-  {
-    free(sample._sampleThread);
-    sample._isAllocated = false;
-  }
   sample._state = SampleState::uninitialized;
   co_delete(sample._sampleThread);
 }
@@ -253,11 +219,6 @@ size_t Conduit::waitAny(vector<Sample> &samples)
         if (engine->_currentExperiment->_storeSampleInformation == true)
           engine->_currentExperiment->_sampleInfo["Samples"][sampleId] = samples[currentSample]._js.getJson();
 
-        if (samples[currentSample]._isAllocated == true)
-        {
-          free(samples[currentSample]._sampleThread);
-          samples[currentSample]._isAllocated = false;
-        }
         samples[currentSample]._state = SampleState::uninitialized;
         co_delete(samples[currentSample]._sampleThread);
         isFinished = true;
@@ -305,11 +266,6 @@ void Conduit::waitAll(vector<Sample> &samples)
     if (engine->_currentExperiment->_storeSampleInformation == true)
       engine->_currentExperiment->_sampleInfo["Samples"][sampleId] = samples[i]._js.getJson();
 
-    if (samples[i]._isAllocated == true)
-    {
-      free(samples[i]._sampleThread);
-      samples[i]._isAllocated = false;
-    }
     samples[i]._state = SampleState::uninitialized;
     co_delete(samples[i]._sampleThread);
   }

@@ -1,6 +1,6 @@
 #!/bin/bash -l
-#SBATCH --job-name="windmill_flow_normal"
-#SBATCH --output=output_windmill_energy_normal%j.out
+#SBATCH --job-name="combo"
+#SBATCH --output=output_windmill_combo%j.out
 #SBATCH --time=24:00:00
 #SBATCH --nodes=65
 #SBATCH --ntasks-per-core=1
@@ -12,5 +12,5 @@
 
 cd ..
 
-./batch-pair-windmill-vracer.sh
+./batch-pair-windmill-vracer.sh combo
 # ./eval-pair-windmill-vracer.sh

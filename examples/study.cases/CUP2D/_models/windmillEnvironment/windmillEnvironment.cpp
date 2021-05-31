@@ -93,11 +93,14 @@ void runEnvironment(korali::Sample &s)
     // Reading new action
     std::vector<double> action = s["Action"];
 
-    double max_torque = 1e-4;
+    // double max_torque = 1e-4;
 
-    // Setting action
-    agent1->act( max_torque * action[0] );
-    agent2->act( max_torque * action[1] );
+    // // Setting action
+    // agent1->act( max_torque * action[0] );
+    // agent2->act( max_torque * action[1] );
+
+    agent1->act( action[0] );
+    agent2->act( action[1] );
 
     // Run the simulation until next action is required
     tNextAct += 0.01;
@@ -115,17 +118,15 @@ void runEnvironment(korali::Sample &s)
       }
     }
 
-    // reward( std::vector<double> target_vel, double C = 10)
-    // double C = 0.5e8;
-    // double D = 0;
-    double C = 0;
-    double D = 1;
-    double r1 = agent1->reward( target_vel,  C, D);
-    double r2 = agent2->reward( target_vel,  C, D);
+    // reward( std::vector<double> target_vel, double C, double D)
+    double en = 500000.0; // = 0.5e6
+    double flow = 1;
+    double r1 = agent1->reward( target_vel,  en, flow);
+    double r2 = agent2->reward( target_vel,  en, flow);
     double reward = (r1 + r2);
 	
-	printf("r1 : %.8f \n", r1);
-	printf("r2 : %.8f \n", r2);
+    printf("r1 : %.8f \n", r1);
+    printf("r2 : %.8f \n", r2);
     // Getting ending time
     auto endTime = std::chrono::steady_clock::now(); // Profiling
     double actionTime = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count() / 1.0e+9;

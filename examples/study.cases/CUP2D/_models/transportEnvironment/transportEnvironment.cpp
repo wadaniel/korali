@@ -363,3 +363,166 @@ void runEnvironmentMocmaes(korali::Sample &s)
   fclose(logFile);
 
 }
+
+void runEnvironmentCmaes(korali::Sample& s)
+{
+  // Defining constants
+  size_t sampleId = s["Sample Id"];
+  double startX = 1.0;
+  double endX = 3.0;
+  double height = 2.0;
+
+  // Constraints
+  size_t maxSteps = 1e5;
+  double maxEnergy = 1e-1;
+ 
+  // Creating results directory
+  std::string baseDir = "_log_transport_mocmaes/";
+  char resDir[64];
+  sprintf(resDir, "%s/sample%08lu", baseDir.c_str(), sampleId);
+  std::filesystem::create_directories(resDir); 
+  // Redirecting all output to the log file
+  char logFilePath[128];
+  sprintf(logFilePath, "%s/log.txt", resDir);
+  auto logFile = freopen(logFilePath, "a", stdout);
+  if (logFile == NULL)
+  {
+    printf("Error creating log file: %s.\n", logFilePath);
+    exit(-1);
+  }
+
+  // Switching to results directory
+  auto curPath = std::filesystem::current_path();
+  std::filesystem::current_path(resDir);
+
+  // Obtaining agent
+  SmartCylinder* agent = dynamic_cast<SmartCylinder *>(_environment->getShapes()[0]);
+
+  // Establishing environment's dump frequency
+  _environment->sim.dumpTime = 0.0;
+
+  // Reseting environment and setting initial conditions
+  _environment->resetRL();
+  std::vector<double> start{startX, height};
+  setInitialConditions(agent, start, false);
+
+  // Set target 
+  std::vector<double> target{endX, height};
+
+  // Parametrization of force
+  std::vector<double> params = s["Parameters"];
+  size_t numParams = params.size();
+
+  double* centerArr = agent->center;
+  std::vector<double> currentPos(centerArr, centerArr+2);
+  
+  //std::vector<double> vertices = logDivision(startX, endX, numParams+1);
+  std::vector<double> edges(numParams, 0.0);
+  for(size_t i = 0; i < numParams; ++i) edges[i] = startX + i*(endX-startX)/(float)(numParams-1.);
+
+  // Natural cubic spline (C^2) with natural boundary conditions (f''=0)
+  tk::spline forceSpline(edges,params);
+
+  // Init counting variables
+  double distToTarget = distance(currentPos, target);
+  double energy = 0.0; // Total energy
+  double t = 0.0;      // Current time
+  size_t curStep = 0;  // Current Step
+
+  // Starting main environment loop
+  bool done = false;
+  //size_t forceIdx = 0;
+  //double force = params[forceIdx];
+  std::vector<double> action(2, 0.0);
+
+  while (done == false)
+  {
+    centerArr = agent->center;
+    currentPos[0] = centerArr[0];
+    currentPos[1] = centerArr[1];
+
+    //if (forceIdx+1 < vertices.size())
+    //if (currentPos[0] >= vertices[forceIdx+1])
+    //{
+	//forceIdx++;
+	//force = params[forceIdx];
+    //}
+
+    double force = std::abs(forceSpline(currentPos[0])); // std::abs because spline evaluation may be negative
+
+    if (distToTarget > 0.)
+    {
+        // Split force in x & y component
+        action[0] = force*(target[0]-currentPos[0])/distToTarget;
+        action[1] = force*(target[1]-currentPos[1])/distToTarget;
+    }
+    else
+    {
+        // Safe split in case of close distance
+        action[0] = force*(target[0]-currentPos[0]);
+        action[1] = force*(target[1]-currentPos[1]);
+    }
+
+    // Setting action
+    agent->act( action );
+    double dt = _environment->calcMaxTimestep();
+    t += dt;
+ 
+    // Update distance and check termination
+    bool error = _environment->advance(dt);
+    distToTarget = distance(currentPos, target);
+    energy = agent->energy;
+
+    // Checkting termination
+    done = (currentPos[0] >= endX) || (curStep >= maxSteps) || (energy >= maxEnergy);
+ 
+    curStep++;
+    
+    // Printing Information:
+    printf("[Korali] Sample %lu, Step: %lu/%lu\n", sampleId, curStep, maxSteps);
+    printf("[Korali] State: [ %.6f, %.6f ]\n", currentPos[0], currentPos[1]);
+    printf("[Korali] Force: [ %.6f, %.6f ]\n", action[0], action[1]);
+    printf("[Korali] Energy %f, Distance %f, Terminal?: %d\n", energy, distToTarget, done);
+    printf("[Korali] Time: %.3fs\n", t);
+    printf("[Korali] -------------------------------------------------------\n");
+    fflush(stdout);
+ 
+    if (error == true)
+    {
+      fprintf(stderr, "Error during environment\n");
+      exit(-1);
+    }
+
+  }
+  
+  //if(forceIdx != numParams)
+  //{
+  //    fprintf(stderr, "Error during sanity check (sampleId %zu), forceIdx %zu, expected %zu\n", sampleId, forceIdx, numParams);
+  //}
+
+  // Penalization for not reaching target
+  if (currentPos[0] < endX)
+  {
+    printf("Target not reached, penalizing objectives..\n");
+	t += (endX-currentPos[0])*1e9;
+	energy += (endX-currentPos[0])*1e9;
+  }
+  if (energy > maxEnergy)
+  {
+    printf("Max energy violated (%f), penalizing objectives..\n", maxEnergy);
+	t += (energy-maxEnergy)*1e9;
+	energy += (energy-maxEnergy)*1e9;
+  }
+  
+  // Setting Objectives
+  std::vector<double> objectives = { -t, -energy };
+  printf("Objectives: %f (time), %f (energy) (total steps %zu) \n", t, energy, curStep);
+  s["F(x)"] = objectives;
+
+  // Switching back to experiment directory
+  std::filesystem::current_path(curPath);
+
+  // Closing log file
+  fclose(logFile);
+
+}

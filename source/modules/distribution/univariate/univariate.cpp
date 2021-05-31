@@ -7,12 +7,6 @@ namespace distribution
 {
 
 
-
-void Univariate::initialize()
-{
-  Distribution::initialize();
-}
-
 void Univariate::setConfiguration(knlohmann::json& js) 
 {
  if (isDefined(js, "Results"))  eraseValue(js, "Results");

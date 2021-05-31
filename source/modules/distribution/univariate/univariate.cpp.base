@@ -3,12 +3,6 @@
 
 @startNamespace
 
-
-void @className::initialize()
-{
-  Distribution::initialize();
-}
-
 @moduleAutoCode
 
 @endNamespace

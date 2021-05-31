@@ -1,6 +1,6 @@
 TRANSPORT = run-mocmaes-transport run-vracer-transport 
 FISH = run-vracer-fish
-WINDMILL = run-vracer-windmill
+WINDMILL = run-vracer-windmill eval-vracer-windmill
 KORALICXX=$(shell python3 -m korali.cxx --compiler)
 KORALICFLAGS=`python3 -m korali.cxx --cflags`
 KORALILIBS=`python3 -m korali.cxx --libs`

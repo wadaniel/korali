@@ -152,19 +152,14 @@ void Agent::initialize()
     {
       // Checking if testing policies have been generated
       if (_testingBestPolicy.empty())
-      {
-        _k->_logger->logWarning("Minimal", "Trying to test policy, but no testing policies have been generated during training yet or given in the configuration. Using current training policy instead.\n");
-        _testingPolicy = _trainingCurrentPolicy;
-      }
+        _testingPolicy = _trainingBestPolicy;
       else
-      {
         _testingPolicy = _testingBestPolicy;
-      }
     }
 
     // Checking if there's testing samples defined
     if (_testingSampleIds.size() == 0)
-      KORALI_LOG_ERROR("For testing, you need to indicate the sample ids to run in the ['Testing']['Sample Ids'] field.\n");
+     _testingSampleIds.push_back(0);
 
     // Prepare storage for rewards from tested samples
     _testingReward.resize(_testingSampleIds.size());
@@ -299,6 +294,8 @@ void Agent::testingGeneration()
     testingAgents[agentId]["Module"] = "Problem";
     testingAgents[agentId]["Operation"] = "Run Testing Episode";
     testingAgents[agentId]["Policy Hyperparameters"] = _testingPolicy;
+    testingAgents[agentId]["State Rescaling"]["Means"] = _stateRescalingMeans;
+    testingAgents[agentId]["State Rescaling"]["Standard Deviations"] = _stateRescalingSigmas;
 
     KORALI_START(testingAgents[agentId]);
   }
@@ -524,6 +521,9 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
 
     if (isDefined(episode[expId], "Policy", "Action Index"))
       expPolicy.actionIndex = episode[expId]["Policy"]["Action Index"].get<size_t>();
+
+    if (isDefined(episode[expId], "Policy", "Unbounded Action"))
+      expPolicy.unboundedAction = episode[expId]["Policy"]["Unbounded Action"].get<std::vector<float>>();
 
     // Storing policy information
     _expPolicyVector.add(expPolicy);

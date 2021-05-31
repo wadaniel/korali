@@ -16,8 +16,20 @@ int main(int argc, char *argv[])
   }
 
   // Storing parameters
-  _argc = argc;
-  _argv = argv;
+  // _argc = argc
+  // _argv = argv;
+
+  // this enables to pass the folder as an argument to exe
+
+  _argc = argc-1;
+
+  char *_argv_[argc-1];
+  for(int i = 0; i < argc-1; ++i)
+  {
+    _argv_[i] = argv[i];
+  }
+
+  
 
   // Getting number of workers
   int N = 1;
@@ -25,12 +37,14 @@ int main(int argc, char *argv[])
   N = N - 1; // Minus one for Korali's engine
 
   // Initialize CUP2D
-  _environment = new Simulation(_argc, _argv);
+  _environment = new Simulation(_argc, _argv_);
   _environment->init();
 
+  std::string folder = std::string(argv[argc-1]);
+
   // Set results path
-  std::string trainingResultsPath = "_results_windmill_training/r_5_100/";
-  std::string testingResultsPath = "_results_windmill_testing/r_5_100/";
+  std::string trainingResultsPath = "_results_windmill_training/" + folder;
+  std::string testingResultsPath = "_results_windmill_testing/" + folder;
   
   // Creating Korali experiment
   auto e = korali::Experiment();
@@ -39,7 +53,7 @@ int main(int argc, char *argv[])
   auto found = e.loadState(trainingResultsPath + std::string("/latest"));
   if (found == true) printf("[Korali] Continuing execution from previous run...\n");
 
-  // Configuring problem
+  // Configuring problem (for test eliminate after)
   e["Problem"]["Type"] = "Reinforcement Learning / Continuous";
   e["Problem"]["Environment Function"] = &runEnvironment;
   e["Problem"]["Training Reward Threshold"] = 8.0;
@@ -49,7 +63,7 @@ int main(int argc, char *argv[])
   e["Problem"]["Custom Settings"]["Dump Frequency"] = 0.0;
   e["Problem"]["Custom Settings"]["Dump Path"] = trainingResultsPath;
 
-  const size_t numStates = 8;
+  const size_t numStates = 4;
   for (int curVariable = 0; curVariable < numStates; curVariable++)
   {
     if(curVariable%2==0){
@@ -61,8 +75,8 @@ int main(int argc, char *argv[])
     e["Variables"][curVariable]["Type"] = "State";
   }
 
-  double max_torque = 1e-5;
-  for(size_t j=numStates; j < numStates + 4; ++j){
+  double max_torque = 1e-4;
+  for(size_t j=numStates; j < numStates + 2; ++j){
     e["Variables"][j]["Name"] = "Torque " + std::to_string(j-numStates+1);
     e["Variables"][j]["Type"] = "Action";
     e["Variables"][j]["Lower Bound"] = -max_torque;
@@ -79,7 +93,7 @@ int main(int argc, char *argv[])
   e["Solver"]["Learning Rate"] = 1e-4;
   e["Solver"]["Discount Factor"] = 0.95;
   e["Solver"]["Mini Batch"]["Size"] =  128;
-  e["Solver"]["Policy"]["Distribution"] = "Normal";
+  e["Solver"]["Policy"]["Distribution"] = "Squashed Normal";
 
   /// Defining the configuration of replay memory
   e["Solver"]["Experience Replay"]["Start Size"] = 1024;
@@ -89,11 +103,14 @@ int main(int argc, char *argv[])
   e["Solver"]["Experience Replay"]["Off Policy"]["REFER Beta"] = 0.3;
   e["Solver"]["Experience Replay"]["Off Policy"]["Target"] = 0.1;
 
+  //////////////////////////////////////////////////
+  e["Solver"]["Termination Criteria"]["Max Experiences"] = 1;
+
 
   //// Defining Policy distribution and scaling parameters
   e["Solver"]["State Rescaling"]["Enabled"] = true;
   e["Solver"]["Reward"]["Rescaling"]["Enabled"] = false; // this was true
-  e["Solver"]["Reward"]["Rescaling"]["Frequency"] = 1000;
+  //e["Solver"]["Reward"]["Rescaling"]["Frequency"] = 1000;
 
   /// Configuring the neural network and its hidden layers
   e["Solver"]["Neural Network"]["Engine"] = "OneDNN";
@@ -144,6 +161,7 @@ int main(int argc, char *argv[])
 
   printf("[Korali] Done with training. Now running learned policy to dump the trajectory.\n");
 
+  //// ELIMINATE EVERYTHING ABOVE
   // Adding custom setting to run the environment dumping the state files during testing
   e["Problem"]["Custom Settings"]["Dump Frequency"] = 0.1;
   e["Problem"]["Custom Settings"]["Dump Path"] = testingResultsPath;
@@ -156,3 +174,10 @@ int main(int argc, char *argv[])
 
   k.run(e);
 }
+
+// plot policy (state vs action), do this per agent
+// action agent took over time and energy consumption it corresponds to, plot mean and std of action and energy consumption
+// state over time, mean and std over time (over the 54 diffferent tries)
+// policy histogram, how the actions are distributed
+// velocity at target over time, mean and std as well over time
+// movie of sim

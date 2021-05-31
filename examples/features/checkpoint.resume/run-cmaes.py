@@ -48,4 +48,7 @@ e["Variables"][0]["Upper Bound"] = +10.0
 # Setting computational model
 e["Problem"]["Objective Function"] = model
 
+# Making sure we preseve RNG state
+e["Preserve Random Number Generator States"] = True
+
 k.run(e)

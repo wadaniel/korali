@@ -43,8 +43,6 @@ void @className::broadcastMessageToWorkers(knlohmann::json &message)
 {
   // Queueing outgoing message directly
   _workerMessageQueue.push(message);
-
-  co_switch(_workerThread);
 }
 
 void @className::sendMessageToEngine(knlohmann::json &message)

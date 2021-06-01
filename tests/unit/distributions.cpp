@@ -3,6 +3,8 @@
 #include "modules/distribution/univariate/beta/beta.hpp"
 #include "modules/distribution/univariate/cauchy/cauchy.hpp"
 #include "modules/distribution/univariate/exponential/exponential.hpp"
+#include "modules/distribution/univariate/gamma/gamma.hpp"
+#include "modules/distribution/univariate/geometric/geometric.hpp"
 
 #define PDENSITY_ERROR_TOLERANCE 0.0000001
 
@@ -257,8 +259,8 @@ namespace
  // Checking random numbers are within the expected range
   for (size_t i = 0; i < 100; i++)
   {
-   double x = d->getRandomNumber();
-   EXPECT_TRUE((x >= 0.0) && (x <= 1.0));
+   double y = d->getRandomNumber();
+   EXPECT_TRUE((y >= 0.0) && (y <= 1.0));
   }
 
   // Testing extreme for log density gradient and hessian
@@ -758,13 +760,342 @@ namespace
  // Checking random numbers are within the expected range
   for (size_t i = 0; i < 100; i++)
   {
-   double x = d->getRandomNumber();
-   EXPECT_TRUE(x >= d->_location);
+   double y = d->getRandomNumber();
+   EXPECT_TRUE(y >= d->_location);
   }
 
   // Testing extreme for log density gradient and hessian
   EXPECT_TRUE(d->getLogDensityGradient( 3.0 ) < 0.0);
   EXPECT_EQ(d->getLogDensityHessian( 0.5 ), 0.0);
+ }
+
+ TEST(Conduit, GammaDistribution)
+ {
+  knlohmann::json distributionJs;
+  Experiment e;
+  distribution::univariate::Gamma* d;
+
+  // Creating distribution with an incorrect name
+  distributionJs["Type"] = "Distribution/Univariate/Gamma";
+  ASSERT_ANY_THROW(d = dynamic_cast<korali::distribution::univariate::Gamma *>(Module::getModule(distributionJs, &e)));
+
+  // Creating distribution correctly now
+  distributionJs["Type"] = "Univariate/Gamma";
+  ASSERT_NO_THROW(d = dynamic_cast<korali::distribution::univariate::Gamma *>(Module::getModule(distributionJs, &e)));
+
+  // Getting module defaults
+  distributionJs["Name"] = "Test";
+  ASSERT_NO_THROW(d->applyModuleDefaults(distributionJs));
+  auto baseJs = distributionJs;
+
+  // Testing correct shape
+  distributionJs = baseJs;
+  distributionJs["Shape"] = 0.5;
+  distributionJs["Scale"] = 0.5;
+  ASSERT_NO_THROW(d->setConfiguration(distributionJs));
+  ASSERT_NO_THROW(d->updateDistribution());
+
+  // Testing incorrect shape
+  d->_shape = -0.5;
+  d->_scale = 0.5;
+  ASSERT_ANY_THROW(d->updateDistribution());
+
+  // Testing correct scale
+  d->_shape = 3.0;
+  d->_scale = 1.0;
+  ASSERT_NO_THROW(d->updateDistribution());
+
+  // Distributions generated with https://keisan.casio.com/exec/system/1180573226
+
+  // Testing expected density
+  EXPECT_NEAR(d->getDensity( 0.00 ), 0.000000000, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 0.10 ), 0.004524187, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 0.20 ), 0.016374615, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 0.30 ), 0.033336820, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 0.40 ), 0.053625604, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 0.50 ), 0.075816332, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 0.60 ), 0.098786095, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 0.70 ), 0.121663399, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 0.80 ), 0.143785269, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 0.90 ), 0.164660712, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 1.00 ), 0.183939721, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 1.10 ), 0.201387006, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 1.20 ), 0.216859833, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 1.30 ), 0.230289365, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 1.40 ), 0.241665025, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 1.50 ), 0.251021430, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 1.60 ), 0.258427543, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 1.70 ), 0.263977692, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 1.80 ), 0.267784199, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 1.90 ), 0.269971358, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 2.00 ), 0.270670567, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 2.10 ), 0.270016424, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 2.20 ), 0.268143643, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 2.30 ), 0.265184642, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 2.40 ), 0.261267706, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 2.50 ), 0.256515621, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 2.60 ), 0.251044694, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 2.70 ), 0.244964094, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 2.80 ), 0.238375446, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 2.90 ), 0.231372640, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 3.00 ), 0.224041808, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 3.10 ), 0.216461418, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 3.20 ), 0.208702484, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 3.30 ), 0.200828847, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 3.40 ), 0.192897500, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 3.50 ), 0.184958974, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 3.60 ), 0.177057722, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 3.70 ), 0.169232539, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 3.80 ), 0.161516973, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 3.90 ), 0.153939737, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 4.00 ), 0.146525111, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 4.10 ), 0.139293337, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 4.20 ), 0.132260988, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 4.30 ), 0.125441328, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 4.40 ), 0.118844650, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 4.50 ), 0.112478590, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 4.60 ), 0.106348422, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 4.70 ), 0.100457336, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 4.80 ), 0.094806686, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 4.90 ), 0.089396230, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 5.00 ), 0.084224337, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 5.10 ), 0.079288189, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 5.20 ), 0.074583951, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 5.30 ), 0.070106936, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 5.40 ), 0.065851750, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 5.50 ), 0.061812418, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 5.60 ), 0.057982503, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 5.70 ), 0.054355209, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 5.80 ), 0.050923471, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 5.90 ), 0.047680037, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 6.00 ), 0.044617539, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 6.10 ), 0.041728554, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 6.20 ), 0.039005657, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 6.30 ), 0.036441468, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 6.40 ), 0.034028693, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 6.50 ), 0.031760153, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 6.60 ), 0.029628816, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 6.70 ), 0.027627818, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 6.80 ), 0.025750481, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 6.90 ), 0.023990332, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 7.00 ), 0.022341108, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 7.10 ), 0.020796770, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 7.20 ), 0.019351504, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 7.30 ), 0.017999731, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 7.40 ), 0.016736101, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 7.50 ), 0.015555498, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 7.60 ), 0.014453037, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 7.70 ), 0.013424062, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 7.80 ), 0.012464138, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 7.90 ), 0.011569052, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 8.00 ), 0.010734804, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 8.10 ), 0.009957601, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 8.20 ), 0.009233853, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 8.30 ), 0.008560162, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 8.40 ), 0.007933319, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 8.50 ), 0.007350295, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 8.60 ), 0.006808232, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 8.70 ), 0.006304440, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 8.80 ), 0.005836385, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 8.90 ), 0.005401683, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 9.00 ), 0.004998097, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 9.10 ), 0.004623523, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 9.20 ), 0.004275987, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 9.30 ), 0.003953641, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 9.40 ), 0.003654749, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 9.50 ), 0.003377689, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 9.60 ), 0.003120940, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 9.70 ), 0.002883082, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 9.80 ), 0.002662786, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 9.90 ), 0.002458810, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 10.00 ), 0.002269996, PDENSITY_ERROR_TOLERANCE);
+
+  // Testing log density function
+  EXPECT_NEAR(d->getLogDensity( 0.10 ), -5.398317367, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 0.20 ), -4.112023006, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 0.30 ), -3.401092789, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 0.40 ), -2.925728644, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 0.50 ), -2.579441542, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 0.60 ), -2.314798428, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 0.70 ), -2.106497069, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 0.80 ), -1.939434283, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 0.90 ), -1.803868212, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 1.00 ), -1.693147180, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 1.10 ), -1.602526821, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 1.20 ), -1.528504067, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 1.30 ), -1.468418652, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 1.40 ), -1.420202707, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 1.50 ), -1.382216964, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 1.60 ), -1.353139922, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 1.70 ), -1.331890678, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 1.80 ), -1.317573851, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 1.90 ), -1.309439408, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 2.00 ), -1.306852819, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 2.10 ), -1.309272491, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 2.20 ), -1.316232460, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 2.30 ), -1.327328935, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 2.40 ), -1.342209706, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 2.50 ), -1.360565717, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 2.60 ), -1.382124290, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 2.70 ), -1.406643635, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 2.80 ), -1.433908346, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 2.90 ), -1.463725707, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 3.00 ), -1.495922603, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 3.10 ), -1.530342958, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 3.20 ), -1.566845561, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 3.30 ), -1.605302244, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 3.40 ), -1.645596317, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 3.50 ), -1.687621243, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 3.60 ), -1.731279489, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 3.70 ), -1.776481541, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 3.80 ), -1.823145047, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 3.90 ), -1.871194075, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 4.00 ), -1.920558458, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 4.10 ), -1.971173233, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 4.20 ), -2.022978130, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 4.30 ), -2.075917135, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 4.40 ), -2.129938098, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 4.50 ), -2.184992387, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 4.60 ), -2.241034573, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 4.70 ), -2.298022163, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 4.80 ), -2.355915345, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 4.90 ), -2.414676770, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 5.00 ), -2.474271356, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 5.10 ), -2.534666101, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 5.20 ), -2.595829929, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 5.30 ), -2.657733539, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 5.40 ), -2.720349273, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 5.50 ), -2.783650996, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 5.60 ), -2.847613985, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 5.70 ), -2.912214831, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 5.80 ), -2.977431345, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 5.90 ), -3.043242479, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 6.00 ), -3.109628242, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 6.10 ), -3.176569638, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 6.20 ), -3.244048596, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 6.30 ), -3.312047914, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 6.40 ), -3.380551200, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 6.50 ), -3.449542827, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 6.60 ), -3.519007882, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 6.70 ), -3.588932128, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 6.80 ), -3.659301956, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 6.90 ), -3.730104357, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 7.00 ), -3.801326882, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 7.10 ), -3.872957613, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 7.20 ), -3.944985129, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 7.30 ), -4.017398484, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 7.40 ), -4.090187180, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 7.50 ), -4.163341140, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 7.60 ), -4.236850686, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 7.70 ), -4.310706523, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 7.80 ), -4.384899713, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 7.90 ), -4.459421662, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 8.00 ), -4.534264097, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 8.10 ), -4.609419057, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 8.20 ), -4.684878872, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 8.30 ), -4.760636151, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 8.40 ), -4.836683769, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 8.50 ), -4.913014854, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 8.60 ), -4.989622774, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 8.70 ), -5.066501129, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 8.80 ), -5.143643738, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 8.90 ), -5.221044627, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 9.00 ), -5.298698026, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 9.10 ), -5.376598353, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 9.20 ), -5.454740212, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 9.30 ), -5.533118380, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 9.40 ), -5.611727802, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 9.50 ), -5.690563583, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 9.60 ), -5.769620984, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 9.70 ), -5.848895409, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 9.80 ), -5.928382409, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 9.90 ), -6.008077666, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 10.00 ), -6.087976995, PDENSITY_ERROR_TOLERANCE);
+
+  // Testing extreme cases for log density
+  EXPECT_EQ(d->getLogDensity( -0.001 ), -INFINITY);
+
+ // Checking random numbers are within the expected range
+  for (size_t i = 0; i < 100; i++)
+  {
+   double y = d->getRandomNumber();
+   EXPECT_TRUE(y >= 0.0);
+  }
+
+  // Testing extreme for log density gradient and hessian
+  EXPECT_EQ(d->getLogDensityGradient( -0.001 ), 0.0);
+  EXPECT_EQ(d->getLogDensityHessian( -0.001 ), 0.0);
+
+  // Normal case for log density gradient and hessian
+  ASSERT_NO_THROW(d->getLogDensityGradient( 0.5 ));
+  ASSERT_NO_THROW(d->getLogDensityHessian( 0.5 ));
+ }
+
+ TEST(Conduit, GeometricDistribution)
+ {
+  knlohmann::json distributionJs;
+  Experiment e;
+  distribution::univariate::Geometric* d;
+
+  // Creating distribution with an incorrect name
+  distributionJs["Type"] = "Distribution/Univariate/Geometric";
+  ASSERT_ANY_THROW(d = dynamic_cast<korali::distribution::univariate::Geometric *>(Module::getModule(distributionJs, &e)));
+
+  // Creating distribution correctly now
+  distributionJs["Type"] = "Univariate/Geometric";
+  ASSERT_NO_THROW(d = dynamic_cast<korali::distribution::univariate::Geometric *>(Module::getModule(distributionJs, &e)));
+
+  // Getting module defaults
+  distributionJs["Name"] = "Test";
+  ASSERT_NO_THROW(d->applyModuleDefaults(distributionJs));
+  auto baseJs = distributionJs;
+
+  // Testing correct instantiation
+  distributionJs = baseJs;
+  distributionJs["Success Probability"] = 0.1;
+  ASSERT_NO_THROW(d->setConfiguration(distributionJs));
+  ASSERT_NO_THROW(d->updateDistribution());
+
+  // Distributions generated with https://keisan.casio.com/exec/system/1180573226
+
+  // Testing expected density
+  EXPECT_NEAR(d->getDensity( 0.00 ), 0.000000000, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 1.00 ), 0.100000000, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 2.00 ), 0.090000000, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 3.00 ), 0.081000000, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 4.00 ), 0.072900000, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 5.00 ), 0.065610000, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 6.00 ), 0.059049000, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 7.00 ), 0.053144100, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 8.00 ), 0.047829690, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 9.00 ), 0.043046721, PDENSITY_ERROR_TOLERANCE);
+
+  // Testing log density function
+  EXPECT_NEAR(d->getLogDensity( 0.00 ), -2.197224577, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 1.00 ), -2.302585093, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 2.00 ), -2.407945609, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 3.00 ), -2.513306124, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 4.00 ), -2.618666640, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 5.00 ), -2.724027156, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 6.00 ), -2.829387671, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 7.00 ), -2.934748187, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 8.00 ), -3.040108703, PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 9.00 ), -3.145469218, PDENSITY_ERROR_TOLERANCE);
+
+  // Testing extreme case for log density
+  ASSERT_NO_THROW(d->getLogDensity(1));
+  ASSERT_NO_THROW(d->getLogDensityGradient(1));
+
+ // Checking random numbers are within the expected range
+  for (size_t i = 0; i < 100; i++)
+  {
+   double y = d->getRandomNumber();
+   EXPECT_TRUE(y >= 0.0);
+  }
+
+  // Testing extreme for log density gradient and hessian
+  ASSERT_NO_THROW(d->getLogDensityGradient(1));
+  ASSERT_NO_THROW(d->getLogDensityHessian(1));
  }
 
 } // namespace

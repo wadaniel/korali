@@ -1,5 +1,4 @@
 #include "gtest/gtest.h"
-#include "auxiliar/cBuffer.hpp"
 #include "korali.hpp"
 
 namespace
@@ -8,7 +7,6 @@ namespace
 
  TEST(Auxiliar, cBuffer)
  {
-  cBuffer b(4);
  }
 
 

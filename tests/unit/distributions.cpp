@@ -5,6 +5,7 @@
 #include "modules/distribution/univariate/exponential/exponential.hpp"
 #include "modules/distribution/univariate/gamma/gamma.hpp"
 #include "modules/distribution/univariate/geometric/geometric.hpp"
+#include "modules/distribution/univariate/igamma/igamma.hpp"
 
 #define PDENSITY_ERROR_TOLERANCE 0.0000001
 
@@ -795,6 +796,11 @@ namespace
   ASSERT_NO_THROW(d->setConfiguration(distributionJs));
   ASSERT_NO_THROW(d->updateDistribution());
 
+  // Testing incorrect scale
+  d->_shape = 0.5;
+  d->_scale = -0.5;
+  ASSERT_ANY_THROW(d->updateDistribution());
+
   // Testing incorrect shape
   d->_shape = -0.5;
   d->_scale = 0.5;
@@ -1097,5 +1103,74 @@ namespace
   ASSERT_NO_THROW(d->getLogDensityGradient(1));
   ASSERT_NO_THROW(d->getLogDensityHessian(1));
  }
+
+ TEST(Conduit, iGammaDistribution)
+  {
+   knlohmann::json distributionJs;
+   Experiment e;
+   distribution::univariate::Igamma* d;
+
+   // Creating distribution with an incorrect name
+   distributionJs["Type"] = "Distribution/Univariate/Igamma";
+   ASSERT_ANY_THROW(d = dynamic_cast<korali::distribution::univariate::Igamma *>(Module::getModule(distributionJs, &e)));
+
+   // Creating distribution correctly now
+   distributionJs["Type"] = "Univariate/Igamma";
+   ASSERT_NO_THROW(d = dynamic_cast<korali::distribution::univariate::Igamma *>(Module::getModule(distributionJs, &e)));
+
+   // Getting module defaults
+   distributionJs["Name"] = "Test";
+   ASSERT_NO_THROW(d->applyModuleDefaults(distributionJs));
+   auto baseJs = distributionJs;
+
+   // Testing correct shape
+   distributionJs = baseJs;
+   distributionJs["Shape"] = 1.0;
+   distributionJs["Scale"] = 2.0;
+   ASSERT_NO_THROW(d->setConfiguration(distributionJs));
+   ASSERT_NO_THROW(d->updateDistribution());
+
+   // Testing incorrect shape
+   d->_shape = -0.5;
+   d->_scale = 0.5;
+   ASSERT_ANY_THROW(d->updateDistribution());
+
+   // Testing incorrect scale
+   d->_shape = 0.5;
+   d->_scale = -0.5;
+   ASSERT_ANY_THROW(d->updateDistribution());
+
+   // Testing correct scale
+   d->_shape = 2.0;
+   d->_scale = 1.0;
+   ASSERT_NO_THROW(d->updateDistribution());
+
+   // Distributions generated with https://keisan.casio.com/exec/system/1180573226
+
+   // Testing expected density
+   EXPECT_EQ(d->getDensity( 0.00 ), -INFINITY);
+   EXPECT_NEAR(d->getDensity( 1.00 ), 0.367879441, PDENSITY_ERROR_TOLERANCE);
+   EXPECT_NEAR(d->getDensity( 5.00 ), 0.006549846, PDENSITY_ERROR_TOLERANCE);
+
+   // Testing log density function
+   EXPECT_EQ(d->getLogDensity( 0.00 ), -INFINITY);
+   EXPECT_NEAR(d->getLogDensity( 1.00 ), 0, PDENSITY_ERROR_TOLERANCE);
+   EXPECT_NEAR(d->getLogDensity( 5.00 ), -4.02831373, PDENSITY_ERROR_TOLERANCE);
+
+  // Checking random numbers are within the expected range
+   for (size_t i = 0; i < 100; i++)
+   {
+    double y = d->getRandomNumber();
+    EXPECT_TRUE(y >= 0.0);
+   }
+
+   // Testing extreme for log density gradient and hessian
+   EXPECT_EQ(d->getLogDensityGradient( -0.001 ), -INFINITY);
+   EXPECT_EQ(d->getLogDensityHessian( -0.001 ), -INFINITY);
+
+   // Normal case for log density gradient and hessian
+   ASSERT_NO_THROW(d->getLogDensityGradient( 0.5 ));
+   ASSERT_NO_THROW(d->getLogDensityHessian( 0.5 ));
+  }
 
 } // namespace

@@ -12,22 +12,25 @@ namespace univariate
 
 double Igamma::getDensity(const double x) const
 {
+  if (x <= 0.0) return -INFINITY;
   return _aux * std::pow(x, -_shape - 1.) * std::exp(-_scale / x);
 }
 
 double Igamma::getLogDensity(const double x) const
 {
-  if (x < 0) return -INFINITY;
+  if (x <= 0) return -INFINITY;
   return _aux - (_shape + 1) * std::log(x) - (_scale / x);
 }
 
 double Igamma::getLogDensityGradient(const double x) const
 {
+  if (x <= 0) return -INFINITY;
   return _scale / (x * x) - (_shape + 1.) / x;
 }
 
 double Igamma::getLogDensityHessian(const double x) const
 {
+  if (x <= 0) return -INFINITY;
   return -2. * _scale / (x * x * x) + (_shape + 1.) / (x * x);
 }
 

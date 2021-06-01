@@ -43,14 +43,15 @@ void @className::updateDistribution()
   if (_sigma <= 0.0) KORALI_LOG_ERROR("Incorrect Standard Deviation parameter of Truncated Normal distribution: %f.\n", _sigma);
 
   if (_maximum - _minimum <= 0.0)
+  {
     _aux = NaN;
-
+  }
   else
   {
     double a = (_minimum - _mu) / _sigma;
     double b = (_maximum - _mu) / _sigma;
 
-    _normalization = 0.5 * M_SQRT2 * M_SQRTPI * _sigma * (gsl_sf_erf(b * M_SQRT1_2) - gsl_sf_erf(a * M_SQRT1_2));
+    _normalization = 0.5 * M_SQRT2 * M_SQRTPI / (_sigma * (gsl_sf_erf(b * M_SQRT1_2) - gsl_sf_erf(a * M_SQRT1_2)));
     _logNormalization = gsl_sf_log(_normalization);
   }
 }

@@ -178,15 +178,15 @@ class @className : public @parentClassName
   void updateBox();
 
   /*
-  * @brief Ascending sort of live sample ranks based on evaluation.
+  * @brief Sorts live sample ranks ascending based on loglikelihood and prior weight evaluation.
  */
   void sortLiveSamplesAscending();
 
   /*
-  * @brief Add sample to discard to sample database.
-  * @param sampleIdx Sample Id of sample in live set to put into database.
+  * @brief Remove sample from live samples and move it to dead samples.
+  * @param sampleIdx Index of sample in live samples to process.
   */
-  void updateSampleDatabase(size_t sampleIdx);
+  void updateDeadSamples(size_t sampleIdx);
 
   /*
   * @brief Generate posterior distribution from sample data base.
@@ -267,22 +267,6 @@ class @className : public @parentClassName
   * @param sample Sample to be checked.
   */
   bool insideUnitCube(const std::vector<double> &sample) const;
-
-  /*
-  * @brief Safely adding two values that are in log space. Returns in log space.
-  * @param logx logx
-  * @param logy logy
-  * return The operation result
-  */
-  double safeLogPlus(double logx, double logy) const;
-
-  /*
-  * @brief Safely subtracting logy from logx. Returns in log space.
-  * @param logx logx
-  * @param logy logy
-  * return The operation result
-  */
-  double safeLogMinus(double logx, double logy) const;
 
   public:
   /**

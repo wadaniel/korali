@@ -13,7 +13,6 @@ namespace univariate
 
 double Uniform::getDensity(const double x) const
 {
-  if (_maximum - _minimum <= 0.0) return NaN;
   return gsl_ran_flat_pdf(x, _minimum, _maximum);
 }
 
@@ -35,18 +34,15 @@ double Uniform::getLogDensityHessian(const double x) const
 
 double Uniform::getRandomNumber()
 {
-  if (_maximum - _minimum <= 0.0)
-    KORALI_LOG_ERROR("Maximum (%f) bound must be higher than Minimum (%f) bound in a Uniform distribution in order to draw a random number.\n", _maximum, _minimum);
-
   return gsl_ran_flat(_range, _minimum, _maximum);
 }
 
 void Uniform::updateDistribution()
 {
   if (_maximum - _minimum <= 0.0)
-    _aux = NaN;
-  else
-    _aux = -gsl_sf_log(_maximum - _minimum);
+   KORALI_LOG_ERROR("Maximum (%f) bound must be higher than Minimum (%f) bound in a Uniform distribution in order to draw a random number.\n", _maximum, _minimum);
+ 
+  _aux = -gsl_sf_log(_maximum - _minimum);
 }
 
 void Uniform::setConfiguration(knlohmann::json& js) 

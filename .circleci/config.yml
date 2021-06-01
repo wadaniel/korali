@@ -71,6 +71,7 @@ workflows:
           name: fedora_openmpi_gcc
           image: fedora_openmpi_onednn
           buildtype: release
+          runCoverage: 'true'
       - build:
           name: macos_openmpi_clang
           image: macos_openmpi_onednn

@@ -1,5 +1,5 @@
 #include "gtest/gtest.h"
-#include "auxiliar/cBuffer.h"
+#include "auxiliar/cBuffer.hpp"
 #include "korali.hpp"
 
 namespace

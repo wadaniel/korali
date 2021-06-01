@@ -268,8 +268,6 @@ void runEnvironmentMocmaes(korali::Sample &s)
 
   // Starting main environment loop
   bool done = false;
-  //size_t forceIdx = 0;
-  //double force = params[forceIdx];
   std::vector<double> action(2, 0.0);
 
   while (done == false)
@@ -277,13 +275,6 @@ void runEnvironmentMocmaes(korali::Sample &s)
     centerArr = agent->center;
     currentPos[0] = centerArr[0];
     currentPos[1] = centerArr[1];
-
-    //if (forceIdx+1 < vertices.size())
-    //if (currentPos[0] >= vertices[forceIdx+1])
-    //{
-	//forceIdx++;
-	//force = params[forceIdx];
-    //}
 
     double force = std::abs(forceSpline(currentPos[0])); // std::abs because spline evaluation may be negative
 
@@ -332,11 +323,6 @@ void runEnvironmentMocmaes(korali::Sample &s)
 
   }
   
-  //if(forceIdx != numParams)
-  //{
-  //    fprintf(stderr, "Error during sanity check (sampleId %zu), forceIdx %zu, expected %zu\n", sampleId, forceIdx, numParams);
-  //}
-
   // Penalization for not reaching target
   if (currentPos[0] < endX)
   {
@@ -416,6 +402,9 @@ void runEnvironmentCmaes(korali::Sample& s)
   double* centerArr = agent->center;
   std::vector<double> currentPos(centerArr, centerArr+2);
   
+  // Force applied
+  const double maxForce = 1e-2;
+  
   // Init counting variables
   double energy = 0.0; // Total energy
   double t = 0.0;      // Current time
@@ -432,11 +421,17 @@ void runEnvironmentCmaes(korali::Sample& s)
     currentPos[1] = centerArr[1];
  
     const double x = currentPos[0];
-    double force = (d*x+e)*(0.5*a/std::sqrt(x)+b+2.*c*x)*std::cos(a*std::sqrt(x)+x*b+c*x*x)+d*std::sin(a*std::sqrt(x)+x*b+c*x*x);
+    double forcex = 1.;
+    double forcey = (d*x+e)*(0.5*a/std::sqrt(x)+b+2.*c*x)*std::cos(a*std::sqrt(x)+x*b+c*x*x)+d*std::sin(a*std::sqrt(x)+x*b+c*x*x);
+
+    // Force vector normalization
+    double FvecLength = std::sqrt(forcey*forcey+forcex*forcex);
+    forcey /= FvecLength;
+    forcex /= FvecLength;
 
     // Split force in x & y component
-    //action[0] = force*(target[0]-currentPos[0])/distToTarget;
-    //action[1] = force*(target[1]-currentPos[1])/distToTarget;
+    action[0] = forcex*maxForce;
+    action[1] = forcey*maxForce;
 
     // Setting action
     agent->act( action );
@@ -469,11 +464,6 @@ void runEnvironmentCmaes(korali::Sample& s)
 
   }
   
-  //if(forceIdx != numParams)
-  //{
-  //    fprintf(stderr, "Error during sanity check (sampleId %zu), forceIdx %zu, expected %zu\n", sampleId, forceIdx, numParams);
-  //}
-
   // Penalization for not reaching target
   if (currentPos[0] < endX)
   {

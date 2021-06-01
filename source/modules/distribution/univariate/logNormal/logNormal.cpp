@@ -18,7 +18,7 @@ double LogNormal::getDensity(const double x) const
 
 double LogNormal::getLogDensity(const double x) const
 {
-  if (x < 0) return -INFINITY;
+  if (x <= 0) return -INFINITY;
   double logx = std::log(x);
   double d = (logx - _mu) / _sigma;
   return _aux - logx - 0.5 * d * d;
@@ -26,14 +26,14 @@ double LogNormal::getLogDensity(const double x) const
 
 double LogNormal::getLogDensityGradient(const double x) const
 {
-  if (x < 0) return 0.;
+  if (x <= 0) return 0.;
   double d = (std::log(x) - _mu) / _sigma;
   return -1. / x - d / (x * _sigma);
 }
 
 double LogNormal::getLogDensityHessian(const double x) const
 {
-  if (x < 0) return 0.;
+  if (x <= 0) return 0.;
   double d = (std::log(x) - _mu) / _sigma;
   return 1. / (x * x) - d / ((x * _sigma) * (x * _sigma)) + d / (x * x * _sigma);
 }

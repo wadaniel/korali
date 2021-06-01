@@ -53,7 +53,7 @@ e["Variables"][2]["Prior Distribution"] = "Uniform 2"
 e["Variables"][2]["Lower Bound"] = 0.0
 e["Variables"][2]["Upper Bound"] = 5.0
 
-e["File Output"]["Frequency"] = 5000
+e["File Output"]["Frequency"] = 1000
 e["Console Output"]["Frequency"] = 500
 e["Console Output"]["Verbosity"] = 'Detailed'
 e["Solver"]["Termination Criteria"]["Max Generations"] = 100000

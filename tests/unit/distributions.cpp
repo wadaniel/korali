@@ -9,6 +9,7 @@
 #include "modules/distribution/univariate/laplace/laplace.hpp"
 #include "modules/distribution/univariate/logNormal/logNormal.hpp"
 #include "modules/distribution/univariate/normal/normal.hpp"
+#include "modules/distribution/univariate/truncatedNormal/truncatedNormal.hpp"
 
 #define PDENSITY_ERROR_TOLERANCE 0.0000001
 
@@ -1932,6 +1933,84 @@ namespace
   EXPECT_NEAR(d->getLogDensity( 4.80 ), -12.438938533 , PDENSITY_ERROR_TOLERANCE);
   EXPECT_NEAR(d->getLogDensity( 4.90 ), -12.923938533 , PDENSITY_ERROR_TOLERANCE);
   EXPECT_NEAR(d->getLogDensity( 5.00 ), -13.418938533 , PDENSITY_ERROR_TOLERANCE);
+
+ // Checking random numbers are within the expected range
+  for (size_t i = 0; i < 100; i++) ASSERT_NO_THROW(d->getRandomNumber());
+
+  // Normal case for log density gradient and hessian
+  ASSERT_NO_THROW(d->getLogDensityGradient( 0.5 ));
+  ASSERT_NO_THROW(d->getLogDensityHessian( 0.5 ));
+ }
+
+ TEST(Conduit, TruncatedNormalDistribution)
+ {
+  knlohmann::json distributionJs;
+  Experiment e;
+  distribution::univariate::TruncatedNormal* d;
+
+  // Creating distribution with an incorrect name
+  distributionJs["Type"] = "Distribution/Univariate/TruncatedNormal";
+  ASSERT_ANY_THROW(d = dynamic_cast<korali::distribution::univariate::TruncatedNormal *>(Module::getModule(distributionJs, &e)));
+
+  // Creating distribution correctly now
+  distributionJs["Type"] = "Univariate/TruncatedNormal";
+  ASSERT_NO_THROW(d = dynamic_cast<korali::distribution::univariate::TruncatedNormal *>(Module::getModule(distributionJs, &e)));
+
+  // Getting module defaults
+  distributionJs["Name"] = "Test";
+  ASSERT_NO_THROW(d->applyModuleDefaults(distributionJs));
+  auto baseJs = distributionJs;
+
+  // Testing correct instantiation
+  distributionJs = baseJs;
+  distributionJs["Mean"] = 100.0;
+  distributionJs["Standard Deviation"] = 25.0;
+  distributionJs["Minimum"] = 50.0;
+  distributionJs["Maximum"] = 150.0;
+  ASSERT_NO_THROW(d->setConfiguration(distributionJs));
+  ASSERT_NO_THROW(d->updateDistribution());
+
+  // Testing incorrect sigma
+  d->_standardDeviation = -25.0;
+  ASSERT_ANY_THROW(d->updateDistribution());
+
+  // Testing correct sigma
+  d->_standardDeviation = 25.0;
+  ASSERT_NO_THROW(d->updateDistribution());
+
+  // Testing incorrect minimum/maximum
+  d->_minimium = 300.0;
+  ASSERT_ANY_THROW(d->updateDistribution());
+
+  // Testing correct sigma
+  d->_minimium = 50.0;
+  ASSERT_NO_THROW(d->updateDistribution());
+
+  // Distributions generated with https://keisan.casio.com/exec/system/1180573226
+
+  // Testing expected density
+  EXPECT_NEAR(d->getDensity( 81.63 ), 0.0127629 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 137.962 ), 0.00527826 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 122.367 ), 0.0112043 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 103.704 ), 0.0165359 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 94.899 ), 0.016374 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 65.8326 ), 0.00657044 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 84.5743 ), 0.0138204 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 71.5672 ), 0.00875626 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 62.0654 ), 0.00528716 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getDensity( 108.155 ), 0.0158521 , PDENSITY_ERROR_TOLERANCE);
+
+  // Testing log density function
+  EXPECT_NEAR(d->getLogDensity( 81.63 ), -4.361212754 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 137.96 ), -5.244158781 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 122.37 ), -4.491457646 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 103.70 ), -4.102221504 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 94.90 ), -4.112060568 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 65.83 ), -5.025174478 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 84.57 ), -4.281609518 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 71.57 ), -4.737986406 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 62.07 ), -5.242474039 , PDENSITY_ERROR_TOLERANCE);
+  EXPECT_NEAR(d->getLogDensity( 108.16 ), -4.144453295 , PDENSITY_ERROR_TOLERANCE);
 
  // Checking random numbers are within the expected range
   for (size_t i = 0; i < 100; i++) ASSERT_NO_THROW(d->getRandomNumber());

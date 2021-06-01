@@ -7,7 +7,6 @@
 
 double @className::getDensity(const double x) const
 {
-  if (_maximum - _minimum <= 0.0) return NaN;
   return gsl_ran_flat_pdf(x, _minimum, _maximum);
 }
 
@@ -29,18 +28,15 @@ double @className::getLogDensityHessian(const double x) const
 
 double @className::getRandomNumber()
 {
-  if (_maximum - _minimum <= 0.0)
-    KORALI_LOG_ERROR("Maximum (%f) bound must be higher than Minimum (%f) bound in a Uniform distribution in order to draw a random number.\n", _maximum, _minimum);
-
   return gsl_ran_flat(_range, _minimum, _maximum);
 }
 
 void @className::updateDistribution()
 {
   if (_maximum - _minimum <= 0.0)
-    _aux = NaN;
-  else
-    _aux = -gsl_sf_log(_maximum - _minimum);
+   KORALI_LOG_ERROR("Maximum (%f) bound must be higher than Minimum (%f) bound in a Uniform distribution in order to draw a random number.\n", _maximum, _minimum);
+ 
+  _aux = -gsl_sf_log(_maximum - _minimum);
 }
 
 @moduleAutoCode

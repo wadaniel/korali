@@ -37,7 +37,7 @@ e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 900
 ### If this is test mode, run only a couple generations
 if len(sys.argv) == 2:
  if sys.argv[1] == '--test':
-  e["Solver"]["Termination Criteria"]["Max Generations"] = 1
+  e["Solver"]["Termination Criteria"]["Max Generations"] = 5
   
 ### Defining Agent Configuration 
 

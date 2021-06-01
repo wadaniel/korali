@@ -2055,12 +2055,15 @@ namespace
   ASSERT_NO_THROW(d->updateDistribution());
 
   // Testing incorrect minimum/maximum
+
   d->_minimum = 16.0;
-  ASSERT_ANY_THROW(d->updateDistribution());
+  ASSERT_NO_THROW(d->updateDistribution());
+  ASSERT_ANY_THROW(d->getRandomNumber());
 
   // Testing correct minimum/maximum
   d->_minimum = 2.0;
   ASSERT_NO_THROW(d->updateDistribution());
+  ASSERT_NO_THROW(d->getRandomNumber());
 
   // Distributions generated with https://keisan.casio.com/exec/system/1180573226
 

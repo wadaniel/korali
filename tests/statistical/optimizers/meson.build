@@ -1,4 +1,4 @@
 subdir('correctness')
 subdir('detailed')
 subdir('termination')
-#subdir('fast')
+subdir('fast')

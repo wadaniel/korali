@@ -41,7 +41,7 @@ e["Variables"][0]["Prior Distribution"] = "Uniform 0"
 e["Variables"][1]["Name"] = "b"
 e["Variables"][1]["Prior Distribution"] = "Uniform 0"
 
-e["Solver"]["Termination Criteria"]["Max Generations"] = 5
+e["Solver"]["Termination Criteria"]["Max Generations"] = 1
 
 # Running Korali
 e["File Output"]["Enabled"] = False

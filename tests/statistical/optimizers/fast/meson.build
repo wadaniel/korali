@@ -7,7 +7,7 @@ fcmaes_tester = executable('fcmaes_tester',
   link_with: [ python_extension ],
   )
   
-test('statistical.optimizer.fast.cmaes', fcmaes_tester,
+test('optimizer.fast.cmaes', fcmaes_tester,
   protocol: 'gtest',
   suite: 'statistical',
 )

@@ -24,8 +24,9 @@ double TruncatedNormal::getDensity(const double x) const
 
 double TruncatedNormal::getLogDensity(const double x) const
 {
-  double d = (x - _mu) / _sigma;
-  return _logNormalization - 0.5 * d * d;
+  // double d = (x - _mu) / _sigma;
+  // return _logNormalization - 0.5 * d * d;
+  return std::log(getDensity(x));
 }
 
 double TruncatedNormal::getLogDensityGradient(const double x) const
@@ -49,7 +50,7 @@ void TruncatedNormal::updateDistribution()
   if (_sigma <= 0.0) KORALI_LOG_ERROR("Incorrect Standard Deviation parameter of Truncated Normal distribution: %f.\n", _sigma);
 
   if (_maximum - _minimum <= 0.0)
-    _aux = NaN;
+    KORALI_LOG_ERROR("Incorrect Minimum/Maximum configuration: %f/%f.\n", _minimum, _maximum);
 
   else
   {

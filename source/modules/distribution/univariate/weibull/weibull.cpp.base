@@ -11,17 +11,23 @@ double @className::getDensity(const double x) const
 
 double @className::getLogDensity(const double x) const
 {
-  if (x < 0) return -INFINITY;
-  return _aux + (_scale - 1.) * std::log(x) - std::pow((x / _scale), _shape);
+  
+  if (x <= 0.0) return -INFINITY;
+  
+  // To-do: Fix this too
+  // return _aux + (_scale - 1.) * std::log(x) - std::pow((x / _scale), _shape);
+  return std::log(getDensity(x));
 }
 
 double @className::getLogDensityGradient(const double x) const
 {
+  if (x <= 0.0) return 0.0;
   return ((_scale - 1.) - _shape * std::pow((x / _scale), _shape)) / x;
 }
 
 double @className::getLogDensityHessian(const double x) const
 {
+  if (x <= 0.0) return 0.0;
   return ((1. - _scale) + _shape * std::pow((x / _scale), _shape) - _shape * _shape * std::pow((x / _scale), _shape)) / (x * x);
 }
 

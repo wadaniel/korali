@@ -35,3 +35,15 @@ test('distributions', distributions_tester,
   protocol: 'gtest',
   suite: 'unit',
 )
+
+auxiliar_tester = executable('auxiliar_tester',
+  files(['auxiliar.cpp']),
+  include_directories: korali_include,
+  dependencies: [ gtest_main_dep, korali_deps, pythonEmbedDep ],
+  link_with: [ python_extension ],
+  )
+  
+test('auxiliar', distributions_tester,
+  protocol: 'gtest',
+  suite: 'unit',
+)

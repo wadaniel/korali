@@ -21,13 +21,12 @@ parser.add_argument('--env', help='Specifies which environment to run.', require
 
 def agent(s, env):
  
- print("X")
  stateVariableCount = env.observation_space.shape[0]
  actionVariableCount = env.action_space.shape[0]
  
  # Get policy
- X = p["Parameters"]
- X.reshape((stateVariableCount, actionVariableCount))
+ X = np.array(s["Parameters"])
+ X = X.reshape((stateVariableCount, actionVariableCount))
  
  state = env.reset()
  step = 0
@@ -37,9 +36,6 @@ def agent(s, env):
  cumulativeReward = 0.0
  overSteps = 0
  while not done and step < 1000:
-  # Getting new action
-  s.update()
-  
   # Performing the action
   action = np.dot(state, X)
   state, reward, done, _ = env.step(action)
@@ -50,14 +46,14 @@ def agent(s, env):
   # Advancing step counter
   step = step + 1
  
-  s["Objective"] = cumulativeReward
+  s["F(x)"] = cumulativeReward
 
 if __name__ == '__main__':
   
   args = parser.parse_args()
 
   envName = args.env
-  resultFolder = '_result_vracer_' + envName + '/'
+  resultFolder = '_result_cmaes_' + envName + '_proportional_2/'
  
   # Environment specifics
   env = gym.make(envName)
@@ -100,6 +96,8 @@ if __name__ == '__main__':
   # Configuring CMA-ES parameters
   e["Solver"]["Type"] = "Optimizer/CMAES"
   e["Solver"]["Population Size"] = 8
+  e["Solver"]["Mu Value"] = 8
+  e["Solver"]["Mu Type"] = "Proportional"
   e["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-32
   e["Solver"]["Termination Criteria"]["Max Generations"] = 1000
 

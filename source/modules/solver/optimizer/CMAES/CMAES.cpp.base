@@ -233,8 +233,10 @@ void @className::initMuWeights(size_t numsamplesmu)
     for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] = 1.;
   else if (_muType == "Logarithmic")
     for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] = log(std::max((double)numsamplesmu, 0.5 * _currentPopulationSize) + 0.5) - log(i + 1.);
+  else if (_muType == "Proportional")
+    for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] = 1.;
   else
-    KORALI_LOG_ERROR("Invalid setting of Mu Type (%s) (Linear, Equal, or Logarithmic accepted).", _muType.c_str());
+    KORALI_LOG_ERROR("Invalid setting of Mu Type (%s) (Linear, Equal, Logarithmic, or Proportional accepted).", _muType.c_str());
 
   // Normalize weights vector and set mueff
   double s1 = 0.0;
@@ -552,6 +554,28 @@ void @className::updateDistribution()
     if (_areConstraintsDefined)
       for (size_t c = 0; c < _constraintEvaluations.size(); c++)
         _bestConstraintEvaluations[c] = _constraintEvaluations[c][_bestValidSample];
+  }
+
+  /* update proportional weights and effective mu (if required) */
+  if(_muType == "Proportional")
+  {
+      double valueMean = 0;
+      double valueSquaredMean = 0;
+      for(size_t i = 0; i < _currentMuValue; ++i)
+      {
+          const double value = _valueVector[_sortingIndex[i]];
+          _muWeights[i] = value;
+          valueMean += value;
+          valueSquaredMean += value*value;
+      }
+      valueMean /= valueMean/(double)_currentMuValue;
+      valueSquaredMean /= valueMean/(double)_currentMuValue;
+      const double valueSdev = std::sqrt(valueSquaredMean - valueMean*valueMean + 1e-9);
+      
+      for(size_t i = 0; i < _currentMuValue; ++i)
+          _muWeights[i] /= valueSdev;
+
+      _effectiveMu = valueSdev * valueMean * valueMean / valueSquaredMean;
   }
 
   /* update mean */

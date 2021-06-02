@@ -41,7 +41,7 @@ e["Solver"]["Termination Criteria"]["Max Generations"] = 500
 
 # Configuring results path
 e["File Output"]["Path"] = '_korali_result_mocmaes'
-e["File Output"]["Frequency"] = 1
+e["File Output"]["Frequency"] = 10
 
 # Running Korali
 k.run(e)

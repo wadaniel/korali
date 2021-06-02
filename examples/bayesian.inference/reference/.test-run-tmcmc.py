@@ -6,7 +6,7 @@ r = call(["python3", "run-tmcmc.py"])
 if r!=0:
   exit(r)
 
-r = main( path='_korali_result_tmcmc', check=False, test=True, output="", plotAll=False)
+r = main( path='_korali_result_tmcmc', test=True, output="", plotAll=False)
 if r!=0: exit(r)
 
 exit(0)

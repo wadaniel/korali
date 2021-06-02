@@ -84,7 +84,7 @@ e["Solver"]["Termination Criteria"]["Max Generations"] = 100
 ### If this is test mode, run only a couple generations
 if len(sys.argv) == 2:
  if sys.argv[1] == '--test':
-  e["Solver"]["Termination Criteria"]["Max Generations"] = 5
+  e["Solver"]["Termination Criteria"]["Max Generations"] = 2
   
 e["Random Seed"] = 0xC0FFEE
 k.run(e)

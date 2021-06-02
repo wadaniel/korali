@@ -17,8 +17,7 @@ e = korali.Experiment()
 e["Problem"]["Type"] = "Bayesian/Reference"
 e["Problem"]["Likelihood Model"] = "Normal"
 e["Problem"]["Reference Data"] = getReferenceData()
-e["Problem"]["Computational Model"] = lambda sampleData: model(
-    sampleData, getReferencePoints())
+e["Problem"]["Computational Model"] = lambda sampleData: model(sampleData, getReferencePoints())
 
 # Configuring CMA-ES parameters
 e["Solver"]["Type"] = "Optimizer/CMAES"

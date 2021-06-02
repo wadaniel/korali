@@ -565,23 +565,20 @@ void CMAES::updateDistribution()
   /* update proportional weights and effective mu (if required) */
   if(_muType == "Proportional")
   {
-      double valueMean = 0;
-      double valueSquaredMean = 0;
+      double valueSum = 0.;
+      double valueSquaredSum = 0.;
       for(size_t i = 0; i < _currentMuValue; ++i)
       {
           const double value = _valueVector[_sortingIndex[i]];
           _muWeights[i] = value;
-          valueMean += value;
-          valueSquaredMean += value*value;
+          valueSum += value;
+          valueSquaredSum += value*value;
       }
-      valueMean /= valueMean/(double)_currentMuValue;
-      valueSquaredMean /= valueMean/(double)_currentMuValue;
-      const double valueSdev = std::sqrt(valueSquaredMean - valueMean*valueMean + 1e-9);
       
-      for(size_t i = 0; i < _currentMuValue; ++i)
-          _muWeights[i] /= valueSdev;
+     for(size_t i = 0; i < _currentMuValue; ++i)
+       _muWeights[i] /= valueSum;
 
-      _effectiveMu = valueSdev * valueMean * valueMean / valueSquaredMean;
+      //_effectiveMu = valueSum * valueSum / valueSquaredSum;
   }
 
   /* update mean */
@@ -728,7 +725,7 @@ void CMAES::updateSigma()
   }
 
   /* escape flat evaluation */
-  if (_currentBestValue == _valueVector[_sortingIndex[(int)_currentMuValue]])
+  if (_currentBestValue == _valueVector[_sortingIndex[_currentMuValue-1]])
   {
     _sigma *= exp(0.2 + _sigmaCumulationFactor / _dampFactor);
     _k->_logger->logWarning("Detailed", "Sigma increased due to equal function values.\n");
@@ -1070,14 +1067,6 @@ void CMAES::setConfiguration(knlohmann::json& js)
 } catch (const std::exception& e)
  { KORALI_LOG_ERROR(" + Object: [ CMAES ] \n + Key:    ['Value Vector']\n%s", e.what()); } 
    eraseValue(js, "Value Vector");
- }
-
- if (isDefined(js, "Previous Value Vector"))
- {
- try { _previousValueVector = js["Previous Value Vector"].get<std::vector<double>>();
-} catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ CMAES ] \n + Key:    ['Previous Value Vector']\n%s", e.what()); } 
-   eraseValue(js, "Previous Value Vector");
  }
 
  if (isDefined(js, "Gradients"))
@@ -1827,7 +1816,6 @@ void CMAES::getConfiguration(knlohmann::json& js)
  if(_uniformGenerator != NULL) _uniformGenerator->getConfiguration(js["Uniform Generator"]);
    js["Is Viability Regime"] = _isViabilityRegime;
    js["Value Vector"] = _valueVector;
-   js["Previous Value Vector"] = _previousValueVector;
    js["Gradients"] = _gradients;
    js["Current Population Size"] = _currentPopulationSize;
    js["Current Mu Value"] = _currentMuValue;

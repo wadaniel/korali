@@ -119,10 +119,6 @@ class CMAES : public Optimizer
   */
    std::vector<double> _valueVector;
   /**
-  * @brief [Internal Use] Objective function values from previous generation.
-  */
-   std::vector<double> _previousValueVector;
-  /**
   * @brief [Internal Use] Gradients of objective function evaluations.
   */
    std::vector<std::vector<double>> _gradients;

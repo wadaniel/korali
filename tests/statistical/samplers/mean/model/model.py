@@ -10,7 +10,6 @@ def lgaussian(s):
   s["grad(logP(x))"] = [-(x0 + 2.0) / 9.0]
   s["H(logP(x))"] = [[-1.0 / 9.0]]
 
-
 def lgaussianCustom(s):
   x0 = s["Parameters"][0]
   r = -0.5 * ((x0 + 2.0)**2 / (9.0)) - 0.5 * math.log(2 * math.pi * 9)

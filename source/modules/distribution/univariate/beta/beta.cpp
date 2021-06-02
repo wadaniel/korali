@@ -54,11 +54,11 @@ void Beta::setConfiguration(knlohmann::json& js)
  if (isDefined(js, "Results"))  eraseValue(js, "Results");
 
   _hasConditionalVariables = false; 
- if(js["Alpha"].is_number()) _alpha = js["Alpha"];
+ if(js["Alpha"].is_number()) {_alpha = js["Alpha"]; _alphaConditional = ""; } 
  if(js["Alpha"].is_string()) { _hasConditionalVariables = true; _alphaConditional = js["Alpha"]; } 
  eraseValue(js, "Alpha");
 
- if(js["Beta"].is_number()) _beta = js["Beta"];
+ if(js["Beta"].is_number()) {_beta = js["Beta"]; _betaConditional = ""; } 
  if(js["Beta"].is_string()) { _hasConditionalVariables = true; _betaConditional = js["Beta"]; } 
  eraseValue(js, "Beta");
 

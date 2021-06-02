@@ -51,11 +51,11 @@ void Cauchy::setConfiguration(knlohmann::json& js)
  if (isDefined(js, "Results"))  eraseValue(js, "Results");
 
   _hasConditionalVariables = false; 
- if(js["Location"].is_number()) _location = js["Location"];
+ if(js["Location"].is_number()) {_location = js["Location"]; _locationConditional = ""; } 
  if(js["Location"].is_string()) { _hasConditionalVariables = true; _locationConditional = js["Location"]; } 
  eraseValue(js, "Location");
 
- if(js["Scale"].is_number()) _scale = js["Scale"];
+ if(js["Scale"].is_number()) {_scale = js["Scale"]; _scaleConditional = ""; } 
  if(js["Scale"].is_string()) { _hasConditionalVariables = true; _scaleConditional = js["Scale"]; } 
  eraseValue(js, "Scale");
 

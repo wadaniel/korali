@@ -140,13 +140,9 @@ def createSetConfiguration(module):
   if 'Conditional Variables' in module:
     codeString += '  _hasConditionalVariables = false; \n'
     for v in module["Conditional Variables"]:
-      codeString += ' if(js' + vr.getVariablePath(v) + '.is_number()) ' + vr.getCXXVariableName(v["Name"]) + ' = js' + vr.getVariablePath(v) + ';\n'
-      codeString += ' if(js' + vr.getVariablePath(
-          v
-      ) + '.is_string()) { _hasConditionalVariables = true; ' + vr.getCXXVariableName(
-          v["Name"]) + 'Conditional = js' + vr.getVariablePath(v) + '; } \n'
-      codeString += ' eraseValue(js, ' + vr.getVariablePath(v).replace(
-          '][', ", ").replace('[', '').replace(']', '') + ');\n\n'
+      codeString += ' if(js' + vr.getVariablePath(v) + '.is_number()) {' + vr.getCXXVariableName(v["Name"]) + ' = js' + vr.getVariablePath(v) + '; ' + vr.getCXXVariableName(v["Name"]) + 'Conditional = ""; } \n'
+      codeString += ' if(js' + vr.getVariablePath(v) + '.is_string()) { _hasConditionalVariables = true; ' + vr.getCXXVariableName(v["Name"]) + 'Conditional = js' + vr.getVariablePath(v) + '; } \n'
+      codeString += ' eraseValue(js, ' + vr.getVariablePath(v).replace('][', ", ").replace('[', '').replace(']', '') + ');\n\n'
 
   if 'Compatible Solvers' in module:
     codeString += '  bool detectedCompatibleSolver = false; \n'

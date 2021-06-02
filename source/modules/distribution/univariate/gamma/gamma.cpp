@@ -51,11 +51,11 @@ void Gamma::setConfiguration(knlohmann::json& js)
  if (isDefined(js, "Results"))  eraseValue(js, "Results");
 
   _hasConditionalVariables = false; 
- if(js["Shape"].is_number()) _shape = js["Shape"];
+ if(js["Shape"].is_number()) {_shape = js["Shape"]; _shapeConditional = ""; } 
  if(js["Shape"].is_string()) { _hasConditionalVariables = true; _shapeConditional = js["Shape"]; } 
  eraseValue(js, "Shape");
 
- if(js["Scale"].is_number()) _scale = js["Scale"];
+ if(js["Scale"].is_number()) {_scale = js["Scale"]; _scaleConditional = ""; } 
  if(js["Scale"].is_string()) { _hasConditionalVariables = true; _scaleConditional = js["Scale"]; } 
  eraseValue(js, "Scale");
 

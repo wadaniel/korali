@@ -47,11 +47,11 @@ void Exponential::setConfiguration(knlohmann::json& js)
  if (isDefined(js, "Results"))  eraseValue(js, "Results");
 
   _hasConditionalVariables = false; 
- if(js["Location"].is_number()) _location = js["Location"];
+ if(js["Location"].is_number()) {_location = js["Location"]; _locationConditional = ""; } 
  if(js["Location"].is_string()) { _hasConditionalVariables = true; _locationConditional = js["Location"]; } 
  eraseValue(js, "Location");
 
- if(js["Mean"].is_number()) _mean = js["Mean"];
+ if(js["Mean"].is_number()) {_mean = js["Mean"]; _meanConditional = ""; } 
  if(js["Mean"].is_string()) { _hasConditionalVariables = true; _meanConditional = js["Mean"]; } 
  eraseValue(js, "Mean");
 

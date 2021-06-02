@@ -1,14 +1,14 @@
-Checking distribution reproducibility of Samplers
+Checking distribution reproducibility of samplers
 #################################################################
 
 
 ## Description
 
-This test calculates the mean and standard deviation of the samples produced and compares the values with the internal variables of MCMC. 
+This test calculates the mean and standard deviation of the samples produced and compares the values with the internal variables.
 
 ## Source
 
-[https://github.com/cselab/korali/tree/master/tests/STAT-002](https://github.com/cselab/korali/tree/master/tests/STAT-002)
+[https://github.com/cselab/korali/tree/master/tests/statistical/samplers](https://github.com/cselab/korali/tree/master/tests/statistical/samplers/)
 
 ## Steps
 

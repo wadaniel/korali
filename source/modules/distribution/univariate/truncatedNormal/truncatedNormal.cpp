@@ -69,18 +69,16 @@ void TruncatedNormal::setConfiguration(knlohmann::json& js)
  if(js["Mu"].is_number()) {_mu = js["Mu"]; _muConditional = ""; } 
  if(js["Mu"].is_string()) { _hasConditionalVariables = true; _muConditional = js["Mu"]; } 
  eraseValue(js, "Mu");
-
  if(js["Sigma"].is_number()) {_sigma = js["Sigma"]; _sigmaConditional = ""; } 
  if(js["Sigma"].is_string()) { _hasConditionalVariables = true; _sigmaConditional = js["Sigma"]; } 
  eraseValue(js, "Sigma");
-
  if(js["Minimum"].is_number()) {_minimum = js["Minimum"]; _minimumConditional = ""; } 
  if(js["Minimum"].is_string()) { _hasConditionalVariables = true; _minimumConditional = js["Minimum"]; } 
  eraseValue(js, "Minimum");
-
  if(js["Maximum"].is_number()) {_maximum = js["Maximum"]; _maximumConditional = ""; } 
  if(js["Maximum"].is_string()) { _hasConditionalVariables = true; _maximumConditional = js["Maximum"]; } 
  eraseValue(js, "Maximum");
+ if (_hasConditionalVariables == false) updateDistribution(); // If distribution is not conditioned to external values, update from the beginning 
 
  Univariate::setConfiguration(js);
  _type = "univariate/truncatedNormal";

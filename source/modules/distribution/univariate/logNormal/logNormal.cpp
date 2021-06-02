@@ -58,10 +58,10 @@ void LogNormal::setConfiguration(knlohmann::json& js)
  if(js["Mu"].is_number()) {_mu = js["Mu"]; _muConditional = ""; } 
  if(js["Mu"].is_string()) { _hasConditionalVariables = true; _muConditional = js["Mu"]; } 
  eraseValue(js, "Mu");
-
  if(js["Sigma"].is_number()) {_sigma = js["Sigma"]; _sigmaConditional = ""; } 
  if(js["Sigma"].is_string()) { _hasConditionalVariables = true; _sigmaConditional = js["Sigma"]; } 
  eraseValue(js, "Sigma");
+ if (_hasConditionalVariables == false) updateDistribution(); // If distribution is not conditioned to external values, update from the beginning 
 
  Univariate::setConfiguration(js);
  _type = "univariate/logNormal";

@@ -54,10 +54,10 @@ void Cauchy::setConfiguration(knlohmann::json& js)
  if(js["Location"].is_number()) {_location = js["Location"]; _locationConditional = ""; } 
  if(js["Location"].is_string()) { _hasConditionalVariables = true; _locationConditional = js["Location"]; } 
  eraseValue(js, "Location");
-
  if(js["Scale"].is_number()) {_scale = js["Scale"]; _scaleConditional = ""; } 
  if(js["Scale"].is_string()) { _hasConditionalVariables = true; _scaleConditional = js["Scale"]; } 
  eraseValue(js, "Scale");
+ if (_hasConditionalVariables == false) updateDistribution(); // If distribution is not conditioned to external values, update from the beginning 
 
  Univariate::setConfiguration(js);
  _type = "univariate/cauchy";

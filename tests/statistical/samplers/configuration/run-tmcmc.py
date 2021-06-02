@@ -41,13 +41,14 @@ e["Variables"][0]["Prior Distribution"] = "Uniform 0"
 e["Variables"][1]["Name"] = "b"
 e["Variables"][1]["Prior Distribution"] = "Uniform 0"
 
-e["Solver"]["Termination Criteria"]["Max Generations"] = 1
+e["Solver"]["Termination Criteria"]["Max Generations"] = 5
 
 # Running Korali
 e["File Output"]["Enabled"] = False
 k.run(e)
 
 # Verify Initial Values
+print(e["Solver"]["Chain Candidates LogPriors"])
 verify(e["Solver"]["Chain Candidates LogPriors"][0], np.log(1./25.))
 verify(e["Solver"]["Chain Leaders LogPriors"][0], np.log(1./25.))
 

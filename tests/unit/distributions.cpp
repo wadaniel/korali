@@ -20,6 +20,62 @@ namespace
 {
  using namespace korali;
 
+ TEST(Conduit, BaseDistribution)
+ {
+   knlohmann::json distributionJs;
+   Experiment e;
+   distribution::univariate::Beta* d;
+
+   // Creating distribution with an incorrect name
+   distributionJs["Type"] = "Distribution/Univariate/Beta";
+   distributionJs["Name"] = "Name";
+   distributionJs["Range"] = "Range";
+   distributionJs["Random Seed"] = 0;
+   distributionJs["Alpha"] = 0.5;
+   distributionJs["Beta"] = 0.5;
+   ASSERT_ANY_THROW(d = dynamic_cast<korali::distribution::univariate::Beta *>(Module::getModule(distributionJs, &e)));
+
+   // Creating distribution correctly now
+   distributionJs["Type"] = "Univariate/Beta";
+   ASSERT_NO_THROW(d = dynamic_cast<korali::distribution::univariate::Beta *>(Module::getModule(distributionJs, &e)));
+
+   // Triggering configuration errors
+   distributionJs.clear();
+   distributionJs["Range"] = "Range";
+   distributionJs["Random Seed"] = 0;
+   distributionJs["Alpha"] = 0.5;
+   distributionJs["Beta"] = 0.5;
+   ASSERT_ANY_THROW(d->setConfiguration(distributionJs)); // Missing name
+   distributionJs["Name"] = 0;
+   ASSERT_ANY_THROW(d->setConfiguration(distributionJs)); // Bad name format
+
+   distributionJs.clear();
+   distributionJs["Name"] = "Name";
+   distributionJs["Random Seed"] = 0;
+   distributionJs["Alpha"] = 0.5;
+   distributionJs["Beta"] = 0.5;
+   ASSERT_ANY_THROW(d->setConfiguration(distributionJs)); // Missing range
+   distributionJs["Range"] = 0;
+   ASSERT_ANY_THROW(d->setConfiguration(distributionJs)); // Bad range format
+
+   distributionJs.clear();
+   distributionJs["Name"] = "Name";
+   distributionJs["Range"] = "Range";
+   distributionJs["Alpha"] = 0.5;
+   distributionJs["Beta"] = 0.5;
+   ASSERT_ANY_THROW(d->setConfiguration(distributionJs)); // Missing seed
+   distributionJs["Random Seed"] = "Seed";
+   ASSERT_ANY_THROW(d->setConfiguration(distributionJs)); // Bad seed format
+
+   distributionJs.clear();
+   distributionJs["Name"] = "Name";
+   distributionJs["Range"] = "Range";
+   distributionJs["Random Seed"] = 0;
+   distributionJs["Alpha"] = 0.5;
+   distributionJs["Beta"] = 0.5;
+   ASSERT_NO_THROW(d->setConfiguration(distributionJs)); // Correct Configuration
+ }
+
  TEST(Conduit, BetaDistribution)
  {
   knlohmann::json distributionJs;
@@ -2259,7 +2315,7 @@ namespace
   // Distributions generated with https://keisan.casio.com/exec/system/1180573226
 
   // Testing expected density
-  // To-do: Add more valus and improve precision
+  // To-do: Add more values and improve precision
   EXPECT_NEAR(d->getDensity( 81.63 ), 0.0127629 , 0.001);
   EXPECT_NEAR(d->getDensity( 137.962 ), 0.00527826 , 0.001);
   EXPECT_NEAR(d->getDensity( 122.367 ), 0.0112043 , 0.001);
@@ -2800,6 +2856,11 @@ namespace
    distributionJs["Sigma"] = std::vector<double>({ 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5 });
    ASSERT_NO_THROW(d->setConfiguration(distributionJs));
    ASSERT_NO_THROW(d->updateDistribution());
+
+   // Setting properties directly
+   ASSERT_NO_THROW(d->setProperty("Mean Vector", std::vector<double>({ 0.5, 0.5, 0.5, 0.5 })));
+   ASSERT_NO_THROW(d->setProperty("Sigma", std::vector<double>({ 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5 })));
+   ASSERT_ANY_THROW(d->setProperty("Undefined", std::vector<double>({ })));
 
    // Testing get configuration method
    d->getConfiguration(distributionJs);

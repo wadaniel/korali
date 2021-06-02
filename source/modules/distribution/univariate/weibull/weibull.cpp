@@ -1,5 +1,6 @@
 #include "modules/distribution/univariate/weibull/weibull.hpp"
 #include "modules/experiment/experiment.hpp"
+#include <gsl/gsl_sf.h>
 #include <gsl/gsl_randist.h>
 
 namespace korali
@@ -20,21 +21,19 @@ double Weibull::getLogDensity(const double x) const
   
   if (x <= 0.0) return -INFINITY;
   
-  // To-do: Fix this too
-  // return _aux + (_scale - 1.) * std::log(x) - std::pow((x / _scale), _shape);
-  return std::log(getDensity(x));
+  return _aux - std::pow(x/_scale, _shape) + (_shape-1.) * gsl_sf_log(x);
 }
 
 double Weibull::getLogDensityGradient(const double x) const
 {
   if (x <= 0.0) return 0.0;
-  return ((_scale - 1.) - _shape * std::pow((x / _scale), _shape)) / x;
+  return (_shape-1.)/x - _shape * std::pow(x, _shape-1.) / std::pow(_scale, _shape);
 }
 
 double Weibull::getLogDensityHessian(const double x) const
 {
   if (x <= 0.0) return 0.0;
-  return ((1. - _scale) + _shape * std::pow((x / _scale), _shape) - _shape * _shape * std::pow((x / _scale), _shape)) / (x * x);
+  return (1.-_shape)/(x*x) - _shape * (_shape - 1.) * std::pow(x, _shape-2.) / std::pow(_scale, _shape);
 }
 
 double Weibull::getRandomNumber()
@@ -47,7 +46,7 @@ void Weibull::updateDistribution()
   if (_shape <= 0.0) KORALI_LOG_ERROR("Incorrect Shape parameter of Weibull distribution: %f.\n", _shape);
   if (_scale <= 0.0) KORALI_LOG_ERROR("Incorrect Scale parameter of Weibull distribution: %f.\n", _scale);
 
-  _aux = log(_shape / _scale) - (_shape - 1.0) * log(_scale);
+  _aux = gsl_sf_log(_shape) - _shape * gsl_sf_log(_scale);
 }
 
 void Weibull::setConfiguration(knlohmann::json& js) 

@@ -25,7 +25,7 @@ double TruncatedNormal::getDensity(const double x) const
 double TruncatedNormal::getLogDensity(const double x) const
 {
   double d = (x - _mu) / _sigma;
-  return _logNormalization - 0.5 * d * d;
+  return - 0.5 * d * d - _logNormalization;
 }
 
 double TruncatedNormal::getLogDensityGradient(const double x) const

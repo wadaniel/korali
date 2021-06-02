@@ -56,10 +56,10 @@ void Uniform::setConfiguration(knlohmann::json& js)
  if(js["Minimum"].is_number()) {_minimum = js["Minimum"]; _minimumConditional = ""; } 
  if(js["Minimum"].is_string()) { _hasConditionalVariables = true; _minimumConditional = js["Minimum"]; } 
  eraseValue(js, "Minimum");
-
  if(js["Maximum"].is_number()) {_maximum = js["Maximum"]; _maximumConditional = ""; } 
  if(js["Maximum"].is_string()) { _hasConditionalVariables = true; _maximumConditional = js["Maximum"]; } 
  eraseValue(js, "Maximum");
+ if (_hasConditionalVariables == false) updateDistribution(); // If distribution is not conditioned to external values, update from the beginning 
 
  Univariate::setConfiguration(js);
  _type = "univariate/uniform";

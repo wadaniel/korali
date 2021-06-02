@@ -54,10 +54,10 @@ void Laplace::setConfiguration(knlohmann::json& js)
  if(js["Mean"].is_number()) {_mean = js["Mean"]; _meanConditional = ""; } 
  if(js["Mean"].is_string()) { _hasConditionalVariables = true; _meanConditional = js["Mean"]; } 
  eraseValue(js, "Mean");
-
  if(js["Width"].is_number()) {_width = js["Width"]; _widthConditional = ""; } 
  if(js["Width"].is_string()) { _hasConditionalVariables = true; _widthConditional = js["Width"]; } 
  eraseValue(js, "Width");
+ if (_hasConditionalVariables == false) updateDistribution(); // If distribution is not conditioned to external values, update from the beginning 
 
  Univariate::setConfiguration(js);
  _type = "univariate/laplace";

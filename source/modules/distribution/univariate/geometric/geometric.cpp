@@ -48,6 +48,7 @@ void Geometric::setConfiguration(knlohmann::json& js)
  if(js["Success Probability"].is_number()) {_successProbability = js["Success Probability"]; _successProbabilityConditional = ""; } 
  if(js["Success Probability"].is_string()) { _hasConditionalVariables = true; _successProbabilityConditional = js["Success Probability"]; } 
  eraseValue(js, "Success Probability");
+ if (_hasConditionalVariables == false) updateDistribution(); // If distribution is not conditioned to external values, update from the beginning 
 
  Univariate::setConfiguration(js);
  _type = "univariate/geometric";

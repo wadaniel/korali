@@ -18,9 +18,8 @@ double @className::getDensity(const double x) const
 
 double @className::getLogDensity(const double x) const
 {
-  // double d = (x - _mu) / _sigma;
-  // return _logNormalization - 0.5 * d * d;
-  return std::log(getDensity(x));
+  double d = (x - _mu) / _sigma;
+  return - 0.5 * d * d - _logNormalization;
 }
 
 double @className::getLogDensityGradient(const double x) const

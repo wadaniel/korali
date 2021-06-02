@@ -13,7 +13,6 @@ namespace univariate
 
 double Uniform::getDensity(const double x) const
 {
-  if (_maximum - _minimum <= 0.0) return NaN;
   return gsl_ran_flat_pdf(x, _minimum, _maximum);
 }
 

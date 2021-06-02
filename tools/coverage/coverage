@@ -9,7 +9,12 @@ set -e
 filter_junk()
 {
     find ${1} -type f -name "${2}" | \
-        sed '/subprojects/d' 
+        sed -e '/subprojects/d' \
+            -e '/libgp/d' \
+            -e '/json.hpp/d' \
+            -e '/amd64.c/d' \
+            -e '/rtnorm/d' \
+            -e '/dnnUtils.hpp/d' 
 }
 
 ROOT="$(pwd -P)"

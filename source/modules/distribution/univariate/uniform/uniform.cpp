@@ -53,11 +53,11 @@ void Uniform::setConfiguration(knlohmann::json& js)
  if (isDefined(js, "Results"))  eraseValue(js, "Results");
 
   _hasConditionalVariables = false; 
- if(js["Minimum"].is_number()) _minimum = js["Minimum"];
+ if(js["Minimum"].is_number()) {_minimum = js["Minimum"]; _minimumConditional = ""; } 
  if(js["Minimum"].is_string()) { _hasConditionalVariables = true; _minimumConditional = js["Minimum"]; } 
  eraseValue(js, "Minimum");
 
- if(js["Maximum"].is_number()) _maximum = js["Maximum"];
+ if(js["Maximum"].is_number()) {_maximum = js["Maximum"]; _maximumConditional = ""; } 
  if(js["Maximum"].is_string()) { _hasConditionalVariables = true; _maximumConditional = js["Maximum"]; } 
  eraseValue(js, "Maximum");
 

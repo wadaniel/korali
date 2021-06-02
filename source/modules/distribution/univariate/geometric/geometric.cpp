@@ -45,7 +45,7 @@ void Geometric::setConfiguration(knlohmann::json& js)
  if (isDefined(js, "Results"))  eraseValue(js, "Results");
 
   _hasConditionalVariables = false; 
- if(js["Success Probability"].is_number()) _successProbability = js["Success Probability"];
+ if(js["Success Probability"].is_number()) {_successProbability = js["Success Probability"]; _successProbabilityConditional = ""; } 
  if(js["Success Probability"].is_string()) { _hasConditionalVariables = true; _successProbabilityConditional = js["Success Probability"]; } 
  eraseValue(js, "Success Probability");
 

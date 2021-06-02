@@ -37,14 +37,37 @@ namespace
   // Getting module defaults
   distributionJs["Name"] = "Test";
   ASSERT_NO_THROW(d->applyModuleDefaults(distributionJs));
+  ASSERT_NO_THROW(d->applyVariableDefaults());
   auto baseJs = distributionJs;
 
-  // Testing correct shape
+  // Testing conditional variables
   distributionJs = baseJs;
+  distributionJs["Alpha"] = "Conditional 1";
+  distributionJs["Beta"] = "Conditional 2";
+  ASSERT_NO_THROW(d->setConfiguration(distributionJs));
+
+  // Testing get configuration method
+  d->getConfiguration(distributionJs);
+  ASSERT_EQ(distributionJs["Type"].get<std::string>(), "univariate/beta");
+  ASSERT_EQ(distributionJs["Alpha"].get<std::string>(), "Conditional 1");
+  ASSERT_EQ(distributionJs["Beta"].get<std::string>(), "Conditional 2");
+
+  // Testing correct shape
   distributionJs["Alpha"] = 0.5;
   distributionJs["Beta"] = 0.5;
   ASSERT_NO_THROW(d->setConfiguration(distributionJs));
   ASSERT_NO_THROW(d->updateDistribution());
+
+  // Testing get configuration method
+  d->getConfiguration(distributionJs);
+  ASSERT_EQ(distributionJs["Type"].get<std::string>(), "univariate/beta");
+  ASSERT_EQ(distributionJs["Alpha"].get<double>(), 0.5);
+  ASSERT_EQ(distributionJs["Beta"].get<double>(), 0.5);
+
+  // Testing get property pointer
+  ASSERT_TRUE(d->getPropertyPointer("Alpha") != NULL);
+  ASSERT_TRUE(d->getPropertyPointer("Beta") != NULL);
+  ASSERT_ANY_THROW(d->getPropertyPointer("Undefined")); // Distribution not recognized
 
   // Testing incorrect shape (alpha)
   d->_alpha = -0.5;
@@ -296,24 +319,47 @@ namespace
   distributionJs["Type"] = "Univariate/Cauchy";
   ASSERT_NO_THROW(d = dynamic_cast<korali::distribution::univariate::Cauchy *>(Module::getModule(distributionJs, &e)));
 
+  //////////////////////////////////////////////////
+
   // Getting module defaults
   distributionJs["Name"] = "Test";
   ASSERT_NO_THROW(d->applyModuleDefaults(distributionJs));
+  ASSERT_NO_THROW(d->applyVariableDefaults());
   auto baseJs = distributionJs;
 
-  // Testing correct instantiation
+  // Testing conditional variables
   distributionJs = baseJs;
+  distributionJs["Scale"] = "Conditional 1";
+  ASSERT_NO_THROW(d->setConfiguration(distributionJs));
+
+  // Testing get configuration method
+  d->getConfiguration(distributionJs);
+  ASSERT_EQ(distributionJs["Type"].get<std::string>(), "univariate/cauchy");
+  ASSERT_EQ(distributionJs["Scale"].get<std::string>(), "Conditional 1");
+
+  // Testing correct shape
   distributionJs["Scale"] = 0.5;
   ASSERT_NO_THROW(d->setConfiguration(distributionJs));
   ASSERT_NO_THROW(d->updateDistribution());
 
-  // Testing incorrect scale
+  // Testing get configuration method
+  d->getConfiguration(distributionJs);
+  ASSERT_EQ(distributionJs["Type"].get<std::string>(), "univariate/cauchy");
+  ASSERT_EQ(distributionJs["Scale"].get<double>(), 0.5);
+
+  // Testing get property pointer
+  ASSERT_TRUE(d->getPropertyPointer("Scale") != NULL);
+  ASSERT_ANY_THROW(d->getPropertyPointer("Undefined")); // Distribution not recognized
+
+  // Testing incorrect shape (alpha)
   d->_scale = -0.5;
   ASSERT_ANY_THROW(d->updateDistribution());
 
-  // Testing correct scale
+  // Testing correct shape (alpha)
   d->_scale = 0.5;
   ASSERT_NO_THROW(d->updateDistribution());
+
+  /////////////////////////////////////////////////
 
   // Distributions generated with https://keisan.casio.com/exec/system/1180573226
 
@@ -543,17 +589,44 @@ namespace
   distributionJs["Type"] = "Univariate/Exponential";
   ASSERT_NO_THROW(d = dynamic_cast<korali::distribution::univariate::Exponential *>(Module::getModule(distributionJs, &e)));
 
+  //////////////////////////////////////////////////
+
   // Getting module defaults
   distributionJs["Name"] = "Test";
   ASSERT_NO_THROW(d->applyModuleDefaults(distributionJs));
+  ASSERT_NO_THROW(d->applyVariableDefaults());
   auto baseJs = distributionJs;
 
-  // Testing correct instantiation
+  // Testing conditional variables
   distributionJs = baseJs;
+  distributionJs["Mean"] = "Conditional 1";
+  distributionJs["Location"] = "Conditional 2";
+  ASSERT_NO_THROW(d->setConfiguration(distributionJs));
+
+  // Testing get configuration method
+  d->getConfiguration(distributionJs);
+  ASSERT_EQ(distributionJs["Type"].get<std::string>(), "univariate/exponential");
+  ASSERT_EQ(distributionJs["Mean"].get<std::string>(), "Conditional 1");
+  ASSERT_EQ(distributionJs["Location"].get<std::string>(), "Conditional 2");
+
+  // Testing correct shape
   distributionJs["Mean"] = 2.0;
   distributionJs["Location"] = -0.1;
   ASSERT_NO_THROW(d->setConfiguration(distributionJs));
   ASSERT_NO_THROW(d->updateDistribution());
+
+  // Testing get configuration method
+  d->getConfiguration(distributionJs);
+  ASSERT_EQ(distributionJs["Type"].get<std::string>(), "univariate/exponential");
+  ASSERT_EQ(distributionJs["Mean"].get<double>(), 2.0);
+  ASSERT_EQ(distributionJs["Location"].get<double>(), -0.1);
+
+  // Testing get property pointer
+  ASSERT_TRUE(d->getPropertyPointer("Mean") != NULL);
+  ASSERT_TRUE(d->getPropertyPointer("Location") != NULL);
+  ASSERT_ANY_THROW(d->getPropertyPointer("Undefined")); // Distribution not recognized
+
+  /////////////////////////////////////////////////
 
   // Distributions generated with https://keisan.casio.com/exec/system/1180573226
 
@@ -791,17 +864,42 @@ namespace
   distributionJs["Type"] = "Univariate/Gamma";
   ASSERT_NO_THROW(d = dynamic_cast<korali::distribution::univariate::Gamma *>(Module::getModule(distributionJs, &e)));
 
+  //////////////////////////////////////////////////
+
   // Getting module defaults
   distributionJs["Name"] = "Test";
   ASSERT_NO_THROW(d->applyModuleDefaults(distributionJs));
+  ASSERT_NO_THROW(d->applyVariableDefaults());
   auto baseJs = distributionJs;
 
-  // Testing correct shape
+  // Testing conditional variables
   distributionJs = baseJs;
+  distributionJs["Shape"] = "Conditional 1";
+  distributionJs["Scale"] = "Conditional 2";
+  ASSERT_NO_THROW(d->setConfiguration(distributionJs));
+
+  // Testing get configuration method
+  d->getConfiguration(distributionJs);
+  ASSERT_EQ(distributionJs["Type"].get<std::string>(), "univariate/gamma");
+  ASSERT_EQ(distributionJs["Shape"].get<std::string>(), "Conditional 1");
+  ASSERT_EQ(distributionJs["Scale"].get<std::string>(), "Conditional 2");
+
+  // Testing correct shape
   distributionJs["Shape"] = 0.5;
   distributionJs["Scale"] = 0.5;
   ASSERT_NO_THROW(d->setConfiguration(distributionJs));
   ASSERT_NO_THROW(d->updateDistribution());
+
+  // Testing get configuration method
+  d->getConfiguration(distributionJs);
+  ASSERT_EQ(distributionJs["Type"].get<std::string>(), "univariate/gamma");
+  ASSERT_EQ(distributionJs["Shape"].get<double>(), 0.5);
+  ASSERT_EQ(distributionJs["Scale"].get<double>(), 0.5);
+
+  // Testing get property pointer
+  ASSERT_TRUE(d->getPropertyPointer("Shape") != NULL);
+  ASSERT_TRUE(d->getPropertyPointer("Scale") != NULL);
+  ASSERT_ANY_THROW(d->getPropertyPointer("Undefined")); // Distribution not recognized
 
   // Testing incorrect scale
   d->_shape = 0.5;
@@ -817,6 +915,8 @@ namespace
   d->_shape = 3.0;
   d->_scale = 1.0;
   ASSERT_NO_THROW(d->updateDistribution());
+
+  /////////////////////////////////////////////////
 
   // Distributions generated with https://keisan.casio.com/exec/system/1180573226
 
@@ -1058,16 +1158,43 @@ namespace
   distributionJs["Type"] = "Univariate/Geometric";
   ASSERT_NO_THROW(d = dynamic_cast<korali::distribution::univariate::Geometric *>(Module::getModule(distributionJs, &e)));
 
+  //////////////////////////////////////////////////
+
   // Getting module defaults
   distributionJs["Name"] = "Test";
   ASSERT_NO_THROW(d->applyModuleDefaults(distributionJs));
+  ASSERT_NO_THROW(d->applyVariableDefaults());
   auto baseJs = distributionJs;
 
-  // Testing correct instantiation
+  // Testing conditional variables
   distributionJs = baseJs;
+  distributionJs["Success Probability"] = "Conditional 1";
+  ASSERT_NO_THROW(d->setConfiguration(distributionJs));
+
+  // Testing get configuration method
+  d->getConfiguration(distributionJs);
+  ASSERT_EQ(distributionJs["Type"].get<std::string>(), "univariate/geometric");
+  ASSERT_EQ(distributionJs["Success Probability"].get<std::string>(), "Conditional 1");
+
+  // Testing correct shape
   distributionJs["Success Probability"] = 0.1;
   ASSERT_NO_THROW(d->setConfiguration(distributionJs));
   ASSERT_NO_THROW(d->updateDistribution());
+
+  // Testing get configuration method
+  d->getConfiguration(distributionJs);
+  ASSERT_EQ(distributionJs["Type"].get<std::string>(), "univariate/geometric");
+  ASSERT_EQ(distributionJs["Success Probability"].get<double>(), 0.1);
+
+  // Testing get property pointer
+  ASSERT_TRUE(d->getPropertyPointer("Success Probability") != NULL);
+  ASSERT_ANY_THROW(d->getPropertyPointer("Undefined")); // Distribution not recognized
+
+  // Testing incorrect scale
+  d->_successProbability = 0.1;
+  ASSERT_NO_THROW(d->updateDistribution());
+
+  /////////////////////////////////////////////////
 
   // Distributions generated with https://keisan.casio.com/exec/system/1180573226
 
@@ -1125,17 +1252,42 @@ namespace
    distributionJs["Type"] = "Univariate/Igamma";
    ASSERT_NO_THROW(d = dynamic_cast<korali::distribution::univariate::Igamma *>(Module::getModule(distributionJs, &e)));
 
+   //////////////////////////////////////////////////
+
    // Getting module defaults
    distributionJs["Name"] = "Test";
    ASSERT_NO_THROW(d->applyModuleDefaults(distributionJs));
+   ASSERT_NO_THROW(d->applyVariableDefaults());
    auto baseJs = distributionJs;
 
-   // Testing correct shape
+   // Testing conditional variables
    distributionJs = baseJs;
+   distributionJs["Shape"] = "Conditional 1";
+   distributionJs["Scale"] = "Conditional 2";
+   ASSERT_NO_THROW(d->setConfiguration(distributionJs));
+
+   // Testing get configuration method
+   d->getConfiguration(distributionJs);
+   ASSERT_EQ(distributionJs["Type"].get<std::string>(), "univariate/igamma");
+   ASSERT_EQ(distributionJs["Shape"].get<std::string>(), "Conditional 1");
+   ASSERT_EQ(distributionJs["Scale"].get<std::string>(), "Conditional 2");
+
+   // Testing correct shape
    distributionJs["Shape"] = 1.0;
    distributionJs["Scale"] = 2.0;
    ASSERT_NO_THROW(d->setConfiguration(distributionJs));
    ASSERT_NO_THROW(d->updateDistribution());
+
+   // Testing get configuration method
+   d->getConfiguration(distributionJs);
+   ASSERT_EQ(distributionJs["Type"].get<std::string>(), "univariate/igamma");
+   ASSERT_EQ(distributionJs["Shape"].get<double>(), 1.0);
+   ASSERT_EQ(distributionJs["Scale"].get<double>(), 2.0);
+
+   // Testing get property pointer
+   ASSERT_TRUE(d->getPropertyPointer("Shape") != NULL);
+   ASSERT_TRUE(d->getPropertyPointer("Scale") != NULL);
+   ASSERT_ANY_THROW(d->getPropertyPointer("Undefined")); // Distribution not recognized
 
    // Testing incorrect shape
    d->_shape = -0.5;
@@ -1151,6 +1303,9 @@ namespace
    d->_shape = 2.0;
    d->_scale = 1.0;
    ASSERT_NO_THROW(d->updateDistribution());
+
+   /////////////////////////////////////////////////
+
 
    // Distributions generated with https://keisan.casio.com/exec/system/1180573226
 
@@ -1194,16 +1349,37 @@ namespace
   distributionJs["Type"] = "Univariate/Laplace";
   ASSERT_NO_THROW(d = dynamic_cast<korali::distribution::univariate::Laplace *>(Module::getModule(distributionJs, &e)));
 
+  //////////////////////////////////////////////////
+
   // Getting module defaults
   distributionJs["Name"] = "Test";
   ASSERT_NO_THROW(d->applyModuleDefaults(distributionJs));
+  ASSERT_NO_THROW(d->applyVariableDefaults());
   auto baseJs = distributionJs;
 
-  // Testing correct instantiation
+  // Testing conditional variables
   distributionJs = baseJs;
+  distributionJs["Width"] = "Conditional 1";
+  ASSERT_NO_THROW(d->setConfiguration(distributionJs));
+
+  // Testing get configuration method
+  d->getConfiguration(distributionJs);
+  ASSERT_EQ(distributionJs["Type"].get<std::string>(), "univariate/laplace");
+  ASSERT_EQ(distributionJs["Width"].get<std::string>(), "Conditional 1");
+
+  // Testing correct shape
   distributionJs["Width"] = 0.7;
   ASSERT_NO_THROW(d->setConfiguration(distributionJs));
   ASSERT_NO_THROW(d->updateDistribution());
+
+  // Testing get configuration method
+  d->getConfiguration(distributionJs);
+  ASSERT_EQ(distributionJs["Type"].get<std::string>(), "univariate/laplace");
+  ASSERT_EQ(distributionJs["Width"].get<double>(), 0.7);
+
+  // Testing get property pointer
+  ASSERT_TRUE(d->getPropertyPointer("Width") != NULL);
+  ASSERT_ANY_THROW(d->getPropertyPointer("Undefined")); // Distribution not recognized
 
   // Testing incorrect width
   d->_width = -0.5;
@@ -1212,6 +1388,8 @@ namespace
   // Testing correct width
   d->_width = 0.7;
   ASSERT_NO_THROW(d->updateDistribution());
+
+  /////////////////////////////////////////////////
 
   // Distributions generated with https://keisan.casio.com/exec/system/1180573226
 
@@ -1446,25 +1624,52 @@ namespace
   distributionJs["Type"] = "Univariate/LogNormal";
   ASSERT_NO_THROW(d = dynamic_cast<korali::distribution::univariate::LogNormal *>(Module::getModule(distributionJs, &e)));
 
+  //////////////////////////////////////////////////
+
   // Getting module defaults
   distributionJs["Name"] = "Test";
   ASSERT_NO_THROW(d->applyModuleDefaults(distributionJs));
+  ASSERT_NO_THROW(d->applyVariableDefaults());
   auto baseJs = distributionJs;
 
-  // Testing correct instantiation
+  // Testing conditional variables
   distributionJs = baseJs;
+  distributionJs["Mu"] = "Conditional 1";
+  distributionJs["Sigma"] = "Conditional 2";
+  ASSERT_NO_THROW(d->setConfiguration(distributionJs));
+
+  // Testing get configuration method
+  d->getConfiguration(distributionJs);
+  ASSERT_EQ(distributionJs["Type"].get<std::string>(), "univariate/logNormal");
+  ASSERT_EQ(distributionJs["Mu"].get<std::string>(), "Conditional 1");
+  ASSERT_EQ(distributionJs["Sigma"].get<std::string>(), "Conditional 2");
+
+  // Testing correct shape
   distributionJs["Mu"] = 0.0;
   distributionJs["Sigma"] = 1.0;
   ASSERT_NO_THROW(d->setConfiguration(distributionJs));
   ASSERT_NO_THROW(d->updateDistribution());
 
-  // Testing incorrect sigma
+  // Testing get configuration method
+  d->getConfiguration(distributionJs);
+  ASSERT_EQ(distributionJs["Type"].get<std::string>(), "univariate/logNormal");
+  ASSERT_EQ(distributionJs["Mu"].get<double>(), 0.0);
+  ASSERT_EQ(distributionJs["Sigma"].get<double>(), 1.0);
+
+  // Testing get property pointer
+  ASSERT_TRUE(d->getPropertyPointer("Mu") != NULL);
+  ASSERT_TRUE(d->getPropertyPointer("Sigma") != NULL);
+  ASSERT_ANY_THROW(d->getPropertyPointer("Undefined")); // Distribution not recognized
+
+  // Testing incorrect width
   d->_sigma = -0.5;
   ASSERT_ANY_THROW(d->updateDistribution());
 
-  // Testing correct sigma
+  // Testing correct width
   d->_sigma = 1.0;
   ASSERT_NO_THROW(d->updateDistribution());
+
+  /////////////////////////////////////////////////
 
   // Distributions generated with https://keisan.casio.com/exec/system/1180573226
 
@@ -1709,17 +1914,42 @@ namespace
   distributionJs["Type"] = "Univariate/Normal";
   ASSERT_NO_THROW(d = dynamic_cast<korali::distribution::univariate::Normal *>(Module::getModule(distributionJs, &e)));
 
+  //////////////////////////////////////////////////
+
   // Getting module defaults
   distributionJs["Name"] = "Test";
   ASSERT_NO_THROW(d->applyModuleDefaults(distributionJs));
+  ASSERT_NO_THROW(d->applyVariableDefaults());
   auto baseJs = distributionJs;
 
-  // Testing correct instantiation
+  // Testing conditional variables
   distributionJs = baseJs;
+  distributionJs["Mean"] = "Conditional 1";
+  distributionJs["Standard Deviation"] = "Conditional 2";
+  ASSERT_NO_THROW(d->setConfiguration(distributionJs));
+
+  // Testing get configuration method
+  d->getConfiguration(distributionJs);
+  ASSERT_EQ(distributionJs["Type"].get<std::string>(), "univariate/normal");
+  ASSERT_EQ(distributionJs["Mean"].get<std::string>(), "Conditional 1");
+  ASSERT_EQ(distributionJs["Standard Deviation"].get<std::string>(), "Conditional 2");
+
+  // Testing correct shape
   distributionJs["Mean"] = 0.0;
   distributionJs["Standard Deviation"] = 1.0;
   ASSERT_NO_THROW(d->setConfiguration(distributionJs));
   ASSERT_NO_THROW(d->updateDistribution());
+
+  // Testing get configuration method
+  d->getConfiguration(distributionJs);
+  ASSERT_EQ(distributionJs["Type"].get<std::string>(), "univariate/normal");
+  ASSERT_EQ(distributionJs["Mean"].get<double>(), 0.0);
+  ASSERT_EQ(distributionJs["Standard Deviation"].get<double>(), 1.0);
+
+  // Testing get property pointer
+  ASSERT_TRUE(d->getPropertyPointer("Mean") != NULL);
+  ASSERT_TRUE(d->getPropertyPointer("Standard Deviation") != NULL);
+  ASSERT_ANY_THROW(d->getPropertyPointer("Undefined")); // Distribution not recognized
 
   // Testing incorrect sigma
   d->_standardDeviation = -0.5;
@@ -1728,6 +1958,8 @@ namespace
   // Testing correct sigma
   d->_standardDeviation = 1.0;
   ASSERT_NO_THROW(d->updateDistribution());
+
+  /////////////////////////////////////////////////
 
   // Distributions generated with https://keisan.casio.com/exec/system/1180573226
 
@@ -1959,19 +2191,52 @@ namespace
   distributionJs["Type"] = "Univariate/TruncatedNormal";
   ASSERT_NO_THROW(d = dynamic_cast<korali::distribution::univariate::TruncatedNormal *>(Module::getModule(distributionJs, &e)));
 
+  //////////////////////////////////////////////////
+
   // Getting module defaults
   distributionJs["Name"] = "Test";
   ASSERT_NO_THROW(d->applyModuleDefaults(distributionJs));
+  ASSERT_NO_THROW(d->applyVariableDefaults());
   auto baseJs = distributionJs;
 
-  // Testing correct instantiation
+  // Testing conditional variables
   distributionJs = baseJs;
+  distributionJs["Mu"] = "Conditional 1";
+  distributionJs["Sigma"] = "Conditional 2";
+  distributionJs["Minimum"] = "Conditional 3";
+  distributionJs["Maximum"] = "Conditional 4";
+  ASSERT_NO_THROW(d->setConfiguration(distributionJs));
+
+  // Testing get configuration method
+  d->getConfiguration(distributionJs);
+  ASSERT_EQ(distributionJs["Type"].get<std::string>(), "univariate/truncatedNormal");
+  ASSERT_EQ(distributionJs["Mu"].get<std::string>(), "Conditional 1");
+  ASSERT_EQ(distributionJs["Sigma"].get<std::string>(), "Conditional 2");
+  ASSERT_EQ(distributionJs["Minimum"].get<std::string>(), "Conditional 3");
+  ASSERT_EQ(distributionJs["Maximum"].get<std::string>(), "Conditional 4");
+
+  // Testing correct shape
   distributionJs["Mu"] = 100.0;
   distributionJs["Sigma"] = 25.0;
   distributionJs["Minimum"] = 50.0;
   distributionJs["Maximum"] = 150.0;
   ASSERT_NO_THROW(d->setConfiguration(distributionJs));
   ASSERT_NO_THROW(d->updateDistribution());
+
+  // Testing get configuration method
+  d->getConfiguration(distributionJs);
+  ASSERT_EQ(distributionJs["Type"].get<std::string>(), "univariate/truncatedNormal");
+  ASSERT_EQ(distributionJs["Mu"].get<double>(), 100.0);
+  ASSERT_EQ(distributionJs["Sigma"].get<double>(), 25.0);
+  ASSERT_EQ(distributionJs["Minimum"].get<double>(), 50.0);
+  ASSERT_EQ(distributionJs["Maximum"].get<double>(), 150.0);
+
+  // Testing get property pointer
+  ASSERT_TRUE(d->getPropertyPointer("Mu") != NULL);
+  ASSERT_TRUE(d->getPropertyPointer("Sigma") != NULL);
+  ASSERT_TRUE(d->getPropertyPointer("Minimum") != NULL);
+  ASSERT_TRUE(d->getPropertyPointer("Maximum") != NULL);
+  ASSERT_ANY_THROW(d->getPropertyPointer("Undefined")); // Distribution not recognized
 
   // Testing incorrect sigma
   d->_sigma = -25.0;
@@ -1988,6 +2253,8 @@ namespace
   // Testing correct minimum/maximum
   d->_minimum = 50.0;
   ASSERT_NO_THROW(d->updateDistribution());
+
+  /////////////////////////////////////////////////
 
   // Distributions generated with https://keisan.casio.com/exec/system/1180573226
 
@@ -2042,20 +2309,44 @@ namespace
   distributionJs["Type"] = "Univariate/Uniform";
   ASSERT_NO_THROW(d = dynamic_cast<korali::distribution::univariate::Uniform *>(Module::getModule(distributionJs, &e)));
 
+  //////////////////////////////////////////////////
+
   // Getting module defaults
   distributionJs["Name"] = "Test";
   ASSERT_NO_THROW(d->applyModuleDefaults(distributionJs));
+  ASSERT_NO_THROW(d->applyVariableDefaults());
   auto baseJs = distributionJs;
 
-  // Testing correct instantiation
+  // Testing conditional variables
   distributionJs = baseJs;
+  distributionJs["Minimum"] = "Conditional 1";
+  distributionJs["Maximum"] = "Conditional 2";
+  ASSERT_NO_THROW(d->setConfiguration(distributionJs));
+
+  // Testing get configuration method
+  d->getConfiguration(distributionJs);
+  ASSERT_EQ(distributionJs["Type"].get<std::string>(), "univariate/uniform");
+  ASSERT_EQ(distributionJs["Minimum"].get<std::string>(), "Conditional 1");
+  ASSERT_EQ(distributionJs["Maximum"].get<std::string>(), "Conditional 2");
+
+  // Testing correct shape
   distributionJs["Minimum"] = 2.0;
   distributionJs["Maximum"] = 8.0;
   ASSERT_NO_THROW(d->setConfiguration(distributionJs));
   ASSERT_NO_THROW(d->updateDistribution());
 
-  // Testing incorrect minimum/maximum
+  // Testing get configuration method
+  d->getConfiguration(distributionJs);
+  ASSERT_EQ(distributionJs["Type"].get<std::string>(), "univariate/uniform");
+  ASSERT_EQ(distributionJs["Minimum"].get<double>(), 2.0);
+  ASSERT_EQ(distributionJs["Maximum"].get<double>(), 8.0);
 
+  // Testing get property pointer
+  ASSERT_TRUE(d->getPropertyPointer("Minimum") != NULL);
+  ASSERT_TRUE(d->getPropertyPointer("Maximum") != NULL);
+  ASSERT_ANY_THROW(d->getPropertyPointer("Undefined")); // Distribution not recognized
+
+  // Testing incorrect minimum/maximum
   d->_minimum = 16.0;
   ASSERT_NO_THROW(d->updateDistribution());
   ASSERT_ANY_THROW(d->getRandomNumber());
@@ -2064,6 +2355,8 @@ namespace
   d->_minimum = 2.0;
   ASSERT_NO_THROW(d->updateDistribution());
   ASSERT_NO_THROW(d->getRandomNumber());
+
+  /////////////////////////////////////////////////
 
   // Distributions generated with https://keisan.casio.com/exec/system/1180573226
 
@@ -2300,17 +2593,42 @@ namespace
    distributionJs["Type"] = "Univariate/Weibull";
    ASSERT_NO_THROW(d = dynamic_cast<korali::distribution::univariate::Weibull *>(Module::getModule(distributionJs, &e)));
 
+   //////////////////////////////////////////////////
+
    // Getting module defaults
    distributionJs["Name"] = "Test";
    ASSERT_NO_THROW(d->applyModuleDefaults(distributionJs));
+   ASSERT_NO_THROW(d->applyVariableDefaults());
    auto baseJs = distributionJs;
 
-   // Testing correct shape
+   // Testing conditional variables
    distributionJs = baseJs;
+   distributionJs["Shape"] = "Conditional 1";
+   distributionJs["Scale"] = "Conditional 2";
+   ASSERT_NO_THROW(d->setConfiguration(distributionJs));
+
+   // Testing get configuration method
+   d->getConfiguration(distributionJs);
+   ASSERT_EQ(distributionJs["Type"].get<std::string>(), "univariate/weibull");
+   ASSERT_EQ(distributionJs["Shape"].get<std::string>(), "Conditional 1");
+   ASSERT_EQ(distributionJs["Scale"].get<std::string>(), "Conditional 2");
+
+   // Testing correct shape
    distributionJs["Shape"] = 0.5;
    distributionJs["Scale"] = 0.5;
    ASSERT_NO_THROW(d->setConfiguration(distributionJs));
    ASSERT_NO_THROW(d->updateDistribution());
+
+   // Testing get configuration method
+   d->getConfiguration(distributionJs);
+   ASSERT_EQ(distributionJs["Type"].get<std::string>(), "univariate/weibull");
+   ASSERT_EQ(distributionJs["Shape"].get<double>(), 0.5);
+   ASSERT_EQ(distributionJs["Scale"].get<double>(), 0.5);
+
+   // Testing get property pointer
+   ASSERT_TRUE(d->getPropertyPointer("Shape") != NULL);
+   ASSERT_TRUE(d->getPropertyPointer("Scale") != NULL);
+   ASSERT_ANY_THROW(d->getPropertyPointer("Undefined")); // Distribution not recognized
 
    // Testing incorrect shape
    d->_shape = -0.5;
@@ -2326,6 +2644,9 @@ namespace
    d->_shape = 2.0;
    d->_scale = 1.0;
    ASSERT_NO_THROW(d->updateDistribution());
+
+
+   /////////////////////////////////////////////////
 
    // Distributions generated with https://keisan.casio.com/exec/system/1180573226
 
@@ -2465,9 +2786,12 @@ namespace
    distributionJs["Type"] = "Multivariate/Normal";
    ASSERT_NO_THROW(d = dynamic_cast<korali::distribution::multivariate::Normal *>(Module::getModule(distributionJs, &e)));
 
+   //////////////////////////////////////////////////
+
    // Getting module defaults
    distributionJs["Name"] = "Test";
    ASSERT_NO_THROW(d->applyModuleDefaults(distributionJs));
+   ASSERT_NO_THROW(d->applyVariableDefaults());
    auto baseJs = distributionJs;
 
    // Testing correct shape
@@ -2477,6 +2801,14 @@ namespace
    ASSERT_NO_THROW(d->setConfiguration(distributionJs));
    ASSERT_NO_THROW(d->updateDistribution());
 
+   // Testing get configuration method
+   d->getConfiguration(distributionJs);
+   ASSERT_EQ(distributionJs["Type"].get<std::string>(), "multivariate/normal");
+   ASSERT_TRUE(distributionJs["Mean Vector"].get<std::vector<double>>() == std::vector<double>({ 0.5, 0.5, 0.5, 0.5 }));
+   ASSERT_TRUE(distributionJs["Sigma"].get<std::vector<double>>() == std::vector<double>({ 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5 }));
+
+   /////////////////////////////////////////////////
+
    // Distributions generated with https://keisan.casio.com/exec/system/1180573226
 
    // Testing correct execution
@@ -2484,6 +2816,9 @@ namespace
    double res[4];
    ASSERT_NO_THROW(d->getDensity( x, res, 4));
    ASSERT_ANY_THROW(d->getDensity( x, res, 6));
+
+   ASSERT_NO_THROW(d->getLogDensity( x, res, 4));
+   ASSERT_ANY_THROW(d->getLogDensity( x, res, 6));
 
    // Test rng with correct and incorrect sigma vector sizes
    d->_sigma = std::vector<double>({ 0.5, 0.5, 0.5 });

@@ -52,11 +52,11 @@ void Normal::setConfiguration(knlohmann::json& js)
  if (isDefined(js, "Results"))  eraseValue(js, "Results");
 
   _hasConditionalVariables = false; 
- if(js["Mean"].is_number()) _mean = js["Mean"];
+ if(js["Mean"].is_number()) {_mean = js["Mean"]; _meanConditional = ""; } 
  if(js["Mean"].is_string()) { _hasConditionalVariables = true; _meanConditional = js["Mean"]; } 
  eraseValue(js, "Mean");
 
- if(js["Standard Deviation"].is_number()) _standardDeviation = js["Standard Deviation"];
+ if(js["Standard Deviation"].is_number()) {_standardDeviation = js["Standard Deviation"]; _standardDeviationConditional = ""; } 
  if(js["Standard Deviation"].is_string()) { _hasConditionalVariables = true; _standardDeviationConditional = js["Standard Deviation"]; } 
  eraseValue(js, "Standard Deviation");
 

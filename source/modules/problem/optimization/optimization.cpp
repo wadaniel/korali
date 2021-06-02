@@ -1,0 +1,221 @@
+#include "modules/problem/optimization/optimization.hpp"
+#include "sample/sample.hpp"
+
+namespace korali
+{
+namespace problem
+{
+
+
+void Optimization::initialize()
+{
+  if (_k->_variables.size() == 0) KORALI_LOG_ERROR("Optimization Evaluation problems require at least one variable.\n");
+
+  /* check _granularity for discrete variables */
+  for (size_t i = 0; i < _k->_variables.size(); i++)
+  {
+    if (_k->_variables[i]->_granularity < 0.0) KORALI_LOG_ERROR("Negative granularity for variable \'%s\'.\n", _k->_variables[i]->_name.c_str());
+    if (_k->_variables[i]->_granularity > 0.0) _hasDiscreteVariables = true;
+  }
+}
+
+void Optimization::evaluateConstraints(Sample &sample)
+{
+  for (size_t i = 0; i < _constraints.size(); i++)
+  {
+    sample.run(_constraints[i]);
+
+    auto evaluation = KORALI_GET(double, sample, "F(x)");
+
+    // If constraint is not a finite number, constraint is set to +Infinity
+    if (std::isnan(evaluation))
+      sample["Constraint Evaluations"][i] = Inf;
+    else
+      sample["Constraint Evaluations"][i] = evaluation;
+  }
+}
+
+void Optimization::evaluate(Sample &sample)
+{
+  sample.run(_objectiveFunction);
+
+  auto evaluation = KORALI_GET(double, sample, "F(x)");
+
+  // If result is not a finite number, objective function evaluates to -Infinity
+  if (std::isnan(evaluation))
+    sample["F(x)"] = -Inf;
+}
+
+void Optimization::evaluateMultiple(Sample &sample)
+{
+  sample.run(_objectiveFunction);
+
+  auto evaluation = KORALI_GET(std::vector<double>, sample, "F(x)");
+
+  // If result is not a finite number, objective function evaluates to -Infinity
+  for (size_t i = 0; i < evaluation.size(); ++i)
+    if (std::isnan(evaluation[i]))
+      sample["F(x)"][i] = -Inf;
+}
+
+void Optimization::evaluateWithGradients(Sample &sample)
+{
+  sample.run(_objectiveFunction);
+
+  auto evaluation = KORALI_GET(double, sample, "F(x)");
+
+  // If result is not a finite number, objective function evaluates to -Infinity
+  if (std::isnan(evaluation))
+    sample["F(x)"] = -Inf;
+  else
+    sample["F(x)"] = evaluation;
+
+  auto gradient = KORALI_GET(std::vector<double>, sample, "Gradient");
+
+  if (gradient.size() != _k->_variables.size())
+    KORALI_LOG_ERROR("Size of sample's gradient evaluations vector (%lu) is different from the number of problem variables defined (%lu).\n", gradient.size(), _k->_variables.size());
+
+  // If result is not a finite number, gradient is set to zero
+  if (std::isnan(evaluation) || isanynan(gradient))
+    for (size_t i = 0; i < sample["Gradient"].size(); i++) sample["Gradient"][i] = 0.;
+  else
+    for (size_t i = 0; i < sample["Gradient"].size(); i++) sample["Gradient"][i] = gradient[i];
+}
+
+void Optimization::setConfiguration(knlohmann::json& js) 
+{
+ if (isDefined(js, "Results"))  eraseValue(js, "Results");
+
+ if (isDefined(js, "Has Discrete Variables"))
+ {
+ try { _hasDiscreteVariables = js["Has Discrete Variables"].get<int>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ optimization ] \n + Key:    ['Has Discrete Variables']\n%s", e.what()); } 
+   eraseValue(js, "Has Discrete Variables");
+ }
+
+ if (isDefined(js, "Num Objectives"))
+ {
+ try { _numObjectives = js["Num Objectives"].get<size_t>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ optimization ] \n + Key:    ['Num Objectives']\n%s", e.what()); } 
+   eraseValue(js, "Num Objectives");
+ }
+  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Num Objectives'] required by optimization.\n"); 
+
+ if (isDefined(js, "Objective Function"))
+ {
+ try { _objectiveFunction = js["Objective Function"].get<std::uint64_t>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ optimization ] \n + Key:    ['Objective Function']\n%s", e.what()); } 
+   eraseValue(js, "Objective Function");
+ }
+  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Objective Function'] required by optimization.\n"); 
+
+ if (isDefined(js, "Constraints"))
+ {
+ try { _constraints = js["Constraints"].get<std::vector<std::uint64_t>>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ optimization ] \n + Key:    ['Constraints']\n%s", e.what()); } 
+   eraseValue(js, "Constraints");
+ }
+  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Constraints'] required by optimization.\n"); 
+
+ if (isDefined(_k->_js.getJson(), "Variables"))
+ for (size_t i = 0; i < _k->_js["Variables"].size(); i++) { 
+ if (isDefined(_k->_js["Variables"][i], "Granularity"))
+ {
+ try { _k->_variables[i]->_granularity = _k->_js["Variables"][i]["Granularity"].get<double>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ optimization ] \n + Key:    ['Granularity']\n%s", e.what()); } 
+   eraseValue(_k->_js["Variables"][i], "Granularity");
+ }
+  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Granularity'] required by optimization.\n"); 
+
+ } 
+  bool detectedCompatibleSolver = false; 
+  std::string solverName = toLower(_k->_js["Solver"]["Type"]); 
+  std::string candidateSolverName; 
+  solverName.erase(remove_if(solverName.begin(), solverName.end(), isspace), solverName.end()); 
+   candidateSolverName = toLower("Optimizer"); 
+   candidateSolverName.erase(remove_if(candidateSolverName.begin(), candidateSolverName.end(), isspace), candidateSolverName.end()); 
+   if (solverName.rfind(candidateSolverName, 0) == 0) detectedCompatibleSolver = true;
+  if (detectedCompatibleSolver == false) KORALI_LOG_ERROR(" + Specified solver (%s) is not compatible with problem of type: optimization\n",  _k->_js["Solver"]["Type"].dump(1).c_str()); 
+
+ Problem::setConfiguration(js);
+ _type = "optimization";
+ if(isDefined(js, "Type")) eraseValue(js, "Type");
+ if(isEmpty(js) == false) KORALI_LOG_ERROR(" + Unrecognized settings for Korali module: optimization: \n%s\n", js.dump(2).c_str());
+} 
+
+void Optimization::getConfiguration(knlohmann::json& js) 
+{
+
+ js["Type"] = _type;
+   js["Num Objectives"] = _numObjectives;
+   js["Objective Function"] = _objectiveFunction;
+   js["Constraints"] = _constraints;
+   js["Has Discrete Variables"] = _hasDiscreteVariables;
+ for (size_t i = 0; i <  _k->_variables.size(); i++) { 
+   _k->_js["Variables"][i]["Granularity"] = _k->_variables[i]->_granularity;
+ } 
+ Problem::getConfiguration(js);
+} 
+
+void Optimization::applyModuleDefaults(knlohmann::json& js) 
+{
+
+ std::string defaultString = "{\"Num Objectives\": 1, \"Has Discrete Variables\": false, \"Constraints\": []}";
+ knlohmann::json defaultJs = knlohmann::json::parse(defaultString);
+ mergeJson(js, defaultJs); 
+ Problem::applyModuleDefaults(js);
+} 
+
+void Optimization::applyVariableDefaults() 
+{
+
+ std::string defaultString = "{\"Granularity\": 0.0}";
+ knlohmann::json defaultJs = knlohmann::json::parse(defaultString);
+ if (isDefined(_k->_js.getJson(), "Variables"))
+  for (size_t i = 0; i < _k->_js["Variables"].size(); i++) 
+   mergeJson(_k->_js["Variables"][i], defaultJs); 
+ Problem::applyVariableDefaults();
+} 
+
+bool Optimization::runOperation(std::string operation, korali::Sample& sample)
+{
+ bool operationDetected = false;
+
+ if (operation == "Evaluate")
+ {
+  evaluate(sample);
+  return true;
+ }
+
+ if (operation == "Evaluate Multiple")
+ {
+  evaluateMultiple(sample);
+  return true;
+ }
+
+ if (operation == "Evaluate With Gradients")
+ {
+  evaluateWithGradients(sample);
+  return true;
+ }
+
+ if (operation == "Evaluate Constraints")
+ {
+  evaluateConstraints(sample);
+  return true;
+ }
+
+ operationDetected = operationDetected || Problem::runOperation(operation, sample);
+ if (operationDetected == false) KORALI_LOG_ERROR(" + Operation %s not recognized for problem Optimization.\n", operation.c_str());
+ return operationDetected;
+}
+
+
+
+} //problem
+} //korali

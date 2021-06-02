@@ -51,19 +51,12 @@ void Engine::initialize()
   
   // Check configuration correctness
   auto js = _js.getJson();
-  try
-  {
-    if (isDefined(js, "Conduit")) eraseValue(js, "Conduit");
-    if (isDefined(js, "Dry Run")) eraseValue(js, "Dry Run");
-    if (isDefined(js, "Conduit", "Type")) eraseValue(js, "Conduit", "Type");
-    if (isDefined(js, "Profiling", "Detail")) eraseValue(js, "Profiling", "Detail");
-    if (isDefined(js, "Profiling", "Path")) eraseValue(js, "Profiling", "Path");
-    if (isDefined(js, "Profiling", "Frequency")) eraseValue(js, "Profiling", "Frequency");
-  }
-  catch (const std::exception &e)
-  {
-    KORALI_LOG_ERROR("[Korali] Error parsing Korali Engine's parameters. Reason:\n%s", e.what());
-  }
+  if (isDefined(js, "Conduit")) eraseValue(js, "Conduit");
+  if (isDefined(js, "Dry Run")) eraseValue(js, "Dry Run");
+  if (isDefined(js, "Conduit", "Type")) eraseValue(js, "Conduit", "Type");
+  if (isDefined(js, "Profiling", "Detail")) eraseValue(js, "Profiling", "Detail");
+  if (isDefined(js, "Profiling", "Path")) eraseValue(js, "Profiling", "Path");
+  if (isDefined(js, "Profiling", "Frequency")) eraseValue(js, "Profiling", "Frequency");
 
   if (isEmpty(js) == false) KORALI_LOG_ERROR("Unrecognized settings for Korali's Engine: \n%s\n", js.dump(2).c_str());
 }

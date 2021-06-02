@@ -6,7 +6,7 @@ r = call(["python3", "run-mcmc.py"])
 if r!=0:
   exit(r)
 
-r = main( path='_korali_result_mcmc', check=False, test=True, output="", plotAll=False)
+r = main( path='_korali_result_mcmc', test=True, output="", plotAll=False)
 if r!=0: exit(r)
 
 exit(0)

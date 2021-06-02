@@ -1,7 +1,7 @@
 e = find_program('./.test-run.py', required: true)
 test('hierarchical.bayesian.extended', e,
-      timeout : 1000,
-      suite: 'hierarchical.bayesian',
+      timeout : 2000,
+      suite: 'regression',
       workdir: meson.current_source_dir(),
       depends: python_extension,
       env: nomalloc

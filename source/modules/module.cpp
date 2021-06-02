@@ -7,6 +7,7 @@
 #include "distribution/multivariate/normal/normal.hpp"
 #include "distribution/specific/multinomial/multinomial.hpp"
 #include "distribution/specific/specific.hpp"
+#include "distribution/univariate/beta/beta.hpp"
 #include "distribution/univariate/cauchy/cauchy.hpp"
 #include "distribution/univariate/exponential/exponential.hpp"
 #include "distribution/univariate/gamma/gamma.hpp"
@@ -103,6 +104,7 @@ Module *Module::getModule(knlohmann::json &js, Experiment *e)
   if (iCompare(moduleType, "Sequential")) module = new korali::conduit::Sequential();
   if (iCompare(moduleType, "Multivariate/Normal")) module = new korali::distribution::multivariate::Normal();
   if (iCompare(moduleType, "Specific/Multinomial")) module = new korali::distribution::specific::Multinomial();
+  if (iCompare(moduleType, "Univariate/Beta")) module = new korali::distribution::univariate::Beta();
   if (iCompare(moduleType, "Univariate/Cauchy")) module = new korali::distribution::univariate::Cauchy();
   if (iCompare(moduleType, "Univariate/Exponential")) module = new korali::distribution::univariate::Exponential();
   if (iCompare(moduleType, "Univariate/Gamma")) module = new korali::distribution::univariate::Gamma();

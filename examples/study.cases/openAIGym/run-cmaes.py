@@ -19,6 +19,11 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument('--env', help='Specifies which environment to run.', required=True)
 
+populationSize = 8
+
+previousStateList = []
+currentStateList = []
+
 def agent(s, env):
  
  stateVariableCount = env.observation_space.shape[0]
@@ -28,17 +33,35 @@ def agent(s, env):
  X = np.array(s["Parameters"])
  X = X.reshape((stateVariableCount, actionVariableCount))
  
+ # Data Whitening
+ global previousStateList
+ global currentStateList
+ if len(previousStateList) == 0:
+     mu = np.zeros(stateVariableCount)
+     Sigma = np.ones(stateVariableCount)
+     SigmaInv = np.diag(1./Sigma)
+ else:
+     stateArr = np.array([item for sublist in previousStateList for item in sublist])
+     mu = np.mean(stateArr, axis=0)
+     Sigma = np.std(stateArr, axis=0)
+     SigmaInv = np.diag(1./Sigma)
+
+ # Init rollout
  state = env.reset()
  step = 0
  done = False
  
+ states = [np.array(state)]
+
  # Storage for cumulative reward
  cumulativeReward = 0.0
  overSteps = 0
  while not done and step < 1000:
   # Performing the action
-  action = np.dot(state, X)
+  M = np.dot(SigmaInv,X)
+  action = np.dot(state-mu, M)
   state, reward, done, _ = env.step(action)
+  states.append(np.array(state))
   
   # Update cumulative reward
   cumulativeReward = cumulativeReward + reward 
@@ -46,7 +69,13 @@ def agent(s, env):
   # Advancing step counter
   step = step + 1
  
-  s["F(x)"] = cumulativeReward
+ currentStateList.append(states)
+ # Reset state lists
+ if len(currentStateList) == populationSize:
+  previousStateList = currentStateList
+  currentStateList = []
+
+ s["F(x)"] = cumulativeReward
 
 if __name__ == '__main__':
   
@@ -95,16 +124,17 @@ if __name__ == '__main__':
 
   # Configuring CMA-ES parameters
   e["Solver"]["Type"] = "Optimizer/CMAES"
-  e["Solver"]["Population Size"] = 8
-  e["Solver"]["Mu Value"] = 8
+  e["Solver"]["Population Size"] = populationSize
+  e["Solver"]["Mu Value"] = populationSize
   e["Solver"]["Mu Type"] = "Proportional"
+  e["Solver"]["Damp Factor"] = 5.0
   e["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-32
-  e["Solver"]["Termination Criteria"]["Max Generations"] = 1000
+  e["Solver"]["Termination Criteria"]["Max Generations"] = 10
 
   # Configuring results path
   e["File Output"]["Enabled"] = True
   e["File Output"]["Path"] = resultFolder
-  e["File Output"]["Frequency"] = 10
+  e["File Output"]["Frequency"] = 2
 
   # Running Korali
   k.run(e)

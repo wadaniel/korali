@@ -181,16 +181,6 @@ namespace
   ASSERT_ANY_THROW(c.initMuWeights(muSize));
  }
 
- TEST(fCMAES, failNoPossibleUpdate)
- {
-  fCMAES c(N, popSize, muSize);
-  ASSERT_NO_THROW(c.setSeed(seed));
-
-  std::vector<float> M(N*N, 0.0f);
-  c.updateEigensystem(M);
-  ASSERT_EQ(c._noUpdatePossible, true);
- }
-
  TEST(fCMAES, failNonFiniteValue)
  {
   fCMAES c(N, popSize, muSize);

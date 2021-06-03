@@ -1,13 +1,13 @@
 pythonEmbedDep = dependency('python3-embed', required: false)
 
-fcmaes_tester = executable('fcmaes_tester',
-  files(['fcmaes_tester.cpp']),
+fastOpt_tester = executable('fastOpt_tester',
+  files(['fastOpt_tester.cpp']),
   include_directories: korali_include,
   dependencies: [ gtest_main_dep, korali_deps, pythonEmbedDep ],
   link_with: [ python_extension ],
   )
   
-test('optimizer.fast.cmaes', fcmaes_tester,
+test('optimizer.fast', fastOpt_tester,
   protocol: 'gtest',
   suite: 'statistical',
 )

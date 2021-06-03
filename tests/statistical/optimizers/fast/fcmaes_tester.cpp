@@ -19,6 +19,7 @@ namespace
  const size_t muSize = 32;
  const size_t seed = 1337;
  const float targetPrecision = 0.0001f;
+ const size_t maxGenerations = 30;
 
  using namespace korali;
 
@@ -27,7 +28,7 @@ namespace
   fCMAES c(N, popSize, muSize);
   ASSERT_NO_THROW(c.setSeed(seed));
 
-  c._maxGenerations = 50;
+  c._maxGenerations = maxGenerations;
   for (size_t i = 0; i < N; i++)
   {
    c._lowerBounds[i] = -10.0f;
@@ -63,7 +64,7 @@ namespace
   fCMAES c(N, popSize, muSize);
   ASSERT_NO_THROW(c.setSeed(seed));
 
-  c._maxGenerations = 50;
+  c._maxGenerations = maxGenerations;
   c._isDiagonal = 1;
   c._isSigmaBounded = 1;
 
@@ -102,7 +103,7 @@ namespace
   fCMAES c(N, popSize, muSize);
   ASSERT_NO_THROW(c.setSeed(seed));
 
-  c._maxGenerations = 50;
+  c._maxGenerations = maxGenerations;
   c._muType == "Equal";
 
   for (size_t i = 0; i < N; i++)
@@ -140,7 +141,7 @@ namespace
   fCMAES c(N, popSize, muSize);
   ASSERT_NO_THROW(c.setSeed(seed));
 
-  c._maxGenerations = 50;
+  c._maxGenerations = maxGenerations;
   c._muType == "Logarithmic";
 
   for (size_t i = 0; i < N; i++)

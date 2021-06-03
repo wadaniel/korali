@@ -423,12 +423,11 @@ void fCMAES::updateEigensystem(std::vector<float> &M)
 
   /* find largest and smallest eigenvalue, they are supposed to be sorted anyway */
   float minCovEVal = *std::min_element(std::begin(_auxiliarAxisLengths), std::end(_auxiliarAxisLengths));
-  if (minCovEVal <= 0.0)
+  if (minCovEVal <= 0.000000000001)
   {
     fprintf(stderr, "Min Eigenvalue smaller or equal 0.0 (%+6.3e) after Eigen decomp (no update possible).\n", minCovEVal);
     _noUpdatePossible = true;
     _isFailFlag = true;
-    return;
   }
 
   for (size_t d = 0; d < _nVars; ++d)
@@ -445,8 +444,9 @@ void fCMAES::updateEigensystem(std::vector<float> &M)
         fprintf(stderr, "Non finite value detected in B (no update possible).\n");
         _isFailFlag = true;
       }
-    if (_isFailFlag == true) return;
   }
+
+  if (_isFailFlag == true) return;
 
   /* write back */
   _minimumCovarianceEigenvalue = minCovEVal;

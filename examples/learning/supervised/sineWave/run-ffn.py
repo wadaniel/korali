@@ -15,6 +15,11 @@ parser.add_argument(
     default='OneDNN',
     required=False)
 parser.add_argument(
+    '--maxGenerations',
+    help='Maximum Number of generations to run',
+    default=10,
+    required=False)    
+parser.add_argument(
     '--optimizer',
     help='Optimizer to use for NN parameter updates',
     default='Adam',
@@ -45,6 +50,9 @@ parser.add_argument(
     default=False,
     required=False)
 args = parser.parse_args()
+
+print("Running FNN solver with arguments:")
+print(args)
 
 scaling = 5.0
 np.random.seed(0xC0FFEE)
@@ -101,7 +109,7 @@ e["Random Seed"] = 0xC0FFEE
 
 ### Training the neural network
 
-e["Solver"]["Termination Criteria"]["Max Generations"] = 20
+e["Solver"]["Termination Criteria"]["Max Generations"] = int(args.maxGenerations)
 k.run(e)
 
 ### Obtaining inferred results from the NN and comparing them to the actual solution

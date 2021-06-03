@@ -18,6 +18,16 @@ parser.add_argument(
     default='Adam',
     required=False)
 parser.add_argument(
+    '--maxGenerations',
+     help='Maximum Number of generations to run',
+     default=10,
+     required=False)   
+parser.add_argument(
+    '--rnnType',
+    help='Optimizer to use for NN parameter updates',
+    default='GRU',
+    required=False)
+parser.add_argument(
     '--learningRate',
     help='Learning rate for the selected optimizer',
     default=0.001,
@@ -43,6 +53,9 @@ parser.add_argument(
     default=False,
     required=False)
 args = parser.parse_args()
+
+print("Running RNN solver with arguments:")
+print(args)
 
 # Setting random seed for reproducibility
 np.random.seed(0xC0FFEE)
@@ -100,7 +113,7 @@ e["Solver"]["Learning Rate"] = float(args.learningRate)
 e["Solver"]["Neural Network"]["Engine"] = "OneDNN"
 e["Solver"]["Neural Network"]["Optimizer"] = args.optimizer
 
-e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Recurrent/GRU"
+e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Recurrent/" + args.rnnType
 e["Solver"]["Neural Network"]["Hidden Layers"][0]["Depth"] = 1
 e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 32
 

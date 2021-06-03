@@ -19,7 +19,7 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument('--env', help='Specifies which environment to run.', required=True)
 
-populationSize = 8
+populationSize = 16
 
 previousStateList = []
 currentStateList = []
@@ -82,7 +82,7 @@ if __name__ == '__main__':
   args = parser.parse_args()
 
   envName = args.env
-  resultFolder = '_result_cmaes_' + envName + '_proportional_2/'
+  resultFolder = '_result_cmaes_' + envName + '_proportional_1/'
  
   # Environment specifics
   env = gym.make(envName)
@@ -120,21 +120,21 @@ if __name__ == '__main__':
       e["Variables"][i]["Name"] = "X" + str(i)
       e["Variables"][i]["Lower Bound"] = -5.0
       e["Variables"][i]["Upper Bound"] = +5.0
-      e["Variables"][i]["Initial Standard Deviation"] = 1e-2
+      e["Variables"][i]["Initial Standard Deviation"] = 2e-2
 
   # Configuring CMA-ES parameters
   e["Solver"]["Type"] = "Optimizer/CMAES"
   e["Solver"]["Population Size"] = populationSize
   e["Solver"]["Mu Value"] = populationSize
-  e["Solver"]["Mu Type"] = "Proportional"
-  e["Solver"]["Damp Factor"] = 5.0
+  #e["Solver"]["Mu Type"] = "Proportional"
+  #e["Solver"]["Damp Factor"] = 50.0
   e["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-32
-  e["Solver"]["Termination Criteria"]["Max Generations"] = 10
+  e["Solver"]["Termination Criteria"]["Max Generations"] = 1000
 
   # Configuring results path
   e["File Output"]["Enabled"] = True
   e["File Output"]["Path"] = resultFolder
-  e["File Output"]["Frequency"] = 2
+  e["File Output"]["Frequency"] = 10
 
   # Running Korali
   k.run(e)

@@ -659,7 +659,7 @@ void @className::updateDistribution()
     else
       for (size_t e = 0; e < _variableCount; ++e) sum += _covarianceEigenvectorMatrix[d * _variableCount + e] * _auxiliarBDZMatrix[e];
 
-    _conjugateEvolutionPath[d] = (1. - _sigmaCumulationFactor) * _conjugateEvolutionPath[d] + sqrt(_sigmaCumulationFactor * (2. - _sigmaCumulationFactor) * _effectiveMu) * sum;
+    _conjugateEvolutionPath[d] = (1. - _sigmaCumulationFactor) * _conjugateEvolutionPath[d] + std::sqrt(_sigmaCumulationFactor * (2. - _sigmaCumulationFactor) * _effectiveMu) * sum;
 
     /* calculate norm(ps)^2 */
     _conjugateEvolutionPathL2Norm += std::pow(_conjugateEvolutionPath[d], 2.0);
@@ -668,7 +668,7 @@ void @className::updateDistribution()
   /* calculate norm(ps) */
   _conjugateEvolutionPathL2Norm = std::sqrt(_conjugateEvolutionPathL2Norm);
 
-  int hsig = (1.4 + 2.0 / (_variableCount + 1) > _conjugateEvolutionPathL2Norm / sqrt(1. - pow(1. - _sigmaCumulationFactor, 2.0 * (1.0 + _k->_currentGeneration))) / _chiSquareNumber);
+  int hsig = (1.4 + 2.0 / (_variableCount + 1) > _conjugateEvolutionPathL2Norm / std::sqrt(1. - std::pow(1. - _sigmaCumulationFactor, 2.0 * (1.0 + _k->_currentGeneration))) / _chiSquareNumber);
 
   /* cumulation for covariance matrix (pc) using B*D*z~_variableCount(0,C) */
   for (size_t d = 0; d < _variableCount; ++d)
@@ -695,18 +695,16 @@ void @className::updateDistribution()
   // Calculating current Minimum and Maximum STD Devs
   for (size_t i = 0; i < _variableCount; ++i)
   {
-    _currentMinStandardDeviation = std::min(_currentMinStandardDeviation, _sigma * sqrt(_covarianceMatrix[i * _variableCount + i]));
-    _currentMaxStandardDeviation = std::max(_currentMaxStandardDeviation, _sigma * sqrt(_covarianceMatrix[i * _variableCount + i]));
+    _currentMinStandardDeviation = std::min(_currentMinStandardDeviation, _sigma * sts::sqrt(_covarianceMatrix[i * _variableCount + i]));
+    _currentMaxStandardDeviation = std::max(_currentMaxStandardDeviation, _sigma * std::sqrt(_covarianceMatrix[i * _variableCount + i]));
   }
 }
 
 void @className::adaptC(int hsig)
 {
   /* definitions for speeding up inner-most loop */
-  //double ccov1  = std::min(_covarianceMatrixLearningRate * (1./_muCovariance) * (_diagonalCovariance ? (_variableCount+1.5) / 3. : 1.), 1.); (orig, alternative)
-  //double ccovmu = std::min(_covarianceMatrixLearningRate * (1-1./_muCovariance) * (_diagonalCovariance ? (_variableCount+1.5) / 3. : 1.), 1.-ccov1); (orig, alternative)
   double ccov1 = 2.0 / (std::pow(_variableCount + 1.3, 2) + _effectiveMu);
-  double ccovmu = std::min(1.0 - ccov1, 2.0 * (_effectiveMu - 2 + 1 / _effectiveMu) / (std::pow(_variableCount + 2.0, 2) + _effectiveMu));
+  double ccovmu = std::min(1.0 - ccov1, 2.0 * (_effectiveMu - 2. + 1. / _effectiveMu) / (std::pow(_variableCount + 2.0, 2) + _effectiveMu));
   double sigmasquare = _sigma * _sigma;
 
   /* update covariance matrix */
@@ -751,7 +749,6 @@ void @className::updateSigma()
   /* standard update */
   else
   {
-    // _sigma *= exp(min(1.0, _sigmaCumulationFactor/_dampFactor*((_conjugateEvolutionPathL2Norm/_chiSquareNumber)-1.))); (alternative)
     _sigma *= exp(_sigmaCumulationFactor / _dampFactor * (_conjugateEvolutionPathL2Norm / _chiSquareNumber - 1.));
   }
 

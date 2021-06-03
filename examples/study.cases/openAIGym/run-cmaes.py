@@ -31,7 +31,7 @@ def agent(s, env):
  
  # Get policy
  X = np.array(s["Parameters"])
- X = X.reshape((stateVariableCount, actionVariableCount))
+ X = X.reshape((actionVariableCount, stateVariableCount))
  
  # Data Whitening
  global previousStateList
@@ -39,12 +39,12 @@ def agent(s, env):
  if len(previousStateList) == 0:
      mu = np.zeros(stateVariableCount)
      Sigma = np.ones(stateVariableCount)
-     SigmaInv = np.diag(1./Sigma)
+     SigmaInv = 1./Sigma
  else:
      stateArr = np.array([item for sublist in previousStateList for item in sublist])
      mu = np.mean(stateArr, axis=0)
      Sigma = np.std(stateArr, axis=0)
-     SigmaInv = np.diag(1./Sigma)
+     SigmaInv = 1./Sigma
 
  # Init rollout
  state = env.reset()
@@ -58,8 +58,9 @@ def agent(s, env):
  overSteps = 0
  while not done and step < 1000:
   # Performing the action
-  M = np.dot(SigmaInv,X)
-  action = np.dot(state-mu, M)
+  stateHat = state - mu
+  M = np.multiply(X,SigmaInv)
+  action = np.dot(M, stateHat)
   state, reward, done, _ = env.step(action)
   states.append(np.array(state))
   
@@ -126,7 +127,7 @@ if __name__ == '__main__':
   e["Solver"]["Type"] = "Optimizer/CMAES"
   e["Solver"]["Population Size"] = populationSize
   e["Solver"]["Mu Value"] = populationSize
-  #e["Solver"]["Mu Type"] = "Proportional"
+  e["Solver"]["Mu Type"] = "Proportional"
   #e["Solver"]["Damp Factor"] = 50.0
   e["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-32
   e["Solver"]["Termination Criteria"]["Max Generations"] = 1000

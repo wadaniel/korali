@@ -18,13 +18,15 @@ from AntWrapper import AntWrapper
 import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument('--env', help='Specifies which environment to run.', required=True)
-
-populationSize = 16
+parser.add_argument('--population', help='Population Size.', type=int, required=True)
+parser.add_argument('--diag', help='Diagonal Covariance Matrix adaption.', action='store_true')
+parser.add_argument('--mirror', help='Mirror Sampling.', action='store_true')
+parser.add_argument('--weight', help='Mu Weightning.', default="Logarithmic", type=str)
 
 previousStateList = []
 currentStateList = []
 
-def agent(s, env):
+def agent(s, env, mirror, populationSize):
  
  stateVariableCount = env.observation_space.shape[0]
  actionVariableCount = env.action_space.shape[0]
@@ -83,7 +85,12 @@ if __name__ == '__main__':
   args = parser.parse_args()
 
   envName = args.env
-  resultFolder = '_result_cmaes_' + envName + '_proportional_1/'
+  populationSize = args.population
+  diag = args.diag
+  muweight = args.weight
+  mirror = args.mirror
+
+  resultFolder = '_result_cmaes_{}_{}_diag{}_mu-{}_mirror{}/'.format(envName, populationSize, diag, muweight, mirror)
  
   # Environment specifics
   env = gym.make(envName)
@@ -112,7 +119,7 @@ if __name__ == '__main__':
 
   e["Random Seed"] = 0xC0FEE
   e["Problem"]["Type"] = "Optimization"
-  e["Problem"]["Objective Function"] = lambda s : agent(s, env)
+  e["Problem"]["Objective Function"] = lambda s : agent(s, env, mirror, populationSize)
 
   dim = stateVariableCount * actionVariableCount
 
@@ -127,8 +134,9 @@ if __name__ == '__main__':
   e["Solver"]["Type"] = "Optimizer/CMAES"
   e["Solver"]["Population Size"] = populationSize
   e["Solver"]["Mu Value"] = populationSize
-  e["Solver"]["Mu Type"] = "Proportional"
-  #e["Solver"]["Damp Factor"] = 50.0
+  e["Solver"]["Mu Type"] = muweight
+  e["Solver"]["Diagonal Covariance"] = diag
+  e["Solver"]["Mirrored Sampling"] = mirror
   e["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-32
   e["Solver"]["Termination Criteria"]["Max Generations"] = 1000
 

@@ -695,7 +695,7 @@ void @className::updateDistribution()
   // Calculating current Minimum and Maximum STD Devs
   for (size_t i = 0; i < _variableCount; ++i)
   {
-    _currentMinStandardDeviation = std::min(_currentMinStandardDeviation, _sigma * sts::sqrt(_covarianceMatrix[i * _variableCount + i]));
+    _currentMinStandardDeviation = std::min(_currentMinStandardDeviation, _sigma * std::sqrt(_covarianceMatrix[i * _variableCount + i]));
     _currentMaxStandardDeviation = std::max(_currentMaxStandardDeviation, _sigma * std::sqrt(_covarianceMatrix[i * _variableCount + i]));
   }
 }

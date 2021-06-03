@@ -111,22 +111,22 @@ void fCMAES::reset()
     if (std::isfinite(_lowerBounds[i]) == false)
     {
       fprintf(stderr, "Lower Bound of variable \'%lu\' not defined.\n", i);
-      std::abort();
+      throw std::runtime_error("Bad Inputs for Optimizer.");
     }
     if (std::isfinite(_upperBounds[i]) == false)
     {
       fprintf(stderr, "Upper Bound of variable \'%lu\' not defined.\n", i);
-      std::abort();
+      throw std::runtime_error("Bad Inputs for Optimizer.");
     }
     if (std::isfinite(_initialMeans[i]) == false)
     {
       fprintf(stderr, "Initial mean of variable \'%lu\' not defined.\n", i);
-      std::abort();
+      throw std::runtime_error("Bad Inputs for Optimizer.");
     }
     if (std::isfinite(_initialStandardDeviations[i]) == false)
     {
       fprintf(stderr, "Initial StdDev of variable \'%lu\' not defined.\n", i);
-      std::abort();
+      throw std::runtime_error("Bad Inputs for Optimizer.");
     }
   }
 

@@ -2,6 +2,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <stdio.h>
+#include <stdexcept>
 
 namespace korali
 {
@@ -34,7 +35,7 @@ void fAdam::reset()
     if (std::isfinite(_initialValues[i]) == false)
     {
       fprintf(stderr, "Initial Value of variable \'%lu\' not defined (no defaults can be calculated).\n", i);
-      std::abort();
+      throw std::runtime_error("Bad Inputs for Optimizer.");
     }
 
   for (size_t i = 0; i < _nVars; i++)
@@ -56,7 +57,7 @@ void fAdam::processResult(float evaluation, std::vector<float> &gradient)
   if (gradient.size() != _nVars)
   {
     fprintf(stderr, "Size of sample's gradient evaluations vector (%lu) is different from the number of problem variables defined (%lu).\n", gradient.size(), _nVars);
-    std::abort();
+    throw std::runtime_error("Bad Inputs for Optimizer.");
   }
 
   const float secondCentralMomentFactor = 1.0f / (1.0f - std::pow(_beta2, (float)_modelEvaluationCount));

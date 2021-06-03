@@ -23,6 +23,10 @@ if r!=0:
 r = call(["python3", "run-ffn.py", "--optimizer", "RMSProp", "--learningRate", "0.002"])
 if r!=0:
   exit(r)
+  
+r = call(["python3", "run-ffn.py", "--optimizer", "Adam", "--learningRate", "0.005", "--engine", "Korali"])
+if r!=0:
+  exit(r)
     
 r = call(["python3", "run-rnn.py", "--optimizer", "AdaBelief", "--learningRate", "0.001"])
 if r!=0:

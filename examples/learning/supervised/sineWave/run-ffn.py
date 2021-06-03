@@ -101,7 +101,7 @@ e["Random Seed"] = 0xC0FFEE
 
 ### Training the neural network
 
-e["Solver"]["Termination Criteria"]["Max Generations"] = 10
+e["Solver"]["Termination Criteria"]["Max Generations"] = 20
 k.run(e)
 
 ### Obtaining inferred results from the NN and comparing them to the actual solution

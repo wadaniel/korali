@@ -10,6 +10,11 @@ k = korali.Engine()
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
+    '--engine',
+    help='NN backend to use',
+    default='OneDNN',
+    required=False)
+parser.add_argument(
     '--optimizer',
     help='Optimizer to use for NN parameter updates',
     default='Adam',
@@ -73,7 +78,7 @@ e["Solver"]["Learning Rate"] = float(args.learningRate)
 
 ### Defining the shape of the neural network
 
-e["Solver"]["Neural Network"]["Engine"] = "OneDNN"
+e["Solver"]["Neural Network"]["Engine"] = args.engine
 e["Solver"]["Neural Network"]["Optimizer"] = args.optimizer
 
 e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear"

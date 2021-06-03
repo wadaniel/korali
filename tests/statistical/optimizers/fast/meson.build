@@ -9,6 +9,7 @@ fastOpt_tester = executable('fastOpt_tester',
   
 test('optimizer.fast', fastOpt_tester,
   protocol: 'gtest',
+  timeout : 1000,
   suite: 'statistical',
 )
 

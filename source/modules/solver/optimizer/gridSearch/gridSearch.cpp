@@ -12,7 +12,7 @@ namespace optimizer
 
 void GridSearch::setInitialConfiguration()
 {
-  _variableCount = _variableCount;
+  _variableCount = _k->_variables.size();
 
   _numberOfValues = 1;
   for (size_t i = 0; i < _variableCount; i++)
@@ -210,3 +210,4 @@ bool GridSearch::checkTermination()
 } //optimizer
 } //solver
 } //korali
+

@@ -133,12 +133,22 @@ namespace
 
   optimizerJs = baseOptJs;
   experimentJs = baseExpJs;
+  optimizerJs.erase("Beta1");
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
   optimizerJs["Beta1"] = 2.0;
   ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
 
   optimizerJs = baseOptJs;
   experimentJs = baseExpJs;
   optimizerJs["Beta2"] = std::vector<double>({ 2.0 });
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs.erase("Beta2");
   ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
 
   optimizerJs = baseOptJs;
@@ -153,12 +163,37 @@ namespace
 
   optimizerJs = baseOptJs;
   experimentJs = baseExpJs;
+  optimizerJs.erase("Eta");
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Eta"] = 2.0;
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Epsilon"] = std::vector<double>({ 2.0 });
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs.erase("Epsilon");
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
   optimizerJs["Epsilon"] = 2.0;
   ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
 
   optimizerJs = baseOptJs;
   experimentJs = baseExpJs;
-  optimizerJs["Termination Criteria"]["Max Min Norm"] = std::vector<double>({ 1.0 });
+  optimizerJs["Termination Criteria"]["Min Gradient Norm"] = std::vector<double>({ 1.0 });
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Termination Criteria"].erase("Min Gradient Norm");
   ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
 
   optimizerJs = baseOptJs;
@@ -169,6 +204,11 @@ namespace
   optimizerJs = baseOptJs;
   experimentJs = baseExpJs;
   optimizerJs["Termination Criteria"]["Max Gradient Norm"] = std::vector<double>({ 2.0 });
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Termination Criteria"].erase("Max Gradient Norm");
   ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
 
   optimizerJs = baseOptJs;

@@ -49,7 +49,7 @@ jobs:
           command: ninja -C build
       - run:
           name: test
-          command: source tools/env/set_env.sh build; if [ "<< parameters.runTests >>" == "true" ]; then OMP_NUM_THREADS=8 meson test -C build; fi
+          command: source tools/env/set_env.sh build; if [ "<< parameters.runTests >>" == "true" ]; then OMP_NUM_THREADS=4 meson test -C build; fi
       - run:
           name: install
           command: meson install -C build

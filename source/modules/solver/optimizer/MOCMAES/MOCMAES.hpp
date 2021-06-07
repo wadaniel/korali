@@ -161,7 +161,7 @@ class MOCMAES : public Optimizer
   /**
   * @brief [Internal Use] Samples associated with  best ever objective values.
   */
-   std::vector<std::vector<double>> _bestEverVariables;
+   std::vector<std::vector<double>> _bestEverVariablesVector;
   /**
   * @brief [Internal Use] Best objectives from previous generation.
   */
@@ -169,7 +169,7 @@ class MOCMAES : public Optimizer
   /**
   * @brief [Internal Use] Samples associated with previous best objective values.
   */
-   std::vector<std::vector<double>> _previousBestVariables;
+   std::vector<std::vector<double>> _previousBestVariablesVector;
   /**
   * @brief [Internal Use] Best objectives from current generation.
   */
@@ -177,7 +177,7 @@ class MOCMAES : public Optimizer
   /**
   * @brief [Internal Use] Samples associated with current best objective values.
   */
-   std::vector<std::vector<double>> _currentBestVariables;
+   std::vector<std::vector<double>> _currentBestVariablesVector;
   /**
   * @brief [Internal Use] Candidate pareto optimal samples. Samples will be finalized at termination.
   */

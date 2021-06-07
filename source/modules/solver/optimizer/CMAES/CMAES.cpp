@@ -94,7 +94,7 @@ void CMAES::setInitialConfiguration()
 
   if(_mirroredSampling)
   {
-    if(_muValue % 2 == 1) KORALI_LOG_ERROR("Mirrored Sampling can only be applied with an even Mu Value (is %zu)", _muValue);
+    if(_populationSize % 2 == 1) KORALI_LOG_ERROR("Mirrored Sampling can only be applied with an even Sample Population (is %zu)", _populationSize);
     if(_hasConstraints) KORALI_LOG_ERROR("Mirrored Sampling not applicable to problems with constraints");
   }
 

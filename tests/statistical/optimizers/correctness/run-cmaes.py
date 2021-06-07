@@ -48,7 +48,7 @@ e["Variables"][0]["Upper Bound"] = +10.0
 e["Solver"]["Type"] = "Optimizer/CMAES"
 e["Solver"]["Population Size"] = 8
 e["Solver"]["Termination Criteria"]["Max Generations"] = 100
-e["Solver"]["Is Diagonal"] = True
+e["Solver"]["Diagonal Covariance"] = True
 
 e["Console Output"]["Frequency"] = 10
 e["Console Output"]["Verbosity"] = "Detailed"

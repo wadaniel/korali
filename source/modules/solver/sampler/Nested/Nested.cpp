@@ -259,7 +259,7 @@ void Nested::runFirstGeneration()
 
 void Nested::updateBounds()
 {
-  if (_generatedSamples < _nextUpdate) return; // No update
+  if (_generatedSamples < _nextUpdate && _ellipseVector.empty() == false) return; // no update
 
   // Set next update of bounding hypervolume
   _nextUpdate += _proposalUpdateFrequency;
@@ -1001,7 +1001,6 @@ void Nested::printGenerationAfter()
   {
     _k->_logger->logInfo("Detailed", "Num Ellipsoids: %zu\n", _ellipseVector.size());
   }
-  return;
 }
 
 void Nested::finalize()
@@ -1014,7 +1013,6 @@ void Nested::finalize()
   _k->_logger->logInfo("Minimal", "Final Log Evidence: %.4f (+- %.4F)\n", _logEvidence, std::sqrt(_logEvidenceVar));
   _k->_logger->logInfo("Minimal", "Max evaluation: %.2f\n", _maxEvaluation);
   _k->_logger->logInfo("Minimal", "Sampling Efficiency: %.2f%%\n", 100.0 * _acceptedSamples / ((double)(_generatedSamples - _numberLivePoints)));
-  return;
 }
 
 void Nested::setConfiguration(knlohmann::json& js) 

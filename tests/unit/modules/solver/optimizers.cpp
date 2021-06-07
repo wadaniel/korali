@@ -538,16 +538,6 @@ namespace
 
   optimizerJs = baseOptJs;
   experimentJs = baseExpJs;
-  optimizerJs["Previous Value Vector"] = std::vector<double>({1.0});
-  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
-
-  optimizerJs = baseOptJs;
-  experimentJs = baseExpJs;
-  optimizerJs["Previous Value Vector"] = 1.0;
-  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
-
-  optimizerJs = baseOptJs;
-  experimentJs = baseExpJs;
   optimizerJs["Gradients"] = std::vector<std::vector<double>>({{1.0}});
   ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
 
@@ -948,16 +938,6 @@ namespace
 
   optimizerJs = baseOptJs;
   experimentJs = baseExpJs;
-  optimizerJs["Are Constraints Defined"] = 1;
-  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
-
-  optimizerJs = baseOptJs;
-  experimentJs = baseExpJs;
-  optimizerJs["Are Constraints Defined"] = std::vector<double>({1.0});
-  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
-
-  optimizerJs = baseOptJs;
-  experimentJs = baseExpJs;
   optimizerJs["Covariance Matrix Adaption Factor"] = 1.0;
   ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
 
@@ -1328,17 +1308,17 @@ namespace
 
   optimizerJs = baseOptJs;
   experimentJs = baseExpJs;
-  optimizerJs["Is Diagonal"] = 1;
+  optimizerJs["Diagonal Covariance"] = true;
   ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
 
   optimizerJs = baseOptJs;
   experimentJs = baseExpJs;
-  optimizerJs.erase("Is Diagonal");
+  optimizerJs.erase("Diagonal Covariance");
   ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
 
   optimizerJs = baseOptJs;
   experimentJs = baseExpJs;
-  optimizerJs["Is Diagonal"] = std::vector<double>({1.0});
+  optimizerJs["Diagonal Covariance"] = std::vector<double>({1.0});
   ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
 
   optimizerJs = baseOptJs;
@@ -2583,12 +2563,12 @@ namespace
 
   optimizerJs = baseOptJs;
   experimentJs = baseExpJs;
-  optimizerJs["Best Ever Variables"] = std::vector<std::vector<double>>({{1.0}});
+  optimizerJs["Best Ever Variables Vector"] = std::vector<std::vector<double>>({{1.0}});
   ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
 
   optimizerJs = baseOptJs;
   experimentJs = baseExpJs;
-  optimizerJs["Best Ever Variables"] = 1.0;
+  optimizerJs["Best Ever Variables Vector"] = 1.0;
   ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
 
   optimizerJs = baseOptJs;
@@ -2603,12 +2583,12 @@ namespace
 
   optimizerJs = baseOptJs;
   experimentJs = baseExpJs;
-  optimizerJs["Previous Best Variables"] = std::vector<std::vector<double>>({{1.0}});
+  optimizerJs["Previous Best Variables Vector"] = std::vector<std::vector<double>>({{1.0}});
   ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
 
   optimizerJs = baseOptJs;
   experimentJs = baseExpJs;
-  optimizerJs["Previous Best Variables"] = 1.0;
+  optimizerJs["Previous Best Variables Vector"] = 1.0;
   ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
 
   optimizerJs = baseOptJs;
@@ -2623,12 +2603,12 @@ namespace
 
   optimizerJs = baseOptJs;
   experimentJs = baseExpJs;
-  optimizerJs["Current Best Variables"] = std::vector<std::vector<double>>({{1.0}});
+  optimizerJs["Current Best Variables Vector"] = std::vector<std::vector<double>>({{1.0}});
   ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
 
   optimizerJs = baseOptJs;
   experimentJs = baseExpJs;
-  optimizerJs["Current Best Variables"] = 1.0;
+  optimizerJs["Current Best Variables Vector"] = 1.0;
   ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
 
   optimizerJs = baseOptJs;

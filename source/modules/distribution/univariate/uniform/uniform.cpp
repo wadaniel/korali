@@ -45,7 +45,7 @@ void Uniform::updateDistribution()
   if (_maximum - _minimum <= 0.0)
     _aux = NaN;
   else
-    _aux = -std::log(_maximum - _minimum);
+    _aux = -gsl_sf_log(_maximum - _minimum);
 }
 
 void Uniform::setConfiguration(knlohmann::json& js) 

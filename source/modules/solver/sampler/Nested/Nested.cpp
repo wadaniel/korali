@@ -17,8 +17,6 @@
 #include <numeric>
 #include <random> // std::default_random_engine
 
-#define L2DIST
-
 namespace korali
 {
 namespace solver
@@ -53,8 +51,8 @@ void ellipse_t::initSphere()
 
 void ellipse_t::scaleVolume(double factor)
 {
-  double K = std::sqrt(std::pow(M_PI, dim)) * 2. / ((double)dim * gsl_sf_gamma(0.5 * dim));
-  double enlargementFactor = std::pow((volume * volume * factor * factor) / (K * K * det), 1. / ((double)dim));
+  const double K = std::sqrt(std::pow(M_PI, dim)) * 2. / ((double)dim * gsl_sf_gamma(0.5 * dim));
+  const double enlargementFactor = std::pow((volume * volume * factor * factor) / (K * K * det), 1. / ((double)dim));
   for (size_t d = 0; d < dim * dim; ++d)
   {
     cov[d] *= enlargementFactor;
@@ -166,12 +164,13 @@ void Nested::runGeneration()
   };
 
   // Generation > 1
-  bool accepted;
   _lastAccepted = 0;
+  bool accepted = false;
   std::vector<double> sample;
   std::vector<Sample> samples(_batchSize);
 
-  do
+  // Repeat until we accept at least one sample
+  while (accepted == false);
   {
     updateBounds();
     generateCandidates();
@@ -190,6 +189,7 @@ void Nested::runGeneration()
     }
 
     size_t finishedCandidatesCount = 0;
+    // Store candidate information
     while (finishedCandidatesCount < _batchSize)
     {
       size_t finishedId = KORALI_WAITANY(samples);
@@ -205,7 +205,7 @@ void Nested::runGeneration()
     _lastAccepted++;
     accepted = processGeneration();
 
-  } while (accepted == false);
+  } 
 
   return;
 }
@@ -234,6 +234,7 @@ void Nested::runFirstGeneration()
   }
 
   size_t finishedCandidatesCount = 0;
+  // Store live sample information
   while (finishedCandidatesCount < _numberLivePoints)
   {
     size_t finishedId = KORALI_WAITANY(samples);
@@ -280,6 +281,7 @@ void Nested::updateBounds()
 
 void Nested::priorTransform(std::vector<double> &sample) const
 {
+  // Transofrmation from unit hypercube to bounded domain
   for (size_t d = 0; d < _variableCount; ++d) sample[d] = _priorLowerBound[d] + sample[d] * _priorWidth[d];
 }
 
@@ -372,6 +374,7 @@ bool Nested::processGeneration()
 double Nested::logPriorWeight(std::vector<double> &sample)
 {
   double logweight = 0.;
+  // Calculate lof prior weight (i.e. log of prior/bounded box volume)
   for (size_t d = 0; d < _variableCount; ++d)
     {
       logweight += dynamic_cast<distribution::Univariate *>(_k->_distributions[_k->_variables[d]->_distributionIndex])->getLogDensity(sample[d]);
@@ -384,17 +387,20 @@ void Nested::setBoundsVolume()
 {
   if (_resamplingMethod == "Box")
   {
+    // Calculate volume of bounding box
     _boundLogVolume = Lowest;
     for (size_t d = 0; d < _variableCount; ++d)
       _boundLogVolume = safeLogPlus(_boundLogVolume, std::log(_boxUpperBound[d] - _boxLowerBound[d]));
   }
   else if (_resamplingMethod == "Ellipse")
   {
+    // Calculate volume of ellipsoid
     auto &ellipse = _ellipseVector.front();
     _boundLogVolume = std::log(ellipse.volume);
   }
   else /* _resamplingMethod == "Multi Ellipse" */
   {
+    // Calculate volume of (overlapping) ellipsoids
     _boundLogVolume = Lowest;
     for (auto &ellipse : _ellipseVector)
       _boundLogVolume = safeLogPlus(_boundLogVolume, std::log(ellipse.volume));
@@ -403,6 +409,7 @@ void Nested::setBoundsVolume()
 
 void Nested::generateCandidatesFromBox()
 {
+  // Generate sample uniformly inside bounding box
   for (size_t i = 0; i < _batchSize; i++)
   {
     for (size_t d = 0; d < _variableCount; ++d)
@@ -413,6 +420,7 @@ void Nested::generateCandidatesFromBox()
 
 void Nested::generateSampleFromEllipse(const ellipse_t &ellipse, std::vector<double> &sample) const
 {
+  // Generate sample uniformly inside bounding ellipsoid
   double len = 0;
   std::vector<double> vec(_variableCount);
   for (size_t d = 0; d < _variableCount; ++d)
@@ -584,11 +592,12 @@ void Nested::generatePosterior()
 
   size_t rndIdx;
   std::vector<std::vector<double>> posteriorSamples;
-  std::vector<double> posteriorSampleLogPriorDatabase;
-  std::vector<double> posteriorSampleLogLikelihoodDatabase;
+  std::vector<double> posteriorSamplesLogPriorDatabase;
+  std::vector<double> posteriorSamplesLogLikelihoodDatabase;
 
   double k = 1.;
   double sum = _uniformGenerator->getRandomNumber();
+  // Resample dead samples based on their weight to produce posterior
   for (size_t i = 0; i < _numberDeadSamples; ++i)
   {
     rndIdx = permutation[i];
@@ -596,20 +605,21 @@ void Nested::generatePosterior()
     if (sum > k)
     {
       posteriorSamples.push_back(_deadSamples[rndIdx]);
-      posteriorSampleLogPriorDatabase.push_back(_deadLogPriors[rndIdx]);
-      posteriorSampleLogLikelihoodDatabase.push_back(_deadLogLikelihoods[rndIdx]);
+      posteriorSamplesLogPriorDatabase.push_back(_deadLogPriors[rndIdx]);
+      posteriorSamplesLogLikelihoodDatabase.push_back(_deadLogLikelihoods[rndIdx]);
       k++;
     }
   }
 
-  (*_k)["Results"]["Posterior Sample Database"] = posteriorSamples;
-  (*_k)["Results"]["Posterior Sample LogPrior Database"] = posteriorSampleLogPriorDatabase;
-  (*_k)["Results"]["Posterior Sample LogLikelihood Database"] = posteriorSampleLogLikelihoodDatabase;
+  (*_k)["Results"]["Posterior Samples Database"] = posteriorSamples;
+  (*_k)["Results"]["Posterior Samples LogPrior Database"] = posteriorSamplesLogPriorDatabase;
+  (*_k)["Results"]["Posterior Samples LogLikelihood Database"] = posteriorSamplesLogLikelihoodDatabase;
 }
 
 double Nested::l2distance(const std::vector<double> &sampleOne, const std::vector<double> &sampleTwo) const
 {
   double dist = 0.;
+  // Calculate L2 distance
   for (size_t d = 0; d < _variableCount; ++d) dist += (sampleOne[d] - sampleTwo[d]) * (sampleOne[d] - sampleTwo[d]);
   dist = std::sqrt(dist);
   return dist;
@@ -628,6 +638,7 @@ bool Nested::updateEllipse(ellipse_t &ellipse) const
 
 void Nested::updateMultiEllipse()
 {
+  // Create ellipsoid
   initEllipseVector();
   bool ok = updateEllipse(_ellipseVector.front());
   if (ok == false) KORALI_LOG_ERROR("Ellipse update failed at initialization\n");
@@ -641,21 +652,14 @@ void Nested::updateMultiEllipse()
     auto one = ellipse_t(_variableCount);
     auto two = ellipse_t(_variableCount);
 
+    //
     okCluster = kmeansClustering(ellipse, 100, one, two);
 
-#ifdef WMDIST
-    if (okCluster)
-    {
-      okOne = updateEllipseVolume(one);
-      okTwo = updateEllipseVolume(two);
-    }
-#else
     if (okCluster)
     {
       okOne = updateEllipse(one);
       okTwo = updateEllipse(two);
     }
-#endif
 
     if ((okCluster == false) || (okOne == false) || (okTwo == false) || ((one.volume + two.volume >= 0.5 * ellipse.volume) && (ellipse.volume < 2. * std::exp(_logVolume))))
     {
@@ -679,7 +683,7 @@ void Nested::initEllipseVector()
 
   first->num = _numberLivePoints;
   first->sampleIdx.resize(_numberLivePoints);
-
+  // Assign all samples to current ellipsoid
   std::iota(first->sampleIdx.begin(), first->sampleIdx.end(), 0);
 }
 
@@ -816,7 +820,7 @@ bool Nested::updateEllipseVolume(ellipse_t &ellipse) const
     return false;
   }
 
-  // calculate axes from cholesky decomposition
+  // Calculate axes from cholesky decomposition
   gsl_matrix_view axes = gsl_matrix_view_array(ellipse.axes.data(), _variableCount, _variableCount);
 
   /* On output the diagonal and lower triangular part of the
@@ -836,7 +840,7 @@ bool Nested::updateEllipseVolume(ellipse_t &ellipse) const
     return false;
   }
 
-  // find scaling s.t. all samples are bounded by ellipse
+  // Find scaling s.t. all samples are bounded by ellipse
   double res, max = Lowest;
   for (size_t i = 0; i < ellipse.num; ++i)
   {
@@ -871,6 +875,7 @@ double Nested::mahalanobisDistance(const std::vector<double> &sample, const elli
 
   double tmp;
   double dist = 0.;
+  // Calculate Mahalanobis distance between sample and ellipsoid
   for (size_t i = 0; i < _variableCount; ++i)
   {
     tmp = 0.;
@@ -882,26 +887,13 @@ double Nested::mahalanobisDistance(const std::vector<double> &sample, const elli
   return dist;
 }
 
-double Nested::weightedMahalanobisDistance(const std::vector<double> &sample, const ellipse_t &ellipse) const
-{
-  double dist = mahalanobisDistance(sample, ellipse);
-
-  return ellipse.volume * dist / ellipse.pointVolume;
-}
-
 bool Nested::kmeansClustering(const ellipse_t &parent, size_t maxIter, ellipse_t &childOne, ellipse_t &childTwo) const
 {
   childOne.initSphere();
   childTwo.initSphere();
 
-#ifdef WMDIST
-  childOne.volume = 1.;
-  childOne.pointVolume = 1.;
-  childTwo.volume = 1.;
-  childTwo.pointVolume = 1.;
-#endif
-
   size_t ax = 0;
+  // Initialize center of ellipsoidals one and two at the ends of the longest axe
   for (size_t d = 0; d < _variableCount; ++d)
   {
     childOne.mean[d] = parent.mean[d] + parent.paxes[d * _variableCount + ax] * parent.evals[ax];
@@ -914,6 +906,8 @@ bool Nested::kmeansClustering(const ellipse_t &parent, size_t maxIter, ellipse_t
   bool ok = true;
   size_t iter = 0;
   size_t diffs = 1;
+  
+  // Iterate until no sample updates cluster assignment
   while ((diffs > 0) && (iter++ < maxIter))
   {
     diffs = 0;
@@ -925,21 +919,15 @@ bool Nested::kmeansClustering(const ellipse_t &parent, size_t maxIter, ellipse_t
     {
       size_t six = parent.sampleIdx[i];
 
-#ifdef L2DIST
+      // measure distances to cluster means
       double d1 = l2distance(_liveSamples[six], childOne.mean);
       double d2 = l2distance(_liveSamples[six], childTwo.mean);
-#else
-  #ifdef WMDIST
-      double d1 = weightedMahalanobisDistance(_liveSamples[six], childOne);
-      double d2 = weightedMahalanobisDistance(_liveSamples[six], childTwo);
-  #else
-      double d1 = mahalanobisDistance(_liveSamples[six], childOne);
-      double d2 = mahalanobisDistance(_liveSamples[six], childTwo);
-  #endif
-#endif
+      
       int8_t flag = (d1 < d2) ? 1 : 2;
 
+      // count updates
       if (clusterFlag[i] != flag) diffs++;
+      // assign cluster
       clusterFlag[i] = flag;
 
       if (flag == 1)
@@ -965,17 +953,12 @@ bool Nested::kmeansClustering(const ellipse_t &parent, size_t maxIter, ellipse_t
         childTwo.sampleIdx[idxTwo++] = parent.sampleIdx[i];
     }
 
+    // update means of ellipsoids
     updateEllipseMean(childOne);
     updateEllipseMean(childTwo);
-#ifndef L2DIST
+    
     ok = ok & updateEllipseCov(childOne);
     ok = ok & updateEllipseCov(childTwo);
-
-  #ifdef WMDIST
-    ok = ok & updateEllipseVolume(childOne);
-    ok = ok & updateEllipseVolume(childTwo);
-  #endif
-#endif
 
     if (ok == false) break;
   }

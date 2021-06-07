@@ -30,27 +30,15 @@ e["Distributions"][0]["Type"] = "Univariate/Uniform"
 e["Distributions"][0]["Minimum"] = 0.0
 e["Distributions"][0]["Maximum"] = +5.0
 
-e["Distributions"][1]["Name"] = "Uniform 1"
-e["Distributions"][1]["Type"] = "Univariate/Uniform"
-e["Distributions"][1]["Minimum"] = 0.0
-e["Distributions"][1]["Maximum"] = +5.0
-
-e["Distributions"][2]["Name"] = "Uniform 2"
-e["Distributions"][2]["Type"] = "Univariate/Normal"
-e["Distributions"][2]["Mean"] = 3.0
-e["Distributions"][2]["Standard Deviation"] = +1.0
-
 # Configuring the problem's variables and their prior distributions
 e["Variables"][0]["Name"] = "a"
 e["Variables"][0]["Prior Distribution"] = "Uniform 0"
 
 e["Variables"][1]["Name"] = "b"
-e["Variables"][1]["Prior Distribution"] = "Uniform 1"
+e["Variables"][1]["Prior Distribution"] = "Uniform 0"
 
 e["Variables"][2]["Name"] = "[Sigma]"
-e["Variables"][2]["Prior Distribution"] = "Uniform 2"
-e["Variables"][2]["Lower Bound"] = 0.0
-e["Variables"][2]["Upper Bound"] = 5.0
+e["Variables"][2]["Prior Distribution"] = "Uniform 0"
 
 e["File Output"]["Frequency"] = 1000
 e["Console Output"]["Frequency"] = 500

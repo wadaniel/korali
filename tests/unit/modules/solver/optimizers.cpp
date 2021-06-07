@@ -732,7 +732,7 @@ namespace
 
   optimizerJs = baseOptJs;
   experimentJs = baseExpJs;
-  optimizerJs["Coveriance Matrix"] = 1.0;
+  optimizerJs["Covariance Matrix"] = 1.0;
   ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
 
   optimizerJs = baseOptJs;
@@ -742,7 +742,7 @@ namespace
 
   optimizerJs = baseOptJs;
   experimentJs = baseExpJs;
-  optimizerJs["Auxiliar Coveriance Matrix"] = 1.0;
+  optimizerJs["Auxiliar Covariance Matrix"] = 1.0;
   ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
 
   optimizerJs = baseOptJs;
@@ -773,6 +773,16 @@ namespace
   optimizerJs = baseOptJs;
   experimentJs = baseExpJs;
   optimizerJs["Axis Lengths"] = 1.0;
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Auxiliar Axis Lengths"] = std::vector<double>({1.0});
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Auxiliar Axis Lengths"] = 1.0;
   ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
 
   optimizerJs = baseOptJs;
@@ -1153,6 +1163,16 @@ namespace
   optimizerJs = baseOptJs;
   experimentJs = baseExpJs;
   optimizerJs["Current Max Standard Deviation"] = std::vector<double>({1.0});
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Constraint Evaluation Count"] = 1;
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Constraint Evaluation Count"] = std::vector<double>({1.0});
   ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
 
   optimizerJs = baseOptJs;

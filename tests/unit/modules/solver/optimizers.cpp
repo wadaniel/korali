@@ -3,12 +3,17 @@
 #include "modules/solver/optimizer/Adam/Adam.hpp"
 #include "modules/solver/optimizer/AdaBelief/AdaBelief.hpp"
 #include "modules/solver/optimizer/CMAES/CMAES.hpp"
+#include "modules/solver/optimizer/MOCMAES/MOCMAES.hpp"
+#include "modules/problem/optimization/optimization.hpp"
 
 namespace
 {
  using namespace korali;
  using namespace korali::solver;
  using namespace korali::solver::optimizer;
+ using namespace korali::problem;
+
+ //////////////// ADABELIEF ////////////////////////
 
  TEST(optimizers, AdaBelief)
  {
@@ -232,6 +237,8 @@ namespace
   opt->_gradientNorm = 3.0;
   ASSERT_TRUE(opt->checkTermination());
  }
+
+ //////////////// ADAM ////////////////////////
 
  TEST(optimizers, Adam)
  {
@@ -465,6 +472,8 @@ namespace
   opt->_gradientNorm = 3.0;
   ASSERT_TRUE(opt->checkTermination());
  }
+
+ //////////////// CMAES ////////////////////////
 
  TEST(optimizers, CMAES)
  {
@@ -1463,6 +1472,514 @@ namespace
   optimizerJs = baseOptJs;
   experimentJs = baseExpJs;
   optimizerJs["Termination Criteria"]["Max Condition Covariance Matrix"] = std::vector<double>({1.0});
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Termination Criteria"]["Min Standard Deviation"] = 1.0;
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Termination Criteria"].erase("Min Standard Deviation");
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Termination Criteria"]["Min Standard Deviation"] = std::vector<double>({1.0});
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Termination Criteria"]["Max Standard Deviation"] = 1.0;
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Termination Criteria"].erase("Max Standard Deviation");
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Termination Criteria"]["Max Standard Deviation"] = std::vector<double>({1.0});
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+ }
+
+ //////////////// MOCMAES ////////////////////////
+
+ TEST(optimizers, MOCMAES)
+ {
+  // Creating base experiment
+  Experiment e;
+  auto& experimentJs = e._js.getJson();
+
+  // Creating initial variable
+  Variable v;
+  e._variables.push_back(&v);
+  e["Variables"][0]["Name"] = "Var 1";
+  e["Variables"][0]["Lower Bound"] = 0.0;
+  e["Variables"][0]["Upper Bound"] = 1.0;
+  e["Problem"]["Type"] = "Optimization";
+
+
+  // Creating problem module
+  Optimization* p;
+  knlohmann::json problemJs;
+  problemJs["Type"] = "Optimization";
+  ASSERT_NO_THROW(p = dynamic_cast<Optimization *>(Module::getModule(problemJs, &e)));
+  e._problem = p;
+  p->_numObjectives = 2;
+
+  // Creating optimizer configuration Json
+  knlohmann::json optimizerJs;
+  optimizerJs["Type"] = "Optimizer/MOCMAES";
+
+  // Creating module
+  MOCMAES* opt;
+  ASSERT_NO_THROW(opt = dynamic_cast<MOCMAES *>(Module::getModule(optimizerJs, &e)));
+
+  // Defaults should be applied without a problem
+  ASSERT_NO_THROW(opt->applyModuleDefaults(optimizerJs));
+
+  // Covering variable functions (no effect)
+  ASSERT_NO_THROW(opt->applyVariableDefaults());
+
+  // Backup the correct base configuration
+  auto baseOptJs = optimizerJs;
+  auto baseExpJs = experimentJs;
+
+  // Setting up optimizer correctly
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  // Testing initial configuration success
+  v._initialValue = 1.0;
+  opt->setInitialConfiguration();
+  ASSERT_NO_THROW(opt->setInitialConfiguration());
+
+  // Testing optional parameters
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Current Non Dominated Sample Count"] = 1;
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Current Non Dominated Sample Count"] = std::vector<double>({1.0});
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Current Values"] = std::vector<std::vector<double>>({{1.0}});
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Current Values"] = 1.0;
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Previous Values"] = std::vector<std::vector<double>>({{1.0}});
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Previous Values"] = 1.0;
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Parent Index"] = std::vector<size_t>({1});
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Parent Index"] = 1.0;
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Current Sample Population"] = std::vector<std::vector<double>>({{1.0}});
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Current Sample Population"] = std::vector<double>({1.0});
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Parent Sample Population"] = std::vector<std::vector<double>>({{1.0}});
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Parent Sample Population"] = std::vector<double>({1.0});
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Current Sigma"] = std::vector<double>({1.0});
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Current Sigma"] = 1.0;
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Parent Sigma"] = std::vector<double>({1.0});
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Parent Sigma"] = 1.0;
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Previous Sigma"] = std::vector<double>({1.0});
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Previous Sigma"] = 1.0;
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Parent Covariance Matrix"] = std::vector<std::vector<double>>({{1.0}});
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Parent Covariance Matrix"] = 1.0;
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Current Covariance Matrix"] = std::vector<std::vector<double>>({{1.0}});
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Current Covariance Matrix"] = 1.0;
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Current Evolution Paths"] = std::vector<std::vector<double>>({{1.0}});
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Current Evolution Paths"] = 1.0;
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Parent Evolution Paths"] = std::vector<std::vector<double>>({{1.0}});
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Parent Evolution Paths"] = 1.0;
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Parent Success Probabilities"] = std::vector<double>({1.0});
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Parent Success Probabilities"] = 1.0;
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Current Success Probabilities"] = std::vector<double>({1.0});
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Current Success Probabilities"] = 1.0;
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Previous Success Probabilities"] = std::vector<double>({1.0});
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Previous Success Probabilities"] = 1.0;
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Finished Sample Count"] = 1;
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Finished Sample Count"] = std::vector<double>({1.0});
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Best Ever Values"] = std::vector<double>({1.0});
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Best Ever Values"] = 1.0;
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Best Ever Variables"] = std::vector<std::vector<double>>({{1.0}});
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Best Ever Variables"] = 1.0;
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Previous Best Values"] = std::vector<double>({1.0});
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Previous Best Values"] = 1.0;
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Previous Best Variables"] = std::vector<std::vector<double>>({{1.0}});
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Previous Best Variables"] = 1.0;
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Current Best Values"] = std::vector<double>({1.0});
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Current Best Values"] = 1.0;
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Current Best Variables"] = std::vector<std::vector<double>>({{1.0}});
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Current Best Variables"] = 1.0;
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Sample Collection"] = std::vector<std::vector<double>>({{1.0}});
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Sample Collection"] = 1.0;
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Infeasible Sample Count"] = 1;
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Infeasible Sample Count"] = std::vector<std::vector<double>>({{1.0}});
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Current Best Value Differences"] = std::vector<double>({1.0});
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Current Best Value Differences"] = 1.0;
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Current Best Variable Differences"] = std::vector<double>({1.0});
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Current Best Variable Differences"] = 1.0;
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Current Min Standard Deviations"] = std::vector<double>({1.0});
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Current Min Standard Deviations"] = 1.0;
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Current Max Standard Deviations"] = std::vector<double>({1.0});
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Current Max Standard Deviations"] = 1.0;
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Population Size"] = 1;
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs.erase("Population Size");
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Population Size"] = std::vector<double>({1.0});
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Mu Value"] = 1;
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs.erase("Mu Value");
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Mu Value"] = std::vector<double>({1.0});
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Evolution Path Adaption Strength"] = 1.0;
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs.erase("Evolution Path Adaption Strength");
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Evolution Path Adaption Strength"] = std::vector<double>({1.0});
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Covariance Learning Rate"] = 1.0;
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs.erase("Covariance Learning Rate");
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Covariance Learning Rate"] = std::vector<double>({1.0});
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Target Success Rate"] = 1.0;
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs.erase("Target Success Rate");
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Target Success Rate"] = std::vector<double>({1.0});
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Threshold Probability"] = 1.0;
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs.erase("Threshold Probability");
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Threshold Probability"] = std::vector<double>({1.0});
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Success Learning Rate"] = 1.0;
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs.erase("Success Learning Rate");
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Success Learning Rate"] = std::vector<double>({1.0});
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Termination Criteria"]["Min Max Value Difference Threshold"] = 1.0;
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Termination Criteria"].erase("Min Max Value Difference Threshold");
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Termination Criteria"]["Min Max Value Difference Threshold"] = std::vector<double>({1.0});
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Termination Criteria"]["Min Variable Difference Threshold"] = 1.0;
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Termination Criteria"].erase("Min Variable Difference Threshold");
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Termination Criteria"]["Min Variable Difference Threshold"] = std::vector<double>({1.0});
   ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
 
   optimizerJs = baseOptJs;

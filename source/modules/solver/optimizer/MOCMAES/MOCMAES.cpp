@@ -51,19 +51,19 @@ void MOCMAES::setInitialConfiguration()
 
   // Establishing optimization goal
   _bestEverValues.resize(_numObjectives);
-  _bestEverVariables.resize(_numObjectives);
+  _bestEverVariablesVector.resize(_numObjectives);
   _previousBestValues.resize(_numObjectives);
-  _previousBestVariables.resize(_numObjectives);
+  _previousBestVariablesVector.resize(_numObjectives);
   _currentBestValues.resize(_numObjectives);
-  _currentBestVariables.resize(_numObjectives);
+  _currentBestVariablesVector.resize(_numObjectives);
   for (size_t k = 0; k < _numObjectives; ++k)
   {
     _bestEverValues[k] = -std::numeric_limits<double>::infinity();
-    _bestEverVariables[k].resize(_variableCount);
+    _bestEverVariablesVector[k].resize(_variableCount);
     _previousBestValues[k] = -std::numeric_limits<double>::infinity();
-    _previousBestVariables[k].resize(_variableCount);
+    _previousBestVariablesVector[k].resize(_variableCount);
     _currentBestValues[k] = -std::numeric_limits<double>::infinity();
-    _currentBestVariables[k].resize(_variableCount);
+    _currentBestVariablesVector[k].resize(_variableCount);
   }
 
   // Disable general termination criterion
@@ -413,7 +413,7 @@ void MOCMAES::updateStatistics()
 {
   _previousBestValues = _currentBestValues;
   for (size_t k = 0; k < _numObjectives; ++k)
-    _previousBestVariables[k] = _currentBestVariables[k];
+    _previousBestVariablesVector[k] = _currentBestVariablesVector[k];
 
   std::fill(_currentBestValues.begin(), _currentBestValues.end(), -std::numeric_limits<double>::infinity());
   std::fill(_currentMinStandardDeviations.begin(), _currentMinStandardDeviations.end(), std::numeric_limits<double>::infinity());
@@ -427,12 +427,12 @@ void MOCMAES::updateStatistics()
       if (_currentValues[i][k] > _currentBestValues[k])
       {
         _currentBestValues[k] = _currentValues[i][k];
-        _currentBestVariables[k] = _currentSamplePopulation[i];
+        _currentBestVariablesVector[k] = _currentSamplePopulation[i];
         _currentBestValueDifferences[k] = _currentBestValues[k] - _previousBestValues[k];
         double l2norm2 = 0.;
         for (size_t d = 0; d < _variableCount; ++d)
         {
-          l2norm2 += std::pow(_previousBestVariables[k][d] - _currentBestVariables[k][d], 2.);
+          l2norm2 += std::pow(_previousBestVariablesVector[k][d] - _currentBestVariablesVector[k][d], 2.);
         }
         _currentBestVariableDifferences[k] = std::sqrt(l2norm2);
       }
@@ -445,7 +445,7 @@ void MOCMAES::updateStatistics()
     if (_currentBestValues[k] > _bestEverValues[k])
     {
       _bestEverValues[k] = _currentBestValues[k];
-      _bestEverVariables[k] = _currentBestVariables[k];
+      _bestEverVariablesVector[k] = _currentBestVariablesVector[k];
     }
   }
 
@@ -545,7 +545,7 @@ void MOCMAES::finalize()
   /*
   _k->_logger->logInfo("Minimal", "Optimum found: %e\n", _bestEverValue);s
   _k->_logger->logInfo("Minimal", "Optimum found at:\n");
-  for (size_t d = 0; d < _k->_variables.size(); ++d) _k->_logger->logData("Minimal", "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _bestEverVariables[d]);
+  for (size_t d = 0; d < _k->_variables.size(); ++d) _k->_logger->logData("Minimal", "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _bestEverVariablesVector[d]);
   _k->_logger->logInfo("Minimal", "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
   */
 }
@@ -748,12 +748,12 @@ void MOCMAES::setConfiguration(knlohmann::json& js)
    eraseValue(js, "Best Ever Values");
  }
 
- if (isDefined(js, "Best Ever Variables"))
+ if (isDefined(js, "Best Ever Variables Vector"))
  {
- try { _bestEverVariables = js["Best Ever Variables"].get<std::vector<std::vector<double>>>();
+ try { _bestEverVariablesVector = js["Best Ever Variables Vector"].get<std::vector<std::vector<double>>>();
 } catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ MOCMAES ] \n + Key:    ['Best Ever Variables']\n%s", e.what()); } 
-   eraseValue(js, "Best Ever Variables");
+ { KORALI_LOG_ERROR(" + Object: [ MOCMAES ] \n + Key:    ['Best Ever Variables Vector']\n%s", e.what()); } 
+   eraseValue(js, "Best Ever Variables Vector");
  }
 
  if (isDefined(js, "Previous Best Values"))
@@ -764,12 +764,12 @@ void MOCMAES::setConfiguration(knlohmann::json& js)
    eraseValue(js, "Previous Best Values");
  }
 
- if (isDefined(js, "Previous Best Variables"))
+ if (isDefined(js, "Previous Best Variables Vector"))
  {
- try { _previousBestVariables = js["Previous Best Variables"].get<std::vector<std::vector<double>>>();
+ try { _previousBestVariablesVector = js["Previous Best Variables Vector"].get<std::vector<std::vector<double>>>();
 } catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ MOCMAES ] \n + Key:    ['Previous Best Variables']\n%s", e.what()); } 
-   eraseValue(js, "Previous Best Variables");
+ { KORALI_LOG_ERROR(" + Object: [ MOCMAES ] \n + Key:    ['Previous Best Variables Vector']\n%s", e.what()); } 
+   eraseValue(js, "Previous Best Variables Vector");
  }
 
  if (isDefined(js, "Current Best Values"))
@@ -780,12 +780,12 @@ void MOCMAES::setConfiguration(knlohmann::json& js)
    eraseValue(js, "Current Best Values");
  }
 
- if (isDefined(js, "Current Best Variables"))
+ if (isDefined(js, "Current Best Variables Vector"))
  {
- try { _currentBestVariables = js["Current Best Variables"].get<std::vector<std::vector<double>>>();
+ try { _currentBestVariablesVector = js["Current Best Variables Vector"].get<std::vector<std::vector<double>>>();
 } catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ MOCMAES ] \n + Key:    ['Current Best Variables']\n%s", e.what()); } 
-   eraseValue(js, "Current Best Variables");
+ { KORALI_LOG_ERROR(" + Object: [ MOCMAES ] \n + Key:    ['Current Best Variables Vector']\n%s", e.what()); } 
+   eraseValue(js, "Current Best Variables Vector");
  }
 
  if (isDefined(js, "Sample Collection"))
@@ -991,11 +991,11 @@ void MOCMAES::getConfiguration(knlohmann::json& js)
    js["Previous Success Probabilities"] = _previousSuccessProbabilities;
    js["Finished Sample Count"] = _finishedSampleCount;
    js["Best Ever Values"] = _bestEverValues;
-   js["Best Ever Variables"] = _bestEverVariables;
+   js["Best Ever Variables Vector"] = _bestEverVariablesVector;
    js["Previous Best Values"] = _previousBestValues;
-   js["Previous Best Variables"] = _previousBestVariables;
+   js["Previous Best Variables Vector"] = _previousBestVariablesVector;
    js["Current Best Values"] = _currentBestValues;
-   js["Current Best Variables"] = _currentBestVariables;
+   js["Current Best Variables Vector"] = _currentBestVariablesVector;
    js["Sample Collection"] = _sampleCollection;
    js["Sample Value Collection"] = _sampleValueCollection;
    js["Infeasible Sample Count"] = _infeasibleSampleCount;

@@ -86,11 +86,15 @@ def plot(genList, **kwargs):
   for i in range(numdim):
     ax[0, 1].plot(genIds, objVec[i], color=colors[i], label=names[i], linewidth=2)
     ax[0, 1].plot(genIds, bestobjVec[i], color=colors[i], linestyle='dashed',linewidth=1)
-  ax[0, 1].legend(
-      bbox_to_anchor=(1.04, 0.5),
-      loc="center left",
-      borderaxespad=0,
-      handlelength=1)
+  
+  if(numdim < 6):
+    ax[0, 1].legend(
+        bbox_to_anchor=(1.04, 0.5),
+        loc="center left",
+        borderaxespad=0,
+        handlelength=1)
+  else:
+    print("[Korali] Warning: Legend for objective variables omitted, too many variables (>5)")
 
   # Lower Right Plot
   ax[1, 0].set_title('Square Root of Eigenvalues of $\mathbf{C}$')

@@ -274,13 +274,6 @@ class Nested : public Sampler
   double mahalanobisDistance(const std::vector<double> &sample, const ellipse_t &ellipse) const;
 
   /*
-  * @brief Calculates weighted Mahalanobis metric of sample and ellipse.
-  * @param sample Sample.
-  * @param ellipse Ellipse.
-  */
-  double weightedMahalanobisDistance(const std::vector<double> &sample, const ellipse_t &ellipse) const;
-
-  /*
   * @brief Calculate effective number of samples.
   * @return the number of effective samples
   */

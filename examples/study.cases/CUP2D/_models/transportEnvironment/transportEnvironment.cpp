@@ -405,6 +405,9 @@ void runEnvironmentCmaes(korali::Sample& s)
   // Force applied
   const double maxForce = 1e-2;
   
+  // Safety intervall before boundary (eps + radius)
+  const double deps = 3e-1;
+  
   // Init counting variables
   double energy = 0.0; // Total energy
   double t = 0.0;      // Current time
@@ -460,6 +463,22 @@ void runEnvironmentCmaes(korali::Sample& s)
     {
       fprintf(stderr, "Error during environment\n");
       exit(-1);
+    }
+
+    if (currentPos[0] < deps) 
+    {
+        done = true; // cylinder approaching left bound
+        printf("[Korali] Terminating, Cylinder approaching left bound\n");
+    }
+    if (currentPos[1] > 4.0 - deps)
+    {
+        done = true; // cylinder approaching upper bound
+        printf("[Korali] Terminating, Cylinder approaching upper bound\n");
+    }
+    else if (currentPos[1] < deps)
+    {
+        done = true; // cylinder approaching lower bound
+        printf("[Korali] Terminating, Cylinder approaching lower bound\n");
     }
 
   }

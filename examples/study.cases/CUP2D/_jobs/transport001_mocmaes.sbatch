@@ -1,6 +1,6 @@
 #!/bin/bash -l
 #SBATCH --job-name="mocmaes_transport001"
-#SBATCH --output=output_transport001_%j.out
+#SBATCH --output=output_mocmaes_transport001_%j.out
 #SBATCH --time=24:00:00
 #SBATCH --nodes=33
 #SBATCH --ntasks-per-core=12

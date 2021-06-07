@@ -45,8 +45,8 @@ void MOCMAES::setInitialConfiguration()
   {
     _currentSamplePopulation[i].resize(_variableCount);
     _previousSamplePopulation[i].resize(_variableCount);
-    _currentValues[i].resize(_numObjectives, -std::numeric_limits<double>::infinity());
-    _previousValues[i].resize(_numObjectives, -std::numeric_limits<double>::infinity());
+    _currentValues[i].resize(_numObjectives, -Inf);
+    _previousValues[i].resize(_numObjectives, -Inf);
   }
 
   // Establishing optimization goal
@@ -58,11 +58,11 @@ void MOCMAES::setInitialConfiguration()
   _currentBestVariablesVector.resize(_numObjectives);
   for (size_t k = 0; k < _numObjectives; ++k)
   {
-    _bestEverValues[k] = -std::numeric_limits<double>::infinity();
+    _bestEverValues[k] = -Inf;
     _bestEverVariablesVector[k].resize(_variableCount);
-    _previousBestValues[k] = -std::numeric_limits<double>::infinity();
+    _previousBestValues[k] = -Inf;
     _previousBestVariablesVector[k].resize(_variableCount);
-    _currentBestValues[k] = -std::numeric_limits<double>::infinity();
+    _currentBestValues[k] = -Inf;
     _currentBestVariablesVector[k].resize(_variableCount);
   }
 
@@ -72,8 +72,8 @@ void MOCMAES::setInitialConfiguration()
 
   // Initializing variable defaults
   double trace = 0.;
-  double minSdev = std::numeric_limits<double>::infinity();
-  double maxSdev = -std::numeric_limits<double>::infinity();
+  double minSdev = Inf;
+  double maxSdev = -Inf;
   for (size_t i = 0; i < _variableCount; i++)
   {
     if (std::isfinite(_k->_variables[i]->_initialValue) == false)
@@ -141,8 +141,8 @@ void MOCMAES::setInitialConfiguration()
   _infeasibleSampleCount = 0;
   _currentMinStandardDeviations.resize(_populationSize, minSdev);
   _currentMaxStandardDeviations.resize(_populationSize, maxSdev);
-  _currentBestValueDifferences.resize(_numObjectives, std::numeric_limits<double>::infinity());
-  _currentBestVariableDifferences.resize(_numObjectives, std::numeric_limits<double>::infinity());
+  _currentBestValueDifferences.resize(_numObjectives, Inf);
+  _currentBestVariableDifferences.resize(_numObjectives, Inf);
 }
 
 void MOCMAES::runGeneration()
@@ -274,7 +274,7 @@ std::vector<int> MOCMAES::sortSampleIndices(const std::vector<std::vector<double
     rank[i] -= minRank;
 
   // find reference point
-  std::vector<double> reference(_numObjectives, std::numeric_limits<double>::infinity());
+  std::vector<double> reference(_numObjectives, Inf);
   for (size_t i = 0; i < numValues; ++i)
     for (size_t k = 0; k < _numObjectives; ++k)
       if (values[i][k] < reference[k])
@@ -297,7 +297,7 @@ std::vector<int> MOCMAES::sortSampleIndices(const std::vector<std::vector<double
 
       // init exclusive upper bounds
       std::vector<std::vector<double>> exclusiveUpperbound(numUnsorted);
-      for (size_t i = 0; i < numUnsorted; ++i) exclusiveUpperbound[i] = std::vector<double>(_numObjectives, -std::numeric_limits<double>::infinity());
+      for (size_t i = 0; i < numUnsorted; ++i) exclusiveUpperbound[i] = std::vector<double>(_numObjectives, -Inf);
 
       // calculate exclusive upper bound
       for (size_t i = 0; i < numUnsorted; ++i)
@@ -415,9 +415,9 @@ void MOCMAES::updateStatistics()
   for (size_t k = 0; k < _numObjectives; ++k)
     _previousBestVariablesVector[k] = _currentBestVariablesVector[k];
 
-  std::fill(_currentBestValues.begin(), _currentBestValues.end(), -std::numeric_limits<double>::infinity());
-  std::fill(_currentMinStandardDeviations.begin(), _currentMinStandardDeviations.end(), std::numeric_limits<double>::infinity());
-  std::fill(_currentMaxStandardDeviations.begin(), _currentMaxStandardDeviations.end(), -std::numeric_limits<double>::infinity());
+  std::fill(_currentBestValues.begin(), _currentBestValues.end(), -Inf);
+  std::fill(_currentMinStandardDeviations.begin(), _currentMinStandardDeviations.end(), Inf);
+  std::fill(_currentMaxStandardDeviations.begin(), _currentMaxStandardDeviations.end(), -Inf);
 
   // Keep track of current best objectives and differences to previous generation
   for (size_t i = 0; i < _populationSize; ++i)

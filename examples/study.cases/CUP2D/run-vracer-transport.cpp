@@ -63,14 +63,14 @@ int main(int argc, char *argv[])
   e["Variables"][curVariable]["Type"] = "Action";
   e["Variables"][curVariable]["Lower Bound"] = -maxForce;
   e["Variables"][curVariable]["Upper Bound"] = +maxForce;
-  e["Variables"][curVariable]["Initial Exploration Noise"] = 0.5*maxForce;
+  e["Variables"][curVariable]["Initial Exploration Noise"] = 0.3*maxForce;
 
   curVariable++;
   e["Variables"][curVariable]["Name"] = "Force Y";
   e["Variables"][curVariable]["Type"] = "Action";
   e["Variables"][curVariable]["Lower Bound"] = -maxForce;
   e["Variables"][curVariable]["Upper Bound"] = +maxForce;
-  e["Variables"][curVariable]["Initial Exploration Noise"] = 0.5*maxForce;
+  e["Variables"][curVariable]["Initial Exploration Noise"] = 0.3*maxForce;
 
   /// Defining Agent Configuration
 
@@ -90,8 +90,8 @@ int main(int argc, char *argv[])
 
   //// Configuring Mini Batch
 
-  e["Solver"]["Mini Batch Size"] = 128;
-  e["Solver"]["Mini Batch Strategy"] = "Uniform";
+  e["Solver"]["Mini Batch Size"] = 256;
+  //e["Solver"]["Mini Batch Strategy"] = "Uniform";
 
   //// Defining Neural Network
 
@@ -112,13 +112,13 @@ int main(int argc, char *argv[])
   // two FF layers with 128
   e["Solver"]["Neural Network"]["Engine"] = "OneDNN";
   e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear";
-  e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 128;
+  e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 32;
 
   e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Activation";
   e["Solver"]["Neural Network"]["Hidden Layers"][1]["Function"] = "Elementwise/Tanh";
 
   e["Solver"]["Neural Network"]["Hidden Layers"][2]["Type"] = "Layer/Linear";
-  e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 128;
+  e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 32;
 
   e["Solver"]["Neural Network"]["Hidden Layers"][3]["Type"] = "Layer/Activation";
   e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tanh";

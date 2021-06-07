@@ -73,7 +73,11 @@ class CMAES : public Optimizer
   /**
   * @brief Covariance matrix updates will be optimized for diagonal matrices.
   */
-   int _isDiagonal;
+   int _diagonalCovariance;
+  /**
+  * @brief Generate the negative counterpart of each random number during sampling.
+  */
+   int _mirroredSampling;
   /**
   * @brief Specifies the number of samples per generation during the viability regime, i.e. during the search for a parameter vector not violating the constraints.
   */
@@ -118,10 +122,6 @@ class CMAES : public Optimizer
   * @brief [Internal Use] Objective function values.
   */
    std::vector<double> _valueVector;
-  /**
-  * @brief [Internal Use] Objective function values from previous generation.
-  */
-   std::vector<double> _previousValueVector;
   /**
   * @brief [Internal Use] Gradients of objective function evaluations.
   */
@@ -285,7 +285,7 @@ class CMAES : public Optimizer
   /**
   * @brief [Internal Use] True if the number of constraints is higher than zero.
   */
-   int _areConstraintsDefined;
+   int _hasConstraints;
   /**
   * @brief [Internal Use] This is the $eta$ factor that indicates how fast the covariance matrix is adapted.
   */
@@ -430,8 +430,9 @@ class CMAES : public Optimizer
   /**
   * @brief Evaluates a single sample
   * @param sampleIdx Index of the sample to evaluate
+  * @param randomNumbers Random numbers to generate sample
  */
-  void sampleSingle(size_t sampleIdx);
+  void sampleSingle(size_t sampleIdx, const std::vector<double>& randomNumbers);
 
   /**
    * @brief Adapts the covariance matrix.

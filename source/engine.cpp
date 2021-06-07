@@ -48,7 +48,7 @@ void Engine::initialize()
     _experimentVector[i]->initialize();
     _experimentVector[i]->_isFinished = false;
   }
-
+  
   // Check configuration correctness
   auto js = _js.getJson();
   if (isDefined(js, "Conduit")) eraseValue(js, "Conduit");

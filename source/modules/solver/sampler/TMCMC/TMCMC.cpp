@@ -92,7 +92,7 @@ void TMCMC::setInitialConfiguration()
   _annealingExponent = 0.0;
   _logEvidence = 0.0;
   _coefficientOfVariation = 0.0;
-  _maxLoglikelihood = -std::numeric_limits<double>::infinity();
+  _maxLoglikelihood = -Inf;
   _chainCount = _populationSize;
 
   _numCovarianceCorrections = 0;

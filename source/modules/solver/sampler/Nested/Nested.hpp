@@ -202,15 +202,15 @@ class Nested : public Sampler
   void updateBox();
 
   /*
-  * @brief Ascending sort of live sample ranks based on evaluation.
+  * @brief Sorts live sample ranks ascending based on loglikelihood and prior weight evaluation.
  */
   void sortLiveSamplesAscending();
 
   /*
-  * @brief Add sample to discard to sample database.
-  * @param sampleIdx Sample Id of sample in live set to put into database.
+  * @brief Remove sample from live samples and move it to dead samples.
+  * @param sampleIdx Index of sample in live samples to process.
   */
-  void updateSampleDatabase(size_t sampleIdx);
+  void updateDeadSamples(size_t sampleIdx);
 
   /*
   * @brief Generate posterior distribution from sample data base.
@@ -274,13 +274,6 @@ class Nested : public Sampler
   double mahalanobisDistance(const std::vector<double> &sample, const ellipse_t &ellipse) const;
 
   /*
-  * @brief Calculates weighted Mahalanobis metric of sample and ellipse.
-  * @param sample Sample.
-  * @param ellipse Ellipse.
-  */
-  double weightedMahalanobisDistance(const std::vector<double> &sample, const ellipse_t &ellipse) const;
-
-  /*
   * @brief Calculate effective number of samples.
   * @return the number of effective samples
   */
@@ -291,22 +284,6 @@ class Nested : public Sampler
   * @param sample Sample to be checked.
   */
   bool insideUnitCube(const std::vector<double> &sample) const;
-
-  /*
-  * @brief Safely adding two values that are in log space. Returns in log space.
-  * @param logx logx
-  * @param logy logy
-  * return The operation result
-  */
-  double safeLogPlus(double logx, double logy) const;
-
-  /*
-  * @brief Safely subtracting logy from logx. Returns in log space.
-  * @param logx logx
-  * @param logy logy
-  * return The operation result
-  */
-  double safeLogMinus(double logx, double logy) const;
 
   public: 
   /**
@@ -430,11 +407,11 @@ class Nested : public Sampler
   */
    std::vector<double> _priorWidth;
   /**
-  * @brief [Internal Use] Sample candidates to be evaluated.
+  * @brief [Internal Use] Sample candidates to be evaluated in current generation.
   */
    std::vector<std::vector<double>> _candidates;
   /**
-  * @brief [Internal Use] Likelihood evaluations of candidates.
+  * @brief [Internal Use] Loglikelihood evaluations of candidates.
   */
    std::vector<double> _candidateLogLikelihoods;
   /**
@@ -442,41 +419,53 @@ class Nested : public Sampler
   */
    std::vector<double> _candidateLogPriors;
   /**
-  * @brief [Internal Use] Current samples.
+  * @brief [Internal Use] The logprior weights of the candidates.
+  */
+   std::vector<double> _candidateLogPriorWeights;
+  /**
+  * @brief [Internal Use] Samples to be processed and replaced in ascending order.
   */
    std::vector<std::vector<double>> _liveSamples;
   /**
-  * @brief [Internal Use] Likelihood evaluations of live samples.
+  * @brief [Internal Use] Loglikelihood evaluations of live samples.
   */
    std::vector<double> _liveLogLikelihoods;
   /**
-  * @brief [Internal Use] Likelihood evaluations of live samples.
+  * @brief [Internal Use] Logprior evaluations of live samples.
   */
    std::vector<double> _liveLogPriors;
   /**
-  * @brief [Internal Use] Ranking of descending sorted live samples based on evaluation.
+  * @brief [Internal Use] Logprior weights of live samples.
+  */
+   std::vector<double> _liveLogPriorWeights;
+  /**
+  * @brief [Internal Use] Ascending ranking of live samples (sorted based on likelihood and logprior weight).
   */
    std::vector<size_t> _liveSamplesRank;
   /**
-  * @brief [Internal Use] Number of samples in db.
+  * @brief [Internal Use] Number of dead samples, which have been removed from the live samples.
   */
-   size_t _databaseEntries;
+   size_t _numberDeadSamples;
   /**
-  * @brief [Internal Use] Discarded samples stored in database.
+  * @brief [Internal Use] Dead samples stored in database.
   */
-   std::vector<std::vector<double>> _sampleDatabase;
+   std::vector<std::vector<double>> _deadSamples;
   /**
   * @brief [Internal Use] Loglikelihood evaluations of dead samples.
   */
-   std::vector<double> _sampleLogLikelihoodDatabase;
+   std::vector<double> _deadLogLikelihoods;
   /**
   * @brief [Internal Use] Logprior evaluations associated with dead samples.
   */
-   std::vector<double> _sampleLogPriorDatabase;
+   std::vector<double> _deadLogPriors;
+  /**
+  * @brief [Internal Use] Logprior weights associated with dead samples.
+  */
+   std::vector<double> _deadLogPriorWeights;
   /**
   * @brief [Internal Use] Log weight (Priormass x Likelihood) of dead samples.
   */
-   std::vector<double> _sampleLogWeightDatabase;
+   std::vector<double> _deadLogWeights;
   /**
   * @brief [Internal Use] Sample covariance of the live samples.
   */

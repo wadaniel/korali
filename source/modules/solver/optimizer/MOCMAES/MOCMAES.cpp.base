@@ -130,10 +130,6 @@ void @className::setInitialConfiguration()
     KORALI_LOG_ERROR("Invalid Global Success Learning Rate (%f), must be greater than 0.0 and less or equal to 1.0\n", _successLearningRate);
   if ((_targetSuccessRate <= 0.) || (_targetSuccessRate > 1.))
     KORALI_LOG_ERROR("Invalid Target Success Rate (%f), must be greater than 0.0 and less or equal to 1.0\n", _targetSuccessRate);
-  if (_covarianceLearningRate <= 0.)
-    KORALI_LOG_ERROR("Invalid Covariance Learning Rate (%f), must be greater than 0.0\n", _covarianceLearningRate);
-  if (_evolutionPathAdaptionStrength <= 0. || _evolutionPathAdaptionStrength > 1.)
-    KORALI_LOG_ERROR("Invalid Evolution Path Adaption Strength (%f), must be greater 0.0 and less or equal to 1.0\n", _evolutionPathAdaptionStrength);
 
   // Termination criteria
   _infeasibleSampleCount = 0;

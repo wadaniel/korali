@@ -25,7 +25,33 @@ e["Solver"]["Type"] = "Optimizer/CMAES"
 e["Solver"]["Population Size"] = 8
 e["Solver"]["Termination Criteria"]["Max Generations"] = 100
 
-e["Console Output"]["Frequency"] = 1000
+e["Console Output"]["Frequency"] = 10
+e["Console Output"]["Verbosity"] = "Detailed"
+e["File Output"]["Enabled"] = False
+e["Random Seed"] = 1337
+
+k = korali.Engine()
+k.run(e)
+
+checkMin(e, 0.22942553779431113, 1e-4)
+
+### Running With Diagonal Covariance Matrix
+
+e = korali.Experiment()
+e["Problem"]["Type"] = "Optimization"
+e["Problem"]["Objective Function"] = evalmodel
+
+e["Variables"][0]["Name"] = "X"
+e["Variables"][0]["Lower Bound"] = -10.0
+e["Variables"][0]["Upper Bound"] = +10.0
+
+e["Solver"]["Type"] = "Optimizer/CMAES"
+e["Solver"]["Population Size"] = 8
+e["Solver"]["Termination Criteria"]["Max Generations"] = 100
+e["Solver"]["Is Diagonal"] = True
+
+e["Console Output"]["Frequency"] = 10
+e["Console Output"]["Verbosity"] = "Detailed"
 e["File Output"]["Enabled"] = False
 e["Random Seed"] = 1337
 

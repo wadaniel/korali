@@ -1,5 +1,5 @@
 #!/bin/bash -l
-#SBATCH --job-name="transport001"
+#SBATCH --job-name="mocmaes_transport001"
 #SBATCH --output=output_transport001_%j.out
 #SBATCH --time=24:00:00
 #SBATCH --nodes=33

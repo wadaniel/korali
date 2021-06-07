@@ -1577,10 +1577,13 @@ namespace
   ASSERT_ANY_THROW(opt->setInitialConfiguration());
   opt->_targetSuccessRate = 0.5;
 
-  // Testing initial configuration failure
+  // Testing initial configuration success
+  opt->_covarianceLearningRate = -1.0;
+  ASSERT_NO_THROW(opt->setInitialConfiguration());
+
+  // Testing initial configuration success
   opt->_evolutionPathAdaptionStrength = -1.0;
-  ASSERT_ANY_THROW(opt->setInitialConfiguration());
-  opt->_evolutionPathAdaptionStrength = 0.5;
+  ASSERT_NO_THROW(opt->setInitialConfiguration());
 
   // Testing initial configuration success
   ASSERT_NO_THROW(opt->setInitialConfiguration());

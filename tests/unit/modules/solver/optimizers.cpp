@@ -1578,11 +1578,6 @@ namespace
   opt->_targetSuccessRate = 0.5;
 
   // Testing initial configuration failure
-  opt->_covarianceLearningRate = -1.0;
-  ASSERT_ANY_THROW(opt->setInitialConfiguration());
-  opt->_covarianceLearningRate  = 0.5;
-
-  // Testing initial configuration failure
   opt->_evolutionPathAdaptionStrength = -1.0;
   ASSERT_ANY_THROW(opt->setInitialConfiguration());
   opt->_evolutionPathAdaptionStrength = 0.5;

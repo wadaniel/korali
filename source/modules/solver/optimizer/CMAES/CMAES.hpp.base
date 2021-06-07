@@ -18,8 +18,9 @@ class @className : public @parentClassName
   /**
   * @brief Evaluates a single sample
   * @param sampleIdx Index of the sample to evaluate
+  * @param randomNumbers Random numbers to generate sample
  */
-  void sampleSingle(size_t sampleIdx);
+  void sampleSingle(size_t sampleIdx, const std::vector<double>& randomNumbers);
 
   /**
    * @brief Adapts the covariance matrix.

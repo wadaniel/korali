@@ -39,25 +39,25 @@ void @className::setInitialConfiguration()
   {
     _currentSamplePopulation[i].resize(_variableCount);
     _previousSamplePopulation[i].resize(_variableCount);
-    _currentValues[i].resize(_numObjectives, -std::numeric_limits<double>::infinity());
-    _previousValues[i].resize(_numObjectives, -std::numeric_limits<double>::infinity());
+    _currentValues[i].resize(_numObjectives, -Inf);
+    _previousValues[i].resize(_numObjectives, -Inf);
   }
 
   // Establishing optimization goal
   _bestEverValues.resize(_numObjectives);
-  _bestEverVariables.resize(_numObjectives);
+  _bestEverVariablesVector.resize(_numObjectives);
   _previousBestValues.resize(_numObjectives);
-  _previousBestVariables.resize(_numObjectives);
+  _previousBestVariablesVector.resize(_numObjectives);
   _currentBestValues.resize(_numObjectives);
-  _currentBestVariables.resize(_numObjectives);
+  _currentBestVariablesVector.resize(_numObjectives);
   for (size_t k = 0; k < _numObjectives; ++k)
   {
-    _bestEverValues[k] = -std::numeric_limits<double>::infinity();
-    _bestEverVariables[k].resize(_variableCount);
-    _previousBestValues[k] = -std::numeric_limits<double>::infinity();
-    _previousBestVariables[k].resize(_variableCount);
-    _currentBestValues[k] = -std::numeric_limits<double>::infinity();
-    _currentBestVariables[k].resize(_variableCount);
+    _bestEverValues[k] = -Inf;
+    _bestEverVariablesVector[k].resize(_variableCount);
+    _previousBestValues[k] = -Inf;
+    _previousBestVariablesVector[k].resize(_variableCount);
+    _currentBestValues[k] = -Inf;
+    _currentBestVariablesVector[k].resize(_variableCount);
   }
 
   // Disable general termination criterion
@@ -66,8 +66,8 @@ void @className::setInitialConfiguration()
 
   // Initializing variable defaults
   double trace = 0.;
-  double minSdev = std::numeric_limits<double>::infinity();
-  double maxSdev = -std::numeric_limits<double>::infinity();
+  double minSdev = Inf;
+  double maxSdev = -Inf;
   for (size_t i = 0; i < _variableCount; i++)
   {
     if (std::isfinite(_k->_variables[i]->_initialValue) == false)
@@ -135,8 +135,8 @@ void @className::setInitialConfiguration()
   _infeasibleSampleCount = 0;
   _currentMinStandardDeviations.resize(_populationSize, minSdev);
   _currentMaxStandardDeviations.resize(_populationSize, maxSdev);
-  _currentBestValueDifferences.resize(_numObjectives, std::numeric_limits<double>::infinity());
-  _currentBestVariableDifferences.resize(_numObjectives, std::numeric_limits<double>::infinity());
+  _currentBestValueDifferences.resize(_numObjectives, Inf);
+  _currentBestVariableDifferences.resize(_numObjectives, Inf);
 }
 
 void @className::runGeneration()
@@ -268,7 +268,7 @@ std::vector<int> @className::sortSampleIndices(const std::vector<std::vector<dou
     rank[i] -= minRank;
 
   // find reference point
-  std::vector<double> reference(_numObjectives, std::numeric_limits<double>::infinity());
+  std::vector<double> reference(_numObjectives, Inf);
   for (size_t i = 0; i < numValues; ++i)
     for (size_t k = 0; k < _numObjectives; ++k)
       if (values[i][k] < reference[k])
@@ -291,7 +291,7 @@ std::vector<int> @className::sortSampleIndices(const std::vector<std::vector<dou
 
       // init exclusive upper bounds
       std::vector<std::vector<double>> exclusiveUpperbound(numUnsorted);
-      for (size_t i = 0; i < numUnsorted; ++i) exclusiveUpperbound[i] = std::vector<double>(_numObjectives, -std::numeric_limits<double>::infinity());
+      for (size_t i = 0; i < numUnsorted; ++i) exclusiveUpperbound[i] = std::vector<double>(_numObjectives, -Inf);
 
       // calculate exclusive upper bound
       for (size_t i = 0; i < numUnsorted; ++i)
@@ -407,11 +407,11 @@ void @className::updateStatistics()
 {
   _previousBestValues = _currentBestValues;
   for (size_t k = 0; k < _numObjectives; ++k)
-    _previousBestVariables[k] = _currentBestVariables[k];
+    _previousBestVariablesVector[k] = _currentBestVariablesVector[k];
 
-  std::fill(_currentBestValues.begin(), _currentBestValues.end(), -std::numeric_limits<double>::infinity());
-  std::fill(_currentMinStandardDeviations.begin(), _currentMinStandardDeviations.end(), std::numeric_limits<double>::infinity());
-  std::fill(_currentMaxStandardDeviations.begin(), _currentMaxStandardDeviations.end(), -std::numeric_limits<double>::infinity());
+  std::fill(_currentBestValues.begin(), _currentBestValues.end(), -Inf);
+  std::fill(_currentMinStandardDeviations.begin(), _currentMinStandardDeviations.end(), Inf);
+  std::fill(_currentMaxStandardDeviations.begin(), _currentMaxStandardDeviations.end(), -Inf);
 
   // Keep track of current best objectives and differences to previous generation
   for (size_t i = 0; i < _populationSize; ++i)
@@ -421,12 +421,12 @@ void @className::updateStatistics()
       if (_currentValues[i][k] > _currentBestValues[k])
       {
         _currentBestValues[k] = _currentValues[i][k];
-        _currentBestVariables[k] = _currentSamplePopulation[i];
+        _currentBestVariablesVector[k] = _currentSamplePopulation[i];
         _currentBestValueDifferences[k] = _currentBestValues[k] - _previousBestValues[k];
         double l2norm2 = 0.;
         for (size_t d = 0; d < _variableCount; ++d)
         {
-          l2norm2 += std::pow(_previousBestVariables[k][d] - _currentBestVariables[k][d], 2.);
+          l2norm2 += std::pow(_previousBestVariablesVector[k][d] - _currentBestVariablesVector[k][d], 2.);
         }
         _currentBestVariableDifferences[k] = std::sqrt(l2norm2);
       }
@@ -439,7 +439,7 @@ void @className::updateStatistics()
     if (_currentBestValues[k] > _bestEverValues[k])
     {
       _bestEverValues[k] = _currentBestValues[k];
-      _bestEverVariables[k] = _currentBestVariables[k];
+      _bestEverVariablesVector[k] = _currentBestVariablesVector[k];
     }
   }
 
@@ -539,7 +539,7 @@ void @className::finalize()
   /*
   _k->_logger->logInfo("Minimal", "Optimum found: %e\n", _bestEverValue);s
   _k->_logger->logInfo("Minimal", "Optimum found at:\n");
-  for (size_t d = 0; d < _k->_variables.size(); ++d) _k->_logger->logData("Minimal", "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _bestEverVariables[d]);
+  for (size_t d = 0; d < _k->_variables.size(); ++d) _k->_logger->logData("Minimal", "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _bestEverVariablesVector[d]);
   _k->_logger->logInfo("Minimal", "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
   */
 }

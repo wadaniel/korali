@@ -1629,6 +1629,16 @@ namespace
 
   optimizerJs = baseOptJs;
   experimentJs = baseExpJs;
+  optimizerJs["Previous Sample Population"] = std::vector<std::vector<double>>({{1.0}});
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Previous Sample Population"] = 1.0;
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
   optimizerJs["Parent Sigma"] = std::vector<double>({1.0});
   ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
 
@@ -1645,6 +1655,26 @@ namespace
   optimizerJs = baseOptJs;
   experimentJs = baseExpJs;
   optimizerJs["Previous Sigma"] = 1.0;
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Num Objectives"] = 1;
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Num Objectives"] = std::vector<std::vector<double>>({{1.0}});
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Previous Covariance Matrix"] = std::vector<std::vector<double>>({{1.0}});
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Previous Covariance Matrix"] = 1.0;
   ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
 
   optimizerJs = baseOptJs;
@@ -2011,6 +2041,42 @@ namespace
   experimentJs = baseExpJs;
   optimizerJs["Termination Criteria"]["Max Standard Deviation"] = std::vector<double>({1.0});
   ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  // Testing termination criteria
+  e._currentGeneration = 2;
+  opt->_maxGenerations = 10;
+  opt->_minValueDifferenceThreshold = -std::numeric_limits<double>::infinity();
+  opt->_minVariableDifferenceThreshold = -std::numeric_limits<double>::infinity();
+  opt->_minStandardDeviation = -std::numeric_limits<double>::infinity();
+  opt->_maxStandardDeviation = std::numeric_limits<double>::infinity();
+
+  opt->_minValueDifferenceThreshold = 2.0;
+  opt->_currentBestValueDifferences[0] = 3.0;
+  ASSERT_FALSE(opt->checkTermination());
+  opt->_currentBestValueDifferences[0] = 1.0;
+  ASSERT_TRUE(opt->checkTermination());
+  opt->_minValueDifferenceThreshold = -std::numeric_limits<double>::infinity();
+
+  opt->_minVariableDifferenceThreshold = 2.0;
+  opt->_currentBestVariableDifferences[0] = 3.0;
+  ASSERT_FALSE(opt->checkTermination());
+  opt->_currentBestVariableDifferences[0] = 1.0;
+  ASSERT_TRUE(opt->checkTermination());
+  opt->_minVariableDifferenceThreshold = -std::numeric_limits<double>::infinity();
+
+  opt->_minStandardDeviation = 2.0;
+  opt->_currentMinStandardDeviations[0] = 3.0;
+  ASSERT_FALSE(opt->checkTermination());
+  opt->_currentMinStandardDeviations[0] = 1.0;
+  ASSERT_TRUE(opt->checkTermination());
+  opt->_minStandardDeviation = -std::numeric_limits<double>::infinity();
+
+  opt->_maxStandardDeviation = 2.0;
+  opt->_currentMaxStandardDeviations[0] = 1.0;
+  ASSERT_FALSE(opt->checkTermination());
+  opt->_currentMaxStandardDeviations[0] = 3.0;
+  ASSERT_TRUE(opt->checkTermination());
+  opt->_maxStandardDeviation = std::numeric_limits<double>::infinity();
  }
 
 } // namespace

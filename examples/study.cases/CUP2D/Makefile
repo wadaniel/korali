@@ -1,4 +1,4 @@
-TRANSPORT = run-cmaes-transport run-mocmaes-transport run-vracer-transport 
+TRANSPORT = run-mocmaes-transport run-cmaes-transport run-vracer-transport 
 FISH = run-vracer-fish
 WINDMILL = run-vracer-windmill eval-vracer-windmill
 KORALICXX=$(shell python3 -m korali.cxx --compiler)
@@ -12,8 +12,6 @@ CUBISMLIBS= _deps/CUP-2D/makefiles/libcup.a $(shell cat _deps/CUP-2D/makefiles/c
 all: transport fish windmill
 
 transport: $(TRANSPORT)
-
-transport2: $(TRANSPORT2)
 
 fish: $(FISH)
 

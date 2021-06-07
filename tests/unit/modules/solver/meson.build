@@ -1,15 +1,14 @@
 pythonEmbedDep = dependency('python3-embed', required: false)
 
-fastOpt_tester = executable('fastOpt_tester',
-  files(['fastOpt_tester.cpp']),
+optimizers_tester = executable('optimizers_tester',
+  files(['optimizers.cpp']),
   include_directories: korali_include,
   dependencies: [ gtest_main_dep, korali_deps, pythonEmbedDep ],
   link_with: [ python_extension ],
   )
   
-test('optimizer.fast', fastOpt_tester,
+test('modules.solver.optimizers', optimizers_tester,
   protocol: 'gtest',
-  timeout : 1000,
-  suite: 'statistical',
+  suite: 'unit',
 )
 

@@ -8,7 +8,54 @@ import matplotlib.patches as mpatch
 from random import randrange
 import time
 import korali
+import argparse
 k = korali.Engine()
+
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    '--optimizer',
+    help='Optimizer to use for NN parameter updates',
+    default='Adam',
+    required=False)
+parser.add_argument(
+    '--maxGenerations',
+     help='Maximum Number of generations to run',
+     default=10,
+     required=False)   
+parser.add_argument(
+    '--rnnType',
+    help='Optimizer to use for NN parameter updates',
+    default='GRU',
+    required=False)
+parser.add_argument(
+    '--learningRate',
+    help='Learning rate for the selected optimizer',
+    default=0.001,
+    required=False)
+parser.add_argument(
+    '--trainingBatchSize',
+    help='Batch size to use for training data',
+    default=500,
+    required=False)
+parser.add_argument(
+    '--testBatchSize',
+    help='Batch size to use for test data',
+    default=100,
+    required=False)
+parser.add_argument(
+    '--testMSEThreshold',
+    help='Threshold for the testing MSE, under which the run will report an error',
+    default=0.05,
+    required=False)
+parser.add_argument(
+    '--plot',
+    help='Indicates whether to plot results after testing',
+    default=False,
+    required=False)
+args = parser.parse_args()
+
+print("Running RNN solver with arguments:")
+print(args)
 
 # Setting random seed for reproducibility
 np.random.seed(0xC0FFEE)
@@ -16,16 +63,14 @@ np.random.seed(0xC0FFEE)
 # Input parameters
 tf = 2.0 # Total Time
 dt = 0.4 # Time Differential
-B = 500 # Training Batch Size
 s = 1.0  # Parameter for peak separation
 w = np.pi # Parameter for wave speed
 a = 1.0 # Scaling
-plotting = False # Indicates whether to plot the results
 
 # Transformation Function
 def y(x, t): return np.sin(x * s +  w * t)  
 
-X = np.random.uniform(0, np.pi*2, B)
+X = np.random.uniform(0, np.pi*2, args.trainingBatchSize)
 T = np.arange(0, tf, dt)
 
 # Providing inputs batches with varying timesequence lengths
@@ -49,8 +94,8 @@ for j, x in enumerate(X):
 e = korali.Experiment()
 e["Problem"]["Type"] = "Supervised Learning"
 e["Problem"]["Max Timesteps"] = len(T)
-e["Problem"]["Training Batch Size"] = B
-e["Problem"]["Inference Batch Size"] = B
+e["Problem"]["Training Batch Size"] = args.trainingBatchSize
+e["Problem"]["Inference Batch Size"] = args.testBatchSize
 e["Problem"]["Input"]["Data"] = trainingInputSetX
 e["Problem"]["Input"]["Size"] = 1
 e["Problem"]["Solution"]["Data"] = trainingSolutionSet
@@ -61,14 +106,14 @@ e["Problem"]["Solution"]["Size"] = 1
 e["Solver"]["Type"] = "Learner/DeepSupervisor"
 e["Solver"]["Loss Function"] = "Mean Squared Error"
 e["Solver"]["Steps Per Generation"] = 20
-e["Solver"]["Learning Rate"] = 0.001
+e["Solver"]["Learning Rate"] = float(args.learningRate)
 
 ### Defining the shape of the neural network
 
 e["Solver"]["Neural Network"]["Engine"] = "OneDNN"
-e["Solver"]["Neural Network"]["Optimizer"] = "Adam"
+e["Solver"]["Neural Network"]["Optimizer"] = args.optimizer
 
-e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Recurrent/GRU"
+e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Recurrent/" + args.rnnType
 e["Solver"]["Neural Network"]["Hidden Layers"][0]["Depth"] = 1
 e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 32
 
@@ -79,7 +124,7 @@ e["File Output"]["Enabled"] = False
 
 ### Training the neural network
 
-e["Solver"]["Termination Criteria"]["Max Generations"] = 100
+e["Solver"]["Termination Criteria"]["Max Generations"] = 50
 
 ### If this is test mode, run only a couple generations
 if len(sys.argv) == 2:
@@ -91,7 +136,7 @@ k.run(e)
 
 ### Obtaining inferred results from the NN and comparing them to the actual solution
 
-X = np.random.uniform(0, np.pi*2, B)
+X = np.random.uniform(0, np.pi*2, args.testBatchSize)
 
 # Providing inputs batches with varying timesequence lengths
 testInputSetX = [ ]
@@ -115,8 +160,12 @@ testInferredSet = e.getEvaluation(testInputSetX)
 mse = np.mean((np.array(testInferredSet) - np.array(testSolutionSet))**2)
 print("MSE on test set: {}".format(mse))
 
+if (mse > args.testMSEThreshold):
+ print("Fail: MSE does not satisfy threshold: " + str(args.testMSEThreshold))
+ exit(-1)
+ 
 ### Plotting inferred result
-if plotting:
+if args.plot:
  cmap = cm.get_cmap(name='Set1')
  xAxis = [ x[-1][0] for x in testInputSetX ]
 

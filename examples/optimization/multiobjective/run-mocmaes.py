@@ -40,6 +40,7 @@ e["Solver"]["Termination Criteria"]["Min Variable Difference Threshold"] = 1e-8
 e["Solver"]["Termination Criteria"]["Max Generations"] = 500
 
 # Configuring results path
+e["Console Output"]["Frequency"] = 10
 e["File Output"]["Path"] = '_korali_result_mocmaes'
 e["File Output"]["Frequency"] = 10
 

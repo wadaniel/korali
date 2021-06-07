@@ -2,6 +2,7 @@
 #include <algorithm> // std::sort
 #include <numeric>   // std::iota
 #include <stdio.h>
+#include <stdexcept>
 
 namespace korali
 {
@@ -18,6 +19,7 @@ fCMAES::fCMAES(size_t nVars, size_t populationSize, size_t muSize)
   _initialCumulativeCovariance = -1.0;
   _isDiagonal = false;
   _muType = "Linear";
+  _isFailFlag = false;
 
   // Variable Parameters
   _nVars = nVars;
@@ -96,6 +98,7 @@ void fCMAES::reset()
 {
   _currentGeneration = 1;
   _noUpdatePossible = false;
+  _isFailFlag = false;
 
   // Establishing optimization goal
   _bestEverValue = -std::numeric_limits<float>::infinity();
@@ -108,22 +111,22 @@ void fCMAES::reset()
     if (std::isfinite(_lowerBounds[i]) == false)
     {
       fprintf(stderr, "Lower Bound of variable \'%lu\' not defined.\n", i);
-      std::abort();
+      throw std::runtime_error("Bad Inputs for Optimizer.");
     }
     if (std::isfinite(_upperBounds[i]) == false)
     {
       fprintf(stderr, "Upper Bound of variable \'%lu\' not defined.\n", i);
-      std::abort();
+      throw std::runtime_error("Bad Inputs for Optimizer.");
     }
     if (std::isfinite(_initialMeans[i]) == false)
     {
       fprintf(stderr, "Initial mean of variable \'%lu\' not defined.\n", i);
-      std::abort();
+      throw std::runtime_error("Bad Inputs for Optimizer.");
     }
     if (std::isfinite(_initialStandardDeviations[i]) == false)
     {
       fprintf(stderr, "Initial StdDev of variable \'%lu\' not defined.\n", i);
-      std::abort();
+      throw std::runtime_error("Bad Inputs for Optimizer.");
     }
   }
 
@@ -145,17 +148,12 @@ void fCMAES::reset()
 void fCMAES::initMuWeights(size_t numsamplesmu)
 {
   // Initializing Mu Weights
-  if (_muType == "Linear")
-    for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] = numsamplesmu - i;
-  else if (_muType == "Equal")
-    for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] = 1.;
-  else if (_muType == "Logarithmic")
-    for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] = log(std::max((float)numsamplesmu, 0.5f * _populationSize) + 0.5f) - log(i + 1.0f);
-  else
-  {
-    fprintf(stderr, "Invalid setting of Mu Type (%s) (Linear, Equal, or Logarithmic accepted).", _muType.c_str());
-    std::abort();
-  }
+  bool muTypeRecognized = false;
+
+  if (_muType == "Linear") { for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] = numsamplesmu - i; muTypeRecognized = true; }
+  if (_muType == "Equal") { for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] = 1.; muTypeRecognized = true; }
+  if (_muType == "Logarithmic") { for (size_t i = 0; i < numsamplesmu; i++) _muWeights[i] = log(std::max((float)numsamplesmu, 0.5f * _populationSize) + 0.5f) - log(i + 1.0f); muTypeRecognized = true; }
+  if (muTypeRecognized == false) throw std::runtime_error("Invalid setting of Mu Type (Linear, Equal, or Logarithmic accepted).");
 
   // Normalize weights vector and set mueff
   float s1 = 0.0;
@@ -425,11 +423,11 @@ void fCMAES::updateEigensystem(std::vector<float> &M)
 
   /* find largest and smallest eigenvalue, they are supposed to be sorted anyway */
   float minCovEVal = *std::min_element(std::begin(_auxiliarAxisLengths), std::end(_auxiliarAxisLengths));
-  if (minCovEVal <= 0.0)
+  if (minCovEVal <= 0.000000000001)
   {
     fprintf(stderr, "Min Eigenvalue smaller or equal 0.0 (%+6.3e) after Eigen decomp (no update possible).\n", minCovEVal);
     _noUpdatePossible = true;
-    return;
+    _isFailFlag = true;
   }
 
   for (size_t d = 0; d < _nVars; ++d)
@@ -438,15 +436,17 @@ void fCMAES::updateEigensystem(std::vector<float> &M)
     if (std::isfinite(_auxiliarAxisLengths[d]) == false)
     {
       fprintf(stderr, "Could not calculate root of Eigenvalue (%+6.3e) after Eigen decomp (no update possible).\n", _auxiliarAxisLengths[d]);
-      return;
+      _isFailFlag = true;
     }
     for (size_t e = 0; e < _nVars; ++e)
       if (std::isfinite(_covarianceEigenvectorMatrix[d * _nVars + e]) == false)
       {
         fprintf(stderr, "Non finite value detected in B (no update possible).\n");
-        return;
+        _isFailFlag = true;
       }
   }
+
+  if (_isFailFlag == true) return;
 
   /* write back */
   _minimumCovarianceEigenvalue = minCovEVal;

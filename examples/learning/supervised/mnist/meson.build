@@ -4,6 +4,5 @@ test('learning.supervised.mnist', e,
       suite: 'regression',
       workdir: meson.current_source_dir(),
       depends: python_extension,
-      env: nomalloc,
-      is_parallel : false
+      env: nomalloc
     )

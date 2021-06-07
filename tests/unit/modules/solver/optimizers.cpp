@@ -1551,9 +1551,43 @@ namespace
   // Setting up optimizer correctly
   ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
 
+  // Testing initial configuration failure
+  e._problem = NULL;
+  ASSERT_ANY_THROW(opt->setInitialConfiguration());
+  e._problem = p;
+
+  // Testing initial configuration failure
+  p->_numObjectives = 1;
+  ASSERT_ANY_THROW(opt->setInitialConfiguration());
+  p->_numObjectives = 2;
+
+  // Testing initial configuration failure
+  opt->_muValue = 64;
+  opt->_populationSize = 32;
+  ASSERT_ANY_THROW(opt->setInitialConfiguration());
+  opt->_muValue = 16;
+
+  // Testing initial configuration failure
+  opt->_successLearningRate = -1.0;
+  ASSERT_ANY_THROW(opt->setInitialConfiguration());
+  opt->_successLearningRate = 0.5;
+
+  // Testing initial configuration failure
+  opt->_targetSuccessRate = -1.0;
+  ASSERT_ANY_THROW(opt->setInitialConfiguration());
+  opt->_targetSuccessRate = 0.5;
+
+  // Testing initial configuration failure
+  opt->_covarianceLearningRate = -1.0;
+  ASSERT_ANY_THROW(opt->setInitialConfiguration());
+  opt->_covarianceLearningRate  = 0.5;
+
+  // Testing initial configuration failure
+  opt->_evolutionPathAdaptionStrength = -1.0;
+  ASSERT_ANY_THROW(opt->setInitialConfiguration());
+  opt->_evolutionPathAdaptionStrength = 0.5;
+
   // Testing initial configuration success
-  v._initialValue = 1.0;
-  opt->setInitialConfiguration();
   ASSERT_NO_THROW(opt->setInitialConfiguration());
 
   // Testing optional parameters
@@ -1709,6 +1743,16 @@ namespace
 
   optimizerJs = baseOptJs;
   experimentJs = baseExpJs;
+  optimizerJs["Previous Evolution Paths"] = std::vector<std::vector<double>>({{1.0}});
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Previous Evolution Paths"] = 1.0;
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
   optimizerJs["Parent Evolution Paths"] = std::vector<std::vector<double>>({{1.0}});
   ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
 
@@ -1825,6 +1869,16 @@ namespace
   optimizerJs = baseOptJs;
   experimentJs = baseExpJs;
   optimizerJs["Sample Collection"] = 1.0;
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Sample Value Collection"] = std::vector<std::vector<double>>({{1.0}});
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Sample Value Collection"] = 1.0;
   ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
 
   optimizerJs = baseOptJs;

@@ -95,7 +95,7 @@ def plotGen(genList, idx):
             genIds[idx] = genList[gen]['Current Generation']
             absfval[idx] = abs(np.array(genList[gen]['Solver']['Current Best Values']))
             dfval[idx] = abs(np.array(genList[gen]['Solver']['Current Best Value Differences']))
-            theta[idx] = np.reshape(np.array(genList[gen]['Solver']['Current Best Variables']), numdim*numObjectives)
+            theta[idx] = np.reshape(np.array(genList[gen]['Solver']['Current Best Variables Vector']), numdim*numObjectives)
             dtheta[idx] = abs(np.array(genList[gen]['Solver']['Current Best Variable Differences']))
             cond[idx] = np.array(genList[gen]['Solver']['Current Max Standard Deviations']) / np.array(genList[gen]['Solver']['Current Min Standard Deviations'])
             minsdev[idx] = np.array(genList[gen]['Solver']['Current Min Standard Deviations'])

@@ -47,8 +47,8 @@ void ellipse_t::initSphere()
 
 void ellipse_t::scaleVolume(double factor)
 {
-  double K = std::sqrt(std::pow(M_PI, dim)) * 2. / ((double)dim * gsl_sf_gamma(0.5 * dim));
-  double enlargementFactor = std::pow((volume * volume * factor * factor) / (K * K * det), 1. / ((double)dim));
+  const double K = std::sqrt(std::pow(M_PI, dim)) * 2. / ((double)dim * gsl_sf_gamma(0.5 * dim));
+  const double enlargementFactor = std::pow((volume * volume * factor * factor) / (K * K * det), 1. / ((double)dim));
   for (size_t d = 0; d < dim * dim; ++d)
   {
     cov[d] *= enlargementFactor;

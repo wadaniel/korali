@@ -73,7 +73,7 @@ void Rprop::runGeneration(void)
 
   evaluateFunctionAndGradient(sample);
 
-  Update_iminus();
+  performUpdate();
 
   _previousBestValue = _currentBestValue;
   _previousGradient = _currentGradient;
@@ -96,74 +96,8 @@ void Rprop::runGeneration(void)
   }
 }
 
-// Rprop_plus
-void Rprop::Update_plus(void)
-{
-  for (size_t i = 0; i < _variableCount; i++)
-  {
-    double productGradient = _previousGradient[i] * _currentGradient[i];
-    if (productGradient > 0)
-    {
-      _delta[i] = std::min(_delta[i] * _etaPlus, _deltaMax);
-      _currentGradient[i] = -sign(_currentGradient[i]) * _delta[i];
-      _currentVariable[i] += _currentGradient[i];
-    }
-    else if (productGradient < 0)
-    {
-      _delta[i] = std::max(_delta[i] * _etaMinus, _deltaMin);
-      _currentVariable[i] -= _currentGradient[i];
-      _currentGradient[i] = 0;
-    }
-    else
-    {
-      _currentGradient[i] = -sign(_currentGradient[i]) * _delta[i];
-      _currentVariable[i] += _currentGradient[i];
-    }
-  }
-}
-
-// Rprop_minus
-void Rprop::Update_minus(void)
-{
-  for (size_t i = 0; i < _variableCount; i++)
-  {
-    double productGradient = _previousGradient[i] * _currentGradient[i];
-    if (productGradient > 0)
-      _delta[i] = std::min(_delta[i] * _etaPlus, _deltaMax);
-    else if (productGradient < 0)
-      _delta[i] = std::max(_delta[i] * _etaMinus, _deltaMin);
-    _currentVariable[i] += -sign(_currentGradient[i]) * _delta[i];
-  }
-}
-
-// iRprop_plus
-void Rprop::Update_iplus(void)
-{
-  for (size_t i = 0; i < _variableCount; i++)
-  {
-    double productGradient = _previousGradient[i] * _currentGradient[i];
-    if (productGradient > 0)
-    {
-      _delta[i] = std::min(_delta[i] * _etaPlus, _deltaMax);
-      _currentGradient[i] = -sign(_currentGradient[i]) * _delta[i];
-      _currentVariable[i] += _currentGradient[i];
-    }
-    else if (productGradient < 0)
-    {
-      _delta[i] = std::max(_delta[i] * _etaMinus, _deltaMin);
-      if (_currentBestValue > _previousBestValue) _currentVariable[i] -= _currentGradient[i];
-      _currentGradient[i] = 0;
-    }
-    else
-    {
-      _currentGradient[i] = -sign(_currentGradient[i]) * _delta[i];
-      _currentVariable[i] += _currentGradient[i];
-    }
-  }
-}
-
 // iRprop_minus
-void Rprop::Update_iminus(void)
+void Rprop::performUpdate(void)
 {
   for (size_t i = 0; i < _variableCount; i++)
   {

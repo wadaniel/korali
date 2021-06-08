@@ -164,7 +164,7 @@ void @className::runGeneration()
   std::vector<Sample> samples(_batchSize);
 
   // Repeat until we accept at least one sample
-  while (accepted == false);
+  while (accepted == false)
   {
     updateBounds();
     generateCandidates();
@@ -198,7 +198,6 @@ void @className::runGeneration()
 
     _lastAccepted++;
     accepted = processGeneration();
-
   } 
 
   return;

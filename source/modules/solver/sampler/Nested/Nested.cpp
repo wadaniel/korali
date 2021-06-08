@@ -170,7 +170,7 @@ void Nested::runGeneration()
   std::vector<Sample> samples(_batchSize);
 
   // Repeat until we accept at least one sample
-  while (accepted == false);
+  while (accepted == false)
   {
     updateBounds();
     generateCandidates();
@@ -204,7 +204,6 @@ void Nested::runGeneration()
 
     _lastAccepted++;
     accepted = processGeneration();
-
   } 
 
   return;

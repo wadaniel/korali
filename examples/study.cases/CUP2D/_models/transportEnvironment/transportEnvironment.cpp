@@ -13,8 +13,9 @@ Simulation *_environment;
 std::mt19937 _randomGenerator;
 
 // Swimmer following an obstacle
-void runEnvironment(korali::Sample &s)
+void runEnvironmentVracer(korali::Sample &s)
 {
+  
   // Setting seed
   size_t sampleId = s["Sample Id"];
   _randomGenerator.seed(sampleId);
@@ -46,11 +47,11 @@ void runEnvironment(korali::Sample &s)
 
   // Reseting environment and setting initial conditions
   _environment->resetRL();
-  std::vector<double> start{0.2,0.5};
+  std::vector<double> start{1., 2.};
   setInitialConditions(agent, start, s["Mode"] == "Training");
 
   // Set target 
-  std::vector<double> target{0.8,0.5};
+  std::vector<double> target{3., 2.};
 
   // Setting initial state
   auto state = agent->state( target );
@@ -62,7 +63,8 @@ void runEnvironment(korali::Sample &s)
   size_t curStep = 0;  // current Step
 
   // Setting maximum number of steps before truncation
-  size_t maxSteps = 200;
+  size_t maxSteps = 1000; 
+  double dtact = 1e-1;
 
   // Starting main environment loop
   bool done = false;
@@ -78,14 +80,29 @@ void runEnvironment(korali::Sample &s)
     std::vector<double> action = s["Action"];
 
     // Setting action
-    agent->act( action );
+    if (action.size() == 2)
+    {
+        agent->act( action );
+    }
+    else if (action.size() == 3)
+    {
+
+        std::vector<double> force = { action[0], action[1] };
+        agent->act( force );
+        agent->torque = action[2];
+    }
+    else
+    {
+        fprintf(stderr, "Action must be of size 2 or 3.\n");
+        exit(-1);
+    }
 
     // Run the simulation until next action is required
-    tNextAct += 0.1;
+    tNextAct += dtact;
     while ( t < tNextAct )
     {
       // Advance simulation
-      const double dt = _environment->calcMaxTimestep();
+      const double dt = std::min(_environment->calcMaxTimestep(), dtact);
       t += dt;
 
       // Advance simulation and check whether it is correct
@@ -94,13 +111,11 @@ void runEnvironment(korali::Sample &s)
         fprintf(stderr, "Error during environment\n");
         exit(-1);
       }
-
       // Re-check if simulation is done.
       done = isTerminal( agent, target );
     }
 
-    // Reward is +10 if state is terminal; otherwise obtain it from inverse distance to target
-    double reward = done ? 100.0 : agent->reward( target );
+    double reward = agent->reward( target );
 
     // Getting ending time
     auto endTime = std::chrono::steady_clock::now(); // Profiling
@@ -108,11 +123,13 @@ void runEnvironment(korali::Sample &s)
 
     // Printing Information:
     printf("[Korali] Sample %lu - Step: %lu/%lu\n", sampleId, curStep, maxSteps);
-    printf("[Korali] State: [ %.3f", state[0]);
-    for (size_t i = 1; i < state.size(); i++) printf(", %.3f", state[i]);
+    printf("[Korali] State: [ %.6f", state[0]);
+    for (size_t i = 1; i < state.size(); i++) printf(", %.6f", state[i]);
     printf("]\n");
-    printf("[Korali] Force: [ %.3f, %.3f ]\n", action[0], action[1]);
-    printf("[Korali] Reward: %.3f\n", reward);
+    printf("[Korali] Force: [ %.6f, %.6f ]\n", action[0], action[1]);
+    if (action.size() == 3)
+        printf("[Korali] Torque: %.6f\n", action[2]);
+    printf("[Korali] Reward: %.6f\n", reward);
     printf("[Korali] Terminal?: %d\n", done);
     printf("[Korali] Time: %.3fs\n", actionTime);
     printf("[Korali] -------------------------------------------------------\n");

@@ -9,8 +9,4 @@ r = call(["python3", "run-dea.py"])
 if r!=0:
   exit(r)
 
-r = call(["python3", "run-lmcma.py"])
-if r!=0:
-  exit(r)
-
 exit(0)

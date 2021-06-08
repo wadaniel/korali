@@ -1862,6 +1862,16 @@ namespace
 
   optimizerJs = baseOptJs;
   experimentJs = baseExpJs;
+  optimizerJs["Current Mean"] = std::vector<double>({ 2.0 });
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Current Mean"] = 2.0;
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
   optimizerJs["Previous Mean"] = std::vector<double>({ 2.0 });
   ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
 
@@ -2789,6 +2799,11 @@ namespace
 
    optimizerJs = baseOptJs;
    experimentJs = baseExpJs;
+   optimizerJs.erase("Weight Decay");
+   ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+   optimizerJs = baseOptJs;
+   experimentJs = baseExpJs;
    optimizerJs["Weight Decay"] = std::vector<double>({ 2.0 });
    ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
 
@@ -2810,6 +2825,16 @@ namespace
    optimizerJs = baseOptJs;
    experimentJs = baseExpJs;
    optimizerJs["Squared Gradient Sum"] = 2.0;
+   ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+   optimizerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   optimizerJs["Gradient"] = std::vector<double>({ 2.0 });
+   ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+   optimizerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   optimizerJs["Gradient"] = 2.0;
    ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
 
    optimizerJs = baseOptJs;
@@ -3140,6 +3165,21 @@ namespace
     optimizerJs = baseOptJs;
     experimentJs = baseExpJs;
     optimizerJs["Termination Criteria"]["Parameter Relative Tolerance"] = 2.0;
+    ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+    optimizerJs = baseOptJs;
+    experimentJs = baseExpJs;
+    optimizerJs["Termination Criteria"]["Max Gradient Norm"] = std::vector<double>({ 2.0 });
+    ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+    optimizerJs = baseOptJs;
+    experimentJs = baseExpJs;
+    optimizerJs["Termination Criteria"].erase("Max Gradient Norm");
+    ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+    optimizerJs = baseOptJs;
+    experimentJs = baseExpJs;
+    optimizerJs["Termination Criteria"]["Max Gradient Norm"] = 2.0;
     ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
 
     // Testing termination criteria

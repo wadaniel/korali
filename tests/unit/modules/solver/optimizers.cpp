@@ -1877,10 +1877,40 @@ namespace
   v._lowerBound = std::numeric_limits<double>::infinity();
   v._upperBound = std::numeric_limits<double>::infinity();
   ASSERT_ANY_THROW(opt->setInitialConfiguration());
-
-  // Testing initial configuration success
   v._lowerBound = -5.0;
   v._upperBound = 5.0;
+
+  // Testing infinite initial value fail
+  opt->_initialSigma = -1.0;
+  ASSERT_ANY_THROW(opt->setInitialConfiguration());
+  opt->_initialSigma = 0.1;
+
+  // Testing infinite initial value fail
+  opt->_cumulativeCovariance = -1.0;
+  ASSERT_ANY_THROW(opt->setInitialConfiguration());
+  opt->_cumulativeCovariance = 0.1;
+
+  // Testing infinite initial value fail
+  opt->_sigmaCumulationFactor = -1.0;
+  ASSERT_ANY_THROW(opt->setInitialConfiguration());
+  opt->_sigmaCumulationFactor = 0.1;
+
+  // Testing infinite initial value fail
+  opt->_dampFactor = -1.0;
+  ASSERT_ANY_THROW(opt->setInitialConfiguration());
+  opt->_dampFactor = 0.1;
+
+  // Testing infinite initial value fail
+  opt->_choleskyMatrixLearningRate = -1.0;
+  ASSERT_ANY_THROW(opt->setInitialConfiguration());
+  opt->_choleskyMatrixLearningRate = 0.1;
+
+  // Testing infinite initial value fail
+  opt->_choleskyMatrixLearningRate = 2.0;
+  ASSERT_ANY_THROW(opt->setInitialConfiguration());
+  opt->_choleskyMatrixLearningRate = 0.1;
+
+  // Testing initial configuration success
   ASSERT_NO_THROW(opt->setInitialConfiguration());
 
   // Testing optional parameters
@@ -1926,6 +1956,146 @@ namespace
 
   optimizerJs = baseOptJs;
   experimentJs = baseExpJs;
+  optimizerJs["Random Vector"] = std::vector<double>({1.0});
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Random Vector"] = 1.0;
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Replacement Index"] = 1;
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Replacement Index"] = "Not a Number";
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Subset History"] = std::vector<size_t>({1});
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Subset History"] = "Not a Number";
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Subset Update Times"] = std::vector<double>({1.0});
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Subset Update Times"] = "Not a Number";
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Cholesky Factor Vector Product"] = std::vector<double>({1.0});
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Cholesky Factor Vector Product"] = "Not a Number";
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Min Cholesky Factor Vector Product Entry"] = 1.0;
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Min Cholesky Factor Vector Product Entry"] = "Not a Number";
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Max Cholesky Factor Vector Product Entry"] = 1.0;
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Max Cholesky Factor Vector Product Entry"] = "Not a Number";
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Evolution Path History"] = std::vector<std::vector<double>>({{1.0}});
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Evolution Path History"] = "Not a Number";
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Inverse Vectors"] = std::vector<std::vector<double>>({{1.0}});
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Inverse Vectors"] = "Not a Number";
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Evolution Path Weights"] = std::vector<double>({1.0});
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Evolution Path Weights"] = "Not a Number";
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Random Number Distribution"] = "Normal";
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Random Number Distribution"] = "Uniform";
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Random Number Distribution"] = "Not a Distribution";
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Random Number Distribution"] = 1.0;
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Symmetric Sampling"] = 1;
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Symmetric Sampling"] = "Not a Number";
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Standard Deviation"] = std::vector<double>({1.0});
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Standard Deviation"] = "Not a Number";
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
   optimizerJs["Effective Mu"] = 1.0;
   ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
 
@@ -1941,6 +2111,11 @@ namespace
 
   optimizerJs = baseOptJs;
   experimentJs = baseExpJs;
+  optimizerJs.erase("Sigma Cumulation Factor");
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
   optimizerJs["Sigma Cumulation Factor"] = std::vector<double>({1.0});
   ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
 
@@ -1952,6 +2127,16 @@ namespace
   optimizerJs = baseOptJs;
   experimentJs = baseExpJs;
   optimizerJs["Damp Factor"] = std::vector<double>({1.0});
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Sigma Exponent Factor"] = 1.0;
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Sigma Exponent Factor"] = std::vector<double>({1.0});
   ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
 
   optimizerJs = baseOptJs;
@@ -2227,6 +2412,66 @@ namespace
   optimizerJs = baseOptJs;
   experimentJs = baseExpJs;
   optimizerJs["Target Success Rate"] = std::vector<double>({1.0});
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Cholesky Matrix Learning Rate"] = 1.0;
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs.erase("Cholesky Matrix Learning Rate");
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Cholesky Matrix Learning Rate"] = std::vector<double>({1.0});
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Target Distance Coefficients"] = std::vector<double>({1.0});
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs.erase("Target Distance Coefficients");
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Target Distance Coefficients"] = "Not a Number";
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Set Update Interval"] = 1;
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs.erase("Set Update Interval");
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Set Update Interval"] = "Not a Number";
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Subset Size"] = 1;
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs.erase("Subset Size");
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Subset Size"] = "Not a Number";
   ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
 
   optimizerJs = baseOptJs;

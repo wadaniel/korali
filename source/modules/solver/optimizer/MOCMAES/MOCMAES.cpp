@@ -384,10 +384,13 @@ void MOCMAES::updateDistribution()
   }
 
   // Update parents
-  size_t pidx = 0;
   for (size_t i = 0; i < sortedIndices.size(); ++i)
     if (sortedIndices[i] >= (int)(values.size() - _muValue))
     {
+      // Insert parent samples descending, the 'largest' first
+      size_t pidx = values.size() - sortedIndices[i] - 1;
+
+      // Take sample from current generation
       if (i < _populationSize)
       {
         _parentSamplePopulation[pidx] = _currentSamplePopulation[i];
@@ -396,6 +399,7 @@ void MOCMAES::updateDistribution()
         _parentEvolutionPaths[pidx] = _currentEvolutionPaths[i];
         _parentSuccessProbabilities[pidx] = _currentSuccessProbabilities[i];
       }
+      // Take sample from previous generation
       else
       {
         const size_t j = i - _populationSize;

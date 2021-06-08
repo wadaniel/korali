@@ -469,7 +469,7 @@ void CMAES::prepareGeneration()
 
       isFeasible = isSampleFeasible(_samplePopulation[i]);
 
-      if (isFeasible == false) _infeasibleSampleCount++;
+      _infeasibleSampleCount += isFeasible ? 0 : 1;
 
     } while (isFeasible == false && (_infeasibleSampleCount < _maxInfeasibleResamplings));
   }

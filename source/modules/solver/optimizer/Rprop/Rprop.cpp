@@ -58,9 +58,6 @@ void Rprop::evaluateFunctionAndGradient(Sample &sample)
   _currentBestValue = -KORALI_GET(double, sample, "F(x)");
   _currentGradient = KORALI_GET(std::vector<double>, sample, "Gradient");
 
-  if (_currentGradient.size() != _variableCount)
-    KORALI_LOG_ERROR("Size of sample's gradient evaluations vector (%lu) is different from the number of problem variables defined (%lu).\n", _currentGradient.size(), _variableCount);
-
   for (size_t i = 0; i < _variableCount; i++)
     _currentGradient[i] = -_currentGradient[i];
 }

@@ -63,7 +63,7 @@ void runEnvironmentVracer(korali::Sample &s)
   size_t curStep = 0;  // current Step
 
   // Setting maximum number of steps before truncation
-  size_t maxSteps = 1000; 
+  size_t maxSteps = 15e3;
   double dtact = 1e-1;
 
   // Starting main environment loop
@@ -227,7 +227,7 @@ void runEnvironmentMocmaes(korali::Sample &s)
   double height = 2.0;
 
   // Constraints
-  size_t maxSteps = 1e5;
+  size_t maxSteps = 15e3;
   double maxEnergy = 1e-1;
  
   // Creating results directory
@@ -287,7 +287,7 @@ void runEnvironmentMocmaes(korali::Sample &s)
   bool done = false;
   std::vector<double> action(2, 0.0);
 
-  while (done == false)
+  while (done == false && curStep < maxSteps)
   {
     centerArr = agent->center;
     currentPos[0] = centerArr[0];
@@ -376,7 +376,7 @@ void runEnvironmentCmaes(korali::Sample& s)
   double height = 2.0;
 
   // Constraints
-  size_t maxSteps = 1e5;
+  size_t maxSteps = 15e3;
  
   // Creating results directory
   std::string baseDir = "_log_transport_cmaes/";
@@ -434,7 +434,7 @@ void runEnvironmentCmaes(korali::Sample& s)
   bool done = false;
   std::vector<double> action(2, 0.0);
 
-  while (done == false)
+  while (done == false && curStep < maxSteps)
   {
     centerArr = agent->center;
     currentPos[0] = centerArr[0];
@@ -445,9 +445,9 @@ void runEnvironmentCmaes(korali::Sample& s)
     double forcey = (d*x+e)*(0.5*a/std::sqrt(x)+b+2.*c*x)*std::cos(a*std::sqrt(x)+x*b+c*x*x)+d*std::sin(a*std::sqrt(x)+x*b+c*x*x);
 
     // Force vector normalization
-    double FvecLength = std::sqrt(forcey*forcey+forcex*forcex);
-    forcey /= FvecLength;
-    forcex /= FvecLength;
+    const double invFvecLength = 1./std::sqrt(forcey*forcey+forcex*forcex);
+    forcey *= invFvecLength;
+    forcex *= invFvecLength;
 
     // Split force in x & y component
     action[0] = forcex*maxForce;

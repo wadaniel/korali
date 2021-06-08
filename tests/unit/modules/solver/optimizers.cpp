@@ -705,6 +705,16 @@ namespace
   e["Variables"][0]["Name"] = "Var 1";
   e["Variables"][0]["Lower Bound"] = 0.0;
   e["Variables"][0]["Upper Bound"] = 1.0;
+  e["Problem"]["Type"] = "Optimization";
+  e["Problem"]["Constraints"][0] = 0;
+
+  // Creating problem module
+  Optimization* p;
+  knlohmann::json problemJs;
+  problemJs["Type"] = "Optimization";
+  ASSERT_NO_THROW(p = dynamic_cast<Optimization *>(Module::getModule(problemJs, &e)));
+  e._problem = p;
+  p->_numObjectives = 2;
 
   // Creating optimizer configuration Json
   knlohmann::json optimizerJs;
@@ -723,12 +733,26 @@ namespace
   // Backup the correct base configuration
   auto baseOptJs = optimizerJs;
   auto baseExpJs = experimentJs;
-
-  // Setting up optimizer correctly
   ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
 
-  // Testing initial configuration success
-  v._initialValue = 1.0;
+  // Testing initial configuration failures
+  opt->_globalSuccessLearningRate = -1.0;
+  ASSERT_ANY_THROW(opt->setInitialConfiguration());
+  opt->_globalSuccessLearningRate = 2.0;
+  ASSERT_ANY_THROW(opt->setInitialConfiguration());
+  opt->_globalSuccessLearningRate = 0.5;
+  ASSERT_NO_THROW(opt->setInitialConfiguration());
+
+  opt->_targetSuccessRate  = -1.0;
+  ASSERT_ANY_THROW(opt->setInitialConfiguration());
+  opt->_targetSuccessRate  = 2.0;
+  ASSERT_ANY_THROW(opt->setInitialConfiguration());
+  opt->_targetSuccessRate  = 0.5;
+  ASSERT_NO_THROW(opt->setInitialConfiguration());
+
+  opt->_covarianceMatrixAdaptionStrength   = -1.0;
+  ASSERT_ANY_THROW(opt->setInitialConfiguration());
+  opt->_covarianceMatrixAdaptionStrength   = 0.5;
   ASSERT_NO_THROW(opt->setInitialConfiguration());
 
   // Testing optional parameters
@@ -2047,7 +2071,6 @@ namespace
   e["Variables"][0]["Lower Bound"] = 0.0;
   e["Variables"][0]["Upper Bound"] = 1.0;
   e["Problem"]["Type"] = "Optimization";
-
 
   // Creating problem module
   Optimization* p;

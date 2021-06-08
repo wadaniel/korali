@@ -1910,6 +1910,11 @@ namespace
   ASSERT_ANY_THROW(opt->setInitialConfiguration());
   opt->_choleskyMatrixLearningRate = 0.1;
 
+  // Testing infinite initial value fail
+  opt->_muType = "Undefined";
+  ASSERT_ANY_THROW(opt->setInitialConfiguration());
+  opt->_muType = "Linear";
+
   // Testing initial configuration success
   ASSERT_NO_THROW(opt->setInitialConfiguration());
 

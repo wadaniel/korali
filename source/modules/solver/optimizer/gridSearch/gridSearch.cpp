@@ -19,14 +19,12 @@ void GridSearch::setInitialConfiguration()
     _numberOfValues *= _k->_variables[i]->_values.size();
 
   if (_numberOfValues > _maxModelEvaluations)
-    KORALI_LOG_ERROR("%lu > %lu. To many evaluations of the Utility per Sensor", _numberOfValues, _maxModelEvaluations);
-
-  _k->_logger->logInfo("Normal", "Evaluating a total of %lu values..\n", _numberOfValues);
+    KORALI_LOG_ERROR("%lu > %lu. More evaluations required than the maximum allowed. ", _numberOfValues, _maxModelEvaluations);
 
   _maxModelEvaluations = _numberOfValues;
 
   _objective.resize(_numberOfValues);
-  _locationOfMaximum.resize(_variableCount);
+  _bestEverVariables.resize(_variableCount);
 
   // We assume i = _index[0] + _index[1]*_sample[0].size() + _index[1]*_sample[0].size()*_sample[1].size() + .....
   _indexHelper.resize(_variableCount);
@@ -64,7 +62,7 @@ void GridSearch::runGeneration()
       sampleData[d] = _k->_variables[d]->_values[index];
     }
     _k->_logger->logInfo("Detailed", "Running sample %zu/%zu with values:\n         ", i + 1, _numberOfValues);
-    for (auto &x : sampleData) _k->_logger->logData("Detailed", " %lu   ", x);
+    for (auto &x : sampleData) _k->_logger->logData("Detailed", " %f   ", x);
     _k->_logger->logData("Detailed", "\n");
 
     samples[i]["Module"] = "Problem";
@@ -83,28 +81,27 @@ void GridSearch::runGeneration()
   std::vector<double>::iterator maximum = std::max_element(_objective.begin(), _objective.end());
   size_t maxIndex = std::distance(_objective.begin(), maximum);
 
-  _locationOfMaximum = KORALI_GET(std::vector<double>, samples[maxIndex], "Parameters");
-  _maximum = KORALI_GET(double, samples[maxIndex], "F(x)");
+  _bestEverVariables = KORALI_GET(std::vector<double>, samples[maxIndex], "Parameters");
+  _bestEverValue = KORALI_GET(double, samples[maxIndex], "F(x)");
 }
 
 void GridSearch::printGenerationBefore()
 {
-  _k->_logger->logInfo("Minimal", "Starting GridSearch\n");
 }
 
 void GridSearch::printGenerationAfter()
 {
-  _k->_logger->logInfo("Minimal", "Found Maximum with Objective %+6.3e at:\n", _maximum);
-  for (size_t i = 0; i < _locationOfMaximum.size(); i++)
-    _k->_logger->logData("Normal", " %+6.3e", _locationOfMaximum[i]);
+  _k->_logger->logInfo("Minimal", "Found Maximum with Objective %+6.3e at:\n", _bestEverValue);
+  for (size_t i = 0; i < _bestEverVariables.size(); i++)
+    _k->_logger->logData("Normal", " %+6.3e", _bestEverVariables[i]);
   _k->_logger->logData("Normal", "\n");
 }
 
 void GridSearch::finalize()
 {
   // Updating Results
-  (*_k)["Results"]["Best Sample"]["Parameters"] = _locationOfMaximum;
-  (*_k)["Results"]["Best Sample"]["F(x)"] = _maximum;
+  (*_k)["Results"]["Best Sample"]["Parameters"] = _bestEverVariables;
+  (*_k)["Results"]["Best Sample"]["F(x)"] = _bestEverValue;
 
   // Resetting execution counter
   _modelEvaluationCount = 0;
@@ -130,22 +127,6 @@ void GridSearch::setConfiguration(knlohmann::json& js)
    eraseValue(js, "Objective");
  }
 
- if (isDefined(js, "Maximum"))
- {
- try { _maximum = js["Maximum"].get<double>();
-} catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ gridSearch ] \n + Key:    ['Maximum']\n%s", e.what()); } 
-   eraseValue(js, "Maximum");
- }
-
- if (isDefined(js, "Location Of Maximum"))
- {
- try { _locationOfMaximum = js["Location Of Maximum"].get<std::vector<double>>();
-} catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ gridSearch ] \n + Key:    ['Location Of Maximum']\n%s", e.what()); } 
-   eraseValue(js, "Location Of Maximum");
- }
-
  if (isDefined(js, "Index Helper"))
  {
  try { _indexHelper = js["Index Helper"].get<std::vector<size_t>>();
@@ -169,8 +150,6 @@ void GridSearch::getConfiguration(knlohmann::json& js)
  js["Type"] = _type;
    js["Number Of Values"] = _numberOfValues;
    js["Objective"] = _objective;
-   js["Maximum"] = _maximum;
-   js["Location Of Maximum"] = _locationOfMaximum;
    js["Index Helper"] = _indexHelper;
  for (size_t i = 0; i <  _k->_variables.size(); i++) { 
  } 

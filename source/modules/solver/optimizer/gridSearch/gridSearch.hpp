@@ -40,14 +40,6 @@ class GridSearch : public Optimizer
   */
    std::vector<double> _objective;
   /**
-  * @brief [Internal Use] Found maximum value of the Objective Function.
-  */
-   double _maximum;
-  /**
-  * @brief [Internal Use] Holds the location of the maximum.
-  */
-   std::vector<double> _locationOfMaximum;
-  /**
   * @brief [Internal Use] Holds helper to calculate cartesian indices from linear index.
   */
    std::vector<size_t> _indexHelper;

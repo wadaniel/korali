@@ -107,7 +107,6 @@ void @className::setInitialConfiguration()
     KORALI_LOG_ERROR("Invalid setting of Mu Type (%s) (Linear, Equal, and Logarithmic accepted).", _muType.c_str());
 
   if ((_randomNumberDistribution != "Normal") && (_randomNumberDistribution != "Uniform")) KORALI_LOG_ERROR("Invalid setting of Random Number Distribution (%s) (Normal and Uniform accepted).", _randomNumberDistribution.c_str());
-  _normalRandomNumbers = (_randomNumberDistribution == "Normal");
 
   // Normalize weights vector and set mueff
   double s1 = 0.0;
@@ -259,7 +258,7 @@ void @className::choleskyFactorUpdate(size_t sampleIdx)
   if (sampleIdx == 0) ms *= 10;
   size_t subsetStartIndex = _subsetSize - std::min((size_t)std::floor(ms * std::abs(_normalGenerator->getRandomNumber())) + 1, _subsetSize);
 
-  if (_normalRandomNumbers)
+  if (_randomNumberDistribution == "Normal")
     for (size_t d = 0; d < _variableCount; ++d) _randomVector[d] = _normalGenerator->getRandomNumber();
   else /* (_randomNumberDistribution == "Uniform" */
     for (size_t d = 0; d < _variableCount; ++d) _randomVector[d] = 2 * _uniformGenerator->getRandomNumber() - 1.0;

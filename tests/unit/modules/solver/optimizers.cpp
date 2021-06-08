@@ -1408,6 +1408,31 @@ namespace
 
   optimizerJs = baseOptJs;
   experimentJs = baseExpJs;
+  optimizerJs["Has Constraints"] = true;
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Has Constraints"] = "Not a Boolean";
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Mirrored Sampling"] = true;
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs.erase("Mirrored Sampling");
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Mirrored Sampling"] = "Not a Boolean";
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
   optimizerJs["Population Size"] = 1;
   ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
 
@@ -1450,6 +1475,7 @@ namespace
   experimentJs = baseExpJs;
   optimizerJs["Mu Type"] = "Undefined";
   ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+  ASSERT_ANY_THROW(opt->initMuWeights(4));
 
   optimizerJs = baseOptJs;
   experimentJs = baseExpJs;

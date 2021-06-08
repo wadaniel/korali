@@ -34,10 +34,7 @@ class Rprop : public Optimizer
   private:
   void evaluateFunctionAndGradient(Sample &sample);
 
-  void Update_plus(void);   // Rprop_plus
-  void Update_minus(void);  // Rprop_minus
-  void Update_iplus(void);  // iRprop_plus
-  void Update_iminus(void); // iRprop_minus
+  void performUpdate(void); // iRprop_minus
 
   public: 
   /**
@@ -149,3 +146,4 @@ class Rprop : public Optimizer
 
 
 #endif // _KORALI_SOLVER_OPTIMIZER_RPROP_
+

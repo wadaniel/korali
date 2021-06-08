@@ -90,11 +90,6 @@ class LMCMAES : public Optimizer
  */
   void sort_index(const std::vector<double> &vec, std::vector<size_t> &_sortingIndex) const;
 
-  /**
-  * @brief Flag if random number source is Normal or Uniform.
- */
-  bool _normalRandomNumbers;
-
   public: 
   /**
   * @brief Specifies the number of samples to evaluate per generation (preferably $4+3*log(N)$, where $N$ is the number of variables).

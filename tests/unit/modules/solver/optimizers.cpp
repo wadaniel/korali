@@ -2076,6 +2076,11 @@ namespace
 
   optimizerJs = baseOptJs;
   experimentJs = baseExpJs;
+  optimizerJs.erase("Random Number Distribution");
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
   optimizerJs["Random Number Distribution"] = 1.0;
   ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
 
@@ -2083,6 +2088,11 @@ namespace
   experimentJs = baseExpJs;
   optimizerJs["Symmetric Sampling"] = 1;
   ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs.erase("Symmetric Sampling");
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
 
   optimizerJs = baseOptJs;
   experimentJs = baseExpJs;

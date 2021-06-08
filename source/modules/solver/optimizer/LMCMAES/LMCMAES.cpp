@@ -138,8 +138,6 @@ void LMCMAES::setInitialConfiguration()
     KORALI_LOG_ERROR("Invalid Damp Factor (must be greater 0.0).");
   if (_choleskyMatrixLearningRate <= 0.0 || _choleskyMatrixLearningRate > 1.0)
     KORALI_LOG_ERROR("Invalid Cholesky Matrix Learning Rate (must be in (0, 1], is %lf).", _choleskyMatrixLearningRate);
-  if (_setUpdateInterval <= 0.0)
-    KORALI_LOG_ERROR("Invalid Set Update Interval(must be greater 0, is %zu).", _setUpdateInterval);
 
   _infeasibleSampleCount = 0;
   _sqrtInverseCholeskyRate = std::sqrt(1.0 - _choleskyMatrixLearningRate);
@@ -953,3 +951,4 @@ bool LMCMAES::checkTermination()
 } //optimizer
 } //solver
 } //korali
+

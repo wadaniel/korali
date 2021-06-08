@@ -42,7 +42,7 @@ parser.add_argument(
 parser.add_argument(
     '--testMSEThreshold',
     help='Threshold for the testing MSE, under which the run will report an error',
-    default=0.01,
+    default=0.05,
     required=False)
 parser.add_argument(
     '--plot',

@@ -18,15 +18,15 @@ e["Problem"]["Likelihood Model"] = lexponentialCustom
 
 # Configuring Nested Sampling parameters
 e["Solver"]["Type"] = "Sampler/Nested"
-e["Solver"]["Number Live Points"] = 1000
+e["Solver"]["Number Live Points"] = 1500
 e["Solver"]["Batch Size"] = 1
 e["Solver"]["Add Live Points"] = True
 e["Solver"]["Resampling Method"] = "Box"
 
 # Configuring the problem's random distributions
 e["Distributions"][0]["Name"] = "Uniform 0"
-e["Distributions"][0]["Type"] = "Univariate/Uniform"
-e["Distributions"][0]["Minimum"] = 0.0
+e["Distributions"][0]["Type"] = "Univariate/Uniform" 
+e["Distributions"][0]["Minimum"] = 0.0 
 e["Distributions"][0]["Maximum"] = 50.0
 
 # Configuring the problem's variables and their prior distributions
@@ -35,8 +35,8 @@ e["Variables"][0]["Prior Distribution"] = "Uniform 0"
 
 e["File Output"]["Enabled"] = False
 e["Console Output"]["Frequency"] = 1000
-e["Solver"]["Termination Criteria"]["Max Generations"] = 50000
-e["Solver"]["Termination Criteria"]["Min Log Evidence Delta"] = 1e-4
+e["Solver"]["Termination Criteria"]["Max Generations"] = 100000
+e["Solver"]["Termination Criteria"]["Min Log Evidence Delta"] = 1e-5
 e["Solver"]["Termination Criteria"]["Max Effective Sample Size"] = 50000
 e["Random Seed"] = 1227
 

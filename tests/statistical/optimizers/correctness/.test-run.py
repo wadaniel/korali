@@ -5,6 +5,10 @@ r = call(["python3", "run-cmaes.py"])
 if r!=0:
   exit(r)
 
+r = call(["python3", "run-gridSearch.py"])
+if r!=0:
+  exit(r)
+
 r = call(["python3", "run-dea.py"])
 if r!=0:
   exit(r)

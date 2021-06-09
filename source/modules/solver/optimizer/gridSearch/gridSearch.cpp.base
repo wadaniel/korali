@@ -13,14 +13,18 @@ void @className::setInitialConfiguration()
     _numberOfValues *= _k->_variables[i]->_values.size();
 
   if (_numberOfValues > _maxModelEvaluations)
-    KORALI_LOG_ERROR("%lu > %lu. To many evaluations of the Utility per Sensor", _numberOfValues, _maxModelEvaluations);
+   {
+    _k->_logger->logWarning("Normal", "%lu > %lu. More evaluations required than the maximum specified.\n", _numberOfValues, _maxModelEvaluations);
+    _numberOfValues = _maxModelEvaluations;
+   }
 
-  _k->_logger->logInfo("Normal", "Evaluating a total of %lu values..\n", _numberOfValues);
+  // Resetting execution counter
+  _modelEvaluationCount = 0;
 
   _maxModelEvaluations = _numberOfValues;
 
   _objective.resize(_numberOfValues);
-  _locationOfMaximum.resize(_variableCount);
+  _bestEverVariables.resize(_variableCount);
 
   // We assume i = _index[0] + _index[1]*_sample[0].size() + _index[1]*_sample[0].size()*_sample[1].size() + .....
   _indexHelper.resize(_variableCount);
@@ -58,7 +62,7 @@ void @className::runGeneration()
       sampleData[d] = _k->_variables[d]->_values[index];
     }
     _k->_logger->logInfo("Detailed", "Running sample %zu/%zu with values:\n         ", i + 1, _numberOfValues);
-    for (auto &x : sampleData) _k->_logger->logData("Detailed", " %lu   ", x);
+    for (auto &x : sampleData) _k->_logger->logData("Detailed", " %f   ", x);
     _k->_logger->logData("Detailed", "\n");
 
     samples[i]["Module"] = "Problem";
@@ -77,31 +81,27 @@ void @className::runGeneration()
   std::vector<double>::iterator maximum = std::max_element(_objective.begin(), _objective.end());
   size_t maxIndex = std::distance(_objective.begin(), maximum);
 
-  _locationOfMaximum = KORALI_GET(std::vector<double>, samples[maxIndex], "Parameters");
-  _maximum = KORALI_GET(double, samples[maxIndex], "F(x)");
+  _bestEverVariables = KORALI_GET(std::vector<double>, samples[maxIndex], "Parameters");
+  _bestEverValue = KORALI_GET(double, samples[maxIndex], "F(x)");
 }
 
 void @className::printGenerationBefore()
 {
-  _k->_logger->logInfo("Minimal", "Starting GridSearch\n");
 }
 
 void @className::printGenerationAfter()
 {
-  _k->_logger->logInfo("Minimal", "Found Maximum with Objective %+6.3e at:\n", _maximum);
-  for (size_t i = 0; i < _locationOfMaximum.size(); i++)
-    _k->_logger->logData("Normal", " %+6.3e", _locationOfMaximum[i]);
+  _k->_logger->logInfo("Minimal", "Found Maximum with Objective %+6.3e at:\n", _bestEverValue);
+  for (size_t i = 0; i < _bestEverVariables.size(); i++)
+    _k->_logger->logData("Normal", " %+6.3e", _bestEverVariables[i]);
   _k->_logger->logData("Normal", "\n");
 }
 
 void @className::finalize()
 {
   // Updating Results
-  (*_k)["Results"]["Best Sample"]["Parameters"] = _locationOfMaximum;
-  (*_k)["Results"]["Best Sample"]["F(x)"] = _maximum;
-
-  // Resetting execution counter
-  _modelEvaluationCount = 0;
+  (*_k)["Results"]["Best Sample"]["Parameters"] = _bestEverVariables;
+  (*_k)["Results"]["Best Sample"]["F(x)"] = _bestEverValue;
 }
 
 @moduleAutoCode

@@ -3,6 +3,7 @@
 #include "modules/solver/sampler/sampler.hpp"
 #include "modules/problem/sampling/sampling.hpp"
 #include "modules/problem/bayesian/reference/reference.hpp"
+#include "modules/solver/sampler/HMC/HMC.hpp"
 #include "modules/solver/sampler/MCMC/MCMC.hpp"
 #include "modules/solver/sampler/TMCMC/TMCMC.hpp"
 
@@ -1077,6 +1078,630 @@ namespace
    samplerJs = baseOptJs;
    experimentJs = baseExpJs;
    samplerJs["Termination Criteria"]["Target Annealing Exponent"] = 1.0;
+   ASSERT_NO_THROW(opt->setConfiguration(samplerJs));
+  }
+
+  //////////////// HMC CLASS ////////////////////////
+
+  TEST(samplers, HMC)
+  {
+   // Creating base experiment
+   Experiment e;
+   auto& experimentJs = e._js.getJson();
+
+   // Creating initial variable
+   Variable v;
+   e._variables.push_back(&v);
+   e["Variables"][0]["Name"] = "Var 1";
+   e["Variables"][0]["Initial Mean"] = 0.0;
+   e["Variables"][0]["Initial Standard Deviation"] = 0.25;
+   e["Variables"][0]["Lower Bound"] = -1.0;
+   e["Variables"][0]["Upper Bound"] = 1.0;
+
+   // Creating optimizer configuration Json
+   knlohmann::json samplerJs;
+   samplerJs["Type"] = "Sampler/HMC";
+
+   // Creating module
+   HMC* opt;
+   ASSERT_NO_THROW(opt = dynamic_cast<HMC *>(Module::getModule(samplerJs, &e)));
+
+   // Defaults should be applied without a problem
+   ASSERT_NO_THROW(opt->applyModuleDefaults(samplerJs));
+
+   // Covering variable functions (no effect)
+   ASSERT_NO_THROW(opt->applyVariableDefaults());
+
+   // Backup the correct base configuration
+   auto baseOptJs = samplerJs;
+   auto baseExpJs = experimentJs;
+
+   // Setting up optimizer correctly
+   ASSERT_NO_THROW(opt->setConfiguration(samplerJs));
+
+   // Testing optional parameters
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Metric Type"] = "Not a Number";
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Metric Type"] = Metric::Static;
+   ASSERT_NO_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Acceptance Rate"] = "Not a Number";
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Acceptance Rate"] = 1.0;
+   ASSERT_NO_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Running Acceptance Rate"] = "Not a Number";
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Running Acceptance Rate"] = 1.0;
+   ASSERT_NO_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Proposed Sample Count"] = "Not a Number";
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Proposed Sample Count"] = 0;
+   ASSERT_NO_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Sample Database"] = "Not a Number";
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Sample Database"] = std::vector<std::vector<double>>({{0.0}});
+   ASSERT_NO_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Euclidean Warmup Sample Database"] = "Not a Number";
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Euclidean Warmup Sample Database"] = std::vector<std::vector<double>>({{0.0}});
+   ASSERT_NO_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Sample Evaluation Database"] = "Not a Number";
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Sample Evaluation Database"] = std::vector<double>({0.0});
+   ASSERT_NO_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Chain Length"] = "Not a Number";
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Chain Length"] = 1;
+   ASSERT_NO_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Leader Evaluation"] = "Not a Number";
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Leader Evaluation"] = 1.0;
+   ASSERT_NO_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Candidate Evaluation"] = "Not a Number";
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Candidate Evaluation"] = 1.0;
+   ASSERT_NO_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Position Leader"] = "Not a Number";
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Position Leader"] =  std::vector<double>({0.0});
+   ASSERT_NO_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Position Candidate"] = "Not a Number";
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Position Candidate"] =  std::vector<double>({0.0});
+   ASSERT_NO_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Momentum Leader"] = "Not a Number";
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Momentum Leader"] =  std::vector<double>({0.0});
+   ASSERT_NO_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Momentum Candidate"] = "Not a Number";
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Momentum Candidate"] =  std::vector<double>({0.0});
+   ASSERT_NO_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Log Dual Step Size"] = "Not a Number";
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Log Dual Step Size"] = 1.0;
+   ASSERT_NO_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Mu"] = "Not a Number";
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Mu"] =  1.0;
+   ASSERT_NO_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["H Bar"] = "Not a Number";
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["H Bar"] =  1.0;
+   ASSERT_NO_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Acceptance Count NUTS"] = "Not a Number";
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Acceptance Count NUTS"] =  1.0;
+   ASSERT_NO_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Current Depth"] = "Not a Number";
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Current Depth"] =  1;
+   ASSERT_NO_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Acceptance Probability"] = "Not a Number";
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Acceptance Probability"] =  1.0;
+   ASSERT_NO_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Acceptance Rate Error"] = "Not a Number";
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Acceptance Rate Error"] =  1.0;
+   ASSERT_NO_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Metric"] = "Not a Number";
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Inverse Metric"] =  std::vector<double>({0.0});
+   ASSERT_NO_THROW(opt->setConfiguration(samplerJs));
+
+   // Testing mandatory values
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs.erase("Burn In");
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Burn In"] = "Not a Number";
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Burn In"] = 4;
+   ASSERT_NO_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs.erase("Use Diagonal Metric");
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Use Diagonal Metric"] = "Not a Number";
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Use Diagonal Metric"] = true;
+   ASSERT_NO_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs.erase("Num Integration Steps");
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Num Integration Steps"] = "Not a Number";
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Num Integration Steps"] = 1;
+   ASSERT_NO_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs.erase("Max Integration Steps");
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Max Integration Steps"] = "Not a Number";
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Max Integration Steps"] = 1;
+   ASSERT_NO_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs.erase("Use NUTS");
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Use NUTS"] = "Not a Number";
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Use NUTS"] = true;
+   ASSERT_NO_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs.erase("Step Size");
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Step Size"] = "Not a Number";
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Step Size"] = 1.0;
+   ASSERT_NO_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs.erase("Use Adaptive Step Size");
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Use Adaptive Step Size"] = "Not a Number";
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Use Adaptive Step Size"] = true;
+   ASSERT_NO_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs.erase("Target Acceptance Rate");
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Target Acceptance Rate"] = "Not a Number";
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Target Acceptance Rate"] = 1.0;
+   ASSERT_NO_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs.erase("Acceptance Rate Learning Rate");
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Acceptance Rate Learning Rate"] = "Not a Number";
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Acceptance Rate Learning Rate"] = 1.0;
+   ASSERT_NO_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs.erase("Target Integration Time");
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Target Integration Time"] = "Not a Number";
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Target Integration Time"] = 1.0;
+   ASSERT_NO_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs.erase("Adaptive Step Size Speed Constant");
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Adaptive Step Size Speed Constant"] = "Not a Number";
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Adaptive Step Size Speed Constant"] = 1.0;
+   ASSERT_NO_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs.erase("Adaptive Step Size Stabilization Constant");
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Adaptive Step Size Stabilization Constant"] = "Not a Number";
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Adaptive Step Size Stabilization Constant"] = 1.0;
+   ASSERT_NO_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs.erase("Adaptive Step Size Schedule Constant");
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Adaptive Step Size Schedule Constant"] = "Not a Number";
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Adaptive Step Size Schedule Constant"] = 1.0;
+   ASSERT_NO_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs.erase("Max Depth");
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Max Depth"] = "Not a Number";
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Max Depth"] = 1;
+   ASSERT_NO_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Version"] = 1;
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs.erase("Version");
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Version"] = "HMC";
+   ASSERT_NO_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs.erase("Inverse Regularization Parameter");
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Inverse Regularization Parameter"] = "Not a Number";
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Inverse Regularization Parameter"] = 1.0;
+   ASSERT_NO_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs.erase("Max Fixed Point Iterations");
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Max Fixed Point Iterations"] = "Not a Number";
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Max Fixed Point Iterations"] = 1;
+   ASSERT_NO_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs.erase("Step Size Jitter");
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Step Size Jitter"] = "Not a Number";
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Step Size Jitter"] = 1.0;
+   ASSERT_NO_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs.erase("Initial Fast Adaption Interval");
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Initial Fast Adaption Interval"] = "Not a Number";
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Initial Fast Adaption Interval"] = 1;
+   ASSERT_NO_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs.erase("Final Fast Adaption Interval");
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Final Fast Adaption Interval"] = "Not a Number";
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Final Fast Adaption Interval"] = 1;
+   ASSERT_NO_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs.erase("Initial Slow Adaption Interval");
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Initial Slow Adaption Interval"] = "Not a Number";
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Initial Slow Adaption Interval"] = 1;
+   ASSERT_NO_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Termination Criteria"].erase("Max Samples");
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Termination Criteria"]["Max Samples"] = "Not a Number";
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Termination Criteria"]["Max Samples"] = 32;
+   ASSERT_NO_THROW(opt->setConfiguration(samplerJs));
+
+   ///// Variable Tests
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   e["Variables"][0].erase("Initial Mean");
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   e["Variables"][0]["Initial Mean"] = "Not a Number";
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   e["Variables"][0]["Initial Mean"] = 1.0;
+   ASSERT_NO_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   e["Variables"][0].erase("Initial Standard Deviation");
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   e["Variables"][0]["Initial Standard Deviation"] = "Not a Number";
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   e["Variables"][0]["Initial Standard Deviation"] = 1.0;
    ASSERT_NO_THROW(opt->setConfiguration(samplerJs));
   }
 

@@ -36,6 +36,11 @@ e["Variables"][7]["Initial Exploration Noise"] = 1.0
 
 e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 900
 
+### If this is test mode, run only a couple generations
+if len(sys.argv) == 2:
+ if sys.argv[1] == '--test':
+  e["Solver"]["Termination Criteria"]["Max Generations"] = 5
+  
 ### Defining Agent Configuration 
 
 e["Solver"]["Type"] = "Agent / Continuous / VRACER"
@@ -44,6 +49,8 @@ e["Solver"]["Episodes Per Generation"] = 1
 e["Solver"]["Experiences Between Policy Updates"] = 1
 e["Solver"]["Learning Rate"] = 1e-4
 e["Solver"]["Mini Batch"]["Size"] = 256
+e["Solver"]["Experience Replay"]["Start Size"] = 1000
+e["Solver"]["Experience Replay"]["Maximum Size"] = 10000
 
 ### Configuring the neural network and its hidden layers
 

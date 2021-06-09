@@ -2,7 +2,6 @@
 #include "auxiliar/fs.hpp"
 #include "auxiliar/koraliJson.hpp"
 #include "modules/conduit/conduit.hpp"
-#include "modules/conduit/distributed/distributed.hpp"
 #include "modules/experiment/experiment.hpp"
 #include "modules/problem/problem.hpp"
 #include "modules/solver/solver.hpp"
@@ -49,22 +48,15 @@ void Engine::initialize()
     _experimentVector[i]->initialize();
     _experimentVector[i]->_isFinished = false;
   }
-
+  
   // Check configuration correctness
   auto js = _js.getJson();
-  try
-  {
-    if (isDefined(js, "Conduit")) eraseValue(js, "Conduit");
-    if (isDefined(js, "Dry Run")) eraseValue(js, "Dry Run");
-    if (isDefined(js, "Conduit", "Type")) eraseValue(js, "Conduit", "Type");
-    if (isDefined(js, "Profiling", "Detail")) eraseValue(js, "Profiling", "Detail");
-    if (isDefined(js, "Profiling", "Path")) eraseValue(js, "Profiling", "Path");
-    if (isDefined(js, "Profiling", "Frequency")) eraseValue(js, "Profiling", "Frequency");
-  }
-  catch (const std::exception &e)
-  {
-    KORALI_LOG_ERROR("[Korali] Error parsing Korali Engine's parameters. Reason:\n%s", e.what());
-  }
+  if (isDefined(js, "Conduit")) eraseValue(js, "Conduit");
+  if (isDefined(js, "Dry Run")) eraseValue(js, "Dry Run");
+  if (isDefined(js, "Conduit", "Type")) eraseValue(js, "Conduit", "Type");
+  if (isDefined(js, "Profiling", "Detail")) eraseValue(js, "Profiling", "Detail");
+  if (isDefined(js, "Profiling", "Path")) eraseValue(js, "Profiling", "Path");
+  if (isDefined(js, "Profiling", "Frequency")) eraseValue(js, "Profiling", "Frequency");
 
   if (isEmpty(js) == false) KORALI_LOG_ERROR("Unrecognized settings for Korali's Engine: \n%s\n", js.dump(2).c_str());
 }
@@ -126,7 +118,7 @@ void Engine::start()
   }
 
   // Finalizing Conduit if last engine in the stack
-  _conduit->finalize();
+  _conduit->terminateServer();
 }
 
 void Engine::saveProfilingInfo(const bool forceSave)
@@ -176,13 +168,6 @@ void Engine::serialize(knlohmann::json &js)
   }
 }
 
-#ifdef _KORALI_USE_MPI
-long int Engine::getMPICommPointer()
-{
-  return (long int)(&__KoraliTeamComm);
-}
-#endif
-
 knlohmann::json &Engine::operator[](const std::string &key)
 {
   return _js[key];
@@ -197,10 +182,6 @@ using namespace korali;
 
 PYBIND11_MODULE(libkorali, m)
 {
-#ifdef _KORALI_USE_MPI
-  m.def("getMPICommPointer", &Engine::getMPICommPointer, pybind11::return_value_policy::reference);
-#endif
-
   pybind11::class_<Engine>(m, "Engine")
     .def(pybind11::init<>())
     .def("run", [](Engine &k, Experiment &e) {

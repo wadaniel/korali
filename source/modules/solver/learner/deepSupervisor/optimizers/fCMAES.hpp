@@ -5,6 +5,7 @@
 #ifndef _KORALI_FAST_CMAES_HPP_
 #define _KORALI_FAST_CMAES_HPP_
 
+#include <cstddef>
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_sf.h>
 #include <random>
@@ -103,6 +104,10 @@ class fCMAES
 * @brief Covariance matrix updates will be optimized for diagonal matrices.
 */
   int _isDiagonal;
+  /**
+  * @brief Flag that gives notice of any possible numerical/functional errors during runtime
+  */
+  bool _isFailFlag;
   /**
 * @brief [Internal Use] Objective function values.
 */

@@ -1,0 +1,29 @@
+@startIncludeGuard
+
+#include "modules/solver/solver.hpp"
+
+@startNamespace
+
+class @className : public @parentClassName
+{
+  private:
+  public:
+  /**
+  * @brief Generate a sample and evaluate it.
+  */
+  void runGeneration() override;
+
+  /**
+  * @brief Console Output before generation runs.
+  */
+  void printGenerationBefore() override;
+
+  /**
+  * @brief Console output after generation.
+  */
+  void printGenerationAfter() override;
+};
+
+@endNamespace
+
+@endIncludeGuard

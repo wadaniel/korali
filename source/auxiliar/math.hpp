@@ -13,6 +13,7 @@
 #include <cmath>
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_sf_gamma.h>
+#include <gsl/gsl_randist.h>
 #include <limits>
 #include <stdlib.h>
 #include <string>
@@ -84,6 +85,36 @@ const double Min = std::numeric_limits<double>::min();
 * @brief Korali's definition of minimum representable difference between two numbers
 */
 const double Eps = std::numeric_limits<double>::epsilon();
+
+/**
+* @brief Safely computes log(exp(x)+exp(y)) and avoids overflows
+* @param x a variable
+* @param y a variable
+* @return The result of log(exp(x)+exp(y))
+*/
+template <typename T>
+T safeLogPlus(T x, T y)
+{
+  if (x > y)
+    return x + log1p(std::exp(y - x));
+  else
+    return y + log1p(std::exp(x - y));
+}
+
+/**
+* @brief Safely computes log(exp(x)-exp(y)) and avoids overflows
+* @param x a variable
+* @param y a variable
+* @return The result of log(exp(x)-exp(y))
+*/
+template <typename T>
+T safeLogMinus(T x, T y)
+{
+  if (x > y)
+     return y + std::log(std::exp(x - y) - 1.);
+  else
+     return x + std::log(1. - std::exp(y - x));
+}
 
 /**
 * @brief Computes: log sum_{i=1}^N x_i using the log-sum-exp trick: https://en.wikipedia.org/wiki/LogSumExp#log-sum-exp_trick_for_log-domain_calculations

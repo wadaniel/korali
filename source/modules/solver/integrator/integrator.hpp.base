@@ -1,0 +1,19 @@
+@startIncludeGuard
+
+#include "modules/solver/solver.hpp"
+
+@startNamespace
+
+class @className : public @parentClassName
+{
+  public:
+  void setInitialConfiguration() override;
+  void runGeneration() override;
+  void printGenerationBefore() override;
+  void printGenerationAfter() override;
+  void finalize() override;
+};
+
+@endNamespace
+
+@endIncludeGuard

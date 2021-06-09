@@ -1,7 +1,7 @@
 #ifndef _DIRECT_HPP_
 #define _DIRECT_HPP_
 
-#include "korali.hpp"
+#include <korali.hpp>
 
 void direct(korali::Sample &k)
 {

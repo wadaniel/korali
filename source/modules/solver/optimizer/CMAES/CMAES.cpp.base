@@ -832,17 +832,10 @@ void @className::handleConstraints()
           for(size_t d = 0; d < _variableCount; ++d) rands[d] = _normalGenerator->getRandomNumber();
           sampleSingle(i, rands);
 
-          if (_resampledParameterCount > _maxInfeasibleResamplings)
-          {
-            _k->_logger->logWarning("Detailed", "Exiting resampling loop, max resamplings (%zu) reached.\n", _maxInfeasibleResamplings);
-            reEvaluateConstraints();
-            return;
-          }
-
           if (_hasDiscreteVariables) discretize(_samplePopulation[i]);
           isFeasible = isSampleFeasible(_samplePopulation[i]);
 
-        } while (isFeasible == false);
+        } while (isFeasible == false && _resampledParameterCount < _maxInfeasibleResamplings);
       }
 
     reEvaluateConstraints();

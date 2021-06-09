@@ -1088,6 +1088,7 @@ namespace
    // Creating base experiment
    Experiment e;
    auto& experimentJs = e._js.getJson();
+   e._logger = new Logger("Detailed", stdout);
 
    // Creating initial variable
    Variable v;
@@ -1097,6 +1098,17 @@ namespace
    e["Variables"][0]["Initial Standard Deviation"] = 0.25;
    e["Variables"][0]["Lower Bound"] = -1.0;
    e["Variables"][0]["Upper Bound"] = 1.0;
+
+   // Configuring Problem
+   e["Problem"]["Type"] = "Sampling";
+   e["Problem"]["Constraints"][0] = 0;
+
+   // Creating problem module
+   Reference* p;
+   knlohmann::json problemJs;
+   problemJs["Type"] = "Sampling";
+   ASSERT_NO_THROW(p = dynamic_cast<Reference *>(Module::getModule(problemJs, &e)));
+   e._problem = p;
 
    // Creating optimizer configuration Json
    knlohmann::json samplerJs;
@@ -1124,24 +1136,25 @@ namespace
    ASSERT_ANY_THROW(opt->setInitialConfiguration());
    opt->_version = "Static";
 
-   opt->_metricType = Metric::Euclidean;
+   opt->_version = "Euclidean";
    opt->_useAdaptiveStepSize = true;
    opt->_burnIn = 200;
    opt->_initialFastAdaptionInterval = 300;
    ASSERT_NO_THROW(opt->setInitialConfiguration());
 
-   opt->_metricType = Metric::Euclidean;
+   opt->_version = "Euclidean";
    opt->_useAdaptiveStepSize = true;
-   opt->_burnIn = 1;
+   opt->_burnIn = 0;
+   opt->_initialFastAdaptionInterval = 0;
    ASSERT_ANY_THROW(opt->setInitialConfiguration());
 
-   v.initialMean = std::numeric_limits<double>::infinity();
+   v._initialMean = std::numeric_limits<double>::infinity();
    ASSERT_ANY_THROW(opt->setInitialConfiguration());
-   v.initialMean = 0.0;
+   v._initialMean = 0.0;
 
-   v.initialStandardDeviation = std::numeric_limits<double>::infinity();
+   v._initialStandardDeviation = std::numeric_limits<double>::infinity();
    ASSERT_ANY_THROW(opt->setInitialConfiguration());
-   v.initialStandardDeviation = 0.0;
+   v._initialStandardDeviation = 0.0;
 
    // Testing optional parameters
    samplerJs = baseOptJs;
@@ -1326,6 +1339,16 @@ namespace
 
    samplerJs = baseOptJs;
    experimentJs = baseExpJs;
+   samplerJs["Acceptance Count"] = "Not a Number";
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Acceptance Count"] =  1;
+   ASSERT_NO_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
    samplerJs["Current Depth"] = "Not a Number";
    ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
 
@@ -1357,6 +1380,16 @@ namespace
    samplerJs = baseOptJs;
    experimentJs = baseExpJs;
    samplerJs["Metric"] = "Not a Number";
+   ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Metric"] =  std::vector<double>({0.0});
+   ASSERT_NO_THROW(opt->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Inverse Metric"] = "Not a Number";
    ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
 
    samplerJs = baseOptJs;

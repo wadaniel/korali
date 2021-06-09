@@ -1,7 +1,7 @@
 TRANSPORT = run-mocmaes-transport run-cmaes-transport run-vracer-transport 
 FISH = run-vracer-fish
 WINDMILL = run-vracer-windmill eval-vracer-windmill
-KORALICXX=$(shell python3 -m korali.cxx --compiler)
+KORALICXX=${CXX}
 KORALICFLAGS=`python3 -m korali.cxx --cflags`
 KORALILIBS=`python3 -m korali.cxx --libs`
 CUBISMCFLAGS=$(shell cat _deps/CUP-2D/makefiles/cup.cflags.txt) -I_deps/CUP-2D/source -I_deps/CUP-2D/Cubism/include -DCUBISM

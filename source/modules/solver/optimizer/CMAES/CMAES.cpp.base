@@ -45,8 +45,9 @@ void @className::setInitialConfiguration()
   }
 
   _hasDiscreteVariables = false;
-  if (isDefined(problemConfig, "Has Discrete Variables"))
-    _hasDiscreteVariables = problemConfig["Has Discrete Variables"];
+  /* check _granularity for discrete variables */
+  for (size_t i = 0; i < _k->_variables.size(); i++)
+    if (_k->_variables[i]->_granularity > 0.0) _hasDiscreteVariables = true;
 
   _isViabilityRegime = _hasConstraints;
 

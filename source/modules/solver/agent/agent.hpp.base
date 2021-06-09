@@ -53,12 +53,6 @@ struct policy_t
   * @brief [Discrete] Stores the index of the selected experience
   */
   size_t actionIndex;
-
-
-  /**
-  * @brief [Continuous] Stores the Unbounded Action
-  */
-  std::vector<float> unboundedAction;
 };
 
 class @className : public @parentClassName

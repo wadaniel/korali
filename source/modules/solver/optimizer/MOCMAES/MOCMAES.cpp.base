@@ -336,7 +336,7 @@ void @className::updateDistribution()
   auto values = _currentValues;
   values.insert(std::end(values), std::begin(_previousValues), std::end(_previousValues));
 
-  // Sort current and previous evaluations ascending (assign larger index to 'larger' samples)
+  // Sort current and previous evlauations
   auto sortedIndices = sortSampleIndices(values);
 
   // Precompute factors
@@ -403,6 +403,7 @@ void @className::updateDistribution()
         _parentEvolutionPaths[pidx] = _previousEvolutionPaths[j];
         _parentSuccessProbabilities[pidx] = _previousSuccessProbabilities[j];
       }
+      pidx++;
     }
 }
 
@@ -538,6 +539,13 @@ void @className::finalize()
   // Updating Results
   (*_k)["Results"]["Pareto Optimal Samples"]["F(x)"] = _sampleValueCollection;
   (*_k)["Results"]["Pareto Optimal Samples"]["Parameters"] = _sampleCollection;
+
+  /*
+  _k->_logger->logInfo("Minimal", "Optimum found: %e\n", _bestEverValue);s
+  _k->_logger->logInfo("Minimal", "Optimum found at:\n");
+  for (size_t d = 0; d < _k->_variables.size(); ++d) _k->_logger->logData("Minimal", "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _bestEverVariablesVector[d]);
+  _k->_logger->logInfo("Minimal", "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
+  */
 }
 
 @moduleAutoCode

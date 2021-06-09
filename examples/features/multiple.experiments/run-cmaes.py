@@ -63,15 +63,17 @@ for i in range(8):
 
   # Setting distinct experiment paths
   e["File Output"]["Path"] = '_korali_multiple/exp' + str(i)
+  e["File Output"]["Enabled"] = True
+  e["File Output"]["True"] = 20
   e["Store Sample Information"] = True
 
   # Adding Experiment to vector
   eList.append(e)
 
-#k["Conduit"]["Type"] = "Concurrent"
-#k["Conduit"]["Concurrent Jobs"] = 4
-#k["Profiling"]["Detail"] = "Full"
-#k["Profiling"]["Frequency"] = 0.5
+k["Conduit"]["Type"] = "Concurrent"
+k["Conduit"]["Concurrent Jobs"] = 4
+k["Profiling"]["Detail"] = "Full"
+k["Profiling"]["Frequency"] = 0.5
 
 # Running first 100 generations
 k.run(eList)

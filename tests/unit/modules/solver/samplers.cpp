@@ -1119,6 +1119,30 @@ namespace
    // Setting up optimizer correctly
    ASSERT_NO_THROW(opt->setConfiguration(samplerJs));
 
+   // Test initial configuration
+   opt->_version = "Undefined";
+   ASSERT_ANY_THROW(opt->setInitialConfiguration());
+   opt->_version = "Static";
+
+   opt->_metricType = Metric::Euclidean;
+   opt->_useAdaptiveStepSize = true;
+   opt->_burnIn = 200;
+   opt->_initialFastAdaptionInterval = 300;
+   ASSERT_NO_THROW(opt->setInitialConfiguration());
+
+   opt->_metricType = Metric::Euclidean;
+   opt->_useAdaptiveStepSize = true;
+   opt->_burnIn = 1;
+   ASSERT_ANY_THROW(opt->setInitialConfiguration());
+
+   v.initialMean = std::numeric_limits<double>::infinity();
+   ASSERT_ANY_THROW(opt->setInitialConfiguration());
+   v.initialMean = 0.0;
+
+   v.initialStandardDeviation = std::numeric_limits<double>::infinity();
+   ASSERT_ANY_THROW(opt->setInitialConfiguration());
+   v.initialStandardDeviation = 0.0;
+
    // Testing optional parameters
    samplerJs = baseOptJs;
    experimentJs = baseExpJs;
@@ -1564,7 +1588,7 @@ namespace
 
    samplerJs = baseOptJs;
    experimentJs = baseExpJs;
-   samplerJs["Version"] = "HMC";
+   samplerJs["Version"] = "Static";
    ASSERT_NO_THROW(opt->setConfiguration(samplerJs));
 
    samplerJs = baseOptJs;

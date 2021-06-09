@@ -808,7 +808,7 @@ namespace
 
   optimizerJs = baseOptJs;
   experimentJs = baseExpJs;
-  optimizerJs["Mu Weights"] = std::vector<double>({1.0});
+  optimizerJs["Mu Weights"] = std::vector<double>({1.0, 1.0, 1.0, 1.0});
   ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
 
   optimizerJs = baseOptJs;
@@ -1751,6 +1751,15 @@ namespace
   experimentJs = baseExpJs;
   optimizerJs["Termination Criteria"]["Max Standard Deviation"] = std::vector<double>({1.0});
   ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  // Testing changes in cumulative covariance
+  opt->_initialCumulativeCovariance = -1.0;
+  ASSERT_NO_THROW(opt->initMuWeights(4));
+  ASSERT_NE(opt->_initialCumulativeCovariance, opt->_cumulativeCovariance);
+
+  opt->_initialCumulativeCovariance = 0.5;
+  ASSERT_NO_THROW(opt->initMuWeights(4));
+  ASSERT_EQ(opt->_initialCumulativeCovariance, opt->_cumulativeCovariance);
  }
 
  //////////////// DEA ////////////////////////

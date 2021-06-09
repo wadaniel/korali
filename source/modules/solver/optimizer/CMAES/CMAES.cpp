@@ -336,9 +336,6 @@ void CMAES::checkMeanAndSetRegime()
 
   auto cEvals = KORALI_GET(std::vector<double>, sample, "Constraint Evaluations");
 
-  if (cEvals.size() != _constraintEvaluations.size())
-    KORALI_LOG_ERROR("Size of sample's sample evaluations vector (%lu) is different from the number of constraints defined (%lu).\n", cEvals.size(), _constraintEvaluations.size());
-
   for (size_t c = 0; c < _constraintEvaluations.size(); c++)
     if (cEvals[c] > 0.0) return; /* mean violates constraint, do nothing */
 
@@ -372,9 +369,6 @@ void CMAES::updateConstraints()
     _constraintEvaluationCount++;
 
     auto cEvals = KORALI_GET(std::vector<double>, sample, "Constraint Evaluations");
-
-    if (cEvals.size() != _constraintEvaluations.size())
-      KORALI_LOG_ERROR("Size of sample's sample evaluations vector (%lu) is different from the number of constraints defined (%lu).\n", cEvals.size(), _constraintEvaluations.size());
 
     for (size_t c = 0; c < _constraintEvaluations.size(); c++)
       _constraintEvaluations[c][i] = cEvals[c];
@@ -418,9 +412,6 @@ void CMAES::reEvaluateConstraints()
       _sampleConstraintViolationCounts[i] = 0;
 
       auto cEvals = KORALI_GET(std::vector<double>, sample, "Constraint Evaluations");
-
-      if (cEvals.size() != _constraintEvaluations.size())
-        KORALI_LOG_ERROR("Size of sample's sample evaluations vector (%lu) is different from the number of constraints defined (%lu).\n", cEvals.size(), _constraintEvaluations.size());
 
       for (size_t c = 0; c < _constraintEvaluations.size(); c++)
       {

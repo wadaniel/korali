@@ -38,9 +38,8 @@ def plotSwarmCentered( sim, t ):
 	ax.set_xlim([center[0]-1,center[0]+1])
 	ax.set_ylim([center[1]-1,center[1]+1])
 	ax.set_zlim([center[2]-1,center[2]+1])
-	plt.show()
-	# plt.savefig("figures/swarm_t={:04d}.png".format(t))
-	# plt.close()
+	plt.savefig("figures/swarm_t={:04d}.png".format(t))
+	plt.close()
 
 def plotSwarmSphere( sim, t, i ):
 	fig = plt.figure()

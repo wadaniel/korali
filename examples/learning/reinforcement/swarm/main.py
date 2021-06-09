@@ -32,7 +32,6 @@ if __name__ == '__main__':
             # camera following center of swarm
             # plotSwarmCentered( sim, step )
 
-
         # compute pair-wise distances and view-angles
         distancesMat, anglesMat = sim.computeStates()
 

@@ -81,9 +81,9 @@ e["File Output"]["Enabled"] = False
 e["Random Seed"] = 1337
 
 #k = korali.Engine()
-#k.run(e)
+k.run(e)
 
-#checkMin(e, 0.22942553779431113, 1e-4)
+checkMin(e, 0.22942553779431113, 1e-4)
 
 ### Running With Different Mu Types
 
@@ -106,9 +106,9 @@ e["File Output"]["Enabled"] = False
 e["Random Seed"] = 1337
 
 k = korali.Engine()
-#k.run(e)
+k.run(e)
 
-#checkMin(e, 0.22942553779431113, 1e-4)
+checkMin(e, 0.22942553779431113, 1e-4)
 
 ### Running With Different Mu Types
 
@@ -131,9 +131,9 @@ e["File Output"]["Enabled"] = False
 e["Random Seed"] = 1337
 
 k = korali.Engine()
-#k.run(e)
+k.run(e)
 
-#checkMin(e, 0.22942553779431113, 1e-4)
+checkMin(e, 0.22942553779431113, 1e-4)
 
 ### Running With Different Mu Types
 
@@ -156,9 +156,9 @@ e["File Output"]["Enabled"] = False
 e["Random Seed"] = 1337
 
 k = korali.Engine()
-#k.run(e)
+k.run(e)
 
-#checkMin(e, 0.22942553779431113, 1e-3)
+checkMin(e, 0.22942553779431113, 1e-3)
 
 ### Running With Different Mu Types
 
@@ -181,9 +181,9 @@ e["File Output"]["Enabled"] = False
 e["Random Seed"] = 1337
 
 k = korali.Engine()
-#k.run(e)
+k.run(e)
 
-#checkMin(e, 0.22942553779431113, 1e-3)
+checkMin(e, 0.22942553779431113, 1e-3)
 
 ### Corner Case: Discrete with Mirrored Sampling
 

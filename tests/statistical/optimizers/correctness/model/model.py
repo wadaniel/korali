@@ -13,3 +13,6 @@ def evalmodel(s):
     r = x * x + math.sin(x)
 
   s["F(x)"] = -r
+
+def constraint1(k):
+ k["F(x)"] = 100.0

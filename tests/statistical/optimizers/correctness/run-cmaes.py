@@ -80,10 +80,10 @@ e["Console Output"]["Verbosity"] = "Detailed"
 e["File Output"]["Enabled"] = False
 e["Random Seed"] = 1337
 
-k = korali.Engine()
-k.run(e)
+#k = korali.Engine()
+#k.run(e)
 
-checkMin(e, 0.22942553779431113, 1e-4)
+#checkMin(e, 0.22942553779431113, 1e-4)
 
 ### Running With Different Mu Types
 
@@ -106,9 +106,9 @@ e["File Output"]["Enabled"] = False
 e["Random Seed"] = 1337
 
 k = korali.Engine()
-k.run(e)
+#k.run(e)
 
-checkMin(e, 0.22942553779431113, 1e-4)
+#checkMin(e, 0.22942553779431113, 1e-4)
 
 ### Running With Different Mu Types
 
@@ -131,9 +131,9 @@ e["File Output"]["Enabled"] = False
 e["Random Seed"] = 1337
 
 k = korali.Engine()
-k.run(e)
+#k.run(e)
 
-checkMin(e, 0.22942553779431113, 1e-4)
+#checkMin(e, 0.22942553779431113, 1e-4)
 
 ### Running With Different Mu Types
 
@@ -156,9 +156,9 @@ e["File Output"]["Enabled"] = False
 e["Random Seed"] = 1337
 
 k = korali.Engine()
-k.run(e)
+#k.run(e)
 
-checkMin(e, 0.22942553779431113, 1e-3)
+#checkMin(e, 0.22942553779431113, 1e-3)
 
 ### Running With Different Mu Types
 
@@ -181,9 +181,9 @@ e["File Output"]["Enabled"] = False
 e["Random Seed"] = 1337
 
 k = korali.Engine()
-k.run(e)
+#k.run(e)
 
-checkMin(e, 0.22942553779431113, 1e-3)
+#checkMin(e, 0.22942553779431113, 1e-3)
 
 ### Corner Case: Discrete with Mirrored Sampling
 
@@ -202,7 +202,7 @@ e["Variables"][0]["Granularity"] = 0.0001
 e["Solver"]["Type"] = "Optimizer/CMAES"
 e["Solver"]["Population Size"] = 64
 e["Solver"]["Mirrored Sampling"] = True
-e["Solver"]["Termination Criteria"]["Max Generations"] = 100
+e["Solver"]["Termination Criteria"]["Max Generations"] = 10
 
 e["Console Output"]["Frequency"] = 10
 e["Console Output"]["Verbosity"] = "Detailed"
@@ -213,3 +213,115 @@ k = korali.Engine()
 k.run(e)
 
 checkMin(e, 0.22942553779431113, 1e-3)
+
+### Corner Case: Constraints that cannot be satisfied
+
+e = korali.Experiment()
+
+e["Problem"]["Type"] = "Optimization"
+e["Problem"]["Objective Function"] = evalmodel
+e["Problem"]["Constraints"] = [ constraint1 ]
+
+e["Variables"][0]["Name"] = "X"
+e["Variables"][0]["Initial Value"] = 1.0
+e["Variables"][0]["Lower Bound"] = -10.0
+e["Variables"][0]["Upper Bound"] = +10.0
+
+e["Solver"]["Type"] = "Optimizer/CMAES"
+e["Solver"]["Population Size"] = 16
+e["Solver"]["Viability Population Size"] = 2
+e["Solver"]["Termination Criteria"]["Max Generations"] = 10
+
+e["Console Output"]["Frequency"] = 10
+e["Console Output"]["Verbosity"] = "Detailed"
+e["File Output"]["Enabled"] = False
+e["Random Seed"] = 1337
+
+k = korali.Engine()
+k.run(e)
+
+checkInfeasible(e, 100)
+
+### Corner Case: Terminating on Max Infeasible Resamplings
+
+e = korali.Experiment()
+
+e["Problem"]["Type"] = "Optimization"
+e["Problem"]["Objective Function"] = evalmodel
+e["Problem"]["Constraints"] = [ constraint1 ]
+
+e["Variables"][0]["Name"] = "X"
+e["Variables"][0]["Initial Value"] = 1.0
+e["Variables"][0]["Lower Bound"] = -10.0
+e["Variables"][0]["Upper Bound"] = +10.0
+
+e["Solver"]["Type"] = "Optimizer/CMAES"
+e["Solver"]["Population Size"] = 16
+e["Solver"]["Viability Population Size"] = 2
+e["Solver"]["Termination Criteria"]["Max Generations"] = 10
+e["Solver"]["Termination Criteria"]["Max Infeasible Resamplings"] = 100
+
+e["Console Output"]["Frequency"] = 10
+e["Console Output"]["Verbosity"] = "Detailed"
+e["File Output"]["Enabled"] = False
+e["Random Seed"] = 1337
+
+k = korali.Engine()
+k.run(e)
+
+checkInfeasible(e, 100)
+
+### Corner Case: Trigger Min StdDev Deviation Update Warning
+
+e = korali.Experiment()
+
+# Selecting problem type
+e["Problem"]["Type"] = "Optimization"
+e["Problem"]["Objective Function"] = evalmodel
+
+e["Variables"][0]["Name"] = "X"
+e["Variables"][0]["Initial Value"] = 1.0
+e["Variables"][0]["Lower Bound"] = -10.0
+e["Variables"][0]["Upper Bound"] = +10.0
+e["Variables"][0]["Minimum Standard Deviation Update"] = 1000.0
+
+e["Solver"]["Type"] = "Optimizer/CMAES"
+e["Solver"]["Population Size"] = 64
+e["Solver"]["Termination Criteria"]["Max Generations"] = 10
+
+e["Console Output"]["Frequency"] = 10
+e["Console Output"]["Verbosity"] = "Detailed"
+e["File Output"]["Enabled"] = False
+e["Random Seed"] = 1337
+
+k = korali.Engine()
+k.run(e)
+
+### Corner Case: Trigger Max Covariance Matrix Corrections Warning
+
+e = korali.Experiment()
+
+# Selecting problem type
+e["Problem"]["Type"] = "Optimization"
+e["Problem"]["Objective Function"] = evalmodel
+
+e["Variables"][0]["Name"] = "X"
+e["Variables"][0]["Initial Value"] = 1.0
+e["Variables"][0]["Lower Bound"] = -10.0
+e["Variables"][0]["Upper Bound"] = +10.0
+e["Variables"][0]["Minimum Standard Deviation Update"] = 1000.0
+
+e["Solver"]["Type"] = "Optimizer/CMAES"
+e["Solver"]["Population Size"] = 64
+e["Solver"]["Termination Criteria"]["Max Generations"] = 100
+e["Solver"]["Max Constraint Violation Count"] = 1
+e["Solver"]["Max Covariance Matrix Corrections"] = 1
+
+e["Console Output"]["Frequency"] = 10
+e["Console Output"]["Verbosity"] = "Detailed"
+e["File Output"]["Enabled"] = False
+e["Random Seed"] = 1337
+
+k = korali.Engine()
+k.run(e)
+

@@ -561,11 +561,6 @@ void CMAES::updateDistribution()
     _bestValidSample = -1;
     for (size_t i = 0; i < _currentPopulationSize; i++)
       if (_sampleConstraintViolationCounts[_sortingIndex[i]] == 0) _bestValidSample = _sortingIndex[i];
-    if (_bestValidSample == -1)
-    {
-      _k->_logger->logWarning("Detailed", "All samples violate constraints, no updates taking place.\n");
-      return;
-    }
   }
 
   /* update function value history */
@@ -893,9 +888,6 @@ void CMAES::updateDiscreteMutationMatrix()
 
 void CMAES::discretize(std::vector<double> &sample)
 {
-  if (sample.size() != _variableCount)
-    KORALI_LOG_ERROR("Size of sample's parameter vector (%lu) is different from the number of problem variables.\n", sample.size(), _variableCount);
-
   for (size_t d = 0; d < _variableCount; ++d)
     if (_k->_variables[d]->_granularity != 0.0)
       sample[d] = std::round(sample[d] / _k->_variables[d]->_granularity) * _k->_variables[d]->_granularity;
@@ -922,13 +914,6 @@ void CMAES::updateEigensystem(const std::vector<double> &M)
       _k->_logger->logWarning("Detailed", "Could not calculate root of Eigenvalue (%+6.3e) after Eigen decomp (no update possible).\n", _auxiliarAxisLengths[d]);
       return;
     }
-    if (!_diagonalCovariance)
-      for (size_t e = 0; e < _variableCount; ++e)
-        if (std::isfinite(_auxiliarCovarianceEigenvectorMatrix[d * _variableCount + e]) == false)
-        {
-          _k->_logger->logWarning("Detailed", "Non finite value detected in B (no update possible).\n");
-          return;
-        }
   }
 
   _minimumCovarianceEigenvalue = minCovEV;
@@ -1021,8 +1006,6 @@ void CMAES::printGenerationAfter()
     _k->_logger->logInfo("Detailed", "Constraint Evaluation at Current Function Value:\n");
     if (_bestValidSample >= 0)
       for (size_t c = 0; c < _constraintEvaluations.size(); c++) _k->_logger->logData("Detailed", "         ( %+6.3e )\n", _constraintEvaluations[c][_bestValidSample]);
-    else
-      for (size_t c = 0; c < _constraintEvaluations.size(); c++) _k->_logger->logData("Detailed", "         ( %+6.3e )\n", _constraintEvaluations[c][0]);
   }
 
   _k->_logger->logInfo("Detailed", "Covariance Matrix:\n");

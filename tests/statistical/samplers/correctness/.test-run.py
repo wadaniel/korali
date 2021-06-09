@@ -1,6 +1,10 @@
 #! /usr/bin/env python3
 from subprocess import call
 
+r = call(["python3", "run-hmc.py"])
+if r!=0:
+  exit(r)
+  
 r = call(["python3", "run-dram.py"])
 if r!=0:
   exit(r)

@@ -900,15 +900,7 @@ void @className::updateEigensystem(const std::vector<double> &M)
     return;
   }
 
-  for (size_t d = 0; d < _variableCount; ++d)
-  {
-    _auxiliarAxisLengths[d] = sqrt(_auxiliarAxisLengths[d]);
-    if (std::isfinite(_auxiliarAxisLengths[d]) == false)
-    {
-      _k->_logger->logWarning("Detailed", "Could not calculate root of Eigenvalue (%+6.3e) after Eigen decomp (no update possible).\n", _auxiliarAxisLengths[d]);
-      return;
-    }
-  }
+  for (size_t d = 0; d < _variableCount; ++d) _auxiliarAxisLengths[d] = sqrt(_auxiliarAxisLengths[d]);
 
   _minimumCovarianceEigenvalue = minCovEV;
   _maximumCovarianceEigenvalue = maxCovEV;

@@ -301,21 +301,22 @@ k.run(e)
 
 e = korali.Experiment()
 
-# Selecting problem type
 e["Problem"]["Type"] = "Optimization"
 e["Problem"]["Objective Function"] = evalmodel
+e["Problem"]["Constraints"] = [g1, g2, g3, g4]
 
-e["Variables"][0]["Name"] = "X"
-e["Variables"][0]["Initial Value"] = 1.0
-e["Variables"][0]["Lower Bound"] = -10.0
-e["Variables"][0]["Upper Bound"] = +10.0
-e["Variables"][0]["Minimum Standard Deviation Update"] = 1000.0
+for i in range(7):
+  e["Variables"][i]["Name"] = "X" + str(i)
+  e["Variables"][i]["Lower Bound"] = -10.0
+  e["Variables"][i]["Upper Bound"] = +10.0
 
 e["Solver"]["Type"] = "Optimizer/CMAES"
-e["Solver"]["Population Size"] = 64
-e["Solver"]["Termination Criteria"]["Max Generations"] = 100
-e["Solver"]["Max Constraint Violation Count"] = 1
-e["Solver"]["Max Covariance Matrix Corrections"] = 1
+e["Solver"]["Is Sigma Bounded"] = True
+e["Solver"]["Population Size"] = 32
+e["Solver"]["Viability Population Size"] = 4
+e["Solver"]["Max Covariance Matrix Corrections"] = 0
+e["Solver"]["Termination Criteria"]["Max Value"] = -680.630057374402 - 1e-4
+e["Solver"]["Termination Criteria"]["Max Generations"] = 500
 
 e["Console Output"]["Frequency"] = 10
 e["Console Output"]["Verbosity"] = "Detailed"

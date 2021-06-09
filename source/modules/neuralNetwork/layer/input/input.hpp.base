@@ -1,0 +1,17 @@
+@startIncludeGuard
+
+#include "modules/neuralNetwork/layer/layer.hpp"
+
+@startNamespace
+
+class @className : public @parentClassName
+{
+  public:
+  void initialize() override;
+  void forwardData(const size_t t) override;
+  void backwardData(const size_t t) override;
+};
+
+@endNamespace
+
+@endIncludeGuard

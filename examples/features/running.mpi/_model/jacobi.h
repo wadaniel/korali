@@ -4,9 +4,8 @@
 // Authors: Sergio Martin                                             //
 // License: Use if you like, but give us credit.                      //
 /**********************************************************************/
-
 #include "mpi.h"
-#include "korali.hpp"
+#include <korali.hpp>
 #include <vector>
 
 std::vector<double> getPointData();

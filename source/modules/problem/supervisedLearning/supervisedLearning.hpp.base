@@ -1,0 +1,20 @@
+@startIncludeGuard
+
+#include "modules/problem/problem.hpp"
+
+@startNamespace
+
+class @className : public @parentClassName
+{
+  public:
+  void initialize() override;
+
+  /**
+   * @brief Checks whether the input data has the correct shape
+   */
+  void verifyData();
+};
+
+@endNamespace
+
+@endIncludeGuard

@@ -5,6 +5,7 @@
 #ifndef _KORALI_FAST_GRADIENT_BASED_OPTIMIZER_HPP_
 #define _KORALI_FAST_GRADIENT_BASED_OPTIMIZER_HPP_
 
+#include <cstddef>
 #include <vector>
 
 namespace korali
@@ -29,6 +30,11 @@ class fGradientBasedOptimizer
     _gradient.resize(_nVars, 0.0);
     _modelEvaluationCount = 0;
   }
+
+  /**
+  * @brief Default destructor to avoid warnings
+  */
+  virtual ~fGradientBasedOptimizer() = default;
 
   /**
   * @brief Number of problem variables

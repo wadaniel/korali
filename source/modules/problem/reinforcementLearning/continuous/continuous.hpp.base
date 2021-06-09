@@ -1,0 +1,16 @@
+@startIncludeGuard
+
+#include "modules/distribution/univariate/normal/normal.hpp"
+#include "modules/problem/reinforcementLearning/reinforcementLearning.hpp"
+
+@startNamespace
+
+class @className : public @parentClassName
+{
+  public:
+  void initialize() override;
+};
+
+@endNamespace
+
+@endIncludeGuard

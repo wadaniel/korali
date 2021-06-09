@@ -1,0 +1,20 @@
+@startIncludeGuard
+
+#include "modules/experiment/experiment.hpp"
+#include "modules/module.hpp"
+
+@startNamespace
+
+class @className : public @parentClassName
+{
+  public:
+  /**
+     * @brief Evaluates whether at least one of constraints have been met.
+     * @param operation Name of the operation
+     * @param sample A Korali Sample
+  */
+};
+
+@endNamespace
+
+@endIncludeGuard

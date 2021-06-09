@@ -46,6 +46,8 @@ e["Solver"]["Experiences Between Policy Updates"] = 1
 e["Solver"]["Discount Factor"] = 0.99
 e["Solver"]["Learning Rate"] = 0.0001
 e["Solver"]["Mini Batch"]["Size"] = 256
+e["Solver"]["Experience Replay"]["Start Size"] = 1000
+e["Solver"]["Experience Replay"]["Maximum Size"] = 10000
 
 ### Configuring the neural network and its hidden layers
 
@@ -56,22 +58,15 @@ e["Solver"]["Time Sequence Length"] = 4
 e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Recurrent/GRU"
 e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 16 
 
-#e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear"
-#e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 32
-
-#e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Activation"
-#e["Solver"]["Neural Network"]["Hidden Layers"][1]["Function"] = "Elementwise/Tanh"
-
-#e["Solver"]["Neural Network"]["Hidden Layers"][2]["Type"] = "Layer/Linear"
-#e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 32
-
-#e["Solver"]["Neural Network"]["Hidden Layers"][3]["Type"] = "Layer/Activation"
-#e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tanh"
-
 ### Defining Termination Criteria
 
 e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 2.0
 
+### If this is test mode, run only a couple generations
+if len(sys.argv) == 2:
+ if sys.argv[1] == '--test':
+  e["Solver"]["Termination Criteria"]["Max Generations"] = 5
+  
 ### Setting file output configuration
 
 e["Console Output"]["Verbosity"] = "Detailed"

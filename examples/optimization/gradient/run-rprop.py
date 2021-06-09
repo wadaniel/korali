@@ -31,6 +31,8 @@ e["Solver"]["Termination Criteria"]["Max Generations"] = 200
 e["Solver"]["Termination Criteria"]["Parameter Relative Tolerance"] = 1e-8
 
 # Configuring results path
+e["Console Output"]["Frequency"] = 250
+e["File Output"]["Frequency"] = 250
 e["File Output"]["Path"] = '_korali_result_rprop'
 
 # Running Experiment

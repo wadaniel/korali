@@ -1,0 +1,14 @@
+@startIncludeGuard
+
+#include "modules/solver/solver.hpp"
+
+@startNamespace
+
+class @className : public @parentClassName
+{
+  public:
+};
+
+@endNamespace
+
+@endIncludeGuard

@@ -1,0 +1,14 @@
+@startIncludeGuard
+
+#include "modules/distribution/distribution.hpp"
+
+@startNamespace
+
+class @className : public @parentClassName
+{
+  public:
+};
+
+@endNamespace
+
+@endIncludeGuard

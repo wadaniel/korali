@@ -1,0 +1,159 @@
+#include "engine.hpp"
+#include "modules/solver/agent/discrete/discrete.hpp"
+#include "sample/sample.hpp"
+
+@startNamespace
+
+void @className::initializeAgent()
+{
+  // Getting discrete problem pointer
+  _problem = dynamic_cast<problem::reinforcementLearning::Discrete *>(_k->_problem);
+}
+
+void @className::getAction(korali::Sample &sample)
+{
+  // Getting current state
+  auto state = sample["State"].get<std::vector<float>>();
+
+  // Adding state to the state time sequence
+  _stateTimeSequence.add(state);
+
+  // Getting the probability of the actions given by the agent's policy
+  auto policy = runPolicy({_stateTimeSequence.getVector()})[0];
+  const auto &pActions = policy.distributionParameters;
+
+  // Storage for the action index to use
+  size_t actionIdx = 0;
+
+  /*****************************************************************************
+  * During training, we follow the Epsilon-greedy strategy. Choose, given a
+  * probability (pEpsilon), one from the following:
+  *  - Uniformly random action among all possible actions
+  *  - Sample action guided by the policy's probability distribution
+  ****************************************************************************/
+
+  if (sample["Mode"] == "Training")
+  {
+    // Getting pGreedy = U[0,1] for the epsilon-greedy strategy
+    float pEpsilon = _uniformGenerator->getRandomNumber();
+
+    // Producing random (uniform) number for the selection of the action
+    float x = _uniformGenerator->getRandomNumber();
+
+    // If p < e, then we choose the action randomly, with a uniform probability, among all possible actions.
+    if (pEpsilon < _randomActionProbability)
+    {
+      actionIdx = floor(x * _problem->_possibleActions.size());
+    }
+    else // else we select guided by the policy's probability distribution
+    {
+      // Categorical action sampled from action probabilites (from ACER paper [Wang2017])
+      float curSum = 0.0;
+      for (actionIdx = 0; actionIdx < pActions.size(); actionIdx++)
+      {
+        curSum += pActions[actionIdx];
+        if (x < curSum) break;
+      }
+
+      // NOTE: In original DQN paper [Minh2015] we choose max
+      // actionIdx = std::distance(pActions.begin(), std::max_element(pActions.begin(), pActions.end()));
+    }
+  }
+
+  /*****************************************************************************
+  * During testing, we just select the action with the largest probability
+  * given by the policy.
+  ****************************************************************************/
+
+  // Finding the best action index from the probabilities
+  if (sample["Mode"] == "Testing")
+    actionIdx = std::distance(pActions.begin(), std::max_element(pActions.begin(), pActions.end()));
+
+  /*****************************************************************************
+  * Storing the action itself
+ ****************************************************************************/
+
+  if (actionIdx >= _problem->_possibleActions.size())
+  {
+    float cump = 0.0;
+    for (float p : pActions) cump += p;
+    _k->_logger->logWarning("Minimal", "Action index (%lu) exceeds action vector size (%lu). This points to a bug in probability calculation (cumulative p = %f).\n", actionIdx, _problem->_possibleActions.size(), cump);
+    for (size_t i = 0; i < _problem->_possibleActions.size(); ++i) _k->_logger->logWarning("Minimal", "p(a_%zu) = %f\n", i, pActions[i]);
+    actionIdx = _problem->_possibleActions.size() - 1;
+  }
+
+  // Storing action itself, its idx, and probabilities
+  sample["Policy"]["Distribution Parameters"] = pActions;
+  sample["Policy"]["Action Index"] = actionIdx;
+  sample["Policy"]["State Value"] = policy.stateValue;
+  sample["Action"] = _problem->_possibleActions[actionIdx];
+}
+
+float @className::calculateImportanceWeight(const std::vector<float> &action, const policy_t &curPolicy, const policy_t &oldPolicy)
+{
+  const auto &pVectorCurPolicy = curPolicy.distributionParameters;
+  const auto &pVectorOldPolicy = oldPolicy.distributionParameters;
+  auto actionIdx = oldPolicy.actionIndex;
+
+  // Getting probability density of action for current policy
+  float pCurPolicy = pVectorCurPolicy[actionIdx];
+
+  // Getting probability density of action for old policy
+  float pOldPolicy = pVectorOldPolicy[actionIdx];
+
+  // Now calculating importance weight for the old s,a experience
+  float constexpr epsilon = 0.00000001f;
+  float importanceWeight = pCurPolicy / (pOldPolicy + epsilon);
+
+  // Safety checks
+  if (importanceWeight > 1024.0f) importanceWeight = 1024.0f;
+  if (importanceWeight < -1024.0f) importanceWeight = -1024.0f;
+
+  return importanceWeight;
+}
+
+std::vector<float> @className::calculateImportanceWeightGradient(const size_t actionIdx, const std::vector<float> &curPvals, const std::vector<float> &oldPvals)
+{
+  std::vector<float> grad(_problem->_possibleActions.size(), 0.0);
+
+  float importanceWeight = curPvals[actionIdx] / oldPvals[actionIdx];
+
+  // Safety checks
+  if (importanceWeight > 1024.0f) importanceWeight = 1024.0f;
+  if (importanceWeight < -1024.0f) importanceWeight = -1024.0f;
+
+  // calculate gradient of categorical distribution normalized by old pvals
+  for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
+  {
+    if (i == actionIdx)
+      grad[i] = importanceWeight * (1. - curPvals[i]);
+    else
+      grad[i] = -importanceWeight * curPvals[i];
+  }
+
+  return grad;
+}
+
+std::vector<float> @className::calculateKLDivergenceGradient(const std::vector<float> &oldPvalues, const std::vector<float> &curPvalues)
+{
+  std::vector<float> klGrad(_problem->_possibleActions.size(), 0.0);
+
+  // Gradient wrt NN output i
+  for (size_t i = 0; i < _problem->_possibleActions.size(); i++)
+  {
+    // Iterate over all pvalues
+    for (size_t j = 0; j < _problem->_possibleActions.size(); j++)
+    {
+      if (i == j)
+        klGrad[i] -= oldPvalues[j] * (1.0 - curPvalues[i]);
+      else
+        klGrad[i] += oldPvalues[j] * curPvalues[i];
+    }
+  }
+
+  return klGrad;
+}
+
+@moduleAutoCode
+
+@endNamespace

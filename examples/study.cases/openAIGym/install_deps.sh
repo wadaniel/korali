@@ -7,4 +7,4 @@ if [ ! -d _model/pyBulletEnvironments ]; then
  rm -rf ./bullet3/ _model/pyBulletEnvironments/kerasrl_utils.py
 fi
 
-python3 -m pip install pybullet --user
+python3 -m pip install pybullet

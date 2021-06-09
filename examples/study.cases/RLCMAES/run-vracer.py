@@ -95,7 +95,7 @@ if len(sys.argv) == 2:
   
 ### Setting file output configuration
 
-e["File Output"]["Enabled"] = True
+e["File Output"]["Enabled"] = False
 
 ### Running Experiment
 

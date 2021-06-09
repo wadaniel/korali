@@ -17,14 +17,16 @@ class RandomHimmelblau:
     self.bestEver = np.inf
     self.prevBestF = np.inf
     self.curBestF = np.inf
+    self.initalBestF = np.inf
     self.function = None
 
   def reset(self):
-    self.a = self.a + np.random.uniform(-2, 2)
-    self.b = self.b + np.random.uniform(-2, 2)
+    self.a = self.a + np.random.uniform(-1, 1)
+    self.b = self.b + np.random.uniform(-1, 1)
     self.function = lambda x : (x[0]**2+x[1]-self.a)**2 + (x[0]+x[1]**2-self.b)**2
     self.population = np.random.multivariate_normal(self.mu, self.sigma, self.populationSize)
     self.evalPopulation()
+    self.initalBestF = self.curBestF
     self.step = 0
 
   def isOver(self):
@@ -52,7 +54,7 @@ class RandomHimmelblau:
     return state
 
   def getReward(self):
-    return self.prevBestF - self.curBestF
+    return 0.001 * (self.prevBestF - self.curBestF)
 
 if __name__ == '__main__':
     objective = RandomHimmelblau(3)

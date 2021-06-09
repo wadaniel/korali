@@ -51,8 +51,9 @@ void CMAES::setInitialConfiguration()
   }
 
   _hasDiscreteVariables = false;
-  if (isDefined(problemConfig, "Has Discrete Variables"))
-    _hasDiscreteVariables = problemConfig["Has Discrete Variables"];
+  /* check _granularity for discrete variables */
+  for (size_t i = 0; i < _k->_variables.size(); i++)
+    if (_k->_variables[i]->_granularity > 0.0) _hasDiscreteVariables = true;
 
   _isViabilityRegime = _hasConstraints;
 
@@ -906,15 +907,7 @@ void CMAES::updateEigensystem(const std::vector<double> &M)
     return;
   }
 
-  for (size_t d = 0; d < _variableCount; ++d)
-  {
-    _auxiliarAxisLengths[d] = sqrt(_auxiliarAxisLengths[d]);
-    if (std::isfinite(_auxiliarAxisLengths[d]) == false)
-    {
-      _k->_logger->logWarning("Detailed", "Could not calculate root of Eigenvalue (%+6.3e) after Eigen decomp (no update possible).\n", _auxiliarAxisLengths[d]);
-      return;
-    }
-  }
+  for (size_t d = 0; d < _variableCount; ++d) _auxiliarAxisLengths[d] = sqrt(_auxiliarAxisLengths[d]);
 
   _minimumCovarianceEigenvalue = minCovEV;
   _maximumCovarianceEigenvalue = maxCovEV;

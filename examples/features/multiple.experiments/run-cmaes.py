@@ -26,7 +26,7 @@ for i in range(8):
 
   # Configuring CMA-ES parameters
   e["Solver"]["Type"] = "Optimizer/CMAES"
-  e["Solver"]["Population Size"] = 24
+  e["Solver"]["Population Size"] = 32
   e["Solver"]["Termination Criteria"]["Max Generations"] = 100
 
   # Configuring the problem's random distributions
@@ -42,7 +42,7 @@ for i in range(8):
 
   e["Distributions"][2]["Name"] = "Uniform 2"
   e["Distributions"][2]["Type"] = "Univariate/Uniform"
-  e["Distributions"][2]["Minimum"] = 0.0
+  e["Distributions"][2]["Minimum"] = 0.01
   e["Distributions"][2]["Maximum"] = +5.0
 
   # Configuring the problem's variables
@@ -64,7 +64,8 @@ for i in range(8):
   # Setting distinct experiment paths
   e["File Output"]["Path"] = '_korali_multiple/exp' + str(i)
   e["File Output"]["Enabled"] = True
-  e["File Output"]["True"] = 20
+  e["File Output"]["Frequency"] = 20
+  e["Console Output"]["Frequency"] = 10
   e["Store Sample Information"] = True
 
   # Adding Experiment to vector

@@ -788,9 +788,6 @@ void CMAES::numericalErrorTreatment()
 
 void CMAES::handleConstraints()
 {
-  size_t initial_resampled = _resampledParameterCount;
-  size_t initial_corrections = _covarianceMatrixAdaptationCount;
-
   while (_maxConstraintViolationCount > 0)
   {
     _auxiliarCovarianceMatrix = _covarianceMatrix;
@@ -803,6 +800,12 @@ void CMAES::handleConstraints()
           if (_viabilityIndicator[c][i] == true)
           {
             _covarianceMatrixAdaptationCount++;
+
+            if (_covarianceMatrixAdaptationCount > _maxCovarianceMatrixCorrections)
+            {
+              _k->_logger->logWarning("Detailed", "Exiting adaption loop, max adaptions (%zu) reached.\n", _maxCovarianceMatrixCorrections);
+              return;
+            }
 
             double v2 = 0;
             for (size_t d = 0; d < _variableCount; ++d)
@@ -835,7 +838,7 @@ void CMAES::handleConstraints()
           for(size_t d = 0; d < _variableCount; ++d) rands[d] = _normalGenerator->getRandomNumber();
           sampleSingle(i, rands);
 
-          if (_resampledParameterCount - initial_resampled > _maxInfeasibleResamplings)
+          if (_resampledParameterCount > _maxInfeasibleResamplings)
           {
             _k->_logger->logWarning("Detailed", "Exiting resampling loop, max resamplings (%zu) reached.\n", _maxInfeasibleResamplings);
             reEvaluateConstraints();
@@ -849,12 +852,6 @@ void CMAES::handleConstraints()
       }
 
     reEvaluateConstraints();
-
-    if (_covarianceMatrixAdaptationCount - initial_corrections > _maxCovarianceMatrixCorrections)
-    {
-      _k->_logger->logWarning("Detailed", "Exiting adaption loop, max adaptions (%zu) reached.\n", _maxCovarianceMatrixCorrections);
-      return;
-    }
 
   } //while _maxConstraintViolationCount > 0
 }

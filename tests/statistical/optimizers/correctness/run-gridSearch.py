@@ -30,3 +30,24 @@ k.run(e)
 
 checkMin(e, 0.22942553779431113, 1e-2)
 
+# Testing termination by maximum evaluations
+values = np.linspace(-10, 10, 1000).tolist()
+
+e = korali.Experiment()
+e["Problem"]["Type"] = "Optimization"
+e["Problem"]["Objective Function"] = evalmodel
+
+e["Variables"][0]["Name"] = "X"
+e["Variables"][0]["Values"] = values
+
+e["Solver"]["Type"] = "Optimizer/GridSearch"
+e["Solver"]["Termination Criteria"]["Max Generations"] = 2
+e["Solver"]["Termination Criteria"]["Max Model Evaluations"] = 10
+
+e["Console Output"]["Verbosity"] = "Detailed"
+e["File Output"]["Enabled"] = False
+
+k = korali.Engine()
+k.run(e)
+
+checkEvals(e, 10)

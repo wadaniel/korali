@@ -14,8 +14,8 @@ k = korali.Engine()
 e = korali.Experiment()
 
 # Creating value list
-values = np.linspace(-1, 1, 100).tolist()
-values = np.linspace(-1, 1, 100).tolist()
+values = np.linspace(-1, 1, 10).tolist()
+
 # Configuring Problem
 e["Random Seed"] = 0xC0FEE
 e["Problem"]["Type"] = "Optimization"
@@ -26,6 +26,8 @@ e["Variables"][0]["Name"] = "X"
 e["Variables"][0]["Values"] = values
 e["Variables"][1]["Name"] = "Y"
 e["Variables"][1]["Values"] = values
+e["Variables"][2]["Name"] = "Z"
+e["Variables"][2]["Values"] = values
 
 # Chosing Grid Search solver
 e["Solver"]["Type"] = "Optimizer/GridSearch"

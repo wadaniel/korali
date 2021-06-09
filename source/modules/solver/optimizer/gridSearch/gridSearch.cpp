@@ -19,7 +19,13 @@ void GridSearch::setInitialConfiguration()
     _numberOfValues *= _k->_variables[i]->_values.size();
 
   if (_numberOfValues > _maxModelEvaluations)
-    KORALI_LOG_ERROR("%lu > %lu. More evaluations required than the maximum allowed. ", _numberOfValues, _maxModelEvaluations);
+   {
+    _k->_logger->logWarning("Normal", "%lu > %lu. More evaluations required than the maximum specified.\n", _numberOfValues, _maxModelEvaluations);
+    _numberOfValues = _maxModelEvaluations;
+   }
+
+  // Resetting execution counter
+  _modelEvaluationCount = 0;
 
   _maxModelEvaluations = _numberOfValues;
 
@@ -102,9 +108,6 @@ void GridSearch::finalize()
   // Updating Results
   (*_k)["Results"]["Best Sample"]["Parameters"] = _bestEverVariables;
   (*_k)["Results"]["Best Sample"]["F(x)"] = _bestEverValue;
-
-  // Resetting execution counter
-  _modelEvaluationCount = 0;
 }
 
 void GridSearch::setConfiguration(knlohmann::json& js) 

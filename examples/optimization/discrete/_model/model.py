@@ -18,4 +18,5 @@ def model(s):
 
 def modelGrid(p):
   x = p["Parameters"][0]
-  p["F(x)"] = -0.5 * x * x
+  y = p["Parameters"][1]
+  p["F(x)"] = -0.5 * (x * x + y * y)  

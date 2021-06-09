@@ -7,6 +7,7 @@
 #include "modules/solver/optimizer/MOCMAES/MOCMAES.hpp"
 #include "modules/solver/optimizer/MADGRAD/MADGRAD.hpp"
 #include "modules/solver/optimizer/Rprop/Rprop.hpp"
+#include "modules/solver/optimizer/gridSearch/gridSearch.hpp"
 #include "modules/problem/optimization/optimization.hpp"
 
 namespace
@@ -15,6 +16,220 @@ namespace
  using namespace korali::solver;
  using namespace korali::solver::optimizer;
  using namespace korali::problem;
+
+ //////////////// BASE CLASS ////////////////////////
+
+  TEST(optimizers, baseClass)
+  {
+   // Creating base experiment
+   Experiment e;
+   auto& experimentJs = e._js.getJson();
+
+   // Creating initial variable
+   Variable v;
+   e._variables.push_back(&v);
+   e["Variables"][0]["Name"] = "Var 1";
+   e["Variables"][0]["Lower Bound"] = 0.0;
+   e["Variables"][0]["Upper Bound"] = 1.0;
+
+   // Creating optimizer configuration Json
+   knlohmann::json optimizerJs;
+   optimizerJs["Type"] = "Optimizer/AdaBelief";
+
+   // Creating module
+   AdaBelief* opt;
+   ASSERT_NO_THROW(opt = dynamic_cast<AdaBelief *>(Module::getModule(optimizerJs, &e)));
+
+   // Defaults should be applied without a problem
+   ASSERT_NO_THROW(opt->applyModuleDefaults(optimizerJs));
+
+   // Covering variable functions (no effect)
+   ASSERT_NO_THROW(opt->applyVariableDefaults());
+
+   // Backup the correct base configuration
+   auto baseOptJs = optimizerJs;
+   auto baseExpJs = experimentJs;
+
+   // Setting up optimizer correctly
+   ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+   // Testing optional parameters
+
+   optimizerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   optimizerJs["Current Best Value"] = 2.0;
+   ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+   optimizerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   optimizerJs["Current Best Value"] = "Not a Number";
+   ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+   optimizerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   optimizerJs["Previous Best Value"] = 2.0;
+   ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+   optimizerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   optimizerJs["Previous Best Value"] = "Not a Number";
+   ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+   optimizerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   optimizerJs["Best Ever Value"] = 2.0;
+   ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+   optimizerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   optimizerJs["Best Ever Value"] = "Not a Number";
+   ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+   optimizerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   optimizerJs["Best Ever Variables"] = std::vector<double>({ 2.0 });
+   ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+   optimizerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   optimizerJs["Best Ever Variables"] = "Not a Number";
+   ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+   optimizerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   optimizerJs["Termination Criteria"]["Max Value"] = 2.0;
+   ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+   optimizerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   optimizerJs["Termination Criteria"].erase("Max Value");
+   ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+   optimizerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   optimizerJs["Termination Criteria"]["Max Value"] = "Not a Number";
+   ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+   optimizerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   optimizerJs["Termination Criteria"]["Min Value Difference Threshold"] = 2.0;
+   ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+   optimizerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   optimizerJs["Termination Criteria"].erase("Min Value Difference Threshold");
+   ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+   optimizerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   optimizerJs["Termination Criteria"]["Min Value Difference Threshold"] = "Not a Number";
+   ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+   optimizerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   e["Variables"][0].erase("Lower Bound");
+   ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+   optimizerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   e["Variables"][0]["Lower Bound"] = "Not a Number";
+   ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+   optimizerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   e["Variables"][0]["Lower Bound"] = 1.0;
+   ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+   optimizerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   e["Variables"][0].erase("Upper Bound");
+   ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+   optimizerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   e["Variables"][0]["Upper Bound"] = "Not a Number";
+   ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+   optimizerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   e["Variables"][0]["Upper Bound"] = 1.0;
+   ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+   optimizerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   e["Variables"][0].erase("Initial Mean");
+   ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+   optimizerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   e["Variables"][0]["Initial Mean"] = "Not a Number";
+   ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+   optimizerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   e["Variables"][0]["Initial Mean"] = 1.0;
+   ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+   optimizerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   e["Variables"][0].erase("Initial Standard Deviation");
+   ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+   optimizerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   e["Variables"][0]["Initial Standard Deviation"] = "Not a Number";
+   ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+   optimizerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   e["Variables"][0]["Initial Standard Deviation"] = 1.0;
+   ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+   optimizerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   e["Variables"][0].erase("Minimum Standard Deviation Update");
+   ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+   optimizerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   e["Variables"][0]["Minimum Standard Deviation Update"] = "Not a Number";
+   ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+   optimizerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   e["Variables"][0]["Minimum Standard Deviation Update"] = 1.0;
+   ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+   optimizerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   e["Variables"][0].erase("Initial Value");
+   ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+   optimizerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   e["Variables"][0]["Initial Value"] = "Not a Number";
+   ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+   optimizerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   e["Variables"][0]["Initial Value"] = 1.0;
+   ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+   optimizerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   e["Variables"][0].erase("Values");
+   ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+   optimizerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   e["Variables"][0]["Values"] = "Not a Number";
+   ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+   optimizerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   e["Variables"][0]["Values"] = std::vector<double>({});
+   ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+  }
 
  //////////////// ADABELIEF ////////////////////////
 
@@ -490,6 +705,16 @@ namespace
   e["Variables"][0]["Name"] = "Var 1";
   e["Variables"][0]["Lower Bound"] = 0.0;
   e["Variables"][0]["Upper Bound"] = 1.0;
+  e["Problem"]["Type"] = "Optimization";
+  e["Problem"]["Constraints"][0] = 0;
+
+  // Creating problem module
+  Optimization* p;
+  knlohmann::json problemJs;
+  problemJs["Type"] = "Optimization";
+  ASSERT_NO_THROW(p = dynamic_cast<Optimization *>(Module::getModule(problemJs, &e)));
+  e._problem = p;
+  p->_numObjectives = 2;
 
   // Creating optimizer configuration Json
   knlohmann::json optimizerJs;
@@ -508,12 +733,26 @@ namespace
   // Backup the correct base configuration
   auto baseOptJs = optimizerJs;
   auto baseExpJs = experimentJs;
-
-  // Setting up optimizer correctly
   ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
 
-  // Testing initial configuration success
-  v._initialValue = 1.0;
+  // Testing initial configuration failures
+  opt->_globalSuccessLearningRate = -1.0;
+  ASSERT_ANY_THROW(opt->setInitialConfiguration());
+  opt->_globalSuccessLearningRate = 2.0;
+  ASSERT_ANY_THROW(opt->setInitialConfiguration());
+  opt->_globalSuccessLearningRate = 0.5;
+  ASSERT_NO_THROW(opt->setInitialConfiguration());
+
+  opt->_targetSuccessRate  = -1.0;
+  ASSERT_ANY_THROW(opt->setInitialConfiguration());
+  opt->_targetSuccessRate  = 2.0;
+  ASSERT_ANY_THROW(opt->setInitialConfiguration());
+  opt->_targetSuccessRate  = 0.5;
+  ASSERT_NO_THROW(opt->setInitialConfiguration());
+
+  opt->_covarianceMatrixAdaptionStrength   = -1.0;
+  ASSERT_ANY_THROW(opt->setInitialConfiguration());
+  opt->_covarianceMatrixAdaptionStrength   = 0.5;
   ASSERT_NO_THROW(opt->setInitialConfiguration());
 
   // Testing optional parameters
@@ -569,7 +808,7 @@ namespace
 
   optimizerJs = baseOptJs;
   experimentJs = baseExpJs;
-  optimizerJs["Mu Weights"] = std::vector<double>({1.0});
+  optimizerJs["Mu Weights"] = std::vector<double>({1.0, 1.0, 1.0, 1.0});
   ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
 
   optimizerJs = baseOptJs;
@@ -1169,6 +1408,31 @@ namespace
 
   optimizerJs = baseOptJs;
   experimentJs = baseExpJs;
+  optimizerJs["Has Constraints"] = true;
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Has Constraints"] = "Not a Boolean";
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Mirrored Sampling"] = true;
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs.erase("Mirrored Sampling");
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Mirrored Sampling"] = "Not a Boolean";
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
   optimizerJs["Population Size"] = 1;
   ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
 
@@ -1211,6 +1475,7 @@ namespace
   experimentJs = baseExpJs;
   optimizerJs["Mu Type"] = "Undefined";
   ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+  ASSERT_ANY_THROW(opt->initMuWeights(4));
 
   optimizerJs = baseOptJs;
   experimentJs = baseExpJs;
@@ -1486,6 +1751,15 @@ namespace
   experimentJs = baseExpJs;
   optimizerJs["Termination Criteria"]["Max Standard Deviation"] = std::vector<double>({1.0});
   ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  // Testing changes in cumulative covariance
+  opt->_initialCumulativeCovariance = -1.0;
+  ASSERT_NO_THROW(opt->initMuWeights(4));
+  ASSERT_NE(opt->_initialCumulativeCovariance, opt->_cumulativeCovariance);
+
+  opt->_initialCumulativeCovariance = 0.5;
+  ASSERT_NO_THROW(opt->initMuWeights(4));
+  ASSERT_EQ(opt->_initialCumulativeCovariance, opt->_cumulativeCovariance);
  }
 
  //////////////// DEA ////////////////////////
@@ -1593,6 +1867,16 @@ namespace
   optimizerJs = baseOptJs;
   experimentJs = baseExpJs;
   optimizerJs["Previous Best Ever Value"] = std::vector<std::vector<double>>({{ 2.0 }});
+  ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Current Mean"] = std::vector<double>({ 2.0 });
+  ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+  optimizerJs = baseOptJs;
+  experimentJs = baseExpJs;
+  optimizerJs["Current Mean"] = 2.0;
   ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
 
   optimizerJs = baseOptJs;
@@ -1832,7 +2116,6 @@ namespace
   e["Variables"][0]["Lower Bound"] = 0.0;
   e["Variables"][0]["Upper Bound"] = 1.0;
   e["Problem"]["Type"] = "Optimization";
-
 
   // Creating problem module
   Optimization* p;
@@ -2525,6 +2808,11 @@ namespace
 
    optimizerJs = baseOptJs;
    experimentJs = baseExpJs;
+   optimizerJs.erase("Weight Decay");
+   ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+   optimizerJs = baseOptJs;
+   experimentJs = baseExpJs;
    optimizerJs["Weight Decay"] = std::vector<double>({ 2.0 });
    ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
 
@@ -2546,6 +2834,16 @@ namespace
    optimizerJs = baseOptJs;
    experimentJs = baseExpJs;
    optimizerJs["Squared Gradient Sum"] = 2.0;
+   ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+   optimizerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   optimizerJs["Gradient"] = std::vector<double>({ 2.0 });
+   ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+   optimizerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   optimizerJs["Gradient"] = 2.0;
    ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
 
    optimizerJs = baseOptJs;
@@ -2878,6 +3176,21 @@ namespace
     optimizerJs["Termination Criteria"]["Parameter Relative Tolerance"] = 2.0;
     ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
 
+    optimizerJs = baseOptJs;
+    experimentJs = baseExpJs;
+    optimizerJs["Termination Criteria"]["Max Gradient Norm"] = std::vector<double>({ 2.0 });
+    ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+    optimizerJs = baseOptJs;
+    experimentJs = baseExpJs;
+    optimizerJs["Termination Criteria"].erase("Max Gradient Norm");
+    ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+    optimizerJs = baseOptJs;
+    experimentJs = baseExpJs;
+    optimizerJs["Termination Criteria"]["Max Gradient Norm"] = 2.0;
+    ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
     // Testing termination criteria
     e._currentGeneration = 200;
     opt->_maxStallGenerations = 100;
@@ -2902,6 +3215,78 @@ namespace
     ASSERT_TRUE(opt->checkTermination());
     opt->_xDiff = 1.5;
     ASSERT_FALSE(opt->checkTermination());
+   }
+
+   //////////////// GridSearch ////////////////////////
+
+   TEST(optimizers, GridSearch)
+   {
+    // Creating base experiment
+    Experiment e;
+    auto& experimentJs = e._js.getJson();
+
+    // Creating initial variable
+    Variable v;
+    e._variables.push_back(&v);
+    e["Variables"][0]["Name"] = "Var 1";
+
+    // Creating optimizer configuration Json
+    knlohmann::json optimizerJs;
+    optimizerJs["Type"] = "Optimizer/GridSearch";
+
+    // Creating module
+    GridSearch* opt;
+    ASSERT_NO_THROW(opt = dynamic_cast<GridSearch *>(Module::getModule(optimizerJs, &e)));
+
+    // Defaults should be applied without a problem
+    ASSERT_NO_THROW(opt->applyModuleDefaults(optimizerJs));
+
+    // Covering variable functions (no effect)
+    ASSERT_NO_THROW(opt->applyVariableDefaults());
+
+    // Backup the correct base configuration
+    auto baseOptJs = optimizerJs;
+    auto baseExpJs = experimentJs;
+
+    // Testing initial configuration fail
+    opt->_numberOfValues = 10;
+    opt->_maxModelEvaluations = 5;
+    ASSERT_NO_THROW(opt->setInitialConfiguration());
+    opt->_maxModelEvaluations = 20;
+
+    // Testing initial configuration success
+    ASSERT_NO_THROW(opt->setInitialConfiguration());
+
+    // Testing optional parameters
+    optimizerJs = baseOptJs;
+    experimentJs = baseExpJs;
+    optimizerJs["Number Of Values"] = 1;
+    ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+    optimizerJs = baseOptJs;
+    experimentJs = baseExpJs;
+    optimizerJs["Number Of Values"] = "Not a Number";
+    ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+    optimizerJs = baseOptJs;
+    experimentJs = baseExpJs;
+    optimizerJs["Objective"] = std::vector<double>({ 2.0 });
+    ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+    optimizerJs = baseOptJs;
+    experimentJs = baseExpJs;
+    optimizerJs["Objective"] = 2.0;
+    ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
+
+    optimizerJs = baseOptJs;
+    experimentJs = baseExpJs;
+    optimizerJs["Index Helper"] = std::vector<size_t>({ 0 });
+    ASSERT_NO_THROW(opt->setConfiguration(optimizerJs));
+
+    optimizerJs = baseOptJs;
+    experimentJs = baseExpJs;
+    optimizerJs["Index Helper"] = 2.0;
+    ASSERT_ANY_THROW(opt->setConfiguration(optimizerJs));
    }
 
 } // namespace

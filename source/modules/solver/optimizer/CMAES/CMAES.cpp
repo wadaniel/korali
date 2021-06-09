@@ -51,8 +51,9 @@ void CMAES::setInitialConfiguration()
   }
 
   _hasDiscreteVariables = false;
-  if (isDefined(problemConfig, "Has Discrete Variables"))
-    _hasDiscreteVariables = problemConfig["Has Discrete Variables"];
+  /* check _granularity for discrete variables */
+  for (size_t i = 0; i < _k->_variables.size(); i++)
+    if (_k->_variables[i]->_granularity > 0.0) _hasDiscreteVariables = true;
 
   _isViabilityRegime = _hasConstraints;
 
@@ -336,9 +337,6 @@ void CMAES::checkMeanAndSetRegime()
 
   auto cEvals = KORALI_GET(std::vector<double>, sample, "Constraint Evaluations");
 
-  if (cEvals.size() != _constraintEvaluations.size())
-    KORALI_LOG_ERROR("Size of sample's sample evaluations vector (%lu) is different from the number of constraints defined (%lu).\n", cEvals.size(), _constraintEvaluations.size());
-
   for (size_t c = 0; c < _constraintEvaluations.size(); c++)
     if (cEvals[c] > 0.0) return; /* mean violates constraint, do nothing */
 
@@ -372,9 +370,6 @@ void CMAES::updateConstraints()
     _constraintEvaluationCount++;
 
     auto cEvals = KORALI_GET(std::vector<double>, sample, "Constraint Evaluations");
-
-    if (cEvals.size() != _constraintEvaluations.size())
-      KORALI_LOG_ERROR("Size of sample's sample evaluations vector (%lu) is different from the number of constraints defined (%lu).\n", cEvals.size(), _constraintEvaluations.size());
 
     for (size_t c = 0; c < _constraintEvaluations.size(); c++)
       _constraintEvaluations[c][i] = cEvals[c];
@@ -418,9 +413,6 @@ void CMAES::reEvaluateConstraints()
       _sampleConstraintViolationCounts[i] = 0;
 
       auto cEvals = KORALI_GET(std::vector<double>, sample, "Constraint Evaluations");
-
-      if (cEvals.size() != _constraintEvaluations.size())
-        KORALI_LOG_ERROR("Size of sample's sample evaluations vector (%lu) is different from the number of constraints defined (%lu).\n", cEvals.size(), _constraintEvaluations.size());
 
       for (size_t c = 0; c < _constraintEvaluations.size(); c++)
       {
@@ -469,7 +461,7 @@ void CMAES::prepareGeneration()
 
       isFeasible = isSampleFeasible(_samplePopulation[i]);
 
-      if (isFeasible == false) _infeasibleSampleCount++;
+      _infeasibleSampleCount += isFeasible ? 0 : 1;
 
     } while (isFeasible == false && (_infeasibleSampleCount < _maxInfeasibleResamplings));
   }
@@ -570,11 +562,6 @@ void CMAES::updateDistribution()
     _bestValidSample = -1;
     for (size_t i = 0; i < _currentPopulationSize; i++)
       if (_sampleConstraintViolationCounts[_sortingIndex[i]] == 0) _bestValidSample = _sortingIndex[i];
-    if (_bestValidSample == -1)
-    {
-      _k->_logger->logWarning("Detailed", "All samples violate constraints, no updates taking place.\n");
-      return;
-    }
   }
 
   /* update function value history */
@@ -801,9 +788,6 @@ void CMAES::numericalErrorTreatment()
 
 void CMAES::handleConstraints()
 {
-  size_t initial_resampled = _resampledParameterCount;
-  size_t initial_corrections = _covarianceMatrixAdaptationCount;
-
   while (_maxConstraintViolationCount > 0)
   {
     _auxiliarCovarianceMatrix = _covarianceMatrix;
@@ -816,6 +800,12 @@ void CMAES::handleConstraints()
           if (_viabilityIndicator[c][i] == true)
           {
             _covarianceMatrixAdaptationCount++;
+
+            if (_covarianceMatrixAdaptationCount > _maxCovarianceMatrixCorrections)
+            {
+              _k->_logger->logWarning("Detailed", "Exiting adaption loop, max adaptions (%zu) reached.\n", _maxCovarianceMatrixCorrections);
+              return;
+            }
 
             double v2 = 0;
             for (size_t d = 0; d < _variableCount; ++d)
@@ -848,26 +838,13 @@ void CMAES::handleConstraints()
           for(size_t d = 0; d < _variableCount; ++d) rands[d] = _normalGenerator->getRandomNumber();
           sampleSingle(i, rands);
 
-          if (_resampledParameterCount - initial_resampled > _maxInfeasibleResamplings)
-          {
-            _k->_logger->logWarning("Detailed", "Exiting resampling loop, max resamplings (%zu) reached.\n", _maxInfeasibleResamplings);
-            reEvaluateConstraints();
-            return;
-          }
-
           if (_hasDiscreteVariables) discretize(_samplePopulation[i]);
           isFeasible = isSampleFeasible(_samplePopulation[i]);
 
-        } while (isFeasible == false);
+        } while (isFeasible == false && _resampledParameterCount < _maxInfeasibleResamplings);
       }
 
     reEvaluateConstraints();
-
-    if (_covarianceMatrixAdaptationCount - initial_corrections > _maxCovarianceMatrixCorrections)
-    {
-      _k->_logger->logWarning("Detailed", "Exiting adaption loop, max adaptions (%zu) reached.\n", _maxCovarianceMatrixCorrections);
-      return;
-    }
 
   } //while _maxConstraintViolationCount > 0
 }
@@ -902,9 +879,6 @@ void CMAES::updateDiscreteMutationMatrix()
 
 void CMAES::discretize(std::vector<double> &sample)
 {
-  if (sample.size() != _variableCount)
-    KORALI_LOG_ERROR("Size of sample's parameter vector (%lu) is different from the number of problem variables.\n", sample.size(), _variableCount);
-
   for (size_t d = 0; d < _variableCount; ++d)
     if (_k->_variables[d]->_granularity != 0.0)
       sample[d] = std::round(sample[d] / _k->_variables[d]->_granularity) * _k->_variables[d]->_granularity;
@@ -923,22 +897,7 @@ void CMAES::updateEigensystem(const std::vector<double> &M)
     return;
   }
 
-  for (size_t d = 0; d < _variableCount; ++d)
-  {
-    _auxiliarAxisLengths[d] = sqrt(_auxiliarAxisLengths[d]);
-    if (std::isfinite(_auxiliarAxisLengths[d]) == false)
-    {
-      _k->_logger->logWarning("Detailed", "Could not calculate root of Eigenvalue (%+6.3e) after Eigen decomp (no update possible).\n", _auxiliarAxisLengths[d]);
-      return;
-    }
-    if (!_diagonalCovariance)
-      for (size_t e = 0; e < _variableCount; ++e)
-        if (std::isfinite(_auxiliarCovarianceEigenvectorMatrix[d * _variableCount + e]) == false)
-        {
-          _k->_logger->logWarning("Detailed", "Non finite value detected in B (no update possible).\n");
-          return;
-        }
-  }
+  for (size_t d = 0; d < _variableCount; ++d) _auxiliarAxisLengths[d] = sqrt(_auxiliarAxisLengths[d]);
 
   _minimumCovarianceEigenvalue = minCovEV;
   _maximumCovarianceEigenvalue = maxCovEV;
@@ -1030,8 +989,6 @@ void CMAES::printGenerationAfter()
     _k->_logger->logInfo("Detailed", "Constraint Evaluation at Current Function Value:\n");
     if (_bestValidSample >= 0)
       for (size_t c = 0; c < _constraintEvaluations.size(); c++) _k->_logger->logData("Detailed", "         ( %+6.3e )\n", _constraintEvaluations[c][_bestValidSample]);
-    else
-      for (size_t c = 0; c < _constraintEvaluations.size(); c++) _k->_logger->logData("Detailed", "         ( %+6.3e )\n", _constraintEvaluations[c][0]);
   }
 
   _k->_logger->logInfo("Detailed", "Covariance Matrix:\n");

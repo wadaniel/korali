@@ -629,12 +629,12 @@ namespace
 
    samplerJs = baseOptJs;
    experimentJs = baseExpJs;
-   samplerJs["Coefficient of Variation"] = "Not a Number";
+   samplerJs["Coefficient Of Variation"] = "Not a Number";
    ASSERT_ANY_THROW(opt->setConfiguration(samplerJs));
 
    samplerJs = baseOptJs;
    experimentJs = baseExpJs;
-   samplerJs["Coefficient of Variation"] = 1.0;
+   samplerJs["Coefficient Of Variation"] = 1.0;
    ASSERT_NO_THROW(opt->setConfiguration(samplerJs));
 
    samplerJs = baseOptJs;
@@ -734,7 +734,7 @@ namespace
 
    samplerJs = baseOptJs;
    experimentJs = baseExpJs;
-   samplerJs["Max Loglikelihood"] = double;
+   samplerJs["Max Loglikelihood"] = 1.0;
    ASSERT_NO_THROW(opt->setConfiguration(samplerJs));
 
    samplerJs = baseOptJs;
@@ -794,7 +794,7 @@ namespace
 
    samplerJs = baseOptJs;
    experimentJs = baseExpJs;
-   samplerJs["Sample Error Database"] = std::vector<int>({0.0});
+   samplerJs["Sample Error Database"] = std::vector<double>({0.0});
    ASSERT_NO_THROW(opt->setConfiguration(samplerJs));
 
    samplerJs = baseOptJs;
@@ -906,12 +906,12 @@ namespace
 
    samplerJs = baseOptJs;
    experimentJs = baseExpJs;
-   samplerJs["Version"] = "TMCMC;
+   samplerJs["Version"] = "TMCMC";
    ASSERT_NO_THROW(opt->setConfiguration(samplerJs));
 
    samplerJs = baseOptJs;
    experimentJs = baseExpJs;
-   samplerJs["Version"] = "mTMCMC;
+   samplerJs["Version"] = "mTMCMC";
    ASSERT_NO_THROW(opt->setConfiguration(samplerJs));
 
    samplerJs = baseOptJs;

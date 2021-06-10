@@ -1132,6 +1132,11 @@ namespace
    ASSERT_NO_THROW(opt->setConfiguration(samplerJs));
 
    // Test initial configuration
+
+   opt->_version = "Riemannian";
+   opt->_useDiagonalMetric = false;
+   ASSERT_ANY_THROW(opt->setInitialConfiguration());
+
    opt->_version = "Undefined";
    ASSERT_ANY_THROW(opt->setInitialConfiguration());
    opt->_version = "Static";

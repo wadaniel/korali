@@ -11,7 +11,7 @@ from helpers import *
 # Starting Korali's Engine
 import korali
 
-##### Euclidean (No Diagonal)
+##### Riemannian Const (No Diagonal)
 
 e = korali.Experiment()
 e["Console Output"]["Frequency"] = 100
@@ -27,7 +27,7 @@ e["Solver"]["Termination Criteria"]["Max Samples"] = 5000
 
 # HMC specific parameters
 e["Solver"]["Use Adaptive Step Size"] = True
-e["Solver"]["Version"] = 'Euclidean'
+e["Solver"]["Version"] = 'Riemannian Const'
 e["Solver"]["Use NUTS"] = True
 e["Solver"]["Num Integration Steps"] = 20
 e["Solver"]["Step Size"] = 0.1
@@ -50,7 +50,7 @@ k.run(e)
 checkMean(e, 0.0, 0.1)
 checkStd(e, 1.0, 0.025)
 
-##### Euclidean (Diagonal)
+##### Riemannian Const (Diagonal)
 
 e = korali.Experiment()
 e["Console Output"]["Frequency"] = 100
@@ -66,7 +66,7 @@ e["Solver"]["Termination Criteria"]["Max Samples"] = 5000
 
 # HMC specific parameters
 e["Solver"]["Use Adaptive Step Size"] = True
-e["Solver"]["Version"] = 'Euclidean'
+e["Solver"]["Version"] = 'Riemannian Const'
 e["Solver"]["Use NUTS"] = True
 e["Solver"]["Num Integration Steps"] = 20
 e["Solver"]["Use Diagonal Metric"] = True

@@ -165,7 +165,7 @@ e["Solver"]["Termination Criteria"]["Max Samples"] = 10
 
 # HMC specific parameters
 e["Solver"]["Use Adaptive Step Size"] = True
-e["Solver"]["Version"] = 'Static'
+e["Solver"]["Version"] = 'Riemannian'
 e["Solver"]["Use NUTS"] = True
 e["Solver"]["Num Integration Steps"] = 20
 e["Solver"]["Step Size"] = 0.1

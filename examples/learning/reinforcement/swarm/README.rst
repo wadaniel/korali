@@ -12,8 +12,8 @@ The particles orientation is updated by rotating the current orientation by an a
 Example
 -------
 
-Example with constant action  :math:`a=(1,0,0)` and visualisation turned on can be run using 
+Verbous example with constant action  :math:`a=(1,0,0)` and visualisation turned on can be run using 
 
 ```
-python main.py --visualize 1 --numIndividuals 50 --numTimesteps 100 --numNearestNeighbours 5
+python main.py --visualize 1 --numIndividuals 10 --numTimesteps 100 --numNearestNeighbours 5
 ```

@@ -1,8 +1,10 @@
 import argparse
+import sys
+sys.path.append('_model')
+from swarm import *
+from plotter import *
 import math
 from pathlib import Path
-from source.swarm import *
-from source.plotter import *
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

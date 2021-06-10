@@ -1094,21 +1094,45 @@ namespace
    // Creating initial variable
    Variable v;
    e._variables.push_back(&v);
+   v._distributionIndex = 0;
    e["Variables"][0]["Name"] = "Var 1";
    e["Variables"][0]["Initial Mean"] = 0.0;
    e["Variables"][0]["Initial Standard Deviation"] = 0.25;
    e["Variables"][0]["Lower Bound"] = -1.0;
    e["Variables"][0]["Upper Bound"] = 1.0;
+   e["Variables"][0]["Prior Distribution"] = "Uniform 0";
+
+   e["Distributions"][0]["Name"] = "Uniform 0";
+   e["Distributions"][0]["Type"] = "Univariate/Uniform";
+   e["Distributions"][0]["Minimum"] = 0.0;
+   e["Distributions"][0]["Maximum"] = +5.0;
+
+   knlohmann::json uniformDistroJs;
+   uniformDistroJs["Type"] = "Univariate/Uniform";
+   uniformDistroJs["Minimum"] = 0.0;
+   uniformDistroJs["Maximum"] = 1.0;
+   auto uniformGenerator = dynamic_cast<korali::distribution::univariate::Uniform*>(korali::Module::getModule(uniformDistroJs, &e));
+   uniformGenerator->applyVariableDefaults();
+   uniformGenerator->applyModuleDefaults(uniformDistroJs);
+   uniformGenerator->setConfiguration(uniformDistroJs);
+   e._distributions.push_back(uniformGenerator);
 
    // Configuring Problem
    e["Problem"]["Type"] = "Sampling";
 
-   // Creating problem module
-   Sampling* p;
+   // Creating sampling problem module
+   Sampling* pS;
    knlohmann::json problemJs;
    problemJs["Type"] = "Sampling";
-   ASSERT_NO_THROW(p = dynamic_cast<Sampling *>(Module::getModule(problemJs, &e)));
-   e._problem = p;
+   ASSERT_NO_THROW(pS = dynamic_cast<Sampling *>(Module::getModule(problemJs, &e)));
+   e._problem = pS;
+
+   Reference* pR;
+   knlohmann::json problemRefJs;
+   problemRefJs["Type"] = "Bayesian/Reference";
+   ASSERT_NO_THROW(pR = dynamic_cast<Reference *>(Module::getModule(problemRefJs, &e)));
+   pR->_likelihoodModel = "Normal";
+   pR->_referenceData = std::vector<double>({0.5});
 
    // Creating optimizer configuration Json
    knlohmann::json samplerJs;
@@ -1130,7 +1154,7 @@ namespace
 
    // Setting up optimizer correctly
    ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
-   sampler->_variableCount = 1;
+   sampler->_variableCount = 2;
 
    // Test initial configuration
 
@@ -1780,17 +1804,34 @@ namespace
     s["logLikelihood Gradient"] = std::vector<double>({0.5});
     s["grad(logP(x))"] = std::vector<double>({0.5});
     s["H(logP(x))"] = std::vector<std::vector<double>>({{0.5}});
+    s["Reference Evaluations"] = std::vector<double>({0.5});
+    s["Standard Deviation"] = std::vector<double>({0.5});
+    s["Gradient Mean"] = std::vector<std::vector<double>>({{0.5}});
+    s["Gradient Standard Deviation"] = std::vector<std::vector<double>>({{0.5}});
    };
 
    ASSERT_NO_THROW(h = new HamiltonianEuclideanDense(1, sampler->_multivariateGenerator, unitVec, &e));
    ASSERT_NO_THROW(h->H(unitVec, unitVec));
    ASSERT_NO_THROW(h->dtau_dq(unitVec, unitVec));
    ASSERT_NO_THROW(h->dtau_dp(unitVec, unitVec));
+   ASSERT_NO_THROW(h->tau(unitVec, unitVec));
    ASSERT_NO_THROW(h->phi());
    ASSERT_NO_THROW(h->dphi_dq());
    ASSERT_NO_THROW(h->innerProduct(unitVec, unitVec, unitVec));
+   ASSERT_NO_THROW(h->sampleMomentum(unitVec));
+   ASSERT_NO_THROW(delete h);
+
+   auto squareVec0 = std::vector<double>({1.0, -0.3, 0.5, 0.8});
+   auto squareVec1 = std::vector<double>({1.0, -0.3, 0.5, 0.8});
+   auto squaretMat = std::vector<std::vector<double>>({{1.0, -0.3}, {0.5, 0.8}});
+   ASSERT_NO_THROW(h = new HamiltonianEuclideanDense(2, sampler->_multivariateGenerator, squareVec0, &e));
+   h->updateMetricMatricesEuclidean(squaretMat, squareVec0, squareVec1);
+   ASSERT_NO_THROW(h->updateMetricMatricesEuclidean(squaretMat, squareVec0, squareVec1));
+   ASSERT_NO_THROW(delete h);
+
+   ASSERT_NO_THROW(h = new HamiltonianEuclideanDense(1, sampler->_multivariateGenerator, unitVec, &e));
    h->_k = &e;
-   h->samplingProblemPtr = p;
+   h->samplingProblemPtr = pS;
    h->updateHamiltonian(unitVec,unitVec,unitVec);
    ASSERT_NO_THROW(delete h);
 
@@ -1802,7 +1843,11 @@ namespace
    ASSERT_NO_THROW(h->innerProduct(unitVec, unitVec, unitVec));
    ASSERT_NO_THROW(h->updateMetricMatricesEuclidean(unitMat, unitVec, unitVec));
    h->_k = &e;
-   h->samplingProblemPtr = p;
+   h->samplingProblemPtr = pS;
+   h->bayesianProblemPtr = NULL;
+   h->updateHamiltonian(unitVec,unitVec,unitVec);
+   h->samplingProblemPtr = NULL;
+   h->bayesianProblemPtr = pR;
    h->updateHamiltonian(unitVec,unitVec,unitVec);
    ASSERT_NO_THROW(delete h);
 
@@ -1816,7 +1861,7 @@ namespace
    ASSERT_NO_THROW(h->innerProduct(unitVec, unitVec, unitVec));
    ASSERT_NO_THROW(h->updateMetricMatricesRiemannian(unitVec, unitVec));
    h->_k = &e;
-   h->samplingProblemPtr = p;
+   h->samplingProblemPtr = pS;
    h->updateHamiltonian(unitVec,unitVec,unitVec);
    ASSERT_NO_THROW(delete h);
 
@@ -1832,7 +1877,7 @@ namespace
    ASSERT_NO_THROW(h->innerProduct(unitVec, unitVec, unitVec));
    ASSERT_NO_THROW(h->updateMetricMatricesRiemannian(unitVec, unitVec));
    h->_k = &e;
-   h->samplingProblemPtr = p;
+   h->samplingProblemPtr = pS;
    h->updateHamiltonian(unitVec,unitVec,unitVec);
    ASSERT_NO_THROW(delete h);
 
@@ -1849,10 +1894,24 @@ namespace
    ASSERT_NO_THROW(h->sampleMomentum(unitVec));
    ASSERT_NO_THROW(h->innerProduct(unitVec, unitVec, unitVec));
    ASSERT_NO_THROW(h->updateMetricMatricesRiemannian(unitVec, unitVec));
+   ASSERT_NO_THROW(((HamiltonianRiemannianDiag*)h)->softAbsFunc(0.0, 0.0));
+   ASSERT_NO_THROW(((HamiltonianRiemannianDiag*)h)->softAbsFunc(1.0, 1.0));
    h->_k = &e;
-   h->samplingProblemPtr = p;
+   h->samplingProblemPtr = pS;
    h->updateHamiltonian(unitVec,unitVec,unitVec);
    ASSERT_NO_THROW(delete h);
+
+   std::shared_ptr<HamiltonianRiemannianDiag> sh;
+   ASSERT_NO_THROW(sh = std::make_shared<HamiltonianRiemannianDiag>(HamiltonianRiemannianDiag(1, sampler->_normalGenerator, 1.0, &e)));
+   LeapfrogExplicit  *leap;
+   ASSERT_NO_THROW(leap = new LeapfrogExplicit(sh));
+   ASSERT_NO_THROW(delete leap);
+
+   TreeHelperEuclidean tE;
+   ASSERT_ANY_THROW(tE.computeCriterion(*h, unitVec, unitVec, unitVec, unitVec));
+
+   TreeHelperRiemannian tR;
+   ASSERT_ANY_THROW(tR.computeCriterion(*h));
   }
 
   //////////////// Nested CLASS ////////////////////////

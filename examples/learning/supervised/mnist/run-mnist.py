@@ -20,6 +20,9 @@ epochs = 90
 
 ### Getting MNIST data
 
+if (not os.path.isfile('./_data/t10k-images-idx3-ubyte.gz')):
+ os.system('./get_data.sh')
+     
 mndata = MNIST('./_data')
 mndata.gz = True
 trainingImages, trainingLabels = mndata.load_training()

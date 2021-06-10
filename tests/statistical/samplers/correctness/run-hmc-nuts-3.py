@@ -30,6 +30,7 @@ e["Solver"]["Use Adaptive Step Size"] = True
 e["Solver"]["Version"] = 'Euclidean'
 e["Solver"]["Use NUTS"] = True
 e["Solver"]["Num Integration Steps"] = 20
+e["Solver"]["Use Diagonal Metric"] = False
 e["Solver"]["Step Size"] = 0.1
 e["Solver"]["Target Integration Time"] = 1.0
 e["Solver"]["Target Acceptance Rate"] = 0.71

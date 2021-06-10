@@ -1767,10 +1767,44 @@ namespace
    ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
 
    ///// Testing Helpers
-   HamiltonianRiemannianConstDense* hrcd;
+   Hamiltonian* h;
    auto unitVec = std::vector<double>({1.0});
-   ASSERT_NO_THROW(hrcd = new HamiltonianRiemannianConstDense(1, sampler->_multivariateGenerator, unitVec, 1.0, &e));
-   ASSERT_NO_THROW(hrcd->H(unitVec, unitVec));
+   auto unitMat = std::vector<std::vector<double>>({{1.0}});
+
+   ASSERT_NO_THROW(h = new HamiltonianEuclideanDense(1, sampler->_multivariateGenerator, unitVec, &e));
+   ASSERT_NO_THROW(h->H(unitVec, unitVec));
+   ASSERT_NO_THROW(h->dtau_dq(unitVec, unitVec));
+   ASSERT_NO_THROW(h->dtau_dp(unitVec, unitVec));
+   ASSERT_NO_THROW(h->phi());
+   ASSERT_NO_THROW(h->dphi_dq());
+   ASSERT_NO_THROW(h->innerProduct(unitVec, unitVec, unitVec));
+
+   ASSERT_NO_THROW(h = new HamiltonianEuclideanDiag(1, sampler->_normalGenerator, &e));
+   ASSERT_NO_THROW(h->H(unitVec, unitVec));
+   ASSERT_NO_THROW(h->K(unitVec, unitVec));
+   ASSERT_NO_THROW(h->dK(unitVec, unitVec));
+   ASSERT_NO_THROW(h->sampleMomentum(unitVec));
+   ASSERT_NO_THROW(h->innerProduct(unitVec, unitVec, unitVec));
+   ASSERT_NO_THROW(h->updateMetricMatricesEuclidean(unitMat, unitVec, unitVec));
+
+   ASSERT_NO_THROW(h = new HamiltonianRiemannianConstDense(1, sampler->_multivariateGenerator, unitVec, 1.0, &e));
+   ASSERT_NO_THROW(h->H(unitVec, unitVec));
+   ASSERT_NO_THROW(h->dtau_dq(unitVec, unitVec));
+   ASSERT_NO_THROW(h->dtau_dp(unitVec, unitVec));
+   ASSERT_NO_THROW(h->phi());
+   ASSERT_NO_THROW(h->dphi_dq());
+   ASSERT_NO_THROW(h->innerProduct(unitVec, unitVec, unitVec));
+
+   ASSERT_NO_THROW(h = new HamiltonianRiemannianConstDiag(1, sampler->_normalGenerator, 1.0, &e));
+   ASSERT_NO_THROW(h->H(unitVec, unitVec));
+   ASSERT_NO_THROW(h->K(unitVec, unitVec));
+   ASSERT_NO_THROW(h->dK(unitVec, unitVec));
+   ASSERT_NO_THROW(h->tau(unitVec, unitVec));
+   ASSERT_NO_THROW(h->dtau_dq(unitVec, unitVec));
+   ASSERT_NO_THROW(h->dtau_dp(unitVec, unitVec));
+   ASSERT_NO_THROW(h->phi());
+   ASSERT_NO_THROW(h->sampleMomentum(unitVec));
+   ASSERT_NO_THROW(h->innerProduct(unitVec, unitVec, unitVec));
   }
 
 } // namespace

@@ -27,8 +27,14 @@ void Custom::evaluateLoglikelihood(Sample &sample)
 
 void Custom::evaluateLoglikelihoodGradient(Sample &sample)
 {
-  if (!sample.contains("logLikelihood Gradient")) KORALI_LOG_ERROR("The specified likelihood model did not assign the value: 'logLikelihood Gradient' to the sample.\n");
-  if (sample["loglikelihood Gradient"].size() != _k->_variables.size()) KORALI_LOG_ERROR("Bayesian problem of type Custom requires likelihood gradient of size %zu (provided size %zu)\n", _k->_variables.size(), sample["loglikelihood Gradient"].size());
+  if (sample.contains("logLikelihood Gradient") == false)
+  {
+   sample.run(_likelihoodModel);
+
+   if (sample.contains("logLikelihood Gradient") == false)
+    KORALI_LOG_ERROR("The specified likelihood model did not assign the value: 'logLikelihood Gradient' to the sample.\n");
+  }
+  if (sample["logLikelihood Gradient"].size() != _k->_variables.size()) KORALI_LOG_ERROR("Bayesian problem of type Custom requires likelihood gradient of size %zu (provided size %zu)\n", _k->_variables.size(), sample["loglikelihood Gradient"].size());
 }
 
 void Custom::evaluateFisherInformation(Sample &sample)
@@ -86,3 +92,4 @@ void Custom::applyVariableDefaults()
 } //bayesian
 } //problem
 } //korali
+

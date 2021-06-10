@@ -9,5 +9,6 @@ def model(s):
   s["F(x)"] = r
   s["logP(x)"] = r
   s["logLikelihood"] = r
+  s["logLikelihood Gradient"] = [0.0]
   s["grad(logP(x))"] = [-v]
   s["H(logP(x))"] = [[-1.0]]

@@ -1,6 +1,5 @@
-e = find_program('run-mnist.py', required: true)
+e = find_program('./.test-run.py', required: true)
 test('learning.supervised.mnist', e,
-      args: [ '--test' ],
       timeout : 2000,
       suite: 'regression',
       workdir: meson.current_source_dir(),

@@ -615,7 +615,7 @@ void Continuous::getConfiguration(knlohmann::json& js)
 void Continuous::applyModuleDefaults(knlohmann::json& js) 
 {
 
- std::string defaultString = "{\"Normal Generator\": {\"Type\": \"Univariate/Normal\", \"Mean\": 0.0, \"Standard Deviation\": 1.0}, \"Policy\": {\"Distribution\": \"Squashed Normal\"}}";
+ std::string defaultString = "{\"Normal Generator\": {\"Type\": \"Univariate/Normal\", \"Mean\": 0.0, \"Standard Deviation\": 1.0}, \"Policy\": {\"Distribution\": \"Normal\"}}";
  knlohmann::json defaultJs = knlohmann::json::parse(defaultString);
  mergeJson(js, defaultJs); 
  Agent::applyModuleDefaults(js);

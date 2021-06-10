@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import time
 import korali
 import random
-from mnist import MNIST
+from importlib import import_module
 
 k = korali.Engine()
 e = korali.Experiment()
@@ -21,8 +21,9 @@ epochs = 90
 ### Getting MNIST data
 
 if (not os.path.isfile('./_data/t10k-images-idx3-ubyte.gz')):
- os.system('./get_data.sh')
-     
+ os.system('./get_mnist.sh')
+mnistModule = import_module('mnist')
+MNIST = getattr(mnistModule, 'MNIST')
 mndata = MNIST('./_data')
 mndata.gz = True
 trainingImages, trainingLabels = mndata.load_training()

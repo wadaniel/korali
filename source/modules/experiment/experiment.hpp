@@ -191,6 +191,9 @@ class Experiment: public Module
   */
   double _resultSavingTime;
 
+  bool _overrideEngine = false;
+  std::function<void(Sample &)> _overrideFunction;
+
   /**
   * @brief Gets an item from the JSON object at the current pointer position.
   * @param key A pybind11 object acting as JSON key (number or string).
@@ -255,3 +258,4 @@ class Experiment: public Module
 
 
 #endif // _KORALI_EXPERIMENT_
+

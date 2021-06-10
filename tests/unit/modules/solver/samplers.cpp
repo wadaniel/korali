@@ -1780,6 +1780,7 @@ namespace
    ASSERT_NO_THROW(h->phi());
    ASSERT_NO_THROW(h->dphi_dq());
    ASSERT_NO_THROW(h->innerProduct(unitVec, unitVec, unitVec));
+   ASSERT_NO_THROW(h->sampleMomentum(unitVec));
    ASSERT_NO_THROW(delete h);
 
    ASSERT_NO_THROW(h = new HamiltonianEuclideanDiag(1, sampler->_normalGenerator, &e));

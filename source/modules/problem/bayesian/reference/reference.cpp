@@ -10,6 +10,7 @@
 #include <gsl/gsl_sf_psi.h>
 #include <gsl/gsl_randist.h>
 
+#define STDEV_EPSILON 0.00000000001
 
 namespace korali
 {
@@ -86,7 +87,7 @@ void Reference::loglikelihoodNormal(Sample &sample)
   for (size_t i = 0; i < stdDevs.size(); i++)
   {
     if (stdDevs[i] < 0.0) KORALI_LOG_ERROR("Negative (%lf) detected for the Standard Deviation.\n", stdDevs[i]);
-    if (stdDevs[i] < 0.00000000001) stdDevs[i] = 0.00000000001; // Adding epsilon for numerical stability
+    if (stdDevs[i] < STDEV_EPSILON) stdDevs[i] = STDEV_EPSILON; // Adding epsilon for numerical stability
     loglike -= log(stdDevs[i]);
   }
 

@@ -1102,13 +1102,12 @@ namespace
 
    // Configuring Problem
    e["Problem"]["Type"] = "Sampling";
-   e["Problem"]["Constraints"][0] = 0;
 
    // Creating problem module
-   Reference* p;
+   Sampling* p;
    knlohmann::json problemJs;
    problemJs["Type"] = "Sampling";
-   ASSERT_NO_THROW(p = dynamic_cast<Reference *>(Module::getModule(problemJs, &e)));
+   ASSERT_NO_THROW(p = dynamic_cast<Sampling *>(Module::getModule(problemJs, &e)));
    e._problem = p;
 
    // Creating optimizer configuration Json
@@ -1772,6 +1771,16 @@ namespace
    auto unitVec = std::vector<double>({1.0});
    auto unitMat = std::vector<std::vector<double>>({{1.0}});
    Hamiltonian* h;
+   e._overrideEngine = true;
+   e._overrideFunction = [](Sample &s)
+   {
+    s["F(x)"] = 0.5;
+    s["logP(x)"] = 0.5;
+    s["logLikelihood"] = 0.5;
+    s["logLikelihood Gradient"] = std::vector<double>({0.5});
+    s["grad(logP(x))"] = std::vector<double>({0.5});
+    s["H(logP(x))"] = std::vector<std::vector<double>>({{0.5}});
+   };
 
    ASSERT_NO_THROW(h = new HamiltonianEuclideanDense(1, sampler->_multivariateGenerator, unitVec, &e));
    ASSERT_NO_THROW(h->H(unitVec, unitVec));
@@ -1780,6 +1789,9 @@ namespace
    ASSERT_NO_THROW(h->phi());
    ASSERT_NO_THROW(h->dphi_dq());
    ASSERT_NO_THROW(h->innerProduct(unitVec, unitVec, unitVec));
+   h->_k = &e;
+   h->samplingProblemPtr = p;
+   h->updateHamiltonian(unitVec,unitVec,unitVec);
    ASSERT_NO_THROW(delete h);
 
    ASSERT_NO_THROW(h = new HamiltonianEuclideanDiag(1, sampler->_normalGenerator, &e));
@@ -1789,6 +1801,9 @@ namespace
    ASSERT_NO_THROW(h->sampleMomentum(unitVec));
    ASSERT_NO_THROW(h->innerProduct(unitVec, unitVec, unitVec));
    ASSERT_NO_THROW(h->updateMetricMatricesEuclidean(unitMat, unitVec, unitVec));
+   h->_k = &e;
+   h->samplingProblemPtr = p;
+   h->updateHamiltonian(unitVec,unitVec,unitVec);
    ASSERT_NO_THROW(delete h);
 
    ASSERT_NO_THROW(h = new HamiltonianRiemannianConstDense(1, sampler->_multivariateGenerator, unitVec, 1.0, &e));
@@ -1800,6 +1815,9 @@ namespace
    ASSERT_NO_THROW(h->sampleMomentum(unitVec));
    ASSERT_NO_THROW(h->innerProduct(unitVec, unitVec, unitVec));
    ASSERT_NO_THROW(h->updateMetricMatricesRiemannian(unitVec, unitVec));
+   h->_k = &e;
+   h->samplingProblemPtr = p;
+   h->updateHamiltonian(unitVec,unitVec,unitVec);
    ASSERT_NO_THROW(delete h);
 
    ASSERT_NO_THROW(h = new HamiltonianRiemannianConstDiag(1, sampler->_normalGenerator, 1.0, &e));
@@ -1813,6 +1831,9 @@ namespace
    ASSERT_NO_THROW(h->sampleMomentum(unitVec));
    ASSERT_NO_THROW(h->innerProduct(unitVec, unitVec, unitVec));
    ASSERT_NO_THROW(h->updateMetricMatricesRiemannian(unitVec, unitVec));
+   h->_k = &e;
+   h->samplingProblemPtr = p;
+   h->updateHamiltonian(unitVec,unitVec,unitVec);
    ASSERT_NO_THROW(delete h);
 
    ASSERT_NO_THROW(h = new HamiltonianRiemannianDiag(1, sampler->_normalGenerator, 1.0, &e));
@@ -1828,6 +1849,9 @@ namespace
    ASSERT_NO_THROW(h->sampleMomentum(unitVec));
    ASSERT_NO_THROW(h->innerProduct(unitVec, unitVec, unitVec));
    ASSERT_NO_THROW(h->updateMetricMatricesRiemannian(unitVec, unitVec));
+   h->_k = &e;
+   h->samplingProblemPtr = p;
+   h->updateHamiltonian(unitVec,unitVec,unitVec);
    ASSERT_NO_THROW(delete h);
   }
 

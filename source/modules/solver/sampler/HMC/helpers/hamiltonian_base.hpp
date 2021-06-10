@@ -222,7 +222,6 @@ class Hamiltonian
   */
   size_t _modelEvaluationCount;
 
-  protected:
   /**
   @brief Pointer to the korali experiment.
   */

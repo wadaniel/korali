@@ -1767,44 +1767,65 @@ namespace
    ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
 
    ///// Testing Helpers
-   Hamiltonian* h;
    auto unitVec = std::vector<double>({1.0});
    auto unitMat = std::vector<std::vector<double>>({{1.0}});
 
-   ASSERT_NO_THROW(h = new HamiltonianEuclideanDense(1, sampler->_multivariateGenerator, unitVec, &e));
-   ASSERT_NO_THROW(h->H(unitVec, unitVec));
-   ASSERT_NO_THROW(h->dtau_dq(unitVec, unitVec));
-   ASSERT_NO_THROW(h->dtau_dp(unitVec, unitVec));
-   ASSERT_NO_THROW(h->phi());
-   ASSERT_NO_THROW(h->dphi_dq());
-   ASSERT_NO_THROW(h->innerProduct(unitVec, unitVec, unitVec));
+   HamiltonianEuclideanDense* h0;
+   ASSERT_NO_THROW(h0 = new HamiltonianEuclideanDense(1, sampler->_multivariateGenerator, unitVec, &e));
+   ASSERT_NO_THROW(h0->H(unitVec, unitVec));
+   ASSERT_NO_THROW(h0->dtau_dq(unitVec, unitVec));
+   ASSERT_NO_THROW(h0->dtau_dp(unitVec, unitVec));
+   ASSERT_NO_THROW(h0->phi());
+   ASSERT_NO_THROW(h0->dphi_dq());
+   ASSERT_NO_THROW(h0->innerProduct(unitVec, unitVec, unitVec));
+   ASSERT_NO_THROW(delete h0);
 
-   ASSERT_NO_THROW(h = new HamiltonianEuclideanDiag(1, sampler->_normalGenerator, &e));
-   ASSERT_NO_THROW(h->H(unitVec, unitVec));
-   ASSERT_NO_THROW(h->K(unitVec, unitVec));
-   ASSERT_NO_THROW(h->dK(unitVec, unitVec));
-   ASSERT_NO_THROW(h->sampleMomentum(unitVec));
-   ASSERT_NO_THROW(h->innerProduct(unitVec, unitVec, unitVec));
-   ASSERT_NO_THROW(h->updateMetricMatricesEuclidean(unitMat, unitVec, unitVec));
+   HamiltonianEuclideanDiag* h1;
+   ASSERT_NO_THROW(h1 = new HamiltonianEuclideanDiag(1, sampler->_normalGenerator, &e));
+   ASSERT_NO_THROW(h1->H(unitVec, unitVec));
+   ASSERT_NO_THROW(h1->K(unitVec, unitVec));
+   ASSERT_NO_THROW(h1->dK(unitVec, unitVec));
+   ASSERT_NO_THROW(h1->sampleMomentum(unitVec));
+   ASSERT_NO_THROW(h1->innerProduct(unitVec, unitVec, unitVec));
+   ASSERT_NO_THROW(h1->updateMetricMatricesEuclidean(unitMat, unitVec, unitVec));
+   ASSERT_NO_THROW(delete h1);
 
-   ASSERT_NO_THROW(h = new HamiltonianRiemannianConstDense(1, sampler->_multivariateGenerator, unitVec, 1.0, &e));
-   ASSERT_NO_THROW(h->H(unitVec, unitVec));
-   ASSERT_NO_THROW(h->dtau_dq(unitVec, unitVec));
-   ASSERT_NO_THROW(h->dtau_dp(unitVec, unitVec));
-   ASSERT_NO_THROW(h->phi());
-   ASSERT_NO_THROW(h->dphi_dq());
-   ASSERT_NO_THROW(h->innerProduct(unitVec, unitVec, unitVec));
+   HamiltonianRiemannianConstDense* h2;
+   ASSERT_NO_THROW(h2 = new HamiltonianRiemannianConstDense(1, sampler->_multivariateGenerator, unitVec, 1.0, &e));
+   ASSERT_NO_THROW(h2->H(unitVec, unitVec));
+   ASSERT_NO_THROW(h2->dtau_dq(unitVec, unitVec));
+   ASSERT_NO_THROW(h2->dtau_dp(unitVec, unitVec));
+   ASSERT_NO_THROW(h2->phi());
+   ASSERT_NO_THROW(h2->dphi_dq());
+   ASSERT_NO_THROW(h2->innerProduct(unitVec, unitVec, unitVec));
+   ASSERT_NO_THROW(delete h2);
 
-   ASSERT_NO_THROW(h = new HamiltonianRiemannianConstDiag(1, sampler->_normalGenerator, 1.0, &e));
-   ASSERT_NO_THROW(h->H(unitVec, unitVec));
-   ASSERT_NO_THROW(h->K(unitVec, unitVec));
-   ASSERT_NO_THROW(h->dK(unitVec, unitVec));
-   ASSERT_NO_THROW(h->tau(unitVec, unitVec));
-   ASSERT_NO_THROW(h->dtau_dq(unitVec, unitVec));
-   ASSERT_NO_THROW(h->dtau_dp(unitVec, unitVec));
-   ASSERT_NO_THROW(h->phi());
-   ASSERT_NO_THROW(h->sampleMomentum(unitVec));
-   ASSERT_NO_THROW(h->innerProduct(unitVec, unitVec, unitVec));
+   HamiltonianRiemannianConstDiag* h3;
+   ASSERT_NO_THROW(h3 = new HamiltonianRiemannianConstDiag(1, sampler->_normalGenerator, 1.0, &e));
+   ASSERT_NO_THROW(h3->H(unitVec, unitVec));
+   ASSERT_NO_THROW(h3->K(unitVec, unitVec));
+   ASSERT_NO_THROW(h3->dK(unitVec, unitVec));
+   ASSERT_NO_THROW(h3->tau(unitVec, unitVec));
+   ASSERT_NO_THROW(h3->dtau_dq(unitVec, unitVec));
+   ASSERT_NO_THROW(h3->dtau_dp(unitVec, unitVec));
+   ASSERT_NO_THROW(h3->phi());
+   ASSERT_NO_THROW(h3->sampleMomentum(unitVec));
+   ASSERT_NO_THROW(h3->innerProduct(unitVec, unitVec, unitVec));
+   ASSERT_NO_THROW(delete h3);
+
+   HamiltonianRiemannianDiag* h4;
+   ASSERT_NO_THROW(h4 = new HamiltonianRiemannianDiag(1, sampler->_normalGenerator, 1.0, &e));
+   h4->_currentGradient = unitVec;
+   ASSERT_NO_THROW(h4->H(unitVec, unitVec));
+   ASSERT_NO_THROW(h4->K(unitVec, unitVec));
+   ASSERT_NO_THROW(h4->dK(unitVec, unitVec));
+   ASSERT_NO_THROW(h4->tau(unitVec, unitVec));
+   ASSERT_NO_THROW(h4->dtau_dq(unitVec, unitVec));
+   ASSERT_NO_THROW(h4->dtau_dp(unitVec, unitVec));
+   ASSERT_NO_THROW(h4->phi());
+   ASSERT_NO_THROW(h4->sampleMomentum(unitVec));
+   ASSERT_NO_THROW(h4->innerProduct(unitVec, unitVec, unitVec));
+   ASSERT_NO_THROW(delete h4);
   }
 
 } // namespace

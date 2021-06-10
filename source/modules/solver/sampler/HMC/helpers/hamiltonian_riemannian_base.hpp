@@ -35,7 +35,6 @@ class HamiltonianRiemannian : public Hamiltonian
   */
   virtual ~HamiltonianRiemannian() = default;
 
-  protected:
   /**
   * @brief Hessian of potential energy function used for Riemannian metric.
   * @return Hessian of potential energy.

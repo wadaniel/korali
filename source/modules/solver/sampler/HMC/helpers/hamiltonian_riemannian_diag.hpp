@@ -169,51 +169,6 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
   }
 
   /**
-  * @brief Updates current position of hamiltonian.
-  * @param position Current position.
-  * @param metric Current metric.
-  * @param inverseMetric Inverse of current metric.
-  */
-  void updateHamiltonian(const std::vector<double> &position, std::vector<double> &metric, std::vector<double> &inverseMetric) override
-  {
-    auto sample = korali::Sample();
-    sample["Sample Id"] = _modelEvaluationCount;
-    sample["Module"] = "Problem";
-    sample["Operation"] = "Evaluate";
-    sample["Parameters"] = position;
-
-    KORALI_START(sample);
-    KORALI_WAIT(sample);
-    _modelEvaluationCount++;
-    _currentEvaluation = KORALI_GET(double, sample, "logP(x)");
-
-    if (samplingProblemPtr != nullptr)
-    {
-      samplingProblemPtr->evaluateGradient(sample);
-      samplingProblemPtr->evaluateHessian(sample);
-    }
-    else
-    {
-      bayesianProblemPtr->evaluateGradient(sample);
-      bayesianProblemPtr->evaluateHessian(sample);
-    }
-
-    _currentGradient = sample["grad(logP(x))"].get<std::vector<double>>();
-    _currentHessian = sample["H(logP(x))"].get<std::vector<double>>();
-
-    // constant for condition number of metric
-    _logDetMetric = 0.0;
-    for (size_t i = 0; i < _stateSpaceDim; ++i)
-    {
-      metric[i] = softAbsFunc(_currentGradient[i] * _currentGradient[i], _inverseRegularizationParam);
-      inverseMetric[i] = 1.0 / metric[i];
-      _logDetMetric += std::log(metric[i]);
-    }
-
-    return;
-  }
-
-  /**
   * @brief Generates sample of momentum.
   * @param metric Current metric.
   * @return Sample of momentum from normal distribution with covariance matrix metric. Only variance taken into account with diagonal metric.

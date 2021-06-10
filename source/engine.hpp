@@ -92,7 +92,7 @@ class Engine : public Module
   /**
    * @brief Runs the stored list of experiments.
    */
-  void start(bool isDelayedStart = false);
+  void start();
 
   /**
    * @brief C++ wrapper for the getItem operator.

@@ -3,6 +3,7 @@
 #include "modules/solver/sampler/sampler.hpp"
 #include "modules/problem/sampling/sampling.hpp"
 #include "modules/problem/bayesian/reference/reference.hpp"
+#include "modules/solver/sampler/Nested/Nested.hpp"
 #include "modules/solver/sampler/HMC/HMC.hpp"
 #include "modules/solver/sampler/MCMC/MCMC.hpp"
 #include "modules/solver/sampler/TMCMC/TMCMC.hpp"
@@ -1827,6 +1828,591 @@ namespace
    ASSERT_NO_THROW(h->innerProduct(unitVec, unitVec, unitVec));
    ASSERT_NO_THROW(h->updateMetricMatricesRiemannian(unitVec, unitVec));
    ASSERT_NO_THROW(delete h);
+  }
+
+  //////////////// Nested CLASS ////////////////////////
+
+  TEST(samplers, Nested)
+  {
+   // Creating base experiment
+   Experiment e;
+   auto& experimentJs = e._js.getJson();
+
+   // Creating initial variable
+   Variable v;
+   e._variables.push_back(&v);
+   e["Variables"][0]["Name"] = "Var 1";
+   e["Variables"][0]["Initial Mean"] = 0.0;
+   e["Variables"][0]["Initial Standard Deviation"] = 0.25;
+   e["Variables"][0]["Lower Bound"] = -1.0;
+   e["Variables"][0]["Upper Bound"] = 1.0;
+
+   // Creating optimizer configuration Json
+   knlohmann::json samplerJs;
+   samplerJs["Type"] = "Sampler/Nested";
+
+   // Creating module
+   Nested* sampler;
+   ASSERT_NO_THROW(sampler = dynamic_cast<Nested *>(Module::getModule(samplerJs, &e)));
+
+   // Defaults should be applied without a problem
+   ASSERT_NO_THROW(sampler->applyModuleDefaults(samplerJs));
+
+   // Covering variable functions (no effect)
+   ASSERT_NO_THROW(sampler->applyVariableDefaults());
+
+   // Backup the correct base configuration
+   auto baseOptJs = samplerJs;
+   auto baseExpJs = experimentJs;
+
+   // Setting up optimizer correctly
+   ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
+
+   // Testing optional parameters
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Accepted Samples"] = "Not a Number";
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Accepted Samples"] = 1;
+   ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Generated Samples"] = "Not a Number";
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Generated Samples"] = 1;
+   ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["LogEvidence"] = "Not a Number";
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["LogEvidence"] = 1.0;
+   ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["LogEvidence Var"] = "Not a Number";
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["LogEvidence Var"] = 1.0;
+   ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["LogVolume"] = "Not a Number";
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["LogVolume"] = 1.0;
+   ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Bound LogVolume"] = "Not a Number";
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Bound LogVolume"] = 1.0;
+   ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Last Accepted"] = "Not a Number";
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Last Accepted"] = 1;
+   ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Next Update"] = "Not a Number";
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Next Update"] = 1;
+   ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Information"] = "Not a Number";
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Information"] = 1.0;
+   ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["LStar"] = "Not a Number";
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["LStar"] = 1.0;
+   ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["LStarOld"] = "Not a Number";
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["LStarOld"] = 1.0;
+   ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["LogWeight"] = "Not a Number";
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["LogWeight"] = 1.0;
+   ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Expected LogShrinkage"] = "Not a Number";
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Expected LogShrinkage"] = 1.0;
+   ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Max Evaluation"] = "Not a Number";
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Max Evaluation"] = 1.0;
+   ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Remaining Log Evidence"] = "Not a Number";
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Remaining Log Evidence"] = 1.0;
+   ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Log Evidence Difference"] = "Not a Number";
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Log Evidence Difference"] = 1.0;
+   ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Sum Log Weights"] = "Not a Number";
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Sum Log Weights"] = 1.0;
+   ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Sum Square Log Weights"] = "Not a Number";
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Sum Square Log Weights"] = 1.0;
+   ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Prior Lower Bound"] = "Not a Number";
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Prior Lower Bound"] = std::vector<double>({1.0});
+   ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Prior Width"] = "Not a Number";
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Prior Width"] = std::vector<double>({1.0});
+   ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Candidates"] = "Not a Number";
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Candidates"] = std::vector<std::vector<double>>({{1.0}});
+   ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Candidate LogLikelihoods"] = "Not a Number";
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Candidate LogLikelihoods"] = std::vector<double>({1.0});
+   ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Candidate LogPriors"] = "Not a Number";
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Candidate LogPriors"] = std::vector<double>({1.0});
+   ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Candidate LogPrior Weights"] = "Not a Number";
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Candidate LogPrior Weights"] = std::vector<double>({1.0});
+   ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Live Samples"] = "Not a Number";
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Live Samples"] = std::vector<std::vector<double>>({{1.0}});
+   ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Live LogLikelihoods"] = "Not a Number";
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Live LogLikelihoods"] = std::vector<double>({1.0});
+   ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Live LogPriors"] = "Not a Number";
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Live LogPriors"] = std::vector<double>({1.0});
+   ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Live LogPrior Weights"] = "Not a Number";
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Live LogPrior Weights"] = std::vector<double>({1.0});
+   ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Live Samples Rank"] = "Not a Number";
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Live Samples Rank"] = std::vector<double>({1});
+   ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Number Dead Samples"] = "Not a Number";
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Number Dead Samples"] = 1;
+   ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Dead Samples"] = "Not a Number";
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Dead Samples"] = std::vector<std::vector<double>>({{1.0}});
+   ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Dead LogLikelihoods"] = "Not a Number";
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Dead LogLikelihoods"] = std::vector<double>({1.0});
+   ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Dead LogPriors"] = "Not a Number";
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Dead LogPriors"] = std::vector<double>({1.0});
+   ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Dead LogPrior Weights"] = "Not a Number";
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Dead LogPrior Weights"] = std::vector<double>({1.0});
+   ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Covariance Matrix"] = "Not a Number";
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Covariance Matrix"] = std::vector<double>({1.0});
+   ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Log Domain Size"] = "Not a Number";
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Log Domain Size"] = 1.0;
+   ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Domain Mean"] = "Not a Number";
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Domain Mean"] = std::vector<double>({1.0});
+   ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Box Lower Bound"] = "Not a Number";
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Box Lower Bound"] = std::vector<double>({1.0});
+   ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Box Upper Bound"] = "Not a Number";
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Box Upper Bound"] = std::vector<double>({1.0});
+   ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Ellipse Axes"] = "Not a Number";
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Ellipse Axes"] = std::vector<std::vector<double>>({{1.0}});
+   ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Number Live Points"] = "Not a Number";
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs.erase("Number Live Points");
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Number Live Points"] = "Not a Number";
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Number Live Points"] = 512;
+   ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs.erase("Batch Size");
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Batch Size"] = "Not a Number";
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Batch Size"] = 512;
+   ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs.erase("Add Live Points");
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Add Live Points"] = "Not a Number";
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Add Live Points"] = 512;
+   ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs.erase("Resampling Method");
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Resampling Method"] = 32;
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Resampling Method"] = "Box";
+   ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs.erase("Proposal Update Frequency");
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Proposal Update Frequency"] = "Not a Number";
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Proposal Update Frequency"] = 512;
+   ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs.erase("Ellipsoidal Scaling");
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Ellipsoidal Scaling"] = "Not a Number";
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Ellipsoidal Scaling"] = 1.0;
+   ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Termination Criteria"].erase("Min Log Evidence Delta");
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Termination Criteria"]["Min Log Evidence Delta"] = "Not a Number";
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Termination Criteria"]["Min Log Evidence Delta"] = 1.0;
+   ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Termination Criteria"].erase("Max Effective Sample Size");
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Termination Criteria"]["Max Effective Sample Size"] = "Not a Number";
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Termination Criteria"]["Max Effective Sample Size"] = 1;
+   ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Termination Criteria"].erase("Max Log Likelihood");
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Termination Criteria"]["Max Log Likelihood"] = "Not a Number";
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Termination Criteria"]["Max Log Likelihood"] = 1;
+   ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
+
+   // Testing individual functions
+   ellipse_t ellipse(1);
+   ASSERT_NO_THROW(ellipse.initSphere());
+   ASSERT_NO_THROW(ellipse.scaleVolume(1.0));
   }
 
 } // namespace

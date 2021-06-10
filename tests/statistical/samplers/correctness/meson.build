@@ -33,7 +33,16 @@ test('samplers.correctness.hmc-nuts-3', e,
       depends: python_extension,
       env: nomalloc
     )
-
+    
+e = find_program('./run-hmc-nuts-4.py', required: true)
+test('samplers.correctness.hmc-nuts-4', e,
+      timeout : 2000,
+      suite: 'statistical',
+      workdir: meson.current_source_dir(),
+      depends: python_extension,
+      env: nomalloc
+    )
+    
 e = find_program('./run-hmc-bayesian.py', required: true)
 test('samplers.correctness.hmc-bayesian', e,
       timeout : 2000,

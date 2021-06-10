@@ -12,7 +12,7 @@ e = korali.Experiment()
 
 ### Defining the Cartpole problem's configuration
 
-populationSize = 8
+populationSize = 16
 
 lEnv = lambda s : env(s,populationSize)
 
@@ -21,32 +21,25 @@ e["Problem"]["Environment Function"] = lEnv
 e["Problem"]["Testing Frequency"] = 100
 e["Problem"]["Training Reward Threshold"] = np.inf
 e["Problem"]["Policy Testing Episodes"] = 10
-e["Problem"]["Actions Between Policy Updates"] = 1
+e["Problem"]["Actions Between Policy Updates"] = 10
 
 
 for i in range(populationSize):
-    e["Variables"][i*2]["Name"] = "Position X"
-    e["Variables"][i*2]["Type"] = "State"
+    e["Variables"][i*3]["Name"] = "Position X"
+    e["Variables"][i*3]["Type"] = "State"
 
-    e["Variables"][i*2+1]["Name"] = "Position Y"
-    e["Variables"][i*2+1]["Type"] = "State"
+    e["Variables"][i*3+1]["Name"] = "Position Y"
+    e["Variables"][i*3+1]["Type"] = "State"
 
-    #e["Variables"][i*3+2]["Name"] = "Evaluation"
-    #e["Variables"][i*3+2]["Type"] = "State"
+    e["Variables"][i*3+2]["Name"] = "Evaluation"
+    e["Variables"][i*3+2]["Type"] = "State"
 
-i = 2*populationSize
-e["Variables"][i]["Name"] = "Mean X"
+i = 3*populationSize
+e["Variables"][i]["Name"] = "Mean Learning Rate"
 e["Variables"][i]["Type"] = "Action"
-e["Variables"][i]["Lower Bound"] = -10.0
-e["Variables"][i]["Upper Bound"] = +10.0
-e["Variables"][i]["Initial Exploration Noise"] = 1.0
-
-i += 1
-e["Variables"][i]["Name"] = "Mean Y"
-e["Variables"][i]["Type"] = "Action"
-e["Variables"][i]["Lower Bound"] = -10.0
-e["Variables"][i]["Upper Bound"] = +10.0
-e["Variables"][i]["Initial Exploration Noise"] = 1.0
+e["Variables"][i]["Lower Bound"] = 0.0
+e["Variables"][i]["Upper Bound"] = 1.0
+e["Variables"][i]["Initial Exploration Noise"] = 0.3
 
 i += 1
 e["Variables"][i]["Name"] = "Covscale"
@@ -61,15 +54,15 @@ e["Variables"][i]["Initial Exploration Noise"] = 0.3
 
 e["Solver"]["Type"] = "Agent / Continuous / VRACER"
 e["Solver"]["Mode"] = "Training"
-e["Solver"]["Experiences Between Policy Updates"] = 10
+e["Solver"]["Experiences Between Policy Updates"] = 1
 e["Solver"]["Episodes Per Generation"] = 1
 
-e["Solver"]["Experience Replay"]["Start Size"] = 4096
+e["Solver"]["Experience Replay"]["Start Size"] = 1024
 e["Solver"]["Experience Replay"]["Maximum Size"] = 262144
 
 e["Solver"]["Discount Factor"] = 0.995
 e["Solver"]["Learning Rate"] = 1e-4
-e["Solver"]["Mini Batch"]["Size"] = 64
+e["Solver"]["Mini Batch"]["Size"] = 32
 
 e["Solver"]["State Rescaling"]["Enabled"] = False
 e["Solver"]["Reward"]["Rescaling"]["Enabled"] = False

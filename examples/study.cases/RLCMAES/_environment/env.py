@@ -3,7 +3,7 @@ from objective import *
 
 ######## Defining Environment Storage
 
-maxSteps = 500
+maxSteps = 100
 
 def env(s, populationSize):
 
@@ -32,8 +32,10 @@ def env(s, populationSize):
   # Advancing step counter
   step = step + 1
 
- print("Initial Ef {} -- Termianl Ef {}".format(objective.initialEf, objective.curEf))
- print("Initial Best F {} -- Termianl Best F {}".format(objective.initialBestF, objective.curBestF))
+ print("Initial Ef {} -- Terminal Ef {}".format(objective.initialEf, objective.curEf))
+ print("Initial Best F {} -- Terminal Best F {} -- Best Ever F {}".format(objective.initialBestF, objective.curBestF, objective.bestEver))
+ print("Terminal Mean {}".format(objective.mean))
+ print("Terminal Scale {}".format(objective.scale))
  # Setting finalization status
  if (objective.isOver()):
   s["Termination"] = "Terminal"

@@ -1131,6 +1131,7 @@ namespace
 
    // Setting up optimizer correctly
    ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
+   sampler->_variableCount = 1;
 
    // Test initial configuration
 

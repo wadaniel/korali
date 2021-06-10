@@ -48,7 +48,7 @@ k.run(e)
 
 # Testing Results
 checkMean(e, 0.0, 0.1)
-checkStd(e, 1.0, 0.025)
+checkStd(e, 1.0, 0.1)
 
 ##### Riemannian Const (Diagonal)
 
@@ -88,4 +88,4 @@ k.run(e)
 
 # Testing Results
 checkMean(e, 0.0, 0.1)
-checkStd(e, 1.0, 0.025)
+checkStd(e, 1.0, 0.1)

@@ -11,7 +11,6 @@ from helpers import *
 # Starting Korali's Engine
 import korali
 
-
 ###### Static
 
 e = korali.Experiment()
@@ -28,7 +27,7 @@ e["Solver"]["Termination Criteria"]["Max Samples"] = 5000
 
 # HMC specific parameters
 e["Solver"]["Use Adaptive Step Size"] = True
-e["Solver"]["Version"] = 'Riemannian'
+e["Solver"]["Version"] = 'Static'
 e["Solver"]["Use NUTS"] = True
 e["Solver"]["Num Integration Steps"] = 20
 e["Solver"]["Step Size"] = 0.1

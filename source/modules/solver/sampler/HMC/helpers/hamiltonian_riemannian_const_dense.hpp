@@ -174,6 +174,40 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannian
   }
 
   /**
+  * @brief Updates current position of hamiltonian.
+  * @param position Current position.
+  * @param metric Current metric.
+  * @param inverseMetric Inverse of current metric.
+  */
+  void updateHamiltonian(const std::vector<double> &position, std::vector<double> &metric, std::vector<double> &inverseMetric) override
+  {
+    auto sample = korali::Sample();
+    sample["Sample Id"] = _modelEvaluationCount;
+    sample["Module"] = "Problem";
+    sample["Operation"] = "Evaluate";
+    sample["Parameters"] = position;
+
+    KORALI_START(sample);
+    KORALI_WAIT(sample);
+    _modelEvaluationCount++;
+    _currentEvaluation = KORALI_GET(double, sample, "logP(x)");
+
+    if (samplingProblemPtr != nullptr)
+    {
+      samplingProblemPtr->evaluateGradient(sample);
+      samplingProblemPtr->evaluateHessian(sample);
+    }
+    else
+    {
+      bayesianProblemPtr->evaluateGradient(sample);
+      bayesianProblemPtr->evaluateHessian(sample);
+    }
+
+    _currentGradient = sample["grad(logP(x))"].get<std::vector<double>>();
+    _currentHessian = sample["H(logP(x))"].get<std::vector<double>>();
+  }
+
+  /**
   * @brief Generates sample of momentum.
   * @param metric Current metric.
   * @return Momentum sampled from normal distribution with metric as covariance matrix.
@@ -267,6 +301,10 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannian
     return err;
   }
 
+  /**
+  * @brief Inverse regularization parameter of SoftAbs metric that controls hardness of approximation
+  */
+  double _inverseRegularizationParam;
 
   private:
   /**

@@ -61,7 +61,7 @@ void Engine::initialize()
   if (isEmpty(js) == false) KORALI_LOG_ERROR("Unrecognized settings for Korali's Engine: \n%s\n", js.dump(2).c_str());
 }
 
-void Engine::start(bool isDelayedStart)
+void Engine::start()
 {
   // Checking if its a dry run and return if it is
   if (_isDryRun) return;
@@ -85,9 +85,6 @@ void Engine::start(bool isDelayedStart)
   {
     // Adding engine to the stack to support Korali-in-Korali execution
     _conduit->stackEngine(this);
-
-    // If this is a delayed start, coming back now
-    if (isDelayedStart == true) return;
 
     // Setting base time for profiling.
     _startTime = std::chrono::high_resolution_clock::now();
@@ -147,7 +144,7 @@ void Engine::run(Experiment &experiment)
   experiment._k->_engine = this;
   _experimentVector.push_back(experiment._k);
   initialize();
-  start(false);
+  start();
 }
 
 void Engine::run(std::vector<Experiment> &experiments)
@@ -159,7 +156,7 @@ void Engine::run(std::vector<Experiment> &experiments)
     _experimentVector.push_back(experiments[i]._k);
   }
   initialize();
-  start(false);
+  start();
 }
 
 void Engine::serialize(knlohmann::json &js)

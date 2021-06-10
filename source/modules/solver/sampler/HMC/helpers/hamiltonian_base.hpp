@@ -147,25 +147,41 @@ class Hamiltonian
   * @param metric Current metric.
   * @param inverseMetric Inverse of current metric.
   */
-  virtual void updateHamiltonian(const std::vector<double> &position, std::vector<double> &metric, std::vector<double> &inverseMetric)
+  void updateHamiltonian(const std::vector<double> &position, std::vector<double> &metric, std::vector<double> &inverseMetric)
   {
-    auto sample = korali::Sample();
-    sample["Sample Id"] = _modelEvaluationCount;
-    sample["Module"] = "Problem";
-    sample["Operation"] = "Evaluate";
-    sample["Parameters"] = position;
+   auto sample = korali::Sample();
+   sample["Sample Id"] = _modelEvaluationCount;
+   sample["Module"] = "Problem";
+   sample["Operation"] = "Evaluate";
+   sample["Parameters"] = position;
 
-    KORALI_START(sample);
-    KORALI_WAIT(sample);
-    _modelEvaluationCount++;
-    _currentEvaluation = KORALI_GET(double, sample, "logP(x)");
+   KORALI_START(sample);
+   KORALI_WAIT(sample);
+   _modelEvaluationCount++;
+   _currentEvaluation = KORALI_GET(double, sample, "logP(x)");
 
-    if (samplingProblemPtr != nullptr)
-      samplingProblemPtr->evaluateGradient(sample);
-    else
-      bayesianProblemPtr->evaluateGradient(sample);
+   if (samplingProblemPtr != nullptr)
+   {
+     samplingProblemPtr->evaluateGradient(sample);
+     samplingProblemPtr->evaluateHessian(sample);
+   }
+   else
+   {
+     bayesianProblemPtr->evaluateGradient(sample);
+     bayesianProblemPtr->evaluateHessian(sample);
+   }
 
-    _currentGradient = sample["grad(logP(x))"].get<std::vector<double>>();
+   if (isDefined(sample._js.getJson(), "grad(logP(x))")) _currentGradient = sample["grad(logP(x))"].get<std::vector<double>>();
+   if (isDefined(sample._js.getJson(), "H(logP(x))")) _currentHessian = sample["H(logP(x))"].get<std::vector<double>>();
+
+   // constant for condition number of metric
+   _logDetMetric = 0.0;
+   for (size_t i = 0; i < _stateSpaceDim; ++i)
+   {
+     metric[i] = softAbsFunc(_currentGradient[i] * _currentGradient[i], _inverseRegularizationParam);
+     inverseMetric[i] = 1.0 / metric[i];
+     _logDetMetric += std::log(metric[i]);
+   }
   }
 
   /**
@@ -218,6 +234,28 @@ class Hamiltonian
   };
 
   /**
+  * @brief Helper function f(x) = x * coth(alpha * x) for SoftAbs metric.
+  * @param x Point of evaluation.
+  * @param alpha Hardness parameter
+  * @return function value at x.
+  */
+  double softAbsFunc(const double x, const double alpha) const
+  {
+    double result;
+    if (std::abs(x * alpha) < 0.5)
+    {
+      double a2 = 1.0 / 3.0;
+      double a4 = -1.0 / 45.0;
+      result = 1.0 / alpha + a2 * std::pow(x, 2) * alpha + a4 * std::pow(x, 4) * std::pow(alpha, 3);
+    }
+    else
+    {
+      result = x * 1.0 / std::tanh(alpha * x);
+    }
+    return result;
+  }
+
+  /**
   * @brief Number of model evaluations.
   */
   size_t _modelEvaluationCount;
@@ -251,6 +289,21 @@ class Hamiltonian
   * @brief State Space Dimension needed for Leapfrog integrator.
   */
   size_t _stateSpaceDim;
+
+  /**
+  * @brief Current Hessian of objective (return value of sample evaluation).
+  */
+  std::vector<double> _currentHessian;
+
+  /**
+  * @brief normalization constant for kinetic energy (isn't constant compared to Euclidean Hamiltonian => have to include term in calculation)
+  */
+  double _logDetMetric;
+
+  /**
+  * @brief Inverse regularization parameter of SoftAbs metric that controls hardness of approximation
+  */
+  double _inverseRegularizationParam = 1.0;
 };
 
 } // namespace sampler

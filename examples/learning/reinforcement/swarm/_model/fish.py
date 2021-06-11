@@ -19,16 +19,9 @@ class fish:
         self.sigmaMotion = 0.1
         # potential
         self.potential = potential
-        ## parameters for Lennard-Jones potential
-        if self.potential == "Lennard-Jones":
-            self.epsilon        = potentialStrength * ( 1 + individualNoise[2] ) # max value of reward
-            self.sigmaPotential = eqDistance        * ( 1 + individualNoise[3] ) # distance below which reward becomes penality
-        ## parameters for harmonic potential
-        elif self.potential == "Harmonic":
-            self.k = potentialStrength * ( 1 + individualNoise[2] ) # strength of force towards optimal distance
-            self.r0 = eqDistance       * ( 1 + individualNoise[3] ) # equilibrium distance
-        else: 
-            assert 0, print("Please chose a potential that is implemented")
+        ## parameters for potentials
+        self.epsilon        = potentialStrength * ( 1 + individualNoise[2] ) # max value of reward
+        self.sigmaPotential = eqDistance        * ( 1 + individualNoise[3] ) # distance below which reward becomes penality
 
     ''' get uniform random unit vector on sphere '''      
     def randUnitDirection(self):
@@ -118,5 +111,7 @@ class fish:
                 reward -= 4*self.epsilon*( x**12 - x**6 )
             # Harmonic potential
             elif self.potential == "Harmonic":
-                reward -= 1/2*self.k*(r-self.r0)**2
+                reward += self.epsilon - 4*self.epsilon/self.sigmaPotential**2*(156/2**(7/3)-42/2**(4/3))*(r-2**(1/6)*self.sigmaPotential)**2
+            else:
+                assert 0, print("Please chose a potential that is implemented")
         return reward

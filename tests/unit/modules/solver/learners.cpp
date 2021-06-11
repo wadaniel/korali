@@ -61,7 +61,7 @@ namespace
    ASSERT_NO_THROW(learner->applyVariableDefaults());
 
    // Running base routines
-   ASSERT_ANY_THROW(learner->Learner::getEvaluation(std::vector<std::vector<std::vector<double>>>({{{0.0f}}}));
+   ASSERT_ANY_THROW(learner->Learner::getEvaluation({{{0.0f}}}));
 
    // Backup the correct base configuration
    auto baseOptJs = learnerJs;

@@ -192,9 +192,8 @@ void GaussianProcess::setConfiguration(knlohmann::json& js)
 
  if (isDefined(js, "Optimizer"))
  {
- try { _optimizer = js["Optimizer"].get<knlohmann::json>();
-} catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ gaussianProcess ] \n + Key:    ['Optimizer']\n%s", e.what()); } 
+ _optimizer = js["Optimizer"].get<knlohmann::json>();
+
    eraseValue(js, "Optimizer");
  }
   else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Optimizer'] required by gaussianProcess.\n"); 

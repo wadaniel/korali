@@ -1373,9 +1373,8 @@ void Agent::setConfiguration(knlohmann::json& js)
 
  if (isDefined(js, "Testing", "Policy"))
  {
- try { _testingPolicy = js["Testing"]["Policy"].get<knlohmann::json>();
-} catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Testing']['Policy']\n%s", e.what()); } 
+ _testingPolicy = js["Testing"]["Policy"].get<knlohmann::json>();
+
    eraseValue(js, "Testing", "Policy");
  }
   else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Testing']['Policy'] required by agent.\n"); 
@@ -1468,9 +1467,8 @@ void Agent::setConfiguration(knlohmann::json& js)
 
  if (isDefined(js, "Neural Network", "Hidden Layers"))
  {
- try { _neuralNetworkHiddenLayers = js["Neural Network"]["Hidden Layers"].get<knlohmann::json>();
-} catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Neural Network']['Hidden Layers']\n%s", e.what()); } 
+ _neuralNetworkHiddenLayers = js["Neural Network"]["Hidden Layers"].get<knlohmann::json>();
+
    eraseValue(js, "Neural Network", "Hidden Layers");
  }
   else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Neural Network']['Hidden Layers'] required by agent.\n"); 

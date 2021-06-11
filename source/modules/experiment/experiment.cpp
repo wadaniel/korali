@@ -313,9 +313,8 @@ void Experiment::setConfiguration(knlohmann::json& js)
 
  if (isDefined(js, "Globals"))
  {
- try { _globals = js["Globals"].get<knlohmann::json>();
-} catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ experiment ] \n + Key:    ['Globals']\n%s", e.what()); } 
+ _globals = js["Globals"].get<knlohmann::json>();
+
    eraseValue(js, "Globals");
  }
 

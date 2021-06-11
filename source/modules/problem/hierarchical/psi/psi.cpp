@@ -164,9 +164,8 @@ void Psi::setConfiguration(knlohmann::json& js)
 
  if (isDefined(js, "Sub Experiments"))
  {
- try { _subExperiments = js["Sub Experiments"].get<std::vector<knlohmann::json>>();
-} catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ psi ] \n + Key:    ['Sub Experiments']\n%s", e.what()); } 
+ _subExperiments = js["Sub Experiments"].get<std::vector<knlohmann::json>>();
+
    eraseValue(js, "Sub Experiments");
  }
   else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Sub Experiments'] required by psi.\n"); 

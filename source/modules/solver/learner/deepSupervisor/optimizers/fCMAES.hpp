@@ -105,10 +105,6 @@ class fCMAES
 */
   int _isDiagonal;
   /**
-  * @brief Flag that gives notice of any possible numerical/functional errors during runtime
-  */
-  bool _isFailFlag;
-  /**
 * @brief [Internal Use] Objective function values.
 */
   std::vector<float> _valueVector;

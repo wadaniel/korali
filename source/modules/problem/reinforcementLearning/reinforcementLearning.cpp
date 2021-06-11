@@ -414,9 +414,8 @@ void ReinforcementLearning::setConfiguration(knlohmann::json& js)
 
  if (isDefined(js, "Custom Settings"))
  {
- try { _customSettings = js["Custom Settings"].get<knlohmann::json>();
-} catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ reinforcementLearning ] \n + Key:    ['Custom Settings']\n%s", e.what()); } 
+ _customSettings = js["Custom Settings"].get<knlohmann::json>();
+
    eraseValue(js, "Custom Settings");
  }
   else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Custom Settings'] required by reinforcementLearning.\n"); 

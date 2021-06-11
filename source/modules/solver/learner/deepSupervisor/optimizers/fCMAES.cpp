@@ -19,7 +19,6 @@ fCMAES::fCMAES(size_t nVars, size_t populationSize, size_t muSize)
   _initialCumulativeCovariance = -1.0;
   _isDiagonal = false;
   _muType = "Linear";
-  _isFailFlag = false;
 
   // Variable Parameters
   _nVars = nVars;
@@ -97,8 +96,6 @@ fCMAES::fCMAES(size_t nVars, size_t populationSize, size_t muSize)
 void fCMAES::reset()
 {
   _currentGeneration = 1;
-  _noUpdatePossible = false;
-  _isFailFlag = false;
 
   // Establishing optimization goal
   _bestEverValue = -std::numeric_limits<float>::infinity();
@@ -399,30 +396,9 @@ void fCMAES::updateEigensystem(std::vector<float> &M)
 
   /* find largest and smallest eigenvalue, they are supposed to be sorted anyway */
   float minCovEVal = *std::min_element(std::begin(_auxiliarAxisLengths), std::end(_auxiliarAxisLengths));
-  if (minCovEVal <= 0.000000000001)
-  {
-    fprintf(stderr, "Min Eigenvalue smaller or equal 0.0 (%+6.3e) after Eigen decomp (no update possible).\n", minCovEVal);
-    _noUpdatePossible = true;
-    _isFailFlag = true;
-  }
 
   for (size_t d = 0; d < _nVars; ++d)
-  {
     _auxiliarAxisLengths[d] = sqrtf(_auxiliarAxisLengths[d]);
-    if (std::isfinite(_auxiliarAxisLengths[d]) == false)
-    {
-      fprintf(stderr, "Could not calculate root of Eigenvalue (%+6.3e) after Eigen decomp (no update possible).\n", _auxiliarAxisLengths[d]);
-      _isFailFlag = true;
-    }
-    for (size_t e = 0; e < _nVars; ++e)
-      if (std::isfinite(_covarianceEigenvectorMatrix[d * _nVars + e]) == false)
-      {
-        fprintf(stderr, "Non finite value detected in B (no update possible).\n");
-        _isFailFlag = true;
-      }
-  }
-
-  if (_isFailFlag == true) return;
 
   /* write back */
   _minimumCovarianceEigenvalue = minCovEVal;
@@ -503,7 +479,6 @@ fCMAES::~fCMAES()
 
 bool fCMAES::checkTermination()
 {
-  if (_currentGeneration > 1 && _noUpdatePossible == true) return true;
   if (_currentGeneration > 1 && ((_maxInfeasibleResamplings > 0) && (_infeasibleSampleCount >= _maxInfeasibleResamplings))) return true;
   if (_currentGeneration > 1 && (_maximumCovarianceEigenvalue >= _maxConditionCovarianceMatrix * _minimumCovarianceEigenvalue)) return true;
   if (_currentGeneration > 1 && (-_bestEverValue < _minValue)) return true;

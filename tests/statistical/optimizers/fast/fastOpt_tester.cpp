@@ -41,6 +41,7 @@ namespace
   fCMAES c(N, popSize, muSize);
   ASSERT_NO_THROW(c.setSeed(seed));
 
+  c._initialCumulativeCovariance = 0.9;
   c._maxGenerations = maxGenerations;
   for (size_t i = 0; i < N; i++)
   {
@@ -69,7 +70,6 @@ namespace
   for (size_t i = 0; i < N; i++)
    ASSERT_NEAR(c._bestEverVariables[i], -1.0f, 0.001);
   ASSERT_NEAR(c._bestEverValue, 8.0f, targetPrecision);
-  ASSERT_EQ(c._isFailFlag, false);
  }
 
  TEST(fCMAES, diagonalCovariance)
@@ -108,7 +108,6 @@ namespace
   for (size_t i = 0; i < N; i++)
    ASSERT_NEAR(c._bestEverVariables[i], -1.0f, 0.001);
   ASSERT_NEAR(c._bestEverValue, 8.0f, targetPrecision);
-  ASSERT_EQ(c._isFailFlag, false);
  }
 
  TEST(fCMAES, equalMu)
@@ -146,7 +145,6 @@ namespace
   for (size_t i = 0; i < N; i++)
    ASSERT_NEAR(c._bestEverVariables[i], -1.0f, 0.001);
   ASSERT_NEAR(c._bestEverValue, 8.0f, targetPrecision);
-  ASSERT_EQ(c._isFailFlag, false);
  }
 
  TEST(fCMAES, logMu)
@@ -184,7 +182,6 @@ namespace
   for (size_t i = 0; i < N; i++)
    ASSERT_NEAR(c._bestEverVariables[i], -1.0f, 0.001);
   ASSERT_NEAR(c._bestEverValue, 8.0f, targetPrecision);
-  ASSERT_EQ(c._isFailFlag, false);
  }
 
  TEST(fCMAES, failBadMu)
@@ -202,9 +199,7 @@ namespace
   std::vector<float> M(N*N, std::numeric_limits<float>::infinity());
   M[0] = 0.0f;
 
-  c.updateEigensystem(M);
-  ASSERT_EQ(c._noUpdatePossible, false);
-  ASSERT_EQ(c._isFailFlag, true);
+  ASSERT_NO_THROW(c.updateEigensystem(M));
  }
 
 

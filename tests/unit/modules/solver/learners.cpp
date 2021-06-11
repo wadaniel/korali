@@ -382,6 +382,16 @@ namespace
 
     learnerJs = baseOptJs;
     experimentJs = baseExpJs;
+    learnerJs.erase("Optimizer");
+    ASSERT_ANY_THROW(learner->setConfiguration(learnerJs));
+
+    learnerJs = baseOptJs;
+    experimentJs = baseExpJs;
+    learnerJs["Optimizer"] = knlohmann::json();
+    ASSERT_NO_THROW(learner->setConfiguration(learnerJs));
+
+    learnerJs = baseOptJs;
+    experimentJs = baseExpJs;
     learnerJs.erase("Default Hyperparameter");
     ASSERT_ANY_THROW(learner->setConfiguration(learnerJs));
 

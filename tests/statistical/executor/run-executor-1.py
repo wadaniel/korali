@@ -23,6 +23,7 @@ e["Solver"]["Type"] = "Executor"
 e["Solver"]["Executions Per Generation"] = 5
 
 e["Console Output"]["Verbosity"] = "Detailed"
+e["File Output"]["Enabled"] = False
 
 # Starting Korali's Engine and running experiment
 k = korali.Engine()

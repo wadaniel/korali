@@ -15,7 +15,6 @@
 class @className : public @parentClassName
 {
   public:
-  ~GaussianProcess();
 
   /**
   * @brief Storage for the output values

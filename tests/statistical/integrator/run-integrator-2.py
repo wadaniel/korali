@@ -32,6 +32,7 @@ e["Solver"]["Executions Per Generation"] = 10
 e["Solver"]["Termination Criteria"]["Max Generations"] = 1000
 
 e["Console Output"]["Verbosity"] = "Detailed"
+e["File Output"]["Enabled"] = False
 
 # Starting Korali's Engine and running experiment
 k = korali.Engine()

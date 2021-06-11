@@ -286,4 +286,129 @@ namespace
    ASSERT_NO_THROW(learner->setConfiguration(learnerJs));
   }
 
+  //////////////// GaussianProcess CLASS ////////////////////////
+
+   TEST(learners, gaussianProcess)
+   {
+    // Creating base experiment
+    Experiment e;
+    auto& experimentJs = e._js.getJson();
+    experimentJs["Variables"][0]["Name"] = "X";
+    Variable v;
+    e._variables.push_back(&v);
+
+    // Creating optimizer configuration Json
+    knlohmann::json learnerJs;
+    learnerJs["Type"] = "Learner/Gaussian Process";
+    learnerJs["Covariance Function"] = "CovSEiso";
+    learnerJs["Optimizer"]["Type"] = "Optimizer/Rprop";
+    learnerJs["Optimizer"]["Termination Criteria"]["Max Generations"] = 1000;
+    learnerJs["Optimizer"]["Termination Criteria"]["Parameter Relative Tolerance"] = 1e-8;
+
+    // Creating module
+    GaussianProcess* learner;
+    ASSERT_NO_THROW(learner = dynamic_cast<GaussianProcess *>(Module::getModule(learnerJs, &e)));
+
+    // Defaults should be applied without a problem
+    ASSERT_NO_THROW(learner->applyModuleDefaults(learnerJs));
+
+    // Covering variable functions (no effect)
+    ASSERT_NO_THROW(learner->applyVariableDefaults());
+
+    // Running base routines
+    ASSERT_ANY_THROW(learner->Learner::getEvaluation({{{0.0f}}}));
+
+    // Backup the correct base configuration
+    auto baseOptJs = learnerJs;
+    auto baseExpJs = experimentJs;
+
+    // Setting up optimizer correctly
+    learnerJs = baseOptJs;
+    experimentJs = baseExpJs;
+    ASSERT_NO_THROW(learner->setConfiguration(learnerJs));
+
+    // Testing hyperparameter management
+    std::vector<float> hyperparameters;
+    ASSERT_NO_THROW(hyperparameters = learner->getHyperparameters());
+    ASSERT_NO_THROW(learner->setHyperparameters(hyperparameters));
+
+    // Testing optional parameters
+    learnerJs = baseOptJs;
+    experimentJs = baseExpJs;
+    learnerJs["gp Input Dimension"] = "Not a Number";
+    ASSERT_ANY_THROW(learner->setConfiguration(learnerJs));
+
+    learnerJs = baseOptJs;
+    experimentJs = baseExpJs;
+    learnerJs["gp Input Dimension"] = 1;
+    ASSERT_NO_THROW(learner->setConfiguration(learnerJs));
+
+    learnerJs = baseOptJs;
+    experimentJs = baseExpJs;
+    learnerJs["gp Parameter Dimension"] = "Not a Number";
+    ASSERT_ANY_THROW(learner->setConfiguration(learnerJs));
+
+    learnerJs = baseOptJs;
+    experimentJs = baseExpJs;
+    learnerJs["gp Parameter Dimension"] = 1;
+    ASSERT_NO_THROW(learner->setConfiguration(learnerJs));
+
+    learnerJs = baseOptJs;
+    experimentJs = baseExpJs;
+    learnerJs["gp Hyperparameters"] = "Not a Number";
+    ASSERT_ANY_THROW(learner->setConfiguration(learnerJs));
+
+    learnerJs = baseOptJs;
+    experimentJs = baseExpJs;
+    learnerJs["gp Hyperparameters"] = std::vector<float>({1.0f});
+    ASSERT_NO_THROW(learner->setConfiguration(learnerJs));
+
+    // Testing mandatory parameters
+
+    learnerJs = baseOptJs;
+    experimentJs = baseExpJs;
+    learnerJs.erase("Covariance Function");
+    ASSERT_ANY_THROW(learner->setConfiguration(learnerJs));
+
+    learnerJs = baseOptJs;
+    experimentJs = baseExpJs;
+    learnerJs["Covariance Function"] = 1.0;
+    ASSERT_ANY_THROW(learner->setConfiguration(learnerJs));
+
+    learnerJs = baseOptJs;
+    experimentJs = baseExpJs;
+    learnerJs["Covariance Function"] = "CovSEiso";
+    ASSERT_NO_THROW(learner->setConfiguration(learnerJs));
+
+    learnerJs = baseOptJs;
+    experimentJs = baseExpJs;
+    learnerJs.erase("Default Hyperparameter");
+    ASSERT_ANY_THROW(learner->setConfiguration(learnerJs));
+
+    learnerJs = baseOptJs;
+    experimentJs = baseExpJs;
+    learnerJs["Default Hyperparameter"] = "Not a Number";
+    ASSERT_ANY_THROW(learner->setConfiguration(learnerJs));
+
+    learnerJs = baseOptJs;
+    experimentJs = baseExpJs;
+    learnerJs["Default Hyperparameter"] = 1.0;
+    ASSERT_NO_THROW(learner->setConfiguration(learnerJs));
+
+    learnerJs = baseOptJs;
+    experimentJs = baseExpJs;
+    learnerJs["Termination Criteria"].erase("Terminate With Optimizer");
+    ASSERT_ANY_THROW(learner->setConfiguration(learnerJs));
+
+    learnerJs = baseOptJs;
+    experimentJs = baseExpJs;
+    learnerJs["Termination Criteria"]["Terminate With Optimizer"] = "Not a Number";
+    ASSERT_ANY_THROW(learner->setConfiguration(learnerJs));
+
+    learnerJs = baseOptJs;
+    experimentJs = baseExpJs;
+    learnerJs["Termination Criteria"]["Terminate With Optimizer"] = false;
+    ASSERT_NO_THROW(learner->setConfiguration(learnerJs));
+   }
+
 } // namespace

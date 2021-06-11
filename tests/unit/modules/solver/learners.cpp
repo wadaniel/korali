@@ -72,11 +72,6 @@ namespace
    experimentJs = baseExpJs;
    ASSERT_NO_THROW(learner->setConfiguration(learnerJs));
 
-   // Testing Base config
-   learnerJs = baseOptJs;
-   experimentJs = baseExpJs;
-   ASSERT_NO_THROW(learner->Learner::setConfiguration(learnerJs));
-
    // Testing optional parameters
    learnerJs = baseOptJs;
    experimentJs = baseExpJs;

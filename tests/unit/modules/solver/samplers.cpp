@@ -47,6 +47,11 @@ namespace
    // Covering variable functions (no effect)
    ASSERT_NO_THROW(sampler->applyVariableDefaults());
 
+   // Base solver class methods
+   ASSERT_NO_THROW(sampler->Solver::printGenerationBefore());
+   ASSERT_NO_THROW(sampler->Solver::printGenerationAfter());
+   ASSERT_NO_THROW(sampler->Solver::setInitialConfiguration());
+
    // Backup the correct base configuration
    auto baseOptJs = samplerJs;
    auto baseExpJs = experimentJs;

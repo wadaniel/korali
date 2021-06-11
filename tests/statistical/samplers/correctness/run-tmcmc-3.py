@@ -15,7 +15,7 @@ e = korali.Experiment()
 
 e["Random Seed"] = 0xC0FFEE
 e["Console Output"]["Verbosity"] = "Detailed"
-e["File Output"]["Path"] = "_result_run-tmcmc2"
+e["File Output"]["Path"] = "_result_run-tmcmc-3"
 
 # Configuring problem
 e["Problem"]["Type"] = "Bayesian/Custom"

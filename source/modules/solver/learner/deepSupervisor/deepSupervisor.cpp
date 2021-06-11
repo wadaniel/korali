@@ -193,16 +193,17 @@ std::vector<std::vector<float>> &DeepSupervisor::getEvaluation(const std::vector
   return _neuralNetwork->getOutputValues(N);
 }
 
-std::vector<std::vector<float>> &DeepSupervisor::getDataGradients(const std::vector<std::vector<std::vector<float>>> &input, const std::vector<std::vector<float>> &outputGradients)
-{
-  const size_t N = input.size();
-
-  // Running the input values through the neural network
-  _neuralNetwork->backward(outputGradients);
-
-  // Returning the input data gradients
-  return _neuralNetwork->getInputGradients(N);
-}
+// Only needed for DDPG
+//std::vector<std::vector<float>> &DeepSupervisor::getDataGradients(const std::vector<std::vector<std::vector<float>>> &input, const std::vector<std::vector<float>> &outputGradients)
+//{
+//  const size_t N = input.size();
+//
+//  // Running the input values through the neural network
+//  _neuralNetwork->backward(outputGradients);
+//
+//  // Returning the input data gradients
+//  return _neuralNetwork->getInputGradients(N);
+//}
 
 void DeepSupervisor::printGenerationAfter()
 {

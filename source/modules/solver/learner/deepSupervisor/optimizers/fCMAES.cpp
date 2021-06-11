@@ -106,30 +106,6 @@ void fCMAES::reset()
   _previousBestValue = -std::numeric_limits<float>::infinity();
   _currentBestValue = -std::numeric_limits<float>::infinity();
 
-  for (size_t i = 0; i < _nVars; i++)
-  {
-    if (std::isfinite(_lowerBounds[i]) == false)
-    {
-      fprintf(stderr, "Lower Bound of variable \'%lu\' not defined.\n", i);
-      throw std::runtime_error("Bad Inputs for Optimizer.");
-    }
-    if (std::isfinite(_upperBounds[i]) == false)
-    {
-      fprintf(stderr, "Upper Bound of variable \'%lu\' not defined.\n", i);
-      throw std::runtime_error("Bad Inputs for Optimizer.");
-    }
-    if (std::isfinite(_initialMeans[i]) == false)
-    {
-      fprintf(stderr, "Initial mean of variable \'%lu\' not defined.\n", i);
-      throw std::runtime_error("Bad Inputs for Optimizer.");
-    }
-    if (std::isfinite(_initialStandardDeviations[i]) == false)
-    {
-      fprintf(stderr, "Initial StdDev of variable \'%lu\' not defined.\n", i);
-      throw std::runtime_error("Bad Inputs for Optimizer.");
-    }
-  }
-
   _globalSuccessRate = -1.0;
   _covarianceMatrixAdaptionFactor = -1.0;
   _covarianceMatrixAdaptationCount = 0;

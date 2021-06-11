@@ -9,7 +9,8 @@ maxSteps = 500
 def env(s):
 
  # Initializing environment
- cart.reset()
+ sampleId = s["Sample Id"]
+ cart.reset(sampleId)
  s["State"] = cart.getState().tolist()
  step = 0
  done = False

@@ -15,7 +15,7 @@ e = korali.Experiment()
 e["Problem"]["Type"] = "Reinforcement Learning / Discrete"
 e["Problem"]["Possible Actions"] = [ [ -10.0 ], [  10.0 ] ]
 e["Problem"]["Environment Function"] = env
-e["Problem"]["Training Reward Threshold"] = 400
+e["Problem"]["Training Reward Threshold"] = 450
 e["Problem"]["Policy Testing Episodes"] = 20
 e["Problem"]["Actions Between Policy Updates"] = 5
 
@@ -86,11 +86,6 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tan
 e["Solver"]["Termination Criteria"]["Max Generations"] = 1000
 e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 450
 
-### If this is test mode, run only a couple generations
-if len(sys.argv) == 2:
- if sys.argv[1] == '--test':
-  e["Solver"]["Termination Criteria"]["Max Generations"] = 5
-  
 ### Setting file output configuration
 
 e["File Output"]["Enabled"] = False
@@ -99,3 +94,24 @@ e["Console Output"]["Verbosity"] = "Detailed"
 ### Running Experiment
 
 k.run(e)
+
+### If this is test mode, we run a few test samples and check their reward
+
+performTest = False
+if len(sys.argv) == 2:
+ if sys.argv[1] == '--test':
+  performTest = True
+
+if (performTest == False): exit(0)
+
+e["Solver"]["Mode"] = "Testing"
+e["Solver"]["Testing"]["Sample Ids"] = list(range(10))
+e["File Output"]["Enabled"] = False
+
+k.run(e)
+
+averageTestReward = np.average(e["Solver"]["Testing"]["Reward"])
+if (averageTestReward < 400):
+ print("Cartpole example did not reach minimum testing average.")
+ exit(-1)
+

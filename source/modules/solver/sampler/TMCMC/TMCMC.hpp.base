@@ -39,7 +39,8 @@ typedef struct fparam_s
 
 class @className : public @parentClassName
 {
-  private:
+public:
+
   /*
   * @brief Sets the burn in steps per generation
   */
@@ -111,7 +112,6 @@ class @className : public @parentClassName
   */
   size_t N;
 
-  public:
   /**
  * @brief Configures TMCMC.
  */

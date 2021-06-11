@@ -232,6 +232,36 @@ namespace
 
    samplerJs = baseOptJs;
    experimentJs = baseExpJs;
+   samplerJs["Chain Leader"] = "Not a Number";
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Chain Leader"] = std::vector<double>({0.0});
+   ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Chain Candidate"] = "Not a Number";
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Chain Candidate"] = std::vector<std::vector<double>>({{0.0}});
+   ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Sample Evaluation Database"] = "Not a Number";
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Sample Evaluation Database"] = std::vector<double>({0.0});
+   ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
    samplerJs["Chain Mean"] = "Not a Number";
    ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
 
@@ -418,23 +448,38 @@ namespace
 
    // Creating initial variable
    Variable v;
+   v._distributionIndex = 0;
    e._variables.push_back(&v);
    e["Variables"][0]["Name"] = "Var 1";
    e["Variables"][0]["Initial Mean"] = 0.0;
    e["Variables"][0]["Initial Standard Deviation"] = 0.25;
    e["Variables"][0]["Lower Bound"] = -1.0;
-   e["Variables"][0]["Upper Bound"] = 1.0;
+   e["Variables"][0]["Prior Distribution"] = "Uniform 0";
+
+   e["Distributions"][0]["Name"] = "Uniform 0";
+   e["Distributions"][0]["Type"] = "Univariate/Uniform";
+   e["Distributions"][0]["Minimum"] = 0.0;
+   e["Distributions"][0]["Maximum"] = +5.0;
+
+   knlohmann::json uniformDistroJs;
+   uniformDistroJs["Type"] = "Univariate/Uniform";
+   uniformDistroJs["Minimum"] = 0.0;
+   uniformDistroJs["Maximum"] = 1.0;
+   auto uniformGenerator = dynamic_cast<korali::distribution::univariate::Uniform*>(korali::Module::getModule(uniformDistroJs, &e));
+   uniformGenerator->applyVariableDefaults();
+   uniformGenerator->applyModuleDefaults(uniformDistroJs);
+   uniformGenerator->setConfiguration(uniformDistroJs);
+   e._distributions.push_back(uniformGenerator);
 
    // Configuring Problem
    e["Problem"]["Type"] = "Bayesian/Reference";
-   e["Problem"]["Constraints"][0] = 0;
-
-   // Creating problem module
-   Reference* p;
-   knlohmann::json problemJs;
-   problemJs["Type"] = "Bayesian/Reference";
-   ASSERT_NO_THROW(p = dynamic_cast<Reference *>(Module::getModule(problemJs, &e)));
-   e._problem = p;
+   Reference* pR;
+   knlohmann::json problemRefJs;
+   problemRefJs["Type"] = "Bayesian/Reference";
+   ASSERT_NO_THROW(pR = dynamic_cast<Reference *>(Module::getModule(problemRefJs, &e)));
+   pR->_likelihoodModel = "Normal";
+   pR->_referenceData = std::vector<double>({0.5});
+   e._problem = pR;
 
    // Creating optimizer configuration Json
    knlohmann::json samplerJs;
@@ -457,6 +502,13 @@ namespace
 
    // Setting up optimizer correctly
    ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
+
+   // Test version compatbility
+   sampler->_version = "mTMCMC";
+   e["Problem"]["Type"] = "Bayesian/Custom";
+   ASSERT_ANY_THROW(sampler->setInitialConfiguration());
+   e["Problem"]["Type"] = "Bayesian/Reference";
+   ASSERT_NO_THROW(sampler->setInitialConfiguration());
 
    // Testing optional parameters
    samplerJs = baseOptJs;
@@ -581,6 +633,16 @@ namespace
 
    samplerJs = baseOptJs;
    experimentJs = baseExpJs;
+   samplerJs["Chain Leaders Covariance"] = "Not a Number";
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Chain Leaders Covariance"] = std::vector<std::vector<double>>({{0.0}});
+   ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
    samplerJs["Chain Leaders Gradients"] = "Not a Number";
    ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
 
@@ -677,6 +739,16 @@ namespace
    samplerJs = baseOptJs;
    experimentJs = baseExpJs;
    samplerJs["Num Finite Prior Evaluations"] = 1;
+   ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Num Finite Likelihood Evaluations"] = "Not a Number";
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Num Finite Likelihood Evaluations"] = 1;
    ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
 
    samplerJs = baseOptJs;
@@ -1963,16 +2035,44 @@ namespace
 
    // Creating initial variable
    Variable v;
+   v._distributionIndex = 0;
    e._variables.push_back(&v);
    e["Variables"][0]["Name"] = "Var 1";
    e["Variables"][0]["Initial Mean"] = 0.0;
    e["Variables"][0]["Initial Standard Deviation"] = 0.25;
    e["Variables"][0]["Lower Bound"] = -1.0;
    e["Variables"][0]["Upper Bound"] = 1.0;
+   e["Variables"][0]["Prior Distribution"] = "Uniform 0";
+
+   e["Distributions"][0]["Name"] = "Uniform 0";
+   e["Distributions"][0]["Type"] = "Univariate/Uniform";
+   e["Distributions"][0]["Minimum"] = 0.0;
+   e["Distributions"][0]["Maximum"] = +5.0;
+
+   knlohmann::json normalDistroJs;
+   normalDistroJs["Type"] = "Univariate/Normal";
+   normalDistroJs["Mean"] = 0.0;
+   normalDistroJs["Standard Deviation"] = 1.0;
+   auto normalGenerator = dynamic_cast<korali::distribution::univariate::Normal*>(korali::Module::getModule(normalDistroJs, &e));
+   normalGenerator->applyVariableDefaults();
+   normalGenerator->applyModuleDefaults(normalDistroJs);
+   normalGenerator->setConfiguration(normalDistroJs);
+   e._distributions.push_back(normalGenerator);
+
+   // Configuring Problem
+   e["Problem"]["Type"] = "Bayesian/Reference";
+   Reference* pR;
+   knlohmann::json problemRefJs;
+   problemRefJs["Type"] = "Bayesian/Reference";
+   ASSERT_NO_THROW(pR = dynamic_cast<Reference *>(Module::getModule(problemRefJs, &e)));
+   pR->_likelihoodModel = "Normal";
+   pR->_referenceData = std::vector<double>({0.5});
+   e._problem = pR;
 
    // Creating optimizer configuration Json
    knlohmann::json samplerJs;
    samplerJs["Type"] = "Sampler/Nested";
+   samplerJs["Resampling Method"] = "Box";
 
    // Creating module
    Nested* sampler;
@@ -1990,6 +2090,9 @@ namespace
 
    // Setting up optimizer correctly
    ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
+
+   // Trying initial configuration up optimizer correctly
+   ASSERT_NO_THROW(sampler->setInitialConfiguration());
 
    // Testing optional parameters
    samplerJs = baseOptJs;

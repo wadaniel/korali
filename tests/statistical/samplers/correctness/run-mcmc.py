@@ -16,7 +16,7 @@ e["Console Output"]["Frequency"] = 500
 e["File Output"]["Frequency"] = 500
 
 e["Problem"]["Type"] = "Sampling"
-e["Problem"]["Probability Function"] = model
+e["Problem"]["Probability Function"] = model2
 
 # Configuring the MCMC sampler parameters
 e["Solver"]["Type"] = "Sampler/MCMC"
@@ -27,6 +27,10 @@ e["Solver"]["Termination Criteria"]["Max Samples"] = 5000
 e["Variables"][0]["Name"] = "X"
 e["Variables"][0]["Initial Mean"] = 1.0
 e["Variables"][0]["Initial Standard Deviation"] = 1.0
+
+e["Variables"][1]["Name"] = "Y"
+e["Variables"][1]["Initial Mean"] = 1.0
+e["Variables"][1]["Initial Standard Deviation"] = 1.0
 
 # Running Korali
 e["Random Seed"] = 0xC0FFEE

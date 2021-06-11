@@ -15,7 +15,7 @@ e = korali.Experiment()
 
 e["Random Seed"] = 0xC0FFEE
 e["Console Output"]["Verbosity"] = "Detailed"
-e["File Output"]["Path"] = "_result_run-tmcmc"
+e["File Output"]["Path"] = "_result_run-tmcmc2"
 
 # Configuring problem
 e["Problem"]["Type"] = "Bayesian/Custom"
@@ -32,10 +32,13 @@ e["Variables"][0]["Prior Distribution"] = "Uniform 0"
 
 # Configuring the TMCMC sampler parameters
 e["Solver"]["Type"] = "Sampler/TMCMC"
-e["Solver"]["Population Size"] = 5000
+e["Solver"]["Population Size"] = 100
+e["Solver"]["Covariance Scaling"] = 0.01
+e["Solver"]["Default Burn In"] = 3
+e["Solver"]["Target Coefficient Of Variation"] = 0.4
+e["Solver"]["Max Annealing Exponent Update"] = 1.0
+e["Solver"]["Min Annealing Exponent Update"] = 0.5
+
 
 # Running Korali
 k.run(e)
-
-checkMean(e, 0.0, 0.05)
-checkStd(e, 1.0, 0.025)

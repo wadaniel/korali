@@ -87,3 +87,12 @@ test('samplers.correctness.mcmc', e,
       depends: python_extension,
       env: nomalloc
     )          
+
+e = find_program('./run-tmcmc-3.py', required: true)
+test('samplers.correctness.mcmc', e,
+      timeout : 2000,
+      suite: 'statistical',
+      workdir: meson.current_source_dir(),
+      depends: python_extension,
+      env: nomalloc
+    )          

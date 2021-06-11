@@ -14,6 +14,7 @@ k = korali.Engine()
 e = korali.Experiment()
 
 e["Random Seed"] = 0xC0FFEE2
+e["Console Output"]["Verbosity"] = "Detailed"
 e["File Output"]["Path"] = "_result_run-tmcmc2"
 
 # Configuring problem

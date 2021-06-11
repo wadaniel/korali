@@ -69,9 +69,8 @@ void ThetaNew::setConfiguration(knlohmann::json& js)
 
  if (isDefined(js, "Psi Experiment"))
  {
- try { _psiExperiment = js["Psi Experiment"].get<knlohmann::json>();
-} catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ thetaNew ] \n + Key:    ['Psi Experiment']\n%s", e.what()); } 
+ _psiExperiment = js["Psi Experiment"].get<knlohmann::json>();
+
    eraseValue(js, "Psi Experiment");
  }
   else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Psi Experiment'] required by thetaNew.\n"); 

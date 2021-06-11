@@ -19,6 +19,7 @@ namespace
    // Creating base experiment
    Experiment e;
    auto& experimentJs = e._js.getJson();
+   experimentJs["Variables"][0]["Name"] = "X";
    Variable v;
    e._variables.push_back(&v);
 
@@ -50,235 +51,244 @@ namespace
    learnerJs["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tanh";
 
    // Creating module
-   DeepSupervisor* sampler;
-   ASSERT_NO_THROW(sampler = dynamic_cast<DeepSupervisor *>(Module::getModule(learnerJs, &e)));
+   DeepSupervisor* learner;
+   ASSERT_NO_THROW(learner = dynamic_cast<DeepSupervisor *>(Module::getModule(learnerJs, &e)));
 
    // Defaults should be applied without a problem
-   ASSERT_NO_THROW(sampler->applyModuleDefaults(learnerJs));
+   ASSERT_NO_THROW(learner->applyModuleDefaults(learnerJs));
 
    // Covering variable functions (no effect)
-   ASSERT_NO_THROW(sampler->applyVariableDefaults());
+   ASSERT_NO_THROW(learner->applyVariableDefaults());
+
+   // Running base routines
+   ASSERT_ANY_THROW(learner->Learner::getEvaluation(std::vector<std::vector<std::vector<double>>>({{{0.0f}}}));
 
    // Backup the correct base configuration
    auto baseOptJs = learnerJs;
    auto baseExpJs = experimentJs;
 
    // Setting up optimizer correctly
-   ASSERT_NO_THROW(sampler->setConfiguration(learnerJs));
+   learnerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   ASSERT_NO_THROW(learner->setConfiguration(learnerJs));
+
+   // Testing Base config
+   learnerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   ASSERT_NO_THROW(learner->Learner::setConfiguration(learnerJs));
 
    // Testing optional parameters
-
    learnerJs = baseOptJs;
    experimentJs = baseExpJs;
    learnerJs["Current Loss"] = "Not a Number";
-   ASSERT_ANY_THROW(sampler->setConfiguration(learnerJs));
+   ASSERT_ANY_THROW(learner->setConfiguration(learnerJs));
 
    learnerJs = baseOptJs;
    experimentJs = baseExpJs;
    learnerJs["Current Loss"] = 1.0;
-   ASSERT_NO_THROW(sampler->setConfiguration(learnerJs));
+   ASSERT_NO_THROW(learner->setConfiguration(learnerJs));
 
    learnerJs = baseOptJs;
    experimentJs = baseExpJs;
    learnerJs["Normalization Means"] = "Not a Number";
-   ASSERT_ANY_THROW(sampler->setConfiguration(learnerJs));
+   ASSERT_ANY_THROW(learner->setConfiguration(learnerJs));
 
    learnerJs = baseOptJs;
    experimentJs = baseExpJs;
    learnerJs["Normalization Means"] = std::vector<float>({1.0f});
-   ASSERT_NO_THROW(sampler->setConfiguration(learnerJs));
+   ASSERT_NO_THROW(learner->setConfiguration(learnerJs));
 
    learnerJs = baseOptJs;
    experimentJs = baseExpJs;
    learnerJs["Normalization Variances"] = "Not a Number";
-   ASSERT_ANY_THROW(sampler->setConfiguration(learnerJs));
+   ASSERT_ANY_THROW(learner->setConfiguration(learnerJs));
 
    learnerJs = baseOptJs;
    experimentJs = baseExpJs;
    learnerJs["Normalization Variances"] = std::vector<float>({1.0f});
-   ASSERT_NO_THROW(sampler->setConfiguration(learnerJs));
+   ASSERT_NO_THROW(learner->setConfiguration(learnerJs));
 
    // Testing mandatory parameters
 
    learnerJs = baseOptJs;
    experimentJs = baseExpJs;
    learnerJs["Neural Network"].erase("Hidden Layers");
-   ASSERT_ANY_THROW(sampler->setConfiguration(learnerJs));
+   ASSERT_ANY_THROW(learner->setConfiguration(learnerJs));
 
    learnerJs = baseOptJs;
    experimentJs = baseExpJs;
    learnerJs["Neural Network"]["Hidden Layers"] = knlohmann::json();
-   ASSERT_NO_THROW(sampler->setConfiguration(learnerJs));
+   ASSERT_NO_THROW(learner->setConfiguration(learnerJs));
 
    learnerJs = baseOptJs;
    experimentJs = baseExpJs;
    learnerJs["Neural Network"].erase("Output Activation");
-   ASSERT_ANY_THROW(sampler->setConfiguration(learnerJs));
+   ASSERT_ANY_THROW(learner->setConfiguration(learnerJs));
 
    learnerJs = baseOptJs;
    experimentJs = baseExpJs;
    learnerJs["Neural Network"]["Output Activation"] = knlohmann::json();
-   ASSERT_NO_THROW(sampler->setConfiguration(learnerJs));
+   ASSERT_NO_THROW(learner->setConfiguration(learnerJs));
 
    learnerJs = baseOptJs;
    experimentJs = baseExpJs;
    learnerJs["Neural Network"].erase("Output Layer");
-   ASSERT_ANY_THROW(sampler->setConfiguration(learnerJs));
+   ASSERT_ANY_THROW(learner->setConfiguration(learnerJs));
 
    learnerJs = baseOptJs;
    experimentJs = baseExpJs;
    learnerJs["Neural Network"]["Output Layer"] = knlohmann::json();
-   ASSERT_NO_THROW(sampler->setConfiguration(learnerJs));
+   ASSERT_NO_THROW(learner->setConfiguration(learnerJs));
 
    learnerJs = baseOptJs;
    experimentJs = baseExpJs;
    learnerJs["Neural Network"].erase("Engine");
-   ASSERT_ANY_THROW(sampler->setConfiguration(learnerJs));
+   ASSERT_ANY_THROW(learner->setConfiguration(learnerJs));
 
    learnerJs = baseOptJs;
    experimentJs = baseExpJs;
    learnerJs["Neural Network"]["Engine"] = 1.0;
-   ASSERT_ANY_THROW(sampler->setConfiguration(learnerJs));
+   ASSERT_ANY_THROW(learner->setConfiguration(learnerJs));
 
    learnerJs = baseOptJs;
    experimentJs = baseExpJs;
    learnerJs["Neural Network"]["Engine"] = "Engine";
-   ASSERT_NO_THROW(sampler->setConfiguration(learnerJs));
+   ASSERT_NO_THROW(learner->setConfiguration(learnerJs));
 
    learnerJs = baseOptJs;
    experimentJs = baseExpJs;
    learnerJs["Neural Network"].erase("Optimizer");
-   ASSERT_ANY_THROW(sampler->setConfiguration(learnerJs));
+   ASSERT_ANY_THROW(learner->setConfiguration(learnerJs));
 
    learnerJs = baseOptJs;
    experimentJs = baseExpJs;
    learnerJs["Neural Network"]["Optimizer"] = 1.0;
-   ASSERT_ANY_THROW(sampler->setConfiguration(learnerJs));
+   ASSERT_ANY_THROW(learner->setConfiguration(learnerJs));
 
    learnerJs = baseOptJs;
    experimentJs = baseExpJs;
    learnerJs["Neural Network"]["Optimizer"] = "Adam";
-   ASSERT_NO_THROW(sampler->setConfiguration(learnerJs));
+   ASSERT_NO_THROW(learner->setConfiguration(learnerJs));
 
    learnerJs = baseOptJs;
    experimentJs = baseExpJs;
    learnerJs.erase("Hyperparameters");
-   ASSERT_ANY_THROW(sampler->setConfiguration(learnerJs));
+   ASSERT_ANY_THROW(learner->setConfiguration(learnerJs));
 
    learnerJs = baseOptJs;
    experimentJs = baseExpJs;
    learnerJs["Hyperparameters"] = "Not a Number";
-   ASSERT_ANY_THROW(sampler->setConfiguration(learnerJs));
+   ASSERT_ANY_THROW(learner->setConfiguration(learnerJs));
 
    learnerJs = baseOptJs;
    experimentJs = baseExpJs;
    learnerJs["Hyperparameters"] = std::vector<float>({0.0});
-   ASSERT_NO_THROW(sampler->setConfiguration(learnerJs));
+   ASSERT_NO_THROW(learner->setConfiguration(learnerJs));
 
    learnerJs = baseOptJs;
    experimentJs = baseExpJs;
    learnerJs.erase("Loss Function");
-   ASSERT_ANY_THROW(sampler->setConfiguration(learnerJs));
+   ASSERT_ANY_THROW(learner->setConfiguration(learnerJs));
 
    learnerJs = baseOptJs;
    experimentJs = baseExpJs;
    learnerJs["Loss Function"] = 1.0;
-   ASSERT_ANY_THROW(sampler->setConfiguration(learnerJs));
+   ASSERT_ANY_THROW(learner->setConfiguration(learnerJs));
 
    learnerJs = baseOptJs;
    experimentJs = baseExpJs;
    learnerJs["Loss Function"] = "Direct Gradient";
-   ASSERT_NO_THROW(sampler->setConfiguration(learnerJs));
+   ASSERT_NO_THROW(learner->setConfiguration(learnerJs));
 
    learnerJs = baseOptJs;
    experimentJs = baseExpJs;
    learnerJs.erase("Steps Per Generation");
-   ASSERT_ANY_THROW(sampler->setConfiguration(learnerJs));
+   ASSERT_ANY_THROW(learner->setConfiguration(learnerJs));
 
    learnerJs = baseOptJs;
    experimentJs = baseExpJs;
    learnerJs["Steps Per Generation"] = "Not a Number";
-   ASSERT_ANY_THROW(sampler->setConfiguration(learnerJs));
+   ASSERT_ANY_THROW(learner->setConfiguration(learnerJs));
 
    learnerJs = baseOptJs;
    experimentJs = baseExpJs;
    learnerJs["Steps Per Generation"] = 10;
-   ASSERT_NO_THROW(sampler->setConfiguration(learnerJs));
+   ASSERT_NO_THROW(learner->setConfiguration(learnerJs));
 
    learnerJs = baseOptJs;
    experimentJs = baseExpJs;
    learnerJs.erase("Learning Rate");
-   ASSERT_ANY_THROW(sampler->setConfiguration(learnerJs));
+   ASSERT_ANY_THROW(learner->setConfiguration(learnerJs));
 
    learnerJs = baseOptJs;
    experimentJs = baseExpJs;
    learnerJs["Learning Rate"] = "Not a Number";
-   ASSERT_ANY_THROW(sampler->setConfiguration(learnerJs));
+   ASSERT_ANY_THROW(learner->setConfiguration(learnerJs));
 
    learnerJs = baseOptJs;
    experimentJs = baseExpJs;
    learnerJs["Learning Rate"] = 0.001;
-   ASSERT_NO_THROW(sampler->setConfiguration(learnerJs));
+   ASSERT_NO_THROW(learner->setConfiguration(learnerJs));
 
    learnerJs = baseOptJs;
    experimentJs = baseExpJs;
    learnerJs["L2 Regularization"].erase("Enabled");
-   ASSERT_ANY_THROW(sampler->setConfiguration(learnerJs));
+   ASSERT_ANY_THROW(learner->setConfiguration(learnerJs));
 
    learnerJs = baseOptJs;
    experimentJs = baseExpJs;
    learnerJs["L2 Regularization"]["Enabled"] = "Not a Number";
-   ASSERT_ANY_THROW(sampler->setConfiguration(learnerJs));
+   ASSERT_ANY_THROW(learner->setConfiguration(learnerJs));
 
    learnerJs = baseOptJs;
    experimentJs = baseExpJs;
    learnerJs["L2 Regularization"]["Enabled"] = true;
-   ASSERT_NO_THROW(sampler->setConfiguration(learnerJs));
+   ASSERT_NO_THROW(learner->setConfiguration(learnerJs));
 
    learnerJs = baseOptJs;
    experimentJs = baseExpJs;
    learnerJs["L2 Regularization"].erase("Importance");
-   ASSERT_ANY_THROW(sampler->setConfiguration(learnerJs));
+   ASSERT_ANY_THROW(learner->setConfiguration(learnerJs));
 
    learnerJs = baseOptJs;
    experimentJs = baseExpJs;
    learnerJs["L2 Regularization"]["Importance"] = "Not a Number";
-   ASSERT_ANY_THROW(sampler->setConfiguration(learnerJs));
+   ASSERT_ANY_THROW(learner->setConfiguration(learnerJs));
 
    learnerJs = baseOptJs;
    experimentJs = baseExpJs;
    learnerJs["L2 Regularization"]["Importance"] = 1.0;
-   ASSERT_NO_THROW(sampler->setConfiguration(learnerJs));
+   ASSERT_NO_THROW(learner->setConfiguration(learnerJs));
 
    learnerJs = baseOptJs;
    experimentJs = baseExpJs;
    learnerJs.erase("Output Weights Scaling");
-   ASSERT_ANY_THROW(sampler->setConfiguration(learnerJs));
+   ASSERT_ANY_THROW(learner->setConfiguration(learnerJs));
 
    learnerJs = baseOptJs;
    experimentJs = baseExpJs;
    learnerJs["Output Weights Scaling"] = "Not a Number";
-   ASSERT_ANY_THROW(sampler->setConfiguration(learnerJs));
+   ASSERT_ANY_THROW(learner->setConfiguration(learnerJs));
 
    learnerJs = baseOptJs;
    experimentJs = baseExpJs;
    learnerJs["Output Weights Scaling"] = 1.0;
-   ASSERT_NO_THROW(sampler->setConfiguration(learnerJs));
+   ASSERT_NO_THROW(learner->setConfiguration(learnerJs));
 
    learnerJs = baseOptJs;
    experimentJs = baseExpJs;
    learnerJs["Termination Criteria"].erase("Target Loss");
-   ASSERT_ANY_THROW(sampler->setConfiguration(learnerJs));
+   ASSERT_ANY_THROW(learner->setConfiguration(learnerJs));
 
    learnerJs = baseOptJs;
    experimentJs = baseExpJs;
    learnerJs["Termination Criteria"]["Target Loss"] = "Not a Number";
-   ASSERT_ANY_THROW(sampler->setConfiguration(learnerJs));
+   ASSERT_ANY_THROW(learner->setConfiguration(learnerJs));
 
    learnerJs = baseOptJs;
    experimentJs = baseExpJs;
    learnerJs["Termination Criteria"]["Target Loss"] = 1.0;
-   ASSERT_NO_THROW(sampler->setConfiguration(learnerJs));
+   ASSERT_NO_THROW(learner->setConfiguration(learnerJs));
   }
 
 } // namespace

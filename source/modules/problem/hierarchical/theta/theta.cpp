@@ -125,18 +125,16 @@ void Theta::setConfiguration(knlohmann::json& js)
 
  if (isDefined(js, "Theta Experiment"))
  {
- try { _thetaExperiment = js["Theta Experiment"].get<knlohmann::json>();
-} catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ theta ] \n + Key:    ['Theta Experiment']\n%s", e.what()); } 
+ _thetaExperiment = js["Theta Experiment"].get<knlohmann::json>();
+
    eraseValue(js, "Theta Experiment");
  }
   else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Theta Experiment'] required by theta.\n"); 
 
  if (isDefined(js, "Psi Experiment"))
  {
- try { _psiExperiment = js["Psi Experiment"].get<knlohmann::json>();
-} catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ theta ] \n + Key:    ['Psi Experiment']\n%s", e.what()); } 
+ _psiExperiment = js["Psi Experiment"].get<knlohmann::json>();
+
    eraseValue(js, "Psi Experiment");
  }
   else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Psi Experiment'] required by theta.\n"); 

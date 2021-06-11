@@ -482,9 +482,8 @@ void NeuralNetwork::setConfiguration(knlohmann::json& js)
 
  if (isDefined(js, "Layers"))
  {
- try { _layers = js["Layers"].get<knlohmann::json>();
-} catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ neuralNetwork ] \n + Key:    ['Layers']\n%s", e.what()); } 
+ _layers = js["Layers"].get<knlohmann::json>();
+
    eraseValue(js, "Layers");
  }
   else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Layers'] required by neuralNetwork.\n"); 

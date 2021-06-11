@@ -88,13 +88,7 @@ void HMC::setInitialConfiguration()
 
   // Initializing variable defaults
   for (size_t i = 0; i < _variableCount; i++)
-  {
-    if (std::isfinite(_k->_variables[i]->_initialMean) == false)
-      KORALI_LOG_ERROR("Initial Mean of variable \'%s\' not defined.\n", _k->_variables[i]->_name.c_str());
-    if (std::isfinite(_k->_variables[i]->_initialStandardDeviation) == false)
-      KORALI_LOG_ERROR("Initial Standard Deviation of variable \'%s\' not defined.\n", _k->_variables[i]->_name.c_str());
     _positionLeader[i] = _k->_variables[i]->_initialMean;
-  }
 
   // Initializing metric and inverseMetric for diagonal and dense
   if (_useDiagonalMetric == true || _metricType == Metric::Static)

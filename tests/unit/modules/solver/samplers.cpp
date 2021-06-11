@@ -1808,6 +1808,8 @@ namespace
     s["Standard Deviation"] = std::vector<double>({0.5});
     s["Gradient Mean"] = std::vector<std::vector<double>>({{0.5}});
     s["Gradient Standard Deviation"] = std::vector<std::vector<double>>({{0.5}});
+    s["Hessian Mean"] = std::vector<std::vector<double>>({{0.5}});
+    s["Hessian Standard Deviation"] = std::vector<std::vector<double>>({{0.5}});
    };
 
    ASSERT_NO_THROW(h = new HamiltonianEuclideanDense(1, sampler->_multivariateGenerator, unitVec, &e));
@@ -1818,6 +1820,7 @@ namespace
    ASSERT_NO_THROW(h->phi());
    ASSERT_NO_THROW(h->dphi_dq());
    ASSERT_NO_THROW(h->innerProduct(unitVec, unitVec, unitVec));
+   ASSERT_NO_THROW(h->computeStandardCriterion(unitVec, unitVec, unitVec, unitVec));
    ASSERT_NO_THROW(h->sampleMomentum(unitVec));
    ASSERT_NO_THROW(delete h);
 
@@ -1841,14 +1844,16 @@ namespace
    ASSERT_NO_THROW(h->dK(unitVec, unitVec));
    ASSERT_NO_THROW(h->sampleMomentum(unitVec));
    ASSERT_NO_THROW(h->innerProduct(unitVec, unitVec, unitVec));
+   ASSERT_NO_THROW(h->computeStandardCriterion(unitVec, unitVec, unitVec, unitVec));
+   ASSERT_NO_THROW(h->updateMetricMatricesRiemannian(unitVec, unitVec));
    ASSERT_NO_THROW(h->updateMetricMatricesEuclidean(unitMat, unitVec, unitVec));
    h->_k = &e;
    h->samplingProblemPtr = pS;
    h->bayesianProblemPtr = NULL;
-   h->updateHamiltonian(unitVec,unitVec,unitVec);
+   ASSERT_NO_THROW(h->updateHamiltonian(unitVec,unitVec,unitVec));
    h->samplingProblemPtr = NULL;
    h->bayesianProblemPtr = pR;
-   h->updateHamiltonian(unitVec,unitVec,unitVec);
+   ASSERT_NO_THROW(h->updateHamiltonian(unitVec,unitVec,unitVec));
    ASSERT_NO_THROW(delete h);
 
    ASSERT_NO_THROW(h = new HamiltonianRiemannianConstDense(1, sampler->_multivariateGenerator, unitVec, 1.0, &e));
@@ -1859,10 +1864,16 @@ namespace
    ASSERT_NO_THROW(h->dphi_dq());
    ASSERT_NO_THROW(h->sampleMomentum(unitVec));
    ASSERT_NO_THROW(h->innerProduct(unitVec, unitVec, unitVec));
+   ASSERT_NO_THROW(h->computeStandardCriterion(unitVec, unitVec, unitVec, unitVec));
    ASSERT_NO_THROW(h->updateMetricMatricesRiemannian(unitVec, unitVec));
+   ASSERT_NO_THROW(h->updateMetricMatricesEuclidean(unitMat, unitVec, unitVec));
    h->_k = &e;
    h->samplingProblemPtr = pS;
-   h->updateHamiltonian(unitVec,unitVec,unitVec);
+   h->bayesianProblemPtr = NULL;
+   ASSERT_NO_THROW(h->updateHamiltonian(unitVec,unitVec,unitVec));
+   h->samplingProblemPtr = NULL;
+   h->bayesianProblemPtr = pR;
+   ASSERT_NO_THROW(h->updateHamiltonian(unitVec,unitVec,unitVec));
    ASSERT_NO_THROW(delete h);
 
    ASSERT_NO_THROW(h = new HamiltonianRiemannianConstDiag(1, sampler->_normalGenerator, 1.0, &e));
@@ -1873,12 +1884,19 @@ namespace
    ASSERT_NO_THROW(h->dtau_dq(unitVec, unitVec));
    ASSERT_NO_THROW(h->dtau_dp(unitVec, unitVec));
    ASSERT_NO_THROW(h->phi());
+   ASSERT_NO_THROW(h->dphi_dq());
    ASSERT_NO_THROW(h->sampleMomentum(unitVec));
    ASSERT_NO_THROW(h->innerProduct(unitVec, unitVec, unitVec));
+   ASSERT_NO_THROW(h->computeStandardCriterion(unitVec, unitVec, unitVec, unitVec));
    ASSERT_NO_THROW(h->updateMetricMatricesRiemannian(unitVec, unitVec));
+   ASSERT_NO_THROW(h->updateMetricMatricesEuclidean(unitMat, unitVec, unitVec));
    h->_k = &e;
    h->samplingProblemPtr = pS;
-   h->updateHamiltonian(unitVec,unitVec,unitVec);
+   h->bayesianProblemPtr = NULL;
+   ASSERT_NO_THROW(h->updateHamiltonian(unitVec,unitVec,unitVec));
+   h->samplingProblemPtr = NULL;
+   h->bayesianProblemPtr = pR;
+   ASSERT_NO_THROW(h->updateHamiltonian(unitVec,unitVec,unitVec));
    ASSERT_NO_THROW(delete h);
 
    ASSERT_NO_THROW(h = new HamiltonianRiemannianDiag(1, sampler->_normalGenerator, 1.0, &e));
@@ -1893,12 +1911,32 @@ namespace
    ASSERT_NO_THROW(h->dphi_dq());
    ASSERT_NO_THROW(h->sampleMomentum(unitVec));
    ASSERT_NO_THROW(h->innerProduct(unitVec, unitVec, unitVec));
+   ASSERT_NO_THROW(h->computeStandardCriterion(unitVec, unitVec, unitVec, unitVec));
    ASSERT_NO_THROW(h->updateMetricMatricesRiemannian(unitVec, unitVec));
+   ASSERT_NO_THROW(h->updateMetricMatricesEuclidean(unitMat, unitVec, unitVec));
    ASSERT_NO_THROW(((HamiltonianRiemannianDiag*)h)->softAbsFunc(0.0, 0.0));
    ASSERT_NO_THROW(((HamiltonianRiemannianDiag*)h)->softAbsFunc(1.0, 1.0));
    h->_k = &e;
    h->samplingProblemPtr = pS;
-   h->updateHamiltonian(unitVec,unitVec,unitVec);
+   h->bayesianProblemPtr = NULL;
+   ASSERT_NO_THROW(h->updateHamiltonian(unitVec,unitVec,unitVec));
+   h->samplingProblemPtr = NULL;
+   h->bayesianProblemPtr = pR;
+   ASSERT_NO_THROW(h->updateHamiltonian(unitVec,unitVec,unitVec));
+
+   ASSERT_NO_THROW(((HamiltonianRiemannianDiag*)h)->taylorSeriesPhiFunc(0.1, 0.1));
+   ASSERT_NO_THROW(((HamiltonianRiemannianDiag*)h)->taylorSeriesPhiFunc(1.0, 1.0));
+   ASSERT_NO_THROW(((HamiltonianRiemannianDiag*)h)->taylorSeriesTauFunc(0.1, 0.1));
+   ASSERT_NO_THROW(((HamiltonianRiemannianDiag*)h)->taylorSeriesTauFunc(1.0, 1.0));
+
+   TreeHelperEuclidean tE;
+   ASSERT_NO_THROW(tE.computeCriterion(*h));
+   ASSERT_ANY_THROW(tE.computeCriterion(*h, unitVec, unitVec, unitVec, unitVec));
+
+   TreeHelperRiemannian tR;
+   ASSERT_ANY_THROW(tR.computeCriterion(*h));
+   ASSERT_NO_THROW(tR.computeCriterion(*h, unitVec, unitVec, unitVec, unitVec));
+
    ASSERT_NO_THROW(delete h);
 
    std::shared_ptr<HamiltonianRiemannianDiag> sh;
@@ -1907,11 +1945,10 @@ namespace
    ASSERT_NO_THROW(leap = new LeapfrogExplicit(sh));
    ASSERT_NO_THROW(delete leap);
 
-   TreeHelperEuclidean tE;
-   ASSERT_ANY_THROW(tE.computeCriterion(*h, unitVec, unitVec, unitVec, unitVec));
 
-   TreeHelperRiemannian tR;
-   ASSERT_ANY_THROW(tR.computeCriterion(*h));
+   e._problem = nullptr;
+   ASSERT_ANY_THROW(sh = std::make_shared<HamiltonianRiemannianDiag>(HamiltonianRiemannianDiag(1, sampler->_normalGenerator, 1.0, &e)));
+   e._problem = pS;
   }
 
   //////////////// Nested CLASS ////////////////////////

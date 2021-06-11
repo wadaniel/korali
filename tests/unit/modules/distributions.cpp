@@ -20,7 +20,7 @@ namespace
 {
  using namespace korali;
 
- TEST(Conduit, BaseDistribution)
+ TEST(Distrtibutions, BaseDistribution)
  {
    knlohmann::json distributionJs;
    Experiment e;
@@ -66,17 +66,9 @@ namespace
    ASSERT_ANY_THROW(d->setConfiguration(distributionJs)); // Missing seed
    distributionJs["Random Seed"] = "Seed";
    ASSERT_ANY_THROW(d->setConfiguration(distributionJs)); // Bad seed format
-
-   distributionJs.clear();
-   distributionJs["Name"] = "Name";
-   distributionJs["Range"] = "Range";
-   distributionJs["Random Seed"] = 0;
-   distributionJs["Alpha"] = 0.5;
-   distributionJs["Beta"] = 0.5;
-   ASSERT_NO_THROW(d->setConfiguration(distributionJs)); // Correct Configuration
  }
 
- TEST(Conduit, BetaDistribution)
+ TEST(Distrtibutions, BetaDistribution)
  {
   knlohmann::json distributionJs;
   Experiment e;
@@ -361,7 +353,7 @@ namespace
   ASSERT_NO_THROW(d->getLogDensityHessian( 0.5 ));
  }
 
- TEST(Conduit, CauchyDistribution)
+ TEST(Distrtibutions, CauchyDistribution)
  {
   knlohmann::json distributionJs;
   Experiment e;
@@ -631,7 +623,7 @@ namespace
   ASSERT_NO_THROW(d->getLogDensityHessian( 0.5 ));
  }
 
- TEST(Conduit, ExponentialDistribution)
+ TEST(Distrtibutions, ExponentialDistribution)
  {
   knlohmann::json distributionJs;
   Experiment e;
@@ -906,7 +898,7 @@ namespace
   EXPECT_EQ(d->getLogDensityHessian( 0.5 ), 0.0);
  }
 
- TEST(Conduit, GammaDistribution)
+ TEST(Distrtibutions, GammaDistribution)
  {
   knlohmann::json distributionJs;
   Experiment e;
@@ -1200,7 +1192,7 @@ namespace
   ASSERT_NO_THROW(d->getLogDensityHessian( 0.5 ));
  }
 
- TEST(Conduit, GeometricDistribution)
+ TEST(Distrtibutions, GeometricDistribution)
  {
   knlohmann::json distributionJs;
   Experiment e;
@@ -1294,7 +1286,7 @@ namespace
   ASSERT_NO_THROW(d->getLogDensityHessian(1));
  }
 
- TEST(Conduit, iGammaDistribution)
+ TEST(Distrtibutions, iGammaDistribution)
   {
    knlohmann::json distributionJs;
    Experiment e;
@@ -1391,7 +1383,7 @@ namespace
    ASSERT_NO_THROW(d->getLogDensityHessian( 0.5 ));
   }
 
- TEST(Conduit, LaplaceDistribution)
+ TEST(Distrtibutions, LaplaceDistribution)
  {
   knlohmann::json distributionJs;
   Experiment e;
@@ -1666,7 +1658,7 @@ namespace
   ASSERT_NO_THROW(d->getLogDensityHessian( 0.5 ));
  }
 
- TEST(Conduit, LogNormalDistribution)
+ TEST(Distrtibutions, LogNormalDistribution)
  {
   knlohmann::json distributionJs;
   Experiment e;
@@ -1956,7 +1948,7 @@ namespace
   ASSERT_NO_THROW(d->getLogDensityHessian( 0.5 ));
  }
 
- TEST(Conduit, NormalDistribution)
+ TEST(Distrtibutions, NormalDistribution)
  {
   knlohmann::json distributionJs;
   Experiment e;
@@ -2233,7 +2225,7 @@ namespace
   ASSERT_NO_THROW(d->getLogDensityHessian( 0.5 ));
  }
 
- TEST(Conduit, TruncatedNormalDistribution)
+ TEST(Distrtibutions, TruncatedNormalDistribution)
  {
   knlohmann::json distributionJs;
   Experiment e;
@@ -2351,7 +2343,7 @@ namespace
   ASSERT_NO_THROW(d->getLogDensityHessian( 0.5 ));
  }
 
- TEST(Conduit, UniformDistribution)
+ TEST(Distrtibutions, UniformDistribution)
  {
   knlohmann::json distributionJs;
   Experiment e;
@@ -2635,7 +2627,7 @@ namespace
   EXPECT_EQ(d->getLogDensityHessian( 5.0 ), 0.0);
  }
 
- TEST(Conduit, WeibullDistribution)
+ TEST(Distrtibutions, WeibullDistribution)
   {
    knlohmann::json distributionJs;
    Experiment e;
@@ -2828,7 +2820,7 @@ namespace
    ASSERT_NO_THROW(d->getLogDensityHessian( 0.5 ));
   }
 
- TEST(Conduit, MultivariateNormalDistribution)
+ TEST(Distrtibutions, MultivariateNormalDistribution)
   {
    knlohmann::json distributionJs;
    Experiment e;

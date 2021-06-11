@@ -24,3 +24,15 @@ test('modules.solver.samplers', samplers_tester,
   suite: 'unit',
 )
 
+executor_tester = executable('executor_tester',
+  files(['executor.cpp']),
+  include_directories: korali_include,
+  dependencies: [ gtest_main_dep, korali_deps, pythonEmbedDep ],
+  link_with: [ python_extension ],
+  )
+  
+test('modules.solver.executor', executor_tester,
+  protocol: 'gtest',
+  suite: 'unit',
+)
+

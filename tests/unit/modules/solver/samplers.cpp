@@ -139,6 +139,11 @@ namespace
    // Setting up optimizer correctly
    ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
 
+   auto inMat = std::vector<double>({1.0, 2.0, 2.0, 13.0});
+   auto outMat = std::vector<double>({1.0, 2.0, 2.0, 13.0});
+   sampler->_variableCount = 2;
+   ASSERT_NO_THROW(sampler->choleskyDecomp(inMat, outMat));
+
    // Testing optional parameters
    samplerJs = baseOptJs;
    experimentJs = baseExpJs;

@@ -38,6 +38,9 @@ e["Solver"]["Type"] = "Learner/DeepSupervisor"
 e["Solver"]["Loss Function"] = "Mean Squared Error"
 e["Solver"]["Steps Per Generation"] = 200
 e["Solver"]["Learning Rate"] = 0.005
+e["Solver"]["L2 Regularization"]["Enabled"] = True
+e["Solver"]["L2 Regularization"]["Importance"] = 0.05
+e["Solver"]["Termination Criteria"]["Target Loss"] = testMSEThreshold * 0.2
 
 ### Defining the shape of the neural network
 
@@ -69,7 +72,7 @@ e["Random Seed"] = 0xC0FFEE
 
 ### Training the neural network
 
-e["Solver"]["Termination Criteria"]["Max Generations"] = 10
+e["Solver"]["Termination Criteria"]["Max Generations"] = 1000
 k.run(e)
 
 ### Obtaining inferred results from the NN and comparing them to the actual solution

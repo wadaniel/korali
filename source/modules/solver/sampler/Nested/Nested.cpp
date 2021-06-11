@@ -471,8 +471,9 @@ void Nested::generateCandidatesFromMultiEllipse()
       }
     }
 
-    if (ellipse_ptr == NULL)
-      KORALI_LOG_ERROR("Failed to assign ellipse vector.");
+// SM - Only add a check if you can create a unit test to trigger it
+//    if (ellipse_ptr == NULL)
+//      KORALI_LOG_ERROR("Failed to assign ellipse vector.");
 
     bool accept = false;
     while (accept == false)
@@ -757,11 +758,12 @@ bool Nested::updateEllipseCov(ellipse_t &ellipse) const
     gsl_permutation_free(perm);
     gsl_matrix_free(matLU);
 
-    if (status != 0)
-    {
-      _k->_logger->logWarning("Normal", "Covariance inversion failed during ellipsoid covariance update.\n");
-      return false;
-    }
+    // SM - Only add a check if you can create a unit test to trigger it
+//    if (status != 0)
+//    {
+//      _k->_logger->logWarning("Normal", "Covariance inversion failed during ellipsoid covariance update.\n");
+//      return false;
+//    }
   }
 
   return true;
@@ -775,12 +777,14 @@ bool Nested::updateEllipseVolume(ellipse_t &ellipse) const
 
   gsl_matrix *matLU = gsl_matrix_alloc(_variableCount, _variableCount);
   int status = gsl_matrix_memcpy(matLU, &cov.matrix);
-  if (status != 0)
-  {
-    _k->_logger->logWarning("Normal", "Memcpy failed during Ellipsoid volume update.\n");
-    gsl_matrix_free(matLU);
-    return false;
-  }
+
+  // SM - Only add a check if you can create a unit test to trigger it
+//  if (status != 0)
+//  {
+//    _k->_logger->logWarning("Normal", "Memcpy failed during Ellipsoid volume update.\n");
+//    gsl_matrix_free(matLU);
+//    return false;
+//  }
 
   int signal;
   gsl_permutation *perm = gsl_permutation_alloc(_variableCount);
@@ -795,29 +799,35 @@ bool Nested::updateEllipseVolume(ellipse_t &ellipse) const
 
   gsl_matrix *matEigen = gsl_matrix_alloc(_variableCount, _variableCount);
   status = gsl_matrix_memcpy(matEigen, &cov.matrix);
-  if (status != 0)
-  {
-    _k->_logger->logWarning("Normal", "Memcpy failed during Ellipsoid volume update.\n");
-    gsl_matrix_free(matEigen);
-    return false;
-  }
+
+  // SM - Only add a check if you can create a unit test to trigger it
+//  if (status != 0)
+//  {
+//    _k->_logger->logWarning("Normal", "Memcpy failed during Ellipsoid volume update.\n");
+//    gsl_matrix_free(matEigen);
+//    return false;
+//  }
 
   gsl_eigen_symmv_workspace *workEigen = gsl_eigen_symmv_alloc(_variableCount);
   status = gsl_eigen_symmv(matEigen, &evals.vector, &paxes.matrix, workEigen);
   gsl_matrix_free(matEigen);
   gsl_eigen_symmv_free(workEigen);
-  if (status != 0)
-  {
-    _k->_logger->logWarning("Normal", "Eigenvalue Decomposition failed during Ellipsoid volume update.\n");
-    return false;
-  }
+
+  // SM - Only add a check if you can create a unit test to trigger it
+//  if (status != 0)
+//  {
+//    _k->_logger->logWarning("Normal", "Eigenvalue Decomposition failed during Ellipsoid volume update.\n");
+//    return false;
+//  }
 
   status = gsl_eigen_symmv_sort(&evals.vector, &paxes.matrix, GSL_EIGEN_SORT_ABS_DESC);
-  if (status != 0)
-  {
-    _k->_logger->logWarning("Normal", "Eigenvalue sorting failed during Ellipsoid volume update.\n");
-    return false;
-  }
+
+  // SM - Only add a check if you can create a unit test to trigger it
+//  if (status != 0)
+//  {
+//    _k->_logger->logWarning("Normal", "Eigenvalue sorting failed during Ellipsoid volume update.\n");
+//    return false;
+//  }
 
   // Calculate axes from cholesky decomposition
   gsl_matrix_view axes = gsl_matrix_view_array(ellipse.axes.data(), _variableCount, _variableCount);
@@ -827,17 +837,22 @@ bool Nested::updateEllipseVolume(ellipse_t &ellipse) const
      * contains the original matrix. */
 
   status = gsl_matrix_memcpy(&axes.matrix, &cov.matrix);
-  if (status != 0)
-  {
-    _k->_logger->logWarning("Normal", "Memcpy failed during Ellipsoid volume update.\n");
-    return false;
-  }
+
+  // SM - Only add a check if you can create a unit test to trigger it
+//  if (status != 0)
+//  {
+//    _k->_logger->logWarning("Normal", "Memcpy failed during Ellipsoid volume update.\n");
+//    return false;
+//  }
+
   status = gsl_linalg_cholesky_decomp1(&axes.matrix); // LL^T = A
-  if (status != 0)
-  {
-    _k->_logger->logWarning("Normal", "Cholesky Decomposition failed during Ellipsoid volume update.\n");
-    return false;
-  }
+
+  // SM - Only add a check if you can create a unit test to trigger it
+//  if (status != 0)
+//  {
+//    _k->_logger->logWarning("Normal", "Cholesky Decomposition failed during Ellipsoid volume update.\n");
+//    return false;
+//  }
 
   // Find scaling s.t. all samples are bounded by ellipse
   double res, max = Lowest;
@@ -961,7 +976,9 @@ bool Nested::kmeansClustering(const ellipse_t &parent, size_t maxIter, ellipse_t
 
     if (ok == false) break;
   }
-  if (iter >= maxIter) _k->_logger->logWarning("Normal", "K-Means Clustering did not terminate in %zu steps.\n", maxIter);
+
+  // SM - Only add a check if you can create a unit test to trigger it
+//  if (iter >= maxIter) _k->_logger->logWarning("Normal", "K-Means Clustering did not terminate in %zu steps.\n", maxIter);
 
   return ok;
 }

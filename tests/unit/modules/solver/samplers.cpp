@@ -1937,13 +1937,15 @@ namespace
    ASSERT_ANY_THROW(tR.computeCriterion(*h));
    ASSERT_NO_THROW(tR.computeCriterion(*h, unitVec, unitVec, unitVec, unitVec));
 
-   ASSERT_NO_THROW(delete h);
-
    std::shared_ptr<HamiltonianRiemannianDiag> sh;
    ASSERT_NO_THROW(sh = std::make_shared<HamiltonianRiemannianDiag>(HamiltonianRiemannianDiag(1, sampler->_normalGenerator, 1.0, &e)));
    LeapfrogExplicit  *leap;
    ASSERT_NO_THROW(leap = new LeapfrogExplicit(sh));
+   ASSERT_NO_THROW(leap->step(unitVec, unitVec, unitVec, unitVec, 1.0));
    ASSERT_NO_THROW(delete leap);
+
+   ASSERT_NO_THROW(delete h);
+
 
 
    e._problem = nullptr;
@@ -2152,6 +2154,16 @@ namespace
 
    samplerJs = baseOptJs;
    experimentJs = baseExpJs;
+   samplerJs["Effective Sample Size"] = "Not a Number";
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Effective Sample Size"] = 1.0;
+   ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
    samplerJs["Sum Log Weights"] = "Not a Number";
    ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
 
@@ -2328,6 +2340,16 @@ namespace
    samplerJs = baseOptJs;
    experimentJs = baseExpJs;
    samplerJs["Dead LogPrior Weights"] = std::vector<double>({1.0});
+   ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Dead LogWeights"] = "Not a Number";
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Dead LogWeights"] = std::vector<double>({1.0});
    ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
 
    samplerJs = baseOptJs;
@@ -2534,6 +2556,16 @@ namespace
    ellipse_t ellipse(1);
    ASSERT_NO_THROW(ellipse.initSphere());
    ASSERT_NO_THROW(ellipse.scaleVolume(1.0));
+
+   // Testing termination criteria
+   e._currentGeneration = 2;
+   sampler->_lStar = 1.0;
+
+   sampler->_maxLogLikelihood = 2.0;
+   ASSERT_FALSE(sampler->checkTermination());
+   sampler->_maxLogLikelihood = 0.5;
+   ASSERT_TRUE(sampler->checkTermination());
+   sampler->_maxLogLikelihood= 2.0;
   }
 
 } // namespace

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-import os
 import sys
 sys.path.append('./_environment')
 from env import *
@@ -10,9 +9,23 @@ import korali
 k = korali.Engine()
 e = korali.Experiment()
 
-### Defining the Cartpole problem's configuration
 
-populationSize = 16
+evaluation = False
+resultDirectory = "_vracer_results"
+maxGens = 1000
+populationSize = 8
+
+### Defining the problem's configuration
+
+e["Problem"]["Custom Settings"]["Evaluation"] = "False"
+#e["Problem"]["Custom Settings"]["Output"] = "testingHistory"
+
+if evaluation == True:
+    found = e.loadState(resultDirectory +'/latest')
+    e["Problem"]["Custom Settings"]["Evaluation"] = "True"
+    maxGens = maxGens + 1
+    if found == False:
+        sys.exit("Cannot run evaluation, results not found")
 
 lEnv = lambda s : env(s,populationSize)
 
@@ -22,7 +35,6 @@ e["Problem"]["Testing Frequency"] = 100
 e["Problem"]["Training Reward Threshold"] = np.inf
 e["Problem"]["Policy Testing Episodes"] = 10
 e["Problem"]["Actions Between Policy Updates"] = 10
-
 
 for i in range(populationSize):
     e["Variables"][i*3]["Name"] = "Position X"
@@ -35,20 +47,30 @@ for i in range(populationSize):
     e["Variables"][i*3+2]["Type"] = "State"
 
 i = 3*populationSize
-e["Variables"][i]["Name"] = "Mean Learning Rate"
-e["Variables"][i]["Type"] = "Action"
-e["Variables"][i]["Lower Bound"] = 0.0
-e["Variables"][i]["Upper Bound"] = 1.0
-e["Variables"][i]["Initial Exploration Noise"] = 0.3
+e["Variables"][i]["Name"] = "Diagonal Variance 1"
+e["Variables"][i]["Type"] = "State"
 
 i += 1
-e["Variables"][i]["Name"] = "Covscale"
+e["Variables"][i]["Name"] = "Diagonal Variance 2"
+e["Variables"][i]["Type"] = "State"
+
+i += 1
+e["Variables"][i]["Name"] = "Best Ever Evaluation"
+e["Variables"][i]["Type"] = "State"
+
+i += 1
+e["Variables"][i]["Name"] = "Step Size Rate"
 e["Variables"][i]["Type"] = "Action"
-e["Variables"][i]["Lower Bound"] = -1.0
+e["Variables"][i]["Lower Bound"] = 0.0
 e["Variables"][i]["Upper Bound"] = +1.0
-e["Variables"][i]["Initial Exploration Noise"] = 0.3
+e["Variables"][i]["Initial Exploration Noise"] = 0.1
 
-
+#i += 1
+#e["Variables"][i]["Name"] = "Mean Learning Rate"
+#e["Variables"][i]["Type"] = "Action"
+#e["Variables"][i]["Lower Bound"] = 0.0
+#e["Variables"][i]["Upper Bound"] = 1.0
+#e["Variables"][i]["Initial Exploration Noise"] = 0.1
 
 ### Defining Agent Configuration 
 
@@ -62,7 +84,7 @@ e["Solver"]["Experience Replay"]["Maximum Size"] = 262144
 
 e["Solver"]["Discount Factor"] = 0.995
 e["Solver"]["Learning Rate"] = 1e-4
-e["Solver"]["Mini Batch"]["Size"] = 32
+e["Solver"]["Mini Batch"]["Size"] = 128
 
 e["Solver"]["State Rescaling"]["Enabled"] = False
 e["Solver"]["Reward"]["Rescaling"]["Enabled"] = False
@@ -88,16 +110,23 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tan
 
 ### Defining Termination Criteria
 
-e["Solver"]["Termination Criteria"]["Max Generations"] = 1000
+e["Solver"]["Termination Criteria"]["Max Generations"] = maxGens
+e["Solver"]["Termination Criteria"]["Max Experiences"] = 1e6
+
 
 ### If this is test mode, run only a couple generations
 if len(sys.argv) == 2:
  if sys.argv[1] == '--test':
   e["Solver"]["Termination Criteria"]["Max Generations"] = 5
-  
+
+if evaluation == True:
+    e["Solver"]["Testing"]["Sample Ids"] = [0]
+
 ### Setting file output configuration
 
-e["File Output"]["Enabled"] = False
+e["File Output"]["Enabled"] = True
+e["File Output"]["Frequency"] = 100
+e["File Output"]["Path"] = resultDirectory
 
 ### Running Experiment
 

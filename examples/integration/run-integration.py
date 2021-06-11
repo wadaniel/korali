@@ -5,10 +5,6 @@ sys.path.append('./_model/')
 from integrand import *
 import numpy as np
 
-# Variables
-x = np.linspace(0.0, 5.0, 1000, dtype=np.float64)  #grid for quadrature
-y = np.linspace(0.0, 5.0, 1000, dtype=np.float64)  #grid for quadrature
-
 # Creating new experiment
 import korali
 e = korali.Experiment()

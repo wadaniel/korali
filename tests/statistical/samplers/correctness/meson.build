@@ -71,7 +71,7 @@ test('samplers.correctness.mcmc', e,
     )
     
 e = find_program('./run-tmcmc-1.py', required: true)
-test('samplers.correctness.mcmc', e,
+test('samplers.correctness.tmcmc-1', e,
       timeout : 2000,
       suite: 'statistical',
       workdir: meson.current_source_dir(),
@@ -80,7 +80,7 @@ test('samplers.correctness.mcmc', e,
     )
     
 e = find_program('./run-tmcmc-2.py', required: true)
-test('samplers.correctness.mcmc', e,
+test('samplers.correctness.tmcmc-2', e,
       timeout : 2000,
       suite: 'statistical',
       workdir: meson.current_source_dir(),
@@ -89,7 +89,7 @@ test('samplers.correctness.mcmc', e,
     )          
 
 e = find_program('./run-tmcmc-3.py', required: true)
-test('samplers.correctness.mcmc', e,
+test('samplers.correctness.tmcmc-3', e,
       timeout : 2000,
       suite: 'statistical',
       workdir: meson.current_source_dir(),

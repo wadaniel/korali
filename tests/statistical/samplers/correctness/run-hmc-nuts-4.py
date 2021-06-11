@@ -42,7 +42,7 @@ e["Variables"][0]["Initial Standard Deviation"] = 1.0
 
 # Running Korali
 e["Random Seed"] = 0xC0FFEE
-e["File Output"]["Path"] = "_result_run-hmc-nuts"
+e["File Output"]["Path"] = "_result_run-hmc-nuts-4a"
 
 k = korali.Engine()
 k.run(e)
@@ -82,7 +82,7 @@ e["Variables"][0]["Initial Standard Deviation"] = 1.0
 
 # Running Korali
 e["Random Seed"] = 0xC0FFEE
-e["File Output"]["Path"] = "_result_run-hmc-nuts"
+e["File Output"]["Path"] = "_result_run-hmc-nuts-4b"
 
 k = korali.Engine()
 k.run(e)

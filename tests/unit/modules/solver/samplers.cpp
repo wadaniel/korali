@@ -57,6 +57,26 @@ namespace
    // Testing optional parameters
    samplerJs = baseOptJs;
    experimentJs = baseExpJs;
+   samplerJs["Variable Count"] = "Not a Number";
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Variable Count"] = 1;
+   ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Model Evaluation Count"] = "Not a Number";
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Model Evaluation Count"] = 1;
+   ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
    e["Variables"][0].erase("Lower Bound");
    ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
 
@@ -410,6 +430,36 @@ namespace
    samplerJs["Termination Criteria"]["Max Samples"] = 1;
    ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
 
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Termination Criteria"].erase("Max Model Evaluations");
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Termination Criteria"]["Max Model Evaluations"] = "Not a Number";
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Termination Criteria"]["Max Model Evaluations"] = 10000;
+   ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Termination Criteria"].erase("Max Generations");
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Termination Criteria"]["Max Generations"] = "Not a Number";
+   ASSERT_ANY_THROW(sampler->setConfiguration(samplerJs));
+
+   samplerJs = baseOptJs;
+   experimentJs = baseExpJs;
+   samplerJs["Termination Criteria"]["Max Generations"] = 10000;
+   ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
+
    ///// Variable Tests
 
    samplerJs = baseOptJs;
@@ -441,6 +491,7 @@ namespace
    experimentJs = baseExpJs;
    e["Variables"][0]["Initial Standard Deviation"] = 1.0;
    ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
+
   }
 
   //////////////// TMCMC CLASS ////////////////////////

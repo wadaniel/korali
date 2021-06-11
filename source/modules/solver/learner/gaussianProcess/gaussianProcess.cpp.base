@@ -12,13 +12,34 @@
   * @param v the vector to convert
   * @return An Eigen vector type
  */
-static Eigen::VectorXd toEigen(const std::vector<float> &v)
+Eigen::VectorXd toEigen(const std::vector<float> &v)
 {
   Eigen::VectorXd ev(v.size());
   for (size_t i = 0; i < v.size(); ++i)
     ev[i] = v[i];
   return ev;
 }
+
+/**
+* @brief Model function to evaluate the error function of the GP
+* @param sample The sample containing the proposal parameters
+* @param gp Pointer to the GP
+*/
+void runSample(Sample &sample, libgp::GaussianProcess *gp)
+{
+  size_t gpParameterDimension = gp->covf().get_param_dim();
+  const Eigen::VectorXd p = toEigen(sample["Parameters"].get<std::vector<float>>());
+
+  gp->covf().set_loghyper(p);
+
+  sample["F(x)"] = gp->log_likelihood();
+  sample["logP(x)"] = sample["F(x)"];
+
+  Eigen::VectorXd eigenGrad = gp->log_likelihood_gradient();
+  for (size_t i = 0; i < gpParameterDimension; i++)
+    sample["Gradient"][i] = eigenGrad[i];
+}
+
 
 @className::~GaussianProcess() = default;
 
@@ -80,21 +101,6 @@ void @className::initialize()
     _gp->add_pattern(inData, outData);
   }
 
-}
-
-void @className::runSample(Sample &sample, libgp::GaussianProcess *gp)
-{
-  size_t gpParameterDimension = gp->covf().get_param_dim();
-  const Eigen::VectorXd p = toEigen(sample["Parameters"].get<std::vector<float>>());
-
-  gp->covf().set_loghyper(p);
-
-  sample["F(x)"] = gp->log_likelihood();
-  sample["logP(x)"] = sample["F(x)"];
-
-  Eigen::VectorXd eigenGrad = gp->log_likelihood_gradient();
-  for (size_t i = 0; i < gpParameterDimension; i++)
-    sample["Gradient"][i] = eigenGrad[i];
 }
 
 void @className::runGeneration()

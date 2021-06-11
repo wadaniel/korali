@@ -40,7 +40,7 @@ class Hamiltonian
     samplingProblemPtr = dynamic_cast<korali::problem::Sampling *>(k->_problem);
     bayesianProblemPtr = dynamic_cast<korali::problem::Bayesian *>(k->_problem);
 
-    if (samplingProblemPtr != nullptr && bayesianProblemPtr != nullptr)
+    if (samplingProblemPtr == nullptr && bayesianProblemPtr == nullptr)
       KORALI_LOG_ERROR("Problem type not compatible with Hamiltonian object. Problem type must be either 'Sampling' or 'Bayesian'.");
   };
 
@@ -185,7 +185,7 @@ class Hamiltonian
   */
   bool computeStandardCriterion(const std::vector<double> &positionLeft, const std::vector<double> &momentumLeft, const std::vector<double> &positionRight, const std::vector<double> &momentumRight) const
   {
-    std::vector<double> tmpVector(_stateSpaceDim, 0.0);
+    std::vector<double> tmpVector(momentumLeft.size(), 0.0);
 
     std::transform(std::begin(positionRight), std::cend(positionRight), std::cbegin(positionLeft), std::begin(tmpVector), std::minus<double>());
     double dotProductLeft = std::inner_product(std::cbegin(tmpVector), std::cend(tmpVector), std::cbegin(momentumLeft), 0.0);

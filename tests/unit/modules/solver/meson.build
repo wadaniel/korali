@@ -36,3 +36,15 @@ test('modules.solver.executor', executor_tester,
   suite: 'unit',
 )
 
+integrator_tester = executable('integrator_tester',
+  files(['integrator.cpp']),
+  include_directories: korali_include,
+  dependencies: [ gtest_main_dep, korali_deps, pythonEmbedDep ],
+  link_with: [ python_extension ],
+  )
+  
+test('modules.solver.integrator', integrator_tester,
+  protocol: 'gtest',
+  suite: 'unit',
+)
+

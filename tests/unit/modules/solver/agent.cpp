@@ -1,6 +1,8 @@
 #include "gtest/gtest.h"
 #include "korali.hpp"
 #include "modules/problem/reinforcementLearning/reinforcementLearning.hpp"
+#include "modules/problem/reinforcementLearning/continuous/continuous.hpp"
+#include "modules/problem/reinforcementLearning/discrete/discrete.hpp"
 #include "modules/solver/agent/continuous/VRACER/VRACER.hpp"
 #include "modules/solver/agent/discrete/dVRACER/dVRACER.hpp"
 
@@ -13,6 +15,7 @@ namespace
  using namespace korali::solver::agent::continuous;
  using namespace korali::solver::agent::discrete;
  using namespace korali::problem;
+ using namespace korali::problem::reinforcementLearning;
 
  //////////////// Base Agent CLASS ////////////////////////
 
@@ -20,6 +23,7 @@ namespace
   {
    // Creating base experiment
    Experiment e;
+   e._logger = new Logger("Detailed", stdout);
    auto& experimentJs = e._js.getJson();
    experimentJs["Variables"][0]["Name"] = "X";
    Variable v;
@@ -27,6 +31,39 @@ namespace
 
    // Creating optimizer configuration Json
    knlohmann::json agentJs;
+
+   // Configuring Problem
+   e["Problem"]["Type"] = "Reinforcement Learning / Continuous";
+   reinforcementLearning::Continuous* pC;
+   knlohmann::json problemRefJs;
+   problemRefJs["Type"] = "Reinforcement Learning / Continuous";
+   problemRefJs["Environment Function"] = [](Sample &s){};
+   problemRefJs["Training Reward Threshold"] = 50.0;
+   problemRefJs["Policy Testing Episodes"] = 20;
+   e["Variables"][0]["Name"] = "State0";
+   e["Variables"][1]["Name"] = "Action0";
+   e["Variables"][1]["Type"] = "Action";
+   e["Variables"][1]["Initial Exploration Noise"] = 0.45;
+   e["Variables"][1]["Lower Bound"] = 0.00;
+   e["Variables"][1]["Upper Bound"] = 1.00;
+
+   Variable vState;
+   vState._name = "State0";
+   vState._type = "State";
+
+   Variable vAction;
+   vAction._name = "Action0";
+   vAction._type = "Action";
+   vAction._initialExplorationNoise = 0.45;
+   vAction._lowerBound = 0.00;
+   vAction._upperBound = 1.00;
+
+   e._variables.push_back(&vState);
+   e._variables.push_back(&vAction);
+
+   ASSERT_NO_THROW(pC = dynamic_cast<reinforcementLearning::Continuous *>(Module::getModule(problemRefJs, &e)));
+   e._problem = pC;
+   pC->initialize();
 
    // Using a neural network solver (deep learning) for inference
 
@@ -48,7 +85,7 @@ namespace
    agentJs["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear";
    agentJs["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 16;
 
-//   // Creating module
+   // Creating module
    VRACER* agent;
    ASSERT_NO_THROW(agent = dynamic_cast<VRACER *>(Module::getModule(agentJs, &e)));
 
@@ -66,6 +103,34 @@ namespace
    agentJs = baseOptJs;
    experimentJs = baseExpJs;
    ASSERT_NO_THROW(agent->setConfiguration(agentJs));
+
+   // Running initial configuration correctly
+   agent->initialize();
+
+   // Case with no ER size maximum
+   agent->_experienceReplayMaximumSize = 0;
+   ASSERT_NO_THROW(agent->initialize());
+   ASSERT_NE(agent->_experienceReplayMaximumSize, 0);
+
+   // Case with no ER size maximum
+   agent->_experienceReplayStartSize = 0;
+   ASSERT_NO_THROW(agent->initialize());
+   ASSERT_NE(agent->_experienceReplayStartSize, 0);
+
+   // Case Cutoff scale
+   agent->_experienceReplayOffPolicyCutoffScale = -1.0f;
+   ASSERT_ANY_THROW(agent->initialize());
+   agent->_experienceReplayOffPolicyCutoffScale = 1.0f;
+
+   // Case testing with testing best policy empty
+   agent->_mode = "Testing";
+   ASSERT_ANY_THROW(agent->initialize()); // No sample ids defined
+
+   agent->_testingSampleIds = std::vector<size_t>({1});
+   agent->_trainingCurrentPolicy = std::vector<float>({1.0});
+   agent->_testingBestPolicy = std::vector<float>();
+   ASSERT_NO_THROW(agent->initialize());
+   ASSERT_EQ(agent->_testingPolicy, agent->_trainingCurrentPolicy);
 
    // Testing optional parameters
    agentJs = baseOptJs;

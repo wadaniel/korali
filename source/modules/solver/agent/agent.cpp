@@ -1106,14 +1106,6 @@ void Agent::setConfiguration(knlohmann::json& js)
    eraseValue(js, "Current Episode");
  }
 
- if (isDefined(js, "Last Training Reward"))
- {
- try { _lastTrainingReward = js["Last Training Reward"].get<float>();
-} catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Last Training Reward']\n%s", e.what()); } 
-   eraseValue(js, "Last Training Reward");
- }
-
  if (isDefined(js, "Training", "Reward History"))
  {
  try { _trainingRewardHistory = js["Training"]["Reward History"].get<std::vector<float>>();
@@ -1712,7 +1704,6 @@ void Agent::getConfiguration(knlohmann::json& js)
    js["Action Lower Bounds"] = _actionLowerBounds;
    js["Action Upper Bounds"] = _actionUpperBounds;
    js["Current Episode"] = _currentEpisode;
-   js["Last Training Reward"] = _lastTrainingReward;
    js["Training"]["Reward History"] = _trainingRewardHistory;
    js["Training"]["Experience History"] = _trainingExperienceHistory;
    js["Training"]["Average Reward"] = _trainingAverageReward;

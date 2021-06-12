@@ -57,6 +57,11 @@ class HamiltonianRiemannianConstDense : public HamiltonianRiemannian
   }
 
   /**
+  * @brief Destructor of derived class.
+  */
+  ~HamiltonianRiemannianConstDense() = default;
+
+  /**
   * @brief Total energy function used for Hamiltonian Dynamics.
   * @param momentum Current momentum.
   * @param inverseMetric Inverse of current metric.

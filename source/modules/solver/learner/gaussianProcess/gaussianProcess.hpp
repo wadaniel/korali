@@ -95,7 +95,6 @@ class GaussianProcess : public Learner
   void applyVariableDefaults() override;
   
 
-  ~GaussianProcess();
 
   /**
   * @brief Storage for the output values

@@ -47,8 +47,6 @@ void runSample(Sample &sample, libgp::GaussianProcess *gp)
 }
 
 
-GaussianProcess::~GaussianProcess() = default;
-
 void GaussianProcess::initialize()
 {
 

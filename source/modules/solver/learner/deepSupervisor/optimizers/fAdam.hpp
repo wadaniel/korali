@@ -16,7 +16,6 @@ namespace korali
 class fAdam : public fGradientBasedOptimizer
 {
   public:
-    virtual ~fAdam(){}
   /**
  * @brief Default constructor for the optimizer
  * @param nVars Variable-space dimensionality

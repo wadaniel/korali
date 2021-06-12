@@ -6,8 +6,16 @@
 
 namespace korali
 {
-fAdam::fAdam(size_t nVars) : fGradientBasedOptimizer(nVars)
+fAdam::fAdam(size_t nVars)
 {
+  // Variable Parameters
+  _currentGeneration = 1;
+  _nVars = nVars;
+  _initialValues.resize(_nVars, 0.0);
+  _currentValue.resize(_nVars, 0.0);
+  _gradient.resize(_nVars, 0.0);
+  _modelEvaluationCount = 0;
+
   // Variable Parameters
   _firstMoment.resize(_nVars, 0.0);
   _secondMoment.resize(_nVars, 0.0);

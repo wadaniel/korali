@@ -31,11 +31,6 @@ class HamiltonianRiemannianConstDiag : public HamiltonianRiemannian
   }
 
   /**
-  * @brief Destructor of derived class.
-  */
-  ~HamiltonianRiemannianConstDiag() = default;
-
-  /**
   * @brief Total energy function used for Hamiltonian Dynamics.
   * @param momentum Current momentum.
   * @param inverseMetric Inverse of current metric.

@@ -60,3 +60,15 @@ test('modules.solver.learners', learners_tester,
   suite: 'unit',
 )
 
+agent_tester = executable('agent_tester',
+  files(['agent.cpp']),
+  include_directories: korali_include,
+  dependencies: [ gtest_main_dep, korali_deps, pythonEmbedDep ],
+  link_with: [ python_extension ],
+  )
+  
+test('modules.solver.agent', agent_tester,
+  protocol: 'gtest',
+  suite: 'unit',
+)
+

@@ -53,6 +53,13 @@ e["Solver"]["Policy"]["Distribution"] = "Normal"
 e["Solver"]["Experience Replay"]["Start Size"] = 32768
 e["Solver"]["Experience Replay"]["Maximum Size"] = 131072
 
+### Normalization Parameters
+
+e["Solver"]["State Rescaling"]["Enabled"] = True
+e["Solver"]["Reward"]["Rescaling"]["Enabled"] = True
+e["Solver"]["Reward"]["Rescaling"]["Frequency"] = 1000
+e["Solver"]["Reward"]["Outbound Penalization"]["Enabled"] = True
+e["Solver"]["Reward"]["Outbound Penalization"]["Factor"] = 0.5
 
 ### Configuring the neural network and its hidden layers
 

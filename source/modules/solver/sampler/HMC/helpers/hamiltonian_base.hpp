@@ -24,6 +24,10 @@ namespace sampler
 class Hamiltonian
 {
   public:
+  /**
+  * @brief Default constructor.
+  */
+  Hamiltonian() = default;
 
   /**
   * @brief Constructor with State Space Dim.
@@ -39,6 +43,11 @@ class Hamiltonian
     if (samplingProblemPtr == nullptr && bayesianProblemPtr == nullptr)
       KORALI_LOG_ERROR("Problem type not compatible with Hamiltonian object. Problem type must be either 'Sampling' or 'Bayesian'.");
   };
+
+  /**
+  * @brief Destructor of abstract base class.
+  */
+  virtual ~Hamiltonian() = default;
 
   /**
   * @brief Purely abstract total energy function used for Hamiltonian Dynamics.

@@ -90,6 +90,10 @@ struct TreeHelper
     */
   virtual bool computeCriterion(const Hamiltonian &hamiltonian, const std::vector<double> &momentumStart, const std::vector<double> &momentumEnd, const std::vector<double> &inverseMetric, const std::vector<double> &rho) const = 0;
 
+  /**
+   * @brief Default destructor
+   */
+  virtual ~TreeHelper() = default;
 };
 
 } // namespace sampler

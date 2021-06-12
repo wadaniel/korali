@@ -31,6 +31,11 @@ class HamiltonianRiemannian : public Hamiltonian
   HamiltonianRiemannian(const size_t stateSpaceDim, korali::Experiment *k) : Hamiltonian{stateSpaceDim, k}, _logDetMetric{1.0} { _currentHessian.resize(stateSpaceDim * stateSpaceDim); }
 
   /**
+  * @brief Destructor of abstract base class.
+  */
+  virtual ~HamiltonianRiemannian() = default;
+
+  /**
   * @brief Hessian of potential energy function used for Riemannian metric.
   * @return Hessian of potential energy.
   */

@@ -23,10 +23,6 @@ namespace sampler
 class HamiltonianEuclidean : public Hamiltonian
 {
   public:
-  /**
-  * @brief Default constructor.
-  */
-  HamiltonianEuclidean() = default;
 
   /**
   * @brief Constructor with State Space Dim.
@@ -34,11 +30,6 @@ class HamiltonianEuclidean : public Hamiltonian
   * @param k Pointer to Korali object.
   */
   HamiltonianEuclidean(const size_t stateSpaceDim, korali::Experiment *k) : Hamiltonian{stateSpaceDim, k} {}
-
-  /**
-  * @brief Destructor of abstract base class.
-  */
-  virtual ~HamiltonianEuclidean() = default;
 
   /**
   * @brief Calculates tau(q, p) = 0.5 * momentum^T * inverseMetric(q) * momentum.

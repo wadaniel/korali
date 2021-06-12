@@ -38,11 +38,6 @@ class HamiltonianEuclideanDiag : public HamiltonianEuclidean
   }
 
   /**
-  * @brief Destructor of derived class.
-  */
-  ~HamiltonianEuclideanDiag() = default;
-
-  /**
   * @brief Total energy function used for Hamiltonian Dynamics.
   * @param momentum Current momentum.
   * @param inverseMetric Inverse of current metric.

@@ -30,10 +30,6 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
     _inverseRegularizationParam = inverseRegularizationParam;
   }
 
-  /**
-  * @brief Destructor of derived class.
-  */
-  ~HamiltonianRiemannianDiag() = default;
 
   /**
   * @brief Total energy function used for Hamiltonian Dynamics.

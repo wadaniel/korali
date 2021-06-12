@@ -45,7 +45,7 @@ e["Solver"]["Episodes Per Generation"] = 10
 e["Solver"]["Experiences Between Policy Updates"] = 1
 e["Solver"]["Discount Factor"] = 0.99
 e["Solver"]["Learning Rate"] = 0.0001
-e["Solver"]["Mini Batch"]["Size"] = 256
+e["Solver"]["Mini Batch"]["Size"] = 32
 e["Solver"]["Experience Replay"]["Start Size"] = 1000
 e["Solver"]["Experience Replay"]["Maximum Size"] = 10000
 
@@ -62,11 +62,6 @@ e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 16
 
 e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 2.0
 
-### If this is test mode, run only a couple generations
-if len(sys.argv) == 2:
- if sys.argv[1] == '--test':
-  e["Solver"]["Termination Criteria"]["Max Generations"] = 5
-  
 ### Setting file output configuration
 
 e["Console Output"]["Verbosity"] = "Detailed"
@@ -76,10 +71,23 @@ e["File Output"]["Enabled"] = False
 
 k.run(e)
 
-#lander = Lander()
-#lander.reset()
-#done = False
-#while not done:
- #state = lander.getState()
- #print(state)
- #done = lander.advance([0.0, 0.0])
+### If this is test mode, we run a few test samples and check their reward
+
+performTest = False
+if len(sys.argv) == 2:
+ if sys.argv[1] == '--test':
+  performTest = True
+
+if (performTest == False): exit(0)
+
+e["Solver"]["Mode"] = "Testing"
+e["Solver"]["Testing"]["Sample Ids"] = list(range(10))
+e["File Output"]["Enabled"] = False
+
+k.run(e)
+
+averageTestReward = np.average(e["Solver"]["Testing"]["Reward"])
+print("Average Reward: " + str(averageTestReward))
+if (averageTestReward < 1.0):
+ print("Landar example did not reach minimum testing average.")
+ exit(-1)

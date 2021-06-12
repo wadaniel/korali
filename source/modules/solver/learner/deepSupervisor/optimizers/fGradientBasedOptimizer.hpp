@@ -16,25 +16,6 @@ namespace korali
 class fGradientBasedOptimizer
 {
   public:
-  /**
- * @brief Default constructor for the optimizer
- * @param nVars Variable-space dimensionality
- */
-  fGradientBasedOptimizer(size_t nVars)
-  {
-    // Variable Parameters
-    _currentGeneration = 1;
-    _nVars = nVars;
-    _initialValues.resize(_nVars, 0.0);
-    _currentValue.resize(_nVars, 0.0);
-    _gradient.resize(_nVars, 0.0);
-    _modelEvaluationCount = 0;
-  }
-
-  /**
-  * @brief Default destructor to avoid warnings
-  */
-  virtual ~fGradientBasedOptimizer() = default;
 
   /**
   * @brief Number of problem variables

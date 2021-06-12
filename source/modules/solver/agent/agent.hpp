@@ -209,10 +209,6 @@ class Agent : public Solver
   */
    size_t _currentEpisode;
   /**
-  * @brief [Internal Use] The cumulative training reward for the last episode received.
-  */
-   float _lastTrainingReward;
-  /**
   * @brief [Internal Use] Keeps a history of all training episode rewards.
   */
    std::vector<float> _trainingRewardHistory;

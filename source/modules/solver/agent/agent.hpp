@@ -97,9 +97,9 @@ class Agent : public Solver
   */
    size_t _trainingAverageDepth;
   /**
-  * @brief Indicates the number of concurrent agents collecting experiences.
+  * @brief Indicates the number of concurrent environments to use to collect experiences.
   */
-   size_t _agentCount;
+   size_t _concurrentEnvironments;
   /**
   * @brief Indicates the how many finished episodes to receive in a generation (checkpoints are generated between generations).
   */

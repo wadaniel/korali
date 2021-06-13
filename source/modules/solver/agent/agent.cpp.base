@@ -135,8 +135,8 @@ void @className::initialize()
   if (_mode == "Training")
   {
     // Creating storate for _agents and their status
-    _agents.resize(_agentCount);
-    _isAgentRunning.resize(_agentCount, false);
+    _agents.resize(_concurrentEnvironments);
+    _isAgentRunning.resize(_concurrentEnvironments, false);
   }
 
   if (_mode == "Testing")
@@ -191,7 +191,7 @@ void @className::trainingGeneration()
   while (_sessionEpisodeCount < _episodesPerGeneration * _sessionGeneration)
   {
     // Launching (or re-launching) agents
-    for (size_t agentId = 0; agentId < _agentCount; agentId++)
+    for (size_t agentId = 0; agentId < _concurrentEnvironments; agentId++)
       if (_isAgentRunning[agentId] == false)
       {
         _agents[agentId]["Sample Id"] = _currentEpisode++;
@@ -209,7 +209,7 @@ void @className::trainingGeneration()
     KORALI_LISTEN(_agents);
 
     // Attending to running agents, checking if any experience has been received
-    for (size_t agentId = 0; agentId < _agentCount; agentId++)
+    for (size_t agentId = 0; agentId < _concurrentEnvironments; agentId++)
       if (_isAgentRunning[agentId] == true)
         attendAgent(agentId);
 
@@ -847,7 +847,7 @@ void @className::finalize()
   do
   {
     agentsRemain = false;
-    for (size_t agentId = 0; agentId < _agentCount; agentId++)
+    for (size_t agentId = 0; agentId < _concurrentEnvironments; agentId++)
       if (_isAgentRunning[agentId] == true)
       {
         attendAgent(agentId);

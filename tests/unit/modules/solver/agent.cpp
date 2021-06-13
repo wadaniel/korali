@@ -1310,9 +1310,227 @@ namespace
    ASSERT_NO_THROW(a->setConfiguration(agentJs));
   }
 
+ //// Continous Agent
+
+ TEST(a, VRACER)
+  {
+   // Creating base experiment
+   Experiment e;
+   e._logger = new Logger("Detailed", stdout);
+   auto& experimentJs = e._js.getJson();
+   experimentJs["Variables"][0]["Name"] = "X";
+   Variable v;
+   e._variables.push_back(&v);
+
+   // Creating optimizer configuration Json
+   knlohmann::json agentJs;
+
+   // Configuring Problem
+   e["Problem"]["Type"] = "Reinforcement Learning / Continuous";
+   reinforcementLearning::Continuous* pC;
+   knlohmann::json problemRefJs;
+   problemRefJs["Type"] = "Reinforcement Learning / Continuous";
+   problemRefJs["Environment Function"] = [](Sample &s){};
+   problemRefJs["Training Reward Threshold"] = 50.0;
+   problemRefJs["Policy Testing Episodes"] = 20;
+   e["Variables"][0]["Name"] = "State0";
+   e["Variables"][1]["Name"] = "Action0";
+   e["Variables"][1]["Type"] = "Action";
+   e["Variables"][1]["Initial Exploration Noise"] = 0.45;
+   e["Variables"][1]["Lower Bound"] = 0.00;
+   e["Variables"][1]["Upper Bound"] = 1.00;
+
+   Variable vState;
+   vState._name = "State0";
+   vState._type = "State";
+
+   Variable vAction;
+   vAction._name = "Action0";
+   vAction._type = "Action";
+   vAction._initialExplorationNoise = 0.45;
+   vAction._lowerBound = 0.00;
+   vAction._upperBound = 1.00;
+
+   e._variables.push_back(&vState);
+   e._variables.push_back(&vAction);
+
+   ASSERT_NO_THROW(pC = dynamic_cast<reinforcementLearning::Continuous *>(Module::getModule(problemRefJs, &e)));
+   e._problem = pC;
+   pC->initialize();
+
+   // Using a neural network solver (deep learning) for inference
+
+   agentJs["Type"] = "Agent / Continuous / VRACER";
+   agentJs["Mode"] = "Training";
+   agentJs["Episodes Per Generation"] = 10;
+   agentJs["Experiences Between Policy Updates"] = 1;
+   agentJs["Discount Factor"] = 0.99;
+   agentJs["Learning Rate"] = 0.0001;
+   agentJs["Mini Batch"]["Size"] = 32;
+   agentJs["Experience Replay"]["Start Size"] = 1000;
+   agentJs["Experience Replay"]["Maximum Size"] = 10000;
+
+   /// Configuring the neural network and its hidden layers
+
+   agentJs["Neural Network"]["Engine"] = "OneDNN";
+   agentJs["Neural Network"]["Optimizer"] = "Adam";
+
+   agentJs["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear";
+   agentJs["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 16;
+
+   // Creating module
+   VRACER* a;
+   ASSERT_NO_THROW(a = dynamic_cast<VRACER *>(Module::getModule(agentJs, &e)));
+
+   // Defaults should be applied without a problem
+   ASSERT_NO_THROW(a->applyModuleDefaults(agentJs));
+
+   // Covering variable functions (no effect)
+   ASSERT_NO_THROW(a->applyVariableDefaults());
+
+   // Backup the correct base configuration
+   auto baseOptJs = agentJs;
+   auto baseExpJs = experimentJs;
+
+   // Testing optional parameters
+   agentJs = baseOptJs;
+   experimentJs = baseExpJs;
+   agentJs["Statistics"]["Average Action Sigmas"] = "Not a Number";
+   ASSERT_ANY_THROW(a->setConfiguration(agentJs));
+
+   agentJs = baseOptJs;
+   experimentJs = baseExpJs;
+   agentJs["Statistics"]["Average Action Sigmas"] = std::vector<float>({0.0});
+   ASSERT_NO_THROW(a->setConfiguration(agentJs));
+
+   agentJs = baseOptJs;
+   experimentJs = baseExpJs;
+   e["Variables"][0].erase("Initial Exploration Noise");
+   ASSERT_ANY_THROW(a->setConfiguration(agentJs));
+
+   agentJs = baseOptJs;
+   experimentJs = baseExpJs;
+   e["Variables"][0]["Initial Exploration Noise"] = "Not a Number";
+   ASSERT_ANY_THROW(a->setConfiguration(agentJs));
+
+   agentJs = baseOptJs;
+   experimentJs = baseExpJs;
+   e["Variables"][0]["Initial Exploration Noise"] = 0.0f;
+   ASSERT_NO_THROW(a->setConfiguration(agentJs));
+  }
+
  //// Discrete Agent
 
-  TEST(a, discreteAgent)
+ TEST(a, discreteAgent)
+  {
+   // Creating base experiment
+   Experiment e;
+   e._logger = new Logger("Detailed", stdout);
+   auto& experimentJs = e._js.getJson();
+   experimentJs["Variables"][0]["Name"] = "X";
+   Variable v;
+   e._variables.push_back(&v);
+
+   // Creating optimizer configuration Json
+   knlohmann::json agentJs;
+
+   // Configuring Problem
+   e["Problem"]["Type"] = "Reinforcement Learning / Discrete";
+   reinforcementLearning::Discrete* pD;
+   knlohmann::json problemRefJs;
+   problemRefJs["Type"] = "Reinforcement Learning / Discrete";
+   problemRefJs["Environment Function"] = [](Sample &s){};
+   problemRefJs["Training Reward Threshold"] = 50.0;
+   problemRefJs["Policy Testing Episodes"] = 20;
+   problemRefJs["Possible Actions"] = std::vector<std::vector<float>>({ { -10.0 }, { 10.0 } });
+   e["Variables"][0]["Name"] = "State0";
+   e["Variables"][1]["Name"] = "Action0";
+   e["Variables"][1]["Type"] = "Action";
+
+   Variable vState;
+   vState._name = "State0";
+   vState._type = "State";
+
+   Variable vAction;
+   vAction._name = "Action0";
+   vAction._type = "Action";
+
+   e._variables.push_back(&vState);
+   e._variables.push_back(&vAction);
+
+   ASSERT_NO_THROW(pD = dynamic_cast<reinforcementLearning::Discrete *>(Module::getModule(problemRefJs, &e)));
+   e._problem = pD;
+   pD->_possibleActions = std::vector<std::vector<float>>({ { -10.0 }, { 10.0 } });
+   pD->initialize();
+
+   // Using a neural network solver (deep learning) for inference
+
+   agentJs["Type"] = "Agent / Discrete / dVRACER";
+   agentJs["Mode"] = "Training";
+   agentJs["Episodes Per Generation"] = 10;
+   agentJs["Experiences Between Policy Updates"] = 1;
+   agentJs["Discount Factor"] = 0.99;
+   agentJs["Learning Rate"] = 0.0001;
+   agentJs["Mini Batch"]["Size"] = 32;
+   agentJs["Experience Replay"]["Start Size"] = 1000;
+   agentJs["Experience Replay"]["Maximum Size"] = 10000;
+
+   /// Configuring the neural network and its hidden layers
+
+   agentJs["Neural Network"]["Engine"] = "OneDNN";
+   agentJs["Neural Network"]["Optimizer"] = "Adam";
+
+   agentJs["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear";
+   agentJs["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 16;
+
+   // Creating module
+   dVRACER* a;
+   ASSERT_NO_THROW(a = dynamic_cast<dVRACER *>(Module::getModule(agentJs, &e)));
+
+   // Defaults should be applied without a problem
+   ASSERT_NO_THROW(a->applyModuleDefaults(agentJs));
+
+   // Covering variable functions (no effect)
+   ASSERT_NO_THROW(a->applyVariableDefaults());
+
+   // Backup the correct base configuration
+   auto baseOptJs = agentJs;
+   auto baseExpJs = experimentJs;
+
+   // Testing distribution corner cases
+   policy_t curPolicy;
+   policy_t prevPolicy;
+   curPolicy.distributionParameters = std::vector<float>({0.2, 0.8}); // Probability distribution of possible actions
+   curPolicy.actionIndex = 0;
+   prevPolicy.distributionParameters = std::vector<float>({0.5, 0.5}); // Probability distribution of possible actions
+   prevPolicy.actionIndex = 0;
+   size_t testActionIdx = 0;
+   auto testAction = std::vector<float>({-10.0f});
+
+   ASSERT_NO_THROW(a->agent::Discrete::initializeAgent());
+   ASSERT_NO_THROW(a->calculateImportanceWeight(testAction, curPolicy, prevPolicy));
+   ASSERT_NO_THROW(a->calculateImportanceWeightGradient(testActionIdx, curPolicy.distributionParameters, prevPolicy.distributionParameters));
+   ASSERT_NO_THROW(a->calculateKLDivergenceGradient(curPolicy.distributionParameters, prevPolicy.distributionParameters));
+
+   // Testing mandatory parameters
+
+   agentJs = baseOptJs;
+   experimentJs = baseExpJs;
+   agentJs.erase("Random Action Probability");
+   ASSERT_ANY_THROW(a->setConfiguration(agentJs));
+
+   agentJs = baseOptJs;
+   experimentJs = baseExpJs;
+   agentJs["Random Action Probability"] = "Not a Number";
+   ASSERT_ANY_THROW(a->setConfiguration(agentJs));
+
+   agentJs = baseOptJs;
+   experimentJs = baseExpJs;
+   agentJs["Random Action Probability"] = 1.0f;
+   ASSERT_NO_THROW(a->setConfiguration(agentJs));
+  }
+
+ TEST(a, dVRACER)
    {
     // Creating base experiment
     Experiment e;
@@ -1388,36 +1606,30 @@ namespace
     auto baseOptJs = agentJs;
     auto baseExpJs = experimentJs;
 
-    // Testing distribution corner cases
-    policy_t curPolicy;
-    policy_t prevPolicy;
-    curPolicy.distributionParameters = std::vector<float>({0.2, 0.8}); // Probability distribution of possible actions
-    curPolicy.actionIndex = 0;
-    prevPolicy.distributionParameters = std::vector<float>({0.5, 0.5}); // Probability distribution of possible actions
-    prevPolicy.actionIndex = 0;
-    size_t testActionIdx = 0;
-    auto testAction = std::vector<float>({-10.0f});
-
-    ASSERT_NO_THROW(a->agent::Discrete::initializeAgent());
-    ASSERT_NO_THROW(a->calculateImportanceWeight(testAction, curPolicy, prevPolicy));
-    ASSERT_NO_THROW(a->calculateImportanceWeightGradient(testActionIdx, curPolicy.distributionParameters, prevPolicy.distributionParameters));
-    ASSERT_NO_THROW(a->calculateKLDivergenceGradient(curPolicy.distributionParameters, prevPolicy.distributionParameters));
-
-    // Testing mandatory parameters
-
+    // Testing optional parameters
     agentJs = baseOptJs;
     experimentJs = baseExpJs;
-    agentJs.erase("Random Action Probability");
+    agentJs["Statistics"]["Average Action Sigmas"] = "Not a Number";
     ASSERT_ANY_THROW(a->setConfiguration(agentJs));
 
     agentJs = baseOptJs;
     experimentJs = baseExpJs;
-    agentJs["Random Action Probability"] = "Not a Number";
+    agentJs["Statistics"]["Average Action Sigmas"] = std::vector<float>({0.0});
+    ASSERT_NO_THROW(a->setConfiguration(agentJs));
+
+    agentJs = baseOptJs;
+    experimentJs = baseExpJs;
+    e["Variables"][0].erase("Initial Exploration Noise");
     ASSERT_ANY_THROW(a->setConfiguration(agentJs));
 
     agentJs = baseOptJs;
     experimentJs = baseExpJs;
-    agentJs["Random Action Probability"] = 1.0f;
+    e["Variables"][0]["Initial Exploration Noise"] = "Not a Number";
+    ASSERT_ANY_THROW(a->setConfiguration(agentJs));
+
+    agentJs = baseOptJs;
+    experimentJs = baseExpJs;
+    e["Variables"][0]["Initial Exploration Noise"] = 0.0f;
     ASSERT_NO_THROW(a->setConfiguration(agentJs));
    }
 

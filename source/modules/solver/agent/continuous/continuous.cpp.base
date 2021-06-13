@@ -199,18 +199,7 @@ std::vector<float> @className::generateTestingAction(const policy_t &curPolicy)
     {
       const float curMu = curPolicy.distributionParameters[i];
       const float curVariance = curPolicy.distributionParameters[_problem->_actionVectorSize + i];
-
-      float alpha, beta;
-      std::tie(alpha, beta) = betaParamTransformAlt(curMu, curVariance, _actionLowerBounds[i], _actionUpperBounds[i]);
-
-      if (alpha > 1.0f && beta > 1.0f)
-        action[i] = _actionLowerBounds[i] + (_actionUpperBounds[i] - _actionLowerBounds[i]) * (alpha - 1.0f) / (alpha + beta - 2.0f);
-      else if (alpha <= 1.0f && beta > 1.0f)
-        action[i] = _actionLowerBounds[i];
-      else if (alpha > 1.0f && beta <= 1.0f)
-        action[i] = _actionUpperBounds[i];
-      else
-        KORALI_LOG_ERROR("Case (a,b <=1) not yet treated (a,b = %f,%f)", alpha, beta);
+      action[i] = ranBetaAlt(_normalGenerator->_range, curMu, curVariance, _actionLowerBounds[i], _actionUpperBounds[i]);
     }
   }
 

@@ -205,6 +205,12 @@ namespace
 
  /////////////////// AdaBelief
 
+ TEST(fGradientBasedOptimizer, baseDestructor)
+ {
+  fGradientBasedOptimizer* c = new fAdaBelief(N);
+  delete c;
+ }
+
  // In Korali, optimizers maximize, so concave functions are candidates for correct execution
  TEST(fAdaBelief, concaveFunction)
  {

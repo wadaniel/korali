@@ -14,9 +14,7 @@ filter_junk()
             -e '/json.hpp/d' \
             -e '/amd64.c/d' \
             -e '/rtnorm/d' \
-            -e '/dnnUtils.hpp/d' \
-            -e '/tests/d' \
-            -e '/helpers/d'
+            -e '/dnnUtils.hpp/d' 
 }
 
 ROOT="$(pwd -P)"

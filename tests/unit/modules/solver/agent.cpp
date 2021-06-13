@@ -105,7 +105,7 @@ namespace
    ASSERT_NO_THROW(agent->setConfiguration(agentJs));
 
    // Running initial configuration correctly
-   agent->initialize();
+   ASSERT_NO_THROW(agent->initialize());
 
    // Case with no ER size maximum
    agent->_experienceReplayMaximumSize = 0;
@@ -131,6 +131,86 @@ namespace
    agent->_testingBestPolicy = std::vector<float>();
    ASSERT_NO_THROW(agent->initialize());
    ASSERT_EQ(agent->_testingPolicy, agent->_trainingCurrentPolicy);
+
+   // Testing Process Episode corner cases
+   knlohmann::json episode;
+   episode[0]["State"] = std::vector<float>({0.0f});
+   episode[0]["Action"] = std::vector<float>({0.0f});
+   episode[0]["Reward"] = 1.0f;
+   episode[0]["Termination"] = "Terminal";
+   episode[0]["Policy"]["State Value"] = 1.0;
+   ASSERT_NO_THROW(agent->processEpisode(0, episode));
+
+   // No state value provided error
+   episode[0]["Policy"].erase("State Value");
+   ASSERT_ANY_THROW(agent->processEpisode(0, episode));
+   episode[0]["Policy"]["State Value"] = 1.0;
+
+   // Reward adjusted due to out of bounds action
+   agent->_rewardOutboundPenalizationEnabled = true;
+   agent->_rewardOutboundPenalizationFactor = 0.5f;
+   episode[0]["Reward"] = 1.0f;
+   episode[0]["Action"] = std::vector<float>({-1.0f});
+   agent->_rewardVector.clear();
+   ASSERT_NO_THROW(agent->processEpisode(0, episode));
+   ASSERT_EQ(agent->_rewardVector[0], 0.5f);
+
+   // Correct handling of truncated state
+   episode[0]["Termination"] = "Truncated";
+   episode[0]["Truncated State"] = std::vector<float>({0.0f});
+   ASSERT_NO_THROW(agent->processEpisode(0, episode));
+
+   // Correct handling of truncated state
+   episode[0]["Termination"] = "Truncated";
+   episode[0]["Truncated State"] = std::vector<float>({std::numeric_limits<float>::infinity()});
+   ASSERT_ANY_THROW(agent->processEpisode(0, episode));
+   episode[0]["Truncated State"] = std::vector<float>({0.0f});
+
+   // Check truncated state sequence for sequences > 1
+   episode[0]["State"] = std::vector<float>({0.0f});
+   episode[0]["Action"] = std::vector<float>({0.0f});
+   episode[0]["Reward"] = 1.0f;
+   episode[0]["Termination"] = "Non Terminal";
+   episode[0]["Policy"]["State Value"] = 1.0;
+   episode[1]["State"] = std::vector<float>({0.0f});
+   episode[1]["Action"] = std::vector<float>({0.0f});
+   episode[1]["Reward"] = 1.0f;
+   episode[1]["Termination"] = "Non Terminal";
+   episode[1]["Policy"]["State Value"] = 1.0;
+   episode[2]["State"] = std::vector<float>({0.0f});
+   episode[2]["Action"] = std::vector<float>({0.0f});
+   episode[2]["Reward"] = 1.0f;
+   episode[2]["Termination"] = "Truncated";
+   episode[2]["Policy"]["State Value"] = 1.0;
+   episode[2]["Truncated State"] = std::vector<float>({0.0f});
+   agent->processEpisode(0, episode);
+   ASSERT_NO_THROW(agent->processEpisode(0, episode));
+   agent->_timeSequenceLength = 2;
+   ASSERT_NO_THROW(agent->getTruncatedStateSequence(agent->_terminationVector.size()-1));
+
+   // Triggering bad path in serialization routine
+   e._fileOutputPath = "/dev/null/\%*Incorrect Path*";
+   ASSERT_ANY_THROW(agent->serializeExperienceReplay());
+   ASSERT_ANY_THROW(agent->deserializeExperienceReplay());
+
+   // Some specific printing cases
+   agent->_maxEpisodes = 0;
+   ASSERT_NO_THROW(agent->printGenerationAfter());
+   agent->_maxEpisodes = 1;
+   ASSERT_NO_THROW(agent->printGenerationAfter());
+   agent->_maxExperiences = 0;
+   ASSERT_NO_THROW(agent->printGenerationAfter());
+   agent->_maxExperiences = 1;
+   ASSERT_NO_THROW(agent->printGenerationAfter());
+   agent->_maxPolicyUpdates = 0;
+   ASSERT_NO_THROW(agent->printGenerationAfter());
+   agent->_maxPolicyUpdates = 1;
+   ASSERT_NO_THROW(agent->printGenerationAfter());
+   agent->_testingTargetAverageReward = -korali::Inf;
+   ASSERT_NO_THROW(agent->printGenerationAfter());
+   agent->_testingTargetAverageReward = 1.0;
+   ASSERT_NO_THROW(agent->printGenerationAfter());
+
 
    // Testing optional parameters
    agentJs = baseOptJs;
@@ -531,6 +611,11 @@ namespace
 
    agentJs = baseOptJs;
    experimentJs = baseExpJs;
+   agentJs["Mini Batch"]["Strategy"] = "Unknown";
+   ASSERT_ANY_THROW(agent->setConfiguration(agentJs));
+
+   agentJs = baseOptJs;
+   experimentJs = baseExpJs;
    agentJs["Mini Batch"]["Strategy"] = "Uniform";
    ASSERT_NO_THROW(agent->setConfiguration(agentJs));
 
@@ -816,6 +901,61 @@ namespace
 
    agentJs = baseOptJs;
    experimentJs = baseExpJs;
+   agentJs["Reward"]["Rescaling"].erase("Enabled");
+   ASSERT_ANY_THROW(agent->setConfiguration(agentJs));
+
+   agentJs = baseOptJs;
+   experimentJs = baseExpJs;
+   agentJs["Reward"]["Rescaling"]["Enabled"] = "Not a Number";
+   ASSERT_ANY_THROW(agent->setConfiguration(agentJs));
+
+   agentJs = baseOptJs;
+   experimentJs = baseExpJs;
+   agentJs["Reward"]["Rescaling"]["Enabled"] = false;
+   ASSERT_NO_THROW(agent->setConfiguration(agentJs));
+
+   agentJs = baseOptJs;
+   experimentJs = baseExpJs;
+   agentJs["Reward"]["Rescaling"].erase("Frequency");
+   ASSERT_ANY_THROW(agent->setConfiguration(agentJs));
+
+   agentJs = baseOptJs;
+   experimentJs = baseExpJs;
+   agentJs["Reward"]["Rescaling"]["Frequency"] = "Not a Number";
+   ASSERT_ANY_THROW(agent->setConfiguration(agentJs));
+
+   agentJs = baseOptJs;
+   experimentJs = baseExpJs;
+   agentJs["Reward"]["Rescaling"]["Frequency"] = 2;
+   ASSERT_NO_THROW(agent->setConfiguration(agentJs));
+
+   agentJs = baseOptJs;
+   experimentJs = baseExpJs;
+   agentJs["Testing"].erase("Policy");
+   ASSERT_ANY_THROW(agent->setConfiguration(agentJs));
+
+   agentJs = baseOptJs;
+   experimentJs = baseExpJs;
+   agentJs["Testing"]["Policy"] = knlohmann::json();
+   ASSERT_NO_THROW(agent->setConfiguration(agentJs));
+
+   agentJs = baseOptJs;
+   experimentJs = baseExpJs;
+   agentJs["Training"].erase("Average Depth");
+   ASSERT_ANY_THROW(agent->setConfiguration(agentJs));
+
+   agentJs = baseOptJs;
+   experimentJs = baseExpJs;
+   agentJs["Training"]["Average Depth"] = "Not a Number";
+   ASSERT_ANY_THROW(agent->setConfiguration(agentJs));
+
+   agentJs = baseOptJs;
+   experimentJs = baseExpJs;
+   agentJs["Training"]["Average Depth"] = 2;
+   ASSERT_NO_THROW(agent->setConfiguration(agentJs));
+
+   agentJs = baseOptJs;
+   experimentJs = baseExpJs;
    agentJs["Termination Criteria"].erase("Max Experiences");
    ASSERT_ANY_THROW(agent->setConfiguration(agentJs));
 
@@ -888,6 +1028,44 @@ namespace
    experimentJs = baseExpJs;
    agentJs["Termination Criteria"]["Max Policy Updates"]  = 200.0;
    ASSERT_NO_THROW(agent->setConfiguration(agentJs));
+
+   // Testing termination criteria
+   e._currentGeneration = 2;
+
+   // Control check
+   ASSERT_FALSE(agent->checkTermination());
+
+   // Checking max episodes termination
+   agent->_mode = "Training";
+   agent->_maxEpisodes = 10;
+   agent->_currentEpisode = 20;
+   ASSERT_TRUE(agent->checkTermination());
+   agent->_currentEpisode = 5;
+   ASSERT_FALSE(agent->checkTermination());
+
+   // Checking max experiences termination
+   agent->_mode = "Training";
+   agent->_maxExperiences = 10;
+   agent->_experienceCount = 20;
+   ASSERT_TRUE(agent->checkTermination());
+   agent->_experienceCount = 5;
+   ASSERT_FALSE(agent->checkTermination());
+
+   // Checking average reward increment termination
+   agent->_mode = "Training";
+   agent->_testingAverageRewardIncrement  = 10.0;
+   agent->_testingPreviousAverageReward  = 20.0;
+   ASSERT_TRUE(agent->checkTermination());
+   agent->_testingPreviousAverageReward  = 5.0;
+   ASSERT_FALSE(agent->checkTermination());
+
+   // Checking policy update termination
+   agent->_mode = "Training";
+   agent->_maxPolicyUpdates   = 10;
+   agent->_policyUpdateCount   = 20;
+   ASSERT_TRUE(agent->checkTermination());
+   agent->_policyUpdateCount   = 5;
+   ASSERT_FALSE(agent->checkTermination());
   }
 
 } // namespace

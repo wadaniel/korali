@@ -12,7 +12,7 @@ e = korali.Experiment()
 
 ### Loading previous run (if exist)
 
-found = e.loadState('_result_vracer/latest')
+found = e.loadState('_result_dvracer/latest')
 
 # If not found, we run first 10 generations.
 if (found == False):
@@ -30,12 +30,13 @@ if (found == True):
   
 ### Defining the Cartpole problem's configuration
 
-e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
+e["Problem"]["Type"] = "Reinforcement Learning / Discrete"
 e["Problem"]["Environment Function"] = env
 e["Problem"]["Actions Between Policy Updates"] = 500
 e["Problem"]["Training Reward Threshold"] = 450
 e["Problem"]["Policy Testing Episodes"] = 10
-
+e["Problem"]["Possible Actions"] = [ [ -10.0 ], [  10.0 ] ]
+                                     
 ### Defining State variables
 
 e["Variables"][0]["Name"] = "Cart Position"
@@ -47,13 +48,10 @@ e["Variables"][3]["Name"] = "Pole Angular Velocity"
 
 e["Variables"][4]["Name"] = "Force"
 e["Variables"][4]["Type"] = "Action"
-e["Variables"][4]["Lower Bound"] = -10.0
-e["Variables"][4]["Upper Bound"] = +10.0
-e["Variables"][4]["Initial Exploration Noise"] = 1.0
 
 ### Defining Agent Configuration 
 
-e["Solver"]["Type"] = "Agent / Continuous / VRACER"
+e["Solver"]["Type"] = "Agent / Discrete / dVRACER"
 e["Solver"]["Mode"] = "Training"
 e["Solver"]["Episodes Per Generation"] = 1
 e["Solver"]["Experiences Between Policy Updates"] = 10
@@ -86,7 +84,7 @@ e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 450
 ### Setting file output configuration
 
 e["Console Output"]["Verbosity"] = "Detailed"
-e["File Output"]["Path"] = "_result_vracer"
+e["File Output"]["Path"] = "_result_dvracer"
 e["File Output"]["Enabled"] = True
 e["File Output"]["Frequency"] = 1
  

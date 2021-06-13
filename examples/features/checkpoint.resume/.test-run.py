@@ -25,4 +25,12 @@ r = call(["python3", "run-vracer.py"])
 if r!=0:
   exit(r)
 
+r = call(["python3", "run-dvracer.py"])
+if r!=0:
+   exit(r)
+
+r = call(["python3", "run-dvracer.py"])
+if r!=0:
+  exit(r)
+    
 exit(0)

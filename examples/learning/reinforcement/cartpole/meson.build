@@ -1,8 +1,39 @@
-e = find_program('./.test-run.py', required: true)
-
-test('learning.reinforcement.cartpole', e,
+e = find_program('run-vracer.py', required: true)
+test('learning.reinforcement.cartpole.continuous.single', e,
+      args: [ '--concurrentEnvironments', '1'],
       timeout : 3600,
+      suite: 'regression',
       workdir: meson.current_source_dir(),
       depends: python_extension,
-      suite: 'regression'
+      env: nomalloc
+    )
+
+e = find_program('run-vracer.py', required: true)
+test('learning.reinforcement.cartpole.continuous.multiple', e,
+      args: [ '--concurrentEnvironments', '4'],
+      timeout : 3600,
+      suite: 'regression',
+      workdir: meson.current_source_dir(),
+      depends: python_extension,
+      env: nomalloc
+    )
+    
+e = find_program('run-dvracer.py', required: true)
+test('learning.reinforcement.cartpole.discrete.single', e,
+      args: [ '--concurrentEnvironments', '1'],
+      timeout : 3600,
+      suite: 'regression',
+      workdir: meson.current_source_dir(),
+      depends: python_extension,
+      env: nomalloc
+    )
+
+e = find_program('run-dvracer.py', required: true)
+test('learning.reinforcement.cartpole.discrete.multiple', e,
+      args: [ '--concurrentEnvironments', '4'],
+      timeout : 3600,
+      suite: 'regression',
+      workdir: meson.current_source_dir(),
+      depends: python_extension,
+      env: nomalloc
     )

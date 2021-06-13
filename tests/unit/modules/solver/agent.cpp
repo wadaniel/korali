@@ -510,6 +510,16 @@ namespace
 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
+  agentJs["State Rescaling"]["Means"] = std::vector<float>({1.0});
+  ASSERT_NO_THROW(a->setConfiguration(agentJs));
+
+  agentJs = baseOptJs;
+  experimentJs = baseExpJs;
+  agentJs["State Rescaling"]["Sigmas"] = "Not a Number";
+  ASSERT_ANY_THROW(a->setConfiguration(agentJs));
+
+  agentJs = baseOptJs;
+  experimentJs = baseExpJs;
   agentJs["State Rescaling"]["Sigmas"] = std::vector<float>({1.0});
   ASSERT_NO_THROW(a->setConfiguration(agentJs));
 
@@ -556,17 +566,17 @@ namespace
 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
-  agentJs.erase("Agent Count");
+  agentJs.erase("Concurrent Environments");
   ASSERT_ANY_THROW(a->setConfiguration(agentJs));
 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
-  agentJs["Agent Count"] = "Not a Number";
+  agentJs["Concurrent Environments"] = "Not a Number";
   ASSERT_ANY_THROW(a->setConfiguration(agentJs));
 
   agentJs = baseOptJs;
   experimentJs = baseExpJs;
-  agentJs["Agent Count"] = 1;
+  agentJs["Concurrent Environments"] = 1;
   ASSERT_NO_THROW(a->setConfiguration(agentJs));
 
   agentJs = baseOptJs;

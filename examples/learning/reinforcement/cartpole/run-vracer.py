@@ -52,7 +52,7 @@ e = korali.Experiment()
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = env
 e["Problem"]["Training Reward Threshold"] = 450
-e["Problem"]["Policy Testing Episodes"] = 20
+e["Problem"]["Policy Testing Episodes"] = 30
 e["Problem"]["Actions Between Policy Updates"] = 5
 
 e["Variables"][0]["Name"] = "Cart Position"

@@ -41,7 +41,7 @@ colors_both = ['darkblue', 'cyan', 'darkred', 'salmon', 'darkgreen', 'limegreen'
 ################# FANS separate
 # ------- compare both, energy, flow, uncontrolled
 
-# 1) torque vs time for fan 1
+# ) torque vs time for fan 1
 fig1 = plt.figure(1)
 
 for ind, name in enumerate(names[:-1]): # don't do for the last one
@@ -58,7 +58,7 @@ fig1.set_size_inches(5, 5)
 fig1.tight_layout()
 fig1.savefig(output + "tau_fan_1.png")
 
-# 2) torque vs time for fan 2
+# ) torque vs time for fan 2
 fig2 = plt.figure(2)
 
 for ind, name in enumerate(names[:-1]): # don't do for the last one
@@ -76,7 +76,7 @@ fig2.tight_layout()
 fig2.savefig(output + "tau_fan_2.png")
 
 
-# 3) omega vs time for fan 1
+# ) omega vs time for fan 1
 fig3 = plt.figure(3)
 
 for ind, name in enumerate(names[:-1]): # don't do for the last one
@@ -93,7 +93,7 @@ fig3.set_size_inches(5, 5)
 fig3.tight_layout()
 fig3.savefig(output + "omega_fan_1.png")
 
-# 4) omega vs time for fan 2
+# ) omega vs time for fan 2
 fig4 = plt.figure(4)
 
 for ind, name in enumerate(names[:-1]): # don't do for the last one
@@ -110,7 +110,7 @@ fig4.set_size_inches(5, 5)
 fig4.tight_layout()
 fig4.savefig(output + "omega_fan_2.png")
 
-# 3) angle vs time for fan 1
+# ) angle vs time for fan 1
 figang1 = plt.figure(50)
 
 for ind, name in enumerate(names[:-1]): # don't do for the last one
@@ -159,7 +159,7 @@ figphase1.set_size_inches(5, 5)
 figphase1.tight_layout()
 figphase1.savefig(output + "phase_fan_1.png")
 
-# 4) phase for fan 2
+# ) omega vs angle for fan 2
 figphase2 = plt.figure(53)
 
 for ind, name in enumerate(names[:-1]): # don't do for the last one
@@ -176,7 +176,7 @@ figphase2.set_size_inches(5, 5)
 figphase2.tight_layout()
 figphase2.savefig(output + "phase_fan_2.png")
 
-# 5/6) torque vs omega for both
+# ) torque vs omega for both
 fig5 = plt.figure(5)
 name_both = 'both'
 
@@ -199,7 +199,7 @@ fig5.set_size_inches(5, 5)
 fig5.tight_layout()
 fig5.savefig(output + "policy_both.png")
 
-# 5/6) torque vs omega for flow 4
+# ) torque vs omega for flow 4
 fig6 = plt.figure(6)
 
 name_4 = 'only flow: tau 1e-4'
@@ -224,7 +224,7 @@ fig6.tight_layout()
 fig6.savefig(output + "policy_e4.png")
 
 
-# 5/6) torque vs omega for flow 3
+# ) torque vs omega for flow 3
 fig73 = plt.figure(73)
 
 name_3 = 'only flow: tau 1e-3'
@@ -308,7 +308,7 @@ fig.savefig(output + "policies.png")
 ###################################################3
 
 
-# 7) reward vs time for both fans, only energy, summed up
+# ) reward vs time for both fans, only energy, summed up
 fig7 = plt.figure(7)
 
 for ind, name in enumerate(names[:-1]): # don't do for the last one
@@ -327,7 +327,7 @@ fig7.set_size_inches(5, 5)
 fig7.tight_layout()
 fig7.savefig(output + "rew_energy.png")
 
-# 8) reward vs time for both fans, only flow
+# ) reward vs time for both fans, only flow
 fig8 = plt.figure(8)
 
 for ind, name in enumerate(names[:-1]): # don't do for the last one
@@ -347,7 +347,7 @@ fig8.tight_layout()
 fig8.savefig(output + "rew_flow.png")
 
 
-# 9) reward vs time for both fans, all
+# ) reward vs time for both fans, all
 fig9 = plt.figure(9)
 
 for ind, name in enumerate(names[:-1]): # don't do for the last one
@@ -368,7 +368,7 @@ fig9.savefig(output + "rew_all.png")
 
 
 
-# 10) velocity at target vs time for 4 different runs, not using the std for uncontrolled and energy
+# ) velocity at target vs time for 4 different runs, not using the std for uncontrolled and energy
 fig10 = plt.figure(10)
 
 for ind, name in enumerate(names[:-1]): # don't do for the last one

@@ -120,7 +120,7 @@ class Continuous : public Agent
   * @param curPolicy The current policy for the given state
   * @return An action vector
   */
-  std::vector<float> generateTrainingAction(const policy_t &curPolicy);
+  std::vector<float> generateTrainingAction(policy_t &curPolicy);
 
   /**
   * @brief Function to generate deterministic actions from neural network output required for policy evaluation, respectively testing.

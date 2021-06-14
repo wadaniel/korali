@@ -528,6 +528,9 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
     if (isDefined(episode[expId], "Policy", "Action Index"))
       expPolicy.actionIndex = episode[expId]["Policy"]["Action Index"].get<size_t>();
 
+    if (isDefined(episode[expId], "Policy", "Unbounded Action"))
+      expPolicy.unboundedAction = episode[expId]["Policy"]["Unbounded Action"].get<std::vector<float>>();
+
     // Storing policy information
     _expPolicyVector.add(expPolicy);
     _curPolicyVector.add(expPolicy);
@@ -656,6 +659,7 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
     // Sanity checks for state value
     if (std::isfinite(importanceWeight) == false)
       KORALI_LOG_ERROR("Calculated value for importanceWeight returned an invalid value: %f\n", importanceWeight);
+
 
     // If this is the truncated experience of an episode, then obtain truncated state value
     float truncatedV = 0.0f;

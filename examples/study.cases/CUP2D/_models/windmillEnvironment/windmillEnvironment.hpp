@@ -2,15 +2,15 @@
 #include <algorithm>
 #include <random>
 
+#include "Obstacles/Windmill.h"
+#include "Simulation.h"
+
 void runEnvironment(korali::Sample &s);
 // void runEnvironmentCmaes(korali::Sample &s);
 // void runEnvironmentMocmaes(korali::Sample &s);
 extern std::string _resultsPath;
 extern int _argc;
 extern char **_argv;
-
-#include "Obstacles/Windmill.h"
-#include "Simulation.h"
 
 void initializeEnvironment();
 void setInitialConditions(Windmill* agent, double init_angle, bool randomized);

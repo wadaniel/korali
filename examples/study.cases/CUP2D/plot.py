@@ -1,105 +1,399 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
+path_to_folders = '_results_test/'
 
-# ---------- Accessing files ----------
+# folders_test = ['both_copy', 'energy_zero_copy',  'flow_zero_copy', 'both_copy_long', 'both_double_copy']
 
-path_to_test = '_results_windmill_testing/'
-folder = 'twinlevels4/'
-num_trials = 64
-sample = 'sample000000'
+# folders_test = ['both_copy', 'energy_zero_copy', 'both_copy_long']
 
-# contains link to all the sample folders in the test results
-folders = [path_to_test + folder + sample + "{:02d}".format(trial) + '/' for trial in range(num_trials)]
+folders_test = ['both_copy', 'energy_zero_copy', 'flow_zero', 'uncontrolled_copy',  'flow_zero_4']
 
-# force and velocity values go from 0 to num_windmills - 1
-num_windmills = 2
+names = ['both', 'only energy', 'only flow: tau 1e-4', 'uncontrolled', 'only flow: tau 1e-3', 'dummy']
 
-# force files contain
-# time Fx Fy FxPres FyPres FxVisc FyVisc tau tauPres tauVisc drag thrust lift perimeter circulation
-force_name = 'forceValues_'
+path_to_files = [path_to_folders + folder for folder in folders_test]
 
-# velocity files contain
-# t dt CXsim CYsim CXlab CYlab angle u v omega M J accx accy accw
-velocity_name = 'velocity_'
+output = '_results_plots/'
 
-# target velocity files contain
-# t target_vel
-target_name = 'targetvelocity_'
-
-# array of all samples containing array of forces for windmills
-# shape num_trials x num_windmills
-force_files = [ [folder_ + force_name + str(num) + '.dat' for num in range(num_windmills)] for folder_ in folders]
-
-velocity_files = [ [folder_ + velocity_name + str(num) + '.dat' for num in range(num_windmills)] for folder_ in folders]
-
-target_files = [ [folder_ + target_name + str(num) + '.dat' for num in range(num_windmills)] for folder_ in folders]
-
-# ---------- Loading data ----------
-
-# reminder, data is layed out in columns with time increasing as one goes down
-
-data = np.genfromtxt(velocity_files[0][0], skip_header=1, delimiter=' ')
-
-time = data[:, 0]
-
-num_steps = time.shape[0]
-
-actions = np.zeros((num_steps, num_trials, num_windmills))
-
-states = np.zeros((num_steps, num_trials, num_windmills, 2)) # the 2 here is for angles and angular velocities
+dico_values = {}
+dico_vels = {}
+dico_rewards = {}
 
 
-for trial in range(num_trials):
-  for mill in range(num_windmills):
-    forces = np.genfromtxt(force_files[trial][mill], skip_header=1, delimiter=' ')
-    velocities = np.genfromtxt(velocity_files[trial][mill], skip_header=1, delimiter=' ')
-
-    actions[:, trial, mill] = forces[:, 7] # tau
-    states[:, trial, mill, 0] = velocities[:, 7] # angle
-    states[:, trial, mill, 1] = velocities[:, 9] # angvel
-
-  print("Loaded trial ", trial+1)
+### load data
+###############################################################
+for index, path in enumerate(path_to_files):
+  dico_values[names[index]] = np.load(path + "_values.npy")
+  dico_vels[names[index]] = np.load(path + "_vels.npy")
+  dico_rewards[names[index]] = np.load(path + "_rews.npy")
+###############################################################
 
 
-# ---------- Plots ----------
+### PLOTS
 
 
-# action vs time with std and mean (torque vs time)
+colors = ['blue', 'red', 'green', 'black', 'purple']
 
-fig = plt.figure(1)
+# dark light for each color
+colors_both = ['darkblue', 'cyan', 'darkred', 'salmon', 'darkgreen', 'limegreen', 'dimgray', 'lightgray', 'darkviolet', 'violet']
 
-tau_mean = np.mean(actions, axis=(1, 2))
-tau_std = np.std(actions, axis=(1, 2))
+###############################################################
+################# FANS separate
+# ------- compare both, energy, flow, uncontrolled
 
-plt.plot(time, tau_mean)
-plt.fill_between(time, tau_mean - tau_std, tau_mean + tau_std, color='gray', alpha=0.2)
-plt.xlabel(r"$t$ [s]")
-plt.ylabel(r'$\tau$ []')
+# 1) torque vs time for fan 1
+fig1 = plt.figure(1)
 
-# velocity at target point vs time 
-dat =np.genfromtxt(target_files[0][0], skip_header=1, delimiter=' ')
-t = dat[:, 0]
-vel = data[:, 1]
+for ind, name in enumerate(names[:-1]): # don't do for the last one
+  plt.plot(dico_values[name][:, 0], dico_values[name][:, 1], colors[ind], label=name)
+  plt.fill_between(dico_values[name][:, 0], dico_values[name][:, 1] - dico_values[name][:, 2], dico_values[name][:, 1] + dico_values[name][:, 2], color=colors[ind], alpha=0.2)
 
+plt.xlabel(r"$C_t$ []")
+plt.ylabel(r'$C_\tau$ []')
+plt.legend()
+plt.title("Torque : Fan 1")
+plt.grid()
+
+fig1.set_size_inches(5, 5)
+fig1.tight_layout()
+fig1.savefig(output + "tau_fan_1.png")
+
+# 2) torque vs time for fan 2
 fig2 = plt.figure(2)
 
-plt.plot(t, vel)
-plt.xlabel(r"$t$ [s]")
-plt.ylabel(r'$v$ []')
+for ind, name in enumerate(names[:-1]): # don't do for the last one
+  plt.plot(dico_values[name][:, 0], dico_values[name][:, 3], colors[ind], label=name)
+  plt.fill_between(dico_values[name][:, 0], dico_values[name][:, 3] - dico_values[name][:, 4], dico_values[name][:, 3] + dico_values[name][:, 4], color=colors[ind], alpha=0.2)
+
+plt.xlabel(r"$C_t$ []")
+plt.ylabel(r'$C_\tau$ []')
+plt.legend()
+plt.title("Torque : Fan 2")
+plt.grid()
+
+fig2.set_size_inches(5, 5)
+fig2.tight_layout()
+fig2.savefig(output + "tau_fan_2.png")
 
 
-# histogram of policy, i.e. action vs state
-
+# 3) omega vs time for fan 1
 fig3 = plt.figure(3)
 
-angvel_mean = np.mean(states[:, :, 0, :], axis=1)[:, 1]
-angvel_std = np.std(states[:, :, 0, :], axis=1)[:, 1]
+for ind, name in enumerate(names[:-1]): # don't do for the last one
+  plt.plot(dico_values[name][:, 0], dico_values[name][:, 9], colors[ind], label=name)
+  plt.fill_between(dico_values[name][:, 0], dico_values[name][:, 9] - dico_values[name][:, 10], dico_values[name][:, 9] + dico_values[name][:, 10], color=colors[ind], alpha=0.2)
 
-plt.plot(angvel_mean, tau_mean)
-plt.fill_between(angvel_mean, tau_mean - tau_std, tau_mean + tau_std, color='gray', alpha=0.2)
+plt.xlabel(r"$C_t$ []")
+plt.ylabel(r'$C_\omega$ []')
+plt.legend()
+plt.title("Angular velocity : Fan 1")
+plt.grid()
 
-plt.xlabel(r"$\omega$ [s$^{-1}$]")
-plt.ylabel(r'$\tau$ []')
+fig3.set_size_inches(5, 5)
+fig3.tight_layout()
+fig3.savefig(output + "omega_fan_1.png")
 
-plt.show()
+# 4) omega vs time for fan 2
+fig4 = plt.figure(4)
+
+for ind, name in enumerate(names[:-1]): # don't do for the last one
+  plt.plot(dico_values[name][:, 0], dico_values[name][:, 11], colors[ind], label=name)
+  plt.fill_between(dico_values[name][:, 0], dico_values[name][:, 11] - dico_values[name][:, 12], dico_values[name][:, 11] + dico_values[name][:, 12], color=colors[ind], alpha=0.2)
+
+plt.xlabel(r"$C_t$ []")
+plt.ylabel(r'$C_\omega$ []')
+plt.legend()
+plt.title("Angular velocity : Fan 2")
+plt.grid()
+
+fig4.set_size_inches(5, 5)
+fig4.tight_layout()
+fig4.savefig(output + "omega_fan_2.png")
+
+# 3) angle vs time for fan 1
+figang1 = plt.figure(50)
+
+for ind, name in enumerate(names[:-1]): # don't do for the last one
+  plt.plot(dico_values[name][:, 0], dico_values[name][:, 5], colors[ind], label=name)
+
+plt.xlabel(r"$t$ []")
+plt.ylabel(r'$\phi$ []')
+plt.legend()
+plt.title("Angle : Fan 1")
+plt.grid()
+
+figang1.set_size_inches(5, 5)
+figang1.tight_layout()
+figang1.savefig(output + "phi_fan_1.png")
+
+# ) angle vs time for fan 2
+figang2 = plt.figure(51)
+
+for ind, name in enumerate(names[:-1]): # don't do for the last one
+  plt.plot(dico_values[name][:, 0], dico_values[name][:, 7], colors[ind], label=name)
+
+plt.xlabel(r"$t$ []")
+plt.ylabel(r'$\phi$ []')
+plt.legend()
+plt.title("Angle : Fan 2")
+plt.grid()
+
+figang2.set_size_inches(5, 5)
+figang2.tight_layout()
+figang2.savefig(output + "phi_fan_2.png")
+
+
+# ) omega vs angle for fan 1
+figphase1 = plt.figure(52)
+
+for ind, name in enumerate(names[:-1]): # don't do for the last one
+  plt.plot(dico_values[name][:, 5], dico_values[name][:, 9], colors[ind], label=name)
+
+plt.xlabel(r"$\phi$ []")
+plt.ylabel(r'$C_\omega$ []')
+plt.legend()
+plt.title("Phase space : Fan 1")
+plt.grid()
+
+figphase1.set_size_inches(5, 5)
+figphase1.tight_layout()
+figphase1.savefig(output + "phase_fan_1.png")
+
+# 4) phase for fan 2
+figphase2 = plt.figure(53)
+
+for ind, name in enumerate(names[:-1]): # don't do for the last one
+  plt.plot(dico_values[name][:, 7], dico_values[name][:, 11], colors[ind], label=name)
+
+plt.xlabel(r"$\phi$ []")
+plt.ylabel(r'$C_\omega$ []')
+plt.legend()
+plt.title("Phase space : Fan 2")
+plt.grid()
+
+
+figphase2.set_size_inches(5, 5)
+figphase2.tight_layout()
+figphase2.savefig(output + "phase_fan_2.png")
+
+# 5/6) torque vs omega for both
+fig5 = plt.figure(5)
+name_both = 'both'
+
+# all
+plt.plot(dico_values[name_both][:, 9], dico_values[name_both][:, 1], colors_both[0], marker=',', label=name + " fan 1")
+plt.plot(dico_values[name_both][:, 11], dico_values[name_both][:, 3], colors_both[1], marker=',', label= name + " fan 2")
+# for the first 5 seconds
+
+begin = 400
+plt.plot(dico_values[name_both][:begin:10, 9], dico_values[name_both][:begin:10, 1], 'gx')
+plt.plot(dico_values[name_both][:begin:10, 11], dico_values[name_both][:begin:10, 3], 'gx')
+
+plt.xlabel(r"$C_\omega$ []")
+plt.ylabel(r'$C_\tau$ []')
+plt.legend(loc='best')
+plt.title("Policy both (action vs state)")
+plt.grid()
+
+fig5.set_size_inches(5, 5)
+fig5.tight_layout()
+fig5.savefig(output + "policy_both.png")
+
+# 5/6) torque vs omega for flow 4
+fig6 = plt.figure(6)
+
+name_4 = 'only flow: tau 1e-4'
+
+
+plt.plot(dico_values[name_4][:, 9], dico_values[name_4][:, 1], colors_both[4], marker=',', label=name + " fan 1")
+plt.plot(dico_values[name_4][:, 11], dico_values[name_4][:, 3], colors_both[5], marker=',', label= name + " fan 2")
+
+begin = 500
+plt.plot(dico_values[name_4][:begin:10, 9], dico_values[name_4][:begin:10, 1], 'kx')
+plt.plot(dico_values[name_4][:begin:10, 11], dico_values[name_4][:begin:10, 3], 'kx')
+
+
+plt.xlabel(r"$C_\omega$ []")
+plt.ylabel(r'$C_\tau$ []')
+plt.legend(loc='best')
+plt.title("Policy flow e-4 (action vs state)")
+plt.grid()
+
+fig6.set_size_inches(5, 5)
+fig6.tight_layout()
+fig6.savefig(output + "policy_e4.png")
+
+
+# 5/6) torque vs omega for flow 3
+fig73 = plt.figure(73)
+
+name_3 = 'only flow: tau 1e-3'
+
+
+plt.plot(dico_values[name_3][:, 9], dico_values[name_3][:, 1], colors_both[-2], marker=',', label=name + " fan 1")
+plt.plot(dico_values[name_3][:, 11], dico_values[name_3][:, 3], colors_both[-1], marker=',', label= name + " fan 2")
+
+begin = 300
+plt.plot(dico_values[name_3][:begin:10, 9], dico_values[name_3][:begin:10, 1], 'kx')
+plt.plot(dico_values[name_3][:begin:10, 11], dico_values[name_3][:begin:10, 3], 'kx')
+
+
+plt.xlabel(r"$C_\omega$ []")
+plt.ylabel(r'$C_\tau$ []')
+plt.legend(loc='best')
+plt.title("Policy flow e-3 (action vs state)")
+plt.grid()
+
+fig73.set_size_inches(5, 5)
+fig73.tight_layout()
+fig73.savefig(output + "policy_e3.png")
+
+####################################################
+# plot all three of the the policy spaces in on subplot
+
+fig, (ax1, ax2, ax3) = plt.subplots(1, 3)
+
+name_both = 'both'
+
+# all
+ax1.plot(dico_values[name_both][:, 9], dico_values[name_both][:, 1], colors_both[0], marker=',', label=name_both + " fan 1")
+ax1.plot(dico_values[name_both][:, 11], dico_values[name_both][:, 3], colors_both[1], marker=',', label= name_both + " fan 2")
+# for the first 5 seconds
+
+begin = 400
+ax1.plot(dico_values[name_both][:begin:10, 9], dico_values[name_both][:begin:10, 1], 'gx')
+ax1.plot(dico_values[name_both][:begin:10, 11], dico_values[name_both][:begin:10, 3], 'gx')
+
+ax1.set_xlabel(r"$C_\omega$ []")
+ax1.set_ylabel(r'$C_\tau$ []')
+ax1.legend(loc=(0.4, 0.3))
+ax1.grid()
+ax1.set_title("both")
+
+
+name_4 = 'only flow: tau 1e-4'
+
+ax2.plot(dico_values[name_4][:, 9], dico_values[name_4][:, 1], colors_both[4], marker=',', label= "flow 1e-4 fan 1")
+ax2.plot(dico_values[name_4][:, 11], dico_values[name_4][:, 3], colors_both[5], marker=',', label= "flow 1e-4 fan 2")
+
+begin = 500
+ax2.plot(dico_values[name_4][:begin:10, 9], dico_values[name_4][:begin:10, 1], 'kx')
+ax2.plot(dico_values[name_4][:begin:10, 11], dico_values[name_4][:begin:10, 3], 'kx')
+
+ax2.set_xlabel(r"$C_\omega$ []")
+ax2.legend(loc='best')
+ax2.grid()
+ax2.set_title("flow e-4")
+
+
+name_3 = 'only flow: tau 1e-3'
+
+ax3.plot(dico_values[name_3][:, 9], dico_values[name_3][:, 1], colors_both[-2], marker=',', label= "flow 1e-3 fan 1")
+ax3.plot(dico_values[name_3][:, 11], dico_values[name_3][:, 3], colors_both[-1], marker=',', label= "flow 1e-3 fan 2")
+
+begin = 300
+ax3.plot(dico_values[name_3][:begin:10, 9], dico_values[name_3][:begin:10, 1], 'kx')
+ax3.plot(dico_values[name_3][:begin:10, 11], dico_values[name_3][:begin:10, 3], 'kx')
+
+ax3.set_xlabel(r"$C_\omega$ []")
+ax3.legend(loc='best')
+ax3.grid()
+ax3.set_title("flow e-3")
+
+
+fig.set_size_inches(10, 5)
+fig.tight_layout()
+fig.savefig(output + "policies.png")
+
+###################################################3
+
+
+# 7) reward vs time for both fans, only energy, summed up
+fig7 = plt.figure(7)
+
+for ind, name in enumerate(names[:-1]): # don't do for the last one
+  mean = dico_rewards[name][:, 1] + dico_rewards[name][:, 3]
+  std = dico_rewards[name][:, 2] + dico_rewards[name][:, 4]
+  plt.plot(dico_rewards[name][:, 0], mean, colors[ind], label=name)
+  plt.fill_between(dico_rewards[name][:, 0], mean - std, mean + std, color=colors[ind], alpha=0.2)
+
+plt.xlabel(r"$C_t$ []")
+plt.ylabel(r'$r$ []')
+plt.legend()
+plt.title("Rewards : only energy")
+plt.grid()
+
+fig7.set_size_inches(5, 5)
+fig7.tight_layout()
+fig7.savefig(output + "rew_energy.png")
+
+# 8) reward vs time for both fans, only flow
+fig8 = plt.figure(8)
+
+for ind, name in enumerate(names[:-1]): # don't do for the last one
+  mean = dico_rewards[name][:, 5] + dico_rewards[name][:, 7]
+  std = dico_rewards[name][:, 6] + dico_rewards[name][:, 8]
+  plt.plot(dico_rewards[name][:, 0], mean, colors[ind], label=name)
+  plt.fill_between(dico_rewards[name][:, 0], mean - std, mean + std, color=colors[ind], alpha=0.2)
+
+plt.xlabel(r"$C_t$ []")
+plt.ylabel(r'$r$ []')
+plt.legend()
+plt.title("Rewards : only flow")
+plt.grid()
+
+fig8.set_size_inches(5, 5)
+fig8.tight_layout()
+fig8.savefig(output + "rew_flow.png")
+
+
+# 9) reward vs time for both fans, all
+fig9 = plt.figure(9)
+
+for ind, name in enumerate(names[:-1]): # don't do for the last one
+  mean = dico_rewards[name][:, 1] + dico_rewards[name][:, 3] + dico_rewards[name][:, 5] + dico_rewards[name][:, 7]
+  std = dico_rewards[name][:, 2] + dico_rewards[name][:, 4] + dico_rewards[name][:, 6] + dico_rewards[name][:, 8]
+  plt.plot(dico_rewards[name][:, 0], mean, colors[ind], label=name)
+  plt.fill_between(dico_rewards[name][:, 0], mean - std, mean + std, color=colors[ind], alpha=0.2)
+
+plt.xlabel(r"$C_t$ []")
+plt.ylabel(r'$r$ []')
+plt.legend()
+plt.title("Rewards : all")
+plt.grid()
+
+fig9.set_size_inches(5, 5)
+fig9.tight_layout()
+fig9.savefig(output + "rew_all.png")
+
+
+
+# 10) velocity at target vs time for 4 different runs, not using the std for uncontrolled and energy
+fig10 = plt.figure(10)
+
+for ind, name in enumerate(names[:-1]): # don't do for the last one
+  mean = dico_vels[name][:, 1]
+  std = dico_vels[name][:, 2]
+  plt.plot(dico_vels[name][:, 0], mean, colors[ind], label=name)
+  if (name != "uncontrolled") and (name != "only energy"):
+    plt.fill_between(dico_vels[name][:, 0], mean - std, mean + std, color=colors[ind], alpha=0.2)
+
+plt.xlabel(r"$C_t$ []")
+plt.ylabel(r'$v_{target}$ []')
+plt.legend()
+plt.title("Velocity at target")
+plt.grid()
+
+fig10.set_size_inches(10, 5)
+fig10.tight_layout()
+fig10.savefig(output + "velocity.png")
+
+
+
+plt.show(block=False)
+
+plt.pause(1) # Pause for interval seconds.
+input("hit[enter] to end.")
+plt.close('all') # all open plots are correctly closed after each run
+
+###############################################################

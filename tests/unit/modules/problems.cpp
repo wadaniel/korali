@@ -181,6 +181,21 @@ namespace
 
   problemJs = baseOptJs;
   experimentJs = baseExpJs;
+  e["Variables"][0].erase("Name");
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseOptJs;
+  experimentJs = baseExpJs;
+  e["Variables"][0]["Name"] = 1.0;
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseOptJs;
+  experimentJs = baseExpJs;
+  e["Variables"][0]["Name"] = "Var X";
+  ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseOptJs;
+  experimentJs = baseExpJs;
   e["Variables"][0].erase("Granularity");
   ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
 
@@ -361,6 +376,145 @@ namespace
   problemJs = baseProbJs;
   experimentJs = baseExpJs;
   problemJs["Solution"]["Size"] = 1;
+  ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
+ }
+
+ TEST(Problem, Sampling)
+ {
+  // Creating base experiment
+  Experiment e;
+  auto& experimentJs = e._js.getJson();
+
+  // Creating initial variable
+  Variable v;
+  v._distributionIndex = 0;
+  e._variables.push_back(&v);
+  e["Variables"][0]["Name"] = "Var 1";
+  e["Variables"][0]["Initial Mean"] = 0.0;
+  e["Variables"][0]["Initial Standard Deviation"] = 0.25;
+  e["Variables"][0]["Lower Bound"] = -1.0;
+  e["Variables"][0]["Upper Bound"] = 1.0;
+
+  // Configuring Problem
+  e["Problem"]["Type"] = "Sampling";
+  Sampling* pObj;
+  knlohmann::json problemJs;
+  problemJs["Type"] = "Sampling";
+  problemJs["Probability Function"] = 0;
+  e["Solver"]["Type"] = "Sampler/MCMC";
+
+  ASSERT_NO_THROW(pObj = dynamic_cast<Sampling *>(Module::getModule(problemJs, &e)));
+  e._problem = pObj;
+
+  // Defaults should be applied without a problem
+  ASSERT_NO_THROW(pObj->applyModuleDefaults(problemJs));
+
+  // Covering variable functions (no effect)
+  pObj->applyVariableDefaults();
+  ASSERT_NO_THROW(pObj->applyVariableDefaults());
+
+  // Backup the correct base configuration
+  auto baseProbJs = problemJs;
+  auto baseExpJs = experimentJs;
+
+  // Testing correct configuration
+  ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
+
+  // Testing unrecognized solver
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  e["Solver"]["Type"] = "";
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
+  // Evaluation function
+  std::function<void(korali::Sample&)> modelFc = [](Sample& s)
+  {
+   s["logP(x)"] = 0.5;
+   s["grad(logP(x))"] = std::vector<double>({0.5});
+   s["H(logP(x))"] = std::vector<std::vector<double>>({{0.5}});
+  };
+  _functionVector.clear();
+  _functionVector.push_back(&modelFc);
+
+  // Evaluating correct execution of evaluation
+  Sample s;
+  ASSERT_NO_THROW(pObj->evaluate(s));
+  ASSERT_NO_THROW(pObj->evaluateGradient(s));
+  ASSERT_NO_THROW(pObj->evaluateHessian(s));
+
+  // Trying to run unknown operation
+  ASSERT_ANY_THROW(pObj->runOperation("Unknown", s));
+
+  // running correct operations
+  ASSERT_NO_THROW(pObj->runOperation("Evaluate", s));
+  ASSERT_NO_THROW(pObj->runOperation("Evaluate Gradient", s));
+  ASSERT_NO_THROW(pObj->runOperation("Evaluate Hessian", s));
+
+  // Evaluation function
+  modelFc = [](Sample& s)
+  {
+   s["logP(x)"] = std::numeric_limits<double>::infinity();
+   s["grad(logP(x))"] = std::vector<double>({0.5});
+   s["H(logP(x))"] = std::vector<std::vector<double>>({{0.5}});
+  };
+  _functionVector.clear();
+  _functionVector.push_back(&modelFc);
+
+  ASSERT_ANY_THROW(pObj->evaluate(s));
+  ASSERT_NO_THROW(pObj->evaluateGradient(s));
+  ASSERT_NO_THROW(pObj->evaluateHessian(s));
+
+  // Evaluation function
+  modelFc = [](Sample& s)
+  {
+   s["logP(x)"] = 0.5;
+   s["grad(logP(x))"] = std::vector<double>({});
+   s["H(logP(x))"] = std::vector<std::vector<double>>({{0.5}});
+  };
+  _functionVector.clear();
+  _functionVector.push_back(&modelFc);
+
+  ASSERT_NO_THROW(pObj->evaluate(s));
+  ASSERT_ANY_THROW(pObj->evaluateGradient(s));
+  ASSERT_NO_THROW(pObj->evaluateHessian(s));
+
+  // Evaluation function
+  modelFc = [](Sample& s)
+  {
+   s["logP(x)"] = 0.5;
+   s["grad(logP(x))"] = std::vector<double>({0.5});
+   s["H(logP(x))"] = std::vector<std::vector<double>>({{}});
+  };
+  _functionVector.clear();
+  _functionVector.push_back(&modelFc);
+
+  ASSERT_NO_THROW(pObj->evaluate(s));
+  ASSERT_NO_THROW(pObj->evaluateGradient(s));
+  ASSERT_ANY_THROW(pObj->evaluateHessian(s));
+
+  modelFc = [](Sample& s)
+  {
+   s["logP(x)"] = 0.5;
+   s["grad(logP(x))"] = std::vector<double>({0.5});
+   s["H(logP(x))"] = std::vector<std::vector<double>>({{1.0}, {1.0}});
+  };
+  _functionVector.clear();
+  _functionVector.push_back(&modelFc);
+  ASSERT_ANY_THROW(pObj->evaluateHessian(s));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  problemJs.erase("Probability Function");
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  problemJs["Probability Function"] = "Not a Number";
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  problemJs["Probability Function"] = modelFc;
   ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
  }
 } // namespace

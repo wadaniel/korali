@@ -12,7 +12,7 @@ The particles orientation is updated by rotating the current orientation by an a
 Example
 -------
 
-Verbous example with constant action  :math:`a=(1,0,0)` and visualisation turned on can be run using 
+Verbous example with Newton policy  :math:`a=-dV(r)/dr / \|dV(r)/dr\|` and visualisation turned on can be run using 
 
 ```
 python main.py --visualize 1 --numIndividuals 10 --numTimesteps 100 --numNearestNeighbours 5

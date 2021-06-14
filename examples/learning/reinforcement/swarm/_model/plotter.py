@@ -1,5 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.cm as cm
+from matplotlib.colors import Normalize
 from mpl_toolkits.mplot3d import Axes3D
 
 def plotSwarm( sim, t ):
@@ -13,8 +15,11 @@ def plotSwarm( sim, t ):
 		#print(np.linalg.norm(fish.curDirection))
 	locations = np.array(locations)
 	directions = np.array(directions)
+	cmap = cm.jet
+	norm = Normalize(vmin=0, vmax=sim.N)
 	ax.quiver(locations[:,0],locations[:,1],locations[:,2],
-		      directions[:,0], directions[:,1], directions[:,2])
+		      directions[:,0], directions[:,1], directions[:,2], 
+		      color=cmap(norm(np.arange(sim.N))))
 	ax.set_xlim([-1,1])
 	ax.set_ylim([-1,1])
 	ax.set_zlim([-1,1])
@@ -33,8 +38,11 @@ def plotSwarmCentered( sim, t ):
 	locations = np.array(locations)
 	directions = np.array(directions)
 	center = sim.computeCenter()
+	cmap = cm.jet
+	norm = Normalize(vmin=0, vmax=sim.N)
 	ax.quiver(locations[:,0],locations[:,1],locations[:,2],
-		      directions[:,0], directions[:,1], directions[:,2])
+		      directions[:,0], directions[:,1], directions[:,2],
+		      color=cmap(norm(np.arange(sim.N))))
 	ax.set_xlim([center[0]-1,center[0]+1])
 	ax.set_ylim([center[1]-1,center[1]+1])
 	ax.set_zlim([center[2]-1,center[2]+1])

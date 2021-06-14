@@ -5,7 +5,7 @@ from scipy.stats import vonmises
 from plotter import *
 
 class fish:
-    def __init__(self, location, individualStd=0.1, speed=3, maxAngle=180./180.*np.pi, eqDistance=0.1, potentialStrength=1, potential="Harmonic" ):
+    def __init__(self, location, individualStd=0.1, speed=3, maxAngle=90./180.*np.pi, eqDistance=0.1, potentialStrength=1, potential="Harmonic" ):
         self.location = location
         self.curDirection = self.randUnitDirection()
         self.wishedDirection = self.curDirection
@@ -90,7 +90,7 @@ class fish:
         else:
             rotVector = np.cross(self.curDirection, self.wishedDirection)
             rotVector /= np.linalg.norm(rotVector)
-            rotVector *= maxAngle
+            rotVector *= self.maxAngle
             r = Rotation.from_rotvec(rotVector)
             self.curDirection = r.apply(self.curDirection)
         
@@ -101,7 +101,7 @@ class fish:
     def updateLocation(self):
         self.location += self.speed*self.dt*self.curDirection
 
-    ''' reward assumes pair-wise Lennard-Jones potentials ''' 
+    ''' reward assumes pair-wise potentials ''' 
     def getReward(self, nearestNeighbourDistance ):
         reward = 0.0
         for r in nearestNeighbourDistance:
@@ -113,5 +113,23 @@ class fish:
             elif self.potential == "Harmonic":
                 reward += self.epsilon - 4*self.epsilon/self.sigmaPotential**2*(156/2**(7/3)-42/2**(4/3))*(r-2**(1/6)*self.sigmaPotential)**2
             else:
-                assert 0, print("Please chose a potential that is implemented")
+                assert 0, print("Please chose a pair-potential that is implemented")
         return reward
+
+    ''' newton policy computes direction as gradient of potential ''' 
+    def newtonPolicy(self, nearestNeighbourDirections ):
+        action = np.zeros(3)
+        for direction in nearestNeighbourDirections:
+            r = np.linalg.norm(direction)
+            # Lennard-Jones potential
+            if self.potential == "Lennard-Jones":
+                x = self.sigmaPotential / r
+                action -= 4*self.epsilon*( -12*x**12/r + 6*x**6/r )*direction/r
+            # Harmonic potential
+            elif self.potential == "Harmonic":
+                action += 4*self.epsilon/self.sigmaPotential**2*(156/2**(7/3)-42/2**(4/3))*(r-2**(1/6)*self.sigmaPotential)*direction/r
+            else:
+                assert 0, print("Please chose a pair-potential that is implemented")
+        action = action / np.linalg.norm(action)
+        return action
+

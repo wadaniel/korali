@@ -24,4 +24,16 @@ test('modules.distributions', distributions_tester,
   suite: 'unit',
 )
 
+problems_tester = executable('problems_tester',
+  files(['problems.cpp']),
+  include_directories: korali_include,
+  dependencies: [ gtest_main_dep, korali_deps, pythonEmbedDep ],
+  link_with: [ python_extension ],
+  )
+  
+test('modules.problems', problems_tester,
+  protocol: 'gtest',
+  suite: 'unit',
+)
+
 subdir('solver')

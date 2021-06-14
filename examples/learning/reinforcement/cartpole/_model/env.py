@@ -8,9 +8,10 @@ maxSteps = 500
 
 def env(s):
 
- # Initializing environment
+ # Initializing environment and random seed
  sampleId = s["Sample Id"]
- cart.reset(sampleId)
+ launchId = s["Launch Id"]
+ cart.reset(sampleId * 1024 + launchId)
  s["State"] = cart.getState().tolist()
  step = 0
  done = False

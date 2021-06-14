@@ -94,6 +94,7 @@ e["Solver"]["Reward"]["Rescaling"]["Frequency"] = 1000
 
 ### Configuring the neural network and its hidden layers
 
+e["Solver"]["Policy"]["Distribution"] = "Squashed Normal"
 e["Solver"]["Neural Network"]["Engine"] = args.engine
 e["Solver"]["Neural Network"]["Optimizer"] = args.optimizer
 

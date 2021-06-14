@@ -72,6 +72,11 @@ struct policy_t
   * @brief [Discrete] Stores the index of the selected experience
   */
   size_t actionIndex;
+
+  /**
+   * @brief [Continuous] Stores the Unbounded Actions of the Squashed Normal Policy Distribution
+   */
+  std::vector<float> unboundedAction;
 };
 
 /**

@@ -10,5 +10,17 @@
 #SBATCH --partition=normal
 #SBATCH --constraint=gpu
 
-cd ..
+if [ $# -lt 1 ] ; then
+	echo "Usage: ./fish64.sbatch RUNNAME"
+	exit 1
+fi
+if [ $# -gt 0 ] ; then
+	RUNNAME=$1
+fi
+
+RUNPATH="${SCRATCH}/CUP2D/${RUNNAME}"
+mkdir -p ${RUNPATH}
+cp ../run-vracer-fish ../batch-fish-vracer.sh ${FOLDERNAME}
+cd ${FOLDERNAME}
+
 ./batch-fish-vracer.sh

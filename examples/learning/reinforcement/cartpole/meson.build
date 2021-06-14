@@ -27,13 +27,3 @@ test('learning.reinforcement.cartpole.discrete.single', e,
       depends: python_extension,
       env: nomalloc
     )
-
-e = find_program('run-dvracer.py', required: true)
-test('learning.reinforcement.cartpole.discrete.multiple', e,
-      args: [ '--concurrentEnvironments', '4'],
-      timeout : 3600,
-      suite: 'regression',
-      workdir: meson.current_source_dir(),
-      depends: python_extension,
-      env: nomalloc
-    )

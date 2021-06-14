@@ -5,8 +5,8 @@
 #include <algorithm>
 #include <chrono>
 
-//#define COSREWARD
-#define COSREWARDSCALED
+#define COSREWARD
+//#define COSREWARDSCALED
 
 namespace korali
 {
@@ -581,7 +581,7 @@ void Agent::partitionFunctionStat()
   // Randomize demonstration batch
   std::vector<size_t> randomDemonstrationIndexes(_problem->_numberObservedTrajectories);
   std::iota(std::begin(randomDemonstrationIndexes), std::end(randomDemonstrationIndexes), 0);
-  //std::shuffle(randomDemonstrationIndexes.begin(), randomDemonstrationIndexes.end(), generator);
+  //std::shuffle(randomDemonstrationIndexes.begin(), randomDemonstrationIndexes.end(), generator); // NO RANDOMIZATION
 
   // Calculate cumulative rewards for demonstration batch
   std::vector<float> cumulativeRewardsDemonstrationBatch(_demonstrationBatchSize, 0.0);

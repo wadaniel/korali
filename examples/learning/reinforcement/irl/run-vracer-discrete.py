@@ -101,7 +101,7 @@ e["Solver"]["State Rescaling"]["Enabled"] = False
 ### IRL related configuration
 
 e["Solver"]["Experiences Between Reward Updates"] = 10
-e["Solver"]["Rewardfunction Learning Rate"] = 1e-4
+e["Solver"]["Rewardfunction Learning Rate"] = 5e-4 # (1e-4 too low)
 e["Solver"]["Demonstration Batch Size"] = 10
 e["Solver"]["Background Batch Size"] = 20
 e["Solver"]["Use Fusion Distribution"] = False

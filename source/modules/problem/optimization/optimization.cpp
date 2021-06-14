@@ -27,23 +27,21 @@ void Optimization::evaluateConstraints(Sample &sample)
 
     auto evaluation = KORALI_GET(double, sample, "F(x)");
 
-    // If constraint is not a finite number, constraint is set to +Infinity
-    if (std::isnan(evaluation))
-      sample["Constraint Evaluations"][i] = Inf;
-    else
-      sample["Constraint Evaluations"][i] = evaluation;
+    if (std::isfinite(evaluation) == false)
+     KORALI_LOG_ERROR("Non finite value of constraint evaluation %lu detected: %f\n", i, evaluation);
+
+    sample["Constraint Evaluations"][i] = evaluation;
   }
 }
 
 void Optimization::evaluate(Sample &sample)
 {
-  sample.run(_objectiveFunction);
+ sample.run(_objectiveFunction);
 
-  auto evaluation = KORALI_GET(double, sample, "F(x)");
+ auto evaluation = KORALI_GET(double, sample, "F(x)");
 
-  // If result is not a finite number, objective function evaluates to -Infinity
-  if (std::isnan(evaluation))
-    sample["F(x)"] = -Inf;
+ if (std::isfinite(evaluation) == false)
+  KORALI_LOG_ERROR("Non finite value of function evaluation detected: %f\n", evaluation);
 }
 
 void Optimization::evaluateMultiple(Sample &sample)
@@ -52,10 +50,9 @@ void Optimization::evaluateMultiple(Sample &sample)
 
   auto evaluation = KORALI_GET(std::vector<double>, sample, "F(x)");
 
-  // If result is not a finite number, objective function evaluates to -Infinity
-  for (size_t i = 0; i < evaluation.size(); ++i)
-    if (std::isnan(evaluation[i]))
-      sample["F(x)"][i] = -Inf;
+  for (size_t i = 0; i < evaluation.size(); i++)
+  if (std::isfinite(evaluation[i]) == false)
+     KORALI_LOG_ERROR("Non finite value of function evaluation detected for variable %lu: %f\n", i, evaluation[i]);
 }
 
 void Optimization::evaluateWithGradients(Sample &sample)
@@ -63,23 +60,17 @@ void Optimization::evaluateWithGradients(Sample &sample)
   sample.run(_objectiveFunction);
 
   auto evaluation = KORALI_GET(double, sample, "F(x)");
-
-  // If result is not a finite number, objective function evaluates to -Infinity
-  if (std::isnan(evaluation))
-    sample["F(x)"] = -Inf;
-  else
-    sample["F(x)"] = evaluation;
-
   auto gradient = KORALI_GET(std::vector<double>, sample, "Gradient");
 
   if (gradient.size() != _k->_variables.size())
-    KORALI_LOG_ERROR("Size of sample's gradient evaluations vector (%lu) is different from the number of problem variables defined (%lu).\n", gradient.size(), _k->_variables.size());
+   KORALI_LOG_ERROR("Size of sample's gradient evaluations vector (%lu) is different from the number of problem variables defined (%lu).\n", gradient.size(), _k->_variables.size());
 
-  // If result is not a finite number, gradient is set to zero
-  if (std::isnan(evaluation) || isanynan(gradient))
-    for (size_t i = 0; i < sample["Gradient"].size(); i++) sample["Gradient"][i] = 0.;
-  else
-    for (size_t i = 0; i < sample["Gradient"].size(); i++) sample["Gradient"][i] = gradient[i];
+  if (std::isfinite(evaluation) == false)
+   KORALI_LOG_ERROR("Non finite value of function evaluation detected: %f\n", evaluation);
+
+  for (size_t i = 0; i < gradient.size(); i++)
+  if (std::isfinite(gradient[i]) == false)
+     KORALI_LOG_ERROR("Non finite value of gradient evaluation detected for variable %lu: %f\n", i, gradient[i]);
 }
 
 void Optimization::setConfiguration(knlohmann::json& js) 
@@ -219,3 +210,4 @@ bool Optimization::runOperation(std::string operation, korali::Sample& sample)
 
 } //problem
 } //korali
+

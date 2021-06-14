@@ -447,7 +447,7 @@ std::vector<float> Continuous::calculateImportanceWeightGradient(const std::vect
         const double k1 = (curMu*curMu-curVar)/curVar*std::exp(normalLogDensity(_actionLowerBounds[i], curMu, curSigma));
         const double k2 = (curMu*curMu-curVar)/curVar*std::exp(normalLogDensity(_actionLowerBounds[i], curMu, curSigma));
         const double k3 = std::sqrt(2./M_PI)*std::erff(action[i]/(std::sqrt(2.)*curSigma))-_actionLowerBounds[i]*curVar*std::exp(-_actionLowerBounds[i]*_actionLowerBounds[i]/(2.*curVar));
-        importanceWeightGradients[_problem->_actionVectorSize+i] = (k1+k2+k3)/std::exp(normalLogCDF(_actionLowerBounds[i], oldMu, oldSigma));
+        importanceWeightGradients[_problem->_actionVectorSize+i] = (k1+k2+k3)/normalLogCDF(_actionLowerBounds[i], oldMu, oldSigma);
         importanceWeightGradients[_problem->_actionVectorSize+i] *= std::exp(normalLogDensity(_actionLowerBounds[i], oldMu, oldSigma)); // Scale correction
 
         // Calculate importance weight
@@ -465,7 +465,7 @@ std::vector<float> Continuous::calculateImportanceWeightGradient(const std::vect
         const float k1 = (curMu*curMu-curVar)/curVar*std::exp(normalLogDensity(_actionUpperBounds[i], curMu, curSigma));
         const float k2 = (curMu*curMu-curVar)/curVar*std::exp(normalLogDensity(_actionUpperBounds[i], curMu, curSigma));
         const float k3 = std::sqrt(2./M_PI)*std::erff(action[i]/(std::sqrt(2.)*curSigma))-_actionUpperBounds[i]*curVar*std::exp(-_actionUpperBounds[i]*_actionUpperBounds[i]/(2.*curVar));
-        importanceWeightGradients[_problem->_actionVectorSize+i] = -(k1+k2+k3)/std::exp(normalLogCCDF(_actionUpperBounds[i], oldMu, oldSigma));
+        importanceWeightGradients[_problem->_actionVectorSize+i] = -(k1+k2+k3)/normalCCDF(_actionUpperBounds[i], oldMu, oldSigma);
         importanceWeightGradients[_problem->_actionVectorSize+i] *= std::exp(normalLogDensity(_actionUpperBounds[i], oldMu, oldSigma)); // Scale correction
 
         // Calculate importance weight
@@ -597,13 +597,18 @@ std::vector<float> Continuous::calculateKLDivergenceGradient(const policy_t &old
       float actionDiff = (curMu - oldMu);
 
       // KL-Gradient with respect to Mean
-      KLDivergenceGradients[i] = -std::exp(normalLogCDF(_actionLowerBounds[i], curMu, curSigma))*std::exp(normalLogCDF(_actionLowerBounds[i], oldMu, oldSigma))*std::exp(normalLogDensity(_actionLowerBounds[i], curMu, curSigma));
+      KLDivergenceGradients[i] = -normalCDF(_actionLowerBounds[i], curMu, curSigma)*normalCDF(_actionLowerBounds[i], oldMu, oldSigma)*std::exp(normalLogDensity(_actionLowerBounds[i], curMu, curSigma));
       KLDivergenceGradients[i] -= actionDiff * curInvVar * std::erff((_actionUpperBounds[i]-oldMu)/(std::sqrt(2.)*oldSigma)) - std::erff((_actionLowerBounds[i]-oldMu)/(std::sqrt(2.)*oldSigma));
       KLDivergenceGradients[i] -= oldSigma/(std::sqrt(2.*M_PI))*curInvVar*(std::exp(-(_actionLowerBounds[i]-oldMu)*(_actionLowerBounds[i]-oldMu)/(2.*oldSigma*oldSigma))-std::exp(-(_actionUpperBounds[i]-oldMu)*(_actionUpperBounds[i]-oldMu)/(2.*oldSigma*oldSigma)));
-      KLDivergenceGradients[i] += (1.-std::exp(normalLogCDF(_actionUpperBounds[i], curMu, curSigma)))*std::exp(normalLogCDF(_actionUpperBounds[i], oldMu, oldSigma))*std::exp(normalLogDensity(_actionUpperBounds[i], curMu, curSigma));
+      KLDivergenceGradients[i] += (1.-normalLogCDF(_actionUpperBounds[i], curMu, curSigma))*normalCDF(_actionUpperBounds[i], oldMu, oldSigma)*std::exp(normalLogDensity(_actionUpperBounds[i], curMu, curSigma));
 
       // KL-Gradient with respect to Sigma
-      //KLDivergenceGradients[_problem->_actionVectorSize + i] = ..
+      KLDivergenceGradients[_problem->_actionVectorSize + i] = -(_actionLowerBounds[i]-curMu)*(_actionLowerBounds[i]-curMu)/curSigma*normalCDF(_actionLowerBounds[i],curMu,curSigma)*std::exp(normalLogDensity(_actionLowerBounds[i], curMu, curSigma));
+      KLDivergenceGradients[_problem->_actionVectorSize + i] += 0.5*(-actionDiff*actionDiff*curInvVar/curSigma+1./curSigma)*(std::erff((_actionUpperBounds[i]-oldMu)/(std::sqrt(2.)*oldSigma))-std::erf((_actionLowerBounds[i]-oldMu)/(std::sqrt(2.)*oldSigma)));
+      KLDivergenceGradients[_problem->_actionVectorSize + i] -= oldSigma*std::sqrt(2./M_PI)*(oldMu-curMu)*curInvVar/curSigma*(std::exp(-(_actionLowerBounds[i]-oldMu)*(_actionLowerBounds[i]-oldMu)/(2.*oldSigma*oldSigma))-std::exp(-(_actionUpperBounds[i]-oldMu)*(_actionUpperBounds[i]-oldMu)/(2.*oldSigma*oldSigma)));
+      KLDivergenceGradients[_problem->_actionVectorSize + i] -= 0.5*oldSigma*oldSigma*curInvVar/curSigma*std::erff((_actionUpperBounds[i]-oldMu)/(std::sqrt(2.)*oldSigma)) - std::erff((_actionLowerBounds[i]-oldMu)/(std::sqrt(2.)*oldSigma));
+      KLDivergenceGradients[_problem->_actionVectorSize + i] -= oldSigma*curInvVar/curSigma*((_actionLowerBounds[i]-oldMu)*std::exp(-(_actionLowerBounds[i]-oldMu)*(_actionLowerBounds[i]-oldMu)/(2.*oldSigma*oldSigma))-(_actionUpperBounds[i]-oldMu)*std::exp(-(_actionUpperBounds[i]-oldMu)*(_actionUpperBounds[i]-oldMu)/(2.*oldSigma*oldSigma)));
+      KLDivergenceGradients[_problem->_actionVectorSize + i] += (_actionUpperBounds[i]-curMu)/curSigma*(1.-normalCDF(_actionUpperBounds[i], curMu, curSigma))*std::exp(normalLogDensity(_actionUpperBounds[i], curMu, curSigma));
     }
   }
 

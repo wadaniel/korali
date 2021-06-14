@@ -29,6 +29,8 @@ void Optimization::evaluateConstraints(Sample &sample)
 
     if (std::isfinite(evaluation) == false)
      KORALI_LOG_ERROR("Non finite value of constraint evaluation %lu detected: %f\n", i, evaluation);
+
+    sample["Constraint Evaluations"][i] = evaluation;
   }
 }
 

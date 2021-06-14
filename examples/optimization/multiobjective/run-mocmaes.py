@@ -15,6 +15,11 @@ k = korali.Engine()
 
 # Creating new experiment
 e = korali.Experiment()
+ 
+resultpath = '_results/' 
+found = e.loadState(resultpath + "latest")
+if (found == True): 
+    print("[Korali] Continuing execution from previous run...\n")
 
 # Configuring Problem
 e["Random Seed"] = 0xC0F33
@@ -37,10 +42,13 @@ e["Solver"]["Population Size"] = 32
 e["Solver"]["Mu Value"] = 16
 e["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-8
 e["Solver"]["Termination Criteria"]["Min Variable Difference Threshold"] = 1e-8
-e["Solver"]["Termination Criteria"]["Max Generations"] = 500
+if found == True:
+    e["Solver"]["Termination Criteria"]["Max Generations"] = 500
+else:
+    e["Solver"]["Termination Criteria"]["Max Generations"] = 50
 
 # Configuring results path
-e["File Output"]["Path"] = '_korali_result_mocmaes'
+e["File Output"]["Path"] = resultpath
 e["File Output"]["Frequency"] = 1
 
 # Running Korali

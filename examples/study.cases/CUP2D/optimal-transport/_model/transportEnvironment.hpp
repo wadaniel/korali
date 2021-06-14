@@ -5,9 +5,9 @@
 #include <algorithm>
 #include <random>
 
-void runEnvironment(korali::Sample &s);
-void runEnvironmentCmaes(korali::Sample &s);
+void runEnvironmentVracer(korali::Sample &s);
 void runEnvironmentMocmaes(korali::Sample &s);
+void runEnvironmentCmaes(korali::Sample &s);
 extern std::string _resultsPath;
 extern int _argc;
 extern char **_argv;

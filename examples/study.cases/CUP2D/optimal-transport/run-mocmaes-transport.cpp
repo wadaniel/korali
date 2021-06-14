@@ -1,5 +1,5 @@
 // Select which environment to use
-#include "_models/transportEnvironment/transportEnvironment.hpp"
+#include "_model/transportEnvironment.hpp"
 #include "korali.hpp"
 
 std::string _resultsPath;
@@ -20,12 +20,14 @@ int main(int argc, char *argv[])
   _argv = argv;
  
   // Defining constants
+  const double maxForce = 1e-2;
+  const size_t numVariables = 8; // Discretization of path
  
   // Init CUP2D
   _environment = new Simulation(_argc, _argv);
   _environment->init();
 
-  std::string resultsPath = "_results_transport_cmaes/";
+  std::string resultsPath = "_results_transport_mocmaes/";
 
   // Creating Experiment
   auto e = korali::Experiment();
@@ -35,36 +37,26 @@ int main(int argc, char *argv[])
 
   e["Random Seed"] = 0xC0FEE;
   e["Problem"]["Type"] = "Optimization";
-  e["Problem"]["Objective Function"] = &runEnvironmentCmaes;
+  e["Problem"]["Objective Function"] = &runEnvironmentMocmaes;
+  e["Problem"]["Num Objectives"] = 2;
   
  
   // Configuring MO-CMA-ES parameters
-  e["Solver"]["Type"] = "Optimizer/CMAES";
+  e["Solver"]["Type"] = "Optimizer/MOCMAES";
   e["Solver"]["Population Size"] = 32;
   e["Solver"]["Mu Value"] = 16;
   e["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-16;
+  e["Solver"]["Termination Criteria"]["Min Variable Difference Threshold"] = 1e-16;
   e["Solver"]["Termination Criteria"]["Max Generations"] = 500;
  
   // Setting up the variables
-  e["Variables"][0]["Name"] = "a";
-  e["Variables"][0]["Lower Bound"] = 0.;
-  e["Variables"][0]["Upper Bound"] = 100.;
-
-  e["Variables"][1]["Name"] = "b";
-  e["Variables"][1]["Lower Bound"] = 0.;
-  e["Variables"][1]["Upper Bound"] = 100.;
-
-  e["Variables"][2]["Name"] = "c";
-  e["Variables"][2]["Lower Bound"] = 0.;
-  e["Variables"][2]["Upper Bound"] = 100.;
- 
-  e["Variables"][3]["Name"] = "d";
-  e["Variables"][3]["Lower Bound"] = -10.;
-  e["Variables"][3]["Upper Bound"] = 10.;
-
-  e["Variables"][4]["Name"] = "e";
-  e["Variables"][4]["Lower Bound"] = -10.;
-  e["Variables"][4]["Upper Bound"] = 10.;
+  for (size_t var = 0; var < numVariables; ++var)
+  {
+    e["Variables"][var]["Name"] = std::string("Velocity") + std::to_string(var);
+    e["Variables"][var]["Lower Bound"] = 0.0;
+    e["Variables"][var]["Upper Bound"] = +maxForce;
+    e["Variables"][var]["Initial Standard Deviation"] = 0.5*maxForce/std::sqrt(numVariables);
+  }
 
   ////// Setting Korali output configuration
 

@@ -1,5 +1,5 @@
 // Select which environment to use
-#include "_models/windmillEnvironment/windmillEnvironment.hpp"
+#include "_model/fishEnvironment.hpp"
 #include "korali.hpp"
 
 std::string _resultsPath;
@@ -16,75 +16,73 @@ int main(int argc, char *argv[])
   }
 
   // Storing parameters
-  // _argc = argc
-  // _argv = argv;
-
-  // this enables to pass the folder as an argument to exe
-
-  _argc = argc-1;
-
-  char *_argv_[argc-1];
-  for(int i = 0; i < argc-1; ++i)
-  {
-    _argv_[i] = argv[i];
-  }
-
-  
+  _argc = argc;
+  _argv = argv;
 
   // Getting number of workers
   int N = 1;
   MPI_Comm_size(MPI_COMM_WORLD, &N);
   N = N - 1; // Minus one for Korali's engine
 
-  // Initialize CUP2D
-  _environment = new Simulation(_argc, _argv_);
+  // Initializing CUP
+  _environment = new Simulation(_argc, _argv);
   _environment->init();
 
-  std::string folder = std::string(argv[argc-1]);
+  // Setting results path
 
-  // Set results path
-  std::string trainingResultsPath = "_results_windmill_training/" + folder;
-  std::string testingResultsPath = "_results_windmill_testing/" + folder;
-  
-  // Creating Korali experiment
+  // for the GRP 2x32 run
+  // std::string trainingResultsPath = "_testingResults";
+  // std::string testingResultsPath = "_testingResults";
+
+  // for the GRU 64 run
+  // std::string trainingResultsPath = "_trainingResults-GRU64/";
+  // std::string testingResultsPath = "_testingResults-GRU64";
+
+  // for the FFN 2x128 run
+  std::string trainingResultsPath = "_trainingResults/";
+  std::string testingResultsPath = "_testingResults/";
+
+  // Creating Experiment
   auto e = korali::Experiment();
+  e["Problem"]["Type"] = "Reinforcement Learning / Continuous";
 
-  // Check if there is log files to continue training
+  ////// Checking if existing results are there and continuing them
+
   auto found = e.loadState(trainingResultsPath + std::string("/latest"));
   if (found == true) printf("[Korali] Continuing execution from previous run...\n");
 
-  // Configuring problem (for test eliminate after)
-  e["Problem"]["Type"] = "Reinforcement Learning / Continuous";
+  // Configuring Experiment
   e["Problem"]["Environment Function"] = &runEnvironment;
-  e["Problem"]["Training Reward Threshold"] = 8.0;
+  e["Problem"]["Training Reward Threshold"] = 200.0;
   e["Problem"]["Policy Testing Episodes"] = 5;
 
   // Adding custom setting to run the environment without dumping the state files during training
   e["Problem"]["Custom Settings"]["Dump Frequency"] = 0.0;
   e["Problem"]["Custom Settings"]["Dump Path"] = trainingResultsPath;
 
-  const size_t numStates = 4;
-  for (int curVariable = 0; curVariable < numStates; curVariable++)
+  // Setting up the 16 state variables
+  size_t curVariable = 0;
+  for (; curVariable < 16; curVariable++)
   {
-    if(curVariable%2==0){
-      e["Variables"][curVariable]["Name"] = std::string("Angle ") + std::to_string(curVariable/2 + 1);
-    } else{
-      e["Variables"][curVariable]["Name"] = std::string("Omega ") + std::to_string(curVariable/2 + 1);
-    }
-    
+    e["Variables"][curVariable]["Name"] = std::string("StateVar") + std::to_string(curVariable);
     e["Variables"][curVariable]["Type"] = "State";
   }
 
-  double max_torque = 1e-4;
-  for(size_t j=numStates; j < numStates + 2; ++j){
-    e["Variables"][j]["Name"] = "Torque " + std::to_string(j-numStates+1);
-    e["Variables"][j]["Type"] = "Action";
-    e["Variables"][j]["Lower Bound"] = -max_torque;
-    e["Variables"][j]["Upper Bound"] = +max_torque;
-    e["Variables"][j]["Initial Exploration Noise"] = 0.5;
-  }
+  e["Variables"][curVariable]["Name"] = "Curvature";
+  e["Variables"][curVariable]["Type"] = "Action";
+  e["Variables"][curVariable]["Lower Bound"] = -1.0;
+  e["Variables"][curVariable]["Upper Bound"] = +1.0;
+  e["Variables"][curVariable]["Initial Exploration Noise"] = 0.50f;
+
+  curVariable++;
+  e["Variables"][curVariable]["Name"] = "Swimming Period";
+  e["Variables"][curVariable]["Type"] = "Action";
+  e["Variables"][curVariable]["Lower Bound"] = -0.25;
+  e["Variables"][curVariable]["Upper Bound"] = +0.25;
+  e["Variables"][curVariable]["Initial Exploration Noise"] = 0.50f;
 
   /// Defining Agent Configuration
+
   e["Solver"]["Type"] = "Agent / Continuous / VRACER";
   e["Solver"]["Mode"] = "Training";
   e["Solver"]["Episodes Per Generation"] = 1;
@@ -93,9 +91,9 @@ int main(int argc, char *argv[])
   e["Solver"]["Learning Rate"] = 1e-4;
   e["Solver"]["Discount Factor"] = 0.95;
   e["Solver"]["Mini Batch"]["Size"] =  128;
-  e["Solver"]["Policy"]["Distribution"] = "Squashed Normal";
 
   /// Defining the configuration of replay memory
+
   e["Solver"]["Experience Replay"]["Start Size"] = 1024;
   e["Solver"]["Experience Replay"]["Maximum Size"] = 65536;
   e["Solver"]["Experience Replay"]["Off Policy"]["Annealing Rate"] = 5.0e-8;
@@ -103,22 +101,35 @@ int main(int argc, char *argv[])
   e["Solver"]["Experience Replay"]["Off Policy"]["REFER Beta"] = 0.3;
   e["Solver"]["Experience Replay"]["Off Policy"]["Target"] = 0.1;
 
-  //////////////////////////////////////////////////
-  e["Solver"]["Termination Criteria"]["Max Experiences"] = 1;
-
-
   //// Defining Policy distribution and scaling parameters
-  e["Solver"]["State Rescaling"]["Enabled"] = true;
-  e["Solver"]["Reward"]["Rescaling"]["Enabled"] = false; // this was true
-  //e["Solver"]["Reward"]["Rescaling"]["Frequency"] = 1000;
-
-  /// Configuring the neural network and its hidden layers
-  e["Solver"]["Neural Network"]["Engine"] = "OneDNN";
-  e["Solver"]["Neural Network"]["Optimizer"] = "Adam";
   
+  e["Solver"]["Policy"]["Distribution"] = "Unbounded Normal";
+  e["Solver"]["State Rescaling"]["Enabled"] = true;
+  e["Solver"]["Reward"]["Rescaling"]["Enabled"] = true;
+  e["Solver"]["Reward"]["Rescaling"]["Frequency"] = 1000;
+  e["Solver"]["Reward"]["Outbound Penalization"]["Enabled"] = true;
+  e["Solver"]["Reward"]["Outbound Penalization"]["Factor"] = 0.5;
+
+  //// Defining Neural Network
+
+  // two GRU layers with 32
+  // e["Solver"]["Neural Network"]["Engine"] = "OneDNN";
+  // e["Solver"]["Time Sequence Length"] = 16;
+  // e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Recurrent/GRU";
+  // e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 32;
+  // e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Recurrent/GRU";
+  // e["Solver"]["Neural Network"]["Hidden Layers"][1]["Output Channels"] = 32;
+
+  // one GRU layer with 64
+  // e["Solver"]["Neural Network"]["Engine"] = "OneDNN";
+  // e["Solver"]["Time Sequence Length"] = 16;
+  // e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Recurrent/GRU";
+  // e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 64;
+
+  // two FF layers with 128
+  e["Solver"]["Neural Network"]["Engine"] = "OneDNN";
   e["Solver"]["L2 Regularization"]["Enabled"] = true;
   e["Solver"]["L2 Regularization"]["Importance"] = 1.0;
-
   e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear";
   e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 128;
 
@@ -154,14 +165,13 @@ int main(int argc, char *argv[])
 
   k["Conduit"]["Type"] = "Distributed";
   k["Conduit"]["Communicator"] = MPI_COMM_WORLD;
-  
+
   k.run(e);
 
   ////// Now testing policy, dumping trajectory results
 
   printf("[Korali] Done with training. Now running learned policy to dump the trajectory.\n");
 
-  //// ELIMINATE EVERYTHING ABOVE
   // Adding custom setting to run the environment dumping the state files during testing
   e["Problem"]["Custom Settings"]["Dump Frequency"] = 0.1;
   e["Problem"]["Custom Settings"]["Dump Path"] = testingResultsPath;
@@ -173,11 +183,6 @@ int main(int argc, char *argv[])
   for (int i = 0; i < N; i++) e["Solver"]["Testing"]["Sample Ids"][i] = i;
 
   k.run(e);
-}
 
-// plot policy (state vs action), do this per agent
-// action agent took over time and energy consumption it corresponds to, plot mean and std of action and energy consumption
-// state over time, mean and std over time (over the 54 diffferent tries)
-// policy histogram, how the actions are distributed
-// velocity at target over time, mean and std as well over time
-// movie of sim
+  printf("[Korali] Finished. Testing dump files stored in %s\n", testingResultsPath.c_str());
+}

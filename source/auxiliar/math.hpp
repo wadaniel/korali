@@ -194,9 +194,22 @@ T normalLogDensity(const T &x, const T &mean, const T &sigma)
   T d = (x - mean) / sigma;
   return norm - 0.5 * d * d;
 }
+ 
+/**
+* @brief Computes the cumulative distribution function of a normal distribution.
+* @param x evaluation point
+* @param mean Mean of normal distribution
+* @param sigma Standard Deviation of normal distribution
+* @return The log of the CDF
+*/
+template <typename T>
+T normalCDF(const T &x, const T &mean, const T &sigma)
+{
+  return 0.5 + 0.5*erff((x-mean)/(sigma*M_SQRT2));
+}
 
 /**
-* @brief Computes the log cumulative distribution function  of a normal distribution.
+* @brief Computes the log of the cumulative distribution function of a normal distribution.
 * @param x evaluation point
 * @param mean Mean of normal distribution
 * @param sigma Standard Deviation of normal distribution
@@ -207,6 +220,20 @@ T normalLogCDF(const T &x, const T &mean, const T &sigma)
 {
   return log(0.5 + 0.5*erff((x-mean)/(sigma*M_SQRT2)));
 }
+
+/**
+* @brief Computes the tail distribution of a normal distribution (complementary cumulative distribution).
+* @param x evaluation point
+* @param mean Mean of normal distribution
+* @param sigma Standard Deviation of normal distribution
+* @return The log of the CDF
+*/
+template <typename T>
+T normalCCDF(const T &x, const T &mean, const T &sigma)
+{
+  return 0.5 - 0.5*erff((x-mean)/(sigma*M_SQRT2));
+}
+
 
 /**
 * @brief Computes the log of the tail distribution of a normal distribution (complementary cumulative distribution).

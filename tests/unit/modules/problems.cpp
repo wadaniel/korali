@@ -483,7 +483,7 @@ namespace
   {
    s["logP(x)"] = 0.5;
    s["grad(logP(x))"] = std::vector<double>({0.5});
-   s["H(logP(x))"] = std::vector<std::vector<double>>({{}});
+   s["H(logP(x))"] = std::vector<std::vector<double>>(2);
   };
   _functionVector.clear();
   _functionVector.push_back(&modelFc);
@@ -496,10 +496,11 @@ namespace
   {
    s["logP(x)"] = 0.5;
    s["grad(logP(x))"] = std::vector<double>({0.5});
-   s["H(logP(x))"] = std::vector<std::vector<double>>({{1.0}, {1.0}});
+   s["H(logP(x))"] = std::vector<std::vector<double>>({{}});
   };
-  _functionVector.clear();
-  _functionVector.push_back(&modelFc);
+  _functionVector[0] = &modelFc;
+  ASSERT_NO_THROW(pObj->evaluate(s));
+  ASSERT_NO_THROW(pObj->evaluateGradient(s));
   ASSERT_ANY_THROW(pObj->evaluateHessian(s));
 
   problemJs = baseProbJs;

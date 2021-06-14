@@ -1175,6 +1175,8 @@ namespace
    policy_t prevPolicy;
    curPolicy.distributionParameters = std::vector<float>({0.0, 1.0});
    prevPolicy.distributionParameters = std::vector<float>({0.0, 0.5});
+   curPolicy.unboundedAction = std::vector<float>({0.1f});
+   prevPolicy.unboundedAction = std::vector<float>({0.1f});
    auto testAction = std::vector<float>({0.1f});
 
    a->_policyDistribution = "Normal";

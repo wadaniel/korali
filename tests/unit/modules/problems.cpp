@@ -43,14 +43,14 @@ namespace
   ASSERT_NO_THROW(pO->applyVariableDefaults());
 
   // Backup the correct base configuration
-  auto baseProbJs = problemJs;
+  auto baseOptJs = problemJs;
   auto baseExpJs = experimentJs;
 
   // Testing correct configuration
   ASSERT_NO_THROW(pO->setConfiguration(problemJs));
 
   // Testing unrecognized solver
-  problemJs = baseProbJs;
+  problemJs = baseOptJs;
   experimentJs = baseExpJs;
   e["Solver"]["Type"] = "";
   ASSERT_ANY_THROW(pO->setConfiguration(problemJs));
@@ -101,6 +101,9 @@ namespace
 
  ASSERT_NO_THROW(pO->evaluateMultiple(s));
 
+ // Trying to run unknown operation
+ ASSERT_ANY_THROW(pO->runOperation("Unknown", s));
+
  // Evaluating incorrect execution of multiple evaluations
  modelFc = [](Sample& s)
  {
@@ -110,44 +113,75 @@ namespace
  ASSERT_ANY_THROW(pO->evaluateMultiple(s));
 
  // Testing optional parameters
- problemJs = baseProbJs;
+ problemJs = baseOptJs;
  experimentJs = baseExpJs;
  problemJs["Has Discrete Variables"] = "Not a Number";
  ASSERT_ANY_THROW(pO->setConfiguration(problemJs));
 
- problemJs = baseProbJs;
+ problemJs = baseOptJs;
  experimentJs = baseExpJs;
  problemJs["Has Discrete Variables"] = true;
  ASSERT_NO_THROW(pO->setConfiguration(problemJs));
 
- problemJs = baseProbJs;
+ problemJs = baseOptJs;
+ experimentJs = baseExpJs;
+ problemJs.erase("Num Objectives");
+ ASSERT_ANY_THROW(pO->setConfiguration(problemJs));
+
+ problemJs = baseOptJs;
  experimentJs = baseExpJs;
  problemJs["Num Objectives"] = "Not a Number";
  ASSERT_ANY_THROW(pO->setConfiguration(problemJs));
 
- problemJs = baseProbJs;
+ problemJs = baseOptJs;
  experimentJs = baseExpJs;
  problemJs["Num Objectives"] = 1;
  ASSERT_NO_THROW(pO->setConfiguration(problemJs));
 
- problemJs = baseProbJs;
+ problemJs = baseOptJs;
+ experimentJs = baseExpJs;
+ problemJs.erase("Objective Function");
+ ASSERT_ANY_THROW(pO->setConfiguration(problemJs));
+
+
+ problemJs = baseOptJs;
  experimentJs = baseExpJs;
  problemJs["Objective Function"] = "Not a Number";
  ASSERT_ANY_THROW(pO->setConfiguration(problemJs));
 
- problemJs = baseProbJs;
+ problemJs = baseOptJs;
  experimentJs = baseExpJs;
  problemJs["Objective Function"] = 1;
  ASSERT_NO_THROW(pO->setConfiguration(problemJs));
 
- problemJs = baseProbJs;
+ problemJs = baseOptJs;
+ experimentJs = baseExpJs;
+ problemJs.erase("Constraints");
+ ASSERT_ANY_THROW(pO->setConfiguration(problemJs));
+
+ problemJs = baseOptJs;
  experimentJs = baseExpJs;
  problemJs["Constraints"] = "Not a Number";
  ASSERT_ANY_THROW(pO->setConfiguration(problemJs));
 
- problemJs = baseProbJs;
+ problemJs = baseOptJs;
  experimentJs = baseExpJs;
  problemJs["Constraints"] = std::vector<uint64_t>({1});
+ ASSERT_NO_THROW(pO->setConfiguration(problemJs));
+
+ problemJs = baseOptJs;
+ experimentJs = baseExpJs;
+ e["Variables"][0].erase("Granularity");
+ ASSERT_ANY_THROW(pO->setConfiguration(problemJs));
+
+ problemJs = baseOptJs;
+ experimentJs = baseExpJs;
+ e["Variables"][0]["Granularity"] = "Not a Number";
+ ASSERT_ANY_THROW(pO->setConfiguration(problemJs));
+
+ problemJs = baseOptJs;
+ experimentJs = baseExpJs;
+ e["Variables"][0]["Granularity"] = 1.0;
  ASSERT_NO_THROW(pO->setConfiguration(problemJs));
 
  }

@@ -1,5 +1,5 @@
 // Select which environment to use
-#include "_models/transportEnvironment/transportEnvironment.hpp"
+#include "_model/transportEnvironment.hpp"
 #include "korali.hpp"
 
 std::string _resultsPath;
@@ -24,12 +24,14 @@ int main(int argc, char *argv[])
   MPI_Comm_size(MPI_COMM_WORLD, &N);
   N = N - 1; // Minus one for Korali's engine
 
+  int testingEpisodes = 5;
+
   // Init CUP2D
   _environment = new Simulation(_argc, _argv);
   _environment->init();
 
-  std::string trainingResultsPath = "_results_transport_training/";
-  std::string testingResultsPath = "_results_transport_testing/";
+  std::string trainingResultsPath = "_results_transport_vracer_training/";
+  std::string testingResultsPath = "_results_transport_vracer_testing/";
 
   // Creating Experiment
   auto e = korali::Experiment();
@@ -39,17 +41,18 @@ int main(int argc, char *argv[])
   if (found == true) printf("[Korali] Continuing execution from previous run...\n");
 
   // Configuring Experiment
-  e["Problem"]["Environment Function"] = &runEnvironment;
-  e["Problem"]["Training Reward Threshold"] = 8.0;
-  e["Problem"]["Policy Testing Episodes"] = 5;
+  e["Problem"]["Environment Function"] = &runEnvironmentVracer;
+  //e["Problem"]["Training Reward Threshold"] = 1.0; // max reward == 1
+  e["Problem"]["Testing Frequency"] = 100; // max reward == 1
+  e["Problem"]["Policy Testing Episodes"] = testingEpisodes;
   e["Problem"]["Actions Between Policy Updates"] = 1;
 
   // Adding custom setting to run the environment without dumping the state files during training
   e["Problem"]["Custom Settings"]["Dump Frequency"] = 0.0;
   e["Problem"]["Custom Settings"]["Dump Path"] = trainingResultsPath;
 
-  // Setting up the 20 state variables
-  const size_t numStates = 20;
+  // Setting up the state variables (see _deps/CUP-2D/source/obstacles/SmartCylinder.cpp
+  const size_t numStates = 4;
   size_t curVariable = 0;
   for (; curVariable < numStates; curVariable++)
   {
@@ -58,30 +61,39 @@ int main(int argc, char *argv[])
   }
 
   const double maxForce = 1e-2;
+  const double maxMomentum = maxForce/0.1; // radius == 0.1
 
   e["Variables"][curVariable]["Name"] = "Force X";
   e["Variables"][curVariable]["Type"] = "Action";
   e["Variables"][curVariable]["Lower Bound"] = -maxForce;
   e["Variables"][curVariable]["Upper Bound"] = +maxForce;
-  e["Variables"][curVariable]["Initial Exploration Noise"] = 0.5*maxForce;
+  e["Variables"][curVariable]["Initial Exploration Noise"] = 0.3*maxForce;
 
   curVariable++;
   e["Variables"][curVariable]["Name"] = "Force Y";
   e["Variables"][curVariable]["Type"] = "Action";
   e["Variables"][curVariable]["Lower Bound"] = -maxForce;
   e["Variables"][curVariable]["Upper Bound"] = +maxForce;
-  e["Variables"][curVariable]["Initial Exploration Noise"] = 0.5*maxForce;
+  e["Variables"][curVariable]["Initial Exploration Noise"] = 0.3*maxForce;
+ 
+  curVariable++;
+  e["Variables"][curVariable]["Name"] = "Momentum";
+  e["Variables"][curVariable]["Type"] = "Action";
+  e["Variables"][curVariable]["Lower Bound"] = -maxMomentum;
+  e["Variables"][curVariable]["Upper Bound"] = +maxMomentum;
+  e["Variables"][curVariable]["Initial Exploration Noise"] = 0.3*maxMomentum;
+
 
   /// Defining Agent Configuration
 
   e["Solver"]["Type"] = "Agent / Continuous / VRACER";
   e["Solver"]["Mode"] = "Training";
-  e["Solver"]["Agent Count"] = N;
+  e["Solver"]["Agent Count"] = 1;
   e["Solver"]["Episodes Per Generation"] = 1;
   e["Solver"]["Experiences Between Policy Updates"] = 1;
   e["Solver"]["Learning Rate"] = 1e-4;
-  e["Solver"]["Discount Factor"] = 0.95;
-  e["Solver"]["Updates Between Reward Rescaling"] = 20000;
+  e["Solver"]["Discount Factor"] = 0.99;
+  //e["Solver"]["Updates Between Reward Rescaling"] = 20000;
 
   /// Defining the configuration of replay memory
 
@@ -90,42 +102,28 @@ int main(int argc, char *argv[])
 
   //// Configuring Mini Batch
 
-  e["Solver"]["Mini Batch Size"] = 128;
-  e["Solver"]["Mini Batch Strategy"] = "Uniform";
+  e["Solver"]["Mini Batch"]["Size"] = 256;
 
   //// Defining Neural Network
 
-  // two GRU layers with 32
-  // e["Solver"]["Neural Network"]["Engine"] = "OneDNN";
-  // e["Solver"]["Time Sequence Length"] = 16;
-  // e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Recurrent/GRU";
-  // e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 32;
-  // e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Recurrent/GRU";
-  // e["Solver"]["Neural Network"]["Hidden Layers"][1]["Output Channels"] = 32;
-
-  // one GRU layer with 64
-  // e["Solver"]["Neural Network"]["Engine"] = "OneDNN";
-  // e["Solver"]["Time Sequence Length"] = 16;
-  // e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Recurrent/GRU";
-  // e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 64;
-
-  // two FF layers with 128
   e["Solver"]["Neural Network"]["Engine"] = "OneDNN";
+  e["Solver"]["Neural Network"]["Optimizer"] = "Adam";
   e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear";
-  e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 128;
+  e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 32;
 
   e["Solver"]["Neural Network"]["Hidden Layers"][1]["Type"] = "Layer/Activation";
   e["Solver"]["Neural Network"]["Hidden Layers"][1]["Function"] = "Elementwise/Tanh";
 
   e["Solver"]["Neural Network"]["Hidden Layers"][2]["Type"] = "Layer/Linear";
-  e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 128;
+  e["Solver"]["Neural Network"]["Hidden Layers"][2]["Output Channels"] = 32;
 
   e["Solver"]["Neural Network"]["Hidden Layers"][3]["Type"] = "Layer/Activation";
   e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tanh";
 
   ////// Defining Termination Criteria
 
-  e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 16.0;
+  e["Solver"]["Termination Criteria"]["Testing"]["Max Generations"] = 1000;
+  e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 0.99;
 
   ////// Setting Korali output configuration
 
@@ -142,7 +140,7 @@ int main(int argc, char *argv[])
 
   k["Profiling"]["Detail"] = "Full";
   k["Profiling"]["Path"] = trainingResultsPath + std::string("/profiling.json");
-  k["Profiling"]["Frequency"] = 60;
+  k["Profiling"]["Frequency"] = 10;
 
   k["Conduit"]["Type"] = "Distributed";
   k["Conduit"]["Communicator"] = MPI_COMM_WORLD;
@@ -161,7 +159,7 @@ int main(int argc, char *argv[])
   k["Profiling"]["Path"] = testingResultsPath + std::string("/profiling.json");
   e["Solver"]["Testing"]["Policy"] = e["Solver"]["Best Training Hyperparamters"];
   e["Solver"]["Mode"] = "Testing";
-  for (int i = 0; i < N; i++) e["Solver"]["Testing"]["Sample Ids"][i] = i;
+  for (int i = 0; i < testingEpisodes; i++) e["Solver"]["Testing"]["Sample Ids"][i] = i;
 
   k.run(e);
 

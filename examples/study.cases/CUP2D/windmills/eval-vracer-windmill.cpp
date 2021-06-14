@@ -1,5 +1,5 @@
 // Select which environment to use
-#include "_models/windmillEnvironment/windmillEnvironment.hpp"
+#include "_model/windmillEnvironment.hpp"
 #include "korali.hpp"
 
 std::string _resultsPath;

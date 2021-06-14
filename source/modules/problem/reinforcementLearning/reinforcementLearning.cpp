@@ -9,24 +9,6 @@ namespace problem
 {
 
 
-void ReinforcementLearning::initialize()
-{
-  // Processing state/action variable configuration
-  _stateVectorIndexes.clear();
-  _actionVectorIndexes.clear();
-  for (size_t i = 0; i < _k->_variables.size(); i++)
-  {
-    if (_k->_variables[i]->_type == "State") _stateVectorIndexes.push_back(i);
-    if (_k->_variables[i]->_type == "Action") _actionVectorIndexes.push_back(i);
-  }
-
-  _actionVectorSize = _actionVectorIndexes.size();
-  _stateVectorSize = _stateVectorIndexes.size();
-
-  if (_actionVectorSize == 0) KORALI_LOG_ERROR("No action variables have been defined.\n");
-  if (_stateVectorSize == 0) KORALI_LOG_ERROR("No state variables have been defined.\n");
-}
-
 /**
  * @brief Pointer to the current agent, it is immediately copied as to avoid concurrency problems
  */
@@ -48,12 +30,40 @@ solver::Agent *_agent;
 cothread_t _envThread;
 
 /**
+  * @brief Stores the current launch Id for the current sample
+  */
+size_t _launchId;
+
+void ReinforcementLearning::initialize()
+{
+  // Processing state/action variable configuration
+  _stateVectorIndexes.clear();
+  _actionVectorIndexes.clear();
+  for (size_t i = 0; i < _k->_variables.size(); i++)
+  {
+    if (_k->_variables[i]->_type == "State") _stateVectorIndexes.push_back(i);
+    if (_k->_variables[i]->_type == "Action") _actionVectorIndexes.push_back(i);
+  }
+
+  _actionVectorSize = _actionVectorIndexes.size();
+  _stateVectorSize = _stateVectorIndexes.size();
+
+  if (_actionVectorSize == 0) KORALI_LOG_ERROR("No action variables have been defined.\n");
+  if (_stateVectorSize == 0) KORALI_LOG_ERROR("No state variables have been defined.\n");
+
+  // Setting initial launch id (0)
+  _launchId = 0;
+}
+
+/**
  * @brief Thread wrapper to run an environment
  */
 void __environmentWrapper()
 {
   Sample *agent = __currentSample;
 
+  // Setting and increasing agent's launch Id
+  (*agent)["Launch Id"] = _launchId++;
   agent->run(__envFunctionId);
 
   if ((*agent)["Termination"] == "Non Terminal")

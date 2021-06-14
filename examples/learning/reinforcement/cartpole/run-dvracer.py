@@ -52,7 +52,7 @@ e = korali.Experiment()
 e["Problem"]["Type"] = "Reinforcement Learning / Discrete"
 e["Problem"]["Possible Actions"] = [ [ -10.0 ], [  10.0 ] ]
 e["Problem"]["Environment Function"] = env
-e["Problem"]["Training Reward Threshold"] = 470
+e["Problem"]["Training Reward Threshold"] = 300
 e["Problem"]["Policy Testing Episodes"] = 40
 e["Problem"]["Actions Between Policy Updates"] = 5
 
@@ -76,7 +76,7 @@ e["Variables"][4]["Type"] = "Action"
 
 e["Solver"]["Type"] = "Agent / Discrete / dVRACER"
 e["Solver"]["Mode"] = "Training"
-e["Solver"]["Episodes Per Generation"] = 30
+e["Solver"]["Episodes Per Generation"] = 10
 e["Solver"]["Experiences Between Policy Updates"] = 1
 e["Solver"]["Learning Rate"] = float(args.learningRate)
 e["Solver"]["Mini Batch"]["Size"] = 32
@@ -120,7 +120,7 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tan
 ### Defining Termination Criteria
 
 e["Solver"]["Termination Criteria"]["Max Generations"] = args.maxGenerations
-e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 470
+e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 250
 
 ### Setting file output configuration
 
@@ -134,13 +134,13 @@ k.run(e)
 ### Now we run a few test samples and check their reward
 
 e["Solver"]["Mode"] = "Testing"
-e["Solver"]["Testing"]["Sample Ids"] = list(range(20))
+e["Solver"]["Testing"]["Sample Ids"] = list(range(5))
 
 k.run(e)
 
 averageTestReward = np.average(e["Solver"]["Testing"]["Reward"])
 print("Average Reward: " + str(averageTestReward))
-if (averageTestReward < 150):
+if (averageTestReward < 100):
  print("Cartpole example did not reach minimum testing average.")
  exit(-1)
 

@@ -1,6 +1,7 @@
 TRANSPORT = run-cmaes-transport run-mocmaes-transport run-vracer-transport 
 FISH = run-vracer-fish
 WINDMILL = run-vracer-windmill eval-vracer-windmill
+
 KORALICXX=$(shell python3 -m korali.cxx --compiler)
 KORALICFLAGS=`python3 -m korali.cxx --cflags`
 KORALILIBS=`python3 -m korali.cxx --libs`
@@ -9,7 +10,7 @@ CUBISMLIBS= _deps/CUP-2D/makefiles/libcup.a $(shell cat _deps/CUP-2D/makefiles/c
 
 .SECONDARY:
 .PHONY: all
-all: transport fish windmill
+all: transport fish windmill windmillenergy windmillflow
 
 transport: $(TRANSPORT)
 
@@ -37,6 +38,8 @@ transportEnvironment.o: _models/transportEnvironment/transportEnvironment.cpp
 
 windmillEnvironment.o: _models/windmillEnvironment/windmillEnvironment.cpp
 	$(KORALICXX) -c $< $(KORALICFLAGS) $(CUBISMCFLAGS)
+
+
 
 .PHONY: clean
 clean:

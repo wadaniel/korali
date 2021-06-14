@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
     e["Variables"][curVariable]["Type"] = "State";
   }
 
-  double max_torque = 1e-4;
+  double max_torque = 1e-3;
   for(size_t j=numStates; j < numStates + 2; ++j){
     e["Variables"][j]["Name"] = "Torque " + std::to_string(j-numStates+1);
     e["Variables"][j]["Type"] = "Action";

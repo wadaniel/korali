@@ -52,13 +52,14 @@ void runEnvironment(korali::Sample &s)
 
   // Reseting environment and setting initial conditions
   _environment->resetRL();
-  bool random_init = (s["Mode"] == "Training");
-  setInitialConditions(agent1, 0, random_init);
-  setInitialConditions(agent2, 0, random_init);
+  //bool random_init = (s["Mode"] == "Training" || s["Mode"] == "Testing" );
+  bool random_init = true;
+  setInitialConditions(agent1, 0.0, random_init);
+  setInitialConditions(agent2, 0.0, random_init);
 
   // Set target
-  std::array<Real,2> target_pos{0.7,0.7};
-  std::vector<double> target_vel={0.0,0.0};
+  std::array<Real,2> target_pos{0.69,0.69};
+  std::array<Real, 2> target_vel={0.0,0.0};
 
   agent1->setTarget(target_pos);
   agent2->setTarget(target_pos);
@@ -76,7 +77,7 @@ void runEnvironment(korali::Sample &s)
   size_t curStep = 0;  // current Step
 
   // Setting maximum number of steps before truncation
-  size_t maxSteps = 2000;
+  size_t maxSteps = 2000; // 2000 for training
 
   // Starting main environment loop
   // bool done = false;
@@ -118,9 +119,23 @@ void runEnvironment(korali::Sample &s)
       }
     }
 
-    // reward( std::vector<double> target_vel, double C, double D)
-    double en = 500000.0; // = 0.5e6
-    double flow = 1;
+    // reward( std::vector<double> target_vel, double C, double D
+
+    // used for both run
+    // Real en = 5.0e4;
+    // Real flow = 2.5;
+
+    // used for energy_zero run
+    // Real en = 5.0e4;
+    // Real flow = 0.0;
+
+    // used for flow_zero run
+    Real en = 0.0;
+    Real flow = 2.5;
+
+
+
+
     double r1 = agent1->reward( target_vel,  en, flow);
     double r2 = agent2->reward( target_vel,  en, flow);
     double reward = (r1 + r2);
@@ -147,6 +162,8 @@ void runEnvironment(korali::Sample &s)
       }
     }
     printf("]\n");
+    printf("[Korali] Factors (en, flow): [ %.8f, %.8f ] \n", en, flow);
+    printf("[Korali] Target pos: [ %.8f, %.8f ] \n", target_pos[0], target_pos[1]);
     printf("[Korali] Previous Torque: [ %.8f, %.8f ]\n", action[0], action[1]);
     printf("[Korali] Reward: %.3f\n", reward);
     printf("[Korali] Time: %.3fs\n", actionTime);

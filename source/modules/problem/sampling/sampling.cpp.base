@@ -14,12 +14,11 @@ void @className::evaluate(Sample &sample)
 
   auto evaluation = KORALI_GET(double, sample, "logP(x)");
 
-  if (std::isnan(evaluation))
-    sample["logP(x)"] = -Inf;
-  else
-    sample["logP(x)"] = evaluation;
+  if (std::isfinite(evaluation) == false)
+   KORALI_LOG_ERROR("Non finite value of evaluation detected: %f\n", evaluation);
 
-  sample["F(x)"] = sample["logP(x)"];
+  sample["logP(x)"] = evaluation;
+  sample["F(x)"] = evaluation;
 }
 
 void @className::evaluateGradient(korali::Sample &sample)

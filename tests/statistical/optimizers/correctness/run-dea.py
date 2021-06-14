@@ -36,7 +36,7 @@ e["Random Seed"] = 1337
 k = korali.Engine()
 k.run(e)
 
-checkMin(e, 0.22942553779431113, 1e-4)
+checkMin(e, 0.23246, 1e-4)
 
 #################################################
 # Different Accept Rules
@@ -65,7 +65,7 @@ e["Random Seed"] = 1337
 k = korali.Engine()
 k.run(e)
 
-checkMin(e, 0.22942553779431113, 1e-2)
+checkMin(e, 0.23246, 1e-2)
 
 e = korali.Experiment()
 
@@ -90,7 +90,7 @@ e["Random Seed"] = 1337
 k = korali.Engine()
 k.run(e)
 
-checkMin(e, 0.22942553779431113, 1e-2)
+checkMin(e, 0.23246, 1e-2)
 
 e = korali.Experiment()
 
@@ -115,7 +115,7 @@ e["Random Seed"] = 1337
 k = korali.Engine()
 k.run(e)
 
-checkMin(e, 0.22942553779431113, 1e-2)
+checkMin(e, 0.23246, 1e-2)
 
 #################################################
 # Different Mutation Rules
@@ -145,7 +145,7 @@ e["Random Seed"] = 1337
 k = korali.Engine()
 k.run(e)
 
-checkMin(e, 0.22942553779431113, 1e-2)
+checkMin(e, 0.23246, 1e-2)
 
 e = korali.Experiment()
 
@@ -171,7 +171,7 @@ e["Random Seed"] = 1337
 k = korali.Engine()
 k.run(e)
 
-checkMin(e, 0.22942553779431113, 1e-2)
+checkMin(e, 0.23246, 1e-2)
 
 #################################################
 # Different Parent Selection Rules
@@ -200,4 +200,4 @@ e["Random Seed"] = 1337
 k = korali.Engine()
 k.run(e)
 
-checkMin(e, 0.22942553779431113, 1e-2)
+checkMin(e, 0.23246, 1e-2)

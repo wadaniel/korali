@@ -95,7 +95,7 @@ e["Solver"]["State Rescaling"]["Enabled"] = False
 ### IRL related configuration
 
 e["Solver"]["Experiences Between Reward Updates"] = 1000
-e["Solver"]["Rewardfunction Learning Rate"] = 1e-4
+e["Solver"]["Rewardfunction Learning Rate"] = 5e-4 # 1e-4 (too low)
 e["Solver"]["Demonstration Batch Size"] = 10
 e["Solver"]["Background Batch Size"] = 20
 e["Solver"]["Use Fusion Distribution"] = True
@@ -120,7 +120,7 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tan
 
 ### Defining Termination Criteria
 
-e["Solver"]["Termination Criteria"]["Max Experiences"] = 1e7
+e["Solver"]["Termination Criteria"]["Max Experiences"] = 10e6
 
 ### Setting file output configuration
 

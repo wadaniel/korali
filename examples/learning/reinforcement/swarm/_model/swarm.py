@@ -49,8 +49,10 @@ class swarm:
     """ compute distance and angle matrix """
     def computeStates(self):
         # create containers for distances and angles
-        distances = np.full(shape=(self.N,self.N), fill_value=np.inf, dtype=float)
-        angles    = np.zeros(shape=(self.N,self.N), dtype=float)
+        distances  = np.full(shape=(self.N,self.N), fill_value=np.inf, dtype=float)
+        angles     = np.zeros(shape=(self.N,self.N), dtype=float)
+        # .. and direction vector
+        directions = np.full(shape=(self.N,self.N, 3), fill_value=np.inf, dtype=float)
         # iterate over grid and compute angle / distance matrix
         # TODO: use scipy.spatial.distance_matrix
         for i in np.arange(self.N):
@@ -61,11 +63,13 @@ class swarm:
               v = self.fishes[i].curDirection
               # set distance
               distances[i,j] = np.linalg.norm(u)
+              # set direction
+              directions[i,j,:] = u
               # set angle
               cosAngle = np.dot(u,v)/(np.linalg.norm(u)*np.linalg.norm(v))
               angles[i,j] = np.arccos(cosAngle)
 
-        return distances, angles
+        return distances, angles, directions
 
     ''' according to https://doi.org/10.1006/jtbi.2002.3065 '''
     def move(self):

@@ -11,19 +11,22 @@ def environment( args, s ):
     ## get initial state
     
     # compute pair-wise distances and view-angles
-    distancesMat, anglesMat = sim.computeStates()
+    distancesMat, anglesMat, directionMat = sim.computeStates()
     for i in np.arange(sim.N):
+        distances = distancesMat[i,:]
+        angles    = anglesMat[i,:]
+        directions= directionMat[i,:,:]
         # sort and select nearest neighbours
         idSorted = np.argsort( distances )
         idNearestNeighbours = idSorted[:numNearestNeighbours]
         distancesNearestNeighbours = distances[ idNearestNeighbours ]
         anglesNearestNeighbours = angles[ idNearestNeighbours ]
-        # the state is the distance and angle to the nearest neigbours
-        # TODO: s["State"] = np.array([ distancesNearestNeighbours, anglesNearestNeighbours ]).flatten()
+        directionNearestNeighbours = directions[idNearestNeighbours,:]
+        # the state is the distance (or direction?) and angle to the nearest neigbours
+        # TODO: s["State"] = np.array([ distancesNearestNeighbours, anglesNearestNeighbours ]).flatten() or s["State"] = np.array([ directionNearestNeighbours, anglesNearestNeighbours ]).flatten()
 
     ## run simulation
     while step < numTimeSteps:
-
         # Getting new action
         # TODO: s.update()
 
@@ -45,22 +48,22 @@ def environment( args, s ):
 
         ## get new state
         # compute pair-wise distances and view-angles
-        distancesMat, anglesMat = sim.computeStates()
+        distancesMat, anglesMat, directionMat = sim.computeStates()
 
         for i in np.arange(sim.N):
             # get row giving distances / angle to other swimmers
             # TODO?: Termination state in case distance matrix has entries < eps
             distances = distancesMat[i,:]
             angles    = anglesMat[i,:]
-
+            directions= directionMat[i,:,:]
             # sort and select nearest neighbours
             idSorted = np.argsort( distances )
             idNearestNeighbours = idSorted[:numNearestNeighbours]
             distancesNearestNeighbours = distances[ idNearestNeighbours ]
             anglesNearestNeighbours = angles[ idNearestNeighbours ]
-
-            # the state is the distance and angle to the nearest neigbours
-            # TODO: s["State"] = np.array([ distancesNearestNeighbours, anglesNearestNeighbours ]).flatten()
+            directionNearestNeighbours = directions[idNearestNeighbours,:]
+            # the state is the distance (or direction?) and angle to the nearest neigbours
+            # TODO: s["State"] = np.array([ distancesNearestNeighbours, anglesNearestNeighbours ]).flatten() or s["State"] = np.array([ directionNearestNeighbours, anglesNearestNeighbours ]).flatten()
             
         step += 1
 

@@ -23,7 +23,6 @@ if __name__ == '__main__':
     
     sim  = swarm( numIndividuals )
     step = 0
-    action = [ 1, 0, 0 ]
     while step < numTimeSteps:
         print("timestep {}/{}".format(step+1, numTimeSteps))
         # if enable, plot current configuration
@@ -35,7 +34,7 @@ if __name__ == '__main__':
             # plotSwarmCentered( sim, step )
 
         # compute pair-wise distances and view-angles
-        distancesMat, anglesMat = sim.computeStates()
+        distancesMat, anglesMat, directionMat = sim.computeStates()
 
         # update swimming directions
         for i in np.arange(sim.N):
@@ -44,18 +43,22 @@ if __name__ == '__main__':
             # TODO?: Termination state in case distance matrix has entries < eps
             distances = distancesMat[i,:]
             angles    = anglesMat[i,:]
+            directions= directionMat[i,:,:]
             # sort and select nearest neighbours
             idSorted = np.argsort( distances )
             idNearestNeighbours = idSorted[:numNearestNeighbours]
             distancesNearestNeighbours = distances[ idNearestNeighbours ]
             anglesNearestNeighbours = angles[ idNearestNeighbours ]
-            # the state is the distance and angle to the nearest neigbours
-            state  = np.array([ distancesNearestNeighbours, anglesNearestNeighbours ]).flatten()
+            directionNearestNeighbours = directions[ idNearestNeighbours,:]
+            # the state is the distance (or direction?) and angle to the nearest neigbours
+            # for Newton policy it is the directions to the nearest neighbours
+            state  = directionNearestNeighbours
             print("state:", state)
             # set action
-            assert len(action) == 3, print("action assumed to be 3D")
-            assert math.isclose( np.linalg.norm(action),  1.0 ), print("action assumed to be normal vector")
-            sim.fishes[i].wishedDirection = action
+            action = sim.fishes[i].newtonPolicy( state )
+            print("action:", action)
+            if math.isclose( np.linalg.norm(action),  1.0 ):
+                sim.fishes[i].wishedDirection = action
             # get reward
             reward = sim.fishes[i].getReward(distancesNearestNeighbours)
             print("reward:", reward)

@@ -99,7 +99,7 @@ class Continuous : public Agent
   problem::reinforcementLearning::Continuous *_problem;
 
   /**
-   * @brief Calculates the gradient of policy wrt to the parameter of the 2nd (current) distribution evaluated at old action.
+   * @brief Calculates the gradient of teh importance weight  wrt to the parameter of the 2nd (current) distribution evaluated at old action.
    * @param action The action taken by the agent in the given experience
    * @param oldPolicy The policy for the given state used at the time the action was performed
    * @param curPolicy The current policy for the given state

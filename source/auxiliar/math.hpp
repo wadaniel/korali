@@ -11,6 +11,7 @@
 #define _USE_MATH_DEFINES
 
 #include <cmath>
+#include <gsl/gsl_math.h>
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_sf_gamma.h>
 #include <gsl/gsl_randist.h>
@@ -192,6 +193,32 @@ T normalLogDensity(const T &x, const T &mean, const T &sigma)
   T norm = -0.5 * log(2 * M_PI * sigma * sigma);
   T d = (x - mean) / sigma;
   return norm - 0.5 * d * d;
+}
+
+/**
+* @brief Computes the log cumulative distribution function  of a normal distribution.
+* @param x evaluation point
+* @param mean Mean of normal distribution
+* @param sigma Standard Deviation of normal distribution
+* @return The log of the CDF
+*/
+template <typename T>
+T normalLogCDF(const T &x, const T &mean, const T &sigma)
+{
+  return log(0.5 + 0.5*erff((x-mean)/(sigma*M_SQRT2)));
+}
+
+/**
+* @brief Computes the log of the tail distribution of a normal distribution (complementary cumulative distribution).
+* @param x evaluation point
+* @param mean Mean of normal distribution
+* @param sigma Standard Deviation of normal distribution
+* @return The log of the CDF
+*/
+template <typename T>
+T normalLogCCDF(const T &x, const T &mean, const T &sigma)
+{
+  return log(0.5 - 0.5*erff((x-mean)/(sigma*M_SQRT2)));
 }
 
 /**

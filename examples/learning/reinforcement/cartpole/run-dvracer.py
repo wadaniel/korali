@@ -52,8 +52,8 @@ e = korali.Experiment()
 e["Problem"]["Type"] = "Reinforcement Learning / Discrete"
 e["Problem"]["Possible Actions"] = [ [ -10.0 ], [  10.0 ] ]
 e["Problem"]["Environment Function"] = env
-e["Problem"]["Training Reward Threshold"] = 450
-e["Problem"]["Policy Testing Episodes"] = 20
+e["Problem"]["Training Reward Threshold"] = 470
+e["Problem"]["Policy Testing Episodes"] = 40
 e["Problem"]["Actions Between Policy Updates"] = 5
 
 e["Variables"][0]["Name"] = "Cart Position"
@@ -120,7 +120,7 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tan
 ### Defining Termination Criteria
 
 e["Solver"]["Termination Criteria"]["Max Generations"] = args.maxGenerations
-e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 450
+e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 470
 
 ### Setting file output configuration
 
@@ -134,7 +134,7 @@ k.run(e)
 ### Now we run a few test samples and check their reward
 
 e["Solver"]["Mode"] = "Testing"
-e["Solver"]["Testing"]["Sample Ids"] = list(range(10))
+e["Solver"]["Testing"]["Sample Ids"] = list(range(20))
 
 k.run(e)
 

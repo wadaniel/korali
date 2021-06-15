@@ -1410,7 +1410,7 @@ namespace
   pObj->_likelihoodModel = "Positive Normal";
   ASSERT_NO_THROW(pObj->runOperation("Evaluate Fisher Information", s));
   pObj->_likelihoodModel = "Negative Binomial";
-  ASSERT_NO_THROW(pObj->runOperation("Evaluate Fisher Information", s));
+  ASSERT_ANY_THROW(pObj->runOperation("Evaluate Fisher Information", s));
 
   pObj->_likelihoodModel = "Positive Normal";
   ASSERT_NO_THROW(pObj->evaluateLoglikelihood(s));

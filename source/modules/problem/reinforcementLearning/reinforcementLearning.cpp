@@ -310,11 +310,6 @@ void ReinforcementLearning::getAction(Sample &agent)
 
   auto t1 = std::chrono::steady_clock::now();                                                          // Profiling
   _agentPolicyEvaluationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(t1 - t0).count(); // Profiling
-
-  // Sanity checks for action
-  for (size_t i = 0; i < _actionVectorSize; i++)
-    if (std::isfinite(agent["Action"][i].get<float>()) == false)
-      KORALI_LOG_ERROR("Agent variable %zu returned an invalid value: %f\n", agent["Action"][i].get<float>());
 }
 
 void ReinforcementLearning::runEnvironment(Sample &agent)
@@ -328,7 +323,7 @@ void ReinforcementLearning::runEnvironment(Sample &agent)
   // Sanity checks for state
   for (size_t i = 0; i < _stateVectorSize; i++)
     if (std::isfinite(agent["State"][i].get<float>()) == false)
-      KORALI_LOG_ERROR("Environment state variable %zu returned an invalid value: %f\n", agent["State"][i].get<float>());
+      KORALI_LOG_ERROR("Environment state variable %lu returned an invalid value: %f\n", i, agent["State"][i].get<float>());
 
   // Normalizing State
   auto state = agent["State"].get<std::vector<float>>();

@@ -105,7 +105,7 @@ T ierf(T x)
     const float tt1 = 2./(M_PI*0.147) + 0.5 * lnx;
     const float tt2 = 1./(0.147) * lnx;
 
-    return(sgn*sqrtf(-tt1 + sqrtf(tt1*tt1 - tt2)));
+    return(sgn*std::sqrt(-tt1 + std::sqrt(tt1*tt1 - tt2)));
 }
 
 

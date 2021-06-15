@@ -96,7 +96,8 @@ e["Solver"]["Reward"]["Rescaling"]["Frequency"] = 1000
 
 #e["Solver"]["Policy"]["Distribution"] = "Normal"
 #e["Solver"]["Policy"]["Distribution"] = "Squashed Normal"
-e["Solver"]["Policy"]["Distribution"] = "Clipped Normal"
+#e["Solver"]["Policy"]["Distribution"] = "Clipped Normal"
+e["Solver"]["Policy"]["Distribution"] = "Truncated Normal"
 e["Solver"]["Neural Network"]["Engine"] = args.engine
 e["Solver"]["Neural Network"]["Optimizer"] = args.optimizer
 

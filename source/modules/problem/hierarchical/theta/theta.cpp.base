@@ -20,15 +20,6 @@ void @className::initialize()
   if (_thetaExperiment["Is Finished"] == false)
     KORALI_LOG_ERROR("The Hierarchical Bayesian (Theta) requires that the theta problem has run completely, but this one has not.\n");
 
-  // Psi-problem correctness checks
-  std::string psiProblemType = _psiExperiment["Problem"]["Type"];
-  if (iCompare(psiProblemType, "Hierarchical/Psi") == false)
-    KORALI_LOG_ERROR("The Hierarchical Bayesian (Theta) can only accept a psi-problem of type 'Bayesian/Hierarchical/Psi' but psi-Problem is of type: '%s'.\n", psiProblemType.c_str());
-
-  // Cross-checks
-  if (_psiExperiment["Problem"]["Conditional Priors"].size() != _thetaExperiment["Variables"].size())
-    KORALI_LOG_ERROR("Sub-problem contains a different number of variables (%lu) than conditional priors in the Bayesian/Hierarchical/Psi problem (%lu).\n", _thetaExperiment["Variables"].size(), _psiExperiment["Problem"]["Conditional Priors"].size());
-
   // Now inheriting Sub problem's variables
   _k->_distributions = _thetaExperimentObject._distributions;
   _k->_variables = _thetaExperimentObject._variables;

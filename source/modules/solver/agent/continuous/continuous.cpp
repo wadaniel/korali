@@ -194,22 +194,6 @@ std::vector<float> Continuous::generateTrainingAction(policy_t &curPolicy)
       const float x = u*normalCDF(beta, mu, sigma) + (1.-u)*normalCDF(alpha, mu, sigma);
       action[i] = mu + 2*ierf( 2.*x - 1. )*sigma;
  
-      /*
-      // Sample truncated normal(0,1) with Rayleigh proposal and RejectTail inside [a,b[
-      // Simulation from the Normal Distribution Truncated to an Interval in the Tail
-      // https://www.iro.umontreal.ca/~lecuyer/myftp/papers/vt16truncnormal.pdf     
-      const float c = _actionLowerBounds[i]*_actionLowerBounds[i]/2;
-      float x;
-      while(true){
-        const float u  = _uniformGenerator->getRandomNumber();
-        const float v  = _uniformGenerator->getRandomNumber();
-        x = c - std::log(u);
-        if( v*v*x <= _actionLowerBounds[i] && 2*x <= _actionUpperBounds[i]*_actionUpperBounds[i]  ) break;
-      }
-      
-      action[i] = std::sqrt(2*x);
-      */
-
       // Keep this for the moment (D.W.)
       assert(action[i] <= _actionUpperBounds[i]);
       assert(action[i] >= _actionLowerBounds[i]);

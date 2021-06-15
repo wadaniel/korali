@@ -1060,6 +1060,7 @@ namespace
   ASSERT_NO_THROW(pObj->evaluateLoglikelihood(s));
   ASSERT_NO_THROW(pObj->evaluateLoglikelihoodGradient(s));
   ASSERT_ANY_THROW(pObj->evaluateFisherInformation(s));
+  ASSERT_ANY_THROW(pObj->evaluateLogLikelihoodHessian(s));
 
   problemJs = baseProbJs;
   experimentJs = baseExpJs;
@@ -1563,6 +1564,35 @@ namespace
   // Testing initialization
   pObj->initialize();
   ASSERT_NO_THROW(pObj->initialize());
+
+  pObj->_conditionalPriors[0] = "Undefined";
+  ASSERT_ANY_THROW(pObj->initialize());
+  pObj->_conditionalPriors[0] = "Uniform";
+
+  pObj->_subExperiments[0]["Variables"] = std::vector<knlohmann::json>();
+  ASSERT_ANY_THROW(pObj->initialize());
+
+  pObj->_subExperiments[0]["Variables"][0]["Name"] = "Var X";
+  pObj->_subExperiments[0]["Variables"][0]["Prior Distribution"] = "Uniform";
+
+  pObj->_subExperiments[0]["Solver"]["Sample LogPrior Database"] = std::vector<double>({std::numeric_limits<double>::infinity()});
+  ASSERT_ANY_THROW(pObj->initialize());
+  pObj->_subExperiments[0]["Solver"]["Sample LogPrior Database"] = std::vector<double>({0.0});
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  problemJs.erase("Sub Experiments");
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  problemJs["Sub Experiments"] = 1.0;
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  problemJs["Sub Experiments"] = std::vector<knlohmann::json>();
+  ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
 
  }
 } // namespace

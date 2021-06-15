@@ -10,7 +10,7 @@ test('learning.reinforcement.cartpole.continuous.single', e,
 
 e = find_program('run-vracer.py', required: true)
 test('learning.reinforcement.cartpole.continuous.multiple', e,
-      args: [ '--concurrentEnvironments', '4'],
+      args: [ '--concurrentEnvironments', '2'],
       timeout : 3600,
       suite: 'regression',
       workdir: meson.current_source_dir(),

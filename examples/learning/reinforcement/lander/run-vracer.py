@@ -15,7 +15,7 @@ e = korali.Experiment()
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = env
 e["Problem"]["Actions Between Policy Updates"] = 1
-e["Problem"]["Training Reward Threshold"] = 1.0
+e["Problem"]["Training Reward Threshold"] = 0.0
 e["Problem"]["Policy Testing Episodes"] = 10
 
 ### Defining State variables
@@ -60,7 +60,7 @@ e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 16
 
 ### Defining Termination Criteria
 
-e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 0.8
+e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 0.0
 
 ### Setting file output configuration
 
@@ -88,6 +88,6 @@ k.run(e)
 
 averageTestReward = np.average(e["Solver"]["Testing"]["Reward"])
 print("Average Reward: " + str(averageTestReward))
-if (averageTestReward < -2.0):
+if (averageTestReward < -5.0):
  print("Landar example did not reach minimum testing average.")
  exit(-1)

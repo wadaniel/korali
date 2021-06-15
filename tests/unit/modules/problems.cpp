@@ -1246,6 +1246,8 @@ namespace
 
   pObj->_likelihoodModel = "Unknown";
   ASSERT_ANY_THROW(pObj->evaluateLoglikelihood(s));
+  ASSERT_ANY_THROW(pObj->evaluateLoglikelihoodGradient(s));
+  ASSERT_ANY_THROW(pObj->evaluateLogLikelihoodHessian(s));
 
   // Evaluation function
   modelFc = [](Sample& s)
@@ -1356,6 +1358,17 @@ namespace
   ASSERT_NO_THROW(pObj->evaluateLoglikelihoodGradient(s));
   ASSERT_NO_THROW(pObj->evaluateLogLikelihoodHessian(s));
 
+  pObj->_likelihoodModel = "Positive Normal";
+  ASSERT_NO_THROW(pObj->evaluateLoglikelihood(s));
+  ASSERT_NO_THROW(pObj->evaluateLoglikelihoodGradient(s));
+  ASSERT_NO_THROW(pObj->evaluateLogLikelihoodHessian(s));
+
+  pObj->_likelihoodModel = "Negative Binomial";
+  ASSERT_NO_THROW(pObj->evaluateLoglikelihood(s));
+  ASSERT_NO_THROW(pObj->evaluateLoglikelihoodGradient(s));
+  ASSERT_NO_THROW(pObj->evaluateLogLikelihoodHessian(s));
+
+
   modelFc = [](Sample& s)
   {
    s["F(x)"] = 0.1;
@@ -1380,6 +1393,7 @@ namespace
 
   // Running operations
   ASSERT_NO_THROW(pObj->runOperation("Evaluate", s));
+  ASSERT_NO_THROW(pObj->runOperation("Evaluate logPrior", s));
   ASSERT_NO_THROW(pObj->runOperation("Evaluate logLikelihood", s));
   ASSERT_NO_THROW(pObj->runOperation("Evaluate logPosterior", s));
   ASSERT_NO_THROW(pObj->runOperation("Evaluate Gradient", s));
@@ -1410,6 +1424,28 @@ namespace
   ASSERT_NO_THROW(pObj->evaluateLoglikelihood(s));
   ASSERT_NO_THROW(pObj->evaluateLoglikelihoodGradient(s));
   ASSERT_NO_THROW(pObj->evaluateLogLikelihoodHessian(s));
+
+  modelFc = [](Sample& s)
+  {
+   s["F(x)"] = 0.1;
+   s["Reference Evaluations"] = std::vector<double>({-0.1});
+   s["Standard Deviation"] = std::vector<double>({0.1});
+   s["Degrees Of Freedom"] = std::vector<double>({0.1});
+   s["Dispersion"] = std::vector<double>({0.1});
+
+   s["Gradient Mean"] = std::vector<std::vector<double>>({{0.1}});
+   s["Gradient Standard Deviation"] = std::vector<std::vector<double>>({{0.1}});
+   s["Gradient Dispersion"] = std::vector<std::vector<double>>({{0.1}});
+
+   s["Hessian Mean"] = std::vector<std::vector<double>>({{0.1}});
+   s["Hessian Standard Deviation"] = std::vector<std::vector<double>>({{0.1}});
+   s["Hessian Dispersion"] = std::vector<std::vector<double>>({{0.1}});
+  };
+
+  pObj->_likelihoodModel = "Negative Binomial";
+  ASSERT_NO_THROW(pObj->evaluateLoglikelihood(s));
+  pObj->_referenceData[0] = -1.0;
+  ASSERT_ANY_THROW(pObj->evaluateLoglikelihood(s));
 
   problemJs = baseProbJs;
   experimentJs = baseExpJs;
@@ -1460,5 +1496,73 @@ namespace
   experimentJs = baseExpJs;
   problemJs["Likelihood Model"] = "Normal";
   ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
+ }
+
+ TEST(Problem, HierarchicalPsi)
+ {
+  // Creating base experiment
+  Experiment e;
+  auto& experimentJs = e._js.getJson();
+
+  knlohmann::json uniformDistroJs;
+  uniformDistroJs["Type"] = "Univariate/Uniform";
+  uniformDistroJs["Minimum"] = 0.0;
+  uniformDistroJs["Maximum"] = 1.0;
+  auto uniformGenerator = dynamic_cast<korali::distribution::univariate::Uniform*>(korali::Module::getModule(uniformDistroJs, &e));
+  uniformGenerator->applyVariableDefaults();
+  uniformGenerator->applyModuleDefaults(uniformDistroJs);
+  uniformGenerator->setConfiguration(uniformDistroJs);
+  e._distributions.push_back(uniformGenerator);
+  e._distributions[0]->_name = "Uniform";
+
+  // Creating initial variable
+  Variable v;
+  v._precomputedValues = std::vector<double>({0.0});
+  e._variables.push_back(&v);
+  e["Solver"]["Type"] = "Sampler/TMCMC";
+  e["Solver"]["Sample Database"] = std::vector<std::vector<double>>({{0.0}});
+  e["Solver"]["Sample LogPrior Database"] = std::vector<double>({0.0});
+  e["Solver"]["Sample LogLikelihood Database"] = std::vector<double>({0.0});
+  e["Variables"][0]["Name"] = "Var X";
+  e["Variables"][0]["Prior Distribution"] = "Uniform";
+
+  // Configuring Problem
+  Psi* pObj;
+  knlohmann::json problemJs;
+  problemJs["Type"] = "Hierarchical/Psi";
+  problemJs["Sub Experiments"] = std::vector<knlohmann::json>({e._js.getJson(), e._js.getJson()});
+  problemJs["Conditional Priors"] = std::vector<std::string>({"Uniform"});
+
+  ASSERT_NO_THROW(pObj = dynamic_cast<Psi *>(Module::getModule(problemJs, &e)));
+  e._problem = pObj;
+
+  // Defaults should be applied without a problem
+  ASSERT_NO_THROW(pObj->applyModuleDefaults(problemJs));
+
+  // Covering variable functions (no effect)
+  pObj->applyVariableDefaults();
+  ASSERT_NO_THROW(pObj->applyVariableDefaults());
+
+  // Trying to run unknown operation
+  Sample s;
+  ASSERT_ANY_THROW(pObj->runOperation("Unknown", s));
+
+  // Backup the correct base configuration
+  auto baseProbJs = problemJs;
+  auto baseExpJs = experimentJs;
+
+  // Testing correct configuration
+  ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
+
+  // Testing unrecognized solver
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  e["Solver"]["Type"] = "";
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
+  // Testing initialization
+  pObj->initialize();
+  ASSERT_NO_THROW(pObj->initialize());
+
  }
 } // namespace

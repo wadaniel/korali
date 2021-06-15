@@ -34,7 +34,7 @@ Source
 
 *_model/windmillEnvironment.cpp*: Defines the reinforcement learning agent characteristics, with the main RL simulation loop. 
 
-To be specified:
+To be specified: line 123 && line 103
 
 * Real en : energy factor
 * Real flow : flow factor
@@ -43,8 +43,7 @@ To be specified:
 
 *run-vracer-windmill.cpp*: Defines Korali model with policy network and ReF-ER hyperparameters
 
-To be specified:
-line 78
+To be specified: line 78
 
 * double max_torque : maximum torque applied to the fans
 
@@ -93,7 +92,7 @@ Cleaning up results and plotting
 In order to preprocess the results use
 
 .. code-block:: bash
-	python results.py
+	python process-results.py
 
 They can subsequently be plotted using
 

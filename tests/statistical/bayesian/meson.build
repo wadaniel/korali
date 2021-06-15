@@ -52,3 +52,12 @@ test('bayesian-6', e,
       env: nomalloc
     )
 
+e = find_program('./run-bayesian-7.py', required: true)
+test('bayesian-7', e,
+      timeout : 2000,
+      suite: 'statistical',
+      workdir: meson.current_source_dir(),
+      depends: python_extension,
+      env: nomalloc
+    )
+

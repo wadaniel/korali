@@ -1137,5 +1137,283 @@ namespace
   // Testing initialization
   ASSERT_NO_THROW(pObj->initialize());
 
+  // Evaluation function
+  std::function<void(korali::Sample&)> modelFc = [](Sample& s)
+  {
+   s["Reference Evaluations"] = std::vector<double>({0.1});
+   s["Standard Deviation"] = std::vector<double>({0.1});
+   s["Degrees Of Freedom"] = std::vector<double>({0.1});
+   s["Dispersion"] = std::vector<double>({0.1});
+  };
+
+  _functionVector.clear();
+  _functionVector.push_back(&modelFc);
+  pObj->_likelihoodModel = "Normal";
+  ASSERT_NO_THROW(pObj->evaluateLoglikelihood(s));
+  pObj->_likelihoodModel = "Positive Normal";
+  ASSERT_NO_THROW(pObj->evaluateLoglikelihood(s));
+  pObj->_likelihoodModel = "StudentT";
+  ASSERT_NO_THROW(pObj->evaluateLoglikelihood(s));
+  pObj->_likelihoodModel = "Positive StudentT";
+  ASSERT_NO_THROW(pObj->evaluateLoglikelihood(s));
+  pObj->_likelihoodModel = "Poisson";
+  ASSERT_NO_THROW(pObj->evaluateLoglikelihood(s));
+  pObj->_likelihoodModel = "Geometric";
+  ASSERT_NO_THROW(pObj->evaluateLoglikelihood(s));
+  pObj->_likelihoodModel = "Negative Binomial";
+  ASSERT_NO_THROW(pObj->evaluateLoglikelihood(s));
+
+  modelFc = [](Sample& s)
+  {
+   s["Reference Evaluations"] = std::vector<double>({0.1});
+   s._js.getJson().erase("Standard Deviation");
+   s["Degrees Of Freedom"] = std::vector<double>({0.1});
+   s["Dispersion"] = std::vector<double>({0.1});
+  };
+
+  _functionVector.clear();
+  _functionVector.push_back(&modelFc);
+  pObj->_likelihoodModel = "Normal";
+  ASSERT_ANY_THROW(pObj->evaluateLoglikelihood(s));
+
+  modelFc = [](Sample& s)
+  {
+   s._js.getJson().erase("Reference Evaluations");
+   s["Standard Deviation"] = std::vector<double>({0.1});
+   s["Degrees Of Freedom"] = std::vector<double>({0.1});
+   s["Dispersion"] = std::vector<double>({0.1});
+  };
+
+  pObj->_likelihoodModel = "Normal";
+  ASSERT_ANY_THROW(pObj->evaluateLoglikelihood(s));
+  pObj->_likelihoodModel = "Positive Normal";
+  ASSERT_ANY_THROW(pObj->evaluateLoglikelihood(s));
+  pObj->_likelihoodModel = "StudentT";
+  ASSERT_ANY_THROW(pObj->evaluateLoglikelihood(s));
+  pObj->_likelihoodModel = "Positive StudentT";
+  ASSERT_ANY_THROW(pObj->evaluateLoglikelihood(s));
+  pObj->_likelihoodModel = "Poisson";
+  ASSERT_ANY_THROW(pObj->evaluateLoglikelihood(s));
+  pObj->_likelihoodModel = "Geometric";
+  ASSERT_ANY_THROW(pObj->evaluateLoglikelihood(s));
+  pObj->_likelihoodModel = "Negative Binomial";
+  ASSERT_ANY_THROW(pObj->evaluateLoglikelihood(s));
+
+  // Evaluation function
+  modelFc = [](Sample& s)
+  {
+   s["Reference Evaluations"] = std::vector<double>({0.1});
+   s["Standard Deviation"] = std::vector<double>({0.1});
+   s["Degrees Of Freedom"] = std::vector<double>({0.1});
+   s["Dispersion"] = std::vector<double>({0.1});
+  };
+
+  pObj->_likelihoodModel = "Unknown";
+  ASSERT_ANY_THROW(pObj->evaluateLoglikelihood(s));
+
+  // Evaluation function
+  modelFc = [](Sample& s)
+  {
+   s["Reference Evaluations"] = std::vector<double>();
+   s["Standard Deviation"] = std::vector<double>({0.1});
+   s["Degrees Of Freedom"] = std::vector<double>({0.1});
+   s["Dispersion"] = std::vector<double>({0.1});
+  };
+
+  pObj->_likelihoodModel = "Normal";
+  ASSERT_ANY_THROW(pObj->evaluateLoglikelihood(s));
+  pObj->_likelihoodModel = "Positive Normal";
+  ASSERT_ANY_THROW(pObj->evaluateLoglikelihood(s));
+  pObj->_likelihoodModel = "StudentT";
+  ASSERT_ANY_THROW(pObj->evaluateLoglikelihood(s));
+  pObj->_likelihoodModel = "Positive StudentT";
+  ASSERT_ANY_THROW(pObj->evaluateLoglikelihood(s));
+  pObj->_likelihoodModel = "Poisson";
+  ASSERT_ANY_THROW(pObj->evaluateLoglikelihood(s));
+  pObj->_likelihoodModel = "Geometric";
+  ASSERT_ANY_THROW(pObj->evaluateLoglikelihood(s));
+  pObj->_likelihoodModel = "Negative Binomial";
+  ASSERT_ANY_THROW(pObj->evaluateLoglikelihood(s));
+
+  // Evaluation function
+  modelFc = [](Sample& s)
+  {
+   s["Reference Evaluations"] = std::vector<double>({0.1});
+   s["Standard Deviation"] = std::vector<double>();
+   s["Degrees Of Freedom"] = std::vector<double>({0.1});
+   s["Dispersion"] = std::vector<double>({0.1});
+  };
+
+  pObj->_likelihoodModel = "Normal";
+  ASSERT_ANY_THROW(pObj->evaluateLoglikelihood(s));
+  pObj->_likelihoodModel = "Positive Normal";
+  ASSERT_ANY_THROW(pObj->evaluateLoglikelihood(s));
+
+  modelFc = [](Sample& s)
+  {
+   s["Reference Evaluations"] = std::vector<double>({0.1});
+   s["Standard Deviation"] = std::vector<double>({0.1});
+   s._js.getJson().erase("Degrees Of Freedom");
+   s["Dispersion"] = std::vector<double>({0.1});
+  };
+
+  pObj->_likelihoodModel = "StudentT";
+  ASSERT_ANY_THROW(pObj->evaluateLoglikelihood(s));
+  pObj->_likelihoodModel = "Positive StudentT";
+  ASSERT_ANY_THROW(pObj->evaluateLoglikelihood(s));
+
+  modelFc = [](Sample& s)
+  {
+   s["Reference Evaluations"] = std::vector<double>({0.1});
+   s["Standard Deviation"] = std::vector<double>({0.1});
+   s["Degrees Of Freedom"] = std::vector<double>();
+   s["Dispersion"] = std::vector<double>({0.1});
+  };
+
+  pObj->_likelihoodModel = "StudentT";
+  ASSERT_ANY_THROW(pObj->evaluateLoglikelihood(s));
+  pObj->_likelihoodModel = "Positive StudentT";
+  ASSERT_ANY_THROW(pObj->evaluateLoglikelihood(s));
+
+  modelFc = [](Sample& s)
+  {
+   s["Reference Evaluations"] = std::vector<double>({0.1});
+   s["Standard Deviation"] = std::vector<double>({0.1});
+   s._js.getJson().erase("Dispersion");
+   s["Degrees Of Freedom"] = std::vector<double>({0.1});
+  };
+
+  pObj->_likelihoodModel = "Negative Binomial";
+  ASSERT_ANY_THROW(pObj->evaluateLoglikelihood(s));
+
+  modelFc = [](Sample& s)
+  {
+   s["Reference Evaluations"] = std::vector<double>({0.1});
+   s["Standard Deviation"] = std::vector<double>({0.1});
+   s["Dispersion"] = std::vector<double>();
+   s["Degrees Of Freedom"] = std::vector<double>({0.1});
+  };
+
+  pObj->_likelihoodModel = "Negative Binomial";
+  ASSERT_ANY_THROW(pObj->evaluateLoglikelihood(s));
+
+  // Gradient evaluation
+  modelFc = [](Sample& s)
+  {
+   s["F(x)"] = std::numeric_limits<double>::infinity();
+   s["Reference Evaluations"] = std::vector<double>({0.1});
+   s["Standard Deviation"] = std::vector<double>({0.1});
+   s["Degrees Of Freedom"] = std::vector<double>({0.1});
+   s["Dispersion"] = std::vector<double>({0.1});
+
+   s["Gradient Mean"] = std::vector<std::vector<double>>({{0.1}});
+   s["Gradient Standard Deviation"] = std::vector<std::vector<double>>({{0.1}});
+   s["Gradient Dispersion"] = std::vector<std::vector<double>>({{0.1}});
+
+   s["Hessian Mean"] += std::vector<std::vector<double>>({{0.1}});
+   s["Hessian Standard Deviation"] += std::vector<std::vector<double>>({{0.1}});
+   s["Hessian Dispersion"] += std::vector<std::vector<double>>({{0.1}});
+  };
+
+  pObj->_likelihoodModel = "Normal";
+  ASSERT_NO_THROW(pObj->evaluateLoglikelihood(s));
+  ASSERT_NO_THROW(pObj->evaluateLoglikelihoodGradient(s));
+  ASSERT_NO_THROW(pObj->evaluateLoglikelihoodHessian(s));
+
+  modelFc = [](Sample& s)
+  {
+   s["F(x)"] = 0.0;
+   s["Reference Evaluations"] = std::vector<double>({0.1});
+   s["Standard Deviation"] = std::vector<double>({0.1});
+   s["Degrees Of Freedom"] = std::vector<double>({0.1});
+   s["Dispersion"] = std::vector<double>({0.1});
+
+   s["Gradient Mean"] = std::vector<std::vector<double>>({{0.1}});
+   s["Gradient Standard Deviation"] = std::vector<std::vector<double>>({{0.1}});
+   s["Gradient Dispersion"] = std::vector<std::vector<double>>({{0.1}});
+
+   s["Hessian Mean"] += std::vector<std::vector<double>>({{0.1}});
+   s["Hessian Standard Deviation"] += std::vector<std::vector<double>>({{0.1}});
+   s["Hessian Dispersion"] += std::vector<std::vector<double>>({{0.1}});
+  };
+
+  pObj->_likelihoodModel = "Normal";
+  ASSERT_NO_THROW(pObj->evaluateLoglikelihood(s));
+  ASSERT_NO_THROW(pObj->evaluateLoglikelihoodGradient(s));
+  ASSERT_NO_THROW(pObj->evaluateLogLikelihoodHessian(s));
+  pObj->_likelihoodModel = "Positive Normal";
+  ASSERT_NO_THROW(pObj->evaluateLoglikelihood(s));
+  ASSERT_NO_THROW(pObj->evaluateLoglikelihoodGradient(s));
+  ASSERT_NO_THROW(pObj->evaluateLogLikelihoodHessian(s));
+  pObj->_likelihoodModel = "StudentT";
+  ASSERT_NO_THROW(pObj->evaluateLoglikelihood(s));
+  ASSERT_ANY_THROW(pObj->evaluateLoglikelihoodGradient(s));
+  ASSERT_ANY_THROW(pObj->evaluateLogLikelihoodHessian(s));
+  pObj->_likelihoodModel = "Positive StudentT";
+  ASSERT_NO_THROW(pObj->evaluateLoglikelihood(s));
+  ASSERT_ANY_THROW(pObj->evaluateLoglikelihoodGradient(s));
+  ASSERT_ANY_THROW(pObj->evaluateLogLikelihoodHessian(s));
+  pObj->_likelihoodModel = "Poisson";
+  ASSERT_NO_THROW(pObj->evaluateLoglikelihood(s));
+  ASSERT_ANY_THROW(pObj->evaluateLoglikelihoodGradient(s));
+  ASSERT_ANY_THROW(pObj->evaluateLogLikelihoodHessian(s));
+  pObj->_likelihoodModel = "Geometric";
+  ASSERT_NO_THROW(pObj->evaluateLoglikelihood(s));
+  ASSERT_ANY_THROW(pObj->evaluateLoglikelihoodGradient(s));
+  ASSERT_ANY_THROW(pObj->evaluateLogLikelihoodHessian(s));
+  pObj->_likelihoodModel = "Negative Binomial";
+  ASSERT_NO_THROW(pObj->evaluateLoglikelihood(s));
+  ASSERT_NO_THROW(pObj->evaluateLoglikelihoodGradient(s));
+  ASSERT_NO_THROW(pObj->evaluateLogLikelihoodHessian(s));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  problemJs.erase("Computational Model");
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  problemJs["Computational Model"] = "Not a Number";
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  problemJs["Computational Model"] = 1;
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  problemJs.erase("Reference Data");
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  problemJs["Reference Data"] = "Not a Number";
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  problemJs["Reference Data"] = std::vector<double>({0.0});
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  problemJs.erase("Likelihood Model");
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  problemJs["Likelihood Model"] = "Unknown";
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  problemJs["Likelihood Model"] = 1;
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  problemJs["Likelihood Model"] = "Normal";
+  ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
  }
 } // namespace

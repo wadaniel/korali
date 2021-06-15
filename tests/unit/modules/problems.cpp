@@ -1368,8 +1368,8 @@ namespace
   ASSERT_NO_THROW(pObj->evaluateLoglikelihoodGradient(s));
   ASSERT_NO_THROW(pObj->evaluateLogLikelihoodHessian(s));
   ASSERT_NO_THROW(pObj->evaluateFisherInformation(s));
-  pObj->_likelihoodModel = "Negative Binomial";
 
+  pObj->_likelihoodModel = "Negative Binomial";
   ASSERT_NO_THROW(pObj->evaluateLoglikelihood(s));
   ASSERT_NO_THROW(pObj->evaluateLoglikelihoodGradient(s));
   ASSERT_NO_THROW(pObj->evaluateLogLikelihoodHessian(s));
@@ -1404,6 +1404,12 @@ namespace
   ASSERT_NO_THROW(pObj->runOperation("Evaluate logPosterior", s));
   ASSERT_NO_THROW(pObj->runOperation("Evaluate Gradient", s));
   ASSERT_NO_THROW(pObj->runOperation("Evaluate Hessian", s));
+
+  pObj->_likelihoodModel = "Normal";
+  ASSERT_NO_THROW(pObj->runOperation("Evaluate Fisher Information", s));
+  pObj->_likelihoodModel = "Positive Normal";
+  ASSERT_NO_THROW(pObj->runOperation("Evaluate Fisher Information", s));
+  pObj->_likelihoodModel = "Negative Binomial";
   ASSERT_NO_THROW(pObj->runOperation("Evaluate Fisher Information", s));
 
   pObj->_likelihoodModel = "Positive Normal";
@@ -2171,15 +2177,5 @@ namespace
 
    // Testing correct initialize
    ASSERT_NO_THROW(pObj->initialize());
-
-//   e._overrideEngine = true;
-//   e._overrideFunction = [](Sample &s)
-//   {
-//    printf("Hola!\n");
-//   };
-//
-//   pObj->runTrainingEpisode(s);
-
-
   }
 } // namespace

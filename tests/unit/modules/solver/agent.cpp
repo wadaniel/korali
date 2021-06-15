@@ -6,6 +6,18 @@
 #include "modules/solver/agent/continuous/VRACER/VRACER.hpp"
 #include "modules/solver/agent/discrete/dVRACER/dVRACER.hpp"
 
+namespace korali
+{
+ namespace problem
+ {
+  extern Sample *__currentSample;
+  extern size_t __envFunctionId;
+  extern solver::Agent *_agent;
+  extern cothread_t _envThread;
+  extern size_t _launchId;
+  extern void __environmentWrapper();
+ }
+}
 
 namespace
 {
@@ -16,6 +28,7 @@ namespace
  using namespace korali::solver::agent::discrete;
  using namespace korali::problem;
  using namespace korali::problem::reinforcementLearning;
+
 
  //////////////// Base Agent CLASS ////////////////////////
 
@@ -1342,7 +1355,7 @@ namespace
    reinforcementLearning::Continuous* pC;
    knlohmann::json problemRefJs;
    problemRefJs["Type"] = "Reinforcement Learning / Continuous";
-   problemRefJs["Environment Function"] = [](Sample &s){};
+   problemRefJs["Environment Function"] = 0;
    problemRefJs["Training Reward Threshold"] = 50.0;
    problemRefJs["Policy Testing Episodes"] = 20;
    e["Variables"][0]["Name"] = "State0";
@@ -1368,7 +1381,7 @@ namespace
 
    ASSERT_NO_THROW(pC = dynamic_cast<reinforcementLearning::Continuous *>(Module::getModule(problemRefJs, &e)));
    e._problem = pC;
-   pC->initialize();
+   ASSERT_NO_THROW(pC->initialize());
 
    // Using a neural network solver (deep learning) for inference
 
@@ -1429,6 +1442,45 @@ namespace
    experimentJs = baseExpJs;
    e["Variables"][0]["Initial Exploration Noise"] = 0.0f;
    ASSERT_NO_THROW(a->setConfiguration(agentJs));
+   ASSERT_NO_THROW(a->initializeAgent());
+   e._solver = a;
+
+   Sample s;
+   auto curPolicy = a->getAgentPolicy();
+   s["Policy Hyperparameters"] = a->getAgentPolicy();
+   s["Sample Id"] = 0;
+   s["State Rescaling"]["Means"] = std::vector<float>({0.0});
+   s["State Rescaling"]["Standard Deviations"] = std::vector<float>({1.0});
+
+   // Evaluation function
+   _functionVector.resize(1);
+   std::function<void(korali::Sample&)> modelFc = [](Sample& s)
+   {
+     s["Termination"] = "Unknown";
+   };
+   _functionVector[0] = &modelFc;
+
+   _launchId = 0;
+   __envFunctionId = 0;
+   __currentSample = &s;
+   ASSERT_ANY_THROW(__environmentWrapper());
+
+   modelFc = [](Sample& s)
+   {
+     s["Termination"] = "Non Terminal";
+   };
+   ASSERT_ANY_THROW(__environmentWrapper());
+
+   modelFc = [](Sample& s)
+   {
+     s["Termination"] = "Terminal";
+   };
+   s._workerThread = co_active();
+   ASSERT_ANY_THROW(__environmentWrapper());
+
+   _envThread = co_active();
+   s["State"] = std::vector<float>({std::numeric_limits<float>::infinity()});
+   ASSERT_ANY_THROW(pC->runEnvironment(s));
   }
 
  //// Discrete Agent
@@ -1473,7 +1525,7 @@ namespace
    ASSERT_NO_THROW(pD = dynamic_cast<reinforcementLearning::Discrete *>(Module::getModule(problemRefJs, &e)));
    e._problem = pD;
    pD->_possibleActions = std::vector<std::vector<float>>({ { -10.0 }, { 10.0 } });
-   pD->initialize();
+   ASSERT_NO_THROW(pD->initialize());
 
    // Using a neural network solver (deep learning) for inference
 

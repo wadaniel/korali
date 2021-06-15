@@ -1,15 +1,5 @@
 #!/bin/bash
 
-# Set number of nodes here
-mpiflags="mpirun -n 2"
-
-if [ ! -z $SLURM_NNODES ]; then
- N=$SLURM_NNODES
- mpiflags="srun -N $N -n $N  -c 12"
-fi
-
-set -ux
-
 # Defaults for Options
 BPDX=${BPDX:-4}
 BPDY=${BPDY:-3}
@@ -81,5 +71,3 @@ echo "setting simulation options"
 OPTIONS="-bpdx $BPDX -bpdy $BPDY -levelMax $LEVELS -Rtol $RTOL -Ctol $CTOL -extent $EXTENT -CFL $CFL -poissonTol $PT -poissonTolRel $PTR -bAdaptChiGradient 0 -tdump 0.1 -nu $NU -tend 100 -muteAll 0 -verbose 0"
 echo $OPTIONS
 echo "###############################"
-
-$mpiflags ./run-vracer-fish ${OPTIONS} -shapes ${OBJECTS}

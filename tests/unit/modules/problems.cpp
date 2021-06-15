@@ -1817,11 +1817,6 @@ namespace
 
   pObj->_psiExperiment = psiExp;
   pObj->_thetaExperiment = thetaExp;
-  pObj->_thetaExperiment["Problem"]["Conditional Priors"] = std::vector<std::string>({"Uniform", "Uniform"});
-  ASSERT_ANY_THROW(pObj->initialize());
-
-  pObj->_psiExperiment = psiExp;
-  pObj->_thetaExperiment = thetaExp;
   pObj->_thetaExperiment["Is Finished"] = false;
   ASSERT_ANY_THROW(pObj->initialize());
 
@@ -1960,7 +1955,6 @@ namespace
   ASSERT_NO_THROW(pObj->runOperation("Evaluate logPrior", s));
   ASSERT_NO_THROW(pObj->runOperation("Evaluate logLikelihood", s));
   ASSERT_NO_THROW(pObj->runOperation("Evaluate logPosterior", s));
-
 
   pObj->_psiExperiment = psiExp;
   pObj->_psiExperiment["Is Finished"] = false;

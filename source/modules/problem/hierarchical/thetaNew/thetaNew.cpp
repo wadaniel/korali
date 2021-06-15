@@ -24,10 +24,6 @@ void ThetaNew::initialize()
   if (_psiExperiment["Is Finished"] == false)
     KORALI_LOG_ERROR("The Hierarchical Bayesian (Theta New) requires that the psi-problem has run completely, but it has not.\n");
 
-  // Cross-checks
-  if (_psiExperiment["Problem"]["Conditional Priors"].size() != _k->_variables.size())
-    KORALI_LOG_ERROR("The problem contains a different number of variables (%lu) than conditional priors in the Hierarchical/Psi problem (%lu).\n", _k->_variables.size(), _psiExperiment["Problem"]["Conditional Priors"].size());
-
   // Loading Psi problem results
   _psiProblemSampleCount = _psiExperiment["Solver"]["Chain Leaders LogLikelihoods"].size();
   _psiProblemSampleLogLikelihoods = _psiExperiment["Solver"]["Sample LogLikelihood Database"].get<std::vector<double>>();
@@ -106,3 +102,4 @@ void ThetaNew::applyVariableDefaults()
 } //hierarchical
 } //problem
 } //korali
+

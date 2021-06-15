@@ -1565,7 +1565,6 @@ namespace
   ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
 
   // Testing initialization
-  pObj->initialize();
   ASSERT_NO_THROW(pObj->initialize());
 
   pObj->_conditionalPriors[0] = "Undefined";
@@ -1741,6 +1740,114 @@ namespace
   experimentJs = baseExpJs;
   problemJs["Theta Experiment"] = std::vector<knlohmann::json>();
   ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  problemJs.erase("Psi Experiment");
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  problemJs["Psi Experiment"] = std::vector<knlohmann::json>();
+  ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
+ }
+
+ TEST(Problem, HierarchicalThetaNew)
+ {
+  // Creating base experiment
+  Experiment e;
+  auto& experimentJs = e._js.getJson();
+
+  knlohmann::json uniformDistroJs;
+  uniformDistroJs["Type"] = "Univariate/Uniform";
+  uniformDistroJs["Minimum"] = 0.0;
+  uniformDistroJs["Maximum"] = 1.0;
+  auto uniformGenerator = dynamic_cast<korali::distribution::univariate::Uniform*>(korali::Module::getModule(uniformDistroJs, &e));
+  uniformGenerator->applyVariableDefaults();
+  uniformGenerator->applyModuleDefaults(uniformDistroJs);
+  uniformGenerator->setConfiguration(uniformDistroJs);
+  e._distributions.push_back(uniformGenerator);
+  e._distributions[0]->_name = "Uniform";
+
+  // Creating initial variable
+  Variable v;
+  v._precomputedValues = std::vector<double>({0.0});
+  e._variables.push_back(&v);
+  e["Solver"]["Type"] = "Sampler/TMCMC";
+  e["Solver"]["Sample Database"] = std::vector<std::vector<double>>({{0.0}});
+  e["Solver"]["Sample LogPrior Database"] = std::vector<double>({0.0});
+  e["Solver"]["Sample LogLikelihood Database"] = std::vector<double>({0.0});
+  e["Variables"][0]["Name"] = "Var X";
+  e["Variables"][0]["Prior Distribution"] = "Uniform";
+
+  knlohmann::json psiExp;
+  psiExp["Is Finished"] = true;
+  psiExp["Problem"]["Type"] = "Hierarchical/Psi";
+  psiExp["Problem"]["Sub Experiments"] = std::vector<knlohmann::json>({e._js.getJson(), e._js.getJson()});
+  psiExp["Problem"]["Conditional Priors"] = std::vector<std::string>({"Uniform"});
+  psiExp["Variables"][0]["Name"] = "Var X";
+  psiExp["Variables"][0]["Prior Distribution"] = "Uniform";
+  psiExp["Distributions"][0]["Name"] = "Uniform";
+  psiExp["Distributions"][0]["Type"] = "Univariate/Uniform";
+  psiExp["Distributions"][0]["Minimum"] = 0.0;
+  psiExp["Distributions"][0]["Maximum"] = 1.0;
+  psiExp["Solver"]["Type"] = "Sampler/TMCMC";
+  psiExp["Solver"]["Population Size"] = 1000;
+  psiExp["Solver"]["Default Burn In"] = 3;
+  psiExp["Solver"]["Target Coefficient Of Variation"] = 0.6;
+  psiExp["Solver"]["Covariance Scaling"] = 0.01;
+  psiExp["Solver"]["Sample Database"] = std::vector<std::vector<double>>({{0.1}});
+  psiExp["Solver"]["Sample LogPrior Database"] = std::vector<double>({0.1});
+  psiExp["Solver"]["Sample LogLikelihood Database"] = std::vector<double>({0.1});
+  psiExp["Solver"]["Chain Leaders LogLikelihoods"] = std::vector<double>({0.1});
+
+  // Configuring Problem
+  ThetaNew* pObj;
+  knlohmann::json problemJs;
+  problemJs["Type"] = "Hierarchical/ThetaNew";
+  problemJs["Psi Experiment"] = psiExp;
+
+  ASSERT_NO_THROW(pObj = dynamic_cast<ThetaNew *>(Module::getModule(problemJs, &e)));
+  e._problem = pObj;
+
+  // Defaults should be applied without a problem
+  ASSERT_NO_THROW(pObj->applyModuleDefaults(problemJs));
+
+  // Covering variable functions (no effect)
+  ASSERT_NO_THROW(pObj->applyVariableDefaults());
+
+  // Trying to run unknown operation
+  Sample s;
+  ASSERT_ANY_THROW(pObj->runOperation("Unknown", s));
+
+  // Backup the correct base configuration
+  auto baseProbJs = problemJs;
+  auto baseExpJs = experimentJs;
+
+  // Testing correct configuration
+  ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
+
+  // Testing unrecognized solver
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  e["Solver"]["Type"] = "";
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
+  // Testing initialization
+  pObj->_psiExperiment = psiExp;
+  ASSERT_NO_THROW(pObj->initialize());
+
+  pObj->_psiExperiment = psiExp;
+  pObj->_psiExperiment["Is Finished"] = false;
+  ASSERT_ANY_THROW(pObj->initialize());
+
+  pObj->_psiExperiment = psiExp;
+  pObj->_psiExperiment["Problem"]["Conditional Priors"] = std::vector<double>({});
+  ASSERT_ANY_THROW(pObj->initialize());
+
+  pObj->_psiExperiment = psiExp;
+  pObj->_psiExperiment["Solver"]["Sample LogPrior Database"] = std::vector<double>({std::numeric_limits<double>::infinity()});
+  ASSERT_ANY_THROW(pObj->initialize());
 
   problemJs = baseProbJs;
   experimentJs = baseExpJs;

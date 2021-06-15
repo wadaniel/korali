@@ -46,7 +46,7 @@ class Continuous : public Agent
   */
    std::vector<float> _actionShifts;
   /**
-  * @brief [Internal Use] Scales required for bounded actions.
+  * @brief [Internal Use] Scales required for bounded actions (half the action domain width).
   */
    std::vector<float> _actionScales;
   /**

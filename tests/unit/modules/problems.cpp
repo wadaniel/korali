@@ -2,6 +2,13 @@
 #include "korali.hpp"
 #include "modules/problem/optimization/optimization.hpp"
 #include "modules/problem/sampling/sampling.hpp"
+#include "modules/problem/bayesian/bayesian.hpp"
+#include "modules/problem/bayesian/custom/custom.hpp"
+#include "modules/problem/bayesian/reference/reference.hpp"
+#include "modules/problem/hierarchical/hierarchical.hpp"
+#include "modules/problem/hierarchical/psi/psi.hpp"
+#include "modules/problem/hierarchical/theta/theta.hpp"
+#include "modules/problem/hierarchical/thetaNew/thetaNew.hpp"
 #include "modules/problem/propagation/propagation.hpp"
 #include "modules/problem/integration/integration.hpp"
 #include "modules/problem/supervisedLearning/supervisedLearning.hpp"
@@ -12,6 +19,8 @@ namespace
 {
  using namespace korali;
  using namespace korali::problem;
+ using namespace korali::problem::bayesian;
+ using namespace korali::problem::hierarchical;
 
  TEST(Problem, Optimization)
  {
@@ -908,6 +917,158 @@ namespace
   problemJs = baseProbJs;
   experimentJs = baseExpJs;
   e["Variables"][0]["Quadrature Weights"] = std::vector<double>({});
+  ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
+ }
+
+ TEST(Problem, BayesianCustom)
+ {
+  // Creating base experiment
+  Experiment e;
+  auto& experimentJs = e._js.getJson();
+
+  knlohmann::json uniformDistroJs;
+  uniformDistroJs["Type"] = "Univariate/Uniform";
+  uniformDistroJs["Minimum"] = 0.0;
+  uniformDistroJs["Maximum"] = 1.0;
+  auto uniformGenerator = dynamic_cast<korali::distribution::univariate::Uniform*>(korali::Module::getModule(uniformDistroJs, &e));
+  uniformGenerator->applyVariableDefaults();
+  uniformGenerator->applyModuleDefaults(uniformDistroJs);
+  uniformGenerator->setConfiguration(uniformDistroJs);
+  e._distributions.push_back(uniformGenerator);
+  e._distributions[0]->_name = "Uniform";
+
+  // Creating initial variable
+  Variable v;
+  v._precomputedValues = std::vector<double>({0.0});
+  e._variables.push_back(&v);
+
+  // Configuring Problem
+  Custom* pObj;
+  knlohmann::json problemJs;
+  problemJs["Type"] = "Bayesian/Custom";
+  problemJs["Likelihood Model"] = 0;
+  e["Solver"]["Type"] = "Sampler/TMCMC";
+
+  e["Variables"][0]["Name"] = "Var X";
+  e["Variables"][0]["Number Of Gridpoints"] = 10;
+  e["Variables"][0]["Prior Distribution"] = "Uniform";
+
+  ASSERT_NO_THROW(pObj = dynamic_cast<Custom *>(Module::getModule(problemJs, &e)));
+  e._problem = pObj;
+
+  // Defaults should be applied without a problem
+  ASSERT_NO_THROW(pObj->applyModuleDefaults(problemJs));
+
+  // Covering variable functions (no effect)
+  pObj->applyVariableDefaults();
+  ASSERT_NO_THROW(pObj->applyVariableDefaults());
+
+  // Trying to run unknown operation
+  Sample s;
+  ASSERT_ANY_THROW(pObj->runOperation("Unknown", s));
+
+  // Backup the correct base configuration
+  auto baseProbJs = problemJs;
+  auto baseExpJs = experimentJs;
+
+  // Testing correct configuration
+  ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
+
+  // Testing unrecognized solver
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  e["Solver"]["Type"] = "";
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
+  // Testing initialization
+  ASSERT_NO_THROW(pObj->initialize());
+
+  // Evaluation function
+  std::function<void(korali::Sample&)> modelFc = [](Sample& s)
+  {
+   s["logLikelihood"] = 0.1;
+   s["logLikelihood Gradient"] = std::vector<double>({0.1});
+   s["Fisher Information"] = std::vector<std::vector<double>>({{0.1}});
+  };
+  _functionVector.clear();
+  _functionVector.push_back(&modelFc);
+
+  ASSERT_NO_THROW(pObj->evaluateLoglikelihood(s));
+  ASSERT_NO_THROW(pObj->evaluateLoglikelihoodGradient(s));
+  ASSERT_NO_THROW(pObj->evaluateFisherInformation(s));
+
+  // Evaluation function
+  modelFc = [](Sample& s)
+  {
+   s._js.getJson().erase("logLikelihood");
+   s._js.getJson().erase("logLikelihood Gradient");
+   s._js.getJson().erase("Fisher Information");
+  };
+
+  _functionVector.clear();
+  _functionVector.push_back(&modelFc);
+  ASSERT_ANY_THROW(pObj->evaluateLoglikelihood(s));
+  ASSERT_ANY_THROW(pObj->evaluateLoglikelihoodGradient(s));
+  ASSERT_ANY_THROW(pObj->evaluateFisherInformation(s));
+
+  // Evaluation function
+  modelFc = [](Sample& s)
+  {
+   s["logLikelihood"] = 0.1;
+   s["logLikelihood Gradient"] = std::vector<double>();
+   s["Fisher Information"] = std::vector<std::vector<double>>({{0.1}});
+  };
+  _functionVector.clear();
+  _functionVector.push_back(&modelFc);
+
+  pObj->evaluateLoglikelihood(s);
+  ASSERT_NO_THROW(pObj->evaluateLoglikelihood(s));
+  ASSERT_ANY_THROW(pObj->evaluateLoglikelihoodGradient(s));
+  ASSERT_NO_THROW(pObj->evaluateFisherInformation(s));
+
+  // Evaluation function
+  modelFc = [](Sample& s)
+  {
+   s["logLikelihood"] = 0.1;
+   s["logLikelihood Gradient"] = std::vector<double>({0.0});
+   s["Fisher Information"] = std::vector<std::vector<double>>();
+  };
+  _functionVector.clear();
+  _functionVector.push_back(&modelFc);
+
+  pObj->evaluateLoglikelihood(s);
+  ASSERT_NO_THROW(pObj->evaluateLoglikelihood(s));
+  ASSERT_NO_THROW(pObj->evaluateLoglikelihoodGradient(s));
+  ASSERT_ANY_THROW(pObj->evaluateFisherInformation(s));
+
+  // Evaluation function
+  modelFc = [](Sample& s)
+  {
+   s["logLikelihood"] = 0.1;
+   s["logLikelihood Gradient"] = std::vector<double>({0.0});
+   s["Fisher Information"] = std::vector<std::vector<double>>({});
+  };
+  _functionVector.clear();
+  _functionVector.push_back(&modelFc);
+
+  pObj->evaluateLoglikelihood(s);
+  ASSERT_NO_THROW(pObj->evaluateLoglikelihood(s));
+  ASSERT_NO_THROW(pObj->evaluateLoglikelihoodGradient(s));
+  ASSERT_ANY_THROW(pObj->evaluateFisherInformation(s));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  problemJs.erase("Likelihood Model");
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  problemJs["Likelihood Model"] = "Not a Number";
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  problemJs["Likelihood Model"] = 1;
   ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
  }
 } // namespace

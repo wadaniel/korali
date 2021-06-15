@@ -1799,9 +1799,25 @@ namespace
   pObj->_thetaExperiment = thetaExp;
   ASSERT_ANY_THROW(pObj->initialize());
 
+  optExp["Variables"][0]["Name"] = "Var 1";
+  optExp["Variables"][0]["Lower Bound"] = -1.0;
+  optExp["Variables"][0]["Upper Bound"] = 1.0;
+  optExp["Problem"]["Type"] = "Optimization";
+  optExp["Problem"]["Objective Function"] = 0;
+  optExp["Solver"]["Type"] = "Optimizer/CMAES";
+  optExp["Solver"]["Population Size"] = 16;
+  pObj->_psiExperiment = psiExp;
+  pObj->_thetaExperiment = optExp;
+  ASSERT_ANY_THROW(pObj->initialize());
+
   pObj->_psiExperiment = psiExp;
   pObj->_thetaExperiment = thetaExp;
   pObj->_psiExperiment["Problem"]["Conditional Priors"] = std::vector<std::string>({"Uniform", "Uniform"});
+  ASSERT_ANY_THROW(pObj->initialize());
+
+  pObj->_psiExperiment = psiExp;
+  pObj->_thetaExperiment = thetaExp;
+  pObj->_thetaExperiment["Problem"]["Conditional Priors"] = std::vector<std::string>({"Uniform", "Uniform"});
   ASSERT_ANY_THROW(pObj->initialize());
 
   pObj->_psiExperiment = psiExp;
@@ -1945,6 +1961,7 @@ namespace
   ASSERT_NO_THROW(pObj->runOperation("Evaluate logLikelihood", s));
   ASSERT_NO_THROW(pObj->runOperation("Evaluate logPosterior", s));
 
+
   pObj->_psiExperiment = psiExp;
   pObj->_psiExperiment["Is Finished"] = false;
   ASSERT_ANY_THROW(pObj->initialize());
@@ -1959,6 +1976,10 @@ namespace
 
   pObj->_psiExperiment = psiExp;
   pObj->_psiExperiment["Solver"]["Sample LogPrior Database"] = std::vector<double>({std::numeric_limits<double>::infinity()});
+  ASSERT_ANY_THROW(pObj->initialize());
+
+  pObj->_psiExperiment = psiExp;
+  pObj->_psiExperiment["Problem"]["Conditional Priors"] = std::vector<std::string>({"Uniform", "Uniform"});
   ASSERT_ANY_THROW(pObj->initialize());
 
   problemJs = baseProbJs;

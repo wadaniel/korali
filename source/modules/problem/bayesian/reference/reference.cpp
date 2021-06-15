@@ -559,9 +559,7 @@ void Reference::fisherInformationLoglikelihoodNormal(Sample &sample)
   auto gradientF = KORALI_GET(std::vector<std::vector<double>>, sample, "Gradient Mean");
   auto gradientG = KORALI_GET(std::vector<std::vector<double>>, sample, "Gradient Standard Deviation");
 
-  if (stdDevs.size() != Nd)
-    KORALI_LOG_ERROR("This Bayesian (%s) problem requires a %lu-sized Standard Deviation array. Provided: %lu.\n", _likelihoodModel.c_str(), Nd, stdDevs.size());
-
+  if (stdDevs.size() != Nd) KORALI_LOG_ERROR("This Bayesian (%s) problem requires a %lu-sized Standard Deviation array. Provided: %lu.\n", _likelihoodModel.c_str(), Nd, stdDevs.size());
   if (gradientF.size() != Nd) KORALI_LOG_ERROR("Bayesian problem requires a gradient of the Mean for each reference evaluation (provided %zu required %zu).", gradientF.size(), Nd);
   if (gradientG.size() != Nd) KORALI_LOG_ERROR("Bayesian problem requires a gradient of the Standard Deviation for each reference evaluation (provided %zu required %zu).", gradientF.size(), Nd);
 

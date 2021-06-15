@@ -36,7 +36,6 @@ Source
 
 To be specified:
 
-line 123 && line 103
 * Real en : energy factor
 * Real flow : flow factor
 * if action is set to zero (send 0 to act function), for the uncontrolled case
@@ -46,13 +45,11 @@ line 123 && line 103
 
 To be specified:
 line 78
+
 * double max_torque : maximum torque applied to the fans
 
 
 *eval-vracer-windmill.cpp*: RL evaluation program. 
-
-To be specified:
-* nothing
 
 Study Cases
 ^^^^^^^^^^^
@@ -60,26 +57,31 @@ Study Cases
 The simulations are launched with sbatch windmill.sbatch.
 
 uncontrolled:
+
 * set output_folder to uncontrolled
 * set en to 0, flow to 0 and the value given to the act() functions to 0
 * set max_torque to 1.0e-3
 
 energy:
+
 * set output_folder to energy_zero
 * set en to 5.0e4, flow to 0 and the value given to the act() functions to action[i], where i is the number of the fan
 * set max_torque to 1.0e-3
 
 flow 1e-4:
+
 * set output_folder to flow_zero
 * set en to 0, flow to 2.5 and the value given to the act() functions to action[i], where i is the number of the fan
 * set max_torque to 1.0e-4
 
 both:
+
 * set output_folder to both
 * set en to 5.0e4, flow to 2.5 and the value given to the act() functions to action[i], where i is the number of the fan
 * set max_torque to 1.0e-3
 
 flow 1e-3:
+
 * set output_folder to flow_zero
 * set en to 0, flow to 2.5 and the value given to the act() functions to action[i], where i is the number of the fan
 * set max_torque to 1.0e-3

@@ -44,7 +44,7 @@ e["Solver"]["Mode"] = "Training"
 e["Solver"]["Episodes Per Generation"] = 10
 e["Solver"]["Experiences Between Policy Updates"] = 1
 e["Solver"]["Discount Factor"] = 0.99
-e["Solver"]["Learning Rate"] = 0.001
+e["Solver"]["Learning Rate"] = 0.0001
 e["Solver"]["Mini Batch"]["Size"] = 32
 e["Solver"]["Experience Replay"]["Start Size"] = 1000
 e["Solver"]["Experience Replay"]["Maximum Size"] = 10000
@@ -60,7 +60,7 @@ e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 16
 
 ### Defining Termination Criteria
 
-e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 1.0
+e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 0.0
 
 ### Setting file output configuration
 
@@ -88,6 +88,6 @@ k.run(e)
 
 averageTestReward = np.average(e["Solver"]["Testing"]["Reward"])
 print("Average Reward: " + str(averageTestReward))
-if (averageTestReward < -5.0):
- print("Lander example did not reach minimum testing average.")
+if (averageTestReward < -8.0):
+ print("Landar example did not reach minimum testing average.")
  exit(-1)

@@ -13,6 +13,8 @@
 #include "modules/problem/integration/integration.hpp"
 #include "modules/problem/supervisedLearning/supervisedLearning.hpp"
 #include "modules/problem/reinforcementLearning/reinforcementLearning.hpp"
+#include "modules/problem/reinforcementLearning/discrete/discrete.hpp"
+#include "modules/problem/reinforcementLearning/continuous/continuous.hpp"
 #include "sample/sample.hpp"
 
 namespace
@@ -1859,4 +1861,321 @@ namespace
   problemJs["Psi Experiment"] = std::vector<knlohmann::json>();
   ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
  }
+
+ TEST(Problem, ReinforcementLearningDiscrete)
+ {
+  // Creating base experiment
+  Experiment e;
+  auto& experimentJs = e._js.getJson();
+
+  // Creating initial variable
+  e["Variables"][0]["Name"] = "X";
+  e["Variables"][0]["Type"] = "State";
+  e["Variables"][1]["Name"] = "Y";
+  e["Variables"][1]["Type"] = "Action";
+  e["Variables"][1]["Initial Exploration Noise"] = 0.45;
+  e["Solver"]["Type"] = "Agent / Discrete / dVRACER";
+
+  Variable v1;
+  Variable v2;
+  e._variables.push_back(&v1);
+  e._variables.push_back(&v2);
+  e._variables[0]->_name = "X";
+  e._variables[0]->_type = "State";
+  e._variables[1]->_name = "Y";
+  e._variables[1]->_type = "Action";
+  e._variables[1]->_initialExplorationNoise = 0.45;
+
+  // Configuring Problem
+  reinforcementLearning::Discrete* pObj;
+  knlohmann::json problemJs;
+  problemJs["Type"] = "Reinforcement Learning / Discrete";
+  problemJs["Environment Function"] = 0;
+  problemJs["Training Reward Threshold"] = 50.0;
+  problemJs["Policy Testing Episodes"] = 20;
+  problemJs["Possible Actions"] = std::vector<std::vector<float>>({{0.0}, {1.0}});
+
+  ASSERT_NO_THROW(pObj = dynamic_cast<reinforcementLearning::Discrete *>(Module::getModule(problemJs, &e)));
+  e._problem = pObj;
+
+  // Defaults should be applied without a problem
+  ASSERT_NO_THROW(pObj->applyModuleDefaults(problemJs));
+
+  // Covering variable functions (no effect)
+  ASSERT_NO_THROW(pObj->applyVariableDefaults());
+
+  // Trying to run unknown operation
+  Sample s;
+  ASSERT_ANY_THROW(pObj->runOperation("Unknown", s));
+
+  // Backup the correct base configuration
+  auto baseProbJs = problemJs;
+  auto baseExpJs = experimentJs;
+
+  // Testing correct configuration
+  ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
+
+  // Testing unrecognized solver
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  e["Solver"]["Type"] = "";
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
+  // Testing correct initialize
+  ASSERT_NO_THROW(pObj->initialize());
+
+  pObj->_possibleActions = std::vector<std::vector<float>>();
+  ASSERT_ANY_THROW(pObj->initialize());
+
+  pObj->_possibleActions = std::vector<std::vector<float>>({{0.0, 0.1}, {1.0, 1.1}});
+  ASSERT_ANY_THROW(pObj->initialize());
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  problemJs["Action Vector Size"] = "Not a Number";
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  problemJs["Action Vector Size"] = 1;
+  ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  problemJs["State Vector Size"] = "Not a Number";
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  problemJs["State Vector Size"] = 1;
+  ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  problemJs["Action Vector Indexes"] = "Not a Number";
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  problemJs["Action Vector Indexes"] = std::vector<size_t>();
+  ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  problemJs["State Vector Indexes"] = "Not a Number";
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  problemJs["State Vector Indexes"] = std::vector<size_t>();
+  ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  problemJs["Environment Function"] = "Not a Number";
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  problemJs["Environment Function"] = 0;
+  ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  problemJs.erase("Possible Actions");
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  problemJs["Possible Actions"] = "Not a Number";
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  problemJs["Possible Actions"] = std::vector<std::vector<float>>({{0.0, 0.1}, {1.0, 1.1}});
+  ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  problemJs.erase("Actions Between Policy Updates");
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  problemJs["Actions Between Policy Updates"] = "Not a Number";
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  problemJs["Actions Between Policy Updates"] = 1;
+  ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  problemJs.erase("Testing Frequency");
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  problemJs["Testing Frequency"] = "Not a Number";
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  problemJs["Testing Frequency"] = 1;
+  ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  problemJs.erase("Training Reward Threshold");
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  problemJs["Training Reward Threshold"] = "Not a Number";
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  problemJs["Training Reward Threshold"] = 1.0;
+  ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  problemJs.erase("Policy Testing Episodes");
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  problemJs["Policy Testing Episodes"] = "Not a Number";
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  problemJs["Policy Testing Episodes"] = 1;
+  ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  problemJs.erase("Custom Settings");
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  problemJs["Custom Settings"] = 1;
+  ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  e["Variables"][0].erase("Type");
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  e["Variables"][0]["Type"] = 1;
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  e["Variables"][0]["Type"] = "State";
+  ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  e["Variables"][0].erase("Lower Bound");
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  e["Variables"][0]["Lower Bound"] = "Not a Number";
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  e["Variables"][0]["Lower Bound"] = 1.0;
+  ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  e["Variables"][0].erase("Upper Bound");
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  e["Variables"][0]["Upper Bound"] = "Not a Number";
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  e["Variables"][0]["Upper Bound"] = 1.0;
+  ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
+ }
+
+ TEST(Problem, ReinforcementLearningContinuous)
+  {
+   // Creating base experiment
+   Experiment e;
+   auto& experimentJs = e._js.getJson();
+
+   // Creating initial variable
+   e["Variables"][0]["Name"] = "X";
+   e["Variables"][0]["Type"] = "State";
+   e["Variables"][1]["Name"] = "Y";
+   e["Variables"][1]["Type"] = "Action";
+   e["Variables"][1]["Initial Exploration Noise"] = 0.45;
+   e["Solver"]["Type"] = "Agent / Continuous / VRACER";
+
+   Variable v1;
+   Variable v2;
+   e._variables.push_back(&v1);
+   e._variables.push_back(&v2);
+   e._variables[0]->_name = "X";
+   e._variables[0]->_type = "State";
+   e._variables[1]->_name = "Y";
+   e._variables[1]->_type = "Action";
+   e._variables[1]->_initialExplorationNoise = 0.45;
+
+   // Configuring Problem
+   reinforcementLearning::Continuous* pObj;
+   knlohmann::json problemJs;
+   problemJs["Type"] = "Reinforcement Learning / Continuous";
+   problemJs["Environment Function"] = 0;
+   problemJs["Training Reward Threshold"] = 50.0;
+   problemJs["Policy Testing Episodes"] = 20;
+
+   ASSERT_NO_THROW(pObj = dynamic_cast<reinforcementLearning::Continuous *>(Module::getModule(problemJs, &e)));
+   e._problem = pObj;
+
+   // Defaults should be applied without a problem
+   ASSERT_NO_THROW(pObj->applyModuleDefaults(problemJs));
+
+   // Covering variable functions (no effect)
+   ASSERT_NO_THROW(pObj->applyVariableDefaults());
+
+   // Trying to run unknown operation
+   Sample s;
+   ASSERT_ANY_THROW(pObj->runOperation("Unknown", s));
+
+   // Backup the correct base configuration
+   auto baseProbJs = problemJs;
+   auto baseExpJs = experimentJs;
+
+   // Testing correct configuration
+   ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
+
+   // Testing unrecognized solver
+   problemJs = baseProbJs;
+   experimentJs = baseExpJs;
+   e["Solver"]["Type"] = "";
+   ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
+   // Testing correct initialize
+   ASSERT_NO_THROW(pObj->initialize());
+
+   pObj->_possibleActions = std::vector<std::vector<float>>();
+   ASSERT_ANY_THROW(pObj->initialize());
+
+   pObj->_possibleActions = std::vector<std::vector<float>>({{0.0, 0.1}, {1.0, 1.1}});
+   ASSERT_ANY_THROW(pObj->initialize());
+  }
 } // namespace

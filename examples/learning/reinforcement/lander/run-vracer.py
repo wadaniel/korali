@@ -60,7 +60,7 @@ e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 16
 
 ### Defining Termination Criteria
 
-e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = -1.0
+e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 0.0
 
 ### Setting file output configuration
 

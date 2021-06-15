@@ -1,5 +1,5 @@
 e = find_program('./run-executor-1.py', required: true)
-test('samplers.correctness.executor-1', e,
+test('executor-1', e,
       timeout : 2000,
       suite: 'statistical',
       workdir: meson.current_source_dir(),
@@ -8,7 +8,7 @@ test('samplers.correctness.executor-1', e,
     )
 
 e = find_program('./run-executor-2.py', required: true)
-test('samplers.correctness.executor-2', e,
+test('executor-2', e,
       timeout : 2000,
       suite: 'statistical',
       workdir: meson.current_source_dir(),

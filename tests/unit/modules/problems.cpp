@@ -1411,6 +1411,10 @@ namespace
   ASSERT_NO_THROW(pObj->runOperation("Evaluate Fisher Information", s));
   pObj->_likelihoodModel = "Negative Binomial";
   ASSERT_ANY_THROW(pObj->runOperation("Evaluate Fisher Information", s));
+  pObj->_likelihoodModel = "Unknown";
+  ASSERT_ANY_THROW(pObj->runOperation("Evaluate Fisher Information", s));
+
+
 
   pObj->_likelihoodModel = "Positive Normal";
   ASSERT_NO_THROW(pObj->evaluateLoglikelihood(s));
@@ -1508,6 +1512,15 @@ namespace
   experimentJs = baseExpJs;
   problemJs["Likelihood Model"] = "Normal";
   ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
+
+  pObj->_likelihoodModel = "Positive Normal";
+  e._variables.push_back(&v);
+  pObj->_referenceData = std::vector<double>({0.5, 0.05});
+  s["Reference Evaluations"] = std::vector<double>({0.5, 0.05});
+  s["Standard Deviation"] = std::vector<double>({0.5, 0.05});
+  s["Gradient Mean"] = std::vector<std::vector<double>>({{0.5, 0.05}, {0.5, 0.05}});
+  s["Gradient Standard Deviation"] = std::vector<std::vector<double>>({{0.5, 0.05}, {0.5, 0.05}});
+  ASSERT_NO_THROW(pObj->runOperation("Evaluate Fisher Information", s));
  }
 
  TEST(Problem, HierarchicalPsi)
@@ -1579,15 +1592,45 @@ namespace
   ASSERT_ANY_THROW(pObj->initialize());
   pObj->_conditionalPriors[0] = "Uniform";
 
+  e._variables[0]->_priorDistribution = "Unknown";
+  ASSERT_ANY_THROW(pObj->Hierarchical::initialize());
+  e._variables[0]->_priorDistribution = "Uniform";
+
+  s["Parameters"][0] = std::numeric_limits<double>::infinity();
+  ASSERT_FALSE(pObj->Hierarchical::isSampleFeasible(s));
+  s["Parameters"][0] = 0.5;
+  ASSERT_TRUE(pObj->Hierarchical::isSampleFeasible(s));
+
   pObj->_subExperiments[0]["Variables"] = std::vector<knlohmann::json>();
   ASSERT_ANY_THROW(pObj->initialize());
 
   pObj->_subExperiments[0]["Variables"][0]["Name"] = "Var X";
   pObj->_subExperiments[0]["Variables"][0]["Prior Distribution"] = "Uniform";
-
   pObj->_subExperiments[0]["Solver"]["Sample LogPrior Database"] = std::vector<double>({std::numeric_limits<double>::infinity()});
   ASSERT_ANY_THROW(pObj->initialize());
   pObj->_subExperiments[0]["Solver"]["Sample LogPrior Database"] = std::vector<double>({0.0});
+
+  pObj->_subExperiments[0]["Solver"].erase("Sample LogPrior Database");
+  ASSERT_ANY_THROW(pObj->initialize());
+  pObj->_subExperiments[0]["Solver"]["Sample LogPrior Database"] = std::vector<double>({0.0});
+
+  pObj->_subExperiments[0]["Is Finished"] = false;
+  ASSERT_ANY_THROW(pObj->initialize());
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  problemJs.erase("Conditional Priors");
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  problemJs["Conditional Priors"] = 1.0;
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  problemJs["Conditional Priors"] = std::vector<knlohmann::json>();
+  ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
 
   problemJs = baseProbJs;
   experimentJs = baseExpJs;
@@ -1602,6 +1645,36 @@ namespace
   problemJs = baseProbJs;
   experimentJs = baseExpJs;
   problemJs["Sub Experiments"] = std::vector<knlohmann::json>();
+  ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  e["Variables"][0].erase("Prior Distribution");
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  e["Variables"][0]["Prior Distribution"] = 1.0;
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  e["Variables"][0]["Prior Distribution"] = "Uniform";
+  ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  e["Variables"][0].erase("Distribution Index");
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  e["Variables"][0]["Distribution Index"] = "Not a Number";
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  e["Variables"][0]["Distribution Index"] = 1;
   ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
  }
 
@@ -1713,6 +1786,23 @@ namespace
   pObj->_psiExperiment = psiExp;
   pObj->_thetaExperiment = thetaExp;
   ASSERT_NO_THROW(pObj->initialize());
+
+  knlohmann::json optExp;
+  optExp["Variables"][0]["Name"] = "Var 1";
+  optExp["Variables"][0]["Lower Bound"] = -1.0;
+  optExp["Variables"][0]["Upper Bound"] = 1.0;
+  optExp["Problem"]["Type"] = "Optimization";
+  optExp["Problem"]["Objective Function"] = 0;
+  optExp["Solver"]["Type"] = "Optimizer/CMAES";
+  optExp["Solver"]["Population Size"] = 16;
+  pObj->_psiExperiment = optExp;
+  pObj->_thetaExperiment = thetaExp;
+  ASSERT_ANY_THROW(pObj->initialize());
+
+  pObj->_psiExperiment = psiExp;
+  pObj->_thetaExperiment = thetaExp;
+  pObj->_psiExperiment["Problem"]["Conditional Priors"] = std::vector<std::string>({"Uniform", "Uniform"});
+  ASSERT_ANY_THROW(pObj->initialize());
 
   pObj->_psiExperiment = psiExp;
   pObj->_thetaExperiment = thetaExp;
@@ -1845,12 +1935,26 @@ namespace
   pObj->_psiExperiment = psiExp;
   ASSERT_NO_THROW(pObj->initialize());
 
+  s["Parameters"] = std::vector<double>({0.0});
+  s["Sample Id"] = 0;
+  s["LogPrior"] = 0.5;
+  s["LogLikelihood"] = 0.5;
+  s["LogPosterior"] = 0.5;
+  ASSERT_NO_THROW(pObj->runOperation("Check Feasibility", s));
+  ASSERT_NO_THROW(pObj->runOperation("Evaluate logPrior", s));
+  ASSERT_NO_THROW(pObj->runOperation("Evaluate logLikelihood", s));
+  ASSERT_NO_THROW(pObj->runOperation("Evaluate logPosterior", s));
+
   pObj->_psiExperiment = psiExp;
   pObj->_psiExperiment["Is Finished"] = false;
   ASSERT_ANY_THROW(pObj->initialize());
 
   pObj->_psiExperiment = psiExp;
-  pObj->_psiExperiment["Problem"]["Conditional Priors"] = std::vector<double>({});
+  pObj->_psiExperiment["Problem"]["Conditional Priors"] = std::vector<std::string>();
+  ASSERT_ANY_THROW(pObj->initialize());
+
+  pObj->_psiExperiment = psiExp;
+  pObj->_psiExperiment["Problem"]["Conditional Priors"] = std::vector<std::string>({"Uniform", "Uniform"});
   ASSERT_ANY_THROW(pObj->initialize());
 
   pObj->_psiExperiment = psiExp;
@@ -1925,6 +2029,7 @@ namespace
   problemJs = baseProbJs;
   experimentJs = baseExpJs;
   e["Solver"]["Type"] = "";
+  ASSERT_ANY_THROW(pObj->ReinforcementLearning::setConfiguration(problemJs));
   ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
 
   // Testing correct initialize
@@ -1975,6 +2080,11 @@ namespace
   experimentJs = baseExpJs;
   problemJs["State Vector Indexes"] = std::vector<size_t>();
   ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  problemJs.erase("Environment Function");
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
 
   problemJs = baseProbJs;
   experimentJs = baseExpJs;

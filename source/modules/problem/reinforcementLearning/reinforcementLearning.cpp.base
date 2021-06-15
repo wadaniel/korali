@@ -125,10 +125,6 @@ void @className::runTrainingEpisode(Sample &agent)
     // Jumping back into the agent's environment
     runEnvironment(agent);
 
-    // Sanity check for reward
-    if (std::isfinite(agent["Reward"].get<float>()) == false)
-      KORALI_LOG_ERROR("Environment reward returned an invalid value: %f\n", agent["Reward"].get<float>());
-
     // Storing experience's reward
     episode["Experiences"][actionCount]["Reward"] = agent["Reward"];
 

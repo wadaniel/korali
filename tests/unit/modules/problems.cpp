@@ -2172,10 +2172,14 @@ namespace
    // Testing correct initialize
    ASSERT_NO_THROW(pObj->initialize());
 
-   pObj->_possibleActions = std::vector<std::vector<float>>();
-   ASSERT_ANY_THROW(pObj->initialize());
+//   e._overrideEngine = true;
+//   e._overrideFunction = [](Sample &s)
+//   {
+//    printf("Hola!\n");
+//   };
+//
+//   pObj->runTrainingEpisode(s);
 
-   pObj->_possibleActions = std::vector<std::vector<float>>({{0.0, 0.1}, {1.0, 1.1}});
-   ASSERT_ANY_THROW(pObj->initialize());
+
   }
 } // namespace

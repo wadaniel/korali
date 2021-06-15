@@ -125,12 +125,6 @@ void Psi::updateConditionalPriors(Sample &sample)
 
 void Psi::evaluateLogLikelihood(Sample &sample)
 {
-  if (isSampleFeasible(sample) == false)
-  {
-    sample["logLikelihood"] = -Inf;
-    return;
-  };
-
   updateConditionalPriors(sample);
 
   double logLikelihood = 0.0;
@@ -147,12 +141,6 @@ void Psi::evaluateLogLikelihood(Sample &sample)
     }
 
     logLikelihood += logSumExp(logValues);
-
-    if (std::isnan(logLikelihood))
-    {
-      sample["logLikelihood"] = -Inf;
-      return;
-    };
   }
 
   sample["logLikelihood"] = logLikelihood;
@@ -211,3 +199,4 @@ void Psi::applyVariableDefaults()
 } //hierarchical
 } //problem
 } //korali
+

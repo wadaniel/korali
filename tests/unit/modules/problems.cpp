@@ -983,6 +983,11 @@ namespace
   // Testing initialization
   ASSERT_NO_THROW(pObj->initialize());
 
+  // Testing initialization fail
+  v._priorDistribution = "Unknown";
+  ASSERT_ANY_THROW(pObj->initialize());
+  v._priorDistribution = "Uniform";
+
   // Evaluation function
   std::function<void(korali::Sample&)> modelFc = [](Sample& s)
   {
@@ -1070,6 +1075,36 @@ namespace
   experimentJs = baseExpJs;
   problemJs["Likelihood Model"] = 1;
   ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  e["Variables"][0].erase("Prior Distribution");
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  e["Variables"][0]["Prior Distribution"] = 1;
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  e["Variables"][0]["Prior Distribution"] = "Uniform";
+  ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  e["Variables"][0].erase("Distribution Index");
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  e["Variables"][0]["Distribution Index"] = "Not a Number";
+  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+
+  problemJs = baseProbJs;
+  experimentJs = baseExpJs;
+  e["Variables"][0]["Distribution Index"] = 1;
+  ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
  }
 
  TEST(Problem, BayesianReference)
@@ -1119,6 +1154,7 @@ namespace
 
   // Trying to run unknown operation
   Sample s;
+  s["Sample Id"] = 0;
   ASSERT_ANY_THROW(pObj->runOperation("Unknown", s));
 
   // Backup the correct base configuration
@@ -1310,19 +1346,19 @@ namespace
    s["Gradient Standard Deviation"] = std::vector<std::vector<double>>({{0.1}});
    s["Gradient Dispersion"] = std::vector<std::vector<double>>({{0.1}});
 
-   s["Hessian Mean"] += std::vector<std::vector<double>>({{0.1}});
-   s["Hessian Standard Deviation"] += std::vector<std::vector<double>>({{0.1}});
-   s["Hessian Dispersion"] += std::vector<std::vector<double>>({{0.1}});
+   s["Hessian Mean"] = std::vector<std::vector<double>>({{0.1}});
+   s["Hessian Standard Deviation"] = std::vector<std::vector<double>>({{0.1}});
+   s["Hessian Dispersion"] = std::vector<std::vector<double>>({{0.1}});
   };
 
   pObj->_likelihoodModel = "Normal";
   ASSERT_NO_THROW(pObj->evaluateLoglikelihood(s));
   ASSERT_NO_THROW(pObj->evaluateLoglikelihoodGradient(s));
-  ASSERT_NO_THROW(pObj->evaluateLoglikelihoodHessian(s));
+  ASSERT_NO_THROW(pObj->evaluateLogLikelihoodHessian(s));
 
   modelFc = [](Sample& s)
   {
-   s["F(x)"] = 0.0;
+   s["F(x)"] = 0.1;
    s["Reference Evaluations"] = std::vector<double>({0.1});
    s["Standard Deviation"] = std::vector<double>({0.1});
    s["Degrees Of Freedom"] = std::vector<double>({0.1});
@@ -1332,19 +1368,28 @@ namespace
    s["Gradient Standard Deviation"] = std::vector<std::vector<double>>({{0.1}});
    s["Gradient Dispersion"] = std::vector<std::vector<double>>({{0.1}});
 
-   s["Hessian Mean"] += std::vector<std::vector<double>>({{0.1}});
-   s["Hessian Standard Deviation"] += std::vector<std::vector<double>>({{0.1}});
-   s["Hessian Dispersion"] += std::vector<std::vector<double>>({{0.1}});
+   s["Hessian Mean"] = std::vector<std::vector<double>>({{0.1}});
+   s["Hessian Standard Deviation"] = std::vector<std::vector<double>>({{0.1}});
+   s["Hessian Dispersion"] = std::vector<std::vector<double>>({{0.1}});
   };
 
   pObj->_likelihoodModel = "Normal";
   ASSERT_NO_THROW(pObj->evaluateLoglikelihood(s));
   ASSERT_NO_THROW(pObj->evaluateLoglikelihoodGradient(s));
   ASSERT_NO_THROW(pObj->evaluateLogLikelihoodHessian(s));
+
+  // Running operations
+  ASSERT_NO_THROW(pObj->runOperation("Evaluate", s));
+  ASSERT_NO_THROW(pObj->runOperation("Evaluate logLikelihood", s));
+  ASSERT_NO_THROW(pObj->runOperation("Evaluate logPosterior", s));
+  ASSERT_NO_THROW(pObj->runOperation("Evaluate Gradient", s));
+  ASSERT_NO_THROW(pObj->runOperation("Evaluate Hessian", s));
+  ASSERT_NO_THROW(pObj->runOperation("Evaluate Fisher Information", s));
+
   pObj->_likelihoodModel = "Positive Normal";
   ASSERT_NO_THROW(pObj->evaluateLoglikelihood(s));
   ASSERT_NO_THROW(pObj->evaluateLoglikelihoodGradient(s));
-  ASSERT_NO_THROW(pObj->evaluateLogLikelihoodHessian(s));
+  ASSERT_ANY_THROW(pObj->evaluateLogLikelihoodHessian(s));
   pObj->_likelihoodModel = "StudentT";
   ASSERT_NO_THROW(pObj->evaluateLoglikelihood(s));
   ASSERT_ANY_THROW(pObj->evaluateLoglikelihoodGradient(s));
@@ -1379,7 +1424,7 @@ namespace
   problemJs = baseProbJs;
   experimentJs = baseExpJs;
   problemJs["Computational Model"] = 1;
-  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+  ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
 
   problemJs = baseProbJs;
   experimentJs = baseExpJs;
@@ -1394,7 +1439,7 @@ namespace
   problemJs = baseProbJs;
   experimentJs = baseExpJs;
   problemJs["Reference Data"] = std::vector<double>({0.0});
-  ASSERT_ANY_THROW(pObj->setConfiguration(problemJs));
+  ASSERT_NO_THROW(pObj->setConfiguration(problemJs));
 
   problemJs = baseProbJs;
   experimentJs = baseExpJs;

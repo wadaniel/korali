@@ -11,6 +11,7 @@
 #define _USE_MATH_DEFINES
 
 #include <cmath>
+#include <gsl/gsl_math.h>
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_sf_gamma.h>
 #include <gsl/gsl_randist.h>
@@ -85,6 +86,28 @@ const double Min = std::numeric_limits<double>::min();
 * @brief Korali's definition of minimum representable difference between two numbers
 */
 const double Eps = std::numeric_limits<double>::epsilon();
+
+/**
+* @brief Approximates the inverse of the error function
+* @param x Argument to the inverse error function
+* @return The inverse of the error function
+*/
+template <typename T>
+T ierf(T x)
+{
+    // Taken from: https://stackoverflow.com/questions/27229371/inverse-error-function-in-c
+    // Based on: A handy approximation for the error function and its inverse" by Sergei Winitzki.
+    
+    const float sgn = (x < 0) ? -1. : 1.;
+    const float xx = (1. - x)*(1. + x);        // x = 1 - x*x;
+    const float lnx = std::log(xx);
+
+    const float tt1 = 2./(M_PI*0.147) + 0.5 * lnx;
+    const float tt2 = 1./(0.147) * lnx;
+
+    return(sgn*std::sqrt(-tt1 + std::sqrt(tt1*tt1 - tt2)));
+}
+
 
 /**
 * @brief Safely computes log(exp(x)+exp(y)) and avoids overflows
@@ -193,6 +216,59 @@ T normalLogDensity(const T &x, const T &mean, const T &sigma)
   T d = (x - mean) / sigma;
   return norm - 0.5 * d * d;
 }
+ 
+/**
+* @brief Computes the cumulative distribution function of a normal distribution.
+* @param x evaluation point
+* @param mean Mean of normal distribution
+* @param sigma Standard Deviation of normal distribution
+* @return The log of the CDF
+*/
+template <typename T>
+T normalCDF(const T &x, const T &mean, const T &sigma)
+{
+  return 0.5 + 0.5*erff((x-mean)/(sigma*M_SQRT2));
+}
+
+/**
+* @brief Computes the log of the cumulative distribution function of a normal distribution.
+* @param x evaluation point
+* @param mean Mean of normal distribution
+* @param sigma Standard Deviation of normal distribution
+* @return The log of the CDF
+*/
+template <typename T>
+T normalLogCDF(const T &x, const T &mean, const T &sigma)
+{
+  return log(0.5 + 0.5*erff((x-mean)/(sigma*M_SQRT2)));
+}
+
+/**
+* @brief Computes the tail distribution of a normal distribution (complementary cumulative distribution).
+* @param x evaluation point
+* @param mean Mean of normal distribution
+* @param sigma Standard Deviation of normal distribution
+* @return The log of the CDF
+*/
+template <typename T>
+T normalCCDF(const T &x, const T &mean, const T &sigma)
+{
+  return 0.5 - 0.5*erff((x-mean)/(sigma*M_SQRT2));
+}
+
+
+/**
+* @brief Computes the log of the tail distribution of a normal distribution (complementary cumulative distribution).
+* @param x evaluation point
+* @param mean Mean of normal distribution
+* @param sigma Standard Deviation of normal distribution
+* @return The log of the CDF
+*/
+template <typename T>
+T normalLogCCDF(const T &x, const T &mean, const T &sigma)
+{
+  return log(0.5 - 0.5*erff((x-mean)/(sigma*M_SQRT2)));
+}
 
 /**
 * @brief Computes the log density of a squashed normal distribution.
@@ -219,6 +295,51 @@ T squashedNormalLogDensity(const T &px, const T &mean, const T &sigma, const T &
 
   // log[p(g(x))]=log[p(x)]-log[g'(x)]
   return logExp - logConst - logStdDev - logDTanhX - logScale;
+}
+
+/**
+* @brief Computes the density of the truncated normal distribution.
+* @param x density evaluation point
+* @param mu Mean of normal distribution
+* @param sigma Standard Deviation of normal distribution
+* @param a Lower bound of truncated normal
+* @param b Upper bound of truncated normal
+* @return The log density
+*/
+template <typename T>
+T truncatedNormalPdf (T x,T mu,T sigma,T a,T b)
+{
+  // Taken from: https://people.sc.fsu.edu/~jburkardt/cpp_src/truncated_normal/truncated_normal.cpp
+  T alpha;
+  T alpha_cdf;
+  T beta;
+  T beta_cdf;
+  T pdf;
+  T xi;
+  T xi_pdf;
+
+  if ( x < a )
+  {
+    pdf = 0.0;
+  }
+  else if ( x <= b )
+  {
+    alpha = ( a - mu ) / sigma;
+    beta = ( b - mu ) / sigma;
+    xi = ( x - mu ) / sigma;
+
+    alpha_cdf = normalCDF( alpha, 0., 1.);
+    beta_cdf = normalCDF( beta, 0., 1. );
+    xi_pdf = normalCDF( xi, 0., 1. );
+
+    pdf = xi_pdf / ( beta_cdf - alpha_cdf ) / sigma;
+  }
+  else
+  {
+    pdf = 0.0;
+  }
+  
+  return pdf;
 }
 
 /**

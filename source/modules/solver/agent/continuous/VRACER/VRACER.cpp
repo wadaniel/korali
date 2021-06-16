@@ -198,7 +198,7 @@ std::vector<policy_t> VRACER::runPolicy(const std::vector<std::vector<std::vecto
 
     // Getting distribution parameters
     policyVector[b].distributionParameters.assign(evaluation[b].begin() + 1, evaluation[b].end());
-    printf("pv [%zu] %f %f %f\n", b, policyVector[b].stateValue, policyVector[b].distributionParameters[0], policyVector[b].distributionParameters[1]);
+    //printf("pv [%zu] %f %f %f\n", b, policyVector[b].stateValue, policyVector[b].distributionParameters[0], policyVector[b].distributionParameters[1]);
   }
 
   return policyVector;

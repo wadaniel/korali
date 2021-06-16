@@ -21,7 +21,7 @@ class Sample;
 /**
   * @brief A Korali Engine initializes the conduit and experiments, and guides their execution.
  */
-class Engine : public Module
+class Engine
 {
   public:
   Engine();
@@ -75,7 +75,7 @@ class Engine : public Module
   /**
    * @brief Initialization stage of the Korali Engine
    */
-  void initialize() override;
+  void initialize();
 
   /**
    * @brief Stores a set experiments into the experiment list and runs them to completion.

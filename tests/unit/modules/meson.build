@@ -48,4 +48,16 @@ test('modules.neuralnetwork', neuralnetwork_tester,
   suite: 'unit',
 )
 
+experiment_tester = executable('experiment_tester',
+  files(['experiment.cpp']),
+  include_directories: korali_include,
+  dependencies: [ gtest_main_dep, korali_deps, pythonEmbedDep ],
+  link_with: [ python_extension ],
+  )
+  
+test('modules.experiment', experiment_tester,
+  protocol: 'gtest',
+  suite: 'unit',
+)
+
 subdir('solver')

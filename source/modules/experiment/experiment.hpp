@@ -84,14 +84,6 @@ class Experiment: public Module
   */
    size_t _fileOutputFrequency;
   /**
-  * @brief Specifies the name and extension of the output file. If this is defined, all generations will be saved onto the specified file, overwriting it. Use this is you want to store only the latest state without overcrowding the results folder
-  */
-   std::string _fileOutputName;
-  /**
-  * @brief Specifies the keys that should not be saved into the file.
-  */
-   std::vector<std::vector<std::string>> _fileOutputExcludedKeys;
-  /**
   * @brief Specifies whether the sample information should be saved to samples.json in the results path.
   */
    int _storeSampleInformation;
@@ -119,10 +111,6 @@ class Experiment: public Module
   * @brief [Internal Use] Indicates the current time when saving a result file.
   */
    std::string _timestamp;
-  /**
-  * @brief [Internal Use] Dictionary of global information broadcasted by the solver, shared by all workers.
-  */
-   knlohmann::json _globals;
   
  
   /**

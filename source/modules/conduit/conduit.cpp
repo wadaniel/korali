@@ -114,7 +114,6 @@ void Conduit::worker()
 
 void Conduit::workerProcessSample(const knlohmann::json &js)
 {
-  Engine *engine = _engineStack.top();
   auto expId = js["Experiment Id"];
   Sample s;
   s._js.getJson() = js;

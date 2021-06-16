@@ -142,8 +142,7 @@ int main(int argc, char *argv[])
   k["Profiling"]["Path"] = trainingResultsPath + std::string("/profiling.json");
   k["Profiling"]["Frequency"] = 10;
 
-  k["Conduit"]["Type"] = "Distributed";
-  k["Conduit"]["Communicator"] = MPI_COMM_WORLD;
+  korali::setKoraliMPIComm(MPI_COMM_WORLD);
 
   k.run(e);
 

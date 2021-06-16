@@ -151,10 +151,19 @@ void Activation::forwardData(const size_t t)
 
   if (_nn->_engine == "Korali")
   {
+    if (_function == "Elementwise/Clip")
+    {
+      for (size_t i = 0; i < N * OC; i++)
+      {
+        if (_prevLayer->_outputValues[i] < _alpha) _outputValues[i] = _alpha;
+        else if (_prevLayer->_outputValues[i] > _beta) _outputValues[i] = _beta;
+        else _outputValues[i] = _prevLayer->_outputValues[i];
+      }
+    }
     if (_function == "Elementwise/Linear")
     {
       for (size_t i = 0; i < N * OC; i++)
-        _outputValues[i] = _prevLayer->_outputValues[i] * _alpha;
+        _outputValues[i] = _prevLayer->_outputValues[i] * _alpha + _beta;
     }
     if (_function == "Elementwise/Log")
     {

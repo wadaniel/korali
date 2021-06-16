@@ -100,11 +100,6 @@ class Conduit : public Module
   void workerPopEngine();
 
   /**
- * @brief Aborts execution for all ranks/threads/processes.
- */
-  virtual void abort() { exit(-1); }
-
-  /**
  * @brief Starts the execution of the sample.
  * @param sample A Korali sample
  */

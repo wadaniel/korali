@@ -113,7 +113,6 @@ void Experiment::run()
   _logger->logInfo("Normal", "Elapsed Time: %.3fs\n", std::chrono::duration<double>(t1 - t0).count());
 
   co_switch(_engine->_thread);
-  KORALI_LOG_ERROR("Trying to continue finished Experiment thread.\n");
 }
 
 void Experiment::saveState()
@@ -123,38 +122,7 @@ void Experiment::saveState()
   if (_storeSampleInformation == true) _js["Samples"] = _sampleInfo["Samples"];
 
   char genFileName[256];
-
-  // Removing keys in the exclusion list
-  for (size_t i = 0; i < _fileOutputExcludedKeys.size(); i++)
-  {
-    bool foundKey = true;
-    auto currentJs = &_js.getJson();
-    auto prevJs = currentJs;
-
-    for (size_t j = 0; j < _fileOutputExcludedKeys[i].size(); j++)
-    {
-      if (isDefined(*currentJs, _fileOutputExcludedKeys[i][j]))
-      {
-        prevJs = currentJs;
-        currentJs = &((*currentJs)[_fileOutputExcludedKeys[i][j]]);
-      }
-      else
-      {
-        foundKey = false;
-        break;
-      }
-    }
-    if (foundKey)
-    {
-      eraseValue(*prevJs, _fileOutputExcludedKeys[i][_fileOutputExcludedKeys[i].size() - 1]);
-    }
-  }
-
-  // If filename not given, assign gen + genId
-  if (_fileOutputName == "")
-    sprintf(genFileName, "gen%08lu.json", _currentGeneration);
-  else
-    sprintf(genFileName, "%s", _fileOutputName.c_str());
+  sprintf(genFileName, "gen%08lu.json", _currentGeneration);
 
   // If results directory doesn't exist, create it
   if (!dirExists(_fileOutputPath)) mkdir(_fileOutputPath);
@@ -166,9 +134,7 @@ void Experiment::saveState()
     KORALI_LOG_ERROR("Error trying to save result file: %s.\n", filePath.c_str());
 
   remove(linkPath.c_str());
-
-  if (link(filePath.c_str(), linkPath.c_str()) != 0)
-    KORALI_LOG_ERROR("Could not create hard link to latest result.\n + Target: %s\n + Link: %s\n", filePath.c_str(), linkPath.c_str());
+  link(filePath.c_str(), linkPath.c_str());
 
   auto endTime = std::chrono::steady_clock::now();
   _resultSavingTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count();
@@ -311,13 +277,6 @@ void Experiment::setConfiguration(knlohmann::json& js)
    eraseValue(js, "Timestamp");
  }
 
- if (isDefined(js, "Globals"))
- {
- _globals = js["Globals"].get<knlohmann::json>();
-
-   eraseValue(js, "Globals");
- }
-
  if (isDefined(js, "Random Seed"))
  {
  try { _randomSeed = js["Random Seed"].get<size_t>();
@@ -396,24 +355,6 @@ void Experiment::setConfiguration(knlohmann::json& js)
  }
   else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['File Output']['Frequency'] required by experiment.\n"); 
 
- if (isDefined(js, "File Output", "Name"))
- {
- try { _fileOutputName = js["File Output"]["Name"].get<std::string>();
-} catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ experiment ] \n + Key:    ['File Output']['Name']\n%s", e.what()); } 
-   eraseValue(js, "File Output", "Name");
- }
-  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['File Output']['Name'] required by experiment.\n"); 
-
- if (isDefined(js, "File Output", "Excluded Keys"))
- {
- try { _fileOutputExcludedKeys = js["File Output"]["Excluded Keys"].get<std::vector<std::vector<std::string>>>();
-} catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ experiment ] \n + Key:    ['File Output']['Excluded Keys']\n%s", e.what()); } 
-   eraseValue(js, "File Output", "Excluded Keys");
- }
-  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['File Output']['Excluded Keys'] required by experiment.\n"); 
-
  if (isDefined(js, "Store Sample Information"))
  {
  try { _storeSampleInformation = js["Store Sample Information"].get<int>();
@@ -467,8 +408,6 @@ void Experiment::getConfiguration(knlohmann::json& js)
    js["File Output"]["Path"] = _fileOutputPath;
    js["File Output"]["Enabled"] = _fileOutputEnabled;
    js["File Output"]["Frequency"] = _fileOutputFrequency;
-   js["File Output"]["Name"] = _fileOutputName;
-   js["File Output"]["Excluded Keys"] = _fileOutputExcludedKeys;
    js["Store Sample Information"] = _storeSampleInformation;
    js["Console Output"]["Verbosity"] = _consoleOutputVerbosity;
    js["Console Output"]["Frequency"] = _consoleOutputFrequency;
@@ -476,14 +415,13 @@ void Experiment::getConfiguration(knlohmann::json& js)
    js["Is Finished"] = _isFinished;
    js["Run ID"] = _runID;
    js["Timestamp"] = _timestamp;
-   js["Globals"] = _globals;
  Module::getConfiguration(js);
 } 
 
 void Experiment::applyModuleDefaults(knlohmann::json& js) 
 {
 
- std::string defaultString = "{\"Random Seed\": 0, \"Preserve Random Number Generator States\": false, \"Distributions\": [], \"Current Generation\": 0, \"File Output\": {\"Enabled\": true, \"Path\": \"_korali_result\", \"Name\": \"\", \"Frequency\": 1, \"Excluded Keys\": []}, \"Console Output\": {\"Verbosity\": \"Normal\", \"Frequency\": 1}, \"Store Sample Information\": false, \"Is Finished\": false}";
+ std::string defaultString = "{\"Random Seed\": 0, \"Preserve Random Number Generator States\": false, \"Distributions\": [], \"Current Generation\": 0, \"File Output\": {\"Enabled\": true, \"Path\": \"_korali_result\", \"Frequency\": 1}, \"Console Output\": {\"Verbosity\": \"Normal\", \"Frequency\": 1}, \"Store Sample Information\": false, \"Is Finished\": false}";
  knlohmann::json defaultJs = knlohmann::json::parse(defaultString);
  mergeJson(js, defaultJs); 
  Module::applyModuleDefaults(js);
@@ -498,3 +436,4 @@ void Experiment::applyVariableDefaults()
 
 
 } //korali
+

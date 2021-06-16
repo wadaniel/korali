@@ -421,7 +421,6 @@ void TMCMC::calculateProposals(std::vector<Sample> &samples)
     numFIMCalculations++;
   }
 
-  int status;
   size_t Nth = _variableCount;
   gsl_vector *ccpy0 = gsl_vector_alloc(Nth);
   gsl_vector *ccpy1 = gsl_vector_alloc(Nth);
@@ -444,7 +443,7 @@ void TMCMC::calculateProposals(std::vector<Sample> &samples)
     gsl_permutation *perm = gsl_permutation_alloc(Nth);
 
     int s;
-    status = gsl_linalg_LU_decomp(&FIMview.matrix, perm, &s);
+    gsl_linalg_LU_decomp(&FIMview.matrix, perm, &s);
 
     // SM - Only add a check if you can create a unit test to trigger it
 //    if (status != GSL_SUCCESS)
@@ -456,7 +455,7 @@ void TMCMC::calculateProposals(std::vector<Sample> &samples)
 //    }
 
     gsl_matrix *FIMinv = gsl_matrix_alloc(Nth, Nth);
-    status = gsl_linalg_LU_invert(&FIMview.matrix, perm, FIMinv);
+    gsl_linalg_LU_invert(&FIMview.matrix, perm, FIMinv);
     gsl_permutation_free(perm);
 
     // SM - Only add a check if you can create a unit test to trigger it
@@ -472,7 +471,7 @@ void TMCMC::calculateProposals(std::vector<Sample> &samples)
     gsl_vector *Evals = gsl_vector_alloc(Nth);
     gsl_matrix *Evecs = gsl_matrix_alloc(Nth, Nth);
     gsl_eigen_symmv_workspace *work = gsl_eigen_symmv_alloc(Nth);
-    status = gsl_eigen_symmv(FIMinv, Evals, Evecs, work);
+    gsl_eigen_symmv(FIMinv, Evals, Evecs, work);
     gsl_eigen_symmv_free(work);
 
     // SM - Only add a check if you can create a unit test to trigger it
@@ -486,7 +485,7 @@ void TMCMC::calculateProposals(std::vector<Sample> &samples)
 //      continue;
 //    }
 
-    double minEval = gsl_vector_min(Evals);
+    gsl_vector_min(Evals);
 
     // SM - Only add a check if you can create a unit test to trigger it
 //    if (minEval <= 0.0)

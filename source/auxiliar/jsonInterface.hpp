@@ -109,15 +109,9 @@ T getValue(T &js, const Key &... key)
 
   const auto *lastKey = (getPointer(key), ...);
 
-  if (result == true)
-  {
-    return (*prv)[*lastKey];
-  }
-  else
-  {
-    std::string keyString(*lastKey);
-    KORALI_LOG_ERROR("Could not find key '%s' to return.\n", keyString.c_str());
-  }
+  if (result == true) return (*prv)[*lastKey];
+
+  return T();
 }
 
 /**

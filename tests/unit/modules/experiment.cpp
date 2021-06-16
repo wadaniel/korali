@@ -1,6 +1,7 @@
 #include "gtest/gtest.h"
 #include "korali.hpp"
 #include "modules/experiment/experiment.hpp"
+#include "sample/sample.hpp"
 
 namespace
 {
@@ -15,6 +16,7 @@ namespace
   expJs["Problem"]["Objective Function"] = 0;
   expJs["Solver"]["Type"] = "Optimizer/CMAES";
   expJs["Solver"]["Population Size"] = 16;
+  expJs["Solver"]["Termination Criteria"]["Max Generations"] = 1;
   expJs["Variables"][0]["Name"] = "Var 1";
   expJs["Variables"][0]["Lower Bound"] = -1.0;
   expJs["Variables"][0]["Upper Bound"] = 1.0;
@@ -32,12 +34,14 @@ namespace
   e->_experimentId = 0;
   e->_engine = &k;
   e->_isFinished = false;
-  e->initialize();
+  ASSERT_NO_THROW(e->initialize());
 
   expJs = backJs;
   expJs.erase("Variables");
-  e->setConfiguration(expJs);
+  ASSERT_NO_THROW(e->setConfiguration(expJs));
 
+  e->_fileOutputPath = {(char)0};
+  ASSERT_ANY_THROW(e->saveState());
 
   expJs = backJs;
   ASSERT_NO_THROW(e = dynamic_cast<Experiment *>(Module::getModule(expJs, NULL)));
@@ -262,6 +266,45 @@ namespace
   e->initialize();
   expJs.erase("Variables");
   ASSERT_NO_THROW(e->setConfiguration(expJs));
+ }
+
+ TEST(Experiment, execution)
+ {
+  Engine k;
+  knlohmann::json expJs;
+  expJs["Type"] = "Experiment";
+  expJs["Problem"]["Type"] = "Optimization";
+  expJs["Problem"]["Objective Function"] = 0;
+  expJs["Solver"]["Type"] = "Optimizer/CMAES";
+  expJs["Solver"]["Population Size"] = 16;
+  expJs["Solver"]["Termination Criteria"]["Max Generations"] = 1;
+  expJs["Variables"][0]["Name"] = "Var 1";
+  expJs["Variables"][0]["Lower Bound"] = -1.0;
+  expJs["Variables"][0]["Upper Bound"] = 1.0;
+
+  // Creating module
+  Experiment* e;
+  ASSERT_NO_THROW(e = dynamic_cast<Experiment *>(Module::getModule(expJs, NULL)));
+  ASSERT_NO_THROW(e->applyModuleDefaults(expJs));
+  ASSERT_NO_THROW(e->applyVariableDefaults());
+
+  expJs["Type"] = "Experiment";
+  auto backJs = expJs;
+  e->_js.getJson() = expJs;
+
+  e->_experimentId = 0;
+  e->_engine = &k;
+  e->_isFinished = false;
+  ASSERT_NO_THROW(e->initialize());
+
+  std::function<void(korali::Sample&)> modelFc = [](Sample& s)
+  {
+   s["F(x)"] = 0.1;
+  };
+  _functionVector.push_back(&modelFc);
+  ASSERT_NO_THROW(k.run(*e));
+
+  ASSERT_NO_THROW(delete e);
  }
 
 } // namespace

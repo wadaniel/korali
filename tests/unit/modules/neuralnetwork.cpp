@@ -26,7 +26,7 @@ namespace
   NeuralNetwork* nn;
   knlohmann::json neuralNetworkConfig;
   neuralNetworkConfig["Type"] = "Neural Network";
-  neuralNetworkConfig["Engine"] = "Korali";
+  neuralNetworkConfig["Engine"] = "OneDNN";
   neuralNetworkConfig["Timestep Count"] = 1;
   neuralNetworkConfig["Batch Sizes"] = std::vector<size_t>({1});
   neuralNetworkConfig["Layers"][0]["Type"] = "Layer/Input";
@@ -56,6 +56,10 @@ namespace
   nn->_batchSizes = std::vector<size_t>();
   ASSERT_ANY_THROW(nn->initialize());
 
+  nn->_isInitialized = false;
+  nn->_batchSizes = std::vector<size_t>({0});
+  ASSERT_ANY_THROW(nn->initialize());
+
   nn->_batchSizes = std::vector<size_t>({1});
   nn->_isInitialized = false;
   ASSERT_NO_THROW(nn->initialize());
@@ -69,7 +73,6 @@ namespace
 
   nn->_mode = "Inference";
   ASSERT_ANY_THROW(nn->backward({{0.0}}));
-  nn->_mode = "Training";
 
   ASSERT_NO_THROW(nn->getInputGradients(1));
   ASSERT_ANY_THROW(nn->getInputGradients(0));
@@ -172,6 +175,11 @@ namespace
    ASSERT_NO_THROW(layer->applyVariableDefaults());
    knlohmann::json layerJs;
    ASSERT_NO_THROW(layer->getConfiguration(layerJs));
+
+   nn->_mode = "Inference";
+   ASSERT_ANY_THROW(layer->backwardData(0));
+   nn->_mode = "Training";
+   ASSERT_NO_THROW(layer->backwardData(0));
 
    layer->_function = "Elementwise/Clip";
    layer->_alpha = 0.3;
@@ -283,6 +291,248 @@ namespace
    layerJs = baseLayerJs;
    layerJs["Beta"] = 1.0;
    ASSERT_NO_THROW(layer->setConfiguration(layerJs));
+
+   delete layer;
   }
 
+ TEST(NeuralNetwork, InputLayer)
+ {
+  Experiment e;
+  e._logger = new Logger("Detailed", stdout);
+  auto& experimentJs = e._js.getJson();
+
+  NeuralNetwork* nn;
+  knlohmann::json neuralNetworkConfig;
+  neuralNetworkConfig["Type"] = "Neural Network";
+  neuralNetworkConfig["Engine"] = "OneDNN";
+  neuralNetworkConfig["Timestep Count"] = 1;
+  neuralNetworkConfig["Batch Sizes"] = std::vector<size_t>({1});
+  neuralNetworkConfig["Layers"][0]["Type"] = "Layer/Input";
+  neuralNetworkConfig["Layers"][0]["Output Channels"] = 1;
+  neuralNetworkConfig["Layers"][1]["Type"] = "Layer/Activation";
+  neuralNetworkConfig["Layers"][1]["Function"] = "Elementwise/Linear";
+  neuralNetworkConfig["Layers"][2]["Type"] = "Layer/Output";
+  neuralNetworkConfig["Mode"] = "Training";
+
+  ASSERT_NO_THROW(nn = dynamic_cast<NeuralNetwork *>(Module::getModule(neuralNetworkConfig, &e)));
+  ASSERT_NO_THROW(nn->applyModuleDefaults(neuralNetworkConfig));
+  auto baseNNJs = neuralNetworkConfig;
+
+  ASSERT_NO_THROW(nn->setConfiguration(neuralNetworkConfig));
+  ASSERT_NO_THROW(nn->applyVariableDefaults());
+  ASSERT_NO_THROW(nn->initialize());
+
+  Input* layer = dynamic_cast<Input*>(nn->_pipelines[0][0]._layerVector[0]);
+  ASSERT_NO_THROW(layer->applyVariableDefaults());
+  knlohmann::json layerJs;
+  ASSERT_NO_THROW(layer->getConfiguration(layerJs));
+
+  nn->_mode = "Inference";
+  ASSERT_ANY_THROW(layer->backwardData(0));
+  nn->_mode = "Training";
+  ASSERT_NO_THROW(layer->backwardData(0));
+ }
+
+ TEST(NeuralNetwork, OutputLayer)
+ {
+  Experiment e;
+  e._logger = new Logger("Detailed", stdout);
+  auto& experimentJs = e._js.getJson();
+
+  NeuralNetwork* nn;
+  knlohmann::json neuralNetworkConfig;
+  neuralNetworkConfig["Type"] = "Neural Network";
+  neuralNetworkConfig["Engine"] = "OneDNN";
+  neuralNetworkConfig["Timestep Count"] = 1;
+  neuralNetworkConfig["Batch Sizes"] = std::vector<size_t>({1});
+  neuralNetworkConfig["Layers"][0]["Type"] = "Layer/Input";
+  neuralNetworkConfig["Layers"][0]["Output Channels"] = 1;
+  neuralNetworkConfig["Layers"][1]["Type"] = "Layer/Output";
+  neuralNetworkConfig["Mode"] = "Training";
+
+  ASSERT_NO_THROW(nn = dynamic_cast<NeuralNetwork *>(Module::getModule(neuralNetworkConfig, &e)));
+  ASSERT_NO_THROW(nn->applyModuleDefaults(neuralNetworkConfig));
+  auto baseNNJs = neuralNetworkConfig;
+
+  ASSERT_NO_THROW(nn->setConfiguration(neuralNetworkConfig));
+  ASSERT_NO_THROW(nn->applyVariableDefaults());
+  ASSERT_NO_THROW(nn->initialize());
+
+  Output* layer = dynamic_cast<Output*>(nn->_pipelines[0][0]._layerVector[1]);
+  ASSERT_NO_THROW(layer->applyVariableDefaults());
+  knlohmann::json layerJs;
+  ASSERT_NO_THROW(layer->getConfiguration(layerJs));
+
+  nn->_mode = "Inference";
+  ASSERT_ANY_THROW(layer->backwardData(0));
+  nn->_mode = "Training";
+  ASSERT_NO_THROW(layer->backwardData(0));
+
+  ASSERT_NO_THROW(layer->getOutput());
+
+  knlohmann::json baseLayerJs = layerJs;
+
+  layerJs = baseLayerJs;
+  layerJs.erase("Output Channels");
+  ASSERT_ANY_THROW(layer->setConfiguration(layerJs));
+
+  layerJs = baseLayerJs;
+  layerJs["Output Channels"] = "Not a Number";
+  ASSERT_ANY_THROW(layer->setConfiguration(layerJs));
+
+  layerJs = baseLayerJs;
+  layerJs["Output Channels"] = 1;
+  ASSERT_NO_THROW(layer->setConfiguration(layerJs));
+
+  layerJs = baseLayerJs;
+  layerJs.erase("Weight Scaling");
+  ASSERT_ANY_THROW(layer->setConfiguration(layerJs));
+
+  layerJs = baseLayerJs;
+  layerJs["Weight Scaling"] = "Not a Number";
+  ASSERT_ANY_THROW(layer->setConfiguration(layerJs));
+
+  layerJs = baseLayerJs;
+  layerJs["Weight Scaling"] = 1.0;
+  ASSERT_NO_THROW(layer->setConfiguration(layerJs));
+ }
+
+ TEST(NeuralNetwork, LinearLayer)
+ {
+  Experiment e;
+  e._logger = new Logger("Detailed", stdout);
+  auto& experimentJs = e._js.getJson();
+
+  NeuralNetwork* nn;
+  knlohmann::json neuralNetworkConfig;
+  neuralNetworkConfig["Type"] = "Neural Network";
+  neuralNetworkConfig["Engine"] = "OneDNN";
+  neuralNetworkConfig["Timestep Count"] = 1;
+  neuralNetworkConfig["Batch Sizes"] = std::vector<size_t>({1});
+  neuralNetworkConfig["Layers"][0]["Type"] = "Layer/Input";
+  neuralNetworkConfig["Layers"][0]["Output Channels"] = 1;
+  neuralNetworkConfig["Layers"][1]["Type"] = "Layer/Linear";
+  neuralNetworkConfig["Layers"][1]["Output Channels"] = 1;
+  neuralNetworkConfig["Layers"][2]["Type"] = "Layer/Output";
+  neuralNetworkConfig["Mode"] = "Training";
+
+  ASSERT_NO_THROW(nn = dynamic_cast<NeuralNetwork *>(Module::getModule(neuralNetworkConfig, &e)));
+  ASSERT_NO_THROW(nn->applyModuleDefaults(neuralNetworkConfig));
+  auto baseNNJs = neuralNetworkConfig;
+
+  ASSERT_NO_THROW(nn->setConfiguration(neuralNetworkConfig));
+  ASSERT_NO_THROW(nn->applyVariableDefaults());
+  ASSERT_NO_THROW(nn->initialize());
+
+  Linear* layer = dynamic_cast<Linear*>(nn->_pipelines[0][0]._layerVector[1]);
+  ASSERT_NO_THROW(layer->applyVariableDefaults());
+  knlohmann::json layerJs;
+  ASSERT_NO_THROW(layer->getConfiguration(layerJs));
+
+  nn->_mode = "Inference";
+  ASSERT_ANY_THROW(layer->backwardData(0));
+  nn->_mode = "Training";
+  ASSERT_NO_THROW(layer->backwardData(0));
+ }
+
+ TEST(NeuralNetwork, GRULayer)
+ {
+  Experiment e;
+  e._logger = new Logger("Detailed", stdout);
+  auto& experimentJs = e._js.getJson();
+
+  NeuralNetwork* nn;
+  knlohmann::json neuralNetworkConfig;
+  neuralNetworkConfig["Type"] = "Neural Network";
+  neuralNetworkConfig["Engine"] = "OneDNN";
+  neuralNetworkConfig["Timestep Count"] = 1;
+  neuralNetworkConfig["Batch Sizes"] = std::vector<size_t>({1});
+  neuralNetworkConfig["Layers"][0]["Type"] = "Layer/Input";
+  neuralNetworkConfig["Layers"][0]["Output Channels"] = 1;
+  neuralNetworkConfig["Layers"][1]["Type"] = "Layer/Recurrent/GRU";
+  neuralNetworkConfig["Layers"][1]["Output Channels"] = 1;
+  neuralNetworkConfig["Layers"][2]["Type"] = "Layer/Output";
+  neuralNetworkConfig["Mode"] = "Training";
+
+  ASSERT_NO_THROW(nn = dynamic_cast<NeuralNetwork *>(Module::getModule(neuralNetworkConfig, &e)));
+  ASSERT_NO_THROW(nn->applyModuleDefaults(neuralNetworkConfig));
+  auto baseNNJs = neuralNetworkConfig;
+
+  ASSERT_NO_THROW(nn->setConfiguration(neuralNetworkConfig));
+  ASSERT_NO_THROW(nn->applyVariableDefaults());
+  ASSERT_NO_THROW(nn->initialize());
+
+  GRU* layer = dynamic_cast<GRU*>(nn->_pipelines[0][0]._layerVector[1]);
+  ASSERT_NO_THROW(layer->applyVariableDefaults());
+  knlohmann::json layerJs;
+  ASSERT_NO_THROW(layer->getConfiguration(layerJs));
+
+  nn->_mode = "Inference";
+  ASSERT_ANY_THROW(layer->backwardData(0));
+  nn->_mode = "Training";
+  ASSERT_NO_THROW(layer->backwardData(0));
+ }
+
+ TEST(NeuralNetwork, LSTMLayer)
+ {
+  Experiment e;
+  e._logger = new Logger("Detailed", stdout);
+  auto& experimentJs = e._js.getJson();
+
+  NeuralNetwork* nn;
+  knlohmann::json neuralNetworkConfig;
+  neuralNetworkConfig["Type"] = "Neural Network";
+  neuralNetworkConfig["Engine"] = "OneDNN";
+  neuralNetworkConfig["Timestep Count"] = 1;
+  neuralNetworkConfig["Batch Sizes"] = std::vector<size_t>({1});
+  neuralNetworkConfig["Layers"][0]["Type"] = "Layer/Input";
+  neuralNetworkConfig["Layers"][0]["Output Channels"] = 1;
+  neuralNetworkConfig["Layers"][1]["Type"] = "Layer/Recurrent/LSTM";
+  neuralNetworkConfig["Layers"][1]["Output Channels"] = 1;
+  neuralNetworkConfig["Layers"][2]["Type"] = "Layer/Output";
+  neuralNetworkConfig["Mode"] = "Training";
+
+  ASSERT_NO_THROW(nn = dynamic_cast<NeuralNetwork *>(Module::getModule(neuralNetworkConfig, &e)));
+  ASSERT_NO_THROW(nn->applyModuleDefaults(neuralNetworkConfig));
+  auto baseNNJs = neuralNetworkConfig;
+
+  ASSERT_NO_THROW(nn->setConfiguration(neuralNetworkConfig));
+  ASSERT_NO_THROW(nn->applyVariableDefaults());
+  ASSERT_NO_THROW(nn->initialize());
+
+  LSTM* layer = dynamic_cast<LSTM*>(nn->_pipelines[0][0]._layerVector[1]);
+  ASSERT_NO_THROW(layer->applyVariableDefaults());
+  knlohmann::json layerJs;
+  ASSERT_NO_THROW(layer->getConfiguration(layerJs));
+
+  ASSERT_NO_THROW(layer->initialize());
+  layer->_depth = 10;
+  layer->_outputChannels = 10;
+  ASSERT_ANY_THROW(layer->initialize());
+  layer->_outputChannels = 1;
+  ASSERT_NO_THROW(layer->initialize());
+  layer->_depth = 1;
+  ASSERT_NO_THROW(layer->initialize());
+
+  nn->_mode = "Inference";
+  ASSERT_ANY_THROW(layer->backwardData(0));
+  ASSERT_ANY_THROW(layer->backwardHyperparameters(0));
+  nn->_mode = "Training";
+  ASSERT_NO_THROW(layer->backwardData(0));
+  ASSERT_NO_THROW(layer->backwardHyperparameters(0));
+
+  knlohmann::json baseLayerJs = layerJs;
+
+  layerJs = baseLayerJs;
+  layerJs.erase("Depth");
+  ASSERT_ANY_THROW(layer->setConfiguration(layerJs));
+
+  layerJs = baseLayerJs;
+  layerJs["Depth"] = "Not a Number";
+  ASSERT_ANY_THROW(layer->setConfiguration(layerJs));
+
+  layerJs = baseLayerJs;
+  layerJs["Depth"] = 1;
+  ASSERT_NO_THROW(layer->setConfiguration(layerJs));
+ }
 } // namespace

@@ -13,6 +13,7 @@ namespace
   ASSERT_NO_THROW(js["Key"] = "Value");
   ASSERT_NO_THROW(getValue(js, "Key"));
   ASSERT_NO_THROW(getPath("Key"));
+  ASSERT_NO_THROW(getValue(js, "Unknown"));
  }
 
  TEST(Auxiliar, KoraliJson)

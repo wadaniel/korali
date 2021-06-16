@@ -36,6 +36,8 @@ namespace
   e->_isFinished = false;
   ASSERT_NO_THROW(e->initialize());
 
+  ASSERT_ANY_THROW(e->getEvaluation({{{}}}));
+
   expJs = backJs;
   expJs.erase("Variables");
   ASSERT_NO_THROW(e->setConfiguration(expJs));
@@ -112,6 +114,8 @@ namespace
   e->initialize();
   expJs.erase("Variables");
   ASSERT_ANY_THROW(e->setConfiguration(expJs));
+  expJs["Random Seed"] = "Not a Number";
+  ASSERT_ANY_THROW(e->setSeed(expJs));
 
   expJs = backJs;
   ASSERT_NO_THROW(e = dynamic_cast<Experiment *>(Module::getModule(expJs, NULL)));
@@ -119,6 +123,8 @@ namespace
   e->initialize();
   expJs.erase("Variables");
   ASSERT_NO_THROW(e->setConfiguration(expJs));
+  expJs["Random Seed"] = 1;
+  ASSERT_NO_THROW(e->setSeed(expJs));
 
   expJs = backJs;
   ASSERT_NO_THROW(e = dynamic_cast<Experiment *>(Module::getModule(expJs, NULL)));
@@ -140,6 +146,27 @@ namespace
   e->initialize();
   expJs.erase("Variables");
   ASSERT_ANY_THROW(e->setConfiguration(expJs));
+
+  expJs = backJs;
+  ASSERT_NO_THROW(e = dynamic_cast<Experiment *>(Module::getModule(expJs, NULL)));
+  expJs.erase("Preserve Random Number Generator States");
+  e->initialize();
+  expJs.erase("Variables");
+  ASSERT_ANY_THROW(e->setConfiguration(expJs));
+
+  expJs = backJs;
+  ASSERT_NO_THROW(e = dynamic_cast<Experiment *>(Module::getModule(expJs, NULL)));
+  expJs["Preserve Random Number Generator States"] = "Not a Number";
+  e->initialize();
+  expJs.erase("Variables");
+  ASSERT_ANY_THROW(e->setConfiguration(expJs));
+
+  expJs = backJs;
+  ASSERT_NO_THROW(e = dynamic_cast<Experiment *>(Module::getModule(expJs, NULL)));
+  expJs["Preserve Random Number Generator States"] = true;
+  e->initialize();
+  expJs.erase("Variables");
+  ASSERT_NO_THROW(e->setConfiguration(expJs));
 
   expJs = backJs;
   ASSERT_NO_THROW(e = dynamic_cast<Experiment *>(Module::getModule(expJs, NULL)));

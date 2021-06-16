@@ -221,7 +221,6 @@ std::vector<std::vector<float>> Experiment::getEvaluation(const std::vector<std:
 }
 
 knlohmann::json &Experiment::operator[](const std::string &key) { return _js[key]; }
-knlohmann::json &Experiment::operator[](const unsigned long int &key) { return _js[key]; }
 pybind11::object Experiment::getItem(const pybind11::object key) { return _js.getItem(key); }
 void Experiment::setItem(const pybind11::object key, const pybind11::object val) { _js.setItem(key, val); }
 

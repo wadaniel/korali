@@ -124,6 +124,18 @@ namespace
    experimentJs = baseExpJs;
    e["Variables"][0]["Initial Value"] = 1.0;
    ASSERT_NO_THROW(sampler->setConfiguration(samplerJs));
+
+   Sample s;
+   Module* m = sampler;
+   knlohmann::json js;
+   ASSERT_NO_THROW(m->Module::initialize());
+   ASSERT_NO_THROW(m->Module::finalize());
+   ASSERT_NO_THROW(m->Module::getType());
+   ASSERT_NO_THROW(m->Module::checkTermination());
+   ASSERT_NO_THROW(m->Module::applyVariableDefaults());
+   ASSERT_NO_THROW(m->Module::getConfiguration(js));
+   ASSERT_NO_THROW(m->Module::setConfiguration(js));
+   ASSERT_NO_THROW(m->Module::applyModuleDefaults(js));
   }
 
   //////////////// MCMC CLASS ////////////////////////

@@ -151,6 +151,11 @@ class Distributed : public Conduit
   */
   std::vector<int> _rankToWorkerMap;
 
+  /**
+   * @brief Checks whether the number of MPI workers satisfies the requirement
+   */
+  void checkRankCount();
+
   void initServer() override;
   void initialize() override;
   void terminateServer() override;
@@ -170,7 +175,6 @@ class Distributed : public Conduit
   */
   int getRootRank();
   bool isRoot() override;
-  void abort() override;
 };
 
 } /* conduit */ 

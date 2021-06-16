@@ -24,7 +24,7 @@ Sequential *_currentConduit;
 
 void _workerWrapper()
 {
-  _currentConduit->worker();
+  if (_currentConduit != NULL) _currentConduit->worker();
 }
 
 void Sequential::initialize()

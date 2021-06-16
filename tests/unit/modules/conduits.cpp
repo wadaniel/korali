@@ -1,9 +1,18 @@
 #include "gtest/gtest.h"
 #include "korali.hpp"
+#include "modules/conduit/distributed/distributed.hpp"
+#include "modules/conduit/concurrent/concurrent.hpp"
+#include "modules/conduit/sequential/sequential.hpp"
+
+namespace korali { namespace conduit {
+extern void _workerWrapper();
+extern Sequential *_currentConduit;
+}}
 
 namespace
 {
  using namespace korali;
+ using namespace korali::conduit;
 
  TEST(Conduit, SequentialConduit)
  {
@@ -11,8 +20,8 @@ namespace
   conduitJs["Type"] = "Sequential";
 
   // Creating module
-  Conduit* conduit;
-  ASSERT_NO_THROW(conduit = dynamic_cast<Conduit *>(Module::getModule(conduitJs, NULL)));
+  Sequential* conduit;
+  ASSERT_NO_THROW(conduit = dynamic_cast<Sequential *>(Module::getModule(conduitJs, NULL)));
 
   // Defaults should be applied without a problem
   ASSERT_NO_THROW(conduit->applyModuleDefaults(conduitJs));
@@ -25,11 +34,15 @@ namespace
 
   // Initializing server
   ASSERT_NO_THROW(conduit->initServer());
+  ASSERT_NO_THROW(conduit->getProcessId());
 
   // Broadcasting message
   knlohmann::json message;
   message["Conduit Action"] == "Terminate";
   ASSERT_NO_THROW(conduit->broadcastMessageToWorkers(message));
+
+  _currentConduit = NULL;
+  _workerWrapper();
  }
 
  TEST(Conduit, ConcurrentConduit)
@@ -38,8 +51,8 @@ namespace
   conduitJs["Type"] = "Concurrent";
 
   // Creating module
-  Conduit* conduit;
-  ASSERT_NO_THROW(conduit = dynamic_cast<Conduit *>(Module::getModule(conduitJs, NULL)));
+  Concurrent* conduit;
+  ASSERT_NO_THROW(conduit = dynamic_cast<Concurrent *>(Module::getModule(conduitJs, NULL)));
 
   // Testing configuration without mandatory field(s)
   ASSERT_ANY_THROW(conduit->setConfiguration(conduitJs));
@@ -65,8 +78,8 @@ namespace
   conduitJs["Type"] = "Distributed";
 
   // Creating module
-  Conduit* conduit;
-  ASSERT_NO_THROW(conduit = dynamic_cast<Conduit *>(Module::getModule(conduitJs, NULL)));
+  Distributed* conduit;
+  ASSERT_NO_THROW(conduit = dynamic_cast<Distributed *>(Module::getModule(conduitJs, NULL)));
 
   // Testing configuration without mandatory field(s)
   ASSERT_ANY_THROW(conduit->setConfiguration(conduitJs));
@@ -84,6 +97,12 @@ namespace
   // Testing correct configuration value type
   conduitJs["Ranks Per Worker"] = 16;
   ASSERT_NO_THROW(conduit->setConfiguration(conduitJs));
+
+  conduit->_ranksPerWorker = 4;
+  conduit->_rankCount = 5;
+  ASSERT_NO_THROW(conduit->checkRankCount());
+  conduit->_rankCount = 4;
+  ASSERT_ANY_THROW(conduit->checkRankCount());
  }
 
 } // namespace

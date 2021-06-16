@@ -22,17 +22,6 @@ double vectorNorm(const std::vector<double> &x)
   return sqrt(norm);
 }
 
-double vectorDistance(const std::vector<double> &x, const std::vector<double> &y)
-{
-  double norm = 0.;
-  for (size_t i = 0; i < x.size(); i++)
-  {
-    double z = x[i] - y[i];
-    norm += z * z;
-  }
-  return sqrt(norm);
-}
-
 std::string getTimestamp()
 {
   time_t rawtime;
@@ -46,21 +35,6 @@ size_t getTimehash()
   return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 }
 
-/**
-* @brief CRC table Implementation taken from https://barrgroup.com/embedded-systems/how-to/crc-calculation-c-code
-*/
-crc crcTable[256];
-crc crcFast(uint8_t const message[], size_t nBytes)
-{
-  uint8_t data;
-  uint32_t remainder = 0;
-  for (size_t byte = 0; byte < nBytes; ++byte)
-  {
-    data = message[byte] ^ (remainder >> (WIDTH - 8));
-    remainder = crcTable[data] ^ (remainder << 8);
-  }
-  return (remainder);
-}
 
 char decimalToHexChar(const uint8_t byte)
 {

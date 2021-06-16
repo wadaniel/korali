@@ -9,7 +9,8 @@ CUBISMLIBS= _deps/CUP-2D/makefiles/libcup.a $(shell cat _deps/CUP-2D/makefiles/c
 
 .SECONDARY:
 .PHONY: all
-all: transport fish windmill
+all: transport
+#all: transport fish windmill
 
 transport: $(TRANSPORT)
 

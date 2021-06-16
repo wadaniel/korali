@@ -24,8 +24,6 @@ To be specified:
 
 Furthermore it contains the CUP2D specifications for the fluid simulations.
 
-
-
 Details
 -------
 

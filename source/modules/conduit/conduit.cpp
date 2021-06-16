@@ -117,7 +117,6 @@ void Conduit::workerProcessSample(const knlohmann::json &js)
   Engine *engine = _engineStack.top();
   auto expId = js["Experiment Id"];
   Sample s;
-  s._globals = &engine->_experimentVector[expId]->_globals;
   s._js.getJson() = js;
   s.sampleLauncher();
   sendMessageToEngine(s._js.getJson());

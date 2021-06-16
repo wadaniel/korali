@@ -70,11 +70,6 @@ class Sample
   std::queue<knlohmann::json> _messageQueue;
 
   /**
-  * @brief Pointer to global parameters
-  */
-  knlohmann::json *_globals;
-
-  /**
   * @brief Current state of the sample
   */
   SampleState _state;

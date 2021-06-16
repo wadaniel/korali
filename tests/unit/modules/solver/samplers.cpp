@@ -2079,8 +2079,6 @@ namespace
 
    ASSERT_NO_THROW(delete h);
 
-
-
    e._problem = nullptr;
    ASSERT_ANY_THROW(sh = std::make_shared<HamiltonianRiemannianDiag>(HamiltonianRiemannianDiag(1, sampler->_normalGenerator, 1.0, &e)));
    e._problem = pS;

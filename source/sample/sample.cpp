@@ -24,10 +24,7 @@ Sample::Sample()
 void Sample::run(size_t functionPosition)
 {
   if (functionPosition >= _functionVector.size())
-  {
-    fprintf(stderr, "Function ID: %lu not contained in function vector (size: %lu). If you are resuming a previous experiment, you need to re-specify model functions.\n", functionPosition, _functionVector.size());
-    exit(-1);
-  }
+    KORALI_LOG_ERROR("Function ID: %lu not contained in function vector (size: %lu). If you are resuming a previous experiment, you need to re-specify model functions.\n", functionPosition, _functionVector.size());
   (*_functionVector[functionPosition])(*_self);
 }
 
@@ -59,19 +56,12 @@ void Sample::sampleLauncher()
   auto experiment = engine->_experimentVector[experimentId];
 
   // Running operation
-  if ((*_self)["Module"] == "Problem")
-    experiment->_problem->runOperation(operation, *_self);
-
-  if ((*_self)["Module"] == "Solver")
-    experiment->_solver->runOperation(operation, *_self);
+  if ((*_self)["Module"] == "Solver") experiment->_solver->runOperation(operation, *_self);
+  if ((*_self)["Module"] == "Problem") experiment->_problem->runOperation(operation, *_self);
 
   (*_self)["Has Finished"] = true;
 }
 
-knlohmann::json &Sample::globals()
-{
-  return *_globals;
-}
 
 Sample::~Sample()
 {

@@ -24,4 +24,16 @@ test('auxiliar', auxiliar_tester,
   suite: 'unit',
 )
 
+sample_tester = executable('sample_tester',
+  files(['sample.cpp']),
+  include_directories: korali_include,
+  dependencies: [ gtest_main_dep, korali_deps, pythonEmbedDep ],
+  link_with: [ python_extension ],
+  )
+  
+test('sample', sample_tester,
+  protocol: 'gtest',
+  suite: 'unit',
+)
+
 subdir('modules')

@@ -91,8 +91,7 @@ void Distributed::initialize()
     int mpiSize;
     MPI_Comm_size(__KoraliGlobalMPIComm, &mpiSize);
 
-    if (_rankCount < _ranksPerWorker + 1)
-      KORALI_LOG_ERROR("You are running Korali with %d ranks. However, you need at least %d ranks to have at least one worker team. \n", _rankCount, _ranksPerWorker + 1);
+    checkRankCount();
 
     curWorker = _workerCount + 1;
   }
@@ -103,6 +102,12 @@ void Distributed::initialize()
   // Waiting for all ranks to reach this point
   MPI_Barrier(__KoraliGlobalMPIComm);
 #endif
+}
+
+void Distributed::checkRankCount()
+{
+ if (_rankCount < _ranksPerWorker + 1)
+   KORALI_LOG_ERROR("You are running Korali with %d ranks. However, you need at least %d ranks to have at least one worker team. \n", _rankCount, _ranksPerWorker + 1);
 }
 
 void Distributed::initServer()
@@ -164,13 +169,6 @@ bool Distributed::isRoot()
 #endif
 
   return true;
-}
-
-void Distributed::abort()
-{
-#ifdef _KORALI_USE_MPI
-  MPI_Abort(__KoraliGlobalMPIComm, -1);
-#endif
 }
 
 void Distributed::sendMessageToEngine(knlohmann::json &message)

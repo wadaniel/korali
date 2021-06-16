@@ -754,7 +754,7 @@ bool Nested::updateEllipseCov(ellipse_t &ellipse) const
     std::fill(ellipse.invCov.begin(), ellipse.invCov.end(), 0.);
     gsl_matrix_view invCov = gsl_matrix_view_array(ellipse.invCov.data(), _variableCount, _variableCount);
 
-    int status = gsl_linalg_LU_invert(matLU, perm, &invCov.matrix);
+    gsl_linalg_LU_invert(matLU, perm, &invCov.matrix);
     gsl_permutation_free(perm);
     gsl_matrix_free(matLU);
 
@@ -776,7 +776,7 @@ bool Nested::updateEllipseVolume(ellipse_t &ellipse) const
   gsl_matrix_view cov = gsl_matrix_view_array(ellipse.cov.data(), _variableCount, _variableCount);
 
   gsl_matrix *matLU = gsl_matrix_alloc(_variableCount, _variableCount);
-  int status = gsl_matrix_memcpy(matLU, &cov.matrix);
+  gsl_matrix_memcpy(matLU, &cov.matrix);
 
   // SM - Only add a check if you can create a unit test to trigger it
 //  if (status != 0)
@@ -798,7 +798,7 @@ bool Nested::updateEllipseVolume(ellipse_t &ellipse) const
   gsl_matrix_view paxes = gsl_matrix_view_array(ellipse.paxes.data(), _variableCount, _variableCount);
 
   gsl_matrix *matEigen = gsl_matrix_alloc(_variableCount, _variableCount);
-  status = gsl_matrix_memcpy(matEigen, &cov.matrix);
+  gsl_matrix_memcpy(matEigen, &cov.matrix);
 
   // SM - Only add a check if you can create a unit test to trigger it
 //  if (status != 0)
@@ -809,7 +809,7 @@ bool Nested::updateEllipseVolume(ellipse_t &ellipse) const
 //  }
 
   gsl_eigen_symmv_workspace *workEigen = gsl_eigen_symmv_alloc(_variableCount);
-  status = gsl_eigen_symmv(matEigen, &evals.vector, &paxes.matrix, workEigen);
+  gsl_eigen_symmv(matEigen, &evals.vector, &paxes.matrix, workEigen);
   gsl_matrix_free(matEigen);
   gsl_eigen_symmv_free(workEigen);
 
@@ -820,7 +820,7 @@ bool Nested::updateEllipseVolume(ellipse_t &ellipse) const
 //    return false;
 //  }
 
-  status = gsl_eigen_symmv_sort(&evals.vector, &paxes.matrix, GSL_EIGEN_SORT_ABS_DESC);
+  gsl_eigen_symmv_sort(&evals.vector, &paxes.matrix, GSL_EIGEN_SORT_ABS_DESC);
 
   // SM - Only add a check if you can create a unit test to trigger it
 //  if (status != 0)
@@ -836,7 +836,7 @@ bool Nested::updateEllipseVolume(ellipse_t &ellipse) const
      * input matrix A contain the matrix L, while the upper triangular part
      * contains the original matrix. */
 
-  status = gsl_matrix_memcpy(&axes.matrix, &cov.matrix);
+  gsl_matrix_memcpy(&axes.matrix, &cov.matrix);
 
   // SM - Only add a check if you can create a unit test to trigger it
 //  if (status != 0)
@@ -845,7 +845,7 @@ bool Nested::updateEllipseVolume(ellipse_t &ellipse) const
 //    return false;
 //  }
 
-  status = gsl_linalg_cholesky_decomp1(&axes.matrix); // LL^T = A
+  gsl_linalg_cholesky_decomp1(&axes.matrix); // LL^T = A
 
   // SM - Only add a check if you can create a unit test to trigger it
 //  if (status != 0)

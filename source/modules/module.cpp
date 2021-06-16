@@ -165,11 +165,4 @@ Module *Module::getModule(knlohmann::json &js, Experiment *e)
   return module;
 }
 
-Module *Module::duplicate(Module *src)
-{
-  knlohmann::json js;
-  src->getConfiguration(js);
-  return Module::getModule(js, src->_k);
-}
-
 } // namespace korali

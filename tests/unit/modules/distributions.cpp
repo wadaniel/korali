@@ -39,6 +39,8 @@ namespace
    distributionJs["Type"] = "Univariate/Beta";
    ASSERT_NO_THROW(d = dynamic_cast<korali::distribution::univariate::Beta *>(Module::getModule(distributionJs, &e)));
 
+   auto baseJs = distributionJs;
+
    // Triggering configuration errors
    distributionJs.clear();
    distributionJs["Range"] = "Range";
@@ -66,6 +68,30 @@ namespace
    ASSERT_ANY_THROW(d->setConfiguration(distributionJs)); // Missing seed
    distributionJs["Random Seed"] = "Seed";
    ASSERT_ANY_THROW(d->setConfiguration(distributionJs)); // Bad seed format
+
+   distributionJs = baseJs;
+   distributionJs.erase("Random Seed");
+   ASSERT_ANY_THROW(d->setConfiguration(distributionJs));
+
+   distributionJs = baseJs;
+   distributionJs["Random Seed"] = "Not a Number";
+   ASSERT_ANY_THROW(d->setConfiguration(distributionJs));
+
+   distributionJs = baseJs;
+   distributionJs["Random Seed"] = 1;
+   ASSERT_NO_THROW(d->setConfiguration(distributionJs));
+
+   distributionJs = baseJs;
+   distributionJs.erase("Range");
+   ASSERT_ANY_THROW(d->setConfiguration(distributionJs));
+
+   distributionJs = baseJs;
+   distributionJs["Range"] = 1.0;
+   ASSERT_ANY_THROW(d->setConfiguration(distributionJs));
+
+   distributionJs = baseJs;
+   distributionJs["Range"] = "Not a Number";
+   ASSERT_NO_THROW(d->setConfiguration(distributionJs));
  }
 
  TEST(Distrtibutions, BetaDistribution)
@@ -1648,7 +1674,8 @@ namespace
   EXPECT_NEAR(d->getLogDensity( 5.00 ), -7.479329380, PDENSITY_ERROR_TOLERANCE);
 
   // Testing extreme case for log density
-  ASSERT_NO_THROW(d->getLogDensityGradient(0.5));
+  ASSERT_NO_THROW(d->getLogDensityGradient(-10.0));
+  ASSERT_NO_THROW(d->getLogDensityGradient(+10.0));
 
  // Checking random numbers are within the expected range
   for (size_t i = 0; i < 100; i++) ASSERT_NO_THROW(d->getRandomNumber());
@@ -2879,6 +2906,38 @@ namespace
    d->_sigma = std::vector<double>({ 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5 });
    ASSERT_NO_THROW(d->updateDistribution());
    ASSERT_NO_THROW(d->getRandomVector(x, 4));
+
+   distributionJs = baseJs;
+   distributionJs["Work Vector"] = "Not a Number";
+   ASSERT_ANY_THROW(d->setConfiguration(distributionJs));
+
+   distributionJs = baseJs;
+   distributionJs["Work Vector"] = std::vector<double>({ 0.5, 0.5, 0.5, 0.5 });
+   ASSERT_NO_THROW(d->setConfiguration(distributionJs));
+
+   distributionJs = baseJs;
+   distributionJs.erase("Mean Vector");
+   ASSERT_ANY_THROW(d->setConfiguration(distributionJs));
+
+   distributionJs = baseJs;
+   distributionJs["Mean Vector"] = "Not a Number";
+   ASSERT_ANY_THROW(d->setConfiguration(distributionJs));
+
+   distributionJs = baseJs;
+   distributionJs["Mean Vector"] = std::vector<double>({ 0.5, 0.5, 0.5, 0.5 });
+   ASSERT_NO_THROW(d->setConfiguration(distributionJs));
+
+   distributionJs = baseJs;
+   distributionJs.erase("Sigma");
+   ASSERT_ANY_THROW(d->setConfiguration(distributionJs));
+
+   distributionJs = baseJs;
+   distributionJs["Sigma"] = "Not a Number";
+   ASSERT_ANY_THROW(d->setConfiguration(distributionJs));
+
+   distributionJs = baseJs;
+   distributionJs["Sigma"] = std::vector<double>({ 0.5, 0.5, 0.5, 0.5 });
+   ASSERT_NO_THROW(d->setConfiguration(distributionJs));
 
    // To-do: check expected densities
   }

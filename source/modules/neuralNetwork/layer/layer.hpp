@@ -251,7 +251,7 @@ class Layer : public Module
   * @brief Calculates the gradients of layer hyperparameters
   * @param t Indicates the current timestep
   */
-  virtual void backwardHyperparameters(const size_t t){};
+  virtual void backwardHyperparameters(const size_t t);
 };
 
 } /* neuralNetwork */ 

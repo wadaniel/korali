@@ -251,7 +251,7 @@ std::vector<float> @className::generateTestingAction(const policy_t &curPolicy)
     {
       action[i] = curPolicy.distributionParameters[i];
   
-      // In case the 'mode' is outside of the bounds
+      // Clip the mode to bounds
       if (action[i] >= _actionUpperBounds[i]) action[i] = _actionUpperBounds[i];
       if (action[i] <= _actionLowerBounds[i]) action[i] = _actionLowerBounds[i];
     }
@@ -264,7 +264,7 @@ std::vector<float> @className::generateTestingAction(const policy_t &curPolicy)
     {
       action[i] = curPolicy.distributionParameters[i];
   
-      // In case the 'mode' is outside of the bounds
+      // Clip the mode to bounds
       if (action[i] >= _actionUpperBounds[i]) action[i] = _actionUpperBounds[i];
       if (action[i] <= _actionLowerBounds[i]) action[i] = _actionLowerBounds[i];
     }

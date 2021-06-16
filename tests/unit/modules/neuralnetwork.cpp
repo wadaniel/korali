@@ -203,6 +203,12 @@ namespace
    ASSERT_NEAR(nn->_pipelines[0][0]._outputValues[0][0], 0.4, 0.000001);
    ASSERT_NO_THROW(nn->backward({{{0.5}}}));
 
+   layer->_function = "Elementwise/Log";
+   ASSERT_NO_THROW(layer->createForwardPipeline());
+   ASSERT_NO_THROW(nn->forward({{{0.5}}}));
+   ASSERT_NEAR(nn->_pipelines[0][0]._outputValues[0][0], -0.69314718, 0.001);
+   ASSERT_NO_THROW(nn->backward({{{0.5}}}));
+
    layer->_function = "Elementwise/Linear";
    layer->_alpha = 2.0;
    layer->_beta = 0.6;
@@ -298,7 +304,7 @@ namespace
    layerJs["Beta"] = 1.0;
    ASSERT_NO_THROW(layer->setConfiguration(layerJs));
 
-   Layer* baseLayer = layer;
+   Layer* baseLayer = new Activation;
    delete baseLayer;
   }
 
@@ -807,6 +813,12 @@ namespace
     ASSERT_NO_THROW(layer->createForwardPipeline());
     ASSERT_NO_THROW(nn->forward({{{0.5}}}));
     ASSERT_NEAR(nn->_pipelines[0][0]._outputValues[0][0], 0.4, 0.000001);
+    ASSERT_NO_THROW(nn->backward({{{0.5}}}));
+
+    layer->_function = "Elementwise/Log";
+    ASSERT_NO_THROW(layer->createForwardPipeline());
+    ASSERT_NO_THROW(nn->forward({{{0.5}}}));
+    ASSERT_NEAR(nn->_pipelines[0][0]._outputValues[0][0], -0.693147180, 0.001);
     ASSERT_NO_THROW(nn->backward({{{0.5}}}));
 
     layer->_function = "Elementwise/Linear";

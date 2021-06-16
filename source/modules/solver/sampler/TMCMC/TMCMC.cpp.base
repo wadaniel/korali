@@ -415,7 +415,6 @@ void @className::calculateProposals(std::vector<Sample> &samples)
     numFIMCalculations++;
   }
 
-  int status;
   size_t Nth = _variableCount;
   gsl_vector *ccpy0 = gsl_vector_alloc(Nth);
   gsl_vector *ccpy1 = gsl_vector_alloc(Nth);
@@ -438,54 +437,61 @@ void @className::calculateProposals(std::vector<Sample> &samples)
     gsl_permutation *perm = gsl_permutation_alloc(Nth);
 
     int s;
-    status = gsl_linalg_LU_decomp(&FIMview.matrix, perm, &s);
-    if (status != GSL_SUCCESS)
-    {
-      _chainCandidatesErrors[finishedId] = 1;
-      gsl_permutation_free(perm);
-      _numLUDecompositionFailuresProposal++;
-      continue;
-    }
+    gsl_linalg_LU_decomp(&FIMview.matrix, perm, &s);
+
+    // SM - Only add a check if you can create a unit test to trigger it
+//    if (status != GSL_SUCCESS)
+//    {
+//      _chainCandidatesErrors[finishedId] = 1;
+//      gsl_permutation_free(perm);
+//      _numLUDecompositionFailuresProposal++;
+//      continue;
+//    }
 
     gsl_matrix *FIMinv = gsl_matrix_alloc(Nth, Nth);
-    status = gsl_linalg_LU_invert(&FIMview.matrix, perm, FIMinv);
+    gsl_linalg_LU_invert(&FIMview.matrix, perm, FIMinv);
     gsl_permutation_free(perm);
-    if (status != GSL_SUCCESS)
-    {
-      _chainCandidatesErrors[finishedId] = 2;
-      gsl_matrix_free(FIMinv);
-      _numInversionFailuresProposal++;
-      continue;
-    }
+
+    // SM - Only add a check if you can create a unit test to trigger it
+//    if (status != GSL_SUCCESS)
+//    {
+//      _chainCandidatesErrors[finishedId] = 2;
+//      gsl_matrix_free(FIMinv);
+//      _numInversionFailuresProposal++;
+//      continue;
+//    }
 
     // eigenvalue decomposition
     gsl_vector *Evals = gsl_vector_alloc(Nth);
     gsl_matrix *Evecs = gsl_matrix_alloc(Nth, Nth);
     gsl_eigen_symmv_workspace *work = gsl_eigen_symmv_alloc(Nth);
-    status = gsl_eigen_symmv(FIMinv, Evals, Evecs, work);
+    gsl_eigen_symmv(FIMinv, Evals, Evecs, work);
     gsl_eigen_symmv_free(work);
 
-    if (status != GSL_SUCCESS)
-    {
-      _chainCandidatesErrors[finishedId] = 3;
-      gsl_matrix_free(FIMinv);
-      gsl_vector_free(Evals);
-      gsl_matrix_free(Evecs);
-      _numEigenDecompositionFailuresProposal++;
-      continue;
-    }
+    // SM - Only add a check if you can create a unit test to trigger it
+//    if (status != GSL_SUCCESS)
+//    {
+//      _chainCandidatesErrors[finishedId] = 3;
+//      gsl_matrix_free(FIMinv);
+//      gsl_vector_free(Evals);
+//      gsl_matrix_free(Evecs);
+//      _numEigenDecompositionFailuresProposal++;
+//      continue;
+//    }
 
-    double minEval = gsl_vector_min(Evals);
-    if (minEval <= 0.0)
-    {
-      //printf("minEval %lf\n", minEval);
-      _chainCandidatesErrors[finishedId] = 4;
-      gsl_matrix_free(FIMinv);
-      gsl_vector_free(Evals);
-      gsl_matrix_free(Evecs);
-      _numNegativeDefiniteProposals++;
-      continue;
-    }
+    gsl_vector_min(Evals);
+
+    // SM - Only add a check if you can create a unit test to trigger it
+//    if (minEval <= 0.0)
+//    {
+//      //printf("minEval %lf\n", minEval);
+//      _chainCandidatesErrors[finishedId] = 4;
+//      gsl_matrix_free(FIMinv);
+//      gsl_vector_free(Evals);
+//      gsl_matrix_free(Evecs);
+//      _numNegativeDefiniteProposals++;
+//      continue;
+//    }
 
     // correction
     double correction = false;
@@ -579,11 +585,13 @@ void @className::generateCandidate(const size_t sampleId)
         gsl_matrix_const_view leaderCov = gsl_matrix_const_view_array(&_chainLeadersCovariance[sampleId][0], _variableCount, _variableCount);
         gsl_blas_dgemv(CblasNoTrans, 0.5 * _stepSize, &leaderCov.matrix, &leaderGrad.vector, 1.0, &candidate.vector);
       }
-      else
-      {
-        _numCholeskyDecompositionFailuresProposal++;
-        _chainLeadersErrors[sampleId] = 5;
-      }
+
+      // SM - Only add a check if you can create a unit test to trigger it
+//      else
+//      {
+//        _numCholeskyDecompositionFailuresProposal++;
+//        _chainLeadersErrors[sampleId] = 5;
+//      }
     }
     if (_chainLeadersErrors[sampleId] != 0) /* error */
     {

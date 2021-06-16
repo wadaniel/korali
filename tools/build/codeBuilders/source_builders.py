@@ -52,8 +52,12 @@ def consumeValue(base, moduleName, path, varName, varType, isMandatory, options)
     rhs = base + path + '.get<' + varType + '>();\n'
     if ('gsl_rng*' in varType): rhs = 'setRange(' + base + path + '.get<std::string>());\n'
 
-    cString += ' try { ' + varName + ' = ' + rhs + '} catch (const std::exception& e)\n'
-    cString += ' { KORALI_LOG_ERROR(" + Object: [ ' + moduleName + ' ] \\n + Key:    ' + path.replace('"', "'") + '\\n%s", e.what()); } \n'
+    if ('knlohmann::json' in varType):
+     cString += ' ' + varName + ' = ' + rhs + '\n'
+    else:
+     cString += ' try { ' + varName + ' = ' + rhs + '} catch (const std::exception& e)\n'
+     cString += ' { KORALI_LOG_ERROR(" + Object: [ ' + moduleName + ' ] \\n + Key:    ' + path.replace('"', "'") + '\\n%s", e.what()); } \n'
+     
     if (options):
       cString += '{\n'
       validVarName = 'validOption'

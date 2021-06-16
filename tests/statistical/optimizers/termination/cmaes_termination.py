@@ -30,7 +30,7 @@ def run_cmaes_with_termination_criterion(criterion, value):
   e["Solver"]["Type"] = "Optimizer/CMAES"
   e["Solver"]["Population Size"] = 8
   e["Solver"]["Termination Criteria"][criterion] = value
-
+  e["File Output"]["Enabled"] = False
   e["Random Seed"] = 1337
 
   k = korali.Engine()

@@ -33,36 +33,6 @@ namespace sampler
 */
 class MCMC : public Sampler
 {
-  private:
-  /**
-  * @brief Calculates recursively acceptance probability. Recursion required for Delayed Rejection.
-  * @param denominator denominator of quotient (acceptance probability)
-  * @param leaderLoglikelihood loglikelihood of current chain leader
-  * @param loglikelihoods loglikelihoods of samples obtained after delay
-  * @param N rescursion depth
-  */
-  double recursiveAlpha(double &deonominator, const double leaderLoglikelihood, const double *loglikelihoods, size_t N) const;
-
-  /**
-  * @brief Updates internal state such as mean and covariance of chain.
-  */
-  void updateState();
-
-  /**
-  * @brief Generate new sample.
-  */
-  void generateCandidate(size_t sampleIdx);
-
-  /**
-  * @brief Cholesky decomposition of chain covariance matrix.
-  */
-  void choleskyDecomp(const std::vector<double> &inC, std::vector<double> &outL) const;
-
-  /**
-  * @brief Process sample after evaluation.
-  */
-  void finishSample(size_t sampleId);
-
   public: 
   /**
   * @brief Specifies the number of preliminary MCMC steps before samples are being drawn. This may reduce effects from improper initialization.
@@ -191,6 +161,36 @@ class MCMC : public Sampler
   */
   void applyVariableDefaults() override;
   
+
+  /**
+  * @brief Calculates recursively acceptance probability. Recursion required for Delayed Rejection.
+  * @param denominator denominator of quotient (acceptance probability)
+  * @param leaderLoglikelihood loglikelihood of current chain leader
+  * @param loglikelihoods loglikelihoods of samples obtained after delay
+  * @param N rescursion depth
+  */
+  double recursiveAlpha(double &deonominator, const double leaderLoglikelihood, const double *loglikelihoods, size_t N) const;
+
+  /**
+  * @brief Updates internal state such as mean and covariance of chain.
+  */
+  void updateState();
+
+  /**
+  * @brief Generate new sample.
+  */
+  void generateCandidate(size_t sampleIdx);
+
+  /**
+  * @brief Cholesky decomposition of chain covariance matrix.
+  */
+  void choleskyDecomp(const std::vector<double> &inC, std::vector<double> &outL) const;
+
+  /**
+  * @brief Process sample after evaluation.
+  */
+  void finishSample(size_t sampleId);
+
 
   /**
  * @brief Configures MCMC.

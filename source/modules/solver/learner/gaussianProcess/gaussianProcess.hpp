@@ -95,7 +95,6 @@ class GaussianProcess : public Learner
   void applyVariableDefaults() override;
   
 
-  ~GaussianProcess();
 
   /**
   * @brief Storage for the output values
@@ -116,13 +115,6 @@ class GaussianProcess : public Learner
   * @brief Korali experiment for optimizing the GP's parameters
   */
   Experiment _koraliExperiment;
-
-  /**
-  * @brief Model function to evaluate the error function of the GP
-  * @param sample The sample containing the proposal parameters
-  * @param gp Pointer to the GP
-  */
-  static void runSample(Sample &sample, libgp::GaussianProcess *gp);
 
   std::vector<std::vector<float>> &getEvaluation(const std::vector<std::vector<std::vector<float>>> &input) override;
   std::vector<float> getHyperparameters() override;

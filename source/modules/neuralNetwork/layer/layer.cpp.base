@@ -149,6 +149,12 @@ void @className::createHyperparameterMemory()
   _hyperparameterCount = 0;
 }
 
+void @className::backwardHyperparameters(const size_t t)
+{
+ if (_nn->_mode == "Inference")
+   KORALI_LOG_ERROR("Requesting Layer hyperparameter gradient propagation but NN was configured for inference only.\n");
+};
+
 @moduleAutoCode
 
 @endNamespace

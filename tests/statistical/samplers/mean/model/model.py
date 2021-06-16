@@ -43,7 +43,7 @@ def lexponential(s):
   x0 = s["Parameters"][0]
   r = 0.0
   if (x0 < 0):
-    r = -math.inf
+    r = -1000.0
   else:
     r = math.log(lam) - lam * x0
   s["logP(x)"] = r
@@ -56,7 +56,7 @@ def lexponentialCustom(s):
   x0 = s["Parameters"][0]
   r = 0.0
   if (x0 < 0):
-    r = -math.inf
+    r = -1000.0
   else:
     r = math.log(lam) - lam * x0
   s["logLikelihood"] = r

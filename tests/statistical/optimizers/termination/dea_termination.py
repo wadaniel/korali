@@ -29,7 +29,7 @@ def run_dea_with_termination_criterion(criterion, value):
   e["Solver"]["Type"] = "Optimizer/DEA"
   e["Solver"]["Population Size"] = 10
   e["Solver"]["Termination Criteria"][criterion] = value
-
+  e["File Output"]["Enabled"] = False
   e["Random Seed"] = 1337
 
   k = korali.Engine()

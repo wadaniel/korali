@@ -18,7 +18,7 @@ namespace learner
   * @param v the vector to convert
   * @return An Eigen vector type
  */
-static Eigen::VectorXd toEigen(const std::vector<float> &v)
+Eigen::VectorXd toEigen(const std::vector<float> &v)
 {
   Eigen::VectorXd ev(v.size());
   for (size_t i = 0; i < v.size(); ++i)
@@ -26,7 +26,26 @@ static Eigen::VectorXd toEigen(const std::vector<float> &v)
   return ev;
 }
 
-GaussianProcess::~GaussianProcess() = default;
+/**
+* @brief Model function to evaluate the error function of the GP
+* @param sample The sample containing the proposal parameters
+* @param gp Pointer to the GP
+*/
+void runSample(Sample &sample, libgp::GaussianProcess *gp)
+{
+  size_t gpParameterDimension = gp->covf().get_param_dim();
+  const Eigen::VectorXd p = toEigen(sample["Parameters"].get<std::vector<float>>());
+
+  gp->covf().set_loghyper(p);
+
+  sample["F(x)"] = gp->log_likelihood();
+  sample["logP(x)"] = sample["F(x)"];
+
+  Eigen::VectorXd eigenGrad = gp->log_likelihood_gradient();
+  for (size_t i = 0; i < gpParameterDimension; i++)
+    sample["Gradient"][i] = eigenGrad[i];
+}
+
 
 void GaussianProcess::initialize()
 {
@@ -86,21 +105,6 @@ void GaussianProcess::initialize()
     _gp->add_pattern(inData, outData);
   }
 
-}
-
-void GaussianProcess::runSample(Sample &sample, libgp::GaussianProcess *gp)
-{
-  size_t gpParameterDimension = gp->covf().get_param_dim();
-  const Eigen::VectorXd p = toEigen(sample["Parameters"].get<std::vector<float>>());
-
-  gp->covf().set_loghyper(p);
-
-  sample["F(x)"] = gp->log_likelihood();
-  sample["logP(x)"] = sample["F(x)"];
-
-  Eigen::VectorXd eigenGrad = gp->log_likelihood_gradient();
-  for (size_t i = 0; i < gpParameterDimension; i++)
-    sample["Gradient"][i] = eigenGrad[i];
 }
 
 void GaussianProcess::runGeneration()
@@ -192,9 +196,8 @@ void GaussianProcess::setConfiguration(knlohmann::json& js)
 
  if (isDefined(js, "Optimizer"))
  {
- try { _optimizer = js["Optimizer"].get<knlohmann::json>();
-} catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ gaussianProcess ] \n + Key:    ['Optimizer']\n%s", e.what()); } 
+ _optimizer = js["Optimizer"].get<knlohmann::json>();
+
    eraseValue(js, "Optimizer");
  }
   else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Optimizer'] required by gaussianProcess.\n"); 

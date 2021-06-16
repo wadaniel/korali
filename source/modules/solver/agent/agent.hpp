@@ -72,6 +72,11 @@ struct policy_t
   * @brief [Discrete] Stores the index of the selected experience
   */
   size_t actionIndex;
+
+  /**
+   * @brief [Continuous] Stores the Unbounded Actions of the Squashed Normal Policy Distribution
+   */
+  std::vector<float> unboundedAction;
 };
 
 /**
@@ -97,9 +102,9 @@ class Agent : public Solver
   */
    size_t _trainingAverageDepth;
   /**
-  * @brief Indicates the number of concurrent agents collecting experiences.
+  * @brief Indicates the number of concurrent environments to use to collect experiences.
   */
-   size_t _agentCount;
+   size_t _concurrentEnvironments;
   /**
   * @brief Indicates the how many finished episodes to receive in a generation (checkpoints are generated between generations).
   */
@@ -208,10 +213,6 @@ class Agent : public Solver
   * @brief [Internal Use] Indicates the current episode being processed.
   */
    size_t _currentEpisode;
-  /**
-  * @brief [Internal Use] The cumulative training reward for the last episode received.
-  */
-   float _lastTrainingReward;
   /**
   * @brief [Internal Use] Keeps a history of all training episode rewards.
   */

@@ -50,46 +50,6 @@ size_t getTimehash()
 * @brief CRC table Implementation taken from https://barrgroup.com/embedded-systems/how-to/crc-calculation-c-code
 */
 crc crcTable[256];
-void crcInit(void)
-{
-  crc remainder;
-
-  /*
-     * Compute the remainder of each possible dividend.
-     */
-  for (int dividend = 0; dividend < 256; ++dividend)
-  {
-    /*
-         * Start with the dividend followed by zeros.
-         */
-    remainder = dividend << (WIDTH - 8);
-
-    /*
-         * Perform modulo-2 division, a bit at a time.
-         */
-    for (uint8_t bit = 8; bit > 0; --bit)
-    {
-      /*
-             * Try to divide the current data bit.
-             */
-      if (remainder & TOPBIT)
-      {
-        remainder = (remainder << 1) ^ POLYNOMIAL;
-      }
-      else
-      {
-        remainder = (remainder << 1);
-      }
-    }
-
-    /*
-         * Store the result into the table.
-         */
-    crcTable[dividend] = remainder;
-  }
-
-} /* crcInit() */
-
 crc crcFast(uint8_t const message[], size_t nBytes)
 {
   uint8_t data;
@@ -120,8 +80,6 @@ char decimalToHexChar(const uint8_t byte)
   if (byte == 13) return 'D';
   if (byte == 14) return 'E';
   if (byte == 15) return 'F';
-  fprintf(stderr, "Number out of Hex limits: %hhu\n", byte);
-  exit(-1);
   return '0';
 }
 
@@ -143,8 +101,6 @@ uint8_t hexCharToDecimal(const char x)
   if (x == 'D') return 13;
   if (x == 'E') return 14;
   if (x == 'F') return 15;
-  fprintf(stderr, "Char out of Hex limits: %c", x);
-  exit(-1);
   return 0;
 }
 

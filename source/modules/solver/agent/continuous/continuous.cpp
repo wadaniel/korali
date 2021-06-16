@@ -132,10 +132,11 @@ void Continuous::getAction(korali::Sample &sample)
 
   sample["Policy"]["Distribution Parameters"] = policy.distributionParameters;
   sample["Policy"]["State Value"] = policy.stateValue;
+  sample["Policy"]["Unbounded Action"] = policy.unboundedAction;
   sample["Action"] = action;
 }
 
-std::vector<float> Continuous::generateTrainingAction(const policy_t &curPolicy)
+std::vector<float> Continuous::generateTrainingAction(policy_t &curPolicy)
 {
   std::vector<float> action(_problem->_actionVectorSize);
 
@@ -152,16 +153,18 @@ std::vector<float> Continuous::generateTrainingAction(const policy_t &curPolicy)
 
   if (_policyDistribution == "Squashed Normal")
   {
+    std::vector<float> unboundedAction(_problem->_actionVectorSize);
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
     {
       const float mean = curPolicy.distributionParameters[i];
       const float sigma = curPolicy.distributionParameters[_problem->_actionVectorSize + i];
       const float scale = _actionScales[i];
       const float shift = _actionShifts[i];
-      const float unboundedAction = mean + sigma * _normalGenerator->getRandomNumber();
-
-      action[i] = (std::tanh(unboundedAction) * scale) + shift;
+      
+      unboundedAction[i] = mean + sigma * _normalGenerator->getRandomNumber();
+      action[i] = (std::tanh(unboundedAction[i]) * scale) + shift;
     }
+    curPolicy.unboundedAction = unboundedAction;
   }
 
   if (_policyDistribution == "Beta")
@@ -205,18 +208,7 @@ std::vector<float> Continuous::generateTestingAction(const policy_t &curPolicy)
     {
       const float curMu = curPolicy.distributionParameters[i];
       const float curVariance = curPolicy.distributionParameters[_problem->_actionVectorSize + i];
-
-      float alpha, beta;
-      std::tie(alpha, beta) = betaParamTransformAlt(curMu, curVariance, _actionLowerBounds[i], _actionUpperBounds[i]);
-
-      if (alpha > 1.0f && beta > 1.0f)
-        action[i] = _actionLowerBounds[i] + (_actionUpperBounds[i] - _actionLowerBounds[i]) * (alpha - 1.0f) / (alpha + beta - 2.0f);
-      else if (alpha <= 1.0f && beta > 1.0f)
-        action[i] = _actionLowerBounds[i];
-      else if (alpha > 1.0f && beta <= 1.0f)
-        action[i] = _actionUpperBounds[i];
-      else
-        KORALI_LOG_ERROR("Case (a,b <=1) not yet treated (a,b = %f,%f)", alpha, beta);
+      action[i] = ranBetaAlt(_normalGenerator->_range, curMu, curVariance, _actionLowerBounds[i], _actionUpperBounds[i]);
     }
   }
 
@@ -256,14 +248,9 @@ float Continuous::calculateImportanceWeight(const std::vector<float> &action, co
       const float curMean = curPolicy.distributionParameters[i];
       const float curSigma = curPolicy.distributionParameters[_problem->_actionVectorSize + i];
 
-      // Get unbounded action
-      const float scale = _actionScales[i];
-      const float shift = _actionShifts[i];
-      const float unboundedAction = std::atanh((action[i] - shift) / scale);
-
       // Importance weight of squashed normal is the importance weight of normal evaluated at unbounded action
-      logpOldPolicy += normalLogDensity(unboundedAction, oldMean, oldSigma);
-      logpCurPolicy += normalLogDensity(unboundedAction, curMean, curSigma);
+      logpOldPolicy += normalLogDensity(oldPolicy.unboundedAction[i], oldMean, oldSigma);
+      logpCurPolicy += normalLogDensity(oldPolicy.unboundedAction[i], curMean, curSigma);
     }
   }
 
@@ -615,7 +602,7 @@ void Continuous::getConfiguration(knlohmann::json& js)
 void Continuous::applyModuleDefaults(knlohmann::json& js) 
 {
 
- std::string defaultString = "{\"Normal Generator\": {\"Type\": \"Univariate/Normal\", \"Mean\": 0.0, \"Standard Deviation\": 1.0}, \"Policy\": {\"Distribution\": \"Squashed Normal\"}}";
+ std::string defaultString = "{\"Normal Generator\": {\"Type\": \"Univariate/Normal\", \"Mean\": 0.0, \"Standard Deviation\": 1.0}, \"Policy\": {\"Distribution\": \"Normal\"}}";
  knlohmann::json defaultJs = knlohmann::json::parse(defaultString);
  mergeJson(js, defaultJs); 
  Agent::applyModuleDefaults(js);

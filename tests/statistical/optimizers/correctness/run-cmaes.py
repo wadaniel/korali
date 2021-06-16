@@ -33,7 +33,7 @@ e["Random Seed"] = 1337
 k = korali.Engine()
 k.run(e)
 
-checkMin(e, 0.22942553779431113, 1e-4)
+checkMin(e, 0.23246, 1e-4)
 
 ### Running With Diagonal Covariance Matrix
 
@@ -58,7 +58,7 @@ e["Random Seed"] = 1337
 k = korali.Engine()
 k.run(e)
 
-checkMin(e, 0.22942553779431113, 1e-4)
+checkMin(e, 0.23246, 1e-4)
 
 ### Running With Mirrored Sampling
 
@@ -83,7 +83,7 @@ e["Random Seed"] = 1337
 #k = korali.Engine()
 k.run(e)
 
-checkMin(e, 0.22942553779431113, 1e-4)
+checkMin(e, 0.23246, 1e-4)
 
 ### Running With Different Mu Types
 
@@ -108,7 +108,7 @@ e["Random Seed"] = 1337
 k = korali.Engine()
 k.run(e)
 
-checkMin(e, 0.22942553779431113, 1e-4)
+checkMin(e, 0.23246, 1e-4)
 
 ### Running With Different Mu Types
 
@@ -133,7 +133,7 @@ e["Random Seed"] = 1337
 k = korali.Engine()
 k.run(e)
 
-checkMin(e, 0.22942553779431113, 1e-4)
+checkMin(e, 0.23246, 1e-4)
 
 ### Running With Different Mu Types
 
@@ -158,7 +158,7 @@ e["Random Seed"] = 1337
 k = korali.Engine()
 k.run(e)
 
-checkMin(e, 0.22942553779431113, 1e-3)
+checkMin(e, 0.23246, 1e-3)
 
 ### Running With Different Mu Types
 
@@ -183,7 +183,7 @@ e["Random Seed"] = 1337
 k = korali.Engine()
 k.run(e)
 
-checkMin(e, 0.22942553779431113, 1e-3)
+checkMin(e, 0.23246, 1e-3)
 
 ### Corner Case: Discrete with Mirrored Sampling
 
@@ -212,7 +212,7 @@ e["Random Seed"] = 1337
 k = korali.Engine()
 k.run(e)
 
-checkMin(e, 0.22942553779431113, 1e-3)
+checkMin(e, 0.23246, 1e-3)
 
 ### Corner Case: Constraints that cannot be satisfied
 
@@ -240,7 +240,7 @@ e["Random Seed"] = 1337
 k = korali.Engine()
 k.run(e)
 
-checkInfeasible(e, 100)
+checkInfeasible(e, 50)
 
 ### Corner Case: Terminating on Max Infeasible Resamplings
 
@@ -258,7 +258,7 @@ e["Variables"][0]["Upper Bound"] = +10.0
 e["Solver"]["Type"] = "Optimizer/CMAES"
 e["Solver"]["Population Size"] = 16
 e["Solver"]["Viability Population Size"] = 2
-e["Solver"]["Termination Criteria"]["Max Generations"] = 10
+e["Solver"]["Termination Criteria"]["Max Generations"] = 100
 e["Solver"]["Termination Criteria"]["Max Infeasible Resamplings"] = 100
 
 e["Console Output"]["Frequency"] = 10

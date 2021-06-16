@@ -6,18 +6,9 @@ from environment import *
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument('--visualize', help='whether to plot the swarm or not', required=True, type=int)
-parser.add_argument('--numIndividuals', help='number of fish', required=True, type=int)
-parser.add_argument('--numTimesteps', help='number of timesteps to simulate', required=True, type=int)
-parser.add_argument('--numNearestNeighbours', help='number of nearest neighbours used for state/reward', required=True, type=int)
+parser.add_argument('--case', help='Reinforcement learning case considered', required=True, type=str)
 
 args = vars(parser.parse_args())
-
-# check given arguments
-numIndividuals       = args["numIndividuals"]
-numTimeSteps         = args["numTimesteps"]
-numNearestNeighbours = args["numNearestNeighbours"]
-assert (numIndividuals > 0) & (numTimesteps > 0) & (numNearestNeighbours > 0) & (numIndividuals > numNearestNeighbours), print("invalid arguments: numTimeSteps={}!>0, numIndividuals={}!>numNearestNeighbours={}!>0".format(numTimesteps, numIndividuals, numNearestNeighbours))
 
 ### Defining Korali Problem
 
@@ -50,25 +41,18 @@ e["Solver"]["Mini Batch"]["Size"] = 256
 
 ### Defining Variables
 
-# States (distance and angle to nearest neighbours)
-for i in range(numNearestNeighbours):
-  e["Variables"][i]["Name"] = "Distance " + str(i)
+# States (flow at sensor locations)
+for i in range(8):
+  e["Variables"][i]["Name"] = "Sensor " + str(i)
   e["Variables"][i]["Type"] = "State"
-  e["Variables"][i+numNearestNeighbours]["Name"] = "Angle " + str(i)
-  e["Variables"][i+numNearestNeighbours]["Type"] = "State"
 
-# Actions (angles for spherical coordinates)
-e["Variables"][2*numNearestNeighbours]["Name"] = "Phi"
-e["Variables"][2*numNearestNeighbours]["Type"] = "Action"
-e["Variables"][2*numNearestNeighbours]["Lower Bound"] = 0
-e["Variables"][2*numNearestNeighbours]["Upper Bound"] = 2*np.pi
-e["Variables"][2*numNearestNeighbours]["Initial Exploration Noise"] = np.pi
-
-e["Variables"][2*numNearestNeighbours+1]["Name"] = "Theta"
-e["Variables"][2*numNearestNeighbours+1]["Type"] = "Action"
-e["Variables"][2*numNearestNeighbours+1]["Lower Bound"] = 0
-e["Variables"][2*numNearestNeighbours+1]["Upper Bound"] = np.pi
-e["Variables"][2*numNearestNeighbours+1]["Initial Exploration Noise"] = np.pi/2
+# Actions (amplitude of gaussian actuation)
+for i in range(6)
+	e["Variables"][8+i]["Name"] = "Actuator " + str(i)
+	e["Variables"][8+i]["Type"] = "Action"
+	e["Variables"][8+i]["Lower Bound"] = -0.5
+	e["Variables"][8+i]["Upper Bound"] = 0.5
+	e["Variables"][8+i]["Initial Exploration Noise"] = 0.1
 
 ### Setting Experience Replay and REFER settings
 

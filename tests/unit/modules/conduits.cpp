@@ -16,6 +16,26 @@ namespace
 
  TEST(Conduit, SequentialConduit)
  {
+
+  knlohmann::json moduleJs;
+  ASSERT_ANY_THROW(Module::getModule(moduleJs, NULL));
+  moduleJs["Type"] = 1.0;
+  ASSERT_ANY_THROW(Module::getModule(moduleJs, NULL));
+  moduleJs["Type"] = "Sequential";
+  Module* m;
+  ASSERT_NO_THROW(m = Module::getModule(moduleJs, NULL));
+  ASSERT_NO_THROW(m->initialize());
+  ASSERT_NO_THROW(m->finalize());
+  ASSERT_NO_THROW(m->getType());
+  ASSERT_NO_THROW(m->checkTermination());
+  ASSERT_NO_THROW(m->getConfiguration(moduleJs));
+  ASSERT_NO_THROW(m->setConfiguration(moduleJs));
+  ASSERT_NO_THROW(m->applyModuleDefaults(moduleJs));
+  ASSERT_NO_THROW(m->applyVariableDefaults());
+  Sample s;
+  ASSERT_NO_THROW(m->runOperation("A", s));
+
+
   knlohmann::json conduitJs;
   conduitJs["Type"] = "Sequential";
 

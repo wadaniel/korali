@@ -19,6 +19,7 @@ class @className: public @parentClassName
 {
   public:
   Experiment();
+  ~Experiment();
 
   void initialize() override;
   void finalize() override;

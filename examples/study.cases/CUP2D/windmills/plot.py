@@ -3,11 +3,9 @@ import numpy as np
 
 path_to_folders = '_results_test/'
 
-# folders_test = ['both_copy', 'energy_zero_copy',  'flow_zero_copy', 'both_copy_long', 'both_double_copy']
+# folders_test = ['both', 'energy_zero', 'flow_zero_4', 'flow_zero_3', 'uncontrolled']
 
-# folders_test = ['both_copy', 'energy_zero_copy', 'both_copy_long']
-
-folders_test = ['both_copy', 'energy_zero_copy', 'flow_zero', 'uncontrolled_copy',  'flow_zero_4']
+folders_test = ['both', 'energy_zero', 'flow_zero_4', 'uncontrolled',  'flow_zero_3']
 
 names = ['both', 'only energy', 'only flow: tau 1e-4', 'uncontrolled', 'only flow: tau 1e-3', 'dummy']
 

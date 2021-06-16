@@ -48,12 +48,12 @@ class Module
   /**
    * @brief Initializes Module upon creation. May allocate memory, set initial states, and initialize external code.
    */
-  virtual void initialize() {}
+  virtual void initialize() {};
 
   /**
    * @brief Finalizes Module. Deallocates memory and produces outputs.
    */
-  virtual void finalize() {}
+  virtual void finalize() {};
 
   /**
    * @brief Returns the module type.
@@ -97,13 +97,6 @@ class Module
   * @return True, if operation found and executed; false, otherwise.
   */
   virtual bool runOperation(std::string operation, korali::Sample &sample) { return false; };
-
-  /**
-  * @brief Duplicates the contents of a module and re-initializes the copy.
-  * @param src The module to duplicate.
-  * @return A pointer to the duplicated module.
-  */
-  static Module *duplicate(Module *src);
 };
 
 /**

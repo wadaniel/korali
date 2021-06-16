@@ -24,10 +24,6 @@ void ThetaNew::initialize()
   if (_psiExperiment["Is Finished"] == false)
     KORALI_LOG_ERROR("The Hierarchical Bayesian (Theta New) requires that the psi-problem has run completely, but it has not.\n");
 
-  // Cross-checks
-  if (_psiExperiment["Problem"]["Conditional Priors"].size() != _k->_variables.size())
-    KORALI_LOG_ERROR("The problem contains a different number of variables (%lu) than conditional priors in the Hierarchical/Psi problem (%lu).\n", _k->_variables.size(), _psiExperiment["Problem"]["Conditional Priors"].size());
-
   // Loading Psi problem results
   _psiProblemSampleCount = _psiExperiment["Solver"]["Chain Leaders LogLikelihoods"].size();
   _psiProblemSampleLogLikelihoods = _psiExperiment["Solver"]["Sample LogLikelihood Database"].get<std::vector<double>>();
@@ -69,9 +65,8 @@ void ThetaNew::setConfiguration(knlohmann::json& js)
 
  if (isDefined(js, "Psi Experiment"))
  {
- try { _psiExperiment = js["Psi Experiment"].get<knlohmann::json>();
-} catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ thetaNew ] \n + Key:    ['Psi Experiment']\n%s", e.what()); } 
+ _psiExperiment = js["Psi Experiment"].get<knlohmann::json>();
+
    eraseValue(js, "Psi Experiment");
  }
   else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Psi Experiment'] required by thetaNew.\n"); 
@@ -107,3 +102,4 @@ void ThetaNew::applyVariableDefaults()
 } //hierarchical
 } //problem
 } //korali
+

@@ -9,7 +9,7 @@
 
 class @className : public @parentClassName
 {
-  private:
+  public:
   /**
   * @brief Calculates recursively acceptance probability. Recursion required for Delayed Rejection.
   * @param denominator denominator of quotient (acceptance probability)
@@ -39,7 +39,7 @@ class @className : public @parentClassName
   */
   void finishSample(size_t sampleId);
 
-  public:
+
   /**
  * @brief Configures MCMC.
  */

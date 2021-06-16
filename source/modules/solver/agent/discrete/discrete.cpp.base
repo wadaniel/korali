@@ -49,7 +49,7 @@ void @className::getAction(korali::Sample &sample)
     {
       // Categorical action sampled from action probabilites (from ACER paper [Wang2017])
       float curSum = 0.0;
-      for (actionIdx = 0; actionIdx < pActions.size(); actionIdx++)
+      for (actionIdx = 0; actionIdx < pActions.size()-1; actionIdx++)
       {
         curSum += pActions[actionIdx];
         if (x < curSum) break;
@@ -73,14 +73,6 @@ void @className::getAction(korali::Sample &sample)
   * Storing the action itself
  ****************************************************************************/
 
-  if (actionIdx >= _problem->_possibleActions.size())
-  {
-    float cump = 0.0;
-    for (float p : pActions) cump += p;
-    _k->_logger->logWarning("Minimal", "Action index (%lu) exceeds action vector size (%lu). This points to a bug in probability calculation (cumulative p = %f).\n", actionIdx, _problem->_possibleActions.size(), cump);
-    for (size_t i = 0; i < _problem->_possibleActions.size(); ++i) _k->_logger->logWarning("Minimal", "p(a_%zu) = %f\n", i, pActions[i]);
-    actionIdx = _problem->_possibleActions.size() - 1;
-  }
 
   // Storing action itself, its idx, and probabilities
   sample["Policy"]["Distribution Parameters"] = pActions;

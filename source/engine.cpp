@@ -67,7 +67,7 @@ void Engine::start()
   if (_isDryRun) return;
 
   // Only initialize conduit if the Engine being ran is the first one in the process
-  auto conduit = dynamic_cast<Conduit *>(getModule(_js["Conduit"], _k));
+  auto conduit = dynamic_cast<Conduit *>(Module::getModule(_js["Conduit"], NULL));
   conduit->applyModuleDefaults(_js["Conduit"]);
   conduit->setConfiguration(_js["Conduit"]);
   conduit->initialize();

@@ -9,24 +9,6 @@ namespace problem
 {
 
 
-void ReinforcementLearning::initialize()
-{
-  // Processing state/action variable configuration
-  _stateVectorIndexes.clear();
-  _actionVectorIndexes.clear();
-  for (size_t i = 0; i < _k->_variables.size(); i++)
-  {
-    if (_k->_variables[i]->_type == "State") _stateVectorIndexes.push_back(i);
-    if (_k->_variables[i]->_type == "Action") _actionVectorIndexes.push_back(i);
-  }
-
-  _actionVectorSize = _actionVectorIndexes.size();
-  _stateVectorSize = _stateVectorIndexes.size();
-
-  if (_actionVectorSize == 0) KORALI_LOG_ERROR("No action variables have been defined.\n");
-  if (_stateVectorSize == 0) KORALI_LOG_ERROR("No state variables have been defined.\n");
-}
-
 /**
  * @brief Pointer to the current agent, it is immediately copied as to avoid concurrency problems
  */
@@ -48,12 +30,40 @@ solver::Agent *_agent;
 cothread_t _envThread;
 
 /**
+  * @brief Stores the current launch Id for the current sample
+  */
+size_t _launchId;
+
+void ReinforcementLearning::initialize()
+{
+  // Processing state/action variable configuration
+  _stateVectorIndexes.clear();
+  _actionVectorIndexes.clear();
+  for (size_t i = 0; i < _k->_variables.size(); i++)
+  {
+    if (_k->_variables[i]->_type == "State") _stateVectorIndexes.push_back(i);
+    if (_k->_variables[i]->_type == "Action") _actionVectorIndexes.push_back(i);
+  }
+
+  _actionVectorSize = _actionVectorIndexes.size();
+  _stateVectorSize = _stateVectorIndexes.size();
+
+  if (_actionVectorSize == 0) KORALI_LOG_ERROR("No action variables have been defined.\n");
+  if (_stateVectorSize == 0) KORALI_LOG_ERROR("No state variables have been defined.\n");
+
+  // Setting initial launch id (0)
+  _launchId = 0;
+}
+
+/**
  * @brief Thread wrapper to run an environment
  */
 void __environmentWrapper()
 {
   Sample *agent = __currentSample;
 
+  // Setting and increasing agent's launch Id
+  (*agent)["Launch Id"] = _launchId++;
   agent->run(__envFunctionId);
 
   if ((*agent)["Termination"] == "Non Terminal")
@@ -118,10 +128,6 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
 
     // Jumping back into the agent's environment
     runEnvironment(agent);
-
-    // Sanity check for reward
-    if (std::isfinite(agent["Reward"].get<float>()) == false)
-      KORALI_LOG_ERROR("Environment reward returned an invalid value: %f\n", agent["Reward"].get<float>());
 
     // Storing experience's reward
     episode["Experiences"][actionCount]["Reward"] = agent["Reward"];
@@ -300,11 +306,6 @@ void ReinforcementLearning::getAction(Sample &agent)
 
   auto t1 = std::chrono::steady_clock::now();                                                          // Profiling
   _agentPolicyEvaluationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(t1 - t0).count(); // Profiling
-
-  // Sanity checks for action
-  for (size_t i = 0; i < _actionVectorSize; i++)
-    if (std::isfinite(agent["Action"][i].get<float>()) == false)
-      KORALI_LOG_ERROR("Agent agent variable %lu returned an invalid value: %f\n", agent["Action"][i].get<float>());
 }
 
 void ReinforcementLearning::runEnvironment(Sample &agent)
@@ -318,7 +319,7 @@ void ReinforcementLearning::runEnvironment(Sample &agent)
   // Sanity checks for state
   for (size_t i = 0; i < _stateVectorSize; i++)
     if (std::isfinite(agent["State"][i].get<float>()) == false)
-      KORALI_LOG_ERROR("Environment state variable %lu returned an invalid value: %f\n", agent["State"][i].get<float>());
+      KORALI_LOG_ERROR("Environment state variable %lu returned an invalid value: %f\n", i, agent["State"][i].get<float>());
 
   // Normalizing State
   auto state = agent["State"].get<std::vector<float>>();
@@ -414,9 +415,8 @@ void ReinforcementLearning::setConfiguration(knlohmann::json& js)
 
  if (isDefined(js, "Custom Settings"))
  {
- try { _customSettings = js["Custom Settings"].get<knlohmann::json>();
-} catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ reinforcementLearning ] \n + Key:    ['Custom Settings']\n%s", e.what()); } 
+ _customSettings = js["Custom Settings"].get<knlohmann::json>();
+
    eraseValue(js, "Custom Settings");
  }
   else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Custom Settings'] required by reinforcementLearning.\n"); 

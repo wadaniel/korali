@@ -21,13 +21,7 @@ void mkdir(const std::string dirPath);
  * @param dirPath relative path to the folder to list.
  * @return A list with the path of all files found.
  */
-std::vector<std::string> listDirFiles(const std::string dirPath);
 
-/**
-  * @brief Checks if directory exists
-  * @param dirPath relative path to the folder to list.
-  * @return true, if the directory exists, or; false, if it does not.
-  */
 bool dirExists(const std::string dirPath);
 
 } // namespace korali

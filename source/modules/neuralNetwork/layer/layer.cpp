@@ -153,6 +153,12 @@ void Layer::createHyperparameterMemory()
   _hyperparameterCount = 0;
 }
 
+void Layer::backwardHyperparameters(const size_t t)
+{
+ if (_nn->_mode == "Inference")
+   KORALI_LOG_ERROR("Requesting Layer hyperparameter gradient propagation but NN was configured for inference only.\n");
+};
+
 void Layer::setConfiguration(knlohmann::json& js) 
 {
  if (isDefined(js, "Results"))  eraseValue(js, "Results");

@@ -36,7 +36,8 @@ def run_nested_with_termination_criterion(criterion, value):
   e["Solver"]["Add Live Points"] = True
   e["Solver"]["Resampling Method"] = "Box"
   e["Solver"]["Termination Criteria"][criterion] = value
-
+  e["File Output"]["Enabled"] = False
+  
   e["Random Seed"] = 1337
 
   k = korali.Engine()

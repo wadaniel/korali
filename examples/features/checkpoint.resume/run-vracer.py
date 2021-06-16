@@ -12,7 +12,7 @@ e = korali.Experiment()
 
 ### Loading previous run (if exist)
 
-found = e.loadState('_result_gfpt/latest')
+found = e.loadState('_result_vracer/latest')
 
 # If not found, we run first 10 generations.
 if (found == False):
@@ -86,7 +86,7 @@ e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 450
 ### Setting file output configuration
 
 e["Console Output"]["Verbosity"] = "Detailed"
-e["File Output"]["Path"] = "_result_gfpt"
+e["File Output"]["Path"] = "_result_vracer"
 e["File Output"]["Enabled"] = True
 e["File Output"]["Frequency"] = 1
  

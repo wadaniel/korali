@@ -135,8 +135,8 @@ void @className::initialize()
   if (_mode == "Training")
   {
     // Creating storate for _agents and their status
-    _agents.resize(_agentCount);
-    _isAgentRunning.resize(_agentCount, false);
+    _agents.resize(_concurrentEnvironments);
+    _isAgentRunning.resize(_concurrentEnvironments, false);
   }
 
   if (_mode == "Testing")
@@ -191,7 +191,7 @@ void @className::trainingGeneration()
   while (_sessionEpisodeCount < _episodesPerGeneration * _sessionGeneration)
   {
     // Launching (or re-launching) agents
-    for (size_t agentId = 0; agentId < _agentCount; agentId++)
+    for (size_t agentId = 0; agentId < _concurrentEnvironments; agentId++)
       if (_isAgentRunning[agentId] == false)
       {
         _agents[agentId]["Sample Id"] = _currentEpisode++;
@@ -209,7 +209,7 @@ void @className::trainingGeneration()
     KORALI_LISTEN(_agents);
 
     // Attending to running agents, checking if any experience has been received
-    for (size_t agentId = 0; agentId < _agentCount; agentId++)
+    for (size_t agentId = 0; agentId < _concurrentEnvironments; agentId++)
       if (_isAgentRunning[agentId] == true)
         attendAgent(agentId);
 
@@ -524,6 +524,9 @@ void @className::processEpisode(size_t episodeId, knlohmann::json &episode)
     if (isDefined(episode[expId], "Policy", "Action Index"))
       expPolicy.actionIndex = episode[expId]["Policy"]["Action Index"].get<size_t>();
 
+    if (isDefined(episode[expId], "Policy", "Unbounded Action"))
+      expPolicy.unboundedAction = episode[expId]["Policy"]["Unbounded Action"].get<std::vector<float>>();
+
     // Storing policy information
     _expPolicyVector.add(expPolicy);
     _curPolicyVector.add(expPolicy);
@@ -652,6 +655,7 @@ void @className::updateExperienceMetadata(const std::vector<size_t> &miniBatch, 
     // Sanity checks for state value
     if (std::isfinite(importanceWeight) == false)
       KORALI_LOG_ERROR("Calculated value for importanceWeight returned an invalid value: %f\n", importanceWeight);
+
 
     // If this is the truncated experience of an episode, then obtain truncated state value
     float truncatedV = 0.0f;
@@ -847,7 +851,7 @@ void @className::finalize()
   do
   {
     agentsRemain = false;
-    for (size_t agentId = 0; agentId < _agentCount; agentId++)
+    for (size_t agentId = 0; agentId < _concurrentEnvironments; agentId++)
       if (_isAgentRunning[agentId] == true)
       {
         attendAgent(agentId);

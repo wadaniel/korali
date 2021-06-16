@@ -1,7 +1,7 @@
 #!/bin/bash -l
 #SBATCH --job-name="cmaes_transport001"
 #SBATCH --output=output_cmaes_transport001_%j.out
-#SBATCH --time=24:00:00
+#SBATCH --time=08:00:00
 #SBATCH --nodes=33
 #SBATCH --ntasks-per-core=12
 #SBATCH --ntasks-per-node=1

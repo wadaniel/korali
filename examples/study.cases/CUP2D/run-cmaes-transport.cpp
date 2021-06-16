@@ -77,9 +77,6 @@ int main(int argc, char *argv[])
 
   auto k = korali::Engine();
 
-  k["Conduit"]["Type"] = "Distributed";
-  k["Conduit"]["Communicator"] = MPI_COMM_WORLD;
-  k["Conduit"]["Ranks Per Worker"] = 1;
-
+  korali::setKoraliMPIComm(MPI_COMM_WORLD);
   k.run(e);
 }

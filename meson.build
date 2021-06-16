@@ -121,7 +121,7 @@ endif
 korali_deps += cudnn_dep
 
 # set configuration values
-korali_conf.set('_KORALI_USE_MPI', mpi_dep.found(),
+korali_conf.set('_KORALI_USE_MPI', true,
   description: 'Use MPI for distributed memory parallelism',
 )
 korali_conf.set('_KORALI_USE_ONEDNN', onednn_dep.found(),

@@ -57,7 +57,7 @@ void Continuous::initializeAgent()
 
       // Identity mask for Means
       _policyParameterScaling[i] = 1.0f;
-      _policyParameterShifting[i] = 0.0f;
+      _policyParameterShifting[i] = _actionShifts[i];
       _policyParameterTransformationMasks[i] = "Identity";
 
       // Softplus mask for Sigmas
@@ -87,7 +87,7 @@ void Continuous::initializeAgent()
 
       // Identity mask for Means
       _policyParameterScaling[i] = 1.0f;
-      _policyParameterShifting[i] = 0.0f;
+      _policyParameterShifting[i] = _actionShifts[i];
       _policyParameterTransformationMasks[i] = "Identity";
 
       // Sigmoid Mask for Variance
@@ -191,16 +191,41 @@ std::vector<float> Continuous::generateTrainingAction(policy_t &curPolicy)
       
       // Sampling via inverse sampling
       const float u = _uniformGenerator->getRandomNumber();
-      const float x = u*normalCDF(beta, mu, sigma) + (1.-u)*normalCDF(alpha, mu, sigma);
-      action[i] = mu + 2*ierf( 2.*x - 1. )*sigma;
+      const float z = u*normalCDF(alpha, 0.f, 1.f) + (1.-u)*normalCDF(beta, 0.f, 1.f);
+      action[i] = mu + 2*ierf( 2.*z - 1. )*sigma;
+
+      /*
+      const float sqrt2Sigma = M_SQRT2 * sigma;
+      const float erfMuNeg = std::erff((mu - 1) / sqrt2Sigma);
+      const float erfMuPlus = std::erff((mu + 1) / sqrt2Sigma);
+      
+      const float u = _uniformGenerator->getRandomNumber();
+        
+      const float C = - std::erff((mu + 1.) / sqrt2Sigma) / (erfMuNeg - erfMuPlus);
+      const float z = (u - C) * (erfMuNeg - erfMuPlus);
+
+      action[i] = _actionShifts[i] + _actionScales[i] * (mu - sqrt2Sigma * ierf(z));
+      */
+
+      /*
+      // Sampling via naive accept-recject method
+      do
+      {
+        action[i] = mu + sigma * _normalGenerator->getRandomNumber();
+      } while (action[i] > _actionUpperBounds[i] || action[i] < _actionLowerBounds[i]);
+      */
  
-      // Keep this for the moment (D.W.)
+      printf("a %f %f %f %f %f %f\n", action[i], z, ierf(z), u, mu, sigma);
+
+      // Safety check
+      if (action[i] >= _actionUpperBounds[i]) action[i] = _actionUpperBounds[i];
+      if (action[i] <= _actionLowerBounds[i]) action[i] = _actionLowerBounds[i];
+
+      // Keep this for the moment, also catches infs and nans (D.W.)
       assert(action[i] <= _actionUpperBounds[i]);
       assert(action[i] >= _actionLowerBounds[i]);
     }
   }
-
-
 
   if (_policyDistribution == "Beta")
   {
@@ -506,9 +531,9 @@ std::vector<float> Continuous::calculateImportanceWeightGradient(const std::vect
  
         // Grad wrt. curSigma
         importanceWeightGradients[_problem->_actionVectorSize+i] = (k1+k2+k3)/curNormalCdfLower;
-        printf("k: %f %f %f\n", k1, k2, k3);
-        printf("NCDF: %f %f %f %f %f %f\n", curNormalCdfLower, _actionLowerBounds[i], curMu, curSigma, oldMu, oldSigma);
-        printf("iwg: %f %f\n", importanceWeightGradients[i], importanceWeightGradients[i+1] );
+        //printf("k: %f %f %f\n", k1, k2, k3);
+        //printf("NCDF: %f %f %f %f %f %f\n", curNormalCdfLower, _actionLowerBounds[i], curMu, curSigma, oldMu, oldSigma);
+        //printf("iwg: %f %f\n", importanceWeightGradients[i], importanceWeightGradients[i+1] );
 
         // Calculate importance weight
         logpCurPolicy += normalLogCDF(_actionLowerBounds[i], curMu, curSigma);
@@ -531,10 +556,10 @@ std::vector<float> Continuous::calculateImportanceWeightGradient(const std::vect
         // Grad wrt. curSigma
         importanceWeightGradients[_problem->_actionVectorSize+i] = -(k1+k2+k3)/curNormalCCdfUpper;
         
-        printf("k: %f %f %f\n", k1, k2, k3);
-        printf("NCDF: %f %f %f %f %f %f\n", normalCDF(_actionUpperBounds[i], curMu, curSigma), _actionUpperBounds[i], curMu, curSigma, oldMu, oldSigma);
-        printf("iwg: %f %f\n", importanceWeightGradients[i], importanceWeightGradients[i+1] );
-        printf("lp: %f %f\n", normalLogCCDF(_actionUpperBounds[i], curMu,curSigma), normalCCDF(_actionUpperBounds[i], oldMu, oldSigma));
+        //printf("k: %f %f %f\n", k1, k2, k3);
+        //printf("NCDF: %f %f %f %f %f %f\n", normalCDF(_actionUpperBounds[i], curMu, curSigma), _actionUpperBounds[i], curMu, curSigma, oldMu, oldSigma);
+        //printf("iwg: %f %f\n", importanceWeightGradients[i], importanceWeightGradients[i+1] );
+        //printf("lp: %f %f\n", normalLogCCDF(_actionUpperBounds[i], curMu,curSigma), normalCCDF(_actionUpperBounds[i], oldMu, oldSigma));
 
         // Calculate importance weight
         logpCurPolicy += normalLogCCDF(_actionUpperBounds[i], curMu, curSigma);
@@ -547,7 +572,7 @@ std::vector<float> Continuous::calculateImportanceWeightGradient(const std::vect
         
         // Grad wrt. curSigma
         importanceWeightGradients[_problem->_actionVectorSize+i] = ((action[i]-curMu)*(action[i]-curMu)-curVar)/(oldSigma*oldSigma*oldSigma);
-        printf("iwg: %f %f\n", importanceWeightGradients[i], importanceWeightGradients[i+1] );
+        //printf("iwg: %f %f\n", importanceWeightGradients[i], importanceWeightGradients[i+1] );
 
         // Calculate importance weight
         logpCurPolicy += normalLogDensity(action[i], curMu, curSigma);
@@ -558,7 +583,7 @@ std::vector<float> Continuous::calculateImportanceWeightGradient(const std::vect
 
     const float logImportanceWeight = logpCurPolicy - logpOldPolicy;
     const float importanceWeight = std::exp(logImportanceWeight);
-    printf("iw: %f\n", importanceWeight);
+    //printf("iw: %f\n", importanceWeight);
 
     // Scale by importance weight to get gradient
     for (size_t i = 0; i < 2 * _problem->_actionVectorSize; i++)
@@ -568,7 +593,7 @@ std::vector<float> Continuous::calculateImportanceWeightGradient(const std::vect
       const float p1 = oldPolicy.distributionParameters[i];
       const float p2 = curPolicy.distributionParameters[i];
  
-      printf("iwgrad[%zu]: %f (%f %f)\n", i, importanceWeightGradients[i], p1, p2);
+      //printf("iwgrad[%zu]: %f (%f %f)\n", i, importanceWeightGradients[i], p1, p2);
     }
 
   }

@@ -94,10 +94,11 @@ e["Solver"]["Reward"]["Rescaling"]["Frequency"] = 1000
 
 ### Configuring the neural network and its hidden layers
 
-#e["Solver"]["Policy"]["Distribution"] = "Normal"
+e["Solver"]["Policy"]["Distribution"] = "Normal"
 #e["Solver"]["Policy"]["Distribution"] = "Squashed Normal"
 #e["Solver"]["Policy"]["Distribution"] = "Clipped Normal"
-e["Solver"]["Policy"]["Distribution"] = "Truncated Normal"
+#e["Solver"]["Policy"]["Distribution"] = "Truncated Normal"
+e["Solver"]["Learning Rate"] = 1e-4
 e["Solver"]["Neural Network"]["Engine"] = args.engine
 e["Solver"]["Neural Network"]["Optimizer"] = args.optimizer
 
@@ -116,7 +117,7 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tan
 ### Defining Termination Criteria
 
 e["Solver"]["Termination Criteria"]["Max Generations"] = 1000
-e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 250
+e["Solver"]["Termination Criteria"]["Testing"]["Target Average Reward"] = 495
 
 ### Setting file output configuration
 

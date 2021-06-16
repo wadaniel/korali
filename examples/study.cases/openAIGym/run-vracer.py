@@ -50,7 +50,7 @@ e["Solver"]["Policy"]["Distribution"] = "Normal"
 e["Solver"]["State Rescaling"]["Enabled"] = True
 e["Solver"]["Reward"]["Rescaling"]["Enabled"] = True
 e["Solver"]["Reward"]["Rescaling"]["Frequency"] = 1000
-e["Solver"]["Reward"]["Outbound Penalization"]["Enabled"] = True
+e["Solver"]["Reward"]["Outbound Penalization"]["Enabled"] = False
 e["Solver"]["Reward"]["Outbound Penalization"]["Factor"] = 0.5
   
 ### Configuring the neural network and its hidden layers

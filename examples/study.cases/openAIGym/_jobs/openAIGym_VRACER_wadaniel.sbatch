@@ -28,11 +28,16 @@ env=Ant-v2
 #env=HumanoidBulletEnv-v0
 #env=Walker2DBulletEnv-v0
 
+dis="Normal"
+#dis="Squashed Normal"
+#dis="Truncated Normal"
+#dis="Clipped Normal"
+
 pushd ..
 
 cat run-vracer.py
 
-expDir=$SCRATCH/OpenAIGym_VRACER/$env/$SLURM_JOB_ID
+expDir=$SCRATCH/OpenAIGym_VRACER/$env/$dis/$SLURM_JOB_ID
 mkdir -p $expDir
 cp run-vracer.py $expDir
 cp -r _model $expDir
@@ -41,7 +46,7 @@ popd
 
 pushd $expDir
 
-OMP_NUM_THREADS=10 python3 run-vracer.py --env $env
+OMP_NUM_THREADS=10 python3 run-vracer.py --env $env --policy $dis
 
 popd
 

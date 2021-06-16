@@ -9,6 +9,7 @@ from agent import *
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--env', help='Specifies which environment to run.', required=True)
+parser.add_argument('--policy', help='Specifies the policy distribution.', default="Normal")
 args = parser.parse_args()
 
 ####### Defining Korali Problem
@@ -46,7 +47,7 @@ e["Solver"]["Experience Replay"]["Off Policy"]["Cutoff Scale"] = 5.0
 e["Solver"]["Experience Replay"]["Off Policy"]["REFER Beta"] = 0.3
 e["Solver"]["Experience Replay"]["Off Policy"]["Target"] = 0.1
 
-e["Solver"]["Policy"]["Distribution"] = "Normal"
+e["Solver"]["Policy"]["Distribution"] = args.policy
 e["Solver"]["State Rescaling"]["Enabled"] = True
 e["Solver"]["Reward"]["Rescaling"]["Enabled"] = True
 e["Solver"]["Reward"]["Rescaling"]["Frequency"] = 1000

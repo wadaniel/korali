@@ -189,33 +189,20 @@ std::vector<float> Continuous::generateTrainingAction(policy_t &curPolicy)
       const float alpha = (_actionLowerBounds[i]-mu)/sigma;
       const float beta = (_actionUpperBounds[i]-mu)/sigma;
       
-      // Sampling via inverse sampling
+      // Sampling via naive inverse sampling (not the safest approach)
       const float u = _uniformGenerator->getRandomNumber();
       const float z = u*normalCDF(alpha, 0.f, 1.f) + (1.-u)*normalCDF(beta, 0.f, 1.f);
       action[i] = mu + 2*ierf( 2.*z - 1. )*sigma;
 
       /*
-      const float sqrt2Sigma = M_SQRT2 * sigma;
-      const float erfMuNeg = std::erff((mu - 1) / sqrt2Sigma);
-      const float erfMuPlus = std::erff((mu + 1) / sqrt2Sigma);
-      
-      const float u = _uniformGenerator->getRandomNumber();
-        
-      const float C = - std::erff((mu + 1.) / sqrt2Sigma) / (erfMuNeg - erfMuPlus);
-      const float z = (u - C) * (erfMuNeg - erfMuPlus);
-
-      action[i] = _actionShifts[i] + _actionScales[i] * (mu - sqrt2Sigma * ierf(z));
-      */
-
-      /*
-      // Sampling via naive accept-recject method
+      // Sampling via naive accept-recject method (alternative)
       do
       {
         action[i] = mu + sigma * _normalGenerator->getRandomNumber();
       } while (action[i] > _actionUpperBounds[i] || action[i] < _actionLowerBounds[i]);
       */
  
-      printf("a %f %f %f %f %f %f\n", action[i], z, ierf(z), u, mu, sigma);
+      // printf("a %f %f %f %f %f %f\n", action[i], z, ierf(z), u, mu, sigma);
 
       // Safety check
       if (action[i] >= _actionUpperBounds[i]) action[i] = _actionUpperBounds[i];
@@ -270,7 +257,7 @@ std::vector<float> Continuous::generateTestingAction(const policy_t &curPolicy)
     {
       action[i] = curPolicy.distributionParameters[i];
   
-      // In case the 'mode' is outside of the bounds
+      // Clip the mode to bounds
       if (action[i] >= _actionUpperBounds[i]) action[i] = _actionUpperBounds[i];
       if (action[i] <= _actionLowerBounds[i]) action[i] = _actionLowerBounds[i];
     }
@@ -283,7 +270,7 @@ std::vector<float> Continuous::generateTestingAction(const policy_t &curPolicy)
     {
       action[i] = curPolicy.distributionParameters[i];
   
-      // In case the 'mode' is outside of the bounds
+      // Clip the mode to bounds
       if (action[i] >= _actionUpperBounds[i]) action[i] = _actionUpperBounds[i];
       if (action[i] <= _actionLowerBounds[i]) action[i] = _actionLowerBounds[i];
     }

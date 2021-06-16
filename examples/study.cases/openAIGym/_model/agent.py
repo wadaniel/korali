@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import gym
-import pyBulletEnvironments
 import math
 from HumanoidWrapper import HumanoidWrapper
 from AntWrapper import AntWrapper

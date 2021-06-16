@@ -54,7 +54,7 @@ Study Cases
 The simulations are launched with
 
 .. code-block:: bash
-	sbatch windmill.sbatch.
+	sbatch windmill.sbatch
 
 uncontrolled:
 

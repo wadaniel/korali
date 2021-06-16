@@ -26,6 +26,7 @@ def environment( args, s ):
         # TODO: s["State"] = np.array([ distancesNearestNeighbours, anglesNearestNeighbours ]).flatten() or s["State"] = np.array([ directionNearestNeighbours, anglesNearestNeighbours ]).flatten()
 
     ## run simulation
+    step = 0
     while step < numTimeSteps:
         # Getting new action
         # TODO: s.update()

@@ -51,7 +51,10 @@ To be specified: line 78
 Study Cases
 ^^^^^^^^^^^
 
-The simulations are launched with sbatch windmill.sbatch.
+The simulations are launched with
+
+.. code-block:: bash
+	sbatch windmill.sbatch.
 
 uncontrolled:
 
@@ -83,6 +86,24 @@ flow 1e-3:
 * set en to 0, flow to 2.5 and the value given to the act() functions to action[i], where i is the number of the fan
 * set max_torque to 1.0e-3
 
+Results
+^^^^^^^^
+
+The training and testing results can be found in the 
+
+ 	/scratch/snx3000/anoca/korali/_results_windmill_training
+ 	
+respectively 
+
+	/scratch/snx3000/anoca/korali/_results_windmill_testing
+	
+folders. They contain the 5 folders for the 5 different cases
+
+* uncontrolled/
+* energy/
+* flow_zero_4/
+* both/
+* flow_zero_3/
 
 Cleaning up results and plotting
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -96,3 +117,15 @@ They can subsequently be plotted using
 
 .. code-block:: bash
 	python plot.py
+	
+The file process-results.py loads the test results from a folder named
+
+	_results_windmill_testing/
+
+in the same directory, which is simply a folder that links to the testing results in the scratch. It then outputs the processed results in the folder
+
+	_results_test/
+
+The file plot.py uses the processed results and outputs the plots in the folder
+
+	_results_plots/

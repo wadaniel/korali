@@ -4,11 +4,7 @@ import numpy as np
 
 path_to_test = '_results_windmill_testing/'
 
-#folders_test = ['both_copy', 'both_copy_long', 'energy_zero_copy', 'flow_zero_copy', 'both_double_copy']
-
-#folders_test = ['both_copy', 'energy_zero_copy', 'both_copy_long']
-
-folders_test = ['both_copy', 'energy_zero_copy', 'flow_zero', 'flow_zero_4', 'uncontrolled_copy']
+folders_test = ['both', 'energy_zero', 'flow_zero_4', 'flow_zero_3', 'uncontrolled']
 
 output = '_results_test/'
 

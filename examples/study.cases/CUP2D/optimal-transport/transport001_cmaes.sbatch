@@ -10,5 +10,4 @@
 #SBATCH --constraint=gpu
 #SBATCH --account=s929
 
-cd ..
 ./batch-transport-cmaes.sh

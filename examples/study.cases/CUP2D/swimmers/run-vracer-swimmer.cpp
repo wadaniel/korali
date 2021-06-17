@@ -107,8 +107,6 @@ int main(int argc, char *argv[])
   e["Solver"]["State Rescaling"]["Enabled"] = true;
   e["Solver"]["Reward"]["Rescaling"]["Enabled"] = true;
   e["Solver"]["Reward"]["Rescaling"]["Frequency"] = 1000;
-  e["Solver"]["Reward"]["Outbound Penalization"]["Enabled"] = true;
-  e["Solver"]["Reward"]["Outbound Penalization"]["Factor"] = 0.5;
 
   //// Defining Neural Network
 
@@ -128,8 +126,11 @@ int main(int argc, char *argv[])
 
   // two FF layers with 128
   e["Solver"]["Neural Network"]["Engine"] = "OneDNN";
+  e["Solver"]["Neural Network"]["Optimizer"] = "Adam";
+
   e["Solver"]["L2 Regularization"]["Enabled"] = true;
   e["Solver"]["L2 Regularization"]["Importance"] = 1.0;
+
   e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear";
   e["Solver"]["Neural Network"]["Hidden Layers"][0]["Output Channels"] = 128;
 

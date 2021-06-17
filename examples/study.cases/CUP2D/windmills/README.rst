@@ -89,7 +89,7 @@ flow 1e-3:
 Results
 ^^^^^^^^
 
-The training and testing results can be found in the 
+The training and testing results can be found on Piz Daint under 
 
  	/scratch/snx3000/anoca/korali/_results_windmill_training
  	

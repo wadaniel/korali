@@ -8,8 +8,8 @@ if [ ! -z $SLURM_NNODES ]; then
  mpiflags="srun -N $N -n $((N+1))  -c 12"
 fi
 
-set -ux
-
 source settings.sh
+
+set -ux
 
 $mpiflags ./run-vracer-swimmer ${OPTIONS} -shapes ${OBJECTS}

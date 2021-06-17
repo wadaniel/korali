@@ -23,8 +23,9 @@ def environment( args, s ):
         anglesNearestNeighbours = angles[ idNearestNeighbours ]
         directionNearestNeighbours = directions[idNearestNeighbours,:]
         # the state is the distance (or direction?) and angle to the nearest neigbours
-        s["State"].append(np.array([ distancesNearestNeighbours, anglesNearestNeighbours ]).flatten() or s["State"] = np.array([ directionNearestNeighbours, anglesNearestNeighbours ]).flatten())
-
+        state.append(np.array([ distancesNearestNeighbours, anglesNearestNeighbours ]).flatten().tolist())
+    s["State"] = state
+    
     ## run simulation
     step = 0
     while step < numTimeSteps:
@@ -64,9 +65,10 @@ def environment( args, s ):
             distancesNearestNeighbours = distances[ idNearestNeighbours ]
             anglesNearestNeighbours = angles[ idNearestNeighbours ]
             directionNearestNeighbours = directions[idNearestNeighbours,:]
-            # the state is the distance (or direction?) and angle to the nearest neigbours
-            s["State"].append(np.array([ distancesNearestNeighbours, anglesNearestNeighbours ]).flatten() or s["State"] = np.array([ directionNearestNeighbours, anglesNearestNeighbours ]).flatten())
             
+            # the state is the distance (or direction?) and angle to the nearest neigbours
+            state.append(np.array([ distancesNearestNeighbours, anglesNearestNeighbours ]).flatten().tolist())
+        s["State"] = state          
         step += 1
 
     # Termination in case distance matrix has entries < eps

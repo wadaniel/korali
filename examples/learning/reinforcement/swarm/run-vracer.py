@@ -1,5 +1,6 @@
 import argparse
 import sys
+import math
 sys.path.append('_model')
 from environment import *
 
@@ -16,7 +17,7 @@ args = vars(parser.parse_args())
 
 # check given arguments
 numIndividuals       = int(args["numIndividuals"])
-numTimeSteps         = int(args["numTimesteps"])
+numTimesteps         = int(args["numTimesteps"])
 numNearestNeighbours = int(args["numNearestNeighbours"])
 assert (numIndividuals > 0) & (numTimesteps > 0) & (numNearestNeighbours > 0) & (numIndividuals > numNearestNeighbours), print("invalid arguments: numTimeSteps={}!>0, numIndividuals={}!>numNearestNeighbours={}!>0".format(numTimesteps, numIndividuals, numNearestNeighbours))
 
@@ -31,11 +32,11 @@ e = korali.Experiment()
 resultFolder = '_result_vracer/'
 found = e.loadState(resultFolder + '/latest')
 if found == True:
-	printf("[Korali] Continuing execution from previous run...\n");
+	print("[Korali] Continuing execution from previous run...\n");
 
 ### Defining Problem Configuration
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
-e["Problem"]["Environment Function"] = lambda x : agent( args, x )
+e["Problem"]["Environment Function"] = lambda x : environment( args, x )
 e["Problem"]["Training Reward Threshold"] = math.inf
 e["Problem"]["Policy Testing Episodes"] = 20
 e["Problem"]["Agents Per Environment"] = numIndividuals
@@ -78,6 +79,8 @@ e["Solver"]["Experience Replay"]["Off Policy"]["Annealing Rate"] = 5.0e-8
 e["Solver"]["Experience Replay"]["Off Policy"]["Cutoff Scale"] = 5.0
 e["Solver"]["Experience Replay"]["Off Policy"]["REFER Beta"] = 0.3
 e["Solver"]["Experience Replay"]["Off Policy"]["Target"] = 0.1
+e["Solver"]["Experience Replay"]["Start Size"] = 10000
+e["Solver"]["Experience Replay"]["Maximum Size"] = 100000
 
 e["Solver"]["Policy"]["Distribution"] = "Squashed Normal"
 e["Solver"]["State Rescaling"]["Enabled"] = True

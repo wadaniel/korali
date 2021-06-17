@@ -23,8 +23,8 @@ def env(s, populationSize):
  step = 0
  done = False
 
- objectiveHistory = []
- scaleHistory = []
+ objectives = []
+ scales = []
 
  while not done and step < maxSteps:
 
@@ -41,8 +41,8 @@ def env(s, populationSize):
   s["State"] = objective.getState().tolist()
   
   # Advancing step counter
-  objectiveHistory.append(objective.curBestF)
-  scaleHistory.append(objective.scale)
+  objectives.append(objective.curBestF)
+  scales.append(objective.scale)
 
   step = step + 1
 
@@ -60,13 +60,17 @@ def env(s, populationSize):
  
  # Store statistics
  if s["Custom Settings"]["Evaluation"] == "True":
-     # load previous
-     if os.path.isfile(outfile):
+    # load previous
+    if os.path.isfile(outfile):
         history = np.load(outfile)
-        print(history)
-        print(history['scaleHistory'])
-        scaleHistory = history['scaleHistory'] + scaleHistory
-        objectiveHistory = history['objectiveHistory'] + objectiveHistory
+        scaleHistory = history['scaleHistory']
+        objectiveHistory = history['objectiveHistory']
         print(scaleHistory)
+        scaleHistory = np.concatenate((scaleHistory, [scales]))
+        objectiveHistory = np.concatenate((objectiveHistory, [objectives]))
+    else:
+        scaleHistory = [scales]
+        objectiveHistory = [objectives]
+        print(scales)
      
-     np.savez(outfile, scaleHistory=scaleHistory, objectiveHistory=objectiveHistory)
+    np.savez(outfile, scaleHistory=scaleHistory, objectiveHistory=objectiveHistory)

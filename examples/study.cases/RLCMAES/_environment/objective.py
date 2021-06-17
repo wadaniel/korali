@@ -53,12 +53,12 @@ class ObjectiveFactory:
 
     # Initialize optimziation target
     u = 0.0
-    self.a = 11
-    self.b = 7
+    self.a = 0.
+    self.b = 0.
     if noisy:
         self.a += np.random.uniform(-10., 10.)
         self.b += np.random.uniform(-10., 10.)
-        u = np.random.uniform(0.,1.)
+        u = np.random.uniform(0.,1./5) + 2./5
 
     # Choose function to optimize
     if u < 1./5:
@@ -69,7 +69,7 @@ class ObjectiveFactory:
         self.function = lambda x : (x[0]+2.*x[1]-self.a)**2 + (2*x[0]+x[1]-self.b)**2 # Booth
     elif u < 3./5:
         self.name = "Rosenbrock"
-        self.function = lambda x : self.a*(x[1]-x[0]**2)**2 + (self.b - x[0])**2 # Rosenbrock
+        self.function = lambda x : abs(self.a)*(x[1]-x[0]**2)**2 + (self.b - x[0])**2 # Rosenbrock
     elif u < 4./5:
         self.name = "Spheres"
         self.function = lambda x : (self.a-x[0])**2 + (self.b-x[1])**2 # Two Spheres
@@ -141,9 +141,9 @@ class ObjectiveFactory:
     # Update step size & path
     self.paths = (1-cs)*self.paths+np.sqrt(cs*(2.-cs)*self.ueff)*np.dot(np.linalg.inv(np.linalg.cholesky(self.cov)), weightedMeanOfBest)
     self.scale *= np.exp(cs/(self.dhat-cs)*(np.linalg.norm(self.paths)/self.chi-1))
-    if(self.scale < 1e-32):
+    if(self.scale < 1e-24):
         print("Warning: scale reaching lower bound")
-        self.scale = 1e-32
+        self.scale = 1e-24
 
     # Update cov & path
     hsig = 0.
@@ -164,12 +164,14 @@ class ObjectiveFactory:
     self.step += 1
 
   def getState(self):
-    state = np.zeros((self.dim+1)*self.populationSize+1+self.dim)
-    for i in range(self.populationSize):
+    state = np.zeros((self.dim+1)*self.mu+1+self.dim)
+    for i in range(self.mu):
         state[i*(self.dim+1):i*(self.dim+1)+self.dim] = self.population[i]
         state[i*(self.dim+1)+self.dim] = self.feval[i]/self.curEf
     state[-1-self.dim:-1] = self.scale**2*np.diag(self.cov) # diagonal variance
     state[-1] = self.bestEver/self.curEf # relative function eval
+    #state[-1] = self.bestEver/self.curEf # relative function eval
+    assert np.any(np.isfinite(state) == False) == False, "State not finite {}".format(state)
     return state
 
   def getReward(self):

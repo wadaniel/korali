@@ -11,14 +11,14 @@ e = korali.Experiment()
 
 
 evaluation = False
-resultDirectory = "_vracer_results"
-maxGens = 1000
-populationSize = 8
+resultDirectory = "_vracer_rosenbrock_new"
+maxGens = 1e6
+populationSize = 16
+mu = int(populationSize/2) # states
 
 ### Defining the problem's configuration
 
 e["Problem"]["Custom Settings"]["Evaluation"] = "False"
-#e["Problem"]["Custom Settings"]["Output"] = "testingHistory"
 
 if evaluation == True:
     found = e.loadState(resultDirectory +'/latest')
@@ -36,7 +36,7 @@ e["Problem"]["Training Reward Threshold"] = np.inf
 e["Problem"]["Policy Testing Episodes"] = 10
 e["Problem"]["Actions Between Policy Updates"] = 10
 
-for i in range(populationSize):
+for i in range(mu):
     e["Variables"][i*3]["Name"] = "Position X"
     e["Variables"][i*3]["Type"] = "State"
 
@@ -46,7 +46,7 @@ for i in range(populationSize):
     e["Variables"][i*3+2]["Name"] = "Evaluation"
     e["Variables"][i*3+2]["Type"] = "State"
 
-i = 3*populationSize
+i = 3*mu
 e["Variables"][i]["Name"] = "Diagonal Variance 1"
 e["Variables"][i]["Type"] = "State"
 
@@ -114,18 +114,18 @@ e["Solver"]["Termination Criteria"]["Max Generations"] = maxGens
 e["Solver"]["Termination Criteria"]["Max Experiences"] = 1e6
 
 
+if evaluation == True:
+    e["Solver"]["Testing"]["Sample Ids"] = [0]
+
 ### If this is test mode, run only a couple generations
 if len(sys.argv) == 2:
  if sys.argv[1] == '--test':
   e["Solver"]["Termination Criteria"]["Max Generations"] = 5
 
-if evaluation == True:
-    e["Solver"]["Testing"]["Sample Ids"] = [0]
-
 ### Setting file output configuration
 
 e["File Output"]["Enabled"] = True
-e["File Output"]["Frequency"] = 100
+e["File Output"]["Frequency"] = 500
 e["File Output"]["Path"] = resultDirectory
 
 ### Running Experiment

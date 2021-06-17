@@ -5,8 +5,7 @@ test('learning.reinforcement.cartpole.continuous.single', e,
       suite: 'regression',
       workdir: meson.current_source_dir(),
       depends: python_extension,
-      env: nomalloc,
-      is_parallel : false
+      env: nomalloc
     )
 
 e = find_program('run-vracer.py', required: true)
@@ -16,8 +15,7 @@ test('learning.reinforcement.cartpole.continuous.multiple', e,
       suite: 'regression',
       workdir: meson.current_source_dir(),
       depends: python_extension,
-      env: nomalloc,
-      is_parallel : false
+      env: nomalloc
     )
     
 e = find_program('run-dvracer.py', required: true)
@@ -27,6 +25,5 @@ test('learning.reinforcement.cartpole.discrete.single', e,
       suite: 'regression',
       workdir: meson.current_source_dir(),
       depends: python_extension,
-      env: nomalloc,
-      is_parallel : false
+      env: nomalloc
     )

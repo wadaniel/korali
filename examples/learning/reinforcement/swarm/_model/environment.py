@@ -23,8 +23,8 @@ def environment( args, s ):
         anglesNearestNeighbours = angles[ idNearestNeighbours ]
         directionNearestNeighbours = directions[idNearestNeighbours,:]
         # the state is the distance (or direction?) and angle to the nearest neigbours
-        s["State"].append(np.array([ distancesNearestNeighbours, anglesNearestNeighbours ]).flatten())
-        #  or s["State"] = np.array([ directionNearestNeighbours, anglesNearestNeighbours ]).flatten()
+        state.append(np.array([ distancesNearestNeighbours, anglesNearestNeighbours ]).flatten().tolist()) # or np.array([ directionNearestNeighbours, anglesNearestNeighbours ]).flatten()
+    s["State"] = state
 
     ## run simulation
     step = 0
@@ -73,9 +73,8 @@ def environment( args, s ):
             anglesNearestNeighbours = angles[ idNearestNeighbours ]
             directionNearestNeighbours = directions[idNearestNeighbours,:]
             # the state is the distance (or direction?) and angle to the nearest neigbours
-            s["State"].append(np.array([ distancesNearestNeighbours, anglesNearestNeighbours ]).flatten())
-            #  or s["State"] = np.array([ directionNearestNeighbours, anglesNearestNeighbours ]).flatten()
-            
+            state.append(np.array([ distancesNearestNeighbours, anglesNearestNeighbours ]).flatten().tolist()) # or np.array([ directionNearestNeighbours, anglesNearestNeighbours ]).flatten()
+        s["State"] = state          
         step += 1
 
     # Setting termination status

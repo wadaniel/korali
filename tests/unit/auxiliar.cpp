@@ -10,10 +10,10 @@ namespace
  {
   knlohmann::json js;
 
-  ASSERT_ANY_THROW(getValue(js, "Key"));
   ASSERT_NO_THROW(js["Key"] = "Value");
   ASSERT_NO_THROW(getValue(js, "Key"));
   ASSERT_NO_THROW(getPath("Key"));
+  ASSERT_NO_THROW(getValue(js, "Unknown"));
  }
 
  TEST(Auxiliar, KoraliJson)
@@ -24,6 +24,12 @@ namespace
   ASSERT_NO_THROW(kjs.setJson(js));
   ASSERT_NO_THROW(kjs["Key"] = "Value");
   ASSERT_NO_THROW(std::string v = kjs["Key"]);
+ }
+
+ TEST(Auxiliar, Math)
+ {
+  ASSERT_NO_THROW(safeLogMinus(1.0, 2.0));
+  ASSERT_NO_THROW(safeLogMinus(2.0, 1.0));
  }
 
 } // namespace

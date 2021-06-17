@@ -1,2 +1,2 @@
 subdir('basic')
-#subdir('extended')
+subdir('extended')

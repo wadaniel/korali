@@ -2,6 +2,21 @@
 
 @startNamespace
 
+/**
+* @brief Prints solver information before the execution of the current generation.
+*/
+void @className::printGenerationBefore(){};
+
+/**
+* @brief Prints solver information after the execution of the current generation.
+*/
+void @className::printGenerationAfter(){};
+
+/**
+* @brief Initializes the solver with starting values for the first generation.
+*/
+void @className::setInitialConfiguration(){};
+
 @moduleAutoCode
 
 @endNamespace

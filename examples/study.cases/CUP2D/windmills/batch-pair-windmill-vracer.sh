@@ -1,5 +1,4 @@
 #!/bin/bash
-
 # Set number of nodes here
 mpiflags="mpirun -n 2"
 
@@ -30,10 +29,6 @@ MAAXIS=${MAAXIS:-0.0405}
 MIAXIS=${MIAXIS:-0.0135}
 NU=${NU:-0.0001215}
 
-#MAAXIS=${MAAXIS:-0.0375}
-#MIAXIS=${MIAXIS:-0.0125}
-#NU=${NU:-0.0001125}
-
 
 
 OPTIONS="-bpdx $BPDX -bpdy $BPDY -levelMax $LEVELS -Rtol $RTOL -Ctol $CTOL -extent $EXTENT -CFL $CFL -tdump 0.1 -nu $NU -tend 0 -muteAll 0 -verbose 1"
@@ -41,4 +36,5 @@ OBJECTS="windmill semiAxisX=$MAAXIS semiAxisY=$MIAXIS xpos=$XPOS ypos=$YPOS1 bFo
 windmill semiAxisX=$MAAXIS semiAxisY=$MIAXIS xpos=$XPOS ypos=$YPOS2 bForced=1 xvel=$XVEL tAccel=0 bBlockAng=0
 "
 
-$mpiflags ./eval-vracer-windmill ${OPTIONS} -shapes "${OBJECTS}" twinlevels4
+ $mpiflags ./run-vracer-windmill ${OPTIONS} -shapes "${OBJECTS}" $1
+

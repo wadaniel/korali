@@ -1,5 +1,5 @@
 // Select which environment to use
-#include "_models/fishEnvironment/fishEnvironment.hpp"
+#include "_model/fishEnvironment.hpp"
 #include "korali.hpp"
 
 std::string _resultsPath;
@@ -103,7 +103,7 @@ int main(int argc, char *argv[])
 
   //// Defining Policy distribution and scaling parameters
   
-  e["Solver"]["Policy"]["Distribution"] = "Unbounded Normal";
+  e["Solver"]["Policy"]["Distribution"] = "Normal";
   e["Solver"]["State Rescaling"]["Enabled"] = true;
   e["Solver"]["Reward"]["Rescaling"]["Enabled"] = true;
   e["Solver"]["Reward"]["Rescaling"]["Frequency"] = 1000;

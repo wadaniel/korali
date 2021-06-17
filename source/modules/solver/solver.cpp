@@ -4,6 +4,21 @@ namespace korali
 {
 
 
+/**
+* @brief Prints solver information before the execution of the current generation.
+*/
+void Solver::printGenerationBefore(){};
+
+/**
+* @brief Prints solver information after the execution of the current generation.
+*/
+void Solver::printGenerationAfter(){};
+
+/**
+* @brief Initializes the solver with starting values for the first generation.
+*/
+void Solver::setInitialConfiguration(){};
+
 void Solver::setConfiguration(knlohmann::json& js) 
 {
  if (isDefined(js, "Results"))  eraseValue(js, "Results");
@@ -97,3 +112,4 @@ bool Solver::checkTermination()
 
 
 } //korali
+

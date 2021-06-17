@@ -196,8 +196,6 @@ PYBIND11_MODULE(libkorali, m)
     .def("__setitem__", pybind11::overload_cast<pybind11::object, pybind11::object>(&Engine::setItem), pybind11::return_value_policy::reference);
 
   pybind11::class_<KoraliJson>(m, "koraliJson")
-    .def("get", &KoraliJson::get)
-    .def("set", &KoraliJson::set)
     .def("__getitem__", pybind11::overload_cast<pybind11::object>(&KoraliJson::getItem), pybind11::return_value_policy::reference)
     .def("__setitem__", pybind11::overload_cast<pybind11::object, pybind11::object>(&KoraliJson::setItem), pybind11::return_value_policy::reference);
 

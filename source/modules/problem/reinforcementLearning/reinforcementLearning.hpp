@@ -32,6 +32,10 @@ class ReinforcementLearning : public Problem
 {
   public: 
   /**
+  * @brief Number of concurrent agents sharing a common policy interacting in a given environment.
+  */
+   size_t _agentsPerEnvironment;
+  /**
   * @brief Function to initialize and run a new environment.
   */
    std::uint64_t _environmentFunction;

@@ -18,8 +18,12 @@ void Discrete::initializeAgent()
 
 void Discrete::getAction(korali::Sample &sample)
 {
+ // Get action for all the agents in the environment
+ for (size_t i = 0; i < sample["State"].size(); i++)
+ {
   // Getting current state
-  auto state = sample["State"].get<std::vector<float>>();
+  auto state = sample["State"][i].get<std::vector<float>>();
+
 
   // Adding state to the state time sequence
   _stateTimeSequence.add(state);
@@ -81,10 +85,11 @@ void Discrete::getAction(korali::Sample &sample)
 
 
   // Storing action itself, its idx, and probabilities
-  sample["Policy"]["Distribution Parameters"] = pActions;
-  sample["Policy"]["Action Index"] = actionIdx;
-  sample["Policy"]["State Value"] = policy.stateValue;
-  sample["Action"] = _problem->_possibleActions[actionIdx];
+  sample["Policy"][i]["Distribution Parameters"] = pActions;
+  sample["Policy"][i]["Action Index"] = actionIdx;
+  sample["Policy"][i]["State Value"] = policy.stateValue;
+  sample["Action"][i] = _problem->_possibleActions[actionIdx];
+ }
 }
 
 float Discrete::calculateImportanceWeight(const std::vector<float> &action, const policy_t &curPolicy, const policy_t &oldPolicy)

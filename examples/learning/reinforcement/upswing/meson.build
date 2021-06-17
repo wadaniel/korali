@@ -4,5 +4,6 @@ test('learning.reinforcement.upswing', e,
       timeout : 3600,
       workdir: meson.current_source_dir(),
       depends: python_extension,
-      suite: 'regression'
+      suite: 'regression',
+      is_parallel : false
     )

@@ -34,7 +34,7 @@ cat <<EOF >daint_sbatch
 #SBATCH --constraint=gpu
 #SBATCH --account=s929
 
-srun ./run-vracer-fish ${OPTIONS} -shapes ${OBJECTS}
+srun ./run-vracer-swimmer ${OPTIONS} -shapes ${OBJECTS}
 EOF
 
 chmod 755 daint_sbatch

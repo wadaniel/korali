@@ -28,6 +28,7 @@ e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = lambda x : agent( args, x )
 e["Problem"]["Training Reward Threshold"] = math.inf
 e["Problem"]["Policy Testing Episodes"] = 20
+e["Problem"]["Agents Per Environment"] = 1 # To be set > 1
 
 ### Defining Agent Configuration 
 

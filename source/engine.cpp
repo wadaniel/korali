@@ -168,6 +168,15 @@ void Engine::serialize(knlohmann::json &js)
   }
 }
 
+#ifdef _KORALI_USE_MPI
+
+mpi4py_comm getMPI4PyComm()
+{
+ return __koraliWorkerMPIComm;
+}
+
+#endif
+
 knlohmann::json &Engine::operator[](const std::string &key)
 {
   return _js[key];
@@ -182,6 +191,15 @@ using namespace korali;
 
 PYBIND11_MODULE(libkorali, m)
 {
+  // import the mpi4py API
+   if (import_mpi4py() < 0) {
+     throw std::runtime_error("Could not load mpi4py API.");
+   }
+
+  #ifdef _KORALI_USE_MPI
+    m.def("getMPI4PyComm", &getMPI4PyComm);
+  #endif
+
   pybind11::class_<Engine>(m, "Engine")
     .def(pybind11::init<>())
     .def("run", [](Engine &k, Experiment &e) {

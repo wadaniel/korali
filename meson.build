@@ -63,10 +63,15 @@ korali_deps += dependency('pybind11', fallback: ['pybind11', 'pybind11_dep'], re
 # process optional korali dependencies
 mpi_dep = null_dep
 openmp_dep = null_dep
+mpi4py_include = ''
 
 if get_option('mpi')
-  mpi_dep = dependency('mpi', language: 'cpp', required: false)  
-
+  mpi4py_include = run_command(python, '-c', 'import mpi4py; print(mpi4py.get_include())').stdout().strip()
+  assert(mpi4py_include.contains('include'), 'For MPI support, Korali requires that the mpi4py Python module is installed, but it was not found.')
+  message('Using mpi4py from ' + mpi4py_include)
+  korali_include += [ mpi4py_include ]
+  mpi_dep = dependency('mpi', language: 'cpp', required: false)
+    
   if mpi_dep.found() == false
    mpi_dep = dependency('mpich', required: false)
   endif

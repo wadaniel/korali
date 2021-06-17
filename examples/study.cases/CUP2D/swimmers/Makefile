@@ -23,4 +23,4 @@ fishEnvironment.o: _model/fishEnvironment.cpp
 
 .PHONY: clean
 clean:
-	$(RM) $(SWIMMER) *.o *.ti *.optrpt *.h5 *.dat *.xmf
+	$(RM) $(SWIMMER) *.txt *.o *.ti *.optrpt *.h5 *.dat *.xmf

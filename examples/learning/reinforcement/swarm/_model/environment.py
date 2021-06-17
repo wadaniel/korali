@@ -3,7 +3,7 @@ from swarm import *
 def environment( args, s ):
 
     numIndividuals       = args["numIndividuals"]
-    numTimeSteps         = args["numTimesteps"]
+    numTimesteps         = args["numTimesteps"]
     numNearestNeighbours = args["numNearestNeighbours"]
     sim = swarm( numIndividuals )
 
@@ -23,11 +23,13 @@ def environment( args, s ):
         anglesNearestNeighbours = angles[ idNearestNeighbours ]
         directionNearestNeighbours = directions[idNearestNeighbours,:]
         # the state is the distance (or direction?) and angle to the nearest neigbours
-        s["State"].append(np.array([ distancesNearestNeighbours, anglesNearestNeighbours ]).flatten() or s["State"] = np.array([ directionNearestNeighbours, anglesNearestNeighbours ]).flatten())
+        s["State"].append(np.array([ distancesNearestNeighbours, anglesNearestNeighbours ]).flatten())
+        #  or s["State"] = np.array([ directionNearestNeighbours, anglesNearestNeighbours ]).flatten()
 
     ## run simulation
     step = 0
-    while step < numTimeSteps:
+    done = False
+    while (step < numTimesteps) and (not done):
         # Getting new action
         s.update()
 
@@ -39,8 +41,15 @@ def environment( args, s ):
             z = np.cos(polarAngles[1])
             sim.fishes[i].wishedDirection = [ x, y, z ]
 
+            # Termination state in case distance matrix has entries < eps
+            if (distances < sim.fishes[i].sigmaPotential ).any():
+                done = True
+
             # get reward
-            s["Reward"][i] = sim.fishes[i].getReward(distancesNearestNeighbours)
+            if done:
+                s["Reward"][i] = -10
+            else:
+                s["Reward"][i] = sim.fishes[i].getReward(distancesNearestNeighbours)
 
             # rotation in wished direction
             sim.fishes[i].updateDirection()
@@ -54,7 +63,6 @@ def environment( args, s ):
         state = [ ]
         for i in np.arange(sim.N):
             # get row giving distances / angle to other swimmers
-            # TODO?: Termination state in case distance matrix has entries < eps
             distances = distancesMat[i,:]
             angles    = anglesMat[i,:]
             directions= directionMat[i,:,:]
@@ -65,9 +73,13 @@ def environment( args, s ):
             anglesNearestNeighbours = angles[ idNearestNeighbours ]
             directionNearestNeighbours = directions[idNearestNeighbours,:]
             # the state is the distance (or direction?) and angle to the nearest neigbours
-            s["State"].append(np.array([ distancesNearestNeighbours, anglesNearestNeighbours ]).flatten() or s["State"] = np.array([ directionNearestNeighbours, anglesNearestNeighbours ]).flatten())
+            s["State"].append(np.array([ distancesNearestNeighbours, anglesNearestNeighbours ]).flatten())
+            #  or s["State"] = np.array([ directionNearestNeighbours, anglesNearestNeighbours ]).flatten()
             
         step += 1
 
-    # Termination in case distance matrix has entries < eps
-    s["Termination"] = "Truncated"
+    # Setting termination status
+    if done:
+        s["Termination"] = "Terminal"
+    else:
+        s["Termination"] = "Truncated"

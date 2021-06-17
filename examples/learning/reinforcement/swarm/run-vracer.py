@@ -16,9 +16,9 @@ args = vars(parser.parse_args())
 
 # check given arguments
 numIndividuals       = int(args["numIndividuals"])
-numTimeSteps         = int(args["numTimesteps"])
+numTimesteps         = int(args["numTimesteps"])
 numNearestNeighbours = int(args["numNearestNeighbours"])
-assert (numIndividuals > 0) & (numTimesteps > 0) & (numNearestNeighbours > 0) & (numIndividuals > numNearestNeighbours), print("invalid arguments: numTimeSteps={}!>0, numIndividuals={}!>numNearestNeighbours={}!>0".format(numTimesteps, numIndividuals, numNearestNeighbours))
+assert (numIndividuals > 0) & (numTimesteps > 0) & (numNearestNeighbours > 0) & (numIndividuals > numNearestNeighbours), print("invalid arguments: numTimesteps={}!>0, numIndividuals={}!>numNearestNeighbours={}!>0".format(numTimesteps, numIndividuals, numNearestNeighbours))
 
 ### Defining Korali Problem
 
@@ -36,7 +36,7 @@ if found == True:
 ### Defining Problem Configuration
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
 e["Problem"]["Environment Function"] = lambda x : agent( args, x )
-e["Problem"]["Training Reward Threshold"] = math.inf
+e["Problem"]["Training Reward Threshold"] = np.Inf
 e["Problem"]["Policy Testing Episodes"] = 20
 e["Problem"]["Agents Per Environment"] = numIndividuals
 

@@ -1,5 +1,19 @@
 from swarm import *
 
+def getState( i, distancesMat, anglesMat, directionMat):
+    # get array for agent i
+    distances = distancesMat[i,:]
+    angles    = anglesMat[i,:]
+    directions= directionMat[i,:,:]
+    # sort and select nearest neighbours
+    idSorted = np.argsort( distances )
+    idNearestNeighbours = idSorted[:numNearestNeighbours]
+    distancesNearestNeighbours = distances[ idNearestNeighbours ]
+    anglesNearestNeighbours = angles[ idNearestNeighbours ]
+    directionNearestNeighbours = directions[idNearestNeighbours,:]
+    # the state is the distance (or direction?) and angle to the nearest neigbours
+    return np.array([ distancesNearestNeighbours, anglesNearestNeighbours ]).flatten().tolist() # or np.array([ directionNearestNeighbours, anglesNearestNeighbours ]).flatten()
+
 def environment( args, s ):
 
     numIndividuals       = args["numIndividuals"]
@@ -7,23 +21,12 @@ def environment( args, s ):
     numNearestNeighbours = args["numNearestNeighbours"]
     sim = swarm( numIndividuals )
 
-    ## get initial state
-    
     # compute pair-wise distances and view-angles
-    state = [ ]
     distancesMat, anglesMat, directionMat = sim.computeStates()
+    # set initial state
+    state = []
     for i in np.arange(sim.N):
-        distances = distancesMat[i,:]
-        angles    = anglesMat[i,:]
-        directions= directionMat[i,:,:]
-        # sort and select nearest neighbours
-        idSorted = np.argsort( distances )
-        idNearestNeighbours = idSorted[:numNearestNeighbours]
-        distancesNearestNeighbours = distances[ idNearestNeighbours ]
-        anglesNearestNeighbours = angles[ idNearestNeighbours ]
-        directionNearestNeighbours = directions[idNearestNeighbours,:]
-        # the state is the distance (or direction?) and angle to the nearest neigbours
-        state.append(np.array([ distancesNearestNeighbours, anglesNearestNeighbours ]).flatten().tolist()) # or np.array([ directionNearestNeighbours, anglesNearestNeighbours ]).flatten()
+        state.append( getState(i, distancesMat, anglesMat, directionMat) )
     s["State"] = state
 
     ## run simulation
@@ -56,25 +59,14 @@ def environment( args, s ):
             # update positions
             sim.fishes[i].updateLocation()
 
-        ## get new state
         # compute pair-wise distances and view-angles
         distancesMat, anglesMat, directionMat = sim.computeStates()
-
-        state = [ ]
+        # set state
+        state = []
         for i in np.arange(sim.N):
-            # get row giving distances / angle to other swimmers
-            distances = distancesMat[i,:]
-            angles    = anglesMat[i,:]
-            directions= directionMat[i,:,:]
-            # sort and select nearest neighbours
-            idSorted = np.argsort( distances )
-            idNearestNeighbours = idSorted[:numNearestNeighbours]
-            distancesNearestNeighbours = distances[ idNearestNeighbours ]
-            anglesNearestNeighbours = angles[ idNearestNeighbours ]
-            directionNearestNeighbours = directions[idNearestNeighbours,:]
-            # the state is the distance (or direction?) and angle to the nearest neigbours
-            state.append(np.array([ distancesNearestNeighbours, anglesNearestNeighbours ]).flatten().tolist()) # or np.array([ directionNearestNeighbours, anglesNearestNeighbours ]).flatten()
-        s["State"] = state          
+            state.append( getState(i, distancesMat, anglesMat, directionMat) )
+        s["State"] = state      
+        
         step += 1
 
     # Setting termination status

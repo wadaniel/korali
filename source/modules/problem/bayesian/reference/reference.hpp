@@ -34,8 +34,6 @@ class Reference : public Bayesian
   private:
   const double _log2pi = 1.83787706640934533908193770912476;
 
-  size_t statisticalVariableIndex;
-
   /**
   * @brief Precomputes the square distance between two vectors (f and y) of the same size normalized by a third vector (g)
   * @param f Vector f

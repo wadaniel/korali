@@ -147,55 +147,55 @@ namespace
 
   // Testing Process Episode corner cases
   knlohmann::json episode;
-  episode[0]["State"] = std::vector<float>({0.0f});
-  episode[0]["Action"] = std::vector<float>({0.0f});
-  episode[0]["Reward"] = 1.0f;
-  episode[0]["Termination"] = "Terminal";
-  episode[0]["Policy"]["State Value"] = 1.0;
+  episode["Experiences"][0]["State"] = std::vector<float>({0.0f});
+  episode["Experiences"][0]["Action"] = std::vector<float>({0.0f});
+  episode["Experiences"][0]["Reward"] = 1.0f;
+  episode["Experiences"][0]["Termination"] = "Terminal";
+  episode["Experiences"][0]["Policy"]["State Value"] = 1.0;
   ASSERT_NO_THROW(a->processEpisode(0, episode));
 
   // No state value provided error
-  episode[0]["Policy"].erase("State Value");
+  episode["Experiences"][0]["Policy"].erase("State Value");
   ASSERT_ANY_THROW(a->processEpisode(0, episode));
-  episode[0]["Policy"]["State Value"] = 1.0;
+  episode["Experiences"][0]["Policy"]["State Value"] = 1.0;
 
   // Reward adjusted due to out of bounds action
   a->_rewardOutboundPenalizationEnabled = true;
   a->_rewardOutboundPenalizationFactor = 0.5f;
-  episode[0]["Reward"] = 1.0f;
-  episode[0]["Action"] = std::vector<float>({-1.0f});
+  episode["Experiences"][0]["Reward"] = 1.0f;
+  episode["Experiences"][0]["Action"] = std::vector<float>({-1.0f});
   a->_rewardVector.clear();
   ASSERT_NO_THROW(a->processEpisode(0, episode));
   ASSERT_EQ(a->_rewardVector[0], 0.5f);
 
   // Correct handling of truncated state
-  episode[0]["Termination"] = "Truncated";
-  episode[0]["Truncated State"] = std::vector<float>({0.0f});
+  episode["Experiences"][0]["Termination"] = "Truncated";
+  episode["Experiences"][0]["Truncated State"] = std::vector<float>({0.0f});
   ASSERT_NO_THROW(a->processEpisode(0, episode));
 
   // Correct handling of truncated state
-  episode[0]["Termination"] = "Truncated";
-  episode[0]["Truncated State"] = std::vector<float>({std::numeric_limits<float>::infinity()});
+  episode["Experiences"][0]["Termination"] = "Truncated";
+  episode["Experiences"][0]["Truncated State"] = std::vector<float>({std::numeric_limits<float>::infinity()});
   ASSERT_ANY_THROW(a->processEpisode(0, episode));
-  episode[0]["Truncated State"] = std::vector<float>({0.0f});
+  episode["Experiences"][0]["Truncated State"] = std::vector<float>({0.0f});
 
   // Check truncated state sequence for sequences > 1
-  episode[0]["State"] = std::vector<float>({0.0f});
-  episode[0]["Action"] = std::vector<float>({0.0f});
-  episode[0]["Reward"] = 1.0f;
-  episode[0]["Termination"] = "Non Terminal";
-  episode[0]["Policy"]["State Value"] = 1.0;
-  episode[1]["State"] = std::vector<float>({0.0f});
-  episode[1]["Action"] = std::vector<float>({0.0f});
-  episode[1]["Reward"] = 1.0f;
-  episode[1]["Termination"] = "Non Terminal";
-  episode[1]["Policy"]["State Value"] = 1.0;
-  episode[2]["State"] = std::vector<float>({0.0f});
-  episode[2]["Action"] = std::vector<float>({0.0f});
-  episode[2]["Reward"] = 1.0f;
-  episode[2]["Termination"] = "Truncated";
-  episode[2]["Policy"]["State Value"] = 1.0;
-  episode[2]["Truncated State"] = std::vector<float>({0.0f});
+  episode["Experiences"][0]["State"] = std::vector<float>({0.0f});
+  episode["Experiences"][0]["Action"] = std::vector<float>({0.0f});
+  episode["Experiences"][0]["Reward"] = 1.0f;
+  episode["Experiences"][0]["Termination"] = "Non Terminal";
+  episode["Experiences"][0]["Policy"]["State Value"] = 1.0;
+  episode["Experiences"][1]["State"] = std::vector<float>({0.0f});
+  episode["Experiences"][1]["Action"] = std::vector<float>({0.0f});
+  episode["Experiences"][1]["Reward"] = 1.0f;
+  episode["Experiences"][1]["Termination"] = "Non Terminal";
+  episode["Experiences"][1]["Policy"]["State Value"] = 1.0;
+  episode["Experiences"][2]["State"] = std::vector<float>({0.0f});
+  episode["Experiences"][2]["Action"] = std::vector<float>({0.0f});
+  episode["Experiences"][2]["Reward"] = 1.0f;
+  episode["Experiences"][2]["Termination"] = "Truncated";
+  episode["Experiences"][2]["Policy"]["State Value"] = 1.0;
+  episode["Experiences"][2]["Truncated State"] = std::vector<float>({0.0f});
   a->processEpisode(0, episode);
   ASSERT_NO_THROW(a->processEpisode(0, episode));
   a->_timeSequenceLength = 2;

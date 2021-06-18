@@ -8,6 +8,8 @@ gmock_dep = gtest_sub.get_variable('gmock_dep')
 #gtest_mpi_listener_sub = subproject('gtest-mpi-listener')
 #gtest_mpi_listener_dep = gtest_mpi_listener_sub.get_variable('gtest_mpi_listener_dep')
 
+python3_embed = dependency('python3-embed', required: true)
+
 subdir('python')
 subdir('unit')
 subdir('statistical')

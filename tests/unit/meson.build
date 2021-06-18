@@ -1,9 +1,7 @@
-pythonEmbedDep = dependency('python3-embed', required: false)
-
 engine_tester = executable('engine_tester',
   files(['engine.cpp']),
   include_directories: korali_include,
-  dependencies: [ gtest_main_dep, korali_deps, pythonEmbedDep ],
+  dependencies: [ gtest_main_dep, korali_deps, python3_embed, pybind11_dep ],
   link_with: [ python_extension ],
   )
   
@@ -15,7 +13,7 @@ test('engine', engine_tester,
 auxiliar_tester = executable('auxiliar_tester',
   files(['auxiliar.cpp']),
   include_directories: korali_include,
-  dependencies: [ gtest_main_dep, korali_deps, pythonEmbedDep ],
+  dependencies: [ gtest_main_dep, korali_deps, python3_embed, pybind11_dep ],
   link_with: [ python_extension ],
   )
   
@@ -27,7 +25,7 @@ test('auxiliar', auxiliar_tester,
 sample_tester = executable('sample_tester',
   files(['sample.cpp']),
   include_directories: korali_include,
-  dependencies: [ gtest_main_dep, korali_deps, pythonEmbedDep ],
+  dependencies: [ gtest_main_dep, korali_deps, python3_embed, pybind11_dep ],
   link_with: [ python_extension ],
   )
   

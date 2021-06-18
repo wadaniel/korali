@@ -58,7 +58,8 @@ korali_deps += dependency('gsl', fallback: ['gsl', 'gsl_dep'], version : '>=2.5'
 korali_deps += dependency('eigen3', fallback: ['eigen', 'eigen_dep'], required: true)
 
 # Process pybind11
-korali_deps += dependency('pybind11', fallback: ['pybind11', 'pybind11_dep'], required: true)
+pybind11_dep = dependency('pybind11', fallback: ['pybind11', 'pybind11_dep'], required: true)
+korali_deps += [ pybind11_dep ]
 
 # process optional korali dependencies
 mpi_dep = null_dep

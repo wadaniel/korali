@@ -1,12 +1,14 @@
 import argparse
+import sys
 sys.path.append('_model')
 from environment import *
+import math
 
 ### Parsing arguments
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument('--case', help='Reinforcement learning case considered', required=True, type=str)
+parser.add_argument('--case', help='Reinforcement learning case considered. Choose one from the following list: "E31", "E12", or "E23"', required=True, type=str)
 
 args = vars(parser.parse_args())
 
@@ -21,14 +23,14 @@ e = korali.Experiment()
 resultFolder = '_result_vracer/'
 found = e.loadState(resultFolder + '/latest')
 if found == True:
-	printf("[Korali] Continuing execution from previous run...\n");
+	print("[Korali] Continuing execution from previous run...\n");
 
 ### Defining Problem Configuration
 e["Problem"]["Type"] = "Reinforcement Learning / Continuous"
-e["Problem"]["Environment Function"] = lambda x : agent( args, x )
+e["Problem"]["Environment Function"] = lambda x : environment( args, x )
 e["Problem"]["Training Reward Threshold"] = math.inf
 e["Problem"]["Policy Testing Episodes"] = 20
-e["Problem"]["Agents Per Environment"] = 1 # To be set > 1
+e["Problem"]["Agents Per Environment"] = 1
 
 ### Defining Agent Configuration 
 
@@ -44,11 +46,11 @@ e["Solver"]["Mini Batch"]["Size"] = 256
 
 # States (flow at sensor locations)
 for i in range(8):
-  e["Variables"][i]["Name"] = "Sensor " + str(i)
-  e["Variables"][i]["Type"] = "State"
+	e["Variables"][i]["Name"] = "Sensor " + str(i)
+	e["Variables"][i]["Type"] = "State"
 
 # Actions (amplitude of gaussian actuation)
-for i in range(6)
+for i in range(4):
 	e["Variables"][8+i]["Name"] = "Actuator " + str(i)
 	e["Variables"][8+i]["Type"] = "Action"
 	e["Variables"][8+i]["Lower Bound"] = -0.5
@@ -61,6 +63,8 @@ e["Solver"]["Experience Replay"]["Off Policy"]["Annealing Rate"] = 5.0e-8
 e["Solver"]["Experience Replay"]["Off Policy"]["Cutoff Scale"] = 5.0
 e["Solver"]["Experience Replay"]["Off Policy"]["REFER Beta"] = 0.3
 e["Solver"]["Experience Replay"]["Off Policy"]["Target"] = 0.1
+e["Solver"]["Experience Replay"]["Start Size"] = 10000
+e["Solver"]["Experience Replay"]["Maximum Size"] = 100000
 
 e["Solver"]["Policy"]["Distribution"] = "Squashed Normal"
 e["Solver"]["State Rescaling"]["Enabled"] = True

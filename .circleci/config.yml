@@ -72,3 +72,17 @@ workflows:
           runCoverage: 'true'
           CC: 'gcc'
           CXX: 'g++'
+      - build:
+          name: ubuntu_openmpi_clang
+          image: ubuntu_openmpi_onednn
+          buildtype: release
+          runCoverage: 'true'
+          CC: 'clang'
+          CXX: 'clang++'
+      - build:
+          name: fedora_openmpi_clang
+          image: fedora_openmpi_onednn
+          buildtype: release
+          runCoverage: 'true'
+          CC: 'clang'
+          CXX: 'clang++'

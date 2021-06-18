@@ -12,6 +12,13 @@ option('mpi',
   yield: true
 )
 
+option('mpi4py',
+  type : 'boolean',
+  value : false,
+  description : 'MPI4Py support',
+  yield: true
+)
+
 option('openmp',
   type : 'boolean',
   value : true,

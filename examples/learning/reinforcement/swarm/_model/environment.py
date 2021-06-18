@@ -15,7 +15,7 @@ def environment( args, s ):
         # get state
         state = sim.getState( i )
         states.append( state )
-    print("states:", state)
+    # print("states:", state)
     s["State"] = states
 
     ## run simulation
@@ -28,7 +28,7 @@ def environment( args, s ):
 
         ## apply action, get reward and advance environment
         actions = s["Action"]
-        print("actions:", actions)
+        # print("actions:", actions)
         for i in np.arange(sim.N):
             # compute wished direction based on action
             polarAngles = actions[i]
@@ -55,9 +55,9 @@ def environment( args, s ):
             if done:
                 reward = -10.
             rewards.append(reward)
-        print("states:", states)
+        # print("states:", states)
         s["State"] = states
-        print("rewards:", rewards)
+        # print("rewards:", rewards)
         s["Reward"] = rewards
 
         step += 1

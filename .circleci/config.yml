@@ -74,7 +74,7 @@ workflows:
           buildtype: release
           runCoverage: 'true'
           useMPI: 'true'
-          useMPI4Py: 'true'
+          useMPI4Py: 'false'
       - build:
           name: ubuntu_openmpi_clang
           image: ubuntu_openmpi_onednn

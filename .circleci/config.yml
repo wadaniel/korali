@@ -3,11 +3,11 @@ version: 2.1
 executors:
   ubuntu_openmpi_onednn:
     docker:
-      - image: docker.io/cselab/ubuntu_openmpi_onednn:latest
+      - image: docker.io/cselab/ubuntu_openmpi_onednn:1.0.4
       
   fedora_openmpi_onednn:
     docker:
-      - image: docker.io/cselab/fedora_openmpi_onednn:latest
+      - image: docker.io/cselab/fedora_openmpi_onednn:1.0.4
   
 jobs:
   build:
@@ -31,7 +31,7 @@ jobs:
         default: 'false'
       buildargs: 
         type: string
-        default: "-Donednn_path=/usr/local -Dmpi=true"
+        default: "-Donednn_path=/usr/local -Dmpi=true -Dmpi4py=true"
     resource_class: xlarge
     executor: << parameters.image >>  
     working_directory: ~/korali

@@ -10,10 +10,13 @@ def environment( args, s ):
     # compute pair-wise distances and view-angles
     done = sim.preComputeStates()
     # set initial state
-    state = []
+    states = []
     for i in np.arange(sim.N):
-        state.append( sim.getState( i ) )
-    s["State"] = state
+        # get state
+        state = sim.getState( i )
+        states.append( state )
+    print("states:", state)
+    s["State"] = states
 
     ## run simulation
     step = 0
@@ -23,20 +26,16 @@ def environment( args, s ):
         # Getting new action
         s.update()
 
-        ## apply action and advance environment
+        ## apply action, get reward and advance environment
+        actions = s["Action"]
+        print("actions:", actions)
         for i in np.arange(sim.N):
-            polarAngles = s["Action"][i]
+            # compute wished direction based on action
+            polarAngles = actions[i]
             x = np.cos(polarAngles[0])*np.sin(polarAngles[1])
             y = np.sin(polarAngles[0])*np.sin(polarAngles[1])
             z = np.cos(polarAngles[1])
             sim.fishes[i].wishedDirection = [ x, y, z ]
-
-            # get reward
-            if done:
-                s["Reward"][i] = -10
-            else:
-                s["Reward"][i] = sim.getReward( i )
-
             # rotation in wished direction
             sim.fishes[i].updateDirection()
             # update positions
@@ -45,11 +44,22 @@ def environment( args, s ):
         # compute pair-wise distances and view-angles
         done = sim.preComputeStates()
         # set state
-        state = []
+        states  = []
+        rewards = []
         for i in np.arange(sim.N):
-            state.append( sim.getState(i) )
-        s["State"] = state      
-        
+            # get state
+            state = sim.getState( i )
+            states.append( state )
+            # get reward
+            reward = sim.getReward( i )
+            if done:
+                reward = -10.
+            rewards.append(reward)
+        print("states:", states)
+        s["State"] = states
+        print("rewards:", rewards)
+        s["Reward"] = rewards
+
         step += 1
 
     # Setting termination status

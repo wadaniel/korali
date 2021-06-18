@@ -22,6 +22,7 @@
 #include <vector>
 
 #ifdef _KORALI_USE_MPI
+#ifdef _KORALI_USE_MPI4PY
 #ifndef _KORALI_NO_MPI4PY
 
 #include "mpi.h"
@@ -70,6 +71,7 @@ namespace pybind11 { namespace detail {
   };
 }} // namespace pybind11::detail
 
+#endif
 #endif
 #endif
 

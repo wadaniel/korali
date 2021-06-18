@@ -102,7 +102,7 @@ class fish:
         self.location += self.speed*self.dt*self.curDirection
 
     ''' reward assumes pair-wise potentials ''' 
-    def getReward(self, nearestNeighbourDistance ):
+    def computeReward(self, nearestNeighbourDistance ):
         reward = 0.0
         for r in nearestNeighbourDistance:
             # Lennard-Jones potential

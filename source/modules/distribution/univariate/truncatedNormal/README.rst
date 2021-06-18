@@ -5,7 +5,7 @@ Truncated Normal Distribution
 Truncated Normal
 ----------------
 
-The probability density of the truncated Normal distribution is
+The truncated Normal distribution has the probability density function (PDF):
 
 .. math::
     f(x\mid \mu ,\sigma ^{2})={\frac {1}{\sqrt {2\pi \sigma ^{2}}}}e^{-{\frac {(x-\mu )^{2}}{2\sigma ^{2}}}}
@@ -13,5 +13,5 @@ The probability density of the truncated Normal distribution is
 for :math:`x\in [a,b]` and 0 otherwise.
 
 
-Here :math:`\mu` is the mean of the distribution and :math:`\sigma` is a scale parameter (related to the standard deviation of the Normal distribution).
+Here :math:`\mu` and :math:`\sigma` are the parameter associated with the Normal distribution.
 

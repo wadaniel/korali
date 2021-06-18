@@ -159,7 +159,7 @@ void VRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
 
     // Compute derivative of kullback-leibler divergence wrt current distribution params
     auto klGrad = calculateKLDivergenceGradient(expPolicy, curPolicy);
-
+    
     // Step towards old policy (gradient pointing to larger difference between old and current policy)
     const float klGradMultiplier = -(1.0f - _experienceReplayOffPolicyREFERBeta);
     for (size_t i = 0; i < 2 * _problem->_actionVectorSize; i++)
@@ -172,6 +172,9 @@ void VRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
     }
 
     // Set Gradient of Loss as Solution
+    for( size_t i = 0; i<gradientLoss.size(); i++ )
+    if(std::isfinite(gradientLoss[i]) == false)
+      KORALI_LOG_ERROR("Gradient loss returned an invalid value: %f\n", gradientLoss[i]);
     _criticPolicyProblem->_solutionData[b] = gradientLoss;
   }
 

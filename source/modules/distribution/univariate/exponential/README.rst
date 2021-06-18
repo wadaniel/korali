@@ -12,6 +12,6 @@ The Exponential distribution has the probability density function (PDF):
     f(x;\beta) = \begin{cases}
         \frac{1}{\beta} e^{-\frac{x}{\beta}} & x \ge 0, \\
             0 & x < 0.
-        \end{cases}$$
+        \end{cases}
 
 Where :math:`\beta > 0` is the **mean** and the **standard deviation**. 

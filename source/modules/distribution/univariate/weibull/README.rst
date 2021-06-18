@@ -1,15 +1,15 @@
 *******************************
-Gamma Distribution
+Weibull Distribution
 *******************************
 
-Gamma
------
+Weibull
+-------
           
-The Gamma distribution has the probability density function (PDF):
+The Weibull distribution has the probability density function (PDF):
 
-:math:`f(x;k,\theta) =  \frac{x^{k-1}e^{-\frac{x}{\theta}}}{\theta^k\Gamma(k)} \quad \text{ for } x > 0 \text{ and } k, \theta > 0,`
+:math:`f(x;k,\theta) =  \frac{k}{\theta}\frac{x}{\theta}^{k-1}e^{-\frac{x}{\theta}^k} \quad \text{ for } x > 0 \text{ and } \theta,k > 0`
 
-where :math:`\theta` is the **scale** and :math:`k` the **shape** parameter. The mean of the Gamma distribution is given by :math:`\theta k`.
+where :math:`\theta` is the **shape** and :math:`k` the **scale** parameter. The mean of the Weibull distribution is given by :math:`\theta\Gamma(1+1/k)`.
 
 
 

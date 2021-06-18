@@ -14,4 +14,4 @@ The Exponential distribution has the probability density function (PDF):
             0 & x < 0.
         \end{cases}$$
 
-Where :math:`\beta > 0` is the mean and the standard deviation. 
+Where :math:`\beta > 0` is the **mean** and the **standard deviation**. 

@@ -3,7 +3,7 @@
 # Defaults for Options
 BPDX=${BPDX:-4}
 BPDY=${BPDY:-3}
-LEVELS=${LEVELS:-7}
+LEVELS=${LEVELS:-5}
 RTOL=${RTOL-1}
 CTOL=${CTOL-0.1}
 EXTENT=${EXTENT:-2}

@@ -21,7 +21,7 @@ e = korali.Experiment()
 
 ### Defining results folder and loading previous results, if any
 
-resultFolder = '_result_vracer_rescale_' + args.env + '_' + args.dis.replace(' ','_') + '/'
+resultFolder = '_result_vracer_rescale0_' + args.env + '_' + args.dis.replace(' ','_') + '/'
 e.loadState(resultFolder + '/latest');
 
 ### Initializing openAI Gym environment

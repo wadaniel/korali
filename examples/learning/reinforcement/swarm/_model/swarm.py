@@ -6,13 +6,15 @@ import time
 from fish import *
 
 class swarm:
-    def __init__(self, N, alpha=360., speed=1., turningRate=360., seed=42):
+    def __init__(self, N, numNN, alpha=360., speed=1., turningRate=360., seed=42):
         assert alpha > 0., "wrong alpha"
         assert alpha <= 360., "wrong alpha"
         assert turningRate > 0., "wrong turningRate"
         assert turningRate <= 360., "wrong turningRate"
         # number of fish
         self.N = N
+        # number of nearest neighbours
+        self.numNearestNeighbours = numNN
         # field of perception
         self.alpha = alpha / 180. * np.pi
         # swimming speed 
@@ -47,29 +49,56 @@ class swarm:
         return fishes
 
     """ compute distance and angle matrix """
-    def computeStates(self):
+    def preComputeStates(self):
         # create containers for distances and angles
         distances  = np.full(shape=(self.N,self.N), fill_value=np.inf, dtype=float)
         angles     = np.zeros(shape=(self.N,self.N), dtype=float)
         # .. and direction vector
         directions = np.full(shape=(self.N,self.N, 3), fill_value=np.inf, dtype=float)
+        # boolean indicating if two fish are touching
+        terminal = False
         # iterate over grid and compute angle / distance matrix
         # TODO: use scipy.spatial.distance_matrix
         for i in np.arange(self.N):
-          for j in np.arange(self.N):
-            if i != j:
-              # direction vector and current direction
-              u = self.fishes[j].location - self.fishes[i].location
-              v = self.fishes[i].curDirection
-              # set distance
-              distances[i,j] = np.linalg.norm(u)
-              # set direction
-              directions[i,j,:] = u
-              # set angle
-              cosAngle = np.dot(u,v)/(np.linalg.norm(u)*np.linalg.norm(v))
-              angles[i,j] = np.arccos(cosAngle)
+            for j in np.arange(self.N):
+                if i != j:
+                    # direction vector and current direction
+                    u = self.fishes[j].location - self.fishes[i].location
+                    v = self.fishes[i].curDirection
+                    # set distance
+                    distances[i,j] = np.linalg.norm(u)
+                    # set direction
+                    directions[i,j,:] = u
+                    # set angle
+                    cosAngle = np.dot(u,v)/(np.linalg.norm(u)*np.linalg.norm(v))
+                    angles[i,j] = np.arccos(cosAngle)
+            # Termination state in case distance matrix has entries < cutoff
+            if (distances[i,:] < self.fishes[i].sigmaPotential ).any():
+                terminal = True
 
-        return distances, angles, directions
+        self.distancesMat = distances
+        self.anglesMat    = angles
+        self.directionMat = directions
+
+        return terminal
+
+    def getState( self, i ):
+        # get array for agent i
+        distances = self.distancesMat[i,:]
+        angles    = self.anglesMat[i,:]
+        directions= self.directionMat[i,:,:]
+        # sort and select nearest neighbours
+        idSorted = np.argsort( distances )
+        idNearestNeighbours = idSorted[:self.numNearestNeighbours]
+        self.distancesNearestNeighbours = distances[ idNearestNeighbours ]
+        self.anglesNearestNeighbours    = angles[ idNearestNeighbours ]
+        self.directionNearestNeighbours = directions[idNearestNeighbours,:]
+        # the state is the distance (or direction?) and angle to the nearest neigbours
+        return np.array([ self.distancesNearestNeighbours, self.anglesNearestNeighbours ]).flatten().tolist() # or np.array([ directionNearestNeighbours, anglesNearestNeighbours ]).flatten()
+
+    def getReward( self, i ):
+        # Careful: assumes sim.state(i) was called before
+        return self.fishes[i].computeReward( self.distancesNearestNeighbours )
 
     ''' according to https://doi.org/10.1006/jtbi.2002.3065 '''
     def move(self):

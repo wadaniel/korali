@@ -19,7 +19,7 @@ args = vars(parser.parse_args())
 numIndividuals       = int(args["numIndividuals"])
 numTimesteps         = int(args["numTimesteps"])
 numNearestNeighbours = int(args["numNearestNeighbours"])
-assert (numIndividuals > 0) & (numTimesteps > 0) & (numNearestNeighbours > 0) & (numIndividuals > numNearestNeighbours), print("invalid arguments: numTimeSteps={}!>0, numIndividuals={}!>numNearestNeighbours={}!>0".format(numTimesteps, numIndividuals, numNearestNeighbours))
+assert (numIndividuals > 0) & (numTimesteps > 0) & (numNearestNeighbours > 0) & (numIndividuals > numNearestNeighbours), print("invalid arguments: numTimesteps={}!>0, numIndividuals={}!>numNearestNeighbours={}!>0".format(numTimesteps, numIndividuals, numNearestNeighbours))
 
 ### Defining Korali Problem
 

@@ -18,8 +18,9 @@ Distributed Conduit
 Run with the `Distributed` conduit to benefit from parallelized model evaluations.
 Note that we set `Ranks Per Worker` to assign a team of MPI processes to the model.
 
-.. code-block:: python
+.. code-block:: cpp
 
+    korali::setKoraliMPIComm(MPI_COMM_WORLD);
     k["Conduit"]["Type"] = "Distributed";
     k["Conduit"]["Ranks Per Worker"] = workersPerTeam;
     k["Profiling"]["Detail"] = "Full";
@@ -33,4 +34,4 @@ Run the script with an input argument (Ranks Per Worker):
 
 .. code-block:: bash
 
-    ./run-tmcmc 4
+    mpirun -n 13./run-tmcmc 4

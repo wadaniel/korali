@@ -1,6 +1,9 @@
 run*
+eval*
 _trainingResults
 _testingResults
+_results*
+core.*
 *.txt
 *.h5
 *.xmf

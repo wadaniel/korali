@@ -1,75 +1,69 @@
 from swarm import *
 
 def environment( args, s ):
-
+    # set set parameters and initialize environment
     numIndividuals       = args["numIndividuals"]
-    numTimeSteps         = args["numTimesteps"]
+    numTimesteps         = args["numTimesteps"]
     numNearestNeighbours = args["numNearestNeighbours"]
-    sim = swarm( numIndividuals )
+    sim = swarm( numIndividuals, numNearestNeighbours )
 
-    ## get initial state
-    
     # compute pair-wise distances and view-angles
-    state = [ ]
-    distancesMat, anglesMat, directionMat = sim.computeStates()
+    done = sim.preComputeStates()
+    # set initial state
+    states = []
     for i in np.arange(sim.N):
-        distances = distancesMat[i,:]
-        angles    = anglesMat[i,:]
-        directions= directionMat[i,:,:]
-        # sort and select nearest neighbours
-        idSorted = np.argsort( distances )
-        idNearestNeighbours = idSorted[:numNearestNeighbours]
-        distancesNearestNeighbours = distances[ idNearestNeighbours ]
-        anglesNearestNeighbours = angles[ idNearestNeighbours ]
-        directionNearestNeighbours = directions[idNearestNeighbours,:]
-        # the state is the distance (or direction?) and angle to the nearest neigbours
-        state.append(np.array([ distancesNearestNeighbours, anglesNearestNeighbours ]).flatten().tolist())
-    s["State"] = state
-    
+        # get state
+        state = sim.getState( i )
+        states.append( state )
+    # print("states:", state)
+    s["State"] = states
+
     ## run simulation
     step = 0
-    while step < numTimeSteps:
+    if done: 
+        print("Initial configuration is terminal state...")
+    while (step < numTimesteps) and (not done):
         # Getting new action
         s.update()
 
-        ## apply action and advance environment
+        ## apply action, get reward and advance environment
+        actions = s["Action"]
+        # print("actions:", actions)
         for i in np.arange(sim.N):
-            polarAngles = s["Action"][i]
+            # compute wished direction based on action
+            polarAngles = actions[i]
             x = np.cos(polarAngles[0])*np.sin(polarAngles[1])
             y = np.sin(polarAngles[0])*np.sin(polarAngles[1])
             z = np.cos(polarAngles[1])
             sim.fishes[i].wishedDirection = [ x, y, z ]
-
-            # get reward
-            s["Reward"][i] = sim.fishes[i].getReward(distancesNearestNeighbours)
-
             # rotation in wished direction
             sim.fishes[i].updateDirection()
             # update positions
             sim.fishes[i].updateLocation()
 
-        ## get new state
         # compute pair-wise distances and view-angles
-        distancesMat, anglesMat, directionMat = sim.computeStates()
-
-        state = [ ]
+        done = sim.preComputeStates()
+        # set state
+        states  = []
+        rewards = []
         for i in np.arange(sim.N):
-            # get row giving distances / angle to other swimmers
-            # TODO?: Termination state in case distance matrix has entries < eps
-            distances = distancesMat[i,:]
-            angles    = anglesMat[i,:]
-            directions= directionMat[i,:,:]
-            # sort and select nearest neighbours
-            idSorted = np.argsort( distances )
-            idNearestNeighbours = idSorted[:numNearestNeighbours]
-            distancesNearestNeighbours = distances[ idNearestNeighbours ]
-            anglesNearestNeighbours = angles[ idNearestNeighbours ]
-            directionNearestNeighbours = directions[idNearestNeighbours,:]
-            
-            # the state is the distance (or direction?) and angle to the nearest neigbours
-            state.append(np.array([ distancesNearestNeighbours, anglesNearestNeighbours ]).flatten().tolist())
-        s["State"] = state          
+            # get state
+            state = sim.getState( i )
+            states.append( state )
+            # get reward
+            reward = sim.getReward( i )
+            if done:
+                reward = -10.
+            rewards.append(reward)
+        # print("states:", states)
+        s["State"] = states
+        # print("rewards:", rewards)
+        s["Reward"] = rewards
+
         step += 1
 
-    # Termination in case distance matrix has entries < eps
-    s["Termination"] = "Truncated"
+    # Setting termination status
+    if done:
+        s["Termination"] = "Terminal"
+    else:
+        s["Termination"] = "Truncated"

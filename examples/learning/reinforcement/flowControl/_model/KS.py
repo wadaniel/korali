@@ -189,7 +189,7 @@ class KS:
         if (action is not None):
             assert len(action) == self.nActions, print("Wrong number of actions. provided {}/{}".format(len(action), self.nActions))
             for i, a in enumerate(action):
-                forcing += a*gaussians[i,:]
+                forcing += a*self.gaussians[i,:]
             Fforcing = fft( forcing )
         #
         # Computation is based on v = fft(u), so linear term is diagonal.
@@ -274,10 +274,11 @@ class KS:
 
     def state(self):
         u = np.real(ifft(self.v))
-        state = np.full(self.N,fill_value=np.inf)
+        state = np.full(8,fill_value=np.inf)
         for i in range(1,17,2):
-            index = int( self.N/i )
-            state[i] = u[i]
+            indexState = int( i/2 )
+            indexField = int( i*self.N/16 )
+            state[indexState] = u[indexState]
         return state
 
 

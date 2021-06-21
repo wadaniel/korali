@@ -48,7 +48,8 @@ Korali's Documentation
    Source Files <https://www.cse-lab.ethz.ch/korali/docs/doxygen/html/files.html>
    Github Repository <https://github.com/cselab/korali>
    Build Status <https://app.circleci.com/pipelines/github/cselab/korali>
-
+   Test Coverage <https://app.codecov.io/gh/cselab/korali>
+   
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`

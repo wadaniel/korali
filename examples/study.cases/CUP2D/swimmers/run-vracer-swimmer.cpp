@@ -55,6 +55,7 @@ int main(int argc, char *argv[])
   e["Problem"]["Environment Function"] = &runEnvironment;
   e["Problem"]["Training Reward Threshold"] = 200.0;
   e["Problem"]["Policy Testing Episodes"] = 5;
+  // e["Problem"]["Actions Between Policy Updates"] = 1;
 
   // Adding custom setting to run the environment without dumping the state files during training
   e["Problem"]["Custom Settings"]["Dump Frequency"] = 0.0;
@@ -164,6 +165,7 @@ int main(int argc, char *argv[])
   k["Profiling"]["Path"] = trainingResultsPath + std::string("/profiling.json");
   k["Profiling"]["Frequency"] = 60;
 
+  k["Conduit"]["Type"] = "Distributed";
   korali::setKoraliMPIComm(MPI_COMM_WORLD);
 
   k.run(e);

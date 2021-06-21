@@ -4,7 +4,7 @@
 
 #include <gsl/gsl_sf_psi.h>
 
-#define NOISY
+//#define NOISY
 
 namespace korali
 {
@@ -500,16 +500,12 @@ std::vector<float> Continuous::calculateImportanceWeightGradient(const std::vect
       const float curMu = curPolicy.distributionParameters[i];
       const float curSigma = curPolicy.distributionParameters[_problem->_actionVectorSize + i];
 
-      const float scale = _actionScales[i]; // verify if half the domain width is correct (DW)
-      const float shift = _actionShifts[i];
-      const float unboundedAction = std::atanh((action[i] - shift) / scale);
-
       // Importance weight of squashed normal is the importance weight of normal evaluated at unbounded action
-      logpCurPolicy += normalLogDensity(unboundedAction, curMu, curSigma);
-      logpOldPolicy += normalLogDensity(unboundedAction, oldMu, oldSigma);
+      logpCurPolicy += normalLogDensity(oldPolicy.unboundedAction[i], curMu, curSigma);
+      logpOldPolicy += normalLogDensity(oldPolicy.unboundedAction[i], oldMu, oldSigma);
 
       // Deviation from expAction and current Mean
-      const float curActionDiff = (unboundedAction - curMu);
+      const float curActionDiff = (oldPolicy.unboundedAction[i] - curMu);
 
       // Inverse Variances
       const float curInvVar = 1. / (curSigma * curSigma);
@@ -800,8 +796,10 @@ std::vector<float> Continuous::calculateKLDivergenceGradient(const policy_t &old
       KLDivergenceGradients[_problem->_actionVectorSize + i] -= oldSigma*curInvSig3*((_actionLowerBounds[i]-oldMu)*expa-(_actionUpperBounds[i]-oldMu)*expb);
       assert(isfinite(KLDivergenceGradients[_problem->_actionVectorSize+i]));
       KLDivergenceGradients[_problem->_actionVectorSize + i] -= (_actionUpperBounds[i]-curMu)/curSigma*normalCCDF(_actionUpperBounds[i], oldMu, oldSigma)*std::exp(normalLogDensity(_actionUpperBounds[i], curMu, curSigma)-normalLogCCDF(_actionUpperBounds[i],curMu, curSigma));
+#ifdef NOISY
       printf("%f %f %f\n", normalCCDF(_actionUpperBounds[i], oldMu, oldSigma), normalLogDensity(_actionUpperBounds[i], curMu, curSigma), normalLogCCDF(_actionUpperBounds[i],curMu, curSigma));
 	  fflush(stdout);
+#endif
       assert(isfinite(KLDivergenceGradients[_problem->_actionVectorSize+i]));
 #ifdef NOISY
       printf("ncdf %f %f\n", normalCDF(_actionLowerBounds[i], curMu, curSigma), normalCCDF(_actionUpperBounds[i], curMu, curSigma));

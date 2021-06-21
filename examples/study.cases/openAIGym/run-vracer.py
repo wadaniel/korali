@@ -21,7 +21,7 @@ e = korali.Experiment()
 
 ### Defining results folder and loading previous results, if any
 
-resultFolder = '_result_vracer_' + args.env + '_' + args.dis.replace(' ','_') + '/'
+resultFolder = '_result_vracer_rescale_' + args.env + '_' + args.dis.replace(' ','_') + '/'
 e.loadState(resultFolder + '/latest');
 
 ### Initializing openAI Gym environment
@@ -50,7 +50,7 @@ e["Solver"]["Experience Replay"]["Off Policy"]["Target"] = 0.1
 
 e["Solver"]["Policy"]["Distribution"] = args.dis
 e["Solver"]["State Rescaling"]["Enabled"] = True
-e["Solver"]["Reward"]["Rescaling"]["Enabled"] = False
+e["Solver"]["Reward"]["Rescaling"]["Enabled"] = True
 e["Solver"]["Reward"]["Rescaling"]["Frequency"] = 1000
 e["Solver"]["Reward"]["Outbound Penalization"]["Enabled"] = True
 e["Solver"]["Reward"]["Outbound Penalization"]["Factor"] = 0.5

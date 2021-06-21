@@ -24,12 +24,8 @@ void Conduit::coroutineWrapper()
 
   // Now that the sample is finished, set its state to finished and come back to the experiment thread
   sample->_state = SampleState::finished;
-  co_switch(engine->_currentExperiment->_thread);
-
-  // Safety check to make sure we do not continue a sample that has ended
-  if (sample->_state != SampleState::uninitialized)
-    KORALI_LOG_ERROR("Resuming a finished sample\n");
-}
+  co_switch(engine->_currentExperiment->_thread); }
+//}
 
 void Conduit::runSample(Sample *sample, Engine *engine)
 {
@@ -76,13 +72,6 @@ void Conduit::runSample(Sample *sample, Engine *engine)
     co_switch(engine->_currentExperiment->_thread);
 
   } while (sample->retrievePendingMessage(endMessage) == false);
-
-  // Making sure the received message corresponds to the sample's ending message
-  if (!isDefined(endMessage, "Has Finished"))
-    KORALI_LOG_ERROR("Trying to receive ending message from sample, but 'Has Finished' field is not defined!\n");
-
-  if (endMessage["Has Finished"] == false)
-    KORALI_LOG_ERROR("Sample's ending message has arrived but it is marked as 'Has Finished' == false!\n");
 
   // Now replacing sample's information by that of the end message
   sample->_js.getJson() = endMessage;
@@ -292,14 +281,6 @@ void Conduit::setConfiguration(knlohmann::json& js)
 {
  if (isDefined(js, "Results"))  eraseValue(js, "Results");
 
- if (isDefined(js, "Sample Id"))
- {
- try { _sampleId = js["Sample Id"].get<size_t>();
-} catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ conduit ] \n + Key:    ['Sample Id']\n%s", e.what()); } 
-   eraseValue(js, "Sample Id");
- }
-
  Module::setConfiguration(js);
  _type = ".";
  if(isDefined(js, "Type")) eraseValue(js, "Type");
@@ -310,14 +291,13 @@ void Conduit::getConfiguration(knlohmann::json& js)
 {
 
  js["Type"] = _type;
-   js["Sample Id"] = _sampleId;
  Module::getConfiguration(js);
 } 
 
 void Conduit::applyModuleDefaults(knlohmann::json& js) 
 {
 
- std::string defaultString = "{\"Sample Id\": 0}";
+ std::string defaultString = "{}";
  knlohmann::json defaultJs = knlohmann::json::parse(defaultString);
  mergeJson(js, defaultJs); 
  Module::applyModuleDefaults(js);

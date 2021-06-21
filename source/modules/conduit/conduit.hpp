@@ -34,10 +34,6 @@ class Engine;
 class Conduit : public Module
 {
   public: 
-  /**
-  * @brief [Internal Use] Indicates the identifier for the next issued sample.
-  */
-   size_t _sampleId;
   
  
   /**

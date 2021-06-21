@@ -119,12 +119,12 @@ class Solver : public Module
   /**
   * @brief Prints solver information before the execution of the current generation.
   */
-  virtual void printGenerationBefore(){};
+  virtual void printGenerationBefore();
 
   /**
  * @brief Prints solver information after the execution of the current generation.
  */
-  virtual void printGenerationAfter(){};
+  virtual void printGenerationAfter();
 
   /**
  * @brief Runs the current generation.
@@ -134,7 +134,7 @@ class Solver : public Module
   /**
   * @brief Initializes the solver with starting values for the first generation.
  */
-  virtual void setInitialConfiguration(){};
+  virtual void setInitialConfiguration();
 
   /**
   * @brief Stores termination criteria for the module.

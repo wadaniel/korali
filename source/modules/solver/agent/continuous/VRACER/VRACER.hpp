@@ -36,7 +36,7 @@ class VRACER : public Continuous
 {
   public: 
   /**
-  * @brief [Internal Use] Standard deviation of actions in minibatch.
+  * @brief [Internal Use] Standard deviation of the actions in the minibatch.
   */
    std::vector<float> _statisticsAverageActionSigmas;
   

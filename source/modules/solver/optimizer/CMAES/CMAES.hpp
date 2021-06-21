@@ -287,7 +287,7 @@ class CMAES : public Optimizer
   */
    int _hasConstraints;
   /**
-  * @brief [Internal Use] This is the $eta$ factor that indicates how fast the covariance matrix is adapted.
+  * @brief [Internal Use] This is the beta factor that indicates how fast the covariance matrix is adapted.
   */
    double _covarianceMatrixAdaptionFactor;
   /**
@@ -327,7 +327,7 @@ class CMAES : public Optimizer
   */
    std::vector<size_t> _sampleConstraintViolationCounts;
   /**
-  * @brief [Internal Use] Constraint Evaluations $$e$$.
+  * @brief [Internal Use] Functions to be evaluated as constraint evaluations, if the return from any of them is > 0, then the constraint is met.
   */
    std::vector<std::vector<double>> _constraintEvaluations;
   /**

@@ -168,8 +168,9 @@ class MCMC : public Sampler
   * @param leaderLoglikelihood loglikelihood of current chain leader
   * @param loglikelihoods loglikelihoods of samples obtained after delay
   * @param N rescursion depth
+  * @return The acceptance probability
   */
-  double recursiveAlpha(double &deonominator, const double leaderLoglikelihood, const double *loglikelihoods, size_t N) const;
+  double recursiveAlpha(double &denominator, const double leaderLoglikelihood, const double *loglikelihoods, size_t N) const;
 
   /**
   * @brief Updates internal state such as mean and covariance of chain.

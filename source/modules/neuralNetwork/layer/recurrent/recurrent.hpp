@@ -32,7 +32,7 @@ class Recurrent : public Layer
 {
   public: 
   /**
-  * @brief The number of consecutive copies of this layer. This has a better performance than just defining many of these layers manually since it is optimized by the underlying engine.
+  * @brief The number of copies of this layer. This has a better performance than just defining many of these layers manually since it is optimized by the underlying engine.
   */
    size_t _depth;
   

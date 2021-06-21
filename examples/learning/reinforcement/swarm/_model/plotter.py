@@ -23,7 +23,7 @@ def plotSwarm( sim, t ):
 	ax.set_xlim([-1,1])
 	ax.set_ylim([-1,1])
 	ax.set_zlim([-1,1])
-	plt.savefig("figures/swarm_t={:04d}.png".format(t))
+	plt.savefig("_figures/swarm_t={:04d}.png".format(t))
 	plt.close()
 
 def plotSwarmCentered( sim, t ):
@@ -46,7 +46,7 @@ def plotSwarmCentered( sim, t ):
 	ax.set_xlim([center[0]-1,center[0]+1])
 	ax.set_ylim([center[1]-1,center[1]+1])
 	ax.set_zlim([center[2]-1,center[2]+1])
-	plt.savefig("figures/swarm_t={:04d}.png".format(t))
+	plt.savefig("_figures/swarm_t={:04d}.png".format(t))
 	plt.close()
 
 def plotSwarmSphere( sim, t, i ):
@@ -76,7 +76,7 @@ def plotSwarmSphere( sim, t, i ):
 	#ax.set_xlim([-2,2])
 	#ax.set_ylim([-2,2])
 	#ax.set_zlim([-2,2])
-	plt.savefig("figures/swarm_t={}_sphere_i={}.png".format(t,i))
+	plt.savefig("_figures/swarm_t={}_sphere_i={}.png".format(t,i))
 	plt.close()
 
 def plotFishs( fishs, i, t, type ):
@@ -98,7 +98,7 @@ def plotFishs( fishs, i, t, type ):
 	ax.set_xlim([-2,2])
 	ax.set_ylim([-2,2])
 	ax.set_zlim([-2,2])
-	plt.savefig("figures/{}_t={}_i={}.png".format(type, t, i))
+	plt.savefig("_figures/{}_t={}_i={}.png".format(type, t, i))
 	plt.close()
 
 def plotFish( fish, i, t ):
@@ -110,7 +110,7 @@ def plotFish( fish, i, t ):
 	ax.set_xlim([-2,2])
 	ax.set_ylim([-2,2])
 	ax.set_zlim([-2,2])
-	plt.savefig("figures/fish_t={}_i={}.png".format(t, i))
+	plt.savefig("_figures/fish_t={}_i={}.png".format(t, i))
 	plt.close()
 
 def plotRot( vec1, vec2, rotvec, angle ):

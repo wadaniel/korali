@@ -32,6 +32,9 @@ namespace korali
 // Defining fallback type for MPI_Comm in case Korali wasn't compiled with compatibility with MPI
 #ifndef _KORALI_USE_MPI
 
+ /**
+ * @brief Dummy communicator storage for the current Korali Worker
+ */
   typedef long int MPI_Comm;
 
 #endif

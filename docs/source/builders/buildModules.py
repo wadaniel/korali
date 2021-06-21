@@ -67,22 +67,15 @@ def recursiveUpdate(dest, defaults):
 
 def createVariableDescription(rootPath, relPath, v):
   moduleTypePath = ''
-  if ("problem" in relPath):
-    moduleTypePath = '["Problem"]'
-  if ("solver" in relPath):
-    moduleTypePath = '["Solver"]'
-  if ("conduit" in relPath):
-    moduleTypePath = '["Conduit"]'
-  if ("Variable" in rootPath):
-    moduleTypePath = ''
-  if ("Results" in rootPath):
-    moduleTypePath = ''
+  if ("problem" in relPath): moduleTypePath = '["Problem"]'
+  if ("solver" in relPath):  moduleTypePath = '["Solver"]'
+  if ("conduit" in relPath): moduleTypePath = '["Conduit"]'
+  if ("Variable" in rootPath): moduleTypePath = ''
+  if ("Results" in rootPath):  moduleTypePath = ''
 
   desc = '\n'
-  desc += getJsonPath(v["Name"]).replace('"', '').replace('[', '').replace(
-      ']', '').replace('\\\\', ' / ') + '\n'
-  desc += ' - **Usage**: ' + rootPath + moduleTypePath + getJsonPath(
-      v["Name"]).replace('\\', '') + ' = ' + getDataType(v) + '\n'
+  desc += getJsonPath(v["Name"]).replace('"', '').replace('[', '').replace(']', '').replace('\\\\', ' / ') + '\n'
+  desc += ' - **Usage**: ' + rootPath + moduleTypePath + getJsonPath(v["Name"]).replace('\\', '') + ' = ' + getDataType(v) + '\n'
   desc += ' - **Description**: ' + v["Description"] + '\n'
   if ('Criteria' in v):
     desc += ' - **Criteria**: :code:`' + v["Criteria"] + '`\n'
@@ -264,9 +257,7 @@ def processModule(parentModuleConfig, source, destination, moduleRelPath, module
       moduleReadmeString += '----------------------------------\n\n'
       moduleReadmeString += 'These following configuration will be assigned by default. Any settings defined by the user will override the given settings specified in these defaults.\n\n'
       moduleReadmeString += '  .. code-block:: python\n\n'
-      moduleReadmeString += '    ' + json.dumps(
-          moduleConfig['Module Defaults'], sort_keys=True, indent=4).replace(
-              '}', '    }')
+      moduleReadmeString += '    ' + json.dumps(moduleConfig['Module Defaults'], sort_keys=True, indent=4).replace('}', '    }')
 
     if ('Variable Defaults' in moduleConfig):
       moduleReadmeString += '\n\n.. _module-' + moduleRelPath.lower().replace(
@@ -275,9 +266,7 @@ def processModule(parentModuleConfig, source, destination, moduleRelPath, module
       moduleReadmeString += '----------------------------------\n\n'
       moduleReadmeString += 'These following configuration will be assigned to each of the experiment variables by default. Any settings defined by the user will override the given settings specified in these defaults.\n\n'
       moduleReadmeString += '  .. code-block:: python\n\n'
-      moduleReadmeString += '    ' + json.dumps(
-          moduleConfig['Variable Defaults'], sort_keys=True, indent=4).replace(
-              '}', '    }')
+      moduleReadmeString += '    ' + json.dumps(moduleConfig['Variable Defaults'], sort_keys=True, indent=4).replace('}', '    }')
 
   # Saving Module's readme file
   moduleReadmeString += '\n\n'

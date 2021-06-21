@@ -105,8 +105,7 @@ def processModule(parentModuleConfig, source, destination, moduleRelPath, module
 
   print('Processing file: ' + moduleConfigFile)
 
-  moduleReadmeString = '.. _module-' + moduleRelPath.lower().replace(
-      '/', '-').replace(' ', '') + ':\n\n'
+  moduleReadmeString = '.. _module-' + moduleRelPath.lower().replace('/', '-').replace(' ', '') + ':\n\n'
 
   # Loading configuration and readme files
   with open(moduleConfigFile, 'r') as file:
@@ -128,8 +127,7 @@ def processModule(parentModuleConfig, source, destination, moduleRelPath, module
   for f in list_dir:
     fullPath = os.path.join(modulePath, f)
     if not os.path.isfile(fullPath):
-      if (not '.o/' in fullPath and not '.d/' in fullPath):
-       subModuleSourceFilePath = os.path.join(fullPath, f + '._cpp')
+       subModuleSourceFilePath = os.path.join(fullPath, f + '.cpp.base')
        if (os.path.exists(subModuleSourceFilePath)):
         subFolderList.append(f)
 
@@ -146,7 +144,7 @@ def processModule(parentModuleConfig, source, destination, moduleRelPath, module
 
     for f in subFolderList:
       subModuleFullPath = os.path.join(modulePath, f)
-      moduleSourceFile = modulePath + '/' + moduleName + '._cpp'
+      moduleSourceFile = modulePath + '/' + moduleName + '.cpp.base'
       moduleReadmeString += '   ' + f + '/' + f + '\n'
       subPath = os.path.join(moduleRelPath, f)
       processModule(moduleConfig, source, destination, subPath, f)
@@ -278,11 +276,13 @@ def build_modules(source, destination):
   shutil.rmtree(destination, ignore_errors=True, onerror=None)
   os.makedirs(destination)
   
+  shutil.copyfile(source + '/README.rst', destination + '/README.rst')
+  
   list_dir = os.listdir(source)
   for f in list_dir:
     fullPath = os.path.join(source, f)
     if not os.path.isfile(fullPath):
-      if (not '.o/' in fullPath and not '.d/' in fullPath and not 'engine' in fullPath):
+      if (not 'engine' in fullPath):
         processModule({}, source, destination, f, f)
 
 

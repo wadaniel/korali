@@ -22,7 +22,9 @@ This creates a new experiment object which can be then configured by specifying 
 .. image:: images/korali_engine.png
    :width: 600
 
-The solver method work by stochastically producing a set of samples that can be evaluated independently. The problem module pre-processes these samples based on their on their configuration and passes them to a *model* function for execution. The problem module produces post-processed results based on the results of their evaluation, which the solver module uses to produce a better estimation of the solution. We call this process a \textit{generation}, which is repeated until the solver has converged to a solution.
+The solver represents a specific algorithm or method find the solution of the specified problem. Most problem types require the evaluation of a *computational model* (function) to evaluate *samples*, whose results are returned to the Korali engine.
+ 
+The cycle of sample creation and evaluation is called a *generation*. Korali will run as many generations required to reach a certain *termination criterion*
 
 Experiments contain :ref:`general settings <module-experiment>` which affect the way in which Korali runs the experiment and outputs its results.    
 
@@ -179,30 +181,30 @@ Different problem types require the output of different results from the model. 
 .. code-block:: python
 
   # Defining a model function for my experiment that returns F(x)
-  def myModel(k):
-  thermalConductivity = k["Parameters"][0]
-  heatSourcePosition  = k["Parameters"][1]
+  def myModel(sample):
+  thermalConductivity = sample["Parameters"][0]
+  heatSourcePosition  = sample["Parameters"][1]
   distanceFromSource = 1.0 - heatSourcePosition
-  k["F(x)"] = thermalConductivity * distanceFromSource * distanceFromSource
+  sample["F(x)"] = thermalConductivity * distanceFromSource * distanceFromSource
   
 Users can also save custom quantities of interest for each samples. These quantities are not used by Korali, but they can be later retrieved from the result files to provide additional data for post-processing.
 
 .. code-block:: python
 
   # Defining a model function for my experiment that returns F(x) and quantities of interest
-  def myModel(k):
-  thermalConductivity = k["Parameters"][0]
-  heatSourcePosition  = k["Parameters"][1]
+  def myModel(sample):
+  thermalConductivity = sample["Parameters"][0]
+  heatSourcePosition  = sample["Parameters"][1]
   distanceFromSource = 1.0 - heatSourcePosition
-  k["Distance From Source"] = distanceFromSource
-  k["F(x)"] = thermalConductivity * distanceFromSource * distanceFromSource
+  sample["Distance From Source"] = distanceFromSource
+  sample["F(x)"] = thermalConductivity * distanceFromSource * distanceFromSource
 
 Model functions can also be represented as lambda functions:
 
 .. code-block:: python
 
   # Defining a lambda model function for my experiment that returns F(x)
-  myModel = lambda k : k["F(x)"] = k["Parameters"][0]*k["Parameters"][1]
+  myModel = lambda sample : sample["F(x)"] = sample["Parameters"][0] * sample["Parameters"][1]
 
 Using the Model
 --------------------------------
@@ -357,7 +359,9 @@ If you would like to reduce the frequency of state files output or outright disa
 .. code-block:: python
 
    # Saving results to a file every 5 generations, instead of 1
+   e0["File Output"]["Enabled"] = True
    e0["File Output"]["Frequency"] = 5
+   e0["File Output"]["Path"] = "/home/user/my.custom.path"
   
    # Disable the output for this other experiment
    e1["File Output"]["Enabled"] = False
@@ -366,8 +370,8 @@ To preserve the all input/output parameters for every sample generated in Korali
 
 .. code-block:: python
 
-   # Saving results to a file every 5 generations, instead of 1
-   e["File Output"]["Store Samples"] = True
+   # Saving the details of all samples generated during execution and their results (this file can become really large)
+   e["Store Sample Information"] = True
   
 This option is by default disabled, since storing all samples may require large file sizes.
 
@@ -400,6 +404,6 @@ To reduce the output frequency, use the following:
 Plotting Results
 -----------------------------------------------
 
-To generate a plot with the results of your experiment, check the documentation for our :ref:`Korali Plotter <korali-plotter>` tool. 
+To generate a plot with the results of your experiment, check the documentation for the :ref:`Korali Plotter <korali-plotter>` and :ref:`Korali Reinforcement Learning View <korali-rlview>` tools. 
 
    

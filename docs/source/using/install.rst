@@ -5,23 +5,14 @@ Installation
 Quick Installation
 ==================
 
-To download and install Korali in the default setup, run the following:
+The simplest way to install Korali is via it's Python module. To obtain it, simply run:
 
 .. code-block:: bash
 
-     git clone https://github.com/cselab/korali.git
-     cd korali
+     python3 -m pip install korali 
+    
 
-     # pip version 21 is required
-     python3 -m pip install --upgrade pip
-
-     python3 -m pip install --use-feature=in-tree-build .
-
-
-Note that the installation may take several minutes.
-
-In the default setup, Korali is compiled with no support for MPI, OneDNN or CUDNN.
-To enable them, see instructions below.
+This variant of Korali is compiled with no support for C++ linking, MPI, OneDNN or CUDNN frameworks. To enable them, see the manual installation option below.
 
 
 Manual Installation
@@ -74,6 +65,14 @@ For more information on these optional support, see *Optional Requirements* belo
 
 To uninstall Korali, run ``cd build && ninja uninstall`` or manually delete the folder containing the ``korali`` package.
 
+5. Setup environment
+
+  The ``LD_LIBRARY_PATH``, ``PATH``, ``PYTHONPATH``environment variables need to be correctly setup for the linker to find the correct libraries at the moment of runtime. We provide a tool that facilitates this task:
+  
+  .. code-block:: bash
+  
+     source tools/env/set_env.sh PREFIX
+     
 
 Troubleshooting
 ====================
@@ -82,7 +81,7 @@ If you are experiencing problems installing or running Korali, please check the 
 
   - Check Korali's `system requirements <#system-requirements>`_ to verify that your system has all the required software components.
 
-  - Check the `build status </korali/docs/dev/testing.html>`_  to see if Korali is currently building correctly.
+  - Check the `build status <https://app.circleci.com/pipelines/github/cselab/korali>`_  to see if Korali is currently building correctly.
 
   - If the problem persists, please submit a new `issue report <https://github.com/cselab/korali/issues>`_ on our Github repository detailing the problem, your system information, and the steps to replicate it and we will promptly address it.
 
@@ -92,8 +91,15 @@ If you are experiencing problems installing or running Korali, please check the 
 Cray systems (Piz Daint)
 ------------------------
 
-The default installation of `mpi4py` possibly uses a different MPI implementation than Korali, preventing multi-rank runs.
-To fix it, configure MPI compilers and reinstall `mpi4py` and Korali.
+Cray systems use a propietary build system that may cause conflicts with the default meson configuration when using MPI. To fix this, the following steps are recommended:
+
+1) Specify the `cc` and `CC` commands as default C and C++ compilers, respectively:
+
+.. code-block:: bash
+
+   CC=cc CXX=CC meson setup build --buildtype=release --prefix=PREFIX
+   
+2) It is possible tat the the default installation of `mpi4py` possibly uses a different MPI implementation than Korali, preventing multi-rank runs. To fix it, configure MPI compilers and reinstall `mpi4py` and Korali.
 
 .. code-block:: bash
 
@@ -109,8 +115,7 @@ To fix it, configure MPI compilers and reinstall `mpi4py` and Korali.
 
     # Reinstall mpi4py locally and reinstall korali.
     python3 -m pip install --user mpi4py --ignore-installed -v
-    cd ~/path/to/korali
-    MPICXX=mpic++ ./install --rebuild
+    
 
 System Requirements
 ====================
@@ -119,8 +124,8 @@ Mandatory Requirements
 ---------------------------
 
   - **C++ Compiler**
-      Korali requires a C++ compiler that supports the C++14 standard (`-std=c++17`) to build.
-      **Hint:** Check the following `link <https://en.cppreference.com/w/cpp/compiler_support#C.2B.2B14_core_language_features>`_ to verify whether your compiler supports C++14.
+      Korali requires a C++ compiler that supports the C++17 standard (`-std=c++17`) to build.
+      **Hint:** Check the following `link <https://en.cppreference.com/w/cpp/compiler_support#C.2B.2B14_core_language_features>`_ to verify whether your compiler supports C++17.
       Korali's installer will check the **$CXX** environment variable to determine the default C++ compiler. You can change the value of this variable to define a custom C++ compiler.
 
   - **Git Client**
@@ -172,4 +177,7 @@ Optional Requirements
 
   - **MPI**
       One way to enable support distributed conduits and computational models is to configure Korali to compile with an MPI compiler. The installer will check the *$MPICXX* environment variable to determine a valid MPI C++ compiler.
+
+  - **MPI4Py**
+      If you need to run Python-based MPI application as computational models in Korali, you will need to install the MPI4py python module, and install Korali via meson using the `-Dmpi4py=true` option.
 

@@ -5,6 +5,7 @@
 #include "auxiliar/jsonInterface.hpp"
 #include "auxiliar/logger.hpp"
 #include <string>
+#include <iostream>
 
 namespace korali
 {
@@ -114,8 +115,8 @@ int saveJsonToFile(const char *fileName, const knlohmann::json &js)
   {
     return -1;
   }
-
-  return rename(auxFile.c_str(), fileName);
+  rename(auxFile.c_str(), fileName);
+  return 0;
 }
 
 } // namespace korali

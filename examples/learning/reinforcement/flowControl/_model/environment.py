@@ -14,23 +14,27 @@ def environment( args, s ):
     sim.simulate( nsteps=nInitialSteps )
 
     ## get initial state
-    s["State"] = sim.state()
+    s["State"] = sim.state().tolist()
+    # print("state:", sim.state())
 
     ## run controlled simulation
     nContolledSteps = int((tEnd-tInit)/dt)
     step = 0
-    while step < numTimeSteps:
+    while step < nContolledSteps:
         # Getting new action
         s.update()
 
         # apply action and advance environment
         sim.step( s["Action"] )
+        # print("action:", s["Action"])
 
         # get reward
         s["Reward"] = sim.reward()
-        
+        # print("state:", sim.reward())
+
         # get new state
-        s["State"] = sim.state()
+        s["State"] = sim.state().tolist()
+        # print("state:", sim.state())
             
         step += 1
 

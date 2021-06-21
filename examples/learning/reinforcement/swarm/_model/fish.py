@@ -5,7 +5,7 @@ from scipy.stats import vonmises
 from plotter import *
 
 class fish:
-    def __init__(self, location, individualStd=0.1, speed=3, maxAngle=90./180.*np.pi, eqDistance=0.1, potentialStrength=1, potential="Harmonic" ):
+    def __init__(self, location, individualStd=0.1, speed=3, maxAngle=90./180.*np.pi, eqDistance=0.1, potentialStrength=100, potential="Lennard-Jones" ):
         self.location = location
         self.curDirection = self.randUnitDirection()
         self.wishedDirection = self.curDirection
@@ -102,7 +102,7 @@ class fish:
         self.location += self.speed*self.dt*self.curDirection
 
     ''' reward assumes pair-wise potentials ''' 
-    def getReward(self, nearestNeighbourDistance ):
+    def computeReward(self, nearestNeighbourDistance ):
         reward = 0.0
         for r in nearestNeighbourDistance:
             # Lennard-Jones potential

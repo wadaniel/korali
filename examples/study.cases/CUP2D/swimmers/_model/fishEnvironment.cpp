@@ -1,7 +1,7 @@
-//  Korali environment for CubismUP_2D For Fish Following Experiment
+//  Korali environment for CubismUP-2D
 //  Copyright (c) 2020 CSE-Lab, ETH Zurich, Switzerland.
 
-#include "environment.hpp"
+#include "fishEnvironment.hpp"
 #include <chrono>
 #include <filesystem>
 
@@ -11,6 +11,7 @@ char **_argv;
 std::mt19937 _randomGenerator;
 Simulation *_environment;
 
+// Swimmer following an obstacle
 void runEnvironment(korali::Sample &s)
 {
   // Setting seed
@@ -20,7 +21,11 @@ void runEnvironment(korali::Sample &s)
   // Creating results directory
   char resDir[64];
   sprintf(resDir, "%s/sample%08lu", s["Custom Settings"]["Dump Path"].get<std::string>().c_str(), sampleId);
-  std::filesystem::create_directories(resDir);
+  if( not std::filesystem::create_directories(resDir) )
+  {
+    fprintf(stderr, "Error creating results directory for environment\n");
+    exit(-1);
+  };
 
   // Redirecting all output to the log file
   char logFilePath[128];
@@ -44,7 +49,7 @@ void runEnvironment(korali::Sample &s)
   _environment->sim.dumpTime = s["Custom Settings"]["Dump Frequency"].get<double>();
 
   // Reseting environment and setting initial conditions
-  _environment->reset();
+  _environment->resetRL();
   setInitialConditions(agent, object, s["Mode"] == "Training");
 
   // Setting initial state
@@ -75,12 +80,9 @@ void runEnvironment(korali::Sample &s)
     // Setting action
     agent->act(t, action);
 
-    // Check if simulation is done.
-    done = isTerminal(agent, object);
-
     // Run the simulation until next action is required
     tNextAct += agent->getLearnTPeriod() * 0.5;
-    while (done == false && t < tNextAct)
+    while ( t < tNextAct )
     {
       // Advance simulation
       const double dt = _environment->calcMaxTimestep();
@@ -144,16 +146,16 @@ void runEnvironment(korali::Sample &s)
 
 void setInitialConditions(StefanFish *agent, Shape *object, const bool isTraining)
 {
-  // Initial fixed conditions for testing
+  // Initial fixed conditions
   double SA = 0.0;
   double SX = 0.3;
   double SY = 0.0;
 
-  // If training, add noise to them
+  // or with noise
   //if (isTraining)
   //{
   // std::uniform_real_distribution<double> disA(-20. / 180. * M_PI, 20. / 180. * M_PI);
-  // std::uniform_real_distribution<double> disX(0.25, 0.35);
+  // std::uniform_real_distribution<double> disX(0.45, 0.55);
   // std::uniform_real_distribution<double> disY(-0.05, 0.05);
 
   // SA = disA(_randomGenerator);
@@ -170,6 +172,9 @@ void setInitialConditions(StefanFish *agent, Shape *object, const bool isTrainin
   double C[2] = {object->center[0] + SX, object->center[1] + SY};
   agent->setCenterOfMass(C);
   agent->setOrientation(SA);
+
+  // After moving the agent, the obstacles have to be restarted
+  _environment->startObstacles();
 }
 
 bool isTerminal(StefanFish *agent, Shape *object)

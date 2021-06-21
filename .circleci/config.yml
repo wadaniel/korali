@@ -57,6 +57,8 @@ jobs:
           command:  if [ "<< parameters.runCoverage >>" == "true" ]; then ninja -C build coverage && ./tools/coverage/coverage && ./tools/coverage/codecov -X search -X fix -f '*.gcov'; fi
       - store_artifacts:
           path: build/meson-logs
+      - store_artifacts:
+          path: docs/docs.log
 
 workflows:
   korali_release:

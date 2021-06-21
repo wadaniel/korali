@@ -23,14 +23,12 @@ def getDataType(v):
   cVarType = cVarType.replace('size_t', '*unsigned integer*')
   cVarType = cVarType.replace('double', '*real number*')
   cVarType = cVarType.replace('std::string', '*string*')
-  cVarType = cVarType.replace('std::function<void(korali::Sample&)',
-                              ':ref:`Computational Model <korali-model>`')
+  cVarType = cVarType.replace('std::function<void(korali::Sample&)', ':ref:`Computational Model <korali-model>`')
   cVarType = cVarType.replace('korali::Sample', ':ref:`Sample <korali-sample>`')
   cVarType = cVarType.replace('std::vector<std::vector<', 'List of Lists of ')
   cVarType = cVarType.replace('std::vector<', 'List of ')
   cVarType = cVarType.replace('bool', '*True/False*')
-  cVarType = cVarType.replace('korali::Variable',
-                              ':ref:`Variable <korali-variable>`')
+  cVarType = cVarType.replace('korali::Variable', ':ref:`Variable <korali-variable>`')
   if ('korali::' in cVarType):
     classList = cVarType.replace('*', '').split('::')
     moduleLink = 'module-' + classList[1].lower()
@@ -38,8 +36,7 @@ def getDataType(v):
     for c in classList[2:]:
       cVarType += '/' + upcase_first_letter(c)
       moduleLink += '-' + c.lower()
-    cVarType = classList[0].replace(
-        'korali', '') + ':ref:`' + cVarType + ' <' + moduleLink + '>`'
+    cVarType = classList[0].replace('korali', '') + ':ref:`' + cVarType + ' <' + moduleLink + '>`'
   return cVarType
 
 
@@ -179,38 +176,31 @@ def processModule(parentModuleConfig, source, destination, moduleRelPath, module
     moduleReadmeString += '`\n\n'
 
     if ('Compatible Solvers' in moduleConfig):
-      moduleReadmeString += '\n.. _module-' + moduleRelPath.lower().replace(
-          '/', '-') + '-compat:\n\n'
+      moduleReadmeString += '\n.. _module-' + moduleRelPath.lower().replace('/', '-') + '-compat:\n\n'
       moduleReadmeString += '\nCompatible Solvers\n'
       moduleReadmeString += '----------------------------------\n\n'
       moduleReadmeString += 'This problem can be solved using the following modules: \n\n'
       for v in moduleConfig["Compatible Solvers"]:
-        moduleReadmeString += '   - :ref:`' + v + ' <module-solver-' + v.lower(
-        ).replace('/', '-').replace(' ', '') + '>`\n'
+        moduleReadmeString += '   - :ref:`' + v + ' <module-solver-' + v.lower().replace('/', '-').replace(' ', '') + '>`\n'
 
     if ('Results' in moduleConfig):
-      moduleReadmeString += '\n.. _module-' + moduleRelPath.lower().replace(
-          '/', '-') + '-results:\n\n'
+      moduleReadmeString += '\n.. _module-' + moduleRelPath.lower().replace('/', '-') + '-results:\n\n'
       moduleReadmeString += '\nResults\n'
       moduleReadmeString += '----------------------------------\n\n'
       moduleReadmeString += 'These are the results produced by this solver: \n\n'
       for v in moduleConfig["Results"]:
-        moduleReadmeString += createVariableDescription('e["Results"]',
-                                                        moduleRelPath, v)
+        moduleReadmeString += createVariableDescription('e["Results"]', moduleRelPath, v)
 
     if ('Variables Configuration' in moduleConfig):
-      moduleReadmeString += '\n.. _module-' + moduleRelPath.lower().replace(
-          '/', '-') + '-varsettings:\n\n'
+      moduleReadmeString += '\n.. _module-' + moduleRelPath.lower().replace('/', '-') + '-varsettings:\n\n'
       moduleReadmeString += '\nVariable-Specific Settings\n'
       moduleReadmeString += '----------------------------------\n\n'
       moduleReadmeString += 'These are settings required by this module that are added to each of the experiment\'s variables when this module is selected.\n\n'
       for v in moduleConfig["Variables Configuration"]:
-        moduleReadmeString += createVariableDescription(
-            'e["Variables"][*index*]', moduleRelPath, v)
+        moduleReadmeString += createVariableDescription(  'e["Variables"][*index*]', moduleRelPath, v)
 
     if ('Conditional Variables' in moduleConfig):
-      moduleReadmeString += '\n.. _module-' + moduleRelPath.lower().replace(
-          '/', '-') + '-distr-config:\n\n'
+      moduleReadmeString += '\n.. _module-' + moduleRelPath.lower().replace('/', '-') + '-distr-config:\n\n'
       moduleReadmeString += '\nDistribution Configuration\n'
       moduleReadmeString += '-----------------------------\n'
       moduleReadmeString += 'These are settings required by this distribution.\n\n'
@@ -220,8 +210,7 @@ def processModule(parentModuleConfig, source, destination, moduleRelPath, module
       else:
         moduleReadmeString += '\n*None*\n'
 
-    moduleReadmeString += '\n.. _module-' + moduleRelPath.lower().replace(
-        '/', '-') + '-config:\n\n'
+    moduleReadmeString += '\n.. _module-' + moduleRelPath.lower().replace('/', '-') + '-config:\n\n'
     moduleReadmeString += '\nConfiguration\n'
     moduleReadmeString += '-----------------------------\n'
     moduleReadmeString += 'These are settings required by this module.\n\n'
@@ -232,8 +221,7 @@ def processModule(parentModuleConfig, source, destination, moduleRelPath, module
       moduleReadmeString += '\n*None*\n'
 
     if ('Termination Criteria' in moduleConfig):
-      moduleReadmeString += '\n.. _module-' + moduleRelPath.lower().replace(
-          '/', '-') + '-criteria:\n\n'
+      moduleReadmeString += '\n.. _module-' + moduleRelPath.lower().replace('/', '-') + '-criteria:\n\n'
       moduleReadmeString += '\nTermination Criteria\n'
       moduleReadmeString += '----------------------------------\n\n'
       moduleReadmeString += 'These are the customizable criteria that indicates whether the solver should continue or finish execution. Korali will stop when at least one of these conditions are met. The criteria is expressed in C++ since it is compiled and evaluated as seen here in the engine. \n\n'
@@ -249,8 +237,7 @@ def processModule(parentModuleConfig, source, destination, moduleRelPath, module
     #  moduleReadmeString += createVariableDescription('e', moduleRelPath, v)
 
     if ('Module Defaults' in moduleConfig):
-      moduleReadmeString += '\n.. _module-' + moduleRelPath.lower().replace(
-          '/', '-') + '-defaults:\n\n'
+      moduleReadmeString += '\n.. _module-' + moduleRelPath.lower().replace('/', '-') + '-defaults:\n\n'
       moduleReadmeString += '\nDefault Configuration\n'
       moduleReadmeString += '----------------------------------\n\n'
       moduleReadmeString += 'These following configuration will be assigned by default. Any settings defined by the user will override the given settings specified in these defaults.\n\n'
@@ -258,8 +245,7 @@ def processModule(parentModuleConfig, source, destination, moduleRelPath, module
       moduleReadmeString += '    ' + json.dumps(moduleConfig['Module Defaults'], sort_keys=True, indent=4).replace('}', '    }')
 
     if ('Variable Defaults' in moduleConfig):
-      moduleReadmeString += '\n\n.. _module-' + moduleRelPath.lower().replace(
-          '/', '-') + '-var-defaults:\n\n'
+      moduleReadmeString += '\n\n.. _module-' + moduleRelPath.lower().replace('/', '-') + '-var-defaults:\n\n'
       moduleReadmeString += '\nVariable Defaults\n'
       moduleReadmeString += '----------------------------------\n\n'
       moduleReadmeString += 'These following configuration will be assigned to each of the experiment variables by default. Any settings defined by the user will override the given settings specified in these defaults.\n\n'

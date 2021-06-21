@@ -61,7 +61,7 @@ int main(int argc, char *argv[])
   // k["Profiling"]["Frequency"] = 60;
 
   k["Conduit"]["Type"] = "Distributed";
-  k["Conduit"]["Communicator"] = MPI_COMM_WORLD;
+  korali::setKoraliMPIComm(MPI_COMM_WORLD);
 
   // Adding custom setting to run the environment dumping the state files during testing
   e["Problem"]["Custom Settings"]["Dump Frequency"] = 0.1;

@@ -77,6 +77,7 @@ int main(int argc, char *argv[])
 
   auto k = korali::Engine();
 
+  k["Conduit"]["Type"] = "Distributed";
   korali::setKoraliMPIComm(MPI_COMM_WORLD);
   k.run(e);
 }

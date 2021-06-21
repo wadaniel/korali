@@ -327,7 +327,6 @@ template <typename T>
 T normalLogCDF(const T &x, const T &mean, const T &sigma)
 {
   /* Code based on https://github.com/ampl/gsl/blob/master/specfunc/erfc.c */
-
   T z = (x-mean)/(sigma*M_SQRT2);
   if (z*z < 10.*GSL_ROOT6_DBL_EPSILON)
   {
@@ -335,8 +334,8 @@ T normalLogCDF(const T &x, const T &mean, const T &sigma)
     /* series for -1/2 Log[Erfc[Sqrt[Pi] y]] */
     const T c3 = (4.0 - M_PI)/3.0;
     const T c4 = 2.0*(1.0 - M_PI/3.0);
-    const T c5 = -0.001829764677455021;  /* (96.0 - 40.0*M_PI + 3.0*M_PI*M_PI)/30.0  */
-    const T c6 =  0.02629651521057465;   /* 2.0*(120.0 - 60.0*M_PI + 7.0*M_PI*M_PI)/45.0 */
+    const T c5 = -0.001829764677455021;
+    const T c6 =  0.02629651521057465;
     const T c7 = -0.01621575378835404;
     const T c8 =  0.00125993961762116;
     const T c9 =  0.00556964649138;
@@ -347,7 +346,8 @@ T normalLogCDF(const T &x, const T &mean, const T &sigma)
     const T c14 =  0.00048204;
     T series = c8 + y*(c9 + y*(c10 + y*(c11 + y*(c12 + y*(c13 + c14*y)))));
     series = y*(1.0 + y*(1.0 + y*(c3 + y*(c4 + y*(c5 + y*(c6 + y*(c7 + y*series)))))));
-    return -2.0 * series;
+	const T log1mErf = -2. * series; // log(1-erf) for erf close to 0.
+    return std::log(-log1mErf); // approximately log(erf), since log(1-erf) approximately erf for erf close to 0.
   }
   else if (z > 8.) 
 	return log_erf8(z);

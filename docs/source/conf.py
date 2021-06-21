@@ -19,7 +19,6 @@ from builders import buildExamples as be
 from builders import buildFeatures as bf
 from builders import buildModules as bm
 from builders import buildTools as bt
-from builders import buildTests as btst
 
 import build_all_source
 
@@ -38,7 +37,6 @@ be.build_examples('../../examples/', './examples/')
 bf.build_features('../../examples/features/', './features/')
 bm.build_modules('../../source/modules/', './modules/')
 bt.build_tools('../../python/korali/', './using/tools/')
-btst.build_tests('../../tests/', './dev/')
 
 # Run doxygen
 sp.run('(cd .. && doxygen)', shell=True) # compile the xml source

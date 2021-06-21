@@ -34,4 +34,4 @@ Run the script with an input argument (Ranks Per Worker):
 
 .. code-block:: bash
 
-    mpirun -n 13./run-tmcmc 4
+    mpirun -n 13 ./run-tmcmc 4

@@ -11,6 +11,7 @@
 #define _USE_MATH_DEFINES
 
 #include <cmath>
+#include <gsl/gsl_sf.h>
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_sf_gamma.h>
@@ -232,91 +233,6 @@ T normalCDF(const T &x, const T &mean, const T &sigma)
 }
 
 /**
-* @brief Estimates exp(x*x)*erfc(x) for 8 < x < 100 
-* @param x evaluation point
-* @return The complementary error function multiplied by exp(x^2)
-*/
-template <typename T>
-inline static T erfc8_sum(T x)
-{
-  /* estimates exp(x*x)*erfc(x) valid for 8 < x < 100 */
-  /* This is based on index 5725 in Hart et al */
-
-  static T P[] = {
-      2.97886562639399288862,
-      7.409740605964741794425,
-      6.1602098531096305440906,
-      5.019049726784267463450058,
-      1.275366644729965952479585264,
-      0.5641895835477550741253201704
-  };
-  static T Q[] = {
-      3.3690752069827527677,
-      9.608965327192787870698,
-      17.08144074746600431571095,
-      12.0489519278551290360340491,
-      9.396034016235054150430579648,
-      2.260528520767326969591866945,
-      1.0
-  };
-  T num=0.0, den=0.0;
-  int i;
-
-  num = P[5];
-  for (i=4; i>=0; --i) {
-      num = x*num + P[i];
-  }
-  den = Q[6];
-  for (i=5; i>=0; --i) {
-      den = x*den + Q[i];
-  }
-
-  return num/den;
-}
-
-/**
-* @brief Estimates erfc(x) for 8 < x < 100 
-* @param x evaluation point
-* @return The complementary error function 
-*/
-template <typename T>
-inline static T erfc8(T x)
-{
-  T e;
-  e = erfc8_sum(x);
-  e *= std::exp(-x*x);
-  return e;
-}
-
-/**
-* @brief Estimates log(erfc(x)) for 8 < x < 100 
-* @param x evaluation point
-* @return The log of the complementary error function 
-*/
-template <typename T>
-inline static T log_erfc8(T x)
-{
-  T e;
-  e = erfc8_sum(x);
-  e = std::log(e) - x*x;
-  return e;
-}
-
-/**
-* @brief Estimates log(erf(x)) for 8 < x < 100 
-* @param x evaluation point
-* @return The log of the error function 
-*/
-template <typename T>
-inline static T log_erf8(T x)
-{
-  T e;
-  e = erfc8(x);
-  e = std::log(1.-e);
-  return e;
-}
-
-/**
 * @brief Computes the log of the cumulative distribution function of a normal distribution.
 * @param x evaluation point
 * @param mean Mean of normal distribution
@@ -326,33 +242,8 @@ inline static T log_erf8(T x)
 template <typename T>
 T normalLogCDF(const T &x, const T &mean, const T &sigma)
 {
-  /* Code based on https://github.com/ampl/gsl/blob/master/specfunc/erfc.c */
-  T z = (x-mean)/(sigma*M_SQRT2);
-  if (z*z < 10.*GSL_ROOT6_DBL_EPSILON)
-  {
-    const T y = z / M_SQRTPI;
-    /* series for -1/2 Log[Erfc[Sqrt[Pi] y]] */
-    const T c3 = (4.0 - M_PI)/3.0;
-    const T c4 = 2.0*(1.0 - M_PI/3.0);
-    const T c5 = -0.001829764677455021;
-    const T c6 =  0.02629651521057465;
-    const T c7 = -0.01621575378835404;
-    const T c8 =  0.00125993961762116;
-    const T c9 =  0.00556964649138;
-    const T c10 = -0.0045563339802;
-    const T c11 =  0.0009461589032;
-    const T c12 =  0.0013200243174;
-    const T c13 = -0.00142906;
-    const T c14 =  0.00048204;
-    T series = c8 + y*(c9 + y*(c10 + y*(c11 + y*(c12 + y*(c13 + c14*y)))));
-    series = y*(1.0 + y*(1.0 + y*(c3 + y*(c4 + y*(c5 + y*(c6 + y*(c7 + y*series)))))));
-	const T log1mErf = -2. * series; // log(1-erf) for erf close to 0.
-    return std::log(-log1mErf); // approximately log(erf), since log(1-erf) approximately erf for erf close to 0.
-  }
-  else if (z > 8.) 
-	return log_erf8(z);
-  else
-  	return std::log(0.5 - 0.5*std::erff(z));
+  const T z = (x-mean)/(sigma*M_SQRT2);
+  return std::log(0.5)+gsl_sf_log_erfc(-z);
 }
 
 /**
@@ -378,7 +269,8 @@ T normalCCDF(const T &x, const T &mean, const T &sigma)
 template <typename T>
 T normalLogCCDF(const T &x, const T &mean, const T &sigma)
 {
-  return std::log(0.5) + gsl_sf_log_erfc((x-mean)/(sigma*M_SQRT2));
+  const T z = (x-mean)/(sigma*M_SQRT2);
+  return std::log(0.5) + gsl_sf_log_erfc(z);
 }
 
 /**

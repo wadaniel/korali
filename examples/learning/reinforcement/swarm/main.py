@@ -21,9 +21,10 @@ if __name__ == '__main__':
     numNearestNeighbours = args["numNearestNeighbours"]
     assert numIndividuals > numNearestNeighbours, print("numIndividuals must be bigger than numNearestNeighbours")
     
-    sim  = swarm( numIndividuals )
+    sim  = swarm( numIndividuals, numNearestNeighbours )
     step = 0
-    while step < numTimeSteps:
+    done = False
+    while (step < numTimeSteps) and not done:
         print("timestep {}/{}".format(step+1, numTimeSteps))
         # if enable, plot current configuration
         if args["visualize"]:
@@ -34,33 +35,21 @@ if __name__ == '__main__':
             # plotSwarmCentered( sim, step )
 
         # compute pair-wise distances and view-angles
-        distancesMat, anglesMat, directionMat = sim.computeStates()
+        done = sim.preComputeStates()
 
         # update swimming directions
         for i in np.arange(sim.N):
             print("agent {}/{}".format(i+1, sim.N))
-            # get row giving distances / angle to other swimmers
-            # TODO?: Termination state in case distance matrix has entries < eps
-            distances = distancesMat[i,:]
-            angles    = anglesMat[i,:]
-            directions= directionMat[i,:,:]
-            # sort and select nearest neighbours
-            idSorted = np.argsort( distances )
-            idNearestNeighbours = idSorted[:numNearestNeighbours]
-            distancesNearestNeighbours = distances[ idNearestNeighbours ]
-            anglesNearestNeighbours = angles[ idNearestNeighbours ]
-            directionNearestNeighbours = directions[ idNearestNeighbours,:]
-            # the state is the distance (or direction?) and angle to the nearest neigbours
-            # for Newton policy it is the directions to the nearest neighbours
-            state  = directionNearestNeighbours
+            # for Newton policy state is the directions to the nearest neighbours
+            state  = sim.getState(i)
             print("state:", state)
             # set action
             action = sim.fishes[i].newtonPolicy( state )
             print("action:", action)
             if math.isclose( np.linalg.norm(action),  1.0 ):
                 sim.fishes[i].wishedDirection = action
-            # get reward
-            reward = sim.fishes[i].getReward(distancesNearestNeighbours)
+            # get reward (Careful: assumes sim.state(i) was called before)
+            reward = sim.getReward( i )
             print("reward:", reward)
             # rotation in wished direction
             sim.fishes[i].updateDirection()

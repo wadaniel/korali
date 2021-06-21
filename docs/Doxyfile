@@ -1,5 +1,5 @@
 # Project specific Doxygen settings
-PROJECT_NAME           = Korali
+PROJECT_NAME           = korali
 XML_OUTPUT             = xml
 INPUT                  = ../source
 OUTPUT_DIRECTORY       = ./doxygen

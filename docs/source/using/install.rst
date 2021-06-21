@@ -67,7 +67,7 @@ To uninstall Korali, run ``cd build && ninja uninstall`` or manually delete the 
 
 5. Setup environment
 
-  The ``LD_LIBRARY_PATH``, ``PATH``, ``PYTHONPATH``environment variables need to be correctly setup for the linker to find the correct libraries at the moment of runtime. We provide a tool that facilitates this task:
+  The ``LD_LIBRARY_PATH``, ``PATH``, ``PYTHONPATH`` environment variables need to be correctly setup for the linker to find the correct libraries at the moment of runtime. We provide a tool that facilitates this task:
   
   .. code-block:: bash
   

@@ -580,9 +580,8 @@ std::vector<float> Continuous::calculateImportanceWeightGradient(const std::vect
     {
       importanceWeightGradients[i] *= importanceWeight;
 
-      const float p1 = oldPolicy.distributionParameters[i];
-      const float p2 = curPolicy.distributionParameters[i];
- 
+      //const float p1 = oldPolicy.distributionParameters[i];
+      //const float p2 = curPolicy.distributionParameters[i];
       //printf("iwgrad[%zu]: %f (%f %f)\n", i, importanceWeightGradients[i], p1, p2);
     }
 

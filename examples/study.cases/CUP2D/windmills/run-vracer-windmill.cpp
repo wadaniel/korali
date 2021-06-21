@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
   }
 
   // Storing parameters
-  _argc = argc
+  _argc = argc;
   _argv = argv;
 
   // Getting number of workers

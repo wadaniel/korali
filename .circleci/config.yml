@@ -9,10 +9,6 @@ executors:
     docker:
       - image: docker.io/cselab/fedora_openmpi_onednn:latest
   
-  macos_openmpi_onednn:
-    docker:
-      - image: docker.io/cselab/macos_openmpi_onednn:latest      
-      
 jobs:
   build:
     parameters:
@@ -49,7 +45,7 @@ jobs:
           command: ninja -C build
       - run:
           name: test
-          command: source tools/env/set_env.sh build; if [ "<< parameters.runTests >>" == "true" ]; then OMP_NUM_THREADS=4 meson test -C build; fi
+          command: source tools/env/set_env.sh build; if [ "<< parameters.runTests >>" == "true" ]; then OMP_NUM_THREADS=2 meson test -C build; fi
       - run:
           name: install
           command: meson install -C build
@@ -62,22 +58,31 @@ jobs:
 workflows:
   korali_release:
     jobs:
-      - build:
+      - build: 
           name: ubuntu_openmpi_gcc
           image: ubuntu_openmpi_onednn
           buildtype: release
           runCoverage: 'true'
+          CC: 'gcc'
+          CXX: 'g++'
       - build:
           name: fedora_openmpi_gcc
           image: fedora_openmpi_onednn
           buildtype: release
           runCoverage: 'true'
+          CC: 'gcc'
+          CXX: 'g++'
       - build:
-          name: macos_openmpi_clang
-          image: macos_openmpi_onednn
-          buildargs: ""
-          CC: /home/linuxbrew/.linuxbrew/bin/clang
-          CXX: /home/linuxbrew/.linuxbrew/bin/clang++
-          runTests: 'false'
+          name: ubuntu_openmpi_clang
+          image: ubuntu_openmpi_onednn
           buildtype: release
-          
+          runCoverage: 'true'
+          CC: 'clang'
+          CXX: 'clang++'
+      - build:
+          name: fedora_openmpi_clang
+          image: fedora_openmpi_onednn
+          buildtype: release
+          runCoverage: 'true'
+          CC: 'clang'
+          CXX: 'clang++'

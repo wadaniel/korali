@@ -11,7 +11,11 @@ namespace korali
 {
 
 
+/**
+* @brief Remembers whether the MPI was given by the used. Otherwise use MPI_COMM_WORLD
+*/
 bool __isMPICommGiven = false;
+
 MPI_Comm __KoraliGlobalMPIComm;
 MPI_Comm __koraliWorkerMPIComm;
 #define __KORALI_MPI_MESSAGE_JSON_TAG 1

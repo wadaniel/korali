@@ -34,15 +34,15 @@ class Continuous : public Agent
 {
   public: 
   /**
-  * @brief Specifies which probability distribution to use to generate the actions of the agent.
+  * @brief Specifies which probability distribution to use for the policy.
   */
    std::string _policyDistribution;
   /**
-  * @brief [Internal Use] Gaussian random number generator for the agent's action.
+  * @brief [Internal Use] Gaussian random number generator to generate the agent's action.
   */
    korali::distribution::univariate::Normal* _normalGenerator;
   /**
-  * @brief [Internal Use] Shift required for bounded actions.
+  * @brief [Internal Use] Shifts required for bounded actions.
   */
    std::vector<float> _actionShifts;
   /**

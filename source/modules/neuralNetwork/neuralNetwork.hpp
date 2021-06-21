@@ -104,11 +104,11 @@ class NeuralNetwork : public Module
   */
    knlohmann::json _layers;
   /**
-  * @brief Provides the timesteps to be expected for the input/output data.
+  * @brief Provides the sequence length for the input/output data.
   */
    size_t _timestepCount;
   /**
-  * @brief Specifies the batch sizes for the NN input/output data.
+  * @brief Specifies the batch sizes.
   */
    std::vector<size_t> _batchSizes;
   /**

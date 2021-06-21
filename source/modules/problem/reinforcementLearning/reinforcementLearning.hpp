@@ -32,11 +32,11 @@ class ReinforcementLearning : public Problem
 {
   public: 
   /**
-  * @brief Number of concurrent agents sharing a common policy interacting in a given environment.
+  * @brief Number of agents in a given environment. All agents share the same policy .
   */
    size_t _agentsPerEnvironment;
   /**
-  * @brief Function to initialize and run a new environment.
+  * @brief Function to initialize and run an episode in the environment.
   */
    std::uint64_t _environmentFunction;
   /**
@@ -44,15 +44,15 @@ class ReinforcementLearning : public Problem
   */
    size_t _actionsBetweenPolicyUpdates;
   /**
-  * @brief Generation intervals at which the current policy will be forcibly tested (even if it does not meet the threshold).
+  * @brief Number of generations after which the policy will be forcibly tested (even if it does not meet the threshold).
   */
    size_t _testingFrequency;
   /**
-  * @brief Minimum value (r) of the episode's average training reward for a policy to be considered as candidate.
+  * @brief Minimum value of the episode's cummulative sum of rewards for a policy to be considered as candidate.
   */
    float _trainingRewardThreshold;
   /**
-  * @brief Number of test episodes to run the policy (without noise) for, for which the average reward will serve to evaluate the reward termination criteria.
+  * @brief Number of test episodes to run the policy (without noise) for, for which the average average sum of rewards will serve to evaluate the termination criteria.
   */
    size_t _policyTestingEpisodes;
   /**
@@ -60,19 +60,19 @@ class ReinforcementLearning : public Problem
   */
    knlohmann::json _customSettings;
   /**
-  * @brief [Internal Use] Stores the number of parameters that make the action space.
+  * @brief [Internal Use] Stores the dimension of the action space.
   */
    size_t _actionVectorSize;
   /**
-  * @brief [Internal Use] Stores the number of parameters that make the state space.
+  * @brief [Internal Use] Stores the dimension of the state space.
   */
    size_t _stateVectorSize;
   /**
-  * @brief [Internal Use] Stores the indexes of the number of variables that constitute the action vector.
+  * @brief [Internal Use] Stores the indexes of the variables that constitute the action vector.
   */
    std::vector<size_t> _actionVectorIndexes;
   /**
-  * @brief [Internal Use] Stores the indexes of the number of variables that constitute the action vector.
+  * @brief [Internal Use] Stores the indexes of the variables that constitute the action vector.
   */
    std::vector<size_t> _stateVectorIndexes;
   

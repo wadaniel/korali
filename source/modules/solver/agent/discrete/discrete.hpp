@@ -33,7 +33,7 @@ class Discrete : public Agent
 {
   public: 
   /**
-  * @brief Specifies the probability of taking an (exploratory) random action. This is the epsilon in the epsilon-greedy strategy.
+  * @brief Specifies the probability of taking a random action for the epsilon-greedy strategy.
   */
    float _randomActionProbability;
   

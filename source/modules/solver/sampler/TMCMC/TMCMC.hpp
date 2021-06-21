@@ -333,73 +333,73 @@ public:
   
 
 
-  /*
+  /**
   * @brief Sets the burn in steps per generation
   */
   void setBurnIn();
 
-  /*
+  /**
   * @brief Prepare Generation before evaluation.
   */
   void prepareGeneration();
 
-  /*
+  /**
   * @brief Process Generation after receiving all results.
   */
   void processGeneration();
 
-  /*
+  /**
   * @brief Helper function for annealing exponent update/
   * @param fj Pointer to exponentiated probability values.
   * @param fn Current exponent.
   * @param pj Number of values in fj array.
-  * @paran objTol
+  * @param objTol Tolerance
   * @param xmin Location of minimum, the new exponent.
   * @param fmin Found minimum in search.
   */
   void minSearch(double const *fj, size_t fn, double pj, double objTol, double &xmin, double &fmin);
 
-  /*
+  /**
   * @brief Collects results after sampleevaluation.
   */
   void processCandidate(const size_t sampleId);
 
-  /*
+  /**
   * @brief Calculate gradients of loglikelihood (only relevant for mTMCMC).
   */
   void calculateGradients(std::vector<Sample> &samples);
 
-  /*
+  /**
   * @brief Calculate sample wise proposal distributions (only relevant for mTMCMC).
   */
   void calculateProposals(std::vector<Sample> &samples);
 
-  /*
+  /**
   * @brief Generate candidate from leader.
   */
   void generateCandidate(const size_t sampleId);
 
-  /*
+  /**
   * @brief Add leader into sample database.
   */
   void updateDatabase(const size_t sampleId);
 
-  /*
+  /**
   * @brief Calculate acceptance probability.
   */
   double calculateAcceptanceProbability(const size_t sampleId);
 
-  /*
+  /**
   * @brief Helper function to calculate objective (CVaR) for min search.
   */
   static double tmcmc_objlogp(double x, const double *fj, size_t fn, double pj, double zero);
 
-  /*
+  /**
   * @brief Helper function to calculate objective (CVaR) for min search.
   */
   static double objLog(const gsl_vector *v, void *param);
 
-  /*
+  /**
   * @brief Number of variables to sample.
   */
   size_t N;

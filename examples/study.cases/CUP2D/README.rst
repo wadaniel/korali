@@ -11,7 +11,9 @@ CubismUP-2D has the following prerequisite libraries:
 - HDF5, with the $HDF5_ROOT environment variable defined.
 
 On Piz Daint:
+
 .. code-block:: bash
+
 	module load module load daint-gpu GSL cray-hdf5-parallel cray-fftw cray-python
 	export GSL_ROOT=/apps/dom/UES/jenkins/7.0.UP02/gpu/easybuild/software/GSL/2.5-CrayGNU-20.11
 	export MPICXX=CC
@@ -19,11 +21,12 @@ On Piz Daint:
 	export CXX=CC
 	export OMP_NUM_THREADS=12
 
-
 On Panda/Falcon:
+
 .. code-block:: bash
-	module load gnu mpich python hdf5
-	export GSL_ROOT=/usr
+
+  	module load gnu mpich python hdf5
+  	export GSL_ROOT=/usr
 
 Setup
 -----
@@ -31,13 +34,15 @@ Setup
 Install CubismUP-2D by running:
 
 .. code-block:: bash
+
    ./install_cup.sh
 
 After installing the flow solver you can go to either of the provided examples and compile them using
 
 .. code-block:: bash
-	cd EXAMPLE
-	make -j
+
+	  cd EXAMPLE
+	  make -j
 
 Running
 -------

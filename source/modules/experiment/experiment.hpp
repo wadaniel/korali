@@ -180,7 +180,14 @@ class Experiment: public Module
   */
   double _resultSavingTime;
 
+  /**
+  * @brief For testing purposes, this field establishes whether the engine is the one to run samples (default = false) or a custom function (true)
+  */
   bool _overrideEngine = false;
+
+  /**
+   * @brief For testing purposes, this field establishes which custom function to use to override the engine on sample execution for testing.
+   */
   std::function<void(Sample &)> _overrideFunction;
 
   /**

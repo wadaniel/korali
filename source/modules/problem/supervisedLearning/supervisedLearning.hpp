@@ -30,19 +30,19 @@ class SupervisedLearning : public Problem
 {
   public: 
   /**
-  * @brief Stores the batch size of the training inputs/outputs.
+  * @brief Stores the batch size of the training dataset.
   */
    size_t _trainingBatchSize;
   /**
-  * @brief Stores the batch size of the inference inputs/outputs.
+  * @brief Stores the batch size of the inference dataset.
   */
    size_t _inferenceBatchSize;
   /**
-  * @brief Stores the maximum number of timesteps on the input and solution data.
+  * @brief Stores the length of the sequence for recurrent neural networks.
   */
    size_t _maxTimesteps;
   /**
-  * @brief Provides the input data with layout T*N*IC, where T is the timestep, N is the batch size and IC is the vector size of the input.
+  * @brief Provides the input data with layout T*N*IC, where T is the sequence length, N is the batch size and IC is the vector size of the input.
   */
    std::vector<std::vector<std::vector<float>>> _inputData;
   /**
@@ -50,11 +50,11 @@ class SupervisedLearning : public Problem
   */
    size_t _inputSize;
   /**
-  * @brief Provides the solution data with layout N*OC, where N is the batch size and OC is the vector size of the input.
+  * @brief Provides the solution for one-step ahead prediction with layout N*OC, where N is the batch size and OC is the vector size of the output.
   */
    std::vector<std::vector<float>> _solutionData;
   /**
-  * @brief Indicates the vector size of the solution (OC).
+  * @brief Indicates the vector size of the output (OC).
   */
    size_t _solutionSize;
   

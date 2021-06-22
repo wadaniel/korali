@@ -17,7 +17,7 @@ RADIUS=${RADIUS:-0.2}
 # Settings for simulation
 echo "###############################"
 echo "setting simulation options"
-OPTIONS="-bpdx $BPDX -bpdy $BPDY -levelMax $LEVELS -Rtol $RTOL -Ctol $CTOL -extent $EXTENT -CFL $CFL -poissonTol $PT -poissonTolRel $PTR -bAdaptChiGradient 1 -tdump 0.1 -nu $NU -tend 100 -muteAll 0 -verbose 0"
+OPTIONS="-bpdx $BPDX -bpdy $BPDY -levelMax $LEVELS -Rtol $RTOL -Ctol $CTOL -extent $EXTENT -CFL $CFL -poissonTol $PT -poissonTolRel $PTR -bAdaptChiGradient 1 -tdump 0.1 -nu $NU -tend 0 -muteAll 0 -verbose 0"
 echo $OPTIONS
 echo "----------------------------"
 # Setting for obstacle

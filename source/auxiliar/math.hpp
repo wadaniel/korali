@@ -11,10 +11,12 @@
 #define _USE_MATH_DEFINES
 
 #include <cmath>
+#include <gsl/gsl_sf.h>
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_sf_gamma.h>
 #include <gsl/gsl_randist.h>
+#include <gsl/gsl_sf_erf.h>
 #include <limits>
 #include <stdlib.h>
 #include <string>
@@ -227,7 +229,7 @@ T normalLogDensity(const T &x, const T &mean, const T &sigma)
 template <typename T>
 T normalCDF(const T &x, const T &mean, const T &sigma)
 {
-  return 0.5 + 0.5*erff((x-mean)/(sigma*M_SQRT2));
+  return 0.5 + 0.5*std::erff((x-mean)/(sigma*M_SQRT2));
 }
 
 /**
@@ -240,7 +242,8 @@ T normalCDF(const T &x, const T &mean, const T &sigma)
 template <typename T>
 T normalLogCDF(const T &x, const T &mean, const T &sigma)
 {
-  return log(0.5 + 0.5*erff((x-mean)/(sigma*M_SQRT2)));
+  const T z = (x-mean)/(sigma*M_SQRT2);
+  return std::log(0.5)+gsl_sf_log_erfc(-z);
 }
 
 /**
@@ -253,9 +256,8 @@ T normalLogCDF(const T &x, const T &mean, const T &sigma)
 template <typename T>
 T normalCCDF(const T &x, const T &mean, const T &sigma)
 {
-  return 0.5 - 0.5*erff((x-mean)/(sigma*M_SQRT2));
+  return 0.5 - 0.5*std::erff((x-mean)/(sigma*M_SQRT2));
 }
-
 
 /**
 * @brief Computes the log of the tail distribution of a normal distribution (complementary cumulative distribution).
@@ -267,7 +269,8 @@ T normalCCDF(const T &x, const T &mean, const T &sigma)
 template <typename T>
 T normalLogCCDF(const T &x, const T &mean, const T &sigma)
 {
-  return log(0.5 - 0.5*erff((x-mean)/(sigma*M_SQRT2)));
+  const T z = (x-mean)/(sigma*M_SQRT2);
+  return std::log(0.5) + gsl_sf_log_erfc(z);
 }
 
 /**

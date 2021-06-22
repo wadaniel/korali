@@ -269,13 +269,13 @@ void TMCMC::processGeneration()
   {
     _k->_logger->logWarning("Normal", "Annealing Step larger than Max Rho Update, updating Annealing Exponent by %f (Max Rho Update). \n", _maxAnnealingExponentUpdate);
     _annealingExponent = _previousAnnealingExponent + _maxAnnealingExponentUpdate;
-    _coefficientOfVariation = sqrt(tmcmc_objlogp(_annealingExponent, _sampleLogLikelihoodDatabase.data(), _populationSize, _previousAnnealingExponent, _targetCoefficientOfVariation)) + _targetCoefficientOfVariation;
+    _coefficientOfVariation = sqrt(calculateSquaredCVDifference(_annealingExponent, _sampleLogLikelihoodDatabase.data(), _populationSize, _previousAnnealingExponent, _targetCoefficientOfVariation)) + _targetCoefficientOfVariation;
   }
   else if (xmin < 1.0 && xmin < _previousAnnealingExponent + _minAnnealingExponentUpdate)
   {
     _k->_logger->logWarning("Normal", "Annealing Step smaller than Min Rho Update, updating Annealing Exponent by %f (Min Rho Update). \n", _minAnnealingExponentUpdate);
     _annealingExponent = _previousAnnealingExponent + _minAnnealingExponentUpdate;
-    _coefficientOfVariation = sqrt(tmcmc_objlogp(_annealingExponent, &_sampleLogLikelihoodDatabase[0], _populationSize, _previousAnnealingExponent, _targetCoefficientOfVariation)) + _targetCoefficientOfVariation;
+    _coefficientOfVariation = sqrt(calculateSquaredCVDifference(_annealingExponent, &_sampleLogLikelihoodDatabase[0], _populationSize, _previousAnnealingExponent, _targetCoefficientOfVariation)) + _targetCoefficientOfVariation;
   }
   else
   {
@@ -686,7 +686,7 @@ double TMCMC::calculateAcceptanceProbability(const size_t sampleId)
   return P;
 }
 
-double TMCMC::tmcmc_objlogp(double x, const double *loglike, size_t Ns, double exponent, double targetCOV)
+double TMCMC::calculateSquaredCVDifference(double x, const double *loglike, size_t Ns, double exponent, double targetCOV)
 {
   std::vector<double> weight(Ns);
   const double loglike_max = gsl_stats_max(loglike, 1, Ns);
@@ -708,11 +708,11 @@ double TMCMC::tmcmc_objlogp(double x, const double *loglike, size_t Ns, double e
     return cov2;
 }
 
-double TMCMC::objLog(const gsl_vector *v, void *param)
+double TMCMC::calculateSquaredCVDifferenceOptimizationWrapper(const gsl_vector *v, void *param)
 {
   double x = gsl_vector_get(v, 0);
   fparam_t *fp = (fparam_t *)param;
-  return TMCMC::tmcmc_objlogp(x, fp->loglike, fp->Ns, fp->exponent, fp->cov);
+  return TMCMC::calculateSquaredCVDifference(x, fp->loglike, fp->Ns, fp->exponent, fp->cov);
 }
 
 void TMCMC::minSearch(double const *loglike, size_t Ns, double exponent, double objCov, double &xmin, double &fmin)
@@ -744,7 +744,7 @@ void TMCMC::minSearch(double const *loglike, size_t Ns, double exponent, double 
   gsl_vector_set_all(ss, Step);
 
   minex_func.n = 1;
-  minex_func.f = objLog;
+  minex_func.f = calculateSquaredCVDifferenceOptimizationWrapper;
   minex_func.params = &fp;
 
   T = gsl_multimin_fminimizer_nmsimplex;
@@ -775,7 +775,7 @@ void TMCMC::minSearch(double const *loglike, size_t Ns, double exponent, double 
 
   if (xmin >= 1.0)
   {
-    fmin = tmcmc_objlogp(1.0, loglike, Ns, exponent, objCov);
+    fmin = calculateSquaredCVDifference(1.0, loglike, Ns, exponent, objCov);
     xmin = 1.0;
   }
 

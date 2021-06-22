@@ -1126,7 +1126,9 @@ namespace
 
    ASSERT_NO_THROW(nn->setConfiguration(neuralNetworkConfig));
    ASSERT_NO_THROW(nn->applyVariableDefaults());
-   ASSERT_NO_THROW(nn->initialize());
+
+   // Not supported yet
+   ASSERT_ANY_THROW(nn->initialize());
 
    GRU* layer = dynamic_cast<GRU*>(nn->_pipelines[0][0]._layerVector[1]);
    ASSERT_NO_THROW(layer->applyVariableDefaults());
@@ -1167,21 +1169,23 @@ namespace
 
    ASSERT_NO_THROW(nn->setConfiguration(neuralNetworkConfig));
    ASSERT_NO_THROW(nn->applyVariableDefaults());
-   ASSERT_NO_THROW(nn->initialize());
+
+   // Not supported yet
+   ASSERT_ANY_THROW(nn->initialize());
 
    LSTM* layer = dynamic_cast<LSTM*>(nn->_pipelines[0][0]._layerVector[1]);
    ASSERT_NO_THROW(layer->applyVariableDefaults());
    knlohmann::json layerJs;
    ASSERT_NO_THROW(layer->getConfiguration(layerJs));
 
-   ASSERT_NO_THROW(layer->initialize());
-   layer->_depth = 10;
-   layer->_outputChannels = 10;
-   ASSERT_ANY_THROW(layer->initialize());
-   layer->_outputChannels = 1;
-   ASSERT_NO_THROW(layer->initialize());
-   layer->_depth = 1;
-   ASSERT_NO_THROW(layer->initialize());
+//   ASSERT_NO_THROW(layer->initialize());
+//   layer->_depth = 10;
+//   layer->_outputChannels = 10;
+//   ASSERT_ANY_THROW(layer->initialize());
+//   layer->_outputChannels = 1;
+//   ASSERT_NO_THROW(layer->initialize());
+//   layer->_depth = 1;
+//   ASSERT_NO_THROW(layer->initialize());
 
    nn->_mode = "Inference";
    ASSERT_ANY_THROW(layer->backwardData(0));

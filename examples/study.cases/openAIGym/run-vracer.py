@@ -8,8 +8,10 @@ from agent import *
 ####### Parsing arguments
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--env', help='Specifies which environment to run.', required=True)
+parser.add_argument('--env', help='Specifies which environment to run.', type=str, required=True)
+parser.add_argument('--policy', help='Specifies the policy distribution.', type=str, default="Normal")
 args = parser.parse_args()
+print(args)
 
 ####### Defining Korali Problem
 
@@ -19,7 +21,7 @@ e = korali.Experiment()
 
 ### Defining results folder and loading previous results, if any
 
-resultFolder = '_result_vracer_' + args.env + '/'
+resultFolder = '_result_vracer_' + args.policy + '_' + args.env + '/'
 e.loadState(resultFolder + '/latest');
 
 ### Initializing openAI Gym environment
@@ -46,7 +48,7 @@ e["Solver"]["Experience Replay"]["Off Policy"]["Cutoff Scale"] = 5.0
 e["Solver"]["Experience Replay"]["Off Policy"]["REFER Beta"] = 0.3
 e["Solver"]["Experience Replay"]["Off Policy"]["Target"] = 0.1
 
-e["Solver"]["Policy"]["Distribution"] = "Normal"
+e["Solver"]["Policy"]["Distribution"] = args.policy.replace("_"," ")
 e["Solver"]["State Rescaling"]["Enabled"] = True
 e["Solver"]["Reward"]["Rescaling"]["Enabled"] = True
 e["Solver"]["Reward"]["Rescaling"]["Frequency"] = 1000

@@ -179,19 +179,22 @@ class MCMC : public Sampler
 
   /**
   * @brief Generate new sample.
+  * @param sampleIdx Id of the sample to generate a candidate for
   */
   void generateCandidate(size_t sampleIdx);
 
   /**
   * @brief Cholesky decomposition of chain covariance matrix.
+  * @param inC Input matrix
+  * @param outL Output lower triangular decomposed matrix
   */
   void choleskyDecomp(const std::vector<double> &inC, std::vector<double> &outL) const;
 
   /**
   * @brief Process sample after evaluation.
+  * @param sampleId Id of the sample to process
   */
   void finishSample(size_t sampleId);
-
 
   /**
  * @brief Configures MCMC.

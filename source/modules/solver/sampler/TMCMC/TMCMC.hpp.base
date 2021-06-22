@@ -68,42 +68,58 @@ public:
   void minSearch(double const *fj, size_t fn, double pj, double objTol, double &xmin, double &fmin);
 
   /**
-  * @brief Collects results after sampleevaluation.
+  * @brief Collects results after sample evaluation.
+  * @param sampleId Id of the sample to process
   */
   void processCandidate(const size_t sampleId);
 
   /**
   * @brief Calculate gradients of loglikelihood (only relevant for mTMCMC).
+  * @param samples Samples to calculate gradients for
   */
   void calculateGradients(std::vector<Sample> &samples);
 
   /**
   * @brief Calculate sample wise proposal distributions (only relevant for mTMCMC).
+  * @param samples Samples to calculate proposal distributions for
   */
   void calculateProposals(std::vector<Sample> &samples);
 
   /**
   * @brief Generate candidate from leader.
+  * @param sampleId Id of the sample to generate
   */
   void generateCandidate(const size_t sampleId);
 
   /**
   * @brief Add leader into sample database.
+  * @param sampleId Id of the sample to update the database with
   */
   void updateDatabase(const size_t sampleId);
 
   /**
   * @brief Calculate acceptance probability.
+  * @param sampleId Id of the sample to calculate acceptance probability
+  * @return The acceptance probability of the given sample
   */
   double calculateAcceptanceProbability(const size_t sampleId);
 
   /**
   * @brief Helper function to calculate objective (CVaR) for min search.
+  * @param x Input value
+  * @param fj Input vector
+  * @param fn Vector size
+  * @param pj Input value
+  * @param zero Value of zero
+  * @return CVaR
   */
   static double tmcmc_objlogp(double x, const double *fj, size_t fn, double pj, double zero);
 
   /**
   * @brief Helper function to calculate objective (CVaR) for min search.
+  * @param v Input GSL vector
+  * @param param Input parameter
+  * @return CVaR
   */
   static double objLog(const gsl_vector *v, void *param);
 

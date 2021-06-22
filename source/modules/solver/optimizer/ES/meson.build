@@ -1,4 +1,4 @@
-module_name = 'optimizer'
+module_name = 'ES'
 
 module_header = files([ module_name + '.hpp'])
 module_source = files([ module_name + '.cpp'])
@@ -14,13 +14,3 @@ korali_include += include_directories('.')
 korali_source += module_header
 korali_source += module_source
 korali_config += module_config
-
-subdir('AdaBelief')
-subdir('Adam')
-subdir('CMAES')
-subdir('ES')
-subdir('DEA')
-subdir('gridSearch')
-subdir('MADGRAD')
-subdir('MOCMAES')
-subdir('Rprop')

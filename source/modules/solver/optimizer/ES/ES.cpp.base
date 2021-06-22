@@ -1,0 +1,196 @@
+#include "engine.hpp"
+#include "modules/solver/optimizer/ES/ES.hpp"
+#include "sample/sample.hpp"
+
+@startNamespace
+
+void @className::setInitialConfiguration()
+{
+  knlohmann::json problemConfig = (*_k)["Problem"];
+  _variableCount = _k->_variables.size();
+
+  // Establishing optimization goal
+  _bestEverValue = -std::numeric_limits<double>::infinity();
+
+  _previousBestEverValue = _bestEverValue;
+  _previousBestValue = _bestEverValue;
+  _currentBestValue = _bestEverValue;
+
+  if (_populationSize == 0) _populationSize = ceil(4.0 + floor(3 * log((double)_variableCount)));
+
+  // Allocating Memory
+  _samplePopulation.resize(_populationSize);
+  for (size_t i = 0; i < s_max; i++) _samplePopulation[i].resize(_variableCount);
+
+  _currentMean.resize(_variableCount);
+  _previousMean.resize(_variableCount);
+  _bestEverVariables.resize(_variableCount);
+  _currentBestVariables.resize(_variableCount);
+  _valueVector.resize(_populationSize);
+
+  if(_mirroredSampling)
+  {
+    if(_populationSize % 2 == 1) KORALI_LOG_ERROR("Mirrored Sampling can only be applied with an even Sample Population (is %zu)", _populationSize);
+  }
+
+  _covarianceMatrix.resize(_variableCount * _variableCount);
+
+  // Initializing variable defaults
+  for (size_t i = 0; i < _variableCount; ++i)
+  {
+    if (std::isfinite(_k->_variables[i]->_initialValue) == false)
+    {
+      if (std::isfinite(_k->_variables[i]->_lowerBound) == false) KORALI_LOG_ERROR("Initial (Mean) Value of variable \'%s\' not defined, and cannot be inferred because variable lower bound is not finite.\n", _k->_variables[i]->_name.c_str());
+      if (std::isfinite(_k->_variables[i]->_upperBound) == false) KORALI_LOG_ERROR("Initial (Mean) Value of variable \'%s\' not defined, and cannot be inferred because variable upper bound is not finite.\n", _k->_variables[i]->_name.c_str());
+      _k->_variables[i]->_initialValue = (_k->_variables[i]->_upperBound + _k->_variables[i]->_lowerBound) * 0.5;
+    }
+
+    if (std::isfinite(_k->_variables[i]->_initialStandardDeviation) == false)
+    {
+      if (std::isfinite(_k->_variables[i]->_lowerBound) == false) KORALI_LOG_ERROR("Initial (Mean) Value of variable \'%s\' not defined, and cannot be inferred because variable lower bound is not finite.\n", _k->_variables[i]->_name.c_str());
+      if (std::isfinite(_k->_variables[i]->_upperBound) == false) KORALI_LOG_ERROR("Initial Standard Deviation \'%s\' not defined, and cannot be inferred because variable upper bound is not finite.\n", _k->_variables[i]->_name.c_str());
+      _k->_variables[i]->_initialStandardDeviation = (_k->_variables[i]->_upperBound - _k->_variables[i]->_lowerBound) * 0.3;
+    }
+  }
+
+  _infeasibleSampleCount = 0;
+  _currentMinStandardDeviation = +std::numeric_limits<double>::infinity();
+  _currentMaxStandardDeviation = -std::numeric_limits<double>::infinity();
+}
+
+void @className::runGeneration()
+{
+  if (_k->_currentGeneration == 1) setInitialConfiguration();
+
+  // Initializing Sample Evaluation
+  std::vector<Sample> samples(_currentPopulationSize);
+  for (size_t i = 0; i < _currentPopulationSize; i++)
+  {
+    samples[i]["Module"] = "Problem";
+    samples[i]["Operation"] = operation;
+    samples[i]["Parameters"] = _samplePopulation[i];
+    samples[i]["Sample Id"] = i;
+    _modelEvaluationCount++;
+
+    KORALI_START(samples[i]);
+  }
+
+  // Waiting for samples to finish
+  KORALI_WAITALL(samples);
+
+  // Gathering evaluations
+  for (size_t i = 0; i < _currentPopulationSize; i++)
+    _valueVector[i] = KORALI_GET(double, samples[i], "F(x)");
+
+  updateDistribution();
+}
+
+void @className::prepareGeneration()
+{
+  for (size_t i = 0; i < _populationSize; ++i)
+  {
+    bool isFeasible;
+    do
+    {
+      std::vector<double> rands(_variableCount);
+      for(size_t d = 0; d < _variableCount; ++d) rands[d] = _normalGenerator->getRandomNumber();
+      sampleSingle(i, rands);
+
+      if (_hasDiscreteVariables) discretize(_samplePopulation[i]);
+
+      isFeasible = isSampleFeasible(_samplePopulation[i]);
+
+      _infeasibleSampleCount += isFeasible ? 0 : 1;
+
+    } while (isFeasible == false && (_infeasibleSampleCount < _maxInfeasibleResamplings));
+  }
+}
+
+void @className::sampleSingle(size_t sampleIdx, const std::vector<double>& randomNumbers)
+{
+    // TODO
+}
+
+void @className::updateDistribution()
+{
+  /* Generate _sortingIndex */
+  sort_index(_valueVector, _sortingIndex, _currentPopulationSize);
+
+  if ((_hasConstraints == false) || _isViabilityRegime)
+    _bestValidSample = _sortingIndex[0];
+  else
+  {
+    _bestValidSample = -1;
+    for (size_t i = 0; i < _currentPopulationSize; i++)
+      if (_sampleConstraintViolationCounts[_sortingIndex[i]] == 0) _bestValidSample = _sortingIndex[i];
+  }
+
+  /* update function value history */
+  _previousBestValue = _currentBestValue;
+
+  /* update current best */
+  _currentBestValue = _valueVector[_bestValidSample];
+
+  for (size_t d = 0; d < _variableCount; ++d) _currentBestVariables[d] = _samplePopulation[_bestValidSample][d];
+
+  /* update xbestever */
+  if (_currentBestValue > _bestEverValue || _k->_currentGeneration == 1)
+  {
+    _previousBestEverValue = _bestEverValue;
+    _bestEverValue = _currentBestValue;
+
+    for (size_t d = 0; d < _variableCount; ++d)
+      _bestEverVariables[d] = _currentBestVariables[d];
+
+    if (_hasConstraints)
+      for (size_t c = 0; c < _constraintEvaluations.size(); c++)
+        _bestConstraintEvaluations[c] = _constraintEvaluations[c][_bestValidSample];
+  }
+
+  // TODO
+}
+
+void @className::sort_index(const std::vector<double> &vec, std::vector<size_t> &sortingIndex, size_t N) const
+{
+  // initialize original sortingIndex locations
+  std::iota(std::begin(sortingIndex), std::begin(sortingIndex) + N, (size_t)0);
+
+  // sort indexes based on comparing values in vec
+  std::sort(std::begin(sortingIndex), std::begin(sortingIndex) + N, [vec](size_t i1, size_t i2) { return vec[i1] > vec[i2]; });
+}
+
+void @className::printGenerationBefore() { return; }
+
+void @className::printGenerationAfter()
+{
+  _k->_logger->logInfo("Normal", "Current Function Value: Max = %+6.3e - Best = %+6.3e\n", _currentBestValue, _bestEverValue);
+  _k->_logger->logInfo("Normal", "Diagonal Covariance:    Min = %+6.3e -  Max = %+6.3e\n", _minimumDiagonalCovarianceMatrixElement, _maximumDiagonalCovarianceMatrixElement);
+
+  _k->_logger->logInfo("Detailed", "Variable = (MeanX, BestX):\n");
+  for (size_t d = 0; d < _variableCount; d++) _k->_logger->logData("Detailed", "         %s = (%+6.3e, %+6.3e)\n", _k->_variables[d]->_name.c_str(), _currentMean[d], _bestEverVariables[d]);
+
+  _k->_logger->logInfo("Detailed", "Covariance Matrix:\n");
+  for (size_t d = 0; d < _variableCount; d++)
+  {
+    for (size_t e = 0; e <= d; e++) _k->_logger->logData("Detailed", "   %+6.3e  ", _covarianceMatrix[d * _variableCount + e]);
+    _k->_logger->logInfo("Detailed", "\n");
+  }
+
+  _k->_logger->logInfo("Detailed", "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
+}
+
+void @className::finalize()
+{
+  // Updating Results
+  (*_k)["Results"]["Best Sample"]["F(x)"] = _bestEverValue;
+  (*_k)["Results"]["Best Sample"]["Parameters"] = _bestEverVariables;
+
+  _k->_logger->logInfo("Minimal", "Optimum found at:\n");
+  for (size_t d = 0; d < _variableCount; ++d) _k->_logger->logData("Minimal", "         %s = %+6.3e\n", _k->_variables[d]->_name.c_str(), _bestEverVariables[d]);
+  _k->_logger->logInfo("Minimal", "Optimum found: %e\n", _bestEverValue);
+  _k->_logger->logInfo("Minimal", "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
+}
+
+@moduleAutoCode
+
+@endNamespace

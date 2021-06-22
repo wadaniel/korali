@@ -42,9 +42,6 @@ namespace
   expJs.erase("Variables");
   ASSERT_NO_THROW(e->setConfiguration(expJs));
 
-  e->_fileOutputPath = {(char)0};
-  ASSERT_ANY_THROW(e->saveState());
-
   expJs = backJs;
   ASSERT_NO_THROW(e = dynamic_cast<Experiment *>(Module::getModule(expJs, NULL)));
   expJs["Current Generation"] = "Not a Number";

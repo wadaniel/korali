@@ -70,7 +70,7 @@ This scenario is similar to the one above, except that the model function uses p
 
 In this case, we recommend to maximize sample-based parallelism, specifying as many concurrent jobs as possible, as opposed to the model's threads per execution.
 
-Examples of the use of this conduit can be found in :ref:`Concurrent Execution <features-concurrent-execution>`.  
+Examples of the use of this conduit can be found in :ref:`Concurrent Execution <feature_concurrent.execution>`.  
 
 Parallel Sampling - Pre-Compiled Model
 -----------------------------------------
@@ -178,7 +178,7 @@ And run it using :code:`mpirun` or similar launch command, for example:
       
 Where the run will employ 257 cores, one for the engine. With the reamining 256 ranks, it will create 64 worker teams of 4 ranks each.
  
-Examples of the use of this conduit can be found in :ref:`Running MPI Applications <features-running-mpi>`.  
+Examples of the use of this conduit can be found in :ref:`Running MPI Applications <feature_running.mpi>`.  
  
 Distributed Sampling - External Application
 --------------------------------------------------

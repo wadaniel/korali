@@ -51,6 +51,7 @@
 #include "solver/learner/gaussianProcess/gaussianProcess.hpp"
 #include "solver/optimizer/AdaBelief/AdaBelief.hpp"
 #include "solver/optimizer/Adam/Adam.hpp"
+#include "solver/optimizer/ES/ES.hpp"
 #include "solver/optimizer/CMAES/CMAES.hpp"
 #include "solver/optimizer/DEA/DEA.hpp"
 #include "solver/optimizer/MADGRAD/MADGRAD.hpp"
@@ -144,6 +145,7 @@ Module *Module::getModule(knlohmann::json &js, Experiment *e)
   if (iCompare(moduleType, "Learner/DeepSupervisor")) module = new korali::solver::learner::DeepSupervisor();
   if (iCompare(moduleType, "Agent/Continuous/VRACER")) module = new korali::solver::agent::continuous::VRACER();
   if (iCompare(moduleType, "Agent/Discrete/dVRACER")) module = new korali::solver::agent::discrete::dVRACER();
+  if (iCompare(moduleType, "Optimizer/ES")) module = new korali::solver::optimizer::ES();
   if (iCompare(moduleType, "Optimizer/CMAES")) module = new korali::solver::optimizer::CMAES();
   if (iCompare(moduleType, "Optimizer/DEA")) module = new korali::solver::optimizer::DEA();
   if (iCompare(moduleType, "Optimizer/Rprop")) module = new korali::solver::optimizer::Rprop();

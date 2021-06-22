@@ -20,7 +20,7 @@ void @className::setInitialConfiguration()
 
   // Allocating Memory
   _samplePopulation.resize(_populationSize);
-  for (size_t i = 0; i < s_max; i++) _samplePopulation[i].resize(_variableCount);
+  for (size_t i = 0; i < _populationSize; i++) _samplePopulation[i].resize(_variableCount);
 
   _currentMean.resize(_variableCount);
   _previousMean.resize(_variableCount);
@@ -54,8 +54,6 @@ void @className::setInitialConfiguration()
   }
 
   _infeasibleSampleCount = 0;
-  _currentMinStandardDeviation = +std::numeric_limits<double>::infinity();
-  _currentMaxStandardDeviation = -std::numeric_limits<double>::infinity();
 }
 
 void @className::runGeneration()
@@ -63,11 +61,11 @@ void @className::runGeneration()
   if (_k->_currentGeneration == 1) setInitialConfiguration();
 
   // Initializing Sample Evaluation
-  std::vector<Sample> samples(_currentPopulationSize);
-  for (size_t i = 0; i < _currentPopulationSize; i++)
+  std::vector<Sample> samples(_populationSize);
+  for (size_t i = 0; i < _populationSize; i++)
   {
     samples[i]["Module"] = "Problem";
-    samples[i]["Operation"] = operation;
+    samples[i]["Operation"] = "Evaluate";
     samples[i]["Parameters"] = _samplePopulation[i];
     samples[i]["Sample Id"] = i;
     _modelEvaluationCount++;
@@ -79,7 +77,7 @@ void @className::runGeneration()
   KORALI_WAITALL(samples);
 
   // Gathering evaluations
-  for (size_t i = 0; i < _currentPopulationSize; i++)
+  for (size_t i = 0; i < _populationSize; i++)
     _valueVector[i] = KORALI_GET(double, samples[i], "F(x)");
 
   updateDistribution();
@@ -95,8 +93,6 @@ void @className::prepareGeneration()
       std::vector<double> rands(_variableCount);
       for(size_t d = 0; d < _variableCount; ++d) rands[d] = _normalGenerator->getRandomNumber();
       sampleSingle(i, rands);
-
-      if (_hasDiscreteVariables) discretize(_samplePopulation[i]);
 
       isFeasible = isSampleFeasible(_samplePopulation[i]);
 
@@ -114,37 +110,23 @@ void @className::sampleSingle(size_t sampleIdx, const std::vector<double>& rando
 void @className::updateDistribution()
 {
   /* Generate _sortingIndex */
-  sort_index(_valueVector, _sortingIndex, _currentPopulationSize);
-
-  if ((_hasConstraints == false) || _isViabilityRegime)
-    _bestValidSample = _sortingIndex[0];
-  else
-  {
-    _bestValidSample = -1;
-    for (size_t i = 0; i < _currentPopulationSize; i++)
-      if (_sampleConstraintViolationCounts[_sortingIndex[i]] == 0) _bestValidSample = _sortingIndex[i];
-  }
+  sort_index(_valueVector, _sortingIndex, _populationSize);
 
   /* update function value history */
   _previousBestValue = _currentBestValue;
 
   /* update current best */
-  _currentBestValue = _valueVector[_bestValidSample];
+  _currentBestValue = _valueVector[_sortingIndex[0]];
 
-  for (size_t d = 0; d < _variableCount; ++d) _currentBestVariables[d] = _samplePopulation[_bestValidSample][d];
+  _currentBestVariables = _samplePopulation[_sortingIndex[0]];
 
   /* update xbestever */
   if (_currentBestValue > _bestEverValue || _k->_currentGeneration == 1)
   {
     _previousBestEverValue = _bestEverValue;
     _bestEverValue = _currentBestValue;
+    _bestEverVariables = _currentBestVariables;
 
-    for (size_t d = 0; d < _variableCount; ++d)
-      _bestEverVariables[d] = _currentBestVariables[d];
-
-    if (_hasConstraints)
-      for (size_t c = 0; c < _constraintEvaluations.size(); c++)
-        _bestConstraintEvaluations[c] = _constraintEvaluations[c][_bestValidSample];
   }
 
   // TODO

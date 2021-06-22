@@ -399,6 +399,7 @@ float Continuous::calculateImportanceWeight(const std::vector<float> &action, co
   float logImportanceWeight = logpCurPolicy - logpOldPolicy;
 
   // Normalizing extreme values to prevent loss of precision
+  if (std::isfinite(logImportanceWeight) == false) logImportanceWeight = -7.0f;
   if (logImportanceWeight > +7.0f) logImportanceWeight = +7.0f;
   if (logImportanceWeight < -7.0f) logImportanceWeight = -7.0f;
 

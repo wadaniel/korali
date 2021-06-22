@@ -14,6 +14,12 @@ import matplotlib.pyplot as plt
 from korali.plotter.helpers import hlsColors, drawMulticoloredLine
 from scipy.signal import savgol_filter
 
+# Check if name has correct suffix
+def validateOutput(output):
+  if not (output.endswith(".png") or output.endswith(".eps") or output.endswith(".svg")):
+    print("[Korali] Error: Outputfile '{0}' must end with '.eps', '.png' or '.svg' suffix.".format(output))
+    sys.exit(-1)
+
 ##################### Plotting Reward History
 
 def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, maxObservations, showCI):
@@ -216,6 +222,11 @@ if __name__ == '__main__':
       help='Run without graphics (for testing purpose)',
       action='store_true',
       required=False)
+ parser.add_argument(
+      '--output',
+      help='Indicates the output file path. If not specified, it prints to screen.',
+      required=False)
+
  args = parser.parse_args()
 
  ### Validating input
@@ -224,9 +235,13 @@ if __name__ == '__main__':
   print("[Korali] Argument of confidence interval must be in [0,1].")
   exit(-1)
 
+ if args.output:
+    validateOutput(args.output)
+
  ### Setup without graphics, if needed
  
- if (args.test): matplotlib.use('Agg')
+ if (args.test or args.output): 
+     matplotlib.use('Agg')
  
  ### Reading values from result files
 
@@ -241,9 +256,8 @@ if __name__ == '__main__':
  ax1 = fig1.add_subplot(111)
      
  ### Creating plots
-     
+  
  plotRewardHistory(ax1, args.dir, results, args.minReward, args.maxReward, args.averageDepth, args.maxObservations, args.showCI)
-
  plt.draw()
  
  ### Printing live results if update frequency > 0
@@ -267,5 +281,17 @@ if __name__ == '__main__':
     if (elapsedTime > maxTime):
      print('[Korali] Maximum plotting time reached. Exiting...') 
      exit(0)
-   
- plt.show() 
+ 
+
+   plt.show()
+  exit(0)
+
+ if (args.output is None):
+   plt.show()
+ else:
+   if args.output.endswith('.eps'):
+     plt.savefig(args.output, format='eps')
+   elif args.output.endswith('.svg'):
+     plt.savefig(args.output, format='svg')
+   else:
+     plt.savefig(args.output, format='png')

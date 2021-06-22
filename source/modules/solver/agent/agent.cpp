@@ -359,8 +359,10 @@ void Agent::calculateRewardRescalingFactors()
   }
 
   // Calculating reward scaling s,t. mean equals 0.0 and standard deviation 1.0.
-  _rewardRescalingMean = sumReward / (float)_rewardVector.size();
-  _rewardRescalingSigma = std::sqrt(sumSquareReward / (float)_rewardVector.size() - _rewardRescalingMean * _rewardRescalingMean + 1e-9);
+  //_rewardRescalingMean = sumReward / (float)_rewardVector.size();
+  //_rewardRescalingSigma = std::sqrt(sumSquareReward / (float)_rewardVector.size() - _rewardRescalingMean * _rewardRescalingMean + 1e-9);
+  _rewardRescalingMean = 0.;
+  _rewardRescalingSigma = std::sqrt(sumSquareReward / (float)_rewardVector.size() + 1e-9);
   _rewardRescalingCount++;
 }
 

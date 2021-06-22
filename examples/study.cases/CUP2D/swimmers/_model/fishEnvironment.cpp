@@ -21,7 +21,11 @@ void runEnvironment(korali::Sample &s)
   // Creating results directory
   char resDir[64];
   sprintf(resDir, "%s/sample%08lu", s["Custom Settings"]["Dump Path"].get<std::string>().c_str(), sampleId);
-  std::filesystem::create_directories(resDir);
+  if( not std::filesystem::create_directories(resDir) )
+  {
+    fprintf(stderr, "Error creating results directory for environment\n");
+    exit(-1);
+  };
 
   // Redirecting all output to the log file
   char logFilePath[128];

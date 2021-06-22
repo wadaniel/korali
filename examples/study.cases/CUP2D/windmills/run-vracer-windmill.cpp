@@ -16,20 +16,8 @@ int main(int argc, char *argv[])
   }
 
   // Storing parameters
-  // _argc = argc
-  // _argv = argv;
-
-  // this enables to pass the folder as an argument to exe
-
-  _argc = argc-1;
-
-  char *_argv_[argc-1];
-  for(int i = 0; i < argc-1; ++i)
-  {
-    _argv_[i] = argv[i];
-  }
-
-  
+  _argc = argc;
+  _argv = argv;
 
   // Getting number of workers
   int N = 1;
@@ -37,14 +25,12 @@ int main(int argc, char *argv[])
   N = N - 1; // Minus one for Korali's engine
 
   // Initialize CUP2D
-  _environment = new Simulation(_argc, _argv_);
+  _environment = new Simulation(_argc, _argv);
   _environment->init();
 
-  std::string folder = std::string(argv[argc-1]);
-
   // Set results path
-  std::string trainingResultsPath = "_results_windmill_training/" + folder;
-  std::string testingResultsPath = "_results_windmill_testing/" + folder;
+  std::string trainingResultsPath = "_results_windmill_training/";
+  std::string testingResultsPath = "_results_windmill_testing/";
   
   // Creating Korali experiment
   auto e = korali::Experiment();

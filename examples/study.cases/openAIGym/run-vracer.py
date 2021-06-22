@@ -21,7 +21,7 @@ e = korali.Experiment()
 
 ### Defining results folder and loading previous results, if any
 
-resultFolder = '_result_vracer_rescale0_' + args.env + '_' + args.dis.replace(' ','_') + '/'
+resultFolder = '_xresult_vracer_' + args.env + '_' + args.dis.replace(' ','_') + '/'
 e.loadState(resultFolder + '/latest');
 
 ### Initializing openAI Gym environment
@@ -40,11 +40,10 @@ e["Solver"]["Mini Batch"]["Size"] = 256
 
 ### Setting Experience Replay and REFER settings
 
-e["Solver"]["Experience Replay"]["Start Size"] = 32768
-e["Solver"]["Experience Replay"]["Maximum Size"] = 131072
-e["Solver"]["Experience Replay"]["Off Policy"]["Cutoff Scale"] = 5.0
+e["Solver"]["Experience Replay"]["Start Size"] = 131072
+e["Solver"]["Experience Replay"]["Maximum Size"] = 262144
 e["Solver"]["Experience Replay"]["Off Policy"]["Annealing Rate"] = 5.0e-8
-e["Solver"]["Experience Replay"]["Off Policy"]["Cutoff Scale"] = 5.0
+e["Solver"]["Experience Replay"]["Off Policy"]["Cutoff Scale"] = 4.0
 e["Solver"]["Experience Replay"]["Off Policy"]["REFER Beta"] = 0.3
 e["Solver"]["Experience Replay"]["Off Policy"]["Target"] = 0.1
 
@@ -52,14 +51,14 @@ e["Solver"]["Policy"]["Distribution"] = args.dis
 e["Solver"]["State Rescaling"]["Enabled"] = True
 e["Solver"]["Reward"]["Rescaling"]["Enabled"] = True
 e["Solver"]["Reward"]["Rescaling"]["Frequency"] = 1000
-e["Solver"]["Reward"]["Outbound Penalization"]["Enabled"] = True
+e["Solver"]["Reward"]["Outbound Penalization"]["Enabled"] = False
 e["Solver"]["Reward"]["Outbound Penalization"]["Factor"] = 0.5
   
 ### Configuring the neural network and its hidden layers
 
 e["Solver"]["Neural Network"]["Engine"] = "OneDNN"
 e["Solver"]['Neural Network']['Optimizer'] = "Adam"
-e["Solver"]["L2 Regularization"]["Enabled"] = True
+e["Solver"]["L2 Regularization"]["Enabled"] = False
 e["Solver"]["L2 Regularization"]["Importance"] = 1.0
 
 e["Solver"]["Neural Network"]["Hidden Layers"][0]["Type"] = "Layer/Linear"
@@ -76,7 +75,7 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tan
 
 ### Setting file output configuration
 
-e["Solver"]["Termination Criteria"]["Max Experiences"] = 1e6
+e["Solver"]["Termination Criteria"]["Max Experiences"] = 10e6
 e["Solver"]["Experience Replay"]["Serialize"] = True
 e["Console Output"]["Verbosity"] = "Detailed"
 e["File Output"]["Enabled"] = True

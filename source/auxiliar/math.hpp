@@ -10,6 +10,8 @@
 */
 #define _USE_MATH_DEFINES
 
+#define KORALI_EPSILON 0.00000000001
+
 #include <cmath>
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_rng.h>

@@ -15,7 +15,6 @@ std::mt19937 _randomGenerator;
 // Swimmer following an obstacle
 void runEnvironmentVracer(korali::Sample &s)
 {
-  
   // Setting seed
   size_t sampleId = s["Sample Id"];
   _randomGenerator.seed(sampleId);
@@ -64,6 +63,8 @@ void runEnvironmentVracer(korali::Sample &s)
 
   // Setting maximum number of steps before truncation
   size_t maxSteps = 15e3;
+
+  // Setting timestep between actions
   double dtact = 1e-1;
 
   // Starting main environment loop
@@ -82,33 +83,32 @@ void runEnvironmentVracer(korali::Sample &s)
     // Setting action
     if (action.size() == 2)
     {
-        agent->act( action );
+      agent->act( action );
     }
     else if (action.size() == 3)
     {
-
-        std::vector<double> force = { action[0], action[1] };
-        agent->act( force );
-        agent->torque = action[2];
+      std::vector<double> force = { action[0], action[1] };
+      agent->act( force );
+      agent->torque = action[2];
     }
     else
     {
-        fprintf(stderr, "Action must be of size 2 or 3.\n");
-        exit(-1);
+      fprintf(stderr, "Action must be of size 2 or 3.\n");
+      exit(-1);
     }
 
     // Run the simulation until next action is required
     tNextAct += dtact;
     while ( t < tNextAct )
     {
-      // Advance simulation
+      // Calculate simulation timestep
       const double dt = std::min(_environment->calcMaxTimestep(), dtact);
       t += dt;
 
-      // Advance simulation and check whether it is correct
+      // advance simulation and check if the simulation ends
       if (_environment->advance(dt))
       {
-        fprintf(stderr, "Error during environment\n");
+        fprintf(stderr, "Environment finished..\n");
         exit(-1);
       }
       // Re-check if simulation is done.
@@ -220,16 +220,8 @@ std::vector<double> logDivision(double start, double end, size_t nvertices)
 
 void runEnvironmentMocmaes(korali::Sample &s)
 {
-  // Defining constants
   size_t sampleId = s["Sample Id"];
-  double startX = 1.0;
-  double endX = 3.0;
-  double height = 2.0;
 
-  // Constraints
-  size_t maxSteps = 15e3;
-  double maxEnergy = 1e-1;
- 
   // Creating results directory
   std::string baseDir = "_log_transport_mocmaes/";
   char resDir[64];
@@ -249,21 +241,35 @@ void runEnvironmentMocmaes(korali::Sample &s)
   auto curPath = std::filesystem::current_path();
   std::filesystem::current_path(resDir);
 
+  // Environment Setup
+  double startX = 1.0;
+  double endX = 3.0;
+  double height = 2.0;
+  double dtact = 1e-1;
+  // environment (flow field) dump frequency
+  _environment->sim.dumpTime = 0.0;
+  // Set target
+  std::vector<double> target{endX, height};
+
+  // Constraints
+  size_t maxSteps = 1e3;
+  double maxEnergy = 1e-1;
+
+  // Setting time/energy/counter to zero
+  double t = 0;        // Current time
+  double tNextAct = 0; // Time until next action
+  double energy = 0.0; // Total energy
+  size_t curStep = 0;  // Current Step
+
   // Obtaining agent
   SmartCylinder* agent = dynamic_cast<SmartCylinder *>(_environment->getShapes()[0]);
 
-  // Establishing environment's dump frequency
-  _environment->sim.dumpTime = 0.0;
-
-  // Reseting environment and setting initial conditions
+  // Resetting environment and setting initial conditions
   _environment->resetRL();
   std::vector<double> start{startX, height};
   setInitialConditions(agent, start, false);
 
-  // Set target 
-  std::vector<double> target{endX, height};
-
-  // Parametrization of force
+  // Get parameterisation of force from MOCMA
   std::vector<double> params = s["Parameters"];
   size_t numParams = params.size();
 
@@ -275,18 +281,14 @@ void runEnvironmentMocmaes(korali::Sample &s)
   for(size_t i = 0; i < numParams; ++i) edges[i] = startX + i*(endX-startX)/(float)(numParams-1.);
 
   // Natural cubic spline (C^2) with natural boundary conditions (f''=0)
-  tk::spline forceSpline(edges,params);
+  tk::spline forceSpline(edges, params);
 
   // Init counting variables
   double distToTarget = distance(currentPos, target);
-  double energy = 0.0; // Total energy
-  double t = 0.0;      // Current time
-  size_t curStep = 0;  // Current Step
 
   // Starting main environment loop
   bool done = false;
   std::vector<double> action(2, 0.0);
-
   while (done == false && curStep < maxSteps)
   {
     centerArr = agent->center;
@@ -297,28 +299,41 @@ void runEnvironmentMocmaes(korali::Sample &s)
 
     if (distToTarget > 0.)
     {
-        // Split force in x & y component
-        action[0] = force*(target[0]-currentPos[0])/distToTarget;
-        action[1] = force*(target[1]-currentPos[1])/distToTarget;
+      // Split force in x & y component
+      action[0] = force*(target[0]-currentPos[0])/distToTarget;
+      action[1] = force*(target[1]-currentPos[1])/distToTarget;
     }
     else
     {
-        // Safe split in case of close distance
-        action[0] = force*(target[0]-currentPos[0]);
-        action[1] = force*(target[1]-currentPos[1]);
+      // Safe split in case of close distance
+      action[0] = force*(target[0]-currentPos[0]);
+      action[1] = force*(target[1]-currentPos[1]);
     }
 
     // Setting action
     agent->act( action );
-    double dt = _environment->calcMaxTimestep();
-    t += dt;
+
+    // Run the simulation until next action is required
+    tNextAct += dtact;
+    while ( t < tNextAct )
+    {
+      // Calculate simulation timestep
+      const double dt = std::min(_environment->calcMaxTimestep(), dtact);
+      t += dt;
+
+      // advance simulation and check if the simulation ends
+      if (_environment->advance(dt))
+      {
+        fprintf(stderr, "Environment finished\n");
+        exit(-1);
+      }
+    }
  
-    // Update distance and check termination
-    bool error = _environment->advance(dt);
+    // Update distance
     distToTarget = distance(currentPos, target);
     energy = agent->energy;
 
-    // Checkting termination
+    // Checking termination
     done = (currentPos[0] >= endX) || (curStep >= maxSteps) || (energy >= maxEnergy);
  
     curStep++;
@@ -331,27 +346,20 @@ void runEnvironmentMocmaes(korali::Sample &s)
     printf("[Korali] Time: %.3fs\n", t);
     printf("[Korali] -------------------------------------------------------\n");
     fflush(stdout);
- 
-    if (error == true)
-    {
-      fprintf(stderr, "Error during environment\n");
-      exit(-1);
-    }
-
   }
   
   // Penalization for not reaching target
   if (currentPos[0] < endX)
   {
     printf("Target not reached, penalizing objectives..\n");
-	t += (endX-currentPos[0])*1e9;
-	energy += (endX-currentPos[0])*1e9;
+    t += (endX-currentPos[0])*1e9;
+    energy += (endX-currentPos[0])*1e9;
   }
   if (energy > maxEnergy)
   {
     printf("Max energy violated (%f), penalizing objectives..\n", maxEnergy);
-	t += (energy-maxEnergy)*1e9;
-	energy += (energy-maxEnergy)*1e9;
+    t += (energy-maxEnergy)*1e9;
+    energy += (energy-maxEnergy)*1e9;
   }
   
   // Setting Objectives
@@ -369,15 +377,8 @@ void runEnvironmentMocmaes(korali::Sample &s)
 
 void runEnvironmentCmaes(korali::Sample& s)
 {
-  // Defining constants
   size_t sampleId = s["Sample Id"];
-  double startX = 1.0;
-  double endX = 3.0;
-  double height = 2.0;
 
-  // Constraints
-  size_t maxSteps = 15e3;
- 
   // Creating results directory
   std::string baseDir = "_log_transport_cmaes/";
   char resDir[64];
@@ -397,18 +398,33 @@ void runEnvironmentCmaes(korali::Sample& s)
   auto curPath = std::filesystem::current_path();
   std::filesystem::current_path(resDir);
 
+  // Environment Setup
+  double startX = 1.0;
+  double endX = 3.0;
+  double height = 2.0;
+  double dtact = 1e-1;
+  // environment (flow field) dump frequency
+  _environment->sim.dumpTime = 0.0;
+
+  // Constraints
+  size_t maxSteps = 1e3;
+  double maxEnergy = 1e-1;
+
+  // Setting time/energy/counter to zero
+  double t = 0;        // Current time
+  double tNextAct = 0; // Time until next action
+  double energy = 0.0; // Total energy
+  size_t curStep = 0;  // Current Step
+
   // Obtaining agent
   SmartCylinder* agent = dynamic_cast<SmartCylinder *>(_environment->getShapes()[0]);
-
-  // Establishing environment's dump frequency
-  _environment->sim.dumpTime = 0.0;
 
   // Reseting environment and setting initial conditions
   _environment->resetRL();
   std::vector<double> start{startX, height};
   setInitialConditions(agent, start, false);
 
-  // Parametrization of force
+  // Get parameterisation of force from CMA
   std::vector<double> params = s["Parameters"];
   const double a = params[0];
   const double b = params[1];
@@ -416,30 +432,24 @@ void runEnvironmentCmaes(korali::Sample& s)
   const double d = params[3];
   const double e = params[4];
 
-  double* centerArr = agent->center;
-  std::vector<double> currentPos(centerArr, centerArr+2);
-  
   // Force applied
   const double maxForce = 1e-2;
   
   // Safety intervall before boundary (eps + radius)
   const double deps = 3e-1;
   
-  // Init counting variables
-  double energy = 0.0; // Total energy
-  double t = 0.0;      // Current time
-  size_t curStep = 0;  // Current Step
-
   // Starting main environment loop
   bool done = false;
   std::vector<double> action(2, 0.0);
-
+  double* centerArr = agent->center;
+  std::vector<double> currentPos(centerArr, centerArr+2);
   while (done == false && curStep < maxSteps)
   {
     centerArr = agent->center;
     currentPos[0] = centerArr[0];
     currentPos[1] = centerArr[1];
  
+    // Compute force vector
     const double x = currentPos[0];
     double forcex = 1.;
     double forcey = (d*x+e)*(0.5*a/std::sqrt(x)+b+2.*c*x)*std::cos(a*std::sqrt(x)+x*b+c*x*x)+d*std::sin(a*std::sqrt(x)+x*b+c*x*x);
@@ -455,11 +465,24 @@ void runEnvironmentCmaes(korali::Sample& s)
 
     // Setting action
     agent->act( action );
-    double dt = _environment->calcMaxTimestep();
-    t += dt;
- 
-    // Update distance and check termination
-    bool error = _environment->advance(dt);
+
+    // Run the simulation until next action is required
+    tNextAct += dtact;
+    while ( t < tNextAct )
+    {
+      // Calculate simulation timestep
+      const double dt = std::min(_environment->calcMaxTimestep(), dtact);
+      t += dt;
+
+      // advance simulation and check if the simulation ends
+      if (_environment->advance(dt))
+      {
+        fprintf(stderr, "Environment finished\n");
+        exit(-1);
+      }
+    }
+
+    // get energy used
     energy = agent->energy;
 
     // Checkting termination
@@ -476,12 +499,6 @@ void runEnvironmentCmaes(korali::Sample& s)
     printf("[Korali] -------------------------------------------------------\n");
     fflush(stdout);
  
-    if (error == true)
-    {
-      fprintf(stderr, "Error during environment\n");
-      exit(-1);
-    }
-
     if (currentPos[0] < deps) 
     {
         done = true; // cylinder approaching left bound
@@ -504,7 +521,7 @@ void runEnvironmentCmaes(korali::Sample& s)
   if (currentPos[0] < endX)
   {
     printf("Target not reached, penalizing objectives..\n");
-	t += (endX-currentPos[0])*1e9;
+    t += (endX-currentPos[0])*1e9;
   }
   
   // Setting Objectives

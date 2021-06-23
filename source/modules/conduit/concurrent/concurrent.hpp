@@ -33,7 +33,7 @@ class Concurrent : public Conduit
 {
   public: 
   /**
-  * @brief Specifies the number of Korali jobs running concurrently evaluating the external model.
+  * @brief Specifies the number of worker processes (jobs) running concurrently.
   */
    size_t _concurrentJobs;
   

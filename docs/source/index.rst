@@ -1,6 +1,4 @@
-************************
-Korali's Documentation
-************************
+.. include:: README.rst
 
 .. toctree::
    :caption: Using Korali

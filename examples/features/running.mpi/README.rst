@@ -3,12 +3,15 @@ Running MPI Applications
 
 In this tutorial we show how an MPI model can be executed with Korali.
 
+For more information on running Korali applications in parallel, see :ref:`Parallel Execution <parallel-execution>`. 
+For more information on running Korali on MPI, see :ref:`Distributed Conduit <module-conduit-distributed>`. 
+
 MPI Init
 ---------------------------
 
 Do not forget to init MPI inside the Korali application:
 
-.. code-block:: python
+.. code-block:: cpp
 
     MPI_Init(&argc, &argv);
 
@@ -35,3 +38,4 @@ Run the script with an input argument (Ranks Per Worker):
 .. code-block:: bash
 
     mpirun -n 13 ./run-tmcmc 4
+

@@ -684,24 +684,17 @@ void @className::updateExperienceMetadata(const std::vector<size_t> &miniBatch, 
     _truncatedImportanceWeightVector[expId] = truncatedImportanceWeight;
   }
 
-  // Storage to register whether the experience needs an updated truncated policy state value
-  std::vector<size_t> needsTruncatedPolicyUpdate;
+  // Calculating updated truncated policy state values
   for (size_t i = 0; i < updateBatch.size(); i++)
   {
    auto batchId = updateBatch[i];
    auto expId = miniBatch[batchId];
    if (_terminationVector[expId] == e_truncated)
-    needsTruncatedPolicyUpdate.push_back(expId);
-  }
-
-  // If this is the truncated experience of an episode, then obtain truncated state value
-  #pragma omp parallel for
-  for (size_t i = 0; i < needsTruncatedPolicyUpdate.size(); i++)
-  {
-    auto expId = needsTruncatedPolicyUpdate[i];
+   {
     auto truncatedState = getTruncatedStateSequence(expId);
     auto truncatedPolicy = runPolicy({getTruncatedStateSequence(expId)})[0];
     _truncatedStateValueVector[expId] = truncatedPolicy.stateValue;
+   }
   }
 
   // Updating the off policy Ratio

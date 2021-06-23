@@ -92,7 +92,7 @@ class Distributed : public Conduit
 {
   public: 
   /**
-  * @brief Specifies the number of workers per model evaluation to use.
+  * @brief Specifies the number of MPI ranks per Korali worker (k).
   */
    int _ranksPerWorker;
   

@@ -10,9 +10,11 @@ from agent import *
 parser = argparse.ArgumentParser()
 parser.add_argument('--env', help='Specifies which environment to run.', required=True)
 parser.add_argument('--dis', help='Sampling Distribution.', required=True)
-parser.add_argument('--l2', help='L2 Regularization.', required=False, default = 0.)
-parser.add_argument('--opt', help='Off Policy Target.', required=False, default = 0.1)
+parser.add_argument('--l2', help='L2 Regularization.', required=False, type=float, default = 0.)
+parser.add_argument('--opt', help='Off Policy Target.', required=False, type=float, default = 0.1)
+parser.add_argument('--lr', help='Learning Rate.', required=False, type=float, default = 0.0001)
 args = parser.parse_args()
+print(args)
 
 ####### Defining Korali Problem
 
@@ -23,7 +25,7 @@ e = korali.Experiment()
 ### Defining results folder and loading previous results, if any
 
 dis_dir = args.dis.replace(" ","_")
-resultFolder = '_result_vracer_' + args.env + '_' + dis_dir + '_' + str(args.opt) + '_' + str(args.l2) + '/'
+resultFolder = '_result_vracer_' + args.env + '_' + dis_dir + '_' + str(args.lr) + '_' + str(args.opt) + '_' + str(args.l2) + '/'
 e.loadState(resultFolder + '/latest');
 
 ### Initializing openAI Gym environment
@@ -36,7 +38,7 @@ e["Solver"]["Type"] = "Agent / Continuous / VRACER"
 e["Solver"]["Mode"] = "Training"
 e["Solver"]["Episodes Per Generation"] = 10
 e["Solver"]["Experiences Between Policy Updates"] = 1
-e["Solver"]["Learning Rate"] = 0.0001
+e["Solver"]["Learning Rate"] = args.lr
 e["Solver"]["Discount Factor"] = 0.995
 e["Solver"]["Mini Batch"]["Size"] = 256
 

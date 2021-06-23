@@ -1,8 +1,7 @@
 Preserving Results
 =====================================================
 
-In this tutorial we show how Korali can be used to store important outputs from the computational model
-that otherwise would be lost.
+In this tutorial we show how Korali can be used to store important outputs from the computational model that otherwise would be lost after evaluation.
 
 Computational Model
 ---------------------------

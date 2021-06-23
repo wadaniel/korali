@@ -12,6 +12,7 @@
 #
 import os
 import sys
+import shutil
 sys.path.insert(0, os.path.abspath('.'))
 sys.path.insert(0, os.path.abspath('../../tools/build/'))
 
@@ -27,6 +28,9 @@ project = 'korali'
 copyright = 'ETH Zurich'
 author = 'CSELab'
 
+# Copying base readme file
+shutil.copy('../../README.rst', './')
+  
 # Build rst files
 be.build_examples('../../examples/', './examples/')
 bf.build_features('../../examples/features/', './features/')

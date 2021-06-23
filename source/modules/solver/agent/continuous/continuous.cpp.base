@@ -562,7 +562,6 @@ std::vector<float> @className::calculateImportanceWeightGradient(const std::vect
         // Grad wrt. curSigma
         importanceWeightGradients[_problem->_actionVectorSize+i] = (_actionUpperBounds[i] - curMu)/curSigma*pdfCdfRatio;
 
-
         // Calculate importance weight
         logpCurPolicy += normalLogCCDF(_actionUpperBounds[i], curMu, curSigma);
         logpOldPolicy += normalLogCCDF(_actionUpperBounds[i], oldMu, oldSigma);
@@ -753,11 +752,13 @@ std::vector<float> @className::calculateKLDivergenceGradient(const policy_t &old
       const float curMu = curPolicy.distributionParameters[i];
       const float curSigma = curPolicy.distributionParameters[_problem->_actionVectorSize + i];
 
-      const float oldInvVar = 1./(oldSigma * oldSigma);
+      // Precompute often used constant terms
+      const float oldVar = oldSigma*oldSigma;
+      const float oldInvVar = 1./oldVar;
 	  const float curInvSigma = 1./curSigma;
       const float curInvVar = 1./(curSigma * curSigma);
       const float curInvSig3 = 1./(curSigma * curSigma * curSigma);
-      const float actionDiff = (curMu - oldMu);
+      const float meanDiff = (oldMu - curMu);
       
       const float erfa = std::erff((_actionLowerBounds[i]-oldMu)/(M_SQRT2*oldSigma));
       const float erfb = std::erff((_actionUpperBounds[i]-oldMu)/(M_SQRT2*oldSigma));
@@ -765,45 +766,37 @@ std::vector<float> @className::calculateKLDivergenceGradient(const policy_t &old
       const float expa = std::exp(-0.5*(_actionLowerBounds[i]-oldMu)*(_actionLowerBounds[i]-oldMu) * oldInvVar );
       const float expb = std::exp(-0.5*(_actionUpperBounds[i]-oldMu)*(_actionUpperBounds[i]-oldMu) * oldInvVar );
 
-      // KL-Gradient with respect to Mean
-      KLDivergenceGradients[i] = std::exp(normalLogCDF(_actionLowerBounds[i], oldMu, oldSigma) + normalLogDensity(_actionLowerBounds[i], curMu, curSigma) - normalLogCDF(_actionLowerBounds[i], curMu, curSigma));
+      const float cdfRatiosA = std::exp(normalLogCDF(_actionLowerBounds[i], oldMu, oldSigma) + normalLogDensity(_actionLowerBounds[i], curMu, curSigma) - normalLogCDF(_actionLowerBounds[i], curMu, curSigma));
+      const float ccdfRatiosB = std::exp(normalLogCCDF(_actionUpperBounds[i], oldMu, oldSigma) + normalLogDensity(_actionUpperBounds[i], curMu, curSigma)-normalLogCCDF(_actionUpperBounds[i], curMu, curSigma));
+
 #ifdef NOISY
-      printf("dp: %f %f %f %f\n", oldMu, oldSigma, curMu, curSigma);
-      printf("f %f %f %f\n", normalLogCDF(_actionLowerBounds[i], oldMu, oldSigma), normalLogDensity(_actionLowerBounds[i], curMu, curSigma), normalLogCDF(_actionLowerBounds[i], curMu, curSigma));
+      printf("ratios %f %f\n", cdfRatiosA, ccdfRatiosB);
+      printf("erf %f %f\n", erfa, erfb);
+      printf("g %f %f %f\n", normalLogCCDF(_actionUpperBounds[i], oldMu, oldSigma), normalLogDensity(_actionUpperBounds[i], curMu, curSigma), normalLogCCDF(_actionUpperBounds[i], curMu, curSigma));
       fflush(stdout);
 #endif
+ 
+      // KL-Gradient with respect to Mean
+      KLDivergenceGradients[i] = cdfRatiosA;
       assert(isfinite(KLDivergenceGradients[i]));
       KLDivergenceGradients[i] -= 0.5 * (oldMu-curMu) * curInvVar * (erfb-erfa);
       assert(isfinite(KLDivergenceGradients[i]));
       KLDivergenceGradients[i] += 1/std::sqrt(2.*M_PI)*oldSigma*curInvVar*(expb-expa);
       assert(isfinite(KLDivergenceGradients[i]));
-      KLDivergenceGradients[i] -= std::exp(normalLogCCDF(_actionUpperBounds[i], oldMu, oldSigma) + normalLogDensity(_actionUpperBounds[i], curMu, curSigma)-normalLogCCDF(_actionUpperBounds[i], curMu, curSigma));
-#ifdef NOISY
-      printf("g %f %f %f\n", normalLogCCDF(_actionUpperBounds[i], oldMu, oldSigma), normalLogDensity(_actionUpperBounds[i], curMu, curSigma), normalLogCCDF(_actionUpperBounds[i], curMu, curSigma));
-      fflush(stdout);
-#endif
+      KLDivergenceGradients[i] -= ccdfRatiosB;
       assert(isfinite(KLDivergenceGradients[i]));
 
       // KL-Gradient with respect to Sigma
-      KLDivergenceGradients[_problem->_actionVectorSize + i] = (_actionLowerBounds[i]-curMu)*curInvSigma*std::exp(normalLogCDF(_actionLowerBounds[i], oldMu, oldSigma)+normalLogDensity(_actionLowerBounds[i], curMu, curSigma)-normalLogCDF(_actionLowerBounds[i], curMu, curSigma));  
+      KLDivergenceGradients[_problem->_actionVectorSize + i] = (_actionLowerBounds[i]-curMu)*curInvSigma*cdfRatiosA;
 	  assert(isfinite(KLDivergenceGradients[_problem->_actionVectorSize+i]));
-      KLDivergenceGradients[_problem->_actionVectorSize + i] += 0.5*(-actionDiff*actionDiff*curInvSig3+curInvSigma)*(erfb-erfa);
-      KLDivergenceGradients[_problem->_actionVectorSize + i] += M_SQRT2/std::sqrt(M_PI)*oldSigma*(oldMu-curMu)*curInvSig3*(expb-expa);
+      KLDivergenceGradients[_problem->_actionVectorSize + i] += 0.5*(-curInvSigma-meanDiff*meanDiff*curInvSig3-0.5*oldVar*curInvSig3)*(erfb-erfa);
       assert(isfinite(KLDivergenceGradients[_problem->_actionVectorSize+i]));
-      KLDivergenceGradients[_problem->_actionVectorSize + i] -= 1./std::sqrt(M_PI)*oldSigma*oldSigma*curInvSig3*(erfb-erfa);
+      KLDivergenceGradients[_problem->_actionVectorSize + i] += 1./std::sqrt(2.*M_PI)*curInvSig3*(oldVar+2.*oldSigma*(_actionUpperBounds[i]-oldMu)+2.*oldSigma*meanDiff)*expb;
       assert(isfinite(KLDivergenceGradients[_problem->_actionVectorSize+i]));
-      KLDivergenceGradients[_problem->_actionVectorSize + i] += 0.5*oldSigma*oldSigma*curInvSig3*((_actionUpperBounds[i]-oldMu)*expb-(_actionLowerBounds[i]-oldMu)*expa);
+      KLDivergenceGradients[_problem->_actionVectorSize + i] -= 1./std::sqrt(2.*M_PI)*curInvSig3*(oldVar+2.*oldSigma*(_actionLowerBounds[i]-oldMu)+2.*oldSigma*meanDiff)*expa;
       assert(isfinite(KLDivergenceGradients[_problem->_actionVectorSize+i]));
-      KLDivergenceGradients[_problem->_actionVectorSize + i] -= (_actionUpperBounds[i]-curMu)*curInvSigma*std::exp(normalLogCCDF(_actionUpperBounds[i], oldMu, oldSigma)+normalLogDensity(_actionUpperBounds[i], curMu, curSigma)-normalLogCCDF(_actionUpperBounds[i],curMu, curSigma));
-#ifdef NOISY
-      printf("h %f %f %f\n", normalCCDF(_actionUpperBounds[i], oldMu, oldSigma), normalLogDensity(_actionUpperBounds[i], curMu, curSigma), normalLogCCDF(_actionUpperBounds[i],curMu, curSigma));
-	  fflush(stdout);
-#endif
+      KLDivergenceGradients[_problem->_actionVectorSize + i] -= (_actionUpperBounds[i]-curMu)*curInvSigma*ccdfRatiosB;
       assert(isfinite(KLDivergenceGradients[_problem->_actionVectorSize+i]));
-#ifdef NOISY
-      printf("ncdf %f %f\n", normalCDF(_actionLowerBounds[i], curMu, curSigma), normalCCDF(_actionUpperBounds[i], curMu, curSigma));
-      printf("erf %f %f\n", erfa, erfb);
-#endif
     }
   }
  

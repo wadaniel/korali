@@ -36,7 +36,7 @@ function check_syntax()
     fi
 
     for d in "${dst[@]}"; do
-      python3 run-clang-format/run-clang-format.py --recursive ${d} --extensions cpp,hpp,_cpp,_hpp > /dev/null
+      python3 run-clang-format/run-clang-format.py --recursive ${d} --extensions "base"
 
       if [ ! $? -eq 0 ]; then
         echo "[Korali] Error: C++ Code formatting in file ${d} is not normalized."
@@ -49,7 +49,7 @@ function check_syntax()
 function fix_syntax()
 {
     for d in "${dst[@]}"; do
-      src_files=`find ${d} -type f -not -name "__*" -name "*.hpp" -name "*.cpp" -name "*._hpp" -name "*._cpp"`
+      src_files=`find ${d} -type f -not -name "__*" -name "*.base"`
 
       echo $src_files | xargs -n6 -P2 clang-format -style=file -i "$@"
 

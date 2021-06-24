@@ -15,4 +15,4 @@ python3_cflags = run_command(python3_config, '--includes', '--embed').stdout().s
 subdir('python')
 subdir('unit')
 subdir('statistical')
-subdir('docs')
+subdir('build')

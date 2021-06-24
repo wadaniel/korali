@@ -13,19 +13,19 @@
 
 #ifndef _KORALI_SOLVER_OPTIMIZER_GRIDSEARCH_
 #define _KORALI_SOLVER_OPTIMIZER_GRIDSEARCH_
-
+;
 
 #include "modules/solver/optimizer/optimizer.hpp"
 
-  namespace korali
+namespace korali
 {
 namespace solver
 {
 namespace optimizer
 {
+;
 
-
-  /**
+/**
 * @brief Class declaration for module: GridSearch.
 */
 class GridSearch : public Optimizer
@@ -81,7 +81,7 @@ class GridSearch : public Optimizer
 } //optimizer
 } //solver
 } //korali
+;
 
-
-  #endif // _KORALI_SOLVER_OPTIMIZER_GRIDSEARCH_
-
+#endif // _KORALI_SOLVER_OPTIMIZER_GRIDSEARCH_
+;

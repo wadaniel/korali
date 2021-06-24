@@ -13,17 +13,17 @@
 
 #ifndef _KORALI_SOLVER_LEARNER_
 #define _KORALI_SOLVER_LEARNER_
-
+;
 
 #include "modules/solver/solver.hpp"
 
-  namespace korali
+namespace korali
 {
 namespace solver
 {
+;
 
-
-  /**
+/**
 * @brief Class declaration for module: Learner.
 */
 class Learner : public Solver
@@ -79,7 +79,7 @@ class Learner : public Solver
 
 } //solver
 } //korali
+;
 
-
-  #endif // _KORALI_SOLVER_LEARNER_
-
+#endif // _KORALI_SOLVER_LEARNER_
+;

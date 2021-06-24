@@ -7,10 +7,10 @@
 
 namespace korali
 {
+;
 
-
-  std::string
-  Distribution::getRange(gsl_rng *range) const
+std::string
+Distribution::getRange(gsl_rng *range) const
 {
   unsigned char *state = (unsigned char *)gsl_rng_state(range);
   size_t n = gsl_rng_size(range);
@@ -125,7 +125,7 @@ void Distribution::applyVariableDefaults()
  Module::applyVariableDefaults();
 } 
 
+;
 
-
-  } //korali
-
+} //korali
+;

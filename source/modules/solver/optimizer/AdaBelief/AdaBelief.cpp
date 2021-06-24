@@ -8,10 +8,9 @@ namespace solver
 {
 namespace optimizer
 {
+;
 
-
-  void
-  AdaBelief::setInitialConfiguration()
+void AdaBelief::setInitialConfiguration()
 {
   _variableCount = _k->_variables.size();
 
@@ -308,9 +307,9 @@ bool AdaBelief::checkTermination()
  return hasFinished;
 }
 
+;
 
-
-  } //optimizer
+} //optimizer
 } //solver
 } //korali
-
+;

@@ -21,10 +21,9 @@ namespace layer
 {
 namespace recurrent
 {
+;
 
-
-  void
-  GRU::initialize()
+void GRU::initialize()
 {
   Recurrent::initialize();
 
@@ -431,10 +430,10 @@ void GRU::applyVariableDefaults()
  Recurrent::applyVariableDefaults();
 } 
 
+;
 
-
-  } //recurrent
+} //recurrent
 } //layer
 } //neuralNetwork
 } //korali
-
+;

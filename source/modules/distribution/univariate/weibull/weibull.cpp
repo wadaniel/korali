@@ -9,10 +9,10 @@ namespace distribution
 {
 namespace univariate
 {
+;
 
-
-  double
-  Weibull::getDensity(const double x) const
+double
+Weibull::getDensity(const double x) const
 {
   return gsl_ran_weibull_pdf(x, _scale, _shape);
 }
@@ -99,9 +99,9 @@ double* Weibull::getPropertyPointer(const std::string& property)
  return NULL;
 }
 
+;
 
-
-  } //univariate
+} //univariate
 } //distribution
 } //korali
-
+;

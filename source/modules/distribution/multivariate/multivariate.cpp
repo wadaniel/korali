@@ -5,9 +5,9 @@ namespace korali
 {
 namespace distribution
 {
+;
 
-
-  void Multivariate::setConfiguration(knlohmann::json& js) 
+void Multivariate::setConfiguration(knlohmann::json& js) 
 {
  if (isDefined(js, "Results"))  eraseValue(js, "Results");
 
@@ -36,8 +36,8 @@ void Multivariate::applyVariableDefaults()
  Distribution::applyVariableDefaults();
 } 
 
+;
 
-
-    } //distribution
+} //distribution
 } //korali
-
+;

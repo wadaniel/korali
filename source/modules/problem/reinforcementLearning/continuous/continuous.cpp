@@ -8,10 +8,9 @@ namespace problem
 {
 namespace reinforcementLearning
 {
+;
 
-
-  void
-  Continuous::initialize()
+void Continuous::initialize()
 {
   ReinforcementLearning::initialize();
 
@@ -86,9 +85,9 @@ bool Continuous::runOperation(std::string operation, korali::Sample& sample)
  return operationDetected;
 }
 
+;
 
-
-  } //reinforcementLearning
+} //reinforcementLearning
 } //problem
 } //korali
-
+;

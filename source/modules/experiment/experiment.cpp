@@ -16,11 +16,11 @@
 
 namespace korali
 {
-
-  /**
+;
+/**
   * @brief Pointer to the current experiment in execution
  */
-  Experiment *__expPointer;
+Experiment *__expPointer;
 
 /**
   * @brief Pointer to the calling thread
@@ -440,7 +440,7 @@ void Experiment::applyVariableDefaults()
  Module::applyVariableDefaults();
 } 
 
+;
 
-
-  } //korali
-
+} //korali
+;

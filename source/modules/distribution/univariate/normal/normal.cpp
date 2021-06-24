@@ -10,10 +10,10 @@ namespace distribution
 {
 namespace univariate
 {
+;
 
-
-  double
-  Normal::getDensity(const double x) const
+double
+Normal::getDensity(const double x) const
 {
   double y = (x - _mean) / _standardDeviation;
   return gsl_sf_exp(-0.5 * y * y) / _normalization;
@@ -98,9 +98,9 @@ double* Normal::getPropertyPointer(const std::string& property)
  return NULL;
 }
 
+;
 
-
-  } //univariate
+} //univariate
 } //distribution
 } //korali
-
+;

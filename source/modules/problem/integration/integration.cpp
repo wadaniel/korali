@@ -5,10 +5,9 @@ namespace korali
 {
 namespace problem
 {
+;
 
-
-  void
-  Integration::initialize()
+void Integration::initialize()
 {
   if (_k->_variables.size() == 0) KORALI_LOG_ERROR("Integration problems require at least one variable.\n");
 
@@ -251,8 +250,8 @@ bool Integration::runOperation(std::string operation, korali::Sample& sample)
  return operationDetected;
 }
 
+;
 
-
-  } //problem
+} //problem
 } //korali
-
+;

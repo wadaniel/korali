@@ -20,10 +20,9 @@ namespace solver
 {
 namespace sampler
 {
+;
 
-
-  void
-  MCMC::setInitialConfiguration()
+void MCMC::setInitialConfiguration()
 {
   _variableCount = _k->_variables.size();
 
@@ -560,9 +559,9 @@ bool MCMC::checkTermination()
  return hasFinished;
 }
 
+;
 
-
-  } //sampler
+} //sampler
 } //solver
 } //korali
-
+;

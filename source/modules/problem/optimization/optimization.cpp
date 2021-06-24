@@ -5,10 +5,9 @@ namespace korali
 {
 namespace problem
 {
+;
 
-
-  void
-  Optimization::initialize()
+void Optimization::initialize()
 {
   if (_k->_variables.size() == 0) KORALI_LOG_ERROR("Optimization Evaluation problems require at least one variable.\n");
 
@@ -207,8 +206,8 @@ bool Optimization::runOperation(std::string operation, korali::Sample& sample)
  return operationDetected;
 }
 
+;
 
-
-  } //problem
+} //problem
 } //korali
-
+;

@@ -8,10 +8,9 @@ namespace solver
 {
 namespace optimizer
 {
+;
 
-
-  void
-  Adam::setInitialConfiguration()
+void Adam::setInitialConfiguration()
 {
   _variableCount = _k->_variables.size();
 
@@ -324,9 +323,9 @@ bool Adam::checkTermination()
  return hasFinished;
 }
 
+;
 
-
-  } //optimizer
+} //optimizer
 } //solver
 } //korali
-
+;

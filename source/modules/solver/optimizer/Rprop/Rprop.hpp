@@ -13,20 +13,20 @@
 
 #ifndef _KORALI_SOLVER_OPTIMIZER_RPROP_
 #define _KORALI_SOLVER_OPTIMIZER_RPROP_
-
+;
 
 #include "modules/solver/optimizer/optimizer.hpp"
 #include <vector>
 
-  namespace korali
+namespace korali
 {
 namespace solver
 {
 namespace optimizer
 {
+;
 
-
-  /**
+/**
 * @brief Class declaration for module: Rprop.
 */
 class Rprop : public Optimizer
@@ -143,7 +143,7 @@ class Rprop : public Optimizer
 } //optimizer
 } //solver
 } //korali
+;
 
-
-  #endif // _KORALI_SOLVER_OPTIMIZER_RPROP_
-
+#endif // _KORALI_SOLVER_OPTIMIZER_RPROP_
+;

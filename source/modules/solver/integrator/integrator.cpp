@@ -6,10 +6,9 @@ namespace korali
 {
 namespace solver
 {
+;
 
-
-  void
-  Integrator::setInitialConfiguration()
+void Integrator::setInitialConfiguration()
 {
   _variableCount = _k->_variables.size();
 
@@ -169,8 +168,8 @@ void Integrator::applyVariableDefaults()
  Solver::applyVariableDefaults();
 } 
 
+;
 
-
-  } //solver
+} //solver
 } //korali
-
+;

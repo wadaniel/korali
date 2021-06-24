@@ -11,10 +11,9 @@ namespace distribution
 {
 namespace multivariate
 {
+;
 
-
-  void
-  Normal::getDensity(double *x, double *result, const size_t n)
+void Normal::getDensity(double *x, double *result, const size_t n)
 {
   if (_workVector.size() != n)
     KORALI_LOG_ERROR("multivariate::Normal::getDensity Error - requested %lu densities, but distribution is configured with %lu.\n", n, _workVector.size());
@@ -136,9 +135,9 @@ void Normal::applyVariableDefaults()
  Multivariate::applyVariableDefaults();
 } 
 
+;
 
-
-  } //multivariate
+} //multivariate
 } //distribution
 } //korali
-
+;

@@ -19,10 +19,9 @@ namespace neuralNetwork
 {
 namespace layer
 {
+;
 
-
-  void
-  Output::initialize()
+void Output::initialize()
 {
   if (_index != _nn->_layers.size() - 1)
     KORALI_LOG_ERROR("Output layers can only be placed at the last position in the NN\n");
@@ -300,9 +299,9 @@ void Output::applyVariableDefaults()
  Layer::applyVariableDefaults();
 } 
 
+;
 
-
-  } //layer
+} //layer
 } //neuralNetwork
 } //korali
-
+;

@@ -13,7 +13,7 @@
 
 #ifndef _KORALI_SOLVER_SAMPLER_HMC_
 #define _KORALI_SOLVER_SAMPLER_HMC_
-
+;
 
 // TODO: REMOVE normal/normal.hpp
 #include "modules/distribution/multivariate/normal/normal.hpp"
@@ -33,38 +33,39 @@
 #include "modules/solver/sampler/HMC/helpers/tree_helper_euclidean.hpp"
 #include "modules/solver/sampler/HMC/helpers/tree_helper_riemannian.hpp"
 
-  namespace korali
+namespace korali
 {
 namespace solver
 {
 namespace sampler
 {
+;
 
-
-  /**
+/**
   * @brief Enum to set metric type.
 */
-  enum Metric {
-    /**
+enum Metric
+{
+  /**
   * @brief Static Metric type.
   */
-    Static = 0,
+  Static = 0,
 
-    /**
+  /**
   * @brief Euclidean Metric type.
   */
-    Euclidean = 1,
+  Euclidean = 1,
 
-    /**
+  /**
   * @brief Riemannian Metric type.
   */
-    Riemannian = 2,
+  Riemannian = 2,
 
-    /**
+  /**
   * @brief Const Riemannian Metric type.
   */
-    Riemannian_Const = 3,
-  };
+  Riemannian_Const = 3,
+};
 
 /**
 * @brief Class declaration for module: HMC.
@@ -381,7 +382,7 @@ class HMC : public Sampler
 } //sampler
 } //solver
 } //korali
+;
 
-
-  #endif // _KORALI_SOLVER_SAMPLER_HMC_
-
+#endif // _KORALI_SOLVER_SAMPLER_HMC_
+;

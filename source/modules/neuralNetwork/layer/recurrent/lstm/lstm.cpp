@@ -23,10 +23,9 @@ namespace layer
 {
 namespace recurrent
 {
+;
 
-
-  void
-  LSTM::initialize()
+void LSTM::initialize()
 {
   Recurrent::initialize();
 
@@ -465,10 +464,10 @@ void LSTM::applyVariableDefaults()
  Recurrent::applyVariableDefaults();
 } 
 
+;
 
-
-  } //recurrent
+} //recurrent
 } //layer
 } //neuralNetwork
 } //korali
-
+;

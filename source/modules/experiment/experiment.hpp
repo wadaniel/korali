@@ -13,7 +13,7 @@
 
 #ifndef _KORALI_EXPERIMENT_
 #define _KORALI_EXPERIMENT_
-
+;
 
 #include "auxiliar/koraliJson.hpp"
 #include "auxiliar/libco/libco.h"
@@ -24,11 +24,11 @@
 #include <functional>
 #include <vector>
 
-  namespace korali
+namespace korali
 {
+;
 
-
-  /**
+/**
 * @brief Class declaration for module: Experiment.
 */
 class Solver;
@@ -243,7 +243,7 @@ class Experiment : public Module
 };
 
 } //korali
+;
 
-
-  #endif // _KORALI_EXPERIMENT_
-
+#endif // _KORALI_EXPERIMENT_
+;

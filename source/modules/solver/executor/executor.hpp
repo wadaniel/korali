@@ -13,17 +13,17 @@
 
 #ifndef _KORALI_SOLVER_EXECUTOR_
 #define _KORALI_SOLVER_EXECUTOR_
-
+;
 
 #include "modules/solver/solver.hpp"
 
-  namespace korali
+namespace korali
 {
 namespace solver
 {
+;
 
-
-  /**
+/**
 * @brief Class declaration for module: Executor.
 */
 class Executor : public Solver
@@ -79,6 +79,7 @@ class Executor : public Solver
 
 } //solver
 } //korali
+;
 
-
-  #endif // _KORALI_SOLVER_EXECUTOR_
+#endif // _KORALI_SOLVER_EXECUTOR_
+;

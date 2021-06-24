@@ -9,10 +9,9 @@ namespace problem
 {
 namespace bayesian
 {
+;
 
-
-  void
-  Custom::initialize()
+void Custom::initialize()
 {
   Bayesian::initialize();
 
@@ -88,9 +87,9 @@ void Custom::applyVariableDefaults()
  Bayesian::applyVariableDefaults();
 } 
 
+;
 
-
-  } //bayesian
+} //bayesian
 } //problem
 } //korali
-
+;

@@ -13,17 +13,17 @@
 
 #ifndef _KORALI_PROBLEM_SUPERVISEDLEARNING_
 #define _KORALI_PROBLEM_SUPERVISEDLEARNING_
-
+;
 
 #include "modules/problem/problem.hpp"
 
-  namespace korali
+namespace korali
 {
 namespace problem
 {
+;
 
-
-  /**
+/**
 * @brief Class declaration for module: SupervisedLearning.
 */
 class SupervisedLearning : public Problem
@@ -90,6 +90,7 @@ class SupervisedLearning : public Problem
 
 } //problem
 } //korali
+;
 
-
-  #endif // _KORALI_PROBLEM_SUPERVISEDLEARNING_
+#endif // _KORALI_PROBLEM_SUPERVISEDLEARNING_
+;

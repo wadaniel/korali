@@ -19,10 +19,9 @@ namespace neuralNetwork
 {
 namespace layer
 {
+;
 
-
-  void
-  Activation::initialize()
+void Activation::initialize()
 {
   // The node count for this layer should be the same as the previous layer
   _outputChannels = _prevLayer->_outputChannels;
@@ -438,9 +437,9 @@ void Activation::applyVariableDefaults()
  Layer::applyVariableDefaults();
 } 
 
+;
 
-
-  } //layer
+} //layer
 } //neuralNetwork
 } //korali
-
+;

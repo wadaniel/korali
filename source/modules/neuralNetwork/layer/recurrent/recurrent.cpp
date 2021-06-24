@@ -19,10 +19,9 @@ namespace neuralNetwork
 {
 namespace layer
 {
+;
 
-
-  void
-  Recurrent::initialize()
+void Recurrent::initialize()
 {
   // Checking Layer size
   if (_outputChannels == 0) KORALI_LOG_ERROR("Node count for layer %lu should be larger than zero.\n", _index);
@@ -387,9 +386,9 @@ void Recurrent::applyVariableDefaults()
  Layer::applyVariableDefaults();
 } 
 
+;
 
-
-  } //layer
+} //layer
 } //neuralNetwork
 } //korali
-
+;

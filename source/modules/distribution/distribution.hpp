@@ -13,17 +13,17 @@
 
 #ifndef _KORALI_DISTRIBUTION_
 #define _KORALI_DISTRIBUTION_
-
+;
 
 #include "modules/module.hpp"
 #include <gsl/gsl_rng.h>
 #include <map>
 
-  namespace korali
+namespace korali
 {
+;
 
-
-  /**
+/**
 * @brief Class declaration for module: Distribution.
 */
 class Distribution : public Module
@@ -107,7 +107,7 @@ class Distribution : public Module
 };
 
 } //korali
+;
 
-
-  #endif // _KORALI_DISTRIBUTION_
-
+#endif // _KORALI_DISTRIBUTION_
+;

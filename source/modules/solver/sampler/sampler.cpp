@@ -4,9 +4,9 @@ namespace korali
 {
 namespace solver
 {
+;
 
-
-  void Sampler::setConfiguration(knlohmann::json& js) 
+void Sampler::setConfiguration(knlohmann::json& js) 
 {
  if (isDefined(js, "Results"))  eraseValue(js, "Results");
 
@@ -86,7 +86,8 @@ bool Sampler::checkTermination()
  return hasFinished;
 }
 
+;
 
-
-    } //solver
+} //solver
 } //korali
+;

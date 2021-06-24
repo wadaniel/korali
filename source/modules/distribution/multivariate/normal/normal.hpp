@@ -13,21 +13,21 @@
 
 #ifndef _KORALI_DISTRIBUTION_MULTIVARIATE_NORMAL_
 #define _KORALI_DISTRIBUTION_MULTIVARIATE_NORMAL_
-
+;
 
 #include "modules/distribution/multivariate/multivariate.hpp"
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_vector.h>
 
-  namespace korali
+namespace korali
 {
 namespace distribution
 {
 namespace multivariate
 {
+;
 
-
-  /**
+/**
 * @brief Class declaration for module: Normal.
 */
 class Normal : public Multivariate
@@ -123,7 +123,7 @@ class Normal : public Multivariate
 } //multivariate
 } //distribution
 } //korali
+;
 
-
-  #endif // _KORALI_DISTRIBUTION_MULTIVARIATE_NORMAL_
-
+#endif // _KORALI_DISTRIBUTION_MULTIVARIATE_NORMAL_
+;

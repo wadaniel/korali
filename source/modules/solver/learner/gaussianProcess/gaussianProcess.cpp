@@ -11,15 +11,15 @@ namespace solver
 {
 namespace learner
 {
+;
 
-
-  /**
+/**
   * @brief Converts a vector of floats to Eigen format
   * @param v the vector to convert
   * @return An Eigen vector type
  */
-  Eigen::VectorXd
-  toEigen(const std::vector<float> &v)
+Eigen::VectorXd
+toEigen(const std::vector<float> &v)
 {
   Eigen::VectorXd ev(v.size());
   for (size_t i = 0; i < v.size(); ++i)
@@ -268,9 +268,9 @@ bool GaussianProcess::checkTermination()
  return hasFinished;
 }
 
+;
 
-
-  } //learner
+} //learner
 } //solver
 } //korali
-
+;

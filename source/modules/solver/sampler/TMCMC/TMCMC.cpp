@@ -22,10 +22,9 @@ namespace solver
 {
 namespace sampler
 {
+;
 
-
-  void
-  TMCMC::setInitialConfiguration()
+void TMCMC::setInitialConfiguration()
 {
   knlohmann::json problemConfig = (*_k)["Problem"];
   _variableCount = _k->_variables.size();
@@ -1447,9 +1446,9 @@ bool TMCMC::checkTermination()
  return hasFinished;
 }
 
+;
 
-
-  } //sampler
+} //sampler
 } //solver
 } //korali
-
+;

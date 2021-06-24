@@ -13,10 +13,9 @@ namespace agent
 {
 namespace continuous
 {
+;
 
-
-  void
-  VRACER::initializeAgent()
+void VRACER::initializeAgent()
 {
   // Initializing common discrete agent configuration
   Continuous::initializeAgent();
@@ -301,10 +300,10 @@ bool VRACER::checkTermination()
  return hasFinished;
 }
 
+;
 
-
-  } //continuous
+} //continuous
 } //agent
 } //solver
 } //korali
-
+;

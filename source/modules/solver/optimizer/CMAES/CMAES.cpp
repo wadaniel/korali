@@ -18,10 +18,9 @@ namespace solver
 {
 namespace optimizer
 {
+;
 
-
-  void
-  CMAES::setInitialConfiguration()
+void CMAES::setInitialConfiguration()
 {
   knlohmann::json problemConfig = (*_k)["Problem"];
   _variableCount = _k->_variables.size();
@@ -1940,9 +1939,9 @@ bool CMAES::checkTermination()
  return hasFinished;
 }
 
+;
 
-
-  } //optimizer
+} //optimizer
 } //solver
 } //korali
-
+;

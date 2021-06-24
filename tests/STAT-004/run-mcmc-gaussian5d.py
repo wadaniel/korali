@@ -19,7 +19,7 @@ e = korali.Experiment()
 e["Problem"]["Type"] = "Sampling"
 e["Problem"]["Probability Function"] = lg5
 e["Console Output"]["Frequency"] = 5000
-e["File Output"]["Frequency"] = 0
+e["File Output"]["Enabled"] = False
 
 # Defining problem's variables and their MCMC settings
 for i in range(5):

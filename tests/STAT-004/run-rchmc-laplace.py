@@ -39,7 +39,6 @@ for useDiagonalMetric in [False, True]:
     e["Solver"]["Use NUTS"] = False
 
     e["Console Output"]["Frequency"] = 5000
-    e["File Output"]["Frequency"] = 0
     e["File Output"]["Enabled"] = False
 
     # Running Korali

@@ -14,9 +14,9 @@ using namespace dnnl;
 using namespace Eigen;
 
 
-@startNamespace
+__startNamespace__
 
-void @className::initialize()
+void __className__::initialize()
 {
   // Checking Layer size
   if (_outputChannels == 0) KORALI_LOG_ERROR("Output Channels for layer (%lu) should be larger than zero.\n", _index);
@@ -25,7 +25,7 @@ void @className::initialize()
   if (_index != 0) KORALI_LOG_ERROR("Input layers can only be placed at the start of the NN\n");
 }
 
-void @className::forwardData(const size_t t)
+void __className__::forwardData(const size_t t)
 {
   size_t N = _batchSize;
   size_t OC = _outputChannels;
@@ -50,7 +50,7 @@ void @className::forwardData(const size_t t)
 #endif
 }
 
-void @className::backwardData(const size_t t)
+void __className__::backwardData(const size_t t)
 {
   int N = _batchSize;
   int OC = _outputChannels;
@@ -78,6 +78,6 @@ void @className::backwardData(const size_t t)
 #endif
 }
 
-@moduleAutoCode
+__moduleAutoCode__
 
-@endNamespace
+__endNamespace__

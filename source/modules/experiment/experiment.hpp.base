@@ -1,4 +1,4 @@
-@startIncludeGuard
+__startIncludeGuard__
 
 #include "config.hpp"
 #include "auxiliar/koraliJson.hpp"
@@ -9,13 +9,13 @@
 #include <functional>
 #include <vector>
 
-@startNamespace
+__startNamespace__
 
 class Solver;
 class Problem;
 class Engine;
 
-class @className: public @parentClassName
+class __className__: public __parentClassName__
 {
   public:
   Experiment();
@@ -126,6 +126,6 @@ class @className: public @parentClassName
   void setSeed(knlohmann::json &js);
 };
 
-@endNamespace
+__endNamespace__
 
-@endIncludeGuard
+__endIncludeGuard__

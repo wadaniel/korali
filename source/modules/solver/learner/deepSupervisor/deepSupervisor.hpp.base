@@ -1,4 +1,4 @@
-@startIncludeGuard
+__startIncludeGuard__
 
 #include "modules/solver/learner/deepSupervisor/optimizers/fAdaBelief.hpp"
 #include "modules/solver/learner/deepSupervisor/optimizers/fAdagrad.hpp"
@@ -11,9 +11,9 @@
 #include "modules/problem/supervisedLearning/supervisedLearning.hpp"
 #include "modules/solver/learner/learner.hpp"
 
-@startNamespace
+__startNamespace__
 
-class @className : public @parentClassName
+class __className__ : public __parentClassName__
 {
   public:
   /**
@@ -59,6 +59,6 @@ class @className : public @parentClassName
   void printGenerationAfter() override;
 };
 
-@endNamespace
+__endNamespace__
 
-@endIncludeGuard
+__endIncludeGuard__

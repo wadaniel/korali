@@ -12,9 +12,9 @@
 
 #define STDEV_EPSILON 0.00000000001
 
-@startNamespace
+__startNamespace__
 
-void @className::initialize()
+void __className__::initialize()
 {
   Bayesian::initialize();
 
@@ -22,7 +22,7 @@ void @className::initialize()
   if (_k->_variables.size() < 1) KORALI_LOG_ERROR("Bayesian (%s) inference problems require at least one variable.\n", _likelihoodModel.c_str());
 }
 
-void @className::evaluateLoglikelihood(Sample &sample)
+void __className__::evaluateLoglikelihood(Sample &sample)
 {
   sample.run(_computationalModel);
 
@@ -49,7 +49,7 @@ void @className::evaluateLoglikelihood(Sample &sample)
     KORALI_LOG_ERROR("Bayesian problem (%s) not recognized.\n", _likelihoodModel.c_str());
 }
 
-double @className::compute_normalized_sse(std::vector<double> f, std::vector<double> g, std::vector<double> y)
+double __className__::compute_normalized_sse(std::vector<double> f, std::vector<double> g, std::vector<double> y)
 {
   double sse = 0.;
   for (size_t i = 0; i < y.size(); i++)
@@ -60,7 +60,7 @@ double @className::compute_normalized_sse(std::vector<double> f, std::vector<dou
   return sse;
 }
 
-void @className::loglikelihoodNormal(Sample &sample)
+void __className__::loglikelihoodNormal(Sample &sample)
 {
   size_t Nd = _referenceData.size();
   auto refEvals = KORALI_GET(std::vector<double>, sample, "Reference Evaluations");
@@ -84,7 +84,7 @@ void @className::loglikelihoodNormal(Sample &sample)
   sample["logLikelihood"] = loglike;
 }
 
-void @className::loglikelihoodPositiveNormal(Sample &sample)
+void __className__::loglikelihoodPositiveNormal(Sample &sample)
 {
   size_t Nd = _referenceData.size();
   auto refEvals = KORALI_GET(std::vector<double>, sample, "Reference Evaluations");
@@ -113,7 +113,7 @@ void @className::loglikelihoodPositiveNormal(Sample &sample)
   sample["logLikelihood"] = loglike;
 }
 
-void @className::loglikelihoodStudentT(Sample &sample)
+void __className__::loglikelihoodStudentT(Sample &sample)
 {
   size_t Nd = _referenceData.size();
 
@@ -133,7 +133,7 @@ void @className::loglikelihoodStudentT(Sample &sample)
   sample["logLikelihood"] = loglike;
 }
 
-void @className::loglikelihoodPositiveStudentT(Sample &sample)
+void __className__::loglikelihoodPositiveStudentT(Sample &sample)
 {
   size_t Nd = _referenceData.size();
 
@@ -157,7 +157,7 @@ void @className::loglikelihoodPositiveStudentT(Sample &sample)
   sample["logLikelihood"] = loglike;
 }
 
-void @className::loglikelihoodPoisson(Sample &sample)
+void __className__::loglikelihoodPoisson(Sample &sample)
 {
   size_t Nd = _referenceData.size();
   auto refEvals = KORALI_GET(std::vector<double>, sample, "Reference Evaluations");
@@ -175,7 +175,7 @@ void @className::loglikelihoodPoisson(Sample &sample)
   sample["logLikelihood"] = loglike;
 }
 
-void @className::loglikelihoodGeometric(Sample &sample)
+void __className__::loglikelihoodGeometric(Sample &sample)
 {
   size_t Nd = _referenceData.size();
 
@@ -194,7 +194,7 @@ void @className::loglikelihoodGeometric(Sample &sample)
   sample["logLikelihood"] = loglike;
 }
 
-void @className::loglikelihoodNegativeBinomial(Sample &sample)
+void __className__::loglikelihoodNegativeBinomial(Sample &sample)
 {
   size_t Nd = _referenceData.size();
 
@@ -234,7 +234,7 @@ void @className::loglikelihoodNegativeBinomial(Sample &sample)
   sample["logLikelihood"] = loglike;
 }
 
-void @className::evaluateLoglikelihoodGradient(Sample &sample)
+void __className__::evaluateLoglikelihoodGradient(Sample &sample)
 {
   double eval = sample["F(x)"];
   if (isfinite(eval))
@@ -254,7 +254,7 @@ void @className::evaluateLoglikelihoodGradient(Sample &sample)
   }
 }
 
-void @className::gradientLoglikelihoodNormal(Sample &sample)
+void __className__::gradientLoglikelihoodNormal(Sample &sample)
 {
   size_t Nd = _referenceData.size();
   size_t Nth = _k->_variables.size();
@@ -291,7 +291,7 @@ void @className::gradientLoglikelihoodNormal(Sample &sample)
   sample["logLikelihood Gradient"] = llkgradient;
 }
 
-void @className::gradientLoglikelihoodPositiveNormal(Sample &sample)
+void __className__::gradientLoglikelihoodPositiveNormal(Sample &sample)
 {
   size_t Nd = _referenceData.size();
   size_t Nth = _k->_variables.size();
@@ -337,7 +337,7 @@ void @className::gradientLoglikelihoodPositiveNormal(Sample &sample)
   sample["logLikelihood Gradient"] = llkgradient;
 }
 
-void @className::gradientLoglikelihoodNegativeBinomial(Sample &sample)
+void __className__::gradientLoglikelihoodNegativeBinomial(Sample &sample)
 {
   size_t Nd = _referenceData.size();
   size_t Nth = _k->_variables.size();
@@ -373,7 +373,7 @@ void @className::gradientLoglikelihoodNegativeBinomial(Sample &sample)
   sample["logLikelihood Gradient"] = llkgradient;
 }
 
-void @className::evaluateLogLikelihoodHessian(Sample &sample)
+void __className__::evaluateLogLikelihoodHessian(Sample &sample)
 {
   double eval = sample["F(x)"];
   if (isfinite(eval))
@@ -393,7 +393,7 @@ void @className::evaluateLogLikelihoodHessian(Sample &sample)
   }
 }
 
-void @className::hessianLogLikelihoodNormal(korali::Sample &sample)
+void __className__::hessianLogLikelihoodNormal(korali::Sample &sample)
 {
   size_t Nd = _referenceData.size();
   size_t Nth = _k->_variables.size();
@@ -445,12 +445,12 @@ void @className::hessianLogLikelihoodNormal(korali::Sample &sample)
   sample["logLikelihood Hessian"] = hessian;
 }
 
-void @className::hessianLogLikelihoodPositiveNormal(korali::Sample &sample)
+void __className__::hessianLogLikelihoodPositiveNormal(korali::Sample &sample)
 {
   KORALI_LOG_ERROR("Hessian not yet implemented for Positive Normal logLikelihood model.");
 }
 
-void @className::hessianLogLikelihoodNegativeBinomial(korali::Sample &sample)
+void __className__::hessianLogLikelihoodNegativeBinomial(korali::Sample &sample)
 {
   size_t Nd = _referenceData.size();
   size_t Nth = _k->_variables.size();
@@ -523,7 +523,7 @@ void @className::hessianLogLikelihoodNegativeBinomial(korali::Sample &sample)
   sample["logLikelihood Hessian"] = hessian;
 }
 
-void @className::evaluateFisherInformation(Sample &sample)
+void __className__::evaluateFisherInformation(Sample &sample)
 {
   auto eval = KORALI_GET(double, sample, "F(x)");
 
@@ -544,7 +544,7 @@ void @className::evaluateFisherInformation(Sample &sample)
   }
 }
 
-void @className::fisherInformationLoglikelihoodNormal(Sample &sample)
+void __className__::fisherInformationLoglikelihoodNormal(Sample &sample)
 {
   size_t Nd = _referenceData.size();
   size_t Nth = _k->_variables.size();
@@ -578,7 +578,7 @@ void @className::fisherInformationLoglikelihoodNormal(Sample &sample)
   sample["Fisher Information"] = FIM;
 }
 
-void @className::fisherInformationLoglikelihoodPositiveNormal(Sample &sample)
+void __className__::fisherInformationLoglikelihoodPositiveNormal(Sample &sample)
 {
   size_t Nd = _referenceData.size();
   size_t Nth = _k->_variables.size();
@@ -632,11 +632,11 @@ void @className::fisherInformationLoglikelihoodPositiveNormal(Sample &sample)
   sample["Fisher Information"] = FIM;
 }
 
-void @className::fisherInformationLoglikelihoodNegativeBinomial(Sample &sample)
+void __className__::fisherInformationLoglikelihoodNegativeBinomial(Sample &sample)
 {
   KORALI_LOG_ERROR("Fisher Information not yet implemented for logLikelihood model of type '%s'.", _likelihoodModel.c_str());
 }
 
-@moduleAutoCode
+__moduleAutoCode__
 
-@endNamespace
+__endNamespace__

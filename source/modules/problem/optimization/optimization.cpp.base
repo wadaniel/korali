@@ -1,9 +1,9 @@
 #include "modules/problem/optimization/optimization.hpp"
 #include "sample/sample.hpp"
 
-@startNamespace
+__startNamespace__
 
-void @className::initialize()
+void __className__::initialize()
 {
   if (_k->_variables.size() == 0) KORALI_LOG_ERROR("Optimization Evaluation problems require at least one variable.\n");
 
@@ -15,7 +15,7 @@ void @className::initialize()
   }
 }
 
-void @className::evaluateConstraints(Sample &sample)
+void __className__::evaluateConstraints(Sample &sample)
 {
   for (size_t i = 0; i < _constraints.size(); i++)
   {
@@ -30,7 +30,7 @@ void @className::evaluateConstraints(Sample &sample)
   }
 }
 
-void @className::evaluate(Sample &sample)
+void __className__::evaluate(Sample &sample)
 {
  sample.run(_objectiveFunction);
 
@@ -40,7 +40,7 @@ void @className::evaluate(Sample &sample)
   KORALI_LOG_ERROR("Non finite value of function evaluation detected: %f\n", evaluation);
 }
 
-void @className::evaluateMultiple(Sample &sample)
+void __className__::evaluateMultiple(Sample &sample)
 {
   sample.run(_objectiveFunction);
 
@@ -51,7 +51,7 @@ void @className::evaluateMultiple(Sample &sample)
      KORALI_LOG_ERROR("Non finite value of function evaluation detected for variable %lu: %f\n", i, evaluation[i]);
 }
 
-void @className::evaluateWithGradients(Sample &sample)
+void __className__::evaluateWithGradients(Sample &sample)
 {
   sample.run(_objectiveFunction);
 
@@ -69,6 +69,6 @@ void @className::evaluateWithGradients(Sample &sample)
      KORALI_LOG_ERROR("Non finite value of gradient evaluation detected for variable %lu: %f\n", i, gradient[i]);
 }
 
-@moduleAutoCode
+__moduleAutoCode__
 
-@endNamespace
+__endNamespace__

@@ -1,10 +1,10 @@
-@startIncludeGuard
+__startIncludeGuard__
 
 #include "modules/problem/problem.hpp"
 
-@startNamespace
+__startNamespace__
 
-class @className : public @parentClassName
+class __className__ : public __parentClassName__
 {
   private:
   public:
@@ -77,6 +77,6 @@ class @className : public @parentClassName
   virtual void evaluateFisherInformation(korali::Sample &sample) { KORALI_LOG_ERROR("Fisher information not yet implemented for selected Bayesian problem and log likelihood model."); }
 };
 
-@endNamespace
+__endNamespace__
 
-@endIncludeGuard
+__endIncludeGuard__

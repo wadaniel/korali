@@ -4,15 +4,15 @@
 #include <omp.h>
 #endif
 
-@startNamespace
+__startNamespace__
 
-@className::NeuralNetwork()
+__className__::NeuralNetwork()
 {
   _isInitialized = false;
   _timestepCount = 0;
 }
 
-void @className::initialize()
+void __className__::initialize()
 {
   // Initializing corresponding NN Engine
 
@@ -181,7 +181,7 @@ void @className::initialize()
   _isInitialized = true;
 }
 
-std::vector<float> @className::generateInitialHyperparameters()
+std::vector<float> __className__::generateInitialHyperparameters()
 {
   // Setting initial values for hyperparameters
   std::vector<float> initialHyperparameters;
@@ -195,7 +195,7 @@ std::vector<float> @className::generateInitialHyperparameters()
   return initialHyperparameters;
 }
 
-void @className::forward(const std::vector<std::vector<std::vector<float>>> &inputValues)
+void __className__::forward(const std::vector<std::vector<std::vector<float>>> &inputValues)
 {
   // Finding out current thread
 #ifdef _OPENMP
@@ -253,7 +253,7 @@ void @className::forward(const std::vector<std::vector<std::vector<float>>> &inp
       p->_outputValues[b][i] = p->_rawOutputValues[p->_inputBatchLastStep[b] * N * OC + b * OC + i];
 }
 
-void @className::backward(const std::vector<std::vector<float>> &outputGradients)
+void __className__::backward(const std::vector<std::vector<float>> &outputGradients)
 {
   // Finding out current thread
 #ifdef _OPENMP
@@ -341,7 +341,7 @@ void @className::backward(const std::vector<std::vector<float>> &outputGradients
       p->_inputGradients[b][i] = p->_rawInputGradients[p->_inputBatchLastStep[b] * N * IC + b * IC + i];
 }
 
-size_t @className::getBatchSizeIdx(const size_t batchSize)
+size_t __className__::getBatchSizeIdx(const size_t batchSize)
 {
   bool foundBatchIdx = false;
   size_t batchSizeIdx = 0;
@@ -359,7 +359,7 @@ size_t @className::getBatchSizeIdx(const size_t batchSize)
   return batchSizeIdx;
 }
 
-std::vector<std::vector<float>> &@className::getOutputValues(const size_t batchSize)
+std::vector<std::vector<float>> &__className__::getOutputValues(const size_t batchSize)
 {
 #ifdef _OPENMP
   size_t curThread = omp_get_thread_num();
@@ -371,7 +371,7 @@ std::vector<std::vector<float>> &@className::getOutputValues(const size_t batchS
   return p->_outputValues;
 }
 
-std::vector<std::vector<float>> &@className::getInputGradients(const size_t batchSize)
+std::vector<std::vector<float>> &__className__::getInputGradients(const size_t batchSize)
 {
 #ifdef _OPENMP
   size_t curThread = omp_get_thread_num();
@@ -383,7 +383,7 @@ std::vector<std::vector<float>> &@className::getInputGradients(const size_t batc
   return p->_inputGradients;
 }
 
-std::vector<float> &@className::getHyperparameterGradients(const size_t batchSize)
+std::vector<float> &__className__::getHyperparameterGradients(const size_t batchSize)
 {
 #ifdef _OPENMP
   size_t curThread = omp_get_thread_num();
@@ -395,7 +395,7 @@ std::vector<float> &@className::getHyperparameterGradients(const size_t batchSiz
   return p->_hyperparameterGradients;
 }
 
-std::vector<float> @className::getHyperparameters()
+std::vector<float> __className__::getHyperparameters()
 {
   auto params = std::vector<float>(_hyperparameterCount);
 
@@ -410,7 +410,7 @@ std::vector<float> @className::getHyperparameters()
   return params;
 }
 
-void @className::setHyperparameters(const std::vector<float> &hyperparameters)
+void __className__::setHyperparameters(const std::vector<float> &hyperparameters)
 {
   if (hyperparameters.size() != _hyperparameterCount)
     KORALI_LOG_ERROR("Wrong number of hyperparameters passed to the neural network. Expected: %lu, provided: %lu.\n", _hyperparameterCount, hyperparameters.size());
@@ -426,6 +426,6 @@ void @className::setHyperparameters(const std::vector<float> &hyperparameters)
   }
 }
 
-@moduleAutoCode
+__moduleAutoCode__
 
-@endNamespace
+__endNamespace__

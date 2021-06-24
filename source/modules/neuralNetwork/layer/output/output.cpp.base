@@ -13,9 +13,9 @@ using namespace dnnl;
 #include <Eigen/Dense>
 using namespace Eigen;
 
-@startNamespace
+__startNamespace__
 
-void @className::initialize()
+void __className__::initialize()
 {
   if (_index != _nn->_layers.size() - 1)
     KORALI_LOG_ERROR("Output layers can only be placed at the last position in the NN\n");
@@ -82,7 +82,7 @@ void @className::initialize()
     }
 }
 
-void @className::createForwardPipeline()
+void __className__::createForwardPipeline()
 {
   size_t N = _batchSize;
   size_t IC = _prevLayer->_outputChannels;
@@ -97,7 +97,7 @@ void @className::createForwardPipeline()
   _srcOutputValues = (float *)malloc(N * OC * sizeof(float));
 }
 
-void @className::createBackwardPipeline()
+void __className__::createBackwardPipeline()
 {
   size_t N = _batchSize;
   size_t IC = _prevLayer->_outputChannels;
@@ -112,7 +112,7 @@ void @className::createBackwardPipeline()
   _dstOutputGradients = (float *)malloc(N * OC * sizeof(float));
 }
 
-void @className::forwardData(const size_t t)
+void __className__::forwardData(const size_t t)
 {
   size_t N = _batchSize;
   size_t OC = _outputChannels;
@@ -162,7 +162,7 @@ void @className::forwardData(const size_t t)
     }
 }
 
-void @className::backwardData(const size_t t)
+void __className__::backwardData(const size_t t)
 {
   const size_t N = _batchSize;
   const size_t OC = _outputChannels;
@@ -231,6 +231,6 @@ void @className::backwardData(const size_t t)
 #endif
 }
 
-@moduleAutoCode
+__moduleAutoCode__
 
-@endNamespace
+__endNamespace__

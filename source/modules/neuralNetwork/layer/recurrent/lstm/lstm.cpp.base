@@ -17,9 +17,9 @@ using namespace Eigen;
 
 #define LSTM_LINEAR_LAYERS 8
 
-@startNamespace
+__startNamespace__
 
-void @className::initialize()
+void __className__::initialize()
 {
   Recurrent::initialize();
 
@@ -31,7 +31,7 @@ void @className::initialize()
 #endif
 }
 
-void @className::createForwardPipeline()
+void __className__::createForwardPipeline()
 {
   // Calling base layer function
   Layer::createForwardPipeline();
@@ -200,7 +200,7 @@ void @className::createForwardPipeline()
 #endif
 }
 
-void @className::createBackwardPipeline()
+void __className__::createBackwardPipeline()
 {
   // Calling base layer function
   Recurrent::createBackwardPipeline();
@@ -298,7 +298,7 @@ void @className::createBackwardPipeline()
 #endif
 }
 
-void @className::forwardData(const size_t t)
+void __className__::forwardData(const size_t t)
 {
 
 #ifdef _KORALI_USE_ONEDNN
@@ -355,7 +355,7 @@ void @className::forwardData(const size_t t)
 #endif
 }
 
-void @className::backwardData(const size_t t)
+void __className__::backwardData(const size_t t)
 {
   if (_nn->_mode == "Inference")
     KORALI_LOG_ERROR("Requesting Layer backward data propagation but NN was configured for inference only.\n");
@@ -427,6 +427,6 @@ void @className::backwardData(const size_t t)
 #endif
 }
 
-@moduleAutoCode
+__moduleAutoCode__
 
-@endNamespace
+__endNamespace__

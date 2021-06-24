@@ -12,9 +12,9 @@
 //#include <gsl/gsl_matrix.h>
 //#include <gsl/gsl_blas.h>
 
-@startNamespace
+__startNamespace__
 
-void @className::setInitialConfiguration()
+void __className__::setInitialConfiguration()
 {
   knlohmann::json problemConfig = (*_k)["Problem"];
   _variableCount = _k->_variables.size();
@@ -184,7 +184,7 @@ void @className::setInitialConfiguration()
   _currentMaxStandardDeviation = -std::numeric_limits<double>::infinity();
 }
 
-void @className::runGeneration()
+void __className__::runGeneration()
 {
   if (_k->_currentGeneration == 1) setInitialConfiguration();
 
@@ -231,7 +231,7 @@ void @className::runGeneration()
   updateDistribution();
 }
 
-void @className::initMuWeights(size_t numsamplesmu)
+void __className__::initMuWeights(size_t numsamplesmu)
 {
   // Initializing Mu Weights
   if (_muType == "Linear")
@@ -284,7 +284,7 @@ void @className::initMuWeights(size_t numsamplesmu)
     _dampFactor = (1.0 + 2 * std::max(0.0, sqrt((_effectiveMu - 1.0) / (_variableCount + 1.0)) - 1)) + _sigmaCumulationFactor;
 }
 
-void @className::initCovariance()
+void __className__::initCovariance()
 {
   // Setting Sigma
   _trace = 0.0;
@@ -313,7 +313,7 @@ void @className::initCovariance()
     if (_minimumDiagonalCovarianceMatrixElement > _covarianceMatrix[i * _variableCount + i]) _minimumDiagonalCovarianceMatrixElement = _covarianceMatrix[i * _variableCount + i];
 }
 
-void @className::checkMeanAndSetRegime()
+void __className__::checkMeanAndSetRegime()
 {
   if (_isViabilityRegime == false) return; /* mean already inside valid domain, no udpates */
 
@@ -345,7 +345,7 @@ void @className::checkMeanAndSetRegime()
   initCovariance();
 }
 
-void @className::updateConstraints()
+void __className__::updateConstraints()
 {
   for (size_t i = 0; i < _currentPopulationSize; i++)
   {
@@ -385,7 +385,7 @@ void @className::updateConstraints()
   }
 }
 
-void @className::reEvaluateConstraints()
+void __className__::reEvaluateConstraints()
 {
   _maxConstraintViolationCount = 0;
 
@@ -424,7 +424,7 @@ void @className::reEvaluateConstraints()
     }
 }
 
-void @className::updateViabilityBoundaries()
+void __className__::updateViabilityBoundaries()
 {
   for (size_t c = 0; c < _constraintEvaluations.size(); c++)
   {
@@ -437,7 +437,7 @@ void @className::updateViabilityBoundaries()
   }
 }
 
-void @className::prepareGeneration()
+void __className__::prepareGeneration()
 {
   updateEigensystem(_covarianceMatrix);
 
@@ -491,7 +491,7 @@ void @className::prepareGeneration()
 
 }
 
-void @className::sampleSingle(size_t sampleIdx, const std::vector<double>& randomNumbers)
+void __className__::sampleSingle(size_t sampleIdx, const std::vector<double>& randomNumbers)
 {
   for (size_t d = 0; d < _variableCount; ++d)
   {
@@ -544,7 +544,7 @@ void @className::sampleSingle(size_t sampleIdx, const std::vector<double>& rando
   }
 }
 
-void @className::updateDistribution()
+void __className__::updateDistribution()
 {
   /* Generate _sortingIndex */
   sort_index(_valueVector, _sortingIndex, _currentPopulationSize);
@@ -687,7 +687,7 @@ void @className::updateDistribution()
   }
 }
 
-void @className::adaptC(int hsig)
+void __className__::adaptC(int hsig)
 {
   /* definitions for speeding up inner-most loop */
   double ccov1 = 2.0 / (std::pow(_variableCount + 1.3, 2) + _effectiveMu);
@@ -717,7 +717,7 @@ void @className::adaptC(int hsig)
   }
 }
 
-void @className::updateSigma()
+void __className__::updateSigma()
 {
   /* update for non-viable region */
   if (_hasConstraints && (_isViabilityRegime == true))
@@ -760,7 +760,7 @@ void @className::updateSigma()
   }
 }
 
-void @className::numericalErrorTreatment()
+void __className__::numericalErrorTreatment()
 {
   //treat maximal standard deviations
   //TODO
@@ -780,7 +780,7 @@ void @className::numericalErrorTreatment()
   //TODO
 }
 
-void @className::handleConstraints()
+void __className__::handleConstraints()
 {
   while (_maxConstraintViolationCount > 0)
   {
@@ -843,7 +843,7 @@ void @className::handleConstraints()
   } //while _maxConstraintViolationCount > 0
 }
 
-void @className::updateDiscreteMutationMatrix()
+void __className__::updateDiscreteMutationMatrix()
 {
   // implemented based on 'A CMA-ES for Mixed-Integer Nonlinear Optimization' by
   // Hansen2011
@@ -871,14 +871,14 @@ void @className::updateDiscreteMutationMatrix()
   std::fill(std::begin(_discreteMutations), std::end(_discreteMutations), 0.0);
 }
 
-void @className::discretize(std::vector<double> &sample)
+void __className__::discretize(std::vector<double> &sample)
 {
   for (size_t d = 0; d < _variableCount; ++d)
     if (_k->_variables[d]->_granularity != 0.0)
       sample[d] = std::round(sample[d] / _k->_variables[d]->_granularity) * _k->_variables[d]->_granularity;
 }
 
-void @className::updateEigensystem(const std::vector<double> &M)
+void __className__::updateEigensystem(const std::vector<double> &M)
 {
   eigen(_variableCount, M, _auxiliarAxisLengths, _auxiliarCovarianceEigenvectorMatrix);
 
@@ -905,7 +905,7 @@ void @className::updateEigensystem(const std::vector<double> &M)
 /*                    Additional Methods                                */
 /************************************************************************/
 
-void @className::eigen(size_t size, const std::vector<double> &M, std::vector<double> &diag, std::vector<double> &Q) const
+void __className__::eigen(size_t size, const std::vector<double> &M, std::vector<double> &diag, std::vector<double> &Q) const
 {
   if (_diagonalCovariance)
   {
@@ -949,7 +949,7 @@ void @className::eigen(size_t size, const std::vector<double> &M, std::vector<do
   }
 }
 
-void @className::sort_index(const std::vector<double> &vec, std::vector<size_t> &sortingIndex, size_t N) const
+void __className__::sort_index(const std::vector<double> &vec, std::vector<size_t> &sortingIndex, size_t N) const
 {
   // initialize original sortingIndex locations
   std::iota(std::begin(sortingIndex), std::begin(sortingIndex) + N, (size_t)0);
@@ -958,9 +958,9 @@ void @className::sort_index(const std::vector<double> &vec, std::vector<size_t> 
   std::sort(std::begin(sortingIndex), std::begin(sortingIndex) + N, [vec](size_t i1, size_t i2) { return vec[i1] > vec[i2]; });
 }
 
-void @className::printGenerationBefore() { return; }
+void __className__::printGenerationBefore() { return; }
 
-void @className::printGenerationAfter()
+void __className__::printGenerationAfter()
 {
   if (_hasConstraints && _isViabilityRegime)
   {
@@ -1000,7 +1000,7 @@ void @className::printGenerationAfter()
   }
 }
 
-void @className::finalize()
+void __className__::finalize()
 {
   // Updating Results
   (*_k)["Results"]["Best Sample"]["F(x)"] = _bestEverValue;
@@ -1018,6 +1018,6 @@ void @className::finalize()
   _k->_logger->logInfo("Minimal", "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
 }
 
-@moduleAutoCode
+__moduleAutoCode__
 
-@endNamespace
+__endNamespace__

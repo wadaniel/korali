@@ -2,40 +2,40 @@
 #include "modules/experiment/experiment.hpp"
 #include <gsl/gsl_randist.h>
 
-@startNamespace
+__startNamespace__
 
-double @className::getDensity(const double x) const
+double __className__::getDensity(const double x) const
 {
   return gsl_ran_exponential_pdf(x - _location, _mean);
 }
 
-double @className::getLogDensity(const double x) const
+double __className__::getLogDensity(const double x) const
 {
   if (x - _location < 0) return -INFINITY;
   return -log(_mean) - (x - _location) / _mean;
 }
 
-double @className::getLogDensityGradient(const double x) const
+double __className__::getLogDensityGradient(const double x) const
 {
   if (x - _location < 0) return 0.;
   return -1.0 / _mean;
 }
 
-double @className::getLogDensityHessian(const double x) const
+double __className__::getLogDensityHessian(const double x) const
 {
   return 0.;
 }
 
-double @className::getRandomNumber()
+double __className__::getRandomNumber()
 {
   return _location + gsl_ran_exponential(_range, _mean);
 }
 
-void @className::updateDistribution()
+void __className__::updateDistribution()
 {
   _aux = 0.0;
 }
 
-@moduleAutoCode
+__moduleAutoCode__
 
-@endNamespace
+__endNamespace__

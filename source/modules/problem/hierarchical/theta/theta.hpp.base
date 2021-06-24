@@ -1,11 +1,11 @@
-@startIncludeGuard
+__startIncludeGuard__
 
 #include "modules/problem/bayesian/bayesian.hpp"
 #include "modules/problem/hierarchical/psi/psi.hpp"
 
-@startNamespace
+__startNamespace__
 
-class @className : public @parentClassName
+class __className__ : public __parentClassName__
 {
   private:
   /**
@@ -83,6 +83,6 @@ class @className : public @parentClassName
   void initialize() override;
 };
 
-@endNamespace
+__endNamespace__
 
-@endIncludeGuard
+__endIncludeGuard__

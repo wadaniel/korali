@@ -11,7 +11,7 @@
 
 using namespace std;
 
-@startNamespace
+__startNamespace__
 
 /**
 * @brief Temporary storage to hold the pointer to the current conduit
@@ -23,29 +23,29 @@ void _workerWrapper()
   if (_currentConduit != NULL) _currentConduit->worker();
 }
 
-void @className::initialize()
+void __className__::initialize()
 {
   _workerQueue.push(0);
 }
 
-void @className::initServer()
+void __className__::initServer()
 {
   _currentConduit = this;
   _workerThread = co_create(1 << 28, _workerWrapper);
 }
 
-void @className::terminateServer()
+void __className__::terminateServer()
 {
   co_delete(_workerThread);
 }
 
-void @className::broadcastMessageToWorkers(knlohmann::json &message)
+void __className__::broadcastMessageToWorkers(knlohmann::json &message)
 {
   // Queueing outgoing message directly
   _workerMessageQueue.push(message);
 }
 
-void @className::sendMessageToEngine(knlohmann::json &message)
+void __className__::sendMessageToEngine(knlohmann::json &message)
 {
   // Identifying sender sample
   auto sample = _workerToSampleMap[0];
@@ -54,7 +54,7 @@ void @className::sendMessageToEngine(knlohmann::json &message)
   sample->_messageQueue.push(message);
 }
 
-knlohmann::json @className::recvMessageFromEngine()
+knlohmann::json __className__::recvMessageFromEngine()
 {
   Engine *engine = _engineStack.top();
 
@@ -77,7 +77,7 @@ knlohmann::json @className::recvMessageFromEngine()
   return message;
 }
 
-void @className::sendMessageToSample(Sample &sample, knlohmann::json &message)
+void __className__::sendMessageToSample(Sample &sample, knlohmann::json &message)
 {
   // Queueing message directly
   _workerMessageQueue.push(message);
@@ -85,34 +85,34 @@ void @className::sendMessageToSample(Sample &sample, knlohmann::json &message)
   co_switch(_workerThread);
 }
 
-void @className::listenWorkers()
+void __className__::listenWorkers()
 {
   // Just switch back to worker to see if a new message appears
   co_switch(_workerThread);
 }
 
-void @className::stackEngine(Engine *engine)
+void __className__::stackEngine(Engine *engine)
 {
   // (Engine-Side) Adding engine to the stack to support Korali-in-Korali execution
   _engineStack.push(engine);
 }
 
-void @className::popEngine()
+void __className__::popEngine()
 {
   // (Engine-Side) Removing the current engine to the conduit's engine stack
   _engineStack.pop();
 }
 
-bool @className::isRoot()
+bool __className__::isRoot()
 {
   return true;
 }
 
-size_t @className::getProcessId()
+size_t __className__::getProcessId()
 {
   return 0;
 }
 
-@moduleAutoCode
+__moduleAutoCode__
 
-@endNamespace
+__endNamespace__

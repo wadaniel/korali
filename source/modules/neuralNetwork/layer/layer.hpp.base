@@ -1,4 +1,4 @@
-@startIncludeGuard
+__startIncludeGuard__
 
 #include "config.hpp"
 #include "modules/distribution/univariate/uniform/uniform.hpp"
@@ -13,14 +13,14 @@
   #include <cudnn.h>
 #endif
 
-@startNamespace0
+__startNamespace__0
 
 class NeuralNetwork;
 struct layerPipeline_t;
 
-@startNamespace1
+__startNamespace__1
 
-class @className : public @parentClassName
+class __className__ : public __parentClassName__
 {
   public:
   /**
@@ -121,12 +121,12 @@ class @className : public @parentClassName
     /**
   * @brief Default constructor
   */
-   @className() = default;
+   __className__() = default;
 
   /**
   * @brief Default destructor
   */
-  virtual ~@className() = default;
+  virtual ~__className__() = default;
 
   /**
    * @brief Returns the output values for the current layer
@@ -198,8 +198,8 @@ class @className : public @parentClassName
   virtual void backwardHyperparameters(const size_t t);
 };
 
-@endNamespace1
+__endNamespace__1
 
-@endNamespace0
+__endNamespace__0
 
-@endIncludeGuard
+__endIncludeGuard__

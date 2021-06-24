@@ -1,4 +1,4 @@
-@startIncludeGuard
+__startIncludeGuard__
 
 #include "modules/distribution/distribution.hpp"
 #include "modules/distribution/multivariate/normal/normal.hpp"
@@ -8,7 +8,7 @@
 #include <gsl/gsl_vector.h>
 
 
-@startNamespace
+__startNamespace__
 
 /**
   * @brief Struct for TMCMC optimization operations
@@ -37,7 +37,7 @@ typedef struct fparam_s
 } fparam_t;
 
 
-class @className : public @parentClassName
+class __className__ : public __parentClassName__
 {
 public:
 
@@ -154,6 +154,6 @@ public:
   void finalize() override;
 };
 
-@endNamespace
+__endNamespace__
 
-@endIncludeGuard
+__endIncludeGuard__

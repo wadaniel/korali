@@ -1,4 +1,4 @@
-@startIncludeGuard
+__startIncludeGuard__
 
 #include "engine.hpp"
 
@@ -10,9 +10,9 @@
 
 #include <memory>
 
-@startNamespace
+__startNamespace__
 
-class @className : public @parentClassName
+class __className__ : public __parentClassName__
 {
   public:
 
@@ -44,6 +44,6 @@ class @className : public @parentClassName
   void printGenerationAfter() override;
 };
 
-@endNamespace
+__endNamespace__
 
-@endIncludeGuard
+__endIncludeGuard__

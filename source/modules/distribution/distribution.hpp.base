@@ -1,12 +1,12 @@
-@startIncludeGuard
+__startIncludeGuard__
 
 #include "modules/module.hpp"
 #include <gsl/gsl_rng.h>
 #include <map>
 
-@startNamespace
+__startNamespace__
 
-class @className : public @parentClassName
+class __className__ : public __parentClassName__
 {
   public:
   /**
@@ -51,6 +51,6 @@ class @className : public @parentClassName
   virtual double *getPropertyPointer(const std::string &property) { return NULL; };
 };
 
-@endNamespace
+__endNamespace__
 
-@endIncludeGuard
+__endIncludeGuard__

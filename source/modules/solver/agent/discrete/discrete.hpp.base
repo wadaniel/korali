@@ -1,11 +1,11 @@
-@startIncludeGuard
+__startIncludeGuard__
 
 #include "modules/problem/reinforcementLearning/discrete/discrete.hpp"
 #include "modules/solver/agent/agent.hpp"
 
-@startNamespace
+__startNamespace__
 
-class @className : public @parentClassName
+class __className__ : public __parentClassName__
 {
   public:
   /**
@@ -36,6 +36,6 @@ class @className : public @parentClassName
   virtual void initializeAgent() override;
 };
 
-@endNamespace
+__endNamespace__
 
-@endIncludeGuard
+__endIncludeGuard__

@@ -10,9 +10,9 @@
 #include <stdio.h>
 #include <unistd.h>
 
-@startNamespace
+__startNamespace__
 
-void @className::setInitialConfiguration()
+void __className__::setInitialConfiguration()
 {
   _variableCount = _k->_variables.size();
 
@@ -60,7 +60,7 @@ void @className::setInitialConfiguration()
       _currentMean[d] += _samplePopulation[i][d] / ((double)_populationSize);
 }
 
-void @className::runGeneration()
+void __className__::runGeneration()
 {
   if (_k->_currentGeneration == 1) setInitialConfiguration();
 
@@ -84,7 +84,7 @@ void @className::runGeneration()
   updateSolver(samples);
 }
 
-void @className::initSamples()
+void __className__::initSamples()
 {
   /* skip sampling in gen 1 */
   for (size_t i = 0; i < _populationSize; ++i)
@@ -96,7 +96,7 @@ void @className::initSamples()
     }
 }
 
-void @className::prepareGeneration()
+void __className__::prepareGeneration()
 {
   /* at gen 1 candidates initialized in initialize() */
   if (_k->_currentGeneration > 1)
@@ -115,7 +115,7 @@ void @className::prepareGeneration()
   _previousValueVector = _valueVector;
 }
 
-void @className::mutateSingle(size_t sampleIdx)
+void __className__::mutateSingle(size_t sampleIdx)
 {
   size_t a, b;
   do
@@ -175,7 +175,7 @@ void @className::mutateSingle(size_t sampleIdx)
   }
 }
 
-void @className::fixInfeasible(size_t sampleIdx)
+void __className__::fixInfeasible(size_t sampleIdx)
 {
   for (size_t d = 0; d < _variableCount; ++d)
   {
@@ -189,7 +189,7 @@ void @className::fixInfeasible(size_t sampleIdx)
   }
 }
 
-void @className::updateSolver(std::vector<Sample> &samples)
+void __className__::updateSolver(std::vector<Sample> &samples)
 {
   // Processing results
   for (size_t i = 0; i < _populationSize; i++)
@@ -281,9 +281,9 @@ void @className::updateSolver(std::vector<Sample> &samples)
 /*                    Additional Methods                                */
 /************************************************************************/
 
-void @className::printGenerationBefore() { return; }
+void __className__::printGenerationBefore() { return; }
 
-void @className::printGenerationAfter()
+void __className__::printGenerationAfter()
 {
   _k->_logger->logInfo("Normal", "Current Function Value: Max = %+6.3e - Best = %+6.3e\n", _currentBestValue, _bestEverValue);
   _k->_logger->logInfo("Detailed", "Variable = (MeanX, BestX):\n");
@@ -293,7 +293,7 @@ void @className::printGenerationAfter()
   _k->_logger->logInfo("Detailed", "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
 }
 
-void @className::finalize()
+void __className__::finalize()
 {
   // Updating Results
   (*_k)["Results"]["Best Sample"]["F(x)"] = _bestEverValue;
@@ -305,6 +305,6 @@ void @className::finalize()
   _k->_logger->logInfo("Minimal", "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
 }
 
-@moduleAutoCode
+__moduleAutoCode__
 
-@endNamespace
+__endNamespace__

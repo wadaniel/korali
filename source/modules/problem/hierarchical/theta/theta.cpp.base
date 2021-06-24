@@ -2,9 +2,9 @@
 #include "modules/problem/hierarchical/theta/theta.hpp"
 #include "sample/sample.hpp"
 
-@startNamespace
+__startNamespace__
 
-void @className::initialize()
+void __className__::initialize()
 {
   // Setting experiment configurations to actual korali experiments
   _psiExperimentObject._js.getJson() = _psiExperiment;
@@ -82,7 +82,7 @@ void @className::initialize()
   Hierarchical::initialize();
 }
 
-void @className::evaluateLogLikelihood(Sample &sample)
+void __className__::evaluateLogLikelihood(Sample &sample)
 {
   std::vector<double> logValues;
   logValues.resize(_psiProblemSampleCount);
@@ -104,6 +104,6 @@ void @className::evaluateLogLikelihood(Sample &sample)
   sample["logLikelihood"] = -log(_psiProblemSampleCount) + logSumExp(logValues);
 }
 
-@moduleAutoCode
+__moduleAutoCode__
 
-@endNamespace
+__endNamespace__

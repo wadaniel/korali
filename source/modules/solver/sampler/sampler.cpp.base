@@ -1,7 +1,7 @@
 #include "modules/solver/sampler/sampler.hpp"
 
-@startNamespace
+__startNamespace__
 
-@moduleAutoCode
+__moduleAutoCode__
 
-@endNamespace
+__endNamespace__

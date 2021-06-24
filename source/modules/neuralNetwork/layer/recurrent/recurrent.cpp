@@ -33,8 +33,10 @@ void Recurrent::initialize()
   if (_index == _nn->_layers.size() - 1) KORALI_LOG_ERROR("Recurrent layers cannot be the last layer of the NN\n");
 
   // If using depth > 1, the input layer channels must be consistent
-  if (_depth != 1)
-    if (_prevLayer->_outputChannels != _outputChannels) KORALI_LOG_ERROR("Node count for layer %lu should be the same as that of the previous layer, when depth > 1.\n", _index);
+  if (_depth != 1)  if (_prevLayer->_outputChannels != _outputChannels) KORALI_LOG_ERROR("Node count for layer %lu should be the same as that of the previous layer, when depth > 1.\n", _index);
+
+  if (_nn->_engine == "Korali")
+   KORALI_LOG_ERROR("Recurrent layers are not yet supported by the Korali NN backend, use OneDNN or CuDNN.\n");
 }
 
 void Recurrent::createHyperparameterMemory()

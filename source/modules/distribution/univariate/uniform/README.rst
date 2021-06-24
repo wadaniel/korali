@@ -5,12 +5,16 @@ Uniform Distribution
 Uniform
 ---------
 
-The Uniform distribution has the probability density function (PDF):
+The Uniform distribution has the probability density function:
 
 .. math::
 
-    f(x;a,b)=\frac{1}{b-a} \quad \text{for} b>a, x \in [a,b]
+    f(x;a,b)=
+    \begin{cases}
+    \frac{1}{b-a}\,, &  x \in [a,b]\,, \\
+    0, & \text{otherwise,}
+    \end{cases}
+    
+where :math:`b` is the **upper bound** and :math:`a<b` the **lower bound**.
 
-where :math:`b` is the **upper bound** and :math:`a` the **lower bound**.
 
- 

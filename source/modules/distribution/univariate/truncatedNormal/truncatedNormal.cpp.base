@@ -7,10 +7,10 @@
 
 using namespace Rtnorm;
 
-__startNamespace__
+__startNamespace__;
 
-  double
-  __className__::getDensity(const double x) const
+double
+__className__::getDensity(const double x) const
 {
   double d = (x - _mu) / _sigma;
   return gsl_sf_exp(-0.5 * d * d) / _normalization;
@@ -55,6 +55,6 @@ void __className__::updateDistribution()
   }
 }
 
-__moduleAutoCode__
+__moduleAutoCode__;
 
-  __endNamespace__
+__endNamespace__;

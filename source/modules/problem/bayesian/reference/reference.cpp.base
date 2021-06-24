@@ -12,10 +12,9 @@
 
 #define STDEV_EPSILON 0.00000000001
 
-__startNamespace__
+__startNamespace__;
 
-  void
-  __className__::initialize()
+void __className__::initialize()
 {
   Bayesian::initialize();
 
@@ -636,6 +635,6 @@ void __className__::fisherInformationLoglikelihoodNegativeBinomial(Sample &sampl
   KORALI_LOG_ERROR("Fisher Information not yet implemented for logLikelihood model of type '%s'.", _likelihoodModel.c_str());
 }
 
-__moduleAutoCode__
+__moduleAutoCode__;
 
-  __endNamespace__
+__endNamespace__;

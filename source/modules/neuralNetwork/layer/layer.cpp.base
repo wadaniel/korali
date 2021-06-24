@@ -13,10 +13,9 @@ using namespace dnnl;
 #include <Eigen/Dense>
 using namespace Eigen;
 
-__startNamespace__
+__startNamespace__;
 
-  void
-  __className__::createForwardPipeline()
+void __className__::createForwardPipeline()
 {
   // Obtaining batch size
   ssize_t N = _batchSize;
@@ -156,6 +155,6 @@ void __className__::backwardHyperparameters(const size_t t)
     KORALI_LOG_ERROR("Requesting Layer hyperparameter gradient propagation but NN was configured for inference only.\n");
 };
 
-__moduleAutoCode__
+__moduleAutoCode__;
 
-  __endNamespace__
+__endNamespace__;

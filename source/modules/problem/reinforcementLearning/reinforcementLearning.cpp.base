@@ -3,12 +3,12 @@
 #include "modules/solver/agent/agent.hpp"
 #include "sample/sample.hpp"
 
-__startNamespace__
+__startNamespace__;
 
-  /**
+/**
  * @brief Pointer to the current agent, it is immediately copied as to avoid concurrency problems
  */
-  Sample *__currentSample;
+Sample *__currentSample;
 
 /**
  * @brief Identifier of the current environment function Id.
@@ -395,6 +395,6 @@ void __className__::runEnvironment(Sample &agent)
       KORALI_LOG_ERROR("Agent %lu reward returned an invalid value: %f\n", i, agent["Reward"][i].get<float>());
 }
 
-__moduleAutoCode__
+__moduleAutoCode__;
 
-  __endNamespace__
+__endNamespace__;

@@ -3,10 +3,9 @@
 #include "omp.h"
 #include "sample/sample.hpp"
 
-__startNamespace__
+__startNamespace__;
 
-  void
-  __className__::initializeAgent()
+void __className__::initializeAgent()
 {
   // Initializing common discrete agent configuration
   Discrete::initializeAgent();
@@ -229,6 +228,6 @@ void __className__::printAgentInformation()
   _k->_logger->logInfo("Normal", " + [dVRACER] Policy Learning Rate: %.3e\n", _currentLearningRate);
 }
 
-__moduleAutoCode__
+__moduleAutoCode__;
 
-  __endNamespace__
+__endNamespace__;

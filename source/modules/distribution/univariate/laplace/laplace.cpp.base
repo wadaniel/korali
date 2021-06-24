@@ -3,10 +3,10 @@
 #include <gsl/gsl_randist.h>
 #include <gsl/gsl_sf.h>
 
-__startNamespace__
+__startNamespace__;
 
-  double
-  __className__::getDensity(const double x) const
+double
+__className__::getDensity(const double x) const
 {
   return gsl_ran_laplace_pdf(x - _mean, _width);
 }
@@ -41,6 +41,6 @@ void __className__::updateDistribution()
   _aux = -gsl_sf_log(2. * _width);
 }
 
-__moduleAutoCode__
+__moduleAutoCode__;
 
-  __endNamespace__
+__endNamespace__;

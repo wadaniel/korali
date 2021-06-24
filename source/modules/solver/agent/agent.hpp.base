@@ -1,4 +1,4 @@
-__startIncludeGuard__
+__startIncludeGuard__;
 
 #include "auxiliar/cbuffer.hpp"
 #include "modules/problem/reinforcementLearning/reinforcementLearning.hpp"
@@ -8,28 +8,29 @@ __startIncludeGuard__
 #include <algorithm> // std::shuffle
 #include <random>
 
-  __startNamespace__
+__startNamespace__;
 
-  /**
+/**
 * @brief This enumerator details all possible termination statuses for a given episode's experience
 */
-  enum termination_t {
-    /**
+enum termination_t
+{
+  /**
   * @brief The experience is non-terminal
   */
-    e_nonTerminal = 0,
+  e_nonTerminal = 0,
 
-    /**
+  /**
    * @brief This is the terminal experience in a normally executed episode
    */
-    e_terminal = 1,
+  e_terminal = 1,
 
-    /**
+  /**
    * @brief This is the terminal experience in a truncated episode
    *        (i.e., should have continued, but it was artificially truncated to limit running time)
    */
-    e_truncated = 2
-  };
+  e_truncated = 2
+};
 
 /**
 * @brief Structure to store policy information
@@ -488,6 +489,6 @@ class __className__ : public __parentClassName__
   void finalize() override;
 };
 
-__endNamespace__
+__endNamespace__;
 
-  __endIncludeGuard__
+__endIncludeGuard__;

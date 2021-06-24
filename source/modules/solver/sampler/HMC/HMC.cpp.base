@@ -14,10 +14,9 @@
 #include <gsl/gsl_sort_vector.h>
 #include <gsl/gsl_statistics.h>
 
-__startNamespace__
+__startNamespace__;
 
-  void
-  __className__::setInitialConfiguration()
+void __className__::setInitialConfiguration()
 {
   _variableCount = _k->_variables.size();
 
@@ -756,6 +755,6 @@ void __className__::finalize()
   (*_k)["Results"]["Sample Database"] = _sampleDatabase;
 }
 
-__moduleAutoCode__
+__moduleAutoCode__;
 
-  __endNamespace__
+__endNamespace__;

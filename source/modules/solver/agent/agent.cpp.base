@@ -4,10 +4,9 @@
 #include "sample/sample.hpp"
 #include <chrono>
 
-__startNamespace__
+__startNamespace__;
 
-  void
-  __className__::initialize()
+void __className__::initialize()
 {
   _variableCount = _k->_variables.size();
 
@@ -1092,6 +1091,6 @@ void __className__::printGenerationAfter()
   }
 }
 
-__moduleAutoCode__
+__moduleAutoCode__;
 
-  __endNamespace__
+__endNamespace__;

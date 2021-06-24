@@ -1,9 +1,8 @@
 #include "modules/problem/supervisedLearning/supervisedLearning.hpp"
 
-__startNamespace__
+__startNamespace__;
 
-  void
-  __className__::initialize()
+void __className__::initialize()
 {
   // Checking batch size
   if (_trainingBatchSize == 0) KORALI_LOG_ERROR("Empty input batch provided.\n");
@@ -48,6 +47,6 @@ void __className__::verifyData()
       KORALI_LOG_ERROR("Solution vector size of batch %lu is inconsistent. Size: %lu - Expected: %lu.\n", b, _solutionData[b].size(), _solutionSize);
 }
 
-__moduleAutoCode__
+__moduleAutoCode__;
 
-  __endNamespace__
+__endNamespace__;

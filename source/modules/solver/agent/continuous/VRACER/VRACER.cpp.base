@@ -5,10 +5,9 @@
 
 #include <gsl/gsl_sf_psi.h>
 
-__startNamespace__
+__startNamespace__;
 
-  void
-  __className__::initializeAgent()
+void __className__::initializeAgent()
 {
   // Initializing common discrete agent configuration
   Continuous::initializeAgent();
@@ -224,6 +223,6 @@ void __className__::printAgentInformation()
     _k->_logger->logInfo("Normal", " + [VRACER] Action %lu - N(%.3e,%.3e)\n", i, _maxMiniBatchPolicyMean[i], _maxMiniBatchPolicyStdDev[i]);
 }
 
-__moduleAutoCode__
+__moduleAutoCode__;
 
-  __endNamespace__
+__endNamespace__;

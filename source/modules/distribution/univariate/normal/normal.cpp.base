@@ -4,10 +4,10 @@
 #include <gsl/gsl_randist.h>
 #include <gsl/gsl_sf.h>
 
-__startNamespace__
+__startNamespace__;
 
-  double
-  __className__::getDensity(const double x) const
+double
+__className__::getDensity(const double x) const
 {
   double y = (x - _mean) / _standardDeviation;
   return gsl_sf_exp(-0.5 * y * y) / _normalization;
@@ -42,6 +42,6 @@ void __className__::updateDistribution()
   _logNormalization = -0.5 * gsl_sf_log(2 * M_PI) - gsl_sf_log(_standardDeviation);
 }
 
-__moduleAutoCode__
+__moduleAutoCode__;
 
-  __endNamespace__
+__endNamespace__;

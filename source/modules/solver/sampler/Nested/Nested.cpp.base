@@ -17,10 +17,9 @@
 #include <numeric>
 #include <random> // std::default_random_engine
 
-__startNamespace__
+__startNamespace__;
 
-  void
-  ellipse_t::initSphere()
+void ellipse_t::initSphere()
 {
   num = 0;
   sampleIdx.clear();
@@ -1024,6 +1023,6 @@ void __className__::finalize()
   _k->_logger->logInfo("Minimal", "Sampling Efficiency: %.2f%%\n", 100.0 * _acceptedSamples / ((double)(_generatedSamples - _numberLivePoints)));
 }
 
-__moduleAutoCode__
+__moduleAutoCode__;
 
-  __endNamespace__
+__endNamespace__;

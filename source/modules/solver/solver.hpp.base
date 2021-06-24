@@ -1,4 +1,4 @@
-__startIncludeGuard__
+__startIncludeGuard__;
 
 #include "auxiliar/libco/libco.h"
 #include "modules/experiment/experiment.hpp"
@@ -7,10 +7,10 @@ __startIncludeGuard__
 #include <string>
 #include <vector>
 
-  /*! \namespace Korali
+/*! \namespace Korali
     \brief The Korali namespace includes all Korali-specific functions, variables, and modules.
 */
-  __startNamespace__
+__startNamespace__;
 
 /**
  * @brief Macro to start the processing of a sample.
@@ -56,7 +56,7 @@ __startIncludeGuard__
  */
 #define KORALI_LISTEN(SAMPLES) _k->_engine->_conduit->listen(SAMPLES);
 
-  class __className__ : public __parentClassName__
+class __className__ : public __parentClassName__
 {
   public:
   /**
@@ -85,6 +85,6 @@ __startIncludeGuard__
   std::vector<std::string> _terminationCriteria;
 };
 
-__endNamespace__
+__endNamespace__;
 
-  __endIncludeGuard__
+__endIncludeGuard__;

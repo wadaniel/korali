@@ -5,15 +5,15 @@
 
 #include <Eigen/Dense>
 
-__startNamespace__
+__startNamespace__;
 
-  /**
+/**
   * @brief Converts a vector of floats to Eigen format
   * @param v the vector to convert
   * @return An Eigen vector type
  */
-  Eigen::VectorXd
-  toEigen(const std::vector<float> &v)
+Eigen::VectorXd
+toEigen(const std::vector<float> &v)
 {
   Eigen::VectorXd ev(v.size());
   for (size_t i = 0; i < v.size(); ++i)
@@ -140,6 +140,6 @@ void __className__::setHyperparameters(const std::vector<float> &hyperparameters
   _gpHyperparameters = hyperparameters;
 }
 
-__moduleAutoCode__
+__moduleAutoCode__;
 
-  __endNamespace__
+__endNamespace__;

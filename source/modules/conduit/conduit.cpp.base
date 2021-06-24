@@ -6,12 +6,12 @@
 
 using namespace std;
 
-__startNamespace__
+__startNamespace__;
 
-  /**
+/**
 * @brief Temporary storage to hold the pointer to the current sample to process
 */
-  Sample *_currentSample;
+Sample *_currentSample;
 void Conduit::coroutineWrapper()
 {
   // Getting pointers for sample and engine
@@ -276,6 +276,6 @@ void Conduit::listen(std::vector<Sample> &samples)
     }
 }
 
-__moduleAutoCode__
+__moduleAutoCode__;
 
-  __endNamespace__
+__endNamespace__;

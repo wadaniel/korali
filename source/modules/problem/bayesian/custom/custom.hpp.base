@@ -1,10 +1,10 @@
-__startIncludeGuard__
+__startIncludeGuard__;
 
 #include "modules/problem/bayesian/bayesian.hpp"
 
-  __startNamespace__
+__startNamespace__;
 
-  class __className__ : public __parentClassName__
+class __className__ : public __parentClassName__
 {
   private:
   public:
@@ -14,6 +14,6 @@ __startIncludeGuard__
   void initialize() override;
 };
 
-__endNamespace__
+__endNamespace__;
 
-  __endIncludeGuard__
+__endIncludeGuard__;

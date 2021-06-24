@@ -1,4 +1,4 @@
-__startIncludeGuard__
+__startIncludeGuard__;
 
 #include "modules/distribution/distribution.hpp"
 #include "modules/distribution/multivariate/normal/normal.hpp"
@@ -7,12 +7,12 @@ __startIncludeGuard__
 #include "modules/solver/sampler/sampler.hpp"
 #include <gsl/gsl_vector.h>
 
-  __startNamespace__
+__startNamespace__;
 
-  /**
+/**
   * @brief Struct for TMCMC optimization operations
  */
-  typedef struct fparam_s
+typedef struct fparam_s
 {
   /**
   * @brief Likelihood values in current generation
@@ -151,6 +151,6 @@ class __className__ : public __parentClassName__
   void finalize() override;
 };
 
-__endNamespace__
+__endNamespace__;
 
-  __endIncludeGuard__
+__endIncludeGuard__;

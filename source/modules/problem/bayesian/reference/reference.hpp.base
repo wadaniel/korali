@@ -1,11 +1,11 @@
-__startIncludeGuard__
+__startIncludeGuard__;
 
 #include "modules/problem/bayesian/bayesian.hpp"
 #include <vector>
 
-  __startNamespace__
+__startNamespace__;
 
-  class __className__ : public __parentClassName__
+class __className__ : public __parentClassName__
 {
   private:
   const double _log2pi = 1.83787706640934533908193770912476;
@@ -123,6 +123,6 @@ __startIncludeGuard__
   void evaluateFisherInformation(korali::Sample &sample) override;
 };
 
-__endNamespace__
+__endNamespace__;
 
-  __endIncludeGuard__
+__endIncludeGuard__;

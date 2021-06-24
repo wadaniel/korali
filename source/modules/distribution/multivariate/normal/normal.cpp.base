@@ -5,10 +5,9 @@
 #include <gsl/gsl_randist.h>
 #include <gsl/gsl_vector.h>
 
-__startNamespace__
+__startNamespace__;
 
-  void
-  __className__::getDensity(double *x, double *result, const size_t n)
+void __className__::getDensity(double *x, double *result, const size_t n)
 {
   if (_workVector.size() != n)
     KORALI_LOG_ERROR("multivariate::__className__::getDensity Error - requested %lu densities, but distribution is configured with %lu.\n", n, _workVector.size());
@@ -69,6 +68,6 @@ void __className__::setProperty(const std::string &propertyName, const std::vect
   if (recognizedProperty == false) KORALI_LOG_ERROR("Unrecognized property: %s for the Multivariate Normal distribution", propertyName.c_str());
 }
 
-__moduleAutoCode__
+__moduleAutoCode__;
 
-  __endNamespace__
+__endNamespace__;

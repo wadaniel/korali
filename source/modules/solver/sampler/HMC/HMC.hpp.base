@@ -1,4 +1,4 @@
-__startIncludeGuard__
+__startIncludeGuard__;
 
 // TODO: REMOVE normal/normal.hpp
 #include "modules/distribution/multivariate/normal/normal.hpp"
@@ -18,32 +18,33 @@ __startIncludeGuard__
 #include "modules/solver/sampler/HMC/helpers/tree_helper_euclidean.hpp"
 #include "modules/solver/sampler/HMC/helpers/tree_helper_riemannian.hpp"
 
-  __startNamespace__
+__startNamespace__;
 
-  /**
+/**
   * @brief Enum to set metric type.
 */
-  enum Metric {
-    /**
+enum Metric
+{
+  /**
   * @brief Static Metric type.
   */
-    Static = 0,
+  Static = 0,
 
-    /**
+  /**
   * @brief Euclidean Metric type.
   */
-    Euclidean = 1,
+  Euclidean = 1,
 
-    /**
+  /**
   * @brief Riemannian Metric type.
   */
-    Riemannian = 2,
+  Riemannian = 2,
 
-    /**
+  /**
   * @brief Const Riemannian Metric type.
   */
-    Riemannian_Const = 3,
-  };
+  Riemannian_Const = 3,
+};
 
 class __className__ : public __parentClassName__
 {
@@ -130,6 +131,6 @@ class __className__ : public __parentClassName__
   void printGenerationAfter() override;
 };
 
-__endNamespace__
+__endNamespace__;
 
-  __endIncludeGuard__
+__endIncludeGuard__;

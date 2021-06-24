@@ -2,10 +2,9 @@
 #include "modules/solver/agent/discrete/discrete.hpp"
 #include "sample/sample.hpp"
 
-__startNamespace__
+__startNamespace__;
 
-  void
-  __className__::initializeAgent()
+void __className__::initializeAgent()
 {
   // Getting discrete problem pointer
   _problem = dynamic_cast<problem::reinforcementLearning::Discrete *>(_k->_problem);
@@ -150,6 +149,6 @@ std::vector<float> __className__::calculateKLDivergenceGradient(const std::vecto
   return klGrad;
 }
 
-__moduleAutoCode__
+__moduleAutoCode__;
 
-  __endNamespace__
+__endNamespace__;

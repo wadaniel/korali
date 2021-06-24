@@ -3,10 +3,10 @@
 #include <gsl/gsl_randist.h>
 #include <gsl/gsl_sf.h>
 
-__startNamespace__
+__startNamespace__;
 
-  double
-  __className__::getDensity(const double x) const
+double
+__className__::getDensity(const double x) const
 {
   return gsl_ran_flat_pdf(x, _minimum, _maximum);
 }
@@ -43,6 +43,6 @@ void __className__::updateDistribution()
     _aux = -gsl_sf_log(_maximum - _minimum);
 }
 
-__moduleAutoCode__
+__moduleAutoCode__;
 
-  __endNamespace__
+__endNamespace__;

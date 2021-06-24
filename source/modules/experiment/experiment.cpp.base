@@ -14,11 +14,11 @@
 #include <map>
 #include <stdlib.h>
 
-__startNamespace__
-  /**
+__startNamespace__;
+/**
   * @brief Pointer to the current experiment in execution
  */
-  Experiment *__expPointer;
+Experiment *__expPointer;
 
 /**
   * @brief Pointer to the calling thread
@@ -246,6 +246,6 @@ void __className__::setSeed(knlohmann::json &js)
   }
 }
 
-__moduleAutoCode__
+__moduleAutoCode__;
 
-  __endNamespace__
+__endNamespace__;

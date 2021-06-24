@@ -2,10 +2,9 @@
 #include "modules/solver/agent/discrete/discrete.hpp"
 #include "sample/sample.hpp"
 
-__startNamespace__
+__startNamespace__;
 
-  void
-  __className__::initialize()
+void __className__::initialize()
 {
   ReinforcementLearning::initialize();
 
@@ -21,6 +20,6 @@ __startNamespace__
       KORALI_LOG_ERROR("For possible action %lu, incorrect vector size provided. Expected: %lu, Provided: %lu.\n", i, _actionVectorSize, _possibleActions[i].size());
 }
 
-__moduleAutoCode__
+__moduleAutoCode__;
 
-  __endNamespace__
+__endNamespace__;

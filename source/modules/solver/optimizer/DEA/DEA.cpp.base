@@ -10,10 +10,9 @@
 #include <stdio.h>
 #include <unistd.h>
 
-__startNamespace__
+__startNamespace__;
 
-  void
-  __className__::setInitialConfiguration()
+void __className__::setInitialConfiguration()
 {
   _variableCount = _k->_variables.size();
 
@@ -306,6 +305,6 @@ void __className__::finalize()
   _k->_logger->logInfo("Minimal", "Number of Infeasible Samples: %zu\n", _infeasibleSampleCount);
 }
 
-__moduleAutoCode__
+__moduleAutoCode__;
 
-  __endNamespace__
+__endNamespace__;

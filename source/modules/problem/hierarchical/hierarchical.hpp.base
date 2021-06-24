@@ -1,10 +1,10 @@
-__startIncludeGuard__
+__startIncludeGuard__;
 
 #include "modules/problem/problem.hpp"
 
-  __startNamespace__
+__startNamespace__;
 
-  class __className__ : public __parentClassName__
+class __className__ : public __parentClassName__
 {
   private:
   public:
@@ -42,6 +42,6 @@ __startIncludeGuard__
   void evaluateLogPosterior(korali::Sample &sample);
 };
 
-__endNamespace__
+__endNamespace__;
 
-  __endIncludeGuard__
+__endIncludeGuard__;

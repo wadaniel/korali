@@ -4,10 +4,9 @@
 
 #include <gsl/gsl_sf_psi.h>
 
-__startNamespace__
+__startNamespace__;
 
-  void
-  __className__::initializeAgent()
+void __className__::initializeAgent()
 {
   // Getting continuous problem pointer
   _problem = dynamic_cast<problem::reinforcementLearning::Continuous *>(_k->_problem);
@@ -839,6 +838,6 @@ std::vector<float> __className__::calculateKLDivergenceGradient(const policy_t &
   return KLDivergenceGradients;
 }
 
-__moduleAutoCode__
+__moduleAutoCode__;
 
-  __endNamespace__
+__endNamespace__;

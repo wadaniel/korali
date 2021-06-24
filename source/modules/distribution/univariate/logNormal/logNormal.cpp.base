@@ -3,10 +3,10 @@
 #include <gsl/gsl_randist.h>
 #include <gsl/gsl_sf.h>
 
-__startNamespace__
+__startNamespace__;
 
-  double
-  __className__::getDensity(const double x) const
+double
+__className__::getDensity(const double x) const
 {
   return gsl_ran_lognormal_pdf(x, _mu, _sigma);
 }
@@ -45,6 +45,6 @@ void __className__::updateDistribution()
   _aux = -0.5 * gsl_sf_log(2 * M_PI) - gsl_sf_log(_sigma);
 }
 
-__moduleAutoCode__
+__moduleAutoCode__;
 
-  __endNamespace__
+__endNamespace__;

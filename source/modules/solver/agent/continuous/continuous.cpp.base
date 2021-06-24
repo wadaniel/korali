@@ -4,7 +4,7 @@
 
 #include <gsl/gsl_sf_psi.h>
 
-#define NOISY
+//#define NOISY
 
 @startNamespace
 
@@ -202,14 +202,6 @@ std::vector<float> @className::generateTrainingAction(policy_t &curPolicy)
       const float u = _uniformGenerator->getRandomNumber();
       const float z = u*normalCDF(alpha, 0.f, 1.f) + (1.-u)*normalCDF(beta, 0.f, 1.f);
       action[i] = mu + 2*ierf( 2.*z - 1. )*sigma;
-
-      /*
-      // Sampling via naive accept-recject method (alternative)
-      do
-      {
-        action[i] = mu + sigma * _normalGenerator->getRandomNumber();
-      } while (action[i] > _actionUpperBounds[i] || action[i] < _actionLowerBounds[i]);
-      */
 
       // Safety check
       if (action[i] >= _actionUpperBounds[i]) action[i] = _actionUpperBounds[i];

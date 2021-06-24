@@ -25,7 +25,7 @@ e = korali.Experiment()
 ### Defining results folder and loading previous results, if any
 
 dis_dir = args.dis.replace(" ","_")
-resultFolder = '_result_vracer_' + args.env + '_' + dis_dir + '_' + str(args.lr) + '_' + str(args.opt) + '_' + str(args.l2) + '/'
+resultFolder = '_result_vracer_cscale_' + args.env + '_' + dis_dir + '_' + str(args.lr) + '_' + str(args.opt) + '_' + str(args.l2) + '/'
 e.loadState(resultFolder + '/latest');
 
 ### Initializing openAI Gym environment
@@ -77,11 +77,11 @@ e["Solver"]["Neural Network"]["Hidden Layers"][3]["Function"] = "Elementwise/Tan
 
 ### Setting file output configuration
 
-e["Solver"]["Termination Criteria"]["Max Experiences"] = 10e6
+e["Solver"]["Termination Criteria"]["Max Experiences"] = 1e6
 e["Solver"]["Experience Replay"]["Serialize"] = True
 e["Console Output"]["Verbosity"] = "Detailed"
 e["File Output"]["Enabled"] = True
-e["File Output"]["Frequency"] = 10
+e["File Output"]["Frequency"] = 200
 e["File Output"]["Path"] = resultFolder
 
 ### Running Experiment

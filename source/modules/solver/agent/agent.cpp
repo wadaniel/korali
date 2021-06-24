@@ -4,6 +4,8 @@
 #include "sample/sample.hpp"
 #include <chrono>
 
+#define CSCALE
+
 namespace korali
 {
 namespace solver
@@ -347,6 +349,7 @@ void Agent::rescaleStates()
 
 void Agent::calculateRewardRescalingFactors()
 {
+#ifndef CSCALE
   float sumReward = 0.0;
   float sumSquareReward = 0.0;
 
@@ -364,6 +367,7 @@ void Agent::calculateRewardRescalingFactors()
   _rewardRescalingMean = 0.;
   _rewardRescalingSigma = std::sqrt(sumSquareReward / (float)_rewardVector.size() + 1e-9);
   _rewardRescalingCount++;
+#endif
 }
 
 void Agent::attendAgent(size_t agentId)
@@ -490,6 +494,11 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
       }
     }
 
+#ifdef CSCALE
+    if(_rewardVector.size() >= _experienceReplayMaximumSize)
+        _rewardRescalingSumSquaredRewards -= _rewardVector[0]*_rewardVector[0];
+    _rewardRescalingSumSquaredRewards += reward*reward;
+#endif
     _rewardVector.add(reward);
 
     // Keeping statistics
@@ -598,6 +607,10 @@ void Agent::processEpisode(size_t episodeId, knlohmann::json &episode)
     // Setting initial retrace value in the experience's cache
     _retraceValueVector[expId] = retV;
   }
+
+#ifdef CSCALE
+  _rewardRescalingSigma = std::sqrt(_rewardRescalingSumSquaredRewards/ (float)_rewardVector.size() + 1e-9);
+#endif
 }
 
 std::vector<size_t> Agent::generateMiniBatch(size_t miniBatchSize)
@@ -1313,6 +1326,14 @@ void Agent::setConfiguration(knlohmann::json& js)
    eraseValue(js, "Reward", "Rescaling", "Sigma");
  }
 
+ if (isDefined(js, "Reward", "Rescaling", "Sum Squared Rewards"))
+ {
+ try { _rewardRescalingSumSquaredRewards = js["Reward"]["Rescaling"]["Sum Squared Rewards"].get<float>();
+} catch (const std::exception& e)
+ { KORALI_LOG_ERROR(" + Object: [ agent ] \n + Key:    ['Reward']['Rescaling']['Sum Squared Rewards']\n%s", e.what()); } 
+   eraseValue(js, "Reward", "Rescaling", "Sum Squared Rewards");
+ }
+
  if (isDefined(js, "Reward", "Rescaling", "Count"))
  {
  try { _rewardRescalingCount = js["Reward"]["Rescaling"]["Count"].get<size_t>();
@@ -1735,6 +1756,7 @@ void Agent::getConfiguration(knlohmann::json& js)
    js["Experience Count"] = _experienceCount;
    js["Reward"]["Rescaling"]["Mean"] = _rewardRescalingMean;
    js["Reward"]["Rescaling"]["Sigma"] = _rewardRescalingSigma;
+   js["Reward"]["Rescaling"]["Sum Squared Rewards"] = _rewardRescalingSumSquaredRewards;
    js["Reward"]["Rescaling"]["Count"] = _rewardRescalingCount;
    js["Reward"]["Outbound Penalization"]["Count"] = _rewardOutboundPenalizationCount;
    js["State Rescaling"]["Means"] = _stateRescalingMeans;

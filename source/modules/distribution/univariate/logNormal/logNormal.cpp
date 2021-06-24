@@ -11,7 +11,8 @@ namespace univariate
 {
 
 
-double LogNormal::getDensity(const double x) const
+  double
+  LogNormal::getDensity(const double x) const
 {
   return gsl_ran_lognormal_pdf(x, _mu, _sigma);
 }
@@ -102,7 +103,7 @@ double* LogNormal::getPropertyPointer(const std::string& property)
 
 
 
-} //univariate
+  } //univariate
 } //distribution
 } //korali
 

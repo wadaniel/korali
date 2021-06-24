@@ -4,7 +4,7 @@ namespace korali
 {
 
 
-void Problem::setConfiguration(knlohmann::json& js) 
+  void Problem::setConfiguration(knlohmann::json& js) 
 {
  if (isDefined(js, "Results"))  eraseValue(js, "Results");
 
@@ -50,5 +50,5 @@ void Problem::applyVariableDefaults()
 
 
 
-} //korali
+    } //korali
 

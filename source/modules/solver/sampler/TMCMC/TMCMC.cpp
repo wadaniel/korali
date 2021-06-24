@@ -7,13 +7,13 @@
 #include <numeric>
 
 #include <gsl/gsl_cdf.h>
+#include <gsl/gsl_eigen.h>
 #include <gsl/gsl_linalg.h>
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_multimin.h>
 #include <gsl/gsl_randist.h>
 #include <gsl/gsl_sort_vector.h>
 #include <gsl/gsl_statistics.h>
-#include <gsl/gsl_eigen.h>
 #include <math.h>
 
 namespace korali
@@ -24,7 +24,8 @@ namespace sampler
 {
 
 
-void TMCMC::setInitialConfiguration()
+  void
+  TMCMC::setInitialConfiguration()
 {
   knlohmann::json problemConfig = (*_k)["Problem"];
   _variableCount = _k->_variables.size();
@@ -446,26 +447,26 @@ void TMCMC::calculateProposals(std::vector<Sample> &samples)
     gsl_linalg_LU_decomp(&FIMview.matrix, perm, &s);
 
     // SM - Only add a check if you can create a unit test to trigger it
-//    if (status != GSL_SUCCESS)
-//    {
-//      _chainCandidatesErrors[finishedId] = 1;
-//      gsl_permutation_free(perm);
-//      _numLUDecompositionFailuresProposal++;
-//      continue;
-//    }
+    //    if (status != GSL_SUCCESS)
+    //    {
+    //      _chainCandidatesErrors[finishedId] = 1;
+    //      gsl_permutation_free(perm);
+    //      _numLUDecompositionFailuresProposal++;
+    //      continue;
+    //    }
 
     gsl_matrix *FIMinv = gsl_matrix_alloc(Nth, Nth);
     gsl_linalg_LU_invert(&FIMview.matrix, perm, FIMinv);
     gsl_permutation_free(perm);
 
     // SM - Only add a check if you can create a unit test to trigger it
-//    if (status != GSL_SUCCESS)
-//    {
-//      _chainCandidatesErrors[finishedId] = 2;
-//      gsl_matrix_free(FIMinv);
-//      _numInversionFailuresProposal++;
-//      continue;
-//    }
+    //    if (status != GSL_SUCCESS)
+    //    {
+    //      _chainCandidatesErrors[finishedId] = 2;
+    //      gsl_matrix_free(FIMinv);
+    //      _numInversionFailuresProposal++;
+    //      continue;
+    //    }
 
     // eigenvalue decomposition
     gsl_vector *Evals = gsl_vector_alloc(Nth);
@@ -475,29 +476,29 @@ void TMCMC::calculateProposals(std::vector<Sample> &samples)
     gsl_eigen_symmv_free(work);
 
     // SM - Only add a check if you can create a unit test to trigger it
-//    if (status != GSL_SUCCESS)
-//    {
-//      _chainCandidatesErrors[finishedId] = 3;
-//      gsl_matrix_free(FIMinv);
-//      gsl_vector_free(Evals);
-//      gsl_matrix_free(Evecs);
-//      _numEigenDecompositionFailuresProposal++;
-//      continue;
-//    }
+    //    if (status != GSL_SUCCESS)
+    //    {
+    //      _chainCandidatesErrors[finishedId] = 3;
+    //      gsl_matrix_free(FIMinv);
+    //      gsl_vector_free(Evals);
+    //      gsl_matrix_free(Evecs);
+    //      _numEigenDecompositionFailuresProposal++;
+    //      continue;
+    //    }
 
     gsl_vector_min(Evals);
 
     // SM - Only add a check if you can create a unit test to trigger it
-//    if (minEval <= 0.0)
-//    {
-//      //printf("minEval %lf\n", minEval);
-//      _chainCandidatesErrors[finishedId] = 4;
-//      gsl_matrix_free(FIMinv);
-//      gsl_vector_free(Evals);
-//      gsl_matrix_free(Evecs);
-//      _numNegativeDefiniteProposals++;
-//      continue;
-//    }
+    //    if (minEval <= 0.0)
+    //    {
+    //      //printf("minEval %lf\n", minEval);
+    //      _chainCandidatesErrors[finishedId] = 4;
+    //      gsl_matrix_free(FIMinv);
+    //      gsl_vector_free(Evals);
+    //      gsl_matrix_free(Evecs);
+    //      _numNegativeDefiniteProposals++;
+    //      continue;
+    //    }
 
     // correction
     double correction = false;
@@ -593,11 +594,11 @@ void TMCMC::generateCandidate(const size_t sampleId)
       }
 
       // SM - Only add a check if you can create a unit test to trigger it
-//      else
-//      {
-//        _numCholeskyDecompositionFailuresProposal++;
-//        _chainLeadersErrors[sampleId] = 5;
-//      }
+      //      else
+      //      {
+      //        _numCholeskyDecompositionFailuresProposal++;
+      //        _chainLeadersErrors[sampleId] = 5;
+      //      }
     }
     if (_chainLeadersErrors[sampleId] != 0) /* error */
     {
@@ -1448,7 +1449,7 @@ bool TMCMC::checkTermination()
 
 
 
-} //sampler
+  } //sampler
 } //solver
 } //korali
 

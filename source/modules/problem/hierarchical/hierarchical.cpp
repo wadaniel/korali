@@ -7,7 +7,8 @@ namespace problem
 {
 
 
-void Hierarchical::initialize()
+  void
+  Hierarchical::initialize()
 {
   for (size_t i = 0; i < _k->_variables.size(); i++)
   {
@@ -189,5 +190,5 @@ bool Hierarchical::runOperation(std::string operation, korali::Sample& sample)
 
 
 
-} //problem
+  } //problem
 } //korali

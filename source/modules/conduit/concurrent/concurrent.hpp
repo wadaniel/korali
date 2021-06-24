@@ -20,13 +20,13 @@
 #include <map>
 #include <vector>
 
-namespace korali
+  namespace korali
 {
 namespace conduit
 {
 
 
-/**
+  /**
 * @brief Class declaration for module: Concurrent.
 */
 class Concurrent : public Conduit
@@ -104,5 +104,5 @@ class Concurrent : public Conduit
 } //korali
 
 
-#endif // _KORALI_CONDUIT_CONCURRENT_
+  #endif // _KORALI_CONDUIT_CONCURRENT_
 

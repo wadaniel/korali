@@ -1,7 +1,7 @@
 #include "modules/distribution/univariate/weibull/weibull.hpp"
 #include "modules/experiment/experiment.hpp"
-#include <gsl/gsl_sf.h>
 #include <gsl/gsl_randist.h>
+#include <gsl/gsl_sf.h>
 
 namespace korali
 {
@@ -11,29 +11,29 @@ namespace univariate
 {
 
 
-double Weibull::getDensity(const double x) const
+  double
+  Weibull::getDensity(const double x) const
 {
   return gsl_ran_weibull_pdf(x, _scale, _shape);
 }
 
 double Weibull::getLogDensity(const double x) const
 {
-  
   if (x <= 0.0) return -INFINITY;
-  
-  return _aux - std::pow(x/_scale, _shape) + (_shape-1.) * gsl_sf_log(x);
+
+  return _aux - std::pow(x / _scale, _shape) + (_shape - 1.) * gsl_sf_log(x);
 }
 
 double Weibull::getLogDensityGradient(const double x) const
 {
   if (x <= 0.0) return 0.0;
-  return (_shape-1.)/x - _shape * std::pow(x, _shape-1.) / std::pow(_scale, _shape);
+  return (_shape - 1.) / x - _shape * std::pow(x, _shape - 1.) / std::pow(_scale, _shape);
 }
 
 double Weibull::getLogDensityHessian(const double x) const
 {
   if (x <= 0.0) return 0.0;
-  return (1.-_shape)/(x*x) - _shape * (_shape - 1.) * std::pow(x, _shape-2.) / std::pow(_scale, _shape);
+  return (1. - _shape) / (x * x) - _shape * (_shape - 1.) * std::pow(x, _shape - 2.) / std::pow(_scale, _shape);
 }
 
 double Weibull::getRandomNumber()
@@ -101,7 +101,7 @@ double* Weibull::getPropertyPointer(const std::string& property)
 
 
 
-} //univariate
+  } //univariate
 } //distribution
 } //korali
 

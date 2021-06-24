@@ -5,9 +5,9 @@ __startIncludeGuard__
 #include <map>
 #include <vector>
 
-__startNamespace__
+  __startNamespace__
 
-class __className__ : public __parentClassName__
+  class __className__ : public __parentClassName__
 {
   public:
   /**
@@ -53,4 +53,4 @@ class __className__ : public __parentClassName__
 
 __endNamespace__
 
-__endIncludeGuard__
+  __endIncludeGuard__

@@ -19,13 +19,13 @@
 #include "modules/neuralNetwork/neuralNetwork.hpp"
 #include "modules/problem/problem.hpp"
 
-namespace korali
+  namespace korali
 {
 namespace problem
 {
 
 
-/**
+  /**
 * @brief Class declaration for module: ReinforcementLearning.
 */
 class ReinforcementLearning : public Problem
@@ -178,5 +178,5 @@ class ReinforcementLearning : public Problem
 } //korali
 
 
-#endif // _KORALI_PROBLEM_REINFORCEMENTLEARNING_
+  #endif // _KORALI_PROBLEM_REINFORCEMENTLEARNING_
 

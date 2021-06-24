@@ -17,7 +17,7 @@
 
 #include "modules/neuralNetwork/layer/layer.hpp"
 
-namespace korali
+  namespace korali
 {
 namespace neuralNetwork
 {
@@ -25,7 +25,7 @@ namespace layer
 {
 
 
-/**
+  /**
 * @brief Class declaration for module: Linear.
 */
 class Linear : public Layer
@@ -77,7 +77,6 @@ class Linear : public Layer
 * @brief Contains the gradients of the bias
 */
   float *_biasGradient;
-
 
 #ifdef _KORALI_USE_ONEDNN
   /**
@@ -201,5 +200,5 @@ class Linear : public Layer
 } //korali
 
 
-#endif // _KORALI_NEURALNETWORK_LAYER_LINEAR_
+  #endif // _KORALI_NEURALNETWORK_LAYER_LINEAR_
 

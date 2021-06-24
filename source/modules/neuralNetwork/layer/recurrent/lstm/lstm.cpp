@@ -10,10 +10,8 @@
 using namespace dnnl;
 #endif
 
-
 #include <Eigen/Dense>
 using namespace Eigen;
-
 
 #define LSTM_LINEAR_LAYERS 8
 
@@ -27,7 +25,8 @@ namespace recurrent
 {
 
 
-void LSTM::initialize()
+  void
+  LSTM::initialize()
 {
   Recurrent::initialize();
 
@@ -308,7 +307,6 @@ void LSTM::createBackwardPipeline()
 
 void LSTM::forwardData(const size_t t)
 {
-
 #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
   {
@@ -469,7 +467,7 @@ void LSTM::applyVariableDefaults()
 
 
 
-} //recurrent
+  } //recurrent
 } //layer
 } //neuralNetwork
 } //korali

@@ -22,13 +22,13 @@
 #include <queue>
 #include <vector>
 
-namespace korali
+  namespace korali
 {
 namespace conduit
 {
 
 
-/**
+  /**
 * @brief Class declaration for module: Sequential.
 */
 class Sequential : public Conduit
@@ -87,5 +87,5 @@ class Sequential : public Conduit
 } //korali
 
 
-#endif // _KORALI_CONDUIT_SEQUENTIAL_
+  #endif // _KORALI_CONDUIT_SEQUENTIAL_
 

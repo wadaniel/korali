@@ -17,13 +17,13 @@
 
 #include "modules/problem/problem.hpp"
 
-namespace korali
+  namespace korali
 {
 namespace problem
 {
 
 
-/**
+  /**
 * @brief Class declaration for module: Propagation.
 */
 class Propagation : public Problem
@@ -80,4 +80,4 @@ class Propagation : public Problem
 } //korali
 
 
-#endif // _KORALI_PROBLEM_PROPAGATION_
+  #endif // _KORALI_PROBLEM_PROPAGATION_

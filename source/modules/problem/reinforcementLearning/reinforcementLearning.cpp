@@ -9,10 +9,10 @@ namespace problem
 {
 
 
-/**
+  /**
  * @brief Pointer to the current agent, it is immediately copied as to avoid concurrency problems
  */
-Sample *__currentSample;
+  Sample *__currentSample;
 
 /**
  * @brief Identifier of the current environment function Id.
@@ -119,15 +119,15 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
 
     // Store the current state in the experience
     for (size_t i = 0; i < _agentsPerEnvironment; i++)
-     episodes[i]["Experiences"][actionCount]["State"] = agent["State"][i];
+      episodes[i]["Experiences"][actionCount]["State"] = agent["State"][i];
 
     // Storing the current action
     for (size_t i = 0; i < _agentsPerEnvironment; i++)
-     episodes[i]["Experiences"][actionCount]["Action"] = agent["Action"][i];
+      episodes[i]["Experiences"][actionCount]["Action"] = agent["Action"][i];
 
     // Storing the experience's policy
     for (size_t i = 0; i < _agentsPerEnvironment; i++)
-     episodes[i]["Experiences"][actionCount]["Policy"] = agent["Policy"][i];
+      episodes[i]["Experiences"][actionCount]["Policy"] = agent["Policy"][i];
 
     // If single agent, put action into a single vector
     // In case of this being a single agent, support returning state as only vector
@@ -138,20 +138,20 @@ void ReinforcementLearning::runTrainingEpisode(Sample &agent)
 
     // Storing experience's reward
     for (size_t i = 0; i < _agentsPerEnvironment; i++)
-     episodes[i]["Experiences"][actionCount]["Reward"] = agent["Reward"][i];
+      episodes[i]["Experiences"][actionCount]["Reward"] = agent["Reward"][i];
 
     // Storing termination status
     for (size_t i = 0; i < _agentsPerEnvironment; i++)
-     episodes[i]["Experiences"][actionCount]["Termination"] = agent["Termination"];
+      episodes[i]["Experiences"][actionCount]["Termination"] = agent["Termination"];
 
     // If the episodes was truncated, then save the terminal state
     if (agent["Termination"] == "Truncated")
-     for (size_t i = 0; i < _agentsPerEnvironment; i++)
-      episodes[i]["Experiences"][actionCount]["Truncated State"] = agent["State"][i];
+      for (size_t i = 0; i < _agentsPerEnvironment; i++)
+        episodes[i]["Experiences"][actionCount]["Truncated State"] = agent["State"][i];
 
     // Adding to cumulative training rewards
     for (size_t i = 0; i < _agentsPerEnvironment; i++)
-     trainingRewards[i] += agent["Reward"][i].get<float>();
+      trainingRewards[i] += agent["Reward"][i].get<float>();
 
     // Increasing counter for generated actions
     actionCount++;
@@ -254,13 +254,13 @@ void ReinforcementLearning::runTestingEpisode(Sample &agent)
     runEnvironment(agent);
 
     for (size_t i = 0; i < _agentsPerEnvironment; i++)
-     testingRewards[i] += agent["Reward"][i].get<float>();
+      testingRewards[i] += agent["Reward"][i].get<float>();
   }
 
   // Calculating average reward between testing episodes
   float rewardSum = 0.0f;
   for (size_t i = 0; i < _agentsPerEnvironment; i++)
-   rewardSum += testingRewards[i];
+    rewardSum += testingRewards[i];
 
   // Storing the average cumulative reward of the testing episode
   agent["Testing Reward"] = rewardSum / _agentsPerEnvironment;
@@ -348,9 +348,9 @@ void ReinforcementLearning::runEnvironment(Sample &agent)
   // In case of this being a single agent, support returning state as only vector
   if (_agentsPerEnvironment == 1)
   {
-   auto state = KORALI_GET(std::vector<float>, agent, "State");
-   agent._js.getJson().erase("State");
-   agent["State"][0] = state;
+    auto state = KORALI_GET(std::vector<float>, agent, "State");
+    agent._js.getJson().erase("State");
+    agent["State"][0] = state;
   }
 
   // Checking correct format of state
@@ -360,33 +360,33 @@ void ReinforcementLearning::runEnvironment(Sample &agent)
   // Sanity checks for state
   for (size_t i = 0; i < _agentsPerEnvironment; i++)
   {
-   if (agent["State"][i].is_array() == false) KORALI_LOG_ERROR("Agent state variable returned by the environment is not a vector.\n");
-   if (agent["State"][i].size() != _stateVectorSize) KORALI_LOG_ERROR("Agents state vector %lu returned with the wrong size: %lu, expected: %lu.\n", i, agent["State"][i].size(), _stateVectorSize);
+    if (agent["State"][i].is_array() == false) KORALI_LOG_ERROR("Agent state variable returned by the environment is not a vector.\n");
+    if (agent["State"][i].size() != _stateVectorSize) KORALI_LOG_ERROR("Agents state vector %lu returned with the wrong size: %lu, expected: %lu.\n", i, agent["State"][i].size(), _stateVectorSize);
 
-   for (size_t j = 0; j < _stateVectorSize; j++)
-    if (std::isfinite(agent["State"][i][j].get<float>()) == false)
-      KORALI_LOG_ERROR("Agent %lu state variable %lu returned an invalid value: %f\n", i, j, agent["State"][i][j].get<float>());
+    for (size_t j = 0; j < _stateVectorSize; j++)
+      if (std::isfinite(agent["State"][i][j].get<float>()) == false)
+        KORALI_LOG_ERROR("Agent %lu state variable %lu returned an invalid value: %f\n", i, j, agent["State"][i][j].get<float>());
   }
 
   // Normalizing State
   for (size_t i = 0; i < _agentsPerEnvironment; i++)
   {
-   auto state = agent["State"][i].get<std::vector<float>>();
+    auto state = agent["State"][i].get<std::vector<float>>();
 
-   // Scale the state
-   for (size_t d = 0; d < _stateVectorSize; ++d)
-     state[d] = (state[d] - _stateRescalingMeans[d]) / _stateRescalingSdevs[d];
+    // Scale the state
+    for (size_t d = 0; d < _stateVectorSize; ++d)
+      state[d] = (state[d] - _stateRescalingMeans[d]) / _stateRescalingSdevs[d];
 
-   // Re-storing state into agent
-   agent["State"][i] = state;
+    // Re-storing state into agent
+    agent["State"][i] = state;
   }
 
   // Parsing reward
   if (_agentsPerEnvironment == 1)
   {
-   auto reward = KORALI_GET(float, agent, "Reward");
-   agent._js.getJson().erase("Reward");
-   agent["Reward"][0] = reward;
+    auto reward = KORALI_GET(float, agent, "Reward");
+    agent._js.getJson().erase("Reward");
+    agent["Reward"][0] = reward;
   }
 
   // Checking correct format of state
@@ -395,8 +395,8 @@ void ReinforcementLearning::runEnvironment(Sample &agent)
 
   // Sanity checks for reward
   for (size_t i = 0; i < _agentsPerEnvironment; i++)
-   if (std::isfinite(agent["Reward"][i].get<float>()) == false)
-     KORALI_LOG_ERROR("Agent %lu reward returned an invalid value: %f\n", i, agent["Reward"][i].get<float>());
+    if (std::isfinite(agent["Reward"][i].get<float>()) == false)
+      KORALI_LOG_ERROR("Agent %lu reward returned an invalid value: %f\n", i, agent["Reward"][i].get<float>());
 }
 
 void ReinforcementLearning::setConfiguration(knlohmann::json& js) 
@@ -614,6 +614,6 @@ bool ReinforcementLearning::runOperation(std::string operation, korali::Sample& 
 
 
 
-} //problem
+  } //problem
 } //korali
 

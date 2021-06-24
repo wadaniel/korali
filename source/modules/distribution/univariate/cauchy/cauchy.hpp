@@ -17,7 +17,7 @@
 
 #include "modules/distribution/univariate/univariate.hpp"
 
-namespace korali
+  namespace korali
 {
 namespace distribution
 {
@@ -25,7 +25,7 @@ namespace univariate
 {
 
 
-/**
+  /**
 * @brief Class declaration for module: Cauchy.
 */
 class Cauchy : public Univariate
@@ -122,5 +122,5 @@ class Cauchy : public Univariate
 } //korali
 
 
-#endif // _KORALI_DISTRIBUTION_UNIVARIATE_CAUCHY_
+  #endif // _KORALI_DISTRIBUTION_UNIVARIATE_CAUCHY_
 

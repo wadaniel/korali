@@ -17,13 +17,13 @@
 
 #include "modules/solver/solver.hpp"
 
-namespace korali
+  namespace korali
 {
 namespace solver
 {
 
 
-/**
+  /**
 * @brief Class declaration for module: Sampler.
 */
 class Sampler : public Solver
@@ -63,5 +63,5 @@ class Sampler : public Solver
 } //korali
 
 
-#endif // _KORALI_SOLVER_SAMPLER_
+  #endif // _KORALI_SOLVER_SAMPLER_
 

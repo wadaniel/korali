@@ -2,6 +2,6 @@
 
 __startNamespace__
 
-__moduleAutoCode__
+  __moduleAutoCode__
 
-__endNamespace__
+    __endNamespace__

@@ -4,7 +4,8 @@
 
 __startNamespace__
 
-void __className__::initialize()
+  void
+  __className__::initialize()
 {
   Hierarchical::initialize();
 
@@ -55,4 +56,4 @@ void __className__::evaluateLogLikelihood(Sample &sample)
 
 __moduleAutoCode__
 
-__endNamespace__
+  __endNamespace__

@@ -10,7 +10,8 @@ namespace hierarchical
 {
 
 
-void ThetaNew::initialize()
+  void
+  ThetaNew::initialize()
 {
   Hierarchical::initialize();
 
@@ -99,7 +100,7 @@ void ThetaNew::applyVariableDefaults()
 
 
 
-} //hierarchical
+  } //hierarchical
 } //problem
 } //korali
 

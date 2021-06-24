@@ -17,7 +17,7 @@
 
 #include "modules/neuralNetwork/layer/recurrent/recurrent.hpp"
 
-namespace korali
+  namespace korali
 {
 namespace neuralNetwork
 {
@@ -27,7 +27,7 @@ namespace recurrent
 {
 
 
-/**
+  /**
 * @brief Class declaration for module: GRU.
 */
 class GRU : public Recurrent
@@ -93,5 +93,5 @@ class GRU : public Recurrent
 } //korali
 
 
-#endif // _KORALI_NEURALNETWORK_LAYER_RECURRENT_GRU_
+  #endif // _KORALI_NEURALNETWORK_LAYER_RECURRENT_GRU_
 

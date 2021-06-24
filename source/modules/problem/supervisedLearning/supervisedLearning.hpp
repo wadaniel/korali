@@ -17,13 +17,13 @@
 
 #include "modules/problem/problem.hpp"
 
-namespace korali
+  namespace korali
 {
 namespace problem
 {
 
 
-/**
+  /**
 * @brief Class declaration for module: SupervisedLearning.
 */
 class SupervisedLearning : public Problem
@@ -92,4 +92,4 @@ class SupervisedLearning : public Problem
 } //korali
 
 
-#endif // _KORALI_PROBLEM_SUPERVISEDLEARNING_
+  #endif // _KORALI_PROBLEM_SUPERVISEDLEARNING_

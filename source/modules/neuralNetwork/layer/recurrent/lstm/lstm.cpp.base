@@ -10,16 +10,15 @@
 using namespace dnnl;
 #endif
 
-
 #include <Eigen/Dense>
 using namespace Eigen;
-
 
 #define LSTM_LINEAR_LAYERS 8
 
 __startNamespace__
 
-void __className__::initialize()
+  void
+  __className__::initialize()
 {
   Recurrent::initialize();
 
@@ -300,7 +299,6 @@ void __className__::createBackwardPipeline()
 
 void __className__::forwardData(const size_t t)
 {
-
 #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
   {
@@ -429,4 +427,4 @@ void __className__::backwardData(const size_t t)
 
 __moduleAutoCode__
 
-__endNamespace__
+  __endNamespace__

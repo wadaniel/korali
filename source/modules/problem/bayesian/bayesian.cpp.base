@@ -3,7 +3,8 @@
 
 __startNamespace__
 
-void __className__::initialize()
+  void
+  __className__::initialize()
 {
   for (size_t i = 0; i < _k->_variables.size(); i++)
   {
@@ -109,4 +110,4 @@ void __className__::evaluateHessian(Sample &sample)
 
 __moduleAutoCode__
 
-__endNamespace__
+  __endNamespace__

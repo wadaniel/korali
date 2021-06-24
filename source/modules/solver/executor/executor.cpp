@@ -8,7 +8,8 @@ namespace solver
 {
 
 
-void Executor::runGeneration()
+  void
+  Executor::runGeneration()
 {
   _variableCount = _k->_variables.size();
   _sampleCount = std::max(_k->_variables[0]->_precomputedValues.size(), _k->_variables[0]->_sampledValues.size());
@@ -106,5 +107,5 @@ void Executor::applyVariableDefaults()
 
 
 
-} //solver
+  } //solver
 } //korali

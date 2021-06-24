@@ -17,7 +17,7 @@
 
 #include "modules/neuralNetwork/layer/layer.hpp"
 
-namespace korali
+  namespace korali
 {
 namespace neuralNetwork
 {
@@ -25,7 +25,7 @@ namespace layer
 {
 
 
-/**
+  /**
 * @brief Class declaration for module: Activation.
 */
 class Activation : public Layer
@@ -146,5 +146,5 @@ class Activation : public Layer
 } //korali
 
 
-#endif // _KORALI_NEURALNETWORK_LAYER_ACTIVATION_
+  #endif // _KORALI_NEURALNETWORK_LAYER_ACTIVATION_
 

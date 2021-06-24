@@ -6,7 +6,8 @@ namespace solver
 {
 
 
-bool Optimizer::isSampleFeasible(const std::vector<double> &sample)
+  bool
+  Optimizer::isSampleFeasible(const std::vector<double> &sample)
 {
   for (size_t i = 0; i < sample.size(); i++)
   {
@@ -207,5 +208,5 @@ bool Optimizer::checkTermination()
 
 
 
-} //solver
+  } //solver
 } //korali

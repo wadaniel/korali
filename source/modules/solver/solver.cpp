@@ -4,10 +4,11 @@ namespace korali
 {
 
 
-/**
+  /**
 * @brief Prints solver information before the execution of the current generation.
 */
-void Solver::printGenerationBefore(){};
+  void
+  Solver::printGenerationBefore(){};
 
 /**
 * @brief Prints solver information after the execution of the current generation.
@@ -111,5 +112,5 @@ bool Solver::checkTermination()
 
 
 
-} //korali
+  } //korali
 

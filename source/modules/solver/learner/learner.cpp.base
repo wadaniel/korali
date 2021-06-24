@@ -2,11 +2,12 @@
 
 __startNamespace__
 
-std::vector<std::vector<float>>& __className__::getEvaluation(const std::vector<std::vector<std::vector<float>>> &input)
+  std::vector<std::vector<float>> &
+  __className__::getEvaluation(const std::vector<std::vector<std::vector<float>>> &input)
 {
   KORALI_LOG_ERROR("This solver does not provide an evaluate operation.\n");
 }
 
 __moduleAutoCode__
 
-__endNamespace__
+  __endNamespace__

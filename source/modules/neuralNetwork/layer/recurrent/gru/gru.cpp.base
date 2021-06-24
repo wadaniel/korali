@@ -13,10 +13,10 @@ using namespace dnnl;
 #include <Eigen/Dense>
 using namespace Eigen;
 
-
 __startNamespace__
 
-void __className__::initialize()
+  void
+  __className__::initialize()
 {
   Recurrent::initialize();
 
@@ -393,4 +393,4 @@ void __className__::backwardData(const size_t t)
 
 __moduleAutoCode__
 
-__endNamespace__
+  __endNamespace__

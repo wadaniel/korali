@@ -17,7 +17,7 @@
 
 #include "modules/distribution/univariate/univariate.hpp"
 
-namespace korali
+  namespace korali
 {
 namespace distribution
 {
@@ -25,7 +25,7 @@ namespace univariate
 {
 
 
-/**
+  /**
 * @brief Class declaration for module: LogNormal.
 */
 class LogNormal : public Univariate
@@ -122,5 +122,5 @@ class LogNormal : public Univariate
 } //korali
 
 
-#endif // _KORALI_DISTRIBUTION_UNIVARIATE_LOGNORMAL_
+  #endif // _KORALI_DISTRIBUTION_UNIVARIATE_LOGNORMAL_
 

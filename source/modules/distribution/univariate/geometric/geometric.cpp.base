@@ -4,7 +4,8 @@
 
 __startNamespace__
 
-double __className__::getDensity(const double x) const
+  double
+  __className__::getDensity(const double x) const
 {
   return gsl_ran_geometric_pdf((int)x, _successProbability);
 }
@@ -36,4 +37,4 @@ void __className__::updateDistribution()
 
 __moduleAutoCode__
 
-__endNamespace__
+  __endNamespace__

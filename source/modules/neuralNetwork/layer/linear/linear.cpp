@@ -21,7 +21,8 @@ namespace layer
 {
 
 
-void Linear::initialize()
+  void
+  Linear::initialize()
 {
   // Checking Layer size
   if (_outputChannels == 0) KORALI_LOG_ERROR("Node count for layer (%lu) should be larger than zero.\n", _index);
@@ -520,7 +521,7 @@ void Linear::applyVariableDefaults()
 
 
 
-} //layer
+  } //layer
 } //neuralNetwork
 } //korali
 

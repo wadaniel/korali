@@ -15,12 +15,12 @@ __startIncludeGuard__
   #include <cudnn.h>
 #endif
 
-__startNamespace__
+  __startNamespace__
 
-/**
+  /**
 * @brief Structure containing the information of a layer pipeline. There is one pipeline per threadCount x batchSize combination.
 */
-struct layerPipeline_t
+  struct layerPipeline_t
 {
   /**
   * @brief Internal container for the NN layer forward/backward pipelines.
@@ -178,4 +178,4 @@ class __className__ : public __parentClassName__
 
 __endNamespace__
 
-__endIncludeGuard__
+  __endIncludeGuard__

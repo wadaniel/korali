@@ -7,13 +7,12 @@ __startIncludeGuard__
 #include "modules/solver/sampler/sampler.hpp"
 #include <gsl/gsl_vector.h>
 
+  __startNamespace__
 
-__startNamespace__
-
-/**
+  /**
   * @brief Struct for TMCMC optimization operations
  */
-typedef struct fparam_s
+  typedef struct fparam_s
 {
   /**
   * @brief Likelihood values in current generation
@@ -36,11 +35,9 @@ typedef struct fparam_s
   double cov;
 } fparam_t;
 
-
 class __className__ : public __parentClassName__
 {
-public:
-
+  public:
   /**
   * @brief Sets the burn in steps per generation
   */
@@ -156,4 +153,4 @@ public:
 
 __endNamespace__
 
-__endIncludeGuard__
+  __endIncludeGuard__

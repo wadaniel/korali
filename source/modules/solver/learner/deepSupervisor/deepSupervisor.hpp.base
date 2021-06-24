@@ -1,19 +1,19 @@
 __startIncludeGuard__
 
+#include "modules/experiment/experiment.hpp"
+#include "modules/neuralNetwork/neuralNetwork.hpp"
+#include "modules/problem/supervisedLearning/supervisedLearning.hpp"
 #include "modules/solver/learner/deepSupervisor/optimizers/fAdaBelief.hpp"
 #include "modules/solver/learner/deepSupervisor/optimizers/fAdagrad.hpp"
 #include "modules/solver/learner/deepSupervisor/optimizers/fAdam.hpp"
 #include "modules/solver/learner/deepSupervisor/optimizers/fGradientBasedOptimizer.hpp"
 #include "modules/solver/learner/deepSupervisor/optimizers/fMadGrad.hpp"
 #include "modules/solver/learner/deepSupervisor/optimizers/fRMSProp.hpp"
-#include "modules/experiment/experiment.hpp"
-#include "modules/neuralNetwork/neuralNetwork.hpp"
-#include "modules/problem/supervisedLearning/supervisedLearning.hpp"
 #include "modules/solver/learner/learner.hpp"
 
-__startNamespace__
+  __startNamespace__
 
-class __className__ : public __parentClassName__
+  class __className__ : public __parentClassName__
 {
   public:
   /**
@@ -61,4 +61,4 @@ class __className__ : public __parentClassName__
 
 __endNamespace__
 
-__endIncludeGuard__
+  __endIncludeGuard__

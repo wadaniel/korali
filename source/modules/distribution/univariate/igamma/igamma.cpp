@@ -10,7 +10,8 @@ namespace univariate
 {
 
 
-double Igamma::getDensity(const double x) const
+  double
+  Igamma::getDensity(const double x) const
 {
   if (x <= 0.0) return -INFINITY;
   return _aux * std::pow(x, -_shape - 1.) * std::exp(-_scale / x);
@@ -100,7 +101,7 @@ double* Igamma::getPropertyPointer(const std::string& property)
 
 
 
-} //univariate
+  } //univariate
 } //distribution
 } //korali
 

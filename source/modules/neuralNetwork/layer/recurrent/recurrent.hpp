@@ -17,7 +17,7 @@
 
 #include "modules/neuralNetwork/layer/layer.hpp"
 
-namespace korali
+  namespace korali
 {
 namespace neuralNetwork
 {
@@ -25,7 +25,7 @@ namespace layer
 {
 
 
-/**
+  /**
 * @brief Class declaration for module: Recurrent.
 */
 class Recurrent : public Layer
@@ -232,5 +232,5 @@ class Recurrent : public Layer
 } //korali
 
 
-#endif // _KORALI_NEURALNETWORK_LAYER_RECURRENT_
+  #endif // _KORALI_NEURALNETWORK_LAYER_RECURRENT_
 

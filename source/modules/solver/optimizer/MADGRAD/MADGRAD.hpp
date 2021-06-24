@@ -17,7 +17,7 @@
 
 #include "modules/solver/optimizer/optimizer.hpp"
 
-namespace korali
+  namespace korali
 {
 namespace solver
 {
@@ -25,7 +25,7 @@ namespace optimizer
 {
 
 
-/**
+  /**
 * @brief Class declaration for module: MADGRAD.
 */
 class MADGRAD : public Optimizer
@@ -130,5 +130,5 @@ class MADGRAD : public Optimizer
 } //korali
 
 
-#endif // _KORALI_SOLVER_OPTIMIZER_MADGRAD_
+  #endif // _KORALI_SOLVER_OPTIMIZER_MADGRAD_
 

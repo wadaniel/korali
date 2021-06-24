@@ -1,8 +1,8 @@
 #include "modules/distribution/univariate/normal/normal.hpp"
 #include "modules/experiment/experiment.hpp"
+#include <gsl/gsl_math.h>
 #include <gsl/gsl_randist.h>
 #include <gsl/gsl_sf.h>
-#include <gsl/gsl_math.h>
 
 namespace korali
 {
@@ -12,7 +12,8 @@ namespace univariate
 {
 
 
-double Normal::getDensity(const double x) const
+  double
+  Normal::getDensity(const double x) const
 {
   double y = (x - _mean) / _standardDeviation;
   return gsl_sf_exp(-0.5 * y * y) / _normalization;
@@ -99,7 +100,7 @@ double* Normal::getPropertyPointer(const std::string& property)
 
 
 
-} //univariate
+  } //univariate
 } //distribution
 } //korali
 

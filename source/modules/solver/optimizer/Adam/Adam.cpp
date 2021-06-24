@@ -10,7 +10,8 @@ namespace optimizer
 {
 
 
-void Adam::setInitialConfiguration()
+  void
+  Adam::setInitialConfiguration()
 {
   _variableCount = _k->_variables.size();
 
@@ -325,7 +326,7 @@ bool Adam::checkTermination()
 
 
 
-} //optimizer
+  } //optimizer
 } //solver
 } //korali
 

@@ -15,10 +15,10 @@
 #include <stdlib.h>
 
 __startNamespace__
-/**
+  /**
   * @brief Pointer to the current experiment in execution
  */
-Experiment *__expPointer;
+  Experiment *__expPointer;
 
 /**
   * @brief Pointer to the calling thread
@@ -28,7 +28,13 @@ cothread_t __returnThread;
 /**
   * @brief Function for the initialization of new coroutine threads.
  */
-void threadWrapper() { auto e = __expPointer; e->run(); co_switch(e->_engine->_thread); KORALI_LOG_ERROR("Trying to continue finished Experiment thread.\n"); }
+void threadWrapper()
+{
+  auto e = __expPointer;
+  e->run();
+  co_switch(e->_engine->_thread);
+  KORALI_LOG_ERROR("Trying to continue finished Experiment thread.\n");
+}
 
 void __className__::run()
 {
@@ -203,7 +209,7 @@ void __className__::finalize()
 
 __className__::~__className__()
 {
- if (_isInitialized == true) co_delete(_thread);
+  if (_isInitialized == true) co_delete(_thread);
 }
 
 std::vector<std::vector<float>> __className__::getEvaluation(const std::vector<std::vector<std::vector<float>>> &inputBatch)
@@ -242,4 +248,4 @@ void __className__::setSeed(knlohmann::json &js)
 
 __moduleAutoCode__
 
-__endNamespace__
+  __endNamespace__

@@ -19,11 +19,11 @@
 #include <queue>
 #include <vector>
 
-namespace korali
+  namespace korali
 {
 
 
-/**
+  /**
 * @brief Class declaration for module: Conduit.
 */
 class Engine;
@@ -199,5 +199,5 @@ class Conduit : public Module
 } //korali
 
 
-#endif // _KORALI_CONDUIT_
+  #endif // _KORALI_CONDUIT_
 

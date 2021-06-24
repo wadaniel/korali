@@ -4,9 +4,9 @@ __startIncludeGuard__
 #include "modules/problem/reinforcementLearning/continuous/continuous.hpp"
 #include "modules/solver/agent/agent.hpp"
 
-__startNamespace__
+  __startNamespace__
 
-class __className__ : public __parentClassName__
+  class __className__ : public __parentClassName__
 {
   public:
   /**
@@ -52,4 +52,4 @@ class __className__ : public __parentClassName__
 
 __endNamespace__
 
-__endIncludeGuard__
+  __endIncludeGuard__

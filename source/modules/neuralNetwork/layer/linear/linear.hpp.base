@@ -2,9 +2,9 @@ __startIncludeGuard__
 
 #include "modules/neuralNetwork/layer/layer.hpp"
 
-__startNamespace__
+  __startNamespace__
 
-class __className__ : public __parentClassName__
+  class __className__ : public __parentClassName__
 {
   public:
   /********************************************************
@@ -30,7 +30,6 @@ class __className__ : public __parentClassName__
 * @brief Contains the gradients of the bias
 */
   float *_biasGradient;
-
 
 #ifdef _KORALI_USE_ONEDNN
   /**
@@ -151,4 +150,4 @@ class __className__ : public __parentClassName__
 
 __endNamespace__
 
-__endIncludeGuard__
+  __endIncludeGuard__

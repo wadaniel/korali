@@ -2,14 +2,15 @@
 #include "modules/experiment/experiment.hpp"
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_randist.h>
-#include <gsl/gsl_sf.h>
 #include <gsl/gsl_rng.h>
+#include <gsl/gsl_sf.h>
 
 namespace korali
 {
 
 
-std::string Distribution::getRange(gsl_rng *range) const
+  std::string
+  Distribution::getRange(gsl_rng *range) const
 {
   unsigned char *state = (unsigned char *)gsl_rng_state(range);
   size_t n = gsl_rng_size(range);
@@ -126,5 +127,5 @@ void Distribution::applyVariableDefaults()
 
 
 
-} //korali
+  } //korali
 

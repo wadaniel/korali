@@ -13,7 +13,6 @@ using namespace dnnl;
 #include <Eigen/Dense>
 using namespace Eigen;
 
-
 namespace korali
 {
 namespace neuralNetwork
@@ -22,7 +21,8 @@ namespace layer
 {
 
 
-void Input::initialize()
+  void
+  Input::initialize()
 {
   // Checking Layer size
   if (_outputChannels == 0) KORALI_LOG_ERROR("Output Channels for layer (%lu) should be larger than zero.\n", _index);
@@ -118,7 +118,7 @@ void Input::applyVariableDefaults()
 
 
 
-} //layer
+  } //layer
 } //neuralNetwork
 } //korali
 

@@ -17,7 +17,7 @@
 
 #include "modules/solver/optimizer/optimizer.hpp"
 
-namespace korali
+  namespace korali
 {
 namespace solver
 {
@@ -25,7 +25,7 @@ namespace optimizer
 {
 
 
-/**
+  /**
 * @brief Class declaration for module: Adam.
 */
 class Adam : public Optimizer
@@ -138,4 +138,4 @@ class Adam : public Optimizer
 } //korali
 
 
-#endif // _KORALI_SOLVER_OPTIMIZER_ADAM_
+  #endif // _KORALI_SOLVER_OPTIMIZER_ADAM_

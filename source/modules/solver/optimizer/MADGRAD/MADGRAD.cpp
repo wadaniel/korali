@@ -10,7 +10,8 @@ namespace optimizer
 {
 
 
-void MADGRAD::setInitialConfiguration()
+  void
+  MADGRAD::setInitialConfiguration()
 {
   _variableCount = _k->_variables.size();
 
@@ -303,7 +304,7 @@ bool MADGRAD::checkTermination()
 
 
 
-} //optimizer
+  } //optimizer
 } //solver
 } //korali
 

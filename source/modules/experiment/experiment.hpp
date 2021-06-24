@@ -15,20 +15,20 @@
 #define _KORALI_EXPERIMENT_
 
 
-#include "config.hpp"
 #include "auxiliar/koraliJson.hpp"
 #include "auxiliar/libco/libco.h"
+#include "config.hpp"
 #include "modules/module.hpp"
 #include "variable/variable.hpp"
 #include <chrono>
 #include <functional>
 #include <vector>
 
-namespace korali
+  namespace korali
 {
 
 
-/**
+  /**
 * @brief Class declaration for module: Experiment.
 */
 class Solver;
@@ -44,7 +44,7 @@ class Engine;
 /**
 * @brief Class declaration for module: Experiment.
 */
-class Experiment: public Module
+class Experiment : public Module
 {
   public: 
   /**
@@ -245,5 +245,5 @@ class Experiment: public Module
 } //korali
 
 
-#endif // _KORALI_EXPERIMENT_
+  #endif // _KORALI_EXPERIMENT_
 

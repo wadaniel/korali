@@ -23,33 +23,32 @@
 #include <algorithm> // std::shuffle
 #include <random>
 
-namespace korali
+  namespace korali
 {
 namespace solver
 {
 
 
-/**
+  /**
 * @brief This enumerator details all possible termination statuses for a given episode's experience
 */
-enum termination_t
-{
-  /**
+  enum termination_t {
+    /**
   * @brief The experience is non-terminal
   */
-  e_nonTerminal = 0,
+    e_nonTerminal = 0,
 
-  /**
+    /**
    * @brief This is the terminal experience in a normally executed episode
    */
-  e_terminal = 1,
+    e_terminal = 1,
 
-  /**
+    /**
    * @brief This is the terminal experience in a truncated episode
    *        (i.e., should have continued, but it was artificially truncated to limit running time)
    */
-  e_truncated = 2
-};
+    e_truncated = 2
+  };
 
 /**
 * @brief Structure to store policy information
@@ -807,5 +806,5 @@ class Agent : public Solver
 } //korali
 
 
-#endif // _KORALI_SOLVER_AGENT_
+  #endif // _KORALI_SOLVER_AGENT_
 

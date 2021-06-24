@@ -6,7 +6,8 @@ namespace problem
 {
 
 
-void SupervisedLearning::initialize()
+  void
+  SupervisedLearning::initialize()
 {
   // Checking batch size
   if (_trainingBatchSize == 0) KORALI_LOG_ERROR("Empty input batch provided.\n");
@@ -167,5 +168,5 @@ void SupervisedLearning::applyVariableDefaults()
 
 
 
-} //problem
+  } //problem
 } //korali

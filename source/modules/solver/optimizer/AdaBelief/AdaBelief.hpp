@@ -17,7 +17,7 @@
 
 #include "modules/solver/optimizer/optimizer.hpp"
 
-namespace korali
+  namespace korali
 {
 namespace solver
 {
@@ -25,7 +25,7 @@ namespace optimizer
 {
 
 
-/**
+  /**
 * @brief Class declaration for module: AdaBelief.
 */
 class AdaBelief : public Optimizer
@@ -134,4 +134,4 @@ class AdaBelief : public Optimizer
 } //korali
 
 
-#endif // _KORALI_SOLVER_OPTIMIZER_ADABELIEF_
+  #endif // _KORALI_SOLVER_OPTIMIZER_ADABELIEF_

@@ -17,10 +17,10 @@
 namespace korali
 {
 
-/**
+  /**
   * @brief Pointer to the current experiment in execution
  */
-Experiment *__expPointer;
+  Experiment *__expPointer;
 
 /**
   * @brief Pointer to the calling thread
@@ -30,7 +30,13 @@ cothread_t __returnThread;
 /**
   * @brief Function for the initialization of new coroutine threads.
  */
-void threadWrapper() { auto e = __expPointer; e->run(); co_switch(e->_engine->_thread); KORALI_LOG_ERROR("Trying to continue finished Experiment thread.\n"); }
+void threadWrapper()
+{
+  auto e = __expPointer;
+  e->run();
+  co_switch(e->_engine->_thread);
+  KORALI_LOG_ERROR("Trying to continue finished Experiment thread.\n");
+}
 
 void Experiment::run()
 {
@@ -205,7 +211,7 @@ void Experiment::finalize()
 
 Experiment::~Experiment()
 {
- if (_isInitialized == true) co_delete(_thread);
+  if (_isInitialized == true) co_delete(_thread);
 }
 
 std::vector<std::vector<float>> Experiment::getEvaluation(const std::vector<std::vector<std::vector<float>>> &inputBatch)
@@ -436,5 +442,5 @@ void Experiment::applyVariableDefaults()
 
 
 
-} //korali
+  } //korali
 

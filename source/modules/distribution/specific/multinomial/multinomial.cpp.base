@@ -4,11 +4,12 @@
 
 __startNamespace__
 
-void __className__::getSelections(std::vector<double> &p, std::vector<unsigned int> &n, int N)
+  void
+  __className__::getSelections(std::vector<double> &p, std::vector<unsigned int> &n, int N)
 {
   gsl_ran_multinomial(_range, p.size(), N, p.data(), n.data());
 }
 
 __moduleAutoCode__
 
-__endNamespace__
+  __endNamespace__

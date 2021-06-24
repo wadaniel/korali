@@ -13,14 +13,14 @@ __startIncludeGuard__
   #include <cudnn.h>
 #endif
 
-__startNamespace__0
+  __startNamespace__0
 
-class NeuralNetwork;
+  class NeuralNetwork;
 struct layerPipeline_t;
 
 __startNamespace__1
 
-class __className__ : public __parentClassName__
+  class __className__ : public __parentClassName__
 {
   public:
   /**
@@ -75,7 +75,6 @@ class __className__ : public __parentClassName__
  */
   float *_outputGradient;
 
-
 #ifdef _KORALI_USE_ONEDNN
   /**
    * @brief oneDNN Stores the propagation kind (inference/training)
@@ -118,10 +117,10 @@ class __className__ : public __parentClassName__
 
 #endif
 
-    /**
+  /**
   * @brief Default constructor
   */
-   __className__() = default;
+  __className__() = default;
 
   /**
   * @brief Default destructor
@@ -200,6 +199,6 @@ class __className__ : public __parentClassName__
 
 __endNamespace__1
 
-__endNamespace__0
+  __endNamespace__0
 
-__endIncludeGuard__
+    __endIncludeGuard__

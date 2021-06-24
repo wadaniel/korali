@@ -13,10 +13,10 @@ using namespace dnnl;
 #include <Eigen/Dense>
 using namespace Eigen;
 
-
 __startNamespace__
 
-void __className__::initialize()
+  void
+  __className__::initialize()
 {
   // Checking Layer size
   if (_outputChannels == 0) KORALI_LOG_ERROR("Output Channels for layer (%lu) should be larger than zero.\n", _index);
@@ -80,4 +80,4 @@ void __className__::backwardData(const size_t t)
 
 __moduleAutoCode__
 
-__endNamespace__
+  __endNamespace__

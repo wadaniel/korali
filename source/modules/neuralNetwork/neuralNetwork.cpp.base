@@ -1,7 +1,7 @@
 #include "modules/experiment/experiment.hpp"
 #include "modules/neuralNetwork/neuralNetwork.hpp"
 #ifdef _OPENMP
-#include <omp.h>
+  #include <omp.h>
 #endif
 
 __startNamespace__
@@ -428,4 +428,4 @@ void __className__::setHyperparameters(const std::vector<float> &hyperparameters
 
 __moduleAutoCode__
 
-__endNamespace__
+  __endNamespace__

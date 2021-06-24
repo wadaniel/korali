@@ -22,7 +22,8 @@ namespace sampler
 {
 
 
-void MCMC::setInitialConfiguration()
+  void
+  MCMC::setInitialConfiguration()
 {
   _variableCount = _k->_variables.size();
 
@@ -561,7 +562,7 @@ bool MCMC::checkTermination()
 
 
 
-} //sampler
+  } //sampler
 } //solver
 } //korali
 

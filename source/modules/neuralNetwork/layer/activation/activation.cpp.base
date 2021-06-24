@@ -13,10 +13,10 @@ using namespace dnnl;
 #include <Eigen/Dense>
 using namespace Eigen;
 
-
 __startNamespace__
 
-void __className__::initialize()
+  void
+  __className__::initialize()
 {
   // The node count for this layer should be the same as the previous layer
   _outputChannels = _prevLayer->_outputChannels;
@@ -149,9 +149,12 @@ void __className__::forwardData(const size_t t)
     {
       for (size_t i = 0; i < N * OC; i++)
       {
-        if (_prevLayer->_outputValues[i] < _alpha) _outputValues[i] = _alpha;
-        else if (_prevLayer->_outputValues[i] > _beta) _outputValues[i] = _beta;
-        else _outputValues[i] = _prevLayer->_outputValues[i];
+        if (_prevLayer->_outputValues[i] < _alpha)
+          _outputValues[i] = _alpha;
+        else if (_prevLayer->_outputValues[i] > _beta)
+          _outputValues[i] = _beta;
+        else
+          _outputValues[i] = _prevLayer->_outputValues[i];
       }
     }
     if (_function == "Elementwise/Linear")
@@ -357,4 +360,4 @@ void __className__::backwardData(const size_t t)
 
 __moduleAutoCode__
 
-__endNamespace__
+  __endNamespace__

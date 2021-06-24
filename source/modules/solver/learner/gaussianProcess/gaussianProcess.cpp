@@ -13,12 +13,13 @@ namespace learner
 {
 
 
-/**
+  /**
   * @brief Converts a vector of floats to Eigen format
   * @param v the vector to convert
   * @return An Eigen vector type
  */
-Eigen::VectorXd toEigen(const std::vector<float> &v)
+  Eigen::VectorXd
+  toEigen(const std::vector<float> &v)
 {
   Eigen::VectorXd ev(v.size());
   for (size_t i = 0; i < v.size(); ++i)
@@ -46,10 +47,8 @@ void runSample(Sample &sample, libgp::GaussianProcess *gp)
     sample["Gradient"][i] = eigenGrad[i];
 }
 
-
 void GaussianProcess::initialize()
 {
-
   _problem = dynamic_cast<problem::SupervisedLearning *>(_k->_problem);
 
   if (_problem->_maxTimesteps > 1) KORALI_LOG_ERROR("Training data cannot be time-dependent.");
@@ -104,7 +103,6 @@ void GaussianProcess::initialize()
     outData = _problem->_solutionData[i][0];
     _gp->add_pattern(inData, outData);
   }
-
 }
 
 void GaussianProcess::runGeneration()
@@ -120,7 +118,7 @@ void GaussianProcess::printGenerationAfter()
   return;
 }
 
-std::vector<std::vector<float>>& GaussianProcess::getEvaluation(const std::vector<std::vector<std::vector<float>>> &input)
+std::vector<std::vector<float>> &GaussianProcess::getEvaluation(const std::vector<std::vector<std::vector<float>>> &input)
 {
   _outputValues.resize(1);
   _outputValues[0].resize(2);
@@ -272,7 +270,7 @@ bool GaussianProcess::checkTermination()
 
 
 
-} //learner
+  } //learner
 } //solver
 } //korali
 

@@ -1,3 +1,5 @@
+.. _basics:
+
 ***********************
 Korali Basics
 ***********************
@@ -78,13 +80,13 @@ To continue our example above, we will choose to use the :ref:`DEA <module-solve
 
 .. code-block:: python
 
-   k["Solver"]["Type"] = "DEA"
+   e["Solver"]["Type"] = "DEA"
 
 It is possible, however, to choose another solver to solve a given problem, simply by changing the solver method choice. For example, if now we wanted to solve the problem using :ref:`CMAES <module-solver-optimizer-cmaes>` instead, we simply change the field:
  
 .. code-block:: python
 
-   k["Solver"]["Type"] = "Optimizer/CMAES"
+   e["Solver"]["Type"] = "Optimizer/CMAES"
    
 Solver Configuration
 ---------------------------------
@@ -93,7 +95,7 @@ Korali solvers, just like problems, also contain their own set of settings to co
 
 .. code-block:: python
 
-   k["Solver"]["Population Size"] = 32
+   e["Solver"]["Population Size"] = 32
 
 Termination Criteria
 -------------------------------
@@ -102,8 +104,8 @@ A Korali solver will run until at least one of its *termination criteria* is met
 
 .. code-block:: python
 
-   k["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 0.0001
-   k["Solver"]["Termination Criteria"]["Max Generations"] = 1000
+   e["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 0.0001
+   e["Solver"]["Termination Criteria"]["Max Generations"] = 1000
    
 Will run iterations of the CMAES algorithm until the difference in objective value (optimization) is less than 0.0001, meaning it has reached convergence within an accepted tolerance **OR** until it has reached a total of 1000 generations (iterations).
 The list of termination criteria for each solver can be found in the "Termination Criteria" section of their documentation. Here is, for example, the :ref:`termination criteria list <module-solver-optimizer-cmaes-criteria>` for CMAES. 

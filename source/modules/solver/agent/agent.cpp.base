@@ -637,7 +637,7 @@ void @className::updateExperienceMetadata(const std::vector<size_t> &miniBatch, 
   for (size_t i = 1; i < miniBatchSize; i++)
     if (miniBatch[i] != miniBatch[i - 1]) updateBatch.push_back(i);
 
-#pragma omp parallel for schedule(guided, 1)
+#pragma omp parallel for
   for (size_t i = 0; i < updateBatch.size(); i++)
   {
     auto batchId = updateBatch[i];
@@ -663,34 +663,38 @@ void @className::updateExperienceMetadata(const std::vector<size_t> &miniBatch, 
     if (std::isfinite(importanceWeight) == false)
       KORALI_LOG_ERROR("Calculated value of importanceWeight returned an invalid value: %f\n", importanceWeight);
 
-
-    // If this is the truncated experience of an episode, then obtain truncated state value
-    float truncatedV = 0.0f;
-    if (_terminationVector[expId] == e_truncated)
-    {
-      auto truncatedPolicy = runPolicy({getTruncatedStateSequence(expId)})[0];
-      truncatedV = truncatedPolicy.stateValue;
-    }
-
     // Checking if experience is still on policy
     bool isOnPolicy = (importanceWeight > (1.0f / _experienceReplayOffPolicyCurrentCutoff)) && (importanceWeight < _experienceReplayOffPolicyCurrentCutoff);
 
     // Updating off policy count if a change is detected
     if (_isOnPolicyVector[expId] == true && isOnPolicy == false)
-#pragma omp atomic
+       #pragma omp atomic
       _experienceReplayOffPolicyCount++;
 
     if (_isOnPolicyVector[expId] == false && isOnPolicy == true)
-#pragma omp atomic
+      #pragma omp atomic
       _experienceReplayOffPolicyCount--;
 
     // Store computed information for use in replay memory.
     _curPolicyVector[expId] = curPolicy;
     _stateValueVector[expId] = stateValue;
-    _truncatedStateValueVector[expId] = truncatedV;
+    _truncatedStateValueVector[expId] = 0.0f;
     _importanceWeightVector[expId] = importanceWeight;
     _isOnPolicyVector[expId] = isOnPolicy;
     _truncatedImportanceWeightVector[expId] = truncatedImportanceWeight;
+  }
+
+  // Calculating updated truncated policy state values
+  for (size_t i = 0; i < updateBatch.size(); i++)
+  {
+   auto batchId = updateBatch[i];
+   auto expId = miniBatch[batchId];
+   if (_terminationVector[expId] == e_truncated)
+   {
+    auto truncatedState = getTruncatedStateSequence(expId);
+    auto truncatedPolicy = runPolicy({getTruncatedStateSequence(expId)})[0];
+    _truncatedStateValueVector[expId] = truncatedPolicy.stateValue;
+   }
   }
 
   // Updating the off policy Ratio

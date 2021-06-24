@@ -184,8 +184,9 @@ std::vector<float> @className::generateTrainingAction(policy_t &curPolicy)
       const float mu = curPolicy.distributionParameters[i];
       const float sigma = curPolicy.distributionParameters[_problem->_actionVectorSize + i];
       
-      const float alpha = (_actionLowerBounds[i]-mu)/sigma;
-      const float beta = (_actionUpperBounds[i]-mu)/sigma;
+      const float invSigma = 1.0f / (sigma + KORALI_EPSILON);
+      const float alpha = (_actionLowerBounds[i]-mu) * invSigma;
+      const float beta = (_actionUpperBounds[i]-mu) * invSigma;
       
       // Sampling via naive inverse sampling (not the safest approach)
       const float u = _uniformGenerator->getRandomNumber();
@@ -279,7 +280,7 @@ std::vector<float> @className::generateTestingAction(const policy_t &curPolicy)
     // Take only the modes without noise
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
     {
-      action[i] = _actionLowerBounds[i] + 2.*_actionScales[i] * curPolicy.distributionParameters[i];
+      action[i] = _actionLowerBounds[i] + 2.0f *_actionScales[i] * curPolicy.distributionParameters[i];
     }
   }
 
@@ -368,8 +369,8 @@ float @className::calculateImportanceWeight(const std::vector<float> &action, co
       const float Cq = 1./(normalCDF(_actionUpperBounds[i], curMu, curSigma));
       const float Cp = 1./(normalCDF(_actionUpperBounds[i], oldMu, oldSigma));
         
-      logpCurPolicy += std::log(Cq/curSigma)-(action[i]-curMu)*(action[i]-curMu)/(2.*curSigma*curSigma);
-      logpOldPolicy += std::log(Cp/oldSigma)-(action[i]-oldMu)*(action[i]-oldMu)/(2.*oldSigma*oldSigma);
+      logpCurPolicy += std::log(Cq/(curSigma + KORALI_EPSILON))-(action[i]-curMu)*(action[i]-curMu)/(2.0f*curSigma*curSigma + KORALI_EPSILON);
+      logpOldPolicy += std::log(Cp/(oldSigma + KORALI_EPSILON))-(action[i]-oldMu)*(action[i]-oldMu)/(2.0f*oldSigma*oldSigma + KORALI_EPSILON);
     }
   }
 
@@ -393,6 +394,7 @@ float @className::calculateImportanceWeight(const std::vector<float> &action, co
   float logImportanceWeight = logpCurPolicy - logpOldPolicy;
 
   // Normalizing extreme values to prevent loss of precision
+  if (std::isfinite(logImportanceWeight) == false) KORALI_LOG_ERROR("NaN detected in the calculation of importance weight.\n");
   if (logImportanceWeight > +7.0f) logImportanceWeight = +7.0f;
   if (logImportanceWeight < -7.0f) logImportanceWeight = -7.0f;
 
@@ -426,24 +428,25 @@ std::vector<float> @className::calculateImportanceWeightGradient(const std::vect
       logpOldPolicy += normalLogDensity(action[i], oldMean, oldSigma);
 
       // Deviation from expAction and current Mean
-      float curActionDiff = (action[i] - curMean);
+      const float curActionDiff = action[i] - curMean;
 
       // Inverse Variances
-      float curInvVar = 1. / (curSigma * curSigma);
+      const float curInvSigma = 1.0f / (curSigma + KORALI_EPSILON);
+      const float curInvVar = curInvSigma * curInvSigma;
+      const float curInvSigmaCube = curInvSigma * curInvSigma * curInvSigma;
 
       // Gradient with respect to Mean
       importanceWeightGradients[i] = curActionDiff * curInvVar;
 
       // Gradient with respect to Sigma
-      importanceWeightGradients[_problem->_actionVectorSize + i] = (curActionDiff * curActionDiff) * (curInvVar / curSigma) - 1.0f / curSigma;
+      importanceWeightGradients[_problem->_actionVectorSize + i] = curActionDiff * curActionDiff * curInvSigmaCube - 1.0f * curInvSigma;
     }
 
     float logImportanceWeight = logpCurPolicy - logpOldPolicy;
     float importanceWeight = std::exp(logImportanceWeight);
 
     // Scale by importance weight to get gradient
-    for (size_t i = 0; i < 2 * _problem->_actionVectorSize; i++)
-      importanceWeightGradients[i] *= importanceWeight;
+    for (size_t i = 0; i < 2 * _problem->_actionVectorSize; i++) importanceWeightGradients[i] *= importanceWeight;
   }
 
   if (_policyDistribution == "Squashed Normal")
@@ -469,13 +472,15 @@ std::vector<float> @className::calculateImportanceWeightGradient(const std::vect
       const float curActionDiff = (unboundedAction - curMu);
 
       // Inverse Variances
-      const float curInvVar = 1. / (curSigma * curSigma);
+      const float curInvSigma = 1.0f / (curSigma + KORALI_EPSILON);
+      const float curInvVar = curInvSigma * curInvSigma;
+      const float curInvSigmaCube = curInvSigma * curInvSigma * curInvSigma;
 
       // Gradient with respect to Mean
       importanceWeightGradients[i] = curActionDiff * curInvVar;
 
       // Gradient with respect to Sigma
-      importanceWeightGradients[_problem->_actionVectorSize + i] = (curActionDiff * curActionDiff) * (curInvVar / curSigma) - 1.0f / curSigma;
+      importanceWeightGradients[_problem->_actionVectorSize + i] = curActionDiff * curActionDiff * curInvSigmaCube - 1.0f * curInvSigma;
     }
 
     const float logImportanceWeight = logpCurPolicy - logpOldPolicy;
@@ -697,21 +702,23 @@ std::vector<float> @className::calculateKLDivergenceGradient(const policy_t &old
       const float curMean = curPolicy.distributionParameters[i];
       const float curSigma = curPolicy.distributionParameters[_problem->_actionVectorSize + i];
 
-      const float curInvVar = 1. / (curSigma * curSigma);
-      const float curInvSig3 = 1. / (curSigma * curSigma * curSigma);
-      const float actionDiff = (curMean - oldMean);
+      // Inverse Variances
+      const float curInvSigma = 1.0f / (curSigma + KORALI_EPSILON);
+      const float curInvVar = curInvSigma * curInvSigma;
+      const float curInvSigmaCube = curInvSigma * curInvSigma * curInvSigma;
+      const float actionDiff = curMean - oldMean;
 
       // KL-Gradient with respect to Mean
       KLDivergenceGradients[i] = actionDiff * curInvVar;
 
       // Contribution to Sigma from Trace
-      float gradTr = - curInvSig3 * oldSigma * oldSigma;
+      float gradTr = - curInvSigmaCube * oldSigma * oldSigma;
 
       // Contribution to Sigma from Quadratic term
-      float gradQuad = -(actionDiff * actionDiff) * curInvSig3;
+      float gradQuad = - actionDiff * actionDiff * curInvSigmaCube;
 
       // Contribution to Sigma from Determinant
-      float gradDet = 1.0f / curSigma;
+      float gradDet = 1.0f * curInvSigma;
 
       // KL-Gradient with respect to Sigma
       KLDivergenceGradients[_problem->_actionVectorSize + i] = gradTr + gradQuad + gradDet;

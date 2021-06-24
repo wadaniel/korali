@@ -65,6 +65,8 @@ korali_deps += [ pybind11_dep ]
 mpi_dep = null_dep
 openmp_dep = null_dep
 
+# MPI - Not required because resolution of MPI dependencies can be introduced by the compiler wrapper
+# For example: Cray systems embed MPI dependencies on CC
 if get_option('mpi')
   mpi_dep = dependency('mpi', language: 'cpp', required: false)
     
@@ -133,7 +135,7 @@ korali_deps += cudnn_dep
 
 
 # set configuration values
-korali_conf.set('_KORALI_USE_MPI', true,
+korali_conf.set('_KORALI_USE_MPI', get_option('mpi'),
   description: 'Use MPI for distributed memory parallelism',
 )
 korali_conf.set('_KORALI_USE_MPI4PY', mpi4py_found,

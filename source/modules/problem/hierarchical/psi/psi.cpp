@@ -12,7 +12,8 @@ namespace hierarchical
 {
 
 
-void Psi::initialize()
+  void
+  Psi::initialize()
 {
   Hierarchical::initialize();
 
@@ -196,7 +197,7 @@ void Psi::applyVariableDefaults()
 
 
 
-} //hierarchical
+  } //hierarchical
 } //problem
 } //korali
 

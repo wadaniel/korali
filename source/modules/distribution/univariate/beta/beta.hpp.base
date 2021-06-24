@@ -2,9 +2,9 @@ __startIncludeGuard__
 
 #include "modules/distribution/univariate/univariate.hpp"
 
-__startNamespace__
+  __startNamespace__
 
-class __className__ : public __parentClassName__
+  class __className__ : public __parentClassName__
 {
   private:
   public:
@@ -50,4 +50,4 @@ class __className__ : public __parentClassName__
 
 __endNamespace__
 
-__endIncludeGuard__
+  __endIncludeGuard__

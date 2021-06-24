@@ -17,7 +17,7 @@
 
 #include "modules/neuralNetwork/layer/layer.hpp"
 
-namespace korali
+  namespace korali
 {
 namespace neuralNetwork
 {
@@ -25,36 +25,35 @@ namespace layer
 {
 
 
-/**
+  /**
 * @brief This enumerator details all possible transformations. It is used in lieu of string comparison to accelerate the application of this layer
 */
-enum transformation_t
-{
-  /**
+  enum transformation_t {
+    /**
   * @brief No transformation
   */
-  t_identity = 0,
+    t_identity = 0,
 
-  /**
+    /**
    * @brief Apply absolute mask
    */
-  t_absolute = 1,
+    t_absolute = 1,
 
-  /**
+    /**
    * @brief Apply softplus mask
    */
-  t_softplus = 2,
+    t_softplus = 2,
 
-  /**
+    /**
    * @brief Apply tanh mask
    */
-  t_tanh = 3,
+    t_tanh = 3,
 
-  /**
+    /**
    * @brief Apply sigmoid mask
    */
-  t_sigmoid = 4
-};
+    t_sigmoid = 4
+  };
 
 /**
 * @brief Class declaration for module: Output.
@@ -124,5 +123,5 @@ class Output : public Layer
 } //korali
 
 
-#endif // _KORALI_NEURALNETWORK_LAYER_OUTPUT_
+  #endif // _KORALI_NEURALNETWORK_LAYER_OUTPUT_
 

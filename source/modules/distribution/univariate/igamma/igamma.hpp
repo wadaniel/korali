@@ -17,7 +17,7 @@
 
 #include "modules/distribution/univariate/univariate.hpp"
 
-namespace korali
+  namespace korali
 {
 namespace distribution
 {
@@ -25,7 +25,7 @@ namespace univariate
 {
 
 
-/**
+  /**
 * @brief Class declaration for module: Igamma.
 */
 class Igamma : public Univariate
@@ -124,5 +124,5 @@ class Igamma : public Univariate
 } //korali
 
 
-#endif // _KORALI_DISTRIBUTION_UNIVARIATE_IGAMMA_
+  #endif // _KORALI_DISTRIBUTION_UNIVARIATE_IGAMMA_
 

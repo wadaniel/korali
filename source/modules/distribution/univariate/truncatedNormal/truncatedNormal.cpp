@@ -1,12 +1,11 @@
 #include "modules/distribution/univariate/truncatedNormal/truncatedNormal.hpp"
 #include "modules/experiment/experiment.hpp"
-#include <gsl/gsl_sf.h>
 #include <gsl/gsl_math.h>
+#include <gsl/gsl_sf.h>
 
 #include "auxiliar/rtnorm/rtnorm.hpp"
 
 using namespace Rtnorm;
-
 
 namespace korali
 {
@@ -16,7 +15,8 @@ namespace univariate
 {
 
 
-double TruncatedNormal::getDensity(const double x) const
+  double
+  TruncatedNormal::getDensity(const double x) const
 {
   double d = (x - _mu) / _sigma;
   return gsl_sf_exp(-0.5 * d * d) / _normalization;
@@ -25,7 +25,7 @@ double TruncatedNormal::getDensity(const double x) const
 double TruncatedNormal::getLogDensity(const double x) const
 {
   double d = (x - _mu) / _sigma;
-  return - 0.5 * d * d - _logNormalization;
+  return -0.5 * d * d - _logNormalization;
 }
 
 double TruncatedNormal::getLogDensityGradient(const double x) const
@@ -125,7 +125,7 @@ double* TruncatedNormal::getPropertyPointer(const std::string& property)
 
 
 
-} //univariate
+  } //univariate
 } //distribution
 } //korali
 

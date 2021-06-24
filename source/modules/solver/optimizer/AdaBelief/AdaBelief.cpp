@@ -10,7 +10,8 @@ namespace optimizer
 {
 
 
-void AdaBelief::setInitialConfiguration()
+  void
+  AdaBelief::setInitialConfiguration()
 {
   _variableCount = _k->_variables.size();
 
@@ -309,7 +310,7 @@ bool AdaBelief::checkTermination()
 
 
 
-} //optimizer
+  } //optimizer
 } //solver
 } //korali
 

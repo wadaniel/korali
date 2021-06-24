@@ -1,9 +1,9 @@
 #include "modules/distribution/multivariate/normal/normal.hpp"
 #include "modules/experiment/experiment.hpp"
 #include <auxiliar/logger.hpp>
-#include <gsl/gsl_vector.h>
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_randist.h>
+#include <gsl/gsl_vector.h>
 
 namespace korali
 {
@@ -13,7 +13,8 @@ namespace multivariate
 {
 
 
-void Normal::getDensity(double *x, double *result, const size_t n)
+  void
+  Normal::getDensity(double *x, double *result, const size_t n)
 {
   if (_workVector.size() != n)
     KORALI_LOG_ERROR("multivariate::Normal::getDensity Error - requested %lu densities, but distribution is configured with %lu.\n", n, _workVector.size());
@@ -137,7 +138,7 @@ void Normal::applyVariableDefaults()
 
 
 
-} //multivariate
+  } //multivariate
 } //distribution
 } //korali
 

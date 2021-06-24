@@ -1,16 +1,16 @@
 #include "modules/distribution/univariate/truncatedNormal/truncatedNormal.hpp"
 #include "modules/experiment/experiment.hpp"
-#include <gsl/gsl_sf.h>
 #include <gsl/gsl_math.h>
+#include <gsl/gsl_sf.h>
 
 #include "auxiliar/rtnorm/rtnorm.hpp"
 
 using namespace Rtnorm;
 
-
 __startNamespace__
 
-double __className__::getDensity(const double x) const
+  double
+  __className__::getDensity(const double x) const
 {
   double d = (x - _mu) / _sigma;
   return gsl_sf_exp(-0.5 * d * d) / _normalization;
@@ -19,7 +19,7 @@ double __className__::getDensity(const double x) const
 double __className__::getLogDensity(const double x) const
 {
   double d = (x - _mu) / _sigma;
-  return - 0.5 * d * d - _logNormalization;
+  return -0.5 * d * d - _logNormalization;
 }
 
 double __className__::getLogDensityGradient(const double x) const
@@ -57,4 +57,4 @@ void __className__::updateDistribution()
 
 __moduleAutoCode__
 
-__endNamespace__
+  __endNamespace__

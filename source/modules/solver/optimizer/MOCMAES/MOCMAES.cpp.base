@@ -7,7 +7,8 @@
 
 __startNamespace__
 
-void __className__::setInitialConfiguration()
+  void
+  __className__::setInitialConfiguration()
 {
   knlohmann::json problemConfig = (*_k)["Problem"];
   _variableCount = _k->_variables.size();
@@ -550,4 +551,4 @@ void __className__::finalize()
 
 __moduleAutoCode__
 
-__endNamespace__
+  __endNamespace__

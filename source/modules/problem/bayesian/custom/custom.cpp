@@ -11,7 +11,8 @@ namespace bayesian
 {
 
 
-void Custom::initialize()
+  void
+  Custom::initialize()
 {
   Bayesian::initialize();
 
@@ -29,10 +30,10 @@ void Custom::evaluateLoglikelihoodGradient(Sample &sample)
 {
   if (sample.contains("logLikelihood Gradient") == false)
   {
-   sample.run(_likelihoodModel);
+    sample.run(_likelihoodModel);
 
-   if (sample.contains("logLikelihood Gradient") == false)
-    KORALI_LOG_ERROR("The specified likelihood model did not assign the value: 'logLikelihood Gradient' to the sample.\n");
+    if (sample.contains("logLikelihood Gradient") == false)
+      KORALI_LOG_ERROR("The specified likelihood model did not assign the value: 'logLikelihood Gradient' to the sample.\n");
   }
   if (sample["logLikelihood Gradient"].size() != _k->_variables.size()) KORALI_LOG_ERROR("Bayesian problem of type Custom requires likelihood gradient of size %zu (provided size %zu)\n", _k->_variables.size(), sample["loglikelihood Gradient"].size());
 }
@@ -89,7 +90,7 @@ void Custom::applyVariableDefaults()
 
 
 
-} //bayesian
+  } //bayesian
 } //problem
 } //korali
 

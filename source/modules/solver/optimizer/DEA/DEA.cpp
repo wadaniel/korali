@@ -18,7 +18,8 @@ namespace optimizer
 {
 
 
-void DEA::setInitialConfiguration()
+  void
+  DEA::setInitialConfiguration()
 {
   _variableCount = _k->_variables.size();
 
@@ -629,6 +630,6 @@ bool DEA::checkTermination()
 
 
 
-} //optimizer
+  } //optimizer
 } //solver
 } //korali

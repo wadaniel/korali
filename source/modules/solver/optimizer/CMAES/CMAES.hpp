@@ -20,7 +20,7 @@
 #include "modules/solver/optimizer/optimizer.hpp"
 #include <vector>
 
-namespace korali
+  namespace korali
 {
 namespace solver
 {
@@ -28,7 +28,7 @@ namespace optimizer
 {
 
 
-/**
+  /**
 * @brief Class declaration for module: CMAES.
 */
 class CMAES : public Optimizer
@@ -432,7 +432,7 @@ class CMAES : public Optimizer
   * @param sampleIdx Index of the sample to evaluate
   * @param randomNumbers Random numbers to generate sample
  */
-  void sampleSingle(size_t sampleIdx, const std::vector<double>& randomNumbers);
+  void sampleSingle(size_t sampleIdx, const std::vector<double> &randomNumbers);
 
   /**
    * @brief Adapts the covariance matrix.
@@ -556,5 +556,5 @@ class CMAES : public Optimizer
 } //korali
 
 
-#endif // _KORALI_SOLVER_OPTIMIZER_CMAES_
+  #endif // _KORALI_SOLVER_OPTIMIZER_CMAES_
 

@@ -10,7 +10,8 @@ namespace solver
 {
 
 
-void Agent::initialize()
+  void
+  Agent::initialize()
 {
   _variableCount = _k->_variables.size();
 
@@ -387,11 +388,11 @@ void Agent::attendAgent(size_t agentId)
       // Process every episode received and its experiences (add them to replay memory)
       for (size_t i = 0; i < _problem->_agentsPerEnvironment; i++)
       {
-       processEpisode(episodeId, message["Episodes"][i]);
+        processEpisode(episodeId, message["Episodes"][i]);
 
-       // Increasing total experience counters
-       _experienceCount += message["Episodes"][i]["Experiences"].size();
-       _sessionExperienceCount += message["Episodes"][i]["Experiences"].size();
+        // Increasing total experience counters
+        _experienceCount += message["Episodes"][i]["Experiences"].size();
+        _sessionExperienceCount += message["Episodes"][i]["Experiences"].size();
       }
 
       // Waiting for the agent to come back with all the information
@@ -400,19 +401,19 @@ void Agent::attendAgent(size_t agentId)
       // Getting the training reward of the latest episodes
       for (size_t i = 0; i < message["Episodes"].size(); i++)
       {
-       _trainingLastReward = _agents[agentId]["Training Rewards"][i].get<float>();
+        _trainingLastReward = _agents[agentId]["Training Rewards"][i].get<float>();
 
-       // Keeping training statistics. Updating if exceeded best training policy so far.
-       if (_trainingLastReward > _trainingBestReward)
-       {
-         _trainingBestReward = _trainingLastReward;
-         _trainingBestEpisodeId = episodeId;
-         _trainingBestPolicy = _agents[agentId]["Policy Hyperparameters"];
-       }
+        // Keeping training statistics. Updating if exceeded best training policy so far.
+        if (_trainingLastReward > _trainingBestReward)
+        {
+          _trainingBestReward = _trainingLastReward;
+          _trainingBestEpisodeId = episodeId;
+          _trainingBestPolicy = _agents[agentId]["Policy Hyperparameters"];
+        }
 
-       // Storing bookkeeping information
-       _trainingRewardHistory.push_back(_trainingLastReward);
-       _trainingExperienceHistory.push_back(message["Episodes"][i]["Experiences"].size());
+        // Storing bookkeeping information
+        _trainingRewardHistory.push_back(_trainingLastReward);
+        _trainingExperienceHistory.push_back(message["Episodes"][i]["Experiences"].size());
       }
 
       // If the policy has exceeded the threshold during training, we gather its statistics
@@ -672,11 +673,11 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
 
     // Updating off policy count if a change is detected
     if (_isOnPolicyVector[expId] == true && isOnPolicy == false)
-       #pragma omp atomic
+#pragma omp atomic
       _experienceReplayOffPolicyCount++;
 
     if (_isOnPolicyVector[expId] == false && isOnPolicy == true)
-      #pragma omp atomic
+#pragma omp atomic
       _experienceReplayOffPolicyCount--;
 
     // Store computed information for use in replay memory.
@@ -691,14 +692,14 @@ void Agent::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const
   // Calculating updated truncated policy state values
   for (size_t i = 0; i < updateBatch.size(); i++)
   {
-   auto batchId = updateBatch[i];
-   auto expId = miniBatch[batchId];
-   if (_terminationVector[expId] == e_truncated)
-   {
-    auto truncatedState = getTruncatedStateSequence(expId);
-    auto truncatedPolicy = runPolicy({getTruncatedStateSequence(expId)})[0];
-    _truncatedStateValueVector[expId] = truncatedPolicy.stateValue;
-   }
+    auto batchId = updateBatch[i];
+    auto expId = miniBatch[batchId];
+    if (_terminationVector[expId] == e_truncated)
+    {
+      auto truncatedState = getTruncatedStateSequence(expId);
+      auto truncatedPolicy = runPolicy({getTruncatedStateSequence(expId)})[0];
+      _truncatedStateValueVector[expId] = truncatedPolicy.stateValue;
+    }
   }
 
   // Updating the off policy Ratio
@@ -1815,6 +1816,6 @@ bool Agent::checkTermination()
 
 
 
-} //solver
+  } //solver
 } //korali
 

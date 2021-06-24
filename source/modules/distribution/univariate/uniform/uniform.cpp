@@ -11,7 +11,8 @@ namespace univariate
 {
 
 
-double Uniform::getDensity(const double x) const
+  double
+  Uniform::getDensity(const double x) const
 {
   return gsl_ran_flat_pdf(x, _minimum, _maximum);
 }
@@ -100,7 +101,7 @@ double* Uniform::getPropertyPointer(const std::string& property)
 
 
 
-} //univariate
+  } //univariate
 } //distribution
 } //korali
 

@@ -5,7 +5,8 @@
 
 __startNamespace__
 
-void __className__::initializeAgent()
+  void
+  __className__::initializeAgent()
 {
   // Initializing common discrete agent configuration
   Discrete::initializeAgent();
@@ -230,4 +231,4 @@ void __className__::printAgentInformation()
 
 __moduleAutoCode__
 
-__endNamespace__
+  __endNamespace__

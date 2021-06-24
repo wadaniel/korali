@@ -1,13 +1,14 @@
 #include "modules/distribution/multivariate/normal/normal.hpp"
 #include "modules/experiment/experiment.hpp"
 #include <auxiliar/logger.hpp>
-#include <gsl/gsl_vector.h>
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_randist.h>
+#include <gsl/gsl_vector.h>
 
 __startNamespace__
 
-void __className__::getDensity(double *x, double *result, const size_t n)
+  void
+  __className__::getDensity(double *x, double *result, const size_t n)
 {
   if (_workVector.size() != n)
     KORALI_LOG_ERROR("multivariate::__className__::getDensity Error - requested %lu densities, but distribution is configured with %lu.\n", n, _workVector.size());
@@ -70,4 +71,4 @@ void __className__::setProperty(const std::string &propertyName, const std::vect
 
 __moduleAutoCode__
 
-__endNamespace__
+  __endNamespace__

@@ -18,7 +18,7 @@
 #include "modules/problem/bayesian/bayesian.hpp"
 #include <vector>
 
-namespace korali
+  namespace korali
 {
 namespace problem
 {
@@ -26,7 +26,7 @@ namespace bayesian
 {
 
 
-/**
+  /**
 * @brief Class declaration for module: Reference.
 */
 class Reference : public Bayesian
@@ -187,5 +187,5 @@ class Reference : public Bayesian
 } //korali
 
 
-#endif // _KORALI_PROBLEM_BAYESIAN_REFERENCE_
+  #endif // _KORALI_PROBLEM_BAYESIAN_REFERENCE_
 

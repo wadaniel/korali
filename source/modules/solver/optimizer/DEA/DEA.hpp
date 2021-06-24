@@ -20,7 +20,7 @@
 #include "modules/solver/optimizer/optimizer.hpp"
 #include <vector>
 
-namespace korali
+  namespace korali
 {
 namespace solver
 {
@@ -28,7 +28,7 @@ namespace optimizer
 {
 
 
-/**
+  /**
 * @brief Class declaration for module: DEA.
 */
 class DEA : public Optimizer
@@ -218,5 +218,5 @@ class DEA : public Optimizer
 } //korali
 
 
-#endif // _KORALI_SOLVER_OPTIMIZER_DEA_
+  #endif // _KORALI_SOLVER_OPTIMIZER_DEA_
 

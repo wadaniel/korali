@@ -13,10 +13,10 @@ using namespace std;
 
 __startNamespace__
 
-/**
+  /**
 * @brief Temporary storage to hold the pointer to the current conduit
 */
-Sequential *_currentConduit;
+  Sequential *_currentConduit;
 
 void _workerWrapper()
 {
@@ -115,4 +115,4 @@ size_t __className__::getProcessId()
 
 __moduleAutoCode__
 
-__endNamespace__
+  __endNamespace__

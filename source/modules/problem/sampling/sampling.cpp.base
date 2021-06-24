@@ -3,7 +3,8 @@
 
 __startNamespace__
 
-void __className__::initialize()
+  void
+  __className__::initialize()
 {
   if (_k->_variables.size() == 0) KORALI_LOG_ERROR("Sampling Evaluation problems require at least one variable.\n");
 }
@@ -15,7 +16,7 @@ void __className__::evaluate(Sample &sample)
   auto evaluation = KORALI_GET(double, sample, "logP(x)");
 
   if (std::isfinite(evaluation) == false)
-   KORALI_LOG_ERROR("Non finite value of evaluation detected: %f\n", evaluation);
+    KORALI_LOG_ERROR("Non finite value of evaluation detected: %f\n", evaluation);
 
   sample["logP(x)"] = evaluation;
   sample["F(x)"] = evaluation;
@@ -51,4 +52,4 @@ void __className__::evaluateHessian(korali::Sample &sample)
 
 __moduleAutoCode__
 
-__endNamespace__
+  __endNamespace__

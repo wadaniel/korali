@@ -7,7 +7,7 @@ namespace distribution
 {
 
 
-void Specific::setConfiguration(knlohmann::json& js) 
+  void Specific::setConfiguration(knlohmann::json& js) 
 {
  if (isDefined(js, "Results"))  eraseValue(js, "Results");
 
@@ -38,5 +38,5 @@ void Specific::applyVariableDefaults()
 
 
 
-} //distribution
+    } //distribution
 } //korali

@@ -7,7 +7,8 @@ namespace problem
 {
 
 
-void Sampling::initialize()
+  void
+  Sampling::initialize()
 {
   if (_k->_variables.size() == 0) KORALI_LOG_ERROR("Sampling Evaluation problems require at least one variable.\n");
 }
@@ -19,7 +20,7 @@ void Sampling::evaluate(Sample &sample)
   auto evaluation = KORALI_GET(double, sample, "logP(x)");
 
   if (std::isfinite(evaluation) == false)
-   KORALI_LOG_ERROR("Non finite value of evaluation detected: %f\n", evaluation);
+    KORALI_LOG_ERROR("Non finite value of evaluation detected: %f\n", evaluation);
 
   sample["logP(x)"] = evaluation;
   sample["F(x)"] = evaluation;
@@ -133,6 +134,6 @@ bool Sampling::runOperation(std::string operation, korali::Sample& sample)
 
 
 
-} //problem
+  } //problem
 } //korali
 

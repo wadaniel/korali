@@ -4,7 +4,8 @@
 
 __startNamespace__
 
-void __className__::setInitialConfiguration()
+  void
+  __className__::setInitialConfiguration()
 {
   _variableCount = _k->_variables.size();
 
@@ -13,10 +14,10 @@ void __className__::setInitialConfiguration()
     _numberOfValues *= _k->_variables[i]->_values.size();
 
   if (_numberOfValues > _maxModelEvaluations)
-   {
+  {
     _k->_logger->logWarning("Normal", "%lu > %lu. More evaluations required than the maximum specified.\n", _numberOfValues, _maxModelEvaluations);
     _numberOfValues = _maxModelEvaluations;
-   }
+  }
 
   // Resetting execution counter
   _modelEvaluationCount = 0;
@@ -106,4 +107,4 @@ void __className__::finalize()
 
 __moduleAutoCode__
 
-__endNamespace__
+  __endNamespace__

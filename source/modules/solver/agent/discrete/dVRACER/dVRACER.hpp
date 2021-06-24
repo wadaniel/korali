@@ -19,7 +19,7 @@
 #include "modules/problem/reinforcementLearning/discrete/discrete.hpp"
 #include "modules/solver/agent/discrete/discrete.hpp"
 
-namespace korali
+  namespace korali
 {
 namespace solver
 {
@@ -29,7 +29,7 @@ namespace discrete
 {
 
 
-/**
+  /**
 * @brief Class declaration for module: dVRACER.
 */
 class dVRACER : public Discrete
@@ -110,5 +110,5 @@ class dVRACER : public Discrete
 } //korali
 
 
-#endif // _KORALI_SOLVER_AGENT_DISCRETE_DVRACER_
+  #endif // _KORALI_SOLVER_AGENT_DISCRETE_DVRACER_
 

@@ -5,7 +5,6 @@
 
 #include <gsl/gsl_sf_psi.h>
 
-
 namespace korali
 {
 namespace solver
@@ -16,7 +15,8 @@ namespace continuous
 {
 
 
-void VRACER::initializeAgent()
+  void
+  VRACER::initializeAgent()
 {
   // Initializing common discrete agent configuration
   Continuous::initializeAgent();
@@ -172,9 +172,9 @@ void VRACER::calculatePolicyGradients(const std::vector<size_t> &miniBatch)
     }
 
     // Set Gradient of Loss as Solution
-    for( size_t i = 0; i<gradientLoss.size(); i++ )
-    if(std::isfinite(gradientLoss[i]) == false)
-      KORALI_LOG_ERROR("Gradient loss returned an invalid value: %f\n", gradientLoss[i]);
+    for (size_t i = 0; i < gradientLoss.size(); i++)
+      if (std::isfinite(gradientLoss[i]) == false)
+        KORALI_LOG_ERROR("Gradient loss returned an invalid value: %f\n", gradientLoss[i]);
     _criticPolicyProblem->_solutionData[b] = gradientLoss;
   }
 
@@ -303,7 +303,7 @@ bool VRACER::checkTermination()
 
 
 
-} //continuous
+  } //continuous
 } //agent
 } //solver
 } //korali

@@ -1,12 +1,12 @@
 __startIncludeGuard__
 
 #include "modules/distribution/multivariate/multivariate.hpp"
-#include <gsl/gsl_vector.h>
 #include <gsl/gsl_matrix.h>
+#include <gsl/gsl_vector.h>
 
-__startNamespace__
+  __startNamespace__
 
-class __className__ : public __parentClassName__
+  class __className__ : public __parentClassName__
 {
   private:
   /**
@@ -63,4 +63,4 @@ class __className__ : public __parentClassName__
 
 __endNamespace__
 
-__endIncludeGuard__
+  __endIncludeGuard__

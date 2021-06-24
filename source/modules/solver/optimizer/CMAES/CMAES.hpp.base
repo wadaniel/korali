@@ -5,9 +5,9 @@ __startIncludeGuard__
 #include "modules/solver/optimizer/optimizer.hpp"
 #include <vector>
 
-__startNamespace__
+  __startNamespace__
 
-class __className__ : public __parentClassName__
+  class __className__ : public __parentClassName__
 {
   public:
   /**
@@ -20,7 +20,7 @@ class __className__ : public __parentClassName__
   * @param sampleIdx Index of the sample to evaluate
   * @param randomNumbers Random numbers to generate sample
  */
-  void sampleSingle(size_t sampleIdx, const std::vector<double>& randomNumbers);
+  void sampleSingle(size_t sampleIdx, const std::vector<double> &randomNumbers);
 
   /**
    * @brief Adapts the covariance matrix.
@@ -141,4 +141,4 @@ class __className__ : public __parentClassName__
 
 __endNamespace__
 
-__endIncludeGuard__
+  __endIncludeGuard__

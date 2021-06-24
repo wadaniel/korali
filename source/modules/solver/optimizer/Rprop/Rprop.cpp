@@ -15,7 +15,8 @@ namespace optimizer
 {
 
 
-void Rprop::setInitialConfiguration()
+  void
+  Rprop::setInitialConfiguration()
 {
   _variableCount = _k->_variables.size();
 
@@ -369,7 +370,7 @@ bool Rprop::checkTermination()
 
 
 
-} //optimizer
+  } //optimizer
 } //solver
 } //korali
 

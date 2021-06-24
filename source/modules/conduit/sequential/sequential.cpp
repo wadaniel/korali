@@ -17,10 +17,10 @@ namespace conduit
 {
 
 
-/**
+  /**
 * @brief Temporary storage to hold the pointer to the current conduit
 */
-Sequential *_currentConduit;
+  Sequential *_currentConduit;
 
 void _workerWrapper()
 {
@@ -151,6 +151,6 @@ void Sequential::applyVariableDefaults()
 
 
 
-} //conduit
+  } //conduit
 } //korali
 

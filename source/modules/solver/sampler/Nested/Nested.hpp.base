@@ -6,12 +6,12 @@ __startIncludeGuard__
 #include "modules/solver/sampler/sampler.hpp"
 #include <vector>
 
-__startNamespace__
+  __startNamespace__
 
-/**
+  /**
  * @brief Ellipse object to generate bounds.
 */
-struct ellipse_t
+  struct ellipse_t
 {
   /**
    * @brief Default c-tor (avoid empty initialization).
@@ -290,4 +290,4 @@ class __className__ : public __parentClassName__
 
 __endNamespace__
 
-__endIncludeGuard__
+  __endIncludeGuard__

@@ -4,9 +4,9 @@ __startIncludeGuard__
 #include <queue>
 #include <vector>
 
-__startNamespace__
+  __startNamespace__
 
-class Engine;
+  class Engine;
 
 class __className__ : public __parentClassName__
 {
@@ -152,4 +152,4 @@ class __className__ : public __parentClassName__
 
 __endNamespace__
 
-__endIncludeGuard__
+  __endIncludeGuard__

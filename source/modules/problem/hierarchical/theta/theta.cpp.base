@@ -4,7 +4,8 @@
 
 __startNamespace__
 
-void __className__::initialize()
+  void
+  __className__::initialize()
 {
   // Setting experiment configurations to actual korali experiments
   _psiExperimentObject._js.getJson() = _psiExperiment;
@@ -106,4 +107,4 @@ void __className__::evaluateLogLikelihood(Sample &sample)
 
 __moduleAutoCode__
 
-__endNamespace__
+  __endNamespace__

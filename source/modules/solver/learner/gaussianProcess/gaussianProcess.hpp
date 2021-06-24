@@ -25,7 +25,7 @@
 
 #include <memory>
 
-namespace korali
+  namespace korali
 {
 namespace solver
 {
@@ -33,7 +33,7 @@ namespace learner
 {
 
 
-/**
+  /**
 * @brief Class declaration for module: GaussianProcess.
 */
 class GaussianProcess : public Learner
@@ -95,7 +95,6 @@ class GaussianProcess : public Learner
   void applyVariableDefaults() override;
   
 
-
   /**
   * @brief Storage for the output values
   */
@@ -129,5 +128,5 @@ class GaussianProcess : public Learner
 } //korali
 
 
-#endif // _KORALI_SOLVER_LEARNER_GAUSSIANPROCESS_
+  #endif // _KORALI_SOLVER_LEARNER_GAUSSIANPROCESS_
 

@@ -10,12 +10,11 @@ __startIncludeGuard__
 
 #include <memory>
 
-__startNamespace__
+  __startNamespace__
 
-class __className__ : public __parentClassName__
+  class __className__ : public __parentClassName__
 {
   public:
-
   /**
   * @brief Storage for the output values
   */
@@ -46,4 +45,4 @@ class __className__ : public __parentClassName__
 
 __endNamespace__
 
-__endIncludeGuard__
+  __endIncludeGuard__

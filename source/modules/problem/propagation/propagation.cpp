@@ -7,7 +7,8 @@ namespace problem
 {
 
 
-void Propagation::initialize()
+  void
+  Propagation::initialize()
 {
   if (_k->_variables.size() == 0) KORALI_LOG_ERROR("Execution problems require at least one variable.\n");
 
@@ -181,5 +182,5 @@ bool Propagation::runOperation(std::string operation, korali::Sample& sample)
 
 
 
-} //problem
+  } //problem
 } //korali

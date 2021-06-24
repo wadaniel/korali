@@ -17,13 +17,13 @@
 
 #include "modules/problem/problem.hpp"
 
-namespace korali
+  namespace korali
 {
 namespace problem
 {
 
 
-/**
+  /**
 * @brief Class declaration for module: Bayesian.
 */
 class Bayesian : public Problem
@@ -133,5 +133,5 @@ class Bayesian : public Problem
 } //korali
 
 
-#endif // _KORALI_PROBLEM_BAYESIAN_
+  #endif // _KORALI_PROBLEM_BAYESIAN_
 

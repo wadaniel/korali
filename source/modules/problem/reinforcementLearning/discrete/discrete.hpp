@@ -17,7 +17,7 @@
 
 #include "modules/problem/reinforcementLearning/reinforcementLearning.hpp"
 
-namespace korali
+  namespace korali
 {
 namespace problem
 {
@@ -25,7 +25,7 @@ namespace reinforcementLearning
 {
 
 
-/**
+  /**
 * @brief Class declaration for module: Discrete.
 */
 class Discrete : public ReinforcementLearning
@@ -73,4 +73,4 @@ class Discrete : public ReinforcementLearning
 } //korali
 
 
-#endif // _KORALI_PROBLEM_REINFORCEMENTLEARNING_DISCRETE_
+  #endif // _KORALI_PROBLEM_REINFORCEMENTLEARNING_DISCRETE_

@@ -1,12 +1,13 @@
 #include "modules/distribution/univariate/normal/normal.hpp"
 #include "modules/experiment/experiment.hpp"
+#include <gsl/gsl_math.h>
 #include <gsl/gsl_randist.h>
 #include <gsl/gsl_sf.h>
-#include <gsl/gsl_math.h>
 
 __startNamespace__
 
-double __className__::getDensity(const double x) const
+  double
+  __className__::getDensity(const double x) const
 {
   double y = (x - _mean) / _standardDeviation;
   return gsl_sf_exp(-0.5 * y * y) / _normalization;
@@ -43,4 +44,4 @@ void __className__::updateDistribution()
 
 __moduleAutoCode__
 
-__endNamespace__
+  __endNamespace__

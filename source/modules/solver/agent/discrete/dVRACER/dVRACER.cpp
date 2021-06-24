@@ -13,7 +13,8 @@ namespace discrete
 {
 
 
-void dVRACER::initializeAgent()
+  void
+  dVRACER::initializeAgent()
 {
   // Initializing common discrete agent configuration
   Discrete::initializeAgent();
@@ -307,7 +308,7 @@ bool dVRACER::checkTermination()
 
 
 
-} //discrete
+  } //discrete
 } //agent
 } //solver
 } //korali

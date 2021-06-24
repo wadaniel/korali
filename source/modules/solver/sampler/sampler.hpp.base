@@ -2,13 +2,13 @@ __startIncludeGuard__
 
 #include "modules/solver/solver.hpp"
 
-__startNamespace__
+  __startNamespace__
 
-class __className__ : public __parentClassName__
+  class __className__ : public __parentClassName__
 {
   public:
 };
 
 __endNamespace__
 
-__endIncludeGuard__
+  __endIncludeGuard__

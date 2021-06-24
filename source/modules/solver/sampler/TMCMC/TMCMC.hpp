@@ -22,8 +22,7 @@
 #include "modules/solver/sampler/sampler.hpp"
 #include <gsl/gsl_vector.h>
 
-
-namespace korali
+  namespace korali
 {
 namespace solver
 {
@@ -31,10 +30,10 @@ namespace sampler
 {
 
 
-/**
+  /**
   * @brief Struct for TMCMC optimization operations
  */
-typedef struct fparam_s
+  typedef struct fparam_s
 {
   /**
   * @brief Likelihood values in current generation
@@ -57,13 +56,12 @@ typedef struct fparam_s
   double cov;
 } fparam_t;
 
-
 /**
 * @brief Class declaration for module: TMCMC.
 */
 class TMCMC : public Sampler
 {
-public: 
+  public: 
   /**
   * @brief Indicates which variant of the TMCMC algorithm to use.
   */
@@ -332,7 +330,6 @@ public:
   void applyVariableDefaults() override;
   
 
-
   /**
   * @brief Sets the burn in steps per generation
   */
@@ -451,5 +448,5 @@ public:
 } //korali
 
 
-#endif // _KORALI_SOLVER_SAMPLER_TMCMC_
+  #endif // _KORALI_SOLVER_SAMPLER_TMCMC_
 

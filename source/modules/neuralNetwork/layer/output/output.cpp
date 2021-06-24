@@ -21,7 +21,8 @@ namespace layer
 {
 
 
-void Output::initialize()
+  void
+  Output::initialize()
 {
   if (_index != _nn->_layers.size() - 1)
     KORALI_LOG_ERROR("Output layers can only be placed at the last position in the NN\n");
@@ -123,7 +124,7 @@ void Output::forwardData(const size_t t)
   size_t N = _batchSize;
   size_t OC = _outputChannels;
 
-// Copying previous layer's output to this layer's output
+  // Copying previous layer's output to this layer's output
   if (_nn->_engine == "Korali")
   {
     memcpy(_srcOutputValues, _prevLayer->_outputValues, N * OC * sizeof(float));
@@ -301,7 +302,7 @@ void Output::applyVariableDefaults()
 
 
 
-} //layer
+  } //layer
 } //neuralNetwork
 } //korali
 

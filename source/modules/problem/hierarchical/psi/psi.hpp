@@ -18,7 +18,7 @@
 #include "modules/distribution/distribution.hpp"
 #include "modules/problem/hierarchical/hierarchical.hpp"
 
-namespace korali
+  namespace korali
 {
 namespace problem
 {
@@ -26,7 +26,7 @@ namespace hierarchical
 {
 
 
-/**
+  /**
 * @brief Class declaration for module: Psi.
 */
 class Psi : public Hierarchical
@@ -129,4 +129,4 @@ class Psi : public Hierarchical
 } //korali
 
 
-#endif // _KORALI_PROBLEM_HIERARCHICAL_PSI_
+  #endif // _KORALI_PROBLEM_HIERARCHICAL_PSI_

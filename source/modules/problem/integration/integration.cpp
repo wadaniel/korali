@@ -7,7 +7,8 @@ namespace problem
 {
 
 
-void Integration::initialize()
+  void
+  Integration::initialize()
 {
   if (_k->_variables.size() == 0) KORALI_LOG_ERROR("Integration problems require at least one variable.\n");
 
@@ -31,7 +32,7 @@ void Integration::initialize()
         }
 
       if (foundDistribution == false)
-       KORALI_LOG_ERROR("Did not find distribution %s, specified by variable %s\n", _k->_variables[i]->_samplingDistribution.c_str(), _k->_variables[i]->_name.c_str());
+        KORALI_LOG_ERROR("Did not find distribution %s, specified by variable %s\n", _k->_variables[i]->_samplingDistribution.c_str(), _k->_variables[i]->_name.c_str());
 
       _k->_variables[i]->_quadratureWeights.resize(1);
       _k->_variables[i]->_quadratureWeights[0] = intervalSize / _k->_variables[i]->_numberOfGridpoints;
@@ -39,7 +40,7 @@ void Integration::initialize()
     else if (_integrationMethod == "Custom")
     {
       if (_k->_variables[i]->_samplePoints.size() != _k->_variables[i]->_quadratureWeights.size())
-       KORALI_LOG_ERROR("Number of 'Sample Points' is not equal to number of 'Quadrature Points' provided for variable %s\n", _k->_variables[i]->_name.c_str());
+        KORALI_LOG_ERROR("Number of 'Sample Points' is not equal to number of 'Quadrature Points' provided for variable %s\n", _k->_variables[i]->_name.c_str());
     }
     else
     {
@@ -252,6 +253,6 @@ bool Integration::runOperation(std::string operation, korali::Sample& sample)
 
 
 
-} //problem
+  } //problem
 } //korali
 

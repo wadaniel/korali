@@ -30,14 +30,14 @@
   #include <cudnn.h>
 #endif
 
-namespace korali
+  namespace korali
 {
 
 
-/**
+  /**
 * @brief Structure containing the information of a layer pipeline. There is one pipeline per threadCount x batchSize combination.
 */
-struct layerPipeline_t
+  struct layerPipeline_t
 {
   /**
   * @brief Internal container for the NN layer forward/backward pipelines.
@@ -250,5 +250,5 @@ class NeuralNetwork : public Module
 } //korali
 
 
-#endif // _KORALI_NEURALNETWORK_
+  #endif // _KORALI_NEURALNETWORK_
 

@@ -17,7 +17,7 @@
 
 #include "modules/distribution/univariate/univariate.hpp"
 
-namespace korali
+  namespace korali
 {
 namespace distribution
 {
@@ -25,7 +25,7 @@ namespace univariate
 {
 
 
-/**
+  /**
 * @brief Class declaration for module: Weibull.
 */
 class Weibull : public Univariate
@@ -122,5 +122,5 @@ class Weibull : public Univariate
 } //korali
 
 
-#endif // _KORALI_DISTRIBUTION_UNIVARIATE_WEIBULL_
+  #endif // _KORALI_DISTRIBUTION_UNIVARIATE_WEIBULL_
 

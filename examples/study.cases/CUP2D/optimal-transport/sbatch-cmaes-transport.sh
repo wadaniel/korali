@@ -8,8 +8,8 @@ if [ $# -gt 0 ] ; then
 	RUNNAME=$1
 fi
 
-# number of agents
-NNODES=64
+# number of ranks
+NNODES=32
 
 # setup run directory and copy necessary files
 RUNPATH="${SCRATCH}/korali/${RUNNAME}"
@@ -26,7 +26,7 @@ cat <<EOF >daint_sbatch
 #SBATCH --output=${RUNNAME}_out_%j.txt
 #SBATCH --error=${RUNNAME}_err_%j.txt
 #SBATCH --time=24:00:00
-#SBATCH --nodes=$((NNODES+1))
+#SBATCH --nodes=$((NNODES))
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=12
 #SBATCH --ntasks-per-core=1

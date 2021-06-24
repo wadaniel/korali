@@ -3,7 +3,7 @@ Multi-Agent Reinforcement Learning on Active Particles
 
 Ensemble of N point particles travelling at a fixed speed :math:`|u|=1`.
 
-The reinforcement learning agent :math:`i` that has available as *state* the distance :math:`r_{ij}`, direction vector :math:`\boldsymbol{r}_{ij}`, and angles :math:`\theta_{ij}` to the *M* nearest neighbours :math:`j=1,\dots,M`. The action determines the wished new direction u=(u_x, u_y, u_z) of the particle. The reward is computed as the sum of a pairwise potential between the neihest neighbours
+The reinforcement learning agent :math:`i` that has available as *state* the distance :math:`r_{ij}`, direction vector :math:`\boldsymbol{r}_{ij}`, and angles :math:`\theta_{ij}` to the *M* nearest neighbours :math:`j=1,\dots,M`. The action determines the wished new direction :math:`u=(u_x, u_y, u_z)` of the particle. The reward is computed as the sum of a pairwise potential between the neihest neighbours
 
 .. math::
 

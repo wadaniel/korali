@@ -1,7 +1,7 @@
 #! /usr/bin/env bash
 
 if [ $# -lt 1 ] ; then
-	echo "Usage: ./sbatch-cmaes-transport.sh RUNNAME"
+	echo "Usage: ./sbatch-vracer-transport.sh RUNNAME"
 	exit 1
 fi
 if [ $# -gt 0 ] ; then
@@ -14,7 +14,7 @@ NNODES=64
 # setup run directory and copy necessary files
 RUNPATH="${SCRATCH}/korali/${RUNNAME}"
 mkdir -p ${RUNPATH}
-cp run-cmaes-transport ${RUNPATH}
+cp run-vracer-transport ${RUNPATH}
 cp settings.sh ${RUNPATH}
 cd ${RUNPATH}
 
@@ -34,7 +34,7 @@ cat <<EOF >daint_sbatch
 #SBATCH --constraint=gpu
 #SBATCH --account=s929
 
-srun ./run-cmaes-transport ${OPTIONS} -shapes "${OBJECTS}"
+srun ./run-vracer-transport ${OPTIONS} -shapes "${OBJECTS}"
 EOF
 
 chmod 755 daint_sbatch

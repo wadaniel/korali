@@ -274,7 +274,7 @@ std::vector<float> @className::generateTestingAction(const policy_t &curPolicy)
     {
       action[i] = curPolicy.distributionParameters[i];
   
-      // Clip the mode to bounds
+      // Clip mode to bounds
       if (action[i] >= _actionUpperBounds[i]) action[i] = _actionUpperBounds[i];
       if (action[i] <= _actionLowerBounds[i]) action[i] = _actionLowerBounds[i];
     }
@@ -287,7 +287,7 @@ std::vector<float> @className::generateTestingAction(const policy_t &curPolicy)
     {
       action[i] = curPolicy.distributionParameters[i];
   
-      // Clip the mode to bounds
+      // Clip mode to bounds
       if (action[i] >= _actionUpperBounds[i]) action[i] = _actionUpperBounds[i];
       if (action[i] <= _actionLowerBounds[i]) action[i] = _actionLowerBounds[i];
     }
@@ -565,7 +565,7 @@ std::vector<float> @className::calculateImportanceWeightGradient(const std::vect
       else
       {
         // Grad wrt. curMu
-        importanceWeightGradients[i] = (action[i]-curMu)/curSigma;
+        importanceWeightGradients[i] = (action[i]-curMu)/curVar;
         
         // Grad wrt. curSigma
         importanceWeightGradients[_problem->_actionVectorSize+i] = ((action[i]-curMu)*(action[i]-curMu)-curVar)/(oldSigma*oldSigma*oldSigma);

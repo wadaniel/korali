@@ -8,10 +8,9 @@ namespace problem
 {
 namespace hierarchical
 {
+;
 
-
-  void
-  Theta::initialize()
+void Theta::initialize()
 {
   // Setting experiment configurations to actual korali experiments
   _psiExperimentObject._js.getJson() = _psiExperiment;
@@ -158,9 +157,9 @@ void Theta::applyVariableDefaults()
  Hierarchical::applyVariableDefaults();
 } 
 
+;
 
-
-  } //hierarchical
+} //hierarchical
 } //problem
 } //korali
-
+;

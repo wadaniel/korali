@@ -13,10 +13,9 @@ namespace solver
 {
 namespace optimizer
 {
+;
 
-
-  void
-  Rprop::setInitialConfiguration()
+void Rprop::setInitialConfiguration()
 {
   _variableCount = _k->_variables.size();
 
@@ -368,9 +367,9 @@ bool Rprop::checkTermination()
  return hasFinished;
 }
 
+;
 
-
-  } //optimizer
+} //optimizer
 } //solver
 } //korali
-
+;

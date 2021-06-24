@@ -8,10 +8,9 @@ namespace korali
 {
 namespace solver
 {
+;
 
-
-  void
-  Agent::initialize()
+void Agent::initialize()
 {
   _variableCount = _k->_variables.size();
 
@@ -1814,8 +1813,8 @@ bool Agent::checkTermination()
  return hasFinished;
 }
 
+;
 
-
-  } //solver
+} //solver
 } //korali
-
+;

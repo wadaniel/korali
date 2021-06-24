@@ -13,7 +13,7 @@
 
 #ifndef _KORALI_SOLVER_SAMPLER_TMCMC_
 #define _KORALI_SOLVER_SAMPLER_TMCMC_
-
+;
 
 #include "modules/distribution/distribution.hpp"
 #include "modules/distribution/multivariate/normal/normal.hpp"
@@ -22,18 +22,18 @@
 #include "modules/solver/sampler/sampler.hpp"
 #include <gsl/gsl_vector.h>
 
-  namespace korali
+namespace korali
 {
 namespace solver
 {
 namespace sampler
 {
+;
 
-
-  /**
+/**
   * @brief Struct for TMCMC optimization operations
  */
-  typedef struct fparam_s
+typedef struct fparam_s
 {
   /**
   * @brief Likelihood values in current generation
@@ -446,7 +446,7 @@ class TMCMC : public Sampler
 } //sampler
 } //solver
 } //korali
+;
 
-
-  #endif // _KORALI_SOLVER_SAMPLER_TMCMC_
-
+#endif // _KORALI_SOLVER_SAMPLER_TMCMC_
+;

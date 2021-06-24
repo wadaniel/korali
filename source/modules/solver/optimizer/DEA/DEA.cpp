@@ -16,10 +16,9 @@ namespace solver
 {
 namespace optimizer
 {
+;
 
-
-  void
-  DEA::setInitialConfiguration()
+void DEA::setInitialConfiguration()
 {
   _variableCount = _k->_variables.size();
 
@@ -628,8 +627,9 @@ bool DEA::checkTermination()
  return hasFinished;
 }
 
+;
 
-
-  } //optimizer
+} //optimizer
 } //solver
 } //korali
+;

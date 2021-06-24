@@ -8,10 +8,10 @@ namespace distribution
 {
 namespace univariate
 {
+;
 
-
-  double
-  Beta::getDensity(const double x) const
+double
+Beta::getDensity(const double x) const
 {
   return gsl_ran_beta_pdf(x, _alpha, _beta);
 }
@@ -100,9 +100,9 @@ double* Beta::getPropertyPointer(const std::string& property)
  return NULL;
 }
 
+;
 
-
-  } //univariate
+} //univariate
 } //distribution
 } //korali
-
+;

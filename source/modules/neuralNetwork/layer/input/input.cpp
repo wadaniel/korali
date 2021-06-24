@@ -19,10 +19,9 @@ namespace neuralNetwork
 {
 namespace layer
 {
+;
 
-
-  void
-  Input::initialize()
+void Input::initialize()
 {
   // Checking Layer size
   if (_outputChannels == 0) KORALI_LOG_ERROR("Output Channels for layer (%lu) should be larger than zero.\n", _index);
@@ -116,9 +115,9 @@ void Input::applyVariableDefaults()
  Layer::applyVariableDefaults();
 } 
 
+;
 
-
-  } //layer
+} //layer
 } //neuralNetwork
 } //korali
-
+;

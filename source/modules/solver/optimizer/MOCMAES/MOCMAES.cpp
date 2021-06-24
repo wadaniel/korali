@@ -11,10 +11,9 @@ namespace solver
 {
 namespace optimizer
 {
+;
 
-
-  void
-  MOCMAES::setInitialConfiguration()
+void MOCMAES::setInitialConfiguration()
 {
   knlohmann::json problemConfig = (*_k)["Problem"];
   _variableCount = _k->_variables.size();
@@ -1065,9 +1064,9 @@ bool MOCMAES::checkTermination()
  return hasFinished;
 }
 
+;
 
-
-  } //optimizer
+} //optimizer
 } //solver
 } //korali
-
+;

@@ -20,10 +20,9 @@ namespace solver
 {
 namespace sampler
 {
+;
 
-
-  void
-  HMC::setInitialConfiguration()
+void HMC::setInitialConfiguration()
 {
   _variableCount = _k->_variables.size();
 
@@ -1299,9 +1298,9 @@ bool HMC::checkTermination()
  return hasFinished;
 }
 
+;
 
-
-  } //sampler
+} //sampler
 } //solver
 } //korali
-
+;

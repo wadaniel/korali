@@ -18,10 +18,9 @@ namespace problem
 {
 namespace bayesian
 {
+;
 
-
-  void
-  Reference::initialize()
+void Reference::initialize()
 {
   Bayesian::initialize();
 
@@ -712,9 +711,9 @@ void Reference::applyVariableDefaults()
  Bayesian::applyVariableDefaults();
 } 
 
+;
 
-
-  } //bayesian
+} //bayesian
 } //problem
 } //korali
-
+;

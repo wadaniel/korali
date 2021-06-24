@@ -13,19 +13,19 @@
 
 #ifndef _KORALI_DISTRIBUTION_SPECIFIC_MULTINOMIAL_
 #define _KORALI_DISTRIBUTION_SPECIFIC_MULTINOMIAL_
-
+;
 
 #include "modules/distribution/specific/specific.hpp"
 
-  namespace korali
+namespace korali
 {
 namespace distribution
 {
 namespace specific
 {
+;
 
-
-  /**
+/**
 * @brief Class declaration for module: Multinomial.
 */
 class Multinomial : public Specific
@@ -66,6 +66,7 @@ class Multinomial : public Specific
 } //specific
 } //distribution
 } //korali
+;
 
-
-  #endif // _KORALI_DISTRIBUTION_SPECIFIC_MULTINOMIAL_
+#endif // _KORALI_DISTRIBUTION_SPECIFIC_MULTINOMIAL_
+;

@@ -13,22 +13,22 @@
 
 #ifndef _KORALI_SOLVER_OPTIMIZER_DEA_
 #define _KORALI_SOLVER_OPTIMIZER_DEA_
-
+;
 
 #include "modules/distribution/univariate/normal/normal.hpp"
 #include "modules/distribution/univariate/uniform/uniform.hpp"
 #include "modules/solver/optimizer/optimizer.hpp"
 #include <vector>
 
-  namespace korali
+namespace korali
 {
 namespace solver
 {
 namespace optimizer
 {
+;
 
-
-  /**
+/**
 * @brief Class declaration for module: DEA.
 */
 class DEA : public Optimizer
@@ -216,7 +216,7 @@ class DEA : public Optimizer
 } //optimizer
 } //solver
 } //korali
+;
 
-
-  #endif // _KORALI_SOLVER_OPTIMIZER_DEA_
-
+#endif // _KORALI_SOLVER_OPTIMIZER_DEA_
+;

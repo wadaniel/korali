@@ -8,10 +8,9 @@ namespace solver
 {
 namespace agent
 {
+;
 
-
-  void
-  Discrete::initializeAgent()
+void Discrete::initializeAgent()
 {
   // Getting discrete problem pointer
   _problem = dynamic_cast<problem::reinforcementLearning::Discrete *>(_k->_problem);
@@ -211,9 +210,9 @@ bool Discrete::checkTermination()
  return hasFinished;
 }
 
+;
 
-
-  } //agent
+} //agent
 } //solver
 } //korali
-
+;

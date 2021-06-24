@@ -13,7 +13,7 @@
 
 #ifndef _KORALI_SOLVER_
 #define _KORALI_SOLVER_
-
+;
 
 #include "auxiliar/libco/libco.h"
 #include "modules/experiment/experiment.hpp"
@@ -22,12 +22,12 @@
 #include <string>
 #include <vector>
 
-  /*! \namespace Korali
+/*! \namespace Korali
     \brief The Korali namespace includes all Korali-specific functions, variables, and modules.
 */
-  namespace korali
+namespace korali
 {
-
+;
 
 /**
  * @brief Macro to start the processing of a sample.
@@ -73,7 +73,7 @@
  */
 #define KORALI_LISTEN(SAMPLES) _k->_engine->_conduit->listen(SAMPLES);
 
-  /**
+/**
 * @brief Class declaration for module: Solver.
 */
 class Solver : public Module
@@ -150,7 +150,7 @@ class Solver : public Module
 };
 
 } //korali
+;
 
-
-  #endif // _KORALI_SOLVER_
-
+#endif // _KORALI_SOLVER_
+;

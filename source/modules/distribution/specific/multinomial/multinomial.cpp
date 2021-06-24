@@ -8,10 +8,9 @@ namespace distribution
 {
 namespace specific
 {
+;
 
-
-  void
-  Multinomial::getSelections(std::vector<double> &p, std::vector<unsigned int> &n, int N)
+void Multinomial::getSelections(std::vector<double> &p, std::vector<unsigned int> &n, int N)
 {
   gsl_ran_multinomial(_range, p.size(), N, p.data(), n.data());
 }
@@ -45,9 +44,9 @@ void Multinomial::applyVariableDefaults()
  Specific::applyVariableDefaults();
 } 
 
+;
 
-
-  } //specific
+} //specific
 } //distribution
 } //korali
-
+;

@@ -10,10 +10,9 @@ namespace solver
 {
 namespace learner
 {
+;
 
-
-  void
-  DeepSupervisor::initialize()
+void DeepSupervisor::initialize()
 {
   // Getting problem pointer
   _problem = dynamic_cast<problem::SupervisedLearning *>(_k->_problem);
@@ -438,9 +437,9 @@ bool DeepSupervisor::checkTermination()
  return hasFinished;
 }
 
+;
 
-
-  } //learner
+} //learner
 } //solver
 } //korali
-
+;

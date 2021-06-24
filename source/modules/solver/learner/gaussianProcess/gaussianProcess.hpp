@@ -13,7 +13,7 @@
 
 #ifndef _KORALI_SOLVER_LEARNER_GAUSSIANPROCESS_
 #define _KORALI_SOLVER_LEARNER_GAUSSIANPROCESS_
-
+;
 
 #include "engine.hpp"
 
@@ -25,15 +25,15 @@
 
 #include <memory>
 
-  namespace korali
+namespace korali
 {
 namespace solver
 {
 namespace learner
 {
+;
 
-
-  /**
+/**
 * @brief Class declaration for module: GaussianProcess.
 */
 class GaussianProcess : public Learner
@@ -126,7 +126,7 @@ class GaussianProcess : public Learner
 } //learner
 } //solver
 } //korali
+;
 
-
-  #endif // _KORALI_SOLVER_LEARNER_GAUSSIANPROCESS_
-
+#endif // _KORALI_SOLVER_LEARNER_GAUSSIANPROCESS_
+;

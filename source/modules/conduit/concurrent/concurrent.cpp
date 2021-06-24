@@ -17,10 +17,9 @@ namespace korali
 {
 namespace conduit
 {
+;
 
-
-  void
-  Concurrent::initialize()
+void Concurrent::initialize()
 {
   // Setting workerId to -1 to identify master process
   _workerId = -1;
@@ -277,8 +276,8 @@ void Concurrent::applyVariableDefaults()
  Conduit::applyVariableDefaults();
 } 
 
+;
 
-
-  } //conduit
+} //conduit
 } //korali
-
+;

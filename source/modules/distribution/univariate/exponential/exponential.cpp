@@ -8,10 +8,10 @@ namespace distribution
 {
 namespace univariate
 {
+;
 
-
-  double
-  Exponential::getDensity(const double x) const
+double
+Exponential::getDensity(const double x) const
 {
   return gsl_ran_exponential_pdf(x - _location, _mean);
 }
@@ -93,9 +93,9 @@ double* Exponential::getPropertyPointer(const std::string& property)
  return NULL;
 }
 
+;
 
-
-  } //univariate
+} //univariate
 } //distribution
 } //korali
-
+;

@@ -8,12 +8,12 @@ using namespace std;
 
 namespace korali
 {
+;
 
-
-  /**
+/**
 * @brief Temporary storage to hold the pointer to the current sample to process
 */
-  Sample *_currentSample;
+Sample *_currentSample;
 void Conduit::coroutineWrapper()
 {
   // Getting pointers for sample and engine
@@ -310,7 +310,7 @@ void Conduit::applyVariableDefaults()
  Module::applyVariableDefaults();
 } 
 
+;
 
-
-  } //korali
-
+} //korali
+;

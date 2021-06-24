@@ -7,12 +7,12 @@ namespace korali
 {
 namespace problem
 {
+;
 
-
-  /**
+/**
  * @brief Pointer to the current agent, it is immediately copied as to avoid concurrency problems
  */
-  Sample *__currentSample;
+Sample *__currentSample;
 
 /**
  * @brief Identifier of the current environment function Id.
@@ -612,8 +612,8 @@ bool ReinforcementLearning::runOperation(std::string operation, korali::Sample& 
  return operationDetected;
 }
 
+;
 
-
-  } //problem
+} //problem
 } //korali
-
+;

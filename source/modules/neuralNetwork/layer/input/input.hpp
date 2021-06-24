@@ -13,19 +13,19 @@
 
 #ifndef _KORALI_NEURALNETWORK_LAYER_INPUT_
 #define _KORALI_NEURALNETWORK_LAYER_INPUT_
-
+;
 
 #include "modules/neuralNetwork/layer/layer.hpp"
 
-  namespace korali
+namespace korali
 {
 namespace neuralNetwork
 {
 namespace layer
 {
+;
 
-
-  /**
+/**
 * @brief Class declaration for module: Input.
 */
 class Input : public Layer
@@ -62,7 +62,7 @@ class Input : public Layer
 } //layer
 } //neuralNetwork
 } //korali
+;
 
-
-  #endif // _KORALI_NEURALNETWORK_LAYER_INPUT_
-
+#endif // _KORALI_NEURALNETWORK_LAYER_INPUT_
+;

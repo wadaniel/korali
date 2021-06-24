@@ -23,10 +23,9 @@ namespace solver
 {
 namespace sampler
 {
+;
 
-
-  void
-  ellipse_t::initSphere()
+void ellipse_t::initSphere()
 {
   num = 0;
   sampleIdx.clear();
@@ -1591,9 +1590,9 @@ bool Nested::checkTermination()
  return hasFinished;
 }
 
+;
 
-
-  } //sampler
+} //sampler
 } //solver
 } //korali
-
+;

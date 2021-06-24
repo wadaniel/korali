@@ -8,10 +8,9 @@ namespace solver
 {
 namespace optimizer
 {
+;
 
-
-  void
-  GridSearch::setInitialConfiguration()
+void GridSearch::setInitialConfiguration()
 {
   _variableCount = _k->_variables.size();
 
@@ -188,9 +187,9 @@ bool GridSearch::checkTermination()
  return hasFinished;
 }
 
+;
 
-
-  } //optimizer
+} //optimizer
 } //solver
 } //korali
-
+;

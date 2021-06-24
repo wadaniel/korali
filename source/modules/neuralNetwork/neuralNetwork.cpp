@@ -6,7 +6,7 @@
 
 namespace korali
 {
-
+;
 
 NeuralNetwork::NeuralNetwork()
 {
@@ -541,7 +541,7 @@ void NeuralNetwork::applyVariableDefaults()
  Module::applyVariableDefaults();
 } 
 
+;
 
-
-  } //korali
-
+} //korali
+;

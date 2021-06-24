@@ -13,10 +13,10 @@ namespace distribution
 {
 namespace univariate
 {
+;
 
-
-  double
-  TruncatedNormal::getDensity(const double x) const
+double
+TruncatedNormal::getDensity(const double x) const
 {
   double d = (x - _mu) / _sigma;
   return gsl_sf_exp(-0.5 * d * d) / _normalization;
@@ -123,9 +123,9 @@ double* TruncatedNormal::getPropertyPointer(const std::string& property)
  return NULL;
 }
 
+;
 
-
-  } //univariate
+} //univariate
 } //distribution
 } //korali
-
+;

@@ -13,20 +13,20 @@
 
 #ifndef _KORALI_PROBLEM_REINFORCEMENTLEARNING_CONTINUOUS_
 #define _KORALI_PROBLEM_REINFORCEMENTLEARNING_CONTINUOUS_
-
+;
 
 #include "modules/distribution/univariate/normal/normal.hpp"
 #include "modules/problem/reinforcementLearning/reinforcementLearning.hpp"
 
-  namespace korali
+namespace korali
 {
 namespace problem
 {
 namespace reinforcementLearning
 {
+;
 
-
-  /**
+/**
 * @brief Class declaration for module: Continuous.
 */
 class Continuous : public ReinforcementLearning
@@ -68,6 +68,7 @@ class Continuous : public ReinforcementLearning
 } //reinforcementLearning
 } //problem
 } //korali
+;
 
-
-  #endif // _KORALI_PROBLEM_REINFORCEMENTLEARNING_CONTINUOUS_
+#endif // _KORALI_PROBLEM_REINFORCEMENTLEARNING_CONTINUOUS_
+;

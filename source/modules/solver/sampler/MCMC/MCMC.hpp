@@ -13,22 +13,22 @@
 
 #ifndef _KORALI_SOLVER_SAMPLER_MCMC_
 #define _KORALI_SOLVER_SAMPLER_MCMC_
-
+;
 
 #include "modules/distribution/univariate/normal/normal.hpp"
 #include "modules/distribution/univariate/uniform/uniform.hpp"
 #include "modules/solver/sampler/sampler.hpp"
 #include <vector>
 
-  namespace korali
+namespace korali
 {
 namespace solver
 {
 namespace sampler
 {
+;
 
-
-  /**
+/**
 * @brief Class declaration for module: MCMC.
 */
 class MCMC : public Sampler
@@ -225,7 +225,7 @@ class MCMC : public Sampler
 } //sampler
 } //solver
 } //korali
+;
 
-
-  #endif // _KORALI_SOLVER_SAMPLER_MCMC_
-
+#endif // _KORALI_SOLVER_SAMPLER_MCMC_
+;

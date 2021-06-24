@@ -8,10 +8,9 @@ namespace solver
 {
 namespace optimizer
 {
+;
 
-
-  void
-  MADGRAD::setInitialConfiguration()
+void MADGRAD::setInitialConfiguration()
 {
   _variableCount = _k->_variables.size();
 
@@ -302,9 +301,9 @@ bool MADGRAD::checkTermination()
  return hasFinished;
 }
 
+;
 
-
-  } //optimizer
+} //optimizer
 } //solver
 } //korali
-
+;

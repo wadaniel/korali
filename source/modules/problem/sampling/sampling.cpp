@@ -5,10 +5,9 @@ namespace korali
 {
 namespace problem
 {
+;
 
-
-  void
-  Sampling::initialize()
+void Sampling::initialize()
 {
   if (_k->_variables.size() == 0) KORALI_LOG_ERROR("Sampling Evaluation problems require at least one variable.\n");
 }
@@ -132,8 +131,8 @@ bool Sampling::runOperation(std::string operation, korali::Sample& sample)
  return operationDetected;
 }
 
+;
 
-
-  } //problem
+} //problem
 } //korali
-
+;

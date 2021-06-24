@@ -13,19 +13,19 @@
 
 #ifndef _KORALI_DISTRIBUTION_UNIVARIATE_LAPLACE_
 #define _KORALI_DISTRIBUTION_UNIVARIATE_LAPLACE_
-
+;
 
 #include "modules/distribution/univariate/univariate.hpp"
 
-  namespace korali
+namespace korali
 {
 namespace distribution
 {
 namespace univariate
 {
+;
 
-
-  /**
+/**
 * @brief Class declaration for module: Laplace.
 */
 class Laplace : public Univariate
@@ -120,7 +120,7 @@ class Laplace : public Univariate
 } //univariate
 } //distribution
 } //korali
+;
 
-
-  #endif // _KORALI_DISTRIBUTION_UNIVARIATE_LAPLACE_
-
+#endif // _KORALI_DISTRIBUTION_UNIVARIATE_LAPLACE_
+;

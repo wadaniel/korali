@@ -13,19 +13,19 @@
 
 #ifndef _KORALI_DISTRIBUTION_UNIVARIATE_BETA_
 #define _KORALI_DISTRIBUTION_UNIVARIATE_BETA_
-
+;
 
 #include "modules/distribution/univariate/univariate.hpp"
 
-  namespace korali
+namespace korali
 {
 namespace distribution
 {
 namespace univariate
 {
+;
 
-
-  /**
+/**
 * @brief Class declaration for module: Beta.
 */
 class Beta : public Univariate
@@ -120,7 +120,7 @@ class Beta : public Univariate
 } //univariate
 } //distribution
 } //korali
+;
 
-
-  #endif // _KORALI_DISTRIBUTION_UNIVARIATE_BETA_
-
+#endif // _KORALI_DISTRIBUTION_UNIVARIATE_BETA_
+;

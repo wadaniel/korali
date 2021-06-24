@@ -10,10 +10,9 @@ namespace solver
 {
 namespace agent
 {
+;
 
-
-  void
-  Continuous::initializeAgent()
+void Continuous::initializeAgent()
 {
   // Getting continuous problem pointer
   _problem = dynamic_cast<problem::reinforcementLearning::Continuous *>(_k->_problem);
@@ -978,9 +977,9 @@ bool Continuous::checkTermination()
  return hasFinished;
 }
 
+;
 
-
-  } //agent
+} //agent
 } //solver
 } //korali
-
+;

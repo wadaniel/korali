@@ -30,8 +30,7 @@ e["Distributions"][0]["Maximum"] = +15.0
 # Configuring the problem's variables and their prior distributions
 e["Variables"][0]["Name"] = "a"
 e["Variables"][0]["Prior Distribution"] = "Uniform 0"
-
-e["File Output"]["Frequency"] = 0
+e["File Output"]["Enabled"] = False
 
 # Running Korali
 e["Random Seed"] = 1337

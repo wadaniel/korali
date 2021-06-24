@@ -789,7 +789,7 @@ std::vector<float> @className::calculateKLDivergenceGradient(const policy_t &old
       // KL-Gradient with respect to Sigma
       KLDivergenceGradients[_problem->_actionVectorSize + i] = adjustedLb*curInvSig*cdfRatiosA;
 	  assert(isfinite(KLDivergenceGradients[_problem->_actionVectorSize+i]));
-      KLDivergenceGradients[_problem->_actionVectorSize + i] += 0.5*(curInvSig-muDif*muDif*curInvSig3-0.5*oldVar*curInvSig3)*(erfUb-erfLb);
+      KLDivergenceGradients[_problem->_actionVectorSize + i] += 0.5*(curInvSig-muDif*muDif*curInvSig3-oldVar*curInvSig3)*(erfUb-erfLb);
       assert(isfinite(KLDivergenceGradients[_problem->_actionVectorSize+i]));
       KLDivergenceGradients[_problem->_actionVectorSize + i] += invSqrt2Pi*curInvSig3*(oldVar*adjustedUb+2.*oldSigma*muDif)*expLb;
       assert(isfinite(KLDivergenceGradients[_problem->_actionVectorSize+i]));
@@ -845,10 +845,10 @@ std::vector<float> @className::calculateKLDivergenceGradient(const policy_t &old
 	  assert(isfinite(KLDivergenceGradients[i]));
 
       // KL grad wrt. sigma
-      KLDivergenceGradients[_problem->_actionVectorSize + i] = 0.5*Cp*(-muDif*muDif*curInvSig3 + curInvSig - dCqSig)*(erfUb-erfLb);
-      KLDivergenceGradients[_problem->_actionVectorSize + i] += Cp*invSqrt2Pi*curInvVar*(oldVar*adjustedUb+2.0*oldSigma*muDif)*expUb;
+      KLDivergenceGradients[_problem->_actionVectorSize + i] = 0.5*Cp*(curInvSig-muDif*muDif*curInvSig3-oldVar*curInvSig3-dCqSig)*(erfUb-erfLb);
+      KLDivergenceGradients[_problem->_actionVectorSize + i] += Cp*invSqrt2Pi*curInvSig3*(oldVar*adjustedUb+2.0*oldSigma*muDif)*expUb;
 	  assert(isfinite(KLDivergenceGradients[_problem->_actionVectorSize + i]));
-      KLDivergenceGradients[_problem->_actionVectorSize + i] -= Cp*invSqrt2Pi*curInvVar*(oldVar*adjustedLb+2.0*oldSigma*muDif)*expLb;
+      KLDivergenceGradients[_problem->_actionVectorSize + i] -= Cp*invSqrt2Pi*curInvSig3*(oldVar*adjustedLb+2.0*oldSigma*muDif)*expLb;
 	  assert(isfinite(KLDivergenceGradients[_problem->_actionVectorSize + i]));
     }
 

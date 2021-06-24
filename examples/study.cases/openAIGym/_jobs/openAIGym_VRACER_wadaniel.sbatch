@@ -11,7 +11,7 @@
 #SBATCH --constraint=gpu
 
 # Choose Environment
-env=Ant-v2
+#env=Ant-v2
 #env=HalfCheetah-v2
 #env=Hopper-v2
 #env=Humanoid-v2
@@ -19,7 +19,7 @@ env=Ant-v2
 #env=InvertedDoublePendulum-v2
 #env=InvertedPendulum-v2
 #env=Reacher-v2
-#env=Swimmer-v2
+env=Swimmer-v2
 #env=Walker2d-v2
 
 #env=AntBulletEnv-v0
@@ -27,6 +27,11 @@ env=Ant-v2
 #env=HopperBulletEnv-v0
 #env=HumanoidBulletEnv-v0
 #env=Walker2DBulletEnv-v0
+
+#dis="Normal"
+#dis="Squashed_Normal"
+#dis="Truncated_Normal"
+dis="Clipped_Normal"
 
 pushd ..
 
@@ -41,7 +46,7 @@ popd
 
 pushd $expDir
 
-OMP_NUM_THREADS=10 python3 run-vracer.py --env $env
+OMP_NUM_THREADS=10 python3 run-vracer.py --env $env --policy $dis
 
 popd
 

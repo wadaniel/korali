@@ -534,7 +534,7 @@ std::vector<float> @className::calculateImportanceWeightGradient(const std::vect
         importanceWeightGradients[_problem->_actionVectorSize+i] = (curMu-_actionLowerBounds[i])/curSigma*pdfCdfRatio;
 
         // Calculate importance weight
-        logpCurPolicy += normalLogCDF(_actionLowerBounds[i], curMu, curSigma);
+        logpCurPolicy += curNormalLogCdfLower;
         logpOldPolicy += normalLogCDF(_actionLowerBounds[i], oldMu, oldSigma);
  
       }
@@ -551,7 +551,7 @@ std::vector<float> @className::calculateImportanceWeightGradient(const std::vect
         importanceWeightGradients[_problem->_actionVectorSize+i] = (_actionUpperBounds[i] - curMu)/curSigma*pdfCdfRatio;
 
         // Calculate importance weight
-        logpCurPolicy += normalLogCCDF(_actionUpperBounds[i], curMu, curSigma);
+        logpCurPolicy += curNormalLogCCdfUpper;
         logpOldPolicy += normalLogCCDF(_actionUpperBounds[i], oldMu, oldSigma);
       }
       else
@@ -589,6 +589,7 @@ std::vector<float> @className::calculateImportanceWeightGradient(const std::vect
       const float oldSigma = oldPolicy.distributionParameters[_problem->_actionVectorSize + i];
       const float curMu = curPolicy.distributionParameters[i];
       const float curSigma = curPolicy.distributionParameters[_problem->_actionVectorSize + i];
+      const float curInvSigma = 1./curSigma;
       const float curVar = curSigma*curSigma;
 
       // Action differences to mu
@@ -604,17 +605,17 @@ std::vector<float> @className::calculateImportanceWeightGradient(const std::vect
  
       // Normalized gradients of constants
       const float dCqMu = Cq*(normalUpper-normalLower);
-      const float dCqSig = Cq/curSigma*((_actionUpperBounds[i]-curMu)*normalUpper-(_actionLowerBounds[i]-curMu)*normalLower);
+      const float dCqSig = Cq*curInvSigma*((_actionUpperBounds[i]-curMu)*normalUpper-(_actionLowerBounds[i]-curMu)*normalLower);
       
       // Gradient with respect to Mean
       importanceWeightGradients[i] = (curActionDif/curVar+dCqMu);
 
       // Gradient with respect to Sigma
-      importanceWeightGradients[_problem->_actionVectorSize + i] = (curActionDif * curActionDif) / (curSigma * curVar) - 1.0f / curSigma + dCqSig;
+      importanceWeightGradients[_problem->_actionVectorSize + i] = (curActionDif * curActionDif) / (curSigma * curVar) - curInvSigma + dCqSig;
 
       // Calculate Importance Weight
-      logpCurPolicy += std::log(Cq/curSigma)-(action[i]-curMu)*(action[i]-curMu)/(2.*curSigma*curSigma);
-      logpOldPolicy += std::log(Cp/oldSigma)-(action[i]-oldMu)*(action[i]-oldMu)/(2.*oldSigma*oldSigma);
+      logpCurPolicy += std::log(Cq*curInvSigma)-0.5*(action[i]-curMu)*(action[i]-curMu)/(curSigma*curSigma);
+      logpOldPolicy += std::log(Cp/oldSigma)-0.5*(action[i]-oldMu)*(action[i]-oldMu)/(oldSigma*oldSigma);
 
     }
 
@@ -709,6 +710,7 @@ std::vector<float> @className::calculateKLDivergenceGradient(const policy_t &old
       const float curMean = curPolicy.distributionParameters[i];
       const float curSigma = curPolicy.distributionParameters[_problem->_actionVectorSize + i];
 
+      const float curInvSig = 1. / curSigma;
       const float curInvVar = 1. / (curSigma * curSigma);
       const float curInvSig3 = 1. / (curSigma * curSigma * curSigma);
       const float actionDiff = (curMean - oldMean);
@@ -717,13 +719,13 @@ std::vector<float> @className::calculateKLDivergenceGradient(const policy_t &old
       KLDivergenceGradients[i] = actionDiff * curInvVar;
 
       // Contribution to Sigma from Trace
-      float gradTr = - curInvSig3 * oldSigma * oldSigma;
+      const float gradTr = - curInvSig3 * oldSigma * oldSigma;
 
       // Contribution to Sigma from Quadratic term
-      float gradQuad = -(actionDiff * actionDiff) * curInvSig3;
+      const float gradQuad = -(actionDiff * actionDiff) * curInvSig3;
 
       // Contribution to Sigma from Determinant
-      float gradDet = 1.0f / curSigma;
+      const float gradDet = curInvSig;
 
       // KL-Gradient with respect to Sigma
       KLDivergenceGradients[_problem->_actionVectorSize + i] = gradTr + gradQuad + gradDet;

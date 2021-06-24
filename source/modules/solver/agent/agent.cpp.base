@@ -4,6 +4,8 @@
 #include "sample/sample.hpp"
 #include <chrono>
 
+#define CSCALE
+
 @startNamespace
 
 void @className::initialize()
@@ -343,6 +345,7 @@ void @className::rescaleStates()
 
 void @className::calculateRewardRescalingFactors()
 {
+#ifndef CSCALE
   float sumReward = 0.0;
   float sumSquareReward = 0.0;
 
@@ -360,6 +363,7 @@ void @className::calculateRewardRescalingFactors()
   _rewardRescalingMean = 0.;
   _rewardRescalingSigma = std::sqrt(sumSquareReward / (float)_rewardVector.size() + 1e-9);
   _rewardRescalingCount++;
+#endif
 }
 
 void @className::attendAgent(size_t agentId)
@@ -486,6 +490,11 @@ void @className::processEpisode(size_t episodeId, knlohmann::json &episode)
       }
     }
 
+#ifdef CSCALE
+    if(_rewardVector.size() >= _experienceReplayMaximumSize)
+        _rewardRescalingSumSquaredRewards -= _rewardVector[0]*_rewardVector[0];
+    _rewardRescalingSumSquaredRewards += reward*reward;
+#endif
     _rewardVector.add(reward);
 
     // Keeping statistics
@@ -594,6 +603,10 @@ void @className::processEpisode(size_t episodeId, knlohmann::json &episode)
     // Setting initial retrace value in the experience's cache
     _retraceValueVector[expId] = retV;
   }
+
+#ifdef CSCALE
+  _rewardRescalingSigma = std::sqrt(_rewardRescalingSumSquaredRewards/ (float)_rewardVector.size() + 1e-9);
+#endif
 }
 
 std::vector<size_t> @className::generateMiniBatch(size_t miniBatchSize)

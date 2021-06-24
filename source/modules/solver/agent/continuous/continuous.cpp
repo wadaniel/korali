@@ -4,7 +4,7 @@
 
 #include <gsl/gsl_sf_psi.h>
 
-#define NOISY
+//#define NOISY
 
 namespace korali
 {
@@ -209,14 +209,6 @@ std::vector<float> Continuous::generateTrainingAction(policy_t &curPolicy)
       const float z = u*normalCDF(alpha, 0.f, 1.f) + (1.-u)*normalCDF(beta, 0.f, 1.f);
       action[i] = mu + 2*ierf( 2.*z - 1. )*sigma;
 
-      /*
-      // Sampling via naive accept-recject method (alternative)
-      do
-      {
-        action[i] = mu + sigma * _normalGenerator->getRandomNumber();
-      } while (action[i] > _actionUpperBounds[i] || action[i] < _actionLowerBounds[i]);
-      */
-
       // Safety check
       if (action[i] >= _actionUpperBounds[i]) action[i] = _actionUpperBounds[i];
       if (action[i] <= _actionLowerBounds[i]) action[i] = _actionLowerBounds[i];
@@ -280,7 +272,7 @@ std::vector<float> Continuous::generateTestingAction(const policy_t &curPolicy)
     {
       action[i] = curPolicy.distributionParameters[i];
   
-      // Clip the mode to bounds
+      // Clip mode to bounds
       if (action[i] >= _actionUpperBounds[i]) action[i] = _actionUpperBounds[i];
       if (action[i] <= _actionLowerBounds[i]) action[i] = _actionLowerBounds[i];
     }
@@ -293,7 +285,7 @@ std::vector<float> Continuous::generateTestingAction(const policy_t &curPolicy)
     {
       action[i] = curPolicy.distributionParameters[i];
   
-      // Clip the mode to bounds
+      // Clip mode to bounds
       if (action[i] >= _actionUpperBounds[i]) action[i] = _actionUpperBounds[i];
       if (action[i] <= _actionLowerBounds[i]) action[i] = _actionLowerBounds[i];
     }
@@ -571,7 +563,7 @@ std::vector<float> Continuous::calculateImportanceWeightGradient(const std::vect
       else
       {
         // Grad wrt. curMu
-        importanceWeightGradients[i] = (action[i]-curMu)/curSigma;
+        importanceWeightGradients[i] = (action[i]-curMu)/curVar;
         
         // Grad wrt. curSigma
         importanceWeightGradients[_problem->_actionVectorSize+i] = ((action[i]-curMu)*(action[i]-curMu)-curVar)/(oldSigma*oldSigma*oldSigma);
@@ -795,7 +787,7 @@ std::vector<float> Continuous::calculateKLDivergenceGradient(const policy_t &old
       // KL-Gradient with respect to Sigma
       KLDivergenceGradients[_problem->_actionVectorSize + i] = adjustedLb*curInvSig*cdfRatiosA;
 	  assert(isfinite(KLDivergenceGradients[_problem->_actionVectorSize+i]));
-      KLDivergenceGradients[_problem->_actionVectorSize + i] += 0.5*(curInvSig-muDif*muDif*curInvSig3-0.5*oldVar*curInvSig3)*(erfUb-erfLb);
+      KLDivergenceGradients[_problem->_actionVectorSize + i] += 0.5*(curInvSig-muDif*muDif*curInvSig3-oldVar*curInvSig3)*(erfUb-erfLb);
       assert(isfinite(KLDivergenceGradients[_problem->_actionVectorSize+i]));
       KLDivergenceGradients[_problem->_actionVectorSize + i] += invSqrt2Pi*curInvSig3*(oldVar*adjustedUb+2.*oldSigma*muDif)*expLb;
       assert(isfinite(KLDivergenceGradients[_problem->_actionVectorSize+i]));
@@ -851,10 +843,10 @@ std::vector<float> Continuous::calculateKLDivergenceGradient(const policy_t &old
 	  assert(isfinite(KLDivergenceGradients[i]));
 
       // KL grad wrt. sigma
-      KLDivergenceGradients[_problem->_actionVectorSize + i] = 0.5*Cp*(-muDif*muDif*curInvSig3 + curInvSig - dCqSig)*(erfUb-erfLb);
-      KLDivergenceGradients[_problem->_actionVectorSize + i] += Cp*invSqrt2Pi*curInvVar*(oldVar*adjustedUb+2.0*oldSigma*muDif)*expUb;
+      KLDivergenceGradients[_problem->_actionVectorSize + i] = 0.5*Cp*(curInvSig-muDif*muDif*curInvSig3-oldVar*curInvSig3-dCqSig)*(erfUb-erfLb);
+      KLDivergenceGradients[_problem->_actionVectorSize + i] += Cp*invSqrt2Pi*curInvSig3*(oldVar*adjustedUb+2.0*oldSigma*muDif)*expUb;
 	  assert(isfinite(KLDivergenceGradients[_problem->_actionVectorSize + i]));
-      KLDivergenceGradients[_problem->_actionVectorSize + i] -= Cp*invSqrt2Pi*curInvVar*(oldVar*adjustedLb+2.0*oldSigma*muDif)*expLb;
+      KLDivergenceGradients[_problem->_actionVectorSize + i] -= Cp*invSqrt2Pi*curInvSig3*(oldVar*adjustedLb+2.0*oldSigma*muDif)*expLb;
 	  assert(isfinite(KLDivergenceGradients[_problem->_actionVectorSize + i]));
     }
 

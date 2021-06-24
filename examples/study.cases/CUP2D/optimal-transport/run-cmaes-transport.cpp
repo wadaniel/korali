@@ -19,8 +19,6 @@ int main(int argc, char *argv[])
   _argc = argc;
   _argv = argv;
  
-  // Defining constants
- 
   // Init CUP2D
   _environment = new Simulation(_argc, _argv);
   _environment->init();

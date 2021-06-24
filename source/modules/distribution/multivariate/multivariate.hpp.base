@@ -1,10 +1,10 @@
-__startIncludeGuard__
+__startIncludeGuard__;
 
 #include "modules/distribution/distribution.hpp"
 
-  __startNamespace__
+__startNamespace__;
 
-  class __className__ : public __parentClassName__
+class __className__ : public __parentClassName__
 {
   public:
   /**
@@ -38,6 +38,6 @@ __startIncludeGuard__
   virtual void getRandomVector(double *x, const size_t n) = 0;
 };
 
-__endNamespace__
+__endNamespace__;
 
-  __endIncludeGuard__
+__endIncludeGuard__;

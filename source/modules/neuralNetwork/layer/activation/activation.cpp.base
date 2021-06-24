@@ -13,10 +13,9 @@ using namespace dnnl;
 #include <Eigen/Dense>
 using namespace Eigen;
 
-__startNamespace__
+__startNamespace__;
 
-  void
-  __className__::initialize()
+void __className__::initialize()
 {
   // The node count for this layer should be the same as the previous layer
   _outputChannels = _prevLayer->_outputChannels;
@@ -358,6 +357,6 @@ void __className__::backwardData(const size_t t)
 #endif
 }
 
-__moduleAutoCode__
+__moduleAutoCode__;
 
-  __endNamespace__
+__endNamespace__;

@@ -7,7 +7,8 @@
 
 using namespace std;
 
-__startNamespace__0
+__startNamespace__;
+0
 
   /**
 * @brief Remembers whether the MPI was given by the used. Otherwise use MPI_COMM_WORLD
@@ -38,7 +39,8 @@ void *getKoraliWorkerMPIComm()
 }
 #endif
 
-__startNamespace__1
+__startNamespace__;
+1
 
   void
   __className__::initialize()
@@ -299,8 +301,10 @@ size_t __className__::getProcessId()
   return _rankId;
 }
 
-__moduleAutoCode__
+__moduleAutoCode__;
 
-  __endNamespace__1
+__endNamespace__;
+1
 
-    __endNamespace__0
+  __endNamespace__;
+0

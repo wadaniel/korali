@@ -2,10 +2,9 @@
 #include "modules/solver/optimizer/MADGRAD/MADGRAD.hpp"
 #include "sample/sample.hpp"
 
-__startNamespace__
+__startNamespace__;
 
-  void
-  __className__::setInitialConfiguration()
+void __className__::setInitialConfiguration()
 {
   _variableCount = _k->_variables.size();
 
@@ -117,6 +116,6 @@ void __className__::finalize()
   (*_k)["Results"]["Best Sample"]["Parameters"] = _bestEverVariables;
 }
 
-__moduleAutoCode__
+__moduleAutoCode__;
 
-  __endNamespace__
+__endNamespace__;

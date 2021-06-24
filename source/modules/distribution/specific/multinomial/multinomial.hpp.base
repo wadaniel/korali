@@ -1,10 +1,10 @@
-__startIncludeGuard__
+__startIncludeGuard__;
 
 #include "modules/distribution/specific/specific.hpp"
 
-  __startNamespace__
+__startNamespace__;
 
-  class __className__ : public __parentClassName__
+class __className__ : public __parentClassName__
 {
   public:
   /**
@@ -16,6 +16,6 @@ __startIncludeGuard__
   void getSelections(std::vector<double> &p, std::vector<unsigned int> &n, int N);
 };
 
-__endNamespace__
+__endNamespace__;
 
-  __endIncludeGuard__
+__endIncludeGuard__;

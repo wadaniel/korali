@@ -2,10 +2,10 @@
 #include "modules/experiment/experiment.hpp"
 #include <gsl/gsl_randist.h>
 
-__startNamespace__
+__startNamespace__;
 
-  double
-  __className__::getDensity(const double x) const
+double
+__className__::getDensity(const double x) const
 {
   return gsl_ran_beta_pdf(x, _alpha, _beta);
 }
@@ -44,6 +44,6 @@ void __className__::updateDistribution()
   _aux = gsl_sf_lngamma(_alpha + _beta) - gsl_sf_lngamma(_alpha) - gsl_sf_lngamma(_beta);
 }
 
-__moduleAutoCode__
+__moduleAutoCode__;
 
-  __endNamespace__
+__endNamespace__;

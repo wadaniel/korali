@@ -1,4 +1,4 @@
-__startIncludeGuard__
+__startIncludeGuard__;
 
 #include "modules/experiment/experiment.hpp"
 #include "modules/neuralNetwork/neuralNetwork.hpp"
@@ -11,9 +11,9 @@ __startIncludeGuard__
 #include "modules/solver/learner/deepSupervisor/optimizers/fRMSProp.hpp"
 #include "modules/solver/learner/learner.hpp"
 
-  __startNamespace__
+__startNamespace__;
 
-  class __className__ : public __parentClassName__
+class __className__ : public __parentClassName__
 {
   public:
   /**
@@ -59,6 +59,6 @@ __startIncludeGuard__
   void printGenerationAfter() override;
 };
 
-__endNamespace__
+__endNamespace__;
 
-  __endIncludeGuard__
+__endIncludeGuard__;

@@ -1,10 +1,10 @@
-__startIncludeGuard__
+__startIncludeGuard__;
 
 #include "modules/neuralNetwork/layer/layer.hpp"
 
-  __startNamespace__
+__startNamespace__;
 
-  class __className__ : public __parentClassName__
+class __className__ : public __parentClassName__
 {
   public:
   /********************************************************
@@ -148,6 +148,6 @@ __startIncludeGuard__
   void backwardHyperparameters(const size_t t) override;
 };
 
-__endNamespace__
+__endNamespace__;
 
-  __endIncludeGuard__
+__endIncludeGuard__;

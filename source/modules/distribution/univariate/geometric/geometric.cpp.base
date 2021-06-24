@@ -2,10 +2,10 @@
 #include "modules/experiment/experiment.hpp"
 #include <gsl/gsl_randist.h>
 
-__startNamespace__
+__startNamespace__;
 
-  double
-  __className__::getDensity(const double x) const
+double
+__className__::getDensity(const double x) const
 {
   return gsl_ran_geometric_pdf((int)x, _successProbability);
 }
@@ -35,6 +35,6 @@ void __className__::updateDistribution()
   _aux = 0.0;
 }
 
-__moduleAutoCode__
+__moduleAutoCode__;
 
-  __endNamespace__
+__endNamespace__;

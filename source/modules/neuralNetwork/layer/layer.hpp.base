@@ -1,4 +1,4 @@
-__startIncludeGuard__
+__startIncludeGuard__;
 
 #include "config.hpp"
 #include "modules/distribution/univariate/uniform/uniform.hpp"
@@ -13,12 +13,14 @@ __startIncludeGuard__
   #include <cudnn.h>
 #endif
 
-  __startNamespace__0
+__startNamespace__;
+0
 
   class NeuralNetwork;
 struct layerPipeline_t;
 
-__startNamespace__1
+__startNamespace__;
+1
 
   class __className__ : public __parentClassName__
 {
@@ -197,8 +199,10 @@ __startNamespace__1
   virtual void backwardHyperparameters(const size_t t);
 };
 
-__endNamespace__1
+__endNamespace__;
+1
 
-  __endNamespace__0
+  __endNamespace__;
+0
 
-    __endIncludeGuard__
+  __endIncludeGuard__;

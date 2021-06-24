@@ -1,11 +1,11 @@
-__startIncludeGuard__
+__startIncludeGuard__;
 
 #include "modules/solver/optimizer/optimizer.hpp"
 #include <vector>
 
-  __startNamespace__
+__startNamespace__;
 
-  class __className__ : public __parentClassName__
+class __className__ : public __parentClassName__
 {
   private:
   void evaluateFunctionAndGradient(Sample &sample);
@@ -20,6 +20,6 @@ __startIncludeGuard__
   void printGenerationAfter() override;
 };
 
-__endNamespace__
+__endNamespace__;
 
-  __endIncludeGuard__
+__endIncludeGuard__;

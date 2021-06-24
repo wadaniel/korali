@@ -1,8 +1,8 @@
 #include "modules/distribution/specific/specific.hpp"
 #include "modules/experiment/experiment.hpp"
 
-__startNamespace__
+__startNamespace__;
 
-  __moduleAutoCode__
+__moduleAutoCode__;
 
-    __endNamespace__
+__endNamespace__;

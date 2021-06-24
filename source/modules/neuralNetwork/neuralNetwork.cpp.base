@@ -4,7 +4,7 @@
   #include <omp.h>
 #endif
 
-__startNamespace__
+__startNamespace__;
 
 __className__::NeuralNetwork()
 {
@@ -426,6 +426,6 @@ void __className__::setHyperparameters(const std::vector<float> &hyperparameters
   }
 }
 
-__moduleAutoCode__
+__moduleAutoCode__;
 
-  __endNamespace__
+__endNamespace__;

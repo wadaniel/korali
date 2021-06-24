@@ -2,10 +2,10 @@
 #include "modules/experiment/experiment.hpp"
 #include <gsl/gsl_randist.h>
 
-__startNamespace__
+__startNamespace__;
 
-  double
-  __className__::getDensity(const double x) const
+double
+__className__::getDensity(const double x) const
 {
   if (x <= 0.0) return -INFINITY;
   return _aux * std::pow(x, -_shape - 1.) * std::exp(-_scale / x);
@@ -43,6 +43,6 @@ void __className__::updateDistribution()
   _aux = std::exp(_auxLog);
 }
 
-__moduleAutoCode__
+__moduleAutoCode__;
 
-  __endNamespace__
+__endNamespace__;

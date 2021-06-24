@@ -1,10 +1,10 @@
-@startIncludeGuard
+__startIncludeGuard__
 
 #include "modules/solver/solver.hpp"
 
-@startNamespace
+__startNamespace__
 
-class @className : public @parentClassName
+class __className__ : public __parentClassName__
 {
   public:
   /**
@@ -27,6 +27,6 @@ class @className : public @parentClassName
   virtual void setHyperparameters(const std::vector<float> &hyperparameters) = 0;
 };
 
-@endNamespace
+__endNamespace__
 
-@endIncludeGuard
+__endIncludeGuard__

@@ -1,22 +1,22 @@
 #include "modules/solver/solver.hpp"
 
-@startNamespace
+__startNamespace__
 
 /**
 * @brief Prints solver information before the execution of the current generation.
 */
-void @className::printGenerationBefore(){};
+void __className__::printGenerationBefore(){};
 
 /**
 * @brief Prints solver information after the execution of the current generation.
 */
-void @className::printGenerationAfter(){};
+void __className__::printGenerationAfter(){};
 
 /**
 * @brief Initializes the solver with starting values for the first generation.
 */
-void @className::setInitialConfiguration(){};
+void __className__::setInitialConfiguration(){};
 
-@moduleAutoCode
+__moduleAutoCode__
 
-@endNamespace
+__endNamespace__

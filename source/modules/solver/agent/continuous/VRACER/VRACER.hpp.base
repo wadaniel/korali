@@ -1,12 +1,12 @@
-@startIncludeGuard
+__startIncludeGuard__
 
 #include "modules/distribution/univariate/normal/normal.hpp"
 #include "modules/problem/reinforcementLearning/continuous/continuous.hpp"
 #include "modules/solver/agent/continuous/continuous.hpp"
 
-@startNamespace
+__startNamespace__
 
-class @className : public @parentClassName
+class __className__ : public __parentClassName__
 {
   public:
   /**
@@ -56,6 +56,6 @@ class @className : public @parentClassName
   void initializeAgent() override;
 };
 
-@endNamespace
+__endNamespace__
 
-@endIncludeGuard
+__endIncludeGuard__

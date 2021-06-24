@@ -1,12 +1,12 @@
-@startIncludeGuard
+__startIncludeGuard__
 
 #include "modules/distribution/univariate/uniform/uniform.hpp"
 #include "modules/neuralNetwork/neuralNetwork.hpp"
 #include "modules/problem/problem.hpp"
 
-@startNamespace
+__startNamespace__
 
-class @className : public @parentClassName
+class __className__ : public __parentClassName__
 {
   public:
   void initialize() override;
@@ -78,6 +78,6 @@ class @className : public @parentClassName
   double _agentCommunicationTime;
 };
 
-@endNamespace
+__endNamespace__
 
-@endIncludeGuard
+__endIncludeGuard__

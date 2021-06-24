@@ -2,15 +2,15 @@
 #include "modules/solver/agent/discrete/discrete.hpp"
 #include "sample/sample.hpp"
 
-@startNamespace
+__startNamespace__
 
-void @className::initializeAgent()
+void __className__::initializeAgent()
 {
   // Getting discrete problem pointer
   _problem = dynamic_cast<problem::reinforcementLearning::Discrete *>(_k->_problem);
 }
 
-void @className::getAction(korali::Sample &sample)
+void __className__::getAction(korali::Sample &sample)
 {
  // Get action for all the agents in the environment
  for (size_t i = 0; i < sample["State"].size(); i++)
@@ -86,7 +86,7 @@ void @className::getAction(korali::Sample &sample)
  }
 }
 
-float @className::calculateImportanceWeight(const std::vector<float> &action, const policy_t &curPolicy, const policy_t &oldPolicy)
+float __className__::calculateImportanceWeight(const std::vector<float> &action, const policy_t &curPolicy, const policy_t &oldPolicy)
 {
   const auto &pVectorCurPolicy = curPolicy.distributionParameters;
   const auto &pVectorOldPolicy = oldPolicy.distributionParameters;
@@ -109,7 +109,7 @@ float @className::calculateImportanceWeight(const std::vector<float> &action, co
   return importanceWeight;
 }
 
-std::vector<float> @className::calculateImportanceWeightGradient(const size_t actionIdx, const std::vector<float> &curPvals, const std::vector<float> &oldPvals)
+std::vector<float> __className__::calculateImportanceWeightGradient(const size_t actionIdx, const std::vector<float> &curPvals, const std::vector<float> &oldPvals)
 {
   std::vector<float> grad(_problem->_possibleActions.size(), 0.0);
 
@@ -131,7 +131,7 @@ std::vector<float> @className::calculateImportanceWeightGradient(const size_t ac
   return grad;
 }
 
-std::vector<float> @className::calculateKLDivergenceGradient(const std::vector<float> &oldPvalues, const std::vector<float> &curPvalues)
+std::vector<float> __className__::calculateKLDivergenceGradient(const std::vector<float> &oldPvalues, const std::vector<float> &curPvalues)
 {
   std::vector<float> klGrad(_problem->_possibleActions.size(), 0.0);
 
@@ -151,6 +151,6 @@ std::vector<float> @className::calculateKLDivergenceGradient(const std::vector<f
   return klGrad;
 }
 
-@moduleAutoCode
+__moduleAutoCode__
 
-@endNamespace
+__endNamespace__

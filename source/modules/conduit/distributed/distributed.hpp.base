@@ -1,4 +1,4 @@
-@startIncludeGuard
+__startIncludeGuard__
 
 #include "config.hpp"
 #include "modules/conduit/conduit.hpp"
@@ -10,7 +10,7 @@
   #include "mpi.h"
 #endif
 
-@startNamespace0
+__startNamespace__0
 
 // Defining fallback type for MPI_Comm in case Korali wasn't compiled with compatibility with MPI
 #ifndef _KORALI_USE_MPI
@@ -64,9 +64,9 @@ extern MPI_Comm __koraliWorkerMPIComm;
 
 #endif
 
-@startNamespace1
+__startNamespace__1
 
-class @className : public @parentClassName
+class __className__ : public __parentClassName__
 {
   public:
 
@@ -131,8 +131,8 @@ class @className : public @parentClassName
   bool isRoot() override;
 };
 
-@endNamespace1
+__endNamespace__1
 
-@endNamespace0
+__endNamespace__0
 
-@endIncludeGuard
+__endIncludeGuard__

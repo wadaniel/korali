@@ -57,7 +57,7 @@ def buildCodeString( configFilePath, templateFilePath ):
   if 'Conditional Variables' in moduleConfig:
     sourceString += sb.createGetPropertyPointer(moduleConfig)
 
-  sourceString = moduleTemplate.replace( '@moduleAutoCode',  sourceString )
+  sourceString = moduleTemplate.replace( '__moduleAutoCode__',  sourceString )
 
   sourceString = aux.replaceKeys( moduleConfig, sourceString );
 

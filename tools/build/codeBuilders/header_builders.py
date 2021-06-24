@@ -7,10 +7,10 @@ import re
 def checkHeaderTemplateString( moduleConfig, templateFilePath, moduleTemplate ):
   """These keywords shouls appear only once"""
 
-  substrings = ['@startIncludeGuard',
-                '@endIncludeGuard',
-                '@className',
-                '@parentClassName']
+  substrings = ['__startIncludeGuard__',
+                '__endIncludeGuard__',
+                '__className__',
+                '__parentClassName__']
 
   aux.checkNamespaceKeys(moduleConfig, templateFilePath, moduleTemplate)
 

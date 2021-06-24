@@ -3,7 +3,7 @@
 #include "modules/solver/agent/agent.hpp"
 #include "sample/sample.hpp"
 
-@startNamespace
+__startNamespace__
 
 /**
  * @brief Pointer to the current agent, it is immediately copied as to avoid concurrency problems
@@ -30,7 +30,7 @@ cothread_t _envThread;
   */
 size_t _launchId;
 
-void @className::initialize()
+void __className__::initialize()
 {
   // Processing state/action variable configuration
   _stateVectorIndexes.clear();
@@ -77,7 +77,7 @@ void __environmentWrapper()
   KORALI_LOG_ERROR("Resuming a finished agent\n");
 }
 
-void @className::runTrainingEpisode(Sample &agent)
+void __className__::runTrainingEpisode(Sample &agent)
 {
   // Profiling information - Computation and communication time taken by the agent
   _agentPolicyEvaluationTime = 0.0;
@@ -222,7 +222,7 @@ void @className::runTrainingEpisode(Sample &agent)
   agent["Policy Evaluation Time"] = _agentPolicyEvaluationTime;
 }
 
-void @className::runTestingEpisode(Sample &agent)
+void __className__::runTestingEpisode(Sample &agent)
 {
   std::vector<float> testingRewards(_agentsPerEnvironment, 0.0);
 
@@ -265,7 +265,7 @@ void @className::runTestingEpisode(Sample &agent)
   finalizeEnvironment();
 }
 
-void @className::initializeEnvironment(Sample &agent)
+void __className__::initializeEnvironment(Sample &agent)
 {
   // Getting RL-compatible solver
   _agent = dynamic_cast<solver::Agent *>(_k->_solver);
@@ -296,13 +296,13 @@ void @className::initializeEnvironment(Sample &agent)
   if (_agentsPerEnvironment > 1) agent["Reward"] = std::vector<float>(_agentsPerEnvironment, 0.0f);
 }
 
-void @className::finalizeEnvironment()
+void __className__::finalizeEnvironment()
 {
   // Freeing training co-routine memory
   co_delete(_envThread);
 }
 
-void @className::requestNewPolicy(Sample &agent)
+void __className__::requestNewPolicy(Sample &agent)
 {
   auto t0 = std::chrono::steady_clock::now(); // Profiling
 
@@ -322,7 +322,7 @@ void @className::requestNewPolicy(Sample &agent)
   _agentCommunicationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(t1 - t0).count(); // Profiling
 }
 
-void @className::getAction(Sample &agent)
+void __className__::getAction(Sample &agent)
 {
   // Generating new action from policy
   auto t0 = std::chrono::steady_clock::now(); // Profiling
@@ -333,7 +333,7 @@ void @className::getAction(Sample &agent)
   _agentPolicyEvaluationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(t1 - t0).count(); // Profiling
 }
 
-void @className::runEnvironment(Sample &agent)
+void __className__::runEnvironment(Sample &agent)
 {
   // Switching back to the environment's thread
   auto beginTime = std::chrono::steady_clock::now(); // Profiling
@@ -395,6 +395,6 @@ void @className::runEnvironment(Sample &agent)
      KORALI_LOG_ERROR("Agent %lu reward returned an invalid value: %f\n", i, agent["Reward"][i].get<float>());
 }
 
-@moduleAutoCode
+__moduleAutoCode__
 
-@endNamespace
+__endNamespace__

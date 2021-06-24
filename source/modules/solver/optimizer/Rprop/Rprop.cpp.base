@@ -7,9 +7,9 @@
 
 #include <stdio.h>
 
-@startNamespace
+__startNamespace__
 
-void @className::setInitialConfiguration()
+void __className__::setInitialConfiguration()
 {
   _variableCount = _k->_variables.size();
 
@@ -34,7 +34,7 @@ void @className::setInitialConfiguration()
   _previousBestValue = Inf;
 }
 
-void @className::evaluateFunctionAndGradient(Sample &sample)
+void __className__::evaluateFunctionAndGradient(Sample &sample)
 {
   // Initializing Sample Evaluation
   sample["Module"] = "Problem";
@@ -56,7 +56,7 @@ void @className::evaluateFunctionAndGradient(Sample &sample)
     _currentGradient[i] = -_currentGradient[i];
 }
 
-void @className::runGeneration(void)
+void __className__::runGeneration(void)
 {
   if (_k->_currentGeneration == 1) setInitialConfiguration();
 
@@ -88,7 +88,7 @@ void @className::runGeneration(void)
 }
 
 // iRprop_minus
-void @className::performUpdate(void)
+void __className__::performUpdate(void)
 {
   for (size_t i = 0; i < _variableCount; i++)
   {
@@ -106,12 +106,12 @@ void @className::performUpdate(void)
   }
 }
 
-void @className::printGenerationBefore()
+void __className__::printGenerationBefore()
 {
   return;
 }
 
-void @className::printGenerationAfter()
+void __className__::printGenerationAfter()
 {
   _k->_logger->logInfo("Normal", "X = [ ");
   for (size_t k = 0; k < _variableCount; k++) _k->_logger->logData("Normal", " %.5le  ", _currentVariable[k]);
@@ -128,7 +128,7 @@ void @className::printGenerationAfter()
   _k->_logger->logData("Normal", " ]\n");
 }
 
-void @className::finalize()
+void __className__::finalize()
 {
   // Updating Results
   (*_k)["Results"]["Best Sample"]["F(x)"] = _bestEverValue;
@@ -137,6 +137,6 @@ void @className::finalize()
   return;
 }
 
-@moduleAutoCode
+__moduleAutoCode__
 
-@endNamespace
+__endNamespace__

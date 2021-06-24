@@ -14,9 +14,9 @@ using namespace dnnl;
 using namespace Eigen;
 
 
-@startNamespace
+__startNamespace__
 
-void @className::initialize()
+void __className__::initialize()
 {
   // The node count for this layer should be the same as the previous layer
   _outputChannels = _prevLayer->_outputChannels;
@@ -29,7 +29,7 @@ void @className::initialize()
   if (_index == _nn->_layers.size() - 1) KORALI_LOG_ERROR("Activation layers cannot be the last layer of the NN\n");
 }
 
-void @className::createForwardPipeline()
+void __className__::createForwardPipeline()
 {
   // Calling base layer function
   Layer::createForwardPipeline();
@@ -99,7 +99,7 @@ void @className::createForwardPipeline()
 #endif
 }
 
-void @className::createBackwardPipeline()
+void __className__::createBackwardPipeline()
 {
   // Calling base layer function
   Layer::createBackwardPipeline();
@@ -138,7 +138,7 @@ void @className::createBackwardPipeline()
 #endif
 }
 
-void @className::forwardData(const size_t t)
+void __className__::forwardData(const size_t t)
 {
   size_t N = _batchSize;
   size_t OC = _outputChannels;
@@ -249,7 +249,7 @@ void @className::forwardData(const size_t t)
 #endif
 }
 
-void @className::backwardData(const size_t t)
+void __className__::backwardData(const size_t t)
 {
   size_t N = _batchSize;
   size_t OC = _outputChannels;
@@ -355,6 +355,6 @@ void @className::backwardData(const size_t t)
 #endif
 }
 
-@moduleAutoCode
+__moduleAutoCode__
 
-@endNamespace
+__endNamespace__

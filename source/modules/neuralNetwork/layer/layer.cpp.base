@@ -13,9 +13,9 @@ using namespace dnnl;
 #include <Eigen/Dense>
 using namespace Eigen;
 
-@startNamespace
+__startNamespace__
 
-void @className::createForwardPipeline()
+void __className__::createForwardPipeline()
 {
   // Obtaining batch size
   ssize_t N = _batchSize;
@@ -62,7 +62,7 @@ void @className::createForwardPipeline()
 #endif
 }
 
-std::vector<std::vector<float>> @className::getOutput()
+std::vector<std::vector<float>> __className__::getOutput()
 {
   size_t N = _batchSize;
   size_t OC = _outputChannels;
@@ -100,7 +100,7 @@ std::vector<std::vector<float>> @className::getOutput()
   return outputVector;
 }
 
-void @className::createBackwardPipeline()
+void __className__::createBackwardPipeline()
 {
   if (_nn->_mode == "Inference")
     KORALI_LOG_ERROR("Requesting layer's backward pipeline creation but NN was configured for inference only.\n");
@@ -138,23 +138,23 @@ void @className::createBackwardPipeline()
 #endif
 }
 
-std::vector<float> @className::generateInitialHyperparameters()
+std::vector<float> __className__::generateInitialHyperparameters()
 {
   std::vector<float> hyperparameters;
   return hyperparameters;
 }
 
-void @className::createHyperparameterMemory()
+void __className__::createHyperparameterMemory()
 {
   _hyperparameterCount = 0;
 }
 
-void @className::backwardHyperparameters(const size_t t)
+void __className__::backwardHyperparameters(const size_t t)
 {
  if (_nn->_mode == "Inference")
    KORALI_LOG_ERROR("Requesting Layer hyperparameter gradient propagation but NN was configured for inference only.\n");
 };
 
-@moduleAutoCode
+__moduleAutoCode__
 
-@endNamespace
+__endNamespace__

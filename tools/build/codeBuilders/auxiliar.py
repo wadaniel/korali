@@ -46,11 +46,11 @@ def checkNamespaceKeys(moduleConfig, templateFilePath, moduleTemplate):
   numStr = [''] + list(range(namespaceCount))
 
   for n in numStr:
-    startStr = rf"startNamespace{n}"
-    regex = re.compile(rf"@\b{startStr}\b")
+    startStr = rf"__startNamespace__{n}"
+    regex = re.compile(rf"\b{startStr}\b")
     findStart = regex.findall(moduleTemplate, re.MULTILINE)
-    endStr = rf"endNamespace{n}"
-    regex = re.compile(rf"@\b{endStr}\b")
+    endStr = rf"__endNamespace__{n}"
+    regex = re.compile(rf"\b{endStr}\b")
     findEnd = regex.findall(moduleTemplate, re.MULTILINE)
 
     if len(findStart)!=len(findEnd):
@@ -60,25 +60,25 @@ def checkNamespaceKeys(moduleConfig, templateFilePath, moduleTemplate):
 
 
 def replaceKeys( moduleConfig, codeString ):
-  codeString = codeString.replace( '@startIncludeGuard', hb.startIncludeGuard(moduleConfig) )
-  codeString = codeString.replace( '@endIncludeGuard', hb.endIncludeGuard(moduleConfig) )
+  codeString = codeString.replace( '__startIncludeGuard__', hb.startIncludeGuard(moduleConfig) )
+  codeString = codeString.replace( '__endIncludeGuard__', hb.endIncludeGuard(moduleConfig) )
 
-  codeString = codeString.replace( '@className', moduleConfig['Class Name'] )
-  codeString = codeString.replace( '@parentClassName', moduleConfig['Parent Class Name'] )
+  codeString = codeString.replace( '__className__', moduleConfig['Class Name'] )
+  codeString = codeString.replace( '__parentClassName__', moduleConfig['Parent Class Name'] )
 
-  regex = re.compile(r"@\bstartNamespace\b")
+  regex = re.compile(r"\b__startNamespace__\b")
   codeString = regex.sub(hb.startNamespace(moduleConfig), codeString, re.MULTILINE)
-  regex = re.compile(r"@\bendNamespace\b")
+  regex = re.compile(r"\b__endNamespace__\b")
   codeString = regex.sub(hb.endNamespace(moduleConfig), codeString, re.MULTILINE)
 
   namespaceCount = len(moduleConfig["Module Data"]["Namespace"])
 
   for n in range(namespaceCount):
-    regex = re.compile(rf"@\bstartNamespace{n}\b")
+    regex = re.compile(rf"\b__startNamespace__{n}\b")
     rep_str = "namespace " + moduleConfig["Module Data"]["Namespace"][n] + "\n{\n"
     codeString = regex.sub(rep_str, codeString, re.MULTILINE)
 
-    regex = re.compile(rf"@\bendNamespace{n}\b")
+    regex = re.compile(rf"\b__endNamespace__{n}\b")
     rep_str = "} /* " + moduleConfig["Module Data"]["Namespace"][n] + " */ "
     codeString = regex.sub(rep_str, codeString, re.MULTILINE)
 

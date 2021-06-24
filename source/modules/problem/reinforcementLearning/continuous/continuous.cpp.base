@@ -2,9 +2,9 @@
 #include "modules/solver/agent/continuous/continuous.hpp"
 #include "sample/sample.hpp"
 
-@startNamespace
+__startNamespace__
 
-void @className::initialize()
+void __className__::initialize()
 {
   ReinforcementLearning::initialize();
 
@@ -19,6 +19,6 @@ void @className::initialize()
   }
 }
 
-@moduleAutoCode
+__moduleAutoCode__
 
-@endNamespace
+__endNamespace__

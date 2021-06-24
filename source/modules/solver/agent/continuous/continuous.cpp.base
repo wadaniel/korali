@@ -4,9 +4,9 @@
 
 #include <gsl/gsl_sf_psi.h>
 
-@startNamespace
+__startNamespace__
 
-void @className::initializeAgent()
+void __className__::initializeAgent()
 {
   // Getting continuous problem pointer
   _problem = dynamic_cast<problem::reinforcementLearning::Continuous *>(_k->_problem);
@@ -92,7 +92,7 @@ void @className::initializeAgent()
   }
 }
 
-void @className::getAction(korali::Sample &sample)
+void __className__::getAction(korali::Sample &sample)
 {
  // Get action for all the agents in the environment
  for (size_t i = 0; i < sample["State"].size(); i++)
@@ -134,7 +134,7 @@ void @className::getAction(korali::Sample &sample)
  }
 }
 
-std::vector<float> @className::generateTrainingAction(policy_t &curPolicy)
+std::vector<float> __className__::generateTrainingAction(policy_t &curPolicy)
 {
   std::vector<float> action(_problem->_actionVectorSize);
 
@@ -226,7 +226,7 @@ std::vector<float> @className::generateTrainingAction(policy_t &curPolicy)
   return action;
 }
 
-std::vector<float> @className::generateTestingAction(const policy_t &curPolicy)
+std::vector<float> __className__::generateTestingAction(const policy_t &curPolicy)
 {
   std::vector<float> action(_problem->_actionVectorSize);
 
@@ -287,7 +287,7 @@ std::vector<float> @className::generateTestingAction(const policy_t &curPolicy)
   return action;
 }
 
-float @className::calculateImportanceWeight(const std::vector<float> &action, const policy_t &curPolicy, const policy_t &oldPolicy)
+float __className__::calculateImportanceWeight(const std::vector<float> &action, const policy_t &curPolicy, const policy_t &oldPolicy)
 {
   float logpCurPolicy = 0.0f;
   float logpOldPolicy = 0.0f;
@@ -404,7 +404,7 @@ float @className::calculateImportanceWeight(const std::vector<float> &action, co
   return importanceWeight;
 }
 
-std::vector<float> @className::calculateImportanceWeightGradient(const std::vector<float> &action, const policy_t &curPolicy, const policy_t &oldPolicy)
+std::vector<float> __className__::calculateImportanceWeightGradient(const std::vector<float> &action, const policy_t &curPolicy, const policy_t &oldPolicy)
 {
   // Storage for importance weight gradients
   std::vector<float> importanceWeightGradients(2 * _problem->_actionVectorSize, 0.0);
@@ -687,7 +687,7 @@ std::vector<float> @className::calculateImportanceWeightGradient(const std::vect
   return importanceWeightGradients;
 }
 
-std::vector<float> @className::calculateKLDivergenceGradient(const policy_t &oldPolicy, const policy_t &curPolicy)
+std::vector<float> __className__::calculateKLDivergenceGradient(const policy_t &oldPolicy, const policy_t &curPolicy)
 {
   // Storage for KL Divergence Gradients
   std::vector<float> KLDivergenceGradients(2.0 * _problem->_actionVectorSize, 0.0);
@@ -844,6 +844,6 @@ std::vector<float> @className::calculateKLDivergenceGradient(const policy_t &old
   return KLDivergenceGradients;
 }
 
-@moduleAutoCode
+__moduleAutoCode__
 
-@endNamespace
+__endNamespace__

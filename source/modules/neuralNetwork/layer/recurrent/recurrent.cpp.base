@@ -15,9 +15,9 @@ using namespace dnnl;
 using namespace Eigen;
 
 
-@startNamespace
+__startNamespace__
 
-void @className::initialize()
+void __className__::initialize()
 {
   // Checking Layer size
   if (_outputChannels == 0) KORALI_LOG_ERROR("Node count for layer %lu should be larger than zero.\n", _index);
@@ -33,7 +33,7 @@ void @className::initialize()
    KORALI_LOG_ERROR("Recurrent layers are not yet supported by the Korali NN backend, use OneDNN or CuDNN.\n");
 }
 
-void @className::createHyperparameterMemory()
+void __className__::createHyperparameterMemory()
 {
   // Getting dimensions
   const size_t L = _depth;     // Physical Layers
@@ -146,7 +146,7 @@ void @className::createHyperparameterMemory()
 #endif
 }
 
-void @className::copyHyperparameterPointers(Layer *dstLayer)
+void __className__::copyHyperparameterPointers(Layer *dstLayer)
 {
   Recurrent *dstPtr = dynamic_cast<Recurrent *>(dstLayer);
   dstPtr->_hyperparameterCount = _hyperparameterCount;
@@ -173,7 +173,7 @@ void @className::copyHyperparameterPointers(Layer *dstLayer)
 #endif
 }
 
-std::vector<float> @className::generateInitialHyperparameters()
+std::vector<float> __className__::generateInitialHyperparameters()
 {
   std::vector<float> hyperparameters;
 
@@ -208,7 +208,7 @@ std::vector<float> @className::generateInitialHyperparameters()
   return hyperparameters;
 }
 
-void @className::createBackwardPipeline()
+void __className__::createBackwardPipeline()
 {
   /*********************************************************************************
   *  Initializing memory objects and primitives for BACKWARD propagation
@@ -234,7 +234,7 @@ void @className::createBackwardPipeline()
 #endif
 }
 
-void @className::backwardHyperparameters(const size_t t)
+void __className__::backwardHyperparameters(const size_t t)
 {
   if (_nn->_mode == "Inference")
     KORALI_LOG_ERROR("Requesting Layer hyperparameter gradient propagation but NN was configured for inference only.\n");
@@ -273,7 +273,7 @@ void @className::backwardHyperparameters(const size_t t)
 #endif
 }
 
-void @className::setHyperparameters(float *hyperparameters)
+void __className__::setHyperparameters(float *hyperparameters)
 {
 #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
@@ -295,7 +295,7 @@ void @className::setHyperparameters(float *hyperparameters)
 #endif
 }
 
-void @className::getHyperparameters(float *hyperparameters)
+void __className__::getHyperparameters(float *hyperparameters)
 {
 #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
@@ -317,7 +317,7 @@ void @className::getHyperparameters(float *hyperparameters)
 #endif
 }
 
-void @className::getHyperparameterGradients(float *gradient)
+void __className__::getHyperparameterGradients(float *gradient)
 {
 #ifdef _KORALI_USE_ONEDNN
   if (_nn->_engine == "OneDNN")
@@ -339,6 +339,6 @@ void @className::getHyperparameterGradients(float *gradient)
 #endif
 }
 
-@moduleAutoCode
+__moduleAutoCode__
 
-@endNamespace
+__endNamespace__

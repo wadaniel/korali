@@ -1,4 +1,4 @@
-@startIncludeGuard
+__startIncludeGuard__
 
 // TODO: REMOVE normal/normal.hpp
 #include "modules/distribution/multivariate/normal/normal.hpp"
@@ -18,7 +18,7 @@
 #include "modules/solver/sampler/HMC/helpers/tree_helper_euclidean.hpp"
 #include "modules/solver/sampler/HMC/helpers/tree_helper_riemannian.hpp"
 
-@startNamespace
+__startNamespace__
 
 /**
   * @brief Enum to set metric type.
@@ -46,7 +46,7 @@ enum Metric
   Riemannian_Const = 3,
 };
 
-class @className : public @parentClassName
+class __className__ : public __parentClassName__
 {
   std::shared_ptr<Hamiltonian> _hamiltonian;
   std::unique_ptr<Leapfrog> _integrator;
@@ -131,6 +131,6 @@ class @className : public @parentClassName
   void printGenerationAfter() override;
 };
 
-@endNamespace
+__endNamespace__
 
-@endIncludeGuard
+__endIncludeGuard__

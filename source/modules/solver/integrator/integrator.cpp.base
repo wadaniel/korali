@@ -2,9 +2,9 @@
 #include "modules/solver/integrator/integrator.hpp"
 #include "sample/sample.hpp"
 
-@startNamespace
+__startNamespace__
 
-void @className::setInitialConfiguration()
+void __className__::setInitialConfiguration()
 {
   _variableCount = _k->_variables.size();
 
@@ -26,7 +26,7 @@ void @className::setInitialConfiguration()
   }
 }
 
-void @className::runGeneration()
+void __className__::runGeneration()
 {
   if (_k->_currentGeneration == 1) setInitialConfiguration();
 
@@ -81,20 +81,20 @@ void @className::runGeneration()
   (*_k)["Results"]["Integral"] = _integral;
 }
 
-void @className::printGenerationBefore()
+void __className__::printGenerationBefore()
 {
 }
 
-void @className::printGenerationAfter()
+void __className__::printGenerationAfter()
 {
   _k->_logger->logInfo("Minimal", "Total Terms summed %lu/%lu.\n", _modelEvaluationCount, _sampleCount);
 }
 
-void @className::finalize()
+void __className__::finalize()
 {
   _k->_logger->logInfo("Minimal", "Integral Calculated: %e\n", _integral);
 }
 
-@moduleAutoCode
+__moduleAutoCode__
 
-@endNamespace
+__endNamespace__

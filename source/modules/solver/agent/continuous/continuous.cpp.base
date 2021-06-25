@@ -35,7 +35,7 @@ void @className::initializeAgent()
   // Obtaining policy parameter transformations (depends on which policy distribution chosen)
   if (_policyDistribution == "Normal" || _policyDistribution == "Squashed Normal" || _policyDistribution == "Clipped Normal" || _policyDistribution == "Truncated Normal")
   {
-    _policyParameterCount = 2 * _problem->_actionVectorSize; // Means and Sigmas
+    _policyParameterCount = 2 * _problem->_actionVectorSize; // Mus and Sigmas
 
     // Allocating space for the required transformations
     _policyParameterTransformationMasks.resize(_policyParameterCount);
@@ -52,12 +52,12 @@ void @className::initializeAgent()
       if (sigma <= 0.0f) KORALI_LOG_ERROR("Provided initial noise (%f) for action variable %lu is not defined or negative.\n", sigma, varIdx);
 
       // Identity mask for Means
-      _policyParameterScaling[i] = 1.0f;
+      _policyParameterScaling[i] = _actionScales[i];
       _policyParameterShifting[i] = _actionShifts[i];
       _policyParameterTransformationMasks[i] = "Identity";
 
       // Softplus mask for Sigmas
-      _policyParameterScaling[_problem->_actionVectorSize + i] = sigma * 2.0f;
+      _policyParameterScaling[_problem->_actionVectorSize + i] = 2.0f * sigma;
       _policyParameterShifting[_problem->_actionVectorSize + i] = 0.0f;
       _policyParameterTransformationMasks[_problem->_actionVectorSize + i] = "Softplus";
     }
@@ -76,10 +76,10 @@ void @className::initializeAgent()
     for (size_t i = 0; i < _problem->_actionVectorSize; i++)
     {
       auto varIdx = _problem->_actionVectorIndexes[i];
-      float variance = _k->_variables[varIdx]->_initialExplorationNoise;
+      const float sigma = _k->_variables[varIdx]->_initialExplorationNoise;
 
       // Checking correct noise configuration
-      if (variance <= 0.0f) KORALI_LOG_ERROR("Provided initial noise (%f) for action variable %lu is not defined or negative.\n", variance, varIdx);
+      if (sigma <= 0.0f) KORALI_LOG_ERROR("Provided initial noise (%f) for action variable %lu is not defined or negative.\n", sigma, varIdx);
 
       // Identity mask for Means
       _policyParameterScaling[i] = 1.0f;
@@ -88,7 +88,7 @@ void @className::initializeAgent()
 
       // Sigmoid Mask for Variance
       _policyParameterTransformationMasks[_problem->_actionVectorSize + i] = "Sigmoid";
-      _policyParameterScaling[_problem->_actionVectorSize + i] = variance * 2.0f;
+      _policyParameterScaling[_problem->_actionVectorSize + i] = 2.0f * sigma;
       _policyParameterShifting[_problem->_actionVectorSize + i] = 0.0f;
     }
   }
@@ -447,16 +447,16 @@ std::vector<float> @className::calculateImportanceWeightGradient(const std::vect
       const float curSigma = curPolicy.distributionParameters[_problem->_actionVectorSize + i];
 
       // Deviation from expAction and current Mean
-      float curActionDiff = action[i] - curMean;
+      const float curActionDif = action[i] - curMean;
 
       // Inverse Variances
-      float curInvVar = 1.f / (curSigma * curSigma);
+      const float curInvVar = 1.f / (curSigma * curSigma);
 
       // Gradient with respect to Mean
-      importanceWg[i] = curActionDiff * curInvVar;
+      importanceWg[i] = curActionDif * curInvVar;
 
       // Gradient with respect to Sigma
-      importanceWg[_problem->_actionVectorSize + i] = (curActionDiff * curActionDiff) * (curInvVar / curSigma) - 1.f / curSigma;
+      importanceWg[_problem->_actionVectorSize + i] = (curActionDif * curActionDif) * (curInvVar / curSigma) - 1.f / curSigma;
 
       // Calculate importance weight
       logpCurPolicy += normalLogDensity(action[i], curMean, curSigma);
@@ -485,16 +485,16 @@ std::vector<float> @className::calculateImportanceWeightGradient(const std::vect
       const float curSigma = curPolicy.distributionParameters[_problem->_actionVectorSize + i];
 
       // Deviation from expAction and current Mean
-      const float curActionDiff = (oldPolicy.unboundedAction[i] - curMu);
+      const float curActionDif = (oldPolicy.unboundedAction[i] - curMu);
 
       // Inverse Variance
       const float curInvVar = 1. / (curSigma * curSigma);
 
       // Gradient with respect to Mean
-      importanceWeightGradients[i] = curActionDiff * curInvVar;
+      importanceWeightGradients[i] = curActionDif * curInvVar;
 
       // Gradient with respect to Sigma
-      importanceWeightGradients[_problem->_actionVectorSize + i] = (curActionDiff * curActionDiff) * (curInvVar / curSigma) - 1.0f / curSigma;
+      importanceWeightGradients[_problem->_actionVectorSize + i] = (curActionDif * curActionDif) * (curInvVar / curSigma) - 1.0f / curSigma;
 
       // Importance weight of squashed normal is the importance weight of normal evaluated at unbounded action
       logpCurPolicy += normalLogDensity(oldPolicy.unboundedAction[i], curMu, curSigma);
@@ -567,10 +567,10 @@ std::vector<float> @className::calculateImportanceWeightGradient(const std::vect
         const float curInvSig3 = curInvSig * curInvSig * curInvSig;
 
         // Grad wrt. curMu
-        importanceWeightGradients[i] = curActionDiff * curInvVar;
+        importanceWeightGradients[i] = curActionDif * curInvSig * curInvSig;
 
         // Grad wrt. curSigma
-        importanceWeightGradients[_problem->_actionVectorSize + i] = (curActionDiff * curActionDiff) * curInvSig3 - curInvSig;
+        importanceWeightGradients[_problem->_actionVectorSize + i] = curActionDif * curActionDif * curInvSig3 - curInvSig;
  
         // Calculate importance weight
         logpCurPolicy += normalLogDensity(action[i], curMu, curSigma);

@@ -6,7 +6,7 @@ Checkpoint / Resume
 
 Korali experiments can either run to completion or in part. In the latter case, the user can then operate over its partial results or change termination criteria and continue its execution later.
  
-To ensure fault-tolerance for all experiments and systems, Korali also stores the entire state into its result files (checkpoints), regardless of the solver/problem/conduit modules selected. Execution can be later resumed from any of its result files without loss of information. 
+To ensure fault-tolerance for all experiments and systems, by default Korali also stores the entire state into its result files (checkpoints), regardless of the solver/problem/conduit modules selected. Execution can be later resumed from any of its result files without loss of information. 
 
 Below, we discuss three possible use case scenarios for Korali's checkpoint/resume capability.
 
@@ -43,9 +43,8 @@ To do this, we simply define an initial set of termination criteria, and run the
    k.run(e)
    
    # Evaluating a domain-specific criterion as to whether to continue or not
-   continue = check(e["Results"]["Best Sample"]) 
-
-   if (continue):
+   if (e["Results"]["Best Sample"]["F(x)"] < 1.0):
+   
     # Extending max generation number
     e["Solver"]["Termination Criteria"]["Max Generation"] = 100
     

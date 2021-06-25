@@ -1,0 +1,14 @@
+__startIncludeGuard__;
+
+#include "modules/distribution/distribution.hpp"
+
+__startNamespace__;
+
+class __className__ : public __parentClassName__
+{
+  public:
+};
+
+__endNamespace__;
+
+__endIncludeGuard__;

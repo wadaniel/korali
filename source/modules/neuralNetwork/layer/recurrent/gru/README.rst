@@ -1,5 +1,5 @@
 *************
-GRU
+GRU Layer
 *************
 
-Uses the Gated recurrent units (GRUs) architecture.
+Specialization of the Recurrent Layer for Gated Recurrent Unit (GRU).

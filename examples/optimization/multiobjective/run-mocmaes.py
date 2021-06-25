@@ -15,14 +15,14 @@ k = korali.Engine()
 
 # Creating new experiment
 e = korali.Experiment()
-
+ 
 # Configuring Problem
 e["Random Seed"] = 0xC0F33
 e["Problem"]["Type"] = "Optimization"
 e["Problem"]["Objective Function"] = negative_rosenbrock_and_sphere
 e["Problem"]["Num Objectives"] = 2
 
-dim = 3
+dim = 4
 
 # Defining the problem's variables.
 for i in range(dim):
@@ -31,17 +31,17 @@ for i in range(dim):
     e["Variables"][i]["Upper Bound"] = +25.0
     e["Variables"][i]["Initial Standard Deviation"] = 3.0
 
-# Configuring CMA-ES parameters
+# Configuring MO-CMA-ES parameters
 e["Solver"]["Type"] = "Optimizer/MOCMAES"
 e["Solver"]["Population Size"] = 32
 e["Solver"]["Mu Value"] = 16
 e["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-8
 e["Solver"]["Termination Criteria"]["Min Variable Difference Threshold"] = 1e-8
-e["Solver"]["Termination Criteria"]["Max Generations"] = 500
 
 # Configuring results path
+e["Console Output"]["Frequency"] = 10
 e["File Output"]["Path"] = '_korali_result_mocmaes'
-e["File Output"]["Frequency"] = 1
+e["File Output"]["Frequency"] = 10
 
 # Running Korali
 k.run(e)

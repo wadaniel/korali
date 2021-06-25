@@ -1,9 +1,8 @@
 e = find_program('./.run_test.sh', required: true)
 
-current_dir = meson.current_source_dir()
-
-test('openAIGym', e,
-      args: [current_dir],
+test('studycases.openAIGym', e,
       timeout : 100,
-      suite: 'Study Cases'
+      suite: 'regression',
+      workdir: meson.current_source_dir(),
+      depends: python_extension
     )

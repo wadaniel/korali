@@ -1,7 +1,7 @@
 #! /usr/bin/env python3
 from subprocess import call
 
-r = call(["bash", "get_data.sh"])
+r = call(["bash", "get_mnist.sh"])
 if r!=0:
   exit(r)
 

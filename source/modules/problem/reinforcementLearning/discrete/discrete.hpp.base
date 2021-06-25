@@ -1,0 +1,15 @@
+__startIncludeGuard__;
+
+#include "modules/problem/reinforcementLearning/reinforcementLearning.hpp"
+
+__startNamespace__;
+
+class __className__ : public __parentClassName__
+{
+  public:
+  void initialize() override;
+};
+
+__endNamespace__;
+
+__endIncludeGuard__;

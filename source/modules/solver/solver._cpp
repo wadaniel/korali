@@ -1,7 +1,0 @@
-#include "modules/solver/solver.hpp"
-
-@startNamespace
-
-@moduleAutoCode
-
-@endNamespace

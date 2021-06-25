@@ -57,7 +57,7 @@ def buildCodeString( configFilePath, templateFilePath ):
   if 'Conditional Variables' in moduleConfig:
     sourceString += sb.createGetPropertyPointer(moduleConfig)
 
-  sourceString = moduleTemplate.replace( '@moduleAutoCode',  sourceString )
+  sourceString = moduleTemplate.replace( '__moduleAutoCode__',  sourceString )
 
   sourceString = aux.replaceKeys( moduleConfig, sourceString );
 
@@ -79,15 +79,15 @@ def buildCodeFromTemplate( configFile, templateFile, outputFile=None ):
   if configFilePath.parent != templateFilePath.parent:
     sys.exit(f'[Korali] Error: configuration file and template file are not in the same directory.\n{configFilePath.parent}\n{templateFilePath.parent}\n')
 
-  if '._hpp' == templateFilePath.suffix:
+  if '.hpp.base' in str(templateFilePath):
     codeString = buildHeaderString( configFilePath, templateFilePath )
-  elif '._cpp' == templateFilePath.suffix:
+  elif '.cpp.base' in str(templateFilePath):
     codeString = buildCodeString( configFilePath, templateFilePath )
   else:
     sys.exit('[Korali] Error: Unknown extension in template file.\n')
 
   if outputFile == None:
-    suffix = templateFilePath.suffix.replace('_','')
+    suffix = templateFilePath.suffix.replace('.base','')
     filePath = templateFilePath.with_suffix(suffix)
   else:
     filePath = Path(outputFile)

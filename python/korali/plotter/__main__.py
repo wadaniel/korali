@@ -12,17 +12,11 @@ curdir = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
 # Check if name has .png ending
 def validateOutput(output):
   if not (output.endswith(".png") or output.endswith(".eps") or output.endswith(".svg")):
-    print(
-        "[Korali] Error: Outputfile '{0}' must end with '.eps', '.png' or '.svg' suffix.".format(
-            output))
+    print("[Korali] Error: Outputfile '{0}' must end with '.eps', '.png' or '.svg' suffix.".format(output))
     sys.exit(-1)
 
 
-def main(path, check, test, output, plotAll=False):
-
-  if (check == True):
-    print("[Korali] Plotter correctly installed.")
-    exit(0)
+def main(path, test, output, plotAll=False):
 
   if test or output:
     matplotlib.use('Agg')
@@ -37,9 +31,7 @@ def main(path, check, test, output, plotAll=False):
 
   configFile = path + '/gen00000000.json'
   if (not os.path.isfile(configFile)):
-    print(
-        "[Korali] Error: Did not find any results in the {0} folder...".format(
-            path))
+    print("[Korali] Error: Did not find any results in the {0} folder...".format(path))
     exit(-1)
 
   with open(configFile) as f:
@@ -69,6 +61,10 @@ def main(path, check, test, output, plotAll=False):
   solverDir = ""
   moduleName = ""
 
+  if ("cmaes" in solverName):
+   solverDir = curdir + '/HMC'
+   moduleName = '.HMC'
+     
   if ("cmaes" in solverName):
    solverDir = curdir + '/CMAES'
    moduleName = '.CMAES'
@@ -128,11 +124,6 @@ if __name__ == '__main__':
       default='_korali_result',
       required=False)
   parser.add_argument(
-      '--check',
-      help='verifies that korali.plotter is available',
-      action='store_true',
-      required=False)
-  parser.add_argument(
       '--test',
       help='run without graphics (for testing purpose)',
       action='store_true',
@@ -143,4 +134,4 @@ if __name__ == '__main__':
       '--all', help='plot all generations', action='store_true', required=False)
   args = parser.parse_args()
 
-  main(args.dir, args.check, args.test, args.output, args.all)
+  main(args.dir, args.test, args.output, args.all)

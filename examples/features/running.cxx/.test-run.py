@@ -13,14 +13,6 @@ r = call(["./run-cmaes-direct"])
 if r!=0:
   exit(r)
 
-r = call(["./run-lmcma"])
-if r!=0:
-  exit(r)
-
-r = call(["./run-lmcma-direct"])
-if r!=0:
-  exit(r)
-
 r = call(["./run-tmcmc"])
 if r!=0:
   exit(r)

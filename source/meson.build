@@ -1,5 +1,6 @@
 # define code generator object
 korali_gen = find_program('../tools/build/build.py')
+
 # Canonical header path.  Needed for installation as header files are in the
 # same place as implementation
 header_path = find_program('../tools/build/get_header_directory.py')

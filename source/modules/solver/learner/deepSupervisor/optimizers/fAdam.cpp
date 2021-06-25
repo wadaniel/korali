@@ -2,11 +2,20 @@
 #include <cmath>
 #include <cstdlib>
 #include <stdio.h>
+#include <stdexcept>
 
 namespace korali
 {
-fAdam::fAdam(size_t nVars) : fGradientBasedOptimizer(nVars)
+fAdam::fAdam(size_t nVars)
 {
+  // Variable Parameters
+  _currentGeneration = 1;
+  _nVars = nVars;
+  _initialValues.resize(_nVars, 0.0);
+  _currentValue.resize(_nVars, 0.0);
+  _gradient.resize(_nVars, 0.0);
+  _modelEvaluationCount = 0;
+
   // Variable Parameters
   _firstMoment.resize(_nVars, 0.0);
   _secondMoment.resize(_nVars, 0.0);
@@ -34,7 +43,7 @@ void fAdam::reset()
     if (std::isfinite(_initialValues[i]) == false)
     {
       fprintf(stderr, "Initial Value of variable \'%lu\' not defined (no defaults can be calculated).\n", i);
-      std::abort();
+      throw std::runtime_error("Bad Inputs for Optimizer.");
     }
 
   for (size_t i = 0; i < _nVars; i++)
@@ -56,7 +65,7 @@ void fAdam::processResult(float evaluation, std::vector<float> &gradient)
   if (gradient.size() != _nVars)
   {
     fprintf(stderr, "Size of sample's gradient evaluations vector (%lu) is different from the number of problem variables defined (%lu).\n", gradient.size(), _nVars);
-    std::abort();
+    throw std::runtime_error("Bad Inputs for Optimizer.");
   }
 
   const float secondCentralMomentFactor = 1.0f / (1.0f - std::pow(_beta2, (float)_modelEvaluationCount));

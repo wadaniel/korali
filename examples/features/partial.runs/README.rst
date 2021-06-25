@@ -1,7 +1,7 @@
 Partial Runs
 =====================================================
 
-In this tutorial we show how to stop and restart a previous Korali run.
+In this tutorial we show how to stop and restart a previous Korali run during the lifetime of an application (without the need of checkpoint files being stored).
 During the first and the second phase you may adjust a solvers settings.
 All scripts in this tutorial follow this structure:
 

@@ -11,13 +11,12 @@ import math
 import numpy as np
 import scipy.stats as st
 import matplotlib.pyplot as plt
-
 from korali.plotter.helpers import hlsColors, drawMulticoloredLine
 from scipy.signal import savgol_filter
 
 ##################### Plotting Reward History
 
-def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, maxObservations, showSamples, showCI):
+def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, maxObservations, showCI):
 
  ## Setting initial x-axis (episode) and  y-axis (reward) limits
  
@@ -98,15 +97,9 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
   confIntervalUpperHistory = np.array(confIntervalUpperHistory)
 
   # Plotting common plot
-  ax.plot(cumulativeObsList, rewardHistory, 'x', markersize=1.3, color='blue', alpha=0.15, zorder=0)
-  ax.plot(cumulativeObsList, meanHistory, '-', color='cyan', lineWidth=3.0, zorder=1) 
+  ax.plot(cumulativeObsList, rewardHistory, 'x', markersize=1.3, color=cmap(colCurrIndex), alpha=0.15, zorder=0)
+  ax.plot(cumulativeObsList, meanHistory, '-', color=cmap(colCurrIndex), lineWidth=3.0, zorder=1) 
 
-  #ax.plot(cumulativeObsList, meanHistory, '-', label=str(averageDepth) + '-Episode Average (' + dirs[resId] + ')', color=cmap(colCurrIndex), zorder=1)
-  #if showSamples:
-  #  ax.plot(cumulativeObsList, rewardHistory, 'x', markersize=1.3, color=cmap(colCurrIndex), alpha=0.5, zorder=0)
-  #if showCI > 0.0:
-  #  ax.fill_between(cumulativeObsList, confIntervalLowerHistory, confIntervalUpperHistory, color=cmap(colCurrIndex), facecolor="none", alpha=0.2)
-  
   # Updating color index
   if (len(results) > 1):
    colCurrIndex = colCurrIndex + (1.0 / float(len(results)-1)) - 0.0001
@@ -124,12 +117,6 @@ def plotRewardHistory(ax, dirs, results, minReward, maxReward, averageDepth, max
  ax.set_xlim([0, maxPlotObservations-1])
  ax.set_ylim([minPlotReward - 0.1*abs(minPlotReward), maxPlotReward + 0.1*abs(maxPlotReward)])
  
- #if (trainingRewardThreshold != math.inf): 
- # ax.hlines(trainingRewardThreshold, 0, maxPlotObservations, linestyle='dashed', label='Training Threshold', color='red')
-
- #if (testingRewardThreshold != math.inf): 
- # ax.hlines(testingRewardThreshold, 0, maxPlotObservations, linestyle='dashdot', label='Testing Threshold', color='blue')
-
 ##################### Results parser
 
 def parseResults(dir):
@@ -169,46 +156,6 @@ def parseResults(dir):
   
  return results
  
-##################### Plotting Smarties Results
-
-def plotSmartiesResults(ax, smartiesFiles, averageDepth):
- 
- results = [ ]
- 
- for p in smartiesFiles:
-  resultFile = p
-  if (not os.path.isfile(resultFile)):
-    print("[Korali] Error: Did not find any results in the {0} file...".format(p))
-    exit(-1)
- 
-  with open(resultFile) as f:
-    resRows = f.readlines()[1:]
- 
-  rewardHistory = [ ]
-  cumulativeObsList = [ ]
-  for i, r in enumerate(resRows):
-   #if (i % 20 == 0):
-   columnInfo = r.split()
-   rewardHistory.append(float(columnInfo[4]))
-   cumulativeObsList.append(int(columnInfo[1]) + 131072)
-
-  #for i, r in enumerate(avgRewards):
-  # print('Nobs: ' + str(numObs[i]) + ' - avgRewards: ' + str(avgRewards[i]))
-   
-  meanHistory = [ rewardHistory[0] ]
-  for i in range(1, len(rewardHistory)):
-   startPos = i - int(averageDepth)
-   if (startPos < 0): startPos = 0
-   endPos = i
-   data = rewardHistory[startPos:endPos]
-   mean = np.mean(data)
-   meanHistory.append(mean)
-  meanHistory = np.array(meanHistory)
-  
-  # Plotting common plot
-  ax.plot(cumulativeObsList, meanHistory, '-', lineWidth=3, label='Smarties', color='fuchsia', zorder=1)
-  ax.plot(cumulativeObsList, rewardHistory, 'x', markersize=1.3, color='red', alpha=0.15, zorder=0)
-
 ##################### Main Routine: Parsing arguments and result files
   
 if __name__ == '__main__':
@@ -244,25 +191,19 @@ if __name__ == '__main__':
      default=0.0,
      required=False)
  parser.add_argument(
+     '--maxPlottingTime',
+     help='Specified the maximum time (seconds) to update the plot for (for testing purposes)',
+     default=0.0,
+     required=False)
+ parser.add_argument(
      '--minReward',
      help='Minimum reward to display',
      default=None,
      required=False)
  parser.add_argument(
-      '--check',
-      help='Verifies that the module has been installed correctly',
-      action='store_true',
-      required=False)
- parser.add_argument(
       '--averageDepth',
       help='Specifies the depth for plotting average',
       default=300,
-      required=False)
- parser.add_argument(
-      '--showSamples',
-      help='Option to plot episode returns or not.',
-      type=lambda arg: (str(arg).lower() != 'false'),
-      default=True,
       required=False)
  parser.add_argument(
       '--showCI',
@@ -270,32 +211,18 @@ if __name__ == '__main__':
       type = float,
       default=0.0,
       required=False)
-
  parser.add_argument(
       '--test',
       help='Run without graphics (for testing purpose)',
       action='store_true',
       required=False)
- parser.add_argument(
-     '--smartiesResults',
-     help='Path(s) to smarties result files, separated by space',
-     default=[ ],
-     required=False,
-     nargs='*')
  args = parser.parse_args()
 
- ### Checking installation
- 
- if (args.check == True):
-  print("[Korali] RL Viewer correctly installed.")
-  exit(0)
- 
  ### Validating input
 
  if args.showCI < 0.0 or args.showCI > 1.0:
   print("[Korali] Argument of confidence interval must be in [0,1].")
   exit(-1)
-
 
  ### Setup without graphics, if needed
  
@@ -315,21 +242,30 @@ if __name__ == '__main__':
      
  ### Creating plots
      
- plotRewardHistory(ax1, args.dir, results, args.minReward, args.maxReward, args.averageDepth, args.maxObservations, args.showSamples, args.showCI)
- plotSmartiesResults(ax1, args.smartiesResults, args.averageDepth)
+ plotRewardHistory(ax1, args.dir, results, args.minReward, args.maxReward, args.averageDepth, args.maxObservations, args.showCI)
 
  plt.draw()
  
  ### Printing live results if update frequency > 0
  
  fq = float(args.updateFrequency)
+ maxTime = float(args.maxPlottingTime)
+ 
  if (fq > 0.0):
+  initialTime = time.time()
   while(True):
    results = parseResults(args.dir)
    plt.pause(fq)
    ax1.clear()
-   plotRewardHistory(ax1, args.dir, results, args.minReward, args.maxReward, args.averageDepth, args.maxObservations, args.showSamples, args.showCI)
-   plotSmartiesResults(ax1, args.smartiesResults, args.averageDepth)
+   plotRewardHistory(ax1, args.dir, results, args.minReward, args.maxReward, args.averageDepth, args.maxObservations, args.showCI)
    plt.draw()
+   
+   # Check if maximum time exceeded
+   if (maxTime> 0.0):
+    currentTime = time.time()
+    elapsedTime = currentTime - initialTime
+    if (elapsedTime > maxTime):
+     print('[Korali] Maximum plotting time reached. Exiting...') 
+     exit(0)
    
  plt.show() 

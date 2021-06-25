@@ -7,6 +7,7 @@
 #include "distribution/multivariate/normal/normal.hpp"
 #include "distribution/specific/multinomial/multinomial.hpp"
 #include "distribution/specific/specific.hpp"
+#include "distribution/univariate/beta/beta.hpp"
 #include "distribution/univariate/cauchy/cauchy.hpp"
 #include "distribution/univariate/exponential/exponential.hpp"
 #include "distribution/univariate/gamma/gamma.hpp"
@@ -52,7 +53,6 @@
 #include "solver/optimizer/Adam/Adam.hpp"
 #include "solver/optimizer/CMAES/CMAES.hpp"
 #include "solver/optimizer/DEA/DEA.hpp"
-#include "solver/optimizer/LMCMAES/LMCMAES.hpp"
 #include "solver/optimizer/MADGRAD/MADGRAD.hpp"
 #include "solver/optimizer/MOCMAES/MOCMAES.hpp"
 #include "solver/optimizer/Rprop/Rprop.hpp"
@@ -70,6 +70,16 @@ knlohmann::json __profiler;
 std::chrono::time_point<std::chrono::high_resolution_clock> _startTime;
 std::chrono::time_point<std::chrono::high_resolution_clock> _endTime;
 double _cumulativeTime;
+
+void Module::initialize() {};
+void Module::finalize() {};
+std::string Module::getType() { return _type; };
+bool Module::checkTermination() { return false; };
+void Module::getConfiguration(knlohmann::json &js){};
+void Module::setConfiguration(knlohmann::json &js){};
+void Module::applyModuleDefaults(knlohmann::json &js){};
+void Module::applyVariableDefaults(){};
+bool Module::runOperation(std::string operation, korali::Sample &sample) { return false; };
 
 Module *Module::getModule(knlohmann::json &js, Experiment *e)
 {
@@ -103,6 +113,7 @@ Module *Module::getModule(knlohmann::json &js, Experiment *e)
   if (iCompare(moduleType, "Sequential")) module = new korali::conduit::Sequential();
   if (iCompare(moduleType, "Multivariate/Normal")) module = new korali::distribution::multivariate::Normal();
   if (iCompare(moduleType, "Specific/Multinomial")) module = new korali::distribution::specific::Multinomial();
+  if (iCompare(moduleType, "Univariate/Beta")) module = new korali::distribution::univariate::Beta();
   if (iCompare(moduleType, "Univariate/Cauchy")) module = new korali::distribution::univariate::Cauchy();
   if (iCompare(moduleType, "Univariate/Exponential")) module = new korali::distribution::univariate::Exponential();
   if (iCompare(moduleType, "Univariate/Gamma")) module = new korali::distribution::univariate::Gamma();
@@ -139,7 +150,6 @@ Module *Module::getModule(knlohmann::json &js, Experiment *e)
   if (iCompare(moduleType, "Optimizer/Adam")) module = new korali::solver::optimizer::Adam();
   if (iCompare(moduleType, "Optimizer/AdaBelief")) module = new korali::solver::optimizer::AdaBelief();
   if (iCompare(moduleType, "Optimizer/MADGRAD")) module = new korali::solver::optimizer::MADGRAD();
-  if (iCompare(moduleType, "Optimizer/LMCMAES")) module = new korali::solver::optimizer::LMCMAES();
   if (iCompare(moduleType, "Optimizer/MOCMAES")) module = new korali::solver::optimizer::MOCMAES();
   if (iCompare(moduleType, "Optimizer/GridSearch")) module = new korali::solver::optimizer::GridSearch();
   if (iCompare(moduleType, "Sampler/Nested")) module = new korali::solver::sampler::Nested();
@@ -163,13 +173,6 @@ Module *Module::getModule(knlohmann::json &js, Experiment *e)
   if (isExperiment == false) module->_k = e;
 
   return module;
-}
-
-Module *Module::duplicate(Module *src)
-{
-  knlohmann::json js;
-  src->getConfiguration(js);
-  return Module::getModule(js, src->_k);
 }
 
 } // namespace korali

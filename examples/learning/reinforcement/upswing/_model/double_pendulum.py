@@ -103,9 +103,11 @@ class DoublePendulum:
  
     self.t = self.t + self.dt
     self.step = self.step + 1
-    #print("{}: {}".format(self.step,self.u), flush=True)
-    if self.isOver(): return 1
-    else: return 0
+    
+    if self.isOver(): 
+        return 1
+    else: 
+        return 0
 
   def getState(self):
     state = np.zeros(7)
@@ -120,7 +122,8 @@ class DoublePendulum:
     # maybe transform state 
     # ..
     # ..
-    #print(state, flush=True)
+    
+    assert np.any(np.isfinite(state) == False) == False, "State is nan: {}".format(state)
     
     return state
 

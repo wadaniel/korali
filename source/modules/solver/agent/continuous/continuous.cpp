@@ -58,7 +58,7 @@ void Continuous::initializeAgent()
       if (sigma <= 0.0f) KORALI_LOG_ERROR("Provided initial noise (%f) for action variable %lu is not defined or negative.\n", sigma, varIdx);
 
       // Identity mask for Means
-      _policyParameterScaling[i] = _actionScales[i];
+      _policyParameterScaling[i] = 1.0; //_actionScales[i];
       _policyParameterShifting[i] = _actionShifts[i];
       _policyParameterTransformationMasks[i] = "Identity";
 
@@ -94,7 +94,7 @@ void Continuous::initializeAgent()
 
       // Sigmoid Mask for Variance
       _policyParameterTransformationMasks[_problem->_actionVectorSize + i] = "Sigmoid";
-      _policyParameterScaling[_problem->_actionVectorSize + i] = 2.0f * _actionScales[i] * sigma;
+      _policyParameterScaling[_problem->_actionVectorSize + i] = 2.0f * sigma;
       _policyParameterShifting[_problem->_actionVectorSize + i] = 0.0f;
     }
   }
@@ -151,7 +151,9 @@ std::vector<float> Continuous::generateTrainingAction(policy_t &curPolicy)
       const float mean = curPolicy.distributionParameters[i];
       const float sigma = curPolicy.distributionParameters[_problem->_actionVectorSize + i];
       action[i] = mean + sigma * _normalGenerator->getRandomNumber();
+#ifdef NOISY
       if(action[i] >= _actionUpperBounds[i] || action[i] <= _actionLowerBounds[i]) printf("oc: %zu\n", ++outsideCount); 
+#endif
     }
   }
 
@@ -187,7 +189,9 @@ std::vector<float> Continuous::generateTrainingAction(policy_t &curPolicy)
       const float mu = curPolicy.distributionParameters[i];
       const float sigma = curPolicy.distributionParameters[_problem->_actionVectorSize + i];
       action[i] = mu + sigma * _normalGenerator->getRandomNumber();
+#ifdef NOISY
       if(action[i] >= _actionUpperBounds[i] || action[i] <= _actionLowerBounds[i]) printf("oc: %zu\n", ++outsideCount); 
+#endif
       if (action[i] >= _actionUpperBounds[i]) action[i] = _actionUpperBounds[i];
       if (action[i] <= _actionLowerBounds[i]) action[i] = _actionLowerBounds[i];
     }

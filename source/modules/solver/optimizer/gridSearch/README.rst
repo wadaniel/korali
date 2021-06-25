@@ -2,7 +2,7 @@
 gridSearch
 **************************
 
-This solver implements a grid-search to find the optimum :math:`x^\star` for a given set of parameters :math:`x=(x_1,\dots,x_n)`. Therefore it computes the value for the given objective function
+This solver implements a uniform grid-search to find the optimum :math:`x^\star` for a given set of parameters :math:`x=(x_1,\dots,x_n)`. Therefore it computes the value for the given objective function
 
 .. math::
 

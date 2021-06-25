@@ -3,7 +3,7 @@ version: 2.1
 executors:
   ubuntu_openmpi_onednn:
     docker:
-      - image: docker.io/cselab/ubuntu_openmpi_onednn:1.0.8
+      - image: docker.io/cselab/ubuntu_openmpi_onednn:1.0.9 
       
   fedora_openmpi_onednn:
     docker:

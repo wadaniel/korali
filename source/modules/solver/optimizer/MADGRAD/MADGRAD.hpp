@@ -32,15 +32,15 @@ class MADGRAD : public Optimizer
 {
   public: 
   /**
-  * @brief Learning Rate
+  * @brief Learning Rate (Step Size)
   */
    double _eta;
   /**
-  * @brief Constant for exponential moving avaerage of value update.
+  * @brief Smoothing factor for variable update.
   */
    double _weightDecay;
   /**
-  * @brief Term for numerical stability
+  * @brief Term to facilitate numerical stability
   */
    double _epsilon;
   /**

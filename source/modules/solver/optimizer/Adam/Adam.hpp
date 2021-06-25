@@ -32,19 +32,19 @@ class Adam : public Optimizer
 {
   public: 
   /**
-  * @brief Beta for momentum update
+  * @brief Smoothing factor for momentum update.
   */
    double _beta1;
   /**
-  * @brief Beta for gradient update
+  * @brief Smoothing factor for gradient update.
   */
    double _beta2;
   /**
-  * @brief Learning Rate
+  * @brief Learning Rate (Step Size)
   */
    double _eta;
   /**
-  * @brief Term for numerical stability.
+  * @brief Term to facilitate numerical stability.
   */
    double _epsilon;
   /**

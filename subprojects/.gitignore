@@ -1,4 +1,6 @@
 /dnnl*
+/googletest-*
+/gtest-mpi-listener-*
 /eigen*
 /gsl*
 /packagecache

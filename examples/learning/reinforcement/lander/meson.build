@@ -1,9 +1,8 @@
 e = find_program('./.test-run.py', required: true)
 
-current_dir = meson.current_source_dir()
-
-test('Reinforcement Lander', e,
-      args: [current_dir],
-      timeout : 1000,
-      suite: 'Learning'
+test('learning.reinforcement.lander', e,
+      timeout : 3600,
+      workdir: meson.current_source_dir(),
+      depends: python_extension,
+      suite: 'regression'
     )

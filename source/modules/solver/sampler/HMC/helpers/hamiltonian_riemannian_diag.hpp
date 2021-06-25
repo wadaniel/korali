@@ -254,7 +254,6 @@ class HamiltonianRiemannianDiag : public HamiltonianRiemannian
   */
   double _inverseRegularizationParam;
 
-  private:
   /**
   * @brief Helper function f(x) = 1/x - alpha * x / (sinh(alpha * x^2) * cosh(alpha * x^2)) for SoftAbs metric.
   * @param x Point of evaluation.

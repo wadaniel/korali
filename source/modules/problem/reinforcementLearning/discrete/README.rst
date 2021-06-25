@@ -1,5 +1,5 @@
-**********************************
-Reinforcement Learning (Discrete)
-**********************************
+********************************
+Discrete Reinforcement Learning 
+********************************
 
-Describes a problem were we want to solve a sequential decision making problem in a discrete action domain. 
+Specialization of the Reinforcement Learning Problem for continuous action domains. 

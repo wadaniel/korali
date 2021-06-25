@@ -1,0 +1,20 @@
+__startIncludeGuard__;
+
+#include "modules/solver/solver.hpp"
+
+__startNamespace__;
+
+class __className__ : public __parentClassName__
+{
+  public:
+  /**
+ * @brief Checks whether the proposed sample can be optimized
+ * @param sample A Korali Sample
+ * @return True, if feasible; false, otherwise.
+*/
+  bool isSampleFeasible(const std::vector<double> &sample);
+};
+
+__endNamespace__;
+
+__endIncludeGuard__;

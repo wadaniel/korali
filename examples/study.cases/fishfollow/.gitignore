@@ -1,9 +1,0 @@
-run*
-_trainingResults
-_testingResults
-*.txt
-*.h5
-*.xmf
-*.dat
-_deps
-*.a

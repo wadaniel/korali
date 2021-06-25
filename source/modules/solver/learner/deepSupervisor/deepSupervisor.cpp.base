@@ -1,0 +1,211 @@
+#include "engine.hpp"
+#include "modules/experiment/experiment.hpp"
+#include "modules/solver/learner/deepSupervisor/deepSupervisor.hpp"
+#include "sample/sample.hpp"
+#include <omp.h>
+
+__startNamespace__;
+
+void __className__::initialize()
+{
+  // Getting problem pointer
+  _problem = dynamic_cast<problem::SupervisedLearning *>(_k->_problem);
+
+  // Don't reinitialize if experiment was already initialized
+  if (_k->_isInitialized == true) return;
+
+  /*****************************************************************
+   * Setting up Neural Networks
+   *****************************************************************/
+
+  // Configuring neural network's inputs
+  knlohmann::json neuralNetworkConfig;
+  neuralNetworkConfig["Type"] = "Neural Network";
+  neuralNetworkConfig["Engine"] = _neuralNetworkEngine;
+  neuralNetworkConfig["Timestep Count"] = _problem->_maxTimesteps;
+
+  // Iterator for the current layer id
+  size_t curLayer = 0;
+
+  // Setting the number of input layer nodes as number of input vector size
+  neuralNetworkConfig["Layers"][curLayer]["Type"] = "Layer/Input";
+  neuralNetworkConfig["Layers"][curLayer]["Output Channels"] = _problem->_inputSize;
+  curLayer++;
+
+  // Adding user-defined hidden layers
+  for (size_t i = 0; i < _neuralNetworkHiddenLayers.size(); i++) neuralNetworkConfig["Layers"][curLayer++] = _neuralNetworkHiddenLayers[i];
+
+  // Adding linear transformation layer to convert hidden state to match output channels
+  neuralNetworkConfig["Layers"][curLayer]["Type"] = "Layer/Linear";
+  neuralNetworkConfig["Layers"][curLayer]["Output Channels"] = _problem->_solutionSize;
+  neuralNetworkConfig["Layers"][curLayer]["Weight Scaling"] = _outputWeightsScaling;
+  curLayer++;
+
+  // Applying a user-defined pre-activation function
+  if (_neuralNetworkOutputActivation != "Identity")
+  {
+    neuralNetworkConfig["Layers"][curLayer]["Type"] = "Layer/Activation";
+    neuralNetworkConfig["Layers"][curLayer]["Function"] = _neuralNetworkOutputActivation;
+    curLayer++;
+  }
+
+  // Applying output layer configuration
+  neuralNetworkConfig["Layers"][curLayer] = _neuralNetworkOutputLayer;
+  neuralNetworkConfig["Layers"][curLayer]["Type"] = "Layer/Output";
+
+  // Instancing training neural network
+  auto trainingNeuralNetworkConfig = neuralNetworkConfig;
+  trainingNeuralNetworkConfig["Batch Sizes"] = {_problem->_trainingBatchSize, _problem->_inferenceBatchSize};
+  trainingNeuralNetworkConfig["Mode"] = "Training";
+  _neuralNetwork = dynamic_cast<NeuralNetwork *>(getModule(trainingNeuralNetworkConfig, _k));
+  _neuralNetwork->applyModuleDefaults(trainingNeuralNetworkConfig);
+  _neuralNetwork->setConfiguration(trainingNeuralNetworkConfig);
+  _neuralNetwork->initialize();
+
+  /*****************************************************************
+  * Initializing NN hyperparameters
+  *****************************************************************/
+
+  // If the hyperparameters have not been specified, produce new initial ones
+  if (_hyperparameters.size() == 0) _hyperparameters = _neuralNetwork->generateInitialHyperparameters();
+
+  // Creating and setting hyperparameter structures
+  _neuralNetwork->setHyperparameters(_hyperparameters);
+
+  /*****************************************************************
+  * Setting up weight and bias optimization experiment
+  *****************************************************************/
+
+  auto weightAndBiasParameters = _neuralNetwork->getHyperparameters();
+
+  if (_neuralNetworkOptimizer == "Adam") _optimizer = new korali::fAdam(weightAndBiasParameters.size());
+  if (_neuralNetworkOptimizer == "AdaBelief") _optimizer = new korali::fAdaBelief(weightAndBiasParameters.size());
+  if (_neuralNetworkOptimizer == "MADGRAD") _optimizer = new korali::fMadGrad(weightAndBiasParameters.size());
+  if (_neuralNetworkOptimizer == "RMSProp") _optimizer = new korali::fRMSProp(weightAndBiasParameters.size());
+  if (_neuralNetworkOptimizer == "Adagrad") _optimizer = new korali::fAdagrad(weightAndBiasParameters.size());
+
+  // Setting initial guesses as the current weight and bias parameters
+  _optimizer->_initialValues = weightAndBiasParameters;
+
+  // Resetting solver before using it
+  _optimizer->reset();
+
+  _currentLoss = 0.0f;
+}
+
+void __className__::runGeneration()
+{
+  // Grabbing constants
+  const size_t N = _problem->_trainingBatchSize;
+  const size_t OC = _problem->_solutionSize;
+
+  // Updating optimizer's learning rate, in case it changed
+  _optimizer->_eta = _learningRate;
+
+  for (size_t step = 0; step < _stepsPerGeneration; step++)
+  {
+    // If we use an MSE loss function, we need to update the gradient vector with its difference with each of batch's last timestep of the NN output
+    if (_lossFunction == "Mean Squared Error")
+    {
+      // Checking that incoming data has a correct format
+      _problem->verifyData();
+
+      // Creating gradient vector
+      auto gradientVector = _problem->_solutionData;
+
+      // Forward propagating the input values through the training neural network
+      _neuralNetwork->forward(_problem->_inputData);
+
+      // Getting a reference to the neural network output
+      const auto &results = _neuralNetwork->getOutputValues(N);
+
+      // Calculating gradients via the loss function
+      for (size_t b = 0; b < N; b++)
+        for (size_t i = 0; i < OC; i++)
+          gradientVector[b][i] = gradientVector[b][i] - results[b][i];
+
+      // Backward propagating the gradients through the training neural network
+      _neuralNetwork->backward(gradientVector);
+
+      // Calculating loss across the batch size
+      _currentLoss = 0.0;
+      for (size_t b = 0; b < N; b++)
+        for (size_t i = 0; i < OC; i++)
+          _currentLoss += gradientVector[b][i] * gradientVector[b][i];
+      _currentLoss = _currentLoss / ((float)N * 2.0f);
+    }
+
+    // If using direct gradient, backward propagating the gradients directly through the training neural network
+    if (_lossFunction == "Direct Gradient")
+      _neuralNetwork->backward(_problem->_solutionData);
+
+    // Getting hyperparameter gradients
+    auto nnHyperparameterGradients = _neuralNetwork->getHyperparameterGradients(N);
+
+    // Apply gradient of L2 regularizer
+    if (_l2RegularizationEnabled)
+    {
+      const auto nnHyperparameters = _neuralNetwork->getHyperparameters();
+      for (size_t i = 0; i < nnHyperparameterGradients.size(); ++i)
+        nnHyperparameterGradients[i] -= _l2RegularizationImportance * nnHyperparameters[i];
+    }
+
+    // Passing hyperparameter gradients through an ADAM update
+    _optimizer->processResult(0.0f, nnHyperparameterGradients);
+
+    // Getting new set of hyperparameters from Adam
+    _neuralNetwork->setHyperparameters(_optimizer->_currentValue);
+  }
+}
+
+std::vector<float> __className__::getHyperparameters()
+{
+  return _neuralNetwork->getHyperparameters();
+}
+
+void __className__::setHyperparameters(const std::vector<float> &hyperparameters)
+{
+  // Update evaluation network
+  _neuralNetwork->setHyperparameters(hyperparameters);
+}
+
+void __className__::resetOptimizer()
+{
+  // Resetting
+  _optimizer->reset();
+}
+
+std::vector<std::vector<float>> &__className__::getEvaluation(const std::vector<std::vector<std::vector<float>>> &input)
+{
+  // Grabbing constants
+  const size_t N = input.size();
+
+  // Running the input values through the neural network
+  _neuralNetwork->forward(input);
+
+  // Returning the output values for the last given timestep
+  return _neuralNetwork->getOutputValues(N);
+}
+
+// Only needed for DDPG
+//std::vector<std::vector<float>> &__className__::getDataGradients(const std::vector<std::vector<std::vector<float>>> &input, const std::vector<std::vector<float>> &outputGradients)
+//{
+//  const size_t N = input.size();
+//
+//  // Running the input values through the neural network
+//  _neuralNetwork->backward(outputGradients);
+//
+//  // Returning the input data gradients
+//  return _neuralNetwork->getInputGradients(N);
+//}
+
+void __className__::printGenerationAfter()
+{
+  // Printing results so far
+  if (_lossFunction == "Mean Squared Error") _k->_logger->logInfo("Normal", " + Training Loss: %.15f\n", _currentLoss);
+  if (_lossFunction == "Direct Gradient") _k->_logger->logInfo("Normal", " + Gradient L2-Norm: %.15f\n", std::sqrt(_currentLoss));
+}
+
+__moduleAutoCode__;
+
+__endNamespace__;

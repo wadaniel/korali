@@ -1,7 +1,7 @@
 Case-Study Applications
 =======================
 
-These are a set of case-study applications that have been used by members of ETH Zurich's CSELab to conduct scientific research or demonstrate Korali.
+These are a set of case-study applications that have been used by ETH Zurich CSELab members or collaborators to conduct scientific research.
 
 For more information:
 

@@ -1,0 +1,19 @@
+__startIncludeGuard__;
+
+#include "modules/solver/solver.hpp"
+
+__startNamespace__;
+
+class __className__ : public __parentClassName__
+{
+  public:
+  void setInitialConfiguration() override;
+  void runGeneration() override;
+  void printGenerationBefore() override;
+  void printGenerationAfter() override;
+  void finalize() override;
+};
+
+__endNamespace__;
+
+__endIncludeGuard__;

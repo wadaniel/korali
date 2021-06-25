@@ -22,17 +22,6 @@ double vectorNorm(const std::vector<double> &x)
   return sqrt(norm);
 }
 
-double vectorDistance(const std::vector<double> &x, const std::vector<double> &y)
-{
-  double norm = 0.;
-  for (size_t i = 0; i < x.size(); i++)
-  {
-    double z = x[i] - y[i];
-    norm += z * z;
-  }
-  return sqrt(norm);
-}
-
 std::string getTimestamp()
 {
   time_t rawtime;
@@ -46,61 +35,6 @@ size_t getTimehash()
   return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 }
 
-/**
-* @brief CRC table Implementation taken from https://barrgroup.com/embedded-systems/how-to/crc-calculation-c-code
-*/
-crc crcTable[256];
-void crcInit(void)
-{
-  crc remainder;
-
-  /*
-     * Compute the remainder of each possible dividend.
-     */
-  for (int dividend = 0; dividend < 256; ++dividend)
-  {
-    /*
-         * Start with the dividend followed by zeros.
-         */
-    remainder = dividend << (WIDTH - 8);
-
-    /*
-         * Perform modulo-2 division, a bit at a time.
-         */
-    for (uint8_t bit = 8; bit > 0; --bit)
-    {
-      /*
-             * Try to divide the current data bit.
-             */
-      if (remainder & TOPBIT)
-      {
-        remainder = (remainder << 1) ^ POLYNOMIAL;
-      }
-      else
-      {
-        remainder = (remainder << 1);
-      }
-    }
-
-    /*
-         * Store the result into the table.
-         */
-    crcTable[dividend] = remainder;
-  }
-
-} /* crcInit() */
-
-crc crcFast(uint8_t const message[], size_t nBytes)
-{
-  uint8_t data;
-  uint32_t remainder = 0;
-  for (size_t byte = 0; byte < nBytes; ++byte)
-  {
-    data = message[byte] ^ (remainder >> (WIDTH - 8));
-    remainder = crcTable[data] ^ (remainder << 8);
-  }
-  return (remainder);
-}
 
 char decimalToHexChar(const uint8_t byte)
 {
@@ -120,8 +54,6 @@ char decimalToHexChar(const uint8_t byte)
   if (byte == 13) return 'D';
   if (byte == 14) return 'E';
   if (byte == 15) return 'F';
-  fprintf(stderr, "Number out of Hex limits: %hhu\n", byte);
-  exit(-1);
   return '0';
 }
 
@@ -143,8 +75,6 @@ uint8_t hexCharToDecimal(const char x)
   if (x == 'D') return 13;
   if (x == 'E') return 14;
   if (x == 'F') return 15;
-  fprintf(stderr, "Char out of Hex limits: %c", x);
-  exit(-1);
   return 0;
 }
 

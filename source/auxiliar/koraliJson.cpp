@@ -25,22 +25,6 @@ void KoraliJson::traverseKey(pybind11::object key)
     _opt = &((*_opt)[keyInt]);
     return;
   }
-
-  fprintf(stderr, "Could not recognize Python key format.\n");
-  exit(-1);
-}
-
-std::string KoraliJson::get()
-{
-  auto ret = _opt->dump(2);
-  _opt = &_js;
-  return ret;
-}
-
-void KoraliJson::set(const std::string &js)
-{
-  *_opt = knlohmann::json::parse(js);
-  _opt = &_js;
 }
 
 void KoraliJson::setItem(const pybind11::object key, const pybind11::object val)

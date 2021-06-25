@@ -5,6 +5,8 @@ r = call(["python3", "run-cmaes.py"])
 if r!=0:
   exit(r)
 
-# FIXME The grid search was not tested. It crashes.
+r = call(["python3", "run-gridsearch.py"])
+if r!=0:
+  exit(r)
 
 exit(0)

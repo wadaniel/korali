@@ -52,8 +52,12 @@ def consumeValue(base, moduleName, path, varName, varType, isMandatory, options)
     rhs = base + path + '.get<' + varType + '>();\n'
     if ('gsl_rng*' in varType): rhs = 'setRange(' + base + path + '.get<std::string>());\n'
 
-    cString += ' try { ' + varName + ' = ' + rhs + '} catch (const std::exception& e)\n'
-    cString += ' { KORALI_LOG_ERROR(" + Object: [ ' + moduleName + ' ] \\n + Key:    ' + path.replace('"', "'") + '\\n%s", e.what()); } \n'
+    if ('knlohmann::json' in varType):
+     cString += ' ' + varName + ' = ' + rhs + '\n'
+    else:
+     cString += ' try { ' + varName + ' = ' + rhs + '} catch (const std::exception& e)\n'
+     cString += ' { KORALI_LOG_ERROR(" + Object: [ ' + moduleName + ' ] \\n + Key:    ' + path.replace('"', "'") + '\\n%s", e.what()); } \n'
+     
     if (options):
       cString += '{\n'
       validVarName = 'validOption'
@@ -140,14 +144,11 @@ def createSetConfiguration(module):
   if 'Conditional Variables' in module:
     codeString += '  _hasConditionalVariables = false; \n'
     for v in module["Conditional Variables"]:
-      codeString += ' if(js' + vr.getVariablePath(v) + '.is_number()) ' + vr.getCXXVariableName(v["Name"]) + ' = js' + vr.getVariablePath(v) + ';\n'
-      codeString += ' if(js' + vr.getVariablePath(
-          v
-      ) + '.is_string()) { _hasConditionalVariables = true; ' + vr.getCXXVariableName(
-          v["Name"]) + 'Conditional = js' + vr.getVariablePath(v) + '; } \n'
-      codeString += ' eraseValue(js, ' + vr.getVariablePath(v).replace(
-          '][', ", ").replace('[', '').replace(']', '') + ');\n\n'
-
+      codeString += ' if(js' + vr.getVariablePath(v) + '.is_number()) {' + vr.getCXXVariableName(v["Name"]) + ' = js' + vr.getVariablePath(v) + '; ' + vr.getCXXVariableName(v["Name"]) + 'Conditional = ""; } \n'
+      codeString += ' if(js' + vr.getVariablePath(v) + '.is_string()) { _hasConditionalVariables = true; ' + vr.getCXXVariableName(v["Name"]) + 'Conditional = js' + vr.getVariablePath(v) + '; } \n'
+      codeString += ' eraseValue(js, ' + vr.getVariablePath(v).replace('][', ", ").replace('[', '').replace(']', '') + ');\n'
+    codeString += ' if (_hasConditionalVariables == false) updateDistribution(); // If distribution is not conditioned to external values, update from the beginning \n\n'
+      
   if 'Compatible Solvers' in module:
     codeString += '  bool detectedCompatibleSolver = false; \n'
     codeString += '  std::string solverName = toLower(_k->_js["Solver"]["Type"]); \n'

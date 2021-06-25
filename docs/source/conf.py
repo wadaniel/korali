@@ -12,6 +12,7 @@
 #
 import os
 import sys
+import shutil
 sys.path.insert(0, os.path.abspath('.'))
 sys.path.insert(0, os.path.abspath('../../tools/build/'))
 
@@ -19,9 +20,6 @@ from builders import buildExamples as be
 from builders import buildFeatures as bf
 from builders import buildModules as bm
 from builders import buildTools as bt
-from builders import buildTests as btst
-
-import build_all_source
 
 import subprocess as sp
 
@@ -30,15 +28,14 @@ project = 'korali'
 copyright = 'ETH Zurich'
 author = 'CSELab'
 
-# Build generated code
-build_all_source.buildAllSource('../../source/','../generated_code/')
-
+# Copying base readme file
+shutil.copy('../../README.rst', './')
+  
 # Build rst files
 be.build_examples('../../examples/', './examples/')
 bf.build_features('../../examples/features/', './features/')
 bm.build_modules('../../source/modules/', './modules/')
 bt.build_tools('../../python/korali/', './using/tools/')
-btst.build_tests('../../tests/', './dev/')
 
 # Run doxygen
 sp.run('(cd .. && doxygen)', shell=True) # compile the xml source
@@ -95,7 +92,7 @@ html_theme = 'sphinx_rtd_theme'
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+html_static_path = [ ]
 
 # If false, no module index is generated.
 html_domain_indices = True

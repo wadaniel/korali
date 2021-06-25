@@ -6,25 +6,10 @@
 
 namespace korali
 {
-Logger::Logger()
-{
-  _verbosityLevel = 3;
-  _outputFile = stdout;
-}
 
 Logger::Logger(const std::string verbosityLevel, FILE *file)
 {
   _verbosityLevel = getVerbosityLevel(verbosityLevel);
-  _outputFile = file;
-}
-
-void Logger::setVerbosityLevel(const std::string verbosityLevel)
-{
-  _verbosityLevel = getVerbosityLevel(verbosityLevel);
-}
-
-void Logger::setConsoleOutputFile(FILE *file)
-{
   _outputFile = file;
 }
 
@@ -88,16 +73,9 @@ void Logger::logWarning(const std::string verbosityLevel, const char *format, ..
   va_start(ap, format);
   vasprintf(&outstr, newFormat.c_str(), ap);
 
-  if (_outputFile == stdout)
-  {
-    fprintf(stderr, "%s", outstr);
-    fflush(stderr);
-  }
-  else
-  {
-    fprintf(_outputFile, "%s", outstr);
-    fflush(_outputFile);
-  }
+  FILE* outFile = _outputFile == stdout ? stderr : _outputFile;
+  fprintf(outFile, "%s", outstr);
+  fflush(outFile);
 
   free(outstr);
 }

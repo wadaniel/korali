@@ -1,12 +1,5 @@
 #!/bin/bash
 
-
-###### Check OS ######
-
-if [ "$(uname)" == "Darwin" ]; then
-    exit
-fi
-
 ###### Check if necessary python modules are installed ######
 
 python3 -m pip install gym

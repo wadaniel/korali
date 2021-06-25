@@ -39,7 +39,7 @@ class CMAES : public Optimizer
   */
    size_t _populationSize;
   /**
-  * @brief Number of best samples used to update the covariance matrix and the mean (by default it is half the Sample Count).
+  * @brief Number of best samples (offspring samples) used to update the covariance matrix and the mean (by default it is half the Sample Count).
   */
    size_t _muValue;
   /**
@@ -83,7 +83,7 @@ class CMAES : public Optimizer
   */
    size_t _viabilityPopulationSize;
   /**
-  * @brief Number of best samples used to update the covariance matrix and the mean during the viability regime (by default this variable is hald the Viability Sample Count).
+  * @brief Number of best samples used to update the covariance matrix and the mean during the viability regime (by default this variable is half the Viability Sample Count).
   */
    size_t _viabilityMuValue;
   /**
@@ -135,7 +135,7 @@ class CMAES : public Optimizer
   */
    size_t _currentMuValue;
   /**
-  * @brief [Internal Use] Weights for each of the Mu samples.
+  * @brief [Internal Use] Calibrated Weights for each of the Mu offspring samples.
   */
    std::vector<double> _muWeights;
   /**

@@ -39,7 +39,7 @@ class MOCMAES : public Optimizer
   */
    size_t _populationSize;
   /**
-  * @brief Number of best samples advancing to the next generation (by default it is half the Sample Count).
+  * @brief Number of best samples (offspring) advancing to the next generation (by default it is half the Sample Count).
   */
    size_t _muValue;
   /**
@@ -87,7 +87,7 @@ class MOCMAES : public Optimizer
   */
    std::vector<std::vector<double>> _previousValues;
   /**
-  * @brief [Internal Use] Tracking index of parent.
+  * @brief [Internal Use] Tracking index of parent samples.
   */
    std::vector<size_t> _parentIndex;
   /**

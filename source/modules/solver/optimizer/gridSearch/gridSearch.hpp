@@ -32,11 +32,11 @@ class GridSearch : public Optimizer
 {
   public: 
   /**
-  * @brief [Internal Use] Total number of locations to evaluate (==samples per generation).
+  * @brief [Internal Use] Total number of parameter to evaluate (samples per generation).
   */
    size_t _numberOfValues;
   /**
-  * @brief [Internal Use] Vector containing values of the Objective Function.
+  * @brief [Internal Use] Vector containing values of the objective function.
   */
    std::vector<double> _objective;
   /**

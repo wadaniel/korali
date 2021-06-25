@@ -64,7 +64,7 @@ class DEA : public Optimizer
 
   public: 
   /**
-  * @brief Specifies the number of samples to evaluate per generation (preferably 5-10x number of variables).
+  * @brief Specifies the number of samples to evaluate per generation (preferably 5-10x the number of variables).
   */
    size_t _populationSize;
   /**

@@ -218,6 +218,7 @@ PYBIND11_MODULE(libkorali, m)
       isPythonActive = true;
       k.run(e);
     })
+
     .def("run", [](Engine &k, std::vector<Experiment> &e) {
       isPythonActive = true;
       k.run(e);

@@ -198,6 +198,7 @@ std::vector<float> @className::generateTrainingAction(policy_t &curPolicy)
       const float mu = curPolicy.distributionParameters[i];
       const float sigma = curPolicy.distributionParameters[_problem->_actionVectorSize + i];
       
+      /*
       const float alpha = (_actionLowerBounds[i]-mu)/sigma;
       const float beta = (_actionUpperBounds[i]-mu)/sigma;
       
@@ -209,6 +210,13 @@ std::vector<float> @className::generateTrainingAction(policy_t &curPolicy)
       // Safety check
       if (action[i] >= _actionUpperBounds[i]) action[i] = _actionUpperBounds[i];
       if (action[i] <= _actionLowerBounds[i]) action[i] = _actionLowerBounds[i];
+      */
+
+      do
+      {
+        action[i] = mu + sigma * _normalGenerator->getRandomNumber();
+      }
+      while( (action[i] < _actionLowerBounds[i]) || (action[i] > _actionUpperBounds[i]) );
 
       // Keep this for the moment, also catches infs and nans (D.W.)
       assert(action[i] <= _actionUpperBounds[i]);
@@ -622,9 +630,11 @@ std::vector<float> @className::calculateImportanceWeightGradient(const std::vect
       
       // Gradient with respect to Mean
       importanceWeightGradients[i] = (curActionDif/curVar+dCqMu);
+	  assert(isfinite(importanceWeightGradients[i]));
 
       // Gradient with respect to Sigma
       importanceWeightGradients[_problem->_actionVectorSize + i] = curActionDif * curActionDif * curInvSig3 - curInvSig + dCqSig;
+	  assert(isfinite(importanceWeightGradients[_problem->_actionVectorSize+i]));
 
       // Calculate Importance Weight
       logpCurPolicy += std::log(Cq*curInvSig)-0.5f*(action[i]-curMu)*(action[i]-curMu)/curVar;
@@ -766,11 +776,11 @@ std::vector<float> @className::calculateKLDivergenceGradient(const policy_t &old
 
       const float invSqrt2Pi = M_SQRT1_2*std::sqrt(M_1_PI);
       
-      const float oldAdjustedUb = (_actionUpperBounds[i] - oldMu)*oldInvSig;
       const float oldAdjustedLb = (_actionLowerBounds[i] - oldMu)*oldInvSig;
+      const float oldAdjustedUb = (_actionUpperBounds[i] - oldMu)*oldInvSig;
       
-      const float curAdjustedLb = (_actionLowerBounds[i] - oldMu)*curInvSig;
-      const float curAdjustedUb = (_actionUpperBounds[i] - oldMu)*curInvSig;
+      const float curAdjustedLb = (_actionLowerBounds[i] - curMu)*curInvSig;
+      const float curAdjustedUb = (_actionUpperBounds[i] - curMu)*curInvSig;
       
       const float erfLb = std::erff(M_SQRT1_2*oldAdjustedLb);
       const float erfUb = std::erff(M_SQRT1_2*oldAdjustedUb);
@@ -799,15 +809,15 @@ std::vector<float> @className::calculateKLDivergenceGradient(const policy_t &old
       assert(isfinite(KLDivergenceGradients[i]));
 
       // KL-Gradient with respect to Sigma
-      KLDivergenceGradients[_problem->_actionVectorSize + i] = curAdjustedLb*curInvSig*cdfRatiosA;
+      KLDivergenceGradients[_problem->_actionVectorSize + i] = curAdjustedLb*cdfRatiosA;
 	  assert(isfinite(KLDivergenceGradients[_problem->_actionVectorSize+i]));
       KLDivergenceGradients[_problem->_actionVectorSize + i] += 0.5f*(curInvSig-muDif*muDif*curInvSig3-oldVar*curInvSig3)*(erfUb-erfLb);
       assert(isfinite(KLDivergenceGradients[_problem->_actionVectorSize+i]));
-      KLDivergenceGradients[_problem->_actionVectorSize + i] += invSqrt2Pi*curInvSig3*oldSigma*(oldAdjustedUb+2.f*muDif)*expLb;
+      KLDivergenceGradients[_problem->_actionVectorSize + i] += invSqrt2Pi*curInvSig3*(oldVar*oldAdjustedUb+2.f*oldSigma*muDif)*expLb;
       assert(isfinite(KLDivergenceGradients[_problem->_actionVectorSize+i]));
-      KLDivergenceGradients[_problem->_actionVectorSize + i] -= invSqrt2Pi*curInvSig3*oldSigma*(oldAdjustedLb+2.f*muDif)*expLb;
+      KLDivergenceGradients[_problem->_actionVectorSize + i] -= invSqrt2Pi*curInvSig3*(oldVar*oldAdjustedLb+2.f*oldSigma*muDif)*expLb;
       assert(isfinite(KLDivergenceGradients[_problem->_actionVectorSize+i]));
-      KLDivergenceGradients[_problem->_actionVectorSize + i] -= curAdjustedUb*curInvSig*ccdfRatiosB;
+      KLDivergenceGradients[_problem->_actionVectorSize + i] -= curAdjustedUb*ccdfRatiosB;
       assert(isfinite(KLDivergenceGradients[_problem->_actionVectorSize+i]));
     }
   }
@@ -834,7 +844,10 @@ std::vector<float> @className::calculateKLDivergenceGradient(const policy_t &old
       
       const float oldAdjustedUb = (_actionUpperBounds[i] - oldMu)*oldInvSig;
       const float oldAdjustedLb = (_actionLowerBounds[i] - oldMu)*oldInvSig;
-      
+
+      const float curAdjustedUb = (_actionUpperBounds[i] - curMu)*curInvSig;
+      const float curAdjustedLb = (_actionLowerBounds[i] - curMu)*curInvSig;
+
       const float erfLb = std::erff(M_SQRT1_2*oldAdjustedLb);
       const float erfUb = std::erff(M_SQRT1_2*oldAdjustedUb);
       
@@ -846,22 +859,26 @@ std::vector<float> @className::calculateKLDivergenceGradient(const policy_t &old
 
       // Normalization constants of truncated normal
       const float Cq = 1./(normalCDF(_actionUpperBounds[i], curMu, curSigma)-normalCDF(_actionLowerBounds[i], curMu, curSigma));
+	  assert(isfinite(Cq));
       const float Cp = 1./(normalCDF(_actionUpperBounds[i], oldMu, oldSigma)-normalCDF(_actionLowerBounds[i], oldMu, oldSigma));
+	  assert(isfinite(Cp));
   
       // Normalized gradients of constants
       const float dCqMu = Cq*(normalUpper-normalLower);
-      const float dCqSig = Cq*(oldAdjustedUb*normalUpper-oldAdjustedLb*normalLower);
+      const float dCqSig = Cq*(curAdjustedUb*normalUpper-curAdjustedLb*normalLower);
  
       // KL grad wrt. mu
       KLDivergenceGradients[i] = 0.5f*Cp*(-dCqMu-muDif*curInvVar)*(erfUb-erfLb);
+	  assert(isfinite(KLDivergenceGradients[i]));
       KLDivergenceGradients[i] += Cp*invSqrt2Pi*oldSigma*curInvVar*(expUb-expLb);
 	  assert(isfinite(KLDivergenceGradients[i]));
 
       // KL grad wrt. sigma
       KLDivergenceGradients[_problem->_actionVectorSize + i] = 0.5f*Cp*(curInvSig-muDif*muDif*curInvSig3-oldVar*curInvSig3-dCqSig)*(erfUb-erfLb);
-      KLDivergenceGradients[_problem->_actionVectorSize + i] += Cp*invSqrt2Pi*curInvSig3*oldSigma*(oldAdjustedUb+2.f*muDif)*expUb;
 	  assert(isfinite(KLDivergenceGradients[_problem->_actionVectorSize + i]));
-      KLDivergenceGradients[_problem->_actionVectorSize + i] -= Cp*invSqrt2Pi*curInvSig3*oldSigma*(oldAdjustedLb+2.f*muDif)*expLb;
+      KLDivergenceGradients[_problem->_actionVectorSize + i] += Cp*invSqrt2Pi*curInvSig3*(oldVar*oldAdjustedUb+2.f*oldSigma*muDif)*expUb;
+	  assert(isfinite(KLDivergenceGradients[_problem->_actionVectorSize + i]));
+      KLDivergenceGradients[_problem->_actionVectorSize + i] -= Cp*invSqrt2Pi*curInvSig3*(oldVar*oldAdjustedLb+2.f*oldSigma*muDif)*expLb;
 	  assert(isfinite(KLDivergenceGradients[_problem->_actionVectorSize + i]));
     }
 

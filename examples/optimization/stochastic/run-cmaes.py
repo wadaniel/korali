@@ -10,6 +10,9 @@ import math
 sys.path.append('./_model')
 from model import *
 
+from mpi4py import MPI
+assert MPI.COMM_WORLD.Get_size() > 1
+
 # Starting Korali's Engine
 import korali
 k = korali.Engine()
@@ -24,6 +27,7 @@ e["Problem"]["Objective Function"] = negative_sphere
 
 dim = 10
 
+
 # Defining the problem's variables.
 for i in range(dim):
     e["Variables"][i]["Name"] = "X" + str(i)
@@ -36,6 +40,9 @@ e["Solver"]["Type"] = "Optimizer/CMAES"
 e["Solver"]["Population Size"] = 32
 e["Solver"]["Termination Criteria"]["Min Value Difference Threshold"] = 1e-32
 e["Solver"]["Termination Criteria"]["Max Generations"] = 100
+
+k.setKoraliMPIComm(MPI._addressof(MPI.COMM_WORLD))
+k["Conduit"]["Type"] = "Distributed"
 
 # Configuring results path
 e["File Output"]["Enabled"] = True

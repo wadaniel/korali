@@ -6,7 +6,7 @@ import time
 from fish import *
 
 class swarm:
-    def __init__(self, N, numNN, alpha=360., speed=1., turningRate=360., seed=42):
+    def __init__(self, N, numNN, alpha=360., speed=1., turningRate=360., cutOff=0.01, seed=42):
         assert alpha > 0., "wrong alpha"
         assert alpha <= 360., "wrong alpha"
         assert turningRate > 0., "wrong turningRate"
@@ -21,6 +21,8 @@ class swarm:
         self.speed = speed
         # turning rate
         self.turningRate = turningRate / 180. * np.pi
+        # cut off for "touching"
+        self.cutOff = cutOff
         # create fish at random locations
         self.fishes = self.randomPlacementNoOverlap( seed )
 
@@ -30,7 +32,7 @@ class swarm:
         M = int( pow( self.N, 1/3 ) )
         V = M+1
         # grid spacing ~ min distance between fish
-        dl = 0.1
+        dl = self.cutOff*10
         # maximal extent
         L = V*dl
         
@@ -49,16 +51,14 @@ class swarm:
         return fishes
 
     """ compute distance and angle matrix """
-    def preComputeStates(self):
-        # create containers for distances and angles
-        distances  = np.full(shape=(self.N,self.N), fill_value=np.inf, dtype=float)
-        angles     = np.zeros(shape=(self.N,self.N), dtype=float)
-        # .. and direction vector
-        directions = np.full(shape=(self.N,self.N, 3), fill_value=np.inf, dtype=float)
+    def preComputeStatesNaive(self):
+        # create containers for distances, angles and directions
+        distances  = np.full( shape=(self.N,self.N), fill_value=np.inf, dtype=float)
+        angles     = np.full( shape=(self.N,self.N), fill_value=np.inf, dtype=float)
+        directions = np.zeros(shape=(self.N,self.N,3), dtype=float)
         # boolean indicating if two fish are touching
         terminal = False
         # iterate over grid and compute angle / distance matrix
-        # TODO: use scipy.spatial.distance_matrix
         for i in np.arange(self.N):
             for j in np.arange(self.N):
                 if i != j:
@@ -81,6 +81,44 @@ class swarm:
         self.directionMat = directions
 
         return terminal
+
+    """ compute distance and angle matrix """
+    def preComputeStates(self):
+        ## create containers for location and swimming directions and angles
+        locations     = np.empty(shape=(self.N,3 ), dtype=float)
+        curDirections = np.empty(shape=(self.N,3 ), dtype=float)
+
+        ## fill matrix with locations / current swimming direction
+        for i,fish in enumerate(self.fishes):
+            locations[i,:]     = fish.location
+            curDirections[i,:] = fish.curDirection
+        # normalize swimming directions
+        normalCurDirections = curDirections / np.linalg.norm( curDirections, axis=1 )[:, np.newaxis]
+
+        ## create containers for direction, distance, and angle
+        directions    = np.empty(shape=(self.N,self.N, 3), dtype=float)
+        distances     = np.empty(shape=(self.N,self.N),    dtype=float)
+        angles        = np.empty(shape=(self.N,self.N),    dtype=float)
+
+        ## use numpy broadcasting to compute direction, distance, and angles
+        directions    = locations[np.newaxis, :, :] - locations[:, np.newaxis, :]
+        distances     = np.sqrt( np.einsum('ijk,ijk->ij', directions, directions) )
+        # normalize direction
+        normalDirections = directions / distances[:,:,np.newaxis]
+        angles = np.arccos( np.einsum( 'ijk, ijk->ij', normalCurDirections[:,np.newaxis,:], normalDirections ) )
+        
+        ## set diagonals entries
+        np.fill_diagonal( distances, np.inf )
+        np.fill_diagonal( angles,    np.inf )
+
+        ## fill values to class member variable
+        self.directionMat = directions
+        self.distancesMat = distances
+        self.anglesMat    = angles
+        
+        # return if any two fish are closer then the cutOff
+        return ( self.distancesMat < self.cutOff ).any()
+
 
     def getState( self, i ):
         # get array for agent i

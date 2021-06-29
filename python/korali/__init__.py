@@ -16,5 +16,9 @@ def Experiment():
 
 
 def getMPIComm():
-  from libkorali import getMPICommPointer
-  return getMPICommPointer()
+  from libkorali import getMPIComm
+  return getMPIComm()
+
+def setMPIComm(comm):
+  from libkorali import setMPIComm
+  setMPIComm(comm)

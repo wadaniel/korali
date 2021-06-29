@@ -229,7 +229,7 @@ T normalLogDensity(const T &x, const T &mean, const T &sigma)
 template <typename T>
 T normalCDF(const T &x, const T &mean, const T &sigma)
 {
-  return 0.5 + 0.5*std::erff((x-mean)/(sigma*M_SQRT2));
+  return 0.5 + 0.5*std::erf((x-mean)/(sigma*M_SQRT2));
 }
 
 /**
@@ -256,7 +256,7 @@ T normalLogCDF(const T &x, const T &mean, const T &sigma)
 template <typename T>
 T normalCCDF(const T &x, const T &mean, const T &sigma)
 {
-  return 0.5 - 0.5*std::erff((x-mean)/(sigma*M_SQRT2));
+  return 0.5 - 0.5*std::erf((x-mean)/(sigma*M_SQRT2));
 }
 
 /**

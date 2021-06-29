@@ -1,12 +1,12 @@
-@startIncludeGuard
+__startIncludeGuard__;
 
 #include "modules/distribution/multivariate/multivariate.hpp"
-#include <gsl/gsl_vector.h>
 #include <gsl/gsl_matrix.h>
+#include <gsl/gsl_vector.h>
 
-@startNamespace
+__startNamespace__;
 
-class @className : public @parentClassName
+class __className__ : public __parentClassName__
 {
   private:
   /**
@@ -61,6 +61,6 @@ class @className : public @parentClassName
   void getRandomVector(double *x, const size_t n) override;
 };
 
-@endNamespace
+__endNamespace__;
 
-@endIncludeGuard
+__endIncludeGuard__;

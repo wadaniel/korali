@@ -10,7 +10,7 @@ namespace solver
 {
 namespace learner
 {
-
+;
 
 void DeepSupervisor::initialize()
 {
@@ -437,9 +437,9 @@ bool DeepSupervisor::checkTermination()
  return hasFinished;
 }
 
-
+;
 
 } //learner
 } //solver
 } //korali
-
+;

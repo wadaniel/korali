@@ -20,7 +20,7 @@ namespace solver
 {
 namespace sampler
 {
-
+;
 
 void HMC::setInitialConfiguration()
 {
@@ -291,11 +291,11 @@ void HMC::runGenerationNUTS(const double logUniSample)
     numLeavesSubtree = helper->numLeavesOut;
 
     if (buildCriterionSubtree == true)
-     if (_uniformGenerator->getRandomNumber() < numValidLeavesSubtree / numValidLeaves && isanynan(_positionCandidate) == false)
-     {
-       _positionLeader = _positionCandidate;
-       _leaderEvaluation = -_hamiltonian->U();
-     }
+      if (_uniformGenerator->getRandomNumber() < numValidLeavesSubtree / numValidLeaves && isanynan(_positionCandidate) == false)
+      {
+        _positionLeader = _positionCandidate;
+        _leaderEvaluation = -_hamiltonian->U();
+      }
 
     numValidLeaves += numValidLeavesSubtree;
 
@@ -380,11 +380,11 @@ void HMC::runGenerationNUTSRiemannian(const double logUniSample)
     numLeavesSubtree = helper->numLeavesOut;
 
     if (buildCriterionSubtree == true)
-     if (_uniformGenerator->getRandomNumber() < numValidLeavesSubtree / numValidLeaves && isanynan(_positionCandidate) == false)
-     {
-       _positionLeader = _positionCandidate;
-       _leaderEvaluation = -_hamiltonian->U();
-     }
+      if (_uniformGenerator->getRandomNumber() < numValidLeavesSubtree / numValidLeaves && isanynan(_positionCandidate) == false)
+      {
+        _positionLeader = _positionCandidate;
+        _leaderEvaluation = -_hamiltonian->U();
+      }
 
     numValidLeaves += numValidLeavesSubtree;
 
@@ -1298,9 +1298,9 @@ bool HMC::checkTermination()
  return hasFinished;
 }
 
-
+;
 
 } //sampler
 } //solver
 } //korali
-
+;

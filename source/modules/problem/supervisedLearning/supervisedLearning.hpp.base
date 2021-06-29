@@ -1,10 +1,10 @@
-@startIncludeGuard
+__startIncludeGuard__;
 
 #include "modules/problem/problem.hpp"
 
-@startNamespace
+__startNamespace__;
 
-class @className : public @parentClassName
+class __className__ : public __parentClassName__
 {
   public:
   void initialize() override;
@@ -15,6 +15,6 @@ class @className : public @parentClassName
   void verifyData();
 };
 
-@endNamespace
+__endNamespace__;
 
-@endIncludeGuard
+__endIncludeGuard__;

@@ -13,7 +13,7 @@
 
 #ifndef _KORALI_SOLVER_AGENT_
 #define _KORALI_SOLVER_AGENT_
-
+;
 
 #include "auxiliar/cbuffer.hpp"
 #include "modules/problem/reinforcementLearning/reinforcementLearning.hpp"
@@ -27,7 +27,7 @@ namespace korali
 {
 namespace solver
 {
-
+;
 
 /**
 * @brief This enumerator details all possible termination statuses for a given episode's experience
@@ -106,11 +106,11 @@ class Agent : public Solver
   */
    size_t _concurrentEnvironments;
   /**
-  * @brief Indicates the how many finished episodes to receive in a generation (checkpoints are generated between generations).
+  * @brief Indicates how many episodes to complete in a generation (checkpoints are generated between generations).
   */
    size_t _episodesPerGeneration;
   /**
-  * @brief The number of experiences to randomly select to train the neural network with.
+  * @brief The number of experiences to randomly select to train the neural network(s) with.
   */
    size_t _miniBatchSize;
   /**
@@ -118,19 +118,19 @@ class Agent : public Solver
   */
    std::string _miniBatchStrategy;
   /**
-  * @brief Indicates the number of contiguous experiences to pass to the NN for learning. This is only useful when using recurrent NNs on problems with time-dependent phenomena.
+  * @brief Indicates the number of contiguous experiences to pass to the NN for learning. This is only useful when using recurrent NNs.
   */
    size_t _timeSequenceLength;
   /**
-  * @brief The base learning rate to use for the NN hyperparameter optimization.
+  * @brief The initial learning rate to use for the NN hyperparameter optimization.
   */
    float _learningRate;
   /**
-  * @brief Regulates if l2 regularization will be applied to the neural networks.
+  * @brief Boolean to determine if l2 regularization will be applied to the neural networks.
   */
    int _l2RegularizationEnabled;
   /**
-  * @brief Importance weight of l2 regularization.
+  * @brief Coefficient for l2 regularization.
   */
    float _l2RegularizationImportance;
   /**
@@ -138,43 +138,43 @@ class Agent : public Solver
   */
    knlohmann::json _neuralNetworkHiddenLayers;
   /**
-  * @brief Indicates the optimizer algorithm to use for the NN hyperparameters.
+  * @brief Indicates the optimizer algorithm to update the NN hyperparameters.
   */
    std::string _neuralNetworkOptimizer;
   /**
-  * @brief Specifies which Neural Network backend engine to use.
+  * @brief Specifies which Neural Network backend to use.
   */
    std::string _neuralNetworkEngine;
   /**
-  * @brief Represents the weight given to the expectation of the cumulative reward from future experiences.
+  * @brief Represents the discount factor to weight future experiences.
   */
    float _discountFactor;
   /**
-  * @brief Indicates whether to serialize and store the experience replay after each generation file save. Disabling will reduce I/O overheads but will disable the checkpoint/resume function.
+  * @brief Indicates whether to serialize and store the experience replay after each generation. Disabling will reduce I/O overheads but will disable the checkpoint/resume function.
   */
    int _experienceReplaySerialize;
   /**
-  * @brief The minimum number of experiences to gather before learning starts.
+  * @brief The minimum number of experiences before learning starts.
   */
    size_t _experienceReplayStartSize;
   /**
-  * @brief The minimum number of experiences to accumulate before starting to forget.
+  * @brief The size of the replay memory. If this number is exceeded, experiences are deleted.
   */
    size_t _experienceReplayMaximumSize;
   /**
-  * @brief Indicates the scaling of the importance weight threshold under/above which an experience is considered off-policy. 
+  * @brief Initial Cut-Off to classify experiences as on- or off-policy. (c_max in https://arxiv.org/abs/1807.05827)
   */
    float _experienceReplayOffPolicyCutoffScale;
   /**
-  * @brief Indicates the target off-policiness. The agent will try to stay under this target value
+  * @brief Target fraction of off-policy experiences in the replay memory. (D in https://arxiv.org/abs/1807.05827)
   */
    float _experienceReplayOffPolicyTarget;
   /**
-  * @brief The parameters A from eq. (13) for REFER  (see: https://arxiv.org/abs/1807.05827) for controling experience off-policiness in the ER memory.
+  * @brief Annealing rate for Off Policy Cutoff Scale and Learning Rate. (A in https://arxiv.org/abs/1807.05827)
   */
    float _experienceReplayOffPolicyAnnealingRate;
   /**
-  * @brief Initial value for the penalisation coefficient for off-policiness. 
+  * @brief Initial value for the penalisation coefficient for off-policiness. (beta in https://arxiv.org/abs/1807.05827)
   */
    float _experienceReplayOffPolicyREFERBeta;
   /**
@@ -182,11 +182,11 @@ class Agent : public Solver
   */
    float _experiencesBetweenPolicyUpdates;
   /**
-  * @brief Determines whether to use state scaling (done only once after the initial exploration phase).
+  * @brief Determines whether to normalize the states, such that they have mean 0 and standard deviation 1 (done only once after the initial exploration phase).
   */
    int _stateRescalingEnabled;
   /**
-  * @brief Determines whether to use reward scaling
+  * @brief Determines whether to normalize the rewards, such that they have mean 0 and standard deviation 1
   */
    int _rewardRescalingEnabled;
   /**
@@ -194,7 +194,7 @@ class Agent : public Solver
   */
    size_t _rewardRescalingFrequency;
   /**
-  * @brief If enabled, it penalizes the rewards for experiences that contain out of bound actions. This is useful for problems with truncated actions (e.g., openAI gym Mujoco) where out of bounds actions produce the same effect as the boundary action to prevent policy means to extend too much outside the bounds.
+  * @brief If enabled, it penalizes the rewards for experiences with out of bound actions. This is useful for problems with truncated actions (e.g., openAI gym Mujoco) where out of bounds actions are clipped in the environment. This prevents policy means to extend too much outside the bounds.
   */
    int _rewardOutboundPenalizationEnabled;
   /**
@@ -226,31 +226,31 @@ class Agent : public Solver
   */
    float _trainingAverageReward;
   /**
-  * @brief [Internal Use] Remembers the cumulative reward of the last training episode.
+  * @brief [Internal Use] Remembers the cumulative sum of rewards for the last training episode.
   */
    float _trainingLastReward;
   /**
-  * @brief [Internal Use] Remembers the cumulative average episode reward found so far from training episodes.
+  * @brief [Internal Use] Remembers the best cumulative sum of rewards found so far in any episodes.
   */
    float _trainingBestReward;
   /**
-  * @brief [Internal Use] Remembers the episode that obtained the maximum reward found so far during training.
+  * @brief [Internal Use] Remembers the episode that obtained the maximum cumulative sum of rewards found so far.
   */
    size_t _trainingBestEpisodeId;
   /**
-  * @brief [Internal Use] The rewards obtained when evaluating the testing samples.
+  * @brief [Internal Use] The cumulative sum of rewards obtained when evaluating the testing samples.
   */
    std::vector<float> _testingReward;
   /**
-  * @brief [Internal Use] Remembers the best reward from latest testing episodes, if any.
+  * @brief [Internal Use] Remembers the best cumulative sum of rewards from latest testing episodes, if any.
   */
    float _testingBestReward;
   /**
-  * @brief [Internal Use] Remembers the worst reward from latest testing episodes, if any.
+  * @brief [Internal Use] Remembers the worst cumulative sum of rewards from latest testing episodes, if any.
   */
    float _testingWorstReward;
   /**
-  * @brief [Internal Use] Remembers the episode Id that obtained the maximum reward found so far during testing.
+  * @brief [Internal Use] Remembers the episode Id that obtained the maximum cumulative sum of rewards found so far during testing.
   */
    size_t _testingBestEpisodeId;
   /**
@@ -258,23 +258,23 @@ class Agent : public Solver
   */
    size_t _testingCandidateCount;
   /**
-  * @brief [Internal Use] Remembers the average reward from latest testing episodes, if any.
+  * @brief [Internal Use] Remembers the average cumulative sum of rewards from latest testing episodes, if any.
   */
    float _testingAverageReward;
   /**
-  * @brief [Internal Use] Remembers the average reward from latest testing episodes, if any.
+  * @brief [Internal Use] Remembers the standard deviation of the cumulative sum of rewards from latest testing episodes, if any.
   */
    float _testingStdevReward;
   /**
-  * @brief [Internal Use] Remembers the average reward from previous testing episodes, if any.
+  * @brief [Internal Use] Remembers the average cumulative sum of rewards from previous testing episodes, if any.
   */
    float _testingPreviousAverageReward;
   /**
-  * @brief [Internal Use] Remembers the cumulative average episode reward found so far from testing episodes.
+  * @brief [Internal Use] Remembers the best cumulative sum of rewards found so far from testing episodes.
   */
    float _testingBestAverageReward;
   /**
-  * @brief [Internal Use] Number of current off-policy experiences in the ER.
+  * @brief [Internal Use] Number of off-policy experiences in the experience replay.
   */
    size_t _experienceReplayOffPolicyCount;
   /**
@@ -282,7 +282,7 @@ class Agent : public Solver
   */
    float _experienceReplayOffPolicyRatio;
   /**
-  * @brief [Internal Use] Indicates the current importance weight threshold under which an experience is considered off-policy. 
+  * @brief [Internal Use] Indicates the current cutoff to classify experiences as on- or off-policy 
   */
    float _experienceReplayOffPolicyCurrentCutoff;
   /**
@@ -290,11 +290,11 @@ class Agent : public Solver
   */
    float _currentLearningRate;
   /**
-  * @brief [Internal Use] Keeps track of the number of policy updates performed.
+  * @brief [Internal Use] Keeps track of the number of policy updates that have been performed.
   */
    size_t _policyUpdateCount;
   /**
-  * @brief [Internal Use] Keeps track of the current Sample ID, to make sure no two equal sample IDs are produced and that this value can be used as random seed.
+  * @brief [Internal Use] Keeps track of the current Sample ID, and makes sure no two equal sample IDs are produced such that this value can be used as random seed.
   */
    size_t _currentSampleID;
   /**
@@ -302,17 +302,21 @@ class Agent : public Solver
   */
    korali::distribution::univariate::Uniform* _uniformGenerator;
   /**
-  * @brief [Internal Use] Takes count of the number of experiences received so far.
+  * @brief [Internal Use] Count of the number of experiences produced so far.
   */
    size_t _experienceCount;
   /**
-  * @brief [Internal Use] Contains the mean by which rewards are rescaled to a N[0,1] distribution.
+  * @brief [Internal Use] Contains the mean of the rewards. They will be shifted by this value in order to normalize the reward distribution in the RM.
   */
    float _rewardRescalingMean;
   /**
-  * @brief [Internal Use] Contains the sigma by which rewards are rescaled to a N[0,1] distribution.
+  * @brief [Internal Use] Contains the standard deviation of the rewards. They will be scaled by this value in order to normalize the reward distribution in the RM.
   */
    float _rewardRescalingSigma;
+  /**
+  * @brief [Internal Use] Sum of squared rewards in experience replay.
+  */
+   float _rewardRescalingSumSquaredRewards;
   /**
   * @brief [Internal Use] Indicates how many times have the rewards been rescaled
   */
@@ -322,15 +326,15 @@ class Agent : public Solver
   */
    size_t _rewardOutboundPenalizationCount;
   /**
-  * @brief [Internal Use] Contains the means by which state variables are rescaled to a N[0,1] distribution.
+  * @brief [Internal Use] Contains the mean of the states. They will be shifted by this value in order to normalize the state distribution in the RM.
   */
    std::vector<float> _stateRescalingMeans;
   /**
-  * @brief [Internal Use] Contains the sigmas by which state variables are rescaled to a N[0,1] distribution.
+  * @brief [Internal Use] Contains the standard deviations of the states. They will be scaled by this value in order to normalize the state distribution in the RM.
   */
    std::vector<float> _stateRescalingSigmas;
   /**
-  * @brief [Termination Criteria] The solver will stop when the given number of environments have been fully executed.
+  * @brief [Termination Criteria] The solver will stop when the given number of episodes have been run.
   */
    size_t _maxEpisodes;
   /**
@@ -342,11 +346,11 @@ class Agent : public Solver
   */
    float _testingTargetAverageReward;
   /**
-  * @brief [Termination Criteria] The solver will stop when the averge testing reward is below the previous testing average by more than a threshold given by this factor multiplied with the testing standard deviation.
+  * @brief [Termination Criteria] The solver will stop when the average testing reward is below the previous testing average by more than a threshold given by this factor multiplied with the testing standard deviation.
   */
    float _testingAverageRewardIncrement;
   /**
-  * @brief [Termination Criteria] The solver will stop when the given number of optimizations have been made to the learner.
+  * @brief [Termination Criteria] The solver will stop when the given number of optimization steps have been performed.
   */
    size_t _maxPolicyUpdates;
   
@@ -805,7 +809,7 @@ class Agent : public Solver
 
 } //solver
 } //korali
-
+;
 
 #endif // _KORALI_SOLVER_AGENT_
-
+;

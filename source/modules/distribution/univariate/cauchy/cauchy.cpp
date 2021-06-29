@@ -9,9 +9,10 @@ namespace distribution
 {
 namespace univariate
 {
+;
 
-
-double Cauchy::getDensity(const double x) const
+double
+Cauchy::getDensity(const double x) const
 {
   return gsl_ran_cauchy_pdf(x - _location, _scale);
 }
@@ -96,9 +97,9 @@ double* Cauchy::getPropertyPointer(const std::string& property)
  return NULL;
 }
 
-
+;
 
 } //univariate
 } //distribution
 } //korali
-
+;

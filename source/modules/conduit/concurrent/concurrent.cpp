@@ -17,7 +17,7 @@ namespace korali
 {
 namespace conduit
 {
-
+;
 
 void Concurrent::initialize()
 {
@@ -276,8 +276,8 @@ void Concurrent::applyVariableDefaults()
  Conduit::applyVariableDefaults();
 } 
 
-
+;
 
 } //conduit
 } //korali
-
+;

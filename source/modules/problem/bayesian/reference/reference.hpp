@@ -13,7 +13,7 @@
 
 #ifndef _KORALI_PROBLEM_BAYESIAN_REFERENCE_
 #define _KORALI_PROBLEM_BAYESIAN_REFERENCE_
-
+;
 
 #include "modules/problem/bayesian/bayesian.hpp"
 #include <vector>
@@ -24,7 +24,7 @@ namespace problem
 {
 namespace bayesian
 {
-
+;
 
 /**
 * @brief Class declaration for module: Reference.
@@ -33,8 +33,6 @@ class Reference : public Bayesian
 {
   private:
   const double _log2pi = 1.83787706640934533908193770912476;
-
-  size_t statisticalVariableIndex;
 
   /**
   * @brief Precomputes the square distance between two vectors (f and y) of the same size normalized by a third vector (g)
@@ -187,7 +185,7 @@ class Reference : public Bayesian
 } //bayesian
 } //problem
 } //korali
-
+;
 
 #endif // _KORALI_PROBLEM_BAYESIAN_REFERENCE_
-
+;

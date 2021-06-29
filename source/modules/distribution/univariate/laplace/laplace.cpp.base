@@ -3,19 +3,20 @@
 #include <gsl/gsl_randist.h>
 #include <gsl/gsl_sf.h>
 
-@startNamespace
+__startNamespace__;
 
-double @className::getDensity(const double x) const
+double
+__className__::getDensity(const double x) const
 {
   return gsl_ran_laplace_pdf(x - _mean, _width);
 }
 
-double @className::getLogDensity(const double x) const
+double __className__::getLogDensity(const double x) const
 {
   return _aux - fabs(x - _mean) / _width;
 }
 
-double @className::getLogDensityGradient(const double x) const
+double __className__::getLogDensityGradient(const double x) const
 {
   if (x >= _mean)
     return 1.0 / _width;
@@ -23,23 +24,23 @@ double @className::getLogDensityGradient(const double x) const
     return -1.0 / _width;
 }
 
-double @className::getLogDensityHessian(const double x) const
+double __className__::getLogDensityHessian(const double x) const
 {
   return 0.;
 }
 
-double @className::getRandomNumber()
+double __className__::getRandomNumber()
 {
   return _mean + gsl_ran_laplace(_range, _width);
 }
 
-void @className::updateDistribution()
+void __className__::updateDistribution()
 {
   if (_width <= 0.0) KORALI_LOG_ERROR("Incorrect Width parameter of Laplace distribution: %f.\n", _width);
 
   _aux = -gsl_sf_log(2. * _width);
 }
 
-@moduleAutoCode
+__moduleAutoCode__;
 
-@endNamespace
+__endNamespace__;

@@ -8,6 +8,11 @@ gmock_dep = gtest_sub.get_variable('gmock_dep')
 #gtest_mpi_listener_sub = subproject('gtest-mpi-listener')
 #gtest_mpi_listener_dep = gtest_mpi_listener_sub.get_variable('gtest_mpi_listener_dep')
 
+python3_config = find_program('python3-config')
+python3_libs = run_command(python3_config, '--ldflags', '--embed').stdout().strip().split()
+python3_cflags = run_command(python3_config, '--includes', '--embed').stdout().strip().split()
+
 subdir('python')
 subdir('unit')
 subdir('statistical')
+subdir('build')

@@ -13,7 +13,7 @@
 
 #ifndef _KORALI_NEURALNETWORK_
 #define _KORALI_NEURALNETWORK_
-
+;
 
 #include "config.hpp"
 #include "modules/experiment/experiment.hpp"
@@ -32,7 +32,7 @@
 
 namespace korali
 {
-
+;
 
 /**
 * @brief Structure containing the information of a layer pipeline. There is one pipeline per threadCount x batchSize combination.
@@ -104,11 +104,11 @@ class NeuralNetwork : public Module
   */
    knlohmann::json _layers;
   /**
-  * @brief Provides the timesteps to be expected for the input/output data.
+  * @brief Provides the sequence length for the input/output data.
   */
    size_t _timestepCount;
   /**
-  * @brief Specifies the batch sizes for the NN input/output data.
+  * @brief Specifies the batch sizes.
   */
    std::vector<size_t> _batchSizes;
   /**
@@ -248,7 +248,7 @@ class NeuralNetwork : public Module
 };
 
 } //korali
-
+;
 
 #endif // _KORALI_NEURALNETWORK_
-
+;

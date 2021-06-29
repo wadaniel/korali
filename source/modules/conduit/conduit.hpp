@@ -13,7 +13,7 @@
 
 #ifndef _KORALI_CONDUIT_
 #define _KORALI_CONDUIT_
-
+;
 
 #include "modules/module.hpp"
 #include <queue>
@@ -21,7 +21,7 @@
 
 namespace korali
 {
-
+;
 
 /**
 * @brief Class declaration for module: Conduit.
@@ -197,7 +197,7 @@ class Conduit : public Module
 };
 
 } //korali
-
+;
 
 #endif // _KORALI_CONDUIT_
-
+;

@@ -1,21 +1,21 @@
-@startIncludeGuard
+__startIncludeGuard__;
 
-#include "config.hpp"
 #include "auxiliar/koraliJson.hpp"
 #include "auxiliar/libco/libco.h"
+#include "config.hpp"
 #include "modules/module.hpp"
 #include "variable/variable.hpp"
 #include <chrono>
 #include <functional>
 #include <vector>
 
-@startNamespace
+__startNamespace__;
 
 class Solver;
 class Problem;
 class Engine;
 
-class @className: public @parentClassName
+class __className__ : public __parentClassName__
 {
   public:
   Experiment();
@@ -64,7 +64,14 @@ class @className: public @parentClassName
   */
   double _resultSavingTime;
 
+  /**
+  * @brief For testing purposes, this field establishes whether the engine is the one to run samples (default = false) or a custom function (true)
+  */
   bool _overrideEngine = false;
+
+  /**
+   * @brief For testing purposes, this field establishes which custom function to use to override the engine on sample execution for testing.
+   */
   std::function<void(Sample &)> _overrideFunction;
 
   /**
@@ -119,6 +126,6 @@ class @className: public @parentClassName
   void setSeed(knlohmann::json &js);
 };
 
-@endNamespace
+__endNamespace__;
 
-@endIncludeGuard
+__endIncludeGuard__;

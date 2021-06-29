@@ -2,9 +2,9 @@
 #include "modules/solver/optimizer/gridSearch/gridSearch.hpp"
 #include "sample/sample.hpp"
 
-@startNamespace
+__startNamespace__;
 
-void @className::setInitialConfiguration()
+void __className__::setInitialConfiguration()
 {
   _variableCount = _k->_variables.size();
 
@@ -13,10 +13,10 @@ void @className::setInitialConfiguration()
     _numberOfValues *= _k->_variables[i]->_values.size();
 
   if (_numberOfValues > _maxModelEvaluations)
-   {
+  {
     _k->_logger->logWarning("Normal", "%lu > %lu. More evaluations required than the maximum specified.\n", _numberOfValues, _maxModelEvaluations);
     _numberOfValues = _maxModelEvaluations;
-   }
+  }
 
   // Resetting execution counter
   _modelEvaluationCount = 0;
@@ -37,7 +37,7 @@ void @className::setInitialConfiguration()
   }
 }
 
-void @className::runGeneration()
+void __className__::runGeneration()
 {
   if (_k->_currentGeneration == 1) setInitialConfiguration();
 
@@ -85,11 +85,11 @@ void @className::runGeneration()
   _bestEverValue = KORALI_GET(double, samples[maxIndex], "F(x)");
 }
 
-void @className::printGenerationBefore()
+void __className__::printGenerationBefore()
 {
 }
 
-void @className::printGenerationAfter()
+void __className__::printGenerationAfter()
 {
   _k->_logger->logInfo("Minimal", "Found Maximum with Objective %+6.3e at:\n", _bestEverValue);
   for (size_t i = 0; i < _bestEverVariables.size(); i++)
@@ -97,13 +97,13 @@ void @className::printGenerationAfter()
   _k->_logger->logData("Normal", "\n");
 }
 
-void @className::finalize()
+void __className__::finalize()
 {
   // Updating Results
   (*_k)["Results"]["Best Sample"]["Parameters"] = _bestEverVariables;
   (*_k)["Results"]["Best Sample"]["F(x)"] = _bestEverValue;
 }
 
-@moduleAutoCode
+__moduleAutoCode__;
 
-@endNamespace
+__endNamespace__;

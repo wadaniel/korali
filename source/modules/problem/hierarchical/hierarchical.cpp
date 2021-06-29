@@ -5,7 +5,7 @@ namespace korali
 {
 namespace problem
 {
-
+;
 
 void Hierarchical::initialize()
 {
@@ -187,7 +187,8 @@ bool Hierarchical::runOperation(std::string operation, korali::Sample& sample)
  return operationDetected;
 }
 
-
+;
 
 } //problem
 } //korali
+;

@@ -8,9 +8,10 @@ namespace distribution
 {
 namespace univariate
 {
+;
 
-
-double Geometric::getDensity(const double x) const
+double
+Geometric::getDensity(const double x) const
 {
   return gsl_ran_geometric_pdf((int)x, _successProbability);
 }
@@ -84,9 +85,9 @@ double* Geometric::getPropertyPointer(const std::string& property)
  return NULL;
 }
 
-
+;
 
 } //univariate
 } //distribution
 } //korali
-
+;

@@ -1,4 +1,4 @@
-Single & Double Pendulum Upswing (Python)
-==========================================
+Upswing (Python)
+======================
 
-Examples of different algorithms solving the pendulum on a cart swing-up problem implemented in python.
+Examples of different algorithms solving the upswing problem on python.

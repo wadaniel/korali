@@ -13,7 +13,7 @@
 
 #ifndef _KORALI_SOLVER_AGENT_CONTINUOUS_
 #define _KORALI_SOLVER_AGENT_CONTINUOUS_
-
+;
 
 #include "modules/distribution/univariate/beta/beta.hpp"
 #include "modules/problem/reinforcementLearning/continuous/continuous.hpp"
@@ -25,7 +25,7 @@ namespace solver
 {
 namespace agent
 {
-
+;
 
 /**
 * @brief Class declaration for module: Continuous.
@@ -34,15 +34,15 @@ class Continuous : public Agent
 {
   public: 
   /**
-  * @brief Specifies which probability distribution to use to generate the actions of the agent.
+  * @brief Specifies which probability distribution to use for the policy.
   */
    std::string _policyDistribution;
   /**
-  * @brief [Internal Use] Gaussian random number generator for the agent's action.
+  * @brief [Internal Use] Gaussian random number generator to generate the agent's action.
   */
    korali::distribution::univariate::Normal* _normalGenerator;
   /**
-  * @brief [Internal Use] Shift required for bounded actions.
+  * @brief [Internal Use] Shifts required for bounded actions.
   */
    std::vector<float> _actionShifts;
   /**
@@ -131,13 +131,13 @@ class Continuous : public Agent
 
   float calculateImportanceWeight(const std::vector<float> &action, const policy_t &curPolicy, const policy_t &oldPolicy) override;
   virtual void getAction(korali::Sample &sample) override;
-  virtual void initializeAgent();
+  virtual void initializeAgent() override;
 };
 
 } //agent
 } //solver
 } //korali
-
+;
 
 #endif // _KORALI_SOLVER_AGENT_CONTINUOUS_
-
+;

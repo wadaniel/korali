@@ -16,7 +16,7 @@ namespace solver
 {
 namespace optimizer
 {
-
+;
 
 void DEA::setInitialConfiguration()
 {
@@ -627,8 +627,9 @@ bool DEA::checkTermination()
  return hasFinished;
 }
 
-
+;
 
 } //optimizer
 } //solver
 } //korali
+;

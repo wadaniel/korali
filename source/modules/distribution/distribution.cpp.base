@@ -2,12 +2,13 @@
 #include "modules/experiment/experiment.hpp"
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_randist.h>
-#include <gsl/gsl_sf.h>
 #include <gsl/gsl_rng.h>
+#include <gsl/gsl_sf.h>
 
-@startNamespace
+__startNamespace__;
 
-std::string @className::getRange(gsl_rng *range) const
+std::string
+__className__::getRange(gsl_rng *range) const
 {
   unsigned char *state = (unsigned char *)gsl_rng_state(range);
   size_t n = gsl_rng_size(range);
@@ -28,7 +29,7 @@ std::string @className::getRange(gsl_rng *range) const
   return output;
 }
 
-gsl_rng *@className::setRange(const std::string rangeString)
+gsl_rng *__className__::setRange(const std::string rangeString)
 {
   gsl_rng *rng = gsl_rng_alloc(gsl_rng_default);
 
@@ -60,6 +61,6 @@ gsl_rng *@className::setRange(const std::string rangeString)
   return rng;
 }
 
-@moduleAutoCode
+__moduleAutoCode__;
 
-@endNamespace
+__endNamespace__;

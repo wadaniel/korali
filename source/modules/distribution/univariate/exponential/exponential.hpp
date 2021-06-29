@@ -13,7 +13,7 @@
 
 #ifndef _KORALI_DISTRIBUTION_UNIVARIATE_EXPONENTIAL_
 #define _KORALI_DISTRIBUTION_UNIVARIATE_EXPONENTIAL_
-
+;
 
 #include "modules/distribution/univariate/univariate.hpp"
 
@@ -23,7 +23,7 @@ namespace distribution
 {
 namespace univariate
 {
-
+;
 
 /**
 * @brief Class declaration for module: Exponential.
@@ -120,7 +120,7 @@ class Exponential : public Univariate
 } //univariate
 } //distribution
 } //korali
-
+;
 
 #endif // _KORALI_DISTRIBUTION_UNIVARIATE_EXPONENTIAL_
-
+;

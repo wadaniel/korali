@@ -6,7 +6,7 @@ import time
 from fish import *
 
 class swarm:
-    def __init__(self, N, numNN, alpha=360., speed=1., turningRate=360., cutOff=0.01, seed=42):
+    def __init__(self, N, numNN, alpha=360., speed=1., turningRate=360., seed=42):
         assert alpha > 0., "wrong alpha"
         assert alpha <= 360., "wrong alpha"
         assert turningRate > 0., "wrong turningRate"
@@ -21,8 +21,6 @@ class swarm:
         self.speed = speed
         # turning rate
         self.turningRate = turningRate / 180. * np.pi
-        # cut off for "touching"
-        self.cutOff = cutOff
         # create fish at random locations
         self.fishes = self.randomPlacementNoOverlap( seed )
 
@@ -32,7 +30,7 @@ class swarm:
         M = int( pow( self.N, 1/3 ) )
         V = M+1
         # grid spacing ~ min distance between fish
-        dl = self.cutOff*10
+        dl = 0.1
         # maximal extent
         L = V*dl
         
@@ -50,7 +48,7 @@ class swarm:
         # return array of fish
         return fishes
 
-    """ compute distance and angle matrix """
+    """ compute distance and angle matrix (very slow version) """
     def preComputeStatesNaive(self):
         # create containers for distances, angles and directions
         distances  = np.full( shape=(self.N,self.N), fill_value=np.inf, dtype=float)
@@ -84,14 +82,16 @@ class swarm:
 
     """ compute distance and angle matrix """
     def preComputeStates(self):
-        ## create containers for location and swimming directions and angles
+        ## create containers for location, swimming directions, and 
         locations     = np.empty(shape=(self.N,3 ), dtype=float)
         curDirections = np.empty(shape=(self.N,3 ), dtype=float)
+        cutOff        = np.empty(shape=(self.N, ),  dtype=float)
 
         ## fill matrix with locations / current swimming direction
         for i,fish in enumerate(self.fishes):
             locations[i,:]     = fish.location
             curDirections[i,:] = fish.curDirection
+            cutOff[i]          = fish.sigmaPotential
         # normalize swimming directions
         normalCurDirections = curDirections / np.linalg.norm( curDirections, axis=1 )[:, np.newaxis]
 
@@ -117,7 +117,7 @@ class swarm:
         self.anglesMat    = angles
         
         # return if any two fish are closer then the cutOff
-        return ( self.distancesMat < self.cutOff ).any()
+        return ( self.distancesMat < cutOff[:,np.newaxis] ).any()
 
 
     def getState( self, i ):

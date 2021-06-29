@@ -8,7 +8,7 @@ namespace solver
 {
 namespace optimizer
 {
-
+;
 
 void AdaBelief::setInitialConfiguration()
 {
@@ -307,9 +307,9 @@ bool AdaBelief::checkTermination()
  return hasFinished;
 }
 
-
+;
 
 } //optimizer
 } //solver
 } //korali
-
+;

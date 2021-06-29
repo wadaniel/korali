@@ -24,7 +24,7 @@ Computational Model and Data Points
 
 First, we create the Korali engine and an experiment that we will configure,
 
-.. code-block:: python
+.. code-block:: cpp
 
     auto k = korali::Engine();
     auto e = korali::Experiment();
@@ -35,7 +35,7 @@ Here, `heat2DInit`, defined in [heat2d.cpp](model/heat2d.cpp), returns the data 
 
 We next set the problem type to Bayesian inference, assign the objective values (refTemp values) of our data as `Reference Data` and set the computational model to the function `heat2DSolver` (our `f` above), defined in [heat2d.cpp](model/heat2d.cpp),
 
-.. code-block:: python
+.. code-block:: cpp
 
     e["Problem"]["Type"] = "Evaluation/Bayesian/Inference/Reference";
     e["Problem"]["Likelihood Model"] = "Additive Normal";
@@ -49,7 +49,7 @@ Solver
 
 Then, we decide on `CMAES` as solver and configure its parameters,
 
-.. code-block:: python
+.. code-block:: cpp
 
     e["Solver"]["Type"] = "Optimizer/CMAES";
     e["Solver"]["Population Size"] = 32;
@@ -61,7 +61,7 @@ Variables and Prior Distributions
 We then need to define four variables, as well as a prior distribution for each
 of them,
 
-.. code-block:: python
+.. code-block:: cpp
 
     e["Distributions"][0]["Name"] = "Uniform 0";
     e["Distributions"][0]["Type"] = "Univariate/Uniform";

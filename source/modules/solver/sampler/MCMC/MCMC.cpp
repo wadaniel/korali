@@ -20,7 +20,7 @@ namespace solver
 {
 namespace sampler
 {
-
+;
 
 void MCMC::setInitialConfiguration()
 {
@@ -137,13 +137,13 @@ void MCMC::choleskyDecomp(const std::vector<double> &inC, std::vector<double> &o
   gsl_matrix_free(A);
 }
 
-double MCMC::recursiveAlpha(double &deonominator, const double leaderLoglikelihood, const double *loglikelihoods, size_t N) const
+double MCMC::recursiveAlpha(double &denominator, const double leaderLoglikelihood, const double *loglikelihoods, size_t N) const
 {
   // recursive formula from Trias[2009]
 
   if (N == 0)
   {
-    deonominator = exp(leaderLoglikelihood);
+    denominator = exp(leaderLoglikelihood);
     return std::min(1.0, exp(loglikelihoods[0] - leaderLoglikelihood));
   }
   else
@@ -167,9 +167,9 @@ double MCMC::recursiveAlpha(double &deonominator, const double leaderLoglikeliho
     // update denomiator
     double denominatorStar;
     double alphaDenominator = recursiveAlpha(denominatorStar, leaderLoglikelihood, loglikelihoods, N - 1);
-    deonominator = denominatorStar * (1.0 - alphaDenominator);
+    denominator = denominatorStar * (1.0 - alphaDenominator);
 
-    return std::min(1.0, numerator / deonominator);
+    return std::min(1.0, numerator / denominator);
   }
 }
 
@@ -559,9 +559,9 @@ bool MCMC::checkTermination()
  return hasFinished;
 }
 
-
+;
 
 } //sampler
 } //solver
 } //korali
-
+;

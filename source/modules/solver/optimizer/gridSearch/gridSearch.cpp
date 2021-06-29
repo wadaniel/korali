@@ -8,7 +8,7 @@ namespace solver
 {
 namespace optimizer
 {
-
+;
 
 void GridSearch::setInitialConfiguration()
 {
@@ -19,10 +19,10 @@ void GridSearch::setInitialConfiguration()
     _numberOfValues *= _k->_variables[i]->_values.size();
 
   if (_numberOfValues > _maxModelEvaluations)
-   {
+  {
     _k->_logger->logWarning("Normal", "%lu > %lu. More evaluations required than the maximum specified.\n", _numberOfValues, _maxModelEvaluations);
     _numberOfValues = _maxModelEvaluations;
-   }
+  }
 
   // Resetting execution counter
   _modelEvaluationCount = 0;
@@ -187,9 +187,9 @@ bool GridSearch::checkTermination()
  return hasFinished;
 }
 
-
+;
 
 } //optimizer
 } //solver
 } //korali
-
+;

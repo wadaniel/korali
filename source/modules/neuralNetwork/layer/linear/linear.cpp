@@ -19,7 +19,7 @@ namespace neuralNetwork
 {
 namespace layer
 {
-
+;
 
 void Linear::initialize()
 {
@@ -518,9 +518,9 @@ void Linear::applyVariableDefaults()
  Layer::applyVariableDefaults();
 } 
 
-
+;
 
 } //layer
 } //neuralNetwork
 } //korali
-
+;

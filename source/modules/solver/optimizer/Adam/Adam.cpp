@@ -8,7 +8,7 @@ namespace solver
 {
 namespace optimizer
 {
-
+;
 
 void Adam::setInitialConfiguration()
 {
@@ -323,9 +323,9 @@ bool Adam::checkTermination()
  return hasFinished;
 }
 
-
+;
 
 } //optimizer
 } //solver
 } //korali
-
+;

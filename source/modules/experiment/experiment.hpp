@@ -13,11 +13,11 @@
 
 #ifndef _KORALI_EXPERIMENT_
 #define _KORALI_EXPERIMENT_
+;
 
-
-#include "config.hpp"
 #include "auxiliar/koraliJson.hpp"
 #include "auxiliar/libco/libco.h"
+#include "config.hpp"
 #include "modules/module.hpp"
 #include "variable/variable.hpp"
 #include <chrono>
@@ -26,7 +26,7 @@
 
 namespace korali
 {
-
+;
 
 /**
 * @brief Class declaration for module: Experiment.
@@ -44,7 +44,7 @@ class Engine;
 /**
 * @brief Class declaration for module: Experiment.
 */
-class Experiment: public Module
+class Experiment : public Module
 {
   public: 
   /**
@@ -135,6 +135,7 @@ class Experiment: public Module
   
 
   Experiment();
+  ~Experiment();
 
   void initialize() override;
   void finalize() override;
@@ -179,7 +180,14 @@ class Experiment: public Module
   */
   double _resultSavingTime;
 
+  /**
+  * @brief For testing purposes, this field establishes whether the engine is the one to run samples (default = false) or a custom function (true)
+  */
   bool _overrideEngine = false;
+
+  /**
+   * @brief For testing purposes, this field establishes which custom function to use to override the engine on sample execution for testing.
+   */
   std::function<void(Sample &)> _overrideFunction;
 
   /**
@@ -221,20 +229,12 @@ class Experiment: public Module
   knlohmann::json &operator[](const std::string &key);
 
   /**
-  * @brief C++ wrapper for the getItem operator.
-  * @param key A C++ integer acting as JSON key.
-  * @return The referenced JSON object content.
- */
-  knlohmann::json &operator[](const unsigned long int &key);
-
-  /**
     * @brief For learner modules which have been trained, test returns an inferred output batch, from a batch of inputs to process.
     * @param inputBatch The inputs from which to infer outputs. Format: TxBxIC (T: Time steps, B: Batch Size, IC: Input channels)
     * @return The inferred outputs. Format: BxOC (Time steps, B: Batch Size, OC: Output channels)
    */
   std::vector<std::vector<float>> getEvaluation(const std::vector<std::vector<std::vector<float>>> &inputBatch);
 
-  private:
   /**
    * @brief Initializes seed to a random value based on current time if not set by the user (i.e. Random Seed is 0).
    * @param js Json object onto which to store the Experiment data.
@@ -243,7 +243,7 @@ class Experiment: public Module
 };
 
 } //korali
-
+;
 
 #endif // _KORALI_EXPERIMENT_
-
+;

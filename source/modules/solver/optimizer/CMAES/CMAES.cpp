@@ -4,10 +4,10 @@
 
 #include <algorithm> // std::sort
 #include <chrono>
+#include <gsl/gsl_eigen.h>
 #include <numeric> // std::iota
 #include <stdio.h>
 #include <unistd.h>
-#include <gsl/gsl_eigen.h>
 //#include <gsl/gsl_vector.h>
 //#include <gsl/gsl_matrix.h>
 //#include <gsl/gsl_blas.h>
@@ -18,7 +18,7 @@ namespace solver
 {
 namespace optimizer
 {
-
+;
 
 void CMAES::setInitialConfiguration()
 {
@@ -93,10 +93,10 @@ void CMAES::setInitialConfiguration()
     if (_gradientStepSize <= 0.) KORALI_LOG_ERROR("Gradient Step Size must be larger than 0.0 (is %f)", _gradientStepSize);
   }
 
-  if(_mirroredSampling)
+  if (_mirroredSampling)
   {
-    if(_populationSize % 2 == 1) KORALI_LOG_ERROR("Mirrored Sampling can only be applied with an even Sample Population (is %zu)", _populationSize);
-    if(_hasConstraints) KORALI_LOG_ERROR("Mirrored Sampling not applicable to problems with constraints");
+    if (_populationSize % 2 == 1) KORALI_LOG_ERROR("Mirrored Sampling can only be applied with an even Sample Population (is %zu)", _populationSize);
+    if (_hasConstraints) KORALI_LOG_ERROR("Mirrored Sampling not applicable to problems with constraints");
   }
 
   _covarianceMatrix.resize(_variableCount * _variableCount);
@@ -447,57 +447,56 @@ void CMAES::prepareGeneration()
 {
   updateEigensystem(_covarianceMatrix);
 
-  if(_mirroredSampling == false)
-  for (size_t i = 0; i < _currentPopulationSize; ++i)
-  {
-    bool isFeasible;
-    do
+  if (_mirroredSampling == false)
+    for (size_t i = 0; i < _currentPopulationSize; ++i)
     {
-      std::vector<double> rands(_variableCount);
-      for(size_t d = 0; d < _variableCount; ++d) rands[d] = _normalGenerator->getRandomNumber();
-      sampleSingle(i, rands);
+      bool isFeasible;
+      do
+      {
+        std::vector<double> rands(_variableCount);
+        for (size_t d = 0; d < _variableCount; ++d) rands[d] = _normalGenerator->getRandomNumber();
+        sampleSingle(i, rands);
 
-      if (_hasDiscreteVariables) discretize(_samplePopulation[i]);
+        if (_hasDiscreteVariables) discretize(_samplePopulation[i]);
 
-      isFeasible = isSampleFeasible(_samplePopulation[i]);
+        isFeasible = isSampleFeasible(_samplePopulation[i]);
 
-      _infeasibleSampleCount += isFeasible ? 0 : 1;
+        _infeasibleSampleCount += isFeasible ? 0 : 1;
 
-    } while (isFeasible == false && (_infeasibleSampleCount < _maxInfeasibleResamplings));
-  }
+      } while (isFeasible == false && (_infeasibleSampleCount < _maxInfeasibleResamplings));
+    }
   else
-  for (size_t i = 0; i < _currentPopulationSize; i+=2)
-  {
-    bool isFeasible;
-    do
+    for (size_t i = 0; i < _currentPopulationSize; i += 2)
     {
-      std::vector<double> randsOne(_variableCount);
-      std::vector<double> randsTwo(_variableCount);
-      for(size_t d = 0; d < _variableCount; ++d) 
+      bool isFeasible;
+      do
       {
-        randsOne[d] = _normalGenerator->getRandomNumber();
-        randsTwo[d] = -randsOne[d];
-      }
-      
-      sampleSingle(i, randsOne);
-      sampleSingle(i+1, randsTwo);
+        std::vector<double> randsOne(_variableCount);
+        std::vector<double> randsTwo(_variableCount);
+        for (size_t d = 0; d < _variableCount; ++d)
+        {
+          randsOne[d] = _normalGenerator->getRandomNumber();
+          randsTwo[d] = -randsOne[d];
+        }
 
-      if (_hasDiscreteVariables)
-      {
-        discretize(_samplePopulation[i]);
-        discretize(_samplePopulation[i+1]);
-      }
-      
-      isFeasible = isSampleFeasible(_samplePopulation[i]) && isSampleFeasible(_samplePopulation[i+1]);
+        sampleSingle(i, randsOne);
+        sampleSingle(i + 1, randsTwo);
 
-      if (isFeasible == false) _infeasibleSampleCount++;
+        if (_hasDiscreteVariables)
+        {
+          discretize(_samplePopulation[i]);
+          discretize(_samplePopulation[i + 1]);
+        }
 
-    } while (isFeasible == false && (_infeasibleSampleCount < _maxInfeasibleResamplings));
-  }
+        isFeasible = isSampleFeasible(_samplePopulation[i]) && isSampleFeasible(_samplePopulation[i + 1]);
 
+        if (isFeasible == false) _infeasibleSampleCount++;
+
+      } while (isFeasible == false && (_infeasibleSampleCount < _maxInfeasibleResamplings));
+    }
 }
 
-void CMAES::sampleSingle(size_t sampleIdx, const std::vector<double>& randomNumbers)
+void CMAES::sampleSingle(size_t sampleIdx, const std::vector<double> &randomNumbers)
 {
   for (size_t d = 0; d < _variableCount; ++d)
   {
@@ -587,22 +586,22 @@ void CMAES::updateDistribution()
   }
 
   /* update proportional weights and effective mu (if required) */
-  if(_muType == "Proportional")
+  if (_muType == "Proportional")
   {
-      double valueSum = 0.;
-      double valueSquaredSum = 0.;
-      for(size_t i = 0; i < _currentMuValue; ++i)
-      {
-          const double value = _valueVector[_sortingIndex[i]];
-          _muWeights[i] = value;
-          valueSum += value;
-          valueSquaredSum += value*value;
-      }
-      
-     for(size_t i = 0; i < _currentMuValue; ++i)
-       _muWeights[i] /= valueSum;
+    double valueSum = 0.;
+    double valueSquaredSum = 0.;
+    for (size_t i = 0; i < _currentMuValue; ++i)
+    {
+      const double value = _valueVector[_sortingIndex[i]];
+      _muWeights[i] = value;
+      valueSum += value;
+      valueSquaredSum += value * value;
+    }
 
-      //_effectiveMu = valueSum * valueSum / valueSquaredSum;
+    for (size_t i = 0; i < _currentMuValue; ++i)
+      _muWeights[i] /= valueSum;
+
+    //_effectiveMu = valueSum * valueSum / valueSquaredSum;
   }
 
   /* update mean */
@@ -746,7 +745,7 @@ void CMAES::updateSigma()
   }
 
   /* escape flat evaluation */
-  if (_currentBestValue == _valueVector[_sortingIndex[_currentMuValue-1]])
+  if (_currentBestValue == _valueVector[_sortingIndex[_currentMuValue - 1]])
   {
     _sigma *= exp(0.2 + _sigmaCumulationFactor / _dampFactor);
     _k->_logger->logWarning("Detailed", "Sigma increased due to equal function values.\n");
@@ -835,7 +834,7 @@ void CMAES::handleConstraints()
         {
           _resampledParameterCount++;
           std::vector<double> rands(_variableCount);
-          for(size_t d = 0; d < _variableCount; ++d) rands[d] = _normalGenerator->getRandomNumber();
+          for (size_t d = 0; d < _variableCount; ++d) rands[d] = _normalGenerator->getRandomNumber();
           sampleSingle(i, rands);
 
           if (_hasDiscreteVariables) discretize(_samplePopulation[i]);
@@ -931,7 +930,7 @@ void CMAES::eigen(size_t size, const std::vector<double> &M, std::vector<double>
       }
 
     // GSL Workspace
-    
+
     gsl_vector *gsl_eval = gsl_vector_alloc(size);
     gsl_matrix *gsl_evec = gsl_matrix_alloc(size, size);
     gsl_eigen_symmv_workspace *gsl_work = gsl_eigen_symmv_alloc(size);
@@ -961,7 +960,8 @@ void CMAES::sort_index(const std::vector<double> &vec, std::vector<size_t> &sort
   std::iota(std::begin(sortingIndex), std::begin(sortingIndex) + N, (size_t)0);
 
   // sort indexes based on comparing values in vec
-  std::sort(std::begin(sortingIndex), std::begin(sortingIndex) + N, [vec](size_t i1, size_t i2) { return vec[i1] > vec[i2]; });
+  std::sort(std::begin(sortingIndex), std::begin(sortingIndex) + N, [vec](size_t i1, size_t i2)
+            { return vec[i1] > vec[i2]; });
 }
 
 void CMAES::printGenerationBefore() { return; }
@@ -1940,9 +1940,9 @@ bool CMAES::checkTermination()
  return hasFinished;
 }
 
-
+;
 
 } //optimizer
 } //solver
 } //korali
-
+;

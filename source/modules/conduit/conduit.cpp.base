@@ -6,7 +6,7 @@
 
 using namespace std;
 
-@startNamespace
+__startNamespace__;
 
 /**
 * @brief Temporary storage to hold the pointer to the current sample to process
@@ -23,11 +23,8 @@ void Conduit::coroutineWrapper()
   // Now that the sample is finished, set its state to finished and come back to the experiment thread
   sample->_state = SampleState::finished;
   co_switch(engine->_currentExperiment->_thread);
-
-  // Safety check to make sure we do not continue a sample that has ended
-  if (sample->_state != SampleState::uninitialized)
-    KORALI_LOG_ERROR("Resuming a finished sample\n");
 }
+//}
 
 void Conduit::runSample(Sample *sample, Engine *engine)
 {
@@ -74,13 +71,6 @@ void Conduit::runSample(Sample *sample, Engine *engine)
     co_switch(engine->_currentExperiment->_thread);
 
   } while (sample->retrievePendingMessage(endMessage) == false);
-
-  // Making sure the received message corresponds to the sample's ending message
-  if (!isDefined(endMessage, "Has Finished"))
-    KORALI_LOG_ERROR("Trying to receive ending message from sample, but 'Has Finished' field is not defined!\n");
-
-  if (endMessage["Has Finished"] == false)
-    KORALI_LOG_ERROR("Sample's ending message has arrived but it is marked as 'Has Finished' == false!\n");
 
   // Now replacing sample's information by that of the end message
   sample->_js.getJson() = endMessage;
@@ -286,6 +276,6 @@ void Conduit::listen(std::vector<Sample> &samples)
     }
 }
 
-@moduleAutoCode
+__moduleAutoCode__;
 
-@endNamespace
+__endNamespace__;

@@ -1,12 +1,12 @@
 #include "modules/experiment/experiment.hpp"
 #include "modules/neuralNetwork/neuralNetwork.hpp"
 #ifdef _OPENMP
-#include <omp.h>
+  #include <omp.h>
 #endif
 
 namespace korali
 {
-
+;
 
 NeuralNetwork::NeuralNetwork()
 {
@@ -541,7 +541,7 @@ void NeuralNetwork::applyVariableDefaults()
  Module::applyVariableDefaults();
 } 
 
-
+;
 
 } //korali
-
+;

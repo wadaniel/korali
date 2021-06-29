@@ -16,7 +16,7 @@
 
 namespace korali
 {
-
+;
 /**
   * @brief Pointer to the current experiment in execution
  */
@@ -30,7 +30,13 @@ cothread_t __returnThread;
 /**
   * @brief Function for the initialization of new coroutine threads.
  */
-void threadWrapper() { __expPointer->run(); }
+void threadWrapper()
+{
+  auto e = __expPointer;
+  e->run();
+  co_switch(e->_engine->_thread);
+  KORALI_LOG_ERROR("Trying to continue finished Experiment thread.\n");
+}
 
 void Experiment::run()
 {
@@ -111,8 +117,6 @@ void Experiment::run()
   for (size_t i = 0; i < _solver->_terminationCriteria.size(); i++) _logger->logInfo("Normal", "Termination Criterion Met: %s\n", _solver->_terminationCriteria[i].c_str());
   _logger->logInfo("Normal", "Final Generation: %lu\n", _currentGeneration);
   _logger->logInfo("Normal", "Elapsed Time: %.3fs\n", std::chrono::duration<double>(t1 - t0).count());
-
-  co_switch(_engine->_thread);
 }
 
 void Experiment::saveState()
@@ -203,7 +207,11 @@ void Experiment::finalize()
   for (size_t i = 0; i < _variables.size(); i++) delete _variables[i];
   _variables.clear();
   delete _logger;
-  co_delete(_thread);
+}
+
+Experiment::~Experiment()
+{
+  if (_isInitialized == true) co_delete(_thread);
 }
 
 std::vector<std::vector<float>> Experiment::getEvaluation(const std::vector<std::vector<std::vector<float>>> &inputBatch)
@@ -219,7 +227,6 @@ std::vector<std::vector<float>> Experiment::getEvaluation(const std::vector<std:
 }
 
 knlohmann::json &Experiment::operator[](const std::string &key) { return _js[key]; }
-knlohmann::json &Experiment::operator[](const unsigned long int &key) { return _js[key]; }
 pybind11::object Experiment::getItem(const pybind11::object key) { return _js.getItem(key); }
 void Experiment::setItem(const pybind11::object key, const pybind11::object val) { _js.setItem(key, val); }
 
@@ -433,7 +440,7 @@ void Experiment::applyVariableDefaults()
  Module::applyVariableDefaults();
 } 
 
-
+;
 
 } //korali
-
+;

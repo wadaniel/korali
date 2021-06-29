@@ -13,7 +13,7 @@
 
 #ifndef _KORALI_PROBLEM_SAMPLING_
 #define _KORALI_PROBLEM_SAMPLING_
-
+;
 
 #include "modules/problem/problem.hpp"
 
@@ -21,7 +21,7 @@ namespace korali
 {
 namespace problem
 {
-
+;
 
 /**
 * @brief Class declaration for module: Sampling.
@@ -87,7 +87,7 @@ class Sampling : public Problem
 
 } //problem
 } //korali
-
+;
 
 #endif // _KORALI_PROBLEM_SAMPLING_
-
+;

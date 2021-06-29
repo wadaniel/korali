@@ -2,7 +2,7 @@
 
 namespace korali
 {
-
+;
 
 void Problem::setConfiguration(knlohmann::json& js) 
 {
@@ -48,7 +48,7 @@ void Problem::applyVariableDefaults()
  Module::applyVariableDefaults();
 } 
 
-
+;
 
 } //korali
-
+;

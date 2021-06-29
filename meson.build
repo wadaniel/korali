@@ -58,18 +58,31 @@ korali_deps += dependency('gsl', fallback: ['gsl', 'gsl_dep'], version : '>=2.5'
 korali_deps += dependency('eigen3', fallback: ['eigen', 'eigen_dep'], required: true)
 
 # Process pybind11
-korali_deps += dependency('pybind11', fallback: ['pybind11', 'pybind11_dep'], required: true)
+pybind11_dep = dependency('pybind11', fallback: ['pybind11', 'pybind11_dep'], required: true)
+korali_deps += [ pybind11_dep ]
 
 # process optional korali dependencies
 mpi_dep = null_dep
 openmp_dep = null_dep
 
+# MPI - Not required because resolution of MPI dependencies can be introduced by the compiler wrapper
+# For example: Cray systems embed MPI dependencies on CC
 if get_option('mpi')
-  mpi_dep = dependency('mpi', language: 'cpp', required: false)  
-
+  mpi_dep = dependency('mpi', language: 'cpp', required: false)
+    
   if mpi_dep.found() == false
    mpi_dep = dependency('mpich', required: false)
   endif
+endif
+
+mpi4py_found = false
+if get_option('mpi4py')
+ assert(get_option('mpi'), 'MPI4Py can only be requested if MPI is also requested.')
+ mpi4py_include = run_command(python, '-c', 'import mpi4py; print(mpi4py.get_include())').stdout().strip()
+ assert(mpi4py_include.contains('include'), 'Could not find a correct MPI4Py Python module support.')
+ message('Using mpi4py from ' + mpi4py_include)
+ mpi4py_found = true
+ korali_include += [ mpi4py_include ]
 endif
 
 if get_option('openmp')
@@ -120,9 +133,13 @@ if get_option('cudnn') or get_option('cudnn_path') != ''
 endif
 korali_deps += cudnn_dep
 
+
 # set configuration values
-korali_conf.set('_KORALI_USE_MPI', mpi_dep.found(),
+korali_conf.set('_KORALI_USE_MPI', get_option('mpi'),
   description: 'Use MPI for distributed memory parallelism',
+)
+korali_conf.set('_KORALI_USE_MPI4PY', mpi4py_found,
+  description: 'Use MPI4Py for distributed memory parallelism on Python',
 )
 korali_conf.set('_KORALI_USE_ONEDNN', onednn_dep.found(),
   description: 'Use Intel OndeDNN backend for Deep Neural Networks',
@@ -132,6 +149,7 @@ korali_conf.set('_KORALI_USE_CUDNN', cudnn_dep.found(),
 )
 summary({
   'MPI': get_option('mpi'),
+  'MPI4Py': mpi4py_found,
   'OpenMP': openmp_dep.found(),
   'oneDNN': onednn_dep.found(),
   'cuDNN': cudnn_dep.found(),

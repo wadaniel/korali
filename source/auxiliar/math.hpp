@@ -10,6 +10,11 @@
 */
 #define _USE_MATH_DEFINES
 
+/**
+* @brief Epsilon to add to log or division operations to prevent numerical instabilities
+*/
+#define KORALI_EPSILON 0.00000000001
+
 #include <cmath>
 #include <gsl/gsl_sf.h>
 #include <gsl/gsl_math.h>
@@ -215,7 +220,7 @@ template <typename T>
 T normalLogDensity(const T &x, const T &mean, const T &sigma)
 {
   T norm = -0.5 * log(2 * M_PI * sigma * sigma);
-  T d = (x - mean) / sigma;
+  T d = (x - mean) / (sigma + KORALI_EPSILON);
   return norm - 0.5 * d * d;
 }
  

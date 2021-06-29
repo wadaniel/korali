@@ -13,7 +13,7 @@
 
 #ifndef _KORALI_PROBLEM_HIERARCHICAL_
 #define _KORALI_PROBLEM_HIERARCHICAL_
-
+;
 
 #include "modules/problem/problem.hpp"
 
@@ -21,7 +21,7 @@ namespace korali
 {
 namespace problem
 {
-
+;
 
 /**
 * @brief Class declaration for module: Hierarchical.
@@ -96,6 +96,7 @@ class Hierarchical : public Problem
 
 } //problem
 } //korali
-
+;
 
 #endif // _KORALI_PROBLEM_HIERARCHICAL_
+;

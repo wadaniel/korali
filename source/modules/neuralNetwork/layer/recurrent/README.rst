@@ -1,5 +1,5 @@
-*************
-Recurrent
-*************
+****************
+Recurrent Layer
+****************
 
-Represent a hidden layer where a recurrent transformation is applied.    
+Specialization of the Layer for Recurrent Neural Networks.   

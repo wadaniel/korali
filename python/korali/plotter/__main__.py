@@ -62,6 +62,10 @@ def main(path, test, output, plotAll=False):
   moduleName = ""
 
   if ("cmaes" in solverName):
+   solverDir = curdir + '/HMC'
+   moduleName = '.HMC'
+     
+  if ("cmaes" in solverName):
    solverDir = curdir + '/CMAES'
    moduleName = '.CMAES'
 

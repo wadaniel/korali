@@ -1,9 +1,9 @@
 #include "modules/problem/integration/integration.hpp"
 #include "sample/sample.hpp"
 
-@startNamespace
+__startNamespace__;
 
-void @className::initialize()
+void __className__::initialize()
 {
   if (_k->_variables.size() == 0) KORALI_LOG_ERROR("Integration problems require at least one variable.\n");
 
@@ -27,7 +27,7 @@ void @className::initialize()
         }
 
       if (foundDistribution == false)
-       KORALI_LOG_ERROR("Did not find distribution %s, specified by variable %s\n", _k->_variables[i]->_samplingDistribution.c_str(), _k->_variables[i]->_name.c_str());
+        KORALI_LOG_ERROR("Did not find distribution %s, specified by variable %s\n", _k->_variables[i]->_samplingDistribution.c_str(), _k->_variables[i]->_name.c_str());
 
       _k->_variables[i]->_quadratureWeights.resize(1);
       _k->_variables[i]->_quadratureWeights[0] = intervalSize / _k->_variables[i]->_numberOfGridpoints;
@@ -35,7 +35,7 @@ void @className::initialize()
     else if (_integrationMethod == "Custom")
     {
       if (_k->_variables[i]->_samplePoints.size() != _k->_variables[i]->_quadratureWeights.size())
-       KORALI_LOG_ERROR("Number of 'Sample Points' is not equal to number of 'Quadrature Points' provided for variable %s\n", _k->_variables[i]->_name.c_str());
+        KORALI_LOG_ERROR("Number of 'Sample Points' is not equal to number of 'Quadrature Points' provided for variable %s\n", _k->_variables[i]->_name.c_str());
     }
     else
     {
@@ -74,7 +74,7 @@ void @className::initialize()
   }
 }
 
-void @className::execute(Sample &sample)
+void __className__::execute(Sample &sample)
 {
   // Evaluating Sample
   sample.run(_integrand);
@@ -84,6 +84,6 @@ void @className::execute(Sample &sample)
   if (std::isnan(evaluation)) KORALI_LOG_ERROR("The function evaluation returned NaN.\n");
 }
 
-@moduleAutoCode
+__moduleAutoCode__;
 
-@endNamespace
+__endNamespace__;

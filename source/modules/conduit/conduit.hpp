@@ -13,7 +13,7 @@
 
 #ifndef _KORALI_CONDUIT_
 #define _KORALI_CONDUIT_
-
+;
 
 #include "modules/module.hpp"
 #include <queue>
@@ -21,7 +21,7 @@
 
 namespace korali
 {
-
+;
 
 /**
 * @brief Class declaration for module: Conduit.
@@ -34,10 +34,6 @@ class Engine;
 class Conduit : public Module
 {
   public: 
-  /**
-  * @brief [Internal Use] Indicates the identifier for the next issued sample.
-  */
-   size_t _sampleId;
   
  
   /**
@@ -201,7 +197,7 @@ class Conduit : public Module
 };
 
 } //korali
-
+;
 
 #endif // _KORALI_CONDUIT_
-
+;

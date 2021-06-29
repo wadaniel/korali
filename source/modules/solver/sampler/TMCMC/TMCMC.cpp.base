@@ -7,18 +7,18 @@
 #include <numeric>
 
 #include <gsl/gsl_cdf.h>
+#include <gsl/gsl_eigen.h>
 #include <gsl/gsl_linalg.h>
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_multimin.h>
 #include <gsl/gsl_randist.h>
 #include <gsl/gsl_sort_vector.h>
 #include <gsl/gsl_statistics.h>
-#include <gsl/gsl_eigen.h>
 #include <math.h>
 
-@startNamespace
+__startNamespace__;
 
-void @className::setInitialConfiguration()
+void __className__::setInitialConfiguration()
 {
   knlohmann::json problemConfig = (*_k)["Problem"];
   _variableCount = _k->_variables.size();
@@ -104,7 +104,7 @@ void @className::setInitialConfiguration()
   std::fill(std::begin(_chainLengths), std::end(_chainLengths), 1);
 }
 
-void @className::runGeneration()
+void __className__::runGeneration()
 {
   if (_k->_currentGeneration == 1) setInitialConfiguration();
 
@@ -156,7 +156,7 @@ void @className::runGeneration()
   processGeneration();
 }
 
-void @className::prepareGeneration()
+void __className__::prepareGeneration()
 {
   setBurnIn();
 
@@ -226,7 +226,7 @@ void @className::prepareGeneration()
   }
 }
 
-void @className::processCandidate(const size_t sampleId)
+void __className__::processCandidate(const size_t sampleId)
 {
   double P = calculateAcceptanceProbability(sampleId);
   double U = _uniformGenerator->getRandomNumber();
@@ -251,7 +251,7 @@ void @className::processCandidate(const size_t sampleId)
   if (_currentChainStep[sampleId] > _currentBurnIn) updateDatabase(sampleId);
 }
 
-void @className::processGeneration()
+void __className__::processGeneration()
 {
   // Compute annealing exponent for next generation
   double fmin = 0, xmin = 0;
@@ -263,13 +263,13 @@ void @className::processGeneration()
   {
     _k->_logger->logWarning("Normal", "Annealing Step larger than Max Rho Update, updating Annealing Exponent by %f (Max Rho Update). \n", _maxAnnealingExponentUpdate);
     _annealingExponent = _previousAnnealingExponent + _maxAnnealingExponentUpdate;
-    _coefficientOfVariation = sqrt(tmcmc_objlogp(_annealingExponent, _sampleLogLikelihoodDatabase.data(), _populationSize, _previousAnnealingExponent, _targetCoefficientOfVariation)) + _targetCoefficientOfVariation;
+    _coefficientOfVariation = sqrt(calculateSquaredCVDifference(_annealingExponent, _sampleLogLikelihoodDatabase.data(), _populationSize, _previousAnnealingExponent, _targetCoefficientOfVariation)) + _targetCoefficientOfVariation;
   }
   else if (xmin < 1.0 && xmin < _previousAnnealingExponent + _minAnnealingExponentUpdate)
   {
     _k->_logger->logWarning("Normal", "Annealing Step smaller than Min Rho Update, updating Annealing Exponent by %f (Min Rho Update). \n", _minAnnealingExponentUpdate);
     _annealingExponent = _previousAnnealingExponent + _minAnnealingExponentUpdate;
-    _coefficientOfVariation = sqrt(tmcmc_objlogp(_annealingExponent, &_sampleLogLikelihoodDatabase[0], _populationSize, _previousAnnealingExponent, _targetCoefficientOfVariation)) + _targetCoefficientOfVariation;
+    _coefficientOfVariation = sqrt(calculateSquaredCVDifference(_annealingExponent, &_sampleLogLikelihoodDatabase[0], _populationSize, _previousAnnealingExponent, _targetCoefficientOfVariation)) + _targetCoefficientOfVariation;
   }
   else
   {
@@ -380,7 +380,7 @@ void @className::processGeneration()
   _chainCount = leaderId;
 }
 
-void @className::calculateGradients(std::vector<Sample> &samples)
+void __className__::calculateGradients(std::vector<Sample> &samples)
 {
   size_t numGradientCalculations = 0.0;
   for (size_t c = 0; c < _chainCount; ++c)
@@ -402,7 +402,7 @@ void @className::calculateGradients(std::vector<Sample> &samples)
   }
 }
 
-void @className::calculateProposals(std::vector<Sample> &samples)
+void __className__::calculateProposals(std::vector<Sample> &samples)
 {
   size_t numFIMCalculations = 0.0;
   for (size_t c = 0; c < _chainCount; ++c)
@@ -440,26 +440,26 @@ void @className::calculateProposals(std::vector<Sample> &samples)
     gsl_linalg_LU_decomp(&FIMview.matrix, perm, &s);
 
     // SM - Only add a check if you can create a unit test to trigger it
-//    if (status != GSL_SUCCESS)
-//    {
-//      _chainCandidatesErrors[finishedId] = 1;
-//      gsl_permutation_free(perm);
-//      _numLUDecompositionFailuresProposal++;
-//      continue;
-//    }
+    //    if (status != GSL_SUCCESS)
+    //    {
+    //      _chainCandidatesErrors[finishedId] = 1;
+    //      gsl_permutation_free(perm);
+    //      _numLUDecompositionFailuresProposal++;
+    //      continue;
+    //    }
 
     gsl_matrix *FIMinv = gsl_matrix_alloc(Nth, Nth);
     gsl_linalg_LU_invert(&FIMview.matrix, perm, FIMinv);
     gsl_permutation_free(perm);
 
     // SM - Only add a check if you can create a unit test to trigger it
-//    if (status != GSL_SUCCESS)
-//    {
-//      _chainCandidatesErrors[finishedId] = 2;
-//      gsl_matrix_free(FIMinv);
-//      _numInversionFailuresProposal++;
-//      continue;
-//    }
+    //    if (status != GSL_SUCCESS)
+    //    {
+    //      _chainCandidatesErrors[finishedId] = 2;
+    //      gsl_matrix_free(FIMinv);
+    //      _numInversionFailuresProposal++;
+    //      continue;
+    //    }
 
     // eigenvalue decomposition
     gsl_vector *Evals = gsl_vector_alloc(Nth);
@@ -469,29 +469,29 @@ void @className::calculateProposals(std::vector<Sample> &samples)
     gsl_eigen_symmv_free(work);
 
     // SM - Only add a check if you can create a unit test to trigger it
-//    if (status != GSL_SUCCESS)
-//    {
-//      _chainCandidatesErrors[finishedId] = 3;
-//      gsl_matrix_free(FIMinv);
-//      gsl_vector_free(Evals);
-//      gsl_matrix_free(Evecs);
-//      _numEigenDecompositionFailuresProposal++;
-//      continue;
-//    }
+    //    if (status != GSL_SUCCESS)
+    //    {
+    //      _chainCandidatesErrors[finishedId] = 3;
+    //      gsl_matrix_free(FIMinv);
+    //      gsl_vector_free(Evals);
+    //      gsl_matrix_free(Evecs);
+    //      _numEigenDecompositionFailuresProposal++;
+    //      continue;
+    //    }
 
     gsl_vector_min(Evals);
 
     // SM - Only add a check if you can create a unit test to trigger it
-//    if (minEval <= 0.0)
-//    {
-//      //printf("minEval %lf\n", minEval);
-//      _chainCandidatesErrors[finishedId] = 4;
-//      gsl_matrix_free(FIMinv);
-//      gsl_vector_free(Evals);
-//      gsl_matrix_free(Evecs);
-//      _numNegativeDefiniteProposals++;
-//      continue;
-//    }
+    //    if (minEval <= 0.0)
+    //    {
+    //      //printf("minEval %lf\n", minEval);
+    //      _chainCandidatesErrors[finishedId] = 4;
+    //      gsl_matrix_free(FIMinv);
+    //      gsl_vector_free(Evals);
+    //      gsl_matrix_free(Evecs);
+    //      _numNegativeDefiniteProposals++;
+    //      continue;
+    //    }
 
     // correction
     double correction = false;
@@ -557,7 +557,7 @@ void @className::calculateProposals(std::vector<Sample> &samples)
   gsl_vector_free(ccpy1);
 }
 
-void @className::generateCandidate(const size_t sampleId)
+void __className__::generateCandidate(const size_t sampleId)
 {
   if (_version == "TMCMC")
   {
@@ -587,11 +587,11 @@ void @className::generateCandidate(const size_t sampleId)
       }
 
       // SM - Only add a check if you can create a unit test to trigger it
-//      else
-//      {
-//        _numCholeskyDecompositionFailuresProposal++;
-//        _chainLeadersErrors[sampleId] = 5;
-//      }
+      //      else
+      //      {
+      //        _numCholeskyDecompositionFailuresProposal++;
+      //        _chainLeadersErrors[sampleId] = 5;
+      //      }
     }
     if (_chainLeadersErrors[sampleId] != 0) /* error */
     {
@@ -608,7 +608,7 @@ void @className::generateCandidate(const size_t sampleId)
   }
 }
 
-void @className::updateDatabase(const size_t sampleId)
+void __className__::updateDatabase(const size_t sampleId)
 {
   _sampleDatabase.push_back(_chainLeaders[sampleId]);
   _sampleLogPriorDatabase.push_back(_chainLeadersLogPriors[sampleId]);
@@ -622,7 +622,7 @@ void @className::updateDatabase(const size_t sampleId)
   }
 }
 
-double @className::calculateAcceptanceProbability(const size_t sampleId)
+double __className__::calculateAcceptanceProbability(const size_t sampleId)
 {
   double P = 0.0;
   if (std::isfinite(_chainCandidatesLogPriors[sampleId]) && std::isfinite(_chainCandidatesLogLikelihoods[sampleId]))
@@ -680,7 +680,7 @@ double @className::calculateAcceptanceProbability(const size_t sampleId)
   return P;
 }
 
-double @className::tmcmc_objlogp(double x, const double *loglike, size_t Ns, double exponent, double targetCOV)
+double __className__::calculateSquaredCVDifference(double x, const double *loglike, size_t Ns, double exponent, double targetCOV)
 {
   std::vector<double> weight(Ns);
   const double loglike_max = gsl_stats_max(loglike, 1, Ns);
@@ -702,14 +702,14 @@ double @className::tmcmc_objlogp(double x, const double *loglike, size_t Ns, dou
     return cov2;
 }
 
-double @className::objLog(const gsl_vector *v, void *param)
+double __className__::calculateSquaredCVDifferenceOptimizationWrapper(const gsl_vector *v, void *param)
 {
   double x = gsl_vector_get(v, 0);
   fparam_t *fp = (fparam_t *)param;
-  return @className::tmcmc_objlogp(x, fp->loglike, fp->Ns, fp->exponent, fp->cov);
+  return __className__::calculateSquaredCVDifference(x, fp->loglike, fp->Ns, fp->exponent, fp->cov);
 }
 
-void @className::minSearch(double const *loglike, size_t Ns, double exponent, double objCov, double &xmin, double &fmin)
+void __className__::minSearch(double const *loglike, size_t Ns, double exponent, double objCov, double &xmin, double &fmin)
 {
   // Minimizer Options
   const size_t MaxIter = 1000; /* Max number of search iterations */
@@ -738,7 +738,7 @@ void @className::minSearch(double const *loglike, size_t Ns, double exponent, do
   gsl_vector_set_all(ss, Step);
 
   minex_func.n = 1;
-  minex_func.f = objLog;
+  minex_func.f = calculateSquaredCVDifferenceOptimizationWrapper;
   minex_func.params = &fp;
 
   T = gsl_multimin_fminimizer_nmsimplex;
@@ -769,7 +769,7 @@ void @className::minSearch(double const *loglike, size_t Ns, double exponent, do
 
   if (xmin >= 1.0)
   {
-    fmin = tmcmc_objlogp(1.0, loglike, Ns, exponent, objCov);
+    fmin = calculateSquaredCVDifference(1.0, loglike, Ns, exponent, objCov);
     xmin = 1.0;
   }
 
@@ -778,7 +778,7 @@ void @className::minSearch(double const *loglike, size_t Ns, double exponent, do
   gsl_multimin_fminimizer_free(s);
 }
 
-void @className::setBurnIn()
+void __className__::setBurnIn()
 {
   if (_k->_currentGeneration <= 1)
     _currentBurnIn = 0;
@@ -788,18 +788,18 @@ void @className::setBurnIn()
     _currentBurnIn = _burnIn;
 }
 
-void @className::finalize()
+void __className__::finalize()
 {
   // Setting results
   (*_k)["Results"]["Sample Database"] = _sampleDatabase;
 }
 
-void @className::printGenerationBefore()
+void __className__::printGenerationBefore()
 {
   _k->_logger->logInfo("Minimal", "Annealing Exponent:          %.3e.\n", _annealingExponent);
 }
 
-void @className::printGenerationAfter()
+void __className__::printGenerationAfter()
 {
   _k->_logger->logInfo("Minimal", "Acceptance Rate (proposals / selections): (%.2f%% / %.2f%%)\n", 100 * _proposalsAcceptanceRate, 100 * _selectionAcceptanceRate);
   _k->_logger->logInfo("Normal", "Coefficient of Variation: %.2f%%\n", 100.0 * _coefficientOfVariation);
@@ -833,6 +833,6 @@ void @className::printGenerationAfter()
   }
 }
 
-@moduleAutoCode
+__moduleAutoCode__;
 
-@endNamespace
+__endNamespace__;

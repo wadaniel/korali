@@ -10,7 +10,7 @@ Since the possible array of particular needs and systems can be diverse, Korali 
 
 The conduit is a property of the Korali engine, which means that all experiments that a given engine runs will use the same parallelism strategy.
 
-In this document, we discuss different parallelism/distributed execution scenarios and show which conduit fits better for the case.    
+In this document, we discuss different parallelism/distributed execution scenarios and show which conduit fits better for the case. 
 
 Sequential Execution (No parallelism)
 ======================================
@@ -70,6 +70,8 @@ This scenario is similar to the one above, except that the model function uses p
 
 In this case, we recommend to maximize sample-based parallelism, specifying as many concurrent jobs as possible, as opposed to the model's threads per execution.
 
+Examples of the use of this conduit can be found in :ref:`Concurrent Execution <feature_concurrent.execution>`.  
+
 Parallel Sampling - Pre-Compiled Model
 -----------------------------------------
 
@@ -95,12 +97,12 @@ In this scenario, we use distributed parallelism (many computers) to run many si
 
 To enable this, we use the :ref:`Distributed Conduit <module-conduit-distributed>`, which uses MPI as communication backend to create many instances of Korali workers distributed among the system.
 
-The following code snippet shows how to set the distributed conduit to run a sequential model:
+The following code snippet shows how to set the distributed conduit to run a sequential model, also specifying the MPI communicator to use:
   
-.. code-block:: python
+.. code-block:: cpp
 
-   k["Conduit"]["Type"] = "Distributed"
-   k["Conduit"]["Ranks Per Team"] = 1
+   k["Conduit"]["Type"] = "Distributed";
+   k["Conduit"]["Ranks Per Team"] = 1;
 
 And run it using :code:`mpirun` or similar launch command, for example:
 
@@ -121,10 +123,11 @@ This scenario is similar to the one above, except that the model function uses t
 
 In this case, it is recommended that the user runs one Korali worker per node/NUMA domain, and then the model function uses threading to employ all the cores/GPU therein.
    
-.. code-block:: python
+.. code-block:: cpp
 
-   k["Conduit"]["Type"] = "Distributed"
-   k["Conduit"]["Ranks Per Team"] = 1
+   korali::setKoraliMPIComm(MPI_COMM_WORLD);
+   k["Conduit"]["Type"] = "Distributed";
+   k["Conduit"]["Ranks Per Team"] = 1;
 
 And run it using :code:`mpirun` or similar launch command, for example:
 
@@ -145,33 +148,37 @@ This scenario is similar to the one above, except that the model function uses M
    
 This is the general case for the :ref:`Distributed Conduit <module-conduit-distributed>`, in which worker teams can contains more than one rank. For example,
    
-.. code-block:: python
+.. code-block:: cpp
 
-   k["Conduit"]["Type"] = "Distributed"
-   k["Conduit"]["Ranks Per Team"] = 4
+   korali::setKoraliMPIComm(MPI_COMM_WORLD);
+   k["Conduit"]["Type"] = "Distributed";
+   k["Conduit"]["Ranks Per Team"] = 4;
 
 The model function should expect an MPI Communicator object and operate upon it as in the following example:
 
-.. code-block:: python
+.. code-block:: cpp
 
-  def myMPIModel(sample): 
-   MPIComm = sample["MPI Communicator"]
-   rank = MPIComm.Get_rank()
-   size = MPIComm.Get_size()
+  void myMPIModel(korali::Sample &sample)
+  {
+   MPI_Comm comm = *(MPI_Comm*)korali::getKoraliWorkerMPIComm();
   
-   x = sample["Variables"]["X"]
-   q = compute_and_communicate(x)
+   double x = sample["Variables"]["X"];
+   double q = compute_partial_result(x);
+   
+   double result;
+   MPI_Allreduce(&q, &result, ..., MPIComm);
+   sample["F(x)"] = result; 
+  }
   
-   sample["F(x)"] = MPIComm.Reduce(q, MPIComm)
- 
-
 And run it using :code:`mpirun` or similar launch command, for example:
 
 .. code-block:: bash
 
-   mpirun -n 257 ./myKoraliExperiment.py
+   mpirun -n 257 ./myKoraliExperiment
       
 Where the run will employ 257 cores, one for the engine. With the reamining 256 ranks, it will create 64 worker teams of 4 ranks each.
+ 
+Examples of the use of this conduit can be found in :ref:`Running MPI Applications <feature_running.mpi>`.  
  
 Distributed Sampling - External Application
 --------------------------------------------------

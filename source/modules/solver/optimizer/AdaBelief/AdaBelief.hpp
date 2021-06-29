@@ -13,7 +13,7 @@
 
 #ifndef _KORALI_SOLVER_OPTIMIZER_ADABELIEF_
 #define _KORALI_SOLVER_OPTIMIZER_ADABELIEF_
-
+;
 
 #include "modules/solver/optimizer/optimizer.hpp"
 
@@ -23,7 +23,7 @@ namespace solver
 {
 namespace optimizer
 {
-
+;
 
 /**
 * @brief Class declaration for module: AdaBelief.
@@ -32,19 +32,19 @@ class AdaBelief : public Optimizer
 {
   public: 
   /**
-  * @brief Beta for momentum update
+  * @brief Smoothing factor for momentum update.
   */
    double _beta1;
   /**
-  * @brief Beta for gradient update
+  * @brief Smoothing for gradient update.
   */
    double _beta2;
   /**
-  * @brief Learning Rate
+  * @brief Learning Rate (Step Size)
   */
    double _eta;
   /**
-  * @brief Term for numerical stability.
+  * @brief Term to facilitate numerical stability.
   */
    double _epsilon;
   /**
@@ -72,7 +72,7 @@ class AdaBelief : public Optimizer
   */
    std::vector<double> _biasCorrectedFirstMoment;
   /**
-  * @brief [Internal Use] Old estimate of second moment of Gradient.
+  * @brief [Internal Use] Previous estimate of second moment of Gradient.
   */
    std::vector<double> _secondCentralMoment;
   /**
@@ -132,6 +132,7 @@ class AdaBelief : public Optimizer
 } //optimizer
 } //solver
 } //korali
-
+;
 
 #endif // _KORALI_SOLVER_OPTIMIZER_ADABELIEF_
+;

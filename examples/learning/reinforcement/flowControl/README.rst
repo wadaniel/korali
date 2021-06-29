@@ -11,4 +11,5 @@ Example
 A standalone simulation can be run
 
 .. code-block:: bash
-	python main.py
+	   
+	  python main.py

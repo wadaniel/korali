@@ -4,7 +4,7 @@ namespace korali
 {
 namespace problem
 {
-
+;
 
 void SupervisedLearning::initialize()
 {
@@ -165,7 +165,8 @@ void SupervisedLearning::applyVariableDefaults()
  Problem::applyVariableDefaults();
 } 
 
-
+;
 
 } //problem
 } //korali
+;

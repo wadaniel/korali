@@ -1,10 +1,10 @@
-@startIncludeGuard
+__startIncludeGuard__;
 
 #include "modules/neuralNetwork/layer/layer.hpp"
 
-@startNamespace
+__startNamespace__;
 
-class @className : public @parentClassName
+class __className__ : public __parentClassName__
 {
   public:
 #ifdef _KORALI_USE_ONEDNN
@@ -82,6 +82,6 @@ class @className : public @parentClassName
   void backwardData(const size_t t) override;
 };
 
-@endNamespace
+__endNamespace__;
 
-@endIncludeGuard
+__endIncludeGuard__;

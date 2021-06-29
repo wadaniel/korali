@@ -13,7 +13,7 @@
 
 #ifndef _KORALI_DISTRIBUTION_MULTIVARIATE_
 #define _KORALI_DISTRIBUTION_MULTIVARIATE_
-
+;
 
 #include "modules/distribution/distribution.hpp"
 
@@ -21,7 +21,7 @@ namespace korali
 {
 namespace distribution
 {
-
+;
 
 /**
 * @brief Class declaration for module: Multivariate.
@@ -85,6 +85,7 @@ class Multivariate : public Distribution
 
 } //distribution
 } //korali
-
+;
 
 #endif // _KORALI_DISTRIBUTION_MULTIVARIATE_
+;

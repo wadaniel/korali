@@ -8,7 +8,7 @@ namespace distribution
 {
 namespace specific
 {
-
+;
 
 void Multinomial::getSelections(std::vector<double> &p, std::vector<unsigned int> &n, int N)
 {
@@ -44,9 +44,9 @@ void Multinomial::applyVariableDefaults()
  Specific::applyVariableDefaults();
 } 
 
-
+;
 
 } //specific
 } //distribution
 } //korali
-
+;

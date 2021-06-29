@@ -3,14 +3,15 @@
 #include <gsl/gsl_randist.h>
 #include <gsl/gsl_sf.h>
 
-@startNamespace
+__startNamespace__;
 
-double @className::getDensity(const double x) const
+double
+__className__::getDensity(const double x) const
 {
   return gsl_ran_cauchy_pdf(x - _location, _scale);
 }
 
-double @className::getLogDensity(const double x) const
+double __className__::getLogDensity(const double x) const
 {
   return _aux - std::log(1. + (x - _location) * (x - _location) / (_scale * _scale));
 }
@@ -28,18 +29,18 @@ double Cauchy::getLogDensityHessian(const double x) const
   return -2. * ((1. + tmp2) - 2. * tmp2) / ((1. + tmp2) * (1. + tmp2) * _scale * _scale);
 }
 
-double @className::getRandomNumber()
+double __className__::getRandomNumber()
 {
   return _location + gsl_ran_cauchy(_range, _scale);
 }
 
-void @className::updateDistribution()
+void __className__::updateDistribution()
 {
   if (_scale <= 0) KORALI_LOG_ERROR("Incorrect Scale parameter of Cauchy distribution: %f.\n", _scale);
 
   _aux = -gsl_sf_log(_scale * M_PI);
 }
 
-@moduleAutoCode
+__moduleAutoCode__;
 
-@endNamespace
+__endNamespace__;

@@ -3,11 +3,11 @@ version: 2.1
 executors:
   ubuntu_openmpi_onednn:
     docker:
-      - image: docker.io/cselab/ubuntu_openmpi_onednn:latest
+      - image: docker.io/cselab/ubuntu_openmpi_onednn:1.0.9 
       
   fedora_openmpi_onednn:
     docker:
-      - image: docker.io/cselab/fedora_openmpi_onednn:latest
+      - image: docker.io/cselab/fedora_openmpi_onednn:1.0.8
   
 jobs:
   build:
@@ -29,9 +29,12 @@ jobs:
       runCoverage:
         type: string
         default: 'false'
-      buildargs: 
+      useMPI:
         type: string
-        default: "-Donednn_path=/usr/local -Dmpi=true"
+        default: 'false'
+      useMPI4Py:
+        type: string
+        default: 'false'        
     resource_class: xlarge
     executor: << parameters.image >>  
     working_directory: ~/korali
@@ -39,13 +42,13 @@ jobs:
       - checkout
       - run:
           name: config
-          command: CC=<< parameters.CC >> CXX=<< parameters.CXX >> meson setup build --prefix=~/test_install << parameters.buildargs >> --buildtype=<< parameters.buildtype >> -Db_coverage=true
+          command: CC=<< parameters.CC >> CXX=<< parameters.CXX >> meson setup build --prefix=~/test_install -Donednn_path=/usr/local -Dmpi=<< parameters.useMPI >>  -Dmpi4py=<< parameters.useMPI4Py >> --buildtype=<< parameters.buildtype >> -Db_coverage=<< parameters.runCoverage >> -Dtest=<< parameters.runTests >>
       - run:
           name: build
           command: ninja -C build
       - run:
           name: test
-          command: source tools/env/set_env.sh build; if [ "<< parameters.runTests >>" == "true" ]; then OMP_NUM_THREADS=2 meson test -C build; fi
+          command: source tools/env/set_env.sh build; if [ "<< parameters.runTests >>" == "true" ]; then MESON_TESTTHREADS=`nproc` OMP_NUM_THREADS=2 meson test -C build; fi
       - run:
           name: install
           command: meson install -C build
@@ -54,35 +57,39 @@ jobs:
           command:  if [ "<< parameters.runCoverage >>" == "true" ]; then ninja -C build coverage && ./tools/coverage/coverage && ./tools/coverage/codecov -X search -X fix -f '*.gcov'; fi
       - store_artifacts:
           path: build/meson-logs
+      - store_artifacts:
+          path: docs/docs.log
 
 workflows:
   korali_release:
     jobs:
-      - build: 
+      - build:
           name: ubuntu_openmpi_gcc
           image: ubuntu_openmpi_onednn
           buildtype: release
           runCoverage: 'true'
-          CC: 'gcc'
-          CXX: 'g++'
+          useMPI: 'true'
+          useMPI4Py: 'true'
       - build:
           name: fedora_openmpi_gcc
           image: fedora_openmpi_onednn
           buildtype: release
-          runCoverage: 'true'
-          CC: 'gcc'
-          CXX: 'g++'
+          runCoverage: 'false'
+          useMPI: 'true'
+          useMPI4Py: 'false'
       - build:
           name: ubuntu_openmpi_clang
           image: ubuntu_openmpi_onednn
           buildtype: release
-          runCoverage: 'true'
+          runCoverage: 'false'
           CC: 'clang'
           CXX: 'clang++'
+          useMPI: 'true'
+          useMPI4Py: 'false'
       - build:
           name: fedora_openmpi_clang
           image: fedora_openmpi_onednn
           buildtype: release
-          runCoverage: 'true'
-          CC: 'clang'
-          CXX: 'clang++'
+          runCoverage: 'false'
+          useMPI: 'true'
+          useMPI4Py: 'false'

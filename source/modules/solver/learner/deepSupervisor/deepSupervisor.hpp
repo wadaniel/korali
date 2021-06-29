@@ -13,17 +13,17 @@
 
 #ifndef _KORALI_SOLVER_LEARNER_DEEPSUPERVISOR_
 #define _KORALI_SOLVER_LEARNER_DEEPSUPERVISOR_
+;
 
-
+#include "modules/experiment/experiment.hpp"
+#include "modules/neuralNetwork/neuralNetwork.hpp"
+#include "modules/problem/supervisedLearning/supervisedLearning.hpp"
 #include "modules/solver/learner/deepSupervisor/optimizers/fAdaBelief.hpp"
 #include "modules/solver/learner/deepSupervisor/optimizers/fAdagrad.hpp"
 #include "modules/solver/learner/deepSupervisor/optimizers/fAdam.hpp"
 #include "modules/solver/learner/deepSupervisor/optimizers/fGradientBasedOptimizer.hpp"
 #include "modules/solver/learner/deepSupervisor/optimizers/fMadGrad.hpp"
 #include "modules/solver/learner/deepSupervisor/optimizers/fRMSProp.hpp"
-#include "modules/experiment/experiment.hpp"
-#include "modules/neuralNetwork/neuralNetwork.hpp"
-#include "modules/problem/supervisedLearning/supervisedLearning.hpp"
 #include "modules/solver/learner/learner.hpp"
 
 namespace korali
@@ -32,7 +32,7 @@ namespace solver
 {
 namespace learner
 {
-
+;
 
 /**
 * @brief Class declaration for module: DeepSupervisor.
@@ -153,12 +153,12 @@ class DeepSupervisor : public Learner
   NeuralNetwork *_neuralNetwork;
 
   // Only needed for DDPG
-  //  /**
+  //
   //    * @brief Calculates the gradients with respect to the inputs (data), given an input and output gradients
   //    * @param input The inputs from which to infer outputs. Format: BxTxIC (B: Batch Size, T: Time steps, IC: Input channels)
   //    * @param outputGradients The output gradients. Format: BxOC (B: Batch Size, OC: Input channels)
   //    * @return The inferred batch input gradients Format: BxIC (B: Batch Size, IC: Output channels)
-  //   */
+  //
   //  std::vector<std::vector<float>> &getDataGradients(const std::vector<std::vector<std::vector<float>>> &input, const std::vector<std::vector<float>> &outputGradients);
 
   /**
@@ -178,7 +178,7 @@ class DeepSupervisor : public Learner
 } //learner
 } //solver
 } //korali
-
+;
 
 #endif // _KORALI_SOLVER_LEARNER_DEEPSUPERVISOR_
-
+;

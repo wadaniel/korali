@@ -13,7 +13,6 @@ using namespace dnnl;
 #include <Eigen/Dense>
 using namespace Eigen;
 
-
 namespace korali
 {
 namespace neuralNetwork
@@ -22,7 +21,7 @@ namespace layer
 {
 namespace recurrent
 {
-
+;
 
 void GRU::initialize()
 {
@@ -431,10 +430,10 @@ void GRU::applyVariableDefaults()
  Recurrent::applyVariableDefaults();
 } 
 
-
+;
 
 } //recurrent
 } //layer
 } //neuralNetwork
 } //korali
-
+;

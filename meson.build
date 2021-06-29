@@ -58,12 +58,15 @@ korali_deps += dependency('gsl', fallback: ['gsl', 'gsl_dep'], version : '>=2.5'
 korali_deps += dependency('eigen3', fallback: ['eigen', 'eigen_dep'], required: true)
 
 # Process pybind11
-korali_deps += dependency('pybind11', fallback: ['pybind11', 'pybind11_dep'], required: true)
+pybind11_dep = dependency('pybind11', fallback: ['pybind11', 'pybind11_dep'], required: true)
+korali_deps += [ pybind11_dep ]
 
 # process optional korali dependencies
 mpi_dep = null_dep
 openmp_dep = null_dep
 
+# MPI - Not required because resolution of MPI dependencies can be introduced by the compiler wrapper
+# For example: Cray systems embed MPI dependencies on CC
 if get_option('mpi')
   mpi_dep = dependency('mpi', language: 'cpp', required: false)
     
@@ -132,7 +135,7 @@ korali_deps += cudnn_dep
 
 
 # set configuration values
-korali_conf.set('_KORALI_USE_MPI', true,
+korali_conf.set('_KORALI_USE_MPI', get_option('mpi'),
   description: 'Use MPI for distributed memory parallelism',
 )
 korali_conf.set('_KORALI_USE_MPI4PY', mpi4py_found,

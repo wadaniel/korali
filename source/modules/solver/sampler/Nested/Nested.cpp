@@ -4,11 +4,11 @@
 #include "modules/solver/sampler/Nested/Nested.hpp"
 #include "sample/sample.hpp"
 
+#include <gsl/gsl_eigen.h>
 #include <gsl/gsl_linalg.h>
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_randist.h>
 #include <gsl/gsl_vector.h>
-#include <gsl/gsl_eigen.h>
 
 #include <algorithm> //sort
 #include <chrono>
@@ -23,7 +23,7 @@ namespace solver
 {
 namespace sampler
 {
-
+;
 
 void ellipse_t::initSphere()
 {
@@ -204,7 +204,7 @@ void Nested::runGeneration()
 
     _lastAccepted++;
     accepted = processGeneration();
-  } 
+  }
 
   return;
 }
@@ -333,7 +333,7 @@ bool Nested::processGeneration()
     }
 
     // Add candidate to dead samples
-    if (isfinite(_liveLogPriorWeights[sampleIdx] + _liveLogLikelihoods[sampleIdx])) 
+    if (isfinite(_liveLogPriorWeights[sampleIdx] + _liveLogLikelihoods[sampleIdx]))
     {
       updateDeadSamples(sampleIdx);
     }
@@ -356,7 +356,6 @@ bool Nested::processGeneration()
       _lStarOld = _lStar;
       _lStar = _liveLogPriorWeights[sampleIdx] + _liveLogLikelihoods[sampleIdx];
     }
-
   }
 
   // Update statistics
@@ -375,10 +374,10 @@ double Nested::logPriorWeight(std::vector<double> &sample)
   double logweight = 0.;
   // Calculate lof prior weight (i.e. log of prior/bounded box volume)
   for (size_t d = 0; d < _variableCount; ++d)
-    {
-      logweight += dynamic_cast<distribution::Univariate *>(_k->_distributions[_k->_variables[d]->_distributionIndex])->getLogDensity(sample[d]);
-      logweight += std::log(_priorWidth[d]);
-    }
+  {
+    logweight += dynamic_cast<distribution::Univariate *>(_k->_distributions[_k->_variables[d]->_distributionIndex])->getLogDensity(sample[d]);
+    logweight += std::log(_priorWidth[d]);
+  }
   return logweight;
 }
 
@@ -471,9 +470,9 @@ void Nested::generateCandidatesFromMultiEllipse()
       }
     }
 
-// SM - Only add a check if you can create a unit test to trigger it
-//    if (ellipse_ptr == NULL)
-//      KORALI_LOG_ERROR("Failed to assign ellipse vector.");
+    // SM - Only add a check if you can create a unit test to trigger it
+    //    if (ellipse_ptr == NULL)
+    //      KORALI_LOG_ERROR("Failed to assign ellipse vector.");
 
     bool accept = false;
     while (accept == false)
@@ -514,9 +513,10 @@ void Nested::sortLiveSamplesAscending()
 {
   // Init sample ranks
   std::iota(_liveSamplesRank.begin(), _liveSamplesRank.end(), 0);
-  
+
   // Sort sample rank ascending based on likelihood and prior weight
-  std::sort(_liveSamplesRank.begin(), _liveSamplesRank.end(), [this](const size_t &idx1, const size_t &idx2) -> bool { return this->_liveLogPriorWeights[idx1] + this->_liveLogLikelihoods[idx1] < this->_liveLogPriorWeights[idx2] + this->_liveLogLikelihoods[idx2]; });
+  std::sort(_liveSamplesRank.begin(), _liveSamplesRank.end(), [this](const size_t &idx1, const size_t &idx2) -> bool
+            { return this->_liveLogPriorWeights[idx1] + this->_liveLogLikelihoods[idx1] < this->_liveLogPriorWeights[idx2] + this->_liveLogLikelihoods[idx2]; });
 }
 
 void Nested::updateDeadSamples(size_t sampleIdx)
@@ -554,14 +554,14 @@ void Nested::consumeLiveSamples()
   for (size_t i = 0; i < _numberLivePoints; ++i)
   {
     // Process samples in ascending order
-    sampleIdx = _liveSamplesRank[i]; 
+    sampleIdx = _liveSamplesRank[i];
 
     logEvidenceOld = _logEvidence;
     informationOld = _information;
 
     // Update lStar and add sample to dead samples
-    if (isfinite(_liveLogPriorWeights[sampleIdx] + _liveLogLikelihoods[sampleIdx])) 
-    { 
+    if (isfinite(_liveLogPriorWeights[sampleIdx] + _liveLogLikelihoods[sampleIdx]))
+    {
       _lStarOld = _lStar;
       _lStar = _liveLogPriorWeights[sampleIdx] + _liveLogLikelihoods[sampleIdx];
       updateDeadSamples(sampleIdx);
@@ -578,7 +578,6 @@ void Nested::consumeLiveSamples()
     _information = std::exp(dLogVol) * evidenceTerm + std::exp(logEvidenceOld - _logEvidence) * (informationOld + logEvidenceOld) - _logEvidence;
 
     _logEvidenceVar += 2. * (_information - informationOld) * dlvs[i];
-
   }
 }
 
@@ -759,11 +758,11 @@ bool Nested::updateEllipseCov(ellipse_t &ellipse) const
     gsl_matrix_free(matLU);
 
     // SM - Only add a check if you can create a unit test to trigger it
-//    if (status != 0)
-//    {
-//      _k->_logger->logWarning("Normal", "Covariance inversion failed during ellipsoid covariance update.\n");
-//      return false;
-//    }
+    //    if (status != 0)
+    //    {
+    //      _k->_logger->logWarning("Normal", "Covariance inversion failed during ellipsoid covariance update.\n");
+    //      return false;
+    //    }
   }
 
   return true;
@@ -779,12 +778,12 @@ bool Nested::updateEllipseVolume(ellipse_t &ellipse) const
   gsl_matrix_memcpy(matLU, &cov.matrix);
 
   // SM - Only add a check if you can create a unit test to trigger it
-//  if (status != 0)
-//  {
-//    _k->_logger->logWarning("Normal", "Memcpy failed during Ellipsoid volume update.\n");
-//    gsl_matrix_free(matLU);
-//    return false;
-//  }
+  //  if (status != 0)
+  //  {
+  //    _k->_logger->logWarning("Normal", "Memcpy failed during Ellipsoid volume update.\n");
+  //    gsl_matrix_free(matLU);
+  //    return false;
+  //  }
 
   int signal;
   gsl_permutation *perm = gsl_permutation_alloc(_variableCount);
@@ -801,12 +800,12 @@ bool Nested::updateEllipseVolume(ellipse_t &ellipse) const
   gsl_matrix_memcpy(matEigen, &cov.matrix);
 
   // SM - Only add a check if you can create a unit test to trigger it
-//  if (status != 0)
-//  {
-//    _k->_logger->logWarning("Normal", "Memcpy failed during Ellipsoid volume update.\n");
-//    gsl_matrix_free(matEigen);
-//    return false;
-//  }
+  //  if (status != 0)
+  //  {
+  //    _k->_logger->logWarning("Normal", "Memcpy failed during Ellipsoid volume update.\n");
+  //    gsl_matrix_free(matEigen);
+  //    return false;
+  //  }
 
   gsl_eigen_symmv_workspace *workEigen = gsl_eigen_symmv_alloc(_variableCount);
   gsl_eigen_symmv(matEigen, &evals.vector, &paxes.matrix, workEigen);
@@ -814,20 +813,20 @@ bool Nested::updateEllipseVolume(ellipse_t &ellipse) const
   gsl_eigen_symmv_free(workEigen);
 
   // SM - Only add a check if you can create a unit test to trigger it
-//  if (status != 0)
-//  {
-//    _k->_logger->logWarning("Normal", "Eigenvalue Decomposition failed during Ellipsoid volume update.\n");
-//    return false;
-//  }
+  //  if (status != 0)
+  //  {
+  //    _k->_logger->logWarning("Normal", "Eigenvalue Decomposition failed during Ellipsoid volume update.\n");
+  //    return false;
+  //  }
 
   gsl_eigen_symmv_sort(&evals.vector, &paxes.matrix, GSL_EIGEN_SORT_ABS_DESC);
 
   // SM - Only add a check if you can create a unit test to trigger it
-//  if (status != 0)
-//  {
-//    _k->_logger->logWarning("Normal", "Eigenvalue sorting failed during Ellipsoid volume update.\n");
-//    return false;
-//  }
+  //  if (status != 0)
+  //  {
+  //    _k->_logger->logWarning("Normal", "Eigenvalue sorting failed during Ellipsoid volume update.\n");
+  //    return false;
+  //  }
 
   // Calculate axes from cholesky decomposition
   gsl_matrix_view axes = gsl_matrix_view_array(ellipse.axes.data(), _variableCount, _variableCount);
@@ -839,20 +838,20 @@ bool Nested::updateEllipseVolume(ellipse_t &ellipse) const
   gsl_matrix_memcpy(&axes.matrix, &cov.matrix);
 
   // SM - Only add a check if you can create a unit test to trigger it
-//  if (status != 0)
-//  {
-//    _k->_logger->logWarning("Normal", "Memcpy failed during Ellipsoid volume update.\n");
-//    return false;
-//  }
+  //  if (status != 0)
+  //  {
+  //    _k->_logger->logWarning("Normal", "Memcpy failed during Ellipsoid volume update.\n");
+  //    return false;
+  //  }
 
   gsl_linalg_cholesky_decomp1(&axes.matrix); // LL^T = A
 
   // SM - Only add a check if you can create a unit test to trigger it
-//  if (status != 0)
-//  {
-//    _k->_logger->logWarning("Normal", "Cholesky Decomposition failed during Ellipsoid volume update.\n");
-//    return false;
-//  }
+  //  if (status != 0)
+  //  {
+  //    _k->_logger->logWarning("Normal", "Cholesky Decomposition failed during Ellipsoid volume update.\n");
+  //    return false;
+  //  }
 
   // Find scaling s.t. all samples are bounded by ellipse
   double res, max = Lowest;
@@ -920,7 +919,7 @@ bool Nested::kmeansClustering(const ellipse_t &parent, size_t maxIter, ellipse_t
   bool ok = true;
   size_t iter = 0;
   size_t diffs = 1;
-  
+
   // Iterate until no sample updates cluster assignment
   while ((diffs > 0) && (iter++ < maxIter))
   {
@@ -936,7 +935,7 @@ bool Nested::kmeansClustering(const ellipse_t &parent, size_t maxIter, ellipse_t
       // measure distances to cluster means
       double d1 = l2distance(_liveSamples[six], childOne.mean);
       double d2 = l2distance(_liveSamples[six], childTwo.mean);
-      
+
       int8_t flag = (d1 < d2) ? 1 : 2;
 
       // count updates
@@ -970,7 +969,7 @@ bool Nested::kmeansClustering(const ellipse_t &parent, size_t maxIter, ellipse_t
     // update means of ellipsoids
     updateEllipseMean(childOne);
     updateEllipseMean(childTwo);
-    
+
     ok = ok & updateEllipseCov(childOne);
     ok = ok & updateEllipseCov(childTwo);
 
@@ -978,7 +977,7 @@ bool Nested::kmeansClustering(const ellipse_t &parent, size_t maxIter, ellipse_t
   }
 
   // SM - Only add a check if you can create a unit test to trigger it
-//  if (iter >= maxIter) _k->_logger->logWarning("Normal", "K-Means Clustering did not terminate in %zu steps.\n", maxIter);
+  //  if (iter >= maxIter) _k->_logger->logWarning("Normal", "K-Means Clustering did not terminate in %zu steps.\n", maxIter);
 
   return ok;
 }
@@ -1592,9 +1591,9 @@ bool Nested::checkTermination()
  return hasFinished;
 }
 
-
+;
 
 } //sampler
 } //solver
 } //korali
-
+;

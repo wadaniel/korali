@@ -7,13 +7,13 @@
 #include <numeric>
 
 #include <gsl/gsl_cdf.h>
+#include <gsl/gsl_eigen.h>
 #include <gsl/gsl_linalg.h>
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_multimin.h>
 #include <gsl/gsl_randist.h>
 #include <gsl/gsl_sort_vector.h>
 #include <gsl/gsl_statistics.h>
-#include <gsl/gsl_eigen.h>
 #include <math.h>
 
 namespace korali
@@ -22,7 +22,7 @@ namespace solver
 {
 namespace sampler
 {
-
+;
 
 void TMCMC::setInitialConfiguration()
 {
@@ -269,13 +269,13 @@ void TMCMC::processGeneration()
   {
     _k->_logger->logWarning("Normal", "Annealing Step larger than Max Rho Update, updating Annealing Exponent by %f (Max Rho Update). \n", _maxAnnealingExponentUpdate);
     _annealingExponent = _previousAnnealingExponent + _maxAnnealingExponentUpdate;
-    _coefficientOfVariation = sqrt(tmcmc_objlogp(_annealingExponent, _sampleLogLikelihoodDatabase.data(), _populationSize, _previousAnnealingExponent, _targetCoefficientOfVariation)) + _targetCoefficientOfVariation;
+    _coefficientOfVariation = sqrt(calculateSquaredCVDifference(_annealingExponent, _sampleLogLikelihoodDatabase.data(), _populationSize, _previousAnnealingExponent, _targetCoefficientOfVariation)) + _targetCoefficientOfVariation;
   }
   else if (xmin < 1.0 && xmin < _previousAnnealingExponent + _minAnnealingExponentUpdate)
   {
     _k->_logger->logWarning("Normal", "Annealing Step smaller than Min Rho Update, updating Annealing Exponent by %f (Min Rho Update). \n", _minAnnealingExponentUpdate);
     _annealingExponent = _previousAnnealingExponent + _minAnnealingExponentUpdate;
-    _coefficientOfVariation = sqrt(tmcmc_objlogp(_annealingExponent, &_sampleLogLikelihoodDatabase[0], _populationSize, _previousAnnealingExponent, _targetCoefficientOfVariation)) + _targetCoefficientOfVariation;
+    _coefficientOfVariation = sqrt(calculateSquaredCVDifference(_annealingExponent, &_sampleLogLikelihoodDatabase[0], _populationSize, _previousAnnealingExponent, _targetCoefficientOfVariation)) + _targetCoefficientOfVariation;
   }
   else
   {
@@ -446,26 +446,26 @@ void TMCMC::calculateProposals(std::vector<Sample> &samples)
     gsl_linalg_LU_decomp(&FIMview.matrix, perm, &s);
 
     // SM - Only add a check if you can create a unit test to trigger it
-//    if (status != GSL_SUCCESS)
-//    {
-//      _chainCandidatesErrors[finishedId] = 1;
-//      gsl_permutation_free(perm);
-//      _numLUDecompositionFailuresProposal++;
-//      continue;
-//    }
+    //    if (status != GSL_SUCCESS)
+    //    {
+    //      _chainCandidatesErrors[finishedId] = 1;
+    //      gsl_permutation_free(perm);
+    //      _numLUDecompositionFailuresProposal++;
+    //      continue;
+    //    }
 
     gsl_matrix *FIMinv = gsl_matrix_alloc(Nth, Nth);
     gsl_linalg_LU_invert(&FIMview.matrix, perm, FIMinv);
     gsl_permutation_free(perm);
 
     // SM - Only add a check if you can create a unit test to trigger it
-//    if (status != GSL_SUCCESS)
-//    {
-//      _chainCandidatesErrors[finishedId] = 2;
-//      gsl_matrix_free(FIMinv);
-//      _numInversionFailuresProposal++;
-//      continue;
-//    }
+    //    if (status != GSL_SUCCESS)
+    //    {
+    //      _chainCandidatesErrors[finishedId] = 2;
+    //      gsl_matrix_free(FIMinv);
+    //      _numInversionFailuresProposal++;
+    //      continue;
+    //    }
 
     // eigenvalue decomposition
     gsl_vector *Evals = gsl_vector_alloc(Nth);
@@ -475,29 +475,29 @@ void TMCMC::calculateProposals(std::vector<Sample> &samples)
     gsl_eigen_symmv_free(work);
 
     // SM - Only add a check if you can create a unit test to trigger it
-//    if (status != GSL_SUCCESS)
-//    {
-//      _chainCandidatesErrors[finishedId] = 3;
-//      gsl_matrix_free(FIMinv);
-//      gsl_vector_free(Evals);
-//      gsl_matrix_free(Evecs);
-//      _numEigenDecompositionFailuresProposal++;
-//      continue;
-//    }
+    //    if (status != GSL_SUCCESS)
+    //    {
+    //      _chainCandidatesErrors[finishedId] = 3;
+    //      gsl_matrix_free(FIMinv);
+    //      gsl_vector_free(Evals);
+    //      gsl_matrix_free(Evecs);
+    //      _numEigenDecompositionFailuresProposal++;
+    //      continue;
+    //    }
 
     gsl_vector_min(Evals);
 
     // SM - Only add a check if you can create a unit test to trigger it
-//    if (minEval <= 0.0)
-//    {
-//      //printf("minEval %lf\n", minEval);
-//      _chainCandidatesErrors[finishedId] = 4;
-//      gsl_matrix_free(FIMinv);
-//      gsl_vector_free(Evals);
-//      gsl_matrix_free(Evecs);
-//      _numNegativeDefiniteProposals++;
-//      continue;
-//    }
+    //    if (minEval <= 0.0)
+    //    {
+    //      //printf("minEval %lf\n", minEval);
+    //      _chainCandidatesErrors[finishedId] = 4;
+    //      gsl_matrix_free(FIMinv);
+    //      gsl_vector_free(Evals);
+    //      gsl_matrix_free(Evecs);
+    //      _numNegativeDefiniteProposals++;
+    //      continue;
+    //    }
 
     // correction
     double correction = false;
@@ -593,11 +593,11 @@ void TMCMC::generateCandidate(const size_t sampleId)
       }
 
       // SM - Only add a check if you can create a unit test to trigger it
-//      else
-//      {
-//        _numCholeskyDecompositionFailuresProposal++;
-//        _chainLeadersErrors[sampleId] = 5;
-//      }
+      //      else
+      //      {
+      //        _numCholeskyDecompositionFailuresProposal++;
+      //        _chainLeadersErrors[sampleId] = 5;
+      //      }
     }
     if (_chainLeadersErrors[sampleId] != 0) /* error */
     {
@@ -686,7 +686,7 @@ double TMCMC::calculateAcceptanceProbability(const size_t sampleId)
   return P;
 }
 
-double TMCMC::tmcmc_objlogp(double x, const double *loglike, size_t Ns, double exponent, double targetCOV)
+double TMCMC::calculateSquaredCVDifference(double x, const double *loglike, size_t Ns, double exponent, double targetCOV)
 {
   std::vector<double> weight(Ns);
   const double loglike_max = gsl_stats_max(loglike, 1, Ns);
@@ -708,11 +708,11 @@ double TMCMC::tmcmc_objlogp(double x, const double *loglike, size_t Ns, double e
     return cov2;
 }
 
-double TMCMC::objLog(const gsl_vector *v, void *param)
+double TMCMC::calculateSquaredCVDifferenceOptimizationWrapper(const gsl_vector *v, void *param)
 {
   double x = gsl_vector_get(v, 0);
   fparam_t *fp = (fparam_t *)param;
-  return TMCMC::tmcmc_objlogp(x, fp->loglike, fp->Ns, fp->exponent, fp->cov);
+  return TMCMC::calculateSquaredCVDifference(x, fp->loglike, fp->Ns, fp->exponent, fp->cov);
 }
 
 void TMCMC::minSearch(double const *loglike, size_t Ns, double exponent, double objCov, double &xmin, double &fmin)
@@ -744,7 +744,7 @@ void TMCMC::minSearch(double const *loglike, size_t Ns, double exponent, double 
   gsl_vector_set_all(ss, Step);
 
   minex_func.n = 1;
-  minex_func.f = objLog;
+  minex_func.f = calculateSquaredCVDifferenceOptimizationWrapper;
   minex_func.params = &fp;
 
   T = gsl_multimin_fminimizer_nmsimplex;
@@ -775,7 +775,7 @@ void TMCMC::minSearch(double const *loglike, size_t Ns, double exponent, double 
 
   if (xmin >= 1.0)
   {
-    fmin = tmcmc_objlogp(1.0, loglike, Ns, exponent, objCov);
+    fmin = calculateSquaredCVDifference(1.0, loglike, Ns, exponent, objCov);
     xmin = 1.0;
   }
 
@@ -791,7 +791,7 @@ void TMCMC::setBurnIn()
   else if (_k->_currentGeneration - 2 < _perGenerationBurnIn.size())
     _currentBurnIn = _perGenerationBurnIn[_k->_currentGeneration - 2];
   else
-    _currentBurnIn = _defaultBurnIn;
+    _currentBurnIn = _burnIn;
 }
 
 void TMCMC::finalize()
@@ -809,9 +809,9 @@ void TMCMC::printGenerationAfter()
 {
   _k->_logger->logInfo("Minimal", "Acceptance Rate (proposals / selections): (%.2f%% / %.2f%%)\n", 100 * _proposalsAcceptanceRate, 100 * _selectionAcceptanceRate);
   _k->_logger->logInfo("Normal", "Coefficient of Variation: %.2f%%\n", 100.0 * _coefficientOfVariation);
-  _k->_logger->logInfo("Normal", "logEvidence: %.3f\n", _logEvidence);
+  _k->_logger->logInfo("Normal", "log of accumulated Plausibility Weights: %.3f\n", _logEvidence);
   _k->_logger->logInfo("Detailed", "max logLikelihood: %.3f\n", _maxLoglikelihood);
-  _k->_logger->logInfo("Detailed", "Number of finite evaluations (prior / likelihood): (%zu / %zu)\n", _numFinitePriorEvaluations, _numFiniteLikelihoodEvaluations);
+  _k->_logger->logInfo("Detailed", "Number of finite Evaluations (prior / likelihood): (%zu / %zu)\n", _numFinitePriorEvaluations, _numFiniteLikelihoodEvaluations);
 
   if (_version == "mTMCMC")
   {
@@ -1263,14 +1263,14 @@ void TMCMC::setConfiguration(knlohmann::json& js)
  }
   else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Max Chain Length'] required by TMCMC.\n"); 
 
- if (isDefined(js, "Default Burn In"))
+ if (isDefined(js, "Burn In"))
  {
- try { _defaultBurnIn = js["Default Burn In"].get<size_t>();
+ try { _burnIn = js["Burn In"].get<size_t>();
 } catch (const std::exception& e)
- { KORALI_LOG_ERROR(" + Object: [ TMCMC ] \n + Key:    ['Default Burn In']\n%s", e.what()); } 
-   eraseValue(js, "Default Burn In");
+ { KORALI_LOG_ERROR(" + Object: [ TMCMC ] \n + Key:    ['Burn In']\n%s", e.what()); } 
+   eraseValue(js, "Burn In");
  }
-  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Default Burn In'] required by TMCMC.\n"); 
+  else   KORALI_LOG_ERROR(" + No value provided for mandatory setting: ['Burn In'] required by TMCMC.\n"); 
 
  if (isDefined(js, "Per Generation Burn In"))
  {
@@ -1357,7 +1357,7 @@ void TMCMC::getConfiguration(knlohmann::json& js)
    js["Version"] = _version;
    js["Population Size"] = _populationSize;
    js["Max Chain Length"] = _maxChainLength;
-   js["Default Burn In"] = _defaultBurnIn;
+   js["Burn In"] = _burnIn;
    js["Per Generation Burn In"] = _perGenerationBurnIn;
    js["Target Coefficient Of Variation"] = _targetCoefficientOfVariation;
    js["Covariance Scaling"] = _covarianceScaling;
@@ -1446,9 +1446,9 @@ bool TMCMC::checkTermination()
  return hasFinished;
 }
 
-
+;
 
 } //sampler
 } //solver
 } //korali
-
+;

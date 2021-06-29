@@ -8,7 +8,7 @@ namespace problem
 {
 namespace hierarchical
 {
-
+;
 
 void Theta::initialize()
 {
@@ -157,9 +157,9 @@ void Theta::applyVariableDefaults()
  Hierarchical::applyVariableDefaults();
 } 
 
-
+;
 
 } //hierarchical
 } //problem
 } //korali
-
+;

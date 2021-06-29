@@ -10,7 +10,7 @@ namespace problem
 {
 namespace hierarchical
 {
-
+;
 
 void Psi::initialize()
 {
@@ -194,9 +194,9 @@ void Psi::applyVariableDefaults()
  Hierarchical::applyVariableDefaults();
 } 
 
-
+;
 
 } //hierarchical
 } //problem
 } //korali
-
+;

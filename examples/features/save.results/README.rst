@@ -1,8 +1,7 @@
 Preserving Results
 =====================================================
 
-In this tutorial we show how Korali can be used to store important outputs from the computational model
-that otherwise would be lost.
+In this tutorial we show how Korali can be used to store important outputs from the computational model that otherwise would be lost after evaluation.
 
 Computational Model
 ---------------------------
@@ -23,7 +22,7 @@ In Korali we have to set this flag to store the values of `Apples` and `Bananas`
 
 .. code-block:: python
 
-    e["File Output"]["Store Samples"] = True
+    e["Store Sample Information"] = True
 
 All evaluations can be found in the files in `_korali_results`.
 

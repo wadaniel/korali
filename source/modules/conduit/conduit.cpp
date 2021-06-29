@@ -8,7 +8,7 @@ using namespace std;
 
 namespace korali
 {
-
+;
 
 /**
 * @brief Temporary storage to hold the pointer to the current sample to process
@@ -24,7 +24,8 @@ void Conduit::coroutineWrapper()
 
   // Now that the sample is finished, set its state to finished and come back to the experiment thread
   sample->_state = SampleState::finished;
-  co_switch(engine->_currentExperiment->_thread); }
+  co_switch(engine->_currentExperiment->_thread);
+}
 //}
 
 void Conduit::runSample(Sample *sample, Engine *engine)
@@ -309,7 +310,7 @@ void Conduit::applyVariableDefaults()
  Module::applyVariableDefaults();
 } 
 
-
+;
 
 } //korali
-
+;

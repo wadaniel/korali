@@ -2,9 +2,12 @@
 Neural Network
 ***************
 
-This module combined the given :ref:`layers <module-neuralnetwork-layer>` to a Neural Network. The Neural Network can be used, for example, as a function approximator in a :ref:`Supervised Learning <module-problem-supervisedlearning>` problem. 
+This module combines the given :ref:`layers <module-neuralnetwork-layer>` to a Neural Network. The Neural Network can be used, for example, as a function approximator in a :ref:`Supervised Learning <module-problem-supervisedlearning>` problem. 
 
-The current implementation is based on Intel's `oneDNN <https://github.com/oneapi-src/oneDNN>`_ library.
+The user can choose between different backends to perform the computations. Besides the Korali lightweight implementation, we support
+
++ Intel's `oneDNN <https://github.com/oneapi-src/oneDNN>`_ library.
++ Nvidia's `cuDNN <https://developer.nvidia.com/cudnn>`_ library.
 
 This module enables two *Operation* types:
 

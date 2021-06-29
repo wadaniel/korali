@@ -13,7 +13,7 @@
 
 #ifndef _KORALI_SOLVER_SAMPLER_MCMC_
 #define _KORALI_SOLVER_SAMPLER_MCMC_
-
+;
 
 #include "modules/distribution/univariate/normal/normal.hpp"
 #include "modules/distribution/univariate/uniform/uniform.hpp"
@@ -26,7 +26,7 @@ namespace solver
 {
 namespace sampler
 {
-
+;
 
 /**
 * @brief Class declaration for module: MCMC.
@@ -168,8 +168,9 @@ class MCMC : public Sampler
   * @param leaderLoglikelihood loglikelihood of current chain leader
   * @param loglikelihoods loglikelihoods of samples obtained after delay
   * @param N rescursion depth
+  * @return The acceptance probability
   */
-  double recursiveAlpha(double &deonominator, const double leaderLoglikelihood, const double *loglikelihoods, size_t N) const;
+  double recursiveAlpha(double &denominator, const double leaderLoglikelihood, const double *loglikelihoods, size_t N) const;
 
   /**
   * @brief Updates internal state such as mean and covariance of chain.
@@ -178,19 +179,22 @@ class MCMC : public Sampler
 
   /**
   * @brief Generate new sample.
+  * @param sampleIdx Id of the sample to generate a candidate for
   */
   void generateCandidate(size_t sampleIdx);
 
   /**
   * @brief Cholesky decomposition of chain covariance matrix.
+  * @param inC Input matrix
+  * @param outL Output lower triangular decomposed matrix
   */
   void choleskyDecomp(const std::vector<double> &inC, std::vector<double> &outL) const;
 
   /**
   * @brief Process sample after evaluation.
+  * @param sampleId Id of the sample to process
   */
   void finishSample(size_t sampleId);
-
 
   /**
  * @brief Configures MCMC.
@@ -221,7 +225,7 @@ class MCMC : public Sampler
 } //sampler
 } //solver
 } //korali
-
+;
 
 #endif // _KORALI_SOLVER_SAMPLER_MCMC_
-
+;

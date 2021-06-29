@@ -13,11 +13,11 @@
 
 #ifndef _KORALI_EXPERIMENT_
 #define _KORALI_EXPERIMENT_
+;
 
-
-#include "config.hpp"
 #include "auxiliar/koraliJson.hpp"
 #include "auxiliar/libco/libco.h"
+#include "config.hpp"
 #include "modules/module.hpp"
 #include "variable/variable.hpp"
 #include <chrono>
@@ -26,7 +26,7 @@
 
 namespace korali
 {
-
+;
 
 /**
 * @brief Class declaration for module: Experiment.
@@ -44,7 +44,7 @@ class Engine;
 /**
 * @brief Class declaration for module: Experiment.
 */
-class Experiment: public Module
+class Experiment : public Module
 {
   public: 
   /**
@@ -180,7 +180,14 @@ class Experiment: public Module
   */
   double _resultSavingTime;
 
+  /**
+  * @brief For testing purposes, this field establishes whether the engine is the one to run samples (default = false) or a custom function (true)
+  */
   bool _overrideEngine = false;
+
+  /**
+   * @brief For testing purposes, this field establishes which custom function to use to override the engine on sample execution for testing.
+   */
   std::function<void(Sample &)> _overrideFunction;
 
   /**
@@ -236,7 +243,7 @@ class Experiment: public Module
 };
 
 } //korali
-
+;
 
 #endif // _KORALI_EXPERIMENT_
-
+;

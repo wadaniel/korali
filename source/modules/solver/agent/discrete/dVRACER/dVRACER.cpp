@@ -11,7 +11,7 @@ namespace agent
 {
 namespace discrete
 {
-
+;
 
 void dVRACER::initializeAgent()
 {
@@ -305,10 +305,10 @@ bool dVRACER::checkTermination()
  return hasFinished;
 }
 
-
+;
 
 } //discrete
 } //agent
 } //solver
 } //korali
-
+;

@@ -1,7 +1,7 @@
 #include "modules/problem/problem.hpp"
 
-@startNamespace
+__startNamespace__;
 
-@moduleAutoCode
+__moduleAutoCode__;
 
-@endNamespace
+__endNamespace__;

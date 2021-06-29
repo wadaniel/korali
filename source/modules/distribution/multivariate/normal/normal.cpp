@@ -1,9 +1,9 @@
 #include "modules/distribution/multivariate/normal/normal.hpp"
 #include "modules/experiment/experiment.hpp"
 #include <auxiliar/logger.hpp>
-#include <gsl/gsl_vector.h>
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_randist.h>
+#include <gsl/gsl_vector.h>
 
 namespace korali
 {
@@ -11,7 +11,7 @@ namespace distribution
 {
 namespace multivariate
 {
-
+;
 
 void Normal::getDensity(double *x, double *result, const size_t n)
 {
@@ -135,9 +135,9 @@ void Normal::applyVariableDefaults()
  Multivariate::applyVariableDefaults();
 } 
 
-
+;
 
 } //multivariate
 } //distribution
 } //korali
-
+;

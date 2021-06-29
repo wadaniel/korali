@@ -4,9 +4,11 @@
 #include "sample/sample.hpp"
 #include <chrono>
 
-@startNamespace
+#define CSCALE
 
-void @className::initialize()
+__startNamespace__;
+
+void __className__::initialize()
 {
   _variableCount = _k->_variables.size();
 
@@ -168,13 +170,13 @@ void @className::initialize()
   }
 }
 
-void @className::runGeneration()
+void __className__::runGeneration()
 {
   if (_mode == "Training") trainingGeneration();
   if (_mode == "Testing") testingGeneration();
 }
 
-void @className::trainingGeneration()
+void __className__::trainingGeneration()
 {
   auto beginTime = std::chrono::steady_clock::now(); // Profiling
 
@@ -284,7 +286,7 @@ void @className::trainingGeneration()
   _sessionGeneration++;
 }
 
-void @className::testingGeneration()
+void __className__::testingGeneration()
 {
   // Allocating testing agents
   std::vector<Sample> testingAgents(_testingSampleIds.size());
@@ -308,7 +310,7 @@ void @className::testingGeneration()
     _testingReward[agentId] = testingAgents[agentId]["Testing Reward"].get<float>();
 }
 
-void @className::rescaleStates()
+void __className__::rescaleStates()
 {
   // Calculation of state moments
   std::vector<float> sumStates(_problem->_stateVectorSize, 0.0);
@@ -341,8 +343,9 @@ void @className::rescaleStates()
       _stateVector[i][d] = (_stateVector[i][d] - _stateRescalingMeans[d]) / _stateRescalingSigmas[d];
 }
 
-void @className::calculateRewardRescalingFactors()
+void __className__::calculateRewardRescalingFactors()
 {
+#ifndef CSCALE
   float sumReward = 0.0;
   float sumSquareReward = 0.0;
 
@@ -354,13 +357,13 @@ void @className::calculateRewardRescalingFactors()
     sumSquareReward += reward * reward;
   }
 
-  // Calculating reward scaling s,t. mean equals 0.0 and standard deviation 1.0.
-  _rewardRescalingMean = sumReward / (float)_rewardVector.size();
-  _rewardRescalingSigma = std::sqrt(sumSquareReward / (float)_rewardVector.size() - _rewardRescalingMean * _rewardRescalingMean + 1e-9);
+  _rewardRescalingMean = 0.;
+  _rewardRescalingSigma = std::sqrt(sumSquareReward / (float)_rewardVector.size() + 1e-9);
   _rewardRescalingCount++;
+#endif
 }
 
-void @className::attendAgent(size_t agentId)
+void __className__::attendAgent(size_t agentId)
 {
   auto beginTime = std::chrono::steady_clock::now(); // Profiling
 
@@ -383,11 +386,11 @@ void @className::attendAgent(size_t agentId)
       // Process every episode received and its experiences (add them to replay memory)
       for (size_t i = 0; i < _problem->_agentsPerEnvironment; i++)
       {
-       processEpisode(episodeId, message["Episodes"][i]);
+        processEpisode(episodeId, message["Episodes"][i]);
 
-       // Increasing total experience counters
-       _experienceCount += message["Episodes"][i]["Experiences"].size();
-       _sessionExperienceCount += message["Episodes"][i]["Experiences"].size();
+        // Increasing total experience counters
+        _experienceCount += message["Episodes"][i]["Experiences"].size();
+        _sessionExperienceCount += message["Episodes"][i]["Experiences"].size();
       }
 
       // Waiting for the agent to come back with all the information
@@ -396,19 +399,19 @@ void @className::attendAgent(size_t agentId)
       // Getting the training reward of the latest episodes
       for (size_t i = 0; i < message["Episodes"].size(); i++)
       {
-       _trainingLastReward = _agents[agentId]["Training Rewards"][i].get<float>();
+        _trainingLastReward = _agents[agentId]["Training Rewards"][i].get<float>();
 
-       // Keeping training statistics. Updating if exceeded best training policy so far.
-       if (_trainingLastReward > _trainingBestReward)
-       {
-         _trainingBestReward = _trainingLastReward;
-         _trainingBestEpisodeId = episodeId;
-         _trainingBestPolicy = _agents[agentId]["Policy Hyperparameters"];
-       }
+        // Keeping training statistics. Updating if exceeded best training policy so far.
+        if (_trainingLastReward > _trainingBestReward)
+        {
+          _trainingBestReward = _trainingLastReward;
+          _trainingBestEpisodeId = episodeId;
+          _trainingBestPolicy = _agents[agentId]["Policy Hyperparameters"];
+        }
 
-       // Storing bookkeeping information
-       _trainingRewardHistory.push_back(_trainingLastReward);
-       _trainingExperienceHistory.push_back(message["Episodes"][i]["Experiences"].size());
+        // Storing bookkeeping information
+        _trainingRewardHistory.push_back(_trainingLastReward);
+        _trainingExperienceHistory.push_back(message["Episodes"][i]["Experiences"].size());
       }
 
       // If the policy has exceeded the threshold during training, we gather its statistics
@@ -453,7 +456,7 @@ void @className::attendAgent(size_t agentId)
   _generationAgentAttendingTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
 }
 
-void @className::processEpisode(size_t episodeId, knlohmann::json &episode)
+void __className__::processEpisode(size_t episodeId, knlohmann::json &episode)
 {
   /*********************************************************************
   * Adding episode's experiences into the replay memory
@@ -491,6 +494,11 @@ void @className::processEpisode(size_t episodeId, knlohmann::json &episode)
       }
     }
 
+#ifdef CSCALE
+    if(_rewardVector.size() >= _experienceReplayMaximumSize)
+        _rewardRescalingSumSquaredRewards -= _rewardVector[0]*_rewardVector[0];
+    _rewardRescalingSumSquaredRewards += reward*reward;
+#endif
     _rewardVector.add(reward);
 
     // Keeping statistics
@@ -599,9 +607,13 @@ void @className::processEpisode(size_t episodeId, knlohmann::json &episode)
     // Setting initial retrace value in the experience's cache
     _retraceValueVector[expId] = retV;
   }
+
+#ifdef CSCALE
+  _rewardRescalingSigma = std::sqrt(_rewardRescalingSumSquaredRewards/ (float)_rewardVector.size() + 1e-9);
+#endif
 }
 
-std::vector<size_t> @className::generateMiniBatch(size_t miniBatchSize)
+std::vector<size_t> __className__::generateMiniBatch(size_t miniBatchSize)
 {
   // Allocating storage for mini batch experiecne indexes
   std::vector<size_t> miniBatch(miniBatchSize);
@@ -626,7 +638,7 @@ std::vector<size_t> @className::generateMiniBatch(size_t miniBatchSize)
   return miniBatch;
 }
 
-void @className::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const std::vector<policy_t> &policyData)
+void __className__::updateExperienceMetadata(const std::vector<size_t> &miniBatch, const std::vector<policy_t> &policyData)
 {
   const size_t miniBatchSize = miniBatch.size();
 
@@ -637,7 +649,7 @@ void @className::updateExperienceMetadata(const std::vector<size_t> &miniBatch, 
   for (size_t i = 1; i < miniBatchSize; i++)
     if (miniBatch[i] != miniBatch[i - 1]) updateBatch.push_back(i);
 
-#pragma omp parallel for schedule(guided, 1)
+#pragma omp parallel for
   for (size_t i = 0; i < updateBatch.size(); i++)
   {
     auto batchId = updateBatch[i];
@@ -663,15 +675,6 @@ void @className::updateExperienceMetadata(const std::vector<size_t> &miniBatch, 
     if (std::isfinite(importanceWeight) == false)
       KORALI_LOG_ERROR("Calculated value of importanceWeight returned an invalid value: %f\n", importanceWeight);
 
-
-    // If this is the truncated experience of an episode, then obtain truncated state value
-    float truncatedV = 0.0f;
-    if (_terminationVector[expId] == e_truncated)
-    {
-      auto truncatedPolicy = runPolicy({getTruncatedStateSequence(expId)})[0];
-      truncatedV = truncatedPolicy.stateValue;
-    }
-
     // Checking if experience is still on policy
     bool isOnPolicy = (importanceWeight > (1.0f / _experienceReplayOffPolicyCurrentCutoff)) && (importanceWeight < _experienceReplayOffPolicyCurrentCutoff);
 
@@ -687,10 +690,23 @@ void @className::updateExperienceMetadata(const std::vector<size_t> &miniBatch, 
     // Store computed information for use in replay memory.
     _curPolicyVector[expId] = curPolicy;
     _stateValueVector[expId] = stateValue;
-    _truncatedStateValueVector[expId] = truncatedV;
+    _truncatedStateValueVector[expId] = 0.0f;
     _importanceWeightVector[expId] = importanceWeight;
     _isOnPolicyVector[expId] = isOnPolicy;
     _truncatedImportanceWeightVector[expId] = truncatedImportanceWeight;
+  }
+
+  // Calculating updated truncated policy state values
+  for (size_t i = 0; i < updateBatch.size(); i++)
+  {
+    auto batchId = updateBatch[i];
+    auto expId = miniBatch[batchId];
+    if (_terminationVector[expId] == e_truncated)
+    {
+      auto truncatedState = getTruncatedStateSequence(expId);
+      auto truncatedPolicy = runPolicy({getTruncatedStateSequence(expId)})[0];
+      _truncatedStateValueVector[expId] = truncatedPolicy.stateValue;
+    }
   }
 
   // Updating the off policy Ratio
@@ -757,7 +773,7 @@ void @className::updateExperienceMetadata(const std::vector<size_t> &miniBatch, 
   }
 }
 
-size_t @className::getTimeSequenceStartExpId(size_t expId)
+size_t __className__::getTimeSequenceStartExpId(size_t expId)
 {
   size_t startId = expId;
 
@@ -781,12 +797,12 @@ size_t @className::getTimeSequenceStartExpId(size_t expId)
   return startId;
 }
 
-void @className::resetTimeSequence()
+void __className__::resetTimeSequence()
 {
   _stateTimeSequence.clear();
 }
 
-std::vector<std::vector<std::vector<float>>> @className::getMiniBatchStateSequence(const std::vector<size_t> &miniBatch, const bool includeAction)
+std::vector<std::vector<std::vector<float>>> __className__::getMiniBatchStateSequence(const std::vector<size_t> &miniBatch, const bool includeAction)
 {
   // Getting mini batch size
   const size_t miniBatchSize = miniBatch.size();
@@ -825,7 +841,7 @@ std::vector<std::vector<std::vector<float>>> @className::getMiniBatchStateSequen
   return stateSequence;
 }
 
-std::vector<std::vector<float>> @className::getTruncatedStateSequence(size_t expId)
+std::vector<std::vector<float>> __className__::getTruncatedStateSequence(size_t expId)
 {
   // Getting starting expId
   size_t startId = getTimeSequenceStartExpId(expId);
@@ -843,7 +859,7 @@ std::vector<std::vector<float>> @className::getTruncatedStateSequence(size_t exp
   return timeSequence;
 }
 
-void @className::finalize()
+void __className__::finalize()
 {
   if (_mode != "Training") return;
 
@@ -869,7 +885,7 @@ void @className::finalize()
   } while (agentsRemain == true);
 }
 
-void @className::serializeExperienceReplay()
+void __className__::serializeExperienceReplay()
 {
   _k->_logger->logInfo("Detailed", "Serializing Agent's Training State...\n");
   auto beginTime = std::chrono::steady_clock::now(); // Profiling
@@ -924,7 +940,7 @@ void @className::serializeExperienceReplay()
   _generationSerializationTime += std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - beginTime).count(); // Profiling
 }
 
-void @className::deserializeExperienceReplay()
+void __className__::deserializeExperienceReplay()
 {
   auto beginTime = std::chrono::steady_clock::now(); // Profiling
 
@@ -1005,7 +1021,7 @@ void @className::deserializeExperienceReplay()
   _k->_logger->logInfo("Detailed", "Took %fs to deserialize training state.\n", deserializationTime);
 }
 
-void @className::printGenerationAfter()
+void __className__::printGenerationAfter()
 {
   if (_mode == "Training")
   {
@@ -1087,6 +1103,6 @@ void @className::printGenerationAfter()
   }
 }
 
-@moduleAutoCode
+__moduleAutoCode__;
 
-@endNamespace
+__endNamespace__;

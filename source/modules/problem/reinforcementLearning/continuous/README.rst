@@ -1,5 +1,5 @@
-************************************
-Reinforcement Learning (Continuous)
-************************************
+**********************************
+Continuous Reinforcement Learning 
+**********************************
 
-Describes a problem were we want to solve a sequential decision making problem in a continuous action domain. 
+Specialization of the Reinforcement Learning Problem for continuous action domains. 

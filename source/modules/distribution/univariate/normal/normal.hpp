@@ -13,7 +13,7 @@
 
 #ifndef _KORALI_DISTRIBUTION_UNIVARIATE_NORMAL_
 #define _KORALI_DISTRIBUTION_UNIVARIATE_NORMAL_
-
+;
 
 #include "modules/distribution/univariate/univariate.hpp"
 
@@ -23,7 +23,7 @@ namespace distribution
 {
 namespace univariate
 {
-
+;
 
 /**
 * @brief Class declaration for module: Normal.
@@ -126,7 +126,7 @@ class Normal : public Univariate
 } //univariate
 } //distribution
 } //korali
-
+;
 
 #endif // _KORALI_DISTRIBUTION_UNIVARIATE_NORMAL_
-
+;

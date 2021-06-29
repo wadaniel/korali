@@ -1,12 +1,12 @@
-@startIncludeGuard
+__startIncludeGuard__;
 
 #include "modules/distribution/univariate/beta/beta.hpp"
 #include "modules/problem/reinforcementLearning/continuous/continuous.hpp"
 #include "modules/solver/agent/agent.hpp"
 
-@startNamespace
+__startNamespace__;
 
-class @className : public @parentClassName
+class __className__ : public __parentClassName__
 {
   public:
   /**
@@ -47,9 +47,9 @@ class @className : public @parentClassName
 
   float calculateImportanceWeight(const std::vector<float> &action, const policy_t &curPolicy, const policy_t &oldPolicy) override;
   virtual void getAction(korali::Sample &sample) override;
-  virtual void initializeAgent();
+  virtual void initializeAgent() override;
 };
 
-@endNamespace
+__endNamespace__;
 
-@endIncludeGuard
+__endIncludeGuard__;
